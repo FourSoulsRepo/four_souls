@@ -31,14 +31,14 @@ Each sub-step is sized for one agent session.
 9. Stop after every finished global step.
    1. Wait for the owner's review and approval.
    2. Never start the next step without approval.
+10. Keep `NOTICE` current.
+   1. Any added, removed or upgraded third-party item updates it.
+   2. Same commit as the change.
 11. One branch per global step.
    1. Name: `step-NN-short-name`, e.g. `step-01-foundation`.
    2. Created from `main` when the step starts.
    3. After approval: merge into `main` with `--no-ff`.
    4. Never squash; keep every sub-step commit.
-10. Keep `NOTICE` current.
-   1. Any added, removed or upgraded third-party item updates it.
-   2. Same commit as the change.
 
 ## Files
 
