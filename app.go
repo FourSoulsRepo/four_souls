@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 
+	"github.com/FourSoulsRepo/four_souls/internal/legal"
 	"github.com/FourSoulsRepo/four_souls/internal/version"
 )
 
@@ -25,4 +26,9 @@ func (a *App) startup(ctx context.Context) {
 // Versions returns the app and rules engine versions for the main menu.
 func (a *App) Versions() version.Info {
 	return version.Get()
+}
+
+// Notice returns the fan-game notice for the splash screen.
+func (a *App) Notice() []legal.Line {
+	return legal.Notice
 }

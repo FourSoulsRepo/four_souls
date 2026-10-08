@@ -69,7 +69,7 @@ Ideas: PR-01, PR-02, PR-03, A-01, A-02, A-04, A-09, A-10, A-13, A-14, B-01, B-02
    1. No file outside `bridge/` imports Wails runtime or bindings.
    2. `npm run build` and lint pass.
 
-### [ ] 1.6 Fan-game notice
+### [x] 1.6 Fan-game notice
 
 1. Goal: legal notice on every start (L-01, L-02).
 2. Tasks:
