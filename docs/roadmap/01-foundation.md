@@ -34,7 +34,7 @@ Ideas: PR-01, PR-02, PR-03, A-01, A-02, A-04, A-09, A-10, A-13, A-14, B-01, B-02
    1. `go build ./...` and `go test ./...` pass in every module.
    2. `pkg/` modules import nothing from the main module.
 
-### [ ] 1.3 Entry points
+### [x] 1.3 Entry points
 
 1. Goal: the entry points from A-04 exist and run.
 2. Tasks:
