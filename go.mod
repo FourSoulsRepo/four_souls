@@ -1,4 +1,4 @@
-module four_souls
+module github.com/FourSoulsRepo/four_souls
 
 go 1.25.0
 

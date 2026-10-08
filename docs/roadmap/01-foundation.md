@@ -18,7 +18,7 @@ Ideas: PR-01, PR-02, PR-03, A-01, A-02, A-04, A-09, A-10, A-13, A-14, B-01, B-02
 3. Done when:
    1. `git status` is clean after a build.
 
-### [ ] 1.2 Go modules and workspace
+### [x] 1.2 Go modules and workspace
 
 1. Goal: the module layout from A-01, A-11, A-12, A-13.
 2. Tasks:
