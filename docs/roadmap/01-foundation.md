@@ -124,7 +124,7 @@ Ideas: PR-01, PR-02, PR-03, A-01, A-02, A-04, A-09, A-10, A-13, A-14, B-01, B-02
    1. A new agent can find every folder's purpose in docs.
    2. `NOTICE` lists every dependency added in step 1.
 
-### [ ] 1.10 Go linter
+### [x] 1.10 Go linter
 
 1. Goal: strict golangci-lint with security rules (PR-03).
 2. Tasks:
@@ -134,6 +134,9 @@ Ideas: PR-01, PR-02, PR-03, A-01, A-02, A-04, A-09, A-10, A-13, A-14, B-01, B-02
    4. Style: `gofumpt`, `revive`, `misspell`.
    5. Runs on every Go module, incl. `pkg/` modules.
    6. CI job fails on any finding.
+   7. `depguard`: `pkg/` never imports the app or Wails.
+   8. `depguard`: the engine never imports `os`, `net`, `time`, `math/rand`.
+   9. Needs golangci-lint built with Go ≥ the local toolchain.
 3. Done when:
    1. The linter passes on all modules locally and in CI.
    2. Wiki: how to run linters.

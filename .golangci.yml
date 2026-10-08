@@ -1,0 +1,106 @@
+version: "2"
+
+run:
+  timeout: 5m
+  tests: true
+
+linters:
+  default: none
+  enable:
+    # Security
+    - gosec
+    - bodyclose
+    - noctx
+    - errorlint
+    - errchkjson
+    - rowserrcheck
+    - sqlclosecheck
+    - depguard
+    # Correctness
+    - errcheck
+    - govet
+    - staticcheck
+    - ineffassign
+    - unused
+    - nilerr
+    - nilnil
+    - copyloopvar
+    - durationcheck
+    - exhaustive
+    - forcetypeassert
+    - makezero
+    - unconvert
+    - wastedassign
+    - contextcheck
+    - containedctx
+    # Style
+    - revive
+    - misspell
+    - godot
+    - whitespace
+  settings:
+    gosec:
+      severity: low
+      confidence: low
+    govet:
+      enable-all: true
+      disable:
+        - fieldalignment # readability first; structs stay in logical order
+    errcheck:
+      check-type-assertions: true
+      check-blank: true
+    exhaustive:
+      default-signifies-exhaustive: true
+    revive:
+      rules:
+        - name: exported
+        - name: package-comments
+        - name: var-naming
+        - name: error-return
+        - name: error-strings
+        - name: error-naming
+        - name: unexported-return
+        - name: indent-error-flow
+        - name: errorf
+        - name: unreachable-code
+        - name: unused-parameter
+        - name: redefines-builtin-id
+    depguard:
+      rules:
+        # pkg/ modules must stay independent of the app (A-01, PR-02).
+        pkg-independent:
+          files:
+            - "**/pkg/**"
+          deny:
+            - pkg: github.com/FourSoulsRepo/four_souls
+              desc: pkg/ modules must not import the app module
+            - pkg: github.com/wailsapp/wails
+              desc: pkg/ modules must not depend on Wails
+        # The rules engine runs in the browser too (A-09).
+        engine-pure:
+          files:
+            - "**/pkg/rules_engine/**"
+          deny:
+            - pkg: os
+              desc: the engine has no file system access
+            - pkg: net
+              desc: the engine has no network access
+            - pkg: math/rand
+              desc: use the engine's seeded RNG (A-08)
+            - pkg: math/rand/v2
+              desc: use the engine's seeded RNG (A-08)
+            - pkg: time
+              desc: the engine must not depend on wall-clock time (A-08)
+  exclusions:
+    generated: strict
+    paths:
+      - frontend
+
+formatters:
+  enable:
+    - gofumpt
+    - goimports
+  settings:
+    goimports:
+      local-prefixes:
+        - github.com/FourSoulsRepo

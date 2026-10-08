@@ -3,6 +3,8 @@ package main
 
 import (
 	"fmt"
+	"io"
+	"log"
 	"os"
 
 	"github.com/FourSoulsRepo/four_souls/internal/legal"
@@ -10,7 +12,18 @@ import (
 )
 
 func main() {
+	if err := printBanner(os.Stdout); err != nil {
+		log.Fatal(err)
+	}
+}
+
+// printBanner writes the fan-game notice and the versions (L-02).
+func printBanner(w io.Writer) error {
 	v := version.Get()
-	fmt.Fprint(os.Stdout, legal.PlainText())
-	fmt.Fprintf(os.Stdout, "\nFour Souls dedicated server\napp %s, rules engine %s\n", v.App, v.Engine)
+	_, err := fmt.Fprintf(w, "%s\nFour Souls dedicated server\napp %s, rules engine %s\n",
+		legal.PlainText(), v.App, v.Engine)
+	if err != nil {
+		return fmt.Errorf("print banner: %w", err)
+	}
+	return nil
 }

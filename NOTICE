@@ -83,4 +83,5 @@ Build tools (not shipped)
 --------------------------------------------------------------------------
   Go toolchain                              BSD-3-Clause
   Wails CLI                                 MIT
+  golangci-lint                             GPL-3.0
   Node.js, npm                              MIT, Artistic-2.0
