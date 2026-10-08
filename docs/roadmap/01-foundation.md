@@ -3,7 +3,7 @@
 Goal: an empty but complete skeleton.
 Everything builds, tests, and runs on all platforms.
 
-Ideas: PR-01, PR-02, A-01, A-02, A-04, A-09, A-10, A-13, A-14, B-01, B-02, L-01, L-02.
+Ideas: PR-01, PR-02, PR-03, A-01, A-02, A-04, A-09, A-10, A-13, A-14, B-01, B-02, L-01, L-02.
 
 ---
 
@@ -120,3 +120,31 @@ Ideas: PR-01, PR-02, A-01, A-02, A-04, A-09, A-10, A-13, A-14, B-01, B-02, L-01,
 3. Done when:
    1. A new agent can find every folder's purpose in docs.
    2. `NOTICE` lists every dependency added in step 1.
+
+### [ ] 1.10 Go linter
+
+1. Goal: strict golangci-lint with security rules (PR-03).
+2. Tasks:
+   1. `.golangci.yml` (config v2) at the repo root.
+   2. Security: `gosec`, `bodyclose`, `noctx`, `errorlint`.
+   3. Correctness: `errcheck`, `govet` (all), `staticcheck`, `nilerr`.
+   4. Style: `gofumpt`, `revive`, `misspell`.
+   5. Runs on every Go module, incl. `pkg/` modules.
+   6. CI job fails on any finding.
+3. Done when:
+   1. The linter passes on all modules locally and in CI.
+   2. Wiki: how to run linters.
+
+### [ ] 1.11 Frontend linter
+
+1. Goal: strict ESLint with security rules (PR-03).
+2. Tasks:
+   1. ESLint flat config in `frontend/`.
+   2. `typescript-eslint` strict and type-checked rules.
+   3. React, React Hooks rules.
+   4. Security: `eslint-plugin-security`, `eslint-plugin-no-unsanitized`.
+   5. Ban `dangerouslySetInnerHTML`, `eval`, `new Function`.
+   6. CI job fails on any finding or warning.
+3. Done when:
+   1. `npm run lint` passes locally and in CI.
+   2. `NOTICE` lists the new dev dependencies.

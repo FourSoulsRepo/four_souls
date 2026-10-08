@@ -14,6 +14,10 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
 2. PR-02. Big self-contained modules go to `/pkg`.
    1. Each is its own Go module, ready to move to a separate repo.
    2. Candidates are proposed to the owner before moving.
+3. PR-03. Strict linters with security rules.
+   1. Go: golangci-lint, strict, incl. `gosec`.
+   2. Frontend: ESLint, strict type-checked, with security plugins.
+   3. Both run locally and in CI; CI fails on any finding.
 
 ## Visual
 
