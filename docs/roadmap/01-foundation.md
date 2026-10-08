@@ -84,7 +84,7 @@ Ideas: PR-01, PR-02, PR-03, A-01, A-02, A-04, A-09, A-10, A-13, A-14, B-01, B-02
    2. Use case written: app start with notice.
 4. **Owner:** confirm the final notice text.
 
-### [ ] 1.7 Embedded and external assets
+### [x] 1.7 Embedded and external assets
 
 1. Goal: two build types (B-01).
 2. Tasks:

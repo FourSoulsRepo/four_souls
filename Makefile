@@ -5,6 +5,7 @@ MODULES := . ./pkg/rules_engine ./pkg/card_db ./pkg/record
 
 test:
 	@for m in $(MODULES); do (cd $$m && go test ./...) || exit 1; done
+	@go test -tags embed ./...
 
 vet:
 	@for m in $(MODULES); do (cd $$m && go vet ./...) || exit 1; done

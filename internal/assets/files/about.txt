@@ -1,0 +1,2 @@
+Four Souls app assets: game mats, sounds and other non-card files.
+Card data and images live in pkg/card_db.
