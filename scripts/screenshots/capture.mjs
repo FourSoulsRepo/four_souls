@@ -1,8 +1,9 @@
 #!/usr/bin/env node
-// Captures each screen into docs/wiki/images/screen-*.png.
+// Captures each screen into .cache/screenshots/screen-*.png (git-ignored).
 // Uses ?screenshot=1 so Wails bindings are faked (no Go/Wails window needed).
 
 import { spawn } from 'node:child_process';
+import { mkdirSync } from 'node:fs';
 import { createServer } from 'node:net';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -11,7 +12,7 @@ import { chromium } from 'playwright';
 const here = dirname(fileURLToPath(import.meta.url));
 const repo = join(here, '..', '..');
 const frontend = join(repo, 'frontend');
-const outDir = join(repo, 'docs', 'wiki', 'images');
+const outDir = join(repo, '.cache', 'screenshots');
 
 // Same size as the window in main.go.
 const width = 1024;
@@ -77,6 +78,7 @@ async function shot(page, name) {
 }
 
 async function main() {
+  mkdirSync(outDir, { recursive: true });
   const port = await unusedPort();
   const vite = startVite(port);
   const browser = await chromium.launch();

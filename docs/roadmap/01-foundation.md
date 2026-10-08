@@ -166,6 +166,7 @@ Ideas: PR-01, PR-02, PR-03, A-01, A-02, A-04, A-09, A-10, A-13, A-14, B-01, B-02
    2. `?screenshot=1` loads fake Wails bindings in Vite.
    3. Playwright (headless Chromium) captures each screen.
    4. Tools live in `scripts/screenshots/`, not in `frontend/`.
-   5. `make screenshots` writes `docs/wiki/images/screen-*.png`.
+   5. `make screenshots` writes `.cache/screenshots/screen-*.png`.
+   6. Screenshots are not committed until the UI settles.
 3. Done when:
    1. Splash and main menu PNGs are generated and look right.
