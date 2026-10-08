@@ -46,7 +46,7 @@ Ideas: PR-01, PR-02, PR-03, A-01, A-02, A-04, A-09, A-10, A-13, A-14, B-01, B-02
    1. All three build.
    2. `GOOS=js GOARCH=wasm go build ./cmd/website` passes.
 
-### [ ] 1.4 Versions
+### [x] 1.4 Versions
 
 1. Goal: app and engine versions in the main menu corner (A-02).
 2. Tasks:

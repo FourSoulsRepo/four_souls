@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
+
+	"github.com/FourSoulsRepo/four_souls/internal/version"
 )
 
 // App struct
@@ -24,4 +26,9 @@ func (a *App) startup(ctx context.Context) {
 // Greet returns a greeting for the given name
 func (a *App) Greet(name string) string {
 	return fmt.Sprintf("Hello %s, It's show time!", name)
+}
+
+// Versions returns the app and rules engine versions for the main menu.
+func (a *App) Versions() version.Info {
+	return version.Get()
 }
