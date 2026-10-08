@@ -1,9 +1,18 @@
 import { useEffect, useState } from 'react';
-import { getNotice, openExternal, type NoticeLine } from '../bridge';
+import { getNotice, openExternal, type NoticeLine, type NoticePart } from '../bridge';
 import './Splash.css';
 
 // How long the fan-game notice stays on screen (L-01).
 const SPLASH_MS = 5000;
+
+// The notice is static text, so its content makes a stable key.
+function partKey(part: NoticePart): string {
+  return `${part.text}|${part.url ?? ''}`;
+}
+
+function lineKey(line: NoticeLine): string {
+  return line.map(partKey).join('');
+}
 
 interface Props {
   onDone: () => void;
@@ -26,12 +35,12 @@ export function Splash({ onDone }: Props) {
     <div className="splash">
       <h1>Four Souls</h1>
       <div className="splash-notice">
-        {notice.map((line, i) => (
-          <p key={i}>
-            {line.map((part, j) =>
+        {notice.map((line) => (
+          <p key={lineKey(line)}>
+            {line.map((part) =>
               part.url ? (
                 <a
-                  key={j}
+                  key={partKey(part)}
                   href={part.url}
                   onClick={(e) => {
                     e.preventDefault();
@@ -43,7 +52,7 @@ export function Splash({ onDone }: Props) {
                   {part.text}
                 </a>
               ) : (
-                <span key={j}>{part.text}</span>
+                <span key={partKey(part)}>{part.text}</span>
               ),
             )}
           </p>

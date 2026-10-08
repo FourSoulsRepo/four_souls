@@ -141,16 +141,18 @@ Ideas: PR-01, PR-02, PR-03, A-01, A-02, A-04, A-09, A-10, A-13, A-14, B-01, B-02
    1. The linter passes on all modules locally and in CI.
    2. Wiki: how to run linters.
 
-### [ ] 1.11 Frontend linter
+### [x] 1.11 Frontend linter
 
 1. Goal: strict ESLint with security rules (PR-03).
 2. Tasks:
    1. ESLint flat config in `frontend/`.
    2. `typescript-eslint` strict and type-checked rules.
-   3. React, React Hooks rules.
+   3. React (`@eslint-react`, strict type-checked), React Hooks rules.
    4. Security: `eslint-plugin-security`, `eslint-plugin-no-unsanitized`.
    5. Ban `dangerouslySetInnerHTML`, `eval`, `new Function`.
    6. CI job fails on any finding or warning.
+   7. ESLint 10; `eslint-plugin-react` skipped (no ESLint 10 support).
+   8. Only `src/bridge` may import Wails bindings.
 3. Done when:
    1. `npm run lint` passes locally and in CI.
    2. `NOTICE` lists the new dev dependencies.

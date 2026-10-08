@@ -77,6 +77,13 @@ npm (build only, not shipped):
   Vite, @vitejs/plugin-react                MIT
   TypeScript                                Apache-2.0
   @types/react, @types/react-dom            MIT
+  ESLint, @eslint/js                        MIT
+  typescript-eslint                         MIT
+  @eslint-react/eslint-plugin               MIT
+  eslint-plugin-react-hooks                 MIT
+  eslint-plugin-security                    Apache-2.0
+  eslint-plugin-no-unsanitized              MPL-2.0
+  globals                                   MIT
 
 --------------------------------------------------------------------------
 Build tools (not shipped)
