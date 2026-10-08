@@ -73,6 +73,9 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    1. Each rule has a stable ID, e.g. `R-COMBAT-03`.
    2. A text copy ships in the client app and the website.
    3. Links point only to our local rules, never to external sites.
+5. R-05. First version supports only the "Base Game" set.
+   1. The engine design keeps all later sets in mind.
+   2. Their mechanics must fit without a full engine rework.
 6. R-06. Mulligan: check in the rules whether it exists.
 7. R-07. Known rulings by Edmund (from the TTS "Ed's Notes" notebook).
    1. Monster Manual can force a second attack.
@@ -97,9 +100,6 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
       https://twitter.com/edmundmcmillen/status/1070033655412645888
    12. Old rulings: check each against the current official rules.
    13. Each confirmed ruling becomes a test case (R-03).
-5. R-05. First version supports only the "Base Game" set.
-   1. The engine design keeps all later sets in mind.
-   2. Their mechanics must fit without a full engine rework.
 
 ## Architecture
 
@@ -111,7 +111,7 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    5. Treated as a separate repo, ready to move out later.
    6. Folder: `pkg/rules_engine`.
    7. Imported in code under the alias `engine`.
-   8. Module path: TBD, a new GitHub account for this project.
+   8. Module path prefix: `github.com/FourSoulsRepo` (may change later).
 2. A-02. The app shows two versions:
    1. App version.
    2. Rules engine version.

@@ -1,0 +1,95 @@
+THIRD-PARTY NOTICES
+
+The LICENSE file of this repository (MIT) covers only the material authored
+by the copyright holder. The items below belong to other people, keep their
+own terms, and are used here only so that the application looks and works
+the way it does.
+
+This file is updated in the same change that adds, removes or upgrades any
+third-party item.
+
+--------------------------------------------------------------------------
+The Binding of Isaac: Four Souls — game rules, card names, texts and art
+--------------------------------------------------------------------------
+The Binding of Isaac: Four Souls is designed by Edmund McMillen and
+published by Maestro Media (first edition: Studio71).
+Card names, card texts, card artwork and rules belong to their owners.
+Card artwork is credited to its artists inside the app, per card.
+
+Not included in this repository yet. Card images will live in a separate
+private repository and ship inside release binaries.
+
+This project is an unofficial, free, fan-made game. It is not affiliated
+with, endorsed by or sponsored by Edmund McMillen, Maestro Media or
+Studio71, and claims no ownership of their material. If the rights holders
+object to its use here, it will be removed.
+
+Buy the physical game: https://foursouls.com
+
+--------------------------------------------------------------------------
+Nunito — frontend/src/assets/fonts/nunito-v16-latin-regular.woff2
+--------------------------------------------------------------------------
+Copyright 2016 The Nunito Project Authors (contact@sansoxygen.com)
+Licensed under the SIL Open Font License, Version 1.1 — see
+frontend/src/assets/fonts/OFL.txt.
+Comes with the Wails project template.
+
+--------------------------------------------------------------------------
+Wails template images — build/appicon.png, build/windows/icon.ico,
+frontend/src/assets/images/logo-universal.png
+--------------------------------------------------------------------------
+Wails logo and default application icon from the Wails project template.
+Copyright (c) Lea Anthony and the Wails contributors. MIT.
+Upstream: https://github.com/wailsapp/wails
+Placeholders; to be replaced by project artwork.
+
+--------------------------------------------------------------------------
+Dependencies
+--------------------------------------------------------------------------
+Not vendored in this repository; fetched by Go and npm at build time and
+linked into release binaries. Each keeps its own license; exact versions
+are in go.mod, go.sum and frontend/package.json.
+
+Go (linked into the app):
+
+  github.com/wailsapp/wails/v2              MIT
+  github.com/wailsapp/go-webview2           MIT
+  github.com/wailsapp/mimetype              MIT
+  github.com/labstack/echo/v4,
+  github.com/labstack/gommon                MIT
+  github.com/leaanthony/go-ansi-parser,
+  gosod, slicer, u                          MIT
+  github.com/samber/lo                      MIT
+  github.com/bep/debounce                   MIT
+  github.com/go-ole/go-ole                  MIT
+  github.com/mattn/go-colorable,
+  github.com/mattn/go-isatty                MIT
+  github.com/rivo/uniseg                    MIT
+  github.com/valyala/bytebufferpool,
+  github.com/valyala/fasttemplate           MIT
+  git.sr.ht/~jackmordaunt/go-toast/v2       MIT
+  github.com/jchv/go-winloader              ISC
+  github.com/gorilla/websocket              BSD-2-Clause
+  github.com/godbus/dbus/v5                 BSD-2-Clause
+  github.com/pkg/browser                    BSD-2-Clause
+  github.com/pkg/errors                     BSD-2-Clause
+  github.com/google/uuid                    BSD-3-Clause
+  golang.org/x/crypto, net, sys, text       BSD-3-Clause
+  github.com/tkrajina/go-reflector          Apache-2.0
+
+npm (bundled into the frontend):
+
+  React, React DOM                          MIT
+
+npm (build only, not shipped):
+
+  Vite, @vitejs/plugin-react                MIT
+  TypeScript                                Apache-2.0
+  @types/react, @types/react-dom            MIT
+
+--------------------------------------------------------------------------
+Build tools (not shipped)
+--------------------------------------------------------------------------
+  Go toolchain                              BSD-3-Clause
+  Wails CLI                                 MIT
+  Node.js, npm                              MIT, Artistic-2.0
