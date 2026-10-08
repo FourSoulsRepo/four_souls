@@ -7,7 +7,7 @@ Ideas: PR-01, PR-02, PR-03, A-01, A-02, A-04, A-09, A-10, A-13, A-14, B-01, B-02
 
 ---
 
-### [ ] 1.1 Repo hygiene
+### [x] 1.1 Repo hygiene
 
 1. Goal: the repo is ready for public work.
 2. Tasks:
