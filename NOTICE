@@ -74,6 +74,8 @@ npm (bundled into the frontend):
 
 npm (build only, not shipped):
 
+  Playwright (scripts/screenshots)          Apache-2.0
+
   Vite, @vitejs/plugin-react                MIT
   TypeScript                                Apache-2.0
   @types/react, @types/react-dom            MIT

@@ -157,3 +157,15 @@ Ideas: PR-01, PR-02, PR-03, A-01, A-02, A-04, A-09, A-10, A-13, A-14, B-01, B-02
 3. Done when:
    1. `npm run lint` passes locally and in CI.
    2. `NOTICE` lists the new dev dependencies.
+
+### [x] 1.12 UI screenshots
+
+1. Goal: agents and docs can see the UI without a real window.
+2. Tasks:
+   1. Same pattern as the owner's other Wails projects.
+   2. `?screenshot=1` loads fake Wails bindings in Vite.
+   3. Playwright (headless Chromium) captures each screen.
+   4. Tools live in `scripts/screenshots/`, not in `frontend/`.
+   5. `make screenshots` writes `docs/wiki/images/screen-*.png`.
+3. Done when:
+   1. Splash and main menu PNGs are generated and look right.

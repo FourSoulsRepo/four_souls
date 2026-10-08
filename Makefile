@@ -8,7 +8,7 @@ TAGS ?=
 GOLANGCI ?= golangci-lint
 ROOT := $(CURDIR)
 
-.PHONY: test vet build wasm lint
+.PHONY: test vet build wasm lint screenshots
 
 test:
 	@for m in $(MODULES); do (cd $$m && go test -tags "$(TAGS)" ./...) || exit 1; done
@@ -30,3 +30,8 @@ wasm:
 lint:
 	@for m in $(MODULES); do (cd $$m && $(GOLANGCI) run --config $(ROOT)/.golangci.yml --build-tags "$(TAGS)" ./...) || exit 1; done
 	@$(GOLANGCI) run --config $(ROOT)/.golangci.yml --build-tags "$(TAGS) embed" ./...
+
+# UI screenshots for docs and review: docs/wiki/images/screen-*.png.
+# Fake Wails bindings via ?screenshot=1; no Go process needed.
+screenshots:
+	@cd scripts/screenshots && npm install --no-audit --no-fund && npx playwright install chromium && node capture.mjs

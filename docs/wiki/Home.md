@@ -9,3 +9,4 @@ These pages describe the current code. Decisions live in `docs/architecture/` (A
 * [Repo layout](Repo-layout) — where everything lives and why.
 * [Build modes](Build-modes) — embedded vs. external files, versions, platforms.
 * [Linters](Linters) — strict Go and frontend linting, and how to run it.
+* [Screenshots](Screenshots) — capture the UI without a real window.

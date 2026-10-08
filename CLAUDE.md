@@ -28,6 +28,8 @@
    5. `cd frontend && npm run typecheck && npm run lint`.
    6. Release-style build: `wails build -tags embed`.
    7. Linter setup and versions: `docs/wiki/Linters.md`.
+   8. `make screenshots`: UI PNGs in `docs/wiki/images/`.
+   9. Use it to check UI changes; a real-window screenshot shows nothing.
 5. Workflow
    1. Work follows `docs/roadmap/`, one sub-step at a time.
    2. Commit after every finished sub-step.

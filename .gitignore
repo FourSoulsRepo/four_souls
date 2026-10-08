@@ -1,6 +1,7 @@
 # Build output
 build/bin
 node_modules
+scripts/screenshots/node_modules
 frontend/dist/*
 !frontend/dist/gitkeep
 
