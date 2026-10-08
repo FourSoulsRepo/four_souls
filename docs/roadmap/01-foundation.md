@@ -57,7 +57,7 @@ Ideas: PR-01, PR-02, PR-03, A-01, A-02, A-04, A-09, A-10, A-13, A-14, B-01, B-02
 3. Done when:
    1. A stamped build shows the stamped version.
 
-### [ ] 1.5 Frontend skeleton and bridge
+### [x] 1.5 Frontend skeleton and bridge
 
 1. Goal: a clean React + TS app with a thin Wails bridge (A-14).
 2. Tasks:
