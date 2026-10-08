@@ -24,6 +24,8 @@
    2. Commit after every finished sub-step.
    3. Stop after every finished global step for owner review.
    4. Never start the next step without approval.
+   5. One branch per global step: `step-NN-short-name`.
+   6. After approval: merge into `main` with `--no-ff`, never squash.
 6. Licenses
    1. Code is MIT (`LICENSE`).
    2. `NOTICE` lists every third-party item and its license.

@@ -12,11 +12,11 @@ Ideas: R-01 – R-07.
 1. Goal: decide storage before downloading.
 2. Tasks:
    1. Raw downloads are copyrighted texts.
-   2. Keep raw data in a git-ignored cache by default.
-   3. Our own rules text is committed in the engine module.
+   2. They live in `research/`, git-ignored, local only.
+   3. Digests (Reddit, X, Discord) live there too.
+   4. Our own rules text is committed in the engine module.
 3. Done when:
    1. Folders exist and are documented.
-4. **Owner:** keep raw data local only, or in a private repo?
 
 ### [ ] 3.2 Official rules
 

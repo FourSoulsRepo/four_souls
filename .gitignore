@@ -8,3 +8,6 @@ pkg/card_db/images/*
 
 # OS files
 .DS_Store
+
+# Downloaded rules sources: copyrighted, local only (step 3)
+research/
