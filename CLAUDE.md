@@ -5,7 +5,7 @@
    2. Network play, 2–4 players.
    3. Wails v2: Go backend, React + TypeScript frontend.
 2. Stage
-   1. Planning. No game code yet.
+   1. Step 1 (foundation) done; no game code yet.
    2. Ideas live in `docs/ideas.md`.
    3. Roadmap: `docs/roadmap.md`; detailed steps in `docs/roadmap/`.
    4. Decisions: `docs/architecture/` (see `INDEX.md`).
@@ -15,10 +15,19 @@
    3. `docs/architecture/`: ADRs.
    4. `docs/use-cases/`: user-visible scenarios.
    5. `docs/wiki/`: package notes.
+   6. `cmd/server`, `cmd/website`: server and wasm website entry points.
+   7. `pkg/rules_engine`, `pkg/card_db`, `pkg/record`: own Go modules.
+   8. `internal/`: app-only packages (protocol, version, legal, assets).
+   9. `frontend/src/bridge/`: the only code that imports Wails.
+   10. Full map: `docs/wiki/Repo-layout.md`; decision: ADR 003.
 4. Commands
    1. `wails dev`: run with hot reload.
    2. `wails build`: release binary to `build/bin/`.
    3. `go build ./...`: quick backend check.
+   4. `make build vet test lint wasm`: all Go modules.
+   5. `cd frontend && npm run typecheck && npm run lint`.
+   6. Release-style build: `wails build -tags embed`.
+   7. Linter setup and versions: `docs/wiki/Linters.md`.
 5. Workflow
    1. Work follows `docs/roadmap/`, one sub-step at a time.
    2. Commit after every finished sub-step.

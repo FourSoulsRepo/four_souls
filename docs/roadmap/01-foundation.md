@@ -112,12 +112,13 @@ Ideas: PR-01, PR-02, PR-03, A-01, A-02, A-04, A-09, A-10, A-13, A-14, B-01, B-02
    1. First push to GitHub must confirm every job.
    2. macOS builds one universal app; the server is arm64 there.
 
-### [ ] 1.9 Foundation docs
+### [x] 1.9 Foundation docs
 
 1. Goal: the layout is documented.
 2. Tasks:
    1. ADR: repo layout, modules, entry points, asset modes.
    2. Accept ADR 001 parts that step 1 implements.
+      Done in ADR 003; ADR 001 stays Proposed until step 4.
    3. Wiki: `Home`, `_Sidebar`, `_Footer`, "Repo layout".
    4. Update `CLAUDE.md` and `README.md`.
 3. Done when:
