@@ -97,7 +97,7 @@ Ideas: PR-01, PR-02, PR-03, A-01, A-02, A-04, A-09, A-10, A-13, A-14, B-01, B-02
    1. Both modes return the same test file.
    2. Tests cover both build tags.
 
-### [ ] 1.8 CI
+### [x] 1.8 CI
 
 1. Goal: GitHub Actions checks every push (A-09, B-02).
 2. Tasks:
@@ -108,6 +108,9 @@ Ideas: PR-01, PR-02, PR-03, A-01, A-02, A-04, A-09, A-10, A-13, A-14, B-01, B-02
    5. Build artifacts uploaded (not released).
 3. Done when:
    1. A push runs all jobs green.
+4. Status: verified locally only; no remote yet.
+   1. First push to GitHub must confirm every job.
+   2. macOS builds one universal app; the server is arm64 there.
 
 ### [ ] 1.9 Foundation docs
 
