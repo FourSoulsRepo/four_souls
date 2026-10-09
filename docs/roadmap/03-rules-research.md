@@ -35,7 +35,7 @@ Ideas: R-01 – R-07.
    3. The FAQ page is only a question form; FAQs live in the rulebook.
    4. Summary in `pkg/rules_engine/docs/sources.md`.
 
-### [ ] 3.3 Russian translation
+### [x] 3.3 Russian translation
 
 1. Goal: foursouls.ru rules, downloaded.
 2. Tasks:
@@ -43,6 +43,11 @@ Ideas: R-01 – R-07.
    2. Note sections that differ from the English rules.
 3. Done when:
    1. A diff list of differences exists.
+4. Result:
+   1. Tools: `scraper rules -site ru`.
+   2. Differences: `pkg/rules_engine/docs/sources.md`, section S-RU.
+   3. Russian adds card rulings in its FAQ; English points to the site.
+   4. One rule differs (co-op timer on death); goes to 3.8.
 
 ### [ ] 3.4 Reddit rulings
 
