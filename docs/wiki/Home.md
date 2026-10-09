@@ -12,3 +12,4 @@ These pages describe the current code. Decisions live in `docs/architecture/` (A
 * [Screenshots](Screenshots) — capture the UI without a real window.
 * [Card data tools](Card-data-tools) — where card data and images come from.
 * [Effect blocks](Effect-blocks) — the blocks cards are built from.
+* [Situation payload](Situation-payload) — sandbox situations and rules tests.

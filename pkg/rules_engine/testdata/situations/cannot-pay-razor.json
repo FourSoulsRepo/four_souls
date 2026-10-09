@@ -1,0 +1,11 @@
+{
+  "title": "Can an item with a 5-cent cost be used with 4 cents?",
+  "sets": ["test", "abilities"],
+  "setup": {
+    "players": [{"character": "hero_a", "items": ["razor"], "cents": 4}, {"character": "hero_b"}],
+    "active": 0,
+    "monsters": ["gaper", "gaper"]
+  },
+  "action": {"player": 0, "kind": "activate", "card": "razor", "choices": ["gaper"]},
+  "expect": {"allowed": false, "rule": "R-ABIL-07"}
+}

@@ -1,0 +1,14 @@
+{
+  "title": "Can a non-active player play loot without an ability allowing it?",
+  "sets": ["test", "abilities"],
+  "setup": {
+    "players": [
+      {"character": "hero_a", "hand": ["penny"]},
+      {"character": "hero_b", "hand": ["penny"]}
+    ],
+    "active": 0,
+    "stack": [{"dice_roll": 4, "owner": 1}]
+  },
+  "action": {"player": 1, "kind": "play", "card": "penny"},
+  "expect": {"allowed": false, "rule": "R-CARD-08"}
+}

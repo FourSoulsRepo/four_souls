@@ -122,7 +122,7 @@ Ideas: A-05 – A-08, N-04, LR-04, LR-07, TS-05.
 3. Done when:
    1. Replaying events rebuilds the same checksum.
 
-### [ ] 4.11 Situation payload and runner
+### [x] 4.11 Situation payload and runner
 
 1. Goal: payload tests (LR-04, LR-07).
 2. Tasks:
@@ -133,6 +133,10 @@ Ideas: A-05 – A-08, N-04, LR-04, LR-07, TS-05.
 3. Done when:
    1. Payload tests run in CI.
    2. Wiki: "Situation payload" reference.
+4. Result:
+   1. `RunSituation` answers allowed or not, with reason and rule ID.
+   2. Five example payloads on fake cards run in `go test`.
+   3. No resolved cases yet: all 3.8 cases are parked.
 
 ### [ ] 4.12 Determinism and fuzz harness
 

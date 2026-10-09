@@ -1,0 +1,12 @@
+{
+  "title": "Can the active player declare an attack while something is on the stack?",
+  "sets": ["test"],
+  "setup": {
+    "players": [{"character": "hero_a"}, {"character": "hero_b"}],
+    "active": 0,
+    "monsters": ["gaper", "gaper"],
+    "stack": [{"dice_roll": 3, "owner": 0}]
+  },
+  "action": {"player": 0, "kind": "attack"},
+  "expect": {"allowed": false, "rule": "R-ATK-01"}
+}
