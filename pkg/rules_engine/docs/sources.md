@@ -19,7 +19,7 @@ Raw copies are copyrighted; they stay in the tools repo cache.
 | S-RED | r/FourSouls | Rules questions; Yuggy answers rank high | Medium |
 | S-X | Tweets by Edmund McMillen, Yuggy, Kizzycocoa | Rulings | High for Ed and Yuggy |
 | S-YUG | Yuggy's Reddit comments and tweets | Rulings with context | High |
-| S-DIS | Discord "Турнирный сервер" | Threads pasted by the owner | Medium |
+| S-DIS | Discord "Турнирный сервер" | 100k messages of the rules channel | Medium |
 
 Order of trust when sources disagree:
 
@@ -61,6 +61,14 @@ Order of trust when sources disagree:
 3. X @YuggyHD: 841 tweets and 659 context tweets.
    1. Period: 2023-03 to 2026-08.
 4. Mixed content: rulings, shop news, chat. Rulings rank high.
+
+## Discord (S-DIS)
+
+1. Downloaded 2026-10-09 in the logged-in Discord web app, read-only.
+2. "Турнирный сервер", channel 799658243172335626 (rules discussion).
+3. 100,050 messages from 2023-01-28 to 2026-10-09; older history not read.
+4. Russian; players discuss cases and quote rulings.
+5. Trust: medium; often agrees with S-RU, which this community maintains.
 
 ## X (S-X)
 

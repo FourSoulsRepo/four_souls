@@ -84,16 +84,20 @@ Ideas: R-01 – R-07.
    1. Reddit: 961 r/FourSouls comments with context (2019-03 to 2026-09).
    2. X @YuggyHD: 841 tweets with 659 context tweets (2023-03 to 2026-08).
 
-### [ ] 3.6 Discord rulings
+### [x] 3.6 Discord rulings
 
 1. Goal: knowledge from "Турнирный сервер".
 2. Tasks:
-   1. No bot scraping (Discord terms).
-   2. Owner exports or pastes relevant threads.
-   3. Agent turns them into the same digest format.
+   1. Discord's terms forbid automating a user account.
+   2. The owner chose to accept that risk for one channel.
+   3. Tools read it read-only in the logged-in web app (`scraper discord`).
 3. Done when:
-   1. Pasted threads are in the digest.
-4. **Owner:** provide the threads.
+   1. The channel is in a digest.
+4. Result:
+   1. Channel 799658243172335626 of "Турнирный сервер".
+   2. 100,050 messages, 2023-01-28 to 2026-10-09 (stopped at the cap).
+   3. Russian rules Q&A between players; medium trust.
+   4. Later: older history before 2023 if a case needs it.
 
 ### [x] 3.7 Our rules text
 
