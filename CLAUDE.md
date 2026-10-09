@@ -20,6 +20,8 @@
    8. `internal/`: app-only packages (protocol, version, legal, assets).
    9. `frontend/src/bridge/`: the only code that imports Wails.
    10. Full map: `docs/wiki/Repo-layout.md`; decision: ADR 003.
+   11. Card data tools: separate repo `FourSoulsRepo/tools`.
+   12. Never add download or scraping code to this repo.
 4. Commands
    1. `wails dev`: run with hot reload.
    2. `wails build`: release binary to `build/bin/`.
