@@ -34,7 +34,16 @@ FOUR_SOULS_SIMS=3000 go test -count=1 -timeout 30m -run TestSimulations ./cards/
 
 ## Running
 
-CI runs only the seed corpus, as normal tests (`go test ./...`). Real fuzzing runs on your machine, from `pkg/rules_engine`:
+CI runs only the seed corpus, as normal tests (`go test ./...`). Real fuzzing runs on your machine. From the repo root:
+
+```sh
+make fuzz                          # fuzz-engine, then fuzz-sets, 10 minutes each
+make fuzz-sets FUZZTIME=2m
+make fuzz-focused FOCUS=razor,d6   # cards of the engine's test sets
+make sims SIMS=3000
+```
+
+Or by hand, from `pkg/rules_engine`:
 
 ```sh
 go test -run '^$' -fuzz=FuzzAllCards -fuzztime=10m -fuzzminimizetime=5s .

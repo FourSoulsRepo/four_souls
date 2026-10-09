@@ -47,5 +47,11 @@ Rules enforced by the linter (see [Linters](Linters)):
 | `make test` | `go test` in every module, plus embed mode |
 | `make lint` | golangci-lint in every module, plus embed mode |
 | `make wasm` | builds the engine and the website for `js/wasm` |
+| `make screenshots` | UI screenshots into `.cache/screenshots/` |
+| `make fuzz-engine`, `fuzz-focused`, `fuzz-sets` | one fuzz target for `FUZZTIME` (default 10m) |
+| `make fuzz` | `fuzz-engine`, then `fuzz-sets` |
+| `make sims` | `SIMS` (default 3000) whole random games |
+
+`make` alone prints this list with the variables.
 
 On Ubuntu 24.04 pass `TAGS=webkit2_41`.

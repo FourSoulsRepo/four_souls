@@ -34,6 +34,8 @@
    9. Use it to check UI changes; a real-window screenshot shows nothing.
    10. `go run ./cmd/cardgen -set b2`: engine card stubs from card_db.
    11. `go run ./cmd/cardgen -report`: card status report; rerun after card work.
+   12. `make` alone prints help: every target and variable.
+   13. `make fuzz`, `fuzz-sets`, `sims`: long local checks; see `docs/wiki/Fuzzing.md`.
 5. Workflow
    1. Work follows `docs/roadmap/`, one sub-step at a time.
    2. Commit after every finished sub-step.
