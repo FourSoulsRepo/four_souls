@@ -6,7 +6,7 @@ import (
 
 // Fake items with replacement effects, controlled by their owner.
 var (
-	// "If you would gain ¢, gain that much +1¢ instead." (R-ABIL-29 example)
+	// plusOne: "If you would gain ¢, gain that much +1¢ instead" (R-ABIL-29).
 	plusOne = Replacement{
 		Text: "+1¢",
 		When: func(g *Game, self ObjectID, a Action) bool {
@@ -17,7 +17,7 @@ var (
 			return []Action{a}
 		},
 	}
-	// "If you would gain ¢, gain double instead."
+	// double: "If you would gain ¢, gain double instead".
 	double = Replacement{
 		Text: "double ¢",
 		When: func(g *Game, self ObjectID, a Action) bool {
@@ -28,7 +28,7 @@ var (
 			return []Action{a}
 		},
 	}
-	// "Prevent losing ¢." (prevent: replace with nothing, R-ABIL-30)
+	// keepCents: "Prevent losing ¢" (prevent replaces with nothing, R-ABIL-30).
 	keepCents = Replacement{
 		Text: "prevent losing ¢",
 		When: func(g *Game, self ObjectID, a Action) bool {
@@ -36,7 +36,7 @@ var (
 		},
 		Do: func(*Game, ObjectID, Action) []Action { return nil },
 	}
-	// "If you would loot, loot double instead."
+	// lootDouble: "If you would loot, loot double instead".
 	lootDouble = Replacement{
 		Text: "loot double",
 		When: func(g *Game, self ObjectID, a Action) bool {
