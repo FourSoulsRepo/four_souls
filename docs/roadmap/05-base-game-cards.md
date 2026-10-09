@@ -18,7 +18,7 @@ Ideas: R-05, TS-01 – TS-04.
 3. Done when:
    1. Every Base Game card has a stub.
 
-### [ ] 5.2 Card status report
+### [x] 5.2 Card status report
 
 1. Goal: see progress (TS-02).
 2. Tasks:

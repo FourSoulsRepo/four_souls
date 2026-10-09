@@ -60,6 +60,16 @@ Each set is a package under `cards/`, e.g. `cards/b2`, with one file per card. `
 
 The generator lives in the app module because the engine never imports `card_db`.
 
+## Card status report
+
+`go run ./cmd/cardgen -report` rewrites `pkg/rules_engine/docs/card-status.md`: progress per set, per engine kind, per printed type and per card.
+
+* Not started: the card file still has the `TODO(card):` line.
+* Implemented: the line is gone.
+* Tested: the card also has `<card>_test.go` next to it.
+
+A test fails when the committed report is out of date, so run the command after finishing a card.
+
 ## The run loop must always settle
 
 `run()` keeps doing automatic work (queued actions, triggers, step changes) until the game waits on a prompt. Any path that leaves no prompt and changes nothing spins forever. Rules for new code:
