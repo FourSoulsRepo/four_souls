@@ -7,7 +7,7 @@ Ideas: A-05 – A-08, N-04, LR-04, LR-07, TS-05.
 
 ---
 
-### [ ] 4.1 Engine design ADR
+### [x] 4.1 Engine design ADR
 
 1. Goal: agree on the design before code.
 2. Tasks:

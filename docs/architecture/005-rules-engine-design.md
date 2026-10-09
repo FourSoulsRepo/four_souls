@@ -1,6 +1,6 @@
 # 5. Rules engine design
 
-* **Status:** Proposed
+* **Status:** Accepted
 * **Date:** 2026-10-09
 * **Authors:** @HardDie
 
@@ -91,6 +91,19 @@ Use options 2, 4 and 6.
    1. A situation payload builds a `Game` directly (LR-04).
    2. Its action is applied; the answer is allowed or not, with reasons.
    3. Fuzz tests drive random legal intents with invariants.
+10. Owner decisions (2026-10-09)
+   1. Cards stay Go code; no Lua or JSON card scripts.
+   2. Adding a card must be easy for anyone who clones the repo.
+      1. One file per card, short, with comments and examples.
+      2. A step-by-step guide, including a fan-made set (CD-10).
+      3. The stub generator writes the boilerplate.
+   3. The engine always asks; it never chooses for a player.
+      1. Even a single valid target or option is a prompt.
+      2. Priority auto-skip (N-05) is separate: it only skips players
+         with no possible action, and the server decides it.
+   4. No undo for now; maybe later.
+   5. Bartering is not implemented.
+      1. Room is kept: intents that need no prompt are possible later.
 
 ```go
 // Sketch of the public API; names may change in step 4.
@@ -121,4 +134,5 @@ sum := g.Checksum()            // RP-12
 ### Neutral
 
 1. Exact type names are settled while coding steps 4.2 to 4.12.
+3. The card guide is roadmap sub-step 5.10.
 2. Each rule implemented gets tests citing its rule ID.

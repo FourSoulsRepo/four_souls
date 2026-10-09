@@ -485,6 +485,7 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    2. Used by outdated viewers and judges (SP-05).
 10. CD-10. Fan-made sets: maybe later.
    1. Only after all official cards are done.
+   2. Cards are Go code; adding one must be easy after cloning (ADR 005).
 11. CD-11. Alt art (later).
    1. Same stats and text: same card, different image.
    2. Different stats or text: a new card or a new version (CD-08).

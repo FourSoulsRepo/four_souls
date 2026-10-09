@@ -94,3 +94,14 @@ Ideas: R-05, TS-01 – TS-04.
 3. Done when:
    1. Report shows 100% tested for the Base Game.
    2. Simulations finish with no invariant failures.
+
+### [ ] 5.10 Guide for adding cards
+
+1. Goal: anyone who clones the repo can add a card or a fan set (ADR 005).
+2. Tasks:
+   1. Wiki page "Adding a card": from stub to passing test.
+   2. Examples: a loot card, an item, a monster, a custom hook.
+   3. How to add a whole fan set as its own package.
+   4. Every effect block documented with a one-line example.
+3. Done when:
+   1. A new contributor adds a test card by following only the guide.
