@@ -7,7 +7,7 @@ Ideas: R-05, TS-01 – TS-04.
 
 ---
 
-### [ ] 5.1 Card registry and stub generator
+### [x] 5.1 Card registry and stub generator
 
 1. Goal: a stub for every card (TS-03).
 2. Tasks:
@@ -18,7 +18,7 @@ Ideas: R-05, TS-01 – TS-04.
 3. Done when:
    1. Every Base Game card has a stub.
 
-### [ ] 5.2 Card status report
+### [x] 5.2 Card status report
 
 1. Goal: see progress (TS-02).
 2. Tasks:
@@ -28,7 +28,7 @@ Ideas: R-05, TS-01 – TS-04.
 3. Done when:
    1. Report regenerates with one command.
 
-### [ ] 5.3 Characters and starting items
+### [x] 5.3 Characters and starting items
 
 1. Goal: all Base Game characters playable.
 2. Tasks:
@@ -37,7 +37,7 @@ Ideas: R-05, TS-01 – TS-04.
 3. Done when:
    1. Report shows characters as tested.
 
-### [ ] 5.4 Loot cards
+### [x] 5.4 Loot cards
 
 1. Goal: all Base Game loot cards.
 2. Tasks:
@@ -46,7 +46,7 @@ Ideas: R-05, TS-01 – TS-04.
 3. Done when:
    1. Report shows loot as tested.
 
-### [ ] 5.5 Treasure items
+### [x] 5.5 Treasure items
 
 1. Goal: all Base Game treasures.
 2. Tasks:
@@ -55,7 +55,7 @@ Ideas: R-05, TS-01 – TS-04.
 3. Done when:
    1. Report shows treasures as tested.
 
-### [ ] 5.6 Monsters, bosses, events, curses
+### [x] 5.6 Monsters, bosses, events, curses
 
 1. Goal: the whole Base Game monster deck.
 2. Tasks:
@@ -65,7 +65,7 @@ Ideas: R-05, TS-01 – TS-04.
 3. Done when:
    1. Report shows monsters as tested.
 
-### [ ] 5.7 Bonus souls
+### [x] 5.7 Bonus souls
 
 1. Goal: Base Game bonus souls, if the set has them.
 2. Tasks:
@@ -74,7 +74,7 @@ Ideas: R-05, TS-01 – TS-04.
 3. Done when:
    1. Report shows bonus souls as tested or not in set.
 
-### [ ] 5.8 Interaction tests
+### [x] 5.8 Interaction tests
 
 1. Goal: card combinations work (TS-04).
 2. Tasks:
@@ -84,7 +84,7 @@ Ideas: R-05, TS-01 – TS-04.
 3. Done when:
    1. All known combos have tests.
 
-### [ ] 5.9 Full-game simulations
+### [x] 5.9 Full-game simulations
 
 1. Goal: whole games without errors.
 2. Tasks:
@@ -95,7 +95,7 @@ Ideas: R-05, TS-01 – TS-04.
    1. Report shows 100% tested for the Base Game.
    2. Simulations finish with no invariant failures.
 
-### [ ] 5.10 Guide for adding cards
+### [x] 5.10 Guide for adding cards
 
 1. Goal: anyone who clones the repo can add a card or a fan set (ADR 005).
 2. Tasks:

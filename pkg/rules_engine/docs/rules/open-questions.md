@@ -16,14 +16,14 @@ On 2026-10-09 the owner parked every open decision for later.
 2. Sources: no mulligan in S-OFF or S-RU; the TTS table has a house-rule button.
 3. Options: (a) no mulligan, as official; (b) optional host setting.
 4. Proposal: (a), per R-SETUP-13.
-5. Status: **Owner**.
+5. Status: **Parked** again by the owner (2026-10-09); the engine has no mulligan.
 
 ### Q-02 First player
 
 1. Question: how is the first player chosen?
 2. Sources: S-OFF suggests "the saddest player", or the lowest dice roll, or any fair method.
 3. Proposal: every player rolls a D6; lowest goes first; reroll ties (GS-06).
-4. Status: **Owner**.
+4. Status: **Resolved** (2026-10-09): the lowest roll, as the engine does; Cain overrides it.
 
 ### Q-03 Two vs two teams (GS-05)
 
@@ -34,7 +34,7 @@ On 2026-10-09 the owner parked every open decision for later.
    3. Can teammates give each other items or loot (bartering forbids it)?
    4. Who gets rewards and souls when a teammate kills a monster?
 3. Options: (a) design house rules; (b) park 2 vs 2 until later.
-4. Status: **Owner**.
+4. Status: **Parked** until after the MVP (2026-10-09).
 
 ### Q-04 Co-op timer on death
 
@@ -47,13 +47,13 @@ On 2026-10-09 the owner parked every open decision for later.
 
 1. Question: how do players barter (R-BARTER-01)?
 2. Proposal: a "give ¢" action usable any time, even without priority; promises stay in chat or voice, unenforced (R-BARTER-04).
-3. Status: **Owner**.
+3. Status: **Resolved** (2026-10-09): no bartering for now; the engine keeps room for it (ADR 005).
 
 ### Q-06 Official variants as host options
 
 1. Question: offer the official variants Mini-draft (R-SETUP-14) and Eden Only (R-SETUP-15) in detailed setup (GS-10)?
 2. Note: S-OFF recommends Mini-draft for 2-player games.
-3. Status: **Owner**.
+3. Status: **Resolved** (2026-10-09): neither variant for now; standard setup only.
 
 ## Old rulings re-checked (R-07)
 
@@ -71,6 +71,8 @@ On 2026-10-09 the owner parked every open decision for later.
 | 10 | Death cancels combat | R-DEATH-12, R-ATK-15 | Holds |
 | 11 | Bombs are not combat | Combat damage comes only from attack rolls (R-ATK-12) | Holds |
 
+Tests: `cards/b2/interactions_test.go` covers rows 1–6, 10 and 11; rows 7–9 are engine tests.
+
 ## Card rulings from the Russian FAQ (S-RU)
 
 Candidates for situation tests; check each against the English rules.
@@ -78,5 +80,9 @@ Candidates for situation tests; check each against the English rules.
 | # | Card | Ruling (summary) | Status |
 |---|---|---|---|
 | 1 | Two of Clubs | Activating it twice still only doubles; a replacement applies once per event (R-ABIL-32) | Consistent; test later |
-| 2 | Ambush! | Attacks on the monster deck made earlier this turn count toward its 2; the rest are additional attacks | **Owner** |
+| 2 | Ambush! | Attacks on the monster deck made earlier this turn count toward its 2; the rest are additional attacks | **Parked** (2026-10-09); the engine forces 2 more |
 | 3 | Multi-dice "choose one result" | Only the chosen result affects the game | Consistent; test later (later sets) |
+| 4 | Mulliboom, The Lamb | ATK is printed with "!" (4!, 6!); card_db has no meaning for it; the engine uses the number | **Resolved**: "!" is only design (owner, 2026-10-09) |
+| 5 | Devil Deal | card_db lists five options; the engine reads three: discard / loot 2, take 1 / take 2, search a Guppy | **Resolved**: three choices (owner, 2026-10-09) |
+
+Tests: FAQ row 1 is in `cards/b2/interactions_test.go`, with Yuggy's "above 6 counts as 6" ruling.

@@ -23,6 +23,7 @@ type Prompt struct {
 	Count   int           `json:"count,omitempty"`
 	Options []string      `json:"options,omitempty"`
 	Purpose ChoicePurpose `json:"purpose,omitempty"`
+	Text    string        `json:"text,omitempty"` // the question, if any
 }
 
 // IntentKind is what a player wants to do.
@@ -74,6 +75,11 @@ func (g *Game) Apply(in Intent) ([]Event, error) {
 	g.events = nil
 	g.apply(in)
 	g.run()
+	// Bonus souls and the win are checked whenever the game stops too,
+	// not only between automatic steps.
+	if !g.Over && g.checkBonusSouls() {
+		g.checkWin()
+	}
 	return g.takeEvents(), nil
 }
 
@@ -97,6 +103,12 @@ func (g *Game) check(in Intent) error {
 		if w.Kind != PromptPriority || !g.inOpenActionPhase() || in.Player != g.Turn.Active {
 			return refuse("R-TURN-06", "only the active player can end the turn, in the action phase, with an empty stack")
 		}
+		if m := g.Turn.MustAttack; m != 0 && g.attacksLeft() > 0 && g.Object(m).Zone.Kind == ZoneInPlay {
+			return refuse("R-ABIL-12", "this turn you must attack %s first", g.Object(m).Card)
+		}
+		if g.Turn.MustAttacks > 0 && g.attacksLeft() > 0 {
+			return refuse("R-ABIL-12", "you must make %d more attacks this turn", g.Turn.MustAttacks)
+		}
 	case IntentDiscard:
 		if w.Kind != PromptDiscard {
 			return refuse("R-TURN-11", "no discard is asked for")
@@ -117,8 +129,11 @@ func (g *Game) check(in Intent) error {
 		if g.lootPlaysFor(in.Player) < 1 {
 			return refuse("R-CARD-08", "no loot play available")
 		}
+		if g.locked(in.Player) {
+			return refuse("R-ABIL-12", "the active player's card forbids playing loot on their turn")
+		}
 		if ab, ok := g.lootAbility(in.Objects[0]); ok {
-			if err := g.targetsAvailable(ab, in.Player); err != nil {
+			if err := g.targetsAvailable(ab, in.Player, in.Objects[0]); err != nil {
 				return err
 			}
 		}
@@ -132,18 +147,21 @@ func (g *Game) check(in Intent) error {
 		if err := g.activatable(in.Player, in.Objects[0], in.Choice); err != nil {
 			return err
 		}
+		if g.locked(in.Player) && g.Object(in.Objects[0]).Role == RoleItem {
+			return refuse("R-ABIL-12", "the active player's card forbids activating items on their turn")
+		}
 	case IntentAttack:
 		if w.Kind != PromptPriority || !g.inOpenActionPhase() || in.Player != g.Turn.Active {
 			return refuse("R-ATK-01", "only the active player attacks, in the action phase, with an empty stack")
 		}
-		if g.Turn.Attacks < 1 {
+		if g.attacksLeft() < 1 {
 			return refuse("R-TURN-07", "no attack left this turn")
 		}
 	case IntentPurchase:
 		if w.Kind != PromptPriority || !g.inOpenActionPhase() || in.Player != g.Turn.Active {
 			return refuse("R-SHOP-01", "only the active player purchases, in the action phase, with an empty stack")
 		}
-		if g.Turn.Purchases < 1 {
+		if g.purchasesLeft() < 1 {
 			return refuse("R-SHOP-05", "no purchase left this turn")
 		}
 	case IntentChoose:
@@ -197,7 +215,7 @@ func (g *Game) apply(in Intent) {
 	case IntentActivate:
 		g.startActivation(Activation{
 			Player: in.Player, Source: in.Objects[0],
-			Ability: AbilityRef{Card: g.Object(in.Objects[0]).Card, Index: in.Choice},
+			Ability: g.AbilitiesOf(in.Objects[0])[in.Choice],
 		})
 	case IntentChoose:
 		g.answer(in.Choice)
@@ -253,4 +271,10 @@ func remove(list []ObjectID, id ObjectID) []ObjectID {
 		}
 	}
 	return list
+}
+
+// locked: p is not the active player, whose card forbids others to play
+// loot or activate items on their turn (Trinity Shield).
+func (g *Game) locked(p PlayerID) bool {
+	return p != g.Turn.Active && g.bonus(StatLockOthers, g.Turn.Active, 0) > 0
 }

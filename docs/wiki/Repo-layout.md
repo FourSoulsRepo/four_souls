@@ -4,11 +4,13 @@
 main.go, app.go        Wails desktop app and its bindings
 cmd/server/            dedicated server (no UI)
 cmd/website/           rules website, js/wasm only
+cmd/cardgen/           writes engine card stubs from card_db data
 internal/assets/       app files, embedded or read from disk
 internal/legal/        fan-game notice used by app and server
 internal/protocol/     network messages (never split out)
 internal/version/      app version stamped at link time
 pkg/rules_engine/      Go module: the rules engine (package rulesengine)
+pkg/rules_engine/cards/  card sets: one package per set, one file per card
 pkg/card_db/           Go module: card display data; images/ is a private submodule
 pkg/record/            Go module: match record format
 frontend/              React + TypeScript (Vite)
@@ -45,5 +47,11 @@ Rules enforced by the linter (see [Linters](Linters)):
 | `make test` | `go test` in every module, plus embed mode |
 | `make lint` | golangci-lint in every module, plus embed mode |
 | `make wasm` | builds the engine and the website for `js/wasm` |
+| `make screenshots` | UI screenshots into `.cache/screenshots/` |
+| `make fuzz-engine`, `fuzz-focused`, `fuzz-sets` | one fuzz target for `FUZZTIME` (default 10m) |
+| `make fuzz` | `fuzz-engine`, then `fuzz-sets` |
+| `make sims` | `SIMS` (default 3000) whole random games |
+
+`make` alone prints this list with the variables.
 
 On Ubuntu 24.04 pass `TAGS=webkit2_41`.

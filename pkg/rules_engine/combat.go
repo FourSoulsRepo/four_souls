@@ -12,9 +12,11 @@ type Target struct {
 
 // AttackState tracks the attack in progress (R-ATK).
 type AttackState struct {
-	On      bool     `json:"on,omitempty"`      // an attack was declared
-	Started bool     `json:"started,omitempty"` // a target was chosen
-	Target  ObjectID `json:"target,omitempty"`
+	// LastRoll is the latest attack roll's result.
+	LastRoll int      `json:"last_roll,omitempty"`
+	On       bool     `json:"on,omitempty"`      // an attack was declared
+	Started  bool     `json:"started,omitempty"` // a target was chosen
+	Target   ObjectID `json:"target,omitempty"`
 	// Revealed is the monster-deck card waiting for a slot (R-ATK-08).
 	Revealed ObjectID `json:"revealed,omitempty"`
 }
@@ -33,8 +35,24 @@ const (
 )
 
 func (g *Game) def(id ObjectID) CardDef {
-	d, _ := g.cards.find(g.Object(id).Card) //nolint:errcheck // every object's card has a definition (checked at setup)
+	d, _ := g.cards.find(g.CardOf(id)) //nolint:errcheck // every object's card has a definition (checked at setup)
 	return d
+}
+
+// CardOf is the card an object acts as: the card it copies, if any, or
+// its own (Diplopia, Modeling Clay). Where it goes when it leaves play
+// still follows its own card.
+func (g *Game) CardOf(id ObjectID) CardRef {
+	if o := g.Object(id); o.CopyOf != "" {
+		return o.CopyOf
+	}
+	return g.Object(id).Card
+}
+
+// Eternal reports whether an object is eternal: printed or gained
+// (R-ABIL-18).
+func (g *Game) Eternal(id ObjectID) bool {
+	return g.def(id).Eternal || g.Object(id).Eternal
 }
 
 // HP is an object's remaining health.
@@ -47,8 +65,8 @@ func (g *Game) PlayerHP(p PlayerID) int {
 	return max(g.def(g.Players[p].Character).HP+g.bonus(StatPlayerHP, p, 0)-g.Players[p].Damage, 0)
 }
 
-// evasion is the dice check to hit a monster, between 1 and 6 (R-ATK-18).
-func (g *Game) evasion(id ObjectID) int {
+// Evasion is the dice check to hit a monster, between 1 and 6 (R-ATK-18).
+func (g *Game) Evasion(id ObjectID) int {
 	return min(max(g.def(id).DC+g.bonus(StatMonsterDC, NoPlayer, id), 1), 6)
 }
 
@@ -57,14 +75,26 @@ func (g *Game) PlayerATK(p PlayerID) int {
 	return max(g.def(g.Players[p].Character).ATK+g.bonus(StatPlayerATK, p, 0), 0)
 }
 
-// monsterATK is a monster's attack.
-func (g *Game) monsterATK(id ObjectID) int {
+// MonsterATK is a monster's attack.
+func (g *Game) MonsterATK(id ObjectID) int {
 	return max(g.def(id).ATK+g.bonus(StatMonsterATK, NoPlayer, id), 0)
 }
 
 // declareAttack: priority passes before a target is chosen (R-ATK-02).
 func (g *Game) declareAttack(p PlayerID) {
-	g.Turn.Attacks--
+	if g.Turn.MustAttacks > 0 {
+		g.Turn.MustAttacks--
+	}
+	if g.Turn.DeckAttacks > 0 && g.attacksLeft() <= g.Turn.DeckAttacks {
+		// Only deck attacks are left: this one is on the monster deck.
+		g.Turn.DeckAttacks--
+		g.Turn.MustAttackDeck++
+	}
+	if g.Turn.Attacks > 0 {
+		g.Turn.Attacks--
+	} else {
+		g.Turn.BonusAttacksUsed++
+	}
 	g.Attack = AttackState{On: true}
 	g.emit(Event{Kind: EvAttackDeclared, Player: p})
 	g.openWindow(p)
@@ -72,9 +102,18 @@ func (g *Game) declareAttack(p PlayerID) {
 
 // askAttackTarget offers the monsters in play and the monster deck.
 func (g *Game) askAttackTarget() {
+	if g.Turn.MustAttackDeck > 0 {
+		g.Turn.MustAttackDeck--
+		g.ask(Choice{Purpose: ChooseAttackTarget, Player: g.Turn.Active, Rule: "R-ATK-02", Deck: true}, []string{"monster deck"})
+		return
+	}
+	if m := g.Turn.MustAttack; m != 0 && g.Object(m).Zone.Kind == ZoneInPlay {
+		g.ask(Choice{Purpose: ChooseAttackTarget, Player: g.Turn.Active, Rule: "R-ATK-02", Objects: []ObjectID{m}}, g.labels([]ObjectID{m}))
+		return
+	}
 	var monsters []ObjectID
 	for _, s := range g.Monsters {
-		if top, ok := s.TopOf(); ok && g.Object(top).Role == RoleMonster {
+		if top, ok := s.TopOf(); ok && g.Object(top).Role == RoleMonster && !g.def(top).Unattackable {
 			monsters = append(monsters, top)
 		}
 	}
@@ -114,11 +153,9 @@ func (g *Game) placeRevealed(slot int) {
 	}
 	id := g.putInSlot(revealed, MonsterSlot, slot)
 	if g.Object(id).Role == RoleEvent {
-		// Events trigger on entering play (step 4.7), then go to discard;
-		// the attack is over (R-ATK-09).
-		g.removeFromSlot(id)
-		g.discard(id, MonsterDeck)
+		// The event's abilities trigger; the attack is over (R-ATK-09).
 		g.endAttack()
+		g.enterMonsterSlot(id)
 		return
 	}
 	g.startAttack(id)
@@ -147,8 +184,15 @@ func (g *Game) resolveAttackRoll(it StackItem) {
 		return
 	}
 	p := g.Turn.Active
-	if it.Roll >= g.evasion(it.Target.Object) {
-		if atk := g.PlayerATK(p); atk > 0 {
+	g.Turn.AttackRolls++ // e.g. "your first attack roll each turn"
+	g.Attack.LastRoll = it.Roll
+	mod := g.def(it.Target.Object).CombatMod
+	if it.Roll >= g.Evasion(it.Target.Object) {
+		atk := g.PlayerATK(p)
+		if mod != nil {
+			atk = mod(g, it.Target.Object, it.Roll, true, atk)
+		}
+		if atk > 0 {
 			g.push(StackItem{
 				Kind: StackDamage, Controller: p, Amount: atk, Label: "combat damage", Attack: true,
 				Target: Target{Object: it.Target.Object},
@@ -157,7 +201,11 @@ func (g *Game) resolveAttackRoll(it StackItem) {
 		return
 	}
 	// Nobody deals 0 damage (R-MECH-20).
-	if atk := g.monsterATK(it.Target.Object); atk > 0 {
+	atk := g.MonsterATK(it.Target.Object)
+	if mod != nil {
+		atk = mod(g, it.Target.Object, it.Roll, false, atk)
+	}
+	if atk > 0 {
 		g.push(StackItem{
 			Kind: StackDamage, Controller: NoPlayer, Source: it.Target.Object, Amount: atk,
 			Label: "combat damage", Attack: true, Target: Target{Player: p, IsPlayer: true},
@@ -197,6 +245,17 @@ func (g *Game) endAttack() {
 // resolveDamage marks damage; an object at 0 HP gets its death on the
 // stack (R-MECH-15, R-MECH-16, R-DEATH-01).
 func (g *Game) resolveDamage(it StackItem) {
+	if it.Amount = g.shield(it.Target, it.Amount); it.Amount <= 0 {
+		return
+	}
+	for _, id := range g.inPlay() { // e.g. Dry Baby, The Dead Cat
+		if mod := g.def(id).DamageMod; mod != nil {
+			if it.Amount = mod(g, id, it.Target, it.Amount); it.Amount <= 0 {
+				g.emit(Event{Kind: EvPrevented, Player: it.Target.player(), Object: it.Target.Object, Source: id})
+				return
+			}
+		}
+	}
 	if it.Target.IsPlayer {
 		p := it.Target.Player
 		hp := g.PlayerHP(p)
@@ -205,7 +264,12 @@ func (g *Game) resolveDamage(it StackItem) {
 		}
 		n := min(it.Amount, hp)
 		g.Players[p].Damage += n
-		g.emit(Event{Kind: EvDamaged, Player: p, Amount: n})
+		g.Players[p].TimesDamaged++
+		e := Event{Kind: EvDamaged, Player: p, Amount: n, Source: it.Source}
+		if it.Attack {
+			e.Text = "combat"
+		}
+		g.emit(e)
 		if g.PlayerHP(p) == 0 {
 			g.push(StackItem{Kind: StackDeath, Controller: NoPlayer, Label: "death", Target: Target{Player: p, IsPlayer: true}})
 		}
@@ -218,10 +282,43 @@ func (g *Game) resolveDamage(it StackItem) {
 	}
 	n := min(it.Amount, g.HP(id))
 	o.Damage += n
-	g.emit(Event{Kind: EvDamaged, Player: NoPlayer, Object: id, Card: o.Card, Amount: n})
-	if g.HP(id) == 0 && !g.def(id).Eternal { // R-DEATH-03
+	o.HitsThisTurn++
+	if g.HP(id) == 0 {
+		o.KilledBy = int(it.Controller) + 1
+		if it.Attack {
+			o.KilledOn = g.Attack.LastRoll
+		}
+	}
+	e := Event{Kind: EvDamaged, Player: NoPlayer, Object: id, Card: o.Card, Amount: n}
+	if it.Attack {
+		e.Text = "combat" // dealt by the active player's attack
+	}
+	g.emit(e)
+	if g.HP(id) == 0 && !g.Eternal(id) { // R-DEATH-03
 		g.push(StackItem{Kind: StackDeath, Controller: NoPlayer, Label: "death", Target: Target{Object: id}})
 	}
+}
+
+// shield uses the first shield that protects t against n damage and
+// returns the damage left (R-MECH-46).
+func (g *Game) shield(t Target, n int) int {
+	for i, s := range g.Shields {
+		st := s.Target
+		if st.IsPlayer != t.IsPlayer || (t.IsPlayer && st.Player != t.Player) || (!t.IsPlayer && st.Object != t.Object) {
+			continue
+		}
+		g.Shields = append(g.Shields[:i:i], g.Shields[i+1:]...)
+		prevented := n
+		switch {
+		case s.Cap > 0:
+			prevented = max(n-s.Cap, 0)
+		case s.Amount > 0:
+			prevented = min(n, s.Amount)
+		}
+		g.emit(Event{Kind: EvPrevented, Player: t.Player, Object: t.Object, Amount: prevented, Source: s.Source})
+		return n - prevented
+	}
+	return n
 }
 
 // resolveDeath: the object or player dies (R-DEATH-02).
@@ -246,33 +343,92 @@ func (g *Game) monsterDeath(id ObjectID) {
 	}
 	g.removeFromSlot(id)
 	holding := g.move(id, Zone{Kind: ZoneOutside}, NoPlayer) // R-DEATH-04
-	g.emit(Event{Kind: EvDied, Player: NoPlayer, Object: holding, Card: card})
+	before := len(g.PendingTriggers)
+	g.emit(Event{Kind: EvDied, Player: NoPlayer, Object: holding, Card: card, Prev: id})
+	if len(g.PendingTriggers) > before {
+		// "When this dies" triggers resolve before the rewards (R-DEATH-05).
+		g.push(StackItem{Kind: StackDeathStep, Controller: NoPlayer, Label: "rewards", Target: Target{Object: holding}, Amount: stepRewards})
+		return
+	}
+	g.rewardsStep(holding)
+}
+
+// The monster death steps that can wait under triggers on the stack.
+const (
+	stepRewards = 1 // R-DEATH-06
+	stepSoul    = 2 // R-DEATH-08, R-DEATH-09
+)
+
+// rewardsStep gives the active player the rewards (R-DEATH-06); then
+// "after rewards" triggers trigger (R-DEATH-07).
+func (g *Game) rewardsStep(holding ObjectID) {
 	active := g.Turn.Active
-	d := g.def(holding)
-	for _, r := range d.Rewards { // R-DEATH-06
-		g.enqueue(Action{Kind: r.action(), Player: active, Amount: r.Amount})
+	times := 1
+	if g.Object(holding).DoubleRewards {
+		times = 2 // e.g. Dinga
 	}
-	if d.Soul > 0 { // R-DEATH-08
-		g.enqueue(Action{Kind: ActBecomeSoul, Player: active, Object: holding})
-	} else {
-		g.enqueue(Action{Kind: ActDiscardObject, Player: NoPlayer, Object: holding})
+	for _, r := range g.def(holding).Rewards {
+		if r.Roll {
+			g.push(StackItem{Kind: StackRoll, Controller: active, Source: holding, Roll: g.d6(), Label: "reward roll", Reward: int(r.Kind) + 1, Amount: times})
+			continue
+		}
+		g.enqueue(Action{Kind: r.action(), Player: active, Amount: r.Amount * times})
 	}
-	g.enqueue(Action{Kind: ActRefillSlots, Player: NoPlayer}) // R-DEATH-09
+	g.enqueue(Action{Kind: ActRewardsDone, Player: active, Object: holding})
+}
+
+// soulStep makes the dead monster a soul of the active player or puts it
+// into discard, unless an effect moved it already; slots refill
+// (R-DEATH-08, R-DEATH-09).
+func (g *Game) soulStep(holding ObjectID) {
+	if g.Object(holding).Zone.Kind == ZoneOutside {
+		if g.def(holding).Soul > 0 {
+			g.enqueue(Action{Kind: ActBecomeSoul, Player: g.Turn.Active, Object: holding})
+		} else {
+			g.enqueue(Action{Kind: ActDiscardObject, Player: NoPlayer, Object: holding})
+		}
+	}
+	g.enqueue(Action{Kind: ActRefillSlots, Player: NoPlayer})
 }
 
 // playerDeath follows the player death steps (R-DEATH-12 to R-DEATH-16).
 func (g *Game) playerDeath(p PlayerID) {
 	g.Players[p].Dead = true // R-DEATH-17
+	defer g.dropCurses(p)
 	g.emit(Event{Kind: EvDied, Player: p, Object: g.Players[p].Character, Card: g.Object(g.Players[p].Character).Card})
 	if p == g.Turn.Active {
 		g.endAttack() // R-DEATH-12
 		g.Turn.DeathEnd = true
 	}
-	g.enqueue( // death penalty (R-DEATH-14)
+	if n := len(g.PendingTriggers); n > 0 && g.triggeredBy(EvDied, p) {
+		// "When a player dies" triggers resolve first: the penalty waits
+		// under them on the stack (R-DEATH-13).
+		g.push(StackItem{Kind: StackPenalty, Controller: NoPlayer, Label: "death penalty", Target: Target{Player: p, IsPlayer: true}})
+		return
+	}
+	g.payPenalty(p)
+}
+
+// triggeredBy reports whether a waiting trigger came from this player's
+// death event.
+func (g *Game) triggeredBy(kind EventKind, p PlayerID) bool {
+	for _, t := range g.PendingTriggers {
+		if t.On == kind && t.EventPlayer == p {
+			return true
+		}
+	}
+	return false
+}
+
+// payPenalty queues the death penalty (R-DEATH-14); "after paying
+// penalties" triggers look at the event that follows it.
+func (g *Game) payPenalty(p PlayerID) {
+	g.enqueue(
 		Action{Kind: ActPenaltyItem, Player: p},
 		Action{Kind: ActPenaltyLoot, Player: p},
-		Action{Kind: ActLoseCents, Player: p, Amount: 1},
+		g.penaltyCents(p),
 		Action{Kind: ActDeactivateTaps, Player: p},
+		Action{Kind: ActPenaltyDone, Player: p},
 	)
 }
 
@@ -296,15 +452,9 @@ func (g *Game) removeFromSlot(id ObjectID) {
 	}
 }
 
-// destroyItem destroys an item a player controls (R-MECH-23).
-func (g *Game) destroyItem(p PlayerID, id ObjectID) {
-	if g.def(id).Eternal {
-		return // R-ABIL-18
-	}
-	g.Players[p].InPlay = remove(g.Players[p].InPlay, id)
-	nid := g.discard(id, TreasureDeck)
-	g.emit(Event{Kind: EvDestroyed, Player: p, Object: nid, Card: g.Object(nid).Card, Prev: id})
-}
+// destroyItem destroys an item a player controls (R-MECH-23). It goes to
+// the discard of its own deck: a trinket is a loot card.
+func (g *Game) destroyItem(p PlayerID, id ObjectID) { g.DestroyObject(p, id) }
 
 // refillSlots fills empty slots from their decks (R-SHOP-06); events met
 // while refilling monster slots are resolved until a monster sits there
@@ -325,9 +475,8 @@ func (g *Game) refillSlots() {
 			}
 			nid := g.putInSlot(id, MonsterSlot, i)
 			if g.Object(nid).Role == RoleEvent {
-				// Event abilities come with step 4.7; then it is discarded.
-				g.removeFromSlot(nid)
-				g.discard(nid, MonsterDeck)
+				g.enterMonsterSlot(nid) // it stays until its abilities are done
+				break
 			}
 		}
 	}
@@ -342,3 +491,32 @@ func (g *Game) d6() int {
 	}
 	return g.RNG.D6()
 }
+
+// attacksLeft is how many attacks the active player may still declare.
+func (g *Game) attacksLeft() int {
+	return g.Turn.Attacks + max(g.bonus(StatAttacks, g.Turn.Active, 0)-g.Turn.BonusAttacksUsed, 0)
+}
+
+// shadowOf is the first other player, in turn order from p, whose card
+// takes p's death penalty (Shadow), or NoPlayer.
+func (g *Game) shadowOf(p PlayerID) PlayerID {
+	for _, q := range g.turnOrderFrom(p)[1:] {
+		for _, id := range g.Players[q].InPlay {
+			if g.Object(id).Role == RoleItem && g.def(id).TakesPenalties {
+				return q
+			}
+		}
+	}
+	return NoPlayer
+}
+
+// penaltyCents is the penalty's 1¢: lost, or gained by a Shadow.
+func (g *Game) penaltyCents(p PlayerID) Action {
+	if s := g.shadowOf(p); s != NoPlayer {
+		return Action{Kind: ActStealCents, Player: s, From: p, Amount: 1}
+	}
+	return Action{Kind: ActLoseCents, Player: p, Amount: 1}
+}
+
+// Def returns the card definition an object acts as.
+func (g *Game) Def(id ObjectID) CardDef { return g.def(id) }

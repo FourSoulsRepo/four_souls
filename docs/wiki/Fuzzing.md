@@ -19,10 +19,31 @@ A game is capped at `maxFuzzSteps` (2000) steps. Every step hashes the whole sta
 
 * `FuzzAllCards` — every card in the fuzz sets can show up.
 * `FuzzFocused` — the given cards are put into every player's play area at the start, so their abilities come up often. Use it for a new card. The focused game is not replayed, because a replay starts without those items.
+* `FuzzSets` (in `pkg/rules_engine/cards`) — the same checks with the real card sets, all of them together.
+
+## Simulations
+
+`TestSimulations` (in `pkg/rules_engine/cards`) plays whole games with random legal moves for 2, 3 and 4 players and checks the invariants after every step. It prefers acting over passing, so most games end with a winner. CI plays 100 games; locally:
+
+```sh
+cd pkg/rules_engine
+FOUR_SOULS_SIMS=3000 go test -count=1 -timeout 30m -run TestSimulations ./cards/
+```
+
+3000 games take a few minutes.
 
 ## Running
 
-CI runs only the seed corpus, as normal tests (`go test ./...`). Real fuzzing runs on your machine, from `pkg/rules_engine`:
+CI runs only the seed corpus, as normal tests (`go test ./...`). Real fuzzing runs on your machine. From the repo root:
+
+```sh
+make fuzz                          # fuzz-engine, then fuzz-sets, 10 minutes each
+make fuzz-sets FUZZTIME=2m
+make fuzz-focused FOCUS=razor,d6   # cards of the engine's test sets
+make sims SIMS=3000
+```
+
+Or by hand, from `pkg/rules_engine`:
 
 ```sh
 go test -run '^$' -fuzz=FuzzAllCards -fuzztime=10m -fuzzminimizetime=5s .

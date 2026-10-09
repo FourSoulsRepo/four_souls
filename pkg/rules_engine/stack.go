@@ -5,12 +5,14 @@ type StackKind int
 
 // The stack item kinds.
 const (
-	StackLoot    StackKind = iota // a played loot card (R-CARD-07)
-	StackAbility                  // an activated ability (R-ABIL-08)
-	StackTrigger                  // a triggered ability (R-ABIL-14)
-	StackRoll                     // a dice roll (R-DICE-02)
-	StackDamage                   // damage aimed at a target (R-MECH-15)
-	StackDeath                    // a pending death (R-DEATH-01)
+	StackLoot      StackKind = iota // a played loot card (R-CARD-07)
+	StackAbility                    // an activated ability (R-ABIL-08)
+	StackTrigger                    // a triggered ability (R-ABIL-14)
+	StackRoll                       // a dice roll (R-DICE-02)
+	StackDamage                     // damage aimed at a target (R-MECH-15)
+	StackDeath                      // a pending death (R-DEATH-01)
+	StackPenalty                    // a death penalty waiting for "when a player dies" triggers (R-DEATH-13)
+	StackDeathStep                  // a monster death step waiting for triggers (R-DEATH-05, R-DEATH-07)
 )
 
 // StackItem is one thing waiting on the stack.
@@ -29,11 +31,22 @@ type StackItem struct {
 	Attack bool `json:"attack,omitempty"`
 	// Ability is the ability of loot, activated and triggered items.
 	Ability AbilityRef `json:"ability"`
+	Mode    int        `json:"mode,omitempty"` // the chosen "choose one-" option
 	Targets []Chosen   `json:"targets,omitempty"`
 	// RollFor is the roll ability waiting for this roll (R-ABIL-24).
 	RollFor AbilityRef `json:"roll_for"`
 	// RollResult is set on the trigger that reads a roll's result.
 	RollResult int `json:"roll_result,omitempty"`
+	// EventPlayer and EventAmount: the triggering event, for triggers.
+	EventPlayer PlayerID `json:"event_player,omitempty"`
+	EventAmount int      `json:"event_amount,omitempty"`
+	EventStack  int      `json:"event_stack,omitempty"`
+	EventObject ObjectID `json:"event_object,omitempty"`
+	// Reward is a roll reward's kind + 1: the result is how much is gained.
+	Reward int `json:"reward,omitempty"`
+	// Checked is the roll value (+1) that "would roll" triggers last saw
+	// (R-DICE-05); the roll only resolves once nothing changes it.
+	Checked int `json:"checked,omitempty"`
 }
 
 // Events about the stack.
@@ -50,6 +63,13 @@ func (g *Game) push(it StackItem) int {
 	it.ID = g.StackSeq
 	g.Stack = append(g.Stack, it)
 	g.emit(Event{Kind: EvStackAdded, Player: it.Controller, Object: it.Source, Card: it.Card, Amount: it.Roll, Text: it.Label})
+	// "Would take damage" and "would die" triggers look at these.
+	switch it.Kind { //nolint:exhaustive // only damage and death have "would" triggers
+	case StackDamage:
+		g.emit(Event{Kind: EvDamagePending, Player: it.Target.player(), Object: it.Target.Object, Amount: it.Amount})
+	case StackDeath:
+		g.emit(Event{Kind: EvDeathPending, Player: it.Target.player(), Object: it.Target.Object})
+	}
 	start := it.Controller
 	if start == NoPlayer {
 		start = g.Turn.Active // the game's items: active player first (R-PRIO-02)
@@ -62,6 +82,17 @@ func (g *Game) push(it StackItem) int {
 // passes again, starting with the active player (R-STACK-04, R-PRIO-02).
 func (g *Game) resolveTop() {
 	n := len(g.Stack)
+	if top := &g.Stack[n-1]; top.Kind == StackRoll && top.Checked != top.Roll+1 {
+		// The roll tries to resolve: "would roll N" triggers trigger now; if
+		// any did, they go on the stack first (R-DICE-05).
+		top.Checked = top.Roll + 1
+		before := len(g.PendingTriggers)
+		g.emit(Event{Kind: EvRollWouldResolve, Player: top.Controller, Amount: top.Roll, StackID: top.ID})
+		if len(g.PendingTriggers) > before {
+			g.openWindow(g.Turn.Active)
+			return
+		}
+	}
 	it := g.Stack[n-1]
 	g.Stack = g.Stack[:n-1]
 	g.emit(Event{Kind: EvStackResolved, Player: it.Controller, Object: it.Source, Card: it.Card, Amount: it.Roll, Text: it.Label})
@@ -75,18 +106,41 @@ func (g *Game) resolveTop() {
 		if it.Ability.Card != "" {
 			g.resolveAbility(it)
 		}
-		g.discard(it.Source, LootDeck)
+		switch {
+		case g.Object(it.Source).Zone.Kind != ZoneStack:
+			// The effect moved the card already (The Sun).
+		case g.def(it.Source).Trinket:
+			g.trinketToPlay(it.Controller, it.Source) // R-ABIL-19
+		default:
+			g.discard(it.Source, LootDeck)
+		}
 	case StackRoll:
-		// The result is final once it resolves (R-DICE-06).
-		g.emit(Event{Kind: EvRollResolved, Player: it.Controller, Amount: it.Roll})
+		// Continuous roll changes apply, then the result is final (R-DICE-06).
+		if it.Controller != NoPlayer {
+			bonus := g.bonus(StatRoll, it.Controller, 0)
+			if it.Attack {
+				bonus += g.bonus(StatAttackRoll, it.Controller, 0)
+			}
+			it.Roll = min(max(it.Roll+bonus, 1), 6)
+		}
+		re := Event{Kind: EvRollResolved, Player: it.Controller, Amount: it.Roll}
+		if it.Attack {
+			re.Text = "attack"
+		}
+		g.emit(re)
 		if it.Attack {
 			g.resolveAttackRoll(it)
+		}
+		if it.Reward > 0 {
+			r := Reward{Kind: RewardKind(it.Reward - 1)}
+			g.enqueue(Action{Kind: r.action(), Player: it.Controller, Amount: it.Roll * max(it.Amount, 1)})
 		}
 		if it.RollFor.Card != "" {
 			// The roll ability's result trigger goes on the stack (R-ABIL-24).
 			g.push(StackItem{
 				Kind: StackTrigger, Controller: it.Controller, Source: it.Source, Card: it.RollFor.Card,
-				Ability: it.RollFor, RollResult: it.Roll, Label: "roll result",
+				Ability: it.RollFor, Mode: it.Mode, Targets: it.Targets, RollResult: it.Roll, Label: "roll result",
+				EventPlayer: it.EventPlayer, EventAmount: it.EventAmount, EventStack: it.EventStack, EventObject: it.EventObject,
 			})
 		}
 	case StackDamage:
@@ -95,10 +149,19 @@ func (g *Game) resolveTop() {
 		g.resolveDeath(it)
 	case StackAbility, StackTrigger:
 		g.resolveAbility(it)
+	case StackPenalty:
+		g.payPenalty(it.Target.Player)
+	case StackDeathStep:
+		if it.Amount == stepRewards {
+			g.rewardsStep(it.Target.Object)
+		} else {
+			g.soulStep(it.Target.Object)
+		}
 	}
-	if len(g.Queue) > 0 && g.Waiting.Kind == PromptPriority {
-		// Queued steps (e.g. death rewards) happen before anyone acts.
-		g.givePriority(g.Priority.Holder)
+	if (len(g.Queue) > 0 || len(g.PendingTriggers) > 0) && g.Waiting.Kind == PromptPriority {
+		// Queued steps (e.g. death rewards) happen and new triggers go on
+		// the stack before anyone acts (R-ABIL-14).
+		g.openWindow(g.Priority.Holder)
 	}
 }
 
@@ -129,4 +192,86 @@ func (g *Game) givePriority(p PlayerID) {
 		return
 	}
 	g.openWindow(p)
+}
+
+// SetRoll changes a dice roll on the stack to n, between 1 and 6
+// (R-DICE-04): "change the result of a dice roll".
+func (g *Game) SetRoll(stackID, n int) {
+	for i := range g.Stack {
+		if it := &g.Stack[i]; it.ID == stackID && it.Kind == StackRoll {
+			it.Roll = min(max(n, 1), 6)
+			g.emit(Event{Kind: EvRollChanged, Player: it.Controller, Amount: it.Roll})
+		}
+	}
+}
+
+// player is the target player, or NoPlayer for an object.
+func (t Target) player() PlayerID {
+	if t.IsPlayer {
+		return t.Player
+	}
+	return NoPlayer
+}
+
+// trinketToPlay puts a resolved trinket into play as an item of p.
+func (g *Game) trinketToPlay(p PlayerID, id ObjectID) {
+	nid := g.move(id, Zone{Kind: ZoneInPlay}, p)
+	g.enterAsItem(p, nid)
+	g.emit(Event{Kind: EvEnteredPlay, Player: p, Object: nid, Card: g.Object(nid).Card})
+}
+
+// CancelStackItem removes an item from the stack without resolving it;
+// a cancelled loot card goes to the loot discard (R-MECH-32).
+func (g *Game) CancelStackItem(id int) {
+	for i, it := range g.Stack {
+		if it.ID != id {
+			continue
+		}
+		g.Stack = append(g.Stack[:i:i], g.Stack[i+1:]...)
+		g.emit(Event{Kind: EvCancelled, Player: it.Controller, Object: it.Source, Card: it.Card, Text: it.Label})
+		if o := g.Object(it.Source); o.Role == RoleEvent && !g.waitingRoll(it.Source) {
+			g.enqueue(Action{Kind: ActFinishEvent, Player: NoPlayer, Object: it.Source}) // R-CARD-15
+		}
+		if it.Kind == StackLoot && g.Object(it.Source).Zone.Kind == ZoneStack {
+			g.discard(it.Source, LootDeck)
+		}
+		return
+	}
+}
+
+// EndTurnNow cancels everything that has not resolved and ends the
+// active player's turn: "End the turn. Cancel everything that hasn't
+// resolved." The turn goes to its end phase.
+func (g *Game) EndTurnNow() {
+	g.endAttack()
+	g.Purchase = PurchaseState{}
+	for len(g.Stack) > 0 {
+		g.CancelStackItem(g.Stack[len(g.Stack)-1].ID)
+	}
+	if g.Turn.Step < StepAction {
+		// From the start phase too: the action phase closes at once.
+		g.Turn.Step, g.Turn.Entered = StepAction, true
+	}
+	g.Turn.EndDeclared = true
+	g.emit(Event{Kind: EvTurnEndedEarly, Player: g.Turn.Active})
+}
+
+// StackItemByID returns the stack item with the given ID.
+func (g *Game) StackItemByID(id int) (StackItem, bool) {
+	for _, it := range g.Stack {
+		if it.ID == id {
+			return it, true
+		}
+	}
+	return StackItem{}, false
+}
+
+// Reroll rolls a dice roll on the stack again (R-MECH-47).
+func (g *Game) Reroll(stackID int) {
+	for i := range g.Stack {
+		if it := &g.Stack[i]; it.ID == stackID && it.Kind == StackRoll {
+			it.Roll = g.d6()
+			g.emit(Event{Kind: EvDiceRolled, Player: it.Controller, Amount: it.Roll, Text: "reroll"})
+		}
+	}
 }

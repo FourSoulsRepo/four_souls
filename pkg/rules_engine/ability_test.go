@@ -306,10 +306,10 @@ func TestStaticAbilities(t *testing.T) {
 	a := g.Turn.Active
 	m := putMonster(g, 0, "gaper") // DC 3
 	stoney := putMonster(g, 1, "stoney_like")
-	if got := g.evasion(m); got != 4 {
+	if got := g.Evasion(m); got != 4 {
 		t.Errorf("evasion %d; Stoney gives monsters +1 DC, want 4 (R-ABIL-28)", got)
 	}
-	if got := g.evasion(stoney); got != 4 {
+	if got := g.Evasion(stoney); got != 4 {
 		t.Errorf("Stoney's own evasion %d, want 4", got)
 	}
 	atk := g.PlayerATK(a)

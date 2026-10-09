@@ -50,6 +50,50 @@ type CardDef struct {
 	// Outside marks cards that start outside the game, such as starting
 	// items: they are never shuffled into a deck (R-ZONE-13).
 	Outside bool
+	// DamageMod changes damage about to be marked on a target while this
+	// object is in play: "Damage you would take is reduced to 1." It
+	// returns the new amount; 0 prevents it.
+	DamageMod func(g *Game, self ObjectID, t Target, n int) int
+	// EntersDeactivated and EntersWithCounters apply when the item enters
+	// play under a player.
+	EntersDeactivated  bool
+	EntersWithCounters int
+	// SoulWhenDestroyed: "If this would be destroyed, it becomes a soul
+	// instead."
+	SoulWhenDestroyed bool
+	// Curse: an event with the Curse keyword; it is given to a player
+	// (R-ABIL-20).
+	Curse bool
+	// Guppy: the Guppy tag other cards look for (R-ABIL-22).
+	Guppy bool
+	// CombatMod changes combat damage from an attack roll against this
+	// monster: hit is true for damage to it, false for its damage to the
+	// attacker. "This takes no combat damage on attack rolls of 6."
+	CombatMod func(g *Game, self ObjectID, roll int, hit bool, n int) int
+	// BonusSoul: the condition for gaining this bonus soul ("the first
+	// player to have 25¢ or more").
+	BonusSoul func(g *Game, p PlayerID) bool
+	// Unattackable: "This can't be attacked."
+	Unattackable bool
+	// TakesPenalties: "If another player would pay the death penalty, you
+	// choose what item they would destroy and you gain any loot cards and
+	// ¢ they would lose" (Shadow).
+	TakesPenalties bool
+	// CopiesTapAbilities: "This copies a ↷ ability of a non-eternal
+	// item" (Placebo): it can use any of their ↷ abilities.
+	CopiesTapAbilities bool
+	// PeeksTreasure: "You may look at the top card of the treasure deck
+	// at any time on your turn": the controller's view shows it.
+	PeeksTreasure bool
+	// Trinket: a loot card that becomes an item when it resolves
+	// (R-ABIL-19); its abilities work only in play.
+	Trinket bool
+	// GoesFirst: a character whose player goes first (Cain).
+	GoesFirst bool
+	// StartingChoice: a character whose player looks at this many top
+	// treasure cards at the start and picks one as an eternal starting
+	// item; the rest go to the bottom (Eden, R-SETUP-09).
+	StartingChoice int
 
 	// Replacements are the card's replacement effects (R-ABIL-29).
 	Replacements []Replacement
@@ -67,6 +111,7 @@ type CardDef struct {
 
 // CardSet is a set of card definitions, e.g. the Base Game.
 type CardSet struct {
+	Code  string // card_db set code, e.g. "b2"
 	Name  string
 	Cards []CardDef
 }
@@ -110,10 +155,12 @@ const (
 	RewardTreasure
 )
 
-// Reward is one line of a reward box, e.g. 3 cents.
+// Reward is one line of a reward box, e.g. 3 cents. Roll rewards
+// ("Roll- gain X¢") give as many as a roll's result.
 type Reward struct {
 	Kind   RewardKind
 	Amount int
+	Roll   bool
 }
 
 func (r Reward) action() ActionKind {

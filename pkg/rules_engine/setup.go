@@ -11,6 +11,9 @@ type Setup struct {
 	Players    int
 	Sets       []CardSet
 	BonusSouls bool // play with 3 random bonus souls (R-SETUP-06)
+	// Characters, when set, gives seat i the character Characters[i]
+	// instead of a random one (character picks, tests).
+	Characters []CardRef
 }
 
 // Defaults of the official rules.
@@ -65,14 +68,31 @@ func NewGame(s Setup) (*Game, []Event, error) {
 	if s.BonusSouls {
 		g.pickBonusSouls(bonus)
 	}
-	if err := g.dealCharacters(characters); err != nil {
+	if len(s.Characters) > 0 {
+		if len(s.Characters) != s.Players {
+			return nil, nil, fmt.Errorf("setup: %d characters for %d players", len(s.Characters), s.Players)
+		}
+		for _, c := range s.Characters {
+			if d, ok := idx.find(c); !ok || d.Kind != CharacterCard {
+				return nil, nil, fmt.Errorf("setup: %q is not a character", c)
+			}
+		}
+		characters = s.Characters
+	}
+	if err := g.dealCharacters(characters, len(s.Characters) == 0); err != nil {
 		return nil, nil, err
 	}
 	for p := range g.Players {
 		g.loot(PlayerID(p), startingLoot)
 		g.Players[p].Cents = startingCents
 	}
-	g.Turn = Turn{Active: g.rollForFirst(), Number: 1, Step: StepRecharge}
+	for p := range g.Players {
+		// Start-of-game abilities resolve at once, without priority (R-SETUP-09).
+		if n := g.def(g.Players[p].Character).StartingChoice; n > 0 {
+			g.enqueue(Action{Kind: ActChooseStartingItem, Player: PlayerID(p), Amount: n})
+		}
+	}
+	g.Turn = Turn{Active: g.firstPlayer(), Number: 1, Step: StepRecharge}
 	g.emit(Event{Kind: EvGameStarted, Player: g.Turn.Active})
 	g.run()
 	return g, g.takeEvents(), nil
@@ -153,11 +173,13 @@ func (g *Game) pickBonusSouls(pool []CardRef) {
 
 // dealCharacters gives each player a random character and its starting
 // item (R-SETUP-07, R-SETUP-08, R-CARD-26).
-func (g *Game) dealCharacters(pool []CardRef) error {
+func (g *Game) dealCharacters(pool []CardRef, random bool) error {
 	if len(pool) < len(g.Players) {
 		return fmt.Errorf("setup: %d characters for %d players", len(pool), len(g.Players))
 	}
-	g.RNG.Shuffle(len(pool), func(i, j int) { pool[i], pool[j] = pool[j], pool[i] })
+	if random {
+		g.RNG.Shuffle(len(pool), func(i, j int) { pool[i], pool[j] = pool[j], pool[i] })
+	}
 	for i := range g.Players {
 		p := PlayerID(i)
 		ch := g.newObject(pool[i], Zone{Kind: ZoneInPlay}, p)
@@ -175,6 +197,65 @@ func (g *Game) dealCharacters(pool []CardRef) error {
 		g.Players[i].InPlay = append(g.Players[i].InPlay, item)
 	}
 	return nil
+}
+
+// firstPlayer is the player whose character says they go first (Cain),
+// or else the winner of the roll.
+func (g *Game) firstPlayer() PlayerID {
+	for _, pl := range g.Players {
+		if g.def(pl.Character).GoesFirst {
+			g.emit(Event{Kind: EvFirstPlayer, Player: pl.ID, Text: "character"})
+			return pl.ID
+		}
+	}
+	return g.rollForFirst()
+}
+
+// askStartingItem shows p the top n treasure cards to pick a starting
+// item from (Eden).
+func (g *Game) askStartingItem(p PlayerID, n int) {
+	deck := g.Decks[TreasureDeck]
+	n = min(n, len(deck))
+	if n == 0 {
+		return
+	}
+	top := make([]ObjectID, 0, n)
+	for i := len(deck) - 1; i >= len(deck)-n; i-- {
+		top = append(top, deck[i])
+	}
+	g.ask(Choice{Purpose: ChooseStartingItem, Player: p, Rule: "R-SETUP-09", Objects: top}, g.labels(top))
+}
+
+// chooseStartingItem puts the chosen card into play as an eternal item;
+// the others go to the bottom of the treasure deck.
+func (g *Game) chooseStartingItem(c Choice, i int) {
+	for _, id := range c.Objects {
+		g.Decks[TreasureDeck] = remove(g.Decks[TreasureDeck], id)
+	}
+	var rest []ObjectID
+	for j, id := range c.Objects {
+		if j == i {
+			continue
+		}
+		nid := g.move(id, DeckZone(TreasureDeck), NoPlayer)
+		g.Decks[TreasureDeck] = append([]ObjectID{nid}, g.Decks[TreasureDeck]...)
+		rest = append(rest, nid)
+	}
+	nid := g.move(c.Objects[i], Zone{Kind: ZoneInPlay}, c.Player)
+	o := g.Object(nid)
+	o.Role, o.Charged, o.Eternal = RoleItem, true, true
+	g.Players[c.Player].InPlay = append(g.Players[c.Player].InPlay, nid)
+	g.emit(Event{Kind: EvGainedTreasure, Player: c.Player, Object: nid, Card: o.Card, Text: "starting item"})
+	if len(rest) > 1 {
+		// The player decides the order of the cards at the bottom.
+		g.ask(Choice{Purpose: ChooseLowest, Player: c.Player, Rule: "R-SETUP-09", Objects: rest}, g.labels(rest))
+	}
+}
+
+// chooseLowest puts the chosen card at the very bottom of the treasure
+// deck, below the other cards of the choice.
+func (g *Game) chooseLowest(c Choice, i int) {
+	g.DeckToBottom(TreasureDeck, c.Objects[i])
 }
 
 // rollForFirst: each player rolls a D6; the lowest goes first; ties among

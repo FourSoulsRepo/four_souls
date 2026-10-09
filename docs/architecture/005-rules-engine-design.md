@@ -82,6 +82,9 @@ Use options 2, 4 and 6.
    4. A card that does not fit gets a small custom Go hook.
    5. Game data (stats, rewards, souls, copies) is in the definition.
    6. A generator copies that data from `card_db` (step 5.1).
+   7. Decisions on resolution are `Ask` blocks (R-ABIL-05).
+   8. A waiting question is plain data in the state, found again by ref.
+   9. "Choose one-" options are modes, picked with the targets (R-ABIL-04).
 8. Views and events
    1. `View(game, viewer)` builds what a player, viewer or judge sees.
    2. Hidden: other hands, deck order, RNG state.

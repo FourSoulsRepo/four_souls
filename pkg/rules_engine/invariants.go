@@ -25,6 +25,17 @@ func (g *Game) CheckInvariants() error {
 		if err := mark(g.Discards[d], ZoneDiscard, "discard"); err != nil {
 			return err
 		}
+		// A card only ever sits in its own deck or discard (R-ZONE-04).
+		for _, id := range append(append([]ObjectID(nil), g.Decks[d]...), g.Discards[d]...) {
+			if own, ok := g.kindOf(id).Deck(); !ok || own != d {
+				return fmt.Errorf("%s is in the %s deck or discard", g.Objects[id].Card, d)
+			}
+		}
+	}
+	for _, s := range g.Shop {
+		if top, ok := s.TopOf(); ok && g.kindOf(top) != TreasureCard {
+			return fmt.Errorf("%s is in a shop slot", g.Objects[top].Card)
+		}
 	}
 	for _, pl := range g.Players {
 		if err := mark(pl.Hand, ZoneHand, fmt.Sprintf("player %d hand", pl.ID)); err != nil {

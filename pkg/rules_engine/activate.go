@@ -9,7 +9,9 @@ type Activation struct {
 	Source  ObjectID   `json:"source"`
 	Ability AbilityRef `json:"ability"`
 	Loot    bool       `json:"loot,omitempty"` // a loot card from hand
-	Chosen  []Chosen   `json:"chosen,omitempty"`
+	// Mode is the chosen "choose one-" option; -1 until it is chosen.
+	Mode   int      `json:"mode"`
+	Chosen []Chosen `json:"chosen,omitempty"`
 	// Window is the priority holder to return to if the player cancels.
 	Window PlayerID `json:"window"`
 }
@@ -26,41 +28,99 @@ func (g *Game) activatable(p PlayerID, src ObjectID, i int) error {
 	if o.Zone.Kind != ZoneInPlay || o.Controller != p || (o.Role != RoleItem && o.Role != RoleCharacter) {
 		return refuse("R-ABIL-09", "only the controller uses an item's or character's abilities")
 	}
-	d := g.def(src)
-	if i < 0 || i >= len(d.Abilities) || d.Abilities[i].Kind != Activated {
+	refs := g.AbilitiesOf(src)
+	if i < 0 || i >= len(refs) || g.ability(refs[i]).Kind != Activated {
 		return refuse("R-ABIL-08", "%s has no such activated ability", o.Card)
 	}
-	a := d.Abilities[i]
+	a := g.ability(refs[i])
 	for _, c := range a.Costs {
 		if !c.canPay(g, p, src) {
 			return refuse("R-ABIL-07", "cannot pay the cost (%s)", c.label())
 		}
 	}
-	return g.targetsAvailable(a, p)
+	return g.targetsAvailable(a, p, src)
 }
 
-// targetsAvailable checks every target spec has something to choose.
-func (g *Game) targetsAvailable(a Ability, p PlayerID) error {
-	for _, t := range a.Targets {
-		if opts, _ := g.targetOptions(t, p); len(opts) == 0 {
-			return refuse("R-ABIL-06", "no valid target")
+// targetsAvailable checks every target spec has something to choose; an
+// ability with modes needs one mode whose targets are there.
+func (g *Game) targetsAvailable(a Ability, p PlayerID, src ObjectID) error {
+	if len(a.Modes) > 0 {
+		if len(g.availableModes(a, p, src)) == 0 {
+			return refuse("R-ABIL-06", "no option has a valid target")
 		}
+		return nil
+	}
+	if !g.hasTargets(a.Targets, p, src) {
+		return refuse("R-ABIL-06", "no valid target")
 	}
 	return nil
 }
 
-// startActivation asks for targets one by one, then pays and pushes.
+func (g *Game) hasTargets(specs []TargetSpec, p PlayerID, src ObjectID) bool {
+	for _, t := range specs {
+		if opts, _ := g.targetOptions(t, p, src); len(opts) == 0 {
+			return false
+		}
+	}
+	return true
+}
+
+// availableModes lists the modes of a whose targets can be chosen.
+func (g *Game) availableModes(a Ability, p PlayerID, src ObjectID) []int {
+	var out []int
+	for i, m := range a.Modes {
+		if g.hasTargets(m.Targets, p, src) {
+			out = append(out, i)
+		}
+	}
+	return out
+}
+
+// startActivation asks for the mode and targets one by one, then pays
+// and pushes.
 func (g *Game) startActivation(a Activation) {
 	a.Window = g.Priority.Holder
+	a.Mode = -1
 	g.Activating = &a
+	ab := g.ability(a.Ability)
+	if len(ab.Modes) == 0 {
+		a.Mode = 0
+		g.nextTarget()
+		return
+	}
+	modes := g.availableModes(ab, a.Player, a.Source)
+	labels := make([]string, 0, len(modes)+1)
+	for _, m := range modes {
+		labels = append(labels, ab.Modes[m].Text)
+	}
+	labels = append(labels, "cancel")
+	g.ask(Choice{Purpose: ChooseMode, Player: a.Player, Rule: "R-ABIL-04", Indexes: modes}, labels)
+}
+
+// chooseMode records the mode, or cancels before anything is paid.
+func (g *Game) chooseMode(c Choice, i int) {
+	if i == len(c.Indexes) {
+		g.cancelActivation()
+		return
+	}
+	g.Activating.Mode = c.Indexes[i]
 	g.nextTarget()
+}
+
+// targetSpecs are the targets to choose for an ability and mode.
+func (g *Game) targetSpecs(ref AbilityRef, mode int) []TargetSpec {
+	ab := g.ability(ref)
+	if len(ab.Modes) > 0 {
+		return ab.Modes[mode].Targets
+	}
+	return ab.Targets
 }
 
 func (g *Game) nextTarget() {
 	a := g.Activating
-	ab := g.ability(a.Ability)
-	if len(a.Chosen) < len(ab.Targets) {
-		opts, labels := g.targetOptions(ab.Targets[len(a.Chosen)], a.Player)
+	specs := g.targetSpecs(a.Ability, a.Mode)
+	if len(a.Chosen) < len(specs) {
+		opts, labels := g.targetOptions(specs[len(a.Chosen)], a.Player, a.Source)
 		labels = append(labels, "cancel")
 		g.ask(Choice{Purpose: ChooseTarget, Player: a.Player, Rule: "R-ABIL-04", Targets: opts}, labels)
 		return
@@ -72,13 +132,18 @@ func (g *Game) nextTarget() {
 func (g *Game) chooseTarget(c Choice, i int) {
 	a := g.Activating
 	if i == len(c.Targets) {
-		g.Activating = nil
-		g.emit(Event{Kind: EvCancelled, Player: a.Player, Object: a.Source})
-		g.openWindow(a.Window)
+		g.cancelActivation()
 		return
 	}
 	a.Chosen = append(a.Chosen, c.Targets[i])
 	g.nextTarget()
+}
+
+func (g *Game) cancelActivation() {
+	a := g.Activating
+	g.Activating = nil
+	g.emit(Event{Kind: EvCancelled, Player: a.Player, Object: a.Source})
+	g.openWindow(a.Window)
 }
 
 func (g *Game) finishActivation() {
@@ -91,26 +156,41 @@ func (g *Game) finishActivation() {
 		nid := g.move(a.Source, Zone{Kind: ZoneStack}, a.Player)
 		card := g.Object(nid).Card
 		g.emit(Event{Kind: EvLootPlayed, Player: a.Player, Object: nid, Card: card})
-		g.push(StackItem{Kind: StackLoot, Controller: a.Player, Source: nid, Card: card, Ability: a.Ability, Targets: a.Chosen})
+		g.push(StackItem{Kind: StackLoot, Controller: a.Player, Source: nid, Card: card, Ability: a.Ability, Mode: a.Mode, Targets: a.Chosen})
+		if pl := &g.Players[a.Player]; pl.CopyNextLoot && !g.def(nid).Trinket {
+			// A copy of the loot goes on the stack above it (Blank Card).
+			pl.CopyNextLoot = false
+			g.push(StackItem{
+				Kind: StackAbility, Controller: a.Player, Source: nid, Card: card, Ability: a.Ability,
+				Mode: a.Mode, Targets: a.Chosen, Label: "copy of " + string(card),
+			})
+		}
 		return
 	}
 	for _, c := range ab.Costs {
+		if cc, ok := c.(chosenCost); ok {
+			cc.payChosen(g, a.Player, a.Chosen)
+			continue
+		}
 		c.pay(g, a.Player, a.Source)
 	}
 	g.emit(Event{Kind: EvActivated, Player: a.Player, Object: a.Source, Card: a.Ability.Card, Text: ab.Text})
 	g.push(StackItem{
 		Kind: StackAbility, Controller: a.Player, Source: a.Source, Card: a.Ability.Card,
-		Ability: a.Ability, Targets: a.Chosen, Label: ab.Text,
+		Ability: a.Ability, Mode: a.Mode, Targets: a.Chosen, Label: ab.Text,
 	})
 }
 
 // targetOptions lists what may be chosen for a spec, with labels.
-func (g *Game) targetOptions(t TargetSpec, _ PlayerID) ([]Chosen, []string) {
+func (g *Game) targetOptions(t TargetSpec, p PlayerID, src ObjectID) ([]Chosen, []string) {
 	var opts []Chosen
 	var labels []string
+	others := t.Kind == TargetOtherPlayer
 	addPlayers := func() {
 		for _, pl := range g.Players {
-			if !pl.Dead {
+			// Dead players can be chosen; damage to them is not marked and
+			// they die at most once a turn (R-07 #2, #4; R-MECH-16).
+			if !others || pl.ID != p {
 				opts = append(opts, Chosen{Kind: TargetPlayer, Player: pl.ID})
 				labels = append(labels, "player "+strconv.Itoa(int(pl.ID)+1)+" ("+string(g.Object(pl.Character).Card)+")")
 			}
@@ -125,8 +205,8 @@ func (g *Game) targetOptions(t TargetSpec, _ PlayerID) ([]Chosen, []string) {
 		}
 	}
 	switch t.Kind {
-	case TargetPlayer:
-		addPlayers()
+	case TargetPlayer, TargetOtherPlayer:
+		addPlayers() // the chosen kind is TargetPlayer either way
 	case TargetMonster:
 		addMonsters()
 	case TargetMonsterOrPlayer:
@@ -148,28 +228,94 @@ func (g *Game) targetOptions(t TargetSpec, _ PlayerID) ([]Chosen, []string) {
 				labels = append(labels, "roll of "+strconv.Itoa(it.Roll))
 			}
 		}
+	case TargetStackAbility:
+		for _, it := range g.Stack {
+			if g.cancellable(it) {
+				opts = append(opts, Chosen{Kind: TargetStackAbility, Player: it.Controller, StackID: it.ID})
+				label := string(it.Card)
+				if it.Label != "" {
+					label += ": " + it.Label
+				}
+				labels = append(labels, label)
+			}
+		}
+	case TargetYourHandCard:
+		for _, id := range g.Players[p].Hand {
+			opts = append(opts, Chosen{Kind: TargetYourHandCard, Player: p, Object: id})
+			labels = append(labels, string(g.Object(id).Card))
+		}
+	case TargetItemOrSoul:
+		for _, pl := range g.Players {
+			for _, id := range pl.InPlay {
+				if r := g.Object(id).Role; r == RoleItem || r == RoleSoul {
+					opts = append(opts, Chosen{Kind: TargetItemOrSoul, Player: pl.ID, Object: id})
+					labels = append(labels, string(g.Object(id).Card))
+				}
+			}
+		}
+	case TargetCurse, TargetYourItem:
+		role := RoleCurse
+		if t.Kind == TargetYourItem {
+			role = RoleItem
+		}
+		for _, pl := range g.Players {
+			if t.Kind == TargetYourItem && pl.ID != p {
+				continue
+			}
+			for _, id := range pl.InPlay {
+				if g.Object(id).Role == role {
+					opts = append(opts, Chosen{Kind: t.Kind, Player: pl.ID, Object: id})
+					labels = append(labels, string(g.Object(id).Card))
+				}
+			}
+		}
+	}
+	if t.Where != nil {
+		keptOpts, keptLabels := opts[:0], labels[:0]
+		for i, o := range opts {
+			if t.Where(g, src, o) {
+				keptOpts, keptLabels = append(keptOpts, o), append(keptLabels, labels[i])
+			}
+		}
+		opts, labels = keptOpts, keptLabels
 	}
 	return opts, labels
+}
+
+// cancellable: an item's ↷ or $ ability, or a loot card being played.
+func (g *Game) cancellable(it StackItem) bool {
+	switch it.Kind { //nolint:exhaustive // only these two can be cancelled this way
+	case StackLoot:
+		return true
+	case StackAbility:
+		return g.Object(it.Source).Role == RoleItem
+	}
+	return false
 }
 
 // stillValid checks a target on resolution (R-ABIL-06).
 func (g *Game) stillValid(c Chosen) bool {
 	switch c.Kind {
-	case TargetPlayer:
-		return !g.Players[c.Player].Dead
+	case TargetPlayer, TargetOtherPlayer:
+		return true // dead players stay valid targets (R-07 #4)
 	case TargetMonster, TargetMonsterOrPlayer:
 		o := g.Object(c.Object)
 		return o.Zone.Kind == ZoneInPlay && o.Role == RoleMonster
 	case TargetItem:
 		o := g.Object(c.Object)
 		return o.Zone.Kind == ZoneInPlay && o.Role == RoleItem
-	case TargetDiceRoll:
+	case TargetDiceRoll, TargetStackAbility:
 		for _, it := range g.Stack {
 			if it.ID == c.StackID {
 				return true
 			}
 		}
 		return false
+	case TargetCurse, TargetYourItem, TargetItemOrSoul:
+		o := g.Object(c.Object)
+		return o.Zone.Kind == ZoneInPlay && o.Controller == c.Player
+	case TargetYourHandCard:
+		return true // spent by the cost already
 	}
 	return false
 }
@@ -177,35 +323,32 @@ func (g *Game) stillValid(c Chosen) bool {
 // resolveAbility runs an ability's effects, or fizzles it when a target
 // is gone (R-ABIL-06). A roll ability's result runs its table instead.
 func (g *Game) resolveAbility(it StackItem) {
-	ab := g.ability(it.Ability)
-	effects := ab.Effects
-	if it.RollResult > 0 {
-		effects = nil
-		for _, e := range ab.Effects {
-			if r, ok := e.(rollEffect); ok {
-				effects = r.table[it.RollResult-1]
-			}
-		}
-	}
+	effects := g.effectsOf(it.Ability, it.Mode, it.RollResult)
+	defer g.afterEventAbility(it.Source)
 	for _, t := range it.Targets {
+		// A roll's result was checked when the roll ability resolved.
+		if t.Spent || it.RollResult > 0 {
+			continue
+		}
 		if !g.stillValid(t) {
 			g.emit(Event{Kind: EvAbilityFizzle, Player: it.Controller, Object: it.Source, Card: it.Card})
 			return
 		}
 	}
-	c := &Ctx{G: g, Controller: it.Controller, Source: it.Source, Targets: it.Targets}
-	g.resolving = it.Ability
-	for _, e := range effects {
-		e.apply(c)
+	for i, e := range effects {
+		e.apply(&Ctx{
+			G: g, Controller: it.Controller, Source: it.Source, Targets: it.Targets,
+			EventPlayer: it.EventPlayer, EventAmount: it.EventAmount, EventStack: it.EventStack, EventObject: it.EventObject,
+			ref: it.Ability, mode: it.Mode, roll: it.RollResult, effect: i,
+		})
 	}
-	g.resolving = AbilityRef{}
 }
 
 // lootPlaysFor is how many loot plays p has right now.
 func (g *Game) lootPlaysFor(p PlayerID) int {
 	n := g.Players[p].ExtraLootPlays
 	if p == g.Turn.Active {
-		n += g.Turn.LootPlays
+		n += g.Turn.LootPlays + max(g.bonus(StatLootPlays, p, 0)-g.Turn.BonusLootUsed, 0)
 	}
 	return n
 }
@@ -215,5 +358,67 @@ func (g *Game) useLootPlay(p PlayerID) {
 		g.Turn.LootPlays--
 		return
 	}
+	if p == g.Turn.Active && g.bonus(StatLootPlays, p, 0) > g.Turn.BonusLootUsed {
+		g.Turn.BonusLootUsed++
+		return
+	}
 	g.Players[p].ExtraLootPlays--
+}
+
+// AbilitiesOf lists the abilities an object can use, in the order an
+// Activate intent's Choice counts them: its card's abilities, or, for a
+// card that borrows them (Placebo), every ↷ ability of the other
+// non-eternal items in play.
+func (g *Game) AbilitiesOf(id ObjectID) []AbilityRef {
+	card := g.CardOf(id)
+	if !g.def(id).CopiesTapAbilities {
+		refs := make([]AbilityRef, len(g.def(id).Abilities))
+		for i := range refs {
+			refs[i] = AbilityRef{Card: card, Index: i}
+		}
+		return refs
+	}
+	var refs []AbilityRef
+	for _, pl := range g.Players {
+		for _, other := range pl.InPlay {
+			if other == id || g.Object(other).Role != RoleItem || g.Eternal(other) {
+				continue
+			}
+			for i, a := range g.def(other).Abilities {
+				if a.Kind == Activated && hasTap(a) {
+					refs = append(refs, AbilityRef{Card: g.CardOf(other), Index: i})
+				}
+			}
+		}
+	}
+	return refs
+}
+
+func hasTap(a Ability) bool {
+	for _, c := range a.Costs {
+		if _, ok := c.(tapCost); ok {
+			return true
+		}
+	}
+	return false
+}
+
+// afterEventAbility sends an event to discard once its ability is done,
+// after what the ability queued (R-CARD-15).
+func (g *Game) afterEventAbility(src ObjectID) {
+	if o := g.Object(src); o.Role == RoleEvent && o.Zone.Kind == ZoneInPlay {
+		if g.Object(src).Zone.Slot == MonsterSlot && !g.def(src).Curse && !g.waitingRoll(src) {
+			g.enqueue(Action{Kind: ActFinishEvent, Player: NoPlayer, Object: src})
+		}
+	}
+}
+
+// waitingRoll: a roll or roll result of this source is still on the stack.
+func (g *Game) waitingRoll(src ObjectID) bool {
+	for _, it := range g.Stack {
+		if it.Source == src && (it.Kind == StackRoll || it.RollFor.Card != "") {
+			return true
+		}
+	}
+	return false
 }

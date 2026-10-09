@@ -15,3 +15,4 @@ These pages describe the current code. Decisions live in `docs/architecture/` (A
 * [Situation payload](Situation-payload) — sandbox situations and rules tests.
 * [Fuzzing](Fuzzing) — random games that check the engine state.
 * [Rules engine](Rules-engine) — map of the engine code and its main rules.
+* [Adding a card](Adding-a-card) — write and test a card, or a whole fan set.

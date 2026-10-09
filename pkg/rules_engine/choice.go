@@ -14,6 +14,11 @@ const (
 	ChoosePurchase                          // a shop item or the treasure deck (R-SHOP-02)
 	ChooseTarget                            // a target for an ability (R-ABIL-04)
 	ChooseTriggerOrder                      // which trigger goes on the stack next (R-ABIL-15)
+	ChooseMode                              // a "choose one-" option (R-ABIL-04)
+	ChooseAnswer                            // a question while an ability resolves (R-ABIL-05)
+	ChooseStartingItem                      // a start-of-game choice, e.g. Eden (R-SETUP-09)
+	ChooseCursed                            // who gains a curse (R-ABIL-20)
+	ChooseLowest                            // which card goes to the very bottom of a deck
 )
 
 // Choice is an open question to one player. Options are listed in the
@@ -31,14 +36,23 @@ type Choice struct {
 	// Targets are the target options of ChooseTarget; one more option
 	// after them means "cancel".
 	Targets []Chosen `json:"targets,omitempty"`
-	// Indexes are pending-trigger indexes for ChooseTriggerOrder.
+	// Indexes are pending-trigger indexes for ChooseTriggerOrder, or
+	// mode indexes for ChooseMode (one more option means "cancel").
 	Indexes []int `json:"indexes,omitempty"`
+	// Ask is the effect waiting for this answer (ChooseAnswer).
+	Ask *Asking `json:"ask,omitempty"`
+	// Question is the text of the question, for display.
+	Question string `json:"question,omitempty"`
+	// Owner is whose death penalty a penalty choice is for; To, if not
+	// NoPlayer, gains the discarded loot card instead (Shadow).
+	Owner PlayerID `json:"owner"`
+	To    PlayerID `json:"to"`
 }
 
 // ask opens a choose prompt.
 func (g *Game) ask(c Choice, labels []string) {
 	g.Choice = &c
-	g.Waiting = Prompt{Kind: PromptChoose, Player: c.Player, Options: labels, Purpose: c.Purpose}
+	g.Waiting = Prompt{Kind: PromptChoose, Player: c.Player, Options: labels, Purpose: c.Purpose, Text: c.Question}
 }
 
 // answer carries out the chosen option of the open choice.
@@ -57,13 +71,27 @@ func (g *Game) answer(i int) {
 	case ChooseMonsterSlot:
 		g.placeRevealed(c.Slots[i])
 	case ChoosePenaltyItem:
-		g.destroyItem(c.Player, c.Objects[i])
+		g.destroyItem(c.Owner, c.Objects[i])
 	case ChoosePenaltyLoot:
-		g.discardFromHand(c.Player, c.Objects[i])
+		if c.To != NoPlayer {
+			g.GiveHandCard(c.Owner, c.To, c.Objects[i])
+		} else {
+			g.discardFromHand(c.Owner, c.Objects[i])
+		}
 	case ChooseTarget:
 		g.chooseTarget(c, i)
 	case ChooseTriggerOrder:
 		g.pushTrigger(c.Indexes[i])
+	case ChooseMode:
+		g.chooseMode(c, i)
+	case ChooseAnswer:
+		g.answerAsk(c, i)
+	case ChooseStartingItem:
+		g.chooseStartingItem(c, i)
+	case ChooseLowest:
+		g.chooseLowest(c, i)
+	case ChooseCursed:
+		g.giveCurse(c.Objects[0], PlayerID(c.Slots[i]))
 	case ChoosePurchase:
 		if c.Deck && i == len(c.Objects) {
 			g.purchase(0, true)

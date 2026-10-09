@@ -1,22 +1,33 @@
 package rulesengine
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+)
 
 // ActionKind is a change to the game that cards may rewrite (A-05).
 type ActionKind int
 
 // The action kinds; more come with combat and effect blocks.
 const (
-	ActGainCents      ActionKind = iota // R-MECH-36
-	ActLoseCents                        // R-MECH-42
-	ActLoot                             // R-CARD-06
-	ActGainTreasure                     // R-CARD-02
-	ActBecomeSoul                       // a dead monster becomes a soul (R-DEATH-08)
-	ActDiscardObject                    // put an object into its discard (R-ZONE-06)
-	ActRefillSlots                      // R-SHOP-06
-	ActPenaltyItem                      // death penalty: destroy an item (R-DEATH-14)
-	ActPenaltyLoot                      // death penalty: discard a loot card
-	ActDeactivateTaps                   // death penalty: deactivate ↷ objects
+	ActGainCents          ActionKind = iota // R-MECH-36
+	ActLoseCents                            // R-MECH-42
+	ActLoot                                 // R-CARD-06
+	ActGainTreasure                         // R-CARD-02
+	ActBecomeSoul                           // a dead monster becomes a soul (R-DEATH-08)
+	ActDiscardObject                        // put an object into its discard (R-ZONE-06)
+	ActRefillSlots                          // R-SHOP-06
+	ActPenaltyItem                          // death penalty: destroy an item (R-DEATH-14)
+	ActPenaltyLoot                          // death penalty: discard a loot card
+	ActDeactivateTaps                       // death penalty: deactivate ↷ objects
+	ActAsk                                  // an Ask effect asks its questions (R-ABIL-05)
+	ActStealCents                           // Player steals Amount¢ From a player (R-MECH-38)
+	ActChooseStartingItem                   // Eden-style start-of-game choice (R-SETUP-09)
+	ActPenaltyDone                          // the death penalty is paid
+	ActAddCounters                          // put Amount counters on Object (Bum-bo levels)
+	ActGiveCurse                            // the active player gives the curse Object to a player
+	ActFinishEvent                          // an event whose ability resolved goes to discard
+	ActRewardsDone                          // a dead monster's rewards are given (R-DEATH-07)
 )
 
 // Action is a pending change. It sits in the queue, may be rewritten by
@@ -26,6 +37,8 @@ type Action struct {
 	Player PlayerID   `json:"player"`
 	Object ObjectID   `json:"object,omitempty"`
 	Amount int        `json:"amount"`
+	From   PlayerID   `json:"from,omitempty"` // the other player, e.g. of a steal
+	Ask    *Asking    `json:"ask,omitempty"`
 	// Applied lists replacements already applied; each applies once
 	// (R-ABIL-32).
 	Applied []ReplacementRef `json:"applied,omitempty"`
@@ -64,7 +77,7 @@ func (g *Game) replacementsFor(a Action) []ReplacementRef {
 	var out []ReplacementRef
 	for _, id := range g.inPlay() {
 		o := g.Object(id)
-		def, ok := g.cards.find(o.Card)
+		def, ok := g.cards.find(g.CardOf(id))
 		if !ok {
 			continue
 		}
@@ -88,7 +101,7 @@ func appliedAlready(a Action, ref ReplacementRef) bool {
 }
 
 func (g *Game) replacement(ref ReplacementRef) Replacement {
-	def, ok := g.cards.find(g.Object(ref.Object).Card)
+	def, ok := g.cards.find(g.CardOf(ref.Object))
 	if !ok || ref.Index >= len(def.Replacements) {
 		panic(fmt.Sprintf("rulesengine: no replacement %+v", ref))
 	}
@@ -146,15 +159,35 @@ func (g *Game) perform(a Action) {
 		g.Players[a.Player].Cents -= n
 		g.emit(Event{Kind: EvLostCents, Player: a.Player, Amount: n})
 	case ActLoot:
-		g.loot(a.Player, a.Amount)
+		n := a.Amount
+		if g.bonus(StatLootDouble, a.Player, 0) > 0 {
+			n *= 2 // Two of Clubs; twice still only doubles (S-RU FAQ)
+		}
+		if g.Compost {
+			g.Compost = false
+			g.lootFromDiscard(a.Player, n)
+			return
+		}
+		g.loot(a.Player, n)
+	case ActAddCounters:
+		if o := g.Object(a.Object); o.Zone.Kind == ZoneInPlay {
+			o.addCounters("", a.Amount)
+			g.emit(Event{Kind: EvCounters, Player: o.Controller, Object: a.Object, Card: o.Card, Amount: a.Amount})
+		}
 	case ActGainTreasure:
 		g.gainTreasure(a.Player, a.Amount)
 	case ActBecomeSoul:
+		if g.Object(a.Object).Zone.Kind == ZoneGone {
+			return // moved by an effect already
+		}
 		nid := g.move(a.Object, Zone{Kind: ZoneInPlay}, a.Player)
 		g.Object(nid).Role = RoleSoul
 		g.Players[a.Player].InPlay = append(g.Players[a.Player].InPlay, nid)
 		g.emit(Event{Kind: EvGainedSoul, Player: a.Player, Object: nid, Card: g.Object(nid).Card})
 	case ActDiscardObject:
+		if g.Object(a.Object).Zone.Kind == ZoneGone {
+			return
+		}
 		if deck, ok := g.kindOf(a.Object).Deck(); ok {
 			g.discard(a.Object, deck)
 		}
@@ -163,16 +196,20 @@ func (g *Game) perform(a Action) {
 	case ActPenaltyItem:
 		var items []ObjectID
 		for _, id := range g.Players[a.Player].InPlay {
-			if g.Object(id).Role == RoleItem && !g.def(id).Eternal {
+			if g.Object(id).Role == RoleItem && !g.Eternal(id) {
 				items = append(items, id)
 			}
 		}
 		if len(items) > 0 {
-			g.ask(Choice{Purpose: ChoosePenaltyItem, Player: a.Player, Rule: "R-DEATH-14", Objects: items}, g.labels(items))
+			chooser := a.Player
+			if s := g.shadowOf(a.Player); s != NoPlayer {
+				chooser = s
+			}
+			g.ask(Choice{Purpose: ChoosePenaltyItem, Player: chooser, Owner: a.Player, To: NoPlayer, Rule: "R-DEATH-14", Objects: items}, g.labels(items))
 		}
 	case ActPenaltyLoot:
 		if hand := g.Players[a.Player].Hand; len(hand) > 0 {
-			g.ask(Choice{Purpose: ChoosePenaltyLoot, Player: a.Player, Rule: "R-DEATH-14", Objects: append([]ObjectID(nil), hand...)}, g.labels(hand))
+			g.ask(Choice{Purpose: ChoosePenaltyLoot, Player: a.Player, Owner: a.Player, To: g.shadowOf(a.Player), Rule: "R-DEATH-14", Objects: append([]ObjectID(nil), hand...)}, g.labels(hand))
 		}
 	case ActDeactivateTaps:
 		pl := g.Players[a.Player]
@@ -183,6 +220,29 @@ func (g *Game) perform(a Action) {
 			}
 		}
 		g.emit(Event{Kind: EvDeactivated, Player: a.Player})
+	case ActAsk:
+		g.continueAsk(a.Ask)
+	case ActStealCents:
+		n := min(a.Amount, g.Players[a.From].Cents)
+		g.Players[a.From].Cents -= n
+		g.Players[a.Player].Cents += n
+		g.emit(Event{Kind: EvStole, Player: a.Player, Amount: n, Text: strconv.Itoa(int(a.From))})
+	case ActChooseStartingItem:
+		g.askStartingItem(a.Player, a.Amount)
+	case ActGiveCurse:
+		g.askCurseTarget(a.Object)
+	case ActRewardsDone:
+		before := len(g.PendingTriggers)
+		g.emit(Event{Kind: EvRewardsGained, Player: a.Player, Object: a.Object, Card: g.Object(a.Object).Card, Prev: a.Object})
+		if len(g.PendingTriggers) > before {
+			g.push(StackItem{Kind: StackDeathStep, Controller: NoPlayer, Label: "soul", Target: Target{Object: a.Object}, Amount: stepSoul})
+		} else {
+			g.soulStep(a.Object)
+		}
+	case ActFinishEvent:
+		g.finishEvent(a.Object)
+	case ActPenaltyDone:
+		g.emit(Event{Kind: EvPenaltyPaid, Player: a.Player})
 	}
 }
 
@@ -195,8 +255,7 @@ func (g *Game) gainTreasure(p PlayerID, n int) {
 		}
 		nid := g.move(id, Zone{Kind: ZoneInPlay}, p)
 		o := g.Object(nid)
-		o.Role, o.Charged = RoleItem, true
-		g.Players[p].InPlay = append(g.Players[p].InPlay, nid)
+		g.enterAsItem(p, nid)
 		g.emit(Event{Kind: EvGainedTreasure, Player: p, Object: nid, Card: o.Card})
 	}
 }

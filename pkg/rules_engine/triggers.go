@@ -55,11 +55,92 @@ func WhenThisIsDestroyed() Trigger {
 	}}
 }
 
+// WhenYouDie triggers when the controller dies, before the penalty
+// (R-DEATH-13).
+func WhenYouDie() Trigger {
+	return Trigger{On: EvDied, Match: func(g *Game, self ObjectID, e Event) bool {
+		return e.Player != NoPlayer && e.Player == g.Object(self).Controller
+	}}
+}
+
+// WhenThisDies triggers when this monster dies; "when this dies"
+// triggers resolve before its rewards (R-DEATH-05). c.Source is the
+// monster as it was; c.EventObject is the dead card, until it becomes a
+// soul or goes to discard.
+func WhenThisDies() Trigger {
+	return Trigger{On: EvDied, Match: func(_ *Game, self ObjectID, e Event) bool { return e.Prev == self }}
+}
+
+// AfterThisRewards triggers after the active player gained this dead
+// monster's rewards (R-DEATH-07).
+func AfterThisRewards() Trigger {
+	return Trigger{On: EvRewardsGained, Match: func(_ *Game, self ObjectID, e Event) bool {
+		return e.Object == self
+	}}
+}
+
+// WhenAPlayerDies triggers when any player dies, before the penalty
+// (R-DEATH-13).
+func WhenAPlayerDies() Trigger {
+	return Trigger{On: EvDied, Match: func(_ *Game, _ ObjectID, e Event) bool { return e.Player != NoPlayer }}
+}
+
+// AfterYourDeathPenalty triggers when the controller has paid the death
+// penalty: "each time you die, after paying penalties".
+func AfterYourDeathPenalty() Trigger {
+	return Trigger{On: EvPenaltyPaid, Match: func(g *Game, self ObjectID, e Event) bool {
+		return e.Player == g.Object(self).Controller
+	}}
+}
+
+// WhenYouWouldTakeDamage triggers when damage aimed at the controller
+// goes on the stack; it resolves before the damage.
+func WhenYouWouldTakeDamage() Trigger {
+	return Trigger{On: EvDamagePending, Match: func(g *Game, self ObjectID, e Event) bool {
+		return e.Player != NoPlayer && e.Player == g.Object(self).Controller
+	}}
+}
+
+// WhenYouWouldDie triggers when the controller's death goes on the
+// stack; it resolves before the death.
+func WhenYouWouldDie() Trigger {
+	return Trigger{On: EvDeathPending, Match: func(g *Game, self ObjectID, e Event) bool {
+		return e.Player != NoPlayer && e.Player == g.Object(self).Controller
+	}}
+}
+
+// WhenARollWouldBe triggers when a player's roll would resolve as n
+// (R-DICE-05): "each time a player would roll a 1". c.EventStack is the
+// roll; changing it makes it try again.
+func WhenARollWouldBe(n int) Trigger {
+	return Trigger{On: EvRollWouldResolve, Match: func(_ *Game, _ ObjectID, e Event) bool {
+		return e.Amount == n && e.Player != NoPlayer
+	}}
+}
+
+// WhenThisEntersPlay triggers when this object enters play.
+func WhenThisEntersPlay() Trigger {
+	return Trigger{On: EvEnteredPlay, Match: func(_ *Game, self ObjectID, e Event) bool { return e.Object == self }}
+}
+
+// WhenYouTakeDamage triggers each time the controller takes damage.
+func WhenYouTakeDamage() Trigger {
+	return Trigger{On: EvDamaged, Match: func(g *Game, self ObjectID, e Event) bool {
+		return e.Player != NoPlayer && e.Object == 0 && e.Player == g.Object(self).Controller
+	}}
+}
+
 // PendingTrigger waits to go on the stack (R-ABIL-14).
 type PendingTrigger struct {
 	Ability    AbilityRef `json:"ability"`
 	Source     ObjectID   `json:"source"`
 	Controller PlayerID   `json:"controller"`
+	// On, EventPlayer and EventAmount describe the event that triggered it.
+	On          EventKind `json:"on"`
+	EventPlayer PlayerID  `json:"event_player"`
+	EventAmount int       `json:"event_amount,omitempty"`
+	EventStack  int       `json:"event_stack,omitempty"`
+	EventObject ObjectID  `json:"event_object,omitempty"`
 }
 
 // collectTriggers finds triggered abilities that match an event. Objects
@@ -67,15 +148,15 @@ type PendingTrigger struct {
 // "when this is destroyed" still sees itself.
 func (g *Game) collectTriggers(e Event) {
 	check := func(id ObjectID) {
-		o := g.Object(id)
-		def, ok := g.cards.find(o.Card)
+		def, ok := g.cards.find(g.CardOf(id))
 		if !ok {
 			return
 		}
 		for i, a := range def.Abilities {
 			if a.Kind == Triggered && a.Trigger.On == e.Kind && a.Trigger.Match != nil && a.Trigger.Match(g, id, e) {
 				g.PendingTriggers = append(g.PendingTriggers, PendingTrigger{
-					Ability: AbilityRef{Card: o.Card, Index: i}, Source: id, Controller: o.Controller,
+					Ability: AbilityRef{Card: g.CardOf(id), Index: i}, Source: id, Controller: g.abilityController(id),
+					On: e.Kind, EventPlayer: e.Player, EventAmount: e.Amount, EventStack: e.StackID, EventObject: e.Object,
 				})
 			}
 		}
@@ -137,6 +218,7 @@ func (g *Game) pushTrigger(i int) {
 	g.push(StackItem{
 		Kind: StackTrigger, Controller: t.Controller, Source: t.Source, Card: t.Ability.Card,
 		Ability: t.Ability, Label: g.abilityText(t.Ability),
+		EventPlayer: t.EventPlayer, EventAmount: t.EventAmount, EventStack: t.EventStack, EventObject: t.EventObject,
 	})
 }
 
@@ -153,4 +235,18 @@ func (g *Game) abilityText(ref AbilityRef) string {
 		return string(ref.Card) + ": " + t
 	}
 	return string(ref.Card)
+}
+
+// abilityController controls an object's triggered abilities: its
+// controller, or the active player for monster cards ("you" on a monster
+// card is the active player, R-CARD-10).
+func (g *Game) abilityController(id ObjectID) PlayerID {
+	o := g.Object(id)
+	if o.Controller != NoPlayer {
+		return o.Controller
+	}
+	if k := g.kindOf(id); k == MonsterCard || k == EventCard {
+		return g.Turn.Active
+	}
+	return NoPlayer
 }

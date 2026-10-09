@@ -121,6 +121,7 @@ Steps 9–14 can be reordered after the MVP.
 3. `README.txt` and wiki page for OS warnings.
 4. Stable app identity; no code signing.
 5. Ideas: B-03 – B-05, L-03.
+6. Card rulings from Yuggy and Discord become tests, before the play-test.
 
 ## 9. Spectators
 

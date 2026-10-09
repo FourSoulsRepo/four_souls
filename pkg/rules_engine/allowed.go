@@ -25,7 +25,7 @@ func (g *Game) Allowed(p PlayerID) []Intent {
 			try(Intent{Player: p, Kind: IntentPlayLoot, Objects: []ObjectID{id}})
 		}
 		for _, id := range g.controlled(p) {
-			for i := range g.def(id).Abilities {
+			for i := range g.AbilitiesOf(id) {
 				try(Intent{Player: p, Kind: IntentActivate, Objects: []ObjectID{id}, Choice: i})
 			}
 		}

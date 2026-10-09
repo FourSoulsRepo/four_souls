@@ -277,9 +277,9 @@ func (g *Game) settle(choices []string) ([]Event, error) {
 			if len(choices) == 0 {
 				return out, fmt.Errorf("situation: a choice is needed, options %v", w.Options)
 			}
-			i := -1
+			i := -1 // the first option with the label
 			for j, o := range w.Options {
-				if o == choices[0] {
+				if o == choices[0] && i < 0 {
 					i = j
 				}
 			}
@@ -339,4 +339,27 @@ func containsRef(list []CardRef, r CardRef) bool {
 		}
 	}
 	return false
+}
+
+// BuildTable builds a game from a situation setup: the active player is
+// in the open action phase. For card tests, the sandbox and card authors.
+func BuildTable(setup SituationSetup, sets ...CardSet) (*Game, error) {
+	names := make([]string, len(sets))
+	for i, set := range sets {
+		names[i] = set.Name
+	}
+	return Situation{Sets: names, Setup: setup}.build(sets)
+}
+
+// Settle answers choose prompts with the given option labels, in order,
+// and passes priority until the stack is empty and no attack or purchase
+// is going on.
+func (g *Game) Settle(choices ...string) ([]Event, error) {
+	return g.settle(choices)
+}
+
+// ForceRolls makes the next dice rolls come out as given. Only for
+// tests and the sandbox; a real game never calls it.
+func (g *Game) ForceRolls(rolls ...int) {
+	g.forcedRolls = append(g.forcedRolls, rolls...)
 }

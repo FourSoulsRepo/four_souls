@@ -23,8 +23,23 @@ type Turn struct {
 	LootPlays   int      `json:"loot_plays"`
 	Attacks     int      `json:"attacks"`
 	Purchases   int      `json:"purchases"`
-	EndDeclared bool     `json:"end_declared,omitempty"`
-	DeathEnd    bool     `json:"death_end,omitempty"` // the active player died (R-DEATH-16)
+	AttackRolls int      `json:"attack_rolls,omitempty"` // attack rolls resolved this turn
+	// Bonus*Used count loot plays, attacks and purchases taken from
+	// static bonuses ("you may attack an additional time on your turn").
+	BonusLootUsed      int `json:"bonus_loot_used,omitempty"`
+	BonusAttacksUsed   int `json:"bonus_attacks_used,omitempty"`
+	BonusPurchasesUsed int `json:"bonus_purchases_used,omitempty"`
+	// MustAttack is a monster the active player must attack this turn if
+	// able (Monster Manual).
+	MustAttack ObjectID `json:"must_attack,omitempty"`
+	// MustAttacks is how many more attacks the active player must make;
+	// MustAttackDeck of them on the monster deck.
+	MustAttacks    int `json:"must_attacks,omitempty"`
+	MustAttackDeck int `json:"must_attack_deck,omitempty"`
+	// DeckAttacks are extra attacks only on the monster deck.
+	DeckAttacks int  `json:"deck_attacks,omitempty"`
+	EndDeclared bool `json:"end_declared,omitempty"`
+	DeathEnd    bool `json:"death_end,omitempty"` // the active player died (R-DEATH-16)
 	// entered is true once the current step's automatic work is done.
 	Entered bool `json:"entered,omitempty"`
 }
@@ -139,6 +154,7 @@ func (g *Game) run() {
 		if steps > maxRunSteps {
 			panic("rulesengine: the game does not settle (bug)")
 		}
+		g.checkBonusSouls()
 		if g.checkWin() {
 			return
 		}
@@ -190,7 +206,7 @@ func (g *Game) enterStep() {
 		g.emit(Event{Kind: EvStartOfTurn, Player: p}) // R-TURN-03
 		g.openWindow(p)
 	case StepLoot:
-		g.enqueue(Action{Kind: ActLoot, Player: p, Amount: 1}) // R-TURN-04
+		g.enqueue(Action{Kind: ActLoot, Player: p, Amount: 1 + g.bonus(StatLootStep, p, 0)}) // R-TURN-04
 	case StepLootWindow:
 		g.openWindow(p)
 	case StepAction:
@@ -210,7 +226,20 @@ func (g *Game) enterStep() {
 }
 
 func (g *Game) startNextTurn() {
-	g.Turn = Turn{Active: g.next(g.Turn.Active), Number: g.Turn.Number + 1, Step: StepRecharge}
+	next := g.next(g.Turn.Active)
+	if g.ExtraTurn {
+		next, g.ExtraTurn = g.Turn.Active, false
+		g.emit(Event{Kind: EvExtraTurn, Player: next})
+	}
+	for range g.Players {
+		if g.Players[next].SkipTurns == 0 {
+			break
+		}
+		g.Players[next].SkipTurns--
+		g.emit(Event{Kind: EvTurnSkipped, Player: next})
+		next = g.next(next)
+	}
+	g.Turn = Turn{Active: next, Number: g.Turn.Number + 1, Step: StepRecharge}
 	g.emit(Event{Kind: EvTurnStarted, Player: g.Turn.Active, Amount: g.Turn.Number})
 }
 
@@ -237,6 +266,10 @@ func (g *Game) loot(p PlayerID, n int) {
 	}
 }
 
+// DiscardFromHand puts a loot card from p's hand into the loot discard
+// (R-MECH-25).
+func (g *Game) DiscardFromHand(p PlayerID, id ObjectID) { g.discardFromHand(p, id) }
+
 func (g *Game) discardFromHand(p PlayerID, id ObjectID) {
 	g.Players[p].Hand = remove(g.Players[p].Hand, id)
 	nid := g.discard(id, LootDeck)
@@ -249,9 +282,19 @@ func (g *Game) healAll() {
 		g.Players[i].Damage = 0
 		g.Players[i].Dead = false // alive again (R-DEATH-19)
 		g.Players[i].ExtraLootPlays = 0
+		g.Players[i].TimesDamaged = 0
 	}
 	for _, id := range g.inPlay() {
-		g.Object(id).Damage = 0
+		g.Object(id).Damage, g.Object(id).HitsThisTurn = 0, 0
+	}
+	g.Boosts, g.Shields = nil, nil // till end of turn effects end
+	for _, pl := range g.Players {
+		for _, id := range pl.InPlay {
+			if o := g.Object(id); o.CopyThisTurn {
+				o.CopyOf, o.CopyThisTurn = "", false
+			}
+		}
+		g.Players[pl.ID].CopyNextLoot = false
 	}
 	g.emit(Event{Kind: EvHealed, Player: NoPlayer})
 }
@@ -289,4 +332,12 @@ func (g *Game) checkWin() bool {
 		g.emit(Event{Kind: EvGameWon, Player: w})
 	}
 	return true
+}
+
+// PlayerAfter is the player to p's left: next in turn order.
+func (g *Game) PlayerAfter(p PlayerID) PlayerID { return g.next(p) }
+
+// PlayerBefore is the player to p's right: previous in turn order.
+func (g *Game) PlayerBefore(p PlayerID) PlayerID {
+	return PlayerID((int(p) + len(g.Players) - 1) % len(g.Players))
 }

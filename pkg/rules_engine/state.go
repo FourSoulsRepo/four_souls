@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"hash/fnv"
+	"maps"
 )
 
 // PlayerID is a seat; seats are in turn order (R-TURN-01).
@@ -89,6 +90,70 @@ type Object struct {
 	Charged    bool      `json:"charged"`
 	Damage     int       `json:"damage,omitempty"`
 	Counters   []Counter `json:"counters,omitempty"`
+	// Eternal is set when an effect makes the object eternal, e.g. Eden's
+	// starting item (R-ABIL-18).
+	Eternal bool `json:"eternal,omitempty"`
+	// CopyOf is the card this object is a copy of; CopyThisTurn ends the
+	// copy at the end of the turn.
+	CopyOf       CardRef `json:"copy_of,omitempty"`
+	CopyThisTurn bool    `json:"copy_this_turn,omitempty"`
+	// KilledBy is who dealt the damage that brought it to 0 HP, plus 1
+	// (0: nobody yet); KilledOn is the attack roll, if it was combat.
+	KilledBy int `json:"killed_by,omitempty"`
+	KilledOn int `json:"killed_on,omitempty"`
+	// DoubleRewards doubles a dying monster's rewards (Dinga).
+	DoubleRewards bool `json:"double_rewards,omitempty"`
+	// HitsThisTurn counts the times it took damage this turn.
+	HitsThisTurn int `json:"hits_this_turn,omitempty"`
+}
+
+// Killer is the player who brought the object to 0 HP, or NoPlayer.
+func (o *Object) Killer() PlayerID { return PlayerID(o.KilledBy - 1) }
+
+// CountersOf returns how many counters named name the object has.
+func (o *Object) CountersOf(name string) int {
+	for _, c := range o.Counters {
+		if c.Name == name {
+			return c.Count
+		}
+	}
+	return 0
+}
+
+// addCounters adds n counters (or removes, if negative), never below 0.
+func (o *Object) addCounters(name string, n int) {
+	for i, c := range o.Counters {
+		if c.Name == name {
+			o.Counters[i].Count = max(c.Count+n, 0)
+			if o.Counters[i].Count == 0 {
+				o.Counters = append(o.Counters[:i], o.Counters[i+1:]...)
+			}
+			return
+		}
+	}
+	if n > 0 {
+		o.Counters = append(o.Counters, Counter{Name: name, Count: n})
+	}
+}
+
+// Shield prevents damage to Target: the whole next instance, or up to
+// Amount of it when Amount > 0 (R-MECH-46). It lasts till end of turn.
+type Shield struct {
+	Target Target `json:"target"`
+	Amount int    `json:"amount,omitempty"`
+	// Cap > 0 reduces the next instance to at most Cap instead.
+	Cap int `json:"cap,omitempty"`
+	// Source is the object that made the shield (Host Hat reacts).
+	Source ObjectID `json:"source,omitempty"`
+}
+
+// Boost is a "till end of turn" stat change (R-TURN-13). It applies to
+// Object, or to Player when Object is 0.
+type Boost struct {
+	Stat   Stat     `json:"stat"`
+	Player PlayerID `json:"player"`
+	Object ObjectID `json:"object,omitempty"`
+	Amount int      `json:"amount"`
 }
 
 // Counter is a counter on an object; Name is "" for a generic counter
@@ -108,6 +173,14 @@ type Player struct {
 	InPlay []ObjectID `json:"in_play"`
 	Damage int        `json:"damage,omitempty"` // tied to the player (R-MECH-19)
 	Dead   bool       `json:"dead,omitempty"`   // died this turn (R-DEATH-17)
+	// CopyNextLoot: the next non-trinket loot p plays this turn is
+	// copied (Blank Card).
+	CopyNextLoot bool `json:"copy_next_loot,omitempty"`
+	// SkipTurns: the player skips this many of their next turns (Famine).
+	SkipTurns int `json:"skip_turns,omitempty"`
+	// TimesDamaged counts this turn's damage ("the first time you take
+	// damage each turn").
+	TimesDamaged int `json:"times_damaged,omitempty"`
 	// ExtraLootPlays come from abilities and last until the turn ends.
 	ExtraLootPlays int `json:"extra_loot_plays,omitempty"`
 }
@@ -150,6 +223,15 @@ type Game struct {
 	Activating *Activation `json:"activating,omitempty"`
 	// PendingTriggers wait to go on the stack (R-ABIL-14).
 	PendingTriggers []PendingTrigger `json:"pending_triggers,omitempty"`
+	// Boosts and Shields last till end of turn (R-TURN-13). A shield
+	// prevents the next damage its target would take (R-MECH-46).
+	// Compost: the next loot comes from the top of the loot discard.
+	Compost bool `json:"compost,omitempty"`
+	// ExtraTurn: the active player takes another turn after this one.
+	ExtraTurn bool `json:"extra_turn,omitempty"`
+
+	Boosts  []Boost  `json:"boosts,omitempty"`
+	Shields []Shield `json:"shields,omitempty"`
 
 	// Stack: the last item is on top (R-STACK-02).
 	Stack    []StackItem `json:"stack"`
@@ -167,12 +249,15 @@ type Game struct {
 	// when a saved game is loaded.
 	Sets []string `json:"sets"`
 
+	// AskSeq numbers Ask effects; asks holds the waiting ones (not saved:
+	// see Asking.Key).
+	AskSeq int `json:"ask_seq,omitempty"`
+	asks   map[int]askEffect
+
 	cards  cardIndex
 	events []Event
 	// forcedRolls lets tests decide dice results; never set in games.
 	forcedRolls []int
-	// resolving is the ability whose effects are running.
-	resolving AbilityRef
 }
 
 // newObject adds a card as a new object and returns its ID.
@@ -210,6 +295,7 @@ func (g *Game) Clone() (*Game, error) {
 		return nil, fmt.Errorf("clone: %w", err)
 	}
 	c.cards = g.cards // definitions are not part of the saved state
+	c.asks = maps.Clone(g.asks)
 	return &c, nil
 }
 
@@ -223,15 +309,22 @@ func (g *Game) Checksum() (uint64, error) {
 	return h.Sum64(), nil
 }
 
-// inPlay lists the objects in play in a fixed order: each player's
-// character and play area in seat order, then the top of every slot.
+// inPlay lists the objects in play whose abilities work, in a fixed
+// order: each player's character and play area in seat order, then the
+// top of every monster and room slot. Souls are left out: a soul only
+// counts for its value (R-CARD-18).
 func (g *Game) inPlay() []ObjectID {
 	var out []ObjectID
 	for _, pl := range g.Players {
 		out = append(out, pl.Character)
-		out = append(out, pl.InPlay...)
+		for _, id := range pl.InPlay {
+			if g.Object(id).Role != RoleSoul {
+				out = append(out, id)
+			}
+		}
 	}
-	for _, rows := range [][]Slot{g.Shop, g.Monsters, g.Rooms} {
+	// Shop items' abilities do not work in the shop (R-CARD-05).
+	for _, rows := range [][]Slot{g.Monsters, g.Rooms} {
 		for _, s := range rows {
 			if top, ok := s.TopOf(); ok && g.Object(top).Zone.Kind == ZoneInPlay {
 				out = append(out, top)
