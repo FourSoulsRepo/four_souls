@@ -45,6 +45,9 @@ const (
 	TypeSetup = "setup" // server → client: bans and picks before the game
 	TypeBan   = "ban"   // client → server: ban a character on your turn
 	TypePick  = "pick"  // client → server: pick one of your offered characters
+
+	// Turn flow (6.7).
+	TypeSkipAll = "skip_all" // client → server: pass on the visible stack (N-06)
 )
 
 // Envelope wraps every message. ID is set by the client on requests;
@@ -98,6 +101,16 @@ type Update struct {
 	View    engine.GameView `json:"view"`
 	Allowed []engine.Intent `json:"allowed"`
 	Seats   []Seat          `json:"seats"`
+	// Deadline is when the response timer answers for the waiting player,
+	// Unix ms; 0: no timer (N-07).
+	Deadline int64 `json:"deadline,omitempty"`
+	// SkipAll is set while this player skips the visible stack (N-06).
+	SkipAll bool `json:"skip_all,omitempty"`
+}
+
+// SkipAll turns "skip all" on or off (N-06).
+type SkipAll struct {
+	On bool `json:"on"`
 }
 
 // Seat is one seat at the table: who sits there and whether they are
@@ -148,6 +161,9 @@ type Options struct {
 	HostBans  []engine.CardRef `json:"host_bans,omitempty"`  // never dealt (GS-02)
 	// NoBonusSouls plays without the 3 bonus souls (R-SETUP-06).
 	NoBonusSouls bool `json:"no_bonus_souls,omitempty"`
+	// ResponseTimer is seconds to answer a prompt: 0 is off, else at
+	// least 60; an allowance for animations is added (N-07).
+	ResponseTimer int `json:"response_timer,omitempty"`
 }
 
 // Ban is one banned character; Seat is -1 for the host's list.

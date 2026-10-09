@@ -95,7 +95,14 @@ func (p *player) failure() string {
 
 func startHub(t *testing.T) *Hub {
 	t.Helper()
+	return startHubWith(t, time.Second)
+}
+
+// startHubWith runs a hub whose timers count second as one second.
+func startHubWith(t *testing.T, second time.Duration) *Hub {
+	t.Helper()
 	h := NewHub()
+	h.second = second
 	ctx, cancel := context.WithCancel(context.Background())
 	go h.Run(ctx)
 	t.Cleanup(cancel)

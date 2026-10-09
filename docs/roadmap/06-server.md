@@ -78,7 +78,7 @@ Ideas: N-01 – N-09, N-11, CD-02, CD-03, GS-01 – GS-06, GS-09, GS-10, A-12, R
 3. Done when:
    1. Every mode has a server test.
 
-### [ ] 6.7 Turn flow over the network
+### [x] 6.7 Turn flow over the network
 
 1. Goal: responses without stalls.
 2. Tasks:

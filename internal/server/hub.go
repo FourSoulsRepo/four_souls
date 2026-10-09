@@ -115,11 +115,13 @@ type Hub struct {
 	tables  []*table
 	games   []started
 	seq     int
+	// second is one second of the rooms' timers; tests shorten it.
+	second time.Duration
 }
 
 // NewHub makes a lobby with the card sets the engine knows.
 func NewHub() *Hub {
-	return &Hub{in: make(chan hubRequest, 64), done: make(chan struct{}), sets: cards.Sets()}
+	return &Hub{in: make(chan hubRequest, 64), done: make(chan struct{}), sets: cards.Sets(), second: time.Second}
 }
 
 // Connect adds a connection; its first message must be hello.
@@ -382,6 +384,9 @@ func (h *Hub) start(t *table) {
 	}
 	setup := engine.Setup{Seed: seed(), Players: len(t.seats), Sets: setsOf(t.sets), BonusSouls: !t.opts.NoBonusSouls}
 	room, err := NewRoom(setup, t.opts, seats)
+	if err == nil {
+		room.second = h.second
+	}
 	if err != nil {
 		for _, s := range t.seats {
 			s.client.fail(0, protocol.ErrBadSetup, err.Error())

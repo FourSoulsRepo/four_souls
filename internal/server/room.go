@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"slices"
 	"strings"
+	"time"
 
 	"github.com/FourSoulsRepo/four_souls/internal/protocol"
 	engine "github.com/FourSoulsRepo/rules_engine"
@@ -20,6 +21,7 @@ type roomSeat struct {
 	name   string
 	token  string
 	client *Client
+	skip   []int // stack item IDs a "skip all" passes on (N-06); nil: off
 }
 
 type request struct {
@@ -28,6 +30,7 @@ type request struct {
 	leave   bool
 	attach  string // the token of a client coming back
 	timeout int    // a ban turn's timer ran out (its turn number)
+	respond int    // the response timer ran out (its number)
 }
 
 // Room runs one game. Only its goroutine (Run) touches the game. It
@@ -43,6 +46,12 @@ type Room struct {
 	seats   []roomSeat
 	clients []*Client
 	tokens  []string // read by the hub; fixed when the room is made
+
+	// second is one second of the ban and response timers; tests shorten it.
+	second   time.Duration
+	timer    *time.Timer // the response timer (N-07)
+	timerGen int
+	deadline time.Time
 }
 
 // NewRoom prepares a game for seated players; it starts in Run. The
@@ -51,7 +60,7 @@ func NewRoom(setup engine.Setup, opts protocol.Options, seats []roomSeat) (*Room
 	if setup.Players != len(seats) {
 		return nil, fmt.Errorf("server: %d seats for %d players", len(seats), setup.Players)
 	}
-	r := &Room{in: make(chan request, 64), done: make(chan struct{}), setup: setup, opts: opts, seats: seats}
+	r := &Room{in: make(chan request, 64), done: make(chan struct{}), setup: setup, opts: opts, seats: seats, second: time.Second}
 	for i, s := range seats {
 		r.tokens = append(r.tokens, s.token)
 		if s.client != nil {
@@ -82,6 +91,9 @@ func (r *Room) Run(ctx context.Context) {
 		if r.match != nil && r.match.timer != nil {
 			r.match.timer.Stop()
 		}
+		if r.timer != nil {
+			r.timer.Stop()
+		}
 		for _, c := range r.clients {
 			c.conn.Close()
 		}
@@ -109,6 +121,9 @@ func (r *Room) handle(req request) {
 	case req.timeout > 0:
 		r.banTimeout(req.timeout)
 		return
+	case req.respond > 0:
+		r.timeUp(req.respond)
+		return
 	}
 	env, err := protocol.Decode(req.msg)
 	if err != nil {
@@ -124,6 +139,8 @@ func (r *Room) handle(req request) {
 		r.ban(c, env)
 	case protocol.TypePick:
 		r.pick(c, env)
+	case protocol.TypeSkipAll:
+		r.skipAll(c, env)
 	default:
 		c.fail(env.ID, protocol.ErrBadMessage, "not during a game: "+env.Type)
 	}
@@ -176,8 +193,7 @@ func (r *Room) intent(c *Client, env protocol.Envelope) {
 		c.fail(env.ID, protocol.ErrBadMessage, err.Error())
 		return
 	}
-	r.step++
-	r.broadcast(events)
+	r.after(events)
 }
 
 // broadcast sends every client its update; during the setup phase,
@@ -211,9 +227,16 @@ func (r *Room) update(c *Client, events []engine.Event) {
 		v = engine.Viewer{Kind: engine.ViewPlayer, Player: engine.PlayerID(c.seat)}
 		allowed = r.game.Allowed(engine.PlayerID(c.seat))
 	}
-	c.send(protocol.TypeUpdate, 0, protocol.Update{
+	u := protocol.Update{
 		Step: r.step, Events: engine.FilterEvents(events, v), View: r.game.View(v), Allowed: allowed, Seats: r.seatViews(),
-	})
+	}
+	if !r.deadline.IsZero() {
+		u.Deadline = r.deadline.UnixMilli()
+	}
+	if c.seat >= 0 {
+		u.SkipAll = r.seats[c.seat].skip != nil
+	}
+	c.send(protocol.TypeUpdate, 0, u)
 }
 
 // drop forgets a connection; its seat stays for its token.

@@ -10,9 +10,6 @@ import (
 	engine "github.com/FourSoulsRepo/rules_engine"
 )
 
-// banSecond is one second of the ban timer; tests make it shorter.
-var banSecond = time.Second
-
 // Limits of the detailed setup.
 const (
 	maxBanRounds = 3
@@ -72,6 +69,8 @@ func checkOptions(o *protocol.Options, sets []engine.CardSet, players int) error
 		return fmt.Errorf("0 to %d ban rounds", maxBanRounds)
 	case o.BanTimer != 0 && (o.BanTimer < minBanTimer || o.BanTimer > maxBanTimer):
 		return fmt.Errorf("a ban timer is off or %d to %d seconds", minBanTimer, maxBanTimer)
+	case o.ResponseTimer != 0 && (o.ResponseTimer < minResponseTimer || o.ResponseTimer > maxResponseTimer):
+		return fmt.Errorf("a response timer is off or %d to %d seconds (N-07)", minResponseTimer, maxResponseTimer)
 	}
 	all := characters(sets)
 	for _, b := range o.HostBans {
@@ -131,7 +130,7 @@ func (r *Room) startBanTurn() {
 	m.gen++
 	m.end = time.Time{}
 	if m.opts.BanTimer > 0 {
-		d := time.Duration(m.opts.BanTimer) * banSecond
+		d := time.Duration(m.opts.BanTimer) * r.second
 		m.end = time.Now().Add(d)
 		gen := m.gen
 		m.timer = time.AfterFunc(d, func() { r.send(request{timeout: gen}) })
@@ -241,7 +240,8 @@ func (r *Room) play(characters []engine.CardRef) {
 		panic(fmt.Sprintf("server: the checked setup failed: %v", err))
 	}
 	r.game, r.match = g, nil
-	r.broadcast(nil)
+	r.step = -1 // after counts the start as step 0
+	r.after(nil)
 }
 
 // broadcastSetup sends every client the setup state.

@@ -96,10 +96,7 @@ func TestBanRounds(t *testing.T) {
 
 // GS-04: when the ban timer runs out, that player makes no ban.
 func TestBanTimer(t *testing.T) {
-	old := banSecond
-	banSecond = time.Millisecond
-	defer func() { banSecond = old }()
-	h := startHub(t)
+	h := startHubWith(t, time.Millisecond)
 	players := setupTable(t, h, 2, protocol.Options{BanRounds: 1, BanTimer: 5})
 	var s protocol.Setup
 	players[0].next(protocol.TypeSetup, &s)

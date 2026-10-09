@@ -91,6 +91,8 @@ Use options 1, 3, 5 and 10.
    3. Lobby: `list`, `games`, `create`, `join`, `ready`, `leave`, `table`.
    4. A table starts by itself when every seat is taken and everyone is ready.
    5. Match setup: `create` carries options; then `setup`, `ban`, `pick` (6.6).
+   6. Turn flow: `skip_all`; `update` shows the response timer's deadline (6.7).
+   7. The server passes for a player who can only pass (N-05).
 9. Playing over the internet, until a relay exists
    1. A virtual LAN (Tailscale, ZeroTier, Hamachi, Radmin VPN), or port forwarding.
    2. Or a dedicated server on a rented VPS.

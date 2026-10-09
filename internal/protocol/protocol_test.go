@@ -34,6 +34,17 @@ func TestGolden(t *testing.T) {
 		{TypeResync, 3, struct{}{}},
 		{TypeUpdate, 0, Update{Step: 1, Events: []engine.Event{{Kind: engine.EvLooted, Player: 0, Card: "a_dime"}}, View: view, Allowed: g.Allowed(p), Seats: []Seat{{Seat: 0, Name: "Ann", Connected: true}, {Seat: 1, Name: "Bo"}}}},
 		{TypeError, 2, Error{Code: ErrRefused, Message: "no loot play available", Rule: "R-CARD-08"}},
+		{TypeList, 4, struct{}{}},
+		{TypeGames, 4, Games{Games: []GameInfo{{ID: "g1", Host: "Ann", Seats: 4, Taken: 2, Sets: []string{"b2"}}}}},
+		{TypeCreate, 5, Create{Seats: 3, Sets: []string{"b2"}, Options: &Options{Picking: PickDraft, DraftSize: 3, BanRounds: 1, BanTimer: 30, HostBans: []engine.CardRef{"eden"}, ResponseTimer: 90}}},
+		{TypeJoin, 6, Join{Game: "g1"}},
+		{TypeReady, 7, Ready{Ready: true}},
+		{TypeLeave, 8, struct{}{}},
+		{TypeTable, 0, Table{Game: "g1", You: 1, Seats: []Seat{{Seat: 0, Name: "Ann", Connected: true, Ready: true}, {Seat: 1, Name: "Bo", Connected: true}}, Sets: []string{"b2"}, Options: &Options{Picking: PickRandom}}},
+		{TypeSetup, 0, Setup{Phase: PhaseBan, Round: 1, Turn: 0, Pool: []engine.CardRef{"isaac", "cain"}, Banned: []Ban{{Seat: -1, Card: "eden"}}, Deadline: 1760000000000, Seats: []Seat{{Seat: 0, Name: "Ann"}}}},
+		{TypeBan, 9, BanCard{Card: "cain"}},
+		{TypePick, 10, PickCard{Card: "isaac"}},
+		{TypeSkipAll, 11, SkipAll{On: true}},
 	}
 	var got bytes.Buffer
 	for _, m := range messages {
