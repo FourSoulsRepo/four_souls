@@ -91,7 +91,7 @@ Ideas: A-05 – A-08, N-04, LR-04, LR-07, TS-05.
    1. Fake cards built only from blocks pass tests.
    2. Wiki: "Effect blocks" reference.
 
-### [ ] 4.8 Allowed actions and intents
+### [x] 4.8 Allowed actions and intents
 
 1. Goal: what each player may do now (N-04).
 2. Tasks:
