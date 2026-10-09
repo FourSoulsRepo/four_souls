@@ -6,6 +6,7 @@ require github.com/wailsapp/wails/v2 v2.16.0
 
 require (
 	git.sr.ht/~jackmordaunt/go-toast/v2 v2.0.3 // indirect
+	github.com/FourSoulsRepo/card_db v0.0.0
 	github.com/FourSoulsRepo/rules_engine v0.0.0
 	github.com/bep/debounce v1.2.1 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
@@ -37,3 +38,5 @@ require (
 )
 
 replace github.com/FourSoulsRepo/rules_engine => ./pkg/rules_engine
+
+replace github.com/FourSoulsRepo/card_db => ./pkg/card_db

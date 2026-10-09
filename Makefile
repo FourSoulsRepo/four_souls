@@ -11,12 +11,10 @@ ROOT := $(CURDIR)
 .PHONY: test vet build wasm lint screenshots
 
 test:
-	@for m in $(MODULES); do (cd $$m && go test -tags "$(TAGS)" ./...) || exit 1; done
-	@go test -tags "$(TAGS) embed" ./...
+	@for m in $(MODULES); do (cd $$m && go test -tags "$(TAGS)" ./... && go test -tags "$(TAGS) embed" ./...) || exit 1; done
 
 vet:
-	@for m in $(MODULES); do (cd $$m && go vet -tags "$(TAGS)" ./...) || exit 1; done
-	@go vet -tags "$(TAGS) embed" ./...
+	@for m in $(MODULES); do (cd $$m && go vet -tags "$(TAGS)" ./... && go vet -tags "$(TAGS) embed" ./...) || exit 1; done
 
 build:
 	@for m in $(MODULES); do (cd $$m && go build -tags "$(TAGS)" ./...) || exit 1; done
@@ -28,8 +26,7 @@ wasm:
 
 # Strict linters with security rules (PR-03); one config for every module.
 lint:
-	@for m in $(MODULES); do (cd $$m && $(GOLANGCI) run --config $(ROOT)/.golangci.yml --build-tags "$(TAGS)" ./...) || exit 1; done
-	@$(GOLANGCI) run --config $(ROOT)/.golangci.yml --build-tags "$(TAGS) embed" ./...
+	@for m in $(MODULES); do (cd $$m && $(GOLANGCI) run --config $(ROOT)/.golangci.yml --build-tags "$(TAGS)" ./... && $(GOLANGCI) run --config $(ROOT)/.golangci.yml --build-tags "$(TAGS) embed" ./...) || exit 1; done
 
 # UI screenshots for review: .cache/screenshots/screen-*.png (git-ignored).
 # Fake Wails bindings via ?screenshot=1; no Go process needed.
