@@ -139,6 +139,8 @@ type Game struct {
 	Queue []Action `json:"queue,omitempty"`
 	// Attack is the attack in progress (R-ATK).
 	Attack AttackState `json:"attack"`
+	// Purchase is a declared purchase (R-SHOP).
+	Purchase PurchaseState `json:"purchase"`
 
 	// Choice is the open question of a choose prompt.
 	Choice *Choice `json:"choice,omitempty"`

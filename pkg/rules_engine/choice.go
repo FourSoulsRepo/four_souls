@@ -11,6 +11,7 @@ const (
 	ChooseMonsterSlot                       // where a revealed monster goes (R-ATK-08)
 	ChoosePenaltyItem                       // the death penalty item (R-DEATH-14)
 	ChoosePenaltyLoot                       // the death penalty discard (R-DEATH-14)
+	ChoosePurchase                          // a shop item or the treasure deck (R-SHOP-02)
 )
 
 // Choice is an open question to one player. Options are listed in the
@@ -52,6 +53,13 @@ func (g *Game) answer(i int) {
 		g.destroyItem(c.Player, c.Objects[i])
 	case ChoosePenaltyLoot:
 		g.discardFromHand(c.Player, c.Objects[i])
+	case ChoosePurchase:
+		if c.Deck && i == len(c.Objects) {
+			g.purchase(0, true)
+		} else {
+			g.purchase(c.Objects[i], false)
+		}
+		g.givePriority(g.Turn.Active)
 	}
 }
 

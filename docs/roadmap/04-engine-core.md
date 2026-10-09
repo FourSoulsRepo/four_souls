@@ -147,7 +147,7 @@ Ideas: A-05 – A-08, N-04, LR-04, LR-07, TS-05.
    1. Local fuzz runs for 10 minutes without failures.
    2. Wiki: how to run fuzzing locally.
 
-### [ ] 4.13 Purchasing
+### [x] 4.13 Purchasing
 
 1. Goal: buying items (R-SHOP); missing from the first plan of step 4.
 2. Tasks:

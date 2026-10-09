@@ -96,6 +96,8 @@ func (g *Game) windowClosed() {
 			// After an active player's death the turn goes to its end phase
 			// once the stack has resolved (R-DEATH-16).
 			g.goTo(StepEndTriggers)
+		case g.Purchase.On:
+			g.askPurchase() // R-SHOP-02
 		case g.Attack.On && !g.Attack.Started:
 			g.askAttackTarget() // R-ATK-02
 		case g.Attack.Started:
@@ -118,7 +120,7 @@ func (g *Game) goTo(s Step) {
 // end the turn: action phase, empty stack (R-TURN-06).
 func (g *Game) inOpenActionPhase() bool {
 	return g.Turn.Step == StepAction && !g.Turn.EndDeclared && !g.Turn.DeathEnd &&
-		!g.Attack.On && len(g.Stack) == 0
+		!g.Attack.On && !g.Purchase.On && len(g.Stack) == 0
 }
 
 // maxRunSteps stops a run loop that never settles; that is always a bug.

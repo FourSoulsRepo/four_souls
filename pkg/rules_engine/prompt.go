@@ -36,6 +36,7 @@ const (
 	IntentPlayLoot                   // play the loot card in Objects[0] (R-CARD-08)
 	IntentChoose                     // pick option Choice of the prompt
 	IntentAttack                     // declare an attack (R-ATK-01)
+	IntentPurchase                   // declare a purchase (R-SHOP-01)
 )
 
 // Intent is one player's request. The engine checks it against the
@@ -122,6 +123,13 @@ func (g *Game) check(in Intent) error {
 		if g.Turn.Attacks < 1 {
 			return refuse("R-TURN-07", "no attack left this turn")
 		}
+	case IntentPurchase:
+		if w.Kind != PromptPriority || !g.inOpenActionPhase() || in.Player != g.Turn.Active {
+			return refuse("R-SHOP-01", "only the active player purchases, in the action phase, with an empty stack")
+		}
+		if g.Turn.Purchases < 1 {
+			return refuse("R-SHOP-05", "no purchase left this turn")
+		}
 	case IntentChoose:
 		if w.Kind != PromptChoose || g.Choice == nil {
 			return refuse("R-PRIO-01", "no choice is asked for")
@@ -166,6 +174,8 @@ func (g *Game) apply(in Intent) {
 		g.answer(in.Choice)
 	case IntentAttack:
 		g.declareAttack(in.Player)
+	case IntentPurchase:
+		g.declarePurchase(in.Player)
 	}
 }
 
