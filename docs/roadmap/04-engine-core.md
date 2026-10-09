@@ -112,7 +112,7 @@ Ideas: A-05 – A-08, N-04, LR-04, LR-07, TS-05.
 3. Done when:
    1. Tests prove no view leaks hidden data.
 
-### [ ] 4.10 Events and checksums
+### [x] 4.10 Events and checksums
 
 1. Goal: a step log for records and animations.
 2. Tasks:
