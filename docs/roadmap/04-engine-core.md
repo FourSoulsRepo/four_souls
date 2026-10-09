@@ -77,7 +77,7 @@ Ideas: A-05 – A-08, N-04, LR-04, LR-07, TS-05.
 3. Done when:
    1. Combat tests match the rules text IDs.
 
-### [ ] 4.7 Effect blocks and card definitions
+### [x] 4.7 Effect blocks and card definitions
 
 1. Goal: cards as data (A-06).
 2. Tasks:

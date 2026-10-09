@@ -27,6 +27,13 @@ type StackItem struct {
 	// Attack marks attack rolls and combat damage; they leave the stack
 	// when the attack ends (R-ATK-15).
 	Attack bool `json:"attack,omitempty"`
+	// Ability is the ability of loot, activated and triggered items.
+	Ability AbilityRef `json:"ability"`
+	Targets []Chosen   `json:"targets,omitempty"`
+	// RollFor is the roll ability waiting for this roll (R-ABIL-24).
+	RollFor AbilityRef `json:"roll_for"`
+	// RollResult is set on the trigger that reads a roll's result.
+	RollResult int `json:"roll_result,omitempty"`
 }
 
 // Events about the stack.
@@ -63,20 +70,31 @@ func (g *Game) resolveTop() {
 	g.givePriority(g.Turn.Active)
 	switch it.Kind {
 	case StackLoot:
-		// Loot abilities come with effect blocks (step 4.7); then the
-		// loot goes to the loot discard (R-CARD-07).
+		// The loot ability happens, then the loot goes to the loot
+		// discard (R-CARD-07).
+		if it.Ability.Card != "" {
+			g.resolveAbility(it)
+		}
 		g.discard(it.Source, LootDeck)
 	case StackRoll:
 		// The result is final once it resolves (R-DICE-06).
+		g.emit(Event{Kind: EvRollResolved, Player: it.Controller, Amount: it.Roll})
 		if it.Attack {
 			g.resolveAttackRoll(it)
+		}
+		if it.RollFor.Card != "" {
+			// The roll ability's result trigger goes on the stack (R-ABIL-24).
+			g.push(StackItem{
+				Kind: StackTrigger, Controller: it.Controller, Source: it.Source, Card: it.RollFor.Card,
+				Ability: it.RollFor, RollResult: it.Roll, Label: "roll result",
+			})
 		}
 	case StackDamage:
 		g.resolveDamage(it)
 	case StackDeath:
 		g.resolveDeath(it)
 	case StackAbility, StackTrigger:
-		// Filled in by step 4.7.
+		g.resolveAbility(it)
 	}
 	if len(g.Queue) > 0 && g.Waiting.Kind == PromptPriority {
 		// Queued steps (e.g. death rewards) happen before anyone acts.
@@ -94,7 +112,7 @@ func (g *Game) roll(p PlayerID, label string) int {
 // playLoot moves a loot card from hand to the stack (R-MECH-45).
 func (g *Game) playLoot(p PlayerID, id ObjectID) {
 	g.Players[p].Hand = remove(g.Players[p].Hand, id)
-	g.Turn.LootPlays--
+	g.useLootPlay(p)
 	nid := g.move(id, Zone{Kind: ZoneStack}, p)
 	card := g.Object(nid).Card
 	g.emit(Event{Kind: EvLootPlayed, Player: p, Object: nid, Card: card})

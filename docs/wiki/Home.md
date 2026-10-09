@@ -11,3 +11,4 @@ These pages describe the current code. Decisions live in `docs/architecture/` (A
 * [Linters](Linters) — strict Go and frontend linting, and how to run it.
 * [Screenshots](Screenshots) — capture the UI without a real window.
 * [Card data tools](Card-data-tools) — where card data and images come from.
+* [Effect blocks](Effect-blocks) — the blocks cards are built from.

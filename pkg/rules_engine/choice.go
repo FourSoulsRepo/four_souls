@@ -12,6 +12,8 @@ const (
 	ChoosePenaltyItem                       // the death penalty item (R-DEATH-14)
 	ChoosePenaltyLoot                       // the death penalty discard (R-DEATH-14)
 	ChoosePurchase                          // a shop item or the treasure deck (R-SHOP-02)
+	ChooseTarget                            // a target for an ability (R-ABIL-04)
+	ChooseTriggerOrder                      // which trigger goes on the stack next (R-ABIL-15)
 )
 
 // Choice is an open question to one player. Options are listed in the
@@ -26,6 +28,11 @@ type Choice struct {
 	Deck bool `json:"deck,omitempty"`
 	// Slots are monster slot indexes (where a revealed card goes).
 	Slots []int `json:"slots,omitempty"`
+	// Targets are the target options of ChooseTarget; one more option
+	// after them means "cancel".
+	Targets []Chosen `json:"targets,omitempty"`
+	// Indexes are pending-trigger indexes for ChooseTriggerOrder.
+	Indexes []int `json:"indexes,omitempty"`
 }
 
 // ask opens a choose prompt.
@@ -53,6 +60,10 @@ func (g *Game) answer(i int) {
 		g.destroyItem(c.Player, c.Objects[i])
 	case ChoosePenaltyLoot:
 		g.discardFromHand(c.Player, c.Objects[i])
+	case ChooseTarget:
+		g.chooseTarget(c, i)
+	case ChooseTriggerOrder:
+		g.pushTrigger(c.Indexes[i])
 	case ChoosePurchase:
 		if c.Deck && i == len(c.Objects) {
 			g.purchase(0, true)

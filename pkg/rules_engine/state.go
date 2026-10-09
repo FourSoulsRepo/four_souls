@@ -108,6 +108,8 @@ type Player struct {
 	InPlay []ObjectID `json:"in_play"`
 	Damage int        `json:"damage,omitempty"` // tied to the player (R-MECH-19)
 	Dead   bool       `json:"dead,omitempty"`   // died this turn (R-DEATH-17)
+	// ExtraLootPlays come from abilities and last until the turn ends.
+	ExtraLootPlays int `json:"extra_loot_plays,omitempty"`
 }
 
 // Slot is one table slot; the last card is on top and in play, the rest
@@ -144,6 +146,10 @@ type Game struct {
 
 	// Choice is the open question of a choose prompt.
 	Choice *Choice `json:"choice,omitempty"`
+	// Activating is an ability being put on the stack (targets pending).
+	Activating *Activation `json:"activating,omitempty"`
+	// PendingTriggers wait to go on the stack (R-ABIL-14).
+	PendingTriggers []PendingTrigger `json:"pending_triggers,omitempty"`
 
 	// Stack: the last item is on top (R-STACK-02).
 	Stack    []StackItem `json:"stack"`
@@ -165,6 +171,8 @@ type Game struct {
 	events []Event
 	// forcedRolls lets tests decide dice results; never set in games.
 	forcedRolls []int
+	// resolving is the ability whose effects are running.
+	resolving AbilityRef
 }
 
 // newObject adds a card as a new object and returns its ID.

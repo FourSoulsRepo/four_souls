@@ -1,5 +1,7 @@
 package rulesengine
 
+import "strconv"
+
 // Target is what a stack item aims at.
 type Target struct {
 	Object ObjectID `json:"object,omitempty"`
@@ -36,15 +38,29 @@ func (g *Game) def(id ObjectID) CardDef {
 }
 
 // HP is an object's remaining health.
-func (g *Game) HP(id ObjectID) int { return max(g.def(id).HP-g.Object(id).Damage, 0) }
+func (g *Game) HP(id ObjectID) int {
+	return max(g.def(id).HP+g.bonus(StatMonsterHP, NoPlayer, id)-g.Object(id).Damage, 0)
+}
 
 // PlayerHP is a player's remaining health (R-CARD-25, R-MECH-19).
 func (g *Game) PlayerHP(p PlayerID) int {
-	return max(g.def(g.Players[p].Character).HP-g.Players[p].Damage, 0)
+	return max(g.def(g.Players[p].Character).HP+g.bonus(StatPlayerHP, p, 0)-g.Players[p].Damage, 0)
 }
 
 // evasion is the dice check to hit a monster, between 1 and 6 (R-ATK-18).
-func (g *Game) evasion(id ObjectID) int { return min(max(g.def(id).DC, 1), 6) }
+func (g *Game) evasion(id ObjectID) int {
+	return min(max(g.def(id).DC+g.bonus(StatMonsterDC, NoPlayer, id), 1), 6)
+}
+
+// PlayerATK is a player's attack (R-CARD-25).
+func (g *Game) PlayerATK(p PlayerID) int {
+	return max(g.def(g.Players[p].Character).ATK+g.bonus(StatPlayerATK, p, 0), 0)
+}
+
+// monsterATK is a monster's attack.
+func (g *Game) monsterATK(id ObjectID) int {
+	return max(g.def(id).ATK+g.bonus(StatMonsterATK, NoPlayer, id), 0)
+}
 
 // declareAttack: priority passes before a target is chosen (R-ATK-02).
 func (g *Game) declareAttack(p PlayerID) {
@@ -80,7 +96,7 @@ func (g *Game) attackDeck() {
 	labels := make([]string, len(g.Monsters))
 	for i, s := range g.Monsters {
 		slots[i] = i
-		labels[i] = "slot " + string(rune('1'+i))
+		labels[i] = "slot " + strconv.Itoa(i+1)
 		if top, ok := s.TopOf(); ok {
 			labels[i] += ": " + string(g.Object(top).Card)
 		}
@@ -132,7 +148,7 @@ func (g *Game) resolveAttackRoll(it StackItem) {
 	}
 	p := g.Turn.Active
 	if it.Roll >= g.evasion(it.Target.Object) {
-		if atk := g.def(g.Players[p].Character).ATK; atk > 0 {
+		if atk := g.PlayerATK(p); atk > 0 {
 			g.push(StackItem{
 				Kind: StackDamage, Controller: p, Amount: atk, Label: "combat damage", Attack: true,
 				Target: Target{Object: it.Target.Object},
@@ -141,7 +157,7 @@ func (g *Game) resolveAttackRoll(it StackItem) {
 		return
 	}
 	// Nobody deals 0 damage (R-MECH-20).
-	if atk := g.def(it.Target.Object).ATK; atk > 0 {
+	if atk := g.monsterATK(it.Target.Object); atk > 0 {
 		g.push(StackItem{
 			Kind: StackDamage, Controller: NoPlayer, Source: it.Target.Object, Amount: atk,
 			Label: "combat damage", Attack: true, Target: Target{Player: p, IsPlayer: true},
@@ -287,7 +303,7 @@ func (g *Game) destroyItem(p PlayerID, id ObjectID) {
 	}
 	g.Players[p].InPlay = remove(g.Players[p].InPlay, id)
 	nid := g.discard(id, TreasureDeck)
-	g.emit(Event{Kind: EvDestroyed, Player: p, Object: nid, Card: g.Object(nid).Card})
+	g.emit(Event{Kind: EvDestroyed, Player: p, Object: nid, Card: g.Object(nid).Card, Prev: id})
 }
 
 // refillSlots fills empty slots from their decks (R-SHOP-06); events met

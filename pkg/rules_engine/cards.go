@@ -53,6 +53,10 @@ type CardDef struct {
 
 	// Replacements are the card's replacement effects (R-ABIL-29).
 	Replacements []Replacement
+	// Abilities are activated, loot and triggered abilities (step 4.7).
+	Abilities []Ability
+	// Statics are static abilities that change stats (R-ABIL-12).
+	Statics []Static
 
 	// Rewards are gained by the active player when it dies (R-CARD-31).
 	Rewards []Reward

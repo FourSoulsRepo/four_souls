@@ -37,6 +37,7 @@ const (
 	IntentChoose                     // pick option Choice of the prompt
 	IntentAttack                     // declare an attack (R-ATK-01)
 	IntentPurchase                   // declare a purchase (R-SHOP-01)
+	IntentActivate                   // use ability Choice of Objects[0] (R-ABIL-08)
 )
 
 // Intent is one player's request. The engine checks it against the
@@ -113,8 +114,23 @@ func (g *Game) check(in Intent) error {
 		if len(in.Objects) != 1 || !contains(g.Players[in.Player].Hand, in.Objects[0]) {
 			return refuse("R-CARD-08", "play one loot card from your hand")
 		}
-		if in.Player != g.Turn.Active || g.Turn.LootPlays < 1 {
+		if g.lootPlaysFor(in.Player) < 1 {
 			return refuse("R-CARD-08", "no loot play available")
+		}
+		if ab, ok := g.lootAbility(in.Objects[0]); ok {
+			if err := g.targetsAvailable(ab, in.Player); err != nil {
+				return err
+			}
+		}
+	case IntentActivate:
+		if w.Kind != PromptPriority {
+			return refuse("R-ABIL-08", "abilities are used with priority")
+		}
+		if len(in.Objects) != 1 {
+			return refuse("R-ABIL-08", "activate one object's ability")
+		}
+		if err := g.activatable(in.Player, in.Objects[0], in.Choice); err != nil {
+			return err
 		}
 	case IntentAttack:
 		if w.Kind != PromptPriority || !g.inOpenActionPhase() || in.Player != g.Turn.Active {
@@ -169,7 +185,20 @@ func (g *Game) apply(in Intent) {
 		}
 		g.Waiting = Prompt{}
 	case IntentPlayLoot:
-		g.playLoot(in.Player, in.Objects[0])
+		if _, ok := g.lootAbility(in.Objects[0]); ok {
+			d := g.def(in.Objects[0])
+			g.startActivation(Activation{
+				Player: in.Player, Source: in.Objects[0], Loot: true,
+				Ability: AbilityRef{Card: d.Ref, Index: lootIndex(d)},
+			})
+		} else {
+			g.playLoot(in.Player, in.Objects[0])
+		}
+	case IntentActivate:
+		g.startActivation(Activation{
+			Player: in.Player, Source: in.Objects[0],
+			Ability: AbilityRef{Card: g.Object(in.Objects[0]).Card, Index: in.Choice},
+		})
 	case IntentChoose:
 		g.answer(in.Choice)
 	case IntentAttack:
@@ -179,7 +208,28 @@ func (g *Game) apply(in Intent) {
 	}
 }
 
-func (g *Game) emit(e Event) { g.events = append(g.events, e) }
+func (g *Game) emit(e Event) {
+	g.events = append(g.events, e)
+	g.collectTriggers(e)
+}
+
+// lootAbility returns the loot ability of a loot card, if it has one.
+func (g *Game) lootAbility(id ObjectID) (Ability, bool) {
+	d := g.def(id)
+	if i := lootIndex(d); i >= 0 {
+		return d.Abilities[i], true
+	}
+	return Ability{}, false
+}
+
+func lootIndex(d CardDef) int {
+	for i, a := range d.Abilities {
+		if a.Kind == LootAbility {
+			return i
+		}
+	}
+	return -1
+}
 
 func (g *Game) takeEvents() []Event {
 	out := g.events

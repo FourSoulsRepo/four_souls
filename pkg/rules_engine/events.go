@@ -33,4 +33,6 @@ type Event struct {
 	Text   string    `json:"text,omitempty"`
 	// Private means only Player sees Card (e.g. a looted card).
 	Private bool `json:"private,omitempty"`
+	// Prev is the object an event moved away, when it got a new ID.
+	Prev ObjectID `json:"prev,omitempty"`
 }

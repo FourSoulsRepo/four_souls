@@ -45,6 +45,13 @@ func (g *Game) next(p PlayerID) PlayerID {
 
 // openWindow gives priority to start (R-PRIO-02, R-PRIO-03).
 func (g *Game) openWindow(start PlayerID) {
+	if len(g.PendingTriggers) > 0 || len(g.Queue) > 0 {
+		// Triggers go on the stack and queued steps happen before anyone
+		// gets priority (R-ABIL-14, R-DEATH-10).
+		g.Priority = Priority{Deferred: true, Holder: start}
+		g.Waiting = Prompt{}
+		return
+	}
 	g.Priority = Priority{Open: true, Holder: start}
 	g.Waiting = Prompt{Kind: PromptPriority, Player: start}
 }
@@ -139,6 +146,10 @@ func (g *Game) run() {
 			g.processQueue()
 			continue
 		}
+		if len(g.PendingTriggers) > 0 {
+			g.placeNextTrigger()
+			continue
+		}
 		if g.Priority.Deferred {
 			g.openWindow(g.Priority.Holder)
 			continue
@@ -176,6 +187,7 @@ func (g *Game) enterStep() {
 	case StepRecharge:
 		g.recharge(p)
 	case StepStartTriggers:
+		g.emit(Event{Kind: EvStartOfTurn, Player: p}) // R-TURN-03
 		g.openWindow(p)
 	case StepLoot:
 		g.enqueue(Action{Kind: ActLoot, Player: p, Amount: 1}) // R-TURN-04
@@ -185,6 +197,7 @@ func (g *Game) enterStep() {
 		g.Turn.LootPlays, g.Turn.Attacks, g.Turn.Purchases = 1, 1, 1 // R-TURN-05, R-TURN-07
 		g.openWindow(p)
 	case StepEndTriggers:
+		g.emit(Event{Kind: EvEndOfTurn, Player: p}) // R-TURN-10
 		g.openWindow(p)
 	case StepHandSize:
 		if extra := len(g.Players[p].Hand) - g.MaxHand; extra > 0 {
@@ -235,6 +248,7 @@ func (g *Game) healAll() {
 	for i := range g.Players {
 		g.Players[i].Damage = 0
 		g.Players[i].Dead = false // alive again (R-DEATH-19)
+		g.Players[i].ExtraLootPlays = 0
 	}
 	for i := range g.Objects {
 		if g.Objects[i].Zone.Kind == ZoneInPlay {

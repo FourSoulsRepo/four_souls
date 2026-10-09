@@ -42,7 +42,10 @@ func (g *Game) askPurchase() {
 func (g *Game) purchase(item ObjectID, fromDeck bool) {
 	p := g.Turn.Active
 	g.Purchase = PurchaseState{}
-	price := basePrice // cost modifiers come with static abilities (step 4.7)
+	price := basePrice
+	if !fromDeck {
+		price = max(price+g.bonus(StatShopPrice, p, item), 0) // e.g. Steamy Sale
+	}
 	if g.Players[p].Cents < price {
 		g.emit(Event{Kind: EvPurchaseFailed, Player: p, Amount: price})
 		return
