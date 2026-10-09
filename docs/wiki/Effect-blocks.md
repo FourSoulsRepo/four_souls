@@ -68,12 +68,12 @@ Targets are always asked, with a "cancel" option before anything is paid. A targ
 
 | Block | Choose … |
 |---|---|
-| `Choose(TargetPlayer)` | a living player |
+| `Choose(TargetPlayer)` | a player; dead players too (damage to them is not marked) |
 | `Choose(TargetMonster)` | a monster in play |
 | `Choose(TargetMonsterOrPlayer)` | either |
 | `Choose(TargetItem)` | an item a player controls |
 | `Choose(TargetDiceRoll)` | a dice roll on the stack |
-| `Choose(TargetOtherPlayer)` | a living player other than you |
+| `Choose(TargetOtherPlayer)` | a player other than you |
 | `Choose(TargetStackAbility)` | an item's ↷ or $ ability, or a loot being played |
 | `Choose(TargetCurse)` | a curse a player has |
 | `Choose(TargetYourItem)` | an item you control |

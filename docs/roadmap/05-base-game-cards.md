@@ -74,7 +74,7 @@ Ideas: R-05, TS-01 – TS-04.
 3. Done when:
    1. Report shows bonus souls as tested or not in set.
 
-### [ ] 5.8 Interaction tests
+### [x] 5.8 Interaction tests
 
 1. Goal: card combinations work (TS-04).
 2. Tasks:

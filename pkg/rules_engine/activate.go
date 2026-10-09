@@ -188,7 +188,9 @@ func (g *Game) targetOptions(t TargetSpec, p PlayerID, src ObjectID) ([]Chosen, 
 	others := t.Kind == TargetOtherPlayer
 	addPlayers := func() {
 		for _, pl := range g.Players {
-			if !pl.Dead && (!others || pl.ID != p) {
+			// Dead players can be chosen; damage to them is not marked and
+			// they die at most once a turn (R-07 #2, #4; R-MECH-16).
+			if !others || pl.ID != p {
 				opts = append(opts, Chosen{Kind: TargetPlayer, Player: pl.ID})
 				labels = append(labels, "player "+strconv.Itoa(int(pl.ID)+1)+" ("+string(g.Object(pl.Character).Card)+")")
 			}
@@ -295,7 +297,7 @@ func (g *Game) cancellable(it StackItem) bool {
 func (g *Game) stillValid(c Chosen) bool {
 	switch c.Kind {
 	case TargetPlayer, TargetOtherPlayer:
-		return !g.Players[c.Player].Dead
+		return true // dead players stay valid targets (R-07 #4)
 	case TargetMonster, TargetMonsterOrPlayer:
 		o := g.Object(c.Object)
 		return o.Zone.Kind == ZoneInPlay && o.Role == RoleMonster

@@ -159,7 +159,10 @@ func (g *Game) perform(a Action) {
 		g.Players[a.Player].Cents -= n
 		g.emit(Event{Kind: EvLostCents, Player: a.Player, Amount: n})
 	case ActLoot:
-		n := a.Amount << g.bonus(StatLootDouble, a.Player, 0) // Two of Clubs
+		n := a.Amount
+		if g.bonus(StatLootDouble, a.Player, 0) > 0 {
+			n *= 2 // Two of Clubs; twice still only doubles (S-RU FAQ)
+		}
 		if g.Compost {
 			g.Compost = false
 			g.lootFromDiscard(a.Player, n)

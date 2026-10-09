@@ -71,6 +71,8 @@ On 2026-10-09 the owner parked every open decision for later.
 | 10 | Death cancels combat | R-DEATH-12, R-ATK-15 | Holds |
 | 11 | Bombs are not combat | Combat damage comes only from attack rolls (R-ATK-12) | Holds |
 
+Tests: `cards/b2/interactions_test.go` covers rows 1–6, 10 and 11; rows 7–9 are engine tests.
+
 ## Card rulings from the Russian FAQ (S-RU)
 
 Candidates for situation tests; check each against the English rules.
@@ -82,3 +84,5 @@ Candidates for situation tests; check each against the English rules.
 | 3 | Multi-dice "choose one result" | Only the chosen result affects the game | Consistent; test later (later sets) |
 | 4 | Mulliboom, The Lamb | ATK is printed with "!" (4!, 6!); card_db has no meaning for it; the engine uses the number | **Owner** |
 | 5 | Devil Deal | card_db lists five options; the engine reads three: discard / loot 2, take 1 / take 2, search a Guppy | **Owner** |
+
+Tests: FAQ row 1 is in `cards/b2/interactions_test.go`, with Yuggy's "above 6 counts as 6" ruling.

@@ -131,12 +131,12 @@ type TargetKind int
 
 // The target kinds.
 const (
-	TargetPlayer          TargetKind = iota // a living player
+	TargetPlayer          TargetKind = iota // a player, dead ones too (R-07 #4)
 	TargetMonster                           // a monster in play
 	TargetMonsterOrPlayer                   // either
 	TargetItem                              // an item a player controls
 	TargetDiceRoll                          // a dice roll on the stack
-	TargetOtherPlayer                       // a living player other than you
+	TargetOtherPlayer                       // a player other than you
 	TargetStackAbility                      // a ↷ or $ ability of an item, or a loot being played, on the stack
 	TargetCurse                             // a curse a player has
 	TargetYourItem                          // an item you control
