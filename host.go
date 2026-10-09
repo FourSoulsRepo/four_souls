@@ -27,16 +27,15 @@ type HostInfo struct {
 // ErrHosting means a game is hosted already.
 var ErrHosting = errors.New("a game is hosted already")
 
-// Start hosts a game with the given number of seats on the default
-// port.
-func (h *Host) Start(players int) (HostInfo, error) {
+// Start runs the server on the default port; the host then creates a
+// game in the lobby like any player.
+func (h *Host) Start() (HostInfo, error) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 	if h.srv != nil {
 		return h.info(), ErrHosting
 	}
 	cfg := server.DefaultConfig()
-	cfg.Players = players
 	srv, err := server.Start(context.Background(), cfg)
 	if err != nil {
 		return HostInfo{}, err //nolint:wrapcheck // shown to the player as is

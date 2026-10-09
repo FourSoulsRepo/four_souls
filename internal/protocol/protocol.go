@@ -31,6 +31,15 @@ const (
 	TypeResync  = "resync"  // client → server: send me a fresh update
 	TypeUpdate  = "update"  // server → client, after every applied step
 	TypeError   = "error"   // server → client
+
+	// Lobby (6.5).
+	TypeList   = "list"   // client → server: which games are there?
+	TypeGames  = "games"  // server → client: the games on this server
+	TypeCreate = "create" // client → server: open a new game and sit down
+	TypeJoin   = "join"   // client → server: sit down at a game
+	TypeReady  = "ready"  // client → server: ready, or not
+	TypeLeave  = "leave"  // client → server: leave the table before it starts
+	TypeTable  = "table"  // server → client: the table you sit at
 )
 
 // Envelope wraps every message. ID is set by the client on requests;
@@ -92,6 +101,47 @@ type Seat struct {
 	Seat      int    `json:"seat"`
 	Name      string `json:"name"`
 	Connected bool   `json:"connected"`
+	Ready     bool   `json:"ready,omitempty"` // in the lobby
+}
+
+// GameInfo is one game in the lobby list.
+type GameInfo struct {
+	ID      string   `json:"id"`
+	Host    string   `json:"host"` // the nickname of who created it
+	Seats   int      `json:"seats"`
+	Taken   int      `json:"taken"`
+	Sets    []string `json:"sets"`
+	Started bool     `json:"started"`
+}
+
+// Games lists the games on the server.
+type Games struct {
+	Games []GameInfo `json:"games"`
+}
+
+// Create opens a game with 2 to 4 seats and the given card sets.
+type Create struct {
+	Seats int      `json:"seats"`
+	Sets  []string `json:"sets"`
+}
+
+// Join sits down at a game.
+type Join struct {
+	Game string `json:"game"`
+}
+
+// Ready marks the player ready to start, or not.
+type Ready struct {
+	Ready bool `json:"ready"`
+}
+
+// Table is the table a player sits at, before the game starts. The
+// game starts by itself when every seat is taken and everyone is ready.
+type Table struct {
+	Game  string   `json:"game"`
+	You   int      `json:"you"` // your seat
+	Seats []Seat   `json:"seats"`
+	Sets  []string `json:"sets"`
 }
 
 // Error codes.
@@ -104,6 +154,11 @@ const (
 	ErrRoomFull       = "room_full"
 	ErrBadName        = "bad_name"
 	ErrNoHello        = "no_hello" // the first message must be hello
+	ErrNoGame         = "no_game"
+	ErrStarted        = "started"      // the game has started already
+	ErrMissingSets    = "missing_sets" // the client lacks a card set (CD-03)
+	ErrBadSetup       = "bad_setup"
+	ErrAtTable        = "at_table" // already sitting at a table
 )
 
 // Error reports a problem with a message. Rule is the rules ID when the

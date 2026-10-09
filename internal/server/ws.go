@@ -25,14 +25,14 @@ var upgrader = websocket.Upgrader{
 	CheckOrigin: func(*http.Request) bool { return true },
 }
 
-// Handler serves the room over WebSocket at any path it is mounted on.
-func Handler(r *Room) http.Handler {
+// Handler serves the hub over WebSocket at any path it is mounted on.
+func Handler(h *Hub) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
 		ws, err := upgrader.Upgrade(w, req, nil)
 		if err != nil {
 			return // the upgrader already answered with an error
 		}
-		serveWS(r, ws)
+		serveWS(h, ws)
 	})
 }
 
@@ -44,10 +44,10 @@ type wsConn struct {
 	close chan struct{}
 }
 
-func serveWS(r *Room, ws *websocket.Conn) {
+func serveWS(h *Hub, ws *websocket.Conn) {
 	c := &wsConn{ws: ws, out: make(chan []byte, sendQueue), close: make(chan struct{})}
 	go c.write()
-	client := r.Connect(c)
+	client := h.Connect(c)
 	defer client.Leave()
 	defer c.Close()
 	ws.SetReadLimit(protocol.MaxClientMessage)

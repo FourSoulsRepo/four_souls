@@ -17,7 +17,7 @@ import (
 // over the LAN address and both play (6.4).
 func TestHostAndRemoteClient(t *testing.T) {
 	h := &Host{}
-	info, err := h.Start(2)
+	info, err := h.Start()
 	if err != nil {
 		t.Skipf("cannot host here: %v", err)
 	}
@@ -26,7 +26,7 @@ func TestHostAndRemoteClient(t *testing.T) {
 			t.Error(err)
 		}
 	}()
-	if _, again := h.Start(2); !errors.Is(again, ErrHosting) {
+	if _, again := h.Start(); !errors.Is(again, ErrHosting) {
 		t.Error("hosted twice")
 	}
 	addr := "127.0.0.1"
@@ -44,16 +44,18 @@ func TestHostAndRemoteClient(t *testing.T) {
 		_ = resp.Body.Close() //nolint:errcheck // test
 		defer ws.Close()      //nolint:errcheck // test
 		players[i] = ws
-		msg, err := protocol.Encode(protocol.TypeHello, 1, protocol.Hello{Protocol: protocol.Version, Name: "P" + strconv.Itoa(i)})
-		if err != nil {
-			t.Fatal(err)
-		}
-		if err := ws.WriteMessage(websocket.TextMessage, msg); err != nil {
-			t.Fatal(err)
-		}
-		var w protocol.Welcome
-		readType(t, ws, protocol.TypeWelcome, &w)
-		seats[i] = w.Seat
+		say(t, ws, protocol.TypeHello, protocol.Hello{Protocol: protocol.Version, Name: "P" + strconv.Itoa(i), Sets: []string{"b2"}})
+		readType(t, ws, protocol.TypeWelcome, &protocol.Welcome{})
+	}
+	// The host creates a game in its own lobby; the friend joins it.
+	say(t, players[0], protocol.TypeCreate, protocol.Create{Seats: 2})
+	var tb protocol.Table
+	readType(t, players[0], protocol.TypeTable, &tb)
+	say(t, players[1], protocol.TypeJoin, protocol.Join{Game: tb.Game})
+	for i, ws := range players {
+		readType(t, ws, protocol.TypeTable, &tb)
+		seats[i] = tb.You
+		say(t, ws, protocol.TypeReady, protocol.Ready{Ready: true})
 	}
 	// Play a few steps: whoever is asked answers with an allowed intent.
 	steps := 0
@@ -68,15 +70,21 @@ func TestHostAndRemoteClient(t *testing.T) {
 			if in.Kind == engine.IntentDiscard { // a discard needs Count cards
 				in.Objects = in.Objects[:u.View.Waiting.Count]
 			}
-			msg, err := protocol.Encode(protocol.TypeIntent, 2, protocol.Intent{Intent: in})
-			if err != nil {
-				t.Fatal(err)
-			}
-			if err := ws.WriteMessage(websocket.TextMessage, msg); err != nil {
-				t.Fatal(err)
-			}
+			say(t, ws, protocol.TypeIntent, protocol.Intent{Intent: in})
 			steps++
 		}
+	}
+}
+
+// say sends one message.
+func say(t *testing.T, ws *websocket.Conn, typ string, data any) {
+	t.Helper()
+	msg, err := protocol.Encode(typ, 1, data)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := ws.WriteMessage(websocket.TextMessage, msg); err != nil {
+		t.Fatal(err)
 	}
 }
 

@@ -88,6 +88,8 @@ Use options 1, 3, 5 and 10.
 8. Later messages use the same envelope.
    1. Lobby (6.5), match setup (6.6), pause and votes (6.8), saves (6.11).
    2. Spectators send `hello` with role `spectator` or `judge`.
+   3. Lobby: `list`, `games`, `create`, `join`, `ready`, `leave`, `table`.
+   4. A table starts by itself when every seat is taken and everyone is ready.
 9. Playing over the internet, until a relay exists
    1. A virtual LAN (Tailscale, ZeroTier, Hamachi, Radmin VPN), or port forwarding.
    2. Or a dedicated server on a rented VPS.

@@ -31,9 +31,6 @@ func TestParse(t *testing.T) {
 	if _, err := parse([]string{"-port", "0"}); err == nil {
 		t.Error("port 0 accepted")
 	}
-	if _, err := parse([]string{"-players", "5"}); err == nil {
-		t.Error("5 players accepted")
-	}
 }
 
 // syncBuffer is a bytes.Buffer safe for the server goroutine and the test.

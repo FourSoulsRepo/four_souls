@@ -52,13 +52,13 @@ Ideas: N-01 – N-09, N-11, CD-02, CD-03, GS-01 – GS-06, GS-09, GS-10, A-12, R
 3. Done when:
    1. Host and one remote client play over LAN.
 
-### [ ] 6.5 Lobby
+### [x] 6.5 Lobby
 
 1. Goal: create and join games.
 2. Tasks:
    1. Create a game; join by address.
    2. Seats 2–4 (GS-09); ready check.
-   3. Play mode: free-for-all or 2 vs 2 (GS-05).
+   3. Play mode: free-for-all; 2 vs 2 is parked (Q-03).
    4. Card sets; Base Game only for now (CD-02).
    5. Collection check on join (CD-03).
    6. Nicknames from `hello`: checked, made unique, shown per seat (ST-06).

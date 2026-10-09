@@ -2,7 +2,7 @@
 
 Any player can rent a small server on the internet (a VPS) and run the game's dedicated server there. Friends then join its address from anywhere; nobody needs a virtual LAN or port forwarding (see [Playing over the internet](Playing-over-the-internet)).
 
-> Work in progress: until the lobby is ready (roadmap step 6.5) the server runs one game with a fixed number of seats (`-players`). Saving match records comes with step 6.9.
+> Work in progress: saving match records comes with roadmap step 6.9.
 
 ## What you need
 
@@ -98,11 +98,10 @@ A JSON config file can set the same values; flags override it.
 | `-addr` | all addresses | listen only on this address |
 | `-records` | `records` | where match records are saved (A-12) |
 | `-retention` | 30 | days to keep records; 0 keeps them forever (RP-07) |
-| `-players` | 2 | seats of the game, until the lobby exists |
 | `-config` | none | a JSON file with the same settings |
 
 ```json
-{"port": 4774, "records": "/var/lib/four-souls/records", "retention": 30, "players": 4}
+{"port": 4774, "records": "/var/lib/four-souls/records", "retention": 30}
 ```
 
 ## Updating

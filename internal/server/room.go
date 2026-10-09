@@ -1,5 +1,5 @@
-// Package server runs games for networked clients (ADR 006): one room
-// per game, whatever the transport.
+// Package server runs games for networked clients (ADR 006): a lobby
+// hub, one room per running game, whatever the transport.
 package server
 
 import (
@@ -8,40 +8,15 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"slices"
+	"strings"
 
 	"github.com/FourSoulsRepo/four_souls/internal/protocol"
-	"github.com/FourSoulsRepo/four_souls/internal/version"
 	engine "github.com/FourSoulsRepo/rules_engine"
 )
 
-// Conn is one client connection. Send queues a message and reports
-// false when the client is gone or too slow; Close ends the connection.
-// Transports implement it; the room never sees sockets (ADR 006).
-type Conn interface {
-	Send(msg []byte) bool
-	Close()
-}
-
-// Client is a connection's handle on the room. The transport passes
-// every message it reads to Receive and calls Leave when the connection
-// ends.
-type Client struct {
-	room *Room
-	conn Conn
-	// Set by the room goroutine only.
-	hello bool
-	seat  int // -1: not seated
-	role  protocol.Role
-}
-
-// Receive hands a message from the client to the room.
-func (c *Client) Receive(msg []byte) { c.room.send(request{client: c, msg: msg}) }
-
-// Leave tells the room the connection is gone.
-func (c *Client) Leave() { c.room.send(request{client: c, leave: true}) }
-
-// seat is one place at the table. Its token lets a player come back.
-type seat struct {
+// roomSeat is one place at the table. Its token lets a player come back.
+type roomSeat struct {
 	name   string
 	token  string
 	client *Client
@@ -50,8 +25,8 @@ type seat struct {
 type request struct {
 	client *Client
 	msg    []byte
-	join   bool
 	leave  bool
+	attach string // the token of a client coming back
 }
 
 // Room runs one game. Only its goroutine (Run) touches the game.
@@ -60,30 +35,31 @@ type Room struct {
 	done    chan struct{}
 	game    *engine.Game
 	step    int
-	seats   []seat
+	seats   []roomSeat
 	clients []*Client
+	tokens  []string // read by the hub; fixed when the room is made
 }
 
-// NewRoom sets up a game; its seats are free until players join.
-func NewRoom(setup engine.Setup) (*Room, error) {
+// NewRoom starts a game for seated players.
+func NewRoom(setup engine.Setup, seats []roomSeat) (*Room, error) {
 	g, _, err := engine.NewGame(setup)
 	if err != nil {
 		return nil, fmt.Errorf("server: %w", err)
 	}
-	return &Room{
-		in:    make(chan request, 64),
-		done:  make(chan struct{}),
-		game:  g,
-		seats: make([]seat, setup.Players),
-	}, nil
+	r := &Room{in: make(chan request, 64), done: make(chan struct{}), game: g, seats: seats}
+	for i, s := range seats {
+		r.tokens = append(r.tokens, s.token)
+		if s.client != nil {
+			s.client.seat = i
+			r.clients = append(r.clients, s.client)
+		}
+	}
+	return r, nil
 }
 
-// Connect adds a connection; its first message must be hello.
-func (r *Room) Connect(conn Conn) *Client {
-	c := &Client{room: r, conn: conn, seat: -1}
-	r.send(request{client: c, join: true})
-	return c
-}
+// hasToken reports whether a seat belongs to the token. Safe from any
+// goroutine: tokens never change.
+func (r *Room) hasToken(token string) bool { return slices.Contains(r.tokens, token) }
 
 // send passes a request to the room unless it has stopped.
 func (r *Room) send(req request) {
@@ -93,7 +69,8 @@ func (r *Room) send(req request) {
 	}
 }
 
-// Run handles requests until ctx ends, then closes every connection.
+// Run sends everyone the first view, then handles requests until ctx
+// ends; then it closes every connection.
 func (r *Room) Run(ctx context.Context) {
 	defer func() {
 		close(r.done)
@@ -101,6 +78,7 @@ func (r *Room) Run(ctx context.Context) {
 			c.conn.Close()
 		}
 	}()
+	r.broadcast(nil)
 	for {
 		select {
 		case <-ctx.Done():
@@ -114,110 +92,54 @@ func (r *Room) Run(ctx context.Context) {
 func (r *Room) handle(req request) {
 	c := req.client
 	switch {
-	case req.join:
-		r.clients = append(r.clients, c)
-		return
 	case req.leave:
 		r.drop(c)
+		return
+	case req.attach != "":
+		r.attach(c, req.attach)
 		return
 	}
 	env, err := protocol.Decode(req.msg)
 	if err != nil {
-		r.fail(c, 0, protocol.ErrBadMessage, err.Error(), "")
-		return
-	}
-	if !c.hello && env.Type != protocol.TypeHello {
-		r.fail(c, env.ID, protocol.ErrNoHello, "the first message must be hello", "")
+		c.fail(0, protocol.ErrBadMessage, err.Error())
 		return
 	}
 	switch env.Type {
-	case protocol.TypeHello:
-		r.hello(c, env)
 	case protocol.TypeIntent:
 		r.intent(c, env)
 	case protocol.TypeResync:
 		r.update(c, nil)
 	default:
-		r.fail(c, env.ID, protocol.ErrBadMessage, "unknown message type "+env.Type, "")
+		c.fail(env.ID, protocol.ErrBadMessage, "not during a game: "+env.Type)
 	}
 }
 
-// hello seats a player: back in their seat with a token, or in the
-// first free one.
-func (r *Room) hello(c *Client, env protocol.Envelope) {
-	var h protocol.Hello
-	if err := env.Unpack(&h); err != nil {
-		r.fail(c, env.ID, protocol.ErrBadMessage, err.Error(), "")
-		return
-	}
-	if code := protocol.CheckVersion(h.Protocol); code != "" {
-		r.fail(c, env.ID, code, fmt.Sprintf("protocol %d, server speaks %d", h.Protocol, protocol.Version), "")
-		r.drop(c)
-		c.conn.Close()
-		return
-	}
-	name, ok := protocol.CleanName(h.Name)
-	if !ok {
-		r.fail(c, env.ID, protocol.ErrBadName, fmt.Sprintf("a nickname has 1 to %d characters", protocol.MaxName), "")
-		return
-	}
-	i := r.seatFor(h.Token)
+// attach gives a returning player their seat back (N-08).
+func (r *Room) attach(c *Client, token string) {
+	i := slices.Index(r.tokens, token)
 	if i < 0 {
-		r.fail(c, env.ID, protocol.ErrRoomFull, "every seat is taken", "")
+		c.fail(0, protocol.ErrNotSeated, "no seat for this token")
 		return
 	}
-	s := &r.seats[i]
-	if s.client != nil && s.client != c {
-		s.client.seat = -1 // an older connection of the same player
-		s.client.conn.Close()
+	if old := r.seats[i].client; old != nil && old != c {
+		old.seat = -1
+		old.conn.Close()
 	}
-	if s.token == "" {
-		s.token = newToken()
-		s.name = protocol.UniqueName(name, r.names())
-	}
-	s.client = c
-	c.hello, c.seat, c.role = true, i, protocol.RolePlayer
-	v := version.Get()
-	r.reply(c, protocol.TypeWelcome, env.ID, protocol.Welcome{Protocol: protocol.Version, App: v.App, Engine: v.Engine, Token: s.token, Seat: i})
-	r.broadcast(nil) // everyone sees the seat taken
-}
-
-// seatFor finds the seat a token belongs to, or the first free seat.
-func (r *Room) seatFor(token string) int {
-	if token != "" {
-		for i, s := range r.seats {
-			if s.token == token {
-				return i
-			}
-		}
-	}
-	for i, s := range r.seats {
-		if s.token == "" {
-			return i
-		}
-	}
-	return -1
-}
-
-func (r *Room) names() []string {
-	var out []string
-	for _, s := range r.seats {
-		if s.name != "" {
-			out = append(out, s.name)
-		}
-	}
-	return out
+	r.seats[i].client = c
+	c.seat = i
+	r.clients = append(r.clients, c)
+	r.broadcast(nil)
 }
 
 // intent applies a seated player's intent and updates everyone.
 func (r *Room) intent(c *Client, env protocol.Envelope) {
 	if c.seat < 0 {
-		r.fail(c, env.ID, protocol.ErrNotSeated, "only a seated player acts", "")
+		c.fail(env.ID, protocol.ErrNotSeated, "only a seated player acts")
 		return
 	}
 	var m protocol.Intent
 	if err := env.Unpack(&m); err != nil {
-		r.fail(c, env.ID, protocol.ErrBadMessage, err.Error(), "")
+		c.fail(env.ID, protocol.ErrBadMessage, err.Error())
 		return
 	}
 	in := m.Intent
@@ -226,10 +148,10 @@ func (r *Room) intent(c *Client, env protocol.Envelope) {
 	var re *engine.RuleError
 	switch {
 	case errors.As(err, &re):
-		r.fail(c, env.ID, protocol.ErrRefused, re.Reason, re.Rule)
+		c.send(protocol.TypeError, env.ID, protocol.Error{Code: protocol.ErrRefused, Message: re.Reason, Rule: re.Rule})
 		return
 	case err != nil:
-		r.fail(c, env.ID, protocol.ErrBadMessage, err.Error(), "")
+		c.fail(env.ID, protocol.ErrBadMessage, err.Error())
 		return
 	}
 	r.step++
@@ -239,9 +161,7 @@ func (r *Room) intent(c *Client, env protocol.Envelope) {
 // broadcast sends every client its update.
 func (r *Room) broadcast(events []engine.Event) {
 	for _, c := range r.clients {
-		if c.hello {
-			r.update(c, events)
-		}
+		r.update(c, events)
 	}
 }
 
@@ -257,19 +177,14 @@ func (r *Room) update(c *Client, events []engine.Event) {
 	for i, s := range r.seats {
 		seats[i] = protocol.Seat{Seat: i, Name: s.name, Connected: s.client != nil}
 	}
-	r.reply(c, protocol.TypeUpdate, 0, protocol.Update{
+	c.send(protocol.TypeUpdate, 0, protocol.Update{
 		Step: r.step, Events: engine.FilterEvents(events, v), View: r.game.View(v), Allowed: allowed, Seats: seats,
 	})
 }
 
-// drop forgets a connection; its seat stays reserved for its token.
+// drop forgets a connection; its seat stays for its token.
 func (r *Room) drop(c *Client) {
-	for i, x := range r.clients {
-		if x == c {
-			r.clients = append(r.clients[:i:i], r.clients[i+1:]...)
-			break
-		}
-	}
+	r.clients = slices.DeleteFunc(r.clients, func(x *Client) bool { return x == c })
 	if c.seat >= 0 && r.seats[c.seat].client == c {
 		r.seats[c.seat].client = nil
 		r.broadcast(nil)
@@ -277,19 +192,13 @@ func (r *Room) drop(c *Client) {
 	c.seat = -1
 }
 
-func (r *Room) fail(c *Client, id int, code, message, rule string) {
-	r.reply(c, protocol.TypeError, id, protocol.Error{Code: code, Message: message, Rule: rule})
-}
-
-// reply sends a message; a client that cannot keep up is disconnected.
-func (r *Room) reply(c *Client, typ string, id int, data any) {
-	msg, err := protocol.Encode(typ, id, data)
-	if err != nil {
-		panic(err) // our own types always encode
+// validToken: 32 lowercase hex digits, as newToken makes them.
+func validToken(s string) bool {
+	if len(s) != 32 {
+		return false
 	}
-	if !c.conn.Send(msg) {
-		c.conn.Close()
-	}
+	_, err := hex.DecodeString(s)
+	return err == nil && strings.ToLower(s) == s
 }
 
 // newToken returns 128 random bits as hex (ADR 006).
