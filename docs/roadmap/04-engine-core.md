@@ -102,7 +102,7 @@ Ideas: A-05 – A-08, N-04, LR-04, LR-07, TS-05.
    1. Every allowed action is accepted when sent.
    2. Every other action is rejected with a reason.
 
-### [ ] 4.9 View filter
+### [x] 4.9 View filter
 
 1. Goal: one function builds every view (A-07).
 2. Tasks:
