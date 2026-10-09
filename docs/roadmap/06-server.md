@@ -90,7 +90,7 @@ Ideas: N-01 – N-09, N-11, CD-02, CD-03, GS-01 – GS-06, GS-09, GS-10, A-12, R
 3. Done when:
    1. Headless games never wait for a player with no options.
 
-### [ ] 6.8 Disconnects
+### [x] 6.8 Disconnects
 
 1. Goal: lost players can come back (N-08).
 2. Tasks:

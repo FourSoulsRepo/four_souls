@@ -21,9 +21,11 @@ const (
 const maxAutoSteps = 1000
 
 // after runs automatic passes, then sends everyone the result and
-// restarts the response timer (6.7).
-func (r *Room) after(events []engine.Event) {
-	r.step++
+// restarts the response timer (6.7). applied: an intent changed the game.
+func (r *Room) after(events []engine.Event, applied bool) {
+	if applied {
+		r.step++
+	}
 	for range maxAutoSteps {
 		in, ok := r.autoIntent()
 		if !ok {
@@ -45,10 +47,13 @@ func (r *Room) after(events []engine.Event) {
 // saw (N-06).
 func (r *Room) autoIntent() (engine.Intent, bool) {
 	g := r.game
-	if g.Over {
+	if g.Over || r.paused() {
 		return engine.Intent{}, false
 	}
 	w := g.Prompt()
+	if w.Player >= 0 && int(w.Player) < len(r.seats) && r.seats[w.Player].kicked {
+		return r.forcedIntent() // a kicked seat stays empty (N-08)
+	}
 	if w.Kind != engine.PromptPriority {
 		return engine.Intent{}, false
 	}
@@ -92,7 +97,7 @@ func (r *Room) skipAll(c *Client, env protocol.Envelope) {
 			s.skip = append(s.skip, it.ID)
 		}
 	}
-	r.after(nil)
+	r.after(nil, false)
 }
 
 // restartTimer starts the response timer for whoever must answer now.
@@ -103,7 +108,7 @@ func (r *Room) restartTimer() {
 	}
 	r.timerGen++
 	r.deadline = time.Time{}
-	if r.opts.ResponseTimer == 0 || r.game.Over {
+	if r.opts.ResponseTimer == 0 || r.game.Over || r.paused() {
 		return
 	}
 	d := time.Duration(r.opts.ResponseTimer+animationAllowance) * r.second
@@ -116,33 +121,111 @@ func (r *Room) restartTimer() {
 // or end the turn; a discard takes the first cards; a choice takes the
 // first option.
 func (r *Room) timeUp(gen int) {
-	if gen != r.timerGen || r.game == nil || r.game.Over {
+	if gen != r.timerGen || r.game == nil || r.game.Over || r.paused() {
 		return
 	}
-	w := r.game.Prompt()
-	allowed := r.game.Allowed(w.Player)
-	var in engine.Intent
-	switch w.Kind {
-	case engine.PromptPriority:
-		i := slices.IndexFunc(allowed, func(x engine.Intent) bool { return x.Kind == engine.IntentPass })
-		if i < 0 {
-			i = slices.IndexFunc(allowed, func(x engine.Intent) bool { return x.Kind == engine.IntentEndTurn })
-		}
-		if i < 0 {
-			return
-		}
-		in = allowed[i]
-	case engine.PromptDiscard:
-		in = allowed[0]
-		in.Objects = in.Objects[:w.Count]
-	case engine.PromptChoose:
-		in = allowed[0]
-	case engine.PromptNone, engine.PromptGameOver:
+	in, ok := r.forcedIntent()
+	if !ok {
 		return
 	}
 	events, err := r.game.Apply(in)
 	if err != nil {
 		return
 	}
-	r.after(events)
+	r.after(events, true)
+}
+
+// paused: a running game waits for a seated player who left (N-08).
+func (r *Room) paused() bool {
+	return r.game != nil && !r.game.Over && len(r.away()) > 0
+}
+
+// away lists the seats whose player left and was not kicked.
+func (r *Room) away() []int {
+	var out []int
+	for i, s := range r.seats {
+		if s.client == nil && !s.kicked {
+			out = append(out, i)
+		}
+	}
+	return out
+}
+
+// resume continues a game once nobody is away any more.
+func (r *Room) resume() {
+	if r.game == nil {
+		return
+	}
+	if !r.paused() {
+		r.votes = nil
+		r.after(nil, false)
+		return
+	}
+	r.broadcast(nil)
+}
+
+// vote records a connected player's vote while the game is paused.
+// When more than half of them vote to kick, every missing player is
+// kicked; their seats stay empty (N-08).
+func (r *Room) vote(c *Client, env protocol.Envelope) {
+	var m protocol.Vote
+	if err := env.Unpack(&m); err != nil {
+		c.fail(env.ID, protocol.ErrBadMessage, err.Error())
+		return
+	}
+	if c.seat < 0 || !r.paused() {
+		c.fail(env.ID, protocol.ErrBadMessage, "nothing to vote on")
+		return
+	}
+	r.votes = slices.DeleteFunc(r.votes, func(v protocol.Vote) bool { return v.Seat == c.seat })
+	r.votes = append(r.votes, protocol.Vote{Seat: c.seat, Kick: m.Kick})
+	connected, kicks := 0, 0
+	for _, s := range r.seats {
+		if s.client != nil {
+			connected++
+		}
+	}
+	for _, v := range r.votes {
+		if v.Kick {
+			kicks++
+		}
+	}
+	if kicks*2 <= connected {
+		r.broadcast(nil)
+		return
+	}
+	for _, i := range r.away() {
+		r.seats[i].kicked = true
+	}
+	r.votes = nil
+	r.after(nil, false)
+}
+
+// forcedIntent is the minimal answer for the waiting player, when the
+// player is out of time or kicked: pass or end the turn; a discard
+// takes the first cards; a choice takes the first option.
+func (r *Room) forcedIntent() (engine.Intent, bool) {
+	w := r.game.Prompt()
+	allowed := r.game.Allowed(w.Player)
+	if len(allowed) == 0 {
+		return engine.Intent{}, false
+	}
+	switch w.Kind {
+	case engine.PromptPriority:
+		for _, kind := range []engine.IntentKind{engine.IntentPass, engine.IntentEndTurn} {
+			if i := slices.IndexFunc(allowed, func(x engine.Intent) bool { return x.Kind == kind }); i >= 0 {
+				return allowed[i], true
+			}
+		}
+		return engine.Intent{}, false
+	case engine.PromptDiscard:
+		in := allowed[0]
+		in.Objects = in.Objects[:w.Count]
+		return in, true
+	case engine.PromptChoose:
+		return allowed[0], true
+	case engine.PromptNone, engine.PromptGameOver:
+		return engine.Intent{}, false
+	}
+	return engine.Intent{}, false
 }

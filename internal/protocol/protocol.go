@@ -48,6 +48,9 @@ const (
 
 	// Turn flow (6.7).
 	TypeSkipAll = "skip_all" // client → server: pass on the visible stack (N-06)
+
+	// Disconnects (6.8).
+	TypeVote = "vote" // client → server: wait for the missing player, or kick them
 )
 
 // Envelope wraps every message. ID is set by the client on requests;
@@ -106,6 +109,21 @@ type Update struct {
 	Deadline int64 `json:"deadline,omitempty"`
 	// SkipAll is set while this player skips the visible stack (N-06).
 	SkipAll bool `json:"skip_all,omitempty"`
+	// Pause is set while the game waits for a disconnected player (N-08).
+	Pause *Pause `json:"pause,omitempty"`
+}
+
+// Pause is a game waiting for disconnected players, and the vote.
+type Pause struct {
+	Away  []int  `json:"away"`  // seats whose player is gone
+	Votes []Vote `json:"votes"` // the connected players' votes so far
+}
+
+// Vote is one player's vote while the game is paused: Kick true kicks
+// the missing players, false waits longer.
+type Vote struct {
+	Seat int  `json:"seat"`
+	Kick bool `json:"kick"`
 }
 
 // SkipAll turns "skip all" on or off (N-06).
@@ -119,7 +137,8 @@ type Seat struct {
 	Seat      int    `json:"seat"`
 	Name      string `json:"name"`
 	Connected bool   `json:"connected"`
-	Ready     bool   `json:"ready,omitempty"` // in the lobby
+	Ready     bool   `json:"ready,omitempty"`  // in the lobby
+	Kicked    bool   `json:"kicked,omitempty"` // the seat is empty for good (N-08)
 }
 
 // GameInfo is one game in the lobby list.
@@ -238,6 +257,7 @@ const (
 	ErrBadSetup       = "bad_setup"
 	ErrAtTable        = "at_table" // already sitting at a table
 	ErrNotYourTurn    = "not_your_turn"
+	ErrPaused         = "paused" // the game waits for a disconnected player
 	ErrBadCard        = "bad_card"
 )
 

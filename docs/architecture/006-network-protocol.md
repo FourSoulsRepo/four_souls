@@ -93,6 +93,7 @@ Use options 1, 3, 5 and 10.
    5. Match setup: `create` carries options; then `setup`, `ban`, `pick` (6.6).
    6. Turn flow: `skip_all`; `update` shows the response timer's deadline (6.7).
    7. The server passes for a player who can only pass (N-05).
+   8. Disconnects: `update` shows the pause and the votes; clients send `vote` (6.8).
 9. Playing over the internet, until a relay exists
    1. A virtual LAN (Tailscale, ZeroTier, Hamachi, Radmin VPN), or port forwarding.
    2. Or a dedicated server on a rented VPS.

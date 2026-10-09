@@ -15,3 +15,4 @@
 {"type":"ban","id":9,"data":{"card":"cain"}}
 {"type":"pick","id":10,"data":{"card":"isaac"}}
 {"type":"skip_all","id":11,"data":{"on":true}}
+{"type":"vote","id":12,"data":{"seat":0,"kick":true}}

@@ -240,8 +240,7 @@ func (r *Room) play(characters []engine.CardRef) {
 		panic(fmt.Sprintf("server: the checked setup failed: %v", err))
 	}
 	r.game, r.match = g, nil
-	r.step = -1 // after counts the start as step 0
-	r.after(nil)
+	r.after(nil, false) // the start is step 0
 }
 
 // broadcastSetup sends every client the setup state.

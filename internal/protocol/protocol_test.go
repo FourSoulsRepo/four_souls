@@ -45,6 +45,7 @@ func TestGolden(t *testing.T) {
 		{TypeBan, 9, BanCard{Card: "cain"}},
 		{TypePick, 10, PickCard{Card: "isaac"}},
 		{TypeSkipAll, 11, SkipAll{On: true}},
+		{TypeVote, 12, Vote{Kick: true}},
 	}
 	var got bytes.Buffer
 	for _, m := range messages {

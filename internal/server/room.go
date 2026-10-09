@@ -22,6 +22,7 @@ type roomSeat struct {
 	token  string
 	client *Client
 	skip   []int // stack item IDs a "skip all" passes on (N-06); nil: off
+	kicked bool  // empty for good after a vote (N-08)
 }
 
 type request struct {
@@ -49,7 +50,8 @@ type Room struct {
 
 	// second is one second of the ban and response timers; tests shorten it.
 	second   time.Duration
-	timer    *time.Timer // the response timer (N-07)
+	votes    []protocol.Vote // while paused (N-08)
+	timer    *time.Timer     // the response timer (N-07)
 	timerGen int
 	deadline time.Time
 }
@@ -141,6 +143,8 @@ func (r *Room) handle(req request) {
 		r.pick(c, env)
 	case protocol.TypeSkipAll:
 		r.skipAll(c, env)
+	case protocol.TypeVote:
+		r.vote(c, env)
 	default:
 		c.fail(env.ID, protocol.ErrBadMessage, "not during a game: "+env.Type)
 	}
@@ -149,8 +153,9 @@ func (r *Room) handle(req request) {
 // attach gives a returning player their seat back (N-08).
 func (r *Room) attach(c *Client, token string) {
 	i := slices.Index(r.tokens, token)
-	if i < 0 {
+	if i < 0 || r.seats[i].kicked {
 		c.fail(0, protocol.ErrNotSeated, "no seat for this token")
+		c.conn.Close()
 		return
 	}
 	if old := r.seats[i].client; old != nil && old != c {
@@ -160,10 +165,11 @@ func (r *Room) attach(c *Client, token string) {
 	r.seats[i].client = c
 	c.seat = i
 	r.clients = append(r.clients, c)
-	r.broadcast(nil)
 	if r.match != nil {
 		r.broadcastSetup()
+		return
 	}
+	r.resume()
 }
 
 // intent applies a seated player's intent and updates everyone.
@@ -174,6 +180,10 @@ func (r *Room) intent(c *Client, env protocol.Envelope) {
 	}
 	if r.game == nil {
 		c.fail(env.ID, protocol.ErrBadMessage, "the game has not started: bans and picks first")
+		return
+	}
+	if r.paused() {
+		c.fail(env.ID, protocol.ErrPaused, "the game waits for a player who left")
 		return
 	}
 	var m protocol.Intent
@@ -193,7 +203,7 @@ func (r *Room) intent(c *Client, env protocol.Envelope) {
 		c.fail(env.ID, protocol.ErrBadMessage, err.Error())
 		return
 	}
-	r.after(events)
+	r.after(events, true)
 }
 
 // broadcast sends every client its update; during the setup phase,
@@ -208,7 +218,7 @@ func (r *Room) broadcast(events []engine.Event) {
 func (r *Room) seatViews() []protocol.Seat {
 	seats := make([]protocol.Seat, len(r.seats))
 	for i, s := range r.seats {
-		seats[i] = protocol.Seat{Seat: i, Name: s.name, Connected: s.client != nil}
+		seats[i] = protocol.Seat{Seat: i, Name: s.name, Connected: s.client != nil, Kicked: s.kicked}
 	}
 	return seats
 }
@@ -236,14 +246,22 @@ func (r *Room) update(c *Client, events []engine.Event) {
 	if c.seat >= 0 {
 		u.SkipAll = r.seats[c.seat].skip != nil
 	}
+	if r.paused() {
+		u.Pause = &protocol.Pause{Away: r.away(), Votes: slices.Clone(r.votes)}
+	}
 	c.send(protocol.TypeUpdate, 0, u)
 }
 
-// drop forgets a connection; its seat stays for its token.
+// drop forgets a connection; its seat stays for its token. During a
+// game this pauses it for everyone (N-08).
 func (r *Room) drop(c *Client) {
 	r.clients = slices.DeleteFunc(r.clients, func(x *Client) bool { return x == c })
 	if c.seat >= 0 && r.seats[c.seat].client == c {
 		r.seats[c.seat].client = nil
+		r.seats[c.seat].skip = nil
+		if r.paused() {
+			r.restartTimer() // stops it while paused
+		}
 		r.broadcast(nil)
 	}
 	c.seat = -1

@@ -69,7 +69,7 @@ func TestSkipAll(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	r := &Room{game: g, seats: []roomSeat{{}, {}}}
+	r := &Room{game: g, seats: []roomSeat{{client: &Client{}}, {client: &Client{}}}} // both connected
 	if _, ok := r.autoIntent(); ok {
 		t.Fatal("a player who can act was skipped") // Isaac's character is charged
 	}
