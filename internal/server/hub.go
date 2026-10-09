@@ -77,6 +77,7 @@ func (c *Client) fail(id int, code, message string) {
 
 // table is a game in the lobby, before it starts.
 type table struct {
+	n     int // the game's number on this server
 	id    string
 	host  string
 	sets  []string
@@ -125,6 +126,8 @@ type Hub struct {
 	records string
 	// cards is the text of every known card, for records (RP-10).
 	cards []record.Card
+	// seed, if not 0, makes game n's seed seed+n.
+	seed uint64
 }
 
 // NewHub makes a lobby with the card sets the engine knows.
@@ -321,7 +324,7 @@ func (h *Hub) create(c *Client, env protocol.Envelope) {
 		return
 	}
 	h.seq++
-	t := &table{id: "g" + strconv.Itoa(h.seq), host: c.name, sets: m.Sets, opts: opts, seats: make([]tableSeat, m.Seats)}
+	t := &table{n: h.seq, id: "g" + strconv.Itoa(h.seq), host: c.name, sets: m.Sets, opts: opts, seats: make([]tableSeat, m.Seats)}
 	h.tables = append(h.tables, t)
 	h.sit(c, t, 0)
 }
@@ -404,7 +407,11 @@ func (h *Hub) start(t *table) {
 	for i, s := range t.seats {
 		seats[i] = roomSeat{name: s.name, token: s.token, client: s.client}
 	}
-	setup := engine.Setup{Seed: seed(), Players: len(t.seats), Sets: setsOf(t.sets), BonusSouls: !t.opts.NoBonusSouls}
+	gameSeed := seed()
+	if h.seed != 0 {
+		gameSeed = h.seed + uint64(t.n) //nolint:gosec // n is positive
+	}
+	setup := engine.Setup{Seed: gameSeed, Players: len(t.seats), Sets: setsOf(t.sets), BonusSouls: !t.opts.NoBonusSouls}
 	room, err := NewRoom(setup, t.opts, seats)
 	if err == nil {
 		room.second = h.second

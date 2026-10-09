@@ -116,7 +116,7 @@ Ideas: N-01 – N-09, N-11, CD-02, CD-03, GS-01 – GS-06, GS-09, GS-10, A-12, R
    1. Writer and reader round-trip tests pass.
    2. ADR: record format.
 
-### [ ] 6.10 Headless integration tests
+### [x] 6.10 Headless integration tests
 
 1. Goal: full games through the real server.
 2. Tasks:
