@@ -2,6 +2,7 @@
 package main
 
 import (
+	"context"
 	"embed"
 	"log"
 
@@ -15,6 +16,7 @@ var frontend embed.FS
 
 func main() {
 	app := NewApp()
+	host := &Host{}
 
 	err := wails.Run(&options.App{
 		Title:  "Four Souls",
@@ -24,7 +26,8 @@ func main() {
 			Assets: frontend,
 		},
 		BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 1},
-		Bind:             []any{app},
+		Bind:             []any{app, host},
+		OnShutdown:       func(ctx context.Context) { _ = host.stop(ctx) }, //nolint:errcheck // the app is closing
 	})
 	if err != nil {
 		log.Fatal(err)

@@ -43,7 +43,7 @@ Ideas: N-01 – N-09, N-11, CD-02, CD-03, GS-01 – GS-06, GS-09, GS-10, A-12, R
 3. Done when:
    1. Server starts, accepts clients, stops cleanly.
 
-### [ ] 6.4 Hosting from the app
+### [x] 6.4 Hosting from the app
 
 1. Goal: a player's app runs the server (N-01).
 2. Tasks:

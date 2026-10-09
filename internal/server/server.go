@@ -113,3 +113,30 @@ func (s *Server) Shutdown(ctx context.Context) error {
 
 // seed is a new game's seed; the engine itself never reads the clock.
 func seed() uint64 { return uint64(time.Now().UnixNano()) } //nolint:gosec // a game seed, not a secret
+
+// LocalAddresses lists this computer's IPv4 addresses that friends may
+// reach: LAN and virtual LAN (Tailscale, ZeroTier, …), not loopback.
+func LocalAddresses() []string {
+	var out []string
+	ifaces, err := net.Interfaces()
+	if err != nil {
+		return nil
+	}
+	for _, iface := range ifaces {
+		if iface.Flags&net.FlagUp == 0 || iface.Flags&net.FlagLoopback != 0 {
+			continue
+		}
+		addrs, err := iface.Addrs()
+		if err != nil {
+			continue
+		}
+		for _, a := range addrs {
+			if ipn, ok := a.(*net.IPNet); ok {
+				if ip4 := ipn.IP.To4(); ip4 != nil && !ip4.IsLinkLocalUnicast() {
+					out = append(out, ip4.String())
+				}
+			}
+		}
+	}
+	return out
+}
