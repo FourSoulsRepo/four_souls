@@ -1,0 +1,57 @@
+name: Card images
+description: >
+  Checks out the private card images repo (FourSoulsRepo/card_db) into
+  pkg/card_db/images, at the commit this repository's submodule points to.
+  Needs a read-only deploy key; without one it does nothing and reports
+  available=false (for example on pull requests from forks).
+
+inputs:
+  ssh-key:
+    description: Private deploy key with read access to FourSoulsRepo/card_db.
+    required: false
+    default: ""
+
+outputs:
+  available:
+    description: "true when the images were checked out"
+    value: ${{ steps.key.outputs.available }}
+
+runs:
+  using: composite
+  steps:
+    - name: Check deploy key
+      id: key
+      shell: bash
+      env:
+        SSH_KEY: ${{ inputs.ssh-key }}
+      run: |
+        if [ -n "$SSH_KEY" ]; then
+          echo "available=true" >> "$GITHUB_OUTPUT"
+        else
+          echo "available=false" >> "$GITHUB_OUTPUT"
+          echo "::notice::No CARD_DB_DEPLOY_KEY secret: building without card images."
+        fi
+
+    - name: Find the pinned images commit
+      id: pin
+      if: steps.key.outputs.available == 'true'
+      shell: bash
+      run: echo "sha=$(git rev-parse HEAD:pkg/card_db/images)" >> "$GITHUB_OUTPUT"
+
+    - name: Check out card images
+      if: steps.key.outputs.available == 'true'
+      uses: actions/checkout@v5
+      with:
+        repository: FourSoulsRepo/card_db
+        ref: ${{ steps.pin.outputs.sha }}
+        ssh-key: ${{ inputs.ssh-key }}
+        path: pkg/card_db/images
+        persist-credentials: false
+
+    - name: Count images
+      if: steps.key.outputs.available == 'true'
+      shell: bash
+      run: |
+        n=$(find pkg/card_db/images -name '*.webp' | wc -l)
+        echo "card images: $n"
+        test "$n" -gt 0

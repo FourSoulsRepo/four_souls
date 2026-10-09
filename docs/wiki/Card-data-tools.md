@@ -24,4 +24,5 @@ Manual fixes go into `pkg/card_db/overrides/<set>.json`, which the tools read bu
 * With access: `git clone --recurse-submodules …` or `git submodule update --init`.
 * Without access (public clones, forks): the folder stays empty, everything still builds, and cards show as text.
 * Release builds pack images with `-tags "embed cardimages"`; plain `-tags embed` packs only card data.
+* CI: `.github/actions/card-images` checks the images out at the pinned submodule commit, using the secret `CARD_DB_DEPLOY_KEY` (a read-only deploy key of `FourSoulsRepo/card_db`). Every app build runs twice, text-only and with images; without the secret (e.g. pull requests from forks) the image builds skip themselves.
 * Its history is a single commit: after regenerating images, commit inside the submodule with `git commit --amend`, force-push it, then commit the new submodule pointer here.

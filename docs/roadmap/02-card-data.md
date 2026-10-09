@@ -126,5 +126,5 @@ Ideas: CD-01, CD-04, CD-06, CD-07, CD-08, A-11.
 5. Private image repo:
    1. Done: `FourSoulsRepo/card_db`, submodule at `pkg/card_db/images`.
    2. Done: `-tags "embed cardimages"` packs images; plain `embed` does not.
-   3. Later: CI checks out the submodule with a token secret (step 8).
+   3. CI checks out the images with a read-only deploy key secret.
    4. New images are added by amending its single commit.
