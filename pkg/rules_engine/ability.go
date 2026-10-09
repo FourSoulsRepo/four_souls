@@ -131,10 +131,11 @@ const (
 )
 
 // TargetSpec says what to choose; the engine always asks (ADR 005).
-// Where, if set, narrows the options further.
+// Where, if set, narrows the options further; self is the ability's own
+// object (the loot card, for a loot ability).
 type TargetSpec struct {
 	Kind  TargetKind
-	Where func(g *Game, chooser PlayerID, c Chosen) bool
+	Where func(g *Game, self ObjectID, c Chosen) bool
 }
 
 // Choose builds a target spec: Choose(TargetMonsterOrPlayer).
@@ -142,7 +143,7 @@ func Choose(k TargetKind) TargetSpec { return TargetSpec{Kind: k} }
 
 // ChooseWhere builds a target spec with a filter: "the player with the
 // most souls".
-func ChooseWhere(k TargetKind, where func(g *Game, chooser PlayerID, c Chosen) bool) TargetSpec {
+func ChooseWhere(k TargetKind, where func(g *Game, self ObjectID, c Chosen) bool) TargetSpec {
 	return TargetSpec{Kind: k, Where: where}
 }
 
@@ -390,7 +391,7 @@ type rechargeEffect struct{ target int }
 // RechargeTarget recharges the target item ("Recharge an item").
 func RechargeTarget(t int) Effect { return rechargeEffect{t} }
 
-func (e rechargeEffect) apply(c *Ctx) { c.G.recharge1(c.target(e.target).Object) }
+func (e rechargeEffect) apply(c *Ctx) { c.G.Recharge(c.target(e.target).Object) }
 
 type rechargeAllEffect struct{ target int }
 
@@ -400,12 +401,13 @@ func RechargeItemsOf(t int) Effect { return rechargeAllEffect{t} }
 func (e rechargeAllEffect) apply(c *Ctx) {
 	for _, id := range c.G.Players[c.target(e.target).Player].InPlay {
 		if c.G.Object(id).Role == RoleItem {
-			c.G.recharge1(id)
+			c.G.Recharge(id)
 		}
 	}
 }
 
-func (g *Game) recharge1(id ObjectID) {
+// Recharge turns an object in play upright (R-MECH-22).
+func (g *Game) Recharge(id ObjectID) {
 	o := g.Object(id)
 	if o.Zone.Kind != ZoneInPlay || o.Charged {
 		return
@@ -574,3 +576,7 @@ func (preventDeathEffect) apply(c *Ctx) {
 		}
 	}
 }
+
+// NotThis is a target filter: anything but the ability's own object
+// ("another item").
+func NotThis(_ *Game, self ObjectID, c Chosen) bool { return c.Object != self }

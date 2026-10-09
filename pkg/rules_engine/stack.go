@@ -95,7 +95,11 @@ func (g *Game) resolveTop() {
 	case StackRoll:
 		// Continuous roll changes apply, then the result is final (R-DICE-06).
 		if it.Controller != NoPlayer {
-			it.Roll = min(max(it.Roll+g.bonus(StatRoll, it.Controller, 0), 1), 6)
+			bonus := g.bonus(StatRoll, it.Controller, 0)
+			if it.Attack {
+				bonus += g.bonus(StatAttackRoll, it.Controller, 0)
+			}
+			it.Roll = min(max(it.Roll+bonus, 1), 6)
 		}
 		g.emit(Event{Kind: EvRollResolved, Player: it.Controller, Amount: it.Roll})
 		if it.Attack {
@@ -212,4 +216,14 @@ func (g *Game) EndTurnNow() {
 	}
 	g.Turn.EndDeclared = true
 	g.emit(Event{Kind: EvTurnEndedEarly, Player: g.Turn.Active})
+}
+
+// StackItemByID returns the stack item with the given ID.
+func (g *Game) StackItemByID(id int) (StackItem, bool) {
+	for _, it := range g.Stack {
+		if it.ID == id {
+			return it, true
+		}
+	}
+	return StackItem{}, false
 }

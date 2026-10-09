@@ -5,11 +5,9 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 // Breakfast (Passive Treasure Card)
 //
 //	{HP}
-//
-// TODO(card): implement the text above, then delete this line.
-// Until then `go run ./cmd/cardgen` rewrites this file from card_db.
 var breakfast = engine.CardDef{
-	Ref:    "breakfast",
-	Kind:   engine.TreasureCard,
-	Copies: 1,
+	Ref:     "breakfast",
+	Kind:    engine.TreasureCard,
+	Copies:  1,
+	Statics: []engine.Static{engine.YouHave(engine.StatPlayerHP, 1)},
 }

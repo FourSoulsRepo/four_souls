@@ -70,7 +70,11 @@ func (g *Game) MonsterATK(id ObjectID) int {
 
 // declareAttack: priority passes before a target is chosen (R-ATK-02).
 func (g *Game) declareAttack(p PlayerID) {
-	g.Turn.Attacks--
+	if g.Turn.Attacks > 0 {
+		g.Turn.Attacks--
+	} else {
+		g.Turn.BonusAttacksUsed++
+	}
 	g.Attack = AttackState{On: true}
 	g.emit(Event{Kind: EvAttackDeclared, Player: p})
 	g.openWindow(p)
@@ -388,4 +392,9 @@ func (g *Game) d6() int {
 		return r
 	}
 	return g.RNG.D6()
+}
+
+// attacksLeft is how many attacks the active player may still declare.
+func (g *Game) attacksLeft() int {
+	return g.Turn.Attacks + max(g.bonus(StatAttacks, g.Turn.Active, 0)-g.Turn.BonusAttacksUsed, 0)
 }

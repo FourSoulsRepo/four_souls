@@ -6,11 +6,17 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 //
 //	{Paid Effect}Pay 4¢:
 //	Recharge an item.
-//
-// TODO(card): implement the text above, then delete this line.
-// Until then `go run ./cmd/cardgen` rewrites this file from card_db.
 var batteryBum = engine.CardDef{
 	Ref:    "battery_bum",
 	Kind:   engine.TreasureCard,
 	Copies: 1,
+	Abilities: []engine.Ability{
+		{
+			Kind:    engine.Activated,
+			Text:    "Pay 4¢: Recharge an item.",
+			Costs:   []engine.Cost{engine.PayCents(4)},
+			Targets: []engine.TargetSpec{engine.Choose(engine.TargetItem)},
+			Effects: []engine.Effect{engine.RechargeTarget(0)},
+		},
+	},
 }

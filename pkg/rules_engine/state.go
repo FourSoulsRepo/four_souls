@@ -275,8 +275,8 @@ func (g *Game) Checksum() (uint64, error) {
 
 // inPlay lists the objects in play whose abilities work, in a fixed
 // order: each player's character and play area in seat order, then the
-// top of every slot. Souls are left out: a soul only counts for its
-// value (R-CARD-18).
+// top of every monster and room slot. Souls are left out: a soul only
+// counts for its value (R-CARD-18).
 func (g *Game) inPlay() []ObjectID {
 	var out []ObjectID
 	for _, pl := range g.Players {
@@ -287,7 +287,8 @@ func (g *Game) inPlay() []ObjectID {
 			}
 		}
 	}
-	for _, rows := range [][]Slot{g.Shop, g.Monsters, g.Rooms} {
+	// Shop items' abilities do not work in the shop (R-CARD-05).
+	for _, rows := range [][]Slot{g.Monsters, g.Rooms} {
 		for _, s := range rows {
 			if top, ok := s.TopOf(); ok && g.Object(top).Zone.Kind == ZoneInPlay {
 				out = append(out, top)

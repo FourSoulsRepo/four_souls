@@ -130,3 +130,19 @@ func testOneOnTop(t *testing.T, card engine.CardRef, d engine.DeckKind) {
 		}
 	}
 }
+
+// itemTable: player 0 (Isaac) has the items and the hand; player 1 is
+// Cain; a fly and a leech are in the monster slots.
+func itemTable(t *testing.T, items []engine.CardRef, hand ...engine.CardRef) *enginetest.Table {
+	t.Helper()
+	return enginetest.NewSetup(t, engine.SituationSetup{
+		Players: []engine.SituationPlayer{
+			{Character: "isaac", Items: items, Hand: hand},
+			seat("cain"),
+		},
+		Monsters: []engine.CardRef{"fly", "leech"},
+	}, Set)
+}
+
+// items is a shorthand for a list of cards.
+func items(cards ...engine.CardRef) []engine.CardRef { return cards }

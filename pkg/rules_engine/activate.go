@@ -38,27 +38,27 @@ func (g *Game) activatable(p PlayerID, src ObjectID, i int) error {
 			return refuse("R-ABIL-07", "cannot pay the cost (%s)", c.label())
 		}
 	}
-	return g.targetsAvailable(a, p)
+	return g.targetsAvailable(a, p, src)
 }
 
 // targetsAvailable checks every target spec has something to choose; an
 // ability with modes needs one mode whose targets are there.
-func (g *Game) targetsAvailable(a Ability, p PlayerID) error {
+func (g *Game) targetsAvailable(a Ability, p PlayerID, src ObjectID) error {
 	if len(a.Modes) > 0 {
-		if len(g.availableModes(a, p)) == 0 {
+		if len(g.availableModes(a, p, src)) == 0 {
 			return refuse("R-ABIL-06", "no option has a valid target")
 		}
 		return nil
 	}
-	if !g.hasTargets(a.Targets, p) {
+	if !g.hasTargets(a.Targets, p, src) {
 		return refuse("R-ABIL-06", "no valid target")
 	}
 	return nil
 }
 
-func (g *Game) hasTargets(specs []TargetSpec, p PlayerID) bool {
+func (g *Game) hasTargets(specs []TargetSpec, p PlayerID, src ObjectID) bool {
 	for _, t := range specs {
-		if opts, _ := g.targetOptions(t, p); len(opts) == 0 {
+		if opts, _ := g.targetOptions(t, p, src); len(opts) == 0 {
 			return false
 		}
 	}
@@ -66,10 +66,10 @@ func (g *Game) hasTargets(specs []TargetSpec, p PlayerID) bool {
 }
 
 // availableModes lists the modes of a whose targets can be chosen.
-func (g *Game) availableModes(a Ability, p PlayerID) []int {
+func (g *Game) availableModes(a Ability, p PlayerID, src ObjectID) []int {
 	var out []int
 	for i, m := range a.Modes {
-		if g.hasTargets(m.Targets, p) {
+		if g.hasTargets(m.Targets, p, src) {
 			out = append(out, i)
 		}
 	}
@@ -88,7 +88,7 @@ func (g *Game) startActivation(a Activation) {
 		g.nextTarget()
 		return
 	}
-	modes := g.availableModes(ab, a.Player)
+	modes := g.availableModes(ab, a.Player, a.Source)
 	labels := make([]string, 0, len(modes)+1)
 	for _, m := range modes {
 		labels = append(labels, ab.Modes[m].Text)
@@ -120,7 +120,7 @@ func (g *Game) nextTarget() {
 	a := g.Activating
 	specs := g.targetSpecs(a.Ability, a.Mode)
 	if len(a.Chosen) < len(specs) {
-		opts, labels := g.targetOptions(specs[len(a.Chosen)], a.Player)
+		opts, labels := g.targetOptions(specs[len(a.Chosen)], a.Player, a.Source)
 		labels = append(labels, "cancel")
 		g.ask(Choice{Purpose: ChooseTarget, Player: a.Player, Rule: "R-ABIL-04", Targets: opts}, labels)
 		return
@@ -170,7 +170,7 @@ func (g *Game) finishActivation() {
 }
 
 // targetOptions lists what may be chosen for a spec, with labels.
-func (g *Game) targetOptions(t TargetSpec, p PlayerID) ([]Chosen, []string) {
+func (g *Game) targetOptions(t TargetSpec, p PlayerID, src ObjectID) ([]Chosen, []string) {
 	var opts []Chosen
 	var labels []string
 	others := t.Kind == TargetOtherPlayer
@@ -245,7 +245,7 @@ func (g *Game) targetOptions(t TargetSpec, p PlayerID) ([]Chosen, []string) {
 	if t.Where != nil {
 		keptOpts, keptLabels := opts[:0], labels[:0]
 		for i, o := range opts {
-			if t.Where(g, p, o) {
+			if t.Where(g, src, o) {
 				keptOpts, keptLabels = append(keptOpts, o), append(keptLabels, labels[i])
 			}
 		}
@@ -312,7 +312,7 @@ func (g *Game) resolveAbility(it StackItem) {
 func (g *Game) lootPlaysFor(p PlayerID) int {
 	n := g.Players[p].ExtraLootPlays
 	if p == g.Turn.Active {
-		n += g.Turn.LootPlays
+		n += g.Turn.LootPlays + max(g.bonus(StatLootPlays, p, 0)-g.Turn.BonusLootUsed, 0)
 	}
 	return n
 }
@@ -320,6 +320,10 @@ func (g *Game) lootPlaysFor(p PlayerID) int {
 func (g *Game) useLootPlay(p PlayerID) {
 	if p == g.Turn.Active && g.Turn.LootPlays > 0 {
 		g.Turn.LootPlays--
+		return
+	}
+	if p == g.Turn.Active && g.bonus(StatLootPlays, p, 0) > g.Turn.BonusLootUsed {
+		g.Turn.BonusLootUsed++
 		return
 	}
 	g.Players[p].ExtraLootPlays--

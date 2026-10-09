@@ -19,7 +19,11 @@ const (
 
 // declarePurchase: priority passes before the item is chosen (R-SHOP-02).
 func (g *Game) declarePurchase(p PlayerID) {
-	g.Turn.Purchases--
+	if g.Turn.Purchases > 0 {
+		g.Turn.Purchases--
+	} else {
+		g.Turn.BonusPurchasesUsed++
+	}
 	g.Purchase = PurchaseState{On: true}
 	g.emit(Event{Kind: EvPurchaseDeclared, Player: p})
 	g.openWindow(p)
@@ -63,4 +67,9 @@ func (g *Game) purchase(item ObjectID, fromDeck bool) {
 	g.Players[p].InPlay = append(g.Players[p].InPlay, nid)
 	g.emit(Event{Kind: EvPurchased, Player: p, Object: nid, Card: o.Card})
 	g.enqueue(Action{Kind: ActRefillSlots, Player: NoPlayer}) // R-SHOP-06
+}
+
+// purchasesLeft is how many purchases the active player may still declare.
+func (g *Game) purchasesLeft() int {
+	return g.Turn.Purchases + max(g.bonus(StatPurchases, g.Turn.Active, 0)-g.Turn.BonusPurchasesUsed, 0)
 }

@@ -19,7 +19,7 @@ var xxJudgement = engine.CardDef{
 	},
 }
 
-func mostSouls(g *engine.Game, _ engine.PlayerID, c engine.Chosen) bool {
+func mostSouls(g *engine.Game, _ engine.ObjectID, c engine.Chosen) bool {
 	for _, pl := range g.Players {
 		if g.SoulValue(pl.ID) > g.SoulValue(c.Player) {
 			return false

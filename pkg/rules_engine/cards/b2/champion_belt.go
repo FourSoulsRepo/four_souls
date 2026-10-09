@@ -6,11 +6,9 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 //
 //	You have +1{ATK} for your first attack roll each turn.
 //	You may attack an additional time on your turn.
-//
-// TODO(card): implement the text above, then delete this line.
-// Until then `go run ./cmd/cardgen` rewrites this file from card_db.
 var championBelt = engine.CardDef{
-	Ref:    "champion_belt",
-	Kind:   engine.TreasureCard,
-	Copies: 1,
+	Ref:     "champion_belt",
+	Kind:    engine.TreasureCard,
+	Copies:  1,
+	Statics: []engine.Static{firstAttackRollATK, engine.YouHave(engine.StatAttacks, 1)},
 }

@@ -24,8 +24,13 @@ type Turn struct {
 	Attacks     int      `json:"attacks"`
 	Purchases   int      `json:"purchases"`
 	AttackRolls int      `json:"attack_rolls,omitempty"` // attack rolls resolved this turn
-	EndDeclared bool     `json:"end_declared,omitempty"`
-	DeathEnd    bool     `json:"death_end,omitempty"` // the active player died (R-DEATH-16)
+	// Bonus*Used count loot plays, attacks and purchases taken from
+	// static bonuses ("you may attack an additional time on your turn").
+	BonusLootUsed      int  `json:"bonus_loot_used,omitempty"`
+	BonusAttacksUsed   int  `json:"bonus_attacks_used,omitempty"`
+	BonusPurchasesUsed int  `json:"bonus_purchases_used,omitempty"`
+	EndDeclared        bool `json:"end_declared,omitempty"`
+	DeathEnd           bool `json:"death_end,omitempty"` // the active player died (R-DEATH-16)
 	// entered is true once the current step's automatic work is done.
 	Entered bool `json:"entered,omitempty"`
 }
@@ -191,7 +196,7 @@ func (g *Game) enterStep() {
 		g.emit(Event{Kind: EvStartOfTurn, Player: p}) // R-TURN-03
 		g.openWindow(p)
 	case StepLoot:
-		g.enqueue(Action{Kind: ActLoot, Player: p, Amount: 1}) // R-TURN-04
+		g.enqueue(Action{Kind: ActLoot, Player: p, Amount: 1 + g.bonus(StatLootStep, p, 0)}) // R-TURN-04
 	case StepLootWindow:
 		g.openWindow(p)
 	case StepAction:

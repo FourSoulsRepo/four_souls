@@ -119,7 +119,7 @@ func (g *Game) check(in Intent) error {
 			return refuse("R-CARD-08", "no loot play available")
 		}
 		if ab, ok := g.lootAbility(in.Objects[0]); ok {
-			if err := g.targetsAvailable(ab, in.Player); err != nil {
+			if err := g.targetsAvailable(ab, in.Player, in.Objects[0]); err != nil {
 				return err
 			}
 		}
@@ -137,14 +137,14 @@ func (g *Game) check(in Intent) error {
 		if w.Kind != PromptPriority || !g.inOpenActionPhase() || in.Player != g.Turn.Active {
 			return refuse("R-ATK-01", "only the active player attacks, in the action phase, with an empty stack")
 		}
-		if g.Turn.Attacks < 1 {
+		if g.attacksLeft() < 1 {
 			return refuse("R-TURN-07", "no attack left this turn")
 		}
 	case IntentPurchase:
 		if w.Kind != PromptPriority || !g.inOpenActionPhase() || in.Player != g.Turn.Active {
 			return refuse("R-SHOP-01", "only the active player purchases, in the action phase, with an empty stack")
 		}
-		if g.Turn.Purchases < 1 {
+		if g.purchasesLeft() < 1 {
 			return refuse("R-SHOP-05", "no purchase left this turn")
 		}
 	case IntentChoose:

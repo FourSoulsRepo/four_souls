@@ -12,9 +12,14 @@ const (
 	StatMonsterHP              // a monster's max HP
 	StatShopPrice              // the price of a shop item for a player
 	StatRoll                   // added to a player's dice rolls as they resolve (R-DICE-06)
+	StatAttackRoll             // added to a player's attack rolls
+	StatLootPlays              // more loot plays on your turn
+	StatAttacks                // more attacks on your turn
+	StatPurchases              // more purchases on your turn
+	StatLootStep               // more cards in your loot step
 )
 
-var statNames = []string{"ATK", "HP", "DC", "ATK", "HP", "price", "roll"}
+var statNames = []string{"ATK", "HP", "DC", "ATK", "HP", "price", "roll", "attack roll", "loot plays", "attacks", "purchases", "loot step"}
 
 func (s Stat) String() string { return statNames[s] }
 

@@ -63,7 +63,7 @@ Targets are always asked, with a "cancel" option before anything is paid. A targ
 | `Choose(TargetStackAbility)` | an item's ↷ or $ ability, or a loot being played |
 | `Choose(TargetCurse)` | a curse a player has |
 | `Choose(TargetYourItem)` | an item you control |
-| `ChooseWhere(kind, filter)` | e.g. the player with the most souls |
+| `ChooseWhere(kind, filter)` | e.g. the player with the most souls; `NotThis` is "another item" |
 
 Effects refer to targets by number: `DealDamage(1, 0)` hits the first target. `You` means the controller, for text without a target: `DealDamage(1, You)` is "Take 1 damage." A roll ability keeps its targets for the result: "Choose a player, then roll- deal damage equal to the result".
 
@@ -158,7 +158,9 @@ Roll(RollTable{}.Results(1, 2, Loot(1)).Results(3, 4, GainCents(3)).Results(5, 6
 | `YouHave(StatShopPrice, -5)` | Shop items you purchase cost 5¢ less. |
 | `MonstersHave(StatMonsterDC, 1)` | Monsters have +1 DC. |
 
-Stats: `StatPlayerATK`, `StatPlayerHP`, `StatMonsterDC`, `StatMonsterATK`, `StatMonsterHP`, `StatShopPrice`.
+Stats: `StatPlayerATK`, `StatPlayerHP`, `StatMonsterDC`, `StatMonsterATK`, `StatMonsterHP`, `StatShopPrice`, `StatRoll`, `StatAttackRoll`, `StatLootPlays`, `StatAttacks`, `StatPurchases`, `StatLootStep`.
+
+`YouHave(StatLootPlays, 1)` is "You may play an additional loot card on your turn"; `YouHave(StatLootStep, 1)` is "Loot +1 during your loot step"; `YouHave(StatAttackRoll, 1)` is "+1 to attack rolls". Shop items' abilities do not work in the shop (R-CARD-05).
 
 ## Replacement effects
 
