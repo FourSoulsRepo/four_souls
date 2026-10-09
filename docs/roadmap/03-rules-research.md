@@ -49,7 +49,7 @@ Ideas: R-01 – R-07.
    3. Russian adds card rulings in its FAQ; English points to the site.
    4. One rule differs (co-op timer on death); goes to 3.8.
 
-### [ ] 3.4 Reddit rulings
+### [x] 3.4 Reddit rulings
 
 1. Goal: rules questions from r/FourSouls.
 2. Tasks:
@@ -59,6 +59,11 @@ Ideas: R-01 – R-07.
    4. Mark answers by Yuggy (Rules Tzar) as high trust.
 3. Done when:
    1. A digest file lists questions with links.
+4. Result:
+   1. Public JSON is blocked; tools use a logged-in Chrome session.
+   2. Flair is "Gameplay Question"; search returns the newest 249.
+   3. Covers 2025-09 to 2026-10; top 3 answers each; 0 answers by Yuggy.
+   4. Later: search Yuggy's older comments for high-trust rulings.
 
 ### [ ] 3.5 Twitter / X rulings
 

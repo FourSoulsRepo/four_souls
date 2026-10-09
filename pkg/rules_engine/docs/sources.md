@@ -44,6 +44,14 @@ Order of trust when sources disagree:
 6. The FAQ page holds only a question form.
 7. Card pages carry no FAQs for the Base Game V2 cards.
 
+## Reddit (S-RED)
+
+1. Downloaded 2026-10-09 with a logged-in session (public JSON is blocked).
+2. Flair "Gameplay Question"; Reddit search returns the newest 249.
+3. Covers 2025-09-13 to 2026-10-09.
+4. Answers come from regular community members; none by Yuggy.
+5. Trust: medium; use as hints and for open cases, not as rulings.
+
 ## Russian translation (S-RU)
 
 1. Downloaded 2026-10-09.
