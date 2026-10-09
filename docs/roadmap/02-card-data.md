@@ -105,8 +105,8 @@ Ideas: CD-01, CD-04, CD-06, CD-07, CD-08, A-11.
    2. Card text is readable on zoom.
 4. Result:
    1. Source: site images, 962×1312 PNG, downloaded through Chrome.
-   2. Output: 600×819 WebP, quality 85, via `cwebp`.
-   3. Base Game: 287 images, 14.4 MB total, 51 KB average.
+   2. Output: 600×818 WebP; Catmull-Rom resize, then `cwebp -q 85 -m 6 -pass 10`.
+   3. Base Game: 287 images, 14.4 MB total, 52 KB average.
    4. Dense text (e.g. Pandora's Box roll table) stays readable.
 
 ### [x] 2.7 Images in builds
