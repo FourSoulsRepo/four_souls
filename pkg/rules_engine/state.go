@@ -205,6 +205,8 @@ type Game struct {
 	PendingTriggers []PendingTrigger `json:"pending_triggers,omitempty"`
 	// Boosts and Shields last till end of turn (R-TURN-13). A shield
 	// prevents the next damage its target would take (R-MECH-46).
+	// Compost: the next loot comes from the top of the loot discard.
+	Compost bool `json:"compost,omitempty"`
 	// ExtraTurn: the active player takes another turn after this one.
 	ExtraTurn bool `json:"extra_turn,omitempty"`
 

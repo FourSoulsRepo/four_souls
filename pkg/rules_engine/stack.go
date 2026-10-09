@@ -39,6 +39,10 @@ type StackItem struct {
 	// EventPlayer and EventAmount: the triggering event, for triggers.
 	EventPlayer PlayerID `json:"event_player,omitempty"`
 	EventAmount int      `json:"event_amount,omitempty"`
+	EventStack  int      `json:"event_stack,omitempty"`
+	// Checked is the roll value (+1) that "would roll" triggers last saw
+	// (R-DICE-05); the roll only resolves once nothing changes it.
+	Checked int `json:"checked,omitempty"`
 }
 
 // Events about the stack.
@@ -74,6 +78,17 @@ func (g *Game) push(it StackItem) int {
 // passes again, starting with the active player (R-STACK-04, R-PRIO-02).
 func (g *Game) resolveTop() {
 	n := len(g.Stack)
+	if top := &g.Stack[n-1]; top.Kind == StackRoll && top.Checked != top.Roll+1 {
+		// The roll tries to resolve: "would roll N" triggers trigger now; if
+		// any did, they go on the stack first (R-DICE-05).
+		top.Checked = top.Roll + 1
+		before := len(g.PendingTriggers)
+		g.emit(Event{Kind: EvRollWouldResolve, Player: top.Controller, Amount: top.Roll, StackID: top.ID})
+		if len(g.PendingTriggers) > before {
+			g.openWindow(g.Turn.Active)
+			return
+		}
+	}
 	it := g.Stack[n-1]
 	g.Stack = g.Stack[:n-1]
 	g.emit(Event{Kind: EvStackResolved, Player: it.Controller, Object: it.Source, Card: it.Card, Amount: it.Roll, Text: it.Label})
@@ -117,7 +132,7 @@ func (g *Game) resolveTop() {
 			g.push(StackItem{
 				Kind: StackTrigger, Controller: it.Controller, Source: it.Source, Card: it.RollFor.Card,
 				Ability: it.RollFor, Mode: it.Mode, Targets: it.Targets, RollResult: it.Roll, Label: "roll result",
-				EventPlayer: it.EventPlayer, EventAmount: it.EventAmount,
+				EventPlayer: it.EventPlayer, EventAmount: it.EventAmount, EventStack: it.EventStack,
 			})
 		}
 	case StackDamage:
@@ -232,4 +247,14 @@ func (g *Game) StackItemByID(id int) (StackItem, bool) {
 		}
 	}
 	return StackItem{}, false
+}
+
+// Reroll rolls a dice roll on the stack again (R-MECH-47).
+func (g *Game) Reroll(stackID int) {
+	for i := range g.Stack {
+		if it := &g.Stack[i]; it.ID == stackID && it.Kind == StackRoll {
+			it.Roll = g.d6()
+			g.emit(Event{Kind: EvDiceRolled, Player: it.Controller, Amount: it.Roll, Text: "reroll"})
+		}
+	}
 }

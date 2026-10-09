@@ -328,3 +328,32 @@ func (g *Game) RevealTop(d DeckKind) {
 		g.emit(Event{Kind: EvCardRevealed, Player: NoPlayer, Object: top[0], Card: g.Object(top[0]).Card, Text: d.String() + " deck"})
 	}
 }
+
+// lootFromDiscard puts the top n cards of the loot discard into p's
+// hand (Compost).
+func (g *Game) lootFromDiscard(p PlayerID, n int) {
+	for range n {
+		pile := g.Discards[LootDeck]
+		if len(pile) == 0 {
+			return
+		}
+		id := pile[len(pile)-1]
+		g.Discards[LootDeck] = pile[:len(pile)-1]
+		nid := g.move(id, Zone{Kind: ZoneHand}, p)
+		g.Players[p].Hand = append(g.Players[p].Hand, nid)
+		g.emit(Event{Kind: EvLooted, Player: p, Object: nid, Card: g.Object(nid).Card, Text: "from the discard"})
+	}
+}
+
+// CoverMonsterSlot puts the top card of the monster deck on top of
+// monster slot i, covering the card there (R-ZONE-10).
+func (g *Game) CoverMonsterSlot(i int) {
+	id, ok := g.drawTop(MonsterDeck)
+	if !ok {
+		return
+	}
+	if top, had := g.Monsters[i].TopOf(); had {
+		g.Object(top).Zone = Zone{Kind: ZoneCovered, Slot: MonsterSlot, Index: i}
+	}
+	g.putInSlot(id, MonsterSlot, i)
+}

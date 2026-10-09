@@ -26,6 +26,8 @@ Cards are Go values built from small blocks (ADR 005). This page lists every blo
 | `Trinket` | Loot that becomes an item when it resolves (R-ABIL-19) |
 | `DamageMod` | Changes damage about to be marked: "Damage you would take is reduced to 1." |
 | `EntersDeactivated`, `EntersWithCounters` | "This enters play deactivated." / "starts with 9 counters" |
+| `TakesPenalties` | Shadow: you choose the item and gain the loot and ¢ of others' death penalties |
+| `PeeksTreasure` | "You may look at the top card of the treasure deck at any time on your turn" (in your view) |
 | `SoulWhenDestroyed` | "If this would be destroyed, it becomes a soul instead." |
 | `GoesFirst` | A character whose player goes first (Cain) |
 | `StartingChoice` | Look at this many top treasures at the start, pick an eternal starting item (Eden) |
@@ -52,6 +54,7 @@ Cards are Go values built from small blocks (ADR 005). This page lists every blo
 | `RemoveCounters(n)` | Remove 2 counters from this: … |
 | `DiscardChosen(t)` | Discard a loot card: … (with `Choose(TargetYourHandCard)`) |
 | `GiveChosen(item, player)` | Give an item you control to another player: … |
+| `DestroyChosen(t…)` | Destroy 2 items you control: … (targets filtered with `NotChosen`) |
 
 ## Targets
 
@@ -159,6 +162,7 @@ Roll(RollTable{}.Results(1, 2, Loot(1)).Results(3, 4, GainCents(3)).Results(5, 6
 | `WhenYouWouldTakeDamage()` | when damage aimed at you goes on the stack (resolves first) |
 | `WhenYouWouldDie()` | when your death goes on the stack (resolves first) |
 | `WhenThisEntersPlay()` | when this object enters play |
+| `WhenARollWouldBe(n)` | each time a player would roll n (R-DICE-05); `c.EventStack` is the roll |
 
 ## Static abilities
 
@@ -170,7 +174,7 @@ Roll(RollTable{}.Results(1, 2, Loot(1)).Results(3, 4, GainCents(3)).Results(5, 6
 
 Stats: `StatPlayerATK`, `StatPlayerHP`, `StatMonsterDC`, `StatMonsterATK`, `StatMonsterHP`, `StatShopPrice`, `StatRoll`, `StatAttackRoll`, `StatLootPlays`, `StatAttacks`, `StatPurchases`, `StatLootStep`.
 
-`YouHave(StatLootPlays, 1)` is "You may play an additional loot card on your turn"; `YouHave(StatLootStep, 1)` is "Loot +1 during your loot step"; `YouHave(StatAttackRoll, 1)` is "+1 to attack rolls". Shop items' abilities do not work in the shop (R-CARD-05).
+`YouHave(StatLootPlays, 1)` is "You may play an additional loot card on your turn"; `YouHave(StatLootStep, 1)` is "Loot +1 during your loot step"; `YouHave(StatAttackRoll, 1)` is "+1 to attack rolls"; `YouHave(StatLockOthers, 1)` is Trinity Shield; a `StatLootDouble` boost doubles a player's loot. A roll that would resolve lets "would roll" triggers act first and tries again only if its value changed. Shop items' abilities do not work in the shop (R-CARD-05).
 
 ## Replacement effects
 

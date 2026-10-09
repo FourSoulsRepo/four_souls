@@ -93,6 +93,15 @@ func WhenYouWouldDie() Trigger {
 	}}
 }
 
+// WhenARollWouldBe triggers when a player's roll would resolve as n
+// (R-DICE-05): "each time a player would roll a 1". c.EventStack is the
+// roll; changing it makes it try again.
+func WhenARollWouldBe(n int) Trigger {
+	return Trigger{On: EvRollWouldResolve, Match: func(_ *Game, _ ObjectID, e Event) bool {
+		return e.Amount == n && e.Player != NoPlayer
+	}}
+}
+
 // WhenThisEntersPlay triggers when this object enters play.
 func WhenThisEntersPlay() Trigger {
 	return Trigger{On: EvEnteredPlay, Match: func(_ *Game, self ObjectID, e Event) bool { return e.Object == self }}
@@ -114,6 +123,7 @@ type PendingTrigger struct {
 	On          EventKind `json:"on"`
 	EventPlayer PlayerID  `json:"event_player"`
 	EventAmount int       `json:"event_amount,omitempty"`
+	EventStack  int       `json:"event_stack,omitempty"`
 }
 
 // collectTriggers finds triggered abilities that match an event. Objects
@@ -130,7 +140,7 @@ func (g *Game) collectTriggers(e Event) {
 			if a.Kind == Triggered && a.Trigger.On == e.Kind && a.Trigger.Match != nil && a.Trigger.Match(g, id, e) {
 				g.PendingTriggers = append(g.PendingTriggers, PendingTrigger{
 					Ability: AbilityRef{Card: o.Card, Index: i}, Source: id, Controller: o.Controller,
-					On: e.Kind, EventPlayer: e.Player, EventAmount: e.Amount,
+					On: e.Kind, EventPlayer: e.Player, EventAmount: e.Amount, EventStack: e.StackID,
 				})
 			}
 		}
@@ -192,7 +202,7 @@ func (g *Game) pushTrigger(i int) {
 	g.push(StackItem{
 		Kind: StackTrigger, Controller: t.Controller, Source: t.Source, Card: t.Ability.Card,
 		Ability: t.Ability, Label: g.abilityText(t.Ability),
-		EventPlayer: t.EventPlayer, EventAmount: t.EventAmount,
+		EventPlayer: t.EventPlayer, EventAmount: t.EventAmount, EventStack: t.EventStack,
 	})
 }
 

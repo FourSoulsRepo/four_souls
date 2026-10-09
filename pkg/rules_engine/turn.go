@@ -26,11 +26,14 @@ type Turn struct {
 	AttackRolls int      `json:"attack_rolls,omitempty"` // attack rolls resolved this turn
 	// Bonus*Used count loot plays, attacks and purchases taken from
 	// static bonuses ("you may attack an additional time on your turn").
-	BonusLootUsed      int  `json:"bonus_loot_used,omitempty"`
-	BonusAttacksUsed   int  `json:"bonus_attacks_used,omitempty"`
-	BonusPurchasesUsed int  `json:"bonus_purchases_used,omitempty"`
-	EndDeclared        bool `json:"end_declared,omitempty"`
-	DeathEnd           bool `json:"death_end,omitempty"` // the active player died (R-DEATH-16)
+	BonusLootUsed      int `json:"bonus_loot_used,omitempty"`
+	BonusAttacksUsed   int `json:"bonus_attacks_used,omitempty"`
+	BonusPurchasesUsed int `json:"bonus_purchases_used,omitempty"`
+	// MustAttack is a monster the active player must attack this turn if
+	// able (Monster Manual).
+	MustAttack  ObjectID `json:"must_attack,omitempty"`
+	EndDeclared bool     `json:"end_declared,omitempty"`
+	DeathEnd    bool     `json:"death_end,omitempty"` // the active player died (R-DEATH-16)
 	// entered is true once the current step's automatic work is done.
 	Entered bool `json:"entered,omitempty"`
 }

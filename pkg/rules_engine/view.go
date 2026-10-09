@@ -37,6 +37,9 @@ type PlayerView struct {
 	InPlay    []CardView `json:"in_play"`
 	HandSize  int        `json:"hand_size"`
 	Hand      []CardView `json:"hand,omitempty"` // only when the viewer may see it
+	// TreasureTop is the top treasure card, when this player may look at
+	// it now (There's Options) and the viewer may see it.
+	TreasureTop *CardView `json:"treasure_top,omitempty"`
 }
 
 // SlotView is a table slot: the top card and the covered ones below.
@@ -81,6 +84,10 @@ func (g *Game) View(v Viewer) GameView {
 		if v.sees(pl.ID) {
 			for _, id := range pl.Hand {
 				pv.Hand = append(pv.Hand, g.cardView(id))
+			}
+			if top := g.DeckTop(TreasureDeck, 1); len(top) > 0 && g.peeksTreasure(pl.ID) {
+				cv := g.cardView(top[0])
+				pv.TreasureTop = &cv
 			}
 		}
 		out.Players = append(out.Players, pv)
@@ -135,4 +142,18 @@ func FilterEvents(events []Event, v Viewer) []Event {
 		out = append(out, e)
 	}
 	return out
+}
+
+// peeksTreasure: it is p's turn and p controls a card that lets them
+// look at the top treasure card.
+func (g *Game) peeksTreasure(p PlayerID) bool {
+	if g.Turn.Active != p {
+		return false
+	}
+	for _, id := range g.Players[p].InPlay {
+		if g.Object(id).Role == RoleItem && g.def(id).PeeksTreasure {
+			return true
+		}
+	}
+	return false
 }

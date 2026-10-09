@@ -98,6 +98,9 @@ func (g *Game) check(in Intent) error {
 		if w.Kind != PromptPriority || !g.inOpenActionPhase() || in.Player != g.Turn.Active {
 			return refuse("R-TURN-06", "only the active player can end the turn, in the action phase, with an empty stack")
 		}
+		if m := g.Turn.MustAttack; m != 0 && g.attacksLeft() > 0 && g.Object(m).Zone.Kind == ZoneInPlay {
+			return refuse("R-ABIL-12", "this turn you must attack %s first", g.Object(m).Card)
+		}
 	case IntentDiscard:
 		if w.Kind != PromptDiscard {
 			return refuse("R-TURN-11", "no discard is asked for")
@@ -118,6 +121,9 @@ func (g *Game) check(in Intent) error {
 		if g.lootPlaysFor(in.Player) < 1 {
 			return refuse("R-CARD-08", "no loot play available")
 		}
+		if g.locked(in.Player) {
+			return refuse("R-ABIL-12", "the active player's card forbids playing loot on their turn")
+		}
 		if ab, ok := g.lootAbility(in.Objects[0]); ok {
 			if err := g.targetsAvailable(ab, in.Player, in.Objects[0]); err != nil {
 				return err
@@ -132,6 +138,9 @@ func (g *Game) check(in Intent) error {
 		}
 		if err := g.activatable(in.Player, in.Objects[0], in.Choice); err != nil {
 			return err
+		}
+		if g.locked(in.Player) && g.Object(in.Objects[0]).Role == RoleItem {
+			return refuse("R-ABIL-12", "the active player's card forbids activating items on their turn")
 		}
 	case IntentAttack:
 		if w.Kind != PromptPriority || !g.inOpenActionPhase() || in.Player != g.Turn.Active {
@@ -254,4 +263,10 @@ func remove(list []ObjectID, id ObjectID) []ObjectID {
 		}
 	}
 	return list
+}
+
+// locked: p is not the active player, whose card forbids others to play
+// loot or activate items on their turn (Trinity Shield).
+func (g *Game) locked(p PlayerID) bool {
+	return p != g.Turn.Active && g.bonus(StatLockOthers, g.Turn.Active, 0) > 0
 }

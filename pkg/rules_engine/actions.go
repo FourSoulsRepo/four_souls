@@ -24,6 +24,7 @@ const (
 	ActStealCents                           // Player steals Amount¢ From a player (R-MECH-38)
 	ActChooseStartingItem                   // Eden-style start-of-game choice (R-SETUP-09)
 	ActPenaltyDone                          // the death penalty is paid
+	ActAddCounters                          // put Amount counters on Object (Bum-bo levels)
 )
 
 // Action is a pending change. It sits in the queue, may be rewritten by
@@ -155,7 +156,18 @@ func (g *Game) perform(a Action) {
 		g.Players[a.Player].Cents -= n
 		g.emit(Event{Kind: EvLostCents, Player: a.Player, Amount: n})
 	case ActLoot:
-		g.loot(a.Player, a.Amount)
+		n := a.Amount << g.bonus(StatLootDouble, a.Player, 0) // Two of Clubs
+		if g.Compost {
+			g.Compost = false
+			g.lootFromDiscard(a.Player, n)
+			return
+		}
+		g.loot(a.Player, n)
+	case ActAddCounters:
+		if o := g.Object(a.Object); o.Zone.Kind == ZoneInPlay {
+			o.addCounters("", a.Amount)
+			g.emit(Event{Kind: EvCounters, Player: o.Controller, Object: a.Object, Card: o.Card, Amount: a.Amount})
+		}
 	case ActGainTreasure:
 		g.gainTreasure(a.Player, a.Amount)
 	case ActBecomeSoul:
@@ -177,11 +189,15 @@ func (g *Game) perform(a Action) {
 			}
 		}
 		if len(items) > 0 {
-			g.ask(Choice{Purpose: ChoosePenaltyItem, Player: a.Player, Rule: "R-DEATH-14", Objects: items}, g.labels(items))
+			chooser := a.Player
+			if s := g.shadowOf(a.Player); s != NoPlayer {
+				chooser = s
+			}
+			g.ask(Choice{Purpose: ChoosePenaltyItem, Player: chooser, Owner: a.Player, To: NoPlayer, Rule: "R-DEATH-14", Objects: items}, g.labels(items))
 		}
 	case ActPenaltyLoot:
 		if hand := g.Players[a.Player].Hand; len(hand) > 0 {
-			g.ask(Choice{Purpose: ChoosePenaltyLoot, Player: a.Player, Rule: "R-DEATH-14", Objects: append([]ObjectID(nil), hand...)}, g.labels(hand))
+			g.ask(Choice{Purpose: ChoosePenaltyLoot, Player: a.Player, Owner: a.Player, To: g.shadowOf(a.Player), Rule: "R-DEATH-14", Objects: append([]ObjectID(nil), hand...)}, g.labels(hand))
 		}
 	case ActDeactivateTaps:
 		pl := g.Players[a.Player]

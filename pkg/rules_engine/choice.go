@@ -41,6 +41,10 @@ type Choice struct {
 	Ask *Asking `json:"ask,omitempty"`
 	// Question is the text of the question, for display.
 	Question string `json:"question,omitempty"`
+	// Owner is whose death penalty a penalty choice is for; To, if not
+	// NoPlayer, gains the discarded loot card instead (Shadow).
+	Owner PlayerID `json:"owner"`
+	To    PlayerID `json:"to"`
 }
 
 // ask opens a choose prompt.
@@ -65,9 +69,13 @@ func (g *Game) answer(i int) {
 	case ChooseMonsterSlot:
 		g.placeRevealed(c.Slots[i])
 	case ChoosePenaltyItem:
-		g.destroyItem(c.Player, c.Objects[i])
+		g.destroyItem(c.Owner, c.Objects[i])
 	case ChoosePenaltyLoot:
-		g.discardFromHand(c.Player, c.Objects[i])
+		if c.To != NoPlayer {
+			g.GiveHandCard(c.Owner, c.To, c.Objects[i])
+		} else {
+			g.discardFromHand(c.Owner, c.Objects[i])
+		}
 	case ChooseTarget:
 		g.chooseTarget(c, i)
 	case ChooseTriggerOrder:

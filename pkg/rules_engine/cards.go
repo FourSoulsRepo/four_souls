@@ -61,6 +61,13 @@ type CardDef struct {
 	// SoulWhenDestroyed: "If this would be destroyed, it becomes a soul
 	// instead."
 	SoulWhenDestroyed bool
+	// TakesPenalties: "If another player would pay the death penalty, you
+	// choose what item they would destroy and you gain any loot cards and
+	// ¢ they would lose" (Shadow).
+	TakesPenalties bool
+	// PeeksTreasure: "You may look at the top card of the treasure deck
+	// at any time on your turn": the controller's view shows it.
+	PeeksTreasure bool
 	// Trinket: a loot card that becomes an item when it resolves
 	// (R-ABIL-19); its abilities work only in play.
 	Trinket bool

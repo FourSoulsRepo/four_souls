@@ -82,6 +82,10 @@ func (g *Game) declareAttack(p PlayerID) {
 
 // askAttackTarget offers the monsters in play and the monster deck.
 func (g *Game) askAttackTarget() {
+	if m := g.Turn.MustAttack; m != 0 && g.Object(m).Zone.Kind == ZoneInPlay {
+		g.ask(Choice{Purpose: ChooseAttackTarget, Player: g.Turn.Active, Rule: "R-ATK-02", Objects: []ObjectID{m}}, g.labels([]ObjectID{m}))
+		return
+	}
 	var monsters []ObjectID
 	for _, s := range g.Monsters {
 		if top, ok := s.TopOf(); ok && g.Object(top).Role == RoleMonster {
@@ -343,7 +347,7 @@ func (g *Game) payPenalty(p PlayerID) {
 	g.enqueue(
 		Action{Kind: ActPenaltyItem, Player: p},
 		Action{Kind: ActPenaltyLoot, Player: p},
-		Action{Kind: ActLoseCents, Player: p, Amount: 1},
+		g.penaltyCents(p),
 		Action{Kind: ActDeactivateTaps, Player: p},
 		Action{Kind: ActPenaltyDone, Player: p},
 	)
@@ -413,4 +417,25 @@ func (g *Game) d6() int {
 // attacksLeft is how many attacks the active player may still declare.
 func (g *Game) attacksLeft() int {
 	return g.Turn.Attacks + max(g.bonus(StatAttacks, g.Turn.Active, 0)-g.Turn.BonusAttacksUsed, 0)
+}
+
+// shadowOf is the first other player, in turn order from p, whose card
+// takes p's death penalty (Shadow), or NoPlayer.
+func (g *Game) shadowOf(p PlayerID) PlayerID {
+	for _, q := range g.turnOrderFrom(p)[1:] {
+		for _, id := range g.Players[q].InPlay {
+			if g.Object(id).Role == RoleItem && g.def(id).TakesPenalties {
+				return q
+			}
+		}
+	}
+	return NoPlayer
+}
+
+// penaltyCents is the penalty's 1¢: lost, or gained by a Shadow.
+func (g *Game) penaltyCents(p PlayerID) Action {
+	if s := g.shadowOf(p); s != NoPlayer {
+		return Action{Kind: ActStealCents, Player: s, From: p, Amount: 1}
+	}
+	return Action{Kind: ActLoseCents, Player: p, Amount: 1}
 }

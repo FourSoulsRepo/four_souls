@@ -45,6 +45,9 @@ type Ctx struct {
 	// triggered ability: who rolled, how much damage was taken.
 	EventPlayer PlayerID
 	EventAmount int
+	// EventStack is the stack item the event was about: the roll a
+	// "would roll" trigger may change.
+	EventStack int
 
 	// Where the effect is, so an Ask can find it again.
 	ref    AbilityRef
@@ -267,7 +270,7 @@ func (e rollEffect) apply(c *Ctx) {
 	c.G.push(StackItem{
 		Kind: StackRoll, Controller: c.Controller, Source: c.Source, Roll: r, Label: "roll",
 		RollFor: c.ref, Mode: c.mode, Targets: c.Targets,
-		EventPlayer: c.EventPlayer, EventAmount: c.EventAmount,
+		EventPlayer: c.EventPlayer, EventAmount: c.EventAmount, EventStack: c.EventStack,
 	})
 }
 
@@ -672,4 +675,34 @@ func (giveChosenCost) label() string                         { return "give an i
 func (c giveChosenCost) payChosen(g *Game, _ PlayerID, chosen []Chosen) {
 	g.GainControl(chosen[c.player].Player, chosen[c.item].Object)
 	chosen[c.item].Spent = true
+}
+
+type destroyChosenCost struct{ targets []int }
+
+// DestroyChosen destroys the items chosen as the given targets, as a
+// cost: "Destroy 2 items you control:".
+func DestroyChosen(targets ...int) Cost { return destroyChosenCost{targets} }
+
+func (destroyChosenCost) canPay(*Game, PlayerID, ObjectID) bool { return true }
+func (destroyChosenCost) pay(*Game, PlayerID, ObjectID)         {}
+func (destroyChosenCost) label() string                         { return "destroy items" }
+func (c destroyChosenCost) payChosen(g *Game, p PlayerID, chosen []Chosen) {
+	for _, t := range c.targets {
+		g.DestroyObject(p, chosen[t].Object)
+		chosen[t].Spent = true
+	}
+}
+
+// NotChosen is a target filter: not something already chosen for this
+// activation ("2 items" means two different ones).
+func NotChosen(g *Game, _ ObjectID, c Chosen) bool {
+	if g.Activating == nil {
+		return true
+	}
+	for _, x := range g.Activating.Chosen {
+		if x.Object == c.Object && x.Kind == c.Kind {
+			return false
+		}
+	}
+	return true
 }
