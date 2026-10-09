@@ -65,7 +65,7 @@ Ideas: R-01 – R-07.
    3. Covers 2025-09 to 2026-10; top 3 answers each; 0 answers by Yuggy.
    4. Later: search Yuggy's older comments for high-trust rulings.
 
-### [ ] 3.5 Twitter / X rulings
+### [x] 3.5 Twitter / X rulings
 
 1. Goal: rulings by Ed, Yuggy, Kizzycocoa.
 2. Tasks:
@@ -75,6 +75,11 @@ Ideas: R-01 – R-07.
    4. Keep text, date, link.
 3. Done when:
    1. All R-07 tweets are saved with text.
+4. Result:
+   1. All 9 R-07 tweets saved with their threads; the ruling is marked.
+   2. Ed's answers match the re-check in open-questions.md.
+   3. Later: the jonzo11 thread holds ~15 more answers by Ed.
+   4. Later: search Ed's and Yuggy's accounts for more ruling threads.
 
 ### [ ] 3.6 Discord rulings
 

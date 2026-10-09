@@ -52,6 +52,13 @@ Order of trust when sources disagree:
 4. Answers come from regular community members; none by Yuggy.
 5. Trust: medium; use as hints and for open cases, not as rulings.
 
+## X (S-X)
+
+1. Downloaded 2026-10-09 with a logged-in session; pages rendered in Chrome.
+2. The 9 tweets of R-07, each with its thread; the ruling is marked.
+3. They date from 2018–2019, before the second edition.
+4. Re-checked against current rules in open-questions.md.
+
 ## Russian translation (S-RU)
 
 1. Downloaded 2026-10-09.
