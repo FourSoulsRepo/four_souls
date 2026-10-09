@@ -36,3 +36,62 @@ func damageEqualToRoll() engine.RollTable {
 	}
 	return t
 }
+
+// endYourTurn: "If it's your turn, cancel everything that hasn't
+// resolved and end it".
+var endYourTurn = engine.EffectFunc(func(c *engine.Ctx) {
+	if c.Controller == c.G.Turn.Active {
+		c.G.EndTurnNow()
+	}
+})
+
+// lookMayBottom: "look at the top card of the deck. You may put it on
+// the bottom".
+func lookMayBottom(d engine.DeckKind) engine.Effect {
+	return engine.Ask(func(c *engine.Ctx, a []int) {
+		top := c.G.DeckTop(d, 1)
+		if len(top) == 0 {
+			return
+		}
+		c.G.LookAt(c.Controller, top...)
+		if a[0] == 1 {
+			c.G.DeckToBottom(d, top[0])
+		}
+	}, engine.Question{
+		Text: "Put the top card on the bottom?",
+		Options: func(c *engine.Ctx, _ []int) []string {
+			top := c.G.DeckTop(d, 1)
+			if len(top) == 0 {
+				return nil
+			}
+			card := string(c.G.Object(top[0]).Card)
+			return []string{"keep " + card + " on top", "put " + card + " on the bottom"}
+		},
+	})
+}
+
+// oneOnTop: "Look at the top 5 cards of the deck. Put 1 on top and the
+// rest on the bottom".
+func oneOnTop(d engine.DeckKind) engine.Effect {
+	return engine.Ask(func(c *engine.Ctx, a []int) {
+		top := c.G.DeckTop(d, 5)
+		c.G.LookAt(c.Controller, top...)
+		if a[0] < 0 {
+			return
+		}
+		for i, id := range top {
+			if i != a[0] {
+				c.G.DeckToBottom(d, id)
+			}
+		}
+	}, engine.Question{
+		Text: "Which card stays on top? The rest go to the bottom.",
+		Options: func(c *engine.Ctx, _ []int) []string {
+			var out []string
+			for _, id := range c.G.DeckTop(d, 5) {
+				out = append(out, string(c.G.Object(id).Card))
+			}
+			return out
+		},
+	})
+}

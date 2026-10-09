@@ -151,3 +151,82 @@ func (g *Game) LookAt(p PlayerID, ids ...ObjectID) {
 		g.emit(Event{Kind: EvLookedAt, Player: p, Object: id, Card: g.Object(id).Card, Private: true})
 	}
 }
+
+// turnOrderFrom lists every player in turn order, starting with p.
+func (g *Game) turnOrderFrom(p PlayerID) []PlayerID {
+	out := make([]PlayerID, 0, len(g.Players))
+	for range g.Players {
+		out = append(out, p)
+		p = g.next(p)
+	}
+	return out
+}
+
+// DeckToBottom moves a card that is in a deck to its bottom; it stays the
+// same object.
+func (g *Game) DeckToBottom(d DeckKind, id ObjectID) {
+	g.Decks[d] = append([]ObjectID{id}, remove(g.Decks[d], id)...)
+}
+
+// DestroyObject destroys an item, curse or soul that p controls: it goes
+// to the discard of its deck, or outside the game if it has none
+// (R-MECH-23). Eternal objects stay (R-ABIL-18). It reports whether the
+// object was destroyed.
+func (g *Game) DestroyObject(p PlayerID, id ObjectID) bool {
+	o := g.Object(id)
+	if o.Zone.Kind != ZoneInPlay || o.Controller != p || g.Eternal(id) {
+		return false
+	}
+	g.Players[p].InPlay = remove(g.Players[p].InPlay, id)
+	var nid ObjectID
+	if d, ok := g.kindOf(id).Deck(); ok {
+		nid = g.discard(id, d)
+	} else {
+		nid = g.move(id, Zone{Kind: ZoneOutside}, NoPlayer)
+	}
+	g.emit(Event{Kind: EvDestroyed, Player: p, Object: nid, Card: g.Object(nid).Card, Prev: id})
+	return true
+}
+
+// GainControl moves an item in play to p: "steal an item". It stays the
+// same object; only its controller changes (R-MECH-38). A shop item
+// leaves its slot, which is refilled.
+func (g *Game) GainControl(p PlayerID, id ObjectID) {
+	o := g.Object(id)
+	if o.Zone.Slot == ShopSlot && o.Controller == NoPlayer {
+		g.removeFromSlot(id)
+		nid := g.move(id, Zone{Kind: ZoneInPlay}, p)
+		g.Object(nid).Role, g.Object(nid).Charged = RoleItem, true
+		g.Players[p].InPlay = append(g.Players[p].InPlay, nid)
+		g.emit(Event{Kind: EvGainedTreasure, Player: p, Object: nid, Card: o.Card, Prev: id})
+		g.enqueue(Action{Kind: ActRefillSlots, Player: NoPlayer})
+		return
+	}
+	from := o.Controller
+	g.Players[from].InPlay = remove(g.Players[from].InPlay, id)
+	o.Controller = p
+	g.Players[p].InPlay = append(g.Players[p].InPlay, id)
+	g.emit(Event{Kind: EvGainedTreasure, Player: p, Object: id, Card: o.Card, Text: "stolen"})
+}
+
+// ShopItems lists the items on top of the shop slots.
+func (g *Game) ShopItems() []ObjectID {
+	var out []ObjectID
+	for _, s := range g.Shop {
+		if top, ok := s.TopOf(); ok {
+			out = append(out, top)
+		}
+	}
+	return out
+}
+
+// DiscardMonster puts a monster in a slot into the monster discard; the
+// slot is refilled later (RefillSlots).
+func (g *Game) DiscardMonster(id ObjectID) {
+	g.removeFromSlot(id)
+	nid := g.discard(id, MonsterDeck)
+	g.emit(Event{Kind: EvDiscarded, Player: NoPlayer, Object: nid, Card: g.Object(nid).Card, Prev: id})
+}
+
+// RefillSlots queues the refill of empty slots (R-SHOP-06).
+func (g *Game) RefillSlots() { g.enqueue(Action{Kind: ActRefillSlots, Player: NoPlayer}) }

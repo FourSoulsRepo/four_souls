@@ -29,6 +29,12 @@ const (
 	EvLookedAt       EventKind = "looked_at"    // private: Player saw Card
 	EvGaveCard       EventKind = "gave_card"    // a hand card changed hands
 	EvMovedToDeck    EventKind = "moved_to_deck"
+	EvDamagePending  EventKind = "damage_pending" // damage went on the stack, aimed at Player or Object
+	EvDeathPending   EventKind = "death_pending"  // a death went on the stack
+	EvEnteredPlay    EventKind = "entered_play"
+	EvTurnEndedEarly EventKind = "turn_ended_early"
+	EvPenaltyPaid    EventKind = "penalty_paid"
+	EvExtraTurn      EventKind = "extra_turn"
 )
 
 // Event is one thing that happened, in order. Hidden cards (e.g. a looted

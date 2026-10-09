@@ -277,9 +277,9 @@ func (g *Game) settle(choices []string) ([]Event, error) {
 			if len(choices) == 0 {
 				return out, fmt.Errorf("situation: a choice is needed, options %v", w.Options)
 			}
-			i := -1
+			i := -1 // the first option with the label
 			for j, o := range w.Options {
-				if o == choices[0] {
+				if o == choices[0] && i < 0 {
 					i = j
 				}
 			}

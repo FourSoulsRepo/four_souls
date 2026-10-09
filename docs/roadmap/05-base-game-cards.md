@@ -37,7 +37,7 @@ Ideas: R-05, TS-01 – TS-04.
 3. Done when:
    1. Report shows characters as tested.
 
-### [ ] 5.4 Loot cards
+### [x] 5.4 Loot cards
 
 1. Goal: all Base Game loot cards.
 2. Tasks:

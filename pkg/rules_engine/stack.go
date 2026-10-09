@@ -11,6 +11,7 @@ const (
 	StackRoll                     // a dice roll (R-DICE-02)
 	StackDamage                   // damage aimed at a target (R-MECH-15)
 	StackDeath                    // a pending death (R-DEATH-01)
+	StackPenalty                  // a death penalty waiting for "when a player dies" triggers (R-DEATH-13)
 )
 
 // StackItem is one thing waiting on the stack.
@@ -51,6 +52,13 @@ func (g *Game) push(it StackItem) int {
 	it.ID = g.StackSeq
 	g.Stack = append(g.Stack, it)
 	g.emit(Event{Kind: EvStackAdded, Player: it.Controller, Object: it.Source, Card: it.Card, Amount: it.Roll, Text: it.Label})
+	// "Would take damage" and "would die" triggers look at these.
+	switch it.Kind { //nolint:exhaustive // only damage and death have "would" triggers
+	case StackDamage:
+		g.emit(Event{Kind: EvDamagePending, Player: it.Target.player(), Object: it.Target.Object, Amount: it.Amount})
+	case StackDeath:
+		g.emit(Event{Kind: EvDeathPending, Player: it.Target.player(), Object: it.Target.Object})
+	}
 	start := it.Controller
 	if start == NoPlayer {
 		start = g.Turn.Active // the game's items: active player first (R-PRIO-02)
@@ -76,7 +84,14 @@ func (g *Game) resolveTop() {
 		if it.Ability.Card != "" {
 			g.resolveAbility(it)
 		}
-		g.discard(it.Source, LootDeck)
+		switch {
+		case g.Object(it.Source).Zone.Kind != ZoneStack:
+			// The effect moved the card already (The Sun).
+		case g.def(it.Source).Trinket:
+			g.trinketToPlay(it.Controller, it.Source) // R-ABIL-19
+		default:
+			g.discard(it.Source, LootDeck)
+		}
 	case StackRoll:
 		// Continuous roll changes apply, then the result is final (R-DICE-06).
 		if it.Controller != NoPlayer {
@@ -99,10 +114,13 @@ func (g *Game) resolveTop() {
 		g.resolveDeath(it)
 	case StackAbility, StackTrigger:
 		g.resolveAbility(it)
+	case StackPenalty:
+		g.payPenalty(it.Target.Player)
 	}
-	if len(g.Queue) > 0 && g.Waiting.Kind == PromptPriority {
-		// Queued steps (e.g. death rewards) happen before anyone acts.
-		g.givePriority(g.Priority.Holder)
+	if (len(g.Queue) > 0 || len(g.PendingTriggers) > 0) && g.Waiting.Kind == PromptPriority {
+		// Queued steps (e.g. death rewards) happen and new triggers go on
+		// the stack before anyone acts (R-ABIL-14).
+		g.openWindow(g.Priority.Holder)
 	}
 }
 
@@ -144,4 +162,54 @@ func (g *Game) SetRoll(stackID, n int) {
 			g.emit(Event{Kind: EvRollChanged, Player: it.Controller, Amount: it.Roll})
 		}
 	}
+}
+
+// player is the target player, or NoPlayer for an object.
+func (t Target) player() PlayerID {
+	if t.IsPlayer {
+		return t.Player
+	}
+	return NoPlayer
+}
+
+// trinketToPlay puts a resolved trinket into play as an item of p.
+func (g *Game) trinketToPlay(p PlayerID, id ObjectID) {
+	nid := g.move(id, Zone{Kind: ZoneInPlay}, p)
+	o := g.Object(nid)
+	o.Role, o.Charged = RoleItem, true
+	g.Players[p].InPlay = append(g.Players[p].InPlay, nid)
+	g.emit(Event{Kind: EvEnteredPlay, Player: p, Object: nid, Card: o.Card})
+}
+
+// CancelStackItem removes an item from the stack without resolving it;
+// a cancelled loot card goes to the loot discard (R-MECH-32).
+func (g *Game) CancelStackItem(id int) {
+	for i, it := range g.Stack {
+		if it.ID != id {
+			continue
+		}
+		g.Stack = append(g.Stack[:i:i], g.Stack[i+1:]...)
+		g.emit(Event{Kind: EvCancelled, Player: it.Controller, Object: it.Source, Card: it.Card, Text: it.Label})
+		if it.Kind == StackLoot && g.Object(it.Source).Zone.Kind == ZoneStack {
+			g.discard(it.Source, LootDeck)
+		}
+		return
+	}
+}
+
+// EndTurnNow cancels everything that has not resolved and ends the
+// active player's turn: "End the turn. Cancel everything that hasn't
+// resolved." The turn goes to its end phase.
+func (g *Game) EndTurnNow() {
+	g.endAttack()
+	g.Purchase = PurchaseState{}
+	for len(g.Stack) > 0 {
+		g.CancelStackItem(g.Stack[len(g.Stack)-1].ID)
+	}
+	if g.Turn.Step < StepAction {
+		// From the start phase too: the action phase closes at once.
+		g.Turn.Step, g.Turn.Entered = StepAction, true
+	}
+	g.Turn.EndDeclared = true
+	g.emit(Event{Kind: EvTurnEndedEarly, Player: g.Turn.Active})
 }

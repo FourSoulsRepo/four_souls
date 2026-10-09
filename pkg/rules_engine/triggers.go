@@ -55,12 +55,47 @@ func WhenThisIsDestroyed() Trigger {
 	}}
 }
 
-// WhenYouDie triggers when the controller dies. Penalties are queued
-// actions, so the trigger resolves after they are paid (R-DEATH-14).
+// WhenYouDie triggers when the controller dies, before the penalty
+// (R-DEATH-13).
 func WhenYouDie() Trigger {
 	return Trigger{On: EvDied, Match: func(g *Game, self ObjectID, e Event) bool {
 		return e.Player != NoPlayer && e.Player == g.Object(self).Controller
 	}}
+}
+
+// WhenAPlayerDies triggers when any player dies, before the penalty
+// (R-DEATH-13).
+func WhenAPlayerDies() Trigger {
+	return Trigger{On: EvDied, Match: func(_ *Game, _ ObjectID, e Event) bool { return e.Player != NoPlayer }}
+}
+
+// AfterYourDeathPenalty triggers when the controller has paid the death
+// penalty: "each time you die, after paying penalties".
+func AfterYourDeathPenalty() Trigger {
+	return Trigger{On: EvPenaltyPaid, Match: func(g *Game, self ObjectID, e Event) bool {
+		return e.Player == g.Object(self).Controller
+	}}
+}
+
+// WhenYouWouldTakeDamage triggers when damage aimed at the controller
+// goes on the stack; it resolves before the damage.
+func WhenYouWouldTakeDamage() Trigger {
+	return Trigger{On: EvDamagePending, Match: func(g *Game, self ObjectID, e Event) bool {
+		return e.Player != NoPlayer && e.Player == g.Object(self).Controller
+	}}
+}
+
+// WhenYouWouldDie triggers when the controller's death goes on the
+// stack; it resolves before the death.
+func WhenYouWouldDie() Trigger {
+	return Trigger{On: EvDeathPending, Match: func(g *Game, self ObjectID, e Event) bool {
+		return e.Player != NoPlayer && e.Player == g.Object(self).Controller
+	}}
+}
+
+// WhenThisEntersPlay triggers when this object enters play.
+func WhenThisEntersPlay() Trigger {
+	return Trigger{On: EvEnteredPlay, Match: func(_ *Game, self ObjectID, e Event) bool { return e.Object == self }}
 }
 
 // WhenYouTakeDamage triggers each time the controller takes damage.
@@ -75,6 +110,9 @@ type PendingTrigger struct {
 	Ability    AbilityRef `json:"ability"`
 	Source     ObjectID   `json:"source"`
 	Controller PlayerID   `json:"controller"`
+	// On and EventPlayer describe the event that triggered it.
+	On          EventKind `json:"on"`
+	EventPlayer PlayerID  `json:"event_player"`
 }
 
 // collectTriggers finds triggered abilities that match an event. Objects
@@ -91,6 +129,7 @@ func (g *Game) collectTriggers(e Event) {
 			if a.Kind == Triggered && a.Trigger.On == e.Kind && a.Trigger.Match != nil && a.Trigger.Match(g, id, e) {
 				g.PendingTriggers = append(g.PendingTriggers, PendingTrigger{
 					Ability: AbilityRef{Card: o.Card, Index: i}, Source: id, Controller: o.Controller,
+					On: e.Kind, EventPlayer: e.Player,
 				})
 			}
 		}

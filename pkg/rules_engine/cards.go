@@ -50,6 +50,9 @@ type CardDef struct {
 	// Outside marks cards that start outside the game, such as starting
 	// items: they are never shuffled into a deck (R-ZONE-13).
 	Outside bool
+	// Trinket: a loot card that becomes an item when it resolves
+	// (R-ABIL-19); its abilities work only in play.
+	Trinket bool
 	// GoesFirst: a character whose player goes first (Cain).
 	GoesFirst bool
 	// StartingChoice: a character whose player looks at this many top

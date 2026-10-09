@@ -1,5 +1,7 @@
 package rulesengine
 
+import "slices"
+
 // AbilityKind is how an ability is used (R-ABIL).
 type AbilityKind int
 
@@ -90,7 +92,7 @@ type destroySelfCost struct{}
 // DestroySelf destroys the object as the cost.
 func DestroySelf() Cost { return destroySelfCost{} }
 
-func (destroySelfCost) canPay(g *Game, _ PlayerID, self ObjectID) bool { return !g.eternal(self) }
+func (destroySelfCost) canPay(g *Game, _ PlayerID, self ObjectID) bool { return !g.Eternal(self) }
 func (destroySelfCost) pay(g *Game, p PlayerID, self ObjectID)         { g.destroyItem(p, self) }
 func (destroySelfCost) label() string                                  { return "destroy this" }
 
@@ -123,15 +125,26 @@ const (
 	TargetItem                              // an item a player controls
 	TargetDiceRoll                          // a dice roll on the stack
 	TargetOtherPlayer                       // a living player other than you
+	TargetStackAbility                      // a ↷ or $ ability of an item, or a loot being played, on the stack
+	TargetCurse                             // a curse a player has
+	TargetYourItem                          // an item you control
 )
 
 // TargetSpec says what to choose; the engine always asks (ADR 005).
+// Where, if set, narrows the options further.
 type TargetSpec struct {
-	Kind TargetKind
+	Kind  TargetKind
+	Where func(g *Game, chooser PlayerID, c Chosen) bool
 }
 
 // Choose builds a target spec: Choose(TargetMonsterOrPlayer).
 func Choose(k TargetKind) TargetSpec { return TargetSpec{Kind: k} }
+
+// ChooseWhere builds a target spec with a filter: "the player with the
+// most souls".
+func ChooseWhere(k TargetKind, where func(g *Game, chooser PlayerID, c Chosen) bool) TargetSpec {
+	return TargetSpec{Kind: k, Where: where}
+}
 
 // --- Effects ---
 
@@ -414,7 +427,7 @@ func (e killEffect) apply(c *Ctx) {
 		c.G.push(StackItem{Kind: StackDeath, Controller: NoPlayer, Label: "death", Target: Target{Player: t.Player, IsPlayer: true}})
 		return
 	}
-	if c.G.eternal(t.Object) {
+	if c.G.Eternal(t.Object) {
 		return // R-DEATH-03
 	}
 	c.G.Object(t.Object).Damage = c.G.def(t.Object).HP + c.G.bonus(StatMonsterHP, NoPlayer, t.Object)
@@ -450,4 +463,114 @@ func (g *Game) effectsOf(ref AbilityRef, mode, roll int) []Effect {
 		return nil
 	}
 	return effects
+}
+
+type cancelEffect struct{ target int }
+
+// CancelTarget cancels the target stack item: "Cancel the ↷ or $
+// ability of an item or a loot being played".
+func CancelTarget(t int) Effect { return cancelEffect{t} }
+
+func (e cancelEffect) apply(c *Ctx) { c.G.CancelStackItem(c.target(e.target).StackID) }
+
+type destroyEffect struct{ target int }
+
+// DestroyTarget destroys the target item or curse (R-MECH-23).
+func DestroyTarget(t int) Effect { return destroyEffect{t} }
+
+func (e destroyEffect) apply(c *Ctx) {
+	t := c.target(e.target)
+	c.G.DestroyObject(t.Player, t.Object)
+}
+
+type eachPlayerEffect struct{ effects []Effect }
+
+// EachPlayer runs the effects once for each player, in turn order from
+// the controller, as if that player controlled them (R-MECH-27): "Each
+// player gains 1¢" is EachPlayer(GainCents(1)). Damage to You goes on
+// the stack in reverse order, so it resolves in turn order (R-MECH-28).
+func EachPlayer(effects ...Effect) Effect { return eachPlayerEffect{effects} }
+
+func (e eachPlayerEffect) apply(c *Ctx) {
+	order := c.G.turnOrderFrom(c.Controller)
+	damage := false
+	for _, x := range e.effects {
+		if _, ok := x.(damageEffect); ok {
+			damage = true
+		}
+	}
+	if damage {
+		slices.Reverse(order)
+	}
+	for _, p := range order {
+		each := *c
+		each.Controller = p
+		each.Do(e.effects...)
+	}
+}
+
+type monstersDamageEffect struct{ n int }
+
+// EachMonsterTakesDamage puts n damage on the stack for each monster in
+// play, in slot order.
+func EachMonsterTakesDamage(n int) Effect { return monstersDamageEffect{n} }
+
+func (e monstersDamageEffect) apply(c *Ctx) {
+	for _, s := range c.G.Monsters {
+		if top, ok := s.TopOf(); ok && c.G.Object(top).Role == RoleMonster {
+			c.G.push(StackItem{Kind: StackDamage, Controller: c.Controller, Source: c.Source, Amount: e.n, Label: "damage", Target: Target{Object: top}})
+		}
+	}
+}
+
+type addAttacksEffect struct{ n, target int }
+
+// AddAttacks lets the target player attack n more times this turn, if
+// it is their turn: "may attack an additional time this turn".
+func AddAttacks(n, t int) Effect { return addAttacksEffect{n, t} }
+
+func (e addAttacksEffect) apply(c *Ctx) {
+	if c.target(e.target).Player == c.G.Turn.Active {
+		c.G.Turn.Attacks += e.n
+	}
+}
+
+type sunEffect struct{}
+
+// ThisToLootBottomExtraTurn puts the loot card on the bottom of the loot
+// deck; if it does and it is the controller's turn, they take an extra
+// turn after this one (The Sun).
+func ThisToLootBottomExtraTurn() Effect { return sunEffect{} }
+
+func (sunEffect) apply(c *Ctx) {
+	g := c.G
+	if g.Object(c.Source).Zone.Kind != ZoneStack {
+		return
+	}
+	nid := g.move(c.Source, DeckZone(LootDeck), NoPlayer)
+	g.Decks[LootDeck] = append([]ObjectID{nid}, g.Decks[LootDeck]...)
+	g.emit(Event{Kind: EvMovedToDeck, Player: c.Controller, Object: nid, Card: g.Object(nid).Card, Text: "loot deck bottom"})
+	if c.Controller == g.Turn.Active {
+		g.ExtraTurn = true
+	}
+}
+
+type preventDeathEffect struct{}
+
+// PreventYourDeath removes the controller's death from the stack and
+// heals them to 1 HP (R-MECH-46): "Prevent death".
+func PreventYourDeath() Effect { return preventDeathEffect{} }
+
+func (preventDeathEffect) apply(c *Ctx) {
+	g := c.G
+	for _, it := range g.Stack {
+		if it.Kind == StackDeath && it.Target.IsPlayer && it.Target.Player == c.Controller {
+			g.CancelStackItem(it.ID)
+			pl := &g.Players[c.Controller]
+			maxHP := g.PlayerHP(c.Controller) + pl.Damage
+			pl.Damage = min(pl.Damage, max(maxHP-1, 0))
+			g.emit(Event{Kind: EvPrevented, Player: c.Controller, Text: "death"})
+			return
+		}
+	}
 }

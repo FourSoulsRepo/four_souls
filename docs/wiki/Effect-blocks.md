@@ -23,6 +23,7 @@ Cards are Go values built from small blocks (ADR 005). This page lists every blo
 | `Eternal` | Keyword: cannot be destroyed or discarded |
 | `Outside` | Starts outside the game (starting items) |
 | `Tap` | Has a ↷ ability (the death penalty deactivates it) |
+| `Trinket` | Loot that becomes an item when it resolves (R-ABIL-19) |
 | `GoesFirst` | A character whose player goes first (Cain) |
 | `StartingChoice` | Look at this many top treasures at the start, pick an eternal starting item (Eden) |
 | `Rewards` | Reward box, e.g. `[]Reward{{Kind: RewardCents, Amount: 3}}` |
@@ -59,6 +60,10 @@ Targets are always asked, with a "cancel" option before anything is paid. A targ
 | `Choose(TargetItem)` | an item a player controls |
 | `Choose(TargetDiceRoll)` | a dice roll on the stack |
 | `Choose(TargetOtherPlayer)` | a living player other than you |
+| `Choose(TargetStackAbility)` | an item's ↷ or $ ability, or a loot being played |
+| `Choose(TargetCurse)` | a curse a player has |
+| `Choose(TargetYourItem)` | an item you control |
+| `ChooseWhere(kind, filter)` | e.g. the player with the most souls |
 
 Effects refer to targets by number: `DealDamage(1, 0)` hits the first target. `You` means the controller, for text without a target: `DealDamage(1, You)` is "Take 1 damage." A roll ability keeps its targets for the result: "Choose a player, then roll- deal damage equal to the result".
 
@@ -87,6 +92,13 @@ Effects refer to targets by number: `DealDamage(1, 0)` hits the first target. `Y
 | `RechargeTarget(t)` | Recharge an item. |
 | `RechargeItemsOf(t)` | Choose a player. Recharge each item they control. |
 | `Kill(t)` | Kill a player. |
+| `CancelTarget(t)` | Cancel the ↷ or $ ability of an item or a loot being played. |
+| `DestroyTarget(t)` | Destroy a curse. |
+| `EachPlayer(effects…)` | Each player gains 1¢. / Each player takes 3 damage. |
+| `EachMonsterTakesDamage(n)` | Each monster takes 1 damage. (slot order) |
+| `AddAttacks(n, t)` | They may attack an additional time this turn. |
+| `PreventYourDeath()` | Prevent death. (heals to 1 HP) |
+| `ThisToLootBottomExtraTurn()` | Put this on the bottom of the loot deck … take an extra turn (The Sun) |
 | `Ask(do, questions…)` | Anything decided on resolution: "a deck", "a card from your hand" |
 | `EffectFunc(func(c *Ctx){…})` | Anything the blocks do not cover |
 
@@ -113,7 +125,7 @@ Ask(func(c *Ctx, a []int) {
 }, DeckQuestion("Put the top card of which deck into discard?"))
 ```
 
-Ready questions: `DeckQuestion(text)` (read with `c.Deck(i)`) and `HandQuestion(text)` (read with `c.HandCard(i)`). Game methods for `do`: `LookAt`, `DeckTop`, `SetDeckTop`, `MillTop`, `DiscardTopToDeck`, `HandToDeckTop`, `GiveHandCard`, `DiscardFromHand`. `c.Do(effects…)` runs ordinary blocks.
+A question's `Player` func picks who answers, e.g. the chosen player (Judgement). Ready questions: `DeckQuestion(text)` (read with `c.Deck(i)`) and `HandQuestion(text)` (read with `c.HandCard(i)`). Game methods for `do` and `EffectFunc`: `LookAt`, `DeckTop`, `SetDeckTop`, `DeckToBottom`, `MillTop`, `DiscardTopToDeck`, `HandToDeckTop`, `GiveHandCard`, `DiscardFromHand`, `DestroyObject`, `GainControl`, `ShopItems`, `DiscardMonster`, `RefillSlots`, `SetRoll`, `CancelStackItem`, `EndTurnNow`. `c.Do(effects…)` runs ordinary blocks.
 
 A roll table is built with `Results`:
 
@@ -132,6 +144,11 @@ Roll(RollTable{}.Results(1, 2, Loot(1)).Results(3, 4, GainCents(3)).Results(5, 6
 | `WhenThisIsDestroyed()` | when this object is destroyed |
 | `WhenYouDie()` | when the controller dies, after the penalties |
 | `WhenYouTakeDamage()` | each time the controller takes damage |
+| `WhenAPlayerDies()` | when any player dies, before the penalty (R-DEATH-13) |
+| `AfterYourDeathPenalty()` | each time you die, after paying penalties |
+| `WhenYouWouldTakeDamage()` | when damage aimed at you goes on the stack (resolves first) |
+| `WhenYouWouldDie()` | when your death goes on the stack (resolves first) |
+| `WhenThisEntersPlay()` | when this object enters play |
 
 ## Static abilities
 
@@ -158,3 +175,8 @@ tb.EndTurn()                             // run to the next player's action phas
 ```
 
 `NewSetup` takes a full `SituationSetup` (hands, monsters, a roll on the stack). `ForceRolls` fixes dice results, `Attack` attacks with given rolls, `Start` and `Pass` leave something on the stack so another player can respond.
+
+## Known simplifications
+
+* "Each monster takes damage" goes on the stack in slot order; the rules let the active player pick (R-MECH-29).
+* "Put the rest on the bottom" keeps the cards' order; the rules let the player pick it.

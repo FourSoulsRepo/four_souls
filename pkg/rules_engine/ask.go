@@ -6,6 +6,8 @@ package rulesengine
 type Question struct {
 	Text    string
 	Options func(c *Ctx, answers []int) []string
+	// Player, if set, is who answers; by default the controller.
+	Player func(c *Ctx, answers []int) PlayerID
 }
 
 type askEffect struct {
@@ -76,7 +78,11 @@ func (g *Game) continueAsk(a *Asking) {
 			a.Answers = append(a.Answers, -1)
 			continue
 		}
-		g.ask(Choice{Purpose: ChooseAnswer, Player: a.Controller, Rule: "R-ABIL-05", Ask: a, Question: q.Text}, opts)
+		who := a.Controller
+		if q.Player != nil {
+			who = q.Player(c, a.Answers)
+		}
+		g.ask(Choice{Purpose: ChooseAnswer, Player: who, Rule: "R-ABIL-05", Ask: a, Question: q.Text}, opts)
 		return
 	}
 	// What the effect queues goes before the rest of the queue.

@@ -37,9 +37,9 @@ func (g *Game) def(id ObjectID) CardDef {
 	return d
 }
 
-// eternal reports whether an object is eternal: printed or gained
+// Eternal reports whether an object is eternal: printed or gained
 // (R-ABIL-18).
-func (g *Game) eternal(id ObjectID) bool {
+func (g *Game) Eternal(id ObjectID) bool {
 	return g.def(id).Eternal || g.Object(id).Eternal
 }
 
@@ -153,6 +153,7 @@ func (g *Game) resolveAttackRoll(it StackItem) {
 		return
 	}
 	p := g.Turn.Active
+	g.Turn.AttackRolls++ // e.g. "your first attack roll each turn"
 	if it.Roll >= g.Evasion(it.Target.Object) {
 		if atk := g.PlayerATK(p); atk > 0 {
 			g.push(StackItem{
@@ -228,7 +229,7 @@ func (g *Game) resolveDamage(it StackItem) {
 	n := min(it.Amount, g.HP(id))
 	o.Damage += n
 	g.emit(Event{Kind: EvDamaged, Player: NoPlayer, Object: id, Card: o.Card, Amount: n})
-	if g.HP(id) == 0 && !g.eternal(id) { // R-DEATH-03
+	if g.HP(id) == 0 && !g.Eternal(id) { // R-DEATH-03
 		g.push(StackItem{Kind: StackDeath, Controller: NoPlayer, Label: "death", Target: Target{Object: id}})
 	}
 }
@@ -296,11 +297,35 @@ func (g *Game) playerDeath(p PlayerID) {
 		g.endAttack() // R-DEATH-12
 		g.Turn.DeathEnd = true
 	}
-	g.enqueue( // death penalty (R-DEATH-14)
+	if n := len(g.PendingTriggers); n > 0 && g.triggeredBy(EvDied, p) {
+		// "When a player dies" triggers resolve first: the penalty waits
+		// under them on the stack (R-DEATH-13).
+		g.push(StackItem{Kind: StackPenalty, Controller: NoPlayer, Label: "death penalty", Target: Target{Player: p, IsPlayer: true}})
+		return
+	}
+	g.payPenalty(p)
+}
+
+// triggeredBy reports whether a waiting trigger came from this player's
+// death event.
+func (g *Game) triggeredBy(kind EventKind, p PlayerID) bool {
+	for _, t := range g.PendingTriggers {
+		if t.On == kind && t.EventPlayer == p {
+			return true
+		}
+	}
+	return false
+}
+
+// payPenalty queues the death penalty (R-DEATH-14); "after paying
+// penalties" triggers look at the event that follows it.
+func (g *Game) payPenalty(p PlayerID) {
+	g.enqueue(
 		Action{Kind: ActPenaltyItem, Player: p},
 		Action{Kind: ActPenaltyLoot, Player: p},
 		Action{Kind: ActLoseCents, Player: p, Amount: 1},
 		Action{Kind: ActDeactivateTaps, Player: p},
+		Action{Kind: ActPenaltyDone, Player: p},
 	)
 }
 
@@ -324,15 +349,9 @@ func (g *Game) removeFromSlot(id ObjectID) {
 	}
 }
 
-// destroyItem destroys an item a player controls (R-MECH-23).
-func (g *Game) destroyItem(p PlayerID, id ObjectID) {
-	if g.eternal(id) {
-		return // R-ABIL-18
-	}
-	g.Players[p].InPlay = remove(g.Players[p].InPlay, id)
-	nid := g.discard(id, TreasureDeck)
-	g.emit(Event{Kind: EvDestroyed, Player: p, Object: nid, Card: g.Object(nid).Card, Prev: id})
-}
+// destroyItem destroys an item a player controls (R-MECH-23). It goes to
+// the discard of its own deck: a trinket is a loot card.
+func (g *Game) destroyItem(p PlayerID, id ObjectID) { g.DestroyObject(p, id) }
 
 // refillSlots fills empty slots from their decks (R-SHOP-06); events met
 // while refilling monster slots are resolved until a monster sits there

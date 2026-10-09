@@ -23,6 +23,7 @@ type Turn struct {
 	LootPlays   int      `json:"loot_plays"`
 	Attacks     int      `json:"attacks"`
 	Purchases   int      `json:"purchases"`
+	AttackRolls int      `json:"attack_rolls,omitempty"` // attack rolls resolved this turn
 	EndDeclared bool     `json:"end_declared,omitempty"`
 	DeathEnd    bool     `json:"death_end,omitempty"` // the active player died (R-DEATH-16)
 	// entered is true once the current step's automatic work is done.
@@ -210,7 +211,12 @@ func (g *Game) enterStep() {
 }
 
 func (g *Game) startNextTurn() {
-	g.Turn = Turn{Active: g.next(g.Turn.Active), Number: g.Turn.Number + 1, Step: StepRecharge}
+	next := g.next(g.Turn.Active)
+	if g.ExtraTurn {
+		next, g.ExtraTurn = g.Turn.Active, false
+		g.emit(Event{Kind: EvExtraTurn, Player: next})
+	}
+	g.Turn = Turn{Active: next, Number: g.Turn.Number + 1, Step: StepRecharge}
 	g.emit(Event{Kind: EvTurnStarted, Player: g.Turn.Active, Amount: g.Turn.Number})
 }
 

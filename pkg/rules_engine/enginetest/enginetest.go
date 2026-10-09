@@ -99,12 +99,12 @@ func (tb *Table) Refused(p int, card engine.CardRef, i int) string {
 // player's action phase, answering prompts with choices on the way.
 func (tb *Table) EndTurn(choices ...string) {
 	tb.T.Helper()
-	active := tb.G.Turn.Active
+	active, number := tb.G.Turn.Active, tb.G.Turn.Number
 	if _, err := tb.G.Apply(engine.Intent{Player: active, Kind: engine.IntentEndTurn}); err != nil {
 		tb.T.Fatal(err)
 	}
 	for range 1000 {
-		if tb.G.Turn.Active != active && tb.G.Turn.Step == engine.StepAction && tb.G.Prompt().Kind == engine.PromptPriority && len(tb.G.Stack) == 0 {
+		if tb.G.Turn.Number != number && tb.G.Turn.Step == engine.StepAction && tb.G.Prompt().Kind == engine.PromptPriority && len(tb.G.Stack) == 0 {
 			return
 		}
 		w := tb.G.Prompt()

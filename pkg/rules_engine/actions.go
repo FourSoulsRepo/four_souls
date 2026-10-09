@@ -23,6 +23,7 @@ const (
 	ActAsk                                  // an Ask effect asks its questions (R-ABIL-05)
 	ActStealCents                           // Player steals Amount¢ From a player (R-MECH-38)
 	ActChooseStartingItem                   // Eden-style start-of-game choice (R-SETUP-09)
+	ActPenaltyDone                          // the death penalty is paid
 )
 
 // Action is a pending change. It sits in the queue, may be rewritten by
@@ -171,7 +172,7 @@ func (g *Game) perform(a Action) {
 	case ActPenaltyItem:
 		var items []ObjectID
 		for _, id := range g.Players[a.Player].InPlay {
-			if g.Object(id).Role == RoleItem && !g.eternal(id) {
+			if g.Object(id).Role == RoleItem && !g.Eternal(id) {
 				items = append(items, id)
 			}
 		}
@@ -200,6 +201,8 @@ func (g *Game) perform(a Action) {
 		g.emit(Event{Kind: EvStole, Player: a.Player, Amount: n, Text: strconv.Itoa(int(a.From))})
 	case ActChooseStartingItem:
 		g.askStartingItem(a.Player, a.Amount)
+	case ActPenaltyDone:
+		g.emit(Event{Kind: EvPenaltyPaid, Player: a.Player})
 	}
 }
 

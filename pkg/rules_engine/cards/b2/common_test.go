@@ -1,6 +1,7 @@
 package b2
 
 import (
+	"slices"
 	"testing"
 
 	engine "github.com/FourSoulsRepo/rules_engine"
@@ -102,5 +103,30 @@ func testGain(t *testing.T, card engine.CardRef, n int) {
 	}
 	if !inDiscard(tb.G, card) {
 		t.Error("the loot card is not in the loot discard (R-CARD-07)")
+	}
+}
+
+// testOneOnTop plays a "look at the top 5, put 1 on top, the rest on the
+// bottom" card, picking the third card by name.
+func testOneOnTop(t *testing.T, card engine.CardRef, d engine.DeckKind) {
+	t.Helper()
+	tb := lootTable(t, card)
+	top := tb.G.DeckTop(d, 5)
+	name := tb.G.Object(top[2]).Card
+	kept := -1 // options are names: the first card with the name is picked
+	for i, id := range top {
+		if kept < 0 && tb.G.Object(id).Card == name {
+			kept = i
+		}
+	}
+	tb.Play(0, card, string(name))
+	if got := tb.G.DeckTop(d, 1)[0]; got != top[kept] {
+		t.Errorf("top is %s, want the chosen %s", tb.G.Object(got).Card, name)
+	}
+	bottom := tb.G.Decks[d][:4]
+	for i, id := range top {
+		if i != kept && !slices.Contains(bottom, id) {
+			t.Errorf("%s is not on the bottom", tb.G.Object(id).Card)
+		}
 	}
 }

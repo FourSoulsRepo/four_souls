@@ -214,8 +214,55 @@ func (g *Game) targetOptions(t TargetSpec, p PlayerID) ([]Chosen, []string) {
 				labels = append(labels, "roll of "+strconv.Itoa(it.Roll))
 			}
 		}
+	case TargetStackAbility:
+		for _, it := range g.Stack {
+			if g.cancellable(it) {
+				opts = append(opts, Chosen{Kind: TargetStackAbility, Player: it.Controller, StackID: it.ID})
+				label := string(it.Card)
+				if it.Label != "" {
+					label += ": " + it.Label
+				}
+				labels = append(labels, label)
+			}
+		}
+	case TargetCurse, TargetYourItem:
+		role := RoleCurse
+		if t.Kind == TargetYourItem {
+			role = RoleItem
+		}
+		for _, pl := range g.Players {
+			if t.Kind == TargetYourItem && pl.ID != p {
+				continue
+			}
+			for _, id := range pl.InPlay {
+				if g.Object(id).Role == role {
+					opts = append(opts, Chosen{Kind: t.Kind, Player: pl.ID, Object: id})
+					labels = append(labels, string(g.Object(id).Card))
+				}
+			}
+		}
+	}
+	if t.Where != nil {
+		keptOpts, keptLabels := opts[:0], labels[:0]
+		for i, o := range opts {
+			if t.Where(g, p, o) {
+				keptOpts, keptLabels = append(keptOpts, o), append(keptLabels, labels[i])
+			}
+		}
+		opts, labels = keptOpts, keptLabels
 	}
 	return opts, labels
+}
+
+// cancellable: an item's ↷ or $ ability, or a loot card being played.
+func (g *Game) cancellable(it StackItem) bool {
+	switch it.Kind { //nolint:exhaustive // only these two can be cancelled this way
+	case StackLoot:
+		return true
+	case StackAbility:
+		return g.Object(it.Source).Role == RoleItem
+	}
+	return false
 }
 
 // stillValid checks a target on resolution (R-ABIL-06).
@@ -229,13 +276,16 @@ func (g *Game) stillValid(c Chosen) bool {
 	case TargetItem:
 		o := g.Object(c.Object)
 		return o.Zone.Kind == ZoneInPlay && o.Role == RoleItem
-	case TargetDiceRoll:
+	case TargetDiceRoll, TargetStackAbility:
 		for _, it := range g.Stack {
 			if it.ID == c.StackID {
 				return true
 			}
 		}
 		return false
+	case TargetCurse, TargetYourItem:
+		o := g.Object(c.Object)
+		return o.Zone.Kind == ZoneInPlay && o.Controller == c.Player
 	}
 	return false
 }

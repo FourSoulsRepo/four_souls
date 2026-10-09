@@ -16,7 +16,7 @@ var lazarusRags = engine.CardDef{
 		{
 			Kind:    engine.Triggered,
 			Text:    "Each time you die, after paying penalties, gain +1 treasure.",
-			Trigger: engine.WhenYouDie(), // penalties are paid before triggers go on the stack
+			Trigger: engine.AfterYourDeathPenalty(),
 			Effects: []engine.Effect{engine.GainTreasure(1)},
 		},
 	},
