@@ -9,3 +9,4 @@
 | UC-05 | Detailed match setup | `internal/server` | In progress | [server/uc-05-detailed-match-setup.md](server/uc-05-detailed-match-setup.md) |
 | UC-06 | Respond without stalls | `internal/server` | In progress | [server/uc-06-respond-without-stalls.md](server/uc-06-respond-without-stalls.md) |
 | UC-07 | Reconnect after a lost connection | `internal/server` | In progress | [server/uc-07-reconnect.md](server/uc-07-reconnect.md) |
+| UC-08 | Get a match record | `internal/server`, `pkg/record` | In progress | [server/uc-08-get-a-match-record.md](server/uc-08-get-a-match-record.md) |

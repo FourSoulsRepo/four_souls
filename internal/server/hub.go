@@ -11,6 +11,7 @@ import (
 
 	"github.com/FourSoulsRepo/four_souls/internal/protocol"
 	"github.com/FourSoulsRepo/four_souls/internal/version"
+	"github.com/FourSoulsRepo/record"
 	engine "github.com/FourSoulsRepo/rules_engine"
 	"github.com/FourSoulsRepo/rules_engine/cards"
 )
@@ -101,6 +102,9 @@ type hubRequest struct {
 	msg    []byte
 	join   bool
 	leave  bool
+	find   string     // a started game by ID, for a record download
+	reply  chan *Room // the answer to find
+	run    func(*Hub) // runs in the hub goroutine (tests)
 }
 
 // Hub is the lobby: it seats players at tables and starts their games
@@ -117,6 +121,10 @@ type Hub struct {
 	seq     int
 	// second is one second of the rooms' timers; tests shorten it.
 	second time.Duration
+	// records is the folder for match records; "" records nothing.
+	records string
+	// cards is the text of every known card, for records (RP-10).
+	cards []record.Card
 }
 
 // NewHub makes a lobby with the card sets the engine knows.
@@ -160,6 +168,20 @@ func (h *Hub) Run(ctx context.Context) {
 }
 
 func (h *Hub) handle(req hubRequest) {
+	if req.run != nil {
+		req.run(h)
+		return
+	}
+	if req.reply != nil {
+		var room *Room
+		for _, g := range h.games {
+			if g.info.ID == req.find {
+				room = g.room
+			}
+		}
+		req.reply <- room
+		return
+	}
 	c := req.client
 	switch {
 	case req.join:
@@ -386,6 +408,9 @@ func (h *Hub) start(t *table) {
 	room, err := NewRoom(setup, t.opts, seats)
 	if err == nil {
 		room.second = h.second
+		room.recDir = h.records
+		room.recInfo = recordInfo{game: t.id, sets: t.sets, cards: h.cards}
+		room.path = recordPath(h.records, t.id, time.Now())
 	}
 	if err != nil {
 		for _, s := range t.seats {

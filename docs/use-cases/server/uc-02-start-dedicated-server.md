@@ -23,4 +23,4 @@
 ## Postconditions
 
 * The notice and versions are printed.
-* Saving running games on stop comes with step 6.9.
+* On stop, running games' records are closed as unfinished (UC-08).

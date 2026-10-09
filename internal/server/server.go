@@ -12,7 +12,10 @@ import (
 	"sync"
 	"time"
 
+	carddb "github.com/FourSoulsRepo/card_db"
+	"github.com/FourSoulsRepo/four_souls/internal/assets"
 	"github.com/FourSoulsRepo/four_souls/internal/protocol"
+	"github.com/FourSoulsRepo/record"
 )
 
 // Config is the server's settings, from flags or a JSON file (6.3).
@@ -75,13 +78,19 @@ func Start(ctx context.Context, cfg Config) (*Server, error) {
 	ctx, cancel := context.WithCancel(ctx)
 	s := &Server{cfg: cfg, ln: ln, cancel: cancel}
 	hub := NewHub()
-	s.hub.Add(1)
+	hub.records, hub.cards = cfg.Records, cardTexts()
+	s.hub.Add(2)
+	go func() {
+		defer s.hub.Done()
+		pruneLoop(ctx.Done(), cfg.Records, cfg.Retention)
+	}()
 	go func() {
 		defer s.hub.Done()
 		hub.Run(ctx)
 	}()
 	mux := http.NewServeMux()
 	mux.Handle("/ws", Handler(hub))
+	mux.HandleFunc("/record", hub.downloadRecord)
 	s.http = &http.Server{Handler: mux, ReadHeaderTimeout: 10 * time.Second}
 	go func() { _ = s.http.Serve(ln) }() //nolint:errcheck // ends with ErrServerClosed on Shutdown
 	return s, nil
@@ -125,6 +134,22 @@ func LocalAddresses() []string {
 				}
 			}
 		}
+	}
+	return out
+}
+
+// cardTexts reads the card data for records; without it records carry
+// no card text (RP-10).
+func cardTexts() []record.Card {
+	db, err := carddb.Load(assets.CardsFS())
+	if err != nil {
+		return nil
+	}
+	var out []record.Card
+	for _, ref := range db.Refs() {
+		c, _ := db.Get(ref)
+		en := c.Text[carddb.English]
+		out = append(out, record.Card{Ref: ref.String(), Name: en.Name, Type: c.Type, Effects: en.Effects})
 	}
 	return out
 }

@@ -10,9 +10,11 @@ import (
 	"fmt"
 	"slices"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/FourSoulsRepo/four_souls/internal/protocol"
+	"github.com/FourSoulsRepo/record"
 	engine "github.com/FourSoulsRepo/rules_engine"
 )
 
@@ -49,9 +51,17 @@ type Room struct {
 	tokens  []string // read by the hub; fixed when the room is made
 
 	// second is one second of the ban and response timers; tests shorten it.
-	second   time.Duration
-	votes    []protocol.Vote // while paused (N-08)
-	timer    *time.Timer     // the response timer (N-07)
+	second time.Duration
+	votes  []protocol.Vote // while paused (N-08)
+
+	// The match record (6.9). path is fixed when the room is made; over
+	// is read by the hub for downloads.
+	recDir   string
+	recInfo  recordInfo
+	rec      *record.Writer
+	path     string
+	over     atomic.Bool
+	timer    *time.Timer // the response timer (N-07)
 	timerGen int
 	deadline time.Time
 }
@@ -89,6 +99,7 @@ func (r *Room) send(req request) {
 // ends; then it closes every connection.
 func (r *Room) Run(ctx context.Context) {
 	defer func() {
+		r.closeRecord(false)
 		close(r.done)
 		if r.match != nil && r.match.timer != nil {
 			r.match.timer.Stop()
@@ -193,7 +204,7 @@ func (r *Room) intent(c *Client, env protocol.Envelope) {
 	}
 	in := m.Intent
 	in.Player = engine.PlayerID(c.seat) // a client acts only for its own seat
-	events, err := r.game.Apply(in)
+	events, err := r.apply(in)
 	var re *engine.RuleError
 	switch {
 	case errors.As(err, &re):

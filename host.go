@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"errors"
+	"os"
+	"path/filepath"
 	"sync"
 	"time"
 
@@ -36,6 +38,7 @@ func (h *Host) Start() (HostInfo, error) {
 		return h.info(), ErrHosting
 	}
 	cfg := server.DefaultConfig()
+	cfg.Records, cfg.Retention = hostRecords(), 0 // kept until the user deletes them (RP-07)
 	srv, err := server.Start(context.Background(), cfg)
 	if err != nil {
 		return HostInfo{}, err //nolint:wrapcheck // shown to the player as is
@@ -73,4 +76,14 @@ func (h *Host) info() HostInfo {
 		return HostInfo{}
 	}
 	return HostInfo{Running: true, Port: h.cfg.Port, Addresses: server.LocalAddresses()}
+}
+
+// hostRecords is where a hosted game's records go: the user's config
+// folder, or "records" next to the app if there is none.
+func hostRecords() string {
+	dir, err := os.UserConfigDir()
+	if err != nil {
+		return "records"
+	}
+	return filepath.Join(dir, "FourSouls", "records")
 }

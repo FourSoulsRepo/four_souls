@@ -240,6 +240,7 @@ func (r *Room) play(characters []engine.CardRef) {
 		panic(fmt.Sprintf("server: the checked setup failed: %v", err))
 	}
 	r.game, r.match = g, nil
+	r.openRecord(s)
 	r.after(nil, false) // the start is step 0
 }
 

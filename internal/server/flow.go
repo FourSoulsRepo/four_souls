@@ -31,7 +31,7 @@ func (r *Room) after(events []engine.Event, applied bool) {
 		if !ok {
 			break
 		}
-		more, err := r.game.Apply(in)
+		more, err := r.apply(in)
 		if err != nil {
 			break // the engine said no; wait for the player
 		}
@@ -40,6 +40,9 @@ func (r *Room) after(events []engine.Event, applied bool) {
 	}
 	r.restartTimer()
 	r.broadcast(events)
+	if r.game.Over {
+		r.closeRecord(true)
+	}
 }
 
 // autoIntent is a pass the server makes for the waiting player: one who
@@ -128,7 +131,7 @@ func (r *Room) timeUp(gen int) {
 	if !ok {
 		return
 	}
-	events, err := r.game.Apply(in)
+	events, err := r.apply(in)
 	if err != nil {
 		return
 	}

@@ -4,6 +4,7 @@ go 1.27.2
 
 require (
 	github.com/FourSoulsRepo/card_db v0.0.0
+	github.com/FourSoulsRepo/record v0.0.0
 	github.com/FourSoulsRepo/rules_engine v0.0.0
 	github.com/gorilla/websocket v1.5.3
 	github.com/wailsapp/wails/v2 v2.16.0
@@ -42,3 +43,5 @@ require (
 replace github.com/FourSoulsRepo/rules_engine => ./pkg/rules_engine
 
 replace github.com/FourSoulsRepo/card_db => ./pkg/card_db
+
+replace github.com/FourSoulsRepo/record => ./pkg/record

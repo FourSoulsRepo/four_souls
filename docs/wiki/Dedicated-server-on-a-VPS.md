@@ -2,8 +2,6 @@
 
 Any player can rent a small server on the internet (a VPS) and run the game's dedicated server there. Friends then join its address from anywhere; nobody needs a virtual LAN or port forwarding (see [Playing over the internet](Playing-over-the-internet)).
 
-> Work in progress: saving match records comes with roadmap step 6.9.
-
 ## What you need
 
 * A Linux VPS. The server is small: 1 CPU and 512 MB–1 GB of memory are plenty for a few games. Any provider works (Hetzner, DigitalOcean, Vultr, OVH, Linode, a local one); the cheapest plan is usually enough. Pick a location close to your friends.
@@ -38,7 +36,7 @@ GOOS=linux GOARCH=amd64 go build -o four-souls-server ./cmd/server   # or GOARCH
 sudo -u four-souls four-souls-server -port 4774 -records /var/lib/four-souls/records
 ```
 
-It prints the fan-game notice, its versions and the address it listens on, then waits for players. Stop it with Ctrl+C (or `systemctl stop`); it closes every connection cleanly.
+It prints the fan-game notice, its versions and the address it listens on, then waits for players. Stop it with Ctrl+C (or `systemctl stop`); it closes every connection cleanly and closes the records of running games as unfinished.
 
 ## 3. Open the port
 
@@ -114,7 +112,7 @@ scp four-souls-server root@<server address>:/usr/local/bin/
 systemctl start four-souls
 ```
 
-Stopping ends the running games for now; saving them comes with step 6.9.
+Stopping ends the running games; their records stay in the records folder, marked unfinished (ADR 007).
 
 ## Safety
 
