@@ -5,9 +5,6 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 // Holy Mom’s Eye (Holy/Charmed Monster Card)
 //
 //	Each time a player rolls a ❷, they may recharge an item.
-//
-// TODO(card): implement the text above, then delete this line.
-// Until then `go run ./cmd/cardgen` rewrites this file from card_db.
 var holyMomsEye = engine.CardDef{
 	Ref:     "holy_moms_eye",
 	Kind:    engine.MonsterCard,
@@ -16,4 +13,12 @@ var holyMomsEye = engine.CardDef{
 	DC:      4,
 	ATK:     2,
 	Rewards: []engine.Reward{{Kind: engine.RewardLoot, Amount: 1}},
+	Abilities: []engine.Ability{
+		{
+			Kind:    engine.Triggered,
+			Text:    "Each time a player rolls a 2, they may recharge an item.",
+			Trigger: playerRollOf(2),
+			Effects: []engine.Effect{forRoller(rechargeAnItem)},
+		},
+	},
 }

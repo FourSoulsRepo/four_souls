@@ -452,13 +452,20 @@ func (e killEffect) apply(c *Ctx) {
 }
 
 // You is the target index that means the ability's controller, for text
-// without a target: DealDamage(1, You) is "Take 1 damage".
-const You = -1
+// without a target: DealDamage(1, You) is "Take 1 damage". This means
+// the ability's own object: PreventNextDamage(This).
+const (
+	You  = -1
+	This = -2
+)
 
 // target returns chosen target t, or the controller for You.
 func (c *Ctx) target(t int) Chosen {
 	if t == You {
 		return Chosen{Kind: TargetPlayer, Player: c.Controller}
+	}
+	if t == This {
+		return Chosen{Kind: TargetMonster, Player: NoPlayer, Object: c.Source}
 	}
 	return c.Targets[t]
 }
@@ -472,14 +479,32 @@ func (g *Game) effectsOf(ref AbilityRef, mode, roll int) []Effect {
 		effects = ab.Modes[mode].Effects
 	}
 	if roll > 0 {
-		for _, e := range effects {
-			if r, ok := e.(rollEffect); ok {
-				return r.table[roll-1]
-			}
+		if r, ok := findRoll(effects); ok {
+			return r.table[roll-1]
 		}
 		return nil
 	}
 	return effects
+}
+
+// findRoll finds the roll effect of an ability, also inside effects that
+// wrap others (DestroyThis(Roll(…))).
+func findRoll(effects []Effect) (rollEffect, bool) {
+	for _, e := range effects {
+		switch x := e.(type) {
+		case rollEffect:
+			return x, true
+		case destroySelfThen:
+			if r, ok := findRoll(x.then); ok {
+				return r, true
+			}
+		case eachPlayerEffect:
+			if r, ok := findRoll(x.effects); ok {
+				return r, true
+			}
+		}
+	}
+	return rollEffect{}, false
 }
 
 type cancelEffect struct{ target int }

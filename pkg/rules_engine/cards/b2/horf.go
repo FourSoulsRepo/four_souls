@@ -5,9 +5,6 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 // Horf (Basic Monster Card)
 //
 //	Combat damage this deals is increased by 1 on attack rolls of 2.
-//
-// TODO(card): implement the text above, then delete this line.
-// Until then `go run ./cmd/cardgen` rewrites this file from card_db.
 var horf = engine.CardDef{
 	Ref:     "horf",
 	Kind:    engine.MonsterCard,
@@ -16,4 +13,10 @@ var horf = engine.CardDef{
 	DC:      4,
 	ATK:     1,
 	Rewards: []engine.Reward{{Kind: engine.RewardCents, Amount: 3}},
+	CombatMod: func(_ *engine.Game, _ engine.ObjectID, roll int, hit bool, n int) int {
+		if !hit && roll == 2 {
+			return n + 1
+		}
+		return n
+	},
 }

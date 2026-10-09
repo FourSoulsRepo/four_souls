@@ -27,6 +27,8 @@ Cards are Go values built from small blocks (ADR 005). This page lists every blo
 | `Curse` | An event given to a player when it enters play (R-ABIL-20) |
 | `Guppy` | The Guppy tag (R-ABIL-22) |
 | `Unattackable` | "This can't be attacked." |
+| `CombatMod` | Changes combat damage by attack roll: "This takes no combat damage on attack rolls of 6." |
+| `BonusSoul` | A bonus soul's condition: "The first player to have 25¢ or more gains this soul." |
 | `DamageMod` | Changes damage about to be marked: "Damage you would take is reduced to 1." |
 | `EntersDeactivated`, `EntersWithCounters` | "This enters play deactivated." / "starts with 9 counters" |
 | `CopiesTapAbilities` | Placebo: may use any ↷ ability of another non-eternal item (`AbilitiesOf`) |
@@ -78,7 +80,7 @@ Targets are always asked, with a "cancel" option before anything is paid. A targ
 | `Choose(TargetItemOrSoul)` | an item or soul a player controls |
 | `ChooseWhere(kind, filter)` | e.g. the player with the most souls; `NotThis` is "another item" |
 
-Effects refer to targets by number: `DealDamage(1, 0)` hits the first target. `You` means the controller, for text without a target: `DealDamage(1, You)` is "Take 1 damage." A roll ability keeps its targets for the result: "Choose a player, then roll- deal damage equal to the result".
+Effects refer to targets by number: `DealDamage(1, 0)` hits the first target. `This` is the ability's own object (a monster shielding itself). `You` means the controller, for text without a target: `DealDamage(1, You)` is "Take 1 damage." A roll ability keeps its targets for the result: "Choose a player, then roll- deal damage equal to the result".
 
 ## Effects
 

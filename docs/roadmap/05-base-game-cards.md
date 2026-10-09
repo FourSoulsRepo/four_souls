@@ -55,7 +55,7 @@ Ideas: R-05, TS-01 – TS-04.
 3. Done when:
    1. Report shows treasures as tested.
 
-### [ ] 5.6 Monsters, bosses, events, curses
+### [x] 5.6 Monsters, bosses, events, curses
 
 1. Goal: the whole Base Game monster deck.
 2. Tasks:
@@ -65,7 +65,7 @@ Ideas: R-05, TS-01 – TS-04.
 3. Done when:
    1. Report shows monsters as tested.
 
-### [ ] 5.7 Bonus souls
+### [x] 5.7 Bonus souls
 
 1. Goal: Base Game bonus souls, if the set has them.
 2. Tasks:

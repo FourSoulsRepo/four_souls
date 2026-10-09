@@ -209,3 +209,34 @@ func slayTable(t *testing.T, monster engine.CardRef, isaac, cain engine.Situatio
 	t.Helper()
 	return enginetest.NewSetup(t, engine.SituationSetup{Players: []engine.SituationPlayer{isaac, cain}, Monsters: items(monster)}, Set)
 }
+
+// bonusGame starts a real game with the bonus souls set aside; b2 has
+// exactly 3, so all of them are in play.
+func bonusGame(t *testing.T, soul engine.CardRef) *engine.Game {
+	t.Helper()
+	g, _, err := engine.NewGame(engine.Setup{Seed: 3, Players: 2, Sets: []engine.CardSet{Set}, BonusSouls: true, Characters: items("isaac", "cain")})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !slices.ContainsFunc(g.BonusSouls, func(id engine.ObjectID) bool { return g.Object(id).Card == soul }) {
+		t.Fatalf("%s is not an active bonus soul", soul)
+	}
+	return g
+}
+
+// runSome applies one allowed intent so the engine runs its checks.
+func runSome(t *testing.T, g *engine.Game) {
+	t.Helper()
+	p := g.Prompt().Player
+	allowed := g.Allowed(p)
+	if len(allowed) == 0 {
+		t.Fatal("nothing allowed")
+	}
+	in := allowed[0]
+	if in.Kind == engine.IntentDiscard {
+		in.Objects = in.Objects[:g.Prompt().Count]
+	}
+	if _, err := g.Apply(in); err != nil {
+		t.Fatal(err)
+	}
+}

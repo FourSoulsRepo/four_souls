@@ -186,8 +186,13 @@ func (g *Game) resolveAttackRoll(it StackItem) {
 	p := g.Turn.Active
 	g.Turn.AttackRolls++ // e.g. "your first attack roll each turn"
 	g.Attack.LastRoll = it.Roll
+	mod := g.def(it.Target.Object).CombatMod
 	if it.Roll >= g.Evasion(it.Target.Object) {
-		if atk := g.PlayerATK(p); atk > 0 {
+		atk := g.PlayerATK(p)
+		if mod != nil {
+			atk = mod(g, it.Target.Object, it.Roll, true, atk)
+		}
+		if atk > 0 {
 			g.push(StackItem{
 				Kind: StackDamage, Controller: p, Amount: atk, Label: "combat damage", Attack: true,
 				Target: Target{Object: it.Target.Object},
@@ -196,7 +201,11 @@ func (g *Game) resolveAttackRoll(it StackItem) {
 		return
 	}
 	// Nobody deals 0 damage (R-MECH-20).
-	if atk := g.MonsterATK(it.Target.Object); atk > 0 {
+	atk := g.MonsterATK(it.Target.Object)
+	if mod != nil {
+		atk = mod(g, it.Target.Object, it.Roll, false, atk)
+	}
+	if atk > 0 {
 		g.push(StackItem{
 			Kind: StackDamage, Controller: NoPlayer, Source: it.Target.Object, Amount: atk,
 			Label: "combat damage", Attack: true, Target: Target{Player: p, IsPlayer: true},
@@ -256,7 +265,11 @@ func (g *Game) resolveDamage(it StackItem) {
 		n := min(it.Amount, hp)
 		g.Players[p].Damage += n
 		g.Players[p].TimesDamaged++
-		g.emit(Event{Kind: EvDamaged, Player: p, Amount: n})
+		e := Event{Kind: EvDamaged, Player: p, Amount: n, Source: it.Source}
+		if it.Attack {
+			e.Text = "combat"
+		}
+		g.emit(e)
 		if g.PlayerHP(p) == 0 {
 			g.push(StackItem{Kind: StackDeath, Controller: NoPlayer, Label: "death", Target: Target{Player: p, IsPlayer: true}})
 		}

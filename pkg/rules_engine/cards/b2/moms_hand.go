@@ -5,9 +5,6 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 // Mom’s Hand (Basic Monster Card)
 //
 //	When the attacking player rolls an attack roll of 6, cancel everything that hasn't resolved and end the turn.
-//
-// TODO(card): implement the text above, then delete this line.
-// Until then `go run ./cmd/cardgen` rewrites this file from card_db.
 var momsHand = engine.CardDef{
 	Ref:     "moms_hand",
 	Kind:    engine.MonsterCard,
@@ -16,4 +13,14 @@ var momsHand = engine.CardDef{
 	DC:      4,
 	ATK:     1,
 	Rewards: []engine.Reward{{Kind: engine.RewardCents, Amount: 4}},
+	Abilities: []engine.Ability{
+		{
+			Kind:    engine.Triggered,
+			Text:    "When the attacking player rolls an attack roll of 6, cancel everything that hasn't resolved and end the turn.",
+			Trigger: attackRollOnThis(6),
+			Effects: []engine.Effect{engine.EffectFunc(func(c *engine.Ctx) {
+				c.G.EndTurnNow()
+			})},
+		},
+	},
 }

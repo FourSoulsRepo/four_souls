@@ -75,6 +75,11 @@ func (g *Game) Apply(in Intent) ([]Event, error) {
 	g.events = nil
 	g.apply(in)
 	g.run()
+	// Bonus souls and the win are checked whenever the game stops too,
+	// not only between automatic steps.
+	if !g.Over && g.checkBonusSouls() {
+		g.checkWin()
+	}
 	return g.takeEvents(), nil
 }
 

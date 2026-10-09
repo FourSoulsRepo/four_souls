@@ -198,6 +198,9 @@ func (g *Game) DestroyObject(p PlayerID, id ObjectID) bool {
 // leaves its slot, which is refilled.
 func (g *Game) GainControl(p PlayerID, id ObjectID) {
 	o := g.Object(id)
+	if o.Zone.Kind != ZoneInPlay || o.Controller == p {
+		return // it left play in the meantime, or is p's already
+	}
 	if o.Zone.Slot == ShopSlot && o.Controller == NoPlayer {
 		g.removeFromSlot(id)
 		nid := g.move(id, Zone{Kind: ZoneInPlay}, p)

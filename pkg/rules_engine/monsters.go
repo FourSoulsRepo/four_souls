@@ -157,3 +157,44 @@ func (g *Game) PlaceFromDeck(id ObjectID, i int) {
 	nid := g.putInSlot(id, MonsterSlot, i)
 	g.enterMonsterSlot(nid)
 }
+
+// checkBonusSouls gives each active bonus soul to the first player, in
+// turn order from the active player, who meets its condition (R-ZONE-14).
+func (g *Game) checkBonusSouls() bool {
+	gained := false
+	for _, id := range append([]ObjectID(nil), g.BonusSouls...) {
+		cond := g.def(id).BonusSoul
+		if cond == nil || g.Object(id).Zone.Kind != ZoneOutside {
+			continue
+		}
+		for _, p := range g.turnOrderFrom(g.Turn.Active) {
+			if cond(g, p) {
+				g.BonusSouls = remove(g.BonusSouls, id)
+				nid := g.move(id, Zone{Kind: ZoneInPlay}, p)
+				g.Object(nid).Role = RoleSoul
+				g.Players[p].InPlay = append(g.Players[p].InPlay, nid)
+				g.emit(Event{Kind: EvGainedSoul, Player: p, Object: nid, Card: g.Object(nid).Card, Text: "bonus soul"})
+				gained = true
+				break
+			}
+		}
+	}
+	return gained
+}
+
+// SoulFromDiscard takes the latest card from a discard pile and gives it
+// to p as a soul ("This becomes a soul. Gain it.").
+func (g *Game) SoulFromDiscard(d DeckKind, card CardRef, p PlayerID) {
+	pile := g.Discards[d]
+	for i := len(pile) - 1; i >= 0; i-- {
+		if g.Object(pile[i]).Card != card {
+			continue
+		}
+		g.Discards[d] = remove(pile, pile[i])
+		nid := g.move(pile[i], Zone{Kind: ZoneInPlay}, p)
+		g.Object(nid).Role = RoleSoul
+		g.Players[p].InPlay = append(g.Players[p].InPlay, nid)
+		g.emit(Event{Kind: EvGainedSoul, Player: p, Object: nid, Card: card})
+		return
+	}
+}

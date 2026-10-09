@@ -5,16 +5,19 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 // Pin (Boss Card)
 //
 //	This takes no combat damage on attack rolls of 6.
-//
-// TODO(card): implement the text above, then delete this line.
-// Until then `go run ./cmd/cardgen` rewrites this file from card_db.
 var pin = engine.CardDef{
 	Ref:     "pin",
 	Kind:    engine.MonsterCard,
 	Copies:  1,
+	Soul:    1,
 	HP:      2,
 	DC:      4,
 	ATK:     1,
-	Soul:    1,
 	Rewards: []engine.Reward{{Kind: engine.RewardCents, Amount: 5}},
+	CombatMod: func(_ *engine.Game, _ engine.ObjectID, roll int, hit bool, n int) int {
+		if hit && roll == 6 {
+			return 0
+		}
+		return n
+	},
 }

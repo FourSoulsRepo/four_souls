@@ -66,6 +66,13 @@ type CardDef struct {
 	Curse bool
 	// Guppy: the Guppy tag other cards look for (R-ABIL-22).
 	Guppy bool
+	// CombatMod changes combat damage from an attack roll against this
+	// monster: hit is true for damage to it, false for its damage to the
+	// attacker. "This takes no combat damage on attack rolls of 6."
+	CombatMod func(g *Game, self ObjectID, roll int, hit bool, n int) int
+	// BonusSoul: the condition for gaining this bonus soul ("the first
+	// player to have 25¢ or more").
+	BonusSoul func(g *Game, p PlayerID) bool
 	// Unattackable: "This can't be attacked."
 	Unattackable bool
 	// TakesPenalties: "If another player would pay the death penalty, you

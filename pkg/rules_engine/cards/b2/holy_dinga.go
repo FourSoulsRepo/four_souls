@@ -5,9 +5,6 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 // Holy Dinga (Holy/Charmed Monster Card)
 //
 //	Each time a player rolls a ❻, they heal 1{HP}.
-//
-// TODO(card): implement the text above, then delete this line.
-// Until then `go run ./cmd/cardgen` rewrites this file from card_db.
 var holyDinga = engine.CardDef{
 	Ref:     "holy_dinga",
 	Kind:    engine.MonsterCard,
@@ -16,4 +13,12 @@ var holyDinga = engine.CardDef{
 	DC:      3,
 	ATK:     1,
 	Rewards: []engine.Reward{{Kind: engine.RewardCents, Roll: true}},
+	Abilities: []engine.Ability{
+		{
+			Kind:    engine.Triggered,
+			Text:    "Each time a player rolls a 6, they heal 1 HP.",
+			Trigger: playerRollOf(6),
+			Effects: []engine.Effect{engine.EffectFunc(func(c *engine.Ctx) { c.G.HealPlayer(c.EventPlayer, 1) })},
+		},
+	},
 }

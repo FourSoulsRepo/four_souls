@@ -154,6 +154,7 @@ func (g *Game) run() {
 		if steps > maxRunSteps {
 			panic("rulesengine: the game does not settle (bug)")
 		}
+		g.checkBonusSouls()
 		if g.checkWin() {
 			return
 		}
@@ -331,4 +332,12 @@ func (g *Game) checkWin() bool {
 		g.emit(Event{Kind: EvGameWon, Player: w})
 	}
 	return true
+}
+
+// PlayerAfter is the player to p's left: next in turn order.
+func (g *Game) PlayerAfter(p PlayerID) PlayerID { return g.next(p) }
+
+// PlayerBefore is the player to p's right: previous in turn order.
+func (g *Game) PlayerBefore(p PlayerID) PlayerID {
+	return PlayerID((int(p) + len(g.Players) - 1) % len(g.Players))
 }

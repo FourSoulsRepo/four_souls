@@ -5,9 +5,6 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 // Holy Keeper Head (Holy/Charmed Monster Card)
 //
 //	Each time a player rolls a ❹, they gain 2¢.
-//
-// TODO(card): implement the text above, then delete this line.
-// Until then `go run ./cmd/cardgen` rewrites this file from card_db.
 var holyKeeperHead = engine.CardDef{
 	Ref:     "holy_keeper_head",
 	Kind:    engine.MonsterCard,
@@ -16,4 +13,12 @@ var holyKeeperHead = engine.CardDef{
 	DC:      4,
 	ATK:     1,
 	Rewards: []engine.Reward{{Kind: engine.RewardCents, Roll: true}},
+	Abilities: []engine.Ability{
+		{
+			Kind:    engine.Triggered,
+			Text:    "Each time a player rolls a 4, they gain 2¢.",
+			Trigger: playerRollOf(4),
+			Effects: []engine.Effect{forRoller(engine.GainCents(2))},
+		},
+	},
 }

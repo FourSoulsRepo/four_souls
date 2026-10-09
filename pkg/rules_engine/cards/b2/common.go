@@ -442,3 +442,83 @@ func damageAnything(n int) engine.Effect {
 		return out
 	}})
 }
+
+// attackRollOnThis triggers when the attacking player's attack roll
+// against this monster resolves as n.
+func attackRollOnThis(n int) engine.Trigger {
+	return engine.Trigger{On: engine.EvRollResolved, Match: func(g *engine.Game, self engine.ObjectID, e engine.Event) bool {
+		return e.Amount == n && e.Text == "attack" && g.Attack.Target == self
+	}}
+}
+
+// playerRollOf triggers when a player's roll resolves as n.
+func playerRollOf(n int) engine.Trigger {
+	return engine.Trigger{On: engine.EvRollResolved, Match: func(_ *engine.Game, _ engine.ObjectID, e engine.Event) bool {
+		return e.Amount == n && e.Player != engine.NoPlayer
+	}}
+}
+
+// whenThisTakesDamage triggers when this monster takes damage; combat
+// only, if set.
+func whenThisTakesDamage(combat bool) engine.Trigger {
+	return engine.Trigger{On: engine.EvDamaged, Match: func(_ *engine.Game, self engine.ObjectID, e engine.Event) bool {
+		return e.Object == self && (!combat || e.Text == "combat")
+	}}
+}
+
+// whenThisDealsDamage triggers when this monster damages a player;
+// combat only, if set. c.EventPlayer is the player.
+func whenThisDealsDamage(combat bool) engine.Trigger {
+	return engine.Trigger{On: engine.EvDamaged, Match: func(_ *engine.Game, self engine.ObjectID, e engine.Event) bool {
+		return e.Source == self && e.Player != engine.NoPlayer && (!combat || e.Text == "combat")
+	}}
+}
+
+// forRoller runs effects as if the event's player controlled them: "they
+// gain 1¢" on a monster card.
+func forRoller(effects ...engine.Effect) engine.Effect {
+	return engine.EffectFunc(func(c *engine.Ctx) {
+		if c.EventPlayer == engine.NoPlayer {
+			return
+		}
+		them := *c
+		them.Controller = c.EventPlayer
+		them.Do(effects...)
+	})
+}
+
+// rollerDiscards: "they discard a loot card".
+var rollerDiscards = forRoller(discardOne)
+
+// eachMonsterGains gives each monster +1 of a stat till end of turn.
+func eachMonsterGains(stat engine.Stat) engine.Effect {
+	return engine.EffectFunc(func(c *engine.Ctx) {
+		for _, id := range monstersInPlay(c.G) {
+			c.G.Boosts = append(c.G.Boosts, engine.Boost{Stat: stat, Player: engine.NoPlayer, Object: id, Amount: 1})
+		}
+	})
+}
+
+// guppyItems counts the Guppy items p controls.
+func guppyItems(g *engine.Game, p engine.PlayerID) int {
+	n := 0
+	for _, id := range g.Players[p].InPlay {
+		if g.Object(id).Role == engine.RoleItem && g.Def(id).Guppy {
+			n++
+		}
+	}
+	return n
+}
+
+// killAMonster: "Kill a monster", picked on resolution.
+var killAMonster = engine.Ask(func(c *engine.Ctx, a []int) {
+	if ids := monstersInPlay(c.G); a[0] >= 0 && a[0] < len(ids) {
+		c.G.KillObject(ids[a[0]])
+	}
+}, engine.Question{Text: "Kill which monster?", Options: func(c *engine.Ctx, _ []int) []string {
+	var out []string
+	for _, id := range monstersInPlay(c.G) {
+		out = append(out, string(c.G.Object(id).Card))
+	}
+	return out
+}})

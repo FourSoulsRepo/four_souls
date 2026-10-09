@@ -5,9 +5,6 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 // Hopper (Basic Monster Card)
 //
 //	This takes no combat damage on attack rolls of 6.
-//
-// TODO(card): implement the text above, then delete this line.
-// Until then `go run ./cmd/cardgen` rewrites this file from card_db.
 var hopper = engine.CardDef{
 	Ref:     "hopper",
 	Kind:    engine.MonsterCard,
@@ -16,4 +13,10 @@ var hopper = engine.CardDef{
 	DC:      3,
 	ATK:     1,
 	Rewards: []engine.Reward{{Kind: engine.RewardCents, Amount: 3}},
+	CombatMod: func(_ *engine.Game, _ engine.ObjectID, roll int, hit bool, n int) int {
+		if hit && roll == 6 {
+			return 0
+		}
+		return n
+	},
 }
