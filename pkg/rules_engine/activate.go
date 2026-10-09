@@ -28,11 +28,11 @@ func (g *Game) activatable(p PlayerID, src ObjectID, i int) error {
 	if o.Zone.Kind != ZoneInPlay || o.Controller != p || (o.Role != RoleItem && o.Role != RoleCharacter) {
 		return refuse("R-ABIL-09", "only the controller uses an item's or character's abilities")
 	}
-	d := g.def(src)
-	if i < 0 || i >= len(d.Abilities) || d.Abilities[i].Kind != Activated {
+	refs := g.AbilitiesOf(src)
+	if i < 0 || i >= len(refs) || g.ability(refs[i]).Kind != Activated {
 		return refuse("R-ABIL-08", "%s has no such activated ability", o.Card)
 	}
-	a := d.Abilities[i]
+	a := g.ability(refs[i])
 	for _, c := range a.Costs {
 		if !c.canPay(g, p, src) {
 			return refuse("R-ABIL-07", "cannot pay the cost (%s)", c.label())
@@ -157,6 +157,14 @@ func (g *Game) finishActivation() {
 		card := g.Object(nid).Card
 		g.emit(Event{Kind: EvLootPlayed, Player: a.Player, Object: nid, Card: card})
 		g.push(StackItem{Kind: StackLoot, Controller: a.Player, Source: nid, Card: card, Ability: a.Ability, Mode: a.Mode, Targets: a.Chosen})
+		if pl := &g.Players[a.Player]; pl.CopyNextLoot && !g.def(nid).Trinket {
+			// A copy of the loot goes on the stack above it (Blank Card).
+			pl.CopyNextLoot = false
+			g.push(StackItem{
+				Kind: StackAbility, Controller: a.Player, Source: nid, Card: card, Ability: a.Ability,
+				Mode: a.Mode, Targets: a.Chosen, Label: "copy of " + string(card),
+			})
+		}
 		return
 	}
 	for _, c := range ab.Costs {
@@ -352,4 +360,42 @@ func (g *Game) useLootPlay(p PlayerID) {
 		return
 	}
 	g.Players[p].ExtraLootPlays--
+}
+
+// AbilitiesOf lists the abilities an object can use, in the order an
+// Activate intent's Choice counts them: its card's abilities, or, for a
+// card that borrows them (Placebo), every ↷ ability of the other
+// non-eternal items in play.
+func (g *Game) AbilitiesOf(id ObjectID) []AbilityRef {
+	card := g.CardOf(id)
+	if !g.def(id).CopiesTapAbilities {
+		refs := make([]AbilityRef, len(g.def(id).Abilities))
+		for i := range refs {
+			refs[i] = AbilityRef{Card: card, Index: i}
+		}
+		return refs
+	}
+	var refs []AbilityRef
+	for _, pl := range g.Players {
+		for _, other := range pl.InPlay {
+			if other == id || g.Object(other).Role != RoleItem || g.Eternal(other) {
+				continue
+			}
+			for i, a := range g.def(other).Abilities {
+				if a.Kind == Activated && hasTap(a) {
+					refs = append(refs, AbilityRef{Card: g.CardOf(other), Index: i})
+				}
+			}
+		}
+	}
+	return refs
+}
+
+func hasTap(a Ability) bool {
+	for _, c := range a.Costs {
+		if _, ok := c.(tapCost); ok {
+			return true
+		}
+	}
+	return false
 }

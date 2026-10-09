@@ -33,8 +33,18 @@ const (
 )
 
 func (g *Game) def(id ObjectID) CardDef {
-	d, _ := g.cards.find(g.Object(id).Card) //nolint:errcheck // every object's card has a definition (checked at setup)
+	d, _ := g.cards.find(g.CardOf(id)) //nolint:errcheck // every object's card has a definition (checked at setup)
 	return d
+}
+
+// CardOf is the card an object acts as: the card it copies, if any, or
+// its own (Diplopia, Modeling Clay). Where it goes when it leaves play
+// still follows its own card.
+func (g *Game) CardOf(id ObjectID) CardRef {
+	if o := g.Object(id); o.CopyOf != "" {
+		return o.CopyOf
+	}
+	return g.Object(id).Card
 }
 
 // Eternal reports whether an object is eternal: printed or gained

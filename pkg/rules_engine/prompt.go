@@ -207,7 +207,7 @@ func (g *Game) apply(in Intent) {
 	case IntentActivate:
 		g.startActivation(Activation{
 			Player: in.Player, Source: in.Objects[0],
-			Ability: AbilityRef{Card: g.Object(in.Objects[0]).Card, Index: in.Choice},
+			Ability: g.AbilitiesOf(in.Objects[0])[in.Choice],
 		})
 	case IntentChoose:
 		g.answer(in.Choice)

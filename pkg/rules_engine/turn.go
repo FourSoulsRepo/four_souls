@@ -273,6 +273,14 @@ func (g *Game) healAll() {
 		g.Object(id).Damage = 0
 	}
 	g.Boosts, g.Shields = nil, nil // till end of turn effects end
+	for _, pl := range g.Players {
+		for _, id := range pl.InPlay {
+			if o := g.Object(id); o.CopyThisTurn {
+				o.CopyOf, o.CopyThisTurn = "", false
+			}
+		}
+		g.Players[pl.ID].CopyNextLoot = false
+	}
 	g.emit(Event{Kind: EvHealed, Player: NoPlayer})
 }
 

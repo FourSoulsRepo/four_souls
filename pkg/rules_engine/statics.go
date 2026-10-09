@@ -56,7 +56,7 @@ func (g *Game) bonus(stat Stat, p PlayerID, subject ObjectID) int {
 	}
 	for _, id := range g.inPlay() {
 		o := g.Object(id)
-		d, ok := g.cards.find(o.Card)
+		d, ok := g.cards.find(g.CardOf(id))
 		if !ok {
 			continue
 		}

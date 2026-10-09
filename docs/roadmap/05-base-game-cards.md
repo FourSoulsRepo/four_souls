@@ -46,7 +46,7 @@ Ideas: R-05, TS-01 – TS-04.
 3. Done when:
    1. Report shows loot as tested.
 
-### [ ] 5.5 Treasure items
+### [x] 5.5 Treasure items
 
 1. Goal: all Base Game treasures.
 2. Tasks:

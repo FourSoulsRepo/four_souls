@@ -74,7 +74,7 @@ func (g *Game) replacementsFor(a Action) []ReplacementRef {
 	var out []ReplacementRef
 	for _, id := range g.inPlay() {
 		o := g.Object(id)
-		def, ok := g.cards.find(o.Card)
+		def, ok := g.cards.find(g.CardOf(id))
 		if !ok {
 			continue
 		}
@@ -98,7 +98,7 @@ func appliedAlready(a Action, ref ReplacementRef) bool {
 }
 
 func (g *Game) replacement(ref ReplacementRef) Replacement {
-	def, ok := g.cards.find(g.Object(ref.Object).Card)
+	def, ok := g.cards.find(g.CardOf(ref.Object))
 	if !ok || ref.Index >= len(def.Replacements) {
 		panic(fmt.Sprintf("rulesengine: no replacement %+v", ref))
 	}

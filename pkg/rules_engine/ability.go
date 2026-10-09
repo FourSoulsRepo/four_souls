@@ -706,3 +706,6 @@ func NotChosen(g *Game, _ ObjectID, c Chosen) bool {
 	}
 	return true
 }
+
+// Ability returns the definition of an ability.
+func (g *Game) Ability(ref AbilityRef) Ability { return g.ability(ref) }

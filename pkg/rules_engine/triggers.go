@@ -132,14 +132,14 @@ type PendingTrigger struct {
 func (g *Game) collectTriggers(e Event) {
 	check := func(id ObjectID) {
 		o := g.Object(id)
-		def, ok := g.cards.find(o.Card)
+		def, ok := g.cards.find(g.CardOf(id))
 		if !ok {
 			return
 		}
 		for i, a := range def.Abilities {
 			if a.Kind == Triggered && a.Trigger.On == e.Kind && a.Trigger.Match != nil && a.Trigger.Match(g, id, e) {
 				g.PendingTriggers = append(g.PendingTriggers, PendingTrigger{
-					Ability: AbilityRef{Card: o.Card, Index: i}, Source: id, Controller: o.Controller,
+					Ability: AbilityRef{Card: g.CardOf(id), Index: i}, Source: id, Controller: o.Controller,
 					On: e.Kind, EventPlayer: e.Player, EventAmount: e.Amount, EventStack: e.StackID,
 				})
 			}

@@ -93,6 +93,10 @@ type Object struct {
 	// Eternal is set when an effect makes the object eternal, e.g. Eden's
 	// starting item (R-ABIL-18).
 	Eternal bool `json:"eternal,omitempty"`
+	// CopyOf is the card this object is a copy of; CopyThisTurn ends the
+	// copy at the end of the turn.
+	CopyOf       CardRef `json:"copy_of,omitempty"`
+	CopyThisTurn bool    `json:"copy_this_turn,omitempty"`
 }
 
 // CountersOf returns how many counters named name the object has.
@@ -158,6 +162,9 @@ type Player struct {
 	InPlay []ObjectID `json:"in_play"`
 	Damage int        `json:"damage,omitempty"` // tied to the player (R-MECH-19)
 	Dead   bool       `json:"dead,omitempty"`   // died this turn (R-DEATH-17)
+	// CopyNextLoot: the next non-trinket loot p plays this turn is
+	// copied (Blank Card).
+	CopyNextLoot bool `json:"copy_next_loot,omitempty"`
 	// TimesDamaged counts this turn's damage ("the first time you take
 	// damage each turn").
 	TimesDamaged int `json:"times_damaged,omitempty"`

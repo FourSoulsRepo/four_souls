@@ -26,6 +26,7 @@ Cards are Go values built from small blocks (ADR 005). This page lists every blo
 | `Trinket` | Loot that becomes an item when it resolves (R-ABIL-19) |
 | `DamageMod` | Changes damage about to be marked: "Damage you would take is reduced to 1." |
 | `EntersDeactivated`, `EntersWithCounters` | "This enters play deactivated." / "starts with 9 counters" |
+| `CopiesTapAbilities` | Placebo: may use any ↷ ability of another non-eternal item (`AbilitiesOf`) |
 | `TakesPenalties` | Shadow: you choose the item and gain the loot and ¢ of others' death penalties |
 | `PeeksTreasure` | "You may look at the top card of the treasure deck at any time on your turn" (in your view) |
 | `SoulWhenDestroyed` | "If this would be destroyed, it becomes a soul instead." |
@@ -191,6 +192,10 @@ tb.EndTurn()                             // run to the next player's action phas
 ```
 
 `NewSetup` takes a full `SituationSetup` (hands, monsters, a roll on the stack). `ForceRolls` fixes dice results, `Attack` attacks with given rolls, `Start` and `Pass` leave something on the stack so another player can respond.
+
+## Copies
+
+An object's `CopyOf` makes it act as another card: abilities, statics and stats come from that card (`CardOf`). Where it goes when it leaves play still follows its own card. `CopyThisTurn` ends the copy at the end of the turn (Diplopia). A player's `CopyNextLoot` puts a copy of their next non-trinket loot on the stack above it (Blank Card).
 
 ## Known simplifications
 

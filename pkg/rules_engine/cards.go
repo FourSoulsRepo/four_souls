@@ -65,6 +65,9 @@ type CardDef struct {
 	// choose what item they would destroy and you gain any loot cards and
 	// ¢ they would lose" (Shadow).
 	TakesPenalties bool
+	// CopiesTapAbilities: "This copies a ↷ ability of a non-eternal
+	// item" (Placebo): it can use any of their ↷ abilities.
+	CopiesTapAbilities bool
 	// PeeksTreasure: "You may look at the top card of the treasure deck
 	// at any time on your turn": the controller's view shows it.
 	PeeksTreasure bool
