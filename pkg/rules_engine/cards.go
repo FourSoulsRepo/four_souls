@@ -72,18 +72,20 @@ type CardSet struct {
 }
 
 // cardIndex finds definitions by ref. It is rebuilt from the sets and is
-// not part of the saved state.
+// not part of the saved state, so it may use a map.
 type cardIndex struct {
-	defs []CardDef
+	defs  []CardDef
+	byRef map[CardRef]int
 }
 
 func newCardIndex(sets ...CardSet) (cardIndex, error) {
-	var idx cardIndex
+	idx := cardIndex{byRef: map[CardRef]int{}}
 	for _, s := range sets {
 		for _, d := range s.Cards {
-			if _, dup := idx.find(d.Ref); dup {
+			if _, dup := idx.byRef[d.Ref]; dup {
 				return cardIndex{}, fmt.Errorf("card %s defined twice", d.Ref)
 			}
+			idx.byRef[d.Ref] = len(idx.defs)
 			idx.defs = append(idx.defs, d)
 		}
 	}
@@ -91,12 +93,11 @@ func newCardIndex(sets ...CardSet) (cardIndex, error) {
 }
 
 func (idx cardIndex) find(ref CardRef) (CardDef, bool) {
-	for _, d := range idx.defs {
-		if d.Ref == ref {
-			return d, true
-		}
+	i, ok := idx.byRef[ref]
+	if !ok {
+		return CardDef{}, false
 	}
-	return CardDef{}, false
+	return idx.defs[i], true
 }
 
 // RewardKind is what a reward box gives (R-CARD-31).

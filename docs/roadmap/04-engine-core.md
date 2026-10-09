@@ -138,7 +138,7 @@ Ideas: A-05 – A-08, N-04, LR-04, LR-07, TS-05.
    2. Five example payloads on fake cards run in `go test`.
    3. No resolved cases yet: all 3.8 cases are parked.
 
-### [ ] 4.12 Determinism and fuzz harness
+### [x] 4.12 Determinism and fuzz harness
 
 1. Goal: catch bugs no one thought of (A-08, TS-05).
 2. Tasks:

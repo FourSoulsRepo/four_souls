@@ -80,6 +80,7 @@ linters:
         engine-pure:
           files:
             - "**/pkg/rules_engine/**"
+            - "!$test" # tests may read env vars, e.g. the fuzz focus list
           deny:
             - pkg: os
               desc: the engine has no file system access

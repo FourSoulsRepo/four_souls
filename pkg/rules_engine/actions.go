@@ -62,11 +62,8 @@ func (g *Game) enqueue(as ...Action) {
 // stable; the affected player chooses the real order (R-ABIL-33).
 func (g *Game) replacementsFor(a Action) []ReplacementRef {
 	var out []ReplacementRef
-	for i := range g.Objects {
-		o := &g.Objects[i]
-		if o.Zone.Kind != ZoneInPlay {
-			continue
-		}
+	for _, id := range g.inPlay() {
+		o := g.Object(id)
 		def, ok := g.cards.find(o.Card)
 		if !ok {
 			continue

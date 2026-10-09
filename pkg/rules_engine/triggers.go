@@ -80,10 +80,8 @@ func (g *Game) collectTriggers(e Event) {
 			}
 		}
 	}
-	for i := range g.Objects {
-		if g.Objects[i].Zone.Kind == ZoneInPlay {
-			check(g.Objects[i].ID)
-		}
+	for _, id := range g.inPlay() {
+		check(id)
 	}
 	if e.Prev != 0 && g.Object(e.Prev).Zone.Kind != ZoneInPlay {
 		check(e.Prev)

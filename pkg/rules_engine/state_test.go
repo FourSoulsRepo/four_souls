@@ -55,6 +55,9 @@ func TestGameHasNoMaps(t *testing.T) {
 		case reflect.Struct:
 			for i := range t.NumField() {
 				f := t.Field(i)
+				if !f.IsExported() {
+					continue // not saved: only the encoded state must be map-free
+				}
 				check(f.Type, path+"."+f.Name)
 			}
 		}

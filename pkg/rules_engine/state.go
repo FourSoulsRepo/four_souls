@@ -215,13 +215,28 @@ func (g *Game) Clone() (*Game, error) {
 
 // Checksum is a stable hash of the whole state (RP-12).
 func (g *Game) Checksum() (uint64, error) {
-	data, err := json.Marshal(g)
-	if err != nil {
-		return 0, fmt.Errorf("checksum: %w", err)
-	}
+	// Encode straight into the hash: no copy of the state is kept.
 	h := fnv.New64a()
-	if _, err := h.Write(data); err != nil {
+	if err := json.NewEncoder(h).Encode(g); err != nil {
 		return 0, fmt.Errorf("checksum: %w", err)
 	}
 	return h.Sum64(), nil
+}
+
+// inPlay lists the objects in play in a fixed order: each player's
+// character and play area in seat order, then the top of every slot.
+func (g *Game) inPlay() []ObjectID {
+	var out []ObjectID
+	for _, pl := range g.Players {
+		out = append(out, pl.Character)
+		out = append(out, pl.InPlay...)
+	}
+	for _, rows := range [][]Slot{g.Shop, g.Monsters, g.Rooms} {
+		for _, s := range rows {
+			if top, ok := s.TopOf(); ok && g.Object(top).Zone.Kind == ZoneInPlay {
+				out = append(out, top)
+			}
+		}
+	}
+	return out
 }

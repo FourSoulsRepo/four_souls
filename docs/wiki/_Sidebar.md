@@ -6,3 +6,5 @@
 * [Card data tools](Card-data-tools)
 * [Effect blocks](Effect-blocks)
 * [Situation payload](Situation-payload)
+* [Fuzzing](Fuzzing)
+* [Rules engine](Rules-engine)
