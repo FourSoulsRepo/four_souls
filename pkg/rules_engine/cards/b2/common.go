@@ -76,19 +76,16 @@ func lookMayBottom(d engine.DeckKind) engine.Effect {
 
 // oneOnTop: "Look at the top 5 cards of the deck. Put 1 on top and the
 // rest on the bottom".
+// The player then picks which of the rest goes lowest, and so on.
 func oneOnTop(d engine.DeckKind) engine.Effect {
-	return engine.Ask(func(c *engine.Ctx, a []int) {
+	others := func(c *engine.Ctx, a []int) []engine.ObjectID {
 		top := c.G.DeckTop(d, 5)
-		c.G.LookAt(c.Controller, top...)
-		if a[0] < 0 {
-			return
+		if len(a) == 0 || a[0] < 0 {
+			return nil
 		}
-		for i, id := range top {
-			if i != a[0] {
-				c.G.DeckToBottom(d, id)
-			}
-		}
-	}, engine.Question{
+		return append(top[:a[0]:a[0]], top[a[0]+1:]...)
+	}
+	questions := append([]engine.Question{{
 		Text: "Which card stays on top? The rest go to the bottom.",
 		Options: func(c *engine.Ctx, _ []int) []string {
 			var out []string
@@ -97,7 +94,23 @@ func oneOnTop(d engine.DeckKind) engine.Effect {
 			}
 			return out
 		},
-	})
+	}}, engine.OrderQuestions("Which card goes lowest?", "the rest in their order", 1, 4, nil, others)...)
+	return engine.Ask(func(c *engine.Ctx, a []int) {
+		c.G.LookAt(c.Controller, c.G.DeckTop(d, 5)...)
+		toBottom(c.G, d, engine.Ordered(others(c, a[:1]), a[1:]))
+	}, questions...)
+}
+
+// toBottom puts cards on the bottom of a deck so that order[0] is the
+// lowest. Cards in a slot leave it.
+func toBottom(g *engine.Game, d engine.DeckKind, order []engine.ObjectID) {
+	for i := len(order) - 1; i >= 0; i-- {
+		if g.Object(order[i]).Zone.Kind == engine.ZoneInPlay {
+			g.SlotToDeckBottom(order[i])
+		} else {
+			g.DeckToBottom(d, order[i])
+		}
+	}
 }
 
 // may asks "yes or no" and runs the effects on yes: "you may …".

@@ -232,18 +232,30 @@ func (g *Game) chooseStartingItem(c Choice, i int) {
 	for _, id := range c.Objects {
 		g.Decks[TreasureDeck] = remove(g.Decks[TreasureDeck], id)
 	}
+	var rest []ObjectID
 	for j, id := range c.Objects {
 		if j == i {
 			continue
 		}
 		nid := g.move(id, DeckZone(TreasureDeck), NoPlayer)
 		g.Decks[TreasureDeck] = append([]ObjectID{nid}, g.Decks[TreasureDeck]...)
+		rest = append(rest, nid)
 	}
 	nid := g.move(c.Objects[i], Zone{Kind: ZoneInPlay}, c.Player)
 	o := g.Object(nid)
 	o.Role, o.Charged, o.Eternal = RoleItem, true, true
 	g.Players[c.Player].InPlay = append(g.Players[c.Player].InPlay, nid)
 	g.emit(Event{Kind: EvGainedTreasure, Player: c.Player, Object: nid, Card: o.Card, Text: "starting item"})
+	if len(rest) > 1 {
+		// The player decides the order of the cards at the bottom.
+		g.ask(Choice{Purpose: ChooseLowest, Player: c.Player, Rule: "R-SETUP-09", Objects: rest}, g.labels(rest))
+	}
+}
+
+// chooseLowest puts the chosen card at the very bottom of the treasure
+// deck, below the other cards of the choice.
+func (g *Game) chooseLowest(c Choice, i int) {
+	g.DeckToBottom(TreasureDeck, c.Objects[i])
 }
 
 // rollForFirst: each player rolls a D6; the lowest goes first; ties among

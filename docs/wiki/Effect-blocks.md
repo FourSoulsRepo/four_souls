@@ -114,7 +114,7 @@ Effects refer to targets by number: `DealDamage(1, 0)` hits the first target. `T
 | `CancelTarget(t)` | Cancel the ↷ or $ ability of an item or a loot being played. |
 | `DestroyTarget(t)` | Destroy a curse. |
 | `EachPlayer(effects…)` | Each player gains 1¢. / Each player takes 3 damage. |
-| `EachMonsterTakesDamage(n)` | Each monster takes 1 damage. (slot order) |
+| `EachMonsterTakesDamage(n)` | Each monster takes 1 damage. (the active player picks the order) |
 | `AddAttacks(n, t)` | They may attack an additional time this turn. |
 | `PreventYourDeath()` | Prevent death. (heals to 1 HP) |
 | `ThisToLootBottomExtraTurn()` | Put this on the bottom of the loot deck … take an extra turn (The Sun) |
@@ -210,7 +210,11 @@ A monster's death runs in steps: "when this dies" triggers, rewards, "after rewa
 
 An object's `CopyOf` makes it act as another card: abilities, statics and stats come from that card (`CardOf`). Where it goes when it leaves play still follows its own card. `CopyThisTurn` ends the copy at the end of the turn (Diplopia). A player's `CopyNextLoot` puts a copy of their next non-trinket loot on the stack above it (Blank Card).
 
-## Known simplifications
+## Orders the player picks
 
-* "Each monster takes damage" goes on the stack in slot order; the rules let the active player pick (R-MECH-29).
-* "Put the rest on the bottom" keeps the cards' order; the rules let the player pick it.
+When several things happen "at once" and their order matters, the player picks it, one at a time; each question also offers to keep the rest in their order, the quick answer.
+
+* "Each monster takes damage": the active player picks which damage resolves first (R-MECH-29); monsters with death effects make this matter.
+* "Put the rest on the bottom": the player picks which card goes lowest (The Emperor, The Hermit, The Moon, Flush, Eden's start).
+
+For a card: `OrderQuestions(text, rest, skip, max, who, items)` builds the questions and `Ordered(items, answers)` reads the order back.

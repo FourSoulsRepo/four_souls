@@ -557,18 +557,27 @@ func (e eachPlayerEffect) apply(c *Ctx) {
 	}
 }
 
-type monstersDamageEffect struct{ n int }
-
 // EachMonsterTakesDamage puts n damage on the stack for each monster in
-// play, in slot order.
-func EachMonsterTakesDamage(n int) Effect { return monstersDamageEffect{n} }
-
-func (e monstersDamageEffect) apply(c *Ctx) {
-	for _, s := range c.G.Monsters {
-		if top, ok := s.TopOf(); ok && c.G.Object(top).Role == RoleMonster {
-			c.G.push(StackItem{Kind: StackDamage, Controller: c.Controller, Source: c.Source, Amount: e.n, Label: "damage", Target: Target{Object: top}})
+// play. The active player picks the order they resolve in, or keeps slot
+// order (R-MECH-29): with death triggers, order matters.
+func EachMonsterTakesDamage(n int) Effect {
+	monsters := func(c *Ctx, _ []int) []ObjectID {
+		var out []ObjectID
+		for _, s := range c.G.Monsters {
+			if top, ok := s.TopOf(); ok && c.G.Object(top).Role == RoleMonster {
+				out = append(out, top)
+			}
 		}
+		return out
 	}
+	active := func(c *Ctx) PlayerID { return c.G.Turn.Active }
+	return Ask(func(c *Ctx, a []int) {
+		order := Ordered(monsters(c, nil), a)
+		// The first in the order resolves first: it goes on the stack last.
+		for i := len(order) - 1; i >= 0; i-- {
+			c.G.push(StackItem{Kind: StackDamage, Controller: c.Controller, Source: c.Source, Amount: n, Label: "damage", Target: Target{Object: order[i]}})
+		}
+	}, OrderQuestions("Which monster takes the damage first?", "the rest in slot order", 0, 8, active, monsters)...)
 }
 
 type addAttacksEffect struct{ n, target int }

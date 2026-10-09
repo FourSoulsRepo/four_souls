@@ -10,7 +10,7 @@ func TestXVITheTower(t *testing.T) {
 	tb := lootTable(t, "xvi_the_tower")
 	fly, _ := tb.G.Monsters[0].TopOf()
 	tb.G.ForceRolls(3)
-	tb.Play(0, "xvi_the_tower")
+	tb.Play(0, "xvi_the_tower", "the rest in slot order")
 	if tb.G.Object(fly).Zone.Kind == engine.ZoneInPlay {
 		t.Error("the fly survived 1 damage")
 	}

@@ -151,3 +151,62 @@ func HandQuestion(text string) Question {
 
 // HandCard is the card an answer to HandQuestion picked.
 func (c *Ctx) HandCard(answer int) ObjectID { return c.G.Players[c.Controller].Hand[answer] }
+
+// OrderQuestions ask a player to put objects in order, one pick at a
+// time: "which first?", then "which next?". Every question also offers
+// rest ("the rest in slot order"), which keeps the others as they are;
+// it is the quick answer. A question with fewer than 2 objects left is
+// skipped. items must return the same objects for every question; skip
+// is how many answers come before these questions.
+func OrderQuestions(text, rest string, skip, maxN int, who func(c *Ctx) PlayerID, items func(c *Ctx, a []int) []ObjectID) []Question {
+	qs := make([]Question, 0, maxN)
+	for range maxN {
+		qs = append(qs, Question{
+			Text: text,
+			Player: func(c *Ctx, _ []int) PlayerID {
+				if who == nil {
+					return c.Controller
+				}
+				return who(c)
+			},
+			Options: func(c *Ctx, a []int) []string {
+				all := items(c, a[:skip])
+				left, done := orderLeft(all, a[skip:])
+				if done || len(left) < 2 {
+					return nil
+				}
+				labels := c.G.labels(left)
+				return append(labels, rest)
+			},
+		})
+	}
+	return qs
+}
+
+// Ordered turns the answers of OrderQuestions into the full order: the
+// picked objects first, then the rest as they were.
+func Ordered(all []ObjectID, answers []int) []ObjectID {
+	left := append([]ObjectID(nil), all...)
+	var out []ObjectID
+	for _, i := range answers {
+		if i < 0 || i >= len(left) {
+			break
+		}
+		out = append(out, left[i])
+		left = append(left[:i:i], left[i+1:]...)
+	}
+	return append(out, left...)
+}
+
+// orderLeft is what is still to be ordered after the answers so far, and
+// whether the player chose to keep the rest as it is.
+func orderLeft(all []ObjectID, answers []int) ([]ObjectID, bool) {
+	left := append([]ObjectID(nil), all...)
+	for _, i := range answers {
+		if i < 0 || i >= len(left) {
+			return left, true
+		}
+		left = append(left[:i:i], left[i+1:]...)
+	}
+	return left, false
+}

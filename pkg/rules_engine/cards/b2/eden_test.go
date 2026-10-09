@@ -28,7 +28,17 @@ func TestEden(t *testing.T) {
 	if item == nil || !item.Eternal || !item.Charged {
 		t.Fatalf("starting item %s: %+v, want an eternal charged item", chosen, item)
 	}
+	// Eden's player orders the other two: the third card goes lowest.
+	if p := g.Prompt(); p.Kind != engine.PromptChoose || len(p.Options) != 2 {
+		t.Fatalf("prompt %+v, want the order of the bottom cards", p)
+	}
+	if _, err := g.Apply(engine.Intent{Player: 1, Kind: engine.IntentChoose, Choice: 1}); err != nil {
+		t.Fatal(err)
+	}
 	deck := g.Decks[engine.TreasureDeck]
+	if g.Object(deck[0]).Card != g.Object(top[2]).Card {
+		t.Errorf("lowest card is %s, want %s", g.Object(deck[0]).Card, g.Object(top[2]).Card)
+	}
 	if len(deck) != bottom-1 {
 		t.Errorf("treasure deck has %d cards, want %d", len(deck), bottom-1)
 	}
