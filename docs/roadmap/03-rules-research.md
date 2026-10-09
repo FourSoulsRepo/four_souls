@@ -20,7 +20,7 @@ Ideas: R-01 – R-07.
 3. Done when:
    1. Folders exist and are documented.
 
-### [ ] 3.2 Official rules
+### [x] 3.2 Official rules
 
 1. Goal: foursouls.com rules and FAQ, downloaded.
 2. Tasks:
@@ -29,6 +29,11 @@ Ideas: R-01 – R-07.
    3. Record the download date and URL per page.
 3. Done when:
    1. Rules and FAQ convert without lost sections.
+4. Result:
+   1. Tools: `scraper rules -site official` (HTML to Markdown).
+   2. Overview, Quickstart (3,000 words), Extended Rulebook (18,500 words).
+   3. The FAQ page is only a question form; FAQs live in the rulebook.
+   4. Summary in `pkg/rules_engine/docs/sources.md`.
 
 ### [ ] 3.3 Russian translation
 
