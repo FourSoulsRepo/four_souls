@@ -20,7 +20,7 @@ Ideas: A-05 – A-08, N-04, LR-04, LR-07, TS-05.
 3. Done when:
    1. **Owner** accepts the ADR.
 
-### [ ] 4.2 State and zones
+### [x] 4.2 State and zones
 
 1. Goal: the game state types.
 2. Tasks:
