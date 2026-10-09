@@ -595,6 +595,14 @@ func (sunEffect) apply(c *Ctx) {
 	if g.Object(c.Source).Zone.Kind != ZoneStack {
 		return
 	}
+	// A copy resolving first (Blank Card) takes the card off the stack:
+	// the loot's own item goes with it.
+	for _, it := range g.Stack {
+		if it.Kind == StackLoot && it.Source == c.Source {
+			g.Stack = slices.DeleteFunc(g.Stack, func(x StackItem) bool { return x.ID == it.ID })
+			break
+		}
+	}
 	nid := g.move(c.Source, DeckZone(LootDeck), NoPlayer)
 	g.Decks[LootDeck] = append([]ObjectID{nid}, g.Decks[LootDeck]...)
 	g.emit(Event{Kind: EvMovedToDeck, Player: c.Controller, Object: nid, Card: g.Object(nid).Card, Text: "loot deck bottom"})

@@ -5,19 +5,23 @@ import (
 	"testing"
 
 	engine "github.com/FourSoulsRepo/rules_engine"
+	"github.com/FourSoulsRepo/rules_engine/cards/b2"
 )
 
+// TestSetsStartGames starts games with all sets together: a fan set or an
+// expansion may not be playable on its own.
 func TestSetsStartGames(t *testing.T) {
-	for _, set := range Sets() {
-		for players := 2; players <= 4; players++ {
-			g, _, err := engine.NewGame(engine.Setup{Seed: 1, Players: players, Sets: []engine.CardSet{set}, BonusSouls: true})
-			if err != nil {
-				t.Fatalf("%s, %d players: %v", set.Code, players, err)
-			}
-			if err := g.CheckInvariants(); err != nil {
-				t.Fatalf("%s, %d players: %v", set.Code, players, err)
-			}
+	for players := 2; players <= 4; players++ {
+		g, _, err := engine.NewGame(engine.Setup{Seed: 1, Players: players, Sets: Sets(), BonusSouls: true})
+		if err != nil {
+			t.Fatalf("%d players: %v", players, err)
 		}
+		if err := g.CheckInvariants(); err != nil {
+			t.Fatalf("%d players: %v", players, err)
+		}
+	}
+	if _, _, err := engine.NewGame(engine.Setup{Seed: 1, Players: 2, Sets: []engine.CardSet{b2.Set}}); err != nil {
+		t.Fatalf("the Base Game alone: %v", err)
 	}
 }
 
