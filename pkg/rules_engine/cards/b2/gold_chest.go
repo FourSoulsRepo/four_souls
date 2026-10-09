@@ -8,11 +8,19 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 //	1-2: Gain +1 Treasure.
 //	3-4: Gain 5¢.
 //	5-6: Gain 7¢.
-//
-// TODO(card): implement the text above, then delete this line.
-// Until then `go run ./cmd/cardgen` rewrites this file from card_db.
 var goldChest = engine.CardDef{
 	Ref:    "gold_chest",
 	Kind:   engine.EventCard,
 	Copies: 1,
+	Abilities: []engine.Ability{
+		{
+			Kind:    engine.Triggered,
+			Text:    "Roll- 1-2: Gain +1 treasure. 3-4: Gain 5¢. 5-6: Gain 7¢.",
+			Trigger: engine.WhenThisEntersPlay(),
+			Effects: []engine.Effect{engine.Roll(engine.RollTable{}.
+				Results(1, 2, engine.GainTreasure(1)).
+				Results(3, 4, engine.GainCents(5)).
+				Results(5, 6, engine.GainCents(7)))},
+		},
+	},
 }

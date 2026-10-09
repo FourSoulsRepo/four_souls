@@ -312,3 +312,28 @@ func otherPlayers(c *engine.Ctx) []engine.PlayerID {
 	}
 	return out
 }
+
+// searchGuppy: "Search the treasure deck for a Guppy item, gain it, then
+// shuffle the treasure deck".
+var searchGuppy = engine.Ask(func(c *engine.Ctx, a []int) {
+	if ids := guppiesInDeck(c.G); a[0] >= 0 && a[0] < len(ids) {
+		c.G.TakeFromDeck(engine.TreasureDeck, ids[a[0]], c.Controller)
+	}
+	c.G.ShuffleDeck(engine.TreasureDeck)
+}, engine.Question{Text: "Gain which Guppy item?", Options: func(c *engine.Ctx, _ []int) []string {
+	var out []string
+	for _, id := range guppiesInDeck(c.G) {
+		out = append(out, string(c.G.Object(id).Card))
+	}
+	return out
+}})
+
+func guppiesInDeck(g *engine.Game) []engine.ObjectID {
+	var out []engine.ObjectID
+	for _, id := range g.Decks[engine.TreasureDeck] {
+		if g.Def(id).Guppy {
+			out = append(out, id)
+		}
+	}
+	return out
+}

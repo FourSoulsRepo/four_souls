@@ -197,3 +197,16 @@ func (tb *Table) Choose(label string) {
 		tb.T.Fatal(err)
 	}
 }
+
+// RevealFromDeck puts card on top of the monster deck and has the active
+// player attack the deck, placing it in slot 1; then it settles with the
+// given choices.
+func (tb *Table) RevealFromDeck(card engine.CardRef, choices ...string) []engine.Event {
+	tb.T.Helper()
+	tb.G.PutOnDeck(engine.MonsterDeck, card)
+	slot := "slot 1"
+	if top, ok := tb.G.Monsters[0].TopOf(); ok {
+		slot += ": " + string(tb.G.Object(top).Card)
+	}
+	return tb.Do(engine.Intent{Player: tb.G.Turn.Active, Kind: engine.IntentAttack}, append([]string{"monster deck", slot}, choices...)...)
+}

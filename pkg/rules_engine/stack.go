@@ -40,6 +40,8 @@ type StackItem struct {
 	EventPlayer PlayerID `json:"event_player,omitempty"`
 	EventAmount int      `json:"event_amount,omitempty"`
 	EventStack  int      `json:"event_stack,omitempty"`
+	// Reward is a roll reward's kind + 1: the result is how much is gained.
+	Reward int `json:"reward,omitempty"`
 	// Checked is the roll value (+1) that "would roll" triggers last saw
 	// (R-DICE-05); the roll only resolves once nothing changes it.
 	Checked int `json:"checked,omitempty"`
@@ -126,6 +128,10 @@ func (g *Game) resolveTop() {
 		g.emit(re)
 		if it.Attack {
 			g.resolveAttackRoll(it)
+		}
+		if it.Reward > 0 {
+			r := Reward{Kind: RewardKind(it.Reward - 1), Amount: it.Roll}
+			g.enqueue(Action{Kind: r.action(), Player: it.Controller, Amount: it.Roll})
 		}
 		if it.RollFor.Card != "" {
 			// The roll ability's result trigger goes on the stack (R-ABIL-24).
@@ -215,6 +221,9 @@ func (g *Game) CancelStackItem(id int) {
 		}
 		g.Stack = append(g.Stack[:i:i], g.Stack[i+1:]...)
 		g.emit(Event{Kind: EvCancelled, Player: it.Controller, Object: it.Source, Card: it.Card, Text: it.Label})
+		if o := g.Object(it.Source); o.Role == RoleEvent && !g.waitingRoll(it.Source) {
+			g.enqueue(Action{Kind: ActFinishEvent, Player: NoPlayer, Object: it.Source}) // R-CARD-15
+		}
 		if it.Kind == StackLoot && g.Object(it.Source).Zone.Kind == ZoneStack {
 			g.discard(it.Source, LootDeck)
 		}

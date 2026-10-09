@@ -61,6 +61,13 @@ type CardDef struct {
 	// SoulWhenDestroyed: "If this would be destroyed, it becomes a soul
 	// instead."
 	SoulWhenDestroyed bool
+	// Curse: an event with the Curse keyword; it is given to a player
+	// (R-ABIL-20).
+	Curse bool
+	// Guppy: the Guppy tag other cards look for (R-ABIL-22).
+	Guppy bool
+	// Unattackable: "This can't be attacked."
+	Unattackable bool
 	// TakesPenalties: "If another player would pay the death penalty, you
 	// choose what item they would destroy and you gain any loot cards and
 	// ¢ they would lose" (Shadow).
@@ -141,10 +148,12 @@ const (
 	RewardTreasure
 )
 
-// Reward is one line of a reward box, e.g. 3 cents.
+// Reward is one line of a reward box, e.g. 3 cents. Roll rewards
+// ("Roll- gain X¢") give as many as a roll's result.
 type Reward struct {
 	Kind   RewardKind
 	Amount int
+	Roll   bool
 }
 
 func (r Reward) action() ActionKind {

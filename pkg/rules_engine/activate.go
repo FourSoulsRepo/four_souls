@@ -322,6 +322,7 @@ func (g *Game) stillValid(c Chosen) bool {
 // is gone (R-ABIL-06). A roll ability's result runs its table instead.
 func (g *Game) resolveAbility(it StackItem) {
 	effects := g.effectsOf(it.Ability, it.Mode, it.RollResult)
+	defer g.afterEventAbility(it.Source)
 	for _, t := range it.Targets {
 		// A roll's result was checked when the roll ability resolved.
 		if t.Spent || it.RollResult > 0 {
@@ -394,6 +395,26 @@ func (g *Game) AbilitiesOf(id ObjectID) []AbilityRef {
 func hasTap(a Ability) bool {
 	for _, c := range a.Costs {
 		if _, ok := c.(tapCost); ok {
+			return true
+		}
+	}
+	return false
+}
+
+// afterEventAbility sends an event to discard once its ability is done,
+// after what the ability queued (R-CARD-15).
+func (g *Game) afterEventAbility(src ObjectID) {
+	if o := g.Object(src); o.Role == RoleEvent && o.Zone.Kind == ZoneInPlay {
+		if g.Object(src).Zone.Slot == MonsterSlot && !g.def(src).Curse && !g.waitingRoll(src) {
+			g.enqueue(Action{Kind: ActFinishEvent, Player: NoPlayer, Object: src})
+		}
+	}
+}
+
+// waitingRoll: a roll or roll result of this source is still on the stack.
+func (g *Game) waitingRoll(src ObjectID) bool {
+	for _, it := range g.Stack {
+		if it.Source == src && (it.Kind == StackRoll || it.RollFor.Card != "") {
 			return true
 		}
 	}

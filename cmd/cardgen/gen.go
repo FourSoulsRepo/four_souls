@@ -163,7 +163,10 @@ func cardStub(pkg string, c carddb.Card, startingItem bool) (stub, error) {
 	soul := 0
 	for _, r := range c.Rewards {
 		n, okN := rewardCount(r.Count)
+		rolled := strings.HasPrefix(strings.ReplaceAll(r.Count, " ", ""), "Roll-")
 		switch {
+		case rolled && kind == "MonsterCard" && rewardKinds[r.Kind] != "":
+			rewards = append(rewards, fmt.Sprintf("{Kind: %s, Roll: true}", rewardKinds[r.Kind]))
 		case r.Kind == "Soul" && okN:
 			soul += n // some cards print several soul icons
 		case kind != "MonsterCard":
@@ -186,6 +189,12 @@ func cardStub(pkg string, c carddb.Card, startingItem bool) (stub, error) {
 	}
 	if hasFootnote(en, "-Eternal-") {
 		fields = append(fields, "Eternal: true")
+	}
+	if c.Type == "Curse Card" {
+		fields = append(fields, "Curse: true")
+	}
+	if hasFootnote(en, "-Guppy-") {
+		fields = append(fields, "Guppy: true")
 	}
 	if startingItem {
 		fields = append(fields, "Outside: true")

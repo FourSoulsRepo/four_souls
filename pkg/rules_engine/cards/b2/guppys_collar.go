@@ -11,6 +11,7 @@ var guppysCollar = engine.CardDef{
 	Ref:    "guppys_collar",
 	Kind:   engine.TreasureCard,
 	Copies: 1,
+	Guppy:  true,
 	Abilities: []engine.Ability{
 		{
 			Kind:    engine.Triggered,

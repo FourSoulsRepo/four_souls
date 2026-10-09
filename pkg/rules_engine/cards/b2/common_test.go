@@ -146,3 +146,44 @@ func itemTable(t *testing.T, items []engine.CardRef, hand ...engine.CardRef) *en
 
 // items is a shorthand for a list of cards.
 func items(cards ...engine.CardRef) []engine.CardRef { return cards }
+
+// testPlainMonster kills a monster with attack rolls of 6 and checks the
+// rewards the active player gains.
+func testPlainMonster(t *testing.T, card engine.CardRef) {
+	t.Helper()
+	tb := monsterTable(t, items(card), seat("isaac"), seat("cain"))
+	m, _ := tb.G.Monsters[0].TopOf()
+	d := Set.Cards[slices.IndexFunc(Set.Cards, func(c engine.CardDef) bool { return c.Ref == card })]
+	rolls := make([]int, d.HP+1)
+	for i := range rolls {
+		rolls[i] = 6
+	}
+	tb.Attack(card, rolls...)
+	if tb.G.Object(m).Zone.Kind == engine.ZoneInPlay {
+		t.Fatalf("%s survived %d hits", card, d.HP)
+	}
+	want := map[engine.RewardKind]int{}
+	for _, r := range d.Rewards {
+		want[r.Kind] += r.Amount
+	}
+	pl := tb.G.Players[0]
+	if pl.Cents != want[engine.RewardCents] || len(pl.Hand) != want[engine.RewardLoot] {
+		t.Errorf("cents %d hand %d, want %d and %d", pl.Cents, len(pl.Hand), want[engine.RewardCents], want[engine.RewardLoot])
+	}
+	if items := len(pl.InPlay) - d.Soul; items != want[engine.RewardTreasure] {
+		t.Errorf("%d treasures, want %d", items, want[engine.RewardTreasure])
+	}
+	if s := tb.G.SoulValue(0); s != d.Soul {
+		t.Errorf("soul value %d, want %d", s, d.Soul)
+	}
+}
+
+// hasCurse reports whether player p has the curse.
+func hasCurse(g *engine.Game, p int, card engine.CardRef) bool {
+	for _, id := range g.Players[p].InPlay {
+		if o := g.Object(id); o.Card == card && o.Role == engine.RoleCurse {
+			return true
+		}
+	}
+	return false
+}

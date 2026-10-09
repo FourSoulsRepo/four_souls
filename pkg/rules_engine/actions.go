@@ -25,6 +25,8 @@ const (
 	ActChooseStartingItem                   // Eden-style start-of-game choice (R-SETUP-09)
 	ActPenaltyDone                          // the death penalty is paid
 	ActAddCounters                          // put Amount counters on Object (Bum-bo levels)
+	ActGiveCurse                            // the active player gives the curse Object to a player
+	ActFinishEvent                          // an event whose ability resolved goes to discard
 )
 
 // Action is a pending change. It sits in the queue, may be rewritten by
@@ -217,6 +219,10 @@ func (g *Game) perform(a Action) {
 		g.emit(Event{Kind: EvStole, Player: a.Player, Amount: n, Text: strconv.Itoa(int(a.From))})
 	case ActChooseStartingItem:
 		g.askStartingItem(a.Player, a.Amount)
+	case ActGiveCurse:
+		g.askCurseTarget(a.Object)
+	case ActFinishEvent:
+		g.finishEvent(a.Object)
 	case ActPenaltyDone:
 		g.emit(Event{Kind: EvPenaltyPaid, Player: a.Player})
 	}

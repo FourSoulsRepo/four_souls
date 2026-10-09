@@ -10,6 +10,7 @@ var guppysPaw = engine.CardDef{
 	Ref:    "guppys_paw",
 	Kind:   engine.TreasureCard,
 	Copies: 1,
+	Guppy:  true,
 	Tap:    true,
 	Abilities: []engine.Ability{
 		{

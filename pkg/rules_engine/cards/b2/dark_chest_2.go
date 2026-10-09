@@ -8,11 +8,19 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 //	1-2: Gain 1¢.
 //	3-4: Loot 2.
 //	5-6: Take 2 damage.
-//
-// TODO(card): implement the text above, then delete this line.
-// Until then `go run ./cmd/cardgen` rewrites this file from card_db.
 var darkChest2 = engine.CardDef{
 	Ref:    "dark_chest_2",
 	Kind:   engine.EventCard,
 	Copies: 1,
+	Abilities: []engine.Ability{
+		{
+			Kind:    engine.Triggered,
+			Text:    "Roll- 1-2: Gain 1¢. 3-4: Loot 2. 5-6: Take 2 damage.",
+			Trigger: engine.WhenThisEntersPlay(),
+			Effects: []engine.Effect{engine.Roll(engine.RollTable{}.
+				Results(1, 2, engine.GainCents(1)).
+				Results(3, 4, engine.Loot(2)).
+				Results(5, 6, engine.DealDamage(2, engine.You)))},
+		},
+	},
 }

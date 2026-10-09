@@ -24,6 +24,9 @@ Cards are Go values built from small blocks (ADR 005). This page lists every blo
 | `Outside` | Starts outside the game (starting items) |
 | `Tap` | Has a ↷ ability (the death penalty deactivates it) |
 | `Trinket` | Loot that becomes an item when it resolves (R-ABIL-19) |
+| `Curse` | An event given to a player when it enters play (R-ABIL-20) |
+| `Guppy` | The Guppy tag (R-ABIL-22) |
+| `Unattackable` | "This can't be attacked." |
 | `DamageMod` | Changes damage about to be marked: "Damage you would take is reduced to 1." |
 | `EntersDeactivated`, `EntersWithCounters` | "This enters play deactivated." / "starts with 9 counters" |
 | `CopiesTapAbilities` | Placebo: may use any ↷ ability of another non-eternal item (`AbilitiesOf`) |
@@ -192,6 +195,10 @@ tb.EndTurn()                             // run to the next player's action phas
 ```
 
 `NewSetup` takes a full `SituationSetup` (hands, monsters, a roll on the stack). `ForceRolls` fixes dice results, `Attack` attacks with given rolls, `Start` and `Pass` leave something on the stack so another player can respond.
+
+## Events and the monster deck
+
+An event's abilities are `Triggered` with `WhenThisEntersPlay()`; "you" is the active player (R-CARD-10). The event stays in its slot until they are done, then goes to the monster discard (R-CARD-15). A `Curse` goes to a player the active player picks, and to discard when that player dies. A reward with `Roll: true` gives as many as a roll's result ("Roll- gain X¢"). Helpers: `ExpandShop`, `ExpandMonsters`, `ForceAttacks(n, deck)`, `TakeFromDeck`, `HealPlayer`, `HealObject`.
 
 ## Copies
 

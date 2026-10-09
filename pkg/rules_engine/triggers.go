@@ -131,7 +131,6 @@ type PendingTrigger struct {
 // "when this is destroyed" still sees itself.
 func (g *Game) collectTriggers(e Event) {
 	check := func(id ObjectID) {
-		o := g.Object(id)
 		def, ok := g.cards.find(g.CardOf(id))
 		if !ok {
 			return
@@ -139,7 +138,7 @@ func (g *Game) collectTriggers(e Event) {
 		for i, a := range def.Abilities {
 			if a.Kind == Triggered && a.Trigger.On == e.Kind && a.Trigger.Match != nil && a.Trigger.Match(g, id, e) {
 				g.PendingTriggers = append(g.PendingTriggers, PendingTrigger{
-					Ability: AbilityRef{Card: g.CardOf(id), Index: i}, Source: id, Controller: o.Controller,
+					Ability: AbilityRef{Card: g.CardOf(id), Index: i}, Source: id, Controller: g.abilityController(id),
 					On: e.Kind, EventPlayer: e.Player, EventAmount: e.Amount, EventStack: e.StackID,
 				})
 			}
@@ -219,4 +218,14 @@ func (g *Game) abilityText(ref AbilityRef) string {
 		return string(ref.Card) + ": " + t
 	}
 	return string(ref.Card)
+}
+
+// abilityController controls an object's triggered abilities: its
+// controller, or the active player for monster cards ("you" on a monster
+// card is the active player, R-CARD-10).
+func (g *Game) abilityController(id ObjectID) PlayerID {
+	if o := g.Object(id); o.Controller != NoPlayer || o.Zone.Slot != MonsterSlot {
+		return o.Controller
+	}
+	return g.Turn.Active
 }

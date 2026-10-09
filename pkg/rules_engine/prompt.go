@@ -101,6 +101,9 @@ func (g *Game) check(in Intent) error {
 		if m := g.Turn.MustAttack; m != 0 && g.attacksLeft() > 0 && g.Object(m).Zone.Kind == ZoneInPlay {
 			return refuse("R-ABIL-12", "this turn you must attack %s first", g.Object(m).Card)
 		}
+		if g.Turn.MustAttacks > 0 && g.attacksLeft() > 0 {
+			return refuse("R-ABIL-12", "you must make %d more attacks this turn", g.Turn.MustAttacks)
+		}
 	case IntentDiscard:
 		if w.Kind != PromptDiscard {
 			return refuse("R-TURN-11", "no discard is asked for")

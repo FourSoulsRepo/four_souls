@@ -17,6 +17,7 @@ const (
 	ChooseMode                              // a "choose one-" option (R-ABIL-04)
 	ChooseAnswer                            // a question while an ability resolves (R-ABIL-05)
 	ChooseStartingItem                      // a start-of-game choice, e.g. Eden (R-SETUP-09)
+	ChooseCursed                            // who gains a curse (R-ABIL-20)
 )
 
 // Choice is an open question to one player. Options are listed in the
@@ -86,6 +87,8 @@ func (g *Game) answer(i int) {
 		g.answerAsk(c, i)
 	case ChooseStartingItem:
 		g.chooseStartingItem(c, i)
+	case ChooseCursed:
+		g.giveCurse(c.Objects[0], PlayerID(c.Slots[i]))
 	case ChoosePurchase:
 		if c.Deck && i == len(c.Objects) {
 			g.purchase(0, true)

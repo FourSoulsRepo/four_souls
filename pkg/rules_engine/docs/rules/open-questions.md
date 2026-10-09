@@ -80,3 +80,5 @@ Candidates for situation tests; check each against the English rules.
 | 1 | Two of Clubs | Activating it twice still only doubles; a replacement applies once per event (R-ABIL-32) | Consistent; test later |
 | 2 | Ambush! | Attacks on the monster deck made earlier this turn count toward its 2; the rest are additional attacks | **Owner** |
 | 3 | Multi-dice "choose one result" | Only the chosen result affects the game | Consistent; test later (later sets) |
+| 4 | Mulliboom, The Lamb | ATK is printed with "!" (4!, 6!); card_db has no meaning for it; the engine uses the number | **Owner** |
+| 5 | Devil Deal | card_db lists five options; the engine reads three: discard / loot 2, take 1 / take 2, search a Guppy | **Owner** |

@@ -31,9 +31,13 @@ type Turn struct {
 	BonusPurchasesUsed int `json:"bonus_purchases_used,omitempty"`
 	// MustAttack is a monster the active player must attack this turn if
 	// able (Monster Manual).
-	MustAttack  ObjectID `json:"must_attack,omitempty"`
-	EndDeclared bool     `json:"end_declared,omitempty"`
-	DeathEnd    bool     `json:"death_end,omitempty"` // the active player died (R-DEATH-16)
+	MustAttack ObjectID `json:"must_attack,omitempty"`
+	// MustAttacks is how many more attacks the active player must make;
+	// MustAttackDeck of them on the monster deck.
+	MustAttacks    int  `json:"must_attacks,omitempty"`
+	MustAttackDeck int  `json:"must_attack_deck,omitempty"`
+	EndDeclared    bool `json:"end_declared,omitempty"`
+	DeathEnd       bool `json:"death_end,omitempty"` // the active player died (R-DEATH-16)
 	// entered is true once the current step's automatic work is done.
 	Entered bool `json:"entered,omitempty"`
 }

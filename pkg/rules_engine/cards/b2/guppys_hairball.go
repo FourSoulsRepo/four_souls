@@ -12,6 +12,7 @@ var guppysHairball = engine.CardDef{
 	Ref:     "guppys_hairball",
 	Kind:    engine.LootCard,
 	Copies:  1,
+	Guppy:   true,
 	Trinket: true,
 	Abilities: []engine.Ability{
 		{

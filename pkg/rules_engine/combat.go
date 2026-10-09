@@ -80,6 +80,9 @@ func (g *Game) MonsterATK(id ObjectID) int {
 
 // declareAttack: priority passes before a target is chosen (R-ATK-02).
 func (g *Game) declareAttack(p PlayerID) {
+	if g.Turn.MustAttacks > 0 {
+		g.Turn.MustAttacks--
+	}
 	if g.Turn.Attacks > 0 {
 		g.Turn.Attacks--
 	} else {
@@ -92,13 +95,18 @@ func (g *Game) declareAttack(p PlayerID) {
 
 // askAttackTarget offers the monsters in play and the monster deck.
 func (g *Game) askAttackTarget() {
+	if g.Turn.MustAttackDeck > 0 {
+		g.Turn.MustAttackDeck--
+		g.ask(Choice{Purpose: ChooseAttackTarget, Player: g.Turn.Active, Rule: "R-ATK-02", Deck: true}, []string{"monster deck"})
+		return
+	}
 	if m := g.Turn.MustAttack; m != 0 && g.Object(m).Zone.Kind == ZoneInPlay {
 		g.ask(Choice{Purpose: ChooseAttackTarget, Player: g.Turn.Active, Rule: "R-ATK-02", Objects: []ObjectID{m}}, g.labels([]ObjectID{m}))
 		return
 	}
 	var monsters []ObjectID
 	for _, s := range g.Monsters {
-		if top, ok := s.TopOf(); ok && g.Object(top).Role == RoleMonster {
+		if top, ok := s.TopOf(); ok && g.Object(top).Role == RoleMonster && !g.def(top).Unattackable {
 			monsters = append(monsters, top)
 		}
 	}
@@ -138,11 +146,9 @@ func (g *Game) placeRevealed(slot int) {
 	}
 	id := g.putInSlot(revealed, MonsterSlot, slot)
 	if g.Object(id).Role == RoleEvent {
-		// Events trigger on entering play (step 4.7), then go to discard;
-		// the attack is over (R-ATK-09).
-		g.removeFromSlot(id)
-		g.discard(id, MonsterDeck)
+		// The event's abilities trigger; the attack is over (R-ATK-09).
 		g.endAttack()
+		g.enterMonsterSlot(id)
 		return
 	}
 	g.startAttack(id)
@@ -313,6 +319,10 @@ func (g *Game) monsterDeath(id ObjectID) {
 	active := g.Turn.Active
 	d := g.def(holding)
 	for _, r := range d.Rewards { // R-DEATH-06
+		if r.Roll {
+			g.push(StackItem{Kind: StackRoll, Controller: active, Source: holding, Roll: g.d6(), Label: "reward roll", Reward: int(r.Kind) + 1})
+			continue
+		}
 		g.enqueue(Action{Kind: r.action(), Player: active, Amount: r.Amount})
 	}
 	if d.Soul > 0 { // R-DEATH-08
@@ -326,6 +336,7 @@ func (g *Game) monsterDeath(id ObjectID) {
 // playerDeath follows the player death steps (R-DEATH-12 to R-DEATH-16).
 func (g *Game) playerDeath(p PlayerID) {
 	g.Players[p].Dead = true // R-DEATH-17
+	defer g.dropCurses(p)
 	g.emit(Event{Kind: EvDied, Player: p, Object: g.Players[p].Character, Card: g.Object(g.Players[p].Character).Card})
 	if p == g.Turn.Active {
 		g.endAttack() // R-DEATH-12
@@ -406,9 +417,8 @@ func (g *Game) refillSlots() {
 			}
 			nid := g.putInSlot(id, MonsterSlot, i)
 			if g.Object(nid).Role == RoleEvent {
-				// Event abilities come with step 4.7; then it is discarded.
-				g.removeFromSlot(nid)
-				g.discard(nid, MonsterDeck)
+				g.enterMonsterSlot(nid) // it stays until its abilities are done
+				break
 			}
 		}
 	}
@@ -449,3 +459,6 @@ func (g *Game) penaltyCents(p PlayerID) Action {
 	}
 	return Action{Kind: ActLoseCents, Player: p, Amount: 1}
 }
+
+// Def returns the card definition an object acts as.
+func (g *Game) Def(id ObjectID) CardDef { return g.def(id) }

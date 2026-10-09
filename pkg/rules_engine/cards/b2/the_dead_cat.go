@@ -11,6 +11,7 @@ var theDeadCat = engine.CardDef{
 	Ref:                "the_dead_cat",
 	Kind:               engine.TreasureCard,
 	Copies:             1,
+	Guppy:              true,
 	EntersWithCounters: 9,
 	DamageMod: func(g *engine.Game, self engine.ObjectID, t engine.Target, n int) int {
 		o := g.Object(self)

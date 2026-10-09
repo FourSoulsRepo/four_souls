@@ -4,8 +4,7 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 
 // Monstro (Boss Card)
 //
-// TODO(card): implement the text above, then delete this line.
-// Until then `go run ./cmd/cardgen` rewrites this file from card_db.
+// No card text: stats and rewards only.
 var monstro = engine.CardDef{
 	Ref:     "monstro",
 	Kind:    engine.MonsterCard,

@@ -8,12 +8,12 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 //
 // TODO(card): implement the text above, then delete this line.
 // Until then `go run ./cmd/cardgen` rewrites this file from card_db.
-// Not generated: reward "Roll- Gain x" Coin.
 var holyKeeperHead = engine.CardDef{
-	Ref:    "holy_keeper_head",
-	Kind:   engine.MonsterCard,
-	Copies: 1,
-	HP:     2,
-	DC:     4,
-	ATK:    1,
+	Ref:     "holy_keeper_head",
+	Kind:    engine.MonsterCard,
+	Copies:  1,
+	HP:      2,
+	DC:      4,
+	ATK:     1,
+	Rewards: []engine.Reward{{Kind: engine.RewardCents, Roll: true}},
 }

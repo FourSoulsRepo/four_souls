@@ -357,3 +357,11 @@ func (g *Game) CoverMonsterSlot(i int) {
 	}
 	g.putInSlot(id, MonsterSlot, i)
 }
+
+// PutOnDeck puts new copies of cards on top of a deck, the last on top.
+// For tests and the sandbox.
+func (g *Game) PutOnDeck(d DeckKind, cards ...CardRef) {
+	for _, c := range cards {
+		g.Decks[d] = append(g.Decks[d], g.newObject(c, DeckZone(d), NoPlayer))
+	}
+}
