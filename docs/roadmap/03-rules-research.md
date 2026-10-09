@@ -80,6 +80,9 @@ Ideas: R-01 – R-07.
    2. Ed's answers match the re-check in open-questions.md.
    3. Later: the jonzo11 thread holds ~15 more answers by Ed.
    4. Later: search Ed's and Yuggy's accounts for more ruling threads.
+5. Yuggy (Rules Tzar), added on the owner's request:
+   1. Reddit: 961 r/FourSouls comments with context (2019-03 to 2026-09).
+   2. X @YuggyHD: 841 tweets with 659 context tweets (2023-03 to 2026-08).
 
 ### [ ] 3.6 Discord rulings
 
@@ -112,7 +115,7 @@ Ideas: R-01 – R-07.
    5. Found: no mulligan rule (R-06); bartering of ¢ needs game support.
    6. Found: official variants Mini-draft (2 players) and Eden Only.
 
-### [ ] 3.8 Open questions
+### [x] 3.8 Open questions
 
 1. Goal: list what the sources do not settle (R-03).
 2. Tasks:
@@ -123,3 +126,7 @@ Ideas: R-01 – R-07.
 3. Done when:
    1. **Owner** has resolved or parked each case.
    2. Resolved cases wait for the payload format (4.11).
+4. Result:
+   1. `pkg/rules_engine/docs/rules/open-questions.md`.
+   2. The owner parked all open decisions for later (2026-10-09).
+   3. They return when the engine or server needs an answer.

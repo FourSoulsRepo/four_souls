@@ -18,6 +18,7 @@ Raw copies are copyrighted; they stay in the tools repo cache.
 | S-RU | foursouls.ru/rules | Russian mirror of the same three pages | High; see differences |
 | S-RED | r/FourSouls | Rules questions; Yuggy answers rank high | Medium |
 | S-X | Tweets by Edmund McMillen, Yuggy, Kizzycocoa | Rulings | High for Ed and Yuggy |
+| S-YUG | Yuggy's Reddit comments and tweets | Rulings with context | High |
 | S-DIS | Discord "Турнирный сервер" | Threads pasted by the owner | Medium |
 
 Order of trust when sources disagree:
@@ -51,6 +52,15 @@ Order of trust when sources disagree:
 3. Covers 2025-09-13 to 2026-10-09.
 4. Answers come from regular community members; none by Yuggy.
 5. Trust: medium; use as hints and for open cases, not as rulings.
+
+## Yuggy, Rules Tzar (S-YUG)
+
+1. Downloaded 2026-10-09 with logged-in sessions.
+2. Reddit: 961 r/FourSouls comments, each with the message it answers.
+   1. Period: 2019-03 to 2026-09.
+3. X @YuggyHD: 841 tweets and 659 context tweets.
+   1. Period: 2023-03 to 2026-08.
+4. Mixed content: rulings, shop news, chat. Rulings rank high.
 
 ## X (S-X)
 

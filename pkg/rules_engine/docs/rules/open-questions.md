@@ -6,6 +6,8 @@ Resolved cases later become situation payload tests (step 4.11).
 
 Status: **Owner** = needs the owner's decision; **Resolved**; **Parked**.
 
+On 2026-10-09 the owner parked every open decision for later.
+
 ## Decisions for the owner
 
 ### Q-01 Mulligan
