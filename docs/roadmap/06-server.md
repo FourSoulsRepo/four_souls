@@ -31,7 +31,7 @@ Ideas: N-01 – N-09, N-11, CD-02, CD-03, GS-01 – GS-06, GS-09, GS-10, A-12, R
 3. Done when:
    1. Race detector tests pass with 4 clients.
 
-### [ ] 6.3 Dedicated server
+### [x] 6.3 Dedicated server
 
 1. Goal: `cmd/server` runs games (N-01).
 2. Tasks:

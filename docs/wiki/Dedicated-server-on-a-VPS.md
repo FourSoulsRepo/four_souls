@@ -2,7 +2,7 @@
 
 Any player can rent a small server on the internet (a VPS) and run the game's dedicated server there. Friends then join its address from anywhere; nobody needs a virtual LAN or port forwarding (see [Playing over the internet](Playing-over-the-internet)).
 
-> The dedicated server is built in roadmap step 6.3. Commands and flags on this page are the planned ones; they are checked against the real binary when it ships.
+> Work in progress: until the lobby is ready (roadmap step 6.5) the server runs one game with a fixed number of seats (`-players`). Saving match records comes with step 6.9.
 
 ## What you need
 
@@ -38,7 +38,7 @@ GOOS=linux GOARCH=amd64 go build -o four-souls-server ./cmd/server   # or GOARCH
 sudo -u four-souls four-souls-server -port 4774 -records /var/lib/four-souls/records
 ```
 
-It prints the fan-game notice and its versions, then waits for players. Stop it with Ctrl+C; running games are saved first.
+It prints the fan-game notice, its versions and the address it listens on, then waits for players. Stop it with Ctrl+C (or `systemctl stop`); it closes every connection cleanly.
 
 ## 3. Open the port
 
@@ -90,15 +90,20 @@ Friends open the game, choose **Join**, and enter the server's address (and the 
 
 ## Options
 
-Planned flags; a JSON config file can set the same values.
+A JSON config file can set the same values; flags override it.
 
 | Flag | Default | Meaning |
 |---|---|---|
 | `-port` | 4774 | TCP port for players |
 | `-addr` | all addresses | listen only on this address |
-| `-records` | `records/` | where match records are saved (A-12) |
-| `-retention` | 30 days | how long records are kept; 0 keeps them forever (RP-07) |
+| `-records` | `records` | where match records are saved (A-12) |
+| `-retention` | 30 | days to keep records; 0 keeps them forever (RP-07) |
+| `-players` | 2 | seats of the game, until the lobby exists |
 | `-config` | none | a JSON file with the same settings |
+
+```json
+{"port": 4774, "records": "/var/lib/four-souls/records", "retention": 30, "players": 4}
+```
 
 ## Updating
 
@@ -110,7 +115,7 @@ scp four-souls-server root@<server address>:/usr/local/bin/
 systemctl start four-souls
 ```
 
-Stopping saves running games; finished ones stay in the records folder.
+Stopping ends the running games for now; saving them comes with step 6.9.
 
 ## Safety
 
