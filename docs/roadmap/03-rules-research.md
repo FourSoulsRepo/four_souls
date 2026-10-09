@@ -7,14 +7,16 @@ Ideas: R-01 – R-07.
 
 ---
 
-### [ ] 3.1 Where research data lives
+### [x] 3.1 Where research data lives
 
 1. Goal: decide storage before downloading.
 2. Tasks:
    1. Raw downloads are copyrighted texts.
-   2. They live in `research/`, git-ignored, local only.
-   3. Digests (Reddit, X, Discord) live there too.
-   4. Our own rules text is committed in the engine module.
+   2. Download code lives in `FourSoulsRepo/tools` (no download code here).
+   3. Downloads go to its git-ignored `.cache/research/<source>/`.
+   4. Digests (Reddit, X, Discord) live there too.
+   5. Our own rules text is committed in the engine module.
+   6. Notes on the sources: `pkg/rules_engine/docs/sources.md`.
 3. Done when:
    1. Folders exist and are documented.
 

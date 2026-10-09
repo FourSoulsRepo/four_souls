@@ -13,8 +13,6 @@ coverage.out
 # OS files
 .DS_Store
 
-# Downloaded rules sources: copyrighted, local only (step 3)
-research/
 
 # Wails build artifact
 frontend/package.json.md5
