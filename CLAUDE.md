@@ -5,7 +5,7 @@
    2. Network play, 2–4 players.
    3. Wails v2: Go backend, React + TypeScript frontend.
 2. Stage
-   1. Steps 1–4 done; the rules engine is in `pkg/rules_engine`.
+   1. Steps 1–5 done; engine in `pkg/rules_engine`, Base Game cards in `cards/b2`.
    2. Ideas live in `docs/ideas.md`.
    3. Roadmap: `docs/roadmap.md`; detailed steps in `docs/roadmap/`.
    4. Decisions: `docs/architecture/` (see `INDEX.md`).
