@@ -70,6 +70,10 @@ func (g *Game) closeIfAllPassed() bool {
 	}
 	g.Priority = Priority{}
 	g.Waiting = Prompt{}
+	if len(g.Stack) > 0 {
+		g.resolveTop() // R-STACK-03
+		return true
+	}
 	g.windowClosed()
 	return true
 }
@@ -102,7 +106,7 @@ func (g *Game) goTo(s Step) {
 // inOpenActionPhase is true when the active player may attack, purchase or
 // end the turn: action phase, empty stack (R-TURN-06).
 func (g *Game) inOpenActionPhase() bool {
-	return g.Turn.Step == StepAction && !g.Turn.EndDeclared
+	return g.Turn.Step == StepAction && !g.Turn.EndDeclared && len(g.Stack) == 0
 }
 
 // run does automatic work until the engine needs input.

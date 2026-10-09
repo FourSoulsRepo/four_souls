@@ -44,7 +44,7 @@ Ideas: A-05 – A-08, N-04, LR-04, LR-07, TS-05.
 3. Done when:
    1. A game with fake cards reaches a winner.
 
-### [ ] 4.4 Stack and priority
+### [x] 4.4 Stack and priority
 
 1. Goal: responses work like the rules say.
 2. Tasks:

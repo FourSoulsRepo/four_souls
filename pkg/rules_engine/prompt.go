@@ -25,9 +25,10 @@ type IntentKind int
 
 // The intents so far.
 const (
-	IntentPass    IntentKind = iota // pass priority (R-PRIO-05)
-	IntentEndTurn                   // declare the end of the turn (R-TURN-06)
-	IntentDiscard                   // discard the chosen loot cards
+	IntentPass     IntentKind = iota // pass priority (R-PRIO-05)
+	IntentEndTurn                    // declare the end of the turn (R-TURN-06)
+	IntentDiscard                    // discard the chosen loot cards
+	IntentPlayLoot                   // play the loot card in Objects[0] (R-CARD-08)
 )
 
 // Intent is one player's request. The engine checks it against the
@@ -96,6 +97,16 @@ func (g *Game) check(in Intent) error {
 		if !g.allInHand(in.Player, in.Objects) {
 			return refuse("R-MECH-25", "you can only discard different loot cards from your own hand")
 		}
+	case IntentPlayLoot:
+		if w.Kind != PromptPriority {
+			return refuse("R-CARD-08", "loot can only be played with priority")
+		}
+		if len(in.Objects) != 1 || !contains(g.Players[in.Player].Hand, in.Objects[0]) {
+			return refuse("R-CARD-08", "play one loot card from your hand")
+		}
+		if in.Player != g.Turn.Active || g.Turn.LootPlays < 1 {
+			return refuse("R-CARD-08", "no loot play available")
+		}
 	default:
 		return refuse("R-PRIO-01", "unknown intent")
 	}
@@ -127,6 +138,8 @@ func (g *Game) apply(in Intent) {
 			g.discardFromHand(in.Player, id)
 		}
 		g.Waiting = Prompt{}
+	case IntentPlayLoot:
+		g.playLoot(in.Player, in.Objects[0])
 	}
 }
 

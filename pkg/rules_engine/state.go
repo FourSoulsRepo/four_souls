@@ -134,6 +134,10 @@ type Game struct {
 	// BonusSouls are the active bonus souls, outside the game (R-SETUP-06).
 	BonusSouls []ObjectID `json:"bonus_souls,omitempty"`
 
+	// Stack: the last item is on top (R-STACK-02).
+	Stack    []StackItem `json:"stack"`
+	StackSeq int         `json:"stack_seq"`
+
 	Turn     Turn       `json:"turn"`
 	Priority Priority   `json:"priority"`
 	Waiting  Prompt     `json:"waiting"`
