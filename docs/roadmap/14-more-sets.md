@@ -11,7 +11,7 @@ Ideas: CD-02, GS-07, GS-08, CD-11.
 
 1. Goal: card data for the next set.
 2. Tasks:
-   1. Run the scrapers from step 2.
+   1. Run the scrapers from step 2 (`FourSoulsRepo/tools`).
    2. Images into the image repo, own folder.
 3. Done when:
    1. The set validates in `card_db`.

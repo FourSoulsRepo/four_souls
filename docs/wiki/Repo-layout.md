@@ -12,6 +12,7 @@ pkg/rules_engine/      Go module: the rules engine (package rulesengine)
 pkg/card_db/           Go module: card display data; images/ is git-ignored
 pkg/record/            Go module: match record format
 frontend/              React + TypeScript (Vite)
+scripts/screenshots/   Playwright UI screenshots
 frontend/src/bridge/   the only code that talks to Wails
 docs/                  ideas, roadmap, ADRs, use cases, this wiki
 ```

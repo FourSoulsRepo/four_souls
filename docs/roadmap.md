@@ -51,7 +51,7 @@ Steps 9–14 can be reordered after the MVP.
 
 ## 2. Card data
 
-1. Scraper in `scripts/`
+1. Scraper in the separate `FourSoulsRepo/tools` repo
    1. Official site via a real browser (Cloudflare check).
    2. Official TTS table for names and images.
 2. `pkg/card_db`: text, stats, artists, versions.
