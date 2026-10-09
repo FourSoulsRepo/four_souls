@@ -3,7 +3,7 @@
 Goal: a playable desktop table.
 Ends with an internal play-test build on the cards done so far.
 
-Ideas: M-01, V-01 – V-08, ST-01 – ST-03, ST-05, B-06.
+Ideas: M-01, V-01 – V-08, ST-01 – ST-03, ST-05, B-06, N-11.
 
 ---
 
@@ -133,3 +133,13 @@ Ideas: M-01, V-01 – V-08, ST-01 – ST-03, ST-05, B-06.
    3. Internal build with the cards done so far.
 3. Done when:
    1. **Owner** plays a LAN game on the internal build.
+
+### [ ] 7.13 Save and continue UI
+
+1. Goal: UI for N-11.
+2. Tasks:
+   1. Host menu: save the game and leave.
+   2. Host screen: list saved games and load one.
+   3. Lobby shows saved seats and who is back.
+3. Done when:
+   1. Use case covers the UI flow.
