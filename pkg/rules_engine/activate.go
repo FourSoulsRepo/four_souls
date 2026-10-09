@@ -160,6 +160,10 @@ func (g *Game) finishActivation() {
 		return
 	}
 	for _, c := range ab.Costs {
+		if cc, ok := c.(chosenCost); ok {
+			cc.payChosen(g, a.Player, a.Chosen)
+			continue
+		}
 		c.pay(g, a.Player, a.Source)
 	}
 	g.emit(Event{Kind: EvActivated, Player: a.Player, Object: a.Source, Card: a.Ability.Card, Text: ab.Text})
@@ -225,6 +229,20 @@ func (g *Game) targetOptions(t TargetSpec, p PlayerID, src ObjectID) ([]Chosen, 
 				labels = append(labels, label)
 			}
 		}
+	case TargetYourHandCard:
+		for _, id := range g.Players[p].Hand {
+			opts = append(opts, Chosen{Kind: TargetYourHandCard, Player: p, Object: id})
+			labels = append(labels, string(g.Object(id).Card))
+		}
+	case TargetItemOrSoul:
+		for _, pl := range g.Players {
+			for _, id := range pl.InPlay {
+				if r := g.Object(id).Role; r == RoleItem || r == RoleSoul {
+					opts = append(opts, Chosen{Kind: TargetItemOrSoul, Player: pl.ID, Object: id})
+					labels = append(labels, string(g.Object(id).Card))
+				}
+			}
+		}
 	case TargetCurse, TargetYourItem:
 		role := RoleCurse
 		if t.Kind == TargetYourItem {
@@ -283,9 +301,11 @@ func (g *Game) stillValid(c Chosen) bool {
 			}
 		}
 		return false
-	case TargetCurse, TargetYourItem:
+	case TargetCurse, TargetYourItem, TargetItemOrSoul:
 		o := g.Object(c.Object)
 		return o.Zone.Kind == ZoneInPlay && o.Controller == c.Player
+	case TargetYourHandCard:
+		return true // spent by the cost already
 	}
 	return false
 }
@@ -295,6 +315,10 @@ func (g *Game) stillValid(c Chosen) bool {
 func (g *Game) resolveAbility(it StackItem) {
 	effects := g.effectsOf(it.Ability, it.Mode, it.RollResult)
 	for _, t := range it.Targets {
+		// A roll's result was checked when the roll ability resolved.
+		if t.Spent || it.RollResult > 0 {
+			continue
+		}
 		if !g.stillValid(t) {
 			g.emit(Event{Kind: EvAbilityFizzle, Player: it.Controller, Object: it.Source, Card: it.Card})
 			return
@@ -303,6 +327,7 @@ func (g *Game) resolveAbility(it StackItem) {
 	for i, e := range effects {
 		e.apply(&Ctx{
 			G: g, Controller: it.Controller, Source: it.Source, Targets: it.Targets,
+			EventPlayer: it.EventPlayer, EventAmount: it.EventAmount,
 			ref: it.Ability, mode: it.Mode, roll: it.RollResult, effect: i,
 		})
 	}

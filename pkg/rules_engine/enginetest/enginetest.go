@@ -188,3 +188,12 @@ func (tb *Table) Play(p int, card engine.CardRef, choices ...string) []engine.Ev
 	tb.T.Helper()
 	return tb.Do(engine.Intent{Player: engine.PlayerID(p), Kind: engine.IntentPlayLoot, Objects: []engine.ObjectID{tb.Find(p, card)}}, choices...)
 }
+
+// Choose answers the open choose prompt by label, without passing.
+func (tb *Table) Choose(label string) {
+	tb.T.Helper()
+	w := tb.G.Prompt()
+	if _, err := tb.G.Apply(engine.Intent{Player: w.Player, Kind: engine.IntentChoose, Choice: tb.option(w, label)}); err != nil {
+		tb.T.Fatal(err)
+	}
+}

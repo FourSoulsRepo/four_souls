@@ -264,6 +264,7 @@ func (g *Game) healAll() {
 		g.Players[i].Damage = 0
 		g.Players[i].Dead = false // alive again (R-DEATH-19)
 		g.Players[i].ExtraLootPlays = 0
+		g.Players[i].TimesDamaged = 0
 	}
 	for _, id := range g.inPlay() {
 		g.Object(id).Damage = 0

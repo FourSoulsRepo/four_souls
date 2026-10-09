@@ -63,8 +63,7 @@ func (g *Game) purchase(item ObjectID, fromDeck bool) {
 	g.removeFromSlot(item)
 	nid := g.move(item, Zone{Kind: ZoneInPlay}, p)
 	o := g.Object(nid)
-	o.Role, o.Charged = RoleItem, true
-	g.Players[p].InPlay = append(g.Players[p].InPlay, nid)
+	g.enterAsItem(p, nid)
 	g.emit(Event{Kind: EvPurchased, Player: p, Object: nid, Card: o.Card})
 	g.enqueue(Action{Kind: ActRefillSlots, Player: NoPlayer}) // R-SHOP-06
 }

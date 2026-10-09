@@ -6,12 +6,18 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 //
 //	{Tap Effect}Reroll an item.
 //	(Destroy that item and replace it with the top card of the treasure deck.)
-//
-// TODO(card): implement the text above, then delete this line.
-// Until then `go run ./cmd/cardgen` rewrites this file from card_db.
 var theD20 = engine.CardDef{
 	Ref:    "the_d20",
 	Kind:   engine.TreasureCard,
 	Copies: 1,
 	Tap:    true,
+	Abilities: []engine.Ability{
+		{
+			Kind:    engine.Activated,
+			Text:    "↷: Reroll an item.",
+			Costs:   []engine.Cost{engine.Tap()},
+			Targets: []engine.TargetSpec{engine.Choose(engine.TargetItem)},
+			Effects: []engine.Effect{engine.RerollTarget(0)},
+		},
+	},
 }

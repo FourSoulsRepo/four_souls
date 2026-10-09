@@ -110,9 +110,10 @@ type PendingTrigger struct {
 	Ability    AbilityRef `json:"ability"`
 	Source     ObjectID   `json:"source"`
 	Controller PlayerID   `json:"controller"`
-	// On and EventPlayer describe the event that triggered it.
+	// On, EventPlayer and EventAmount describe the event that triggered it.
 	On          EventKind `json:"on"`
 	EventPlayer PlayerID  `json:"event_player"`
+	EventAmount int       `json:"event_amount,omitempty"`
 }
 
 // collectTriggers finds triggered abilities that match an event. Objects
@@ -129,7 +130,7 @@ func (g *Game) collectTriggers(e Event) {
 			if a.Kind == Triggered && a.Trigger.On == e.Kind && a.Trigger.Match != nil && a.Trigger.Match(g, id, e) {
 				g.PendingTriggers = append(g.PendingTriggers, PendingTrigger{
 					Ability: AbilityRef{Card: o.Card, Index: i}, Source: id, Controller: o.Controller,
-					On: e.Kind, EventPlayer: e.Player,
+					On: e.Kind, EventPlayer: e.Player, EventAmount: e.Amount,
 				})
 			}
 		}
@@ -191,6 +192,7 @@ func (g *Game) pushTrigger(i int) {
 	g.push(StackItem{
 		Kind: StackTrigger, Controller: t.Controller, Source: t.Source, Card: t.Ability.Card,
 		Ability: t.Ability, Label: g.abilityText(t.Ability),
+		EventPlayer: t.EventPlayer, EventAmount: t.EventAmount,
 	})
 }
 

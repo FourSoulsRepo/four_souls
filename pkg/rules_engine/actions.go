@@ -215,8 +215,7 @@ func (g *Game) gainTreasure(p PlayerID, n int) {
 		}
 		nid := g.move(id, Zone{Kind: ZoneInPlay}, p)
 		o := g.Object(nid)
-		o.Role, o.Charged = RoleItem, true
-		g.Players[p].InPlay = append(g.Players[p].InPlay, nid)
+		g.enterAsItem(p, nid)
 		g.emit(Event{Kind: EvGainedTreasure, Player: p, Object: nid, Card: o.Card})
 	}
 }

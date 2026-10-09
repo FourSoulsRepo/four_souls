@@ -41,6 +41,10 @@ type Ctx struct {
 	Controller PlayerID
 	Source     ObjectID
 	Targets    []Chosen
+	// EventPlayer and EventAmount describe the event that triggered a
+	// triggered ability: who rolled, how much damage was taken.
+	EventPlayer PlayerID
+	EventAmount int
 
 	// Where the effect is, so an Ask can find it again.
 	ref    AbilityRef
@@ -55,6 +59,9 @@ type Chosen struct {
 	Player  PlayerID   `json:"player"`
 	Object  ObjectID   `json:"object,omitempty"`
 	StackID int        `json:"stack_id,omitempty"`
+	// Spent: a cost used this choice up (a discarded card, a given
+	// item); it is not checked again on resolution.
+	Spent bool `json:"spent,omitempty"`
 }
 
 // --- Costs (R-ABIL-07) ---
@@ -128,6 +135,8 @@ const (
 	TargetStackAbility                      // a ↷ or $ ability of an item, or a loot being played, on the stack
 	TargetCurse                             // a curse a player has
 	TargetYourItem                          // an item you control
+	TargetYourHandCard                      // a loot card in your hand (for costs)
+	TargetItemOrSoul                        // an item or a soul a player controls
 )
 
 // TargetSpec says what to choose; the engine always asks (ADR 005).
@@ -258,6 +267,7 @@ func (e rollEffect) apply(c *Ctx) {
 	c.G.push(StackItem{
 		Kind: StackRoll, Controller: c.Controller, Source: c.Source, Roll: r, Label: "roll",
 		RollFor: c.ref, Mode: c.mode, Targets: c.Targets,
+		EventPlayer: c.EventPlayer, EventAmount: c.EventAmount,
 	})
 }
 
@@ -378,7 +388,7 @@ func PreventDamage(n, t int) Effect { return shieldEffect{n, t} }
 
 func (e shieldEffect) apply(c *Ctx) {
 	t := c.target(e.target)
-	s := Shield{Target: Target{Object: t.Object}, Amount: e.n}
+	s := Shield{Target: Target{Object: t.Object}, Amount: e.n, Source: c.Source}
 	if t.Kind == TargetPlayer {
 		s.Target = Target{Player: t.Player, IsPlayer: true}
 	}
@@ -485,13 +495,16 @@ func (e destroyEffect) apply(c *Ctx) {
 	c.G.DestroyObject(t.Player, t.Object)
 }
 
-type eachPlayerEffect struct{ effects []Effect }
+type eachPlayerEffect struct {
+	effects []Effect
+	others  bool
+}
 
 // EachPlayer runs the effects once for each player, in turn order from
 // the controller, as if that player controlled them (R-MECH-27): "Each
 // player gains 1¢" is EachPlayer(GainCents(1)). Damage to You goes on
 // the stack in reverse order, so it resolves in turn order (R-MECH-28).
-func EachPlayer(effects ...Effect) Effect { return eachPlayerEffect{effects} }
+func EachPlayer(effects ...Effect) Effect { return eachPlayerEffect{effects: effects} }
 
 func (e eachPlayerEffect) apply(c *Ctx) {
 	order := c.G.turnOrderFrom(c.Controller)
@@ -505,6 +518,9 @@ func (e eachPlayerEffect) apply(c *Ctx) {
 		slices.Reverse(order)
 	}
 	for _, p := range order {
+		if e.others && p == c.Controller {
+			continue
+		}
 		each := *c
 		each.Controller = p
 		each.Do(e.effects...)
@@ -580,3 +596,80 @@ func (preventDeathEffect) apply(c *Ctx) {
 // NotThis is a target filter: anything but the ability's own object
 // ("another item").
 func NotThis(_ *Game, self ObjectID, c Chosen) bool { return c.Object != self }
+
+// CapNextDamage reduces the next instance of damage the target takes
+// this turn to at most n: "is reduced to 1".
+func CapNextDamage(n, t int) Effect { return capEffect{n, t} }
+
+type capEffect struct{ n, target int }
+
+func (e capEffect) apply(c *Ctx) {
+	t := c.target(e.target)
+	s := Shield{Target: Target{Object: t.Object}, Cap: e.n, Source: c.Source}
+	if t.Kind == TargetPlayer {
+		s.Target = Target{Player: t.Player, IsPlayer: true}
+	}
+	c.G.Shields = append(c.G.Shields, s)
+	c.G.emit(Event{Kind: EvShielded, Player: s.Target.Player, Object: s.Target.Object, Amount: e.n, Text: "cap"})
+}
+
+// EachOtherPlayer is EachPlayer without the controller.
+func EachOtherPlayer(effects ...Effect) Effect {
+	return eachPlayerEffect{effects: effects, others: true}
+}
+
+// DestroyThis destroys the ability's own object as an effect and runs
+// then only if it was destroyed: "↷: Destroy this. If you do, …".
+func DestroyThis(then ...Effect) Effect { return destroySelfThen{then} }
+
+type destroySelfThen struct{ then []Effect }
+
+func (e destroySelfThen) apply(c *Ctx) {
+	if c.G.DestroyObject(c.Controller, c.Source) {
+		c.Do(e.then...)
+	}
+}
+
+type rerollItemEffect struct{ target int }
+
+// RerollTarget rerolls the target item (R-MECH-48).
+func RerollTarget(t int) Effect { return rerollItemEffect{t} }
+
+func (e rerollItemEffect) apply(c *Ctx) { c.G.RerollItem(c.target(e.target).Object) }
+
+// chosenCost is a cost paid with something chosen on activation, like a
+// target (R-ABIL-07): "Discard a loot card:".
+type chosenCost interface {
+	payChosen(g *Game, p PlayerID, chosen []Chosen)
+}
+
+type discardChosenCost struct{ target int }
+
+// DiscardChosen discards the hand card chosen as target t, as a cost:
+// Targets: Choose(TargetYourHandCard), Costs: DiscardChosen(0).
+func DiscardChosen(t int) Cost { return discardChosenCost{t} }
+
+func (discardChosenCost) canPay(g *Game, p PlayerID, _ ObjectID) bool {
+	return len(g.Players[p].Hand) > 0
+}
+func (discardChosenCost) pay(*Game, PlayerID, ObjectID) {}
+func (discardChosenCost) label() string                 { return "discard a loot card" }
+func (c discardChosenCost) payChosen(g *Game, p PlayerID, chosen []Chosen) {
+	g.DiscardFromHand(p, chosen[c.target].Object)
+	chosen[c.target].Spent = true
+}
+
+type giveChosenCost struct{ item, player int }
+
+// GiveChosen gives the item chosen as target item to the player chosen
+// as target player, as a cost: "Give an item you control to another
+// player:".
+func GiveChosen(item, player int) Cost { return giveChosenCost{item, player} }
+
+func (giveChosenCost) canPay(*Game, PlayerID, ObjectID) bool { return true }
+func (giveChosenCost) pay(*Game, PlayerID, ObjectID)         {}
+func (giveChosenCost) label() string                         { return "give an item" }
+func (c giveChosenCost) payChosen(g *Game, _ PlayerID, chosen []Chosen) {
+	g.GainControl(chosen[c.player].Player, chosen[c.item].Object)
+	chosen[c.item].Spent = true
+}

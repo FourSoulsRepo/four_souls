@@ -211,6 +211,14 @@ func (g *Game) resolveDamage(it StackItem) {
 	if it.Amount = g.shield(it.Target, it.Amount); it.Amount <= 0 {
 		return
 	}
+	for _, id := range g.inPlay() { // e.g. Dry Baby, The Dead Cat
+		if mod := g.def(id).DamageMod; mod != nil {
+			if it.Amount = mod(g, id, it.Target, it.Amount); it.Amount <= 0 {
+				g.emit(Event{Kind: EvPrevented, Player: it.Target.player(), Object: it.Target.Object, Source: id})
+				return
+			}
+		}
+	}
 	if it.Target.IsPlayer {
 		p := it.Target.Player
 		hp := g.PlayerHP(p)
@@ -219,6 +227,7 @@ func (g *Game) resolveDamage(it StackItem) {
 		}
 		n := min(it.Amount, hp)
 		g.Players[p].Damage += n
+		g.Players[p].TimesDamaged++
 		g.emit(Event{Kind: EvDamaged, Player: p, Amount: n})
 		if g.PlayerHP(p) == 0 {
 			g.push(StackItem{Kind: StackDeath, Controller: NoPlayer, Label: "death", Target: Target{Player: p, IsPlayer: true}})
@@ -232,7 +241,11 @@ func (g *Game) resolveDamage(it StackItem) {
 	}
 	n := min(it.Amount, g.HP(id))
 	o.Damage += n
-	g.emit(Event{Kind: EvDamaged, Player: NoPlayer, Object: id, Card: o.Card, Amount: n})
+	e := Event{Kind: EvDamaged, Player: NoPlayer, Object: id, Card: o.Card, Amount: n}
+	if it.Attack {
+		e.Text = "combat" // dealt by the active player's attack
+	}
+	g.emit(e)
 	if g.HP(id) == 0 && !g.Eternal(id) { // R-DEATH-03
 		g.push(StackItem{Kind: StackDeath, Controller: NoPlayer, Label: "death", Target: Target{Object: id}})
 	}
@@ -248,10 +261,13 @@ func (g *Game) shield(t Target, n int) int {
 		}
 		g.Shields = append(g.Shields[:i:i], g.Shields[i+1:]...)
 		prevented := n
-		if s.Amount > 0 {
+		switch {
+		case s.Cap > 0:
+			prevented = max(n-s.Cap, 0)
+		case s.Amount > 0:
 			prevented = min(n, s.Amount)
 		}
-		g.emit(Event{Kind: EvPrevented, Player: t.Player, Object: t.Object, Amount: prevented})
+		g.emit(Event{Kind: EvPrevented, Player: t.Player, Object: t.Object, Amount: prevented, Source: s.Source})
 		return n - prevented
 	}
 	return n

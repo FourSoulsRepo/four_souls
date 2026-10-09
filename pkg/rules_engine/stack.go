@@ -36,6 +36,9 @@ type StackItem struct {
 	RollFor AbilityRef `json:"roll_for"`
 	// RollResult is set on the trigger that reads a roll's result.
 	RollResult int `json:"roll_result,omitempty"`
+	// EventPlayer and EventAmount: the triggering event, for triggers.
+	EventPlayer PlayerID `json:"event_player,omitempty"`
+	EventAmount int      `json:"event_amount,omitempty"`
 }
 
 // Events about the stack.
@@ -101,7 +104,11 @@ func (g *Game) resolveTop() {
 			}
 			it.Roll = min(max(it.Roll+bonus, 1), 6)
 		}
-		g.emit(Event{Kind: EvRollResolved, Player: it.Controller, Amount: it.Roll})
+		re := Event{Kind: EvRollResolved, Player: it.Controller, Amount: it.Roll}
+		if it.Attack {
+			re.Text = "attack"
+		}
+		g.emit(re)
 		if it.Attack {
 			g.resolveAttackRoll(it)
 		}
@@ -110,6 +117,7 @@ func (g *Game) resolveTop() {
 			g.push(StackItem{
 				Kind: StackTrigger, Controller: it.Controller, Source: it.Source, Card: it.RollFor.Card,
 				Ability: it.RollFor, Mode: it.Mode, Targets: it.Targets, RollResult: it.Roll, Label: "roll result",
+				EventPlayer: it.EventPlayer, EventAmount: it.EventAmount,
 			})
 		}
 	case StackDamage:
@@ -179,10 +187,8 @@ func (t Target) player() PlayerID {
 // trinketToPlay puts a resolved trinket into play as an item of p.
 func (g *Game) trinketToPlay(p PlayerID, id ObjectID) {
 	nid := g.move(id, Zone{Kind: ZoneInPlay}, p)
-	o := g.Object(nid)
-	o.Role, o.Charged = RoleItem, true
-	g.Players[p].InPlay = append(g.Players[p].InPlay, nid)
-	g.emit(Event{Kind: EvEnteredPlay, Player: p, Object: nid, Card: o.Card})
+	g.enterAsItem(p, nid)
+	g.emit(Event{Kind: EvEnteredPlay, Player: p, Object: nid, Card: g.Object(nid).Card})
 }
 
 // CancelStackItem removes an item from the stack without resolving it;

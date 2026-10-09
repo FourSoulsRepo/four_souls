@@ -6,11 +6,17 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 //
 //	{Paid Effect}Discard a loot card:
 //	Gain 3¢.
-//
-// TODO(card): implement the text above, then delete this line.
-// Until then `go run ./cmd/cardgen` rewrites this file from card_db.
 var smelter = engine.CardDef{
 	Ref:    "smelter",
 	Kind:   engine.TreasureCard,
 	Copies: 1,
+	Abilities: []engine.Ability{
+		{
+			Kind:    engine.Activated,
+			Text:    "Discard a loot card: Gain 3¢.",
+			Costs:   []engine.Cost{engine.DiscardChosen(0)},
+			Targets: []engine.TargetSpec{engine.Choose(engine.TargetYourHandCard)},
+			Effects: []engine.Effect{engine.GainCents(3)},
+		},
+	},
 }

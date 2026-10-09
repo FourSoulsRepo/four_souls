@@ -181,3 +181,134 @@ var firstAttackRollATK = engine.Static{
 		return g.Object(self).Controller == p && p == g.Turn.Active && g.Attack.On && g.Turn.AttackRolls == 1
 	},
 }
+
+// monstersInPlay lists the monsters on top of the monster slots.
+func monstersInPlay(g *engine.Game) []engine.ObjectID {
+	var out []engine.ObjectID
+	for _, s := range g.Monsters {
+		if top, ok := s.TopOf(); ok && g.Object(top).Role == engine.RoleMonster {
+			out = append(out, top)
+		}
+	}
+	return out
+}
+
+// livingPlayers lists living players, other than skip if skip >= 0.
+func livingPlayers(g *engine.Game, skip engine.PlayerID) []engine.PlayerID {
+	var out []engine.PlayerID
+	for _, pl := range g.Players {
+		if !pl.Dead && pl.ID != skip {
+			out = append(out, pl.ID)
+		}
+	}
+	return out
+}
+
+func playerLabel(g *engine.Game, p engine.PlayerID) string {
+	return "player " + strconv.Itoa(int(p)+1) + " (" + string(g.Object(g.Players[p].Character).Card) + ")"
+}
+
+// damageAMonster: "Deal n damage to a monster", picked on resolution.
+func damageAMonster(n int) engine.Effect {
+	return engine.Ask(func(c *engine.Ctx, a []int) {
+		if a[0] >= 0 {
+			c.G.DealDamageTo(engine.Target{Object: monstersInPlay(c.G)[a[0]]}, n, c.Controller, c.Source)
+		}
+	}, engine.Question{Text: "Deal damage to which monster?", Options: func(c *engine.Ctx, _ []int) []string {
+		var out []string
+		for _, id := range monstersInPlay(c.G) {
+			out = append(out, string(c.G.Object(id).Card))
+		}
+		return out
+	}})
+}
+
+// damageAPlayer: "Deal n damage to a player" (another player if others),
+// picked on resolution.
+func damageAPlayer(n int, others bool) engine.Effect {
+	skip := func(c *engine.Ctx) engine.PlayerID {
+		if others {
+			return c.Controller
+		}
+		return engine.NoPlayer
+	}
+	return engine.Ask(func(c *engine.Ctx, a []int) {
+		if a[0] >= 0 {
+			p := livingPlayers(c.G, skip(c))[a[0]]
+			c.G.DealDamageTo(engine.Target{Player: p, IsPlayer: true}, n, c.Controller, c.Source)
+		}
+	}, engine.Question{Text: "Deal damage to which player?", Options: func(c *engine.Ctx, _ []int) []string {
+		var out []string
+		for _, p := range livingPlayers(c.G, skip(c)) {
+			out = append(out, playerLabel(c.G, p))
+		}
+		return out
+	}})
+}
+
+// rechargeAnItem: "you may recharge an item", picked on resolution; the
+// last option declines.
+var rechargeAnItem = engine.Ask(func(c *engine.Ctx, a []int) {
+	if ids := allItems(c.G); a[0] >= 0 && a[0] < len(ids) {
+		c.G.Recharge(ids[a[0]])
+	}
+}, engine.Question{Text: "Recharge which item?", Options: func(c *engine.Ctx, _ []int) []string {
+	var out []string
+	for _, id := range allItems(c.G) {
+		out = append(out, string(c.G.Object(id).Card))
+	}
+	return append(out, "none")
+}})
+
+// allItems lists every item players control, in seat order.
+func allItems(g *engine.Game) []engine.ObjectID {
+	var out []engine.ObjectID
+	for _, pl := range g.Players {
+		for _, id := range pl.InPlay {
+			if g.Object(id).Role == engine.RoleItem {
+				out = append(out, id)
+			}
+		}
+	}
+	return out
+}
+
+// onYourAttackRollOf triggers when the controller's attack roll
+// resolves as 6.
+func onYourAttackRollOf(n int) engine.Trigger {
+	return engine.Trigger{On: engine.EvRollResolved, Match: func(g *engine.Game, self engine.ObjectID, e engine.Event) bool {
+		return e.Amount == n && e.Text == "attack" && e.Player == g.Object(self).Controller
+	}}
+}
+
+// whenYouDealCombatDamage triggers when the controller's attack damages
+// a monster.
+func whenYouDealCombatDamage() engine.Trigger {
+	return engine.Trigger{On: engine.EvDamaged, Match: func(g *engine.Game, self engine.ObjectID, e engine.Event) bool {
+		return e.Text == "combat" && e.Object != 0 && g.Turn.Active == g.Object(self).Controller
+	}}
+}
+
+// giveThisAway: "give this to another player" (the haunts).
+var giveThisAway = engine.Ask(func(c *engine.Ctx, a []int) {
+	if a[0] >= 0 {
+		c.G.GainControl(otherPlayers(c)[a[0]], c.Source)
+	}
+}, engine.Question{Text: "Give this to which player?", Options: func(c *engine.Ctx, _ []int) []string {
+	var out []string
+	for _, p := range otherPlayers(c) {
+		out = append(out, playerLabel(c.G, p))
+	}
+	return out
+}})
+
+// otherPlayers lists the other players, alive or not ("another player").
+func otherPlayers(c *engine.Ctx) []engine.PlayerID {
+	var out []engine.PlayerID
+	for _, pl := range c.G.Players {
+		if pl.ID != c.Controller {
+			out = append(out, pl.ID)
+		}
+	}
+	return out
+}

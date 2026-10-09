@@ -177,6 +177,11 @@ func (g *Game) DestroyObject(p PlayerID, id ObjectID) bool {
 	if o.Zone.Kind != ZoneInPlay || o.Controller != p || g.Eternal(id) {
 		return false
 	}
+	if g.def(id).SoulWhenDestroyed && o.Role == RoleItem {
+		o.Role, o.Charged, o.Counters = RoleSoul, false, nil // The Chest
+		g.emit(Event{Kind: EvGainedSoul, Player: p, Object: id, Card: o.Card})
+		return false
+	}
 	g.Players[p].InPlay = remove(g.Players[p].InPlay, id)
 	var nid ObjectID
 	if d, ok := g.kindOf(id).Deck(); ok {
@@ -196,8 +201,7 @@ func (g *Game) GainControl(p PlayerID, id ObjectID) {
 	if o.Zone.Slot == ShopSlot && o.Controller == NoPlayer {
 		g.removeFromSlot(id)
 		nid := g.move(id, Zone{Kind: ZoneInPlay}, p)
-		g.Object(nid).Role, g.Object(nid).Charged = RoleItem, true
-		g.Players[p].InPlay = append(g.Players[p].InPlay, nid)
+		g.enterAsItem(p, nid)
 		g.emit(Event{Kind: EvGainedTreasure, Player: p, Object: nid, Card: o.Card, Prev: id})
 		g.enqueue(Action{Kind: ActRefillSlots, Player: NoPlayer})
 		return
@@ -230,3 +234,97 @@ func (g *Game) DiscardMonster(id ObjectID) {
 
 // RefillSlots queues the refill of empty slots (R-SHOP-06).
 func (g *Game) RefillSlots() { g.enqueue(Action{Kind: ActRefillSlots, Player: NoPlayer}) }
+
+// enterAsItem makes a new object in play an item of p: charged, unless
+// the card says it enters deactivated, with its starting counters.
+func (g *Game) enterAsItem(p PlayerID, id ObjectID) {
+	o, d := g.Object(id), g.def(id)
+	o.Role, o.Charged = RoleItem, !d.EntersDeactivated
+	if d.EntersWithCounters > 0 {
+		o.addCounters("", d.EntersWithCounters)
+	}
+	g.Players[p].InPlay = append(g.Players[p].InPlay, id)
+}
+
+// DealDamageTo puts n damage aimed at t on the stack (R-MECH-15), for
+// effects that pick the target on resolution.
+func (g *Game) DealDamageTo(t Target, n int, controller PlayerID, source ObjectID) {
+	if n <= 0 {
+		return
+	}
+	g.push(StackItem{Kind: StackDamage, Controller: controller, Source: source, Amount: n, Label: "damage", Target: t})
+}
+
+// PayHP makes p pay n HP (R-MECH-44): it is lost, not damage. It
+// reports whether p could pay.
+func (g *Game) PayHP(p PlayerID, n int) bool {
+	if g.PlayerHP(p) < n || g.Players[p].Dead {
+		return false
+	}
+	g.Players[p].Damage += n
+	g.emit(Event{Kind: EvPaid, Player: p, Amount: n, Text: "HP"})
+	if g.PlayerHP(p) == 0 {
+		g.push(StackItem{Kind: StackDeath, Controller: NoPlayer, Label: "death", Target: Target{Player: p, IsPlayer: true}})
+	}
+	return true
+}
+
+// RerollItem destroys an item; if it is destroyed, its controller gains
+// 1 treasure. A shop item is replaced by the top treasure card instead
+// (R-MECH-48).
+func (g *Game) RerollItem(id ObjectID) {
+	o := g.Object(id)
+	if o.Zone.Kind != ZoneInPlay || o.Role != RoleItem {
+		return
+	}
+	if o.Controller == NoPlayer && o.Zone.Slot == ShopSlot {
+		g.removeFromSlot(id)
+		nid := g.discard(id, TreasureDeck)
+		g.emit(Event{Kind: EvDestroyed, Player: NoPlayer, Object: nid, Card: g.Object(nid).Card, Prev: id})
+		g.RefillSlots()
+		return
+	}
+	if p := o.Controller; g.DestroyObject(p, id) {
+		g.enqueue(Action{Kind: ActGainTreasure, Player: p, Amount: 1})
+	}
+}
+
+// Kind returns the card kind of an object.
+func (g *Game) Kind(id ObjectID) CardKind { return g.kindOf(id) }
+
+// DiscardShopItem puts a shop item into the treasure discard; the slot is
+// refilled later (RefillSlots).
+func (g *Game) DiscardShopItem(id ObjectID) {
+	g.removeFromSlot(id)
+	nid := g.discard(id, TreasureDeck)
+	g.emit(Event{Kind: EvDiscarded, Player: NoPlayer, Object: nid, Card: g.Object(nid).Card, Prev: id})
+	g.RefillSlots()
+}
+
+// SlotToDeckBottom puts the top card of a shop or monster slot on the
+// bottom of its deck; the slot is refilled later (RefillSlots).
+func (g *Game) SlotToDeckBottom(id ObjectID) {
+	d, ok := g.kindOf(id).Deck()
+	if !ok {
+		return
+	}
+	g.removeFromSlot(id)
+	nid := g.move(id, DeckZone(d), NoPlayer)
+	g.Decks[d] = append([]ObjectID{nid}, g.Decks[d]...)
+	g.emit(Event{Kind: EvMovedToDeck, Player: NoPlayer, Object: nid, Card: g.Object(nid).Card, Text: d.String() + " deck bottom", Prev: id})
+}
+
+// DiscardToDeckTop puts a card from a discard pile on top of its deck.
+func (g *Game) DiscardToDeckTop(d DeckKind, id ObjectID) {
+	g.Discards[d] = remove(g.Discards[d], id)
+	nid := g.move(id, DeckZone(d), NoPlayer)
+	g.Decks[d] = append(g.Decks[d], nid)
+	g.emit(Event{Kind: EvMovedToDeck, Player: NoPlayer, Object: nid, Card: g.Object(nid).Card, Text: d.String() + " deck"})
+}
+
+// RevealTop shows the top card of a deck to everyone.
+func (g *Game) RevealTop(d DeckKind) {
+	if top := g.DeckTop(d, 1); len(top) > 0 {
+		g.emit(Event{Kind: EvCardRevealed, Player: NoPlayer, Object: top[0], Card: g.Object(top[0]).Card, Text: d.String() + " deck"})
+	}
+}

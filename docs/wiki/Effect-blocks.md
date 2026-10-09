@@ -24,6 +24,9 @@ Cards are Go values built from small blocks (ADR 005). This page lists every blo
 | `Outside` | Starts outside the game (starting items) |
 | `Tap` | Has a ↷ ability (the death penalty deactivates it) |
 | `Trinket` | Loot that becomes an item when it resolves (R-ABIL-19) |
+| `DamageMod` | Changes damage about to be marked: "Damage you would take is reduced to 1." |
+| `EntersDeactivated`, `EntersWithCounters` | "This enters play deactivated." / "starts with 9 counters" |
+| `SoulWhenDestroyed` | "If this would be destroyed, it becomes a soul instead." |
 | `GoesFirst` | A character whose player goes first (Cain) |
 | `StartingChoice` | Look at this many top treasures at the start, pick an eternal starting item (Eden) |
 | `Rewards` | Reward box, e.g. `[]Reward{{Kind: RewardCents, Amount: 3}}` |
@@ -47,6 +50,8 @@ Cards are Go values built from small blocks (ADR 005). This page lists every blo
 | `PayCents(n)` | Pay 5¢: … |
 | `DestroySelf()` | Destroy this: … (not on eternal objects) |
 | `RemoveCounters(n)` | Remove 2 counters from this: … |
+| `DiscardChosen(t)` | Discard a loot card: … (with `Choose(TargetYourHandCard)`) |
+| `GiveChosen(item, player)` | Give an item you control to another player: … |
 
 ## Targets
 
@@ -63,6 +68,7 @@ Targets are always asked, with a "cancel" option before anything is paid. A targ
 | `Choose(TargetStackAbility)` | an item's ↷ or $ ability, or a loot being played |
 | `Choose(TargetCurse)` | a curse a player has |
 | `Choose(TargetYourItem)` | an item you control |
+| `Choose(TargetItemOrSoul)` | an item or soul a player controls |
 | `ChooseWhere(kind, filter)` | e.g. the player with the most souls; `NotThis` is "another item" |
 
 Effects refer to targets by number: `DealDamage(1, 0)` hits the first target. `You` means the controller, for text without a target: `DealDamage(1, You)` is "Take 1 damage." A roll ability keeps its targets for the result: "Choose a player, then roll- deal damage equal to the result".
@@ -92,6 +98,10 @@ Effects refer to targets by number: `DealDamage(1, 0)` hits the first target. `Y
 | `RechargeTarget(t)` | Recharge an item. |
 | `RechargeItemsOf(t)` | Choose a player. Recharge each item they control. |
 | `Kill(t)` | Kill a player. |
+| `CapNextDamage(n, t)` | The next instance of damage they take this turn is reduced to 1. |
+| `EachOtherPlayer(effects…)` | Deal 1 damage to each other player. |
+| `DestroyThis(then…)` | ↷: Destroy this. If you do, … |
+| `RerollTarget(t)` | Reroll an item. (R-MECH-48) |
 | `CancelTarget(t)` | Cancel the ↷ or $ ability of an item or a loot being played. |
 | `DestroyTarget(t)` | Destroy a curse. |
 | `EachPlayer(effects…)` | Each player gains 1¢. / Each player takes 3 damage. |
@@ -125,7 +135,7 @@ Ask(func(c *Ctx, a []int) {
 }, DeckQuestion("Put the top card of which deck into discard?"))
 ```
 
-A question's `Player` func picks who answers, e.g. the chosen player (Judgement). Ready questions: `DeckQuestion(text)` (read with `c.Deck(i)`) and `HandQuestion(text)` (read with `c.HandCard(i)`). Game methods for `do` and `EffectFunc`: `LookAt`, `DeckTop`, `SetDeckTop`, `DeckToBottom`, `MillTop`, `DiscardTopToDeck`, `HandToDeckTop`, `GiveHandCard`, `DiscardFromHand`, `DestroyObject`, `GainControl`, `ShopItems`, `DiscardMonster`, `RefillSlots`, `SetRoll`, `CancelStackItem`, `EndTurnNow`. `c.Do(effects…)` runs ordinary blocks.
+A question with `Random: true` is answered by the game at random ("choose a player at random"). A triggered ability's `c.EventPlayer` and `c.EventAmount` tell who rolled or how much damage was taken. A question's `Player` func picks who answers, e.g. the chosen player (Judgement). Ready questions: `DeckQuestion(text)` (read with `c.Deck(i)`) and `HandQuestion(text)` (read with `c.HandCard(i)`). Game methods for `do` and `EffectFunc`: `LookAt`, `DeckTop`, `SetDeckTop`, `DeckToBottom`, `MillTop`, `DiscardTopToDeck`, `HandToDeckTop`, `GiveHandCard`, `DiscardFromHand`, `DestroyObject`, `GainControl`, `ShopItems`, `DiscardMonster`, `RefillSlots`, `SetRoll`, `CancelStackItem`, `EndTurnNow`. `c.Do(effects…)` runs ordinary blocks.
 
 A roll table is built with `Results`:
 

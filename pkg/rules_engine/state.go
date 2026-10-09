@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"hash/fnv"
+	"maps"
 )
 
 // PlayerID is a seat; seats are in turn order (R-TURN-01).
@@ -125,6 +126,10 @@ func (o *Object) addCounters(name string, n int) {
 type Shield struct {
 	Target Target `json:"target"`
 	Amount int    `json:"amount,omitempty"`
+	// Cap > 0 reduces the next instance to at most Cap instead.
+	Cap int `json:"cap,omitempty"`
+	// Source is the object that made the shield (Host Hat reacts).
+	Source ObjectID `json:"source,omitempty"`
 }
 
 // Boost is a "till end of turn" stat change (R-TURN-13). It applies to
@@ -153,6 +158,9 @@ type Player struct {
 	InPlay []ObjectID `json:"in_play"`
 	Damage int        `json:"damage,omitempty"` // tied to the player (R-MECH-19)
 	Dead   bool       `json:"dead,omitempty"`   // died this turn (R-DEATH-17)
+	// TimesDamaged counts this turn's damage ("the first time you take
+	// damage each turn").
+	TimesDamaged int `json:"times_damaged,omitempty"`
 	// ExtraLootPlays come from abilities and last until the turn ends.
 	ExtraLootPlays int `json:"extra_loot_plays,omitempty"`
 }
@@ -219,6 +227,11 @@ type Game struct {
 	// when a saved game is loaded.
 	Sets []string `json:"sets"`
 
+	// AskSeq numbers Ask effects; asks holds the waiting ones (not saved:
+	// see Asking.Key).
+	AskSeq int `json:"ask_seq,omitempty"`
+	asks   map[int]askEffect
+
 	cards  cardIndex
 	events []Event
 	// forcedRolls lets tests decide dice results; never set in games.
@@ -260,6 +273,7 @@ func (g *Game) Clone() (*Game, error) {
 		return nil, fmt.Errorf("clone: %w", err)
 	}
 	c.cards = g.cards // definitions are not part of the saved state
+	c.asks = maps.Clone(g.asks)
 	return &c, nil
 }
 

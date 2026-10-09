@@ -35,6 +35,7 @@ const (
 	EvTurnEndedEarly EventKind = "turn_ended_early"
 	EvPenaltyPaid    EventKind = "penalty_paid"
 	EvExtraTurn      EventKind = "extra_turn"
+	EvRandomPick     EventKind = "random_pick" // Text is the picked option
 )
 
 // Event is one thing that happened, in order. Hidden cards (e.g. a looted
@@ -50,4 +51,7 @@ type Event struct {
 	Private bool `json:"private,omitempty"`
 	// Prev is the object an event moved away, when it got a new ID.
 	Prev ObjectID `json:"prev,omitempty"`
+	// Source is the object that caused the event, when that matters
+	// (the shield that prevented damage).
+	Source ObjectID `json:"source,omitempty"`
 }

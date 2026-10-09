@@ -50,6 +50,17 @@ type CardDef struct {
 	// Outside marks cards that start outside the game, such as starting
 	// items: they are never shuffled into a deck (R-ZONE-13).
 	Outside bool
+	// DamageMod changes damage about to be marked on a target while this
+	// object is in play: "Damage you would take is reduced to 1." It
+	// returns the new amount; 0 prevents it.
+	DamageMod func(g *Game, self ObjectID, t Target, n int) int
+	// EntersDeactivated and EntersWithCounters apply when the item enters
+	// play under a player.
+	EntersDeactivated  bool
+	EntersWithCounters int
+	// SoulWhenDestroyed: "If this would be destroyed, it becomes a soul
+	// instead."
+	SoulWhenDestroyed bool
 	// Trinket: a loot card that becomes an item when it resolves
 	// (R-ABIL-19); its abilities work only in play.
 	Trinket bool

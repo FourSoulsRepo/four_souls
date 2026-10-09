@@ -8,6 +8,9 @@ type Question struct {
 	Options func(c *Ctx, answers []int) []string
 	// Player, if set, is who answers; by default the controller.
 	Player func(c *Ctx, answers []int) PlayerID
+	// Random: nobody answers; the game picks an option at random
+	// ("choose a player at random").
+	Random bool
 }
 
 type askEffect struct {
@@ -30,17 +33,30 @@ type Asking struct {
 	Mode       int        `json:"mode,omitempty"`
 	RollResult int        `json:"roll_result,omitempty"`
 	Effect     int        `json:"effect"` // index in the effect list
-	Controller PlayerID   `json:"controller"`
-	Source     ObjectID   `json:"source"`
-	Targets    []Chosen   `json:"targets,omitempty"`
-	Answers    []int      `json:"answers,omitempty"`
+	// Key finds the effect while the game runs, also when it is nested
+	// in another effect; Effect is the fallback after a Load.
+	Key        int      `json:"key"`
+	Controller PlayerID `json:"controller"`
+	Source     ObjectID `json:"source"`
+	Targets    []Chosen `json:"targets,omitempty"`
+	Answers    []int    `json:"answers,omitempty"`
+	// EventPlayer and EventAmount come from the trigger, if any.
+	EventPlayer PlayerID `json:"event_player,omitempty"`
+	EventAmount int      `json:"event_amount,omitempty"`
 }
 
 func (e askEffect) apply(c *Ctx) {
 	a := &Asking{
 		Ability: c.ref, Mode: c.mode, RollResult: c.roll, Effect: c.effect,
 		Controller: c.Controller, Source: c.Source, Targets: c.Targets,
+		EventPlayer: c.EventPlayer, EventAmount: c.EventAmount,
 	}
+	c.G.AskSeq++
+	a.Key = c.G.AskSeq
+	if c.G.asks == nil {
+		c.G.asks = map[int]askEffect{}
+	}
+	c.G.asks[a.Key] = e
 	c.G.enqueue(Action{Kind: ActAsk, Player: c.Controller, Ask: a})
 }
 
@@ -54,11 +70,15 @@ func (c *Ctx) Do(effects ...Effect) {
 func (a *Asking) ctx(g *Game) *Ctx {
 	return &Ctx{
 		G: g, Controller: a.Controller, Source: a.Source, Targets: a.Targets,
+		EventPlayer: a.EventPlayer, EventAmount: a.EventAmount,
 		ref: a.Ability, mode: a.Mode, roll: a.RollResult, effect: a.Effect,
 	}
 }
 
 func (g *Game) askEffectOf(a *Asking) askEffect {
+	if e, ok := g.asks[a.Key]; ok {
+		return e
+	}
 	effects := g.effectsOf(a.Ability, a.Mode, a.RollResult)
 	e, ok := effects[a.Effect].(askEffect)
 	if !ok {
@@ -78,6 +98,12 @@ func (g *Game) continueAsk(a *Asking) {
 			a.Answers = append(a.Answers, -1)
 			continue
 		}
+		if q.Random {
+			i := g.RNG.Intn(len(opts))
+			g.emit(Event{Kind: EvRandomPick, Player: a.Controller, Amount: i, Text: opts[i]})
+			a.Answers = append(a.Answers, i)
+			continue
+		}
 		who := a.Controller
 		if q.Player != nil {
 			who = q.Player(c, a.Answers)
@@ -88,6 +114,7 @@ func (g *Game) continueAsk(a *Asking) {
 	// What the effect queues goes before the rest of the queue.
 	rest := g.Queue
 	g.Queue = nil
+	delete(g.asks, a.Key)
 	e.do(c, a.Answers)
 	g.Queue = append(g.Queue, rest...)
 }
