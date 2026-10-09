@@ -84,7 +84,7 @@ Ideas: R-05, TS-01 – TS-04.
 3. Done when:
    1. All known combos have tests.
 
-### [ ] 5.9 Full-game simulations
+### [x] 5.9 Full-game simulations
 
 1. Goal: whole games without errors.
 2. Tasks:
@@ -95,7 +95,7 @@ Ideas: R-05, TS-01 – TS-04.
    1. Report shows 100% tested for the Base Game.
    2. Simulations finish with no invariant failures.
 
-### [ ] 5.10 Guide for adding cards
+### [x] 5.10 Guide for adding cards
 
 1. Goal: anyone who clones the repo can add a card or a fan set (ADR 005).
 2. Tasks:

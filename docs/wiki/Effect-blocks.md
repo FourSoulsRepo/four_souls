@@ -1,6 +1,6 @@
 # Effect blocks
 
-Cards are Go values built from small blocks (ADR 005). This page lists every block with a one-line example. The full guide to adding a card comes with roadmap step 5.10.
+Cards are Go values built from small blocks (ADR 005). This page lists every block with a one-line example. For a step-by-step guide see [Adding a card](Adding-a-card).
 
 ```go
 {Ref: "razor", Kind: TreasureCard, Abilities: []Ability{
