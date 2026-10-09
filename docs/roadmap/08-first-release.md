@@ -70,3 +70,18 @@ Ideas: B-03 – B-05, L-03.
    3. Accepted ADRs match the code.
 3. Done when:
    1. Use case index has no "Planned" item for MVP features.
+
+### [ ] 8.7 Rulings from Yuggy and Discord
+
+1. Goal: card rulings beyond R-07 and the FAQ become tests (R-07, TS-04).
+2. When: before the play-test (8.5).
+3. Tasks:
+   1. Search the step 3 digests for every Base Game card name, English and Russian.
+   2. Yuggy first: Reddit comments and X posts, high trust.
+   3. Then the Discord channel, threads about specific cards only.
+   4. Write each ruling in our own words.
+   5. Matching rulings become interaction tests.
+   6. Contradictions are fixed, or go to `open-questions.md` for the **Owner**.
+4. Done when:
+   1. Every Base Game card was searched in both sources.
+   2. Found rulings have tests or open questions.
