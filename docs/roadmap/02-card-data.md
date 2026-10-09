@@ -97,9 +97,9 @@ Ideas: CD-01, CD-04, CD-06, CD-07, CD-08, A-11.
    1. Convert to WebP at one fixed size.
    2. Pick the size by checking text readability when zoomed.
    3. One folder per set.
-   4. For now images live in `pkg/card_db/images/`.
-   5. That folder is git-ignored; never committed here.
-   6. Private image repo comes later (A-11).
+   4. Images live in `pkg/card_db/images/`.
+   5. That folder is the private `FourSoulsRepo/card_db` submodule (A-11).
+   6. The public game repo never holds image files.
 3. Done when:
    1. Base Game images total is reported (MB).
    2. Card text is readable on zoom.
@@ -113,7 +113,7 @@ Ideas: CD-01, CD-04, CD-06, CD-07, CD-08, A-11.
 
 1. Goal: builds find images; work without them.
 2. Tasks:
-   1. Local: external mode reads `pkg/card_db/images/`.
+   1. Local: external mode reads `pkg/card_db/images/` (the submodule).
    2. Without images: build passes; cards fall back to text.
    3. CI builds without images for now.
 3. Done when:
@@ -123,7 +123,8 @@ Ideas: CD-01, CD-04, CD-06, CD-07, CD-08, A-11.
    2. Local: 287 of 287 images found in both build modes.
    3. `carddb.HasImage` tells the client when to draw a blank card.
    4. The app does not link card data yet; the client uses it in step 7.
-5. Later (with the private repo):
-   1. CI clones the image repo with `--depth 1` via a secret.
-   2. Script publishes the image repo as one amended commit.
-   3. **Owner:** create the repo and add the secret.
+5. Private image repo:
+   1. Done: `FourSoulsRepo/card_db`, submodule at `pkg/card_db/images`.
+   2. Done: `-tags "embed cardimages"` packs images; plain `embed` does not.
+   3. Later: CI checks out the submodule with a token secret (step 8).
+   4. New images are added by amending its single commit.

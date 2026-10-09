@@ -16,8 +16,10 @@ wails dev
 ## Build
 
 ```sh
-wails build -tags embed
+wails build -tags "embed cardimages"
 ```
+
+Card images come from a private submodule (`pkg/card_db/images`). Without access, build with `-tags embed`; cards then show as text.
 
 The binary lands in `build/bin/`.
 

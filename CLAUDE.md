@@ -28,7 +28,7 @@
    3. `go build ./...`: quick backend check.
    4. `make build vet test lint wasm`: all Go modules.
    5. `cd frontend && npm run typecheck && npm run lint`.
-   6. Release-style build: `wails build -tags embed`.
+   6. Release-style build: `wails build -tags "embed cardimages"`.
    7. Linter setup and versions: `docs/wiki/Linters.md`.
    8. `make screenshots`: UI PNGs in `.cache/screenshots/` (not tracked).
    9. Use it to check UI changes; a real-window screenshot shows nothing.
@@ -43,4 +43,6 @@
    1. Code is MIT (`LICENSE`).
    2. `NOTICE` lists every third-party item and its license.
    3. Update `NOTICE` in the same commit as any dependency change.
-   4. Card images are never committed (`pkg/card_db/images/`).
+   4. Card images live only in the private submodule `pkg/card_db/images`.
+   5. Submodule repo: private `FourSoulsRepo/card_db` (images only).
+   6. Public clones build without it; cards then show as text.

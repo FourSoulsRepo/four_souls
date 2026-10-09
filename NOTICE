@@ -16,8 +16,9 @@ published by Maestro Media (first edition: Studio71).
 Card names, card texts, card artwork and rules belong to their owners.
 Card artwork is credited to its artists inside the app, per card.
 
-Not included in this repository yet. Card images will live in a separate
-private repository and ship inside release binaries.
+Card images are not in this repository. They live in the private
+repository FourSoulsRepo/card_db (git submodule pkg/card_db/images) and
+ship inside release binaries built with -tags cardimages.
 
 This project is an unofficial, free, fan-made game. It is not affiliated
 with, endorsed by or sponsored by Edmund McMillen, Maestro Media or

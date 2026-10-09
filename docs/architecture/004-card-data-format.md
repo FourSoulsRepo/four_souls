@@ -12,7 +12,7 @@
 2. Changed cards keep their ID and get a version (CD-08).
 3. Text is English first, other languages later (LO-01, LO-02).
 4. Artists and translators are credited by name only (CD-04, CD-06).
-5. Images are licensed and never committed here (A-11).
+5. Images are licensed and never committed to the public repo (A-11).
 6. The engine needs IDs and effects, not display data (A-06, A-11).
 7. Sources: foursouls.com pages and the official TTS table (2.2, 2.3).
 
@@ -35,7 +35,8 @@ Use options 1 and 4; stats and rewards stay strings (option 5 lost).
 
 1. Files
    1. `pkg/card_db/data/<set code>.json`; the file name must match the code.
-   2. Images under `pkg/card_db/images/<set code>/`, git-ignored.
+   2. Images under `pkg/card_db/images/<set code>/`.
+   3. `images/` is a git submodule: the private `FourSoulsRepo/card_db` repo.
 2. Set file
    1. `set`: `code` (e.g. `b2`) and `name` (e.g. `Base Game V2`).
    2. `cards`: list of cards.
@@ -60,7 +61,9 @@ Use options 1 and 4; stats and rewards stay strings (option 5 lost).
    3. Rejects image paths that leave `images/`.
    4. Reports every problem at once.
 6. Build modes
-   1. `-tags embed`: `carddb.Embedded()` packs `data/` and `images/`.
+   1. `-tags embed`: `carddb.Embedded()` packs `data/`.
+   4. `-tags "embed cardimages"`: also packs `images/` (needs the submodule).
+   5. The images pattern skips dot-files, so the submodule's `.git` stays out.
    2. Otherwise `assets.CardsFS()` reads `$FOUR_SOULS_CARDS`.
    3. Then `cards/` next to the binary, then `pkg/card_db/` (dev).
 

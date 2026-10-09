@@ -9,7 +9,7 @@ App files (game mats, sounds and similar) are reached through `internal/assets.F
 | `-tags embed` | packed into the binary from `internal/assets/files/` |
 | default (`wails dev`) | `$FOUR_SOULS_ASSETS`, else `assets/` next to the binary, else `internal/assets/files/` |
 
-Card data and images (`pkg/card_db`, see ADR 004) follow the same idea through `internal/assets.CardsFS()`: embedded with `-tags embed`; otherwise `$FOUR_SOULS_CARDS`, else `cards/` next to the binary, else `pkg/card_db/` (for `wails dev`).
+Card data and images (`pkg/card_db`, see ADR 004) follow the same idea through `internal/assets.CardsFS()`: card data is embedded with `-tags embed`, and images too with `-tags "embed cardimages"` (needs the private images submodule); otherwise `$FOUR_SOULS_CARDS`, else `cards/` next to the binary, else `pkg/card_db/` (for `wails dev`).
 
 External mode lets you change files and restart without rebuilding. A missing folder is not fatal: reads simply fail with "not exist", and the app still starts.
 

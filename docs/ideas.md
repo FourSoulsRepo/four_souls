@@ -176,6 +176,9 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    15. Fallback if it grows too big: image packs as GitHub Release assets.
    16. One image repo, one folder per set.
    17. Split into a repo per set only when we hit the limits.
+   18. The image repo is `FourSoulsRepo/card_db` (private).
+   19. Mounted as a git submodule at `pkg/card_db/images`.
+   20. Release builds embed images with `-tags cardimages`.
 12. A-12. `pkg/record`: match record format, a separate Go module.
    1. Stays in this repo for now; not moved out.
 13. A-13. Network protocol stays inside the app.

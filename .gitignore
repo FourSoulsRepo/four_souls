@@ -10,10 +10,6 @@ frontend/dist/*
 coverage.out
 *.test
 
-# Card images: licensed, never committed here (A-11)
-pkg/card_db/images/*
-!pkg/card_db/images/.gitkeep
-
 # OS files
 .DS_Store
 
