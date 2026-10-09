@@ -302,6 +302,13 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    1. Stored as files in the rules engine module.
    2. The test runner loads each file and checks `expect`.
    3. A case shared from the app or site becomes a test by saving it.
+8. LR-08. FAQ built from frequent rules questions.
+   1. Questions come from the collected sources (Reddit, Yuggy, Discord).
+   2. The most frequent ones become FAQ entries.
+   3. Each answer explains how it works and why.
+   4. Each answer links to the rule IDs it rests on.
+   5. Where possible, an entry has a situation payload to try it.
+   6. Shown in the app's rules viewer and on the rules website.
 
 ## Testing
 

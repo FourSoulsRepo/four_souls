@@ -144,7 +144,8 @@ Steps 9–14 can be reordered after the MVP.
 2. Sandbox on the game table; export payload and link.
 3. Tutorial lessons.
 4. Simple random bot; seeded and free practice games.
-5. Ideas: LR-01 – LR-06.
+5. FAQ from frequent rules questions, linked to rule IDs.
+6. Ideas: LR-01 – LR-06, LR-08.
 
 ## 12. Rules website
 

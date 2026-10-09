@@ -2,7 +2,7 @@
 
 Goal: players learn the rules inside the app.
 
-Ideas: LR-01 – LR-06.
+Ideas: LR-01 – LR-06, LR-08.
 
 ---
 
@@ -64,3 +64,17 @@ Ideas: LR-01 – LR-06.
 3. Done when:
    1. A new player finishes all lessons.
    2. Use case: complete a lesson.
+
+### [ ] 11.7 FAQ from frequent questions
+
+1. Goal: answer what players ask most (LR-08).
+2. Tasks:
+   1. Group similar questions from the step 3 sources by topic.
+   2. Rank them by how often they are asked.
+   3. Write each answer in our own words: how it works and why.
+   4. Link every answer to its rule IDs (R-…).
+   5. Add a situation payload where the case can be tried.
+   6. Show the FAQ in the rules viewer (11.1), searchable.
+3. Done when:
+   1. The top questions have entries; every link opens its rule.
+   2. Payload examples pass as tests.
