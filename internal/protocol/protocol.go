@@ -7,9 +7,13 @@ import (
 	engine "github.com/FourSoulsRepo/rules_engine"
 )
 
-// Version is the protocol version. A change to any message JSON, or to
-// the engine's view, event or intent JSON, bumps it (ADR 006).
+// Version is the protocol version (ADR 006). Adding a field keeps it;
+// renaming or removing a field of any message, or of the engine's view,
+// event or intent JSON, or changing its meaning, bumps it.
 const Version = 1
+
+// DefaultPort is the server's TCP port unless configured.
+const DefaultPort = 4774
 
 // MaxClientMessage is the largest message a client may send.
 const MaxClientMessage = 64 << 10

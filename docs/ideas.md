@@ -364,6 +364,11 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    1. Not in the first version.
    2. Configurable in the settings.
 5. ST-05. Animation speed setting.
+6. ST-06. Nickname.
+   1. Each player sets a nickname; asked on the first start.
+   2. Sent when joining a game; shown in the lobby, at the table and in the history.
+   3. 1–20 characters; the server makes equal names in one game unique.
+   4. Can be changed in the settings; a running game keeps the old one.
 
 ## Audio (later)
 

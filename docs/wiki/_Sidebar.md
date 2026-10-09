@@ -9,3 +9,5 @@
 * [Fuzzing](Fuzzing)
 * [Rules engine](Rules-engine)
 * [Adding a card](Adding-a-card)
+* [Playing over the internet](Playing-over-the-internet)
+* [Dedicated server on a VPS](Dedicated-server-on-a-VPS)

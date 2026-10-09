@@ -3,7 +3,7 @@
 Goal: a playable desktop table.
 Ends with an internal play-test build on the cards done so far.
 
-Ideas: M-01, V-01 – V-08, ST-01 – ST-03, ST-05, B-06, N-11.
+Ideas: M-01, V-01 – V-08, ST-01 – ST-03, ST-05, ST-06, B-06, N-11.
 
 ---
 
@@ -106,12 +106,13 @@ Ideas: M-01, V-01 – V-08, ST-01 – ST-03, ST-05, B-06, N-11.
 
 ### [ ] 7.10 Settings screen
 
-1. Goal: ST-01, ST-02, ST-03, ST-05.
+1. Goal: ST-01, ST-02, ST-03, ST-05, ST-06.
 2. Tasks:
    1. Fullscreen or window.
    2. Dark or light theme for menus and panels.
    3. Game mat choice.
    4. Animation speed.
+   5. Nickname; asked on the first start.
 3. Done when:
    1. Every setting applies without restart where possible.
 

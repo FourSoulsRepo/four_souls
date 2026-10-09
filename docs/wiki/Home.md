@@ -16,3 +16,5 @@ These pages describe the current code. Decisions live in `docs/architecture/` (A
 * [Fuzzing](Fuzzing) — random games that check the engine state.
 * [Rules engine](Rules-engine) — map of the engine code and its main rules.
 * [Adding a card](Adding-a-card) — write and test a card, or a whole fan set.
+* [Playing over the internet](Playing-over-the-internet) — virtual LAN (Tailscale, ZeroTier, Radmin VPN, Hamachi) or port forwarding.
+* [Dedicated server on a VPS](Dedicated-server-on-a-VPS) — rent a server and host games for friends.

@@ -14,7 +14,8 @@ import (
 var update = flag.Bool("update", false, "rewrite testdata/golden.jsonl")
 
 // TestGolden pins the JSON of every message (ADR 006). If it fails, the
-// wire format changed: bump Version, then run with -update.
+// wire format changed: if a field was renamed or removed, bump Version;
+// then run with -update.
 func TestGolden(t *testing.T) {
 	g, _, err := engine.NewGame(engine.Setup{Seed: 1, Players: 2, Sets: cards.Sets(), Characters: []engine.CardRef{"isaac", "cain"}})
 	if err != nil {
@@ -54,7 +55,7 @@ func TestGolden(t *testing.T) {
 		t.Fatal(err)
 	}
 	if !bytes.Equal(got.Bytes(), want) {
-		t.Errorf("the wire format changed (ADR 006): bump protocol.Version, then run go test ./internal/protocol -update")
+		t.Errorf("the wire format changed (ADR 006): bump protocol.Version unless fields were only added, then run go test ./internal/protocol -update")
 	}
 }
 
