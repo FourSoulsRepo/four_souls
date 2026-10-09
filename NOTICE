@@ -61,7 +61,7 @@ Go (linked into the app):
   github.com/valyala/fasttemplate           MIT
   git.sr.ht/~jackmordaunt/go-toast/v2       MIT
   github.com/jchv/go-winloader              ISC
-  github.com/gorilla/websocket              BSD-2-Clause
+  github.com/gorilla/websocket              BSD-2-Clause  (also the game server, ADR 006)
   github.com/godbus/dbus/v5                 BSD-2-Clause
   github.com/pkg/browser                    BSD-2-Clause
   github.com/pkg/errors                     BSD-2-Clause

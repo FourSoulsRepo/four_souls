@@ -32,7 +32,7 @@ func TestGolden(t *testing.T) {
 		{TypeWelcome, 1, Welcome{Protocol: Version, App: "0.1.0", Engine: engine.Version, Token: "t0k3n", Seat: 0}},
 		{TypeIntent, 2, Intent{Intent: engine.Intent{Kind: engine.IntentPass}}},
 		{TypeResync, 3, struct{}{}},
-		{TypeUpdate, 0, Update{Step: 1, Events: []engine.Event{{Kind: engine.EvLooted, Player: 0, Card: "a_dime"}}, View: view, Allowed: g.Allowed(p)}},
+		{TypeUpdate, 0, Update{Step: 1, Events: []engine.Event{{Kind: engine.EvLooted, Player: 0, Card: "a_dime"}}, View: view, Allowed: g.Allowed(p), Seats: []Seat{{Seat: 0, Name: "Ann", Connected: true}, {Seat: 1, Name: "Bo"}}}},
 		{TypeError, 2, Error{Code: ErrRefused, Message: "no loot play available", Rule: "R-CARD-08"}},
 	}
 	var got bytes.Buffer
@@ -87,5 +87,21 @@ func TestRoundTrip(t *testing.T) {
 func TestCheckVersion(t *testing.T) {
 	if CheckVersion(Version) != "" || CheckVersion(Version-1) != ErrClientOutdated || CheckVersion(Version+1) != ErrServerOutdated {
 		t.Error("CheckVersion")
+	}
+}
+
+func TestNames(t *testing.T) {
+	for in, want := range map[string]string{"  Ann ": "Ann", "Олег": "Олег"} {
+		if got, ok := CleanName(in); !ok || got != want {
+			t.Errorf("CleanName(%q) = %q, %v", in, got, ok)
+		}
+	}
+	for _, bad := range []string{"", "   ", "a\x07b", "ThisNameIsWayTooLongForUs"} {
+		if _, ok := CleanName(bad); ok {
+			t.Errorf("CleanName(%q) accepted", bad)
+		}
+	}
+	if got := UniqueName("Ann", []string{"Ann", "Ann (2)"}); got != "Ann (3)" {
+		t.Errorf("UniqueName = %q", got)
 	}
 }

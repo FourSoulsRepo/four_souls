@@ -3,6 +3,11 @@ package protocol
 import (
 	"encoding/json"
 	"fmt"
+	"slices"
+	"strconv"
+	"strings"
+	"unicode"
+	"unicode/utf8"
 
 	engine "github.com/FourSoulsRepo/rules_engine"
 )
@@ -78,6 +83,15 @@ type Update struct {
 	Events  []engine.Event  `json:"events"`
 	View    engine.GameView `json:"view"`
 	Allowed []engine.Intent `json:"allowed"`
+	Seats   []Seat          `json:"seats"`
+}
+
+// Seat is one seat at the table: who sits there and whether they are
+// connected now.
+type Seat struct {
+	Seat      int    `json:"seat"`
+	Name      string `json:"name"`
+	Connected bool   `json:"connected"`
 }
 
 // Error codes.
@@ -87,6 +101,9 @@ const (
 	ErrBadMessage     = "bad_message"
 	ErrRefused        = "refused" // the engine refused an intent; Rule says why
 	ErrNotSeated      = "not_seated"
+	ErrRoomFull       = "room_full"
+	ErrBadName        = "bad_name"
+	ErrNoHello        = "no_hello" // the first message must be hello
 )
 
 // Error reports a problem with a message. Rule is the rules ID when the
@@ -140,5 +157,37 @@ func CheckVersion(client int) string {
 		return ErrServerOutdated
 	default:
 		return ""
+	}
+}
+
+// MaxName is the longest nickname, in characters (ST-06).
+const MaxName = 20
+
+// CleanName checks a nickname: trimmed, 1 to MaxName characters, no
+// control characters. It returns the cleaned name and whether it is ok.
+func CleanName(name string) (string, bool) {
+	name = strings.TrimSpace(name)
+	n := utf8.RuneCountInString(name)
+	if n == 0 || n > MaxName || !utf8.ValidString(name) {
+		return "", false
+	}
+	for _, r := range name {
+		if unicode.IsControl(r) {
+			return "", false
+		}
+	}
+	return name, true
+}
+
+// UniqueName makes name differ from the taken ones: "Ann", then "Ann (2)".
+func UniqueName(name string, taken []string) string {
+	free := func(s string) bool { return !slices.Contains(taken, s) }
+	if free(name) {
+		return name
+	}
+	for i := 2; ; i++ {
+		if s := name + " (" + strconv.Itoa(i) + ")"; free(s) {
+			return s
+		}
 	}
 }
