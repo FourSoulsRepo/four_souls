@@ -7,7 +7,7 @@ Ideas: PR-01, PR-02, PR-03, A-01, A-02, A-04, A-09, A-10, A-13, A-14, B-01, B-02
 
 ---
 
-### [ ] 1.1 Repo hygiene
+### [x] 1.1 Repo hygiene
 
 1. Goal: the repo is ready for public work.
 2. Tasks:
@@ -18,7 +18,7 @@ Ideas: PR-01, PR-02, PR-03, A-01, A-02, A-04, A-09, A-10, A-13, A-14, B-01, B-02
 3. Done when:
    1. `git status` is clean after a build.
 
-### [ ] 1.2 Go modules and workspace
+### [x] 1.2 Go modules and workspace
 
 1. Goal: the module layout from A-01, A-11, A-12, A-13.
 2. Tasks:
@@ -34,7 +34,7 @@ Ideas: PR-01, PR-02, PR-03, A-01, A-02, A-04, A-09, A-10, A-13, A-14, B-01, B-02
    1. `go build ./...` and `go test ./...` pass in every module.
    2. `pkg/` modules import nothing from the main module.
 
-### [ ] 1.3 Entry points
+### [x] 1.3 Entry points
 
 1. Goal: the entry points from A-04 exist and run.
 2. Tasks:
@@ -46,7 +46,7 @@ Ideas: PR-01, PR-02, PR-03, A-01, A-02, A-04, A-09, A-10, A-13, A-14, B-01, B-02
    1. All three build.
    2. `GOOS=js GOARCH=wasm go build ./cmd/website` passes.
 
-### [ ] 1.4 Versions
+### [x] 1.4 Versions
 
 1. Goal: app and engine versions in the main menu corner (A-02).
 2. Tasks:
@@ -57,7 +57,7 @@ Ideas: PR-01, PR-02, PR-03, A-01, A-02, A-04, A-09, A-10, A-13, A-14, B-01, B-02
 3. Done when:
    1. A stamped build shows the stamped version.
 
-### [ ] 1.5 Frontend skeleton and bridge
+### [x] 1.5 Frontend skeleton and bridge
 
 1. Goal: a clean React + TS app with a thin Wails bridge (A-14).
 2. Tasks:
@@ -69,7 +69,7 @@ Ideas: PR-01, PR-02, PR-03, A-01, A-02, A-04, A-09, A-10, A-13, A-14, B-01, B-02
    1. No file outside `bridge/` imports Wails runtime or bindings.
    2. `npm run build` and lint pass.
 
-### [ ] 1.6 Fan-game notice
+### [x] 1.6 Fan-game notice
 
 1. Goal: legal notice on every start (L-01, L-02).
 2. Tasks:
@@ -84,7 +84,7 @@ Ideas: PR-01, PR-02, PR-03, A-01, A-02, A-04, A-09, A-10, A-13, A-14, B-01, B-02
    2. Use case written: app start with notice.
 4. **Owner:** confirm the final notice text.
 
-### [ ] 1.7 Embedded and external assets
+### [x] 1.7 Embedded and external assets
 
 1. Goal: two build types (B-01).
 2. Tasks:
@@ -97,7 +97,7 @@ Ideas: PR-01, PR-02, PR-03, A-01, A-02, A-04, A-09, A-10, A-13, A-14, B-01, B-02
    1. Both modes return the same test file.
    2. Tests cover both build tags.
 
-### [ ] 1.8 CI
+### [x] 1.8 CI
 
 1. Goal: GitHub Actions checks every push (A-09, B-02).
 2. Tasks:
@@ -108,20 +108,24 @@ Ideas: PR-01, PR-02, PR-03, A-01, A-02, A-04, A-09, A-10, A-13, A-14, B-01, B-02
    5. Build artifacts uploaded (not released).
 3. Done when:
    1. A push runs all jobs green.
+4. Status: verified locally only; no remote yet.
+   1. First push to GitHub must confirm every job.
+   2. macOS builds one universal app; the server is arm64 there.
 
-### [ ] 1.9 Foundation docs
+### [x] 1.9 Foundation docs
 
 1. Goal: the layout is documented.
 2. Tasks:
    1. ADR: repo layout, modules, entry points, asset modes.
    2. Accept ADR 001 parts that step 1 implements.
+      Done in ADR 003; ADR 001 stays Proposed until step 4.
    3. Wiki: `Home`, `_Sidebar`, `_Footer`, "Repo layout".
    4. Update `CLAUDE.md` and `README.md`.
 3. Done when:
    1. A new agent can find every folder's purpose in docs.
    2. `NOTICE` lists every dependency added in step 1.
 
-### [ ] 1.10 Go linter
+### [x] 1.10 Go linter
 
 1. Goal: strict golangci-lint with security rules (PR-03).
 2. Tasks:
@@ -131,20 +135,38 @@ Ideas: PR-01, PR-02, PR-03, A-01, A-02, A-04, A-09, A-10, A-13, A-14, B-01, B-02
    4. Style: `gofumpt`, `revive`, `misspell`.
    5. Runs on every Go module, incl. `pkg/` modules.
    6. CI job fails on any finding.
+   7. `depguard`: `pkg/` never imports the app or Wails.
+   8. `depguard`: the engine never imports `os`, `net`, `time`, `math/rand`.
+   9. Needs golangci-lint built with Go ≥ the local toolchain.
 3. Done when:
    1. The linter passes on all modules locally and in CI.
    2. Wiki: how to run linters.
 
-### [ ] 1.11 Frontend linter
+### [x] 1.11 Frontend linter
 
 1. Goal: strict ESLint with security rules (PR-03).
 2. Tasks:
    1. ESLint flat config in `frontend/`.
    2. `typescript-eslint` strict and type-checked rules.
-   3. React, React Hooks rules.
+   3. React (`@eslint-react`, strict type-checked), React Hooks rules.
    4. Security: `eslint-plugin-security`, `eslint-plugin-no-unsanitized`.
    5. Ban `dangerouslySetInnerHTML`, `eval`, `new Function`.
    6. CI job fails on any finding or warning.
+   7. ESLint 10; `eslint-plugin-react` skipped (no ESLint 10 support).
+   8. Only `src/bridge` may import Wails bindings.
 3. Done when:
    1. `npm run lint` passes locally and in CI.
    2. `NOTICE` lists the new dev dependencies.
+
+### [x] 1.12 UI screenshots
+
+1. Goal: agents and docs can see the UI without a real window.
+2. Tasks:
+   1. Same pattern as the owner's other Wails projects.
+   2. `?screenshot=1` loads fake Wails bindings in Vite.
+   3. Playwright (headless Chromium) captures each screen.
+   4. Tools live in `scripts/screenshots/`, not in `frontend/`.
+   5. `make screenshots` writes `.cache/screenshots/screen-*.png`.
+   6. Screenshots are not committed until the UI settles.
+3. Done when:
+   1. Splash and main menu PNGs are generated and look right.

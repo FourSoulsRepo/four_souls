@@ -1,0 +1,9 @@
+{
+  "name": "four-souls-screenshots",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "devDependencies": {
+    "playwright": "1.64.0"
+  }
+}

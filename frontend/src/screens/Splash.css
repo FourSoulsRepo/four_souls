@@ -1,0 +1,19 @@
+.splash {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 0 16px;
+  text-align: center;
+}
+
+.splash-notice {
+  max-width: 640px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.splash-notice a {
+  color: var(--fg);
+}

@@ -27,18 +27,9 @@ object to its use here, it will be removed.
 Buy the physical game: https://foursouls.com
 
 --------------------------------------------------------------------------
-Nunito — frontend/src/assets/fonts/nunito-v16-latin-regular.woff2
+Wails template images — build/appicon.png, build/windows/icon.ico
 --------------------------------------------------------------------------
-Copyright 2016 The Nunito Project Authors (contact@sansoxygen.com)
-Licensed under the SIL Open Font License, Version 1.1 — see
-frontend/src/assets/fonts/OFL.txt.
-Comes with the Wails project template.
-
---------------------------------------------------------------------------
-Wails template images — build/appicon.png, build/windows/icon.ico,
-frontend/src/assets/images/logo-universal.png
---------------------------------------------------------------------------
-Wails logo and default application icon from the Wails project template.
+Default application icon from the Wails project template.
 Copyright (c) Lea Anthony and the Wails contributors. MIT.
 Upstream: https://github.com/wailsapp/wails
 Placeholders; to be replaced by project artwork.
@@ -83,13 +74,23 @@ npm (bundled into the frontend):
 
 npm (build only, not shipped):
 
+  Playwright (scripts/screenshots)          Apache-2.0
+
   Vite, @vitejs/plugin-react                MIT
   TypeScript                                Apache-2.0
   @types/react, @types/react-dom            MIT
+  ESLint, @eslint/js                        MIT
+  typescript-eslint                         MIT
+  @eslint-react/eslint-plugin               MIT
+  eslint-plugin-react-hooks                 MIT
+  eslint-plugin-security                    Apache-2.0
+  eslint-plugin-no-unsanitized              MPL-2.0
+  globals                                   MIT
 
 --------------------------------------------------------------------------
 Build tools (not shipped)
 --------------------------------------------------------------------------
   Go toolchain                              BSD-3-Clause
   Wails CLI                                 MIT
+  golangci-lint                             GPL-3.0
   Node.js, npm                              MIT, Artistic-2.0

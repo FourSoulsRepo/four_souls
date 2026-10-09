@@ -1,4 +1,4 @@
-module four_souls
+module github.com/FourSoulsRepo/four_souls
 
 go 1.25.0
 
@@ -6,6 +6,7 @@ require github.com/wailsapp/wails/v2 v2.16.0
 
 require (
 	git.sr.ht/~jackmordaunt/go-toast/v2 v2.0.3 // indirect
+	github.com/FourSoulsRepo/rules_engine v0.0.0
 	github.com/bep/debounce v1.2.1 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
 	github.com/godbus/dbus/v5 v5.1.0 // indirect
@@ -35,4 +36,4 @@ require (
 	golang.org/x/text v0.39.0 // indirect
 )
 
-// replace github.com/wailsapp/wails/v2 v2.16.0 => /var/folders/kl/2wnjk4y54tg3k_k5y_2w9jzh0000gn/T/cursor-sandbox-cache/14001d2b6c48380f9597f4d7a6ce4714/go-mod
+replace github.com/FourSoulsRepo/rules_engine => ./pkg/rules_engine
