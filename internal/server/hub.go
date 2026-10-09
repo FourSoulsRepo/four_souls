@@ -79,6 +79,7 @@ type table struct {
 	id    string
 	host  string
 	sets  []string
+	opts  protocol.Options
 	seats []tableSeat
 }
 
@@ -287,8 +288,16 @@ func (h *Hub) create(c *Client, env protocol.Envelope) {
 		c.fail(env.ID, protocol.ErrMissingSets, "you do not have the card set "+missing)
 		return
 	}
+	var opts protocol.Options // the simple setup (GS-10)
+	if m.Options != nil {
+		opts = *m.Options
+	}
+	if err := checkOptions(&opts, setsOf(m.Sets), m.Seats); err != nil {
+		c.fail(env.ID, protocol.ErrBadSetup, err.Error())
+		return
+	}
 	h.seq++
-	t := &table{id: "g" + strconv.Itoa(h.seq), host: c.name, sets: m.Sets, seats: make([]tableSeat, m.Seats)}
+	t := &table{id: "g" + strconv.Itoa(h.seq), host: c.name, sets: m.Sets, opts: opts, seats: make([]tableSeat, m.Seats)}
 	h.tables = append(h.tables, t)
 	h.sit(c, t, 0)
 }
@@ -367,16 +376,12 @@ func (h *Hub) ready(c *Client, env protocol.Envelope) {
 
 // start turns a table into a running game.
 func (h *Hub) start(t *table) {
-	var sets []engine.CardSet
-	for _, code := range t.sets {
-		set, _ := cards.Find(code)
-		sets = append(sets, set)
-	}
 	seats := make([]roomSeat, len(t.seats))
 	for i, s := range t.seats {
 		seats[i] = roomSeat{name: s.name, token: s.token, client: s.client}
 	}
-	room, err := NewRoom(engine.Setup{Seed: seed(), Players: len(t.seats), Sets: sets, BonusSouls: true}, seats)
+	setup := engine.Setup{Seed: seed(), Players: len(t.seats), Sets: setsOf(t.sets), BonusSouls: !t.opts.NoBonusSouls}
+	room, err := NewRoom(setup, t.opts, seats)
 	if err != nil {
 		for _, s := range t.seats {
 			s.client.fail(0, protocol.ErrBadSetup, err.Error())
@@ -431,7 +436,7 @@ func (h *Hub) tableChanged(t *table) {
 	}
 	for i, s := range t.seats {
 		if s.client != nil {
-			s.client.send(protocol.TypeTable, 0, protocol.Table{Game: t.id, You: i, Seats: seats, Sets: t.sets})
+			s.client.send(protocol.TypeTable, 0, protocol.Table{Game: t.id, You: i, Seats: seats, Sets: t.sets, Options: &t.opts})
 		}
 	}
 }
@@ -475,3 +480,14 @@ func lacks(have, need []string) string {
 
 // seed is a new game's seed; the engine itself never reads the clock.
 func seed() uint64 { return uint64(time.Now().UnixNano()) } //nolint:gosec // a game seed, not a secret
+
+// setsOf looks up card sets by code; the codes were checked already.
+func setsOf(codes []string) []engine.CardSet {
+	var out []engine.CardSet
+	for _, code := range codes {
+		if set, ok := cards.Find(code); ok {
+			out = append(out, set)
+		}
+	}
+	return out
+}

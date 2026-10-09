@@ -40,6 +40,11 @@ const (
 	TypeReady  = "ready"  // client → server: ready, or not
 	TypeLeave  = "leave"  // client → server: leave the table before it starts
 	TypeTable  = "table"  // server → client: the table you sit at
+
+	// Match setup (6.6).
+	TypeSetup = "setup" // server → client: bans and picks before the game
+	TypeBan   = "ban"   // client → server: ban a character on your turn
+	TypePick  = "pick"  // client → server: pick one of your offered characters
 )
 
 // Envelope wraps every message. ID is set by the client on requests;
@@ -120,9 +125,65 @@ type Games struct {
 }
 
 // Create opens a game with 2 to 4 seats and the given card sets.
+// Options are the detailed setup; leaving them out is the simple one
+// (GS-10).
 type Create struct {
-	Seats int      `json:"seats"`
-	Sets  []string `json:"sets"`
+	Seats   int      `json:"seats"`
+	Sets    []string `json:"sets"`
+	Options *Options `json:"options,omitempty"`
+}
+
+// Picking modes (GS-01).
+const (
+	PickRandom = "random" // each player gets a random character
+	PickDraft  = "draft"  // each player is offered DraftSize and picks one
+)
+
+// Options is the detailed match setup (GS-01 to GS-04, GS-10).
+type Options struct {
+	Picking   string           `json:"picking,omitempty"`    // PickRandom (default) or PickDraft
+	DraftSize int              `json:"draft_size,omitempty"` // characters offered in a draft; default 3
+	BanRounds int              `json:"ban_rounds,omitempty"` // each player bans one character per round
+	BanTimer  int              `json:"ban_timer,omitempty"`  // seconds per ban; 0: no timer
+	HostBans  []engine.CardRef `json:"host_bans,omitempty"`  // never dealt (GS-02)
+	// NoBonusSouls plays without the 3 bonus souls (R-SETUP-06).
+	NoBonusSouls bool `json:"no_bonus_souls,omitempty"`
+}
+
+// Ban is one banned character; Seat is -1 for the host's list.
+type Ban struct {
+	Seat int            `json:"seat"`
+	Card engine.CardRef `json:"card"`
+}
+
+// Setup phases.
+const (
+	PhaseBan  = "ban"
+	PhasePick = "pick"
+)
+
+// Setup is the ban and pick phase before the game, sent to each seat
+// after every change. Bans are public; offers only go to their player.
+type Setup struct {
+	Phase    string           `json:"phase"`
+	Round    int              `json:"round,omitempty"`    // ban round, from 1
+	Turn     int              `json:"turn"`               // the seat that bans now; -1 when everyone picks
+	Pool     []engine.CardRef `json:"pool"`               // characters still in the game
+	Banned   []Ban            `json:"banned"`             // in order
+	Offers   []engine.CardRef `json:"offers,omitempty"`   // your draft choices
+	Picked   []bool           `json:"picked,omitempty"`   // who has picked, per seat
+	Deadline int64            `json:"deadline,omitempty"` // Unix ms when the ban turn ends; 0: no timer
+	Seats    []Seat           `json:"seats"`
+}
+
+// BanCard bans a character on the player's ban turn.
+type BanCard struct {
+	Card engine.CardRef `json:"card"`
+}
+
+// PickCard picks one of the player's offered characters.
+type PickCard struct {
+	Card engine.CardRef `json:"card"`
 }
 
 // Join sits down at a game.
@@ -138,10 +199,11 @@ type Ready struct {
 // Table is the table a player sits at, before the game starts. The
 // game starts by itself when every seat is taken and everyone is ready.
 type Table struct {
-	Game  string   `json:"game"`
-	You   int      `json:"you"` // your seat
-	Seats []Seat   `json:"seats"`
-	Sets  []string `json:"sets"`
+	Game    string   `json:"game"`
+	You     int      `json:"you"` // your seat
+	Seats   []Seat   `json:"seats"`
+	Sets    []string `json:"sets"`
+	Options *Options `json:"options,omitempty"`
 }
 
 // Error codes.
@@ -159,6 +221,8 @@ const (
 	ErrMissingSets    = "missing_sets" // the client lacks a card set (CD-03)
 	ErrBadSetup       = "bad_setup"
 	ErrAtTable        = "at_table" // already sitting at a table
+	ErrNotYourTurn    = "not_your_turn"
+	ErrBadCard        = "bad_card"
 )
 
 // Error reports a problem with a message. Rule is the rules ID when the

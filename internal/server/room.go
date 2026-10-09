@@ -23,30 +23,35 @@ type roomSeat struct {
 }
 
 type request struct {
-	client *Client
-	msg    []byte
-	leave  bool
-	attach string // the token of a client coming back
+	client  *Client
+	msg     []byte
+	leave   bool
+	attach  string // the token of a client coming back
+	timeout int    // a ban turn's timer ran out (its turn number)
 }
 
-// Room runs one game. Only its goroutine (Run) touches the game.
+// Room runs one game. Only its goroutine (Run) touches the game. It
+// starts with the ban and pick phase, if the setup has one (6.6).
 type Room struct {
 	in      chan request
 	done    chan struct{}
-	game    *engine.Game
+	setup   engine.Setup
+	opts    protocol.Options
+	match   *matchSetup  // the ban and pick phase; nil once playing
+	game    *engine.Game // nil until the characters are chosen
 	step    int
 	seats   []roomSeat
 	clients []*Client
 	tokens  []string // read by the hub; fixed when the room is made
 }
 
-// NewRoom starts a game for seated players.
-func NewRoom(setup engine.Setup, seats []roomSeat) (*Room, error) {
-	g, _, err := engine.NewGame(setup)
-	if err != nil {
-		return nil, fmt.Errorf("server: %w", err)
+// NewRoom prepares a game for seated players; it starts in Run. The
+// options must have passed checkOptions.
+func NewRoom(setup engine.Setup, opts protocol.Options, seats []roomSeat) (*Room, error) {
+	if setup.Players != len(seats) {
+		return nil, fmt.Errorf("server: %d seats for %d players", len(seats), setup.Players)
 	}
-	r := &Room{in: make(chan request, 64), done: make(chan struct{}), game: g, seats: seats}
+	r := &Room{in: make(chan request, 64), done: make(chan struct{}), setup: setup, opts: opts, seats: seats}
 	for i, s := range seats {
 		r.tokens = append(r.tokens, s.token)
 		if s.client != nil {
@@ -69,16 +74,19 @@ func (r *Room) send(req request) {
 	}
 }
 
-// Run sends everyone the first view, then handles requests until ctx
+// Run starts the setup or the game, then handles requests until ctx
 // ends; then it closes every connection.
 func (r *Room) Run(ctx context.Context) {
 	defer func() {
 		close(r.done)
+		if r.match != nil && r.match.timer != nil {
+			r.match.timer.Stop()
+		}
 		for _, c := range r.clients {
 			c.conn.Close()
 		}
 	}()
-	r.broadcast(nil)
+	r.beginSetup()
 	for {
 		select {
 		case <-ctx.Done():
@@ -98,6 +106,9 @@ func (r *Room) handle(req request) {
 	case req.attach != "":
 		r.attach(c, req.attach)
 		return
+	case req.timeout > 0:
+		r.banTimeout(req.timeout)
+		return
 	}
 	env, err := protocol.Decode(req.msg)
 	if err != nil {
@@ -109,6 +120,10 @@ func (r *Room) handle(req request) {
 		r.intent(c, env)
 	case protocol.TypeResync:
 		r.update(c, nil)
+	case protocol.TypeBan:
+		r.ban(c, env)
+	case protocol.TypePick:
+		r.pick(c, env)
 	default:
 		c.fail(env.ID, protocol.ErrBadMessage, "not during a game: "+env.Type)
 	}
@@ -129,12 +144,19 @@ func (r *Room) attach(c *Client, token string) {
 	c.seat = i
 	r.clients = append(r.clients, c)
 	r.broadcast(nil)
+	if r.match != nil {
+		r.broadcastSetup()
+	}
 }
 
 // intent applies a seated player's intent and updates everyone.
 func (r *Room) intent(c *Client, env protocol.Envelope) {
 	if c.seat < 0 {
 		c.fail(env.ID, protocol.ErrNotSeated, "only a seated player acts")
+		return
+	}
+	if r.game == nil {
+		c.fail(env.ID, protocol.ErrBadMessage, "the game has not started: bans and picks first")
 		return
 	}
 	var m protocol.Intent
@@ -158,27 +180,39 @@ func (r *Room) intent(c *Client, env protocol.Envelope) {
 	r.broadcast(events)
 }
 
-// broadcast sends every client its update.
+// broadcast sends every client its update; during the setup phase,
+// the setup.
 func (r *Room) broadcast(events []engine.Event) {
 	for _, c := range r.clients {
 		r.update(c, events)
 	}
 }
 
+// seatViews lists the seats' nicknames and connections.
+func (r *Room) seatViews() []protocol.Seat {
+	seats := make([]protocol.Seat, len(r.seats))
+	for i, s := range r.seats {
+		seats[i] = protocol.Seat{Seat: i, Name: s.name, Connected: s.client != nil}
+	}
+	return seats
+}
+
 // update sends one client its view, events and allowed intents.
 func (r *Room) update(c *Client, events []engine.Event) {
+	if r.game == nil {
+		if r.match != nil {
+			r.sendSetup(c)
+		}
+		return
+	}
 	v := engine.Viewer{Kind: engine.ViewSpectator}
 	var allowed []engine.Intent
 	if c.seat >= 0 {
 		v = engine.Viewer{Kind: engine.ViewPlayer, Player: engine.PlayerID(c.seat)}
 		allowed = r.game.Allowed(engine.PlayerID(c.seat))
 	}
-	seats := make([]protocol.Seat, len(r.seats))
-	for i, s := range r.seats {
-		seats[i] = protocol.Seat{Seat: i, Name: s.name, Connected: s.client != nil}
-	}
 	c.send(protocol.TypeUpdate, 0, protocol.Update{
-		Step: r.step, Events: engine.FilterEvents(events, v), View: r.game.View(v), Allowed: allowed, Seats: seats,
+		Step: r.step, Events: engine.FilterEvents(events, v), View: r.game.View(v), Allowed: allowed, Seats: r.seatViews(),
 	})
 }
 

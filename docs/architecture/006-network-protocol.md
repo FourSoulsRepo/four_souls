@@ -90,6 +90,7 @@ Use options 1, 3, 5 and 10.
    2. Spectators send `hello` with role `spectator` or `judge`.
    3. Lobby: `list`, `games`, `create`, `join`, `ready`, `leave`, `table`.
    4. A table starts by itself when every seat is taken and everyone is ready.
+   5. Match setup: `create` carries options; then `setup`, `ban`, `pick` (6.6).
 9. Playing over the internet, until a relay exists
    1. A virtual LAN (Tailscale, ZeroTier, Hamachi, Radmin VPN), or port forwarding.
    2. Or a dedicated server on a rented VPS.
