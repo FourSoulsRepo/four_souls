@@ -23,6 +23,10 @@ type StackItem struct {
 	Roll       int       `json:"roll,omitempty"` // current result of a roll
 	Amount     int       `json:"amount,omitempty"`
 	Label      string    `json:"label,omitempty"`
+	Target     Target    `json:"target"`
+	// Attack marks attack rolls and combat damage; they leave the stack
+	// when the attack ends (R-ATK-15).
+	Attack bool `json:"attack,omitempty"`
 }
 
 // Events about the stack.
@@ -39,7 +43,11 @@ func (g *Game) push(it StackItem) int {
 	it.ID = g.StackSeq
 	g.Stack = append(g.Stack, it)
 	g.emit(Event{Kind: EvStackAdded, Player: it.Controller, Object: it.Source, Card: it.Card, Amount: it.Roll, Text: it.Label})
-	g.openWindow(it.Controller)
+	start := it.Controller
+	if start == NoPlayer {
+		start = g.Turn.Active // the game's items: active player first (R-PRIO-02)
+	}
+	g.givePriority(start)
 	return it.ID
 }
 
@@ -49,6 +57,10 @@ func (g *Game) resolveTop() {
 	n := len(g.Stack)
 	it := g.Stack[n-1]
 	g.Stack = g.Stack[:n-1]
+	g.emit(Event{Kind: EvStackResolved, Player: it.Controller, Object: it.Source, Card: it.Card, Amount: it.Roll, Text: it.Label})
+	// Priority after a resolution starts with the active player
+	// (R-STACK-04); items pushed by the resolution set it again.
+	g.givePriority(g.Turn.Active)
 	switch it.Kind {
 	case StackLoot:
 		// Loot abilities come with effect blocks (step 4.7); then the
@@ -56,18 +68,25 @@ func (g *Game) resolveTop() {
 		g.discard(it.Source, LootDeck)
 	case StackRoll:
 		// The result is final once it resolves (R-DICE-06).
-	case StackAbility, StackTrigger, StackDamage, StackDeath:
-		// Filled in by steps 4.5 to 4.7.
+		if it.Attack {
+			g.resolveAttackRoll(it)
+		}
+	case StackDamage:
+		g.resolveDamage(it)
+	case StackDeath:
+		g.resolveDeath(it)
+	case StackAbility, StackTrigger:
+		// Filled in by step 4.7.
 	}
-	g.emit(Event{Kind: EvStackResolved, Player: it.Controller, Object: it.Source, Card: it.Card, Amount: it.Roll, Text: it.Label})
-	if !g.Over {
-		g.openWindow(g.Turn.Active)
+	if len(g.Queue) > 0 && g.Waiting.Kind == PromptPriority {
+		// Queued steps (e.g. death rewards) happen before anyone acts.
+		g.givePriority(g.Priority.Holder)
 	}
 }
 
 // roll rolls a D6 for p and puts the roll on the stack (R-DICE-02).
 func (g *Game) roll(p PlayerID, label string) int {
-	r := g.RNG.D6()
+	r := g.d6()
 	g.emit(Event{Kind: EvDiceRolled, Player: p, Amount: r, Text: label})
 	return g.push(StackItem{Kind: StackRoll, Controller: p, Roll: r, Label: label})
 }
@@ -80,4 +99,16 @@ func (g *Game) playLoot(p PlayerID, id ObjectID) {
 	card := g.Object(nid).Card
 	g.emit(Event{Kind: EvLootPlayed, Player: p, Object: nid, Card: card})
 	g.push(StackItem{Kind: StackLoot, Controller: p, Source: nid, Card: card})
+}
+
+// givePriority opens a window for p, or waits until the action queue is
+// empty: queued steps (such as death steps) happen before anyone acts
+// (R-DEATH-10).
+func (g *Game) givePriority(p PlayerID) {
+	if len(g.Queue) > 0 {
+		g.Priority = Priority{Deferred: true, Holder: p}
+		g.Waiting = Prompt{}
+		return
+	}
+	g.openWindow(p)
 }

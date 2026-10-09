@@ -11,17 +11,18 @@ const (
 	PromptPriority            // the player may act or pass (R-PRIO-01)
 	PromptDiscard             // the player discards Count loot cards
 	PromptGameOver            // nothing more to do
-	// PromptChooseReplacement asks which replacement applies first
-	// (R-ABIL-33); Options describe them.
-	PromptChooseReplacement
+	// PromptChoose asks the player to pick one of Options; Purpose says
+	// what for (see Choice).
+	PromptChoose
 )
 
 // Prompt names who must answer and what kind of answer is expected.
 type Prompt struct {
-	Kind    PromptKind `json:"kind"`
-	Player  PlayerID   `json:"player"`
-	Count   int        `json:"count,omitempty"`
-	Options []string   `json:"options,omitempty"`
+	Kind    PromptKind    `json:"kind"`
+	Player  PlayerID      `json:"player"`
+	Count   int           `json:"count,omitempty"`
+	Options []string      `json:"options,omitempty"`
+	Purpose ChoicePurpose `json:"purpose,omitempty"`
 }
 
 // IntentKind is what a player wants to do.
@@ -34,6 +35,7 @@ const (
 	IntentDiscard                    // discard the chosen loot cards
 	IntentPlayLoot                   // play the loot card in Objects[0] (R-CARD-08)
 	IntentChoose                     // pick option Choice of the prompt
+	IntentAttack                     // declare an attack (R-ATK-01)
 )
 
 // Intent is one player's request. The engine checks it against the
@@ -113,12 +115,19 @@ func (g *Game) check(in Intent) error {
 		if in.Player != g.Turn.Active || g.Turn.LootPlays < 1 {
 			return refuse("R-CARD-08", "no loot play available")
 		}
-	case IntentChoose:
-		if w.Kind != PromptChooseReplacement {
-			return refuse("R-ABIL-33", "no choice is asked for")
+	case IntentAttack:
+		if w.Kind != PromptPriority || !g.inOpenActionPhase() || in.Player != g.Turn.Active {
+			return refuse("R-ATK-01", "only the active player attacks, in the action phase, with an empty stack")
 		}
-		if in.Choice < 0 || in.Choice >= len(g.Choices) {
-			return refuse("R-ABIL-33", "choose one of the %d options", len(g.Choices))
+		if g.Turn.Attacks < 1 {
+			return refuse("R-TURN-07", "no attack left this turn")
+		}
+	case IntentChoose:
+		if w.Kind != PromptChoose || g.Choice == nil {
+			return refuse("R-PRIO-01", "no choice is asked for")
+		}
+		if in.Choice < 0 || in.Choice >= len(w.Options) {
+			return refuse(g.Choice.Rule, "choose one of the %d options", len(w.Options))
 		}
 	default:
 		return refuse("R-PRIO-01", "unknown intent")
@@ -154,9 +163,9 @@ func (g *Game) apply(in Intent) {
 	case IntentPlayLoot:
 		g.playLoot(in.Player, in.Objects[0])
 	case IntentChoose:
-		ref := g.Choices[in.Choice]
-		g.Choices, g.Waiting = nil, Prompt{}
-		g.applyReplacement(ref)
+		g.answer(in.Choice)
+	case IntentAttack:
+		g.declareAttack(in.Player)
 	}
 }
 

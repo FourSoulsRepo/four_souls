@@ -7,9 +7,16 @@ type ActionKind int
 
 // The action kinds; more come with combat and effect blocks.
 const (
-	ActGainCents ActionKind = iota // R-MECH-36
-	ActLoseCents                   // R-MECH-42
-	ActLoot                        // R-CARD-06
+	ActGainCents      ActionKind = iota // R-MECH-36
+	ActLoseCents                        // R-MECH-42
+	ActLoot                             // R-CARD-06
+	ActGainTreasure                     // R-CARD-02
+	ActBecomeSoul                       // a dead monster becomes a soul (R-DEATH-08)
+	ActDiscardObject                    // put an object into its discard (R-ZONE-06)
+	ActRefillSlots                      // R-SHOP-06
+	ActPenaltyItem                      // death penalty: destroy an item (R-DEATH-14)
+	ActPenaltyLoot                      // death penalty: discard a loot card
+	ActDeactivateTaps                   // death penalty: deactivate ↷ objects
 )
 
 // Action is a pending change. It sits in the queue, may be rewritten by
@@ -110,8 +117,7 @@ func (g *Game) processQueue() {
 		for i, r := range refs {
 			opts[i] = g.replacement(r).Text
 		}
-		g.Choices = refs
-		g.Waiting = Prompt{Kind: PromptChooseReplacement, Player: g.affected(a), Options: opts}
+		g.ask(Choice{Purpose: ChooseReplacement, Player: g.affected(a), Rule: "R-ABIL-33", Replacements: refs}, opts)
 	case len(refs) == 1:
 		g.applyReplacement(refs[0])
 	default:
@@ -144,5 +150,56 @@ func (g *Game) perform(a Action) {
 		g.emit(Event{Kind: EvLostCents, Player: a.Player, Amount: n})
 	case ActLoot:
 		g.loot(a.Player, a.Amount)
+	case ActGainTreasure:
+		g.gainTreasure(a.Player, a.Amount)
+	case ActBecomeSoul:
+		nid := g.move(a.Object, Zone{Kind: ZoneInPlay}, a.Player)
+		g.Object(nid).Role = RoleSoul
+		g.Players[a.Player].InPlay = append(g.Players[a.Player].InPlay, nid)
+		g.emit(Event{Kind: EvGainedSoul, Player: a.Player, Object: nid, Card: g.Object(nid).Card})
+	case ActDiscardObject:
+		if deck, ok := g.kindOf(a.Object).Deck(); ok {
+			g.discard(a.Object, deck)
+		}
+	case ActRefillSlots:
+		g.refillSlots()
+	case ActPenaltyItem:
+		var items []ObjectID
+		for _, id := range g.Players[a.Player].InPlay {
+			if g.Object(id).Role == RoleItem && !g.def(id).Eternal {
+				items = append(items, id)
+			}
+		}
+		if len(items) > 0 {
+			g.ask(Choice{Purpose: ChoosePenaltyItem, Player: a.Player, Rule: "R-DEATH-14", Objects: items}, g.labels(items))
+		}
+	case ActPenaltyLoot:
+		if hand := g.Players[a.Player].Hand; len(hand) > 0 {
+			g.ask(Choice{Purpose: ChoosePenaltyLoot, Player: a.Player, Rule: "R-DEATH-14", Objects: append([]ObjectID(nil), hand...)}, g.labels(hand))
+		}
+	case ActDeactivateTaps:
+		pl := g.Players[a.Player]
+		g.Object(pl.Character).Charged = false
+		for _, id := range pl.InPlay {
+			if g.Object(id).Role == RoleItem && g.def(id).Tap {
+				g.Object(id).Charged = false
+			}
+		}
+		g.emit(Event{Kind: EvDeactivated, Player: a.Player})
+	}
+}
+
+// gainTreasure puts the top n treasure cards into play under p (R-CARD-02).
+func (g *Game) gainTreasure(p PlayerID, n int) {
+	for range n {
+		id, ok := g.drawTop(TreasureDeck)
+		if !ok {
+			return
+		}
+		nid := g.move(id, Zone{Kind: ZoneInPlay}, p)
+		o := g.Object(nid)
+		o.Role, o.Charged = RoleItem, true
+		g.Players[p].InPlay = append(g.Players[p].InPlay, nid)
+		g.emit(Event{Kind: EvGainedTreasure, Player: p, Object: nid, Card: o.Card})
 	}
 }

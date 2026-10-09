@@ -24,6 +24,7 @@ type Turn struct {
 	Attacks     int      `json:"attacks"`
 	Purchases   int      `json:"purchases"`
 	EndDeclared bool     `json:"end_declared,omitempty"`
+	DeathEnd    bool     `json:"death_end,omitempty"` // the active player died (R-DEATH-16)
 	// entered is true once the current step's automatic work is done.
 	Entered bool `json:"entered,omitempty"`
 }
@@ -33,6 +34,8 @@ type Priority struct {
 	Open   bool     `json:"open"`
 	Holder PlayerID `json:"holder"`
 	Passes int      `json:"passes"` // passes in a row
+	// Deferred: priority goes to Holder once the action queue is empty.
+	Deferred bool `json:"deferred,omitempty"`
 }
 
 // next returns the player after p in turn order (R-TURN-01).
@@ -88,9 +91,16 @@ func (g *Game) windowClosed() {
 	case StepLootWindow:
 		g.goTo(StepAction)
 	case StepAction:
-		if g.Turn.EndDeclared {
+		switch {
+		case g.Turn.DeathEnd, g.Turn.EndDeclared:
+			// After an active player's death the turn goes to its end phase
+			// once the stack has resolved (R-DEATH-16).
 			g.goTo(StepEndTriggers)
-		} else {
+		case g.Attack.On && !g.Attack.Started:
+			g.askAttackTarget() // R-ATK-02
+		case g.Attack.Started:
+			g.continueAttack() // R-ATK-11
+		default:
 			// The action phase only ends when the active player ends it (R-TURN-09).
 			g.openWindow(g.Turn.Active)
 		}
@@ -107,7 +117,8 @@ func (g *Game) goTo(s Step) {
 // inOpenActionPhase is true when the active player may attack, purchase or
 // end the turn: action phase, empty stack (R-TURN-06).
 func (g *Game) inOpenActionPhase() bool {
-	return g.Turn.Step == StepAction && !g.Turn.EndDeclared && len(g.Stack) == 0
+	return g.Turn.Step == StepAction && !g.Turn.EndDeclared && !g.Turn.DeathEnd &&
+		!g.Attack.On && len(g.Stack) == 0
 }
 
 // maxRunSteps stops a run loop that never settles; that is always a bug.
@@ -124,6 +135,10 @@ func (g *Game) run() {
 		}
 		if len(g.Queue) > 0 {
 			g.processQueue()
+			continue
+		}
+		if g.Priority.Deferred {
+			g.openWindow(g.Priority.Holder)
 			continue
 		}
 		if g.Turn.Entered {
@@ -217,6 +232,7 @@ func (g *Game) discardFromHand(p PlayerID, id ObjectID) {
 func (g *Game) healAll() {
 	for i := range g.Players {
 		g.Players[i].Damage = 0
+		g.Players[i].Dead = false // alive again (R-DEATH-19)
 	}
 	for i := range g.Objects {
 		if g.Objects[i].Zone.Kind == ZoneInPlay {

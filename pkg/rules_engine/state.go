@@ -107,6 +107,7 @@ type Player struct {
 	// InPlay holds items, souls and curses the player controls.
 	InPlay []ObjectID `json:"in_play"`
 	Damage int        `json:"damage,omitempty"` // tied to the player (R-MECH-19)
+	Dead   bool       `json:"dead,omitempty"`   // died this turn (R-DEATH-17)
 }
 
 // Slot is one table slot; the last card is on top and in play, the rest
@@ -136,8 +137,11 @@ type Game struct {
 
 	// Queue holds pending actions that cards may rewrite (A-05).
 	Queue []Action `json:"queue,omitempty"`
-	// Choices are what the current choose prompt picks from.
-	Choices []ReplacementRef `json:"choices,omitempty"`
+	// Attack is the attack in progress (R-ATK).
+	Attack AttackState `json:"attack"`
+
+	// Choice is the open question of a choose prompt.
+	Choice *Choice `json:"choice,omitempty"`
 
 	// Stack: the last item is on top (R-STACK-02).
 	Stack    []StackItem `json:"stack"`
@@ -157,6 +161,8 @@ type Game struct {
 
 	cards  cardIndex
 	events []Event
+	// forcedRolls lets tests decide dice results; never set in games.
+	forcedRolls []int
 }
 
 // newObject adds a card as a new object and returns its ID.

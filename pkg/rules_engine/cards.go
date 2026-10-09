@@ -53,6 +53,12 @@ type CardDef struct {
 
 	// Replacements are the card's replacement effects (R-ABIL-29).
 	Replacements []Replacement
+
+	// Rewards are gained by the active player when it dies (R-CARD-31).
+	Rewards []Reward
+	// Tap marks cards with a ↷ ability; the death penalty deactivates
+	// them (R-DEATH-14). Characters always have one.
+	Tap bool
 }
 
 // CardSet is a set of card definitions, e.g. the Base Game.
@@ -87,4 +93,33 @@ func (idx cardIndex) find(ref CardRef) (CardDef, bool) {
 		}
 	}
 	return CardDef{}, false
+}
+
+// RewardKind is what a reward box gives (R-CARD-31).
+type RewardKind int
+
+// The reward kinds.
+const (
+	RewardCents RewardKind = iota
+	RewardLoot
+	RewardTreasure
+)
+
+// Reward is one line of a reward box, e.g. 3 cents.
+type Reward struct {
+	Kind   RewardKind
+	Amount int
+}
+
+func (r Reward) action() ActionKind {
+	switch r.Kind {
+	case RewardLoot:
+		return ActLoot
+	case RewardTreasure:
+		return ActGainTreasure
+	case RewardCents:
+		return ActGainCents
+	default:
+		return ActGainCents
+	}
 }

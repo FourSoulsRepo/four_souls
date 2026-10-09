@@ -65,7 +65,7 @@ Ideas: A-05 – A-08, N-04, LR-04, LR-07, TS-05.
 3. Done when:
    1. Prevent-damage and replace tests pass with fake cards.
 
-### [ ] 4.6 Combat and death
+### [x] 4.6 Combat and death
 
 1. Goal: attacks, damage, death, rewards.
 2. Tasks:
@@ -146,3 +146,15 @@ Ideas: A-05 – A-08, N-04, LR-04, LR-07, TS-05.
 3. Done when:
    1. Local fuzz runs for 10 minutes without failures.
    2. Wiki: how to run fuzzing locally.
+
+### [ ] 4.13 Purchasing
+
+1. Goal: buying items (R-SHOP); missing from the first plan of step 4.
+2. Tasks:
+   1. Declare a purchase; priority passes before the choice (R-SHOP-02).
+   2. Choose a shop item or the top of the treasure deck.
+   3. Price fixed at declaration time; 10¢ by default (R-SHOP-03).
+   4. Pay and gain, or fail when unable to pay (R-SHOP-04).
+   5. One purchase per turn by default (R-SHOP-05); refill the shop.
+3. Done when:
+   1. Tests cover buying from the shop and the deck, and failing to pay.

@@ -145,7 +145,7 @@ func TestPlayerOrdersSeveralReplacements(t *testing.T) {
 		before := g.Players[0].Cents
 		runAction(g, Action{Kind: ActGainCents, Player: 0, Amount: 3})
 		pr := g.Prompt()
-		if pr.Kind != PromptChooseReplacement || pr.Player != 0 || len(pr.Options) != 2 {
+		if pr.Kind != PromptChoose || pr.Purpose != ChooseReplacement || pr.Player != 0 || len(pr.Options) != 2 {
 			t.Fatalf("prompt %+v; the affected player orders the replacements (R-ABIL-33)", pr)
 		}
 		choice := 0
