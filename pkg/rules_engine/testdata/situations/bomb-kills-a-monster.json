@@ -1,0 +1,11 @@
+{
+  "title": "A Bomb!-like loot kills a 1-HP monster; the loot card leaves the hand",
+  "sets": ["test", "abilities"],
+  "setup": {
+    "players": [{"character": "hero_a", "hand": ["bomb_loot"]}, {"character": "hero_b"}],
+    "active": 0,
+    "monsters": ["dummy", "gaper"]
+  },
+  "action": {"player": 0, "kind": "play", "card": "bomb_loot", "choices": ["dummy"]},
+  "expect": {"allowed": true, "after": [{"player": 0, "hand": 0}]}
+}

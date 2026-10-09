@@ -3,7 +3,7 @@
 Goal: games run on a server; clients only send intents.
 Tested with headless Go clients before the UI exists.
 
-Ideas: N-01 – N-09, CD-02, CD-03, GS-01 – GS-06, GS-09, GS-10, A-12, RP-01, RP-03, RP-05, RP-07 – RP-09, RP-12.
+Ideas: N-01 – N-09, N-11, CD-02, CD-03, GS-01 – GS-06, GS-09, GS-10, A-12, RP-01, RP-03, RP-05, RP-07 – RP-09, RP-12.
 
 ---
 
@@ -123,3 +123,16 @@ Ideas: N-01 – N-09, CD-02, CD-03, GS-01 – GS-06, GS-09, GS-10, A-12, RP-01, 
    3. Include drops and reconnects.
 3. Done when:
    1. Full games finish and produce valid records.
+
+### [ ] 6.11 Save and continue later
+
+1. Goal: friends finish a game on another day (N-11).
+2. Tasks:
+   1. Host saves an unfinished game: engine `Save` plus seats.
+   2. The save stays with the host or server; players get no copy.
+   3. Loading opens a lobby with the saved seats.
+   4. Players reclaim their own seats; resume when all are back.
+   5. Refuse saves from an incompatible version with a clear message.
+3. Done when:
+   1. Headless test: save mid-stack, load, finish; checksums match.
+   2. Use case: save and continue a game.

@@ -7,7 +7,7 @@ Ideas: A-05 – A-08, N-04, LR-04, LR-07, TS-05.
 
 ---
 
-### [ ] 4.1 Engine design ADR
+### [x] 4.1 Engine design ADR
 
 1. Goal: agree on the design before code.
 2. Tasks:
@@ -20,7 +20,7 @@ Ideas: A-05 – A-08, N-04, LR-04, LR-07, TS-05.
 3. Done when:
    1. **Owner** accepts the ADR.
 
-### [ ] 4.2 State and zones
+### [x] 4.2 State and zones
 
 1. Goal: the game state types.
 2. Tasks:
@@ -32,7 +32,7 @@ Ideas: A-05 – A-08, N-04, LR-04, LR-07, TS-05.
 3. Done when:
    1. Same seed gives the same shuffles in tests.
 
-### [ ] 4.3 Game setup and turn structure
+### [x] 4.3 Game setup and turn structure
 
 1. Goal: a turn loop with no card effects.
 2. Tasks:
@@ -44,7 +44,7 @@ Ideas: A-05 – A-08, N-04, LR-04, LR-07, TS-05.
 3. Done when:
    1. A game with fake cards reaches a winner.
 
-### [ ] 4.4 Stack and priority
+### [x] 4.4 Stack and priority
 
 1. Goal: responses work like the rules say.
 2. Tasks:
@@ -55,7 +55,7 @@ Ideas: A-05 – A-08, N-04, LR-04, LR-07, TS-05.
 3. Done when:
    1. Tests cover nested responses.
 
-### [ ] 4.5 Pending actions and rewriting
+### [x] 4.5 Pending actions and rewriting
 
 1. Goal: the MTG Arena "whiteboard" pattern (A-05).
 2. Tasks:
@@ -65,7 +65,7 @@ Ideas: A-05 – A-08, N-04, LR-04, LR-07, TS-05.
 3. Done when:
    1. Prevent-damage and replace tests pass with fake cards.
 
-### [ ] 4.6 Combat and death
+### [x] 4.6 Combat and death
 
 1. Goal: attacks, damage, death, rewards.
 2. Tasks:
@@ -77,7 +77,7 @@ Ideas: A-05 – A-08, N-04, LR-04, LR-07, TS-05.
 3. Done when:
    1. Combat tests match the rules text IDs.
 
-### [ ] 4.7 Effect blocks and card definitions
+### [x] 4.7 Effect blocks and card definitions
 
 1. Goal: cards as data (A-06).
 2. Tasks:
@@ -91,7 +91,7 @@ Ideas: A-05 – A-08, N-04, LR-04, LR-07, TS-05.
    1. Fake cards built only from blocks pass tests.
    2. Wiki: "Effect blocks" reference.
 
-### [ ] 4.8 Allowed actions and intents
+### [x] 4.8 Allowed actions and intents
 
 1. Goal: what each player may do now (N-04).
 2. Tasks:
@@ -102,7 +102,7 @@ Ideas: A-05 – A-08, N-04, LR-04, LR-07, TS-05.
    1. Every allowed action is accepted when sent.
    2. Every other action is rejected with a reason.
 
-### [ ] 4.9 View filter
+### [x] 4.9 View filter
 
 1. Goal: one function builds every view (A-07).
 2. Tasks:
@@ -112,7 +112,7 @@ Ideas: A-05 – A-08, N-04, LR-04, LR-07, TS-05.
 3. Done when:
    1. Tests prove no view leaks hidden data.
 
-### [ ] 4.10 Events and checksums
+### [x] 4.10 Events and checksums
 
 1. Goal: a step log for records and animations.
 2. Tasks:
@@ -122,7 +122,7 @@ Ideas: A-05 – A-08, N-04, LR-04, LR-07, TS-05.
 3. Done when:
    1. Replaying events rebuilds the same checksum.
 
-### [ ] 4.11 Situation payload and runner
+### [x] 4.11 Situation payload and runner
 
 1. Goal: payload tests (LR-04, LR-07).
 2. Tasks:
@@ -133,8 +133,12 @@ Ideas: A-05 – A-08, N-04, LR-04, LR-07, TS-05.
 3. Done when:
    1. Payload tests run in CI.
    2. Wiki: "Situation payload" reference.
+4. Result:
+   1. `RunSituation` answers allowed or not, with reason and rule ID.
+   2. Five example payloads on fake cards run in `go test`.
+   3. No resolved cases yet: all 3.8 cases are parked.
 
-### [ ] 4.12 Determinism and fuzz harness
+### [x] 4.12 Determinism and fuzz harness
 
 1. Goal: catch bugs no one thought of (A-08, TS-05).
 2. Tasks:
@@ -146,3 +150,15 @@ Ideas: A-05 – A-08, N-04, LR-04, LR-07, TS-05.
 3. Done when:
    1. Local fuzz runs for 10 minutes without failures.
    2. Wiki: how to run fuzzing locally.
+
+### [x] 4.13 Purchasing
+
+1. Goal: buying items (R-SHOP); missing from the first plan of step 4.
+2. Tasks:
+   1. Declare a purchase; priority passes before the choice (R-SHOP-02).
+   2. Choose a shop item or the top of the treasure deck.
+   3. Price fixed at declaration time; 10¢ by default (R-SHOP-03).
+   4. Pay and gain, or fail when unable to pay (R-SHOP-04).
+   5. One purchase per turn by default (R-SHOP-05); refill the shop.
+3. Done when:
+   1. Tests cover buying from the shop and the deck, and failing to pay.

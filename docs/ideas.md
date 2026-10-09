@@ -251,6 +251,16 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
 10. N-10. Phase stops (to consider).
    1. Player marks phases where the game always stops for them.
    2. Example: always stop at the opponent's end phase.
+11. N-11. Save a game and continue it later with the same friends.
+   1. The host saves an unfinished game at any moment.
+   2. The save file stays with the host or server.
+   3. Players get no copy: it holds every hand (RP-05).
+   4. Loading opens a lobby with the saved seats.
+   5. Each player takes back their own seat.
+   6. The game resumes when every seat is taken.
+   7. It continues exactly as saved: stack, prompts, dice state.
+   8. A save made by an older game version may not load.
+   9. Builds on the engine save (step 4) and records (RP-08).
 
 ## Learning
 
@@ -485,6 +495,7 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    2. Used by outdated viewers and judges (SP-05).
 10. CD-10. Fan-made sets: maybe later.
    1. Only after all official cards are done.
+   2. Cards are Go code; adding one must be easy after cloning (ADR 005).
 11. CD-11. Alt art (later).
    1. Same stats and text: same card, different image.
    2. Different stats or text: a new card or a new version (CD-08).

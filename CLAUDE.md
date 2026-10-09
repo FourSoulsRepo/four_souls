@@ -5,7 +5,7 @@
    2. Network play, 2–4 players.
    3. Wails v2: Go backend, React + TypeScript frontend.
 2. Stage
-   1. Step 1 (foundation) done; no game code yet.
+   1. Steps 1–4 done; the rules engine is in `pkg/rules_engine`.
    2. Ideas live in `docs/ideas.md`.
    3. Roadmap: `docs/roadmap.md`; detailed steps in `docs/roadmap/`.
    4. Decisions: `docs/architecture/` (see `INDEX.md`).
@@ -39,6 +39,9 @@
    4. Never start the next step without approval.
    5. One branch per global step: `step-NN-short-name`.
    6. After approval: merge into `main` with `--no-ff`, never squash.
+   7. Before every commit: tests and lint must pass.
+   8. Gate on the tool's own exit code: `make lint && git commit …`.
+   9. Never pipe lint through `grep` or `tail` in a gate; it hides failures.
 6. Licenses
    1. Code is MIT (`LICENSE`).
    2. `NOTICE` lists every third-party item and its license.

@@ -99,7 +99,8 @@ Steps 9–14 can be reordered after the MVP.
 5. Auto-skip, "Skip all", response timer.
 6. Reconnect, pause, vote to kick.
 7. Match records: autosave, retention, checksums.
-8. Ideas: N-01 – N-09, CD-02, CD-03, GS-01 – GS-06, GS-09, GS-10, A-12, RP-01, RP-03, RP-05, RP-07 – RP-09, RP-12.
+8. Ideas: N-01 – N-09, N-11, CD-02, CD-03, GS-01 – GS-06, GS-09, GS-10, A-12, RP-01, RP-03, RP-05, RP-07 – RP-09, RP-12.
+9. Save a game and continue later with the same players.
 
 ## 7. Client
 
@@ -111,7 +112,7 @@ Steps 9–14 can be reordered after the MVP.
 6. Settings: fullscreen, theme, game mat, animation speed.
 7. Touch-friendly; tested on Linux.
 8. Internal play-test build on the cards done so far.
-8. Ideas: M-01, V-01 – V-08, ST-01 – ST-03, ST-05, B-06.
+8. Ideas: M-01, V-01 – V-08, ST-01 – ST-03, ST-05, B-06, N-11.
 
 ## 8. First release (MVP)
 

@@ -1,0 +1,14 @@
+{
+  "title": "Golden Razor Blade-like item: pay 5 cents, deal 1 damage to a player",
+  "sets": ["test", "abilities"],
+  "setup": {
+    "players": [
+      {"character": "hero_a", "items": ["razor"], "cents": 7},
+      {"character": "hero_b"}
+    ],
+    "active": 0,
+    "monsters": ["gaper", "gaper"]
+  },
+  "action": {"player": 0, "kind": "activate", "card": "razor", "choices": ["player 2 (hero_b)"]},
+  "expect": {"allowed": true, "after": [{"player": 0, "cents": 2}, {"player": 1, "damage": 1}]}
+}
