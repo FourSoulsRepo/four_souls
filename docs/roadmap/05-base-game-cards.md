@@ -28,7 +28,7 @@ Ideas: R-05, TS-01 – TS-04.
 3. Done when:
    1. Report regenerates with one command.
 
-### [ ] 5.3 Characters and starting items
+### [x] 5.3 Characters and starting items
 
 1. Goal: all Base Game characters playable.
 2. Tasks:

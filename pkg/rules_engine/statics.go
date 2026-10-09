@@ -37,6 +37,11 @@ func MonstersHave(s Stat, n int) Static {
 // bonus sums the statics in play that change stat for the subject.
 func (g *Game) bonus(stat Stat, p PlayerID, subject ObjectID) int {
 	total := 0
+	for _, b := range g.Boosts {
+		if b.Stat == stat && ((b.Object != 0 && b.Object == subject) || (b.Object == 0 && subject == 0 && b.Player == p)) {
+			total += b.Amount
+		}
+	}
 	for _, id := range g.inPlay() {
 		o := g.Object(id)
 		d, ok := g.cards.find(o.Card)

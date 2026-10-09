@@ -37,6 +37,12 @@ func (g *Game) def(id ObjectID) CardDef {
 	return d
 }
 
+// eternal reports whether an object is eternal: printed or gained
+// (R-ABIL-18).
+func (g *Game) eternal(id ObjectID) bool {
+	return g.def(id).Eternal || g.Object(id).Eternal
+}
+
 // HP is an object's remaining health.
 func (g *Game) HP(id ObjectID) int {
 	return max(g.def(id).HP+g.bonus(StatMonsterHP, NoPlayer, id)-g.Object(id).Damage, 0)
@@ -47,8 +53,8 @@ func (g *Game) PlayerHP(p PlayerID) int {
 	return max(g.def(g.Players[p].Character).HP+g.bonus(StatPlayerHP, p, 0)-g.Players[p].Damage, 0)
 }
 
-// evasion is the dice check to hit a monster, between 1 and 6 (R-ATK-18).
-func (g *Game) evasion(id ObjectID) int {
+// Evasion is the dice check to hit a monster, between 1 and 6 (R-ATK-18).
+func (g *Game) Evasion(id ObjectID) int {
 	return min(max(g.def(id).DC+g.bonus(StatMonsterDC, NoPlayer, id), 1), 6)
 }
 
@@ -57,8 +63,8 @@ func (g *Game) PlayerATK(p PlayerID) int {
 	return max(g.def(g.Players[p].Character).ATK+g.bonus(StatPlayerATK, p, 0), 0)
 }
 
-// monsterATK is a monster's attack.
-func (g *Game) monsterATK(id ObjectID) int {
+// MonsterATK is a monster's attack.
+func (g *Game) MonsterATK(id ObjectID) int {
 	return max(g.def(id).ATK+g.bonus(StatMonsterATK, NoPlayer, id), 0)
 }
 
@@ -147,7 +153,7 @@ func (g *Game) resolveAttackRoll(it StackItem) {
 		return
 	}
 	p := g.Turn.Active
-	if it.Roll >= g.evasion(it.Target.Object) {
+	if it.Roll >= g.Evasion(it.Target.Object) {
 		if atk := g.PlayerATK(p); atk > 0 {
 			g.push(StackItem{
 				Kind: StackDamage, Controller: p, Amount: atk, Label: "combat damage", Attack: true,
@@ -157,7 +163,7 @@ func (g *Game) resolveAttackRoll(it StackItem) {
 		return
 	}
 	// Nobody deals 0 damage (R-MECH-20).
-	if atk := g.monsterATK(it.Target.Object); atk > 0 {
+	if atk := g.MonsterATK(it.Target.Object); atk > 0 {
 		g.push(StackItem{
 			Kind: StackDamage, Controller: NoPlayer, Source: it.Target.Object, Amount: atk,
 			Label: "combat damage", Attack: true, Target: Target{Player: p, IsPlayer: true},
@@ -197,6 +203,9 @@ func (g *Game) endAttack() {
 // resolveDamage marks damage; an object at 0 HP gets its death on the
 // stack (R-MECH-15, R-MECH-16, R-DEATH-01).
 func (g *Game) resolveDamage(it StackItem) {
+	if g.useShield(it.Target) {
+		return
+	}
 	if it.Target.IsPlayer {
 		p := it.Target.Player
 		hp := g.PlayerHP(p)
@@ -219,9 +228,21 @@ func (g *Game) resolveDamage(it StackItem) {
 	n := min(it.Amount, g.HP(id))
 	o.Damage += n
 	g.emit(Event{Kind: EvDamaged, Player: NoPlayer, Object: id, Card: o.Card, Amount: n})
-	if g.HP(id) == 0 && !g.def(id).Eternal { // R-DEATH-03
+	if g.HP(id) == 0 && !g.eternal(id) { // R-DEATH-03
 		g.push(StackItem{Kind: StackDeath, Controller: NoPlayer, Label: "death", Target: Target{Object: id}})
 	}
+}
+
+// useShield prevents damage to t if a shield protects it (R-MECH-46).
+func (g *Game) useShield(t Target) bool {
+	for i, s := range g.Shields {
+		if s.IsPlayer == t.IsPlayer && ((t.IsPlayer && s.Player == t.Player) || (!t.IsPlayer && s.Object == t.Object)) {
+			g.Shields = append(g.Shields[:i:i], g.Shields[i+1:]...)
+			g.emit(Event{Kind: EvPrevented, Player: t.Player, Object: t.Object})
+			return true
+		}
+	}
+	return false
 }
 
 // resolveDeath: the object or player dies (R-DEATH-02).
@@ -298,7 +319,7 @@ func (g *Game) removeFromSlot(id ObjectID) {
 
 // destroyItem destroys an item a player controls (R-MECH-23).
 func (g *Game) destroyItem(p PlayerID, id ObjectID) {
-	if g.def(id).Eternal {
+	if g.eternal(id) {
 		return // R-ABIL-18
 	}
 	g.Players[p].InPlay = remove(g.Players[p].InPlay, id)

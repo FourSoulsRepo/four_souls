@@ -20,6 +20,17 @@ type Ability struct {
 	Targets []TargetSpec
 	Effects []Effect
 	Trigger Trigger
+	// Modes are "choose one-" options, picked on activation before the
+	// targets (R-ABIL-04). An ability with modes uses the targets and
+	// effects of the chosen mode instead of its own.
+	Modes []Mode
+}
+
+// Mode is one "choose one-" option.
+type Mode struct {
+	Text    string
+	Targets []TargetSpec
+	Effects []Effect
 }
 
 // Ctx is what an effect sees while it resolves.
@@ -28,6 +39,12 @@ type Ctx struct {
 	Controller PlayerID
 	Source     ObjectID
 	Targets    []Chosen
+
+	// Where the effect is, so an Ask can find it again.
+	ref    AbilityRef
+	mode   int
+	roll   int
+	effect int
 }
 
 // Chosen is one chosen target.
@@ -73,9 +90,25 @@ type destroySelfCost struct{}
 // DestroySelf destroys the object as the cost.
 func DestroySelf() Cost { return destroySelfCost{} }
 
-func (destroySelfCost) canPay(g *Game, _ PlayerID, self ObjectID) bool { return !g.def(self).Eternal }
+func (destroySelfCost) canPay(g *Game, _ PlayerID, self ObjectID) bool { return !g.eternal(self) }
 func (destroySelfCost) pay(g *Game, p PlayerID, self ObjectID)         { g.destroyItem(p, self) }
 func (destroySelfCost) label() string                                  { return "destroy this" }
+
+type removeCountersCost struct{ n int }
+
+// RemoveCounters removes n counters from the object: "Remove 2 counters
+// from this:".
+func RemoveCounters(n int) Cost { return removeCountersCost{n} }
+
+func (c removeCountersCost) canPay(g *Game, _ PlayerID, self ObjectID) bool {
+	return g.Object(self).CountersOf("") >= c.n
+}
+
+func (c removeCountersCost) pay(g *Game, p PlayerID, self ObjectID) {
+	g.Object(self).addCounters("", -c.n)
+	g.emit(Event{Kind: EvCounters, Player: p, Object: self, Card: g.Object(self).Card, Amount: -c.n})
+}
+func (c removeCountersCost) label() string { return "remove counters" }
 
 // --- Targets (R-ABIL-04 to R-ABIL-06) ---
 
@@ -89,6 +122,7 @@ const (
 	TargetMonsterOrPlayer                   // either
 	TargetItem                              // an item a player controls
 	TargetDiceRoll                          // a dice roll on the stack
+	TargetOtherPlayer                       // a living player other than you
 )
 
 // TargetSpec says what to choose; the engine always asks (ADR 005).
@@ -205,12 +239,9 @@ func (e rollEffect) apply(c *Ctx) {
 	c.G.emit(Event{Kind: EvDiceRolled, Player: c.Controller, Amount: r, Text: "roll"})
 	c.G.push(StackItem{
 		Kind: StackRoll, Controller: c.Controller, Source: c.Source, Roll: r, Label: "roll",
-		RollFor: c.abilityRef(),
+		RollFor: c.ref, Mode: c.mode,
 	})
 }
-
-// abilityRef finds the ability of the current context; set by resolve.
-func (c *Ctx) abilityRef() AbilityRef { return c.G.resolving }
 
 // Results fills a roll table: Results(1, 2, Loot(1)) for "1-2: Loot 1".
 func (t RollTable) Results(from, to int, effects ...Effect) RollTable {
@@ -218,4 +249,126 @@ func (t RollTable) Results(from, to int, effects ...Effect) RollTable {
 		t[r-1] = effects
 	}
 	return t
+}
+
+// --- More effects (step 5.3) ---
+
+type rechargeSelfEffect struct{}
+
+// RechargeSelf recharges the ability's own object (R-MECH-22).
+func RechargeSelf() Effect { return rechargeSelfEffect{} }
+
+func (rechargeSelfEffect) apply(c *Ctx) {
+	o := c.G.Object(c.Source)
+	if o.Zone.Kind != ZoneInPlay || o.Charged {
+		return
+	}
+	o.Charged = true
+	c.G.emit(Event{Kind: EvRecharged, Player: c.Controller, Object: c.Source, Card: o.Card})
+}
+
+type addCounterEffect struct{ n int }
+
+// AddCounters puts n counters on the ability's own object.
+func AddCounters(n int) Effect { return addCounterEffect{n} }
+
+func (e addCounterEffect) apply(c *Ctx) {
+	o := c.G.Object(c.Source)
+	if o.Zone.Kind != ZoneInPlay {
+		return
+	}
+	o.addCounters("", e.n)
+	c.G.emit(Event{Kind: EvCounters, Player: c.Controller, Object: c.Source, Card: o.Card, Amount: e.n})
+}
+
+type modifyRollEffect struct{ n, target int }
+
+// ModifyRoll adds n (or subtracts, if negative) to a dice roll on the
+// stack; a result stays between 1 and 6 (R-DICE-01, R-DICE-04).
+func ModifyRoll(n, t int) Effect { return modifyRollEffect{n, t} }
+
+func (e modifyRollEffect) apply(c *Ctx) {
+	id := c.Targets[e.target].StackID
+	for i := range c.G.Stack {
+		if it := &c.G.Stack[i]; it.ID == id {
+			it.Roll = min(max(it.Roll+e.n, 1), 6)
+			c.G.emit(Event{Kind: EvRollChanged, Player: it.Controller, Amount: it.Roll})
+		}
+	}
+}
+
+type becomeSoulEffect struct{}
+
+// BecomeSoul turns the ability's own object into a soul of its
+// controller; as a soul it has no abilities (R-CARD-18).
+func BecomeSoul() Effect { return becomeSoulEffect{} }
+
+func (becomeSoulEffect) apply(c *Ctx) {
+	o := c.G.Object(c.Source)
+	if o.Zone.Kind != ZoneInPlay || o.Controller != c.Controller {
+		return
+	}
+	o.Role, o.Charged, o.Counters = RoleSoul, false, nil
+	c.G.emit(Event{Kind: EvGainedSoul, Player: c.Controller, Object: c.Source, Card: o.Card})
+}
+
+type stealCentsEffect struct{ n, target int }
+
+// StealCents takes up to n¢ from the target player and gives them to
+// the controller (R-MECH-38).
+func StealCents(n, t int) Effect { return stealCentsEffect{n, t} }
+
+func (e stealCentsEffect) apply(c *Ctx) {
+	c.G.enqueue(Action{Kind: ActStealCents, Player: c.Controller, From: c.Targets[e.target].Player, Amount: e.n})
+}
+
+type boostATKEffect struct{ n, target int }
+
+// GainATKThisTurn gives a player or monster +n ATK till end of turn
+// (R-TURN-13 ends it).
+func GainATKThisTurn(n, t int) Effect { return boostATKEffect{n, t} }
+
+func (e boostATKEffect) apply(c *Ctx) {
+	t := c.Targets[e.target]
+	b := Boost{Stat: StatMonsterATK, Player: NoPlayer, Object: t.Object, Amount: e.n}
+	if t.Kind == TargetPlayer {
+		b = Boost{Stat: StatPlayerATK, Player: t.Player, Amount: e.n}
+	}
+	c.G.Boosts = append(c.G.Boosts, b)
+	c.G.emit(Event{Kind: EvBoosted, Player: b.Player, Object: b.Object, Amount: e.n, Text: "ATK"})
+}
+
+type shieldEffect struct{ target int }
+
+// PreventNextDamage prevents the next instance of damage the target
+// would take this turn (R-MECH-46).
+func PreventNextDamage(t int) Effect { return shieldEffect{t} }
+
+func (e shieldEffect) apply(c *Ctx) {
+	t := c.Targets[e.target]
+	s := Target{Object: t.Object}
+	if t.Kind == TargetPlayer {
+		s = Target{Player: t.Player, IsPlayer: true}
+	}
+	c.G.Shields = append(c.G.Shields, s)
+	c.G.emit(Event{Kind: EvShielded, Player: s.Player, Object: s.Object})
+}
+
+// effectsOf returns the effects that run for an ability: those of the
+// chosen mode, or of a roll result.
+func (g *Game) effectsOf(ref AbilityRef, mode, roll int) []Effect {
+	ab := g.ability(ref)
+	effects := ab.Effects
+	if len(ab.Modes) > 0 {
+		effects = ab.Modes[mode].Effects
+	}
+	if roll > 0 {
+		for _, e := range effects {
+			if r, ok := e.(rollEffect); ok {
+				return r.table[roll-1]
+			}
+		}
+		return nil
+	}
+	return effects
 }

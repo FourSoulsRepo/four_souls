@@ -29,6 +29,7 @@ type StackItem struct {
 	Attack bool `json:"attack,omitempty"`
 	// Ability is the ability of loot, activated and triggered items.
 	Ability AbilityRef `json:"ability"`
+	Mode    int        `json:"mode,omitempty"` // the chosen "choose one-" option
 	Targets []Chosen   `json:"targets,omitempty"`
 	// RollFor is the roll ability waiting for this roll (R-ABIL-24).
 	RollFor AbilityRef `json:"roll_for"`
@@ -86,7 +87,7 @@ func (g *Game) resolveTop() {
 			// The roll ability's result trigger goes on the stack (R-ABIL-24).
 			g.push(StackItem{
 				Kind: StackTrigger, Controller: it.Controller, Source: it.Source, Card: it.RollFor.Card,
-				Ability: it.RollFor, RollResult: it.Roll, Label: "roll result",
+				Ability: it.RollFor, Mode: it.Mode, RollResult: it.Roll, Label: "roll result",
 			})
 		}
 	case StackDamage:

@@ -89,6 +89,44 @@ type Object struct {
 	Charged    bool      `json:"charged"`
 	Damage     int       `json:"damage,omitempty"`
 	Counters   []Counter `json:"counters,omitempty"`
+	// Eternal is set when an effect makes the object eternal, e.g. Eden's
+	// starting item (R-ABIL-18).
+	Eternal bool `json:"eternal,omitempty"`
+}
+
+// CountersOf returns how many counters named name the object has.
+func (o *Object) CountersOf(name string) int {
+	for _, c := range o.Counters {
+		if c.Name == name {
+			return c.Count
+		}
+	}
+	return 0
+}
+
+// addCounters adds n counters (or removes, if negative), never below 0.
+func (o *Object) addCounters(name string, n int) {
+	for i, c := range o.Counters {
+		if c.Name == name {
+			o.Counters[i].Count = max(c.Count+n, 0)
+			if o.Counters[i].Count == 0 {
+				o.Counters = append(o.Counters[:i], o.Counters[i+1:]...)
+			}
+			return
+		}
+	}
+	if n > 0 {
+		o.Counters = append(o.Counters, Counter{Name: name, Count: n})
+	}
+}
+
+// Boost is a "till end of turn" stat change (R-TURN-13). It applies to
+// Object, or to Player when Object is 0.
+type Boost struct {
+	Stat   Stat     `json:"stat"`
+	Player PlayerID `json:"player"`
+	Object ObjectID `json:"object,omitempty"`
+	Amount int      `json:"amount"`
 }
 
 // Counter is a counter on an object; Name is "" for a generic counter
@@ -150,6 +188,10 @@ type Game struct {
 	Activating *Activation `json:"activating,omitempty"`
 	// PendingTriggers wait to go on the stack (R-ABIL-14).
 	PendingTriggers []PendingTrigger `json:"pending_triggers,omitempty"`
+	// Boosts and Shields last till end of turn (R-TURN-13). A shield
+	// prevents the next damage its target would take (R-MECH-46).
+	Boosts  []Boost  `json:"boosts,omitempty"`
+	Shields []Target `json:"shields,omitempty"`
 
 	// Stack: the last item is on top (R-STACK-02).
 	Stack    []StackItem `json:"stack"`
@@ -171,8 +213,6 @@ type Game struct {
 	events []Event
 	// forcedRolls lets tests decide dice results; never set in games.
 	forcedRolls []int
-	// resolving is the ability whose effects are running.
-	resolving AbilityRef
 }
 
 // newObject adds a card as a new object and returns its ID.
@@ -223,13 +263,19 @@ func (g *Game) Checksum() (uint64, error) {
 	return h.Sum64(), nil
 }
 
-// inPlay lists the objects in play in a fixed order: each player's
-// character and play area in seat order, then the top of every slot.
+// inPlay lists the objects in play whose abilities work, in a fixed
+// order: each player's character and play area in seat order, then the
+// top of every slot. Souls are left out: a soul only counts for its
+// value (R-CARD-18).
 func (g *Game) inPlay() []ObjectID {
 	var out []ObjectID
 	for _, pl := range g.Players {
 		out = append(out, pl.Character)
-		out = append(out, pl.InPlay...)
+		for _, id := range pl.InPlay {
+			if g.Object(id).Role != RoleSoul {
+				out = append(out, id)
+			}
+		}
 	}
 	for _, rows := range [][]Slot{g.Shop, g.Monsters, g.Rooms} {
 		for _, s := range rows {

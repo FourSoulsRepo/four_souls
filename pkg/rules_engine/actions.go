@@ -1,22 +1,28 @@
 package rulesengine
 
-import "fmt"
+import (
+	"fmt"
+	"strconv"
+)
 
 // ActionKind is a change to the game that cards may rewrite (A-05).
 type ActionKind int
 
 // The action kinds; more come with combat and effect blocks.
 const (
-	ActGainCents      ActionKind = iota // R-MECH-36
-	ActLoseCents                        // R-MECH-42
-	ActLoot                             // R-CARD-06
-	ActGainTreasure                     // R-CARD-02
-	ActBecomeSoul                       // a dead monster becomes a soul (R-DEATH-08)
-	ActDiscardObject                    // put an object into its discard (R-ZONE-06)
-	ActRefillSlots                      // R-SHOP-06
-	ActPenaltyItem                      // death penalty: destroy an item (R-DEATH-14)
-	ActPenaltyLoot                      // death penalty: discard a loot card
-	ActDeactivateTaps                   // death penalty: deactivate ↷ objects
+	ActGainCents          ActionKind = iota // R-MECH-36
+	ActLoseCents                            // R-MECH-42
+	ActLoot                                 // R-CARD-06
+	ActGainTreasure                         // R-CARD-02
+	ActBecomeSoul                           // a dead monster becomes a soul (R-DEATH-08)
+	ActDiscardObject                        // put an object into its discard (R-ZONE-06)
+	ActRefillSlots                          // R-SHOP-06
+	ActPenaltyItem                          // death penalty: destroy an item (R-DEATH-14)
+	ActPenaltyLoot                          // death penalty: discard a loot card
+	ActDeactivateTaps                       // death penalty: deactivate ↷ objects
+	ActAsk                                  // an Ask effect asks its questions (R-ABIL-05)
+	ActStealCents                           // Player steals Amount¢ From a player (R-MECH-38)
+	ActChooseStartingItem                   // Eden-style start-of-game choice (R-SETUP-09)
 )
 
 // Action is a pending change. It sits in the queue, may be rewritten by
@@ -26,6 +32,8 @@ type Action struct {
 	Player PlayerID   `json:"player"`
 	Object ObjectID   `json:"object,omitempty"`
 	Amount int        `json:"amount"`
+	From   PlayerID   `json:"from,omitempty"` // the other player, e.g. of a steal
+	Ask    *Asking    `json:"ask,omitempty"`
 	// Applied lists replacements already applied; each applies once
 	// (R-ABIL-32).
 	Applied []ReplacementRef `json:"applied,omitempty"`
@@ -163,7 +171,7 @@ func (g *Game) perform(a Action) {
 	case ActPenaltyItem:
 		var items []ObjectID
 		for _, id := range g.Players[a.Player].InPlay {
-			if g.Object(id).Role == RoleItem && !g.def(id).Eternal {
+			if g.Object(id).Role == RoleItem && !g.eternal(id) {
 				items = append(items, id)
 			}
 		}
@@ -183,6 +191,15 @@ func (g *Game) perform(a Action) {
 			}
 		}
 		g.emit(Event{Kind: EvDeactivated, Player: a.Player})
+	case ActAsk:
+		g.continueAsk(a.Ask)
+	case ActStealCents:
+		n := min(a.Amount, g.Players[a.From].Cents)
+		g.Players[a.From].Cents -= n
+		g.Players[a.Player].Cents += n
+		g.emit(Event{Kind: EvStole, Player: a.Player, Amount: n, Text: strconv.Itoa(int(a.From))})
+	case ActChooseStartingItem:
+		g.askStartingItem(a.Player, a.Amount)
 	}
 }
 

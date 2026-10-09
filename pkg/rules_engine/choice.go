@@ -14,6 +14,9 @@ const (
 	ChoosePurchase                          // a shop item or the treasure deck (R-SHOP-02)
 	ChooseTarget                            // a target for an ability (R-ABIL-04)
 	ChooseTriggerOrder                      // which trigger goes on the stack next (R-ABIL-15)
+	ChooseMode                              // a "choose one-" option (R-ABIL-04)
+	ChooseAnswer                            // a question while an ability resolves (R-ABIL-05)
+	ChooseStartingItem                      // a start-of-game choice, e.g. Eden (R-SETUP-09)
 )
 
 // Choice is an open question to one player. Options are listed in the
@@ -31,14 +34,19 @@ type Choice struct {
 	// Targets are the target options of ChooseTarget; one more option
 	// after them means "cancel".
 	Targets []Chosen `json:"targets,omitempty"`
-	// Indexes are pending-trigger indexes for ChooseTriggerOrder.
+	// Indexes are pending-trigger indexes for ChooseTriggerOrder, or
+	// mode indexes for ChooseMode (one more option means "cancel").
 	Indexes []int `json:"indexes,omitempty"`
+	// Ask is the effect waiting for this answer (ChooseAnswer).
+	Ask *Asking `json:"ask,omitempty"`
+	// Question is the text of the question, for display.
+	Question string `json:"question,omitempty"`
 }
 
 // ask opens a choose prompt.
 func (g *Game) ask(c Choice, labels []string) {
 	g.Choice = &c
-	g.Waiting = Prompt{Kind: PromptChoose, Player: c.Player, Options: labels, Purpose: c.Purpose}
+	g.Waiting = Prompt{Kind: PromptChoose, Player: c.Player, Options: labels, Purpose: c.Purpose, Text: c.Question}
 }
 
 // answer carries out the chosen option of the open choice.
@@ -64,6 +72,12 @@ func (g *Game) answer(i int) {
 		g.chooseTarget(c, i)
 	case ChooseTriggerOrder:
 		g.pushTrigger(c.Indexes[i])
+	case ChooseMode:
+		g.chooseMode(c, i)
+	case ChooseAnswer:
+		g.answerAsk(c, i)
+	case ChooseStartingItem:
+		g.chooseStartingItem(c, i)
 	case ChoosePurchase:
 		if c.Deck && i == len(c.Objects) {
 			g.purchase(0, true)

@@ -23,6 +23,7 @@ type Prompt struct {
 	Count   int           `json:"count,omitempty"`
 	Options []string      `json:"options,omitempty"`
 	Purpose ChoicePurpose `json:"purpose,omitempty"`
+	Text    string        `json:"text,omitempty"` // the question, if any
 }
 
 // IntentKind is what a player wants to do.

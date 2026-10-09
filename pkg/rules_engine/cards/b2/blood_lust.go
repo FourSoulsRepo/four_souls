@@ -7,9 +7,6 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 //	{Tap Effect}Choose a player or monster. They gain +1{ATK} till end of turn.
 //	At the end of your turn, recharge this.
 //	-Eternal- This can't be destroyed or put into discard.
-//
-// TODO(card): implement the text above, then delete this line.
-// Until then `go run ./cmd/cardgen` rewrites this file from card_db.
 var bloodLust = engine.CardDef{
 	Ref:     "blood_lust",
 	Kind:    engine.TreasureCard,
@@ -17,4 +14,14 @@ var bloodLust = engine.CardDef{
 	Eternal: true,
 	Outside: true,
 	Tap:     true,
+	Abilities: []engine.Ability{
+		{
+			Kind:    engine.Activated,
+			Text:    "↷: Choose a player or monster. They gain +1 ATK till end of turn.",
+			Costs:   []engine.Cost{engine.Tap()},
+			Targets: []engine.TargetSpec{engine.Choose(engine.TargetMonsterOrPlayer)},
+			Effects: []engine.Effect{engine.GainATKThisTurn(1, 0)},
+		},
+		rechargeAtEndOfTurn,
+	},
 }

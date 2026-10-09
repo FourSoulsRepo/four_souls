@@ -50,6 +50,12 @@ type CardDef struct {
 	// Outside marks cards that start outside the game, such as starting
 	// items: they are never shuffled into a deck (R-ZONE-13).
 	Outside bool
+	// GoesFirst: a character whose player goes first (Cain).
+	GoesFirst bool
+	// StartingChoice: a character whose player looks at this many top
+	// treasure cards at the start and picks one as an eternal starting
+	// item; the rest go to the bottom (Eden, R-SETUP-09).
+	StartingChoice int
 
 	// Replacements are the card's replacement effects (R-ABIL-29).
 	Replacements []Replacement

@@ -237,6 +237,10 @@ func (g *Game) loot(p PlayerID, n int) {
 	}
 }
 
+// DiscardFromHand puts a loot card from p's hand into the loot discard
+// (R-MECH-25).
+func (g *Game) DiscardFromHand(p PlayerID, id ObjectID) { g.discardFromHand(p, id) }
+
 func (g *Game) discardFromHand(p PlayerID, id ObjectID) {
 	g.Players[p].Hand = remove(g.Players[p].Hand, id)
 	nid := g.discard(id, LootDeck)
@@ -253,6 +257,7 @@ func (g *Game) healAll() {
 	for _, id := range g.inPlay() {
 		g.Object(id).Damage = 0
 	}
+	g.Boosts, g.Shields = nil, nil // till end of turn effects end
 	g.emit(Event{Kind: EvHealed, Player: NoPlayer})
 }
 

@@ -55,6 +55,21 @@ func WhenThisIsDestroyed() Trigger {
 	}}
 }
 
+// WhenYouDie triggers when the controller dies. Penalties are queued
+// actions, so the trigger resolves after they are paid (R-DEATH-14).
+func WhenYouDie() Trigger {
+	return Trigger{On: EvDied, Match: func(g *Game, self ObjectID, e Event) bool {
+		return e.Player != NoPlayer && e.Player == g.Object(self).Controller
+	}}
+}
+
+// WhenYouTakeDamage triggers each time the controller takes damage.
+func WhenYouTakeDamage() Trigger {
+	return Trigger{On: EvDamaged, Match: func(g *Game, self ObjectID, e Event) bool {
+		return e.Player != NoPlayer && e.Object == 0 && e.Player == g.Object(self).Controller
+	}}
+}
+
 // PendingTrigger waits to go on the stack (R-ABIL-14).
 type PendingTrigger struct {
 	Ability    AbilityRef `json:"ability"`
