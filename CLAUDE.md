@@ -32,6 +32,7 @@
    7. Linter setup and versions: `docs/wiki/Linters.md`.
    8. `make screenshots`: UI PNGs in `.cache/screenshots/` (not tracked).
    9. Use it to check UI changes; a real-window screenshot shows nothing.
+   10. `go run ./cmd/cardgen -set b2`: engine card stubs from card_db.
 5. Workflow
    1. Work follows `docs/roadmap/`, one sub-step at a time.
    2. Commit after every finished sub-step.

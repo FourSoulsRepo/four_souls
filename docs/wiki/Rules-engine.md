@@ -46,6 +46,20 @@ Every card is an object with an ID. Moving a card to another zone gives it a new
 
 Cards are Go values built from effect blocks; see [Effect blocks](Effect-blocks).
 
+## Card sets
+
+Each set is a package under `cards/`, e.g. `cards/b2`, with one file per card. `cards.Sets()` lists every set and `cards.Find("b2")` returns one.
+
+`go run ./cmd/cardgen -set b2` (from the repo root) writes the files from `card_db` data:
+
+* each card file holds the printed text as a comment, the game data (kind, copies, stats, soul, rewards, keywords) and a `TODO(card):` line;
+* a file with that line is a stub and is rewritten on every run;
+* when you implement a card, delete the line: the file is yours and the generator never touches it again;
+* `set_gen.go` lists every card of the set and is always rewritten, so keep the variable name the generator chose;
+* data it cannot read (e.g. a printed `X` or a rolled reward) is listed as `Not generated:` in the comment.
+
+The generator lives in the app module because the engine never imports `card_db`.
+
 ## The run loop must always settle
 
 `run()` keeps doing automatic work (queued actions, triggers, step changes) until the game waits on a prompt. Any path that leaves no prompt and changes nothing spins forever. Rules for new code:

@@ -1,0 +1,19 @@
+package b2
+
+import engine "github.com/FourSoulsRepo/rules_engine"
+
+// Judas (Character Card)
+//
+//	{Tap Effect}Play an additional loot card this turn.
+//
+// TODO(card): implement the text above, then delete this line.
+// Until then `go run ./cmd/cardgen` rewrites this file from card_db.
+var judas = engine.CardDef{
+	Ref:          "judas",
+	Kind:         engine.CharacterCard,
+	Copies:       1,
+	HP:           2,
+	ATK:          1,
+	StartingItem: "book_of_belial",
+	Tap:          true,
+}

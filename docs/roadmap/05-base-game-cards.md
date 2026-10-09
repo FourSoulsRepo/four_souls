@@ -7,7 +7,7 @@ Ideas: R-05, TS-01 – TS-04.
 
 ---
 
-### [ ] 5.1 Card registry and stub generator
+### [x] 5.1 Card registry and stub generator
 
 1. Goal: a stub for every card (TS-03).
 2. Tasks:

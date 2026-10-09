@@ -39,6 +39,10 @@ linters:
     - godot
     - whitespace
   settings:
+    misspell:
+      # Card names are not typos (Monstro's Tooth).
+      ignore-rules:
+        - monstros
     gosec:
       severity: low
       confidence: low

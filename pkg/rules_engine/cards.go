@@ -67,6 +67,7 @@ type CardDef struct {
 
 // CardSet is a set of card definitions, e.g. the Base Game.
 type CardSet struct {
+	Code  string // card_db set code, e.g. "b2"
 	Name  string
 	Cards []CardDef
 }
