@@ -97,7 +97,18 @@ type Object struct {
 	// copy at the end of the turn.
 	CopyOf       CardRef `json:"copy_of,omitempty"`
 	CopyThisTurn bool    `json:"copy_this_turn,omitempty"`
+	// KilledBy is who dealt the damage that brought it to 0 HP, plus 1
+	// (0: nobody yet); KilledOn is the attack roll, if it was combat.
+	KilledBy int `json:"killed_by,omitempty"`
+	KilledOn int `json:"killed_on,omitempty"`
+	// DoubleRewards doubles a dying monster's rewards (Dinga).
+	DoubleRewards bool `json:"double_rewards,omitempty"`
+	// HitsThisTurn counts the times it took damage this turn.
+	HitsThisTurn int `json:"hits_this_turn,omitempty"`
 }
+
+// Killer is the player who brought the object to 0 HP, or NoPlayer.
+func (o *Object) Killer() PlayerID { return PlayerID(o.KilledBy - 1) }
 
 // CountersOf returns how many counters named name the object has.
 func (o *Object) CountersOf(name string) int {
@@ -165,6 +176,8 @@ type Player struct {
 	// CopyNextLoot: the next non-trinket loot p plays this turn is
 	// copied (Blank Card).
 	CopyNextLoot bool `json:"copy_next_loot,omitempty"`
+	// SkipTurns: the player skips this many of their next turns (Famine).
+	SkipTurns int `json:"skip_turns,omitempty"`
 	// TimesDamaged counts this turn's damage ("the first time you take
 	// damage each turn").
 	TimesDamaged int `json:"times_damaged,omitempty"`

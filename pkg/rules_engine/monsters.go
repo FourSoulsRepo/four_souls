@@ -126,3 +126,34 @@ func (g *Game) HealObject(id ObjectID, n int) {
 	o.Damage -= h
 	g.emit(Event{Kind: EvHealed, Player: NoPlayer, Object: id, Card: o.Card, Amount: h})
 }
+
+// AddDeckAttack lets the active player attack the monster deck one more
+// time this turn ("may attack the monster deck an additional time").
+func (g *Game) AddDeckAttack() {
+	g.Turn.Attacks++
+	g.Turn.DeckAttacks++
+}
+
+// PutIntoDeck puts a card that is outside the game or in a slot into a
+// deck, below the top n cards (0: on top).
+func (g *Game) PutIntoDeck(d DeckKind, id ObjectID, n int) {
+	if g.Object(id).Zone.Kind == ZoneInPlay {
+		g.removeFromSlot(id) // a monster or shop card in its slot
+	}
+	nid := g.move(id, DeckZone(d), NoPlayer)
+	deck := g.Decks[d]
+	at := max(len(deck)-n, 0)
+	g.Decks[d] = append(deck[:at:at], append([]ObjectID{nid}, deck[at:]...)...)
+	g.emit(Event{Kind: EvMovedToDeck, Player: NoPlayer, Object: nid, Card: g.Object(nid).Card, Amount: n, Text: d.String() + " deck"})
+}
+
+// PlaceFromDeck takes a card out of the monster deck and puts it on
+// top of monster slot i ("put it in a monster slot").
+func (g *Game) PlaceFromDeck(id ObjectID, i int) {
+	g.Decks[MonsterDeck] = remove(g.Decks[MonsterDeck], id)
+	if top, had := g.Monsters[i].TopOf(); had {
+		g.Object(top).Zone = Zone{Kind: ZoneCovered, Slot: MonsterSlot, Index: i}
+	}
+	nid := g.putInSlot(id, MonsterSlot, i)
+	g.enterMonsterSlot(nid)
+}

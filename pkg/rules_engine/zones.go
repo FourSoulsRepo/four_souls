@@ -365,3 +365,18 @@ func (g *Game) PutOnDeck(d DeckKind, cards ...CardRef) {
 		g.Decks[d] = append(g.Decks[d], g.newObject(c, DeckZone(d), NoPlayer))
 	}
 }
+
+// KillObject kills a monster or other object with HP: HP to 0, its
+// death on the stack (R-MECH-23).
+func (g *Game) KillObject(id ObjectID) {
+	if g.Object(id).Zone.Kind != ZoneInPlay || g.Eternal(id) {
+		return
+	}
+	g.Object(id).Damage = g.def(id).HP + g.bonus(StatMonsterHP, NoPlayer, id)
+	g.push(StackItem{Kind: StackDeath, Controller: NoPlayer, Label: "death", Target: Target{Object: id}})
+}
+
+// LoseCentsNow queues "p loses n¢" (R-MECH-42).
+func (g *Game) LoseCentsNow(p PlayerID, n int) {
+	g.enqueue(Action{Kind: ActLoseCents, Player: p, Amount: n})
+}

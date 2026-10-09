@@ -12,9 +12,11 @@ type Target struct {
 
 // AttackState tracks the attack in progress (R-ATK).
 type AttackState struct {
-	On      bool     `json:"on,omitempty"`      // an attack was declared
-	Started bool     `json:"started,omitempty"` // a target was chosen
-	Target  ObjectID `json:"target,omitempty"`
+	// LastRoll is the latest attack roll's result.
+	LastRoll int      `json:"last_roll,omitempty"`
+	On       bool     `json:"on,omitempty"`      // an attack was declared
+	Started  bool     `json:"started,omitempty"` // a target was chosen
+	Target   ObjectID `json:"target,omitempty"`
 	// Revealed is the monster-deck card waiting for a slot (R-ATK-08).
 	Revealed ObjectID `json:"revealed,omitempty"`
 }
@@ -82,6 +84,11 @@ func (g *Game) MonsterATK(id ObjectID) int {
 func (g *Game) declareAttack(p PlayerID) {
 	if g.Turn.MustAttacks > 0 {
 		g.Turn.MustAttacks--
+	}
+	if g.Turn.DeckAttacks > 0 && g.attacksLeft() <= g.Turn.DeckAttacks {
+		// Only deck attacks are left: this one is on the monster deck.
+		g.Turn.DeckAttacks--
+		g.Turn.MustAttackDeck++
 	}
 	if g.Turn.Attacks > 0 {
 		g.Turn.Attacks--
@@ -178,6 +185,7 @@ func (g *Game) resolveAttackRoll(it StackItem) {
 	}
 	p := g.Turn.Active
 	g.Turn.AttackRolls++ // e.g. "your first attack roll each turn"
+	g.Attack.LastRoll = it.Roll
 	if it.Roll >= g.Evasion(it.Target.Object) {
 		if atk := g.PlayerATK(p); atk > 0 {
 			g.push(StackItem{
@@ -261,6 +269,13 @@ func (g *Game) resolveDamage(it StackItem) {
 	}
 	n := min(it.Amount, g.HP(id))
 	o.Damage += n
+	o.HitsThisTurn++
+	if g.HP(id) == 0 {
+		o.KilledBy = int(it.Controller) + 1
+		if it.Attack {
+			o.KilledOn = g.Attack.LastRoll
+		}
+	}
 	e := Event{Kind: EvDamaged, Player: NoPlayer, Object: id, Card: o.Card, Amount: n}
 	if it.Attack {
 		e.Text = "combat" // dealt by the active player's attack
@@ -315,22 +330,52 @@ func (g *Game) monsterDeath(id ObjectID) {
 	}
 	g.removeFromSlot(id)
 	holding := g.move(id, Zone{Kind: ZoneOutside}, NoPlayer) // R-DEATH-04
-	g.emit(Event{Kind: EvDied, Player: NoPlayer, Object: holding, Card: card})
+	before := len(g.PendingTriggers)
+	g.emit(Event{Kind: EvDied, Player: NoPlayer, Object: holding, Card: card, Prev: id})
+	if len(g.PendingTriggers) > before {
+		// "When this dies" triggers resolve before the rewards (R-DEATH-05).
+		g.push(StackItem{Kind: StackDeathStep, Controller: NoPlayer, Label: "rewards", Target: Target{Object: holding}, Amount: stepRewards})
+		return
+	}
+	g.rewardsStep(holding)
+}
+
+// The monster death steps that can wait under triggers on the stack.
+const (
+	stepRewards = 1 // R-DEATH-06
+	stepSoul    = 2 // R-DEATH-08, R-DEATH-09
+)
+
+// rewardsStep gives the active player the rewards (R-DEATH-06); then
+// "after rewards" triggers trigger (R-DEATH-07).
+func (g *Game) rewardsStep(holding ObjectID) {
 	active := g.Turn.Active
-	d := g.def(holding)
-	for _, r := range d.Rewards { // R-DEATH-06
+	times := 1
+	if g.Object(holding).DoubleRewards {
+		times = 2 // e.g. Dinga
+	}
+	for _, r := range g.def(holding).Rewards {
 		if r.Roll {
-			g.push(StackItem{Kind: StackRoll, Controller: active, Source: holding, Roll: g.d6(), Label: "reward roll", Reward: int(r.Kind) + 1})
+			g.push(StackItem{Kind: StackRoll, Controller: active, Source: holding, Roll: g.d6(), Label: "reward roll", Reward: int(r.Kind) + 1, Amount: times})
 			continue
 		}
-		g.enqueue(Action{Kind: r.action(), Player: active, Amount: r.Amount})
+		g.enqueue(Action{Kind: r.action(), Player: active, Amount: r.Amount * times})
 	}
-	if d.Soul > 0 { // R-DEATH-08
-		g.enqueue(Action{Kind: ActBecomeSoul, Player: active, Object: holding})
-	} else {
-		g.enqueue(Action{Kind: ActDiscardObject, Player: NoPlayer, Object: holding})
+	g.enqueue(Action{Kind: ActRewardsDone, Player: active, Object: holding})
+}
+
+// soulStep makes the dead monster a soul of the active player or puts it
+// into discard, unless an effect moved it already; slots refill
+// (R-DEATH-08, R-DEATH-09).
+func (g *Game) soulStep(holding ObjectID) {
+	if g.Object(holding).Zone.Kind == ZoneOutside {
+		if g.def(holding).Soul > 0 {
+			g.enqueue(Action{Kind: ActBecomeSoul, Player: g.Turn.Active, Object: holding})
+		} else {
+			g.enqueue(Action{Kind: ActDiscardObject, Player: NoPlayer, Object: holding})
+		}
 	}
-	g.enqueue(Action{Kind: ActRefillSlots, Player: NoPlayer}) // R-DEATH-09
+	g.enqueue(Action{Kind: ActRefillSlots, Player: NoPlayer})
 }
 
 // playerDeath follows the player death steps (R-DEATH-12 to R-DEATH-16).

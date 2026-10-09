@@ -34,10 +34,12 @@ type Turn struct {
 	MustAttack ObjectID `json:"must_attack,omitempty"`
 	// MustAttacks is how many more attacks the active player must make;
 	// MustAttackDeck of them on the monster deck.
-	MustAttacks    int  `json:"must_attacks,omitempty"`
-	MustAttackDeck int  `json:"must_attack_deck,omitempty"`
-	EndDeclared    bool `json:"end_declared,omitempty"`
-	DeathEnd       bool `json:"death_end,omitempty"` // the active player died (R-DEATH-16)
+	MustAttacks    int `json:"must_attacks,omitempty"`
+	MustAttackDeck int `json:"must_attack_deck,omitempty"`
+	// DeckAttacks are extra attacks only on the monster deck.
+	DeckAttacks int  `json:"deck_attacks,omitempty"`
+	EndDeclared bool `json:"end_declared,omitempty"`
+	DeathEnd    bool `json:"death_end,omitempty"` // the active player died (R-DEATH-16)
 	// entered is true once the current step's automatic work is done.
 	Entered bool `json:"entered,omitempty"`
 }
@@ -228,6 +230,14 @@ func (g *Game) startNextTurn() {
 		next, g.ExtraTurn = g.Turn.Active, false
 		g.emit(Event{Kind: EvExtraTurn, Player: next})
 	}
+	for range g.Players {
+		if g.Players[next].SkipTurns == 0 {
+			break
+		}
+		g.Players[next].SkipTurns--
+		g.emit(Event{Kind: EvTurnSkipped, Player: next})
+		next = g.next(next)
+	}
 	g.Turn = Turn{Active: next, Number: g.Turn.Number + 1, Step: StepRecharge}
 	g.emit(Event{Kind: EvTurnStarted, Player: g.Turn.Active, Amount: g.Turn.Number})
 }
@@ -274,7 +284,7 @@ func (g *Game) healAll() {
 		g.Players[i].TimesDamaged = 0
 	}
 	for _, id := range g.inPlay() {
-		g.Object(id).Damage = 0
+		g.Object(id).Damage, g.Object(id).HitsThisTurn = 0, 0
 	}
 	g.Boosts, g.Shields = nil, nil // till end of turn effects end
 	for _, pl := range g.Players {

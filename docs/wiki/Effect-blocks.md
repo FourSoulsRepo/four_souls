@@ -166,6 +166,8 @@ Roll(RollTable{}.Results(1, 2, Loot(1)).Results(3, 4, GainCents(3)).Results(5, 6
 | `WhenYouWouldTakeDamage()` | when damage aimed at you goes on the stack (resolves first) |
 | `WhenYouWouldDie()` | when your death goes on the stack (resolves first) |
 | `WhenThisEntersPlay()` | when this object enters play |
+| `WhenThisDies()` | when this monster dies, before its rewards (R-DEATH-05); `c.EventObject` is the dead card |
+| `AfterThisRewards()` | after this dead monster's rewards (R-DEATH-07) |
 | `WhenARollWouldBe(n)` | each time a player would roll n (R-DICE-05); `c.EventStack` is the roll |
 
 ## Static abilities
@@ -198,7 +200,9 @@ tb.EndTurn()                             // run to the next player's action phas
 
 ## Events and the monster deck
 
-An event's abilities are `Triggered` with `WhenThisEntersPlay()`; "you" is the active player (R-CARD-10). The event stays in its slot until they are done, then goes to the monster discard (R-CARD-15). A `Curse` goes to a player the active player picks, and to discard when that player dies. A reward with `Roll: true` gives as many as a roll's result ("Roll- gain X¢"). Helpers: `ExpandShop`, `ExpandMonsters`, `ForceAttacks(n, deck)`, `TakeFromDeck`, `HealPlayer`, `HealObject`.
+An event's abilities are `Triggered` with `WhenThisEntersPlay()`; "you" is the active player (R-CARD-10). The event stays in its slot until they are done, then goes to the monster discard (R-CARD-15). A `Curse` goes to a player the active player picks, and to discard when that player dies. A reward with `Roll: true` gives as many as a roll's result ("Roll- gain X¢"). Helpers: `ExpandShop`, `ExpandMonsters`, `ForceAttacks(n, deck)`, `AddDeckAttack`, `TakeFromDeck`, `PutIntoDeck`, `PlaceFromDeck`, `KillObject`, `HealPlayer`, `HealObject`.
+
+A monster's death runs in steps: "when this dies" triggers, rewards, "after rewards" triggers, then the soul or discard and the refill (R-DEATH-04 to R-DEATH-09). A step waits under its triggers on the stack. An object remembers who killed it (`Killer()`) and on which attack roll (`KilledOn`).
 
 ## Copies
 

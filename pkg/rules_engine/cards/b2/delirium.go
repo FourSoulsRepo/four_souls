@@ -6,9 +6,6 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 //
 //	Other monsters have +1{DC}.
 //	When this dies, put it in the monster deck 6 cards from the top.
-//
-// TODO(card): implement the text above, then delete this line.
-// Until then `go run ./cmd/cardgen` rewrites this file from card_db.
 var delirium = engine.CardDef{
 	Ref:     "delirium",
 	Kind:    engine.MonsterCard,
@@ -17,4 +14,19 @@ var delirium = engine.CardDef{
 	DC:      4,
 	ATK:     3,
 	Rewards: []engine.Reward{{Kind: engine.RewardTreasure, Amount: 2}},
+	Statics: []engine.Static{{Stat: engine.StatMonsterDC, Amount: 1, Applies: func(_ *engine.Game, self engine.ObjectID, _ engine.PlayerID, m engine.ObjectID) bool {
+		return m != self
+	}}},
+	Abilities: []engine.Ability{
+		{
+			Kind:    engine.Triggered,
+			Text:    "When this dies, put it in the monster deck 6 cards from the top.",
+			Trigger: engine.WhenThisDies(),
+			Effects: []engine.Effect{engine.EffectFunc(func(c *engine.Ctx) {
+				if c.G.Object(c.EventObject).Zone.Kind == engine.ZoneOutside {
+					c.G.PutIntoDeck(engine.MonsterDeck, c.EventObject, 5)
+				}
+			})},
+		},
+	},
 }

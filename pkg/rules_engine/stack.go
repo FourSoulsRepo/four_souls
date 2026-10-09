@@ -5,13 +5,14 @@ type StackKind int
 
 // The stack item kinds.
 const (
-	StackLoot    StackKind = iota // a played loot card (R-CARD-07)
-	StackAbility                  // an activated ability (R-ABIL-08)
-	StackTrigger                  // a triggered ability (R-ABIL-14)
-	StackRoll                     // a dice roll (R-DICE-02)
-	StackDamage                   // damage aimed at a target (R-MECH-15)
-	StackDeath                    // a pending death (R-DEATH-01)
-	StackPenalty                  // a death penalty waiting for "when a player dies" triggers (R-DEATH-13)
+	StackLoot      StackKind = iota // a played loot card (R-CARD-07)
+	StackAbility                    // an activated ability (R-ABIL-08)
+	StackTrigger                    // a triggered ability (R-ABIL-14)
+	StackRoll                       // a dice roll (R-DICE-02)
+	StackDamage                     // damage aimed at a target (R-MECH-15)
+	StackDeath                      // a pending death (R-DEATH-01)
+	StackPenalty                    // a death penalty waiting for "when a player dies" triggers (R-DEATH-13)
+	StackDeathStep                  // a monster death step waiting for triggers (R-DEATH-05, R-DEATH-07)
 )
 
 // StackItem is one thing waiting on the stack.
@@ -40,6 +41,7 @@ type StackItem struct {
 	EventPlayer PlayerID `json:"event_player,omitempty"`
 	EventAmount int      `json:"event_amount,omitempty"`
 	EventStack  int      `json:"event_stack,omitempty"`
+	EventObject ObjectID `json:"event_object,omitempty"`
 	// Reward is a roll reward's kind + 1: the result is how much is gained.
 	Reward int `json:"reward,omitempty"`
 	// Checked is the roll value (+1) that "would roll" triggers last saw
@@ -130,15 +132,15 @@ func (g *Game) resolveTop() {
 			g.resolveAttackRoll(it)
 		}
 		if it.Reward > 0 {
-			r := Reward{Kind: RewardKind(it.Reward - 1), Amount: it.Roll}
-			g.enqueue(Action{Kind: r.action(), Player: it.Controller, Amount: it.Roll})
+			r := Reward{Kind: RewardKind(it.Reward - 1)}
+			g.enqueue(Action{Kind: r.action(), Player: it.Controller, Amount: it.Roll * max(it.Amount, 1)})
 		}
 		if it.RollFor.Card != "" {
 			// The roll ability's result trigger goes on the stack (R-ABIL-24).
 			g.push(StackItem{
 				Kind: StackTrigger, Controller: it.Controller, Source: it.Source, Card: it.RollFor.Card,
 				Ability: it.RollFor, Mode: it.Mode, Targets: it.Targets, RollResult: it.Roll, Label: "roll result",
-				EventPlayer: it.EventPlayer, EventAmount: it.EventAmount, EventStack: it.EventStack,
+				EventPlayer: it.EventPlayer, EventAmount: it.EventAmount, EventStack: it.EventStack, EventObject: it.EventObject,
 			})
 		}
 	case StackDamage:
@@ -149,6 +151,12 @@ func (g *Game) resolveTop() {
 		g.resolveAbility(it)
 	case StackPenalty:
 		g.payPenalty(it.Target.Player)
+	case StackDeathStep:
+		if it.Amount == stepRewards {
+			g.rewardsStep(it.Target.Object)
+		} else {
+			g.soulStep(it.Target.Object)
+		}
 	}
 	if (len(g.Queue) > 0 || len(g.PendingTriggers) > 0) && g.Waiting.Kind == PromptPriority {
 		// Queued steps (e.g. death rewards) happen and new triggers go on

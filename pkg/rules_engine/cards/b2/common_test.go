@@ -187,3 +187,25 @@ func hasCurse(g *engine.Game, p int, card engine.CardRef) bool {
 	}
 	return false
 }
+
+// killWithSixes attacks the monster in slot 1 with rolls of 6 until it
+// dies, answering the prompts that follow with choices.
+func killWithSixes(t *testing.T, tb *enginetest.Table, choices ...string) {
+	t.Helper()
+	m, _ := tb.G.Monsters[0].TopOf()
+	rolls := make([]int, tb.G.HP(m)+1)
+	for i := range rolls {
+		rolls[i] = 6
+	}
+	tb.G.ForceRolls(rolls...)
+	tb.Do(engine.Intent{Player: tb.G.Turn.Active, Kind: engine.IntentAttack}, append([]string{string(tb.G.Object(m).Card)}, choices...)...)
+	if tb.G.Object(m).Zone.Kind == engine.ZoneInPlay {
+		t.Fatalf("%s survived", tb.G.Object(m).Card)
+	}
+}
+
+// slayTable: the monster in slot 1, Isaac and Cain with the given setups.
+func slayTable(t *testing.T, monster engine.CardRef, isaac, cain engine.SituationPlayer) *enginetest.Table {
+	t.Helper()
+	return enginetest.NewSetup(t, engine.SituationSetup{Players: []engine.SituationPlayer{isaac, cain}, Monsters: items(monster)}, Set)
+}

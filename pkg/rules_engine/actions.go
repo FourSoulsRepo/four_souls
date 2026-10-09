@@ -27,6 +27,7 @@ const (
 	ActAddCounters                          // put Amount counters on Object (Bum-bo levels)
 	ActGiveCurse                            // the active player gives the curse Object to a player
 	ActFinishEvent                          // an event whose ability resolved goes to discard
+	ActRewardsDone                          // a dead monster's rewards are given (R-DEATH-07)
 )
 
 // Action is a pending change. It sits in the queue, may be rewritten by
@@ -173,11 +174,17 @@ func (g *Game) perform(a Action) {
 	case ActGainTreasure:
 		g.gainTreasure(a.Player, a.Amount)
 	case ActBecomeSoul:
+		if g.Object(a.Object).Zone.Kind == ZoneGone {
+			return // moved by an effect already
+		}
 		nid := g.move(a.Object, Zone{Kind: ZoneInPlay}, a.Player)
 		g.Object(nid).Role = RoleSoul
 		g.Players[a.Player].InPlay = append(g.Players[a.Player].InPlay, nid)
 		g.emit(Event{Kind: EvGainedSoul, Player: a.Player, Object: nid, Card: g.Object(nid).Card})
 	case ActDiscardObject:
+		if g.Object(a.Object).Zone.Kind == ZoneGone {
+			return
+		}
 		if deck, ok := g.kindOf(a.Object).Deck(); ok {
 			g.discard(a.Object, deck)
 		}
@@ -221,6 +228,14 @@ func (g *Game) perform(a Action) {
 		g.askStartingItem(a.Player, a.Amount)
 	case ActGiveCurse:
 		g.askCurseTarget(a.Object)
+	case ActRewardsDone:
+		before := len(g.PendingTriggers)
+		g.emit(Event{Kind: EvRewardsGained, Player: a.Player, Object: a.Object, Card: g.Object(a.Object).Card, Prev: a.Object})
+		if len(g.PendingTriggers) > before {
+			g.push(StackItem{Kind: StackDeathStep, Controller: NoPlayer, Label: "soul", Target: Target{Object: a.Object}, Amount: stepSoul})
+		} else {
+			g.soulStep(a.Object)
+		}
 	case ActFinishEvent:
 		g.finishEvent(a.Object)
 	case ActPenaltyDone:

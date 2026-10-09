@@ -44,13 +44,14 @@ type Asking struct {
 	EventPlayer PlayerID `json:"event_player,omitempty"`
 	EventAmount int      `json:"event_amount,omitempty"`
 	EventStack  int      `json:"event_stack,omitempty"`
+	EventObject ObjectID `json:"event_object,omitempty"`
 }
 
 func (e askEffect) apply(c *Ctx) {
 	a := &Asking{
 		Ability: c.ref, Mode: c.mode, RollResult: c.roll, Effect: c.effect,
 		Controller: c.Controller, Source: c.Source, Targets: c.Targets,
-		EventPlayer: c.EventPlayer, EventAmount: c.EventAmount, EventStack: c.EventStack,
+		EventPlayer: c.EventPlayer, EventAmount: c.EventAmount, EventStack: c.EventStack, EventObject: c.EventObject,
 	}
 	c.G.AskSeq++
 	a.Key = c.G.AskSeq
@@ -71,7 +72,7 @@ func (c *Ctx) Do(effects ...Effect) {
 func (a *Asking) ctx(g *Game) *Ctx {
 	return &Ctx{
 		G: g, Controller: a.Controller, Source: a.Source, Targets: a.Targets,
-		EventPlayer: a.EventPlayer, EventAmount: a.EventAmount, EventStack: a.EventStack,
+		EventPlayer: a.EventPlayer, EventAmount: a.EventAmount, EventStack: a.EventStack, EventObject: a.EventObject,
 		ref: a.Ability, mode: a.Mode, roll: a.RollResult, effect: a.Effect,
 	}
 }

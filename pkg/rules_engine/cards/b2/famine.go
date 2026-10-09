@@ -5,9 +5,6 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 // Famine (Boss Card)
 //
 //	When this dies, the active player skips their next turn.
-//
-// TODO(card): implement the text above, then delete this line.
-// Until then `go run ./cmd/cardgen` rewrites this file from card_db.
 var famine = engine.CardDef{
 	Ref:     "famine",
 	Kind:    engine.MonsterCard,
@@ -16,4 +13,14 @@ var famine = engine.CardDef{
 	DC:      3,
 	ATK:     1,
 	Rewards: []engine.Reward{{Kind: engine.RewardLoot, Amount: 3}},
+	Abilities: []engine.Ability{
+		{
+			Kind:    engine.Triggered,
+			Text:    "When this dies, the active player skips their next turn.",
+			Trigger: engine.WhenThisDies(),
+			Effects: []engine.Effect{engine.EffectFunc(func(c *engine.Ctx) {
+				c.G.Players[c.Controller].SkipTurns++
+			})},
+		},
+	},
 }

@@ -63,6 +63,22 @@ func WhenYouDie() Trigger {
 	}}
 }
 
+// WhenThisDies triggers when this monster dies; "when this dies"
+// triggers resolve before its rewards (R-DEATH-05). c.Source is the
+// monster as it was; c.EventObject is the dead card, until it becomes a
+// soul or goes to discard.
+func WhenThisDies() Trigger {
+	return Trigger{On: EvDied, Match: func(_ *Game, self ObjectID, e Event) bool { return e.Prev == self }}
+}
+
+// AfterThisRewards triggers after the active player gained this dead
+// monster's rewards (R-DEATH-07).
+func AfterThisRewards() Trigger {
+	return Trigger{On: EvRewardsGained, Match: func(_ *Game, self ObjectID, e Event) bool {
+		return e.Object == self
+	}}
+}
+
 // WhenAPlayerDies triggers when any player dies, before the penalty
 // (R-DEATH-13).
 func WhenAPlayerDies() Trigger {
@@ -124,6 +140,7 @@ type PendingTrigger struct {
 	EventPlayer PlayerID  `json:"event_player"`
 	EventAmount int       `json:"event_amount,omitempty"`
 	EventStack  int       `json:"event_stack,omitempty"`
+	EventObject ObjectID  `json:"event_object,omitempty"`
 }
 
 // collectTriggers finds triggered abilities that match an event. Objects
@@ -139,7 +156,7 @@ func (g *Game) collectTriggers(e Event) {
 			if a.Kind == Triggered && a.Trigger.On == e.Kind && a.Trigger.Match != nil && a.Trigger.Match(g, id, e) {
 				g.PendingTriggers = append(g.PendingTriggers, PendingTrigger{
 					Ability: AbilityRef{Card: g.CardOf(id), Index: i}, Source: id, Controller: g.abilityController(id),
-					On: e.Kind, EventPlayer: e.Player, EventAmount: e.Amount, EventStack: e.StackID,
+					On: e.Kind, EventPlayer: e.Player, EventAmount: e.Amount, EventStack: e.StackID, EventObject: e.Object,
 				})
 			}
 		}
@@ -201,7 +218,7 @@ func (g *Game) pushTrigger(i int) {
 	g.push(StackItem{
 		Kind: StackTrigger, Controller: t.Controller, Source: t.Source, Card: t.Ability.Card,
 		Ability: t.Ability, Label: g.abilityText(t.Ability),
-		EventPlayer: t.EventPlayer, EventAmount: t.EventAmount, EventStack: t.EventStack,
+		EventPlayer: t.EventPlayer, EventAmount: t.EventAmount, EventStack: t.EventStack, EventObject: t.EventObject,
 	})
 }
 
@@ -224,8 +241,12 @@ func (g *Game) abilityText(ref AbilityRef) string {
 // controller, or the active player for monster cards ("you" on a monster
 // card is the active player, R-CARD-10).
 func (g *Game) abilityController(id ObjectID) PlayerID {
-	if o := g.Object(id); o.Controller != NoPlayer || o.Zone.Slot != MonsterSlot {
+	o := g.Object(id)
+	if o.Controller != NoPlayer {
 		return o.Controller
 	}
-	return g.Turn.Active
+	if k := g.kindOf(id); k == MonsterCard || k == EventCard {
+		return g.Turn.Active
+	}
+	return NoPlayer
 }

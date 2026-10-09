@@ -337,3 +337,108 @@ func guppiesInDeck(g *engine.Game) []engine.ObjectID {
 	}
 	return out
 }
+
+// pickAPlayer asks the controller for a living player.
+func pickAPlayer(text string) engine.Question {
+	return engine.Question{Text: text, Options: func(c *engine.Ctx, _ []int) []string {
+		var out []string
+		for _, p := range livingPlayers(c.G, engine.NoPlayer) {
+			out = append(out, playerLabel(c.G, p))
+		}
+		return out
+	}}
+}
+
+// killAPlayer: "the active player kills a player".
+var killAPlayer = engine.Ask(func(c *engine.Ctx, a []int) {
+	if a[0] >= 0 {
+		p := livingPlayers(c.G, engine.NoPlayer)[a[0]]
+		c.Do(engine.EffectFunc(func(c *engine.Ctx) {
+			c.Targets = []engine.Chosen{{Kind: engine.TargetPlayer, Player: p}}
+			c.Do(engine.Kill(0))
+		}))
+	}
+}, pickAPlayer("Kill which player?"))
+
+// forcedDiscardQuestions: the controller picks a player, who then picks
+// n cards from their hand, one at a time.
+func forcedDiscardQuestions(n int) []engine.Question {
+	qs := []engine.Question{pickAPlayer("Which player discards?")}
+	for range n {
+		qs = append(qs, engine.Question{
+			Text:   "Discard which loot card?",
+			Player: func(c *engine.Ctx, a []int) engine.PlayerID { return livingPlayers(c.G, engine.NoPlayer)[a[0]] },
+			Options: func(c *engine.Ctx, a []int) []string {
+				if a[0] < 0 {
+					return nil
+				}
+				var out []string
+				for _, id := range forcedLeft(c, a) {
+					out = append(out, string(c.G.Object(id).Card))
+				}
+				return out
+			},
+		})
+	}
+	return qs
+}
+
+// forcedLeft is the chosen player's hand without the cards picked so far.
+func forcedLeft(c *engine.Ctx, a []int) []engine.ObjectID {
+	left := append([]engine.ObjectID(nil), c.G.Players[livingPlayers(c.G, engine.NoPlayer)[a[0]]].Hand...)
+	for _, i := range a[1:] {
+		if i < 0 || i >= len(left) {
+			break
+		}
+		left = append(left[:i:i], left[i+1:]...)
+	}
+	return left
+}
+
+// forcedDiscard discards the cards picked by forcedDiscardQuestions.
+func forcedDiscard(n int) func(c *engine.Ctx, a []int) {
+	return func(c *engine.Ctx, a []int) {
+		if a[0] < 0 {
+			return
+		}
+		p := livingPlayers(c.G, engine.NoPlayer)[a[0]]
+		left := append([]engine.ObjectID(nil), c.G.Players[p].Hand...)
+		for _, i := range a[1 : n+1] {
+			if i < 0 || i >= len(left) {
+				break
+			}
+			c.G.DiscardFromHand(p, left[i])
+			left = append(left[:i:i], left[i+1:]...)
+		}
+	}
+}
+
+// damageAnything: "deal n damage to a monster or player", picked on
+// resolution.
+func damageAnything(n int) engine.Effect {
+	targets := func(g *engine.Game) []engine.Target {
+		var out []engine.Target
+		for _, id := range monstersInPlay(g) {
+			out = append(out, engine.Target{Object: id})
+		}
+		for _, p := range livingPlayers(g, engine.NoPlayer) {
+			out = append(out, engine.Target{Player: p, IsPlayer: true})
+		}
+		return out
+	}
+	return engine.Ask(func(c *engine.Ctx, a []int) {
+		if a[0] >= 0 {
+			c.G.DealDamageTo(targets(c.G)[a[0]], n, c.Controller, c.Source)
+		}
+	}, engine.Question{Text: "Deal damage to?", Options: func(c *engine.Ctx, _ []int) []string {
+		var out []string
+		for _, t := range targets(c.G) {
+			if t.IsPlayer {
+				out = append(out, playerLabel(c.G, t.Player))
+			} else {
+				out = append(out, string(c.G.Object(t.Object).Card))
+			}
+		}
+		return out
+	}})
+}

@@ -5,9 +5,6 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 // Psy Horf (Basic Monster Card)
 //
 //	When this dies, the active player recharges each item they control.
-//
-// TODO(card): implement the text above, then delete this line.
-// Until then `go run ./cmd/cardgen` rewrites this file from card_db.
 var psyHorf = engine.CardDef{
 	Ref:     "psy_horf",
 	Kind:    engine.MonsterCard,
@@ -16,4 +13,12 @@ var psyHorf = engine.CardDef{
 	DC:      5,
 	ATK:     1,
 	Rewards: []engine.Reward{{Kind: engine.RewardLoot, Amount: 1}},
+	Abilities: []engine.Ability{
+		{
+			Kind:    engine.Triggered,
+			Text:    "When this dies, the active player recharges each item they control.",
+			Trigger: engine.WhenThisDies(),
+			Effects: []engine.Effect{engine.RechargeItemsOf(engine.You)},
+		},
+	},
 }

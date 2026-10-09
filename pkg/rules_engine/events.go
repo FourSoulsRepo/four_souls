@@ -35,6 +35,8 @@ const (
 	EvTurnEndedEarly   EventKind = "turn_ended_early"
 	EvPenaltyPaid      EventKind = "penalty_paid"
 	EvExtraTurn        EventKind = "extra_turn"
+	EvRewardsGained    EventKind = "rewards_gained" // the active player got Object's rewards
+	EvTurnSkipped      EventKind = "turn_skipped"
 	EvCursed           EventKind = "cursed"             // Player gained the curse Object
 	EvExpanded         EventKind = "expanded"           // Amount slots of kind Text were added
 	EvRandomPick       EventKind = "random_pick"        // Text is the picked option
