@@ -143,6 +143,17 @@ func (db *DB) Has(refs []Ref) []Ref {
 	return missing
 }
 
+// HasImage reports whether the card's image file exists in fsys.
+// Clients show a blank card with text when it does not (A-11, SP-05).
+func HasImage(fsys fs.FS, c Card) bool {
+	p := ImagePath(c)
+	if p == "" {
+		return false
+	}
+	info, err := fs.Stat(fsys, p)
+	return err == nil && !info.IsDir()
+}
+
 // ImagePath returns where a card's image lives inside the file system,
 // or "" when the card has none.
 func ImagePath(c Card) string {

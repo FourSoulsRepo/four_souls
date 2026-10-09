@@ -104,6 +104,26 @@ func TestLoadDuplicateAcrossSets(t *testing.T) {
 	}
 }
 
+func TestHasImage(t *testing.T) {
+	fsys := fstest.MapFS{
+		"data/b2.json":           {Data: []byte(sampleSet)},
+		"images/b2/the_d6.webp":  {Data: []byte("webp")},
+		"images/b2/isaac.webp/x": {Data: []byte("dir, not a file")},
+	}
+	db, err := Load(fsys)
+	if err != nil {
+		t.Fatal(err)
+	}
+	d6, _ := db.Get(Ref{ID: "the_d6", Version: 1})
+	if !HasImage(fsys, d6) {
+		t.Error("the_d6 image should exist")
+	}
+	isaac, _ := db.Get(Ref{ID: "isaac", Version: 1})
+	if HasImage(fsys, isaac) {
+		t.Error("isaac has no image field, so no image")
+	}
+}
+
 func TestLoadEmpty(t *testing.T) {
 	db, err := Load(fstest.MapFS{})
 	if err != nil || len(db.Refs()) != 0 {

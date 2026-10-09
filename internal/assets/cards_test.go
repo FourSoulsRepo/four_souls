@@ -18,6 +18,26 @@ func TestCardsFSLoads(t *testing.T) {
 	}
 }
 
+// Images are optional: a fresh clone has none and must still load every card.
+func TestCardsFSImagesAreOptional(t *testing.T) {
+	if !Embedded {
+		t.Setenv(EnvCardsDir, filepath.Join("..", "..", "pkg", "card_db"))
+	}
+	fsys := CardsFS()
+	db, err := carddb.Load(fsys)
+	if err != nil {
+		t.Fatal(err)
+	}
+	with := 0
+	for _, ref := range db.Refs() {
+		c, _ := db.Get(ref)
+		if carddb.HasImage(fsys, c) {
+			with++
+		}
+	}
+	t.Logf("embedded=%v: %d cards, %d with images", Embedded, len(db.Refs()), with)
+}
+
 func TestCardsFSEnvOverride(t *testing.T) {
 	if Embedded {
 		t.Skip("external mode only")
