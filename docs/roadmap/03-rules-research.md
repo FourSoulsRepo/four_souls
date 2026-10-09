@@ -82,7 +82,7 @@ Ideas: R-01 – R-07.
    1. Pasted threads are in the digest.
 4. **Owner:** provide the threads.
 
-### [ ] 3.7 Our rules text
+### [x] 3.7 Our rules text
 
 1. Goal: our Base Game rules inside the engine (R-04).
 2. Tasks:
@@ -94,6 +94,13 @@ Ideas: R-01 – R-07.
 3. Done when:
    1. Every Base Game mechanic has a rule.
    2. IDs are unique; a test checks this.
+4. Result:
+   1. 237 rules in 14 topics (SETUP, CARD, ZONE, ABIL, MECH, TURN, PRIO).
+   2. Also STACK, DICE, ATK, SHOP, DEATH, WIN, BARTER.
+   3. Written from the official Extended Rulebook, checked against S-RU.
+   4. `rules_doc_test.go`: ids well formed, unique, gap-free, refs resolve.
+   5. Found: no mulligan rule (R-06); bartering of ¢ needs game support.
+   6. Found: official variants Mini-draft (2 players) and Eden Only.
 
 ### [ ] 3.8 Open questions
 
