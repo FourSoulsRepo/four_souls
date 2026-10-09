@@ -78,7 +78,10 @@ func (g *Game) resolveTop() {
 		}
 		g.discard(it.Source, LootDeck)
 	case StackRoll:
-		// The result is final once it resolves (R-DICE-06).
+		// Continuous roll changes apply, then the result is final (R-DICE-06).
+		if it.Controller != NoPlayer {
+			it.Roll = min(max(it.Roll+g.bonus(StatRoll, it.Controller, 0), 1), 6)
+		}
 		g.emit(Event{Kind: EvRollResolved, Player: it.Controller, Amount: it.Roll})
 		if it.Attack {
 			g.resolveAttackRoll(it)
@@ -87,7 +90,7 @@ func (g *Game) resolveTop() {
 			// The roll ability's result trigger goes on the stack (R-ABIL-24).
 			g.push(StackItem{
 				Kind: StackTrigger, Controller: it.Controller, Source: it.Source, Card: it.RollFor.Card,
-				Ability: it.RollFor, Mode: it.Mode, RollResult: it.Roll, Label: "roll result",
+				Ability: it.RollFor, Mode: it.Mode, Targets: it.Targets, RollResult: it.Roll, Label: "roll result",
 			})
 		}
 	case StackDamage:
@@ -130,4 +133,15 @@ func (g *Game) givePriority(p PlayerID) {
 		return
 	}
 	g.openWindow(p)
+}
+
+// SetRoll changes a dice roll on the stack to n, between 1 and 6
+// (R-DICE-04): "change the result of a dice roll".
+func (g *Game) SetRoll(stackID, n int) {
+	for i := range g.Stack {
+		if it := &g.Stack[i]; it.ID == stackID && it.Kind == StackRoll {
+			it.Roll = min(max(n, 1), 6)
+			g.emit(Event{Kind: EvRollChanged, Player: it.Controller, Amount: it.Roll})
+		}
+	}
 }

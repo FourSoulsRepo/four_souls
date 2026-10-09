@@ -8,11 +8,18 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 //	1-2: Gain 4¢.
 //	3-4: Gain 7¢.
 //	5-6: Lose 4¢.
-//
-// TODO(card): implement the text above, then delete this line.
-// Until then `go run ./cmd/cardgen` rewrites this file from card_db.
 var pills2 = engine.CardDef{
 	Ref:    "pills_2",
 	Kind:   engine.LootCard,
 	Copies: 1,
+	Abilities: []engine.Ability{
+		{
+			Kind: engine.LootAbility,
+			Text: "Roll- 1-2: Gain 4¢. 3-4: Gain 7¢. 5-6: Lose 4¢.",
+			Effects: []engine.Effect{engine.Roll(engine.RollTable{}.
+				Results(1, 2, engine.GainCents(4)).
+				Results(3, 4, engine.GainCents(7)).
+				Results(5, 6, engine.LoseCents(4)))},
+		},
+	},
 }

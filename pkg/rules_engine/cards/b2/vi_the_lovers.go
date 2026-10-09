@@ -6,11 +6,16 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 //
 //	Choose a player.
 //	They gain +2{HP} till end of turn.
-//
-// TODO(card): implement the text above, then delete this line.
-// Until then `go run ./cmd/cardgen` rewrites this file from card_db.
 var viTheLovers = engine.CardDef{
 	Ref:    "vi_the_lovers",
 	Kind:   engine.LootCard,
 	Copies: 1,
+	Abilities: []engine.Ability{
+		{
+			Kind:    engine.LootAbility,
+			Text:    "Choose a player. They gain +2 HP till end of turn.",
+			Targets: []engine.TargetSpec{engine.Choose(engine.TargetPlayer)},
+			Effects: []engine.Effect{engine.GainHPThisTurn(2, 0)},
+		},
+	},
 }

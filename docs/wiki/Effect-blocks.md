@@ -60,7 +60,7 @@ Targets are always asked, with a "cancel" option before anything is paid. A targ
 | `Choose(TargetDiceRoll)` | a dice roll on the stack |
 | `Choose(TargetOtherPlayer)` | a living player other than you |
 
-Effects refer to targets by number: `DealDamage(1, 0)` hits the first target.
+Effects refer to targets by number: `DealDamage(1, 0)` hits the first target. `You` means the controller, for text without a target: `DealDamage(1, You)` is "Take 1 damage." A roll ability keeps its targets for the result: "Choose a player, then roll- deal damage equal to the result".
 
 ## Effects
 
@@ -81,6 +81,12 @@ Effects refer to targets by number: `DealDamage(1, 0)` hits the first target.
 | `StealCents(n, t)` | Steal 1¢ from another player. |
 | `GainATKThisTurn(n, t)` | They gain +1 ATK till end of turn. |
 | `PreventNextDamage(t)` | Prevent the next instance of damage they would take this turn. |
+| `PreventDamage(n, t)` | Prevent the next 1 damage they would take this turn. |
+| `GainHPThisTurn(n, t)` | They gain +2 HP till end of turn. |
+| `GainRollBonusThisTurn(n, t)` | They gain +1 to dice rolls till end of turn. |
+| `RechargeTarget(t)` | Recharge an item. |
+| `RechargeItemsOf(t)` | Choose a player. Recharge each item they control. |
+| `Kill(t)` | Kill a player. |
 | `Ask(do, questions…)` | Anything decided on resolution: "a deck", "a card from your hand" |
 | `EffectFunc(func(c *Ctx){…})` | Anything the blocks do not cover |
 

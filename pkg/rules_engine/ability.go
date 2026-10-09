@@ -184,11 +184,15 @@ func (e gainTreasureEffect) apply(c *Ctx) {
 
 type damageEffect struct{ n, target int }
 
-// DealDamage puts n damage on the stack aimed at target number t (R-MECH-15).
+// DealDamage puts n damage on the stack aimed at target number t
+// (R-MECH-15). DealDamage(n, You) is "take n damage" (R-MECH-18).
 func DealDamage(n, t int) Effect { return damageEffect{n, t} }
 
 func (e damageEffect) apply(c *Ctx) {
-	t := c.Targets[e.target]
+	if e.n <= 0 {
+		return // nobody deals or takes 0 damage (R-MECH-20)
+	}
+	t := c.target(e.target)
 	tgt := Target{Object: t.Object}
 	if t.Kind == TargetPlayer {
 		tgt = Target{Player: t.Player, IsPlayer: true}
@@ -239,7 +243,7 @@ func (e rollEffect) apply(c *Ctx) {
 	c.G.emit(Event{Kind: EvDiceRolled, Player: c.Controller, Amount: r, Text: "roll"})
 	c.G.push(StackItem{
 		Kind: StackRoll, Controller: c.Controller, Source: c.Source, Roll: r, Label: "roll",
-		RollFor: c.ref, Mode: c.mode,
+		RollFor: c.ref, Mode: c.mode, Targets: c.Targets,
 	})
 }
 
@@ -319,39 +323,114 @@ type stealCentsEffect struct{ n, target int }
 func StealCents(n, t int) Effect { return stealCentsEffect{n, t} }
 
 func (e stealCentsEffect) apply(c *Ctx) {
-	c.G.enqueue(Action{Kind: ActStealCents, Player: c.Controller, From: c.Targets[e.target].Player, Amount: e.n})
+	c.G.enqueue(Action{Kind: ActStealCents, Player: c.Controller, From: c.target(e.target).Player, Amount: e.n})
 }
 
-type boostATKEffect struct{ n, target int }
+type boostEffect struct {
+	player, monster Stat // the stat for a player or a monster target
+	n, target       int
+}
 
 // GainATKThisTurn gives a player or monster +n ATK till end of turn
 // (R-TURN-13 ends it).
-func GainATKThisTurn(n, t int) Effect { return boostATKEffect{n, t} }
+func GainATKThisTurn(n, t int) Effect { return boostEffect{StatPlayerATK, StatMonsterATK, n, t} }
 
-func (e boostATKEffect) apply(c *Ctx) {
-	t := c.Targets[e.target]
-	b := Boost{Stat: StatMonsterATK, Player: NoPlayer, Object: t.Object, Amount: e.n}
+// GainHPThisTurn gives a player or monster +n HP till end of turn.
+func GainHPThisTurn(n, t int) Effect { return boostEffect{StatPlayerHP, StatMonsterHP, n, t} }
+
+// GainRollBonusThisTurn gives a player +n to their dice rolls till end
+// of turn; it applies as each roll resolves (R-DICE-06).
+func GainRollBonusThisTurn(n, t int) Effect { return boostEffect{StatRoll, StatRoll, n, t} }
+
+func (e boostEffect) apply(c *Ctx) {
+	t := c.target(e.target)
+	b := Boost{Stat: e.monster, Player: NoPlayer, Object: t.Object, Amount: e.n}
 	if t.Kind == TargetPlayer {
-		b = Boost{Stat: StatPlayerATK, Player: t.Player, Amount: e.n}
+		b = Boost{Stat: e.player, Player: t.Player, Amount: e.n}
 	}
 	c.G.Boosts = append(c.G.Boosts, b)
-	c.G.emit(Event{Kind: EvBoosted, Player: b.Player, Object: b.Object, Amount: e.n, Text: "ATK"})
+	c.G.emit(Event{Kind: EvBoosted, Player: b.Player, Object: b.Object, Amount: e.n, Text: b.Stat.String()})
 }
 
-type shieldEffect struct{ target int }
+type shieldEffect struct{ n, target int }
 
 // PreventNextDamage prevents the next instance of damage the target
 // would take this turn (R-MECH-46).
-func PreventNextDamage(t int) Effect { return shieldEffect{t} }
+func PreventNextDamage(t int) Effect { return shieldEffect{0, t} }
+
+// PreventDamage prevents up to n of the next instance of damage the
+// target would take this turn: "Prevent the next 1 damage".
+func PreventDamage(n, t int) Effect { return shieldEffect{n, t} }
 
 func (e shieldEffect) apply(c *Ctx) {
-	t := c.Targets[e.target]
-	s := Target{Object: t.Object}
+	t := c.target(e.target)
+	s := Shield{Target: Target{Object: t.Object}, Amount: e.n}
 	if t.Kind == TargetPlayer {
-		s = Target{Player: t.Player, IsPlayer: true}
+		s.Target = Target{Player: t.Player, IsPlayer: true}
 	}
 	c.G.Shields = append(c.G.Shields, s)
-	c.G.emit(Event{Kind: EvShielded, Player: s.Player, Object: s.Object})
+	c.G.emit(Event{Kind: EvShielded, Player: s.Target.Player, Object: s.Target.Object, Amount: e.n})
+}
+
+type rechargeEffect struct{ target int }
+
+// RechargeTarget recharges the target item ("Recharge an item").
+func RechargeTarget(t int) Effect { return rechargeEffect{t} }
+
+func (e rechargeEffect) apply(c *Ctx) { c.G.recharge1(c.target(e.target).Object) }
+
+type rechargeAllEffect struct{ target int }
+
+// RechargeItemsOf recharges each item the target player controls.
+func RechargeItemsOf(t int) Effect { return rechargeAllEffect{t} }
+
+func (e rechargeAllEffect) apply(c *Ctx) {
+	for _, id := range c.G.Players[c.target(e.target).Player].InPlay {
+		if c.G.Object(id).Role == RoleItem {
+			c.G.recharge1(id)
+		}
+	}
+}
+
+func (g *Game) recharge1(id ObjectID) {
+	o := g.Object(id)
+	if o.Zone.Kind != ZoneInPlay || o.Charged {
+		return
+	}
+	o.Charged = true
+	g.emit(Event{Kind: EvRecharged, Player: o.Controller, Object: id, Card: o.Card})
+}
+
+type killEffect struct{ target int }
+
+// Kill kills the target player or monster: its death goes on the stack
+// (R-MECH-23, R-DEATH-01).
+func Kill(t int) Effect { return killEffect{t} }
+
+func (e killEffect) apply(c *Ctx) {
+	t := c.target(e.target)
+	if t.Kind == TargetPlayer {
+		c.G.Players[t.Player].Damage += c.G.PlayerHP(t.Player) // HP to 0 (R-MECH-23)
+		c.G.push(StackItem{Kind: StackDeath, Controller: NoPlayer, Label: "death", Target: Target{Player: t.Player, IsPlayer: true}})
+		return
+	}
+	if c.G.eternal(t.Object) {
+		return // R-DEATH-03
+	}
+	c.G.Object(t.Object).Damage = c.G.def(t.Object).HP + c.G.bonus(StatMonsterHP, NoPlayer, t.Object)
+	c.G.push(StackItem{Kind: StackDeath, Controller: NoPlayer, Label: "death", Target: Target{Object: t.Object}})
+}
+
+// You is the target index that means the ability's controller, for text
+// without a target: DealDamage(1, You) is "Take 1 damage".
+const You = -1
+
+// target returns chosen target t, or the controller for You.
+func (c *Ctx) target(t int) Chosen {
+	if t == You {
+		return Chosen{Kind: TargetPlayer, Player: c.Controller}
+	}
+	return c.Targets[t]
 }
 
 // effectsOf returns the effects that run for an ability: those of the

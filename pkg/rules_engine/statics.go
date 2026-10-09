@@ -11,7 +11,12 @@ const (
 	StatMonsterATK             // a monster's attack
 	StatMonsterHP              // a monster's max HP
 	StatShopPrice              // the price of a shop item for a player
+	StatRoll                   // added to a player's dice rolls as they resolve (R-DICE-06)
 )
+
+var statNames = []string{"ATK", "HP", "DC", "ATK", "HP", "price", "roll"}
+
+func (s Stat) String() string { return statNames[s] }
 
 // Static is a static ability that changes a stat while its object is in
 // play (R-ABIL-12, R-ABIL-28). Applies says whom it affects: for player

@@ -182,3 +182,9 @@ func (tb *Table) Start(p int, card engine.CardRef, i int) {
 		tb.T.Fatalf("%+v refused: %v", in, err)
 	}
 }
+
+// Play plays a loot card from p's hand, answering the prompts.
+func (tb *Table) Play(p int, card engine.CardRef, choices ...string) []engine.Event {
+	tb.T.Helper()
+	return tb.Do(engine.Intent{Player: engine.PlayerID(p), Kind: engine.IntentPlayLoot, Objects: []engine.ObjectID{tb.Find(p, card)}}, choices...)
+}

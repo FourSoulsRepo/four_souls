@@ -20,3 +20,19 @@ var rechargeAtEndOfTurn = engine.Ability{
 	Trigger: engine.AtEndOfYourTurn(),
 	Effects: []engine.Effect{engine.RechargeSelf()},
 }
+
+// discardOne is "Discard 1 loot card." for the controller.
+var discardOne = engine.Ask(func(c *engine.Ctx, a []int) {
+	if a[0] >= 0 {
+		c.G.DiscardFromHand(c.Controller, c.HandCard(a[0]))
+	}
+}, engine.HandQuestion("Discard which loot card?"))
+
+// damageEqualToRoll deals damage equal to the roll to target 0.
+func damageEqualToRoll() engine.RollTable {
+	var t engine.RollTable
+	for r := 1; r <= 6; r++ {
+		t = t.Results(r, r, engine.DealDamage(r, 0))
+	}
+	return t
+}

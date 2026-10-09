@@ -203,7 +203,7 @@ func (g *Game) endAttack() {
 // resolveDamage marks damage; an object at 0 HP gets its death on the
 // stack (R-MECH-15, R-MECH-16, R-DEATH-01).
 func (g *Game) resolveDamage(it StackItem) {
-	if g.useShield(it.Target) {
+	if it.Amount = g.shield(it.Target, it.Amount); it.Amount <= 0 {
 		return
 	}
 	if it.Target.IsPlayer {
@@ -233,16 +233,23 @@ func (g *Game) resolveDamage(it StackItem) {
 	}
 }
 
-// useShield prevents damage to t if a shield protects it (R-MECH-46).
-func (g *Game) useShield(t Target) bool {
+// shield uses the first shield that protects t against n damage and
+// returns the damage left (R-MECH-46).
+func (g *Game) shield(t Target, n int) int {
 	for i, s := range g.Shields {
-		if s.IsPlayer == t.IsPlayer && ((t.IsPlayer && s.Player == t.Player) || (!t.IsPlayer && s.Object == t.Object)) {
-			g.Shields = append(g.Shields[:i:i], g.Shields[i+1:]...)
-			g.emit(Event{Kind: EvPrevented, Player: t.Player, Object: t.Object})
-			return true
+		st := s.Target
+		if st.IsPlayer != t.IsPlayer || (t.IsPlayer && st.Player != t.Player) || (!t.IsPlayer && st.Object != t.Object) {
+			continue
 		}
+		g.Shields = append(g.Shields[:i:i], g.Shields[i+1:]...)
+		prevented := n
+		if s.Amount > 0 {
+			prevented = min(n, s.Amount)
+		}
+		g.emit(Event{Kind: EvPrevented, Player: t.Player, Object: t.Object, Amount: prevented})
+		return n - prevented
 	}
-	return false
+	return n
 }
 
 // resolveDeath: the object or player dies (R-DEATH-02).

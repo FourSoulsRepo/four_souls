@@ -63,3 +63,44 @@ func monsterTable(t *testing.T, monsters []engine.CardRef, seats ...engine.Situa
 	t.Helper()
 	return enginetest.NewSetup(t, engine.SituationSetup{Players: seats, Monsters: monsters}, Set)
 }
+
+// lootTable: player 0 (Isaac) holds the cards, player 1 is Cain; a fly
+// and a leech are in the monster slots.
+func lootTable(t *testing.T, hand ...engine.CardRef) *enginetest.Table {
+	t.Helper()
+	return enginetest.NewSetup(t, engine.SituationSetup{
+		Players: []engine.SituationPlayer{
+			{Character: "isaac", Hand: hand},
+			seat("cain"),
+		},
+		Monsters: []engine.CardRef{"fly", "leech"},
+	}, Set)
+}
+
+const (
+	me  = "player 1 (isaac)"
+	foe = "player 2 (cain)"
+)
+
+// inDiscard reports whether the loot discard holds the card.
+func inDiscard(g *engine.Game, card engine.CardRef) bool {
+	for _, id := range g.Discards[engine.LootDeck] {
+		if g.Object(id).Card == card {
+			return true
+		}
+	}
+	return false
+}
+
+// testGain plays a coin card and checks the cents.
+func testGain(t *testing.T, card engine.CardRef, n int) {
+	t.Helper()
+	tb := lootTable(t, card)
+	tb.Play(0, card)
+	if got := tb.G.Players[0].Cents; got != n {
+		t.Errorf("cents = %d, want %d", got, n)
+	}
+	if !inDiscard(tb.G, card) {
+		t.Error("the loot card is not in the loot discard (R-CARD-07)")
+	}
+}

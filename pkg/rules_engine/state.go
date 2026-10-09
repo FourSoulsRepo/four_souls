@@ -120,6 +120,13 @@ func (o *Object) addCounters(name string, n int) {
 	}
 }
 
+// Shield prevents damage to Target: the whole next instance, or up to
+// Amount of it when Amount > 0 (R-MECH-46). It lasts till end of turn.
+type Shield struct {
+	Target Target `json:"target"`
+	Amount int    `json:"amount,omitempty"`
+}
+
 // Boost is a "till end of turn" stat change (R-TURN-13). It applies to
 // Object, or to Player when Object is 0.
 type Boost struct {
@@ -191,7 +198,7 @@ type Game struct {
 	// Boosts and Shields last till end of turn (R-TURN-13). A shield
 	// prevents the next damage its target would take (R-MECH-46).
 	Boosts  []Boost  `json:"boosts,omitempty"`
-	Shields []Target `json:"shields,omitempty"`
+	Shields []Shield `json:"shields,omitempty"`
 
 	// Stack: the last item is on top (R-STACK-02).
 	Stack    []StackItem `json:"stack"`
