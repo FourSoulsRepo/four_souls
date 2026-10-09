@@ -23,6 +23,7 @@ Ideas: A-03.
    1. Paste payload or open a link.
    2. Show the answer, reasons, rule links.
    3. Rules text with anchors by rule ID.
+   4. FAQ from 11.7, with the same rule links.
 3. Done when:
    1. A link copied from the app opens the same situation.
 
