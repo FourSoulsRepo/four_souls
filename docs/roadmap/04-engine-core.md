@@ -32,7 +32,7 @@ Ideas: A-05 – A-08, N-04, LR-04, LR-07, TS-05.
 3. Done when:
    1. Same seed gives the same shuffles in tests.
 
-### [ ] 4.3 Game setup and turn structure
+### [x] 4.3 Game setup and turn structure
 
 1. Goal: a turn loop with no card effects.
 2. Tasks:

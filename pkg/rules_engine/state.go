@@ -65,11 +65,26 @@ type Zone struct {
 	Index int `json:"index,omitempty"`
 }
 
+// Role is what an object in play is (R-CARD).
+type Role int
+
+// The roles of objects in play.
+const (
+	RoleNone      Role = iota // not in play
+	RoleCharacter             // R-CARD-25
+	RoleItem                  // R-CARD-01
+	RoleMonster               // R-CARD-09
+	RoleEvent                 // R-CARD-09
+	RoleSoul                  // R-CARD-18
+	RoleCurse                 // R-ABIL-20
+)
+
 // Object is one card in one zone.
 type Object struct {
 	ID         ObjectID  `json:"id"`
 	Card       CardRef   `json:"card"`
 	Zone       Zone      `json:"zone"`
+	Role       Role      `json:"role,omitempty"`
 	Controller PlayerID  `json:"controller"`
 	Charged    bool      `json:"charged"`
 	Damage     int       `json:"damage,omitempty"`
@@ -116,6 +131,23 @@ type Game struct {
 	Rooms    []Slot `json:"rooms,omitempty"`
 
 	Outside []ObjectID `json:"outside"`
+	// BonusSouls are the active bonus souls, outside the game (R-SETUP-06).
+	BonusSouls []ObjectID `json:"bonus_souls,omitempty"`
+
+	Turn     Turn       `json:"turn"`
+	Priority Priority   `json:"priority"`
+	Waiting  Prompt     `json:"waiting"`
+	MaxHand  int        `json:"max_hand"`  // default 10 (R-TURN-11)
+	WinSouls int        `json:"win_souls"` // default 4 (R-WIN-01)
+	Over     bool       `json:"over,omitempty"`
+	Winners  []PlayerID `json:"winners,omitempty"`
+
+	// Sets lists the card sets in play; definitions are looked up by name
+	// when a saved game is loaded.
+	Sets []string `json:"sets"`
+
+	cards  cardIndex
+	events []Event
 }
 
 // newObject adds a card as a new object and returns its ID.
@@ -152,6 +184,7 @@ func (g *Game) Clone() (*Game, error) {
 	if err := json.Unmarshal(data, &c); err != nil {
 		return nil, fmt.Errorf("clone: %w", err)
 	}
+	c.cards = g.cards // definitions are not part of the saved state
 	return &c, nil
 }
 
