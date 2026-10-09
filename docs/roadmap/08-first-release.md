@@ -13,8 +13,8 @@ Ideas: B-03 – B-05, L-03.
 2. Tasks:
    1. Trigger on version tags.
    2. Build Windows, Linux, macOS × x64, ARM.
-   3. Embedded build with images (2.7) once the private image repo exists.
-   4. Until then releases ship text-only cards.
+   3. Check out the images with `.github/actions/card-images` (deploy key).
+   4. Build with `-tags "embed cardimages"` (2.7).
    5. Dedicated server binaries too.
    6. Archives include `README.txt`.
 3. Done when:

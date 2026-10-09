@@ -176,6 +176,9 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    15. Fallback if it grows too big: image packs as GitHub Release assets.
    16. One image repo, one folder per set.
    17. Split into a repo per set only when we hit the limits.
+   18. The image repo is `FourSoulsRepo/card_db` (private).
+   19. Mounted as a git submodule at `pkg/card_db/images`.
+   20. Release builds embed images with `-tags cardimages`.
 12. A-12. `pkg/record`: match record format, a separate Go module.
    1. Stays in this repo for now; not moved out.
 13. A-13. Network protocol stays inside the app.
@@ -455,7 +458,7 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
 6. CD-06. Each card stores its fan translators, when translated.
    1. Name only, no links.
 7. CD-07. Card data is collected automatically.
-   1. A tool in `scripts/` gathers data from official sources.
+   1. A tool in the separate `FourSoulsRepo/tools` repo gathers data from official sources.
    2. Names, text, artists, images.
    3. The official site is behind a Cloudflare check.
    4. The script opens a real browser; the user passes the check.

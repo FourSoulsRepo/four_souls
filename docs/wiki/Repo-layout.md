@@ -9,9 +9,10 @@ internal/legal/        fan-game notice used by app and server
 internal/protocol/     network messages (never split out)
 internal/version/      app version stamped at link time
 pkg/rules_engine/      Go module: the rules engine (package rulesengine)
-pkg/card_db/           Go module: card display data; images/ is git-ignored
+pkg/card_db/           Go module: card display data; images/ is a private submodule
 pkg/record/            Go module: match record format
 frontend/              React + TypeScript (Vite)
+scripts/screenshots/   Playwright UI screenshots
 frontend/src/bridge/   the only code that talks to Wails
 docs/                  ideas, roadmap, ADRs, use cases, this wiki
 ```

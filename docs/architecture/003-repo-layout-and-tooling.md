@@ -77,6 +77,7 @@ Use options 2, 5 and 7.
    2. Engine and website built for `js/wasm`.
    3. Frontend typecheck, lint, build.
    4. App and server for Linux and Windows (x64, ARM), macOS universal.
+   5. Each app build runs text-only and with card images (deploy key).
 11. Implements from ADR 001: Wails v2, wasm build in CI.
 
 ## Consequences
