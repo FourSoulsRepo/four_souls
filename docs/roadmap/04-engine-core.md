@@ -55,7 +55,7 @@ Ideas: A-05 – A-08, N-04, LR-04, LR-07, TS-05.
 3. Done when:
    1. Tests cover nested responses.
 
-### [ ] 4.5 Pending actions and rewriting
+### [x] 4.5 Pending actions and rewriting
 
 1. Goal: the MTG Arena "whiteboard" pattern (A-05).
 2. Tasks:

@@ -134,6 +134,11 @@ type Game struct {
 	// BonusSouls are the active bonus souls, outside the game (R-SETUP-06).
 	BonusSouls []ObjectID `json:"bonus_souls,omitempty"`
 
+	// Queue holds pending actions that cards may rewrite (A-05).
+	Queue []Action `json:"queue,omitempty"`
+	// Choices are what the current choose prompt picks from.
+	Choices []ReplacementRef `json:"choices,omitempty"`
+
 	// Stack: the last item is on top (R-STACK-02).
 	Stack    []StackItem `json:"stack"`
 	StackSeq int         `json:"stack_seq"`

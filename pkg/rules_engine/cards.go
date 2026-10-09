@@ -50,6 +50,9 @@ type CardDef struct {
 	// Outside marks cards that start outside the game, such as starting
 	// items: they are never shuffled into a deck (R-ZONE-13).
 	Outside bool
+
+	// Replacements are the card's replacement effects (R-ABIL-29).
+	Replacements []Replacement
 }
 
 // CardSet is a set of card definitions, e.g. the Base Game.

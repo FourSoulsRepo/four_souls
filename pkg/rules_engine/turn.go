@@ -8,6 +8,7 @@ const (
 	StepRecharge      Step = iota // R-TURN-02, nobody has priority
 	StepStartTriggers             // R-TURN-03
 	StepLoot                      // R-TURN-04
+	StepLootWindow                // priority after the loot (R-TURN-04)
 	StepAction                    // R-TURN-05 to R-TURN-09
 	StepEndTriggers               // R-TURN-10
 	StepHandSize                  // R-TURN-11, nobody has priority
@@ -84,7 +85,7 @@ func (g *Game) windowClosed() {
 	switch g.Turn.Step { //nolint:exhaustive // other steps never open a window
 	case StepStartTriggers:
 		g.goTo(StepLoot)
-	case StepLoot:
+	case StepLootWindow:
 		g.goTo(StepAction)
 	case StepAction:
 		if g.Turn.EndDeclared {
@@ -109,11 +110,21 @@ func (g *Game) inOpenActionPhase() bool {
 	return g.Turn.Step == StepAction && !g.Turn.EndDeclared && len(g.Stack) == 0
 }
 
+// maxRunSteps stops a run loop that never settles; that is always a bug.
+const maxRunSteps = 100000
+
 // run does automatic work until the engine needs input.
 func (g *Game) run() {
-	for !g.Over && g.Waiting.Kind == PromptNone {
+	for steps := 0; !g.Over && g.Waiting.Kind == PromptNone; steps++ {
+		if steps > maxRunSteps {
+			panic("rulesengine: the game does not settle (bug)")
+		}
 		if g.checkWin() {
 			return
+		}
+		if len(g.Queue) > 0 {
+			g.processQueue()
+			continue
 		}
 		if g.Turn.Entered {
 			// The step finished its work without asking anything.
@@ -129,10 +140,16 @@ func (g *Game) advanceFrom(s Step) {
 	switch s { //nolint:exhaustive // steps with windows advance in windowClosed
 	case StepRecharge:
 		g.goTo(StepStartTriggers)
+	case StepLoot:
+		g.goTo(StepLootWindow)
 	case StepHandSize:
 		g.goTo(StepCleanup)
 	case StepCleanup:
 		g.startNextTurn()
+	case StepStartTriggers, StepLootWindow, StepAction, StepEndTriggers:
+		// These steps move on when their priority window closes; without
+		// an open window, give priority again instead of spinning.
+		g.openWindow(g.Turn.Active)
 	}
 }
 
@@ -144,7 +161,8 @@ func (g *Game) enterStep() {
 	case StepStartTriggers:
 		g.openWindow(p)
 	case StepLoot:
-		g.loot(p, 1)
+		g.enqueue(Action{Kind: ActLoot, Player: p, Amount: 1}) // R-TURN-04
+	case StepLootWindow:
 		g.openWindow(p)
 	case StepAction:
 		g.Turn.LootPlays, g.Turn.Attacks, g.Turn.Purchases = 1, 1, 1 // R-TURN-05, R-TURN-07

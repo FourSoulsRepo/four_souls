@@ -11,13 +11,17 @@ const (
 	PromptPriority            // the player may act or pass (R-PRIO-01)
 	PromptDiscard             // the player discards Count loot cards
 	PromptGameOver            // nothing more to do
+	// PromptChooseReplacement asks which replacement applies first
+	// (R-ABIL-33); Options describe them.
+	PromptChooseReplacement
 )
 
 // Prompt names who must answer and what kind of answer is expected.
 type Prompt struct {
-	Kind   PromptKind `json:"kind"`
-	Player PlayerID   `json:"player"`
-	Count  int        `json:"count,omitempty"`
+	Kind    PromptKind `json:"kind"`
+	Player  PlayerID   `json:"player"`
+	Count   int        `json:"count,omitempty"`
+	Options []string   `json:"options,omitempty"`
 }
 
 // IntentKind is what a player wants to do.
@@ -29,6 +33,7 @@ const (
 	IntentEndTurn                    // declare the end of the turn (R-TURN-06)
 	IntentDiscard                    // discard the chosen loot cards
 	IntentPlayLoot                   // play the loot card in Objects[0] (R-CARD-08)
+	IntentChoose                     // pick option Choice of the prompt
 )
 
 // Intent is one player's request. The engine checks it against the
@@ -37,6 +42,7 @@ type Intent struct {
 	Player  PlayerID   `json:"player"`
 	Kind    IntentKind `json:"kind"`
 	Objects []ObjectID `json:"objects,omitempty"`
+	Choice  int        `json:"choice,omitempty"`
 }
 
 // RuleError explains why an intent is not allowed, citing a rule ID.
@@ -107,6 +113,13 @@ func (g *Game) check(in Intent) error {
 		if in.Player != g.Turn.Active || g.Turn.LootPlays < 1 {
 			return refuse("R-CARD-08", "no loot play available")
 		}
+	case IntentChoose:
+		if w.Kind != PromptChooseReplacement {
+			return refuse("R-ABIL-33", "no choice is asked for")
+		}
+		if in.Choice < 0 || in.Choice >= len(g.Choices) {
+			return refuse("R-ABIL-33", "choose one of the %d options", len(g.Choices))
+		}
 	default:
 		return refuse("R-PRIO-01", "unknown intent")
 	}
@@ -140,6 +153,10 @@ func (g *Game) apply(in Intent) {
 		g.Waiting = Prompt{}
 	case IntentPlayLoot:
 		g.playLoot(in.Player, in.Objects[0])
+	case IntentChoose:
+		ref := g.Choices[in.Choice]
+		g.Choices, g.Waiting = nil, Prompt{}
+		g.applyReplacement(ref)
 	}
 }
 
