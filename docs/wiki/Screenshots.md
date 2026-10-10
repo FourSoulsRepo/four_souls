@@ -19,5 +19,10 @@ The fixture copies the fan-game notice. `internal/legal` has a test that fails w
 | Splash with the fan-game notice | `screen-splash.png` |
 | Main menu with versions | `screen-menu.png` |
 | Settings | `screen-settings.png` |
+| Host a game, detailed setup | `screen-host.png` |
+| Game list on a server | `screen-games.png` |
+| Table before the game | `screen-table.png` |
+| Card gallery: image and blank cards (dev only) | `screen-cards.png` |
+| Zoomed card | `screen-card-zoom.png` |
 
 When a screen is added, call `shot` in its test and add a row here.

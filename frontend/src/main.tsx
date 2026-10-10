@@ -8,6 +8,11 @@ if (import.meta.env.DEV && new URLSearchParams(window.location.search).has('fake
   await import('./fakeBridge');
 }
 const { App } = await import('./App');
+// ?screen=cards opens the card gallery (dev server only, for tests).
+if (import.meta.env.DEV && new URLSearchParams(window.location.search).get('screen') === 'cards') {
+  const { useApp } = await import('./store');
+  useApp.setState({ screen: 'cards' });
+}
 
 const container = document.getElementById('root');
 if (!container) {

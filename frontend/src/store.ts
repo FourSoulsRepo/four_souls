@@ -2,6 +2,7 @@
 // and server messages write it.
 import { create } from 'zustand';
 import {
+  getCards,
   getCardSets,
   getSettings,
   getVersions,
@@ -11,11 +12,20 @@ import {
   type HostInfo,
   type Settings,
 } from './bridge';
+import type { CardInfo } from './cards';
 import { emptyLobby, leftTable, lost, onMessage, remember, type Screen, type Session } from './lobby';
 import { connect, disconnect, send } from './net';
 import { protocolVersion, wsURL, type Create, type Hello } from './protocol';
 
 export type { Screen } from './lobby';
+
+// Zoom is the card shown large: on hover, or after a long press on touch
+// (B-06). side is where it shows, away from the pointer.
+export interface Zoom {
+  ref: string;
+  touch: boolean;
+  side: 'left' | 'right';
+}
 
 interface AppState extends Session {
   settings: Settings;
@@ -25,6 +35,11 @@ interface AppState extends Session {
   connected: boolean;
   // cardSets are the sets this app has, sent in hello.
   cardSets: string[];
+  // cards is the display data by ref; empty until loaded.
+  cards: Map<string, CardInfo>;
+  zoom: Zoom | null;
+  loadCards: () => Promise<void>;
+  setZoom: (zoom: Zoom | null) => void;
   show: (screen: Screen) => void;
   loadSettings: () => Promise<void>;
   // saveSettings reports whether Go stored them.
@@ -99,8 +114,21 @@ export const useApp = create<AppState>()((set, get) => {
     hosting: null,
     connected: false,
     cardSets: [],
+    cards: new Map(),
+    zoom: null,
+    loadCards: async () => {
+      try {
+        const list = await getCards();
+        set({ cards: new Map(list.map((c) => [c.ref, c])) });
+      } catch (e) {
+        set({ error: `Card data: ${messageOf(e)}` });
+      }
+    },
+    setZoom: (zoom) => {
+      set({ zoom });
+    },
     show: (screen) => {
-      set({ screen, error: '' });
+      set({ screen, error: '', zoom: null });
     },
     loadSettings: async () => {
       try {

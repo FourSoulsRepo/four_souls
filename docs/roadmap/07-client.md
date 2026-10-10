@@ -39,7 +39,7 @@ Ideas: M-01, V-01 – V-08, ST-01 – ST-03, ST-05, ST-06, B-06, N-11.
 3. Done when:
    1. Two apps on a LAN reach the same lobby.
 
-### [ ] 7.4 Card component
+### [x] 7.4 Card component
 
 1. Goal: one card component used everywhere.
 2. Tasks:

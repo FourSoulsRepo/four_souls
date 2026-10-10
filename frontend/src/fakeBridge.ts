@@ -51,6 +51,74 @@ function saveSettings(s: { nickname: string; recent: string[] }): Promise<unknow
   return Promise.resolve(saved);
 }
 
+// A few cards: one with an image, one whose image fails to load, and
+// some without images, so tests see both faces of the Card component.
+const isaacImage =
+  'data:image/svg+xml,' +
+  encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 63 88"><rect width="63" height="88" fill="#7a5c2e"/>' +
+      '<text x="31" y="46" font-size="9" text-anchor="middle" fill="#fff">Isaac art</text></svg>',
+  );
+const none = { footnotes: [], stats: [], rewards: [], effects: [] };
+const cards = [
+  {
+    ...none,
+    ref: 'isaac',
+    set: 'b2',
+    type: 'Character Card',
+    name: 'Isaac',
+    effects: ['{Tap Effect}Play an additional loot card this turn.'],
+    stats: [
+      { name: 'HP', value: '2' },
+      { name: 'ATK', value: '1' },
+    ],
+    image: isaacImage,
+  },
+  {
+    ...none,
+    ref: 'the_d6',
+    set: 'b2',
+    type: 'Eternal Treasure Card',
+    name: 'The D6',
+    effects: ['{Tap Effect}Choose a dice roll. Its controller rerolls it.', 'At the end of your turn, recharge this.'],
+    footnotes: [{ title: '-Eternal-', text: "This can't be destroyed or put into discard." }],
+    image: '/cardimg/b2/the_d6.webp',
+  },
+  {
+    ...none,
+    ref: 'big_spider',
+    set: 'b2',
+    type: 'Basic Monster Card',
+    name: 'Big Spider',
+    effects: ['When this dies, the active player may attack the monster deck an additional time.'],
+    stats: [
+      { name: 'HP', value: '3' },
+      { name: 'DC', value: '4' },
+      { name: 'ATK', value: '1' },
+    ],
+    rewards: [{ count: '1x', kind: 'Loot' }],
+    image: '',
+  },
+  {
+    ...none,
+    ref: 'a_dime',
+    set: 'b2',
+    type: '10 Cent Card',
+    name: 'A Dime!!',
+    effects: ['Gain 10¢.'],
+    image: '',
+  },
+  {
+    ...none,
+    ref: 'bonus_soul',
+    set: 'b2',
+    type: 'Bonus Soul Card',
+    name: 'Soul of Greed',
+    effects: ['If you have 25¢ or more, gain this soul.'],
+    image: '',
+  },
+];
+
 // Hosting points at a real dedicated server the e2e tests start
 // (?server=PORT), so two pages reach the same lobby.
 const hostPort = Number(new URLSearchParams(window.location.search).get('server') ?? '4774');
@@ -69,6 +137,7 @@ w.go = {
       Settings: () => Promise.resolve(loadSettings()),
       SaveSettings: saveSettings,
       CardSets: () => Promise.resolve(['b2']),
+      Cards: () => Promise.resolve(cards),
     },
     Host: {
       Start: () => Promise.resolve(hostInfo),

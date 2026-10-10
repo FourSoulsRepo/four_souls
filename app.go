@@ -1,6 +1,9 @@
 package main
 
 import (
+	"io/fs"
+
+	"github.com/FourSoulsRepo/four_souls/internal/assets"
 	"github.com/FourSoulsRepo/four_souls/internal/legal"
 	"github.com/FourSoulsRepo/four_souls/internal/settings"
 	"github.com/FourSoulsRepo/four_souls/internal/version"
@@ -9,12 +12,14 @@ import (
 
 // App holds the methods the frontend calls through Wails bindings.
 type App struct {
-	settings string // the settings file
+	settings  string // the settings file
+	cardFiles fs.FS  // card data and images
+	cardList  cardList
 }
 
 // NewApp creates the bindings object.
 func NewApp() *App {
-	return &App{settings: appPath("settings.json")}
+	return &App{settings: appPath("settings.json"), cardFiles: assets.CardsFS()}
 }
 
 // Versions returns the app and rules engine versions for the main menu.

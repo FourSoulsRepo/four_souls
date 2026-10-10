@@ -6,6 +6,10 @@ export function CardSets() {
   return window['go']['main']['App']['CardSets']();
 }
 
+export function Cards() {
+  return window['go']['main']['App']['Cards']();
+}
+
 export function Notice() {
   return window['go']['main']['App']['Notice']();
 }

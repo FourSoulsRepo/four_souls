@@ -1,7 +1,9 @@
 // The only module that talks to Wails.
 // Everything else imports from here, so a move to Wails v3 or a browser
 // build replaces this folder and nothing else (A-14).
+import type { CardInfo } from '../cards';
 import {
+  Cards as wailsCards,
   CardSets as wailsCardSets,
   Notice as wailsNotice,
   SaveSettings as wailsSaveSettings,
@@ -61,6 +63,11 @@ export async function saveSettings(s: Settings): Promise<Settings> {
 // getCardSets lists the card set codes this app has (CD-03).
 export function getCardSets(): Promise<string[]> {
   return wailsCardSets();
+}
+
+// getCards returns every card the app knows (7.4).
+export function getCards(): Promise<CardInfo[]> {
+  return wailsCards();
 }
 
 // startHosting runs the game server inside the app. If it runs already,

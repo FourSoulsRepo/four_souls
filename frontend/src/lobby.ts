@@ -3,7 +3,8 @@
 import type { Envelope, GameInfo, Games, Options, ProtocolError, Saved, SaveInfo, Table, Welcome } from './protocol';
 import { errorText } from './protocol';
 
-export type Screen = 'splash' | 'menu' | 'settings' | 'host' | 'join' | 'table' | 'game';
+// 'cards' is a dev-only card gallery for tests (?screen=cards).
+export type Screen = 'splash' | 'menu' | 'settings' | 'host' | 'join' | 'table' | 'game' | 'cards';
 
 export interface Lobby {
   welcome: Welcome | null;
