@@ -1,0 +1,123 @@
+/* Player actions (7.7): the action bar, a card's action menu, and the
+   choice and discard dialogs. */
+
+.action-bar {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  max-width: 320px;
+}
+
+.action-status {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-weight: 700;
+  background: rgb(0 0 0 / 55%);
+}
+
+.action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.action-bar button,
+.action-menu button,
+.choice button,
+.player-pick {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  font: inherit;
+  color: var(--fg);
+  background: var(--accent);
+  cursor: pointer;
+}
+
+.action-bar button:disabled,
+.choice button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.action-error {
+  min-height: 1.2em;
+  font-size: 13px;
+  text-align: right;
+  color: #ffb4ab;
+  text-shadow: 0 1px 3px #000;
+}
+
+.action-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 15;
+}
+
+.action-menu {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px;
+  border-radius: 8px;
+  translate: -50% calc(-100% - 8px);
+  background: var(--panel);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 50%);
+}
+
+.action-menu button:last-child {
+  background: var(--bg);
+}
+
+.choice {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 12;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  max-width: min(90vw, 760px);
+  padding: 14px 18px;
+  border-radius: 10px;
+  translate: -50% -50%;
+  background: rgb(20 28 40 / 92%);
+  box-shadow: 0 8px 32px rgb(0 0 0 / 60%);
+}
+
+.choice h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.choice-options {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.choice-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.player.hl-pick {
+  border-color: #4fc3f7;
+}
+
+.player-pick {
+  padding: 2px 10px;
+  font-size: 12px;
+  background: #1f7fa8;
+}

@@ -171,3 +171,21 @@
   flex: 1;
   justify-content: center;
 }
+
+/* Dragging a hand card to play it (7.7); only transform changes. */
+.hand-card {
+  flex: none;
+  transition: transform 150ms ease-out;
+}
+
+.hand-card.playable {
+  cursor: grab;
+  touch-action: none;
+}
+
+.hand-card.dragging {
+  position: relative;
+  z-index: 30;
+  cursor: grabbing;
+  transition: none;
+}

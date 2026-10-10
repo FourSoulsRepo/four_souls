@@ -1,4 +1,10 @@
+import { useMemo } from 'react';
+import { actionsFor, PromptKind, type Actions } from '../actions';
+import { ActionBar } from '../components/ActionBar';
+import { ActionMenu } from '../components/ActionMenu';
 import { Board } from '../components/Board';
+import { ChoiceDialog, DiscardDialog } from '../components/ChoiceDialog';
+import { interact, noInteract } from '../components/Interact';
 import { PlayerArea } from '../components/PlayerArea';
 import type { Update } from '../protocol';
 import { useApp } from '../store';
@@ -6,7 +12,9 @@ import { seatPositions } from '../table';
 import '../components/Table.css';
 import './screens.css';
 
-// GameScreen is the game table (7.5), drawn from the latest update.
+const noActions: Actions = { buttons: [], cards: new Map(), choice: null, discard: null };
+
+// GameScreen is the game table (7.5), drawn from the update on screen.
 export function GameScreen() {
   const game = useApp((s) => s.game);
   const you = useApp((s) => s.lobby.table?.you ?? 0);
@@ -32,7 +40,19 @@ export function GameScreen() {
 
 function Table({ game, you }: { game: Update; you: number }) {
   const { view } = game;
+  const cards = useApp((s) => s.cards);
+  const behind = useApp((s) => s.behind);
+  const sent = useApp((s) => s.sent);
+  const act = useApp((s) => s.act);
+  const select = useApp((s) => s.select);
+  // The player acts only on the latest state, and once per step. While
+  // waiting, buttons stay but are disabled, so they do not blink.
+  const canAct = !behind && sent !== game.step;
+  const actions = useMemo(() => actionsFor(game, (label) => cards.has(label)), [game, cards]);
+  const ui = canAct ? interact(actions, act, select) : noInteract;
+  const offered = canAct ? actions : noActions;
   const name = (player: number) => game.seats?.find((s) => s.seat === player)?.name ?? `Player ${String(player + 1)}`;
+  const me = view.players.at(you);
   return (
     <main className="game" aria-label={`Turn ${String(view.turn.number)}`}>
       {seatPositions(view.players.length, you).map(({ position, player }) => {
@@ -46,11 +66,35 @@ function Table({ game, you }: { game: Update; you: number }) {
               position={position}
               you={p.id === you}
               active={view.turn.active === p.id}
+              ui={ui}
             />
           )
         );
       })}
-      <Board view={view} />
+      <Board view={view} ui={ui} />
+      <ActionBar status={statusText(game, you, name, actions)} buttons={actions.buttons} disabled={!canAct} />
+      <ActionMenu actions={offered.cards} />
+      {offered.choice && <ChoiceDialog key={game.step} choice={offered.choice} />}
+      {offered.discard && me && <DiscardDialog key={game.step} discard={offered.discard} hand={me.hand ?? []} />}
     </main>
   );
+}
+
+// statusText says whose move it is.
+function statusText(game: Update, you: number, name: (p: number) => string, actions: Actions): string {
+  const { waiting, turn, over } = game.view;
+  if (over) {
+    return 'Game over';
+  }
+  if (waiting.player !== you) {
+    return `Waiting for ${name(waiting.player)}`;
+  }
+  switch (waiting.kind) {
+    case PromptKind.choose:
+      return actions.choice?.title ?? 'Your choice';
+    case PromptKind.discard:
+      return 'Discard down to your hand size';
+    default:
+      return turn.active === you ? 'Your turn' : 'You may respond';
+  }
 }

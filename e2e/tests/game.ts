@@ -11,17 +11,18 @@ const address = `127.0.0.1:${String(serverPort)}`;
 export async function startGame(
   browser: Browser,
   names: string[],
-  viewport = { width: 1280, height: 720 },
+  { viewport = { width: 1280, height: 720 }, touch = false, url = appURL } = {},
 ): Promise<Page[]> {
   const pages: Page[] = [];
   for (const name of names) {
-    pages.push(await (await browser.newContext({ viewport })).newPage());
+    void name;
+    pages.push(await (await browser.newContext({ viewport, hasTouch: touch })).newPage());
   }
   const [host, ...guests] = pages;
   if (!host) {
     throw new Error('no players');
   }
-  await host.goto(appURL);
+  await host.goto(url);
   await host.getByRole('button', { name: 'Host a game' }).click();
   await host.getByLabel('Nickname').fill(names[0] ?? '');
   await host.getByLabel('Players').selectOption(String(names.length));
@@ -29,7 +30,7 @@ export async function startGame(
   await expect(host.getByRole('list', { name: 'Seats' })).toBeVisible();
 
   for (const [i, page] of guests.entries()) {
-    await page.goto(appURL);
+    await page.goto(url);
     await page.getByRole('button', { name: 'Join a game' }).click();
     await page.getByLabel('Nickname').fill(names[i + 1] ?? '');
     await page.getByLabel('Host address').fill(address);

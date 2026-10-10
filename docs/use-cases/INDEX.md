@@ -14,3 +14,4 @@
 | UC-10 | Change settings | `internal/settings`, `frontend` | In progress | [app/uc-10-change-settings.md](app/uc-10-change-settings.md) |
 | UC-11 | Look at a card | `frontend`, `cards.go` | Implemented | [app/uc-11-look-at-a-card.md](app/uc-11-look-at-a-card.md) |
 | UC-12 | See the table | `frontend` | In progress | [app/uc-12-see-the-table.md](app/uc-12-see-the-table.md) |
+| UC-13 | Take actions | `frontend` | Implemented | [app/uc-13-take-actions.md](app/uc-13-take-actions.md) |

@@ -1,6 +1,7 @@
 import type { Kind } from '../cards';
 import type { CardView } from '../protocol';
 import { Card, type CardSize } from './Card';
+import type { Handle } from './Interact';
 import './Table.css';
 
 // title is a deck name for labels: "loot" -> "Loot".
@@ -9,11 +10,27 @@ function title(kind: Kind): string {
 }
 
 // Deck is a face-down pile with its card count.
-export function Deck({ kind, count, size }: { kind: Kind; count: number; size: CardSize }) {
+const noHandle: Handle = {};
+
+export function Deck({
+  kind,
+  count,
+  size,
+  handle = noHandle,
+}: {
+  kind: Kind;
+  count: number;
+  size: CardSize;
+  handle?: Handle;
+}) {
   const label = `${title(kind)} deck: ${String(count)} cards`;
   return (
     <div className="pile" role="group" aria-label={label} title={label} data-zone={`deck-${kind}`}>
-      {count > 0 ? <Card size={size} back={kind} /> : <div className={`pile-empty size-${size}`} />}
+      {count > 0 ? (
+        <Card size={size} back={kind} highlight={handle.highlight} onClick={handle.onClick} />
+      ) : (
+        <div className={`pile-empty size-${size}`} />
+      )}
       <span className="pile-count">{count}</span>
     </div>
   );

@@ -62,9 +62,9 @@
    1. Lost. Not an open-source license.
 8. **Animation: react-spring**
    1. Lost. No shared-element moves between parents.
-9. **Drag and drop: Motion drag + own drop zones**
+9. **Drag and drop: own pointer events + own drop zones**
    1. Won. No extra library.
-   2. Pointer events; mouse and touch alike.
+   2. Pointer events with pointer capture; mouse and touch alike.
    3. Drop target found with `document.elementFromPoint`.
    4. Our drops are few: play area, targets, order lists.
 10. **Drag and drop: dnd-kit**
@@ -94,8 +94,8 @@ Use options 1, 5, 9 and 12.
    2. Card moves use `layoutId`.
    3. The queue awaits each animation's promise.
    4. Speed setting (ST-05) scales every duration.
-3. Drag and drop: Motion drag.
-   1. A small hook finds the drop zone under the pointer.
+3. Drag and drop: own pointer events (7.7).
+   1. `document.elementsFromPoint` finds the drop zone under the pointer.
    2. A drop only sends an intent the server allows.
    3. Click or tap to play works too, without drag.
 4. Versions
@@ -140,6 +140,9 @@ Use options 1, 5, 9 and 12.
    1. Keyboard drag is not covered; click to play is.
 4. Layout animations on WebKitGTK must be checked early (7.12).
 5. End-to-end tests are slower; they run as `make e2e`.
+6. Motion's drag was tried first (7.7) and dropped.
+   1. It reported a drag end again, seconds later, and replayed a play.
+   2. About 40 lines of pointer events with capture replace it.
 
 ### Neutral
 

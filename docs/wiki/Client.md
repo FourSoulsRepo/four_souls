@@ -35,3 +35,12 @@ Effect durations scale with the animation setting (ST-05) and speed up when upda
 ## Cards
 
 `Card` shows a card image, or a blank card with its text when the image is missing (A-11). Sizes: `hand`, `table`, `small`, `zoom`; everything inside scales with the width through container query units. Hover zooms a card; on touch a long press does (B-06). A card with an `objectId` pops in when it first appears and is a `data-zone` for effects.
+
+## Player actions
+
+`actions.ts` turns the update's allowed intents into what the table offers: buttons (pass, end turn, attack, buy), per-card actions (play, use an ability), a choice, or a discard. The table offers nothing else, so it never sends what the server would not allow; a refused intent still shows the engine's reason and rule ID.
+
+* Cards the player may act on glow yellow; clicking or tapping one opens its action menu.
+* A playable loot card can also be dragged onto the board (`data-drop="play"`). The drag is plain pointer events with pointer capture (`HandCard` in `PlayerArea.tsx`).
+* Choices show as a dialog; card options show as cards (V-07). Options that point at the table (`view.options`, from the engine) glow blue there and can be clicked in place.
+* The player acts only on the latest update (`store.behind`) and once per step (`store.sent`); meanwhile buttons stay but are disabled, so nothing blinks.

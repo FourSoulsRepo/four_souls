@@ -140,6 +140,8 @@ export interface Playback {
   clear: () => void;
   // idle resolves when everything queued is shown.
   idle: () => Promise<void>;
+  // pending is how many updates wait to be shown.
+  pending: () => number;
 }
 
 export function createPlayback(deps: Deps): Playback {
@@ -202,6 +204,7 @@ export function createPlayback(deps: Deps): Playback {
     clear: () => {
       queue = [];
     },
+    pending: () => queue.length,
     idle: () =>
       new Promise((resolve) => {
         waiters.push(resolve);

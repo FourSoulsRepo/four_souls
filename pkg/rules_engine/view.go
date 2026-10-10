@@ -61,6 +61,20 @@ type GameView struct {
 	Waiting    Prompt                `json:"waiting"`
 	Over       bool                  `json:"over,omitempty"`
 	Winners    []PlayerID            `json:"winners,omitempty"`
+	// Options says what each option of a choose prompt points at, one
+	// per Waiting.Options; only for whoever sees those options.
+	Options []OptionView `json:"options,omitempty"`
+}
+
+// OptionView is what one option of a choose prompt points at, so a
+// client can let the player pick it on the table. An option with none
+// of these set is plain text.
+type OptionView struct {
+	Object   ObjectID `json:"object,omitempty"` // a card on the table or in the chooser's hand
+	Player   PlayerID `json:"player"`           // a player, when IsPlayer
+	IsPlayer bool     `json:"is_player,omitempty"`
+	Deck     bool     `json:"deck,omitempty"`     // the monster or treasure deck
+	StackID  int      `json:"stack_id,omitempty"` // a stack item
 }
 
 // sees reports whether the viewer may see player p's hand.
@@ -107,6 +121,62 @@ func (g *Game) View(v Viewer) GameView {
 	if g.Waiting.Kind == PromptChoose && !v.sees(g.Waiting.Player) {
 		// Options may name hidden cards (e.g. which loot card to discard).
 		out.Waiting.Options = nil
+	}
+	if g.Waiting.Kind == PromptChoose && v.sees(g.Waiting.Player) {
+		out.Options = g.optionViews()
+	}
+	return out
+}
+
+// optionViews maps the open choice's options to what they point at.
+func (g *Game) optionViews() []OptionView {
+	c := g.Choice
+	if c == nil {
+		return nil
+	}
+	out := make([]OptionView, len(g.Waiting.Options))
+	for i := range out {
+		out[i].Player = NoPlayer
+	}
+	set := func(i int, f func(o *OptionView)) {
+		if i < len(out) {
+			f(&out[i])
+		}
+	}
+	switch c.Purpose {
+	case ChooseAttackTarget, ChoosePurchase, ChoosePenaltyItem, ChoosePenaltyLoot, ChooseStartingItem, ChooseLowest:
+		for i, id := range c.Objects {
+			set(i, func(o *OptionView) { o.Object = id })
+		}
+		if c.Deck {
+			set(len(c.Objects), func(o *OptionView) { o.Deck = true })
+		}
+	case ChooseTarget:
+		for i, t := range c.Targets {
+			set(i, func(o *OptionView) {
+				switch t.Kind {
+				case TargetPlayer, TargetOtherPlayer:
+					o.Player, o.IsPlayer = t.Player, true
+				case TargetDiceRoll, TargetStackAbility:
+					o.StackID = t.StackID
+				case TargetMonster, TargetMonsterOrPlayer, TargetItem, TargetCurse, TargetYourItem,
+					TargetYourHandCard, TargetItemOrSoul:
+					o.Object = t.Object
+				}
+			})
+		}
+	case ChooseMonsterSlot:
+		for i, s := range c.Slots {
+			if top, ok := g.Monsters[s].TopOf(); ok {
+				set(i, func(o *OptionView) { o.Object = top })
+			}
+		}
+	case ChooseCursed:
+		for i, p := range c.Slots {
+			set(i, func(o *OptionView) { o.Player, o.IsPlayer = PlayerID(p), true })
+		}
+	case ChooseReplacement, ChooseTriggerOrder, ChooseMode, ChooseAnswer:
+		// Text options.
 	}
 	return out
 }

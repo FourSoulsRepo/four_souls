@@ -85,3 +85,7 @@ A test fails when the committed report is out of date, so run the command after 
 * [Situation payload](Situation-payload): build a position from JSON, run intents, compare the result.
 * [Fuzzing](Fuzzing): random games with invariant, leak and replay checks.
 * Determinism: replaying the same setup and intents must give the same checksum after every step.
+
+## Choice options in views
+
+`GameView.Options` tells the chooser what each option of a choose prompt points at (`OptionView`: an object, a player, a deck, or a stack item), one per `Waiting.Options`. Clients use it to let the player pick on the table. It is built from `g.Choice` at view time, so it is not saved state and does not change checksums.

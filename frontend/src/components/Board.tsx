@@ -1,17 +1,24 @@
 import { Deck as DeckKind, type GameView, type SlotView } from '../protocol';
 import { Card } from './Card';
+import type { Interact } from './Interact';
 import { Deck, Discard } from './Pile';
 import './Table.css';
 
 // Board is the middle of the table: monsters, shop, decks, discards and
 // bonus souls (V-01).
-export function Board({ view }: { view: GameView }) {
+// The board is also where loot cards are dropped to play them (7.7).
+export function Board({ view, ui }: { view: GameView; ui: Interact }) {
   return (
-    <section className="board" aria-label="Board">
+    <section className="board" aria-label="Board" data-drop="play">
       <div className="board-row" role="group" aria-label="Monsters">
-        <Deck kind="monster" count={view.deck_sizes[DeckKind.monster] ?? 0} size="table" />
+        <Deck
+          kind="monster"
+          count={view.deck_sizes[DeckKind.monster] ?? 0}
+          size="table"
+          handle={ui.deck('monster')}
+        />
         {(view.monsters ?? []).map((slot, i) => (
-          <Slot key={slotKey(slot, i)} slot={slot} />
+          <Slot key={slotKey(slot, i)} slot={slot} ui={ui} />
         ))}
         <Discard kind="monster" cards={view.discards[DeckKind.monster] ?? null} size="table" />
         {(view.bonus_souls ?? []).length > 0 && (
@@ -23,9 +30,14 @@ export function Board({ view }: { view: GameView }) {
         )}
       </div>
       <div className="board-row" role="group" aria-label="Shop">
-        <Deck kind="treasure" count={view.deck_sizes[DeckKind.treasure] ?? 0} size="table" />
+        <Deck
+          kind="treasure"
+          count={view.deck_sizes[DeckKind.treasure] ?? 0}
+          size="table"
+          handle={ui.deck('treasure')}
+        />
         {(view.shop ?? []).map((slot, i) => (
-          <Slot key={slotKey(slot, i)} slot={slot} />
+          <Slot key={slotKey(slot, i)} slot={slot} ui={ui} />
         ))}
         <Discard kind="treasure" cards={view.discards[DeckKind.treasure] ?? null} size="table" />
       </div>
@@ -43,14 +55,20 @@ function slotKey(slot: SlotView, i: number): string {
 }
 
 // Slot is one shop or monster slot: its top card and how many it covers.
-function Slot({ slot }: { slot: SlotView }) {
+function Slot({ slot, ui }: { slot: SlotView; ui: Interact }) {
   const covered = slot.covered?.length ?? 0;
   if (!slot.top) {
     return <div className="pile-empty size-table" />;
   }
   return (
     <div className="pile">
-      <Card cardRef={slot.top.card} size="table" damage={slot.top.damage} objectId={slot.top.id} />
+      <Card
+        cardRef={slot.top.card}
+        size="table"
+        damage={slot.top.damage}
+        objectId={slot.top.id}
+        {...ui.object(slot.top.id)}
+      />
       {covered > 0 && <span className="pile-count">+{covered}</span>}
     </div>
   );

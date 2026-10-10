@@ -124,3 +124,23 @@ func TestPrivateEventsAreFiltered(t *testing.T) {
 		t.Error("the judge sees looted cards")
 	}
 }
+
+func TestChoiceOptionsPointAtTheTable(t *testing.T) {
+	g := toAction(t, 2)
+	a := g.Turn.Active
+	m := putMonster(g, 0, "gaper")
+	attack(t, g)
+	v := g.View(Viewer{Kind: ViewPlayer, Player: a})
+	if len(v.Options) != len(v.Waiting.Options) {
+		t.Fatalf("%d option views for %d options", len(v.Options), len(v.Waiting.Options))
+	}
+	if v.Options[0].Object != m {
+		t.Errorf("option 0 points at %+v, want the gaper %d", v.Options[0], m)
+	}
+	if last := v.Options[len(v.Options)-1]; !last.Deck {
+		t.Errorf("the last option %+v should be the monster deck", last)
+	}
+	if other := g.View(Viewer{Kind: ViewPlayer, Player: g.next(a)}); other.Options != nil {
+		t.Error("others must not see what the options point at")
+	}
+}

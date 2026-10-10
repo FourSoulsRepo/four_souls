@@ -16,7 +16,7 @@ import type { CardInfo } from './cards';
 import { emptyLobby, leftTable, lost, onMessage, remember, type Screen, type Session } from './lobby';
 import { connect, disconnect, send } from './net';
 import { createPlayback, effectsFor, type Effect } from './playback';
-import { protocolVersion, wsURL, type Create, type Envelope, type Hello, type Update } from './protocol';
+import { protocolVersion, wsURL, type Create, type Envelope, type Hello, type Intent, type Update } from './protocol';
 
 export type { Screen } from './lobby';
 
@@ -41,6 +41,16 @@ interface AppState extends Session {
   playing: Playing | null;
   // receive handles one server message.
   receive: (env: Envelope) => void;
+  // behind is set while updates wait to be shown: the player acts only
+  // on the latest state.
+  behind: boolean;
+  // sent is the step an intent was sent at; actions wait for the next
+  // update, or for the refusal.
+  sent: number | null;
+  // selected is the card whose action menu is open.
+  selected: number | null;
+  act: (intent: Intent) => void;
+  select: (id: number | null) => void;
   settings: Settings;
   // hosting is set while this app runs the game server.
   hosting: HostInfo | null;
@@ -87,7 +97,7 @@ export const useApp = create<AppState>()((set, get) => {
   let effectKey = 0;
   const playback = createPlayback({
     show: (u) => {
-      set({ game: u });
+      set({ game: u, behind: playback.pending() > 0 });
     },
     run: (effect, scale) =>
       new Promise((resolve) => {
@@ -149,14 +159,28 @@ export const useApp = create<AppState>()((set, get) => {
 
   return {
     playing: null,
+    behind: false,
+    sent: null,
+    selected: null,
     receive: (env) => {
       if (env.type === 'table' || env.type === 'saved') {
         stopPlayback();
       }
       set((s) => onMessage(s, env));
       if (env.type === 'update') {
+        set({ behind: true });
         playback.push(env.data as Update);
       }
+      if (env.type === 'error') {
+        set({ sent: null });
+      }
+    },
+    act: (intent) => {
+      send('intent', { intent });
+      set({ sent: get().game?.step ?? null, selected: null, error: '' });
+    },
+    select: (id) => {
+      set({ selected: id });
     },
     screen: 'splash',
     lobby: emptyLobby,

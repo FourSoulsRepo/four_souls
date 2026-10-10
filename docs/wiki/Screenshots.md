@@ -27,5 +27,8 @@ The fixture copies the fan-game notice. `internal/legal` has a test that fails w
 | Game table, 2 players, 1280×720 | `screen-table-2p.png` |
 | Game table, 4 players, 1280×720 | `screen-table-4p.png` |
 | Dice roll effect | `screen-effect-dice.png` |
+| Your turn: playable cards highlighted | `screen-actions.png` |
+| A card's action menu (touch) | `screen-action-menu.png` |
+| Choosing what to attack | `screen-choose-attack.png` |
 
 When a screen is added, call `shot` in its test and add a row here.

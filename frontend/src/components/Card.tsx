@@ -23,20 +23,38 @@ interface Props {
   // objectId is the card's object on the table; effects find it by it,
   // and a new one pops in.
   objectId?: number;
+  // highlight marks a card the player may act on or pick (7.7).
+  highlight?: 'act' | 'pick';
+  onClick?: () => void;
 }
 
 // Card is the one card component (7.4): the card image, or a blank card
 // with its text when the image is missing (A-11).
-export function Card({ cardRef, size, back = 'loot', damage = 0, spent = false, objectId }: Props) {
+export function Card({
+  cardRef,
+  size,
+  back = 'loot',
+  damage = 0,
+  spent = false,
+  objectId,
+  highlight,
+  onClick,
+}: Props) {
   const info = useApp((s) => (cardRef ? s.cards.get(cardRef) : undefined));
   const setZoom = useApp((s) => s.setZoom);
   const scale = useApp((s) => scaleFor(s.settings.animation, 0, 0));
   const pressRef = useRef(0);
+  const downRef = useRef<{ x: number; y: number } | null>(null);
   const [brokenImage, setBrokenImage] = useState('');
 
   if (cardRef === undefined) {
     return (
-      <div className={`card size-${size} kind-${back}`} role="img" aria-label={`Face-down ${back} card`}>
+      <div
+        className={`card size-${size} kind-${back}${highlight ? ` hl-${highlight}` : ''}`}
+        role={onClick ? 'button' : 'img'}
+        aria-label={`Face-down ${back} card`}
+        onClick={onClick}
+      >
         <div className="card-back-face">{back}</div>
       </div>
     );
@@ -48,6 +66,7 @@ export function Card({ cardRef, size, back = 'loot', damage = 0, spent = false, 
   const side = (e: PointerEvent) => (e.clientX < window.innerWidth / 2 ? 'right' : 'left');
   const cancelPress = () => {
     window.clearTimeout(pressRef.current);
+    downRef.current = null;
   };
 
   const pop = objectId !== undefined && scale > 0;
@@ -57,9 +76,10 @@ export function Card({ cardRef, size, back = 'loot', damage = 0, spent = false, 
       animate={{ scale: 1, opacity: 1 }}
       transition={{ duration: 0.25 * scale }}
       data-zone={objectId === undefined ? undefined : `obj-${String(objectId)}`}
-      className={`card size-${size} kind-${kindOf(card.type)}${spent ? ' spent' : ''}`}
-      role="img"
+      className={`card size-${size} kind-${kindOf(card.type)}${spent ? ' spent' : ''}${highlight ? ` hl-${highlight}` : ''}`}
+      role={onClick ? 'button' : 'img'}
       aria-label={card.name}
+      onClick={onClick}
       onPointerEnter={(e) => {
         if (zoomable && e.pointerType === 'mouse') {
           setZoom({ ref: card.ref, touch: false, side: side(e) });
@@ -74,9 +94,17 @@ export function Card({ cardRef, size, back = 'loot', damage = 0, spent = false, 
       onPointerDown={(e) => {
         if (zoomable && e.pointerType !== 'mouse') {
           const s = side(e);
+          downRef.current = { x: e.clientX, y: e.clientY };
           pressRef.current = window.setTimeout(() => {
             setZoom({ ref: card.ref, touch: true, side: s });
           }, LONG_PRESS_MS);
+        }
+      }}
+      onPointerMove={(e) => {
+        // A finger that moves is dragging, not pressing.
+        const d = downRef.current;
+        if (d && Math.hypot(e.clientX - d.x, e.clientY - d.y) > 8) {
+          cancelPress();
         }
       }}
       onPointerUp={cancelPress}

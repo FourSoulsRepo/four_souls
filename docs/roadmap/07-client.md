@@ -72,7 +72,7 @@ Ideas: M-01, V-01 – V-08, ST-01 – ST-03, ST-05, ST-06, B-06, N-11.
 3. Done when:
    1. Fast event bursts play without glitches.
 
-### [ ] 7.7 Player actions
+### [x] 7.7 Player actions
 
 1. Goal: act through allowed actions only.
 2. Tasks:

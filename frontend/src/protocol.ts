@@ -133,6 +133,8 @@ export function errorText(e: ProtocolError): string {
       return 'The server is older than this app. Ask the host to update.';
     case 'missing_sets':
       return `You are missing a card set: ${e.message}`;
+    case 'refused':
+      return e.rule ? `${e.message} (${e.rule})` : e.message;
     default:
       return e.message;
   }
@@ -258,6 +260,17 @@ export interface GameView {
   waiting: Prompt;
   over?: boolean;
   winners?: number[];
+  // options says what each choice option points at; only for the chooser.
+  options?: OptionView[];
+}
+
+// OptionView is what one option of a choose prompt points at.
+export interface OptionView {
+  object?: number;
+  player: number;
+  is_player?: boolean;
+  deck?: boolean;
+  stack_id?: number;
 }
 
 export interface Intent {

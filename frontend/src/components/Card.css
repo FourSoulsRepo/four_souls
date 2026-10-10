@@ -194,3 +194,17 @@
   color: #fff;
   background: #b3261e;
 }
+
+/* Highlights (7.7): yellow for "you may act", blue for "pick this". */
+.card.hl-act,
+.card.hl-pick {
+  cursor: pointer;
+}
+
+.card.hl-act {
+  box-shadow: 0 0 0 3px #f5c542, 0 0 14px 2px rgb(245 197 66 / 65%);
+}
+
+.card.hl-pick {
+  box-shadow: 0 0 0 3px #4fc3f7, 0 0 14px 2px rgb(79 195 247 / 70%);
+}
