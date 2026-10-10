@@ -51,6 +51,7 @@ Rules enforced by the linter (see [Linters](Linters)):
 | `make wasm` | builds the engine and the website for `js/wasm` |
 | `make frontend` | typecheck, lint and Vitest for the frontend |
 | `make e2e` | Playwright UI tests |
+| `make internal` | play-test app with card images; `PLATFORM=windows/amd64` |
 | `make screenshots` | `make e2e`, saving UI screenshots into `.cache/screenshots/` |
 | `make fuzz-engine`, `fuzz-focused`, `fuzz-sets` | one fuzz target for `FUZZTIME` (default 10m) |
 | `make fuzz` | `fuzz-engine`, then `fuzz-sets` |

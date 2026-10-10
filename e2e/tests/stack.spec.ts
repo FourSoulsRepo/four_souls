@@ -5,12 +5,12 @@ import { appURL } from './server';
 import { shot } from './shot';
 import { activePage, click } from './turn';
 
-const fast = `${appURL}&anim=off`;
+const fast = () => `${appURL()}&anim=off`;
 
 test.setTimeout(90_000);
 
 test('a played loot card shows on the stack; others may skip all', async ({ browser }) => {
-  const pages = await startGame(browser, ['Sam', 'Tia'], { url: fast });
+  const pages = await startGame(browser, ['Sam', 'Tia'], { url: fast() });
   const active = await activePage(pages, click);
   const other = pages.find((p) => p !== active);
   if (!other) {
@@ -48,7 +48,7 @@ test('a played loot card shows on the stack; others may skip all', async ({ brow
 
 test('the response timer counts down for the waiting player', async ({ browser }) => {
   const pages = await startGame(browser, ['Uma', 'Vic'], {
-    url: fast,
+    url: fast(),
     setup: async (host) => {
       await host.getByLabel('Detailed setup').check();
       await host.getByLabel('Response timer').selectOption('60');

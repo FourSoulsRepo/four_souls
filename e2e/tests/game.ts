@@ -2,7 +2,6 @@
 import { expect, type Browser, type Page } from '@playwright/test';
 import { appURL, serverPort } from './server';
 
-const address = `127.0.0.1:${String(serverPort)}`;
 
 // startGame: the first name hosts a game with a seat per name, the others
 // join. Tests share one server, so each test needs its own host name.
@@ -14,7 +13,7 @@ export async function startGame(
   {
     viewport = { width: 1280, height: 720 },
     touch = false,
-    url = appURL,
+    url = appURL(),
     // setup changes the host form before Host is pressed.
     setup = (_: Page) => Promise.resolve(),
   } = {},
@@ -40,7 +39,7 @@ export async function startGame(
     await page.goto(url);
     await page.getByRole('button', { name: 'Join a game' }).click();
     await page.getByLabel('Nickname').fill(names[i + 1] ?? '');
-    await page.getByLabel('Host address').fill(address);
+    await page.getByLabel('Host address').fill(`127.0.0.1:${String(serverPort())}`);
     await page.getByRole('button', { name: 'Connect' }).click();
     await page
       .getByRole('listitem')

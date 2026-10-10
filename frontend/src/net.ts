@@ -5,6 +5,10 @@ import type { Envelope } from './protocol';
 let socket: WebSocket | null = null;
 let nextID = 1;
 
+// connectTimeout: a host that never answers (or a port the browser
+// blocks) must not leave the player waiting forever.
+const connectTimeout = 5000;
+
 // connect opens the socket; it resolves once open. onClose runs when the
 // server or the network closes it, not on disconnect().
 export function connect(
@@ -17,8 +21,16 @@ export function connect(
     const ws = new WebSocket(url);
     socket = ws;
     let open = false;
+    const timer = window.setTimeout(() => {
+      if (!open && socket === ws) {
+        socket = null;
+        ws.close();
+        reject(new Error('Could not connect to the server.'));
+      }
+    }, connectTimeout);
     ws.onopen = () => {
       open = true;
+      window.clearTimeout(timer);
       resolve();
     };
     ws.onmessage = (e: MessageEvent<string>) => {
@@ -29,6 +41,7 @@ export function connect(
         return; // closed by disconnect()
       }
       socket = null;
+      window.clearTimeout(timer);
       if (open) {
         onClose();
       } else {

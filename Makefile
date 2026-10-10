@@ -17,14 +17,14 @@ FOCUS ?=
 SIMS ?= 3000
 
 .DEFAULT_GOAL := help
-.PHONY: help test vet build wasm lint frontend e2e screenshots fuzz fuzz-engine fuzz-focused fuzz-sets sims
+.PHONY: help test vet build wasm lint frontend e2e screenshots internal fuzz fuzz-engine fuzz-focused fuzz-sets sims
 
 help: ## Show this help
 	@echo "Usage: make <target> [VAR=value]"
 	@echo
 	@awk 'BEGIN {FS = ":.*## "} /^[a-z-]+:.*## / {printf "  %-14s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 	@echo
-	@echo "Variables: TAGS, GOLANGCI, FUZZTIME=$(FUZZTIME), MINIMIZE=$(MINIMIZE), FOCUS=$(FOCUS), SIMS=$(SIMS)"
+	@echo "Variables: TAGS, GOLANGCI, PLATFORM, FUZZTIME=$(FUZZTIME), MINIMIZE=$(MINIMIZE), FOCUS=$(FOCUS), SIMS=$(SIMS)"
 
 test: ## Run tests in every Go module, plus embed mode
 	@for m in $(MODULES); do (cd $$m && go test -tags "$(TAGS)" ./... && go test -tags "$(TAGS) embed" ./...) || exit 1; done
@@ -50,13 +50,23 @@ frontend: ## Typecheck, lint and unit-test the frontend
 
 # Playwright lives in e2e/, so frontend installs never download Chromium.
 # Fake Wails bindings via ?fake; no Go process needed.
-E2E := cd e2e && npm install --no-audit --no-fund && npx playwright install chromium &&
+E2E := cd e2e && npm install --no-audit --no-fund && npx playwright install chromium webkit &&
 
 e2e: ## Run end-to-end UI tests (Playwright)
 	@$(E2E) npx playwright test
 
 screenshots: ## Run e2e and save UI screenshots into .cache/screenshots
-	@$(E2E) SCREENSHOTS=1 npx playwright test
+	@$(E2E) SCREENSHOTS=1 npx playwright test --project chromium
+
+# Internal play-test build (7.12): card images embedded, the version
+# names the commit. Needs the private images submodule. PLATFORM picks
+# another target, e.g. windows/amd64; empty builds for this machine.
+INTERNAL_VERSION := internal-$(shell git rev-parse --short HEAD)
+PLATFORM ?=
+
+internal: ## Build the app for play tests, card images included
+	@test -d pkg/card_db/images/b2 || (echo "the card images submodule is missing" && exit 1)
+	@wails build $(if $(PLATFORM),-platform $(PLATFORM)) -tags "$(TAGS) embed cardimages" -ldflags "-X github.com/FourSoulsRepo/four_souls/internal/version.App=$(INTERNAL_VERSION)"
 
 # Go fuzzes one target at a time, so fuzz runs them one after another.
 fuzz: fuzz-engine fuzz-sets ## Run fuzz-engine, then fuzz-sets (FUZZTIME each)

@@ -5,6 +5,7 @@
 * [Screenshots](Screenshots)
 * [Client](Client)
 * [Frontend tests](Frontend-tests)
+* [Internal builds](Internal-builds)
 * [Card data tools](Card-data-tools)
 * [Effect blocks](Effect-blocks)
 * [Situation payload](Situation-payload)

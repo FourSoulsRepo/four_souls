@@ -11,6 +11,7 @@ These pages describe the current code. Decisions live in `docs/architecture/` (A
 * [Linters](Linters) — strict Go and frontend linting, and how to run it.
 * [Screenshots](Screenshots) — capture the UI without a real window.
 * [Client](Client) — how the React client is put together: store, lobby, playback, table.
+* [Internal builds](Internal-builds) — the app for play tests with friends.
 * [Frontend tests](Frontend-tests) — unit tests, UI tests, and how to keep the frontend testable.
 * [Card data tools](Card-data-tools) — where card data and images come from.
 * [Effect blocks](Effect-blocks) — the blocks cards are built from.

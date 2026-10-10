@@ -5,13 +5,13 @@ import { appURL } from './server';
 import { shot } from './shot';
 import { activePage, click } from './turn';
 
-const fast = `${appURL}&anim=off`;
+const fast = () => `${appURL()}&anim=off`;
 
 test.setTimeout(90_000);
 
 test('the history shows only what the viewer may see', async ({ browser }) => {
   const names = ['Wes', 'Xan'];
-  const pages = await startGame(browser, names, { url: fast });
+  const pages = await startGame(browser, names, { url: fast() });
   const active = await activePage(pages, click);
   const history = (p: typeof active) => p.getByRole('complementary', { name: 'History' });
   for (const [i, page] of pages.entries()) {
@@ -30,7 +30,7 @@ test('the history shows only what the viewer may see', async ({ browser }) => {
 
 test('the turn badge, what is left, and hiding the history', async ({ browser }) => {
   const names = ['Yul', 'Zed'];
-  const pages = await startGame(browser, names, { url: fast });
+  const pages = await startGame(browser, names, { url: fast() });
   const active = await activePage(pages, click);
   const activeName = names[pages.indexOf(active)] ?? '';
   for (const page of pages) {

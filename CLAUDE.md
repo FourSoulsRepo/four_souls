@@ -40,6 +40,7 @@
    14. `make frontend`: typecheck, lint, Vitest.
    15. `make e2e`: Playwright UI tests in `e2e/`.
    16. Frontend testing rules: `docs/wiki/Frontend-tests.md`.
+   17. `make internal`: play-test build with card images; see `docs/wiki/Internal-builds.md`.
 5. Workflow
    1. Work follows `docs/roadmap/`, one sub-step at a time.
    2. Commit after every finished sub-step.

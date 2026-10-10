@@ -8,7 +8,7 @@ The frontend is tested like the Go code (ADR 008). Three layers, from fast to sl
 | Protocol check | Vitest | reads `internal/protocol/testdata/golden.jsonl` | `make frontend` |
 | UI tests | Playwright | `e2e/tests/*.spec.ts` | `make e2e` |
 
-Frontend changes gate on `make frontend e2e`, next to the Go gate.
+Frontend changes gate on `make frontend e2e`, next to the Go gate. `make e2e` runs every test in Chromium and in WebKit (the engine of macOS's WKWebView, and the nearest check for Linux's WebKitGTK).
 
 ## Keep it simple
 
@@ -48,4 +48,4 @@ The fake bridge also reads the real card text from `pkg/card_db/data` (no images
 
 Match dialogs and buttons by exact name where a question could contain the same word (`{ name: 'Discard', exact: true }`).
 
-Network play runs against the real Go server: `e2e/playwright.config.ts` starts `cmd/server` on port 4799, next to Vite. The fake `Host` binding points at it (`?server=4799`), so one page "hosts" and others join it by address. Use separate browser contexts for separate players: each has its own `localStorage`, like a separate app.
+Network play runs against the real Go server: `e2e/playwright.config.ts` starts `cmd/server` next to Vite, one per browser project (Chromium on port 4799, WebKit on 4797; `e2e/tests/ports.ts`), so the two runs never see each other's games. Tests reach theirs with `serverPort()` and `appURL()` (`e2e/tests/server.ts`). The fake `Host` binding points at it (`?server=PORT`), so one page "hosts" and others join it by address. Use separate browser contexts for separate players: each has its own `localStorage`, like a separate app.

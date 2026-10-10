@@ -86,7 +86,7 @@ function Table({ game, you }: { game: Update; you: number }) {
         <StackPanel view={view} names={names} />
       </Board>
       <ActionBar
-        status={waitText(view, you, names, actions.choice?.title)}
+        status={game.pause ? 'Paused' : waitText(view, you, names, actions.choice?.title)}
         buttons={actions.buttons}
         disabled={!canAct}
         deadline={game.deadline ?? 0}

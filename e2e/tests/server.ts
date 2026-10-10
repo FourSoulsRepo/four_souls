@@ -1,7 +1,16 @@
-// The real dedicated server the e2e tests play on (playwright.config.ts
-// starts it). The fake Host binding points at it (?server=PORT).
-export const serverPort = 4799;
+// The real dedicated servers the e2e tests play on (playwright.config.ts
+// starts them): one per browser project, so their games never meet. The
+// fake Host binding points at the project's server (?server=PORT).
+import { test } from '@playwright/test';
+import { serverPorts } from './ports';
+
+// serverPort is the test server of the running project.
+export function serverPort(): number {
+  return serverPorts[test.info().project.name] ?? 4799;
+}
 
 // appURL opens the app with fake bindings, no splash, hosting on the
-// test server.
-export const appURL = `/?fake&nosplash&server=${String(serverPort)}`;
+// project's test server.
+export function appURL(): string {
+  return `/?fake&nosplash&server=${String(serverPort())}`;
+}

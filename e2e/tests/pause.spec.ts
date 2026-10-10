@@ -4,10 +4,10 @@ import { startGame } from './game';
 import { appURL } from './server';
 import { shot } from './shot';
 
-const fast = `${appURL}&anim=off`;
+const fast = () => `${appURL()}&anim=off`;
 
 test('a dropped player reconnects to the same seat; the others wait', async ({ browser }) => {
-  const [amy, ben] = await startGame(browser, ['Amy', 'Ben'], { url: fast });
+  const [amy, ben] = await startGame(browser, ['Amy', 'Ben'], { url: fast() });
   if (!amy || !ben) {
     throw new Error('no pages');
   }
@@ -26,7 +26,7 @@ test('a dropped player reconnects to the same seat; the others wait', async ({ b
 });
 
 test('players vote to go on without one who left', async ({ browser }) => {
-  const [cal, dee] = await startGame(browser, ['Cal', 'Dee'], { url: fast });
+  const [cal, dee] = await startGame(browser, ['Cal', 'Dee'], { url: fast() });
   if (!cal || !dee) {
     throw new Error('no pages');
   }
@@ -38,7 +38,7 @@ test('players vote to go on without one who left', async ({ browser }) => {
 });
 
 test('the end screen names the winner and saves the record', async ({ browser }) => {
-  const [eli] = await startGame(browser, ['Eli', 'Fox'], { url: fast });
+  const [eli] = await startGame(browser, ['Eli', 'Fox'], { url: fast() });
   if (!eli) {
     throw new Error('no pages');
   }

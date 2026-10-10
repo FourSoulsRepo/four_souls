@@ -3,7 +3,7 @@
 // runs against the real Go server.
 // SCREENSHOTS=1 also saves each screen into .cache/screenshots/.
 import { defineConfig } from '@playwright/test';
-import { serverPort } from './tests/server';
+import { serverPorts } from './tests/ports';
 
 const port = 5199;
 
@@ -16,6 +16,12 @@ export default defineConfig({
     // Same size as the window in main.go.
     viewport: { width: 1024, height: 768 },
   },
+  // Chromium, and WebKit as the nearest check for Linux's WebKitGTK and
+  // macOS's WKWebView (7.12).
+  projects: [
+    { name: 'chromium', use: { browserName: 'chromium' } },
+    { name: 'webkit', use: { browserName: 'webkit' } },
+  ],
   webServer: [
     {
       command: `npx vite --host 127.0.0.1 --port ${port} --strictPort`,
@@ -23,11 +29,11 @@ export default defineConfig({
       url: `http://127.0.0.1:${port}`,
       reuseExistingServer: false,
     },
-    {
-      command: `go run ./cmd/server -addr 127.0.0.1 -port ${serverPort} -records .cache/e2e/records -saves .cache/e2e/saves`,
+    ...Object.values(serverPorts).map((p) => ({
+      command: `go run ./cmd/server -addr 127.0.0.1 -port ${String(p)} -records .cache/e2e/records -saves .cache/e2e/saves`,
       cwd: '..',
-      port: serverPort,
+      port: p,
       reuseExistingServer: false,
-    },
+    })),
   ],
 });

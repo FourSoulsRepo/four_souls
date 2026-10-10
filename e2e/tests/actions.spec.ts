@@ -17,7 +17,7 @@ import {
   type Tap,
 } from './turn';
 
-const fast = `${appURL}&anim=off`;
+const fast = () => `${appURL()}&anim=off`;
 
 // A whole turn can take many moves (combat rolls, responses).
 test.setTimeout(120_000);
@@ -46,7 +46,7 @@ async function endTurn(active: Page, press: Tap) {
 }
 
 test('a full turn with the mouse: drag a loot card, attack, end the turn', async ({ browser }) => {
-  const pages = await startGame(browser, ['Max', 'Nia'], { url: fast });
+  const pages = await startGame(browser, ['Max', 'Nia'], { url: fast() });
   const active = await activePage(pages, click);
   const turn = await turnNumber(active);
 
@@ -70,7 +70,7 @@ test('a full turn with the mouse: drag a loot card, attack, end the turn', async
 });
 
 test('a full turn with touch: tap a loot card to play it, attack, end the turn', async ({ browser }) => {
-  const pages = await startGame(browser, ['Oz', 'Pia'], { url: fast, touch: true });
+  const pages = await startGame(browser, ['Oz', 'Pia'], { url: fast(), touch: true });
   const active = await activePage(pages, tap);
   const turn = await turnNumber(active);
 
@@ -89,7 +89,7 @@ test('a full turn with touch: tap a loot card to play it, attack, end the turn',
 });
 
 test('a refused action shows the reason', async ({ browser }) => {
-  const pages = await startGame(browser, ['Quin', 'Ray'], { url: fast });
+  const pages = await startGame(browser, ['Quin', 'Ray'], { url: fast() });
   const active = await activePage(pages, click);
   // Send what the server must refuse: the other player cannot end this turn.
   const other = pages.find((p) => p !== active);
