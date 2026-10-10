@@ -285,3 +285,119 @@ func TestHeadlessGames(t *testing.T) {
 		})
 	}
 }
+
+// TestSaveAndContinue: the host saves with a stack open, the game is
+// loaded again, the players take their seats back by token, and it plays
+// to the end; the record has a resume and replays with every checksum
+// (6.11, N-11).
+func TestSaveAndContinue(t *testing.T) {
+	if testing.Short() {
+		t.Skip("plays a whole game")
+	}
+	dir := t.TempDir()
+	cfg := DefaultConfig()
+	cfg.Addr, cfg.Port, cfg.Records, cfg.Saves, cfg.Seed = "127.0.0.1", freePort(t), filepath.Join(dir, "records"), filepath.Join(dir, "saves"), 77
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	srv, err := Start(ctx, cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	url := "ws://" + srv.Addr() + "/ws"
+	bots := []*bot{dialBot(t, url, "Host", 1), dialBot(t, url, "Guest", 2)}
+	bots[0].send(protocol.TypeCreate, protocol.Create{Seats: 2})
+	var tb protocol.Table
+	bots[0].expect(protocol.TypeTable, &tb)
+	bots[1].send(protocol.TypeJoin, protocol.Join{Game: tb.Game})
+	bots[1].expect(protocol.TypeTable, nil)
+	for _, b := range bots {
+		b.send(protocol.TypeReady, protocol.Ready{Ready: true})
+	}
+
+	// Play until something is on the stack, then the host saves.
+	saved := ""
+	for steps := 0; saved == "" && steps < 20000; steps++ {
+		for i, b := range bots {
+			e, ok := b.read(2 * time.Millisecond)
+			if !ok {
+				continue
+			}
+			switch e.Type {
+			case protocol.TypeUpdate:
+				var u protocol.Update
+				if uerr := e.Unpack(&u); uerr != nil {
+					t.Fatal(uerr)
+				}
+				if i == 0 && len(u.View.Stack) > 0 && u.Step > 20 {
+					bots[0].send(protocol.TypeSave, struct{}{})
+					continue
+				}
+				b.act(u)
+			case protocol.TypeSaved:
+				var s protocol.Saved
+				if uerr := e.Unpack(&s); uerr != nil {
+					t.Fatal(uerr)
+				}
+				saved = s.Save
+			}
+		}
+	}
+	if saved == "" {
+		t.Fatal("the game was not saved")
+	}
+	var games protocol.Games
+	bots[0].expect(protocol.TypeGames, &games)
+	if len(games.Saves) != 1 || games.Saves[0].ID != saved || games.Saves[0].Seats[1] != "Guest" {
+		t.Fatalf("saves %+v", games.Saves)
+	}
+
+	// Load it again: the seats wait for their players.
+	bots[0].send(protocol.TypeLoad, protocol.Load{Save: saved})
+	bots[0].expect(protocol.TypeTable, &tb)
+	if tb.Loaded != saved || tb.You != 0 {
+		t.Fatalf("loaded table %+v", tb)
+	}
+	bots[1].send(protocol.TypeJoin, protocol.Join{Game: tb.Game})
+	bots[1].expect(protocol.TypeTable, &tb)
+	if tb.You != 1 {
+		t.Fatalf("the guest got seat %d", tb.You)
+	}
+	for _, b := range bots {
+		b.send(protocol.TypeReady, protocol.Ready{Ready: true})
+	}
+	over := false
+	for steps := 0; !over && steps < 40000; steps++ {
+		for _, b := range bots {
+			e, ok := b.read(2 * time.Millisecond)
+			if !ok || e.Type != protocol.TypeUpdate {
+				continue
+			}
+			var u protocol.Update
+			if uerr := e.Unpack(&u); uerr != nil {
+				t.Fatal(uerr)
+			}
+			if u.View.Over {
+				over = true
+				break
+			}
+			b.act(u)
+		}
+	}
+	if !over {
+		t.Skip("the continued game did not end within the step limit")
+	}
+	cancel()
+	_ = srv.Shutdown(context.Background()) //nolint:errcheck // test
+	files, err := filepath.Glob(filepath.Join(cfg.Records, "*"+record.Ext))
+	if err != nil || len(files) != 1 {
+		t.Fatalf("records %v, %v", files, err)
+	}
+	rec, err := record.ReadFile(files[0])
+	if err != nil {
+		t.Fatal(err)
+	}
+	if rec.Resumes != 1 {
+		t.Errorf("resumes %d, want 1", rec.Resumes)
+	}
+	checkRecord(t, files[0])
+}

@@ -16,3 +16,6 @@
 {"type":"pick","id":10,"data":{"card":"isaac"}}
 {"type":"skip_all","id":11,"data":{"on":true}}
 {"type":"vote","id":12,"data":{"seat":0,"kick":true}}
+{"type":"save","id":13,"data":{}}
+{"type":"saved","data":{"save":"g1"}}
+{"type":"load","id":14,"data":{"save":"g1"}}

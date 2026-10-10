@@ -46,6 +46,9 @@ func TestGolden(t *testing.T) {
 		{TypePick, 10, PickCard{Card: "isaac"}},
 		{TypeSkipAll, 11, SkipAll{On: true}},
 		{TypeVote, 12, Vote{Kick: true}},
+		{TypeSave, 13, struct{}{}},
+		{TypeSaved, 0, Saved{Save: "g1"}},
+		{TypeLoad, 14, Load{Save: "g1"}},
 	}
 	var got bytes.Buffer
 	for _, m := range messages {

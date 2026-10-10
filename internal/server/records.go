@@ -26,6 +26,7 @@ func (r *Room) apply(in engine.Intent) ([]engine.Event, error) {
 	if err != nil {
 		return nil, err //nolint:wrapcheck // the engine's RuleError is checked by the caller
 	}
+	r.steps++
 	if r.rec != nil {
 		if err := r.rec.Step(st.Intent, st.Events, st.Checksum); err != nil {
 			log.Printf("server: record %s: %v; recording stops", r.path, err)

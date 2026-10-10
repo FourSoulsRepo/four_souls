@@ -24,6 +24,7 @@ type Config struct {
 	Port      int    `json:"port"`      // TCP port
 	Records   string `json:"records"`   // folder for match records (6.9)
 	Retention int    `json:"retention"` // days to keep records; 0 keeps them
+	Saves     string `json:"saves"`     // folder for saved games (N-11)
 	// Seed makes game seeds reproducible: game n gets Seed+n. 0 seeds
 	// from the clock. For tests and bug reports.
 	Seed uint64 `json:"seed,omitempty"`
@@ -31,7 +32,7 @@ type Config struct {
 
 // DefaultConfig is used for settings the flags and file leave out.
 func DefaultConfig() Config {
-	return Config{Port: protocol.DefaultPort, Records: "records", Retention: 30}
+	return Config{Port: protocol.DefaultPort, Records: "records", Retention: 30, Saves: "saves"}
 }
 
 // LoadConfig reads a JSON config file over the defaults.
@@ -81,7 +82,7 @@ func Start(ctx context.Context, cfg Config) (*Server, error) {
 	ctx, cancel := context.WithCancel(ctx)
 	s := &Server{cfg: cfg, ln: ln, cancel: cancel}
 	hub := NewHub()
-	hub.records, hub.cards, hub.seed = cfg.Records, cardTexts(), cfg.Seed
+	hub.records, hub.cards, hub.seed, hub.saves = cfg.Records, cardTexts(), cfg.Seed, cfg.Saves
 	s.hub.Add(2)
 	go func() {
 		defer s.hub.Done()

@@ -77,12 +77,13 @@ func (c *Client) fail(id int, code, message string) {
 
 // table is a game in the lobby, before it starts.
 type table struct {
-	n     int // the game's number on this server
-	id    string
-	host  string
-	sets  []string
-	opts  protocol.Options
-	seats []tableSeat
+	loaded *saveFile // the saved game this table continues (N-11)
+	n      int       // the game's number on this server
+	id     string
+	host   string
+	sets   []string
+	opts   protocol.Options
+	seats  []tableSeat
 }
 
 type tableSeat struct {
@@ -128,6 +129,8 @@ type Hub struct {
 	cards []record.Card
 	// seed, if not 0, makes game n's seed seed+n.
 	seed uint64
+	// saves is the folder for saved games (N-11); "" keeps none.
+	saves string
 }
 
 // NewHub makes a lobby with the card sets the engine knows.
@@ -217,6 +220,8 @@ func (h *Hub) handle(req hubRequest) {
 	case protocol.TypeLeave:
 		h.leaveTable(c)
 		h.lobbyChanged()
+	case protocol.TypeLoad:
+		h.load(c, env)
 	default:
 		c.fail(env.ID, protocol.ErrBadMessage, "not in a game: "+env.Type)
 	}
@@ -350,6 +355,10 @@ func (h *Hub) join(c *Client, env protocol.Envelope) {
 		return
 	}
 	t := h.tables[i]
+	if t.loaded != nil {
+		h.joinLoaded(c, env, t.loaded.Game)
+		return
+	}
 	if missing := lacks(c.sets, t.sets); missing != "" {
 		c.fail(env.ID, protocol.ErrMissingSets, "you do not have the card set "+missing+" (CD-03)")
 		return
@@ -414,7 +423,7 @@ func (h *Hub) start(t *table) {
 	setup := engine.Setup{Seed: gameSeed, Players: len(t.seats), Sets: setsOf(t.sets), BonusSouls: !t.opts.NoBonusSouls}
 	room, err := NewRoom(setup, t.opts, seats)
 	if err == nil {
-		room.second = h.second
+		room.second, room.hub, room.saves, room.loaded = h.second, h, h.saves, t.loaded
 		room.recDir = h.records
 		room.recInfo = recordInfo{game: t.id, sets: t.sets, cards: h.cards}
 		room.path = recordPath(h.records, t.id, time.Now())
@@ -448,10 +457,16 @@ func (h *Hub) leaveTable(c *Client) {
 	c.table = nil
 	for i := range t.seats {
 		if t.seats[i].client == c {
-			t.seats[i] = tableSeat{}
+			if t.loaded != nil {
+				// A saved game's seat waits for its player (N-11).
+				t.seats[i].client, t.seats[i].ready = nil, false
+			} else {
+				t.seats[i] = tableSeat{}
+			}
 		}
 	}
-	if slices.IndexFunc(t.seats, func(s tableSeat) bool { return s.token != "" }) < 0 {
+	someone := func(s tableSeat) bool { return s.token != "" && (t.loaded == nil || s.client != nil) }
+	if slices.IndexFunc(t.seats, someone) < 0 {
 		h.tables = slices.DeleteFunc(h.tables, func(x *table) bool { return x == t })
 		return
 	}
@@ -473,7 +488,11 @@ func (h *Hub) tableChanged(t *table) {
 	}
 	for i, s := range t.seats {
 		if s.client != nil {
-			s.client.send(protocol.TypeTable, 0, protocol.Table{Game: t.id, You: i, Seats: seats, Sets: t.sets, Options: &t.opts})
+			msg := protocol.Table{Game: t.id, You: i, Seats: seats, Sets: t.sets, Options: &t.opts}
+			if t.loaded != nil {
+				msg.Loaded = t.loaded.Game
+			}
+			s.client.send(protocol.TypeTable, 0, msg)
 		}
 	}
 }
@@ -502,6 +521,7 @@ func (h *Hub) list() protocol.Games {
 	for _, g := range h.games {
 		out.Games = append(out.Games, g.info)
 	}
+	out.Saves = listSaves(h.saves)
 	return out
 }
 

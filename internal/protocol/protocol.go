@@ -51,6 +51,11 @@ const (
 
 	// Disconnects (6.8).
 	TypeVote = "vote" // client → server: wait for the missing player, or kick them
+
+	// Save and continue later (6.11).
+	TypeSave  = "save"  // client → server: the host saves the game; it stops
+	TypeSaved = "saved" // server → client: the game was saved under this ID
+	TypeLoad  = "load"  // client → server: open a saved game's table again
 )
 
 // Envelope wraps every message. ID is set by the client on requests;
@@ -151,9 +156,29 @@ type GameInfo struct {
 	Started bool     `json:"started"`
 }
 
-// Games lists the games on the server.
+// Games lists the games on the server, and the saved ones.
 type Games struct {
 	Games []GameInfo `json:"games"`
+	Saves []SaveInfo `json:"saves,omitempty"`
+}
+
+// SaveInfo is one saved game (N-11): who played, when it was saved.
+type SaveInfo struct {
+	ID     string   `json:"id"`
+	Host   string   `json:"host"`
+	Seats  []string `json:"seats"` // nicknames
+	Saved  int64    `json:"saved"` // Unix ms
+	Engine string   `json:"engine"`
+}
+
+// Saved tells the players their game was saved and stopped.
+type Saved struct {
+	Save string `json:"save"`
+}
+
+// Load opens a saved game's table; its players take their seats back.
+type Load struct {
+	Save string `json:"save"`
 }
 
 // Create opens a game with 2 to 4 seats and the given card sets.
@@ -239,6 +264,9 @@ type Table struct {
 	Seats   []Seat   `json:"seats"`
 	Sets    []string `json:"sets"`
 	Options *Options `json:"options,omitempty"`
+	// Loaded is the save the table continues; its seats wait for their
+	// players (N-11).
+	Loaded string `json:"loaded,omitempty"`
 }
 
 // Error codes.
@@ -258,6 +286,10 @@ const (
 	ErrAtTable        = "at_table" // already sitting at a table
 	ErrNotYourTurn    = "not_your_turn"
 	ErrPaused         = "paused" // the game waits for a disconnected player
+	ErrNotHost        = "not_host"
+	ErrNoSave         = "no_save"
+	ErrSaveVersion    = "save_version" // the save is from another engine version
+	ErrNotInSave      = "not_in_save"  // the player did not play the saved game
 	ErrBadCard        = "bad_card"
 )
 

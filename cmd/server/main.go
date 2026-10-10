@@ -68,6 +68,7 @@ func parse(args []string) (server.Config, error) {
 	port := fs.Int("port", def.Port, "TCP port for players")
 	records := fs.String("records", def.Records, "folder for match records")
 	retention := fs.Int("retention", def.Retention, "days to keep records; 0 keeps them forever")
+	saves := fs.String("saves", def.Saves, "folder for saved games")
 	if err := fs.Parse(args); err != nil {
 		return def, fmt.Errorf("flags: %w", err)
 	}
@@ -88,6 +89,8 @@ func parse(args []string) (server.Config, error) {
 			cfg.Records = *records
 		case "retention":
 			cfg.Retention = *retention
+		case "saves":
+			cfg.Saves = *saves
 		}
 	})
 	return cfg, cfg.Check()

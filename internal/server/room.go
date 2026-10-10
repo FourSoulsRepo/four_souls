@@ -58,6 +58,11 @@ type Room struct {
 	// is read by the hub for downloads.
 	recDir   string
 	recInfo  recordInfo
+	steps    int // applied steps, for the record of a saved game
+	saves    string
+	loaded   *saveFile // the save this room continues, if any
+	stopped  bool      // saved: the room ends, its players go back to the lobby
+	hub      *Hub
 	rec      *record.Writer
 	path     string
 	over     atomic.Bool
@@ -101,6 +106,10 @@ func (r *Room) Run(ctx context.Context) {
 	defer func() {
 		r.closeRecord(false)
 		close(r.done)
+		if r.stopped {
+			r.backToLobby()
+			return
+		}
 		if r.match != nil && r.match.timer != nil {
 			r.match.timer.Stop()
 		}
@@ -111,8 +120,12 @@ func (r *Room) Run(ctx context.Context) {
 			c.conn.Close()
 		}
 	}()
-	r.beginSetup()
-	for {
+	if r.loaded != nil {
+		r.resumeLoaded()
+	} else {
+		r.beginSetup()
+	}
+	for !r.stopped {
 		select {
 		case <-ctx.Done():
 			return
@@ -156,6 +169,8 @@ func (r *Room) handle(req request) {
 		r.skipAll(c, env)
 	case protocol.TypeVote:
 		r.vote(c, env)
+	case protocol.TypeSave:
+		r.save(c, env)
 	default:
 		c.fail(env.ID, protocol.ErrBadMessage, "not during a game: "+env.Type)
 	}
@@ -294,4 +309,18 @@ func newToken() string {
 		panic(err) // crypto/rand does not fail on supported systems
 	}
 	return hex.EncodeToString(b)
+}
+
+// backToLobby hands the room's players back to the lobby after a save.
+func (r *Room) backToLobby() {
+	for _, c := range r.clients {
+		c.room.Store(nil)
+	}
+	if r.hub == nil {
+		return
+	}
+	r.hub.send(hubRequest{run: func(h *Hub) {
+		h.games = slices.DeleteFunc(h.games, func(g started) bool { return g.room == r })
+		h.lobbyChanged()
+	}})
 }

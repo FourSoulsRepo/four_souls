@@ -38,7 +38,8 @@ func (h *Host) Start() (HostInfo, error) {
 		return h.info(), ErrHosting
 	}
 	cfg := server.DefaultConfig()
-	cfg.Records, cfg.Retention = hostRecords(), 0 // kept until the user deletes them (RP-07)
+	cfg.Records, cfg.Retention = hostFolder("records"), 0 // kept until the user deletes them (RP-07)
+	cfg.Saves = hostFolder("saves")
 	srv, err := server.Start(context.Background(), cfg)
 	if err != nil {
 		return HostInfo{}, err //nolint:wrapcheck // shown to the player as is
@@ -78,12 +79,12 @@ func (h *Host) info() HostInfo {
 	return HostInfo{Running: true, Port: h.cfg.Port, Addresses: server.LocalAddresses()}
 }
 
-// hostRecords is where a hosted game's records go: the user's config
-// folder, or "records" next to the app if there is none.
-func hostRecords() string {
+// hostFolder is where a hosted game keeps records or saves: the user's
+// config folder, or a folder next to the app if there is none.
+func hostFolder(name string) string {
 	dir, err := os.UserConfigDir()
 	if err != nil {
-		return "records"
+		return name
 	}
-	return filepath.Join(dir, "FourSouls", "records")
+	return filepath.Join(dir, "FourSouls", name)
 }

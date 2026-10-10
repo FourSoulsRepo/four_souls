@@ -96,10 +96,11 @@ A JSON config file can set the same values; flags override it.
 | `-addr` | all addresses | listen only on this address |
 | `-records` | `records` | where match records are saved (A-12) |
 | `-retention` | 30 | days to keep records; 0 keeps them forever (RP-07) |
+| `-saves` | `saves` | where saved games wait to be continued (N-11) |
 | `-config` | none | a JSON file with the same settings |
 
 ```json
-{"port": 4774, "records": "/var/lib/four-souls/records", "retention": 30}
+{"port": 4774, "records": "/var/lib/four-souls/records", "retention": 30, "saves": "/var/lib/four-souls/saves"}
 ```
 
 ## Updating

@@ -152,6 +152,8 @@ type Record struct {
 	Header Header
 	Steps  []Step
 	End    *End
+	// Resumes counts how often the game was saved and loaded again.
+	Resumes int
 }
 
 // ErrFormat means a file is not a record this package can read.
@@ -196,6 +198,9 @@ func Read(r io.Reader) (*Record, error) {
 				return &rec, fmt.Errorf("%w: %w", ErrFormat, err)
 			}
 			rec.End = &e
+		case kind.Kind == "resume":
+			rec.End = nil // the game went on after a save (N-11)
+			rec.Resumes++
 		}
 		first = false
 	}
@@ -246,4 +251,27 @@ func Prune(dir string, days int, now time.Time) (int, error) {
 		}
 	}
 	return n, nil
+}
+
+// Resume marks where a saved game was loaded again (N-11).
+type Resume struct {
+	Kind    string    `json:"kind"` // "resume"
+	Resumed time.Time `json:"resumed"`
+}
+
+// Append continues a record after a saved game was loaded: a new gzip
+// part at the end of the same file (gzip readers read every part), a
+// resume line, then the next steps from step steps+1.
+func Append(path string, steps int, at time.Time) (*Writer, error) {
+	f, err := os.OpenFile(path, os.O_APPEND|os.O_WRONLY, 0o600) //nolint:gosec // the server names the file
+	if err != nil {
+		return nil, fmt.Errorf("record: %w", err)
+	}
+	w := &Writer{f: f, gz: gzip.NewWriter(f), steps: steps}
+	w.enc = json.NewEncoder(w.gz)
+	if err := w.write(Resume{Kind: "resume", Resumed: at}); err != nil {
+		_ = f.Close() //nolint:errcheck // the write error matters
+		return nil, err
+	}
+	return w, nil
 }

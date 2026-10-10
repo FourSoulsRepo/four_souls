@@ -42,6 +42,7 @@ Use options 1 and 5.
    4. One `step` line per applied intent: intent, every event (hands too), checksum (RP-12).
    5. Rejected intents are never recorded (RP-03).
    6. Last an `end` line: finished or not, winners.
+   7. A saved game loaded again adds a gzip part with a `resume` line (N-11).
 3. Writing
    1. Each line is flushed: a crash leaves a readable record without `end`.
    2. A server that stops writes `end` with finished false (RP-08).

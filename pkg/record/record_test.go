@@ -111,3 +111,37 @@ func TestPrune(t *testing.T) {
 		t.Error("retention 0 deleted records")
 	}
 }
+
+// TestAppend: a saved game continues in the same file (N-11).
+func TestAppend(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "g3"+Ext)
+	w, err := Create(path, header())
+	if err != nil {
+		t.Fatal(err)
+	}
+	for i := range 2 {
+		if serr := w.Step(i, nil, 1); serr != nil {
+			t.Fatal(serr)
+		}
+	}
+	if cerr := w.Close(End{Finished: false}); cerr != nil {
+		t.Fatal(cerr)
+	}
+	w, err = Append(path, 2, time.Date(2026, 10, 11, 0, 0, 0, 0, time.UTC))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if serr := w.Step(2, nil, 7); serr != nil {
+		t.Fatal(serr)
+	}
+	if cerr := w.Close(End{Finished: true, Winners: []int{0}}); cerr != nil {
+		t.Fatal(cerr)
+	}
+	rec, err := ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(rec.Steps) != 3 || rec.Steps[2].N != 3 || rec.Resumes != 1 || rec.End == nil || !rec.End.Finished {
+		t.Errorf("steps %d (last %d), resumes %d, end %+v", len(rec.Steps), rec.Steps[len(rec.Steps)-1].N, rec.Resumes, rec.End)
+	}
+}
