@@ -104,7 +104,7 @@ Ideas: M-01, V-01 – V-08, ST-01 – ST-03, ST-05, ST-06, B-06, N-11.
 3. Done when:
    1. History shows only what the viewer may see.
 
-### [ ] 7.10 Settings screen
+### [x] 7.10 Settings screen
 
 1. Goal: ST-01, ST-02, ST-03, ST-05, ST-06.
 2. Tasks:

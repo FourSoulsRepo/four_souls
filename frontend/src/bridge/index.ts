@@ -12,7 +12,7 @@ import {
   Versions as wailsVersions,
 } from '../../wailsjs/go/main/App';
 import { Info as hostInfo, Start as hostStart, Stop as hostStop } from '../../wailsjs/go/main/Host';
-import { BrowserOpenURL } from '../../wailsjs/runtime/runtime';
+import { BrowserOpenURL, WindowFullscreen, WindowUnfullscreen } from '../../wailsjs/runtime/runtime';
 
 export interface Versions {
   app: string;
@@ -33,6 +33,25 @@ export interface Settings {
   recent: string[];
   // animation is the animation speed (ST-05).
   animation: Speed;
+  fullscreen: boolean; // ST-01
+  theme: Theme; // ST-02, menus and panels
+  mat: Mat; // ST-03
+}
+
+export type Theme = 'dark' | 'light';
+export type Mat = 'felt' | 'basement' | 'cathedral';
+
+// fromGo reads Go's settings; Go checks the choices, so anything else is
+// only possible from an older app.
+function fromGo(s: { nickname: string; recent: string[]; animation: string; fullscreen: boolean; theme: string; mat: string }): Settings {
+  return {
+    nickname: s.nickname,
+    recent: s.recent,
+    animation: speed(s.animation),
+    fullscreen: s.fullscreen,
+    theme: s.theme === 'light' ? 'light' : 'dark',
+    mat: s.mat === 'basement' || s.mat === 'cathedral' ? s.mat : 'felt',
+  };
 }
 
 // HostInfo tells the host how friends reach the hosted game.
@@ -51,22 +70,18 @@ export async function getNotice(): Promise<NoticeLine[]> {
   return lines.map((line) => line.parts.map((p) => ({ text: p.text, url: p.url })));
 }
 
-// speed reads Go's animation setting; Go checks it, so anything else is
-// only possible from an older app.
 function speed(s: string): Speed {
   return s === 'fast' || s === 'slow' || s === 'off' ? s : 'normal';
 }
 
 export async function getSettings(): Promise<Settings> {
-  const s = await wailsSettings();
-  return { nickname: s.nickname, recent: s.recent, animation: speed(s.animation) };
+  return fromGo(await wailsSettings());
 }
 
 // Go checks and cleans the settings; the result is what it stored.
 // A rejection carries Go's message for the player.
 export async function saveSettings(s: Settings): Promise<Settings> {
-  const saved = await wailsSaveSettings({ nickname: s.nickname, recent: s.recent, animation: s.animation });
-  return { nickname: saved.nickname, recent: saved.recent, animation: speed(saved.animation) };
+  return fromGo(await wailsSaveSettings(s));
 }
 
 // getCardSets lists the card set codes this app has (CD-03).
@@ -96,6 +111,15 @@ export async function startHosting(): Promise<HostInfo> {
 
 export function stopHosting(): Promise<void> {
   return hostStop();
+}
+
+// setFullscreen switches the window (ST-01).
+export function setFullscreen(on: boolean): void {
+  if (on) {
+    WindowFullscreen();
+  } else {
+    WindowUnfullscreen();
+  }
 }
 
 // Opens an https link in the system browser; anything else is ignored.

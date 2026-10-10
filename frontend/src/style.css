@@ -10,6 +10,15 @@
   background-color: var(--bg);
 }
 
+/* Light theme for menus and panels (ST-02); the game table keeps its
+   dark overlays, which sit on the mat. */
+:root[data-theme="light"] {
+  --bg: #efeae0;
+  --fg: #1f2329;
+  --muted: #5e6672;
+  --panel: #ffffff;
+}
+
 html,
 body,
 #root {
@@ -19,4 +28,17 @@ body,
 
 button {
   font: inherit;
+}
+
+/* Game mats (ST-03): CSS until mat images come with the card data. */
+.mat-felt {
+  background: radial-gradient(ellipse at center, #2f5a3c 0%, #21412c 65%, #172e20 100%);
+}
+
+.mat-basement {
+  background: radial-gradient(ellipse at center, #5a4330 0%, #3e2d1f 65%, #2a1e14 100%);
+}
+
+.mat-cathedral {
+  background: radial-gradient(ellipse at center, #5d6f86 0%, #3e4c60 65%, #2a3444 100%);
 }

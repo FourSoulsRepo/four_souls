@@ -44,6 +44,7 @@ export function GameScreen() {
 function Table({ game, you }: { game: Update; you: number }) {
   const { view } = game;
   const cards = useApp((s) => s.cards);
+  const mat = useApp((s) => s.settings.mat);
   const behind = useApp((s) => s.behind);
   const sent = useApp((s) => s.sent);
   const act = useApp((s) => s.act);
@@ -60,7 +61,7 @@ function Table({ game, you }: { game: Update; you: number }) {
   const stacked = (view.stack ?? []).length > 0;
   const skip = game.skip_all ? 'on' : stacked && !view.over ? 'offer' : 'none';
   return (
-    <main className="game" aria-label={`Turn ${String(view.turn.number)}`}>
+    <main className={`game mat-${mat}`} aria-label={`Turn ${String(view.turn.number)}`}>
       {seatPositions(view.players.length, you).map(({ position, player }) => {
         const p = view.players.at(player);
         return (

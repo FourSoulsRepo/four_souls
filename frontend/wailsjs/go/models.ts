@@ -167,6 +167,9 @@ export namespace settings {
 	    nickname: string;
 	    recent: string[];
 	    animation: string;
+	    fullscreen: boolean;
+	    theme: string;
+	    mat: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new Settings(source);
@@ -177,6 +180,9 @@ export namespace settings {
 	        this.nickname = source["nickname"];
 	        this.recent = source["recent"];
 	        this.animation = source["animation"];
+	        this.fullscreen = source["fullscreen"];
+	        this.theme = source["theme"];
+	        this.mat = source["mat"];
 	    }
 	}
 

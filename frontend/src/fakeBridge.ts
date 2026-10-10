@@ -38,19 +38,32 @@ const notice: { parts: Part[] }[] = [
 const settingsKey = 'fake-settings';
 
 function loadSettings(): unknown {
-  // ?anim=off starts with animations off.
-  const animation = new URLSearchParams(window.location.search).get('anim') ?? 'normal';
-  return JSON.parse(localStorage.getItem(settingsKey) ?? JSON.stringify({ nickname: '', recent: [], animation }));
+  // ?anim=off starts with animations off; ?firstrun starts without a
+  // nickname, as on the first start.
+  const params = new URLSearchParams(window.location.search);
+  const animation = params.get('anim') ?? 'normal';
+  const nickname = params.has('firstrun') ? '' : 'Player';
+  const fresh = { nickname, recent: [], animation, fullscreen: false, theme: 'dark', mat: 'felt' };
+  return JSON.parse(localStorage.getItem(settingsKey) ?? JSON.stringify(fresh));
 }
 
 // Same checks as internal/settings (Go counts runes, so code points), so
 // tests see the Go error.
-function saveSettings(s: { nickname: string; recent: string[]; animation: string }): Promise<unknown> {
+interface FakeSettings {
+  nickname: string;
+  recent: string[];
+  animation: string;
+  fullscreen: boolean;
+  theme: string;
+  mat: string;
+}
+
+function saveSettings(s: FakeSettings): Promise<unknown> {
   const nickname = s.nickname.trim();
   if (s.nickname !== '' && (nickname === '' || Array.from(nickname).length > 20)) {
     return Promise.reject(new Error('nickname must be 1–20 characters'));
   }
-  const saved = { nickname, recent: s.recent.slice(0, 5), animation: s.animation };
+  const saved = { ...s, nickname, recent: s.recent.slice(0, 5) };
   localStorage.setItem(settingsKey, JSON.stringify(saved));
   return Promise.resolve(saved);
 }
@@ -157,7 +170,9 @@ const hostInfo = { running: true, port: hostPort, addresses: ['127.0.0.1'] };
 
 const w = window as unknown as {
   go: { main: Record<string, Record<string, (...args: never[]) => Promise<unknown>>> };
-  runtime: { BrowserOpenURL: (url: string) => void };
+  runtime: Record<string, (...args: never[]) => void>;
+  // fakeFullscreen lets tests see the window mode.
+  fakeFullscreen: boolean;
 };
 
 w.go = {
@@ -177,8 +192,15 @@ w.go = {
     },
   },
 };
+w.fakeFullscreen = false;
 w.runtime = {
   BrowserOpenURL: () => undefined,
+  WindowFullscreen: () => {
+    w.fakeFullscreen = true;
+  },
+  WindowUnfullscreen: () => {
+    w.fakeFullscreen = false;
+  },
 };
 
 export {};

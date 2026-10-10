@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { CardZoom } from './components/CardZoom';
 import { Effects } from './components/Effects';
 import { CardGallery } from './screens/CardGallery';
@@ -9,17 +9,23 @@ import { MainMenu } from './screens/MainMenu';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { Splash } from './screens/Splash';
 import { TableScreen } from './screens/TableScreen';
+import { WelcomeScreen } from './screens/WelcomeScreen';
 import { useApp, type Screen as ScreenName } from './store';
 
 export function App() {
   const screen = useApp((s) => s.screen);
   const show = useApp((s) => s.show);
+  const loadingRef = useRef<Promise<void> | null>(null);
+  // After the splash: the menu, or the nickname first on the first start
+  // (ST-06). The settings may still be loading.
   const showMenu = useCallback(() => {
-    show('menu');
+    void (loadingRef.current ?? Promise.resolve()).then(() => {
+      show(useApp.getState().settings.nickname ? 'menu' : 'welcome');
+    });
   }, [show]);
 
   useEffect(() => {
-    void useApp.getState().loadSettings();
+    loadingRef.current = useApp.getState().loadSettings();
     void useApp.getState().loadCards();
   }, []);
 
@@ -36,6 +42,8 @@ function Screen({ screen, onSplashDone }: { screen: ScreenName; onSplashDone: ()
   switch (screen) {
     case 'splash':
       return <Splash onDone={onSplashDone} />;
+    case 'welcome':
+      return <WelcomeScreen />;
     case 'menu':
       return <MainMenu />;
     case 'settings':

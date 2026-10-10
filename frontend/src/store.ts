@@ -2,6 +2,7 @@
 // and server messages write it.
 import { create } from 'zustand';
 import {
+  setFullscreen,
   getCards,
   getCardSets,
   getSettings,
@@ -84,6 +85,14 @@ interface AppState extends Session {
   leaveTable: () => Promise<void>;
   // quit closes the connection, stops hosting, and goes to the menu.
   quit: () => Promise<void>;
+}
+
+// applyTheme colours menus and panels (ST-02).
+// Unit tests run without a document.
+function applyTheme(s: Settings): void {
+  if (typeof document !== 'undefined') {
+    document.documentElement.dataset.theme = s.theme;
+  }
 }
 
 // messageOf turns a rejected call into a message for the player. Wails
@@ -209,7 +218,7 @@ export const useApp = create<AppState>()((set, get) => {
     lobby: emptyLobby,
     game: null,
     error: '',
-    settings: { nickname: '', recent: [], animation: 'normal' },
+    settings: { nickname: '', recent: [], animation: 'normal', fullscreen: false, theme: 'dark', mat: 'felt' },
     hosting: null,
     connected: false,
     cardSets: [],
@@ -231,14 +240,23 @@ export const useApp = create<AppState>()((set, get) => {
     },
     loadSettings: async () => {
       try {
-        set({ settings: await getSettings() });
+        const s = await getSettings();
+        set({ settings: s });
+        applyTheme(s);
       } catch {
         // Keep the defaults; Go already falls back to them.
       }
     },
     saveSettings: async (s) => {
       try {
-        set({ settings: await saveSettings(s), error: '' });
+        const before = get().settings;
+        const saved = await saveSettings(s);
+        set({ settings: saved, error: '' });
+        // Settings apply at once, without a restart.
+        applyTheme(saved);
+        if (saved.fullscreen !== before.fullscreen) {
+          setFullscreen(saved.fullscreen);
+        }
         return true;
       } catch (e) {
         set({ error: messageOf(e) });

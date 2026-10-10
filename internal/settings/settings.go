@@ -22,26 +22,48 @@ type Settings struct {
 	Recent []string `json:"recent"`
 	// Animation is the animation speed (ST-05): one of Speeds.
 	Animation string `json:"animation"`
+	// Fullscreen starts the window fullscreen (ST-01).
+	Fullscreen bool `json:"fullscreen"`
+	// Theme colours menus and panels (ST-02): one of Themes.
+	Theme string `json:"theme"`
+	// Mat is the game mat under the table (ST-03): one of Mats.
+	Mat string `json:"mat"`
 }
 
-// Speeds are the animation speeds; the first is the default.
-var Speeds = []string{"normal", "fast", "slow", "off"}
+// The choices of the settings that take one of a list; the first is
+// the default.
+var (
+	Speeds = []string{"normal", "fast", "slow", "off"}
+	Themes = []string{"dark", "light"}
+	Mats   = []string{"felt", "basement", "cathedral"}
+)
 
 // MaxRecent is how many recent addresses are kept.
 const MaxRecent = 5
 
-// ErrAnimation means the animation speed is not one of Speeds.
-var ErrAnimation = errors.New("unknown animation speed")
+// ErrChoice means a setting is not one of its choices.
+var ErrChoice = errors.New("unknown setting value")
 
 // ErrNickname means the nickname is empty after trimming, too long, or
 // has control characters.
 var ErrNickname = fmt.Errorf("nickname must be 1–%d characters", protocol.MaxName)
 
+// choices pairs each one-of-a-list setting with its choices.
+func (s *Settings) choices() []struct {
+	value   *string
+	allowed []string
+} {
+	return []struct {
+		value   *string
+		allowed []string
+	}{{&s.Animation, Speeds}, {&s.Theme, Themes}, {&s.Mat, Mats}}
+}
+
 // Load reads the settings. A missing or broken file gives the defaults.
 // Recent is never nil, so the frontend always gets a list; an unknown
-// animation speed reads as the default.
+// choice reads as its default.
 func Load(path string) Settings {
-	def := Settings{Recent: []string{}, Animation: Speeds[0]}
+	def := Settings{Recent: []string{}, Animation: Speeds[0], Theme: Themes[0], Mat: Mats[0]}
 	data, err := os.ReadFile(path) //nolint:gosec // the app names the file
 	if err != nil {
 		return def
@@ -53,8 +75,10 @@ func Load(path string) Settings {
 	if s.Recent == nil {
 		s.Recent = []string{}
 	}
-	if !slices.Contains(Speeds, s.Animation) {
-		s.Animation = Speeds[0]
+	for _, c := range s.choices() {
+		if !slices.Contains(c.allowed, *c.value) {
+			*c.value = c.allowed[0]
+		}
 	}
 	return s
 }
@@ -69,11 +93,13 @@ func Save(path string, s Settings) (Settings, error) {
 		}
 		s.Nickname = name
 	}
-	if s.Animation == "" {
-		s.Animation = Speeds[0]
-	}
-	if !slices.Contains(Speeds, s.Animation) {
-		return Settings{}, ErrAnimation
+	for _, c := range s.choices() {
+		if *c.value == "" {
+			*c.value = c.allowed[0]
+		}
+		if !slices.Contains(c.allowed, *c.value) {
+			return Settings{}, fmt.Errorf("%w: %q", ErrChoice, *c.value)
+		}
 	}
 	recent := []string{}
 	for _, a := range s.Recent {

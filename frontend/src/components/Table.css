@@ -14,8 +14,12 @@
   padding: 6px;
   box-sizing: border-box;
   overflow: hidden;
-  /* The default game mat (ST-03); image mats come with the settings. */
-  background: radial-gradient(ellipse at center, #2f5a3c 0%, #21412c 65%, #172e20 100%);
+  /* The table stays dark in both themes; the mat is a mat-* class. */
+  --bg: #1b2636;
+  --fg: #f2f2f2;
+  --muted: #9aa5b5;
+  --panel: #243248;
+  color: var(--fg);
 }
 
 .player-top {
