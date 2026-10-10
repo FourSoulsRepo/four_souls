@@ -50,3 +50,9 @@ Effect durations scale with the animation setting (ST-05) and speed up when upda
 `stack.ts` has the words: `stackLine` describes a stack item ("Ann plays A Dime!!", "Attack: Bo rolls 4", "2 damage to Gaper"), and `waitText` says who the game waits for and why ("Your turn", "Bo may respond", "Ann is choosing"). The stack panel sits in the board's top-right corner while the stack is not empty, the top item first.
 
 The action bar shows the response timer from `update.deadline` (N-07) and "Skip all" / "Cancel skip" while something is on the stack (N-06); the server does the skipping.
+
+## Info panels
+
+`history.ts` builds the history from the events this viewer received: one entry per resolved stack item (`stack_resolved`), plus turns, loots, rewards, curses and the winner. The server already filters events per viewer, so a hidden loot reads "Bo loots a card". The history lives in `store.history`, grows as playback shows updates, and is lost on leaving the table (replays come in step 10).
+
+The turn badge shows the turn number, the active player and the step. Player areas show what the engine computed: HP, ATK, cents, souls, hand size, and for the active player the loot plays, attacks and purchases left (`PlayerView.loot_plays`, `attacks`, `purchases`). Card counters show as a yellow badge (`CardView.counters`).

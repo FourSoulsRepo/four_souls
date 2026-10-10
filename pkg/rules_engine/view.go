@@ -23,6 +23,8 @@ type CardView struct {
 	Role    Role     `json:"role,omitempty"`
 	Charged bool     `json:"charged"`
 	Damage  int      `json:"damage,omitempty"`
+	// Counters are the counters on the card, e.g. charge counters.
+	Counters []Counter `json:"counters,omitempty"`
 }
 
 // PlayerView is what a viewer sees of one player.
@@ -37,6 +39,11 @@ type PlayerView struct {
 	InPlay    []CardView `json:"in_play"`
 	HandSize  int        `json:"hand_size"`
 	Hand      []CardView `json:"hand,omitempty"` // only when the viewer may see it
+	// LootPlays, Attacks and Purchases are what the player may still do
+	// now, bonuses included; attacks and purchases only on their turn.
+	LootPlays int `json:"loot_plays"`
+	Attacks   int `json:"attacks"`
+	Purchases int `json:"purchases"`
 	// TreasureTop is the top treasure card, when this player may look at
 	// it now (There's Options) and the viewer may see it.
 	TreasureTop *CardView `json:"treasure_top,omitempty"`
@@ -91,6 +98,10 @@ func (g *Game) View(v Viewer) GameView {
 		pv := PlayerView{
 			ID: pl.ID, Character: g.cardView(pl.Character), HP: g.PlayerHP(pl.ID), ATK: g.PlayerATK(pl.ID),
 			Cents: pl.Cents, Souls: g.SoulValue(pl.ID), Dead: pl.Dead, HandSize: len(pl.Hand),
+			LootPlays: g.lootPlaysFor(pl.ID),
+		}
+		if pl.ID == g.Turn.Active {
+			pv.Attacks, pv.Purchases = g.attacksLeft(), g.purchasesLeft()
 		}
 		for _, id := range pl.InPlay {
 			pv.InPlay = append(pv.InPlay, g.cardView(id))
@@ -183,7 +194,10 @@ func (g *Game) optionViews() []OptionView {
 
 func (g *Game) cardView(id ObjectID) CardView {
 	o := g.Object(id)
-	return CardView{ID: id, Card: o.Card, Role: o.Role, Charged: o.Charged, Damage: o.Damage}
+	return CardView{
+		ID: id, Card: o.Card, Role: o.Role, Charged: o.Charged, Damage: o.Damage,
+		Counters: append([]Counter(nil), o.Counters...),
+	}
 }
 
 func (g *Game) slotViews(slots []Slot) []SlotView {

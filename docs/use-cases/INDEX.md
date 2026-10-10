@@ -16,3 +16,4 @@
 | UC-12 | See the table | `frontend` | In progress | [app/uc-12-see-the-table.md](app/uc-12-see-the-table.md) |
 | UC-13 | Take actions | `frontend` | Implemented | [app/uc-13-take-actions.md](app/uc-13-take-actions.md) |
 | UC-14 | Follow the stack | `frontend` | Implemented | [app/uc-14-follow-the-stack.md](app/uc-14-follow-the-stack.md) |
+| UC-15 | Read the history | `frontend` | Implemented | [app/uc-15-read-the-history.md](app/uc-15-read-the-history.md) |

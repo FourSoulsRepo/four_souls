@@ -30,5 +30,6 @@ The fixture copies the fan-game notice. `internal/legal` has a test that fails w
 | Your turn: playable cards highlighted | `screen-actions.png` |
 | A card's action menu (touch) | `screen-action-menu.png` |
 | The stack, seen by a player who may respond | `screen-stack.png` |
+| History, turn badge, what is left this turn | `screen-history.png` |
 
 When a screen is added, call `shot` in its test and add a row here.

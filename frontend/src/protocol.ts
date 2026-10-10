@@ -155,6 +155,7 @@ export interface CardView {
   role?: number;
   charged: boolean;
   damage?: number;
+  counters?: { name?: string; count: number }[];
 }
 
 export interface SlotView {
@@ -174,6 +175,10 @@ export interface PlayerView {
   hand_size: number;
   hand?: CardView[]; // only the viewer's own hand
   treasure_top?: CardView;
+  // What the player may still do now; attacks and purchases on their turn.
+  loot_plays: number;
+  attacks: number;
+  purchases: number;
 }
 
 export interface Turn {

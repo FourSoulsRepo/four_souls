@@ -23,6 +23,8 @@ interface Props {
   // objectId is the card's object on the table; effects find it by it,
   // and a new one pops in.
   objectId?: number;
+  // counters is how many counters the card carries (7.9).
+  counters?: number;
   // highlight marks a card the player may act on or pick (7.7).
   highlight?: 'act' | 'pick';
   onClick?: () => void;
@@ -36,6 +38,7 @@ export function Card({
   back = 'loot',
   damage = 0,
   spent = false,
+  counters = 0,
   objectId,
   highlight,
   onClick,
@@ -124,6 +127,11 @@ export function Card({
         />
       ) : (
         <BlankFace card={card} full={size === 'zoom'} />
+      )}
+      {counters > 0 && (
+        <span className="card-counters" aria-label={`${String(counters)} counters`}>
+          {counters}
+        </span>
       )}
       {damage > 0 && (
         <span className="card-damage" aria-label={`${String(damage)} damage`}>

@@ -15,6 +15,11 @@ interface Props {
   ui: Interact;
 }
 
+// counted is how many counters a card carries, of any kind.
+function counted(c: CardView): number {
+  return (c.counters ?? []).reduce((n, x) => n + x.count, 0);
+}
+
 // spent: a character or item that is used up until it recharges.
 function spent(c: CardView): boolean {
   return (c.role === Role.character || c.role === Role.item) && !c.charged;
@@ -39,6 +44,11 @@ export function PlayerArea({ player, name, position, you, active, ui }: Props) {
           {!you && ` · ${String(player.hand_size)} in hand`}
           {player.dead && ' · dead'}
         </span>
+        {active && (
+          <span className="player-allowance" aria-label="Left this turn">
+            Loot {player.loot_plays} · Attacks {player.attacks} · Buys {player.purchases}
+          </span>
+        )}
         {pick.onClick && (
           <button type="button" className="player-pick" onClick={pick.onClick}>
             Choose {label}
@@ -53,6 +63,7 @@ export function PlayerArea({ player, name, position, you, active, ui }: Props) {
             size={size}
             damage={c.damage}
             spent={spent(c)}
+            counters={counted(c)}
             objectId={c.id}
             {...ui.object(c.id)}
           />

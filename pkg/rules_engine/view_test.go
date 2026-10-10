@@ -144,3 +144,22 @@ func TestChoiceOptionsPointAtTheTable(t *testing.T) {
 		t.Error("others must not see what the options point at")
 	}
 }
+
+func TestViewCountsWhatIsLeft(t *testing.T) {
+	g := toAction(t, 2)
+	a := g.Turn.Active
+	id := g.Players[a].Character
+	g.Object(id).addCounters("charge", 2)
+	v := g.View(Viewer{Kind: ViewPlayer, Player: g.next(a)})
+	me := v.Players[a]
+	if me.LootPlays != g.lootPlaysFor(a) || me.Attacks != g.attacksLeft() || me.Purchases != g.purchasesLeft() {
+		t.Errorf("active player left %d/%d/%d, want %d/%d/%d",
+			me.LootPlays, me.Attacks, me.Purchases, g.lootPlaysFor(a), g.attacksLeft(), g.purchasesLeft())
+	}
+	if other := v.Players[g.next(a)]; other.Attacks != 0 || other.Purchases != 0 {
+		t.Errorf("a waiting player has attacks %d and purchases %d, want none", other.Attacks, other.Purchases)
+	}
+	if c := me.Character.Counters; len(c) != 1 || c[0].Count != 2 {
+		t.Errorf("counters %+v, want 2 charge", c)
+	}
+}

@@ -6,6 +6,7 @@ import { Board } from '../components/Board';
 import { ChoiceDialog, DiscardDialog } from '../components/ChoiceDialog';
 import { interact, noInteract } from '../components/Interact';
 import { PlayerArea } from '../components/PlayerArea';
+import { HistoryPanel, TurnBadge } from '../components/InfoPanels';
 import { StackPanel } from '../components/StackPanel';
 import type { Update } from '../protocol';
 import { useApp } from '../store';
@@ -77,6 +78,8 @@ function Table({ game, you }: { game: Update; you: number }) {
         );
       })}
       <Board view={view} ui={ui}>
+        <TurnBadge view={view} names={names} />
+        <HistoryPanel />
         <StackPanel view={view} names={names} />
       </Board>
       <ActionBar

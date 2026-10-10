@@ -93,7 +93,7 @@ Ideas: M-01, V-01 – V-08, ST-01 – ST-03, ST-05, ST-06, B-06, N-11.
 3. Done when:
    1. Players always see why the game waits.
 
-### [ ] 7.9 Info panels
+### [x] 7.9 Info panels
 
 1. Goal: never get lost (V-03, V-05, V-06).
 2. Tasks:

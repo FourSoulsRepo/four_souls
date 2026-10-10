@@ -13,6 +13,7 @@ import {
   type Settings,
 } from './bridge';
 import type { CardInfo } from './cards';
+import { entriesFor, type Entry } from './history';
 import { emptyLobby, leftTable, lost, onMessage, remember, type Screen, type Session } from './lobby';
 import { connect, disconnect, send } from './net';
 import { createPlayback, effectsFor, type Effect } from './playback';
@@ -39,6 +40,8 @@ export interface Playing {
 interface AppState extends Session {
   // playing is the event effect on screen, if any.
   playing: Playing | null;
+  // history is the match so far, as this viewer saw it (7.9).
+  history: Entry[];
   // receive handles one server message.
   receive: (env: Envelope) => void;
   // behind is set while updates wait to be shown: the player acts only
@@ -97,9 +100,22 @@ export function messageOf(e: unknown): string {
 
 export const useApp = create<AppState>()((set, get) => {
   let effectKey = 0;
+  // names reads players from an update and cards from the card data.
+  const names = (u: Update) => ({
+    player: (p: number) => u.seats?.find((s) => s.seat === p)?.name ?? `Player ${String(p + 1)}`,
+    card: (ref: string) => get().cards.get(ref)?.name ?? ref,
+  });
   const playback = createPlayback({
     show: (u) => {
-      set({ game: u, behind: playback.pending() > 0 });
+      const s = get();
+      const entries = entriesFor(
+        u.events ?? [],
+        s.game?.view.turn.number ?? u.view.turn.number,
+        s.lobby.table?.you ?? -1,
+        names(u),
+        (s.history.at(-1)?.key ?? 0) + 1,
+      );
+      set({ game: u, behind: playback.pending() > 0, history: [...s.history, ...entries] });
     },
     run: (effect, scale) =>
       new Promise((resolve) => {
@@ -118,7 +134,7 @@ export const useApp = create<AppState>()((set, get) => {
     effects: (u) =>
       effectsFor(u.events ?? [], {
         card: (ref) => get().cards.get(ref),
-        name: (p) => u.seats?.find((s) => s.seat === p)?.name ?? `Player ${String(p + 1)}`,
+        name: names(u).player,
       }),
     speed: () => get().settings.animation,
     shown: () => get().game,
@@ -127,6 +143,7 @@ export const useApp = create<AppState>()((set, get) => {
   const stopPlayback = () => {
     playback.clear();
     get().playing?.done();
+    set({ history: [] });
   };
 
   // open connects to address and says hello; the server answers with
@@ -161,6 +178,7 @@ export const useApp = create<AppState>()((set, get) => {
 
   return {
     playing: null,
+    history: [],
     behind: false,
     sent: null,
     selected: null,

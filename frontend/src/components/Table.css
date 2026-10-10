@@ -192,3 +192,8 @@
   cursor: grabbing;
   transition: none;
 }
+
+.player-allowance {
+  font-size: 12px;
+  color: #ffd27a;
+}

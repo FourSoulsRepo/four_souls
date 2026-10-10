@@ -56,6 +56,9 @@ const modeled: Record<string, Envelope> = {
             souls: 0,
             in_play: [{ id: 321, card: 'the_d6', role: 2, charged: true }],
             hand_size: 3,
+            loot_plays: 0,
+            attacks: 0,
+            purchases: 0,
           },
           {
             id: 1,
@@ -71,6 +74,9 @@ const modeled: Record<string, Envelope> = {
               { id: 328, card: 'four_cents', charged: false },
               { id: 329, card: 'xvi_the_tower', charged: false },
             ],
+            loot_plays: 0,
+            attacks: 0,
+            purchases: 0,
           },
         ],
         shop: [

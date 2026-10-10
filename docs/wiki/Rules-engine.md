@@ -89,3 +89,7 @@ A test fails when the committed report is out of date, so run the command after 
 ## Choice options in views
 
 `GameView.Options` tells the chooser what each option of a choose prompt points at (`OptionView`: an object, a player, a deck, or a stack item), one per `Waiting.Options`. Clients use it to let the player pick on the table. It is built from `g.Choice` at view time, so it is not saved state and does not change checksums.
+
+## Counts in views
+
+`PlayerView.LootPlays`, `Attacks` and `Purchases` are what a player may still do now, bonuses included (attacks and purchases only for the active player). `CardView.Counters` copies the object's counters. Like `Options`, they are computed at view time.
