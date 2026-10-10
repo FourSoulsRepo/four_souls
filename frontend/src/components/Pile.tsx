@@ -12,7 +12,7 @@ function title(kind: Kind): string {
 export function Deck({ kind, count, size }: { kind: Kind; count: number; size: CardSize }) {
   const label = `${title(kind)} deck: ${String(count)} cards`;
   return (
-    <div className="pile" role="group" aria-label={label} title={label}>
+    <div className="pile" role="group" aria-label={label} title={label} data-zone={`deck-${kind}`}>
       {count > 0 ? <Card size={size} back={kind} /> : <div className={`pile-empty size-${size}`} />}
       <span className="pile-count">{count}</span>
     </div>
@@ -24,8 +24,8 @@ export function Discard({ kind, cards, size }: { kind: Kind; cards: CardView[] |
   const top = cards?.at(-1);
   const label = `${title(kind)} discard: ${String(cards?.length ?? 0)} cards`;
   return (
-    <div className="pile" role="group" aria-label={label} title={label}>
-      {top ? <Card cardRef={top.card} size={size} /> : <div className={`pile-empty size-${size}`}>Discard</div>}
+    <div className="pile" role="group" aria-label={label} title={label} data-zone={`discard-${kind}`}>
+      {top ? <Card cardRef={top.card} size={size} objectId={top.id} /> : <div className={`pile-empty size-${size}`}>Discard</div>}
     </div>
   );
 }

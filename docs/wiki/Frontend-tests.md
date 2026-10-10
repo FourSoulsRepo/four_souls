@@ -32,6 +32,8 @@ URL flags, dev server only:
 
 * `?fake` — fake Wails bindings.
 * `?nosplash` — skip the 5-second fan-game notice. Players always see it (L-01); one test checks it.
+* `?anim=off` — start with animations off (until the player changes the setting).
+* With `?fake`, `window.fourSouls.store` is the store: tests feed it server messages with `store.getState().receive(env)`, e.g. a burst of updates.
 * `?screen=cards` — the card gallery: every card in hand and table size. The fake has a card with an image, one whose image fails, and blank ones.
 
 Every new screen gets a Playwright test. Find elements the way a player does: by role and visible text (`getByRole('button', { name: 'Save' })`), not by CSS classes.

@@ -24,6 +24,8 @@
   * The saved settings stay as they were.
 * **4a. Missing or broken file:** the app starts with default settings.
 * **6a. Back:** **Back** returns to the main menu without saving.
+* **3b. Animations (ST-05):** Normal, Fast, Slow or Off.
+  * Saved with the nickname; it applies to the next effect.
 
 ## Postconditions
 

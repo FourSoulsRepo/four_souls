@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 
 	"github.com/FourSoulsRepo/four_souls/internal/protocol"
@@ -19,28 +20,41 @@ type Settings struct {
 	Nickname string `json:"nickname"`
 	// Recent are the last addresses joined, newest first.
 	Recent []string `json:"recent"`
+	// Animation is the animation speed (ST-05): one of Speeds.
+	Animation string `json:"animation"`
 }
+
+// Speeds are the animation speeds; the first is the default.
+var Speeds = []string{"normal", "fast", "slow", "off"}
 
 // MaxRecent is how many recent addresses are kept.
 const MaxRecent = 5
+
+// ErrAnimation means the animation speed is not one of Speeds.
+var ErrAnimation = errors.New("unknown animation speed")
 
 // ErrNickname means the nickname is empty after trimming, too long, or
 // has control characters.
 var ErrNickname = fmt.Errorf("nickname must be 1–%d characters", protocol.MaxName)
 
 // Load reads the settings. A missing or broken file gives the defaults.
-// Recent is never nil, so the frontend always gets a list.
+// Recent is never nil, so the frontend always gets a list; an unknown
+// animation speed reads as the default.
 func Load(path string) Settings {
-	s := Settings{Recent: []string{}}
+	def := Settings{Recent: []string{}, Animation: Speeds[0]}
 	data, err := os.ReadFile(path) //nolint:gosec // the app names the file
 	if err != nil {
-		return s
+		return def
 	}
+	s := def
 	if err := json.Unmarshal(data, &s); err != nil {
-		return Settings{Recent: []string{}}
+		return def
 	}
 	if s.Recent == nil {
 		s.Recent = []string{}
+	}
+	if !slices.Contains(Speeds, s.Animation) {
+		s.Animation = Speeds[0]
 	}
 	return s
 }
@@ -54,6 +68,12 @@ func Save(path string, s Settings) (Settings, error) {
 			return Settings{}, ErrNickname
 		}
 		s.Nickname = name
+	}
+	if s.Animation == "" {
+		s.Animation = Speeds[0]
+	}
+	if !slices.Contains(Speeds, s.Animation) {
+		return Settings{}, ErrAnimation
 	}
 	recent := []string{}
 	for _, a := range s.Recent {

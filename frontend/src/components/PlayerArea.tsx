@@ -25,6 +25,7 @@ export function PlayerArea({ player, name, position, you, active }: Props) {
     <section
       className={`player player-${position}${active ? ' active' : ''}${player.dead ? ' dead' : ''}`}
       aria-label={label}
+      data-zone={`player-${String(player.id)}`}
     >
       <header className="player-header">
         <b>{label}</b>
@@ -40,15 +41,16 @@ export function PlayerArea({ player, name, position, you, active }: Props) {
           size={size}
           damage={player.character.damage}
           spent={spent(player.character)}
+          objectId={player.character.id}
         />
         {(player.in_play ?? []).map((c) => (
-          <Card key={c.id} cardRef={c.card} size={size} damage={c.damage} spent={spent(c)} />
+          <Card key={c.id} cardRef={c.card} size={size} damage={c.damage} spent={spent(c)} objectId={c.id} />
         ))}
       </div>
       {you && (
-        <div className="hand" role="group" aria-label="Your hand">
+        <div className="hand" role="group" aria-label="Your hand" data-zone={`hand-${String(player.id)}`}>
           {(player.hand ?? []).map((c) => (
-            <Card key={c.id} cardRef={c.card} size="hand" />
+            <Card key={c.id} cardRef={c.card} size="hand" objectId={c.id} />
           ))}
         </div>
       )}

@@ -38,17 +38,19 @@ const notice: { parts: Part[] }[] = [
 const settingsKey = 'fake-settings';
 
 function loadSettings(): unknown {
-  return JSON.parse(localStorage.getItem(settingsKey) ?? '{"nickname":"","recent":[]}');
+  // ?anim=off starts with animations off.
+  const animation = new URLSearchParams(window.location.search).get('anim') ?? 'normal';
+  return JSON.parse(localStorage.getItem(settingsKey) ?? JSON.stringify({ nickname: '', recent: [], animation }));
 }
 
 // Same checks as internal/settings (Go counts runes, so code points), so
 // tests see the Go error.
-function saveSettings(s: { nickname: string; recent: string[] }): Promise<unknown> {
+function saveSettings(s: { nickname: string; recent: string[]; animation: string }): Promise<unknown> {
   const nickname = s.nickname.trim();
   if (s.nickname !== '' && (nickname === '' || Array.from(nickname).length > 20)) {
     return Promise.reject(new Error('nickname must be 1–20 characters'));
   }
-  const saved = { nickname, recent: s.recent.slice(0, 5) };
+  const saved = { nickname, recent: s.recent.slice(0, 5), animation: s.animation };
   localStorage.setItem(settingsKey, JSON.stringify(saved));
   return Promise.resolve(saved);
 }

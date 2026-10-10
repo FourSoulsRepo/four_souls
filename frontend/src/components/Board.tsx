@@ -17,7 +17,7 @@ export function Board({ view }: { view: GameView }) {
         {(view.bonus_souls ?? []).length > 0 && (
           <div className="bonus-souls" role="group" aria-label="Bonus souls">
             {view.bonus_souls?.map((c) => (
-              <Card key={c.id} cardRef={c.card} size="small" />
+              <Card key={c.id} cardRef={c.card} size="small" objectId={c.id} />
             ))}
           </div>
         )}
@@ -50,7 +50,7 @@ function Slot({ slot }: { slot: SlotView }) {
   }
   return (
     <div className="pile">
-      <Card cardRef={slot.top.card} size="table" damage={slot.top.damage} />
+      <Card cardRef={slot.top.card} size="table" damage={slot.top.damage} objectId={slot.top.id} />
       {covered > 0 && <span className="pile-count">+{covered}</span>}
     </div>
   );

@@ -61,7 +61,7 @@ Ideas: M-01, V-01 – V-08, ST-01 – ST-03, ST-05, ST-06, B-06, N-11.
 3. Done when:
    1. Layout fits at 1280×720 and up.
 
-### [ ] 7.6 Event playback and animations
+### [x] 7.6 Event playback and animations
 
 1. Goal: events play in order as animations (V-08).
 2. Tasks:

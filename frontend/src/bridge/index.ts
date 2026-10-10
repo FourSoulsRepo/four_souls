@@ -2,6 +2,7 @@
 // Everything else imports from here, so a move to Wails v3 or a browser
 // build replaces this folder and nothing else (A-14).
 import type { CardInfo } from '../cards';
+import type { Speed } from '../playback';
 import {
   Cards as wailsCards,
   CardSets as wailsCardSets,
@@ -30,6 +31,8 @@ export interface Settings {
   nickname: string;
   // recent are the last addresses joined, newest first.
   recent: string[];
+  // animation is the animation speed (ST-05).
+  animation: Speed;
 }
 
 // HostInfo tells the host how friends reach the hosted game.
@@ -48,16 +51,22 @@ export async function getNotice(): Promise<NoticeLine[]> {
   return lines.map((line) => line.parts.map((p) => ({ text: p.text, url: p.url })));
 }
 
+// speed reads Go's animation setting; Go checks it, so anything else is
+// only possible from an older app.
+function speed(s: string): Speed {
+  return s === 'fast' || s === 'slow' || s === 'off' ? s : 'normal';
+}
+
 export async function getSettings(): Promise<Settings> {
   const s = await wailsSettings();
-  return { nickname: s.nickname, recent: s.recent };
+  return { nickname: s.nickname, recent: s.recent, animation: speed(s.animation) };
 }
 
 // Go checks and cleans the settings; the result is what it stored.
 // A rejection carries Go's message for the player.
 export async function saveSettings(s: Settings): Promise<Settings> {
-  const saved = await wailsSaveSettings({ nickname: s.nickname, recent: s.recent });
-  return { nickname: saved.nickname, recent: saved.recent };
+  const saved = await wailsSaveSettings({ nickname: s.nickname, recent: s.recent, animation: s.animation });
+  return { nickname: saved.nickname, recent: saved.recent, animation: speed(saved.animation) };
 }
 
 // getCardSets lists the card set codes this app has (CD-03).

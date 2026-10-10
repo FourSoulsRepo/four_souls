@@ -166,6 +166,7 @@ export namespace settings {
 	export class Settings {
 	    nickname: string;
 	    recent: string[];
+	    animation: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new Settings(source);
@@ -175,6 +176,7 @@ export namespace settings {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.nickname = source["nickname"];
 	        this.recent = source["recent"];
+	        this.animation = source["animation"];
 	    }
 	}
 

@@ -1,5 +1,7 @@
+import { motion } from 'motion/react';
 import { useRef, useState, type PointerEvent } from 'react';
 import { iconText, kindOf, textParts, unknownCard, type CardInfo, type Kind } from '../cards';
+import { scaleFor } from '../playback';
 import { useApp } from '../store';
 import './Card.css';
 
@@ -18,13 +20,17 @@ interface Props {
   damage?: number;
   // spent dims a used (uncharged) card.
   spent?: boolean;
+  // objectId is the card's object on the table; effects find it by it,
+  // and a new one pops in.
+  objectId?: number;
 }
 
 // Card is the one card component (7.4): the card image, or a blank card
 // with its text when the image is missing (A-11).
-export function Card({ cardRef, size, back = 'loot', damage = 0, spent = false }: Props) {
+export function Card({ cardRef, size, back = 'loot', damage = 0, spent = false, objectId }: Props) {
   const info = useApp((s) => (cardRef ? s.cards.get(cardRef) : undefined));
   const setZoom = useApp((s) => s.setZoom);
+  const scale = useApp((s) => scaleFor(s.settings.animation, 0, 0));
   const pressRef = useRef(0);
   const [brokenImage, setBrokenImage] = useState('');
 
@@ -44,8 +50,13 @@ export function Card({ cardRef, size, back = 'loot', damage = 0, spent = false }
     window.clearTimeout(pressRef.current);
   };
 
+  const pop = objectId !== undefined && scale > 0;
   return (
-    <div
+    <motion.div
+      initial={pop ? { scale: 0.6, opacity: 0 } : false}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ duration: 0.25 * scale }}
+      data-zone={objectId === undefined ? undefined : `obj-${String(objectId)}`}
       className={`card size-${size} kind-${kindOf(card.type)}${spent ? ' spent' : ''}`}
       role="img"
       aria-label={card.name}
@@ -91,7 +102,7 @@ export function Card({ cardRef, size, back = 'loot', damage = 0, spent = false }
           {damage}
         </span>
       )}
-    </div>
+    </motion.div>
   );
 }
 

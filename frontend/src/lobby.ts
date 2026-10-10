@@ -22,7 +22,8 @@ export const emptyLobby: Lobby = { welcome: null, games: [], saves: [], table: n
 export interface Session {
   screen: Screen;
   lobby: Lobby;
-  // game is the latest update of the running game; null before it.
+  // game is the update on screen; playback shows each update after its
+  // effects (playback.ts). null before the game.
   game: Update | null;
   // error is the last failure to show the player; '' if none.
   error: string;
@@ -43,7 +44,8 @@ export function onMessage(s: Session, env: Envelope): Session {
     case 'setup':
       return s.screen === 'game' ? s : { ...s, screen: 'game', error: '' };
     case 'update':
-      return { ...s, screen: 'game', game: env.data as Update, error: s.screen === 'game' ? s.error : '' };
+      // The update itself goes to playback, which shows it in turn.
+      return s.screen === 'game' ? s : { ...s, screen: 'game', error: '' };
     case 'saved':
       return { ...s, screen: 'join', lobby: { ...l, table: null, saved: (env.data as Saved).save }, game: null };
     case 'error':

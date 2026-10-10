@@ -1,5 +1,6 @@
 import { useCallback, useEffect } from 'react';
 import { CardZoom } from './components/CardZoom';
+import { Effects } from './components/Effects';
 import { CardGallery } from './screens/CardGallery';
 import { GameScreen } from './screens/GameScreen';
 import { HostScreen } from './screens/HostScreen';
@@ -25,6 +26,7 @@ export function App() {
   return (
     <>
       <Screen screen={screen} onSplashDone={showMenu} />
+      <Effects />
       <CardZoom />
     </>
   );

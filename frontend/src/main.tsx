@@ -14,6 +14,12 @@ if (import.meta.env.DEV && new URLSearchParams(window.location.search).get('scre
   useApp.setState({ screen: 'cards' });
 }
 
+// With fake bindings, tests reach the store to play event bursts.
+if (import.meta.env.DEV && new URLSearchParams(window.location.search).has('fake')) {
+  const { useApp } = await import('./store');
+  (window as unknown as { fourSouls: unknown }).fourSouls = { store: useApp };
+}
+
 const container = document.getElementById('root');
 if (!container) {
   throw new Error('root element is missing');

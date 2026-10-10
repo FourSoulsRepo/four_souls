@@ -30,6 +30,14 @@
 * **3a. Empty deck or discard:** a dashed outline keeps its place.
 * **3b. Covered slot:** a "+N" badge shows the cards under the top one.
 * **1a. Bans or a draft first:** "Setting up the match…" until 7.14.
+* **1b. Events play first (V-08):** each update's events play one at a time.
+  * Looted and discarded cards fly between deck, hand and discard.
+  * Dice rolls show the result; cents, healing and damage pop up.
+  * A new turn shows a banner; a revealed card shows large.
+  * Then the table shows the update; new cards pop in.
+* **1c. Many updates at once:** effects play faster; a long queue skips them.
+  * The table always ends on the latest update.
+* **1d. Animations off:** updates show at once.
 
 ## Postconditions
 

@@ -3,6 +3,7 @@
 * [Build modes](Build-modes)
 * [Linters](Linters)
 * [Screenshots](Screenshots)
+* [Client](Client)
 * [Frontend tests](Frontend-tests)
 * [Card data tools](Card-data-tools)
 * [Effect blocks](Effect-blocks)

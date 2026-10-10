@@ -26,5 +26,6 @@ The fixture copies the fan-game notice. `internal/legal` has a test that fails w
 | Zoomed card | `screen-card-zoom.png` |
 | Game table, 2 players, 1280×720 | `screen-table-2p.png` |
 | Game table, 4 players, 1280×720 | `screen-table-4p.png` |
+| Dice roll effect | `screen-effect-dice.png` |
 
 When a screen is added, call `shot` in its test and add a row here.

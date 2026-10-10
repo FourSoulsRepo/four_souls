@@ -15,7 +15,8 @@ import {
 import type { CardInfo } from './cards';
 import { emptyLobby, leftTable, lost, onMessage, remember, type Screen, type Session } from './lobby';
 import { connect, disconnect, send } from './net';
-import { protocolVersion, wsURL, type Create, type Hello } from './protocol';
+import { createPlayback, effectsFor, type Effect } from './playback';
+import { protocolVersion, wsURL, type Create, type Envelope, type Hello, type Update } from './protocol';
 
 export type { Screen } from './lobby';
 
@@ -27,7 +28,19 @@ export interface Zoom {
   side: 'left' | 'right';
 }
 
+// Playing is the effect on screen now; done ends it (playback.ts).
+export interface Playing {
+  effect: Effect;
+  scale: number;
+  key: number;
+  done: () => void;
+}
+
 interface AppState extends Session {
+  // playing is the event effect on screen, if any.
+  playing: Playing | null;
+  // receive handles one server message.
+  receive: (env: Envelope) => void;
   settings: Settings;
   // hosting is set while this app runs the game server.
   hosting: HostInfo | null;
@@ -71,6 +84,39 @@ export function messageOf(e: unknown): string {
 }
 
 export const useApp = create<AppState>()((set, get) => {
+  let effectKey = 0;
+  const playback = createPlayback({
+    show: (u) => {
+      set({ game: u });
+    },
+    run: (effect, scale) =>
+      new Promise((resolve) => {
+        const key = ++effectKey;
+        const done = () => {
+          window.clearTimeout(timer);
+          if (get().playing?.key === key) {
+            set({ playing: null });
+          }
+          resolve();
+        };
+        // An effect that never ends (its screen closed) must not block.
+        const timer = window.setTimeout(done, 3000 * scale + 1000);
+        set({ playing: { effect, scale, key, done } });
+      }),
+    effects: (u) =>
+      effectsFor(u.events ?? [], {
+        card: (ref) => get().cards.get(ref),
+        name: (p) => u.seats?.find((s) => s.seat === p)?.name ?? `Player ${String(p + 1)}`,
+      }),
+    speed: () => get().settings.animation,
+    shown: () => get().game,
+  });
+  // stopPlayback drops queued updates and the effect on screen.
+  const stopPlayback = () => {
+    playback.clear();
+    get().playing?.done();
+  };
+
   // open connects to address and says hello; the server answers with
   // welcome and its game list.
   async function open(address: string): Promise<boolean> {
@@ -81,15 +127,10 @@ export const useApp = create<AppState>()((set, get) => {
     }
     try {
       const [versions, sets] = await Promise.all([getVersions(), getCardSets()]);
-      await connect(
-        url,
-        (env) => {
-          set((s) => onMessage(s, env));
-        },
-        () => {
-          set((s) => ({ ...lost(s), connected: false }));
-        },
-      );
+      await connect(url, get().receive, () => {
+        stopPlayback();
+        set((s) => ({ ...lost(s), connected: false }));
+      });
       set({ connected: true, cardSets: sets, lobby: emptyLobby, error: '' });
       const hello: Hello = {
         protocol: protocolVersion,
@@ -107,11 +148,21 @@ export const useApp = create<AppState>()((set, get) => {
   }
 
   return {
+    playing: null,
+    receive: (env) => {
+      if (env.type === 'table' || env.type === 'saved') {
+        stopPlayback();
+      }
+      set((s) => onMessage(s, env));
+      if (env.type === 'update') {
+        playback.push(env.data as Update);
+      }
+    },
     screen: 'splash',
     lobby: emptyLobby,
     game: null,
     error: '',
-    settings: { nickname: '', recent: [] },
+    settings: { nickname: '', recent: [], animation: 'normal' },
     hosting: null,
     connected: false,
     cardSets: [],
@@ -185,10 +236,12 @@ export const useApp = create<AppState>()((set, get) => {
         return;
       }
       send('leave');
+      stopPlayback();
       set((s) => leftTable(s));
     },
     quit: async () => {
       disconnect();
+      stopPlayback();
       const hosting = get().hosting;
       set({ connected: false, hosting: null, lobby: emptyLobby, game: null, screen: 'menu', error: '' });
       if (hosting) {

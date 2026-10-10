@@ -73,6 +73,7 @@ npm (bundled into the frontend):
 
   React, React DOM                          MIT
   Zustand                                   MIT
+  Motion                                    MIT
 
 npm (build only, not shipped):
 

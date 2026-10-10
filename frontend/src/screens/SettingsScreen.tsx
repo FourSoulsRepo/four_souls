@@ -1,6 +1,11 @@
 import { useState } from 'react';
+import type { Speed } from '../playback';
 import { useApp } from '../store';
 import './screens.css';
+
+function speedOf(v: string): Speed {
+  return v === 'fast' || v === 'slow' || v === 'off' ? v : 'normal';
+}
 
 export function SettingsScreen() {
   const settings = useApp((s) => s.settings);
@@ -8,6 +13,7 @@ export function SettingsScreen() {
   const save = useApp((s) => s.saveSettings);
   const show = useApp((s) => s.show);
   const [nickname, setNickname] = useState(settings.nickname);
+  const [animation, setAnimation] = useState(settings.animation);
   const [saved, setSaved] = useState(false);
 
   return (
@@ -17,7 +23,7 @@ export function SettingsScreen() {
         className="row"
         onSubmit={(e) => {
           e.preventDefault();
-          void save({ ...settings, nickname }).then((ok) => {
+          void save({ ...settings, nickname, animation }).then((ok) => {
             setSaved(ok);
             if (ok) {
               setNickname(useApp.getState().settings.nickname);
@@ -34,6 +40,21 @@ export function SettingsScreen() {
               setSaved(false);
             }}
           />
+        </label>
+        <label className="field">
+          Animations
+          <select
+            value={animation}
+            onChange={(e) => {
+              setAnimation(speedOf(e.target.value));
+              setSaved(false);
+            }}
+          >
+            <option value="normal">Normal</option>
+            <option value="fast">Fast</option>
+            <option value="slow">Slow</option>
+            <option value="off">Off</option>
+          </select>
         </label>
         <button type="submit">Save</button>
       </form>

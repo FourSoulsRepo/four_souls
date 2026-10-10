@@ -30,11 +30,10 @@ describe('onMessage', () => {
     expect(onMessage(atTable, { type: 'update', data: {} }).screen).toBe('game');
   });
 
-  it('keeps the latest update, and drops it at a new table', () => {
-    const first = onMessage(start, { type: 'update', data: { step: 1 } });
-    const second = onMessage(first, { type: 'update', data: { step: 2 } });
-    expect(second.game?.step).toBe(2);
-    expect(onMessage(second, { type: 'table', data: table }).game).toBeNull();
+  it('leaves showing updates to playback, and drops the game at a new table', () => {
+    expect(onMessage(start, { type: 'update', data: { step: 1 } }).game).toBeNull();
+    const playing = { ...start, game: { step: 1 } as Session['game'] };
+    expect(onMessage(playing, { type: 'table', data: table }).game).toBeNull();
   });
 
   it('goes back to the game list after a save', () => {
