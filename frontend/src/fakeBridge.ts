@@ -2,6 +2,8 @@
 // Installs fake Wails bindings so Vite can render screens without the Go runtime.
 // Keep the notice in sync with internal/legal/notice.go.
 
+import b2 from '../../pkg/card_db/data/b2.json?raw';
+
 interface Part {
   text: string;
   url?: string;
@@ -53,6 +55,7 @@ function saveSettings(s: { nickname: string; recent: string[] }): Promise<unknow
 
 // A few cards: one with an image, one whose image fails to load, and
 // some without images, so tests see both faces of the Card component.
+// The real card text follows them, without images, as in a public clone.
 const isaacImage =
   'data:image/svg+xml,' +
   encodeURIComponent(
@@ -119,6 +122,32 @@ const cards = [
   },
 ];
 
+interface DataCard {
+  id: string;
+  version?: number;
+  type: string;
+  text: { en?: { name: string; effects?: string[]; footnotes?: { title: string; text: string }[] } };
+  stats?: { name: string; value: string }[];
+  rewards?: { count: string; kind: string }[];
+}
+
+function realCards(): unknown[] {
+  const data = JSON.parse(b2) as { set: { code: string }; cards: DataCard[] };
+  return data.cards
+    .filter((c) => !cards.some((s) => s.ref === c.id))
+    .map((c) => ({
+      ref: c.version && c.version > 1 ? `${c.id}@${String(c.version)}` : c.id,
+      set: data.set.code,
+      type: c.type,
+      name: c.text.en?.name ?? c.id,
+      effects: c.text.en?.effects ?? [],
+      footnotes: c.text.en?.footnotes ?? [],
+      stats: c.stats ?? [],
+      rewards: c.rewards ?? [],
+      image: '',
+    }));
+}
+
 // Hosting points at a real dedicated server the e2e tests start
 // (?server=PORT), so two pages reach the same lobby.
 const hostPort = Number(new URLSearchParams(window.location.search).get('server') ?? '4774');
@@ -137,7 +166,7 @@ w.go = {
       Settings: () => Promise.resolve(loadSettings()),
       SaveSettings: saveSettings,
       CardSets: () => Promise.resolve(['b2']),
-      Cards: () => Promise.resolve(cards),
+      Cards: () => Promise.resolve([...cards, ...realCards()]),
     },
     Host: {
       Start: () => Promise.resolve(hostInfo),

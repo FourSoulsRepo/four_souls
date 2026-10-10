@@ -36,8 +36,8 @@ test('two apps reach the same lobby and start the game', async ({ browser }) => 
   await ann.getByRole('button', { name: 'Ready', exact: true }).click();
   await expect(bo.getByRole('list', { name: 'Seats' })).toContainText('Ready');
   await bo.getByRole('button', { name: 'Ready', exact: true }).click();
-  await expect(ann.getByRole('heading', { name: 'The game has started' })).toBeVisible();
-  await expect(bo.getByRole('heading', { name: 'The game has started' })).toBeVisible();
+  await expect(ann.getByRole('main', { name: 'Turn 1' })).toBeVisible();
+  await expect(bo.getByRole('main', { name: 'Turn 1' })).toBeVisible();
 });
 
 test('a joined address is remembered', async ({ page }) => {

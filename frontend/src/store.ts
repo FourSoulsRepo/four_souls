@@ -109,6 +109,7 @@ export const useApp = create<AppState>()((set, get) => {
   return {
     screen: 'splash',
     lobby: emptyLobby,
+    game: null,
     error: '',
     settings: { nickname: '', recent: [] },
     hosting: null,
@@ -189,7 +190,7 @@ export const useApp = create<AppState>()((set, get) => {
     quit: async () => {
       disconnect();
       const hosting = get().hosting;
-      set({ connected: false, hosting: null, lobby: emptyLobby, screen: 'menu', error: '' });
+      set({ connected: false, hosting: null, lobby: emptyLobby, game: null, screen: 'menu', error: '' });
       if (hosting) {
         await stopHosting().catch(() => undefined);
       }

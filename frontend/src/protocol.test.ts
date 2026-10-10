@@ -10,12 +10,14 @@ import {
   type Envelope,
   type Games,
   type Hello,
+  type Intent,
   type Join,
   type Load,
   type ProtocolError,
   type Ready,
   type Saved,
   type Table,
+  type Update,
   type Welcome,
 } from './protocol';
 
@@ -36,6 +38,65 @@ const modeled: Record<string, Envelope> = {
     type: 'error',
     id: 2,
     data: { code: 'refused', message: 'no loot play available', rule: 'R-CARD-08' } satisfies ProtocolError,
+  },
+  intent: { type: 'intent', id: 2, data: { intent: { player: 0, kind: 0 } satisfies Intent } },
+  update: {
+    type: 'update',
+    data: {
+      step: 1,
+      events: [{ kind: 'looted', player: 0, card: 'a_dime' }],
+      view: {
+        players: [
+          {
+            id: 0,
+            character: { id: 320, card: 'isaac', role: 1, charged: false },
+            hp: 2,
+            atk: 1,
+            cents: 3,
+            souls: 0,
+            in_play: [{ id: 321, card: 'the_d6', role: 2, charged: true }],
+            hand_size: 3,
+          },
+          {
+            id: 1,
+            character: { id: 322, card: 'cain', role: 1, charged: true },
+            hp: 2,
+            atk: 1,
+            cents: 3,
+            souls: 0,
+            in_play: [{ id: 323, card: 'sleight_of_hand', role: 2, charged: true }],
+            hand_size: 3,
+            hand: [
+              { id: 327, card: 'a_nickel', charged: false },
+              { id: 328, card: 'four_cents', charged: false },
+              { id: 329, card: 'xvi_the_tower', charged: false },
+            ],
+          },
+        ],
+        shop: [
+          { top: { id: 316, card: 'suicide_king', role: 2, charged: true } },
+          { top: { id: 317, card: 'breakfast', role: 2, charged: true } },
+        ],
+        monsters: [
+          { top: { id: 318, card: 'moms_dead_hand', role: 3, charged: true } },
+          { top: { id: 319, card: 'delirium', role: 3, charged: true } },
+        ],
+        deck_sizes: [103, 98, 105, 0],
+        discards: [null, null, null, null],
+        stack: null,
+        turn: { active: 1, number: 1, step: 1, loot_plays: 0, attacks: 0, purchases: 0, entered: true },
+        waiting: { kind: 1, player: 1 },
+      },
+      allowed: [
+        { player: 1, kind: 0 },
+        { player: 1, kind: 7, objects: [322] },
+        { player: 1, kind: 7, objects: [323] },
+      ],
+      seats: [
+        { seat: 0, name: 'Ann', connected: true },
+        { seat: 1, name: 'Bo', connected: false },
+      ],
+    } satisfies Update,
   },
   list: { type: 'list', id: 4, data: {} },
   games: {
@@ -82,7 +143,7 @@ const modeled: Record<string, Envelope> = {
 };
 
 // Messages the client does not read or send yet; later steps model them.
-const notYet = ['intent', 'resync', 'update', 'setup', 'ban', 'pick', 'skip_all', 'vote', 'save'];
+const notYet = ['resync', 'setup', 'ban', 'pick', 'skip_all', 'vote', 'save'];
 
 const lines = golden
   .split('\n')

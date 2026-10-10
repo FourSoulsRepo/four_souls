@@ -16,7 +16,7 @@ export function CardGallery() {
         <Card size="hand" back="treasure" />
       </div>
       <div className="row" aria-label="Table size">
-        {cards.map((c) => (
+        {cards.slice(0, 12).map((c) => (
           <Card key={c.ref} cardRef={c.ref} size="table" />
         ))}
       </div>

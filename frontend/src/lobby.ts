@@ -1,6 +1,6 @@
 // The lobby state and how server messages change it. Pure, so it is
 // tested without a socket.
-import type { Envelope, GameInfo, Games, Options, ProtocolError, Saved, SaveInfo, Table, Welcome } from './protocol';
+import type { Envelope, GameInfo, Games, Options, ProtocolError, Saved, SaveInfo, Table, Update, Welcome } from './protocol';
 import { errorText } from './protocol';
 
 // 'cards' is a dev-only card gallery for tests (?screen=cards).
@@ -22,6 +22,8 @@ export const emptyLobby: Lobby = { welcome: null, games: [], saves: [], table: n
 export interface Session {
   screen: Screen;
   lobby: Lobby;
+  // game is the latest update of the running game; null before it.
+  game: Update | null;
   // error is the last failure to show the player; '' if none.
   error: string;
 }
@@ -37,12 +39,13 @@ export function onMessage(s: Session, env: Envelope): Session {
       return { ...s, lobby: { ...l, games: g.games ?? [], saves: g.saves ?? [] } };
     }
     case 'table':
-      return { screen: 'table', lobby: { ...l, table: env.data as Table, saved: '' }, error: '' };
+      return { screen: 'table', lobby: { ...l, table: env.data as Table, saved: '' }, game: null, error: '' };
     case 'setup':
-    case 'update':
       return s.screen === 'game' ? s : { ...s, screen: 'game', error: '' };
+    case 'update':
+      return { ...s, screen: 'game', game: env.data as Update, error: s.screen === 'game' ? s.error : '' };
     case 'saved':
-      return { ...s, screen: 'join', lobby: { ...l, table: null, saved: (env.data as Saved).save } };
+      return { ...s, screen: 'join', lobby: { ...l, table: null, saved: (env.data as Saved).save }, game: null };
     case 'error':
       return { ...s, error: errorText(env.data as ProtocolError) };
     default:
@@ -53,13 +56,13 @@ export function onMessage(s: Session, env: Envelope): Session {
 // leftTable is the session after the player leaves the table: back to
 // the server's game list.
 export function leftTable(s: Session): Session {
-  return { screen: 'join', lobby: { ...s.lobby, table: null }, error: '' };
+  return { screen: 'join', lobby: { ...s.lobby, table: null }, game: null, error: '' };
 }
 
 // lost is the session after the connection dropped. A server error sent
 // just before the close says more than "lost".
 export function lost(s: Session): Session {
-  return { screen: 'join', lobby: emptyLobby, error: s.error || 'Lost the connection to the server.' };
+  return { screen: 'join', lobby: emptyLobby, game: null, error: s.error || 'Lost the connection to the server.' };
 }
 
 // remember puts an address first in the recent list, once.

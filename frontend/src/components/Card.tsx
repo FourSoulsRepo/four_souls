@@ -6,7 +6,7 @@ import './Card.css';
 // How long a touch must rest on a card to zoom it (B-06).
 const LONG_PRESS_MS = 450;
 
-export type CardSize = 'hand' | 'table' | 'zoom';
+export type CardSize = 'hand' | 'table' | 'small' | 'zoom';
 
 interface Props {
   // cardRef is the card to show; undefined shows a face-down card.
@@ -14,11 +14,15 @@ interface Props {
   size: CardSize;
   // back is the deck of a face-down card.
   back?: Kind;
+  // damage is shown as a counter on the card.
+  damage?: number;
+  // spent dims a used (uncharged) card.
+  spent?: boolean;
 }
 
 // Card is the one card component (7.4): the card image, or a blank card
 // with its text when the image is missing (A-11).
-export function Card({ cardRef, size, back = 'loot' }: Props) {
+export function Card({ cardRef, size, back = 'loot', damage = 0, spent = false }: Props) {
   const info = useApp((s) => (cardRef ? s.cards.get(cardRef) : undefined));
   const setZoom = useApp((s) => s.setZoom);
   const pressRef = useRef(0);
@@ -42,7 +46,7 @@ export function Card({ cardRef, size, back = 'loot' }: Props) {
 
   return (
     <div
-      className={`card size-${size} kind-${kindOf(card.type)}`}
+      className={`card size-${size} kind-${kindOf(card.type)}${spent ? ' spent' : ''}`}
       role="img"
       aria-label={card.name}
       onPointerEnter={(e) => {
@@ -81,6 +85,11 @@ export function Card({ cardRef, size, back = 'loot' }: Props) {
         />
       ) : (
         <BlankFace card={card} full={size === 'zoom'} />
+      )}
+      {damage > 0 && (
+        <span className="card-damage" aria-label={`${String(damage)} damage`}>
+          {damage}
+        </span>
       )}
     </div>
   );

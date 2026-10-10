@@ -18,11 +18,15 @@
 }
 
 .card.size-hand {
-  width: 120px;
+  width: 100px;
 }
 
 .card.size-table {
-  width: 96px;
+  width: 80px;
+}
+
+.card.size-small {
+  width: 60px;
 }
 
 .card.size-zoom {
@@ -170,4 +174,23 @@
   justify-content: center;
   pointer-events: auto;
   background: rgb(0 0 0 / 45%);
+}
+
+.card.spent {
+  filter: brightness(0.55) saturate(0.6);
+}
+
+.card-damage {
+  position: absolute;
+  top: 6cqi;
+  right: 6cqi;
+  min-width: 18cqi;
+  padding: 1cqi 3cqi;
+  border-radius: 9cqi;
+  box-sizing: border-box;
+  font-size: 13cqi;
+  font-weight: 700;
+  text-align: center;
+  color: #fff;
+  background: #b3261e;
 }

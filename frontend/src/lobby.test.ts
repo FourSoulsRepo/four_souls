@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { emptyLobby, leftTable, lost, onMessage, optionsText, remember, type Session } from './lobby';
 import type { Table } from './protocol';
 
-const start: Session = { screen: 'join', lobby: emptyLobby, error: '' };
+const start: Session = { screen: 'join', lobby: emptyLobby, game: null, error: '' };
 
 const table: Table = {
   game: 'g1',
@@ -28,6 +28,13 @@ describe('onMessage', () => {
     const atTable = onMessage(start, { type: 'table', data: table });
     expect(onMessage(atTable, { type: 'setup', data: {} }).screen).toBe('game');
     expect(onMessage(atTable, { type: 'update', data: {} }).screen).toBe('game');
+  });
+
+  it('keeps the latest update, and drops it at a new table', () => {
+    const first = onMessage(start, { type: 'update', data: { step: 1 } });
+    const second = onMessage(first, { type: 'update', data: { step: 2 } });
+    expect(second.game?.step).toBe(2);
+    expect(onMessage(second, { type: 'table', data: table }).game).toBeNull();
   });
 
   it('goes back to the game list after a save', () => {

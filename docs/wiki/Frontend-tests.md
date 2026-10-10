@@ -36,4 +36,8 @@ URL flags, dev server only:
 
 Every new screen gets a Playwright test. Find elements the way a player does: by role and visible text (`getByRole('button', { name: 'Save' })`), not by CSS classes.
 
+`e2e/tests/game.ts` has `startGame(browser, names)`: a real game with one page per player, and `expectFits(page)`, which fails when the table scrolls or leaves the window. Tests share one server, so each test uses its own host name.
+
+The fake bridge also reads the real card text from `pkg/card_db/data` (no images), so tables show real names, like a public clone does.
+
 Network play runs against the real Go server: `e2e/playwright.config.ts` starts `cmd/server` on port 4799, next to Vite. The fake `Host` binding points at it (`?server=4799`), so one page "hosts" and others join it by address. Use separate browser contexts for separate players: each has its own `localStorage`, like a separate app.

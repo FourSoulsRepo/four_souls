@@ -49,7 +49,7 @@ Ideas: M-01, V-01 – V-08, ST-01 – ST-03, ST-05, ST-06, B-06, N-11.
 3. Done when:
    1. Missing images show readable blank cards.
 
-### [ ] 7.5 Table layout
+### [x] 7.5 Table layout
 
 1. Goal: Hearthstone-like table (V-01, V-02).
 2. Tasks:
