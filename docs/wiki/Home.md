@@ -18,3 +18,4 @@ These pages describe the current code. Decisions live in `docs/architecture/` (A
 * [Adding a card](Adding-a-card) — write and test a card, or a whole fan set.
 * [Playing over the internet](Playing-over-the-internet) — virtual LAN (Tailscale, ZeroTier, Radmin VPN, Hamachi) or port forwarding.
 * [Dedicated server on a VPS](Dedicated-server-on-a-VPS) — rent a server and host games for friends.
+* [Server](Server) — how the lobby, game rooms and transport fit together.
