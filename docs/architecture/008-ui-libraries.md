@@ -1,6 +1,6 @@
 # 8. UI libraries
 
-* **Status:** Proposed
+* **Status:** Accepted
 * **Date:** 2026-10-10
 * **Authors:** @HardDie
 
@@ -74,10 +74,16 @@
 11. **Drag and drop: Pragmatic drag and drop**
     1. Lost. Built on native HTML5 drag.
     2. Touch and WebKitGTK support are weak.
+12. **Tests: Vitest + Playwright**
+    1. Won. Vitest is Vite's own test runner.
+    2. Playwright already runs `make screenshots`.
+13. **Tests: React Testing Library**
+    1. Lost for now. Logic lives outside components.
+    2. Playwright covers the rendered UI.
 
 ## Decision
 
-Use options 1, 5 and 9.
+Use options 1, 5, 9 and 12.
 
 1. Store: Zustand.
    1. One store for the connection, view and event queue.
@@ -99,6 +105,20 @@ Use options 1, 5 and 9.
 5. Nothing else for now.
    1. No router: the screen lives in the store.
    2. No component kit: own CSS.
+6. Tests
+   1. Unit tests: Vitest, no browser.
+   2. They cover plain `.ts` logic, like Go tests.
+   3. TS tests decode `internal/protocol/testdata/golden.jsonl`.
+   4. A Go protocol change then breaks the TS build.
+   5. End-to-end: Playwright against the real Go server.
+   6. Fixed seed, two or more browser pages, speed 0.
+   7. Each new screen gets a Playwright check.
+   8. Typecheck, lint and Vitest gate every commit.
+7. KISS
+   1. The server is the truth; the client computes no rules.
+   2. Logic goes into plain functions with tests.
+   3. Components stay thin: they draw the store.
+   4. One store; no layers "for later".
 
 ## Consequences
 
@@ -107,6 +127,7 @@ Use options 1, 5 and 9.
 1. Two runtime libraries, both MIT and widely used.
 2. Card moves between zones come almost for free.
 3. Mouse and touch share one drag code path.
+4. Frontend logic is tested like the Go code.
 
 ### Negative and risks
 
@@ -118,6 +139,7 @@ Use options 1, 5 and 9.
 3. Own drop zones: we maintain them.
    1. Keyboard drag is not covered; click to play is.
 4. Layout animations on WebKitGTK must be checked early (7.12).
+5. End-to-end tests are slower; they run as `make e2e`.
 
 ### Neutral
 

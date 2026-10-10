@@ -7,7 +7,7 @@ Ideas: M-01, V-01 – V-08, ST-01 – ST-03, ST-05, ST-06, B-06, N-11.
 
 ---
 
-### [ ] 7.1 UI libraries ADR
+### [x] 7.1 UI libraries ADR
 
 1. Goal: pick the few libraries we need.
 2. Tasks:
