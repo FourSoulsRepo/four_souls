@@ -1,13 +1,15 @@
 import { useMemo } from 'react';
-import { actionsFor, PromptKind, type Actions } from '../actions';
+import { actionsFor, type Actions } from '../actions';
 import { ActionBar } from '../components/ActionBar';
 import { ActionMenu } from '../components/ActionMenu';
 import { Board } from '../components/Board';
 import { ChoiceDialog, DiscardDialog } from '../components/ChoiceDialog';
 import { interact, noInteract } from '../components/Interact';
 import { PlayerArea } from '../components/PlayerArea';
+import { StackPanel } from '../components/StackPanel';
 import type { Update } from '../protocol';
 import { useApp } from '../store';
+import { waitText, type Names } from '../stack';
 import { seatPositions } from '../table';
 import '../components/Table.css';
 import './screens.css';
@@ -52,7 +54,10 @@ function Table({ game, you }: { game: Update; you: number }) {
   const ui = canAct ? interact(actions, act, select) : noInteract;
   const offered = canAct ? actions : noActions;
   const name = (player: number) => game.seats?.find((s) => s.seat === player)?.name ?? `Player ${String(player + 1)}`;
+  const names: Names = { player: name, card: (ref) => cards.get(ref)?.name ?? ref };
   const me = view.players.at(you);
+  const stacked = (view.stack ?? []).length > 0;
+  const skip = game.skip_all ? 'on' : stacked && !view.over ? 'offer' : 'none';
   return (
     <main className="game" aria-label={`Turn ${String(view.turn.number)}`}>
       {seatPositions(view.players.length, you).map(({ position, player }) => {
@@ -71,30 +76,19 @@ function Table({ game, you }: { game: Update; you: number }) {
           )
         );
       })}
-      <Board view={view} ui={ui} />
-      <ActionBar status={statusText(game, you, name, actions)} buttons={actions.buttons} disabled={!canAct} />
+      <Board view={view} ui={ui}>
+        <StackPanel view={view} names={names} />
+      </Board>
+      <ActionBar
+        status={waitText(view, you, names, actions.choice?.title)}
+        buttons={actions.buttons}
+        disabled={!canAct}
+        deadline={game.deadline ?? 0}
+        skip={skip}
+      />
       <ActionMenu actions={offered.cards} />
       {offered.choice && <ChoiceDialog key={game.step} choice={offered.choice} />}
       {offered.discard && me && <DiscardDialog key={game.step} discard={offered.discard} hand={me.hand ?? []} />}
     </main>
   );
-}
-
-// statusText says whose move it is.
-function statusText(game: Update, you: number, name: (p: number) => string, actions: Actions): string {
-  const { waiting, turn, over } = game.view;
-  if (over) {
-    return 'Game over';
-  }
-  if (waiting.player !== you) {
-    return `Waiting for ${name(waiting.player)}`;
-  }
-  switch (waiting.kind) {
-    case PromptKind.choose:
-      return actions.choice?.title ?? 'Your choice';
-    case PromptKind.discard:
-      return 'Discard down to your hand size';
-    default:
-      return turn.active === you ? 'Your turn' : 'You may respond';
-  }
 }

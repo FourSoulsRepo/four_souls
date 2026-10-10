@@ -50,6 +50,8 @@ interface AppState extends Session {
   // selected is the card whose action menu is open.
   selected: number | null;
   act: (intent: Intent) => void;
+  // skipAll turns "skip all" on or off (N-06).
+  skipAll: (on: boolean) => void;
   select: (id: number | null) => void;
   settings: Settings;
   // hosting is set while this app runs the game server.
@@ -178,6 +180,9 @@ export const useApp = create<AppState>()((set, get) => {
     act: (intent) => {
       send('intent', { intent });
       set({ sent: get().game?.step ?? null, selected: null, error: '' });
+    },
+    skipAll: (on) => {
+      send('skip_all', { on });
     },
     select: (id) => {
       set({ selected: id });

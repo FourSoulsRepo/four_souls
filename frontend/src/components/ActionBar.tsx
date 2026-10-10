@@ -1,16 +1,33 @@
+import { useEffect, useState } from 'react';
 import type { Action } from '../actions';
+import { secondsLeft } from '../stack';
 import { useApp } from '../store';
 import './Actions.css';
 
-// ActionBar shows whose move it is, the actions that need no card, and
-// why the last action was refused (7.7).
-export function ActionBar({ status, buttons, disabled }: { status: string; buttons: Action[]; disabled: boolean }) {
+interface Props {
+  status: string;
+  buttons: Action[];
+  disabled: boolean;
+  // deadline is when the response timer answers, Unix ms; 0: no timer.
+  deadline: number;
+  // skip: "Skip all" is offered, or on (N-06).
+  skip: 'offer' | 'on' | 'none';
+}
+
+// ActionBar shows whose move it is and why the game waits, the actions
+// that need no card, the response timer, and why the last action was
+// refused (7.7, 7.8).
+export function ActionBar({ status, buttons, disabled, deadline, skip }: Props) {
   const act = useApp((s) => s.act);
+  const skipAll = useApp((s) => s.skipAll);
   const error = useApp((s) => s.error);
   return (
     <div className="action-bar" role="region" aria-label="Actions">
-      <div className="action-status">{status}</div>
-      {buttons.length > 0 && (
+      <div className="action-status">
+        {status}
+        {deadline > 0 && <Timer deadline={deadline} />}
+      </div>
+      {(buttons.length > 0 || skip !== 'none') && (
         <div className="action-buttons">
           {buttons.map((b) => (
             <button
@@ -24,11 +41,41 @@ export function ActionBar({ status, buttons, disabled }: { status: string; butto
               {b.label}
             </button>
           ))}
+          {skip !== 'none' && (
+            <button
+              type="button"
+              className="secondary"
+              onClick={() => {
+                skipAll(skip === 'offer');
+              }}
+            >
+              {skip === 'offer' ? 'Skip all' : 'Cancel skip'}
+            </button>
+          )}
         </div>
       )}
       <div className="action-error" role="status">
         {error}
       </div>
     </div>
+  );
+}
+
+// Timer counts down the response timer (N-07).
+function Timer({ deadline }: { deadline: number }) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const t = window.setInterval(() => {
+      setNow(Date.now());
+    }, 250);
+    return () => {
+      window.clearInterval(t);
+    };
+  }, []);
+  return (
+    <span className="action-timer" aria-label="Time left">
+      {' '}
+      · {secondsLeft(deadline, now)} s
+    </span>
   );
 }

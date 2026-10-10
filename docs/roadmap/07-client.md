@@ -83,7 +83,7 @@ Ideas: M-01, V-01 – V-08, ST-01 – ST-03, ST-05, ST-06, B-06, N-11.
 3. Done when:
    1. A full turn is playable with mouse and with touch.
 
-### [ ] 7.8 Stack and responses
+### [x] 7.8 Stack and responses
 
 1. Goal: clear response moments.
 2. Tasks:

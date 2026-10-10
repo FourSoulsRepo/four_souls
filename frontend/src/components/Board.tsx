@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Deck as DeckKind, type GameView, type SlotView } from '../protocol';
 import { Card } from './Card';
 import type { Interact } from './Interact';
@@ -7,9 +8,10 @@ import './Table.css';
 // Board is the middle of the table: monsters, shop, decks, discards and
 // bonus souls (V-01).
 // The board is also where loot cards are dropped to play them (7.7).
-export function Board({ view, ui }: { view: GameView; ui: Interact }) {
+export function Board({ view, ui, children }: { view: GameView; ui: Interact; children?: ReactNode }) {
   return (
     <section className="board" aria-label="Board" data-drop="play">
+      {children}
       <div className="board-row" role="group" aria-label="Monsters">
         <Deck
           kind="monster"

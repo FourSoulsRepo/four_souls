@@ -35,6 +35,7 @@
 }
 
 .board {
+  position: relative;
   grid-area: board;
   display: grid;
   grid-template-columns: minmax(0, auto) auto;
@@ -148,6 +149,8 @@
   display: flex;
   gap: 6px;
   min-width: 0;
+  /* Room for the highlight glow, which overflow would clip. */
+  padding: 4px;
   overflow-x: auto;
 }
 

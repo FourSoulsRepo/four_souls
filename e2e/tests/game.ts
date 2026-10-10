@@ -11,7 +11,13 @@ const address = `127.0.0.1:${String(serverPort)}`;
 export async function startGame(
   browser: Browser,
   names: string[],
-  { viewport = { width: 1280, height: 720 }, touch = false, url = appURL } = {},
+  {
+    viewport = { width: 1280, height: 720 },
+    touch = false,
+    url = appURL,
+    // setup changes the host form before Host is pressed.
+    setup = (_: Page) => Promise.resolve(),
+  } = {},
 ): Promise<Page[]> {
   const pages: Page[] = [];
   for (const name of names) {
@@ -26,6 +32,7 @@ export async function startGame(
   await host.getByRole('button', { name: 'Host a game' }).click();
   await host.getByLabel('Nickname').fill(names[0] ?? '');
   await host.getByLabel('Players').selectOption(String(names.length));
+  await setup(host);
   await host.getByRole('button', { name: 'Host', exact: true }).click();
   await expect(host.getByRole('list', { name: 'Seats' })).toBeVisible();
 

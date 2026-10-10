@@ -44,3 +44,9 @@ Effect durations scale with the animation setting (ST-05) and speed up when upda
 * A playable loot card can also be dragged onto the board (`data-drop="play"`). The drag is plain pointer events with pointer capture (`HandCard` in `PlayerArea.tsx`).
 * Choices show as a dialog; card options show as cards (V-07). Options that point at the table (`view.options`, from the engine) glow blue there and can be clicked in place.
 * The player acts only on the latest update (`store.behind`) and once per step (`store.sent`); meanwhile buttons stay but are disabled, so nothing blinks.
+
+## Stack and waiting
+
+`stack.ts` has the words: `stackLine` describes a stack item ("Ann plays A Dime!!", "Attack: Bo rolls 4", "2 damage to Gaper"), and `waitText` says who the game waits for and why ("Your turn", "Bo may respond", "Ann is choosing"). The stack panel sits in the board's top-right corner while the stack is not empty, the top item first.
+
+The action bar shows the response timer from `update.deadline` (N-07) and "Skip all" / "Cancel skip" while something is on the stack (N-06); the server does the skipping.

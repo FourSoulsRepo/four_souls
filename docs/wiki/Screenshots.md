@@ -29,6 +29,6 @@ The fixture copies the fan-game notice. `internal/legal` has a test that fails w
 | Dice roll effect | `screen-effect-dice.png` |
 | Your turn: playable cards highlighted | `screen-actions.png` |
 | A card's action menu (touch) | `screen-action-menu.png` |
-| Choosing what to attack | `screen-choose-attack.png` |
+| The stack, seen by a player who may respond | `screen-stack.png` |
 
 When a screen is added, call `shot` in its test and add a row here.
