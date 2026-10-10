@@ -14,6 +14,10 @@ export function Notice() {
   return window['go']['main']['App']['Notice']();
 }
 
+export function SaveRecord(arg1) {
+  return window['go']['main']['App']['SaveRecord'](arg1);
+}
+
 export function SaveSettings(arg1) {
   return window['go']['main']['App']['SaveSettings'](arg1);
 }

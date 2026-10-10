@@ -34,6 +34,7 @@ URL flags, dev server only:
 * `?nosplash` — skip the 5-second fan-game notice. Players always see it (L-01); one test checks it.
 * `?firstrun` — start without a nickname, as on the first start; otherwise the fake starts as "Player".
 * `?anim=off` — start with animations off (until the player changes the setting).
+* With `?fake`, `window.fourSouls.drop()` fails the connection as the network would, to test reconnecting.
 * With `?fake`, `window.fourSouls.store` is the store: tests feed it server messages with `store.getState().receive(env)`, e.g. a burst of updates.
 * `?screen=cards` — the card gallery: every card in hand and table size. The fake has a card with an image, one whose image fails, and blank ones.
 

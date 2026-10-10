@@ -7,6 +7,7 @@ import { ChoiceDialog, DiscardDialog } from '../components/ChoiceDialog';
 import { interact, noInteract } from '../components/Interact';
 import { PlayerArea } from '../components/PlayerArea';
 import { HistoryPanel, TurnBadge } from '../components/InfoPanels';
+import { EndOverlay, LostOverlay, PauseOverlay } from '../components/Overlays';
 import { StackPanel } from '../components/StackPanel';
 import type { Update } from '../protocol';
 import { useApp } from '../store';
@@ -45,6 +46,7 @@ function Table({ game, you }: { game: Update; you: number }) {
   const { view } = game;
   const cards = useApp((s) => s.cards);
   const mat = useApp((s) => s.settings.mat);
+  const connected = useApp((s) => s.connected);
   const behind = useApp((s) => s.behind);
   const sent = useApp((s) => s.sent);
   const act = useApp((s) => s.act);
@@ -93,6 +95,13 @@ function Table({ game, you }: { game: Update; you: number }) {
       <ActionMenu actions={offered.cards} />
       {offered.choice && <ChoiceDialog key={game.step} choice={offered.choice} />}
       {offered.discard && me && <DiscardDialog key={game.step} discard={offered.discard} hand={me.hand ?? []} />}
+      {!connected ? (
+        <LostOverlay />
+      ) : view.over ? (
+        <EndOverlay game={game} you={you} name={name} />
+      ) : (
+        <PauseOverlay game={game} you={you} name={name} />
+      )}
     </main>
   );
 }

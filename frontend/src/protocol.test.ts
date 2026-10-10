@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import golden from '../../internal/protocol/testdata/golden.jsonl?raw';
 import {
   errorText,
+  recordURL,
   wsURL,
   type Create,
   type Envelope,
@@ -187,5 +188,12 @@ describe('errorText', () => {
     expect(errorText({ code: 'server_outdated', message: '' })).toBe(
       'The server is older than this app. Ask the host to update.',
     );
+  });
+});
+
+describe('recordURL', () => {
+  it('points at the record download of the same server', () => {
+    expect(recordURL('192.168.1.5', 'g1', 't0k3n')).toBe('http://192.168.1.5:4774/record?game=g1&token=t0k3n');
+    expect(recordURL('not an address', 'g1', 't')).toBeNull();
   });
 });

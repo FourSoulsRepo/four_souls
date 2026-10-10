@@ -32,6 +32,7 @@ func main() {
 		// The saved window mode applies from the first frame (ST-01).
 		Fullscreen: settings.Load(app.settings).Fullscreen,
 		Bind:       []any{app, host},
+		OnStartup:  app.startup,
 		OnShutdown: func(ctx context.Context) { _ = host.stop(ctx) }, //nolint:errcheck // the app is closing
 	})
 	if err != nil {

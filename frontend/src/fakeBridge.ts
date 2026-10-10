@@ -184,6 +184,7 @@ w.go = {
       SaveSettings: saveSettings,
       CardSets: () => Promise.resolve(['b2']),
       Cards: () => Promise.resolve([...cards, ...realCards()]),
+      SaveRecord: (link: string) => Promise.resolve(`/fake/${new URL(link).searchParams.get('game') ?? ''}.fsrec`),
     },
     Host: {
       Start: () => Promise.resolve(hostInfo),

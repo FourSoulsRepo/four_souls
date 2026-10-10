@@ -5,6 +5,7 @@ import {
   setFullscreen,
   getCards,
   getCardSets,
+  saveRecord,
   getSettings,
   getVersions,
   saveSettings,
@@ -16,9 +17,18 @@ import {
 import type { CardInfo } from './cards';
 import { entriesFor, type Entry } from './history';
 import { emptyLobby, leftTable, lost, onMessage, remember, type Screen, type Session } from './lobby';
-import { connect, disconnect, send } from './net';
+import { connect, disconnect, drop, send } from './net';
 import { createPlayback, effectsFor, type Effect } from './playback';
-import { protocolVersion, wsURL, type Create, type Envelope, type Hello, type Intent, type Update } from './protocol';
+import {
+  protocolVersion,
+  recordURL,
+  wsURL,
+  type Create,
+  type Envelope,
+  type Hello,
+  type Intent,
+  type Update,
+} from './protocol';
 
 export type { Screen } from './lobby';
 
@@ -56,6 +66,15 @@ interface AppState extends Session {
   act: (intent: Intent) => void;
   // skipAll turns "skip all" on or off (N-06).
   skipAll: (on: boolean) => void;
+  // address is the server this app is connected to, for reconnecting.
+  address: string;
+  // reconnect says hello again with the seat's token (N-08).
+  reconnect: () => Promise<void>;
+  // vote: kick the missing players, or wait for them (N-08).
+  vote: (kick: boolean) => void;
+  // saveRecord saves the finished game's record; it returns the file,
+  // or '' when cancelled or failed (the error says why).
+  saveRecord: () => Promise<string>;
   select: (id: number | null) => void;
   settings: Settings;
   // hosting is set while this app runs the game server.
@@ -107,6 +126,10 @@ export function messageOf(e: unknown): string {
   return 'something went wrong';
 }
 
+// dropConnection is for tests: it fails the connection as the network
+// would, so reconnecting can be checked.
+export const dropConnection = drop;
+
 export const useApp = create<AppState>()((set, get) => {
   let effectKey = 0;
   // names reads players from an update and cards from the card data.
@@ -157,7 +180,7 @@ export const useApp = create<AppState>()((set, get) => {
 
   // open connects to address and says hello; the server answers with
   // welcome and its game list.
-  async function open(address: string): Promise<boolean> {
+  async function open(address: string, token?: string): Promise<boolean> {
     const url = wsURL(address);
     if (!url) {
       set({ error: 'Type an address like 192.168.1.5 or 192.168.1.5:4774.' });
@@ -166,16 +189,21 @@ export const useApp = create<AppState>()((set, get) => {
     try {
       const [versions, sets] = await Promise.all([getVersions(), getCardSets()]);
       await connect(url, get().receive, () => {
-        stopPlayback();
+        // A game keeps its table and history, to reconnect to.
+        if (get().screen !== 'game') {
+          stopPlayback();
+        }
         set((s) => ({ ...lost(s), connected: false }));
       });
-      set({ connected: true, cardSets: sets, lobby: emptyLobby, error: '' });
+      // A reconnect keeps the table it comes back to.
+      set(token ? { connected: true, address, error: '' } : { connected: true, address, cardSets: sets, lobby: emptyLobby, error: '' });
       const hello: Hello = {
         protocol: protocolVersion,
         app: versions.app,
         name: get().settings.nickname,
         role: 'player',
         sets,
+        ...(token ? { token } : {}),
       };
       send('hello', hello);
       return true;
@@ -210,6 +238,29 @@ export const useApp = create<AppState>()((set, get) => {
     },
     skipAll: (on) => {
       send('skip_all', { on });
+    },
+    address: '',
+    reconnect: async () => {
+      const token = get().lobby.welcome?.token;
+      if (token) {
+        await open(get().address, token);
+      }
+    },
+    vote: (kick) => {
+      send('vote', { kick });
+    },
+    saveRecord: async () => {
+      const s = get();
+      const link = recordURL(s.address, s.lobby.table?.game ?? '', s.lobby.welcome?.token ?? '');
+      if (!link) {
+        return '';
+      }
+      try {
+        return await saveRecord(link);
+      } catch (e) {
+        set({ error: messageOf(e) });
+        return '';
+      }
     },
     select: (id) => {
       set({ selected: id });

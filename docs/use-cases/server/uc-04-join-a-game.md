@@ -24,7 +24,7 @@
 * **4c. The player lacks a card set of the game:** refused with `missing_sets` (CD-03).
 * **5a. The nickname is taken at this table:** the server adds " (2)".
 * **6a. The connection drops during the game:** the player says hello again with their token and gets the seat back (N-08).
-  * The app has no reconnect button yet (7.11); it shows "Lost the connection to the server.".
+  * In the app, a "Connection lost" dialog offers Reconnect (UC-07).
 * **1a. In the app:** Main menu, **Join a game**, nickname and host address.
   * A bare address uses port 4774.
   * The last 5 addresses show as buttons under **Recent**.

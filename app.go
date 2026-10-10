@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"io/fs"
 
 	"github.com/FourSoulsRepo/four_souls/internal/assets"
@@ -12,8 +13,9 @@ import (
 
 // App holds the methods the frontend calls through Wails bindings.
 type App struct {
-	settings  string // the settings file
-	cardFiles fs.FS  // card data and images
+	ctx       context.Context //nolint:containedctx // Wails hands the app context over at startup
+	settings  string          // the settings file
+	cardFiles fs.FS           // card data and images
 	cardList  cardList
 }
 
@@ -21,6 +23,9 @@ type App struct {
 func NewApp() *App {
 	return &App{settings: appPath("settings.json"), cardFiles: assets.CardsFS()}
 }
+
+// startup keeps the app context for runtime calls such as dialogs.
+func (a *App) startup(ctx context.Context) { a.ctx = ctx }
 
 // Versions returns the app and rules engine versions for the main menu.
 func (a *App) Versions() version.Info {

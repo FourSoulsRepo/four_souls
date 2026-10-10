@@ -124,6 +124,17 @@ export function wsURL(address: string): string | null {
   return `ws://${host}:${String(port)}/ws`;
 }
 
+// recordURL is where the server serves a finished game's record to one
+// of its players (RP-05).
+export function recordURL(address: string, game: string, token: string): string | null {
+  const ws = wsURL(address);
+  if (!ws) {
+    return null;
+  }
+  const q = new URLSearchParams({ game, token });
+  return `${ws.replace(/^ws:/, 'http:').replace(/\/ws$/, '/record')}?${q.toString()}`;
+}
+
 // errorText is what the player reads for a server error.
 export function errorText(e: ProtocolError): string {
   switch (e.code) {

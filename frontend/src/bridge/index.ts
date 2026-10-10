@@ -7,6 +7,7 @@ import {
   Cards as wailsCards,
   CardSets as wailsCardSets,
   Notice as wailsNotice,
+  SaveRecord as wailsSaveRecord,
   SaveSettings as wailsSaveSettings,
   Settings as wailsSettings,
   Versions as wailsVersions,
@@ -111,6 +112,12 @@ export async function startHosting(): Promise<HostInfo> {
 
 export function stopHosting(): Promise<void> {
   return hostStop();
+}
+
+// saveRecord asks where to save a finished game's record and downloads
+// it; '' means the player cancelled (RP-05).
+export function saveRecord(link: string): Promise<string> {
+  return wailsSaveRecord(link);
 }
 
 // setFullscreen switches the window (ST-01).

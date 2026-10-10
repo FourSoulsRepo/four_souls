@@ -62,9 +62,14 @@ export function leftTable(s: Session): Session {
 }
 
 // lost is the session after the connection dropped. A server error sent
-// just before the close says more than "lost".
+// just before the close says more than "lost". During a game the table
+// stays, so the player can reconnect to the same seat (N-08).
 export function lost(s: Session): Session {
-  return { screen: 'join', lobby: emptyLobby, game: null, error: s.error || 'Lost the connection to the server.' };
+  const error = s.error || 'Lost the connection to the server.';
+  if (s.screen === 'game') {
+    return { ...s, error };
+  }
+  return { screen: 'join', lobby: emptyLobby, game: null, error };
 }
 
 // remember puts an address first in the recent list, once.

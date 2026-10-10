@@ -116,7 +116,7 @@ Ideas: M-01, V-01 – V-08, ST-01 – ST-03, ST-05, ST-06, B-06, N-11.
 3. Done when:
    1. Every setting applies without restart where possible.
 
-### [ ] 7.11 Pause, vote, end of match
+### [x] 7.11 Pause, vote, end of match
 
 1. Goal: UI for N-08 and RP-05.
 2. Tasks:

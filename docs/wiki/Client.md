@@ -56,3 +56,9 @@ The action bar shows the response timer from `update.deadline` (N-07) and "Skip 
 `history.ts` builds the history from the events this viewer received: one entry per resolved stack item (`stack_resolved`), plus turns, loots, rewards, curses and the winner. The server already filters events per viewer, so a hidden loot reads "Bo loots a card". The history lives in `store.history`, grows as playback shows updates, and is lost on leaving the table (replays come in step 10).
 
 The turn badge shows the turn number, the active player and the step. Player areas show what the engine computed: HP, ATK, cents, souls, hand size, and for the active player the loot plays, attacks and purchases left (`PlayerView.loot_plays`, `attacks`, `purchases`). Card counters show as a yellow badge (`CardView.counters`).
+
+## Pause, reconnect, game over
+
+* A lost connection during a game keeps the table (`lobby.lost`); `LostOverlay` offers Reconnect, which says hello again with the seat's token from `welcome`.
+* `update.pause` shows `PauseOverlay` to the others: who is away, the votes, and Wait / Go on without them (`vote` messages).
+* `view.over` shows `EndOverlay`: the winner and Save record. `App.SaveRecord` (Go, `record.go`) asks where to save and downloads `http://<server>/record?game=…&token=…`; it accepts only such links.

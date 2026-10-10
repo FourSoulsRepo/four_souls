@@ -50,3 +50,9 @@ export function disconnect(): void {
   socket = null;
   ws?.close();
 }
+
+// drop closes the socket as if the network failed, so onClose runs.
+// Tests use it to check reconnecting.
+export function drop(): void {
+  socket?.close();
+}

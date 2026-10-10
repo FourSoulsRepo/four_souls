@@ -68,6 +68,12 @@ describe('leaving', () => {
     );
     expect(lost({ ...start, screen: 'table' }).screen).toBe('join');
   });
+
+  it('lost keeps a running game, to reconnect to', () => {
+    const playing = onMessage(start, { type: 'table', data: table });
+    const s = lost({ ...playing, screen: 'game' });
+    expect(s).toMatchObject({ screen: 'game', lobby: { table } });
+  });
 });
 
 describe('remember', () => {

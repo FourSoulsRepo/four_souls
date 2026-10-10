@@ -6,7 +6,7 @@ vi.mock('./bridge', () => ({
   getSettings: vi.fn(),
   saveSettings: vi.fn(),
 }));
-vi.mock('./net', () => ({}));
+vi.mock('./net', () => ({ drop: vi.fn() }));
 
 const initial = useApp.getState();
 
