@@ -7,7 +7,7 @@ Ideas: N-01 – N-09, N-11, CD-02, CD-03, GS-01 – GS-06, GS-09, GS-10, A-12, R
 
 ---
 
-### [ ] 6.1 Protocol ADR
+### [x] 6.1 Protocol ADR
 
 1. Goal: agree on the wire format.
 2. Tasks:
@@ -20,7 +20,7 @@ Ideas: N-01 – N-09, N-11, CD-02, CD-03, GS-01 – GS-06, GS-09, GS-10, A-12, R
    1. **Owner** accepts the ADR.
    2. Types live in `internal/protocol`.
 
-### [ ] 6.2 Game room
+### [x] 6.2 Game room
 
 1. Goal: one game runs safely on the server.
 2. Tasks:
@@ -31,7 +31,7 @@ Ideas: N-01 – N-09, N-11, CD-02, CD-03, GS-01 – GS-06, GS-09, GS-10, A-12, R
 3. Done when:
    1. Race detector tests pass with 4 clients.
 
-### [ ] 6.3 Dedicated server
+### [x] 6.3 Dedicated server
 
 1. Goal: `cmd/server` runs games (N-01).
 2. Tasks:
@@ -39,10 +39,11 @@ Ideas: N-01 – N-09, N-11, CD-02, CD-03, GS-01 – GS-06, GS-09, GS-10, A-12, R
    2. Address, port, records folder, retention.
    3. Prints the notice (L-02) and versions.
    4. Clean shutdown saves running records.
+   5. Check the wiki page "Dedicated server on a VPS" against the real flags.
 3. Done when:
    1. Server starts, accepts clients, stops cleanly.
 
-### [ ] 6.4 Hosting from the app
+### [x] 6.4 Hosting from the app
 
 1. Goal: a player's app runs the server (N-01).
 2. Tasks:
@@ -51,19 +52,20 @@ Ideas: N-01 – N-09, N-11, CD-02, CD-03, GS-01 – GS-06, GS-09, GS-10, A-12, R
 3. Done when:
    1. Host and one remote client play over LAN.
 
-### [ ] 6.5 Lobby
+### [x] 6.5 Lobby
 
 1. Goal: create and join games.
 2. Tasks:
    1. Create a game; join by address.
    2. Seats 2–4 (GS-09); ready check.
-   3. Play mode: free-for-all or 2 vs 2 (GS-05).
+   3. Play mode: free-for-all; 2 vs 2 is parked (Q-03).
    4. Card sets; Base Game only for now (CD-02).
    5. Collection check on join (CD-03).
+   6. Nicknames from `hello`: checked, made unique, shown per seat (ST-06).
 3. Done when:
    1. Use cases: host a game, join a game.
 
-### [ ] 6.6 Match setup
+### [x] 6.6 Match setup
 
 1. Goal: simple and detailed setup (GS-10).
 2. Tasks:
@@ -76,7 +78,7 @@ Ideas: N-01 – N-09, N-11, CD-02, CD-03, GS-01 – GS-06, GS-09, GS-10, A-12, R
 3. Done when:
    1. Every mode has a server test.
 
-### [ ] 6.7 Turn flow over the network
+### [x] 6.7 Turn flow over the network
 
 1. Goal: responses without stalls.
 2. Tasks:
@@ -88,7 +90,7 @@ Ideas: N-01 – N-09, N-11, CD-02, CD-03, GS-01 – GS-06, GS-09, GS-10, A-12, R
 3. Done when:
    1. Headless games never wait for a player with no options.
 
-### [ ] 6.8 Disconnects
+### [x] 6.8 Disconnects
 
 1. Goal: lost players can come back (N-08).
 2. Tasks:
@@ -100,7 +102,7 @@ Ideas: N-01 – N-09, N-11, CD-02, CD-03, GS-01 – GS-06, GS-09, GS-10, A-12, R
    1. Tests cover drop, reconnect, kick.
    2. Use case: reconnect.
 
-### [ ] 6.9 Match records
+### [x] 6.9 Match records
 
 1. Goal: every match is saved (A-12, RP-01 – RP-09).
 2. Tasks:
@@ -114,7 +116,7 @@ Ideas: N-01 – N-09, N-11, CD-02, CD-03, GS-01 – GS-06, GS-09, GS-10, A-12, R
    1. Writer and reader round-trip tests pass.
    2. ADR: record format.
 
-### [ ] 6.10 Headless integration tests
+### [x] 6.10 Headless integration tests
 
 1. Goal: full games through the real server.
 2. Tasks:
@@ -124,7 +126,7 @@ Ideas: N-01 – N-09, N-11, CD-02, CD-03, GS-01 – GS-06, GS-09, GS-10, A-12, R
 3. Done when:
    1. Full games finish and produce valid records.
 
-### [ ] 6.11 Save and continue later
+### [x] 6.11 Save and continue later
 
 1. Goal: friends finish a game on another day (N-11).
 2. Tasks:

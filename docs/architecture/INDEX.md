@@ -7,3 +7,5 @@
 | [003](003-repo-layout-and-tooling.md) | Repo layout, modules, build modes and linters | Accepted |
 | [004](004-card-data-format.md) | Card data format | Accepted |
 | [005](005-rules-engine-design.md) | Rules engine design | Accepted |
+| [006](006-network-protocol.md) | Network protocol | Accepted |
+| [007](007-match-record-format.md) | Match record format | Accepted |

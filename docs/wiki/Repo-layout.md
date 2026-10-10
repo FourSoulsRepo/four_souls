@@ -8,6 +8,7 @@ cmd/cardgen/           writes engine card stubs from card_db data
 internal/assets/       app files, embedded or read from disk
 internal/legal/        fan-game notice used by app and server
 internal/protocol/     network messages (never split out)
+internal/server/       game rooms and the WebSocket transport (ADR 006)
 internal/version/      app version stamped at link time
 pkg/rules_engine/      Go module: the rules engine (package rulesengine)
 pkg/rules_engine/cards/  card sets: one package per set, one file per card

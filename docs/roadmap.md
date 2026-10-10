@@ -112,7 +112,7 @@ Steps 9–14 can be reordered after the MVP.
 6. Settings: fullscreen, theme, game mat, animation speed.
 7. Touch-friendly; tested on Linux.
 8. Internal play-test build on the cards done so far.
-8. Ideas: M-01, V-01 – V-08, ST-01 – ST-03, ST-05, B-06, N-11.
+8. Ideas: M-01, V-01 – V-08, ST-01 – ST-03, ST-05, ST-06, B-06, N-11.
 
 ## 8. First release (MVP)
 
