@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/FourSoulsRepo/four_souls/internal/protocol"
 )
@@ -16,21 +17,30 @@ import (
 type Settings struct {
 	// Nickname is sent when joining a game (ST-06); "" until set.
 	Nickname string `json:"nickname"`
+	// Recent are the last addresses joined, newest first.
+	Recent []string `json:"recent"`
 }
+
+// MaxRecent is how many recent addresses are kept.
+const MaxRecent = 5
 
 // ErrNickname means the nickname is empty after trimming, too long, or
 // has control characters.
 var ErrNickname = fmt.Errorf("nickname must be 1–%d characters", protocol.MaxName)
 
 // Load reads the settings. A missing or broken file gives the defaults.
+// Recent is never nil, so the frontend always gets a list.
 func Load(path string) Settings {
-	var s Settings
+	s := Settings{Recent: []string{}}
 	data, err := os.ReadFile(path) //nolint:gosec // the app names the file
 	if err != nil {
-		return Settings{}
+		return s
 	}
 	if err := json.Unmarshal(data, &s); err != nil {
-		return Settings{}
+		return Settings{Recent: []string{}}
+	}
+	if s.Recent == nil {
+		s.Recent = []string{}
 	}
 	return s
 }
@@ -45,6 +55,13 @@ func Save(path string, s Settings) (Settings, error) {
 		}
 		s.Nickname = name
 	}
+	recent := []string{}
+	for _, a := range s.Recent {
+		if a = strings.TrimSpace(a); a != "" && len(recent) < MaxRecent {
+			recent = append(recent, a)
+		}
+	}
+	s.Recent = recent
 	data, err := json.MarshalIndent(s, "", "  ")
 	if err != nil {
 		return Settings{}, fmt.Errorf("settings: %w", err)

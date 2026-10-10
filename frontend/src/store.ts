@@ -1,24 +1,51 @@
-// The app's one store (ADR 008). Screens read it; only the bridge
-// results and, later, the event queue write it.
+// The app's one store (ADR 008). Screens read it; only bridge results
+// and server messages write it.
 import { create } from 'zustand';
-import { getSettings, saveSettings, type Settings } from './bridge';
+import {
+  getCardSets,
+  getSettings,
+  getVersions,
+  saveSettings,
+  startHosting,
+  stopHosting,
+  type HostInfo,
+  type Settings,
+} from './bridge';
+import { emptyLobby, leftTable, lost, onMessage, remember, type Screen, type Session } from './lobby';
+import { connect, disconnect, send } from './net';
+import { protocolVersion, wsURL, type Create, type Hello } from './protocol';
 
-export type Screen = 'splash' | 'menu' | 'settings';
+export type { Screen } from './lobby';
 
-interface AppState {
-  screen: Screen;
+interface AppState extends Session {
   settings: Settings;
-  // error is the last failure to show the player; '' if none.
-  error: string;
+  // hosting is set while this app runs the game server.
+  hosting: HostInfo | null;
+  // connected is set while the socket to a server is open.
+  connected: boolean;
+  // cardSets are the sets this app has, sent in hello.
+  cardSets: string[];
   show: (screen: Screen) => void;
   loadSettings: () => Promise<void>;
   // saveSettings reports whether Go stored them.
   saveSettings: (s: Settings) => Promise<boolean>;
+  // saveNickname saves the nickname if it changed (ST-06).
+  saveNickname: (nickname: string) => Promise<boolean>;
+  // joinServer connects to address and shows its game list.
+  joinServer: (address: string) => Promise<void>;
+  // host runs the server in this app and opens a game on it.
+  host: (game: Omit<Create, 'sets'>) => Promise<void>;
+  joinGame: (game: string) => void;
+  loadSave: (save: string) => void;
+  setReady: (ready: boolean) => void;
+  leaveTable: () => Promise<void>;
+  // quit closes the connection, stops hosting, and goes to the menu.
+  quit: () => Promise<void>;
 }
 
-// errorText turns a rejected bridge call into a message for the player.
-// Wails rejects with Go's error string.
-export function errorText(e: unknown): string {
+// messageOf turns a rejected call into a message for the player. Wails
+// rejects with Go's error string.
+export function messageOf(e: unknown): string {
   if (typeof e === 'string') {
     return e;
   }
@@ -28,27 +55,116 @@ export function errorText(e: unknown): string {
   return 'something went wrong';
 }
 
-export const useApp = create<AppState>()((set) => ({
-  screen: 'splash',
-  settings: { nickname: '' },
-  error: '',
-  show: (screen) => {
-    set({ screen, error: '' });
-  },
-  loadSettings: async () => {
-    try {
-      set({ settings: await getSettings() });
-    } catch {
-      // Keep the defaults; Go already falls back to them.
-    }
-  },
-  saveSettings: async (s) => {
-    try {
-      set({ settings: await saveSettings(s), error: '' });
-      return true;
-    } catch (e) {
-      set({ error: errorText(e) });
+export const useApp = create<AppState>()((set, get) => {
+  // open connects to address and says hello; the server answers with
+  // welcome and its game list.
+  async function open(address: string): Promise<boolean> {
+    const url = wsURL(address);
+    if (!url) {
+      set({ error: 'Type an address like 192.168.1.5 or 192.168.1.5:4774.' });
       return false;
     }
-  },
-}));
+    try {
+      const [versions, sets] = await Promise.all([getVersions(), getCardSets()]);
+      await connect(
+        url,
+        (env) => {
+          set((s) => onMessage(s, env));
+        },
+        () => {
+          set((s) => ({ ...lost(s), connected: false }));
+        },
+      );
+      set({ connected: true, cardSets: sets, lobby: emptyLobby, error: '' });
+      const hello: Hello = {
+        protocol: protocolVersion,
+        app: versions.app,
+        name: get().settings.nickname,
+        role: 'player',
+        sets,
+      };
+      send('hello', hello);
+      return true;
+    } catch (e) {
+      set({ error: messageOf(e) });
+      return false;
+    }
+  }
+
+  return {
+    screen: 'splash',
+    lobby: emptyLobby,
+    error: '',
+    settings: { nickname: '', recent: [] },
+    hosting: null,
+    connected: false,
+    cardSets: [],
+    show: (screen) => {
+      set({ screen, error: '' });
+    },
+    loadSettings: async () => {
+      try {
+        set({ settings: await getSettings() });
+      } catch {
+        // Keep the defaults; Go already falls back to them.
+      }
+    },
+    saveSettings: async (s) => {
+      try {
+        set({ settings: await saveSettings(s), error: '' });
+        return true;
+      } catch (e) {
+        set({ error: messageOf(e) });
+        return false;
+      }
+    },
+    saveNickname: async (nickname) => {
+      const s = get().settings;
+      return nickname === s.nickname || get().saveSettings({ ...s, nickname });
+    },
+    joinServer: async (address) => {
+      if (await open(address)) {
+        const s = get().settings;
+        void get().saveSettings({ ...s, recent: remember(s.recent, address) });
+      }
+    },
+    host: async (game) => {
+      let info: HostInfo;
+      try {
+        info = await startHosting();
+      } catch (e) {
+        set({ error: messageOf(e) });
+        return;
+      }
+      set({ hosting: info });
+      if (await open(`127.0.0.1:${String(info.port)}`)) {
+        send('create', { ...game, sets: get().cardSets });
+      }
+    },
+    joinGame: (game) => {
+      send('join', { game });
+    },
+    loadSave: (save) => {
+      send('load', { save });
+    },
+    setReady: (ready) => {
+      send('ready', { ready });
+    },
+    leaveTable: async () => {
+      if (get().hosting) {
+        await get().quit();
+        return;
+      }
+      send('leave');
+      set((s) => leftTable(s));
+    },
+    quit: async () => {
+      disconnect();
+      const hosting = get().hosting;
+      set({ connected: false, hosting: null, lobby: emptyLobby, screen: 'menu', error: '' });
+      if (hosting) {
+        await stopHosting().catch(() => undefined);
+      }
+    },
+  };
+});

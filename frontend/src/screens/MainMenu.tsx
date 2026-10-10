@@ -17,8 +17,22 @@ export function MainMenu() {
     <div className="menu">
       <h1>Four Souls</h1>
       <nav className="menu-buttons">
-        <button type="button" disabled>Host a game</button>
-        <button type="button" disabled>Join a game</button>
+        <button
+          type="button"
+          onClick={() => {
+            show('host');
+          }}
+        >
+          Host a game
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            show('join');
+          }}
+        >
+          Join a game
+        </button>
         <button type="button" disabled>Records</button>
         <button
           type="button"

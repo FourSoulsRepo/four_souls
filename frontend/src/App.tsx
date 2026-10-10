@@ -1,7 +1,11 @@
 import { useCallback, useEffect } from 'react';
+import { GameScreen } from './screens/GameScreen';
+import { HostScreen } from './screens/HostScreen';
+import { JoinScreen } from './screens/JoinScreen';
 import { MainMenu } from './screens/MainMenu';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { Splash } from './screens/Splash';
+import { TableScreen } from './screens/TableScreen';
 import { useApp } from './store';
 
 export function App() {
@@ -22,5 +26,13 @@ export function App() {
       return <MainMenu />;
     case 'settings':
       return <SettingsScreen />;
+    case 'host':
+      return <HostScreen />;
+    case 'join':
+      return <JoinScreen />;
+    case 'table':
+      return <TableScreen />;
+    case 'game':
+      return <GameScreen />;
   }
 }

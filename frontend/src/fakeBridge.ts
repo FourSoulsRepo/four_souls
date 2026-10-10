@@ -36,23 +36,28 @@ const notice: { parts: Part[] }[] = [
 const settingsKey = 'fake-settings';
 
 function loadSettings(): unknown {
-  return JSON.parse(localStorage.getItem(settingsKey) ?? '{"nickname":""}');
+  return JSON.parse(localStorage.getItem(settingsKey) ?? '{"nickname":"","recent":[]}');
 }
 
 // Same checks as internal/settings (Go counts runes, so code points), so
 // tests see the Go error.
-function saveSettings(s: { nickname: string }): Promise<unknown> {
+function saveSettings(s: { nickname: string; recent: string[] }): Promise<unknown> {
   const nickname = s.nickname.trim();
   if (s.nickname !== '' && (nickname === '' || Array.from(nickname).length > 20)) {
     return Promise.reject(new Error('nickname must be 1–20 characters'));
   }
-  const saved = { nickname };
+  const saved = { nickname, recent: s.recent.slice(0, 5) };
   localStorage.setItem(settingsKey, JSON.stringify(saved));
   return Promise.resolve(saved);
 }
 
+// Hosting points at a real dedicated server the e2e tests start
+// (?server=PORT), so two pages reach the same lobby.
+const hostPort = Number(new URLSearchParams(window.location.search).get('server') ?? '4774');
+const hostInfo = { running: true, port: hostPort, addresses: ['127.0.0.1'] };
+
 const w = window as unknown as {
-  go: { main: { App: Record<string, (...args: never[]) => Promise<unknown>> } };
+  go: { main: Record<string, Record<string, (...args: never[]) => Promise<unknown>>> };
   runtime: { BrowserOpenURL: (url: string) => void };
 };
 
@@ -63,6 +68,12 @@ w.go = {
       Notice: () => Promise.resolve(notice),
       Settings: () => Promise.resolve(loadSettings()),
       SaveSettings: saveSettings,
+      CardSets: () => Promise.resolve(['b2']),
+    },
+    Host: {
+      Start: () => Promise.resolve(hostInfo),
+      Info: () => Promise.resolve(hostInfo),
+      Stop: () => Promise.resolve(),
     },
   },
 };

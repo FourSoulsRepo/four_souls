@@ -4,6 +4,8 @@ import {legal} from '../models';
 import {settings} from '../models';
 import {version} from '../models';
 
+export function CardSets():Promise<Array<string>>;
+
 export function Notice():Promise<Array<legal.Line>>;
 
 export function SaveSettings(arg1:settings.Settings):Promise<settings.Settings>;

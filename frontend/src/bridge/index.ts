@@ -2,11 +2,13 @@
 // Everything else imports from here, so a move to Wails v3 or a browser
 // build replaces this folder and nothing else (A-14).
 import {
+  CardSets as wailsCardSets,
   Notice as wailsNotice,
   SaveSettings as wailsSaveSettings,
   Settings as wailsSettings,
   Versions as wailsVersions,
 } from '../../wailsjs/go/main/App';
+import { Info as hostInfo, Start as hostStart, Stop as hostStop } from '../../wailsjs/go/main/Host';
 import { BrowserOpenURL } from '../../wailsjs/runtime/runtime';
 
 export interface Versions {
@@ -24,6 +26,14 @@ export type NoticeLine = NoticePart[];
 // Settings are kept by Go in the user's config folder.
 export interface Settings {
   nickname: string;
+  // recent are the last addresses joined, newest first.
+  recent: string[];
+}
+
+// HostInfo tells the host how friends reach the hosted game.
+export interface HostInfo {
+  port: number;
+  addresses: string[];
 }
 
 export async function getVersions(): Promise<Versions> {
@@ -38,14 +48,38 @@ export async function getNotice(): Promise<NoticeLine[]> {
 
 export async function getSettings(): Promise<Settings> {
   const s = await wailsSettings();
-  return { nickname: s.nickname };
+  return { nickname: s.nickname, recent: s.recent };
 }
 
 // Go checks and cleans the settings; the result is what it stored.
 // A rejection carries Go's message for the player.
 export async function saveSettings(s: Settings): Promise<Settings> {
-  const saved = await wailsSaveSettings({ nickname: s.nickname });
-  return { nickname: saved.nickname };
+  const saved = await wailsSaveSettings({ nickname: s.nickname, recent: s.recent });
+  return { nickname: saved.nickname, recent: saved.recent };
+}
+
+// getCardSets lists the card set codes this app has (CD-03).
+export function getCardSets(): Promise<string[]> {
+  return wailsCardSets();
+}
+
+// startHosting runs the game server inside the app. If it runs already,
+// its info is returned.
+export async function startHosting(): Promise<HostInfo> {
+  try {
+    const info = await hostStart();
+    return { port: info.port, addresses: info.addresses };
+  } catch (e) {
+    const info = await hostInfo();
+    if (!info.running) {
+      throw e;
+    }
+    return { port: info.port, addresses: info.addresses };
+  }
+}
+
+export function stopHosting(): Promise<void> {
+  return hostStop();
 }
 
 // Opens an https link in the system browser; anything else is ignored.

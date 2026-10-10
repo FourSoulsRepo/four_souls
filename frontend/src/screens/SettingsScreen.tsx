@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useApp } from '../store';
-import './SettingsScreen.css';
+import './screens.css';
 
 export function SettingsScreen() {
   const settings = useApp((s) => s.settings);
@@ -11,10 +11,10 @@ export function SettingsScreen() {
   const [saved, setSaved] = useState(false);
 
   return (
-    <div className="settings">
+    <div className="screen">
       <h1>Settings</h1>
       <form
-        className="settings-form"
+        className="row"
         onSubmit={(e) => {
           e.preventDefault();
           void save({ ...settings, nickname }).then((ok) => {
@@ -25,7 +25,7 @@ export function SettingsScreen() {
           });
         }}
       >
-        <label>
+        <label className="field">
           Nickname
           <input
             value={nickname}
@@ -37,7 +37,7 @@ export function SettingsScreen() {
         </label>
         <button type="submit">Save</button>
       </form>
-      <p className="settings-status" role="status">
+      <p className="status" role="status">
         {error || (saved ? 'Saved.' : '')}
       </p>
       <button

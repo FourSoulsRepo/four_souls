@@ -4,13 +4,14 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"testing"
 )
 
 func TestSurvivesRestart(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "FourSouls", "settings.json")
-	saved, err := Save(path, Settings{Nickname: "  Ann  "})
+	saved, err := Save(path, Settings{Nickname: "  Ann  ", Recent: []string{"10.0.0.2"}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -18,21 +19,22 @@ func TestSurvivesRestart(t *testing.T) {
 		t.Fatalf("saved nickname %q, want Ann", saved.Nickname)
 	}
 	// A restart only has the file.
-	if got := Load(path); got != saved {
+	if got := Load(path); !reflect.DeepEqual(got, saved) {
 		t.Fatalf("loaded %+v, want %+v", got, saved)
 	}
 }
 
 func TestDefaults(t *testing.T) {
 	dir := t.TempDir()
-	if got := Load(filepath.Join(dir, "none.json")); got != (Settings{}) {
+	want := Settings{Recent: []string{}}
+	if got := Load(filepath.Join(dir, "none.json")); !reflect.DeepEqual(got, want) {
 		t.Fatalf("missing file: %+v", got)
 	}
 	broken := filepath.Join(dir, "broken.json")
 	if err := os.WriteFile(broken, []byte("{nick"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if got := Load(broken); got != (Settings{}) {
+	if got := Load(broken); !reflect.DeepEqual(got, want) {
 		t.Fatalf("broken file: %+v", got)
 	}
 }
@@ -49,5 +51,16 @@ func TestBadNicknameKeepsFile(t *testing.T) {
 	}
 	if got := Load(path).Nickname; got != "Ann" {
 		t.Fatalf("nickname %q after bad saves, want Ann", got)
+	}
+}
+
+func TestRecentIsCleanedAndCapped(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "settings.json")
+	got, err := Save(path, Settings{Recent: []string{" a ", "", "b", "c", "d", "e", "f"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if want := []string{"a", "b", "c", "d", "e"}; !reflect.DeepEqual(got.Recent, want) {
+		t.Fatalf("recent %q, want %q", got.Recent, want)
 	}
 }

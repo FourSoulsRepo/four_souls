@@ -5,7 +5,7 @@ The frontend is tested like the Go code (ADR 008). Three layers, from fast to sl
 | Layer | Tool | Where | Run |
 |---|---|---|---|
 | Unit tests | Vitest | `frontend/src/**/*.test.ts` | `make frontend` (with typecheck and lint) |
-| Protocol check (from 7.3) | Vitest | reads `internal/protocol/testdata/golden.jsonl` | `make frontend` |
+| Protocol check | Vitest | reads `internal/protocol/testdata/golden.jsonl` | `make frontend` |
 | UI tests | Playwright | `e2e/tests/*.spec.ts` | `make e2e` |
 
 Frontend changes gate on `make frontend e2e`, next to the Go gate.
@@ -35,4 +35,4 @@ URL flags, dev server only:
 
 Every new screen gets a Playwright test. Find elements the way a player does: by role and visible text (`getByRole('button', { name: 'Save' })`), not by CSS classes.
 
-Later steps add tests against the real Go server for network play.
+Network play runs against the real Go server: `e2e/playwright.config.ts` starts `cmd/server` on port 4799, next to Vite. The fake `Host` binding points at it (`?server=4799`), so one page "hosts" and others join it by address. Use separate browser contexts for separate players: each has its own `localStorage`, like a separate app.

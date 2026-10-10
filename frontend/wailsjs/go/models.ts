@@ -72,6 +72,7 @@ export namespace settings {
 	
 	export class Settings {
 	    nickname: string;
+	    recent: string[];
 	
 	    static createFrom(source: any = {}) {
 	        return new Settings(source);
@@ -80,6 +81,7 @@ export namespace settings {
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.nickname = source["nickname"];
+	        this.recent = source["recent"];
 	    }
 	}
 
