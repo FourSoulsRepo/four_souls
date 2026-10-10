@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react';
 import { getNotice, openExternal, type NoticeLine, type NoticePart } from '../bridge';
 import './Splash.css';
 
-// How long the fan-game notice stays on screen (L-01).
-const SPLASH_MS = 5000;
+// How long the fan-game notice stays on screen (L-01). Tests on the
+// dev server skip it with ?nosplash; players always see it.
+const SPLASH_MS =
+  import.meta.env.DEV && new URLSearchParams(window.location.search).has('nosplash') ? 0 : 5000;
 
 // The notice is static text, so its content makes a stable key.
 function partKey(part: NoticePart): string {

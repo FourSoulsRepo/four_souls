@@ -1,0 +1,63 @@
+// Package settings keeps the player's app settings in a JSON file in
+// the user's config folder, so they survive a restart.
+package settings
+
+import (
+	"encoding/json"
+	"errors"
+	"fmt"
+	"os"
+	"path/filepath"
+
+	"github.com/FourSoulsRepo/four_souls/internal/protocol"
+)
+
+// Settings are the player's app settings.
+type Settings struct {
+	// Nickname is sent when joining a game (ST-06); "" until set.
+	Nickname string `json:"nickname"`
+}
+
+// ErrNickname means the nickname is empty after trimming, too long, or
+// has control characters.
+var ErrNickname = fmt.Errorf("nickname must be 1–%d characters", protocol.MaxName)
+
+// Load reads the settings. A missing or broken file gives the defaults.
+func Load(path string) Settings {
+	var s Settings
+	data, err := os.ReadFile(path) //nolint:gosec // the app names the file
+	if err != nil {
+		return Settings{}
+	}
+	if err := json.Unmarshal(data, &s); err != nil {
+		return Settings{}
+	}
+	return s
+}
+
+// Save checks and writes the settings, and returns what was stored.
+// The file is replaced in one step, so a crash never leaves half of it.
+func Save(path string, s Settings) (Settings, error) {
+	if s.Nickname != "" {
+		name, ok := protocol.CleanName(s.Nickname)
+		if !ok {
+			return Settings{}, ErrNickname
+		}
+		s.Nickname = name
+	}
+	data, err := json.MarshalIndent(s, "", "  ")
+	if err != nil {
+		return Settings{}, fmt.Errorf("settings: %w", err)
+	}
+	if err := os.MkdirAll(filepath.Dir(path), 0o750); err != nil {
+		return Settings{}, fmt.Errorf("settings: %w", err)
+	}
+	tmp := path + ".tmp"
+	if err := os.WriteFile(tmp, data, 0o600); err != nil {
+		return Settings{}, fmt.Errorf("settings: %w", err)
+	}
+	if err := os.Rename(tmp, path); err != nil {
+		return Settings{}, errors.Join(fmt.Errorf("settings: %w", err), os.Remove(tmp))
+	}
+	return s, nil
+}

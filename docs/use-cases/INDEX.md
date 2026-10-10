@@ -11,3 +11,4 @@
 | UC-07 | Reconnect after a lost connection | `internal/server` | In progress | [server/uc-07-reconnect.md](server/uc-07-reconnect.md) |
 | UC-08 | Get a match record | `internal/server`, `pkg/record` | In progress | [server/uc-08-get-a-match-record.md](server/uc-08-get-a-match-record.md) |
 | UC-09 | Save and continue a game | `internal/server`, `pkg/record` | In progress | [server/uc-09-save-and-continue.md](server/uc-09-save-and-continue.md) |
+| UC-10 | Change settings | `internal/settings`, `frontend` | In progress | [app/uc-10-change-settings.md](app/uc-10-change-settings.md) |

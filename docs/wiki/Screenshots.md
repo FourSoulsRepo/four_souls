@@ -4,13 +4,13 @@
 
 The folder is git-ignored: the UI changes often, and images would bloat the repository. Screenshots go into the docs once the UI settles.
 
-It works the same way as in the owner's other Wails projects:
+Screenshots are taken by the Playwright UI tests in `e2e/` (see [Frontend tests](Frontend-tests)): `make screenshots` runs `make e2e` with `SCREENSHOTS=1`, and each test calls `shot(page, name)` where a screen is worth a picture.
 
-1. Vite serves the frontend with `?screenshot=1`.
-2. That flag loads `frontend/src/screenshotBridge.ts`, which installs fake Wails bindings, so no Go process or real window is needed. The fixture is loaded only by the Vite dev server; release builds never contain it.
-3. Playwright (headless Chromium, 1024×768 like the app window) opens the page and saves each screen.
+1. Vite serves the frontend with `?fake`.
+2. That flag loads `frontend/src/fakeBridge.ts`, which installs fake Wails bindings, so no Go process or real window is needed. The fixture is loaded only by the Vite dev server; release builds never contain it.
+3. Playwright (headless Chromium, 1024×768 like the app window) opens the page.
 
-Playwright lives in `scripts/screenshots/`, not in `frontend/`, so normal frontend installs and release builds never download Chromium.
+Playwright lives in `e2e/`, not in `frontend/`, so normal frontend installs and release builds never download Chromium.
 
 The fixture copies the fan-game notice. `internal/legal` has a test that fails when the two drift apart.
 
@@ -18,5 +18,6 @@ The fixture copies the fan-game notice. `internal/legal` has a test that fails w
 |--------|------|
 | Splash with the fan-game notice | `screen-splash.png` |
 | Main menu with versions | `screen-menu.png` |
+| Settings | `screen-settings.png` |
 
-When a screen is added, add a step to `scripts/screenshots/capture.mjs` and a row here.
+When a screen is added, call `shot` in its test and add a row here.

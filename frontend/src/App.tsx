@@ -1,14 +1,26 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect } from 'react';
 import { MainMenu } from './screens/MainMenu';
+import { SettingsScreen } from './screens/SettingsScreen';
 import { Splash } from './screens/Splash';
-
-type Screen = 'splash' | 'menu';
+import { useApp } from './store';
 
 export function App() {
-  const [screen, setScreen] = useState<Screen>('splash');
+  const screen = useApp((s) => s.screen);
+  const show = useApp((s) => s.show);
   const showMenu = useCallback(() => {
-    setScreen('menu');
+    show('menu');
+  }, [show]);
+
+  useEffect(() => {
+    void useApp.getState().loadSettings();
   }, []);
 
-  return screen === 'splash' ? <Splash onDone={showMenu} /> : <MainMenu />;
+  switch (screen) {
+    case 'splash':
+      return <Splash onDone={showMenu} />;
+    case 'menu':
+      return <MainMenu />;
+    case 'settings':
+      return <SettingsScreen />;
+  }
 }

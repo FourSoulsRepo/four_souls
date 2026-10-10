@@ -47,6 +47,44 @@ export namespace legal {
 
 }
 
+export namespace main {
+	
+	export class HostInfo {
+	    running: boolean;
+	    port: number;
+	    addresses: string[];
+	
+	    static createFrom(source: any = {}) {
+	        return new HostInfo(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.running = source["running"];
+	        this.port = source["port"];
+	        this.addresses = source["addresses"];
+	    }
+	}
+
+}
+
+export namespace settings {
+	
+	export class Settings {
+	    nickname: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new Settings(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.nickname = source["nickname"];
+	    }
+	}
+
+}
+
 export namespace version {
 	
 	export class Info {

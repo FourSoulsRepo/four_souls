@@ -18,7 +18,7 @@ Ideas: M-01, V-01 – V-08, ST-01 – ST-03, ST-05, ST-06, B-06, N-11.
 3. Done when:
    1. **Owner** accepts the ADR.
 
-### [ ] 7.2 App shell
+### [x] 7.2 App shell
 
 1. Goal: splash, main menu, settings storage.
 2. Tasks:

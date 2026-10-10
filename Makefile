@@ -17,7 +17,7 @@ FOCUS ?=
 SIMS ?= 3000
 
 .DEFAULT_GOAL := help
-.PHONY: help test vet build wasm lint screenshots fuzz fuzz-engine fuzz-focused fuzz-sets sims
+.PHONY: help test vet build wasm lint frontend e2e screenshots fuzz fuzz-engine fuzz-focused fuzz-sets sims
 
 help: ## Show this help
 	@echo "Usage: make <target> [VAR=value]"
@@ -44,10 +44,19 @@ wasm: ## Build the engine and the website for js/wasm
 lint: ## Run golangci-lint in every Go module, plus embed mode
 	@for m in $(MODULES); do (cd $$m && $(GOLANGCI) run --config $(ROOT)/.golangci.yml --build-tags "$(TAGS)" ./... && $(GOLANGCI) run --config $(ROOT)/.golangci.yml --build-tags "$(TAGS) embed" ./...) || exit 1; done
 
-# UI screenshots for review: .cache/screenshots/screen-*.png (git-ignored).
-# Fake Wails bindings via ?screenshot=1; no Go process needed.
-screenshots: ## Capture UI screenshots into .cache/screenshots
-	@cd scripts/screenshots && npm install --no-audit --no-fund && npx playwright install chromium && node capture.mjs
+# Frontend checks for every commit (ADR 008).
+frontend: ## Typecheck, lint and unit-test the frontend
+	@cd frontend && npm run typecheck && npm run lint && npm test
+
+# Playwright lives in e2e/, so frontend installs never download Chromium.
+# Fake Wails bindings via ?fake; no Go process needed.
+E2E := cd e2e && npm install --no-audit --no-fund && npx playwright install chromium &&
+
+e2e: ## Run end-to-end UI tests (Playwright)
+	@$(E2E) npx playwright test
+
+screenshots: ## Run e2e and save UI screenshots into .cache/screenshots
+	@$(E2E) SCREENSHOTS=1 npx playwright test
 
 # Go fuzzes one target at a time, so fuzz runs them one after another.
 fuzz: fuzz-engine fuzz-sets ## Run fuzz-engine, then fuzz-sets (FUZZTIME each)

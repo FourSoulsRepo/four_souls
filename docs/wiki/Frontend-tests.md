@@ -1,0 +1,38 @@
+# Frontend tests
+
+The frontend is tested like the Go code (ADR 008). Three layers, from fast to slow:
+
+| Layer | Tool | Where | Run |
+|---|---|---|---|
+| Unit tests | Vitest | `frontend/src/**/*.test.ts` | `make frontend` (with typecheck and lint) |
+| Protocol check (from 7.3) | Vitest | reads `internal/protocol/testdata/golden.jsonl` | `make frontend` |
+| UI tests | Playwright | `e2e/tests/*.spec.ts` | `make e2e` |
+
+Frontend changes gate on `make frontend e2e`, next to the Go gate.
+
+## Keep it simple
+
+The frontend follows the same KISS rules as the backend:
+
+1. The server is the truth. The client computes no rules; it shows the view and sends intents.
+2. Logic goes into plain `.ts` functions or the store, with Vitest tests. Components stay thin: they read the store and draw.
+3. One Zustand store (`frontend/src/store.ts`). Tests drive it with `useApp.getState()`, no browser needed.
+4. Only `frontend/src/bridge/` talks to Wails. Unit tests mock the bridge with `vi.mock('./bridge', …)`.
+5. No layers "for later". A new library needs a reason and a `NOTICE` line.
+
+## Unit tests
+
+A test sits next to its file: `store.ts` and `store.test.ts`. They run in Node, without a DOM.
+
+## UI tests
+
+Vite serves the frontend with fake Wails bindings (`?fake`, `frontend/src/fakeBridge.ts`). The fake keeps settings in `localStorage`, so a page reload acts like an app restart.
+
+URL flags, dev server only:
+
+* `?fake` — fake Wails bindings.
+* `?nosplash` — skip the 5-second fan-game notice. Players always see it (L-01); one test checks it.
+
+Every new screen gets a Playwright test. Find elements the way a player does: by role and visible text (`getByRole('button', { name: 'Save' })`), not by CSS classes.
+
+Later steps add tests against the real Go server for network play.

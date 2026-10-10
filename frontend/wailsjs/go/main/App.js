@@ -6,6 +6,14 @@ export function Notice() {
   return window['go']['main']['App']['Notice']();
 }
 
+export function SaveSettings(arg1) {
+  return window['go']['main']['App']['SaveSettings'](arg1);
+}
+
+export function Settings() {
+  return window['go']['main']['App']['Settings']();
+}
+
 export function Versions() {
   return window['go']['main']['App']['Versions']();
 }

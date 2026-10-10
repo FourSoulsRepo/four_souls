@@ -2,10 +2,10 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import './style.css';
 
-// ?screenshot=1 swaps in fake Wails bindings for make screenshots.
+// ?fake swaps in fake Wails bindings for make e2e and make screenshots.
 // Dev server only: production builds drop the fixture entirely.
-if (import.meta.env.DEV && new URLSearchParams(window.location.search).has('screenshot')) {
-  await import('./screenshotBridge');
+if (import.meta.env.DEV && new URLSearchParams(window.location.search).has('fake')) {
+  await import('./fakeBridge');
 }
 const { App } = await import('./App');
 

@@ -22,6 +22,7 @@
    10. Full map: `docs/wiki/Repo-layout.md`; decision: ADR 003.
    11. Card data tools: separate repo `FourSoulsRepo/tools`.
    12. Never add download or scraping code to this repo.
+   13. `e2e/`: Playwright UI tests; also makes screenshots.
 4. Commands
    1. `wails dev`: run with hot reload.
    2. `wails build`: release binary to `build/bin/`.
@@ -36,6 +37,9 @@
    11. `go run ./cmd/cardgen -report`: card status report; rerun after card work.
    12. `make` alone prints help: every target and variable.
    13. `make fuzz`, `fuzz-sets`, `sims`: long local checks; see `docs/wiki/Fuzzing.md`.
+   14. `make frontend`: typecheck, lint, Vitest.
+   15. `make e2e`: Playwright UI tests in `e2e/`.
+   16. Frontend testing rules: `docs/wiki/Frontend-tests.md`.
 5. Workflow
    1. Work follows `docs/roadmap/`, one sub-step at a time.
    2. Commit after every finished sub-step.
@@ -46,6 +50,7 @@
    7. Before every commit: tests and lint must pass.
    8. Gate on the tool's own exit code: `make lint && git commit …`.
    9. Never pipe lint through `grep` or `tail` in a gate; it hides failures.
+   10. Frontend changes also gate on `make frontend e2e`.
 6. Licenses
    1. Code is MIT (`LICENSE`).
    2. `NOTICE` lists every third-party item and its license.

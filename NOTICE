@@ -72,10 +72,12 @@ Go (linked into the app):
 npm (bundled into the frontend):
 
   React, React DOM                          MIT
+  Zustand                                   MIT
 
 npm (build only, not shipped):
 
-  Playwright (scripts/screenshots)          Apache-2.0
+  Playwright, @playwright/test (e2e)       Apache-2.0
+  Vitest                                    MIT
 
   Vite, @vitejs/plugin-react                MIT
   TypeScript                                Apache-2.0
