@@ -30,3 +30,4 @@ Sources: S-OFF Priority, The Stack, Dice Rolls; S-RU Приоритет, Сте�
 18. **R-DICE-04** While it is on the stack, abilities and loot may change the roll.
 19. **R-DICE-05** When all players pass, the roll tries to resolve: "would roll N" triggers trigger now; if one changes the result, go back to R-DICE-04.
 20. **R-DICE-06** As the roll resolves, continuous effects that modify rolls apply; the result is then final, and "when you roll N" triggers trigger.
+21. **R-DICE-07** A "would roll N" trigger fizzles if, when it resolves, the roll is gone or no longer N (S-YUG).

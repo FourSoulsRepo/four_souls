@@ -29,7 +29,8 @@ func TestGolden(t *testing.T) {
 		data any
 	}{
 		{TypeHello, 1, Hello{Protocol: Version, App: "0.1.0", Name: "Ann", Role: RolePlayer, Sets: []string{"b2"}}},
-		{TypeWelcome, 1, Welcome{Protocol: Version, App: "0.1.0", Engine: engine.Version, Token: "t0k3n", Seat: 0}},
+		// A fixed sample: an engine version bump is not a wire change.
+		{TypeWelcome, 1, Welcome{Protocol: Version, App: "0.1.0", Engine: "0.1.0", Token: "t0k3n", Seat: 0}},
 		{TypeIntent, 2, Intent{Intent: engine.Intent{Kind: engine.IntentPass}}},
 		{TypeResync, 3, struct{}{}},
 		{TypeUpdate, 0, Update{Step: 1, Events: []engine.Event{{Kind: engine.EvLooted, Player: 0, Card: "a_dime"}}, View: view, Allowed: g.Allowed(p), Seats: []Seat{{Seat: 0, Name: "Ann", Connected: true}, {Seat: 1, Name: "Bo"}}}},

@@ -521,8 +521,10 @@ type destroyEffect struct{ target int }
 func DestroyTarget(t int) Effect { return destroyEffect{t} }
 
 func (e destroyEffect) apply(c *Ctx) {
+	// The item may have changed hands since it was chosen (Decoy); it is
+	// still the same target, destroyed under its current controller.
 	t := c.target(e.target)
-	c.G.DestroyObject(t.Player, t.Object)
+	c.G.DestroyObject(c.G.Object(t.Object).Controller, t.Object)
 }
 
 type eachPlayerEffect struct {

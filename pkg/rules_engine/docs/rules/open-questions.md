@@ -55,6 +55,25 @@ On 2026-10-09 the owner parked every open decision for later.
 2. Note: S-OFF recommends Mini-draft for 2-player games.
 3. Status: **Resolved** (2026-10-09): neither variant for now; standard setup only.
 
+### Q-07 Choosing a dead player
+
+1. Question: may "choose a player" pick a player who is already dead this turn?
+2. Sources:
+   1. Ed (2018, R-07 #4): you can damage dead players ("beating the corpse").
+   2. Yuggy (S-YUG, Reddit etdouue, fmz4v53; Ed's tweet 1085299878199062528): you can't choose a dead player; only damage that picks no one (all players, the player to your left) hits them. The Isaac boss then makes you damage yourself.
+3. Engine now: dead players stay valid choices (R-07 #4).
+4. Options: (a) keep; (b) dead players can't be chosen when a living one could be.
+5. Proposal: (b), with the source note; R-07 #4 then means untargeted damage only.
+6. Status: **Owner**.
+
+### Q-08 The 3+ player symbol
+
+1. Question: R-CARD-32 removes 3+ player cards in 2-player games; which Base Game cards have the symbol?
+2. Sources: S-OFF (3+ Player Only Symbol); Yuggy (Reddit kh7ze7n, jdlljs9): no loot card has it; Satan does.
+3. Gap: card_db has no field for the symbol, so the engine can't apply R-CARD-32.
+4. Proposal: the scraper in `FourSoulsRepo/tools` reads the symbol into card_db; the engine then removes those cards in 2-player games.
+5. Status: **Owner**: a tools-repo change first.
+
 ## Old rulings re-checked (R-07)
 
 | # | Ruling (Ed's Notes, 2018–2019) | Check against current rules and V2 text | Status |
@@ -86,3 +105,30 @@ Candidates for situation tests; check each against the English rules.
 | 5 | Devil Deal | card_db lists five options; the engine reads three: discard / loot 2, take 1 / take 2, search a Guppy | **Resolved**: three choices (owner, 2026-10-09) |
 
 Tests: FAQ row 1 is in `cards/b2/interactions_test.go`, with Yuggy's "above 6 counts as 6" ruling.
+
+## Card rulings from Yuggy (S-YUG)
+
+Searched 2026-10-12 (8.7): his r/FourSouls comments and tweets that name a Base Game card, 294 questions. Rulings on V1 wording that V2 changed (Placebo, Butter Bean, Evil Twin, Eve, Judas) are left out. Tests: `cards/b2/yuggy_test.go`.
+
+| # | Cards | Ruling (our words) | Status |
+|---|---|---|---|
+| 1 | Chaos Card, XIII. Death | Death clears only unresolved attack rolls; an item ability still resolves after its controller dies | Holds; test |
+| 2 | Chaos Card, Butter Bean | Cancelling "Destroy this. If you do" leaves the item tapped, not destroyed | Holds; test |
+| 3 | Chaos Card, Glass Cannon | Destroyed in response, "Destroy this. If you do" fizzles; a destroyed item's other abilities still resolve | Holds; test |
+| 4 | Mom's Shovel | Usable with no soul to steal; it is destroyed anyway | Holds; test |
+| 5 | Eden, Chaos Card | An eternal "Destroy this. If you do" item does nothing | Holds; test |
+| 6 | Guppy's Paw, Fanny Pack | Paying HP is not damage; HP you don't have can't be paid | Holds; tests |
+| 7 | The Dead Cat, Fanny Pack | Prevented damage is not taken: "when you take damage" doesn't trigger | Holds; test |
+| 8 | Yum Heart | V2 prevents one whole instance of damage | Holds; test |
+| 9 | Curved Horn, The D6 | A reroll is the same roll: the first attack roll keeps its +1 | Holds; test |
+| 10 | Sacred Heart, Book of Belial | A roll changed down to 1 triggers "would roll a 1" | Holds; test |
+| 11 | Sacred Heart, Dad's Lost Coin | Same-time triggers stack in turn order; a "would roll" trigger fizzles if the roll changed (R-DICE-07) | **Fixed** in the engine; test |
+| 12 | Sacred Heart, Godhead | A roll changed to 1 triggers Sacred Heart again | Holds; test |
+| 13 | Glass Cannon, The D20 | A target gone by resolution: Glass Cannon fizzles, stays tapped, no roll | Holds; test |
+| 14 | Sloth, Bomb | The damage belongs to whoever played the loot: that player killed Sloth | Holds; test |
+| 15 | Decoy, The Chest, Glass Cannon | A target swapped away is still the target; the soul goes to its new controller (R-ABIL-34) | **Fixed** in the engine; test |
+| 16 | Modeling Clay | A copy of an active item stays tapped until recharged | Holds; test |
+| 17 | Placebo, The D20 | Shop items count as in play for targeting (R-CARD-34) | **Fixed** in the engine; tests |
+| 18 | Soul of Gluttony | A bonus soul is gained once per game, even if destroyed | Holds; test |
+| 19 | Any "choose a player" | Dead players can't be chosen | **Owner**: Q-07 |
+| 20 | 3+ player cards | Satan and others are out of 2-player games | **Owner**: Q-08 |

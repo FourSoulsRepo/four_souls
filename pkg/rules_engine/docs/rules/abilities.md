@@ -46,3 +46,4 @@ Sources: S-OFF Abilities, Effects; S-RU Способности, Эффекты.
 31. **R-ABIL-31** "This enters play …" and "as …" add to the event rather than replacing it (e.g. "enters play deactivated").
 32. **R-ABIL-32** A replacement effect applies at most once to the same event.
 33. **R-ABIL-33** If several replacement effects apply to one event, the affected player picks their order; one may stop another from applying.
+34. **R-ABIL-34** A target that changes controller but stays in its zone is still the same target; the ability acts on it under its new controller (S-YUG).

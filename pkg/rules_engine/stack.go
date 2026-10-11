@@ -45,7 +45,9 @@ type StackItem struct {
 	// Reward is a roll reward's kind + 1: the result is how much is gained.
 	Reward int `json:"reward,omitempty"`
 	// Checked is the roll value (+1) that "would roll" triggers last saw
-	// (R-DICE-05); the roll only resolves once nothing changes it.
+	// (R-DICE-05); the roll only resolves once nothing changes it. On a
+	// "would roll" trigger it is the value (+1) the trigger saw: it
+	// fizzles if the roll no longer has it (R-DICE-07).
 	Checked int `json:"checked,omitempty"`
 }
 

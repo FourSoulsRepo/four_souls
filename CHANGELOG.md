@@ -6,7 +6,9 @@ Rules engine versions are in each release's notes.
 
 ## Unreleased
 
-- Nothing yet.
+- Rules: Sacred Heart and similar "would roll" items no longer change a roll that was already changed.
+- Rules: an item swapped away (Decoy) can still be destroyed by an ability aimed at it.
+- Rules: abilities that choose an item can choose shop items (The D20, Placebo, Glass Cannon).
 
 ## 0.1.0 - 2026-10-12
 

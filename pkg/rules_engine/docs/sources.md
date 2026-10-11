@@ -61,6 +61,8 @@ Order of trust when sources disagree:
 3. X @YuggyHD: 841 tweets and 659 context tweets.
    1. Period: 2023-03 to 2026-08.
 4. Mixed content: rulings, shop news, chat. Rulings rank high.
+5. Searched for every Base Game card on 2026-10-12 (8.7): 294 questions.
+   1. Rulings and tests: rules/open-questions.md, section S-YUG.
 
 ## Discord (S-DIS)
 

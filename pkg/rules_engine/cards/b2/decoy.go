@@ -27,5 +27,5 @@ var decoy = engine.CardDef{
 
 // othersNonEternal keeps non-eternal items of other players.
 func othersNonEternal(g *engine.Game, self engine.ObjectID, c engine.Chosen) bool {
-	return c.Player != g.Object(self).Controller && !g.Eternal(c.Object)
+	return c.Player != engine.NoPlayer && c.Player != g.Object(self).Controller && !g.Eternal(c.Object)
 }

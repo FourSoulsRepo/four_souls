@@ -215,11 +215,26 @@ func (g *Game) nextTriggerGroup() []int {
 func (g *Game) pushTrigger(i int) {
 	t := g.PendingTriggers[i]
 	g.PendingTriggers = append(g.PendingTriggers[:i:i], g.PendingTriggers[i+1:]...)
-	g.push(StackItem{
+	it := StackItem{
 		Kind: StackTrigger, Controller: t.Controller, Source: t.Source, Card: t.Ability.Card,
 		Ability: t.Ability, Label: g.abilityText(t.Ability),
 		EventPlayer: t.EventPlayer, EventAmount: t.EventAmount, EventStack: t.EventStack, EventObject: t.EventObject,
-	})
+	}
+	if t.On == EvRollWouldResolve {
+		it.Checked = t.EventAmount + 1 // R-DICE-07
+	}
+	g.push(it)
+}
+
+// rollStillIs reports whether the roll with stack ID id is on the stack
+// with the result n.
+func (g *Game) rollStillIs(id, n int) bool {
+	for _, it := range g.Stack {
+		if it.ID == id && it.Kind == StackRoll {
+			return it.Roll == n
+		}
+	}
+	return false
 }
 
 func (g *Game) ability(ref AbilityRef) Ability {

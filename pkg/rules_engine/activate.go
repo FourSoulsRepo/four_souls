@@ -221,6 +221,11 @@ func (g *Game) targetOptions(t TargetSpec, p PlayerID, src ObjectID) ([]Chosen, 
 				}
 			}
 		}
+		// Shop items are items in play too (R-CARD-01, R-ZONE-02).
+		for _, id := range g.ShopItems() {
+			opts = append(opts, Chosen{Kind: TargetItem, Player: NoPlayer, Object: id})
+			labels = append(labels, string(g.Object(id).Card))
+		}
 	case TargetDiceRoll:
 		for _, it := range g.Stack {
 			if it.Kind == StackRoll {
@@ -325,6 +330,11 @@ func (g *Game) stillValid(c Chosen) bool {
 func (g *Game) resolveAbility(it StackItem) {
 	effects := g.effectsOf(it.Ability, it.Mode, it.RollResult)
 	defer g.afterEventAbility(it.Source)
+	// A "would roll N" trigger needs the roll to still be N (R-DICE-07).
+	if it.Kind == StackTrigger && it.Checked > 0 && !g.rollStillIs(it.EventStack, it.Checked-1) {
+		g.emit(Event{Kind: EvAbilityFizzle, Player: it.Controller, Object: it.Source, Card: it.Card})
+		return
+	}
 	for _, t := range it.Targets {
 		// A roll's result was checked when the roll ability resolved.
 		if t.Spent || it.RollResult > 0 {
@@ -368,7 +378,8 @@ func (g *Game) useLootPlay(p PlayerID) {
 // AbilitiesOf lists the abilities an object can use, in the order an
 // Activate intent's Choice counts them: its card's abilities, or, for a
 // card that borrows them (Placebo), every ↷ ability of the other
-// non-eternal items in play.
+// non-eternal items in play: players' items, then shop items, which count
+// as in play for targeting (S-YUG).
 func (g *Game) AbilitiesOf(id ObjectID) []AbilityRef {
 	card := g.CardOf(id)
 	if !g.def(id).CopiesTapAbilities {
@@ -378,16 +389,23 @@ func (g *Game) AbilitiesOf(id ObjectID) []AbilityRef {
 		}
 		return refs
 	}
-	var refs []AbilityRef
+	var items []ObjectID
 	for _, pl := range g.Players {
-		for _, other := range pl.InPlay {
-			if other == id || g.Object(other).Role != RoleItem || g.Eternal(other) {
-				continue
-			}
-			for i, a := range g.def(other).Abilities {
-				if a.Kind == Activated && hasTap(a) {
-					refs = append(refs, AbilityRef{Card: g.CardOf(other), Index: i})
-				}
+		items = append(items, pl.InPlay...)
+	}
+	for _, slot := range g.Shop {
+		if top, ok := slot.TopOf(); ok {
+			items = append(items, top)
+		}
+	}
+	var refs []AbilityRef
+	for _, other := range items {
+		if other == id || g.Object(other).Role != RoleItem || g.Eternal(other) {
+			continue
+		}
+		for i, a := range g.def(other).Abilities {
+			if a.Kind == Activated && hasTap(a) {
+				refs = append(refs, AbilityRef{Card: g.CardOf(other), Index: i})
 			}
 		}
 	}

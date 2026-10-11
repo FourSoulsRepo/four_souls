@@ -177,6 +177,15 @@ func (g *Game) DestroyObject(p PlayerID, id ObjectID) bool {
 	if o.Zone.Kind != ZoneInPlay || o.Controller != p || g.Eternal(id) {
 		return false
 	}
+	if o.Zone.Slot == ShopSlot && o.Controller == NoPlayer {
+		// A shop item: its abilities don't work in the shop (R-CARD-05),
+		// so it is simply discarded and its slot refilled (R-SHOP-06).
+		g.removeFromSlot(id)
+		nid := g.discard(id, TreasureDeck)
+		g.emit(Event{Kind: EvDestroyed, Player: NoPlayer, Object: nid, Card: g.Object(nid).Card, Prev: id})
+		g.enqueue(Action{Kind: ActRefillSlots, Player: NoPlayer})
+		return true
+	}
 	if g.def(id).SoulWhenDestroyed && o.Role == RoleItem {
 		o.Role, o.Charged, o.Counters = RoleSoul, false, nil // The Chest
 		g.emit(Event{Kind: EvGainedSoul, Player: p, Object: id, Card: o.Card})
