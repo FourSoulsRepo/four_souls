@@ -67,6 +67,8 @@ PLATFORM ?=
 internal: ## Build the app for play tests, card images included
 	@test -d pkg/card_db/images/b2 || (echo "the card images submodule is missing" && exit 1)
 	@wails build $(if $(PLATFORM),-platform $(PLATFORM)) -tags "$(TAGS) embed cardimages" -ldflags "-X github.com/FourSoulsRepo/four_souls/internal/version.App=$(INTERNAL_VERSION)"
+	@# wails build regenerates the bindings as executable files; keep them 644.
+	@chmod 644 frontend/wailsjs/go/main/* frontend/wailsjs/go/models.ts frontend/wailsjs/runtime/*
 
 # Go fuzzes one target at a time, so fuzz runs them one after another.
 fuzz: fuzz-engine fuzz-sets ## Run fuzz-engine, then fuzz-sets (FUZZTIME each)

@@ -98,6 +98,11 @@ interface AppState extends Session {
   joinServer: (address: string) => Promise<void>;
   // host runs the server in this app and opens a game on it.
   host: (game: Omit<Create, 'sets'>) => Promise<void>;
+  // hostSaved runs the server in this app and shows its games and saved
+  // games, to continue one (N-11).
+  hostSaved: () => Promise<void>;
+  // saveGame saves the running game; only the host may (N-11).
+  saveGame: () => void;
   joinGame: (game: string) => void;
   loadSave: (save: string) => void;
   setReady: (ready: boolean) => void;
@@ -180,6 +185,18 @@ export const useApp = create<AppState>()((set, get) => {
 
   // open connects to address and says hello; the server answers with
   // welcome and its game list.
+  // startHost runs the server in this app; null when it cannot.
+  async function startHost(): Promise<HostInfo | null> {
+    try {
+      const info = await startHosting();
+      set({ hosting: info });
+      return info;
+    } catch (e) {
+      set({ error: messageOf(e) });
+      return null;
+    }
+  }
+
   async function open(address: string, token?: string): Promise<boolean> {
     const url = wsURL(address);
     if (!url) {
@@ -325,17 +342,19 @@ export const useApp = create<AppState>()((set, get) => {
       }
     },
     host: async (game) => {
-      let info: HostInfo;
-      try {
-        info = await startHosting();
-      } catch (e) {
-        set({ error: messageOf(e) });
-        return;
-      }
-      set({ hosting: info });
-      if (await open(`127.0.0.1:${String(info.port)}`)) {
+      const info = await startHost();
+      if (info && (await open(`127.0.0.1:${String(info.port)}`))) {
         send('create', { ...game, sets: get().cardSets });
       }
+    },
+    hostSaved: async () => {
+      const info = await startHost();
+      if (info && (await open(`127.0.0.1:${String(info.port)}`))) {
+        set({ screen: 'join' });
+      }
+    },
+    saveGame: () => {
+      send('save');
     },
     joinGame: (game) => {
       send('join', { game });

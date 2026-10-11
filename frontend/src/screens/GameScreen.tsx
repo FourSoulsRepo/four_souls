@@ -7,6 +7,7 @@ import { ChoiceDialog, DiscardDialog } from '../components/ChoiceDialog';
 import { interact, noInteract } from '../components/Interact';
 import { PlayerArea } from '../components/PlayerArea';
 import { HistoryPanel, TurnBadge } from '../components/InfoPanels';
+import { GameMenu } from '../components/GameMenu';
 import { EndOverlay, LostOverlay, PauseOverlay } from '../components/Overlays';
 import { StackPanel } from '../components/StackPanel';
 import type { Update } from '../protocol';
@@ -95,6 +96,7 @@ function Table({ game, you }: { game: Update; you: number }) {
       <ActionMenu actions={offered.cards} />
       {offered.choice && <ChoiceDialog key={game.step} choice={offered.choice} />}
       {offered.discard && me && <DiscardDialog key={game.step} discard={offered.discard} hand={me.hand ?? []} />}
+      {connected && !view.over && <GameMenu host={you === 0} />}
       {!connected ? (
         <LostOverlay />
       ) : view.over ? (

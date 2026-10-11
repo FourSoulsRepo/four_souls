@@ -62,3 +62,7 @@ The turn badge shows the turn number, the active player and the step. Player are
 * A lost connection during a game keeps the table (`lobby.lost`); `LostOverlay` offers Reconnect, which says hello again with the seat's token from `welcome`.
 * `update.pause` shows `PauseOverlay` to the others: who is away, the votes, and Wait / Go on without them (`vote` messages).
 * `view.over` shows `EndOverlay`: the winner and Save record. `App.SaveRecord` (Go, `record.go`) asks where to save and downloads `http://<server>/record?game=…&token=…`; it accepts only such links.
+
+## Save and continue
+
+The in-game **Menu** (`GameMenu`) offers **Save and leave** to seat 1, the host (`save` message), and **Leave game** to all. After `saved`, everyone is back on the server's game list. **Continue a saved game** on the host screen starts the in-app server and shows that list (`store.hostSaved`); **Continue** sends `load`. A loaded table shows its seats as "back" or "not back yet".

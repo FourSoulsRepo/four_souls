@@ -44,7 +44,7 @@ Every new screen gets a Playwright test. Find elements the way a player does: by
 
 The fake bridge also reads the real card text from `pkg/card_db/data` (no images), so tables show real names, like a public clone does.
 
-`e2e/tests/turn.ts` plays prompts through the UI like a careful player: it answers choices with the first option (picking on the table when it can), discards the first cards and passes when only responding. `settle(pages, press, done)` runs it until `done()` holds; `click` and `tap` choose mouse or touch. When a game stalls, its error lists each page's prompt, buttons and dialog.
+`e2e/tests/turn.ts` plays prompts through the UI like a careful player: it answers choices with the first option (picking on the table when it can), discards the first cards, passes when only responding, and attacks when a card forces it before the turn can end. `settle(pages, press, done)` runs it until `done()` holds; `click` and `tap` choose mouse or touch. When a game stalls, its error lists each page's prompt, buttons and dialog.
 
 Match dialogs and buttons by exact name where a question could contain the same word (`{ name: 'Discard', exact: true }`).
 

@@ -1,6 +1,7 @@
 // Drives prompts through the UI the way a careful player would: answer
 // choices with the first option, discard the first cards, pass when
-// only responding. Used to get through a turn in tests.
+// only responding, attack when the turn cannot end otherwise. Used to
+// get through a turn in tests.
 import { expect, type Page } from '@playwright/test';
 
 interface Seen {
@@ -77,9 +78,16 @@ async function answer(pages: Page[], press: Tap): Promise<boolean> {
       await press(page, (await onTable.isVisible()) ? onTable : choice.locator('.choice-option button').first());
       return true;
     }
-    const pass = page.getByRole('region', { name: 'Actions' }).getByRole('button', { name: 'Pass' });
+    const bar = page.getByRole('region', { name: 'Actions' });
+    const pass = bar.getByRole('button', { name: 'Pass' });
     if (await enabled(pass)) {
       await press(page, pass);
+      return true;
+    }
+    // A card may force attacks before the turn can end (Ambush).
+    const attack = bar.getByRole('button', { name: 'Attack' });
+    if (!(await enabled(bar.getByRole('button', { name: 'End turn' }))) && (await enabled(attack))) {
+      await press(page, attack);
       return true;
     }
   }

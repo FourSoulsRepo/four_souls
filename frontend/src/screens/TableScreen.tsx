@@ -37,14 +37,21 @@ export function TableScreen() {
               <span>
                 {s.name || <span className="muted">Waiting for a player…</span>}
                 {s.seat === table.you && <span className="muted"> (you)</span>}
-                {s.name && !s.connected && <span className="muted"> · away</span>}
+                {s.name && !s.connected && (
+                  <span className="muted">{table.loaded ? ' · not back yet' : ' · away'}</span>
+                )}
+                {table.loaded && s.connected && s.seat !== table.you && <span className="muted"> · back</span>}
               </span>
               <span>{s.ready ? 'Ready' : ''}</span>
             </li>
           ))}
         </ul>
         <span className="muted">{optionsText(table.options)}</span>
-        <span className="muted">The game starts when every seat is taken and everyone is ready.</span>
+        <span className="muted">
+          {table.loaded
+            ? 'The saved game goes on when everyone is back and ready.'
+            : 'The game starts when every seat is taken and everyone is ready.'}
+        </span>
       </div>
       <p className="status" role="status">
         {error}

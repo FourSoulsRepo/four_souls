@@ -135,7 +135,7 @@ Ideas: M-01, V-01 – V-08, ST-01 – ST-03, ST-05, ST-06, B-06, N-11.
 3. Done when:
    1. **Owner** plays a LAN game on the internal build.
 
-### [ ] 7.13 Save and continue UI
+### [x] 7.13 Save and continue UI
 
 1. Goal: UI for N-11.
 2. Tasks:

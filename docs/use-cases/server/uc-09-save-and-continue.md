@@ -1,6 +1,6 @@
 # UC-09: Save and continue a game
 
-**Module:** `internal/server`, `pkg/record`
+**Module:** `internal/server`, `pkg/record`, `frontend`
 **Status:** In progress
 **Actors:** Host; the other players
 **Goal:** Friends finish a game on another day (N-11)
@@ -22,6 +22,13 @@
 * **4a. The save is from another rules engine version:** refused with `save_version`.
 * **4b. Someone who did not play loads or joins it:** refused with `not_in_save`.
 * **5a. A player leaves the table before the start:** the seat waits for them.
+* **1b. In the app:** the host opens **Menu** in the game, then **Save and leave**.
+  * Others see only **Leave game** in their menu.
+  * Everyone lands on the game list with "The game was saved.".
+* **4c. Continue in the app:** **Host a game**, then **Continue a saved game**.
+  * The game list shows saved games: who played and when, with **Continue**.
+* **5b. Who is back:** the saved game's table marks seats "back" or "not back yet".
+  * Everyone presses Ready; the game goes on where it stopped.
 
 ## Postconditions
 

@@ -11,6 +11,7 @@ export function HostScreen() {
   const settings = useApp((s) => s.settings);
   const error = useApp((s) => s.error);
   const host = useApp((s) => s.host);
+  const hostSaved = useApp((s) => s.hostSaved);
   const saveNickname = useApp((s) => s.saveNickname);
   const show = useApp((s) => s.show);
   const [nickname, setNickname] = useState(settings.nickname);
@@ -164,6 +165,21 @@ export function HostScreen() {
         )}
         <button type="submit" className="primary" disabled={busy}>
           Host
+        </button>
+        <button
+          type="button"
+          disabled={busy}
+          onClick={() => {
+            setBusy(true);
+            void (async () => {
+              if (await saveNickname(nickname)) {
+                await hostSaved();
+              }
+              setBusy(false);
+            })();
+          }}
+        >
+          Continue a saved game
         </button>
       </form>
       <p className="status" role="status">

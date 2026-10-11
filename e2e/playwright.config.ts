@@ -30,7 +30,8 @@ export default defineConfig({
       reuseExistingServer: false,
     },
     ...Object.values(serverPorts).map((p) => ({
-      command: `go run ./cmd/server -addr 127.0.0.1 -port ${String(p)} -records .cache/e2e/records -saves .cache/e2e/saves`,
+      // A fresh folder per run: saved games from earlier runs would show.
+      command: `rm -rf .cache/e2e/${String(p)} && go run ./cmd/server -addr 127.0.0.1 -port ${String(p)} -records .cache/e2e/${String(p)}/records -saves .cache/e2e/${String(p)}/saves`,
       cwd: '..',
       port: p,
       reuseExistingServer: false,
