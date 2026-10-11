@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { useRef, useState, type PointerEvent } from 'react';
+import { useEffect, useRef, useState, type PointerEvent } from 'react';
 import { iconText, kindOf, textParts, unknownCard, type CardInfo, type Kind } from '../cards';
 import { scaleFor } from '../playback';
 import { useApp } from '../store';
@@ -50,6 +50,19 @@ export function Card({
   const downRef = useRef<{ x: number; y: number } | null>(null);
   const [brokenImage, setBrokenImage] = useState('');
 
+  // A card that leaves the screen while hovered gets no pointer-leave:
+  // the card that started a mouse zoom ends it then.
+  const zoomedRef = useRef(false);
+  useEffect(
+    () => () => {
+      const { zoom, setZoom: clear } = useApp.getState();
+      if (zoomedRef.current && zoom && zoom.ref === cardRef && !zoom.touch) {
+        clear(null);
+      }
+    },
+    [cardRef],
+  );
+
   if (cardRef === undefined) {
     return (
       <div
@@ -85,12 +98,14 @@ export function Card({
       onClick={onClick}
       onPointerEnter={(e) => {
         if (zoomable && e.pointerType === 'mouse') {
+          zoomedRef.current = true;
           setZoom({ ref: card.ref, touch: false, side: side(e) });
         }
       }}
       onPointerLeave={(e) => {
         cancelPress();
         if (zoomable && e.pointerType === 'mouse') {
+          zoomedRef.current = false;
           setZoom(null);
         }
       }}

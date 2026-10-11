@@ -74,67 +74,10 @@ export function HostScreen() {
         </label>
         {detailed && (
           <>
+            {/* Draft and bans need the ban and pick screen, which comes with
+                the tournament tools (roadmap, Future); until then a game
+                with them could not start. */}
             <div className="row">
-              <label className="field">
-                Characters
-                <select
-                  value={options.picking}
-                  onChange={(e) => {
-                    option({ picking: e.target.value === 'draft' ? 'draft' : 'random' });
-                  }}
-                >
-                  <option value="random">Random</option>
-                  <option value="draft">Draft</option>
-                </select>
-              </label>
-              {options.picking === 'draft' && (
-                <label className="field">
-                  Offered to each
-                  <select
-                    value={options.draft_size}
-                    onChange={(e) => {
-                      option({ draft_size: Number(e.target.value) });
-                    }}
-                  >
-                    {[2, 3, 4, 5].map((n) => (
-                      <option key={n} value={n}>
-                        {n}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-              )}
-            </div>
-            <div className="row">
-              <label className="field">
-                Ban rounds
-                <select
-                  value={options.ban_rounds}
-                  onChange={(e) => {
-                    option({ ban_rounds: Number(e.target.value) });
-                  }}
-                >
-                  {[0, 1, 2, 3].map((n) => (
-                    <option key={n} value={n}>
-                      {n}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="field">
-                Ban timer
-                <select
-                  value={options.ban_timer}
-                  onChange={(e) => {
-                    option({ ban_timer: Number(e.target.value) });
-                  }}
-                >
-                  <option value={0}>Off</option>
-                  <option value={15}>15 s</option>
-                  <option value={30}>30 s</option>
-                  <option value={60}>60 s</option>
-                </select>
-              </label>
               <label className="field">
                 Response timer
                 <select

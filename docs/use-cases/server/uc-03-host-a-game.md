@@ -25,7 +25,8 @@
 * **7b. The host leaves:** the table stays while anyone sits at it.
 * **1a. In the app:** Main menu, **Host a game**.
   * Nickname and players (2–4); "Detailed setup" shows the rest (GS-10).
-  * Detailed: random or draft, ban rounds, ban timer, response timer, bonus souls.
+  * Detailed: response timer, bonus souls.
+  * Draft and bans wait for the tournament tools (roadmap, Future).
   * Host bans need the card list; they come with the card component.
 * **2a. The port is taken:** the app shows the error and stays on the host screen.
 * **6a. The table screen:** the host sees "Friends join at" and the addresses.
