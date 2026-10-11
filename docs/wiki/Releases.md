@@ -35,6 +35,17 @@ Every archive also has `README.txt` (from `release/README.txt`), `LICENSE` and `
 
 The app is built with `-tags "embed cardimages"`; the server only with `embed` (it needs card text, not images). Linux builds use WebKitGTK 4.1 (`webkit2_41`), so players need `libwebkit2gtk-4.1` (Ubuntu 22.04 and later).
 
+## App identity
+
+Every release has the same identity (B-03), so the OS treats it as the same app:
+
+* Bundle ID `io.github.foursoulsrepo.foursouls` on macOS (`build/darwin/Info.plist`) and in the Windows manifest (`build/windows/wails.exe.manifest`).
+* Product name "Four Souls", company "FourSoulsRepo" (`wails.json`, `info`); Windows shows them in the file's details.
+* The build stamps the release version into the product version; Windows takes numbers only, so trial and CI builds show 0.0.0.
+* No code signing; see `README.txt` for the first start.
+
+`identity_test.go` fails if any of these drift.
+
 ## Card images
 
 A release needs the private card images. The workflow checks them out with `.github/actions/card-images`, using the `CARD_DB_DEPLOY_KEY` repository secret (a read-only deploy key of `FourSoulsRepo/card_db`). Without the secret the release fails on purpose; CI builds still work without it.
