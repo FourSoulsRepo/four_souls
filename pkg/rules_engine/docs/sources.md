@@ -71,6 +71,10 @@ Order of trust when sources disagree:
 3. 100,050 messages from 2023-01-28 to 2026-10-09; older history not read.
 4. Russian; players discuss cases and quote rulings.
 5. Trust: medium; often agrees with S-RU, which this community maintains.
+6. Searched for every Base Game card on 2026-10-12 (8.7), by Russian name.
+   1. Names: foursouls.ru database migrations from the owner (not in the repo).
+   2. Read: the 87 questions to the judges that name a Base Game card.
+   3. Rulings: rules/open-questions.md, section S-DIS.
 
 ## X (S-X)
 

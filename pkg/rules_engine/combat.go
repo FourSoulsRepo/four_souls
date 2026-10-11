@@ -260,6 +260,10 @@ func (g *Game) resolveDamage(it StackItem) {
 		p := it.Target.Player
 		hp := g.PlayerHP(p)
 		if hp == 0 || g.Players[p].Dead {
+			// The player still takes the damage: nothing is marked and they
+			// can't die again, but "when you take damage" triggers (R-MECH-51).
+			g.Players[p].TimesDamaged++
+			g.emit(Event{Kind: EvDamaged, Player: p, Amount: it.Amount, Source: it.Source})
 			return
 		}
 		n := min(it.Amount, hp)

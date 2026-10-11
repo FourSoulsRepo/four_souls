@@ -52,3 +52,4 @@ Sources: S-OFF Specific Mechanics; S-RU Специальные механики.
 48. **R-MECH-48** **Reroll an item**: destroy it; if you do, its controller gains 1 treasure. A shop item is replaced by the top treasure card in its slot instead.
 49. **R-MECH-49** **Vote**: the named players vote in turn order from the ability's controller (or the active player); a vote cannot be changed.
 50. **R-MECH-50** *(later sets)* **Additional names**: "This is also named …" works in every zone.
+51. **R-MECH-51** A player at 0 HP still **takes damage** when damage aimed at them resolves: nothing is marked, but "when you take damage" triggers (S-OFF, S-DIS).

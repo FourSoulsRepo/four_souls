@@ -71,7 +71,7 @@ Ideas: B-03 – B-05, L-03.
 3. Done when:
    1. Use case index has no "Planned" item for MVP features.
 
-### [ ] 8.7 Rulings from Yuggy and Discord
+### [x] 8.7 Rulings from Yuggy and Discord
 
 1. Goal: card rulings beyond R-07 and the FAQ become tests (R-07, TS-04).
 2. When: before the play-test (8.5).

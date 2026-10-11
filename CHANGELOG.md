@@ -10,6 +10,7 @@ Rules engine versions are in each release's notes.
 - Rules: an item swapped away (Decoy) can still be destroyed by an ability aimed at it.
 - Rules: abilities that choose an item can choose shop items (The D20, Placebo, Glass Cannon).
 - Rules: a player who already died this turn can't be chosen while a living player can (Yuggy's ruling).
+- Rules: a dead player still takes damage for "when you take damage" items, without losing HP again.
 
 ## 0.1.0 - 2026-10-12
 

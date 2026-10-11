@@ -74,6 +74,16 @@ On 2026-10-09 the owner parked every open decision for later.
 4. Proposal: the scraper in `FourSoulsRepo/tools` reads the symbol into card_db; the engine then removes those cards in 2-player games.
 5. Status: **Owner**: a tools-repo change first.
 
+### Q-09 Two of Clubs twice
+
+1. Question: does a second Two of Clubs this turn double the loot again?
+2. Sources:
+   1. No: Ed; the S-RU FAQ (row 1 below); the tournament server's practice (S-DIS, 2024-05-30).
+   2. Yes: Yuggy and another rules lead, as quoted on that server.
+3. Engine now: no; a replacement applies once per event (R-ABIL-32).
+4. Proposal: keep "no" until Yuggy's ruling is found in writing.
+5. Status: **Owner**.
+
 ## Old rulings re-checked (R-07)
 
 | # | Ruling (Ed's Notes, 2018–2019) | Check against current rules and V2 text | Status |
@@ -132,3 +142,17 @@ Searched 2026-10-12 (8.7): his r/FourSouls comments and tweets that name a Base 
 | 18 | Soul of Gluttony | A bonus soul is gained once per game, even if destroyed | Holds; test |
 | 19 | Any "choose a player" | Dead players can't be chosen while a living one can (R-ABIL-35) | **Fixed** in the engine: Q-07; tests |
 | 20 | 3+ player cards | Satan and others are out of 2-player games | **Owner**: Q-08 |
+
+## Card rulings from Discord (S-DIS)
+
+Searched 2026-10-12 (8.7) with each card's Russian name from foursouls.ru (the owner's database migrations, not in the repo): 188 Base Game cards are named in the channel. Read: every question to "@Судья" (the judges) that names one, 87 threads. Medium trust; kept where it agrees with S-OFF or fills a gap.
+
+| # | Cards | Ruling (our words) | Status |
+|---|---|---|---|
+| 1 | Fanny Pack | A dead player still takes damage: nothing is marked, but "when you take damage" triggers (R-MECH-51, as S-OFF says) | **Fixed** in the engine; test |
+| 2 | Two of Clubs | Stacking is disputed | **Owner**: Q-09 |
+| 3 | Placebo | It uses one ↷ ability; it doesn't become a copy | Holds (V2 text) |
+| 4 | Modeling Clay, ? Card | They can't copy cards in a discard or a deck | Holds |
+| 5 | Diplopia | It may copy other players' items and shop items | Holds (R-CARD-34) |
+| 6 | Any item | Items enter play charged unless they say otherwise | Holds |
+| 7 | Butter Bean | It cancels a loot card entirely | Holds |

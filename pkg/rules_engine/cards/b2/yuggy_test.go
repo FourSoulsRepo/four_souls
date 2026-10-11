@@ -385,3 +385,22 @@ func TestYuggyDeadPlayersCantBeChosen(t *testing.T) {
 		t.Errorf("options %v: Isaac must be able to choose himself", opts)
 	}
 }
+
+// S-OFF "Damage", Discord judge (2024-07-25): a dead player still takes
+// damage that reaches them: nothing is marked, but Fanny Pack loots.
+func TestDeadPlayerStillTakesDamage(t *testing.T) {
+	tb := enginetest.NewSetup(t, engine.SituationSetup{Players: []engine.SituationPlayer{
+		{Character: "isaac", Hand: items("xiii_death", "xvi_the_tower")}, {Character: "cain", Items: items("fanny_pack", "breakfast")},
+	}}, Set)
+	tb.G.Players[0].ExtraLootPlays = 1
+	tb.Play(0, "xiii_death", foe, "breakfast") // Cain's penalty: Breakfast
+	hand := len(tb.G.Players[1].Hand)
+	tb.G.ForceRolls(1) // each player takes 1 damage
+	tb.Play(0, "xvi_the_tower")
+	if h := len(tb.G.Players[1].Hand); h != hand+1 {
+		t.Errorf("Cain's hand %d → %d: dead Cain took damage, so Fanny Pack loots", hand, h)
+	}
+	if !tb.G.Players[1].Dead {
+		t.Error("Cain should still be dead, not dead twice")
+	}
+}
