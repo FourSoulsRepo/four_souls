@@ -41,9 +41,13 @@ func (g *Game) askCurseTarget(curse ObjectID) {
 	}
 	var labels []string
 	var players []int
+	all := make([]PlayerID, 0, len(g.Players))
 	for _, pl := range g.Players {
-		players = append(players, int(pl.ID))
-		labels = append(labels, "player "+strconv.Itoa(int(pl.ID)+1)+" ("+string(g.Object(pl.Character).Card)+")")
+		all = append(all, pl.ID)
+	}
+	for _, id := range g.choosablePlayers(all) { // R-ABIL-35
+		players = append(players, int(id))
+		labels = append(labels, "player "+strconv.Itoa(int(id)+1)+" ("+string(g.Object(g.Players[id].Character).Card)+")")
 	}
 	g.ask(Choice{Purpose: ChooseCursed, Player: g.Turn.Active, Rule: "R-ABIL-20", Objects: []ObjectID{curse}, Slots: players}, labels)
 }

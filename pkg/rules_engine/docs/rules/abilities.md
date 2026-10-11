@@ -47,3 +47,4 @@ Sources: S-OFF Abilities, Effects; S-RU Способности, Эффекты.
 32. **R-ABIL-32** A replacement effect applies at most once to the same event.
 33. **R-ABIL-33** If several replacement effects apply to one event, the affected player picks their order; one may stop another from applying.
 34. **R-ABIL-34** A target that changes controller but stays in its zone is still the same target; the ability acts on it under its new controller (S-YUG).
+35. **R-ABIL-35** A dead player can't be chosen as a target while a living player could be; with no living choice, the dead may be chosen. Untargeted effects still reach the dead (S-YUG, Q-07).

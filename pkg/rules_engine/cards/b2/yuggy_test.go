@@ -6,6 +6,7 @@ package b2
 // status IDs.
 
 import (
+	"slices"
 	"testing"
 
 	engine "github.com/FourSoulsRepo/rules_engine"
@@ -364,5 +365,23 @@ func TestYuggyD20OnShopItem(t *testing.T) {
 	tb.Activate(0, "the_d20", 0, "breakfast")
 	if top, ok := tb.G.Shop[0].TopOf(); !ok || tb.G.Object(top).Card == "breakfast" {
 		t.Error("the shop's Breakfast was not rerolled")
+	}
+}
+
+// Reddit etdouue, fmz4v53 (Q-07): a dead player can't be chosen while a
+// living one can; with every other player dead, you must choose yourself.
+func TestYuggyDeadPlayersCantBeChosen(t *testing.T) {
+	tb := lootTable(t, "xiii_death", "bomb")
+	tb.G.Players[0].ExtraLootPlays = 1
+	tb.Play(0, "xiii_death", foe)
+	if _, err := tb.G.Apply(engine.Intent{Player: 0, Kind: engine.IntentPlayLoot, Objects: []engine.ObjectID{tb.Find(0, "bomb")}}); err != nil {
+		t.Fatal(err)
+	}
+	opts := tb.Options()
+	if slices.Contains(opts, foe) {
+		t.Errorf("dead Cain is a choice: %v", opts)
+	}
+	if !slices.Contains(opts, me) {
+		t.Errorf("options %v: Isaac must be able to choose himself", opts)
 	}
 }

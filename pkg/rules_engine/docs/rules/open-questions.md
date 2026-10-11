@@ -64,7 +64,7 @@ On 2026-10-09 the owner parked every open decision for later.
 3. Engine now: dead players stay valid choices (R-07 #4).
 4. Options: (a) keep; (b) dead players can't be chosen when a living one could be.
 5. Proposal: (b), with the source note; R-07 #4 then means untargeted damage only.
-6. Status: **Owner**.
+6. Status: **Resolved** (2026-10-12): (b), as Yuggy rules (R-ABIL-35).
 
 ### Q-08 The 3+ player symbol
 
@@ -81,7 +81,7 @@ On 2026-10-09 the owner parked every open decision for later.
 | 1 | Monster Manual can force a second attack | V2 text: "must attack that monster this turn if able"; it grants no extra attack | Superseded |
 | 2 | You cannot kill dead players | A player dies at most once per turn (R-DEATH-17) | Holds |
 | 3 | Copying an item is like getting it new | Copies take abilities but not counters or state (R-MECH-08) | Holds |
-| 4 | You can damage dead players | 0-HP objects take damage that is not marked (R-MECH-16) | Holds |
+| 4 | You can damage dead players | 0-HP objects take damage that is not marked (R-MECH-16); only untargeted damage, see Q-07 (R-ABIL-35) | Narrowed |
 | 5 | Eden can have Glass Cannon as Eternal | Eden's V2 text gives the chosen item eternal; eternal is not destroyed | Holds |
 | 6 | Steamy Sale only affects shop items | V2 text says "shop items" | Holds (now in text) |
 | 7 | Items recharge before the loot draw; the draw can be answered | R-TURN-02 to R-TURN-04 | Holds |
@@ -130,5 +130,5 @@ Searched 2026-10-12 (8.7): his r/FourSouls comments and tweets that name a Base 
 | 16 | Modeling Clay | A copy of an active item stays tapped until recharged | Holds; test |
 | 17 | Placebo, The D20 | Shop items count as in play for targeting (R-CARD-34) | **Fixed** in the engine; tests |
 | 18 | Soul of Gluttony | A bonus soul is gained once per game, even if destroyed | Holds; test |
-| 19 | Any "choose a player" | Dead players can't be chosen | **Owner**: Q-07 |
+| 19 | Any "choose a player" | Dead players can't be chosen while a living one can (R-ABIL-35) | **Fixed** in the engine: Q-07; tests |
 | 20 | 3+ player cards | Satan and others are out of 2-player games | **Owner**: Q-08 |

@@ -20,14 +20,16 @@ func TestRulingMonsterManualGivesNoAttack(t *testing.T) {
 	}
 }
 
-// R-07 #2: a player dies at most once per turn (R-DEATH-17).
+// R-07 #2: a player dies at most once per turn (R-DEATH-17); after Q-07
+// only untargeted damage can still reach the dead player.
 func TestRulingDeadPlayerDiesOnce(t *testing.T) {
 	tb := enginetest.NewSetup(t, engine.SituationSetup{Players: []engine.SituationPlayer{
-		{Character: "isaac", Hand: items("xiii_death", "xiii_death")}, {Character: "cain", Cents: 3},
+		{Character: "isaac", Hand: items("xiii_death", "xvi_the_tower")}, {Character: "cain", Cents: 3},
 	}}, Set)
 	tb.G.Players[0].ExtraLootPlays = 1
 	tb.Play(0, "xiii_death", foe)
-	tb.Play(0, "xiii_death", foe)
+	tb.G.ForceRolls(5) // each player takes 2 damage
+	tb.Play(0, "xvi_the_tower")
 	if c := tb.G.Players[1].Cents; c != 2 {
 		t.Errorf("Cain's cents = %d, want 2: one penalty only", c)
 	}
@@ -43,15 +45,20 @@ func TestRulingCopyTakesNoCounters(t *testing.T) {
 	}
 }
 
-// R-07 #4: a dead player can be damaged, but nothing is marked (R-MECH-16).
+// R-07 #4, narrowed by Q-07: a dead player takes untargeted damage, but
+// nothing is marked (R-MECH-16).
 func TestRulingDamageToDeadPlayer(t *testing.T) {
-	tb := lootTable(t, "xiii_death", "bomb")
+	tb := lootTable(t, "xiii_death", "xvi_the_tower")
 	tb.G.Players[0].ExtraLootPlays = 1
 	tb.Play(0, "xiii_death", foe)
 	before := tb.G.Players[1].Damage
-	tb.Play(0, "bomb", foe)
+	tb.G.ForceRolls(1) // each player takes 1 damage
+	tb.Play(0, "xvi_the_tower")
 	if d := tb.G.Players[1].Damage; d != before || !tb.G.Players[1].Dead {
 		t.Errorf("damage %d, want %d", d, before)
+	}
+	if hp := tb.G.PlayerHP(0); hp != 1 {
+		t.Errorf("Isaac's HP = %d, want 1: The Tower hits each player", hp)
 	}
 }
 

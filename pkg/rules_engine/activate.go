@@ -187,13 +187,15 @@ func (g *Game) targetOptions(t TargetSpec, p PlayerID, src ObjectID) ([]Chosen, 
 	var labels []string
 	others := t.Kind == TargetOtherPlayer
 	addPlayers := func() {
+		var eligible []PlayerID
 		for _, pl := range g.Players {
-			// Dead players can be chosen; damage to them is not marked and
-			// they die at most once a turn (R-07 #2, #4; R-MECH-16).
 			if !others || pl.ID != p {
-				opts = append(opts, Chosen{Kind: TargetPlayer, Player: pl.ID})
-				labels = append(labels, "player "+strconv.Itoa(int(pl.ID)+1)+" ("+string(g.Object(pl.Character).Card)+")")
+				eligible = append(eligible, pl.ID)
 			}
+		}
+		for _, id := range g.choosablePlayers(eligible) {
+			opts = append(opts, Chosen{Kind: TargetPlayer, Player: id})
+			labels = append(labels, "player "+strconv.Itoa(int(id)+1)+" ("+string(g.Object(g.Players[id].Character).Card)+")")
 		}
 	}
 	addMonsters := func() {
@@ -439,4 +441,20 @@ func (g *Game) waitingRoll(src ObjectID) bool {
 		}
 	}
 	return false
+}
+
+// choosablePlayers keeps the living players: a dead player can't be
+// chosen while a living one can (R-ABIL-35). Untargeted effects ("each
+// player", "the player to your left") still reach the dead (R-MECH-16).
+func (g *Game) choosablePlayers(ids []PlayerID) []PlayerID {
+	var living []PlayerID
+	for _, id := range ids {
+		if !g.Players[id].Dead {
+			living = append(living, id)
+		}
+	}
+	if len(living) == 0 {
+		return ids
+	}
+	return living
 }

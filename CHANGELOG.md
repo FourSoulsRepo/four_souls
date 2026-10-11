@@ -9,6 +9,7 @@ Rules engine versions are in each release's notes.
 - Rules: Sacred Heart and similar "would roll" items no longer change a roll that was already changed.
 - Rules: an item swapped away (Decoy) can still be destroyed by an ability aimed at it.
 - Rules: abilities that choose an item can choose shop items (The D20, Placebo, Glass Cannon).
+- Rules: a player who already died this turn can't be chosen while a living player can (Yuggy's ruling).
 
 ## 0.1.0 - 2026-10-12
 
