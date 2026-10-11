@@ -125,7 +125,7 @@ Ideas: M-01, V-01 – V-08, ST-01 – ST-03, ST-05, ST-06, B-06, N-11.
 3. Done when:
    1. Use cases: disconnect vote, save record.
 
-### [ ] 7.12 Linux, touch, internal build
+### [x] 7.12 Linux, touch, internal build
 
 1. Goal: check weak spots; first play-test.
 2. Tasks:

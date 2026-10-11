@@ -5,7 +5,7 @@
    2. Network play, 2–4 players.
    3. Wails v2: Go backend, React + TypeScript frontend.
 2. Stage
-   1. Steps 1–6 done; engine in `pkg/rules_engine`, server in `internal/server`.
+   1. Steps 1–7 done; engine, server, and the desktop client in `frontend/`.
    2. Ideas live in `docs/ideas.md`.
    3. Roadmap: `docs/roadmap.md`; detailed steps in `docs/roadmap/`.
    4. Decisions: `docs/architecture/` (see `INDEX.md`).
