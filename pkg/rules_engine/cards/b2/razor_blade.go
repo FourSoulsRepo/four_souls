@@ -6,10 +6,11 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 //
 //	{Tap Effect}Deal 1 damage to a player.
 var razorBlade = engine.CardDef{
-	Ref:    "razor_blade",
-	Kind:   engine.TreasureCard,
-	Copies: 1,
-	Tap:    true,
+	Ref:       "razor_blade",
+	Kind:      engine.TreasureCard,
+	Copies:    1,
+	ThreePlus: true,
+	Tap:       true,
 	Abilities: []engine.Ability{
 		{
 			Kind:    engine.Activated,

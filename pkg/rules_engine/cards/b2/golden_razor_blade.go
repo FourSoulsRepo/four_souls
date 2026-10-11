@@ -7,9 +7,10 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 //	{Paid Effect}Pay 5¢:
 //	Deal 1 damage to a monster or player.
 var goldenRazorBlade = engine.CardDef{
-	Ref:    "golden_razor_blade",
-	Kind:   engine.TreasureCard,
-	Copies: 1,
+	Ref:       "golden_razor_blade",
+	Kind:      engine.TreasureCard,
+	Copies:    1,
+	ThreePlus: true,
 	Abilities: []engine.Ability{
 		{
 			Kind:    engine.Activated,

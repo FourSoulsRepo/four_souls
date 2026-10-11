@@ -6,10 +6,11 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 //
 //	{Tap Effect}Each player votes on an item in play. Destroy the item with the most votes. If there is a tie, nothing happens.
 var remoteDetonator = engine.CardDef{
-	Ref:    "remote_detonator",
-	Kind:   engine.TreasureCard,
-	Copies: 1,
-	Tap:    true,
+	Ref:       "remote_detonator",
+	Kind:      engine.TreasureCard,
+	Copies:    1,
+	ThreePlus: true,
+	Tap:       true,
 	Abilities: []engine.Ability{
 		{
 			Kind:    engine.Activated,

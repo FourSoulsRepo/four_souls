@@ -6,10 +6,11 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 //
 //	{Tap Effect}Choose a monster. The active player must attack that monster this turn if able.
 var monsterManual = engine.CardDef{
-	Ref:    "monster_manual",
-	Kind:   engine.TreasureCard,
-	Copies: 1,
-	Tap:    true,
+	Ref:       "monster_manual",
+	Kind:      engine.TreasureCard,
+	Copies:    1,
+	ThreePlus: true,
+	Tap:       true,
 	Abilities: []engine.Ability{
 		{
 			Kind:    engine.Activated,

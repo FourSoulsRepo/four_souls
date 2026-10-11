@@ -821,7 +821,8 @@
           "name": "KrystalFlamingo"
         }
       ],
-      "image": "b2/brimstone.webp"
+      "image": "b2/brimstone.webp",
+      "three_plus": true
     },
     {
       "id": "broken_ankh",
@@ -1918,7 +1919,8 @@
           "name": "KrystalFlamingo"
         }
       ],
-      "image": "b2/curse_of_the_tower.webp"
+      "image": "b2/curse_of_the_tower.webp",
+      "three_plus": true
     },
     {
       "id": "cursed_chest",
@@ -3091,7 +3093,8 @@
           "name": "KrystalFlamingo"
         }
       ],
-      "image": "b2/dople.webp"
+      "image": "b2/dople.webp",
+      "three_plus": true
     },
     {
       "id": "dry_baby",
@@ -3399,7 +3402,8 @@
           "name": "KrystalFlamingo"
         }
       ],
-      "image": "b2/evil_twin.webp"
+      "image": "b2/evil_twin.webp",
+      "three_plus": true
     },
     {
       "id": "eye_of_greed",
@@ -4172,7 +4176,8 @@
           "name": "KrystalFlamingo"
         }
       ],
-      "image": "b2/golden_razor_blade.webp"
+      "image": "b2/golden_razor_blade.webp",
+      "three_plus": true
     },
     {
       "id": "greed",
@@ -6623,7 +6628,8 @@
           "name": "KrystalFlamingo"
         }
       ],
-      "image": "b2/monster_manual.webp"
+      "image": "b2/monster_manual.webp",
+      "three_plus": true
     },
     {
       "id": "monstro",
@@ -7781,7 +7787,8 @@
           "name": "KrystalFlamingo"
         }
       ],
-      "image": "b2/rage_creep.webp"
+      "image": "b2/rage_creep.webp",
+      "three_plus": true
     },
     {
       "id": "razor_blade",
@@ -7812,7 +7819,8 @@
           "name": "KrystalFlamingo"
         }
       ],
-      "image": "b2/razor_blade.webp"
+      "image": "b2/razor_blade.webp",
+      "three_plus": true
     },
     {
       "id": "red_host",
@@ -7888,7 +7896,8 @@
           "name": "KrystalFlamingo"
         }
       ],
-      "image": "b2/remote_detonator.webp"
+      "image": "b2/remote_detonator.webp",
+      "three_plus": true
     },
     {
       "id": "restock",
@@ -8158,7 +8167,8 @@
           "name": "KrystalFlamingo"
         }
       ],
-      "image": "b2/satan.webp"
+      "image": "b2/satan.webp",
+      "three_plus": true
     },
     {
       "id": "scolex",
@@ -10078,7 +10088,8 @@
           "name": "KrystalFlamingo"
         }
       ],
-      "image": "b2/trinity_shield.webp"
+      "image": "b2/trinity_shield.webp",
+      "three_plus": true
     },
     {
       "id": "trite",

@@ -6,13 +6,14 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 //
 //	Damage this deals to the active player is also dealt to the player to their left.
 var rageCreep = engine.CardDef{
-	Ref:     "rage_creep",
-	Kind:    engine.MonsterCard,
-	Copies:  1,
-	HP:      1,
-	DC:      5,
-	ATK:     1,
-	Rewards: []engine.Reward{{Kind: engine.RewardLoot, Amount: 2}},
+	Ref:       "rage_creep",
+	Kind:      engine.MonsterCard,
+	Copies:    1,
+	ThreePlus: true,
+	HP:        1,
+	DC:        5,
+	ATK:       1,
+	Rewards:   []engine.Reward{{Kind: engine.RewardLoot, Amount: 2}},
 	Abilities: []engine.Ability{
 		{
 			Kind: engine.Triggered,

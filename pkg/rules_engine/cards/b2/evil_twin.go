@@ -6,13 +6,14 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 //
 //	Damage dealt to this is also dealt to the player to the active player's left.
 var evilTwin = engine.CardDef{
-	Ref:     "evil_twin",
-	Kind:    engine.MonsterCard,
-	Copies:  1,
-	HP:      3,
-	DC:      5,
-	ATK:     2,
-	Rewards: []engine.Reward{{Kind: engine.RewardTreasure, Amount: 1}},
+	Ref:       "evil_twin",
+	Kind:      engine.MonsterCard,
+	Copies:    1,
+	ThreePlus: true,
+	HP:        3,
+	DC:        5,
+	ATK:       2,
+	Rewards:   []engine.Reward{{Kind: engine.RewardTreasure, Amount: 1}},
 	Abilities: []engine.Ability{
 		{
 			Kind:    engine.Triggered,

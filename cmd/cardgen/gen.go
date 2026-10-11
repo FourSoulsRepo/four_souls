@@ -196,6 +196,9 @@ func cardStub(pkg string, c carddb.Card, startingItem bool) (stub, error) {
 	if hasFootnote(en, "-Guppy-") {
 		fields = append(fields, "Guppy: true")
 	}
+	if c.ThreePlus {
+		fields = append(fields, "ThreePlus: true")
+	}
 	if startingItem {
 		fields = append(fields, "Outside: true")
 	}

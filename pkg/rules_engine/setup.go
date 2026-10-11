@@ -44,7 +44,7 @@ func NewGame(s Setup) (*Game, []Event, error) {
 
 	var characters, bonus []CardRef
 	for _, d := range idx.defs {
-		if d.Outside {
+		if d.Outside || (d.ThreePlus && s.Players < 3) { // R-CARD-32
 			continue
 		}
 		deck, hasDeck := d.Kind.Deck()

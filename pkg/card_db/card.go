@@ -39,6 +39,9 @@ type Card struct {
 	Image      string   `json:"image,omitempty"` // path inside the images folder
 	Related    []string `json:"related,omitempty"`
 	Rebalanced bool     `json:"rebalanced,omitempty"`
+	// ThreePlus marks the 3+ player only symbol: the card is left out of
+	// 1- and 2-player games (R-CARD-32).
+	ThreePlus bool `json:"three_plus,omitempty"`
 }
 
 // Text is everything printed on a card in one language.

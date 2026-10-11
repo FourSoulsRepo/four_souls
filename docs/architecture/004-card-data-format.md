@@ -52,6 +52,7 @@ Use options 1 and 4; stats and rewards stay strings (option 5 lost).
    9. `image`: path inside `images/`, e.g. `b2/the_d6.webp`.
    10. `related`: card refs, e.g. a character's starting item.
    11. `rebalanced`: true for cards changed by the Rebalance pack.
+   12. `three_plus`: true for cards with the 3+ player only symbol.
 4. Card ref
    1. `id` for the first version, `id@N` for version N ≥ 2.
    2. The ref is unique across all loaded sets.

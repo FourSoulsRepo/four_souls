@@ -8,9 +8,10 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 //	1-3: Each other player takes 1 damage.
 //	4-6: Deal 1 damage to a monster.
 var curseOfTheTower = engine.CardDef{
-	Ref:    "curse_of_the_tower",
-	Kind:   engine.TreasureCard,
-	Copies: 1,
+	Ref:       "curse_of_the_tower",
+	Kind:      engine.TreasureCard,
+	Copies:    1,
+	ThreePlus: true,
 	Abilities: []engine.Ability{
 		{
 			Kind:    engine.Triggered,

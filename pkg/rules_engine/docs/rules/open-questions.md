@@ -70,9 +70,13 @@ On 2026-10-09 the owner parked every open decision for later.
 
 1. Question: R-CARD-32 removes 3+ player cards in 2-player games; which Base Game cards have the symbol?
 2. Sources: S-OFF (3+ Player Only Symbol); Yuggy (Reddit kh7ze7n, jdlljs9): no loot card has it; Satan does.
-3. Gap: card_db has no field for the symbol, so the engine can't apply R-CARD-32.
+3. Gap (closed): card_db now has `three_plus`, read by the scraper from foursouls.com.
 4. Proposal: the scraper in `FourSoulsRepo/tools` reads the symbol into card_db; the engine then removes those cards in 2-player games.
-5. Status: **Owner**: a tools-repo change first.
+5. Status: **Resolved** (2026-10-12): (proposal) R-CARD-32 applies.
+6. Base Game V2 cards with the symbol (11):
+   1. Monsters: Dople, Evil Twin, Rage Creep, Satan.
+   2. Treasure: Brimstone, Curse of the Tower, Golden Razor Blade, Monster Manual.
+   3. Treasure: Razor Blade, Remote Detonator, Trinity Shield.
 
 ### Q-09 Two of Clubs twice
 
@@ -141,7 +145,7 @@ Searched 2026-10-12 (8.7): his r/FourSouls comments and tweets that name a Base 
 | 17 | Placebo, The D20 | Shop items count as in play for targeting (R-CARD-34) | **Fixed** in the engine; tests |
 | 18 | Soul of Gluttony | A bonus soul is gained once per game, even if destroyed | Holds; test |
 | 19 | Any "choose a player" | Dead players can't be chosen while a living one can (R-ABIL-35) | **Fixed** in the engine: Q-07; tests |
-| 20 | 3+ player cards | Satan and others are out of 2-player games | **Owner**: Q-08 |
+| 20 | 3+ player cards | Satan and others are out of 2-player games (R-CARD-32) | **Fixed** in the engine: Q-08; test |
 
 ## Card rulings from Discord (S-DIS)
 

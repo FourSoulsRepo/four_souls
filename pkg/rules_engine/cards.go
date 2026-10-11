@@ -47,6 +47,9 @@ type CardDef struct {
 
 	StartingItem CardRef // characters only (R-CARD-26)
 	Eternal      bool    // keyword (R-ABIL-18)
+	// ThreePlus is the 3+ player only symbol: the card is left out of
+	// 1- and 2-player games (R-CARD-32).
+	ThreePlus bool
 	// Outside marks cards that start outside the game, such as starting
 	// items: they are never shuffled into a deck (R-ZONE-13).
 	Outside bool

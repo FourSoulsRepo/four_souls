@@ -11,6 +11,7 @@ Rules engine versions are in each release's notes.
 - Rules: abilities that choose an item can choose shop items (The D20, Placebo, Glass Cannon).
 - Rules: a player who already died this turn can't be chosen while a living player can (Yuggy's ruling).
 - Rules: a dead player still takes damage for "when you take damage" items, without losing HP again.
+- Rules: cards with the 3+ player symbol are left out of 2-player games.
 
 ## 0.1.0 - 2026-10-12
 
