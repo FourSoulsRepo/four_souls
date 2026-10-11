@@ -6,6 +6,12 @@ Rules engine versions are in each release's notes.
 
 ## Unreleased
 
+- Nothing yet.
+
+## 0.1.0 - 2026-10-12
+
+The first release (MVP): the Base Game for 2–4 players over a LAN.
+
 - Network play for 2–4 players: host a game in the app, or run the dedicated server.
 - The Base Game: every card, with the official rules and FAQ.
 - A Hearthstone-like table: cards fly, dice roll, a history and a stack panel.
