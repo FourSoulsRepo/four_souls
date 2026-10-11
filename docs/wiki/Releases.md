@@ -4,6 +4,9 @@ A version tag builds every platform and makes a **draft** GitHub release (`.gith
 
 ## Make a release
 
+1. Move the `Unreleased` items in `CHANGELOG.md` under a new `## X.Y.Z - YYYY-MM-DD` section and commit.
+2. Tag that commit and push the tag:
+
 ```sh
 git tag v0.1.0
 git push origin v0.1.0
@@ -12,6 +15,13 @@ git push origin v0.1.0
 A tag with a suffix, like `v0.1.0-test`, is a trial: its draft is marked as a pre-release, never the latest one. Delete trial drafts and tags when done.
 
 The version shown in the app's main menu is the tag without the `v`.
+
+## Versions
+
+* **App:** semantic versions, from the tag (`v1.2.3` → `1.2.3`). Minor for new features, patch for fixes; 1.0.0 is for the owner to call.
+* **Rules engine:** `rulesengine.Version` in `pkg/rules_engine/version.go`, bumped with every change to rules behavior. Saved games only load on the same engine version (N-11).
+* The release notes start with both: **App 1.2.3 · Rules engine 0.4.1**, then the changelog section (`cmd/relnotes`). A tag that is not a version, or a release without its changelog section, fails before anything is built.
+* The first release of an engine version also tags it `rules_engine/vX.Y.Z`.
 
 ## What it builds
 
