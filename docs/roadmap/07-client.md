@@ -144,13 +144,3 @@ Ideas: M-01, V-01 – V-08, ST-01 – ST-03, ST-05, ST-06, B-06, N-11.
    3. Lobby shows saved seats and who is back.
 3. Done when:
    1. Use case covers the UI flow.
-
-### [ ] 7.14 Ban and pick screen
-
-1. Goal: UI for the match setup phase (GS-01 – GS-04).
-2. Tasks:
-   1. Ban turn: pick a character to ban; timer.
-   2. Draft: pick one of the offered characters.
-   3. Host bans on the host screen, with card names.
-3. Done when:
-   1. A draft game with a ban round starts from the UI.

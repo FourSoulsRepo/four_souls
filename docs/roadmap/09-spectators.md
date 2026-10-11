@@ -1,17 +1,18 @@
 # Step 9. Spectators
 
-Goal: viewers and judges watch live matches.
+Goal: viewers watch live matches.
 
-Ideas: SP-01 – SP-03, SP-05, CD-09, V-04.
+Ideas: SP-01, SP-03, SP-05, CD-09.
+Judges and viewer delay moved to Future in [../roadmap.md](../roadmap.md).
 
 ---
 
 ### [ ] 9.1 Roles in the protocol
 
-1. Goal: viewer and judge roles.
+1. Goal: viewer role.
 2. Tasks:
-   1. Join as viewer or judge.
-   2. Viewer view: public only; judge view: all hands.
+   1. Join as viewer.
+   2. Viewer view: public only.
    3. Players see only the viewer count.
 3. Done when:
    1. View tests prove viewers never see hands.
@@ -26,15 +27,9 @@ Ideas: SP-01 – SP-03, SP-05, CD-09, V-04.
 3. Done when:
    1. A stalled viewer does not delay players in tests.
 
-### [ ] 9.3 Viewer delay
+### [-] 9.3 Viewer delay
 
-1. Goal: live or delayed view (SP-01).
-2. Tasks:
-   1. Host picks live or a delay.
-   2. Delay applies on the game server.
-   3. Judges are always live.
-3. Done when:
-   1. Delayed viewers see events after the set delay.
+1. Moved to Future: tournament tools.
 
 ### [ ] 9.4 Unknown cards
 
@@ -49,8 +44,8 @@ Ideas: SP-01 – SP-03, SP-05, CD-09, V-04.
 
 1. Goal: watching in the app.
 2. Tasks:
-   1. Join as viewer or judge from the join screen.
+   1. Join as viewer from the join screen.
    2. Table without action controls.
-   3. Judge: plain-text log panel with copy (V-04).
+   3. Judge log panel: moved to Future.
 3. Done when:
-   1. Use cases: watch a match, judge a match.
+   1. Use case: watch a match.

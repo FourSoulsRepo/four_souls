@@ -18,7 +18,7 @@ Each step ends in something that runs and is tested.
 | 6 | Server | Dedicated and hosted server, lobby, records | 4 |
 | 7 | Client | Playable table in the desktop app; internal play-test build | 4, 6 |
 | 8 | First release | **MVP:** 2–4 players, Base Game, over LAN | 7 |
-| 9 | Spectators | Viewers and judges watch live | 8 |
+| 9 | Spectators | Viewers watch live | 8 |
 | 10 | Replays | Records screen and replay player | 8 |
 | 11 | Learning | Rules viewer, sandbox, tutorial, bot | 8 |
 | 12 | Rules website | Engine in WebAssembly on GitHub Pages | 11 |
@@ -125,12 +125,12 @@ Steps 9–14 can be reordered after the MVP.
 
 ## 9. Spectators
 
-1. Viewers and judges join a live match.
-2. Live or delayed view; viewer count for players.
+1. Viewers join a live match.
+2. Live view; viewer count for players.
 3. Viewers never slow the game.
 4. Outdated clients still watch with blank cards.
-5. Plain-text judge log.
-6. Ideas: SP-01 – SP-03, SP-05, CD-09, V-04.
+5. Judges and viewer delay: moved to Future.
+6. Ideas: SP-01, SP-03, SP-05, CD-09.
 
 ## 10. Replays
 
@@ -187,3 +187,7 @@ Not scheduled; revisit after the MVP.
 10. Keyboard shortcuts (ST-04).
 11. Fan-made sets (CD-10).
 12. Mobile apps (B-06).
+13. Tournament tools, moved from steps 7 and 9.
+   1. Ban and pick screen (GS-01 – GS-04 UI); server part is done.
+   2. Judges: role, all-hands view, plain-text log (SP-02, V-04).
+   3. Delayed view for viewers (SP-01).
