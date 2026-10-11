@@ -9,6 +9,8 @@ frontend/dist/*
 
 # Tool caches and local output
 .cache/
+/test-results/
+/four_souls
 coverage.out
 *.test
 
