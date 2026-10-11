@@ -8,9 +8,7 @@ macOS 15 (Sequoia) and later:
 
 1. Unzip the archive, move `four_souls` to Applications.
 2. Double-click it. macOS says it "cannot verify that four_souls is free of malware". Press **Done**.
-   *(screenshot: the blocked dialog)*
 3. Open **System Settings → Privacy & Security**. At the bottom: "four_souls was blocked to protect your Mac". Press **Open Anyway**.
-   *(screenshot: Privacy & Security with Open Anyway)*
 4. Confirm with **Open Anyway** and your password. From now on it opens normally.
 
 macOS 14 and earlier: right-click the app, **Open**, then **Open** in the dialog.
@@ -21,7 +19,6 @@ For the terminal: `xattr -dr com.apple.quarantine /Applications/four_souls.app` 
 
 1. Extract the zip (right-click → **Extract All**). Running from inside the zip fails.
 2. Double-click `four_souls.exe`. SmartScreen says "Windows protected your PC". Press **More info**, then **Run anyway**.
-   *(screenshot: SmartScreen with More info open)*
 3. The app needs Microsoft Edge WebView2. Windows 10 and 11 usually have it; otherwise the app offers to install it.
 
 ## Linux
