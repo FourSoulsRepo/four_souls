@@ -166,36 +166,17 @@ jobs:
             echo "tags=embed ${{ matrix.target.tags }}" >> "$GITHUB_OUTPUT"
             echo "suffix=text-only" >> "$GITHUB_OUTPUT"
           fi
-      - uses: actions/setup-go@v6
+      - name: Build app and server
         if: steps.build.outputs.run == 'true'
+        uses: ./.github/actions/build
         with:
-          go-version-file: go.work
-          cache-dependency-path: "**/go.sum"
-      - uses: actions/setup-node@v5
-        if: steps.build.outputs.run == 'true'
-        with:
+          platform: ${{ matrix.target.platform }}
+          tags: ${{ steps.build.outputs.tags }}
+          goos: ${{ matrix.target.goos }}
+          goarch: ${{ matrix.target.goarch }}
+          version: ci-${{ github.sha }}
           node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
-      - name: Install Wails Linux dependencies
-        if: steps.build.outputs.run == 'true' && runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev
-      - name: Install Wails CLI
-        if: steps.build.outputs.run == 'true'
-        run: go install github.com/wailsapp/wails/v2/cmd/wails@${{ env.WAILS_VERSION }}
-      - name: Build app
-        if: steps.build.outputs.run == 'true'
-        shell: bash
-        run: |
-          wails build -platform ${{ matrix.target.platform }} -tags "${{ steps.build.outputs.tags }}" \
-            -ldflags "-X github.com/FourSoulsRepo/four_souls/internal/version.App=ci-${GITHUB_SHA::7}"
-      - name: Build server
-        if: steps.build.outputs.run == 'true'
-        shell: bash
-        env:
-          GOOS: ${{ matrix.target.goos }}
-          GOARCH: ${{ matrix.target.goarch }}
-        run: go build -tags "${{ steps.build.outputs.tags }}" -o build/bin/ ./cmd/server
+          wails-version: ${{ env.WAILS_VERSION }}
       - uses: actions/upload-artifact@v4
         if: steps.build.outputs.run == 'true'
         with:

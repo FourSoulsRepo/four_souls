@@ -7,6 +7,13 @@ Built with [Wails](https://wails.io) (Go + React/TypeScript).
 The game belongs to Edmund McMillen and Maestro Media.
 Please [buy the physical game](https://foursouls.com).
 
+## Play
+
+Download the archive for your system from
+[Releases](https://github.com/FourSoulsRepo/four_souls/releases).
+The app is not code-signed: `README.txt` inside, or the wiki page
+[First start](docs/wiki/First-start.md), shows how to open it the first time.
+
 ## Run in dev mode
 
 ```sh

@@ -9,5 +9,12 @@
   "author": {
     "name": "HardDie",
     "email": "oleg1995sysoev@yandex.ru"
+  },
+  "info": {
+    "companyName": "FourSoulsRepo",
+    "productName": "Four Souls",
+    "productVersion": "0.0.0",
+    "copyright": "Code MIT. The Binding of Isaac: Four Souls belongs to Edmund McMillen and Maestro Media.",
+    "comments": "Unofficial, free, fan-made game"
   }
 }

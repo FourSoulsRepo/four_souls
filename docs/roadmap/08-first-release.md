@@ -7,7 +7,7 @@ Ideas: B-03 – B-05, L-03.
 
 ---
 
-### [ ] 8.1 Release workflow
+### [x] 8.1 Release workflow
 
 1. Goal: a tag builds and publishes a release.
 2. Tasks:
@@ -20,7 +20,7 @@ Ideas: B-03 – B-05, L-03.
 3. Done when:
    1. A test tag produces all archives.
 
-### [ ] 8.2 Versioning
+### [x] 8.2 Versioning
 
 1. Goal: clear versions for app and engine.
 2. Tasks:
@@ -30,7 +30,7 @@ Ideas: B-03 – B-05, L-03.
 3. Done when:
    1. Release notes show both versions.
 
-### [ ] 8.3 Stable app identity
+### [x] 8.3 Stable app identity
 
 1. Goal: same identity every release (B-03).
 2. Tasks:
@@ -47,7 +47,7 @@ Ideas: B-03 – B-05, L-03.
    1. `README.txt`: macOS right-click → Open.
    2. `README.txt`: Windows "More info" → "Run anyway".
    3. Linux notes if needed.
-   4. Wiki page with screenshots.
+   4. Wiki page; text only, no images while the visuals change.
 3. Done when:
    1. A new user starts the app with only the README.
 

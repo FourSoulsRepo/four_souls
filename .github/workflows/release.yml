@@ -1,0 +1,169 @@
+name: Release
+
+# A version tag (v1.2.3, or v1.2.3-test for a trial) builds every platform
+# with card images and makes a draft GitHub release; the owner checks it
+# and publishes it by hand.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+env:
+  NODE_VERSION: "24"
+  WAILS_VERSION: "v2.16.0"
+
+jobs:
+  notes:
+    name: Release notes
+    runs-on: ubuntu-24.04
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      engine: ${{ steps.version.outputs.engine }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.work
+          cache-dependency-path: "**/go.sum"
+      - name: Versions
+        id: version
+        shell: bash
+        run: |
+          echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+          echo "engine=$(sed -n 's/^const Version = "\(.*\)"$/\1/p' pkg/rules_engine/version.go)" >> "$GITHUB_OUTPUT"
+      # Fails on a tag that is not a version, or a release without its
+      # CHANGELOG.md section, before anything is built.
+      - name: Notes
+        run: go run ./cmd/relnotes -version "${{ steps.version.outputs.version }}" > notes.md
+      - uses: actions/upload-artifact@v4
+        with:
+          name: notes
+          path: notes.md
+          retention-days: 7
+
+  build:
+    name: Build ${{ matrix.target.name }}
+    needs: notes
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - name: linux-amd64
+            os: ubuntu-24.04
+            platform: linux/amd64
+            tags: webkit2_41
+            goos: linux
+            goarch: amd64
+          - name: linux-arm64
+            os: ubuntu-24.04-arm
+            platform: linux/arm64
+            tags: webkit2_41
+            goos: linux
+            goarch: arm64
+          - name: windows-amd64
+            os: windows-latest
+            platform: windows/amd64
+            tags: ""
+            goos: windows
+            goarch: amd64
+          - name: windows-arm64
+            os: windows-latest
+            platform: windows/arm64
+            tags: ""
+            goos: windows
+            goarch: arm64
+          - name: macos-universal
+            os: macos-latest
+            platform: darwin/universal
+            tags: ""
+            goos: darwin
+            goarch: arm64
+    runs-on: ${{ matrix.target.os }}
+    steps:
+      - uses: actions/checkout@v5
+      - name: Card images
+        id: images
+        uses: ./.github/actions/card-images
+        with:
+          ssh-key: ${{ secrets.CARD_DB_DEPLOY_KEY }}
+      - name: Require card images
+        if: steps.images.outputs.available != 'true'
+        shell: bash
+        run: |
+          echo "::error::A release needs the card images: set the CARD_DB_DEPLOY_KEY secret."
+          exit 1
+      - name: Build app and server
+        uses: ./.github/actions/build
+        with:
+          platform: ${{ matrix.target.platform }}
+          tags: embed cardimages ${{ matrix.target.tags }}
+          goos: ${{ matrix.target.goos }}
+          goarch: ${{ matrix.target.goarch }}
+          version: ${{ needs.notes.outputs.version }}
+          node-version: ${{ env.NODE_VERSION }}
+          wails-version: ${{ env.WAILS_VERSION }}
+      - name: Pack
+        id: pack
+        shell: bash
+        env:
+          NAME: four-souls-${{ needs.notes.outputs.version }}-${{ matrix.target.name }}
+        run: |
+          mkdir -p "dist/$NAME"
+          cp -R build/bin/. "dist/$NAME/"
+          cp release/README.txt LICENSE NOTICE "dist/$NAME/"
+          cd dist
+          case "$RUNNER_OS" in
+            # Keeps the .app intact; no ._ metadata files.
+            macOS) ditto -c -k --keepParent --norsrc --noextattr --noacl "$NAME" "$NAME.zip" ;;
+            Windows) 7z a -tzip "$NAME.zip" "$NAME" > /dev/null ;;
+            *) tar -czf "$NAME.tar.gz" "$NAME" ;;
+          esac
+          rm -rf "$NAME"
+          ls -la
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.target.name }}
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 7
+
+  release:
+    name: Draft release
+    needs: [notes, build]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Create the draft release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          ls -la dist
+          mv dist/notes.md notes.md
+          flags=(--draft --title "Four Souls ${TAG#v}" --notes-file notes.md)
+          # A tag with a suffix (v0.1.0-test) is a trial, never the latest release.
+          [[ "$TAG" == *-* ]] && flags+=(--prerelease)
+          gh release create "$TAG" dist/* --repo "${{ github.repository }}" "${flags[@]}"
+      # The engine version gets its own tag the first time it ships, so the
+      # rules_engine module can be fetched at it (8.2).
+      - name: Tag the rules engine
+        if: ${{ !contains(github.ref_name, '-') }}
+        shell: bash
+        env:
+          ENGINE_TAG: rules_engine/v${{ needs.notes.outputs.engine }}
+        run: |
+          if git ls-remote --exit-code --tags origin "refs/tags/$ENGINE_TAG" > /dev/null; then
+            echo "$ENGINE_TAG exists"
+          else
+            git tag "$ENGINE_TAG" "$GITHUB_SHA"
+            git push origin "$ENGINE_TAG"
+          fi
