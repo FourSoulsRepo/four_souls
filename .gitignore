@@ -1,7 +1,9 @@
 # Build output
 build/bin
 node_modules
-scripts/screenshots/node_modules
+e2e/node_modules
+e2e/test-results
+e2e/playwright-report
 frontend/dist/*
 !frontend/dist/gitkeep
 

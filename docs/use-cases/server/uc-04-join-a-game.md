@@ -1,6 +1,6 @@
 # UC-04: Join a game
 
-**Module:** `internal/server`
+**Module:** `internal/server`, `frontend`
 **Status:** In progress
 **Actors:** Player
 **Goal:** The player sits at a friend's game and plays
@@ -24,6 +24,14 @@
 * **4c. The player lacks a card set of the game:** refused with `missing_sets` (CD-03).
 * **5a. The nickname is taken at this table:** the server adds " (2)".
 * **6a. The connection drops during the game:** the player says hello again with their token and gets the seat back (N-08).
+  * In the app, a "Connection lost" dialog offers Reconnect (UC-07).
+* **1a. In the app:** Main menu, **Join a game**, nickname and host address.
+  * A bare address uses port 4774.
+  * The last 5 addresses show as buttons under **Recent**.
+* **1b. Not an address:** the app says how one looks and does not connect.
+* **1c. Nobody answers:** "Could not connect to the server.".
+* **3a. The game list:** each game shows its host, taken and free seats.
+  * Saved games show who played and when, with **Continue** (UC-09).
 
 ## Postconditions
 

@@ -264,7 +264,8 @@ func (h *Hub) hello(c *Client, env protocol.Envelope) {
 		for _, g := range h.games {
 			if g.room.hasToken(m.Token) {
 				c.token = m.Token
-				welcome.Token = m.Token
+				// The seat tells a restarted app which player it is.
+				welcome.Token, welcome.Seat = m.Token, g.room.seatOf(m.Token)
 				c.send(protocol.TypeWelcome, env.ID, welcome)
 				c.room.Store(g.room)
 				g.room.send(request{client: c, attach: m.Token})

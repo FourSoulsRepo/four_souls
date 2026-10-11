@@ -1,6 +1,6 @@
 # UC-03: Host a game
 
-**Module:** `internal/server`, `host.go`
+**Module:** `internal/server`, `host.go`, `frontend`
 **Status:** In progress
 **Actors:** Host (a player)
 **Goal:** A game waits in the lobby for friends to join
@@ -23,6 +23,14 @@
 * **4c. The host lacks a card set:** refused with `missing_sets` (CD-03).
 * **7a. Someone leaves before the start:** their seat is free again.
 * **7b. The host leaves:** the table stays while anyone sits at it.
+* **1a. In the app:** Main menu, **Host a game**.
+  * Nickname and players (2–4); "Detailed setup" shows the rest (GS-10).
+  * Detailed: response timer, bonus souls.
+  * Draft and bans wait for the tournament tools (roadmap, Future).
+  * Host bans need the card list; they come with the card component.
+* **2a. The port is taken:** the app shows the error and stays on the host screen.
+* **6a. The table screen:** the host sees "Friends join at" and the addresses.
+* **7c. The host leaves in the app:** the app stops its server; friends lose the connection.
 
 ## Postconditions
 

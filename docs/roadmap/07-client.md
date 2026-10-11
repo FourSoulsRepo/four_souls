@@ -7,7 +7,7 @@ Ideas: M-01, V-01 – V-08, ST-01 – ST-03, ST-05, ST-06, B-06, N-11.
 
 ---
 
-### [ ] 7.1 UI libraries ADR
+### [x] 7.1 UI libraries ADR
 
 1. Goal: pick the few libraries we need.
 2. Tasks:
@@ -18,7 +18,7 @@ Ideas: M-01, V-01 – V-08, ST-01 – ST-03, ST-05, ST-06, B-06, N-11.
 3. Done when:
    1. **Owner** accepts the ADR.
 
-### [ ] 7.2 App shell
+### [x] 7.2 App shell
 
 1. Goal: splash, main menu, settings storage.
 2. Tasks:
@@ -29,7 +29,7 @@ Ideas: M-01, V-01 – V-08, ST-01 – ST-03, ST-05, ST-06, B-06, N-11.
 3. Done when:
    1. Settings survive a restart.
 
-### [ ] 7.3 Host and join screens
+### [x] 7.3 Host and join screens
 
 1. Goal: get into a game.
 2. Tasks:
@@ -39,7 +39,7 @@ Ideas: M-01, V-01 – V-08, ST-01 – ST-03, ST-05, ST-06, B-06, N-11.
 3. Done when:
    1. Two apps on a LAN reach the same lobby.
 
-### [ ] 7.4 Card component
+### [x] 7.4 Card component
 
 1. Goal: one card component used everywhere.
 2. Tasks:
@@ -49,7 +49,7 @@ Ideas: M-01, V-01 – V-08, ST-01 – ST-03, ST-05, ST-06, B-06, N-11.
 3. Done when:
    1. Missing images show readable blank cards.
 
-### [ ] 7.5 Table layout
+### [x] 7.5 Table layout
 
 1. Goal: Hearthstone-like table (V-01, V-02).
 2. Tasks:
@@ -61,7 +61,7 @@ Ideas: M-01, V-01 – V-08, ST-01 – ST-03, ST-05, ST-06, B-06, N-11.
 3. Done when:
    1. Layout fits at 1280×720 and up.
 
-### [ ] 7.6 Event playback and animations
+### [x] 7.6 Event playback and animations
 
 1. Goal: events play in order as animations (V-08).
 2. Tasks:
@@ -72,7 +72,7 @@ Ideas: M-01, V-01 – V-08, ST-01 – ST-03, ST-05, ST-06, B-06, N-11.
 3. Done when:
    1. Fast event bursts play without glitches.
 
-### [ ] 7.7 Player actions
+### [x] 7.7 Player actions
 
 1. Goal: act through allowed actions only.
 2. Tasks:
@@ -83,7 +83,7 @@ Ideas: M-01, V-01 – V-08, ST-01 – ST-03, ST-05, ST-06, B-06, N-11.
 3. Done when:
    1. A full turn is playable with mouse and with touch.
 
-### [ ] 7.8 Stack and responses
+### [x] 7.8 Stack and responses
 
 1. Goal: clear response moments.
 2. Tasks:
@@ -93,7 +93,7 @@ Ideas: M-01, V-01 – V-08, ST-01 – ST-03, ST-05, ST-06, B-06, N-11.
 3. Done when:
    1. Players always see why the game waits.
 
-### [ ] 7.9 Info panels
+### [x] 7.9 Info panels
 
 1. Goal: never get lost (V-03, V-05, V-06).
 2. Tasks:
@@ -104,7 +104,7 @@ Ideas: M-01, V-01 – V-08, ST-01 – ST-03, ST-05, ST-06, B-06, N-11.
 3. Done when:
    1. History shows only what the viewer may see.
 
-### [ ] 7.10 Settings screen
+### [x] 7.10 Settings screen
 
 1. Goal: ST-01, ST-02, ST-03, ST-05, ST-06.
 2. Tasks:
@@ -116,7 +116,7 @@ Ideas: M-01, V-01 – V-08, ST-01 – ST-03, ST-05, ST-06, B-06, N-11.
 3. Done when:
    1. Every setting applies without restart where possible.
 
-### [ ] 7.11 Pause, vote, end of match
+### [x] 7.11 Pause, vote, end of match
 
 1. Goal: UI for N-08 and RP-05.
 2. Tasks:
@@ -125,7 +125,7 @@ Ideas: M-01, V-01 – V-08, ST-01 – ST-03, ST-05, ST-06, B-06, N-11.
 3. Done when:
    1. Use cases: disconnect vote, save record.
 
-### [ ] 7.12 Linux, touch, internal build
+### [x] 7.12 Linux, touch, internal build
 
 1. Goal: check weak spots; first play-test.
 2. Tasks:
@@ -135,7 +135,7 @@ Ideas: M-01, V-01 – V-08, ST-01 – ST-03, ST-05, ST-06, B-06, N-11.
 3. Done when:
    1. **Owner** plays a LAN game on the internal build.
 
-### [ ] 7.13 Save and continue UI
+### [x] 7.13 Save and continue UI
 
 1. Goal: UI for N-11.
 2. Tasks:

@@ -8,7 +8,7 @@ import (
 
 // The screenshot fixture copies the notice; keep both in sync.
 func TestScreenshotFixtureMatchesNotice(t *testing.T) {
-	data, err := os.ReadFile("../../frontend/src/screenshotBridge.ts")
+	data, err := os.ReadFile("../../frontend/src/fakeBridge.ts")
 	if err != nil {
 		t.Fatalf("read fixture: %v", err)
 	}

@@ -1,0 +1,225 @@
+/* One card component in three sizes (7.4). Sizes only set the width;
+   everything inside scales with it (container query units). cqi units
+   work only inside .card, never on .card itself. */
+
+.card {
+  --face: #d9d4c7;
+  --frame: #6b6b6b;
+  position: relative;
+  flex: none;
+  aspect-ratio: 63 / 88;
+  overflow: hidden;
+  border-radius: 5% / 3.6%;
+  container-type: inline-size;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 40%);
+}
+
+.card.size-hand {
+  width: 100px;
+}
+
+.card.size-table {
+  width: 80px;
+}
+
+.card.size-small {
+  width: 60px;
+}
+
+.card.size-zoom {
+  width: 320px;
+}
+
+.card img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.kind-character {
+  --face: #efe0b4;
+  --frame: #b08d2e;
+}
+
+.kind-treasure {
+  --face: #f5e7b8;
+  --frame: #c9a227;
+}
+
+.kind-loot {
+  --face: #dedad0;
+  --frame: #6b6b6b;
+}
+
+.kind-monster {
+  --face: #ecccc1;
+  --frame: #8e3b2e;
+}
+
+.kind-soul {
+  --face: #e1e9f4;
+  --frame: #5a7fa8;
+}
+
+.card-blank {
+  display: flex;
+  flex-direction: column;
+  gap: 3cqi;
+  height: 100%;
+  box-sizing: border-box;
+  padding: 7cqi;
+  border: 3cqi solid var(--frame);
+  border-radius: 5cqi;
+  color: #1d1d1d;
+  background: var(--face);
+}
+
+.card-name {
+  font-size: 11cqi;
+  font-weight: 700;
+  line-height: 1.1;
+  overflow-wrap: anywhere;
+}
+
+.card-type {
+  font-size: 7cqi;
+  opacity: 0.75;
+}
+
+.card-text {
+  flex: 1;
+  overflow: hidden;
+  font-size: 5.2cqi;
+  line-height: 1.3;
+}
+
+.card-text p {
+  margin: 0 0 2cqi;
+}
+
+.card-footnote {
+  opacity: 0.8;
+}
+
+.card-icon {
+  display: inline-block;
+  min-width: 1.2em;
+  padding: 0 0.2em;
+  border-radius: 0.3em;
+  font-weight: 700;
+  text-align: center;
+  color: var(--face);
+  background: var(--frame);
+}
+
+.card-rewards {
+  margin-top: auto;
+  font-size: 7cqi;
+}
+
+.card-stats {
+  display: flex;
+  justify-content: space-around;
+  font-size: 9cqi;
+  font-weight: 700;
+}
+
+.card-rewards + .card-stats {
+  margin-top: 0;
+}
+
+.card-type + .card-stats,
+.card-text + .card-stats {
+  margin-top: auto;
+}
+
+.card-back-face {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  border: 3cqi solid var(--frame);
+  border-radius: 5cqi;
+  box-sizing: border-box;
+  font-size: 12cqi;
+  font-weight: 700;
+  text-transform: capitalize;
+  color: var(--face);
+  background: #2a2a2a;
+}
+
+.card-zoom {
+  position: fixed;
+  inset: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  padding: 24px;
+  pointer-events: none;
+}
+
+.card-zoom-left {
+  justify-content: flex-start;
+}
+
+.card-zoom-right {
+  justify-content: flex-end;
+}
+
+.card-zoom-touch {
+  justify-content: center;
+  pointer-events: auto;
+  background: rgb(0 0 0 / 45%);
+}
+
+.card.spent {
+  filter: brightness(0.55) saturate(0.6);
+}
+
+.card-damage {
+  position: absolute;
+  top: 6cqi;
+  right: 6cqi;
+  min-width: 18cqi;
+  padding: 1cqi 3cqi;
+  border-radius: 9cqi;
+  box-sizing: border-box;
+  font-size: 13cqi;
+  font-weight: 700;
+  text-align: center;
+  color: #fff;
+  background: #b3261e;
+}
+
+/* Highlights (7.7): yellow for "you may act", blue for "pick this". */
+.card.hl-act,
+.card.hl-pick {
+  cursor: pointer;
+}
+
+.card.hl-act {
+  box-shadow: 0 0 0 3px #f5c542, 0 0 14px 2px rgb(245 197 66 / 65%);
+}
+
+.card.hl-pick {
+  box-shadow: 0 0 0 3px #4fc3f7, 0 0 14px 2px rgb(79 195 247 / 70%);
+}
+
+.card-counters {
+  position: absolute;
+  bottom: 6cqi;
+  left: 6cqi;
+  min-width: 18cqi;
+  padding: 1cqi 3cqi;
+  border-radius: 9cqi;
+  box-sizing: border-box;
+  font-size: 13cqi;
+  font-weight: 700;
+  text-align: center;
+  color: #1d1d1d;
+  background: #ffd27a;
+}

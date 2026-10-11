@@ -23,6 +23,8 @@ type CardView struct {
 	Role    Role     `json:"role,omitempty"`
 	Charged bool     `json:"charged"`
 	Damage  int      `json:"damage,omitempty"`
+	// Counters are the counters on the card, e.g. charge counters.
+	Counters []Counter `json:"counters,omitempty"`
 }
 
 // PlayerView is what a viewer sees of one player.
@@ -37,6 +39,11 @@ type PlayerView struct {
 	InPlay    []CardView `json:"in_play"`
 	HandSize  int        `json:"hand_size"`
 	Hand      []CardView `json:"hand,omitempty"` // only when the viewer may see it
+	// LootPlays, Attacks and Purchases are what the player may still do
+	// now, bonuses included; attacks and purchases only on their turn.
+	LootPlays int `json:"loot_plays"`
+	Attacks   int `json:"attacks"`
+	Purchases int `json:"purchases"`
 	// TreasureTop is the top treasure card, when this player may look at
 	// it now (There's Options) and the viewer may see it.
 	TreasureTop *CardView `json:"treasure_top,omitempty"`
@@ -61,6 +68,20 @@ type GameView struct {
 	Waiting    Prompt                `json:"waiting"`
 	Over       bool                  `json:"over,omitempty"`
 	Winners    []PlayerID            `json:"winners,omitempty"`
+	// Options says what each option of a choose prompt points at, one
+	// per Waiting.Options; only for whoever sees those options.
+	Options []OptionView `json:"options,omitempty"`
+}
+
+// OptionView is what one option of a choose prompt points at, so a
+// client can let the player pick it on the table. An option with none
+// of these set is plain text.
+type OptionView struct {
+	Object   ObjectID `json:"object,omitempty"` // a card on the table or in the chooser's hand
+	Player   PlayerID `json:"player"`           // a player, when IsPlayer
+	IsPlayer bool     `json:"is_player,omitempty"`
+	Deck     bool     `json:"deck,omitempty"`     // the monster or treasure deck
+	StackID  int      `json:"stack_id,omitempty"` // a stack item
 }
 
 // sees reports whether the viewer may see player p's hand.
@@ -77,6 +98,10 @@ func (g *Game) View(v Viewer) GameView {
 		pv := PlayerView{
 			ID: pl.ID, Character: g.cardView(pl.Character), HP: g.PlayerHP(pl.ID), ATK: g.PlayerATK(pl.ID),
 			Cents: pl.Cents, Souls: g.SoulValue(pl.ID), Dead: pl.Dead, HandSize: len(pl.Hand),
+			LootPlays: g.lootPlaysFor(pl.ID),
+		}
+		if pl.ID == g.Turn.Active {
+			pv.Attacks, pv.Purchases = g.attacksLeft(), g.purchasesLeft()
 		}
 		for _, id := range pl.InPlay {
 			pv.InPlay = append(pv.InPlay, g.cardView(id))
@@ -108,12 +133,71 @@ func (g *Game) View(v Viewer) GameView {
 		// Options may name hidden cards (e.g. which loot card to discard).
 		out.Waiting.Options = nil
 	}
+	if g.Waiting.Kind == PromptChoose && v.sees(g.Waiting.Player) {
+		out.Options = g.optionViews()
+	}
+	return out
+}
+
+// optionViews maps the open choice's options to what they point at.
+func (g *Game) optionViews() []OptionView {
+	c := g.Choice
+	if c == nil {
+		return nil
+	}
+	out := make([]OptionView, len(g.Waiting.Options))
+	for i := range out {
+		out[i].Player = NoPlayer
+	}
+	set := func(i int, f func(o *OptionView)) {
+		if i < len(out) {
+			f(&out[i])
+		}
+	}
+	switch c.Purpose {
+	case ChooseAttackTarget, ChoosePurchase, ChoosePenaltyItem, ChoosePenaltyLoot, ChooseStartingItem, ChooseLowest:
+		for i, id := range c.Objects {
+			set(i, func(o *OptionView) { o.Object = id })
+		}
+		if c.Deck {
+			set(len(c.Objects), func(o *OptionView) { o.Deck = true })
+		}
+	case ChooseTarget:
+		for i, t := range c.Targets {
+			set(i, func(o *OptionView) {
+				switch t.Kind {
+				case TargetPlayer, TargetOtherPlayer:
+					o.Player, o.IsPlayer = t.Player, true
+				case TargetDiceRoll, TargetStackAbility:
+					o.StackID = t.StackID
+				case TargetMonster, TargetMonsterOrPlayer, TargetItem, TargetCurse, TargetYourItem,
+					TargetYourHandCard, TargetItemOrSoul:
+					o.Object = t.Object
+				}
+			})
+		}
+	case ChooseMonsterSlot:
+		for i, s := range c.Slots {
+			if top, ok := g.Monsters[s].TopOf(); ok {
+				set(i, func(o *OptionView) { o.Object = top })
+			}
+		}
+	case ChooseCursed:
+		for i, p := range c.Slots {
+			set(i, func(o *OptionView) { o.Player, o.IsPlayer = PlayerID(p), true })
+		}
+	case ChooseReplacement, ChooseTriggerOrder, ChooseMode, ChooseAnswer:
+		// Text options.
+	}
 	return out
 }
 
 func (g *Game) cardView(id ObjectID) CardView {
 	o := g.Object(id)
-	return CardView{ID: id, Card: o.Card, Role: o.Role, Charged: o.Charged, Damage: o.Damage}
+	return CardView{
+		ID: id, Card: o.Card, Role: o.Role, Charged: o.Charged, Damage: o.Damage,
+		Counters: append([]Counter(nil), o.Counters...),
+	}
 }
 
 func (g *Game) slotViews(slots []Slot) []SlotView {

@@ -1,6 +1,6 @@
 # UC-08: Get a match record
 
-**Module:** `internal/server`, `pkg/record`
+**Module:** `internal/server`, `pkg/record`, `frontend`, `record.go`
 **Status:** In progress
 **Actors:** Players; server owner
 **Goal:** Every match is kept, and its players can download it after the end
@@ -21,6 +21,9 @@
 * **4a. The game is not over:** refused; a record would reveal hands (RP-05).
 * **4b. Someone who did not play asks:** refused.
 * **5a. The record is older than the retention:** it was deleted (RP-07).
+* **4c. In the app:** the game-over dialog names the winner and offers **Save record**.
+  * The app asks where to save the `.fsrec` file, then downloads it.
+  * It says where it saved it, or why it could not.
 
 ## Postconditions
 

@@ -1,0 +1,70 @@
+/* Event effects (7.6): drawn above the table, never catching clicks.
+   Only transform and opacity animate (ADR 002). */
+
+.effects {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+}
+
+.effect-fly {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.effect-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.effect-dice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 96px;
+  height: 96px;
+  border-radius: 18px;
+  font-size: 56px;
+  font-weight: 800;
+  color: #1d1d1d;
+  background: #f4f1e8;
+  box-shadow: 0 6px 24px rgb(0 0 0 / 55%);
+}
+
+.effect-label {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 16px;
+  background: rgb(0 0 0 / 60%);
+}
+
+.effect-banner {
+  font-size: 40px;
+  font-weight: 800;
+  text-shadow: 0 3px 12px rgb(0 0 0 / 70%);
+}
+
+.effect-popup {
+  position: absolute;
+  translate: -50% -50%;
+  padding: 4px 12px;
+  border-radius: 14px;
+  font-size: 22px;
+  font-weight: 800;
+  background: rgb(0 0 0 / 65%);
+}
+
+.effect-good {
+  color: #9be29b;
+}
+
+.effect-bad {
+  color: #ff8a80;
+}

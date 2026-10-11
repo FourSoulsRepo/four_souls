@@ -1,6 +1,6 @@
 # UC-07: Reconnect after a lost connection
 
-**Module:** `internal/server`
+**Module:** `internal/server`, `frontend`
 **Status:** In progress
 **Actors:** A player who lost the connection; the other players
 **Goal:** The player comes back to their seat, or the others go on without them
@@ -21,6 +21,14 @@
 * **2c. A kicked seat's turn:** the server answers its prompts the minimal way (pass or end the turn, first cards, first option).
 * **3a. A kicked player comes back:** the server refuses the seat and closes the connection.
 * **3b. The connection drops at a table before the start:** the seat is freed (UC-04).
+* **1a. In the app:** a "Connection lost" dialog keeps the table on screen.
+  * **Reconnect** says hello again with the seat's token.
+  * **Leave** goes back to the main menu.
+* **2d. The others, in the app:** a "Waiting for <name>" dialog shows the votes.
+  * **Wait** or **Go on without them**; a vote can be changed.
+* **1b. The app was closed:** the app keeps the last game's server and seat token in its settings.
+  * Joining that server again sends the token; the player is back in their seat.
+  * The welcome names the seat, so the app knows which player it is.
 
 ## Postconditions
 

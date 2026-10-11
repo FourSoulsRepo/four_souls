@@ -92,6 +92,9 @@ func NewRoom(setup engine.Setup, opts protocol.Options, seats []roomSeat) (*Room
 // goroutine: tokens never change.
 func (r *Room) hasToken(token string) bool { return slices.Contains(r.tokens, token) }
 
+// seatOf is the seat a token belongs to, or -1.
+func (r *Room) seatOf(token string) int { return slices.Index(r.tokens, token) }
+
 // send passes a request to the room unless it has stopped.
 func (r *Room) send(req request) {
 	select {
