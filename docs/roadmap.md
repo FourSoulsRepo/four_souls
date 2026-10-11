@@ -24,13 +24,16 @@ Each step ends in something that runs and is tested.
 | 12 | Rules website | Engine in WebAssembly on GitHub Pages | 11 |
 | 13 | Web client | Browser client served by the game server | 9 |
 | 14 | More sets | Gold Box, Four Souls+, Requiem, promos | 8 |
+| 15 | Visual refresh | Table layout reworked after fouronlinesouls.net | 8 |
+| 16 | Localization | Menus, messages, and cards in several languages | 8 |
+| 17 | Rollback | Other players can undo a mistaken event | 8 |
 | — | Future | Not scheduled yet | — |
 
 Step 3 reuses the browser scraping tool from step 2.
 Steps 5, 6 and 7 can run in parallel.
 Step 7 ends with an internal build on a partial card set.
 Step 8 needs all Base Game cards from step 5.
-Steps 9–14 can be reordered after the MVP.
+Steps 9–17 can be reordered after the MVP.
 
 ---
 
@@ -122,6 +125,9 @@ Steps 9–14 can be reordered after the MVP.
 4. Stable app identity; no code signing.
 5. Ideas: B-03 – B-05, L-03.
 6. Card rulings from Yuggy and Discord become tests, before the play-test.
+7. No page scroll and no drag selection, before the play-test (V-10).
+8. Stack shows whom it waits for, before the play-test (V-11).
+9. Wiki in three groups: players, server admins, developers (DO-01).
 
 ## 9. Spectators
 
@@ -148,6 +154,7 @@ Steps 9–14 can be reordered after the MVP.
 4. Simple random bot; seeded and free practice games.
 5. FAQ from frequent rules questions, linked to rule IDs.
 6. Ideas: LR-01 – LR-06, LR-08.
+7. Any event on the stack in payloads (LR-09).
 
 ## 12. Rules website
 
@@ -156,6 +163,7 @@ Steps 9–14 can be reordered after the MVP.
 3. Rules text with links by rule ID.
 4. Hosted on GitHub Pages.
 5. Ideas: A-03.
+6. Step-by-step stack resolution (LR-10).
 
 ## 13. Web client
 
@@ -171,6 +179,29 @@ Steps 9–14 can be reordered after the MVP.
 3. Optional removal of multiplayer-only cards.
 4. Ideas: CD-02, GS-07, GS-08, CD-11.
 
+## 15. Visual refresh
+
+1. Study fouronlinesouls.net: start a game with a bot.
+2. Borrow layout and readability ideas; copy no assets.
+3. Rework the table; keep e2e tests and screenshots green.
+4. Ideas: V-09.
+
+## 16. Localization
+
+1. Translation layer for the frontend; ADR picks the library.
+2. Server sends message keys and values, not text.
+3. Card names and text from card_db translations.
+4. Language setting; first extra language: Russian.
+5. Ideas: LO-01 – LO-04.
+
+## 17. Rollback
+
+1. Owner decides limits: hidden info, dice, who must agree.
+2. Engine undoes the last event from a saved state.
+3. Only other players can roll back; never the author.
+4. History and records show the rollback.
+5. Ideas: N-12.
+
 ## Future
 
 Not scheduled; revisit after the MVP.
@@ -181,7 +212,7 @@ Not scheduled; revisit after the MVP.
 4. In-game chat (CH-01).
 5. Co-op and solitaire modes (GS-11).
 6. Phase stops (N-10).
-7. Localization (LO-01 – LO-03).
+7. Localization: moved to step 16.
 8. Audio (AU-01).
 9. Card gallery (CD-05).
 10. Keyboard shortcuts (ST-04).

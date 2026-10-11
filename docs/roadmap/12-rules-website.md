@@ -2,7 +2,7 @@
 
 Goal: check rules in the browser; no server.
 
-Ideas: A-03.
+Ideas: A-03, LR-10.
 
 ---
 
@@ -35,3 +35,16 @@ Ideas: A-03.
    2. App config gets the site base URL (11.3).
 3. Done when:
    1. The public URL loads and answers payloads.
+
+### [ ] 12.4 Step-by-step stack
+
+1. Goal: users learn how the stack resolves (LR-10).
+2. Tasks:
+   1. Wasm function: resolve one step, return the new state.
+   2. Each step shows what happened and why, with rule links.
+   3. User may add a response between steps.
+   4. Step back to the previous state.
+   5. Needs stacked events in payloads (11.8).
+3. Done when:
+   1. A three-event stack resolves step by step and back.
+   2. Use case: solve a stack step by step.

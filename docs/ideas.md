@@ -51,6 +51,19 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    1. Drag and drop for playing cards.
    2. Card moves, flips, zoom, damage, dice.
    3. No particle effects.
+9. V-09. Second visual reference: https://fouronlinesouls.net/
+   1. The table shows only after starting a game against a bot.
+   2. Borrow layout and readability ideas only.
+   3. Never copy its images, styles, or code.
+10. V-10. The app does not behave like a web page.
+   1. Screens never scroll as a whole page.
+   2. Only lists with their own scroll bar may scroll.
+   3. No text or element selection by mouse drag.
+   4. Text stays selectable where copying helps (logs, payloads).
+11. V-11. The stack shows what the game is waiting for.
+   1. Lists the players who must still respond or pass.
+   2. Shows who already passed.
+   3. Shows a pending prompt: who must choose and what.
 
 ## Rules
 
@@ -261,6 +274,13 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    7. It continues exactly as saved: stack, prompts, dice state.
    8. A save made by an older game version may not load.
    9. Builds on the engine save (step 4) and records (RP-08).
+12. N-12. Rollback of an event.
+   1. Undoes a mistake, e.g. a misclick.
+   2. The player who did the event cannot roll it back.
+   3. Only the other players can roll it back.
+   4. Open: whether hidden info (draws) or dice block a rollback.
+   5. Open: in 3–4 player games, does one other player suffice.
+   6. The rollback is shown in the history and kept in the record.
 
 ## Learning
 
@@ -319,6 +339,17 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    4. Each answer links to the rule IDs it rests on.
    5. Where possible, an entry has a situation payload to try it.
    6. Shown in the app's rules viewer and on the rules website.
+9. LR-09. Payload setup holds any event on the stack.
+   1. Not only dice rolls: loot cards, abilities, attacks, triggers.
+   2. Each event has its owner, targets, and choices made.
+   3. The stack is ready to resolve, bottom first.
+10. LR-10. Step-by-step stack resolution on the rules website.
+   1. Not only a yes/no answer to one action.
+   2. The user resolves the stack one step at a time.
+   3. Each step shows what happened and why, with rule links.
+   4. Players may respond between steps.
+   5. A step back is possible.
+   6. Goal: understand how the stack works.
 
 ## Testing
 
@@ -350,6 +381,12 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
 3. LO-03. Later: view a card in other languages right in the game.
    1. How exactly: TBD.
    2. Proposal: hover or zoom a card, a hotkey cycles its languages.
+4. LO-04. Everything is translatable.
+   1. Menus and screens.
+   2. Messages: errors, refusal reasons, history, prompts.
+   3. Cards: name and text, from card_db translations (A-11).
+   4. The server sends message keys and values, not ready text.
+   5. So each client shows the text in its own language (N-03).
 
 ## Settings
 
@@ -626,3 +663,11 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
 1. CH-01. In-game chat.
    1. Messages are stored in the match record.
    2. Messages are shown in replays.
+
+## Docs
+
+1. DO-01. The wiki has three groups.
+   1. Players: install, first start, play over LAN or internet.
+   2. Server admins: how to run a dedicated server.
+   3. Developers: layout, builds, engine, tests.
+   4. `_Sidebar.md` and `Home.md` show the three groups.

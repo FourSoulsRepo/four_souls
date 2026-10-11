@@ -3,7 +3,7 @@
 Goal: the full Base Game for 2–4 players over LAN.
 Public downloads for all platforms.
 
-Ideas: B-03 – B-05, L-03.
+Ideas: B-03 – B-05, L-03, V-10, V-11, DO-01.
 
 ---
 
@@ -85,3 +85,40 @@ Ideas: B-03 – B-05, L-03.
 4. Done when:
    1. Every Base Game card was searched in both sources.
    2. Found rulings have tests or open questions.
+
+### [ ] 8.8 Not a web page
+
+1. Goal: the app does not scroll or select like a web page (V-10).
+2. When: before the play-test (8.5).
+3. Tasks:
+   1. No whole-page scroll on any screen.
+   2. Lists keep their own scroll bars.
+   3. Disable drag selection of text and elements.
+   4. Keep selection where copying helps: logs, payloads, addresses.
+   5. e2e test: a drag across the table selects nothing.
+4. Done when:
+   1. No screen scrolls or selects at any window size.
+
+### [ ] 8.9 Stack shows whom it waits for
+
+1. Goal: everyone sees who must act now (V-11).
+2. When: before the play-test (8.5).
+3. Tasks:
+   1. Server sends who still has to respond and who passed.
+   2. Stack panel lists them by nickname.
+   3. Pending prompt: who must choose and what.
+   4. Auto-skipped players are marked as passed.
+4. Done when:
+   1. In a 4-player game, every client names the same waiting players.
+   2. Use case updated: respond to the stack.
+
+### [ ] 8.10 Wiki in three groups
+
+1. Goal: each reader finds their pages fast (DO-01).
+2. Tasks:
+   1. Groups: players, server admins, developers.
+   2. Sort every page into one group.
+   3. `Home.md` and `_Sidebar.md` show the groups.
+   4. Page slugs stay the same, so links keep working.
+3. Done when:
+   1. Every wiki page sits in exactly one group.

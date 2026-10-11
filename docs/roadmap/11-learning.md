@@ -2,7 +2,7 @@
 
 Goal: players learn the rules inside the app.
 
-Ideas: LR-01 – LR-06, LR-08.
+Ideas: LR-01 – LR-06, LR-08, LR-09.
 
 ---
 
@@ -78,3 +78,16 @@ Ideas: LR-01 – LR-06, LR-08.
 3. Done when:
    1. The top questions have entries; every link opens its rule.
    2. Payload examples pass as tests.
+
+### [ ] 11.8 Any event on the stack
+
+1. Goal: payloads start with a ready stack (LR-09).
+2. Tasks:
+   1. `setup.stack` takes loot cards, abilities, attack rolls, triggers.
+   2. Each event: owner, targets, choices made.
+   3. Bottom first, ready to resolve.
+   4. Sandbox (11.2) can place these events.
+   5. Update the wiki page `Situation-payload`.
+3. Done when:
+   1. A payload with three stacked events resolves as expected.
+   2. Old dice-only payloads still load.

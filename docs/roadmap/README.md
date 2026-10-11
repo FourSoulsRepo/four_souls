@@ -58,3 +58,6 @@ Each sub-step is sized for one agent session.
 | 12 | [12-rules-website.md](12-rules-website.md) |
 | 13 | [13-web-client.md](13-web-client.md) |
 | 14 | [14-more-sets.md](14-more-sets.md) |
+| 15 | [15-visual-refresh.md](15-visual-refresh.md) |
+| 16 | [16-localization.md](16-localization.md) |
+| 17 | [17-rollback.md](17-rollback.md) |
