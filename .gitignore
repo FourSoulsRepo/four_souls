@@ -17,6 +17,7 @@ coverage.out
 # OS files
 .DS_Store
 
+.idea/
 
 # Wails build artifact
 frontend/package.json.md5
