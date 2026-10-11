@@ -111,6 +111,12 @@ interface AppState extends Session {
   quit: () => Promise<void>;
 }
 
+// seatOf is this player's seat: from the table, or, for an app that came
+// back to a running game after a restart, from the welcome.
+export function seatOf(s: Pick<Session, 'lobby'>): number {
+  return s.lobby.table?.you ?? Math.max(s.lobby.welcome?.seat ?? 0, 0);
+}
+
 // applyTheme colours menus and panels (ST-02).
 // Unit tests run without a document.
 function applyTheme(s: Settings): void {
@@ -148,7 +154,7 @@ export const useApp = create<AppState>()((set, get) => {
       const entries = entriesFor(
         u.events ?? [],
         s.game?.view.turn.number ?? u.view.turn.number,
-        s.lobby.table?.you ?? -1,
+        seatOf(s),
         names(u),
         (s.history.at(-1)?.key ?? 0) + 1,
       );
@@ -176,6 +182,17 @@ export const useApp = create<AppState>()((set, get) => {
     speed: () => get().settings.animation,
     shown: () => get().game,
   });
+  // keepSeat keeps the table's seat token in the settings, so the app
+  // can take the seat back after a restart (N-08).
+  const keepSeat = () => {
+    const s = get();
+    const r = { address: s.address, token: s.lobby.welcome?.token ?? '', game: s.lobby.table?.game ?? '' };
+    const old = s.settings.rejoin;
+    if (r.token && (r.address !== old.address || r.token !== old.token || r.game !== old.game)) {
+      void s.saveSettings({ ...s.settings, rejoin: r });
+    }
+  };
+
   // stopPlayback drops queued updates and the effect on screen.
   const stopPlayback = () => {
     playback.clear();
@@ -197,7 +214,10 @@ export const useApp = create<AppState>()((set, get) => {
     }
   }
 
-  async function open(address: string, token?: string): Promise<boolean> {
+  async function open(address: string, reconnect?: string): Promise<boolean> {
+    // A restarted app still holds the seat of its last game there.
+    const rejoin = get().settings.rejoin;
+    const token = reconnect ?? (rejoin.address === address && rejoin.token ? rejoin.token : undefined);
     const url = wsURL(address);
     if (!url) {
       set({ error: 'Type an address like 192.168.1.5 or 192.168.1.5:4774.' });
@@ -248,6 +268,9 @@ export const useApp = create<AppState>()((set, get) => {
       if (env.type === 'error') {
         set({ sent: null });
       }
+      if (env.type === 'table') {
+        keepSeat();
+      }
     },
     act: (intent) => {
       send('intent', { intent });
@@ -268,7 +291,7 @@ export const useApp = create<AppState>()((set, get) => {
     },
     saveRecord: async () => {
       const s = get();
-      const link = recordURL(s.address, s.lobby.table?.game ?? '', s.lobby.welcome?.token ?? '');
+      const link = recordURL(s.address, s.lobby.table?.game ?? s.settings.rejoin.game, s.lobby.welcome?.token ?? '');
       if (!link) {
         return '';
       }
@@ -286,7 +309,15 @@ export const useApp = create<AppState>()((set, get) => {
     lobby: emptyLobby,
     game: null,
     error: '',
-    settings: { nickname: '', recent: [], animation: 'normal', fullscreen: false, theme: 'dark', mat: 'felt' },
+    settings: {
+      nickname: '',
+      recent: [],
+      animation: 'normal',
+      fullscreen: false,
+      theme: 'dark',
+      mat: 'felt',
+      rejoin: { address: '', token: '', game: '' },
+    },
     hosting: null,
     connected: false,
     cardSets: [],

@@ -25,6 +25,27 @@ test('a dropped player reconnects to the same seat; the others wait', async ({ b
   await expect(ben.locator('.player-bottom')).toHaveAccessibleName('Ben (you)');
 });
 
+test('a player who closed the app comes back to the same seat', async ({ browser }) => {
+  const [kit, lou] = await startGame(browser, ['Kit', 'Lou'], { url: fast() });
+  if (!kit || !lou) {
+    throw new Error('no pages');
+  }
+  // Lou closes the app; Kit chooses to wait.
+  const context = lou.context();
+  await lou.close();
+  const paused = kit.getByRole('dialog', { name: 'Paused' });
+  await expect(paused).toContainText('Waiting for Lou');
+  await paused.getByRole('button', { name: 'Wait' }).click();
+
+  // Lou starts the app again (same settings) and connects to the server.
+  const again = await context.newPage();
+  await again.goto(fast());
+  await again.getByRole('button', { name: 'Join a game' }).click();
+  await again.getByRole('button', { name: 'Connect' }).click();
+  await expect(again.locator('.player-bottom')).toHaveAccessibleName('Lou (you)');
+  await expect(paused).toHaveCount(0);
+});
+
 test('players vote to go on without one who left', async ({ browser }) => {
   const [cal, dee] = await startGame(browser, ['Cal', 'Dee'], { url: fast() });
   if (!cal || !dee) {

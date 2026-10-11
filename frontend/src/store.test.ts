@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getSettings, saveSettings } from './bridge';
-import { messageOf, useApp } from './store';
+import { messageOf, seatOf, useApp } from './store';
 
 vi.mock('./bridge', () => ({
   getSettings: vi.fn(),
@@ -29,7 +29,7 @@ describe('screens', () => {
 
 describe('settings', () => {
   it('loads what Go has', async () => {
-    vi.mocked(getSettings).mockResolvedValue({ nickname: 'Ann', recent: [], animation: 'normal', fullscreen: false, theme: 'dark', mat: 'felt' });
+    vi.mocked(getSettings).mockResolvedValue({ nickname: 'Ann', recent: [], animation: 'normal', fullscreen: false, theme: 'dark', mat: 'felt', rejoin: { address: '', token: '', game: '' } });
     await useApp.getState().loadSettings();
     expect(useApp.getState().settings.nickname).toBe('Ann');
   });
@@ -41,15 +41,15 @@ describe('settings', () => {
   });
 
   it('keeps what Go stored, not what was typed', async () => {
-    vi.mocked(saveSettings).mockResolvedValue({ nickname: 'Ann', recent: [], animation: 'normal', fullscreen: false, theme: 'dark', mat: 'felt' });
-    expect(await useApp.getState().saveSettings({ nickname: '  Ann  ', recent: [], animation: 'normal', fullscreen: false, theme: 'dark', mat: 'felt' })).toBe(true);
+    vi.mocked(saveSettings).mockResolvedValue({ nickname: 'Ann', recent: [], animation: 'normal', fullscreen: false, theme: 'dark', mat: 'felt', rejoin: { address: '', token: '', game: '' } });
+    expect(await useApp.getState().saveSettings({ nickname: '  Ann  ', recent: [], animation: 'normal', fullscreen: false, theme: 'dark', mat: 'felt', rejoin: { address: '', token: '', game: '' } })).toBe(true);
     expect(useApp.getState().settings.nickname).toBe('Ann');
   });
 
   it('shows the Go error and keeps the old settings', async () => {
-    useApp.setState({ settings: { nickname: 'Ann', recent: [], animation: 'normal', fullscreen: false, theme: 'dark', mat: 'felt' } });
+    useApp.setState({ settings: { nickname: 'Ann', recent: [], animation: 'normal', fullscreen: false, theme: 'dark', mat: 'felt', rejoin: { address: '', token: '', game: '' } } });
     vi.mocked(saveSettings).mockRejectedValue('nickname must be 1–20 characters');
-    expect(await useApp.getState().saveSettings({ nickname: ' ', recent: [], animation: 'normal', fullscreen: false, theme: 'dark', mat: 'felt' })).toBe(false);
+    expect(await useApp.getState().saveSettings({ nickname: ' ', recent: [], animation: 'normal', fullscreen: false, theme: 'dark', mat: 'felt', rejoin: { address: '', token: '', game: '' } })).toBe(false);
     expect(useApp.getState()).toMatchObject({
       settings: { nickname: 'Ann' },
       error: 'nickname must be 1–20 characters',
@@ -62,5 +62,15 @@ describe('messageOf', () => {
     expect(messageOf('bad')).toBe('bad');
     expect(messageOf(new Error('worse'))).toBe('worse');
     expect(messageOf(42)).toBe('something went wrong');
+  });
+});
+
+describe('seatOf', () => {
+  it('takes the seat from the table, or from the welcome after a restart', () => {
+    const welcome = { protocol: 1, app: 'a', engine: 'e', token: 't', seat: 1 };
+    const table = { game: 'g1', you: 0, seats: null, sets: null };
+    expect(seatOf({ lobby: { ...initial.lobby, welcome, table } })).toBe(0);
+    expect(seatOf({ lobby: { ...initial.lobby, welcome } })).toBe(1);
+    expect(seatOf({ lobby: { ...initial.lobby, welcome: { ...welcome, seat: -1 } } })).toBe(0);
   });
 });

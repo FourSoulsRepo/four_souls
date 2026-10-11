@@ -11,7 +11,7 @@ import { GameMenu } from '../components/GameMenu';
 import { EndOverlay, LostOverlay, PauseOverlay } from '../components/Overlays';
 import { StackPanel } from '../components/StackPanel';
 import type { Update } from '../protocol';
-import { useApp } from '../store';
+import { seatOf, useApp } from '../store';
 import { waitText, type Names } from '../stack';
 import { seatPositions } from '../table';
 import '../components/Table.css';
@@ -22,7 +22,7 @@ const noActions: Actions = { buttons: [], cards: new Map(), choice: null, discar
 // GameScreen is the game table (7.5), drawn from the update on screen.
 export function GameScreen() {
   const game = useApp((s) => s.game);
-  const you = useApp((s) => s.lobby.table?.you ?? 0);
+  const you = useApp(seatOf);
   const quit = useApp((s) => s.quit);
   if (!game) {
     return (

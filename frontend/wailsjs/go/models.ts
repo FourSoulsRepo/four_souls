@@ -163,6 +163,22 @@ export namespace main {
 
 export namespace settings {
 	
+	export class Rejoin {
+	    address: string;
+	    token: string;
+	    game: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new Rejoin(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.address = source["address"];
+	        this.token = source["token"];
+	        this.game = source["game"];
+	    }
+	}
 	export class Settings {
 	    nickname: string;
 	    recent: string[];
@@ -170,6 +186,7 @@ export namespace settings {
 	    fullscreen: boolean;
 	    theme: string;
 	    mat: string;
+	    rejoin: Rejoin;
 	
 	    static createFrom(source: any = {}) {
 	        return new Settings(source);
@@ -183,7 +200,26 @@ export namespace settings {
 	        this.fullscreen = source["fullscreen"];
 	        this.theme = source["theme"];
 	        this.mat = source["mat"];
+	        this.rejoin = this.convertValues(source["rejoin"], Rejoin);
 	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
 	}
 
 }

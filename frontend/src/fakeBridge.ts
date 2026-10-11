@@ -43,7 +43,15 @@ function loadSettings(): unknown {
   const params = new URLSearchParams(window.location.search);
   const animation = params.get('anim') ?? 'normal';
   const nickname = params.has('firstrun') ? '' : 'Player';
-  const fresh = { nickname, recent: [], animation, fullscreen: false, theme: 'dark', mat: 'felt' };
+  const fresh = {
+    nickname,
+    recent: [],
+    animation,
+    fullscreen: false,
+    theme: 'dark',
+    mat: 'felt',
+    rejoin: { address: '', token: '', game: '' },
+  };
   return JSON.parse(localStorage.getItem(settingsKey) ?? JSON.stringify(fresh));
 }
 
@@ -56,6 +64,7 @@ interface FakeSettings {
   fullscreen: boolean;
   theme: string;
   mat: string;
+  rejoin: { address: string; token: string; game: string };
 }
 
 function saveSettings(s: FakeSettings): Promise<unknown> {

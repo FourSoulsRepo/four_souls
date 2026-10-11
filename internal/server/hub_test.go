@@ -283,8 +283,8 @@ func TestReconnect(t *testing.T) {
 		bob.next(protocol.TypeUpdate, &u)
 	}
 	ann3, back := arrive(t, h, "Ann", w.Token)
-	if back.Token != w.Token {
-		t.Fatalf("token %q", back.Token)
+	if back.Token != w.Token || back.Seat != 0 {
+		t.Fatalf("token %q, seat %d; want the old token and seat 0", back.Token, back.Seat)
 	}
 	ann3.next(protocol.TypeUpdate, &u)
 	if !u.Seats[0].Connected || u.View.Players[0].HandSize == 0 {

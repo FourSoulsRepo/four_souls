@@ -26,6 +26,9 @@
   * **Leave** goes back to the main menu.
 * **2d. The others, in the app:** a "Waiting for <name>" dialog shows the votes.
   * **Wait** or **Go on without them**; a vote can be changed.
+* **1b. The app was closed:** the app keeps the last game's server and seat token in its settings.
+  * Joining that server again sends the token; the player is back in their seat.
+  * The welcome names the seat, so the app knows which player it is.
 
 ## Postconditions
 

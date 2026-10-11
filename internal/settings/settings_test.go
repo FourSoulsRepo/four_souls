@@ -101,3 +101,14 @@ func TestWindowThemeAndMat(t *testing.T) {
 		}
 	}
 }
+
+func TestRejoinSurvivesRestart(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "settings.json")
+	r := Rejoin{Address: "192.168.1.5", Token: "t0k3n", Game: "g1"}
+	if _, err := Save(path, Settings{Rejoin: r}); err != nil {
+		t.Fatal(err)
+	}
+	if got := Load(path).Rejoin; got != r {
+		t.Fatalf("rejoin %+v, want %+v", got, r)
+	}
+}

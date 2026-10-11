@@ -28,6 +28,16 @@ type Settings struct {
 	Theme string `json:"theme"`
 	// Mat is the game mat under the table (ST-03): one of Mats.
 	Mat string `json:"mat"`
+	// Rejoin is the last game joined, so a restarted app takes its seat
+	// back (N-08).
+	Rejoin Rejoin `json:"rejoin"`
+}
+
+// Rejoin is where the last game ran and the token that holds its seat.
+type Rejoin struct {
+	Address string `json:"address"`
+	Token   string `json:"token"`
+	Game    string `json:"game"`
 }
 
 // The choices of the settings that take one of a list; the first is

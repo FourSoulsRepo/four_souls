@@ -12,6 +12,7 @@ import {
   Settings as wailsSettings,
   Versions as wailsVersions,
 } from '../../wailsjs/go/main/App';
+import { settings } from '../../wailsjs/go/models';
 import { Info as hostInfo, Start as hostStart, Stop as hostStop } from '../../wailsjs/go/main/Host';
 import { BrowserOpenURL, WindowFullscreen, WindowUnfullscreen } from '../../wailsjs/runtime/runtime';
 
@@ -37,6 +38,15 @@ export interface Settings {
   fullscreen: boolean; // ST-01
   theme: Theme; // ST-02, menus and panels
   mat: Mat; // ST-03
+  // rejoin is the last game joined, so a restarted app takes its seat
+  // back (N-08).
+  rejoin: Rejoin;
+}
+
+export interface Rejoin {
+  address: string;
+  token: string;
+  game: string;
 }
 
 export type Theme = 'dark' | 'light';
@@ -44,7 +54,15 @@ export type Mat = 'felt' | 'basement' | 'cathedral';
 
 // fromGo reads Go's settings; Go checks the choices, so anything else is
 // only possible from an older app.
-function fromGo(s: { nickname: string; recent: string[]; animation: string; fullscreen: boolean; theme: string; mat: string }): Settings {
+function fromGo(s: {
+  nickname: string;
+  recent: string[];
+  animation: string;
+  fullscreen: boolean;
+  theme: string;
+  mat: string;
+  rejoin: Rejoin;
+}): Settings {
   return {
     nickname: s.nickname,
     recent: s.recent,
@@ -52,6 +70,7 @@ function fromGo(s: { nickname: string; recent: string[]; animation: string; full
     fullscreen: s.fullscreen,
     theme: s.theme === 'light' ? 'light' : 'dark',
     mat: s.mat === 'basement' || s.mat === 'cathedral' ? s.mat : 'felt',
+    rejoin: { address: s.rejoin.address, token: s.rejoin.token, game: s.rejoin.game },
   };
 }
 
@@ -82,7 +101,7 @@ export async function getSettings(): Promise<Settings> {
 // Go checks and cleans the settings; the result is what it stored.
 // A rejection carries Go's message for the player.
 export async function saveSettings(s: Settings): Promise<Settings> {
-  return fromGo(await wailsSaveSettings(s));
+  return fromGo(await wailsSaveSettings(settings.Settings.createFrom(s)));
 }
 
 // getCardSets lists the card set codes this app has (CD-03).

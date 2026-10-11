@@ -60,6 +60,7 @@ The turn badge shows the turn number, the active player and the step. Player are
 ## Pause, reconnect, game over
 
 * A lost connection during a game keeps the table (`lobby.lost`); `LostOverlay` offers Reconnect, which says hello again with the seat's token from `welcome`.
+* The seat token also goes into the settings (`settings.rejoin`: address, token, game) whenever the player sits at a table. A restarted app sends it on the next connect to that address and lands back in its seat; `seatOf` then reads the seat from the welcome.
 * `update.pause` shows `PauseOverlay` to the others: who is away, the votes, and Wait / Go on without them (`vote` messages).
 * `view.over` shows `EndOverlay`: the winner and Save record. `App.SaveRecord` (Go, `record.go`) asks where to save and downloads `http://<server>/record?game=…&token=…`; it accepts only such links.
 
