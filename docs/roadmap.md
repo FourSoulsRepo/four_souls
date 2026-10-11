@@ -18,22 +18,23 @@ Each step ends in something that runs and is tested.
 | 6 | Server | Dedicated and hosted server, lobby, records | 4 |
 | 7 | Client | Playable table in the desktop app; internal play-test build | 4, 6 |
 | 8 | First release | **MVP:** 2–4 players, Base Game, over LAN | 7 |
+| 15 | Visual refresh | Table layout reworked after fouronlinesouls.net | 8 |
+| 16 | Localization | Menus, messages, and cards in several languages | 8 |
+| 17 | Rollback | Other players can undo a mistaken event | 8 |
+| 14 | More sets | Gold Box, Four Souls+, Requiem, promos | 8 |
 | 9 | Spectators | Viewers watch live | 8 |
 | 10 | Replays | Records screen and replay player | 8 |
 | 11 | Learning | Rules viewer, sandbox, tutorial, bot | 8 |
 | 12 | Rules website | Engine in WebAssembly on GitHub Pages | 11 |
 | 13 | Web client | Browser client served by the game server | 9 |
-| 14 | More sets | Gold Box, Four Souls+, Requiem, promos | 8 |
-| 15 | Visual refresh | Table layout reworked after fouronlinesouls.net | 8 |
-| 16 | Localization | Menus, messages, and cards in several languages | 8 |
-| 17 | Rollback | Other players can undo a mistaken event | 8 |
 | — | Future | Not scheduled yet | — |
 
 Step 3 reuses the browser scraping tool from step 2.
 Steps 5, 6 and 7 can run in parallel.
 Step 7 ends with an internal build on a partial card set.
 Step 8 needs all Base Game cards from step 5.
-Steps 9–17 can be reordered after the MVP.
+After the MVP the order is 15, 16, 17, 14, 9, 10, 11, 12, 13.
+Step numbers stay as IDs; the table lists steps in work order.
 
 ---
 
