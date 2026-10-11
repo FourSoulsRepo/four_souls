@@ -19,6 +19,8 @@ frontend/              React + TypeScript (Vite)
 e2e/                   Playwright UI tests and screenshots
 frontend/src/bridge/   the only code that talks to Wails
 docs/                  ideas, roadmap, ADRs, use cases, this wiki
+release/               README.txt for the release archives
+.github/               CI, release workflow, shared build and card images actions
 ```
 
 ## Go modules

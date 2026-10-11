@@ -1,0 +1,71 @@
+name: Build
+description: >
+  Builds the desktop app (Wails) and the dedicated server for one target
+  into build/bin. Shared by CI and the release workflow.
+
+inputs:
+  platform:
+    description: Wails platform, e.g. linux/amd64, darwin/universal.
+    required: true
+  tags:
+    description: Go build tags, e.g. "embed cardimages webkit2_41".
+    required: true
+  goos:
+    description: GOOS of the server binary.
+    required: true
+  goarch:
+    description: GOARCH of the server binary (ignored for darwin, which is universal).
+    required: true
+  version:
+    description: App version stamped into both binaries.
+    required: true
+  node-version:
+    description: Node.js version for the frontend.
+    required: true
+  wails-version:
+    description: Wails CLI version.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-go@v6
+      with:
+        go-version-file: go.work
+        cache-dependency-path: "**/go.sum"
+    - uses: actions/setup-node@v5
+      with:
+        node-version: ${{ inputs.node-version }}
+        cache: npm
+        cache-dependency-path: frontend/package-lock.json
+    - name: Install Wails Linux dependencies
+      if: runner.os == 'Linux'
+      shell: bash
+      run: sudo apt-get update && sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.1-dev
+    - name: Install Wails CLI
+      shell: bash
+      run: go install github.com/wailsapp/wails/v2/cmd/wails@${{ inputs.wails-version }}
+    - name: Build app
+      shell: bash
+      run: |
+        wails build -platform "${{ inputs.platform }}" -tags "${{ inputs.tags }}" \
+          -ldflags "-X github.com/FourSoulsRepo/four_souls/internal/version.App=${{ inputs.version }}"
+    - name: Build server
+      shell: bash
+      env:
+        GOOS: ${{ inputs.goos }}
+        GOARCH: ${{ inputs.goarch }}
+        TAGS: ${{ inputs.tags }}
+        LDFLAGS: -X github.com/FourSoulsRepo/four_souls/internal/version.App=${{ inputs.version }}
+      run: |
+        # The server needs card text, not card images.
+        TAGS="${TAGS//cardimages/}"
+        if [ "$GOOS" = darwin ]; then
+          # One server binary for Intel and Apple silicon, like the app.
+          GOARCH=amd64 go build -tags "$TAGS" -ldflags "$LDFLAGS" -o build/server-amd64 ./cmd/server
+          GOARCH=arm64 go build -tags "$TAGS" -ldflags "$LDFLAGS" -o build/server-arm64 ./cmd/server
+          lipo -create -output build/bin/four_souls_server build/server-amd64 build/server-arm64
+        else
+          ext=""; [ "$GOOS" = windows ] && ext=".exe"
+          go build -tags "$TAGS" -ldflags "$LDFLAGS" -o "build/bin/four_souls_server$ext" ./cmd/server
+        fi
