@@ -217,6 +217,7 @@ Images come first, so the new table is built with backs and mats.
    3. The app serves only WebP under `/cardimg/` now.
    4. Originals kept locally in `.cache/assets-originals-2026-10-12/`.
    5. Not converted: `coin.png` and two small Steam icons; owner decides.
+   6. Owner: keep those three as they are for now; owner reviewed and pushed.
 
 ### [ ] 15.10 Mat backgrounds
 
