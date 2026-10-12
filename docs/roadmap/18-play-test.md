@@ -37,3 +37,17 @@ Ideas: B-04, B-05.
    3. Accepted ADRs match the code.
 3. Done when:
    1. Use case index has no "Planned" item for released features.
+
+### [ ] 18.4 Multi-instance review
+
+1. Goal: the "several copies" solution (UC-16) is reviewed and kept or reworked.
+2. Tasks:
+   1. Review `internal/instance`, `main.go`, `app.go` from commit 62a610f.
+   2. It was built outside the roadmap; it has no ADR yet.
+   3. Check it on macOS (`open -n`), Windows, and Linux.
+   4. Check edge cases: crash, all 16 slots busy, two copies hosting.
+   5. Check settings seeding: no copy takes another copy's seat.
+   6. **Owner** decides: keep, simplify, or replace.
+   7. Write an ADR for the result; update UC-16 if behavior changes.
+3. Done when:
+   1. ADR accepted; UC-16 matches the code.
