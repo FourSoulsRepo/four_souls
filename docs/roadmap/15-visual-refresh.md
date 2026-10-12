@@ -409,7 +409,7 @@ Images come first, so the new table is built with backs and mats.
    1. Owner marks 15.17 solved.
    2. New sub-step: the real coin image as the coin icon; planned as 15.38.
 
-### [ ] 15.18 Opponents
+### [x] 15.18 Opponents
 
 1. Goal: opponents placed well for 2, 3, and 4 players.
 2. Tasks:
@@ -434,6 +434,8 @@ Images come first, so the new table is built with backs and mats.
    10. The allowance wraps only between its parts.
    11. e2e test: coins, badges, one back per card, top hand off screen.
    12. Screenshots: `.cache/screenshots/15.18/before/` and `after/`.
+5. Owner notes (2026-10-12)
+   1. Owner marks 15.18 solved.
 
 ### [ ] 15.19 Action icons
 
