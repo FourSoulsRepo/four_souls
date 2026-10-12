@@ -199,6 +199,7 @@ Step numbers stay as IDs; the table lists steps in work order.
 7. Responsive, simple, informative UI (V-15, V-18).
 8. Drag cards onto the table or a target, Hearthstone-style (V-16).
 9. Real-looking dice, thrown by a button (V-17).
+10. Everyone sees the roller's own dice look (V-19).
 
 ## 16. Localization
 

@@ -64,6 +64,21 @@ Ideas: V-09, V-12, V-13, V-15 – V-18.
    4. Only `transform` and `opacity`; follows animation speed (ST-05).
    5. The roller can never miss that the game waits for them (V-17).
    6. Use the player's dice look (V-19).
+   7. **Owner** decides the open V-17 questions: timer, bots, throw intent.
 3. Done when:
    1. e2e screenshot of a die in the air.
    2. The rolled value matches the engine in every test.
+
+### [ ] 15.6 Each player's own dice
+
+1. Goal: everyone sees the roller's dice, not their own (V-19).
+2. Tasks:
+   1. Hello sends the player's dice look; the seat keeps it.
+   2. Lobby and game views list each seat's look.
+   3. A roll is drawn with the roller's look on every screen.
+   4. Unknown or missing texture: a plain die.
+   5. Bots use the default look.
+   6. Update protocol docs and golden files.
+3. Done when:
+   1. Server test: each seat's look reaches the other players.
+   2. e2e test: two players see the same look for one roll.

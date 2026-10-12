@@ -104,6 +104,7 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    15. The engine draws the value only when the intent arrives.
    16. So nobody, the roller included, can see it early.
    17. The record keeps the intent, so replays stay exact.
+   18. Items 5–17 are open; the owner decides them in roadmap step 15.5.
 18. V-18. Simple but informative interface.
    1. Do not overload the screen with numbers and panels.
    2. Do not hide what players need to know.
@@ -118,6 +119,11 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    6. First version: one look ("Tear"), no picker yet.
    7. Later: a picker in settings once there are more looks.
    8. Later: others see each player's own dice; needs a protocol field.
+   9. Everyone sees the roller's dice, never their own look.
+   10. The look a player picks is what all players see on that player's rolls.
+   11. Each player's look reaches the others with their seat in the game.
+   12. Today (8.15) every roll shows the viewer's own look; step 15.6 changes that.
+   13. A player without that texture sees a plain die.
 
 ## Rules
 
