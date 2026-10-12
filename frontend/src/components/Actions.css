@@ -76,9 +76,11 @@
   background: var(--bg);
 }
 
+/* A choice sits at the bottom edge, over the viewer's own area, so the
+   board and its targets stay in view (F-02). */
 .choice {
   position: fixed;
-  top: 50%;
+  bottom: 8px;
   left: 50%;
   z-index: 12;
   display: flex;
@@ -88,7 +90,7 @@
   max-width: min(90vw, 760px);
   padding: 14px 18px;
   border-radius: 10px;
-  translate: -50% -50%;
+  translate: -50% 0;
   background: rgb(20 28 40 / 92%);
   box-shadow: 0 8px 32px rgb(0 0 0 / 60%);
 }
@@ -130,13 +132,10 @@
   color: #ffd27a;
 }
 
+/* The stack sits in the board's info column (F-02). */
 .stack {
-  position: absolute;
-  top: 0;
-  right: 0;
-  z-index: 4;
-  width: 230px;
-  max-height: 100%;
+  flex: 0 1 auto;
+  max-height: 65%;
   overflow-y: auto;
   padding: 8px 10px;
   border-radius: 8px;

@@ -9,7 +9,7 @@
 ## Main scenario (happy path)
 
 1. Someone plays a loot card or uses an ability.
-2. The stack panel shows it on every player's table.
+2. The stack panel shows it on every player's table, in the board's left column.
    1. The top item, which resolves next, comes first.
    2. Rolls show their result; damage shows its target.
 3. The action bar says who may respond: "Bo may respond".

@@ -362,6 +362,16 @@ Images come first, so the new table is built with backs and mats.
 3. Done when:
    1. e2e test: board size stays the same when a shop slot empties.
    2. e2e test: no panel covers a deck with 2, 3, or 4 players.
+4. Result (2026-10-12)
+   1. One framed board: info column, slots, bonus souls, decks.
+   2. Info column: turn badge, stack, history; nothing floats over the board.
+   3. Decks sit at the right edge, each with its discard (H-16).
+   4. Fixed shape; it scales with the window, never with its content.
+   5. Up to four slots show full size; more share the row.
+   6. No seat boxes; the active player's name is in the accent color.
+   7. Green felt is no longer the default; Basement is, without images.
+   8. Choices open at the bottom edge, so the board stays in view.
+   9. Screenshots: `.cache/screenshots/15.16/before/` and `after/`.
 
 ### [ ] 15.17 Own area
 

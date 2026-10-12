@@ -67,7 +67,7 @@ test('a drag across the table selects nothing; the history and address do', asyn
   // The turn starts with a loot, so the history has a line.
   const kim = await activePage(pages, click);
   const history = kim.getByRole('complementary', { name: 'History' });
-  // The history lies over the board's corner; the drag starts on the board.
+  // The history sits on the board; hidden, the drag starts on the board.
   await history.getByRole('button', { name: 'Hide' }).click();
   await dragAcross(kim, kim.getByRole('main', { name: /^Turn / }).locator('.board'));
   expect(await selection(kim)).toBe('');

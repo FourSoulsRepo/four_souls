@@ -8,7 +8,7 @@
 
 ## Main scenario (happy path)
 
-1. The history panel sits on the left of the board.
+1. The history panel sits in the board's left column, under the turn badge.
 2. Each resolved stack item adds one entry, with an icon.
 3. Each turn starts with a "Turn N: <name>" line.
 4. The newest entry is at the bottom; the list scrolls.

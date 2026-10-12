@@ -18,9 +18,10 @@ export function matChoices(images: readonly MatInfo[]): MatInfo[] {
 }
 
 // matOf resolves the mat setting: '' is the default, the first mat
-// image, or Green felt without images.
+// image, or Basement without images. Green felt is never the default:
+// it reads as a poker table (H-05).
 export function matOf(id: string, images: readonly MatInfo[]): string {
-  return id || (images[0]?.id ?? 'felt');
+  return id || (images[0]?.id ?? 'basement');
 }
 
 export interface MatLook {
@@ -28,12 +29,12 @@ export interface MatLook {
   style: CSSProperties;
 }
 
-// matLook draws a mat: its colors, or felt for a mat with no colors of
-// its own, and its image over them. A missing or unloadable image
+// matLook draws a mat: its colors, or Basement for a mat with no colors
+// of its own, and its image over them. A missing or unloadable image
 // leaves the colors.
 export function matLook(setting: string, images: readonly MatInfo[]): MatLook {
   const id = matOf(setting, images);
-  const colors = colorMats.some((c) => c.id === id) ? id : 'felt';
+  const colors = colorMats.some((c) => c.id === id) ? id : 'basement';
   const image = images.find((m) => m.id === id)?.image ?? '';
   if (!image) {
     return { className: `mat-${colors}`, style: {} };

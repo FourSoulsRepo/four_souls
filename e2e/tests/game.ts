@@ -78,7 +78,7 @@ export async function expectFits(page: Page): Promise<void> {
     if (document.documentElement.scrollHeight > h || document.documentElement.scrollWidth > w) {
       out.push('page scrolls');
     }
-    for (const el of document.querySelectorAll('.player, .board-row, .board-side, .hand')) {
+    for (const el of document.querySelectorAll('.player, .board, .hand')) {
       const r = el.getBoundingClientRect();
       if (r.left < 0 || r.top < 0 || r.right > w || r.bottom > h) {
         out.push(`${el.className} at ${JSON.stringify(r)}`);

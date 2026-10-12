@@ -15,12 +15,14 @@
    3. Two players: the other one on top.
    4. Three players: left and right.
    5. Four players: left, top, right.
-3. The middle shows the board.
-   1. Monster deck, monster slots, monster discard, bonus souls.
-   2. Treasure deck, shop slots, treasure discard.
-   3. Loot deck and loot discard on the side.
+3. The middle shows the board, in one frame (F-01).
+   1. Left: the turn, the stack and the history.
+   2. Middle: monster slots above shop slots, then bonus souls.
+   3. Right edge: monster, treasure and loot decks, each with its discard.
+   4. The board keeps one shape; it scales with the window only (V-23).
+   5. Nothing lies over the board (F-02).
 4. Each player area shows HP, ATK, cents, souls and hand size.
-5. The active player's area has a red frame.
+5. The active player's name is in the accent color.
 
 ## Alternative scenarios and errors
 
@@ -29,6 +31,7 @@
 * **2c. Dead player:** the area fades and says "dead".
 * **3a. Empty deck or discard:** a dashed outline keeps its place.
 * **3b. Covered slot:** a "+N" badge shows the cards under the top one.
+* **3c. More than four slots:** the slots share the row; the board stays the same.
 * **1a. Bans or a draft first:** "Setting up the match…" until 7.14.
 * **1b. Events play first (V-08):** each update's events play one at a time.
   * Looted and discarded cards fly between deck, hand and discard.

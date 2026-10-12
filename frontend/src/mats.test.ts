@@ -22,17 +22,17 @@ describe('matLook', () => {
       className: 'mat-basement mat-image',
       style: { '--mat-image': 'url("/cardimg/assets/mats/basement.webp")' },
     });
-    expect(matLook('dark_room', [room]).className).toBe('mat-felt mat-image');
+    expect(matLook('dark_room', [room]).className).toBe('mat-basement mat-image');
   });
 
-  it('defaults to the first image, or felt without images', () => {
-    expect(matLook('', [room, basement]).className).toBe('mat-felt mat-image');
+  it('defaults to the first image, or Basement without images', () => {
+    expect(matLook('', [room, basement]).className).toBe('mat-basement mat-image');
     expect(matLook('', [basement]).className).toBe('mat-basement mat-image');
-    expect(matLook('', [])).toEqual({ className: 'mat-felt', style: {} });
+    expect(matLook('', [])).toEqual({ className: 'mat-basement', style: {} });
   });
 
   it('falls back to colors when the image is missing', () => {
     expect(matLook('basement', [])).toEqual({ className: 'mat-basement', style: {} });
-    expect(matLook('dark_room', [])).toEqual({ className: 'mat-felt', style: {} });
+    expect(matLook('dark_room', [])).toEqual({ className: 'mat-basement', style: {} });
   });
 });

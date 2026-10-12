@@ -1,32 +1,25 @@
-/* Info panels (7.9): the turn badge and the history. */
+/* Info panels (7.9): the turn badge and the history. They sit in the
+   board's info column, never over the board (F-02). */
 
 .turn-badge {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  z-index: 3;
+  flex: none;
   padding: 3px 12px;
   border-radius: 12px;
-  translate: -50% 0;
   font-size: 13px;
   font-weight: 700;
-  white-space: nowrap;
+  text-align: center;
   background: rgb(0 0 0 / 55%);
 }
 
-.history,
 .history-show {
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 4;
+  align-self: flex-start;
 }
 
 .history {
   display: flex;
+  flex: 1 1 0;
   flex-direction: column;
-  width: 240px;
-  height: 100%;
+  min-height: 4em;
   padding: 6px 8px;
   border-radius: 8px;
   box-sizing: border-box;

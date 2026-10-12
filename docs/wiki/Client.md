@@ -34,7 +34,15 @@ A dice effect draws `Die`: one face cut out of the player's dice texture (V-19).
 
 ## Game mats
 
-The table lies on a mat (ST-03, V-24), drawn by `mats.matLook`. Three color mats are CSS: Green felt, Basement and Cathedral. Image mats come from `App.Mats`, one per file in `assets/mats/`; an image mat with a color mat's id takes its place in the menu, and a new id is added after them. The image is drawn under a dark shade, so cards and text stay readable, and over its colors (felt for a new id), so a missing or unloadable image leaves the colors. The `mat` setting keeps any mat file name, so a saved mat whose image is gone also falls back to colors. An empty `mat` is the default: the first mat image, or Green felt without images (`mats.matOf`).
+The table lies on a mat (ST-03, V-24), drawn by `mats.matLook`. Three color mats are CSS: Green felt, Basement and Cathedral. Image mats come from `App.Mats`, one per file in `assets/mats/`; an image mat with a color mat's id takes its place in the menu, and a new id is added after them. The image is drawn under a dark shade, so cards and text stay readable, and over its colors (Basement for a new id), so a missing or unloadable image leaves the colors. The `mat` setting keeps any mat file name, so a saved mat whose image is gone also falls back to colors. An empty `mat` is the default: the first mat image, or Basement without images (`mats.matOf`). Green felt stays a choice but is never the default: with seat boxes it read as a poker table (H-05).
+
+## Board
+
+`Board` is one framed board in the middle of the table (F-01, H-01). Its grid has four columns: the info column (turn badge, stack, history), the monster and shop slots, the bonus souls, and the decks at the right edge, each with its discard (H-16). Nothing lies over it (F-02); the e2e tests check that every deck and discard is uncovered with 2, 3 and 4 players.
+
+The board has one fixed shape, empty or full (H-06, V-23). `.board-cell` takes the space the players leave and is a size container; the board takes the largest size of its shape that fits there. `--u`, the width of a slot card, sizes everything on it, so no zone grows or shrinks when cards come and go. An empty slot keeps a dashed outline; up to four slots show full size, and more share the row. `--u` is used only outside cards: inside a card, container units would measure the card.
+
+Players sit on the mat with no seat boxes (H-05); the active player's name is in the accent color. Choices open at the bottom edge, over the viewer's own area, so the board and its targets stay in view.
 
 ## Card backs
 
@@ -57,7 +65,7 @@ Effect durations scale with the animation setting (ST-05) and speed up when upda
 
 ## Stack and waiting
 
-`stack.ts` has the words: `stackLine` describes a stack item ("Ann plays A Dime!!", "Attack: Bo rolls 4", "2 damage to Gaper"), and `waitText` says who the game waits for and why ("Your turn", "Bo may respond", "Ann is choosing"). The stack panel sits in the board's top-right corner while the stack is not empty, the top item first.
+`stack.ts` has the words: `stackLine` describes a stack item ("Ann plays A Dime!!", "Attack: Bo rolls 4", "2 damage to Gaper"), and `waitText` says who the game waits for and why ("Your turn", "Bo may respond", "Ann is choosing"). The stack panel sits in the board's info column, above the history, while the stack is not empty, the top item first.
 
 The action bar shows the response timer from `update.deadline` (N-07) and "Skip all" / "Cancel skip" while something is on the stack (N-06); the server does the skipping.
 

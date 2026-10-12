@@ -2,7 +2,7 @@
 // choices with the first option, discard the first cards, pass when
 // only responding, attack when the turn cannot end otherwise. Used to
 // get through a turn in tests.
-import { expect, type Page } from '@playwright/test';
+import { expect, type Locator, type Page } from '@playwright/test';
 
 interface Seen {
   waiting: number;
@@ -47,6 +47,16 @@ export const tap: Tap = async (_, l) => {
   await l.tap();
 };
 
+// uncovered is the first of the targets a click would reach, if any.
+async function uncovered(targets: Locator): Promise<Locator | undefined> {
+  for (const t of await targets.all()) {
+    if (await t.click({ trial: true, timeout: 300 }).then(() => true, () => false)) {
+      return t;
+    }
+  }
+  return undefined;
+}
+
 // answer makes one move for whichever page must act, if any. It returns
 // false when nobody can act right now.
 async function answer(pages: Page[], press: Tap): Promise<boolean> {
@@ -73,9 +83,9 @@ async function answer(pages: Page[], press: Tap): Promise<boolean> {
     }
     const choice = page.locator('.choice');
     if (await choice.isVisible()) {
-      // Prefer picking on the table, as a player would (7.7).
-      const onTable = page.locator('.board .card.hl-pick, .player-pick').first();
-      await press(page, (await onTable.isVisible()) ? onTable : choice.locator('.choice-option button').first());
+      // Prefer picking on the table, as a player would (7.7), where the
+      // dialog leaves the target uncovered.
+      await press(page, (await uncovered(page.locator('.board .card.hl-pick, .player-pick'))) ?? choice.locator('.choice-option button').first());
       return true;
     }
     const bar = page.getByRole('region', { name: 'Actions' });

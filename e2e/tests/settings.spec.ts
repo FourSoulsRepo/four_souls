@@ -76,9 +76,9 @@ test('the first mat image is the default', async ({ page }) => {
 
 test('without mat images the table shows colors', async ({ browser }) => {
   for (const [query, colors] of [
-    ['&nomats', 'mat-felt'],
-    ['&nomats&mat=basement', 'mat-basement'],
-    ['&mat=dark_room', 'mat-felt'],
+    ['&nomats', 'mat-basement'],
+    ['&nomats&mat=felt', 'mat-felt'],
+    ['&mat=dark_room', 'mat-basement'],
   ]) {
     const page = await (await browser.newContext()).newPage();
     await page.goto(`${appURL()}${query ?? ''}`);
