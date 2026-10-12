@@ -23,6 +23,12 @@
    5. Nothing lies over the board (F-02).
 4. Each player area shows HP, ATK, cents, souls and hand size.
 5. The active player's name is in the accent color.
+6. The player's own area reads at a glance (15.17).
+   1. Left: name, coins as a big number, and souls.
+   2. The character sits centered under the board; items to its right.
+   3. Health and attack are big numbers on the character card.
+   4. The hand fans out at the bottom edge, partly off screen.
+   5. Hover a card to read it in full (V-18).
 
 ## Alternative scenarios and errors
 

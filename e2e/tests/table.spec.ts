@@ -30,6 +30,31 @@ async function expectDecksClear(page: Page): Promise<void> {
   expect(covered).toEqual([]);
 }
 
+// expectOwnArea checks the viewer's place (15.17): the character sits
+// under the board's middle with live health and attack on it, coins are
+// shown, and every hand card hangs partly past the bottom edge.
+async function expectOwnArea(page: Page): Promise<void> {
+  const own = page.locator('.player-bottom');
+  const character = own.locator('.own-character > .card');
+  await expect(character.getByLabel(/^\d+ health$/)).toBeVisible();
+  await expect(character.getByLabel(/^\d+ attack$/)).toBeVisible();
+  await expect(own.getByLabel(/^\d+ cents$/)).toBeVisible();
+  const board = await boardBox(page);
+  const card = await character.boundingBox();
+  if (!board || !card) {
+    throw new Error('no board or character');
+  }
+  expect(Math.abs(card.x + card.width / 2 - (board.x + board.width / 2))).toBeLessThan(2);
+  const height = page.viewportSize()?.height ?? 0;
+  const hand = await own.getByRole('group', { name: 'Your hand' }).locator('.hand-card').all();
+  expect(hand.length).toBeGreaterThan(0);
+  for (const c of hand) {
+    const box = await c.boundingBox();
+    expect(box?.y ?? height).toBeLessThan(height);
+    expect((box?.y ?? 0) + (box?.height ?? 0)).toBeGreaterThan(height);
+  }
+}
+
 type View = Record<string, unknown>;
 
 // rewriteView changes the page's game updates before the app sees them;
@@ -102,6 +127,7 @@ test('two players face each other; the table fits 1280x720', async ({ browser })
     await expect(page.getByRole('group', { name: 'Monsters' }).getByRole('img')).not.toHaveCount(0);
     await expectFits(page);
     await expectDecksClear(page);
+    await expectOwnArea(page);
   }
   await shot(eve, 'table-2p');
 });
@@ -119,6 +145,7 @@ test('four players sit left, top and right in turn order', async ({ browser }) =
   for (const page of pages) {
     await expectFits(page);
     await expectDecksClear(page);
+    await expectOwnArea(page);
   }
   await shot(hal, 'table-4p');
 });
@@ -182,7 +209,8 @@ for (const [n, names] of [
         } else {
           expect(r.width).toBeLessThan(full);
         }
-        expect(r.x).toBeGreaterThanOrEqual(area?.x ?? 0);
+        // Half a pixel either side for sub-pixel rounding (WebKit).
+        expect(r.x).toBeGreaterThanOrEqual((area?.x ?? 0) - 0.5);
         expect(r.x + r.width).toBeLessThanOrEqual((area?.x ?? 0) + (area?.width ?? 0) + 0.5);
         const next = boxes[i + 1];
         if (next) {

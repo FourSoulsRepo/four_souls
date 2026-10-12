@@ -240,20 +240,111 @@
   flex-wrap: wrap;
 }
 
-.player-bottom {
-  flex-direction: row;
-  flex-wrap: wrap;
+/* The own area (15.17): status | character | items, the hand below.
+   The character sits in the middle column, so it stays centered at
+   the bottom edge whatever the status and the items take (H-02). */
+.player.own {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-areas:
+    "status character items"
+    "hand hand hand";
+  align-items: end;
+  column-gap: 14px;
+  row-gap: 0;
+  padding: 0 8px;
+}
+
+.own-status {
+  grid-area: status;
+  justify-self: end;
+  display: flex;
+  flex-direction: column;
   align-items: flex-end;
-  column-gap: 16px;
+  gap: 2px;
+  padding-bottom: 4px;
+  text-align: right;
+  text-shadow: 0 1px 3px rgb(0 0 0 / 80%);
 }
 
-.player-bottom .player-header {
-  flex-basis: 100%;
+.own-name {
+  font-size: 16px;
 }
 
-.hand {
-  flex: 1;
+.player.active .own-name {
+  color: var(--accent);
+}
+
+/* Coins are big, like mana in Hearthstone (H-18). */
+.own-coins {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1.1;
+  color: #ffd27a;
+}
+
+.coin {
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: 2px solid #8a6212;
+  border-radius: 50%;
+  box-sizing: border-box;
+  font-size: 15px;
+  color: #6b4a0a;
+  text-shadow: none;
+  background: radial-gradient(circle at 35% 30%, #ffe9a3, #e0a82e);
+}
+
+.own-souls {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.own-souls b {
+  font-size: 16px;
+  color: var(--fg);
+}
+
+.own-character {
+  grid-area: character;
+}
+
+.own-items {
+  grid-area: items;
+}
+
+/* The hand box is shorter than its cards: they hang past the bottom
+   edge, where the table clips them (H-03). The box stays on screen. */
+.own .hand {
+  grid-area: hand;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 0;
+  height: 104px;
+  padding: 12px 0 0;
+  overflow: visible;
+}
+
+/* The fan: each card turns by its place from the middle and drops a
+   little toward the ends. --spread is set per card, the rest on .hand. */
+.own .hand-card {
+  transform: translateY(calc(var(--spread) * var(--spread) * 4px)) rotate(calc(var(--spread) * var(--fan-step)));
+  transform-origin: 50% 160%;
+}
+
+.own .hand-card + .hand-card {
+  margin-left: calc(var(--fan-overlap) * -1);
+}
+
+/* A hovered card comes to the front of the fan; 15.27 makes it rise. */
+.own .hand-card:hover:not(.dragging) {
+  z-index: 10;
 }
 
 /* Dragging a hand card to play it (7.7); only transform changes. */

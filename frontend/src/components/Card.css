@@ -223,3 +223,39 @@
   color: #1d1d1d;
   background: #ffd27a;
 }
+
+/* Live health and attack on the own character (H-15): big round
+   numbers at the bottom corners, health left and attack right. */
+.card-stat {
+  position: absolute;
+  bottom: 3cqi;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 34cqi;
+  aspect-ratio: 1;
+  border: 2cqi solid rgb(0 0 0 / 55%);
+  border-radius: 50%;
+  box-sizing: border-box;
+  font-size: 21cqi;
+  font-weight: 800;
+  line-height: 1;
+  color: #fff;
+  text-shadow: 0 1px 2px #000;
+}
+
+.card-hp {
+  left: 3cqi;
+  background: radial-gradient(circle at 35% 30%, #e85a4f, #8e1b14);
+}
+
+.card-atk {
+  right: 3cqi;
+  background: radial-gradient(circle at 35% 30%, #f2c94c, #9a6a0c);
+}
+
+/* The health badge takes the corner of the counters. */
+.card.has-stats .card-counters {
+  top: 6cqi;
+  bottom: auto;
+}

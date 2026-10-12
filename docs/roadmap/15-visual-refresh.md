@@ -393,6 +393,17 @@ Images come first, so the new table is built with backs and mats.
 3. Done when:
    1. `make screenshots` shows the new own area.
    2. `make frontend e2e` passes.
+4. Result (2026-10-12)
+   1. Status at the left: name, big coins with a coin mark, souls.
+   2. The active player's name is in the accent color; "what is left" below.
+   3. Character centered under the board; items to its right.
+   4. Live HP and ATK as big round badges on the character card.
+   5. Hand fanned at the bottom edge; each card hangs about 40 px off screen.
+   6. The fan narrows and overlaps more as the hand grows.
+   7. A hovered hand card comes to the front; rising is 15.27.
+   8. e2e test: character centered, badges and coins shown, hand cut off.
+   9. The board is a little smaller: the own area takes about 35 px more.
+   10. Screenshots: `.cache/screenshots/15.17/before/` and `after/`.
 
 ### [ ] 15.18 Opponents
 

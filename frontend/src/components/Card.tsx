@@ -27,6 +27,8 @@ interface Props {
   counters?: number;
   // highlight marks a card the player may act on or pick (7.7).
   highlight?: 'act' | 'pick';
+  // stats shows live health and attack as big numbers (H-15).
+  stats?: { hp: number; atk: number };
   onClick?: () => void;
 }
 
@@ -41,6 +43,7 @@ export function Card({
   counters = 0,
   objectId,
   highlight,
+  stats,
   onClick,
 }: Props) {
   const info = useApp((s) => (cardRef ? s.cards.get(cardRef) : undefined));
@@ -104,7 +107,7 @@ export function Card({
       animate={{ scale: 1, opacity: 1 }}
       transition={{ duration: 0.25 * scale }}
       data-zone={objectId === undefined ? undefined : `obj-${String(objectId)}`}
-      className={`card size-${size} kind-${kindOf(card.type)}${spent ? ' spent' : ''}${highlight ? ` hl-${highlight}` : ''}`}
+      className={`card size-${size} kind-${kindOf(card.type)}${spent ? ' spent' : ''}${stats ? ' has-stats' : ''}${highlight ? ` hl-${highlight}` : ''}`}
       role={onClick ? 'button' : 'img'}
       aria-label={card.name}
       onClick={onClick}
@@ -164,6 +167,16 @@ export function Card({
         <span className="card-damage" aria-label={`${String(damage)} damage`}>
           {damage}
         </span>
+      )}
+      {stats && (
+        <>
+          <span className="card-stat card-hp" title="Health" aria-label={`${String(stats.hp)} health`}>
+            {stats.hp}
+          </span>
+          <span className="card-stat card-atk" title="Attack" aria-label={`${String(stats.atk)} attack`}>
+            {stats.atk}
+          </span>
+        </>
       )}
     </motion.div>
   );
