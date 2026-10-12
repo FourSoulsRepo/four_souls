@@ -38,6 +38,11 @@
   * Below it: the used ability's words, highlighted.
   * Then the owner's name, in their color.
   * On touch, a tap shows the same until the next tap.
+* **2f. Attacks (15.22):** a roll names the monster: "Attack: Ann rolls 4 against Fly".
+  * Damage names its dealer: "Fly deals 1 damage to Ann".
+  * Hover shows the monster, and this line under it.
+* **2g. A roll's result (15.22):** the result item has only the rolled line.
+  * "1: Each player gains 1¢." instead of the whole card text.
 
 ## Postconditions
 

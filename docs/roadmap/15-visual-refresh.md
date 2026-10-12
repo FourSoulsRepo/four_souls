@@ -591,6 +591,27 @@ Images come first, so the new table is built with backs and mats.
    13. e2e test: a loot played in a real game shows with a bolt badge.
    14. e2e test: 3 items, badges, order, and hover with card and owner.
    15. Screenshots: `.cache/screenshots/15.22/before/` and `after/`.
+6. Owner notes (2026-10-12)
+   1. Owner: attack rolls and attack damage do not say whom they hit.
+   2. Owner: Blank Rune shows the whole card text, not the rolled line.
+   3. Owner: Blank Rune shows twice; the first did nothing yet.
+   4. Owner: show only the effect that was applied; split the items.
+7. Result of the fixes (2026-10-12)
+   1. Stack items name their source and target cards (`source_card`, `target_card`).
+   2. Views and the resolved event fill them, while the card is public.
+   3. A dead monster stays named; its object is gone by then.
+   4. Attack roll: "Attack: Ann rolls 4 against Fly"; hover shows Fly.
+   5. Damage names its dealer: "Ann deals 2 damage to Fly".
+   6. A monster hitting back: "Fly deals 1 damage to Ann".
+   7. An item without ability words shows this line under the card.
+   8. A card that rolls resolves twice: the play, then its result.
+   9. The play now says only "Roll." (the words up to the roll).
+   10. The result says only its line: "1: Each player gains 1¢."
+   11. A result without a line says "6: Nothing happens."
+   12. On the stack, the play keeps the whole text: all results to come.
+   13. A card's roll names the card: "Ann rolls 1 for Blank Rune".
+   14. The full History panel keeps its old lines for now.
+   15. Screenshots: `.cache/screenshots/15.22/fix/`.
 
 ### [ ] 15.23 Counter badges and live stats
 

@@ -43,10 +43,15 @@ export interface LinePart {
 export function stackParts(it: StackItem, view: GameView, n: Names): LinePart[] {
   const who: LinePart = { text: n.player(it.controller), role: 'player', player: it.controller };
   const card: LinePart = { text: it.card ? n.card(it.card) : '', role: 'card' };
+  const targetCard = it.target_card ?? findCard(view, it.target.object ?? 0);
   const target: LinePart = it.target.is_player
     ? { text: n.player(it.target.player), role: 'target', player: it.target.player }
-    : { text: n.card(findCard(view, it.target.object ?? 0) ?? 'a card'), role: 'target' };
+    : { text: targetCard ? n.card(targetCard) : 'a card', role: 'target' };
   const attack: LinePart[] = it.attack ? [{ text: 'Attack: ' }] : [];
+  // dealer is who deals damage: the player, or the monster that hits back.
+  const sourceCard = it.source_card ?? findCard(view, it.source);
+  const dealer: LinePart[] =
+    it.controller >= 0 ? [who, { text: ' deals ' }] : sourceCard ? [{ text: n.card(sourceCard), role: 'card' }, { text: ' deals ' }] : [];
   switch (it.kind) {
     case StackKind.loot:
       return [who, { text: ' plays ' }, card];
@@ -55,11 +60,20 @@ export function stackParts(it: StackItem, view: GameView, n: Names): LinePart[] 
     case StackKind.trigger:
       return [card, { text: ' triggers' }];
     case StackKind.roll: {
-      const label = it.label ? ` for ${it.label}` : '';
-      return [...attack, who, { text: ` rolls${it.roll ? ` ${String(it.roll)}` : ''}${label}` }];
+      const rolls: LinePart = { text: ` rolls${it.roll ? ` ${String(it.roll)}` : ''}` };
+      if (it.attack && targetCard) {
+        // An attack roll names the monster it is against.
+        return [...attack, who, rolls, { text: ' against ' }, target];
+      }
+      // A card's roll names the card; other rolls their label.
+      if (it.roll_for.card) {
+        return [who, { text: `${rolls.text} for ` }, { text: n.card(it.roll_for.card), role: 'card' }];
+      }
+      return [...attack, who, { text: `${rolls.text}${it.label ? ` for ${it.label}` : ''}` }];
     }
-    case StackKind.damage:
-      return [...attack, { text: `${String(it.amount ?? 0)} damage to ` }, target];
+    case StackKind.damage: {
+      return [...attack, ...dealer, { text: `${String(it.amount ?? 0)} damage to ` }, target];
+    }
     case StackKind.death:
       return [target, { text: ' dies' }];
     case StackKind.penalty:
@@ -100,9 +114,16 @@ export function stackIcon(it: StackItem): StackIcon {
 }
 
 // stackCard is the card a stack row shows large on hover (S-06): its own
-// card, or the card it comes from.
+// card, the card it comes from, or else the card it targets: the monster
+// an attack roll is against (15.22).
 export function stackCard(it: StackItem, view: GameView): string | undefined {
-  return it.card ?? findCard(view, it.source);
+  return (
+    it.card ??
+    it.source_card ??
+    findCard(view, it.source) ??
+    it.target_card ??
+    (it.target.is_player ? undefined : findCard(view, it.target.object ?? 0))
+  );
 }
 
 // StackBadge marks a history icon (H-08): a sword for an attack, a bolt

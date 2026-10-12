@@ -1,6 +1,11 @@
 package rulesengine
 
-import "slices"
+import (
+	"fmt"
+	"regexp"
+	"slices"
+	"strings"
+)
 
 // ViewerKind is who looks at the game (A-07, SP-01, SP-02).
 type ViewerKind int
@@ -102,7 +107,7 @@ func (v Viewer) sees(p PlayerID) bool {
 func (g *Game) View(v Viewer) GameView {
 	out := GameView{Turn: g.Turn, Over: g.Over, Winners: g.Winners, Stack: append([]StackItem(nil), g.Stack...)}
 	for i := range out.Stack {
-		out.Stack[i].Text = g.usedText(out.Stack[i])
+		out.Stack[i] = g.shown(out.Stack[i])
 	}
 	for _, pl := range g.Players {
 		pv := PlayerView{
@@ -277,16 +282,103 @@ func (g *Game) peeksTreasure(p PlayerID) bool {
 	return false
 }
 
+// shown is a stack item with its display fields filled: the used
+// ability's words and the cards of its source and target (S-07, 15.22).
+func (g *Game) shown(it StackItem) StackItem {
+	it.Text = g.usedText(it)
+	it.SourceCard = g.publicCard(it.Source)
+	if !it.Target.IsPlayer {
+		it.TargetCard = g.publicCard(it.Target.Object)
+	}
+	return it
+}
+
+// publicCard is the card of an object anyone may see, or "".
+func (g *Game) publicCard(id ObjectID) CardRef {
+	if id <= 0 || int(id) >= len(g.Objects) {
+		return ""
+	}
+	o := g.Object(id)
+	if o.Zone.Kind == ZoneDeck || o.Zone.Kind == ZoneHand {
+		return ""
+	}
+	return o.Card
+}
+
 // usedText is the words of the ability a stack item uses: the chosen
-// mode's when it has one, else the whole ability's (S-07).
+// mode's when it has one, else the whole ability's (S-07). A roll's
+// result trigger has only the line for its result (15.22).
 func (g *Game) usedText(it StackItem) string {
 	d, ok := g.cards.find(it.Ability.Card)
 	if !ok || it.Ability.Index < 0 || it.Ability.Index >= len(d.Abilities) {
 		return ""
 	}
 	a := d.Abilities[it.Ability.Index]
+	text := a.Text
 	if it.Mode >= 0 && it.Mode < len(a.Modes) && a.Modes[it.Mode].Text != "" {
-		return a.Modes[it.Mode].Text
+		text = a.Modes[it.Mode].Text
 	}
-	return a.Text
+	if it.RollResult > 0 {
+		return rollResultText(text, it.RollResult)
+	}
+	return text
+}
+
+// rollWord is where a roll starts in an ability's words: "roll-" or
+// "rolls-"; rollHead is one result line's head: "1:", "1-2:", "1 or 6:".
+var (
+	rollWord = regexp.MustCompile(`(?i)\brolls?-`)
+	rollHead = regexp.MustCompile(`(\d)(?:-(\d)| or (\d))?:\s`)
+)
+
+// rollStartText is what an ability does before its roll's result: the
+// words up to the roll. "Roll- 1: Gain 1¢. 2: …" says "Roll." (15.22).
+func rollStartText(text string) string {
+	m := rollWord.FindStringIndex(text)
+	if m == nil {
+		return text
+	}
+	return text[:m[1]-1] + "."
+}
+
+// rollResultText is the line of an ability's words for one roll result:
+// "1: Each player gains 1¢." A roll without a table keeps the words
+// after the roll; a result with no line says it did nothing.
+func rollResultText(text string, result int) string {
+	m := rollWord.FindStringIndex(text)
+	if m == nil {
+		return text
+	}
+	rest := strings.TrimSpace(text[m[1]:])
+	heads := rollHead.FindAllStringSubmatchIndex(rest, -1)
+	// A head starts the words or follows the end of a line.
+	heads = slices.DeleteFunc(heads, func(h []int) bool {
+		return h[0] > 0 && !strings.HasSuffix(strings.TrimSpace(rest[:h[0]]), ".")
+	})
+	if len(heads) == 0 {
+		return rest
+	}
+	for i, h := range heads {
+		lo := digit(rest[h[2]:h[3]])
+		hi, or := lo, -1
+		if h[4] >= 0 {
+			hi = digit(rest[h[4]:h[5]])
+		}
+		if h[6] >= 0 {
+			or = digit(rest[h[6]:h[7]])
+		}
+		if (result >= lo && result <= hi) || result == or {
+			end := len(rest)
+			if i+1 < len(heads) {
+				end = heads[i+1][0]
+			}
+			return strings.TrimSpace(rest[h[0]:end])
+		}
+	}
+	return fmt.Sprintf("%d: Nothing happens.", result)
+}
+
+// digit is a one-digit number; rollHead matches only those.
+func digit(s string) int {
+	return int(s[0] - '0')
 }

@@ -79,8 +79,8 @@ test('a resolved loot card goes to the history strip (15.22)', async ({ browser 
 test('the history strip: icons, badges, and a hover with card and owner (15.22)', async ({ browser }) => {
   const pages = await startGame(browser, ['Cid', 'Dee'], { url: fast() });
   const active = await activePage(pages, click);
-  // Resolved items as the server would send them: a loot card, an attack
-  // roll, and damage, the newest last. They replace what the deal
+  // Resolved items as the server would send them, the newest last: Blank
+  // Rune, its roll and its result; a loot card, an attack roll, damage. They replace what the deal
   // resolved so far. Only the screen changes.
   await active.evaluate(() => {
     interface Item {
@@ -93,7 +93,8 @@ test('the history strip: icons, badges, and a hover with card and owner (15.22)'
       amount?: number;
       attack?: boolean;
       text?: string;
-      target: { player: number; is_player?: boolean };
+      target_card?: string;
+      target: { player: number; object?: number; is_player?: boolean };
       ability: { card: string; index: number };
       roll_for: { card: string; index: number };
     }
@@ -119,7 +120,21 @@ test('the history strip: icons, badges, and a hover with card and owner (15.22)'
     const turn = s.game.view.turn.number;
     const other = 1 - me;
     const none = { card: '', index: 0 };
+    const rune = { card: 'blank_rune', index: 0 };
     const items: Item[] = [
+      { id: 98, kind: 0, controller: me, source: 0, card: 'blank_rune', text: 'Roll.', target: { player: -1 }, ability: rune, roll_for: none },
+      { id: 99, kind: 3, controller: me, source: 0, roll: 1, target: { player: -1 }, ability: none, roll_for: rune },
+      {
+        id: 100,
+        kind: 2,
+        controller: me,
+        source: 0,
+        card: 'blank_rune',
+        text: '1: Each player gains 1¢.',
+        target: { player: -1 },
+        ability: rune,
+        roll_for: none,
+      },
       {
         id: 101,
         kind: 0,
@@ -131,7 +146,18 @@ test('the history strip: icons, badges, and a hover with card and owner (15.22)'
         ability: { card: 'bomb', index: 0 },
         roll_for: none,
       },
-      { id: 102, kind: 3, controller: me, source: 0, roll: 4, attack: true, target: { player: -1 }, ability: none, roll_for: none },
+      {
+        id: 102,
+        kind: 3,
+        controller: me,
+        source: 0,
+        roll: 4,
+        attack: true,
+        target_card: 'fly',
+        target: { player: -1, object: 999 },
+        ability: none,
+        roll_for: none,
+      },
       { id: 103, kind: 4, controller: me, source: 0, amount: 2, attack: true, target: { player: other, is_player: true }, ability: none, roll_for: none },
     ];
     const history = items.map((item, i) => ({ key: i + 1, turn, icon: '✦', text: '', ...(item.card ? { card: item.card } : {}), item }));
@@ -140,9 +166,9 @@ test('the history strip: icons, badges, and a hover with card and owner (15.22)'
 
   const strip = active.getByRole('complementary', { name: 'History strip' });
   const icons = strip.locator('.strip-item');
-  await expect(icons).toHaveCount(3);
+  await expect(icons).toHaveCount(6);
   // Newest on top; a sword for the attack, a bolt for the loot (H-08).
-  await expect(icons.nth(0)).toHaveAttribute('aria-label', /^Attack: 2 damage to (Cid|Dee)$/);
+  await expect(icons.nth(0)).toHaveAttribute('aria-label', /^Attack: (Cid|Dee) deals 2 damage to (Cid|Dee)$/);
   await expect(icons.nth(0).locator('.strip-attack')).toBeAttached();
   await expect(icons.nth(1).locator('.die')).toHaveAttribute('aria-label', 'Rolled 4');
   await expect(icons.nth(1).locator('.strip-attack')).toBeAttached();
@@ -156,6 +182,19 @@ test('the history strip: icons, badges, and a hover with card and owner (15.22)'
   await expect(zoom.locator('.card-zoom-ability')).toHaveText('Deal 1 damage to a monster or player.');
   await expect(zoom.locator('.card-zoom-owner')).toHaveText(/^(Cid|Dee)$/);
   await shot(active, 'history-strip-hover');
+
+  // Hover the attack roll: the monster it was against, and the line.
+  await icons.nth(1).hover();
+  await expect(zoom.locator('.card.size-zoom')).toHaveAttribute('aria-label', /^Fly/);
+  await expect(zoom.locator('.card-zoom-line')).toHaveText(/^Attack: (Cid|Dee) rolls 4 against Fly$/);
+  await shot(active, 'history-strip-attack');
+
+  // Blank Rune: the play says only "Roll."; its result says what happened.
+  await icons.nth(5).hover();
+  await expect(zoom.locator('.card-zoom-ability')).toHaveText('Roll.');
+  await icons.nth(3).hover();
+  await expect(zoom.locator('.card-zoom-ability')).toHaveText('1: Each player gains 1¢.');
+  await shot(active, 'history-strip-result');
   await active.mouse.move(1000, 420);
   await expect(zoom).toBeHidden();
   await shot(active, 'history-strip');

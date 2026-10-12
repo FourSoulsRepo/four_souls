@@ -42,11 +42,23 @@ describe('stackLine', () => {
       'Attack: Bo rolls 4',
     );
     expect(stackLine(item({ kind: StackKind.damage, amount: 2, target: { player: -1, object: 9 } }), view, names)).toBe(
-      '2 damage to GAPER',
+      'Ann deals 2 damage to GAPER',
     );
     expect(stackLine(item({ kind: StackKind.death, target: { player: 1, is_player: true } }), view, names)).toBe(
       'Bo dies',
     );
+  });
+
+  it('names whom an attack is against and who hits back (15.22)', () => {
+    const roll = item({ kind: StackKind.roll, roll: 3, attack: true, target: { player: -1, object: 9 } });
+    expect(stackLine(roll, view, names)).toBe('Attack: Ann rolls 3 against GAPER');
+    const rune = item({ kind: StackKind.roll, roll: 1, label: 'roll', roll_for: { card: 'blank_rune', index: 0 } });
+    expect(stackLine(rune, view, names)).toBe('Ann rolls 1 for BLANK_RUNE');
+    // A monster that died since: the item still names its card.
+    const gone = item({ kind: StackKind.damage, amount: 1, attack: true, target: { player: -1, object: 77 }, target_card: 'fly' });
+    expect(stackLine(gone, view, names)).toBe('Attack: Ann deals 1 damage to FLY');
+    const back = item({ kind: StackKind.damage, amount: 1, attack: true, controller: -1, source: 9, target: { player: 0, is_player: true } });
+    expect(stackLine(back, view, names)).toBe('Attack: GAPER deals 1 damage to Ann');
   });
 });
 
@@ -58,6 +70,8 @@ describe('stackParts', () => {
       { text: 'A_DIME', role: 'card' },
     ]);
     expect(stackParts(item({ kind: StackKind.damage, amount: 1, target: { player: 1, is_player: true } }), view, names)).toEqual([
+      { text: 'Ann', role: 'player', player: 0 },
+      { text: ' deals ' },
       { text: '1 damage to ' },
       { text: 'Bo', role: 'target', player: 1 },
     ]);
@@ -76,6 +90,9 @@ describe('stackIcon and stackCard', () => {
     expect(stackCard(item({ card: 'a_dime' }), view)).toBe('a_dime');
     expect(stackCard(item({ kind: StackKind.roll, source: 9 }), view)).toBe('gaper');
     expect(stackCard(item({ kind: StackKind.roll, source: 99 }), view)).toBeUndefined();
+    // An attack roll has no source: its monster shows (15.22).
+    expect(stackCard(item({ kind: StackKind.roll, source: 0, attack: true, target: { player: -1, object: 9 } }), view)).toBe('gaper');
+    expect(stackCard(item({ kind: StackKind.roll, source: 0, target_card: 'fly', target: { player: -1, object: 77 } }), view)).toBe('fly');
   });
 });
 

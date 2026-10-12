@@ -23,6 +23,10 @@
 9. The strip runs along the board's left edge (15.22).
    1. Its History button opens the full history panel.
    2. The panel starts hidden, so the stack has the room.
+10. Each strip icon says only what that item did.
+   1. A card that rolls shows twice: the play, then its result.
+   2. The play says "Roll."; the result says the rolled line.
+   3. Attack rolls and damage name the monster and who dealt it.
 
 ## Alternative scenarios and errors
 

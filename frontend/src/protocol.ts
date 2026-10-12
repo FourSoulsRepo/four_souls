@@ -260,6 +260,10 @@ export interface StackItem {
   checked?: number;
   // text is the used ability's words, or its chosen mode's (15.21).
   text?: string;
+  // source_card and target_card name the cards of source and target
+  // while anyone may see them (15.22).
+  source_card?: string;
+  target_card?: string;
 }
 
 export interface Prompt {

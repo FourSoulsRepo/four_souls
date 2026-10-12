@@ -50,7 +50,7 @@ function StripItem({ entry, view, names, newTurn }: { entry: Entry; view: GameVi
   if (!it) {
     return null;
   }
-  const card = it.card ?? entry.card ?? stackCard(it, view);
+  const card = stackCard(it, view) ?? entry.card;
   const badge = stackBadge(it);
   const line = stackLine(it, view, names);
   return (
@@ -60,7 +60,7 @@ function StripItem({ entry, view, names, newTurn }: { entry: Entry; view: GameVi
       title={`Turn ${String(entry.turn)}: ${line}`}
       onPointerEnter={(e) => {
         if (card && e.pointerType === 'mouse') {
-          setZoom(itemZoom(it, card, names, e, false));
+          setZoom(itemZoom(it, card, view, names, e, false));
         }
       }}
       onPointerLeave={(e) => {
@@ -70,7 +70,7 @@ function StripItem({ entry, view, names, newTurn }: { entry: Entry; view: GameVi
       }}
       onPointerUp={(e) => {
         if (card && e.pointerType !== 'mouse') {
-          setZoom(itemZoom(it, card, names, e, true));
+          setZoom(itemZoom(it, card, view, names, e, true));
         }
       }}
     >

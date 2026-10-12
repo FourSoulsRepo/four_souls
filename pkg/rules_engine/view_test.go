@@ -255,3 +255,51 @@ func TestResolvedEventCarriesTheItem(t *testing.T) {
 	}
 	t.Fatal("no stack_resolved event")
 }
+
+func TestRollTextSplitsByResult(t *testing.T) {
+	tests := []struct {
+		text   string
+		result int
+		start  string
+		line   string
+	}{
+		{"Roll- 1: Gain 1¢. 2: Take 2 damage. 3: Loot 3. 4: Lose 4¢. 5: Gain 5¢. 6: Gain +1 treasure.", 2, "Roll.", "2: Take 2 damage."},
+		{"↷: Roll- 1-2: Loot 1. 3-4: Gain 4¢.", 4, "↷: Roll.", "3-4: Gain 4¢."},
+		{"↷: Roll- 1-2: Loot 1. 3-4: Gain 4¢.", 6, "↷: Roll.", "6: Nothing happens."},
+		{"When this dies, after gaining rewards, the active player rolls- 1 or 6: Put this on top of the monster deck.", 6, "When this dies, after gaining rewards, the active player rolls.", "1 or 6: Put this on top of the monster deck."},
+		{"Each time you would die, roll- 1-3: Prevent death. If it's your turn, cancel everything that hasn't resolved and end your turn.", 1, "Each time you would die, roll.", "1-3: Prevent death. If it's your turn, cancel everything that hasn't resolved and end your turn."},
+		{"Choose a player or monster, then roll- Deal damage to them equal to the result.", 5, "Choose a player or monster, then roll.", "Deal damage to them equal to the result."},
+		{"Roll- 1-3: Take 1 damage. 4-5: Take 2 damage. 6: Search the treasure deck for a Guppy item, gain it, then shuffle the treasure deck.", 6, "Roll.", "6: Search the treasure deck for a Guppy item, gain it, then shuffle the treasure deck."},
+		{"Gain 3¢.", 2, "Gain 3¢.", "Gain 3¢."},
+	}
+	for _, tt := range tests {
+		if got := rollStartText(tt.text); got != tt.start {
+			t.Errorf("rollStartText(%q) = %q, want %q", tt.text, got, tt.start)
+		}
+		if got := rollResultText(tt.text, tt.result); got != tt.line {
+			t.Errorf("rollResultText(%q, %d) = %q, want %q", tt.text, tt.result, got, tt.line)
+		}
+	}
+}
+
+func TestViewNamesSourceAndTargetCards(t *testing.T) {
+	g := newAbilityGame(t)
+	a := g.Turn.Active
+	monster, ok := g.Monsters[0].TopOf()
+	if !ok {
+		t.Fatal("no monster in the first slot")
+	}
+	g.push(StackItem{Kind: StackDamage, Controller: NoPlayer, Source: monster, Amount: 1, Target: Target{Player: a, IsPlayer: true}})
+	g.push(StackItem{Kind: StackRoll, Controller: a, Attack: true, Target: Target{Object: monster}})
+	gv := g.View(Viewer{Kind: ViewSpectator})
+	card := g.Object(monster).Card
+	if gv.Stack[0].SourceCard != card || gv.Stack[0].TargetCard != "" {
+		t.Errorf("monster damage names source %q and target %q, want %q and none", gv.Stack[0].SourceCard, gv.Stack[0].TargetCard, card)
+	}
+	if gv.Stack[1].TargetCard != card {
+		t.Errorf("attack roll names target %q, want %q", gv.Stack[1].TargetCard, card)
+	}
+	if g.Stack[1].TargetCard != "" {
+		t.Error("the game's own stack got a target card; only views have it")
+	}
+}

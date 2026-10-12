@@ -28,6 +28,7 @@ import { noHostSetup } from './hostSetup';
 import type { CardInfo, Kind } from './cards';
 import { loadFonts } from './fonts';
 import { entriesFor, type Entry } from './history';
+import type { LinePart } from './stack';
 import { emptyLobby, leftTable, lost, onMessage, remember, type Screen, type Session } from './lobby';
 import { connect, disconnect, drop, send } from './net';
 import { createPlayback, effectsFor, type Effect } from './playback';
@@ -59,6 +60,9 @@ export interface ZoomCaption {
   owner?: string;
   color?: string;
   ability?: string;
+  // line says what a stack item without ability words did: whom an
+  // attack roll was against, who dealt damage to whom (15.22).
+  line?: LinePart[];
 }
 
 // Playing is the effect on screen now; done ends it (playback.ts).

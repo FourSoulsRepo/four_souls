@@ -76,7 +76,7 @@ function StackRow({ it, view, names }: { it: StackItem; view: GameView; names: N
   const parts = stackParts(it, view, names);
   const show = (e: PointerEvent, touch: boolean) => {
     if (card) {
-      setZoom(itemZoom(it, card, names, e, touch));
+      setZoom(itemZoom(it, card, view, names, e, touch));
     }
   };
   return (
@@ -112,15 +112,20 @@ function StackRow({ it, view, names }: { it: StackItem; view: GameView; names: N
 }
 
 // itemZoom is the large card of a stack item: the used ability's words
-// and the owner in their color below it (S-06, S-07). It opens on the
-// side away from the pointer.
-export function itemZoom(it: StackItem, card: string, names: Names, e: PointerEvent, touch: boolean): Zoom {
+// and the owner in their color below it (S-06, S-07). An item without
+// words says what it did instead, naming its target (15.22). It opens
+// on the side away from the pointer.
+export function itemZoom(it: StackItem, card: string, view: GameView, names: Names, e: PointerEvent, touch: boolean): Zoom {
   const owner = it.controller >= 0 ? names.player(it.controller) : undefined;
   return {
     ref: card,
     touch,
     side: e.clientX < window.innerWidth / 2 ? 'right' : 'left',
-    caption: { owner, color: playerColor(it.controller), ability: it.text },
+    caption: {
+      owner,
+      color: playerColor(it.controller),
+      ...(it.text ? { ability: it.text } : { line: stackParts(it, view, names) }),
+    },
   };
 }
 
@@ -153,7 +158,8 @@ export function ItemIcon({ it }: { it: StackItem }) {
   );
 }
 
-function Part({ part }: { part: LinePart }) {
+// Part is one piece of a stack line, colored by its role (S-03).
+export function Part({ part }: { part: LinePart }) {
   if (part.role === 'target') {
     return <b className="stack-target">{part.text}</b>;
   }

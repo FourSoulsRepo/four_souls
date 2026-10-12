@@ -1,5 +1,6 @@
 import { useApp } from '../store';
 import { Card } from './Card';
+import { Part } from './StackPanel';
 import './Card.css';
 
 // CardZoom shows the zoomed card. A mouse zoom follows the hover and
@@ -24,6 +25,15 @@ export function CardZoom() {
         {zoom.caption && (
           <figcaption className="card-zoom-caption">
             {zoom.caption.ability && <p className="card-zoom-ability">{zoom.caption.ability}</p>}
+            {zoom.caption.line && (
+              <p className="card-zoom-ability card-zoom-line">
+                {zoom.caption.line.map((p, i) => (
+                  // A line's parts never change order, so the index is a stable key.
+                  // eslint-disable-next-line @eslint-react/no-array-index-key
+                  <Part key={i} part={p} />
+                ))}
+              </p>
+            )}
             {zoom.caption.owner && (
               <p className="card-zoom-owner" style={{ color: zoom.caption.color }}>
                 {zoom.caption.owner}
