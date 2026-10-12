@@ -1,10 +1,11 @@
 // Card component (7.4) in the dev-only card gallery.
 import { expect, test } from '@playwright/test';
-import { shot } from './shot';
+import { realAssets, shot } from './shot';
 
 const gallery = '/?fake&nosplash&screen=cards';
 
 test('cards show their image, or a readable blank card', async ({ page }) => {
+  await realAssets(page);
   await page.goto(gallery);
   const hand = page.getByLabel('Hand size');
   // Isaac has an image.
