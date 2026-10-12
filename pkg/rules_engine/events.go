@@ -52,8 +52,10 @@ type Event struct {
 	Card   CardRef   `json:"card,omitempty"`
 	Amount int       `json:"amount,omitempty"`
 	Text   string    `json:"text,omitempty"`
-	// Private means only Player sees Card (e.g. a looted card).
-	Private bool `json:"private,omitempty"`
+	// Private means only Player sees Card (e.g. a looted card), and
+	// whoever SeenBy names (the giver of a hand card, V-14).
+	Private bool       `json:"private,omitempty"`
+	SeenBy  []PlayerID `json:"seen_by,omitempty"`
 	// Prev is the object an event moved away, when it got a new ID.
 	Prev ObjectID `json:"prev,omitempty"`
 	// Source is the object that caused the event, when that matters

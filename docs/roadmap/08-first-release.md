@@ -126,7 +126,7 @@ Ideas: B-03 – B-05, L-03, V-10, V-11, DO-01, V-14, A-16, N-13, N-14, V-19.
 3. Done when:
    1. Every wiki page sits in exactly one group.
 
-### [ ] 8.11 Stolen card in the history
+### [x] 8.11 Stolen card in the history
 
 1. Goal: both sides of a steal see the card (V-14).
 2. When: before the play-test (8.5).

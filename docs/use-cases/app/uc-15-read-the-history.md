@@ -24,6 +24,10 @@
 * **5a. Touch:** tapping an entry zooms its card; the next tap closes it.
 * **7a. Counters:** a card with counters shows their number.
 * **4a. Copy:** history text can be selected and copied (V-10).
+* **2b. A card changes hands (V-14):** a steal or a give adds a line.
+  * The taker reads "You get Bomb from Bo".
+  * The giver reads "Ann gets your Bomb".
+  * Everyone else reads "Ann gets a card from Bo".
 
 ## Postconditions
 

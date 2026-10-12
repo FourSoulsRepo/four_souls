@@ -136,12 +136,16 @@ func (g *Game) HandToDeckTop(p PlayerID, id ObjectID) {
 }
 
 // GiveHandCard moves a loot card from one hand to another (R-MECH-37).
-// The receiver learns the card; the giver knew it already.
+// The receiver learns the card; the giver knew it already, so both see
+// it in the event and nobody else does (V-14).
 func (g *Game) GiveHandCard(from, to PlayerID, id ObjectID) ObjectID {
 	g.Players[from].Hand = remove(g.Players[from].Hand, id)
 	nid := g.move(id, Zone{Kind: ZoneHand}, to)
 	g.Players[to].Hand = append(g.Players[to].Hand, nid)
-	g.emit(Event{Kind: EvGaveCard, Player: to, Object: nid, Card: g.Object(nid).Card, Text: strconv.Itoa(int(from)), Private: true})
+	g.emit(Event{
+		Kind: EvGaveCard, Player: to, Object: nid, Card: g.Object(nid).Card,
+		Text: strconv.Itoa(int(from)), Private: true, SeenBy: []PlayerID{from},
+	})
 	return nid
 }
 

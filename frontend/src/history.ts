@@ -41,6 +41,19 @@ export function entriesFor(events: GameEvent[], turn: number, you: number, n: Na
         // A private loot comes without its card to everyone but its player.
         add('+', card ? `${does(e.player, 'loot')} ${card}` : `${does(e.player, 'loot')} a card`, e.card);
         break;
+      case 'gave_card': {
+        // A hand card changed hands (V-14): text is the giver. Only the
+        // two hands get the card; the others see that one moved.
+        const from = Number(e.text);
+        if (e.player === you) {
+          add('⇄', card ? `You get ${card} from ${who(from)}` : `You get a card from ${who(from)}`, e.card);
+        } else if (from === you) {
+          add('⇄', card ? `${n.player(e.player)} gets your ${card}` : `${n.player(e.player)} gets a card from you`, e.card);
+        } else {
+          add('⇄', `${n.player(e.player)} gets a card from ${n.player(from)}`);
+        }
+        break;
+      }
       case 'rewards_gained':
         add('★', `${does(e.player, 'gain')} the rewards of ${card}`, e.card);
         break;

@@ -308,6 +308,8 @@ export interface GameEvent {
   amount?: number;
   text?: string;
   private?: boolean;
+  // seen_by: who else sees a private card (the giver of a hand card).
+  seen_by?: number[];
   prev?: number;
   source?: number;
   stack_id?: number;

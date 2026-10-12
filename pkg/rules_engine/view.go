@@ -1,5 +1,7 @@
 package rulesengine
 
+import "slices"
+
 // ViewerKind is who looks at the game (A-07, SP-01, SP-02).
 type ViewerKind int
 
@@ -248,7 +250,7 @@ func (g *Game) slotViews(slots []Slot) []SlotView {
 func FilterEvents(events []Event, v Viewer) []Event {
 	out := make([]Event, 0, len(events))
 	for _, e := range events {
-		if e.Private && !v.sees(e.Player) {
+		if e.Private && !v.sees(e.Player) && !slices.ContainsFunc(e.SeenBy, v.sees) {
 			e.Card, e.Object = "", 0
 		}
 		out = append(out, e)

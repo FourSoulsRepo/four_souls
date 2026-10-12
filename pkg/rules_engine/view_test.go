@@ -186,3 +186,34 @@ func TestViewNamesWhoPassedAndWhoMayRespond(t *testing.T) {
 		t.Errorf("a choice is not a priority window: passed %v, responding %v", gv.Passed, gv.Responding)
 	}
 }
+
+func TestGivenCardIsSeenByBothHands(t *testing.T) {
+	g := toAction(t, 3)
+	from, to, other := PlayerID(0), PlayerID(1), PlayerID(2)
+	id := g.Players[from].Hand[0]
+	card := g.Object(id).Card
+	g.events = nil
+	g.GiveHandCard(from, to, id)
+	ev := g.takeEvents()
+	for _, c := range []struct {
+		v    Viewer
+		sees bool
+	}{
+		{Viewer{Kind: ViewPlayer, Player: from}, true},
+		{Viewer{Kind: ViewPlayer, Player: to}, true},
+		{Viewer{Kind: ViewPlayer, Player: other}, false},
+		{Viewer{Kind: ViewSpectator}, false},
+		{Viewer{Kind: ViewJudge}, true},
+	} {
+		got := FilterEvents(ev, c.v)
+		if len(got) != 1 || got[0].Kind != EvGaveCard {
+			t.Fatalf("viewer %+v: events %+v, want one gave_card", c.v, got)
+		}
+		if seen := got[0].Card == card; seen != c.sees {
+			t.Errorf("viewer %+v sees the given card: %v, want %v (V-14)", c.v, seen, c.sees)
+		}
+		if got[0].Text != "0" {
+			t.Errorf("viewer %+v: giver %q, want everyone to know it", c.v, got[0].Text)
+		}
+	}
+}
