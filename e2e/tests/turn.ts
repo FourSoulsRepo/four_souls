@@ -96,7 +96,7 @@ async function answer(pages: Page[], press: Tap): Promise<boolean> {
     }
     // A card may force attacks before the turn can end (Ambush).
     const attack = turnAction(page, 'Attack');
-    if (!(await enabled(bar.getByRole('button', { name: 'End turn' }))) && (await enabled(attack))) {
+    if (!(await enabled(endTurnButton(page))) && (await enabled(attack))) {
       await press(page, attack);
       return true;
     }
@@ -139,9 +139,10 @@ export function turnAction(page: Page, name: 'Buy' | 'Attack') {
   return page.getByRole('toolbar', { name: 'Turn actions' }).getByRole('button', { name, exact: true });
 }
 
-// endTurnButton is the active player's "End turn", when it is offered.
-export function endTurnButton(page: Page) {
-  return page.getByRole('region', { name: 'Actions' }).getByRole('button', { name: 'End turn' });
+// endTurnButton is the big button at the board's right edge (15.20):
+// "End turn" on own turn, "Their turn" otherwise.
+export function endTurnButton(page: Page, name: 'End turn' | 'Their turn' = 'End turn') {
+  return page.getByRole('region', { name: 'Board' }).getByRole('button', { name, exact: true });
 }
 
 // canEndTurn: the page may end the turn now (offered and enabled).

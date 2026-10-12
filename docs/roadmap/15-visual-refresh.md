@@ -475,6 +475,22 @@ Images come first, so the new table is built with backs and mats.
 3. Done when:
    1. e2e test: Space and E send the same intents as the buttons.
    2. `make screenshots` shows own turn and their turn.
+4. Result (2026-10-12)
+   1. End turn left the action bar for the board's new last column.
+   2. The column is part of the fixed board shape (V-23).
+   3. Cards keep their size; the board only grows wider.
+   4. Own turn: yellow "End turn"; dim while not allowed yet.
+   5. Other turns: grey "Their turn".
+   6. Green pulsing glow when only Pass or End turn is left (H-20).
+   7. The glow holds still with reduced motion.
+   8. E ends the turn; Space passes, like the Pass button.
+   9. Keys in a text field, dialog, or menu are left alone.
+   10. Space never clicks a focused button, so it cannot end the turn.
+   11. Tooltips: "End turn (E)", "Pass (Space)".
+   12. B and A now share the key helper (`keys.ts`).
+   13. e2e test: both labels; Space sends Pass, E sends End turn.
+   14. The green glow has a unit test; no screenshot of it yet.
+   15. Screenshots: `.cache/screenshots/15.20/before/` and `after/`.
 
 ### [ ] 15.21 Stack panel
 

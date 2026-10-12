@@ -1,5 +1,6 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 import { IntentKind, PromptKind, Purpose, type TurnActions as Allowed } from '../actions';
+import { useKey } from '../keys';
 import type { Intent, Prompt } from '../protocol';
 import { useApp } from '../store';
 import './Actions.css';
@@ -62,20 +63,12 @@ export function TurnActions({ allowed, disabled, step, waiting, you }: Props) {
   };
 
   // Keys: B buys, A attacks; the tooltip names them.
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.repeat || e.ctrlKey || e.metaKey || e.altKey || typing(e.target)) {
-        return;
-      }
-      const t = tools.find((x) => x.key === e.key.toLowerCase());
-      if (t) {
-        press(t);
-      }
-    };
-    window.addEventListener('keydown', onKey);
-    return () => {
-      window.removeEventListener('keydown', onKey);
-    };
+  const [buy, attack] = tools as [Tool, Tool];
+  useKey(buy.key, () => {
+    press(buy);
+  });
+  useKey(attack.key, () => {
+    press(attack);
   });
 
   return (
@@ -104,9 +97,45 @@ export function TurnActions({ allowed, disabled, step, waiting, you }: Props) {
   );
 }
 
-// typing: the key goes to a text field, not to the table.
-function typing(target: EventTarget | null): boolean {
-  return target instanceof HTMLElement && (target.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(target.tagName));
+interface EndProps {
+  // intent ends the turn, when the engine allows it now.
+  intent?: Intent;
+  // idle: nothing is left to do but end the turn (H-20).
+  idle: boolean;
+  // own: it is the viewer's turn.
+  own: boolean;
+  disabled: boolean;
+  step: number;
+}
+
+// EndTurn is the one big End turn button at the board's right edge
+// (15.20, H-04): yellow on own turn, grey "Their turn" otherwise
+// (H-19), glowing green once nothing is left to do (H-20). E presses
+// it (F-15).
+export function EndTurn({ intent, idle, own, disabled, step }: EndProps) {
+  const act = useApp((s) => s.act);
+  const [pressed, setPressed] = useState(-1);
+  const lit = own && intent !== undefined && !disabled;
+  const press = () => {
+    if (lit) {
+      setPressed(step);
+      act(intent);
+    }
+  };
+  useKey('e', press);
+  const label = own ? 'End turn' : 'Their turn';
+  const state = !own ? 'theirs' : lit && idle ? 'own idle' : 'own';
+  return (
+    <button
+      type="button"
+      className={`end-turn ${state}${pressed === step ? ' down' : ''}`}
+      title={own ? 'End turn (E)' : 'Their turn'}
+      disabled={!lit}
+      onClick={press}
+    >
+      {label}
+    </button>
+  );
 }
 
 function SwordIcon() {

@@ -61,9 +61,10 @@ export interface Choice {
 export const Purpose = { attackTarget: 1, purchase: 5, answer: 9 } as const;
 
 export interface Actions {
-  // buttons are the actions that need no card: pass, end turn.
+  // buttons are the actions that need no card: pass.
   buttons: Action[];
-  // turn holds the turn actions shown as icons by own name (F-11).
+  // turn holds the turn actions: icons by own name (F-11) and the big
+  // End turn button (H-04).
   turn: TurnActions;
   // cards maps an object to what it can do: play it, use its abilities.
   cards: Map<number, Action[]>;
@@ -71,16 +72,16 @@ export interface Actions {
   discard: { count: number; from: number[]; intent: Intent } | null;
 }
 
-// TurnActions are the declare intents, when allowed.
+// TurnActions are the declare intents and ending the turn, when allowed.
 export interface TurnActions {
   attack?: Intent;
   buy?: Intent;
+  endTurn?: Intent;
+  // idle: nothing is left to do but pass or end the turn (H-20).
+  idle?: boolean;
 }
 
-const buttonLabels = new Map<number, string>([
-  [IntentKind.pass, 'Pass'],
-  [IntentKind.endTurn, 'End turn'],
-]);
+const buttonLabels = new Map<number, string>([[IntentKind.pass, 'Pass']]);
 
 // actionsFor lists the viewer's actions. isCard tells whether an option
 // label is a card ref.
@@ -102,6 +103,8 @@ export function actionsFor(u: Update, isCard: (label: string) => boolean): Actio
     const button = buttonLabels.get(a.kind);
     if (button) {
       out.buttons.push({ label: button, intent: a });
+    } else if (a.kind === IntentKind.endTurn) {
+      out.turn.endTurn = a;
     } else if (a.kind === IntentKind.attack) {
       out.turn.attack = a;
     } else if (a.kind === IntentKind.purchase) {
@@ -114,6 +117,9 @@ export function actionsFor(u: Update, isCard: (label: string) => boolean): Actio
     } else if (a.kind === IntentKind.discard) {
       out.discard = { count: u.view.waiting.count ?? 0, from: a.objects ?? [], intent: a };
     }
+  }
+  if (out.turn.endTurn && allowed.every((a) => a.kind === IntentKind.endTurn || a.kind === IntentKind.pass)) {
+    out.turn.idle = true;
   }
   const choose = allowed.filter((a) => a.kind === IntentKind.choose);
   if (choose.length > 0) {

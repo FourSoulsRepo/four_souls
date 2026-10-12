@@ -53,17 +53,19 @@
 }
 
 .board {
-  --u: min((100cqw - 4px) / 10.6, (100cqh - 4px) / 3.6, 92px);
+  --u: min((100cqw - 4px) / 12.1, (100cqh - 4px) / 3.6, 92px);
   position: relative;
   display: grid;
-  grid-template-columns: calc(var(--u) * 2.9) minmax(0, 1fr) calc(var(--u) * 0.75) calc(var(--u) * 1.58);
+  grid-template-columns:
+    calc(var(--u) * 2.9) minmax(0, 1fr) calc(var(--u) * 0.75) calc(var(--u) * 1.58)
+    calc(var(--u) * 1.3);
   grid-template-rows: repeat(2, minmax(0, 1fr));
   grid-template-areas:
-    "info monsters souls decks"
-    "info shop souls decks";
+    "info monsters souls decks end"
+    "info shop souls decks end";
   gap: calc(var(--u) * 0.1) calc(var(--u) * 0.2);
   /* Four slot cards and their gaps fit the slots column; 4px is the border. */
-  width: calc(var(--u) * 10.6 + 4px);
+  width: calc(var(--u) * 12.1 + 4px);
   height: calc(var(--u) * 3.6 + 4px);
   padding: calc(var(--u) * 0.15);
   border: 2px solid rgb(255 255 255 / 18%);
@@ -138,6 +140,14 @@
   display: grid;
   grid-template-rows: repeat(3, minmax(0, 1fr));
   align-items: center;
+}
+
+/* The End turn button at the board's right edge (15.20, H-04). */
+.board-end {
+  grid-area: end;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .deck-pair {

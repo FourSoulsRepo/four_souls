@@ -10,8 +10,9 @@
 
 1. The table highlights what the player may do now.
    1. Yellow: cards to play or use.
-   2. The action bar: Pass, End turn.
+   2. The action bar: Pass.
    3. Icons by own name: Buy and Attack; lit when usable, dim when not.
+   4. A big End turn button at the board's right edge.
 2. The player drags a loot card onto the board to play it.
 3. Others may respond; the player passes or acts again.
 4. The player presses Attack.
@@ -34,6 +35,10 @@
 * **4a. Keys:** B buys, A attacks; each icon's tooltip names its key.
 * **4b. Pressed:** a pressed icon shows at once, before the server answers.
 * **4c. Choosing:** while the player picks what to buy or attack, that icon stays pressed.
+* **7a. Their turn:** the big button is grey and says "Their turn".
+* **7b. Not yet:** on own turn, End turn stays dim until the engine allows it.
+* **7c. Nothing left:** End turn glows green when only passing or ending is left.
+* **7d. Keys:** E ends the turn; Space passes.
 
 ## Postconditions
 

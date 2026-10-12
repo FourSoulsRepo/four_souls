@@ -9,10 +9,11 @@ import './Table.css';
 // Board is the middle of the table: one framed board with a fixed shape
 // (F-01, H-06). Left to right: the info column (children: turn, stack,
 // history), monster and shop slots, bonus souls, and the decks with
-// their discards at the right edge (H-16). An empty zone keeps its
-// place, so the board never changes size (V-23).
+// their discards at the right edge (H-16), then the End turn button
+// (end, H-04). An empty zone keeps its place, so the board never
+// changes size (V-23).
 // The board is also where loot cards are dropped to play them (7.7).
-export function Board({ view, ui, children }: { view: GameView; ui: Interact; children?: ReactNode }) {
+export function Board({ view, ui, end, children }: { view: GameView; ui: Interact; end?: ReactNode; children?: ReactNode }) {
   return (
     <div className="board-cell">
       <section className="board" aria-label="Board" data-drop="play">
@@ -52,6 +53,7 @@ export function Board({ view, ui, children }: { view: GameView; ui: Interact; ch
             ui={ui}
           />
         </div>
+        <div className="board-end">{end}</div>
       </section>
     </div>
   );

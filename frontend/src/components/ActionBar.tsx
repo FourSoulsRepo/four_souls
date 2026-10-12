@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import type { Action } from '../actions';
+import { IntentKind, type Action } from '../actions';
+import { useKey } from '../keys';
 import { secondsLeft } from '../stack';
 import { useApp } from '../store';
 import './Actions.css';
@@ -16,11 +17,17 @@ interface Props {
 
 // ActionBar shows whose move it is and why the game waits, the actions
 // that need no card, the response timer, and why the last action was
-// refused (7.7, 7.8).
+// refused (7.7, 7.8). Space passes (F-15).
 export function ActionBar({ status, buttons, disabled, deadline, skip }: Props) {
   const act = useApp((s) => s.act);
   const skipAll = useApp((s) => s.skipAll);
   const error = useApp((s) => s.error);
+  const pass = buttons.find((b) => b.intent.kind === IntentKind.pass);
+  useKey(' ', () => {
+    if (pass && !disabled) {
+      act(pass.intent);
+    }
+  });
   return (
     <div className="action-bar" role="region" aria-label="Actions">
       <div className="action-status">
@@ -33,6 +40,7 @@ export function ActionBar({ status, buttons, disabled, deadline, skip }: Props) 
             <button
               key={b.label}
               type="button"
+              title={b.intent.kind === IntentKind.pass ? `${b.label} (Space)` : undefined}
               disabled={disabled}
               onClick={() => {
                 act(b.intent);

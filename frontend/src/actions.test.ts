@@ -38,13 +38,27 @@ describe('actionsFor', () => {
       ]),
       isCard,
     );
-    expect(a.buttons.map((b) => b.label)).toEqual(['End turn']);
+    expect(a.buttons).toEqual([]);
+    expect(a.turn.endTurn?.kind).toBe(IntentKind.endTurn);
+    expect(a.turn.idle).toBeUndefined();
     expect(a.turn.attack?.kind).toBe(IntentKind.attack);
     expect(a.turn.buy?.kind).toBe(IntentKind.purchase);
     expect(a.cards.get(7)?.map((x) => x.label)).toEqual(['Play']);
     expect(a.cards.get(3)?.map((x) => x.label)).toEqual(['Use']);
     expect(a.cards.get(4)?.map((x) => x.label)).toEqual(['Use ability 1', 'Use ability 2']);
     expect(a.choice).toBeNull();
+  });
+
+  it('is idle when only passing or ending the turn is left', () => {
+    const a = actionsFor(
+      update({}, [
+        { player: 0, kind: IntentKind.pass },
+        { player: 0, kind: IntentKind.endTurn },
+      ]),
+      isCard,
+    );
+    expect(a.buttons.map((b) => b.label)).toEqual(['Pass']);
+    expect(a.turn.idle).toBe(true);
   });
 
   it('offers nothing when it is not the viewer’s move', () => {

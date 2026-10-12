@@ -10,7 +10,7 @@ import { HistoryPanel, TurnBadge } from '../components/InfoPanels';
 import { GameMenu } from '../components/GameMenu';
 import { EndOverlay, LostOverlay, PauseOverlay } from '../components/Overlays';
 import { StackPanel } from '../components/StackPanel';
-import { TurnActions } from '../components/TurnActions';
+import { EndTurn, TurnActions } from '../components/TurnActions';
 import { matLook } from '../mats';
 import type { Update } from '../protocol';
 import { seatOf, useApp } from '../store';
@@ -96,7 +96,21 @@ function Table({ game, you }: { game: Update; you: number }) {
           )
         );
       })}
-      <Board view={view} ui={ui}>
+      <Board
+        view={view}
+        ui={ui}
+        end={
+          me && !view.over ? (
+            <EndTurn
+              intent={actions.turn.endTurn}
+              idle={actions.turn.idle ?? false}
+              own={view.turn.active === you}
+              disabled={!canAct}
+              step={game.step}
+            />
+          ) : undefined
+        }
+      >
         <TurnBadge view={view} names={names} />
         <StackPanel view={view} you={you} names={names} />
         <HistoryPanel />

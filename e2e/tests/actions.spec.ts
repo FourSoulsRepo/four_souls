@@ -155,3 +155,78 @@ test('buy and attack icons are lit only when the engine allows them; B buys', as
   await shot(active, 'turn-actions-buy');
   await settle(pages, click, backToMe(active, turn));
 });
+
+// recordActs keeps every intent the page sends in window.acts.
+async function recordActs(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    interface I {
+      kind: number;
+    }
+    interface S {
+      act: (i: I) => void;
+    }
+    const w = window as unknown as {
+      acts: I[];
+      fourSouls: { store: { getState: () => S; setState: (s: Partial<S>) => void } };
+    };
+    const { store } = w.fourSouls;
+    const act = store.getState().act;
+    w.acts = [];
+    store.setState({
+      act: (i) => {
+        w.acts.push(i);
+        act(i);
+      },
+    });
+  });
+}
+
+async function lastAct(page: Page): Promise<number | undefined> {
+  return page.evaluate(() => (window as unknown as { acts: { kind: number }[] }).acts.at(-1)?.kind);
+}
+
+test('the big End turn button: E ends the turn, Space passes', async ({ browser }) => {
+  const pages = await startGame(browser, ['Yan', 'Zoe'], { url: fast() });
+  const active = await activePage(pages, click);
+  const turn = await turnNumber(active);
+  const other = pages.find((p) => p !== active);
+  if (!other) {
+    throw new Error('no other page');
+  }
+  await expect(endTurnButton(active)).toBeEnabled();
+  await expect(endTurnButton(other, 'Their turn')).toBeDisabled();
+  await shot(active, 'end-turn-own');
+  // Off the hand, so no card zoom covers the board.
+  await other.mouse.move(1200, 420);
+  await shot(other, 'end-turn-theirs');
+
+  // Space passes priority, like the Pass button (F-15).
+  for (const page of pages) {
+    await recordActs(page);
+  }
+  await active.keyboard.press('b');
+  const passing = async () => {
+    for (const page of pages) {
+      const pass = page.getByRole('region', { name: 'Actions' }).getByRole('button', { name: 'Pass' });
+      if ((await pass.count()) > 0 && (await pass.isEnabled())) {
+        return page;
+      }
+    }
+    return undefined;
+  };
+  await expect.poll(passing).toBeDefined();
+  const page = await passing();
+  if (!page) {
+    throw new Error('nobody may pass');
+  }
+  await page.keyboard.press(' ');
+  expect(await lastAct(page)).toBe(0);
+  await settle(pages, click, backToMe(active, turn));
+
+  // E ends the turn, like the button.
+  if (await canEndTurn(active)) {
+    await active.keyboard.press('e');
+    expect(await lastAct(active)).toBe(1);
+    await expectNextTurn(pages, click, turn);
+  }
+});
