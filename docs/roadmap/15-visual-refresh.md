@@ -181,6 +181,7 @@ Images come first, so the new table is built with backs and mats.
    8. Hover a hand card: it rises large, keyword tips beside it (H-13).
    9. Playable cards glow green; the rest stay plain (H-12).
    10. Aiming arrow: no screenshot found yet; study gameplay videos (H-23).
+   11. Zoom opens over the hovered card, not at a screen side (F-16).
 3. Done when:
    1. e2e test: a bomb dragged onto a monster damages it.
    2. e2e test: the same play by two clicks.
