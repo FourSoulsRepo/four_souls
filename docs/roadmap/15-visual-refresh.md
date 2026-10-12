@@ -510,7 +510,7 @@ Images come first, so the new table is built with backs and mats.
    10. e2e test: both font faces are registered.
    11. Screenshots: `.cache/screenshots/15.20/styled/`.
 
-### [ ] 15.21 Stack panel
+### [x] 15.21 Stack panel
 
 1. Goal: the stack reads at a glance, with icons (S-01 – S-09).
 2. Tasks:
@@ -545,6 +545,7 @@ Images come first, so the new table is built with backs and mats.
    2. Owner: center the card art in the row icon.
    3. Owner: a roll shows the player's die, not only the number.
    4. Owner: compare history with Hearthstone; theirs is one thin line.
+   5. Owner marks 15.21 solved.
 6. Result of the fixes (2026-10-12)
    1. The card art is centered in its square.
    2. A roll shows its face in the viewer's dice look (V-19).
