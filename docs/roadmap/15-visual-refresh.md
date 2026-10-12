@@ -372,6 +372,8 @@ Images come first, so the new table is built with backs and mats.
    7. Green felt is no longer the default; Basement is, without images.
    8. Choices open at the bottom edge, so the board stays in view.
    9. Screenshots: `.cache/screenshots/15.16/before/` and `after/`.
+   10. e2e tests: 3, 4, and 6 monster and shop slots on the same board.
+   11. Screenshots now show real card and dice images, before and after.
 
 ### [ ] 15.17 Own area
 

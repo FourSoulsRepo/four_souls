@@ -84,7 +84,9 @@ function saveSettings(s: FakeSettings): Promise<unknown> {
 
 // A few cards: one with an image, one whose image fails to load, and
 // some without images, so tests see both faces of the Card component.
-// The real card text follows them, without images, as in a public clone.
+// The real card text follows them, with images at their real paths; the
+// e2e tests serve those only for screenshots, else they fail to load and
+// the cards show their text, as in a public clone.
 const isaacImage =
   'data:image/svg+xml,' +
   encodeURIComponent(
@@ -114,7 +116,8 @@ const cards = [
     name: 'The D6',
     effects: ['{Tap Effect}Choose a dice roll. Its controller rerolls it.', 'At the end of your turn, recharge this.'],
     footnotes: [{ title: '-Eternal-', text: "This can't be destroyed or put into discard." }],
-    image: '/cardimg/b2/the_d6.webp',
+    // A path with no file, so its image always fails, screenshots too.
+    image: '/cardimg/b2/missing_the_d6.webp',
   },
   {
     ...none,
@@ -158,6 +161,7 @@ interface DataCard {
   text: { en?: { name: string; effects?: string[]; footnotes?: { title: string; text: string }[] } };
   stats?: { name: string; value: string }[];
   rewards?: { count: string; kind: string }[];
+  image?: string;
 }
 
 function realCards(): unknown[] {
@@ -173,7 +177,7 @@ function realCards(): unknown[] {
       footnotes: c.text.en?.footnotes ?? [],
       stats: c.stats ?? [],
       rewards: c.rewards ?? [],
-      image: '',
+      image: c.image ? `/cardimg/${c.image}` : '',
     }));
 }
 
@@ -199,8 +203,9 @@ w.go = {
       SaveSettings: saveSettings,
       CardSets: () => Promise.resolve(['b2', 'g2', 'fsp2']),
       Cards: () => Promise.resolve([...cards, ...realCards()]),
-      // Dice textures are private images too: a plain die, as in a public clone.
-      Dice: () => Promise.resolve([{ id: 'tear', name: 'Tear', image: '' }]),
+      // The dice texture at its real path; like the mat, the e2e tests
+      // serve it only for screenshots, else it fails: a plain die.
+      Dice: () => Promise.resolve([{ id: 'tear', name: 'Tear', image: '/cardimg/assets/dices/holy_set/d6_tear.webp' }]),
       // Card backs at their real paths; like the mat, the e2e tests serve
       // them only for screenshots, else they fail to load: plain backs.
       Backs: () =>

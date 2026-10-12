@@ -1,5 +1,5 @@
 // Table layout (7.5), with real games on the Go server.
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Browser, type Page } from '@playwright/test';
 import { expectFits, startGame } from './game';
 import { serverPort } from './server';
 import { shot } from './shot';
@@ -30,23 +30,55 @@ async function expectDecksClear(page: Page): Promise<void> {
   expect(covered).toEqual([]);
 }
 
-// emptySlots rewrites the page's game updates: the first shop slot is
-// empty, three more empty slots follow, and no monsters or bonus souls
-// are left. The real game goes on unchanged.
-async function emptySlots(page: Page): Promise<void> {
+type View = Record<string, unknown>;
+
+// rewriteView changes the page's game updates before the app sees them;
+// the real game goes on unchanged.
+async function rewriteView(page: Page, change: (view: View) => void): Promise<void> {
   await page.routeWebSocket(new RegExp(`:${String(serverPort())}/`), (ws) => {
     const server = ws.connectToServer();
     server.onMessage((message) => {
-      const env = JSON.parse(String(message)) as { type: string; data?: { view?: Record<string, unknown> } };
+      const env = JSON.parse(String(message)) as { type: string; data?: { view?: View } };
       const view = env.data?.view;
       if (env.type === 'update' && view && Array.isArray(view.shop)) {
-        view.shop = [{}, ...view.shop.slice(1), {}, {}, {}];
-        view.monsters = [];
-        view.bonus_souls = [];
+        change(view);
       }
       ws.send(JSON.stringify(env));
     });
   });
+}
+
+// slots makes n slots of the given cards, with ids no real card has.
+function slots(cards: string[], n: number, firstId: number): { top: { id: number; card: string; charged: boolean } }[] {
+  return Array.from({ length: n }, (_, i) => ({ top: { id: firstId + i, card: cards[i % cards.length] ?? '', charged: true } }));
+}
+
+const monsterRefs = ['big_spider', 'black_bony', 'boom_fly', 'clotty', 'cod_worm', 'dinga'];
+const treasureRefs = ['baby_haunt', 'belly_button', 'bobs_brain', 'breakfast', 'brimstone', 'bum_bo'];
+
+// startPair starts a two-player game; the second page's updates go
+// through change, the first page's do not.
+async function startPair(browser: Browser, names: [string, string], change: (view: View) => void): Promise<[Page, Page]> {
+  let opened = 0;
+  const [plain, changed] = await startGame(browser, names, {
+    open: (page) => (opened++ === 1 ? rewriteView(page, change) : Promise.resolve()),
+  });
+  if (!plain || !changed) {
+    throw new Error('no pages');
+  }
+  return [plain, changed];
+}
+
+// boardBox is where the board is on screen.
+async function boardBox(page: Page) {
+  return page.getByRole('region', { name: 'Board' }).boundingBox();
+}
+
+// slotBoxes are the slots of a row, left to right. A slot, not its card:
+// a new card pops in with a scale, which would change its box.
+async function slotBoxes(page: Page, row: string) {
+  const cards = page.getByRole('group', { name: row }).locator('> *');
+  return Promise.all((await cards.all()).map(async (c) => (await c.boundingBox()) ?? { x: 0, y: 0, width: 0, height: 0 }));
 }
 
 test('two players face each other; the table fits 1280x720', async ({ browser }) => {
@@ -107,20 +139,59 @@ test('three players sit left and right; nothing covers the decks', async ({ brow
 });
 
 test('the board keeps its size when shop slots empty (V-23)', async ({ browser }) => {
-  let opened = 0;
-  const [ned, ola] = await startGame(browser, ['Ned', 'Ola'], {
-    open: (page) => (opened++ === 1 ? emptySlots(page) : Promise.resolve()),
+  const [ned, ola] = await startPair(browser, ['Ned', 'Ola'], (view) => {
+    const shop = view.shop as unknown[];
+    view.shop = [{}, ...shop.slice(1), {}, {}, {}];
+    view.monsters = [];
+    view.bonus_souls = [];
   });
-  if (!ned || !ola) {
-    throw new Error('no pages');
-  }
-  const shop = ola.getByRole('group', { name: 'Shop' });
-  await expect(shop.locator('.pile-empty')).toHaveCount(4);
+  await expect(ola.getByRole('group', { name: 'Shop' }).locator('.pile-empty')).toHaveCount(4);
   await expect(ola.getByRole('group', { name: 'Monsters' }).getByRole('img')).toHaveCount(0);
   await expect(ned.getByRole('group', { name: 'Shop' }).locator('.pile-empty')).toHaveCount(0);
-  const full = await ned.getByRole('region', { name: 'Board' }).boundingBox();
-  const empty = await ola.getByRole('region', { name: 'Board' }).boundingBox();
-  expect(empty).toEqual(full);
+  expect(await boardBox(ola)).toEqual(await boardBox(ned));
   await expectDecksClear(ola);
   await shot(ola, 'table-empty-slots');
 });
+
+// Some cards add monster or shop slots. Up to four slots show at full
+// size; more share the row. The board never changes (V-23).
+for (const [n, names] of [
+  [3, ['Pam', 'Quy']],
+  [4, ['Rex', 'Sol']],
+  [6, ['Tom', 'Uma']],
+] as const) {
+  test(`${String(n)} monster and shop slots fit the same board`, async ({ browser }) => {
+    const [plain, many] = await startPair(browser, [...names], (view) => {
+      view.monsters = slots(monsterRefs, n, 900000);
+      view.shop = slots(treasureRefs, n, 900100);
+    });
+    for (const row of ['Monsters', 'Shop']) {
+      await expect(many.getByRole('group', { name: row }).locator('.card')).toHaveCount(n);
+    }
+    const board = await boardBox(plain);
+    expect(await boardBox(many)).toEqual(board);
+    const full = (await slotBoxes(plain, 'Shop'))[0]?.width ?? 0;
+    expect(full).toBeGreaterThan(0);
+    for (const row of ['Monsters', 'Shop']) {
+      const area = await many.getByRole('group', { name: row }).boundingBox();
+      const boxes = await slotBoxes(many, row);
+      for (const [i, r] of boxes.entries()) {
+        // Full size up to four slots; smaller, never overlapping, past that.
+        if (n <= 4) {
+          expect(r.width).toBeCloseTo(full, 0);
+        } else {
+          expect(r.width).toBeLessThan(full);
+        }
+        expect(r.x).toBeGreaterThanOrEqual(area?.x ?? 0);
+        expect(r.x + r.width).toBeLessThanOrEqual((area?.x ?? 0) + (area?.width ?? 0) + 0.5);
+        const next = boxes[i + 1];
+        if (next) {
+          expect(next.x).toBeGreaterThanOrEqual(r.x + r.width);
+        }
+      }
+    }
+    await expectDecksClear(many);
+    await expectFits(many);
+    await shot(many, `table-slots-${String(n)}`);
+  });
+}

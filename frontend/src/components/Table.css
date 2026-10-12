@@ -53,7 +53,7 @@
 }
 
 .board {
-  --u: min(100cqw / 10.4, 100cqh / 3.6, 92px);
+  --u: min((100cqw - 4px) / 10.6, (100cqh - 4px) / 3.6, 92px);
   position: relative;
   display: grid;
   grid-template-columns: calc(var(--u) * 2.9) minmax(0, 1fr) calc(var(--u) * 0.75) calc(var(--u) * 1.58);
@@ -62,8 +62,9 @@
     "info monsters souls decks"
     "info shop souls decks";
   gap: calc(var(--u) * 0.1) calc(var(--u) * 0.2);
-  width: calc(var(--u) * 10.4);
-  height: calc(var(--u) * 3.6);
+  /* Four slot cards and their gaps fit the slots column; 4px is the border. */
+  width: calc(var(--u) * 10.6 + 4px);
+  height: calc(var(--u) * 3.6 + 4px);
   padding: calc(var(--u) * 0.15);
   border: 2px solid rgb(255 255 255 / 18%);
   border-radius: 14px;
