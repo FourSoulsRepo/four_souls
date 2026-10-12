@@ -40,7 +40,7 @@ Ideas: B-03 – B-05, L-03, V-10, V-11, DO-01, V-14, A-16, N-13, N-14.
 3. Done when:
    1. Two releases share the same identity.
 
-### [ ] 8.4 OS warning help
+### [~] 8.4 OS warning help
 
 1. Goal: users can start the app (B-04, B-05).
 2. Tasks:
@@ -50,8 +50,9 @@ Ideas: B-03 – B-05, L-03, V-10, V-11, DO-01, V-14, A-16, N-13, N-14.
    4. Wiki page; text only, no images while the visuals change.
 3. Done when:
    1. A new user starts the app with only the README.
+4. Moved: the new-user check is 18.1, after more sets.
 
-### [ ] 8.5 Play-test and fixes
+### [~] 8.5 Play-test and fixes
 
 1. Goal: real games with real players.
 2. Tasks:
@@ -60,8 +61,9 @@ Ideas: B-03 – B-05, L-03, V-10, V-11, DO-01, V-14, A-16, N-13, N-14.
    3. New rule disputes go to the open list.
 3. Done when:
    1. **Owner** approves the release.
+4. Moved to 18.2: few cards so far; play-test after more sets.
 
-### [ ] 8.6 Docs check
+### [~] 8.6 Docs check
 
 1. Goal: docs match the released app.
 2. Tasks:
@@ -70,6 +72,7 @@ Ideas: B-03 – B-05, L-03, V-10, V-11, DO-01, V-14, A-16, N-13, N-14.
    3. Accepted ADRs match the code.
 3. Done when:
    1. Use case index has no "Planned" item for MVP features.
+4. Moved to 18.3, after the play-test.
 
 ### [x] 8.7 Rulings from Yuggy and Discord
 

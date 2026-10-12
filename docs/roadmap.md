@@ -22,6 +22,7 @@ Each step ends in something that runs and is tested.
 | 16 | Localization | Menus, messages, and cards in several languages | 8 |
 | 17 | Rollback | Other players can undo a mistaken event | 8 |
 | 14 | More sets | Gold Box, Four Souls+, Requiem, promos | 8 |
+| 18 | Play-test | New-user check, play-test, docs check | 14 |
 | 9 | Spectators | Viewers watch live | 8 |
 | 10 | Replays | Records screen and replay player | 8 |
 | 11 | Learning | Rules viewer, sandbox, tutorial, bot | 8 |
@@ -33,7 +34,7 @@ Step 3 reuses the browser scraping tool from step 2.
 Steps 5, 6 and 7 can run in parallel.
 Step 7 ends with an internal build on a partial card set.
 Step 8 needs all Base Game cards from step 5.
-After the MVP the order is 15, 16, 17, 14, 9, 10, 11, 12, 13.
+After the MVP the order is 15, 16, 17, 14, 18, 9, 10, 11, 12, 13.
 Step numbers stay as IDs; the table lists steps in work order.
 
 ---
@@ -133,6 +134,7 @@ Step numbers stay as IDs; the table lists steps in work order.
 11. Audit card lists for leaks of hidden cards (A-16).
 12. LAN games found without typing an IP (N-13).
 13. Game passwords (N-14).
+14. New-user check, play-test and docs check: moved to step 18.
 
 ## 9. Spectators
 
@@ -210,6 +212,14 @@ Step numbers stay as IDs; the table lists steps in work order.
 4. History and records show the rollback.
 5. Ideas: N-12.
 6. Dice keep their value after a rollback (N-12).
+
+## 18. Play-test
+
+1. A new user starts the app from the README alone.
+2. Full games with 2, 3, 4 players on all sets so far.
+3. Docs match the app: use cases, README, ADRs.
+4. Moved from step 8 (8.4–8.6): more cards make a better test.
+5. Ideas: B-04, B-05.
 
 ## Future
 
