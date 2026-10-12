@@ -296,14 +296,14 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    1. Undoes a mistake, e.g. a misclick.
    2. The player who did the event cannot roll it back.
    3. Only the other players can roll it back.
-   4. Open: whether hidden info (draws) or dice block a rollback.
+   4. Open: whether hidden info (draws) blocks a rollback; dice do not.
    5. Open: in 3–4 player games, does one other player suffice.
    6. The rollback is shown in the history and kept in the record.
-   7. Open: after a rollback, does a new dice roll give the same value?
+   7. Decided: after a rollback, the next dice roll gives the same value.
    8. Same value: the RNG is restored, so the player knows the next roll.
    9. That holds whatever is played first, since it is one RNG stream.
    10. New value: a rollback becomes a free re-roll.
-   11. Proposal: a seen dice roll blocks rollback, like at a real table.
+   11. Rejected: a seen dice roll blocks rollback.
 13. N-13. Find LAN games without typing an IP.
    1. A hosting app announces its waiting game on the LAN.
    2. The join screen lists the games it finds.
@@ -311,6 +311,8 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    4. Announcements stop when the game starts.
    5. A dedicated server never announces.
    6. Players join it by address and pick from its list of games.
+   12. Accepted risk: the player knows the next roll after a rollback.
+   13. Only other players can roll back, which limits the abuse.
 14. N-14. A game can have a password.
    1. Set by whoever creates the game.
    2. The games list shows a lock; joining asks for the password.

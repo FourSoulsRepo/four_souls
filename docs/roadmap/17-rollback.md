@@ -11,11 +11,11 @@ Ideas: N-12.
 1. Goal: clear limits for rollback (N-12).
 2. Tasks:
    1. **Owner**: may hidden info (draws, peeks) be rolled back?
-   2. **Owner**: may a dice roll be rolled back?
+   2. Dice may be rolled back; the next roll keeps its value.
    3. **Owner**: in 3–4 player games, one other player or all?
    4. How far back: last event only, or more.
-   5. Proposal: a seen dice roll blocks rollback.
-   6. Restored RNG repeats the roll; a new seed makes a free re-roll.
+   5. Decided: the restored RNG repeats the roll (N-12).
+   6. Never reseed after a rollback; that would be a free re-roll.
 3. Done when:
    1. ADR accepted.
 
@@ -26,6 +26,7 @@ Ideas: N-12.
    1. Keep the state before each event (engine save, step 4).
    2. Undo restores it exactly, RNG included.
    3. Fuzz check: undo then redo gives the same state.
+   4. Test: roll, roll back, roll again gives the same value.
 3. Done when:
    1. Tests cover undo of a loot play, an attack, a purchase.
 

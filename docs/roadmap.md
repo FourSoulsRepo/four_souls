@@ -209,7 +209,7 @@ Step numbers stay as IDs; the table lists steps in work order.
 3. Only other players can roll back; never the author.
 4. History and records show the rollback.
 5. Ideas: N-12.
-6. Proposal: a seen dice roll blocks rollback (N-12).
+6. Dice keep their value after a rollback (N-12).
 
 ## Future
 
