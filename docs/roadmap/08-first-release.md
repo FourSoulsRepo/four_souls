@@ -138,7 +138,7 @@ Ideas: B-03 – B-05, L-03, V-10, V-11, DO-01, V-14, A-16, N-13, N-14, V-19.
 4. Done when:
    1. Dead Bird steal shows the card to exactly two players.
 
-### [ ] 8.12 Card list leak audit
+### [x] 8.12 Card list leak audit
 
 1. Goal: no message reveals hidden cards (A-16).
 2. When: before the play-test (8.5).

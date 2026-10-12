@@ -89,3 +89,24 @@ func TestCanAct(t *testing.T) {
 		t.Errorf("b can only pass; allowed %+v", g.Allowed(b))
 	}
 }
+
+// A client may send any intent; unknown objects are refused, never a
+// panic that would stop the server (A-16).
+func TestUnknownObjectsAreRefused(t *testing.T) {
+	for k := IntentPass; k <= IntentActivate; k++ {
+		for _, id := range []ObjectID{-5, 99999} {
+			g := toAction(t, 2)
+			func() {
+				defer func() {
+					if r := recover(); r != nil {
+						t.Errorf("intent %d with object %d: panic %v", k, id, r)
+					}
+				}()
+				_, err := g.Apply(Intent{Player: g.Prompt().Player, Kind: k, Objects: []ObjectID{id}, Choice: 99})
+				if usesObjects := k == IntentDiscard || k == IntentPlayLoot || k == IntentActivate; usesObjects && err == nil {
+					t.Errorf("intent %d with unknown object %d was applied", k, id)
+				}
+			}()
+		}
+	}
+}

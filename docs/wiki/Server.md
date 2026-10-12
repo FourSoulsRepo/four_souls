@@ -33,6 +33,32 @@ The server answers for a player only in these cases, never choosing among real o
 * the player turned on "skip all" for the stack they saw (N-06);
 * the response timer ran out, or the seat was kicked: pass or end the turn, the first cards for a discard, the first option of a choice (N-07, N-08).
 
+## Leak audit (A-16)
+
+Step 8.12 checked every message the server sends for hidden cards. Hidden means: in a deck, in another player's hand, or seen only by another player.
+
+| Message | What it carries | Verdict |
+|---|---|---|
+| `welcome` | versions, your token, your seat | Tokens never reach other clients; `Seat` has no token. |
+| `games` | host nickname, seats, set codes; saves with nicknames | No cards. |
+| `table` | seats, set codes, options | Host bans are public by design (GS-02). |
+| `setup` | pool, bans, who picked | `Offers` go only to their own seat. |
+| `update` → `view` | `engine.View` for the seat | Other hands are sizes only; deck contents and order never leave; choice labels and `Options` only for the chooser; the top treasure only for a player who may peek. |
+| `update` → `events` | `engine.FilterEvents` | Private events keep `Card` and `Object` only for `Player` and `SeenBy`. Every non-private event with a card was checked: each moves a card from or to a public place (stack, slot, discard, play), or is a public reveal. |
+| `update` → `allowed` | this seat's intents | Only the seat's own objects and choice indexes. |
+| `error` | code, message, rule | Engine refusals name only cards in play; an activation checks the zone before it names the card. |
+| `/record` | the match record (all hidden info) | Only to the game's players, only after the game is over (RP-05); `TestDownloadRecord`. |
+
+Rules that keep it so:
+
+* A random pick over hidden cards (Boomerang, Ring of Flies) leaves its option labels empty; `EvRandomPick` sends the label to everyone.
+* Questions (`Prompt.Text`) are fixed card text, so they are public.
+* The collection check compares whole set codes, never the dealt decks (CD-03).
+* Card text for outdated clients (CD-09) is not built yet; when it is, it must answer only for cards the client may see.
+* The fuzz check `checkNoLeaks` fails when any view names an object that sits in a deck, or a stack item from a deck.
+
+Found and fixed: an `activate` intent with an unknown object ID made the engine panic, which stopped the whole server. It is now refused (`TestUnknownObjectsAreRefused`).
+
 ## Tests
 
 * `hub_test.go`, `setup_test.go`, `flow_test.go`, `pause_test.go`, `records_test.go`, `saves_test.go`: in-memory connections.

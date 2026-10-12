@@ -24,6 +24,10 @@ const (
 
 // activatable returns why p cannot activate ability i of src, or nil.
 func (g *Game) activatable(p PlayerID, src ObjectID, i int) error {
+	// A client may send any ID; an unknown one must not panic (A-16).
+	if src < 0 || int(src) >= len(g.Objects) {
+		return refuse("R-ABIL-09", "only the controller uses an item's or character's abilities")
+	}
 	o := g.Object(src)
 	if o.Zone.Kind != ZoneInPlay || o.Controller != p || (o.Role != RoleItem && o.Role != RoleCharacter) {
 		return refuse("R-ABIL-09", "only the controller uses an item's or character's abilities")
