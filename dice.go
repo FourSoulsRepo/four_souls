@@ -20,7 +20,7 @@ type DiceSkin struct {
 // diceSkins are the dice textures inside the card images folder; the
 // order and IDs follow settings.Dice.
 var diceSkins = []struct{ id, name, file string }{
-	{"tear", "Tear", "assets/dices/holy_set/d6_tear.png"},
+	{"tear", "Tear", "assets/dices/holy_set/d6_tear.webp"},
 }
 
 // Dice returns every dice look, for the dice component and settings.

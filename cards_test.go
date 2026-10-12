@@ -31,9 +31,10 @@ func TestCards(t *testing.T) {
 
 func TestCardImages(t *testing.T) {
 	files := fstest.MapFS{
-		"images/b2/isaac.webp":  {Data: []byte("RIFF")},
-		"images/assets/die.png": {Data: []byte("PNG")},
-		"data/b2.json":          {Data: []byte("{}")},
+		"images/b2/isaac.webp":   {Data: []byte("RIFF")},
+		"images/assets/die.webp": {Data: []byte("RIFF")},
+		"images/assets/die.png":  {Data: []byte("PNG")},
+		"data/b2.json":           {Data: []byte("{}")},
 	}
 	frontend := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusTeapot)
@@ -47,7 +48,8 @@ func TestCardImages(t *testing.T) {
 		"/index.html":                  http.StatusTeapot,
 		"/cardimgs/b2/isaac.webp":      http.StatusTeapot,
 		"/cardimg/b2/../b2/isaac.webp": http.StatusNotFound,
-		"/cardimg/assets/die.png":      http.StatusOK,
+		"/cardimg/assets/die.webp":     http.StatusOK,
+		"/cardimg/assets/die.png":      http.StatusNotFound,
 		"/cardimg/assets/die.jpg":      http.StatusNotFound,
 	} {
 		rec := httptest.NewRecorder()

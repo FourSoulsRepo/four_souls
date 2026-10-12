@@ -198,7 +198,7 @@ Images come first, so the new table is built with backs and mats.
 1. Goal: every player knows what is happening right now (V-21).
 2. Split into 15.30 – 15.31; tasks moved there.
 
-### [ ] 15.9 Mats and dice in WebP
+### [x] 15.9 Mats and dice in WebP
 
 1. Goal: mat and dice images as small as the cards (V-25).
 2. Tasks:
@@ -211,6 +211,12 @@ Images come first, so the new table is built with backs and mats.
    1. No JPG or PNG left under `assets/mats/` and `assets/dices/`.
    2. Mats and dice still show in `make internal`.
    3. A build without the images still works.
+4. Result (2026-10-12)
+   1. `scraper assets` in the tools repo: mats 3840 px, dice 1200 px, quality 85.
+   2. 12 files, 1.6 MB to 0.4 MB; the images repo is still one commit.
+   3. The app serves only WebP under `/cardimg/` now.
+   4. Originals kept locally in `.cache/assets-originals-2026-10-12/`.
+   5. Not converted: `coin.png` and two small Steam icons; owner decides.
 
 ### [ ] 15.10 Mat backgrounds
 
