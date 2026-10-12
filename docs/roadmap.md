@@ -204,6 +204,14 @@ Step numbers stay as IDs; the table lists steps in work order.
 10. Everyone sees the roller's own dice look (V-19).
 11. The game always shows clearly when it waits for the player (V-20).
 12. Everyone sees what the active player is doing now (V-21).
+13. Compare with Hearthstone screenshots from the internet (V-22).
+14. Table areas keep their size when a zone empties (V-23).
+15. Game mat images as the background; colors without images (V-24).
+16. Mats and dice in WebP, like the cards (V-25).
+17. Card backs on decks and opponent hands (V-26).
+18. Study counters, stack window, and cheat menu of the reference (V-27).
+19. Play a card by one click or by drag; a setting picks (V-28).
+20. No number badges on cards (V-29).
 
 ## 16. Localization
 

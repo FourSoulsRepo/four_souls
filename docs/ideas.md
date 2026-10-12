@@ -142,6 +142,44 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    7. One status line or badge on the active seat says it in a few words.
    8. Same marks on every screen, spectators included.
    9. Built from game state; no new intents needed.
+22. V-22. Compare with real Hearthstone screenshots.
+   1. Find Hearthstone screenshots on the internet.
+   2. Keep them in `.cache/screenshots/`, never in the repo.
+   3. Compare board shape, hand, hero, and buttons with our table.
+23. V-23. Table areas keep their size.
+   1. An empty zone keeps its place and size.
+   2. Nothing on the table grows or shrinks when a zone empties.
+   3. As on fouronlinesouls.net today.
+24. V-24. Game mat image as the table background.
+   1. First mat: `pkg/card_db/images/assets/mats/basement.jpg`.
+   2. Every image in `assets/mats/` becomes a choice in the mat setting (ST-03).
+   3. A new mat needs only a new file in that folder.
+   4. A build without images uses plain colors, as now.
+25. V-25. Mats and dice in WebP, like the cards.
+   1. Mats are JPG today; dice are JPG and PNG.
+   2. Convert them to WebP for size.
+   3. The conversion lives in `FourSoulsRepo/tools`, not here.
+26. V-26. Card backs for decks and opponent hands.
+   1. Each deck shows its own back: loot, treasure, monster.
+   2. An opponent's hand shows backs, not blank boxes.
+   3. No back images exist yet; the tools repo must collect them.
+   4. Without images: plain colored backs, as now.
+27. V-27. Study more of fouronlinesouls.net.
+   1. Counters: how they look and change.
+   2. Stack window with card icons; it looks good.
+   3. Stack history strip with icons; it looks good.
+   4. Their room has "Allow cheat options" (on by default).
+   5. Cheat menu sits in the game menu ("Cheat view").
+   6. It gives any card, which makes testing a card quick.
+   7. Later: study it as a model for our sandbox (LR-01).
+28. V-28. Two ways to play a card; the player picks.
+   1. One click: the card plays at once, as on fouronlinesouls.net.
+   2. Drag and drop: as in Hearthstone (V-16).
+   3. A setting chooses the mode.
+   4. Both modes send the same intent.
+29. V-29. No number badges on cards.
+   1. Owner rejected 1–9 badges on valid targets (15.1, F-14).
+   2. Targets glow instead (V-20).
 
 ## Rules
 

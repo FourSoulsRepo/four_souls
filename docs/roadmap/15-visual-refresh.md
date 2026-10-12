@@ -2,7 +2,7 @@
 
 Goal: a clearer table, using fouronlinesouls.net as a second reference.
 
-Ideas: V-09, V-12, V-13, V-15 – V-20.
+Ideas: V-09, V-12, V-13, V-15 – V-29.
 
 ---
 
@@ -15,8 +15,60 @@ Ideas: V-09, V-12, V-13, V-15 – V-20.
    3. Compare with our table: layout, card sizes, panels, stack, prompts.
    4. List ideas to borrow; ideas only, no images, styles, or code.
    5. Compare with Hearthstone again; avoid the poker-table look (V-13).
+   6. Find Hearthstone screenshots on the internet; compare (V-22).
+   7. Study the stack window and its icon history strip (V-27).
+   8. Study counters; use the cheat menu to get any card (V-27).
+   9. Note how the cheat menu works, for the sandbox later (LR-01).
 3. Done when:
    1. **Owner** picks the ideas to apply.
+   2. Hearthstone screenshots compared; findings added below.
+4. How the study went (2026-10-12)
+   1. The site has no bot; "Add copy" gives a hot-seat second player.
+   2. Played 2, 3 and 4 seats: loot, play, buy, attack, roll.
+   3. Screenshots: `.cache/screenshots/reference/`.
+   4. Hearthstone compared from memory; no game client here.
+5. Problems seen in our table
+   1. O-01. 4 players: History panel covers the monster and treasure decks.
+   2. O-02. 4 players: Stack panel covers the loot deck.
+   3. O-03. Seat boxes with text stats on green felt read as poker (V-13).
+6. Ideas to borrow: layout
+   1. F-01. One framed central board: decks, shop, monsters, souls, stack.
+   2. F-02. Nothing floats over the board; panels sit beside it.
+   3. F-03. Stack sits inside the board, at its left side.
+   4. F-04. Resolved stack items leave as icons in a strip by the stack.
+   5. F-05. Own hand large at the bottom edge.
+   6. F-06. Own character and items in one row above the hand.
+   7. F-07. Opponent: name and coins, then character and items.
+   8. F-08. Opponent hand: one card back with a count.
+   9. F-09. Board grows for 3 players; opponents take side columns.
+   10. F-10. Active player's name is highlighted.
+7. Ideas to borrow: actions and feedback
+   1. F-11. Turn actions as icons by own name: end turn, buy, attack.
+   2. F-12. Icons light up when usable, dim when not.
+   3. F-13. Icons change mode: "Attack" becomes "Roll"; "Buy" becomes "Cancel".
+   4. F-14. Valid targets get number badges; keys 1–9 pick them.
+   5. F-15. Space resolves or passes; E ends the turn.
+   6. F-16. Hover zooms the card in place.
+   7. F-17. Zoom of an unplayable card says why: "No loot plays left".
+   8. F-18. A refused action shows its reason next to the clicked item.
+   9. F-19. In a fight, attacker and monster both get a red frame.
+   10. F-20. Choices open a dialog with big cards and a "View board" button.
+   11. F-21. Last die value stays visible as a small die by the stack.
+8. Things not to borrow
+   1. N-01. One click plays a card at once; we keep drag and two clicks (V-16).
+   2. N-02. No dice animation; we want V-17.
+   3. N-03. No turn number, phase, or "waiting for" list; ours stay (V-05, V-11).
+   4. N-04. HP and souls only on card art; V-18 wants them always visible.
+   5. N-05. Their art, wood table, and fonts; never copy assets (V-09).
+9. Hearthstone again (V-13)
+   1. H-01. One shaped play area in the middle; no boxes around the edges.
+   2. H-02. Hero portrait centered at own and opponent edge.
+   3. H-03. Own hand fanned at the bottom, partly off screen.
+   4. H-04. One big "End turn" button at the board's right edge.
+   5. H-05. Drop the green felt and seat boxes; this removes the poker look.
+10. Owner notes (2026-10-12)
+   1. F-14 rejected: no 1–9 badges on cards (V-29).
+   2. New ideas from the review: V-22 – V-29.
 
 ### [ ] 15.2 Rework the table
 
@@ -27,9 +79,11 @@ Ideas: V-09, V-12, V-13, V-15 – V-20.
    3. Update `docs/wiki/Client.md`.
    4. Simple but informative: nothing needed is hidden (V-18).
    5. Every action gets instant feedback (V-15).
+   6. Empty zones keep their place and size (V-23).
 3. Done when:
    1. `make frontend e2e` passes.
    2. `make screenshots` shows every player count.
+   3. e2e test: board size stays the same when a shop slot empties.
 
 ### [ ] 15.3 Attack animation
 
@@ -50,9 +104,12 @@ Ideas: V-09, V-12, V-13, V-15 – V-20.
    3. Aiming arrow; valid targets glow, others stay plain.
    4. Click card, then click target, still works.
    5. Works with mouse and touch (B-06).
+   6. One-click mode: a click plays the card at once (V-28).
+   7. A setting chooses one-click or drag; both send the same intent.
 3. Done when:
    1. e2e test: a bomb dragged onto a monster damages it.
    2. e2e test: the same play by two clicks.
+   3. e2e test: the same play in one-click mode.
 
 ### [ ] 15.5 Dice throw
 
@@ -112,3 +169,45 @@ Ideas: V-09, V-12, V-13, V-15 – V-20.
 3. Done when:
    1. e2e test: a second player sees the fight mark and the status line.
    2. `make screenshots` covers "Ann attacks" and "Ann is thinking".
+
+### [ ] 15.9 Mats and dice in WebP
+
+1. Goal: mat and dice images as small as the cards (V-25).
+2. Tasks:
+   1. Work in `FourSoulsRepo/tools`, never in this repo.
+   2. Convert `assets/mats/` and `assets/dices/` to WebP.
+   3. Pick a size that still looks sharp full-screen.
+   4. Amend the single commit of the images repo, as for cards.
+   5. Update the code paths here that load JPG or PNG.
+3. Done when:
+   1. No JPG or PNG left under `assets/mats/` and `assets/dices/`.
+   2. Mats and dice still show in `make internal`.
+
+### [ ] 15.10 Mat backgrounds
+
+1. Goal: a game mat image under the table (V-24, ST-03).
+2. Tasks:
+   1. First mat: `basement` from `assets/mats/`.
+   2. The app lists every image in `assets/mats/` as a mat choice.
+   3. A new mat needs only a new file; no code change.
+   4. Build without images: plain colors, as now.
+   5. A saved mat that is missing falls back to colors.
+   6. Cards and text stay readable on every mat.
+   7. Update `docs/wiki/Client.md` and `docs/wiki/Build-modes.md`.
+3. Done when:
+   1. Go test: the mat list matches the folder.
+   2. e2e test: the setting changes the background.
+   3. A public-clone build shows the color table.
+
+### [ ] 15.11 Card backs
+
+1. Goal: decks and opponent hands show real card backs (V-26).
+2. Tasks:
+   1. **Owner** confirms the source of back images.
+   2. Tools repo collects loot, treasure, and monster backs.
+   3. Decks show their own back; opponent hands show loot backs.
+   4. No images: plain colored backs, as now.
+   5. A back never reveals the card under it.
+3. Done when:
+   1. `make screenshots` shows backs on decks and opponent hands.
+   2. A public-clone build shows the plain backs.
