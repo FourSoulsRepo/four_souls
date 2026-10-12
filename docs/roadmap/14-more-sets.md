@@ -36,6 +36,14 @@ Ideas: CD-02, GS-07, GS-08, CD-11, A-16, CD-12.
    3. New effect blocks where needed.
 3. Done when:
    1. **Owner** resolved the set's open cases.
+4. Progress:
+   1. Gold Box: rulings from S-OFF, S-YUG, S-DIS, Reddit, X; 2026-10-13.
+   2. New rules: R-DICE-08, R-MECH-52, R-ATK-19.
+   3. Open case Q-10 (Fruitcake); **Owner**: keep the proposal for now.
+   4. New blocks are built with their first card in 14.3, tested there.
+   5. Blocks: max hand size, recharge limit, roll history.
+   6. Blocks: next attack roll, till-end-of-turn abilities, free purchase.
+   7. Blocks: reprint copies in the engine's deck setup (ADR 010).
 
 ### [ ] 14.3 Cards per set
 

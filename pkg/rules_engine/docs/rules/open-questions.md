@@ -90,6 +90,19 @@ On 2026-10-09 the owner parked every open decision for later.
    1. The S-RU FAQ says the wording matters; the card doubles once.
 6. FAQ: explain this case in the rules FAQ (11.7); players often ask.
 
+### Q-10 Fruitcake: whose rolls are "in a row"
+
+1. Question: "Each time a player rolls the same result twice in a row on the same turn".
+   1. Does it look at each player's own rolls, or at the last two rolls of anyone?
+2. Sources:
+   1. No ruling in S-OFF, S-YUG, Reddit, X, or the web (searched 2026-10-13).
+   2. S-DIS (2023-12-06): each pair counts; three in a row recharge twice.
+   3. S-DIS: of Mutant Spider's dice only the chosen result counts.
+   4. S-YUG on Euthanasia: final results after changes count.
+3. Options: (a) per player; (b) any two rolls in a row.
+4. Engine now: (a), as R-DICE-08.
+5. Status: **Owner**, open (2026-10-13); keep (a) until a ruling is found.
+
 ## Old rulings re-checked (R-07)
 
 | # | Ruling (Ed's Notes, 2018–2019) | Check against current rules and V2 text | Status |
@@ -148,6 +161,10 @@ Searched 2026-10-12 (8.7): his r/FourSouls comments and tweets that name a Base 
 | 18 | Soul of Gluttony | A bonus soul is gained once per game, even if destroyed | Holds; test |
 | 19 | Any "choose a player" | Dead players can't be chosen while a living one can (R-ABIL-35) | **Fixed** in the engine: Q-07; tests |
 | 20 | 3+ player cards | Satan and others are out of 2-player games (R-CARD-32) | **Fixed** in the engine: Q-08; test |
+| 21 | Steven, Bomb | Steven dies to a bomb before his "roll of 6" trigger: the roll is gone, no trigger | Gold Box; test |
+| 22 | Holy Mantle, Bomb | Death ends combat: unresolved attack rolls are cancelled; a bomb on the stack still resolves | Gold Box; test |
+| 23 | Plan C, Eden | An eternal "Destroy this. If you do" item does nothing (as row 5) | Gold Box; test |
+| 24 | Euthanasia, 20/20 | "Same result twice in a row" uses final results | Four Souls+; test |
 
 ## Card rulings from Discord (S-DIS)
 
@@ -162,3 +179,5 @@ Searched 2026-10-12 (8.7) with each card's Russian name from foursouls.ru (the o
 | 5 | Diplopia | It may copy other players' items and shop items | Holds (R-CARD-34) |
 | 6 | Any item | Items enter play charged unless they say otherwise | Holds |
 | 7 | Butter Bean | It cancels a loot card entirely | Holds |
+| 8 | Fruitcake | Each pair of equal rolls in a row recharges it: three in a row is two | Gold Box (Q-10); test |
+| 9 | Fruitcake, Mutant Spider | Only Mutant Spider's chosen result counts as a roll | Gold Box (R-DICE-08) |

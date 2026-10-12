@@ -20,3 +20,4 @@ Sources: S-OFF Attacking; S-RU Атака.
 16. **R-ATK-16** A player told to roll an attack roll who is not the attacker does not end the attack by dying; dead players make no attack rolls.
 17. **R-ATK-17** If a player and a monster take lethal damage at the same moment, the monster's death resolves first.
 18. **R-ATK-18** Evasion is between 1 and 6.
+19. **R-ATK-19** *(Gold Box)* **Next attack roll**: "the next attack roll this turn has -2" changes the next attack roll that resolves this turn, by anyone; "their next attack roll" only that player's. It then ends; an unused one ends with the turn.
