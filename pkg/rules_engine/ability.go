@@ -50,6 +50,8 @@ type Ctx struct {
 	EventStack int
 	// EventObject is the object the event was about (a dead monster).
 	EventObject ObjectID
+	// EventSource is what caused the event, e.g. the monster that dealt damage.
+	EventSource ObjectID
 
 	// Where the effect is, so an Ask can find it again.
 	ref    AbilityRef
@@ -272,7 +274,7 @@ func (e rollEffect) apply(c *Ctx) {
 	c.G.push(StackItem{
 		Kind: StackRoll, Controller: c.Controller, Source: c.Source, Roll: r, Label: "roll",
 		RollFor: c.ref, Mode: c.mode, Targets: c.Targets,
-		EventPlayer: c.EventPlayer, EventAmount: c.EventAmount, EventStack: c.EventStack, EventObject: c.EventObject,
+		EventPlayer: c.EventPlayer, EventAmount: c.EventAmount, EventStack: c.EventStack, EventObject: c.EventObject, EventSource: c.EventSource,
 	})
 }
 

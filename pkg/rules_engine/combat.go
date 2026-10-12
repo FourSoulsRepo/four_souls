@@ -67,7 +67,11 @@ func (g *Game) PlayerHP(p PlayerID) int {
 
 // Evasion is the dice check to hit a monster, between 1 and 6 (R-ATK-18).
 func (g *Game) Evasion(id ObjectID) int {
-	return min(max(g.def(id).DC+g.bonus(StatMonsterDC, NoPlayer, id), 1), 6)
+	dc := g.def(id).DC + g.bonus(StatMonsterDC, NoPlayer, id)
+	if g.Attack.On && g.Attack.Target == id {
+		dc += g.bonus(StatAttackedDC, g.Turn.Active, 0) // "monsters you attack have -1 DC"
+	}
+	return min(max(dc, 1), 6)
 }
 
 // PlayerATK is a player's attack (R-CARD-25).

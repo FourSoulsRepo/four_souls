@@ -354,7 +354,7 @@ func (g *Game) resolveAbility(it StackItem) {
 	for i, e := range effects {
 		e.apply(&Ctx{
 			G: g, Controller: it.Controller, Source: it.Source, Targets: it.Targets,
-			EventPlayer: it.EventPlayer, EventAmount: it.EventAmount, EventStack: it.EventStack, EventObject: it.EventObject,
+			EventPlayer: it.EventPlayer, EventAmount: it.EventAmount, EventStack: it.EventStack, EventObject: it.EventObject, EventSource: it.EventSource,
 			ref: it.Ability, mode: it.Mode, roll: it.RollResult, effect: i,
 		})
 	}

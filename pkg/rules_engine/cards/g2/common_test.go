@@ -26,6 +26,26 @@ func setup(t *testing.T, s engine.SituationSetup) *enginetest.Table {
 	return enginetest.NewSetup(t, s, sets...)
 }
 
+// lootTable: player 0 (Isaac) holds the cards, player 1 is Cain; a fly
+// (DC 2) and a leech (DC 4) are in the monster slots.
+func lootTable(t *testing.T, hand ...engine.CardRef) *enginetest.Table {
+	t.Helper()
+	return setup(t, engine.SituationSetup{
+		Players:  []engine.SituationPlayer{{Character: "isaac", Hand: hand}, seat("cain")},
+		Monsters: []engine.CardRef{"fly", "leech"},
+	})
+}
+
+// inDiscard reports whether the deck's discard holds the card.
+func inDiscard(g *engine.Game, d engine.DeckKind, card engine.CardRef) bool {
+	for _, id := range g.Discards[d] {
+		if g.Object(id).Card == card {
+			return true
+		}
+	}
+	return false
+}
+
 const (
 	me  = "player 1 (isaac)"
 	foe = "player 2 (cain)"

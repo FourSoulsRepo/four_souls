@@ -37,9 +37,13 @@ type Turn struct {
 	MustAttacks    int `json:"must_attacks,omitempty"`
 	MustAttackDeck int `json:"must_attack_deck,omitempty"`
 	// DeckAttacks are extra attacks only on the monster deck.
-	DeckAttacks int  `json:"deck_attacks,omitempty"`
-	EndDeclared bool `json:"end_declared,omitempty"`
-	DeathEnd    bool `json:"death_end,omitempty"` // the active player died (R-DEATH-16)
+	DeckAttacks int `json:"deck_attacks,omitempty"`
+	// ShopBought counts shop items purchased this turn; FreeShopItem makes
+	// the first one cost 0¢ (Credit Card).
+	ShopBought   int  `json:"shop_bought,omitempty"`
+	FreeShopItem bool `json:"free_shop_item,omitempty"`
+	EndDeclared  bool `json:"end_declared,omitempty"`
+	DeathEnd     bool `json:"death_end,omitempty"` // the active player died (R-DEATH-16)
 	// entered is true once the current step's automatic work is done.
 	Entered bool `json:"entered,omitempty"`
 }
@@ -283,6 +287,7 @@ func (g *Game) healAll() {
 		g.Players[i].Dead = false // alive again (R-DEATH-19)
 		g.Players[i].ExtraLootPlays = 0
 		g.Players[i].TimesDamaged = 0
+		g.Players[i].Rolls, g.Players[i].LastRoll = 0, 0
 	}
 	for _, id := range g.inPlay() {
 		g.Object(id).Damage, g.Object(id).HitsThisTurn = 0, 0

@@ -183,6 +183,10 @@ type Player struct {
 	TimesDamaged int `json:"times_damaged,omitempty"`
 	// ExtraLootPlays come from abilities and last until the turn ends.
 	ExtraLootPlays int `json:"extra_loot_plays,omitempty"`
+	// Rolls and LastRoll are this turn's resolved rolls ("your first dice
+	// roll each turn", "twice in a row": R-DICE-08).
+	Rolls    int `json:"rolls,omitempty"`
+	LastRoll int `json:"last_roll,omitempty"`
 }
 
 // Slot is one table slot; the last card is on top and in play, the rest

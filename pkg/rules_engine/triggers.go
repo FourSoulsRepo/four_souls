@@ -17,6 +17,7 @@ const (
 	EvStartOfTurn   EventKind = "start_of_turn" // start-of-turn triggers (R-TURN-03)
 	EvEndOfTurn     EventKind = "end_of_turn"   // end-of-turn triggers (R-TURN-10)
 	EvRollResolved  EventKind = "roll_resolved" // a roll became final (R-DICE-06)
+	EvRollRepeated  EventKind = "roll_repeated" // a player rolled the same result twice in a row (R-DICE-08)
 	EvAbilityFizzle EventKind = "fizzled"       // R-ABIL-06
 )
 
@@ -141,6 +142,8 @@ type PendingTrigger struct {
 	EventAmount int       `json:"event_amount,omitempty"`
 	EventStack  int       `json:"event_stack,omitempty"`
 	EventObject ObjectID  `json:"event_object,omitempty"`
+	// EventSource is what caused the event, e.g. the monster that dealt damage.
+	EventSource ObjectID `json:"event_source,omitempty"`
 }
 
 // collectTriggers finds triggered abilities that match an event. Objects
@@ -156,7 +159,7 @@ func (g *Game) collectTriggers(e Event) {
 			if a.Kind == Triggered && a.Trigger.On == e.Kind && a.Trigger.Match != nil && a.Trigger.Match(g, id, e) {
 				g.PendingTriggers = append(g.PendingTriggers, PendingTrigger{
 					Ability: AbilityRef{Card: g.CardOf(id), Index: i}, Source: id, Controller: g.abilityController(id),
-					On: e.Kind, EventPlayer: e.Player, EventAmount: e.Amount, EventStack: e.StackID, EventObject: e.Object,
+					On: e.Kind, EventPlayer: e.Player, EventAmount: e.Amount, EventStack: e.StackID, EventObject: e.Object, EventSource: e.Source,
 				})
 			}
 		}
@@ -218,7 +221,7 @@ func (g *Game) pushTrigger(i int) {
 	it := StackItem{
 		Kind: StackTrigger, Controller: t.Controller, Source: t.Source, Card: t.Ability.Card,
 		Ability: t.Ability, Label: g.abilityText(t.Ability),
-		EventPlayer: t.EventPlayer, EventAmount: t.EventAmount, EventStack: t.EventStack, EventObject: t.EventObject,
+		EventPlayer: t.EventPlayer, EventAmount: t.EventAmount, EventStack: t.EventStack, EventObject: t.EventObject, EventSource: t.EventSource,
 	}
 	if t.On == EvRollWouldResolve {
 		it.Checked = t.EventAmount + 1 // R-DICE-07

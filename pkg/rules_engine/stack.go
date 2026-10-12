@@ -42,6 +42,8 @@ type StackItem struct {
 	EventAmount int      `json:"event_amount,omitempty"`
 	EventStack  int      `json:"event_stack,omitempty"`
 	EventObject ObjectID `json:"event_object,omitempty"`
+	// EventSource is what caused the event, e.g. the monster that dealt damage.
+	EventSource ObjectID `json:"event_source,omitempty"`
 	// Reward is a roll reward's kind + 1: the result is how much is gained.
 	Reward int `json:"reward,omitempty"`
 	// Checked is the roll value (+1) that "would roll" triggers last saw
@@ -133,6 +135,13 @@ func (g *Game) resolveTop() {
 			re.Text = "attack"
 		}
 		g.emit(re)
+		if it.Controller != NoPlayer {
+			pl := &g.Players[it.Controller]
+			if pl.Rolls > 0 && pl.LastRoll == it.Roll {
+				g.emit(Event{Kind: EvRollRepeated, Player: it.Controller, Amount: it.Roll}) // R-DICE-08
+			}
+			pl.Rolls, pl.LastRoll = pl.Rolls+1, it.Roll
+		}
 		if it.Attack {
 			g.resolveAttackRoll(it)
 		}
@@ -145,7 +154,7 @@ func (g *Game) resolveTop() {
 			g.push(StackItem{
 				Kind: StackTrigger, Controller: it.Controller, Source: it.Source, Card: it.RollFor.Card,
 				Ability: it.RollFor, Mode: it.Mode, Targets: it.Targets, RollResult: it.Roll, Label: "roll result",
-				EventPlayer: it.EventPlayer, EventAmount: it.EventAmount, EventStack: it.EventStack, EventObject: it.EventObject,
+				EventPlayer: it.EventPlayer, EventAmount: it.EventAmount, EventStack: it.EventStack, EventObject: it.EventObject, EventSource: it.EventSource,
 			})
 		}
 	case StackDamage:
