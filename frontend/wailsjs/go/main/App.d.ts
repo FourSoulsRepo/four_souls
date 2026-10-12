@@ -6,6 +6,8 @@ import {legal} from '../models';
 import {settings} from '../models';
 import {version} from '../models';
 
+export function Backs():Promise<Array<main.CardBack>>;
+
 export function CardSets():Promise<Array<string>>;
 
 export function Cards():Promise<Array<main.CardInfo>>;

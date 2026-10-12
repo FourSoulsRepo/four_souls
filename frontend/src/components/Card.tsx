@@ -44,6 +44,7 @@ export function Card({
   onClick,
 }: Props) {
   const info = useApp((s) => (cardRef ? s.cards.get(cardRef) : undefined));
+  const backImage = useApp((s) => s.backs.get(back) ?? '');
   const setZoom = useApp((s) => s.setZoom);
   const scale = useApp((s) => scaleFor(s.settings.animation, 0, 0));
   const pressRef = useRef(0);
@@ -71,7 +72,18 @@ export function Card({
         aria-label={`Face-down ${back} card`}
         onClick={onClick}
       >
-        <div className="card-back-face">{back}</div>
+        {backImage !== '' && backImage !== brokenImage ? (
+          <img
+            src={backImage}
+            alt="" // the card itself carries the label
+            draggable={false}
+            onError={() => {
+              setBrokenImage(backImage);
+            }}
+          />
+        ) : (
+          <div className="card-back-face">{back}</div>
+        )}
       </div>
     );
   }

@@ -68,11 +68,11 @@ func (a *App) Cards() ([]CardInfo, error) {
 	return a.cardList.load(a.cardFiles)
 }
 
-// imageTypes are the files cardImages serves: card images, dice
-// textures (V-19) and mats are all WebP.
+// imageTypes are the files cardImages serves: card images, card backs,
+// dice textures (V-19) and mats are all WebP.
 var imageTypes = map[string]bool{".webp": true}
 
-// cardImages serves card images, dice textures and mats under cardImagePrefix
+// cardImages serves card images, backs, dice textures and mats under cardImagePrefix
 // from the card files; every other request goes on to the frontend.
 func cardImages(fsys fs.FS) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {

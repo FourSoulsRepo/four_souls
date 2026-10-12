@@ -2,7 +2,7 @@
 import { expect, test } from '@playwright/test';
 import { startGame } from './game';
 import { appURL } from './server';
-import { realMats, shot } from './shot';
+import { realAssets, shot } from './shot';
 
 test('the first start asks for a nickname, once', async ({ page }) => {
   await page.goto('/?fake&nosplash&firstrun');
@@ -55,7 +55,7 @@ test('a mat image lies under the table', async ({ browser }) => {
 });
 
 test('the mat menu lists the mat images', async ({ page }) => {
-  await realMats(page);
+  await realAssets(page);
   await page.goto('/?fake&nosplash');
   await page.getByRole('button', { name: 'Settings' }).click();
   const mats = page.getByRole('combobox', { name: 'Game mat' });

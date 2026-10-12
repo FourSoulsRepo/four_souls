@@ -36,6 +36,10 @@ A dice effect draws `Die`: one face cut out of the player's dice texture (V-19).
 
 The table lies on a mat (ST-03, V-24), drawn by `mats.matLook`. Three color mats are CSS: Green felt, Basement and Cathedral. Image mats come from `App.Mats`, one per file in `assets/mats/`; an image mat with a color mat's id takes its place in the menu, and a new id is added after them. The image is drawn under a dark shade, so cards and text stay readable, and over its colors (felt for a new id), so a missing or unloadable image leaves the colors. The `mat` setting keeps any mat file name, so a saved mat whose image is gone also falls back to colors. An empty `mat` is the default: the first mat image, or Green felt without images (`mats.matOf`).
 
+## Card backs
+
+Face-down cards show their deck's back (V-26). `App.Backs` gives the loot, treasure and monster back URLs from `assets/backs/<kind>.webp`, or no URL when the file is missing; the store keeps them in `store.backs`. `Card` draws the back image, and falls back to the plain dark back with the deck name when there is none or it fails to load. An opponent's hand is `Pile.HiddenHand`: one loot back with the card count, in the `hand-<id>` zone, so drawn cards fly to it. A back never carries a card ref, so it cannot reveal the card.
+
 Effect durations scale with the animation setting (ST-05) and speed up when updates pile up; past 8 waiting updates they are skipped, so the table always catches up. Each effect has a time limit, so a closed screen never blocks playback.
 
 ## Cards

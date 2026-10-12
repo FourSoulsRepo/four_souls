@@ -2,9 +2,10 @@
 // Everything else imports from here, so a move to Wails v3 or a browser
 // build replaces this folder and nothing else (A-14).
 import { noHostSetup, type HostSetup } from '../hostSetup';
-import type { CardInfo } from '../cards';
+import type { CardInfo, Kind } from '../cards';
 import type { Speed } from '../playback';
 import {
+  Backs as wailsBacks,
   Cards as wailsCards,
   CardSets as wailsCardSets,
   Dice as wailsDice,
@@ -135,6 +136,18 @@ export interface DiceSkin {
 // getDice returns every dice look the app knows.
 export function getDice(): Promise<DiceSkin[]> {
   return wailsDice();
+}
+
+// CardBack is the back image of one deck (V-26).
+export interface CardBack {
+  kind: Kind;
+  image: string; // URL; '' when missing: a plain back
+}
+
+// getBacks returns the deck backs; images are '' without the private images.
+export async function getBacks(): Promise<CardBack[]> {
+  // Go sends only deck kinds, so the cast is safe.
+  return (await wailsBacks()) as CardBack[];
 }
 
 // MatInfo is one game mat image (ST-03, V-24).

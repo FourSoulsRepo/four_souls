@@ -155,6 +155,20 @@ export namespace legal {
 
 export namespace main {
 	
+	export class CardBack {
+	    kind: string;
+	    image: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new CardBack(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.kind = source["kind"];
+	        this.image = source["image"];
+	    }
+	}
 	export class CardInfo {
 	    ref: string;
 	    set: string;

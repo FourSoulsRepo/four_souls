@@ -4,6 +4,7 @@ import { useApp } from '../store';
 import type { Position } from '../table';
 import { Card, type CardSize } from './Card';
 import type { Interact } from './Interact';
+import { HiddenHand } from './Pile';
 import './Table.css';
 
 interface Props {
@@ -56,6 +57,7 @@ export function PlayerArea({ player, name, position, you, active, ui }: Props) {
         )}
       </header>
       <div className="player-cards">
+        {!you && <HiddenHand playerId={player.id} count={player.hand_size} size={size} />}
         {[player.character, ...(player.in_play ?? [])].map((c) => (
           <Card
             key={c.id}

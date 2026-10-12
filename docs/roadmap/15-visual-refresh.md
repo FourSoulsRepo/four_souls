@@ -265,6 +265,13 @@ Images come first, so the new table is built with backs and mats.
 3. Done when:
    1. `make screenshots` shows backs on decks and opponent hands.
    2. A public-clone build shows the plain backs.
+4. Result (2026-10-12)
+   1. `scraper backs` in the tools repo: three site backs, 600 px, quality 85.
+   2. Files: `assets/backs/loot.webp`, `treasure.webp`, `monster.webp`; 73 KB.
+   3. `App.Backs` lists them; a missing file gives a plain back.
+   4. An opponent's hand is one loot back with its count (F-08).
+   5. Drawn cards fly to that back; it never carries a card ref.
+   6. Screenshots: `.cache/screenshots/15.11/before/` and `after/`.
 
 ### [~] 15.12 Turn action buttons
 

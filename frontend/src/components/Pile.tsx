@@ -46,3 +46,19 @@ export function Discard({ kind, cards, size }: { kind: Kind; cards: CardView[] |
     </div>
   );
 }
+
+// HiddenHand is an opponent's hand: one loot back with the card count
+// (V-26, F-08). The backs never tell the cards apart. Its zone is the
+// player's hand, so drawn cards fly to it.
+export function HiddenHand({ playerId, count, size }: { playerId: number; count: number; size: CardSize }) {
+  if (count === 0) {
+    return null;
+  }
+  const label = `Hand: ${String(count)} cards`;
+  return (
+    <div className="pile" role="group" aria-label={label} title={label} data-zone={`hand-${String(playerId)}`}>
+      <Card size={size} back="loot" />
+      <span className="pile-count">{count}</span>
+    </div>
+  );
+}

@@ -201,6 +201,12 @@ w.go = {
       Cards: () => Promise.resolve([...cards, ...realCards()]),
       // Dice textures are private images too: a plain die, as in a public clone.
       Dice: () => Promise.resolve([{ id: 'tear', name: 'Tear', image: '' }]),
+      // Card backs at their real paths; like the mat, the e2e tests serve
+      // them only for screenshots, else they fail to load: plain backs.
+      Backs: () =>
+        Promise.resolve(
+          ['loot', 'treasure', 'monster'].map((kind) => ({ kind, image: `/cardimg/assets/backs/${kind}.webp` })),
+        ),
       // One mat image, at its real path; the e2e tests serve it only for
       // screenshots, else it fails to load as in a public clone.
       // ?nomats lists none, as Go does without the private images.

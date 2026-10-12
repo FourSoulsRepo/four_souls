@@ -6,6 +6,7 @@ import {
   setFullscreen,
   getCards,
   getDice,
+  getBacks,
   getMats,
   getCardSets,
   saveRecord,
@@ -21,7 +22,7 @@ import {
   type Settings,
 } from './bridge';
 import { noHostSetup } from './hostSetup';
-import type { CardInfo } from './cards';
+import type { CardInfo, Kind } from './cards';
 import { entriesFor, type Entry } from './history';
 import { emptyLobby, leftTable, lost, onMessage, remember, type Screen, type Session } from './lobby';
 import { connect, disconnect, drop, send } from './net';
@@ -96,6 +97,8 @@ interface AppState extends Session {
   dice: DiceSkin[];
   // mats are the mat images (V-24); empty until loaded or without images.
   mats: MatInfo[];
+  // backs are the deck back images by kind (V-26); a missing kind is plain.
+  backs: Map<Kind, string>;
   zoom: Zoom | null;
   loadCards: () => Promise<void>;
   setZoom: (zoom: Zoom | null) => void;
@@ -343,11 +346,17 @@ export const useApp = create<AppState>()((set, get) => {
     cards: new Map(),
     dice: [],
     mats: [],
+    backs: new Map(),
     zoom: null,
     loadCards: async () => {
       try {
-        const [list, dice, mats] = await Promise.all([getCards(), getDice(), getMats()]);
-        set({ cards: new Map(list.map((c) => [c.ref, c])), dice, mats });
+        const [list, dice, mats, backs] = await Promise.all([getCards(), getDice(), getMats(), getBacks()]);
+        set({
+          cards: new Map(list.map((c) => [c.ref, c])),
+          dice,
+          mats,
+          backs: new Map(backs.filter((b) => b.image !== '').map((b) => [b.kind, b.image])),
+        });
       } catch (e) {
         set({ error: `Card data: ${messageOf(e)}` });
       }

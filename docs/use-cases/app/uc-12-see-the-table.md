@@ -40,6 +40,9 @@
 * **1d. Animations off:** updates show at once.
 * **1e. Dice look (V-19):** a roll shows the face of the player's dice texture.
   * No texture (public clone) or a value past 1–6: a plain die with the number.
+* **1f. Card backs (V-26):** each deck shows its own back.
+  * An opponent's hand is one loot back with its card count.
+  * No back images (public clone): plain dark backs with the deck name.
 
 ## Postconditions
 

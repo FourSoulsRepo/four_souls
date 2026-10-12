@@ -19,6 +19,18 @@ test('cards show their image, or a readable blank card', async ({ page }) => {
   await shot(page, 'cards');
 });
 
+test('a face-down card shows its deck back, or a plain back without it', async ({ page }) => {
+  // Only the treasure back is there; the loot back fails to load.
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="63" height="88"><rect width="63" height="88" fill="#a70"/></svg>';
+  await page.route('**/cardimg/assets/backs/treasure.webp', (route) => route.fulfill({ body: svg, contentType: 'image/svg+xml' }));
+  await page.goto(gallery);
+  const back = page.getByLabel('Hand size').getByRole('img', { name: 'Face-down treasure card' });
+  await expect(back.locator('img')).toHaveAttribute('src', '/cardimg/assets/backs/treasure.webp');
+  await expect(back.locator('img')).toBeVisible();
+  await expect(back).not.toContainText('treasure');
+  await expect(page.getByLabel('Hand size').getByRole('img', { name: 'Face-down loot card' })).toHaveText('loot');
+});
+
 test('hovering a card zooms it with its full text', async ({ page }) => {
   await page.goto(gallery);
   const zoom = page.getByTestId('card-zoom');
