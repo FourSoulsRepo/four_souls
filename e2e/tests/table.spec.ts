@@ -55,6 +55,38 @@ async function expectOwnArea(page: Page): Promise<void> {
   }
 }
 
+// expectOpponents checks every other player's place (15.18): coins
+// shown, live health and attack on the character, and the hand as one
+// back per card, with its count. At the top, the character sits over
+// the board's middle and the hand hangs past the top edge.
+async function expectOpponents(page: Page): Promise<void> {
+  const others = await page.locator('.player.opponent').all();
+  expect(others.length).toBeGreaterThan(0);
+  for (const other of others) {
+    await expect(other.getByLabel(/^\d+ cents$/)).toBeVisible();
+    const character = other.locator('.opp-character > .card');
+    await expect(character.getByLabel(/^\d+ health$/)).toBeVisible();
+    await expect(character.getByLabel(/^\d+ attack$/)).toBeVisible();
+    const hand = other.getByRole('group', { name: /^Hand: \d+ cards$/ });
+    const count = Number((await hand.locator('.pile-count').textContent()) ?? '');
+    expect(count).toBeGreaterThan(0);
+    await expect(hand.getByRole('img', { name: 'Face-down loot card' })).toHaveCount(Math.min(count, 8));
+  }
+  const top = page.locator('.player-top');
+  if ((await top.count()) === 0) {
+    return;
+  }
+  const board = await boardBox(page);
+  const card = await top.locator('.opp-character > .card').boundingBox();
+  if (!board || !card) {
+    throw new Error('no board or character');
+  }
+  expect(Math.abs(card.x + card.width / 2 - (board.x + board.width / 2))).toBeLessThan(2);
+  for (const back of await top.locator('.hidden-back').all()) {
+    expect((await back.boundingBox())?.y ?? 0).toBeLessThan(0);
+  }
+}
+
 type View = Record<string, unknown>;
 
 // rewriteView changes the page's game updates before the app sees them;
@@ -119,20 +151,17 @@ test('two players face each other; the table fits 1280x720', async ({ browser })
     await expect(page.locator('.player-top')).toHaveAccessibleName(other);
     await expect(page.getByRole('group', { name: 'Your hand' }).getByRole('img')).not.toHaveCount(0);
     await expect(page.getByRole('group', { name: /^Loot deck: \d+ cards$/ })).toBeVisible();
-    // The opponent's hand is one loot back with its count (15.11).
-    const theirHand = page.locator('.player-top').getByRole('group', { name: /^Hand: \d+ cards$/ });
-    await expect(theirHand.getByRole('img', { name: 'Face-down loot card' })).toHaveCount(1);
-    await expect(theirHand.locator('.pile-count')).toHaveText(/^\d+$/);
     await expect(page.getByRole('group', { name: 'Shop' }).getByRole('img')).not.toHaveCount(0);
     await expect(page.getByRole('group', { name: 'Monsters' }).getByRole('img')).not.toHaveCount(0);
     await expectFits(page);
     await expectDecksClear(page);
     await expectOwnArea(page);
+    await expectOpponents(page);
   }
   await shot(eve, 'table-2p');
 });
 
-test('own coins show the coin image, or a drawn coin without it (15.38)', async ({ browser }) => {
+test('coins show the coin image, or a drawn coin without it (15.38)', async ({ browser }) => {
   // Coy gets a coin image; Dot's fails to load, as without the images.
   const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="8" height="8"><circle cx="4" cy="4" r="4" fill="#d90"/></svg>';
   let opened = 0;
@@ -147,11 +176,16 @@ test('own coins show the coin image, or a drawn coin without it (15.38)', async 
   if (!coy || !dot) {
     throw new Error('no pages');
   }
-  const image = coy.getByLabel(/^\d+ cents$/).locator('img.coin');
-  await expect(image).toHaveAttribute('src', '/cardimg/assets/icons/coin.webp');
-  await expect(image).toBeVisible();
-  await expect(coy.getByLabel(/^\d+ cents$/)).not.toContainText('¢');
-  await expect(dot.getByLabel(/^\d+ cents$/).locator('.coin')).toHaveText('¢');
+  // Own coins and the opponent's (15.18) use the same icon.
+  for (const coins of await coy.getByLabel(/^\d+ cents$/).all()) {
+    const image = coins.locator('img.coin');
+    await expect(image).toHaveAttribute('src', '/cardimg/assets/icons/coin.webp');
+    await expect(image).toBeVisible();
+    await expect(coins).not.toContainText('¢');
+  }
+  for (const coins of await dot.getByLabel(/^\d+ cents$/).all()) {
+    await expect(coins.locator('.coin')).toHaveText('¢');
+  }
 });
 
 test('four players sit left, top and right in turn order', async ({ browser }) => {
@@ -168,6 +202,7 @@ test('four players sit left, top and right in turn order', async ({ browser }) =
     await expectFits(page);
     await expectDecksClear(page);
     await expectOwnArea(page);
+    await expectOpponents(page);
   }
   await shot(hal, 'table-4p');
 });
@@ -183,6 +218,7 @@ test('three players sit left and right; nothing covers the decks', async ({ brow
   for (const page of pages) {
     await expectFits(page);
     await expectDecksClear(page);
+    await expectOpponents(page);
   }
   await shot(kip, 'table-3p');
 });

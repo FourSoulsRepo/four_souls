@@ -421,6 +421,19 @@ Images come first, so the new table is built with backs and mats.
 3. Done when:
    1. `make screenshots` shows every player count.
    2. `make frontend e2e` passes.
+4. Result (2026-10-12)
+   1. No text header; a small name, coins with the coin icon, and souls.
+   2. Live HP and ATK as badges on the character, as for the own area.
+   3. Hand: one loot back per card, at most eight, fanned, with the count.
+   4. Top: the own area mirrored; the character centered over the board.
+   5. Top hand hangs past the top edge, backs upside down.
+   6. Sides: 150 px instead of 200 px; name first, clear of the menu.
+   7. Side cards are small, two to a row.
+   8. 3 players: the board is about 12% wider than before.
+   9. 4 players: about 2% wider; 2 players: about 1% smaller.
+   10. The allowance wraps only between its parts.
+   11. e2e test: coins, badges, one back per card, top hand off screen.
+   12. Screenshots: `.cache/screenshots/15.18/before/` and `after/`.
 
 ### [ ] 15.19 Action icons
 

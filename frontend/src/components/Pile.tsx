@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react';
 import type { Kind } from '../cards';
 import type { CardView } from '../protocol';
 import { Card, type CardSize } from './Card';
@@ -47,17 +48,23 @@ export function Discard({ kind, cards, size }: { kind: Kind; cards: CardView[] |
   );
 }
 
-// HiddenHand is an opponent's hand: one loot back with the card count
-// (V-26, F-08). The backs never tell the cards apart. Its zone is the
-// player's hand, so drawn cards fly to it.
+// Most backs a hidden hand fans out; the count tells the rest.
+const fannedBacks = 8;
+
+// HiddenHand is an opponent's hand: fanned loot backs with the card
+// count (V-26, F-08, H-17). The backs never tell the cards apart. Its
+// zone is the player's hand, so drawn cards fly to it; an empty hand
+// keeps the zone with only the count.
 export function HiddenHand({ playerId, count, size }: { playerId: number; count: number; size: CardSize }) {
-  if (count === 0) {
-    return null;
-  }
   const label = `Hand: ${String(count)} cards`;
+  const shown = Math.min(count, fannedBacks);
   return (
-    <div className="pile" role="group" aria-label={label} title={label} data-zone={`hand-${String(playerId)}`}>
-      <Card size={size} back="loot" />
+    <div className="hidden-hand" role="group" aria-label={label} title={label} data-zone={`hand-${String(playerId)}`}>
+      {Array.from({ length: shown }, (_, i) => (
+        <div key={i} className="hidden-back" style={{ '--spread': String(i - (shown - 1) / 2) } as CSSProperties}>
+          <Card size={size} back="loot" />
+        </div>
+      ))}
       <span className="pile-count">{count}</span>
     </div>
   );

@@ -32,22 +32,33 @@ export function PlayerArea({ you, position, ...rest }: Props) {
   return you ? <OwnArea {...rest} /> : <OpponentArea position={position} {...rest} />;
 }
 
-// OpponentArea is another player's place: a header of stats, then the
-// hand's back, the character, and the cards in play.
+// OpponentArea is another player's place (15.18): a small name with
+// coins and souls, the character with its live health and attack, the
+// items, and the hand as fanned backs (F-07, F-08, H-17, H-21). At the
+// top it mirrors the own area, the hand hanging past the top edge; in
+// a side column everything stacks in a narrow column (F-09).
 function OpponentArea({ player, name, position, active, ui }: Omit<Props, 'you'>) {
   const size: CardSize = position === 'left' || position === 'right' ? 'small' : 'table';
   const pick = ui.player(player.id);
+  const { character } = player;
   return (
     <section
-      className={`player player-${position}${active ? ' active' : ''}${player.dead ? ' dead' : ''}${pick.highlight ? ' hl-pick' : ''}`}
+      className={`player player-${position} opponent${active ? ' active' : ''}${player.dead ? ' dead' : ''}${pick.highlight ? ' hl-pick' : ''}`}
       aria-label={name}
       data-zone={`player-${String(player.id)}`}
     >
-      <header className="player-header">
-        <b>{name}</b>
-        <span className="player-stats">
-          HP {player.hp} · ATK {player.atk} · {player.cents}¢ · {player.souls} souls · {player.hand_size} in hand
-          {player.dead && ' · dead'}
+      <HiddenHand playerId={player.id} count={player.hand_size} size="small" />
+      <div className="opp-status">
+        <b className="opp-name">{name}</b>
+        <span className="opp-line">
+          <span className="opp-coins" title="Coins" aria-label={`${String(player.cents)} cents`}>
+            <Coin />
+            {player.cents}
+          </span>
+          <span className="opp-souls" title="Souls">
+            <b>{player.souls}</b> {player.souls === 1 ? 'soul' : 'souls'}
+            {player.dead && ' · dead'}
+          </span>
         </span>
         {active && <Allowance player={player} />}
         {pick.onClick && (
@@ -55,10 +66,21 @@ function OpponentArea({ player, name, position, active, ui }: Omit<Props, 'you'>
             Choose {name}
           </button>
         )}
-      </header>
-      <div className="player-cards">
-        <HiddenHand playerId={player.id} count={player.hand_size} size={size} />
-        {[player.character, ...(player.in_play ?? [])].map((c) => (
+      </div>
+      <div className="player-cards opp-character">
+        <Card
+          cardRef={character.card}
+          size={size}
+          damage={character.damage}
+          spent={spent(character)}
+          counters={counted(character)}
+          stats={{ hp: player.hp, atk: player.atk }}
+          objectId={character.id}
+          {...ui.object(character.id)}
+        />
+      </div>
+      <div className="player-cards opp-items" role="group" aria-label={`${name}: items`}>
+        {(player.in_play ?? []).map((c) => (
           <PlayCard key={c.id} card={c} size={size} ui={ui} />
         ))}
       </div>
@@ -160,7 +182,8 @@ function OwnArea({ player, name, active, ui }: Omit<Props, 'you' | 'position'>) 
 function Allowance({ player }: { player: PlayerView }) {
   return (
     <span className="player-allowance" aria-label="Left this turn">
-      Loot {player.loot_plays} · Attacks {player.attacks} · Buys {player.purchases}
+      <span>Loot {player.loot_plays}</span> · <span>Attacks {player.attacks}</span> ·{' '}
+      <span>Buys {player.purchases}</span>
     </span>
   );
 }

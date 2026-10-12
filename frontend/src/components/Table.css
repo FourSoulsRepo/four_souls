@@ -195,34 +195,8 @@
   border-radius: 8px;
 }
 
-.player-header {
-  text-shadow: 0 1px 3px rgb(0 0 0 / 80%);
-}
-
-.player.active .player-header b {
-  color: var(--accent);
-}
-
 .player.dead {
   opacity: 0.6;
-}
-
-.player-left,
-.player-right {
-  width: 200px;
-  box-sizing: border-box;
-}
-
-.player-header {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 2px 10px;
-  font-size: 13px;
-}
-
-.player-stats {
-  color: var(--muted);
 }
 
 .player-cards,
@@ -235,9 +209,166 @@
   overflow-x: auto;
 }
 
+/* Opponents (15.18): a small name with coins and souls outside the
+   board (F-07, H-21), the character with live stats, the items, and
+   the hand as fanned backs with a count (F-08, H-17). */
+.opp-status {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  text-shadow: 0 1px 3px rgb(0 0 0 / 80%);
+}
+
+.opp-name {
+  font-size: 13px;
+}
+
+.player.active .opp-name {
+  color: var(--accent);
+}
+
+.opp-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 10px;
+}
+
+.opp-coins {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.1;
+  color: #ffd27a;
+}
+
+.opp-coins .coin {
+  width: 18px;
+  height: 18px;
+  border-width: 1px;
+  font-size: 11px;
+}
+
+.opp-coins .coin-image {
+  width: 20px;
+  height: 20px;
+}
+
+.opp-souls {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.opp-souls b {
+  font-size: 14px;
+  color: var(--fg);
+}
+
+.hidden-hand {
+  position: relative;
+  display: flex;
+  flex: none;
+}
+
+.hidden-back {
+  flex: none;
+  transition: transform 150ms ease-out;
+}
+
+/* Top: the own area mirrored. The character keeps the middle column,
+   so it sits centered at the top edge; the hand hangs past the edge,
+   its backs upside down, as across a real table (H-02, H-17). */
+.player-top.opponent {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-areas:
+    "hand hand hand"
+    "status character items";
+  align-items: start;
+  column-gap: 14px;
+  row-gap: 0;
+  padding: 0 8px;
+}
+
+.player-top .hidden-hand {
+  grid-area: hand;
+  justify-self: center;
+  align-items: flex-end;
+  height: 34px;
+}
+
+.player-top .hidden-back {
+  transform: translateY(calc(var(--spread) * var(--spread) * -2px)) rotate(calc(var(--spread) * -5deg));
+  transform-origin: 50% -80%;
+}
+
+.player-top .hidden-back .card {
+  transform: rotate(180deg);
+}
+
+.player-top .hidden-back + .hidden-back {
+  margin-left: -42px;
+}
+
+.player-top .opp-status {
+  grid-area: status;
+  justify-self: end;
+  align-items: flex-end;
+  padding-top: 6px;
+  text-align: right;
+}
+
+.player-top .opp-line {
+  justify-content: flex-end;
+}
+
+.player-top .opp-character {
+  grid-area: character;
+}
+
+.player-top .opp-items {
+  grid-area: items;
+}
+
+/* Sides (F-09): one narrow column, so the board keeps most of the
+   width; with three players the free top lets it grow. */
+.player-left,
+.player-right {
+  width: 150px;
+  box-sizing: border-box;
+  padding: 4px;
+}
+
+/* The name comes first, clear of the corner menu; the hand below it. */
+.player-left .opp-status,
+.player-right .opp-status {
+  order: -1;
+}
+
+.player-left .hidden-hand,
+.player-right .hidden-hand {
+  align-self: center;
+  margin: 4px 0 6px;
+}
+
+.player-left .hidden-back,
+.player-right .hidden-back {
+  transform: translateY(calc(var(--spread) * var(--spread) * 1.5px)) rotate(calc(var(--spread) * 5deg));
+  transform-origin: 50% 160%;
+}
+
+.player-left .hidden-back + .hidden-back,
+.player-right .hidden-back + .hidden-back {
+  margin-left: -50px;
+}
+
 .player-left .player-cards,
 .player-right .player-cards {
   flex-wrap: wrap;
+  justify-content: center;
+  overflow: visible;
 }
 
 /* The own area (15.17): status | character | items, the hand below.
@@ -377,4 +508,9 @@
 .player-allowance {
   font-size: 12px;
   color: #ffd27a;
+}
+
+/* A narrow column wraps only between the parts. */
+.player-allowance > span {
+  white-space: nowrap;
 }

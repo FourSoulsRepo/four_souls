@@ -30,6 +30,12 @@
    4. The hand fans out at the bottom edge, partly off screen.
    5. Hover a card to read it in full (V-18).
    6. The coins show the game's own coin (15.38).
+7. Opponents read at a glance too (15.18).
+   1. A small name, coins with the coin icon, and souls.
+   2. The character with big health and attack; items beside it.
+   3. The hand: one back per card, fanned, with the count.
+   4. Top: mirrors the own area; the hand hangs past the top edge.
+   5. Sides: one narrow column; with three players the board grows.
 
 ## Alternative scenarios and errors
 
@@ -51,7 +57,7 @@
 * **1e. Dice look (V-19):** a roll shows the face of the player's dice texture.
   * No texture (public clone) or a value past 1–6: a plain die with the number.
 * **1f. Card backs (V-26):** each deck shows its own back.
-  * An opponent's hand is one loot back with its card count.
+  * An opponent's hand is fanned loot backs with its card count.
   * No back images (public clone): plain dark backs with the deck name.
 * **1g. No coin image (public clone):** a drawn ¢ coin by the cents.
 
