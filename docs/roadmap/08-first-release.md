@@ -151,7 +151,7 @@ Ideas: B-03 – B-05, L-03, V-10, V-11, DO-01, V-14, A-16, N-13, N-14, V-19.
 4. Done when:
    1. Audit notes in `docs/wiki/Server.md`; found leaks fixed with tests.
 
-### [~] 8.13 LAN game discovery
+### [x] 8.13 LAN game discovery
 
 1. Goal: join a friend's game without typing an IP (N-13).
 2. When: before the play-test (8.5).
@@ -164,7 +164,7 @@ Ideas: B-03 – B-05, L-03, V-10, V-11, DO-01, V-14, A-16, N-13, N-14, V-19.
    6. Use case: join a game found on the LAN.
 4. Done when:
    1. Two machines on one Wi-Fi find each other's game.
-4. Left for the **Owner**: two real machines; macOS and Windows prompts.
+4. **Owner** checked LAN search on real machines (2026-10-12).
 
 ### [x] 8.14 Game password
 
