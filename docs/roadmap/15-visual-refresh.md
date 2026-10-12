@@ -437,7 +437,7 @@ Images come first, so the new table is built with backs and mats.
 5. Owner notes (2026-10-12)
    1. Owner marks 15.18 solved.
 
-### [ ] 15.19 Action icons
+### [x] 15.19 Action icons
 
 1. Goal: buy and attack as clear icons next to own name (F-11).
 2. Tasks:
@@ -461,6 +461,8 @@ Images come first, so the new table is built with backs and mats.
    9. Roll on Attack waits for 15.5.
    10. e2e test: icons follow the allowed intents; B opens the buy choice.
    11. Screenshots: `.cache/screenshots/15.19/before/` and `after/`.
+5. Owner notes (2026-10-12)
+   1. Owner marks 15.19 solved.
 
 ### [ ] 15.20 End turn button and keys
 
