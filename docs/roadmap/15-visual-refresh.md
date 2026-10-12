@@ -249,6 +249,7 @@ Images come first, so the new table is built with backs and mats.
 5. Owner notes (2026-10-12)
    1. Owner: the mat image is the default when it exists.
    2. Owner marks 15.10 resolved.
+   3. Owner reviewed the default-mat change; 15.10 solved.
 
 ### [ ] 15.11 Card backs
 
