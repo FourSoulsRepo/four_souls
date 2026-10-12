@@ -216,6 +216,8 @@ Step numbers stay as IDs; the table lists steps in work order.
 21. Turn action icons with hotkeys (15.12).
 22. Stack panel and history strip with icons (15.13).
 23. Counters and live stats on the cards (15.14).
+24. First study how Hearthstone aims at targets (15.15).
+25. Big sub-steps split into one-session ones (15.16 – 15.31).
 
 ## 16. Localization
 
