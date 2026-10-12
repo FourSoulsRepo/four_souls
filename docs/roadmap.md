@@ -200,6 +200,7 @@ Step numbers stay as IDs; the table lists steps in work order.
 8. Drag cards onto the table or a target, Hearthstone-style (V-16).
 9. Real-looking dice, thrown by a button (V-17).
 10. Everyone sees the roller's own dice look (V-19).
+11. The game always shows clearly when it waits for the player (V-20).
 
 ## 16. Localization
 

@@ -2,7 +2,7 @@
 
 Goal: a clearer table, using fouronlinesouls.net as a second reference.
 
-Ideas: V-09, V-12, V-13, V-15 – V-18.
+Ideas: V-09, V-12, V-13, V-15 – V-20.
 
 ---
 
@@ -82,3 +82,17 @@ Ideas: V-09, V-12, V-13, V-15 – V-18.
 3. Done when:
    1. Server test: each seat's look reaches the other players.
    2. e2e test: two players see the same look for one roll.
+
+### [ ] 15.7 Never leave the player lost
+
+1. Goal: the player always knows when the game waits for them (V-20).
+2. Tasks:
+   1. List every prompt the engine can send: priority, targets, choices, pay, roll.
+   2. Each prompt shows a clear banner: what to do, in a few words.
+   3. Cards and buttons that answer it glow; the rest dim.
+   4. The stack panel shows the same prompt (V-11).
+   5. Waiting on others names who and what for.
+   6. Optional: a soft sound or window flash when input is needed.
+3. Done when:
+   1. e2e test: every prompt type shows its banner and highlights.
+   2. `make screenshots` covers "your turn to act" and "waiting for Ann".

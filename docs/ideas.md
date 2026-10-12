@@ -124,6 +124,14 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    11. Each player's look reaches the others with their seat in the game.
    12. Today (8.15) every roll shows the viewer's own look; step 15.6 changes that.
    13. A player without that texture sees a plain die.
+20. V-20. The player never feels lost.
+   1. When the game waits for this player, it says so clearly.
+   2. A clear banner names what to do: "Choose a target", "Pay 3¢".
+   3. The cards or buttons that answer it glow; others dim.
+   4. The stack panel shows the same prompt (V-11).
+   5. When the game waits for others, it names who and for what.
+   6. No silent waits: a screen never looks idle while input is needed.
+   7. Covers every prompt: priority, targets, choices, dice (V-17).
 
 ## Rules
 
