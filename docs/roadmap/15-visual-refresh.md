@@ -261,6 +261,36 @@ Images come first, so the new table is built with backs and mats.
    7. Write findings below as T-01, T-02, …; ideas only.
 3. Done when:
    1. **Owner** picks the ideas for 15.25.
+4. How the study went (2026-10-12)
+   1. Main source: the Hearthstone wiki pages Target, Attack, Hero Power, Gameplay.
+   2. Video: YouTube stops headless playback; storyboard frames are too small.
+   3. No sharp picture of the arrow; marked "memory" where not confirmed.
+   4. Frames: `.cache/screenshots/reference/hearthstone/targeting/`.
+5. Findings
+   1. T-01. Only a playable card or ability can start aiming.
+   2. T-02. A bold red arrow runs from the source to the pointer.
+   3. T-03. Over a valid target a red crosshair marks it (memory).
+   4. T-04. Click a valid target: the action completes, the arrow goes.
+   5. T-05. Click an invalid target: a short reason, e.g. "A minion with Taunt is in the way".
+   6. T-06. Cancel: click empty space or right-click.
+   7. T-07. A targeted ability is cancelled by clicking its source again.
+   8. T-08. The opponent sees the arrow live, while it moves.
+   9. T-09. The opponent sees which hand slot aims, not which card.
+   10. T-10. Hover a card: it is marked red on the opponent's screen.
+   11. T-11. Ready attackers have a bright green frame; "zzz" when not ready.
+   12. T-12. No target needed: drag the card onto the board; no arrow.
+   13. T-13. Place first, then aim: cancelling the aim undoes the whole play.
+   14. T-14. No valid target: the card plays without its targeted effect.
+   15. T-15. After the target locks, the effect flies from source to target.
+   16. T-16. The played card shows large at the left meanwhile (H-10).
+   17. T-17. Touch: drag from the source, release on the target (memory).
+6. What it means for us
+   1. Our sources: hand cards, items, the character (attack).
+   2. Our targets: monsters, players, items, stack items, the monster deck.
+   3. T-08 and T-09 need a new server message for live aiming.
+   4. **Owner** decides: share live aiming with others, or keep it local.
+   5. T-09 must never leak the card (A-16).
+   6. T-14 depends on the engine; it already decides valid targets.
 
 ### [ ] 15.16 Board frame
 
