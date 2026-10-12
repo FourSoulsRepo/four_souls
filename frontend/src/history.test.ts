@@ -24,6 +24,13 @@ describe('entriesFor', () => {
     ]);
   });
 
+  it('keeps the resolved stack item for the strip (15.22)', () => {
+    const item = { id: 3, kind: 0, controller: 1, source: 7, card: 'a_dime', target: { player: 0 }, ability: { card: 'a_dime', index: 0 }, roll_for: { card: '', index: 0 } };
+    const [entry] = entriesFor([{ kind: 'stack_resolved', player: 1, object: 7, card: 'a_dime', stack_id: 3, item }], 1, 0, n, 0);
+    expect(entry.item).toEqual(item);
+    expect(entriesFor([{ kind: 'looted', player: 0, card: 'a_dime' }], 1, 0, n, 0)[0]?.item).toBeUndefined();
+  });
+
   it('keeps hidden loots hidden', () => {
     const mine = entriesFor([{ kind: 'looted', player: 0, card: 'a_dime', private: true }], 1, 0, n, 0);
     const theirs = entriesFor([{ kind: 'looted', player: 1, private: true }], 1, 0, n, 0);

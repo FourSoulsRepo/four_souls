@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { PromptKind } from './actions';
 import type { GameView, StackItem } from './protocol';
-import { findCard, secondsLeft, stackCard, stackIcon, StackKind, stackLine, stackParts, stackWait, waitText } from './stack';
+import { findCard, secondsLeft, stackBadge, stackCard, stackIcon, StackKind, stackLine, stackParts, stackWait, waitText } from './stack';
 
 const view: GameView = {
   players: [
@@ -76,6 +76,16 @@ describe('stackIcon and stackCard', () => {
     expect(stackCard(item({ card: 'a_dime' }), view)).toBe('a_dime');
     expect(stackCard(item({ kind: StackKind.roll, source: 9 }), view)).toBe('gaper');
     expect(stackCard(item({ kind: StackKind.roll, source: 99 }), view)).toBeUndefined();
+  });
+});
+
+describe('stackBadge', () => {
+  it('marks attacks with a sword and loot plays with a bolt (H-08)', () => {
+    expect(stackBadge(item({ kind: StackKind.roll, attack: true }))).toBe('attack');
+    expect(stackBadge(item({ kind: StackKind.damage, attack: true }))).toBe('attack');
+    expect(stackBadge(item({ card: 'a_dime' }))).toBe('spell');
+    expect(stackBadge(item({ kind: StackKind.ability }))).toBeUndefined();
+    expect(stackBadge(item({ kind: StackKind.roll }))).toBeUndefined();
   });
 });
 

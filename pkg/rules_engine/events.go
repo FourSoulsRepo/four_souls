@@ -65,4 +65,7 @@ type Event struct {
 	StackID int `json:"stack_id,omitempty"`
 	// By is the player who dealt damage, plus 1 (0: a monster or nobody).
 	By int `json:"by,omitempty"`
+	// Item is the stack item that resolved, with its used ability's
+	// words, for the history strip (15.22, S-10).
+	Item *StackItem `json:"item,omitempty"`
 }

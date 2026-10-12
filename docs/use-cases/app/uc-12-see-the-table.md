@@ -21,6 +21,7 @@
    3. Right edge: monster, treasure and loot decks, each with its discard.
    4. The board keeps one shape; it scales with the window only (V-23).
    5. Nothing lies over the board (F-02).
+   6. Left edge: a thin history strip, before the turn and stack (15.22).
 4. Each player area shows HP, ATK, cents, souls and hand size.
 5. The active player's name is in the accent color.
 6. The player's own area reads at a glance (15.17).

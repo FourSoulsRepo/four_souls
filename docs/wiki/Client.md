@@ -38,7 +38,7 @@ The table lies on a mat (ST-03, V-24), drawn by `mats.matLook`. Three color mats
 
 ## Board
 
-`Board` is one framed board in the middle of the table (F-01, H-01). Its grid has five columns: the info column (turn badge, stack, history), the monster and shop slots, the bonus souls, the decks, each with its discard (H-16), and the End turn button at the right edge (H-04). Nothing lies over it (F-02); the e2e tests check that every deck and discard is uncovered with 2, 3 and 4 players.
+`Board` is one framed board in the middle of the table (F-01, H-01). Its grid has six columns: the history strip (H-07), the info column (turn badge, stack, and the full history when open), the monster and shop slots, the bonus souls, the decks, each with its discard (H-16), and the End turn button at the right edge (H-04). Nothing lies over it (F-02); the e2e tests check that every deck and discard is uncovered with 2, 3 and 4 players.
 
 The board has one fixed shape, empty or full (H-06, V-23). `.board-cell` takes the space the players leave and is a size container; the board takes the largest size of its shape that fits there. `--u`, the width of a slot card, sizes everything on it, so no zone grows or shrinks when cards come and go. An empty slot keeps a dashed outline; up to four slots show full size, and more share the row. `--u` is used only outside cards: inside a card, container units would measure the card.
 
@@ -77,13 +77,15 @@ Effect durations scale with the animation setting (ST-05) and speed up when upda
 
 `stack.ts` has the words: `stackParts` describes a stack item in parts that keep the player, the target and the card apart ("Ann plays A Dime!!", "Attack: Bo rolls 4", "2 damage to Gaper"); `stackLine` joins them into plain text. `waitText` says who the game waits for and why ("Your turn", "Bo may respond", "Ann is choosing"). `stackIcon` picks a row's icon and `stackCard` the card it shows on hover.
 
-The stack panel (`StackPanel.tsx`, 15.21) always sits in the board's info column, above the history, newest item on top; an empty stack says "Nothing on the stack". Each row is a square icon (cropped card art, a die with the roll, a blood drop with the damage, or a skull) and one line, with players in their seat color (`playerColor` in `table.ts`, also the dot by each name) and targets in red. Hovering a row, or tapping it, shows the card large through the shared zoom with a caption: the used ability's words, highlighted, and the owner. The words come from the engine view: `GameView` fills each stack item's `text` with the ability's text, or the chosen mode's; the game state never holds it. Highlighting on the card image itself is not possible, since the image has no map of its abilities. Pass sits in the panel header; Space presses it.
+The stack panel (`StackPanel.tsx`, 15.21) always sits in the board's info column, newest item on top; an empty stack says "Nothing on the stack". Each row is a square icon (cropped card art, a die with the roll, a blood drop with the damage, or a skull) and one line, with players in their seat color (`playerColor` in `table.ts`, also the dot by each name) and targets in red. Hovering a row, or tapping it, shows the card large through the shared zoom with a caption: the used ability's words, highlighted, and the owner. The words come from the engine view: `GameView` fills each stack item's `text` with the ability's text, or the chosen mode's; the game state never holds it. Highlighting on the card image itself is not possible, since the image has no map of its abilities. Pass sits in the panel header; Space presses it.
 
 The action bar shows the response timer from `update.deadline` (N-07) and "Skip all" / "Cancel skip" while something is on the stack (N-06); the server does the skipping.
 
 ## Info panels
 
 `history.ts` builds the history from the events this viewer received: one entry per resolved stack item (`stack_resolved`), plus turns, loots, rewards, curses and the winner. The server already filters events per viewer, so a hidden loot reads "Bo loots a card". The history lives in `store.history`, grows as playback shows updates, and is lost on leaving the table (replays come in step 10).
+
+The history strip (`HistoryStrip.tsx`, 15.22) is the board's first column: one icon per resolved stack item, newest on top, drawn by the stack panel's `ItemIcon`. The engine's `stack_resolved` event carries the resolved `item`, with its ability's words, so the strip knows its kind and whether it was an attack; `stackBadge` puts a sword on attacks and a bolt on loot plays (H-08). Hovering an icon uses the stack's `itemZoom`. A gold line ends each turn's run of icons. The scroll button on top opens the full `HistoryPanel` in the info column, under the stack; it starts hidden.
 
 The turn badge shows the turn number, the active player and the step. Player areas show what the engine computed: HP, ATK, cents, souls, hand size, and for the active player the loot plays, attacks and purchases left (`PlayerView.loot_plays`, `attacks`, `purchases`). Card counters show as a yellow badge (`CardView.counters`).
 

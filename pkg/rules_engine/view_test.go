@@ -235,3 +235,23 @@ func TestViewStackNamesTheUsedAbility(t *testing.T) {
 		t.Errorf("the game's own stack got text %q; only views have it", g.Stack[0].Text)
 	}
 }
+
+func TestResolvedEventCarriesTheItem(t *testing.T) {
+	g := newAbilityGame(t)
+	a := g.Turn.Active
+	id := g.push(StackItem{Kind: StackLoot, Controller: a, Ability: AbilityRef{Card: "dagaz_like", Index: 0}, Mode: 1, Attack: true})
+	g.resolveTop()
+	for _, e := range g.events {
+		if e.Kind != EvStackResolved {
+			continue
+		}
+		if e.StackID != id || e.Item == nil || e.Item.ID != id || !e.Item.Attack {
+			t.Fatalf("resolved event %+v does not carry item %d", e, id)
+		}
+		if e.Item.Text != "Choose a player." {
+			t.Errorf("resolved item says %q, want the chosen mode's words", e.Item.Text)
+		}
+		return
+	}
+	t.Fatal("no stack_resolved event")
+}

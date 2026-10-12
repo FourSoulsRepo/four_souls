@@ -2,7 +2,7 @@ import type { PointerEvent } from 'react';
 import { useKey } from '../keys';
 import type { GameView, Intent, StackItem } from '../protocol';
 import { stackCard, stackIcon, stackParts, stackWait, type LinePart, type Names } from '../stack';
-import { useApp } from '../store';
+import { useApp, type Zoom } from '../store';
 import { playerColor } from '../table';
 import { Card } from './Card';
 import { Die } from './Die';
@@ -72,24 +72,16 @@ export function StackPanel({ view, you, names, pass, disabled }: Props) {
 // highlighted and the owner below (S-06, S-07); a tap does the same.
 function StackRow({ it, view, names }: { it: StackItem; view: GameView; names: Names }) {
   const setZoom = useApp((s) => s.setZoom);
-  const diceImage = useApp((s) => s.dice.find((d) => d.id === s.settings.dice)?.image ?? '');
   const card = stackCard(it, view);
-  const icon = stackIcon(it);
   const parts = stackParts(it, view, names);
   const show = (e: PointerEvent, touch: boolean) => {
     if (card) {
-      const owner = it.controller >= 0 ? names.player(it.controller) : undefined;
-      setZoom({
-        ref: card,
-        touch,
-        side: e.clientX < window.innerWidth / 2 ? 'right' : 'left',
-        caption: { owner, color: playerColor(it.controller), ability: it.text },
-      });
+      setZoom(itemZoom(it, card, names, e, touch));
     }
   };
   return (
     <li
-      className={`stack-row stack-${icon}`}
+      className={`stack-row stack-${stackIcon(it)}`}
       aria-label={parts.map((p) => p.text).join('')}
       onPointerEnter={(e) => {
         if (e.pointerType === 'mouse') {
@@ -107,26 +99,7 @@ function StackRow({ it, view, names }: { it: StackItem; view: GameView; names: N
         }
       }}
     >
-      <span className="stack-icon" aria-hidden="true">
-        {icon === 'card' ? (
-          it.card && <Card cardRef={it.card} size="small" noZoom />
-        ) : icon === 'roll' ? (
-          it.roll === undefined ? (
-            <span className="stack-die">?</span>
-          ) : (
-            <Die value={it.roll} image={diceImage} />
-          )
-        ) : icon === 'damage' ? (
-          <span className="stack-mark">
-            <DamageIcon />
-            <b>{it.amount ?? 0}</b>
-          </span>
-        ) : (
-          <span className="stack-mark">
-            <SkullIcon />
-          </span>
-        )}
-      </span>
+      <ItemIcon it={it} />
       <span className="stack-line">
         {parts.map((p, i) => (
           // A line's parts never change order, so the index is a stable key.
@@ -135,6 +108,48 @@ function StackRow({ it, view, names }: { it: StackItem; view: GameView; names: N
         ))}
       </span>
     </li>
+  );
+}
+
+// itemZoom is the large card of a stack item: the used ability's words
+// and the owner in their color below it (S-06, S-07). It opens on the
+// side away from the pointer.
+export function itemZoom(it: StackItem, card: string, names: Names, e: PointerEvent, touch: boolean): Zoom {
+  const owner = it.controller >= 0 ? names.player(it.controller) : undefined;
+  return {
+    ref: card,
+    touch,
+    side: e.clientX < window.innerWidth / 2 ? 'right' : 'left',
+    caption: { owner, color: playerColor(it.controller), ability: it.text },
+  };
+}
+
+// ItemIcon is a stack item's square icon (S-04): card art, a die in the
+// viewer's dice look, a blood drop with the damage, or a skull.
+export function ItemIcon({ it }: { it: StackItem }) {
+  const diceImage = useApp((s) => s.dice.find((d) => d.id === s.settings.dice)?.image ?? '');
+  const icon = stackIcon(it);
+  return (
+    <span className="stack-icon" aria-hidden="true">
+      {icon === 'card' ? (
+        it.card && <Card cardRef={it.card} size="small" noZoom />
+      ) : icon === 'roll' ? (
+        it.roll === undefined ? (
+          <span className="stack-die">?</span>
+        ) : (
+          <Die value={it.roll} image={diceImage} />
+        )
+      ) : icon === 'damage' ? (
+        <span className="stack-mark">
+          <DamageIcon />
+          <b>{it.amount ?? 0}</b>
+        </span>
+      ) : (
+        <span className="stack-mark">
+          <SkullIcon />
+        </span>
+      )}
+    </span>
   );
 }
 

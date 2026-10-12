@@ -575,6 +575,22 @@ Images come first, so the new table is built with backs and mats.
    5. Owner picks B: the info column keeps its width.
    6. The strip sits inside the board, left of the info column.
    7. The stack takes the room History used: ~7 rows before scrolling.
+5. Result (2026-10-12)
+   1. A new first board column, 0.45 u wide, holds the strip (H-07).
+   2. The board grows 12.1 u → 12.75 u wide; cards shrink ~5% to fit.
+   3. Icons: the stack's own, from one shared component (S-10).
+   4. Newest on top; a gold line under the first item of each turn.
+   5. Badges: a red sword for an attack, a blue bolt for a loot play (H-08).
+   6. Other items (abilities, triggers) have no badge.
+   7. Hover or tap: the stack's large card, ability, and owner (S-11, H-09).
+   8. A scroll button tops the strip; it opens or hides the full History.
+   9. The full History starts hidden; open, it sits under the stack.
+   10. The engine's `stack_resolved` event now carries the stack item.
+   11. The item has its ability's words, like the view's stack items.
+   12. Only stack items show in the strip; loots and turns stay in History.
+   13. e2e test: a loot played in a real game shows with a bolt badge.
+   14. e2e test: 3 items, badges, order, and hover with card and owner.
+   15. Screenshots: `.cache/screenshots/15.22/before/` and `after/`.
 
 ### [ ] 15.23 Counter badges and live stats
 

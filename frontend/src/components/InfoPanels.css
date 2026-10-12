@@ -1,5 +1,5 @@
-/* Info panels (7.9): the turn badge and the history. They sit in the
-   board's info column, never over the board (F-02). */
+/* Info panels (7.9): the turn badge, the history strip, and the full
+   history. They sit in the board, never over it (F-02). */
 
 .turn-badge {
   flex: none;
@@ -9,10 +9,6 @@
   font-weight: 700;
   text-align: center;
   background: rgb(0 0 0 / 55%);
-}
-
-.history-show {
-  align-self: flex-start;
 }
 
 .history {
@@ -38,8 +34,7 @@
   color: var(--muted);
 }
 
-.history button,
-.history-show {
+.history button {
   padding: 2px 10px;
   border: none;
   border-radius: 6px;
@@ -76,4 +71,133 @@
   flex: none;
   width: 1.2em;
   text-align: center;
+}
+
+/* The history strip (15.22, H-07): a thin column at the board's left
+   edge; resolved items as the stack's icons, newest on top. --s is the
+   icon's side. */
+.history-strip {
+  --s: calc(var(--u) * 0.4);
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-height: 0;
+  padding: 3px 0;
+  border-radius: 8px;
+  background: rgb(10 16 24 / 80%);
+}
+
+.history-toggle {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: var(--s);
+  height: var(--s);
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  color: var(--muted);
+  background: var(--panel);
+  cursor: pointer;
+}
+
+.history-toggle:hover,
+.history-toggle[aria-pressed="true"] {
+  color: #ffd27a;
+}
+
+.history-toggle svg {
+  width: 70%;
+  height: 70%;
+  fill: currentcolor;
+}
+
+.history-strip ol {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden auto;
+  list-style: none;
+  scrollbar-width: none;
+}
+
+.strip-item {
+  position: relative;
+  flex: none;
+  padding-bottom: 1px;
+  border-radius: 6px;
+}
+
+.strip-item:hover {
+  outline: 2px solid rgb(255 255 255 / 45%);
+}
+
+/* The first item of a turn: a line below it. */
+.strip-turn {
+  margin-bottom: 3px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid rgb(255 210 122 / 45%);
+  border-radius: 6px 6px 0 0;
+}
+
+.history-strip .stack-icon {
+  width: var(--s);
+  height: var(--s);
+}
+
+.board .history-strip .stack-icon .card.size-small {
+  top: calc(var(--s) * -0.25);
+  width: calc(var(--s) * 1.5);
+}
+
+.history-strip .stack-icon .die,
+.history-strip .stack-die {
+  width: calc(var(--s) * 0.82);
+  height: calc(var(--s) * 0.82);
+  box-sizing: border-box;
+}
+
+.history-strip .stack-mark,
+.history-strip .stack-mark svg {
+  width: calc(var(--s) * 0.9);
+  height: calc(var(--s) * 0.9);
+}
+
+.history-strip .stack-mark b {
+  font-size: calc(var(--s) * 0.4);
+}
+
+/* The badge (H-08): a sword for an attack, a bolt for a loot play. */
+.strip-badge {
+  position: absolute;
+  right: -3px;
+  bottom: -2px;
+  display: grid;
+  place-items: center;
+  width: calc(var(--s) * 0.48);
+  height: calc(var(--s) * 0.48);
+  border: 1px solid #1d120a;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.strip-badge svg {
+  width: 72%;
+  height: 72%;
+  fill: #fff1d6;
+}
+
+.strip-attack {
+  background: #a3261f;
+}
+
+.strip-spell {
+  background: #2f6fb3;
 }

@@ -105,6 +105,17 @@ export function stackCard(it: StackItem, view: GameView): string | undefined {
   return it.card ?? findCard(view, it.source);
 }
 
+// StackBadge marks a history icon (H-08): a sword for an attack, a bolt
+// for a played loot card, our spells.
+export type StackBadge = 'attack' | 'spell';
+
+export function stackBadge(it: StackItem): StackBadge | undefined {
+  if (it.attack) {
+    return 'attack';
+  }
+  return it.kind === StackKind.loot ? 'spell' : undefined;
+}
+
 // waitText says who the game waits for and why, so nobody is lost.
 export function waitText(view: GameView, you: number, n: Names, choiceTitle?: string): string {
   const { waiting, turn, over, stack } = view;

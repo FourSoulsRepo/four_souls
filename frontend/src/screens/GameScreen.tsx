@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { actionsFor, IntentKind, type Actions } from '../actions';
 import { ActionBar } from '../components/ActionBar';
 import { ActionMenu } from '../components/ActionMenu';
@@ -8,6 +8,7 @@ import { interact, noInteract } from '../components/Interact';
 import { PlayerArea } from '../components/PlayerArea';
 import { HistoryPanel, TurnBadge } from '../components/InfoPanels';
 import { GameMenu } from '../components/GameMenu';
+import { HistoryStrip } from '../components/HistoryStrip';
 import { EndOverlay, LostOverlay, PauseOverlay } from '../components/Overlays';
 import { StackPanel } from '../components/StackPanel';
 import { EndTurn, TurnActions } from '../components/TurnActions';
@@ -56,6 +57,8 @@ function Table({ game, you }: { game: Update; you: number }) {
   const sent = useApp((s) => s.sent);
   const act = useApp((s) => s.act);
   const select = useApp((s) => s.select);
+  // The full history opens from the strip; the stack has its room (15.22).
+  const [historyOpen, setHistoryOpen] = useState(false);
   // The player acts only on the latest state, and once per step. While
   // waiting, buttons stay but are disabled, so they do not blink.
   const canAct = !behind && sent !== game.step;
@@ -99,6 +102,16 @@ function Table({ game, you }: { game: Update; you: number }) {
       <Board
         view={view}
         ui={ui}
+        strip={
+          <HistoryStrip
+            view={view}
+            names={names}
+            open={historyOpen}
+            toggle={() => {
+              setHistoryOpen(!historyOpen);
+            }}
+          />
+        }
         end={
           me && !view.over ? (
             <EndTurn
@@ -119,7 +132,13 @@ function Table({ game, you }: { game: Update; you: number }) {
           pass={actions.buttons.find((b) => b.intent.kind === IntentKind.pass)?.intent}
           disabled={!canAct}
         />
-        <HistoryPanel />
+        {historyOpen && (
+          <HistoryPanel
+            hide={() => {
+              setHistoryOpen(false);
+            }}
+          />
+        )}
       </Board>
       <ActionBar
         status={game.pause ? 'Paused' : waitText(view, you, names, actions.choice?.title)}

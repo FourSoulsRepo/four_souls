@@ -114,7 +114,12 @@ func (g *Game) resolveTop() {
 	}
 	it := g.Stack[n-1]
 	g.Stack = g.Stack[:n-1]
-	g.emit(Event{Kind: EvStackResolved, Player: it.Controller, Object: it.Source, Card: it.Card, Amount: it.Roll, Text: it.Label})
+	shown := it
+	shown.Text = g.usedText(it)
+	g.emit(Event{
+		Kind: EvStackResolved, Player: it.Controller, Object: it.Source, Card: it.Card, Amount: it.Roll, Text: it.Label,
+		StackID: it.ID, Item: &shown,
+	})
 	// Priority after a resolution starts with the active player
 	// (R-STACK-04); items pushed by the resolution set it again.
 	g.givePriority(g.Turn.Active)
