@@ -7,6 +7,7 @@ import {
   Cards as wailsCards,
   CardSets as wailsCardSets,
   Dice as wailsDice,
+  FindGames as wailsFindGames,
   Notice as wailsNotice,
   SaveRecord as wailsSaveRecord,
   SaveSettings as wailsSaveSettings,
@@ -154,6 +155,32 @@ export function stopHosting(): Promise<void> {
 // it; '' means the player cancelled (RP-05).
 export function saveRecord(link: string): Promise<string> {
   return wailsSaveRecord(link);
+}
+
+// LanServer is a hosting app found on the local network, with its games
+// that wait for players (N-13, ADR 009).
+export interface LanServer {
+  address: string;
+  protocol: number;
+  app: string;
+  games: LanGame[];
+}
+
+export interface LanGame {
+  host: string;
+  seats: number;
+  taken: number;
+}
+
+// findGames searches the local network for about a second.
+export async function findGames(): Promise<LanServer[]> {
+  const found = await wailsFindGames();
+  return found.map((f) => ({
+    address: f.address,
+    protocol: f.protocol,
+    app: f.app,
+    games: f.games.map((g) => ({ host: g.host, seats: g.seats, taken: g.taken })),
+  }));
 }
 
 // setFullscreen switches the window (ST-01).

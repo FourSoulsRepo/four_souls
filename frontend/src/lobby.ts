@@ -2,6 +2,7 @@
 // tested without a socket.
 import type { Envelope, GameInfo, Games, Options, ProtocolError, Saved, SaveInfo, Table, Update, Welcome } from './protocol';
 import { errorText } from './protocol';
+import type { LanServer } from './bridge';
 
 // 'cards' is a dev-only card gallery for tests (?screen=cards).
 export type Screen = 'splash' | 'welcome' | 'menu' | 'settings' | 'host' | 'join' | 'table' | 'game' | 'cards';
@@ -91,4 +92,30 @@ export function optionsText(o: Options | undefined): string {
     parts.push('no bonus souls');
   }
   return parts.join(' · ');
+}
+
+// LanRow is one game found on the local network, as the join screen
+// lists it (N-13).
+export interface LanRow {
+  key: string;
+  address: string;
+  text: string;
+  joinable: boolean;
+}
+
+// lanRows lists the found games. A server that speaks another protocol
+// version shows, but cannot be joined.
+export function lanRows(found: LanServer[], protocol: number): LanRow[] {
+  return found.flatMap((f) =>
+    f.games.map((g, i) => {
+      const same = f.protocol === protocol;
+      const version = same ? '' : ` · needs app ${f.app}`;
+      return {
+        key: `${f.address}#${String(i)}`,
+        address: f.address,
+        text: `${g.host}'s game · ${String(g.taken)}/${String(g.seats)} players · ${f.address}${version}`,
+        joinable: same,
+      };
+    }),
+  );
 }

@@ -176,7 +176,8 @@ function realCards(): unknown[] {
 
 // Hosting points at a real dedicated server the e2e tests start
 // (?server=PORT), so two pages reach the same lobby.
-const hostPort = Number(new URLSearchParams(window.location.search).get('server') ?? '4774');
+const params = new URLSearchParams(window.location.search);
+const hostPort = Number(params.get('server') ?? '4774');
 const hostInfo = { running: true, port: hostPort, addresses: ['127.0.0.1'] };
 
 const w = window as unknown as {
@@ -198,6 +199,14 @@ w.go = {
       // Dice textures are private images too: a plain die, as in a public clone.
       Dice: () => Promise.resolve([{ id: 'tear', name: 'Tear', image: '' }]),
       SaveRecord: (link: string) => Promise.resolve(`/fake/${new URL(link).searchParams.get('game') ?? ''}.fsrec`),
+      // The LAN holds one hosting app: the test server (?server=PORT).
+      // ?nolan finds nothing.
+      FindGames: () =>
+        Promise.resolve(
+          params.has('nolan')
+            ? []
+            : [{ address: `127.0.0.1:${String(hostPort)}`, protocol: 1, app: 'demo', games: [{ host: 'Lan', seats: 2, taken: 1 }] }],
+        ),
     },
     Host: {
       Start: () => Promise.resolve(hostInfo),

@@ -117,6 +117,12 @@
   border-radius: 6px;
 }
 
+/* LAN games on the join screen (N-13). */
+.lan-head {
+  align-items: center;
+  justify-content: space-between;
+}
+
 /* The card gallery is a test screen bigger than the window. */
 .gallery {
   justify-content: flex-start;

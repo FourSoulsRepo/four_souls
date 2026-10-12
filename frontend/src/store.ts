@@ -2,6 +2,7 @@
 // and server messages write it.
 import { create } from 'zustand';
 import {
+  findGames,
   setFullscreen,
   getCards,
   getDice,
@@ -14,6 +15,7 @@ import {
   stopHosting,
   type DiceSkin,
   type HostInfo,
+  type LanServer,
   type Settings,
 } from './bridge';
 import type { CardInfo } from './cards';
@@ -100,6 +102,9 @@ interface AppState extends Session {
   saveNickname: (nickname: string) => Promise<boolean>;
   // joinServer connects to address and shows its game list.
   joinServer: (address: string) => Promise<void>;
+  // lan is the last search for games on the local network (N-13).
+  lan: { searching: boolean; found: LanServer[]; error: string };
+  findLanGames: () => Promise<void>;
   // host runs the server in this app and opens a game on it.
   host: (game: Omit<Create, 'sets'>) => Promise<void>;
   // hostSaved runs the server in this app and shows its games and saved
@@ -324,6 +329,7 @@ export const useApp = create<AppState>()((set, get) => {
       rejoin: { address: '', token: '', game: '' },
     },
     hosting: null,
+    lan: { searching: false, found: [], error: '' },
     connected: false,
     cardSets: [],
     cards: new Map(),
@@ -371,6 +377,17 @@ export const useApp = create<AppState>()((set, get) => {
     saveNickname: async (nickname) => {
       const s = get().settings;
       return nickname === s.nickname || get().saveSettings({ ...s, nickname });
+    },
+    findLanGames: async () => {
+      if (get().lan.searching) {
+        return;
+      }
+      set({ lan: { ...get().lan, searching: true } });
+      try {
+        set({ lan: { searching: false, found: await findGames(), error: '' } });
+      } catch (e) {
+        set({ lan: { searching: false, found: [], error: messageOf(e) } });
+      }
     },
     joinServer: async (address) => {
       if (await open(address)) {

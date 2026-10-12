@@ -106,7 +106,7 @@ type hubRequest struct {
 	leave  bool
 	find   string     // a started game by ID, for a record download
 	reply  chan *Room // the answer to find
-	run    func(*Hub) // runs in the hub goroutine (tests)
+	run    func(*Hub) // runs in the hub goroutine
 }
 
 // Hub is the lobby: it seats players at tables and starts their games

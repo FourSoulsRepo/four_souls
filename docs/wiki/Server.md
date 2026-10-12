@@ -33,6 +33,10 @@ The server answers for a player only in these cases, never choosing among real o
 * the player turned on "skip all" for the stack they saw (N-06);
 * the response timer ran out, or the seat was kicked: pass or end the turn, the first cards for a discard, the first option of a choice (N-07, N-08).
 
+## LAN discovery
+
+`internal/lan` (ADR 009). A joining app sends a UDP probe to port 4774: to 255.255.255.255, to each interface's broadcast address, and to 127.0.0.1 (several copies on one computer, UC-16). A server started with `Config.Discovery` answers the sender by unicast with its waiting games; with none waiting it stays silent. Only the app's `Host` sets `Discovery`; it has no JSON name, so `cmd/server` never answers. Answers carry a random server ID, so the same server reached over loopback and the LAN shows once, with its LAN address.
+
 ## Leak audit (A-16)
 
 Step 8.12 checked every message the server sends for hidden cards. Hidden means: in a deck, in another player's hand, or seen only by another player.

@@ -65,3 +65,33 @@ test('a wrong address says why', async ({ page }) => {
   await page.getByRole('button', { name: 'Connect' }).click();
   await expect(page.getByRole('status')).toHaveText('Could not connect to the server.', { timeout: 8000 });
 });
+
+test('a game found on the LAN is joined without typing (N-13)', async ({ browser }) => {
+  const host = await (await browser.newContext()).newPage();
+  await host.goto(appURL());
+  await host.getByRole('button', { name: 'Host a game' }).click();
+  await host.getByLabel('Nickname').fill('Lex');
+  await host.getByRole('button', { name: 'Host', exact: true }).click();
+  await expect(host.getByRole('list', { name: 'Seats' })).toContainText('Lex (you)');
+
+  // The fake LAN holds the test server; its real games list follows.
+  const guest = await (await browser.newContext()).newPage();
+  await guest.goto(appURL());
+  await guest.getByRole('button', { name: 'Join a game' }).click();
+  await guest.getByLabel('Nickname').fill('Mio');
+  const lan = guest.getByRole('region', { name: 'On your network' });
+  const found = lan.getByRole('listitem').filter({ hasText: address() });
+  await expect(found).toContainText('1/2 players');
+  await shot(guest, 'join-lan');
+  await found.getByRole('button', { name: 'Join' }).click();
+  await guest.getByRole('listitem').filter({ hasText: "Lex's game" }).getByRole('button', { name: 'Join' }).click();
+  await expect(guest.getByRole('list', { name: 'Seats' })).toContainText('Mio (you)');
+});
+
+test('with no game on the LAN, the address field is the way', async ({ page }) => {
+  await page.goto(`${appURL()}&nolan`);
+  await page.getByRole('button', { name: 'Join a game' }).click();
+  const lan = page.getByRole('region', { name: 'On your network' });
+  await expect(lan).toContainText('No games found');
+  await expect(lan.getByRole('button', { name: 'Search again' })).toBeEnabled();
+});

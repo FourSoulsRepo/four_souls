@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { lanRows } from '../lobby';
+import { protocolVersion } from '../protocol';
 import { useApp } from '../store';
 import './screens.css';
 
@@ -17,6 +19,13 @@ function Connect() {
   const [nickname, setNickname] = useState(settings.nickname);
   const [address, setAddress] = useState(settings.recent[0] ?? '');
   const [busy, setBusy] = useState(false);
+  const lan = useApp((s) => s.lan);
+  const findLanGames = useApp((s) => s.findLanGames);
+  const rows = lanRows(lan.found, protocolVersion);
+
+  useEffect(() => {
+    void findLanGames();
+  }, [findLanGames]);
 
   const go = (to: string) => {
     setBusy(true);
@@ -81,6 +90,40 @@ function Connect() {
           </>
         )}
       </form>
+      <section className="panel" aria-label="On your network">
+        <div className="row lan-head">
+          <span className="muted">On your network</span>
+          <button
+            type="button"
+            disabled={lan.searching}
+            onClick={() => {
+              void findLanGames();
+            }}
+          >
+            {lan.searching ? 'Searching…' : 'Search again'}
+          </button>
+        </div>
+        {rows.length === 0 && !lan.searching && (
+          <span className="muted selectable">{lan.error || 'No games found. Type the host address above.'}</span>
+        )}
+        <ul className="list">
+          {rows.map((r) => (
+            <li key={r.key}>
+              <span className="selectable">{r.text}</span>
+              <button
+                type="button"
+                disabled={busy || !r.joinable}
+                onClick={() => {
+                  setAddress(r.address);
+                  go(r.address);
+                }}
+              >
+                Join
+              </button>
+            </li>
+          ))}
+        </ul>
+      </section>
       <p className="status" role="status">
         {error}
       </p>

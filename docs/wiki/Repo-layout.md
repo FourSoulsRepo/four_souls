@@ -7,6 +7,7 @@ cmd/website/           rules website, js/wasm only
 cmd/cardgen/           writes engine card stubs from card_db data
 internal/assets/       app files, embedded or read from disk
 internal/instance/     one slot per running app copy
+internal/lan/          finds hosted games on the LAN (ADR 009)
 internal/legal/        fan-game notice used by app and server
 internal/protocol/     network messages (never split out)
 internal/server/       game rooms and the WebSocket transport (ADR 006)

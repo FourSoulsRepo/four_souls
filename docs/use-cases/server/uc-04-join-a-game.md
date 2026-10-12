@@ -32,6 +32,7 @@
 * **1c. Nobody answers:** "Could not connect to the server.".
 * **3a. The game list:** each game shows its host, taken and free seats.
   * Saved games show who played and when, with **Continue** (UC-09).
+* **1d. A game on the LAN:** the join screen lists it; no typing (UC-17).
 
 ## Postconditions
 
