@@ -565,6 +565,9 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
 
 1. AU-01. Sound effects and music.
    1. Taken from any Isaac game: the Flash original or the C++ remake.
+2. AU-02. Sounds for game actions.
+   1. First list: dice roll, attack, damage dealt.
+   2. Sources follow AU-01.
 
 ## Menu
 

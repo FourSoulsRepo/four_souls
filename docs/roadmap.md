@@ -260,7 +260,7 @@ Not scheduled; revisit after the MVP.
 5. Co-op and solitaire modes (GS-11).
 6. Phase stops (N-10).
 7. Localization: moved to step 16.
-8. Audio (AU-01).
+8. Audio (AU-01, AU-02).
 9. Card gallery (CD-05).
 10. Keyboard shortcuts (ST-04).
 11. Fan-made sets (CD-10).
