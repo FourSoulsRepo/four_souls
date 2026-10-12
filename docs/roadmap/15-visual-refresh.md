@@ -251,7 +251,7 @@ Images come first, so the new table is built with backs and mats.
    2. Owner marks 15.10 resolved.
    3. Owner reviewed the default-mat change; 15.10 solved.
 
-### [ ] 15.11 Card backs
+### [x] 15.11 Card backs
 
 1. Goal: decks and opponent hands show real card backs (V-26).
 2. Tasks:
@@ -272,6 +272,9 @@ Images come first, so the new table is built with backs and mats.
    4. An opponent's hand is one loot back with its count (F-08).
    5. Drawn cards fly to that back; it never carries a card ref.
    6. Screenshots: `.cache/screenshots/15.11/before/` and `after/`.
+5. Owner notes (2026-10-12)
+   1. Owner merged the backs into the images repo.
+   2. Owner marks 15.11 solved.
 
 ### [~] 15.12 Turn action buttons
 
