@@ -71,6 +71,11 @@ type GameView struct {
 	// Options says what each option of a choose prompt points at, one
 	// per Waiting.Options; only for whoever sees those options.
 	Options []OptionView `json:"options,omitempty"`
+	// Passed lists who passed in a row in the open priority window,
+	// first passer first; Responding lists who may still respond, the
+	// waiting player first (V-11). Both are empty outside a window.
+	Passed     []PlayerID `json:"passed,omitempty"`
+	Responding []PlayerID `json:"responding,omitempty"`
 }
 
 // OptionView is what one option of a choose prompt points at, so a
@@ -136,7 +141,30 @@ func (g *Game) View(v Viewer) GameView {
 	if g.Waiting.Kind == PromptChoose && v.sees(g.Waiting.Player) {
 		out.Options = g.optionViews()
 	}
+	out.Passed, out.Responding = g.responders()
 	return out
+}
+
+// responders splits the players of the open priority window into those
+// who passed in a row and those still to answer, in turn order.
+// Priority goes round once; the window closes when all passed
+// (R-PRIO-05).
+func (g *Game) responders() (passed, responding []PlayerID) {
+	if g.Waiting.Kind != PromptPriority || !g.Priority.Open {
+		return nil, nil
+	}
+	n := len(g.Players)
+	p := g.Priority.Holder
+	for range g.Priority.Passes {
+		p = PlayerID((int(p) + n - 1) % n)
+		passed = append([]PlayerID{p}, passed...)
+	}
+	p = g.Priority.Holder
+	for range n - g.Priority.Passes {
+		responding = append(responding, p)
+		p = g.next(p)
+	}
+	return passed, responding
 }
 
 // optionViews maps the open choice's options to what they point at.

@@ -2,6 +2,7 @@ package rulesengine
 
 import (
 	"encoding/json"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -161,5 +162,27 @@ func TestViewCountsWhatIsLeft(t *testing.T) {
 	}
 	if c := me.Character.Counters; len(c) != 1 || c[0].Count != 2 {
 		t.Errorf("counters %+v, want 2 charge", c)
+	}
+}
+
+func TestViewNamesWhoPassedAndWhoMayRespond(t *testing.T) {
+	g := toAction(t, 4)
+	a := g.Turn.Active
+	b := g.next(a)
+	c, d := g.next(b), g.next(g.next(b))
+	g.push(StackItem{Kind: StackRoll, Controller: b, Label: "x"})
+	pass(t, g)
+	pass(t, g)
+	// Every viewer sees the same lists (V-11).
+	for _, v := range []Viewer{{Kind: ViewPlayer, Player: a}, {Kind: ViewPlayer, Player: c}, {Kind: ViewSpectator}} {
+		gv := g.View(v)
+		if !slices.Equal(gv.Passed, []PlayerID{b, c}) || !slices.Equal(gv.Responding, []PlayerID{d, a}) {
+			t.Errorf("viewer %+v: passed %v, responding %v; want [%d %d] and [%d %d]",
+				v, gv.Passed, gv.Responding, b, c, d, a)
+		}
+	}
+	g.Waiting = Prompt{Kind: PromptChoose, Player: a}
+	if gv := g.View(Viewer{Kind: ViewSpectator}); gv.Passed != nil || gv.Responding != nil {
+		t.Errorf("a choice is not a priority window: passed %v, responding %v", gv.Passed, gv.Responding)
 	}
 }

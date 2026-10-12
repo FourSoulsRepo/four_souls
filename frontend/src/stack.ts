@@ -1,6 +1,6 @@
 // Words for the stack and for why the game waits (7.8). Pure, so it is
 // tested without a browser.
-import { PromptKind } from './actions';
+import { choiceTitle, PromptKind } from './actions';
 import type { GameView, StackItem } from './protocol';
 
 // Stack item kinds, in Go's order (pkg/rules_engine/stack.go).
@@ -87,6 +87,29 @@ export function waitText(view: GameView, you: number, n: Names, choiceTitle?: st
     default:
       return '';
   }
+}
+
+// StackWait is whom the stack waits for (V-11): the players who may still
+// respond, the waiting one first, and those who passed; or the player who
+// must answer a prompt, and what.
+export interface StackWait {
+  responding: string[];
+  passed: string[];
+  prompt?: string;
+}
+
+// stackWait names whom the stack waits for, as the server says.
+export function stackWait(view: GameView, you: number, n: Names): StackWait {
+  const name = (p: number) => (p === you ? 'You' : n.player(p));
+  const w = view.waiting;
+  const out: StackWait = { responding: (view.responding ?? []).map(name), passed: (view.passed ?? []).map(name) };
+  if (w.kind === PromptKind.choose) {
+    out.prompt = `${name(w.player)}: ${choiceTitle(w)}`;
+  } else if (w.kind === PromptKind.discard) {
+    const count = w.count ?? 0;
+    out.prompt = `${name(w.player)}: Discard ${String(count)} loot card${count === 1 ? '' : 's'}`;
+  }
+  return out;
 }
 
 // secondsLeft is the response timer, whole seconds, never negative.

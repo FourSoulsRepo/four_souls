@@ -278,6 +278,10 @@ export interface GameView {
   winners?: number[];
   // options says what each choice option points at; only for the chooser.
   options?: OptionView[];
+  // Who passed in a row in the open priority window, and who may still
+  // respond, the waiting player first (V-11).
+  passed?: number[];
+  responding?: number[];
 }
 
 // OptionView is what one option of a choose prompt points at.

@@ -102,7 +102,7 @@ Ideas: B-03 – B-05, L-03, V-10, V-11, DO-01, V-14, A-16, N-13, N-14, V-19.
 4. Done when:
    1. No screen scrolls or selects at any window size.
 
-### [ ] 8.9 Stack shows whom it waits for
+### [x] 8.9 Stack shows whom it waits for
 
 1. Goal: everyone sees who must act now (V-11).
 2. When: before the play-test (8.5).
