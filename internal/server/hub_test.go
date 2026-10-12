@@ -387,3 +387,43 @@ func TestWebSocket(t *testing.T) {
 		}
 	}
 }
+
+// A game password keeps others out (N-14); it is never sent back.
+func TestGamePassword(t *testing.T) {
+	const secret = "s3cret-pw"
+	h := startHub(t)
+	ann, _ := arrive(t, h, "Ann", "")
+	ann.say(protocol.TypeCreate, protocol.Create{Seats: 2, Password: strings.Repeat("x", protocol.MaxPassword+1)})
+	if code := ann.failure(); code != protocol.ErrBadSetup {
+		t.Errorf("too long a password: %s", code)
+	}
+	ann.say(protocol.TypeCreate, protocol.Create{Seats: 2, Password: secret})
+	var tb protocol.Table
+	if e := ann.next(protocol.TypeTable, &tb); strings.Contains(string(e.Data), secret) {
+		t.Errorf("the table carries the password: %s", e.Data)
+	}
+
+	bo, _ := arrive(t, h, "Bo", "")
+	var games protocol.Games
+	if e := bo.next(protocol.TypeGames, &games); strings.Contains(string(e.Data), secret) {
+		t.Errorf("the games list carries the password: %s", e.Data)
+	}
+	if len(games.Games) != 1 || !games.Games[0].Locked {
+		t.Fatalf("games %+v, want one locked game", games.Games)
+	}
+	for _, c := range []struct{ password, reason string }{
+		{"", "this game needs a password"},
+		{"guess", "wrong password"},
+	} {
+		bo.say(protocol.TypeJoin, protocol.Join{Game: tb.Game, Password: c.password})
+		var er protocol.Error
+		bo.next(protocol.TypeError, &er)
+		if er.Code != protocol.ErrPassword || er.Message != c.reason {
+			t.Errorf("password %q: %+v, want %q", c.password, er, c.reason)
+		}
+	}
+	bo.say(protocol.TypeJoin, protocol.Join{Game: tb.Game, Password: secret})
+	if e := bo.next(protocol.TypeTable, &tb); tb.You != 1 || strings.Contains(string(e.Data), secret) {
+		t.Errorf("the right password: table %+v", tb)
+	}
+}

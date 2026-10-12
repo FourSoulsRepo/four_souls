@@ -95,6 +95,9 @@ Use options 1, 3, 5 and 10.
    7. The server passes for a player who can only pass (N-05).
    8. Disconnects: `update` shows the pause and the votes; clients send `vote` (6.8).
    9. Saves: the host sends `save`; all get `saved`; `games` lists saves; `load` reopens one (6.11).
+   10. Passwords: `create` may set one; `join` must match it (N-14).
+   11. `games` marks such a game `locked`; a wrong one gets error `password`.
+   12. The password is never sent back, logged, recorded or saved.
 9. Playing over the internet, until a relay exists
    1. A virtual LAN (Tailscale, ZeroTier, Hamachi, Radmin VPN), or port forwarding.
    2. Or a dedicated server on a rented VPS.

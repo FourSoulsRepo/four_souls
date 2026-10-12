@@ -28,6 +28,8 @@ type Game struct {
 	Host  string `json:"host"` // the nickname of who created it
 	Seats int    `json:"seats"`
 	Taken int    `json:"taken"`
+	// Locked: joining needs the password (N-14).
+	Locked bool `json:"locked,omitempty"`
 }
 
 // Answer is what a hosting app tells a probe.

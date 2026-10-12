@@ -93,16 +93,16 @@ describe('optionsText', () => {
 });
 
 describe('lanRows', () => {
-  it('lists each waiting game with its address; another version cannot be joined', () => {
+  it('lists each waiting game with its address and lock; another version cannot be joined', () => {
     const rows = lanRows(
       [
-        { address: '192.168.1.5:4774', protocol: 1, app: '1.0.0', games: [{ host: 'Ann', seats: 3, taken: 1 }] },
-        { address: '192.168.1.9:4774', protocol: 2, app: '2.0.0', games: [{ host: 'Bo', seats: 2, taken: 1 }] },
+        { address: '192.168.1.5:4774', protocol: 1, app: '1.0.0', games: [{ host: 'Ann', seats: 3, taken: 1, locked: true }] },
+        { address: '192.168.1.9:4774', protocol: 2, app: '2.0.0', games: [{ host: 'Bo', seats: 2, taken: 1, locked: false }] },
       ],
       1,
     );
     expect(rows).toEqual([
-      { key: '192.168.1.5:4774#0', address: '192.168.1.5:4774', text: "Ann's game · 1/3 players · 192.168.1.5:4774", joinable: true },
+      { key: '192.168.1.5:4774#0', address: '192.168.1.5:4774', text: "🔒 Ann's game · 1/3 players · 192.168.1.5:4774", joinable: true },
       {
         key: '192.168.1.9:4774#0',
         address: '192.168.1.9:4774',

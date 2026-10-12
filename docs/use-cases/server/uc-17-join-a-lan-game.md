@@ -25,6 +25,7 @@
 * **3d. A dedicated server:** never listed; join it by address (UC-04).
 * **2a. macOS asks for Local Network access:** "no" hides LAN games.
 * **2b. The router blocks broadcasts:** nothing is found; the address field works.
+* **3e. A locked game:** it shows a lock; the password is asked in the game list (UC-04).
 
 ## Postconditions
 

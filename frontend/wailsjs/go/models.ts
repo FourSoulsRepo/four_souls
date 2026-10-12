@@ -51,6 +51,7 @@ export namespace lan {
 	    host: string;
 	    seats: number;
 	    taken: number;
+	    locked?: boolean;
 	
 	    static createFrom(source: any = {}) {
 	        return new Game(source);
@@ -61,6 +62,7 @@ export namespace lan {
 	        this.host = source["host"];
 	        this.seats = source["seats"];
 	        this.taken = source["taken"];
+	        this.locked = source["locked"];
 	    }
 	}
 	export class Found {

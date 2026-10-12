@@ -32,6 +32,9 @@
 * **6a. The table screen:** the host sees "Friends join at" and the addresses.
 * **6b. Copy an address:** the addresses can be selected and copied (V-10).
 * **6c. LAN players:** while a seat is free, the app answers LAN searches (UC-17).
+* **1b. Password (N-14):** the host may set one, up to 64 characters.
+  * Friends need it to join; the game list shows a lock.
+  * It is never shown again, logged, recorded or saved.
 * **7c. The host leaves in the app:** the app stops its server; friends lose the connection.
 
 ## Postconditions

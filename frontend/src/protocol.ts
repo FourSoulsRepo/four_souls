@@ -41,6 +41,8 @@ export interface GameInfo {
   taken: number;
   sets: string[] | null;
   started: boolean;
+  // locked: joining needs the game password (N-14).
+  locked?: boolean;
 }
 
 export interface SaveInfo {
@@ -71,10 +73,13 @@ export interface Create {
   seats: number;
   sets: string[];
   options?: Options;
+  // password, if set, is needed to join (N-14).
+  password?: string;
 }
 
 export interface Join {
   game: string;
+  password?: string;
 }
 
 export interface Ready {

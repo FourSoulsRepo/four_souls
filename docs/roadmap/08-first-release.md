@@ -166,7 +166,7 @@ Ideas: B-03 – B-05, L-03, V-10, V-11, DO-01, V-14, A-16, N-13, N-14, V-19.
    1. Two machines on one Wi-Fi find each other's game.
 4. Left for the **Owner**: two real machines; macOS and Windows prompts.
 
-### [ ] 8.14 Game password
+### [x] 8.14 Game password
 
 1. Goal: only invited players join (N-14).
 2. Tasks:

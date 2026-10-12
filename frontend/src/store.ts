@@ -112,7 +112,8 @@ interface AppState extends Session {
   hostSaved: () => Promise<void>;
   // saveGame saves the running game; only the host may (N-11).
   saveGame: () => void;
-  joinGame: (game: string) => void;
+  // joinGame sits down at a game; a locked one needs its password.
+  joinGame: (game: string, password?: string) => void;
   loadSave: (save: string) => void;
   setReady: (ready: boolean) => void;
   leaveTable: () => Promise<void>;
@@ -410,8 +411,8 @@ export const useApp = create<AppState>()((set, get) => {
     saveGame: () => {
       send('save');
     },
-    joinGame: (game) => {
-      send('join', { game });
+    joinGame: (game, password) => {
+      send('join', password ? { game, password } : { game });
     },
     loadSave: (save) => {
       send('load', { save });

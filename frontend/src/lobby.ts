@@ -113,7 +113,7 @@ export function lanRows(found: LanServer[], protocol: number): LanRow[] {
       return {
         key: `${f.address}#${String(i)}`,
         address: f.address,
-        text: `${g.host}'s game · ${String(g.taken)}/${String(g.seats)} players · ${f.address}${version}`,
+        text: `${g.locked ? '🔒 ' : ''}${g.host}'s game · ${String(g.taken)}/${String(g.seats)} players · ${f.address}${version}`,
         joinable: same,
       };
     }),

@@ -140,6 +140,7 @@ function Connect() {
 }
 
 function GameList() {
+  const [passwords, setPasswords] = useState<Record<string, string>>({});
   const lobby = useApp((s) => s.lobby);
   const error = useApp((s) => s.error);
   const joinGame = useApp((s) => s.joinGame);
@@ -156,13 +157,27 @@ function GameList() {
           {lobby.games.map((g) => (
             <li key={g.id}>
               <span>
+                {g.locked && <span aria-label="Locked">🔒 </span>}
                 {g.host}&apos;s game · {g.taken}/{g.seats} players{g.started ? ' · playing' : ''}
               </span>
+              {g.locked && !g.started && g.taken < g.seats && (
+                <input
+                  type="password"
+                  className="game-password"
+                  aria-label={`Password for ${g.host}'s game`}
+                  placeholder="Password"
+                  autoComplete="off"
+                  value={passwords[g.id] ?? ''}
+                  onChange={(e) => {
+                    setPasswords({ ...passwords, [g.id]: e.target.value });
+                  }}
+                />
+              )}
               <button
                 type="button"
                 disabled={g.started || g.taken >= g.seats}
                 onClick={() => {
-                  joinGame(g.id);
+                  joinGame(g.id, passwords[g.id]);
                 }}
               >
                 Join

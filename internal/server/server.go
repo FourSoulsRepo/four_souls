@@ -183,7 +183,7 @@ func waitingGames(hub *Hub, port int) func() (lan.Answer, bool) {
 			var out []lan.Game
 			for _, g := range h.list().Games {
 				if !g.Started && g.Taken < g.Seats {
-					out = append(out, lan.Game{Host: g.Host, Seats: g.Seats, Taken: g.Taken})
+					out = append(out, lan.Game{Host: g.Host, Seats: g.Seats, Taken: g.Taken, Locked: g.Locked})
 				}
 			}
 			reply <- out

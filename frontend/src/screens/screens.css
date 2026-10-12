@@ -123,6 +123,13 @@
   justify-content: space-between;
 }
 
+/* A locked game asks for its password in its row (N-14). */
+.screen input.game-password {
+  flex: 1;
+  min-width: 0;
+  max-width: 160px;
+}
+
 /* The card gallery is a test screen bigger than the window. */
 .gallery {
   justify-content: flex-start;

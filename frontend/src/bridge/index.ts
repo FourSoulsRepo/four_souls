@@ -170,6 +170,7 @@ export interface LanGame {
   host: string;
   seats: number;
   taken: number;
+  locked: boolean; // joining needs the password (N-14)
 }
 
 // findGames searches the local network for about a second.
@@ -179,7 +180,7 @@ export async function findGames(): Promise<LanServer[]> {
     address: f.address,
     protocol: f.protocol,
     app: f.app,
-    games: f.games.map((g) => ({ host: g.host, seats: g.seats, taken: g.taken })),
+    games: f.games.map((g) => ({ host: g.host, seats: g.seats, taken: g.taken, locked: g.locked ?? false })),
   }));
 }
 

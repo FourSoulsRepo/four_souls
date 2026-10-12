@@ -95,3 +95,34 @@ test('with no game on the LAN, the address field is the way', async ({ page }) =
   await expect(lan).toContainText('No games found');
   await expect(lan.getByRole('button', { name: 'Search again' })).toBeEnabled();
 });
+
+test('a game password keeps others out (N-14)', async ({ browser }) => {
+  const host = await (await browser.newContext()).newPage();
+  await host.goto(appURL());
+  await host.getByRole('button', { name: 'Host a game' }).click();
+  await host.getByLabel('Nickname').fill('Nox');
+  await host.getByLabel('Password (optional)').fill('pw-123');
+  await host.getByRole('button', { name: 'Host', exact: true }).click();
+  await expect(host.getByRole('list', { name: 'Seats' })).toContainText('Nox (you)');
+
+  const guest = await (await browser.newContext()).newPage();
+  await guest.goto(appURL());
+  await guest.getByRole('button', { name: 'Join a game' }).click();
+  await guest.getByLabel('Nickname').fill('Pip');
+  await guest.getByLabel('Host address').fill(address());
+  await guest.getByRole('button', { name: 'Connect' }).click();
+  const game = guest.getByRole('listitem').filter({ hasText: "Nox's game" });
+  await expect(game.getByLabel('Locked')).toBeVisible();
+  const join = game.getByRole('button', { name: 'Join' });
+  const status = guest.getByRole('status');
+
+  await join.click();
+  await expect(status).toHaveText('this game needs a password');
+  await game.getByLabel("Password for Nox's game").fill('guess');
+  await join.click();
+  await expect(status).toHaveText('wrong password');
+  await shot(guest, 'join-password');
+  await game.getByLabel("Password for Nox's game").fill('pw-123');
+  await join.click();
+  await expect(guest.getByRole('list', { name: 'Seats' })).toContainText('Pip (you)');
+});
