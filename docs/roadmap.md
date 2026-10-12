@@ -195,6 +195,9 @@ Step numbers stay as IDs; the table lists steps in work order.
 4. Ideas: V-09.
 5. Check Hearthstone again; the table must not feel like poker (V-13).
 6. Attack animation: the attacker hits the monster (V-12).
+7. Responsive, simple, informative UI (V-15, V-18).
+8. Drag cards onto the table or a target, Hearthstone-style (V-16).
+9. Real-looking dice, thrown by a button (V-17).
 
 ## 16. Localization
 

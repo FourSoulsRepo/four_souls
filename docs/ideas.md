@@ -74,6 +74,30 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
 14. V-14. History shows which card was stolen.
    1. The thief and the victim see the card.
    2. Everyone else sees only "A stole a card from B".
+15. V-15. The UI feels responsive.
+   1. Every click, hover, and drag gets instant visual feedback.
+   2. Feedback shows before the server answers.
+   3. The game state still changes only on server events.
+   4. A slow answer shows a small busy mark, not a frozen screen.
+16. V-16. Play cards like in Hearthstone.
+   1. Drag a trinket or item from hand onto the table.
+   2. Drag a card onto its target, e.g. a bomb onto a monster.
+   3. An arrow follows the pointer while aiming; valid targets glow.
+   4. Simple way still works: click the card, then click the target.
+   5. Both ways send the same intent.
+   6. Study Hearthstone screenshots first; maybe other card games too.
+17. V-17. Dice look and feel like real dice.
+   1. A die falls on the table, bounces, and rolls to a stop.
+   2. The value is still decided by the engine, as now.
+   3. The animation only shows that value; it never picks one.
+   4. The player presses a "Throw" button; no automatic roll.
+   5. Open: what happens if the player does not press it (timer, bot).
+   6. Open: whether the button needs a new intent in the protocol.
+18. V-18. Simple but informative interface.
+   1. Do not overload the screen with numbers and panels.
+   2. Do not hide what players need to know.
+   3. Key facts are always visible: health, coins, souls, turn, stack.
+   4. Details show on hover or zoom, not as extra text on the table.
 
 ## Rules
 
