@@ -38,6 +38,8 @@
 * **1c. Many updates at once:** effects play faster; a long queue skips them.
   * The table always ends on the latest update.
 * **1d. Animations off:** updates show at once.
+* **1e. Dice look (V-19):** a roll shows the face of the player's dice texture.
+  * No texture (public clone) or a value past 1–6: a plain die with the number.
 
 ## Postconditions
 

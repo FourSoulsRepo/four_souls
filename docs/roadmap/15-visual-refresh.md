@@ -62,6 +62,8 @@ Ideas: V-09, V-12, V-13, V-15 – V-18.
    2. "Throw" button for the player who rolls; others watch.
    3. Fall, bounce, and roll animation ends on the engine's value.
    4. Only `transform` and `opacity`; follows animation speed (ST-05).
+   5. The roller can never miss that the game waits for them (V-17).
+   6. Use the player's dice look (V-19).
 3. Done when:
    1. e2e screenshot of a die in the air.
    2. The rolled value matches the engine in every test.

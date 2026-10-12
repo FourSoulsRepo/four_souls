@@ -50,6 +50,7 @@ function loadSettings(): unknown {
     fullscreen: false,
     theme: 'dark',
     mat: 'felt',
+    dice: 'tear',
     rejoin: { address: '', token: '', game: '' },
   };
   return JSON.parse(localStorage.getItem(settingsKey) ?? JSON.stringify(fresh));
@@ -64,6 +65,7 @@ interface FakeSettings {
   fullscreen: boolean;
   theme: string;
   mat: string;
+  dice: string;
   rejoin: { address: string; token: string; game: string };
 }
 
@@ -193,6 +195,8 @@ w.go = {
       SaveSettings: saveSettings,
       CardSets: () => Promise.resolve(['b2']),
       Cards: () => Promise.resolve([...cards, ...realCards()]),
+      // Dice textures are private images too: a plain die, as in a public clone.
+      Dice: () => Promise.resolve([{ id: 'tear', name: 'Tear', image: '' }]),
       SaveRecord: (link: string) => Promise.resolve(`/fake/${new URL(link).searchParams.get('game') ?? ''}.fsrec`),
     },
     Host: {

@@ -9,6 +9,8 @@ export function CardSets():Promise<Array<string>>;
 
 export function Cards():Promise<Array<main.CardInfo>>;
 
+export function Dice():Promise<Array<main.DiceSkin>>;
+
 export function Notice():Promise<Array<legal.Line>>;
 
 export function SaveRecord(arg1:string):Promise<string>;

@@ -142,6 +142,22 @@ export namespace main {
 		    return a;
 		}
 	}
+	export class DiceSkin {
+	    id: string;
+	    name: string;
+	    image: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new DiceSkin(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.name = source["name"];
+	        this.image = source["image"];
+	    }
+	}
 	export class HostInfo {
 	    running: boolean;
 	    port: number;
@@ -186,6 +202,7 @@ export namespace settings {
 	    fullscreen: boolean;
 	    theme: string;
 	    mat: string;
+	    dice: string;
 	    rejoin: Rejoin;
 	
 	    static createFrom(source: any = {}) {
@@ -200,6 +217,7 @@ export namespace settings {
 	        this.fullscreen = source["fullscreen"];
 	        this.theme = source["theme"];
 	        this.mat = source["mat"];
+	        this.dice = source["dice"];
 	        this.rejoin = this.convertValues(source["rejoin"], Rejoin);
 	    }
 	

@@ -3,7 +3,7 @@
 Goal: the full Base Game for 2–4 players over LAN.
 Public downloads for all platforms.
 
-Ideas: B-03 – B-05, L-03, V-10, V-11, DO-01, V-14, A-16, N-13, N-14.
+Ideas: B-03 – B-05, L-03, V-10, V-11, DO-01, V-14, A-16, N-13, N-14, V-19.
 
 ---
 
@@ -176,3 +176,17 @@ Ideas: B-03 – B-05, L-03, V-10, V-11, DO-01, V-14, A-16, N-13, N-14.
 3. Done when:
    1. Server tests for right, wrong, and missing passwords.
    2. Use case updated: host a game, join a game.
+
+### [x] 8.15 Dice looks
+
+1. Goal: dice show a real texture; the core for choosing one (V-19).
+2. Tasks:
+   1. Go lists dice looks; `App.Dice` gives their image URLs.
+   2. Textures are served with card images, PNG allowed.
+   3. Setting `dice` keeps the chosen look; default "tear".
+   4. `Die` cuts one face out of the 3×3 texture.
+   5. Plain die when the texture is missing or the value is not 1–6.
+   6. Textures must be added to the private submodule via the tools repo.
+3. Done when:
+   1. Go and Vitest tests for the catalog, setting, and faces.
+   2. All six faces checked on two real textures.

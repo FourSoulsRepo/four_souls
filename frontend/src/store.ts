@@ -4,6 +4,7 @@ import { create } from 'zustand';
 import {
   setFullscreen,
   getCards,
+  getDice,
   getCardSets,
   saveRecord,
   getSettings,
@@ -11,6 +12,7 @@ import {
   saveSettings,
   startHosting,
   stopHosting,
+  type DiceSkin,
   type HostInfo,
   type Settings,
 } from './bridge';
@@ -85,6 +87,8 @@ interface AppState extends Session {
   cardSets: string[];
   // cards is the display data by ref; empty until loaded.
   cards: Map<string, CardInfo>;
+  // dice are the dice looks (V-19); empty until loaded.
+  dice: DiceSkin[];
   zoom: Zoom | null;
   loadCards: () => Promise<void>;
   setZoom: (zoom: Zoom | null) => void;
@@ -316,17 +320,19 @@ export const useApp = create<AppState>()((set, get) => {
       fullscreen: false,
       theme: 'dark',
       mat: 'felt',
+      dice: 'tear',
       rejoin: { address: '', token: '', game: '' },
     },
     hosting: null,
     connected: false,
     cardSets: [],
     cards: new Map(),
+    dice: [],
     zoom: null,
     loadCards: async () => {
       try {
-        const list = await getCards();
-        set({ cards: new Map(list.map((c) => [c.ref, c])) });
+        const [list, dice] = await Promise.all([getCards(), getDice()]);
+        set({ cards: new Map(list.map((c) => [c.ref, c])), dice });
       } catch (e) {
         set({ error: `Card data: ${messageOf(e)}` });
       }

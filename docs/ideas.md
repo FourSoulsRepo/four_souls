@@ -93,11 +93,31 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    4. The player presses a "Throw" button; no automatic roll.
    5. Open: what happens if the player does not press it (timer, bot).
    6. Open: whether the button needs a new intent in the protocol.
+   7. The player always knows the game waits for their throw.
+   8. The Throw button is big, glows, and sits where the die will land.
+   9. The stack panel says "Waiting for you to throw" (V-11).
+   10. Others see "Ann is throwing…" and a die shaking in her hand.
+   11. Proposal for 5: no timer by default, as at a real table.
+   12. The response timer (UC-06) throws for a player who stays idle.
+   13. Bots and disconnected players throw at once.
+   14. Proposal for 6: yes, a "throw" intent from the roller.
+   15. The engine draws the value only when the intent arrives.
+   16. So nobody, the roller included, can see it early.
+   17. The record keeps the intent, so replays stay exact.
 18. V-18. Simple but informative interface.
    1. Do not overload the screen with numbers and panels.
    2. Do not hide what players need to know.
    3. Key facts are always visible: health, coins, souls, turn, stack.
    4. Details show on hover or zoom, not as extra text on the table.
+19. V-19. Players choose the look of their dice.
+   1. Dice textures live with the private card images.
+   2. Tabletop Simulator layout: 3×3 faces, top row unused.
+   3. Row 2: faces 2, 4, 5; row 3: faces 1, 3, 6.
+   4. The setting keeps the chosen look; the first one is the default.
+   5. No texture: a plain die with the number, as in a public clone.
+   6. First version: one look ("Tear"), no picker yet.
+   7. Later: a picker in settings once there are more looks.
+   8. Later: others see each player's own dice; needs a protocol field.
 
 ## Rules
 

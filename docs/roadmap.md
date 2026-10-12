@@ -135,6 +135,7 @@ Step numbers stay as IDs; the table lists steps in work order.
 12. LAN games found without typing an IP (N-13).
 13. Game passwords (N-14).
 14. New-user check, play-test and docs check: moved to step 18.
+15. Dice looks: a real dice texture; core for choosing one (V-19).
 
 ## 9. Spectators
 

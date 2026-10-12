@@ -6,6 +6,7 @@ import type { Speed } from '../playback';
 import {
   Cards as wailsCards,
   CardSets as wailsCardSets,
+  Dice as wailsDice,
   Notice as wailsNotice,
   SaveRecord as wailsSaveRecord,
   SaveSettings as wailsSaveSettings,
@@ -38,6 +39,7 @@ export interface Settings {
   fullscreen: boolean; // ST-01
   theme: Theme; // ST-02, menus and panels
   mat: Mat; // ST-03
+  dice: string; // V-19, a DiceSkin id; Go checks it
   // rejoin is the last game joined, so a restarted app takes its seat
   // back (N-08).
   rejoin: Rejoin;
@@ -61,6 +63,7 @@ function fromGo(s: {
   fullscreen: boolean;
   theme: string;
   mat: string;
+  dice: string;
   rejoin: Rejoin;
 }): Settings {
   return {
@@ -70,6 +73,7 @@ function fromGo(s: {
     fullscreen: s.fullscreen,
     theme: s.theme === 'light' ? 'light' : 'dark',
     mat: s.mat === 'basement' || s.mat === 'cathedral' ? s.mat : 'felt',
+    dice: s.dice,
     rejoin: { address: s.rejoin.address, token: s.rejoin.token, game: s.rejoin.game },
   };
 }
@@ -112,6 +116,19 @@ export function getCardSets(): Promise<string[]> {
 // getCards returns every card the app knows (7.4).
 export function getCards(): Promise<CardInfo[]> {
   return wailsCards();
+}
+
+// DiceSkin is one look of the six-sided die (V-19).
+export interface DiceSkin {
+  id: string;
+  name: string;
+  // image is the texture URL (see Die); '' when missing: a plain die.
+  image: string;
+}
+
+// getDice returns every dice look the app knows.
+export function getDice(): Promise<DiceSkin[]> {
+  return wailsDice();
 }
 
 // startHosting runs the game server inside the app. If it runs already,
