@@ -4,8 +4,8 @@ Goal: a clearer table, using fouronlinesouls.net as a second reference.
 
 Ideas: V-09, V-12, V-13, V-15 – V-29.
 
-Order: 15.1, 15.15, 15.9 – 15.11, 15.16 – 15.24, 15.3, 15.25 – 15.27,
-15.5, 15.6, 15.28 – 15.31.
+Order: 15.1, 15.15, 15.9 – 15.11, 15.16 – 15.24, 15.3, 15.37, 15.25,
+15.32 – 15.34, 15.26, 15.27, 15.5, 15.6, 15.28 – 15.31, 15.35, 15.36.
 Images come first, so the new table is built with backs and mats.
 
 ---
@@ -140,6 +140,7 @@ Images come first, so the new table is built with backs and mats.
    3. Only `transform` and `opacity`; follows animation speed (ST-05).
    4. A starburst with "-N" on the card that was hit (H-14).
    5. HP on the card drops as soon as the damage resolves (C-03).
+   6. The lunge goes into the target and back, as in T-23.
 3. Done when:
    1. e2e screenshot of an attack in progress.
 
@@ -248,7 +249,7 @@ Images come first, so the new table is built with backs and mats.
 1. Goal: a card's state reads on the card itself (C-01 – C-06).
 2. Split into 15.23 – 15.24; tasks moved there.
 
-### [ ] 15.15 Study Hearthstone targeting
+### [x] 15.15 Study Hearthstone targeting
 
 1. Goal: know exactly how aiming at a target works in Hearthstone (H-23).
 2. Tasks:
@@ -302,6 +303,9 @@ Images come first, so the new table is built with backs and mats.
    4. **Owner** decides: share live aiming with others, or keep it local.
    5. T-09 must never leak the card (A-16).
    6. T-14 depends on the engine; it already decides valid targets.
+7. Owner notes (2026-10-12)
+   1. Owner picks all T ideas; planned in 15.32 – 15.37.
+   2. Live aiming: a new kind of message, never recorded (N-15).
 
 ### [ ] 15.16 Board frame
 
@@ -417,6 +421,7 @@ Images come first, so the new table is built with backs and mats.
    1. Two abilities: a dialog with the big card; pick one line (C-05).
    2. Status marks on cards, e.g. not usable yet (H-22).
    3. Used items stay dimmed, not rotated; already so (C-04).
+   4. A character that can attack has a green frame; not yet: "zzz" (T-11).
 3. Done when:
    1. e2e test: a two-ability card opens the dialog and uses the picked line.
 
@@ -428,6 +433,7 @@ Images come first, so the new table is built with backs and mats.
    2. Drag a card onto the table or onto its target.
    3. Aiming arrow; valid targets glow, others stay plain.
    4. Works with mouse and touch (B-06).
+   5. Touch: drag from the source, release on the target (T-17).
 3. Done when:
    1. e2e test: a bomb dragged onto a monster damages it.
 
@@ -447,7 +453,7 @@ Images come first, so the new table is built with backs and mats.
 1. Goal: the hand shows what can be played and what it does.
 2. Tasks:
    1. Hover a hand card: it rises large, keyword tips beside it (H-13).
-   2. Zoom opens over the hovered card, not at a screen side (F-16).
+   2. Zoom pops up right beside the hovered card, not at a screen side (F-16, T-27).
    3. Playable cards glow green; the rest stay plain (H-12).
 3. Done when:
    1. e2e test: playable cards glow, others do not.
@@ -499,5 +505,82 @@ Images come first, so the new table is built with backs and mats.
    1. In a fight, the attacker and the monster get a red frame (F-19).
    2. Attack rolls, targets, and damage are visible to all.
    3. A card another player plays shows large for a moment (H-10).
+   4. It stays large while its effect resolves (T-16).
 3. Done when:
    1. e2e test: a second player sees the fight mark.
+
+### [ ] 15.32 Aiming arrow
+
+1. Goal: a clear Hearthstone-style arrow while aiming (T-02, T-18 – T-20).
+2. Tasks:
+   1. A chain of thick red blocks with a big head, source to pointer (T-02, T-18).
+   2. A little see-through; drawn over every card (T-19).
+   3. Off target: plain head; on a valid target: a red ring (T-03, T-20).
+   4. Only `transform` and `opacity`; follows animation speed (ST-05).
+   5. Without images the arrow looks the same.
+3. Done when:
+   1. `make screenshots` shows the arrow off and on a target.
+
+### [ ] 15.33 Start, finish, and cancel aiming
+
+1. Goal: aiming starts, ends, and cancels as in Hearthstone.
+2. Tasks:
+   1. Only a playable card or ability can start aiming (T-01).
+   2. A valid target completes the action; the arrow goes (T-04).
+   3. An invalid target shows the engine's short reason (T-05).
+   4. Cancel: click empty space, right-click, or Esc (T-06).
+   5. Clicking the source again also cancels (T-07).
+3. Done when:
+   1. e2e test: right-click cancels and sends nothing.
+   2. e2e test: an invalid target shows the reason.
+
+### [ ] 15.34 Plays without aiming
+
+1. Goal: cards that need no target, or place then aim, feel natural.
+2. Tasks:
+   1. No target needed: drag onto the board; no arrow (T-12).
+   2. Place first, then aim; cancelling the aim undoes the play (T-13).
+   3. No valid target: follow what the engine allows (T-14).
+3. Done when:
+   1. e2e test: a no-target loot card dragged onto the board plays.
+   2. e2e test: a cancelled aim leaves the card in hand.
+
+### [ ] 15.35 Presence messages
+
+1. Goal: a light message kind for live aiming and hover (N-15).
+2. Tasks:
+   1. ADR: presence messages; update ADR 006 and ADR 007.
+   2. New message kind: not an intent, not an event; the engine never sees it.
+   3. The server relays it to the other players of that game only.
+   4. Never recorded; replays never show it.
+   5. A hidden card travels as its hand slot only, never its identity (A-16).
+   6. The server limits the rate per player and drops the rest.
+   7. Update protocol docs and golden files.
+3. Done when:
+   1. Server test: an aim message reaches the others, not the sender.
+   2. Server test: the record has no presence messages.
+   3. Server test: a hidden card's aim carries no card ID.
+
+### [ ] 15.36 Others' aim and hover
+
+1. Goal: everyone sees what the active player is aiming at (T-08 – T-10, T-21, T-22).
+2. Tasks:
+   1. Others see the arrow live while it moves (T-08).
+   2. A hidden card shows as a back lifted from its hand slot (T-09, T-22).
+   3. The aimed-at card glows red on the target's screen (T-21).
+   4. A hovered card is marked red for the others (T-10).
+   5. A late or missing message never breaks the table.
+3. Done when:
+   1. e2e test: a second player sees the arrow and the red mark.
+
+### [ ] 15.37 Hit and death marks
+
+1. Goal: damage and deaths read at a glance (T-15, T-24 – T-26).
+2. Tasks:
+   1. After the target locks, the effect flies from source to target (T-15).
+   2. A yellow starburst "-N" on every damaged card at once (T-24).
+   3. An HP number turns red while below full (T-25).
+   4. A dying card gets a big skull before it leaves (T-26).
+   5. Only `transform` and `opacity`; follows animation speed (ST-05).
+3. Done when:
+   1. `make screenshots` shows a starburst, red HP, and a skull.

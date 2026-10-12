@@ -425,6 +425,16 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
 14. N-14. A game can have a password.
    1. Set by whoever creates the game.
    2. The games list shows a lock; joining asks for the password.
+15. N-15. Live aiming and hover reach the other players.
+   1. Others see the aiming arrow while it moves (15.15, T-08).
+   2. Others see which card is hovered or aimed at (T-10, T-21).
+   3. A hidden card shows only as a back from its hand slot (T-09, A-16).
+   4. A separate kind of message: not an intent, not a game event.
+   5. The engine never sees these messages.
+   6. Never recorded, so replays never show them.
+   7. Lost or late ones do no harm; the next one replaces them.
+   8. The server limits how often a player may send them.
+   9. Open: whether viewers see them too (step 9).
 
 ## Learning
 

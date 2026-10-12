@@ -153,6 +153,7 @@ Step numbers stay as IDs; the table lists steps in work order.
 3. Show or hide hands.
 4. Optional check against the current engine.
 5. Ideas: RP-02, RP-04, RP-10, RP-11, M-01.
+6. Replays never show live aiming or hover (N-15).
 
 ## 11. Learning
 
@@ -218,6 +219,9 @@ Step numbers stay as IDs; the table lists steps in work order.
 23. Counters and live stats on the cards (15.14).
 24. First study how Hearthstone aims at targets (15.15).
 25. Big sub-steps split into one-session ones (15.16 – 15.31).
+26. Aiming like Hearthstone: arrow, start, cancel (15.32 – 15.34).
+27. Others see live aiming; never recorded (N-15, 15.35, 15.36).
+28. Hit and death marks: starbursts, red HP, skull (15.37).
 
 ## 16. Localization
 
