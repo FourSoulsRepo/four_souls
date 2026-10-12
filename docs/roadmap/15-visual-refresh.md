@@ -87,9 +87,39 @@ Ideas: V-09, V-12, V-13, V-15 – V-29.
    21. H-21. Player names sit small in the corners, outside the board.
    22. H-22. Status marks on cards: "Zzz" for not ready, a shield for Taunt.
    23. H-23. Aiming arrow: no screenshot found; study it in 15.4.
+11. Stack on the reference (V-27)
+   1. S-01. Stack panel inside the board; newest item on top.
+   2. S-02. Each row: an icon and one short line of text.
+   3. S-03. Names in color: player in their color, target in red.
+   4. S-04. Icon by kind: card art, die for a roll, knife for damage.
+   5. S-05. Each step is its own item: attack roll, then damage.
+   6. S-06. Hover a row: the card shows large, owner name below.
+   7. S-07. The used ability is highlighted on that large card.
+   8. S-08. Resolve button sits in the panel; Space does the same.
+   9. S-09. Empty stack: "Nothing on the stack…" and a grey button.
+   10. S-10. History strip: resolved items as the same icons, newest on top.
+   11. S-11. Hover a history icon: the same large card view.
+12. Counters on the reference (V-27)
+   1. C-01. A counter is a big green circle with a number, on the card art.
+   2. C-02. The zoomed card shows the same circle.
+   3. C-03. Card stats are live: monster HP on the card drops after damage.
+   4. C-04. A tapped item turns grey; it is not rotated.
+   5. C-05. A card with two abilities opens a dialog to pick one line.
+   6. C-06. Zoom of an unusable card says why: "No effects usable now".
+   7. Screenshots: `.cache/screenshots/reference/counters/`.
+13. Cheat menu on the reference (V-27)
+   1. K-01. Room option "Allow cheat options", on by default.
+   2. K-02. Game menu, "Cheat view", adds cheat controls to the table.
+   3. K-03. Decks get "Draw" and "Select"; monster deck gets "Put in slot".
+   4. K-04. Every card gets an ×; coins get a +.
+   5. K-05. "Select" opens a searchable picker of the whole deck.
+   6. K-06. Search also matches card text, not only names.
+   7. K-07. Every cheat is announced: "Ann used a cheat to gain 1 treasures".
+   8. K-08. For us: a model for the sandbox (LR-01), not for normal games.
 10. Owner notes (2026-10-12)
    1. F-14 rejected: no 1–9 badges on cards (V-29).
    2. New ideas from the review: V-22 – V-29.
+   3. Owner approves the Hearthstone ideas, H-01 – H-23.
 
 ### [ ] 15.2 Rework the table
 
