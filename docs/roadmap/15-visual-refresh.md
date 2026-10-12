@@ -555,7 +555,7 @@ Images come first, so the new table is built with backs and mats.
    6. 15.22 brings the thin strip; see the proposal there.
    7. Screenshots: `.cache/screenshots/15.21/fix/`.
 
-### [ ] 15.22 History strip
+### [x] 15.22 History strip
 
 1. Goal: a thin icon history along the board's left edge (H-07).
 2. Tasks:
@@ -622,6 +622,8 @@ Images come first, so the new table is built with backs and mats.
    4. Stack and history show only that ability's words.
    5. "Choose one-" cards (Dagaz) show only the chosen mode.
    6. Engine tests check The Bone and Blank Rune on the stack and in history.
+10. Owner notes (2026-10-12)
+   1. Owner marks 15.22 solved.
 
 ### [ ] 15.23 Counter badges and live stats
 
