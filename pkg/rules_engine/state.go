@@ -236,6 +236,8 @@ type Game struct {
 
 	Boosts  []Boost  `json:"boosts,omitempty"`
 	Shields []Shield `json:"shields,omitempty"`
+	// Lingering abilities last till end of turn (Linger).
+	Lingering []Lingering `json:"lingering,omitempty"`
 
 	// Stack: the last item is on top (R-STACK-02).
 	Stack    []StackItem `json:"stack"`

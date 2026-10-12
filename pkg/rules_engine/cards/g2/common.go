@@ -2,6 +2,7 @@ package g2
 
 import (
 	"slices"
+	"strconv"
 
 	engine "github.com/FourSoulsRepo/rules_engine"
 	"github.com/FourSoulsRepo/rules_engine/cards/cardkit"
@@ -13,6 +14,10 @@ var (
 	rechargeAtEndOfTurn = cardkit.RechargeAtEndOfTurn
 	livingPlayers       = cardkit.LivingPlayers
 	rechargeAnItem      = cardkit.RechargeAnItem
+	discardOne          = cardkit.DiscardOne
+	killAMonster        = cardkit.KillAMonster
+	monstersInPlay      = cardkit.MonstersInPlay
+	may                 = cardkit.May
 )
 
 // centsEqualToRoll: "that player gains ¢ equal to the result" for
@@ -94,4 +99,178 @@ func combatDamageOnRollOf(n int) engine.Trigger {
 	return engine.Trigger{On: engine.EvDamaged, Match: func(g *engine.Game, self engine.ObjectID, e engine.Event) bool {
 		return e.Text == "combat" && e.Player == g.Object(self).Controller && g.Attack.LastRoll == n
 	}}
+}
+
+// rechargeYourItem: "you may recharge an item you control", one at a time.
+var rechargeYourItem = engine.Ask(func(c *engine.Ctx, a []int) {
+	if ids := yourDeactivated(c); a[0] >= 0 && a[0] < len(ids) {
+		c.G.Recharge(ids[a[0]])
+	}
+}, engine.Question{Text: "Recharge which item?", Options: func(c *engine.Ctx, _ []int) []string {
+	var out []string
+	for _, id := range yourDeactivated(c) {
+		out = append(out, string(c.G.Object(id).Card))
+	}
+	if len(out) == 0 {
+		return nil
+	}
+	return append(out, "none")
+}})
+
+func yourDeactivated(c *engine.Ctx) []engine.ObjectID {
+	var out []engine.ObjectID
+	for _, id := range c.G.Players[c.Controller].InPlay {
+		if o := c.G.Object(id); o.Role == engine.RoleItem && !o.Charged {
+			out = append(out, id)
+		}
+	}
+	return out
+}
+
+// freeSlots lists monster slots whose monster is not being attacked.
+func freeSlots(g *engine.Game) []int {
+	var out []int
+	for i, s := range g.Monsters {
+		if top, ok := s.TopOf(); !ok || !g.Attack.On || top != g.Attack.Target {
+			out = append(out, i)
+		}
+	}
+	return out
+}
+
+// coverASlot: "put the top card of the monster deck in a monster slot not
+// being attacked"; optional adds a "none" option.
+func coverASlot(optional bool) engine.Effect {
+	return engine.Ask(func(c *engine.Ctx, a []int) {
+		if slots := freeSlots(c.G); a[0] >= 0 && a[0] < len(slots) {
+			c.G.CoverMonsterSlot(slots[a[0]])
+		}
+	}, engine.Question{Text: "Which monster slot?", Options: func(c *engine.Ctx, _ []int) []string {
+		var out []string
+		for _, i := range freeSlots(c.G) {
+			out = append(out, "slot "+strconv.Itoa(i+1))
+		}
+		if optional {
+			out = append(out, "none")
+		}
+		return out
+	}})
+}
+
+// lookAtADeck is "Look at the top card of a deck".
+var lookAtADeck = engine.Ask(func(c *engine.Ctx, a []int) {
+	if a[0] >= 0 {
+		c.G.LookAt(c.Controller, c.G.DeckTop(c.Deck(a[0]), 1)...)
+	}
+}, engine.DeckQuestion("Look at the top card of which deck?"))
+
+// targetsYours: a stack ability or loot that targets an item or a dice
+// roll the chooser controls.
+func targetsYours(g *engine.Game, self engine.ObjectID, c engine.Chosen) bool {
+	it, ok := g.StackItemByID(c.StackID)
+	if !ok {
+		return false
+	}
+	me := g.Object(self).Controller
+	for _, t := range it.Targets {
+		if roll, ok := g.StackItemByID(t.StackID); ok && t.StackID != 0 && roll.Kind == engine.StackRoll && roll.Controller == me {
+			return true
+		}
+		if t.StackID == 0 && t.Object != 0 && g.Object(t.Object).Role == engine.RoleItem && g.Object(t.Object).Controller == me {
+			return true
+		}
+	}
+	return false
+}
+
+// noCombatDamageTakenOn is "You take no combat damage on attack rolls of n".
+func noCombatDamageTakenOn(n int) func(*engine.Game, engine.ObjectID, int, bool, int) int {
+	return func(_ *engine.Game, _ engine.ObjectID, roll int, hit bool, dmg int) int {
+		if !hit && roll == n {
+			return 0
+		}
+		return dmg
+	}
+}
+
+// combatDamageToAMonster triggers when the controller deals combat damage
+// to a monster, on an attack roll of roll (0: any roll).
+func combatDamageToAMonster(roll int) engine.Trigger {
+	return engine.Trigger{On: engine.EvDamaged, Match: func(g *engine.Game, self engine.ObjectID, e engine.Event) bool {
+		return e.Text == "combat" && e.Player == engine.NoPlayer && e.Object != 0 &&
+			g.Turn.Active == g.Object(self).Controller && (roll == 0 || g.Attack.LastRoll == roll)
+	}}
+}
+
+// damageOtherMonsters: "deal 1 damage to each other monster" than the one
+// that was damaged.
+var damageOtherMonsters = engine.EffectFunc(func(c *engine.Ctx) {
+	for _, id := range monstersInPlay(c.G) {
+		if id != c.EventObject {
+			c.G.DealDamageTo(engine.Target{Object: id}, 1, c.Controller, c.Source)
+		}
+	}
+})
+
+// namedMom: Mom!, Mom's Heart! or It Lives!
+func namedMom(g *engine.Game, _ engine.ObjectID, c engine.Chosen) bool {
+	switch g.Object(c.Object).Card {
+	case "mom", "moms_heart", "it_lives":
+		return true
+	}
+	return false
+}
+
+// ouija: "Reveal the top 4 cards of the monster deck. You may put an event
+// card revealed this way in a monster slot not being attacked. Put the
+// rest on the bottom of the deck in a random order".
+var ouija = engine.Ask(func(c *engine.Ctx, a []int) {
+	top := c.G.DeckTop(engine.MonsterDeck, 4)
+	for _, pl := range c.G.Players {
+		c.G.LookAt(pl.ID, top...) // revealed to everyone
+	}
+	events := ouijaEvents(c.G, top)
+	placed := engine.ObjectID(-1)
+	if slots := freeSlots(c.G); a[0] >= 0 && a[0] < len(events) && a[1] >= 0 && a[1] < len(slots) {
+		placed = events[a[0]]
+		c.G.PlaceFromDeck(placed, slots[a[1]])
+	}
+	var rest []engine.ObjectID
+	for _, id := range top {
+		if id != placed {
+			rest = append(rest, id)
+		}
+	}
+	c.G.RNG.Shuffle(len(rest), func(i, j int) { rest[i], rest[j] = rest[j], rest[i] })
+	for _, id := range rest {
+		c.G.DeckToBottom(engine.MonsterDeck, id)
+	}
+}, engine.Question{Text: "Put which event in a monster slot?", Options: func(c *engine.Ctx, _ []int) []string {
+	var out []string
+	for _, id := range ouijaEvents(c.G, c.G.DeckTop(engine.MonsterDeck, 4)) {
+		out = append(out, string(c.G.Object(id).Card))
+	}
+	if len(out) == 0 {
+		return nil
+	}
+	return append(out, "none")
+}}, engine.Question{Text: "Which monster slot?", Options: func(c *engine.Ctx, a []int) []string {
+	if a[0] < 0 || a[0] >= len(ouijaEvents(c.G, c.G.DeckTop(engine.MonsterDeck, 4))) {
+		return nil
+	}
+	var out []string
+	for _, i := range freeSlots(c.G) {
+		out = append(out, "slot "+strconv.Itoa(i+1))
+	}
+	return out
+}})
+
+func ouijaEvents(g *engine.Game, ids []engine.ObjectID) []engine.ObjectID {
+	var out []engine.ObjectID
+	for _, id := range ids {
+		if g.Kind(id) == engine.EventCard {
+			out = append(out, id)
+		}
+	}
+	return out
 }

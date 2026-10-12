@@ -786,3 +786,16 @@ func CancelAttack(then ...Effect) Effect {
 func ActivePlayerAttacksAgain() Effect {
 	return EffectFunc(func(c *Ctx) { c.G.Turn.Attacks++ })
 }
+
+// Linger starts the source card's lingering ability i; it lasts till end
+// of turn, even if the card leaves play: "Till end of turn, each time a
+// player rolls a 1, …" (Lemon Mishap), "At the end of the turn, …" (Plan C).
+func Linger(i int) Effect {
+	return EffectFunc(func(c *Ctx) {
+		c.G.Lingering = append(c.G.Lingering, Lingering{
+			Ability:    AbilityRef{Card: c.G.Object(c.Source).Card, Index: i, Lingering: true},
+			Source:     c.Source,
+			Controller: c.Controller,
+		})
+	})
+}

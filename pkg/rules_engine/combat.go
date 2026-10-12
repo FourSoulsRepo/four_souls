@@ -196,6 +196,7 @@ func (g *Game) resolveAttackRoll(it StackItem) {
 		if mod != nil {
 			atk = mod(g, it.Target.Object, it.Roll, true, atk)
 		}
+		atk = g.attackerCombatMod(p, it.Roll, true, atk)
 		if atk > 0 {
 			g.push(StackItem{
 				Kind: StackDamage, Controller: p, Amount: atk, Label: "combat damage", Attack: true,
@@ -209,6 +210,7 @@ func (g *Game) resolveAttackRoll(it StackItem) {
 	if mod != nil {
 		atk = mod(g, it.Target.Object, it.Roll, false, atk)
 	}
+	atk = g.attackerCombatMod(p, it.Roll, false, atk)
 	if atk > 0 {
 		g.push(StackItem{
 			Kind: StackDamage, Controller: NoPlayer, Source: it.Target.Object, Amount: atk,
@@ -528,3 +530,18 @@ func (g *Game) penaltyCents(p PlayerID) Action {
 
 // Def returns the card definition an object acts as.
 func (g *Game) Def(id ObjectID) CardDef { return g.def(id) }
+
+// attackerCombatMod applies the CombatMod of the attacker's character and
+// items: "You take no combat damage on attack rolls of 1" (Infamy).
+func (g *Game) attackerCombatMod(p PlayerID, roll int, hit bool, n int) int {
+	ids := append([]ObjectID{g.Players[p].Character}, g.Players[p].InPlay...)
+	for _, id := range ids {
+		if o := g.Object(id); o.Role == RoleSoul {
+			continue
+		}
+		if mod := g.def(id).CombatMod; mod != nil {
+			n = mod(g, id, roll, hit, n)
+		}
+	}
+	return n
+}

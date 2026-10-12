@@ -4,6 +4,16 @@ package rulesengine
 type AbilityRef struct {
 	Card  CardRef `json:"card"`
 	Index int     `json:"index"`
+	// Lingering: Index is into the card's Lingering abilities.
+	Lingering bool `json:"lingering,omitempty"`
+}
+
+// Lingering is a card's ability that lasts till end of turn after an
+// effect started it: "Till end of turn, each time …" (Linger).
+type Lingering struct {
+	Ability    AbilityRef `json:"ability"`
+	Source     ObjectID   `json:"source"`
+	Controller PlayerID   `json:"controller"`
 }
 
 // Trigger says when a triggered ability triggers (R-ABIL-13).
@@ -170,6 +180,15 @@ func (g *Game) collectTriggers(e Event) {
 	if e.Prev != 0 && g.Object(e.Prev).Zone.Kind != ZoneInPlay {
 		check(e.Prev)
 	}
+	for _, l := range g.Lingering {
+		a := g.ability(l.Ability)
+		if a.Trigger.On == e.Kind && a.Trigger.Match != nil && a.Trigger.Match(g, l.Source, e) {
+			g.PendingTriggers = append(g.PendingTriggers, PendingTrigger{
+				Ability: l.Ability, Source: l.Source, Controller: l.Controller,
+				On: e.Kind, EventPlayer: e.Player, EventAmount: e.Amount, EventStack: e.StackID, EventObject: e.Object, EventSource: e.Source,
+			})
+		}
+	}
 }
 
 // placeNextTrigger puts waiting triggers on the stack in rule order: the
@@ -242,7 +261,10 @@ func (g *Game) rollStillIs(id, n int) bool {
 
 func (g *Game) ability(ref AbilityRef) Ability {
 	d, ok := g.cards.find(ref.Card)
-	if !ok || ref.Index >= len(d.Abilities) {
+	if ok && ref.Lingering && ref.Index < len(d.Lingering) {
+		return d.Lingering[ref.Index]
+	}
+	if !ok || ref.Lingering || ref.Index >= len(d.Abilities) {
 		panic("rulesengine: unknown ability " + string(ref.Card))
 	}
 	return d.Abilities[ref.Index]

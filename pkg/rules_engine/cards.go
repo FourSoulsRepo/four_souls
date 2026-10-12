@@ -72,6 +72,8 @@ type CardDef struct {
 	// CombatMod changes combat damage from an attack roll against this
 	// monster: hit is true for damage to it, false for its damage to the
 	// attacker. "This takes no combat damage on attack rolls of 6."
+	// On a player's character or item it changes that player's attacks:
+	// "You take no combat damage on attack rolls of 1."
 	CombatMod func(g *Game, self ObjectID, roll int, hit bool, n int) int
 	// BonusSoul: the condition for gaining this bonus soul ("the first
 	// player to have 25¢ or more").
@@ -102,6 +104,9 @@ type CardDef struct {
 	Replacements []Replacement
 	// Abilities are activated, loot and triggered abilities (step 4.7).
 	Abilities []Ability
+	// Lingering are triggered abilities an effect starts with Linger;
+	// they last till end of turn ("Till end of turn, each time …").
+	Lingering []Ability
 	// Statics are static abilities that change stats (R-ABIL-12).
 	Statics []Static
 
