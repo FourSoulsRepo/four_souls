@@ -4,12 +4,15 @@ package main
 import (
 	"context"
 	"embed"
+	"fmt"
 	"log"
+	"path/filepath"
 
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
 	"github.com/wailsapp/wails/v2/pkg/options/assetserver"
 
+	"github.com/FourSoulsRepo/four_souls/internal/instance"
 	"github.com/FourSoulsRepo/four_souls/internal/settings"
 )
 
@@ -17,11 +20,24 @@ import (
 var frontend embed.FS
 
 func main() {
-	app := NewApp()
+	// Each running copy holds a slot with its own settings, so several
+	// players can share one computer.
+	title, settingsFile := "Four Souls", appPath("settings.json")
+	slot, err := instance.Acquire(filepath.Dir(settingsFile))
+	if err != nil {
+		log.Printf("%v; sharing the first copy's settings", err)
+	} else {
+		defer slot.Release() //nolint:errcheck // the app is closing
+		settingsFile = slotSettings(slot, settingsFile)
+		if slot.N > 1 {
+			title = fmt.Sprintf("%s (%d)", title, slot.N)
+		}
+	}
+	app := NewApp(settingsFile)
 	host := &Host{}
 
-	err := wails.Run(&options.App{
-		Title:  "Four Souls",
+	err = wails.Run(&options.App{
+		Title:  title,
 		Width:  1024,
 		Height: 768,
 		AssetServer: &assetserver.Options{

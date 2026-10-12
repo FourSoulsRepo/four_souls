@@ -17,3 +17,4 @@
 | UC-13 | Take actions | `frontend` | Implemented | [app/uc-13-take-actions.md](app/uc-13-take-actions.md) |
 | UC-14 | Follow the stack | `frontend` | Implemented | [app/uc-14-follow-the-stack.md](app/uc-14-follow-the-stack.md) |
 | UC-15 | Read the history | `frontend` | Implemented | [app/uc-15-read-the-history.md](app/uc-15-read-the-history.md) |
+| UC-16 | Run several copies on one computer | `internal/instance`, `main.go` | Implemented | [app/uc-16-run-several-copies.md](app/uc-16-run-several-copies.md) |

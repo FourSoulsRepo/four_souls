@@ -14,6 +14,9 @@ Download the archive for your system from
 The app is not code-signed: `README.txt` inside, or the wiki page
 [First start](docs/wiki/First-start.md), shows how to open it the first time.
 
+Several copies can run on one computer; each is its own player.
+On macOS start another copy with `open -n four_souls.app`.
+
 ## Run in dev mode
 
 ```sh
