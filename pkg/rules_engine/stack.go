@@ -118,12 +118,7 @@ func (g *Game) resolveTop() {
 	}
 	it := g.Stack[n-1]
 	g.Stack = g.Stack[:n-1]
-	// The history shows what this item did: an item that rolls did only
-	// the roll; its result trigger comes later (15.22).
 	shown := g.shown(it)
-	if it.RollResult == 0 {
-		shown.Text = rollStartText(shown.Text)
-	}
 	g.emit(Event{
 		Kind: EvStackResolved, Player: it.Controller, Object: it.Source, Card: it.Card, Amount: it.Roll, Text: it.Label,
 		StackID: it.ID, Item: &shown,

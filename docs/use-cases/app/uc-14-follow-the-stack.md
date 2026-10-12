@@ -43,6 +43,8 @@
   * Hover shows the monster, and this line under it.
 * **2g. A roll's result (15.22):** the result item has only the rolled line.
   * "1: Each player gains 1¢." instead of the whole card text.
+  * The item that rolls says only "Roll."; the card shows every result.
+* **2h. Several abilities (The Bone):** only the used ability's words show.
 
 ## Postconditions
 

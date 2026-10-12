@@ -608,10 +608,20 @@ Images come first, so the new table is built with backs and mats.
    9. The play now says only "Roll." (the words up to the roll).
    10. The result says only its line: "1: Each player gains 1¢."
    11. A result without a line says "6: Nothing happens."
-   12. On the stack, the play keeps the whole text: all results to come.
+   12. The stack says "Roll." too (owner, see below).
    13. A card's roll names the card: "Ann rolls 1 for Blank Rune".
    14. The full History panel keeps its old lines for now.
    15. Screenshots: `.cache/screenshots/15.22/fix/`.
+8. Owner notes (2026-10-12)
+   1. Owner: show "Roll." on the stack too; the card has the full text.
+   2. Owner asks: does a card with several abilities show only the used one?
+9. Result (2026-10-12)
+   1. The stack says "Roll." for an item that rolls.
+   2. Without images the zoomed text card lists every result too.
+   3. Several abilities (The Bone): the item knows its ability's index.
+   4. Stack and history show only that ability's words.
+   5. "Choose one-" cards (Dagaz) show only the chosen mode.
+   6. Engine tests check The Bone and Blank Rune on the stack and in history.
 
 ### [ ] 15.23 Counter badges and live stats
 

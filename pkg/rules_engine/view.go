@@ -306,8 +306,10 @@ func (g *Game) publicCard(id ObjectID) CardRef {
 }
 
 // usedText is the words of the ability a stack item uses: the chosen
-// mode's when it has one, else the whole ability's (S-07). A roll's
-// result trigger has only the line for its result (15.22).
+// mode's when it has one, else the whole ability's (S-07). Rolls say
+// only what the item does (15.22): the item that rolls says the words up
+// to the roll, its result trigger only the line for its result. The card
+// shows every result: its image, or its text without images.
 func (g *Game) usedText(it StackItem) string {
 	d, ok := g.cards.find(it.Ability.Card)
 	if !ok || it.Ability.Index < 0 || it.Ability.Index >= len(d.Abilities) {
@@ -321,7 +323,7 @@ func (g *Game) usedText(it StackItem) string {
 	if it.RollResult > 0 {
 		return rollResultText(text, it.RollResult)
 	}
-	return text
+	return rollStartText(text)
 }
 
 // rollWord is where a roll starts in an ability's words: "roll-" or
