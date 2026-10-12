@@ -264,12 +264,13 @@ Images come first, so the new table is built with backs and mats.
 4. How the study went (2026-10-12)
    1. Main source: the Hearthstone wiki pages Target, Attack, Hero Power, Gameplay.
    2. Video: YouTube stops headless playback; storyboard frames are too small.
-   3. No sharp picture of the arrow; marked "memory" where not confirmed.
+   3. Then the owner's Short, `YhKh9Eybil0`, via yt-dlp: 1080p, 2 frames a second.
    4. Frames: `.cache/screenshots/reference/hearthstone/targeting/`.
+   5. Touch is still unconfirmed; marked "memory".
 5. Findings
    1. T-01. Only a playable card or ability can start aiming.
    2. T-02. A bold red arrow runs from the source to the pointer.
-   3. T-03. Over a valid target a red crosshair marks it (memory).
+   3. T-03. Over a valid target a red crosshair marks it.
    4. T-04. Click a valid target: the action completes, the arrow goes.
    5. T-05. Click an invalid target: a short reason, e.g. "A minion with Taunt is in the way".
    6. T-06. Cancel: click empty space or right-click.
@@ -284,6 +285,16 @@ Images come first, so the new table is built with backs and mats.
    15. T-15. After the target locks, the effect flies from source to target.
    16. T-16. The played card shows large at the left meanwhile (H-10).
    17. T-17. Touch: drag from the source, release on the target (memory).
+   18. T-18. The arrow: a chain of thick red blocks with a big head.
+   19. T-19. The arrow is a little see-through and draws over every card.
+   20. T-20. Off target: a plain head; on a target: a red ring around the head.
+   21. T-21. On the defender's screen, the aimed-at card glows red.
+   22. T-22. An opponent's aimed card shows as a card back lifted from the hand.
+   23. T-23. The attacker lunges into the defender, then returns (V-12).
+   24. T-24. Damage: a yellow starburst "-N" on every damaged card at once.
+   25. T-25. An HP number turns red while it is below full.
+   26. T-26. A dying card gets a big skull over it before it leaves.
+   27. T-27. Hover a board card: its zoom pops up right beside it (F-16).
 6. What it means for us
    1. Our sources: hand cards, items, the character (attack).
    2. Our targets: monsters, players, items, stack items, the monster deck.
