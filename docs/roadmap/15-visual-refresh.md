@@ -148,6 +148,7 @@ Images come first, so the new table is built with backs and mats.
    17. Decks show their backs at the board's edge (H-16).
    18. Coins big next to own name, like mana (H-18).
    19. HP and ATK as big numbers on the character card (H-15).
+   20. The board has one fixed shape and size, empty or full (H-06).
 3. Done when:
    1. `make frontend e2e` passes.
    2. `make screenshots` shows every player count.
@@ -179,6 +180,7 @@ Images come first, so the new table is built with backs and mats.
    7. A setting chooses one-click or drag; both send the same intent.
    8. Hover a hand card: it rises large, keyword tips beside it (H-13).
    9. Playable cards glow green; the rest stay plain (H-12).
+   10. Aiming arrow: no screenshot found yet; study gameplay videos (H-23).
 3. Done when:
    1. e2e test: a bomb dragged onto a monster damages it.
    2. e2e test: the same play by two clicks.
@@ -299,7 +301,7 @@ Images come first, so the new table is built with backs and mats.
 
 1. Goal: turn actions as clear icons next to own name (F-11).
 2. Tasks:
-   1. End turn, buy, and attack as icon buttons by own name.
+   1. Buy and attack as icon buttons by own name.
    2. Lit when usable, dim when not (F-12).
    3. Buy turns into Cancel while choosing what to buy (F-13).
    4. Attack turns into Roll once 15.5 adds the throw (F-13).
@@ -308,6 +310,7 @@ Images come first, so the new table is built with backs and mats.
    7. Keys: Space resolves or passes; E ends the turn (F-15).
    8. A tooltip names each button and its key.
    9. No number badges on cards (V-29).
+   10. End turn: one big button at the board's right edge (H-04).
 3. Done when:
    1. e2e test: each button is lit or dim as the engine allows.
    2. e2e test: Space and E send the same intents as the buttons.
@@ -328,6 +331,7 @@ Images come first, so the new table is built with backs and mats.
    10. Hover a history icon: the same large card view (S-11, H-09).
    11. The full history panel (V-03) stays one click away.
    12. Keep the "waiting for" lines (V-11); the reference has none.
+   13. The history strip runs along the board's left edge (H-07).
 3. Done when:
    1. e2e test: hover a stack row shows its card and owner.
    2. `make screenshots` shows a stack of 3 items and the history strip.
