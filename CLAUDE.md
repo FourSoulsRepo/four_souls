@@ -52,6 +52,9 @@
    8. Gate on the tool's own exit code: `make lint && git commit …`.
    9. Never pipe lint through `grep` or `tail` in a gate; it hides failures.
    10. Frontend changes also gate on `make frontend e2e`.
+   11. Ideas from the owner are not tasks; never implement them unasked.
+   12. Ideas go to `docs/ideas.md` and get planned in `docs/roadmap/`.
+   13. Open questions wait for the owner at that roadmap step.
 6. Licenses
    1. Code is MIT (`LICENSE`).
    2. `NOTICE` lists every third-party item and its license.
