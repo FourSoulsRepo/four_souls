@@ -45,3 +45,6 @@
 
 * The table fits 1280×720 and larger windows.
 * Planned: the stack panel (7.8), history and turn panels (7.9).
+* No screen scrolls as a whole, at any window size (V-10).
+  * Long lists and panels scroll on their own.
+* A mouse drag selects nothing on the table or in menus.

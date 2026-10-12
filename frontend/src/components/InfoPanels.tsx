@@ -54,7 +54,7 @@ export function HistoryPanel() {
           Hide
         </button>
       </header>
-      <ol ref={listRef}>
+      <ol ref={listRef} className="selectable">
         {history.map((e) => (
           <li
             key={e.key}

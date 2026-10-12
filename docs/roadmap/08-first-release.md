@@ -89,7 +89,7 @@ Ideas: B-03 – B-05, L-03, V-10, V-11, DO-01, V-14, A-16, N-13, N-14, V-19.
    1. Every Base Game card was searched in both sources.
    2. Found rulings have tests or open questions.
 
-### [ ] 8.8 Not a web page
+### [x] 8.8 Not a web page
 
 1. Goal: the app does not scroll or select like a web page (V-10).
 2. When: before the play-test (8.5).

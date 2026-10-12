@@ -30,6 +30,7 @@
   * Host bans need the card list; they come with the card component.
 * **2a. The port is taken:** the app shows the error and stays on the host screen.
 * **6a. The table screen:** the host sees "Friends join at" and the addresses.
+* **6b. Copy an address:** the addresses can be selected and copied (V-10).
 * **7c. The host leaves in the app:** the app stops its server; friends lose the connection.
 
 ## Postconditions

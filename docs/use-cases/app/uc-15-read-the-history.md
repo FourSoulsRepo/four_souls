@@ -23,6 +23,7 @@
 * **1a. Hide:** the Hide button folds the panel into a History button.
 * **5a. Touch:** tapping an entry zooms its card; the next tap closes it.
 * **7a. Counters:** a card with counters shows their number.
+* **4a. Copy:** history text can be selected and copied (V-10).
 
 ## Postconditions
 

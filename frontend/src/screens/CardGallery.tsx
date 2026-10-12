@@ -7,7 +7,7 @@ import './screens.css';
 export function CardGallery() {
   const cards = [...useApp((s) => s.cards).values()];
   return (
-    <div className="screen">
+    <div className="screen gallery">
       <h1>Cards</h1>
       <div className="row" aria-label="Hand size">
         {cards.slice(0, 6).map((c) => (

@@ -6,7 +6,7 @@
   align-items: center;
   justify-content: center;
   gap: 16px;
-  min-height: 100%;
+  height: 100%;
   padding: 24px;
   box-sizing: border-box;
 }
@@ -21,6 +21,8 @@
   flex-direction: column;
   gap: 12px;
   width: min(480px, 100%);
+  min-height: 0;
+  overflow-y: auto;
   box-sizing: border-box;
   padding: 16px 20px;
   border-radius: 8px;
@@ -85,6 +87,9 @@
   min-height: 1.2em;
   margin: 0;
   color: var(--muted);
+  /* Errors are worth copying (V-10). */
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 .list {
@@ -110,4 +115,10 @@
 .mat-preview {
   height: 48px;
   border-radius: 6px;
+}
+
+/* The card gallery is a test screen bigger than the window. */
+.gallery {
+  justify-content: flex-start;
+  overflow-y: auto;
 }
