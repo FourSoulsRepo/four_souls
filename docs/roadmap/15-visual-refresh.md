@@ -8,6 +8,15 @@ Order: 15.1, 15.15, 15.9 – 15.11, 15.16 – 15.24, 15.3, 15.37, 15.25,
 15.32 – 15.34, 15.26, 15.27, 15.5, 15.6, 15.28 – 15.31, 15.35, 15.36.
 Images come first, so the new table is built with backs and mats.
 
+## Rules for this step (owner, 2026-10-12)
+
+1. One sub-step at a time, in the order above.
+2. Stop after every sub-step for the owner's review.
+   1. Show screenshots of the work (`make screenshots`, `.cache/`).
+   2. Never commit screenshots to the repo.
+3. Start the next sub-step only after the owner approves.
+4. These rules replace "stop after the global step" for step 15.
+
 ---
 
 ### [x] 15.1 Study the reference

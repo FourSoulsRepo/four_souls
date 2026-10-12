@@ -57,6 +57,8 @@
    11. Ideas from the owner are not tasks; never implement them unasked.
    12. Ideas go to `docs/ideas.md` and get planned in `docs/roadmap/`.
    13. Open questions wait for the owner at that roadmap step.
+   14. A step file may add its own rules in its header; they win.
+   15. Step 15: stop after every sub-step, with screenshots, for review.
 6. Licenses
    1. Code is MIT (`LICENSE`).
    2. `NOTICE` lists every third-party item and its license.
