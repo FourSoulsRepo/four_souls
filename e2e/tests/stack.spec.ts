@@ -174,7 +174,7 @@ test('the stack panel: icons, colored names, and a hover with card and owner (15
   // Newest on top; the target in red, the player in their color (S-01, S-03).
   await expect(rows.nth(0)).toHaveAttribute('aria-label', /^1 damage to (Ike|Jud)$/);
   await expect(rows.nth(0).locator('.stack-target')).toBeVisible();
-  await expect(rows.nth(1).locator('.stack-die')).toHaveText('5');
+  await expect(rows.nth(1).locator('.die')).toHaveAttribute('aria-label', 'Rolled 5');
   await expect(rows.nth(2)).toHaveAttribute('aria-label', /^(Ike|Jud) plays Bomb!?$/);
 
   // Hover the loot row: its card large, the used ability, the owner (S-06, S-07).

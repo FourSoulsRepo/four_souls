@@ -191,6 +191,7 @@
 
 /* Every icon is the same square; a card shows its art, cropped. */
 .stack-icon {
+  position: relative;
   display: grid;
   flex: none;
   place-items: center;
@@ -200,9 +201,24 @@
   border-radius: 6px;
 }
 
+/* The card is wider than the square: centered, its art in view. */
 .stack-icon .card {
-  align-self: start;
-  margin-top: -7px;
+  position: absolute;
+  top: -7px;
+  left: 50%;
+  translate: -50% 0;
+}
+
+/* A roll shows the die in the player's dice look (V-19). */
+.stack-icon .die {
+  width: 24px;
+  height: 24px;
+  border-radius: 5px;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 60%);
+}
+
+.stack-icon .die-plain {
+  font-size: 14px;
 }
 
 .stack-die {

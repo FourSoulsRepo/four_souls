@@ -540,6 +540,19 @@ Images come first, so the new table is built with backs and mats.
    13. "Waiting for" and "Passed" lines stay (V-11).
    14. e2e test: a 3-item stack, hover shows card, ability, and owner.
    15. Screenshots: `.cache/screenshots/15.21/before/` and `after/`.
+5. Owner notes (2026-10-12)
+   1. Owner likes the caption under the card and the "Pass" label.
+   2. Owner: center the card art in the row icon.
+   3. Owner: a roll shows the player's die, not only the number.
+   4. Owner: compare history with Hearthstone; theirs is one thin line.
+6. Result of the fixes (2026-10-12)
+   1. The card art is centered in its square.
+   2. A roll shows its face in the viewer's dice look (V-19).
+   3. Each player's own dice come with 15.6.
+   4. Hearthstone: no stack; a ~45 px icon column at the board's left edge.
+   5. Ours: the info column is ~25% of the board, history included.
+   6. 15.22 brings the thin strip; see the proposal there.
+   7. Screenshots: `.cache/screenshots/15.21/fix/`.
 
 ### [ ] 15.22 History strip
 
@@ -553,6 +566,11 @@ Images come first, so the new table is built with backs and mats.
 3. Done when:
    1. e2e test: hover a history icon shows its card.
    2. `make screenshots` shows the history strip.
+4. Proposal after the Hearthstone check (2026-10-12)
+   1. The strip replaces the History panel in the info column.
+   2. The strip is ~0.45 u wide, at the board's left edge (H-07).
+   3. The info column keeps only the turn badge and the stack.
+   4. **Owner** decides: narrow the info column, or let the stack use the room.
 
 ### [ ] 15.23 Counter badges and live stats
 

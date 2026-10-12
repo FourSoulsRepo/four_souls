@@ -5,6 +5,7 @@ import { stackCard, stackIcon, stackParts, stackWait, type LinePart, type Names 
 import { useApp } from '../store';
 import { playerColor } from '../table';
 import { Card } from './Card';
+import { Die } from './Die';
 import './Actions.css';
 
 interface Props {
@@ -71,6 +72,7 @@ export function StackPanel({ view, you, names, pass, disabled }: Props) {
 // highlighted and the owner below (S-06, S-07); a tap does the same.
 function StackRow({ it, view, names }: { it: StackItem; view: GameView; names: Names }) {
   const setZoom = useApp((s) => s.setZoom);
+  const diceImage = useApp((s) => s.dice.find((d) => d.id === s.settings.dice)?.image ?? '');
   const card = stackCard(it, view);
   const icon = stackIcon(it);
   const parts = stackParts(it, view, names);
@@ -109,7 +111,11 @@ function StackRow({ it, view, names }: { it: StackItem; view: GameView; names: N
         {icon === 'card' ? (
           it.card && <Card cardRef={it.card} size="small" noZoom />
         ) : icon === 'roll' ? (
-          <span className="stack-die">{it.roll ?? '?'}</span>
+          it.roll === undefined ? (
+            <span className="stack-die">?</span>
+          ) : (
+            <Die value={it.roll} image={diceImage} />
+          )
         ) : icon === 'damage' ? (
           <span className="stack-mark">
             <DamageIcon />
