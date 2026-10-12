@@ -4,8 +4,9 @@ Goal: a clearer table, using fouronlinesouls.net as a second reference.
 
 Ideas: V-09, V-12, V-13, V-15 – V-29.
 
-Order: 15.1, 15.15, 15.9 – 15.11, 15.16 – 15.24, 15.3, 15.37, 15.25,
-15.32 – 15.34, 15.26, 15.27, 15.5, 15.6, 15.28 – 15.31, 15.35, 15.36.
+Order: 15.1, 15.15, 15.9 – 15.11, 15.16, 15.17, 15.38, 15.18 – 15.24,
+15.3, 15.37, 15.25, 15.32 – 15.34, 15.26, 15.27, 15.5, 15.6,
+15.28 – 15.31, 15.35, 15.36.
 Images come first, so the new table is built with backs and mats.
 
 ## Rules for this step (owner, 2026-10-12)
@@ -380,7 +381,7 @@ Images come first, so the new table is built with backs and mats.
    3. Owner agrees: the info column keeps its width with the history hidden.
    4. Owner marks 15.16 solved.
 
-### [ ] 15.17 Own area
+### [x] 15.17 Own area
 
 1. Goal: own character, items, hand, and coins read at a glance.
 2. Tasks:
@@ -404,6 +405,9 @@ Images come first, so the new table is built with backs and mats.
    8. e2e test: character centered, badges and coins shown, hand cut off.
    9. The board is a little smaller: the own area takes about 35 px more.
    10. Screenshots: `.cache/screenshots/15.17/before/` and `after/`.
+5. Owner notes (2026-10-12)
+   1. Owner marks 15.17 solved.
+   2. New sub-step: the real coin image as the coin icon; planned as 15.38.
 
 ### [ ] 15.18 Opponents
 
@@ -654,3 +658,20 @@ Images come first, so the new table is built with backs and mats.
    5. Only `transform` and `opacity`; follows animation speed (ST-05).
 3. Done when:
    1. `make screenshots` shows a starburst, red HP, and a skull.
+
+### [ ] 15.38 Coin icon
+
+1. Goal: coins show the game's own coin, not a drawn one.
+2. Tasks:
+   1. Work in `FourSoulsRepo/tools`, never in this repo (as 15.9).
+   2. Crop the ¢ face from `assets/coin.png`; drop the pentagram side.
+   3. Convert it to WebP, small and sharp at icon size.
+   4. Amend the single commit of the images repo, as for cards.
+   5. Serve it like the backs; the app gets its URL or none.
+   6. Own coins use the image; the drawn ¢ coin is the fallback.
+   7. Opponents get the same icon in 15.18.
+   8. **Owner** decides: keep or drop the pentagram face and `coin.png`.
+3. Done when:
+   1. `make screenshots` shows the coin image by own name.
+   2. A build without the images shows the drawn coin.
+   3. `make frontend e2e` passes.
