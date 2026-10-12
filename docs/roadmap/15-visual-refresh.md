@@ -464,7 +464,7 @@ Images come first, so the new table is built with backs and mats.
 5. Owner notes (2026-10-12)
    1. Owner marks 15.19 solved.
 
-### [ ] 15.20 End turn button and keys
+### [x] 15.20 End turn button and keys
 
 1. Goal: one big End turn button, as in Hearthstone (H-04).
 2. Tasks:
@@ -495,6 +495,8 @@ Images come first, so the new table is built with backs and mats.
    1. Owner: the button looks generic; style it for the game.
    2. Owner: use the game's fonts; the system font without the images.
    3. Fonts: font-souls (MIT, GitHub) and the foursouls.ru card font.
+   4. Owner amended and pushed the images repo with the fonts.
+   5. Owner marks 15.20 solved.
 6. Result of the restyle (2026-10-12)
    1. `scraper fonts` in the tools repo downloads both fonts.
    2. font-souls is pinned to one commit; its license is kept.
