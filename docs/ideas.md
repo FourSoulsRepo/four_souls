@@ -159,11 +159,14 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    1. Mats are JPG today; dice are JPG and PNG.
    2. Convert them to WebP for size.
    3. The conversion lives in `FourSoulsRepo/tools`, not here.
+   4. The result amends the images repo; it stays one commit.
 26. V-26. Card backs for decks and opponent hands.
    1. Each deck shows its own back: loot, treasure, monster.
    2. An opponent's hand shows backs, not blank boxes.
    3. No back images exist yet; the tools repo must collect them.
    4. Without images: plain colored backs, as now.
+   5. Owner: backs come from the official foursouls.com site.
+   6. The tools repo downloads them, like the card images.
 27. V-27. Study more of fouronlinesouls.net.
    1. Counters: how they look and change.
    2. Stack window with card icons; it looks good.

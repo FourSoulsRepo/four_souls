@@ -27,6 +27,9 @@ Ideas: V-09, V-12, V-13, V-15 – V-29.
    2. Played 2, 3 and 4 seats: loot, play, buy, attack, roll.
    3. Screenshots: `.cache/screenshots/reference/`.
    4. Hearthstone compared from memory; no game client here.
+   5. Then web screenshots (V-22): `.cache/screenshots/reference/hearthstone/`.
+   6. Sources: Wikipedia, interfaceingame.com, image search; ideas only.
+   7. Talk to watch: GDC 2015, "Hearthstone: How to Create an Immersive UI".
 5. Problems seen in our table
    1. O-01. 4 players: History panel covers the monster and treasure decks.
    2. O-02. 4 players: Stack panel covers the loot deck.
@@ -66,6 +69,24 @@ Ideas: V-09, V-12, V-13, V-15 – V-29.
    3. H-03. Own hand fanned at the bottom, partly off screen.
    4. H-04. One big "End turn" button at the board's right edge.
    5. H-05. Drop the green felt and seat boxes; this removes the poker look.
+   6. H-06. The board has one fixed shape and size, empty or full (V-23).
+   7. H-07. History: a thin icon column on the board's left edge.
+   8. H-08. Each history icon has a badge: sword for attack, bolt for a spell.
+   9. H-09. Hover a history icon: the full card shows large beside it.
+   10. H-10. An opponent's played card shows large at the left, then resolves.
+   11. H-11. Choices: big cards over a dimmed board, nothing else on screen.
+   12. H-12. Playable hand cards and ready attackers glow green.
+   13. H-13. Hover a hand card: it rises large, keyword tips beside it.
+   14. H-14. Damage: a starburst with "-3" on the hit target.
+   15. H-15. Health and attack are big numbers on the portrait, not text.
+   16. H-16. Decks sit at the right edge, seen from the side, with backs.
+   17. H-17. Opponent hand: fanned card backs at the top, partly off screen.
+   18. H-18. Mana: "3/8" and crystals at the bottom right; for us, coins.
+   19. H-19. End turn: yellow on your turn, grey "Enemy turn" otherwise.
+   20. H-20. End turn glows green when no actions are left.
+   21. H-21. Player names sit small in the corners, outside the board.
+   22. H-22. Status marks on cards: "Zzz" for not ready, a shield for Taunt.
+   23. H-23. Aiming arrow: no screenshot found; study it in 15.4.
 10. Owner notes (2026-10-12)
    1. F-14 rejected: no 1–9 badges on cards (V-29).
    2. New ideas from the review: V-22 – V-29.
@@ -182,6 +203,7 @@ Ideas: V-09, V-12, V-13, V-15 – V-29.
 3. Done when:
    1. No JPG or PNG left under `assets/mats/` and `assets/dices/`.
    2. Mats and dice still show in `make internal`.
+   3. A build without the images still works.
 
 ### [ ] 15.10 Mat backgrounds
 
@@ -208,6 +230,8 @@ Ideas: V-09, V-12, V-13, V-15 – V-29.
    3. Decks show their own back; opponent hands show loot backs.
    4. No images: plain colored backs, as now.
    5. A back never reveals the card under it.
+   6. Owner answer to 1: backs come from foursouls.com (tools repo).
+   7. Amend the single commit of the images repo.
 3. Done when:
    1. `make screenshots` shows backs on decks and opponent hands.
    2. A public-clone build shows the plain backs.

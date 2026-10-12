@@ -64,3 +64,7 @@
    4. Card images live only in the private submodule `pkg/card_db/images`.
    5. Submodule repo: private `FourSoulsRepo/card_db` (images only).
    6. Public clones build without it; cards then show as text.
+   7. Every change must still build and run without the private images.
+   8. That covers cards, card backs, dice, and mats.
+   9. Without them: text cards, plain backs, plain dice, color table.
+   10. Check: `wails build -tags embed` (no `cardimages`) and `make e2e`.
