@@ -42,7 +42,7 @@ function loadSettings(): unknown {
   // mat; ?firstrun starts without a nickname, as on the first start.
   const params = new URLSearchParams(window.location.search);
   const animation = params.get('anim') ?? 'normal';
-  const mat = params.get('mat') ?? 'felt';
+  const mat = params.get('mat') ?? '';
   const nickname = params.has('firstrun') ? '' : 'Player';
   const fresh = {
     nickname,

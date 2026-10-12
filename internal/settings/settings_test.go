@@ -26,7 +26,7 @@ func TestSurvivesRestart(t *testing.T) {
 
 func TestDefaults(t *testing.T) {
 	dir := t.TempDir()
-	want := Settings{Recent: []string{}, Animation: "normal", Theme: "dark", Mat: "felt", Dice: "tear"}
+	want := Settings{Recent: []string{}, Animation: "normal", Theme: "dark", Dice: "tear"}
 	if got := Load(filepath.Join(dir, "none.json")); !reflect.DeepEqual(got, want) {
 		t.Fatalf("missing file: %+v", got)
 	}
@@ -115,8 +115,8 @@ func TestImageMatKept(t *testing.T) {
 	if err := os.WriteFile(path, []byte(`{"mat":"../x"}`), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	if got := Load(path).Mat; got != "felt" {
-		t.Fatalf("bad mat reads as %q, want felt", got)
+	if got := Load(path).Mat; got != "" {
+		t.Fatalf("bad mat reads as %q, want the default", got)
 	}
 }
 

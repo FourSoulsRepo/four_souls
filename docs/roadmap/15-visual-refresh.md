@@ -19,6 +19,7 @@ Images come first, so the new table is built with backs and mats.
 5. Screenshots show how the interface changed.
    1. Before and after shots of every changed screen.
    2. Owner reviews the changes and the screenshots.
+   3. The review message links each screenshot file; no bare paths.
 
 ---
 
@@ -243,8 +244,11 @@ Images come first, so the new table is built with backs and mats.
    3. A new image name is added to the menu after them.
    4. The image lies under a dark shade, over its colors.
    5. The mat setting keeps any file name; a missing image shows colors.
-   6. Default stays Green felt; owner decides if Basement becomes it.
+   6. Default: the first mat image; Green felt without images.
    7. Screenshots: `.cache/screenshots/15.10/before/` and `after/`.
+5. Owner notes (2026-10-12)
+   1. Owner: the mat image is the default when it exists.
+   2. Owner marks 15.10 resolved.
 
 ### [ ] 15.11 Card backs
 

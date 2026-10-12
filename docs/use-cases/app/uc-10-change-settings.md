@@ -35,6 +35,7 @@
   * With the private images, every mat image is a choice (V-24).
   * An image takes the place of the color mat with its name.
   * A missing mat image shows that mat's colors, or felt.
+  * Default: the first mat image; Green felt without images.
 * **1a. First start (ST-06):** after the splash, a Welcome screen asks for the nickname.
   * Continue saves it and opens the main menu; it is asked only once.
 

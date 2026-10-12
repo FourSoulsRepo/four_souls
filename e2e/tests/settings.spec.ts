@@ -44,7 +44,7 @@ test('fullscreen, theme and mat apply at once and survive a restart', async ({ p
 // Mat images (15.10, V-24): the setting puts the image under the table;
 // without images, or with a missing one, the table shows colors.
 test('a mat image lies under the table', async ({ browser }) => {
-  const [mat] = await startGame(browser, ['Mat', 'Ned'], { url: `${appURL()}&mat=basement`, open: realMats });
+  const [mat] = await startGame(browser, ['Mat', 'Ned'], { url: `${appURL()}&mat=basement` });
   if (!mat) {
     throw new Error('no pages');
   }
@@ -65,8 +65,18 @@ test('the mat menu lists the mat images', async ({ page }) => {
   await shot(page, 'settings-mat');
 });
 
+test('the first mat image is the default', async ({ page }) => {
+  await page.goto(appURL());
+  await page.getByRole('button', { name: 'Settings' }).click();
+  await expect(page.getByRole('combobox', { name: 'Game mat' })).toHaveValue('basement');
+  await expect(page.getByLabel('Game mat preview')).toHaveClass(/mat-basement mat-image/);
+  // The image fails to load here; the basement colors stay under it.
+  expect(await page.getByLabel('Game mat preview').evaluate((el) => getComputedStyle(el).backgroundImage)).toContain('rgb(90, 67, 48)');
+});
+
 test('without mat images the table shows colors', async ({ browser }) => {
   for (const [query, colors] of [
+    ['&nomats', 'mat-felt'],
     ['&nomats&mat=basement', 'mat-basement'],
     ['&mat=dark_room', 'mat-felt'],
   ]) {

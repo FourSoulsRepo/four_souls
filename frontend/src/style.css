@@ -55,15 +55,21 @@ button {
 
 /* Game mats (ST-03): colors, and the fallback for a missing mat image. */
 .mat-felt {
-  background: radial-gradient(ellipse at center, #2f5a3c 0%, #21412c 65%, #172e20 100%);
+  --mat-colors: radial-gradient(ellipse at center, #2f5a3c 0%, #21412c 65%, #172e20 100%);
+
+  background: var(--mat-colors);
 }
 
 .mat-basement {
-  background: radial-gradient(ellipse at center, #5a4330 0%, #3e2d1f 65%, #2a1e14 100%);
+  --mat-colors: radial-gradient(ellipse at center, #5a4330 0%, #3e2d1f 65%, #2a1e14 100%);
+
+  background: var(--mat-colors);
 }
 
 .mat-cathedral {
-  background: radial-gradient(ellipse at center, #5d6f86 0%, #3e4c60 65%, #2a3444 100%);
+  --mat-colors: radial-gradient(ellipse at center, #5d6f86 0%, #3e4c60 65%, #2a3444 100%);
+
+  background: var(--mat-colors);
 }
 
 /* A mat image (V-24) over its colors, which show if it fails to load.
@@ -71,7 +77,8 @@ button {
 .mat-image {
   background-image:
     radial-gradient(ellipse at center, rgb(0 0 0 / 35%) 0%, rgb(0 0 0 / 60%) 100%),
-    var(--mat-image);
+    var(--mat-image),
+    var(--mat-colors);
   background-size: cover;
   background-position: center;
 }

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { Settings, Theme } from '../bridge';
-import { matChoices, matLook } from '../mats';
+import { matChoices, matLook, matOf } from '../mats';
 import type { Speed } from '../playback';
 import { useApp } from '../store';
 import './screens.css';
@@ -79,7 +79,7 @@ export function SettingsScreen() {
           <label className="field">
             Game mat
             <select
-              value={form.mat}
+              value={matOf(form.mat, mats)}
               onChange={(e) => {
                 change({ mat: e.target.value });
               }}

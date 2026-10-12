@@ -1,6 +1,7 @@
 // Starts a real game on the test server with one page per player.
 import { expect, type Browser, type Page } from '@playwright/test';
 import { appURL, serverPort } from './server';
+import { realMats } from './shot';
 
 
 // startGame: the first name hosts a game with a seat per name, the others
@@ -24,6 +25,7 @@ export async function startGame(
   for (const name of names) {
     void name;
     const page = await (await browser.newContext({ viewport, hasTouch: touch })).newPage();
+    await realMats(page);
     await open(page);
     pages.push(page);
   }

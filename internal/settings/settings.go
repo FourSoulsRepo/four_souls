@@ -28,7 +28,8 @@ type Settings struct {
 	// Theme colours menus and panels (ST-02): one of Themes.
 	Theme string `json:"theme"`
 	// Mat is the game mat under the table (ST-03, V-24): a mat image
-	// name or one of ColorMats; see ValidMat.
+	// name or one of ColorMats; see ValidMat. "" is the default: the
+	// first mat image, or the first color mat without images.
 	Mat string `json:"mat"`
 	// Dice is the look of the player's dice (V-19): one of Dice.
 	Dice string `json:"dice"`
@@ -94,7 +95,8 @@ var (
 	Dice   = []string{"tear"}
 )
 
-// ColorMats are the mats drawn without images; the first is the default.
+// ColorMats are the mats drawn without images; the first is the default
+// when there are no mat images.
 // Image mats come from the files, so any ValidMat name is kept: a mat
 // whose image is missing shows as colors.
 var ColorMats = []string{"felt", "basement", "cathedral"}
@@ -132,7 +134,7 @@ func (s *Settings) choices() []struct {
 // Recent is never nil, so the frontend always gets a list; an unknown
 // choice reads as its default.
 func Load(path string) Settings {
-	def := Settings{Recent: []string{}, Animation: Speeds[0], Theme: Themes[0], Mat: ColorMats[0], Dice: Dice[0]}
+	def := Settings{Recent: []string{}, Animation: Speeds[0], Theme: Themes[0], Dice: Dice[0]}
 	data, err := os.ReadFile(path) //nolint:gosec // the app names the file
 	if err != nil {
 		return def
@@ -150,8 +152,8 @@ func Load(path string) Settings {
 			*c.value = c.allowed[0]
 		}
 	}
-	if !ValidMat(s.Mat) {
-		s.Mat = ColorMats[0]
+	if s.Mat != "" && !ValidMat(s.Mat) {
+		s.Mat = ""
 	}
 	return s
 }
@@ -174,10 +176,7 @@ func Save(path string, s Settings) (Settings, error) {
 			return Settings{}, fmt.Errorf("%w: %q", ErrChoice, *c.value)
 		}
 	}
-	if s.Mat == "" {
-		s.Mat = ColorMats[0]
-	}
-	if !ValidMat(s.Mat) {
+	if s.Mat != "" && !ValidMat(s.Mat) {
 		return Settings{}, fmt.Errorf("%w: %q", ErrChoice, s.Mat)
 	}
 	recent := []string{}

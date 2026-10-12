@@ -41,7 +41,7 @@ export interface Settings {
   animation: Speed;
   fullscreen: boolean; // ST-01
   theme: Theme; // ST-02, menus and panels
-  mat: string; // ST-03, V-24: a MatInfo or color mat id; Go checks it
+  mat: string; // ST-03, V-24: a MatInfo or color mat id, '' for the default; Go checks it
   dice: string; // V-19, a DiceSkin id; Go checks it
   // rejoin is the last game joined, so a restarted app takes its seat
   // back (N-08).

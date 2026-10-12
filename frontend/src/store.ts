@@ -331,7 +331,7 @@ export const useApp = create<AppState>()((set, get) => {
       animation: 'normal',
       fullscreen: false,
       theme: 'dark',
-      mat: 'felt',
+      mat: '',
       dice: 'tear',
       rejoin: { address: '', token: '', game: '' },
       host: noHostSetup,
