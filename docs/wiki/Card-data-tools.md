@@ -6,8 +6,13 @@ What the tools do, in short:
 
 1. Download card pages from foursouls.com through a real Chrome (the site is behind a Cloudflare check).
 2. Read copies per card from the official Tabletop Simulator table.
-3. `scraper build -game <this repo>` merges both with `pkg/card_db/overrides/<set>.json` and writes `pkg/card_db/data/<set>.json` (format: ADR 004).
-4. `scraper images -game <this repo>` writes 600 px WebP images to `pkg/card_db/images/<set>/`.
+3. `scraper copies` finds the numbered page of every copy on foursouls.com, so each copy gets its own image.
+4. `scraper build -game <this repo>` merges all of it with `pkg/card_db/overrides/<set>.json` and writes `pkg/card_db/data/<set>.json` (format: ADR 004 and ADR 010).
+5. `scraper images -game <this repo>` writes 600 px WebP images to `pkg/card_db/images/<set>/`, one per copy when copies differ.
+
+Sets are built oldest first (Base Game, Gold Box, Four Souls+, …), because `build` looks at the older sets' files: a card with the same name, type, stats and text becomes a reprint entry that adds copies and images to the older card, and a different card whose ID is taken gets the set code as a suffix (`isaac_fsp2`). See ADR 010.
+
+In the official TTS table, Gold Box is the bag named "Kickstarter" (`scraper tts -origin g2 -bag Kickstarter`).
 
 After regenerating data, validate it here:
 

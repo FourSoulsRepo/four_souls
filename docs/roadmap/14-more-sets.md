@@ -3,7 +3,7 @@
 Goal: official sets beyond the Base Game.
 Order: Gold Box, Four Souls+, Requiem, Warp Zone, promos.
 
-Ideas: CD-02, GS-07, GS-08, CD-11, A-16.
+Ideas: CD-02, GS-07, GS-08, CD-11, A-16, CD-12.
 
 ---
 
@@ -15,6 +15,17 @@ Ideas: CD-02, GS-07, GS-08, CD-11, A-16.
    2. Images into the image repo, own folder.
 3. Done when:
    1. The set validates in `card_db`.
+4. Progress (owner's one-time jump ahead of step 15):
+   1. Gold Box V2 (`g2`): 64 cards, 68 with copies; done.
+   2. Four Souls+ V2 (`fsp2`): 90 cards, 98 with copies; done.
+   3. TTS bags: "Kickstarter" is Gold Box; "Four Souls+".
+   4. Two TTS name typos fixed in the tools' name matching.
+   5. Reprints and taken IDs: ADR 010.
+   6. g2: 6 reprints; `pills_g2` renamed.
+   7. fsp2: 10 reprints; 6 cards renamed, e.g. `isaac_fsp2`.
+   8. Every copy now has its own image, Base Game too.
+   9. Base Game IDs did not change.
+   10. Steps 14.2 and 14.3 for these sets are still open.
 
 ### [ ] 14.2 New mechanics
 
@@ -43,8 +54,21 @@ Ideas: CD-02, GS-07, GS-08, CD-11, A-16.
    2. Deck ratios from Ed's recommendations (GS-07).
    3. Remove multiplayer-only cards in 2-player games (GS-08).
    4. Deck ratios: the collection check still compares whole sets (A-16).
+   5. The deck takes every chosen set's copies of a card (ADR 010).
 3. Done when:
    1. Each option has a server test and a use case.
+
+### [ ] 14.5 Copy art on the table
+
+1. Goal: each copy shows its own image (CD-12).
+2. Tasks:
+   1. The engine gives each card instance its print and copy index.
+   2. Views and the protocol carry it; records too.
+   3. The client picks the image from `Card.Prints`.
+   4. A missing copy image falls back to the first one.
+3. Done when:
+   1. Two coins of one card show different art in a game.
+   2. Use case and e2e test.
 
 Repeat 14.1–14.3 for each set.
 Alt art (CD-11) comes after all sets.

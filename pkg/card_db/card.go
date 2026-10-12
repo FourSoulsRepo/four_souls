@@ -18,6 +18,10 @@ const English Lang = "en"
 type Set struct {
 	Code string `json:"code"` // e.g. "b2"
 	Name string `json:"name"` // e.g. "Base Game V2"
+	// Order sorts sets by first release, oldest first (ADR 010).
+	Order int `json:"order"`
+	// Released is the year and month of the first release, e.g. "2018-12".
+	Released string `json:"released"`
 }
 
 // Card is the display data of one card version.
@@ -25,10 +29,13 @@ type Card struct {
 	ID      string `json:"id"`                // stable, e.g. "the_d6"
 	Version int    `json:"version,omitempty"` // 0 or 1 = first version (CD-08)
 	Set     string `json:"-"`                 // set code, filled by the loader
-	Type    string `json:"type"`              // site label, e.g. "Eternal Treasure Card"
+	Type    string `json:"type,omitempty"`    // site label, e.g. "Eternal Treasure Card"
 	Copies  int    `json:"copies"`            // copies in the set
+	// Reprint marks an entry that only adds this set's copies and images
+	// to a card of an older set (ADR 010).
+	Reprint bool `json:"reprint,omitempty"`
 
-	Text map[Lang]Text `json:"text"`
+	Text map[Lang]Text `json:"text,omitempty"`
 
 	Stats   []Stat   `json:"stats,omitempty"`
 	Rewards []Reward `json:"rewards,omitempty"`
@@ -36,12 +43,25 @@ type Card struct {
 	Artists     []Artist          `json:"artists,omitempty"`     // names only (CD-04)
 	Translators map[Lang][]string `json:"translators,omitempty"` // names only (CD-06)
 
-	Image      string   `json:"image,omitempty"` // path inside the images folder
+	// Images are paths inside the images folder: one per copy, or one
+	// that every copy shows (ADR 010).
+	Images     []string `json:"images,omitempty"`
 	Related    []string `json:"related,omitempty"`
 	Rebalanced bool     `json:"rebalanced,omitempty"`
 	// ThreePlus marks the 3+ player only symbol: the card is left out of
 	// 1- and 2-player games (R-CARD-32).
 	ThreePlus bool `json:"three_plus,omitempty"`
+
+	// Prints are the card's copies per set, filled by the loader: its own
+	// set first, then reprints, oldest first (ADR 010).
+	Prints []Print `json:"-"`
+}
+
+// Print is one set's copies of a card.
+type Print struct {
+	Set    string   // set code
+	Copies int      // copies in that set
+	Images []string // as Card.Images
 }
 
 // Text is everything printed on a card in one language.

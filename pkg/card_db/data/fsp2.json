@@ -1,0 +1,3251 @@
+{
+  "set": {
+    "code": "fsp2",
+    "name": "Four Souls+ V2",
+    "order": 3,
+    "released": "2019-06"
+  },
+  "cards": [
+    {
+      "id": "1_up",
+      "type": "Passive Treasure Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "1-Up",
+          "effects": [
+            "When you would die on your turn, destroy this. If you do, prevent death, heal to full {HP}, and cancel your attack. You may attack an additional time this turn."
+          ]
+        }
+      },
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "TAR HEAD"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/1_up.webp"
+      ]
+    },
+    {
+      "id": "20_20",
+      "type": "Active Treasure Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "20/20",
+          "effects": [
+            "{Tap Effect}Add up to 2 to an attack roll."
+          ],
+          "notes": [
+            "\"The eye is the lamp of the body. If your vision is clear, your whole body will be full of light.\"\nMatthew 6:22"
+          ]
+        }
+      },
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "TikaratheMew"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/20_20.webp"
+      ]
+    },
+    {
+      "id": "a_nickel",
+      "reprint": true,
+      "copies": 1,
+      "images": [
+        "fsp2/a_nickel.webp"
+      ]
+    },
+    {
+      "id": "a_penny_6",
+      "reprint": true,
+      "copies": 3,
+      "images": [
+        "fsp2/a_penny.webp",
+        "fsp2/a_penny-2.webp",
+        "fsp2/a_penny-3.webp"
+      ]
+    },
+    {
+      "id": "aaa_battery",
+      "type": "Trinket Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "AAA Battery",
+          "effects": [
+            "At the end of your turn, roll-",
+            "4-6: Recharge an item."
+          ],
+          "footnotes": [
+            {
+              "title": "-Trinket-",
+              "text": "This loot becomes an item under your control when it resolves."
+            }
+          ]
+        }
+      },
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "TikaratheMew"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/aaa_battery.webp"
+      ]
+    },
+    {
+      "id": "abaddon",
+      "type": "Passive Treasure Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Abaddon",
+          "effects": [
+            "{ATK}",
+            "Each time you take damage, die!"
+          ]
+        }
+      },
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "KrystalFlamingo"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/abaddon.webp"
+      ]
+    },
+    {
+      "id": "angel_room",
+      "type": "Good Event Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Angel Room",
+          "effects": [
+            "Roll-\n1: Gain +2 treasure.",
+            "2-3: Gain +1 treasure.",
+            "4-6: Loot 2."
+          ]
+        }
+      },
+      "rewards": [
+        {
+          "count": "2x",
+          "kind": "Treasure"
+        },
+        {
+          "count": "1x",
+          "kind": "Treasure"
+        },
+        {
+          "count": "2x",
+          "kind": "Loot"
+        }
+      ],
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "KrystalFlamingo"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/angel_room.webp"
+      ]
+    },
+    {
+      "id": "ansuz",
+      "type": "Pill/Rune Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Ansuz",
+          "effects": [
+            "Look at the top 4 cards of a deck and put them back in any order."
+          ]
+        }
+      },
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "TikaratheMew"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/ansuz.webp"
+      ]
+    },
+    {
+      "id": "athame",
+      "type": "Paid Treasure Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Athame",
+          "effects": [
+            "{Paid Effect}Discard a loot card:\nForce a player to discard 2 loot cards."
+          ]
+        }
+      },
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "TikaratheMew"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/athame.webp"
+      ]
+    },
+    {
+      "id": "bag_o_trash",
+      "type": "Eternal Treasure Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Bag-O-Trash",
+          "effects": [
+            "{Paid Effect}Pay 3¢: Play an additional loot card this turn.",
+            "{Paid Effect}Pay 4¢: Loot 1.",
+            "{Paid Effect}Pay 6¢: Deal 1 damage to a monster or player."
+          ],
+          "footnotes": [
+            {
+              "title": "-Eternal-",
+              "text": "This can't be destroyed or put into discard."
+            }
+          ]
+        }
+      },
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "KrystalFlamingo"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/bag_o_trash.webp"
+      ],
+      "related": [
+        "bum_bo_fsp2"
+      ],
+      "rebalanced": true
+    },
+    {
+      "id": "black_candle",
+      "type": "Active Treasure Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Black Candle",
+          "effects": [
+            "{Tap Effect}Reveal the top 6 cards of the monster deck. Give any curse cards revealed to the player or players of your choosing. Put the rest on the bottom of the deck in any order."
+          ]
+        }
+      },
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "TAR HEAD"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/black_candle.webp"
+      ]
+    },
+    {
+      "id": "black_rune",
+      "type": "Pill/Rune Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Black Rune",
+          "effects": [
+            "Roll-\n1-2: Deal 1 damage to each monster.",
+            "3-4: Reroll an item.",
+            "5-6: Discard your hand, then loot 3."
+          ]
+        }
+      },
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "TikaratheMew"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/black_rune.webp"
+      ]
+    },
+    {
+      "id": "blastocyst",
+      "type": "Boss Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Blastocyst",
+          "effects": [
+            "When this dies, expand monster slots by 2. The active player may attack the monster deck an additional time."
+          ]
+        }
+      },
+      "stats": [
+        {
+          "name": "HP",
+          "value": "5"
+        },
+        {
+          "name": "DC",
+          "value": "4"
+        },
+        {
+          "name": "ATK",
+          "value": "1"
+        }
+      ],
+      "rewards": [
+        {
+          "count": "1x",
+          "kind": "Soul"
+        },
+        {
+          "count": "1x",
+          "kind": "Loot"
+        }
+      ],
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "Rojen241"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/blastocyst.webp"
+      ]
+    },
+    {
+      "id": "bomb",
+      "reprint": true,
+      "copies": 1,
+      "images": [
+        "fsp2/bomb.webp"
+      ]
+    },
+    {
+      "id": "bony",
+      "type": "Basic Monster Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Bony",
+          "effects": [
+            "Each time the attacking player rolls an attack roll of 1, this gains +2{ATK} till end of turn."
+          ]
+        }
+      },
+      "stats": [
+        {
+          "name": "HP",
+          "value": "2"
+        },
+        {
+          "name": "DC",
+          "value": "3"
+        },
+        {
+          "name": "ATK",
+          "value": "1"
+        }
+      ],
+      "rewards": [
+        {
+          "count": "1x",
+          "kind": "Loot"
+        }
+      ],
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "WORMBOY"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/bony.webp"
+      ]
+    },
+    {
+      "id": "boss_rush",
+      "type": "Good Event Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Boss Rush!",
+          "effects": [
+            "Reveal cards from the top of the monster deck till you reveal 2 boss cards. Put them in one or more monster slots not being attacked and the rest into discard. The active player must make an additional attack on one of them this turn."
+          ]
+        }
+      },
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "TAR HEAD"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/boss_rush.webp"
+      ]
+    },
+    {
+      "id": "brain",
+      "type": "Basic Monster Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Brain",
+          "effects": [
+            "Each time the attacking player rolls an attack roll of 6, they take 1 damage."
+          ]
+        }
+      },
+      "stats": [
+        {
+          "name": "HP",
+          "value": "2"
+        },
+        {
+          "name": "DC",
+          "value": "3"
+        },
+        {
+          "name": "ATK",
+          "value": "1"
+        }
+      ],
+      "rewards": [
+        {
+          "count": "1x",
+          "kind": "Loot"
+        }
+      ],
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "TAR HEAD"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/brain.webp"
+      ]
+    },
+    {
+      "id": "bum_bo_fsp2",
+      "type": "Character Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Bum-Bo",
+          "effects": [
+            "{Tap Effect}Play an additional loot card this turn."
+          ],
+          "notes": [
+            "This can be done on any player's turn in response to any action."
+          ]
+        }
+      },
+      "stats": [
+        {
+          "name": "HP",
+          "value": "2"
+        },
+        {
+          "name": "ATK",
+          "value": "1"
+        }
+      ],
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "Rojen241"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/bum_bo.webp"
+      ],
+      "related": [
+        "bag_o_trash"
+      ]
+    },
+    {
+      "id": "butter_bean",
+      "reprint": true,
+      "copies": 1,
+      "images": [
+        "fsp2/butter_bean.webp"
+      ]
+    },
+    {
+      "id": "curse_of_blood_lust",
+      "type": "Curse Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Curse Of Blood Lust",
+          "effects": [
+            "{Curse Effect}You must attack on your turn if able."
+          ],
+          "footnotes": [
+            {
+              "title": "-Curse-",
+              "text": "When this enters play, give this to a player. When they die, they put this into discard."
+            }
+          ]
+        }
+      },
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "TikaratheMew"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/curse_of_blood_lust.webp"
+      ]
+    },
+    {
+      "id": "curse_of_impulse",
+      "type": "Curse Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Curse Of Impulse",
+          "effects": [
+            "{Curse Effect}At the end of your turn, deactivate each item you control and your character."
+          ],
+          "footnotes": [
+            {
+              "title": "-Curse-",
+              "text": "When this enters play, give this to a player. When they die, they put this into discard."
+            }
+          ]
+        }
+      },
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "TikaratheMew"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/curse_of_impulse.webp"
+      ]
+    },
+    {
+      "id": "cursed_eye",
+      "type": "Passive Treasure Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Cursed Eye",
+          "effects": [
+            "Combat damage you deal on attack rolls of 6 is increased by 3.",
+            "When you roll an attack roll of 1, end your turn. Cancel everything that hasn't resolved."
+          ]
+        }
+      },
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "TAR HEAD"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/cursed_eye.webp"
+      ]
+    },
+    {
+      "id": "cursed_globin",
+      "type": "Cursed Monster Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Cursed Globin",
+          "effects": [
+            "{Curse Effect}Each time a player rolls a ➂, each monster heals 2{HP}."
+          ]
+        }
+      },
+      "stats": [
+        {
+          "name": "HP",
+          "value": "3"
+        },
+        {
+          "name": "DC",
+          "value": "4"
+        },
+        {
+          "name": "ATK",
+          "value": "1"
+        }
+      ],
+      "rewards": [
+        {
+          "count": "Roll- Loot x",
+          "kind": "Loot"
+        }
+      ],
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "WORMBOY"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/cursed_globin.webp"
+      ]
+    },
+    {
+      "id": "cursed_tumor",
+      "type": "Cursed Monster Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Cursed Tumor",
+          "effects": [
+            "{Curse Effect}Each time a player rolls a ➃, each player takes 1 damage."
+          ]
+        }
+      },
+      "stats": [
+        {
+          "name": "HP",
+          "value": "3"
+        },
+        {
+          "name": "DC",
+          "value": "4"
+        },
+        {
+          "name": "ATK",
+          "value": "1"
+        }
+      ],
+      "rewards": [
+        {
+          "count": "Roll- Gain x",
+          "kind": "Coin"
+        }
+      ],
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "WORMBOY"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/cursed_tumor.webp"
+      ]
+    },
+    {
+      "id": "daddy_long_legs_fsp2",
+      "type": "Passive Treasure Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Daddy Long Legs",
+          "effects": [
+            "At the start of your turn, deal 1 damage to a monster or player."
+          ]
+        }
+      },
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "KrystalFlamingo"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/daddy_long_legs.webp"
+      ]
+    },
+    {
+      "id": "dark_arts",
+      "type": "Eternal Treasure Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Dark Arts",
+          "effects": [
+            "Each time a player rolls a ❻, gain 2¢.",
+            "Each time another player dies, loot 1."
+          ],
+          "footnotes": [
+            {
+              "title": "-Eternal-",
+              "text": "This can't be destroyed or put into discard."
+            }
+          ]
+        }
+      },
+      "rewards": [
+        {
+          "count": "2x",
+          "kind": "Coin"
+        },
+        {
+          "count": "1x",
+          "kind": "Loot"
+        }
+      ],
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "KrystalFlamingo"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/dark_arts.webp"
+      ],
+      "related": [
+        "dark_judas"
+      ],
+      "rebalanced": true
+    },
+    {
+      "id": "dark_judas",
+      "type": "Character Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Dark Judas",
+          "effects": [
+            "{Tap Effect}Play an additional loot card this turn."
+          ],
+          "notes": [
+            "This can be done on any player's turn in response to any action."
+          ]
+        }
+      },
+      "stats": [
+        {
+          "name": "HP",
+          "value": "2"
+        },
+        {
+          "name": "ATK",
+          "value": "1"
+        }
+      ],
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "Rojen241"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/dark_judas.webp"
+      ],
+      "related": [
+        "dark_arts"
+      ]
+    },
+    {
+      "id": "dice_shard_3",
+      "reprint": true,
+      "copies": 1,
+      "images": [
+        "fsp2/dice_shard.webp"
+      ]
+    },
+    {
+      "id": "dingle",
+      "type": "Boss Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Dingle",
+          "effects": [
+            "Each time the active player deals damage to this, they roll-\n1-2: They take 1 damage.",
+            "3-4: Each player takes 1 damage.",
+            "5-6: This takes 1 damage."
+          ]
+        }
+      },
+      "stats": [
+        {
+          "name": "HP",
+          "value": "3"
+        },
+        {
+          "name": "DC",
+          "value": "3"
+        },
+        {
+          "name": "ATK",
+          "value": "1"
+        }
+      ],
+      "rewards": [
+        {
+          "count": "1x",
+          "kind": "Soul"
+        },
+        {
+          "count": "6x",
+          "kind": "Coin"
+        }
+      ],
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "Rojen241"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/dingle.webp"
+      ]
+    },
+    {
+      "id": "distant_admiration",
+      "type": "Active Treasure Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Distant Admiration",
+          "effects": [
+            "{Tap Effect}Choose another player. They give you a loot card. Reveal it, then you must play that loot card if able. This doesn't use a loot play."
+          ]
+        }
+      },
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "KrystalFlamingo"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/distant_admiration.webp"
+      ]
+    },
+    {
+      "id": "divorce_papers",
+      "type": "One-Use Treasure Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Divorce Papers",
+          "effects": [
+            "{Tap Effect}Destroy this. If you do, choose another player. They give you half of their ¢ and loot cards rounded down, then gives you an item."
+          ]
+        }
+      },
+      "rewards": [
+        {
+          "count": "?x",
+          "kind": "Coin"
+        },
+        {
+          "count": "?x",
+          "kind": "Loot"
+        },
+        {
+          "count": "1x",
+          "kind": "Treasure"
+        }
+      ],
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "TikaratheMew"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/divorce_papers.webp"
+      ]
+    },
+    {
+      "id": "euthanasia",
+      "type": "Passive Treasure Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Euthanasia",
+          "effects": [
+            "Each time you roll the same result twice in a row on an attack roll on the same turn, kill the monster you're attacking."
+          ]
+        }
+      },
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "TAR HEAD"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/euthanasia.webp"
+      ]
+    },
+    {
+      "id": "flaming_hopper",
+      "type": "Basic Monster Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Flaming Hopper",
+          "effects": [
+            "This takes no combat damage on attack rolls of 6."
+          ]
+        }
+      },
+      "stats": [
+        {
+          "name": "HP",
+          "value": "1"
+        },
+        {
+          "name": "DC",
+          "value": "4"
+        },
+        {
+          "name": "ATK",
+          "value": "2"
+        }
+      ],
+      "rewards": [
+        {
+          "count": "4x",
+          "kind": "Coin"
+        }
+      ],
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "TAR HEAD"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/flaming_hopper.webp"
+      ]
+    },
+    {
+      "id": "forget_me_now",
+      "type": "One-Use Treasure Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Forget Me Now",
+          "effects": [
+            "{Tap Effect}Destroy this. If you do, each player destroys a soul they control."
+          ]
+        }
+      },
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "TAR HEAD"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/forget_me_now.webp"
+      ]
+    },
+    {
+      "id": "four_cents",
+      "reprint": true,
+      "copies": 2,
+      "images": [
+        "fsp2/four_cents.webp",
+        "fsp2/four_cents-2.webp"
+      ]
+    },
+    {
+      "id": "game_breaking_bug",
+      "type": "Passive Treasure Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Game Breaking Bug!",
+          "effects": [
+            "Each time a player rolls a ❶, you may reroll an item they control."
+          ]
+        }
+      },
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "TAR HEAD"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/game_breaking_bug.webp"
+      ]
+    },
+    {
+      "id": "get_out_of_jail_card",
+      "type": "Wildcard Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Get Out Of Jail Card",
+          "effects": [
+            "Other players can't play loot cards or activate items till end of turn."
+          ]
+        }
+      },
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "TikaratheMew"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/get_out_of_jail_card.webp"
+      ]
+    },
+    {
+      "id": "gimpy",
+      "type": "Eternal Treasure Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Gimpy",
+          "effects": [
+            "Each time you take damage, choose one- Gain 2¢. Loot 1, then discard a loot card. Gain +2{ATK} till end of turn."
+          ],
+          "footnotes": [
+            {
+              "title": "-Eternal-",
+              "text": "This can't be destroyed or put into discard."
+            }
+          ]
+        }
+      },
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "KrystalFlamingo"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/gimpy.webp"
+      ],
+      "related": [
+        "whore_of_babylon"
+      ]
+    },
+    {
+      "id": "globin",
+      "type": "Basic Monster Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Globin",
+          "effects": [
+            "When this reaches 1{HP}, the active player rolls-\n1-4: This takes 1 damage.",
+            "5-6: This heals 2{HP}."
+          ]
+        }
+      },
+      "stats": [
+        {
+          "name": "HP",
+          "value": "4"
+        },
+        {
+          "name": "DC",
+          "value": "4"
+        },
+        {
+          "name": "ATK",
+          "value": "1"
+        }
+      ],
+      "rewards": [
+        {
+          "count": "3x",
+          "kind": "Loot"
+        }
+      ],
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "WORMBOY"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/globin.webp"
+      ]
+    },
+    {
+      "id": "gold_key",
+      "type": "Wildcard Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Gold Key",
+          "effects": [
+            "The active player may attack the monster deck any number of times till end of turn."
+          ]
+        }
+      },
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "TikaratheMew"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/gold_key.webp"
+      ]
+    },
+    {
+      "id": "guppy",
+      "type": "Character Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Guppy",
+          "effects": [
+            "{Tap Effect}Play an additional loot card this turn."
+          ],
+          "notes": [
+            "This can be done on any player's turn in response to any action."
+          ]
+        }
+      },
+      "stats": [
+        {
+          "name": "HP",
+          "value": "2"
+        },
+        {
+          "name": "ATK",
+          "value": "1"
+        }
+      ],
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "Rojen241"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/guppy.webp"
+      ],
+      "related": [
+        "infestation"
+      ]
+    },
+    {
+      "id": "guppys_eye",
+      "type": "Passive Treasure Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Guppy’s Eye",
+          "effects": [
+            "Each other player plays with their hand revealed."
+          ],
+          "footnotes": [
+            {
+              "title": "-Guppy-",
+              "text": "The first player to control 2 or more Guppy items gains the Soul of Guppy."
+            }
+          ]
+        }
+      },
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "TikaratheMew"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/guppys_eye.webp"
+      ]
+    },
+    {
+      "id": "head_of_krampus",
+      "type": "Active Treasure Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Head Of Krampus",
+          "effects": [
+            "{Tap Effect}Roll-\n1-3: Deal 1 damage to each player.\n4-6: Deal 1 damage to each monster."
+          ]
+        }
+      },
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "TikaratheMew"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/head_of_krampus.webp"
+      ]
+    },
+    {
+      "id": "head_of_the_keeper",
+      "type": "Passive Treasure Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Head Of The Keeper",
+          "effects": [
+            "Each time you deal damage, gain 1¢.",
+            "Each time you kill a monster or player, gain 2¢."
+          ]
+        }
+      },
+      "rewards": [
+        {
+          "count": "1x",
+          "kind": "Coin"
+        },
+        {
+          "count": "2x",
+          "kind": "Coin"
+        }
+      ],
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "KrystalFlamingo"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/head_of_the_keeper.webp"
+      ]
+    },
+    {
+      "id": "head_trauma",
+      "type": "Bad Event Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Head Trauma",
+          "effects": [
+            "Discard 2 loot cards."
+          ]
+        }
+      },
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "TAR HEAD"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/head_trauma.webp"
+      ]
+    },
+    {
+      "id": "headless_horseman",
+      "type": "Boss Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Headless Horseman",
+          "effects": [
+            "The first time this would die each turn, prevent death. This heals 2{HP} and gains +1{DC} and -1{ATK} till end of turn."
+          ]
+        }
+      },
+      "stats": [
+        {
+          "name": "HP",
+          "value": "3"
+        },
+        {
+          "name": "DC",
+          "value": "3"
+        },
+        {
+          "name": "ATK",
+          "value": "2"
+        }
+      ],
+      "rewards": [
+        {
+          "count": "1x",
+          "kind": "Soul"
+        },
+        {
+          "count": "1x",
+          "kind": "Treasure"
+        }
+      ],
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "WORMBOY"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/headless_horseman.webp"
+      ]
+    },
+    {
+      "id": "holy_bony",
+      "type": "Holy/Charmed Monster Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Holy Bony",
+          "effects": [
+            "Each time a player rolls a ❻, they may look at the top 3 cards of a deck and put them back in any order."
+          ]
+        }
+      },
+      "stats": [
+        {
+          "name": "HP",
+          "value": "1"
+        },
+        {
+          "name": "DC",
+          "value": "3"
+        },
+        {
+          "name": "ATK",
+          "value": "1"
+        }
+      ],
+      "rewards": [
+        {
+          "count": "2x",
+          "kind": "Loot"
+        }
+      ],
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "Rojen241"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/holy_bony.webp"
+      ]
+    },
+    {
+      "id": "holy_chest",
+      "type": "Good Event Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Holy Chest",
+          "effects": [
+            "Roll-\n1-2: Prevent the next 2 damage you would take this turn. You may attack an additional time this turn.",
+            "3-5: Gain 7¢.",
+            "6: This becomes a soul. Gain it."
+          ]
+        }
+      },
+      "rewards": [
+        {
+          "count": "7x",
+          "kind": "Coin"
+        },
+        {
+          "count": "1x",
+          "kind": "Soul"
+        }
+      ],
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "TAR HEAD"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/holy_chest.webp"
+      ]
+    },
+    {
+      "id": "holy_mulligan",
+      "type": "Holy/Charmed Monster Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Holy Mulligan",
+          "effects": [
+            "When this dies, expand monster slots by 2. The active player may attack an additional time this turn."
+          ]
+        }
+      },
+      "stats": [
+        {
+          "name": "HP",
+          "value": "1"
+        },
+        {
+          "name": "DC",
+          "value": "3"
+        },
+        {
+          "name": "ATK",
+          "value": "1"
+        }
+      ],
+      "rewards": [
+        {
+          "count": "3x",
+          "kind": "Coin"
+        }
+      ],
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "Rojen241"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/holy_mulligan.webp"
+      ]
+    },
+    {
+      "id": "hourglass",
+      "type": "Passive Treasure Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Hourglass",
+          "effects": [
+            "Each time a player rolls a ❷, you may deactivate an item."
+          ]
+        }
+      },
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "KrystalFlamingo"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/hourglass.webp"
+      ]
+    },
+    {
+      "id": "infestation",
+      "type": "Eternal Treasure Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Infestation",
+          "effects": [
+            "{Tap Effect}Loot 2, then discard 1 loot card."
+          ],
+          "footnotes": [
+            {
+              "title": "-Eternal-",
+              "text": "This can't be destroyed or put into discard."
+            }
+          ]
+        }
+      },
+      "rewards": [
+        {
+          "count": "1x",
+          "kind": "Loot"
+        }
+      ],
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "KrystalFlamingo"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/infestation.webp"
+      ],
+      "related": [
+        "guppy"
+      ]
+    },
+    {
+      "id": "isaac_fsp2",
+      "type": "Epic Boss Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Isaac!",
+          "effects": [
+            "Each time this takes damage, the active player chooses a living player. This deals 1 damage to that player."
+          ]
+        }
+      },
+      "stats": [
+        {
+          "name": "HP",
+          "value": "7"
+        },
+        {
+          "name": "DC",
+          "value": "3"
+        },
+        {
+          "name": "ATK",
+          "value": "1"
+        }
+      ],
+      "rewards": [
+        {
+          "count": "2x",
+          "kind": "Soul"
+        },
+        {
+          "count": "1x",
+          "kind": "Treasure"
+        }
+      ],
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "Rojen241"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/isaac.webp"
+      ],
+      "three_plus": true
+    },
+    {
+      "id": "krampus",
+      "type": "Boss Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Krampus",
+          "effects": [
+            "The active player must attack this once each turn if able."
+          ]
+        }
+      },
+      "stats": [
+        {
+          "name": "HP",
+          "value": "4"
+        },
+        {
+          "name": "DC",
+          "value": "4"
+        },
+        {
+          "name": "ATK",
+          "value": "2"
+        }
+      ],
+      "rewards": [
+        {
+          "count": "1x",
+          "kind": "Soul"
+        },
+        {
+          "count": "1x",
+          "kind": "Treasure"
+        }
+      ],
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "TikaratheMew"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/krampus.webp"
+      ]
+    },
+    {
+      "id": "lard",
+      "type": "Passive Treasure Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Lard",
+          "effects": [
+            "{HP}",
+            "Each time you take damage, discard a loot card."
+          ]
+        }
+      },
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "TAR HEAD"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/lard.webp"
+      ]
+    },
+    {
+      "id": "libra",
+      "type": "Active Treasure Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Libra",
+          "effects": [
+            "{Tap Effect}Change the result of a dice roll to a 3."
+          ]
+        }
+      },
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "KrystalFlamingo"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/libra.webp"
+      ]
+    },
+    {
+      "id": "lil_battery",
+      "reprint": true,
+      "copies": 1,
+      "images": [
+        "fsp2/lil_battery.webp"
+      ]
+    },
+    {
+      "id": "magnet",
+      "type": "Passive Treasure Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Magnet",
+          "effects": [
+            "Each time another player gains ¢, they must give you 1¢."
+          ],
+          "notes": [
+            "\"The rich rules over the poor, and the borrower is the slave of the lender.\"\nProverbs 22:7"
+          ]
+        }
+      },
+      "rewards": [
+        {
+          "count": "1x",
+          "kind": "Coin"
+        }
+      ],
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "TAR HEAD"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/magnet.webp"
+      ]
+    },
+    {
+      "id": "mama_haunt",
+      "type": "Passive Treasure Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Mama Haunt",
+          "effects": [
+            "{Curse Effect}Your character doesn't recharge during your recharge step.",
+            "When you die, before paying penalties, give this to another player."
+          ]
+        }
+      },
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "Rojen241"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/mama_haunt.webp"
+      ]
+    },
+    {
+      "id": "moms_eye_shadow",
+      "type": "Passive Treasure Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Mom’s Eye Shadow",
+          "effects": [
+            "If another player declares an attack on a monster, you may choose which monster they attack."
+          ]
+        }
+      },
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "TAR HEAD"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/moms_eye_shadow.webp"
+      ],
+      "three_plus": true
+    },
+    {
+      "id": "moms_heart",
+      "type": "Epic Boss Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Mom’s Heart!",
+          "effects": [
+            "When a player gains this soul, choose a player who controls the most souls or tied for the most. That player wins."
+          ]
+        }
+      },
+      "stats": [
+        {
+          "name": "HP",
+          "value": "8"
+        },
+        {
+          "name": "DC",
+          "value": "4"
+        },
+        {
+          "name": "ATK",
+          "value": "2"
+        }
+      ],
+      "rewards": [
+        {
+          "count": "2x",
+          "kind": "Soul"
+        }
+      ],
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "KrystalFlamingo"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/moms_heart.webp"
+      ]
+    },
+    {
+      "id": "monstro_ii",
+      "type": "Boss Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Monstro II",
+          "effects": [
+            "Each time this deals combat damage, the active player rolls-",
+            "1-3: Deal 1 damage to the player to your right.",
+            "4-6: Deal 1 damage to the player to your left."
+          ]
+        }
+      },
+      "stats": [
+        {
+          "name": "HP",
+          "value": "5"
+        },
+        {
+          "name": "DC",
+          "value": "4"
+        },
+        {
+          "name": "ATK",
+          "value": "1"
+        }
+      ],
+      "rewards": [
+        {
+          "count": "1x",
+          "kind": "Soul"
+        },
+        {
+          "count": "1x",
+          "kind": "Treasure"
+        }
+      ],
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "WORMBOY"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/monstro_ii.webp"
+      ],
+      "three_plus": true
+    },
+    {
+      "id": "mutant_spider",
+      "type": "Active Treasure Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Mutant Spider",
+          "effects": [
+            "{Tap Effect}The next time a player would roll a dice, they instead roll 4 dice. You choose one of the rolls as the result."
+          ]
+        }
+      },
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "KrystalFlamingo"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/mutant_spider.webp"
+      ]
+    },
+    {
+      "id": "nerve_ending",
+      "type": "Basic Monster Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Nerve Ending",
+          "notes": [
+            "\"Strain every nerve to force your way in through the narrow gate; for many, I tell you, will seek to enter and will not be able.\"\nLuke 13:24"
+          ]
+        }
+      },
+      "stats": [
+        {
+          "name": "HP",
+          "value": "4"
+        },
+        {
+          "name": "DC",
+          "value": "2"
+        },
+        {
+          "name": "ATK",
+          "value": "1"
+        }
+      ],
+      "rewards": [
+        {
+          "count": "3x",
+          "kind": "Coin"
+        }
+      ],
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "WORMBOY"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/nerve_ending.webp"
+      ]
+    },
+    {
+      "id": "perthro",
+      "type": "Pill/Rune Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Perthro",
+          "effects": [
+            "Reroll an item."
+          ],
+          "notes": [
+            "(Destroy that item and replace it with the top card of the treasure deck.)"
+          ]
+        }
+      },
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "TikaratheMew"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/perthro.webp"
+      ]
+    },
+    {
+      "id": "phd",
+      "type": "Passive Treasure Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "P.H.D.",
+          "effects": [
+            "You may add or subtract 1 from any of your non-attack rolls."
+          ]
+        }
+      },
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "TAR HEAD"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/phd.webp"
+      ]
+    },
+    {
+      "id": "pills_2_fsp2",
+      "type": "Pill/Rune Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Pills!",
+          "effects": [
+            "Roll-\n1-2: Reroll an item you control.",
+            "3-4: Reroll an item.",
+            "5-6: Reroll each item you control."
+          ],
+          "notes": [
+            "(Destroy that item and replace it with the top card of the treasure deck.)"
+          ]
+        }
+      },
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "TikaratheMew"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/pills_2.webp"
+      ]
+    },
+    {
+      "id": "pills_3_fsp2",
+      "type": "Pill/Rune Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Pills!",
+          "effects": [
+            "Roll-\n1-2: Deal 1 damage to a player.",
+            "3-4: Deal 1 damage to a monster.",
+            "5-6: Take 1 damage."
+          ]
+        }
+      },
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "TikaratheMew"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/pills_3.webp"
+      ]
+    },
+    {
+      "id": "pills_fsp2",
+      "type": "Pill/Rune Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Pills!",
+          "effects": [
+            "Roll-\n1-2: Cancel the effect of a loot being played.",
+            "3-4: Each other player discards a loot card."
+          ]
+        }
+      },
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "TikaratheMew"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/pills.webp"
+      ]
+    },
+    {
+      "id": "poker_chip",
+      "type": "Trinket Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Poker Chip",
+          "effects": [
+            "The first time you would gain ¢ on each of your turns, roll-",
+            "1-3: Gain 1 ¢ instead.",
+            "4-6: Gain double the number of ¢ you would've gained."
+          ],
+          "footnotes": [
+            {
+              "title": "-Trinket-",
+              "text": "This loot becomes an item under your control when it resolves."
+            }
+          ]
+        }
+      },
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "TikaratheMew"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/poker_chip.webp"
+      ]
+    },
+    {
+      "id": "polyphemus",
+      "type": "Passive Treasure Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Polyphemus",
+          "effects": [
+            "{ATK}",
+            "Monsters have +1{DC} on your turn."
+          ]
+        }
+      },
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "KrystalFlamingo"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/polyphemus.webp"
+      ]
+    },
+    {
+      "id": "questionmark_card",
+      "type": "Wildcard Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "? Card",
+          "effects": [
+            "As you play this, choose an item. This copies one of that item's ↷ abilities."
+          ]
+        }
+      },
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "TikaratheMew"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/questionmark_card.webp"
+      ]
+    },
+    {
+      "id": "rainbow_baby",
+      "type": "Active Treasure Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Rainbow Baby",
+          "effects": [
+            "{Tap Effect}Choose one- Each player loots 1. Each player gains 2¢. Each player takes 1 damage."
+          ]
+        }
+      },
+      "rewards": [
+        {
+          "count": "1x",
+          "kind": "Loot"
+        },
+        {
+          "count": "2x",
+          "kind": "Coin"
+        }
+      ],
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "KrystalFlamingo"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/rainbow_baby.webp"
+      ]
+    },
+    {
+      "id": "red_candle",
+      "type": "Active Treasure Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Red Candle",
+          "effects": [
+            "{Tap Effect}Before a dice is rolled, choose a number. Till the end of turn, each time that number is rolled, deal 1 damage to a monster or player."
+          ]
+        }
+      },
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "TAR HEAD"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/red_candle.webp"
+      ]
+    },
+    {
+      "id": "roundy",
+      "type": "Basic Monster Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Roundy",
+          "effects": [
+            "Each time this deals combat damage, it deals 1 damage to each other monster."
+          ]
+        }
+      },
+      "stats": [
+        {
+          "name": "HP",
+          "value": "3"
+        },
+        {
+          "name": "DC",
+          "value": "4"
+        },
+        {
+          "name": "ATK",
+          "value": "2"
+        }
+      ],
+      "rewards": [
+        {
+          "count": "6x",
+          "kind": "Coin"
+        }
+      ],
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "WORMBOY"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/roundy.webp"
+      ]
+    },
+    {
+      "id": "rubber_cement",
+      "type": "Passive Treasure Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Rubber Cement",
+          "effects": [
+            "Each time you miss an attack roll, roll-\n1-3: Deal 1 damage to a monster or player."
+          ]
+        }
+      },
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "KrystalFlamingo"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/rubber_cement.webp"
+      ]
+    },
+    {
+      "id": "smart_fly",
+      "type": "Active Treasure Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Smart Fly",
+          "effects": [
+            "{Tap Effect}Look at the top card of a deck. You may put it into discard or put it back on top.",
+            "Each time you take damage, you may recharge this."
+          ]
+        }
+      },
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "KrystalFlamingo"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/smart_fly.webp"
+      ]
+    },
+    {
+      "id": "spiked_chest",
+      "type": "Good Event Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Spiked Chest",
+          "effects": [
+            "Roll-\n1-2: Take 1 damage.",
+            "3-4: Take 1 damage. Loot 1.",
+            "5-6: Take 1 damage. Gain +1 treasure."
+          ]
+        }
+      },
+      "rewards": [
+        {
+          "count": "1x",
+          "kind": "Loot"
+        },
+        {
+          "count": "1x",
+          "kind": "Treasure"
+        }
+      ],
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "TAR HEAD"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/spiked_chest.webp"
+      ]
+    },
+    {
+      "id": "sucker",
+      "type": "Basic Monster Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Sucker",
+          "effects": [
+            "When this dies, it deals 1 damage to each player."
+          ]
+        }
+      },
+      "stats": [
+        {
+          "name": "HP",
+          "value": "1"
+        },
+        {
+          "name": "DC",
+          "value": "3"
+        },
+        {
+          "name": "ATK",
+          "value": "1"
+        }
+      ],
+      "rewards": [
+        {
+          "count": "1x",
+          "kind": "Loot"
+        }
+      ],
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "TAR HEAD"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/sucker.webp"
+      ]
+    },
+    {
+      "id": "swarmer",
+      "type": "Basic Monster Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Swarmer",
+          "effects": [
+            "When this dies, expand monster slots by 2."
+          ]
+        }
+      },
+      "stats": [
+        {
+          "name": "HP",
+          "value": "4"
+        },
+        {
+          "name": "DC",
+          "value": "3"
+        },
+        {
+          "name": "ATK",
+          "value": "2"
+        }
+      ],
+      "rewards": [
+        {
+          "count": "1x",
+          "kind": "Treasure"
+        }
+      ],
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "WORMBOY"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/swarmer.webp"
+      ]
+    },
+    {
+      "id": "tape_worm",
+      "type": "Trinket Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Tape Worm",
+          "effects": [
+            "Each time you miss an attack roll, deal 1 damage to another player."
+          ],
+          "footnotes": [
+            {
+              "title": "-Trinket-",
+              "text": "This loot becomes an item under your control when it resolves."
+            }
+          ]
+        }
+      },
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "TikaratheMew"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/tape_worm.webp"
+      ]
+    },
+    {
+      "id": "telepathy_for_dummies",
+      "type": "Passive Treasure Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Telepathy For Dummies",
+          "effects": [
+            "At the start of your turn, roll-\nYou may change the result of your next roll this turn to this result."
+          ]
+        }
+      },
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "TAR HEAD"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/telepathy_for_dummies.webp"
+      ]
+    },
+    {
+      "id": "the_fallen",
+      "type": "Boss Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "The Fallen",
+          "effects": [
+            "When this dies, look at the top 5 cards of the monster deck and put them back in any order."
+          ]
+        }
+      },
+      "stats": [
+        {
+          "name": "HP",
+          "value": "4"
+        },
+        {
+          "name": "DC",
+          "value": "5"
+        },
+        {
+          "name": "ATK",
+          "value": "2"
+        }
+      ],
+      "rewards": [
+        {
+          "count": "1x",
+          "kind": "Soul"
+        },
+        {
+          "count": "1x",
+          "kind": "Treasure"
+        }
+      ],
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "WORMBOY"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/the_fallen.webp"
+      ]
+    },
+    {
+      "id": "the_left_hand",
+      "type": "Trinket Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "The Left Hand",
+          "effects": [
+            "Each time another player dies, you may recharge an item."
+          ],
+          "footnotes": [
+            {
+              "title": "-Trinket-",
+              "text": "This loot becomes an item under your control when it resolves."
+            }
+          ]
+        }
+      },
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "TikaratheMew"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/the_left_hand.webp"
+      ]
+    },
+    {
+      "id": "the_wiz",
+      "type": "Passive Treasure Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "The Wiz",
+          "effects": [
+            "Monsters have +1{DC} on your turn.",
+            "Each time you deal combat damage, deal 1 damage to another monster or player."
+          ]
+        }
+      },
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "TAR HEAD"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/the_wiz.webp"
+      ]
+    },
+    {
+      "id": "three_cents",
+      "reprint": true,
+      "copies": 4,
+      "images": [
+        "fsp2/three_cents.webp",
+        "fsp2/three_cents-2.webp",
+        "fsp2/three_cents-3.webp",
+        "fsp2/three_cents-4.webp"
+      ]
+    },
+    {
+      "id": "troll_bombs",
+      "reprint": true,
+      "copies": 1,
+      "images": [
+        "fsp2/troll_bombs.webp"
+      ]
+    },
+    {
+      "id": "tumor",
+      "type": "Basic Monster Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Tumor",
+          "effects": [
+            "Each time this takes damage, it deals 1 damage to each non-active player."
+          ]
+        }
+      },
+      "stats": [
+        {
+          "name": "HP",
+          "value": "2"
+        },
+        {
+          "name": "DC",
+          "value": "5"
+        },
+        {
+          "name": "ATK",
+          "value": "2"
+        }
+      ],
+      "rewards": [
+        {
+          "count": "6x",
+          "kind": "Coin"
+        }
+      ],
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "WORMBOY"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/tumor.webp"
+      ]
+    },
+    {
+      "id": "two_cents",
+      "reprint": true,
+      "copies": 3,
+      "images": [
+        "fsp2/two_cents.webp",
+        "fsp2/two_cents-2.webp",
+        "fsp2/two_cents-3.webp"
+      ]
+    },
+    {
+      "id": "whore_of_babylon",
+      "type": "Character Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Whore Of Babylon",
+          "effects": [
+            "{Tap Effect}Play an additional loot card this turn."
+          ],
+          "notes": [
+            "This can be done on any player's turn in response to any action."
+          ]
+        }
+      },
+      "stats": [
+        {
+          "name": "HP",
+          "value": "2"
+        },
+        {
+          "name": "ATK",
+          "value": "1"
+        }
+      ],
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "Rojen241"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/whore_of_babylon.webp"
+      ],
+      "related": [
+        "gimpy"
+      ]
+    },
+    {
+      "id": "widow",
+      "type": "Boss Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Widow",
+          "notes": [
+            "\"Their confidence hangs by a thread. They are leaning on a spider's web.\"\nJob 8:14"
+          ]
+        }
+      },
+      "stats": [
+        {
+          "name": "HP",
+          "value": "3"
+        },
+        {
+          "name": "DC",
+          "value": "4"
+        },
+        {
+          "name": "ATK",
+          "value": "1"
+        }
+      ],
+      "rewards": [
+        {
+          "count": "1x",
+          "kind": "Soul"
+        },
+        {
+          "count": "2x",
+          "kind": "Loot"
+        }
+      ],
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "WORMBOY"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "fsp2/widow.webp"
+      ]
+    }
+  ]
+}

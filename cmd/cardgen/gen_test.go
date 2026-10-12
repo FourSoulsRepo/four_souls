@@ -50,8 +50,14 @@ func TestGenerateBaseGame(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(files) != len(db.Refs())+2 { // cards, set list, doc.go
-		t.Fatalf("%d files for %d cards", len(files), len(db.Refs()))
+	cards := 0
+	for _, ref := range db.Refs() {
+		if c, _ := db.Get(ref); c.Set == "b2" {
+			cards++
+		}
+	}
+	if len(files) != cards+2 { // cards, set list, doc.go
+		t.Fatalf("%d files for %d cards", len(files), cards)
 	}
 	if _, err := generate(db, "zz"); err == nil {
 		t.Fatal("unknown set accepted")
