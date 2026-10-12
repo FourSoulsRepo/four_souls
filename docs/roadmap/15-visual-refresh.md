@@ -659,7 +659,7 @@ Images come first, so the new table is built with backs and mats.
 3. Done when:
    1. `make screenshots` shows a starburst, red HP, and a skull.
 
-### [ ] 15.38 Coin icon
+### [x] 15.38 Coin icon
 
 1. Goal: coins show the game's own coin, not a drawn one.
 2. Tasks:
@@ -684,3 +684,8 @@ Images come first, so the new table is built with backs and mats.
    6. Own coins show the image at 30 px; a failed load shows the drawn coin.
    7. e2e test: one page gets the image, the other the drawn coin.
    8. Screenshots: `.cache/screenshots/15.38/before/` and `after/`.
+5. Owner notes (2026-10-12)
+   1. Owner: the faint ¢ at 30 px is fine.
+   2. Owner: keep the pentagram face and `coin.png`; may be useful later.
+   3. Owner pushed the tools and images repos.
+   4. Owner marks 15.38 solved.
