@@ -23,6 +23,10 @@ Ideas: LR-01 – LR-06, LR-08, LR-09.
    1. Place cards, set HP, coins, souls, stack.
    2. Pick one action; engine answers allowed or not.
    3. Answer explains why, with rule links.
+   4. Study the fouronlinesouls.net cheat menu first (15.1, K-01 – K-08).
+   5. Draw or pick any card from a deck; search names and card text.
+   6. Remove any card; change coins.
+   7. Every change shows in the history, as on the reference.
 3. Done when:
    1. Use case: check a situation.
 

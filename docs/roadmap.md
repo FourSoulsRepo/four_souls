@@ -163,6 +163,7 @@ Step numbers stay as IDs; the table lists steps in work order.
 5. FAQ from frequent rules questions, linked to rule IDs.
 6. Ideas: LR-01 – LR-06, LR-08.
 7. Any event on the stack in payloads (LR-09).
+8. Sandbox tools modelled on the fouronlinesouls.net cheat menu.
 
 ## 12. Rules website
 
@@ -212,6 +213,9 @@ Step numbers stay as IDs; the table lists steps in work order.
 18. Study counters, stack window, and cheat menu of the reference (V-27).
 19. Play a card by one click or by drag; a setting picks (V-28).
 20. No number badges on cards (V-29).
+21. Turn action icons with hotkeys (15.12).
+22. Stack panel and history strip with icons (15.13).
+23. Counters and live stats on the cards (15.14).
 
 ## 16. Localization
 

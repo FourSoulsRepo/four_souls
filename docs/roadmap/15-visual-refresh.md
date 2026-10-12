@@ -4,9 +4,12 @@ Goal: a clearer table, using fouronlinesouls.net as a second reference.
 
 Ideas: V-09, V-12, V-13, V-15 – V-29.
 
+Order: 15.1, 15.9 – 15.11, 15.2, 15.12 – 15.14, then 15.3 – 15.8.
+Images come first, so the new table is built with backs and mats.
+
 ---
 
-### [ ] 15.1 Study the reference
+### [x] 15.1 Study the reference
 
 1. Goal: a list of what to borrow (V-09).
 2. Tasks:
@@ -120,6 +123,7 @@ Ideas: V-09, V-12, V-13, V-15 – V-29.
    1. F-14 rejected: no 1–9 badges on cards (V-29).
    2. New ideas from the review: V-22 – V-29.
    3. Owner approves the Hearthstone ideas, H-01 – H-23.
+   4. Owner picks F (without F-14), S, C, and K; planned in 15.2 – 15.14.
 
 ### [ ] 15.2 Rework the table
 
@@ -131,10 +135,24 @@ Ideas: V-09, V-12, V-13, V-15 – V-29.
    4. Simple but informative: nothing needed is hidden (V-18).
    5. Every action gets instant feedback (V-15).
    6. Empty zones keep their place and size (V-23).
+   7. One framed board: decks, shop, monsters, souls, stack (F-01, H-01).
+   8. Nothing floats over the board; fixes O-01 and O-02 (F-02).
+   9. Drop the green felt and seat boxes (H-05, O-03).
+   10. Own character centered at the bottom edge, items beside it (F-06, H-02).
+   11. Own hand large and fanned at the bottom, partly off screen (F-05, H-03).
+   12. Opponent: name and coins, then character and items (F-07).
+   13. Opponent hand: fanned backs with a count (F-08, H-17).
+   14. 3–4 players: opponents in side columns; the board grows (F-09).
+   15. The active player's name is highlighted (F-10).
+   16. Player names small, outside the board (H-21).
+   17. Decks show their backs at the board's edge (H-16).
+   18. Coins big next to own name, like mana (H-18).
+   19. HP and ATK as big numbers on the character card (H-15).
 3. Done when:
    1. `make frontend e2e` passes.
    2. `make screenshots` shows every player count.
    3. e2e test: board size stays the same when a shop slot empties.
+   4. e2e test: no panel covers a deck with 2, 3, or 4 players.
 
 ### [ ] 15.3 Attack animation
 
@@ -143,6 +161,8 @@ Ideas: V-09, V-12, V-13, V-15 – V-29.
    1. The attacker's card jumps at the monster, hits, and returns.
    2. Damage shows on the card that was hit.
    3. Only `transform` and `opacity`; follows animation speed (ST-05).
+   4. A starburst with "-N" on the card that was hit (H-14).
+   5. HP on the card drops as soon as the damage resolves (C-03).
 3. Done when:
    1. e2e screenshot of an attack in progress.
 
@@ -157,6 +177,8 @@ Ideas: V-09, V-12, V-13, V-15 – V-29.
    5. Works with mouse and touch (B-06).
    6. One-click mode: a click plays the card at once (V-28).
    7. A setting chooses one-click or drag; both send the same intent.
+   8. Hover a hand card: it rises large, keyword tips beside it (H-13).
+   9. Playable cards glow green; the rest stay plain (H-12).
 3. Done when:
    1. e2e test: a bomb dragged onto a monster damages it.
    2. e2e test: the same play by two clicks.
@@ -173,6 +195,7 @@ Ideas: V-09, V-12, V-13, V-15 – V-29.
    5. The roller can never miss that the game waits for them (V-17).
    6. Use the player's dice look (V-19).
    7. **Owner** decides the open V-17 questions: timer, bots, throw intent.
+   8. The last roll stays visible as a small die by the stack (F-21).
 3. Done when:
    1. e2e screenshot of a die in the air.
    2. The rolled value matches the engine in every test.
@@ -201,6 +224,10 @@ Ideas: V-09, V-12, V-13, V-15 – V-29.
    4. The stack panel shows the same prompt (V-11).
    5. Waiting on others names who and what for.
    6. Optional: a soft sound or window flash when input is needed.
+   7. Hover an unusable card: the zoom says why (F-17, C-06).
+   8. A refused action shows its reason next to the clicked item (F-18).
+   9. Choices: big cards over a dimmed board (F-20, H-11).
+   10. A "View board" button hides the choice to look at the table (F-20).
 3. Done when:
    1. e2e test: every prompt type shows its banner and highlights.
    2. `make screenshots` covers "your turn to act" and "waiting for Ann".
@@ -217,6 +244,8 @@ Ideas: V-09, V-12, V-13, V-15 – V-29.
    6. "Thinking" shows while the active player holds priority.
    7. Spectators see the same marks.
    8. Share the banner and highlight code with 15.7.
+   9. In a fight, the attacker and the monster get a red frame (F-19).
+   10. A card another player plays shows large for a moment (H-10).
 3. Done when:
    1. e2e test: a second player sees the fight mark and the status line.
    2. `make screenshots` covers "Ann attacks" and "Ann is thinking".
@@ -265,3 +294,56 @@ Ideas: V-09, V-12, V-13, V-15 – V-29.
 3. Done when:
    1. `make screenshots` shows backs on decks and opponent hands.
    2. A public-clone build shows the plain backs.
+
+### [ ] 15.12 Turn action buttons
+
+1. Goal: turn actions as clear icons next to own name (F-11).
+2. Tasks:
+   1. End turn, buy, and attack as icon buttons by own name.
+   2. Lit when usable, dim when not (F-12).
+   3. Buy turns into Cancel while choosing what to buy (F-13).
+   4. Attack turns into Roll once 15.5 adds the throw (F-13).
+   5. End turn: yellow on own turn, grey "Their turn" otherwise (H-19).
+   6. End turn glows green when nothing is left to do (H-20).
+   7. Keys: Space resolves or passes; E ends the turn (F-15).
+   8. A tooltip names each button and its key.
+   9. No number badges on cards (V-29).
+3. Done when:
+   1. e2e test: each button is lit or dim as the engine allows.
+   2. e2e test: Space and E send the same intents as the buttons.
+
+### [ ] 15.13 Stack panel and history strip
+
+1. Goal: stack and history read at a glance, with icons (S-01 – S-11).
+2. Tasks:
+   1. Stack panel inside the board, at its left side (F-03).
+   2. Newest item on top; each row is an icon and one short line (S-01, S-02).
+   3. Names in color: player in their color, target in red (S-03).
+   4. Icon by kind: card art, die for a roll, mark for damage (S-04).
+   5. Hover a row: card large, used ability highlighted, owner below (S-06, S-07).
+   6. Resolve or Pass button in the panel; Space does the same (S-08).
+   7. Empty stack: a quiet "Nothing on the stack" (S-09).
+   8. History strip next to the stack: same icons, newest on top (S-10, F-04).
+   9. History icon badge: sword for an attack, bolt for a spell (H-08).
+   10. Hover a history icon: the same large card view (S-11, H-09).
+   11. The full history panel (V-03) stays one click away.
+   12. Keep the "waiting for" lines (V-11); the reference has none.
+3. Done when:
+   1. e2e test: hover a stack row shows its card and owner.
+   2. `make screenshots` shows a stack of 3 items and the history strip.
+
+### [ ] 15.14 Counters and card states
+
+1. Goal: a card's state reads on the card itself (C-01 – C-06).
+2. Tasks:
+   1. Counter: a big round badge with a number on the card art (C-01).
+   2. The zoomed card shows the same badge (C-02).
+   3. Live HP, ATK, and dice values on the card (C-03).
+   4. **Owner** decides: values drawn over the image, or a badge beside it.
+   5. Text cards without images get the same badges.
+   6. Used items stay dimmed, not rotated; already so (C-04).
+   7. Two abilities: a dialog with the big card; pick one line (C-05).
+   8. Status marks on cards, e.g. not usable yet (H-22).
+3. Done when:
+   1. e2e test: a counter badge on the card and in its zoom.
+   2. e2e test: a damaged monster shows its new HP on the card.
