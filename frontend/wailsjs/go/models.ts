@@ -231,6 +231,20 @@ export namespace main {
 	        this.image = source["image"];
 	    }
 	}
+	export class Fonts {
+	    title: string;
+	    cyrillic: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new Fonts(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.title = source["title"];
+	        this.cyrillic = source["cyrillic"];
+	    }
+	}
 	export class HostInfo {
 	    running: boolean;
 	    port: number;

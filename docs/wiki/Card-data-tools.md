@@ -9,6 +9,7 @@ What the tools do, in short:
 3. `scraper copies` finds the numbered page of every copy on foursouls.com, so each copy gets its own image.
 4. `scraper build -game <this repo>` merges all of it with `pkg/card_db/overrides/<set>.json` and writes `pkg/card_db/data/<set>.json` (format: ADR 004 and ADR 010).
 5. `scraper images -game <this repo>` writes 600 px WebP images to `pkg/card_db/images/<set>/`, one per copy when copies differ.
+6. `scraper fonts -game <this repo>` writes the game's fonts to `pkg/card_db/images/assets/fonts/`.
 
 Sets are built oldest first (Base Game, Gold Box, Four Souls+, …), because `build` looks at the older sets' files: a card with the same name, type, stats and text becomes a reprint entry that adds copies and images to the older card, and a different card whose ID is taken gets the set code as a suffix (`isaac_fsp2`). See ADR 010.
 

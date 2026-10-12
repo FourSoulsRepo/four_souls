@@ -7,6 +7,7 @@ import {
   getCards,
   getDice,
   getBacks,
+  getFonts,
   getIcons,
   getMats,
   getCardSets,
@@ -25,6 +26,7 @@ import {
 } from './bridge';
 import { noHostSetup } from './hostSetup';
 import type { CardInfo, Kind } from './cards';
+import { loadFonts } from './fonts';
 import { entriesFor, type Entry } from './history';
 import { emptyLobby, leftTable, lost, onMessage, remember, type Screen, type Session } from './lobby';
 import { connect, disconnect, drop, send } from './net';
@@ -355,7 +357,15 @@ export const useApp = create<AppState>()((set, get) => {
     zoom: null,
     loadCards: async () => {
       try {
-        const [list, dice, mats, backs, icons] = await Promise.all([getCards(), getDice(), getMats(), getBacks(), getIcons()]);
+        const [list, dice, mats, backs, icons, fonts] = await Promise.all([
+          getCards(),
+          getDice(),
+          getMats(),
+          getBacks(),
+          getIcons(),
+          getFonts(),
+        ]);
+        loadFonts(fonts);
         set({
           cards: new Map(list.map((c) => [c.ref, c])),
           dice,

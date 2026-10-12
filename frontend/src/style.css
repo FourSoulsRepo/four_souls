@@ -4,8 +4,12 @@
   --muted: #9aa5b5;
   --accent: #c0392b;
   --panel: #243248;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Ubuntu,
+  --font-ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Ubuntu,
     Cantarell, "Helvetica Neue", sans-serif;
+  /* The game's hand-drawn letters (15.20, fonts.ts): font-souls for
+     Latin, the Russian card font for Cyrillic, else the system font. */
+  --font-game: "Four Souls Title", "Four Souls Cyrillic", var(--font-ui);
+  font-family: var(--font-ui);
   color: var(--fg);
   background-color: var(--bg);
 }

@@ -12,18 +12,19 @@ export async function shot(page: Page, name: string): Promise<void> {
   }
 }
 
-// realAssets serves cards, backs, mats and dice from the private images
-// submodule when SCREENSHOTS is set and the submodule is there, so
+// realAssets serves cards, backs, mats, dice and fonts from the private
+// images submodule when SCREENSHOTS is set and the submodule is there, so
 // screenshots show the real images. Tests never depend on it.
 export async function realAssets(page: Page): Promise<void> {
   const dir = join(root, 'pkg', 'card_db', 'images');
   if (!process.env.SCREENSHOTS || !existsSync(dir)) {
     return;
   }
-  await page.route('**/cardimg/**/*.webp', async (route) => {
+  await page.route(/\/cardimg\/.+\.(webp|ttf)$/, async (route) => {
     const name = normalize(new URL(route.request().url()).pathname.replace(/^\/cardimg\//, ''));
     const file = join(dir, name);
     const inside = !name.startsWith('..') && existsSync(file);
-    await (inside ? route.fulfill({ path: file, contentType: 'image/webp' }) : route.continue());
+    const contentType = name.endsWith('.ttf') ? 'font/ttf' : 'image/webp';
+    await (inside ? route.fulfill({ path: file, contentType }) : route.continue());
   });
 }

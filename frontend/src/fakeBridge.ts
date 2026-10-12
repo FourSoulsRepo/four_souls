@@ -215,6 +215,13 @@ w.go = {
       // The coin icon at its real path; like the backs, it loads only in
       // screenshots, else the drawn coin shows.
       Icons: () => Promise.resolve({ coin: '/cardimg/assets/icons/coin.webp' }),
+      // The fonts at their real paths; they load only in screenshots, else
+      // the system font shows.
+      Fonts: () =>
+        Promise.resolve({
+          title: '/cardimg/assets/fonts/font-souls-title.ttf',
+          cyrillic: '/cardimg/assets/fonts/tboi4s-original.ttf',
+        }),
       // One mat image, at its real path; the e2e tests serve it only for
       // screenshots, else it fails to load as in a public clone.
       // ?nomats lists none, as Go does without the private images.

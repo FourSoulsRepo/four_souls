@@ -491,6 +491,22 @@ Images come first, so the new table is built with backs and mats.
    13. e2e test: both labels; Space sends Pass, E sends End turn.
    14. The green glow has a unit test; no screenshot of it yet.
    15. Screenshots: `.cache/screenshots/15.20/before/` and `after/`.
+5. Owner notes (2026-10-12)
+   1. Owner: the button looks generic; style it for the game.
+   2. Owner: use the game's fonts; the system font without the images.
+   3. Fonts: font-souls (MIT, GitHub) and the foursouls.ru card font.
+6. Result of the restyle (2026-10-12)
+   1. `scraper fonts` in the tools repo downloads both fonts.
+   2. font-souls is pinned to one commit; its license is kept.
+   3. foursouls.com fonts sit behind Cloudflare; not used.
+   4. Files: `assets/fonts/` in the images repo, staged for the owner.
+   5. `App.Fonts` gives their URLs, or none without the images.
+   6. Stack: font-souls for Latin, the RU font for Cyrillic, then system.
+   7. End turn: cut-out look with ink outline, tilt, and hard shadow.
+   8. Pass, Skip all, Buy, and Attack share the ink outline and shadow.
+   9. End turn is bigger: label about 21 px at 2 players.
+   10. e2e test: both font faces are registered.
+   11. Screenshots: `.cache/screenshots/15.20/styled/`.
 
 ### [ ] 15.21 Stack panel
 

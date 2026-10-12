@@ -10,6 +10,7 @@ import {
   CardSets as wailsCardSets,
   Dice as wailsDice,
   FindGames as wailsFindGames,
+  Fonts as wailsFonts,
   Icons as wailsIcons,
   Mats as wailsMats,
   Notice as wailsNotice,
@@ -160,6 +161,18 @@ export interface Icons {
 // getIcons returns the icon URLs.
 export function getIcons(): Promise<Icons> {
   return wailsIcons();
+}
+
+// Fonts are the game's own fonts (15.20); each URL is '' without the
+// private images, and the app uses the system font.
+export interface Fonts {
+  title: string;
+  cyrillic: string;
+}
+
+// getFonts returns the font URLs.
+export function getFonts(): Promise<Fonts> {
+  return wailsFonts();
 }
 
 // MatInfo is one game mat image (ST-03, V-24).

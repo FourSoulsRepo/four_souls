@@ -68,12 +68,14 @@ func (a *App) Cards() ([]CardInfo, error) {
 	return a.cardList.load(a.cardFiles)
 }
 
-// imageTypes are the files cardImages serves: card images, card backs,
-// dice textures (V-19) and mats are all WebP.
-var imageTypes = map[string]bool{".webp": true}
+// imageTypes are the files cardImages serves, with their content types:
+// card images, card backs, dice textures (V-19) and mats are all WebP;
+// the game's fonts are TrueType (15.20). The type is set here, as not
+// every OS's MIME table knows .ttf.
+var imageTypes = map[string]string{".webp": "image/webp", ".ttf": "font/ttf"}
 
-// cardImages serves card images, backs, dice textures and mats under cardImagePrefix
-// from the card files; every other request goes on to the frontend.
+// cardImages serves card images, backs, dice textures, mats and fonts under
+// cardImagePrefix from the card files; every other request goes on to the frontend.
 func cardImages(fsys fs.FS) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -82,10 +84,12 @@ func cardImages(fsys fs.FS) func(http.Handler) http.Handler {
 				next.ServeHTTP(w, r)
 				return
 			}
-			if !fs.ValidPath(name) || !imageTypes[path.Ext(name)] {
+			kind, known := imageTypes[path.Ext(name)]
+			if !fs.ValidPath(name) || !known {
 				http.NotFound(w, r)
 				return
 			}
+			w.Header().Set("Content-Type", kind)
 			http.ServeFileFS(w, r, fsys, path.Join(carddb.ImagesDir, name)) //nolint:gosec // fs.ValidPath above rejects ".." and absolute paths
 		})
 	}

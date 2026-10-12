@@ -195,6 +195,10 @@ test('the big End turn button: E ends the turn, Space passes', async ({ browser 
   }
   await expect(endTurnButton(active)).toBeEnabled();
   await expect(endTurnButton(other, 'Their turn')).toBeDisabled();
+  // The game's fonts are registered from their URLs; without the files
+  // they fail to load and the system font shows.
+  const families = await active.evaluate(() => [...document.fonts].map((f) => f.family.replace(/"/g, '')));
+  expect(families).toEqual(expect.arrayContaining(['Four Souls Title', 'Four Souls Cyrillic']));
   await shot(active, 'end-turn-own');
   // Off the hand, so no card zoom covers the board.
   await other.mouse.move(1200, 420);

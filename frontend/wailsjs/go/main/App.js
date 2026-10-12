@@ -22,6 +22,10 @@ export function FindGames() {
   return window['go']['main']['App']['FindGames']();
 }
 
+export function Fonts() {
+  return window['go']['main']['App']['Fonts']();
+}
+
 export function Icons() {
   return window['go']['main']['App']['Icons']();
 }
