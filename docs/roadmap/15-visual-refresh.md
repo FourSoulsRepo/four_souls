@@ -349,7 +349,7 @@ Images come first, so the new table is built with backs and mats.
    1. Owner picks all T ideas; planned in 15.32 – 15.37.
    2. Live aiming: a new kind of message, never recorded (N-15).
 
-### [ ] 15.16 Board frame
+### [x] 15.16 Board frame
 
 1. Goal: one framed board in the middle that never changes size.
 2. Tasks:
@@ -374,6 +374,11 @@ Images come first, so the new table is built with backs and mats.
    9. Screenshots: `.cache/screenshots/15.16/before/` and `after/`.
    10. e2e tests: 3, 4, and 6 monster and shop slots on the same board.
    11. Screenshots now show real card and dice images, before and after.
+5. Owner notes (2026-10-12)
+   1. Owner agrees: Basement, not Green felt, is the default without images.
+   2. Owner agrees: choices open at the bottom edge.
+   3. Owner agrees: the info column keeps its width with the history hidden.
+   4. Owner marks 15.16 solved.
 
 ### [ ] 15.17 Own area
 
