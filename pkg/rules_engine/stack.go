@@ -51,6 +51,9 @@ type StackItem struct {
 	// "would roll" trigger it is the value (+1) the trigger saw: it
 	// fizzles if the roll no longer has it (R-DICE-07).
 	Checked int `json:"checked,omitempty"`
+	// Text is the words of the ability it uses, or of its chosen mode,
+	// for display. Only views set it (15.21, S-07).
+	Text string `json:"text,omitempty"`
 }
 
 // Events about the stack.

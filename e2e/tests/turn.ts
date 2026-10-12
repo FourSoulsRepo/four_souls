@@ -88,8 +88,7 @@ async function answer(pages: Page[], press: Tap): Promise<boolean> {
       await press(page, (await uncovered(page.locator('.board .card.hl-pick, .player-pick'))) ?? choice.locator('.choice-option button').first());
       return true;
     }
-    const bar = page.getByRole('region', { name: 'Actions' });
-    const pass = bar.getByRole('button', { name: 'Pass' });
+    const pass = passButton(page);
     if (await enabled(pass)) {
       await press(page, pass);
       return true;
@@ -137,6 +136,11 @@ export async function settle(pages: Page[], press: Tap, done: () => Promise<bool
 // turnAction is an icon button by own name (15.19): "Buy" or "Attack".
 export function turnAction(page: Page, name: 'Buy' | 'Attack') {
   return page.getByRole('toolbar', { name: 'Turn actions' }).getByRole('button', { name, exact: true });
+}
+
+// passButton is Pass in the stack panel (15.21).
+export function passButton(page: Page) {
+  return page.getByRole('complementary', { name: 'Stack' }).getByRole('button', { name: 'Pass', exact: true });
 }
 
 // endTurnButton is the big button at the board's right edge (15.20):

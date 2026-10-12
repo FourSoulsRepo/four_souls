@@ -41,6 +41,12 @@ var abilitySet = CardSet{Name: "abilities", Cards: []CardDef{
 	{Ref: "isaac_like", Kind: CharacterCard, Outside: true, HP: 2, ATK: 1, Abilities: []Ability{
 		{Kind: Activated, Text: "↷: Play an additional loot card this turn.", Costs: []Cost{Tap()}, Effects: []Effect{AddLootPlays(1)}},
 	}},
+	{Ref: "dagaz_like", Kind: LootCard, Outside: true, Abilities: []Ability{ // like Dagaz
+		{Kind: LootAbility, Text: "Choose one- Gain 1¢. Choose a player.", Modes: []Mode{
+			{Text: "Gain 1¢.", Effects: []Effect{GainCents(1)}},
+			{Text: "Choose a player.", Targets: []TargetSpec{Choose(TargetPlayer)}, Effects: []Effect{GainCents(1)}},
+		}},
+	}},
 	{Ref: "stoney_like", Kind: MonsterCard, Outside: true, HP: 3, DC: 3, ATK: 1, Statics: []Static{MonstersHave(StatMonsterDC, 1)}},
 }}
 

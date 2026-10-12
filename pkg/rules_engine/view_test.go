@@ -217,3 +217,21 @@ func TestGivenCardIsSeenByBothHands(t *testing.T) {
 		}
 	}
 }
+
+func TestViewStackNamesTheUsedAbility(t *testing.T) {
+	g := newAbilityGame(t)
+	a := g.Turn.Active
+	activate(t, g, a, giveItem(g, a, "coin_bag"), 0)
+	g.push(StackItem{Kind: StackLoot, Controller: a, Ability: AbilityRef{Card: "dagaz_like", Index: 0}, Mode: 1})
+	g.push(StackItem{Kind: StackRoll, Controller: a})
+	gv := g.View(Viewer{Kind: ViewSpectator})
+	want := []string{"↷: Gain 3¢.", "Choose a player.", ""}
+	for i, it := range gv.Stack {
+		if it.Text != want[i] {
+			t.Errorf("stack item %d says %q, want %q", i, it.Text, want[i])
+		}
+	}
+	if g.Stack[0].Text != "" {
+		t.Errorf("the game's own stack got text %q; only views have it", g.Stack[0].Text)
+	}
+}

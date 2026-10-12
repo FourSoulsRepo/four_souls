@@ -3,7 +3,8 @@ import { Card } from './Card';
 import './Card.css';
 
 // CardZoom shows the zoomed card. A mouse zoom follows the hover and
-// lets clicks through; a touch zoom stays until the next tap.
+// lets clicks through; a touch zoom stays until the next tap. A caption
+// names the owner and highlights the used ability (S-06, S-07).
 export function CardZoom() {
   const zoom = useApp((s) => s.zoom);
   const setZoom = useApp((s) => s.setZoom);
@@ -18,7 +19,19 @@ export function CardZoom() {
         setZoom(null);
       }}
     >
-      <Card cardRef={zoom.ref} size="zoom" />
+      <figure className="card-zoom-figure">
+        <Card cardRef={zoom.ref} size="zoom" />
+        {zoom.caption && (
+          <figcaption className="card-zoom-caption">
+            {zoom.caption.ability && <p className="card-zoom-ability">{zoom.caption.ability}</p>}
+            {zoom.caption.owner && (
+              <p className="card-zoom-owner" style={{ color: zoom.caption.color }}>
+                {zoom.caption.owner}
+              </p>
+            )}
+          </figcaption>
+        )}
+      </figure>
     </div>
   );
 }

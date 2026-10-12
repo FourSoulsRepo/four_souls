@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { PromptKind } from './actions';
 import type { GameView, StackItem } from './protocol';
-import { findCard, secondsLeft, StackKind, stackLine, stackWait, waitText } from './stack';
+import { findCard, secondsLeft, stackCard, stackIcon, StackKind, stackLine, stackParts, stackWait, waitText } from './stack';
 
 const view: GameView = {
   players: [
@@ -47,6 +47,35 @@ describe('stackLine', () => {
     expect(stackLine(item({ kind: StackKind.death, target: { player: 1, is_player: true } }), view, names)).toBe(
       'Bo dies',
     );
+  });
+});
+
+describe('stackParts', () => {
+  it('keeps the player and the target apart from the words (S-03)', () => {
+    expect(stackParts(item({ card: 'a_dime' }), view, names)).toEqual([
+      { text: 'Ann', role: 'player', player: 0 },
+      { text: ' plays ' },
+      { text: 'A_DIME', role: 'card' },
+    ]);
+    expect(stackParts(item({ kind: StackKind.damage, amount: 1, target: { player: 1, is_player: true } }), view, names)).toEqual([
+      { text: '1 damage to ' },
+      { text: 'Bo', role: 'target', player: 1 },
+    ]);
+  });
+});
+
+describe('stackIcon and stackCard', () => {
+  it('picks an icon by kind (S-04)', () => {
+    expect(stackIcon(item({ card: 'a_dime' }))).toBe('card');
+    expect(stackIcon(item({ kind: StackKind.roll }))).toBe('roll');
+    expect(stackIcon(item({ kind: StackKind.damage }))).toBe('damage');
+    expect(stackIcon(item({ kind: StackKind.penalty }))).toBe('death');
+  });
+
+  it('shows the item card, or the card it comes from (S-06)', () => {
+    expect(stackCard(item({ card: 'a_dime' }), view)).toBe('a_dime');
+    expect(stackCard(item({ kind: StackKind.roll, source: 9 }), view)).toBe('gaper');
+    expect(stackCard(item({ kind: StackKind.roll, source: 99 }), view)).toBeUndefined();
   });
 });
 

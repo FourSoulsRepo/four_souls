@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { actionsFor, type Actions } from '../actions';
+import { actionsFor, IntentKind, type Actions } from '../actions';
 import { ActionBar } from '../components/ActionBar';
 import { ActionMenu } from '../components/ActionMenu';
 import { Board } from '../components/Board';
@@ -112,13 +112,17 @@ function Table({ game, you }: { game: Update; you: number }) {
         }
       >
         <TurnBadge view={view} names={names} />
-        <StackPanel view={view} you={you} names={names} />
+        <StackPanel
+          view={view}
+          you={you}
+          names={names}
+          pass={actions.buttons.find((b) => b.intent.kind === IntentKind.pass)?.intent}
+          disabled={!canAct}
+        />
         <HistoryPanel />
       </Board>
       <ActionBar
         status={game.pause ? 'Paused' : waitText(view, you, names, actions.choice?.title)}
-        buttons={actions.buttons}
-        disabled={!canAct}
         deadline={game.deadline ?? 0}
         skip={skip}
       />

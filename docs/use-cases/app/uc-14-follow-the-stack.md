@@ -12,10 +12,13 @@
 2. The stack panel shows it on every player's table, in the board's left column.
    1. The top item, which resolves next, comes first.
    2. Rolls show their result; damage shows its target.
+   3. Each row: a square icon and one short line.
+   4. Icons: card art, a die, a blood drop, or a skull.
+   5. Players show in their seat color; targets in red.
 3. The action bar says who may respond: "Bo may respond".
 4. The player who may respond sees "Respond, or pass".
 5. That player passes or acts (UC-13).
-6. The item resolves; the panel shows what is left, or hides.
+6. The item resolves; the panel shows what is left, or "Nothing on the stack".
 
 ## Alternative scenarios and errors
 
@@ -31,6 +34,10 @@
   * Every client names the same players; the viewer is "You".
 * **2d. A prompt on top:** the panel says "Bo: Choose a target".
   * A discard reads "Bo: Discard 2 loot cards".
+* **2e. Hover a row:** its card shows large.
+  * Below it: the used ability's words, highlighted.
+  * Then the owner's name, in their color.
+  * On touch, a tap shows the same until the next tap.
 
 ## Postconditions
 

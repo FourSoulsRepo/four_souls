@@ -31,36 +31,78 @@ export function findCard(view: GameView, id: number): string | undefined {
   return all.find((c) => c.id === id)?.card;
 }
 
-// stackLine says what one stack item is.
-export function stackLine(it: StackItem, view: GameView, n: Names): string {
-  const who = n.player(it.controller);
-  const card = it.card ? n.card(it.card) : '';
-  const target = it.target.is_player
-    ? n.player(it.target.player)
-    : n.card(findCard(view, it.target.object ?? 0) ?? 'a card');
-  const attack = it.attack ? 'Attack: ' : '';
+// LinePart is a piece of a stack line: plain words, a player's name in
+// their color, a target in red (S-03), or a card's name.
+export interface LinePart {
+  text: string;
+  role?: 'player' | 'target' | 'card';
+  player?: number;
+}
+
+// stackParts says what one stack item is, in parts that keep who is who.
+export function stackParts(it: StackItem, view: GameView, n: Names): LinePart[] {
+  const who: LinePart = { text: n.player(it.controller), role: 'player', player: it.controller };
+  const card: LinePart = { text: it.card ? n.card(it.card) : '', role: 'card' };
+  const target: LinePart = it.target.is_player
+    ? { text: n.player(it.target.player), role: 'target', player: it.target.player }
+    : { text: n.card(findCard(view, it.target.object ?? 0) ?? 'a card'), role: 'target' };
+  const attack: LinePart[] = it.attack ? [{ text: 'Attack: ' }] : [];
   switch (it.kind) {
     case StackKind.loot:
-      return `${who} plays ${card}`;
+      return [who, { text: ' plays ' }, card];
     case StackKind.ability:
-      return `${card} (${who})`;
+      return [card, { text: ' (' }, who, { text: ')' }];
     case StackKind.trigger:
-      return `${card} triggers`;
+      return [card, { text: ' triggers' }];
     case StackKind.roll: {
       const label = it.label ? ` for ${it.label}` : '';
-      return `${attack}${who} rolls${it.roll ? ` ${String(it.roll)}` : ''}${label}`;
+      return [...attack, who, { text: ` rolls${it.roll ? ` ${String(it.roll)}` : ''}${label}` }];
     }
     case StackKind.damage:
-      return `${attack}${String(it.amount ?? 0)} damage to ${target}`;
+      return [...attack, { text: `${String(it.amount ?? 0)} damage to ` }, target];
     case StackKind.death:
-      return `${target} dies`;
+      return [target, { text: ' dies' }];
     case StackKind.penalty:
-      return `${n.player(it.target.player)} pays the death penalty`;
+      return [
+        { text: n.player(it.target.player), role: 'target', player: it.target.player },
+        { text: ' pays the death penalty' },
+      ];
     case StackKind.deathStep:
-      return `${card} is killed`;
+      return [card, { text: ' is killed' }];
     default:
-      return card || 'Something';
+      return [card.text ? card : { text: 'Something' }];
   }
+}
+
+// stackLine says what one stack item is, as plain text.
+export function stackLine(it: StackItem, view: GameView, n: Names): string {
+  return stackParts(it, view, n)
+    .map((p) => p.text)
+    .join('');
+}
+
+// StackIcon is what a stack row shows first (S-04): the card's art, a
+// die for a roll, a mark for damage, or a skull for a death.
+export type StackIcon = 'card' | 'roll' | 'damage' | 'death';
+
+export function stackIcon(it: StackItem): StackIcon {
+  switch (it.kind) {
+    case StackKind.roll:
+      return 'roll';
+    case StackKind.damage:
+      return 'damage';
+    case StackKind.death:
+    case StackKind.penalty:
+      return 'death';
+    default:
+      return 'card';
+  }
+}
+
+// stackCard is the card a stack row shows large on hover (S-06): its own
+// card, or the card it comes from.
+export function stackCard(it: StackItem, view: GameView): string | undefined {
+  return it.card ?? findCard(view, it.source);
 }
 
 // waitText says who the game waits for and why, so nobody is lost.

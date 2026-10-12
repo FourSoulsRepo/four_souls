@@ -87,8 +87,8 @@
   width: calc(var(--u) * 0.75);
 }
 
-.board .stack .card.size-small {
-  width: calc(var(--u) * 0.5);
+.board .stack-icon .card.size-small {
+  width: 42px;
 }
 
 .board-info {
@@ -231,6 +231,17 @@
 
 .opp-name {
   font-size: 13px;
+}
+
+/* A player's own color (15.21), as the stack names them. */
+.player-dot {
+  display: inline-block;
+  width: 0.6em;
+  height: 0.6em;
+  margin-right: 0.35em;
+  border: 1px solid rgb(0 0 0 / 70%);
+  border-radius: 50%;
+  vertical-align: 0.05em;
 }
 
 .player.active .opp-name {

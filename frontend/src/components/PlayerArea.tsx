@@ -1,7 +1,7 @@
 import { useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { Role, type CardView, type Intent, type PlayerView } from '../protocol';
 import { useApp } from '../store';
-import type { Position } from '../table';
+import { playerColor, type Position } from '../table';
 import { Card, type CardSize } from './Card';
 import type { Interact } from './Interact';
 import { HiddenHand } from './Pile';
@@ -51,7 +51,10 @@ function OpponentArea({ player, name, position, active, ui }: Omit<Props, 'you' 
     >
       <HiddenHand playerId={player.id} count={player.hand_size} size="small" />
       <div className="opp-status">
-        <b className="opp-name">{name}</b>
+        <b className="opp-name">
+          <PlayerDot player={player.id} />
+          {name}
+        </b>
         <span className="opp-line">
           <span className="opp-coins" title="Coins" aria-label={`${String(player.cents)} cents`}>
             <Coin />
@@ -133,7 +136,10 @@ function OwnArea({ player, name, active, ui, tools }: Omit<Props, 'you' | 'posit
     >
       <div className="own-left">
         <div className="own-status">
-          <b className="own-name">{label}</b>
+          <b className="own-name">
+            <PlayerDot player={player.id} />
+            {label}
+          </b>
           <span className="own-coins" title="Coins" aria-label={`${String(player.cents)} cents`}>
             <Coin />
             {player.cents}
@@ -290,4 +296,10 @@ function HandCard({ card, ui, spread }: { card: CardView; ui: Interact; spread: 
       <Card cardRef={card.card} size="hand" objectId={card.id} {...handle} />
     </div>
   );
+}
+
+// PlayerDot is the player's own color by their name; the stack names
+// them in it (15.21, S-03).
+function PlayerDot({ player }: { player: number }) {
+  return <span className="player-dot" style={{ background: playerColor(player) }} aria-hidden="true" />;
 }

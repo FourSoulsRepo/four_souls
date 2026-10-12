@@ -10,7 +10,7 @@
 
 1. The table highlights what the player may do now.
    1. Yellow: cards to play or use.
-   2. The action bar: Pass.
+   2. The stack panel: Pass.
    3. Icons by own name: Buy and Attack; lit when usable, dim when not.
    4. A big End turn button at the board's right edge.
 2. The player drags a loot card onto the board to play it.

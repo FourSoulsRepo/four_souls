@@ -524,6 +524,22 @@ Images come first, so the new table is built with backs and mats.
 3. Done when:
    1. e2e test: hover a stack row shows its card and owner.
    2. `make screenshots` shows a stack of 3 items.
+4. Result (2026-10-12)
+   1. The panel always shows, in the board's info column (F-03).
+   2. Empty: "Nothing on the stack" and a grey Pass (S-09).
+   3. Rows: newest on top; a square icon and one line (S-01, S-02).
+   4. Icons: card art, a die with the roll, a blood drop, a skull (S-04).
+   5. Each seat has its own color; a dot by the name shows it (S-03).
+   6. Players on the stack in their color; targets in red.
+   7. Hover or tap a row: its card large, a caption below (S-06).
+   8. The caption: the used ability's words, highlighted, then the owner.
+   9. Highlight is a caption, not on the image; images have no ability map.
+   10. The engine view adds `text` to stack items: ability or mode words.
+   11. Pass left the action bar for the panel header; Space still passes.
+   12. The label stays "Pass": passing resolves only once all pass.
+   13. "Waiting for" and "Passed" lines stay (V-11).
+   14. e2e test: a 3-item stack, hover shows card, ability, and owner.
+   15. Screenshots: `.cache/screenshots/15.21/before/` and `after/`.
 
 ### [ ] 15.22 History strip
 

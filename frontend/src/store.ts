@@ -50,6 +50,15 @@ export interface Zoom {
   ref: string;
   touch: boolean;
   side: 'left' | 'right';
+  // caption goes below the card: who owns it, and the used ability's
+  // words, highlighted (S-06, S-07).
+  caption?: ZoomCaption;
+}
+
+export interface ZoomCaption {
+  owner?: string;
+  color?: string;
+  ability?: string;
 }
 
 // Playing is the effect on screen now; done ends it (playback.ts).

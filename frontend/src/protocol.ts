@@ -258,6 +258,8 @@ export interface StackItem {
   event_object?: number;
   reward?: number;
   checked?: number;
+  // text is the used ability's words, or its chosen mode's (15.21).
+  text?: string;
 }
 
 export interface Prompt {

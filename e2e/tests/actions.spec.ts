@@ -11,6 +11,7 @@ import {
   endTurnButton,
   expectNextTurn,
   gameOver,
+  passButton,
   settle,
   tap,
   turnAction,
@@ -211,7 +212,7 @@ test('the big End turn button: E ends the turn, Space passes', async ({ browser 
   await active.keyboard.press('b');
   const passing = async () => {
     for (const page of pages) {
-      const pass = page.getByRole('region', { name: 'Actions' }).getByRole('button', { name: 'Pass' });
+      const pass = passButton(page);
       if ((await pass.count()) > 0 && (await pass.isEnabled())) {
         return page;
       }

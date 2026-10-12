@@ -29,6 +29,8 @@ interface Props {
   highlight?: 'act' | 'pick';
   // stats shows live health and attack as big numbers (H-15).
   stats?: { hp: number; atk: number };
+  // noZoom: the card does not zoom itself; its row does (15.21).
+  noZoom?: boolean;
   onClick?: () => void;
 }
 
@@ -44,6 +46,7 @@ export function Card({
   objectId,
   highlight,
   stats,
+  noZoom = false,
   onClick,
 }: Props) {
   const info = useApp((s) => (cardRef ? s.cards.get(cardRef) : undefined));
@@ -93,7 +96,7 @@ export function Card({
 
   const card = info ?? unknownCard(cardRef);
   const image = card.image !== '' && card.image !== brokenImage;
-  const zoomable = size !== 'zoom';
+  const zoomable = size !== 'zoom' && !noZoom;
   const side = (e: PointerEvent) => (e.clientX < window.innerWidth / 2 ? 'right' : 'left');
   const cancelPress = () => {
     window.clearTimeout(pressRef.current);

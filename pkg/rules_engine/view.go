@@ -101,6 +101,9 @@ func (v Viewer) sees(p PlayerID) bool {
 // never leave the engine.
 func (g *Game) View(v Viewer) GameView {
 	out := GameView{Turn: g.Turn, Over: g.Over, Winners: g.Winners, Stack: append([]StackItem(nil), g.Stack...)}
+	for i := range out.Stack {
+		out.Stack[i].Text = g.usedText(out.Stack[i])
+	}
 	for _, pl := range g.Players {
 		pv := PlayerView{
 			ID: pl.ID, Character: g.cardView(pl.Character), HP: g.PlayerHP(pl.ID), ATK: g.PlayerATK(pl.ID),
@@ -272,4 +275,18 @@ func (g *Game) peeksTreasure(p PlayerID) bool {
 		}
 	}
 	return false
+}
+
+// usedText is the words of the ability a stack item uses: the chosen
+// mode's when it has one, else the whole ability's (S-07).
+func (g *Game) usedText(it StackItem) string {
+	d, ok := g.cards.find(it.Ability.Card)
+	if !ok || it.Ability.Index < 0 || it.Ability.Index >= len(d.Abilities) {
+		return ""
+	}
+	a := d.Abilities[it.Ability.Index]
+	if it.Mode >= 0 && it.Mode < len(a.Modes) && a.Modes[it.Mode].Text != "" {
+		return a.Modes[it.Mode].Text
+	}
+	return a.Text
 }
