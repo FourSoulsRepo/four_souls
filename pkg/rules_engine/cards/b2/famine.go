@@ -9,6 +9,7 @@ var famine = engine.CardDef{
 	Ref:     "famine",
 	Kind:    engine.MonsterCard,
 	Copies:  1,
+	Soul:    1,
 	HP:      2,
 	DC:      3,
 	ATK:     1,

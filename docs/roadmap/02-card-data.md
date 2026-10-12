@@ -89,6 +89,7 @@ Ideas: CD-01, CD-04, CD-06, CD-07, CD-08, A-11.
    3. Overrides: `pkg/card_db/overrides/b2.json` (empty so far).
    4. Copies of shared names (Pills!, chests) split evenly; override if wrong.
    5. Images will come from the site (962×1312), not TTS (659×921).
+   6. Later fix: Famine lacks its soul on the site; an override adds it.
 
 ### [x] 2.6 Image pipeline
 
