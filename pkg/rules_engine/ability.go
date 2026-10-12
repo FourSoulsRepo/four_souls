@@ -755,3 +755,32 @@ func NotChosen(g *Game, _ ObjectID, c Chosen) bool {
 
 // Ability returns the definition of an ability.
 func (g *Game) Ability(ref AbilityRef) Ability { return g.ability(ref) }
+
+// WardDeath is "Choose a player. The next time that player would die this
+// turn, prevent it. If it's their turn, cancel everything that hasn't
+// resolved and end it." (Holy Mantle, Holy Card).
+func WardDeath(t int) Effect {
+	return EffectFunc(func(c *Ctx) {
+		if t < len(c.Targets) {
+			c.G.Boosts = append(c.G.Boosts, Boost{Stat: StatDeathWard, Player: c.Targets[t].Player, Amount: 1})
+		}
+	})
+}
+
+// CancelAttack is "Cancel an attack." It ends the attack in progress
+// (R-ATK-14, R-ATK-15); then runs only if an attack was cancelled.
+func CancelAttack(then ...Effect) Effect {
+	return EffectFunc(func(c *Ctx) {
+		if !c.G.Attack.On {
+			return
+		}
+		c.G.endAttack()
+		c.Do(then...)
+	})
+}
+
+// ActivePlayerAttacksAgain is "That player may attack an additional time
+// this turn", for the active player.
+func ActivePlayerAttacksAgain() Effect {
+	return EffectFunc(func(c *Ctx) { c.G.Turn.Attacks++ })
+}

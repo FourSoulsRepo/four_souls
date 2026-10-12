@@ -220,3 +220,32 @@ func TestCloneKeepsCardDefinitions(t *testing.T) {
 		t.Error("a clone must still know card definitions")
 	}
 }
+
+func TestReprintsAddCopies(t *testing.T) {
+	// An expansion's coins join the older set's in one deck (ADR 010).
+	expansion := CardSet{Code: "x", Name: "expansion", Reprints: []Reprint{{Ref: "penny", Copies: 5}}}
+	g, _, err := NewGame(Setup{Seed: 1, Players: 2, Sets: []CardSet{testSet, expansion}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	pennies := 0
+	for _, pl := range g.Players {
+		for _, id := range pl.Hand {
+			if g.Object(id).Card == "penny" {
+				pennies++
+			}
+		}
+	}
+	for _, id := range g.Decks[LootDeck] {
+		if g.Object(id).Card == "penny" {
+			pennies++
+		}
+	}
+	if pennies != 35 {
+		t.Errorf("pennies = %d, want 30 + 5 reprinted", pennies)
+	}
+	lone := CardSet{Code: "x", Name: "expansion", Reprints: []Reprint{{Ref: "nickel", Copies: 1}}}
+	if _, _, err := NewGame(Setup{Seed: 1, Players: 2, Sets: []CardSet{testSet, lone}}); err == nil {
+		t.Error("a reprint of a card no set defines must be an error")
+	}
+}

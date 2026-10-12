@@ -61,6 +61,9 @@ const (
 // push puts an item on top of the stack; priority passes starting with
 // its controller (R-PRIO-03).
 func (g *Game) push(it StackItem) int {
+	if it.Kind == StackDeath && it.Target.IsPlayer && g.useDeathWard(it.Target.Player) {
+		return 0
+	}
 	g.StackSeq++
 	it.ID = g.StackSeq
 	g.Stack = append(g.Stack, it)
@@ -276,4 +279,26 @@ func (g *Game) Reroll(stackID int) {
 			g.emit(Event{Kind: EvDiceRolled, Player: it.Controller, Amount: it.Roll, Text: "reroll"})
 		}
 	}
+}
+
+// useDeathWard prevents p's death with a ward from this turn, if p has
+// one: "The next time that player would die this turn, prevent it. If
+// it's their turn, cancel everything that hasn't resolved and end it."
+// (Holy Mantle, Holy Card; R-MECH-07, R-MECH-52).
+func (g *Game) useDeathWard(p PlayerID) bool {
+	for i, b := range g.Boosts {
+		if b.Stat != StatDeathWard || b.Object != 0 || b.Player != p {
+			continue
+		}
+		g.Boosts = append(g.Boosts[:i:i], g.Boosts[i+1:]...)
+		pl := &g.Players[p]
+		maxHP := g.PlayerHP(p) + pl.Damage
+		pl.Damage = min(pl.Damage, max(maxHP-1, 0))
+		g.emit(Event{Kind: EvPrevented, Player: p, Text: "death"})
+		if p == g.Turn.Active {
+			g.EndTurnNow()
+		}
+		return true
+	}
+	return false
 }

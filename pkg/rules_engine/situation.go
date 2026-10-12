@@ -187,9 +187,9 @@ func (s Situation) build(sets []CardSet) (*Game, error) {
 		g.Players = append(g.Players, pl)
 	}
 	// Decks: every card of the sets, shuffled; enough for refills.
-	for _, d := range idx.defs {
+	for i, d := range idx.defs {
 		if deck, ok := d.Kind.Deck(); ok && !d.Outside {
-			for range max(d.Copies, 1) {
+			for range idx.copies(i) {
 				g.AddToDeck(deck, d.Ref)
 			}
 		}

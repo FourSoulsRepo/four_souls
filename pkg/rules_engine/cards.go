@@ -117,6 +117,15 @@ type CardSet struct {
 	Code  string // card_db set code, e.g. "b2"
 	Name  string
 	Cards []CardDef
+	// Reprints add this set's copies of cards an older set defines.
+	Reprints []Reprint
+}
+
+// Reprint is a set's copies of a card that an older set defines: the Gold
+// Box's coins join the Base Game's in one deck (ADR 010).
+type Reprint struct {
+	Ref    CardRef
+	Copies int
 }
 
 // cardIndex finds definitions by ref. It is rebuilt from the sets and is
@@ -124,6 +133,7 @@ type CardSet struct {
 type cardIndex struct {
 	defs  []CardDef
 	byRef map[CardRef]int
+	extra []int // reprinted copies, by index into defs
 }
 
 func newCardIndex(sets ...CardSet) (cardIndex, error) {
@@ -137,7 +147,23 @@ func newCardIndex(sets ...CardSet) (cardIndex, error) {
 			idx.defs = append(idx.defs, d)
 		}
 	}
+	idx.extra = make([]int, len(idx.defs))
+	for _, s := range sets {
+		for _, r := range s.Reprints {
+			i, ok := idx.byRef[r.Ref]
+			if !ok {
+				return cardIndex{}, fmt.Errorf("set %s reprints %s, which no set in the game defines", s.Code, r.Ref)
+			}
+			idx.extra[i] += r.Copies
+		}
+	}
 	return idx, nil
+}
+
+// copies is how many copies of defs[i] the game uses: its own set's and
+// every reprint's (ADR 010).
+func (idx cardIndex) copies(i int) int {
+	return max(idx.defs[i].Copies, 1) + idx.extra[i]
 }
 
 func (idx cardIndex) find(ref CardRef) (CardDef, bool) {

@@ -301,7 +301,11 @@ func (g *Game) healAll() {
 
 // SoulValue is a player's total soul value (R-CARD-21).
 func (g *Game) SoulValue(p PlayerID) int {
+	// A character's soul value counts, though it is not a soul (R-CARD-35).
 	total := 0
+	if d, ok := g.cards.find(g.CardOf(g.Players[p].Character)); ok {
+		total += d.Soul
+	}
 	for _, id := range g.Players[p].InPlay {
 		o := g.Object(id)
 		if o.Role != RoleSoul {

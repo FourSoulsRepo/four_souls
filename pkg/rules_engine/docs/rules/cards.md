@@ -56,3 +56,4 @@ Sources: S-OFF Card Types; S-RU Типы карт.
 32. **R-CARD-32** Cards with the 3+ player symbol are removed in 1- and 2-player games; one found during play is set aside and replaced by another card of the same type (GS-08).
 33. **R-CARD-33** *(later sets)* Rooms sit in room slots; only the active player uses a room's activated abilities.
 34. **R-CARD-34** An ability that chooses "an item" may choose a shop item; one that says "an item a player controls" may not. A destroyed shop item goes to the treasure discard and its slot is refilled (S-OFF, S-YUG).
+35. **R-CARD-35** *(Gold Box)* A character's soul value counts toward its player's total soul value (S-OFF: The Lost provides 1).

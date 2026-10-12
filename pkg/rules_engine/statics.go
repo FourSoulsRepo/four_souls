@@ -19,9 +19,10 @@ const (
 	StatLootStep               // more cards in your loot step
 	StatLockOthers             // others can't play loot or activate items on your turn
 	StatLootDouble             // a player loots double (Two of Clubs)
+	StatDeathWard              // the player's next death this turn is prevented (Holy Mantle)
 )
 
-var statNames = []string{"ATK", "HP", "DC", "ATK", "HP", "price", "roll", "attack roll", "loot plays", "attacks", "purchases", "loot step", "lock", "double loot"}
+var statNames = []string{"ATK", "HP", "DC", "ATK", "HP", "price", "roll", "attack roll", "loot plays", "attacks", "purchases", "loot step", "lock", "double loot", "death ward"}
 
 func (s Stat) String() string { return statNames[s] }
 
