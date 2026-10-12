@@ -23,6 +23,8 @@
    11. Card data tools: separate repo `FourSoulsRepo/tools`.
    12. Never add download or scraping code to this repo.
    13. `e2e/`: Playwright UI tests; also makes screenshots.
+   14. Wiki groups: players, server admins, developers.
+   15. A new wiki page goes into one group in `Home.md` and `_Sidebar.md`.
 4. Commands
    1. `wails dev`: run with hot reload.
    2. `wails build`: release binary to `build/bin/`.

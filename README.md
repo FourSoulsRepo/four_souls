@@ -40,7 +40,7 @@ make build vet test lint wasm
 cd frontend && npm run typecheck && npm run lint
 ```
 
-Developer notes: [docs/wiki/Home.md](docs/wiki/Home.md).
+Wiki for players, server admins and developers: [docs/wiki/Home.md](docs/wiki/Home.md).
 Plan: [docs/roadmap.md](docs/roadmap.md).
 
 ## License

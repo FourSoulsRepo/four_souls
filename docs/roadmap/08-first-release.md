@@ -115,7 +115,7 @@ Ideas: B-03 – B-05, L-03, V-10, V-11, DO-01, V-14, A-16, N-13, N-14, V-19.
    1. In a 4-player game, every client names the same waiting players.
    2. Use case updated: respond to the stack.
 
-### [ ] 8.10 Wiki in three groups
+### [x] 8.10 Wiki in three groups
 
 1. Goal: each reader finds their pages fast (DO-01).
 2. Tasks:
