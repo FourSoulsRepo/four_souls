@@ -23,7 +23,7 @@ export function TableScreen() {
       {hosting && (
         <div className="panel">
           <span className="muted">Friends join at</span>
-          <ul className="list">
+          <ul className="list selectable" aria-label="Addresses">
             {hosting.addresses.map((a) => (
               <li key={a}>{a + port}</li>
             ))}

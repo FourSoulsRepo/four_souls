@@ -66,6 +66,10 @@ Over the internet, use a virtual LAN (Tailscale, ZeroTier, Radmin VPN)
 or a dedicated server: see the wiki pages "Playing over the internet"
 and "Dedicated server on a VPS".
 
+Several copies of the game can run on one computer; each one is its
+own player with its own nickname. On macOS start another copy from
+Terminal: open -n /Applications/four_souls.app
+
 
 Dedicated server
 ----------------

@@ -41,6 +41,8 @@ export interface GameInfo {
   taken: number;
   sets: string[] | null;
   started: boolean;
+  // locked: joining needs the game password (N-14).
+  locked?: boolean;
 }
 
 export interface SaveInfo {
@@ -71,10 +73,13 @@ export interface Create {
   seats: number;
   sets: string[];
   options?: Options;
+  // password, if set, is needed to join (N-14).
+  password?: string;
 }
 
 export interface Join {
   game: string;
+  password?: string;
 }
 
 export interface Ready {
@@ -278,6 +283,10 @@ export interface GameView {
   winners?: number[];
   // options says what each choice option points at; only for the chooser.
   options?: OptionView[];
+  // Who passed in a row in the open priority window, and who may still
+  // respond, the waiting player first (V-11).
+  passed?: number[];
+  responding?: number[];
 }
 
 // OptionView is what one option of a choose prompt points at.
@@ -304,6 +313,8 @@ export interface GameEvent {
   amount?: number;
   text?: string;
   private?: boolean;
+  // seen_by: who else sees a private card (the giver of a hand card).
+  seen_by?: number[];
   prev?: number;
   source?: number;
   stack_id?: number;

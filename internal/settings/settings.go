@@ -28,6 +28,8 @@ type Settings struct {
 	Theme string `json:"theme"`
 	// Mat is the game mat under the table (ST-03): one of Mats.
 	Mat string `json:"mat"`
+	// Dice is the look of the player's dice (V-19): one of Dice.
+	Dice string `json:"dice"`
 	// Rejoin is the last game joined, so a restarted app takes its seat
 	// back (N-08).
 	Rejoin Rejoin `json:"rejoin"`
@@ -46,6 +48,7 @@ var (
 	Speeds = []string{"normal", "fast", "slow", "off"}
 	Themes = []string{"dark", "light"}
 	Mats   = []string{"felt", "basement", "cathedral"}
+	Dice   = []string{"tear"}
 )
 
 // MaxRecent is how many recent addresses are kept.
@@ -66,14 +69,14 @@ func (s *Settings) choices() []struct {
 	return []struct {
 		value   *string
 		allowed []string
-	}{{&s.Animation, Speeds}, {&s.Theme, Themes}, {&s.Mat, Mats}}
+	}{{&s.Animation, Speeds}, {&s.Theme, Themes}, {&s.Mat, Mats}, {&s.Dice, Dice}}
 }
 
 // Load reads the settings. A missing or broken file gives the defaults.
 // Recent is never nil, so the frontend always gets a list; an unknown
 // choice reads as its default.
 func Load(path string) Settings {
-	def := Settings{Recent: []string{}, Animation: Speeds[0], Theme: Themes[0], Mat: Mats[0]}
+	def := Settings{Recent: []string{}, Animation: Speeds[0], Theme: Themes[0], Mat: Mats[0], Dice: Dice[0]}
 	data, err := os.ReadFile(path) //nolint:gosec // the app names the file
 	if err != nil {
 		return def

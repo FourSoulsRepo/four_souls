@@ -2,6 +2,7 @@ package rulesengine
 
 import (
 	"encoding/json"
+	"slices"
 	"strings"
 	"testing"
 )
@@ -161,5 +162,58 @@ func TestViewCountsWhatIsLeft(t *testing.T) {
 	}
 	if c := me.Character.Counters; len(c) != 1 || c[0].Count != 2 {
 		t.Errorf("counters %+v, want 2 charge", c)
+	}
+}
+
+func TestViewNamesWhoPassedAndWhoMayRespond(t *testing.T) {
+	g := toAction(t, 4)
+	a := g.Turn.Active
+	b := g.next(a)
+	c, d := g.next(b), g.next(g.next(b))
+	g.push(StackItem{Kind: StackRoll, Controller: b, Label: "x"})
+	pass(t, g)
+	pass(t, g)
+	// Every viewer sees the same lists (V-11).
+	for _, v := range []Viewer{{Kind: ViewPlayer, Player: a}, {Kind: ViewPlayer, Player: c}, {Kind: ViewSpectator}} {
+		gv := g.View(v)
+		if !slices.Equal(gv.Passed, []PlayerID{b, c}) || !slices.Equal(gv.Responding, []PlayerID{d, a}) {
+			t.Errorf("viewer %+v: passed %v, responding %v; want [%d %d] and [%d %d]",
+				v, gv.Passed, gv.Responding, b, c, d, a)
+		}
+	}
+	g.Waiting = Prompt{Kind: PromptChoose, Player: a}
+	if gv := g.View(Viewer{Kind: ViewSpectator}); gv.Passed != nil || gv.Responding != nil {
+		t.Errorf("a choice is not a priority window: passed %v, responding %v", gv.Passed, gv.Responding)
+	}
+}
+
+func TestGivenCardIsSeenByBothHands(t *testing.T) {
+	g := toAction(t, 3)
+	from, to, other := PlayerID(0), PlayerID(1), PlayerID(2)
+	id := g.Players[from].Hand[0]
+	card := g.Object(id).Card
+	g.events = nil
+	g.GiveHandCard(from, to, id)
+	ev := g.takeEvents()
+	for _, c := range []struct {
+		v    Viewer
+		sees bool
+	}{
+		{Viewer{Kind: ViewPlayer, Player: from}, true},
+		{Viewer{Kind: ViewPlayer, Player: to}, true},
+		{Viewer{Kind: ViewPlayer, Player: other}, false},
+		{Viewer{Kind: ViewSpectator}, false},
+		{Viewer{Kind: ViewJudge}, true},
+	} {
+		got := FilterEvents(ev, c.v)
+		if len(got) != 1 || got[0].Kind != EvGaveCard {
+			t.Fatalf("viewer %+v: events %+v, want one gave_card", c.v, got)
+		}
+		if seen := got[0].Card == card; seen != c.sees {
+			t.Errorf("viewer %+v sees the given card: %v, want %v (V-14)", c.v, seen, c.sees)
+		}
+		if got[0].Text != "0" {
+			t.Errorf("viewer %+v: giver %q, want everyone to know it", c.v, got[0].Text)
+		}
 	}
 }

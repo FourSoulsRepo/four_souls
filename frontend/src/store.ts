@@ -2,8 +2,10 @@
 // and server messages write it.
 import { create } from 'zustand';
 import {
+  findGames,
   setFullscreen,
   getCards,
+  getDice,
   getCardSets,
   saveRecord,
   getSettings,
@@ -11,7 +13,9 @@ import {
   saveSettings,
   startHosting,
   stopHosting,
+  type DiceSkin,
   type HostInfo,
+  type LanServer,
   type Settings,
 } from './bridge';
 import type { CardInfo } from './cards';
@@ -85,6 +89,8 @@ interface AppState extends Session {
   cardSets: string[];
   // cards is the display data by ref; empty until loaded.
   cards: Map<string, CardInfo>;
+  // dice are the dice looks (V-19); empty until loaded.
+  dice: DiceSkin[];
   zoom: Zoom | null;
   loadCards: () => Promise<void>;
   setZoom: (zoom: Zoom | null) => void;
@@ -96,6 +102,9 @@ interface AppState extends Session {
   saveNickname: (nickname: string) => Promise<boolean>;
   // joinServer connects to address and shows its game list.
   joinServer: (address: string) => Promise<void>;
+  // lan is the last search for games on the local network (N-13).
+  lan: { searching: boolean; found: LanServer[]; error: string };
+  findLanGames: () => Promise<void>;
   // host runs the server in this app and opens a game on it.
   host: (game: Omit<Create, 'sets'>) => Promise<void>;
   // hostSaved runs the server in this app and shows its games and saved
@@ -103,7 +112,8 @@ interface AppState extends Session {
   hostSaved: () => Promise<void>;
   // saveGame saves the running game; only the host may (N-11).
   saveGame: () => void;
-  joinGame: (game: string) => void;
+  // joinGame sits down at a game; a locked one needs its password.
+  joinGame: (game: string, password?: string) => void;
   loadSave: (save: string) => void;
   setReady: (ready: boolean) => void;
   leaveTable: () => Promise<void>;
@@ -316,17 +326,20 @@ export const useApp = create<AppState>()((set, get) => {
       fullscreen: false,
       theme: 'dark',
       mat: 'felt',
+      dice: 'tear',
       rejoin: { address: '', token: '', game: '' },
     },
     hosting: null,
+    lan: { searching: false, found: [], error: '' },
     connected: false,
     cardSets: [],
     cards: new Map(),
+    dice: [],
     zoom: null,
     loadCards: async () => {
       try {
-        const list = await getCards();
-        set({ cards: new Map(list.map((c) => [c.ref, c])) });
+        const [list, dice] = await Promise.all([getCards(), getDice()]);
+        set({ cards: new Map(list.map((c) => [c.ref, c])), dice });
       } catch (e) {
         set({ error: `Card data: ${messageOf(e)}` });
       }
@@ -366,6 +379,17 @@ export const useApp = create<AppState>()((set, get) => {
       const s = get().settings;
       return nickname === s.nickname || get().saveSettings({ ...s, nickname });
     },
+    findLanGames: async () => {
+      if (get().lan.searching) {
+        return;
+      }
+      set({ lan: { ...get().lan, searching: true } });
+      try {
+        set({ lan: { searching: false, found: await findGames(), error: '' } });
+      } catch (e) {
+        set({ lan: { searching: false, found: [], error: messageOf(e) } });
+      }
+    },
     joinServer: async (address) => {
       if (await open(address)) {
         const s = get().settings;
@@ -387,8 +411,8 @@ export const useApp = create<AppState>()((set, get) => {
     saveGame: () => {
       send('save');
     },
-    joinGame: (game) => {
-      send('join', { game });
+    joinGame: (game, password) => {
+      send('join', password ? { game, password } : { game });
     },
     loadSave: (save) => {
       send('load', { save });

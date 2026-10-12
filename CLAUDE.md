@@ -23,6 +23,8 @@
    11. Card data tools: separate repo `FourSoulsRepo/tools`.
    12. Never add download or scraping code to this repo.
    13. `e2e/`: Playwright UI tests; also makes screenshots.
+   14. Wiki groups: players, server admins, developers.
+   15. A new wiki page goes into one group in `Home.md` and `_Sidebar.md`.
 4. Commands
    1. `wails dev`: run with hot reload.
    2. `wails build`: release binary to `build/bin/`.
@@ -52,6 +54,9 @@
    8. Gate on the tool's own exit code: `make lint && git commit …`.
    9. Never pipe lint through `grep` or `tail` in a gate; it hides failures.
    10. Frontend changes also gate on `make frontend e2e`.
+   11. Ideas from the owner are not tasks; never implement them unasked.
+   12. Ideas go to `docs/ideas.md` and get planned in `docs/roadmap/`.
+   13. Open questions wait for the owner at that roadmap step.
 6. Licenses
    1. Code is MIT (`LICENSE`).
    2. `NOTICE` lists every third-party item and its license.

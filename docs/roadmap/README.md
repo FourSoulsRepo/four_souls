@@ -39,6 +39,8 @@ Each sub-step is sized for one agent session.
    2. Created from `main` when the step starts.
    3. After approval: merge into `main` with `--no-ff`.
    4. Never squash; keep every sub-step commit.
+12. A moved sub-step keeps its number and gets `[~]`.
+   1. Its last item names the new sub-step.
 
 ## Files
 
@@ -61,3 +63,4 @@ Each sub-step is sized for one agent session.
 | 15 | [15-visual-refresh.md](15-visual-refresh.md) |
 | 16 | [16-localization.md](16-localization.md) |
 | 17 | [17-rollback.md](17-rollback.md) |
+| 18 | [18-play-test.md](18-play-test.md) |

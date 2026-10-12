@@ -26,6 +26,11 @@
   * The action bar counts down the seconds left.
   * When it runs out, the server answers for the player.
 * **3c. Choices and discards:** the bar says "Ann is choosing" or "Ann is discarding".
+* **2c. Whom it waits for (V-11):** the panel says "Waiting for Bo, Cy".
+  * "Passed: Ann" lists who passed, auto-skipped players too.
+  * Every client names the same players; the viewer is "You".
+* **2d. A prompt on top:** the panel says "Bo: Choose a target".
+  * A discard reads "Bo: Discard 2 loot cards".
 
 ## Postconditions
 

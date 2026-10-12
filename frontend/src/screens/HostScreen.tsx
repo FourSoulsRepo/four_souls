@@ -18,6 +18,7 @@ export function HostScreen() {
   const [seats, setSeats] = useState(2);
   const [detailed, setDetailed] = useState(false);
   const [options, setOptions] = useState<Options>(simple);
+  const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
 
   const option = (o: Options) => {
@@ -34,7 +35,7 @@ export function HostScreen() {
           setBusy(true);
           void (async () => {
             if (await saveNickname(nickname)) {
-              await host({ seats, options: detailed ? options : undefined });
+              await host({ seats, options: detailed ? options : undefined, password: password || undefined });
             }
             setBusy(false);
           })();
@@ -61,6 +62,18 @@ export function HostScreen() {
             <option value={3}>3</option>
             <option value={4}>4</option>
           </select>
+        </label>
+        <label className="field">
+          Password (optional)
+          <input
+            type="password"
+            autoComplete="off"
+            maxLength={64}
+            value={password}
+            onChange={(e) => {
+              setPassword(e.target.value);
+            }}
+          />
         </label>
         <label className="check">
           <input

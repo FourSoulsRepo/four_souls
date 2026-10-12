@@ -154,6 +154,7 @@ type GameInfo struct {
 	Taken   int      `json:"taken"`
 	Sets    []string `json:"sets"`
 	Started bool     `json:"started"`
+	Locked  bool     `json:"locked,omitempty"` // joining needs the password (N-14)
 }
 
 // Games lists the games on the server, and the saved ones.
@@ -188,7 +189,13 @@ type Create struct {
 	Seats   int      `json:"seats"`
 	Sets    []string `json:"sets"`
 	Options *Options `json:"options,omitempty"`
+	// Password, if set, is needed to join (N-14). It is not an option,
+	// so tables, records and saves never carry it.
+	Password string `json:"password,omitempty"`
 }
+
+// MaxPassword is the longest game password, in bytes.
+const MaxPassword = 64
 
 // Picking modes (GS-01).
 const (
@@ -248,7 +255,8 @@ type PickCard struct {
 
 // Join sits down at a game.
 type Join struct {
-	Game string `json:"game"`
+	Game     string `json:"game"`
+	Password string `json:"password,omitempty"` // for a locked game (N-14)
 }
 
 // Ready marks the player ready to start, or not.
@@ -291,6 +299,7 @@ const (
 	ErrSaveVersion    = "save_version" // the save is from another engine version
 	ErrNotInSave      = "not_in_save"  // the player did not play the saved game
 	ErrBadCard        = "bad_card"
+	ErrPassword       = "password" // missing or wrong game password (N-14)
 )
 
 // Error reports a problem with a message. Rule is the rules ID when the

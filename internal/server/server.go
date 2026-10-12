@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"net"
 	"net/http"
 	"os"
@@ -14,7 +15,9 @@ import (
 
 	carddb "github.com/FourSoulsRepo/card_db"
 	"github.com/FourSoulsRepo/four_souls/internal/assets"
+	"github.com/FourSoulsRepo/four_souls/internal/lan"
 	"github.com/FourSoulsRepo/four_souls/internal/protocol"
+	"github.com/FourSoulsRepo/four_souls/internal/version"
 	"github.com/FourSoulsRepo/record"
 )
 
@@ -28,6 +31,9 @@ type Config struct {
 	// Seed makes game seeds reproducible: game n gets Seed+n. 0 seeds
 	// from the clock. For tests and bug reports.
 	Seed uint64 `json:"seed,omitempty"`
+	// Discovery answers LAN probes while a game waits (N-13, ADR 009).
+	// Only the app's host sets it; a dedicated server never announces.
+	Discovery bool `json:"-"`
 }
 
 // DefaultConfig is used for settings the flags and file leave out.
@@ -92,6 +98,15 @@ func Start(ctx context.Context, cfg Config) (*Server, error) {
 		defer s.hub.Done()
 		hub.Run(ctx)
 	}()
+	if cfg.Discovery {
+		port := cfg.Port
+		if a, ok := ln.Addr().(*net.TCPAddr); ok {
+			port = a.Port // the real one when cfg.Port is 0
+		}
+		if err := lan.Listen(ctx, port, waitingGames(hub, port)); err != nil {
+			log.Printf("server: LAN discovery is off: %v", err) // joining by address still works
+		}
+	}
 	mux := http.NewServeMux()
 	mux.Handle("/ws", Handler(hub))
 	mux.HandleFunc("/record", hub.downloadRecord)
@@ -156,4 +171,29 @@ func cardTexts() []record.Card {
 		out = append(out, record.Card{Ref: ref.String(), Name: en.Name, Type: c.Type, Effects: en.Effects})
 	}
 	return out
+}
+
+// waitingGames answers a LAN probe with the games that wait for
+// players; none waiting means no answer (ADR 009).
+func waitingGames(hub *Hub, port int) func() (lan.Answer, bool) {
+	id := newToken()
+	return func() (lan.Answer, bool) {
+		reply := make(chan []lan.Game, 1)
+		hub.send(hubRequest{run: func(h *Hub) {
+			var out []lan.Game
+			for _, g := range h.list().Games {
+				if !g.Started && g.Taken < g.Seats {
+					out = append(out, lan.Game{Host: g.Host, Seats: g.Seats, Taken: g.Taken, Locked: g.Locked})
+				}
+			}
+			reply <- out
+		}})
+		var games []lan.Game
+		select {
+		case games = <-reply:
+		case <-hub.done:
+		}
+		v := version.Get()
+		return lan.Answer{ID: id, Protocol: protocol.Version, App: v.App, Port: port, Games: games}, len(games) > 0
+	}
 }

@@ -10,6 +10,14 @@ export function Cards() {
   return window['go']['main']['App']['Cards']();
 }
 
+export function Dice() {
+  return window['go']['main']['App']['Dice']();
+}
+
+export function FindGames() {
+  return window['go']['main']['App']['FindGames']();
+}
+
 export function Notice() {
   return window['go']['main']['App']['Notice']();
 }

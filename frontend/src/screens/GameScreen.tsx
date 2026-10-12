@@ -84,7 +84,7 @@ function Table({ game, you }: { game: Update; you: number }) {
       <Board view={view} ui={ui}>
         <TurnBadge view={view} names={names} />
         <HistoryPanel />
-        <StackPanel view={view} names={names} />
+        <StackPanel view={view} you={you} names={names} />
       </Board>
       <ActionBar
         status={game.pause ? 'Paused' : waitText(view, you, names, actions.choice?.title)}

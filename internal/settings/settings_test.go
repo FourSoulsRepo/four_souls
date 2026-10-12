@@ -26,7 +26,7 @@ func TestSurvivesRestart(t *testing.T) {
 
 func TestDefaults(t *testing.T) {
 	dir := t.TempDir()
-	want := Settings{Recent: []string{}, Animation: "normal", Theme: "dark", Mat: "felt"}
+	want := Settings{Recent: []string{}, Animation: "normal", Theme: "dark", Mat: "felt", Dice: "tear"}
 	if got := Load(filepath.Join(dir, "none.json")); !reflect.DeepEqual(got, want) {
 		t.Fatalf("missing file: %+v", got)
 	}
@@ -87,7 +87,7 @@ func TestAnimationSpeed(t *testing.T) {
 
 func TestWindowThemeAndMat(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "settings.json")
-	want := Settings{Recent: []string{}, Animation: "normal", Fullscreen: true, Theme: "light", Mat: "cathedral"}
+	want := Settings{Recent: []string{}, Animation: "normal", Fullscreen: true, Theme: "light", Mat: "cathedral", Dice: "tear"}
 	got, err := Save(path, Settings{Fullscreen: true, Theme: "light", Mat: "cathedral"})
 	if err != nil || !reflect.DeepEqual(got, want) {
 		t.Fatalf("saved %+v, %v; want %+v", got, err, want)
@@ -95,7 +95,7 @@ func TestWindowThemeAndMat(t *testing.T) {
 	if got := Load(path); !reflect.DeepEqual(got, want) {
 		t.Fatalf("loaded %+v, want %+v", got, want)
 	}
-	for _, bad := range []Settings{{Theme: "pink"}, {Mat: "lava"}} {
+	for _, bad := range []Settings{{Theme: "pink"}, {Mat: "lava"}, {Dice: "d20"}} {
 		if _, err := Save(path, bad); !errors.Is(err, ErrChoice) {
 			t.Fatalf("%+v: err %v, want ErrChoice", bad, err)
 		}

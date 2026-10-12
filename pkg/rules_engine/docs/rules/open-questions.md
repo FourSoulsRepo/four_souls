@@ -86,7 +86,9 @@ On 2026-10-09 the owner parked every open decision for later.
    2. Yes: Yuggy and another rules lead, as quoted on that server.
 3. Engine now: no; a replacement applies once per event (R-ABIL-32).
 4. Proposal: keep "no" until Yuggy's ruling is found in writing.
-5. Status: **Owner**.
+5. Status: **Resolved** (2026-10-12): (a) no stacking (R-ABIL-36).
+   1. The S-RU FAQ says the wording matters; the card doubles once.
+6. FAQ: explain this case in the rules FAQ (11.7); players often ask.
 
 ## Old rulings re-checked (R-07)
 
@@ -112,7 +114,7 @@ Candidates for situation tests; check each against the English rules.
 
 | # | Card | Ruling (summary) | Status |
 |---|---|---|---|
-| 1 | Two of Clubs | Activating it twice still only doubles; a replacement applies once per event (R-ABIL-32) | Consistent; test later |
+| 1 | Two of Clubs | Activating it twice still only doubles; a replacement applies once per event (R-ABIL-32) | Holds (Q-09, R-ABIL-36); tests |
 | 2 | Ambush! | Attacks on the monster deck made earlier this turn count toward its 2; the rest are additional attacks | **Parked** (2026-10-09); the engine forces 2 more |
 | 3 | Multi-dice "choose one result" | Only the chosen result affects the game | Consistent; test later (later sets) |
 | 4 | Mulliboom, The Lamb | ATK is printed with "!" (4!, 6!); card_db has no meaning for it; the engine uses the number | **Resolved**: "!" is only design (owner, 2026-10-09) |
@@ -154,7 +156,7 @@ Searched 2026-10-12 (8.7) with each card's Russian name from foursouls.ru (the o
 | # | Cards | Ruling (our words) | Status |
 |---|---|---|---|
 | 1 | Fanny Pack | A dead player still takes damage: nothing is marked, but "when you take damage" triggers (R-MECH-51, as S-OFF says) | **Fixed** in the engine; test |
-| 2 | Two of Clubs | Stacking is disputed | **Owner**: Q-09 |
+| 2 | Two of Clubs | Stacking is disputed | **Resolved**: no stacking (Q-09); tests |
 | 3 | Placebo | It uses one ↷ ability; it doesn't become a copy | Holds (V2 text) |
 | 4 | Modeling Clay, ? Card | They can't copy cards in a discard or a deck | Holds |
 | 5 | Diplopia | It may copy other players' items and shop items | Holds (R-CARD-34) |

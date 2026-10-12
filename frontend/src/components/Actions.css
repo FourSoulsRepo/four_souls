@@ -169,3 +169,13 @@
 .stack li:first-child {
   font-weight: 700;
 }
+
+.stack-wait {
+  margin: 8px 0 0;
+  font-size: 12px;
+}
+
+.stack-passed {
+  margin-top: 2px;
+  color: var(--muted);
+}

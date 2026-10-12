@@ -32,6 +32,10 @@
 * **1c. Nobody answers:** "Could not connect to the server.".
 * **3a. The game list:** each game shows its host, taken and free seats.
   * Saved games show who played and when, with **Continue** (UC-09).
+* **1d. A game on the LAN:** the join screen lists it; no typing (UC-17).
+* **4d. A locked game (N-14):** its row shows a lock and a password field.
+  * No password: "this game needs a password".
+  * A wrong one: "wrong password"; the player may try again.
 
 ## Postconditions
 

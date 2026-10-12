@@ -10,3 +10,4 @@
 | [006](006-network-protocol.md) | Network protocol | Accepted |
 | [007](007-match-record-format.md) | Match record format | Accepted |
 | [008](008-ui-libraries.md) | UI libraries | Accepted |
+| [009](009-lan-discovery.md) | LAN game discovery | Accepted |

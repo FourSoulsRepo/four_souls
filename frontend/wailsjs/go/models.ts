@@ -45,6 +45,65 @@ export namespace carddb {
 
 }
 
+export namespace lan {
+	
+	export class Game {
+	    host: string;
+	    seats: number;
+	    taken: number;
+	    locked?: boolean;
+	
+	    static createFrom(source: any = {}) {
+	        return new Game(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.host = source["host"];
+	        this.seats = source["seats"];
+	        this.taken = source["taken"];
+	        this.locked = source["locked"];
+	    }
+	}
+	export class Found {
+	    address: string;
+	    protocol: number;
+	    app: string;
+	    games: Game[];
+	
+	    static createFrom(source: any = {}) {
+	        return new Found(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.address = source["address"];
+	        this.protocol = source["protocol"];
+	        this.app = source["app"];
+	        this.games = this.convertValues(source["games"], Game);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+
+}
+
 export namespace legal {
 	
 	export class Part {
@@ -142,6 +201,22 @@ export namespace main {
 		    return a;
 		}
 	}
+	export class DiceSkin {
+	    id: string;
+	    name: string;
+	    image: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new DiceSkin(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.name = source["name"];
+	        this.image = source["image"];
+	    }
+	}
 	export class HostInfo {
 	    running: boolean;
 	    port: number;
@@ -186,6 +261,7 @@ export namespace settings {
 	    fullscreen: boolean;
 	    theme: string;
 	    mat: string;
+	    dice: string;
 	    rejoin: Rejoin;
 	
 	    static createFrom(source: any = {}) {
@@ -200,6 +276,7 @@ export namespace settings {
 	        this.fullscreen = source["fullscreen"];
 	        this.theme = source["theme"];
 	        this.mat = source["mat"];
+	        this.dice = source["dice"];
 	        this.rejoin = this.convertValues(source["rejoin"], Rejoin);
 	    }
 	

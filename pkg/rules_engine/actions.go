@@ -161,7 +161,7 @@ func (g *Game) perform(a Action) {
 	case ActLoot:
 		n := a.Amount
 		if g.bonus(StatLootDouble, a.Player, 0) > 0 {
-			n *= 2 // Two of Clubs; twice still only doubles (S-RU FAQ)
+			n *= 2 // Two of Clubs; twice still only doubles (R-ABIL-36)
 		}
 		if g.Compost {
 			g.Compost = false

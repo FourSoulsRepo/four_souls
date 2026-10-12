@@ -6,6 +6,8 @@ import type { Speed } from '../playback';
 import {
   Cards as wailsCards,
   CardSets as wailsCardSets,
+  Dice as wailsDice,
+  FindGames as wailsFindGames,
   Notice as wailsNotice,
   SaveRecord as wailsSaveRecord,
   SaveSettings as wailsSaveSettings,
@@ -38,6 +40,7 @@ export interface Settings {
   fullscreen: boolean; // ST-01
   theme: Theme; // ST-02, menus and panels
   mat: Mat; // ST-03
+  dice: string; // V-19, a DiceSkin id; Go checks it
   // rejoin is the last game joined, so a restarted app takes its seat
   // back (N-08).
   rejoin: Rejoin;
@@ -61,6 +64,7 @@ function fromGo(s: {
   fullscreen: boolean;
   theme: string;
   mat: string;
+  dice: string;
   rejoin: Rejoin;
 }): Settings {
   return {
@@ -70,6 +74,7 @@ function fromGo(s: {
     fullscreen: s.fullscreen,
     theme: s.theme === 'light' ? 'light' : 'dark',
     mat: s.mat === 'basement' || s.mat === 'cathedral' ? s.mat : 'felt',
+    dice: s.dice,
     rejoin: { address: s.rejoin.address, token: s.rejoin.token, game: s.rejoin.game },
   };
 }
@@ -114,6 +119,19 @@ export function getCards(): Promise<CardInfo[]> {
   return wailsCards();
 }
 
+// DiceSkin is one look of the six-sided die (V-19).
+export interface DiceSkin {
+  id: string;
+  name: string;
+  // image is the texture URL (see Die); '' when missing: a plain die.
+  image: string;
+}
+
+// getDice returns every dice look the app knows.
+export function getDice(): Promise<DiceSkin[]> {
+  return wailsDice();
+}
+
 // startHosting runs the game server inside the app. If it runs already,
 // its info is returned.
 export async function startHosting(): Promise<HostInfo> {
@@ -137,6 +155,33 @@ export function stopHosting(): Promise<void> {
 // it; '' means the player cancelled (RP-05).
 export function saveRecord(link: string): Promise<string> {
   return wailsSaveRecord(link);
+}
+
+// LanServer is a hosting app found on the local network, with its games
+// that wait for players (N-13, ADR 009).
+export interface LanServer {
+  address: string;
+  protocol: number;
+  app: string;
+  games: LanGame[];
+}
+
+export interface LanGame {
+  host: string;
+  seats: number;
+  taken: number;
+  locked: boolean; // joining needs the password (N-14)
+}
+
+// findGames searches the local network for about a second.
+export async function findGames(): Promise<LanServer[]> {
+  const found = await wailsFindGames();
+  return found.map((f) => ({
+    address: f.address,
+    protocol: f.protocol,
+    app: f.app,
+    games: f.games.map((g) => ({ host: g.host, seats: g.seats, taken: g.taken, locked: g.locked ?? false })),
+  }));
 }
 
 // setFullscreen switches the window (ST-01).

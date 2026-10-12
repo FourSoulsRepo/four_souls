@@ -2,9 +2,13 @@ package main
 
 import (
 	"context"
+	"errors"
 	"io/fs"
+	"os"
+	"path/filepath"
 
 	"github.com/FourSoulsRepo/four_souls/internal/assets"
+	"github.com/FourSoulsRepo/four_souls/internal/instance"
 	"github.com/FourSoulsRepo/four_souls/internal/legal"
 	"github.com/FourSoulsRepo/four_souls/internal/settings"
 	"github.com/FourSoulsRepo/four_souls/internal/version"
@@ -19,9 +23,26 @@ type App struct {
 	cardList  cardList
 }
 
-// NewApp creates the bindings object.
-func NewApp() *App {
-	return &App{settings: appPath("settings.json"), cardFiles: assets.CardsFS()}
+// NewApp creates the bindings object; settings is its settings file.
+func NewApp(settingsFile string) *App {
+	return &App{settings: settingsFile, cardFiles: assets.CardsFS()}
+}
+
+// slotSettings is the settings file of this copy of the app. A new
+// extra copy starts with the first copy's choices, but asks for its own
+// nickname and never takes the first copy's seat.
+// first is the first copy's settings file.
+func slotSettings(slot *instance.Slot, first string) string {
+	path := slot.File(filepath.Base(first))
+	if path == first {
+		return path
+	}
+	if _, err := os.Stat(path); errors.Is(err, fs.ErrNotExist) {
+		s := settings.Load(first)
+		s.Nickname, s.Rejoin = "", settings.Rejoin{}
+		_, _ = settings.Save(path, s) //nolint:errcheck // a missing file gives the defaults
+	}
+	return path
 }
 
 // startup keeps the app context for runtime calls such as dialogs.

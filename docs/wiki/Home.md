@@ -1,26 +1,32 @@
 # Four Souls
 
-Developer notes for the Four Souls fan game: a desktop network card game for 2–4 players, built with Wails (Go + React/TypeScript).
+Notes for the Four Souls fan game: a desktop network card game for 2–4 players, built with Wails (Go + React/TypeScript).
 
-These pages describe the current code. Decisions live in `docs/architecture/` (ADRs); user-visible behavior in `docs/use-cases/`; the plan in `docs/roadmap.md`.
+Pick your group: players, people who run a game server, or developers. Developer pages describe the current code. Decisions live in `docs/architecture/` (ADRs); user-visible behavior in `docs/use-cases/`; the plan in `docs/roadmap.md`.
 
-## Pages
+## Players
+
+* [First start](First-start) — getting past the macOS and Windows warnings; Linux packages.
+* [Playing over the internet](Playing-over-the-internet) — virtual LAN (Tailscale, ZeroTier, Radmin VPN, Hamachi) or port forwarding.
+
+## Server admins
+
+* [Dedicated server on a VPS](Dedicated-server-on-a-VPS) — rent a server and host games for friends.
+
+## Developers
 
 * [Repo layout](Repo-layout) — where everything lives and why.
 * [Build modes](Build-modes) — embedded vs. external files, versions, platforms.
 * [Linters](Linters) — strict Go and frontend linting, and how to run it.
 * [Screenshots](Screenshots) — capture the UI without a real window.
 * [Client](Client) — how the React client is put together: store, lobby, playback, table.
+* [Frontend tests](Frontend-tests) — unit tests, UI tests, and how to keep the frontend testable.
 * [Internal builds](Internal-builds) — the app for play tests with friends.
 * [Releases](Releases) — version tags, draft releases, archives.
-* [First start](First-start) — getting past the macOS and Windows warnings; Linux packages.
-* [Frontend tests](Frontend-tests) — unit tests, UI tests, and how to keep the frontend testable.
 * [Card data tools](Card-data-tools) — where card data and images come from.
+* [Rules engine](Rules-engine) — map of the engine code and its main rules.
 * [Effect blocks](Effect-blocks) — the blocks cards are built from.
+* [Adding a card](Adding-a-card) — write and test a card, or a whole fan set.
 * [Situation payload](Situation-payload) — sandbox situations and rules tests.
 * [Fuzzing](Fuzzing) — random games that check the engine state.
-* [Rules engine](Rules-engine) — map of the engine code and its main rules.
-* [Adding a card](Adding-a-card) — write and test a card, or a whole fan set.
-* [Playing over the internet](Playing-over-the-internet) — virtual LAN (Tailscale, ZeroTier, Radmin VPN, Hamachi) or port forwarding.
-* [Dedicated server on a VPS](Dedicated-server-on-a-VPS) — rent a server and host games for friends.
 * [Server](Server) — how the lobby, game rooms and transport fit together.

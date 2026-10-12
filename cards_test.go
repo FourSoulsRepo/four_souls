@@ -31,8 +31,9 @@ func TestCards(t *testing.T) {
 
 func TestCardImages(t *testing.T) {
 	files := fstest.MapFS{
-		"images/b2/isaac.webp": {Data: []byte("RIFF")},
-		"data/b2.json":         {Data: []byte("{}")},
+		"images/b2/isaac.webp":  {Data: []byte("RIFF")},
+		"images/assets/die.png": {Data: []byte("PNG")},
+		"data/b2.json":          {Data: []byte("{}")},
 	}
 	frontend := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusTeapot)
@@ -46,6 +47,8 @@ func TestCardImages(t *testing.T) {
 		"/index.html":                  http.StatusTeapot,
 		"/cardimgs/b2/isaac.webp":      http.StatusTeapot,
 		"/cardimg/b2/../b2/isaac.webp": http.StatusNotFound,
+		"/cardimg/assets/die.png":      http.StatusOK,
+		"/cardimg/assets/die.jpg":      http.StatusNotFound,
 	} {
 		rec := httptest.NewRecorder()
 		h.ServeHTTP(rec, httptest.NewRequestWithContext(t.Context(), http.MethodGet, "http://wails.localhost"+path, nil))

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { entriesFor, stepName } from './history';
 
-const n = { player: (p: number) => ['Ann', 'Bo'].at(p) ?? '?', card: (ref: string) => ref.toUpperCase() };
+const n = { player: (p: number) => ['Ann', 'Bo', 'Cy'].at(p) ?? '?', card: (ref: string) => ref.toUpperCase() };
 
 describe('entriesFor', () => {
   it('makes one entry per resolved stack item and marks turns', () => {
@@ -30,6 +30,16 @@ describe('entriesFor', () => {
     expect(mine[0]?.text).toBe('You loot A_DIME');
     expect(theirs[0]?.text).toBe('Bo loots a card');
     expect(theirs[0]?.card).toBeUndefined();
+  });
+
+  it('shows a stolen card to the thief and the victim only (V-14)', () => {
+    const shown = { kind: 'gave_card', player: 1, card: 'bomb', text: '0', private: true, seen_by: [0] };
+    const hidden = { kind: 'gave_card', player: 1, text: '2', private: true, seen_by: [2] };
+    expect(entriesFor([shown], 1, 1, n, 0)[0]?.text).toBe('You get BOMB from Ann');
+    expect(entriesFor([shown], 1, 0, n, 0)[0]?.text).toBe('Bo gets your BOMB');
+    const other = entriesFor([hidden], 1, 0, n, 0).at(0);
+    expect(other?.text).toBe('Bo gets a card from Cy');
+    expect(other?.card).toBeUndefined();
   });
 });
 

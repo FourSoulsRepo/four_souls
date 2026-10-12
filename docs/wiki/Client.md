@@ -30,6 +30,8 @@ The desktop client is React + TypeScript in `frontend/` (ADR 002), with three li
 
 `playback.effectsFor` maps engine events to effects: a flying card (looted, discarded), a dice, a popup (cents, healing, damage), a banner (turn, winner), a revealed card. Effects find their places on screen by `data-zone` attributes: `deck-loot`, `discard-monster`, `player-1`, `hand-0`, `obj-42` and so on, falling back to the next zone when one is not drawn.
 
+A dice effect draws `Die`: one face cut out of the player's dice texture (V-19). `App.Dice` lists the looks with their image URLs, and the `dice` setting picks one. A texture is a 3×3 grid in the Tabletop Simulator layout: the top row is unused, then faces 2 4 5 and 1 3 6 (`dice.ts`). Without a texture, or for a modified value outside 1–6, the die is plain with a number.
+
 Effect durations scale with the animation setting (ST-05) and speed up when updates pile up; past 8 waiting updates they are skipped, so the table always catches up. Each effect has a time limit, so a closed screen never blocks playback.
 
 ## Cards

@@ -36,3 +36,7 @@ Then `tar -xzf four-souls-*.tar.gz` and `./four_souls`. If it does not start, `c
 ## Firewall
 
 The first time a player hosts, Windows and macOS ask whether the app may accept connections. Allow it, or friends cannot join. More in [Playing over the internet](Playing-over-the-internet).
+
+## Local network
+
+The join screen lists games hosted on your network. On macOS 15 and later, the first search asks whether Four Souls may find devices on your local network: allow it, or the list stays empty. If you said no, turn it on in **System Settings → Privacy & Security → Local Network**. Guest Wi-Fi and some routers block these searches; typing the host's address always works.

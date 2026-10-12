@@ -66,6 +66,31 @@ func playFuzz(t *testing.T, seed uint64, players uint8, choices []byte, focus []
 
 func checkNoLeaks(t *testing.T, g *Game) {
 	t.Helper()
+	// No view names a card hidden in a deck (A-16). The top treasure for
+	// a peeking player is allowed; viewIDs leaves it out.
+	inDeck := map[ObjectID]bool{}
+	for d := range deckCount {
+		for _, id := range g.Decks[d] {
+			inDeck[id] = true
+		}
+	}
+	viewers := []Viewer{{Kind: ViewSpectator}}
+	for _, pl := range g.Players {
+		viewers = append(viewers, Viewer{Kind: ViewPlayer, Player: pl.ID})
+	}
+	for _, v := range viewers {
+		gv := g.View(v)
+		for id := range viewIDs(gv) {
+			if inDeck[id] {
+				t.Fatalf("viewer %+v sees %s, hidden in a deck (A-16)", v, g.Object(id).Card)
+			}
+		}
+		for _, it := range gv.Stack {
+			if it.Card != "" && inDeck[it.Source] {
+				t.Fatalf("viewer %+v sees stack item %s from a deck (A-16)", v, it.Card)
+			}
+		}
+	}
 	for _, pl := range g.Players {
 		ids := viewIDs(g.View(Viewer{Kind: ViewPlayer, Player: pl.ID}))
 		for _, other := range g.Players {

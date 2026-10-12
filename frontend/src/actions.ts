@@ -1,6 +1,6 @@
 // What the player may do now, from the update's allowed intents (7.7).
 // Pure: the table only offers what the server allows.
-import type { Intent, OptionView, Update } from './protocol';
+import type { Intent, OptionView, Prompt, Update } from './protocol';
 
 // Engine enums, in Go's order (pkg/rules_engine/prompt.go, choice.go).
 export const IntentKind = {
@@ -32,6 +32,11 @@ const purposeTitles = [
   'Choose who gains the curse',
   'Choose the card for the very bottom',
 ];
+
+// choiceTitle is the question of a choose prompt.
+export function choiceTitle(w: Prompt): string {
+  return w.text ?? purposeTitles.at(w.purpose ?? 0) ?? 'Choose';
+}
 
 export interface Action {
   label: string;
@@ -104,7 +109,7 @@ export function actionsFor(u: Update, isCard: (label: string) => boolean): Actio
   if (choose.length > 0) {
     const w = u.view.waiting;
     out.choice = {
-      title: w.text ?? purposeTitles.at(w.purpose ?? 0) ?? 'Choose',
+      title: choiceTitle(w),
       purpose: w.purpose ?? 0,
       options: choose.map((intent) => {
         const i = intent.choice ?? 0;

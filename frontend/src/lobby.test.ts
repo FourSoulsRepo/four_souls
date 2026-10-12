@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { emptyLobby, leftTable, lost, onMessage, optionsText, remember, type Session } from './lobby';
+import { emptyLobby, lanRows, leftTable, lost, onMessage, optionsText, remember, type Session } from './lobby';
 import type { Table } from './protocol';
 
 const start: Session = { screen: 'join', lobby: emptyLobby, game: null, error: '' };
@@ -89,5 +89,26 @@ describe('optionsText', () => {
     expect(optionsText({ picking: 'draft', draft_size: 4, ban_rounds: 2, response_timer: 90, no_bonus_souls: true })).toBe(
       'Draft of 4 · 2 ban rounds · 90 s to respond · no bonus souls',
     );
+  });
+});
+
+describe('lanRows', () => {
+  it('lists each waiting game with its address and lock; another version cannot be joined', () => {
+    const rows = lanRows(
+      [
+        { address: '192.168.1.5:4774', protocol: 1, app: '1.0.0', games: [{ host: 'Ann', seats: 3, taken: 1, locked: true }] },
+        { address: '192.168.1.9:4774', protocol: 2, app: '2.0.0', games: [{ host: 'Bo', seats: 2, taken: 1, locked: false }] },
+      ],
+      1,
+    );
+    expect(rows).toEqual([
+      { key: '192.168.1.5:4774#0', address: '192.168.1.5:4774', text: "🔒 Ann's game · 1/3 players · 192.168.1.5:4774", joinable: true },
+      {
+        key: '192.168.1.9:4774#0',
+        address: '192.168.1.9:4774',
+        text: "Bo's game · 1/2 players · 192.168.1.9:4774 · needs app 2.0.0",
+        joinable: false,
+      },
+    ]);
   });
 });

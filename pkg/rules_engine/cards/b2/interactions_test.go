@@ -103,15 +103,31 @@ func TestRulingBombsAreNotCombat(t *testing.T) {
 	}
 }
 
-// S-RU FAQ #1: Two of Clubs twice still only doubles.
+// S-RU FAQ #1, Q-09: Two of Clubs used again still only doubles; the
+// wording matters ("loot double that number"), so uses don't stack.
 func TestRulingTwoOfClubsTwice(t *testing.T) {
+	for uses := 1; uses <= 3; uses++ {
+		tb := itemTable(t, items("two_of_clubs", "bum_friend"), "a_dime")
+		for i := range uses {
+			if i > 0 {
+				tb.G.Recharge(tb.Find(0, "two_of_clubs"))
+			}
+			tb.Activate(0, "two_of_clubs", 0, me)
+		}
+		tb.Activate(0, "bum_friend", 0, "a_dime") // loot 1, doubled once; one goes back
+		if h := len(tb.G.Players[0].Hand); h != 2 {
+			t.Errorf("%d uses: hand = %d, want 2", uses, h)
+		}
+	}
+}
+
+// Q-09: a use on another player doubles only that player's loot.
+func TestRulingTwoOfClubsPerPlayer(t *testing.T) {
 	tb := itemTable(t, items("two_of_clubs", "bum_friend"), "a_dime")
-	tb.Activate(0, "two_of_clubs", 0, me)
-	tb.G.Recharge(tb.Find(0, "two_of_clubs"))
-	tb.Activate(0, "two_of_clubs", 0, me)
-	tb.Activate(0, "bum_friend", 0, "a_dime") // loot 1, doubled once; one goes back
-	if h := len(tb.G.Players[0].Hand); h != 2 {
-		t.Errorf("hand = %d, want 2", h)
+	tb.Activate(0, "two_of_clubs", 0, foe)
+	tb.Activate(0, "bum_friend", 0, "a_dime") // loot 1, not doubled; one goes back
+	if h := len(tb.G.Players[0].Hand); h != 1 {
+		t.Errorf("hand = %d, want 1", h)
 	}
 }
 

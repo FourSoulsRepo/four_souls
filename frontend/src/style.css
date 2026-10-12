@@ -19,11 +19,34 @@
   --panel: #ffffff;
 }
 
+/* Not a web page (V-10): the window never scrolls as a whole, and a
+   mouse drag selects nothing. Lists scroll on their own; text worth
+   copying opts back in with .selectable. */
 html,
 body,
 #root {
   height: 100%;
   margin: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
+body {
+  cursor: default;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+input,
+textarea,
+.selectable {
+  cursor: text;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+img {
+  -webkit-user-drag: none;
 }
 
 button {

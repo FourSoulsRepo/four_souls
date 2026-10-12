@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"crypto/subtle"
 	"fmt"
 	"slices"
 	"strconv"
@@ -84,6 +85,9 @@ type table struct {
 	sets   []string
 	opts   protocol.Options
 	seats  []tableSeat
+	// password is needed to join; "" means none (N-14). Never sent,
+	// logged, recorded or saved.
+	password string
 }
 
 type tableSeat struct {
@@ -106,7 +110,7 @@ type hubRequest struct {
 	leave  bool
 	find   string     // a started game by ID, for a record download
 	reply  chan *Room // the answer to find
-	run    func(*Hub) // runs in the hub goroutine (tests)
+	run    func(*Hub) // runs in the hub goroutine
 }
 
 // Hub is the lobby: it seats players at tables and starts their games
@@ -329,8 +333,15 @@ func (h *Hub) create(c *Client, env protocol.Envelope) {
 		c.fail(env.ID, protocol.ErrBadSetup, err.Error())
 		return
 	}
+	if len(m.Password) > protocol.MaxPassword {
+		c.fail(env.ID, protocol.ErrBadSetup, "a password has at most "+strconv.Itoa(protocol.MaxPassword)+" characters")
+		return
+	}
 	h.seq++
-	t := &table{n: h.seq, id: "g" + strconv.Itoa(h.seq), host: c.name, sets: m.Sets, opts: opts, seats: make([]tableSeat, m.Seats)}
+	t := &table{
+		n: h.seq, id: "g" + strconv.Itoa(h.seq), host: c.name, sets: m.Sets, opts: opts,
+		seats: make([]tableSeat, m.Seats), password: m.Password,
+	}
 	h.tables = append(h.tables, t)
 	h.sit(c, t, 0)
 }
@@ -362,6 +373,14 @@ func (h *Hub) join(c *Client, env protocol.Envelope) {
 	}
 	if missing := lacks(c.sets, t.sets); missing != "" {
 		c.fail(env.ID, protocol.ErrMissingSets, "you do not have the card set "+missing+" (CD-03)")
+		return
+	}
+	if t.password != "" && subtle.ConstantTimeCompare([]byte(m.Password), []byte(t.password)) != 1 {
+		reason := "wrong password"
+		if m.Password == "" {
+			reason = "this game needs a password"
+		}
+		c.fail(env.ID, protocol.ErrPassword, reason)
 		return
 	}
 	free := slices.IndexFunc(t.seats, func(s tableSeat) bool { return s.token == "" })
@@ -517,7 +536,9 @@ func (h *Hub) list() protocol.Games {
 				taken++
 			}
 		}
-		out.Games = append(out.Games, protocol.GameInfo{ID: t.id, Host: t.host, Seats: len(t.seats), Taken: taken, Sets: t.sets})
+		out.Games = append(out.Games, protocol.GameInfo{
+			ID: t.id, Host: t.host, Seats: len(t.seats), Taken: taken, Sets: t.sets, Locked: t.password != "",
+		})
 	}
 	for _, g := range h.games {
 		out.Games = append(out.Games, g.info)
