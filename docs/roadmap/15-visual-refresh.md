@@ -572,6 +572,9 @@ Images come first, so the new table is built with backs and mats.
    2. The strip is ~0.45 u wide, at the board's left edge (H-07).
    3. The info column keeps only the turn badge and the stack.
    4. **Owner** decides: narrow the info column, or let the stack use the room.
+   5. Owner picks B: the info column keeps its width.
+   6. The strip sits inside the board, left of the info column.
+   7. The stack takes the room History used: ~7 rows before scrolling.
 
 ### [ ] 15.23 Counter badges and live stats
 
