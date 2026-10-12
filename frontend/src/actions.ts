@@ -61,25 +61,31 @@ export interface Choice {
 export const Purpose = { attackTarget: 1, purchase: 5, answer: 9 } as const;
 
 export interface Actions {
-  // buttons are the actions that need no card: pass, end turn, attack, buy.
+  // buttons are the actions that need no card: pass, end turn.
   buttons: Action[];
+  // turn holds the turn actions shown as icons by own name (F-11).
+  turn: TurnActions;
   // cards maps an object to what it can do: play it, use its abilities.
   cards: Map<number, Action[]>;
   choice: Choice | null;
   discard: { count: number; from: number[]; intent: Intent } | null;
 }
 
+// TurnActions are the declare intents, when allowed.
+export interface TurnActions {
+  attack?: Intent;
+  buy?: Intent;
+}
+
 const buttonLabels = new Map<number, string>([
   [IntentKind.pass, 'Pass'],
   [IntentKind.endTurn, 'End turn'],
-  [IntentKind.attack, 'Attack'],
-  [IntentKind.purchase, 'Buy'],
 ]);
 
 // actionsFor lists the viewer's actions. isCard tells whether an option
 // label is a card ref.
 export function actionsFor(u: Update, isCard: (label: string) => boolean): Actions {
-  const out: Actions = { buttons: [], cards: new Map(), choice: null, discard: null };
+  const out: Actions = { buttons: [], turn: {}, cards: new Map(), choice: null, discard: null };
   const allowed = u.allowed ?? [];
   const abilities = new Map<number, number>();
   for (const a of allowed) {
@@ -96,6 +102,10 @@ export function actionsFor(u: Update, isCard: (label: string) => boolean): Actio
     const button = buttonLabels.get(a.kind);
     if (button) {
       out.buttons.push({ label: button, intent: a });
+    } else if (a.kind === IntentKind.attack) {
+      out.turn.attack = a;
+    } else if (a.kind === IntentKind.purchase) {
+      out.turn.buy = a;
     } else if (a.kind === IntentKind.playLoot) {
       add(id, { label: 'Play', intent: a });
     } else if (a.kind === IntentKind.activate) {

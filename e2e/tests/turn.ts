@@ -95,7 +95,7 @@ async function answer(pages: Page[], press: Tap): Promise<boolean> {
       return true;
     }
     // A card may force attacks before the turn can end (Ambush).
-    const attack = bar.getByRole('button', { name: 'Attack' });
+    const attack = turnAction(page, 'Attack');
     if (!(await enabled(bar.getByRole('button', { name: 'End turn' }))) && (await enabled(attack))) {
       await press(page, attack);
       return true;
@@ -132,6 +132,11 @@ export async function settle(pages: Page[], press: Tap, done: () => Promise<bool
     })),
   );
   throw new Error(`the game never settled: ${JSON.stringify(states)}`);
+}
+
+// turnAction is an icon button by own name (15.19): "Buy" or "Attack".
+export function turnAction(page: Page, name: 'Buy' | 'Attack') {
+  return page.getByRole('toolbar', { name: 'Turn actions' }).getByRole('button', { name, exact: true });
 }
 
 // endTurnButton is the active player's "End turn", when it is offered.

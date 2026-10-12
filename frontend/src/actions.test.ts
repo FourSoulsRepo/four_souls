@@ -38,7 +38,9 @@ describe('actionsFor', () => {
       ]),
       isCard,
     );
-    expect(a.buttons.map((b) => b.label)).toEqual(['End turn', 'Attack', 'Buy']);
+    expect(a.buttons.map((b) => b.label)).toEqual(['End turn']);
+    expect(a.turn.attack?.kind).toBe(IntentKind.attack);
+    expect(a.turn.buy?.kind).toBe(IntentKind.purchase);
     expect(a.cards.get(7)?.map((x) => x.label)).toEqual(['Play']);
     expect(a.cards.get(3)?.map((x) => x.label)).toEqual(['Use']);
     expect(a.cards.get(4)?.map((x) => x.label)).toEqual(['Use ability 1', 'Use ability 2']);
@@ -48,6 +50,7 @@ describe('actionsFor', () => {
   it('offers nothing when it is not the viewer’s move', () => {
     const a = actionsFor(update({}, null), isCard);
     expect(a.buttons).toEqual([]);
+    expect(a.turn).toEqual({});
     expect(a.cards.size).toBe(0);
   });
 

@@ -449,6 +449,18 @@ Images come first, so the new table is built with backs and mats.
    6. Instant feedback on press (V-15); no number badges (V-29).
 3. Done when:
    1. e2e test: each icon is lit or dim as the engine allows.
+4. Result (2026-10-12)
+   1. Buy (a bag) and Attack (a sword): round icons beside own status.
+   2. A column right of the coins, so the own area keeps its height.
+   3. Lit gold when the engine allows; dim grey otherwise.
+   4. The action bar keeps only Pass, End turn, and Skip all.
+   5. Keys: B buys, A attacks; the tooltip says "Buy (B)".
+   6. A press shows at once, before the server answers (V-15).
+   7. While choosing what to buy or attack, that icon stays pressed.
+   8. No Cancel: R-SHOP-02 passes priority once a purchase is declared.
+   9. Roll on Attack waits for 15.5.
+   10. e2e test: icons follow the allowed intents; B opens the buy choice.
+   11. Screenshots: `.cache/screenshots/15.19/before/` and `after/`.
 
 ### [ ] 15.20 End turn button and keys
 

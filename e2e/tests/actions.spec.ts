@@ -13,6 +13,7 @@ import {
   gameOver,
   settle,
   tap,
+  turnAction,
   turnNumber,
   type Tap,
 } from './turn';
@@ -30,8 +31,8 @@ function backToMe(active: Page, turn: number) {
 
 // attack declares an attack; settling picks the target on the table.
 async function attack(pages: Page[], active: Page, press: Tap, turn: number) {
-  const button = active.getByRole('region', { name: 'Actions' }).getByRole('button', { name: 'Attack' });
-  if (!(await canEndTurn(active)) || !(await button.isVisible())) {
+  const button = turnAction(active, 'Attack');
+  if (!(await canEndTurn(active)) || !(await button.isEnabled())) {
     return;
   }
   await press(active, button);
@@ -104,4 +105,53 @@ test('a refused action shows the reason', async ({ browser }) => {
     store.getState().act({ player: 0, kind: 1 });
   });
   await expect(other.getByRole('region', { name: 'Actions' }).getByRole('status')).toContainText(/\(R-[A-Z]+-\d+\)/);
+});
+
+// allowedKinds reads the intent kinds the engine allows this page now,
+// or none while the page may not act.
+async function allowedKinds(page: Page): Promise<number[]> {
+  return page.evaluate(() => {
+    interface S {
+      game: { step: number; allowed?: { kind: number }[] | null } | null;
+      behind: boolean;
+      sent: number | null;
+    }
+    const s = (window as unknown as { fourSouls: { store: { getState: () => S } } }).fourSouls.store.getState();
+    const ready = s.game !== null && !s.behind && s.sent !== s.game.step;
+    return ready ? (s.game?.allowed ?? []).map((a) => a.kind) : [];
+  });
+}
+
+test('buy and attack icons are lit only when the engine allows them; B buys', async ({ browser }) => {
+  const pages = await startGame(browser, ['Sol', 'Tia'], { url: fast() });
+  const active = await activePage(pages, click);
+  const turn = await turnNumber(active);
+  for (const page of pages) {
+    const kinds = await allowedKinds(page);
+    const buy = turnAction(page, 'Buy');
+    const attack = turnAction(page, 'Attack');
+    await expect(buy).toBeVisible();
+    await expect(attack).toBeVisible();
+    await (kinds.includes(6) ? expect(buy).toBeEnabled() : expect(buy).toBeDisabled());
+    await (kinds.includes(5) ? expect(attack).toBeEnabled() : expect(attack).toBeDisabled());
+  }
+  await expect(turnAction(active, 'Buy')).toBeEnabled();
+  const other = pages.find((p) => p !== active);
+  if (!other) {
+    throw new Error('no other page');
+  }
+  await expect(turnAction(other, 'Buy')).toBeDisabled();
+  await expect(turnAction(other, 'Attack')).toBeDisabled();
+  await shot(active, 'turn-actions');
+
+  // B declares the purchase; once the others pass, the Buy icon stays
+  // pressed while the player picks what to buy (F-13).
+  await active.keyboard.press('b');
+  await settle(pages, click, async () => active.locator('.choice').isVisible());
+  const choosing = active
+    .getByRole('toolbar', { name: 'Turn actions' })
+    .getByRole('button', { name: 'Choosing what to buy' });
+  await expect(choosing).toHaveAttribute('aria-pressed', 'true');
+  await shot(active, 'turn-actions-buy');
+  await settle(pages, click, backToMe(active, turn));
 });

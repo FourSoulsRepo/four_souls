@@ -10,7 +10,8 @@
 
 1. The table highlights what the player may do now.
    1. Yellow: cards to play or use.
-   2. The action bar: Pass, End turn, Attack, Buy.
+   2. The action bar: Pass, End turn.
+   3. Icons by own name: Buy and Attack; lit when usable, dim when not.
 2. The player drags a loot card onto the board to play it.
 3. Others may respond; the player passes or acts again.
 4. The player presses Attack.
@@ -30,6 +31,9 @@
 * **1a. Not the player's move:** the bar says "Waiting for <name>".
 * **1b. Updates still playing:** buttons stay but are disabled.
 * **2c. Refused:** the bar shows the engine's reason and rule, e.g. "(R-TURN-06)".
+* **4a. Keys:** B buys, A attacks; each icon's tooltip names its key.
+* **4b. Pressed:** a pressed icon shows at once, before the server answers.
+* **4c. Choosing:** while the player picks what to buy or attack, that icon stays pressed.
 
 ## Postconditions
 

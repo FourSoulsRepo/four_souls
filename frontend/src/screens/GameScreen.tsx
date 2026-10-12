@@ -10,6 +10,7 @@ import { HistoryPanel, TurnBadge } from '../components/InfoPanels';
 import { GameMenu } from '../components/GameMenu';
 import { EndOverlay, LostOverlay, PauseOverlay } from '../components/Overlays';
 import { StackPanel } from '../components/StackPanel';
+import { TurnActions } from '../components/TurnActions';
 import { matLook } from '../mats';
 import type { Update } from '../protocol';
 import { seatOf, useApp } from '../store';
@@ -18,7 +19,7 @@ import { seatPositions } from '../table';
 import '../components/Table.css';
 import './screens.css';
 
-const noActions: Actions = { buttons: [], cards: new Map(), choice: null, discard: null };
+const noActions: Actions = { buttons: [], turn: {}, cards: new Map(), choice: null, discard: null };
 
 // GameScreen is the game table (7.5), drawn from the update on screen.
 export function GameScreen() {
@@ -80,6 +81,17 @@ function Table({ game, you }: { game: Update; you: number }) {
               you={p.id === you}
               active={view.turn.active === p.id}
               ui={ui}
+              tools={
+                p.id === you && !view.over ? (
+                  <TurnActions
+                    allowed={actions.turn}
+                    disabled={!canAct}
+                    step={game.step}
+                    waiting={view.waiting}
+                    you={you}
+                  />
+                ) : undefined
+              }
             />
           )
         );

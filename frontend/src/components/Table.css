@@ -386,9 +386,21 @@
   padding: 0 8px;
 }
 
-.own-status {
+/* Status text, then the turn actions in a column beside it (15.19). */
+.own-left {
   grid-area: status;
   justify-self: end;
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.own-left .turn-actions {
+  flex-direction: column;
+  padding-bottom: 6px;
+}
+
+.own-status {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
