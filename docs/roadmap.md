@@ -129,6 +129,10 @@ Step numbers stay as IDs; the table lists steps in work order.
 7. No page scroll and no drag selection, before the play-test (V-10).
 8. Stack shows whom it waits for, before the play-test (V-11).
 9. Wiki in three groups: players, server admins, developers (DO-01).
+10. Stolen card shown to the thief and the victim (V-14).
+11. Audit card lists for leaks of hidden cards (A-16).
+12. LAN games found without typing an IP (N-13).
+13. Game passwords (N-14).
 
 ## 9. Spectators
 
@@ -179,6 +183,7 @@ Step numbers stay as IDs; the table lists steps in work order.
 2. Detailed setup: Bonus Souls, Rooms, deck ratios.
 3. Optional removal of multiplayer-only cards.
 4. Ideas: CD-02, GS-07, GS-08, CD-11.
+5. Deck ratios never reveal the dealt decks (A-16).
 
 ## 15. Visual refresh
 
@@ -186,6 +191,8 @@ Step numbers stay as IDs; the table lists steps in work order.
 2. Borrow layout and readability ideas; copy no assets.
 3. Rework the table; keep e2e tests and screenshots green.
 4. Ideas: V-09.
+5. Check Hearthstone again; the table must not feel like poker (V-13).
+6. Attack animation: the attacker hits the monster (V-12).
 
 ## 16. Localization
 
@@ -202,6 +209,7 @@ Step numbers stay as IDs; the table lists steps in work order.
 3. Only other players can roll back; never the author.
 4. History and records show the rollback.
 5. Ideas: N-12.
+6. Proposal: a seen dice roll blocks rollback (N-12).
 
 ## Future
 

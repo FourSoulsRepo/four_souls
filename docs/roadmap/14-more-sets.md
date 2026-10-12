@@ -3,7 +3,7 @@
 Goal: official sets beyond the Base Game.
 Order: Gold Box, Four Souls+, Requiem, Warp Zone, promos.
 
-Ideas: CD-02, GS-07, GS-08, CD-11.
+Ideas: CD-02, GS-07, GS-08, CD-11, A-16.
 
 ---
 
@@ -42,6 +42,7 @@ Ideas: CD-02, GS-07, GS-08, CD-11.
    1. Bonus Souls and Rooms in detailed setup.
    2. Deck ratios from Ed's recommendations (GS-07).
    3. Remove multiplayer-only cards in 2-player games (GS-08).
+   4. Deck ratios: the collection check still compares whole sets (A-16).
 3. Done when:
    1. Each option has a server test and a use case.
 

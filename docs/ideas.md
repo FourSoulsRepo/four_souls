@@ -64,6 +64,16 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    1. Lists the players who must still respond or pass.
    2. Shows who already passed.
    3. Shows a pending prompt: who must choose and what.
+12. V-12. Attack animation, like Hearthstone.
+   1. The attacker's card jumps at the monster and hits it.
+   2. Then it returns to its place.
+   3. Damage shows on the card that was hit.
+13. V-13. Check the Hearthstone table again.
+   1. Today our table looks more like a poker table.
+   2. Compare layout, board shape, and card placement.
+14. V-14. History shows which card was stolen.
+   1. The thief and the victim see the card.
+   2. Everyone else sees only "A stole a card from B".
 
 ## Rules
 
@@ -215,6 +225,14 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    9. Otherwise blank cards with text (like SP-05).
    10. Used for playing and watching; not for replays.
    11. Later maybe: a GitHub Pages copy for public servers with TLS.
+16. A-16. No leaks through card lists.
+   1. Lists sent to a client hold only cards that are public.
+   2. Public: on the table, played, discarded, revealed, or seen by that client.
+   3. Never cards still hidden in a deck.
+   4. The collection check compares whole sets, not the dealt decks.
+   5. With deck ratios (GS-07) the decks are a random subset.
+   6. Sending that subset would tell players what is in the decks.
+   7. Exception: cards the host banned are public and may be left out.
 
 ## Network
 
@@ -281,6 +299,21 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    4. Open: whether hidden info (draws) or dice block a rollback.
    5. Open: in 3–4 player games, does one other player suffice.
    6. The rollback is shown in the history and kept in the record.
+   7. Open: after a rollback, does a new dice roll give the same value?
+   8. Same value: the RNG is restored, so the player knows the next roll.
+   9. That holds whatever is played first, since it is one RNG stream.
+   10. New value: a rollback becomes a free re-roll.
+   11. Proposal: a seen dice roll blocks rollback, like at a real table.
+13. N-13. Find LAN games without typing an IP.
+   1. A hosting app announces its waiting game on the LAN.
+   2. The join screen lists the games it finds.
+   3. Typing an address still works.
+   4. Announcements stop when the game starts.
+   5. A dedicated server never announces.
+   6. Players join it by address and pick from its list of games.
+14. N-14. A game can have a password.
+   1. Set by whoever creates the game.
+   2. The games list shows a lock; joining asks for the password.
 
 ## Learning
 

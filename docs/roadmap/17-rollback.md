@@ -14,6 +14,8 @@ Ideas: N-12.
    2. **Owner**: may a dice roll be rolled back?
    3. **Owner**: in 3–4 player games, one other player or all?
    4. How far back: last event only, or more.
+   5. Proposal: a seen dice roll blocks rollback.
+   6. Restored RNG repeats the roll; a new seed makes a free re-roll.
 3. Done when:
    1. ADR accepted.
 

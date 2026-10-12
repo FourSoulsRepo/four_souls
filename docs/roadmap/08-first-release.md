@@ -3,7 +3,7 @@
 Goal: the full Base Game for 2–4 players over LAN.
 Public downloads for all platforms.
 
-Ideas: B-03 – B-05, L-03, V-10, V-11, DO-01.
+Ideas: B-03 – B-05, L-03, V-10, V-11, DO-01, V-14, A-16, N-13, N-14.
 
 ---
 
@@ -122,3 +122,54 @@ Ideas: B-03 – B-05, L-03, V-10, V-11, DO-01.
    4. Page slugs stay the same, so links keep working.
 3. Done when:
    1. Every wiki page sits in exactly one group.
+
+### [ ] 8.11 Stolen card in the history
+
+1. Goal: both sides of a steal see the card (V-14).
+2. When: before the play-test (8.5).
+3. Tasks:
+   1. Today `EvGaveCard` is private to the receiver only.
+   2. Let a private event name every player who sees the card.
+   3. Thief and victim see the card; others see "A stole a card from B".
+   4. Engine view test for all three seats.
+4. Done when:
+   1. Dead Bird steal shows the card to exactly two players.
+
+### [ ] 8.12 Card list leak audit
+
+1. Goal: no message reveals hidden cards (A-16).
+2. When: before the play-test (8.5).
+3. Tasks:
+   1. Review every server message: views, setup, games list, errors.
+   2. Review card text sent to outdated clients (CD-09).
+   3. Records go only to players after the match (RP-05).
+   4. Collection check stays by whole sets.
+   5. Fuzz invariant: views never name a card hidden in a deck.
+4. Done when:
+   1. Audit notes in `docs/wiki/Server.md`; found leaks fixed with tests.
+
+### [ ] 8.13 LAN game discovery
+
+1. Goal: join a friend's game without typing an IP (N-13).
+2. When: before the play-test (8.5).
+3. Tasks:
+   1. ADR: UDP broadcast or mDNS; port; message format.
+   2. Hosting app announces while the game waits for players.
+   3. Join screen lists found games; manual address stays.
+   4. Dedicated server never announces.
+   5. Check macOS local network and Windows firewall prompts.
+   6. Use case: join a game found on the LAN.
+4. Done when:
+   1. Two machines on one Wi-Fi find each other's game.
+
+### [ ] 8.14 Game password
+
+1. Goal: only invited players join (N-14).
+2. Tasks:
+   1. Optional password when creating a game.
+   2. Games list shows a lock.
+   3. Join asks for it; a wrong one is refused with a reason.
+   4. Password never appears in records or logs.
+3. Done when:
+   1. Server tests for right, wrong, and missing passwords.
+   2. Use case updated: host a game, join a game.
