@@ -201,6 +201,7 @@ Step numbers stay as IDs; the table lists steps in work order.
 9. Real-looking dice, thrown by a button (V-17).
 10. Everyone sees the roller's own dice look (V-19).
 11. The game always shows clearly when it waits for the player (V-20).
+12. Everyone sees what the active player is doing now (V-21).
 
 ## 16. Localization
 

@@ -96,3 +96,19 @@ Ideas: V-09, V-12, V-13, V-15 – V-20.
 3. Done when:
    1. e2e test: every prompt type shows its banner and highlights.
    2. `make screenshots` covers "your turn to act" and "waiting for Ann".
+
+### [ ] 15.8 Show what the active player is doing
+
+1. Goal: every player knows what is happening right now (V-21).
+2. Tasks:
+   1. List the activities to show: fight, shop, play a card, pay, think.
+   2. Derive each one from game state on the client.
+   3. The active seat shows a short status: "Ann attacks Pooter".
+   4. In a fight, the player and the monster get a battle mark.
+   5. Attack rolls, targets, and damage are visible to all.
+   6. "Thinking" shows while the active player holds priority.
+   7. Spectators see the same marks.
+   8. Share the banner and highlight code with 15.7.
+3. Done when:
+   1. e2e test: a second player sees the fight mark and the status line.
+   2. `make screenshots` covers "Ann attacks" and "Ann is thinking".

@@ -132,6 +132,16 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    5. When the game waits for others, it names who and for what.
    6. No silent waits: a screen never looks idle while input is needed.
    7. Covers every prompt: priority, targets, choices, dice (V-17).
+21. V-21. Everyone sees what the active player is doing.
+   1. V-20 covers prompts to the viewer; this covers watching others.
+   2. Every player can tell the current activity at a glance.
+   3. Fight: the player and the monster are marked as in battle.
+   4. Others see the attack roll, the target, and the damage.
+   5. Thinking: "Ann is choosing what to do" when she holds priority.
+   6. Also: buying from the shop, playing a card, paying a cost.
+   7. One status line or badge on the active seat says it in a few words.
+   8. Same marks on every screen, spectators included.
+   9. Built from game state; no new intents needed.
 
 ## Rules
 
