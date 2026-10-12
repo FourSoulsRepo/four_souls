@@ -10,6 +10,7 @@ import {
   CardSets as wailsCardSets,
   Dice as wailsDice,
   FindGames as wailsFindGames,
+  Icons as wailsIcons,
   Mats as wailsMats,
   Notice as wailsNotice,
   SaveRecord as wailsSaveRecord,
@@ -148,6 +149,17 @@ export interface CardBack {
 export async function getBacks(): Promise<CardBack[]> {
   // Go sends only deck kinds, so the cast is safe.
   return (await wailsBacks()) as CardBack[];
+}
+
+// Icons are the game's own small images (15.38); each URL is '' without
+// the private images, and the app draws its own.
+export interface Icons {
+  coin: string;
+}
+
+// getIcons returns the icon URLs.
+export function getIcons(): Promise<Icons> {
+  return wailsIcons();
 }
 
 // MatInfo is one game mat image (ST-03, V-24).

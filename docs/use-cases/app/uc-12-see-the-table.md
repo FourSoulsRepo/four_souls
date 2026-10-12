@@ -29,6 +29,7 @@
    3. Health and attack are big numbers on the character card.
    4. The hand fans out at the bottom edge, partly off screen.
    5. Hover a card to read it in full (V-18).
+   6. The coins show the game's own coin (15.38).
 
 ## Alternative scenarios and errors
 
@@ -52,6 +53,7 @@
 * **1f. Card backs (V-26):** each deck shows its own back.
   * An opponent's hand is one loot back with its card count.
   * No back images (public clone): plain dark backs with the deck name.
+* **1g. No coin image (public clone):** a drawn ¢ coin by the cents.
 
 ## Postconditions
 

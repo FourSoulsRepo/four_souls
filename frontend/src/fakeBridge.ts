@@ -212,6 +212,9 @@ w.go = {
         Promise.resolve(
           ['loot', 'treasure', 'monster'].map((kind) => ({ kind, image: `/cardimg/assets/backs/${kind}.webp` })),
         ),
+      // The coin icon at its real path; like the backs, it loads only in
+      // screenshots, else the drawn coin shows.
+      Icons: () => Promise.resolve({ coin: '/cardimg/assets/icons/coin.webp' }),
       // One mat image, at its real path; the e2e tests serve it only for
       // screenshots, else it fails to load as in a public clone.
       // ?nomats lists none, as Go does without the private images.

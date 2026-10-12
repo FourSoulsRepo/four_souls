@@ -675,3 +675,12 @@ Images come first, so the new table is built with backs and mats.
    1. `make screenshots` shows the coin image by own name.
    2. A build without the images shows the drawn coin.
    3. `make frontend e2e` passes.
+4. Result (2026-10-12)
+   1. `scraper coin` in the tools repo: 128 px WebP, quality 85, 6 KB.
+   2. It takes the biggest opaque blob in the left half: the ¢ face.
+   3. File: `assets/icons/coin.webp`; `coin.png` is kept.
+   4. The icon is staged in the images repo; the owner amends and pushes.
+   5. `App.Icons` gives its URL; a missing file gives the drawn coin.
+   6. Own coins show the image at 30 px; a failed load shows the drawn coin.
+   7. e2e test: one page gets the image, the other the drawn coin.
+   8. Screenshots: `.cache/screenshots/15.38/before/` and `after/`.

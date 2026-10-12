@@ -1,12 +1,5 @@
 package main
 
-import (
-	"io/fs"
-	"path"
-
-	carddb "github.com/FourSoulsRepo/card_db"
-)
-
 // backsDir holds the card back images inside the card images folder.
 const backsDir = "assets/backs"
 
@@ -25,12 +18,7 @@ type CardBack struct {
 func (a *App) Backs() []CardBack {
 	out := make([]CardBack, 0, len(backKinds))
 	for _, kind := range backKinds {
-		b := CardBack{Kind: kind}
-		file := backsDir + "/" + kind + ".webp"
-		if info, err := fs.Stat(a.cardFiles, path.Join(carddb.ImagesDir, file)); err == nil && !info.IsDir() {
-			b.Image = cardImagePrefix + file
-		}
-		out = append(out, b)
+		out = append(out, CardBack{Kind: kind, Image: a.imageURL(backsDir + "/" + kind + ".webp")})
 	}
 	return out
 }

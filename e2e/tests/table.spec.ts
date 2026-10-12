@@ -132,6 +132,28 @@ test('two players face each other; the table fits 1280x720', async ({ browser })
   await shot(eve, 'table-2p');
 });
 
+test('own coins show the coin image, or a drawn coin without it (15.38)', async ({ browser }) => {
+  // Coy gets a coin image; Dot's fails to load, as without the images.
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="8" height="8"><circle cx="4" cy="4" r="4" fill="#d90"/></svg>';
+  let opened = 0;
+  const [coy, dot] = await startGame(browser, ['Coy', 'Dot'], {
+    open: (page) => {
+      const served = opened++ === 0;
+      return page.route('**/cardimg/assets/icons/coin.webp', (route) =>
+        served ? route.fulfill({ body: svg, contentType: 'image/svg+xml' }) : route.abort(),
+      );
+    },
+  });
+  if (!coy || !dot) {
+    throw new Error('no pages');
+  }
+  const image = coy.getByLabel(/^\d+ cents$/).locator('img.coin');
+  await expect(image).toHaveAttribute('src', '/cardimg/assets/icons/coin.webp');
+  await expect(image).toBeVisible();
+  await expect(coy.getByLabel(/^\d+ cents$/)).not.toContainText('¢');
+  await expect(dot.getByLabel(/^\d+ cents$/).locator('.coin')).toHaveText('¢');
+});
+
 test('four players sit left, top and right in turn order', async ({ browser }) => {
   const pages = await startGame(browser, ['Gus', 'Hal', 'Ivy', 'Jo']);
   const hal = pages[1];

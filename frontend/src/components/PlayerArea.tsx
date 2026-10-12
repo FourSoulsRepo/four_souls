@@ -66,6 +66,32 @@ function OpponentArea({ player, name, position, active, ui }: Omit<Props, 'you'>
   );
 }
 
+// Coin is the game's coin image (15.38), or a drawn ¢ coin without the
+// private images or when the image fails to load.
+function Coin() {
+  const image = useApp((s) => s.icons.coin);
+  const [broken, setBroken] = useState('');
+  if (image !== '' && image !== broken) {
+    return (
+      <img
+        className="coin coin-image"
+        src={image}
+        alt=""
+        aria-hidden="true"
+        draggable={false}
+        onError={() => {
+          setBroken(image);
+        }}
+      />
+    );
+  }
+  return (
+    <span className="coin" aria-hidden="true">
+      ¢
+    </span>
+  );
+}
+
 // OwnArea is the viewer's place at the bottom edge (15.17): name and
 // big coins at the left, the character centered with its live health
 // and attack, items to its right, and the hand fanned below, partly
@@ -84,9 +110,7 @@ function OwnArea({ player, name, active, ui }: Omit<Props, 'you' | 'position'>) 
       <div className="own-status">
         <b className="own-name">{label}</b>
         <span className="own-coins" title="Coins" aria-label={`${String(player.cents)} cents`}>
-          <span className="coin" aria-hidden="true">
-            ¢
-          </span>
+          <Coin />
           {player.cents}
         </span>
         <span className="own-souls" title="Souls">

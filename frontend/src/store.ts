@@ -7,6 +7,7 @@ import {
   getCards,
   getDice,
   getBacks,
+  getIcons,
   getMats,
   getCardSets,
   saveRecord,
@@ -17,6 +18,7 @@ import {
   stopHosting,
   type DiceSkin,
   type HostInfo,
+  type Icons,
   type LanServer,
   type MatInfo,
   type Settings,
@@ -99,6 +101,8 @@ interface AppState extends Session {
   mats: MatInfo[];
   // backs are the deck back images by kind (V-26); a missing kind is plain.
   backs: Map<Kind, string>;
+  // icons are the game's own icon images (15.38); '' draws our own.
+  icons: Icons;
   zoom: Zoom | null;
   loadCards: () => Promise<void>;
   setZoom: (zoom: Zoom | null) => void;
@@ -347,15 +351,17 @@ export const useApp = create<AppState>()((set, get) => {
     dice: [],
     mats: [],
     backs: new Map(),
+    icons: { coin: '' },
     zoom: null,
     loadCards: async () => {
       try {
-        const [list, dice, mats, backs] = await Promise.all([getCards(), getDice(), getMats(), getBacks()]);
+        const [list, dice, mats, backs, icons] = await Promise.all([getCards(), getDice(), getMats(), getBacks(), getIcons()]);
         set({
           cards: new Map(list.map((c) => [c.ref, c])),
           dice,
           mats,
           backs: new Map(backs.filter((b) => b.image !== '').map((b) => [b.kind, b.image])),
+          icons,
         });
       } catch (e) {
         set({ error: `Card data: ${messageOf(e)}` });

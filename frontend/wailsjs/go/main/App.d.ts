@@ -16,6 +16,8 @@ export function Dice():Promise<Array<main.DiceSkin>>;
 
 export function FindGames():Promise<Array<lan.Found>>;
 
+export function Icons():Promise<main.Icons>;
+
 export function Mats():Promise<Array<main.MatInfo>>;
 
 export function Notice():Promise<Array<legal.Line>>;
