@@ -16,6 +16,9 @@ Images come first, so the new table is built with backs and mats.
    2. Never commit screenshots to the repo.
 3. Start the next sub-step only after the owner approves.
 4. These rules replace "stop after the global step" for step 15.
+5. Screenshots show how the interface changed.
+   1. Before and after shots of every changed screen.
+   2. Owner reviews the changes and the screenshots.
 
 ---
 
@@ -219,7 +222,7 @@ Images come first, so the new table is built with backs and mats.
    5. Not converted: `coin.png` and two small Steam icons; owner decides.
    6. Owner: keep those three as they are for now; owner reviewed and pushed.
 
-### [ ] 15.10 Mat backgrounds
+### [x] 15.10 Mat backgrounds
 
 1. Goal: a game mat image under the table (V-24, ST-03).
 2. Tasks:
@@ -234,6 +237,14 @@ Images come first, so the new table is built with backs and mats.
    1. Go test: the mat list matches the folder.
    2. e2e test: the setting changes the background.
    3. A public-clone build shows the color table.
+4. Result (2026-10-12)
+   1. `App.Mats` lists every WebP in `assets/mats/`.
+   2. The menu keeps the three color mats; an image takes its namesake's place.
+   3. A new image name is added to the menu after them.
+   4. The image lies under a dark shade, over its colors.
+   5. The mat setting keeps any file name; a missing image shows colors.
+   6. Default stays Green felt; owner decides if Basement becomes it.
+   7. Screenshots: `.cache/screenshots/15.10/before/` and `after/`.
 
 ### [ ] 15.11 Card backs
 

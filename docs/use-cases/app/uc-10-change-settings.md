@@ -32,7 +32,9 @@
   * The game table keeps its dark overlays on the mat.
 * **3e. Game mat (ST-03):** Green felt, Basement or Cathedral.
   * A preview shows the mat; the table uses it at once.
-  * Mat images come later with the card data (CD-07).
+  * With the private images, every mat image is a choice (V-24).
+  * An image takes the place of the color mat with its name.
+  * A missing mat image shows that mat's colors, or felt.
 * **1a. First start (ST-06):** after the splash, a Welcome screen asks for the nickname.
   * Continue saves it and opens the main menu; it is asked only once.
 

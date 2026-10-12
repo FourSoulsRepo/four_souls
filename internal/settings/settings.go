@@ -27,7 +27,8 @@ type Settings struct {
 	Fullscreen bool `json:"fullscreen"`
 	// Theme colours menus and panels (ST-02): one of Themes.
 	Theme string `json:"theme"`
-	// Mat is the game mat under the table (ST-03): one of Mats.
+	// Mat is the game mat under the table (ST-03, V-24): a mat image
+	// name or one of ColorMats; see ValidMat.
 	Mat string `json:"mat"`
 	// Dice is the look of the player's dice (V-19): one of Dice.
 	Dice string `json:"dice"`
@@ -90,9 +91,21 @@ type Rejoin struct {
 var (
 	Speeds = []string{"normal", "fast", "slow", "off"}
 	Themes = []string{"dark", "light"}
-	Mats   = []string{"felt", "basement", "cathedral"}
 	Dice   = []string{"tear"}
 )
+
+// ColorMats are the mats drawn without images; the first is the default.
+// Image mats come from the files, so any ValidMat name is kept: a mat
+// whose image is missing shows as colors.
+var ColorMats = []string{"felt", "basement", "cathedral"}
+
+// matName is a mat file name without its extension.
+var matName = regexp.MustCompile(`^[a-z0-9_-]{1,40}$`)
+
+// ValidMat reports whether name can name a mat.
+func ValidMat(name string) bool {
+	return matName.MatchString(name)
+}
 
 // MaxRecent is how many recent addresses are kept.
 const MaxRecent = 5
@@ -112,14 +125,14 @@ func (s *Settings) choices() []struct {
 	return []struct {
 		value   *string
 		allowed []string
-	}{{&s.Animation, Speeds}, {&s.Theme, Themes}, {&s.Mat, Mats}, {&s.Dice, Dice}}
+	}{{&s.Animation, Speeds}, {&s.Theme, Themes}, {&s.Dice, Dice}}
 }
 
 // Load reads the settings. A missing or broken file gives the defaults.
 // Recent is never nil, so the frontend always gets a list; an unknown
 // choice reads as its default.
 func Load(path string) Settings {
-	def := Settings{Recent: []string{}, Animation: Speeds[0], Theme: Themes[0], Mat: Mats[0], Dice: Dice[0]}
+	def := Settings{Recent: []string{}, Animation: Speeds[0], Theme: Themes[0], Mat: ColorMats[0], Dice: Dice[0]}
 	data, err := os.ReadFile(path) //nolint:gosec // the app names the file
 	if err != nil {
 		return def
@@ -136,6 +149,9 @@ func Load(path string) Settings {
 		if !slices.Contains(c.allowed, *c.value) {
 			*c.value = c.allowed[0]
 		}
+	}
+	if !ValidMat(s.Mat) {
+		s.Mat = ColorMats[0]
 	}
 	return s
 }
@@ -157,6 +173,12 @@ func Save(path string, s Settings) (Settings, error) {
 		if !slices.Contains(c.allowed, *c.value) {
 			return Settings{}, fmt.Errorf("%w: %q", ErrChoice, *c.value)
 		}
+	}
+	if s.Mat == "" {
+		s.Mat = ColorMats[0]
+	}
+	if !ValidMat(s.Mat) {
+		return Settings{}, fmt.Errorf("%w: %q", ErrChoice, s.Mat)
 	}
 	recent := []string{}
 	for _, a := range s.Recent {

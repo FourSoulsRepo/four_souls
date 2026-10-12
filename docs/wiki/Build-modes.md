@@ -2,7 +2,7 @@
 
 ## Embedded vs. external files
 
-App files (game mats, sounds and similar) are reached through `internal/assets.FS()`.
+App files (sounds and similar) are reached through `internal/assets.FS()`.
 
 | Build | Where files come from |
 |-------|----------------------|
@@ -12,6 +12,8 @@ App files (game mats, sounds and similar) are reached through `internal/assets.F
 Card data and images (`pkg/card_db`, see ADR 004) follow the same idea through `internal/assets.CardsFS()`: card data is embedded with `-tags embed`, and images too with `-tags "embed cardimages"` (needs the private images submodule); otherwise `$FOUR_SOULS_CARDS`, else `cards/` next to the binary, else `pkg/card_db/` (for `wails dev`).
 
 The app serves card images to the frontend under `/cardimg/<set>/<file>.webp` (an asset server middleware in `cards.go`); `App.Cards()` gives each card's text and image URL, or no URL when the file is missing.
+
+Dice textures and game mats are private images too, under `/cardimg/assets/`. `App.Mats()` lists every `.webp` in `images/assets/mats/`, so a new mat needs only a new file. Without the images the list is empty and the table uses the color mats.
 
 External mode lets you change files and restart without rebuilding. A missing folder is not fatal: reads simply fail with "not exist", and the app still starts.
 

@@ -16,12 +16,16 @@ export async function startGame(
     url = appURL(),
     // setup changes the host form before Host is pressed.
     setup = (_: Page) => Promise.resolve(),
+    // open runs on each new page before it loads the app.
+    open = (_: Page) => Promise.resolve(),
   } = {},
 ): Promise<Page[]> {
   const pages: Page[] = [];
   for (const name of names) {
     void name;
-    pages.push(await (await browser.newContext({ viewport, hasTouch: touch })).newPage());
+    const page = await (await browser.newContext({ viewport, hasTouch: touch })).newPage();
+    await open(page);
+    pages.push(page);
   }
   const [host, ...guests] = pages;
   if (!host) {

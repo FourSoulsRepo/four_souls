@@ -10,6 +10,7 @@ import { HistoryPanel, TurnBadge } from '../components/InfoPanels';
 import { GameMenu } from '../components/GameMenu';
 import { EndOverlay, LostOverlay, PauseOverlay } from '../components/Overlays';
 import { StackPanel } from '../components/StackPanel';
+import { matLook } from '../mats';
 import type { Update } from '../protocol';
 import { seatOf, useApp } from '../store';
 import { waitText, type Names } from '../stack';
@@ -47,6 +48,8 @@ function Table({ game, you }: { game: Update; you: number }) {
   const { view } = game;
   const cards = useApp((s) => s.cards);
   const mat = useApp((s) => s.settings.mat);
+  const mats = useApp((s) => s.mats);
+  const look = matLook(mat, mats);
   const connected = useApp((s) => s.connected);
   const behind = useApp((s) => s.behind);
   const sent = useApp((s) => s.sent);
@@ -64,7 +67,7 @@ function Table({ game, you }: { game: Update; you: number }) {
   const stacked = (view.stack ?? []).length > 0;
   const skip = game.skip_all ? 'on' : stacked && !view.over ? 'offer' : 'none';
   return (
-    <main className={`game mat-${mat}`} aria-label={`Turn ${String(view.turn.number)}`}>
+    <main className={`game ${look.className}`} style={look.style} aria-label={`Turn ${String(view.turn.number)}`}>
       {seatPositions(view.players.length, you).map(({ position, player }) => {
         const p = view.players.at(player);
         return (

@@ -9,6 +9,7 @@ import {
   CardSets as wailsCardSets,
   Dice as wailsDice,
   FindGames as wailsFindGames,
+  Mats as wailsMats,
   Notice as wailsNotice,
   SaveRecord as wailsSaveRecord,
   SaveSettings as wailsSaveSettings,
@@ -40,7 +41,7 @@ export interface Settings {
   animation: Speed;
   fullscreen: boolean; // ST-01
   theme: Theme; // ST-02, menus and panels
-  mat: Mat; // ST-03
+  mat: string; // ST-03, V-24: a MatInfo or color mat id; Go checks it
   dice: string; // V-19, a DiceSkin id; Go checks it
   // rejoin is the last game joined, so a restarted app takes its seat
   // back (N-08).
@@ -56,7 +57,6 @@ export interface Rejoin {
 }
 
 export type Theme = 'dark' | 'light';
-export type Mat = 'felt' | 'basement' | 'cathedral';
 
 // fromGo reads Go's settings; Go checks the choices, so anything else is
 // only possible from an older app.
@@ -77,7 +77,7 @@ function fromGo(s: {
     animation: speed(s.animation),
     fullscreen: s.fullscreen,
     theme: s.theme === 'light' ? 'light' : 'dark',
-    mat: s.mat === 'basement' || s.mat === 'cathedral' ? s.mat : 'felt',
+    mat: s.mat,
     dice: s.dice,
     rejoin: { address: s.rejoin.address, token: s.rejoin.token, game: s.rejoin.game },
     host: s.host ? { ...noHostSetup, ...s.host } : noHostSetup,
@@ -135,6 +135,18 @@ export interface DiceSkin {
 // getDice returns every dice look the app knows.
 export function getDice(): Promise<DiceSkin[]> {
   return wailsDice();
+}
+
+// MatInfo is one game mat image (ST-03, V-24).
+export interface MatInfo {
+  id: string;
+  name: string;
+  image: string; // URL; '' for a color mat
+}
+
+// getMats returns the mat images; empty without the private images.
+export function getMats(): Promise<MatInfo[]> {
+  return wailsMats();
 }
 
 // startHosting runs the game server inside the app. If it runs already,

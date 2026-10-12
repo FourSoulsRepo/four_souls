@@ -1,6 +1,8 @@
 // Settings screen (7.10): ST-01, ST-02, ST-03, ST-06.
 import { expect, test } from '@playwright/test';
-import { shot } from './shot';
+import { startGame } from './game';
+import { appURL } from './server';
+import { realMats, shot } from './shot';
 
 test('the first start asks for a nickname, once', async ({ page }) => {
   await page.goto('/?fake&nosplash&firstrun');
@@ -37,4 +39,41 @@ test('fullscreen, theme and mat apply at once and survive a restart', async ({ p
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(page.getByRole('status')).toHaveText('Saved.');
   expect(await page.evaluate(() => (window as unknown as { fakeFullscreen: boolean }).fakeFullscreen)).toBe(false);
+});
+
+// Mat images (15.10, V-24): the setting puts the image under the table;
+// without images, or with a missing one, the table shows colors.
+test('a mat image lies under the table', async ({ browser }) => {
+  const [mat] = await startGame(browser, ['Mat', 'Ned'], { url: `${appURL()}&mat=basement`, open: realMats });
+  if (!mat) {
+    throw new Error('no pages');
+  }
+  const table = mat.getByRole('main', { name: /^Turn / });
+  await expect(table).toHaveClass(/mat-basement mat-image/);
+  expect(await table.evaluate((el) => getComputedStyle(el).backgroundImage)).toContain('/cardimg/assets/mats/basement.webp');
+  await shot(mat, 'table-mat');
+});
+
+test('the mat menu lists the mat images', async ({ page }) => {
+  await realMats(page);
+  await page.goto('/?fake&nosplash');
+  await page.getByRole('button', { name: 'Settings' }).click();
+  const mats = page.getByRole('combobox', { name: 'Game mat' });
+  await expect(mats.getByRole('option')).toHaveText(['Green felt', 'Basement', 'Cathedral']);
+  await mats.selectOption('basement');
+  await expect(page.getByLabel('Game mat preview')).toHaveClass(/mat-image/);
+  await shot(page, 'settings-mat');
+});
+
+test('without mat images the table shows colors', async ({ browser }) => {
+  for (const [query, colors] of [
+    ['&nomats&mat=basement', 'mat-basement'],
+    ['&mat=dark_room', 'mat-felt'],
+  ]) {
+    const page = await (await browser.newContext()).newPage();
+    await page.goto(`${appURL()}${query ?? ''}`);
+    await page.getByRole('button', { name: 'Settings' }).click();
+    await expect(page.getByLabel('Game mat preview')).toHaveClass(new RegExp(`${colors ?? ''}$`));
+    await expect(page.getByLabel('Game mat preview')).not.toHaveClass(/mat-image/);
+  }
 });

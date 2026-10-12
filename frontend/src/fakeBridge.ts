@@ -38,10 +38,11 @@ const notice: { parts: Part[] }[] = [
 const settingsKey = 'fake-settings';
 
 function loadSettings(): unknown {
-  // ?anim=off starts with animations off; ?firstrun starts without a
-  // nickname, as on the first start.
+  // ?anim=off starts with animations off; ?mat=basement starts on that
+  // mat; ?firstrun starts without a nickname, as on the first start.
   const params = new URLSearchParams(window.location.search);
   const animation = params.get('anim') ?? 'normal';
+  const mat = params.get('mat') ?? 'felt';
   const nickname = params.has('firstrun') ? '' : 'Player';
   const fresh = {
     nickname,
@@ -49,7 +50,7 @@ function loadSettings(): unknown {
     animation,
     fullscreen: false,
     theme: 'dark',
-    mat: 'felt',
+    mat,
     dice: 'tear',
     rejoin: { address: '', token: '', game: '' },
     host: { seats: 0, sets: null, detailed: false, response_timer: 0, no_bonus_souls: false },
@@ -200,6 +201,11 @@ w.go = {
       Cards: () => Promise.resolve([...cards, ...realCards()]),
       // Dice textures are private images too: a plain die, as in a public clone.
       Dice: () => Promise.resolve([{ id: 'tear', name: 'Tear', image: '' }]),
+      // One mat image, at its real path; the e2e tests serve it only for
+      // screenshots, else it fails to load as in a public clone.
+      // ?nomats lists none, as Go does without the private images.
+      Mats: () =>
+        Promise.resolve(params.has('nomats') ? [] : [{ id: 'basement', name: 'Basement', image: '/cardimg/assets/mats/basement.webp' }]),
       SaveRecord: (link: string) => Promise.resolve(`/fake/${new URL(link).searchParams.get('game') ?? ''}.fsrec`),
       // The LAN holds one hosting app: the test server (?server=PORT).
       // ?nolan finds nothing.

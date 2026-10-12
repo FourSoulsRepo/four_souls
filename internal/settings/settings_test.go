@@ -95,10 +95,28 @@ func TestWindowThemeAndMat(t *testing.T) {
 	if got := Load(path); !reflect.DeepEqual(got, want) {
 		t.Fatalf("loaded %+v, want %+v", got, want)
 	}
-	for _, bad := range []Settings{{Theme: "pink"}, {Mat: "lava"}, {Dice: "d20"}} {
+	for _, bad := range []Settings{{Theme: "pink"}, {Mat: "../lava"}, {Mat: "Lava"}, {Dice: "d20"}} {
 		if _, err := Save(path, bad); !errors.Is(err, ErrChoice) {
 			t.Fatalf("%+v: err %v, want ErrChoice", bad, err)
 		}
+	}
+}
+
+// A mat image may be added later, so any mat file name is kept; the
+// table shows colors while its image is missing.
+func TestImageMatKept(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "settings.json")
+	if got, err := Save(path, Settings{Mat: "dark_room"}); err != nil || got.Mat != "dark_room" {
+		t.Fatalf("saved %+v, %v", got, err)
+	}
+	if got := Load(path).Mat; got != "dark_room" {
+		t.Fatalf("loaded mat %q", got)
+	}
+	if err := os.WriteFile(path, []byte(`{"mat":"../x"}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if got := Load(path).Mat; got != "felt" {
+		t.Fatalf("bad mat reads as %q, want felt", got)
 	}
 }
 

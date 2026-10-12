@@ -6,6 +6,7 @@ import {
   setFullscreen,
   getCards,
   getDice,
+  getMats,
   getCardSets,
   saveRecord,
   getSettings,
@@ -16,6 +17,7 @@ import {
   type DiceSkin,
   type HostInfo,
   type LanServer,
+  type MatInfo,
   type Settings,
 } from './bridge';
 import { noHostSetup } from './hostSetup';
@@ -92,6 +94,8 @@ interface AppState extends Session {
   cards: Map<string, CardInfo>;
   // dice are the dice looks (V-19); empty until loaded.
   dice: DiceSkin[];
+  // mats are the mat images (V-24); empty until loaded or without images.
+  mats: MatInfo[];
   zoom: Zoom | null;
   loadCards: () => Promise<void>;
   setZoom: (zoom: Zoom | null) => void;
@@ -338,11 +342,12 @@ export const useApp = create<AppState>()((set, get) => {
     cardSets: [],
     cards: new Map(),
     dice: [],
+    mats: [],
     zoom: null,
     loadCards: async () => {
       try {
-        const [list, dice] = await Promise.all([getCards(), getDice()]);
-        set({ cards: new Map(list.map((c) => [c.ref, c])), dice });
+        const [list, dice, mats] = await Promise.all([getCards(), getDice(), getMats()]);
+        set({ cards: new Map(list.map((c) => [c.ref, c])), dice, mats });
       } catch (e) {
         set({ error: `Card data: ${messageOf(e)}` });
       }

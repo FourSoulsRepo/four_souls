@@ -14,6 +14,8 @@ export function Dice():Promise<Array<main.DiceSkin>>;
 
 export function FindGames():Promise<Array<lan.Found>>;
 
+export function Mats():Promise<Array<main.MatInfo>>;
+
 export function Notice():Promise<Array<legal.Line>>;
 
 export function SaveRecord(arg1:string):Promise<string>;

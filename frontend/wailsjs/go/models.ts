@@ -233,6 +233,22 @@ export namespace main {
 	        this.addresses = source["addresses"];
 	    }
 	}
+	export class MatInfo {
+	    id: string;
+	    name: string;
+	    image: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new MatInfo(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.name = source["name"];
+	        this.image = source["image"];
+	    }
+	}
 
 }
 

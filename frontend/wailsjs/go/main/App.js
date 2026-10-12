@@ -18,6 +18,10 @@ export function FindGames() {
   return window['go']['main']['App']['FindGames']();
 }
 
+export function Mats() {
+  return window['go']['main']['App']['Mats']();
+}
+
 export function Notice() {
   return window['go']['main']['App']['Notice']();
 }
