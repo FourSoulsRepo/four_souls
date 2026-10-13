@@ -80,6 +80,9 @@ Ideas: LR-01 – LR-06, LR-08, LR-09.
    5. Add a situation payload where the case can be tried.
    6. Show the FAQ in the rules viewer (11.1), searchable.
    7. Include the owner's picks from `open-questions.md` (e.g. Q-09).
+   8. Read the BoardGameGeek rules forum too (R-02):
+      https://boardgamegeek.com/boardgame/255664/the-binding-of-isaac-four-souls/forums/66
+   9. Its answered questions also become engine tests (R-03).
 3. Done when:
    1. The top questions have entries; every link opens its rule.
    2. Payload examples pass as tests.

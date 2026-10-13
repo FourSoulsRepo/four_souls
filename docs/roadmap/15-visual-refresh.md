@@ -2,11 +2,11 @@
 
 Goal: a clearer table, using fouronlinesouls.net as a second reference.
 
-Ideas: V-09, V-12, V-13, V-15 – V-31.
+Ideas: V-09, V-12, V-13, V-15 – V-31, V-33 – V-38, GS-06.
 
 Order: 15.1, 15.15, 15.9 – 15.11, 15.16, 15.17, 15.38, 15.18 – 15.24,
 15.3, 15.37, 15.25, 15.32 – 15.34, 15.26, 15.27, 15.5, 15.6,
-15.28 – 15.31, 15.35, 15.36, 15.39.
+15.28 – 15.31, 15.35, 15.36, 15.39 – 15.46.
 Images come first, so the new table is built with backs and mats.
 
 ## Rules for this step (owner, 2026-10-12)
@@ -854,3 +854,89 @@ Images come first, so the new table is built with backs and mats.
    1. e2e test: a gained soul fills one more slot.
    2. `make screenshots` shows the row left of the character.
    3. UC-12 updated.
+
+### [ ] 15.40 Isaac fonts on the title screen
+
+1. Goal: the title screen looks like the game (V-33).
+2. Tasks:
+   1. Use the fonts from `assets/fonts` for the title.
+   2. **Owner** decides which font for which text.
+   3. Without images: the plain UI font, as now.
+3. Done when:
+   1. `make screenshots` shows the new title.
+   2. `wails build -tags embed` still shows a readable title.
+
+### [ ] 15.41 foursouls.ru banner on the home screen
+
+1. Goal: the home screen greets like foursouls.ru (V-34).
+2. Tasks:
+   1. The tools repo downloads the top image of foursouls.ru.
+   2. It goes into the private images repo; amend its one commit.
+   3. The home screen shows it at the top.
+   4. Without images: the home screen as now.
+   5. Credit it in `NOTICE`.
+3. Done when:
+   1. `make screenshots` shows the banner.
+   2. e2e passes without images.
+
+### [ ] 15.42 Animated background
+
+1. Goal: home and setup screens feel alive (V-35).
+2. Tasks:
+   1. Study the background animation of foursouls.ru.
+   2. Rebuild it with our own CSS; copy no code.
+   3. Use it on the home screen and the game setup screens.
+   4. Respect the animation speed setting (ST-05).
+   5. Without images: a plain background.
+3. Done when:
+   1. `make screenshots` shows both screens.
+   2. Owner compares it with the site.
+
+### [ ] 15.43 First player roll for everyone
+
+1. Goal: everyone sees who goes first and why (GS-06).
+2. Tasks:
+   1. Show each player's first-player roll as real dice (V-17).
+   2. Ties roll again; those rolls show too.
+   3. The winner of the roll is named; then the game starts.
+   4. A character that goes first (Cain) says so instead.
+   5. The history keeps the rolls.
+3. Done when:
+   1. e2e test: every player's roll shows before the first turn.
+   2. Use case.
+
+### [ ] 15.44 Declarations on the stack
+
+1. Goal: everyone sees a "Buy" or "Attack" before it resolves (V-36).
+2. Tasks:
+   1. List every declaration the rules put on the stack.
+   2. Each one shows as a stack entry with player and target.
+   3. Same icons in the history strip (15.13).
+3. Done when:
+   1. e2e test: a purchase and an attack show on the stack.
+   2. UC for the stack panel updated.
+
+### [ ] 15.45 Look at the table after the game
+
+1. Goal: players discuss the finished game (V-37).
+2. Tasks:
+   1. After the game, the view filter reveals all hands (A-07).
+   2. The end overlay can be closed and opened again.
+   3. The table stays live until the player leaves.
+   4. Spectators see the same.
+3. Done when:
+   1. Engine test: a finished game's view shows every hand.
+   2. e2e test: close the overlay, see an opponent's hand.
+   3. Use case.
+
+### [ ] 15.46 Failed effects in the history
+
+1. Goal: nothing fails silently (V-38).
+2. Tasks:
+   1. A fizzled ability gets a history entry.
+   2. A failed purchase too: the player could not pay.
+   3. The entry says what failed and why.
+   4. Check which other events end silently today.
+3. Done when:
+   1. Vitest: a fizzle event becomes a history entry.
+   2. e2e test: a failed purchase shows in the history.

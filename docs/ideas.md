@@ -193,6 +193,30 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    3. Open question: only reprints from enabled sets, or always?
    4. It is only an image, so "always" may be fine.
    5. Related: alt art (CD-11), per-copy art (CD-12).
+33. V-33. Title screen uses the Isaac fonts.
+   1. The fonts in `assets/fonts` of the private images repo.
+   2. Without images: the plain UI font, as now.
+34. V-34. Top image of foursouls.ru on the home screen.
+   1. The banner at the top of the foursouls.ru main page.
+   2. The tools repo downloads it; it lives with the private images.
+   3. Without images: the home screen as now.
+35. V-35. Background animation of foursouls.ru.
+   1. On the home screen and the game setup screens.
+   2. Same look as the site; our own code.
+   3. Without images: a plain background.
+36. V-36. Declarations show on the stack.
+   1. "Buy" and "Attack" show as stack entries.
+   2. Other declarations too, wherever the rules use the stack.
+   3. Each entry names the player and the target.
+37. V-37. After the game, everyone may look at the table.
+   1. The winner is announced; the table stays open.
+   2. All hands are revealed to everyone.
+   3. Players can discuss how the game was played.
+   4. The end overlay can be closed and opened again.
+38. V-38. Failed effects show in the history.
+   1. A fizzled ability gets its own history entry.
+   2. Example: a purchase fails because the player cannot pay.
+   3. The entry says what failed and why.
 
 ## Rules
 
@@ -209,6 +233,8 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
       2. Charlie on Reddit: https://www.reddit.com/user/Yuggy
       3. Sean "Kizzycocoa", foursouls.com developer: https://twitter.com/Kizzycocoa
       4. Edmund McMillen, designer: https://x.com/edmundmcmillen
+   6. BoardGameGeek rules forum:
+      https://boardgamegeek.com/boardgame/255664/the-binding-of-isaac-four-souls/forums/66
 3. R-03. Disputed cases are resolved one by one.
    1. We discuss each case together.
    2. The decision becomes a rules engine test.
@@ -503,6 +529,8 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    4. Each answer links to the rule IDs it rests on.
    5. Where possible, an entry has a situation payload to try it.
    6. Shown in the app's rules viewer and on the rules website.
+   7. BoardGameGeek rules forum is a source too (R-02).
+   8. Its answered questions also become test cases (R-03).
 9. LR-09. Payload setup holds any event on the stack.
    1. Not only dice rolls: loot cards, abilities, attacks, triggers.
    2. Each event has its owner, targets, and choices made.
@@ -612,6 +640,8 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
 6. GS-06. First player is chosen by a dice roll.
    1. The roll is shown to everyone.
    2. Check the rules: some characters may change this.
+   3. Today the roll is silent; only the result shows.
+   4. Everyone sees each player's die, re-rolls on ties included.
 7. GS-07. Optional: deck ratios.
    1. When sets are mixed, decks follow Ed's recommended ratios.
    2. The official TTS table has the same option.

@@ -165,6 +165,7 @@ Step numbers stay as IDs; the table lists steps in work order.
 6. Ideas: LR-01 – LR-06, LR-08.
 7. Any event on the stack in payloads (LR-09).
 8. Sandbox tools modelled on the fouronlinesouls.net cheat menu.
+9. BoardGameGeek rules forum: a source for the FAQ and tests (R-02, 11.7).
 
 ## 12. Rules website
 
@@ -225,6 +226,11 @@ Step numbers stay as IDs; the table lists steps in work order.
 27. Others see live aiming; never recorded (N-15, 15.35, 15.36).
 28. Hit and death marks: starbursts, red HP, skull (15.37).
 29. Souls as Hearthstone-style crystals, left of the character (V-30, V-31, 15.39).
+30. Isaac fonts, foursouls.ru banner and background (V-33 – V-35, 15.40 – 15.42).
+31. Everyone sees the first-player roll (GS-06, 15.43).
+32. "Buy" and "Attack" declarations on the stack (V-36, 15.44).
+33. After the game, all hands are revealed (V-37, 15.45).
+34. Failed effects show in the history (V-38, 15.46).
 
 ## 16. Localization
 
