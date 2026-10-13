@@ -230,3 +230,56 @@ test('the history strip: icons, badges, and a hover with card and owner (15.22)'
   await expect(zoom).toBeHidden();
   await shot(active, 'history-strip');
 });
+
+test('damage a player takes names its card in the history strip (15.47)', async ({ browser }) => {
+  const pages = await startGame(browser, ['Bob', 'Wes'], { url: fast() });
+  const active = await activePage(pages, click);
+  // Boom Fly died: each player controls the damage they take from it, and
+  // the fly is no longer on the table; only source_card names it.
+  await active.evaluate(() => {
+    interface S {
+      game: { view: { turn: { active: number; number: number } } } | null;
+      history: unknown[];
+    }
+    const { store } = (window as unknown as { fourSouls: { store: { getState: () => S; setState: (s: Partial<S>) => void } } })
+      .fourSouls;
+    const s = store.getState();
+    if (!s.game) {
+      throw new Error('no game');
+    }
+    const turn = s.game.view.turn.number;
+    const none = { card: '', index: 0 };
+    const history = [1, 0].map((p, i) => ({
+      key: i + 1,
+      turn,
+      icon: '✦',
+      text: '',
+      item: {
+        id: 40 + i,
+        kind: 4,
+        controller: p,
+        source: 307,
+        source_card: 'boom_fly',
+        amount: 1,
+        label: 'damage',
+        target: { player: p, is_player: true },
+        ability: none,
+        roll_for: none,
+      },
+    }));
+    store.setState({ history });
+  });
+
+  const strip = active.getByRole('complementary', { name: 'History strip' });
+  const icons = strip.locator('.strip-item');
+  await expect(icons).toHaveCount(2);
+  await expect(icons.nth(0)).toHaveAttribute('aria-label', /^Boom Fly deals 1 damage to (Bob|Wes)$/);
+  await expect(icons.nth(1)).toHaveAttribute('aria-label', /^Boom Fly deals 1 damage to (Bob|Wes)$/);
+
+  // Hover: the fly large, and the line under it.
+  await icons.nth(0).hover();
+  const zoom = active.getByTestId('card-zoom');
+  await expect(zoom.locator('.card.size-zoom')).toHaveAttribute('aria-label', /^Boom Fly/);
+  await expect(zoom.locator('.card-zoom-line')).toHaveText(/^Boom Fly deals 1 damage to (Bob|Wes)$/);
+  await shot(active, 'history-strip-taken-damage');
+});

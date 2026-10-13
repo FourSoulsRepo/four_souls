@@ -1062,3 +1062,26 @@ Images come first, so the new table is built with backs and mats.
 3. Done when:
    1. Vitest: a fizzle event becomes a history entry.
    2. e2e test: a failed purchase shows in the history.
+
+### [x] 15.47 Who deals damage a player takes
+
+1. Goal: the history names the real dealer (play test, 2026-10-12).
+2. Bug: Boom Fly died; the line said "Harddie deals 1 damage to Harddie".
+3. Owner: fix it now, before 15.37; write the decision down.
+4. Tasks:
+   1. Find the cause in the match record.
+   2. Name the source card when a player takes damage.
+   3. ADR for the choice.
+5. Done when:
+   1. Vitest: Boom Fly's item names the fly; no card says "takes".
+   2. e2e test: the history strip names Boom Fly.
+   3. Use case UC-14 updated.
+6. Result (2026-10-13)
+   1. Record: each damage item had controller = target = the player.
+   2. `EachPlayer(DealDamage(1, You))` makes each player the controller.
+   3. The engine is right; `stackParts` named the controller first.
+   4. Now damage to its own controller names the source card.
+   5. No source card: "Ann takes 1 damage".
+   6. Engine, protocol and records unchanged; ADR 011.
+   7. The hover's owner line still shows the controller.
+   8. Screenshots: `.cache/screenshots/15.47/before/` and `after/`.

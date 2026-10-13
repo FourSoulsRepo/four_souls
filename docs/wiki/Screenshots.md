@@ -41,5 +41,6 @@ The fixture copies the fan-game notice. `internal/legal` has a test that fails w
 | History strip: hovering an icon shows its card | `screen-history-strip-hover.png` |
 | Ability dialog: a card with several abilities | `screen-ability-dialog.png` |
 | Own turn: buys and attacks left on their icons | `screen-turn-left.png` |
+| History strip: damage a player takes names its card | `screen-history-strip-taken-damage.png` |
 
 When a screen is added, call `shot` in its test and add a row here.

@@ -60,6 +60,17 @@ describe('stackLine', () => {
     const back = item({ kind: StackKind.damage, amount: 1, attack: true, controller: -1, source: 9, target: { player: 0, is_player: true } });
     expect(stackLine(back, view, names)).toBe('Attack: GAPER deals 1 damage to Ann');
   });
+
+  it('names the card when a player takes damage (15.47)', () => {
+    // Boom Fly: each player controls the damage they take; the fly is gone.
+    const fly = item({ kind: StackKind.damage, amount: 1, controller: 1, source: 307, source_card: 'boom_fly', target: { player: 1, is_player: true } });
+    expect(stackLine(fly, view, names)).toBe('BOOM_FLY deals 1 damage to Bo');
+    const bare = item({ kind: StackKind.damage, amount: 3, controller: 0, source: 0, target: { player: 0, is_player: true } });
+    expect(stackLine(bare, view, names)).toBe('Ann takes 3 damage');
+    // Damage to someone else still names the player who deals it.
+    const other = item({ kind: StackKind.damage, amount: 1, controller: 0, source_card: 'mr_boom', target: { player: 1, is_player: true } });
+    expect(stackLine(other, view, names)).toBe('Ann deals 1 damage to Bo');
+  });
 });
 
 describe('stackParts', () => {

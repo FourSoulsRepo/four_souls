@@ -49,9 +49,12 @@ export function stackParts(it: StackItem, view: GameView, n: Names): LinePart[] 
     : { text: targetCard ? n.card(targetCard) : 'a card', role: 'target' };
   const attack: LinePart[] = it.attack ? [{ text: 'Attack: ' }] : [];
   // dealer is who deals damage: the player, or the monster that hits back.
+  // Damage a player controls against themselves is "take damage" (Boom
+  // Fly, Secret Room): its card deals it (15.47, ADR 011).
   const sourceCard = it.source_card ?? findCard(view, it.source);
-  const dealer: LinePart[] =
-    it.controller >= 0 ? [who, { text: ' deals ' }] : sourceCard ? [{ text: n.card(sourceCard), role: 'card' }, { text: ' deals ' }] : [];
+  const self = it.target.is_player && it.target.player === it.controller;
+  const byCard: LinePart[] = sourceCard ? [{ text: n.card(sourceCard), role: 'card' }, { text: ' deals ' }] : [];
+  const dealer: LinePart[] = it.controller >= 0 && !self ? [who, { text: ' deals ' }] : byCard;
   switch (it.kind) {
     case StackKind.loot:
       return [who, { text: ' plays ' }, card];
@@ -72,6 +75,10 @@ export function stackParts(it: StackItem, view: GameView, n: Names): LinePart[] 
       return [...attack, who, { text: `${rolls.text}${it.label ? ` for ${it.label}` : ''}` }];
     }
     case StackKind.damage: {
+      if (dealer.length === 0 && self) {
+        // No card to name: the player takes it.
+        return [...attack, target, { text: ` takes ${String(it.amount ?? 0)} damage` }];
+      }
       return [...attack, ...dealer, { text: `${String(it.amount ?? 0)} damage to ` }, target];
     }
     case StackKind.death:

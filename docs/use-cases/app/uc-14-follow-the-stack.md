@@ -45,6 +45,9 @@
   * "1: Each player gains 1¢." instead of the whole card text.
   * The item that rolls says only "Roll."; the card shows every result.
 * **2h. Several abilities (The Bone):** only the used ability's words show.
+* **2i. A player takes damage (15.47):** the line names the card that deals it.
+  * Boom Fly: "Boom Fly deals 1 damage to Ann", one line per player.
+  * No card to name: "Ann takes 1 damage".
 
 ## Postconditions
 
