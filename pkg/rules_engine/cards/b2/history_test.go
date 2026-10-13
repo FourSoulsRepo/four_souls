@@ -1,6 +1,7 @@
 package b2
 
 import (
+	"slices"
 	"testing"
 
 	engine "github.com/FourSoulsRepo/rules_engine"
@@ -92,5 +93,31 @@ func TestStackShowsOnlyTheRollUntilItsResult(t *testing.T) {
 	stack := tb.G.View(engine.Viewer{Kind: engine.ViewSpectator}).Stack
 	if len(stack) == 0 || stack[len(stack)-1].Text != "Roll." {
 		t.Errorf("stack %+v, want Blank Rune on top saying Roll.", stack)
+	}
+}
+
+func TestViewListsTheLinesOfACardWithManyAbilities(t *testing.T) {
+	tb := monsterTable(t, []engine.CardRef{"fly"}, seat("the_forgotten", "the_bone"), seat("cain"))
+	gv := tb.G.View(engine.Viewer{Kind: engine.ViewPlayer, Player: 0})
+	var bone *engine.CardView
+	for i := range gv.Players[0].InPlay {
+		if gv.Players[0].InPlay[i].Card == "the_bone" {
+			bone = &gv.Players[0].InPlay[i]
+		}
+	}
+	if bone == nil {
+		t.Fatal("The Bone is not in play")
+	}
+	want := []string{
+		"↷: Put a counter on this.",
+		"Remove 1 counter from this: Add +1 to a dice roll.",
+		"Remove 2 counters from this: Deal 1 damage to a monster or player.",
+		"Remove 5 counters from this: This becomes a soul and loses all abilities.",
+	}
+	if !slices.Equal(bone.Abilities, want) {
+		t.Errorf("The Bone's lines = %q, want %q", bone.Abilities, want)
+	}
+	if got := gv.Players[1].Character.Abilities; got != nil {
+		t.Errorf("Cain, with one ability, got lines %q", got)
 	}
 }

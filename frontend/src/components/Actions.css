@@ -76,6 +76,87 @@
   background: var(--bg);
 }
 
+/* The ability dialog (C-05): the card large at the left, its lines
+   at the right; the player picks one. */
+.ability-backdrop {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(0 0 0 / 45%);
+}
+
+.ability-dialog {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  max-width: min(92vw, 760px);
+  max-height: 92vh;
+  padding: 16px 18px;
+  border-radius: 10px;
+  box-sizing: border-box;
+  background: rgb(20 28 40 / 94%);
+  box-shadow: 0 8px 32px rgb(0 0 0 / 60%);
+}
+
+.ability-dialog .card.size-zoom {
+  flex: none;
+  width: min(280px, 40vw);
+}
+
+.ability-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
+}
+
+.ability-lines h2 {
+  margin: 0 0 2px;
+  font-family: var(--font-game);
+  font-size: 24px;
+  font-weight: 400;
+}
+
+.ability-line {
+  padding: 9px 12px;
+  border: 2px solid #1d120a;
+  border-radius: 8px;
+  font: inherit;
+  font-size: 14px;
+  line-height: 1.3;
+  text-align: left;
+  color: #1d120a;
+  background: linear-gradient(#f4ead2, #dccaa0);
+  box-shadow: 0 3px 0 #1d120a;
+  cursor: pointer;
+  transition:
+    translate 80ms ease,
+    box-shadow 160ms ease;
+}
+
+.ability-line:enabled:hover {
+  translate: 0 -2px;
+  box-shadow:
+    0 5px 0 #1d120a,
+    0 0 12px rgb(255 210 122 / 70%);
+}
+
+.ability-line:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.ability-cancel {
+  align-self: flex-end;
+  padding: 6px 14px;
+  border: none;
+  border-radius: 6px;
+  font: inherit;
+  color: var(--fg);
+  background: var(--panel);
+  cursor: pointer;
+}
+
 /* A choice sits at the bottom edge, over the viewer's own area, so the
    board and its targets stay in view (F-02). */
 .choice {

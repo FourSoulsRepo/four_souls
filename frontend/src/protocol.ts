@@ -173,6 +173,9 @@ export interface CardView {
   damage?: number;
   counters?: { name?: string; count: number }[];
   stats?: MonsterStats; // only on monsters
+  // abilities: each ability's words by the activate intent's choice;
+  // only on a played card with two or more to pick from (C-05).
+  abilities?: string[];
 }
 
 // counted is how many counters a card carries, of any kind.

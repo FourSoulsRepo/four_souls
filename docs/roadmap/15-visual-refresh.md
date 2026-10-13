@@ -681,6 +681,22 @@ Images come first, so the new table is built with backs and mats.
    4. A character that can attack has a green frame; not yet: "zzz" (T-11).
 3. Done when:
    1. e2e test: a two-ability card opens the dialog and uses the picked line.
+4. Result (2026-10-13)
+   1. The engine view gives played cards `abilities`: each ability's words.
+   2. Only on cards with two or more activated abilities.
+   3. Indexed like the activate intent's choice, copied abilities too.
+   4. Such a card opens a dialog: the card large, one button per line.
+   5. Lines not usable now stay greyed, with "Not usable now".
+   6. Cancel or a click outside closes it; one ability keeps the menu.
+   7. Own character, own turn: a bright green frame while it may attack.
+   8. "zzz" in the game's font once no attack is left this turn.
+   9. Nothing while an attack waits (stack) or on others' turns.
+   10. Used items stay dimmed; no change (C-04).
+   11. The character box no longer clips the glow.
+   12. Engine test: The Bone lists its four lines; Cain has none.
+   13. e2e test: The Bone's dialog, a greyed line, the picked line is sent.
+   14. e2e test: green frame with an attack, "zzz" without.
+   15. Screenshots: `.cache/screenshots/15.24/before/` and `after/`.
 
 ### [ ] 15.25 Drag and aim
 

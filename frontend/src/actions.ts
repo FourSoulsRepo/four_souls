@@ -1,6 +1,6 @@
 // What the player may do now, from the update's allowed intents (7.7).
 // Pure: the table only offers what the server allows.
-import type { Intent, OptionView, Prompt, Update } from './protocol';
+import type { GameView, Intent, OptionView, Prompt, Update } from './protocol';
 
 // Engine enums, in Go's order (pkg/rules_engine/prompt.go, choice.go).
 export const IntentKind = {
@@ -41,6 +41,9 @@ export function choiceTitle(w: Prompt): string {
 export interface Action {
   label: string;
   intent: Intent;
+  // line is the words of the ability it uses, when the card has two or
+  // more to pick from (C-05).
+  line?: string;
 }
 
 export interface ChoiceOption extends Action {
@@ -95,6 +98,12 @@ export function actionsFor(u: Update, isCard: (label: string) => boolean): Actio
       abilities.set(id, (abilities.get(id) ?? 0) + 1);
     }
   }
+  const lines = new Map<number, string[]>();
+  for (const c of u.view.players.flatMap((p) => [p.character, ...(p.in_play ?? [])])) {
+    if (c.abilities) {
+      lines.set(c.id, c.abilities);
+    }
+  }
   const add = (id: number, action: Action) => {
     out.cards.set(id, [...(out.cards.get(id) ?? []), action]);
   };
@@ -113,7 +122,12 @@ export function actionsFor(u: Update, isCard: (label: string) => boolean): Actio
       add(id, { label: 'Play', intent: a });
     } else if (a.kind === IntentKind.activate) {
       const n = a.choice ?? 0;
-      add(id, { label: (abilities.get(id) ?? 0) > 1 ? `Use ability ${String(n + 1)}` : 'Use', intent: a });
+      const line = lines.get(id)?.at(n);
+      add(id, {
+        label: (abilities.get(id) ?? 0) > 1 ? `Use ability ${String(n + 1)}` : 'Use',
+        intent: a,
+        ...(line ? { line } : {}),
+      });
     } else if (a.kind === IntentKind.discard) {
       out.discard = { count: u.view.waiting.count ?? 0, from: a.objects ?? [], intent: a };
     }
@@ -146,4 +160,18 @@ export function actionsFor(u: Update, isCard: (label: string) => boolean): Actio
 // discardIntent is the discard of exactly the chosen hand cards.
 export function discardIntent(base: Intent, chosen: number[]): Intent {
   return { ...base, objects: chosen };
+}
+
+// attackStatus marks the viewer's character on their own turn (T-11,
+// H-22): 'ready' while they may attack, 'sleep' once no attack is left.
+// Otherwise, e.g. while the stack resolves, it marks nothing.
+export function attackStatus(actions: Actions, view: GameView, you: number): 'ready' | 'sleep' | undefined {
+  const me = view.players.at(you);
+  if (!me || view.over || view.turn.active !== you || me.dead) {
+    return undefined;
+  }
+  if (actions.turn.attack) {
+    return 'ready';
+  }
+  return me.attacks === 0 ? 'sleep' : undefined;
 }

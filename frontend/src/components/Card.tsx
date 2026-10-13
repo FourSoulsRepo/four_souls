@@ -11,6 +11,10 @@ const LONG_PRESS_MS = 450;
 
 export type CardSize = 'hand' | 'table' | 'small' | 'zoom';
 
+// CardStatus marks a character (T-11, H-22): a green frame while it may
+// attack, "zzz" once it has no attack left.
+export type CardStatus = 'ready' | 'sleep';
+
 interface Props {
   // cardRef is the card to show; undefined shows a face-down card.
   cardRef?: string;
@@ -32,6 +36,8 @@ interface Props {
   stats?: { hp: number; atk: number };
   // monster shows the stats that differ from the print (C-03).
   monster?: MonsterStats;
+  // status marks whether a character may attack.
+  status?: CardStatus;
   // noZoom: the card does not zoom itself; its row does (15.21).
   noZoom?: boolean;
   onClick?: () => void;
@@ -50,6 +56,7 @@ export function Card({
   highlight,
   stats,
   monster,
+  status,
   noZoom = false,
   onClick,
 }: Props) {
@@ -116,7 +123,7 @@ export function Card({
       animate={{ scale: 1, opacity: 1 }}
       transition={{ duration: 0.25 * scale }}
       data-zone={objectId === undefined ? undefined : `obj-${String(objectId)}`}
-      className={`card size-${size} kind-${kindOf(card.type)}${image ? '' : ' blank'}${counters > 0 ? ' has-counters' : ''}${spent ? ' spent' : ''}${highlight ? ` hl-${highlight}` : ''}`}
+      className={`card size-${size} kind-${kindOf(card.type)}${image ? '' : ' blank'}${counters > 0 ? ' has-counters' : ''}${spent ? ' spent' : ''}${highlight ? ` hl-${highlight}` : ''}${badges && status ? ` status-${status}` : ''}`}
       role={onClick ? 'button' : 'img'}
       aria-label={card.name}
       onClick={onClick}
@@ -177,6 +184,12 @@ export function Card({
         </>
       )}
       {badges && monster && <MonsterBadges stats={monster} />}
+      {badges && status === 'sleep' && (
+        <span className="card-sleep" title="No attack left this turn" aria-label="No attack left">
+          z<span>z</span>
+          <span>z</span>
+        </span>
+      )}
     </motion.div>
   );
 }

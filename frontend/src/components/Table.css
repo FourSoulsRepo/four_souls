@@ -490,8 +490,10 @@
   color: var(--fg);
 }
 
+/* One card, nothing to scroll: its ready glow may spill out (T-11). */
 .own-character {
   grid-area: character;
+  overflow: visible;
 }
 
 .own-items {

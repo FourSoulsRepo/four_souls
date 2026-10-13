@@ -72,6 +72,8 @@ Effect durations scale with the animation setting (ST-05) and speed up when upda
 * A playable loot card can also be dragged onto the board (`data-drop="play"`). The drag is plain pointer events with pointer capture (`HandCard` in `PlayerArea.tsx`).
 * Choices show as a dialog; card options show as cards (V-07). Options that point at the table (`view.options`, from the engine) glow blue there and can be clicked in place.
 * The player acts only on the latest update (`store.behind`) and once per step (`store.sent`); meanwhile buttons stay but are disabled, so nothing blinks.
+* A card with two or more activated abilities opens the ability dialog instead of the menu (`AbilityDialog` in `ActionMenu.tsx`, C-05): the card large at the left, one button per ability line at the right. The lines come from the engine: `CardView.abilities` holds each ability's words by the activate intent's `choice`, only on a played card with two or more activated abilities (`playedView` in `view.go`). An index can point at another card's ability (copied tap abilities), so the client cannot read the lines from its own card data. A line the update does not allow stays in the list, greyed, so the card reads in full.
+* The own character shows whether it may attack (`attackStatus` in `actions.ts`, T-11, H-22): a bright green frame while the update allows an attack, "zzz" on its own turn once no attack is left. While an attack waits, e.g. for the stack, and on others' turns it shows neither. Used items stay dimmed, not turned (C-04).
 
 ## Stack and waiting
 

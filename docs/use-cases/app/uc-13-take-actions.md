@@ -39,6 +39,11 @@
 * **7b. Not yet:** on own turn, End turn stays dim until the engine allows it.
 * **7c. Nothing left:** End turn glows green when only passing or ending is left.
 * **7d. Keys:** E ends the turn; Space passes.
+* **2d. Several abilities (15.24):** the card opens a dialog with the card large and one line per ability.
+  * The player clicks a line to use that ability.
+  * Lines not usable now stay greyed; Cancel or a click outside closes it.
+* **4d. Ready to attack (15.24):** on own turn the character has a green frame while it may attack.
+* **4e. No attack left (15.24):** the character shows "zzz".
 
 ## Postconditions
 

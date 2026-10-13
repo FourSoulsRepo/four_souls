@@ -357,3 +357,65 @@
 .card-damage .card-badge-value {
   font-size: 15cqi;
 }
+
+/* Attack readiness of the own character (T-11, H-22): a bright green
+   frame while it may attack; with a yellow "act" ring, the green one
+   goes outside it. */
+.card.status-ready {
+  box-shadow:
+    0 0 0 4px #5fe04a,
+    0 0 22px 8px rgb(95 224 74 / 80%);
+}
+
+.card.status-ready.hl-act {
+  box-shadow:
+    0 0 0 3px #f5c542,
+    0 0 0 8px #5fe04a,
+    0 0 24px 10px rgb(95 224 74 / 80%);
+}
+
+/* "zzz" once no attack is left: three letters in the game's hand, each
+   higher and bigger, drifting up. */
+.card-sleep {
+  position: absolute;
+  top: 30cqi;
+  right: 8cqi;
+  font-family: var(--font-game);
+  font-size: 20cqi;
+  line-height: 1;
+  color: #f2f2f2;
+  -webkit-text-stroke: 3cqi #1d120a;
+  paint-order: stroke fill;
+  pointer-events: none;
+  animation: card-sleep 2.4s ease-in-out infinite alternate;
+}
+
+.card-sleep span {
+  position: relative;
+  display: inline-block;
+}
+
+.card-sleep span:first-child {
+  top: -5cqi;
+  font-size: 1.3em;
+}
+
+.card-sleep span:last-child {
+  top: -12cqi;
+  font-size: 1.6em;
+}
+
+@keyframes card-sleep {
+  from {
+    translate: 0 1cqi;
+  }
+  to {
+    translate: 0 -2cqi;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card-sleep {
+    animation: none;
+  }
+}

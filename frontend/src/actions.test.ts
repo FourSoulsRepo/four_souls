@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { actionsFor, IntentKind, PromptKind } from './actions';
+import { actionsFor, attackStatus, IntentKind, PromptKind } from './actions';
 import type { Update } from './protocol';
 
 function update(partial: Partial<Update['view']>, allowed: Update['allowed']): Update {
@@ -47,6 +47,31 @@ describe('actionsFor', () => {
     expect(a.cards.get(3)?.map((x) => x.label)).toEqual(['Use']);
     expect(a.cards.get(4)?.map((x) => x.label)).toEqual(['Use ability 1', 'Use ability 2']);
     expect(a.choice).toBeNull();
+  });
+
+  it('gives each ability of a card with many its line (C-05)', () => {
+    const bone = { id: 4, card: 'the_bone', charged: true, abilities: ['↷: Put a counter on this.', '', 'Remove 2: Deal 1.'] };
+    const player = {
+      id: 0,
+      character: { id: 1, card: 'isaac', charged: true },
+      hp: 2,
+      atk: 1,
+      cents: 0,
+      souls: 0,
+      in_play: [bone],
+      hand_size: 0,
+      loot_plays: 0,
+      attacks: 0,
+      purchases: 0,
+    };
+    const a = actionsFor(
+      update({ players: [player] }, [
+        { player: 0, kind: IntentKind.activate, objects: [4] },
+        { player: 0, kind: IntentKind.activate, objects: [4], choice: 2 },
+      ]),
+      isCard,
+    );
+    expect(a.cards.get(4)?.map((x) => x.line)).toEqual(['↷: Put a counter on this.', 'Remove 2: Deal 1.']);
   });
 
   it('is idle when only passing or ending the turn is left', () => {
@@ -122,5 +147,35 @@ describe('actionsFor', () => {
       isCard,
     );
     expect(a.discard).toMatchObject({ count: 2, from: [5, 6, 7] });
+  });
+});
+
+describe('attackStatus', () => {
+  const me = (attacks: number) => ({
+    id: 0,
+    character: { id: 1, card: 'isaac', charged: true },
+    hp: 2,
+    atk: 1,
+    cents: 0,
+    souls: 0,
+    in_play: null,
+    hand_size: 0,
+    loot_plays: 0,
+    attacks,
+    purchases: 0,
+  });
+
+  it('is ready while the viewer may attack, asleep with no attack left (T-11)', () => {
+    const ready = update({ players: [me(1)] }, [{ player: 0, kind: IntentKind.attack }]);
+    expect(attackStatus(actionsFor(ready, isCard), ready.view, 0)).toBe('ready');
+    const spent = update({ players: [me(0)] }, [{ player: 0, kind: IntentKind.endTurn }]);
+    expect(attackStatus(actionsFor(spent, isCard), spent.view, 0)).toBe('sleep');
+  });
+
+  it('marks nothing while an attack waits, or on another player’s turn', () => {
+    const waiting = update({ players: [me(1)] }, [{ player: 0, kind: IntentKind.pass }]);
+    expect(attackStatus(actionsFor(waiting, isCard), waiting.view, 0)).toBeUndefined();
+    const theirs = update({ players: [me(0), { ...me(1), id: 1 }] }, null);
+    expect(attackStatus(actionsFor(theirs, isCard), theirs.view, 1)).toBeUndefined();
   });
 });

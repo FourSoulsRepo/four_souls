@@ -35,6 +35,10 @@ type CardView struct {
 	// Stats are a monster's live and printed stats (C-03); nil for
 	// other cards.
 	Stats *MonsterStats `json:"stats,omitempty"`
+	// Abilities are the words of each ability an activate intent may
+	// pick, by its Choice; only on a played card with two or more
+	// activated abilities, so a client can offer the lines (C-05).
+	Abilities []string `json:"abilities,omitempty"`
 }
 
 // MonsterStats are a monster's stats now and as printed, so a client can
@@ -125,7 +129,7 @@ func (g *Game) View(v Viewer) GameView {
 	}
 	for _, pl := range g.Players {
 		pv := PlayerView{
-			ID: pl.ID, Character: g.cardView(pl.Character), HP: g.PlayerHP(pl.ID), ATK: g.PlayerATK(pl.ID),
+			ID: pl.ID, Character: g.playedView(pl.Character), HP: g.PlayerHP(pl.ID), ATK: g.PlayerATK(pl.ID),
 			Cents: pl.Cents, Souls: g.SoulValue(pl.ID), Dead: pl.Dead, HandSize: len(pl.Hand),
 			LootPlays: g.lootPlaysFor(pl.ID),
 		}
@@ -133,7 +137,7 @@ func (g *Game) View(v Viewer) GameView {
 			pv.Attacks, pv.Purchases = g.attacksLeft(), g.purchasesLeft()
 		}
 		for _, id := range pl.InPlay {
-			pv.InPlay = append(pv.InPlay, g.cardView(id))
+			pv.InPlay = append(pv.InPlay, g.playedView(id))
 		}
 		if v.sees(pl.ID) || g.bonus(StatRevealHand, pl.ID, 0) > 0 {
 			for _, id := range pl.Hand {
@@ -260,6 +264,30 @@ func (g *Game) cardView(id ObjectID) CardView {
 			// marks it as changed.
 			PrintedHP: d.HP, PrintedDC: min(max(d.DC, 1), 6), PrintedATK: d.ATK,
 		}
+	}
+	return cv
+}
+
+// playedView is the view of a character or an item in play: a card
+// view with the words of its abilities, when it has two or more to
+// pick from (C-05).
+func (g *Game) playedView(id ObjectID) CardView {
+	cv := g.cardView(id)
+	refs := g.AbilitiesOf(id)
+	texts := make([]string, len(refs))
+	activated := 0
+	for i, ref := range refs {
+		d, ok := g.cards.find(ref.Card)
+		if !ok || ref.Index < 0 || ref.Index >= len(d.Abilities) {
+			continue
+		}
+		if a := d.Abilities[ref.Index]; a.Kind == Activated {
+			texts[i] = a.Text
+			activated++
+		}
+	}
+	if activated > 1 {
+		cv.Abilities = texts
 	}
 	return cv
 }

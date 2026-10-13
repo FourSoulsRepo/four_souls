@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { actionsFor, IntentKind, type Actions } from '../actions';
+import { actionsFor, attackStatus, IntentKind, type Actions } from '../actions';
 import { ActionBar } from '../components/ActionBar';
 import { ActionMenu } from '../components/ActionMenu';
 import { Board } from '../components/Board';
@@ -85,6 +85,7 @@ function Table({ game, you }: { game: Update; you: number }) {
               you={p.id === you}
               active={view.turn.active === p.id}
               ui={ui}
+              ready={p.id === you ? attackStatus(offered, view, you) : undefined}
               tools={
                 p.id === you && !view.over ? (
                   <TurnActions

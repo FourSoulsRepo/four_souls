@@ -3,6 +3,7 @@ import { expect, test, type Browser, type Page } from '@playwright/test';
 import { expectFits, startGame } from './game';
 import { serverPort } from './server';
 import { shot } from './shot';
+import { activePage, click, turnAction } from './turn';
 
 // expectDecksClear fails when anything lies over a deck or a discard
 // (F-02): their corners and middle must hit the pile itself.
@@ -337,4 +338,105 @@ test('counters and changed monster stats show on the card, not in its zoom (15.2
   await expect(zoom).toBeVisible();
   await expect(zoom.locator('.card-badge')).toHaveCount(0);
   await shot(page, 'monster-stats-zoom');
+});
+
+test('a card with many abilities opens a dialog that uses the picked line (15.24)', async ({ browser }) => {
+  const [page] = await startGame(browser, ['Lux', 'Ivy']);
+  if (!page) {
+    throw new Error('no pages');
+  }
+  // The viewer gets The Bone with 3 counters: its first three lines are
+  // usable, the last needs 5 counters. Its lines come from the server
+  // (C-05); a recorder stands in for sending.
+  await page.evaluate(() => {
+    interface Intent {
+      player: number;
+      kind: number;
+      objects?: number[];
+      choice?: number;
+    }
+    interface S {
+      game: { step: number; view: { players: { in_play: unknown[] | null }[] }; allowed: Intent[] | null } | null;
+      lobby: { table: { you: number } | null };
+      select: (id: number | null) => void;
+    }
+    const w = window as unknown as {
+      fourSouls: { store: { getState: () => S; setState: (s: object) => void } };
+      picked?: Intent;
+    };
+    const { store } = w.fourSouls;
+    const { game, lobby, select } = store.getState();
+    const you = lobby.table?.you ?? 0;
+    if (!game) {
+      throw new Error('no game');
+    }
+    const bone = {
+      id: 9001,
+      card: 'the_bone',
+      role: 2,
+      charged: true,
+      counters: [{ count: 3 }],
+      abilities: [
+        '↷: Put a counter on this.',
+        'Remove 1 counter from this: Add +1 to a dice roll.',
+        'Remove 2 counters from this: Deal 1 damage to a monster or player.',
+        'Remove 5 counters from this: This becomes a soul and loses all abilities.',
+      ],
+    };
+    const players = game.view.players.map((p, i) => (i === you ? { ...p, in_play: [...(p.in_play ?? []), bone] } : p));
+    const allowed = [0, 1, 2].map((choice) => ({ player: you, kind: 7, objects: [9001], choice }));
+    store.setState({
+      game: { ...game, view: { ...game.view, players }, allowed },
+      act: (intent: Intent) => {
+        w.picked = intent;
+        select(null);
+      },
+    });
+  });
+
+  await page.getByRole('group', { name: 'Your items' }).getByRole('button', { name: 'The Bone' }).click();
+  const dialog = page.getByRole('dialog', { name: 'Use The Bone' });
+  await expect(dialog).toBeVisible();
+  await expect(dialog.locator('.card.size-zoom')).toBeVisible();
+  const last = dialog.getByRole('button', { name: /Remove 5 counters/ });
+  await expect(last).toBeDisabled();
+  await shot(page, 'ability-dialog');
+
+  await dialog.getByRole('button', { name: /Remove 2 counters/ }).click();
+  await expect(dialog).toBeHidden();
+  const picked = await page.evaluate(() => (window as unknown as { picked?: { objects?: number[]; choice?: number } }).picked);
+  expect(picked).toMatchObject({ kind: 7, objects: [9001], choice: 2 });
+});
+
+test('the own character glows while it may attack, and sleeps with no attack left (15.24)', async ({ browser }) => {
+  const pages = await startGame(browser, ['Jo', 'Kit']);
+  const active = await activePage(pages, click);
+  const character = active.locator('.own-character .card');
+  const attack = turnAction(active, 'Attack');
+  await expect(attack).toBeEnabled();
+  await expect(character).toHaveClass(/status-ready/);
+  await expect(character.getByLabel('No attack left')).toHaveCount(0);
+  await shot(active, 'attack-ready');
+
+  // No attack left this turn, as the server would send it after one.
+  await active.evaluate(() => {
+    interface S {
+      game: {
+        view: { players: { attacks: number }[]; turn: { active: number } };
+        allowed: { kind: number }[] | null;
+      } | null;
+    }
+    const { store } = (window as unknown as { fourSouls: { store: { getState: () => S; setState: (s: Partial<S>) => void } } })
+      .fourSouls;
+    const { game } = store.getState();
+    if (!game) {
+      throw new Error('no game');
+    }
+    const players = game.view.players.map((p, i) => (i === game.view.turn.active ? { ...p, attacks: 0 } : p));
+    const allowed = (game.allowed ?? []).filter((a) => a.kind !== 5);
+    store.setState({ game: { ...game, view: { ...game.view, players }, allowed } });
+  });
+  await expect(character).not.toHaveClass(/status-ready/);
+  await expect(character.getByLabel('No attack left')).toBeVisible();
+  await shot(active, 'attack-sleep');
 });
