@@ -1041,7 +1041,7 @@ Images come first, so the new table is built with backs and mats.
    3. Owner pushed the tools and images repos.
    4. Owner marks 15.38 solved.
 
-### [ ] 15.39 Souls as crystals
+### [x] 15.39 Souls as crystals
 
 1. Goal: a player's souls read at a glance (V-30, V-31).
 2. Tasks:
@@ -1071,6 +1071,9 @@ Images come first, so the new table is built with backs and mats.
    13. Unit test: `soulSlots`; engine test: the view's win target.
    14. e2e test: a gained soul fills one more; the row left of the card.
    15. Screenshots: `.cache/screenshots/15.39/before/` and `after/`.
+5. Owner notes (2026-10-13)
+   1. Owner: the vertical column is fine.
+   2. Owner marks 15.39 solved.
 
 ### [ ] 15.40 Isaac fonts on the title screen
 
