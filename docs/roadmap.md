@@ -191,6 +191,7 @@ Step numbers stay as IDs; the table lists steps in work order.
 5. Deck ratios never reveal the dealt decks (A-16).
 6. Reprints add copies; every copy keeps its own art (CD-12, ADR 010).
 7. The host picks the card sets; the Base Game is always in (14.6).
+8. Switch character and eternal item art between reprints (V-32, 14.7).
 
 ## 15. Visual refresh
 
@@ -222,6 +223,7 @@ Step numbers stay as IDs; the table lists steps in work order.
 26. Aiming like Hearthstone: arrow, start, cancel (15.32 – 15.34).
 27. Others see live aiming; never recorded (N-15, 15.35, 15.36).
 28. Hit and death marks: starbursts, red HP, skull (15.37).
+29. Souls as Hearthstone-style crystals, left of the character (V-30, V-31, 15.39).
 
 ## 16. Localization
 

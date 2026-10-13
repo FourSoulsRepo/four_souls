@@ -2,11 +2,11 @@
 
 Goal: a clearer table, using fouronlinesouls.net as a second reference.
 
-Ideas: V-09, V-12, V-13, V-15 – V-29.
+Ideas: V-09, V-12, V-13, V-15 – V-31.
 
 Order: 15.1, 15.15, 15.9 – 15.11, 15.16, 15.17, 15.38, 15.18 – 15.24,
 15.3, 15.37, 15.25, 15.32 – 15.34, 15.26, 15.27, 15.5, 15.6,
-15.28 – 15.31, 15.35, 15.36.
+15.28 – 15.31, 15.35, 15.36, 15.39.
 Images come first, so the new table is built with backs and mats.
 
 ## Rules for this step (owner, 2026-10-12)
@@ -839,3 +839,18 @@ Images come first, so the new table is built with backs and mats.
    2. Owner: keep the pentagram face and `coin.png`; may be useful later.
    3. Owner pushed the tools and images repos.
    4. Owner marks 15.38 solved.
+
+### [ ] 15.39 Souls as crystals
+
+1. Goal: a player's souls read at a glance (V-30, V-31).
+2. Tasks:
+   1. A row of slots, like mana crystals in Hearthstone (V-30).
+   2. Filled slots are gained souls; empty ones show what is left to win.
+   3. The row sits left of the character, not right (V-31).
+   4. Opponents get the same row, smaller.
+   5. A card worth two souls fills two slots.
+   6. **Owner** decides: slot count from the win target, or a fixed four.
+3. Done when:
+   1. e2e test: a gained soul fills one more slot.
+   2. `make screenshots` shows the row left of the character.
+   3. UC-12 updated.

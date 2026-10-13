@@ -183,6 +183,16 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
 29. V-29. No number badges on cards.
    1. Owner rejected 1–9 badges on valid targets (15.1, F-14).
    2. Targets glow instead (V-20).
+30. V-30. Souls look like mana crystals in Hearthstone.
+   1. A row of slots; filled ones are gained souls.
+   2. Shows at a glance how close a player is to winning.
+31. V-31. Gained souls sit left of the character, not right.
+32. V-32. Switch character or eternal item art between reprints.
+   1. Right click, or long tap on touch, cycles the art.
+   2. Only cards that have reprints in other sets.
+   3. Open question: only reprints from enabled sets, or always?
+   4. It is only an image, so "always" may be fine.
+   5. Related: alt art (CD-11), per-copy art (CD-12).
 
 ## Rules
 

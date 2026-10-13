@@ -3,7 +3,7 @@
 Goal: official sets beyond the Base Game.
 Order: Gold Box, Four Souls+, Requiem, Warp Zone, promos.
 
-Ideas: CD-02, GS-07, GS-08, CD-11, A-16, CD-12.
+Ideas: CD-02, GS-07, GS-08, CD-11, A-16, CD-12, V-32.
 
 ---
 
@@ -115,3 +115,18 @@ Alt art (CD-11) comes after all sets.
    4. The host screen remembers the last setup in the settings.
    5. IDs `a_penny_6`, `dice_shard_3`, `soul_heart_2` became `a_penny`, `dice_shard`, `soul_heart`.
    6. Old saved games with those IDs no longer load.
+
+### [ ] 14.7 Switch reprint art
+
+1. Goal: a player picks which print of a card they see (V-32).
+2. Tasks:
+   1. Only characters and eternal items with reprints.
+   2. Right click, or long tap on touch, cycles the art.
+   3. Needs the per-copy art from 14.5.
+   4. **Owner** decides: only prints from enabled sets, or every print.
+   5. **Owner** decides: only the viewer sees it, or everyone.
+   6. Card text and stats never change; it is only the image.
+3. Done when:
+   1. e2e test: a right click on a reprinted character changes its image.
+   2. A card without reprints ignores the click.
+   3. Use case.
