@@ -671,7 +671,7 @@ Images come first, so the new table is built with backs and mats.
 8. Owner notes (2026-10-13)
    1. Owner marks 15.23 solved.
 
-### [ ] 15.24 Ability dialog and status marks
+### [x] 15.24 Ability dialog and status marks
 
 1. Goal: clear choice of ability and clear card states (C-04, C-05, H-22).
 2. Tasks:
@@ -741,6 +741,8 @@ Images come first, so the new table is built with backs and mats.
     6. A missing or broken image shows the drawn sword.
     7. e2e test: one page gets the image, the other the drawn sword.
     8. Screenshots: `.cache/screenshots/15.24/sword/`.
+13. Owner notes (2026-10-13)
+    1. Owner marks 15.24 solved.
 
 ### [ ] 15.25 Drag and aim
 
