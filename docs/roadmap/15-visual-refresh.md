@@ -892,7 +892,7 @@ Images come first, so the new table is built with backs and mats.
 3. Done when:
    1. e2e test: a second player sees the fight mark.
 
-### [ ] 15.32 Aiming arrow
+### [x] 15.32 Aiming arrow
 
 1. Goal: a clear Hearthstone-style arrow while aiming (T-02, T-18 – T-20).
 2. Tasks:
@@ -918,6 +918,8 @@ Images come first, so the new table is built with backs and mats.
    12. Unit test: `blocks` counts the blocks short of the head.
    13. e2e test: plain head off a target, ring on it; the chain's origin.
    14. Screenshots: `.cache/screenshots/15.32/before/` and `after/`.
+5. Owner notes (2026-10-13)
+   1. Owner marks 15.32 solved.
 
 ### [ ] 15.33 Start, finish, and cancel aiming
 
