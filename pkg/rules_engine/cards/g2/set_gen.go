@@ -69,10 +69,10 @@ var Set = engine.CardSet{
 		woodenNickel,
 	},
 	Reprints: []engine.Reprint{
-		{Ref: "a_penny_6", Copies: 2},
+		{Ref: "a_penny", Copies: 2},
 		{Ref: "bomb", Copies: 1},
 		{Ref: "four_cents", Copies: 2},
-		{Ref: "soul_heart_2", Copies: 1},
+		{Ref: "soul_heart", Copies: 1},
 		{Ref: "three_cents", Copies: 2},
 		{Ref: "two_cents", Copies: 2},
 	},

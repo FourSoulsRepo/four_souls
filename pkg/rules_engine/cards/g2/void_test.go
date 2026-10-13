@@ -11,7 +11,7 @@ func voidTable(t *testing.T) *enginetest.Table {
 	t.Helper()
 	tb := setup(t, engine.SituationSetup{
 		Players: []engine.SituationPlayer{
-			{Character: "apollyon", Items: []engine.CardRef{"void"}, Hand: []engine.CardRef{"bomb", "bomb", "a_penny_6"}},
+			{Character: "apollyon", Items: []engine.CardRef{"void"}, Hand: []engine.CardRef{"bomb", "bomb", "a_penny"}},
 			seat("cain"),
 		},
 		Monsters: []engine.CardRef{"fly", "leech"},

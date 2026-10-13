@@ -5,8 +5,8 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 // Dice Shard (Dice Shard/Soul Heart Card)
 //
 //	Choose a dice roll. Its controller rerolls it.
-var diceShard3 = engine.CardDef{
-	Ref:    "dice_shard_3",
+var diceShard = engine.CardDef{
+	Ref:    "dice_shard",
 	Kind:   engine.LootCard,
 	Copies: 3,
 	Abilities: []engine.Ability{

@@ -83,7 +83,7 @@
       ]
     },
     {
-      "id": "a_penny_6",
+      "id": "a_penny",
       "type": "1 Cent Card",
       "copies": 6,
       "text": {
@@ -115,12 +115,12 @@
         }
       ],
       "images": [
-        "b2/a_penny_6.webp",
-        "b2/a_penny_6-2.webp",
-        "b2/a_penny_6-3.webp",
-        "b2/a_penny_6-4.webp",
-        "b2/a_penny_6-5.webp",
-        "b2/a_penny_6-6.webp"
+        "b2/a_penny.webp",
+        "b2/a_penny-2.webp",
+        "b2/a_penny-3.webp",
+        "b2/a_penny-4.webp",
+        "b2/a_penny-5.webp",
+        "b2/a_penny-6.webp"
       ]
     },
     {
@@ -2997,7 +2997,7 @@
       ]
     },
     {
-      "id": "dice_shard_3",
+      "id": "dice_shard",
       "type": "Dice Shard/Soul Heart Card",
       "copies": 3,
       "text": {
@@ -3023,9 +3023,9 @@
         }
       ],
       "images": [
-        "b2/dice_shard_3.webp",
-        "b2/dice_shard_3-2.webp",
-        "b2/dice_shard_3-3.webp"
+        "b2/dice_shard.webp",
+        "b2/dice_shard-2.webp",
+        "b2/dice_shard-3.webp"
       ]
     },
     {
@@ -8955,7 +8955,7 @@
       ]
     },
     {
-      "id": "soul_heart_2",
+      "id": "soul_heart",
       "type": "Dice Shard/Soul Heart Card",
       "copies": 2,
       "text": {
@@ -8981,8 +8981,8 @@
         }
       ],
       "images": [
-        "b2/soul_heart_2.webp",
-        "b2/soul_heart_2-2.webp"
+        "b2/soul_heart.webp",
+        "b2/soul_heart-2.webp"
       ]
     },
     {
