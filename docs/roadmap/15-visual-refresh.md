@@ -1088,7 +1088,7 @@ Images come first, so the new table is built with backs and mats.
 7. Owner notes (2026-10-13)
    1. Owner marks 15.47 solved.
 
-### [ ] 15.48 Player names in record file names
+### [x] 15.48 Player names in record file names
 
 1. Goal: a record file says who played (owner, 2026-10-13).
 2. Owner: fix it now; clean the names for security and file systems.
@@ -1110,3 +1110,5 @@ Images come first, so the new table is built with backs and mats.
    7. The app downloads first, then the dialog suggests that name.
    8. The app cleans it again with `record.SafeFileName`.
    9. No screen changed; no screenshots.
+6. Owner notes (2026-10-13)
+   1. Owner marks 15.48 solved.
