@@ -771,7 +771,7 @@ Images come first, so the new table is built with backs and mats.
 13. Owner notes (2026-10-13)
     1. Owner marks 15.24 solved.
 
-### [ ] 15.25 Drag and aim
+### [x] 15.25 Drag and aim
 
 1. Goal: play a card by dragging it to the table or a target (V-16).
 2. Tasks:
@@ -817,6 +817,8 @@ Images come first, so the new table is built with backs and mats.
    11. e2e helper `playLoot` aims when a card needs a target.
    12. e2e test: a right click cancels; the arrow's ends; two clicks hit.
    13. Screenshots: `.cache/screenshots/15.25/fix/`.
+7. Owner notes (2026-10-13)
+   1. Owner marks 15.25 solved.
 
 ### [ ] 15.26 Click modes
 
