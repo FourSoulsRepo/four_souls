@@ -827,7 +827,7 @@
         "en": {
           "name": "Breakfast",
           "effects": [
-            "{HP}"
+            "+1{HP}"
           ],
           "notes": [
             "\"I gave you milk to drink, not solid food; for you were not yet able to receive it.\"\nCorinthians 3:2"
@@ -860,7 +860,7 @@
         "en": {
           "name": "Brimstone",
           "effects": [
-            "{ATK}",
+            "+1{ATK}",
             "Each time you deal combat damage to a monster, deal 1 damage to another player."
           ]
         }
@@ -3086,7 +3086,7 @@
         "en": {
           "name": "Dinner",
           "effects": [
-            "{HP}"
+            "+1{HP}"
           ],
           "notes": [
             "\"Do not give what is holy to dogs, and do not throw your pearls before swine.\"\nMatthew 7:6"
@@ -5475,7 +5475,7 @@
         "en": {
           "name": "Ipecac",
           "effects": [
-            "{ATK}",
+            "+1{ATK}",
             "Each time you roll an attack roll of 6, deal 1 damage to each other player."
           ]
         }

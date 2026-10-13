@@ -1,0 +1,24 @@
+{
+  "moms_knife": {
+    "text": {
+      "en": {
+        "name": "Mom’s Knife",
+        "effects": [
+          "+1{ATK}",
+          "Each time you deal combat damage to a monster on an attack roll of 6, deal 1 damage to each other monster."
+        ]
+      }
+    }
+  },
+  "placenta": {
+    "text": {
+      "en": {
+        "name": "Placenta",
+        "effects": [
+          "+1{HP}",
+          "You take no combat damage on attack rolls of 4."
+        ]
+      }
+    }
+  }
+}
