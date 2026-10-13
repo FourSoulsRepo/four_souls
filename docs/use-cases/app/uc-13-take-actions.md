@@ -51,6 +51,8 @@
   * The second click, on a target, plays the card at it; no dialog asks.
   * A click elsewhere, a right click, or Esc cancels; nothing is sent.
   * Such a card opens no menu and is not dragged.
+  * The arrow is a chain of red blocks with a big head (15.32).
+  * Over a valid target a red ring marks the head.
 
 ## Postconditions
 

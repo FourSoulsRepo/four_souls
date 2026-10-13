@@ -551,41 +551,140 @@
   transform: translateY(-40px) scale(1.08);
 }
 
-/* The aiming arrow (15.25, Aim.tsx): a 100px shaft stretched with
-   scaleX from the card to the head's base, and a 30px head whose tip is
-   at the pointer; both drawn over everything, outlined so they read on
-   red art, and never hit by the pointer. */
+/* The aiming arrow (15.32, Aim.tsx), after Hearthstone's: a chain of
+   thick red blocks from the card, placed once with translate and
+   rotate, and a big head whose tip is at the pointer. The chain marches
+   toward the head; the first block fades in and the last fades out in
+   step, so the loop has no seam. On a valid target a ring with cross
+   ticks marks the tip. A little see-through, drawn over everything,
+   outlined so it reads on red art, and never hit by the pointer. Only
+   transform and opacity move; --march follows the animation speed. */
 .aim-arrow {
   position: fixed;
   inset: 0;
   z-index: 1000;
   pointer-events: none;
   opacity: 0.85;
-  filter: drop-shadow(0 0 1px #000) drop-shadow(0 0 3px #000);
+  filter: drop-shadow(0 0 1px #000) drop-shadow(0 2px 3px rgb(0 0 0 / 70%));
 }
 
-.aim-shaft,
-.aim-head {
+.aim-chain,
+.aim-head,
+.aim-ring {
   position: absolute;
   top: 0;
   left: 0;
-  background: #e53228;
 }
 
-.aim-shaft {
-  width: 100px;
-  height: 12px;
-  margin-top: -6px;
-  transform-origin: 0 50%;
+.aim-march {
+  animation: aim-march var(--march) linear infinite;
+}
+
+.aim-block {
+  position: absolute;
+  top: -13px;
+  left: 0;
+}
+
+.aim-block > div {
+  width: 28px;
+  height: 26px;
+  box-sizing: border-box;
+  border: 2px solid #6e0d08;
+  border-radius: 3px;
+  background: linear-gradient(to bottom, #ff7a63, #e53228 40%, #a8170f);
+}
+
+.aim-block > .first {
+  animation: aim-fade-in var(--march) linear infinite;
+}
+
+.aim-block > .last {
+  animation: aim-fade-out var(--march) linear infinite;
 }
 
 .aim-head {
-  width: 30px;
-  height: 34px;
-  margin-top: -17px;
-  margin-left: -30px;
-  clip-path: polygon(0 0, 100% 50%, 0 100%);
-  transform-origin: 30px 50%;
+  width: 48px;
+  height: 60px;
+  margin-top: -30px;
+  margin-left: -48px;
+  clip-path: polygon(0 0, 100% 50%, 0 100%, 24% 50%);
+  transform-origin: 48px 50%;
+  background: linear-gradient(to bottom, #ff7a63, #e53228 40%, #a8170f);
+}
+
+.aim-ring > div {
+  position: absolute;
+  top: -34px;
+  left: -34px;
+  width: 68px;
+  height: 68px;
+  box-sizing: border-box;
+  border: 6px solid #e53228;
+  border-radius: 50%;
+  opacity: 0;
+  transform: scale(1.5);
+  transition:
+    opacity calc(var(--march) / 2),
+    transform calc(var(--march) / 2);
+}
+
+/* The cross ticks: two bars, see-through in the middle. */
+.aim-ring > div::before,
+.aim-ring > div::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 88px;
+  height: 5px;
+  margin: -2.5px 0 0 -44px;
+  background: linear-gradient(
+    to right,
+    #e53228 0 18px,
+    transparent 18px calc(100% - 18px),
+    #e53228 calc(100% - 18px)
+  );
+}
+
+.aim-ring > div::after {
+  transform: rotate(90deg);
+}
+
+.aim-arrow.on .aim-ring > div {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.aim-arrow.still *,
+.aim-arrow.still *::before,
+.aim-arrow.still *::after {
+  animation: none;
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aim-arrow * {
+    animation: none;
+  }
+}
+
+@keyframes aim-march {
+  to {
+    transform: translateX(36px);
+  }
+}
+
+@keyframes aim-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes aim-fade-out {
+  to {
+    opacity: 0;
+  }
 }
 
 .player-allowance {

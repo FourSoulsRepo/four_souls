@@ -1,6 +1,7 @@
-import { useEffect, useState } from 'react';
-import { arrow, targetAt, zonesAt, type Point } from '../aim';
+import { useEffect, useState, type CSSProperties } from 'react';
+import { arrow, blocks, targetAt, zonesAt, type Point } from '../aim';
 import { useKey } from '../keys';
+import { scaleFor } from '../playback';
 import { useApp, type Aiming } from '../store';
 
 // AimLayer is the player's aim (15.25): a click on a card that needs a
@@ -15,7 +16,7 @@ export function AimLayer() {
 function Aim({ aiming }: { aiming: Aiming }) {
   const setAiming = useApp((s) => s.setAiming);
   const playAt = useApp((s) => s.playAt);
-  const [line, setLine] = useState<{ from: Point; to: Point } | null>(null);
+  const [line, setLine] = useState<{ from: Point; to: Point; on: boolean } | null>(null);
   useKey('escape', () => {
     setAiming(null);
   });
@@ -24,7 +25,8 @@ function Aim({ aiming }: { aiming: Aiming }) {
       // The arrow starts at the card's middle, wherever it is drawn now.
       const r = document.querySelector(`[data-zone="obj-${String(aiming.source)}"]`)?.getBoundingClientRect();
       if (r && e.pointerType === 'mouse') {
-        setLine({ from: { x: r.left + r.width / 2, y: r.top + r.height / 2 }, to: { x: e.clientX, y: e.clientY } });
+        const on = !!targetAt(zonesAt(e.clientX, e.clientY), aiming.targets);
+        setLine({ from: { x: r.left + r.width / 2, y: r.top + r.height / 2 }, to: { x: e.clientX, y: e.clientY }, on });
       }
     };
     // Capture: the click picks or cancels and reaches nothing else.
@@ -51,24 +53,40 @@ function Aim({ aiming }: { aiming: Aiming }) {
       window.removeEventListener('contextmenu', menu, true);
     };
   }, [aiming, playAt, setAiming]);
-  return line ? <AimArrow from={line.from} to={line.to} /> : null;
+  return line ? <AimArrow {...line} /> : null;
 }
 
-// The head's length and the shaft's drawn width, as in Table.css.
-const headLength = 30;
-const shaftWidth = 100;
+// The head's length and the chain's step, as in Table.css.
+const headLength = 48;
+const step = 36;
 
-// AimArrow: a shaft from the card to the head's base, and a head whose
-// tip is at the pointer; placed with transform only. 15.32 gives it its
-// final look.
-function AimArrow({ from, to }: { from: Point; to: Point }) {
+// AimArrow (15.32): a chain of thick blocks from the card to the head,
+// and a head whose tip is at the pointer; on a valid target a ring
+// marks the tip. The blocks march toward the head at the animation
+// speed; the first fades in and the last fades out, so the loop has no
+// seam. Placed and moved with transform and opacity only.
+function AimArrow({ from, to, on }: { from: Point; to: Point; on: boolean }) {
+  const scale = useApp((s) => scaleFor(s.settings.animation, 0, 0));
   const { length, angle } = arrow(from, to);
   const at = (p: Point) => `translate(${String(p.x)}px, ${String(p.y)}px) rotate(${String(angle)}deg)`;
-  const shaft = Math.max(0, length - headLength + 2) / shaftWidth;
+  const n = blocks(length, step, headLength);
+  const cls = ['aim-arrow', on ? 'on' : '', scale > 0 ? '' : 'still'].filter(Boolean).join(' ');
+  const march = { '--march': `${String(0.5 * scale)}s` } as CSSProperties;
   return (
-    <div className="aim-arrow" aria-hidden="true">
-      <div className="aim-shaft" style={{ transform: `${at(from)} scaleX(${String(shaft)})` }} />
+    <div className={cls} style={march} aria-hidden="true">
+      <div className="aim-chain" style={{ transform: at(from) }}>
+        <div className="aim-march">
+          {Array.from({ length: n }, (_, i) => (
+            <div key={i} className="aim-block" style={{ transform: `translateX(${String(i * step)}px)` }}>
+              <div className={i === 0 ? 'first' : i === n - 1 ? 'last' : undefined} />
+            </div>
+          ))}
+        </div>
+      </div>
       <div className="aim-head" style={{ transform: at(to) }} />
+      <div className="aim-ring" style={{ transform: `translate(${String(to.x)}px, ${String(to.y)}px)` }}>
+        <div />
+      </div>
     </div>
   );
 }

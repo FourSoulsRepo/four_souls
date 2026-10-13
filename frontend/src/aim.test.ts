@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { arrow, targetAt } from './aim';
+import { arrow, blocks, targetAt } from './aim';
 import type { OptionView } from './protocol';
 
 const monster: OptionView = { object: 40, player: -1 };
@@ -34,5 +34,13 @@ describe('arrow', () => {
   it('measures length and angle', () => {
     expect(arrow({ x: 0, y: 0 }, { x: 3, y: 4 }).length).toBe(5);
     expect(arrow({ x: 0, y: 0 }, { x: 0, y: -10 }).angle).toBe(-90);
+  });
+});
+
+describe('blocks', () => {
+  it('fills the chain short of the head', () => {
+    expect(blocks(100, 30, 40)).toBe(2);
+    expect(blocks(130, 30, 40)).toBe(3);
+    expect(blocks(20, 30, 40)).toBe(0);
   });
 });

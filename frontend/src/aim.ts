@@ -62,3 +62,10 @@ export function arrow(from: Point, to: Point): { length: number; angle: number }
   const dy = to.y - from.y;
   return { length: Math.hypot(dx, dy), angle: (Math.atan2(dy, dx) * 180) / Math.PI };
 }
+
+// blocks is how many blocks of an aiming arrow's chain fit between its
+// source and its head: one every step pixels, the head's length short
+// of the pointer.
+export function blocks(length: number, step: number, head: number): number {
+  return Math.max(0, Math.floor((length - head) / step));
+}

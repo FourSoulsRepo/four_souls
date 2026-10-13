@@ -903,6 +903,21 @@ Images come first, so the new table is built with backs and mats.
    5. Without images the arrow looks the same.
 3. Done when:
    1. `make screenshots` shows the arrow off and on a target.
+4. Result (2026-10-13)
+   1. The arrow is a chain of thick red blocks with a notched head.
+   2. Blocks: 28 by 26 px, one every 36 px, with a light top edge.
+   3. The chain is placed once at the card's middle; it never stretches.
+   4. The blocks march toward the head; the ends fade, so no seam shows.
+   5. A little see-through, outlined, drawn over every card and the zoom.
+   6. Over a valid target, a red ring with cross ticks marks the tip.
+   7. The ring fades and shrinks in; off target it fades out.
+   8. Only `transform` and `opacity` move.
+   9. March speed follows the animation setting; off stands it still.
+   10. Reduced motion also stands it still.
+   11. Pure CSS: the same without the card images.
+   12. Unit test: `blocks` counts the blocks short of the head.
+   13. e2e test: plain head off a target, ring on it; the chain's origin.
+   14. Screenshots: `.cache/screenshots/15.32/before/` and `after/`.
 
 ### [ ] 15.33 Start, finish, and cancel aiming
 

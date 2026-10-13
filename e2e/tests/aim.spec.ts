@@ -127,23 +127,31 @@ test('a bomb aimed at a monster by two clicks damages it', async ({ browser }) =
     throw new Error('no monster box');
   }
   const tip = { x: to.x + to.width / 2, y: to.y + to.height / 2 };
+  // Off a target the head is plain; on one, a ring marks it.
+  const arrow = active.locator('.aim-arrow');
+  await active.mouse.move(to.x - 200, tip.y, { steps: 12 });
+  await expect(arrow).toBeVisible();
+  await expect(arrow).not.toHaveClass(/\bon\b/);
+  await expect(active.locator('.aim-block').first()).toBeAttached();
+  await shot(active, 'aim-off');
   await active.mouse.move(tip.x, tip.y, { steps: 12 });
-  await expect(active.locator('.aim-arrow')).toBeVisible();
+  await expect(arrow).toHaveClass(/\bon\b/);
   await shot(active, 'aim');
   const geometry = await active.evaluate(() => {
     const box = (s: string) => document.querySelector(s)?.getBoundingClientRect();
-    return { head: box('.aim-head'), shaft: box('.aim-shaft'), card: box('.hand-card.aiming .card') };
+    return { head: box('.aim-head'), ring: box('.aim-ring > div'), chain: box('.aim-chain'), card: box('.hand-card.aiming .card') };
   });
-  const { head, shaft, card } = geometry;
-  if (!head || !shaft || !card) {
+  const { head, ring, chain, card } = geometry;
+  if (!head || !ring || !chain || !card) {
     throw new Error('no arrow');
   }
-  // The head ends at the pointer; the shaft starts in the card's middle.
+  // The head ends at the pointer, where the ring is centered; the chain
+  // starts in the card's middle.
   const near = (a: number, b: number) => Math.abs(a - b) < 3;
   expect(tip.x >= head.left - 1 && tip.x <= head.right + 1 && tip.y >= head.top - 1 && tip.y <= head.bottom + 1).toBe(true);
-  expect(near(head.top, tip.y) || near(head.bottom, tip.y) || near(head.left, tip.x) || near(head.right, tip.x)).toBe(true);
+  expect(near(ring.left + ring.width / 2, tip.x) && near(ring.top + ring.height / 2, tip.y)).toBe(true);
   const middle = { x: card.left + card.width / 2, y: card.top + card.height / 2 };
-  expect(middle.x >= shaft.left - 8 && middle.x <= shaft.right + 8 && middle.y >= shaft.top - 8 && middle.y <= shaft.bottom + 8).toBe(true);
+  expect(near(chain.left, middle.x) && near(chain.top, middle.y)).toBe(true);
 
   // The second click picks the target.
   await active.mouse.click(tip.x, tip.y);
