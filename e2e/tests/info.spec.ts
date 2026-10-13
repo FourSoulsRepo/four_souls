@@ -46,6 +46,25 @@ test('the turn badge, what is left, and hiding the history', async ({ browser })
   await expect(tools.getByRole('button', { name: 'Buy', exact: true }).getByLabel(/^\d+ left$/)).toBeVisible();
   await expect(tools.getByRole('button', { name: 'Attack', exact: true }).getByLabel(/^\d+ left$/)).toBeVisible();
   await shot(active, 'turn-left');
+  // A big count reads "99+" and stays clear of the character card.
+  await active.evaluate(() => {
+    interface S {
+      game: { view: { players: { purchases: number }[]; turn: { active: number } } } | null;
+    }
+    const { store } = (window as unknown as { fourSouls: { store: { getState: () => S; setState: (s: Partial<S>) => void } } })
+      .fourSouls;
+    const { game } = store.getState();
+    if (!game) {
+      throw new Error('no game');
+    }
+    const players = game.view.players.map((p, i) => (i === game.view.turn.active ? { ...p, purchases: 100 } : p));
+    store.setState({ game: { ...game, view: { ...game.view, players } } });
+  });
+  const big = tools.getByLabel('100 left');
+  await expect(big).toHaveText('99+');
+  const badge = await big.boundingBox();
+  const card = await active.locator('.own-character .card').boundingBox();
+  expect((badge?.x ?? 0) + (badge?.width ?? 0)).toBeLessThanOrEqual(card?.x ?? 0);
   // Others see the active player's whole allowance by their name.
   const other = pages.find((p) => p !== active);
   if (!other) {

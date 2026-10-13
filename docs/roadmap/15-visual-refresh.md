@@ -719,6 +719,16 @@ Images come first, so the new table is built with backs and mats.
    4. Own name shows "Loot N"; opponents keep the full line.
    5. e2e test: badges on own icons, the full line for others.
    6. Screenshots: `.cache/screenshots/15.24/fix2/`.
+9. Owner notes (2026-10-13)
+   1. Owner: the badge digit touches the circle's top.
+   2. Owner: check 2, 3, 99 and 100.
+10. Result of the fixes (2026-10-13)
+    1. A top pad centers the digit; the game font sits high.
+    2. One digit: a round disc; two or three: a pill with smaller digits.
+    3. Past 99 the badge says "99+".
+    4. The pill grows left: the character card is close on the right.
+    5. e2e test: 100 reads "99+" and stays clear of the card.
+    6. Screenshots: `.cache/screenshots/15.24/badges/`.
 
 ### [ ] 15.25 Drag and aim
 

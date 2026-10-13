@@ -97,15 +97,22 @@ export function TurnActions({ allowed, disabled, step, waiting, you, left }: Pro
             }}
           >
             {t.icon}
-            {t.left !== undefined && (
-              <span className={`turn-action-left${t.left === 0 ? ' none' : ''}`} aria-label={`${String(t.left)} left`}>
-                {t.left}
-              </span>
-            )}
+            {t.left !== undefined && <Left n={t.left} />}
           </button>
         );
       })}
     </div>
+  );
+}
+
+// Left is the count badge on a turn icon; past 99 it says "99+".
+function Left({ n }: { n: number }) {
+  const text = n > 99 ? '99+' : String(n);
+  const size = text.length > 2 ? ' long' : text.length > 1 ? ' wide' : '';
+  return (
+    <span className={`turn-action-left${size}${n === 0 ? ' none' : ''}`} aria-label={`${String(n)} left`}>
+      {text}
+    </span>
   );
 }
 

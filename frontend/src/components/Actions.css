@@ -503,22 +503,26 @@
 }
 
 /* What is left this turn (15.24): a small paper disc on the icon's
-   corner, the number in the game's letters; dark at 0. */
+   corner, the number in the game's letters; dark at 0. Two or three
+   digits stretch it into a pill that grows left, over the icon's rim:
+   to the right the character card is close. The font sits high in
+   its line box: a top pad centers the digits. */
 .turn-action {
   position: relative;
 }
 
 .turn-action-left {
   position: absolute;
-  top: -8px;
+  top: -10px;
   right: -9px;
+  z-index: 1;
   display: grid;
   place-items: center;
-  min-width: 20px;
+  width: 20px;
   height: 20px;
-  padding: 0 3px;
+  padding: 2px 0 0;
   border: 2px solid var(--ink);
-  border-radius: 50%;
+  border-radius: 10px;
   box-sizing: border-box;
   font-family: var(--font-game);
   font-size: 14px;
@@ -528,6 +532,17 @@
   box-shadow: 0 2px 0 var(--ink);
   rotate: 6deg;
   pointer-events: none;
+}
+
+.turn-action-left.wide,
+.turn-action-left.long {
+  width: auto;
+  padding: 2px 3px 0;
+  font-size: 12px;
+}
+
+.turn-action-left.long {
+  font-size: 10px;
 }
 
 .turn-action-left.none {
