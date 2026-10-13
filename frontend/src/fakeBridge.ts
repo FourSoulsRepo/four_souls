@@ -161,7 +161,7 @@ interface DataCard {
   text: { en?: { name: string; effects?: string[]; footnotes?: { title: string; text: string }[] } };
   stats?: { name: string; value: string }[];
   rewards?: { count: string; kind: string }[];
-  image?: string;
+  images?: string[]; // one per copy; the first stands for the card
 }
 
 function realCards(): unknown[] {
@@ -177,7 +177,7 @@ function realCards(): unknown[] {
       footnotes: c.text.en?.footnotes ?? [],
       stats: c.stats ?? [],
       rewards: c.rewards ?? [],
-      image: c.image ? `/cardimg/${c.image}` : '',
+      image: c.images?.[0] ? `/cardimg/${c.images[0]}` : '',
     }));
 }
 

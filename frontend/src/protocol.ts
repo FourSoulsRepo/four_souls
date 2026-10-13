@@ -172,6 +172,22 @@ export interface CardView {
   charged: boolean;
   damage?: number;
   counters?: { name?: string; count: number }[];
+  stats?: MonsterStats; // only on monsters
+}
+
+// counted is how many counters a card carries, of any kind.
+export function counted(c: CardView): number {
+  return (c.counters ?? []).reduce((n, x) => n + x.count, 0);
+}
+
+// MonsterStats are a monster's stats now and as printed (C-03).
+export interface MonsterStats {
+  hp: number;
+  dc: number;
+  atk: number;
+  printed_hp: number;
+  printed_dc: number;
+  printed_atk: number;
 }
 
 export interface SlotView {

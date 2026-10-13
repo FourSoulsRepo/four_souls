@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import type { Kind } from '../cards';
-import { Deck as DeckKind, type CardView, type GameView, type SlotView } from '../protocol';
+import { counted, Deck as DeckKind, type CardView, type GameView, type SlotView } from '../protocol';
 import { Card } from './Card';
 import type { Interact } from './Interact';
 import { Deck, Discard } from './Pile';
@@ -99,6 +99,8 @@ function Slot({ slot, ui }: { slot: SlotView; ui: Interact }) {
         cardRef={slot.top.card}
         size="table"
         damage={slot.top.damage}
+        counters={counted(slot.top)}
+        monster={slot.top.stats}
         objectId={slot.top.id}
         {...ui.object(slot.top.id)}
       />

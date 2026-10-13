@@ -281,3 +281,60 @@ for (const [n, names] of [
     await shot(many, `table-slots-${String(n)}`);
   });
 }
+
+test('counters and changed monster stats show on the card and in its zoom (15.23)', async ({ browser }) => {
+  const [page] = await startGame(browser, ['Flo', 'Hux']);
+  if (!page) {
+    throw new Error('no pages');
+  }
+  const monster = page.getByRole('group', { name: 'Monsters' }).locator('.card').first();
+  // The server sends each monster's stats; an untouched one shows the print only.
+  await expect(monster).toBeVisible();
+  await expect(monster.locator('.card-stat')).toHaveCount(0);
+
+  // The first monster takes 1 damage and gets 2 counters; the second
+  // gets +1 attack and is easier to hit, as the server would send it.
+  // Only the screen changes; nobody acts on it.
+  const hp = await page.evaluate(() => {
+    interface Card {
+      damage?: number;
+      counters?: { count: number }[];
+      stats?: { hp: number; dc: number; atk: number; printed_hp: number; printed_dc: number; printed_atk: number };
+    }
+    interface S {
+      game: { view: { monsters: { top?: Card }[] } } | null;
+    }
+    const { store } = (window as unknown as { fourSouls: { store: { getState: () => S; setState: (s: Partial<S>) => void } } })
+      .fourSouls;
+    const game = store.getState().game;
+    const top = game?.view.monsters[0]?.top;
+    const next = game?.view.monsters[1]?.top;
+    if (!game || !top?.stats || !next?.stats) {
+      throw new Error('no monster stats');
+    }
+    const hit: Card = { ...top, damage: 1, counters: [{ count: 2 }], stats: { ...top.stats, hp: top.stats.printed_hp - 1 } };
+    const { printed_dc: dc, printed_atk: atk } = next.stats;
+    const boosted: Card = { ...next, stats: { ...next.stats, dc: dc > 1 ? dc - 1 : dc + 1, atk: atk + 1 } };
+    const monsters = game.view.monsters.map((s, i) => (i === 0 ? { ...s, top: hit } : i === 1 ? { ...s, top: boosted } : s));
+    store.setState({ game: { ...game, view: { ...game.view, monsters } } });
+    return top.stats.printed_hp - 1;
+  });
+
+  // The new health replaces the damage mark; dice and attack are as printed (C-03).
+  await expect(monster.getByLabel(`${String(hp)} health`)).toBeVisible();
+  await expect(monster.getByLabel('1 damage')).toHaveCount(0);
+  await expect(monster.getByLabel(/ (dice|attack)$/)).toHaveCount(0);
+  await expect(monster.getByLabel('2 counters')).toBeVisible();
+  const second = page.getByRole('group', { name: 'Monsters' }).locator('.card').nth(1);
+  await expect(second.getByLabel(/^\d dice$/)).toBeVisible();
+  await expect(second.getByLabel(/^\d+ attack$/)).toBeVisible();
+  await expect(second.getByLabel(/ health$/)).toHaveCount(0);
+  await shot(page, 'monster-stats');
+
+  // The zoom shows the same badges (C-02).
+  await monster.hover();
+  const zoom = page.getByTestId('card-zoom').locator('.card.size-zoom');
+  await expect(zoom.getByLabel('2 counters')).toBeVisible();
+  await expect(zoom.getByLabel(`${String(hp)} health`)).toBeVisible();
+  await shot(page, 'monster-stats-zoom');
+});

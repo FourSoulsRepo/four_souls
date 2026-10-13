@@ -258,19 +258,28 @@
   box-shadow: 0 0 0 3px #4fc3f7, 0 0 14px 2px rgb(79 195 247 / 70%);
 }
 
+/* Counters (C-01): a big green circle with the count, on the card's
+   art, clear of the stat badges at the bottom. */
 .card-counters {
   position: absolute;
-  bottom: 6cqi;
+  top: 30cqi;
   left: 6cqi;
-  min-width: 18cqi;
-  padding: 1cqi 3cqi;
-  border-radius: 9cqi;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 34cqi;
+  height: 34cqi;
+  padding: 0 4cqi;
+  border: 2cqi solid rgb(0 0 0 / 55%);
+  border-radius: 17cqi;
   box-sizing: border-box;
-  font-size: 13cqi;
-  font-weight: 700;
-  text-align: center;
-  color: #1d1d1d;
-  background: #ffd27a;
+  font-size: 21cqi;
+  font-weight: 800;
+  line-height: 1;
+  color: #fff;
+  text-shadow: 0 1px 2px #000;
+  background: radial-gradient(circle at 35% 30%, #5fd36a, #1b7a2a);
+  box-shadow: 0 1px 4px rgb(0 0 0 / 60%);
 }
 
 /* Live health and attack on the own character (H-15): big round
@@ -303,8 +312,33 @@
   background: radial-gradient(circle at 35% 30%, #f2c94c, #9a6a0c);
 }
 
-/* The health badge takes the corner of the counters. */
-.card.has-stats .card-counters {
-  top: 6cqi;
-  bottom: auto;
+/* A text card has no art: the counter takes the top corner, and the
+   name keeps clear of it, so no words hide under it. */
+.card.blank .card-counters {
+  top: 4cqi;
+  right: 4cqi;
+  left: auto;
+}
+
+.card.blank.has-counters .card-name {
+  padding-right: 38cqi;
+}
+
+/* A monster's dice to hit (C-03): a die, between health and attack. */
+.card-dc {
+  left: 50%;
+  border-radius: 22%;
+  color: #1d1d1d;
+  text-shadow: none;
+  background: linear-gradient(145deg, #fff, #c9c9c9);
+  transform: translateX(-50%);
+}
+
+/* A monster's badge shows only a changed stat; its ring says which way. */
+.card-stat.higher {
+  border-color: #6fe07a;
+}
+
+.card-stat.lower {
+  border-color: #2a0705;
 }

@@ -303,3 +303,29 @@ func TestViewNamesSourceAndTargetCards(t *testing.T) {
 		t.Error("the game's own stack got a target card; only views have it")
 	}
 }
+
+func TestViewShowsLiveMonsterStats(t *testing.T) {
+	g := newAbilityGame(t)
+	monster, ok := g.Monsters[0].TopOf()
+	if !ok {
+		t.Fatal("no monster in the first slot")
+	}
+	d := g.def(monster)
+	g.Object(monster).Damage = 1
+	g.Boosts = append(g.Boosts, Boost{Stat: StatMonsterATK, Object: monster, Amount: 2})
+	gv := g.View(Viewer{Kind: ViewSpectator})
+	s := gv.Monsters[0].Top.Stats
+	if s == nil {
+		t.Fatal("a monster's view has no stats")
+	}
+	want := MonsterStats{
+		HP: d.HP - 1, DC: d.DC, ATK: d.ATK + 2,
+		PrintedHP: d.HP, PrintedDC: d.DC, PrintedATK: d.ATK,
+	}
+	if *s != want {
+		t.Errorf("stats = %+v, want %+v", *s, want)
+	}
+	if gv.Players[0].Character.Stats != nil {
+		t.Error("a character got monster stats")
+	}
+}

@@ -1,5 +1,5 @@
 import { useRef, useState, type CSSProperties, type ReactNode } from 'react';
-import { Role, type CardView, type Intent, type PlayerView } from '../protocol';
+import { counted, Role, type CardView, type Intent, type PlayerView } from '../protocol';
 import { useApp } from '../store';
 import { playerColor, type Position } from '../table';
 import { Card, type CardSize } from './Card';
@@ -16,11 +16,6 @@ interface Props {
   ui: Interact;
   // tools are the viewer's turn actions, shown by own name (15.19).
   tools?: ReactNode;
-}
-
-// counted is how many counters a card carries, of any kind.
-function counted(c: CardView): number {
-  return (c.counters ?? []).reduce((n, x) => n + x.count, 0);
 }
 
 // spent: a character or item that is used up until it recharges.
@@ -208,6 +203,7 @@ function PlayCard({ card, size, ui }: { card: CardView; size: CardSize; ui: Inte
       damage={card.damage}
       spent={spent(card)}
       counters={counted(card)}
+      monster={card.stats}
       objectId={card.id}
       {...ui.object(card.id)}
     />

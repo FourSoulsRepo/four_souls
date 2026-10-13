@@ -41,7 +41,7 @@
 ## Alternative scenarios and errors
 
 * **2a. Used cards:** a character or item that is not charged is dimmed.
-* **2b. Damage:** a red counter on the card shows damage taken.
+* **2b. Damage:** a red counter on a character shows damage taken.
 * **2c. Dead player:** the area fades and says "dead".
 * **3a. Empty deck or discard:** a dashed outline keeps its place.
 * **3b. Covered slot:** a "+N" badge shows the cards under the top one.
@@ -61,6 +61,12 @@
   * An opponent's hand is fanned loot backs with its card count.
   * No back images (public clone): plain dark backs with the deck name.
 * **1g. No coin image (public clone):** a drawn ¢ coin by the cents.
+* **2d. Counters (15.23):** a big green circle with the count, on the card art.
+  * A text card shows it in its top corner, clear of the words.
+* **2e. Changed monster stats (15.23):** a badge per changed value.
+  * Red health, a white die for the dice, gold attack.
+  * A value as printed shows no badge; the card shows it.
+  * A damaged monster shows its lower health instead of a damage mark.
 
 ## Postconditions
 

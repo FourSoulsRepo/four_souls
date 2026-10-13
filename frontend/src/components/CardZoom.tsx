@@ -21,7 +21,7 @@ export function CardZoom() {
       }}
     >
       <figure className="card-zoom-figure">
-        <Card cardRef={zoom.ref} size="zoom" />
+        <Card cardRef={zoom.ref} size="zoom" {...zoom.marks} />
         {zoom.caption && (
           <figcaption className="card-zoom-caption">
             {zoom.caption.ability && <p className="card-zoom-ability">{zoom.caption.ability}</p>}

@@ -85,8 +85,24 @@ const modeled: Record<string, Envelope> = {
           { top: { id: 306, card: 'breakfast', role: 2, charged: true } },
         ],
         monsters: [
-          { top: { id: 308, card: 'pin', role: 3, charged: true } },
-          { top: { id: 309, card: 'pestilence', role: 3, charged: true } },
+          {
+            top: {
+              id: 308,
+              card: 'pin',
+              role: 3,
+              charged: true,
+              stats: { hp: 2, dc: 4, atk: 1, printed_hp: 2, printed_dc: 4, printed_atk: 1 },
+            },
+          },
+          {
+            top: {
+              id: 309,
+              card: 'pestilence',
+              role: 3,
+              charged: true,
+              stats: { hp: 4, dc: 4, atk: 1, printed_hp: 4, printed_dc: 4, printed_atk: 1 },
+            },
+          },
         ],
         deck_sizes: [96, 98, 101, 0],
         discards: [null, null, null, null],

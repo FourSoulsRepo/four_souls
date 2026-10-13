@@ -32,6 +32,20 @@ type CardView struct {
 	Damage  int      `json:"damage,omitempty"`
 	// Counters are the counters on the card, e.g. charge counters.
 	Counters []Counter `json:"counters,omitempty"`
+	// Stats are a monster's live and printed stats (C-03); nil for
+	// other cards.
+	Stats *MonsterStats `json:"stats,omitempty"`
+}
+
+// MonsterStats are a monster's stats now and as printed, so a client can
+// mark the ones that changed (C-03).
+type MonsterStats struct {
+	HP         int `json:"hp"`
+	DC         int `json:"dc"`
+	ATK        int `json:"atk"`
+	PrintedHP  int `json:"printed_hp"`
+	PrintedDC  int `json:"printed_dc"`
+	PrintedATK int `json:"printed_atk"`
 }
 
 // PlayerView is what a viewer sees of one player.
@@ -234,10 +248,20 @@ func (g *Game) optionViews() []OptionView {
 
 func (g *Game) cardView(id ObjectID) CardView {
 	o := g.Object(id)
-	return CardView{
+	cv := CardView{
 		ID: id, Card: o.Card, Role: o.Role, Charged: o.Charged, Damage: o.Damage,
 		Counters: append([]Counter(nil), o.Counters...),
 	}
+	if o.Role == RoleMonster {
+		d := g.def(id)
+		cv.Stats = &MonsterStats{
+			HP: g.HP(id), DC: g.Evasion(id), ATK: g.MonsterATK(id),
+			// The printed dice clamp as Evasion does, so only a bonus
+			// marks it as changed.
+			PrintedHP: d.HP, PrintedDC: min(max(d.DC, 1), 6), PrintedATK: d.ATK,
+		}
+	}
+	return cv
 }
 
 func (g *Game) slotViews(slots []Slot) []SlotView {

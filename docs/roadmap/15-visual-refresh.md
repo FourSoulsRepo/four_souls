@@ -637,6 +637,23 @@ Images come first, so the new table is built with backs and mats.
 3. Done when:
    1. e2e test: a counter badge on the card and in its zoom.
    2. e2e test: a damaged monster shows its new HP on the card.
+4. Owner decision (2026-10-13)
+   1. Monster stats as badges beside the print, only when changed.
+5. Result (2026-10-13)
+   1. Counter: a big green circle with the count, on the card art (C-01).
+   2. A text card has it in the top corner; the name keeps clear of it.
+   3. The engine view gives monsters `stats`: live and printed HP, dice, ATK.
+   4. A badge shows only a value that differs from the print (C-03).
+   5. Red health, a white die for the dice, gold attack.
+   6. A green ring marks a value above the print.
+   7. A damaged monster's health badge replaces its red damage mark.
+   8. Characters keep their always-on health and attack badges (15.17).
+   9. The zoom shows the same badges as the card (C-02).
+   10. Text cards get the same badges.
+   11. e2e test: counters, health, dice and attack on the card and in the zoom.
+   12. Engine test: a damaged, boosted monster's view stats.
+   13. Fix: screenshots had text cards; the fake bridge read a wrong field.
+   14. Screenshots: `.cache/screenshots/15.23/before/` and `after/`.
 
 ### [ ] 15.24 Ability dialog and status marks
 

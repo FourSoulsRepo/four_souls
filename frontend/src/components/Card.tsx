@@ -2,7 +2,8 @@ import { motion } from 'motion/react';
 import { useEffect, useRef, useState, type PointerEvent } from 'react';
 import { iconText, kindOf, textParts, unknownCard, type CardInfo, type Kind } from '../cards';
 import { scaleFor } from '../playback';
-import { useApp } from '../store';
+import type { MonsterStats } from '../protocol';
+import { useApp, type Marks } from '../store';
 import './Card.css';
 
 // How long a touch must rest on a card to zoom it (B-06).
@@ -29,6 +30,8 @@ interface Props {
   highlight?: 'act' | 'pick';
   // stats shows live health and attack as big numbers (H-15).
   stats?: { hp: number; atk: number };
+  // monster shows the stats that differ from the print (C-03).
+  monster?: MonsterStats;
   // noZoom: the card does not zoom itself; its row does (15.21).
   noZoom?: boolean;
   onClick?: () => void;
@@ -46,6 +49,7 @@ export function Card({
   objectId,
   highlight,
   stats,
+  monster,
   noZoom = false,
   onClick,
 }: Props) {
@@ -97,6 +101,7 @@ export function Card({
   const card = info ?? unknownCard(cardRef);
   const image = card.image !== '' && card.image !== brokenImage;
   const zoomable = size !== 'zoom' && !noZoom;
+  const marks: Marks = { damage, counters, stats, monster };
   const side = (e: PointerEvent) => (e.clientX < window.innerWidth / 2 ? 'right' : 'left');
   const cancelPress = () => {
     window.clearTimeout(pressRef.current);
@@ -110,14 +115,14 @@ export function Card({
       animate={{ scale: 1, opacity: 1 }}
       transition={{ duration: 0.25 * scale }}
       data-zone={objectId === undefined ? undefined : `obj-${String(objectId)}`}
-      className={`card size-${size} kind-${kindOf(card.type)}${spent ? ' spent' : ''}${stats ? ' has-stats' : ''}${highlight ? ` hl-${highlight}` : ''}`}
+      className={`card size-${size} kind-${kindOf(card.type)}${image ? '' : ' blank'}${counters > 0 ? ' has-counters' : ''}${spent ? ' spent' : ''}${highlight ? ` hl-${highlight}` : ''}`}
       role={onClick ? 'button' : 'img'}
       aria-label={card.name}
       onClick={onClick}
       onPointerEnter={(e) => {
         if (zoomable && e.pointerType === 'mouse') {
           zoomedRef.current = true;
-          setZoom({ ref: card.ref, touch: false, side: side(e) });
+          setZoom({ ref: card.ref, touch: false, side: side(e), marks });
         }
       }}
       onPointerLeave={(e) => {
@@ -132,7 +137,7 @@ export function Card({
           const s = side(e);
           downRef.current = { x: e.clientX, y: e.clientY };
           pressRef.current = window.setTimeout(() => {
-            setZoom({ ref: card.ref, touch: true, side: s });
+            setZoom({ ref: card.ref, touch: true, side: s, marks });
           }, LONG_PRESS_MS);
         }
       }}
@@ -166,7 +171,8 @@ export function Card({
           {counters}
         </span>
       )}
-      {damage > 0 && (
+      {/* A monster's damage shows as its lower health. */}
+      {damage > 0 && !monster && (
         <span className="card-damage" aria-label={`${String(damage)} damage`}>
           {damage}
         </span>
@@ -181,7 +187,45 @@ export function Card({
           </span>
         </>
       )}
+      {monster && <MonsterBadges stats={monster} />}
     </motion.div>
+  );
+}
+
+// MonsterBadges shows a monster's health, dice and attack, each only
+// while it differs from the print (C-03): the card shows the rest.
+function MonsterBadges({ stats }: { stats: MonsterStats }) {
+  const changed = (now: number, printed: number) => (now < printed ? ' lower' : ' higher');
+  return (
+    <>
+      {stats.hp !== stats.printed_hp && (
+        <span
+          className={`card-stat card-hp${changed(stats.hp, stats.printed_hp)}`}
+          title={`Health (printed ${String(stats.printed_hp)})`}
+          aria-label={`${String(stats.hp)} health`}
+        >
+          {stats.hp}
+        </span>
+      )}
+      {stats.dc !== stats.printed_dc && (
+        <span
+          className={`card-stat card-dc${changed(stats.dc, stats.printed_dc)}`}
+          title={`Dice to hit (printed ${String(stats.printed_dc)})`}
+          aria-label={`${String(stats.dc)} dice`}
+        >
+          {stats.dc}
+        </span>
+      )}
+      {stats.atk !== stats.printed_atk && (
+        <span
+          className={`card-stat card-atk${changed(stats.atk, stats.printed_atk)}`}
+          title={`Attack (printed ${String(stats.printed_atk)})`}
+          aria-label={`${String(stats.atk)} attack`}
+        >
+          {stats.atk}
+        </span>
+      )}
+    </>
   );
 }
 
