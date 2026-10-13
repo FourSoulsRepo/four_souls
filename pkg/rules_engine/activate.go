@@ -462,3 +462,29 @@ func (g *Game) choosablePlayers(ids []PlayerID) []PlayerID {
 	}
 	return living
 }
+
+// tapAbilitiesInPlay lists every ↷ ability of the items in play, shop
+// items included, for a card that copies one ("? Card"; R-CARD-34).
+func (g *Game) tapAbilitiesInPlay(self ObjectID) []AbilityRef {
+	var items []ObjectID
+	for _, pl := range g.Players {
+		items = append(items, pl.InPlay...)
+	}
+	for _, slot := range g.Shop {
+		if top, ok := slot.TopOf(); ok {
+			items = append(items, top)
+		}
+	}
+	var refs []AbilityRef
+	for _, id := range items {
+		if id == self || g.Object(id).Role != RoleItem {
+			continue
+		}
+		for i, a := range g.def(id).Abilities {
+			if a.Kind == Activated && hasTap(a) {
+				refs = append(refs, AbilityRef{Card: g.CardOf(id), Index: i})
+			}
+		}
+	}
+	return refs
+}

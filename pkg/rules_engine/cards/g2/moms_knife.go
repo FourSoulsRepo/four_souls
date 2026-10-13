@@ -4,7 +4,7 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 
 // Mom’s Knife (Passive Treasure Card)
 //
-//	{ATK}
+//	+1{ATK}
 //	Each time you deal combat damage to a monster on an attack roll of 6, deal 1 damage to each other monster.
 var momsKnife = engine.CardDef{
 	Ref:     "moms_knife",

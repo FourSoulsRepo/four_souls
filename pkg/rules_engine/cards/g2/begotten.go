@@ -5,9 +5,6 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 // Begotten (Basic Monster Card)
 //
 //	While this is at 1{HP}, it has +1{ATK}.
-//
-// TODO(card): implement the text above, then delete this line.
-// Until then `go run ./cmd/cardgen` rewrites this file from card_db.
 var begotten = engine.CardDef{
 	Ref:     "begotten",
 	Kind:    engine.MonsterCard,
@@ -16,4 +13,7 @@ var begotten = engine.CardDef{
 	DC:      4,
 	ATK:     1,
 	Rewards: []engine.Reward{{Kind: engine.RewardLoot, Amount: 2}},
+	Statics: []engine.Static{{Stat: engine.StatMonsterATK, Amount: 1, Applies: func(g *engine.Game, self engine.ObjectID, _ engine.PlayerID, m engine.ObjectID) bool {
+		return m == self && g.HP(self) == 1 // "While this is at 1 HP"
+	}}},
 }

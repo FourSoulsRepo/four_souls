@@ -535,3 +535,20 @@ var KillAMonster = engine.Ask(func(c *engine.Ctx, a []int) {
 	}
 	return out
 }})
+
+// Used reports whether the object's "once each turn" ability was used
+// this turn.
+func Used(g *engine.Game, id engine.ObjectID) bool {
+	for _, b := range g.Boosts {
+		if b.Stat == engine.StatUsed && b.Object == id {
+			return true
+		}
+	}
+	return false
+}
+
+// MarkUsed marks the object's "once each turn" ability as used; the mark
+// ends with the turn.
+func MarkUsed(g *engine.Game, id engine.ObjectID) {
+	g.Boosts = append(g.Boosts, engine.Boost{Stat: engine.StatUsed, Player: engine.NoPlayer, Object: id, Amount: 1})
+}

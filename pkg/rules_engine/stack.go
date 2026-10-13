@@ -128,6 +128,9 @@ func (g *Game) resolveTop() {
 			if it.Attack {
 				bonus += g.bonus(StatAttackRoll, it.Controller, 0)
 			}
+			if it.Attack {
+				bonus += g.useNextAttackRoll(it.Controller)
+			}
 			it.Roll = min(max(it.Roll+bonus, 1), 6)
 		}
 		re := Event{Kind: EvRollResolved, Player: it.Controller, Amount: it.Roll}
@@ -310,4 +313,20 @@ func (g *Game) useDeathWard(p PlayerID) bool {
 		return true
 	}
 	return false
+}
+
+// useNextAttackRoll returns and uses up the "next attack roll this turn"
+// boosts that apply to p's attack roll: p's own and anyone's (R-ATK-19).
+func (g *Game) useNextAttackRoll(p PlayerID) int {
+	total := 0
+	kept := g.Boosts[:0]
+	for _, b := range g.Boosts {
+		if b.Stat == StatNextAttackRoll && b.Object == 0 && (b.Player == p || b.Player == NoPlayer) {
+			total += b.Amount
+			continue
+		}
+		kept = append(kept, b)
+	}
+	g.Boosts = kept
+	return total
 }

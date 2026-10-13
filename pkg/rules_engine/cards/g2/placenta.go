@@ -4,7 +4,7 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 
 // Placenta (Passive Treasure Card)
 //
-//	{HP}
+//	+1{HP}
 //	You take no combat damage on attack rolls of 4.
 var placenta = engine.CardDef{
 	Ref:       "placenta",

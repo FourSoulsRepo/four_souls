@@ -19,6 +19,8 @@ const (
 	ChooseStartingItem                      // a start-of-game choice, e.g. Eden (R-SETUP-09)
 	ChooseCursed                            // who gains a curse (R-ABIL-20)
 	ChooseLowest                            // which card goes to the very bottom of a deck
+	ChooseRecharge                          // the one item to recharge (Curse of Fatigue)
+	ChooseCopyAbility                       // the ↷ ability a loot card copies ("? Card")
 )
 
 // Choice is an open question to one player. Options are listed in the
@@ -39,6 +41,9 @@ type Choice struct {
 	// Indexes are pending-trigger indexes for ChooseTriggerOrder, or
 	// mode indexes for ChooseMode (one more option means "cancel").
 	Indexes []int `json:"indexes,omitempty"`
+	// Abilities are the options of ChooseCopyAbility; Objects[0] is the
+	// loot card. One more option means "cancel".
+	Abilities []AbilityRef `json:"abilities,omitempty"`
 	// Ask is the effect waiting for this answer (ChooseAnswer).
 	Ask *Asking `json:"ask,omitempty"`
 	// Question is the text of the question, for display.
@@ -92,6 +97,15 @@ func (g *Game) answer(i int) {
 		g.chooseLowest(c, i)
 	case ChooseCursed:
 		g.giveCurse(c.Objects[0], PlayerID(c.Slots[i]))
+	case ChooseCopyAbility:
+		if i == len(c.Abilities) {
+			g.openWindow(c.Player)
+			return
+		}
+		g.startActivation(Activation{Player: c.Player, Source: c.Objects[0], Loot: true, Ability: c.Abilities[i]})
+	case ChooseRecharge:
+		g.Object(c.Objects[i]).Charged = true
+		g.emit(Event{Kind: EvRecharged, Player: c.Player})
 	case ChoosePurchase:
 		if c.Deck && i == len(c.Objects) {
 			g.purchase(0, true)

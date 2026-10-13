@@ -6,9 +6,6 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 //
 //	When this dies, after gaining rewards, the active player rolls-
 //	1 or 6: Put this on top of the Monster Deck.
-//
-// TODO(card): implement the text above, then delete this line.
-// Until then `go run ./cmd/cardgen` rewrites this file from card_db.
 var ragling = engine.CardDef{
 	Ref:     "ragling",
 	Kind:    engine.MonsterCard,
@@ -17,4 +14,10 @@ var ragling = engine.CardDef{
 	DC:      3,
 	ATK:     1,
 	Rewards: []engine.Reward{{Kind: engine.RewardLoot, Amount: 1}},
+	Abilities: []engine.Ability{{
+		Kind:    engine.Triggered,
+		Text:    "When this dies, after gaining rewards, the active player rolls- 1 or 6: Put this on top of the monster deck.",
+		Trigger: engine.AfterThisRewards(),
+		Effects: []engine.Effect{engine.Roll(engine.RollTable{}.Results(1, 1, backOnTop).Results(6, 6, backOnTop))},
+	}},
 }

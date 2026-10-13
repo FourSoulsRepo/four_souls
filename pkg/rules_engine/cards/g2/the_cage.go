@@ -4,8 +4,7 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 
 // The Cage (Boss Card)
 //
-// TODO(card): implement the text above, then delete this line.
-// Until then `go run ./cmd/cardgen` rewrites this file from card_db.
+// No card text: stats and rewards only.
 var theCage = engine.CardDef{
 	Ref:     "the_cage",
 	Kind:    engine.MonsterCard,

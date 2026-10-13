@@ -78,6 +78,9 @@ type CardDef struct {
 	// BonusSoul: the condition for gaining this bonus soul ("the first
 	// player to have 25¢ or more").
 	BonusSoul func(g *Game, p PlayerID) bool
+	// CopiesTapOnPlay: a loot card that, as it is played, copies a ↷
+	// ability of an item in play ("? Card").
+	CopiesTapOnPlay bool
 	// Unattackable: "This can't be attacked."
 	Unattackable bool
 	// TakesPenalties: "If another player would pay the death penalty, you

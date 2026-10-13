@@ -793,9 +793,31 @@ func ActivePlayerAttacksAgain() Effect {
 func Linger(i int) Effect {
 	return EffectFunc(func(c *Ctx) {
 		c.G.Lingering = append(c.G.Lingering, Lingering{
-			Ability:    AbilityRef{Card: c.G.Object(c.Source).Card, Index: i, Lingering: true},
+			// The card whose ability is resolving: a copy (Placebo) starts the
+			// copied card's lingering ability.
+			Ability:    AbilityRef{Card: c.ref.Card, Index: i, Lingering: true},
 			Source:     c.Source,
 			Controller: c.Controller,
 		})
 	})
+}
+
+// NextAttackRoll is "the next attack roll this turn has -2" (anyone's,
+// active false) or "the attacking player has -1 to their next attack roll
+// this turn" (active true) (R-ATK-19).
+func NextAttackRoll(n int, active bool) Effect {
+	return EffectFunc(func(c *Ctx) {
+		p := NoPlayer
+		if active {
+			p = c.G.Turn.Active
+		}
+		c.G.Boosts = append(c.G.Boosts, Boost{Stat: StatNextAttackRoll, Player: p, Amount: n})
+	})
+}
+
+// PushLingering is a replacement's action that puts lingering ability i
+// of the object self on the stack instead, with p and n as its event
+// player and amount: "roll- 1-3: gain 1¢ instead" (Poker Chip).
+func PushLingering(self ObjectID, i int, p PlayerID, n int) Action {
+	return Action{Kind: ActPushLingering, Object: self, From: PlayerID(i), Player: p, Amount: n}
 }

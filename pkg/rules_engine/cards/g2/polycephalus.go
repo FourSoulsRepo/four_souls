@@ -5,9 +5,6 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 // Polycephalus (Boss Card)
 //
 //	Each time this takes damage, the next attack roll this turn has -2.
-//
-// TODO(card): implement the text above, then delete this line.
-// Until then `go run ./cmd/cardgen` rewrites this file from card_db.
 var polycephalus = engine.CardDef{
 	Ref:     "polycephalus",
 	Kind:    engine.MonsterCard,
@@ -17,4 +14,10 @@ var polycephalus = engine.CardDef{
 	ATK:     1,
 	Soul:    1,
 	Rewards: []engine.Reward{{Kind: engine.RewardLoot, Amount: 3}},
+	Abilities: []engine.Ability{{
+		Kind:    engine.Triggered,
+		Text:    "Each time this takes damage, the next attack roll this turn has -2.",
+		Trigger: whenThisTakesDamage(false),
+		Effects: []engine.Effect{engine.NextAttackRoll(-2, false)},
+	}},
 }

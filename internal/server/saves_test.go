@@ -9,13 +9,13 @@ import (
 
 	"github.com/FourSoulsRepo/four_souls/internal/protocol"
 	engine "github.com/FourSoulsRepo/rules_engine"
-	"github.com/FourSoulsRepo/rules_engine/cards"
+	"github.com/FourSoulsRepo/rules_engine/cards/b2"
 )
 
 // writeSave puts a saved game of a fresh 2-player game into dir.
 func writeSave(t *testing.T, dir, id, engineVersion string) {
 	t.Helper()
-	g, _, err := engine.NewGame(engine.Setup{Seed: 5, Players: 2, Sets: cards.Sets(), BonusSouls: true})
+	g, _, err := engine.NewGame(engine.Setup{Seed: 5, Players: 2, Sets: []engine.CardSet{b2.Set}, BonusSouls: true})
 	if err != nil {
 		t.Fatal(err)
 	}

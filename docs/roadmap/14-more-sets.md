@@ -44,6 +44,13 @@ Ideas: CD-02, GS-07, GS-08, CD-11, A-16, CD-12.
    5. Blocks: max hand size, recharge limit, roll history.
    6. Blocks: next attack roll, till-end-of-turn abilities, free purchase.
    7. Blocks: reprint copies in the engine's deck setup (ADR 010).
+   8. Four Souls+: rulings from S-OFF, S-YUG, S-DIS, Reddit, X; 2026-10-13.
+   9. New rules: R-DICE-09 (attack rolls in a row), R-DICE-10, R-DICE-11.
+   10. Q-11 (PHD) resolved by the **Owner**: once per roll.
+   11. Q-12 (Euthanasia) open; **Owner**: keep the proposal for now.
+   12. Blocks: attack-roll repeats, roll change once, several dice, stored roll.
+   13. Blocks: revealed hands, attack redirect, win by a card, play lock.
+   14. Blocks: forced attacks, cents-gain hooks, free loot play, curse giving.
 
 ### [ ] 14.3 Cards per set
 
@@ -53,6 +60,13 @@ Ideas: CD-02, GS-07, GS-08, CD-11, A-16, CD-12.
    2. Focused fuzz on the new cards.
 3. Done when:
    1. Status report shows the set at 100%.
+4. Progress:
+   1. Gold Box: 58 of 58 cards tested; registered in `cards.Sets()`.
+   2. Shared helpers moved to `cards/cardkit`; b2 keeps its names.
+   3. Engine: reprints, death ward, CancelAttack, Linger, NextAttackRoll.
+   4. Engine: roll history, free shop item, recharge limit, hand cap.
+   5. Engine: a character's soul value counts (R-CARD-35).
+   6. Tests that mean "the Base Game" now use `b2.Set` only.
 
 ### [ ] 14.4 Setup options
 

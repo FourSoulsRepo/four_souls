@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	engine "github.com/FourSoulsRepo/rules_engine"
-	"github.com/FourSoulsRepo/rules_engine/cards"
+	"github.com/FourSoulsRepo/rules_engine/cards/b2"
 )
 
 var update = flag.Bool("update", false, "rewrite testdata/golden.jsonl")
@@ -17,7 +17,7 @@ var update = flag.Bool("update", false, "rewrite testdata/golden.jsonl")
 // wire format changed: if a field was renamed or removed, bump Version;
 // then run with -update.
 func TestGolden(t *testing.T) {
-	g, _, err := engine.NewGame(engine.Setup{Seed: 1, Players: 2, Sets: cards.Sets(), Characters: []engine.CardRef{"isaac", "cain"}})
+	g, _, err := engine.NewGame(engine.Setup{Seed: 1, Players: 2, Sets: []engine.CardSet{b2.Set}, Characters: []engine.CardRef{"isaac", "cain"}})
 	if err != nil {
 		t.Fatal(err)
 	}

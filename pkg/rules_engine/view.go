@@ -185,7 +185,7 @@ func (g *Game) optionViews() []OptionView {
 		}
 	}
 	switch c.Purpose {
-	case ChooseAttackTarget, ChoosePurchase, ChoosePenaltyItem, ChoosePenaltyLoot, ChooseStartingItem, ChooseLowest:
+	case ChooseAttackTarget, ChoosePurchase, ChoosePenaltyItem, ChoosePenaltyLoot, ChooseStartingItem, ChooseLowest, ChooseRecharge:
 		for i, id := range c.Objects {
 			set(i, func(o *OptionView) { o.Object = id })
 		}
@@ -216,7 +216,7 @@ func (g *Game) optionViews() []OptionView {
 		for i, p := range c.Slots {
 			set(i, func(o *OptionView) { o.Player, o.IsPlayer = PlayerID(p), true })
 		}
-	case ChooseReplacement, ChooseTriggerOrder, ChooseMode, ChooseAnswer:
+	case ChooseReplacement, ChooseTriggerOrder, ChooseMode, ChooseAnswer, ChooseCopyAbility:
 		// Text options.
 	}
 	return out

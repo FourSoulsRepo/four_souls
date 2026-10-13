@@ -18,6 +18,10 @@ var (
 	killAMonster        = cardkit.KillAMonster
 	monstersInPlay      = cardkit.MonstersInPlay
 	may                 = cardkit.May
+	whenThisDealsDamage = cardkit.WhenThisDealsDamage
+	whenThisTakesDamage = cardkit.WhenThisTakesDamage
+	attackRollOnThis    = cardkit.AttackRollOnThis
+	putBackInOrder      = cardkit.PutBackInOrder
 )
 
 // centsEqualToRoll: "that player gains ¢ equal to the result" for
@@ -274,3 +278,22 @@ func ouijaEvents(g *engine.Game, ids []engine.ObjectID) []engine.ObjectID {
 	}
 	return out
 }
+
+// healThis heals this monster by n.
+func healThis(n int) engine.Effect {
+	return engine.EffectFunc(func(c *engine.Ctx) { c.G.HealObject(c.Source, n) })
+}
+
+// thisGains gives this monster +n of a stat till end of turn.
+func thisGains(stat engine.Stat, n int) engine.Effect {
+	return engine.EffectFunc(func(c *engine.Ctx) {
+		c.G.Boosts = append(c.G.Boosts, engine.Boost{Stat: stat, Player: engine.NoPlayer, Object: c.Source, Amount: n})
+	})
+}
+
+// backOnTop puts the dead monster on top of the monster deck.
+var backOnTop = engine.EffectFunc(func(c *engine.Ctx) {
+	if c.G.Object(c.EventObject).Zone.Kind == engine.ZoneOutside {
+		c.G.PutIntoDeck(engine.MonsterDeck, c.EventObject, 0)
+	}
+})

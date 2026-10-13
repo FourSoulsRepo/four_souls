@@ -220,7 +220,7 @@ func (g *Game) enterStep() {
 		g.emit(Event{Kind: EvEndOfTurn, Player: p}) // R-TURN-10
 		g.openWindow(p)
 	case StepHandSize:
-		if extra := len(g.Players[p].Hand) - g.MaxHand; extra > 0 {
+		if extra := len(g.Players[p].Hand) - g.maxHand(p); extra > 0 {
 			g.Waiting = Prompt{Kind: PromptDiscard, Player: p, Count: extra}
 		}
 	case StepCleanup:
@@ -251,6 +251,24 @@ func (g *Game) startNextTurn() {
 func (g *Game) recharge(p PlayerID) {
 	pl := &g.Players[p]
 	g.Object(pl.Character).Charged = true
+	if g.bonus(StatRechargeLimit, p, 0) > 0 {
+		// "You can't recharge more than 1 item during your recharge step."
+		var items []ObjectID
+		for _, id := range pl.InPlay {
+			if o := g.Object(id); o.Role == RoleItem && !o.Charged {
+				items = append(items, id)
+			}
+		}
+		if len(items) > 1 {
+			g.ask(Choice{Purpose: ChooseRecharge, Player: p, Rule: "R-TURN-02", Objects: items}, g.labels(items))
+			return
+		}
+		for _, id := range items {
+			g.Object(id).Charged = true
+		}
+		g.emit(Event{Kind: EvRecharged, Player: p})
+		return
+	}
 	for _, id := range pl.InPlay {
 		g.Object(id).Charged = true
 	}
@@ -349,4 +367,22 @@ func (g *Game) PlayerAfter(p PlayerID) PlayerID { return g.next(p) }
 // PlayerBefore is the player to p's right: previous in turn order.
 func (g *Game) PlayerBefore(p PlayerID) PlayerID {
 	return PlayerID((int(p) + len(g.Players) - 1) % len(g.Players))
+}
+
+// maxHand is p's max hand size: the game's, or a lower cap ("Your max
+// hand size is 2", R-TURN-11).
+func (g *Game) maxHand(p PlayerID) int {
+	limit := g.MaxHand
+	for _, id := range g.inPlay() {
+		d, ok := g.cards.find(g.CardOf(id))
+		if !ok {
+			continue
+		}
+		for _, s := range d.Statics {
+			if s.Stat == StatHandCap && s.Applies(g, id, p, 0) {
+				limit = min(limit, s.Amount)
+			}
+		}
+	}
+	return limit
 }

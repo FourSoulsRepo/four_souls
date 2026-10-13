@@ -24,3 +24,19 @@ func TestLemonMishap(t *testing.T) {
 		t.Error("the lingering ability outlived the turn")
 	}
 }
+
+// Placebo uses Lemon Mishap's ↷: the lingering ability is Lemon Mishap's
+// (a simulation found this).
+func TestLemonMishapThroughPlacebo(t *testing.T) {
+	tb := setup(t, engine.SituationSetup{
+		Players:  []engine.SituationPlayer{{Character: "isaac", Items: []engine.CardRef{"placebo"}}, seat("cain", "lemon_mishap")},
+		Monsters: []engine.CardRef{"monstro", "fatty"},
+	})
+	tb.Activate(0, "placebo", 0)
+	tb.G.ForceRolls(1, 3, 3, 3)
+	tb.Do(engine.Intent{Player: 0, Kind: engine.IntentAttack}, "fatty", "the rest in slot order")
+	monstro, _ := tb.G.Monsters[0].TopOf()
+	if d := tb.G.Object(monstro).Damage; d != 1 {
+		t.Errorf("Monstro damage = %d, want 1", d)
+	}
+}

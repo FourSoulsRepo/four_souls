@@ -28,6 +28,7 @@ const (
 	ActGiveCurse                            // the active player gives the curse Object to a player
 	ActFinishEvent                          // an event whose ability resolved goes to discard
 	ActRewardsDone                          // a dead monster's rewards are given (R-DEATH-07)
+	ActPushLingering                        // put lingering ability From of Object on the stack; EventPlayer Player, EventAmount Amount
 )
 
 // Action is a pending change. It sits in the queue, may be rewritten by
@@ -231,6 +232,15 @@ func (g *Game) perform(a Action) {
 		g.askStartingItem(a.Player, a.Amount)
 	case ActGiveCurse:
 		g.askCurseTarget(a.Object)
+	case ActPushLingering:
+		// A replacement that rolls first (Poker Chip): its card's lingering
+		// ability goes on the stack with the replaced amount.
+		g.push(StackItem{
+			Kind: StackTrigger, Controller: g.abilityController(a.Object), Source: a.Object, Card: g.Object(a.Object).Card,
+			Ability:     AbilityRef{Card: g.Object(a.Object).Card, Index: int(a.From), Lingering: true},
+			Label:       g.abilityText(AbilityRef{Card: g.Object(a.Object).Card, Index: int(a.From), Lingering: true}),
+			EventPlayer: a.Player, EventAmount: a.Amount,
+		})
 	case ActRewardsDone:
 		before := len(g.PendingTriggers)
 		g.emit(Event{Kind: EvRewardsGained, Player: a.Player, Object: a.Object, Card: g.Object(a.Object).Card, Prev: a.Object})

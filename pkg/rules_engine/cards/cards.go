@@ -7,11 +7,12 @@ package cards
 import (
 	engine "github.com/FourSoulsRepo/rules_engine"
 	"github.com/FourSoulsRepo/rules_engine/cards/b2"
+	"github.com/FourSoulsRepo/rules_engine/cards/g2"
 )
 
 // Sets returns every known set, in a fixed order.
 func Sets() []engine.CardSet {
-	return []engine.CardSet{b2.Set}
+	return []engine.CardSet{b2.Set, g2.Set}
 }
 
 // Find returns the set with the given code, e.g. "b2".

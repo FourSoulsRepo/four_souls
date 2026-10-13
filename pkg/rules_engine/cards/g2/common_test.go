@@ -126,3 +126,52 @@ func settleAny(tb *enginetest.Table) {
 	}
 	tb.T.Fatal("settleAny: the stack never emptied")
 }
+
+// fight builds a table where Isaac (HP 2, ATK 1) faces the monsters.
+func fight(t *testing.T, monsters ...engine.CardRef) *enginetest.Table {
+	t.Helper()
+	return setup(t, engine.SituationSetup{
+		Players:  []engine.SituationPlayer{seat("isaac"), seat("cain")},
+		Monsters: monsters,
+	})
+}
+
+// top returns the card on top of monster slot i.
+func top(tb *enginetest.Table, i int) engine.CardRef {
+	id, _ := tb.G.Monsters[i].TopOf()
+	return tb.G.Object(id).Card
+}
+
+// topID returns the object on top of monster slot i.
+func topID(tb *enginetest.Table, i int) engine.ObjectID {
+	id, _ := tb.G.Monsters[i].TopOf()
+	return id
+}
+
+func engineRef(s string) engine.CardRef { return engine.CardRef(s) }
+
+// attackIntent declares an attack for the active player.
+func attackIntent(tb *enginetest.Table) engine.Intent {
+	return engine.Intent{Player: tb.G.Turn.Active, Kind: engine.IntentAttack}
+}
+
+// attackRolls counts resolved attack rolls in events.
+func attackRolls(ev []engine.Event) int {
+	n := 0
+	for _, e := range ev {
+		if e.Kind == engine.EvRollResolved && e.Text == "attack" {
+			n++
+		}
+	}
+	return n
+}
+
+// testStats checks a monster that has no abilities.
+func testStats(t *testing.T, card string, hp, dc, atk int) {
+	t.Helper()
+	tb := fight(t, engineRef(card), "fly")
+	id := topID(tb, 0)
+	if tb.G.HP(id) != hp || tb.G.Evasion(id) != dc || tb.G.MonsterATK(id) != atk {
+		t.Errorf("%s: HP %d DC %d ATK %d, want %d %d %d", card, tb.G.HP(id), tb.G.Evasion(id), tb.G.MonsterATK(id), hp, dc, atk)
+	}
+}
