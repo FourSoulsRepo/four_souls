@@ -45,6 +45,27 @@ export function targetAt(zones: string[], targets: OptionView[]): OptionView | u
   return undefined;
 }
 
+// AimClick is what a click while aiming does (15.33): pick a target;
+// cancel on the source (T-07) or on empty space (T-06); or, on a card,
+// player, pile, or stack item that is no target, say why (T-05).
+export type AimClick = { kind: 'pick'; target: OptionView } | { kind: 'cancel' } | { kind: 'wrong' };
+
+// aimClick decides a click by the zones under it, topmost first. The
+// source cancels before the player area around it may pick its owner,
+// unless the source is a target itself.
+export function aimClick(zones: string[], source: number, targets: OptionView[]): AimClick {
+  const src = `obj-${String(source)}`;
+  if (zones.find((z) => z.startsWith('obj-')) === src) {
+    const self = targetAt([src], targets);
+    return self ? { kind: 'pick', target: self } : { kind: 'cancel' };
+  }
+  const target = targetAt(zones, targets);
+  if (target) {
+    return { kind: 'pick', target };
+  }
+  return zones.length === 0 ? { kind: 'cancel' } : { kind: 'wrong' };
+}
+
 // aimed: the target is one of the targets.
 export function aimed(targets: OptionView[] | null, test: (o: OptionView) => boolean): boolean {
   return targets?.some(test) ?? false;

@@ -165,6 +165,12 @@ describe('aims', () => {
     expect(a.cards.get(8)?.[0]?.targets).toBeUndefined();
   });
 
+  it('keeps the reason an aim gives for wrong clicks', () => {
+    const u = update({}, [{ player: 0, kind: IntentKind.playLoot, objects: [7] }]);
+    const a = actionsFor({ ...u, aims: [{ intent: 0, targets: [monster], reason: 'Pick a monster.' }] }, isCard);
+    expect(a.cards.get(7)?.[0]?.reason).toBe('Pick a monster.');
+  });
+
   it('picks the dropped-on target from the target prompt', () => {
     const u = update({ waiting: { kind: PromptKind.choose, player: 0, purpose: Purpose.target, options: ['gaper', 'player 1', 'cancel'] }, options: [monster, ann, { player: -1 }] }, [
       { player: 0, kind: IntentKind.choose, choice: 0 },

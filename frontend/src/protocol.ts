@@ -329,6 +329,7 @@ export interface OptionView {
 export interface Aim {
   intent: number;
   targets: OptionView[];
+  reason?: string; // what it may target, for a wrong click (15.33)
 }
 
 export interface Intent {

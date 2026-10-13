@@ -134,6 +134,9 @@ func checkAim(t *testing.T, after *Game, in Intent, aims []Aim, i int) {
 	if aim == nil {
 		t.Fatalf("intent %+v asks a target but has no aim", in)
 	}
+	if aim.Reason == "" {
+		t.Fatalf("intent %+v: aim has no reason", in)
+	}
 	want := after.optionViews()
 	want = want[:len(want)-1] // the last option cancels
 	if !slices.Equal(aim.Targets, want) {

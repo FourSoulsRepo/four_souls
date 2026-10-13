@@ -1,5 +1,6 @@
 // Aiming (15.25): one click on a card that needs a target starts aiming,
-// the next click picks the target.
+// the next click picks the target. A wrong target says why; the source
+// or a right click cancels (15.33).
 import { expect, test, type Page } from '@playwright/test';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -16,6 +17,7 @@ interface Store {
   getState: () => {
     game: { step: number; events: { kind: string; object?: number }[] | null; view: { stack: StackItem[] | null } } | null;
     lobby: { table: { game: string } | null };
+    sent: number | null;
   };
   subscribe: (f: (s: ReturnType<Store['getState']>) => void) => void;
 }
@@ -107,6 +109,14 @@ test('a bomb aimed at a monster by two clicks damages it', async ({ browser }) =
   }
   const clickBomb = () => active.mouse.click(box.x + box.width / 2, box.y + 30);
 
+  // What was sent and at which step, to see that nothing goes out.
+  const sent = () =>
+    active.evaluate(() => {
+      const s = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store.getState();
+      return { sent: s.sent, step: s.game?.step };
+    });
+  const before = await sent();
+
   // A right click cancels aiming; nothing is sent.
   await clickBomb();
   await expect(lifted).toHaveCount(1);
@@ -115,6 +125,34 @@ test('a bomb aimed at a monster by two clicks damages it', async ({ browser }) =
   await expect(lifted).toHaveCount(0);
   await expect(monster).not.toHaveClass(/hl-aim/);
   await expect(active.getByRole('menu')).toHaveCount(0);
+  expect(await sent()).toEqual(before);
+
+  // A shop item is no target for a bomb: the reason shows beside the
+  // click, and aiming goes on. Clicking the bomb again cancels.
+  await clickBomb();
+  await expect(lifted).toHaveCount(1);
+  const item = active.getByRole('group', { name: 'Shop' }).locator('.card').first();
+  const at = await item.boundingBox();
+  if (!at) {
+    throw new Error('no shop item box');
+  }
+  await active.mouse.click(at.x + at.width / 2, at.y + at.height / 2);
+  const why = active.locator('.aim-why');
+  await expect(why).toHaveText('Pick a monster or a player.');
+  await shot(active, 'aim-wrong');
+  const note = await why.locator('div').boundingBox();
+  if (!note) {
+    throw new Error('no reason box');
+  }
+  // The note sits just above the click, centered on it.
+  expect(Math.abs(note.x + note.width / 2 - (at.x + at.width / 2)) < 3 && note.y + note.height < at.y + at.height / 2).toBe(true);
+  await expect(lifted).toHaveCount(1);
+  await expect(monster).toHaveClass(/hl-aim/);
+  await clickBomb();
+  await expect(lifted).toHaveCount(0);
+  await expect(why).toHaveCount(0);
+  await expect(active.getByRole('menu')).toHaveCount(0);
+  expect(await sent()).toEqual(before);
 
   // One click starts aiming: the card stays lifted, the targets glow, and
   // an arrow runs from the card's middle to the pointer.

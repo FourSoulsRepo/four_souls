@@ -46,6 +46,8 @@ export interface Action {
   line?: string;
   // targets are what the action asks to target first, if it aims (15.25).
   targets?: OptionView[];
+  // reason says what it may target, for a click on anything else (15.33).
+  reason?: string;
 }
 
 export interface ChoiceOption extends Action {
@@ -106,10 +108,11 @@ export function actionsFor(u: Update, isCard: (label: string) => boolean): Actio
       lines.set(c.id, c.abilities);
     }
   }
-  const aims = new Map((u.aims ?? []).map((a) => [a.intent, a.targets]));
+  const aims = new Map((u.aims ?? []).map((a) => [a.intent, a]));
   const add = (id: number, action: Action, i: number) => {
-    const targets = aims.get(i);
-    out.cards.set(id, [...(out.cards.get(id) ?? []), targets ? { ...action, targets } : action]);
+    const aim = aims.get(i);
+    const aimed = aim ? { ...action, targets: aim.targets, ...(aim.reason ? { reason: aim.reason } : {}) } : action;
+    out.cards.set(id, [...(out.cards.get(id) ?? []), aimed]);
   };
   for (const [i, a] of allowed.entries()) {
     const id = a.objects?.[0] ?? 0;

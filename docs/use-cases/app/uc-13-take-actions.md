@@ -49,10 +49,14 @@
   * The valid targets glow red: monsters, players, items, stack items.
   * With a mouse, a red arrow points from the card to the pointer.
   * The second click, on a target, plays the card at it; no dialog asks.
-  * A click elsewhere, a right click, or Esc cancels; nothing is sent.
+  * A click on empty space, a right click, or Esc cancels; nothing is sent.
   * Such a card opens no menu and is not dragged.
   * The arrow is a chain of red blocks with a big head (15.32).
   * Over a valid target a red ring marks the head.
+  * A click on the aiming card again cancels too (15.33).
+  * A click on a card, player, or pile that is no target keeps aiming.
+  * A short note above the click says what the card may target.
+  * E.g. "Pick a monster or a player."; it fades after 2.5 s.
 
 ## Postconditions
 

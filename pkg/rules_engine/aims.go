@@ -2,10 +2,12 @@ package rulesengine
 
 // Aim is what an allowed play or use asks to target first, so a client
 // can light the targets while the card is dragged (15.25). Intent is the
-// index of that intent in Allowed.
+// index of that intent in Allowed. Reason says, in a few words, what
+// it may target, for a click on anything else (15.33, T-05).
 type Aim struct {
 	Intent  int          `json:"intent"`
 	Targets []OptionView `json:"targets"`
+	Reason  string       `json:"reason,omitempty"`
 }
 
 // Aims lists the first target options of the allowed intents. An intent
@@ -23,7 +25,7 @@ func (g *Game) Aims(allowed []Intent) []Aim {
 		for _, o := range opts {
 			targets = append(targets, targetView(o))
 		}
-		out = append(out, Aim{Intent: i, Targets: targets})
+		out = append(out, Aim{Intent: i, Targets: targets, Reason: targetReason(spec)})
 	}
 	return out
 }
@@ -50,4 +52,33 @@ func (g *Game) firstTarget(in Intent) (TargetSpec, bool) {
 		return TargetSpec{}, false
 	}
 	return ab.Targets[0], true
+}
+
+// targetWords say what a target kind may pick.
+var targetWords = map[TargetKind]string{
+	TargetPlayer:          "a player",
+	TargetMonster:         "a monster",
+	TargetMonsterOrPlayer: "a monster or a player",
+	TargetItem:            "an item",
+	TargetDiceRoll:        "a dice roll on the stack",
+	TargetOtherPlayer:     "another player",
+	TargetStackAbility:    "an ability on the stack",
+	TargetCurse:           "a curse",
+	TargetYourItem:        "one of your items",
+	TargetYourHandCard:    "a loot card in your hand",
+	TargetItemOrSoul:      "an item or a soul",
+}
+
+// targetReason is the short reason a click on a wrong target shows:
+// what the target may be. A filter narrows it to the glowing ones.
+func targetReason(t TargetSpec) string {
+	words, ok := targetWords[t.Kind]
+	if !ok {
+		words = "a glowing target"
+	}
+	out := "Pick " + words + "."
+	if t.Where != nil {
+		out += " Only the glowing ones fit."
+	}
+	return out
 }

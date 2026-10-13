@@ -124,6 +124,7 @@ const modeled: Record<string, Envelope> = {
             { object: 320, player: -1 },
             { player: 1, is_player: true },
           ],
+          reason: 'Pick a monster or a player.',
         },
       ],
       seats: [

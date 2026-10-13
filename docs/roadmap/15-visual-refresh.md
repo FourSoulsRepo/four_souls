@@ -921,7 +921,7 @@ Images come first, so the new table is built with backs and mats.
 5. Owner notes (2026-10-13)
    1. Owner marks 15.32 solved.
 
-### [ ] 15.33 Start, finish, and cancel aiming
+### [x] 15.33 Start, finish, and cancel aiming
 
 1. Goal: aiming starts, ends, and cancels as in Hearthstone.
 2. Tasks:
@@ -933,6 +933,24 @@ Images come first, so the new table is built with backs and mats.
 3. Done when:
    1. e2e test: right-click cancels and sends nothing.
    2. e2e test: an invalid target shows the reason.
+4. Result (2026-10-13)
+   1. T-01, T-04, T-06 came with the 15.25 fixes; kept as they are.
+   2. Each aim now carries a `reason` from the engine (`targetReason`).
+   3. It says what the card may target: "Pick a monster or a player."
+   4. A filtered target adds "Only the glowing ones fit."
+   5. A click on a card, player, pile, or stack row that is no target keeps aiming.
+   6. The reason shows in a small note above the click; it fades in 2.5 s.
+   7. A click on the aiming card cancels (T-07).
+   8. The card wins over the player area around it.
+   9. Bomb! may target its own player; a click on it used to pick you.
+   10. A source that is its own target still picks itself.
+   11. Empty space, a right click, or Esc still cancel.
+   12. Protocol: `aims` gains the optional `reason`; golden files updated.
+   13. Engine test: every aim has a reason; every target kind has words.
+   14. Unit tests: `aimClick` picks, cancels, or calls a click wrong.
+   15. e2e test: right click and the source cancel; nothing is sent.
+   16. e2e test: a shop item shows "Pick a monster or a player." above it.
+   17. Screenshots: `.cache/screenshots/15.33/before/` and `after/`.
 
 ### [ ] 15.34 Plays without aiming
 

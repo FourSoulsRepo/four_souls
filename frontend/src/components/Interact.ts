@@ -66,11 +66,11 @@ export function interact(
       }
       const only = list.length === 1 ? list[0] : undefined;
       if (only?.targets && only.targets.length > 0) {
-        const { intent, targets: aims } = only;
+        const { intent, targets: aims, reason } = only;
         return {
           highlight: 'act',
           onClick: () => {
-            aim({ source: id, intent, targets: aims });
+            aim({ source: id, intent, targets: aims, reason });
           },
         };
       }

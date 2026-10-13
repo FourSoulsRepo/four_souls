@@ -69,11 +69,12 @@ export interface ZoomCaption {
 }
 
 // Aiming is a click-started aim (15.25): the card, its play or use,
-// and the targets it may pick.
+// the targets it may pick, and why anything else is wrong (15.33).
 export interface Aiming {
   source: number;
   intent: Intent;
   targets: OptionView[];
+  reason?: string;
 }
 
 // Aimed is a played card's target, kept until the target prompt.

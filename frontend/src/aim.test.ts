@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { arrow, blocks, targetAt } from './aim';
+import { aimClick, arrow, blocks, targetAt } from './aim';
 import type { OptionView } from './protocol';
 
 const monster: OptionView = { object: 40, player: -1 };
@@ -27,6 +27,31 @@ describe('targetAt', () => {
   it('never mistakes a player for an object with the same number', () => {
     expect(targetAt(['obj-0'], [ann])).toBeUndefined();
     expect(targetAt(['player-40'], [monster])).toBeUndefined();
+  });
+});
+
+describe('aimClick', () => {
+  const targets = [monster, ann];
+
+  it('picks a target', () => {
+    expect(aimClick(['obj-40', 'board'], 7, targets)).toEqual({ kind: 'pick', target: monster });
+  });
+
+  it('cancels on the source or on empty space', () => {
+    // The source cancels even inside the area of a player it may target.
+    expect(aimClick(['obj-7', 'hand-0', 'player-0'], 7, targets)).toEqual({ kind: 'cancel' });
+    expect(aimClick([], 7, targets)).toEqual({ kind: 'cancel' });
+  });
+
+  it('calls any other card, player, pile, or stack item wrong', () => {
+    expect(aimClick(['obj-8', 'obj-7', 'hand-0'], 7, targets)).toEqual({ kind: 'wrong' });
+    expect(aimClick(['player-1'], 7, targets)).toEqual({ kind: 'wrong' });
+    expect(aimClick(['deck-monster'], 7, targets)).toEqual({ kind: 'wrong' });
+    expect(aimClick(['stack-3'], 7, targets)).toEqual({ kind: 'wrong' });
+  });
+
+  it('lets a source that is its own target pick itself', () => {
+    expect(aimClick(['obj-40'], 40, targets)).toEqual({ kind: 'pick', target: monster });
   });
 });
 

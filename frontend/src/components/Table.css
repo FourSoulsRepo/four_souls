@@ -734,6 +734,46 @@
   }
 }
 
+/* Why a wrong click is no target (15.33, T-05): a short note just
+   above the pointer, over everything; it fades out near the end of its
+   2.5 s. The pointer passes through it. */
+.aim-why {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1001;
+  pointer-events: none;
+}
+
+.aim-why > div {
+  position: absolute;
+  bottom: 14px;
+  left: 0;
+  width: max-content;
+  max-width: 260px;
+  padding: 6px 12px;
+  transform: translateX(-50%);
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  color: #fff;
+  background: rgb(60 10 10 / 92%);
+  border: 1px solid #e0473c;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 60%);
+  animation: aim-why 2.5s linear forwards;
+}
+
+@keyframes aim-why {
+  80% {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
 .player-allowance {
   font-size: 12px;
   color: #ffd27a;
