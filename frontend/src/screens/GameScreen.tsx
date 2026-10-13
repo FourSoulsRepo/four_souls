@@ -3,7 +3,7 @@ import { actionsFor, IntentKind, type Actions } from '../actions';
 import { ActionBar } from '../components/ActionBar';
 import { ActionMenu } from '../components/ActionMenu';
 import { Board } from '../components/Board';
-import { ChoiceDialog, DiscardDialog } from '../components/ChoiceDialog';
+import { ChoiceDialog, DiscardDialog, LookDialog } from '../components/ChoiceDialog';
 import { interact, noInteract } from '../components/Interact';
 import { PlayerArea } from '../components/PlayerArea';
 import { HistoryPanel, TurnBadge } from '../components/InfoPanels';
@@ -57,6 +57,7 @@ function Table({ game, you }: { game: Update; you: number }) {
   const sent = useApp((s) => s.sent);
   const act = useApp((s) => s.act);
   const select = useApp((s) => s.select);
+  const looking = useApp((s) => s.looking);
   // The full history opens from the strip; the stack has its room (15.22).
   const [historyOpen, setHistoryOpen] = useState(false);
   // The player acts only on the latest state, and once per step. While
@@ -148,6 +149,7 @@ function Table({ game, you }: { game: Update; you: number }) {
       <ActionMenu actions={offered.cards} />
       {offered.choice && <ChoiceDialog key={game.step} choice={offered.choice} />}
       {offered.discard && me && <DiscardDialog key={game.step} discard={offered.discard} hand={me.hand ?? []} />}
+      {looking.length > 0 && <LookDialog cards={looking} />}
       {connected && !view.over && <GameMenu host={you === 0} />}
       {!connected ? (
         <LostOverlay />

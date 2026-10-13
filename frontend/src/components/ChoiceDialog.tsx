@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { discardIntent, type Actions } from '../actions';
+import type { Looked } from '../history';
 import type { CardView } from '../protocol';
 import { useApp } from '../store';
 import { Card } from './Card';
@@ -37,6 +38,25 @@ export function ChoiceDialog({ choice }: { choice: NonNullable<Actions['choice']
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+// LookDialog shows the cards an effect let this player look at,
+// Hearthstone-style (V-07), until they close it.
+export function LookDialog({ cards }: { cards: Looked[] }) {
+  const endLook = useApp((s) => s.endLook);
+  return (
+    <div className="choice look" role="dialog" aria-label="You look at">
+      <h2>You look at</h2>
+      <div className="choice-options">
+        {cards.map((c) => (
+          <Card key={c.id} cardRef={c.card} size="hand" />
+        ))}
+      </div>
+      <button type="button" onClick={endLook}>
+        OK
+      </button>
     </div>
   );
 }

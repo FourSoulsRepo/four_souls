@@ -235,3 +235,44 @@ test('the big End turn button: E ends the turn, Space passes', async ({ browser 
     await expectNextTurn(pages, click, turn);
   }
 });
+
+// feed plays the current view again as the next update, with events;
+// player 'you' is the page's seat, 'other' the next one.
+async function feed(page: Page, events: Record<string, unknown>[]) {
+  await page.evaluate((events) => {
+    interface S {
+      game: { step: number; events: unknown };
+      lobby: { table: { you: number } };
+      receive: (env: unknown) => void;
+    }
+    const s = (window as unknown as { fourSouls: { store: { getState: () => S } } }).fourSouls.store.getState();
+    const you = s.lobby.table.you;
+    const g = structuredClone(s.game);
+    g.step += 1;
+    g.events = events.map((e) => ({ ...e, player: e.player === 'you' ? you : 1 - you }));
+    s.receive({ type: 'update', data: g });
+  }, events);
+}
+
+test('a "look at the top card" effect shows the card until it is closed (V-07)', async ({ browser }) => {
+  const [pip, rue] = await startGame(browser, ['Pip', 'Rue'], { url: fast() });
+  if (!pip || !rue) {
+    throw new Error('no pages');
+  }
+  // Forever Alone's "Look at the top card of a deck", as the server
+  // sends it: the looker gets the card, the others only the event.
+  await feed(pip, [
+    { kind: 'stack_resolved', player: 'you', card: 'forever_alone' },
+    { kind: 'looked_at', player: 'you', object: 900, card: 'a_dime', private: true },
+  ]);
+  await feed(rue, [{ kind: 'looked_at', player: 'other', private: true }]);
+  const look = pip.getByRole('dialog', { name: 'You look at' });
+  await expect(look.getByRole('img', { name: 'A Dime!!' })).toBeVisible();
+  await shot(pip, 'look-at');
+  // It stays through the next update; only OK closes it.
+  await feed(pip, []);
+  await expect(look).toBeVisible();
+  await look.getByRole('button', { name: 'OK' }).click();
+  await expect(look).toHaveCount(0);
+  await expect(rue.getByRole('dialog', { name: 'You look at' })).toHaveCount(0);
+});

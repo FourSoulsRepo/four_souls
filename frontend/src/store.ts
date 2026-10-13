@@ -27,7 +27,7 @@ import {
 import { noHostSetup } from './hostSetup';
 import type { CardInfo, Kind } from './cards';
 import { loadFonts } from './fonts';
-import { entriesFor, type Entry } from './history';
+import { entriesFor, lookedAt, type Entry, type Looked } from './history';
 import type { LinePart } from './stack';
 import { emptyLobby, leftTable, lost, onMessage, remember, type Screen, type Session } from './lobby';
 import { connect, disconnect, drop, send } from './net';
@@ -78,6 +78,10 @@ interface AppState extends Session {
   playing: Playing | null;
   // history is the match so far, as this viewer saw it (7.9).
   history: Entry[];
+  // looking is the cards an effect lets this player look at, shown
+  // until endLook (V-07).
+  looking: Looked[];
+  endLook: () => void;
   // receive handles one server message.
   receive: (env: Envelope) => void;
   // behind is set while updates wait to be shown: the player acts only
@@ -196,7 +200,13 @@ export const useApp = create<AppState>()((set, get) => {
         names(u),
         (s.history.at(-1)?.key ?? 0) + 1,
       );
-      set({ game: u, behind: playback.pending() > 0, history: [...s.history, ...entries] });
+      const looked = lookedAt(u.events ?? [], seatOf(s));
+      set({
+        game: u,
+        behind: playback.pending() > 0,
+        history: [...s.history, ...entries],
+        ...(looked.length > 0 ? { looking: looked } : {}),
+      });
     },
     run: (effect, scale) =>
       new Promise((resolve) => {
@@ -235,7 +245,7 @@ export const useApp = create<AppState>()((set, get) => {
   const stopPlayback = () => {
     playback.clear();
     get().playing?.done();
-    set({ history: [] });
+    set({ history: [], looking: [] });
   };
 
   // open connects to address and says hello; the server answers with
@@ -291,6 +301,10 @@ export const useApp = create<AppState>()((set, get) => {
   return {
     playing: null,
     history: [],
+    looking: [],
+    endLook: () => {
+      set({ looking: [] });
+    },
     behind: false,
     sent: null,
     selected: null,

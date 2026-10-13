@@ -82,6 +82,8 @@ Ideas: M-01, V-01 – V-08, ST-01 – ST-03, ST-05, ST-06, B-06, N-11.
    4. Rejected intents show the reason.
 3. Done when:
    1. A full turn is playable with mouse and with touch.
+4. Later fixes
+   1. "Look at" effects showed nothing; a "You look at" dialog shows the cards.
 
 ### [x] 7.8 Stack and responses
 

@@ -56,6 +56,10 @@ export function entriesFor(events: GameEvent[], turn: number, you: number, n: Na
         }
         break;
       }
+      case 'looked_at':
+        // Only the looker gets the card (V-07).
+        add('◉', card ? `You look at ${card}` : `${does(e.player, 'look')} at a card`, e.card);
+        break;
       case 'rewards_gained':
         add('★', `${does(e.player, 'gain')} the rewards of ${card}`, e.card);
         break;
@@ -68,6 +72,18 @@ export function entriesFor(events: GameEvent[], turn: number, you: number, n: Na
     }
   }
   return out;
+}
+
+// Looked is one card this viewer looks at; id is its object.
+export interface Looked {
+  id: number;
+  card: string;
+}
+
+// lookedAt is the cards this viewer looks at in one update's events,
+// for the look dialog (V-07).
+export function lookedAt(events: GameEvent[], you: number): Looked[] {
+  return events.flatMap((e) => (e.kind === 'looked_at' && e.player === you && e.card ? [{ id: e.object ?? 0, card: e.card }] : []));
 }
 
 // Turn step names, in Go's order (pkg/rules_engine/turn.go).

@@ -95,6 +95,14 @@
   box-shadow: 0 8px 32px rgb(0 0 0 / 60%);
 }
 
+/* A look sits in the middle, over a choice that may come with it. */
+.choice.look {
+  top: 50%;
+  bottom: auto;
+  z-index: 13;
+  translate: -50% -50%;
+}
+
 .choice h2 {
   margin: 0;
   font-size: 18px;
