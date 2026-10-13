@@ -1,11 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { loadSounds, playSound, urlFor } from './sounds';
+import { loadSounds, playSound } from './sounds';
 
-const cast = '/cardimg/assets/sounds/fireball-cast.mp3';
-const impact = '/cardimg/assets/sounds/fireball-impact.mp3';
+const hit = '/cardimg/assets/sounds/attack-hit.mp3';
+const cast = '/cardimg/assets/sounds/effect-cast.mp3';
+const impact = '/cardimg/assets/sounds/effect-impact.mp3';
 
-// fakeAudio records each played URL; play fails for the URLs in fail.
-function fakeAudio(fail: string[]): string[] {
+// fakeAudio records each played URL; play fails with the given error.
+function fakeAudio(fail?: DOMException): string[] {
   const played: string[] = [];
   vi.stubGlobal(
     'Audio',
@@ -14,7 +15,7 @@ function fakeAudio(fail: string[]): string[] {
       constructor(public src: string) {}
       play(): Promise<void> {
         played.push(this.src);
-        return fail.includes(this.src) ? Promise.reject(new DOMException('no file', 'NotSupportedError')) : Promise.resolve();
+        return fail ? Promise.reject(fail) : Promise.resolve();
       }
     },
   );
@@ -25,52 +26,29 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe('urlFor', () => {
-  it('plays the fireball with the private sounds', () => {
-    loadSounds({ fireballCast: cast, fireballImpact: impact });
-    expect(urlFor('cast')).toBe(cast);
-    expect(urlFor('impact')).toBe(impact);
-    expect(urlFor('hit')).toMatch(/card-hit\.mp3$/);
-  });
-
-  it('plays the card hit on impact without them, and no cast', () => {
-    loadSounds({ fireballCast: '', fireballImpact: '' });
-    expect(urlFor('cast')).toBe('');
-    expect(urlFor('impact')).toBe(urlFor('hit'));
-  });
-});
-
 describe('playSound', () => {
-  it('falls back to the card hit when a file fails to load', async () => {
-    const missing = '/cardimg/missing-impact.mp3';
-    loadSounds({ fireballCast: '', fireballImpact: missing });
-    const played = fakeAudio([missing]);
-    playSound('impact');
-    await vi.waitFor(() => {
-      expect(played).toEqual([missing, urlFor('hit')]);
-    });
-    // The broken file is not tried again.
-    playSound('impact');
-    expect(played.at(-1)).toBe(urlFor('hit'));
+  it('plays each sound from its file', () => {
+    loadSounds({ attackHit: hit, effectCast: cast, effectImpact: impact });
+    const played = fakeAudio();
+    playSound('attackHit');
+    playSound('effectCast');
+    playSound('effectImpact');
+    expect(played).toEqual([hit, cast, impact]);
   });
 
-  it('keeps a file that autoplay blocked', async () => {
-    loadSounds({ fireballCast: cast, fireballImpact: impact });
-    const played: string[] = [];
-    vi.stubGlobal(
-      'Audio',
-      class {
-        volume = 1;
-        constructor(public src: string) {}
-        play(): Promise<void> {
-          played.push(this.src);
-          return Promise.reject(new DOMException('no gesture', 'NotAllowedError'));
-        }
-      },
-    );
-    playSound('cast');
+  it('is silent without the private files', () => {
+    loadSounds({ attackHit: '', effectCast: '', effectImpact: '' });
+    const played = fakeAudio();
+    playSound('attackHit');
+    playSound('effectImpact');
+    expect(played).toEqual([]);
+  });
+
+  it('swallows a file that fails to load', async () => {
+    loadSounds({ attackHit: hit, effectCast: cast, effectImpact: impact });
+    const played = fakeAudio(new DOMException('no file', 'NotSupportedError'));
+    playSound('attackHit');
     await Promise.resolve();
-    expect(played).toEqual([cast]);
-    expect(urlFor('cast')).toBe(cast);
+    expect(played).toEqual([hit]);
   });
 });

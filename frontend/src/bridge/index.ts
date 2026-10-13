@@ -178,11 +178,12 @@ export function getFonts(): Promise<Fonts> {
   return wailsFonts();
 }
 
-// Sounds are the private fireball sounds (15.50); each URL is '' without
-// the private images, and the app plays the card hit sound instead.
+// Sounds are the damage sounds (15.50); each URL is '' without the
+// private images, and that sound stays silent.
 export interface Sounds {
-  fireballCast: string;
-  fireballImpact: string;
+  attackHit: string;
+  effectCast: string;
+  effectImpact: string;
 }
 
 // getSounds returns the sound URLs.

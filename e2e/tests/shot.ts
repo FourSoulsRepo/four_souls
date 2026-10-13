@@ -12,11 +12,6 @@ export async function shot(page: Page, name: string): Promise<void> {
   }
 }
 
-// realAsset tells whether realAssets serves this private file.
-export function realAsset(name: string): boolean {
-  return Boolean(process.env.SCREENSHOTS) && existsSync(join(root, 'pkg', 'card_db', 'images', name));
-}
-
 // realAssets serves cards, backs, mats, dice, fonts and sounds from the
 // private images submodule when SCREENSHOTS is set and the submodule is
 // there, so screenshots show the real images. Tests never depend on it.

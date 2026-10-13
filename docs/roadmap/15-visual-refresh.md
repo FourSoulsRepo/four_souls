@@ -1193,3 +1193,15 @@ Images come first, so the new table is built with backs and mats.
    12. Sounds follow animations; with them off, nothing plays.
    13. No volume or mute setting yet; volume is fixed at 60 %.
    14. No screenshots: the screens do not change.
+6. Owner notes (2026-10-13)
+   1. Owner: the cast is fine.
+   2. Owner: the card hit on attacks sounds bad and has a wrong name.
+   3. Owner: take it from sounds.spriters-resource.com, Hearthstone.
+   4. Owner picks `WoW_unarmedparrymetala` for attacks, card to card.
+   5. Owner: keep the effect sounds; give the files proper names.
+7. Result of the fixes (2026-10-13)
+   1. The site has no file named "kick"; 11 impacts went to the owner.
+   2. Names by use: `attack-hit`, `effect-cast`, `effect-impact`.
+   3. All three are Hearthstone's: private images only.
+   4. Kenney's card hit is gone; a public clone is silent.
+   5. `attack-hit.mp3`: 4 KB.

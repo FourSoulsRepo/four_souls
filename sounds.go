@@ -1,22 +1,28 @@
 package main
 
-// The fireball sounds inside the card images folder (15.50): Hearthstone's
-// Fireball cast and impact, played on damage that is not an attack. They
-// belong to Blizzard, so they live only in the private images; the card
-// hit sound is CC0 and ships with the frontend.
+// The damage sounds inside the card images folder (15.50), all from
+// Hearthstone: an unarmed hit for attacks, and the Fireball spell's cast
+// and impact for damage from effects. They belong to Blizzard, so they
+// live only in the private images.
 const (
-	fireballCastSound   = "assets/sounds/fireball-cast.mp3"
-	fireballImpactSound = "assets/sounds/fireball-impact.mp3"
+	attackHitSound    = "assets/sounds/attack-hit.mp3"
+	effectCastSound   = "assets/sounds/effect-cast.mp3"
+	effectImpactSound = "assets/sounds/effect-impact.mp3"
 )
 
-// Sounds are the private sound URLs; each is "" when its file is missing,
-// and the frontend plays the card hit sound instead.
+// Sounds are the sound URLs; each is "" when its file is missing, and
+// that sound stays silent.
 type Sounds struct {
-	FireballCast   string `json:"fireballCast"`   // the shot leaves its source
-	FireballImpact string `json:"fireballImpact"` // the shot lands
+	AttackHit    string `json:"attackHit"`    // an attack lands, card to card
+	EffectCast   string `json:"effectCast"`   // an effect's shot leaves its source
+	EffectImpact string `json:"effectImpact"` // the shot lands
 }
 
 // Sounds returns the sound URLs.
 func (a *App) Sounds() Sounds {
-	return Sounds{FireballCast: a.imageURL(fireballCastSound), FireballImpact: a.imageURL(fireballImpactSound)}
+	return Sounds{
+		AttackHit:    a.imageURL(attackHitSound),
+		EffectCast:   a.imageURL(effectCastSound),
+		EffectImpact: a.imageURL(effectImpactSound),
+	}
 }

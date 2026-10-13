@@ -10,14 +10,15 @@ import (
 
 func TestSoundsFromFiles(t *testing.T) {
 	a := &App{cardFiles: fstest.MapFS{
-		"images/" + fireballCastSound:   {Data: []byte("ID3")},
-		"images/" + fireballImpactSound: {Data: []byte("ID3")},
+		"images/" + attackHitSound:    {Data: []byte("ID3")},
+		"images/" + effectCastSound:   {Data: []byte("ID3")},
+		"images/" + effectImpactSound: {Data: []byte("ID3")},
 	}}
 	got := a.Sounds()
-	if got.FireballCast != "/cardimg/"+fireballCastSound || got.FireballImpact != "/cardimg/"+fireballImpactSound {
+	if got.AttackHit != "/cardimg/"+attackHitSound || got.EffectCast != "/cardimg/"+effectCastSound || got.EffectImpact != "/cardimg/"+effectImpactSound {
 		t.Fatalf("%+v", got)
 	}
-	// Without the private images the card hit sound is played.
+	// Without the private images the game is silent.
 	a = &App{cardFiles: os.DirFS(t.TempDir())}
 	if got := a.Sounds(); got != (Sounds{}) {
 		t.Fatalf("%+v without images", got)
@@ -29,7 +30,7 @@ func TestSoundsFromFiles(t *testing.T) {
 func TestSoundsServed(t *testing.T) {
 	files := os.DirFS("pkg/card_db")
 	sounds := (&App{cardFiles: files}).Sounds()
-	for file, url := range map[string]string{fireballCastSound: sounds.FireballCast, fireballImpactSound: sounds.FireballImpact} {
+	for file, url := range map[string]string{attackHitSound: sounds.AttackHit, effectCastSound: sounds.EffectCast, effectImpactSound: sounds.EffectImpact} {
 		_, err := os.Stat("pkg/card_db/images/" + file)
 		if (err == nil) != (url != "") {
 			t.Fatalf("%s: %q does not match the file (%v)", file, url, err)

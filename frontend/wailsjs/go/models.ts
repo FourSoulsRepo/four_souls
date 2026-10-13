@@ -294,8 +294,9 @@ export namespace main {
 	    }
 	}
 	export class Sounds {
-	    fireballCast: string;
-	    fireballImpact: string;
+	    attackHit: string;
+	    effectCast: string;
+	    effectImpact: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new Sounds(source);
@@ -303,8 +304,9 @@ export namespace main {
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.fireballCast = source["fireballCast"];
-	        this.fireballImpact = source["fireballImpact"];
+	        this.attackHit = source["attackHit"];
+	        this.effectCast = source["effectCast"];
+	        this.effectImpact = source["effectImpact"];
 	    }
 	}
 

@@ -70,7 +70,7 @@ func (a *App) Cards() ([]CardInfo, error) {
 
 // imageTypes are the files cardImages serves, with their content types:
 // card images, card backs, dice textures (V-19) and mats are all WebP;
-// the game's fonts are TrueType (15.20); the fireball sounds are MP3
+// the game's fonts are TrueType (15.20); the damage sounds are MP3
 // (15.50). The type is set here, as not every OS's MIME table knows .ttf.
 var imageTypes = map[string]string{".webp": "image/webp", ".ttf": "font/ttf", ".mp3": "audio/mpeg"}
 

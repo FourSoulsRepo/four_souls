@@ -71,11 +71,11 @@ export function hits(list: Hit[], scale: number, done: () => void): void {
     anim.oncancel = end;
   }
   if (flying) {
-    playSound('cast');
+    playSound('effectCast');
   }
   const land = () => {
     if (landed.length > 0) {
-      playSound('impact');
+      playSound('effectImpact');
     }
     for (const l of landed) {
       burst(l.at, l.amount, scale);

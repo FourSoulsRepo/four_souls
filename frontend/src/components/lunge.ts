@@ -3,7 +3,7 @@
 // (H-14). The copy lives in a layer of its own, so it is never clipped
 // by the table and outlives the effect: playback goes on at the hit,
 // and the target's HP drops at once (C-03). Only transform and opacity
-// animate (ADR 002). The hit lands with a card hit sound (15.50).
+// animate (ADR 002). The hit lands with an attack hit sound (15.50).
 import { playSound } from '../sounds';
 
 // The normal length of the lunge and of the starburst, in ms.
@@ -109,7 +109,7 @@ export function lunge(from: string[], to: string[], amount: number, scale: numbe
   const b = dst.getBoundingClientRect();
   const src = find(from);
   if (!src) {
-    playSound('hit');
+    playSound('attackHit');
     burst(b, amount, scale);
     hit();
     return;
@@ -140,7 +140,7 @@ export function lunge(from: string[], to: string[], amount: number, scale: numbe
   anim.onfinish = end;
   anim.oncancel = end;
   window.setTimeout(() => {
-    playSound('hit');
+    playSound('attackHit');
     burst(b, amount, scale);
     hit();
   }, ms * hitAt);

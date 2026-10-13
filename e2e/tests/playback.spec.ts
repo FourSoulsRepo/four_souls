@@ -1,7 +1,7 @@
 // Event playback and animations (7.6).
 import { expect, test, type Page } from '@playwright/test';
 import { startGame } from './game';
-import { realAsset, shot } from './shot';
+import { shot } from './shot';
 
 // listenSounds records the file of every sound played from now on, in
 // window.played (15.50). Each sound still plays.
@@ -146,8 +146,8 @@ test('an attack lunges at the monster and drops its HP at the hit', async ({ bro
     });
   }
   await expect(vee.getByTestId('burst')).toHaveText('−1');
-  // The hit lands with a card hit sound.
-  expect(await played(vee)).toEqual([expect.stringMatching(/card-hit.*\.mp3$/)]);
+  // The hit lands with the attack hit sound.
+  expect(await played(vee)).toEqual(['/cardimg/assets/sounds/attack-hit.mp3']);
   await vee.waitForTimeout(200); // the burst pops
   await shot(vee, 'attack-hit');
   await expect(monster.getByLabel(`${String(ids.hp - 1)} health`)).toBeVisible();
@@ -226,11 +226,8 @@ test('damage from a card hits every target at once and reddens their HP', async 
   // Every target bursts at once.
   await expect(mo.getByTestId('burst')).toHaveCount(3);
   // One fireball for all shots: the cast as they leave, the impact as
-  // they land. Without the fireball files (public clone) the impact
-  // falls back to the card hit, and the cast fails silently.
-  const fireball = ['/cardimg/assets/sounds/fireball-cast.mp3', '/cardimg/assets/sounds/fireball-impact.mp3'];
-  const fallback = realAsset('assets/sounds/fireball-impact.mp3') ? [] : [expect.stringMatching(/card-hit.*\.mp3$/)];
-  await expect.poll(() => played(mo)).toEqual([...fireball, ...fallback]);
+  // they land.
+  expect(await played(mo)).toEqual(['/cardimg/assets/sounds/effect-cast.mp3', '/cardimg/assets/sounds/effect-impact.mp3']);
   await mo.waitForTimeout(200); // the bursts pop
   await shot(mo, 'damage-bursts');
   for (const [i, id] of ids.monsters.entries()) {

@@ -223,12 +223,13 @@ w.go = {
           body: '/cardimg/assets/fonts/font-souls-body.ttf',
           cyrillic: '/cardimg/assets/fonts/tboi4s-original.ttf',
         }),
-      // The fireball sounds at their real paths; like the fonts, they load
-      // only in screenshots, else the card hit sound plays.
+      // The damage sounds at their real paths; like the fonts, they load
+      // only in screenshots, else they fail to load and stay silent.
       Sounds: () =>
         Promise.resolve({
-          fireballCast: '/cardimg/assets/sounds/fireball-cast.mp3',
-          fireballImpact: '/cardimg/assets/sounds/fireball-impact.mp3',
+          attackHit: '/cardimg/assets/sounds/attack-hit.mp3',
+          effectCast: '/cardimg/assets/sounds/effect-cast.mp3',
+          effectImpact: '/cardimg/assets/sounds/effect-impact.mp3',
         }),
       // One mat image, at its real path; the e2e tests serve it only for
       // screenshots, else it fails to load as in a public clone.
