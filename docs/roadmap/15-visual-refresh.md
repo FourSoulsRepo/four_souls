@@ -919,7 +919,7 @@ Images come first, so the new table is built with backs and mats.
 3. Done when:
    1. e2e test: a second player sees the arrow and the red mark.
 
-### [ ] 15.37 Hit and death marks
+### [x] 15.37 Hit and death marks
 
 1. Goal: damage and deaths read at a glance (T-15, T-24 – T-26).
 2. Tasks:
@@ -953,6 +953,8 @@ Images come first, so the new table is built with backs and mats.
    2. A card without health keeps the mark: its only sign of damage.
    3. e2e test: a hurt character has no corner mark.
    4. Screenshots: `.cache/screenshots/15.37/fix/`.
+7. Owner notes (2026-10-13)
+   1. Owner marks 15.37 solved.
 
 ### [x] 15.38 Coin icon
 
