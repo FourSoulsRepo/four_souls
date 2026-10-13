@@ -125,6 +125,27 @@ On 2026-10-09 the owner parked every open decision for later.
 5. Status: **Owner**, open (2026-10-13); keep (a) until a ruling is found.
 6. FAQ: explain the difference from Fruitcake (R-DICE-08) in the rules FAQ (11.7).
 
+### Q-13 Damage loops at 0 HP
+
+1. Question: may a player at 0 HP loop "when you take damage" triggers?
+   1. Example: Forever Alone with Gurdy Jr., while their death waits on the stack.
+   2. Each activation deals 1 damage; the damage recharges Forever Alone.
+2. Sources:
+   1. S-OFF §559: an object at 0 HP still takes damage.
+   2. S-X: Edmund, dead players still take damage ("beating a carcass").
+   3. S-YUG: "take 1 damage" costs could be used over and over when dead.
+   4. BGG 2019: Blue Baby may respond to lethal damage with Forever Alone.
+   5. BGG 2023, The Maestro Team: damage to 0 HP still fires damage triggers.
+   6. BGG 2019, designer Daniel Cochran: breaking the game with loops is fine.
+   7. No ruling on this exact combo in S-RED, S-DIS, S-X, or BGG (2026-10-13).
+3. fouronlinesouls.net (2026-10-13):
+   1. The death goes on the stack above the recharge trigger.
+   2. The death resolves first; the penalty deactivates Forever Alone.
+4. Options: (a) official, the loop is legal; (b) death above the triggers;
+   (c) house rule: damage at 0 HP fires no "take damage" triggers.
+5. Engine now: (a).
+6. Status: **Resolved** (2026-10-13): (a) by default; (c) as a match option (GS-12, 14.8).
+
 ## Old rulings re-checked (R-07)
 
 | # | Ruling (Ed's Notes, 2018–2019) | Check against current rules and V2 text | Status |

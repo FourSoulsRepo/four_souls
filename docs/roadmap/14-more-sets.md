@@ -3,7 +3,7 @@
 Goal: official sets beyond the Base Game.
 Order: Gold Box, Four Souls+, Requiem, Warp Zone, promos.
 
-Ideas: CD-02, GS-07, GS-08, CD-11, A-16, CD-12, V-32.
+Ideas: CD-02, GS-07, GS-08, CD-11, A-16, CD-12, V-32, GS-12.
 
 ---
 
@@ -130,3 +130,20 @@ Alt art (CD-11) comes after all sets.
    1. e2e test: a right click on a reprinted character changes its image.
    2. A card without reprints ignores the click.
    3. Use case.
+
+### [ ] 14.8 House rule: no damage loops at 0 HP
+
+1. Goal: the host may stop damage loops at 0 HP for a match (GS-12).
+2. Tasks:
+   1. Detailed setup: a checkbox, off by default.
+   2. A hint next to it explains the rule in plain words.
+   3. Hint text: damage to a player at 0 HP no longer fires "take damage" effects.
+   4. Hint example: Forever Alone with Gurdy Jr. stops looping.
+   5. Engine: a setup flag; R-MECH-51 skips the triggers when it is on.
+   6. The flag goes into the record header and saved games.
+   7. The game list and the table show that the house rule is on.
+3. Done when:
+   1. Engine test: Forever Alone with Gurdy Jr. loops when off, not when on.
+   2. Server test: the flag reaches the game.
+   3. e2e test: the checkbox and its hint.
+   4. Use case for the option; Q-13 updated.

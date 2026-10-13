@@ -192,6 +192,7 @@ Step numbers stay as IDs; the table lists steps in work order.
 6. Reprints add copies; every copy keeps its own art (CD-12, ADR 010).
 7. The host picks the card sets; the Base Game is always in (14.6).
 8. Switch character and eternal item art between reprints (V-32, 14.7).
+9. House rule option: no damage loops at 0 HP (GS-12, 14.8).
 
 ## 15. Visual refresh
 

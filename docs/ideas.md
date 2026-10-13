@@ -627,6 +627,13 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    2. Official challenges, each against a boss (Rag Man, Mom, Greed, ...).
    3. Difficulty: Normal, Hard, Ultra Hard.
    4. Not part of the first main goal.
+12. GS-12. Optional house rule: no damage loops at 0 HP.
+   1. Official rules: damage at 0 HP still fires "when you take damage" (R-MECH-51).
+   2. Example: Forever Alone with Gurdy Jr. loops while the death waits.
+   3. With the option on, damage at 0 HP fires no "take damage" triggers.
+   4. Off by default; the host turns it on per match.
+   5. Detailed setup shows a hint that explains it.
+   6. Research: Q-13 in `pkg/rules_engine/docs/rules/open-questions.md`.
 
 ## Spectators
 
