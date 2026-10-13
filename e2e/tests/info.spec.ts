@@ -40,7 +40,19 @@ test('the turn badge, what is left, and hiding the history', async ({ browser })
   for (const page of pages) {
     await expect(page.getByRole('status', { name: 'Turn' })).toHaveText(new RegExp(`^Turn \\d+ · ${activeName} · \\w`));
   }
-  await expect(active.getByLabel('Left this turn')).toHaveText(/Loot \d+ · Attacks \d+ · Buys \d+/);
+  // Own: loot plays by the name, buys and attacks as badges on their icons (15.24).
+  await expect(active.getByLabel('Loot plays left')).toHaveText(/^Loot \d+$/);
+  const tools = active.getByRole('toolbar', { name: 'Turn actions' });
+  await expect(tools.getByRole('button', { name: 'Buy', exact: true }).getByLabel(/^\d+ left$/)).toBeVisible();
+  await expect(tools.getByRole('button', { name: 'Attack', exact: true }).getByLabel(/^\d+ left$/)).toBeVisible();
+  await shot(active, 'turn-left');
+  // Others see the active player's whole allowance by their name.
+  const other = pages.find((p) => p !== active);
+  if (!other) {
+    throw new Error('no other page');
+  }
+  await expect(other.getByLabel('Left this turn')).toHaveText(/Loot \d+ · Attacks \d+ · Buys \d+/);
+  await expect(other.getByLabel(/^\d+ left$/)).toHaveCount(0);
 
   // The full history is closed; the strip opens it, Hide closes it.
   const panel = active.getByRole('complementary', { name: 'History', exact: true });

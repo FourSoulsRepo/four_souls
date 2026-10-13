@@ -13,6 +13,9 @@ interface Props {
   step: number;
   waiting: Prompt;
   you: number;
+  // left is how many buys and attacks are left this turn; only on the
+  // viewer's own turn (15.24).
+  left?: { buy: number; attack: number };
 }
 
 interface Tool {
@@ -24,13 +27,15 @@ interface Tool {
   // choosing: the player is picking what this action is for.
   choosing: boolean;
   choosingLabel: string;
+  left?: number;
 }
 
 // TurnActions are buy and attack as icon buttons by own name (15.19,
 // F-11): lit when the engine allows them, dim when not (F-12). A press
 // shows at once, before the server answers (V-15). While the player
-// picks what to buy or attack, that icon stays pressed (F-13).
-export function TurnActions({ allowed, disabled, step, waiting, you }: Props) {
+// picks what to buy or attack, that icon stays pressed (F-13). On own
+// turn a badge on each icon counts what is left (15.24).
+export function TurnActions({ allowed, disabled, step, waiting, you, left }: Props) {
   const act = useApp((s) => s.act);
   const [pressed, setPressed] = useState<{ kind: number; step: number } | null>(null);
   const picking = waiting.kind === PromptKind.choose && waiting.player === you ? (waiting.purpose ?? -1) : -1;
@@ -43,6 +48,7 @@ export function TurnActions({ allowed, disabled, step, waiting, you }: Props) {
       intent: allowed.buy,
       choosing: picking === Purpose.purchase,
       choosingLabel: 'Choosing what to buy',
+      left: left?.buy,
     },
     {
       kind: IntentKind.attack,
@@ -52,6 +58,7 @@ export function TurnActions({ allowed, disabled, step, waiting, you }: Props) {
       intent: allowed.attack,
       choosing: picking === Purpose.attackTarget,
       choosingLabel: 'Choosing what to attack',
+      left: left?.attack,
     },
   ];
   const press = (t: Tool) => {
@@ -90,6 +97,11 @@ export function TurnActions({ allowed, disabled, step, waiting, you }: Props) {
             }}
           >
             {t.icon}
+            {t.left !== undefined && (
+              <span className={`turn-action-left${t.left === 0 ? ' none' : ''}`} aria-label={`${String(t.left)} left`}>
+                {t.left}
+              </span>
+            )}
           </button>
         );
       })}

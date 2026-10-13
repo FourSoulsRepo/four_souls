@@ -81,7 +81,13 @@ async function answer(pages: Page[], press: Tap): Promise<boolean> {
       }
       return true;
     }
-    const choice = page.locator('.choice');
+    // A "look at" dialog only shows cards; OK closes it.
+    const look = page.locator('.choice.look');
+    if (await look.isVisible()) {
+      await press(page, look.getByRole('button', { name: 'OK' }));
+      return true;
+    }
+    const choice = page.locator('.choice:not(.look)');
     if (await choice.isVisible()) {
       // Prefer picking on the table, as a player would (7.7), where the
       // dialog leaves the target uncovered.

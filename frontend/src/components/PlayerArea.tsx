@@ -2,7 +2,7 @@ import { useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { counted, Role, type CardView, type Intent, type PlayerView } from '../protocol';
 import { useApp } from '../store';
 import { playerColor, type Position } from '../table';
-import { Card, type CardSize, type CardStatus } from './Card';
+import { Card, type CardSize } from './Card';
 import type { Interact } from './Interact';
 import { HiddenHand } from './Pile';
 import './Table.css';
@@ -16,9 +16,6 @@ interface Props {
   ui: Interact;
   // tools are the viewer's turn actions, shown by own name (15.19).
   tools?: ReactNode;
-  // ready marks the viewer's character: it may attack now, or it has
-  // no attacks left this turn (T-11, H-22).
-  ready?: CardStatus;
 }
 
 // spent: a character or item that is used up until it recharges.
@@ -28,8 +25,8 @@ function spent(c: CardView): boolean {
 
 // PlayerArea is one player's place at the table: name and counters,
 // character and cards in play, and the hand for the viewer (V-02).
-export function PlayerArea({ you, position, tools, ready, ...rest }: Props) {
-  return you ? <OwnArea tools={tools} ready={ready} {...rest} /> : <OpponentArea position={position} {...rest} />;
+export function PlayerArea({ you, position, tools, ...rest }: Props) {
+  return you ? <OwnArea tools={tools} {...rest} /> : <OpponentArea position={position} {...rest} />;
 }
 
 // OpponentArea is another player's place (15.18): a small name with
@@ -37,7 +34,7 @@ export function PlayerArea({ you, position, tools, ready, ...rest }: Props) {
 // items, and the hand as fanned backs (F-07, F-08, H-17, H-21). At the
 // top it mirrors the own area, the hand hanging past the top edge; in
 // a side column everything stacks in a narrow column (F-09).
-function OpponentArea({ player, name, position, active, ui }: Omit<Props, 'you' | 'tools' | 'ready'>) {
+function OpponentArea({ player, name, position, active, ui }: Omit<Props, 'you' | 'tools'>) {
   const size: CardSize = position === 'left' || position === 'right' ? 'small' : 'table';
   const pick = ui.player(player.id);
   const { character } = player;
@@ -121,7 +118,7 @@ function Coin() {
 // coins and the turn actions at the left, the character centered with its live health
 // and attack, items to its right, and the hand fanned below, partly
 // off screen (F-05, F-06, H-02, H-03, H-15, H-18).
-function OwnArea({ player, name, active, ui, tools, ready }: Omit<Props, 'you' | 'position'>) {
+function OwnArea({ player, name, active, ui, tools }: Omit<Props, 'you' | 'position'>) {
   const label = `${name} (you)`;
   const pick = ui.player(player.id);
   const hand = player.hand ?? [];
@@ -146,7 +143,11 @@ function OwnArea({ player, name, active, ui, tools, ready }: Omit<Props, 'you' |
             <b>{player.souls}</b> {player.souls === 1 ? 'soul' : 'souls'}
             {player.dead && ' · dead'}
           </span>
-          {active && <Allowance player={player} />}
+          {active && (
+            <span className="player-allowance" aria-label="Loot plays left">
+              Loot {player.loot_plays}
+            </span>
+          )}
           {pick.onClick && (
             <button type="button" className="player-pick" onClick={pick.onClick}>
               Choose {label}
@@ -163,7 +164,6 @@ function OwnArea({ player, name, active, ui, tools, ready }: Omit<Props, 'you' |
           spent={spent(character)}
           counters={counted(character)}
           stats={{ hp: player.hp, atk: player.atk }}
-          status={ready}
           objectId={character.id}
           {...ui.object(character.id)}
         />

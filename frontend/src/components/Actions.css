@@ -502,6 +502,39 @@
   fill: currentColor;
 }
 
+/* What is left this turn (15.24): a small paper disc on the icon's
+   corner, the number in the game's letters; dark at 0. */
+.turn-action {
+  position: relative;
+}
+
+.turn-action-left {
+  position: absolute;
+  top: -8px;
+  right: -9px;
+  display: grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 3px;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  box-sizing: border-box;
+  font-family: var(--font-game);
+  font-size: 14px;
+  line-height: 1;
+  color: var(--ink);
+  background: linear-gradient(#fbf4e2, #d9c290);
+  box-shadow: 0 2px 0 var(--ink);
+  rotate: 6deg;
+  pointer-events: none;
+}
+
+.turn-action-left.none {
+  color: rgb(255 255 255 / 70%);
+  background: linear-gradient(#5a554c, #36332d);
+}
+
 /* Lit: the same yellow as End turn, with the cut-out shadow (15.20). */
 .turn-action.lit {
   color: var(--ink);

@@ -708,6 +708,17 @@ Images come first, so the new table is built with backs and mats.
    5. The cost in red ink, then the effect.
    6. Fix: "zzz" showed before the action step; now only in it.
    7. Screenshots: `.cache/screenshots/15.24/fix/`.
+7. Owner notes (2026-10-13)
+   1. Owner: remove "zzz"; it does not suit this game.
+   2. Owner: no green "ready to attack" frame either.
+   3. Owner: rework the Loot, Attacks, Buys line; badges on the icons.
+8. Result of the fixes (2026-10-13)
+   1. "zzz" and the green frame are gone (T-11, H-22 dropped).
+   2. Buy and Attack icons carry a paper badge: what is left this turn.
+   3. A badge turns dark at 0; badges show only on own turn.
+   4. Own name shows "Loot N"; opponents keep the full line.
+   5. e2e test: badges on own icons, the full line for others.
+   6. Screenshots: `.cache/screenshots/15.24/fix2/`.
 
 ### [ ] 15.25 Drag and aim
 

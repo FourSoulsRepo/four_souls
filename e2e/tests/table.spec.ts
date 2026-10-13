@@ -3,7 +3,6 @@ import { expect, test, type Browser, type Page } from '@playwright/test';
 import { expectFits, startGame } from './game';
 import { serverPort } from './server';
 import { shot } from './shot';
-import { activePage, click, turnAction } from './turn';
 
 // expectDecksClear fails when anything lies over a deck or a discard
 // (F-02): their corners and middle must hit the pile itself.
@@ -406,37 +405,4 @@ test('a card with many abilities opens a dialog that uses the picked line (15.24
   await expect(dialog).toBeHidden();
   const picked = await page.evaluate(() => (window as unknown as { picked?: { objects?: number[]; choice?: number } }).picked);
   expect(picked).toMatchObject({ kind: 7, objects: [9001], choice: 2 });
-});
-
-test('the own character glows while it may attack, and sleeps with no attack left (15.24)', async ({ browser }) => {
-  const pages = await startGame(browser, ['Jo', 'Kit']);
-  const active = await activePage(pages, click);
-  const character = active.locator('.own-character .card');
-  const attack = turnAction(active, 'Attack');
-  await expect(attack).toBeEnabled();
-  await expect(character).toHaveClass(/status-ready/);
-  await expect(character.getByLabel('No attack left')).toHaveCount(0);
-  await shot(active, 'attack-ready');
-
-  // No attack left this turn, as the server would send it after one.
-  await active.evaluate(() => {
-    interface S {
-      game: {
-        view: { players: { attacks: number }[]; turn: { active: number } };
-        allowed: { kind: number }[] | null;
-      } | null;
-    }
-    const { store } = (window as unknown as { fourSouls: { store: { getState: () => S; setState: (s: Partial<S>) => void } } })
-      .fourSouls;
-    const { game } = store.getState();
-    if (!game) {
-      throw new Error('no game');
-    }
-    const players = game.view.players.map((p, i) => (i === game.view.turn.active ? { ...p, attacks: 0 } : p));
-    const allowed = (game.allowed ?? []).filter((a) => a.kind !== 5);
-    store.setState({ game: { ...game, view: { ...game.view, players }, allowed } });
-  });
-  await expect(character).not.toHaveClass(/status-ready/);
-  await expect(character.getByLabel('No attack left')).toBeVisible();
-  await shot(active, 'attack-sleep');
 });

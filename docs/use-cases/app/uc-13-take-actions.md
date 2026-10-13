@@ -42,8 +42,8 @@
 * **2d. Several abilities (15.24):** the card opens a dialog with the card large and one line per ability.
   * The player clicks a line to use that ability.
   * Lines not usable now stay greyed; Cancel or a click outside closes it.
-* **4d. Ready to attack (15.24):** on own turn the character has a green frame while it may attack.
-* **4e. No attack left (15.24):** in the action step the character shows "zzz".
+* **4d. What is left (15.24):** on own turn the Buy and Attack icons carry a count badge.
+  * Loot plays left show by the player's name as "Loot N".
 
 ## Postconditions
 
