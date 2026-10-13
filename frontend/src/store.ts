@@ -8,6 +8,7 @@ import {
   getDice,
   getBacks,
   getFonts,
+  getSounds,
   getIcons,
   getMats,
   getCardSets,
@@ -32,6 +33,7 @@ import type { LinePart } from './stack';
 import { emptyLobby, leftTable, lost, onMessage, remember, type Screen, type Session } from './lobby';
 import { connect, disconnect, drop, send } from './net';
 import { createPlayback, effectsFor, type Effect } from './playback';
+import { loadSounds } from './sounds';
 import {
   protocolVersion,
   recordURL,
@@ -390,15 +392,17 @@ export const useApp = create<AppState>()((set, get) => {
     zoom: null,
     loadCards: async () => {
       try {
-        const [list, dice, mats, backs, icons, fonts] = await Promise.all([
+        const [list, dice, mats, backs, icons, fonts, sounds] = await Promise.all([
           getCards(),
           getDice(),
           getMats(),
           getBacks(),
           getIcons(),
           getFonts(),
+          getSounds(),
         ]);
         loadFonts(fonts);
+        loadSounds(sounds);
         set({
           cards: new Map(list.map((c) => [c.ref, c])),
           dice,

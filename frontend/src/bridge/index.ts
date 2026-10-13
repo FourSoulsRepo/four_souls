@@ -17,6 +17,7 @@ import {
   SaveRecord as wailsSaveRecord,
   SaveSettings as wailsSaveSettings,
   Settings as wailsSettings,
+  Sounds as wailsSounds,
   Versions as wailsVersions,
 } from '../../wailsjs/go/main/App';
 import { settings } from '../../wailsjs/go/models';
@@ -175,6 +176,18 @@ export interface Fonts {
 // getFonts returns the font URLs.
 export function getFonts(): Promise<Fonts> {
   return wailsFonts();
+}
+
+// Sounds are the private fireball sounds (15.50); each URL is '' without
+// the private images, and the app plays the card hit sound instead.
+export interface Sounds {
+  fireballCast: string;
+  fireballImpact: string;
+}
+
+// getSounds returns the sound URLs.
+export function getSounds(): Promise<Sounds> {
+  return wailsSounds();
 }
 
 // MatInfo is one game mat image (ST-03, V-24).

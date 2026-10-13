@@ -83,6 +83,11 @@
 * **1k. Death (15.37):** a big skull pops on the dying card.
   * The card leaves while the skull fades.
   * A dead player's skull sits on their character.
+* **1l. Damage sounds (15.50):** an attack hit sounds as a card slap.
+  * Other damage sounds as a fireball: a cast, then an impact.
+  * All shots of one update share one fireball.
+  * No private images (public clone): the impact is the card slap.
+  * With animations off, no sound plays.
 
 ## Postconditions
 

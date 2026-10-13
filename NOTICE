@@ -35,6 +35,21 @@ object to its use here, it will be removed.
 Buy the physical game: https://foursouls.com
 
 --------------------------------------------------------------------------
+Sounds
+--------------------------------------------------------------------------
+frontend/src/assets/sounds/card-hit.mp3
+  "card-place-1" from Casino Audio by Kenney (www.kenney.nl). CC0 1.0.
+  https://opengameart.org/content/54-casino-sound-effects-cards-dice-chips
+  Trimmed and converted to mono MP3.
+
+Fireball cast and impact sounds (assets/sounds in the private images).
+  From Hearthstone, the Fireball spell: FX_FireballEvent01_BirthStart_01
+  and FX_FireballEvent04_SpellImpact_01, via hearthstone.wiki.gg.
+  Hearthstone is (c) Blizzard Entertainment, Inc. They belong to their
+  owners, are not in this repository, and ship the same way as the card
+  images. Converted to mono MP3.
+
+--------------------------------------------------------------------------
 Wails template images — build/appicon.png, build/windows/icon.ico
 --------------------------------------------------------------------------
 Default application icon from the Wails project template.

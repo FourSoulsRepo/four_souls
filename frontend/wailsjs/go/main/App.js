@@ -50,6 +50,10 @@ export function Settings() {
   return window['go']['main']['App']['Settings']();
 }
 
+export function Sounds() {
+  return window['go']['main']['App']['Sounds']();
+}
+
 export function Versions() {
   return window['go']['main']['App']['Versions']();
 }

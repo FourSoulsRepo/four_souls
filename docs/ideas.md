@@ -613,6 +613,11 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
 2. AU-02. Sounds for game actions.
    1. First list: dice roll, attack, damage dealt.
    2. Sources follow AU-01.
+3. AU-03. Damage sounds (owner, 2026-10-13).
+   1. A card hitting a card when anyone deals damage.
+   2. Hearthstone's Jaina fireball for bombs and other effects.
+   3. No background music in the files.
+   4. Small files.
 
 ## Menu
 

@@ -1164,3 +1164,32 @@ Images come first, so the new table is built with backs and mats.
    10. Screenshots: `.cache/screenshots/15.49/before/` and `after/`.
 6. Owner notes (2026-10-13)
    1. Owner marks 15.49 solved.
+
+### [ ] 15.50 Damage sounds
+
+1. Goal: damage is heard as well as seen (AU-03).
+2. Owner: do it now; follow the step's rules.
+3. Tasks:
+   1. Find a card-hits-card sound; download it into the assets.
+   2. Find Hearthstone's Jaina fireball for bombs and effects.
+   3. No background music; convert the files small.
+   4. Play the hit on attack damage, the fireball on other damage.
+4. Done when:
+   1. Go test: the sounds are served; none without the private images.
+   2. Vitest: the fallback when a fireball file is missing.
+   3. e2e test: an attack plays the hit; card damage the fireball.
+5. Result (2026-10-13)
+   1. Card hit: Kenney "Casino Audio", `card-place-1`, CC0.
+   2. It ships with the frontend: `src/assets/sounds/card-hit.mp3`.
+   3. Fireball: Hearthstone's Fireball spell effects, from hearthstone.wiki.gg.
+   4. Files `FX_FireballEvent01_BirthStart_01` and `…04_SpellImpact_01`.
+   5. Sound effects only: no voice, no music.
+   6. They belong to Blizzard: private images only, `assets/sounds/`.
+   7. Served by `App.Sounds()`, like the fonts.
+   8. The cast plays as shots leave; the impact as they land.
+   9. All shots of one update share one fireball.
+   10. Without the private files the impact is the card hit; no cast.
+   11. All mono MP3, 64 kbit/s: 5 KB, 7 KB, 13 KB.
+   12. Sounds follow animations; with them off, nothing plays.
+   13. No volume or mute setting yet; volume is fixed at 60 %.
+   14. No screenshots: the screens do not change.

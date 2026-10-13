@@ -3,8 +3,9 @@
 // at once (T-24). A dying card gets a big skull before it leaves (T-26).
 // Both play in the lunge's layer and end the effect early, so the table
 // changes while the marks fade. Only transform and opacity animate
-// (ADR 002).
+// (ADR 002). A shot sounds as a fireball: cast, then impact (15.50).
 import type { Hit } from '../playback';
+import { playSound } from '../sounds';
 import { burst, find, layer } from './lunge';
 
 // The normal length of a shot and of a skull, in ms.
@@ -69,7 +70,13 @@ export function hits(list: Hit[], scale: number, done: () => void): void {
     anim.onfinish = end;
     anim.oncancel = end;
   }
+  if (flying) {
+    playSound('cast');
+  }
   const land = () => {
+    if (landed.length > 0) {
+      playSound('impact');
+    }
     for (const l of landed) {
       burst(l.at, l.amount, scale);
     }

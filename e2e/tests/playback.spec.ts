@@ -1,7 +1,25 @@
 // Event playback and animations (7.6).
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 import { startGame } from './game';
-import { shot } from './shot';
+import { realAsset, shot } from './shot';
+
+// listenSounds records the file of every sound played from now on, in
+// window.played (15.50). Each sound still plays.
+async function listenSounds(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const w = window as unknown as { played: string[] };
+    w.played = [];
+    const play = HTMLMediaElement.prototype.play;
+    HTMLMediaElement.prototype.play = function (this: HTMLMediaElement) {
+      w.played.push(new URL(this.src).pathname);
+      return play.call(this);
+    };
+  });
+}
+
+function played(page: Page): Promise<string[]> {
+  return page.evaluate(() => (window as unknown as { played: string[] }).played);
+}
 
 test('the animation speed setting survives a restart', async ({ page }) => {
   await page.goto('/?fake&nosplash');
@@ -70,6 +88,7 @@ test('an attack lunges at the monster and drops its HP at the hit', async ({ bro
   if (!vee) {
     throw new Error('no pages');
   }
+  await listenSounds(vee);
   // Replay the view with one hit of the own character on the first
   // monster, whose HP is one lower after it.
   const ids = await vee.evaluate(() => {
@@ -127,6 +146,8 @@ test('an attack lunges at the monster and drops its HP at the hit', async ({ bro
     });
   }
   await expect(vee.getByTestId('burst')).toHaveText('−1');
+  // The hit lands with a card hit sound.
+  expect(await played(vee)).toEqual([expect.stringMatching(/card-hit.*\.mp3$/)]);
   await vee.waitForTimeout(200); // the burst pops
   await shot(vee, 'attack-hit');
   await expect(monster.getByLabel(`${String(ids.hp - 1)} health`)).toBeVisible();
@@ -158,6 +179,7 @@ test('damage from a card hits every target at once and reddens their HP', async 
   if (!mo) {
     throw new Error('no pages');
   }
+  await listenSounds(mo);
   // The own character's ability deals 1 damage to two monsters and to
   // its own player.
   const ids = await mo.evaluate(() => {
@@ -203,6 +225,12 @@ test('damage from a card hits every target at once and reddens their HP', async 
   }
   // Every target bursts at once.
   await expect(mo.getByTestId('burst')).toHaveCount(3);
+  // One fireball for all shots: the cast as they leave, the impact as
+  // they land. Without the fireball files (public clone) the impact
+  // falls back to the card hit, and the cast fails silently.
+  const fireball = ['/cardimg/assets/sounds/fireball-cast.mp3', '/cardimg/assets/sounds/fireball-impact.mp3'];
+  const fallback = realAsset('assets/sounds/fireball-impact.mp3') ? [] : [expect.stringMatching(/card-hit.*\.mp3$/)];
+  await expect.poll(() => played(mo)).toEqual([...fireball, ...fallback]);
   await mo.waitForTimeout(200); // the bursts pop
   await shot(mo, 'damage-bursts');
   for (const [i, id] of ids.monsters.entries()) {

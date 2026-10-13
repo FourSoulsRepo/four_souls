@@ -30,4 +30,6 @@ export function SaveSettings(arg1:settings.Settings):Promise<settings.Settings>;
 
 export function Settings():Promise<settings.Settings>;
 
+export function Sounds():Promise<main.Sounds>;
+
 export function Versions():Promise<version.Info>;
