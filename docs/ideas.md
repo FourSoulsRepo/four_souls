@@ -664,6 +664,10 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    4. Off by default; the host turns it on per match.
    5. Detailed setup shows a hint that explains it.
    6. Research: Q-13 in `pkg/rules_engine/docs/rules/open-questions.md`.
+13. GS-13. Host bans cards before hosting (owner, 2026-10-13).
+   1. Banned cards are left out of every deck and never dealt.
+   2. Players see the ban list (A-16: banned cards are public).
+   3. Tests use the same bans for fixed deals.
 
 ## Spectators
 

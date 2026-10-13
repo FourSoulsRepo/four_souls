@@ -3,7 +3,7 @@
 Goal: official sets beyond the Base Game.
 Order: Gold Box, Four Souls+, Requiem, Warp Zone, promos.
 
-Ideas: CD-02, GS-07, GS-08, CD-11, A-16, CD-12, V-32, GS-12.
+Ideas: CD-02, GS-07, GS-08, CD-11, A-16, CD-12, V-32, GS-12, GS-13.
 
 ---
 
@@ -147,3 +147,34 @@ Alt art (CD-11) comes after all sets.
    2. Server test: the flag reaches the game.
    3. e2e test: the checkbox and its hint.
    4. Use case for the option; Q-13 updated.
+
+### [ ] 14.9 Host bans cards
+
+1. Goal: the host leaves chosen cards out of the game (GS-13).
+2. Tasks:
+   1. Detailed setup: pick cards to ban, from the chosen sets.
+   2. Banned cards are never in a deck and never dealt.
+   3. The ban list goes into the record header and saved games.
+   4. The game list and the table show the ban list.
+3. Done when:
+   1. Engine test: a banned card is in no deck.
+   2. Server test: the ban list reaches the game.
+   3. e2e test: ban a card in the host screen.
+   4. Use case for the option.
+
+### [ ] 14.10 Tests deal without stat-changing monsters
+
+1. Goal: e2e tests stop failing on unlucky deals.
+2. Found in 15.3 (2026-10-13):
+   1. The 15.23 badge test expects no badge on a fresh monster.
+   2. Delirium and Stoney give other monsters +1 DC.
+   3. Dealt into a slot, they put a dice badge on the first monster.
+   4. A probe: 3 of 120 deals failed the check (2.5%).
+3. Tasks:
+   1. Depends on 14.9; use its bans, no test-only deal code.
+   2. Tests that check monster stats ban such monsters.
+   3. Find the list in card statics: each monster that changes others.
+   4. Base Game: Delirium, Stoney; then each new set.
+4. Done when:
+   1. The 15.23 test bans them and checks the untouched monster.
+   2. Many deals in a row show no stat badge on a fresh monster.

@@ -194,6 +194,8 @@ Step numbers stay as IDs; the table lists steps in work order.
 7. The host picks the card sets; the Base Game is always in (14.6).
 8. Switch character and eternal item art between reprints (V-32, 14.7).
 9. House rule option: no damage loops at 0 HP (GS-12, 14.8).
+10. Host bans cards before hosting (GS-13, 14.9).
+11. Tests ban stat-changing monsters for fixed deals (14.10).
 
 ## 15. Visual refresh
 
