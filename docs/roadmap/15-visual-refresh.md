@@ -145,7 +145,7 @@ Images come first, so the new table is built with backs and mats.
 1. Goal: apply the chosen ideas.
 2. Split into 15.16 – 15.18; tasks moved there.
 
-### [ ] 15.3 Attack animation
+### [x] 15.3 Attack animation
 
 1. Goal: attacks look like Hearthstone (V-12).
 2. Tasks:
@@ -182,6 +182,8 @@ Images come first, so the new table is built with backs and mats.
    5. Engine test: pending attack damage says "combat".
    6. Unit test: no popup for pending attack damage.
    7. Screenshots: `.cache/screenshots/15.3/fix/`.
+7. Owner notes (2026-10-13)
+   1. Owner marks 15.3 solved.
 
 ### [~] 15.4 Hearthstone-style card play
 
