@@ -1165,7 +1165,7 @@ Images come first, so the new table is built with backs and mats.
 6. Owner notes (2026-10-13)
    1. Owner marks 15.49 solved.
 
-### [ ] 15.50 Damage sounds
+### [x] 15.50 Damage sounds
 
 1. Goal: damage is heard as well as seen (AU-03).
 2. Owner: do it now; follow the step's rules.
@@ -1205,3 +1205,6 @@ Images come first, so the new table is built with backs and mats.
    3. All three are Hearthstone's: private images only.
    4. Kenney's card hit is gone; a public clone is silent.
    5. `attack-hit.mp3`: 4 KB.
+8. Owner notes (2026-10-13)
+   1. Owner merged the sounds into the private images.
+   2. Owner marks 15.50 solved.
