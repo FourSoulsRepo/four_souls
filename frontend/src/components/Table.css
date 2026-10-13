@@ -225,7 +225,7 @@
   overflow-x: auto;
 }
 
-/* Opponents (15.18): a small name with coins and souls outside the
+/* Opponents (15.18): a small name with coins outside the
    board (F-07, H-21), the character with live stats, the items, and
    the hand as fanned backs with a count (F-08, H-17). */
 .opp-status {
@@ -283,14 +283,9 @@
   height: 20px;
 }
 
-.opp-souls {
+.player-dead {
   font-size: 12px;
   color: var(--muted);
-}
-
-.opp-souls b {
-  font-size: 14px;
-  color: var(--fg);
 }
 
 .hidden-hand {
@@ -480,18 +475,70 @@
   filter: drop-shadow(0 1px 1px rgb(0 0 0 / 60%));
 }
 
-.own-souls {
-  font-size: 13px;
-  color: var(--muted);
-}
-
-.own-souls b {
-  font-size: 16px;
-  color: var(--fg);
-}
-
 .own-character {
   grid-area: character;
+}
+
+/* Soul crystals (15.39): a column of gem slots left of the character,
+   like mana crystals in Hearthstone (V-30, V-31). The character cell
+   pads its right side as wide, so the card stays centered. */
+.own {
+  --crystal: 16px;
+}
+
+.opponent {
+  --crystal: 12px;
+}
+
+.own-character,
+.opp-character {
+  align-items: flex-end;
+  padding-right: calc(4px + var(--crystal) + 6px);
+}
+
+.souls {
+  display: flex;
+  flex: none;
+  flex-direction: column-reverse;
+  gap: 3px;
+  padding-bottom: 6px;
+  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 80%));
+}
+
+/* The rim, and the gem inset in it; both cut as a six-sided gem. */
+.soul-slot {
+  position: relative;
+  width: var(--crystal);
+  aspect-ratio: 4 / 5;
+}
+
+.soul-slot::before,
+.soul-slot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(50% 0, 100% 28%, 100% 72%, 50% 100%, 0 72%, 0 28%);
+}
+
+.soul-slot::before {
+  background: rgb(255 255 255 / 35%);
+}
+
+.soul-slot::after {
+  inset: 2px;
+  background: rgb(8 14 28 / 80%);
+}
+
+.soul-slot.filled {
+  filter: drop-shadow(0 0 3px #6fd0ff);
+}
+
+.soul-slot.filled::before {
+  background: #d8f4ff;
+}
+
+.soul-slot.filled::after {
+  background: radial-gradient(circle at 35% 30%, #f2fdff, #62c9ff 45%, #1d5bd0);
 }
 
 .own-items {

@@ -165,6 +165,14 @@ func TestViewCountsWhatIsLeft(t *testing.T) {
 	}
 }
 
+func TestViewSaysHowManySoulsWin(t *testing.T) {
+	g := toAction(t, 2)
+	g.WinSouls = 5
+	if v := g.View(Viewer{Kind: ViewSpectator}); v.WinSouls != 5 {
+		t.Errorf("win souls %d, want 5", v.WinSouls)
+	}
+}
+
 func TestViewNamesWhoPassedAndWhoMayRespond(t *testing.T) {
 	g := toAction(t, 4)
 	a := g.Turn.Active

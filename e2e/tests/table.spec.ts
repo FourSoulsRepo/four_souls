@@ -429,3 +429,57 @@ test('a card with many abilities opens a dialog that uses the picked line (15.24
   const picked = await page.evaluate(() => (window as unknown as { picked?: { objects?: number[]; choice?: number } }).picked);
   expect(picked).toMatchObject({ kind: 7, objects: [9001], choice: 2 });
 });
+
+test('souls show as crystals left of the character; a gained soul fills one more (15.39)', async ({ browser }) => {
+  const [page] = await startGame(browser, ['Rho', 'Tau']);
+  if (!page) {
+    throw new Error('no pages');
+  }
+  const own = page.locator('.player-bottom');
+  const other = page.locator('.player-top');
+  // A slot per soul the game needs; none filled at the start (V-30).
+  for (const area of [own, other]) {
+    await expect(area.getByRole('img', { name: 'Souls: 0 of 4' })).toBeVisible();
+    await expect(area.locator('.soul-slot')).toHaveCount(4);
+    await expect(area.locator('.soul-slot.filled')).toHaveCount(0);
+  }
+
+  // setSouls gives each player souls, as the server would send them.
+  // Only the screen changes; nobody acts on it.
+  const setSouls = (souls: number[]) =>
+    page.evaluate((next) => {
+      interface S {
+        game: { view: { players: { souls: number }[] } } | null;
+      }
+      const { store } = (window as unknown as { fourSouls: { store: { getState: () => S; setState: (s: Partial<S>) => void } } })
+        .fourSouls;
+      const game = store.getState().game;
+      if (!game) {
+        throw new Error('no game');
+      }
+      const players = game.view.players.map((p, i) => ({ ...p, souls: next[i] ?? p.souls }));
+      store.setState({ game: { ...game, view: { ...game.view, players } } });
+    }, souls);
+  const you = (await own.getAttribute('data-zone')) === 'player-0' ? 0 : 1;
+  const souls = (mine: number, theirs: number) => (you === 0 ? [mine, theirs] : [theirs, mine]);
+
+  await setSouls(souls(1, 2));
+  await expect(own.locator('.soul-slot.filled')).toHaveCount(1);
+  await expect(other.locator('.soul-slot.filled')).toHaveCount(2);
+  // A gained soul fills one more slot; the row keeps its four.
+  await setSouls(souls(2, 2));
+  await expect(own.getByRole('img', { name: 'Souls: 2 of 4' })).toBeVisible();
+  await expect(own.locator('.soul-slot.filled')).toHaveCount(2);
+  await expect(own.locator('.soul-slot')).toHaveCount(4);
+
+  // The row sits left of the character (V-31); opponents get it smaller.
+  for (const area of [own, other]) {
+    const row = await area.locator('.souls').boundingBox();
+    const card = await area.locator('.own-character .card, .opp-character .card').first().boundingBox();
+    expect(row && card && row.x + row.width <= card.x).toBe(true);
+  }
+  const big = await own.locator('.soul-slot').first().boundingBox();
+  const small = await other.locator('.soul-slot').first().boundingBox();
+  expect(small?.width ?? 0).toBeLessThan(big?.width ?? 0);
+  await shot(page, 'souls');
+});

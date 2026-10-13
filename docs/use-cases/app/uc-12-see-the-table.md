@@ -25,14 +25,14 @@
 4. Each player area shows HP, ATK, cents, souls and hand size.
 5. The active player's name is in the accent color.
 6. The player's own area reads at a glance (15.17).
-   1. Left: name, coins as a big number, and souls.
+   1. Left: name and coins as a big number.
    2. The character sits centered under the board; items to its right.
    3. Health and attack are big numbers on the character card.
    4. The hand fans out at the bottom edge, partly off screen.
    5. Hover a card to read it in full (V-18).
    6. The coins show the game's own coin (15.38).
 7. Opponents read at a glance too (15.18).
-   1. A small name, coins with the coin icon, and souls.
+   1. A small name and coins with the coin icon.
    2. The character with big health and attack; items beside it.
    3. The hand: one back per card, fanned, with the count.
    4. Top: mirrors the own area; the hand hangs past the top edge.
@@ -88,6 +88,13 @@
   * All shots of one update share one fireball.
   * No private images (public clone): no sound.
   * With animations off, no sound plays.
+* **1m. Soul crystals (15.39):** souls show as gem slots left of the character.
+  * One slot per soul the game needs to win; four today.
+  * Filled slots are gained souls, from the bottom up.
+  * A card worth two souls fills two slots.
+  * Opponents get the same column, smaller.
+  * Hover the column to read "Souls: N of 4".
+  * Pure CSS: the same without the card images.
 
 ## Postconditions
 

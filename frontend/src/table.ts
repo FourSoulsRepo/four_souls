@@ -31,3 +31,14 @@ const playerColors = ['#5ab0ff', '#5fd47a', '#c48cff', '#ff9a3c'];
 export function playerColor(player: number): string | undefined {
   return player < 0 ? undefined : playerColors[player % playerColors.length];
 }
+
+// The win target when a view has none: an older server or record (R-WIN-01).
+const defaultWinSouls = 4;
+
+// soulSlots are a player's soul crystals (V-30): one slot per soul the
+// game needs, the gained ones filled first. Souls past the target, at
+// the end of a game, add filled slots.
+export function soulSlots(souls: number, winSouls = 0): boolean[] {
+  const target = winSouls > 0 ? winSouls : defaultWinSouls;
+  return Array.from({ length: Math.max(target, souls) }, (_, i) => i < souls);
+}

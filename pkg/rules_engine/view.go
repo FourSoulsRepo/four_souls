@@ -93,6 +93,9 @@ type GameView struct {
 	Waiting    Prompt                `json:"waiting"`
 	Over       bool                  `json:"over,omitempty"`
 	Winners    []PlayerID            `json:"winners,omitempty"`
+	// WinSouls is the soul value that wins the game (R-WIN-01), so a
+	// client can show how far each player still has to go (V-30).
+	WinSouls int `json:"win_souls"`
 	// Options says what each option of a choose prompt points at, one
 	// per Waiting.Options; only for whoever sees those options.
 	Options []OptionView `json:"options,omitempty"`
@@ -123,7 +126,7 @@ func (v Viewer) sees(p PlayerID) bool {
 // clients (A-07): hidden hands, deck contents and order, and the RNG
 // never leave the engine.
 func (g *Game) View(v Viewer) GameView {
-	out := GameView{Turn: g.Turn, Over: g.Over, Winners: g.Winners, Stack: append([]StackItem(nil), g.Stack...)}
+	out := GameView{Turn: g.Turn, Over: g.Over, Winners: g.Winners, WinSouls: g.WinSouls, Stack: append([]StackItem(nil), g.Stack...)}
 	for i := range out.Stack {
 		out.Stack[i] = g.shown(out.Stack[i])
 	}

@@ -306,6 +306,8 @@ export interface GameView {
   waiting: Prompt;
   over?: boolean;
   winners?: number[];
+  // win_souls is the soul value that wins; older servers send none (V-30).
+  win_souls?: number;
   // options says what each choice option points at; only for the chooser.
   options?: OptionView[];
   // Who passed in a row in the open priority window, and who may still

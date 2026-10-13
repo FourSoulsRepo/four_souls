@@ -109,6 +109,7 @@ const modeled: Record<string, Envelope> = {
         stack: null,
         turn: { active: 1, number: 1, step: 1, loot_plays: 0, attacks: 0, purchases: 0, entered: true },
         waiting: { kind: 1, player: 1 },
+        win_souls: 4,
         responding: [1, 0],
       },
       allowed: [

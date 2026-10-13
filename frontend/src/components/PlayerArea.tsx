@@ -1,7 +1,7 @@
 import { useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { counted, Role, type CardView, type PlayerView } from '../protocol';
 import { useApp } from '../store';
-import { playerColor, type Position } from '../table';
+import { playerColor, soulSlots, type Position } from '../table';
 import { Card, type CardSize } from './Card';
 import type { Interact } from './Interact';
 import { HiddenHand } from './Pile';
@@ -13,6 +13,8 @@ interface Props {
   position: Position;
   you: boolean;
   active: boolean;
+  // winSouls is the soul value that wins; 0 when the view has none (V-30).
+  winSouls: number;
   ui: Interact;
   // tools are the viewer's turn actions, shown by own name (15.19).
   tools?: ReactNode;
@@ -30,11 +32,11 @@ export function PlayerArea({ you, position, tools, ...rest }: Props) {
 }
 
 // OpponentArea is another player's place (15.18): a small name with
-// coins and souls, the character with its live health and attack, the
+// coins, the souls and the character with its live health and attack, the
 // items, and the hand as fanned backs (F-07, F-08, H-17, H-21). At the
 // top it mirrors the own area, the hand hanging past the top edge; in
 // a side column everything stacks in a narrow column (F-09).
-function OpponentArea({ player, name, position, active, ui }: Omit<Props, 'you' | 'tools'>) {
+function OpponentArea({ player, name, position, active, winSouls, ui }: Omit<Props, 'you' | 'tools'>) {
   const size: CardSize = position === 'left' || position === 'right' ? 'small' : 'table';
   const pick = ui.player(player.id);
   const { character } = player;
@@ -55,10 +57,7 @@ function OpponentArea({ player, name, position, active, ui }: Omit<Props, 'you' 
             <Coin />
             {player.cents}
           </span>
-          <span className="opp-souls" title="Souls">
-            <b>{player.souls}</b> {player.souls === 1 ? 'soul' : 'souls'}
-            {player.dead && ' · dead'}
-          </span>
+          {player.dead && <span className="player-dead">dead</span>}
         </span>
         {active && <Allowance player={player} />}
         {pick.onClick && (
@@ -68,6 +67,7 @@ function OpponentArea({ player, name, position, active, ui }: Omit<Props, 'you' 
         )}
       </div>
       <div className="player-cards opp-character">
+        <Souls souls={player.souls} winSouls={winSouls} />
         <Card
           cardRef={character.card}
           size={size}
@@ -115,10 +115,10 @@ function Coin() {
 }
 
 // OwnArea is the viewer's place at the bottom edge (15.17): name, big
-// coins and the turn actions at the left, the character centered with its live health
+// coins and the turn actions at the left, the souls and the character centered with its live health
 // and attack, items to its right, and the hand fanned below, partly
 // off screen (F-05, F-06, H-02, H-03, H-15, H-18).
-function OwnArea({ player, name, active, ui, tools }: Omit<Props, 'you' | 'position'>) {
+function OwnArea({ player, name, active, winSouls, ui, tools }: Omit<Props, 'you' | 'position'>) {
   const label = `${name} (you)`;
   const pick = ui.player(player.id);
   const hand = player.hand ?? [];
@@ -139,10 +139,7 @@ function OwnArea({ player, name, active, ui, tools }: Omit<Props, 'you' | 'posit
             <Coin />
             {player.cents}
           </span>
-          <span className="own-souls" title="Souls">
-            <b>{player.souls}</b> {player.souls === 1 ? 'soul' : 'souls'}
-            {player.dead && ' · dead'}
-          </span>
+          {player.dead && <span className="player-dead">dead</span>}
           {active && (
             <span className="player-allowance" aria-label="Loot plays left">
               Loot {player.loot_plays}
@@ -157,6 +154,7 @@ function OwnArea({ player, name, active, ui, tools }: Omit<Props, 'you' | 'posit
         {tools}
       </div>
       <div className="player-cards own-character">
+        <Souls souls={player.souls} winSouls={winSouls} />
         <Card
           cardRef={character.card}
           size="table"
@@ -185,6 +183,23 @@ function OwnArea({ player, name, active, ui, tools }: Omit<Props, 'you' | 'posit
         ))}
       </div>
     </section>
+  );
+}
+
+// Souls are a player's soul crystals left of the character (V-30,
+// V-31): filled slots are gained souls, empty ones what is left to
+// win. They fill from the bottom up.
+function Souls({ souls, winSouls }: { souls: number; winSouls: number }) {
+  const slots = soulSlots(souls, winSouls);
+  const label = `Souls: ${String(souls)} of ${String(slots.length)}`;
+  return (
+    <div className="souls" role="img" aria-label={label} title={label}>
+      {slots.map((filled, i) => (
+        // A slot is only its place in the row, so the index is its key.
+        // eslint-disable-next-line @eslint-react/no-array-index-key
+        <span key={i} className={`soul-slot${filled ? ' filled' : ''}`} />
+      ))}
+    </div>
   );
 }
 

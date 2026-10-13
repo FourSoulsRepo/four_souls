@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { seatPositions } from './table';
+import { seatPositions, soulSlots } from './table';
 
 describe('seatPositions', () => {
   it('puts the viewer at the bottom and the other player on top', () => {
@@ -24,5 +24,24 @@ describe('seatPositions', () => {
       'top:3',
       'right:0',
     ]);
+  });
+});
+
+describe('soulSlots', () => {
+  it('fills one slot per soul, the rest left to win', () => {
+    expect(soulSlots(0, 4)).toEqual([false, false, false, false]);
+    expect(soulSlots(2, 4)).toEqual([true, true, false, false]);
+  });
+
+  it('takes its length from the win target', () => {
+    expect(soulSlots(1, 6)).toHaveLength(6);
+  });
+
+  it('needs four souls when the view has no target', () => {
+    expect(soulSlots(1)).toEqual([true, false, false, false]);
+  });
+
+  it('adds filled slots past the target', () => {
+    expect(soulSlots(5, 4)).toEqual([true, true, true, true, true]);
   });
 });

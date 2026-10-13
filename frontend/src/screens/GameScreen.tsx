@@ -105,6 +105,7 @@ function Table({ game, you }: { game: Update; you: number }) {
               position={position}
               you={p.id === you}
               active={view.turn.active === p.id}
+              winSouls={view.win_souls ?? 0}
               ui={ui}
               tools={
                 p.id === you && !view.over ? (

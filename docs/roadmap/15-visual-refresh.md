@@ -1055,6 +1055,22 @@ Images come first, so the new table is built with backs and mats.
    1. e2e test: a gained soul fills one more slot.
    2. `make screenshots` shows the row left of the character.
    3. UC-12 updated.
+4. Result (2026-10-13)
+   1. Done out of order, at the owner's request.
+   2. Owner: slot count from the win target.
+   3. `GameView.win_souls` sends `Game.WinSouls`; always 4 today.
+   4. A view without it counts four (older server or record).
+   5. A column of six-sided gems left of the character, bottom up.
+   6. Filled: a glowing blue gem; empty: a dark gem with a pale rim.
+   7. Own 16 px wide, opponents 12 px; the same in every seat.
+   8. The cell pads its right side, so the card stays centered.
+   9. Souls past the target add filled slots.
+   10. The "N souls" text is gone; hover reads "Souls: N of 4".
+   11. A dead player's status still says "dead".
+   12. Pure CSS: the same without the card images.
+   13. Unit test: `soulSlots`; engine test: the view's win target.
+   14. e2e test: a gained soul fills one more; the row left of the card.
+   15. Screenshots: `.cache/screenshots/15.39/before/` and `after/`.
 
 ### [ ] 15.40 Isaac fonts on the title screen
 
