@@ -3,7 +3,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { startGame } from './game';
 import { appURL } from './server';
 import { shot } from './shot';
-import { activePage, click, passButton } from './turn';
+import { activePage, click, endTurnButton, passButton } from './turn';
 
 const fast = () => `${appURL()}&anim=off`;
 
@@ -44,6 +44,32 @@ test('a played loot card shows on the stack; others may skip all', async ({ brow
   await expect(bar.getByRole('button', { name: 'Cancel skip' })).toBeVisible();
   await bar.getByRole('button', { name: 'Cancel skip' }).click();
   await expect(bar.getByRole('button', { name: 'Skip all' })).toBeVisible();
+});
+
+test('a player may wait for their turn; the end of the turn before asks them (N-16)', async ({ browser }) => {
+  const pages = await startGame(browser, ['Wan', 'Oti'], { url: fast() });
+  const active = await activePage(pages, click);
+  const other = pages.find((p) => p !== active);
+  if (!other) {
+    throw new Error('no other page');
+  }
+  await shot(other, 'wait-turn-offer');
+  const bar = other.getByRole('region', { name: 'Actions' });
+  await bar.getByRole('button', { name: 'Wait for my turn' }).click();
+  await expect(bar.getByRole('button', { name: 'Cancel wait' })).toBeVisible();
+  await shot(other, 'wait-turn-on');
+  await bar.getByRole('button', { name: 'Cancel wait' }).click();
+  await expect(bar.getByRole('button', { name: 'Wait for my turn' })).toBeVisible();
+  await bar.getByRole('button', { name: 'Wait for my turn' }).click();
+  await expect(bar.getByRole('button', { name: 'Cancel wait' })).toBeVisible();
+
+  // The turn before ends: waiting is over, and nothing more is offered.
+  await endTurnButton(active).click();
+  await expect(bar.getByRole('button', { name: /Cancel wait|Wait for my turn/ })).toHaveCount(0);
+  if (await passButton(other).isEnabled()) {
+    await expect(other.locator('.action-status')).toHaveText(/You may act|Respond, or pass/);
+    await shot(other, 'wait-turn-last-chance');
+  }
 });
 
 test('the response timer counts down for the waiting player', async ({ browser }) => {

@@ -50,6 +50,7 @@ func TestGolden(t *testing.T) {
 		{TypeSave, 13, struct{}{}},
 		{TypeSaved, 0, Saved{Save: "g1"}},
 		{TypeLoad, 14, Load{Save: "g1"}},
+		{TypeWaitTurn, 15, WaitTurn{On: true}},
 	}
 	var got bytes.Buffer
 	for _, m := range messages {

@@ -1112,3 +1112,28 @@ Images come first, so the new table is built with backs and mats.
    9. No screen changed; no screenshots.
 6. Owner notes (2026-10-13)
    1. Owner marks 15.48 solved.
+
+### [~] 15.49 Wait for my turn
+
+1. Goal: a player skips a whole turn of others in one press (N-16).
+2. Owner: fix it now; follow the step's rules.
+3. Tasks:
+   1. Button "Wait for my turn" for a player on another's turn.
+   2. The server passes for them, as for "Skip all".
+   3. It ends when the player before them ends the turn.
+   4. Then they are asked once more: the last chance to act.
+4. Done when:
+   1. Go test: passes while waiting; the end of the turn before stops it.
+   2. Vitest: when the button is offered.
+   3. e2e test: on, cancel, and asked again at the end of the turn.
+5. Result (2026-10-13)
+   1. New message `wait_turn`; `update` carries `wait_turn` (ADR 006).
+   2. Protocol version unchanged: only added.
+   3. "The turn before": the seat before, in seat order.
+   4. It ends at the declared end, a death, or the end phase.
+   5. It ends on the player's own turn too, whatever came first.
+   6. Not offered while the turn before is ending.
+   7. Choices and discards still ask the player.
+   8. Leaving the table turns it off, as "Skip all".
+   9. Button sits by "Skip all"; it says "Cancel wait" while on.
+   10. Screenshots: `.cache/screenshots/15.49/before/` and `after/`.

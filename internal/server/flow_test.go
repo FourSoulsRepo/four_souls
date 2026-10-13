@@ -83,6 +83,42 @@ func TestSkipAll(t *testing.T) {
 	}
 }
 
+// TestWaitTurn: a waiting player is passed for until the player before
+// them ends the turn; then they are asked again (N-16).
+func TestWaitTurn(t *testing.T) {
+	g, err := engine.BuildTable(engine.SituationSetup{
+		Players: []engine.SituationPlayer{{Character: "isaac"}, {Character: "cain"}, {Character: "maggy"}},
+		Stack:   []engine.SituationStack{{DiceRoll: 3, Owner: 0}},
+	}, b2.Set)
+	if err != nil {
+		t.Fatal(err)
+	}
+	r := &Room{game: g, seats: []roomSeat{{client: &Client{}}, {client: &Client{}}, {client: &Client{}}}}
+	if _, err := g.Apply(engine.Intent{Player: 0, Kind: engine.IntentPass}); err != nil {
+		t.Fatal(err)
+	}
+	if w := g.Prompt(); w.Player != 1 {
+		t.Fatalf("player %d has priority, want 1", w.Player)
+	}
+	if _, ok := r.autoIntent(); ok {
+		t.Fatal("a player who can act was skipped") // Cain's character is charged
+	}
+	r.seats[0].wait, r.seats[1].wait, r.seats[2].wait = true, true, true
+	if in, ok := r.autoIntent(); !ok || in.Kind != engine.IntentPass || in.Player != 1 {
+		t.Fatalf("wait for my turn did not pass: %+v %v", in, ok)
+	}
+	if r.seats[0].wait {
+		t.Error("the active player still waits for their turn")
+	}
+	g.Turn.EndDeclared = true // player 0 ends the turn: player 1 is next
+	if _, ok := r.autoIntent(); ok || r.seats[1].wait {
+		t.Error("the end of the turn before did not return control")
+	}
+	if !r.seats[2].wait {
+		t.Error("player 2 stopped waiting at the end of player 0's turn")
+	}
+}
+
 // TestResponseTimer: with nobody answering, the timer moves the game on
 // (N-07).
 func TestResponseTimer(t *testing.T) {

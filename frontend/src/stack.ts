@@ -15,6 +15,24 @@ export const StackKind = {
   deathStep: 7,
 } as const;
 
+// endStep is the end of turn step, in Go's order (pkg/rules_engine/turn.go).
+const endStep = 5;
+
+// waitTurn is "Wait for my turn" (N-16): on, offered on another player's
+// turn, or not offered once the turn before this player's is ending.
+export function waitTurn(view: GameView, you: number, on: boolean): 'offer' | 'on' | 'none' {
+  const { turn, over, players } = view;
+  if (on) {
+    return 'on';
+  }
+  if (over || you < 0 || turn.active === you) {
+    return 'none';
+  }
+  const before = (turn.active + 1) % players.length === you;
+  const ending = (turn.end_declared ?? false) || (turn.death_end ?? false) || turn.step >= endStep;
+  return before && ending ? 'none' : 'offer';
+}
+
 export interface Names {
   player: (p: number) => string;
   card: (ref: string) => string;

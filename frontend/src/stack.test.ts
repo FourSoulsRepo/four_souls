@@ -1,7 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import { PromptKind } from './actions';
 import type { GameView, StackItem } from './protocol';
-import { findCard, secondsLeft, stackBadge, stackCard, stackIcon, StackKind, stackLine, stackParts, stackWait, waitText } from './stack';
+import {
+  findCard,
+  secondsLeft,
+  stackBadge,
+  stackCard,
+  stackIcon,
+  StackKind,
+  stackLine,
+  stackParts,
+  stackWait,
+  waitText,
+  waitTurn,
+} from './stack';
 
 const view: GameView = {
   players: [
@@ -139,6 +151,18 @@ describe('waitText', () => {
     expect(waitText(choosing, 0, names)).toBe('Bo is choosing');
     expect(waitText(choosing, 1, names, 'Choose a target')).toBe('Choose a target');
     expect(waitText({ ...view, over: true }, 0, names)).toBe('Game over');
+  });
+});
+
+describe('waitTurn', () => {
+  it('is offered on another turn until the turn before ends (N-16)', () => {
+    expect(waitTurn(view, 0, false)).toBe('none');
+    expect(waitTurn(view, 1, false)).toBe('offer');
+    expect(waitTurn(view, 1, true)).toBe('on');
+    const ending = { ...view, turn: { ...view.turn, end_declared: true } };
+    expect(waitTurn(ending, 1, false)).toBe('none');
+    expect(waitTurn({ ...view, turn: { ...view.turn, step: 5 } }, 1, false)).toBe('none');
+    expect(waitTurn({ ...view, over: true }, 1, false)).toBe('none');
   });
 });
 

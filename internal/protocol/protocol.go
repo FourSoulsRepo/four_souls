@@ -47,7 +47,8 @@ const (
 	TypePick  = "pick"  // client → server: pick one of your offered characters
 
 	// Turn flow (6.7).
-	TypeSkipAll = "skip_all" // client → server: pass on the visible stack (N-06)
+	TypeSkipAll  = "skip_all"  // client → server: pass on the visible stack (N-06)
+	TypeWaitTurn = "wait_turn" // client → server: pass until the turn before mine ends (N-16)
 
 	// Disconnects (6.8).
 	TypeVote = "vote" // client → server: wait for the missing player, or kick them
@@ -114,6 +115,8 @@ type Update struct {
 	Deadline int64 `json:"deadline,omitempty"`
 	// SkipAll is set while this player skips the visible stack (N-06).
 	SkipAll bool `json:"skip_all,omitempty"`
+	// WaitTurn is set while this player waits for their turn (N-16).
+	WaitTurn bool `json:"wait_turn,omitempty"`
 	// Pause is set while the game waits for a disconnected player (N-08).
 	Pause *Pause `json:"pause,omitempty"`
 }
@@ -133,6 +136,11 @@ type Vote struct {
 
 // SkipAll turns "skip all" on or off (N-06).
 type SkipAll struct {
+	On bool `json:"on"`
+}
+
+// WaitTurn turns "wait for my turn" on or off (N-16).
+type WaitTurn struct {
 	On bool `json:"on"`
 }
 

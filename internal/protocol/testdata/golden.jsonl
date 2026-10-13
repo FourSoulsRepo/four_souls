@@ -19,3 +19,4 @@
 {"type":"save","id":13,"data":{}}
 {"type":"saved","data":{"save":"g1"}}
 {"type":"load","id":14,"data":{"save":"g1"}}
+{"type":"wait_turn","id":15,"data":{"on":true}}

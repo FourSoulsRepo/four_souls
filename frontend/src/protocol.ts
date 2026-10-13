@@ -366,5 +366,6 @@ export interface Update {
   seats: Seat[] | null;
   deadline?: number; // Unix ms; the response timer
   skip_all?: boolean;
+  wait_turn?: boolean;
   pause?: Pause;
 }

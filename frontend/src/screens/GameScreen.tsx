@@ -15,7 +15,7 @@ import { EndTurn, TurnActions } from '../components/TurnActions';
 import { matLook } from '../mats';
 import type { Update } from '../protocol';
 import { seatOf, useApp } from '../store';
-import { waitText, type Names } from '../stack';
+import { waitText, waitTurn, type Names } from '../stack';
 import { seatPositions } from '../table';
 import '../components/Table.css';
 import './screens.css';
@@ -146,6 +146,7 @@ function Table({ game, you }: { game: Update; you: number }) {
         status={game.pause ? 'Paused' : waitText(view, you, names, actions.choice?.title)}
         deadline={game.deadline ?? 0}
         skip={skip}
+        wait={waitTurn(view, you, game.wait_turn ?? false)}
       />
       <ActionMenu actions={offered.cards} />
       {offered.choice && <ChoiceDialog key={game.step} choice={offered.choice} />}

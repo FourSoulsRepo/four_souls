@@ -164,6 +164,7 @@ const modeled: Record<string, Envelope> = {
   },
   saved: { type: 'saved', data: { save: 'g1' } satisfies Saved },
   load: { type: 'load', id: 14, data: { save: 'g1' } satisfies Load },
+  wait_turn: { type: 'wait_turn', id: 15, data: { on: true } },
 };
 
 // Messages the client does not read or send yet; later steps model them.

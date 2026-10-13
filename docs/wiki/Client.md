@@ -83,7 +83,7 @@ Effect durations scale with the animation setting (ST-05) and speed up when upda
 
 The stack panel (`StackPanel.tsx`, 15.21) always sits in the board's info column, newest item on top; an empty stack says "Nothing on the stack". Each row is a square icon (cropped card art, a die with the roll, a blood drop with the damage, or a skull) and one line, with players in their seat color (`playerColor` in `table.ts`, also the dot by each name) and targets in red. Hovering a row, or tapping it, shows the card large through the shared zoom with a caption: the used ability's words, highlighted, and the owner. The words come from the engine view: `GameView` fills each stack item's `text` with the ability's text, or the chosen mode's; the game state never holds it. Highlighting on the card image itself is not possible, since the image has no map of its abilities. Pass sits in the panel header; Space presses it.
 
-The action bar shows the response timer from `update.deadline` (N-07) and "Skip all" / "Cancel skip" while something is on the stack (N-06); the server does the skipping.
+The action bar shows the response timer from `update.deadline` (N-07) and "Skip all" / "Cancel skip" while something is on the stack (N-06); the server does the skipping. On another player's turn it also offers "Wait for my turn" / "Cancel wait" (`waitTurn` in `stack.ts`, N-16); it is hidden once the turn before the viewer's is ending, since that end window is the last chance to act.
 
 ## Info panels
 

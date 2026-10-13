@@ -471,6 +471,13 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    7. Lost or late ones do no harm; the next one replaces them.
    8. The server limits how often a player may send them.
    9. Open: whether viewers see them too (step 9).
+16. N-16. "Wait for my turn" button (owner, 2026-10-13).
+   1. Offered to a player on another player's turn.
+   2. The server passes for them on everything.
+   3. Choices and discards still ask them.
+   4. It ends when the player before them ends the turn.
+   5. That end window is their last chance to act.
+   6. The player can cancel it at any time.
 
 ## Learning
 

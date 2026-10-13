@@ -24,6 +24,7 @@ type roomSeat struct {
 	token  string
 	client *Client
 	skip   []int // stack item IDs a "skip all" passes on (N-06); nil: off
+	wait   bool  // "wait for my turn": pass until the turn before ends (N-16)
 	kicked bool  // empty for good after a vote (N-08)
 }
 
@@ -170,6 +171,8 @@ func (r *Room) handle(req request) {
 		r.pick(c, env)
 	case protocol.TypeSkipAll:
 		r.skipAll(c, env)
+	case protocol.TypeWaitTurn:
+		r.waitTurn(c, env)
 	case protocol.TypeVote:
 		r.vote(c, env)
 	case protocol.TypeSave:
@@ -274,6 +277,7 @@ func (r *Room) update(c *Client, events []engine.Event) {
 	}
 	if c.seat >= 0 {
 		u.SkipAll = r.seats[c.seat].skip != nil
+		u.WaitTurn = r.seats[c.seat].wait
 	}
 	if r.paused() {
 		u.Pause = &protocol.Pause{Away: r.away(), Votes: slices.Clone(r.votes)}
@@ -288,6 +292,7 @@ func (r *Room) drop(c *Client) {
 	if c.seat >= 0 && r.seats[c.seat].client == c {
 		r.seats[c.seat].client = nil
 		r.seats[c.seat].skip = nil
+		r.seats[c.seat].wait = false
 		if r.paused() {
 			r.restartTimer() // stops it while paused
 		}

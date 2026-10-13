@@ -95,6 +95,8 @@ interface AppState extends Session {
   act: (intent: Intent) => void;
   // skipAll turns "skip all" on or off (N-06).
   skipAll: (on: boolean) => void;
+  // waitTurn turns "wait for my turn" on or off (N-16).
+  waitTurn: (on: boolean) => void;
   // address is the server this app is connected to, for reconnecting.
   address: string;
   // reconnect says hello again with the seat's token (N-08).
@@ -331,6 +333,9 @@ export const useApp = create<AppState>()((set, get) => {
     },
     skipAll: (on) => {
       send('skip_all', { on });
+    },
+    waitTurn: (on) => {
+      send('wait_turn', { on });
     },
     address: '',
     reconnect: async () => {
