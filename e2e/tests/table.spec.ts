@@ -188,6 +188,29 @@ test('coins show the coin image, or a drawn coin without it (15.38)', async ({ b
   }
 });
 
+test('the Attack icon shows the sword image, or a drawn sword without it (15.24)', async ({ browser }) => {
+  // Sid gets a sword image; Uli's fails to load, as without the images.
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="8" height="8"><rect width="8" height="8" fill="#555"/></svg>';
+  let opened = 0;
+  const [sid, uli] = await startGame(browser, ['Sid', 'Uli'], {
+    open: (page) => {
+      const served = opened++ === 0;
+      return page.route('**/cardimg/assets/icons/sword.webp', (route) =>
+        served ? route.fulfill({ body: svg, contentType: 'image/svg+xml' }) : route.abort(),
+      );
+    },
+  });
+  if (!sid || !uli) {
+    throw new Error('no pages');
+  }
+  const attack = (page: Page) => page.getByRole('toolbar', { name: 'Turn actions' }).getByRole('button', { name: 'Attack' });
+  const image = attack(sid).locator('img');
+  await expect(image).toHaveAttribute('src', '/cardimg/assets/icons/sword.webp');
+  await expect(image).toBeVisible();
+  await expect(attack(uli).locator('img')).toHaveCount(0);
+  await expect(attack(uli).locator('svg')).toBeVisible();
+});
+
 test('four players sit left, top and right in turn order', async ({ browser }) => {
   const pages = await startGame(browser, ['Gus', 'Hal', 'Ivy', 'Jo']);
   const hal = pages[1];

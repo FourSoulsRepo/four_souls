@@ -157,7 +157,25 @@ export function EndTurn({ intent, idle, own, disabled, step }: EndProps) {
   );
 }
 
+// SwordIcon is the game's pixel sword (15.24), or a drawn one without
+// the private images or when the image fails to load.
 function SwordIcon() {
+  const image = useApp((s) => s.icons.sword);
+  const [broken, setBroken] = useState('');
+  if (image !== '' && image !== broken) {
+    return (
+      <img
+        className="turn-action-image"
+        src={image}
+        alt=""
+        aria-hidden="true"
+        draggable={false}
+        onError={() => {
+          setBroken(image);
+        }}
+      />
+    );
+  }
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <path d="M19.5 3 21 4.5 11 14.5 9.5 13Z" />

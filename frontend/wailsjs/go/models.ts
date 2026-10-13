@@ -265,6 +265,7 @@ export namespace main {
 	}
 	export class Icons {
 	    coin: string;
+	    sword: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new Icons(source);
@@ -273,6 +274,7 @@ export namespace main {
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.coin = source["coin"];
+	        this.sword = source["sword"];
 	    }
 	}
 	export class MatInfo {

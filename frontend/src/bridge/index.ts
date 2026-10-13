@@ -156,6 +156,7 @@ export async function getBacks(): Promise<CardBack[]> {
 // the private images, and the app draws its own.
 export interface Icons {
   coin: string;
+  sword: string;
 }
 
 // getIcons returns the icon URLs.

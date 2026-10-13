@@ -729,6 +729,18 @@ Images come first, so the new table is built with backs and mats.
     4. The pill grows left: the character card is close on the right.
     5. e2e test: 100 reads "99+" and stays clear of the card.
     6. Screenshots: `.cache/screenshots/15.24/badges/`.
+11. Owner notes (2026-10-13)
+    1. Owner: use the sword from the images' `assets` folder for Attack.
+    2. Owner: convert it to WebP and move it to the icons folder first.
+12. Result (2026-10-13)
+    1. `assets/sword.png` to `assets/icons/sword.webp`: lossless, 65 px, 1.5 KB.
+    2. Pixel-identical to the PNG; `sword.png` is kept, as `coin.png` was.
+    3. The WebP is staged in the images repo; the owner amends and pushes.
+    4. `App.Icons` gives its URL; the Attack icon shows it, pixels crisp.
+    5. Dim, it is greyed and faded like the drawn icons.
+    6. A missing or broken image shows the drawn sword.
+    7. e2e test: one page gets the image, the other the drawn sword.
+    8. Screenshots: `.cache/screenshots/15.24/sword/`.
 
 ### [ ] 15.25 Drag and aim
 

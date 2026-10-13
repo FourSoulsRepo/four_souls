@@ -502,6 +502,23 @@
   fill: currentColor;
 }
 
+/* The game's pixel sword (15.24): crisp pixels, a little shadow on the
+   lit icon; dim, it fades like the drawn icons. */
+.turn-action-image {
+  width: 26px;
+  height: 26px;
+  image-rendering: pixelated;
+  opacity: 0.45;
+  filter: grayscale(1) brightness(1.8);
+  pointer-events: none;
+}
+
+.turn-action.lit .turn-action-image,
+.turn-action.down .turn-action-image {
+  opacity: 1;
+  filter: drop-shadow(0 1px 0 rgb(255 255 255 / 45%));
+}
+
 /* What is left this turn (15.24): a small paper disc on the icon's
    corner, the number in the game's letters; dark at 0. Two or three
    digits stretch it into a pill that grows left, over the icon's rim:
