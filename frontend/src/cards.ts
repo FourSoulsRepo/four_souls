@@ -75,3 +75,27 @@ export function iconText(icon: string): string {
 export function unknownCard(ref: string): CardInfo {
   return { ref, set: '', type: '', name: ref, effects: [], footnotes: [], stats: [], rewards: [], image: '' };
 }
+
+// AbilityLine is one ability's words split like a line of card text:
+// its cost icon, the cost, and what it does (15.24).
+export interface AbilityLine {
+  // icon: 'tap' for a ↷ ability, 'paid' for one with another cost.
+  icon?: 'tap' | 'paid';
+  cost?: string;
+  effect: string;
+}
+
+// abilityLine splits "↷: Gain 3¢." or "Pay 5¢: Deal 1 damage." at the
+// first colon. Words with no cost before a colon stay whole.
+export function abilityLine(text: string): AbilityLine {
+  const colon = text.indexOf(': ');
+  if (colon < 0) {
+    return { effect: text };
+  }
+  const cost = text.slice(0, colon).trim();
+  const effect = text.slice(colon + 2).trim();
+  if (cost === '↷' || cost === '{Tap Effect}') {
+    return { icon: 'tap', effect };
+  }
+  return { icon: 'paid', cost, effect };
+}

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { Action } from '../actions';
+import { abilityLine } from '../cards';
 import { useApp } from '../store';
 import { Card } from './Card';
 import './Actions.css';
@@ -95,6 +96,7 @@ function AbilityDialog({ id, list, onClose }: { id: number; list: Action[]; onCl
                 key={i}
                 type="button"
                 className="ability-line"
+                aria-label={line}
                 disabled={!use}
                 title={use ? undefined : 'Not usable now'}
                 onClick={() => {
@@ -103,7 +105,7 @@ function AbilityDialog({ id, list, onClose }: { id: number; list: Action[]; onCl
                   }
                 }}
               >
-                {line}
+                <LineText line={line} />
               </button>
             );
           })}
@@ -113,5 +115,32 @@ function AbilityDialog({ id, list, onClose }: { id: number; list: Action[]; onCl
         </div>
       </div>
     </div>
+  );
+}
+
+// LineText draws an ability line like the card does: the cost icon in a
+// box at the left, the cost in bold, then what it does.
+function LineText({ line }: { line: string }) {
+  const { icon, cost, effect } = abilityLine(line);
+  return (
+    <>
+      {icon && (
+        <span className={`ability-icon ability-${icon}`} aria-hidden="true">
+          {icon === 'tap' ? (
+            // The tap arrow, drawn: card fonts have no ↷.
+            <svg viewBox="0 0 24 24">
+              <path d="M5 16.5A7.5 7.5 0 1 1 17.5 11" />
+              <path d="M13.5 9.5L17.5 14L21.5 9.5" />
+            </svg>
+          ) : (
+            '$'
+          )}
+        </span>
+      )}
+      <span className="ability-words">
+        {cost && <b>{cost}: </b>}
+        {effect}
+      </span>
+    </>
   );
 }

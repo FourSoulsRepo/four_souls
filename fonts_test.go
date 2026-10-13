@@ -12,10 +12,11 @@ import (
 func TestFontsFromFiles(t *testing.T) {
 	a := &App{cardFiles: fstest.MapFS{
 		"images/" + titleFont:    {Data: []byte("\x00\x01\x00\x00")},
+		"images/" + bodyFont:     {Data: []byte("\x00\x01\x00\x00")},
 		"images/" + cyrillicFont: {Data: []byte("\x00\x01\x00\x00")},
 	}}
 	got := a.Fonts()
-	if got.Title != "/cardimg/"+titleFont || got.Cyrillic != "/cardimg/"+cyrillicFont {
+	if got.Title != "/cardimg/"+titleFont || got.Body != "/cardimg/"+bodyFont || got.Cyrillic != "/cardimg/"+cyrillicFont {
 		t.Fatalf("%+v", got)
 	}
 	// Without the private images the system font is used.
@@ -30,7 +31,7 @@ func TestFontsFromFiles(t *testing.T) {
 func TestFontsServed(t *testing.T) {
 	files := os.DirFS("pkg/card_db")
 	fonts := (&App{cardFiles: files}).Fonts()
-	for file, url := range map[string]string{titleFont: fonts.Title, cyrillicFont: fonts.Cyrillic} {
+	for file, url := range map[string]string{titleFont: fonts.Title, bodyFont: fonts.Body, cyrillicFont: fonts.Cyrillic} {
 		_, err := os.Stat("pkg/card_db/images/" + file)
 		if (err == nil) != (url != "") {
 			t.Fatalf("%s: %q does not match the file (%v)", file, url, err)

@@ -162,9 +162,13 @@ export function discardIntent(base: Intent, chosen: number[]): Intent {
   return { ...base, objects: chosen };
 }
 
+// The action step, in Go's order of turn steps (pkg/rules_engine/turn.go).
+const actionStep = 4;
+
 // attackStatus marks the viewer's character on their own turn (T-11,
-// H-22): 'ready' while they may attack, 'sleep' once no attack is left.
-// Otherwise, e.g. while the stack resolves, it marks nothing.
+// H-22): 'ready' while they may attack, 'sleep' once no attack is left
+// in the action step. Otherwise, e.g. while the stack resolves or
+// before the action step, it marks nothing.
 export function attackStatus(actions: Actions, view: GameView, you: number): 'ready' | 'sleep' | undefined {
   const me = view.players.at(you);
   if (!me || view.over || view.turn.active !== you || me.dead) {
@@ -173,5 +177,5 @@ export function attackStatus(actions: Actions, view: GameView, you: number): 're
   if (actions.turn.attack) {
     return 'ready';
   }
-  return me.attacks === 0 ? 'sleep' : undefined;
+  return me.attacks === 0 && view.turn.step === actionStep ? 'sleep' : undefined;
 }

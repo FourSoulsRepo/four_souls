@@ -21,7 +21,7 @@ repository FourSoulsRepo/card_db (git submodule pkg/card_db/images) and
 ship inside release binaries built with -tags cardimages.
 
 The game's fonts live there too (assets/fonts) and ship the same way:
-  font-souls Title, a fan replica of the card font (Latin).
+  font-souls Title and Body, fan replicas of the card fonts (Latin).
     Copyright (c) 2020 Matheus Assis. MIT.
     https://github.com/AssisrMatheus/font-souls
   TBoI4SOriginal, the card font of foursouls.ru (Cyrillic). It belongs

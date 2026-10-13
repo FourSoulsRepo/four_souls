@@ -233,6 +233,7 @@ export namespace main {
 	}
 	export class Fonts {
 	    title: string;
+	    body: string;
 	    cyrillic: string;
 	
 	    static createFrom(source: any = {}) {
@@ -242,6 +243,7 @@ export namespace main {
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.title = source["title"];
+	        this.body = source["body"];
 	        this.cyrillic = source["cyrillic"];
 	    }
 	}

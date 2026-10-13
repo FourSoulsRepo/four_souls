@@ -697,6 +697,17 @@ Images come first, so the new table is built with backs and mats.
    13. e2e test: The Bone's dialog, a greyed line, the picked line is sent.
    14. e2e test: green frame with an attack, "zzz" without.
    15. Screenshots: `.cache/screenshots/15.24/before/` and `after/`.
+5. Owner notes (2026-10-13)
+   1. Owner: use the Four Souls font for dialogs.
+   2. Owner: style each ability line to suit the game.
+6. Result of the fixes (2026-10-13)
+   1. The app also loads font-souls Body, the card text font.
+   2. Dialog titles in the game's title font; options in the body font.
+   3. Each line: parchment, ink outline, hard shadow, a slight tilt.
+   4. The cost icon boxed at the left: a drawn tap arrow, or "$".
+   5. The cost in red ink, then the effect.
+   6. Fix: "zzz" showed before the action step; now only in it.
+   7. Screenshots: `.cache/screenshots/15.24/fix/`.
 
 ### [ ] 15.25 Drag and aim
 

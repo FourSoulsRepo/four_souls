@@ -220,6 +220,7 @@ w.go = {
       Fonts: () =>
         Promise.resolve({
           title: '/cardimg/assets/fonts/font-souls-title.ttf',
+          body: '/cardimg/assets/fonts/font-souls-body.ttf',
           cyrillic: '/cardimg/assets/fonts/tboi4s-original.ttf',
         }),
       // One mat image, at its real path; the e2e tests serve it only for

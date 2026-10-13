@@ -9,6 +9,8 @@
   /* The game's hand-drawn letters (15.20, fonts.ts): font-souls for
      Latin, the Russian card font for Cyrillic, else the system font. */
   --font-game: "Four Souls Title", "Four Souls Cyrillic", var(--font-ui);
+  /* Card text in dialogs (15.24): font-souls Body, then the same stack. */
+  --font-card: "Four Souls Body", "Four Souls Cyrillic", var(--font-ui);
   font-family: var(--font-ui);
   color: var(--fg);
   background-color: var(--bg);

@@ -175,6 +175,8 @@ describe('attackStatus', () => {
   it('marks nothing while an attack waits, or on another player’s turn', () => {
     const waiting = update({ players: [me(1)] }, [{ player: 0, kind: IntentKind.pass }]);
     expect(attackStatus(actionsFor(waiting, isCard), waiting.view, 0)).toBeUndefined();
+    const early = update({ players: [me(0)], turn: { active: 0, number: 1, step: 0, loot_plays: 0, attacks: 0, purchases: 0 } }, null);
+    expect(attackStatus(actionsFor(early, isCard), early.view, 0)).toBeUndefined();
     const theirs = update({ players: [me(0), { ...me(1), id: 1 }] }, null);
     expect(attackStatus(actionsFor(theirs, isCard), theirs.view, 1)).toBeUndefined();
   });

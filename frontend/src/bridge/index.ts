@@ -167,6 +167,7 @@ export function getIcons(): Promise<Icons> {
 // private images, and the app uses the system font.
 export interface Fonts {
   title: string;
+  body: string;
   cyrillic: string;
 }
 
