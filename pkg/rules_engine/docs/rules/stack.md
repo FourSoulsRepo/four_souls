@@ -35,3 +35,9 @@ Sources: S-OFF Priority, The Stack, Dice Rolls; S-RU Приоритет, Сте�
     1. Each such pair counts once: three equal rolls in a row are two pairs (S-DIS).
     2. When one of several dice is chosen as the result, only the chosen result is a roll (S-DIS).
     3. "Of one player" is our proposal: Q-10.
+23. **R-DICE-09** *(Four Souls+)* **Twice in a row on an attack roll**: two of one player's attack rolls this turn, one right after the other, have equal final results.
+    1. Only attack rolls count; that player's other rolls between them do not break the pair (Q-12).
+    2. Compare R-DICE-08: there every roll of the player counts.
+    3. Example: attack roll 3, Fruitcake rolls 5, attack roll 3: Euthanasia kills; Fruitcake does not recharge.
+24. **R-DICE-10** *(Four Souls+)* An ability that lets a player change a roll by an amount ("add or subtract 1", PHD) changes each roll at most once (Q-11).
+25. **R-DICE-11** *(Four Souls+)* **Several dice, one result** (Mutant Spider): the dice are rolled at once; only the chosen die is a roll, as R-DICE-08 says (S-DIS, Reddit).
