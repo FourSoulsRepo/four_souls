@@ -1113,7 +1113,7 @@ Images come first, so the new table is built with backs and mats.
 6. Owner notes (2026-10-13)
    1. Owner marks 15.48 solved.
 
-### [~] 15.49 Wait for my turn
+### [x] 15.49 Wait for my turn
 
 1. Goal: a player skips a whole turn of others in one press (N-16).
 2. Owner: fix it now; follow the step's rules.
@@ -1137,3 +1137,5 @@ Images come first, so the new table is built with backs and mats.
    8. Leaving the table turns it off, as "Skip all".
    9. Button sits by "Skip all"; it says "Cancel wait" while on.
    10. Screenshots: `.cache/screenshots/15.49/before/` and `after/`.
+6. Owner notes (2026-10-13)
+   1. Owner marks 15.49 solved.
