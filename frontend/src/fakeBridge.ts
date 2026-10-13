@@ -52,6 +52,7 @@ function loadSettings(): unknown {
     mat: 'felt',
     dice: 'tear',
     rejoin: { address: '', token: '', game: '' },
+    host: { seats: 0, sets: null, detailed: false, response_timer: 0, no_bonus_souls: false },
   };
   return JSON.parse(localStorage.getItem(settingsKey) ?? JSON.stringify(fresh));
 }
@@ -67,6 +68,7 @@ interface FakeSettings {
   mat: string;
   dice: string;
   rejoin: { address: string; token: string; game: string };
+  host?: { seats: number; sets: string[] | null; detailed: boolean; response_timer: number; no_bonus_souls: boolean };
 }
 
 function saveSettings(s: FakeSettings): Promise<unknown> {

@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"strings"
 
@@ -33,7 +34,49 @@ type Settings struct {
 	// Rejoin is the last game joined, so a restarted app takes its seat
 	// back (N-08).
 	Rejoin Rejoin `json:"rejoin"`
+	// Host is the last game setup the player hosted, for the next one.
+	// The password is never kept (N-14).
+	Host HostSetup `json:"host"`
 }
+
+// HostSetup is a remembered host screen.
+type HostSetup struct {
+	Seats int `json:"seats"` // 2–4; 0: not set yet
+	// Sets are the chosen card set codes; nil: not set yet (all sets).
+	Sets          []string `json:"sets"`
+	Detailed      bool     `json:"detailed"`
+	ResponseTimer int      `json:"response_timer"` // seconds, one of ResponseTimers
+	NoBonusSouls  bool     `json:"no_bonus_souls"`
+}
+
+// ResponseTimers are the host screen's response timer choices; 0 is off.
+var ResponseTimers = []int{0, 60, 90, 120, 180}
+
+// maxHostSets caps the remembered card sets.
+const maxHostSets = 20
+
+// clean drops values a host screen can't show.
+func (h HostSetup) clean() HostSetup {
+	if h.Seats < 2 || h.Seats > 4 {
+		h.Seats = 0
+	}
+	if !slices.Contains(ResponseTimers, h.ResponseTimer) {
+		h.ResponseTimer = 0
+	}
+	if h.Sets != nil {
+		sets := []string{}
+		for _, code := range h.Sets {
+			if setCode.MatchString(code) && !slices.Contains(sets, code) && len(sets) < maxHostSets {
+				sets = append(sets, code)
+			}
+		}
+		h.Sets = sets
+	}
+	return h
+}
+
+// setCode is a card set code, e.g. "fsp2".
+var setCode = regexp.MustCompile(`^[a-z0-9]{1,20}$`)
 
 // Rejoin is where the last game ran and the token that holds its seat.
 type Rejoin struct {
@@ -88,6 +131,7 @@ func Load(path string) Settings {
 	if s.Recent == nil {
 		s.Recent = []string{}
 	}
+	s.Host = s.Host.clean()
 	for _, c := range s.choices() {
 		if !slices.Contains(c.allowed, *c.value) {
 			*c.value = c.allowed[0]
@@ -121,6 +165,7 @@ func Save(path string, s Settings) (Settings, error) {
 		}
 	}
 	s.Recent = recent
+	s.Host = s.Host.clean()
 	data, err := json.MarshalIndent(s, "", "  ")
 	if err != nil {
 		return Settings{}, fmt.Errorf("settings: %w", err)

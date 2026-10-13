@@ -40,6 +40,10 @@
   * The Base Game is always in; its box can't be unticked.
   * The server adds the Base Game if a client leaves it out.
   * The game list shows each game's sets, e.g. "Base Game, Gold Box".
+  * Gold Box and Four Souls+ are core sets: ticked by default, optional.
+* **1d. The last setup:** the host screen starts from the last hosted game.
+  * Players, card sets, detailed setup, response timer, bonus souls.
+  * Kept in the app settings; the password is never kept (N-14).
 
 ## Postconditions
 

@@ -18,6 +18,7 @@ import {
   type LanServer,
   type Settings,
 } from './bridge';
+import { noHostSetup } from './hostSetup';
 import type { CardInfo } from './cards';
 import { entriesFor, type Entry } from './history';
 import { emptyLobby, leftTable, lost, onMessage, remember, type Screen, type Session } from './lobby';
@@ -105,8 +106,8 @@ interface AppState extends Session {
   // lan is the last search for games on the local network (N-13).
   lan: { searching: boolean; found: LanServer[]; error: string };
   findLanGames: () => Promise<void>;
-  // host runs the server in this app and opens a game on it.
-  // host opens a game; sets defaults to every set this app has.
+  // host runs the server in this app and opens a game on it; sets
+  // defaults to every set this app has.
   host: (game: Omit<Create, 'sets'> & { sets?: string[] }) => Promise<void>;
   // hostSaved runs the server in this app and shows its games and saved
   // games, to continue one (N-11).
@@ -329,6 +330,7 @@ export const useApp = create<AppState>()((set, get) => {
       mat: 'felt',
       dice: 'tear',
       rejoin: { address: '', token: '', game: '' },
+      host: noHostSetup,
     },
     hosting: null,
     lan: { searching: false, found: [], error: '' },

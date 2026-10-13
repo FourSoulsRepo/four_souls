@@ -111,3 +111,7 @@ Alt art (CD-11) comes after all sets.
 4. Result:
    1. Before 14.6 the app sent every set it had data for.
    2. So hosting failed between 14.1 and the registration of both sets.
+   3. **Owner:** Gold Box and Four Souls+ are core sets, ticked by default.
+   4. The host screen remembers the last setup in the settings.
+   5. IDs `a_penny_6`, `dice_shard_3`, `soul_heart_2` became `a_penny`, `dice_shard`, `soul_heart`.
+   6. Old saved games with those IDs no longer load.

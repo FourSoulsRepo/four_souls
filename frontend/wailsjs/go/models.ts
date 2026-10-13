@@ -238,6 +238,26 @@ export namespace main {
 
 export namespace settings {
 	
+	export class HostSetup {
+	    seats: number;
+	    sets: string[];
+	    detailed: boolean;
+	    response_timer: number;
+	    no_bonus_souls: boolean;
+	
+	    static createFrom(source: any = {}) {
+	        return new HostSetup(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.seats = source["seats"];
+	        this.sets = source["sets"];
+	        this.detailed = source["detailed"];
+	        this.response_timer = source["response_timer"];
+	        this.no_bonus_souls = source["no_bonus_souls"];
+	    }
+	}
 	export class Rejoin {
 	    address: string;
 	    token: string;
@@ -263,6 +283,7 @@ export namespace settings {
 	    mat: string;
 	    dice: string;
 	    rejoin: Rejoin;
+	    host: HostSetup;
 	
 	    static createFrom(source: any = {}) {
 	        return new Settings(source);
@@ -278,6 +299,7 @@ export namespace settings {
 	        this.mat = source["mat"];
 	        this.dice = source["dice"];
 	        this.rejoin = this.convertValues(source["rejoin"], Rejoin);
+	        this.host = this.convertValues(source["host"], HostSetup);
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {

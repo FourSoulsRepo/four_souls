@@ -8,18 +8,25 @@ import './screens.css';
 // The detailed setup's starting values: the same as the simple setup.
 const simple: Options = { picking: 'random', draft_size: 3, ban_rounds: 0, ban_timer: 0, response_timer: 0 };
 
-// Host: a simple setup, with "Detailed" for the rest (GS-10).
+// Host: a simple setup, with "Detailed" for the rest (GS-10). It starts
+// from the last hosted setup; the first time every card set is ticked.
 export function HostScreen() {
   const settings = useApp((s) => s.settings);
+  const saveSettings = useApp((s) => s.saveSettings);
+  const last = settings.host;
   const error = useApp((s) => s.error);
   const host = useApp((s) => s.host);
   const hostSaved = useApp((s) => s.hostSaved);
   const saveNickname = useApp((s) => s.saveNickname);
   const show = useApp((s) => s.show);
   const [nickname, setNickname] = useState(settings.nickname);
-  const [seats, setSeats] = useState(2);
-  const [detailed, setDetailed] = useState(false);
-  const [options, setOptions] = useState<Options>(simple);
+  const [seats, setSeats] = useState(last.seats || 2);
+  const [detailed, setDetailed] = useState(last.detailed);
+  const [options, setOptions] = useState<Options>({
+    ...simple,
+    response_timer: last.response_timer,
+    no_bonus_souls: last.no_bonus_souls,
+  });
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
   // available are the sets this app has; chosen always holds the Base Game.
@@ -28,9 +35,13 @@ export function HostScreen() {
 
   useEffect(() => {
     void getCardSets().then((sets) => {
-      setAvailable(sortSets(sets.includes(baseGame) ? sets : [baseGame, ...sets]));
+      const all = sortSets(sets.includes(baseGame) ? sets : [baseGame, ...sets]);
+      setAvailable(all);
+      // The core sets are on by default; a remembered choice wins.
+      const kept = last.sets === null ? all : all.filter((c) => last.sets?.includes(c));
+      setChosen(kept.includes(baseGame) ? kept : [baseGame, ...kept]);
     });
-  }, []);
+  }, [last.sets]);
 
   const option = (o: Options) => {
     setOptions({ ...options, ...o });
@@ -46,6 +57,18 @@ export function HostScreen() {
           setBusy(true);
           void (async () => {
             if (await saveNickname(nickname)) {
+              // Remember the setup for the next host; never the password.
+              const s = useApp.getState().settings;
+              await saveSettings({
+                ...s,
+                host: {
+                  seats,
+                  sets: chosen,
+                  detailed,
+                  response_timer: options.response_timer ?? 0,
+                  no_bonus_souls: options.no_bonus_souls ?? false,
+                },
+              });
               await host({ seats, sets: chosen, options: detailed ? options : undefined, password: password || undefined });
             }
             setBusy(false);

@@ -112,3 +112,24 @@ func TestRejoinSurvivesRestart(t *testing.T) {
 		t.Fatalf("rejoin %+v, want %+v", got, r)
 	}
 }
+
+func TestHostSetupRemembered(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "settings.json")
+	if got := Load(path).Host; got.Seats != 0 || got.Sets != nil {
+		t.Errorf("default host setup = %+v, want unset", got)
+	}
+	in := Load(path)
+	in.Host = HostSetup{Seats: 3, Sets: []string{"b2", "g2", "g2", "Bad Code"}, Detailed: true, ResponseTimer: 90, NoBonusSouls: true}
+	if _, err := Save(path, in); err != nil {
+		t.Fatal(err)
+	}
+	got := Load(path).Host
+	want := HostSetup{Seats: 3, Sets: []string{"b2", "g2"}, Detailed: true, ResponseTimer: 90, NoBonusSouls: true}
+	if !reflect.DeepEqual(got, want) {
+		t.Errorf("host setup = %+v, want %+v", got, want)
+	}
+	in.Host = HostSetup{Seats: 9, ResponseTimer: 7}
+	if out, err := Save(path, in); err != nil || out.Host.Seats != 0 || out.Host.ResponseTimer != 0 {
+		t.Errorf("bad values: %+v, %v; want them dropped", out.Host, err)
+	}
+}
