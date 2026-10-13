@@ -171,6 +171,17 @@ Images come first, so the new table is built with backs and mats.
    11. Unit test: combat damage maps to lunges, other damage does not.
    12. e2e test: the copy flies, the card hides, the burst, HP drops.
    13. Screenshots: `.cache/screenshots/15.3/before/` and `after/`.
+5. Owner notes (2026-10-13)
+   1. Owner: a rising "−1" shows after a hit roll, before the lunge.
+   2. Owner: drop it for attacks; the engine marks the damage.
+6. Result of the fixes (2026-10-13)
+   1. The engine's `damage_pending` says "combat" for attack damage.
+   2. Same text as on `damaged`; no trigger reads it.
+   3. The client shows no popup for it; the lunge's burst is the one "−N".
+   4. Other pending damage keeps its popup until 15.37.
+   5. Engine test: pending attack damage says "combat".
+   6. Unit test: no popup for pending attack damage.
+   7. Screenshots: `.cache/screenshots/15.3/fix/`.
 
 ### [~] 15.4 Hearthstone-style card play
 

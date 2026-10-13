@@ -43,12 +43,13 @@ describe('effectsFor', () => {
     ]);
   });
 
-  it('lunges the attacker at what its attack damaged', () => {
+  it('lunges the attacker at what its attack damaged, with no pending popup', () => {
     const events: GameEvent[] = [
       { kind: 'damaged', player: -1, object: 40, amount: 1, source: 30, text: 'combat' },
       { kind: 'damaged', player: 1, amount: 2, source: 40, text: 'combat' },
       { kind: 'damaged', player: 0, amount: 1, source: 40, text: 'combat' },
       { kind: 'damaged', player: -1, object: 40, amount: 1, source: 7 },
+      { kind: 'damage_pending', player: -1, object: 40, amount: 1, text: 'combat' },
     ];
     expect(effectsFor(events, ctx)).toEqual([
       { kind: 'lunge', from: ['obj-30'], to: ['obj-40'], amount: 1 },

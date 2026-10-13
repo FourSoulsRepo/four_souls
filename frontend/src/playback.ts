@@ -85,6 +85,10 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
         out.push({ kind: 'popup', at: targetZones(e), text: `+${String(amount)} HP`, tone: 'good' });
         break;
       case 'damage_pending':
+        // Attack damage shows when it lands, as its lunge.
+        if (e.text === 'combat') {
+          break;
+        }
         out.push({ kind: 'popup', at: targetZones(e), text: `−${String(amount)}`, tone: 'bad' });
         break;
       case 'damaged':

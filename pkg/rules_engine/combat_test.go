@@ -98,6 +98,29 @@ func TestMissDamagesTheAttacker(t *testing.T) {
 	}
 }
 
+// Pending attack damage says so, like the damage it becomes, so the
+// client shows the attack's own hit instead (15.3).
+func TestPendingCombatDamageSaysCombat(t *testing.T) {
+	g := toAction(t, 2)
+	putMonster(g, 0, "gaper")
+	g.forcedRolls = []int{6}
+	attack(t, g)
+	if _, err := g.Apply(Intent{Player: g.Turn.Active, Kind: IntentChoose, Choice: 0}); err != nil {
+		t.Fatal(err)
+	}
+	for range 20 {
+		for _, e := range pass(t, g) {
+			if e.Kind == EvDamagePending {
+				if e.Text != "combat" {
+					t.Fatalf("pending attack damage text %q, want combat", e.Text)
+				}
+				return
+			}
+		}
+	}
+	t.Fatal("no pending damage")
+}
+
 func TestPlayerDeathPenalty(t *testing.T) {
 	g := toAction(t, 2)
 	a := g.Turn.Active

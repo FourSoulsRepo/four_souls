@@ -72,6 +72,7 @@
   * A yellow starburst "−N" pops on the card that was hit.
   * The target's health drops at the hit, while the card goes back.
   * A monster's hit on a player lunges the monster at the character.
+  * Attack damage shows no popup when it goes on the stack.
 
 ## Postconditions
 
