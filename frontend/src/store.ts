@@ -106,7 +106,8 @@ interface AppState extends Session {
   lan: { searching: boolean; found: LanServer[]; error: string };
   findLanGames: () => Promise<void>;
   // host runs the server in this app and opens a game on it.
-  host: (game: Omit<Create, 'sets'>) => Promise<void>;
+  // host opens a game; sets defaults to every set this app has.
+  host: (game: Omit<Create, 'sets'> & { sets?: string[] }) => Promise<void>;
   // hostSaved runs the server in this app and shows its games and saved
   // games, to continue one (N-11).
   hostSaved: () => Promise<void>;
@@ -399,7 +400,7 @@ export const useApp = create<AppState>()((set, get) => {
     host: async (game) => {
       const info = await startHost();
       if (info && (await open(`127.0.0.1:${String(info.port)}`))) {
-        send('create', { ...game, sets: get().cardSets });
+        send('create', { ...game, sets: game.sets ?? get().cardSets });
       }
     },
     hostSaved: async () => {

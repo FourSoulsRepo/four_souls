@@ -11,7 +11,7 @@
 1. The host starts hosting in the app.
 2. The app runs the server and shows its LAN and virtual LAN addresses.
 3. The host connects to it like any client and says hello with a nickname.
-4. The host creates a game: 2–4 seats, Base Game cards.
+4. The host creates a game: 2–4 seats and the card sets to play with.
 5. The server opens a table and seats the host at seat 1.
 6. Friends join (UC-04); the host sees their nicknames appear.
 7. Everyone marks ready; the game starts when every seat is taken.
@@ -36,6 +36,10 @@
   * Friends need it to join; the game list shows a lock.
   * It is never shown again, logged, recorded or saved.
 * **7c. The host leaves in the app:** the app stops its server; friends lose the connection.
+* **1c. Card sets (CD-02):** the host ticks the sets, oldest first.
+  * The Base Game is always in; its box can't be unticked.
+  * The server adds the Base Game if a client leaves it out.
+  * The game list shows each game's sets, e.g. "Base Game, Gold Box".
 
 ## Postconditions
 

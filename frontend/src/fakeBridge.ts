@@ -194,7 +194,7 @@ w.go = {
       Notice: () => Promise.resolve(notice),
       Settings: () => Promise.resolve(loadSettings()),
       SaveSettings: saveSettings,
-      CardSets: () => Promise.resolve(['b2']),
+      CardSets: () => Promise.resolve(['b2', 'g2', 'fsp2']),
       Cards: () => Promise.resolve([...cards, ...realCards()]),
       // Dice textures are private images too: a plain die, as in a public clone.
       Dice: () => Promise.resolve([{ id: 'tear', name: 'Tear', image: '' }]),

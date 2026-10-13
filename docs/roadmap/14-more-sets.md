@@ -67,6 +67,10 @@ Ideas: CD-02, GS-07, GS-08, CD-11, A-16, CD-12.
    4. Engine: roll history, free shop item, recharge limit, hand cap.
    5. Engine: a character's soul value counts (R-CARD-35).
    6. Tests that mean "the Base Game" now use `b2.Set` only.
+   7. Four Souls+: 80 of 80 cards tested; registered in `cards.Sets()`.
+   8. Engine: copy a ↷ ability, several dice, revealed hands, attack redirect.
+   9. Engine: win by a card, free loot play, lingering push, damage dealer.
+   10. Simulations found two bugs with copies (Placebo, Diplopia); fixed, tested.
 
 ### [ ] 14.4 Setup options
 
@@ -94,3 +98,16 @@ Ideas: CD-02, GS-07, GS-08, CD-11, A-16, CD-12.
 
 Repeat 14.1–14.3 for each set.
 Alt art (CD-11) comes after all sets.
+
+### [x] 14.6 Host picks the card sets
+
+1. Goal: games can use Gold Box and Four Souls+ (CD-02).
+2. Tasks:
+   1. Host screen: a box per card set; the Base Game is always in.
+   2. The server adds the Base Game if a client leaves it out.
+   3. The game list shows each game's sets.
+3. Done when:
+   1. Server test, e2e test, UC-03 updated.
+4. Result:
+   1. Before 14.6 the app sent every set it had data for.
+   2. So hosting failed between 14.1 and the registration of both sets.

@@ -126,3 +126,28 @@ test('a game password keeps others out (N-14)', async ({ browser }) => {
   await join.click();
   await expect(guest.getByRole('list', { name: 'Seats' })).toContainText('Pip (you)');
 });
+
+test('the host picks card sets; the Base Game is always in', async ({ browser }) => {
+  const host = await (await browser.newContext()).newPage();
+  const guest = await (await browser.newContext()).newPage();
+
+  await host.goto(appURL());
+  await host.getByRole('button', { name: 'Host a game' }).click();
+  await host.getByLabel('Nickname').fill('Tess');
+  const sets = host.getByRole('group', { name: 'Card sets' });
+  await expect(sets.getByLabel('Base Game')).toBeChecked();
+  await expect(sets.getByLabel('Base Game')).toBeDisabled();
+  await sets.getByLabel('Gold Box').check();
+  await shot(host, 'host-sets');
+  await host.getByRole('button', { name: 'Host', exact: true }).click();
+  await expect(host.getByRole('list', { name: 'Seats' })).toContainText('Tess (you)');
+
+  await guest.goto(appURL());
+  await guest.getByRole('button', { name: 'Join a game' }).click();
+  await guest.getByLabel('Nickname').fill('Lu');
+  await guest.getByLabel('Host address').fill(address());
+  await guest.getByRole('button', { name: 'Connect' }).click();
+  const game = guest.getByRole('listitem').filter({ hasText: "Tess's game" });
+  await expect(game).toContainText('Base Game, Gold Box');
+  await expect(game).not.toContainText('Four Souls+');
+});

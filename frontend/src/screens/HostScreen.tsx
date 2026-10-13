@@ -1,5 +1,7 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { getCardSets } from '../bridge';
 import type { Options } from '../protocol';
+import { baseGame, setName, sortSets } from '../sets';
 import { useApp } from '../store';
 import './screens.css';
 
@@ -20,6 +22,15 @@ export function HostScreen() {
   const [options, setOptions] = useState<Options>(simple);
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
+  // available are the sets this app has; chosen always holds the Base Game.
+  const [available, setAvailable] = useState<string[]>([baseGame]);
+  const [chosen, setChosen] = useState<string[]>([baseGame]);
+
+  useEffect(() => {
+    void getCardSets().then((sets) => {
+      setAvailable(sortSets(sets.includes(baseGame) ? sets : [baseGame, ...sets]));
+    });
+  }, []);
 
   const option = (o: Options) => {
     setOptions({ ...options, ...o });
@@ -35,7 +46,7 @@ export function HostScreen() {
           setBusy(true);
           void (async () => {
             if (await saveNickname(nickname)) {
-              await host({ seats, options: detailed ? options : undefined, password: password || undefined });
+              await host({ seats, sets: chosen, options: detailed ? options : undefined, password: password || undefined });
             }
             setBusy(false);
           })();
@@ -63,6 +74,22 @@ export function HostScreen() {
             <option value={4}>4</option>
           </select>
         </label>
+        <fieldset className="sets">
+          <legend>Card sets</legend>
+          {available.map((code) => (
+            <label key={code} className="check">
+              <input
+                type="checkbox"
+                checked={chosen.includes(code)}
+                disabled={code === baseGame}
+                onChange={(e) => {
+                  setChosen(e.target.checked ? sortSets([...chosen, code]) : chosen.filter((c) => c !== code));
+                }}
+              />
+              {setName(code)}
+            </label>
+          ))}
+        </fieldset>
         <label className="field">
           Password (optional)
           <input

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { lanRows } from '../lobby';
 import { protocolVersion } from '../protocol';
+import { setList } from '../sets';
 import { useApp } from '../store';
 import './screens.css';
 
@@ -159,6 +160,7 @@ function GameList() {
               <span>
                 {g.locked && <span aria-label="Locked">🔒 </span>}
                 {g.host}&apos;s game · {g.taken}/{g.seats} players{g.started ? ' · playing' : ''}
+                {g.sets && g.sets.length > 0 && <span className="muted"> · {setList(g.sets)}</span>}
               </span>
               {g.locked && !g.started && g.taken < g.seats && (
                 <input
