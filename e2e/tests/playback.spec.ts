@@ -210,6 +210,8 @@ test('damage from a card hits every target at once and reddens their HP', async 
     await expect(health).toHaveClass(/hurt/);
   }
   await expect(mo.locator(`[data-zone="obj-${String(ids.character)}"] .card-hp`)).toHaveClass(/hurt/);
+  // The red health is the damage mark; no corner mark.
+  await expect(mo.locator(`[data-zone="obj-${String(ids.character)}"] .card-damage`)).toHaveCount(0);
   await expect(mo.locator('.effects-trail > *')).toHaveCount(0);
   await shot(mo, 'damage-red-hp');
 });

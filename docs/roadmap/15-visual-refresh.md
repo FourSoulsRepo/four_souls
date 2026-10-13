@@ -941,10 +941,18 @@ Images come first, so the new table is built with backs and mats.
    8. A hurt monster shows health even when it matches the print.
    9. A dying card gets a big bone-white skull, the stack's icon (T-26).
    10. The card leaves while the skull fades.
-   11. A character keeps its top-corner damage mark; unchanged.
+   11. A character kept its top-corner damage mark at first.
    12. Unit tests: damage joins one `hits` effect; deaths get skulls.
    13. e2e tests: shots, bursts at once, red health; a skull, then gone.
    14. Screenshots: `.cache/screenshots/15.37/before/` and `after/`.
+5. Owner notes (2026-10-13)
+   1. Owner: the pale heart with a red number is fine.
+   2. Owner: drop the character's corner damage mark; red health shows it.
+6. Result of the fixes (2026-10-13)
+   1. Cards with a health badge have no corner damage mark.
+   2. A card without health keeps the mark: its only sign of damage.
+   3. e2e test: a hurt character has no corner mark.
+   4. Screenshots: `.cache/screenshots/15.37/fix/`.
 
 ### [x] 15.38 Coin icon
 

@@ -168,8 +168,8 @@ export function Card({
         <BlankFace card={card} full={size === 'zoom'} />
       )}
       {badges && counters > 0 && <Badge kind="counters" value={counters} label="counters" />}
-      {/* A monster's damage shows as its lower health. */}
-      {badges && damage > 0 && !monster && <Badge kind="damage" value={damage} label="damage" />}
+      {/* Damage shows as the lower, red health; the mark is for the rest. */}
+      {badges && damage > 0 && !monster && !stats && <Badge kind="damage" value={damage} label="damage" />}
       {badges && stats && (
         <>
           <Badge kind="hp" value={stats.hp} label="health" title="Health" hurt={damage > 0} />

@@ -79,6 +79,7 @@
 * **1j. Hurt health (15.37):** the health number is red below full.
   * The heart turns pale, so the red number reads.
   * A hurt monster shows its health even when it matches the print.
+  * A character has no damage mark in its corner; the health shows it.
 * **1k. Death (15.37):** a big skull pops on the dying card.
   * The card leaves while the skull fades.
   * A dead player's skull sits on their character.
