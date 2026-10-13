@@ -68,7 +68,15 @@ export interface ZoomCaption {
   line?: LinePart[];
 }
 
-// Aimed is a dropped card's target, kept until the target prompt.
+// Aiming is a click-started aim (15.25): the card, its play or use,
+// and the targets it may pick.
+export interface Aiming {
+  source: number;
+  intent: Intent;
+  targets: OptionView[];
+}
+
+// Aimed is a played card's target, kept until the target prompt.
 export interface Aimed {
   step: number;
   target: OptionView;
@@ -102,10 +110,10 @@ interface AppState extends Session {
   // selected is the card whose action menu is open.
   selected: number | null;
   act: (intent: Intent) => void;
-  // aiming is the targets of the card being dragged; they glow (15.25).
-  aiming: OptionView[] | null;
-  setAiming: (targets: OptionView[] | null) => void;
-  // aimed is the target a card was dropped on, at the step its play was
+  // aiming is the card the player aims with; its targets glow (15.25).
+  aiming: Aiming | null;
+  setAiming: (aiming: Aiming | null) => void;
+  // aimed is the target a card was aimed at, at the step its play was
   // sent; the target prompt that follows picks it (15.25).
   aimed: Aimed | null;
   // playAt sends a play and remembers its target.
@@ -352,13 +360,13 @@ export const useApp = create<AppState>()((set, get) => {
       set({ sent: get().game?.step ?? null, selected: null, error: '' });
     },
     aiming: null,
-    setAiming: (targets) => {
-      set({ aiming: targets });
+    setAiming: (aiming) => {
+      set({ aiming, selected: null });
     },
     aimed: null,
     playAt: (intent, target) => {
       get().act(intent);
-      set({ aimed: { step: get().game?.step ?? 0, target } });
+      set({ aiming: null, aimed: { step: get().game?.step ?? 0, target } });
     },
     takeAimed: () => {
       const { aimed } = get();

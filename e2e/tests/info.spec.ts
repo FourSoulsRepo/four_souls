@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test';
 import { startGame } from './game';
 import { appURL } from './server';
 import { shot } from './shot';
-import { activePage, canEndTurn, click, settle } from './turn';
+import { activePage, canEndTurn, click, playLoot, settle } from './turn';
 
 const fast = () => `${appURL()}&anim=off`;
 
@@ -93,8 +93,7 @@ test('a resolved loot card goes to the history strip (15.22)', async ({ browser 
   const loot = active.locator('.hand .card.hl-act').first();
   test.skip(!(await loot.isVisible()), 'no playable loot card in this deal');
   const name = (await loot.getAttribute('aria-label')) ?? '';
-  await loot.click();
-  await active.getByRole('menu').getByRole('menuitem', { name: 'Play' }).click();
+  await playLoot(active, loot, click);
   // Targets, passes and anything the card asks, until the stack is empty.
   const stackRows = active.getByRole('complementary', { name: 'Stack' }).locator('.stack-row');
   await settle(pages, click, async () => (await stackRows.count()) === 0 && (await canEndTurn(active)));

@@ -75,7 +75,7 @@ function StackRow({ it, view, names }: { it: StackItem; view: GameView; names: N
   const setZoom = useApp((s) => s.setZoom);
   const card = stackCard(it, view);
   const parts = stackParts(it, view, names);
-  const aimed = useApp((s) => s.aiming?.some((t) => t.stack_id === it.id) ?? false);
+  const aimed = useApp((s) => s.aiming?.targets.some((t) => t.stack_id === it.id) ?? false);
   const show = (e: PointerEvent, touch: boolean) => {
     if (card) {
       setZoom(itemZoom(it, card, view, names, e, touch));

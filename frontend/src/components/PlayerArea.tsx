@@ -1,6 +1,4 @@
 import { useRef, useState, type CSSProperties, type ReactNode } from 'react';
-import { createPortal } from 'react-dom';
-import { arrow, targetAt, zonesAt } from '../aim';
 import { counted, Role, type CardView, type PlayerView } from '../protocol';
 import { useApp } from '../store';
 import { playerColor, type Position } from '../table';
@@ -232,51 +230,34 @@ function onPlayArea(x: number, y: number): boolean {
 // How far a pointer moves before a press becomes a drag, in pixels.
 const dragThreshold = 8;
 
-// How far an aiming card rises in the fan, in pixels; as in Table.css.
-const aimLift = 40;
-
-interface Drag {
-  // from is where the card's arrow starts, to the pointer (aiming only).
-  from: { x: number; y: number };
-  to: { x: number; y: number };
-  // offset moves a card that needs no target with the pointer.
-  offset: { x: number; y: number };
-}
-
 // HandCard is a card in the viewer's hand, spread from the hand's middle
 // by its place in the fan. A playable one can be dragged
 // onto the board to play it; clicking it opens its actions instead. The
 // drag is plain pointer events with pointer capture, so mouse and touch
 // share it and the release is never missed (ADR 008).
-// A card that aims stays lifted in the hand: an arrow runs from it to
-// the pointer, its targets glow, and a drop on one plays the card at it
-// (15.25). A drop elsewhere on the board plays it and the dialog asks.
+// A card that needs a target is not dragged: a click starts aiming and
+// the card stays lifted in the fan meanwhile (15.25).
 function HandCard({ card, ui, spread }: { card: CardView; ui: Interact; spread: number }) {
   const act = useApp((s) => s.act);
-  const playAt = useApp((s) => s.playAt);
-  const setAiming = useApp((s) => s.setAiming);
   const setZoom = useApp((s) => s.setZoom);
-  const [drag, setDrag] = useState<Drag | null>(null);
+  const aiming = useApp((s) => s.aiming?.source === card.id);
+  const [offset, setOffset] = useState<{ x: number; y: number } | null>(null);
   const startRef = useRef<{ x: number; y: number; pointer: number } | null>(null);
   // draggedRef swallows the click that ends a drag.
   const draggedRef = useRef(false);
-  const play = ui.play(card.id);
-  const targets = play?.targets;
+  const action = ui.play(card.id);
+  const play = action && !action.targets?.length ? action.intent : undefined;
   const handle = ui.object(card.id);
   const reset = () => {
     startRef.current = null;
-    setDrag(null);
-    if (targets) {
-      setAiming(null);
-    }
+    setOffset(null);
   };
-  const lifted = drag && targets;
   return (
     <div
-      className={`hand-card${play ? ' playable' : ''}${drag ? ' dragging' : ''}${lifted ? ' aiming' : ''}`}
+      className={`hand-card${play ? ' playable' : ''}${offset ? ' dragging' : ''}${aiming ? ' aiming' : ''}`}
       style={
-        drag && !targets
-          ? { transform: `translate(${String(drag.offset.x)}px, ${String(drag.offset.y)}px) scale(1.08)` }
+        offset
+          ? { transform: `translate(${String(offset.x)}px, ${String(offset.y)}px) scale(1.08)` }
           : ({ '--spread': String(spread) } as CSSProperties)
       }
       onPointerDown={(e) => {
@@ -290,33 +271,21 @@ function HandCard({ card, ui, spread }: { card: CardView; ui: Interact; spread: 
         if (start?.pointer !== e.pointerId) {
           return;
         }
-        const offset = { x: e.clientX - start.x, y: e.clientY - start.y };
-        const to = { x: e.clientX, y: e.clientY };
-        if (!drag) {
-          if (Math.hypot(offset.x, offset.y) < dragThreshold) {
+        const x = e.clientX - start.x;
+        const y = e.clientY - start.y;
+        if (!offset) {
+          if (Math.hypot(x, y) < dragThreshold) {
             return;
           }
           e.currentTarget.setPointerCapture(e.pointerId);
           draggedRef.current = true;
           setZoom(null);
-          // The arrow starts at the card's middle, once it is lifted.
-          const r = e.currentTarget.getBoundingClientRect();
-          setDrag({ from: { x: r.left + r.width / 2, y: r.top + r.height / 2 - aimLift }, to, offset });
-          if (targets) {
-            setAiming(targets);
-          }
-          return;
         }
-        setDrag({ ...drag, to, offset });
+        setOffset({ x, y });
       }}
       onPointerUp={(e) => {
-        if (drag && play) {
-          const target = targets && targetAt(zonesAt(e.clientX, e.clientY), targets);
-          if (target) {
-            playAt(play.intent, target);
-          } else if (onPlayArea(e.clientX, e.clientY)) {
-            act(play.intent);
-          }
+        if (offset && play && onPlayArea(e.clientX, e.clientY)) {
+          act(play);
         }
         reset();
       }}
@@ -329,20 +298,6 @@ function HandCard({ card, ui, spread }: { card: CardView; ui: Interact; spread: 
       }}
     >
       <Card cardRef={card.card} size="hand" objectId={card.id} {...handle} />
-      {lifted && createPortal(<AimArrow from={drag.from} to={drag.to} />, document.body)}
-    </div>
-  );
-}
-
-// AimArrow runs from the aiming card to the pointer (15.25): a shaft
-// and a head, placed with transform only; 15.32 gives it its final look.
-function AimArrow({ from, to }: { from: { x: number; y: number }; to: { x: number; y: number } }) {
-  const { length, angle } = arrow(from, to);
-  const at = (p: { x: number; y: number }) => `translate(${String(p.x)}px, ${String(p.y)}px) rotate(${String(angle)}deg)`;
-  return (
-    <div className="aim-arrow" aria-hidden="true">
-      <div className="aim-shaft" style={{ transform: `${at(from)} scaleX(${String(length)})` }} />
-      <div className="aim-head" style={{ transform: at(to) }} />
     </div>
   );
 }

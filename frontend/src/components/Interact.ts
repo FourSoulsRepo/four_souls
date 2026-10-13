@@ -3,7 +3,8 @@
 import { aimed } from '../aim';
 import { Purpose, type Action, type Actions, type ChoiceOption } from '../actions';
 import type { Kind } from '../cards';
-import type { Intent, OptionView } from '../protocol';
+import type { Intent } from '../protocol';
+import type { Aiming } from '../store';
 
 export interface Handle {
   highlight?: 'act' | 'pick' | 'aim';
@@ -14,8 +15,7 @@ export interface Interact {
   object: (id: number) => Handle;
   player: (id: number) => Handle;
   deck: (kind: Kind) => Handle;
-  // play is the play action of a hand card, for drag and drop; its
-  // targets glow while it is dragged (15.25).
+  // play is the play action of a hand card, for drag and drop.
   play: (id: number) => Action | undefined;
 }
 
@@ -26,7 +26,7 @@ export const noInteract: Interact = {
   play: () => undefined,
 };
 
-// aimHandle marks a target of the card being dragged (15.25).
+// aimHandle marks a target of the card the player aims with (15.25).
 const aimHandle: Handle = { highlight: 'aim' };
 
 // The deck a "deck" option means.
@@ -34,13 +34,16 @@ function deckOf(purpose: number): Kind {
   return purpose === Purpose.purchase ? 'treasure' : 'monster';
 }
 
-// interact: aiming is the targets of the card being dragged, if any.
+// interact: aiming is the card the player aims with, if any; aim starts
+// aiming with a card whose one action asks for a target (15.25).
 export function interact(
   actions: Actions,
   act: (i: Intent) => void,
   select: (id: number) => void,
-  aiming: OptionView[] | null = null,
+  aiming: Aiming | null = null,
+  aim: (a: Aiming) => void = () => undefined,
 ): Interact {
+  const targets = aiming?.targets ?? null;
   const pick = (o: ChoiceOption): Handle => ({
     highlight: 'pick',
     onClick: () => {
@@ -50,24 +53,36 @@ export function interact(
   const options = actions.choice?.options ?? [];
   return {
     object: (id) => {
-      if (aimed(aiming, (t) => !t.is_player && t.object === id)) {
+      if (aimed(targets, (t) => !t.is_player && t.object === id)) {
         return aimHandle;
       }
       const o = options.find((x) => x.target?.object === id);
       if (o) {
         return pick(o);
       }
-      return actions.cards.has(id)
-        ? {
-            highlight: 'act',
-            onClick: () => {
-              select(id);
-            },
-          }
-        : {};
+      const list = actions.cards.get(id);
+      if (!list) {
+        return {};
+      }
+      const only = list.length === 1 ? list[0] : undefined;
+      if (only?.targets && only.targets.length > 0) {
+        const { intent, targets: aims } = only;
+        return {
+          highlight: 'act',
+          onClick: () => {
+            aim({ source: id, intent, targets: aims });
+          },
+        };
+      }
+      return {
+        highlight: 'act',
+        onClick: () => {
+          select(id);
+        },
+      };
     },
     player: (id) => {
-      if (aimed(aiming, (t) => !!t.is_player && t.player === id)) {
+      if (aimed(targets, (t) => !!t.is_player && t.player === id)) {
         return aimHandle;
       }
       const o = options.find((x) => x.target?.is_player && x.target.player === id);

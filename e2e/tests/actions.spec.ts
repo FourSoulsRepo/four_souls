@@ -12,6 +12,7 @@ import {
   expectNextTurn,
   gameOver,
   passButton,
+  playLoot,
   settle,
   tap,
   turnAction,
@@ -78,11 +79,7 @@ test('a full turn with touch: tap a loot card to play it, attack, end the turn',
 
   const loot = active.locator('.hand .card.hl-act').first();
   if (await loot.isVisible()) {
-    await loot.tap();
-    const menu = active.getByRole('menu');
-    await expect(menu).toBeVisible();
-    await shot(active, 'action-menu');
-    await menu.getByRole('menuitem', { name: 'Play' }).tap();
+    await playLoot(active, loot, tap);
     await settle(pages, tap, backToMe(active, turn));
   }
   await attack(pages, active, tap, turn);

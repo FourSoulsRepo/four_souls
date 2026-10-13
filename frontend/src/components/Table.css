@@ -545,15 +545,16 @@
 }
 
 /* A card that aims stays in the fan, lifted, while its arrow points
-   (15.25). The lift matches aimLift in PlayerArea.tsx. */
+   (15.25). */
 .own .hand-card.aiming {
+  z-index: 10;
   transform: translateY(-40px) scale(1.08);
-  transition: transform 150ms ease-out;
 }
 
-/* The aiming arrow (15.25): a 1px shaft stretched with scaleX, and a
-   head with its tip at the pointer; both drawn over everything and
-   never hit by the pointer. */
+/* The aiming arrow (15.25, Aim.tsx): a 100px shaft stretched with
+   scaleX from the card to the head's base, and a 30px head whose tip is
+   at the pointer; both drawn over everything, outlined so they read on
+   red art, and never hit by the pointer. */
 .aim-arrow {
   position: fixed;
   inset: 0;
@@ -568,24 +569,23 @@
   position: absolute;
   top: 0;
   left: 0;
+  background: #e53228;
 }
 
 .aim-shaft {
-  width: 1px;
-  height: 14px;
-  margin-top: -7px;
-  background: #e53228;
+  width: 100px;
+  height: 12px;
+  margin-top: -6px;
   transform-origin: 0 50%;
 }
 
 .aim-head {
-  width: 34px;
+  width: 30px;
   height: 34px;
   margin-top: -17px;
-  margin-left: -34px;
-  background: #e53228;
-  clip-path: polygon(0 0, 100% 50%, 0 100%, 22% 50%);
-  transform-origin: 34px 50%;
+  margin-left: -30px;
+  clip-path: polygon(0 0, 100% 50%, 0 100%);
+  transform-origin: 30px 50%;
 }
 
 .player-allowance {

@@ -3,7 +3,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { startGame } from './game';
 import { appURL } from './server';
 import { shot } from './shot';
-import { activePage, click, endTurnButton, passButton } from './turn';
+import { activePage, click, endTurnButton, passButton, playLoot } from './turn';
 
 const fast = () => `${appURL()}&anim=off`;
 
@@ -19,8 +19,7 @@ test('a played loot card shows on the stack; others may skip all', async ({ brow
   const loot = active.locator('.hand .card.hl-act').first();
   test.skip(!(await loot.isVisible()), 'no playable loot card in this deal');
   const name = await loot.getAttribute('aria-label');
-  await loot.click();
-  await active.getByRole('menu').getByRole('menuitem', { name: 'Play' }).click();
+  await playLoot(active, loot, click);
   // Some loot cards ask for a target before they go on the stack.
   const stack = active.getByRole('complementary', { name: 'Stack' });
   for (let i = 0; i < 10 && (await stack.locator('.stack-row').count()) === 0; i++) {
@@ -113,8 +112,7 @@ test('every player sees whom the stack waits for (V-11)', async ({ browser }) =>
   const me = names[pages.indexOf(active)] ?? '';
   const loot = active.locator('.hand .card.hl-act').first();
   test.skip(!(await loot.isVisible()), 'no playable loot card in this deal');
-  await loot.click();
-  await active.getByRole('menu').getByRole('menuitem', { name: 'Play' }).click();
+  await playLoot(active, loot, click);
   const stack = active.getByRole('complementary', { name: 'Stack' });
   for (let i = 0; i < 10 && (await stack.locator('.stack-row').count()) === 0; i++) {
     const option = active.locator('.choice .choice-option button').first();

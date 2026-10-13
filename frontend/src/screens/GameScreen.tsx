@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { actionsFor, aimedOption, IntentKind, type Actions } from '../actions';
 import { ActionBar } from '../components/ActionBar';
 import { ActionMenu } from '../components/ActionMenu';
+import { AimLayer } from '../components/Aim';
 import { Board } from '../components/Board';
 import { ChoiceDialog, DiscardDialog, LookDialog } from '../components/ChoiceDialog';
 import { interact, noInteract } from '../components/Interact';
@@ -67,8 +68,13 @@ function Table({ game, you }: { game: Update; you: number }) {
   // waiting, buttons stay but are disabled, so they do not blink.
   const canAct = !behind && sent !== game.step;
   const actions = useMemo(() => actionsFor(game, (label) => cards.has(label)), [game, cards]);
-  const ui = canAct ? interact(actions, act, select, aiming) : noInteract;
-  // A card dropped on a target: its target prompt picks that target at
+  const setAiming = useApp((s) => s.setAiming);
+  const ui = canAct ? interact(actions, act, select, aiming, setAiming) : noInteract;
+  // A new state ends an aim: its targets may be gone (15.25).
+  useEffect(() => {
+    setAiming(null);
+  }, [game.step, setAiming]);
+  // A card aimed at a target: its target prompt picks that target at
   // once (15.25). Only the first state after the play gets the chance.
   useEffect(() => {
     if (!aimed || !canAct || game.step <= aimed.step) {
@@ -164,6 +170,7 @@ function Table({ game, you }: { game: Update; you: number }) {
         wait={waitTurn(view, you, game.wait_turn ?? false)}
       />
       <ActionMenu actions={offered.cards} />
+      {canAct && <AimLayer />}
       {offered.choice && <ChoiceDialog key={game.step} choice={offered.choice} />}
       {offered.discard && me && <DiscardDialog key={game.step} discard={offered.discard} hand={me.hand ?? []} />}
       {looking.length > 0 && <LookDialog cards={looking} />}

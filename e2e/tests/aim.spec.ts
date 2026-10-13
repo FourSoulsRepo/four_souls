@@ -1,4 +1,5 @@
-// Drag and aim (15.25): a card that needs a target is dragged onto it.
+// Aiming (15.25): one click on a card that needs a target starts aiming,
+// the next click picks the target.
 import { expect, test, type Page } from '@playwright/test';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -77,7 +78,7 @@ async function saveAndContinue(pages: Page[], names: string) {
   }
 }
 
-test('a bomb dragged onto a monster damages it', async ({ browser }) => {
+test('a bomb aimed at a monster by two clicks damages it', async ({ browser }) => {
   const pages = await startGame(browser, ['Bom', 'Cid'], { url: fast() });
   await activePage(pages, click);
   await saveAndContinue(pages, 'Bom, Cid');
@@ -96,32 +97,59 @@ test('a bomb dragged onto a monster damages it', async ({ browser }) => {
   });
 
   const bomb = active.getByRole('group', { name: 'Your hand' }).getByRole('button', { name: 'Bomb!' }).first();
-  await expect(bomb).toBeVisible();
-  const from = await bomb.boundingBox();
-  if (!from) {
+  const monster = active.getByRole('group', { name: 'Monsters' }).locator('.card').first();
+  const lifted = active.locator('.hand-card.aiming');
+  // Click the card's visible top: a locator click would scroll the hand,
+  // which hangs past the window's edge, into view.
+  const box = await bomb.boundingBox();
+  if (!box) {
     throw new Error('no bomb box');
   }
-  await active.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
-  await active.mouse.down();
-  await active.mouse.move(from.x + from.width / 2, from.y - 60, { steps: 4 });
+  const clickBomb = () => active.mouse.click(box.x + box.width / 2, box.y + 30);
 
-  // Aiming: the card stays lifted, an arrow points, the targets glow.
-  const monster = active.getByRole('group', { name: 'Monsters' }).locator('.card.hl-aim').first();
-  await expect(monster).toBeVisible();
-  await expect(active.locator('.aim-arrow')).toBeVisible();
-  await expect(active.locator('.hand-card.aiming')).toHaveCount(1);
-  const zone = await monster.getAttribute('data-zone');
-  const id = Number(zone?.replace('obj-', ''));
+  // A right click cancels aiming; nothing is sent.
+  await clickBomb();
+  await expect(lifted).toHaveCount(1);
+  await expect(monster).toHaveClass(/hl-aim/);
+  await active.mouse.click(640, 360, { button: 'right' });
+  await expect(lifted).toHaveCount(0);
+  await expect(monster).not.toHaveClass(/hl-aim/);
+  await expect(active.getByRole('menu')).toHaveCount(0);
+
+  // One click starts aiming: the card stays lifted, the targets glow, and
+  // an arrow runs from the card's middle to the pointer.
+  await clickBomb();
+  await expect(lifted).toHaveCount(1);
+  await expect(monster).toHaveClass(/hl-aim/);
+  const id = Number((await monster.getAttribute('data-zone'))?.replace('obj-', ''));
   const to = await monster.boundingBox();
   if (!to) {
     throw new Error('no monster box');
   }
-  await active.mouse.move(to.x + to.width / 2, to.y + to.height / 2, { steps: 12 });
+  const tip = { x: to.x + to.width / 2, y: to.y + to.height / 2 };
+  await active.mouse.move(tip.x, tip.y, { steps: 12 });
+  await expect(active.locator('.aim-arrow')).toBeVisible();
   await shot(active, 'aim');
-  await active.mouse.up();
+  const geometry = await active.evaluate(() => {
+    const box = (s: string) => document.querySelector(s)?.getBoundingClientRect();
+    return { head: box('.aim-head'), shaft: box('.aim-shaft'), card: box('.hand-card.aiming .card') };
+  });
+  const { head, shaft, card } = geometry;
+  if (!head || !shaft || !card) {
+    throw new Error('no arrow');
+  }
+  // The head ends at the pointer; the shaft starts in the card's middle.
+  const near = (a: number, b: number) => Math.abs(a - b) < 3;
+  expect(tip.x >= head.left - 1 && tip.x <= head.right + 1 && tip.y >= head.top - 1 && tip.y <= head.bottom + 1).toBe(true);
+  expect(near(head.top, tip.y) || near(head.bottom, tip.y) || near(head.left, tip.x) || near(head.right, tip.x)).toBe(true);
+  const middle = { x: card.left + card.width / 2, y: card.top + card.height / 2 };
+  expect(middle.x >= shaft.left - 8 && middle.x <= shaft.right + 8 && middle.y >= shaft.top - 8 && middle.y <= shaft.bottom + 8).toBe(true);
+
+  // The second click picks the target.
+  await active.mouse.click(tip.x, tip.y);
   await expect(active.locator('.aim-arrow')).toHaveCount(0);
 
-  // The drop picked the monster: no dialog asked, the bomb aims at it.
+  // The click picked the monster: no dialog asked, the bomb aims at it.
   await expect
     .poll(() =>
       active.evaluate((obj) => {

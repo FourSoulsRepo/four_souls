@@ -799,6 +799,24 @@ Images come first, so the new table is built with backs and mats.
    14. Unit tests: aims by index, drop target lookup, prompt auto-pick.
    15. e2e test: a save gives a Bomb!; dragged onto a monster, it hits it.
    16. Screenshots: `.cache/screenshots/15.25/before/` and `after/`.
+5. Owner notes (2026-10-13)
+   1. Owner: aim by clicks: one click starts aiming, a second picks the target.
+   2. Owner: no press, drag, and release to aim.
+   3. Owner: the arrow's geometry is bad.
+6. Result of the fixes (2026-10-13)
+   1. A click on a card whose one action needs a target starts aiming.
+   2. The next click on a target plays it there; no dialog asks.
+   3. A click elsewhere, a right click, Esc, or a new update cancels.
+   4. Such a card opens no menu and is not dragged.
+   5. Items with one targeted ability aim the same way.
+   6. The arrow starts at the card's middle, measured as it moves.
+   7. It used the card's place before the lift, so it started off the card.
+   8. The shaft stops at the head's base; the head's tip is at the pointer.
+   9. The head is a plain triangle; the shaft no longer shows through it.
+   10. The arrow shows only for a mouse; touch taps the card, then the target.
+   11. e2e helper `playLoot` aims when a card needs a target.
+   12. e2e test: a right click cancels; the arrow's ends; two clicks hit.
+   13. Screenshots: `.cache/screenshots/15.25/fix/`.
 
 ### [ ] 15.26 Click modes
 

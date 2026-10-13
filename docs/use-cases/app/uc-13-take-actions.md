@@ -44,12 +44,13 @@
   * Lines not usable now stay greyed; Cancel or a click outside closes it.
 * **4d. What is left (15.24):** on own turn the Buy and Attack icons carry a count badge.
   * Loot plays left show by the player's name as "Loot N".
-* **2e. Drag and aim (15.25):** a loot card that needs a target is dragged onto it.
-  * The card stays lifted in the hand; a red arrow points from it.
+* **2e. Aim (15.25):** a card that needs a target is aimed by two clicks.
+  * The first click starts aiming; the card stays lifted in the hand.
   * The valid targets glow red: monsters, players, items, stack items.
-  * A drop on a target plays the card at it; no dialog asks.
-  * A drop elsewhere on the board plays it; the dialog asks for the target.
-  * A drop off the board plays nothing.
+  * With a mouse, a red arrow points from the card to the pointer.
+  * The second click, on a target, plays the card at it; no dialog asks.
+  * A click elsewhere, a right click, or Esc cancels; nothing is sent.
+  * Such a card opens no menu and is not dragged.
 
 ## Postconditions
 

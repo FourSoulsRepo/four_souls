@@ -1,4 +1,4 @@
-// Drag and aim (15.25): what a dragged card points at. Pure, except
+// Aiming (15.25): what an aiming card points at. Pure, except
 // zonesAt, which reads the page.
 import type { OptionView } from './protocol';
 
@@ -50,9 +50,14 @@ export function aimed(targets: OptionView[] | null, test: (o: OptionView) => boo
   return targets?.some(test) ?? false;
 }
 
-// Arrow is how an aiming arrow from a point to a point is drawn: its
+export interface Point {
+  x: number;
+  y: number;
+}
+
+// arrow is how an aiming arrow from a point to a point is drawn: its
 // length, and its angle in degrees from the x axis.
-export function arrow(from: { x: number; y: number }, to: { x: number; y: number }): { length: number; angle: number } {
+export function arrow(from: Point, to: Point): { length: number; angle: number } {
   const dx = to.x - from.x;
   const dy = to.y - from.y;
   return { length: Math.hypot(dx, dy), angle: (Math.atan2(dy, dx) * 180) / Math.PI };
