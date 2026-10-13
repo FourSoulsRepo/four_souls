@@ -55,7 +55,7 @@ func (l *cardList) load(fsys fs.FS) ([]CardInfo, error) {
 				Rewards:   append([]carddb.Reward{}, c.Rewards...),
 			}
 			if carddb.HasImage(fsys, c) {
-				info.Image = cardImagePrefix + c.Image
+				info.Image = cardImagePrefix + c.Images[0]
 			}
 			l.cards = append(l.cards, info)
 		}

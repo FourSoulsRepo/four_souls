@@ -40,6 +40,7 @@ Use options 1 and 4; stats and rewards stay strings (option 5 lost).
 2. Set file
    1. `set`: `code` (e.g. `b2`) and `name` (e.g. `Base Game V2`).
    2. `cards`: list of cards.
+   3. `order`, `released`: release order (ADR 010).
 3. Card fields
    1. `id`: lowercase words joined by `_`, e.g. `the_d6`.
    2. `version`: omitted for the first version, else 2, 3, …
@@ -49,10 +50,11 @@ Use options 1 and 4; stats and rewards stay strings (option 5 lost).
    6. Icons in text: `{Icon Name}`, e.g. `{Tap Effect}`.
    7. `stats`, `rewards`: printed name and value strings.
    8. `artists`: role and name; `translators.<lang>`: names.
-   9. `image`: path inside `images/`, e.g. `b2/the_d6.webp`.
+   9. `images`: paths inside `images/`, e.g. `b2/the_d6.webp` (ADR 010).
    10. `related`: card refs, e.g. a character's starting item.
    11. `rebalanced`: true for cards changed by the Rebalance pack.
    12. `three_plus`: true for cards with the 3+ player only symbol.
+   13. `reprint`: adds copies to an older set's card (ADR 010).
 4. Card ref
    1. `id` for the first version, `id@N` for version N ≥ 2.
    2. The ref is unique across all loaded sets.
@@ -61,6 +63,7 @@ Use options 1 and 4; stats and rewards stay strings (option 5 lost).
    2. Rejects bad IDs, duplicate refs, missing English names.
    3. Rejects image paths that leave `images/`.
    4. Reports every problem at once.
+   5. Reads sets oldest first (ADR 010).
 6. Build modes
    1. `-tags embed`: `carddb.Embedded()` packs `data/`.
    4. `-tags "embed cardimages"`: also packs `images/` (needs the submodule).
@@ -79,7 +82,7 @@ Use options 1 and 4; stats and rewards stay strings (option 5 lost).
 ### Negative and risks
 
 1. A reprint with the same slug in two sets is a load error.
-   1. It must become a version or alt art when that set is added.
+   1. Solved by reprint entries and set suffixes (ADR 010).
 2. Embedded release builds grow by the size of all images.
 
 ### Neutral

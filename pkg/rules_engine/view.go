@@ -113,10 +113,12 @@ func (g *Game) View(v Viewer) GameView {
 		for _, id := range pl.InPlay {
 			pv.InPlay = append(pv.InPlay, g.cardView(id))
 		}
-		if v.sees(pl.ID) {
+		if v.sees(pl.ID) || g.bonus(StatRevealHand, pl.ID, 0) > 0 {
 			for _, id := range pl.Hand {
 				pv.Hand = append(pv.Hand, g.cardView(id))
 			}
+		}
+		if v.sees(pl.ID) {
 			if top := g.DeckTop(TreasureDeck, 1); len(top) > 0 && g.peeksTreasure(pl.ID) {
 				cv := g.cardView(top[0])
 				pv.TreasureTop = &cv
@@ -185,7 +187,7 @@ func (g *Game) optionViews() []OptionView {
 		}
 	}
 	switch c.Purpose {
-	case ChooseAttackTarget, ChoosePurchase, ChoosePenaltyItem, ChoosePenaltyLoot, ChooseStartingItem, ChooseLowest:
+	case ChooseAttackTarget, ChoosePurchase, ChoosePenaltyItem, ChoosePenaltyLoot, ChooseStartingItem, ChooseLowest, ChooseRecharge, ChooseRedirect:
 		for i, id := range c.Objects {
 			set(i, func(o *OptionView) { o.Object = id })
 		}
@@ -216,7 +218,7 @@ func (g *Game) optionViews() []OptionView {
 		for i, p := range c.Slots {
 			set(i, func(o *OptionView) { o.Player, o.IsPlayer = PlayerID(p), true })
 		}
-	case ChooseReplacement, ChooseTriggerOrder, ChooseMode, ChooseAnswer:
+	case ChooseReplacement, ChooseTriggerOrder, ChooseMode, ChooseAnswer, ChooseCopyAbility, ChooseDie:
 		// Text options.
 	}
 	return out

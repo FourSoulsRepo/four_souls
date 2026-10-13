@@ -11,3 +11,4 @@
 | [007](007-match-record-format.md) | Match record format | Accepted |
 | [008](008-ui-libraries.md) | UI libraries | Accepted |
 | [009](009-lan-discovery.md) | LAN game discovery | Accepted |
+| [010](010-reprints-and-copy-images.md) | Reprints, copy images and set order | Accepted |

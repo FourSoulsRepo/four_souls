@@ -396,3 +396,9 @@ func (g *Game) KillObject(id ObjectID) {
 func (g *Game) LoseCentsNow(p PlayerID, n int) {
 	g.enqueue(Action{Kind: ActLoseCents, Player: p, Amount: n})
 }
+
+// PlayLootFree makes p play the loot card id from their hand without
+// using a loot play (Distant Admiration).
+func (g *Game) PlayLootFree(p PlayerID, id ObjectID) {
+	g.enqueue(Action{Kind: ActPlayLootFree, Player: p, Object: id})
+}

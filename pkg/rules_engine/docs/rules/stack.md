@@ -31,3 +31,13 @@ Sources: S-OFF Priority, The Stack, Dice Rolls; S-RU Приоритет, Сте�
 19. **R-DICE-05** When all players pass, the roll tries to resolve: "would roll N" triggers trigger now; if one changes the result, go back to R-DICE-04.
 20. **R-DICE-06** As the roll resolves, continuous effects that modify rolls apply; the result is then final, and "when you roll N" triggers trigger.
 21. **R-DICE-07** A "would roll N" trigger fizzles if, when it resolves, the roll is gone or no longer N (S-YUG).
+22. **R-DICE-08** *(Gold Box)* **Twice in a row**: two final results of one player's rolls this turn are equal, with no roll of that player between them.
+    1. Each such pair counts once: three equal rolls in a row are two pairs (S-DIS).
+    2. When one of several dice is chosen as the result, only the chosen result is a roll (S-DIS).
+    3. "Of one player" is our proposal: Q-10.
+23. **R-DICE-09** *(Four Souls+)* **Twice in a row on an attack roll**: two of one player's attack rolls this turn, one right after the other, have equal final results.
+    1. Only attack rolls count; that player's other rolls between them do not break the pair (Q-12).
+    2. Compare R-DICE-08: there every roll of the player counts.
+    3. Example: attack roll 3, Fruitcake rolls 5, attack roll 3: Euthanasia kills; Fruitcake does not recharge.
+24. **R-DICE-10** *(Four Souls+)* An ability that lets a player change a roll by an amount ("add or subtract 1", PHD) changes each roll at most once (Q-11).
+25. **R-DICE-11** *(Four Souls+)* **Several dice, one result** (Mutant Spider): the dice are rolled at once; only the chosen die is a roll, as R-DICE-08 says (S-DIS, Reddit).

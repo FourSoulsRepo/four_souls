@@ -354,7 +354,7 @@ func (g *Game) resolveAbility(it StackItem) {
 	for i, e := range effects {
 		e.apply(&Ctx{
 			G: g, Controller: it.Controller, Source: it.Source, Targets: it.Targets,
-			EventPlayer: it.EventPlayer, EventAmount: it.EventAmount, EventStack: it.EventStack, EventObject: it.EventObject,
+			EventPlayer: it.EventPlayer, EventAmount: it.EventAmount, EventStack: it.EventStack, EventObject: it.EventObject, EventSource: it.EventSource,
 			ref: it.Ability, mode: it.Mode, roll: it.RollResult, effect: i,
 		})
 	}
@@ -461,4 +461,30 @@ func (g *Game) choosablePlayers(ids []PlayerID) []PlayerID {
 		return ids
 	}
 	return living
+}
+
+// tapAbilitiesInPlay lists every ↷ ability of the items in play, shop
+// items included, for a card that copies one ("? Card"; R-CARD-34).
+func (g *Game) tapAbilitiesInPlay(self ObjectID) []AbilityRef {
+	var items []ObjectID
+	for _, pl := range g.Players {
+		items = append(items, pl.InPlay...)
+	}
+	for _, slot := range g.Shop {
+		if top, ok := slot.TopOf(); ok {
+			items = append(items, top)
+		}
+	}
+	var refs []AbilityRef
+	for _, id := range items {
+		if id == self || g.Object(id).Role != RoleItem {
+			continue
+		}
+		for i, a := range g.def(id).Abilities {
+			if a.Kind == Activated && hasTap(a) {
+				refs = append(refs, AbilityRef{Card: g.CardOf(id), Index: i})
+			}
+		}
+	}
+	return refs
 }

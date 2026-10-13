@@ -1,6 +1,7 @@
 // The only module that talks to Wails.
 // Everything else imports from here, so a move to Wails v3 or a browser
 // build replaces this folder and nothing else (A-14).
+import { noHostSetup, type HostSetup } from '../hostSetup';
 import type { CardInfo } from '../cards';
 import type { Speed } from '../playback';
 import {
@@ -44,6 +45,8 @@ export interface Settings {
   // rejoin is the last game joined, so a restarted app takes its seat
   // back (N-08).
   rejoin: Rejoin;
+  // host is the last hosted setup, for the next host screen; no password.
+  host: HostSetup;
 }
 
 export interface Rejoin {
@@ -66,6 +69,7 @@ function fromGo(s: {
   mat: string;
   dice: string;
   rejoin: Rejoin;
+  host?: HostSetup;
 }): Settings {
   return {
     nickname: s.nickname,
@@ -76,6 +80,7 @@ function fromGo(s: {
     mat: s.mat === 'basement' || s.mat === 'cathedral' ? s.mat : 'felt',
     dice: s.dice,
     rejoin: { address: s.rejoin.address, token: s.rejoin.token, game: s.rejoin.game },
+    host: s.host ? { ...noHostSetup, ...s.host } : noHostSetup,
   };
 }
 

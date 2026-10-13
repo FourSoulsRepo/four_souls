@@ -37,9 +37,13 @@ type Turn struct {
 	MustAttacks    int `json:"must_attacks,omitempty"`
 	MustAttackDeck int `json:"must_attack_deck,omitempty"`
 	// DeckAttacks are extra attacks only on the monster deck.
-	DeckAttacks int  `json:"deck_attacks,omitempty"`
-	EndDeclared bool `json:"end_declared,omitempty"`
-	DeathEnd    bool `json:"death_end,omitempty"` // the active player died (R-DEATH-16)
+	DeckAttacks int `json:"deck_attacks,omitempty"`
+	// ShopBought counts shop items purchased this turn; FreeShopItem makes
+	// the first one cost 0¢ (Credit Card).
+	ShopBought   int  `json:"shop_bought,omitempty"`
+	FreeShopItem bool `json:"free_shop_item,omitempty"`
+	EndDeclared  bool `json:"end_declared,omitempty"`
+	DeathEnd     bool `json:"death_end,omitempty"` // the active player died (R-DEATH-16)
 	// entered is true once the current step's automatic work is done.
 	Entered bool `json:"entered,omitempty"`
 }
@@ -216,7 +220,7 @@ func (g *Game) enterStep() {
 		g.emit(Event{Kind: EvEndOfTurn, Player: p}) // R-TURN-10
 		g.openWindow(p)
 	case StepHandSize:
-		if extra := len(g.Players[p].Hand) - g.MaxHand; extra > 0 {
+		if extra := len(g.Players[p].Hand) - g.maxHand(p); extra > 0 {
 			g.Waiting = Prompt{Kind: PromptDiscard, Player: p, Count: extra}
 		}
 	case StepCleanup:
@@ -246,7 +250,27 @@ func (g *Game) startNextTurn() {
 // recharge charges what the active player controls (R-TURN-02).
 func (g *Game) recharge(p PlayerID) {
 	pl := &g.Players[p]
-	g.Object(pl.Character).Charged = true
+	if g.bonus(StatNoCharRecharge, p, 0) == 0 {
+		g.Object(pl.Character).Charged = true
+	}
+	if g.bonus(StatRechargeLimit, p, 0) > 0 {
+		// "You can't recharge more than 1 item during your recharge step."
+		var items []ObjectID
+		for _, id := range pl.InPlay {
+			if o := g.Object(id); o.Role == RoleItem && !o.Charged {
+				items = append(items, id)
+			}
+		}
+		if len(items) > 1 {
+			g.ask(Choice{Purpose: ChooseRecharge, Player: p, Rule: "R-TURN-02", Objects: items}, g.labels(items))
+			return
+		}
+		for _, id := range items {
+			g.Object(id).Charged = true
+		}
+		g.emit(Event{Kind: EvRecharged, Player: p})
+		return
+	}
 	for _, id := range pl.InPlay {
 		g.Object(id).Charged = true
 	}
@@ -283,11 +307,12 @@ func (g *Game) healAll() {
 		g.Players[i].Dead = false // alive again (R-DEATH-19)
 		g.Players[i].ExtraLootPlays = 0
 		g.Players[i].TimesDamaged = 0
+		g.Players[i].Rolls, g.Players[i].LastRoll, g.Players[i].LastAttack, g.Players[i].KilledBy = 0, 0, 0, 0
 	}
 	for _, id := range g.inPlay() {
 		g.Object(id).Damage, g.Object(id).HitsThisTurn = 0, 0
 	}
-	g.Boosts, g.Shields = nil, nil // till end of turn effects end
+	g.Boosts, g.Shields, g.Lingering = nil, nil, nil // till end of turn effects end
 	for _, pl := range g.Players {
 		for _, id := range pl.InPlay {
 			if o := g.Object(id); o.CopyThisTurn {
@@ -301,7 +326,11 @@ func (g *Game) healAll() {
 
 // SoulValue is a player's total soul value (R-CARD-21).
 func (g *Game) SoulValue(p PlayerID) int {
+	// A character's soul value counts, though it is not a soul (R-CARD-35).
 	total := 0
+	if d, ok := g.cards.find(g.CardOf(g.Players[p].Character)); ok {
+		total += d.Soul
+	}
 	for _, id := range g.Players[p].InPlay {
 		o := g.Object(id)
 		if o.Role != RoleSoul {
@@ -340,4 +369,33 @@ func (g *Game) PlayerAfter(p PlayerID) PlayerID { return g.next(p) }
 // PlayerBefore is the player to p's right: previous in turn order.
 func (g *Game) PlayerBefore(p PlayerID) PlayerID {
 	return PlayerID((int(p) + len(g.Players) - 1) % len(g.Players))
+}
+
+// maxHand is p's max hand size: the game's, or a lower cap ("Your max
+// hand size is 2", R-TURN-11).
+func (g *Game) maxHand(p PlayerID) int {
+	limit := g.MaxHand
+	for _, id := range g.inPlay() {
+		d, ok := g.cards.find(g.CardOf(id))
+		if !ok {
+			continue
+		}
+		for _, s := range d.Statics {
+			if s.Stat == StatHandCap && s.Applies(g, id, p, 0) {
+				limit = min(limit, s.Amount)
+			}
+		}
+	}
+	return limit
+}
+
+// WinGame ends the game with p as the winner: "That player wins." (Mom's
+// Heart).
+func (g *Game) WinGame(p PlayerID) {
+	if g.Over {
+		return
+	}
+	g.Over, g.Winners = true, []PlayerID{p}
+	g.Waiting = Prompt{Kind: PromptGameOver, Player: NoPlayer}
+	g.emit(Event{Kind: EvGameWon, Player: p})
 }

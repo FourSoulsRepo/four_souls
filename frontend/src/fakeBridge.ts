@@ -52,6 +52,7 @@ function loadSettings(): unknown {
     mat: 'felt',
     dice: 'tear',
     rejoin: { address: '', token: '', game: '' },
+    host: { seats: 0, sets: null, detailed: false, response_timer: 0, no_bonus_souls: false },
   };
   return JSON.parse(localStorage.getItem(settingsKey) ?? JSON.stringify(fresh));
 }
@@ -67,6 +68,7 @@ interface FakeSettings {
   mat: string;
   dice: string;
   rejoin: { address: string; token: string; game: string };
+  host?: { seats: number; sets: string[] | null; detailed: boolean; response_timer: number; no_bonus_souls: boolean };
 }
 
 function saveSettings(s: FakeSettings): Promise<unknown> {
@@ -194,7 +196,7 @@ w.go = {
       Notice: () => Promise.resolve(notice),
       Settings: () => Promise.resolve(loadSettings()),
       SaveSettings: saveSettings,
-      CardSets: () => Promise.resolve(['b2']),
+      CardSets: () => Promise.resolve(['b2', 'g2', 'fsp2']),
       Cards: () => Promise.resolve([...cards, ...realCards()]),
       // Dice textures are private images too: a plain die, as in a public clone.
       Dice: () => Promise.resolve([{ id: 'tear', name: 'Tear', image: '' }]),

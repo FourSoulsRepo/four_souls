@@ -132,6 +132,9 @@ func (g *Game) check(in Intent) error {
 		if g.locked(in.Player) {
 			return refuse("R-ABIL-12", "the active player's card forbids playing loot on their turn")
 		}
+		if g.def(in.Objects[0]).CopiesTapOnPlay && len(g.tapAbilitiesInPlay(in.Objects[0])) == 0 {
+			return refuse("R-ABIL-04", "no item in play has a ↷ ability to copy")
+		}
 		if ab, ok := g.lootAbility(in.Objects[0]); ok {
 			if err := g.targetsAvailable(ab, in.Player, in.Objects[0]); err != nil {
 				return err
@@ -203,6 +206,15 @@ func (g *Game) apply(in Intent) {
 		}
 		g.Waiting = Prompt{}
 	case IntentPlayLoot:
+		if g.def(in.Objects[0]).CopiesTapOnPlay {
+			refs := g.tapAbilitiesInPlay(in.Objects[0])
+			labels := make([]string, 0, len(refs)+1)
+			for _, r := range refs {
+				labels = append(labels, string(r.Card)+": "+g.abilityText(r))
+			}
+			g.ask(Choice{Purpose: ChooseCopyAbility, Player: in.Player, Rule: "R-ABIL-04", Objects: []ObjectID{in.Objects[0]}, Abilities: refs, Question: "Copy which ↷ ability?"}, append(labels, "cancel"))
+			return
+		}
 		if _, ok := g.lootAbility(in.Objects[0]); ok {
 			d := g.def(in.Objects[0])
 			g.startActivation(Activation{
@@ -274,7 +286,16 @@ func remove(list []ObjectID, id ObjectID) []ObjectID {
 }
 
 // locked: p is not the active player, whose card forbids others to play
-// loot or activate items on their turn (Trinity Shield).
+// loot or activate items on their turn (Trinity Shield), or another
+// player locked everyone else this turn.
 func (g *Game) locked(p PlayerID) bool {
-	return p != g.Turn.Active && g.bonus(StatLockOthers, g.Turn.Active, 0) > 0
+	if p != g.Turn.Active && g.bonus(StatLockOthers, g.Turn.Active, 0) > 0 {
+		return true
+	}
+	for _, b := range g.Boosts {
+		if b.Stat == StatLockTurn && b.Object == 0 && b.Player != p {
+			return true // "Other players can't … till end of turn" (Get Out of Jail Card)
+		}
+	}
+	return false
 }

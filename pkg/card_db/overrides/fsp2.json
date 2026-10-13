@@ -1,0 +1,35 @@
+{
+  "abaddon": {
+    "text": {
+      "en": {
+        "name": "Abaddon",
+        "effects": [
+          "+3{ATK}",
+          "Each time you take damage, die!"
+        ]
+      }
+    }
+  },
+  "lard": {
+    "text": {
+      "en": {
+        "name": "Lard",
+        "effects": [
+          "+2{HP}",
+          "Each time you take damage, discard a loot card."
+        ]
+      }
+    }
+  },
+  "polyphemus": {
+    "text": {
+      "en": {
+        "name": "Polyphemus",
+        "effects": [
+          "+2{ATK}",
+          "Monsters have +1{DC} on your turn."
+        ]
+      }
+    }
+  }
+}

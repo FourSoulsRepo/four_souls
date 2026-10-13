@@ -270,7 +270,7 @@ func TestYuggyGlassCannonLosesItsTarget(t *testing.T) {
 // it; Sloth makes its killer discard, here the non-active player.
 func TestYuggySlothKilledByAnotherPlayer(t *testing.T) {
 	tb := enginetest.NewSetup(t, engine.SituationSetup{
-		Players:  []engine.SituationPlayer{{Character: "isaac", Hand: items("a_penny_6")}, {Character: "cain", Hand: items("bomb", "a_dime")}},
+		Players:  []engine.SituationPlayer{{Character: "isaac", Hand: items("a_penny")}, {Character: "cain", Hand: items("bomb", "a_dime")}},
 		Monsters: items("sloth"),
 	}, Set)
 	tb.G.Players[1].ExtraLootPlays = 1

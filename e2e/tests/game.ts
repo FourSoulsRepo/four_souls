@@ -31,6 +31,12 @@ export async function startGame(
   await host.getByRole('button', { name: 'Host a game' }).click();
   await host.getByLabel('Nickname').fill(names[0] ?? '');
   await host.getByLabel('Players').selectOption(String(names.length));
+  // Game tests play the Base Game only: they were written for its cards,
+  // and a forced attack (Krampus) could keep a turn from ending.
+  const sets = host.getByRole('group', { name: 'Card sets' });
+  for (const set of ['Gold Box', 'Four Souls+']) {
+    await sets.getByLabel(set).uncheck();
+  }
   await setup(host);
   await host.getByRole('button', { name: 'Host', exact: true }).click();
   await expect(host.getByRole('list', { name: 'Seats' })).toBeVisible();

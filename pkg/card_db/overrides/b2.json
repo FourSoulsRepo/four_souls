@@ -1,1 +1,50 @@
-{}
+{
+  "breakfast": {
+    "text": {
+      "en": {
+        "name": "Breakfast",
+        "effects": [
+          "+1{HP}"
+        ],
+        "notes": [
+          "\"I gave you milk to drink, not solid food; for you were not yet able to receive it.\"\nCorinthians 3:2"
+        ]
+      }
+    }
+  },
+  "dinner": {
+    "text": {
+      "en": {
+        "name": "Dinner",
+        "effects": [
+          "+1{HP}"
+        ],
+        "notes": [
+          "\"Do not give what is holy to dogs, and do not throw your pearls before swine.\"\nMatthew 7:6"
+        ]
+      }
+    }
+  },
+  "brimstone": {
+    "text": {
+      "en": {
+        "name": "Brimstone",
+        "effects": [
+          "+1{ATK}",
+          "Each time you deal combat damage to a monster, deal 1 damage to another player."
+        ]
+      }
+    }
+  },
+  "ipecac": {
+    "text": {
+      "en": {
+        "name": "Ipecac",
+        "effects": [
+          "+1{ATK}",
+          "Each time you roll an attack roll of 6, deal 1 damage to each other player."
+        ]
+      }
+    }
+  }
+}

@@ -202,3 +202,13 @@ func (g *Game) SoulFromDiscard(d DeckKind, card CardRef, p PlayerID) {
 		return
 	}
 }
+
+// GiveCurseFromDeck takes a curse out of the monster deck and gives it to
+// p (Black Candle).
+func (g *Game) GiveCurseFromDeck(curse ObjectID, p PlayerID) {
+	g.Decks[MonsterDeck] = remove(g.Decks[MonsterDeck], curse)
+	nid := g.move(curse, Zone{Kind: ZoneInPlay}, p)
+	g.Object(nid).Role = RoleCurse
+	g.Players[p].InPlay = append(g.Players[p].InPlay, nid)
+	g.emit(Event{Kind: EvCursed, Player: p, Object: nid, Card: g.Object(nid).Card})
+}

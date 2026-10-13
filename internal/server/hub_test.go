@@ -4,6 +4,7 @@ import (
 	"context"
 	"math/rand/v2"
 	"net/http/httptest"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -425,5 +426,17 @@ func TestGamePassword(t *testing.T) {
 	bo.say(protocol.TypeJoin, protocol.Join{Game: tb.Game, Password: secret})
 	if e := bo.next(protocol.TypeTable, &tb); tb.You != 1 || strings.Contains(string(e.Data), secret) {
 		t.Errorf("the right password: table %+v", tb)
+	}
+}
+
+func TestWithBaseGame(t *testing.T) {
+	for _, c := range []struct{ in, want []string }{
+		{nil, []string{"b2"}},
+		{[]string{"g2"}, []string{"b2", "g2"}},
+		{[]string{"fsp2", "b2", "fsp2"}, []string{"b2", "fsp2"}},
+	} {
+		if got := withBaseGame(c.in); !slices.Equal(got, c.want) {
+			t.Errorf("withBaseGame(%v) = %v, want %v", c.in, got, c.want)
+		}
 	}
 }

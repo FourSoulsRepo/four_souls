@@ -187,6 +187,8 @@ Step numbers stay as IDs; the table lists steps in work order.
 3. Optional removal of multiplayer-only cards.
 4. Ideas: CD-02, GS-07, GS-08, CD-11.
 5. Deck ratios never reveal the dealt decks (A-16).
+6. Reprints add copies; every copy keeps its own art (CD-12, ADR 010).
+7. The host picks the card sets; the Base Game is always in (14.6).
 
 ## 15. Visual refresh
 

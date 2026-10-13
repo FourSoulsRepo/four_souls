@@ -183,6 +183,16 @@ type Player struct {
 	TimesDamaged int `json:"times_damaged,omitempty"`
 	// ExtraLootPlays come from abilities and last until the turn ends.
 	ExtraLootPlays int `json:"extra_loot_plays,omitempty"`
+	// Rolls and LastRoll are this turn's resolved rolls ("your first dice
+	// roll each turn", "twice in a row": R-DICE-08).
+	Rolls    int `json:"rolls,omitempty"`
+	LastRoll int `json:"last_roll,omitempty"`
+	// LastAttack is this turn's last attack roll ("twice in a row on an
+	// attack roll": R-DICE-09).
+	LastAttack int `json:"last_attack,omitempty"`
+	// KilledBy is who dealt the damage or effect that killed the player
+	// this turn, plus 1 (0: nobody).
+	KilledBy int `json:"killed_by,omitempty"`
 }
 
 // Slot is one table slot; the last card is on top and in play, the rest
@@ -232,6 +242,11 @@ type Game struct {
 
 	Boosts  []Boost  `json:"boosts,omitempty"`
 	Shields []Shield `json:"shields,omitempty"`
+	// Lingering abilities last till end of turn (Linger).
+	Lingering []Lingering `json:"lingering,omitempty"`
+	// ManyDice: the next roll is made with Dice dice and Chooser picks the
+	// result (Mutant Spider, R-DICE-11).
+	ManyDice []ManyDice `json:"many_dice,omitempty"`
 
 	// Stack: the last item is on top (R-STACK-02).
 	Stack    []StackItem `json:"stack"`
@@ -332,4 +347,13 @@ func (g *Game) inPlay() []ObjectID {
 		}
 	}
 	return out
+}
+
+// ManyDice is a pending "roll several dice, one is the result".
+type ManyDice struct {
+	Chooser PlayerID `json:"chooser"`
+	Dice    int      `json:"dice"`
+	// Values and StackID are set once the roll is made.
+	Values  []int `json:"values,omitempty"`
+	StackID int   `json:"stack_id,omitempty"`
 }

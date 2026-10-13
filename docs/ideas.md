@@ -644,6 +644,11 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
 11. CD-11. Alt art (later).
    1. Same stats and text: same card, different image.
    2. Different stats or text: a new card or a new version (CD-08).
+12. CD-12. Every copy keeps its own art.
+   1. Coins and similar cards have a different picture per copy.
+   2. A reprint in a newer set adds its copies to the same card.
+   3. With Base Game and Gold Box, all copies of both go into the deck.
+   4. Sets are ordered by release date, oldest first.
 
 ## Build
 

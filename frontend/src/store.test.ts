@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getSettings, saveSettings } from './bridge';
+import { noHostSetup } from './hostSetup';
 import { messageOf, seatOf, useApp } from './store';
 
 vi.mock('./bridge', () => ({
@@ -29,7 +30,7 @@ describe('screens', () => {
 
 describe('settings', () => {
   it('loads what Go has', async () => {
-    vi.mocked(getSettings).mockResolvedValue({ nickname: 'Ann', recent: [], animation: 'normal', fullscreen: false, theme: 'dark', mat: 'felt', dice: 'tear', rejoin: { address: '', token: '', game: '' } });
+    vi.mocked(getSettings).mockResolvedValue({ nickname: 'Ann', recent: [], animation: 'normal', fullscreen: false, theme: 'dark', mat: 'felt', dice: 'tear', rejoin: { address: '', token: '', game: '' }, host: noHostSetup });
     await useApp.getState().loadSettings();
     expect(useApp.getState().settings.nickname).toBe('Ann');
   });
@@ -41,15 +42,15 @@ describe('settings', () => {
   });
 
   it('keeps what Go stored, not what was typed', async () => {
-    vi.mocked(saveSettings).mockResolvedValue({ nickname: 'Ann', recent: [], animation: 'normal', fullscreen: false, theme: 'dark', mat: 'felt', dice: 'tear', rejoin: { address: '', token: '', game: '' } });
-    expect(await useApp.getState().saveSettings({ nickname: '  Ann  ', recent: [], animation: 'normal', fullscreen: false, theme: 'dark', mat: 'felt', dice: 'tear', rejoin: { address: '', token: '', game: '' } })).toBe(true);
+    vi.mocked(saveSettings).mockResolvedValue({ nickname: 'Ann', recent: [], animation: 'normal', fullscreen: false, theme: 'dark', mat: 'felt', dice: 'tear', rejoin: { address: '', token: '', game: '' }, host: noHostSetup });
+    expect(await useApp.getState().saveSettings({ nickname: '  Ann  ', recent: [], animation: 'normal', fullscreen: false, theme: 'dark', mat: 'felt', dice: 'tear', rejoin: { address: '', token: '', game: '' }, host: noHostSetup })).toBe(true);
     expect(useApp.getState().settings.nickname).toBe('Ann');
   });
 
   it('shows the Go error and keeps the old settings', async () => {
-    useApp.setState({ settings: { nickname: 'Ann', recent: [], animation: 'normal', fullscreen: false, theme: 'dark', mat: 'felt', dice: 'tear', rejoin: { address: '', token: '', game: '' } } });
+    useApp.setState({ settings: { nickname: 'Ann', recent: [], animation: 'normal', fullscreen: false, theme: 'dark', mat: 'felt', dice: 'tear', rejoin: { address: '', token: '', game: '' }, host: noHostSetup } });
     vi.mocked(saveSettings).mockRejectedValue('nickname must be 1–20 characters');
-    expect(await useApp.getState().saveSettings({ nickname: ' ', recent: [], animation: 'normal', fullscreen: false, theme: 'dark', mat: 'felt', dice: 'tear', rejoin: { address: '', token: '', game: '' } })).toBe(false);
+    expect(await useApp.getState().saveSettings({ nickname: ' ', recent: [], animation: 'normal', fullscreen: false, theme: 'dark', mat: 'felt', dice: 'tear', rejoin: { address: '', token: '', game: '' }, host: noHostSetup })).toBe(false);
     expect(useApp.getState()).toMatchObject({
       settings: { nickname: 'Ann' },
       error: 'nickname must be 1–20 characters',

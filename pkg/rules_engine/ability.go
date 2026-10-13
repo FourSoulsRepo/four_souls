@@ -50,6 +50,8 @@ type Ctx struct {
 	EventStack int
 	// EventObject is the object the event was about (a dead monster).
 	EventObject ObjectID
+	// EventSource is what caused the event, e.g. the monster that dealt damage.
+	EventSource ObjectID
 
 	// Where the effect is, so an Ask can find it again.
 	ref    AbilityRef
@@ -272,7 +274,7 @@ func (e rollEffect) apply(c *Ctx) {
 	c.G.push(StackItem{
 		Kind: StackRoll, Controller: c.Controller, Source: c.Source, Roll: r, Label: "roll",
 		RollFor: c.ref, Mode: c.mode, Targets: c.Targets,
-		EventPlayer: c.EventPlayer, EventAmount: c.EventAmount, EventStack: c.EventStack, EventObject: c.EventObject,
+		EventPlayer: c.EventPlayer, EventAmount: c.EventAmount, EventStack: c.EventStack, EventObject: c.EventObject, EventSource: c.EventSource,
 	})
 }
 
@@ -338,6 +340,18 @@ func BecomeSoul() Effect { return becomeSoulEffect{} }
 
 func (becomeSoulEffect) apply(c *Ctx) {
 	o := c.G.Object(c.Source)
+	if o.Zone.Kind == ZoneInPlay && o.Role == RoleEvent && o.Zone.Slot == MonsterSlot {
+		// An event in a monster slot: "This becomes a soul. Gain it."
+		// (Holy Chest); its slot is refilled.
+		g := c.G
+		g.removeFromSlot(c.Source)
+		nid := g.move(c.Source, Zone{Kind: ZoneInPlay}, c.Controller)
+		g.Object(nid).Role = RoleSoul
+		g.Players[c.Controller].InPlay = append(g.Players[c.Controller].InPlay, nid)
+		g.emit(Event{Kind: EvGainedSoul, Player: c.Controller, Object: nid, Card: g.Object(nid).Card, Prev: c.Source})
+		g.RefillSlots()
+		return
+	}
 	if o.Zone.Kind != ZoneInPlay || o.Controller != c.Controller {
 		return
 	}
@@ -441,6 +455,7 @@ func (e killEffect) apply(c *Ctx) {
 	t := c.target(e.target)
 	if t.Kind == TargetPlayer {
 		c.G.Players[t.Player].Damage += c.G.PlayerHP(t.Player) // HP to 0 (R-MECH-23)
+		c.G.Players[t.Player].KilledBy = int(c.Controller) + 1
 		c.G.push(StackItem{Kind: StackDeath, Controller: NoPlayer, Label: "death", Target: Target{Player: t.Player, IsPlayer: true}})
 		return
 	}
@@ -755,3 +770,84 @@ func NotChosen(g *Game, _ ObjectID, c Chosen) bool {
 
 // Ability returns the definition of an ability.
 func (g *Game) Ability(ref AbilityRef) Ability { return g.ability(ref) }
+
+// WardDeath is "Choose a player. The next time that player would die this
+// turn, prevent it. If it's their turn, cancel everything that hasn't
+// resolved and end it." (Holy Mantle, Holy Card).
+func WardDeath(t int) Effect {
+	return EffectFunc(func(c *Ctx) {
+		if t < len(c.Targets) {
+			c.G.Boosts = append(c.G.Boosts, Boost{Stat: StatDeathWard, Player: c.Targets[t].Player, Amount: 1})
+		}
+	})
+}
+
+// CancelAttack is "Cancel an attack." It ends the attack in progress
+// (R-ATK-14, R-ATK-15); then runs only if an attack was cancelled.
+func CancelAttack(then ...Effect) Effect {
+	return EffectFunc(func(c *Ctx) {
+		if !c.G.Attack.On {
+			return
+		}
+		c.G.endAttack()
+		c.Do(then...)
+	})
+}
+
+// ActivePlayerAttacksAgain is "That player may attack an additional time
+// this turn", for the active player.
+func ActivePlayerAttacksAgain() Effect {
+	return EffectFunc(func(c *Ctx) { c.G.Turn.Attacks++ })
+}
+
+// Linger starts the source card's lingering ability i; it lasts till end
+// of turn, even if the card leaves play: "Till end of turn, each time a
+// player rolls a 1, …" (Lemon Mishap), "At the end of the turn, …" (Plan C).
+func Linger(i int) Effect {
+	return EffectFunc(func(c *Ctx) {
+		c.G.Lingering = append(c.G.Lingering, Lingering{
+			// The card whose ability is resolving: a copy (Placebo) starts the
+			// copied card's lingering ability.
+			Ability:    AbilityRef{Card: c.ref.Card, Index: i, Lingering: true},
+			Source:     c.Source,
+			Controller: c.Controller,
+		})
+	})
+}
+
+// NextAttackRoll is "the next attack roll this turn has -2" (anyone's,
+// active false) or "the attacking player has -1 to their next attack roll
+// this turn" (active true) (R-ATK-19).
+func NextAttackRoll(n int, active bool) Effect {
+	return EffectFunc(func(c *Ctx) {
+		p := NoPlayer
+		if active {
+			p = c.G.Turn.Active
+		}
+		c.G.Boosts = append(c.G.Boosts, Boost{Stat: StatNextAttackRoll, Player: p, Amount: n})
+	})
+}
+
+// PushLingering is a replacement's action that puts lingering ability i
+// of the object self on the stack instead, with p and n as its event
+// player and amount: "roll- 1-3: gain 1¢ instead" (Poker Chip).
+func PushLingering(self ObjectID, i int, p PlayerID, n int) Action {
+	return Action{Kind: ActPushLingering, Object: self, From: PlayerID(i), Player: p, Amount: n}
+}
+
+// PreventThisDeath prevents the death of this monster: "prevent death"
+// (Headless Horseman). It is left at 1 HP (R-MECH-07).
+func PreventThisDeath() Effect {
+	return EffectFunc(func(c *Ctx) {
+		g := c.G
+		for _, it := range g.Stack {
+			if it.Kind == StackDeath && !it.Target.IsPlayer && it.Target.Object == c.Source {
+				g.CancelStackItem(it.ID)
+				o := g.Object(c.Source)
+				o.Damage = min(o.Damage, max(g.def(c.Source).HP+g.bonus(StatMonsterHP, NoPlayer, c.Source)-1, 0))
+				g.emit(Event{Kind: EvPrevented, Player: NoPlayer, Object: c.Source, Text: "death"})
+				return
+			}
+		}
+	})
+}

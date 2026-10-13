@@ -90,6 +90,41 @@ On 2026-10-09 the owner parked every open decision for later.
    1. The S-RU FAQ says the wording matters; the card doubles once.
 6. FAQ: explain this case in the rules FAQ (11.7); players often ask.
 
+### Q-10 Fruitcake: whose rolls are "in a row"
+
+1. Question: "Each time a player rolls the same result twice in a row on the same turn".
+   1. Does it look at each player's own rolls, or at the last two rolls of anyone?
+2. Sources:
+   1. No ruling in S-OFF, S-YUG, Reddit, X, or the web (searched 2026-10-13).
+   2. S-DIS (2023-12-06): each pair counts; three in a row recharge twice.
+   3. S-DIS: of Mutant Spider's dice only the chosen result counts.
+   4. S-YUG on Euthanasia: final results after changes count.
+3. Options: (a) per player; (b) any two rolls in a row.
+4. Engine now: (a), as R-DICE-08.
+5. Status: **Owner**, open (2026-10-13); keep (a) until a ruling is found.
+
+### Q-11 PHD: once per roll
+
+1. Question: "You may add or subtract 1 from any of your non-attack rolls."
+   1. A changed roll lets "would roll" effects look again (R-DICE-05).
+   2. May PHD change the same roll again, 2 → 3 → 4?
+2. Sources: no ruling in S-OFF, S-YUG, S-DIS, Reddit, X, or the web (2026-10-13).
+3. Options: (a) once per roll; (b) any number of times.
+4. Status: **Resolved** (2026-10-13): (a); (b) looks like a bug (R-DICE-10).
+
+### Q-12 Euthanasia: which rolls are "in a row"
+
+1. Question: "Each time you roll the same result twice in a row on an attack roll on the same turn".
+   1. Must both rolls be attack rolls, or any roll then an attack roll?
+2. Sources:
+   1. No ruling on this point in S-OFF, S-YUG, Reddit, X, or the web (2026-10-13).
+   2. S-DIS: it works on bosses; a rerolled second roll counts by its final value.
+   3. S-DIS: it triggers before combat damage; you must control it as the roll resolves.
+3. Options: (a) two attack rolls in a row; (b) any roll, then an attack roll (as R-DICE-08).
+4. Engine now: (a), as R-DICE-09.
+5. Status: **Owner**, open (2026-10-13); keep (a) until a ruling is found.
+6. FAQ: explain the difference from Fruitcake (R-DICE-08) in the rules FAQ (11.7).
+
 ## Old rulings re-checked (R-07)
 
 | # | Ruling (Ed's Notes, 2018–2019) | Check against current rules and V2 text | Status |
@@ -148,6 +183,21 @@ Searched 2026-10-12 (8.7): his r/FourSouls comments and tweets that name a Base 
 | 18 | Soul of Gluttony | A bonus soul is gained once per game, even if destroyed | Holds; test |
 | 19 | Any "choose a player" | Dead players can't be chosen while a living one can (R-ABIL-35) | **Fixed** in the engine: Q-07; tests |
 | 20 | 3+ player cards | Satan and others are out of 2-player games (R-CARD-32) | **Fixed** in the engine: Q-08; test |
+| 21 | Steven, Bomb | Steven dies to a bomb before his "roll of 6" trigger: the roll is gone, no trigger | Gold Box; test |
+| 22 | Holy Mantle, Bomb | Death ends combat: unresolved attack rolls are cancelled; a bomb on the stack still resolves | Gold Box; test |
+| 23 | Plan C, Eden | An eternal "Destroy this. If you do" item does nothing (as row 5) | Gold Box; test |
+| 24 | Euthanasia, 20/20 | "Same result twice in a row" uses final results | Four Souls+; test |
+| 25 | Mom's Heart, It Lives! | It triggers "when a player gains this soul" | Four Souls+; test |
+| 26 | Mom's Eye Shadow | Only attacks declared on a monster; attacks on the monster deck go through | Four Souls+; test |
+| 27 | Mutant Spider | The dice are rolled at once; only the chosen one is a roll | Four Souls+ (R-DICE-11); test |
+| 28 | Telepathy for Dummies | Roll at the start of the turn; the next roll may become that result | Four Souls+; test |
+| 29 | Distant Admiration | The given loot is played for free: no loot play is used | Four Souls+; test |
+| 30 | 1-Up, Eden | An eternal 1-Up can't be destroyed, so it does nothing | Four Souls+; test |
+| 31 | Krampus, a forced deck attack | The active player picks which forced attack to make (R-ATK-03) | Four Souls+; test |
+| 32 | Cursed Eye, Bomb | A bomb in response to the attack roll ends combat before Cursed Eye triggers | Four Souls+; test |
+| 33 | Headless Horseman | It prevents its death and heals; the attack goes on | Four Souls+; test |
+| 34 | Hourglass and circled numbers | A circled number triggers on any roll that resolves as it | Four Souls+ (R-DICE-06) |
+| 35 | Abaddon | Printed +3 ATK; the site text lacks the number (fixed by an override) | Four Souls+ |
 
 ## Card rulings from Discord (S-DIS)
 
@@ -162,3 +212,7 @@ Searched 2026-10-12 (8.7) with each card's Russian name from foursouls.ru (the o
 | 5 | Diplopia | It may copy other players' items and shop items | Holds (R-CARD-34) |
 | 6 | Any item | Items enter play charged unless they say otherwise | Holds |
 | 7 | Butter Bean | It cancels a loot card entirely | Holds |
+| 8 | Fruitcake | Each pair of equal rolls in a row recharges it: three in a row is two | Gold Box (Q-10); test |
+| 9 | Fruitcake, Mutant Spider | Only Mutant Spider's chosen result counts as a roll | Gold Box (R-DICE-08) |
+| 10 | Euthanasia | It works on bosses; a rerolled second roll counts by its final value | Four Souls+; test |
+| 11 | Euthanasia | It triggers before combat damage; you must control it as the roll resolves | Four Souls+; test |

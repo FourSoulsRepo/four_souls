@@ -42,6 +42,8 @@ type StackItem struct {
 	EventAmount int      `json:"event_amount,omitempty"`
 	EventStack  int      `json:"event_stack,omitempty"`
 	EventObject ObjectID `json:"event_object,omitempty"`
+	// EventSource is what caused the event, e.g. the monster that dealt damage.
+	EventSource ObjectID `json:"event_source,omitempty"`
 	// Reward is a roll reward's kind + 1: the result is how much is gained.
 	Reward int `json:"reward,omitempty"`
 	// Checked is the roll value (+1) that "would roll" triggers last saw
@@ -61,8 +63,20 @@ const (
 // push puts an item on top of the stack; priority passes starting with
 // its controller (R-PRIO-03).
 func (g *Game) push(it StackItem) int {
+	if it.Kind == StackDeath && it.Target.IsPlayer && g.useDeathWard(it.Target.Player) {
+		return 0
+	}
 	g.StackSeq++
 	it.ID = g.StackSeq
+	if it.Kind == StackRoll && it.Controller != NoPlayer && len(g.ManyDice) > 0 && g.ManyDice[0].StackID == 0 {
+		// "They instead roll 4 dice. You choose one of the rolls."
+		md := &g.ManyDice[0]
+		md.StackID, md.Values = it.ID, []int{it.Roll}
+		for range md.Dice - 1 {
+			md.Values = append(md.Values, g.d6())
+		}
+		g.enqueue(Action{Kind: ActChooseDie, Player: md.Chooser, Amount: it.ID})
+	}
 	g.Stack = append(g.Stack, it)
 	g.emit(Event{Kind: EvStackAdded, Player: it.Controller, Object: it.Source, Card: it.Card, Amount: it.Roll, Text: it.Label})
 	// "Would take damage" and "would die" triggers look at these.
@@ -123,6 +137,9 @@ func (g *Game) resolveTop() {
 			if it.Attack {
 				bonus += g.bonus(StatAttackRoll, it.Controller, 0)
 			}
+			if it.Attack {
+				bonus += g.useNextAttackRoll(it.Controller)
+			}
 			it.Roll = min(max(it.Roll+bonus, 1), 6)
 		}
 		re := Event{Kind: EvRollResolved, Player: it.Controller, Amount: it.Roll}
@@ -130,6 +147,19 @@ func (g *Game) resolveTop() {
 			re.Text = "attack"
 		}
 		g.emit(re)
+		if it.Controller != NoPlayer {
+			pl := &g.Players[it.Controller]
+			if pl.Rolls > 0 && pl.LastRoll == it.Roll {
+				g.emit(Event{Kind: EvRollRepeated, Player: it.Controller, Amount: it.Roll}) // R-DICE-08
+			}
+			pl.Rolls, pl.LastRoll = pl.Rolls+1, it.Roll
+			if it.Attack {
+				if pl.LastAttack == it.Roll {
+					g.emit(Event{Kind: EvAttackRollRepeated, Player: it.Controller, Amount: it.Roll}) // R-DICE-09
+				}
+				pl.LastAttack = it.Roll
+			}
+		}
 		if it.Attack {
 			g.resolveAttackRoll(it)
 		}
@@ -142,7 +172,7 @@ func (g *Game) resolveTop() {
 			g.push(StackItem{
 				Kind: StackTrigger, Controller: it.Controller, Source: it.Source, Card: it.RollFor.Card,
 				Ability: it.RollFor, Mode: it.Mode, Targets: it.Targets, RollResult: it.Roll, Label: "roll result",
-				EventPlayer: it.EventPlayer, EventAmount: it.EventAmount, EventStack: it.EventStack, EventObject: it.EventObject,
+				EventPlayer: it.EventPlayer, EventAmount: it.EventAmount, EventStack: it.EventStack, EventObject: it.EventObject, EventSource: it.EventSource,
 			})
 		}
 	case StackDamage:
@@ -276,4 +306,42 @@ func (g *Game) Reroll(stackID int) {
 			g.emit(Event{Kind: EvDiceRolled, Player: it.Controller, Amount: it.Roll, Text: "reroll"})
 		}
 	}
+}
+
+// useDeathWard prevents p's death with a ward from this turn, if p has
+// one: "The next time that player would die this turn, prevent it. If
+// it's their turn, cancel everything that hasn't resolved and end it."
+// (Holy Mantle, Holy Card; R-MECH-07, R-MECH-52).
+func (g *Game) useDeathWard(p PlayerID) bool {
+	for i, b := range g.Boosts {
+		if b.Stat != StatDeathWard || b.Object != 0 || b.Player != p {
+			continue
+		}
+		g.Boosts = append(g.Boosts[:i:i], g.Boosts[i+1:]...)
+		pl := &g.Players[p]
+		maxHP := g.PlayerHP(p) + pl.Damage
+		pl.Damage = min(pl.Damage, max(maxHP-1, 0))
+		g.emit(Event{Kind: EvPrevented, Player: p, Text: "death"})
+		if p == g.Turn.Active {
+			g.EndTurnNow()
+		}
+		return true
+	}
+	return false
+}
+
+// useNextAttackRoll returns and uses up the "next attack roll this turn"
+// boosts that apply to p's attack roll: p's own and anyone's (R-ATK-19).
+func (g *Game) useNextAttackRoll(p PlayerID) int {
+	total := 0
+	kept := g.Boosts[:0]
+	for _, b := range g.Boosts {
+		if b.Stat == StatNextAttackRoll && b.Object == 0 && (b.Player == p || b.Player == NoPlayer) {
+			total += b.Amount
+			continue
+		}
+		kept = append(kept, b)
+	}
+	g.Boosts = kept
+	return total
 }

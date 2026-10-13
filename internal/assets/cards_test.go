@@ -46,7 +46,7 @@ func TestCardsFSEnvOverride(t *testing.T) {
 	if err := os.MkdirAll(filepath.Join(dir, "data"), 0o750); err != nil {
 		t.Fatal(err)
 	}
-	set := `{"set":{"code":"zz","name":"Test"},"cards":[{"id":"x","type":"T","copies":1,"text":{"en":{"name":"X"}}}]}`
+	set := `{"set":{"code":"zz","name":"Test","order":1},"cards":[{"id":"x","type":"T","copies":1,"text":{"en":{"name":"X"}}}]}`
 	if err := os.WriteFile(filepath.Join(dir, "data", "zz.json"), []byte(set), 0o600); err != nil {
 		t.Fatal(err)
 	}

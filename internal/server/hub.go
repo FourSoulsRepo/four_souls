@@ -312,9 +312,7 @@ func (h *Hub) create(c *Client, env protocol.Envelope) {
 		c.fail(env.ID, protocol.ErrBadSetup, "a game has 2 to 4 seats (GS-09)")
 		return
 	}
-	if len(m.Sets) == 0 {
-		m.Sets = []string{"b2"} // the Base Game (CD-02)
-	}
+	m.Sets = withBaseGame(m.Sets)
 	for _, code := range m.Sets {
 		if _, ok := cards.Find(code); !ok {
 			c.fail(env.ID, protocol.ErrBadSetup, "this server has no card set "+code)
@@ -566,6 +564,21 @@ func setsOf(codes []string) []engine.CardSet {
 	for _, code := range codes {
 		if set, ok := cards.Find(code); ok {
 			out = append(out, set)
+		}
+	}
+	return out
+}
+
+// baseGame is the set every game uses: expansions need it (CD-02, ADR 010).
+const baseGame = "b2"
+
+// withBaseGame returns sets with the Base Game first, added if missing,
+// without repeats.
+func withBaseGame(sets []string) []string {
+	out := []string{baseGame}
+	for _, s := range sets {
+		if !slices.Contains(out, s) {
+			out = append(out, s)
 		}
 	}
 	return out

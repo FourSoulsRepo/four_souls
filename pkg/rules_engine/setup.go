@@ -43,12 +43,12 @@ func NewGame(s Setup) (*Game, []Event, error) {
 	}
 
 	var characters, bonus []CardRef
-	for _, d := range idx.defs {
+	for i, d := range idx.defs {
 		if d.Outside || (d.ThreePlus && s.Players < 3) { // R-CARD-32
 			continue
 		}
 		deck, hasDeck := d.Kind.Deck()
-		for range max(d.Copies, 1) {
+		for range idx.copies(i) {
 			switch {
 			case hasDeck:
 				g.AddToDeck(deck, d.Ref)

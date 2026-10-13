@@ -8,7 +8,7 @@ import (
 
 	"github.com/FourSoulsRepo/four_souls/internal/protocol"
 	engine "github.com/FourSoulsRepo/rules_engine"
-	"github.com/FourSoulsRepo/rules_engine/cards"
+	"github.com/FourSoulsRepo/rules_engine/cards/b2"
 )
 
 // TestNoWaitingWithoutOptions: in a played game, no update ever asks a
@@ -65,7 +65,7 @@ func TestSkipAll(t *testing.T) {
 	g, err := engine.BuildTable(engine.SituationSetup{
 		Players: []engine.SituationPlayer{{Character: "isaac"}, {Character: "cain"}},
 		Stack:   []engine.SituationStack{{DiceRoll: 3, Owner: 0}},
-	}, cards.Sets()...)
+	}, b2.Set)
 	if err != nil {
 		t.Fatal(err)
 	}

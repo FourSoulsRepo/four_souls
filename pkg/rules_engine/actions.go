@@ -28,6 +28,9 @@ const (
 	ActGiveCurse                            // the active player gives the curse Object to a player
 	ActFinishEvent                          // an event whose ability resolved goes to discard
 	ActRewardsDone                          // a dead monster's rewards are given (R-DEATH-07)
+	ActChooseDie                            // the chooser of ManyDice picks the result of the roll Amount
+	ActPlayLootFree                         // Player plays the loot card Object without using a loot play
+	ActPushLingering                        // put lingering ability From of Object on the stack; EventPlayer Player, EventAmount Amount
 )
 
 // Action is a pending change. It sits in the queue, may be rewritten by
@@ -231,6 +234,28 @@ func (g *Game) perform(a Action) {
 		g.askStartingItem(a.Player, a.Amount)
 	case ActGiveCurse:
 		g.askCurseTarget(a.Object)
+	case ActPlayLootFree:
+		// "You must play that loot card if able. This doesn't use a loot play."
+		if contains(g.Players[a.Player].Hand, a.Object) {
+			g.Players[a.Player].ExtraLootPlays++
+			g.apply(Intent{Player: a.Player, Kind: IntentPlayLoot, Objects: []ObjectID{a.Object}})
+		}
+	case ActChooseDie:
+		md := g.ManyDice[0]
+		labels := make([]string, len(md.Values))
+		for i, v := range md.Values {
+			labels[i] = strconv.Itoa(v)
+		}
+		g.ask(Choice{Purpose: ChooseDie, Player: a.Player, Rule: "R-DICE-11", Slots: md.Values, Indexes: []int{md.StackID}, Question: "Which die is the result?"}, labels)
+	case ActPushLingering:
+		// A replacement that rolls first (Poker Chip): its card's lingering
+		// ability goes on the stack with the replaced amount. A copy
+		// (Diplopia) uses the copied card's ability.
+		ref := AbilityRef{Card: g.CardOf(a.Object), Index: int(a.From), Lingering: true}
+		g.push(StackItem{
+			Kind: StackTrigger, Controller: g.abilityController(a.Object), Source: a.Object, Card: ref.Card,
+			Ability: ref, Label: g.abilityText(ref), EventPlayer: a.Player, EventAmount: a.Amount,
+		})
 	case ActRewardsDone:
 		before := len(g.PendingTriggers)
 		g.emit(Event{Kind: EvRewardsGained, Player: a.Player, Object: a.Object, Card: g.Object(a.Object).Card, Prev: a.Object})

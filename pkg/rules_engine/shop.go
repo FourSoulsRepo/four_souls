@@ -49,6 +49,9 @@ func (g *Game) purchase(item ObjectID, fromDeck bool) {
 	price := basePrice
 	if !fromDeck {
 		price = max(price+g.bonus(StatShopPrice, p, item), 0) // e.g. Steamy Sale
+		if g.Turn.FreeShopItem && g.Turn.ShopBought == 0 {
+			price = 0 // Credit Card
+		}
 	}
 	if g.Players[p].Cents < price {
 		g.emit(Event{Kind: EvPurchaseFailed, Player: p, Amount: price})
@@ -60,6 +63,7 @@ func (g *Game) purchase(item ObjectID, fromDeck bool) {
 		g.gainTreasure(p, 1)
 		return
 	}
+	g.Turn.ShopBought++
 	g.removeFromSlot(item)
 	nid := g.move(item, Zone{Kind: ZoneInPlay}, p)
 	o := g.Object(nid)

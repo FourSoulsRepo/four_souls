@@ -6,7 +6,9 @@ Cards are Go values. Each card is one short file built from the blocks listed on
 
 ## 1. Find or make the stub
 
-Base Game cards live in `pkg/rules_engine/cards/b2/`, one file per card, named after the card ID: `the_d6.go`, `a_nickel.go`.
+Base Game cards live in `pkg/rules_engine/cards/b2/`, one file per card, named after the card ID: `the_d6.go`, `a_nickel.go`. Gold Box is `cards/g2/`, Four Souls+ is `cards/fsp2/`. Pieces many cards share (a character's extra loot play, "recharge an item", "deal 1 damage to a monster or player", …) live in `cards/cardkit/`; each set's `common.go` gives them short local names.
+
+A card that an older set already has (a reprint, ADR 010) is not written again: the generator lists it under the set's `Reprints`, which only adds that set's copies to the decks.
 
 If the card exists in `card_db`, the generator has already written a stub:
 
