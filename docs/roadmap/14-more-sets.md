@@ -3,7 +3,7 @@
 Goal: official sets beyond the Base Game.
 Order: Gold Box, Four Souls+, Requiem, Warp Zone, promos.
 
-Ideas: CD-02, GS-07, GS-08, CD-11, A-16, CD-12, V-32, GS-12, GS-13.
+Ideas: CD-02, GS-07, GS-08, CD-11, A-16, CD-12, V-32, GS-12, GS-13, GS-01.
 
 ---
 
@@ -178,3 +178,18 @@ Alt art (CD-11) comes after all sets.
 4. Done when:
    1. The 15.23 test bans them and checks the untouched monster.
    2. Many deals in a row show no stat badge on a fresh monster.
+
+### [ ] 14.11 Draft pick screen
+
+1. Goal: normal games can use draft picking (GS-01).
+2. Tasks:
+   1. The server part is done in 6.6 (UC-05); this is the client.
+   2. Detailed setup: picking (random or draft) and draft size.
+   3. Pick screen: each player sees only their own offers.
+   4. A click on a character picks it.
+   5. Others see who has picked, not what.
+   6. Without card images, the offers show as text cards.
+   7. No bans here; ban rounds stay with the tournament tools.
+3. Done when:
+   1. e2e test: host a draft game, each player picks, the game starts.
+   2. UC-05 updated; use case for the pick screen.

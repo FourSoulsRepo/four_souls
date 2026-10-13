@@ -196,6 +196,7 @@ Step numbers stay as IDs; the table lists steps in work order.
 9. House rule option: no damage loops at 0 HP (GS-12, 14.8).
 10. Host bans cards before hosting (GS-13, 14.9).
 11. Tests ban stat-changing monsters for fixed deals (14.10).
+12. Draft pick screen for normal games, no bans (GS-01, 14.11).
 
 ## 15. Visual refresh
 
@@ -281,3 +282,4 @@ Not scheduled; revisit after the MVP.
    1. Ban and pick screen (GS-01 – GS-04 UI); server part is done.
    2. Judges: role, all-hands view, plain-text log (SP-02, V-04).
    3. Delayed view for viewers (SP-01).
+   4. The plain draft pick screen moved to 14.11.
