@@ -625,7 +625,7 @@ Images come first, so the new table is built with backs and mats.
 10. Owner notes (2026-10-12)
    1. Owner marks 15.22 solved.
 
-### [ ] 15.23 Counter badges and live stats
+### [x] 15.23 Counter badges and live stats
 
 1. Goal: counters and current stats read on the card (C-01 – C-03).
 2. Tasks:
@@ -668,6 +668,8 @@ Images come first, so the new table is built with backs and mats.
    7. The green "higher" ring is gone; a badge's tooltip names the print.
    8. e2e test: badges on the card, none in the zoom.
    9. Screenshots: `.cache/screenshots/15.23/fix/`.
+8. Owner notes (2026-10-13)
+   1. Owner marks 15.23 solved.
 
 ### [ ] 15.24 Ability dialog and status marks
 
