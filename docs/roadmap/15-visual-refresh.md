@@ -1085,3 +1085,5 @@ Images come first, so the new table is built with backs and mats.
    6. Engine, protocol and records unchanged; ADR 011.
    7. The hover's owner line still shows the controller.
    8. Screenshots: `.cache/screenshots/15.47/before/` and `after/`.
+7. Owner notes (2026-10-13)
+   1. Owner marks 15.47 solved.
