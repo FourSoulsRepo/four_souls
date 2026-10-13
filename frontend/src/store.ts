@@ -226,6 +226,7 @@ export const useApp = create<AppState>()((set, get) => {
       effectsFor(u.events ?? [], {
         card: (ref) => get().cards.get(ref),
         name: names(u).player,
+        character: (p) => u.view.players.find((x) => x.id === p)?.character.id,
       }),
     speed: () => get().settings.animation,
     shown: () => get().game,

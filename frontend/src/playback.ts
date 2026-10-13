@@ -13,13 +13,17 @@ export type Effect =
   | { kind: 'popup'; at: string[]; text: string; tone: 'good' | 'bad' }
   | { kind: 'dice'; value: number; label: string }
   | { kind: 'banner'; text: string }
-  | { kind: 'reveal'; card: string };
+  | { kind: 'reveal'; card: string }
+  // lunge: the attacker's card hits the target and returns (15.3, V-12).
+  | { kind: 'lunge'; from: string[]; to: string[]; amount: number };
 
 const noPlayer = -1;
 
 interface Context {
   card: (ref: string) => CardInfo | undefined;
   name: (player: number) => string;
+  // character is a player's character object, if known.
+  character: (player: number) => number | undefined;
 }
 
 function playerZones(p: number): string[] {
@@ -33,6 +37,15 @@ function handZones(p: number): string[] {
 // targetZones: an object, else a player.
 function targetZones(e: GameEvent): string[] {
   return e.object ? [`obj-${String(e.object)}`, ...playerZones(e.player)] : playerZones(e.player);
+}
+
+// hitZones: the damaged object, else the player's character card.
+function hitZones(e: GameEvent, ctx: Context): string[] {
+  if (e.object) {
+    return [`obj-${String(e.object)}`];
+  }
+  const c = ctx.character(e.player);
+  return c === undefined ? playerZones(e.player) : [`obj-${String(c)}`, ...playerZones(e.player)];
 }
 
 // effectsFor turns one update's events into effects. Events without an
@@ -73,6 +86,13 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
         break;
       case 'damage_pending':
         out.push({ kind: 'popup', at: targetZones(e), text: `−${String(amount)}`, tone: 'bad' });
+        break;
+      case 'damaged':
+        // Attack damage: its source lunges at the target. Other damage
+        // shows with its stack item.
+        if (e.text === 'combat' && e.source) {
+          out.push({ kind: 'lunge', from: [`obj-${String(e.source)}`], to: hitZones(e, ctx), amount });
+        }
         break;
       case 'prevented':
         out.push({ kind: 'popup', at: targetZones(e), text: 'Prevented', tone: 'good' });

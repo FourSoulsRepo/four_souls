@@ -9,6 +9,7 @@ const ctx = {
       ? { ref, set: 'b2', type: 'Character Card', name: 'Cain', effects: [], footnotes: [], stats: [], rewards: [], image: '' }
       : undefined,
   name: (p: number) => ['Ann', 'Bo'].at(p) ?? '?',
+  character: (p: number) => (p === 1 ? 31 : undefined),
 };
 
 describe('effectsFor', () => {
@@ -39,6 +40,20 @@ describe('effectsFor', () => {
       { kind: 'popup', at: ['player-0'], text: '+3¢', tone: 'good' },
       { kind: 'popup', at: ['player-1'], text: '−2', tone: 'bad' },
       { kind: 'banner', text: "Bo's turn" },
+    ]);
+  });
+
+  it('lunges the attacker at what its attack damaged', () => {
+    const events: GameEvent[] = [
+      { kind: 'damaged', player: -1, object: 40, amount: 1, source: 30, text: 'combat' },
+      { kind: 'damaged', player: 1, amount: 2, source: 40, text: 'combat' },
+      { kind: 'damaged', player: 0, amount: 1, source: 40, text: 'combat' },
+      { kind: 'damaged', player: -1, object: 40, amount: 1, source: 7 },
+    ];
+    expect(effectsFor(events, ctx)).toEqual([
+      { kind: 'lunge', from: ['obj-30'], to: ['obj-40'], amount: 1 },
+      { kind: 'lunge', from: ['obj-40'], to: ['obj-31', 'player-1'], amount: 2 },
+      { kind: 'lunge', from: ['obj-40'], to: ['player-0'], amount: 1 },
     ]);
   });
 });

@@ -157,6 +157,20 @@ Images come first, so the new table is built with backs and mats.
    6. The lunge goes into the target and back, as in T-23.
 3. Done when:
    1. e2e screenshot of an attack in progress.
+4. Result (2026-10-13)
+   1. A combat `damaged` event with a source plays a lunge.
+   2. A copy of the source card flies; the card waits hidden at home.
+   3. The copy winds up, goes into the target, and returns.
+   4. At the hit, a yellow starburst "−N" pops on the target.
+   5. The effect ends at the hit: the target's HP drops at once.
+   6. A monster's hit on a player lunges at the character card.
+   7. The copy plays in its own layer; the table never clips it.
+   8. Web Animations, `transform` and `opacity` only; speed setting applies.
+   9. Other damage has no lunge yet; 15.37 adds its marks.
+   10. The "−N" popup when damage goes on the stack stays.
+   11. Unit test: combat damage maps to lunges, other damage does not.
+   12. e2e test: the copy flies, the card hides, the burst, HP drops.
+   13. Screenshots: `.cache/screenshots/15.3/before/` and `after/`.
 
 ### [~] 15.4 Hearthstone-style card play
 

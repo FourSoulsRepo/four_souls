@@ -4,6 +4,7 @@ import { useApp, type Playing } from '../store';
 import { Card } from './Card';
 import { Die } from './Die';
 import './Effects.css';
+import { lunge } from './lunge';
 
 // The size of a table card, for flying cards.
 const cardW = 80;
@@ -86,7 +87,24 @@ function Effect({ playing }: { playing: Playing }) {
           <Card cardRef={effect.card} size="zoom" />
         </motion.div>
       );
+    case 'lunge':
+      return <Lunge from={effect.from} to={effect.to} amount={effect.amount} playing={playing} />;
   }
+}
+
+// lunged is the last lunge started: Strict Mode runs effects twice.
+let lunged = 0;
+
+// Lunge starts the attack lunge; it ends the effect at the hit and
+// plays on in its own layer (lunge.ts).
+function Lunge({ from, to, amount, playing }: { from: string[]; to: string[]; amount: number; playing: Playing }) {
+  useEffect(() => {
+    if (playing.key > lunged) {
+      lunged = playing.key;
+      lunge(from, to, amount, playing.scale, playing.done);
+    }
+  }, [from, to, amount, playing]);
+  return null;
 }
 
 // useSkip ends an effect at once when it has nowhere to play.

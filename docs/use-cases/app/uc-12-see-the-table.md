@@ -67,6 +67,11 @@
   * Red health, a white die for the dice, gold attack.
   * A value as printed shows no badge; the card shows it.
   * A damaged monster shows its lower health instead of a damage mark.
+* **1h. Attack hit (15.3):** the attacker's card lunges into the target.
+  * It winds up, hits, and goes back to its place.
+  * A yellow starburst "−N" pops on the card that was hit.
+  * The target's health drops at the hit, while the card goes back.
+  * A monster's hit on a player lunges the monster at the character.
 
 ## Postconditions
 

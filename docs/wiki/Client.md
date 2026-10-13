@@ -30,6 +30,8 @@ The desktop client is React + TypeScript in `frontend/` (ADR 002), with three li
 
 `playback.effectsFor` maps engine events to effects: a flying card (looted, discarded), a dice, a popup (cents, healing, damage), a banner (turn, winner), a revealed card. Effects find their places on screen by `data-zone` attributes: `deck-loot`, `discard-monster`, `player-1`, `hand-0`, `obj-42` and so on, falling back to the next zone when one is not drawn.
 
+An attack hit (a `damaged` event with `text: "combat"` and a `source`) is a lunge (15.3, `components/lunge.ts`). A copy of the source card goes into a layer of its own, `.effects-trail`, so the table never clips it; the card itself is hidden until the copy is back. The copy winds up, goes into the target, and returns; at the hit a starburst "−N" pops on the target. The lunge ends its effect at the hit, so playback shows the update at once and the target's HP drops while the copy returns. The copy loses its `data-zone` and test ids, and the layer is `aria-hidden`, so nothing finds the copy in place of the card. Other damage has no lunge.
+
 A dice effect draws `Die`: one face cut out of the player's dice texture (V-19). `App.Dice` lists the looks with their image URLs, and the `dice` setting picks one. A texture is a 3×3 grid in the Tabletop Simulator layout: the top row is unused, then faces 2 4 5 and 1 3 6 (`dice.ts`). Without a texture, or for a modified value outside 1–6, the die is plain with a number.
 
 ## Game mats
