@@ -355,11 +355,14 @@ func (g *Game) monsterDeath(id ObjectID) {
 	if g.Attack.Target == id {
 		g.endAttack()
 	}
-	g.removeFromSlot(id)
+	z := g.takeFromSlot(id)
 	holding := g.move(id, Zone{Kind: ZoneOutside}, NoPlayer) // R-DEATH-04
 	before := len(g.PendingTriggers)
 	g.emit(Event{Kind: EvDied, Player: NoPlayer, Object: holding, Card: card, Prev: id})
-	if len(g.PendingTriggers) > before {
+	triggered := len(g.PendingTriggers) > before
+	// The card below was covered when this died: it misses the death (R-ZONE-11).
+	g.uncover(z)
+	if triggered {
 		// "When this dies" triggers resolve before the rewards (R-DEATH-05).
 		g.push(StackItem{Kind: StackDeathStep, Controller: NoPlayer, Label: "rewards", Target: Target{Object: holding}, Amount: stepRewards})
 		return
@@ -449,20 +452,35 @@ func (g *Game) payPenalty(p PlayerID) {
 // removeFromSlot takes an object off the top of its slot; the card below,
 // if any, enters play again as a new object (R-ZONE-11).
 func (g *Game) removeFromSlot(id ObjectID) {
+	g.uncover(g.takeFromSlot(id))
+}
+
+// takeFromSlot takes an object off the top of its slot and returns the
+// slot's zone; the card below stays covered until uncover.
+func (g *Game) takeFromSlot(id ObjectID) Zone {
 	z := g.Object(id).Zone
-	var slot *Slot
-	switch z.Slot {
-	case ShopSlot:
-		slot = &g.Shop[z.Index]
-	case MonsterSlot:
-		slot = &g.Monsters[z.Index]
-	case RoomSlot:
-		slot = &g.Rooms[z.Index]
-	}
+	slot := g.slotAt(z)
 	slot.Cards = remove(slot.Cards, id)
+	return z
+}
+
+// uncover puts the covered card on top of the slot at z into play.
+func (g *Game) uncover(z Zone) {
+	slot := g.slotAt(z)
 	if below, ok := slot.TopOf(); ok && g.Object(below).Zone.Kind == ZoneCovered {
 		slot.Cards = slot.Cards[:len(slot.Cards)-1]
 		g.putInSlot(below, z.Slot, z.Index)
+	}
+}
+
+func (g *Game) slotAt(z Zone) *Slot {
+	switch z.Slot {
+	case ShopSlot:
+		return &g.Shop[z.Index]
+	case MonsterSlot:
+		return &g.Monsters[z.Index]
+	default:
+		return &g.Rooms[z.Index]
 	}
 }
 

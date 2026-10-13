@@ -64,6 +64,8 @@ Ideas: R-05, TS-01 – TS-04.
    3. Batches of about 20 cards.
 3. Done when:
    1. Report shows monsters as tested.
+4. Later fixes
+   1. A covered Stoney no longer dies with the monster on top of it.
 
 ### [x] 5.7 Bonus souls
 
