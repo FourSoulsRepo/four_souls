@@ -1,5 +1,5 @@
-import { useMemo, useState } from 'react';
-import { actionsFor, IntentKind, type Actions } from '../actions';
+import { useEffect, useMemo, useState } from 'react';
+import { actionsFor, aimedOption, IntentKind, type Actions } from '../actions';
 import { ActionBar } from '../components/ActionBar';
 import { ActionMenu } from '../components/ActionMenu';
 import { Board } from '../components/Board';
@@ -58,13 +58,28 @@ function Table({ game, you }: { game: Update; you: number }) {
   const act = useApp((s) => s.act);
   const select = useApp((s) => s.select);
   const looking = useApp((s) => s.looking);
+  const aiming = useApp((s) => s.aiming);
+  const aimed = useApp((s) => s.aimed);
+  const takeAimed = useApp((s) => s.takeAimed);
   // The full history opens from the strip; the stack has its room (15.22).
   const [historyOpen, setHistoryOpen] = useState(false);
   // The player acts only on the latest state, and once per step. While
   // waiting, buttons stay but are disabled, so they do not blink.
   const canAct = !behind && sent !== game.step;
   const actions = useMemo(() => actionsFor(game, (label) => cards.has(label)), [game, cards]);
-  const ui = canAct ? interact(actions, act, select) : noInteract;
+  const ui = canAct ? interact(actions, act, select, aiming) : noInteract;
+  // A card dropped on a target: its target prompt picks that target at
+  // once (15.25). Only the first state after the play gets the chance.
+  useEffect(() => {
+    if (!aimed || !canAct || game.step <= aimed.step) {
+      return;
+    }
+    takeAimed();
+    const pick = aimedOption(actions.choice, aimed.target);
+    if (pick) {
+      act(pick);
+    }
+  }, [aimed, canAct, game.step, actions, act, takeAimed]);
   const offered = canAct ? actions : noActions;
   const name = (player: number) => game.seats?.find((s) => s.seat === player)?.name ?? `Player ${String(player + 1)}`;
   const names: Names = { player: name, card: (ref) => cards.get(ref)?.name ?? ref };

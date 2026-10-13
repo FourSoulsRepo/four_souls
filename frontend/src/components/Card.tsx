@@ -27,7 +27,7 @@ interface Props {
   // counters is how many counters the card carries (7.9).
   counters?: number;
   // highlight marks a card the player may act on or pick (7.7).
-  highlight?: 'act' | 'pick';
+  highlight?: 'act' | 'pick' | 'aim';
   // stats shows live health and attack as big numbers (H-15).
   stats?: { hp: number; atk: number };
   // monster shows the stats that differ from the print (C-03).

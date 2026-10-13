@@ -752,3 +752,13 @@
     0 0 0 var(--ink),
     0 2px 4px rgb(0 0 0 / 50%);
 }
+
+/* Drag and aim (15.25): the dragged card's targets glow red, as in
+   Hearthstone; a stack item it may aim at too. */
+.stack-row.hl-aim {
+  box-shadow: inset 0 0 0 2px #ff4b3e;
+}
+
+.player.hl-aim {
+  border-color: #ff4b3e;
+}

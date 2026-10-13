@@ -40,7 +40,7 @@ Every card is an object with an ID. Moving a card to another zone gives it a new
 | `ability.go`, `activate.go` | effect blocks, activating abilities, targets |
 | `triggers.go`, `statics.go` | triggered and static abilities |
 | `choice.go` | `Choose` prompts (targets, order of replacements and triggers, penalties) |
-| `allowed.go`, `view.go` | allowed intents; per-viewer hidden information |
+| `allowed.go`, `aims.go`, `view.go` | allowed intents and their first targets; per-viewer hidden information |
 | `record.go`, `situation.go` | step records, replay, save/load; situation payloads |
 | `invariants.go` | state checks used by tests and fuzzing |
 

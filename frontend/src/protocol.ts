@@ -323,6 +323,12 @@ export interface OptionView {
   stack_id?: number;
 }
 
+// Aim is what the allowed intent at index intent asks to target first.
+export interface Aim {
+  intent: number;
+  targets: OptionView[];
+}
+
 export interface Intent {
   player: number;
   kind: number;
@@ -363,6 +369,7 @@ export interface Update {
   events: GameEvent[] | null;
   view: GameView;
   allowed: Intent[] | null;
+  aims?: Aim[]; // the first targets of allowed plays and uses (15.25)
   seats: Seat[] | null;
   deadline?: number; // Unix ms; the response timer
   skip_all?: boolean;

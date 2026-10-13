@@ -116,6 +116,15 @@ const modeled: Record<string, Envelope> = {
         { player: 1, kind: 7, objects: [312] },
         { player: 1, kind: 7, objects: [313] },
       ],
+      aims: [
+        {
+          intent: 0,
+          targets: [
+            { object: 320, player: -1 },
+            { player: 1, is_player: true },
+          ],
+        },
+      ],
       seats: [
         { seat: 0, name: 'Ann', connected: true },
         { seat: 1, name: 'Bo', connected: false },

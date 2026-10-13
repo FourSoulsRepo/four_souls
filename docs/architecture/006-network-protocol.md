@@ -99,6 +99,7 @@ Use options 1, 3, 5 and 10.
    11. `games` marks such a game `locked`; a wrong one gets error `password`.
    12. The password is never sent back, logged, recorded or saved.
    13. Turn flow: `wait_turn`; `update` shows it while on (N-16).
+   14. Aiming: `update` → `aims` lists the first targets of allowed plays and uses (15.25).
 9. Playing over the internet, until a relay exists
    1. A virtual LAN (Tailscale, ZeroTier, Hamachi, Radmin VPN), or port forwarding.
    2. Or a dedicated server on a rented VPS.

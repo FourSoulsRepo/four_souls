@@ -44,6 +44,8 @@ export interface Action {
   // line is the words of the ability it uses, when the card has two or
   // more to pick from (C-05).
   line?: string;
+  // targets are what the action asks to target first, if it aims (15.25).
+  targets?: OptionView[];
 }
 
 export interface ChoiceOption extends Action {
@@ -61,7 +63,7 @@ export interface Choice {
 
 // Purpose.purchase: a "deck" option means the treasure deck, otherwise
 // the monster deck.
-export const Purpose = { attackTarget: 1, purchase: 5, answer: 9 } as const;
+export const Purpose = { attackTarget: 1, purchase: 5, target: 6, answer: 9 } as const;
 
 export interface Actions {
   // buttons are the actions that need no card: pass.
@@ -104,10 +106,12 @@ export function actionsFor(u: Update, isCard: (label: string) => boolean): Actio
       lines.set(c.id, c.abilities);
     }
   }
-  const add = (id: number, action: Action) => {
-    out.cards.set(id, [...(out.cards.get(id) ?? []), action]);
+  const aims = new Map((u.aims ?? []).map((a) => [a.intent, a.targets]));
+  const add = (id: number, action: Action, i: number) => {
+    const targets = aims.get(i);
+    out.cards.set(id, [...(out.cards.get(id) ?? []), targets ? { ...action, targets } : action]);
   };
-  for (const a of allowed) {
+  for (const [i, a] of allowed.entries()) {
     const id = a.objects?.[0] ?? 0;
     const button = buttonLabels.get(a.kind);
     if (button) {
@@ -119,7 +123,7 @@ export function actionsFor(u: Update, isCard: (label: string) => boolean): Actio
     } else if (a.kind === IntentKind.purchase) {
       out.turn.buy = a;
     } else if (a.kind === IntentKind.playLoot) {
-      add(id, { label: 'Play', intent: a });
+      add(id, { label: 'Play', intent: a }, i);
     } else if (a.kind === IntentKind.activate) {
       const n = a.choice ?? 0;
       const line = lines.get(id)?.at(n);
@@ -127,7 +131,7 @@ export function actionsFor(u: Update, isCard: (label: string) => boolean): Actio
         label: (abilities.get(id) ?? 0) > 1 ? `Use ability ${String(n + 1)}` : 'Use',
         intent: a,
         ...(line ? { line } : {}),
-      });
+      }, i);
     } else if (a.kind === IntentKind.discard) {
       out.discard = { count: u.view.waiting.count ?? 0, from: a.objects ?? [], intent: a };
     }
@@ -160,4 +164,24 @@ export function actionsFor(u: Update, isCard: (label: string) => boolean): Actio
 // discardIntent is the discard of exactly the chosen hand cards.
 export function discardIntent(base: Intent, chosen: number[]): Intent {
   return { ...base, objects: chosen };
+}
+
+// sameTarget: two option views point at the same thing on the table.
+export function sameTarget(a: OptionView, b: OptionView): boolean {
+  if (a.is_player || b.is_player) {
+    return !!a.is_player && !!b.is_player && a.player === b.player;
+  }
+  if (a.stack_id || b.stack_id) {
+    return a.stack_id === b.stack_id;
+  }
+  return !!a.object && a.object === b.object;
+}
+
+// aimedOption is the target prompt's option for a card dropped on target
+// (15.25), if the prompt asks for a target and offers it.
+export function aimedOption(choice: Choice | null, target: OptionView): Intent | undefined {
+  if (choice?.purpose !== Purpose.target) {
+    return undefined;
+  }
+  return choice.options.find((o) => o.target && sameTarget(o.target, target))?.intent;
 }

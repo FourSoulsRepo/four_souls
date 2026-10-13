@@ -109,7 +109,10 @@ type Update struct {
 	Events  []engine.Event  `json:"events"`
 	View    engine.GameView `json:"view"`
 	Allowed []engine.Intent `json:"allowed"`
-	Seats   []Seat          `json:"seats"`
+	// Aims are the targets an allowed play or use asks first, by its
+	// index in Allowed, to light while a card is dragged (15.25).
+	Aims  []engine.Aim `json:"aims,omitempty"`
+	Seats []Seat       `json:"seats"`
 	// Deadline is when the response timer answers for the waiting player,
 	// Unix ms; 0: no timer (N-07).
 	Deadline int64 `json:"deadline,omitempty"`

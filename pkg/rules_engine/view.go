@@ -222,17 +222,7 @@ func (g *Game) optionViews() []OptionView {
 		}
 	case ChooseTarget:
 		for i, t := range c.Targets {
-			set(i, func(o *OptionView) {
-				switch t.Kind {
-				case TargetPlayer, TargetOtherPlayer:
-					o.Player, o.IsPlayer = t.Player, true
-				case TargetDiceRoll, TargetStackAbility:
-					o.StackID = t.StackID
-				case TargetMonster, TargetMonsterOrPlayer, TargetItem, TargetCurse, TargetYourItem,
-					TargetYourHandCard, TargetItemOrSoul:
-					o.Object = t.Object
-				}
-			})
+			set(i, func(o *OptionView) { *o = targetView(t) })
 		}
 	case ChooseMonsterSlot:
 		for i, s := range c.Slots {
@@ -248,6 +238,21 @@ func (g *Game) optionViews() []OptionView {
 		// Text options.
 	}
 	return out
+}
+
+// targetView is what a chosen target points at on the table.
+func targetView(t Chosen) OptionView {
+	o := OptionView{Player: NoPlayer}
+	switch t.Kind {
+	case TargetPlayer, TargetOtherPlayer:
+		o.Player, o.IsPlayer = t.Player, true
+	case TargetDiceRoll, TargetStackAbility:
+		o.StackID = t.StackID
+	case TargetMonster, TargetMonsterOrPlayer, TargetItem, TargetCurse, TargetYourItem,
+		TargetYourHandCard, TargetItemOrSoul:
+		o.Object = t.Object
+	}
+	return o
 }
 
 func (g *Game) cardView(id ObjectID) CardView {

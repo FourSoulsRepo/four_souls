@@ -42,6 +42,7 @@ import {
   type Envelope,
   type Hello,
   type Intent,
+  type OptionView,
   type Update,
 } from './protocol';
 
@@ -65,6 +66,12 @@ export interface ZoomCaption {
   // line says what a stack item without ability words did: whom an
   // attack roll was against, who dealt damage to whom (15.22).
   line?: LinePart[];
+}
+
+// Aimed is a dropped card's target, kept until the target prompt.
+export interface Aimed {
+  step: number;
+  target: OptionView;
 }
 
 // Playing is the effect on screen now; done ends it (playback.ts).
@@ -95,6 +102,16 @@ interface AppState extends Session {
   // selected is the card whose action menu is open.
   selected: number | null;
   act: (intent: Intent) => void;
+  // aiming is the targets of the card being dragged; they glow (15.25).
+  aiming: OptionView[] | null;
+  setAiming: (targets: OptionView[] | null) => void;
+  // aimed is the target a card was dropped on, at the step its play was
+  // sent; the target prompt that follows picks it (15.25).
+  aimed: Aimed | null;
+  // playAt sends a play and remembers its target.
+  playAt: (intent: Intent, target: OptionView) => void;
+  // takeAimed returns aimed and forgets it.
+  takeAimed: () => Aimed | null;
   // skipAll turns "skip all" on or off (N-06).
   skipAll: (on: boolean) => void;
   // waitTurn turns "wait for my turn" on or off (N-16).
@@ -323,15 +340,30 @@ export const useApp = create<AppState>()((set, get) => {
         playback.push(env.data as Update);
       }
       if (env.type === 'error') {
-        set({ sent: null });
+        set({ sent: null, aimed: null });
       }
       if (env.type === 'table') {
+        set({ aiming: null, aimed: null });
         keepSeat();
       }
     },
     act: (intent) => {
       send('intent', { intent });
       set({ sent: get().game?.step ?? null, selected: null, error: '' });
+    },
+    aiming: null,
+    setAiming: (targets) => {
+      set({ aiming: targets });
+    },
+    aimed: null,
+    playAt: (intent, target) => {
+      get().act(intent);
+      set({ aimed: { step: get().game?.step ?? 0, target } });
+    },
+    takeAimed: () => {
+      const { aimed } = get();
+      set({ aimed: null });
+      return aimed;
     },
     skipAll: (on) => {
       send('skip_all', { on });

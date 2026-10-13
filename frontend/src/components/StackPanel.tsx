@@ -75,6 +75,7 @@ function StackRow({ it, view, names }: { it: StackItem; view: GameView; names: N
   const setZoom = useApp((s) => s.setZoom);
   const card = stackCard(it, view);
   const parts = stackParts(it, view, names);
+  const aimed = useApp((s) => s.aiming?.some((t) => t.stack_id === it.id) ?? false);
   const show = (e: PointerEvent, touch: boolean) => {
     if (card) {
       setZoom(itemZoom(it, card, view, names, e, touch));
@@ -82,9 +83,11 @@ function StackRow({ it, view, names }: { it: StackItem; view: GameView; names: N
   };
   return (
     <li
-      className={`stack-row stack-${stackIcon(it)}`}
+      className={`stack-row stack-${stackIcon(it)}${aimed ? ' hl-aim' : ''}`}
       // Damage from this item's source flies from here (15.37).
       data-zone={it.source ? `stack-src-${String(it.source)}` : undefined}
+      // A dragged card may aim at this item (15.25).
+      data-stack={it.id}
       aria-label={parts.map((p) => p.text).join('')}
       onPointerEnter={(e) => {
         if (e.pointerType === 'mouse') {

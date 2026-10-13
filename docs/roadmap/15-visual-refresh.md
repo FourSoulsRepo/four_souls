@@ -782,6 +782,23 @@ Images come first, so the new table is built with backs and mats.
    5. Touch: drag from the source, release on the target (T-17).
 3. Done when:
    1. e2e test: a bomb dragged onto a monster damages it.
+4. Result (2026-10-13)
+   1. Owner: the engine sends the targets, so they glow while dragging.
+   2. New `update.aims`: first target options of each allowed play or use.
+   3. Keyed by the intent's index in `allowed`; built by `Game.Aims`.
+   4. No aim for a card with a mode, no target, or a copied ability.
+   5. A card that aims stays lifted in the fan while dragged.
+   6. A plain red arrow runs from the card to the pointer; 15.32 styles it.
+   7. Valid targets glow red: cards, player areas, stack rows.
+   8. A drop on a target sends the play; its target prompt picks it at once.
+   9. A drop elsewhere on the board plays it; the dialog asks, as before.
+   10. Cards that need no target move with the pointer, as before.
+   11. Hand cards only; items and the character aim in 15.33.
+   12. Touch shares the pointer code; e2e drives the mouse only.
+   13. Engine test: every aim matches the target prompt its intent opens.
+   14. Unit tests: aims by index, drop target lookup, prompt auto-pick.
+   15. e2e test: a save gives a Bomb!; dragged onto a monster, it hits it.
+   16. Screenshots: `.cache/screenshots/15.25/before/` and `after/`.
 
 ### [ ] 15.26 Click modes
 

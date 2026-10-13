@@ -243,6 +243,11 @@
   box-shadow: 0 0 0 3px #4fc3f7, 0 0 14px 2px rgb(79 195 247 / 70%);
 }
 
+/* A target of the card being dragged (15.25). */
+.card.hl-aim {
+  box-shadow: 0 0 0 3px #ff4b3e, 0 0 16px 3px rgb(255 75 62 / 75%);
+}
+
 /* Badges (15.23): numbers on a card, drawn like the game's cut-out art
    and its End turn button: a shape with a thick ink outline and a hard
    shadow, a slight tilt, and the number in the game's hand-drawn

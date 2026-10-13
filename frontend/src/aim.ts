@@ -1,0 +1,59 @@
+// Drag and aim (15.25): what a dragged card points at. Pure, except
+// zonesAt, which reads the page.
+import type { OptionView } from './protocol';
+
+// zonesAt lists the zones under a point, topmost first: data-zone of
+// cards ("obj-N") and players ("player-N"), data-stack of stack rows.
+export function zonesAt(x: number, y: number): string[] {
+  const out: string[] = [];
+  for (const el of document.elementsFromPoint(x, y)) {
+    const zone = el.getAttribute('data-zone');
+    const stack = el.getAttribute('data-stack');
+    if (stack) {
+      out.push(`stack-${stack}`);
+    }
+    if (zone) {
+      out.push(zone);
+    }
+  }
+  return out;
+}
+
+// targetAt is the first of the targets the zones show, topmost first:
+// a card wins over the player area around it.
+export function targetAt(zones: string[], targets: OptionView[]): OptionView | undefined {
+  for (const zone of zones) {
+    const m = /^(obj|player|stack)-(\d+)$/.exec(zone);
+    if (!m) {
+      continue;
+    }
+    const n = Number(m[2]);
+    const t = targets.find((o) => {
+      switch (m[1]) {
+        case 'obj':
+          return !o.is_player && o.object === n;
+        case 'player':
+          return !!o.is_player && o.player === n;
+        default:
+          return o.stack_id === n;
+      }
+    });
+    if (t) {
+      return t;
+    }
+  }
+  return undefined;
+}
+
+// aimed: the target is one of the targets.
+export function aimed(targets: OptionView[] | null, test: (o: OptionView) => boolean): boolean {
+  return targets?.some(test) ?? false;
+}
+
+// Arrow is how an aiming arrow from a point to a point is drawn: its
+// length, and its angle in degrees from the x axis.
+export function arrow(from: { x: number; y: number }, to: { x: number; y: number }): { length: number; angle: number } {
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+  return { length: Math.hypot(dx, dy), angle: (Math.atan2(dy, dx) * 180) / Math.PI };
+}

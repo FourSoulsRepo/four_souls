@@ -271,6 +271,7 @@ func (r *Room) update(c *Client, events []engine.Event) {
 	}
 	u := protocol.Update{
 		Step: r.step, Events: engine.FilterEvents(events, v), View: r.game.View(v), Allowed: allowed, Seats: r.seatViews(),
+		Aims: r.game.Aims(allowed),
 	}
 	if !r.deadline.IsZero() {
 		u.Deadline = r.deadline.UnixMilli()

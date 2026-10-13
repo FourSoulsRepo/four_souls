@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { actionsFor, IntentKind, PromptKind } from './actions';
+import { actionsFor, aimedOption, IntentKind, PromptKind, Purpose, sameTarget } from './actions';
 import type { Update } from './protocol';
 
 function update(partial: Partial<Update['view']>, allowed: Update['allowed']): Update {
@@ -147,5 +147,40 @@ describe('actionsFor', () => {
       isCard,
     );
     expect(a.discard).toMatchObject({ count: 2, from: [5, 6, 7] });
+  });
+});
+
+describe('aims', () => {
+  const monster = { object: 40, player: -1 };
+  const ann = { player: 0, is_player: true };
+
+  it('gives a play its targets by its place in allowed', () => {
+    const u = update({}, [
+      { player: 0, kind: IntentKind.pass },
+      { player: 0, kind: IntentKind.playLoot, objects: [7] },
+      { player: 0, kind: IntentKind.playLoot, objects: [8] },
+    ]);
+    const a = actionsFor({ ...u, aims: [{ intent: 1, targets: [monster, ann] }] }, isCard);
+    expect(a.cards.get(7)?.[0]?.targets).toEqual([monster, ann]);
+    expect(a.cards.get(8)?.[0]?.targets).toBeUndefined();
+  });
+
+  it('picks the dropped-on target from the target prompt', () => {
+    const u = update({ waiting: { kind: PromptKind.choose, player: 0, purpose: Purpose.target, options: ['gaper', 'player 1', 'cancel'] }, options: [monster, ann, { player: -1 }] }, [
+      { player: 0, kind: IntentKind.choose, choice: 0 },
+      { player: 0, kind: IntentKind.choose, choice: 1 },
+      { player: 0, kind: IntentKind.choose, choice: 2 },
+    ]);
+    const { choice } = actionsFor(u, isCard);
+    expect(aimedOption(choice, ann)?.choice).toBe(1);
+    expect(aimedOption(choice, { object: 41, player: -1 })).toBeUndefined();
+    expect(aimedOption({ title: '', purpose: Purpose.attackTarget, options: choice?.options ?? [] }, ann)).toBeUndefined();
+  });
+
+  it('tells players, stack items and cards apart', () => {
+    expect(sameTarget(ann, { player: 0, is_player: true })).toBe(true);
+    expect(sameTarget(ann, { object: 0, player: 0 })).toBe(false);
+    expect(sameTarget({ stack_id: 2, player: 1 }, { stack_id: 2, player: 0 })).toBe(true);
+    expect(sameTarget({ player: -1 }, { player: -1 })).toBe(false);
   });
 });

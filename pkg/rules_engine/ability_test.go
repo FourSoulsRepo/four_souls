@@ -336,3 +336,34 @@ func TestStaticAbilities(t *testing.T) {
 		t.Errorf("cents %d; a shop item costs 10-5 with a sale, want 0", g.Players[a].Cents)
 	}
 }
+
+func TestAimsListTheFirstTargets(t *testing.T) {
+	g := newAbilityGame(t)
+	a := g.Turn.Active
+	m := putMonster(g, 0, "gaper")
+	bomb := addToHand(g, a, "bomb_loot")
+	pills := addToHand(g, a, "pills_loot")
+	dagaz := addToHand(g, a, "dagaz_like")
+	allowed := []Intent{
+		{Player: a, Kind: IntentPlayLoot, Objects: []ObjectID{bomb}},
+		{Player: a, Kind: IntentPlayLoot, Objects: []ObjectID{pills}},
+		{Player: a, Kind: IntentPlayLoot, Objects: []ObjectID{dagaz}},
+		{Player: a, Kind: IntentPass},
+	}
+	aims := g.Aims(allowed)
+	if len(aims) != 1 || aims[0].Intent != 0 {
+		t.Fatalf("aims %+v; only the bomb aims: pills has no target, Dagaz asks a mode first", aims)
+	}
+	var monster, players int
+	for _, o := range aims[0].Targets {
+		switch {
+		case o.Object == m:
+			monster++
+		case o.IsPlayer:
+			players++
+		}
+	}
+	if monster != 1 || players != len(g.Players) {
+		t.Errorf("bomb targets %+v; want the monster and every player", aims[0].Targets)
+	}
+}
