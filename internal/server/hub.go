@@ -444,7 +444,7 @@ func (h *Hub) start(t *table) {
 		room.second, room.hub, room.saves, room.loaded = h.second, h, h.saves, t.loaded
 		room.recDir = h.records
 		room.recInfo = recordInfo{game: t.id, sets: t.sets, cards: h.cards}
-		room.path = recordPath(h.records, t.id, time.Now())
+		room.path = recordPath(h.records, t.id, seats, time.Now())
 	}
 	if err != nil {
 		for _, s := range t.seats {

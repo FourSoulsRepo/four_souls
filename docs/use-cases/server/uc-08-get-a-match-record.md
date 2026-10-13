@@ -22,8 +22,11 @@
 * **4b. Someone who did not play asks:** refused.
 * **5a. The record is older than the retention:** it was deleted (RP-07).
 * **4c. In the app:** the game-over dialog names the winner and offers **Save record**.
-  * The app asks where to save the `.fsrec` file, then downloads it.
+  * The app downloads the `.fsrec` file, then asks where to save it.
   * It says where it saved it, or why it could not.
+  * The dialog suggests the server's file name, cleaned again.
+* **1a. The file name:** start time, game ID, and the players' nicknames.
+  * Nicknames lose every character but letters and digits (ADR 007).
 
 ## Postconditions
 

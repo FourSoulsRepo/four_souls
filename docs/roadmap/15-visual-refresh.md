@@ -1087,3 +1087,26 @@ Images come first, so the new table is built with backs and mats.
    8. Screenshots: `.cache/screenshots/15.47/before/` and `after/`.
 7. Owner notes (2026-10-13)
    1. Owner marks 15.47 solved.
+
+### [ ] 15.48 Player names in record file names
+
+1. Goal: a record file says who played (owner, 2026-10-13).
+2. Owner: fix it now; clean the names for security and file systems.
+3. Tasks:
+   1. The server adds seat nicknames to the record file name.
+   2. Nicknames keep letters and digits; other runs become `-`.
+   3. The app suggests the server's file name, cleaned again.
+   4. ADR 007 and UC-08 updated.
+4. Done when:
+   1. Go tests: hostile nicknames give a safe file name.
+   2. Go test: the app's save dialog suggests the cleaned name.
+5. Result (2026-10-13)
+   1. Name: `2026-10-13-120000-g3_Ann_Bob.fsrec`.
+   2. `record.FileName` and `SafeName` in `pkg/record`.
+   3. Kept: Unicode letters and digits; at most 20 per nickname.
+   4. Dropped: dots, slashes, spaces, control and bidi runes.
+   5. Empty after cleaning: `p1`, `p2`, ….
+   6. `Content-Disposition` is built by `mime`; Cyrillic names survive.
+   7. The app downloads first, then the dialog suggests that name.
+   8. The app cleans it again with `record.SafeFileName`.
+   9. No screen changed; no screenshots.

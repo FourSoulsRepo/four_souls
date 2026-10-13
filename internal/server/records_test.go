@@ -3,10 +3,12 @@ package server
 import (
 	"context"
 	"encoding/json"
+	"mime"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -48,6 +50,9 @@ func TestRecordReplays(t *testing.T) {
 	if err != nil || len(files) != 1 {
 		t.Fatalf("records %v, %v", files, err)
 	}
+	if name := filepath.Base(files[0]); !strings.HasSuffix(name, "_P0_P1"+record.Ext) {
+		t.Errorf("record %s does not name its players", name)
+	}
 	rec, err := record.ReadFile(files[0])
 	if err != nil {
 		t.Fatal(err)
@@ -84,7 +89,7 @@ func TestRecordReplays(t *testing.T) {
 // (RP-05).
 func TestDownloadRecord(t *testing.T) {
 	dir := t.TempDir()
-	path := filepath.Join(dir, "g1"+record.Ext)
+	path := filepath.Join(dir, "g1_Иван"+record.Ext)
 	if err := os.WriteFile(path, []byte("rec"), 0o600); err != nil {
 		t.Fatal(err)
 	}
@@ -98,12 +103,14 @@ func TestDownloadRecord(t *testing.T) {
 	<-done
 	srv := httptest.NewServer(http.HandlerFunc(h.downloadRecord))
 	defer srv.Close()
+	var disposition string
 	get := func(q string) int {
 		resp, err := http.Get(srv.URL + "/record?" + q) //nolint:noctx // test
 		if err != nil {
 			t.Fatal(err)
 		}
 		_ = resp.Body.Close() //nolint:errcheck // test
+		disposition = resp.Header.Get("Content-Disposition")
 		return resp.StatusCode
 	}
 	if code := get("game=g1&token=tok"); code != http.StatusConflict {
@@ -118,5 +125,8 @@ func TestDownloadRecord(t *testing.T) {
 	}
 	if code := get("game=g1&token=tok"); code != http.StatusOK {
 		t.Errorf("a player after the end: %d", code)
+	}
+	if _, params, err := mime.ParseMediaType(disposition); err != nil || params["filename"] != "g1_Иван"+record.Ext {
+		t.Errorf("Content-Disposition %q: %v %v", disposition, params, err)
 	}
 }

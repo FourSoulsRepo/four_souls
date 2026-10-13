@@ -2,6 +2,7 @@ package server
 
 import (
 	"log"
+	"mime"
 	"net/http"
 	"path/filepath"
 	"slices"
@@ -85,9 +86,14 @@ func (r *Room) closeRecord(finished bool) {
 	}
 }
 
-// recordPath names a game's record: started time and game ID.
-func recordPath(dir, game string, now time.Time) string {
-	return filepath.Join(dir, now.UTC().Format("2006-01-02-150405")+"-"+game+record.Ext)
+// recordPath names a game's record: started time, game ID and the
+// seats' nicknames, cleaned for file systems (record.FileName).
+func recordPath(dir, game string, seats []roomSeat, now time.Time) string {
+	names := make([]string, len(seats))
+	for i, s := range seats {
+		names[i] = s.name
+	}
+	return filepath.Join(dir, record.FileName(now, game, names))
 }
 
 // downloadRecord serves a finished game's record to one of its players
@@ -110,7 +116,7 @@ func (h *Hub) downloadRecord(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, "the record is ready when the game is over (RP-05)", http.StatusConflict)
 	default:
 		w.Header().Set("Content-Type", "application/octet-stream")
-		w.Header().Set("Content-Disposition", `attachment; filename="`+filepath.Base(room.path)+`"`)
+		w.Header().Set("Content-Disposition", mime.FormatMediaType("attachment", map[string]string{"filename": filepath.Base(room.path)}))
 		http.ServeFile(w, req, room.path)
 	}
 }
