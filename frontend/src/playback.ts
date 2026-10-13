@@ -15,7 +15,18 @@ export type Effect =
   | { kind: 'banner'; text: string }
   | { kind: 'reveal'; card: string }
   // lunge: the attacker's card hits the target and returns (15.3, V-12).
-  | { kind: 'lunge'; from: string[]; to: string[]; amount: number };
+  | { kind: 'lunge'; from: string[]; to: string[]; amount: number }
+  // hits: other damage flies from its source and bursts on every
+  // damaged card at once (15.37, T-15, T-24).
+  | { kind: 'hits'; hits: Hit[] }
+  // deaths: a big skull on each dying card before it leaves (T-26).
+  | { kind: 'deaths'; at: string[][] };
+
+export interface Hit {
+  from: string[];
+  to: string[];
+  amount: number;
+}
 
 const noPlayer = -1;
 
@@ -84,20 +95,35 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
       case 'healed':
         out.push({ kind: 'popup', at: targetZones(e), text: `+${String(amount)} HP`, tone: 'good' });
         break;
-      case 'damage_pending':
-        // Attack damage shows when it lands, as its lunge.
-        if (e.text === 'combat') {
-          break;
-        }
-        out.push({ kind: 'popup', at: targetZones(e), text: `−${String(amount)}`, tone: 'bad' });
-        break;
-      case 'damaged':
-        // Attack damage: its source lunges at the target. Other damage
-        // shows with its stack item.
+      case 'damaged': {
+        // Damage shows when it lands. Attack damage: its source lunges
+        // at the target. Other damage flies from its source: a card on
+        // the table, else its stack row.
         if (e.text === 'combat' && e.source) {
           out.push({ kind: 'lunge', from: [`obj-${String(e.source)}`], to: hitZones(e, ctx), amount });
+          break;
+        }
+        const from = e.source ? [`obj-${String(e.source)}`, `stack-src-${String(e.source)}`] : [];
+        const hit = { from, to: hitZones(e, ctx), amount };
+        const last = out.at(-1);
+        if (last?.kind === 'hits') {
+          last.hits.push(hit);
+        } else {
+          out.push({ kind: 'hits', hits: [hit] });
         }
         break;
+      }
+      case 'died': {
+        // A monster's card left its place under a new ID (prev).
+        const at = e.prev ? [`obj-${String(e.prev)}`] : hitZones(e, ctx);
+        const last = out.at(-1);
+        if (last?.kind === 'deaths') {
+          last.at.push(at);
+        } else {
+          out.push({ kind: 'deaths', at: [at] });
+        }
+        break;
+      }
       case 'prevented':
         out.push({ kind: 'popup', at: targetZones(e), text: 'Prevented', tone: 'good' });
         break;

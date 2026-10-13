@@ -72,7 +72,16 @@
   * A yellow starburst "−N" pops on the card that was hit.
   * The target's health drops at the hit, while the card goes back.
   * A monster's hit on a player lunges the monster at the character.
-  * Attack damage shows no popup when it goes on the stack.
+  * Damage shows no popup when it goes on the stack.
+* **1i. Other damage (15.37):** a glowing shot flies from its source.
+  * The source: its card on the table, else its stack row.
+  * Every damaged card bursts "−N" at once.
+* **1j. Hurt health (15.37):** the health number is red below full.
+  * The heart turns pale, so the red number reads.
+  * A hurt monster shows its health even when it matches the print.
+* **1k. Death (15.37):** a big skull pops on the dying card.
+  * The card leaves while the skull fades.
+  * A dead player's skull sits on their character.
 
 ## Postconditions
 

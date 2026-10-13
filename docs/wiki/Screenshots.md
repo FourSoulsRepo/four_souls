@@ -42,5 +42,9 @@ The fixture copies the fan-game notice. `internal/legal` has a test that fails w
 | Ability dialog: a card with several abilities | `screen-ability-dialog.png` |
 | Own turn: buys and attacks left on their icons | `screen-turn-left.png` |
 | History strip: damage a player takes names its card | `screen-history-strip-taken-damage.png` |
+| Damage shots on their way to their targets | `screen-damage-shots.png` |
+| Damage bursts on every target at once | `screen-damage-bursts.png` |
+| Hurt health in red | `screen-damage-red-hp.png` |
+| A skull on a dying monster | `screen-death-skull.png` |
 
 When a screen is added, call `shot` in its test and add a row here.

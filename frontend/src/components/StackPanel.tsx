@@ -6,6 +6,7 @@ import { useApp, type Zoom } from '../store';
 import { playerColor } from '../table';
 import { Card } from './Card';
 import { Die } from './Die';
+import { skullPath } from './marks';
 import './Actions.css';
 
 interface Props {
@@ -82,6 +83,8 @@ function StackRow({ it, view, names }: { it: StackItem; view: GameView; names: N
   return (
     <li
       className={`stack-row stack-${stackIcon(it)}`}
+      // Damage from this item's source flies from here (15.37).
+      data-zone={it.source ? `stack-src-${String(it.source)}` : undefined}
       aria-label={parts.map((p) => p.text).join('')}
       onPointerEnter={(e) => {
         if (e.pointerType === 'mouse') {
@@ -188,7 +191,7 @@ function DamageIcon() {
 function SkullIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M12 2.5a8 8 0 0 0-8 8c0 2.8 1.4 4.6 3 5.6V19a1.5 1.5 0 0 0 1.5 1.5h7A1.5 1.5 0 0 0 17 19v-2.9c1.6-1 3-2.8 3-5.6a8 8 0 0 0-8-8Zm-3.2 7.2a1.9 1.9 0 1 1 0 3.8 1.9 1.9 0 0 1 0-3.8Zm6.4 0a1.9 1.9 0 1 1 0 3.8 1.9 1.9 0 0 1 0-3.8ZM12 14l1.3 2.2h-2.6Z" />
+      <path d={skullPath} />
     </svg>
   );
 }

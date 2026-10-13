@@ -133,3 +133,111 @@ test('an attack lunges at the monster and drops its HP at the hit', async ({ bro
   await expect(vee.locator('.effects-trail > *')).toHaveCount(0);
   await expect(character).toBeVisible();
 });
+
+// The view parts the replays below change.
+interface Card {
+  id: number;
+  card: string;
+  damage?: number;
+  stats?: { hp: number };
+}
+interface View {
+  players: { id: number; hp: number; character: Card }[];
+  monsters: { top?: Card }[];
+}
+interface Store {
+  getState: () => {
+    game: { view: View } | null;
+    lobby: { table: { you: number } | null };
+    receive: (env: unknown) => void;
+  };
+}
+
+test('damage from a card hits every target at once and reddens their HP', async ({ browser }) => {
+  const [mo] = await startGame(browser, ['Mo', 'Nia']);
+  if (!mo) {
+    throw new Error('no pages');
+  }
+  // The own character's ability deals 1 damage to two monsters and to
+  // its own player.
+  const ids = await mo.evaluate(() => {
+    const store = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store;
+    const s = store.getState();
+    const game = structuredClone(s.game);
+    const you = s.lobby.table?.you ?? 0;
+    const me = game?.view.players.find((p) => p.id === you);
+    const tops = (game?.view.monsters ?? []).flatMap((m) => (m.top?.stats ? [m.top] : [])).slice(0, 2);
+    if (!game || !me || tops.length < 2) {
+      throw new Error('no game');
+    }
+    const hps = tops.map((t) => t.stats?.hp ?? 0);
+    const events: unknown[] = tops.map((t) => {
+      if (t.stats) {
+        t.stats.hp -= 1;
+      }
+      t.damage = 1;
+      return { kind: 'damaged', player: -1, object: t.id, amount: 1, source: me.character.id };
+    });
+    me.hp -= 1;
+    me.character.damage = 1;
+    events.push({ kind: 'damaged', player: you, amount: 1, source: me.character.id });
+    s.receive({ type: 'update', data: { ...game, step: 2, events } });
+    return { character: me.character.id, monsters: tops.map((t) => t.id), hps };
+  });
+  // A shot flies from the source to each target.
+  await expect(mo.getByTestId('shot')).toHaveCount(3);
+  if (process.env.SCREENSHOTS) {
+    // Hold the shots on their way for the picture.
+    await mo.evaluate(() => {
+      for (const a of document.getAnimations()) {
+        a.pause();
+        a.currentTime = 0.6 * Number(a.effect?.getTiming().duration ?? 0);
+      }
+    });
+    await shot(mo, 'damage-shots');
+    await mo.evaluate(() => {
+      for (const a of document.getAnimations()) {
+        a.play();
+      }
+    });
+  }
+  // Every target bursts at once.
+  await expect(mo.getByTestId('burst')).toHaveCount(3);
+  await mo.waitForTimeout(200); // the bursts pop
+  await shot(mo, 'damage-bursts');
+  for (const [i, id] of ids.monsters.entries()) {
+    const health = mo.locator(`[data-zone="obj-${String(id)}"]`).getByLabel(`${String((ids.hps[i] ?? 0) - 1)} health`);
+    await expect(health).toHaveClass(/hurt/);
+  }
+  await expect(mo.locator(`[data-zone="obj-${String(ids.character)}"] .card-hp`)).toHaveClass(/hurt/);
+  await expect(mo.locator('.effects-trail > *')).toHaveCount(0);
+  await shot(mo, 'damage-red-hp');
+});
+
+test('a dying monster gets a skull before it leaves', async ({ browser }) => {
+  const [ola] = await startGame(browser, ['Ola', 'Pim']);
+  if (!ola) {
+    throw new Error('no pages');
+  }
+  const id = await ola.evaluate(() => {
+    const store = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store;
+    const s = store.getState();
+    const game = structuredClone(s.game);
+    const slot = game?.view.monsters.find((m) => m.top?.stats);
+    const top = slot?.top;
+    if (!game || !slot || !top) {
+      throw new Error('no game');
+    }
+    slot.top = undefined;
+    const events = [{ kind: 'died', player: -1, object: 999, card: top.card, prev: top.id }];
+    s.receive({ type: 'update', data: { ...game, step: 2, events } });
+    return top.id;
+  });
+  const monster = ola.locator(`[data-zone="obj-${String(id)}"]`);
+  await expect(ola.getByTestId('skull')).toBeVisible();
+  await expect(monster).toBeVisible();
+  await ola.waitForTimeout(250); // the skull pops
+  await shot(ola, 'death-skull');
+  await expect(monster).toHaveCount(0);
+  await expect(ola.locator('.effects-trail > *')).toHaveCount(0);
+});

@@ -38,7 +38,6 @@ describe('effectsFor', () => {
     expect(effectsFor(events, ctx)).toEqual([
       { kind: 'dice', value: 5, label: 'attack roll' },
       { kind: 'popup', at: ['player-0'], text: '+3¢', tone: 'good' },
-      { kind: 'popup', at: ['player-1'], text: '−2', tone: 'bad' },
       { kind: 'banner', text: "Bo's turn" },
     ]);
   });
@@ -48,7 +47,6 @@ describe('effectsFor', () => {
       { kind: 'damaged', player: -1, object: 40, amount: 1, source: 30, text: 'combat' },
       { kind: 'damaged', player: 1, amount: 2, source: 40, text: 'combat' },
       { kind: 'damaged', player: 0, amount: 1, source: 40, text: 'combat' },
-      { kind: 'damaged', player: -1, object: 40, amount: 1, source: 7 },
       { kind: 'damage_pending', player: -1, object: 40, amount: 1, text: 'combat' },
     ];
     expect(effectsFor(events, ctx)).toEqual([
@@ -56,6 +54,38 @@ describe('effectsFor', () => {
       { kind: 'lunge', from: ['obj-40'], to: ['obj-31', 'player-1'], amount: 2 },
       { kind: 'lunge', from: ['obj-40'], to: ['player-0'], amount: 1 },
     ]);
+  });
+
+  it('hits every card other damage lands on at once, from its source', () => {
+    const events: GameEvent[] = [
+      { kind: 'damage_pending', player: -1, object: 40, amount: 1 },
+      { kind: 'damaged', player: -1, object: 40, amount: 1, source: 7 },
+      { kind: 'damaged', player: 1, amount: 2, source: 7 },
+      { kind: 'damaged', player: 0, amount: 1 },
+      { kind: 'gained_cents', player: 0, amount: 1 },
+      { kind: 'damaged', player: -1, object: 41, amount: 1, source: 7 },
+    ];
+    const from = ['obj-7', 'stack-src-7'];
+    expect(effectsFor(events, ctx)).toEqual([
+      {
+        kind: 'hits',
+        hits: [
+          { from, to: ['obj-40'], amount: 1 },
+          { from, to: ['obj-31', 'player-1'], amount: 2 },
+          { from: [], to: ['player-0'], amount: 1 },
+        ],
+      },
+      { kind: 'popup', at: ['player-0'], text: '+1¢', tone: 'good' },
+      { kind: 'hits', hits: [{ from, to: ['obj-41'], amount: 1 }] },
+    ]);
+  });
+
+  it('marks dying cards with skulls, where they were', () => {
+    const events: GameEvent[] = [
+      { kind: 'died', player: -1, object: 90, prev: 40, card: 'fly' },
+      { kind: 'died', player: 1, object: 31, card: 'cain' },
+    ];
+    expect(effectsFor(events, ctx)).toEqual([{ kind: 'deaths', at: [['obj-40'], ['obj-31']] }]);
   });
 });
 

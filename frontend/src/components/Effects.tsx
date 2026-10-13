@@ -5,6 +5,7 @@ import { Card } from './Card';
 import { Die } from './Die';
 import './Effects.css';
 import { lunge } from './lunge';
+import { hits, skulls } from './marks';
 
 // The size of a table card, for flying cards.
 const cardW = 80;
@@ -88,22 +89,48 @@ function Effect({ playing }: { playing: Playing }) {
         </motion.div>
       );
     case 'lunge':
-      return <Lunge from={effect.from} to={effect.to} amount={effect.amount} playing={playing} />;
+      return (
+        <Layered
+          playing={playing}
+          start={(done) => {
+            lunge(effect.from, effect.to, effect.amount, scale, done);
+          }}
+        />
+      );
+    case 'hits':
+      return (
+        <Layered
+          playing={playing}
+          start={(done) => {
+            hits(effect.hits, scale, done);
+          }}
+        />
+      );
+    case 'deaths':
+      return (
+        <Layered
+          playing={playing}
+          start={(done) => {
+            skulls(effect.at, scale, done);
+          }}
+        />
+      );
   }
 }
 
-// lunged is the last lunge started: Strict Mode runs effects twice.
-let lunged = 0;
+// started is the last layered effect started: Strict Mode runs effects
+// twice.
+let started = 0;
 
-// Lunge starts the attack lunge; it ends the effect at the hit and
-// plays on in its own layer (lunge.ts).
-function Lunge({ from, to, amount, playing }: { from: string[]; to: string[]; amount: number; playing: Playing }) {
+// Layered starts an effect that plays in its own layer (lunge.ts,
+// marks.ts) and calls done when playback may go on.
+function Layered({ playing, start }: { playing: Playing; start: (done: () => void) => void }) {
   useEffect(() => {
-    if (playing.key > lunged) {
-      lunged = playing.key;
-      lunge(from, to, amount, playing.scale, playing.done);
+    if (playing.key > started) {
+      started = playing.key;
+      start(playing.done);
     }
-  }, [from, to, amount, playing]);
+  }, [playing, start]);
   return null;
 }
 

@@ -306,6 +306,12 @@
   translate: 0 -2cqi;
 }
 
+/* Health below full (T-25): a pale heart, so the red number reads. */
+.card-hp.hurt {
+  --fill: #f3ead2;
+  --digit: #e0261c;
+}
+
 .card-atk {
   right: 2cqi;
   --fill: #f0b83a;

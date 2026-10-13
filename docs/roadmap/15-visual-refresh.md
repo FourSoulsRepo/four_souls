@@ -930,6 +930,21 @@ Images come first, so the new table is built with backs and mats.
    5. Only `transform` and `opacity`; follows animation speed (ST-05).
 3. Done when:
    1. `make screenshots` shows a starburst, red HP, and a skull.
+4. Result (2026-10-13)
+   1. Damage that is not an attack lands as a glowing shot.
+   2. The shot flies from the source card, else from its stack row.
+   3. All damage of one update lands at once: a "−N" burst on each card.
+   4. "Target locks" is when the damage resolves, as for attacks.
+   5. Pending damage has no popup now; damage shows when it lands.
+   6. Hurt health: a pale heart with a red number (T-25).
+   7. A red number on the red heart did not read; hence the pale heart.
+   8. A hurt monster shows health even when it matches the print.
+   9. A dying card gets a big bone-white skull, the stack's icon (T-26).
+   10. The card leaves while the skull fades.
+   11. A character keeps its top-corner damage mark; unchanged.
+   12. Unit tests: damage joins one `hits` effect; deaths get skulls.
+   13. e2e tests: shots, bursts at once, red health; a skull, then gone.
+   14. Screenshots: `.cache/screenshots/15.37/before/` and `after/`.
 
 ### [x] 15.38 Coin icon
 

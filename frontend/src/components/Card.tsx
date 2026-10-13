@@ -172,23 +172,24 @@ export function Card({
       {badges && damage > 0 && !monster && <Badge kind="damage" value={damage} label="damage" />}
       {badges && stats && (
         <>
-          <Badge kind="hp" value={stats.hp} label="health" title="Health" />
+          <Badge kind="hp" value={stats.hp} label="health" title="Health" hurt={damage > 0} />
           <Badge kind="atk" value={stats.atk} label="attack" title="Attack" />
         </>
       )}
-      {badges && monster && <MonsterBadges stats={monster} />}
+      {badges && monster && <MonsterBadges stats={monster} hurt={damage > 0} />}
     </motion.div>
   );
 }
 
 // MonsterBadges shows a monster's health, dice and attack, each only
 // while it differs from the print (C-03): the card shows the rest.
-function MonsterBadges({ stats }: { stats: MonsterStats }) {
+// Health also shows, in red, while the monster is hurt (T-25).
+function MonsterBadges({ stats, hurt }: { stats: MonsterStats; hurt: boolean }) {
   const printed = (n: number) => `printed ${String(n)}`;
   return (
     <>
-      {stats.hp !== stats.printed_hp && (
-        <Badge kind="hp" value={stats.hp} label="health" title={`Health (${printed(stats.printed_hp)})`} />
+      {(stats.hp !== stats.printed_hp || hurt) && (
+        <Badge kind="hp" value={stats.hp} label="health" title={`Health (${printed(stats.printed_hp)})`} hurt={hurt} />
       )}
       {stats.dc !== stats.printed_dc && (
         <Badge kind="dc" value={stats.dc} label="dice" title={`Dice to hit (${printed(stats.printed_dc)})`} />
@@ -209,11 +210,20 @@ const shapes = new Map<BadgeKind, string>([
   ['dc', 'M22 8L78 6C88 6 94 12 94 22L93 78C93 88 87 94 77 94L23 93C13 93 7 87 7 77L6 23C6 13 12 8 22 8Z'],
 ]);
 
+interface BadgeProps {
+  kind: BadgeKind;
+  value: number;
+  label: string;
+  title?: string;
+  hurt?: boolean;
+}
+
 // Badge is one number on a card: its shape in ink with a hard shadow,
-// the number in the game's hand-drawn letters.
-function Badge({ kind, value, label, title }: { kind: BadgeKind; value: number; label: string; title?: string }) {
+// the number in the game's hand-drawn letters. A hurt health number is
+// red while below full (T-25).
+function Badge({ kind, value, label, title, hurt = false }: BadgeProps) {
   return (
-    <span className={`card-badge card-${kind}`} title={title} aria-label={`${String(value)} ${label}`}>
+    <span className={`card-badge card-${kind}${hurt ? ' hurt' : ''}`} title={title} aria-label={`${String(value)} ${label}`}>
       <svg className="card-badge-shape" viewBox="0 0 100 100" aria-hidden="true">
         <path d={shapes.get(kind) ?? blob} />
         <path className="card-badge-shine" d="M30 26C36 18 46 16 52 18C44 22 38 28 34 36C31 34 29 30 30 26Z" />

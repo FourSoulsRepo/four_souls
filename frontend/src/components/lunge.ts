@@ -13,7 +13,7 @@ const hitAt = 0.5;
 // How many points the burst's star has.
 const starPoints = 14;
 
-function find(zones: string[]): HTMLElement | null {
+export function find(zones: string[]): HTMLElement | null {
   for (const z of zones) {
     const el = document.querySelector<HTMLElement>(`[data-zone="${CSS.escape(z)}"]`);
     if (el) {
@@ -23,8 +23,8 @@ function find(zones: string[]): HTMLElement | null {
   return null;
 }
 
-// layer is the page's lunge layer, made on first use.
-function layer(): HTMLElement {
+// layer is the page's effect layer, made on first use.
+export function layer(): HTMLElement {
   let el = document.querySelector<HTMLElement>('.effects-trail');
   if (!el) {
     el = document.createElement('div');
@@ -73,7 +73,8 @@ function copy(src: HTMLElement, r: DOMRect): HTMLElement {
   return c;
 }
 
-function burst(at: DOMRect, amount: number, scale: number): void {
+// burst pops a starburst "−N" on a card (H-14, T-24).
+export function burst(at: DOMRect, amount: number, scale: number): void {
   const b = document.createElement('div');
   b.className = 'effect-burst';
   b.dataset.testid = 'burst';
