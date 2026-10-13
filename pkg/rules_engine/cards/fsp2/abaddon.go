@@ -6,11 +6,15 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 //
 //	+3{ATK}
 //	Each time you take damage, die!
-//
-// TODO(card): implement the text above, then delete this line.
-// Until then `go run ./cmd/cardgen` rewrites this file from card_db.
 var abaddon = engine.CardDef{
-	Ref:    "abaddon",
-	Kind:   engine.TreasureCard,
-	Copies: 1,
+	Ref:     "abaddon",
+	Kind:    engine.TreasureCard,
+	Copies:  1,
+	Statics: []engine.Static{engine.YouHave(engine.StatPlayerATK, 3)},
+	Abilities: []engine.Ability{{
+		Kind:    engine.Triggered,
+		Text:    "Each time you take damage, die!",
+		Trigger: engine.WhenYouTakeDamage(),
+		Effects: []engine.Effect{killYou},
+	}},
 }

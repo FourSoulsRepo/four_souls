@@ -25,10 +25,13 @@ const (
 	StatHandCap                    // the player's max hand size is at most Amount (Curse of Tiny Hands)
 	StatNextAttackRoll             // a boost: added to the next attack roll this turn (R-ATK-19)
 	StatLockTurn                   // a boost: other players can't play loot or activate items this turn (Get Out of Jail Card)
+	StatNoCharRecharge             // the player's character doesn't recharge in the recharge step (Mama Haunt)
+	StatRevealHand                 // the player's hand is revealed to everyone (Guppy's Eye; Applies picks whose)
+	StatChooseAttack               // the player may choose which monster another player attacks (Mom's Eye Shadow)
 	StatUsed                       // a boost marking an object's "once each turn" ability as used
 )
 
-var statNames = []string{"ATK", "HP", "DC", "ATK", "HP", "price", "roll", "attack roll", "loot plays", "attacks", "purchases", "loot step", "lock", "double loot", "death ward", "DC of attacked monsters", "recharge limit", "max hand size", "next attack roll", "lock this turn", "used"}
+var statNames = []string{"ATK", "HP", "DC", "ATK", "HP", "price", "roll", "attack roll", "loot plays", "attacks", "purchases", "loot step", "lock", "double loot", "death ward", "DC of attacked monsters", "recharge limit", "max hand size", "next attack roll", "lock this turn", "no character recharge", "revealed hand", "choose attacks", "used"}
 
 func (s Stat) String() string { return statNames[s] }
 

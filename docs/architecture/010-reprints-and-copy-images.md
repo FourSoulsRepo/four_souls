@@ -68,8 +68,8 @@ Use options 1 and 4; images become a list.
 5. Deck building
    1. A game's deck takes the copies of every chosen set.
    2. `Card.Prints` lists them: own set first, then reprints.
-   3. Each copy keeps its image index for display.
-   4. Built when the sets become playable (14.4, 14.5).
+   3. Each copy will keep its image index for display (14.5).
+   4. The engine counts them: `CardSet.Reprints` (14.3); copy images are 14.5.
 6. Sources
    1. Copies per card: the official TTS table.
    2. Copy images: the numbered copy pages on foursouls.com.

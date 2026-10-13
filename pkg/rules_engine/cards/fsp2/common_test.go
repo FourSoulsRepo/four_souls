@@ -126,3 +126,62 @@ func topID(tb *enginetest.Table, i int) engine.ObjectID {
 func attackIntent(tb *enginetest.Table) engine.Intent {
 	return engine.Intent{Player: tb.G.Turn.Active, Kind: engine.IntentAttack}
 }
+
+// fight builds a table where Isaac (HP 2, ATK 1) faces the monsters.
+func fight(t *testing.T, monsters ...engine.CardRef) *enginetest.Table {
+	t.Helper()
+	return setup(t, engine.SituationSetup{
+		Players:  []engine.SituationPlayer{seat("isaac"), seat("cain")},
+		Monsters: monsters,
+	})
+}
+
+// armed builds a table where Isaac has the items and faces the monsters.
+func armed(t *testing.T, items []engine.CardRef, monsters ...engine.CardRef) *enginetest.Table {
+	t.Helper()
+	return setup(t, engine.SituationSetup{
+		Players:  []engine.SituationPlayer{{Character: "isaac", Items: items}, seat("cain")},
+		Monsters: monsters,
+	})
+}
+
+// items is a list of cards.
+func items(cards ...engine.CardRef) []engine.CardRef { return cards }
+
+// attackRolls counts resolved attack rolls in events.
+func attackRolls(ev []engine.Event) int {
+	n := 0
+	for _, e := range ev {
+		if e.Kind == engine.EvRollResolved && e.Text == "attack" {
+			n++
+		}
+	}
+	return n
+}
+
+// declareAttack declares an attack and picks the target, then stops
+// with the first attack roll on the stack, so players may respond.
+func declareAttack(tb *enginetest.Table, target string) {
+	tb.T.Helper()
+	if _, err := tb.G.Apply(attackIntent(tb)); err != nil {
+		tb.T.Fatal(err)
+	}
+	for range 20 {
+		if w := tb.G.Prompt(); w.Kind == engine.PromptChoose {
+			tb.Choose(target)
+			return
+		}
+		tb.Pass(int(tb.G.Prompt().Player))
+	}
+	tb.T.Fatal("no target prompt after declaring the attack")
+}
+
+// testStats checks a monster that has no abilities.
+func testStats(t *testing.T, card engine.CardRef, hp, dc, atk int) {
+	t.Helper()
+	tb := fight(t, card, "fly")
+	id := topID(tb, 0)
+	if tb.G.HP(id) != hp || tb.G.Evasion(id) != dc || tb.G.MonsterATK(id) != atk {
+		t.Errorf("%s: HP %d DC %d ATK %d, want %d %d %d", card, tb.G.HP(id), tb.G.Evasion(id), tb.G.MonsterATK(id), hp, dc, atk)
+	}
+}

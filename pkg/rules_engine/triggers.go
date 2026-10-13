@@ -24,11 +24,12 @@ type Trigger struct {
 
 // Events used by triggers.
 const (
-	EvStartOfTurn   EventKind = "start_of_turn" // start-of-turn triggers (R-TURN-03)
-	EvEndOfTurn     EventKind = "end_of_turn"   // end-of-turn triggers (R-TURN-10)
-	EvRollResolved  EventKind = "roll_resolved" // a roll became final (R-DICE-06)
-	EvRollRepeated  EventKind = "roll_repeated" // a player rolled the same result twice in a row (R-DICE-08)
-	EvAbilityFizzle EventKind = "fizzled"       // R-ABIL-06
+	EvStartOfTurn        EventKind = "start_of_turn"        // start-of-turn triggers (R-TURN-03)
+	EvEndOfTurn          EventKind = "end_of_turn"          // end-of-turn triggers (R-TURN-10)
+	EvRollResolved       EventKind = "roll_resolved"        // a roll became final (R-DICE-06)
+	EvRollRepeated       EventKind = "roll_repeated"        // a player rolled the same result twice in a row (R-DICE-08)
+	EvAttackRollRepeated EventKind = "attack_roll_repeated" // two attack rolls in a row with one result (R-DICE-09)
+	EvAbilityFizzle      EventKind = "fizzled"              // R-ABIL-06
 )
 
 // AtStartOfYourTurn triggers at the start of the controller's turn.
@@ -179,6 +180,9 @@ func (g *Game) collectTriggers(e Event) {
 	}
 	if e.Prev != 0 && g.Object(e.Prev).Zone.Kind != ZoneInPlay {
 		check(e.Prev)
+	}
+	if e.Kind == EvGainedSoul && e.Object != 0 {
+		check(e.Object) // "When a player gains this soul" (Mom's Heart)
 	}
 	for _, l := range g.Lingering {
 		a := g.ability(l.Ability)

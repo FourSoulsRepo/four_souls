@@ -68,6 +68,15 @@ func (g *Game) push(it StackItem) int {
 	}
 	g.StackSeq++
 	it.ID = g.StackSeq
+	if it.Kind == StackRoll && it.Controller != NoPlayer && len(g.ManyDice) > 0 && g.ManyDice[0].StackID == 0 {
+		// "They instead roll 4 dice. You choose one of the rolls."
+		md := &g.ManyDice[0]
+		md.StackID, md.Values = it.ID, []int{it.Roll}
+		for range md.Dice - 1 {
+			md.Values = append(md.Values, g.d6())
+		}
+		g.enqueue(Action{Kind: ActChooseDie, Player: md.Chooser, Amount: it.ID})
+	}
 	g.Stack = append(g.Stack, it)
 	g.emit(Event{Kind: EvStackAdded, Player: it.Controller, Object: it.Source, Card: it.Card, Amount: it.Roll, Text: it.Label})
 	// "Would take damage" and "would die" triggers look at these.
@@ -144,6 +153,12 @@ func (g *Game) resolveTop() {
 				g.emit(Event{Kind: EvRollRepeated, Player: it.Controller, Amount: it.Roll}) // R-DICE-08
 			}
 			pl.Rolls, pl.LastRoll = pl.Rolls+1, it.Roll
+			if it.Attack {
+				if pl.LastAttack == it.Roll {
+					g.emit(Event{Kind: EvAttackRollRepeated, Player: it.Controller, Amount: it.Roll}) // R-DICE-09
+				}
+				pl.LastAttack = it.Roll
+			}
 		}
 		if it.Attack {
 			g.resolveAttackRoll(it)

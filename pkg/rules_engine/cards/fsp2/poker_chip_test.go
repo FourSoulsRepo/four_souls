@@ -24,3 +24,18 @@ func TestPokerChip(t *testing.T) {
 		}
 	}
 }
+
+// Diplopia copying Poker Chip rolls with Poker Chip's ability (a
+// simulation found this).
+func TestPokerChipThroughDiplopia(t *testing.T) {
+	tb := setup(t, engine.SituationSetup{Players: []engine.SituationPlayer{
+		{Character: "isaac", Items: items("diplopia"), Hand: items("three_cents")},
+		{Character: "cain", Items: items("poker_chip")},
+	}})
+	tb.Activate(0, "diplopia", 0, "poker_chip")
+	tb.G.ForceRolls(5)
+	tb.Play(0, "three_cents")
+	if c := tb.G.Players[0].Cents; c != 6 {
+		t.Errorf("cents = %d, want double 3", c)
+	}
+}

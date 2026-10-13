@@ -4,8 +4,7 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 
 // Nerve Ending (Basic Monster Card)
 //
-// TODO(card): implement the text above, then delete this line.
-// Until then `go run ./cmd/cardgen` rewrites this file from card_db.
+// No card text: stats and rewards only.
 var nerveEnding = engine.CardDef{
 	Ref:     "nerve_ending",
 	Kind:    engine.MonsterCard,

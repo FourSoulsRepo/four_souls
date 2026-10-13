@@ -250,7 +250,9 @@ func (g *Game) startNextTurn() {
 // recharge charges what the active player controls (R-TURN-02).
 func (g *Game) recharge(p PlayerID) {
 	pl := &g.Players[p]
-	g.Object(pl.Character).Charged = true
+	if g.bonus(StatNoCharRecharge, p, 0) == 0 {
+		g.Object(pl.Character).Charged = true
+	}
 	if g.bonus(StatRechargeLimit, p, 0) > 0 {
 		// "You can't recharge more than 1 item during your recharge step."
 		var items []ObjectID
@@ -305,7 +307,7 @@ func (g *Game) healAll() {
 		g.Players[i].Dead = false // alive again (R-DEATH-19)
 		g.Players[i].ExtraLootPlays = 0
 		g.Players[i].TimesDamaged = 0
-		g.Players[i].Rolls, g.Players[i].LastRoll = 0, 0
+		g.Players[i].Rolls, g.Players[i].LastRoll, g.Players[i].LastAttack, g.Players[i].KilledBy = 0, 0, 0, 0
 	}
 	for _, id := range g.inPlay() {
 		g.Object(id).Damage, g.Object(id).HitsThisTurn = 0, 0
@@ -385,4 +387,15 @@ func (g *Game) maxHand(p PlayerID) int {
 		}
 	}
 	return limit
+}
+
+// WinGame ends the game with p as the winner: "That player wins." (Mom's
+// Heart).
+func (g *Game) WinGame(p PlayerID) {
+	if g.Over {
+		return
+	}
+	g.Over, g.Winners = true, []PlayerID{p}
+	g.Waiting = Prompt{Kind: PromptGameOver, Player: NoPlayer}
+	g.emit(Event{Kind: EvGameWon, Player: p})
 }

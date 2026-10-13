@@ -552,3 +552,19 @@ func Used(g *engine.Game, id engine.ObjectID) bool {
 func MarkUsed(g *engine.Game, id engine.ObjectID) {
 	g.Boosts = append(g.Boosts, engine.Boost{Stat: engine.StatUsed, Player: engine.NoPlayer, Object: id, Amount: 1})
 }
+
+// UsedOn reports whether the object's ability was used this turn for n,
+// e.g. a roll's stack ID ("once per roll") or a chosen number.
+func UsedOn(g *engine.Game, id engine.ObjectID, n int) bool {
+	for _, b := range g.Boosts {
+		if b.Stat == engine.StatUsed && b.Object == id && b.Amount == n {
+			return true
+		}
+	}
+	return false
+}
+
+// MarkUsedOn marks the object's ability as used this turn for n.
+func MarkUsedOn(g *engine.Game, id engine.ObjectID, n int) {
+	g.Boosts = append(g.Boosts, engine.Boost{Stat: engine.StatUsed, Player: engine.NoPlayer, Object: id, Amount: n})
+}

@@ -6,11 +6,9 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 //
 //	+2{ATK}
 //	Monsters have +1{DC} on your turn.
-//
-// TODO(card): implement the text above, then delete this line.
-// Until then `go run ./cmd/cardgen` rewrites this file from card_db.
 var polyphemus = engine.CardDef{
-	Ref:    "polyphemus",
-	Kind:   engine.TreasureCard,
-	Copies: 1,
+	Ref:     "polyphemus",
+	Kind:    engine.TreasureCard,
+	Copies:  1,
+	Statics: []engine.Static{engine.YouHave(engine.StatPlayerATK, 2), monstersDCOnYourTurn},
 }

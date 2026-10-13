@@ -340,6 +340,18 @@ func BecomeSoul() Effect { return becomeSoulEffect{} }
 
 func (becomeSoulEffect) apply(c *Ctx) {
 	o := c.G.Object(c.Source)
+	if o.Zone.Kind == ZoneInPlay && o.Role == RoleEvent && o.Zone.Slot == MonsterSlot {
+		// An event in a monster slot: "This becomes a soul. Gain it."
+		// (Holy Chest); its slot is refilled.
+		g := c.G
+		g.removeFromSlot(c.Source)
+		nid := g.move(c.Source, Zone{Kind: ZoneInPlay}, c.Controller)
+		g.Object(nid).Role = RoleSoul
+		g.Players[c.Controller].InPlay = append(g.Players[c.Controller].InPlay, nid)
+		g.emit(Event{Kind: EvGainedSoul, Player: c.Controller, Object: nid, Card: g.Object(nid).Card, Prev: c.Source})
+		g.RefillSlots()
+		return
+	}
 	if o.Zone.Kind != ZoneInPlay || o.Controller != c.Controller {
 		return
 	}
@@ -443,6 +455,7 @@ func (e killEffect) apply(c *Ctx) {
 	t := c.target(e.target)
 	if t.Kind == TargetPlayer {
 		c.G.Players[t.Player].Damage += c.G.PlayerHP(t.Player) // HP to 0 (R-MECH-23)
+		c.G.Players[t.Player].KilledBy = int(c.Controller) + 1
 		c.G.push(StackItem{Kind: StackDeath, Controller: NoPlayer, Label: "death", Target: Target{Player: t.Player, IsPlayer: true}})
 		return
 	}
@@ -820,4 +833,21 @@ func NextAttackRoll(n int, active bool) Effect {
 // player and amount: "roll- 1-3: gain 1¢ instead" (Poker Chip).
 func PushLingering(self ObjectID, i int, p PlayerID, n int) Action {
 	return Action{Kind: ActPushLingering, Object: self, From: PlayerID(i), Player: p, Amount: n}
+}
+
+// PreventThisDeath prevents the death of this monster: "prevent death"
+// (Headless Horseman). It is left at 1 HP (R-MECH-07).
+func PreventThisDeath() Effect {
+	return EffectFunc(func(c *Ctx) {
+		g := c.G
+		for _, it := range g.Stack {
+			if it.Kind == StackDeath && !it.Target.IsPlayer && it.Target.Object == c.Source {
+				g.CancelStackItem(it.ID)
+				o := g.Object(c.Source)
+				o.Damage = min(o.Damage, max(g.def(c.Source).HP+g.bonus(StatMonsterHP, NoPlayer, c.Source)-1, 0))
+				g.emit(Event{Kind: EvPrevented, Player: NoPlayer, Object: c.Source, Text: "death"})
+				return
+			}
+		}
+	})
 }

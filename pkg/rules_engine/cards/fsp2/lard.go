@@ -6,11 +6,15 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 //
 //	+2{HP}
 //	Each time you take damage, discard a loot card.
-//
-// TODO(card): implement the text above, then delete this line.
-// Until then `go run ./cmd/cardgen` rewrites this file from card_db.
 var lard = engine.CardDef{
-	Ref:    "lard",
-	Kind:   engine.TreasureCard,
-	Copies: 1,
+	Ref:     "lard",
+	Kind:    engine.TreasureCard,
+	Copies:  1,
+	Statics: []engine.Static{engine.YouHave(engine.StatPlayerHP, 2)},
+	Abilities: []engine.Ability{{
+		Kind:    engine.Triggered,
+		Text:    "Each time you take damage, discard a loot card.",
+		Trigger: engine.WhenYouTakeDamage(),
+		Effects: []engine.Effect{discardOne},
+	}},
 }

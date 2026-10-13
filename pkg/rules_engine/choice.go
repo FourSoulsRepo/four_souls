@@ -21,6 +21,8 @@ const (
 	ChooseLowest                            // which card goes to the very bottom of a deck
 	ChooseRecharge                          // the one item to recharge (Curse of Fatigue)
 	ChooseCopyAbility                       // the ↷ ability a loot card copies ("? Card")
+	ChooseDie                               // which of several dice is the result (Mutant Spider)
+	ChooseRedirect                          // which monster another player attacks (Mom\'s Eye Shadow)
 )
 
 // Choice is an open question to one player. Options are listed in the
@@ -72,6 +74,10 @@ func (g *Game) answer(i int) {
 			g.attackDeck()
 			return
 		}
+		if q, ok := g.redirector(); ok {
+			g.askRedirect(q, c.Objects[i])
+			return
+		}
 		g.startAttack(c.Objects[i])
 	case ChooseMonsterSlot:
 		g.placeRevealed(c.Slots[i])
@@ -97,6 +103,13 @@ func (g *Game) answer(i int) {
 		g.chooseLowest(c, i)
 	case ChooseCursed:
 		g.giveCurse(c.Objects[0], PlayerID(c.Slots[i]))
+	case ChooseDie:
+		g.ManyDice = g.ManyDice[1:]
+		if it, ok := g.StackItemByID(c.Indexes[0]); ok && it.Roll != c.Slots[i] {
+			g.SetRoll(it.ID, c.Slots[i])
+		}
+	case ChooseRedirect:
+		g.startAttack(c.Objects[i])
 	case ChooseCopyAbility:
 		if i == len(c.Abilities) {
 			g.openWindow(c.Player)

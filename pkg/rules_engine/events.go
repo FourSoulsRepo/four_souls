@@ -63,4 +63,6 @@ type Event struct {
 	Source ObjectID `json:"source,omitempty"`
 	// StackID is the stack item the event is about (a roll).
 	StackID int `json:"stack_id,omitempty"`
+	// By is the player who dealt damage, plus 1 (0: a monster or nobody).
+	By int `json:"by,omitempty"`
 }

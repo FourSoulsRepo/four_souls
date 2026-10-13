@@ -168,6 +168,9 @@ func (g *Game) placeRevealed(slot int) {
 // startAttack begins attack rolls against a target (R-ATK-11).
 func (g *Game) startAttack(target ObjectID) {
 	g.Attack.Started, g.Attack.Target = true, target
+	if g.Turn.MustAttack == target {
+		g.Turn.MustAttack = 0 // the forced attack is made (Monster Manual, Krampus)
+	}
 	g.emit(Event{Kind: EvAttackTarget, Player: g.Turn.Active, Object: target, Card: g.Object(target).Card})
 	g.attackRoll()
 }
@@ -199,7 +202,7 @@ func (g *Game) resolveAttackRoll(it StackItem) {
 		atk = g.attackerCombatMod(p, it.Roll, true, atk)
 		if atk > 0 {
 			g.push(StackItem{
-				Kind: StackDamage, Controller: p, Amount: atk, Label: "combat damage", Attack: true,
+				Kind: StackDamage, Controller: p, Source: g.Players[p].Character, Amount: atk, Label: "combat damage", Attack: true,
 				Target: Target{Object: it.Target.Object},
 			})
 		}
@@ -275,12 +278,13 @@ func (g *Game) resolveDamage(it StackItem) {
 		n := min(it.Amount, hp)
 		g.Players[p].Damage += n
 		g.Players[p].TimesDamaged++
-		e := Event{Kind: EvDamaged, Player: p, Amount: n, Source: it.Source}
+		e := Event{Kind: EvDamaged, Player: p, Amount: n, Source: it.Source, By: int(it.Controller) + 1}
 		if it.Attack {
 			e.Text = "combat"
 		}
 		g.emit(e)
 		if g.PlayerHP(p) == 0 {
+			g.Players[p].KilledBy = int(it.Controller) + 1
 			g.push(StackItem{Kind: StackDeath, Controller: NoPlayer, Label: "death", Target: Target{Player: p, IsPlayer: true}})
 		}
 		return
@@ -299,7 +303,7 @@ func (g *Game) resolveDamage(it StackItem) {
 			o.KilledOn = g.Attack.LastRoll
 		}
 	}
-	e := Event{Kind: EvDamaged, Player: NoPlayer, Object: id, Card: o.Card, Amount: n}
+	e := Event{Kind: EvDamaged, Player: NoPlayer, Object: id, Card: o.Card, Amount: n, Source: it.Source, By: int(it.Controller) + 1}
 	if it.Attack {
 		e.Text = "combat" // dealt by the active player's attack
 	}
@@ -544,4 +548,28 @@ func (g *Game) attackerCombatMod(p PlayerID, roll int, hit bool, n int) int {
 		}
 	}
 	return n
+}
+
+// redirector is another player who may choose which monster the active
+// player attacks (Mom's Eye Shadow), first in turn order.
+func (g *Game) redirector() (PlayerID, bool) {
+	for _, p := range g.turnOrderFrom(g.Turn.Active) {
+		if p != g.Turn.Active && g.bonus(StatChooseAttack, p, 0) > 0 {
+			return p, true
+		}
+	}
+	return NoPlayer, false
+}
+
+// askRedirect lets q choose the monster the attack goes to; the declared
+// one is the first option. Only attacks on a monster, never the deck
+// (S-YUG).
+func (g *Game) askRedirect(q PlayerID, declared ObjectID) {
+	options := []ObjectID{declared}
+	for _, s := range g.Monsters {
+		if top, ok := s.TopOf(); ok && top != declared && g.Object(top).Role == RoleMonster && !g.def(top).Unattackable {
+			options = append(options, top)
+		}
+	}
+	g.ask(Choice{Purpose: ChooseRedirect, Player: q, Rule: "R-ATK-03", Objects: options, Question: "Which monster do they attack?"}, g.labels(options))
 }
