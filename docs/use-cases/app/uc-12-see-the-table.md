@@ -61,7 +61,7 @@
   * An opponent's hand is fanned loot backs with its card count.
   * No back images (public clone): plain dark backs with the deck name.
 * **1g. No coin image (public clone):** a drawn ¢ coin by the cents.
-* **2d. Counters (15.23):** a big green circle with the count, on the card art.
+* **2d. Counters (15.23):** a big green blob with the count, on the card art.
   * A text card shows it in its top corner, clear of the words.
 * **2e. Changed monster stats (15.23):** a badge per changed value.
   * Red health, a white die for the dice, gold attack.

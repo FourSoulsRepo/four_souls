@@ -282,7 +282,7 @@ for (const [n, names] of [
   });
 }
 
-test('counters and changed monster stats show on the card and in its zoom (15.23)', async ({ browser }) => {
+test('counters and changed monster stats show on the card, not in its zoom (15.23)', async ({ browser }) => {
   const [page] = await startGame(browser, ['Flo', 'Hux']);
   if (!page) {
     throw new Error('no pages');
@@ -290,7 +290,7 @@ test('counters and changed monster stats show on the card and in its zoom (15.23
   const monster = page.getByRole('group', { name: 'Monsters' }).locator('.card').first();
   // The server sends each monster's stats; an untouched one shows the print only.
   await expect(monster).toBeVisible();
-  await expect(monster.locator('.card-stat')).toHaveCount(0);
+  await expect(monster.locator('.card-badge')).toHaveCount(0);
 
   // The first monster takes 1 damage and gets 2 counters; the second
   // gets +1 attack and is easier to hit, as the server would send it.
@@ -331,10 +331,10 @@ test('counters and changed monster stats show on the card and in its zoom (15.23
   await expect(second.getByLabel(/ health$/)).toHaveCount(0);
   await shot(page, 'monster-stats');
 
-  // The zoom shows the same badges (C-02).
+  // The zoom shows no badges, so none of its words hide (owner, 15.23).
   await monster.hover();
   const zoom = page.getByTestId('card-zoom').locator('.card.size-zoom');
-  await expect(zoom.getByLabel('2 counters')).toBeVisible();
-  await expect(zoom.getByLabel(`${String(hp)} health`)).toBeVisible();
+  await expect(zoom).toBeVisible();
+  await expect(zoom.locator('.card-badge')).toHaveCount(0);
   await shot(page, 'monster-stats-zoom');
 });

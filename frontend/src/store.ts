@@ -40,7 +40,6 @@ import {
   type Envelope,
   type Hello,
   type Intent,
-  type MonsterStats,
   type Update,
 } from './protocol';
 
@@ -52,19 +51,9 @@ export interface Zoom {
   ref: string;
   touch: boolean;
   side: 'left' | 'right';
-  // marks are the zoomed card's badges, as on the table (C-02).
-  marks?: Marks;
   // caption goes below the card: who owns it, and the used ability's
   // words, highlighted (S-06, S-07).
   caption?: ZoomCaption;
-}
-
-// Marks are the badges a card on the table carries.
-export interface Marks {
-  damage?: number;
-  counters?: number;
-  stats?: { hp: number; atk: number };
-  monster?: MonsterStats;
 }
 
 export interface ZoomCaption {

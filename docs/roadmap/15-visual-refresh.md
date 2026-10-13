@@ -654,6 +654,20 @@ Images come first, so the new table is built with backs and mats.
    12. Engine test: a damaged, boosted monster's view stats.
    13. Fix: screenshots had text cards; the fake bridge read a wrong field.
    14. Screenshots: `.cache/screenshots/15.23/before/` and `after/`.
+6. Owner notes (2026-10-13)
+   1. Owner: use the game's fonts for the badges.
+   2. Owner: no badges on the zoomed card; they hide its text.
+   3. Owner: style the badges to suit the game.
+7. Result of the fixes (2026-10-13)
+   1. Numbers in the game's hand-drawn font, with an ink edge.
+   2. Shapes in the End turn button's style: ink outline, hard shadow, tilt.
+   3. Health is a red heart, the dice a bone-white die, attack a gold blob.
+   4. Counters are a green blob; damage on a character a dark-red one.
+   5. Characters' health and attack badges get the same look.
+   6. The zoomed card shows no badges; this replaces C-02.
+   7. The green "higher" ring is gone; a badge's tooltip names the print.
+   8. e2e test: badges on the card, none in the zoom.
+   9. Screenshots: `.cache/screenshots/15.23/fix/`.
 
 ### [ ] 15.24 Ability dialog and status marks
 

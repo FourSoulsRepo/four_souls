@@ -229,21 +229,6 @@
   filter: brightness(0.55) saturate(0.6);
 }
 
-.card-damage {
-  position: absolute;
-  top: 6cqi;
-  right: 6cqi;
-  min-width: 18cqi;
-  padding: 1cqi 3cqi;
-  border-radius: 9cqi;
-  box-sizing: border-box;
-  font-size: 13cqi;
-  font-weight: 700;
-  text-align: center;
-  color: #fff;
-  background: #b3261e;
-}
-
 /* Highlights (7.7): yellow for "you may act", blue for "pick this". */
 .card.hl-act,
 .card.hl-pick {
@@ -258,87 +243,117 @@
   box-shadow: 0 0 0 3px #4fc3f7, 0 0 14px 2px rgb(79 195 247 / 70%);
 }
 
-/* Counters (C-01): a big green circle with the count, on the card's
-   art, clear of the stat badges at the bottom. */
-.card-counters {
+/* Badges (15.23): numbers on a card, drawn like the game's cut-out art
+   and its End turn button: a shape with a thick ink outline and a hard
+   shadow, a slight tilt, and the number in the game's hand-drawn
+   letters with an ink edge. Sizes follow the card (cqi). */
+.card-badge {
+  --ink: #1d120a;
+  --fill: #d8302a;
+  --digit: #fff;
   position: absolute;
-  top: 30cqi;
-  left: 6cqi;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 34cqi;
-  height: 34cqi;
-  padding: 0 4cqi;
-  border: 2cqi solid rgb(0 0 0 / 55%);
-  border-radius: 17cqi;
-  box-sizing: border-box;
-  font-size: 21cqi;
-  font-weight: 800;
-  line-height: 1;
-  color: #fff;
-  text-shadow: 0 1px 2px #000;
-  background: radial-gradient(circle at 35% 30%, #5fd36a, #1b7a2a);
-  box-shadow: 0 1px 4px rgb(0 0 0 / 60%);
-}
-
-/* Live health and attack on the own character (H-15): big round
-   numbers at the bottom corners, health left and attack right. */
-.card-stat {
-  position: absolute;
-  bottom: 3cqi;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: grid;
+  place-items: center;
   width: 34cqi;
   aspect-ratio: 1;
-  border: 2cqi solid rgb(0 0 0 / 55%);
-  border-radius: 50%;
-  box-sizing: border-box;
-  font-size: 21cqi;
-  font-weight: 800;
+  filter: drop-shadow(0 1.6cqi 0 var(--ink)) drop-shadow(0 2cqi 3cqi rgb(0 0 0 / 50%));
+  pointer-events: none;
+}
+
+.card-badge-shape {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+}
+
+.card-badge-shape path {
+  fill: var(--fill);
+  stroke: var(--ink);
+  stroke-width: 7;
+  stroke-linejoin: round;
+}
+
+.card-badge-shape .card-badge-shine {
+  fill: rgb(255 255 255 / 45%);
+  stroke: none;
+}
+
+.card-badge-value {
+  position: relative;
+  font-family: var(--font-game);
+  font-size: 22cqi;
+  font-weight: 400;
   line-height: 1;
-  color: #fff;
-  text-shadow: 0 1px 2px #000;
+  color: var(--digit);
+  -webkit-text-stroke: 2.4cqi var(--ink);
+  paint-order: stroke fill;
+}
+
+/* Health and attack sit on the bottom corners (H-15), the dice between. */
+.card-hp,
+.card-dc,
+.card-atk {
+  bottom: 2cqi;
 }
 
 .card-hp {
-  left: 3cqi;
-  background: radial-gradient(circle at 35% 30%, #e85a4f, #8e1b14);
+  left: 2cqi;
+  rotate: -6deg;
+}
+
+/* The heart's middle is high; so is its number. */
+.card-hp .card-badge-value {
+  translate: 0 -2cqi;
 }
 
 .card-atk {
-  right: 3cqi;
-  background: radial-gradient(circle at 35% 30%, #f2c94c, #9a6a0c);
+  right: 2cqi;
+  --fill: #f0b83a;
+  rotate: 5deg;
+}
+
+/* A monster's dice to hit (C-03): a bone-white die with an ink number. */
+.card-dc {
+  left: 50%;
+  --fill: #f3ead2;
+  --digit: #1d120a;
+  translate: -50% 0;
+  rotate: -3deg;
+}
+
+.card-dc .card-badge-value {
+  -webkit-text-stroke: 0;
+}
+
+/* Counters (C-01): a green blob on the card's art, clear of the stats. */
+.card-counters {
+  top: 30cqi;
+  left: 4cqi;
+  --fill: #5cb83a;
+  rotate: -4deg;
 }
 
 /* A text card has no art: the counter takes the top corner, and the
    name keeps clear of it, so no words hide under it. */
 .card.blank .card-counters {
-  top: 4cqi;
-  right: 4cqi;
+  top: 3cqi;
+  right: 3cqi;
   left: auto;
 }
 
 .card.blank.has-counters .card-name {
-  padding-right: 38cqi;
+  padding-right: 36cqi;
 }
 
-/* A monster's dice to hit (C-03): a die, between health and attack. */
-.card-dc {
-  left: 50%;
-  border-radius: 22%;
-  color: #1d1d1d;
-  text-shadow: none;
-  background: linear-gradient(145deg, #fff, #c9c9c9);
-  transform: translateX(-50%);
+/* Damage on a character: a smaller dark-red blob at the top corner. */
+.card-damage {
+  top: 4cqi;
+  right: 4cqi;
+  width: 24cqi;
+  --fill: #8e1b14;
+  rotate: 4deg;
 }
 
-/* A monster's badge shows only a changed stat; its ring says which way. */
-.card-stat.higher {
-  border-color: #6fe07a;
-}
-
-.card-stat.lower {
-  border-color: #2a0705;
+.card-damage .card-badge-value {
+  font-size: 15cqi;
 }

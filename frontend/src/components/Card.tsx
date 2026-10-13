@@ -3,7 +3,7 @@ import { useEffect, useRef, useState, type PointerEvent } from 'react';
 import { iconText, kindOf, textParts, unknownCard, type CardInfo, type Kind } from '../cards';
 import { scaleFor } from '../playback';
 import type { MonsterStats } from '../protocol';
-import { useApp, type Marks } from '../store';
+import { useApp } from '../store';
 import './Card.css';
 
 // How long a touch must rest on a card to zoom it (B-06).
@@ -101,7 +101,8 @@ export function Card({
   const card = info ?? unknownCard(cardRef);
   const image = card.image !== '' && card.image !== brokenImage;
   const zoomable = size !== 'zoom' && !noZoom;
-  const marks: Marks = { damage, counters, stats, monster };
+  // The zoomed card shows no badges: its words stay readable.
+  const badges = size !== 'zoom';
   const side = (e: PointerEvent) => (e.clientX < window.innerWidth / 2 ? 'right' : 'left');
   const cancelPress = () => {
     window.clearTimeout(pressRef.current);
@@ -122,7 +123,7 @@ export function Card({
       onPointerEnter={(e) => {
         if (zoomable && e.pointerType === 'mouse') {
           zoomedRef.current = true;
-          setZoom({ ref: card.ref, touch: false, side: side(e), marks });
+          setZoom({ ref: card.ref, touch: false, side: side(e) });
         }
       }}
       onPointerLeave={(e) => {
@@ -137,7 +138,7 @@ export function Card({
           const s = side(e);
           downRef.current = { x: e.clientX, y: e.clientY };
           pressRef.current = window.setTimeout(() => {
-            setZoom({ ref: card.ref, touch: true, side: s, marks });
+            setZoom({ ref: card.ref, touch: true, side: s });
           }, LONG_PRESS_MS);
         }
       }}
@@ -166,28 +167,16 @@ export function Card({
       ) : (
         <BlankFace card={card} full={size === 'zoom'} />
       )}
-      {counters > 0 && (
-        <span className="card-counters" aria-label={`${String(counters)} counters`}>
-          {counters}
-        </span>
-      )}
+      {badges && counters > 0 && <Badge kind="counters" value={counters} label="counters" />}
       {/* A monster's damage shows as its lower health. */}
-      {damage > 0 && !monster && (
-        <span className="card-damage" aria-label={`${String(damage)} damage`}>
-          {damage}
-        </span>
-      )}
-      {stats && (
+      {badges && damage > 0 && !monster && <Badge kind="damage" value={damage} label="damage" />}
+      {badges && stats && (
         <>
-          <span className="card-stat card-hp" title="Health" aria-label={`${String(stats.hp)} health`}>
-            {stats.hp}
-          </span>
-          <span className="card-stat card-atk" title="Attack" aria-label={`${String(stats.atk)} attack`}>
-            {stats.atk}
-          </span>
+          <Badge kind="hp" value={stats.hp} label="health" title="Health" />
+          <Badge kind="atk" value={stats.atk} label="attack" title="Attack" />
         </>
       )}
-      {monster && <MonsterBadges stats={monster} />}
+      {badges && monster && <MonsterBadges stats={monster} />}
     </motion.div>
   );
 }
@@ -195,37 +184,42 @@ export function Card({
 // MonsterBadges shows a monster's health, dice and attack, each only
 // while it differs from the print (C-03): the card shows the rest.
 function MonsterBadges({ stats }: { stats: MonsterStats }) {
-  const changed = (now: number, printed: number) => (now < printed ? ' lower' : ' higher');
+  const printed = (n: number) => `printed ${String(n)}`;
   return (
     <>
       {stats.hp !== stats.printed_hp && (
-        <span
-          className={`card-stat card-hp${changed(stats.hp, stats.printed_hp)}`}
-          title={`Health (printed ${String(stats.printed_hp)})`}
-          aria-label={`${String(stats.hp)} health`}
-        >
-          {stats.hp}
-        </span>
+        <Badge kind="hp" value={stats.hp} label="health" title={`Health (${printed(stats.printed_hp)})`} />
       )}
       {stats.dc !== stats.printed_dc && (
-        <span
-          className={`card-stat card-dc${changed(stats.dc, stats.printed_dc)}`}
-          title={`Dice to hit (printed ${String(stats.printed_dc)})`}
-          aria-label={`${String(stats.dc)} dice`}
-        >
-          {stats.dc}
-        </span>
+        <Badge kind="dc" value={stats.dc} label="dice" title={`Dice to hit (${printed(stats.printed_dc)})`} />
       )}
       {stats.atk !== stats.printed_atk && (
-        <span
-          className={`card-stat card-atk${changed(stats.atk, stats.printed_atk)}`}
-          title={`Attack (printed ${String(stats.printed_atk)})`}
-          aria-label={`${String(stats.atk)} attack`}
-        >
-          {stats.atk}
-        </span>
+        <Badge kind="atk" value={stats.atk} label="attack" title={`Attack (${printed(stats.printed_atk)})`} />
       )}
     </>
+  );
+}
+
+// Badge shapes, drawn like the game's cut-out art (15.23): a heart for
+// health, a die for the dice, and lumpy blobs for the rest.
+const blob = 'M52 6C78 5 95 24 94 50C93 77 74 95 48 94C22 93 5 76 6 49C7 22 26 7 52 6Z';
+type BadgeKind = 'hp' | 'dc' | 'atk' | 'counters' | 'damage';
+const shapes = new Map<BadgeKind, string>([
+  ['hp', 'M50 92C24 72 5 55 6 33C7 15 22 6 35 7C43 8 48 13 50 20C52 13 57 8 65 7C78 6 93 15 94 33C95 55 76 72 50 92Z'],
+  ['dc', 'M22 8L78 6C88 6 94 12 94 22L93 78C93 88 87 94 77 94L23 93C13 93 7 87 7 77L6 23C6 13 12 8 22 8Z'],
+]);
+
+// Badge is one number on a card: its shape in ink with a hard shadow,
+// the number in the game's hand-drawn letters.
+function Badge({ kind, value, label, title }: { kind: BadgeKind; value: number; label: string; title?: string }) {
+  return (
+    <span className={`card-badge card-${kind}`} title={title} aria-label={`${String(value)} ${label}`}>
+      <svg className="card-badge-shape" viewBox="0 0 100 100" aria-hidden="true">
+        <path d={shapes.get(kind) ?? blob} />
+        <path className="card-badge-shine" d="M30 26C36 18 46 16 52 18C44 22 38 28 34 36C31 34 29 30 30 26Z" />
+      </svg>
+      <span className="card-badge-value">{value}</span>
+    </span>
   );
 }
 

@@ -25,8 +25,8 @@
   * The large copy shows in the middle; the next tap closes it (B-06).
   * A short tap does not zoom.
 * **1c. Face-down card:** shows its deck name; it cannot be zoomed.
-* **3a. Badges (15.23):** the large copy shows the card's badges.
-  * Counters, changed monster stats, and a character's health and attack.
+* **3a. Badges (15.23):** the large copy shows no badges.
+  * Its words stay readable; the card on the table keeps them.
 
 ## Postconditions
 
