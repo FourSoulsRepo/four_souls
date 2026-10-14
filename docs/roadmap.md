@@ -235,6 +235,8 @@ Step numbers stay as IDs; the table lists steps in work order.
 33. After the game, all hands are revealed (V-37, 15.45).
 34. Failed effects show in the history (V-38, 15.46).
 35. Damage a player takes names its card (play test, 15.47).
+36. Stack and history rows fade and slide (V-39, 15.51).
+37. Played cards fly hand → stack → discard (V-40, 15.52).
 
 ## 16. Localization
 

@@ -2,11 +2,11 @@
 
 Goal: a clearer table, using fouronlinesouls.net as a second reference.
 
-Ideas: V-09, V-12, V-13, V-15 – V-31, V-33 – V-38, GS-06.
+Ideas: V-09, V-12, V-13, V-15 – V-31, V-33 – V-40, GS-06.
 
 Order: 15.1, 15.15, 15.9 – 15.11, 15.16, 15.17, 15.38, 15.18 – 15.24,
 15.3, 15.37, 15.25, 15.32 – 15.34, 15.26, 15.27, 15.5, 15.6,
-15.28 – 15.31, 15.35, 15.36, 15.39 – 15.46.
+15.28 – 15.31, 15.35, 15.36, 15.39 – 15.46, 15.51, 15.52.
 Images come first, so the new table is built with backs and mats.
 
 ## Rules for this step (owner, 2026-10-12)
@@ -1325,3 +1325,36 @@ Images come first, so the new table is built with backs and mats.
 8. Owner notes (2026-10-13)
    1. Owner merged the sounds into the private images.
    2. Owner marks 15.50 solved.
+
+### [ ] 15.51 Stack and history rows move
+
+1. Goal: rows of the stack and history never jump (V-39).
+2. Tasks:
+   1. A new row fades in.
+   2. Other rows slide to their new place.
+   3. A leaving row fades out, then the rest close the gap.
+   4. Stack panel and history strip both.
+   5. Follow the animation speed setting (ST-05); off means none.
+   6. Rows keep a stable key, so React moves them, not redraws.
+3. Done when:
+   1. Vitest: rows keep their keys when the stack grows and shrinks.
+   2. e2e test: a resolved row fades out; the next slides up.
+   3. e2e test: with animations off, rows change at once.
+
+### [ ] 15.52 Played cards fly through the stack
+
+1. Goal: everyone follows a played card to the end (V-40).
+2. Tasks:
+   1. A played card flies from its hand to the stack panel.
+   2. Opponents' cards fly from their hand, face up.
+   3. At the stack the card becomes its row.
+   4. **Owner** picks the effect: shrink into the row, or another.
+   5. Resolved, the row turns back into the card.
+   6. The card flies to its discard pile.
+   7. Damage and death marks (15.37) play first; then the flight.
+   8. Cards that stay in play (items, abilities): the row fades out (15.51).
+   9. Use the playback queue (`fly` effect); follow ST-05.
+3. Done when:
+   1. Vitest: a resolved loot gives hits, then the discard flight.
+   2. e2e test: a played loot flies to the stack, then to the discard.
+   3. `make screenshots` shows the card mid-flight.

@@ -217,6 +217,17 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    1. A fizzled ability gets its own history entry.
    2. Example: a purchase fails because the player cannot pay.
    3. The entry says what failed and why.
+39. V-39. Stack and history rows move with animation.
+   1. A new row fades in.
+   2. Other rows slide to their new place, not jump.
+   3. A leaving row fades out before it is gone.
+   4. Same for the stack panel and the history strip.
+40. V-40. Played cards fly to the stack and on to the discard.
+   1. The card flies from the hand to the stack.
+   2. There it turns into its stack row.
+   3. Shrink, or another effect; the owner picks.
+   4. Resolved, the card flies from the stack to the discard pile.
+   5. Damage and death marks play first; then the card flies.
 
 ## Rules
 
