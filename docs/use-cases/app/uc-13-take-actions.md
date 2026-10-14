@@ -54,9 +54,11 @@
   * The arrow is a chain of red blocks with a big head (15.32).
   * Over a valid target a red ring marks the head.
   * A click on the aiming card again cancels too (15.33).
-  * A click on a card, player, or pile that is no target keeps aiming.
+  * A click on a card, pile, or stack item that is no target keeps aiming.
   * A short note above the click says what the card may target.
   * E.g. "Pick a monster or a player."; it fades after 2.5 s.
+  * A player is aimed at by the character card, as a monster is.
+  * The character glows red; the player's area stays plain.
 
 ## Postconditions
 

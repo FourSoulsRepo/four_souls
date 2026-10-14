@@ -159,6 +159,10 @@ test('a bomb aimed at a monster by two clicks damages it', async ({ browser }) =
   await clickBomb();
   await expect(lifted).toHaveCount(1);
   await expect(monster).toHaveClass(/hl-aim/);
+  // A player glows by the character card, not by the area (15.33).
+  const opponent = active.locator('.player.opponent');
+  await expect(opponent.locator('.opp-character .card')).toHaveClass(/hl-aim/);
+  await expect(opponent).not.toHaveClass(/hl-aim/);
   const id = Number((await monster.getAttribute('data-zone'))?.replace('obj-', ''));
   const to = await monster.boundingBox();
   if (!to) {

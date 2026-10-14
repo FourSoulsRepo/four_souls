@@ -24,6 +24,9 @@ interface Props {
   // objectId is the card's object on the table; effects find it by it,
   // and a new one pops in.
   objectId?: number;
+  // player marks a character card as its player: aiming at the player
+  // picks the character (15.33).
+  player?: number;
   // counters is how many counters the card carries (7.9).
   counters?: number;
   // highlight marks a card the player may act on or pick (7.7).
@@ -47,6 +50,7 @@ export function Card({
   spent = false,
   counters = 0,
   objectId,
+  player,
   highlight,
   stats,
   monster,
@@ -116,6 +120,7 @@ export function Card({
       animate={{ scale: 1, opacity: 1 }}
       transition={{ duration: 0.25 * scale }}
       data-zone={objectId === undefined ? undefined : `obj-${String(objectId)}`}
+      data-player={player}
       className={`card size-${size} kind-${kindOf(card.type)}${image ? '' : ' blank'}${counters > 0 ? ' has-counters' : ''}${spent ? ' spent' : ''}${highlight ? ` hl-${highlight}` : ''}`}
       role={onClick ? 'button' : 'img'}
       aria-label={card.name}

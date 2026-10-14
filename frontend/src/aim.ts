@@ -3,24 +3,30 @@
 import type { OptionView } from './protocol';
 
 // zonesAt lists the zones under a point, topmost first: data-zone of
-// cards ("obj-N") and players ("player-N"), data-stack of stack rows.
+// cards ("obj-N") and piles, data-stack of stack rows. A player is aimed
+// at by the character card (data-player, "player-N"), never by the area
+// around it (15.33), so the areas' own zones are left out.
 export function zonesAt(x: number, y: number): string[] {
   const out: string[] = [];
   for (const el of document.elementsFromPoint(x, y)) {
     const zone = el.getAttribute('data-zone');
     const stack = el.getAttribute('data-stack');
+    const player = el.getAttribute('data-player');
     if (stack) {
       out.push(`stack-${stack}`);
     }
-    if (zone) {
+    if (zone && !zone.startsWith('player-')) {
       out.push(zone);
+    }
+    if (player) {
+      out.push(`player-${player}`);
     }
   }
   return out;
 }
 
 // targetAt is the first of the targets the zones show, topmost first:
-// a card wins over the player area around it.
+// a character card as an object wins over it as its player.
 export function targetAt(zones: string[], targets: OptionView[]): OptionView | undefined {
   for (const zone of zones) {
     const m = /^(obj|player|stack)-(\d+)$/.exec(zone);
@@ -47,12 +53,12 @@ export function targetAt(zones: string[], targets: OptionView[]): OptionView | u
 
 // AimClick is what a click while aiming does (15.33): pick a target;
 // cancel on the source (T-07) or on empty space (T-06); or, on a card,
-// player, pile, or stack item that is no target, say why (T-05).
+// pile, or stack item that is no target, say why (T-05).
 export type AimClick = { kind: 'pick'; target: OptionView } | { kind: 'cancel' } | { kind: 'wrong' };
 
 // aimClick decides a click by the zones under it, topmost first. The
-// source cancels before the player area around it may pick its owner,
-// unless the source is a target itself.
+// source cancels, unless it is a target itself (an item that may pick
+// any item, as The D20).
 export function aimClick(zones: string[], source: number, targets: OptionView[]): AimClick {
   const src = `obj-${String(source)}`;
   if (zones.find((z) => z.startsWith('obj-')) === src) {

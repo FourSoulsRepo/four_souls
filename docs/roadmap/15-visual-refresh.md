@@ -951,6 +951,19 @@ Images come first, so the new table is built with backs and mats.
    15. e2e test: right click and the source cancel; nothing is sent.
    16. e2e test: a shop item shows "Pick a monster or a player." above it.
    17. Screenshots: `.cache/screenshots/15.33/before/` and `after/`.
+5. Owner notes (2026-10-14)
+   1. Owner: aim at a player by the character card only, as at a monster.
+   2. Owner asks when a source can be its own target.
+6. Result of the fixes (2026-10-14)
+   1. A player is aimed at by the character card; the area no longer counts.
+   2. The character glows red while aiming; the area stays plain.
+   3. A click on empty space in a player area now cancels.
+   4. Own target: The D20 and Battery Bum may pick any item, themselves too.
+   5. No character card has a targeted ability today.
+   6. e2e test: the opponent's character glows, the area does not.
+   7. Screenshots: `.cache/screenshots/15.33/fix/before/` and `after/`.
+   8. e2e helper `playLoot` takes any glowing target, e.g. your own item.
+   9. It missed XV. The Devil's target, an item you control.
 
 ### [ ] 15.34 Plays without aiming
 

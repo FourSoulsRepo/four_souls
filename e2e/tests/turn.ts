@@ -196,11 +196,12 @@ export async function expectNextTurn(pages: Page[], press: Tap, after: number): 
 }
 
 // playLoot plays a hand card the way a player would: its menu's Play,
-// or, for a card that needs a target, the first glowing target (15.25).
+// or, for a card that needs a target, the first glowing target (15.25):
+// any card, a character for its player (15.33), or a stack item.
 export async function playLoot(page: Page, card: Locator, press: Tap): Promise<void> {
   await press(page, card);
   const menu = page.getByRole('menu');
-  const target = page.locator('.board .card.hl-aim, .player.hl-aim').first();
+  const target = page.locator('.card.hl-aim, .stack-row.hl-aim').first();
   await expect(menu.or(target)).toBeVisible();
   await press(page, (await menu.isVisible()) ? menu.getByRole('menuitem', { name: 'Play' }) : target);
 }

@@ -76,7 +76,8 @@ function OpponentArea({ player, name, position, active, winSouls, ui }: Omit<Pro
           counters={counted(character)}
           stats={{ hp: player.hp, atk: player.atk }}
           objectId={character.id}
-          {...ui.object(character.id)}
+          player={player.id}
+          {...ui.character(player.id, character.id)}
         />
       </div>
       <div className="player-cards opp-items" role="group" aria-label={`${name}: items`}>
@@ -163,7 +164,8 @@ function OwnArea({ player, name, active, winSouls, ui, tools }: Omit<Props, 'you
           counters={counted(character)}
           stats={{ hp: player.hp, atk: player.atk }}
           objectId={character.id}
-          {...ui.object(character.id)}
+          player={player.id}
+          {...ui.character(player.id, character.id)}
         />
       </div>
       <div className="player-cards own-items" role="group" aria-label="Your items">
