@@ -282,3 +282,54 @@ test('damage a player takes names its card in the history strip (15.47)', async 
   await expect(zoom.locator('.card-zoom-line')).toHaveText(/^Boom Fly deals 1 damage to (Bob|Wes)$/);
   await shot(active, 'history-strip-taken-damage');
 });
+
+test('a changed roll shows the die and the result in the history (19.1)', async ({ browser }) => {
+  const pages = await startGame(browser, ['Jin', 'Kaz'], { url: fast() });
+  const active = await activePage(pages, click);
+  // Polycephalus took damage: the next attack roll has -2. The die says
+  // 6, the game uses 4 (the play-test record of 19.1).
+  await active.evaluate(() => {
+    interface Store {
+      getState: () => {
+        game: { view: { turn: { active: number }; monsters: { top?: { id: number; card: string; stats?: unknown } }[] } } | null;
+        receive: (env: unknown) => void;
+      };
+    }
+    const store = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store;
+    const s = store.getState();
+    const game = structuredClone(s.game);
+    const monster = game?.view.monsters.find((m) => m.top?.stats)?.top;
+    if (!game || !monster) {
+      throw new Error('no game');
+    }
+    const p = game.view.turn.active;
+    const none = { card: '', index: 0 };
+    const item = { id: 900, kind: 3, controller: p, source: 0, roll: 6, label: 'attack roll', attack: true, target: { object: monster.id, player: 0 }, ability: none, roll_for: none, target_card: monster.card };
+    s.receive({
+      type: 'update',
+      data: {
+        ...game,
+        step: 900,
+        events: [
+          { kind: 'stack_resolved', player: p, amount: 6, text: 'attack roll', stack_id: 900, item },
+          { kind: 'roll_resolved', player: p, amount: 4, text: 'attack' },
+        ],
+      },
+    });
+  });
+
+  const strip = active.getByRole('complementary', { name: 'History strip' });
+  const icon = strip.locator('.strip-item.stack-roll').first();
+  await expect(icon).toHaveAttribute('aria-label', /rolls \d against /);
+  await icon.hover();
+  await shot(active, 'history-roll-changed-strip');
+  await active.mouse.move(1000, 420);
+  await active.getByRole('button', { name: 'History', exact: true }).click();
+  const history = active.getByRole('complementary', { name: 'History', exact: true });
+  await expect(history).toContainText('attack roll (rolled 6');
+  await shot(active, 'history-roll-changed');
+
+  await expect(icon).toHaveAttribute('aria-label', /rolls 4 against /);
+  await expect(icon.locator('.die')).toHaveAttribute('aria-label', 'Rolled 4');
+  await expect(history).toContainText('Roll — attack roll (rolled 6 → 4)');
+});

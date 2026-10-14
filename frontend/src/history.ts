@@ -26,6 +26,8 @@ export function entriesFor(events: GameEvent[], turn: number, you: number, n: Na
   const add = (icon: string, text: string, card?: string, item?: StackItem) => {
     out.push({ key: key + out.length, turn: t, icon, text, ...(card ? { card } : {}), ...(item ? { item } : {}) });
   };
+  // roll is the last resolved roll's entry and its die, for its result.
+  let roll: { entry: Entry; die: number } | undefined;
   for (const e of events) {
     const card = e.card ? n.card(e.card) : '';
     switch (e.kind) {
@@ -34,11 +36,24 @@ export function entriesFor(events: GameEvent[], turn: number, you: number, n: Na
         add('▶', `Turn ${String(t)}: ${who(e.player)}`);
         break;
       case 'stack_resolved': {
-        const roll = e.amount ? ` (rolled ${String(e.amount)})` : '';
+        const rolled = e.amount ? ` (rolled ${String(e.amount)})` : '';
         const label = e.text && !e.text.startsWith(e.card ?? '\u0000') ? ` — ${e.text}` : '';
-        add('✦', `${card || 'Roll'}${label}${roll}`, e.card, e.item);
+        add('✦', `${card || 'Roll'}${label}${rolled}`, e.card, e.item);
+        roll = e.amount ? { entry: out[out.length - 1], die: e.amount } : undefined;
         break;
       }
+      case 'roll_resolved':
+        // Roll changes ("the next attack roll has -2") make the result
+        // differ from the die; show both, and the result on the strip.
+        if (roll && e.amount && e.amount !== roll.die) {
+          const { entry, die } = roll;
+          entry.text = entry.text.replace(`(rolled ${String(die)})`, `(rolled ${String(die)} → ${String(e.amount)})`);
+          if (entry.item) {
+            entry.item = { ...entry.item, roll: e.amount };
+          }
+        }
+        roll = undefined;
+        break;
       case 'looted':
         // A private loot comes without its card to everyone but its player.
         add('+', card ? `${does(e.player, 'loot')} ${card}` : `${does(e.player, 'loot')} a card`, e.card);

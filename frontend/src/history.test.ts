@@ -31,6 +31,34 @@ describe('entriesFor', () => {
     expect(entriesFor([{ kind: 'looted', player: 0, card: 'a_dime' }], 1, 0, n, 0)[0]?.item).toBeUndefined();
   });
 
+  it('shows a changed roll result next to its die', () => {
+    const item = { id: 3, kind: 3, controller: 1, source: 0, roll: 6, attack: true, target: { player: 0 }, ability: { card: '', index: 0 }, roll_for: { card: '', index: 0 } };
+    const [changed] = entriesFor(
+      [
+        { kind: 'stack_resolved', player: 1, amount: 6, text: 'attack roll', stack_id: 3, item },
+        { kind: 'roll_resolved', player: 1, amount: 4, text: 'attack' },
+      ],
+      1,
+      0,
+      n,
+      0,
+    );
+    expect(changed.text).toBe('Roll — attack roll (rolled 6 → 4)');
+    expect(changed.item?.roll).toBe(4);
+    expect(item.roll).toBe(6);
+    const [same] = entriesFor(
+      [
+        { kind: 'stack_resolved', player: 1, amount: 6, text: 'attack roll' },
+        { kind: 'roll_resolved', player: 1, amount: 6, text: 'attack' },
+      ],
+      1,
+      0,
+      n,
+      0,
+    );
+    expect(same.text).toBe('Roll — attack roll (rolled 6)');
+  });
+
   it('keeps hidden loots hidden', () => {
     const mine = entriesFor([{ kind: 'looted', player: 0, card: 'a_dime', private: true }], 1, 0, n, 0);
     const theirs = entriesFor([{ kind: 'looted', player: 1, private: true }], 1, 0, n, 0);

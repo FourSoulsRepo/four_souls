@@ -40,6 +40,10 @@
   * The taker reads "You get Bomb from Bo".
   * The giver reads "Ann gets your Bomb".
   * Everyone else reads "Ann gets a card from Bo".
+* **2c. A changed roll (19.1):** the entry shows the die and the result.
+  * Polycephalus's -2: "Roll — attack roll (rolled 6 → 4)".
+  * The strip's die and line show the result: "Ann rolls 4 against Fly".
+  * An unchanged roll shows one number: "(rolled 6)".
 
 ## Postconditions
 
