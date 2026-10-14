@@ -964,6 +964,17 @@ Images come first, so the new table is built with backs and mats.
    7. Screenshots: `.cache/screenshots/15.33/fix/before/` and `after/`.
    8. e2e helper `playLoot` takes any glowing target, e.g. your own item.
    9. It missed XV. The Devil's target, an item you control.
+7. Owner notes (2026-10-14)
+   1. Owner: a click on the aiming card no longer cancels; it does nothing.
+   2. Owner: only a click on empty space stops aiming.
+   3. Owner: a card that may target itself picks itself on that click.
+8. Result of the fixes (2026-10-14)
+   1. `aimClick` gives "none" for the source; aiming goes on.
+   2. A source that is its own target picks itself, as before.
+   3. Empty space, a right click, or Esc still cancel.
+   4. Unit test: the source does nothing, even over a player it may target.
+   5. e2e test: the bomb clicked again stays aimed; empty space cancels.
+   6. No screenshots: nothing on screen changed.
 
 ### [ ] 15.34 Plays without aiming
 

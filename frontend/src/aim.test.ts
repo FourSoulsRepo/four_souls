@@ -37,10 +37,12 @@ describe('aimClick', () => {
     expect(aimClick(['obj-40', 'board'], 7, targets)).toEqual({ kind: 'pick', target: monster });
   });
 
-  it('cancels on the source or on empty space', () => {
-    // The source cancels even inside the area of a player it may target.
-    expect(aimClick(['obj-7', 'hand-0', 'player-0'], 7, targets)).toEqual({ kind: 'cancel' });
+  it('cancels on empty space', () => {
     expect(aimClick([], 7, targets)).toEqual({ kind: 'cancel' });
+  });
+
+  it('does nothing on the source, even over a player it may target', () => {
+    expect(aimClick(['obj-7', 'hand-0', 'player-0'], 7, targets)).toEqual({ kind: 'none' });
   });
 
   it('calls any other card, player, pile, or stack item wrong', () => {

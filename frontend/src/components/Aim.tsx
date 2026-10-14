@@ -5,10 +5,10 @@ import { scaleFor } from '../playback';
 import { useApp, type Aiming } from '../store';
 
 // AimLayer is the player's aim (15.25): a click on a card that needs a
-// target starts it, the next click picks the target. A click on the
-// card again or on empty space, a right click, or Esc cancels it. A
-// click on a card, player, or pile that is no target keeps aiming and
-// says why beside the click (15.33). While the mouse moves, an arrow
+// target starts it, the next click picks the target. A click on empty
+// space, a right click, or Esc cancels it. A click on the card again
+// does nothing, unless it may target itself. A click on a card, pile,
+// or stack row that is no target keeps aiming and says why (15.33). While the mouse moves, an arrow
 // runs from the card to the pointer.
 export function AimLayer() {
   const aiming = useApp((s) => s.aiming);
@@ -42,7 +42,7 @@ function Aim({ aiming }: { aiming: Aiming }) {
         playAt(aiming.intent, what.target);
       } else if (what.kind === 'wrong') {
         setWhy((w) => ({ at: { x: e.clientX, y: e.clientY }, n: (w?.n ?? 0) + 1 }));
-      } else {
+      } else if (what.kind === 'cancel') {
         setAiming(null);
       }
     };

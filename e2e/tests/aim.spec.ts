@@ -1,6 +1,6 @@
 // Aiming (15.25): one click on a card that needs a target starts aiming,
 // the next click picks the target. A wrong target says why; the source
-// or a right click cancels (15.33).
+// does nothing; empty space or a right click cancels (15.33).
 import { expect, test, type Page } from '@playwright/test';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -128,7 +128,8 @@ test('a bomb aimed at a monster by two clicks damages it', async ({ browser }) =
   expect(await sent()).toEqual(before);
 
   // A shop item is no target for a bomb: the reason shows beside the
-  // click, and aiming goes on. Clicking the bomb again cancels.
+  // click, and aiming goes on. Clicking the bomb again does nothing;
+  // empty space cancels.
   await clickBomb();
   await expect(lifted).toHaveCount(1);
   const item = active.getByRole('group', { name: 'Shop' }).locator('.card').first();
@@ -149,6 +150,9 @@ test('a bomb aimed at a monster by two clicks damages it', async ({ browser }) =
   await expect(lifted).toHaveCount(1);
   await expect(monster).toHaveClass(/hl-aim/);
   await clickBomb();
+  await expect(lifted).toHaveCount(1);
+  await expect(monster).toHaveClass(/hl-aim/);
+  await active.getByText('Nothing on the stack').click();
   await expect(lifted).toHaveCount(0);
   await expect(why).toHaveCount(0);
   await expect(active.getByRole('menu')).toHaveCount(0);
