@@ -223,7 +223,7 @@ type Options struct {
 	DraftSize int              `json:"draft_size,omitempty"` // characters offered in a draft; default 3
 	BanRounds int              `json:"ban_rounds,omitempty"` // each player bans one character per round
 	BanTimer  int              `json:"ban_timer,omitempty"`  // seconds per ban; 0: no timer
-	HostBans  []engine.CardRef `json:"host_bans,omitempty"`  // never dealt (GS-02)
+	HostBans  []engine.CardRef `json:"host_bans,omitempty"`  // any card; never in the game (GS-02, GS-13)
 	// NoBonusSouls plays without the 3 bonus souls (R-SETUP-06).
 	NoBonusSouls bool `json:"no_bonus_souls,omitempty"`
 	// ResponseTimer is seconds to answer a prompt: 0 is off, else at

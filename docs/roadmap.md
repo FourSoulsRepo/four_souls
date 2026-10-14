@@ -198,6 +198,7 @@ Step numbers stay as IDs; the table lists steps in work order.
 10. Host bans cards before hosting (GS-13, 14.9).
 11. Tests ban stat-changing monsters for fixed deals (14.10).
 12. Draft pick screen for normal games, no bans (GS-01, 14.11).
+13. Ban list in the host screen (GS-13, 14.12).
 
 ## 15. Visual refresh
 

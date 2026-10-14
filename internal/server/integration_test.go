@@ -247,6 +247,9 @@ func checkRecord(t *testing.T, path string) {
 	for _, c := range s.Characters {
 		setup.Characters = append(setup.Characters, engine.CardRef(c))
 	}
+	for _, c := range s.Banned {
+		setup.Banned = append(setup.Banned, engine.CardRef(c))
+	}
 	steps := make([]engine.StepRecord, len(rec.Steps))
 	for i, st := range rec.Steps {
 		if jerr := json.Unmarshal(st.Intent, &steps[i].Intent); jerr != nil {

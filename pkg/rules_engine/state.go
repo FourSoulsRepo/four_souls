@@ -263,6 +263,8 @@ type Game struct {
 	// Sets lists the card sets in play; definitions are looked up by name
 	// when a saved game is loaded.
 	Sets []string `json:"sets"`
+	// Banned lists the cards the host left out of the game (GS-13).
+	Banned []CardRef `json:"banned,omitempty"`
 
 	// AskSeq numbers Ask effects; asks holds the waiting ones (not saved:
 	// see Asking.Key).

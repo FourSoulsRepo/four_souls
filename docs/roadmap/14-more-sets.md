@@ -161,6 +161,18 @@ Alt art (CD-11) comes after all sets.
    2. Server test: the ban list reaches the game.
    3. e2e test: ban a card in the host screen.
    4. Use case for the option.
+4. Split (owner, 2026-10-15):
+   1. This step: engine and server only; no host screen yet.
+   2. Host screen, game list, table, their e2e test, use case: 14.12.
+5. Result (2026-10-15):
+   1. `engine.Setup.Banned`: no copy goes into a deck, none is dealt.
+   2. The list stays in `Game.Banned`, so saved games keep it.
+   3. `host_bans` takes any card of the sets, not only characters.
+   4. A starting item cannot be banned; ban its character.
+   5. A ban that leaves a deck too small is refused (`bad_setup`).
+   6. The record header has `setup.banned`.
+   7. Tests: `TestBannedCardsAreLeftOut`, `TestHostBansAnyCard`.
+   8. UC-05 updated: host bans of any card.
 
 ### [ ] 14.10 Tests deal without stat-changing monsters
 
@@ -193,3 +205,18 @@ Alt art (CD-11) comes after all sets.
 3. Done when:
    1. e2e test: host a draft game, each player picks, the game starts.
    2. UC-05 updated; use case for the pick screen.
+
+### [ ] 14.12 Ban list in the host screen
+
+1. Goal: the host picks banned cards in the app (GS-13).
+2. Tasks:
+   1. Engine and server are done in 14.9; this is the client.
+   2. Detailed setup: pick cards to ban, from the chosen sets.
+   3. Unchecking a set drops its cards from the list.
+   4. Starting items are not offered; their character is.
+   5. Without card images, the picker shows text cards.
+   6. The game list and the table show the ban list.
+3. Done when:
+   1. e2e test: ban a card in the host screen; it is in no deck.
+   2. e2e test: the table shows the ban list to every player.
+   3. Use case for the option.

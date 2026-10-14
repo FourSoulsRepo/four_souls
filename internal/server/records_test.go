@@ -72,6 +72,9 @@ func TestRecordReplays(t *testing.T) {
 	for _, c := range s.Characters {
 		setup.Characters = append(setup.Characters, engine.CardRef(c))
 	}
+	for _, c := range s.Banned {
+		setup.Banned = append(setup.Banned, engine.CardRef(c))
+	}
 	var steps []engine.StepRecord
 	for _, st := range rec.Steps {
 		var in engine.Intent

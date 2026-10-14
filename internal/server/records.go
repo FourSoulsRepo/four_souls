@@ -46,6 +46,10 @@ func (r *Room) openRecord(s engine.Setup) {
 	for i, c := range s.Characters {
 		chars[i] = string(c)
 	}
+	banned := make([]string, len(s.Banned))
+	for i, c := range s.Banned {
+		banned[i] = string(c)
+	}
 	seats := make([]record.Seat, len(r.seats))
 	for i, st := range r.seats {
 		seats[i] = record.Seat{Seat: i, Name: st.name}
@@ -54,7 +58,7 @@ func (r *Room) openRecord(s engine.Setup) {
 	now := time.Now()
 	h := record.Header{
 		App: v.App, Engine: v.Engine, Protocol: protocol.Version, Game: r.recInfo.game, Started: now.UTC(),
-		Setup: record.Setup{Seed: s.Seed, Players: s.Players, Sets: r.recInfo.sets, BonusSouls: s.BonusSouls, Characters: chars},
+		Setup: record.Setup{Seed: s.Seed, Players: s.Players, Sets: r.recInfo.sets, BonusSouls: s.BonusSouls, Characters: chars, Banned: banned},
 		Seats: seats, Cards: r.recInfo.cards,
 	}
 	w, err := record.Create(r.path, h)

@@ -17,10 +17,15 @@
 7. Random picking: each player gets one random character from the pool.
 8. Draft: each player sees only their own offers and picks one (GS-01, GS-03).
 9. The game starts with the chosen characters.
+10. Host bans may name any card of the sets, not only characters (GS-13).
+11. No copy of a host-banned card goes into a deck.
+12. The match record header lists the host bans.
 
 ## Alternative scenarios and errors
 
 * **3a. Options that cannot work:** refused with `bad_setup` and the reason.
+* **3b. A host ban of a card outside the sets or of a starting item:** refused with `bad_setup`.
+* **3c. Host bans that leave a deck too small to deal:** refused with `bad_setup`.
 * **5a. A ban out of turn:** refused with `not_your_turn`.
 * **5b. A ban of a card not in the pool:** refused with `bad_card`.
 * **5c. The ban timer runs out:** that player makes no ban this round.
@@ -29,3 +34,4 @@
 ## Postconditions
 
 * Every player has a character; banned characters were never dealt.
+* Host-banned cards are in no deck, slot, or hand.

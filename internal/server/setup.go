@@ -73,17 +73,23 @@ func checkOptions(o *protocol.Options, sets []engine.CardSet, players int) error
 		return fmt.Errorf("a response timer is off or %d to %d seconds (N-07)", minResponseTimer, maxResponseTimer)
 	}
 	all := characters(sets)
+	left := len(all) - o.BanRounds*players
 	for _, b := range o.HostBans {
-		if !slices.Contains(all, b) {
-			return fmt.Errorf("%s is not a character of these sets", b)
+		if slices.Contains(all, b) {
+			left--
 		}
 	}
 	need := players
 	if o.Picking == protocol.PickDraft {
 		need = players * o.DraftSize
 	}
-	if left := len(all) - len(o.HostBans) - o.BanRounds*players; left < need {
+	if left < need {
 		return fmt.Errorf("%d characters left after bans; the setup needs %d", left, need)
+	}
+	// Any card of the sets may be banned (GS-13); a trial deal shows the
+	// decks still fill the slots.
+	if _, _, err := engine.NewGame(engine.Setup{Players: players, Sets: sets, Banned: o.HostBans}); err != nil {
+		return err
 	}
 	return nil
 }

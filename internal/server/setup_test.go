@@ -1,13 +1,17 @@
 package server
 
 import (
+	"context"
+	"path/filepath"
 	"slices"
 	"strconv"
 	"testing"
 	"time"
 
 	"github.com/FourSoulsRepo/four_souls/internal/protocol"
+	"github.com/FourSoulsRepo/record"
 	engine "github.com/FourSoulsRepo/rules_engine"
+	"github.com/FourSoulsRepo/rules_engine/cards"
 )
 
 // setupTable seats n players at a game with the given options and marks
@@ -59,6 +63,58 @@ func TestHostBans(t *testing.T) {
 	}
 	if len(got) != 2 || !slices.Contains(got, "isaac") || !slices.Contains(got, "samson") {
 		t.Fatalf("dealt %v, want Isaac and Samson", got)
+	}
+}
+
+// GS-13: the host may ban any card; banned cards are in no deck, and
+// the record keeps the list.
+func TestHostBansAnyCard(t *testing.T) {
+	dir := t.TempDir()
+	h := NewHub()
+	h.records = dir
+	ctx, cancel := context.WithCancel(context.Background())
+	stopped := make(chan struct{})
+	go func() { h.Run(ctx); close(stopped) }()
+	bans := []engine.CardRef{"delirium", "stoney", "belly_button", "isaac"}
+	players := setupTable(t, h, 2, protocol.Options{HostBans: bans})
+	var u protocol.Update
+	players[0].next(protocol.TypeUpdate, &u)
+	for _, pl := range u.View.Players {
+		if slices.Contains(bans, pl.Character.Card) {
+			t.Errorf("banned %s was dealt", pl.Character.Card)
+		}
+	}
+	cancel()
+	<-stopped
+
+	files, err := filepath.Glob(filepath.Join(dir, "*"+record.Ext))
+	if err != nil || len(files) != 1 {
+		t.Fatalf("records %v, %v", files, err)
+	}
+	rec, err := record.ReadFile(files[0])
+	if err != nil {
+		t.Fatal(err)
+	}
+	s := rec.Header.Setup
+	if !slices.Equal(s.Banned, []string{"delirium", "stoney", "belly_button", "isaac"}) {
+		t.Fatalf("record bans %v", s.Banned)
+	}
+	setup := engine.Setup{Seed: s.Seed, Players: s.Players, BonusSouls: s.BonusSouls, Banned: bans}
+	for _, code := range s.Sets {
+		set, _ := cards.Find(code)
+		setup.Sets = append(setup.Sets, set)
+	}
+	for _, c := range s.Characters {
+		setup.Characters = append(setup.Characters, engine.CardRef(c))
+	}
+	g, _, err := engine.NewGame(setup)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, o := range g.Objects {
+		if slices.Contains(bans, o.Card) {
+			t.Errorf("banned %s is in the game", o.Card)
+		}
 	}
 }
 
@@ -148,7 +204,7 @@ func TestOptionChecks(t *testing.T) {
 		"unknown picking":  {Picking: "auction"},
 		"4 ban rounds":     {BanRounds: 4},
 		"1 second timer":   {BanRounds: 1, BanTimer: 1},
-		"not a character":  {HostBans: []engine.CardRef{"fly"}},
+		"not in the sets":  {HostBans: []engine.CardRef{"nope"}},
 		"too few to draft": {Picking: protocol.PickDraft, DraftSize: 5, BanRounds: 3},
 	} {
 		ann.say(protocol.TypeCreate, protocol.Create{Seats: 4, Options: &o})

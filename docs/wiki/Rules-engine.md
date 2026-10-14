@@ -13,6 +13,8 @@ allowed := g.Allowed(p.Player)               // every intent that would be accep
 events, err = g.Apply(intent)                // validate, then run until input is needed
 ```
 
+`Setup.Banned` lists cards the host left out (GS-13): no copy goes into a deck, a banned character is never dealt, and the list stays in `Game.Banned`. A starting item cannot be banned; ban its character instead.
+
 `Apply` either refuses the intent with a `RuleError` (rule ID plus reason, state unchanged) or applies it and runs automatic work until the game waits on a player again. The engine never picks for a player, even when only one option exists.
 
 ## State
