@@ -276,6 +276,7 @@ export const useApp = create<AppState>()((set, get) => {
         name: names(u).player,
         character: (p) => u.view.players.find((x) => x.id === p)?.character.id,
         slot: (id) => slotZone(u.view, id),
+        seen: (ref) => (get().game?.events ?? []).some((e) => e.kind === 'card_revealed' && e.card === ref),
       }),
     speed: () => get().settings.animation,
     shown: () => get().game,

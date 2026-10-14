@@ -136,3 +136,9 @@ This step never closes; new reports are appended.
    1. `attackDeck` emits `card_revealed` for the drawn card.
    2. `placeRevealed` puts it in the slot; `putInSlot` emits it again.
    3. Playback shows every `card_revealed` large.
+6. Result (2026-10-14)
+   1. A card the update before revealed gets no second large reveal.
+   2. A deck attack: one large reveal, then the card flies to its slot.
+   3. Other reveals and refills show large as before.
+   4. Engine, protocol and records unchanged.
+   5. Screenshots: `.cache/screenshots/19.4/before/` and `after/`.

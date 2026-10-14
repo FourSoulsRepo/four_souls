@@ -310,3 +310,54 @@ test('a deck attack places the monster in its slot before the attack roll', asyn
   await expect(dax.locator(`[data-zone="obj-${String(ids.top)}"]`)).toBeVisible();
   await expect(placed).toHaveCount(0);
 });
+
+test('a deck attack shows the revealed monster large once (19.4)', async ({ browser }) => {
+  const [vix] = await startGame(browser, ['Vix', 'Wen']);
+  if (!vix) {
+    throw new Error('no pages');
+  }
+  // Replay a deck attack: the top card is revealed, then it covers the
+  // first slot and the first roll is made. Every effect is recorded.
+  await vix.evaluate(() => {
+    interface Effects {
+      subscribe: (f: (s: { playing: { key: number; effect: { kind: string } } | null }) => void) => void;
+    }
+    const w = window as unknown as { fourSouls: { store: Store & Effects }; effects: string[] };
+    const store = w.fourSouls.store;
+    w.effects = [];
+    let last = 0;
+    store.subscribe((s) => {
+      if (s.playing && s.playing.key !== last) {
+        last = s.playing.key;
+        w.effects.push(s.playing.effect.kind);
+      }
+    });
+    const s = store.getState();
+    const you = s.lobby.table?.you ?? 0;
+    const drawn = structuredClone(s.game);
+    const placed = structuredClone(s.game);
+    const [first, second] = placed?.view.monsters ?? [];
+    const card = second?.top?.card;
+    if (!drawn || !placed || !first || !second?.top || !card) {
+      throw new Error('no game');
+    }
+    first.top = { ...second.top, id: 990 };
+    s.receive({
+      type: 'update',
+      data: { ...drawn, step: 2, events: [{ kind: 'card_revealed', player: you, object: 989, card }] },
+    });
+    const events = [
+      { kind: 'card_revealed', player: -1, object: 990, card },
+      { kind: 'attack_target', player: you, object: 990, card },
+      { kind: 'dice_rolled', player: you, amount: 4, text: 'attack roll' },
+    ];
+    s.receive({ type: 'update', data: { ...placed, step: 3, events } });
+  });
+  // The drawn card shows large; in its slot it only flies there.
+  await expect(vix.getByTestId('effect-dice')).toBeVisible({ timeout: 8000 });
+  await vix.waitForTimeout(300); // let the dice settle for the picture
+  await shot(vix, 'deck-attack-once');
+  await expect(vix.locator('[data-zone="obj-990"]')).toBeVisible();
+  const effects = await vix.evaluate(() => (window as unknown as { effects: string[] }).effects);
+  expect(effects).toEqual(['reveal', 'place', 'dice']);
+});

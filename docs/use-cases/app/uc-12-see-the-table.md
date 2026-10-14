@@ -99,6 +99,9 @@
   * It stays on the slot while the update's later effects play.
   * A deck attack: the monster is in its slot before the attack roll.
   * Then the table shows the update and the copy goes away.
+* **1o. A card revealed twice (19.4):** it shows large only the first time.
+  * A deck attack shows its monster large when it is drawn.
+  * In the next update it only flies into its slot.
 
 ## Postconditions
 

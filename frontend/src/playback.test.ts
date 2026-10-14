@@ -11,6 +11,7 @@ const ctx = {
   name: (p: number) => ['Ann', 'Bo'].at(p) ?? '?',
   character: (p: number) => (p === 1 ? 31 : undefined),
   slot: (id: number) => (id === 50 ? 'monster-slot-1' : undefined),
+  seen: (card: string) => card === 'pin',
 };
 
 describe('effectsFor', () => {
@@ -99,6 +100,13 @@ describe('effectsFor', () => {
       { kind: 'reveal', card: 'fly' },
       { kind: 'place', from: ['deck-loot'], to: ['monster-slot-1'], card: 'fly', back: 'loot' },
       { kind: 'dice', value: 4, label: 'attack roll' },
+    ]);
+  });
+
+  it('shows a card revealed in the update before large only once (19.4)', () => {
+    const e: GameEvent = { kind: 'card_revealed', player: -1, object: 50, card: 'pin' };
+    expect(effectsFor([e], ctx)).toEqual([
+      { kind: 'place', from: ['deck-loot'], to: ['monster-slot-1'], card: 'pin', back: 'loot' },
     ]);
   });
 

@@ -40,6 +40,8 @@ interface Context {
   character: (player: number) => number | undefined;
   // slot is the zone of the slot an object is the top card of, if any.
   slot: (object: number) => string | undefined;
+  // seen tells if the update before revealed the card (19.4).
+  seen: (card: string) => boolean;
 }
 
 function playerZones(p: number): string[] {
@@ -154,7 +156,11 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
         if (!e.card) {
           break;
         }
-        out.push({ kind: 'reveal', card: e.card });
+        // A deck attack reveals its card, then puts it in a slot in the
+        // next update: it shows large once (19.4).
+        if (!ctx.seen(e.card)) {
+          out.push({ kind: 'reveal', card: e.card });
+        }
         // A card put into a slot, e.g. a deck attack's monster, is there
         // before the attack roll that follows it.
         const slot = e.object ? ctx.slot(e.object) : undefined;
