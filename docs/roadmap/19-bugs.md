@@ -89,7 +89,7 @@ This step never closes; new reports are appended.
 7. Owner notes (2026-10-14)
    1. Owner marks 19.2 solved.
 
-### [ ] 19.3 Deck attack: the monster lands before the roll
+### [x] 19.3 Deck attack: the monster lands before the roll
 
 1. Goal: on a deck attack the monster is in its slot before the dice roll.
 2. Report (owner, 2026-10-14)
@@ -116,8 +116,10 @@ This step never closes; new reports are appended.
    4. Shop refills get the same fly into their slot.
    5. Engine, protocol and records unchanged.
    6. Screenshots: `.cache/screenshots/19.3/before/` and `after/`.
+7. Owner notes (2026-10-14)
+   1. Owner marks 19.3 solved.
 
-### [ ] 19.4 Deck attack shows the monster large twice
+### [x] 19.4 Deck attack shows the monster large twice
 
 1. Goal: a deck attack shows the revealed monster large once.
 2. Report (owner, 2026-10-14)
@@ -142,3 +144,5 @@ This step never closes; new reports are appended.
    3. Other reveals and refills show large as before.
    4. Engine, protocol and records unchanged.
    5. Screenshots: `.cache/screenshots/19.4/before/` and `after/`.
+7. Owner notes (2026-10-14)
+   1. Owner marks 19.4 solved.
