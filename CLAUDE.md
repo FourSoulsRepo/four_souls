@@ -59,6 +59,11 @@
    13. Open questions wait for the owner at that roadmap step.
    14. A step file may add its own rules in its header; they win.
    15. Step 15: stop after every sub-step, with screenshots, for review.
+   16. Known e2e flakes: unlucky deals, until roadmap 14.10 is done.
+       1. A random deal can break a test that expects a plain board.
+       2. One failed test that passes when rerun alone is this flake.
+       3. Rerun the gate; do not chase it or blame the change.
+       4. A test that fails again on rerun is a real failure.
 6. Licenses
    1. Code is MIT (`LICENSE`).
    2. `NOTICE` lists every third-party item and its license.
