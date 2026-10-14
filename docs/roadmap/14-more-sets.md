@@ -148,7 +148,7 @@ Alt art (CD-11) comes after all sets.
    3. e2e test: the checkbox and its hint.
    4. Use case for the option; Q-13 updated.
 
-### [ ] 14.9 Host bans cards
+### [x] 14.9 Host bans cards
 
 1. Goal: the host leaves chosen cards out of the game (GS-13).
 2. Tasks:
@@ -173,8 +173,10 @@ Alt art (CD-11) comes after all sets.
    6. The record header has `setup.banned`.
    7. Tests: `TestBannedCardsAreLeftOut`, `TestHostBansAnyCard`.
    8. UC-05 updated: host bans of any card.
+6. Owner notes (2026-10-15)
+   1. Owner marks 14.9 solved; the host screen goes on in 14.12.
 
-### [ ] 14.10 Tests deal without stat-changing monsters
+### [x] 14.10 Tests deal without stat-changing monsters
 
 1. Goal: e2e tests stop failing on unlucky deals.
 2. Found in 15.3 (2026-10-13):
@@ -197,6 +199,9 @@ Alt art (CD-11) comes after all sets.
    4. `TestStatMonsterBans`: 400 deals, no fresh monster changed.
    5. It also fails if the Base Game gets a new such monster.
    6. Gold Box and Four Souls+: e2e tests play the Base Game only.
+6. Owner notes (2026-10-15)
+   1. Owner marks 14.10 solved.
+   2. Rule: a test bans only the cards it needs, each with a reason.
 
 ### [ ] 14.11 Draft pick screen
 
