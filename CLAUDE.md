@@ -62,8 +62,13 @@
    16. Unlucky deals in e2e tests: fixed by host bans (14.10).
        1. A random deal can break a test that expects a plain board.
        2. Such a test bans the cards: `startGame(…, { bans })`.
-       3. A deal-dependent failure is a test bug; ban the card, never rerun.
+       3. A deal-dependent failure is a bug; find why the card breaks it.
        4. A test that fails again on rerun is a real failure.
+       5. Ban only the fewest cards the test needs.
+       6. Each ban needs a reason: what the card changes that the test checks.
+       7. Write the reason in a comment next to the bans.
+       8. Never ban a card only because the test failed on it.
+       9. Such a failure may be an engine or client bug; fix that instead.
    17. Bug reports go to `docs/roadmap/19-bugs.md`, one item each.
        1. Log the item before any code change.
        2. Fix it under the roadmap rules and that file's rules.

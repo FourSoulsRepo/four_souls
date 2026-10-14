@@ -44,6 +44,8 @@ Every new screen gets a Playwright test. Find elements the way a player does: by
 
 A random deal can change what a test sees. `startGame(browser, names, { bans })` leaves cards out of the game (GS-13): it adds `host_bans` to the host's `create` message through Playwright's WebSocket routing, since the host screen has no ban list yet. A test that checks a fresh monster's stats passes `bans: statMonsters` (Delirium and Stoney, 14.10); `TestStatMonsterBans` in `pkg/rules_engine/cards` proves that list is complete for the Base Game.
 
+Bans are a last resort, not a way to silence a failure. A test bans only the fewest cards it needs, and a comment next to the bans says what each card changes that the test checks. A test never bans a card just because it failed on that card: such a failure may be a real engine or client bug, so find the cause first.
+
 The fake bridge also reads the real card text from `pkg/card_db/data` (no images), so tables show real names, like a public clone does.
 
 `e2e/tests/turn.ts` plays prompts through the UI like a careful player: it answers choices with the first option (picking on the table when it can), discards the first cards, passes when only responding, and attacks when a card forces it before the turn can end. `settle(pages, press, done)` runs it until `done()` holds; `click` and `tap` choose mouse or touch. When a game stalls, its error lists each page's prompt, buttons and dialog.
