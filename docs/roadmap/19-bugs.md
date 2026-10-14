@@ -176,3 +176,24 @@ This step never closes; new reports are appended.
    6. Screenshots: `.cache/screenshots/19.5/before/` and `after/`.
 7. Owner notes (2026-10-15)
    1. Owner marks 19.5 solved.
+
+### [ ] 19.6 Deck attack: the monster lands in its slot twice
+
+1. Goal: a card that flies into its place does not appear there again.
+2. Report (owner, 2026-10-15)
+   1. A player attacks the top of the monster deck.
+   2. The monster flies to its slot; the dice roll plays.
+   3. Then the same monster appears in the slot again.
+   4. Not the first animation clash: 19.3 and 19.4 were the same kind.
+   5. Owner asks for a rule and a check against animation clashes.
+3. Tasks:
+   1. Find the cause in the code.
+   2. One card gets one arrival animation per update.
+   3. List every animation in one place, with what it owns.
+   4. A check that finds two animations on one card.
+   5. A rule for new animations; research how others solve it.
+4. Done when:
+   1. Vitest: the clash check finds a double arrival and a double reveal.
+   2. e2e test: a deck attack's monster does not pop in after it lands.
+   3. Every e2e test fails on an animation clash.
+   4. ADR and wiki page for the rule; use case updated.
