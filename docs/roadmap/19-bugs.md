@@ -276,7 +276,23 @@ This step never closes; new reports are appended.
    1. Cause found and written here.
    2. A test that reproduces it.
 5. Cause
-   1. Not found yet.
+   1. The test, not the client or the server.
+   2. `sent` was not stuck: Ada had `sent: 19` at step 21.
+   3. The client blocks only while `sent === game.step`.
+   4. Turn 1 was Ben's; the test kept his page as `active`.
+   5. Ben's loot card ended his turn early.
+   6. Such cards: The Fool, `EndYourTurn` cards, damage that kills him.
+   7. Turn 2 was Ada's; Ben's page showed "Their turn".
+   8. `settle` waited for `canEndTurn(active)` on Ben's page: never true.
+   9. `answer()` never ends a turn, so nothing moved on.
+   10. The dump lists only the `Actions` region's buttons.
+   11. End turn sits in the `Board` region, so it looked like no buttons.
+   12. Rare: only deals where that loot card is the first playable one.
+6. Fix
+   1. The wait also ends when the turn moved on or the game ended.
+   2. Same check as `backToMe` in `actions.spec.ts`.
+   3. No test reproduces it: that needs a rigged hand.
+   4. The owner chose no rig hook for e2e (2026-10-15).
 
 ### [x] 19.9 Deck attack: the drawn card hides during the slot choice
 
