@@ -173,6 +173,9 @@ interface AppState extends Session {
   // host runs the server in this app and opens a game on it; sets
   // defaults to every set this app has.
   host: (game: Omit<Create, 'sets'> & { sets?: string[] }) => Promise<void>;
+  // createGame opens a game on the connected server, which runs
+  // elsewhere (N-17); sets defaults to every set this app has.
+  createGame: (game: Omit<Create, 'sets'> & { sets?: string[] }) => void;
   // hostSaved runs the server in this app and shows its games and saved
   // games, to continue one (N-11).
   hostSaved: () => Promise<void>;
@@ -516,6 +519,9 @@ export const useApp = create<AppState>()((set, get) => {
       if (info && (await open(`127.0.0.1:${String(info.port)}`))) {
         send('create', { ...game, sets: game.sets ?? get().cardSets });
       }
+    },
+    createGame: (game) => {
+      send('create', { ...game, sets: game.sets ?? get().cardSets });
     },
     hostSaved: async () => {
       const info = await startHost();

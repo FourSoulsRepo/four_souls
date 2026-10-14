@@ -63,6 +63,7 @@ Use options 1, 3, 5 and 10.
    5. Nicknames are 1–20 characters, trimmed; control characters are refused.
    6. Two equal names in one game: the server adds " (2)" to the later one.
    7. `update` lists each seat's nickname, so the table shows names.
+   8. `welcome` sets `create` when this client may open games (N-17).
    4. A different protocol version gets `error` `client_outdated` or `server_outdated`, then close.
 4. Playing
    1. The client sends `intent`: an engine intent; the server fills in the seat.
@@ -85,6 +86,10 @@ Use options 1, 3, 5 and 10.
    1. LAN first: no accounts; the token only proves "same seat as before".
    2. Tokens are 128 random bits.
    3. No encryption yet; `wss://` comes with online play.
+   4. A dedicated server lets every client create or load games.
+   5. A server in a player's app lets only loopback clients do so.
+      1. That is the host's own app; friends join.
+      2. Others get `error` `not_host` (N-17).
 8. Later messages use the same envelope.
    1. Lobby (6.5), match setup (6.6), pause and votes (6.8), saves (6.11).
    2. Spectators send `hello` with role `spectator` or `judge`.

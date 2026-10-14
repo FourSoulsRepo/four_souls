@@ -26,6 +26,8 @@ export interface Welcome {
   engine: string;
   token: string;
   seat: number;
+  // create is set when this app may open a game on the server (N-17).
+  create?: boolean;
 }
 
 export interface ProtocolError {

@@ -10,6 +10,8 @@ const simple: Options = { picking: 'random', draft_size: 3, ban_rounds: 0, ban_t
 
 // Host: a simple setup, with "Detailed" for the rest (GS-10). It starts
 // from the last hosted setup; the first time every card set is ticked.
+// Connected to a dedicated server, it creates the game there instead
+// of hosting it in this app (N-17).
 export function HostScreen() {
   const settings = useApp((s) => s.settings);
   const saveSettings = useApp((s) => s.saveSettings);
@@ -17,6 +19,9 @@ export function HostScreen() {
   const error = useApp((s) => s.error);
   const host = useApp((s) => s.host);
   const hostSaved = useApp((s) => s.hostSaved);
+  const createGame = useApp((s) => s.createGame);
+  const remote = useApp((s) => s.connected && !s.hosting);
+  const address = useApp((s) => s.address);
   const saveNickname = useApp((s) => s.saveNickname);
   const show = useApp((s) => s.show);
   const [nickname, setNickname] = useState(settings.nickname);
@@ -49,7 +54,8 @@ export function HostScreen() {
 
   return (
     <div className="screen">
-      <h1>Host a game</h1>
+      <h1>{remote ? 'Create a game' : 'Host a game'}</h1>
+      {remote && <p className="muted">On the server {address}</p>}
       <form
         className="panel"
         onSubmit={(e) => {
@@ -69,21 +75,29 @@ export function HostScreen() {
                   no_bonus_souls: options.no_bonus_souls ?? false,
                 },
               });
-              await host({ seats, sets: chosen, options: detailed ? options : undefined, password: password || undefined });
+              const game = { seats, sets: chosen, options: detailed ? options : undefined, password: password || undefined };
+              if (remote) {
+                createGame(game);
+              } else {
+                await host(game);
+              }
             }
             setBusy(false);
           })();
         }}
       >
-        <label className="field">
-          Nickname
-          <input
-            value={nickname}
-            onChange={(e) => {
-              setNickname(e.target.value);
-            }}
-          />
-        </label>
+        {/* On a server the nickname went with hello already. */}
+        {!remote && (
+          <label className="field">
+            Nickname
+            <input
+              value={nickname}
+              onChange={(e) => {
+                setNickname(e.target.value);
+              }}
+            />
+          </label>
+        )}
         <label className="field">
           Players
           <select
@@ -170,11 +184,13 @@ export function HostScreen() {
           </>
         )}
         <button type="submit" className="primary" disabled={busy}>
-          Host
+          {remote ? 'Create' : 'Host'}
         </button>
-        <button
-          type="button"
-          disabled={busy}
+        {/* A server's saved games are in its Games list already. */}
+        {!remote && (
+          <button
+            type="button"
+            disabled={busy}
           onClick={() => {
             setBusy(true);
             void (async () => {
@@ -185,8 +201,9 @@ export function HostScreen() {
             })();
           }}
         >
-          Continue a saved game
-        </button>
+            Continue a saved game
+          </button>
+        )}
       </form>
       <p className="status" role="status">
         {error}
@@ -194,7 +211,7 @@ export function HostScreen() {
       <button
         type="button"
         onClick={() => {
-          show('menu');
+          show(remote ? 'join' : 'menu');
         }}
       >
         Back

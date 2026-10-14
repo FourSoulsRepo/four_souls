@@ -25,14 +25,21 @@ type Conn interface {
 	Close()
 }
 
+// localConn is a Conn that knows whether its client runs on this
+// computer; a Conn without it is not local.
+type localConn interface {
+	Local() bool
+}
+
 // Client is a connection's handle on the server. The transport passes
 // every message it reads to Receive and calls Leave when the connection
 // ends. Messages go to the lobby until the client's game starts, then
 // to its room.
 type Client struct {
-	hub  *Hub
-	conn Conn
-	room atomic.Pointer[Room]
+	hub   *Hub
+	conn  Conn
+	room  atomic.Pointer[Room]
+	local bool // the client runs on this computer
 
 	// Owned by the hub goroutine.
 	hello bool
@@ -135,6 +142,8 @@ type Hub struct {
 	seed uint64
 	// saves is the folder for saved games (N-11); "" keeps none.
 	saves string
+	// hostOnly lets only local clients create or load games (N-17).
+	hostOnly bool
 }
 
 // NewHub makes a lobby with the card sets the engine knows.
@@ -145,6 +154,9 @@ func NewHub() *Hub {
 // Connect adds a connection; its first message must be hello.
 func (h *Hub) Connect(conn Conn) *Client {
 	c := &Client{hub: h, conn: conn, seat: -1}
+	if l, ok := conn.(localConn); ok {
+		c.local = l.Local()
+	}
 	h.send(hubRequest{client: c, join: true})
 	return c
 }
@@ -251,7 +263,7 @@ func (h *Hub) hello(c *Client, env protocol.Envelope) {
 	}
 	c.hello, c.name, c.sets = true, name, m.Sets
 	v := version.Get()
-	welcome := protocol.Welcome{Protocol: protocol.Version, App: v.App, Engine: v.Engine, Seat: -1}
+	welcome := protocol.Welcome{Protocol: protocol.Version, App: v.App, Engine: v.Engine, Seat: -1, Create: h.mayCreate(c)}
 	if m.Token != "" {
 		if t, i := h.tableSeat(m.Token); t != nil {
 			welcome.Token, welcome.Seat = m.Token, i
@@ -297,11 +309,18 @@ func (h *Hub) tableSeat(token string) (*table, int) {
 	return nil, -1
 }
 
+// mayCreate reports whether c may open a game here (N-17).
+func (h *Hub) mayCreate(c *Client) bool { return !h.hostOnly || c.local }
+
 // create opens a table and seats its creator.
 func (h *Hub) create(c *Client, env protocol.Envelope) {
 	var m protocol.Create
 	if err := env.Unpack(&m); err != nil {
 		c.fail(env.ID, protocol.ErrBadMessage, err.Error())
+		return
+	}
+	if !h.mayCreate(c) {
+		c.fail(env.ID, protocol.ErrNotHost, "only the host opens games here")
 		return
 	}
 	if c.table != nil {

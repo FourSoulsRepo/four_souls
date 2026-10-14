@@ -94,6 +94,9 @@ type Welcome struct {
 	Engine   string `json:"engine"`
 	Token    string `json:"token"`
 	Seat     int    `json:"seat"` // -1 when not seated
+	// Create is set when this client may open a game here: always on a
+	// dedicated server, only for the host's own app on a hosted one (N-17).
+	Create bool `json:"create,omitempty"`
 }
 
 // Intent asks the server to do something; the server fills in the

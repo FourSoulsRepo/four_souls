@@ -34,6 +34,10 @@ type Config struct {
 	// Discovery answers LAN probes while a game waits (N-13, ADR 009).
 	// Only the app's host sets it; a dedicated server never announces.
 	Discovery bool `json:"-"`
+	// HostOnly lets only a client on this computer create or load a
+	// game: the app's host. Friends join (N-17). A dedicated server
+	// lets everyone create.
+	HostOnly bool `json:"-"`
 }
 
 // DefaultConfig is used for settings the flags and file leave out.
@@ -89,6 +93,7 @@ func Start(ctx context.Context, cfg Config) (*Server, error) {
 	s := &Server{cfg: cfg, ln: ln, cancel: cancel}
 	hub := NewHub()
 	hub.records, hub.cards, hub.seed, hub.saves = cfg.Records, cardTexts(), cfg.Seed, cfg.Saves
+	hub.hostOnly = cfg.HostOnly
 	s.hub.Add(2)
 	go func() {
 		defer s.hub.Done()

@@ -489,6 +489,11 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    4. It ends when the player before them ends the turn.
    5. That end window is their last chance to act.
    6. The player can cancel it at any time.
+17. N-17. Create a game on a dedicated server (owner, 2026-10-14).
+   1. A player connected to a dedicated server opens a new game there.
+   2. The Games list shows "Create a game" only on a dedicated server.
+   3. A game hosted in an app: only that app creates or loads games.
+   4. Friends there join; they never open games on the host's app.
 
 ## Learning
 

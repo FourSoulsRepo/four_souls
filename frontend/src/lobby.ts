@@ -73,6 +73,13 @@ export function lost(s: Session): Session {
   return { screen: 'join', lobby: emptyLobby, game: null, error };
 }
 
+// canCreate reports whether the Games list offers "Create a game": the
+// server allows it (a dedicated one), and this app does not host. A
+// friend of an app's host never opens games there (N-17).
+export function canCreate(lobby: Lobby, hosting: boolean): boolean {
+  return !hosting && lobby.welcome?.create === true;
+}
+
 // remember puts an address first in the recent list, once.
 export function remember(recent: string[], address: string, max = 5): string[] {
   const a = address.trim();

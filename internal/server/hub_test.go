@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"math/rand/v2"
+	"net"
 	"net/http/httptest"
 	"slices"
 	"strconv"
@@ -437,6 +438,82 @@ func TestWithBaseGame(t *testing.T) {
 	} {
 		if got := withBaseGame(c.in); !slices.Equal(got, c.want) {
 			t.Errorf("withBaseGame(%v) = %v, want %v", c.in, got, c.want)
+		}
+	}
+}
+
+// localMemConn is a memConn whose client runs on the server's computer.
+type localMemConn struct{ *memConn }
+
+func (localMemConn) Local() bool { return true }
+
+// arriveLocal is arrive from the server's own computer.
+func arriveLocal(t *testing.T, h *Hub, name string) (*player, protocol.Welcome) {
+	t.Helper()
+	p := &player{t: t, conn: newMemConn()}
+	p.c = h.Connect(localMemConn{p.conn})
+	p.say(protocol.TypeHello, protocol.Hello{Protocol: protocol.Version, Name: name, Role: protocol.RolePlayer, Sets: []string{"b2"}})
+	var w protocol.Welcome
+	p.next(protocol.TypeWelcome, &w)
+	return p, w
+}
+
+func TestDedicatedLetsAnyoneCreate(t *testing.T) {
+	h := startHub(t)
+	ann, w := arrive(t, h, "Ann", "")
+	if !w.Create {
+		t.Fatal("a dedicated server does not offer create")
+	}
+	ann.say(protocol.TypeCreate, protocol.Create{Seats: 2})
+	ann.next(protocol.TypeTable, nil)
+}
+
+func TestHostOnlyCreates(t *testing.T) {
+	dir := t.TempDir()
+	writeSave(t, dir, "g1", engine.Version)
+	h := startHubWithSaves(t, dir)
+	h.hostOnly = true // before anyone connects; the hub reads it later
+
+	bob, w := arrive(t, h, "Bob", "")
+	if w.Create {
+		t.Error("a friend is offered create on a hosted server")
+	}
+	bob.say(protocol.TypeCreate, protocol.Create{Seats: 2})
+	if code := bob.failure(); code != protocol.ErrNotHost {
+		t.Errorf("a friend creates: %s", code)
+	}
+	bob.say(protocol.TypeLoad, protocol.Load{Save: "g1"})
+	if code := bob.failure(); code != protocol.ErrNotHost {
+		t.Errorf("a friend loads: %s", code)
+	}
+
+	ann, w := arriveLocal(t, h, "Ann")
+	if !w.Create {
+		t.Error("the host is not offered create")
+	}
+	ann.say(protocol.TypeLoad, protocol.Load{Save: "g1"})
+	ann.next(protocol.TypeTable, nil)
+	// The host opened the saved game; the friend sits down in it.
+	bob.say(protocol.TypeLoad, protocol.Load{Save: "g1"})
+	var tb protocol.Table
+	bob.next(protocol.TypeTable, &tb)
+	if tb.You != 1 {
+		t.Errorf("friend's seat %d", tb.You)
+	}
+}
+
+func TestLoopback(t *testing.T) {
+	for _, c := range []struct {
+		addr net.Addr
+		want bool
+	}{
+		{&net.TCPAddr{IP: net.IPv4(127, 0, 0, 1)}, true},
+		{&net.TCPAddr{IP: net.IPv6loopback}, true},
+		{&net.TCPAddr{IP: net.IPv4(192, 168, 1, 5)}, false},
+		{&net.UnixAddr{Name: "x"}, false},
+	} {
+		if got := loopback(c.addr); got != c.want {
+			t.Errorf("%v: %v", c.addr, got)
 		}
 	}
 }

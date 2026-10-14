@@ -38,6 +38,10 @@ The server answers for a player only in these cases, never choosing among real o
 
 `internal/lan` (ADR 009). A joining app sends a UDP probe to port 4774: to 255.255.255.255, to each interface's broadcast address, and to 127.0.0.1 (several copies on one computer, UC-16). A server started with `Config.Discovery` answers the sender by unicast with its waiting games; with none waiting it stays silent. Only the app's `Host` sets `Discovery`; it has no JSON name, so `cmd/server` never answers. Answers carry a random server ID, so the same server reached over loopback and the LAN shows once, with its LAN address.
 
+## Who opens games
+
+Any client of a dedicated server may create a game or load a saved one. A server started with `Config.HostOnly` lets only clients on its own computer do that (loopback address, `wsConn.Local`); everyone else gets `not_host` and only joins (N-17). Only the app's `Host` sets it, so friends of an app's host never open games on that app. `welcome.create` tells each client which case it is; the app shows **Create a game** only then.
+
 ## Leak audit (A-16)
 
 Step 8.12 checked every message the server sends for hidden cards. Hidden means: in a deck, in another player's hand, or seen only by another player.

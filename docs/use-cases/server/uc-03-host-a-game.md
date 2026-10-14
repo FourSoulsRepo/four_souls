@@ -44,6 +44,9 @@
 * **1d. The last setup:** the host screen starts from the last hosted game.
   * Players, card sets, detailed setup, response timer, bonus souls.
   * Kept in the app settings; the password is never kept (N-14).
+* **1e. On a dedicated server:** the player creates the game there (UC-19).
+* **4d. A friend creates on the host's app:** refused with `not_host` (N-17).
+  * The friend's app offers no "Create a game" there.
 
 ## Postconditions
 

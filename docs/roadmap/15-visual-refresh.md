@@ -1377,3 +1377,34 @@ Images come first, so the new table is built with backs and mats.
    1. Vitest: a resolved loot gives hits, then the discard flight.
    2. e2e test: a played loot flies to the stack, then to the discard.
    3. `make screenshots` shows the card mid-flight.
+
+### [x] 15.53 Create a game on a dedicated server
+
+1. Goal: a player opens a game on a dedicated server from the app (N-17).
+2. Owner: do it now; follow the step's rules.
+3. Tasks:
+   1. `welcome` says whether this client may create a game.
+   2. A dedicated server lets every client create.
+   3. A server hosted in the app lets only the host's own app create.
+   4. The same for loading a saved game there; friends still join it.
+   5. Games list: "Create a game" only when the server allows it.
+   6. It opens the host setup; the game opens on that server.
+   7. No server starts in the app; Back returns to the Games list.
+   8. Fix the VPS wiki page, which says players create games there.
+4. Done when:
+   1. Go test: a hosted server refuses a friend's create and load.
+   2. Go test: a dedicated server lets anyone create.
+   3. Vitest: when the button shows.
+   4. e2e test: create on the test server; another player joins.
+5. Result (2026-10-14)
+   1. `welcome` carries `create`; protocol version unchanged: only added.
+   2. `Config.HostOnly`: only loopback clients create or load.
+   3. Only the app's `Host` sets it; `cmd/server` never does.
+   4. Others get `not_host`; they still join and continue loaded saves.
+   5. The host's app always connects over `127.0.0.1`, so it may.
+   6. A second copy on the host's computer counts as local too (UC-16).
+   7. The setup screen says "Create a game" and "On the server …".
+   8. No nickname field there: it went with hello.
+   9. No "Continue a saved game" there: saves are in the Games list.
+   10. ADR 006, UC-03, new UC-19, Server and VPS wiki pages updated.
+   11. Screenshots: `.cache/screenshots/15.53/before/` and `after/`.

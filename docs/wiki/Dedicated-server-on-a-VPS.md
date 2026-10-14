@@ -84,7 +84,7 @@ journalctl -u four-souls -f        # its output
 
 ## 5. Play
 
-Friends open the game, choose **Join**, and enter the server's address (and the port, if it is not 4774). One of them creates the game in the lobby; the others join it.
+Friends open the game, choose **Join a game**, and enter the server's address (and the port, if it is not 4774). One of them clicks **Create a game** under the server's games, sets it up and clicks **Create**; the others join it from the same list. Nobody needs to host in their app.
 
 ## Options
 
