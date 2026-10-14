@@ -1179,6 +1179,8 @@ Images come first, so the new table is built with backs and mats.
    10. Checkboxes: parchment boxes with an ink tick.
    11. The look lives in `style.css` (`--ink`, `--paper`, `--gold`).
    12. Screenshots: `.cache/screenshots/15.40/paper-before/` and `paper-after/`.
+7. Owner notes after the rework (2026-10-14)
+   1. Owner marks 15.40 solved.
 
 ### [ ] 15.41 foursouls.ru banner on the home screen
 
