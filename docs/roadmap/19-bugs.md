@@ -358,7 +358,7 @@ This step never closes; new reports are appended.
 7. Owner notes (2026-10-15)
    1. Owner marks 19.10 solved.
 
-### [ ] 19.11 Look at the top card: only its name shows
+### [x] 19.11 Look at the top card: only its name shows
 
 1. Goal: the player sees the card they decide about.
 2. Report (owner, 2026-10-15)
@@ -389,3 +389,5 @@ This step never closes; new reports are appended.
    6. Also for fsp2 curse and boss reveals ("Give X to which player?").
    7. New view field: protocol stays version 1 (ADR 006).
    8. Screenshots: `.cache/screenshots/19.11/before/` and `after/`.
+7. Owner notes (2026-10-15)
+   1. Owner marks 19.11 solved.
