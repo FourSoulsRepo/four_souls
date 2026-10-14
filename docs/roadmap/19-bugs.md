@@ -257,7 +257,7 @@ This step never closes; new reports are appended.
 7. Owner notes (2026-10-15)
    1. Owner marks 19.7 solved.
 
-### [ ] 19.8 Intent waits forever after a pass
+### [x] 19.8 Intent waits forever after a pass
 
 1. Goal: a sent intent always ends: by an update or a refusal.
 2. Report (agent, 2026-10-15)
@@ -293,6 +293,8 @@ This step never closes; new reports are appended.
    2. Same check as `backToMe` in `actions.spec.ts`.
    3. No test reproduces it: that needs a rigged hand.
    4. The owner chose no rig hook for e2e (2026-10-15).
+7. Owner notes (2026-10-15)
+   1. Owner marks 19.8 solved.
 
 ### [x] 19.9 Deck attack: the drawn card hides during the slot choice
 
@@ -327,7 +329,7 @@ This step never closes; new reports are appended.
 7. Owner notes (2026-10-15)
    1. Owner marks 19.9 solved.
 
-### [ ] 19.10 e2e `settle` cannot answer a target aimed from a card
+### [x] 19.10 e2e `settle` cannot answer a target aimed from a card
 
 1. Goal: `settle` answers every prompt a player can answer.
 2. Report (agent, 2026-10-15)
@@ -353,3 +355,5 @@ This step never closes; new reports are appended.
 6. Fix
    1. `answer()` clicks the first uncovered `hl-aim` target.
    2. It runs when no dialog shows, before Pass.
+7. Owner notes (2026-10-15)
+   1. Owner marks 19.10 solved.
