@@ -217,7 +217,7 @@ This step never closes; new reports are appended.
    1. Owner marks 19.6 solved.
    2. Claims stay on cards; zones get them with a second source.
 
-### [ ] 19.7 Buy is lit, then the purchase fails
+### [x] 19.7 Buy is lit, then the purchase fails
 
 1. Goal: e2e `settle` answers only a state its done check saw.
 2. Report (agent, 2026-10-15)
@@ -254,6 +254,8 @@ This step never closes; new reports are appended.
    4. e2e test: updates come 150 ms late; `done()` is slow.
    5. It failed 2 of 2 before the fix and passes 3 of 3 after.
    6. Engine, client, protocol and records unchanged.
+7. Owner notes (2026-10-15)
+   1. Owner marks 19.7 solved.
 
 ### [ ] 19.8 Intent waits forever after a pass
 
