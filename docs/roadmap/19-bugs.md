@@ -147,7 +147,7 @@ This step never closes; new reports are appended.
 7. Owner notes (2026-10-14)
    1. Owner marks 19.4 solved.
 
-### [ ] 19.5 Revealed hands show as backs
+### [x] 19.5 Revealed hands show as backs
 
 1. Goal: a revealed opponent's hand shows its cards face up.
 2. Report (owner, 2026-10-14)
@@ -174,3 +174,5 @@ This step never closes; new reports are appended.
    4. Hover a card to read it in full.
    5. Engine, protocol and records unchanged.
    6. Screenshots: `.cache/screenshots/19.5/before/` and `after/`.
+7. Owner notes (2026-10-15)
+   1. Owner marks 19.5 solved.
