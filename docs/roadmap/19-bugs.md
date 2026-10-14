@@ -177,7 +177,7 @@ This step never closes; new reports are appended.
 7. Owner notes (2026-10-15)
    1. Owner marks 19.5 solved.
 
-### [ ] 19.6 Deck attack: the monster lands in its slot twice
+### [x] 19.6 Deck attack: the monster lands in its slot twice
 
 1. Goal: a card that flies into its place does not appear there again.
 2. Report (owner, 2026-10-15)
@@ -213,3 +213,6 @@ This step never closes; new reports are appended.
    6. ADR 012 holds the rule and the research.
    7. Engine, protocol and records unchanged.
    8. Screenshots: `.cache/screenshots/19.6/before/` and `after/`.
+7. Owner notes (2026-10-15)
+   1. Owner marks 19.6 solved.
+   2. Claims stay on cards; zones get them with a second source.
