@@ -326,3 +326,30 @@ This step never closes; new reports are appended.
    7. Screenshots: `.cache/screenshots/19.9/before/` and `after/`.
 7. Owner notes (2026-10-15)
    1. Owner marks 19.9 solved.
+
+### [ ] 19.10 e2e `settle` cannot answer a target aimed from a card
+
+1. Goal: `settle` answers every prompt a player can answer.
+2. Report (agent, 2026-10-15)
+   1. Found in a loop of the 19.8 test; webkit, run 54 of 80.
+   2. Same error: "the game never settled".
+   3. Ada played Dagaz: choose one, then choose a player.
+   4. Ada showed "Choose a target"; no dialog, empty stack.
+   5. Her loot was not played yet: still in hand, "Loot 1".
+3. Tasks:
+   1. Find the cause.
+   2. Teach `settle` to answer that prompt.
+4. Done when:
+   1. Cause found and written here.
+   2. The 19.8 test passes in a long loop.
+5. Cause
+   1. Since 15.34 a target prompt of one's own card aims from it.
+   2. The dialog hides; the targets glow `hl-aim` on the table.
+   3. `answer()` picks table targets only while a `.choice` dialog shows.
+   4. Then Pass is disabled and Attack does not apply: no move.
+   5. `playLoot` aims before the play, so most cards never hit this.
+   6. A modal card (Dagaz) asks its mode first, its target after.
+   7. That target prompt comes as a fresh aim: nobody clicks it.
+6. Fix
+   1. `answer()` clicks the first uncovered `hl-aim` target.
+   2. It runs when no dialog shows, before Pass.

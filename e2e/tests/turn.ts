@@ -101,6 +101,13 @@ async function answer(pages: Page[], press: Tap, steps: number[]): Promise<boole
       await press(page, (await uncovered(page.locator('.board .card.hl-pick, .player-pick'))) ?? choice.locator('.choice-option button').first());
       return true;
     }
+    // A target prompt of the player's own card aims from it, with no
+    // dialog (15.34): its targets glow on the table (19.10).
+    const aim = await uncovered(page.locator('.card.hl-aim, .stack-row.hl-aim'));
+    if (aim) {
+      await press(page, aim);
+      return true;
+    }
     const pass = passButton(page);
     if (await enabled(pass)) {
       await press(page, pass);
