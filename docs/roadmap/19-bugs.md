@@ -219,7 +219,7 @@ This step never closes; new reports are appended.
 
 ### [ ] 19.7 Buy is lit, then the purchase fails
 
-1. Goal: Buy is lit only when the player can buy.
+1. Goal: e2e `settle` answers only a state its done check saw.
 2. Report (agent, 2026-10-15)
    1. Found in `make e2e` while fixing 19.6; chromium.
    2. Test: "buy and attack icons are lit only when the engine allows them".
@@ -233,9 +233,27 @@ This step never closes; new reports are appended.
    2. Find which dealt card makes Buy allowed but unaffordable.
 4. Done when:
    1. Cause found and written here.
-   2. A test that plays the failing deal.
+   2. A test that forces the race, fails before the fix, passes after.
 5. Cause
-   1. Not found yet.
+   1. The test helper `settle`, not the engine or the client.
+   2. Buy needs no cents: a failed payment is a rule (R-SHOP-04).
+   3. Players start with 3 cents; every price is 10.
+   4. So every purchase on turn 1 fails; no card in the deal matters.
+   5. `purchase_failed` comes only after the purchase choice is answered.
+   6. So the dialog opened, and `settle` picked its first option.
+   7. Each `settle` loop runs `done()`, then `answer()`.
+   8. `done()` saw no dialog: Tia's update had not come yet.
+   9. It came while `answer()` read the pages, one by one.
+   10. `answer()` found the dialog and answered it.
+   11. The purchase failed; no dialog again; `done()` never held.
+   12. Timing decides it: reruns pass.
+6. Result (2026-10-15)
+   1. `settle` keeps each page's step from before `done()`.
+   2. `answer()` makes no move when a page's step changed since.
+   3. The next loop checks `done()` against the new state first.
+   4. e2e test: updates come 150 ms late; `done()` is slow.
+   5. It failed 2 of 2 before the fix and passes 3 of 3 after.
+   6. Engine, client, protocol and records unchanged.
 
 ### [ ] 19.8 Intent waits forever after a pass
 

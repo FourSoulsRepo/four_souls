@@ -3,7 +3,7 @@
 import type { Page } from '@playwright/test';
 import { expect, test } from './fixtures';
 import { startGame } from './game';
-import { appURL } from './server';
+import { appURL, serverPort } from './server';
 import { shot } from './shot';
 import {
   activePage,
@@ -152,6 +152,43 @@ test('buy and attack icons are lit only when the engine allows them; B buys', as
     .getByRole('button', { name: 'Choosing what to buy' });
   await expect(choosing).toHaveAttribute('aria-pressed', 'true');
   await shot(active, 'turn-actions-buy');
+  await settle(pages, click, backToMe(active, turn));
+});
+
+// 19.7: an update that lands after the done check must not be answered.
+// Updates come late; the slow check sees no dialog, then waits while the
+// last pass opens it.
+test('settle never answers a dialog its done check has not seen (19.7)', async ({ browser }) => {
+  let lag = 0;
+  const late = (page: Page) =>
+    page.routeWebSocket(`ws://127.0.0.1:${String(serverPort())}/ws`, (ws) => {
+      const server = ws.connectToServer();
+      let last = Promise.resolve();
+      ws.onMessage((msg) => {
+        server.send(msg);
+      });
+      server.onMessage((msg) => {
+        const at = Date.now() + lag;
+        last = last
+          .then(() => new Promise((r) => setTimeout(r, Math.max(at - Date.now(), 0))))
+          .then(() => {
+            ws.send(msg);
+          });
+      });
+    });
+  const pages = await startGame(browser, ['Ari', 'Ozy'], { url: fast(), open: late });
+  const active = await activePage(pages, click);
+  const turn = await turnNumber(active);
+  lag = 150;
+  await active.keyboard.press('b');
+  // Back to the action phase without a dialog: settle answered it.
+  await settle(pages, click, async () => {
+    const done = (await active.locator('.choice').isVisible()) || (await canEndTurn(active));
+    await active.waitForTimeout(300);
+    return done;
+  });
+  await expect(active.locator('.choice')).toBeVisible();
+  lag = 0;
   await settle(pages, click, backToMe(active, turn));
 });
 

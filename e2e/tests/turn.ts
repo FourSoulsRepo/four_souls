@@ -5,6 +5,7 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
 interface Seen {
+  step: number;
   waiting: number;
   you: number;
   ready: boolean;
@@ -23,6 +24,7 @@ async function seen(page: Page): Promise<Seen> {
     }
     const s = (window as unknown as { fourSouls: { store: { getState: () => S } } }).fourSouls.store.getState();
     return {
+      step: s.game?.step ?? -1,
       waiting: s.game?.view.waiting.player ?? -1,
       you: s.lobby.table?.you ?? -1,
       ready: s.game !== null && !s.behind && s.sent !== s.game.step,
@@ -58,10 +60,15 @@ async function uncovered(targets: Locator): Promise<Locator | undefined> {
 }
 
 // answer makes one move for whichever page must act, if any. It returns
-// false when nobody can act right now.
-async function answer(pages: Page[], press: Tap): Promise<boolean> {
-  for (const page of pages) {
+// false when nobody can act right now. steps are the pages' steps when
+// the done check began: when a page has moved on since, it makes no move
+// and returns true, so done checks the new state first (19.7).
+async function answer(pages: Page[], press: Tap, steps: number[]): Promise<boolean> {
+  for (const [i, page] of pages.entries()) {
     const s = await seen(page);
+    if (s.step !== steps[i]) {
+      return true;
+    }
     if (!s.ready || s.waiting !== s.you) {
       continue;
     }
@@ -112,10 +119,11 @@ async function answer(pages: Page[], press: Tap): Promise<boolean> {
 // settle answers prompts until done() holds.
 export async function settle(pages: Page[], press: Tap, done: () => Promise<boolean>): Promise<void> {
   for (let i = 0; i < 600; i++) {
+    const steps = await Promise.all(pages.map(async (p) => (await seen(p)).step));
     if (await done()) {
       return;
     }
-    if (!(await answer(pages, press))) {
+    if (!(await answer(pages, press, steps))) {
       await pages[0]?.waitForTimeout(100);
     }
   }
