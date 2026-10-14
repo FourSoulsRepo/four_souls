@@ -55,3 +55,5 @@ This step never closes; new reports are appended.
    3. An unchanged roll reads as before: "(rolled 6)".
    4. Engine, protocol and records unchanged.
    5. Screenshots: `.cache/screenshots/19.1/before/` and `after/`.
+7. Owner notes (2026-10-14)
+   1. Owner marks 19.1 solved.
