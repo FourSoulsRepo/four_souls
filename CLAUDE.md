@@ -64,6 +64,9 @@
        2. One failed test that passes when rerun alone is this flake.
        3. Rerun the gate; do not chase it or blame the change.
        4. A test that fails again on rerun is a real failure.
+   17. Bug reports go to `docs/roadmap/19-bugs.md`, one item each.
+       1. Log the item before any code change.
+       2. Fix it under the roadmap rules and that file's rules.
 6. Licenses
    1. Code is MIT (`LICENSE`).
    2. `NOTICE` lists every third-party item and its license.

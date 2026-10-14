@@ -28,6 +28,7 @@ Each step ends in something that runs and is tested.
 | 11 | Learning | Rules viewer, sandbox, tutorial, bot | 8 |
 | 12 | Rules website | Engine in WebAssembly on GitHub Pages | 11 |
 | 13 | Web client | Browser client served by the game server | 9 |
+| 19 | Bugs | Every bug report, logged and fixed under the roadmap rules | — |
 | — | Future | Not scheduled yet | — |
 
 Step 3 reuses the browser scraping tool from step 2.
@@ -263,6 +264,12 @@ Step numbers stay as IDs; the table lists steps in work order.
 4. Moved from step 8 (8.4–8.6): more cards make a better test.
 5. Ideas: B-04, B-05.
 6. Review the multi-instance solution (UC-16).
+
+## 19. Bugs
+
+1. Every bug report from play gets an item in `roadmap/19-bugs.md`.
+2. Each fix follows the roadmap rules: tests, docs, screenshots, review.
+3. Open the whole time; never closed as a step.
 
 ## Future
 
