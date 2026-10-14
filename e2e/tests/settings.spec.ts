@@ -5,6 +5,7 @@ import { appURL } from './server';
 import { realAssets, shot } from './shot';
 
 test('the first start asks for a nickname, once', async ({ page }) => {
+  await realAssets(page);
   await page.goto('/?fake&nosplash&firstrun');
   await expect(page.getByRole('heading', { name: 'Welcome!' })).toBeVisible();
   await shot(page, 'welcome');

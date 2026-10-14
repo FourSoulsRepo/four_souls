@@ -14,6 +14,9 @@
 .screen h1,
 .screen h2 {
   margin: 0;
+  font-family: var(--font-title);
+  /* Bold for the system font; the game font has no bold face. */
+  font-synthesis: none;
 }
 
 .panel {
@@ -79,6 +82,7 @@
 
 .screen button {
   padding: 8px 20px;
+  font-family: var(--font-game);
   border: none;
   border-radius: 6px;
   color: var(--fg);

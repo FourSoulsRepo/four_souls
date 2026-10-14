@@ -1,7 +1,7 @@
 // Host and join screens (7.3), against the real Go server.
 import { expect, test } from '@playwright/test';
 import { appURL, serverPort } from './server';
-import { shot } from './shot';
+import { realAssets, shot } from './shot';
 
 // address is the project's test server.
 const address = () => `127.0.0.1:${String(serverPort())}`;
@@ -11,6 +11,7 @@ test('two apps reach the same lobby and start the game', async ({ browser }) => 
   const ann = await (await browser.newContext()).newPage();
   const bo = await (await browser.newContext()).newPage();
 
+  await realAssets(ann);
   await ann.goto(appURL());
   await ann.getByRole('button', { name: 'Host a game' }).click();
   await ann.getByLabel('Nickname').fill('Ann');
@@ -21,6 +22,7 @@ test('two apps reach the same lobby and start the game', async ({ browser }) => 
   await expect(annSeats).toContainText('Ann (you)');
   await expect(ann.getByText(address())).toBeVisible();
 
+  await realAssets(bo);
   await bo.goto(appURL());
   await bo.getByRole('button', { name: 'Join a game' }).click();
   await bo.getByLabel('Nickname').fill('Bo');
@@ -76,6 +78,7 @@ test('a game found on the LAN is joined without typing (N-13)', async ({ browser
 
   // The fake LAN holds the test server; its real games list follows.
   const guest = await (await browser.newContext()).newPage();
+  await realAssets(guest);
   await guest.goto(appURL());
   await guest.getByRole('button', { name: 'Join a game' }).click();
   await guest.getByLabel('Nickname').fill('Mio');
@@ -106,6 +109,7 @@ test('a game password keeps others out (N-14)', async ({ browser }) => {
   await expect(host.getByRole('list', { name: 'Seats' })).toContainText('Nox (you)');
 
   const guest = await (await browser.newContext()).newPage();
+  await realAssets(guest);
   await guest.goto(appURL());
   await guest.getByRole('button', { name: 'Join a game' }).click();
   await guest.getByLabel('Nickname').fill('Pip');
@@ -132,6 +136,7 @@ test('the host picks card sets; the choice is remembered', async ({ browser }) =
   const host = await ctx.newPage();
   const guest = await (await browser.newContext()).newPage();
 
+  await realAssets(host);
   await host.goto(appURL());
   await host.getByRole('button', { name: 'Host a game' }).click();
   await host.getByLabel('Nickname').fill('Tess');
@@ -175,6 +180,7 @@ test('the host picks card sets; the choice is remembered', async ({ browser }) =
 test('a player creates a game on a dedicated server; another joins (N-17)', async ({ browser }) => {
   // The test server is a dedicated one: it lets anyone create.
   const ivy = await (await browser.newContext()).newPage();
+  await realAssets(ivy);
   await ivy.goto(appURL());
   await ivy.getByRole('button', { name: 'Join a game' }).click();
   await ivy.getByLabel('Nickname').fill('Ivy');

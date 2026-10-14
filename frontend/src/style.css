@@ -11,6 +11,9 @@
   --font-game: "Four Souls Title", "Four Souls Cyrillic", var(--font-ui);
   /* Card text in dialogs (15.24): font-souls Body, then the same stack. */
   --font-card: "Four Souls Body", "Four Souls Cyrillic", var(--font-ui);
+  /* Titles on the menu screens (15.40): the Russian card font, which
+     has mixed case for Latin and Cyrillic alike. */
+  --font-title: "Four Souls Cyrillic", var(--font-ui);
   font-family: var(--font-ui);
   color: var(--fg);
   background-color: var(--bg);

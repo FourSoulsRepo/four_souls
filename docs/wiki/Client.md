@@ -114,3 +114,7 @@ The turn badge shows the turn number, the active player and the step. Player are
 ## Save and continue
 
 The in-game **Menu** (`GameMenu`) offers **Save and leave** to seat 1, the host (`save` message), and **Leave game** to all. After `saved`, everyone is back on the server's game list. **Continue a saved game** on the host screen starts the in-app server and shows that list (`store.hostSaved`); **Continue** sends `load`. A loaded table shows its seats as "back" or "not back yet".
+
+## Menu screens
+
+The splash, the main menu and the menu-like screens (`src/screens/`) use the game's letters too (15.40, V-33). Titles and screen headings use `--font-title` from `style.css`: the Russian card font (tboi4s), which has mixed case for Latin and Cyrillic, then the system font. Buttons use `--font-game`, as on the table. Body text, form labels, inputs and the fan-game notice stay in the system font, so they read easily. Headings keep `font-weight: bold` with `font-synthesis: none`: the game font has no bold face and is not faked, while the system font fallback stays bold, as it was before the change.

@@ -1138,7 +1138,7 @@ Images come first, so the new table is built with backs and mats.
    1. Owner: the vertical column is fine.
    2. Owner marks 15.39 solved.
 
-### [ ] 15.40 Isaac fonts on the title screen
+### [x] 15.40 Isaac fonts on the title screen
 
 1. Goal: the title screen looks like the game (V-33).
 2. Tasks:
@@ -1148,6 +1148,21 @@ Images come first, so the new table is built with backs and mats.
 3. Done when:
    1. `make screenshots` shows the new title.
    2. `wails build -tags embed` still shows a readable title.
+4. Result (2026-10-14)
+   1. Done out of order, at the owner's request.
+   2. Owner: the title in tboi4s, the Russian card font.
+   3. Owner: menu buttons in font-souls Title, like the game buttons.
+   4. Owner: the same fonts on every menu-like screen.
+   5. New `--font-title` in `style.css`: tboi4s, then the system font.
+   6. Splash and menu title: `--font-title`, 56 px.
+   7. Screen headings (Welcome, Host, Join, Games, Table, Settings) too.
+   8. Every button on those screens: `--font-game`.
+   9. Body text, labels, inputs and the legal notice stay plain.
+   10. `font-synthesis: none`: no fake bold on the game font.
+   11. Without images: the bold system font, as before.
+   12. e2e test: title, buttons and a heading ask for the game fonts.
+   13. Shell, welcome and lobby shots now load the real fonts.
+   14. Screenshots: `.cache/screenshots/15.40/before/` and `after/`.
 
 ### [ ] 15.41 foursouls.ru banner on the home screen
 
