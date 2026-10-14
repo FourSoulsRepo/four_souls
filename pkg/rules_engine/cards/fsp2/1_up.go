@@ -16,8 +16,6 @@ var card1Up = engine.CardDef{
 			p := g.Object(self).Controller
 			return e.Player == p && g.Turn.Active == p
 		}},
-		Effects: []engine.Effect{engine.DestroyThis(engine.PreventYourDeath(), engine.EffectFunc(func(c *engine.Ctx) {
-			c.G.HealPlayer(c.Controller, c.G.Players[c.Controller].Damage)
-		}), engine.CancelAttack(), engine.ActivePlayerAttacksAgain())},
+		Effects: []engine.Effect{engine.DestroyThis(engine.PreventYourDeathHealFull(), engine.CancelAttack(), engine.ActivePlayerAttacksAgain())},
 	}},
 }

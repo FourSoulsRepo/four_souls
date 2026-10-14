@@ -117,6 +117,7 @@ Effects refer to targets by number: `DealDamage(1, 0)` hits the first target. `T
 | `EachMonsterTakesDamage(n)` | Each monster takes 1 damage. (the active player picks the order) |
 | `AddAttacks(n, t)` | They may attack an additional time this turn. |
 | `PreventYourDeath()` | Prevent death. (heals to 1 HP) |
+| `PreventYourDeathHealFull()` | Prevent death, heal to full HP. |
 | `ThisToLootBottomExtraTurn()` | Put this on the bottom of the loot deck … take an extra turn (The Sun) |
 | `Ask(do, questions…)` | Anything decided on resolution: "a deck", "a card from your hand" |
 | `EffectFunc(func(c *Ctx){…})` | Anything the blocks do not cover |

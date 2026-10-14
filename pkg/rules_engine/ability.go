@@ -637,21 +637,30 @@ func (sunEffect) apply(c *Ctx) {
 	}
 }
 
-type preventDeathEffect struct{}
+type preventDeathEffect struct{ full bool }
 
 // PreventYourDeath removes the controller's death from the stack and
 // heals them to 1 HP (R-MECH-46): "Prevent death".
 func PreventYourDeath() Effect { return preventDeathEffect{} }
 
-func (preventDeathEffect) apply(c *Ctx) {
+// PreventYourDeathHealFull is PreventYourDeath that heals to full HP:
+// "prevent death, heal to full HP". The heal is one event.
+func PreventYourDeathHealFull() Effect { return preventDeathEffect{full: true} }
+
+func (e preventDeathEffect) apply(c *Ctx) {
 	g := c.G
 	for _, it := range g.Stack {
 		if it.Kind == StackDeath && it.Target.IsPlayer && it.Target.Player == c.Controller {
 			g.CancelStackItem(it.ID)
 			pl := &g.Players[c.Controller]
-			maxHP := g.PlayerHP(c.Controller) + pl.Damage
-			pl.Damage = min(pl.Damage, max(maxHP-1, 0))
+			left := 0
+			if !e.full {
+				maxHP := g.PlayerHP(c.Controller) + pl.Damage
+				left = min(pl.Damage, max(maxHP-1, 0))
+			}
 			g.emit(Event{Kind: EvPrevented, Player: c.Controller, Text: "death"})
+			// The HP given back shows as a heal (19.2).
+			g.HealPlayer(c.Controller, pl.Damage-left)
 			return
 		}
 	}

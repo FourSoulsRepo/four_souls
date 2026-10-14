@@ -57,3 +57,32 @@ This step never closes; new reports are appended.
    5. Screenshots: `.cache/screenshots/19.1/before/` and `after/`.
 7. Owner notes (2026-10-14)
    1. Owner marks 19.1 solved.
+
+### [ ] 19.2 Heal popup after 1-Up
+
+1. Goal: the heal popup shows the HP a player got back.
+2. Report (owner, 2026-10-14)
+   1. Play test; record `2026-10-14-173137-g1_Gaijin_Oleg.fsrec`.
+   2. Lazarus died on his turn with 1-Up.
+   3. The popup said +1 HP; his HP went up by 2.
+3. Tasks:
+   1. Find the cause in the match record.
+   2. Every HP a death prevention gives back gets a `healed` event.
+   3. 1-Up shows one popup with the full amount.
+4. Done when:
+   1. Engine test: 1-Up heals in one event for the full amount.
+   2. Engine test: Guppy's Collar emits a `healed` event for 1 HP.
+   3. Old records still replay.
+5. Cause
+   1. Step 196: Leech's combat damage leaves Lazarus at 0 of 2 HP.
+   2. Step 198: 1-Up resolves; `healed` amount 1.
+   3. `PreventYourDeath` sets HP to 1 with no `healed` event.
+   4. 1-Up's heal to full then emits only the rest: +1.
+   5. Broken Ankh and Guppy's Collar show no heal at all.
+6. Result (2026-10-14)
+   1. `PreventYourDeath` emits `healed` for the HP it gives back.
+   2. New block `PreventYourDeathHealFull`: one `healed` to full.
+   3. 1-Up uses it: popup "+2 HP" for Lazarus at 0 of 2 HP.
+   4. Broken Ankh and Guppy's Collar now show "+1 HP".
+   5. Events are not in the checksum; the owner's record replays.
+   6. No frontend change; the popup is short, so no screenshots.
