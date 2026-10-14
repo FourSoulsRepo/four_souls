@@ -311,3 +311,34 @@ test('a "look at the top card" effect shows the card until it is closed (V-07)',
   await expect(look).toHaveCount(0);
   await expect(rue.getByRole('dialog', { name: 'You look at' })).toHaveCount(0);
 });
+
+test('a "look, you may put it on the bottom" question shows the card (19.11)', async ({ browser }) => {
+  const [opal] = await startGame(browser, ['Opal', 'Reed'], { url: fast() });
+  if (!opal) {
+    throw new Error('no pages');
+  }
+  // Cain's Eye at the start of the turn, as the server sends it to the
+  // chooser: the question names the deck top and the view holds it.
+  await opal.evaluate(() => {
+    interface S {
+      game: { view: Record<string, unknown>; allowed: unknown[] };
+      lobby: { table: { you: number } };
+      receive: (env: unknown) => void;
+    }
+    const s = (window as unknown as { fourSouls: { store: { getState: () => S } } }).fourSouls.store.getState();
+    const game = structuredClone(s.game);
+    const you = s.lobby.table.you;
+    const options = ['keep a_dime on top', 'put a_dime on the bottom'];
+    game.view.subject = { id: 901, card: 'a_dime', charged: false };
+    game.view.waiting = { kind: 4, player: you, purpose: 9, text: 'Put the top card on the bottom?', options };
+    game.view.options = options.map(() => ({ player: -1 }));
+    game.allowed = options.map((_, i) => ({ player: you, kind: 4, choice: i }));
+    s.receive({ type: 'update', data: { ...game, step: 2, events: [] } });
+  });
+  const dialog = opal.getByRole('dialog', { name: 'Put the top card on the bottom?' });
+  await expect(dialog).toBeVisible();
+  await shot(opal, 'look-may-bottom');
+  await expect(dialog.getByRole('img', { name: 'A Dime!!' })).toBeVisible();
+  // The buttons name the card by its title, not its ref.
+  await expect(dialog.getByRole('button', { name: 'keep A Dime!! on top' })).toBeVisible();
+});

@@ -50,6 +50,9 @@ type Choice struct {
 	Ask *Asking `json:"ask,omitempty"`
 	// Question is the text of the question, for display.
 	Question string `json:"question,omitempty"`
+	// Subject is the card the question is about; only the chooser sees
+	// it (19.11).
+	Subject ObjectID `json:"subject,omitempty"`
 	// Owner is whose death penalty a penalty choice is for; To, if not
 	// NoPlayer, gains the discarded loot card instead (Shadow).
 	Owner PlayerID `json:"owner"`

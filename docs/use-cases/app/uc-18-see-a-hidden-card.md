@@ -25,6 +25,10 @@
   * The choice stays at the bottom edge, below it.
 * **7a. History:** the looker's history keeps "You look at <card>".
   * Its zoom shows the card again.
+* **2a. A choice about the card (19.11):** e.g. Cain's Eye, Golden Horseshoe.
+  * "Put the top card on the bottom?" shows the card above its buttons.
+  * The buttons name the card by its title.
+  * Only the chooser sees the card; others see no dialog.
 
 ## Postconditions
 

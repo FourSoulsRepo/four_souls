@@ -357,3 +357,35 @@ This step never closes; new reports are appended.
    2. It runs when no dialog shows, before Pass.
 7. Owner notes (2026-10-15)
    1. Owner marks 19.10 solved.
+
+### [ ] 19.11 Look at the top card: only its name shows
+
+1. Goal: the player sees the card they decide about.
+2. Report (owner, 2026-10-15)
+   1. Golden Horseshoe and Cain's Eye trigger at turn start.
+   2. The screen shows only the card's name in the buttons.
+   3. The card itself never shows while the player decides.
+3. Tasks:
+   1. Find the cause in the code.
+   2. Show the card in the dialog while the choice is open.
+   3. Only the chooser sees it; the deck top stays hidden to others.
+4. Done when:
+   1. Engine test: the chooser's view has the card; others' do not.
+   2. e2e test: the card shows in the dialog.
+   3. Use case updated.
+5. Cause
+   1. Both use `cardkit.LookMayBottom`: one question, then `LookAt`.
+   2. The card is only text in the options: "keep X on top".
+   3. `LookAt` runs after the answer; the look dialog comes too late.
+   4. The view has no field for the card a question is about.
+   5. Same for Sack Head and fsp2 `lookMayDiscard`.
+   6. Options also showed the raw ref: "keep a_dime on top".
+6. Result (2026-10-15)
+   1. New `Question.Subject`: the card a question is about.
+   2. The view sends it as `subject`, only to the chooser.
+   3. The choice dialog shows it above the buttons.
+   4. Buttons name it by title: "keep A Dime!! on top".
+   5. Set for `LookMayBottom`, Sack Head, `lookMayDiscard`.
+   6. Also for fsp2 curse and boss reveals ("Give X to which player?").
+   7. New view field: protocol stays version 1 (ADR 006).
+   8. Screenshots: `.cache/screenshots/19.11/before/` and `after/`.

@@ -446,6 +446,9 @@ var lookMayDiscard = engine.Ask(func(c *engine.Ctx, a []int) {
 	}
 }, engine.DeckQuestion("Look at the top card of which deck?"), engine.Question{
 	Text: "Put it into discard?",
+	Subject: func(c *engine.Ctx, a []int) engine.ObjectID {
+		return c.G.DeckTop(c.Deck(a[0]), 1)[0]
+	},
 	Options: func(c *engine.Ctx, a []int) []string {
 		if a[0] < 0 || len(c.G.DeckTop(c.Deck(a[0]), 1)) == 0 {
 			return nil
@@ -506,7 +509,7 @@ var revealGiveCurses = engine.EffectFunc(func(c *engine.Ctx) {
 	qs := make([]engine.Question, 0, len(curses))
 	for _, id := range curses {
 		card := string(c.G.Object(id).Card)
-		qs = append(qs, engine.Question{Text: "Give " + card + " to which player?", Options: func(c *engine.Ctx, _ []int) []string {
+		qs = append(qs, engine.Question{Text: "Give " + card + " to which player?", Subject: func(*engine.Ctx, []int) engine.ObjectID { return id }, Options: func(c *engine.Ctx, _ []int) []string {
 			var out []string
 			for _, p := range livingPlayers(c.G, engine.NoPlayer) {
 				out = append(out, playerLabel(c.G, p))
@@ -613,7 +616,7 @@ var revealTwoBosses = engine.EffectFunc(func(c *engine.Ctx) {
 	qs := make([]engine.Question, 0, len(bosses))
 	for _, id := range bosses {
 		card := string(c.G.Object(id).Card)
-		qs = append(qs, engine.Question{Text: "Put " + card + " in which monster slot?", Options: func(c *engine.Ctx, _ []int) []string {
+		qs = append(qs, engine.Question{Text: "Put " + card + " in which monster slot?", Subject: func(*engine.Ctx, []int) engine.ObjectID { return id }, Options: func(c *engine.Ctx, _ []int) []string {
 			var out []string
 			for _, i := range freeSlots(c.G) {
 				out = append(out, "slot "+strconv.Itoa(i+1))

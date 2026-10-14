@@ -187,7 +187,7 @@ function Table({ game, you }: { game: Update; you: number }) {
         <ChoiceDialog
           key={game.step}
           choice={offered.choice}
-          subject={offered.choice.purpose === Purpose.monsterSlot ? view.revealed?.card : undefined}
+          subject={offered.choice.purpose === Purpose.monsterSlot ? view.revealed?.card : view.subject?.card}
         />
       )}
       {offered.discard && me && <DiscardDialog key={game.step} discard={offered.discard} hand={me.hand ?? []} />}

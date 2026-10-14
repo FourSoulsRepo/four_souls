@@ -11,6 +11,9 @@ type Question struct {
 	// Random: nobody answers; the game picks an option at random
 	// ("choose a player at random").
 	Random bool
+	// Subject, if set, is the card the question is about, e.g. the deck
+	// top a player looks at; the chooser sees it while deciding (19.11).
+	Subject func(c *Ctx, answers []int) ObjectID
 }
 
 type askEffect struct {
@@ -112,7 +115,11 @@ func (g *Game) continueAsk(a *Asking) {
 		if q.Player != nil {
 			who = q.Player(c, a.Answers)
 		}
-		g.ask(Choice{Purpose: ChooseAnswer, Player: who, Rule: "R-ABIL-05", Ask: a, Question: q.Text}, opts)
+		ch := Choice{Purpose: ChooseAnswer, Player: who, Rule: "R-ABIL-05", Ask: a, Question: q.Text}
+		if q.Subject != nil {
+			ch.Subject = q.Subject(c, a.Answers)
+		}
+		g.ask(ch, opts)
 		return
 	}
 	// What the effect queues goes before the rest of the queue.

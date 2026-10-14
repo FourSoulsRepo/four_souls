@@ -305,6 +305,9 @@ export interface GameView {
   bonus_souls?: CardView[];
   // revealed is the card a deck attack drew, until its slot is picked (19.9).
   revealed?: CardView;
+  // subject is the card the open question is about, e.g. the deck top
+  // a player looks at; only for the chooser (19.11).
+  subject?: CardView;
   stack: StackItem[] | null;
   turn: Turn;
   waiting: Prompt;

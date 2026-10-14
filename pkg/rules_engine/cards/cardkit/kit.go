@@ -61,7 +61,8 @@ func LookMayBottom(d engine.DeckKind) engine.Effect {
 			c.G.DeckToBottom(d, top[0])
 		}
 	}, engine.Question{
-		Text: "Put the top card on the bottom?",
+		Text:    "Put the top card on the bottom?",
+		Subject: func(c *engine.Ctx, _ []int) engine.ObjectID { return c.G.DeckTop(d, 1)[0] },
 		Options: func(c *engine.Ctx, _ []int) []string {
 			top := c.G.DeckTop(d, 1)
 			if len(top) == 0 {

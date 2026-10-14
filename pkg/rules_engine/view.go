@@ -99,6 +99,9 @@ type GameView struct {
 	// Revealed is the monster-deck card a deck attack drew, while the
 	// attacker picks its slot (R-ATK-08); it is public (19.9).
 	Revealed *CardView `json:"revealed,omitempty"`
+	// Subject is the card the open question is about, e.g. the deck top
+	// a player looks at; only for the chooser (19.11).
+	Subject *CardView `json:"subject,omitempty"`
 	// Options says what each option of a choose prompt points at, one
 	// per Waiting.Options; only for whoever sees those options.
 	Options []OptionView `json:"options,omitempty"`
@@ -184,6 +187,10 @@ func (g *Game) View(v Viewer) GameView {
 	if g.Waiting.Kind == PromptChoose && v.sees(g.Waiting.Player) {
 		out.Options = g.optionViews()
 		out.Activating = g.activatingSource()
+		if g.Choice != nil && g.Choice.Subject != 0 {
+			cv := g.cardView(g.Choice.Subject)
+			out.Subject = &cv
+		}
 	}
 	out.Passed, out.Responding = g.responders()
 	return out
