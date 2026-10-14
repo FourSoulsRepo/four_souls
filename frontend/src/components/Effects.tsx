@@ -29,16 +29,33 @@ function zoneCenter(zones: string[]): Point | null {
 }
 
 // Effects draws the event effect playing now (7.6). Each effect calls
-// done when its animation ends; playback then goes on.
+// done when its animation ends; playback then goes on. Cards that place
+// effects left on their slots stay below it (19.3).
 export function Effects() {
   const playing = useApp((s) => s.playing);
-  if (!playing) {
-    return null;
-  }
+  const placed = useApp((s) => s.placed);
   return (
-    <div className="effects" data-testid={`effect-${playing.effect.kind}`}>
-      <Effect key={playing.key} playing={playing} />
-    </div>
+    <>
+      {placed.length > 0 && (
+        <div className="effects">
+          {placed.map((p) => (
+            <div
+              key={p.key}
+              className="effect-fly"
+              style={{ transform: `translate(${String(p.x)}px, ${String(p.y)}px)` }}
+              data-testid="placed"
+            >
+              <Card cardRef={p.card} size="table" />
+            </div>
+          ))}
+        </div>
+      )}
+      {playing && (
+        <div className="effects" data-testid={`effect-${playing.effect.kind}`}>
+          <Effect key={playing.key} playing={playing} />
+        </div>
+      )}
+    </>
   );
 }
 
@@ -49,6 +66,8 @@ function Effect({ playing }: { playing: Playing }) {
   switch (effect.kind) {
     case 'fly':
       return <Fly from={effect.from} to={effect.to} card={effect.card} back={effect.back} playing={playing} />;
+    case 'place':
+      return <Fly from={effect.from} to={effect.to} card={effect.card} back={effect.back} playing={playing} stay />;
     case 'popup':
       return <Popup at={effect.at} text={effect.text} tone={effect.tone} playing={playing} />;
     case 'dice':
@@ -149,12 +168,15 @@ function Fly({
   card,
   back,
   playing,
+  stay = false,
 }: {
   from: string[];
   to: string[];
   card: string | undefined;
   back: Parameters<typeof Card>[0]['back'];
   playing: Playing;
+  // stay leaves the card where it landed until the next view (19.3).
+  stay?: boolean;
 }) {
   // Read the zones once, when the effect starts.
   const [path] = useState(() => ({ a: zoneCenter(from), b: zoneCenter(to) }));
@@ -162,13 +184,20 @@ function Fly({
   if (!path.a || !path.b) {
     return null;
   }
+  const end = { x: path.b.x - cardW / 2, y: path.b.y - cardH / 2 };
+  const land = () => {
+    if (stay && card) {
+      useApp.setState((s) => ({ placed: [...s.placed, { key: playing.key, card, ...end }] }));
+    }
+    playing.done();
+  };
   return (
     <motion.div
       className="effect-fly"
       initial={{ x: path.a.x - cardW / 2, y: path.a.y - cardH / 2, scale: 0.9 }}
-      animate={{ x: path.b.x - cardW / 2, y: path.b.y - cardH / 2, scale: 1 }}
+      animate={{ ...end, scale: 1 }}
       transition={{ duration: 0.45 * playing.scale, ease: 'easeInOut' }}
-      onAnimationComplete={playing.done}
+      onAnimationComplete={land}
     >
       <Card cardRef={card} back={back} size="table" />
     </motion.div>

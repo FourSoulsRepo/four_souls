@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { CardInfo } from './cards';
-import { createPlayback, effectsFor, scaleFor, type Effect } from './playback';
-import type { GameEvent, Update } from './protocol';
+import { createPlayback, effectsFor, scaleFor, slotZone, type Effect } from './playback';
+import type { GameEvent, GameView, Update } from './protocol';
 
 const ctx = {
   card: (ref: string): CardInfo | undefined =>
@@ -10,6 +10,7 @@ const ctx = {
       : undefined,
   name: (p: number) => ['Ann', 'Bo'].at(p) ?? '?',
   character: (p: number) => (p === 1 ? 31 : undefined),
+  slot: (id: number) => (id === 50 ? 'monster-slot-1' : undefined),
 };
 
 describe('effectsFor', () => {
@@ -86,6 +87,36 @@ describe('effectsFor', () => {
       { kind: 'died', player: 1, object: 31, card: 'cain' },
     ];
     expect(effectsFor(events, ctx)).toEqual([{ kind: 'deaths', at: [['obj-40'], ['obj-31']] }]);
+  });
+
+  it('places a card put into a slot before the attack roll after it (19.3)', () => {
+    const events: GameEvent[] = [
+      { kind: 'card_revealed', player: -1, object: 50, card: 'fly' },
+      { kind: 'attack_target', player: 0, object: 50, card: 'fly' },
+      { kind: 'dice_rolled', player: 0, amount: 4, text: 'attack roll' },
+    ];
+    expect(effectsFor(events, ctx)).toEqual([
+      { kind: 'reveal', card: 'fly' },
+      { kind: 'place', from: ['deck-loot'], to: ['monster-slot-1'], card: 'fly', back: 'loot' },
+      { kind: 'dice', value: 4, label: 'attack roll' },
+    ]);
+  });
+
+  it('only reveals a card that is in no slot', () => {
+    const e: GameEvent = { kind: 'card_revealed', player: 0, object: 51, card: 'fly' };
+    expect(effectsFor([e], ctx)).toEqual([{ kind: 'reveal', card: 'fly' }]);
+  });
+});
+
+describe('slotZone', () => {
+  it('names the monster or shop slot a card is the top of', () => {
+    const view = {
+      monsters: [{ top: { id: 7 } }, { top: { id: 8 } }],
+      shop: [{}, { top: { id: 9 } }],
+    } as unknown as GameView;
+    expect(slotZone(view, 8)).toBe('monster-slot-1');
+    expect(slotZone(view, 9)).toBe('shop-slot-1');
+    expect(slotZone(view, 10)).toBeUndefined();
   });
 });
 

@@ -33,12 +33,12 @@ export function Board({
         <div className="board-info">{children}</div>
         <div className="board-slots board-monsters" role="group" aria-label="Monsters">
           {(view.monsters ?? []).map((slot, i) => (
-            <Slot key={slotKey(slot, i)} slot={slot} ui={ui} />
+            <Slot key={slotKey(slot, i)} slot={slot} zone={`monster-slot-${String(i)}`} ui={ui} />
           ))}
         </div>
         <div className="board-slots board-shop" role="group" aria-label="Shop">
           {(view.shop ?? []).map((slot, i) => (
-            <Slot key={slotKey(slot, i)} slot={slot} ui={ui} />
+            <Slot key={slotKey(slot, i)} slot={slot} zone={`shop-slot-${String(i)}`} ui={ui} />
           ))}
         </div>
         <div className="bonus-souls" role="group" aria-label="Bonus souls">
@@ -88,13 +88,14 @@ function slotKey(slot: SlotView, i: number): string {
 }
 
 // Slot is one shop or monster slot: its top card and how many it covers.
-function Slot({ slot, ui }: { slot: SlotView; ui: Interact }) {
+// zone names the slot for effects that place a card on it (19.3).
+function Slot({ slot, zone, ui }: { slot: SlotView; zone: string; ui: Interact }) {
   const covered = slot.covered?.length ?? 0;
   if (!slot.top) {
-    return <div className="pile-empty size-table" />;
+    return <div className="pile-empty size-table" data-zone={zone} />;
   }
   return (
-    <div className="pile">
+    <div className="pile" data-zone={zone}>
       <Card
         cardRef={slot.top.card}
         size="table"

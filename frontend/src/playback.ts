@@ -2,7 +2,7 @@
 // first their events as short effects, then the update's view is shown.
 // Playback only changes what is drawn; the game state is the server's.
 import { kindOf, type CardInfo, type Kind } from './cards';
-import type { GameEvent, Update } from './protocol';
+import type { GameEvent, GameView, Update } from './protocol';
 
 export type Speed = 'normal' | 'fast' | 'slow' | 'off';
 
@@ -14,6 +14,9 @@ export type Effect =
   | { kind: 'dice'; value: number; label: string }
   | { kind: 'banner'; text: string }
   | { kind: 'reveal'; card: string }
+  // place: a card flies into a slot and stays there until the view is
+  // shown, so later effects play over it (19.3).
+  | { kind: 'place'; from: string[]; to: string[]; card: string; back: Kind }
   // lunge: the attacker's card hits the target and returns (15.3, V-12).
   | { kind: 'lunge'; from: string[]; to: string[]; amount: number }
   // hits: other damage flies from its source and bursts on every
@@ -35,6 +38,8 @@ interface Context {
   name: (player: number) => string;
   // character is a player's character object, if known.
   character: (player: number) => number | undefined;
+  // slot is the zone of the slot an object is the top card of, if any.
+  slot: (object: number) => string | undefined;
 }
 
 function playerZones(p: number): string[] {
@@ -57,6 +62,21 @@ function hitZones(e: GameEvent, ctx: Context): string[] {
   }
   const c = ctx.character(e.player);
   return c === undefined ? playerZones(e.player) : [`obj-${String(c)}`, ...playerZones(e.player)];
+}
+
+// slotZone is the zone of the monster or shop slot whose top card is
+// object, as the board names it.
+export function slotZone(view: GameView, object: number): string | undefined {
+  for (const [name, slots] of [
+    ['monster', view.monsters],
+    ['shop', view.shop],
+  ] as const) {
+    const i = (slots ?? []).findIndex((s) => s.top?.id === object);
+    if (i >= 0) {
+      return `${name}-slot-${String(i)}`;
+    }
+  }
+  return undefined;
 }
 
 // effectsFor turns one update's events into effects. Events without an
@@ -130,11 +150,20 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
       case 'stole':
         out.push({ kind: 'popup', at: playerZones(e.player), text: `+${String(amount)}¢ stolen`, tone: 'good' });
         break;
-      case 'card_revealed':
-        if (e.card) {
-          out.push({ kind: 'reveal', card: e.card });
+      case 'card_revealed': {
+        if (!e.card) {
+          break;
+        }
+        out.push({ kind: 'reveal', card: e.card });
+        // A card put into a slot, e.g. a deck attack's monster, is there
+        // before the attack roll that follows it.
+        const slot = e.object ? ctx.slot(e.object) : undefined;
+        if (slot) {
+          const kind = kindOf(ctx.card(e.card)?.type ?? '');
+          out.push({ kind: 'place', from: [`deck-${kind}`], to: [slot], card: e.card, back: kind });
         }
         break;
+      }
       case 'turn_started':
         out.push({ kind: 'banner', text: `${ctx.name(e.player)}'s turn` });
         break;

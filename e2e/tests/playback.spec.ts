@@ -268,3 +268,45 @@ test('a dying monster gets a skull before it leaves', async ({ browser }) => {
   await expect(monster).toHaveCount(0);
   await expect(ola.locator('.effects-trail > *')).toHaveCount(0);
 });
+
+test('a deck attack places the monster in its slot before the attack roll', async ({ browser }) => {
+  const [dax] = await startGame(browser, ['Dax', 'Ivo']);
+  if (!dax) {
+    throw new Error('no pages');
+  }
+  // Replay the slot pick of a deck attack: the revealed card covers the
+  // first slot, the attack starts, and the first roll is made.
+  const ids = await dax.evaluate(() => {
+    const store = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store;
+    const s = store.getState();
+    const game = structuredClone(s.game);
+    const you = s.lobby.table?.you ?? 0;
+    const [first, second] = game?.view.monsters ?? [];
+    const old = first?.top;
+    if (!game || !first || !old || !second?.top) {
+      throw new Error('no game');
+    }
+    const top = { ...second.top, id: 990 };
+    first.top = top;
+    const events = [
+      { kind: 'card_revealed', player: -1, object: top.id, card: top.card },
+      { kind: 'attack_target', player: you, object: top.id, card: top.card },
+      { kind: 'dice_rolled', player: you, amount: 4, text: 'attack roll' },
+    ];
+    s.receive({ type: 'update', data: { ...game, step: 2, events } });
+    return { old: old.id, top: top.id };
+  });
+  // The card flies to the slot and stays there while the dice rolls.
+  await expect(dax.getByTestId('effect-dice')).toBeVisible({ timeout: 5000 });
+  await dax.waitForTimeout(300); // let the dice settle for the picture
+  await shot(dax, 'deck-attack-roll');
+  const placed = dax.getByTestId('placed');
+  await expect(placed).toBeVisible();
+  const slot = await dax.locator(`[data-zone="obj-${String(ids.old)}"]`).boundingBox();
+  const box = await placed.boundingBox();
+  expect(Math.abs((box?.x ?? 0) - (slot?.x ?? 0))).toBeLessThan(2);
+  expect(Math.abs((box?.y ?? 0) - (slot?.y ?? 0))).toBeLessThan(2);
+  // Then the board shows the card in its slot, and the copy is gone.
+  await expect(dax.locator(`[data-zone="obj-${String(ids.top)}"]`)).toBeVisible();
+  await expect(placed).toHaveCount(0);
+});

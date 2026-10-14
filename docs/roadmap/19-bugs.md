@@ -109,3 +109,10 @@ This step never closes; new reports are appended.
    2. `startAttack` then rolls; both land in one update.
    3. Playback plays an update's effects, then draws its board.
    4. So the dice plays before the board shows the monster in the slot.
+6. Result (2026-10-14)
+   1. New `place` effect: the card flies from its deck to the slot.
+   2. It stays there, drawn by `Effects`, until the board redraws.
+   3. Order now: reveal, the card lands in its slot, the attack roll.
+   4. Shop refills get the same fly into their slot.
+   5. Engine, protocol and records unchanged.
+   6. Screenshots: `.cache/screenshots/19.3/before/` and `after/`.

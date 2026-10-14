@@ -33,7 +33,7 @@ import { entriesFor, lookedAt, type Entry, type Looked } from './history';
 import type { LinePart } from './stack';
 import { emptyLobby, leftTable, lost, onMessage, remember, type Screen, type Session } from './lobby';
 import { connect, disconnect, drop, send } from './net';
-import { createPlayback, effectsFor, type Effect } from './playback';
+import { createPlayback, effectsFor, slotZone, type Effect } from './playback';
 import { loadSounds } from './sounds';
 import {
   protocolVersion,
@@ -95,9 +95,19 @@ export interface Playing {
   done: () => void;
 }
 
+// Placed is a card a place effect left on its slot, at a screen point,
+// until the next view is shown (19.3).
+export interface Placed {
+  key: number;
+  card: string;
+  x: number;
+  y: number;
+}
+
 interface AppState extends Session {
   // playing is the event effect on screen, if any.
   playing: Playing | null;
+  placed: Placed[];
   // history is the match so far, as this viewer saw it (7.9).
   history: Entry[];
   // looking is the cards an effect lets this player look at, shown
@@ -240,6 +250,7 @@ export const useApp = create<AppState>()((set, get) => {
       const looked = lookedAt(u.events ?? [], seatOf(s));
       set({
         game: u,
+        placed: [],
         behind: playback.pending() > 0,
         history: [...s.history, ...entries],
         ...(looked.length > 0 ? { looking: looked } : {}),
@@ -264,6 +275,7 @@ export const useApp = create<AppState>()((set, get) => {
         card: (ref) => get().cards.get(ref),
         name: names(u).player,
         character: (p) => u.view.players.find((x) => x.id === p)?.character.id,
+        slot: (id) => slotZone(u.view, id),
       }),
     speed: () => get().settings.animation,
     shown: () => get().game,
@@ -283,7 +295,7 @@ export const useApp = create<AppState>()((set, get) => {
   const stopPlayback = () => {
     playback.clear();
     get().playing?.done();
-    set({ history: [], looking: [] });
+    set({ history: [], looking: [], placed: [] });
   };
 
   // open connects to address and says hello; the server answers with
@@ -338,6 +350,7 @@ export const useApp = create<AppState>()((set, get) => {
 
   return {
     playing: null,
+    placed: [],
     history: [],
     looking: [],
     endLook: () => {

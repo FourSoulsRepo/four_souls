@@ -95,6 +95,10 @@
   * Opponents get the same column, smaller.
   * Hover the column to read "Souls: N of 4".
   * Pure CSS: the same without the card images.
+* **1n. A card put into a slot (19.3):** it flies there from its deck.
+  * It stays on the slot while the update's later effects play.
+  * A deck attack: the monster is in its slot before the attack roll.
+  * Then the table shows the update and the copy goes away.
 
 ## Postconditions
 
