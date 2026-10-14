@@ -975,6 +975,8 @@ Images come first, so the new table is built with backs and mats.
    4. Unit test: the source does nothing, even over a player it may target.
    5. e2e test: the bomb clicked again stays aimed; empty space cancels.
    6. No screenshots: nothing on screen changed.
+9. Owner notes (2026-10-14)
+   1. Owner marks 15.33 solved.
 
 ### [ ] 15.34 Plays without aiming
 
