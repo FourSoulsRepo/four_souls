@@ -661,6 +661,7 @@
   animation: end-turn-glow 1.4s ease-in-out infinite alternate;
 }
 
+/* anim: end-turn-glow */
 @keyframes end-turn-glow {
   from {
     box-shadow:

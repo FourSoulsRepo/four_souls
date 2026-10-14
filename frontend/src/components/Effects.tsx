@@ -72,6 +72,7 @@ function Effect({ playing }: { playing: Playing }) {
       return <Popup at={effect.at} text={effect.text} tone={effect.tone} playing={playing} />;
     case 'dice':
       return (
+        // anim: dice
         <motion.div
           className="effect-center"
           initial={{ opacity: 0, scale: 0.4, rotate: -180 }}
@@ -85,6 +86,7 @@ function Effect({ playing }: { playing: Playing }) {
       );
     case 'banner':
       return (
+        // anim: banner
         <motion.div
           className="effect-center effect-banner"
           initial={{ opacity: 0, scale: 0.9 }}
@@ -97,6 +99,7 @@ function Effect({ playing }: { playing: Playing }) {
       );
     case 'reveal':
       return (
+        // anim: reveal
         <motion.div
           className="effect-center"
           initial={{ opacity: 0, scale: 0.8 }}
@@ -192,6 +195,7 @@ function Fly({
     playing.done();
   };
   return (
+    // anim: fly
     <motion.div
       className="effect-fly"
       initial={{ x: path.a.x - cardW / 2, y: path.a.y - cardH / 2, scale: 0.9 }}
@@ -211,6 +215,7 @@ function Popup({ at, text, tone, playing }: { at: string[]; text: string; tone: 
     return null;
   }
   return (
+    // anim: popup
     <motion.div
       className={`effect-popup effect-${tone}`}
       style={{ left: point.x, top: point.y }}

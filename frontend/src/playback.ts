@@ -209,6 +209,8 @@ export function scaleFor(speed: Speed, pending: number, effects: number): number
 }
 
 interface Deps {
+  // begin starts an update, before its effects (animations.ts).
+  begin: () => void;
   // show draws an update's view.
   show: (u: Update) => void;
   // run plays one effect and resolves when it ends.
@@ -265,6 +267,7 @@ export function createPlayback(deps: Deps): Playback {
 
   async function play(): Promise<void> {
     for (let u = queue.shift(); u; u = queue.shift()) {
+      deps.begin();
       // The first update has no table to play on yet.
       if (deps.shown() !== null) {
         const effects = deps.effects(u);

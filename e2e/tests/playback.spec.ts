@@ -1,5 +1,6 @@
 // Event playback and animations (7.6).
-import { expect, test, type Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { startGame } from './game';
 import { shot } from './shot';
 
@@ -360,4 +361,49 @@ test('a deck attack shows the revealed monster large once (19.4)', async ({ brow
   await expect(vix.locator('[data-zone="obj-990"]')).toBeVisible();
   const effects = await vix.evaluate(() => (window as unknown as { effects: string[] }).effects);
   expect(effects).toEqual(['reveal', 'place', 'dice']);
+});
+
+test('a deck attack monster does not pop in after it lands (19.6)', async ({ browser }) => {
+  const [yara] = await startGame(browser, ['Yara', 'Bram']);
+  if (!yara) {
+    throw new Error('no pages');
+  }
+  // Replay the slot pick of a deck attack, as above. When the board
+  // draws the card in its slot, record how see-through it is then.
+  await yara.evaluate(() => {
+    const w = window as unknown as { fourSouls: { store: Store }; landed: Promise<number> };
+    w.landed = new Promise((resolve) => {
+      const seen = new MutationObserver(() => {
+        const el = document.querySelector('[data-zone="obj-990"]');
+        if (el) {
+          seen.disconnect();
+          requestAnimationFrame(() => {
+            resolve(Number(getComputedStyle(el).opacity));
+          });
+        }
+      });
+      seen.observe(document.body, { childList: true, subtree: true });
+    });
+    const s = w.fourSouls.store.getState();
+    const game = structuredClone(s.game);
+    const you = s.lobby.table?.you ?? 0;
+    const [first, second] = game?.view.monsters ?? [];
+    if (!game || !first || !second?.top) {
+      throw new Error('no game');
+    }
+    first.top = { ...second.top, id: 990 };
+    const events = [
+      { kind: 'card_revealed', player: -1, object: 990, card: second.top.card },
+      { kind: 'attack_target', player: you, object: 990, card: second.top.card },
+      { kind: 'dice_rolled', player: you, amount: 4, text: 'attack roll' },
+    ];
+    s.receive({ type: 'update', data: { ...game, step: 2, events } });
+  });
+  const card = yara.locator('[data-zone="obj-990"]');
+  await expect(card).toBeVisible({ timeout: 8000 });
+  await yara.waitForTimeout(60); // a pop would be half way now
+  await shot(yara, 'deck-attack-landed');
+  // The card that flew there is already whole: no second arrival.
+  const opacity = await yara.evaluate(() => (window as unknown as { landed: Promise<number> }).landed);
+  expect(opacity).toBe(1);
 });

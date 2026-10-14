@@ -1,5 +1,6 @@
 import { motion } from 'motion/react';
 import { useEffect, useRef, useState, type PointerEvent } from 'react';
+import { claimed } from '../animations';
 import { iconText, kindOf, textParts, unknownCard, type CardInfo, type Kind } from '../cards';
 import { scaleFor } from '../playback';
 import type { MonsterStats } from '../protocol';
@@ -22,7 +23,7 @@ interface Props {
   // spent dims a used (uncharged) card.
   spent?: boolean;
   // objectId is the card's object on the table; effects find it by it,
-  // and a new one pops in.
+  // and a new one pops in, unless an effect just brought it (19.6).
   objectId?: number;
   // player marks a character card as its player: aiming at the player
   // picks the character (15.33).
@@ -113,8 +114,9 @@ export function Card({
     downRef.current = null;
   };
 
-  const pop = objectId !== undefined && scale > 0;
+  const pop = objectId !== undefined && scale > 0 && !claimed(card.ref, 'arrive');
   return (
+    // anim: card-pop
     <motion.div
       initial={pop ? { scale: 0.6, opacity: 0 } : false}
       animate={{ scale: 1, opacity: 1 }}

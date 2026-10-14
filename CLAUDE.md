@@ -72,6 +72,13 @@
    17. Bug reports go to `docs/roadmap/19-bugs.md`, one item each.
        1. Log the item before any code change.
        2. Fix it under the roadmap rules and that file's rules.
+   18. Animations: one card, one animation per job (ADR 012).
+       1. Rules and inventory: `docs/wiki/Animations.md`.
+       2. Every animation has an `anim: <id>` tag and a row there.
+       3. One that brings or shows a card claims it (`animations.ts`).
+       4. A replaced animation loses its code, tag and row.
+       5. e2e specs import `test` from `e2e/tests/fixtures.ts`.
+       6. Its fixture fails any test that logs an animation clash.
 6. Licenses
    1. Code is MIT (`LICENSE`).
    2. `NOTICE` lists every third-party item and its license.

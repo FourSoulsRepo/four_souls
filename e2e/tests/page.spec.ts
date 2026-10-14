@@ -1,6 +1,7 @@
 // Not a web page (8.8, V-10): no screen scrolls as a whole, and a mouse
 // drag selects nothing except text worth copying.
-import { expect, test, type Locator, type Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { startGame } from './game';
 import { appURL } from './server';
 import { activePage, click } from './turn';

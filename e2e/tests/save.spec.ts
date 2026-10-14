@@ -1,5 +1,5 @@
 // Save and continue (7.13, N-11).
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { startGame } from './game';
 import { appURL } from './server';
 import { shot } from './shot';

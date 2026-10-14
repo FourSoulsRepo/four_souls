@@ -33,6 +33,7 @@ import { entriesFor, lookedAt, type Entry, type Looked } from './history';
 import type { LinePart } from './stack';
 import { emptyLobby, leftTable, lost, onMessage, remember, type Screen, type Session } from './lobby';
 import { connect, disconnect, drop, send } from './net';
+import { claimEffect, nextBeat } from './animations';
 import { createPlayback, effectsFor, slotZone, type Effect } from './playback';
 import { loadSounds } from './sounds';
 import {
@@ -238,6 +239,7 @@ export const useApp = create<AppState>()((set, get) => {
     card: (ref: string) => get().cards.get(ref)?.name ?? ref,
   });
   const playback = createPlayback({
+    begin: nextBeat,
     show: (u) => {
       const s = get();
       const entries = entriesFor(
@@ -258,6 +260,11 @@ export const useApp = create<AppState>()((set, get) => {
     },
     run: (effect, scale) =>
       new Promise((resolve) => {
+        // A clashing effect is logged and skipped (19.6).
+        if (!claimEffect(effect)) {
+          resolve();
+          return;
+        }
         const key = ++effectKey;
         const done = () => {
           window.clearTimeout(timer);

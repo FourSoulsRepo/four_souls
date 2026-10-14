@@ -160,6 +160,7 @@ describe('createPlayback', () => {
     const played: Effect[] = [];
     let current: Update | null = null;
     const playback = createPlayback({
+      begin: () => undefined,
       show: (u) => {
         current = u;
         shown.push(u.step);

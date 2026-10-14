@@ -56,6 +56,7 @@ export function hits(list: Hit[], scale: number, done: () => void): void {
     layer().append(shot);
     const dx = b.x - a.x;
     const dy = b.y - a.y;
+    // anim: hit-shot
     const anim = shot.animate(
       [
         { transform: 'translate(0, 0) scale(0.4)', opacity: 0 },
@@ -117,6 +118,7 @@ export function skulls(at: string[][], scale: number, done: () => void): void {
     place(s, p.x, p.y);
     s.append(skull());
     layer().append(s);
+    // anim: death-skull
     const anim = s.animate(
       [
         { transform: 'scale(0.3) rotate(-12deg)', opacity: 0 },

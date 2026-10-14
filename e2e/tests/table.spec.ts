@@ -1,5 +1,6 @@
 // Table layout (7.5), with real games on the Go server.
-import { expect, test, type Browser, type Page } from '@playwright/test';
+import type { Browser, Page } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { expectFits, startGame, statMonsters } from './game';
 import { serverPort } from './server';
 import { shot } from './shot';

@@ -1,5 +1,5 @@
 // Card component (7.4) in the dev-only card gallery.
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { realAssets, shot } from './shot';
 
 const gallery = '/?fake&nosplash&screen=cards';

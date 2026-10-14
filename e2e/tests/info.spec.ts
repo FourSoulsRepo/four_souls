@@ -1,5 +1,5 @@
 // Info panels (7.9): history, turn badge, what is left this turn.
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { startGame } from './game';
 import { appURL } from './server';
 import { shot } from './shot';

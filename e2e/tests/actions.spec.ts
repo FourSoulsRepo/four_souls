@@ -1,6 +1,7 @@
 // Player actions (7.7): a full turn with the mouse, and with touch, on
 // real games.
-import { expect, test, type Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { startGame } from './game';
 import { appURL } from './server';
 import { shot } from './shot';

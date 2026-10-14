@@ -85,6 +85,7 @@ export function burst(at: DOMRect, amount: number, scale: number): void {
   n.textContent = `−${String(amount)}`;
   b.append(star(), n);
   layer().append(b);
+  // anim: burst
   const a = b.animate(
     [
       { transform: 'scale(0.3)', opacity: 0 },
@@ -124,6 +125,7 @@ export function lunge(from: string[], to: string[], amount: number, scale: numbe
   layer().append(c);
   src.style.visibility = 'hidden';
   const ms = lungeMs * scale;
+  // anim: lunge
   const anim = c.animate(
     [
       { transform: 'translate(0, 0) scale(1)', easing: 'ease-out' },

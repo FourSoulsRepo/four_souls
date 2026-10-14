@@ -107,6 +107,10 @@
   * Same fan and place as the backs, with the count.
   * At the top the cards hang past the edge, turned to their owner.
   * Hover a card to read it in full.
+* **1q. A card that flew to its place (19.6):** it does not pop in there again.
+  * A deck attack's monster lands in its slot once.
+  * A looted or discarded card lands in the hand or pile once.
+  * Cards no effect brought still pop in.
 
 ## Postconditions
 

@@ -3,7 +3,8 @@
 // does nothing; empty space or a right click cancels (15.33). A card
 // with no target is dragged onto the board; one that asks its mode
 // first aims after it, and a cancelled aim puts it back (15.34).
-import { expect, test, type Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { startGame } from './game';

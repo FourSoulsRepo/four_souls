@@ -1,5 +1,6 @@
 // App shell (7.2): splash, main menu, settings.
-import { expect, test, type Locator } from '@playwright/test';
+import type { Locator } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { realAssets, shot } from './shot';
 
 test('splash shows the fan-game notice, then the menu', async ({ page }) => {

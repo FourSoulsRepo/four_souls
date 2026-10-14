@@ -197,3 +197,19 @@ This step never closes; new reports are appended.
    2. e2e test: a deck attack's monster does not pop in after it lands.
    3. Every e2e test fails on an animation clash.
    4. ADR and wiki page for the rule; use case updated.
+5. Cause
+   1. The client has two sources of animation.
+   2. Events: the `place` effect flies the monster to its slot (19.3).
+   3. The view: `Card` pops in whenever a new `objectId` mounts.
+   4. The slot's card gets a new ID, so it popped in after it landed.
+   5. Looted and discarded cards did the same after their fly.
+   6. Nothing listed the animations or checked two on one card.
+6. Result (2026-10-15)
+   1. Effects claim the card they bring or show: `animations.ts`.
+   2. `Card` does not pop in a card an effect brought that update.
+   3. A clash is logged and skipped; e2e tests fail on any.
+   4. Every animation has an `anim: <id>` tag.
+   5. `docs/wiki/Animations.md` lists them; Vitest checks the list.
+   6. ADR 012 holds the rule and the research.
+   7. Engine, protocol and records unchanged.
+   8. Screenshots: `.cache/screenshots/19.6/before/` and `after/`.

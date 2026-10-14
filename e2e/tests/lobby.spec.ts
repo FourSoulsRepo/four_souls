@@ -1,5 +1,5 @@
 // Host and join screens (7.3), against the real Go server.
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { appURL, serverPort } from './server';
 import { realAssets, shot } from './shot';
 

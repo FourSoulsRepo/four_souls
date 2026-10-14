@@ -716,18 +716,21 @@
   }
 }
 
+/* anim: aim-march */
 @keyframes aim-march {
   to {
     transform: translateX(36px);
   }
 }
 
+/* anim: aim-fade-in */
 @keyframes aim-fade-in {
   from {
     opacity: 0;
   }
 }
 
+/* anim: aim-fade-out */
 @keyframes aim-fade-out {
   to {
     opacity: 0;
@@ -764,6 +767,7 @@
   animation: aim-why 2.5s linear forwards;
 }
 
+/* anim: aim-why */
 @keyframes aim-why {
   80% {
     opacity: 1;

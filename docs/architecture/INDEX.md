@@ -13,3 +13,4 @@
 | [009](009-lan-discovery.md) | LAN game discovery | Accepted |
 | [010](010-reprints-and-copy-images.md) | Reprints, copy images and set order | Accepted |
 | [011](011-taken-damage-display.md) | Who deals damage a player takes | Accepted |
+| [012](012-animation-ownership.md) | Animation ownership | Accepted |

@@ -11,6 +11,7 @@ The desktop client is React + TypeScript in `frontend/` (ADR 002), with three li
 | `src/protocol.ts` | Message and engine view types, mirroring `internal/protocol` and the engine; `wsURL`, `errorText`. |
 | `src/lobby.ts` | Pure: how server messages change the session (screen, lobby, error). |
 | `src/playback.ts` | Pure: event → effect mapping, speed, and the update queue. |
+| `src/animations.ts` | Animation claims: which effect brought or showed a card, and clashes ([Animations](Animations)). |
 | `src/table.ts` | Pure: where each player sits. |
 | `src/cards.ts` | Pure: card kinds, text icons. |
 | `src/store.ts` | The Zustand store; wires the pure parts to the bridge, the socket and playback. |
@@ -74,7 +75,7 @@ Effect durations scale with the animation setting (ST-05) and speed up when upda
 
 ## Cards
 
-`Card` shows a card image, or a blank card with its text when the image is missing (A-11). Sizes: `hand`, `table`, `small`, `zoom`; everything inside scales with the width through container query units. Hover zooms a card; on touch a long press does (B-06). A card with an `objectId` pops in when it first appears and is a `data-zone` for effects.
+`Card` shows a card image, or a blank card with its text when the image is missing (A-11). Sizes: `hand`, `table`, `small`, `zoom`; everything inside scales with the width through container query units. Hover zooms a card; on touch a long press does (B-06). A card with an `objectId` pops in when it first appears and is a `data-zone` for effects. It stays still when an effect of the same update already brought it there, like a `fly` or a `place` (19.6, [Animations](Animations)).
 
 ## Player actions
 

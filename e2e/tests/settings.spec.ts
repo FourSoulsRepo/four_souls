@@ -1,5 +1,5 @@
 // Settings screen (7.10): ST-01, ST-02, ST-03, ST-06.
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { startGame } from './game';
 import { appURL } from './server';
 import { realAssets, shot } from './shot';
