@@ -258,7 +258,7 @@ This step never closes; new reports are appended.
 5. Cause
    1. Not found yet.
 
-### [ ] 19.9 Deck attack: the drawn card hides during the slot choice
+### [x] 19.9 Deck attack: the drawn card hides during the slot choice
 
 1. Goal: the drawn card stays in view until the player places it.
 2. Report (owner, 2026-10-15)
@@ -288,3 +288,5 @@ This step never closes; new reports are appended.
    5. New view field: protocol stays version 1 (ADR 006).
    6. Records unchanged; they hold intents, not views.
    7. Screenshots: `.cache/screenshots/19.9/before/` and `after/`.
+7. Owner notes (2026-10-15)
+   1. Owner marks 19.9 solved.
