@@ -257,3 +257,22 @@ This step never closes; new reports are appended.
    2. A test that reproduces it.
 5. Cause
    1. Not found yet.
+
+### [ ] 19.9 Deck attack: the drawn card hides during the slot choice
+
+1. Goal: the drawn card stays in view until the player places it.
+2. Report (owner, 2026-10-15)
+   1. A player attacks the top of the monster deck.
+   2. The new card shows for a few seconds, then hides.
+   3. The player then picks the slot to put it in.
+   4. A player who missed the reveal does not know the card.
+   5. The slot choice may depend on the card.
+3. Tasks:
+   1. Find the cause in the code.
+   2. Show the drawn card while the slot choice is open.
+   3. It hides once the card is placed.
+4. Done when:
+   1. e2e test: the drawn card is visible during the slot choice.
+   2. Use case updated.
+5. Cause
+   1. Not found yet.
