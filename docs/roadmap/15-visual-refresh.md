@@ -2,11 +2,12 @@
 
 Goal: a clearer table, using fouronlinesouls.net as a second reference.
 
-Ideas: V-09, V-12, V-13, V-15 – V-31, V-33 – V-40, GS-06.
+Ideas: V-09, V-12, V-13, V-15 – V-31, V-33 – V-43, GS-06.
 
 Order: 15.1, 15.15, 15.9 – 15.11, 15.16, 15.17, 15.38, 15.18 – 15.24,
 15.3, 15.37, 15.25, 15.32 – 15.34, 15.26, 15.27, 15.5, 15.6,
-15.28 – 15.31, 15.35, 15.36, 15.39 – 15.46, 15.51, 15.52.
+15.28 – 15.31, 15.35, 15.36, 15.39 – 15.46, 15.51, 15.52,
+15.54 – 15.56.
 Images come first, so the new table is built with backs and mats.
 
 ## Rules for this step (owner, 2026-10-12)
@@ -1443,3 +1444,53 @@ Images come first, so the new table is built with backs and mats.
    11. Screenshots: `.cache/screenshots/15.53/before/` and `after/`.
 6. Owner notes (2026-10-14)
    1. Owner marks 15.53 solved.
+
+### [ ] 15.54 Sources of stat boosts
+
+1. Goal: a player sees why a character's HP or ATK changed (V-41).
+2. Tasks:
+   1. The engine view lists each source of a character's HP and ATK change.
+   2. A source: an item, a curse, a soul, a played effect "till end of turn".
+   3. Small icons on the character card, beside its HP or ATK badge.
+   4. One icon per source; hover names the card and its change.
+   5. Hovering an icon zooms the source card.
+   6. **Owner** decides: icon from the card art, or a plain mark.
+   7. **Owner** decides: also on monsters, or only characters.
+   8. Text cards without images get the same icons.
+3. Done when:
+   1. Engine test: a boosted character's view lists its sources.
+   2. e2e test: an item with +1 ATK shows one icon by the ATK badge.
+   3. `make screenshots` shows a character with two sources.
+   4. UC-12 updated.
+
+### [ ] 15.55 Curses left of the player
+
+1. Goal: curses read apart from items (V-42).
+2. Tasks:
+   1. Curses leave the items row on the right.
+   2. They form their own group left of the player.
+   3. Own area and opponents alike.
+   4. **Owner** decides: left of the soul crystals, or between them and the card.
+   5. The table areas keep their size when there is no curse (V-23).
+3. Done when:
+   1. e2e test: a curse sits left of the character, not with the items.
+   2. `make screenshots` shows a cursed player in every seat.
+   3. UC-12 updated.
+
+### [ ] 15.56 Soul cards behind the crystals
+
+1. Goal: the table shows no soul cards; the crystals hold them (V-43).
+2. Tasks:
+   1. Gained soul cards leave the items row.
+   2. Each filled crystal knows its soul card.
+   3. A card worth two souls ties both of its crystals to it.
+   4. Hovering a filled crystal zooms its card.
+   5. A killed monster zooms with the soul it gave.
+   6. Touch: a long tap does the same.
+   7. Effects that aim at a soul still can aim at the crystal.
+   8. **Owner** decides: the zoom for a bonus soul, which is no monster.
+3. Done when:
+   1. Vitest: crystals map to soul cards, two-soul cards included.
+   2. e2e test: no soul card in the items row; hover zooms it.
+   3. `make screenshots` shows the zoom over a crystal.
+   4. UC-12 updated.

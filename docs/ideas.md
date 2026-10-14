@@ -228,6 +228,17 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    3. Shrink, or another effect; the owner picks.
    4. Resolved, the card flies from the stack to the discard pile.
    5. Damage and death marks play first; then the card flies.
+41. V-41. Stat boosts show what gives them.
+   1. A character with extra HP or ATK shows small icons on its card.
+   2. One icon per card or effect that changes the stat.
+   3. Hover an icon to see its source card.
+42. V-42. Curses sit left of the player.
+   1. Not on the right with the items.
+   2. Each player's curses form their own group.
+43. V-43. Soul cards hide behind the soul crystals.
+   1. Gained soul cards are not on the table.
+   2. Hovering a filled crystal zooms its soul card.
+   3. A killed monster shows with its soul.
 
 ## Rules
 

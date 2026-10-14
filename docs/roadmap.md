@@ -238,6 +238,9 @@ Step numbers stay as IDs; the table lists steps in work order.
 35. Damage a player takes names its card (play test, 15.47).
 36. Stack and history rows fade and slide (V-39, 15.51).
 37. Played cards fly hand → stack → discard (V-40, 15.52).
+38. Icons for the sources of HP and ATK boosts (V-41, 15.54).
+39. Curses left of the player (V-42, 15.55).
+40. Soul cards shown by hovering a soul crystal (V-43, 15.56).
 
 ## 16. Localization
 
