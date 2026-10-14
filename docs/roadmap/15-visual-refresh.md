@@ -1163,6 +1163,22 @@ Images come first, so the new table is built with backs and mats.
    12. e2e test: title, buttons and a heading ask for the game fonts.
    13. Shell, welcome and lobby shots now load the real fonts.
    14. Screenshots: `.cache/screenshots/15.40/before/` and `after/`.
+5. Owner notes (2026-10-14)
+   1. Owner: buttons like the ability lines of The Bone.
+   2. Owner: settings and game setup should fit the game too.
+6. Rework (2026-10-14)
+   1. Menu, screen and overlay buttons: parchment, ink outline, hard shadow.
+   2. They tilt a little in turn, like the ability lines.
+   3. The main action (Host, Save, Ready) is the gold of End turn.
+   4. Disabled: greyed, like a line that is not allowed.
+   5. The in-game Menu button gets the same look, smaller.
+   6. Panels: a dark board with an ink frame, in both themes.
+   7. Overlay boxes (pause, game over, menu) get the same frame.
+   8. Field names in the game font, gold; option names light.
+   9. Inputs and selects: parchment slips; typed text stays plain.
+   10. Checkboxes: parchment boxes with an ink tick.
+   11. The look lives in `style.css` (`--ink`, `--paper`, `--gold`).
+   12. Screenshots: `.cache/screenshots/15.40/paper-before/` and `paper-after/`.
 
 ### [ ] 15.41 foursouls.ru banner on the home screen
 

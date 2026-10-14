@@ -91,3 +91,83 @@ button {
   background-size: cover;
   background-position: center;
 }
+
+/* Buttons off the table look like the ability lines (15.24, 15.40):
+   cut-out parchment with an ink outline, a hard shadow and a slight
+   tilt, the game's letters; the main action is the gold of End turn.
+   The look stays the same in both themes, like the game's dialogs. */
+:root {
+  --ink: #1d120a;
+  --paper:
+    radial-gradient(ellipse at 20% 15%, rgb(255 255 255 / 45%), transparent 50%),
+    linear-gradient(#f6ecd2, #e1cc9b);
+  --gold:
+    radial-gradient(ellipse at 30% 22%, rgb(255 255 255 / 55%), transparent 45%),
+    linear-gradient(#f7de8f, #e4a63a);
+}
+
+.screen button,
+.menu-buttons button,
+.overlay-buttons button,
+.game-menu-button {
+  padding: 7px 20px 5px;
+  border: 3px solid var(--ink);
+  border-radius: 14px 18px 16px 12px / 12px 16px 18px 14px;
+  font-family: var(--font-game);
+  font-size: 17px;
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  color: var(--ink);
+  background: var(--paper);
+  box-shadow: 0 3px 0 var(--ink);
+  rotate: -0.6deg;
+  cursor: pointer;
+  transition:
+    translate 80ms ease,
+    box-shadow 160ms ease;
+}
+
+.screen button:nth-of-type(even),
+.menu-buttons button:nth-of-type(even),
+.overlay-buttons button:nth-of-type(even) {
+  rotate: 0.6deg;
+}
+
+.screen button.primary,
+.overlay-buttons button.primary {
+  background: var(--gold);
+}
+
+.screen button:enabled:hover,
+.menu-buttons button:enabled:hover,
+.overlay-buttons button:enabled:hover,
+.game-menu-button:hover {
+  translate: 0 -2px;
+  box-shadow:
+    0 5px 0 var(--ink),
+    0 0 14px rgb(255 210 122 / 75%);
+}
+
+.screen button:enabled:active,
+.menu-buttons button:enabled:active,
+.overlay-buttons button:enabled:active,
+.game-menu-button:active {
+  translate: 0 2px;
+  box-shadow: 0 1px 0 var(--ink);
+}
+
+.screen button:disabled,
+.menu-buttons button:disabled,
+.overlay-buttons button:disabled {
+  filter: grayscale(0.8) brightness(0.75);
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.screen button:focus-visible,
+.menu-buttons button:focus-visible,
+.overlay-buttons button:focus-visible,
+.game-menu-button:focus-visible {
+  outline: 3px solid #f7de8f;
+  outline-offset: 2px;
+}
