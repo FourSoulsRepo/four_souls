@@ -216,3 +216,44 @@ This step never closes; new reports are appended.
 7. Owner notes (2026-10-15)
    1. Owner marks 19.6 solved.
    2. Claims stay on cards; zones get them with a second source.
+
+### [ ] 19.7 Buy is lit, then the purchase fails
+
+1. Goal: Buy is lit only when the player can buy.
+2. Report (agent, 2026-10-15)
+   1. Found in `make e2e` while fixing 19.6; chromium.
+   2. Test: "buy and attack icons are lit only when the engine allows them".
+   3. `actions.spec.ts:149`: "the game never settled".
+   4. Tia had Buy lit and pressed B at step 10.
+   5. The engine answered `purchase_failed`, amount 10.
+   6. No choice dialog opened; the test waited until it timed out.
+   7. Passed twice when rerun alone: the deal may matter.
+3. Tasks:
+   1. Find the cause: engine, client, or the test.
+   2. Find which dealt card makes Buy allowed but unaffordable.
+4. Done when:
+   1. Cause found and written here.
+   2. A test that plays the failing deal.
+5. Cause
+   1. Not found yet.
+
+### [ ] 19.8 Intent waits forever after a pass
+
+1. Goal: a sent intent always ends: by an update or a refusal.
+2. Report (agent, 2026-10-15)
+   1. Found in `make e2e` while fixing 19.6; webkit.
+   2. Test: "a resolved loot card goes to the history strip (15.22)".
+   3. `info.spec.ts:99`: "the game never settled".
+   4. Both pages were at step 21, turn 2, Ada's turn.
+   5. Ada's page still had `sent: 19`; the other page `sent: 20`.
+   6. Last event: `passed_priority` by player 1.
+   7. Ada showed "Your turn" with no buttons.
+   8. Passed 4 of 4 fresh runs alone: timing may matter.
+3. Tasks:
+   1. Find the cause: client `sent`, server, or the test.
+   2. Find why `sent` stays set after later updates arrive.
+4. Done when:
+   1. Cause found and written here.
+   2. A test that reproduces it.
+5. Cause
+   1. Not found yet.
