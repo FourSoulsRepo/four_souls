@@ -88,3 +88,24 @@ This step never closes; new reports are appended.
    6. No frontend change; the popup is short, so no screenshots.
 7. Owner notes (2026-10-14)
    1. Owner marks 19.2 solved.
+
+### [ ] 19.3 Deck attack: the monster lands before the roll
+
+1. Goal: on a deck attack the monster is in its slot before the dice roll.
+2. Report (owner, 2026-10-14)
+   1. A player attacks the top of the monster deck.
+   2. The dice roll plays first.
+   3. Only then the monster appears in the chosen slot.
+3. Tasks:
+   1. Find the cause in the code.
+   2. A card put into a slot flies there and stays until the board redraws.
+   3. Effects after it, like the attack roll, play over the placed card.
+4. Done when:
+   1. Vitest: a slot reveal gives a place effect before the dice.
+   2. e2e test: the placed card is on the slot while the dice plays.
+   3. Use case updated.
+5. Cause
+   1. Engine order is right: `placeRevealed` puts the card in the slot.
+   2. `startAttack` then rolls; both land in one update.
+   3. Playback plays an update's effects, then draws its board.
+   4. So the dice plays before the board shows the monster in the slot.
