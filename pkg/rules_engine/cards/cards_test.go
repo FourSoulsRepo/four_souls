@@ -94,3 +94,33 @@ func FuzzSets(f *testing.F) {
 		}
 	})
 }
+
+// TestStatMonsterBans: with the monsters that change other monsters
+// banned, a fresh deal shows every monster as printed (14.10). The e2e
+// tests ban the same list (e2e/tests/game.ts).
+func TestStatMonsterBans(t *testing.T) {
+	statMonsters := []engine.CardRef{"delirium", "stoney"}
+	changed := func(bans []engine.CardRef) int {
+		n := 0
+		for seed := range uint64(400) {
+			s := engine.Setup{Seed: seed, Players: 2, Sets: []engine.CardSet{b2.Set}, BonusSouls: true, Banned: bans}
+			g, _, err := engine.NewGame(s)
+			if err != nil {
+				t.Fatal(err)
+			}
+			for _, slot := range g.View(engine.Viewer{Kind: engine.ViewSpectator}).Monsters {
+				st := slot.Top.Stats
+				if st != nil && (st.HP != st.PrintedHP || st.DC != st.PrintedDC || st.ATK != st.PrintedATK) {
+					n++
+				}
+			}
+		}
+		return n
+	}
+	if changed(nil) == 0 {
+		t.Fatal("no deal changed a monster; the test checks nothing")
+	}
+	if n := changed(statMonsters); n > 0 {
+		t.Errorf("%d fresh monsters changed with %v banned; a monster is missing from the list", n, statMonsters)
+	}
+}

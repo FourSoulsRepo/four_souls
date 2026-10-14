@@ -3,6 +3,35 @@ import { expect, type Browser, type Page } from '@playwright/test';
 import { appURL, serverPort } from './server';
 import { realAssets } from './shot';
 
+// statMonsters change other monsters' stats (14.10). A test that checks
+// a fresh monster bans them, or a lucky deal puts a badge on it.
+export const statMonsters = ['delirium', 'stoney'];
+
+// hostBans adds the cards to the host's create message on its way to
+// the server: the host screen has no ban list yet (14.9). The getter it
+// resolves to returns the bans the server's table names, as a check.
+function hostBans(page: Page, bans: string[]): Promise<() => string[]> {
+  let echoed: string[] = [];
+  return page
+    .routeWebSocket(`ws://127.0.0.1:${String(serverPort())}/ws`, (ws) => {
+      const server = ws.connectToServer();
+      ws.onMessage((msg) => {
+        const env = JSON.parse(String(msg)) as { type: string; data?: { options?: Record<string, unknown> } };
+        if (env.type === 'create' && env.data) {
+          env.data.options = { ...env.data.options, host_bans: bans };
+        }
+        server.send(JSON.stringify(env));
+      });
+      server.onMessage((msg) => {
+        const env = JSON.parse(String(msg)) as { type: string; data?: { options?: { host_bans?: string[] } } };
+        if (env.type === 'table') {
+          echoed = env.data?.options?.host_bans ?? [];
+        }
+        ws.send(msg);
+      });
+    })
+    .then(() => () => echoed);
+}
 
 // startGame: the first name hosts a game with a seat per name, the others
 // join. Tests share one server, so each test needs its own host name.
@@ -19,6 +48,8 @@ export async function startGame(
     setup = (_: Page) => Promise.resolve(),
     // open runs on each new page before it loads the app.
     open = (_: Page) => Promise.resolve(),
+    // bans are cards the host leaves out of the game (GS-13).
+    bans = [] as string[],
   } = {},
 ): Promise<Page[]> {
   const pages: Page[] = [];
@@ -33,6 +64,7 @@ export async function startGame(
   if (!host) {
     throw new Error('no players');
   }
+  const banned = bans.length > 0 ? await hostBans(host, bans) : () => [];
   await host.goto(url);
   await host.getByRole('button', { name: 'Host a game' }).click();
   await host.getByLabel('Nickname').fill(names[0] ?? '');
@@ -46,6 +78,7 @@ export async function startGame(
   await setup(host);
   await host.getByRole('button', { name: 'Host', exact: true }).click();
   await expect(host.getByRole('list', { name: 'Seats' })).toBeVisible();
+  expect(banned()).toEqual(bans);
 
   for (const [i, page] of guests.entries()) {
     await page.goto(url);

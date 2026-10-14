@@ -190,6 +190,13 @@ Alt art (CD-11) comes after all sets.
 4. Done when:
    1. The 15.23 test bans them and checks the untouched monster.
    2. Many deals in a row show no stat badge on a fresh monster.
+5. Result (2026-10-15):
+   1. `startGame` takes `bans`; Playwright adds them to `create`.
+   2. `statMonsters` in `e2e/tests/game.ts`: Delirium, Stoney.
+   3. The 15.23 test bans them.
+   4. `TestStatMonsterBans`: 400 deals, no fresh monster changed.
+   5. It also fails if the Base Game gets a new such monster.
+   6. Gold Box and Four Souls+: e2e tests play the Base Game only.
 
 ### [ ] 14.11 Draft pick screen
 

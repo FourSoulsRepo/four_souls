@@ -1,6 +1,6 @@
 // Table layout (7.5), with real games on the Go server.
 import { expect, test, type Browser, type Page } from '@playwright/test';
-import { expectFits, startGame } from './game';
+import { expectFits, startGame, statMonsters } from './game';
 import { serverPort } from './server';
 import { shot } from './shot';
 
@@ -306,7 +306,8 @@ for (const [n, names] of [
 }
 
 test('counters and changed monster stats show on the card, not in its zoom (15.23)', async ({ browser }) => {
-  const [page] = await startGame(browser, ['Flo', 'Hux']);
+  // Delirium or Stoney dealt into a slot would change the other monster (14.10).
+  const [page] = await startGame(browser, ['Flo', 'Hux'], { bans: statMonsters });
   if (!page) {
     throw new Error('no pages');
   }

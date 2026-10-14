@@ -59,10 +59,10 @@
    13. Open questions wait for the owner at that roadmap step.
    14. A step file may add its own rules in its header; they win.
    15. Step 15: stop after every sub-step, with screenshots, for review.
-   16. Known e2e flakes: unlucky deals, until roadmap 14.10 is done.
+   16. Unlucky deals in e2e tests: fixed by host bans (14.10).
        1. A random deal can break a test that expects a plain board.
-       2. One failed test that passes when rerun alone is this flake.
-       3. Rerun the gate; do not chase it or blame the change.
+       2. Such a test bans the cards: `startGame(…, { bans })`.
+       3. A deal-dependent failure is a test bug; ban the card, never rerun.
        4. A test that fails again on rerun is a real failure.
    17. Bug reports go to `docs/roadmap/19-bugs.md`, one item each.
        1. Log the item before any code change.
