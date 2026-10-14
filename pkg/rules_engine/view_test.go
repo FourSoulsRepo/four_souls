@@ -146,6 +146,29 @@ func TestChoiceOptionsPointAtTheTable(t *testing.T) {
 	}
 }
 
+func TestViewShowsTheDrawnMonsterUntilPlaced(t *testing.T) {
+	g := toAction(t, 2)
+	a := g.Turn.Active
+	putMonster(g, 0, "gaper")
+	g.Decks[MonsterDeck] = append(g.Decks[MonsterDeck], g.newObject("dummy", DeckZone(MonsterDeck), NoPlayer))
+	if v := g.View(Viewer{Kind: ViewSpectator}); v.Revealed != nil {
+		t.Fatalf("revealed %+v before the deck attack", *v.Revealed)
+	}
+	attack(t, g)
+	choose(t, g, "monster deck")
+	for _, v := range []Viewer{{Kind: ViewPlayer, Player: a}, {Kind: ViewPlayer, Player: g.next(a)}, {Kind: ViewSpectator}} {
+		if r := g.View(v).Revealed; r == nil || r.Card != "dummy" {
+			t.Errorf("viewer %+v: revealed %+v, want the dummy (19.9)", v, r)
+		}
+	}
+	if _, err := g.Apply(Intent{Player: a, Kind: IntentChoose, Choice: 0}); err != nil {
+		t.Fatal(err)
+	}
+	if r := g.View(Viewer{Kind: ViewSpectator}).Revealed; r != nil {
+		t.Errorf("revealed %+v after it went into its slot", *r)
+	}
+}
+
 func TestViewCountsWhatIsLeft(t *testing.T) {
 	g := toAction(t, 2)
 	a := g.Turn.Active

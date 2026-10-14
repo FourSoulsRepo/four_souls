@@ -8,12 +8,18 @@ import './Actions.css';
 
 // ChoiceDialog asks the player to pick one option. Card options show as
 // cards, Hearthstone-style (V-07); options on the table can be clicked
-// there too.
-export function ChoiceDialog({ choice }: { choice: NonNullable<Actions['choice']> }) {
+// there too. subject is the card the choice is about, e.g. the monster
+// a deck attack drew (19.9); it shows beside the options.
+export function ChoiceDialog({ choice, subject }: { choice: NonNullable<Actions['choice']>; subject?: string | undefined }) {
   const act = useApp((s) => s.act);
   return (
     <div className="choice" role="dialog" aria-label={choice.title}>
       <h2>{choice.title}</h2>
+      {subject && (
+        <div className="choice-subject">
+          <Card cardRef={subject} size="table" />
+        </div>
+      )}
       <div className="choice-options">
         {choice.options.map((o) => (
           <div key={o.intent.choice ?? 0} className="choice-option">

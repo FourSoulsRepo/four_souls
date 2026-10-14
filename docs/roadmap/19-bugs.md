@@ -275,4 +275,16 @@ This step never closes; new reports are appended.
    1. e2e test: the drawn card is visible during the slot choice.
    2. Use case updated.
 5. Cause
-   1. Not found yet.
+   1. Engine order is right: `attackDeck` reveals, then asks for the slot.
+   2. The card waits outside the table in `Attack.Revealed`.
+   3. `View` never sent it; only the `card_revealed` event named it.
+   4. The client showed that event large for a moment, then nothing.
+   5. The slot dialog lists only "slot 1", "slot 2".
+6. Result (2026-10-15)
+   1. The view sends the waiting card as `revealed`, to every viewer.
+   2. The board shows it face up on the monster deck.
+   3. The slot dialog shows it above the slot buttons.
+   4. It leaves the deck when it flies to the chosen slot.
+   5. New view field: protocol stays version 1 (ADR 006).
+   6. Records unchanged; they hold intents, not views.
+   7. Screenshots: `.cache/screenshots/19.9/before/` and `after/`.

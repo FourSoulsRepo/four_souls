@@ -96,6 +96,9 @@ type GameView struct {
 	// WinSouls is the soul value that wins the game (R-WIN-01), so a
 	// client can show how far each player still has to go (V-30).
 	WinSouls int `json:"win_souls"`
+	// Revealed is the monster-deck card a deck attack drew, while the
+	// attacker picks its slot (R-ATK-08); it is public (19.9).
+	Revealed *CardView `json:"revealed,omitempty"`
 	// Options says what each option of a choose prompt points at, one
 	// per Waiting.Options; only for whoever sees those options.
 	Options []OptionView `json:"options,omitempty"`
@@ -168,6 +171,10 @@ func (g *Game) View(v Viewer) GameView {
 	}
 	for _, id := range g.BonusSouls {
 		out.BonusSouls = append(out.BonusSouls, g.cardView(id))
+	}
+	if g.Attack.Revealed != 0 {
+		cv := g.cardView(g.Attack.Revealed)
+		out.Revealed = &cv
 	}
 	out.Waiting = g.Waiting
 	if g.Waiting.Kind == PromptChoose && !v.sees(g.Waiting.Player) {

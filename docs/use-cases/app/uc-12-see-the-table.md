@@ -111,6 +111,10 @@
   * A deck attack's monster lands in its slot once.
   * A looted or discarded card lands in the hand or pile once.
   * Cards no effect brought still pop in.
+* **1r. A deck attack's drawn card (19.9):** it stays in view until placed.
+  * It lies face up on the monster deck, for every player.
+  * The slot dialog shows it above the slot buttons.
+  * It leaves the deck when it flies into the chosen slot.
 
 ## Postconditions
 

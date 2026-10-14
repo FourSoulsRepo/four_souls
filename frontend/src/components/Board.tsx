@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import type { Kind } from '../cards';
 import { counted, Deck as DeckKind, type CardView, type GameView, type SlotView } from '../protocol';
+import { useApp } from '../store';
 import { Card } from './Card';
 import type { Interact } from './Interact';
 import { Deck, Discard } from './Pile';
@@ -52,6 +53,7 @@ export function Board({
             count={view.deck_sizes[DeckKind.monster] ?? 0}
             discard={view.discards[DeckKind.monster] ?? null}
             ui={ui}
+            top={view.revealed}
           />
           <DeckPair
             kind="treasure"
@@ -72,11 +74,31 @@ export function Board({
   );
 }
 
-// DeckPair is a deck and its discard, side by side.
-function DeckPair({ kind, count, discard, ui }: { kind: Kind; count: number; discard: CardView[] | null; ui: Interact }) {
+// DeckPair is a deck and its discard, side by side. top is a drawn card
+// waiting on the deck for its slot (19.9); it leaves the deck once a
+// place effect flies it to the slot.
+function DeckPair({
+  kind,
+  count,
+  discard,
+  ui,
+  top,
+}: {
+  kind: Kind;
+  count: number;
+  discard: CardView[] | null;
+  ui: Interact;
+  top?: CardView | undefined;
+}) {
+  const leaving = useApp(
+    (s) =>
+      !!top &&
+      ((s.playing?.effect.kind === 'place' && s.playing.effect.card === top.card) ||
+        s.placed.some((p) => p.card === top.card)),
+  );
   return (
     <div className="deck-pair">
-      <Deck kind={kind} count={count} size="small" handle={ui.deck(kind)} />
+      <Deck kind={kind} count={count} size="small" handle={ui.deck(kind)} top={leaving ? undefined : top} />
       <Discard kind={kind} cards={discard} size="small" />
     </div>
   );

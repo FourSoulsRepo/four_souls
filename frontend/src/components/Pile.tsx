@@ -10,7 +10,8 @@ function title(kind: Kind): string {
   return kind.charAt(0).toUpperCase() + kind.slice(1);
 }
 
-// Deck is a face-down pile with its card count.
+// Deck is a face-down pile with its card count. A drawn card that waits
+// for its place (top) lies face up on it (19.9).
 const noHandle: Handle = {};
 
 export function Deck({
@@ -18,16 +19,20 @@ export function Deck({
   count,
   size,
   handle = noHandle,
+  top,
 }: {
   kind: Kind;
   count: number;
   size: CardSize;
   handle?: Handle;
+  top?: CardView;
 }) {
   const label = `${title(kind)} deck: ${String(count)} cards`;
   return (
     <div className="pile" role="group" aria-label={label} title={label} data-zone={`deck-${kind}`}>
-      {count > 0 ? (
+      {top ? (
+        <Card cardRef={top.card} size={size} objectId={top.id} highlight="pick" />
+      ) : count > 0 ? (
         <Card size={size} back={kind} highlight={handle.highlight} onClick={handle.onClick} />
       ) : (
         <div className={`pile-empty size-${size}`} />

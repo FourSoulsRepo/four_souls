@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
-import { actionsFor, aimedOption, IntentKind, type Actions } from '../actions';
+import { actionsFor, aimedOption, IntentKind, Purpose, type Actions } from '../actions';
 import { onScreen, promptAim } from '../aim';
 import { ActionBar } from '../components/ActionBar';
 import { ActionMenu } from '../components/ActionMenu';
@@ -183,7 +183,13 @@ function Table({ game, you }: { game: Update; you: number }) {
       />
       <ActionMenu actions={offered.cards} />
       {canAct && <AimLayer />}
-      {offered.choice && !aiming?.choice && <ChoiceDialog key={game.step} choice={offered.choice} />}
+      {offered.choice && !aiming?.choice && (
+        <ChoiceDialog
+          key={game.step}
+          choice={offered.choice}
+          subject={offered.choice.purpose === Purpose.monsterSlot ? view.revealed?.card : undefined}
+        />
+      )}
       {offered.discard && me && <DiscardDialog key={game.step} discard={offered.discard} hand={me.hand ?? []} />}
       {looking.length > 0 && <LookDialog cards={looking} />}
       {connected && !view.over && <GameMenu host={you === 0} />}

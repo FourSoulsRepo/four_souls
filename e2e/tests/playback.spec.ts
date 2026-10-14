@@ -407,3 +407,59 @@ test('a deck attack monster does not pop in after it lands (19.6)', async ({ bro
   const opacity = await yara.evaluate(() => (window as unknown as { landed: Promise<number> }).landed);
   expect(opacity).toBe(1);
 });
+
+test('a deck attack keeps the drawn monster in view while its slot is picked (19.9)', async ({ browser }) => {
+  const [odo] = await startGame(browser, ['Odo', 'Kye']);
+  if (!odo) {
+    throw new Error('no pages');
+  }
+  // Replay the draw of a deck attack: the top card is revealed and the
+  // attacker is asked for a slot to put it in.
+  const name = await odo.evaluate(() => {
+    const store = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store;
+    const s = store.getState();
+    const game = structuredClone(s.game);
+    const you = s.lobby.table?.you ?? 0;
+    const slots = game?.view.monsters ?? [];
+    const card = slots[1]?.top?.card;
+    if (!game || !card || slots.some((m) => !m.top)) {
+      throw new Error('no game');
+    }
+    game.view.revealed = { id: 989, card, charged: false };
+    game.view.waiting = { kind: 4, player: you, purpose: 2, options: slots.map((_, i) => `slot ${String(i + 1)}`) };
+    game.view.options = slots.map((m) => ({ object: m.top?.id ?? 0, player: -1 }));
+    game.allowed = slots.map((_, i) => ({ player: you, kind: 4, choice: i }));
+    const events = [{ kind: 'card_revealed', player: you, object: 989, card }];
+    s.receive({ type: 'update', data: { ...game, step: 2, events } });
+    return s.cards.get(card)?.name ?? card;
+  });
+  // After the large reveal, the card stays face up on the monster deck
+  // and in the dialog until the slot is picked.
+  const dialog = odo.getByRole('dialog', { name: 'Choose a slot for the monster' });
+  await expect(dialog).toBeVisible({ timeout: 8000 });
+  await expect(odo.getByTestId('effect-reveal')).toHaveCount(0);
+  await odo.waitForTimeout(400); // the deck card pops in
+  await shot(odo, 'deck-attack-pick-slot');
+  await expect(odo.locator('[data-zone="deck-monster"] [data-zone="obj-989"]')).toBeVisible();
+  await expect(dialog.getByLabel(name, { exact: true })).toBeVisible();
+  // Once it flies into its slot, the deck no longer shows it.
+  await odo.evaluate(() => {
+    const s = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store.getState();
+    const game = structuredClone(s.game);
+    const [first] = game?.view.monsters ?? [];
+    const drawn = game?.view.revealed;
+    if (!game || !first || !drawn) {
+      throw new Error('no game');
+    }
+    first.top = { ...drawn, id: 990 };
+    delete game.view.revealed;
+    game.view.waiting = { kind: 1, player: s.lobby.table?.you ?? 0 };
+    game.allowed = [];
+    const events = [{ kind: 'card_revealed', player: -1, object: 990, card: drawn.card }];
+    s.receive({ type: 'update', data: { ...game, step: 3, events } });
+  });
+  await expect(odo.getByTestId('effect-place')).toBeVisible({ timeout: 5000 });
+  await expect(odo.locator('[data-zone="obj-989"]')).toHaveCount(0);
+  await expect(odo.locator('[data-zone="obj-990"]')).toBeVisible();
+  await expect(dialog).toHaveCount(0);
+});

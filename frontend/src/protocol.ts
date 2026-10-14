@@ -303,6 +303,8 @@ export interface GameView {
   deck_sizes: number[];
   discards: (CardView[] | null)[];
   bonus_souls?: CardView[];
+  // revealed is the card a deck attack drew, until its slot is picked (19.9).
+  revealed?: CardView;
   stack: StackItem[] | null;
   turn: Turn;
   waiting: Prompt;
