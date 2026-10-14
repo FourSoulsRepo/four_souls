@@ -116,3 +116,23 @@ This step never closes; new reports are appended.
    4. Shop refills get the same fly into their slot.
    5. Engine, protocol and records unchanged.
    6. Screenshots: `.cache/screenshots/19.3/before/` and `after/`.
+
+### [ ] 19.4 Deck attack shows the monster large twice
+
+1. Goal: a deck attack shows the revealed monster large once.
+2. Report (owner, 2026-10-14)
+   1. Found while fixing 19.3.
+   2. The monster shows large when it is drawn.
+   3. It shows large again when it goes into the slot.
+3. Tasks:
+   1. Find the cause in the code.
+   2. A card shown large in the update before is not shown again.
+   3. It still flies into its slot (19.3).
+4. Done when:
+   1. Vitest: a card revealed in the update before gets no second reveal.
+   2. e2e test: one large reveal for a deck attack.
+   3. Use case updated.
+5. Cause
+   1. `attackDeck` emits `card_revealed` for the drawn card.
+   2. `placeRevealed` puts it in the slot; `putInSlot` emits it again.
+   3. Playback shows every `card_revealed` large.
