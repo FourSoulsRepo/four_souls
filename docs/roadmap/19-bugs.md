@@ -58,7 +58,7 @@ This step never closes; new reports are appended.
 7. Owner notes (2026-10-14)
    1. Owner marks 19.1 solved.
 
-### [ ] 19.2 Heal popup after 1-Up
+### [x] 19.2 Heal popup after 1-Up
 
 1. Goal: the heal popup shows the HP a player got back.
 2. Report (owner, 2026-10-14)
@@ -86,3 +86,5 @@ This step never closes; new reports are appended.
    4. Broken Ankh and Guppy's Collar now show "+1 HP".
    5. Events are not in the checksum; the owner's record replays.
    6. No frontend change; the popup is short, so no screenshots.
+7. Owner notes (2026-10-14)
+   1. Owner marks 19.2 solved.
