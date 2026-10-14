@@ -1005,6 +1005,8 @@ Images come first, so the new table is built with backs and mats.
    14. e2e test: A Penny! dragged onto the board plays; no arrow, no dialog.
    15. e2e test: Dagaz aims after its mode; a right click leaves it in hand.
    16. Screenshots: `.cache/screenshots/15.34/before/` and `after/`.
+5. Owner notes (2026-10-14)
+   1. Owner marks 15.34 solved.
 
 ### [ ] 15.35 Presence messages
 
