@@ -69,3 +69,20 @@ export function HiddenHand({ playerId, count, size }: { playerId: number; count:
     </div>
   );
 }
+
+// RevealedHand is an opponent's hand the view sends face up, e.g.
+// under Guppy's Eye (19.5): every card, fanned like the backs, each
+// zoomable. Its zone is the player's hand, like a hidden one.
+export function RevealedHand({ playerId, cards, size }: { playerId: number; cards: CardView[]; size: CardSize }) {
+  const label = `Revealed hand: ${String(cards.length)} cards`;
+  return (
+    <div className="hidden-hand revealed-hand" role="group" aria-label={label} title={label} data-zone={`hand-${String(playerId)}`}>
+      {cards.map((c, i) => (
+        <div key={c.id} className="hidden-back" style={{ '--spread': String(i - (cards.length - 1) / 2) } as CSSProperties}>
+          <Card cardRef={c.card} size={size} objectId={c.id} />
+        </div>
+      ))}
+      <span className="pile-count">{cards.length}</span>
+    </div>
+  );
+}

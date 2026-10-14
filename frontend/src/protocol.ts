@@ -210,7 +210,7 @@ export interface PlayerView {
   dead?: boolean;
   in_play: CardView[] | null;
   hand_size: number;
-  hand?: CardView[]; // only the viewer's own hand
+  hand?: CardView[]; // the viewer's own hand, or one revealed to all (Guppy's Eye)
   treasure_top?: CardView;
   // What the player may still do now; attacks and purchases on their turn.
   loot_plays: number;

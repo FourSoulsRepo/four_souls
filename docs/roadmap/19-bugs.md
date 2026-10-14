@@ -167,3 +167,10 @@ This step never closes; new reports are appended.
    1. Engine is right: `View` sends the hand under `StatRevealHand`.
    2. `OpponentArea` always draws `HiddenHand` from `hand_size`.
    3. It never reads `player.hand`; no screen ever drew it.
+6. Result (2026-10-14)
+   1. A hand the view sends shows face up: `RevealedHand`.
+   2. Same fan, place and count as the backs; every card shows.
+   3. At the top the cards hang past the edge, turned to their owner.
+   4. Hover a card to read it in full.
+   5. Engine, protocol and records unchanged.
+   6. Screenshots: `.cache/screenshots/19.5/before/` and `after/`.

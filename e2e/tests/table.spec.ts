@@ -483,3 +483,53 @@ test('souls show as crystals left of the character; a gained soul fills one more
   expect(small?.width ?? 0).toBeLessThan(big?.width ?? 0);
   await shot(page, 'souls');
 });
+
+test('a revealed hand shows face up; a hidden one stays backs (19.5)', async ({ browser }) => {
+  const pages = await startGame(browser, ['Tam', 'Una', 'Vera', 'Wynn']);
+  const una = pages[1];
+  if (!una) {
+    throw new Error('no pages');
+  }
+  // Reveal the hands at the top and right, as Guppy's Eye does: the
+  // view sends their cards. Copies of the own hand stand in for them.
+  // Only the screen changes; nobody acts on it.
+  await una.evaluate(() => {
+    interface Card {
+      id: number;
+      card: string;
+    }
+    interface S {
+      game: { view: { players: { id: number; hand?: Card[]; hand_size: number }[] } } | null;
+    }
+    const { store } = (window as unknown as { fourSouls: { store: { getState: () => S; setState: (s: Partial<S>) => void } } })
+      .fourSouls;
+    const { game } = store.getState();
+    if (!game) {
+      throw new Error('no game');
+    }
+    const own = game.view.players[1]?.hand ?? [];
+    const revealed = (p: number) => [0, 1, 2].map((i) => ({ ...own[i % own.length], id: 9000 + p * 10 + i }) as Card);
+    // Una is player 1: Wynn (3) sits at the top, Tam (0) at the right.
+    const players = game.view.players.map((p) => (p.id === 0 || p.id === 3 ? { ...p, hand: revealed(p.id), hand_size: 3 } : p));
+    store.setState({ game: { ...game, view: { ...game.view, players } } });
+  });
+  for (const name of ['Wynn', 'Tam']) {
+    const area = una.getByRole('region', { name, exact: true });
+    const hand = area.getByRole('group', { name: 'Revealed hand: 3 cards' });
+    await expect(hand.locator('.card')).toHaveCount(3);
+    await expect(hand.getByRole('img', { name: 'Face-down loot card' })).toHaveCount(0);
+    await expect(hand).toHaveAttribute('data-zone', /^hand-\d$/);
+  }
+  // The hidden hand on the left keeps its backs and count.
+  const vera = una.getByRole('region', { name: 'Vera', exact: true });
+  await expect(vera.getByRole('group', { name: /^Hand: \d+ cards$/ })).toBeVisible();
+  await expect(vera.getByRole('group', { name: /^Revealed hand/ })).toHaveCount(0);
+  // A revealed card zooms on hover, like any table card.
+  const zoom = una.getByTestId('card-zoom');
+  await una.getByRole('region', { name: 'Wynn', exact: true }).getByRole('group', { name: /^Revealed hand/ }).locator('.card').last().hover();
+  await expect(zoom).toBeVisible();
+  await shot(una, 'revealed-hand-zoom');
+  await una.mouse.move(0, 0);
+  await expectFits(una);
+  await shot(una, 'revealed-hand');
+});

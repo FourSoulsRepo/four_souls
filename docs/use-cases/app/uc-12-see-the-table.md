@@ -102,6 +102,11 @@
 * **1o. A card revealed twice (19.4):** it shows large only the first time.
   * A deck attack shows its monster large when it is drawn.
   * In the next update it only flies into its slot.
+* **1p. A revealed hand (19.5):** the opponent's cards show face up.
+  * Guppy's Eye reveals each other player's hand.
+  * Same fan and place as the backs, with the count.
+  * At the top the cards hang past the edge, turned to their owner.
+  * Hover a card to read it in full.
 
 ## Postconditions
 

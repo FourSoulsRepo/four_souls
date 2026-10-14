@@ -4,7 +4,7 @@ import { useApp } from '../store';
 import { playerColor, soulSlots, type Position } from '../table';
 import { Card, type CardSize } from './Card';
 import type { Interact } from './Interact';
-import { HiddenHand } from './Pile';
+import { HiddenHand, RevealedHand } from './Pile';
 import './Table.css';
 
 interface Props {
@@ -33,7 +33,8 @@ export function PlayerArea({ you, position, tools, ...rest }: Props) {
 
 // OpponentArea is another player's place (15.18): a small name with
 // coins, the souls and the character with its live health and attack, the
-// items, and the hand as fanned backs (F-07, F-08, H-17, H-21). At the
+// items, and the hand as fanned backs (F-07, F-08, H-17, H-21), or face
+// up when the view sends it (19.5). At the
 // top it mirrors the own area, the hand hanging past the top edge; in
 // a side column everything stacks in a narrow column (F-09).
 function OpponentArea({ player, name, position, active, winSouls, ui }: Omit<Props, 'you' | 'tools'>) {
@@ -46,7 +47,11 @@ function OpponentArea({ player, name, position, active, winSouls, ui }: Omit<Pro
       aria-label={name}
       data-zone={`player-${String(player.id)}`}
     >
-      <HiddenHand playerId={player.id} count={player.hand_size} size="small" />
+      {player.hand ? (
+        <RevealedHand playerId={player.id} cards={player.hand} size="small" />
+      ) : (
+        <HiddenHand playerId={player.id} count={player.hand_size} size="small" />
+      )}
       <div className="opp-status">
         <b className="opp-name">
           <PlayerDot player={player.id} />

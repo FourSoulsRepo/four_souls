@@ -68,7 +68,7 @@ Souls are a column of gem slots left of every character, like Hearthstone's mana
 
 ## Card backs
 
-Face-down cards show their deck's back (V-26). `App.Backs` gives the loot, treasure and monster back URLs from `assets/backs/<kind>.webp`, or no URL when the file is missing; the store keeps them in `store.backs`. `Card` draws the back image, and falls back to the plain dark back with the deck name when there is none or it fails to load. An opponent's hand is `Pile.HiddenHand`: one loot back per card, fanned, at most eight, with the card count, in the `hand-<id>` zone, so drawn cards fly to it. A back never carries a card ref, so it cannot reveal the card.
+Face-down cards show their deck's back (V-26). `App.Backs` gives the loot, treasure and monster back URLs from `assets/backs/<kind>.webp`, or no URL when the file is missing; the store keeps them in `store.backs`. `Card` draws the back image, and falls back to the plain dark back with the deck name when there is none or it fails to load. An opponent's hand is `Pile.HiddenHand`: one loot back per card, fanned, at most eight, with the card count, in the `hand-<id>` zone, so drawn cards fly to it. A back never carries a card ref, so it cannot reveal the card. When the view sends an opponent's hand (a `StatRevealHand` static such as Guppy's Eye), `PlayerArea` draws `Pile.RevealedHand` instead: every card face up, in the same fan and zone, each zoomable on hover (19.5).
 
 Effect durations scale with the animation setting (ST-05) and speed up when updates pile up; past 8 waiting updates they are skipped, so the table always catches up. Each effect has a time limit, so a closed screen never blocks playback.
 
