@@ -2,12 +2,12 @@
 
 Goal: a clearer table, using fouronlinesouls.net as a second reference.
 
-Ideas: V-09, V-12, V-13, V-15 – V-31, V-33 – V-43, GS-06.
+Ideas: V-09, V-12, V-13, V-15 – V-31, V-33 – V-44, GS-06.
 
 Order: 15.1, 15.15, 15.9 – 15.11, 15.16, 15.17, 15.38, 15.18 – 15.24,
 15.3, 15.37, 15.25, 15.32 – 15.34, 15.26, 15.27, 15.5, 15.6,
 15.28 – 15.31, 15.35, 15.36, 15.39 – 15.46, 15.51, 15.52,
-15.54 – 15.56.
+15.54 – 15.57.
 Images come first, so the new table is built with backs and mats.
 
 ## Rules for this step (owner, 2026-10-12)
@@ -1504,3 +1504,18 @@ Images come first, so the new table is built with backs and mats.
    4. UC-12 updated.
 4. Owner decisions (2026-10-14)
    1. A bonus soul zooms from its crystal too, like a monster soul.
+
+### [ ] 15.57 Purchases in the history
+
+1. Goal: everyone sees what a player bought (V-44).
+2. Tasks:
+   1. Check which event a purchase sends today.
+   2. The engine sends a purchase event if none fits.
+   3. The full History gets a line: "A buys <item>".
+   4. A bought shop top card and a bought deck top card both count.
+   5. Hovering the line zooms the item card.
+   6. **Owner** decides: also an icon in the history strip, or the full History only.
+3. Done when:
+   1. Vitest: a purchase event becomes a history entry.
+   2. e2e test: buy an item; the History names it.
+   3. UC-12 updated.

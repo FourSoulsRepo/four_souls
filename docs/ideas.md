@@ -239,6 +239,10 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    1. Gained soul cards are not on the table.
    2. Hovering a filled crystal zooms its soul card.
    3. A killed monster shows with its soul.
+44. V-44. History shows what a player bought.
+   1. A purchase gets its own history entry.
+   2. The entry names the buyer and the item.
+   3. Hovering the entry shows the item card.
 
 ## Rules
 

@@ -241,6 +241,7 @@ Step numbers stay as IDs; the table lists steps in work order.
 38. Icons for the sources of HP and ATK boosts (V-41, 15.54).
 39. Curses left of the player (V-42, 15.55).
 40. Soul cards shown by hovering a soul crystal (V-43, 15.56).
+41. Purchases shown in the history (V-44, 15.57).
 
 ## 16. Localization
 
