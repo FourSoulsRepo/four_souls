@@ -978,7 +978,7 @@ Images come first, so the new table is built with backs and mats.
 9. Owner notes (2026-10-14)
    1. Owner marks 15.33 solved.
 
-### [ ] 15.34 Plays without aiming
+### [x] 15.34 Plays without aiming
 
 1. Goal: cards that need no target, or place then aim, feel natural.
 2. Tasks:
@@ -988,6 +988,23 @@ Images come first, so the new table is built with backs and mats.
 3. Done when:
    1. e2e test: a no-target loot card dragged onto the board plays.
    2. e2e test: a cancelled aim leaves the card in hand.
+4. Result (2026-10-14)
+   1. T-12 came with 15.25: a card with no target is dragged; no arrow.
+   2. T-13: a card with a mode is dragged; the mode dialog asks first.
+   3. Then its target is aimed from the card; no target dialog.
+   4. The engine names that card in `view.activating`, only for the chooser.
+   5. The card stays lifted in the hand while it aims.
+   6. Esc, a right click, or empty space sends the prompt's cancel.
+   7. The engine then leaves the card in hand; nothing is paid.
+   8. Items with a mode, as Chaos Card, aim the same way.
+   9. A target not on the table keeps the dialog.
+   10. T-14: the engine never offers a card with no valid target (R-ABIL-06).
+   11. While aiming, player areas no longer show "Choose …" picks.
+   12. Engine test: the chooser sees the card; others do not.
+   13. Unit tests: `promptAim` and `cancelOption`.
+   14. e2e test: A Penny! dragged onto the board plays; no arrow, no dialog.
+   15. e2e test: Dagaz aims after its mode; a right click leaves it in hand.
+   16. Screenshots: `.cache/screenshots/15.34/before/` and `after/`.
 
 ### [ ] 15.35 Presence messages
 

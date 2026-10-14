@@ -99,6 +99,9 @@ type GameView struct {
 	// Options says what each option of a choose prompt points at, one
 	// per Waiting.Options; only for whoever sees those options.
 	Options []OptionView `json:"options,omitempty"`
+	// Activating is the card whose mode or targets the chooser picks
+	// now, so a client can aim from it (15.34, T-13); only for them.
+	Activating *ObjectID `json:"activating,omitempty"`
 	// Passed lists who passed in a row in the open priority window,
 	// first passer first; Responding lists who may still respond, the
 	// waiting player first (V-11). Both are empty outside a window.
@@ -173,6 +176,7 @@ func (g *Game) View(v Viewer) GameView {
 	}
 	if g.Waiting.Kind == PromptChoose && v.sees(g.Waiting.Player) {
 		out.Options = g.optionViews()
+		out.Activating = g.activatingSource()
 	}
 	out.Passed, out.Responding = g.responders()
 	return out
@@ -198,6 +202,20 @@ func (g *Game) responders() (passed, responding []PlayerID) {
 		p = g.next(p)
 	}
 	return passed, responding
+}
+
+// activatingSource is the card whose mode or targets the open choice
+// asks for, if a play or use asks it.
+func (g *Game) activatingSource() *ObjectID {
+	a := g.Activating
+	if a == nil || g.Choice == nil || a.Player != g.Choice.Player {
+		return nil
+	}
+	if p := g.Choice.Purpose; p != ChooseMode && p != ChooseTarget {
+		return nil
+	}
+	src := a.Source
+	return &src
 }
 
 // optionViews maps the open choice's options to what they point at.

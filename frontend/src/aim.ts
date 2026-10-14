@@ -1,6 +1,7 @@
 // Aiming (15.25): what an aiming card points at. Pure, except
-// zonesAt, which reads the page.
-import type { OptionView } from './protocol';
+// zonesAt and onScreen, which read the page.
+import { Purpose, type Choice } from './actions';
+import type { Intent, OptionView } from './protocol';
 
 // zonesAt lists the zones under a point, topmost first: data-zone of
 // cards ("obj-N") and piles, data-stack of stack rows. A player is aimed
@@ -70,6 +71,50 @@ export function aimClick(zones: string[], source: number, targets: OptionView[])
     return { kind: 'pick', target };
   }
   return zones.length === 0 ? { kind: 'cancel' } : { kind: 'wrong' };
+}
+
+// PromptAim is a target prompt answered by aiming (15.34, T-13): the
+// card already placed aims at the prompt's options.
+export interface PromptAim {
+  source: number;
+  choice: Choice;
+  targets: OptionView[];
+}
+
+// promptAim is the aim a target prompt opens, when the card that asks
+// is known: the viewer's own play or use. Others keep the dialog.
+export function promptAim(activating: number | undefined, choice: Choice | null): PromptAim | null {
+  if (activating === undefined || choice?.purpose !== Purpose.target) {
+    return null;
+  }
+  const targets = choice.options.flatMap((o) => (o.target ? [o.target] : []));
+  return targets.length > 0 ? { source: activating, choice, targets } : null;
+}
+
+// cancelOption is the prompt's option that cancels the play: the one
+// that points at nothing.
+export function cancelOption(choice: Choice): Intent | undefined {
+  return choice.options.find((o) => !o.target)?.intent;
+}
+
+// zoneOf is the page selector of a target, as zonesAt reads it.
+function zoneOf(t: OptionView): string {
+  if (t.is_player) {
+    return `[data-player="${String(t.player)}"]`;
+  }
+  if (t.stack_id) {
+    return `[data-stack="${String(t.stack_id)}"]`;
+  }
+  return `[data-zone="obj-${String(t.object ?? 0)}"]`;
+}
+
+// onScreen: every target and the source can be clicked on the table;
+// otherwise the dialog lists the options instead (15.34).
+export function onScreen(a: PromptAim): boolean {
+  return (
+    document.querySelector(`[data-zone="obj-${String(a.source)}"]`) !== null &&
+    a.targets.every((t) => document.querySelector(zoneOf(t)) !== null)
+  );
 }
 
 // aimed: the target is one of the targets.

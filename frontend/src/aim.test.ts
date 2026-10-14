@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { aimClick, arrow, blocks, targetAt } from './aim';
+import { Purpose, type Choice } from './actions';
+import { aimClick, arrow, blocks, cancelOption, promptAim, targetAt } from './aim';
 import type { OptionView } from './protocol';
 
 const monster: OptionView = { object: 40, player: -1 };
@@ -69,5 +70,36 @@ describe('blocks', () => {
     expect(blocks(100, 30, 40)).toBe(2);
     expect(blocks(130, 30, 40)).toBe(3);
     expect(blocks(20, 30, 40)).toBe(0);
+  });
+});
+
+describe('promptAim', () => {
+  const choose = (choice: number) => ({ player: 0, kind: 4, choice });
+  const target: Choice = {
+    title: 'Choose a target',
+    purpose: Purpose.target,
+    options: [
+      { label: 'Ann', intent: choose(0), target: ann },
+      { label: 'cancel', intent: choose(1) },
+    ],
+  };
+
+  it('aims a placed card at its target prompt', () => {
+    expect(promptAim(7, target)).toEqual({ source: 7, choice: target, targets: [ann] });
+  });
+
+  it('aims from object 0 too', () => {
+    expect(promptAim(0, target)?.source).toBe(0);
+  });
+
+  it('keeps the dialog when the card is unknown or nothing aims', () => {
+    expect(promptAim(undefined, target)).toBeNull();
+    expect(promptAim(7, null)).toBeNull();
+    expect(promptAim(7, { ...target, purpose: Purpose.answer })).toBeNull();
+    expect(promptAim(7, { ...target, options: target.options.slice(1) })).toBeNull();
+  });
+
+  it('cancels by the option that points at nothing', () => {
+    expect(cancelOption(target)).toEqual(choose(1));
   });
 });

@@ -90,7 +90,11 @@ export function interact(
   };
   return {
     object,
+    // While aiming, a player is picked by the character card (15.34).
     player: (id) => {
+      if (targets) {
+        return {};
+      }
       const o = options.find(
         (x) => x.target?.is_player && x.target.player === id,
       );

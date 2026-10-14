@@ -367,3 +367,37 @@ func TestAimsListTheFirstTargets(t *testing.T) {
 		t.Errorf("bomb targets %+v; want the monster and every player", aims[0].Targets)
 	}
 }
+
+// TestViewNamesTheActivatingCard: while a play asks its mode and then its
+// target, the chooser sees which card asks, so a client aims from it
+// (15.34). Others never see it; a cancel leaves the card in hand.
+func TestViewNamesTheActivatingCard(t *testing.T) {
+	g := newAbilityGame(t)
+	a := g.Turn.Active
+	dagaz := addToHand(g, a, "dagaz_like")
+	if _, err := g.Apply(Intent{Player: a, Kind: IntentPlayLoot, Objects: []ObjectID{dagaz}}); err != nil {
+		t.Fatal(err)
+	}
+	own := func() *ObjectID { return g.View(Viewer{Kind: ViewPlayer, Player: a}).Activating }
+	if src := own(); src == nil || *src != dagaz {
+		t.Fatalf("mode prompt: activating %v, want the card %d", src, dagaz)
+	}
+	if _, err := g.Apply(Intent{Player: a, Kind: IntentChoose, Choice: 1}); err != nil {
+		t.Fatal(err)
+	}
+	if p := g.Prompt(); p.Purpose != ChooseTarget {
+		t.Fatalf("prompt %+v; the second mode asks a player", p)
+	}
+	if src := own(); src == nil || *src != dagaz {
+		t.Fatalf("target prompt: activating %v, want the card %d", src, dagaz)
+	}
+	if g.View(Viewer{Kind: ViewPlayer, Player: g.next(a)}).Activating != nil {
+		t.Error("others must not see which hand card is played")
+	}
+	if _, err := g.Apply(Intent{Player: a, Kind: IntentChoose, Choice: len(g.Prompt().Options) - 1}); err != nil {
+		t.Fatal(err)
+	}
+	if !contains(g.Players[a].Hand, dagaz) || own() != nil {
+		t.Error("a cancelled aim leaves the card in hand and asks nothing")
+	}
+}

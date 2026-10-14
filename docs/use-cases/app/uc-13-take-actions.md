@@ -60,6 +60,14 @@
   * A player is aimed at by the character card, as a monster is.
   * The character glows red; the player's area stays plain.
   * A card that may target itself, as The D20, picks itself on that click.
+* **2f. Place, then aim (15.34):** a card with no target is dragged onto the board; no arrow.
+  * A card that asks its mode first is dragged too; the mode dialog asks.
+  * Then the target is aimed from the card, as in 2e; no dialog asks.
+  * The card stays lifted in the hand until the target is picked.
+  * Esc, a right click, or empty space cancels the whole play.
+  * The card stays in hand; nothing goes on the stack.
+  * A card with no valid target cannot be played; the engine decides.
+  * A target that is not on the table keeps the dialog.
 
 ## Postconditions
 

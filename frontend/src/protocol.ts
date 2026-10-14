@@ -310,6 +310,9 @@ export interface GameView {
   win_souls?: number;
   // options says what each choice option points at; only for the chooser.
   options?: OptionView[];
+  // activating is the card whose mode or targets the chooser picks now
+  // (15.34); only for the chooser.
+  activating?: number;
   // Who passed in a row in the open priority window, and who may still
   // respond, the waiting player first (V-11).
   passed?: number[];

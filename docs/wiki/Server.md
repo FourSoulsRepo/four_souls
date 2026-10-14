@@ -48,7 +48,7 @@ Step 8.12 checked every message the server sends for hidden cards. Hidden means:
 | `games` | host nickname, seats, set codes; saves with nicknames | No cards. |
 | `table` | seats, set codes, options | Host bans are public by design (GS-02). |
 | `setup` | pool, bans, who picked | `Offers` go only to their own seat. |
-| `update` → `view` | `engine.View` for the seat | Other hands are sizes only; deck contents and order never leave; choice labels and `Options` only for the chooser; the top treasure only for a player who may peek. |
+| `update` → `view` | `engine.View` for the seat | Other hands are sizes only; deck contents and order never leave; choice labels, `Options` and `Activating` only for the chooser; the top treasure only for a player who may peek. |
 | `update` → `events` | `engine.FilterEvents` | Private events keep `Card` and `Object` only for `Player` and `SeenBy`. Every non-private event with a card was checked: each moves a card from or to a public place (stack, slot, discard, play), or is a public reveal. |
 | `update` → `allowed` | this seat's intents | Only the seat's own objects and choice indexes. |
 | `update` → `aims` | first targets of allowed plays and uses, and a `reason` saying what they may be | Targets are public objects, players and stack items; a "your hand card" target goes only to its own seat. |

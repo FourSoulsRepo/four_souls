@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { actionsFor, aimedOption, IntentKind, type Actions } from '../actions';
+import { onScreen, promptAim } from '../aim';
 import { ActionBar } from '../components/ActionBar';
 import { ActionMenu } from '../components/ActionMenu';
 import { AimLayer } from '../components/Aim';
@@ -70,10 +71,20 @@ function Table({ game, you }: { game: Update; you: number }) {
   const actions = useMemo(() => actionsFor(game, (label) => cards.has(label)), [game, cards]);
   const setAiming = useApp((s) => s.setAiming);
   const ui = canAct ? interact(actions, act, select, aiming, setAiming) : noInteract;
-  // A new state ends an aim: its targets may be gone (15.25).
-  useEffect(() => {
+  // A new state ends an aim: its targets may be gone (15.25). Before
+  // paint, so a placed card's aim below replaces it without a blink.
+  useLayoutEffect(() => {
     setAiming(null);
   }, [game.step, setAiming]);
+  // A target prompt of the player's own play or use aims from its card,
+  // with no dialog (15.34, T-13). A card aimed already gets its pick
+  // below; a target off the table keeps the dialog.
+  const placed = useMemo(() => promptAim(view.activating, actions.choice), [view.activating, actions.choice]);
+  useLayoutEffect(() => {
+    if (placed && canAct && !aimed && onScreen(placed)) {
+      setAiming(placed);
+    }
+  }, [placed, canAct, aimed, setAiming]);
   // A card aimed at a target: its target prompt picks that target at
   // once (15.25). Only the first state after the play gets the chance.
   useEffect(() => {
@@ -172,7 +183,7 @@ function Table({ game, you }: { game: Update; you: number }) {
       />
       <ActionMenu actions={offered.cards} />
       {canAct && <AimLayer />}
-      {offered.choice && <ChoiceDialog key={game.step} choice={offered.choice} />}
+      {offered.choice && !aiming?.choice && <ChoiceDialog key={game.step} choice={offered.choice} />}
       {offered.discard && me && <DiscardDialog key={game.step} discard={offered.discard} hand={me.hand ?? []} />}
       {looking.length > 0 && <LookDialog cards={looking} />}
       {connected && !view.over && <GameMenu host={you === 0} />}

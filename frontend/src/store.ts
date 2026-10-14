@@ -1,6 +1,7 @@
 // The app's one store (ADR 008). Screens read it; only bridge results
 // and server messages write it.
 import { create } from 'zustand';
+import type { Choice } from './actions';
 import {
   findGames,
   setFullscreen,
@@ -70,9 +71,12 @@ export interface ZoomCaption {
 
 // Aiming is a click-started aim (15.25): the card, its play or use,
 // the targets it may pick, and why anything else is wrong (15.33).
+// A card already placed aims at its target prompt's options instead
+// of a play or use (15.34).
 export interface Aiming {
   source: number;
-  intent: Intent;
+  intent?: Intent;
+  choice?: Choice;
   targets: OptionView[];
   reason?: string;
 }
