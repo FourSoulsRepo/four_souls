@@ -1462,6 +1462,11 @@ Images come first, so the new table is built with backs and mats.
    2. e2e test: an item with +1 ATK shows one icon by the ATK badge.
    3. `make screenshots` shows a character with two sources.
    4. UC-12 updated.
+4. Owner decisions (2026-10-14)
+   1. Icons use the source card's art.
+   2. Monsters get the icons too, not only characters.
+   3. Reference: the stat icons on fouronlinesouls.net characters.
+   4. Study them first; borrow ideas only, no assets (15.1).
 
 ### [ ] 15.55 Curses left of the player
 
@@ -1476,6 +1481,9 @@ Images come first, so the new table is built with backs and mats.
    1. e2e test: a curse sits left of the character, not with the items.
    2. `make screenshots` shows a cursed player in every seat.
    3. UC-12 updated.
+4. Owner decisions (2026-10-14)
+   1. Curses go at the far left of the player area.
+   2. Not next to the soul crystals.
 
 ### [ ] 15.56 Soul cards behind the crystals
 
@@ -1494,3 +1502,5 @@ Images come first, so the new table is built with backs and mats.
    2. e2e test: no soul card in the items row; hover zooms it.
    3. `make screenshots` shows the zoom over a crystal.
    4. UC-12 updated.
+4. Owner decisions (2026-10-14)
+   1. A bonus soul zooms from its crystal too, like a monster soul.
