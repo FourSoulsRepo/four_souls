@@ -146,3 +146,24 @@ This step never closes; new reports are appended.
    5. Screenshots: `.cache/screenshots/19.4/before/` and `after/`.
 7. Owner notes (2026-10-14)
    1. Owner marks 19.4 solved.
+
+### [ ] 19.5 Revealed hands show as backs
+
+1. Goal: a revealed opponent's hand shows its cards face up.
+2. Report (owner, 2026-10-14)
+   1. A player controls Guppy's Eye.
+   2. "Each other player plays with their hand revealed."
+   3. The opponents' hands still show only card backs.
+3. Tasks:
+   1. Find the cause in the code.
+   2. An opponent's hand the view sends shows face up, fanned.
+   3. Each card zooms on hover, like other table cards.
+   4. A hidden hand stays backs with its count.
+4. Done when:
+   1. e2e test: a revealed hand shows its cards at the top and sides.
+   2. e2e test: the hand zooms a card on hover.
+   3. Use case UC-12 updated.
+5. Cause
+   1. Engine is right: `View` sends the hand under `StatRevealHand`.
+   2. `OpponentArea` always draws `HiddenHand` from `hand_size`.
+   3. It never reads `player.hand`; no screen ever drew it.
