@@ -51,6 +51,12 @@ export function isSoul(c: CardView): boolean {
   return c.role === Role.soul;
 }
 
+// isCurse: a curse a player carries; it sits apart from the items, at
+// the far left of the player (V-42).
+export function isCurse(c: CardView): boolean {
+  return c.role === Role.curse;
+}
+
 // soulCards are the cards behind a player's filled crystals, bottom up
 // (V-43): the character's own soul value first, then each soul card,
 // once per soul it is worth. A view without the worth counts one.

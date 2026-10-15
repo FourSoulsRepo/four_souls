@@ -1520,6 +1520,17 @@ Images come first, so the new table is built with backs and mats.
 4. Owner decisions (2026-10-14)
    1. Curses go at the far left of the player area.
    2. Not next to the soul crystals.
+5. Result (2026-10-15)
+   1. Done before 15.54, at the owner's request.
+   2. The items row skips curses (`isCurse`, `table.ts`).
+   3. `Curses` in `PlayerArea.tsx`: their own group, same card size.
+   4. Own area and top: far left of the status cell.
+   5. Side columns: a row above the character, at its left.
+   6. No curse: no group; the areas keep their size.
+   7. e2e: a curse in every seat, left of the crystals; sizes unchanged.
+   8. UC-12, Client wiki, CHANGELOG updated.
+   9. A flaky aim test, also on the base commit, logged as 19.20.
+   10. Screenshots: `.cache/screenshots/15.55/before/` and `after/`.
 
 ### [x] 15.56 Soul cards behind the crystals
 

@@ -125,6 +125,11 @@
   * A killed monster zooms as the soul it gave; a bonus soul zooms too.
   * A character's own soul value zooms the character.
   * An effect that picks a soul highlights its crystal; click it to pick.
+* **1u. Curses apart from items (15.55):** curses are not in the items row.
+  * Own area and top: at the far left of the player area.
+  * Not next to the soul crystals.
+  * Side columns: their own row above the character, at its left.
+  * No curse: the areas keep their size and look as before.
 
 ## Postconditions
 

@@ -334,9 +334,17 @@
   margin-left: -42px;
 }
 
-.player-top .opp-status {
+.player-top .opp-left {
   grid-area: status;
-  justify-self: end;
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-start;
+  gap: 14px;
+  min-width: 0;
+}
+
+.player-top .opp-status {
+  flex: none;
   align-items: flex-end;
   padding-top: 6px;
   text-align: right;
@@ -361,6 +369,12 @@
   width: 150px;
   box-sizing: border-box;
   padding: 4px;
+}
+
+/* The curses and the name are items of the column itself. */
+.player-left .opp-left,
+.player-right .opp-left {
+  display: contents;
 }
 
 /* The name comes first, clear of the corner menu; the hand below it. */
@@ -393,6 +407,13 @@
   overflow: visible;
 }
 
+/* No room beside the character: the curses are a row above it, at the
+   column's left (V-42). */
+.player-left .curses,
+.player-right .curses {
+  justify-content: flex-start;
+}
+
 /* The own area (15.17): status | character | items, the hand below.
    The character sits in the middle column, so it stays centered at
    the bottom edge whatever the status and the items take (H-02). */
@@ -408,13 +429,27 @@
   padding: 0 8px;
 }
 
-/* Status text, then the turn actions in a column beside it (15.19). */
+/* Status text, then the turn actions in a column beside it (15.19).
+   The curses take the far left of the cell (V-42). */
 .own-left {
   grid-area: status;
-  justify-self: end;
   display: flex;
+  justify-content: flex-end;
   align-items: flex-end;
   gap: 12px;
+  min-width: 0;
+}
+
+.own-left > * {
+  flex: none;
+}
+
+/* Curses stand at the far left of the player, apart from the items
+   (V-42); many of them scroll, as the items do. */
+.own-left > .curses,
+.player-top .curses {
+  flex: 0 1 auto;
+  margin-right: auto;
 }
 
 .own-left .turn-actions {

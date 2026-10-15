@@ -600,6 +600,84 @@ test('soul cards hide behind the crystals; hovering one zooms its card (15.56)',
   expect(sent).toMatchObject({ kind: 4, choice: 1 });
 });
 
+test('curses sit at the far left of the player, apart from the items (15.55)', async ({ browser }) => {
+  const pages = await startGame(browser, ['Cora', 'Dmitri', 'Elsa', 'Fynn']);
+  const page = pages[1];
+  if (!page) {
+    throw new Error('no pages');
+  }
+  const sizes = () =>
+    page.evaluate(() =>
+      [...document.querySelectorAll('.player, .board')].map((el) => {
+        const r = el.getBoundingClientRect();
+        return [r.width, r.height];
+      }),
+    );
+  const before = await sizes();
+  // Every player gains a curse, the viewer two, as the server would
+  // send them. Only the screen changes; nobody acts on it.
+  await page.evaluate(() => {
+    interface Card {
+      id: number;
+      card: string;
+      role?: number;
+      charged: boolean;
+    }
+    interface S {
+      game: { view: { players: { id: number; in_play: Card[] | null }[] } } | null;
+    }
+    const { store } = (window as unknown as { fourSouls: { store: { getState: () => S; setState: (s: Partial<S>) => void } } })
+      .fourSouls;
+    const { game } = store.getState();
+    if (!game) {
+      throw new Error('no game');
+    }
+    const curses = ['curse_of_amnesia', 'curse_of_greed', 'curse_of_loss', 'curse_of_pain'];
+    const you = Number(document.querySelector('.player-bottom')?.getAttribute('data-zone')?.replace('player-', ''));
+    const players = game.view.players.map((p, i) => {
+      const own: Card[] = [{ id: 9201 + i, card: curses[i] ?? 'curse_of_pain', role: 6, charged: false }];
+      if (p.id === you) {
+        own.push({ id: 9211, card: 'curse_of_the_blind', role: 6, charged: false });
+      }
+      return { ...p, in_play: [...(p.in_play ?? []), ...own] };
+    });
+    store.setState({ game: { ...game, view: { ...game.view, players } } });
+  });
+  // The new cards pop in (card-pop) before the shot.
+  await page.waitForTimeout(400);
+  await shot(page, 'curses-4p');
+
+  for (const position of ['bottom', 'left', 'top', 'right']) {
+    const area = page.locator(`.player-${position}`);
+    const curses = area.locator('.curses');
+    const cards = curses.locator('.card');
+    await expect(cards).toHaveCount(position === 'bottom' ? 2 : 1);
+    // No curse in the items row.
+    await expect(area.locator('[role="group"][aria-label$="items"] .card[aria-label^="Curse"]')).toHaveCount(0);
+    // The curses stand left of the character, and of the soul crystals
+    // too, at the far left of the area.
+    const character = await area.locator('.player-cards:has(.souls)').boundingBox();
+    const souls = await area.locator('.souls').boundingBox();
+    const group = await curses.boundingBox();
+    if (!character || !souls || !group) {
+      throw new Error(`no character or curses at the ${position}`);
+    }
+    if (position === 'bottom' || position === 'top') {
+      expect(group.x + group.width).toBeLessThan(souls.x);
+      const own = await area.boundingBox();
+      expect(group.x - (own?.x ?? 0)).toBeLessThan(20);
+    } else {
+      // A side column has no room beside the character: the curses get
+      // their own row above it, at its left.
+      expect(group.y + group.height).toBeLessThanOrEqual(character.y + 1);
+      expect(group.x).toBeLessThanOrEqual(character.x + 1);
+    }
+  }
+  // The table keeps its size (V-23).
+  expect(await sizes()).toEqual(before);
+  await expectFits(page);
+});
+
 test('a revealed hand shows face up; a hidden one stays backs (19.5)', async ({ browser }) => {
   const pages = await startGame(browser, ['Tam', 'Una', 'Vera', 'Wynn']);
   const una = pages[1];

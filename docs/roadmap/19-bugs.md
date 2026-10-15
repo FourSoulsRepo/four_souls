@@ -650,3 +650,19 @@ This step never closes; new reports are appended.
    6. Screenshots: `.cache/screenshots/19.19/before/` and `after/`.
 7. Owner notes (2026-10-15)
    1. Owner marks 19.19 solved.
+
+### [ ] 19.20 e2e: a cancelled Dagaz shows twice in the hand
+
+1. Goal: the aim test passes every run.
+2. Report (agent, 2026-10-15)
+   1. Found by `make screenshots` during 15.55.
+   2. `aim.spec.ts`: "a card placed first aims after its mode …".
+   3. Chromium; after the right-click cancel.
+   4. The hand had two "Dagaz" buttons; the test expects one.
+   5. Fails about 1 run in 5, also without the 15.55 change.
+   6. Evidence: `.cache/e2e-evidence/15.55-aim-*`.
+3. Tasks:
+   1. Find why the hand shows Dagaz twice after the cancel.
+   2. Fix the client or the test, whichever is wrong.
+4. Done when:
+   1. The test passes ten runs in a row.

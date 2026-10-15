@@ -1,7 +1,7 @@
 import { useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { counted, Role, type CardView, type PlayerView } from '../protocol';
 import { useApp } from '../store';
-import { isSoul, playerColor, soulCards, soulSlots, type Position } from '../table';
+import { isCurse, isSoul, playerColor, soulCards, soulSlots, type Position } from '../table';
 import { Card, useZoom, type CardSize } from './Card';
 import type { Interact } from './Interact';
 import { HiddenHand, RevealedHand } from './Pile';
@@ -34,8 +34,8 @@ export function PlayerArea({ you, position, tools, ...rest }: Props) {
 // OpponentArea is another player's place (15.18): a small name with
 // coins, the souls and the character with its live health and attack, the
 // items, and the hand as fanned backs (F-07, F-08, H-17, H-21), or face
-// up when the view sends it (19.5). At the
-// top it mirrors the own area, the hand hanging past the top edge; in
+// up when the view sends it (19.5). Curses stand at the far left
+// (15.55). At the top it mirrors the own area, the hand hanging past the top edge; in
 // a side column everything stacks in a narrow column (F-09).
 function OpponentArea({ player, name, position, active, winSouls, ui }: Omit<Props, 'you' | 'tools'>) {
   const size: CardSize = position === 'left' || position === 'right' ? 'small' : 'table';
@@ -52,24 +52,27 @@ function OpponentArea({ player, name, position, active, winSouls, ui }: Omit<Pro
       ) : (
         <HiddenHand playerId={player.id} count={player.hand_size} size="small" />
       )}
-      <div className="opp-status">
-        <b className="opp-name">
-          <PlayerDot player={player.id} />
-          {name}
-        </b>
-        <span className="opp-line">
-          <span className="opp-coins" title="Coins" aria-label={`${String(player.cents)} cents`}>
-            <Coin />
-            {player.cents}
+      <div className="opp-left">
+        <Curses player={player} label={`${name}: curses`} size={size} ui={ui} />
+        <div className="opp-status">
+          <b className="opp-name">
+            <PlayerDot player={player.id} />
+            {name}
+          </b>
+          <span className="opp-line">
+            <span className="opp-coins" title="Coins" aria-label={`${String(player.cents)} cents`}>
+              <Coin />
+              {player.cents}
+            </span>
+            {player.dead && <span className="player-dead">dead</span>}
           </span>
-          {player.dead && <span className="player-dead">dead</span>}
-        </span>
-        {active && <Allowance player={player} />}
-        {pick.onClick && (
-          <button type="button" className="player-pick" onClick={pick.onClick}>
-            Choose {name}
-          </button>
-        )}
+          {active && <Allowance player={player} />}
+          {pick.onClick && (
+            <button type="button" className="player-pick" onClick={pick.onClick}>
+              Choose {name}
+            </button>
+          )}
+        </div>
       </div>
       <div className="player-cards opp-character">
         <Souls player={player} winSouls={winSouls} ui={ui} />
@@ -87,7 +90,7 @@ function OpponentArea({ player, name, position, active, winSouls, ui }: Omit<Pro
       </div>
       <div className="player-cards opp-items" role="group" aria-label={`${name}: items`}>
         {(player.in_play ?? [])
-          .filter((c) => !isSoul(c))
+          .filter((c) => !isSoul(c) && !isCurse(c))
           .map((c) => (
             <PlayCard key={c.id} card={c} size={size} ui={ui} />
           ))}
@@ -123,7 +126,8 @@ function Coin() {
 }
 
 // OwnArea is the viewer's place at the bottom edge (15.17): name, big
-// coins and the turn actions at the left, the souls and the character centered with its live health
+// coins and the turn actions at the left, any curses at the far left
+// (15.55), the souls and the character centered with its live health
 // and attack, items to its right, and the hand fanned below, partly
 // off screen (F-05, F-06, H-02, H-03, H-15, H-18).
 function OwnArea({ player, name, active, winSouls, ui, tools }: Omit<Props, 'you' | 'position'>) {
@@ -138,6 +142,7 @@ function OwnArea({ player, name, active, winSouls, ui, tools }: Omit<Props, 'you
       data-zone={`player-${String(player.id)}`}
     >
       <div className="own-left">
+        <Curses player={player} label="Your curses" size="table" ui={ui} />
         <div className="own-status">
           <b className="own-name">
             <PlayerDot player={player.id} />
@@ -177,7 +182,7 @@ function OwnArea({ player, name, active, winSouls, ui, tools }: Omit<Props, 'you
       </div>
       <div className="player-cards own-items" role="group" aria-label="Your items">
         {(player.in_play ?? [])
-          .filter((c) => !isSoul(c))
+          .filter((c) => !isSoul(c) && !isCurse(c))
           .map((c) => (
             <PlayCard key={c.id} card={c} size="table" ui={ui} />
           ))}
@@ -239,6 +244,23 @@ function SoulCrystal({ filled, card, own, ui }: { filled: boolean; card?: CardVi
       onClick={pick.onClick}
       {...zoom}
     />
+  );
+}
+
+// Curses are the curses a player carries, apart from the items, at the
+// far left of the player (V-42). None, no group: the area keeps its
+// size (V-23).
+function Curses({ player, label, size, ui }: { player: PlayerView; label: string; size: CardSize; ui: Interact }) {
+  const curses = (player.in_play ?? []).filter(isCurse);
+  if (curses.length === 0) {
+    return null;
+  }
+  return (
+    <div className="player-cards curses" role="group" aria-label={label}>
+      {curses.map((c) => (
+        <PlayCard key={c.id} card={c} size={size} ui={ui} />
+      ))}
+    </div>
   );
 }
 
