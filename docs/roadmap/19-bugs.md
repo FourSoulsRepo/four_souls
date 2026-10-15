@@ -391,3 +391,86 @@ This step never closes; new reports are appended.
    8. Screenshots: `.cache/screenshots/19.11/before/` and `after/`.
 7. Owner notes (2026-10-15)
    1. Owner marks 19.11 solved.
+
+### [ ] 19.12 A whole random game hangs: Escape never returns
+
+1. Goal: a whole random game never freezes a page.
+2. Report (agent, 2026-10-15)
+   1. New e2e `games.spec.ts`: random moves, every set, chromium.
+   2. 3 of 12 games hung until the 60-minute test timeout.
+   3. Two 4-player games, one 2-player game.
+   4. Each hung in `page.keyboard.press('Escape')`.
+   5. That runs after a move found nothing to press.
+   6. One hung after turn 30; no progress line came after it.
+   7. The 60-second stall check never fired: the loop was blocked.
+   8. A key press waits for the page to take input.
+   9. So the page likely stopped running its event loop.
+   10. The error snapshot shows only an old finished page.
+   11. Seeds and match records of the three were lost.
+   12. The spec logged a seed only on a win.
+   13. The next run's start deleted the server's records folder.
+3. Tasks:
+   1. Make the spec record a hang: page state, screenshot, last events.
+   2. Bound every wait in the loop, so a hang fails in seconds.
+   3. Rerun until a hang repeats; find the cause.
+   4. Fix it in the client or the server.
+4. Done when:
+   1. Cause found and written here.
+   2. `make e2e-games` passes five rounds with no hang.
+5. Findings so far
+   1. A rerun at 11:10 lost three games: every page reloaded.
+   2. The owner's own Wails build rewrote `frontend/wailsjs`.
+   3. The e2e Vite server watched it and reloaded every page.
+   4. Not the cause of the first hangs: no build ran then.
+   5. e2e Vite now watches no files (`FOUR_SOULS_E2E`).
+   6. The spec now fails a hang in 30 s and keeps its evidence.
+   7. Evidence: seed, record, screenshots, store, a frozen page's stack.
+   8. Cause still unknown; waiting for a hang to repeat.
+   9. More than 20 games since, with the diagnostics on: no hang.
+   10. Paused by the owner (2026-10-15); see `docs/wiki/Frontend-tests.md`.
+
+### [ ] 19.13 The look dialog shows one card twice
+
+1. Goal: the look dialog shows each card it is about once.
+2. Report (agent, 2026-10-15)
+   1. Found by the new `games.spec.ts`; 2 players, seed 371908.
+   2. Record `2026-10-15-071253-g1_Rnd2r0Ann_Rnd2r0Bob.fsrec`.
+   3. Bob's page logged a React error: two children with key 361.
+   4. 361 is a Library Card Bob looked at twice.
+   5. Step 2314: Forever Alone, "look at the top card of a deck".
+   6. Step 2316: More Options looks at the top 2 treasures: 361, 430.
+3. Tasks:
+   1. Find the cause.
+   2. Show each looked-at card once.
+4. Done when:
+   1. Cause found and written here.
+   2. Vitest: the same card looked at twice in one update shows once.
+5. Cause
+   1. The server views have no duplicate: a replay checked each list.
+   2. Steps 2315 and 2316 are server auto-passes (`after`, N-05).
+   3. Their events join step 2314's in one update.
+   4. That update has `looked_at` 361 twice.
+   5. `lookedAt` keeps every event, so 361 is listed twice.
+   6. `LookDialog` keys its cards by object id: React warns.
+
+### [ ] 19.14 e2e: a guest's Join click can miss under load
+
+1. Goal: `startGame` joins every guest, however busy the lobby is.
+2. Report (agent, 2026-10-15)
+   1. `make e2e`, webkit: N-16 test in `stack.spec.ts` failed.
+   2. Oti clicked Join on "Wan's game · 1/2 players".
+   3. The page stayed on the list; no error; Join still enabled.
+   4. About 20 other test games were starting in the same lobby.
+   5. Passed 3 of 3 separate reruns.
+   6. Evidence: `.cache/e2e-fails/20261015-120743-gate/` (not in git).
+   7. Next full run: the same miss in `table.spec.ts` (15.24), webkit.
+   8. Evidence: `.cache/e2e-fails/20261015-121014-gate2/`.
+   9. Full runs with e2e Vite watching no files: 2 of 4 failed.
+   10. Full runs with watching on: 2 of 2 passed.
+   11. Too few runs to blame the no-watch setting; check it first.
+3. Tasks:
+   1. Find why the click did not join: a re-rendered row or a lost reply.
+   2. Make `startGame` join reliably, or fix the lobby if it drops it.
+4. Done when:
+   1. Cause found and written here.
+   2. `make e2e` passes several runs in a row.
