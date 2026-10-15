@@ -475,7 +475,7 @@ This step never closes; new reports are appended.
    1. Cause found and written here.
    2. `make e2e` passes several runs in a row.
 
-### [ ] 19.15 A full hand: the end cards are hard to play
+### [x] 19.15 A full hand: the end cards are hard to play
 
 1. Goal: every card of a big hand can be hovered and played.
 2. Report (owner, 2026-10-15)
@@ -499,3 +499,5 @@ This step never closes; new reports are appended.
    2. Hands of up to 5 cards keep their old shape.
    3. Every card of a 12-card hand shows its top and name.
    4. Screenshots: `.cache/screenshots/19.15/before/` and `after/`.
+7. Owner notes (2026-10-15)
+   1. Owner marks 19.15 solved.
