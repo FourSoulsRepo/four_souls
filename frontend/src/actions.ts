@@ -12,9 +12,10 @@ export const IntentKind = {
   attack: 5,
   purchase: 6,
   activate: 7,
+  order: 8,
 } as const;
 
-export const PromptKind = { none: 0, priority: 1, discard: 2, gameOver: 3, choose: 4 } as const;
+export const PromptKind = { none: 0, priority: 1, discard: 2, gameOver: 3, choose: 4, order: 5 } as const;
 
 // Choice titles, by purpose, in Go's order.
 const purposeTitles = [
@@ -77,6 +78,9 @@ export interface Actions {
   cards: Map<number, Action[]>;
   choice: Choice | null;
   discard: { count: number; from: number[]; intent: Intent } | null;
+  // order puts cards back on a deck (19.16): send intent with the cards
+  // top first.
+  order: { title: string; intent: Intent } | null;
 }
 
 // TurnActions are the declare intents and ending the turn, when allowed.
@@ -93,7 +97,7 @@ const buttonLabels = new Map<number, string>([[IntentKind.pass, 'Pass']]);
 // actionsFor lists the viewer's actions. isCard tells whether an option
 // label is a card ref.
 export function actionsFor(u: Update, isCard: (label: string) => boolean): Actions {
-  const out: Actions = { buttons: [], turn: {}, cards: new Map(), choice: null, discard: null };
+  const out: Actions = { buttons: [], turn: {}, cards: new Map(), choice: null, discard: null, order: null };
   const allowed = u.allowed ?? [];
   const abilities = new Map<number, number>();
   for (const a of allowed) {
@@ -137,6 +141,8 @@ export function actionsFor(u: Update, isCard: (label: string) => boolean): Actio
       }, i);
     } else if (a.kind === IntentKind.discard) {
       out.discard = { count: u.view.waiting.count ?? 0, from: a.objects ?? [], intent: a };
+    } else if (a.kind === IntentKind.order) {
+      out.order = { title: choiceTitle(u.view.waiting), intent: a };
     }
   }
   if (out.turn.endTurn && allowed.every((a) => a.kind === IntentKind.endTurn || a.kind === IntentKind.pass)) {
@@ -162,6 +168,11 @@ export function actionsFor(u: Update, isCard: (label: string) => boolean): Actio
     };
   }
   return out;
+}
+
+// orderIntent puts the cards back in the given order, top first.
+export function orderIntent(base: Intent, top: number[]): Intent {
+  return { ...base, objects: top };
 }
 
 // discardIntent is the discard of exactly the chosen hand cards.

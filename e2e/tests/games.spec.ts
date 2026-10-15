@@ -125,6 +125,22 @@ async function move(page: Page, s: Seen, rnd: Rnd): Promise<string | null> {
     await look.getByRole('button', { name: 'OK' }).click();
     return 'look';
   }
+  const order = page.locator('.choice.order');
+  if (await order.isVisible()) {
+    const done = order.getByRole('button', { name: 'Put back' });
+    for (let i = 0; i < 12 && !(await enabled(done)); i++) {
+      const card = one(rnd, await order.locator('.card.hl-pick').all());
+      if (!card) {
+        break;
+      }
+      await card.click();
+    }
+    if (!(await enabled(done))) {
+      return null;
+    }
+    await done.click();
+    return 'order';
+  }
   const menu = page.getByRole('menu');
   if (await menu.isVisible()) {
     const item = one(rnd, await menu.getByRole('menuitem').filter({ hasNotText: 'Cancel' }).all());

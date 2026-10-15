@@ -3,6 +3,7 @@
 // Keep the notice in sync with internal/legal/notice.go.
 
 import b2 from '../../pkg/card_db/data/b2.json?raw';
+import { protocolVersion } from './protocol';
 
 interface Part {
   text: string;
@@ -243,7 +244,7 @@ w.go = {
         Promise.resolve(
           params.has('nolan')
             ? []
-            : [{ address: `127.0.0.1:${String(hostPort)}`, protocol: 1, app: 'demo', games: [{ host: 'Lan', seats: 2, taken: 1 }] }],
+            : [{ address: `127.0.0.1:${String(hostPort)}`, protocol: protocolVersion, app: 'demo', games: [{ host: 'Lan', seats: 2, taken: 1 }] }],
         ),
     },
     Host: {

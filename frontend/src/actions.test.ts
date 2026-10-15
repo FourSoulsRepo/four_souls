@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { actionsFor, aimedOption, IntentKind, PromptKind, Purpose, sameTarget } from './actions';
+import { actionsFor, aimedOption, IntentKind, orderIntent, PromptKind, Purpose, sameTarget } from './actions';
 import type { Update } from './protocol';
 
 function update(partial: Partial<Update['view']>, allowed: Update['allowed']): Update {
@@ -147,6 +147,14 @@ describe('actionsFor', () => {
       isCard,
     );
     expect(a.discard).toMatchObject({ count: 2, from: [5, 6, 7] });
+  });
+
+  it('asks for an order with the question as its title (19.16)', () => {
+    const text = 'Put the cards back in any order';
+    const intent = { player: 0, kind: IntentKind.order, objects: [5, 6, 7] };
+    const a = actionsFor(update({ waiting: { kind: PromptKind.order, player: 0, count: 3, text } }, [intent]), isCard);
+    expect(a.order).toEqual({ title: text, intent });
+    expect(orderIntent(intent, [7, 5, 6]).objects).toEqual([7, 5, 6]);
   });
 });
 

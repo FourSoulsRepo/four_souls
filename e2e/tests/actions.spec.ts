@@ -342,3 +342,60 @@ test('a "look, you may put it on the bottom" question shows the card (19.11)', a
   // The buttons name the card by its title, not its ref.
   await expect(dialog.getByRole('button', { name: 'keep A Dime!! on top' })).toBeVisible();
 });
+
+test('"put them back in any order" shows each card in its place (19.16)', async ({ browser }) => {
+  const [olaf] = await startGame(browser, ['Olaf', 'Rhea'], { url: fast() });
+  if (!olaf) {
+    throw new Error('no pages');
+  }
+  // Sleight of Hand's order prompt, as the server sends it to the
+  // chooser. act is caught, so the test reads the intent it would send.
+  const title = 'Put the cards back in any order';
+  await olaf.evaluate((text) => {
+    interface S {
+      game: { view: Record<string, unknown>; allowed: unknown[] };
+      lobby: { table: { you: number } };
+      receive: (env: unknown) => void;
+    }
+    const store = (window as unknown as { fourSouls: { store: { getState: () => S; setState: (s: object) => void } } }).fourSouls.store;
+    const s = store.getState();
+    const game = structuredClone(s.game);
+    const you = s.lobby.table.you;
+    const refs = ['a_dime', 'a_penny', 'bomb'];
+    game.view.ordering = refs.map((card, i) => ({ id: 901 + i, card, charged: false }));
+    game.view.waiting = { kind: 5, player: you, purpose: 17, count: 3, text };
+    game.allowed = [{ player: you, kind: 8, objects: [901, 902, 903] }];
+    store.setState({
+      act: (intent: unknown) => {
+        (window as unknown as { sentOrder: unknown }).sentOrder = intent;
+      },
+    });
+    s.receive({ type: 'update', data: { ...game, step: 2, events: [] } });
+  }, title);
+  const dialog = olaf.getByRole('dialog', { name: title });
+  await expect(dialog).toBeVisible();
+  const place = (n: number) => dialog.getByRole('group', { name: `Place ${String(n)}` });
+  const left = dialog.getByRole('group', { name: 'Not placed' });
+  const putBack = dialog.getByRole('button', { name: 'Put back' });
+  await expect(place(1)).toContainText('1 · top');
+  await expect(putBack).toBeDisabled();
+  // Bomb on top, then A Dime!!; A Penny! is still to place.
+  await left.getByRole('button', { name: 'Bomb!' }).click();
+  await left.getByRole('button', { name: 'A Dime!!' }).click();
+  await expect(place(1).getByRole('button', { name: 'Bomb!' })).toBeVisible();
+  await expect(place(2).getByRole('button', { name: 'A Dime!!' })).toBeVisible();
+  await shot(olaf, 'order-two-placed');
+  // A click on a placed card takes it back; the later ones move up.
+  await place(1).getByRole('button', { name: 'Bomb!' }).click();
+  await expect(place(1).getByRole('button', { name: 'A Dime!!' })).toBeVisible();
+  await expect(left.getByRole('button', { name: 'Bomb!' })).toBeVisible();
+  await left.getByRole('button', { name: 'Bomb!' }).click();
+  await left.getByRole('button', { name: 'A Penny!' }).click();
+  await expect(left).toHaveCount(0);
+  await expect(place(2).getByRole('button', { name: 'Bomb!' })).toBeVisible();
+  await expect(place(3).getByRole('button', { name: 'A Penny!' })).toBeVisible();
+  await shot(olaf, 'order-all-placed');
+  await putBack.click();
+  const sent = await olaf.evaluate(() => (window as unknown as { sentOrder: unknown }).sentOrder);
+  expect(sent).toMatchObject({ kind: 8, objects: [901, 903, 902] });
+});

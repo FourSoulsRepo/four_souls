@@ -58,6 +58,8 @@ Use options 2, 4 and 6.
    5. A prompt names who must answer and what they may do.
    6. Prompt kinds: priority, choose target, choose option.
    7. More prompt kinds: order triggers, discard, vote, end-of-game.
+   8. Order prompt: the player sends a whole card order in one intent (19.16).
+   9. An `Ask` question with `Order` opens it; `do` reads `c.Order`.
 4. Priority and the stack
    1. Stack items: loot, activated ability, triggered ability.
    2. More stack items: dice roll, damage, death.

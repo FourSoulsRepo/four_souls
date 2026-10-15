@@ -501,3 +501,41 @@ This step never closes; new reports are appended.
    4. Screenshots: `.cache/screenshots/19.15/before/` and `after/`.
 7. Owner notes (2026-10-15)
    1. Owner marks 19.15 solved.
+
+### [ ] 19.16 Put back in any order: the final order is unclear
+
+1. Goal: the player sees and sets where each card goes.
+2. Report (owner, 2026-10-15)
+   1. Look at the top 5 cards; put them back in any order.
+   2. The screens are confusing.
+   3. In the end the player does not know which card is where.
+3. Tasks:
+   1. Find the cause in the code.
+   2. Show the whole order while the player builds it.
+   3. After the choice, show the cards in their new order.
+4. Done when:
+   1. Cause found and written here.
+   2. e2e test: the dialog shows each card's place in the deck.
+   3. Screenshots before and after.
+5. Cause
+   1. `PutBackInOrder` asks one question per card.
+   2. Each has the same text: "Which card goes next, from the top?".
+   3. The dialog shows only the cards left, never the placed ones.
+   4. No position number: card 3 of 5 looks like card 1.
+   5. The last card is asked too, with one option.
+   6. Then `LookAt` shows the cards in the old order, not the new one.
+   7. Same code in Sleight of Hand and fsp2 `reorderADeck`.
+6. Result (2026-10-15)
+   1. Owner's pick: arrange all cards, then confirm.
+   2. New engine prompt `PromptOrder`, answered by `IntentOrder`.
+   3. The intent holds every card, top first.
+   4. An `Ask` question with `Order` opens it; `do` reads `c.Order`.
+   5. `PutBackInOrder`, Sleight of Hand and `reorderADeck` use it.
+   6. The view sends the cards as `ordering`, only to the chooser.
+   7. `OrderDialog`: numbered places, "1 · top" first; cards below.
+   8. A click places a card; a click on a placed card takes it back.
+   9. "Put back" sends the order once every card has a place.
+   10. No "You look at" dialog after it.
+   11. Protocol 2: an older client cannot answer the new prompt.
+   12. Card tests unchanged: test drivers answer an order by card refs.
+   13. Screenshots: `.cache/screenshots/19.16/before/` and `after/`.

@@ -175,6 +175,8 @@ export function waitText(view: GameView, you: number, n: Names, choiceTitle?: st
       return mine ? (choiceTitle ?? 'Your choice') : `${who} is choosing`;
     case PromptKind.discard:
       return mine ? 'Discard down to your hand size' : `${who} is discarding`;
+    case PromptKind.order:
+      return mine ? (choiceTitle ?? 'Put the cards in order') : `${who} is putting cards back`;
     case PromptKind.priority:
       if ((stack ?? []).length > 0) {
         return mine ? 'Respond, or pass' : `${who} may respond`;
@@ -202,7 +204,7 @@ export function stackWait(view: GameView, you: number, n: Names): StackWait {
   const name = (p: number) => (p === you ? 'You' : n.player(p));
   const w = view.waiting;
   const out: StackWait = { responding: (view.responding ?? []).map(name), passed: (view.passed ?? []).map(name) };
-  if (w.kind === PromptKind.choose) {
+  if (w.kind === PromptKind.choose || w.kind === PromptKind.order) {
     out.prompt = `${name(w.player)}: ${choiceTitle(w)}`;
   } else if (w.kind === PromptKind.discard) {
     const count = w.count ?? 0;

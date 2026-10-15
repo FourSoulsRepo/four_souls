@@ -246,7 +246,8 @@ func (r *Room) vote(c *Client, env protocol.Envelope) {
 
 // forcedIntent is the minimal answer for the waiting player, when the
 // player is out of time or kicked: pass or end the turn; a discard
-// takes the first cards; a choice takes the first option.
+// takes the first cards; a choice takes the first option; an order
+// keeps the cards as they are.
 func (r *Room) forcedIntent() (engine.Intent, bool) {
 	w := r.game.Prompt()
 	allowed := r.game.Allowed(w.Player)
@@ -265,7 +266,7 @@ func (r *Room) forcedIntent() (engine.Intent, bool) {
 		in := allowed[0]
 		in.Objects = in.Objects[:w.Count]
 		return in, true
-	case engine.PromptChoose:
+	case engine.PromptChoose, engine.PromptOrder:
 		return allowed[0], true
 	case engine.PromptNone, engine.PromptGameOver:
 		return engine.Intent{}, false

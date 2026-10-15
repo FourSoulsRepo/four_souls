@@ -43,51 +43,22 @@ func whenAnotherPlayerDies() engine.Trigger {
 }
 
 // reorderADeck is "Look at the top n cards of a deck and put them back in
-// any order": the deck first, then the cards from the top.
+// any order": the deck first, then one order question (19.16).
 func reorderADeck(n int) engine.Effect {
-	left := func(c *engine.Ctx, a []int) []engine.ObjectID {
-		cards := c.G.DeckTop(c.Deck(a[0]), n)
-		for _, i := range a[1:] {
-			if i < 0 || i >= len(cards) {
-				break
-			}
-			cards = append(cards[:i:i], cards[i+1:]...)
-		}
-		return cards
-	}
-	qs := []engine.Question{engine.DeckQuestion("Look at the top cards of which deck?")}
-	for range n {
-		qs = append(qs, engine.Question{
-			Text: "Which card goes next, from the top?",
-			Options: func(c *engine.Ctx, a []int) []string {
-				if a[0] < 0 {
-					return nil
-				}
-				var out []string
-				for _, id := range left(c, a) {
-					out = append(out, string(c.G.Object(id).Card))
-				}
-				return out
-			},
-		})
-	}
 	return engine.Ask(func(c *engine.Ctx, a []int) {
 		if a[0] < 0 {
 			return
 		}
-		d := c.Deck(a[0])
-		cards := c.G.DeckTop(d, n)
-		c.G.LookAt(c.Controller, cards...)
-		var order []engine.ObjectID
-		for _, i := range a[1:] {
-			if i < 0 || i >= len(cards) {
-				break
+		c.G.SetDeckTop(c.Deck(a[0]), c.Order)
+	}, engine.DeckQuestion("Look at the top cards of which deck?"), engine.Question{
+		Text: cardkit.PutBackText,
+		Order: func(c *engine.Ctx, a []int) []engine.ObjectID {
+			if a[0] < 0 {
+				return nil
 			}
-			order = append(order, cards[i])
-			cards = append(cards[:i:i], cards[i+1:]...)
-		}
-		c.G.SetDeckTop(d, append(order, cards...))
-	}, qs...)
+			return c.G.DeckTop(c.Deck(a[0]), n)
+		},
+	})
 }
 
 // itemsOf lists the items p controls, or every player's for NoPlayer.

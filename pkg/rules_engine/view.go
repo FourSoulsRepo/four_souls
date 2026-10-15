@@ -102,6 +102,9 @@ type GameView struct {
 	// Subject is the card the open question is about, e.g. the deck top
 	// a player looks at; only for the chooser (19.11).
 	Subject *CardView `json:"subject,omitempty"`
+	// Ordering are the cards of an open order prompt, in their order
+	// now; only for the chooser (19.16).
+	Ordering []CardView `json:"ordering,omitempty"`
 	// Options says what each option of a choose prompt points at, one
 	// per Waiting.Options; only for whoever sees those options.
 	Options []OptionView `json:"options,omitempty"`
@@ -192,6 +195,11 @@ func (g *Game) View(v Viewer) GameView {
 			out.Subject = &cv
 		}
 	}
+	if g.Waiting.Kind == PromptOrder && v.sees(g.Waiting.Player) && g.Choice != nil {
+		for _, id := range g.Choice.Objects {
+			out.Ordering = append(out.Ordering, g.cardView(id))
+		}
+	}
 	out.Passed, out.Responding = g.responders()
 	return out
 }
@@ -269,7 +277,7 @@ func (g *Game) optionViews() []OptionView {
 		for i, p := range c.Slots {
 			set(i, func(o *OptionView) { o.Player, o.IsPlayer = PlayerID(p), true })
 		}
-	case ChooseReplacement, ChooseTriggerOrder, ChooseMode, ChooseAnswer, ChooseCopyAbility, ChooseDie:
+	case ChooseReplacement, ChooseTriggerOrder, ChooseMode, ChooseAnswer, ChooseCopyAbility, ChooseDie, ChooseOrder:
 		// Text options.
 	}
 	return out

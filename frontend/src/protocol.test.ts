@@ -28,12 +28,12 @@ const modeled: Record<string, Envelope> = {
   hello: {
     type: 'hello',
     id: 1,
-    data: { protocol: 1, app: '0.1.0', name: 'Ann', role: 'player', sets: ['b2'] } satisfies Hello,
+    data: { protocol: 2, app: '0.1.0', name: 'Ann', role: 'player', sets: ['b2'] } satisfies Hello,
   },
   welcome: {
     type: 'welcome',
     id: 1,
-    data: { protocol: 1, app: '0.1.0', engine: '0.1.0', token: 't0k3n', seat: 0 } satisfies Welcome,
+    data: { protocol: 2, app: '0.1.0', engine: '0.1.0', token: 't0k3n', seat: 0 } satisfies Welcome,
   },
   error: {
     type: 'error',

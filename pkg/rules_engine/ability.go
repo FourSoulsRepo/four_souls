@@ -52,6 +52,8 @@ type Ctx struct {
 	EventObject ObjectID
 	// EventSource is what caused the event, e.g. the monster that dealt damage.
 	EventSource ObjectID
+	// Order is the answer of an Ask's order question, top first (19.16).
+	Order []ObjectID
 
 	// Where the effect is, so an Ask can find it again.
 	ref    AbilityRef

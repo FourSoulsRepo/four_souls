@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { discardIntent, type Actions } from '../actions';
+import { discardIntent, orderIntent, type Actions } from '../actions';
 import type { Looked } from '../history';
 import type { CardView } from '../protocol';
 import { useApp } from '../store';
@@ -65,6 +65,66 @@ export function LookDialog({ cards }: { cards: Looked[] }) {
       </div>
       <button type="button" onClick={endLook}>
         OK
+      </button>
+    </div>
+  );
+}
+
+// OrderDialog puts the cards of an order prompt back on the deck (19.16).
+// A click puts a card in the next free place, top first; a click on a
+// placed card takes it back. Nothing is sent until every card has a
+// place, so the player sees the whole order before it counts.
+export function OrderDialog({ order, cards }: { order: NonNullable<Actions['order']>; cards: CardView[] }) {
+  const act = useApp((s) => s.act);
+  const [placed, setPlaced] = useState<number[]>([]);
+  const left = cards.filter((c) => !placed.includes(c.id));
+  // One place per card, numbered from the top.
+  const places = cards.map((_, i) => ({ n: i + 1, card: cards.find((x) => x.id === placed.at(i)) }));
+  return (
+    <div className="choice order" role="dialog" aria-label={order.title}>
+      <h2>{order.title}</h2>
+      <p className="order-hint">Click the cards top first. Click a placed card to take it back.</p>
+      <div className="order-deck">
+        {places.map(({ n, card: c }) => (
+          <div key={n} className="order-place" role="group" aria-label={`Place ${String(n)}`}>
+            {c ? (
+              <Card
+                cardRef={c.card}
+                size="table"
+                onClick={() => {
+                  setPlaced(placed.filter((id) => id !== c.id));
+                }}
+              />
+            ) : (
+              <div className="order-empty" />
+            )}
+            <span>{n === 1 ? '1 · top' : String(n)}</span>
+          </div>
+        ))}
+      </div>
+      {left.length > 0 && (
+        <div className="choice-options" role="group" aria-label="Not placed">
+          {left.map((c) => (
+            <Card
+              key={c.id}
+              cardRef={c.card}
+              size="table"
+              highlight="pick"
+              onClick={() => {
+                setPlaced([...placed, c.id]);
+              }}
+            />
+          ))}
+        </div>
+      )}
+      <button
+        type="button"
+        disabled={left.length > 0}
+        onClick={() => {
+          act(orderIntent(order.intent, placed));
+        }}
+      >
+        Put back
       </button>
     </div>
   );

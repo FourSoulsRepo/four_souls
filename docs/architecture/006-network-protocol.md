@@ -78,6 +78,8 @@ Use options 1, 3, 5 and 10.
    3. A golden test pins the JSON of each message.
    4. Adding a field keeps the version; clients ignore unknown fields.
    5. Renaming or removing a field, or changing its meaning, bumps it.
+   6. A new prompt an older client cannot answer bumps it too.
+   7. Version 2: the order prompt (19.16).
 6. Cards
    1. Messages carry card refs (`the_d6`, `the_d6@2`), never card text.
    2. A client shows an unknown ref as a blank card with the ref (SP-05).

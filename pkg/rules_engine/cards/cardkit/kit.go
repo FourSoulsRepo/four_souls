@@ -123,45 +123,18 @@ func May(question string, effects ...engine.Effect) engine.Effect {
 }
 
 // PutBackInOrder is "look at the top n cards of the deck. Put them back in
-// any order." Each answer picks the next card from the top.
+// any order." One order question puts them back, top first (19.16).
 func PutBackInOrder(d engine.DeckKind, n int) engine.Effect {
-	left := func(c *engine.Ctx, a []int) []engine.ObjectID {
-		cards := c.G.DeckTop(d, n)
-		for _, i := range a {
-			if i < 0 {
-				break
-			}
-			cards = append(cards[:i:i], cards[i+1:]...)
-		}
-		return cards
-	}
-	var qs []engine.Question
-	for range n {
-		qs = append(qs, engine.Question{
-			Text: "Which card goes next, from the top?",
-			Options: func(c *engine.Ctx, a []int) []string {
-				var out []string
-				for _, id := range left(c, a) {
-					out = append(out, string(c.G.Object(id).Card))
-				}
-				return out
-			},
-		})
-	}
-	return engine.Ask(func(c *engine.Ctx, a []int) {
-		cards := c.G.DeckTop(d, n)
-		c.G.LookAt(c.Controller, cards...)
-		var order []engine.ObjectID
-		for _, i := range a {
-			if i < 0 {
-				break
-			}
-			order = append(order, cards[i])
-			cards = append(cards[:i:i], cards[i+1:]...)
-		}
-		c.G.SetDeckTop(d, order)
-	}, qs...)
+	return engine.Ask(func(c *engine.Ctx, _ []int) {
+		c.G.SetDeckTop(d, c.Order)
+	}, engine.Question{
+		Text:  PutBackText,
+		Order: func(c *engine.Ctx, _ []int) []engine.ObjectID { return c.G.DeckTop(d, n) },
+	})
 }
+
+// PutBackText is the question of every "put them back in any order".
+const PutBackText = "Put the cards back in any order"
 
 // ChangeRollBy asks how much to change a roll by: "Add up to 2 to a roll".
 func ChangeRollBy(amounts ...int) engine.Effect {

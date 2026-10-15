@@ -35,6 +35,7 @@ var (
 	playerLabel             = cardkit.PlayerLabel
 	playerRollOf            = cardkit.PlayerRollOf
 	putBackInOrder          = cardkit.PutBackInOrder
+	putBackText             = cardkit.PutBackText
 	rechargeAnItem          = cardkit.RechargeAnItem
 	rechargeAtEndOfTurn     = cardkit.RechargeAtEndOfTurn
 	rollerDiscards          = cardkit.RollerDiscards

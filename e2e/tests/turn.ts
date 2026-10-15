@@ -107,6 +107,16 @@ async function answer(pages: Page[], press: Tap, steps: number[]): Promise<boole
       await press(page, look.getByRole('button', { name: 'OK' }));
       return true;
     }
+    // An order dialog (19.16): place the cards as they come, then confirm.
+    const order = page.locator('.choice.order');
+    if (await order.isVisible()) {
+      const done = order.getByRole('button', { name: 'Put back' });
+      for (let i = 0; i < 12 && !(await enabled(done)); i++) {
+        await press(page, order.locator('.card.hl-pick').first());
+      }
+      await press(page, done);
+      return true;
+    }
     const choice = page.locator('.choice:not(.look)');
     if (await choice.isVisible()) {
       // Prefer picking on the table, as a player would (7.7), where the

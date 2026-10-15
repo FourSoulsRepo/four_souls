@@ -2,7 +2,7 @@
 // Only what the client uses so far; protocol.test.ts checks these types
 // against Go's golden file. Go sends a nil list as null.
 
-export const protocolVersion = 1;
+export const protocolVersion = 2;
 export const defaultPort = 4774;
 
 export interface Envelope {
@@ -308,6 +308,9 @@ export interface GameView {
   // subject is the card the open question is about, e.g. the deck top
   // a player looks at; only for the chooser (19.11).
   subject?: CardView;
+  // ordering are the cards of an open order prompt, in their order now;
+  // only for the chooser (19.16).
+  ordering?: CardView[];
   stack: StackItem[] | null;
   turn: Turn;
   waiting: Prompt;

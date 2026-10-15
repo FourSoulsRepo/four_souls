@@ -287,6 +287,43 @@
   gap: 6px;
 }
 
+/* The order dialog (19.16): the deck's places in a row, top first, and
+   the cards not placed yet below. */
+.order-hint {
+  margin: 0;
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+.order-deck {
+  display: flex;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: rgb(0 0 0 / 30%);
+}
+
+.order-place {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-card);
+  font-size: 13px;
+}
+
+.order-place:first-child span {
+  color: #ffd27a;
+}
+
+.order-empty {
+  width: 80px;
+  aspect-ratio: 63 / 88;
+  border: 2px dashed rgb(255 255 255 / 30%);
+  border-radius: 5% / 3.6%;
+  box-sizing: border-box;
+}
+
 .player.hl-pick {
   border-color: #4fc3f7;
 }

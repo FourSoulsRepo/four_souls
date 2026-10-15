@@ -29,7 +29,15 @@
   * "Put the top card on the bottom?" shows the card above its buttons.
   * The buttons name the card by its title.
   * Only the chooser sees the card; others see no dialog.
+* **2b. Put them back in any order (19.16):** e.g. Sleight of Hand, The Compass.
+  * One dialog shows a row of places, "1 · top" first, and the cards.
+  * A click on a card puts it in the next free place.
+  * A click on a placed card takes it back; later ones move up.
+  * "Put back" is enabled once every card has a place.
+  * Only the chooser sees the cards; others read "Ann is putting cards back".
+  * No "You look at" dialog follows; the order dialog showed them.
 
 ## Postconditions
 
 * The cards stay where they were; only the looker saw them.
+* After 2b, the deck's top cards are in the order the player set.

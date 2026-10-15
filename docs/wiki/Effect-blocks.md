@@ -135,7 +135,7 @@ Effects refer to targets by number: `DealDamage(1, 0)` hits the first target. `T
 
 ## Questions on resolution
 
-What is not a target is decided when the ability resolves (R-ABIL-05). `Ask` asks the controller its questions in order, then calls `do` with the answers. A question whose `Options` are empty is skipped and its answer is `-1`. The answers are saved in the game state, so a saved game continues mid-question.
+What is not a target is decided when the ability resolves (R-ABIL-05). `Ask` asks the controller its questions in order, then calls `do` with the answers. A question whose `Options` are empty is skipped and its answer is `-1`. The answers are saved in the game state, so a saved game continues mid-question. A question with `Order` set is an order question (19.16): the chooser gets one order prompt with those cards and sends them back top first in one intent (`IntentOrder`); its answer is `0` and `do` reads the cards from `c.Order`. No cards skip it (`-1`); one card needs no prompt. `PutBackInOrder(deck, n)` is the whole "look at the top n cards, put them back in any order".
 
 ```go
 Ask(func(c *Ctx, a []int) {

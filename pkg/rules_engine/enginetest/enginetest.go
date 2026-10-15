@@ -116,6 +116,16 @@ func (tb *Table) EndTurn(choices ...string) {
 			}
 			in = engine.Intent{Player: w.Player, Kind: engine.IntentChoose, Choice: tb.option(w, choices[0])}
 			choices = choices[1:]
+		case engine.PromptOrder:
+			if len(choices) < w.Count {
+				tb.T.Fatalf("an order of %d cards is needed, choices %v", w.Count, choices)
+			}
+			order, err := tb.G.OrderOf(choices[:w.Count])
+			if err != nil {
+				tb.T.Fatal(err)
+			}
+			in = engine.Intent{Player: w.Player, Kind: engine.IntentOrder, Objects: order}
+			choices = choices[w.Count:]
 		case engine.PromptDiscard:
 			in = engine.Intent{Player: w.Player, Kind: engine.IntentDiscard, Objects: tb.G.Players[w.Player].Hand[:w.Count]}
 		case engine.PromptPriority:

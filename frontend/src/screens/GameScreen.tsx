@@ -5,7 +5,7 @@ import { ActionBar } from '../components/ActionBar';
 import { ActionMenu } from '../components/ActionMenu';
 import { AimLayer } from '../components/Aim';
 import { Board } from '../components/Board';
-import { ChoiceDialog, DiscardDialog, LookDialog } from '../components/ChoiceDialog';
+import { ChoiceDialog, DiscardDialog, LookDialog, OrderDialog } from '../components/ChoiceDialog';
 import { interact, noInteract } from '../components/Interact';
 import { PlayerArea } from '../components/PlayerArea';
 import { HistoryPanel, TurnBadge } from '../components/InfoPanels';
@@ -22,7 +22,7 @@ import { seatPositions } from '../table';
 import '../components/Table.css';
 import './screens.css';
 
-const noActions: Actions = { buttons: [], turn: {}, cards: new Map(), choice: null, discard: null };
+const noActions: Actions = { buttons: [], turn: {}, cards: new Map(), choice: null, discard: null, order: null };
 
 // GameScreen is the game table (7.5), drawn from the update on screen.
 export function GameScreen() {
@@ -176,7 +176,7 @@ function Table({ game, you }: { game: Update; you: number }) {
         )}
       </Board>
       <ActionBar
-        status={game.pause ? 'Paused' : waitText(view, you, names, actions.choice?.title)}
+        status={game.pause ? 'Paused' : waitText(view, you, names, actions.choice?.title ?? actions.order?.title)}
         deadline={game.deadline ?? 0}
         skip={skip}
         wait={waitTurn(view, you, game.wait_turn ?? false)}
@@ -191,6 +191,7 @@ function Table({ game, you }: { game: Update; you: number }) {
         />
       )}
       {offered.discard && me && <DiscardDialog key={game.step} discard={offered.discard} hand={me.hand ?? []} />}
+      {offered.order && <OrderDialog key={game.step} order={offered.order} cards={view.ordering ?? []} />}
       {looking.length > 0 && <LookDialog cards={looking} />}
       {connected && !view.over && <GameMenu host={you === 0} />}
       {!connected ? (
