@@ -1,8 +1,8 @@
 import { useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { counted, Role, type CardView, type PlayerView } from '../protocol';
 import { useApp } from '../store';
-import { playerColor, soulSlots, type Position } from '../table';
-import { Card, type CardSize } from './Card';
+import { isSoul, playerColor, soulCards, soulSlots, type Position } from '../table';
+import { Card, useZoom, type CardSize } from './Card';
 import type { Interact } from './Interact';
 import { HiddenHand, RevealedHand } from './Pile';
 import './Table.css';
@@ -72,7 +72,7 @@ function OpponentArea({ player, name, position, active, winSouls, ui }: Omit<Pro
         )}
       </div>
       <div className="player-cards opp-character">
-        <Souls souls={player.souls} winSouls={winSouls} />
+        <Souls player={player} winSouls={winSouls} ui={ui} />
         <Card
           cardRef={character.card}
           size={size}
@@ -86,9 +86,11 @@ function OpponentArea({ player, name, position, active, winSouls, ui }: Omit<Pro
         />
       </div>
       <div className="player-cards opp-items" role="group" aria-label={`${name}: items`}>
-        {(player.in_play ?? []).map((c) => (
-          <PlayCard key={c.id} card={c} size={size} ui={ui} />
-        ))}
+        {(player.in_play ?? [])
+          .filter((c) => !isSoul(c))
+          .map((c) => (
+            <PlayCard key={c.id} card={c} size={size} ui={ui} />
+          ))}
       </div>
     </section>
   );
@@ -160,7 +162,7 @@ function OwnArea({ player, name, active, winSouls, ui, tools }: Omit<Props, 'you
         {tools}
       </div>
       <div className="player-cards own-character">
-        <Souls souls={player.souls} winSouls={winSouls} />
+        <Souls player={player} winSouls={winSouls} ui={ui} />
         <Card
           cardRef={character.card}
           size="table"
@@ -174,9 +176,11 @@ function OwnArea({ player, name, active, winSouls, ui, tools }: Omit<Props, 'you
         />
       </div>
       <div className="player-cards own-items" role="group" aria-label="Your items">
-        {(player.in_play ?? []).map((c) => (
-          <PlayCard key={c.id} card={c} size="table" ui={ui} />
-        ))}
+        {(player.in_play ?? [])
+          .filter((c) => !isSoul(c))
+          .map((c) => (
+            <PlayCard key={c.id} card={c} size="table" ui={ui} />
+          ))}
       </div>
       <div
         className="hand"
@@ -195,18 +199,46 @@ function OwnArea({ player, name, active, winSouls, ui, tools }: Omit<Props, 'you
 
 // Souls are a player's soul crystals left of the character (V-30,
 // V-31): filled slots are gained souls, empty ones what is left to
-// win. They fill from the bottom up.
-function Souls({ souls, winSouls }: { souls: number; winSouls: number }) {
-  const slots = soulSlots(souls, winSouls);
-  const label = `Souls: ${String(souls)} of ${String(slots.length)}`;
+// win. They fill from the bottom up. Each filled one holds its soul
+// card, which is not on the table (V-43).
+function Souls({ player, winSouls, ui }: { player: PlayerView; winSouls: number; ui: Interact }) {
+  const cards = soulCards(player);
+  const slots = soulSlots(Math.max(player.souls, cards.length), winSouls);
+  const label = `Souls: ${String(player.souls)} of ${String(slots.length)}`;
   return (
-    <div className="souls" role="img" aria-label={label} title={label}>
-      {slots.map((filled, i) => (
-        // A slot is only its place in the row, so the index is its key.
-        // eslint-disable-next-line @eslint-react/no-array-index-key
-        <span key={i} className={`soul-slot${filled ? ' filled' : ''}`} />
-      ))}
+    <div className="souls" role="group" aria-label={label} title={label}>
+      {slots.map((filled, i) => {
+        const card = cards.at(i);
+        return (
+          // A slot is only its place in the row, so the index is its key.
+          // eslint-disable-next-line @eslint-react/no-array-index-key
+          <SoulCrystal key={i} filled={filled} card={card} own={card?.id === player.character.id} ui={ui} />
+        );
+      })}
     </div>
+  );
+}
+
+// SoulCrystal is one soul slot. Hovering a filled one, or a long touch,
+// zooms its card, a killed monster or a bonus soul (V-43); an effect
+// that aims at the soul aims at the crystal. A character's own soul
+// value (own) only zooms: the character card stays its zone.
+function SoulCrystal({ filled, card, own, ui }: { filled: boolean; card?: CardView; own: boolean; ui: Interact }) {
+  const soul = card && !own ? card : undefined;
+  const pick = soul ? ui.object(soul.id) : {};
+  const zoom = useZoom(card?.card, card !== undefined);
+  const name = useApp((s) => (card ? (s.cards.get(card.card)?.name ?? card.card) : ''));
+  return (
+    <span
+      className={`soul-slot${filled ? ' filled' : ''}${pick.highlight ? ` hl-${pick.highlight}` : ''}`}
+      data-zone={soul ? `obj-${String(soul.id)}` : undefined}
+      role={pick.onClick ? 'button' : card ? 'img' : undefined}
+      aria-label={card ? `Soul: ${name}` : undefined}
+      // An empty title hides the row's tooltip: the zoom shows instead.
+      title={card ? '' : undefined}
+      onClick={pick.onClick}
+      {...zoom}
+    />
   );
 }
 

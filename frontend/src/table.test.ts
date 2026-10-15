@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { seatPositions, soulSlots } from './table';
+import { Role, type CardView, type PlayerView } from './protocol';
+import { seatPositions, soulCards, soulSlots } from './table';
 
 describe('seatPositions', () => {
   it('puts the viewer at the bottom and the other player on top', () => {
@@ -43,5 +44,35 @@ describe('soulSlots', () => {
 
   it('adds filled slots past the target', () => {
     expect(soulSlots(5, 4)).toEqual([true, true, true, true, true]);
+  });
+});
+
+describe('soulCards', () => {
+  const card = (id: number, role: number, souls?: number): CardView => ({ id, card: `c${String(id)}`, role, charged: false, souls });
+  const player = (character: CardView, inPlay: CardView[]) => ({ id: 0, character, in_play: inPlay }) as unknown as PlayerView;
+  const ids = (cards: CardView[]) => cards.map((c) => c.id);
+
+  it('ties one crystal to each soul card, in order', () => {
+    const p = player(card(1, Role.character), [card(2, Role.soul, 1), card(3, Role.item), card(4, Role.soul, 1)]);
+    expect(ids(soulCards(p))).toEqual([2, 4]);
+  });
+
+  it('ties both crystals of a two-soul card to it', () => {
+    const p = player(card(1, Role.character), [card(2, Role.soul, 2), card(3, Role.soul, 1)]);
+    expect(ids(soulCards(p))).toEqual([2, 2, 3]);
+  });
+
+  it("puts a character's own soul value first", () => {
+    const p = player(card(1, Role.character, 1), [card(2, Role.soul, 1)]);
+    expect(ids(soulCards(p))).toEqual([1, 2]);
+  });
+
+  it('counts one soul when the view has no worth', () => {
+    const p = player(card(1, Role.character), [card(2, Role.soul)]);
+    expect(ids(soulCards(p))).toEqual([2]);
+  });
+
+  it('has none without souls', () => {
+    expect(soulCards(player(card(1, Role.character), []))).toEqual([]);
   });
 });

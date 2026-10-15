@@ -441,7 +441,7 @@ test('souls show as crystals left of the character; a gained soul fills one more
   const other = page.locator('.player-top');
   // A slot per soul the game needs; none filled at the start (V-30).
   for (const area of [own, other]) {
-    await expect(area.getByRole('img', { name: 'Souls: 0 of 4' })).toBeVisible();
+    await expect(area.getByRole('group', { name: 'Souls: 0 of 4' })).toBeVisible();
     await expect(area.locator('.soul-slot')).toHaveCount(4);
     await expect(area.locator('.soul-slot.filled')).toHaveCount(0);
   }
@@ -470,7 +470,7 @@ test('souls show as crystals left of the character; a gained soul fills one more
   await expect(other.locator('.soul-slot.filled')).toHaveCount(2);
   // A gained soul fills one more slot; the row keeps its four.
   await setSouls(souls(2, 2));
-  await expect(own.getByRole('img', { name: 'Souls: 2 of 4' })).toBeVisible();
+  await expect(own.getByRole('group', { name: 'Souls: 2 of 4' })).toBeVisible();
   await expect(own.locator('.soul-slot.filled')).toHaveCount(2);
   await expect(own.locator('.soul-slot')).toHaveCount(4);
 
@@ -484,6 +484,120 @@ test('souls show as crystals left of the character; a gained soul fills one more
   const small = await other.locator('.soul-slot').first().boundingBox();
   expect(small?.width ?? 0).toBeLessThan(big?.width ?? 0);
   await shot(page, 'souls');
+});
+
+test('soul cards hide behind the crystals; hovering one zooms its card (15.56)', async ({ browser }) => {
+  const [page] = await startGame(browser, ['Sigrid', 'Soren']);
+  if (!page) {
+    throw new Error('no pages');
+  }
+  const own = page.locator('.player-bottom');
+  // Give the viewer two soul cards, as the server would send them: Mom
+  // is worth two souls, Soul of Greed (a bonus soul) one. Only the
+  // screen changes; nobody acts on it.
+  await page.evaluate(() => {
+    interface Card {
+      id: number;
+      card: string;
+      role?: number;
+      charged: boolean;
+      souls?: number;
+    }
+    interface S {
+      game: { view: { players: { id: number; souls: number; in_play: Card[] | null }[] } } | null;
+    }
+    const { store } = (window as unknown as { fourSouls: { store: { getState: () => S; setState: (s: Partial<S>) => void } } })
+      .fourSouls;
+    const { game } = store.getState();
+    if (!game) {
+      throw new Error('no game');
+    }
+    const souls: Card[] = [
+      { id: 9101, card: 'mom', role: 5, charged: false, souls: 2 },
+      { id: 9102, card: 'soul_of_greed', role: 5, charged: false, souls: 1 },
+    ];
+    const you = Number(document.querySelector('.player-bottom')?.getAttribute('data-zone')?.replace('player-', ''));
+    const players = game.view.players.map((p) =>
+      p.id === you ? { ...p, souls: p.souls + 3, in_play: [...(p.in_play ?? []), ...souls] } : p,
+    );
+    store.setState({ game: { ...game, view: { ...game.view, players } } });
+  });
+  await expect(own.locator('.soul-slot.filled')).toHaveCount(3);
+  await shot(page, 'soul-crystals');
+
+  // No soul card in the items row (V-43).
+  const items = own.getByRole('group', { name: 'Your items' });
+  await expect(items.getByRole('img', { name: 'Mom!' })).toHaveCount(0);
+  await expect(items.getByRole('img', { name: 'Soul Of Greed' })).toHaveCount(0);
+
+  // Mom fills two crystals, Soul of Greed the third.
+  const crystals = own.locator('.soul-slot.filled');
+  await expect(crystals.nth(0)).toHaveAttribute('data-zone', 'obj-9101');
+  await expect(crystals.nth(1)).toHaveAttribute('data-zone', 'obj-9101');
+  await expect(crystals.nth(2)).toHaveAttribute('data-zone', 'obj-9102');
+
+  // Hovering a crystal zooms its card beside it.
+  const zoom = page.getByTestId('card-zoom').locator('.card.size-zoom');
+  // Ready was clicked where the crystals now stand: move off first, so
+  // the hover enters the crystal.
+  await page.mouse.move(0, 0);
+  await crystals.nth(1).hover();
+  await expect(zoom).toHaveAttribute('aria-label', 'Mom!');
+  await shot(page, 'soul-zoom');
+  await crystals.nth(2).hover();
+  await expect(zoom).toHaveAttribute('aria-label', 'Soul Of Greed');
+  // An empty crystal zooms nothing.
+  await own.locator('.soul-slot:not(.filled)').first().hover();
+  await expect(zoom).toBeHidden();
+
+  // An effect that aims at a soul picks it by its crystal: the other
+  // player gains Pin, and a target prompt names it, as the server sends
+  // it to the chooser. act is caught. (The choice dialog stands over
+  // the own area, so the other player's soul is the one clicked.)
+  await page.evaluate(() => {
+    interface Player {
+      id: number;
+      souls: number;
+      in_play: unknown[] | null;
+    }
+    interface S {
+      game: { view: { players: Player[] } & Record<string, unknown>; allowed: unknown[] };
+      lobby: { table: { you: number } };
+      receive: (env: unknown) => void;
+    }
+    const store = (window as unknown as { fourSouls: { store: { getState: () => S; setState: (s: object) => void } } }).fourSouls.store;
+    const s = store.getState();
+    const game = structuredClone(s.game);
+    const you = s.lobby.table.you;
+    game.view.players = game.view.players.map((p) =>
+      p.id === you
+        ? p
+        : { ...p, souls: p.souls + 1, in_play: [...(p.in_play ?? []), { id: 9103, card: 'pin', role: 5, charged: false, souls: 1 }] },
+    );
+    game.view.waiting = { kind: 4, player: you, purpose: 6, options: ['mom', 'pin'] };
+    game.view.options = [
+      { object: 9101, player: -1 },
+      { object: 9103, player: -1 },
+    ];
+    game.allowed = [
+      { player: you, kind: 4, choice: 0 },
+      { player: you, kind: 4, choice: 1 },
+    ];
+    store.setState({
+      act: (intent: unknown) => {
+        (window as unknown as { sentChoice: unknown }).sentChoice = intent;
+      },
+    });
+    s.receive({ type: 'update', data: { ...game, step: 2, events: [] } });
+  });
+  const pin = page.locator('.player-top .soul-slot.filled');
+  await expect(pin).toHaveAttribute('data-zone', 'obj-9103');
+  await expect(pin).toHaveClass(/hl-pick/);
+  await expect(page.getByRole('dialog', { name: 'Choose a target' })).toBeVisible();
+  await shot(page, 'soul-pick');
+  await pin.click();
+  const sent = await page.evaluate(() => (window as unknown as { sentChoice: unknown }).sentChoice);
+  expect(sent).toMatchObject({ kind: 4, choice: 1 });
 });
 
 test('a revealed hand shows face up; a hidden one stays backs (19.5)', async ({ browser }) => {

@@ -541,6 +541,43 @@
   background: radial-gradient(circle at 35% 30%, #f2fdff, #62c9ff 45%, #1d5bd0);
 }
 
+/* A crystal an effect may aim at or pick (V-43), in the card colors.
+   It grows, so a blue pick still stands out on a blue gem. */
+.soul-slot.hl-act,
+.soul-slot.hl-pick,
+.soul-slot.hl-aim {
+  scale: 1.35;
+}
+
+.soul-slot.hl-act,
+.soul-slot.hl-pick {
+  cursor: pointer;
+}
+
+.soul-slot.hl-act {
+  filter: drop-shadow(0 0 2px #f5c542) drop-shadow(0 0 5px #f5c542);
+}
+
+.soul-slot.hl-act::before {
+  background: #f5c542;
+}
+
+.soul-slot.hl-pick {
+  filter: drop-shadow(0 0 2px #fff) drop-shadow(0 0 5px #4fc3f7);
+}
+
+.soul-slot.hl-pick::before {
+  background: #fff;
+}
+
+.soul-slot.hl-aim {
+  filter: drop-shadow(0 0 2px #ff4b3e) drop-shadow(0 0 5px #ff4b3e);
+}
+
+.soul-slot.hl-aim::before {
+  background: #ff4b3e;
+}
+
 .own-items {
   grid-area: items;
 }

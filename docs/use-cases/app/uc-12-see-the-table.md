@@ -118,6 +118,13 @@
 * **1s. A big hand (19.15):** the fan tightens; the end cards drop only a little.
   * Every card's top stays on screen, even with 12 cards.
   * Each card can be hovered and played.
+* **1t. Soul cards behind the crystals (15.56):** gained souls are no cards on the table.
+  * Each filled crystal holds its soul card.
+  * A card worth two souls holds both of its crystals.
+  * Hover a filled crystal to zoom its card; on touch, a long tap.
+  * A killed monster zooms as the soul it gave; a bonus soul zooms too.
+  * A character's own soul value zooms the character.
+  * An effect that picks a soul highlights its crystal; click it to pick.
 
 ## Postconditions
 

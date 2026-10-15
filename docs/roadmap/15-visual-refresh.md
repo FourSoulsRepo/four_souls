@@ -1521,7 +1521,7 @@ Images come first, so the new table is built with backs and mats.
    1. Curses go at the far left of the player area.
    2. Not next to the soul crystals.
 
-### [ ] 15.56 Soul cards behind the crystals
+### [x] 15.56 Soul cards behind the crystals
 
 1. Goal: the table shows no soul cards; the crystals hold them (V-43).
 2. Tasks:
@@ -1540,6 +1540,23 @@ Images come first, so the new table is built with backs and mats.
    4. UC-12 updated.
 4. Owner decisions (2026-10-14)
    1. A bonus soul zooms from its crystal too, like a monster soul.
+5. Result (2026-10-15)
+   1. Done out of order, at the owner's request.
+   2. Engine: `CardView.souls` is what a soul or a character is worth.
+   3. `soulsOf` and `characterSouls` (`turn.go`) also sum `SoulValue`.
+   4. The items row skips soul cards (`isSoul`, `table.ts`).
+   5. `soulCards` ties each filled crystal to its card, bottom up.
+   6. A character's own soul value (The Lost) comes first.
+   7. A two-soul card holds two crystals; a view without worth counts one.
+   8. Hover or long tap zooms the card: `useZoom`, shared with `Card`.
+   9. A killed monster is its own soul, so it zooms as the monster.
+   10. A soul's crystal has the card's zone and pick handle.
+   11. A highlighted crystal grows and glows in the highlight color.
+   12. The choice dialog covers the own crystals; it lists the souls too.
+   13. Engine test: each soul's worth; Vitest: `soulCards`.
+   14. e2e: no soul card in the items row; hover zooms; a pick by crystal.
+   15. UC-12, Client wiki, CHANGELOG updated.
+   16. Screenshots: `.cache/screenshots/15.56/before/` and `after/`.
 
 ### [ ] 15.57 Purchases in the history
 

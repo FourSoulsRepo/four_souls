@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type MouseEvent, type PointerEvent } from 'react';
 import { claimed } from '../animations';
 import { iconText, kindOf, textParts, unknownCard, type CardInfo, type Kind } from '../cards';
 import { scaleFor } from '../playback';
@@ -64,24 +64,10 @@ export function Card({
 }: Props) {
   const info = useApp((s) => (cardRef ? s.cards.get(cardRef) : undefined));
   const backImage = useApp((s) => s.backs.get(back) ?? '');
-  const setZoom = useApp((s) => s.setZoom);
   const scale = useApp((s) => scaleFor(s.settings.animation, 0, 0));
-  const pressRef = useRef(0);
-  const downRef = useRef<{ x: number; y: number } | null>(null);
   const [brokenImage, setBrokenImage] = useState('');
-
-  // A card that leaves the screen while hovered gets no pointer-leave:
-  // the card that started a mouse zoom ends it then.
-  const zoomedRef = useRef(false);
-  useEffect(
-    () => () => {
-      const { zoom, setZoom: clear } = useApp.getState();
-      if (zoomedRef.current && zoom && zoom.ref === cardRef && !zoom.touch) {
-        clear(null);
-      }
-    },
-    [cardRef],
-  );
+  const zoomable = size !== 'zoom' && !noZoom;
+  const zoomHandlers = useZoom(cardRef, zoomable, rise);
 
   if (cardRef === undefined) {
     return (
@@ -109,13 +95,8 @@ export function Card({
 
   const card = info ?? unknownCard(cardRef);
   const image = card.image !== '' && card.image !== brokenImage;
-  const zoomable = size !== 'zoom' && !noZoom;
   // The zoomed card shows no badges: its words stay readable.
   const badges = size !== 'zoom';
-  const cancelPress = () => {
-    window.clearTimeout(pressRef.current);
-    downRef.current = null;
-  };
 
   const pop = objectId !== undefined && scale > 0 && !claimed(card.ref, 'arrive');
   return (
@@ -130,40 +111,7 @@ export function Card({
       role={onClick ? 'button' : 'img'}
       aria-label={card.name}
       onClick={onClick}
-      onPointerEnter={(e) => {
-        if (zoomable && e.pointerType === 'mouse') {
-          zoomedRef.current = true;
-          setZoom({ ref: card.ref, touch: false, at: boxOf(e.currentTarget), rise });
-        }
-      }}
-      onPointerLeave={(e) => {
-        cancelPress();
-        if (zoomable && e.pointerType === 'mouse') {
-          zoomedRef.current = false;
-          setZoom(null);
-        }
-      }}
-      onPointerDown={(e) => {
-        if (zoomable && e.pointerType !== 'mouse') {
-          const at = boxOf(e.currentTarget);
-          downRef.current = { x: e.clientX, y: e.clientY };
-          pressRef.current = window.setTimeout(() => {
-            setZoom({ ref: card.ref, touch: true, at });
-          }, LONG_PRESS_MS);
-        }
-      }}
-      onPointerMove={(e) => {
-        // A finger that moves is dragging, not pressing.
-        const d = downRef.current;
-        if (d && Math.hypot(e.clientX - d.x, e.clientY - d.y) > 8) {
-          cancelPress();
-        }
-      }}
-      onPointerUp={cancelPress}
-      onPointerCancel={cancelPress}
-      onContextMenu={(e) => {
-        e.preventDefault(); // a long press must not open the menu
-      }}
+      {...zoomHandlers}
     >
       {image ? (
         <img
@@ -189,6 +137,71 @@ export function Card({
       {badges && monster && <MonsterBadges stats={monster} hurt={damage > 0} />}
     </motion.div>
   );
+}
+
+// useZoom zooms a card from the element it is spread on: on mouse
+// hover, beside it or rising from it, or after a long touch (B-06). A
+// card and a soul crystal share it (V-43). Nothing zooms without a
+// card ref or when zoomable is false.
+export function useZoom(cardRef: string | undefined, zoomable: boolean, rise = false) {
+  const setZoom = useApp((s) => s.setZoom);
+  const pressRef = useRef(0);
+  const downRef = useRef<{ x: number; y: number } | null>(null);
+  const on = zoomable && cardRef !== undefined;
+
+  // A card that leaves the screen while hovered gets no pointer-leave:
+  // the card that started a mouse zoom ends it then.
+  const zoomedRef = useRef(false);
+  useEffect(
+    () => () => {
+      const { zoom, setZoom: clear } = useApp.getState();
+      if (zoomedRef.current && zoom && zoom.ref === cardRef && !zoom.touch) {
+        clear(null);
+      }
+    },
+    [cardRef],
+  );
+
+  const cancelPress = () => {
+    window.clearTimeout(pressRef.current);
+    downRef.current = null;
+  };
+  return {
+    onPointerEnter: (e: PointerEvent<HTMLElement>) => {
+      if (on && e.pointerType === 'mouse') {
+        zoomedRef.current = true;
+        setZoom({ ref: cardRef, touch: false, at: boxOf(e.currentTarget), rise });
+      }
+    },
+    onPointerLeave: (e: PointerEvent<HTMLElement>) => {
+      cancelPress();
+      if (on && e.pointerType === 'mouse') {
+        zoomedRef.current = false;
+        setZoom(null);
+      }
+    },
+    onPointerDown: (e: PointerEvent<HTMLElement>) => {
+      if (on && e.pointerType !== 'mouse') {
+        const at = boxOf(e.currentTarget);
+        downRef.current = { x: e.clientX, y: e.clientY };
+        pressRef.current = window.setTimeout(() => {
+          setZoom({ ref: cardRef, touch: true, at });
+        }, LONG_PRESS_MS);
+      }
+    },
+    onPointerMove: (e: PointerEvent<HTMLElement>) => {
+      // A finger that moves is dragging, not pressing.
+      const d = downRef.current;
+      if (d && Math.hypot(e.clientX - d.x, e.clientY - d.y) > 8) {
+        cancelPress();
+      }
+    },
+    onPointerUp: cancelPress,
+    onPointerCancel: cancelPress,
+    onContextMenu: (e: MouseEvent<HTMLElement>) => {
+      e.preventDefault(); // a long press must not open the menu
+    },
+  };
 }
 
 // MonsterBadges shows a monster's health, dice and attack, each only

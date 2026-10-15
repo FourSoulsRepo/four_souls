@@ -178,6 +178,9 @@ export interface CardView {
   // abilities: each ability's words by the activate intent's choice;
   // only on a played card with two or more to pick from (C-05).
   abilities?: string[];
+  // souls: the soul value the card adds to its owner, on a soul in play
+  // or a character; older servers send none (V-43).
+  souls?: number;
 }
 
 // counted is how many counters a card carries, of any kind.

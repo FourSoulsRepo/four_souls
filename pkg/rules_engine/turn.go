@@ -326,21 +326,33 @@ func (g *Game) healAll() {
 
 // SoulValue is a player's total soul value (R-CARD-21).
 func (g *Game) SoulValue(p PlayerID) int {
-	// A character's soul value counts, though it is not a soul (R-CARD-35).
-	total := 0
-	if d, ok := g.cards.find(g.CardOf(g.Players[p].Character)); ok {
-		total += d.Soul
-	}
+	total := g.characterSouls(g.Players[p].Character)
 	for _, id := range g.Players[p].InPlay {
-		o := g.Object(id)
-		if o.Role != RoleSoul {
-			continue
-		}
-		if d, ok := g.cards.find(o.Card); ok {
-			total += max(d.Soul, 1)
-		}
+		total += g.soulsOf(id)
 	}
 	return total
+}
+
+// soulsOf is the soul value of a soul card: at least one (R-CARD-18).
+// Other cards are no souls.
+func (g *Game) soulsOf(id ObjectID) int {
+	o := g.Object(id)
+	if o.Role != RoleSoul {
+		return 0
+	}
+	if d, ok := g.cards.find(o.Card); ok {
+		return max(d.Soul, 1)
+	}
+	return 0
+}
+
+// characterSouls is a character's soul value; it counts, though it is
+// not a soul (R-CARD-35).
+func (g *Game) characterSouls(id ObjectID) int {
+	if d, ok := g.cards.find(g.CardOf(id)); ok {
+		return d.Soul
+	}
+	return 0
 }
 
 // checkWin ends the game when players reach the soul target (R-WIN-01 to

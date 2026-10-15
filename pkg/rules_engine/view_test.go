@@ -196,6 +196,32 @@ func TestViewSaysHowManySoulsWin(t *testing.T) {
 	}
 }
 
+func TestViewSaysWhatEachSoulIsWorth(t *testing.T) {
+	g := toAction(t, 2)
+	p := g.Turn.Active
+	boss := g.newObject("boss", Zone{Kind: ZoneInPlay}, p)
+	bonus := g.newObject("soul_x", Zone{Kind: ZoneInPlay}, p)
+	g.Object(boss).Role, g.Object(bonus).Role = RoleSoul, RoleSoul
+	g.Players[p].InPlay = append(g.Players[p].InPlay, boss, bonus)
+	v := g.View(Viewer{Kind: ViewSpectator})
+	worth := map[ObjectID]int{}
+	for _, c := range v.Players[p].InPlay {
+		worth[c.ID] = c.Souls
+	}
+	// A soul without a printed value is still worth one (R-CARD-18).
+	if worth[boss] != 1 || worth[bonus] != 1 {
+		t.Errorf("souls boss %d, bonus %d; want 1 and 1", worth[boss], worth[bonus])
+	}
+	for _, c := range v.Players[p].InPlay {
+		if c.ID != boss && c.ID != bonus && c.Souls != 0 {
+			t.Errorf("%s is no soul but worth %d", c.Card, c.Souls)
+		}
+	}
+	if v.Players[p].Souls != 2 || v.Players[p].Character.Souls != 0 {
+		t.Errorf("player souls %d, character %d; want 2 and 0", v.Players[p].Souls, v.Players[p].Character.Souls)
+	}
+}
+
 func TestViewNamesWhoPassedAndWhoMayRespond(t *testing.T) {
 	g := toAction(t, 4)
 	a := g.Turn.Active

@@ -39,6 +39,10 @@ type CardView struct {
 	// pick, by its Choice; only on a played card with two or more
 	// activated abilities, so a client can offer the lines (C-05).
 	Abilities []string `json:"abilities,omitempty"`
+	// Souls is the soul value the card adds to its owner, on a soul in
+	// play or a player's character, so a client can tie crystals to it
+	// (V-43).
+	Souls int `json:"souls,omitempty"`
 }
 
 // MonsterStats are a monster's stats now and as printed, so a client can
@@ -172,8 +176,11 @@ func (g *Game) View(v Viewer) GameView {
 		if pl.ID == g.Turn.Active {
 			pv.Attacks, pv.Purchases = g.attacksLeft(), g.purchasesLeft()
 		}
+		pv.Character.Souls = g.characterSouls(pl.Character)
 		for _, id := range pl.InPlay {
-			pv.InPlay = append(pv.InPlay, g.playedView(id))
+			cv := g.playedView(id)
+			cv.Souls = g.soulsOf(id)
+			pv.InPlay = append(pv.InPlay, cv)
 		}
 		if v.sees(pl.ID) || g.bonus(StatRevealHand, pl.ID, 0) > 0 {
 			for _, id := range pl.Hand {
