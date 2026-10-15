@@ -68,6 +68,7 @@ func addToHand(g *Game, p PlayerID, card CardRef) ObjectID {
 
 func activate(t *testing.T, g *Game, p PlayerID, obj ObjectID, i int) {
 	t.Helper()
+	throwPending(t, g)
 	if _, err := g.Apply(Intent{Player: p, Kind: IntentActivate, Objects: []ObjectID{obj}, Choice: i}); err != nil {
 		t.Fatal(err)
 	}
@@ -296,11 +297,11 @@ func TestExtraLootPlayOnAnotherTurn(t *testing.T) {
 	g.Object(isaac).Card = "isaac_like" // give b an Isaac-like character
 	g.Object(isaac).Charged = true
 	penny := addToHand(g, b, "penny")
-	g.push(StackItem{Kind: StackRoll, Controller: a})
+	g.push(StackItem{Kind: StackRoll, Roll: 3, Controller: a})
 	pass(t, g) // a passes; b has priority on a's turn
 	activate(t, g, b, isaac, 0)
 	resolveAll(t, g)
-	g.push(StackItem{Kind: StackRoll, Controller: a})
+	g.push(StackItem{Kind: StackRoll, Roll: 3, Controller: a})
 	pass(t, g)
 	if _, err := g.Apply(Intent{Player: b, Kind: IntentPlayLoot, Objects: []ObjectID{penny}}); err != nil {
 		t.Errorf("an extra loot play works on another player's turn: %v", err)

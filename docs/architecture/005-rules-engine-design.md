@@ -60,6 +60,7 @@ Use options 2, 4 and 6.
    7. More prompt kinds: order triggers, discard, vote, end-of-game.
    8. Order prompt: the player sends a whole card order in one intent (19.16).
    9. An `Ask` question with `Order` opens it; `do` reads `c.Order`.
+   10. Throw prompt: a roll waits for its roller's throw intent (ADR 014).
 4. Priority and the stack
    1. Stack items: loot, activated ability, triggered ability.
    2. More stack items: dice roll, damage, death.

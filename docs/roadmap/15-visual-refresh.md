@@ -1574,7 +1574,7 @@ Images come first, so the new table is built with backs and mats.
    3. `make screenshots` shows the mode dialog.
    4. UC-13 updated.
 
-### [ ] 15.59 Throw in the engine
+### [x] 15.59 Throw in the engine
 
 1. Goal: every roll waits for the roller's throw (V-17, 15.5).
 2. Tasks:
@@ -1590,6 +1590,26 @@ Images come first, so the new table is built with backs and mats.
    1. Engine test: no value exists before the throw.
    2. Engine test: forced rolls still decide the value.
    3. All engine tests and fuzz runs pass.
+4. Result (2026-10-15)
+   1. `PromptThrow` and `IntentThrow`; ADR 014.
+   2. A roll goes on the stack with no value and queues `ActThrow`.
+   3. Queued actions run first: nobody responds before the throw.
+   4. The throw draws the value; then `dice_rolled` with the stack ID.
+   5. Attack, reward, `Roll` effect rolls; many dice are drawn with the throw.
+   6. `Reroll` and `RerollRoll` clear the value; the roll's player throws.
+   7. A roll gone before its throw is never thrown.
+   8. A game-controlled roll is thrown at once; the first-player roll unchanged.
+   9. Test helpers and `settle` throw; fuzz throws through `Allowed`.
+   10. Engine 0.2.0; `CanReplay` refuses older records clearly.
+   11. Record format stays 1, so old records stay readable (ADR 007).
+   12. Server `forcedIntent` throws, so the build stays exhaustive; tests in 15.60.
+   13. The client has no throw yet: the app waits at every roll until 15.61.
+   14. ADR 005, ADR 007, Adding-a-card wiki, CHANGELOG updated.
+   15. No screen change; no screenshots.
+5. Owner notes (2026-10-15)
+   1. Owner marks 15.59 solved.
+   2. 15.59 – 15.61 stay together and land together.
+   3. The app and e2e wait at rolls until 15.61; e2e gates it then.
 
 ### [ ] 15.60 Throw on the server
 

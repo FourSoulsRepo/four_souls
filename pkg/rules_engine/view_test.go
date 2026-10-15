@@ -201,7 +201,7 @@ func TestViewNamesWhoPassedAndWhoMayRespond(t *testing.T) {
 	a := g.Turn.Active
 	b := g.next(a)
 	c, d := g.next(b), g.next(g.next(b))
-	g.push(StackItem{Kind: StackRoll, Controller: b, Label: "x"})
+	g.push(StackItem{Kind: StackRoll, Roll: 3, Controller: b, Label: "x"})
 	pass(t, g)
 	pass(t, g)
 	// Every viewer sees the same lists (V-11).
@@ -254,7 +254,7 @@ func TestViewStackNamesTheUsedAbility(t *testing.T) {
 	a := g.Turn.Active
 	activate(t, g, a, giveItem(g, a, "coin_bag"), 0)
 	g.push(StackItem{Kind: StackLoot, Controller: a, Ability: AbilityRef{Card: "dagaz_like", Index: 0}, Mode: 1})
-	g.push(StackItem{Kind: StackRoll, Controller: a})
+	g.push(StackItem{Kind: StackRoll, Roll: 3, Controller: a})
 	gv := g.View(Viewer{Kind: ViewSpectator})
 	want := []string{"↷: Gain 3¢.", "Choose a player.", ""}
 	for i, it := range gv.Stack {
@@ -321,7 +321,7 @@ func TestViewNamesSourceAndTargetCards(t *testing.T) {
 		t.Fatal("no monster in the first slot")
 	}
 	g.push(StackItem{Kind: StackDamage, Controller: NoPlayer, Source: monster, Amount: 1, Target: Target{Player: a, IsPlayer: true}})
-	g.push(StackItem{Kind: StackRoll, Controller: a, Attack: true, Target: Target{Object: monster}})
+	g.push(StackItem{Kind: StackRoll, Roll: 3, Controller: a, Attack: true, Target: Target{Object: monster}})
 	gv := g.View(Viewer{Kind: ViewSpectator})
 	card := g.Object(monster).Card
 	if gv.Stack[0].SourceCard != card || gv.Stack[0].TargetCard != "" {

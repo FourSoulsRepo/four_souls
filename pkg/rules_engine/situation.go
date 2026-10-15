@@ -318,6 +318,8 @@ func (g *Game) settle(choices []string) ([]Event, error) {
 			}
 			choices = choices[w.Count:]
 			in = Intent{Player: w.Player, Kind: IntentOrder, Objects: order}
+		case w.Kind == PromptThrow:
+			in = Intent{Player: w.Player, Kind: IntentThrow}
 		case w.Kind == PromptPriority && (len(g.Stack) > 0 || g.Attack.On || g.Purchase.On):
 			in = Intent{Player: w.Player, Kind: IntentPass}
 		default:

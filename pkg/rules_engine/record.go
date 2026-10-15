@@ -31,6 +31,29 @@ func (g *Game) Step(in Intent) (StepRecord, error) {
 // ErrMismatch means a replayed step ended in a different state.
 var ErrMismatch = errors.New("replay: state differs from the record")
 
+// CanReplay says whether a record made by engine version v replays on
+// this engine. Records made before the throw (ADR 014) do not: their
+// steps have no throw intents.
+func CanReplay(v string) error {
+	if older(v, throwVersion) {
+		return fmt.Errorf("replay: the record was made by rules engine %s; engines from %s on need a throw for every roll, so it cannot replay", v, throwVersion)
+	}
+	return nil
+}
+
+// older reports whether version a (X.Y.Z) is older than b. A version
+// that does not parse counts as older.
+func older(a, b string) bool {
+	var x, y [3]int
+	if n, err := fmt.Sscanf(a, "%d.%d.%d", &x[0], &x[1], &x[2]); err != nil || n != 3 {
+		return true
+	}
+	if _, err := fmt.Sscanf(b, "%d.%d.%d", &y[0], &y[1], &y[2]); err != nil {
+		panic("rulesengine: bad version " + b)
+	}
+	return slices.Compare(x[:], y[:]) < 0
+}
+
 // Replay rebuilds a game from its setup and recorded steps. It stops at
 // the first step whose checksum differs and returns that step's index
 // with ErrMismatch (RP-02, RP-12).

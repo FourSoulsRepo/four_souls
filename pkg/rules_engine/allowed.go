@@ -40,6 +40,8 @@ func (g *Game) Allowed(p PlayerID) []Intent {
 	case PromptOrder:
 		// One intent: the cards in their order now; send them reordered.
 		out = append(out, Intent{Player: p, Kind: IntentOrder, Objects: append([]ObjectID(nil), g.Choice.Objects...)})
+	case PromptThrow:
+		out = append(out, Intent{Player: p, Kind: IntentThrow})
 	case PromptNone, PromptGameOver:
 	}
 	return out

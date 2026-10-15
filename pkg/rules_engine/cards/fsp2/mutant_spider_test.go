@@ -1,6 +1,10 @@
 package fsp2
 
-import "testing"
+import (
+	"testing"
+
+	engine "github.com/FourSoulsRepo/rules_engine"
+)
 
 func TestMutantSpider(t *testing.T) {
 	tb := armed(t, items("mutant_spider"), "trite", "fatty")
@@ -12,6 +16,10 @@ func TestMutantSpider(t *testing.T) {
 	settleAny2 := func() {
 		for range 20 {
 			w := tb.G.Prompt()
+			if w.Kind == engine.PromptThrow {
+				tb.ThrowPending()
+				continue
+			}
 			if len(w.Options) == 4 {
 				tb.Choose("6")
 				return

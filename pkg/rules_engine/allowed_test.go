@@ -82,7 +82,7 @@ func TestCanAct(t *testing.T) {
 	if !g.CanAct(a) {
 		t.Error("the active player in the action phase can act")
 	}
-	g.push(StackItem{Kind: StackRoll, Controller: a})
+	g.push(StackItem{Kind: StackRoll, Roll: 3, Controller: a})
 	pass(t, g)
 	if g.Prompt().Player != b {
 		t.Fatal("b should have priority")

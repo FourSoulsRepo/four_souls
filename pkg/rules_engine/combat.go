@@ -176,11 +176,8 @@ func (g *Game) startAttack(target ObjectID) {
 }
 
 func (g *Game) attackRoll() {
-	p := g.Turn.Active
-	r := g.d6()
-	g.emit(Event{Kind: EvDiceRolled, Player: p, Amount: r, Text: "attack roll"})
 	g.push(StackItem{
-		Kind: StackRoll, Controller: p, Roll: r, Label: "attack roll", Attack: true,
+		Kind: StackRoll, Controller: g.Turn.Active, Label: "attack roll", Attack: true,
 		Target: Target{Object: g.Attack.Target},
 	})
 }
@@ -386,7 +383,7 @@ func (g *Game) rewardsStep(holding ObjectID) {
 	}
 	for _, r := range g.def(holding).Rewards {
 		if r.Roll {
-			g.push(StackItem{Kind: StackRoll, Controller: active, Source: holding, Roll: g.d6(), Label: "reward roll", Reward: int(r.Kind) + 1, Amount: times})
+			g.push(StackItem{Kind: StackRoll, Controller: active, Source: holding, Label: "reward roll", Reward: int(r.Kind) + 1, Amount: times})
 			continue
 		}
 		g.enqueue(Action{Kind: r.action(), Player: active, Amount: r.Amount * times})
@@ -514,7 +511,7 @@ func (g *Game) refillSlots() {
 	}
 }
 
-// d6 rolls a die; tests may force results.
+// d6 draws a die's value when it is thrown; tests may force results.
 func (g *Game) d6() int {
 	if len(g.forcedRolls) > 0 {
 		r := g.forcedRolls[0]

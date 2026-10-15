@@ -252,13 +252,7 @@ type rerollEffect struct{ target int }
 func RerollRoll(t int) Effect { return rerollEffect{t} }
 
 func (e rerollEffect) apply(c *Ctx) {
-	id := c.Targets[e.target].StackID
-	for i := range c.G.Stack {
-		if c.G.Stack[i].ID == id {
-			c.G.Stack[i].Roll = c.G.d6()
-			c.G.emit(Event{Kind: EvDiceRolled, Player: c.G.Stack[i].Controller, Amount: c.G.Stack[i].Roll, Text: "reroll"})
-		}
-	}
+	c.G.Reroll(c.Targets[e.target].StackID)
 }
 
 // RollTable maps roll results to effects: index 0 is a roll of 1.
@@ -271,10 +265,8 @@ type rollEffect struct{ table RollTable }
 func Roll(t RollTable) Effect { return rollEffect{t} }
 
 func (e rollEffect) apply(c *Ctx) {
-	r := c.G.d6()
-	c.G.emit(Event{Kind: EvDiceRolled, Player: c.Controller, Amount: r, Text: "roll"})
 	c.G.push(StackItem{
-		Kind: StackRoll, Controller: c.Controller, Source: c.Source, Roll: r, Label: "roll",
+		Kind: StackRoll, Controller: c.Controller, Source: c.Source, Label: "roll",
 		RollFor: c.ref, Mode: c.mode, Targets: c.Targets,
 		EventPlayer: c.EventPlayer, EventAmount: c.EventAmount, EventStack: c.EventStack, EventObject: c.EventObject, EventSource: c.EventSource,
 	})

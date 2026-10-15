@@ -31,6 +31,7 @@ const (
 	ActChooseDie                            // the chooser of ManyDice picks the result of the roll Amount
 	ActPlayLootFree                         // Player plays the loot card Object without using a loot play
 	ActPushLingering                        // put lingering ability From of Object on the stack; EventPlayer Player, EventAmount Amount
+	ActThrow                                // Player throws the die of the roll Amount (15.59)
 )
 
 // Action is a pending change. It sits in the queue, may be rewritten by
@@ -42,6 +43,8 @@ type Action struct {
 	Amount int        `json:"amount"`
 	From   PlayerID   `json:"from,omitempty"` // the other player, e.g. of a steal
 	Ask    *Asking    `json:"ask,omitempty"`
+	// Reroll marks a throw that rolls a roll again (ActThrow).
+	Reroll bool `json:"reroll,omitempty"`
 	// Applied lists replacements already applied; each applies once
 	// (R-ABIL-32).
 	Applied []ReplacementRef `json:"applied,omitempty"`
@@ -314,6 +317,8 @@ func (g *Game) perform(a Action) {
 			Kind: StackTrigger, Controller: g.abilityController(a.Object), Source: a.Object, Card: ref.Card,
 			Ability: ref, Label: g.abilityText(ref), EventPlayer: a.Player, EventAmount: a.Amount,
 		})
+	case ActThrow:
+		g.askThrow(a)
 	case ActRewardsDone:
 		before := len(g.PendingTriggers)
 		g.emit(Event{Kind: EvRewardsGained, Player: a.Player, Object: a.Object, Card: g.Object(a.Object).Card, Prev: a.Object})

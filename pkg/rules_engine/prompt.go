@@ -17,6 +17,9 @@ const (
 	// PromptOrder asks the player to put Count cards in order, top
 	// first, with one IntentOrder (19.16).
 	PromptOrder
+	// PromptThrow asks the player to throw the die of a roll with
+	// IntentThrow; Text names the roll (15.59).
+	PromptThrow
 )
 
 // Prompt names who must answer and what kind of answer is expected.
@@ -43,6 +46,7 @@ const (
 	IntentPurchase                   // declare a purchase (R-SHOP-01)
 	IntentActivate                   // use ability Choice of Objects[0] (R-ABIL-08)
 	IntentOrder                      // the cards of an order prompt in Objects, top first
+	IntentThrow                      // throw the die of a throw prompt (R-DICE-02)
 )
 
 // Intent is one player's request. The engine checks it against the
@@ -185,6 +189,10 @@ func (g *Game) check(in Intent) error {
 		if !samePermutation(in.Objects, g.Choice.Objects) {
 			return refuse(g.Choice.Rule, "put all %d cards in order, each once", len(g.Choice.Objects))
 		}
+	case IntentThrow:
+		if w.Kind != PromptThrow || g.Throw == nil {
+			return refuse("R-DICE-02", "no throw is asked for")
+		}
 	default:
 		return refuse("R-PRIO-01", "unknown intent")
 	}
@@ -259,6 +267,8 @@ func (g *Game) apply(in Intent) {
 		g.answer(in.Choice)
 	case IntentOrder:
 		g.answerOrder(in.Objects)
+	case IntentThrow:
+		g.throw()
 	case IntentAttack:
 		g.declareAttack(in.Player)
 	case IntentPurchase:
