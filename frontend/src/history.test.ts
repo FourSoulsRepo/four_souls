@@ -98,4 +98,16 @@ describe('lookedAt', () => {
     expect(mine[0]).toMatchObject({ text: 'You look at A_DIME', card: 'a_dime' });
     expect(mine[1]?.text).toBe('Bo looks at a card');
   });
+
+  it('shows a card looked at twice in one update once (19.13)', () => {
+    const events = [
+      { kind: 'looked_at', player: 0, object: 361, card: 'library_card', private: true },
+      { kind: 'looked_at', player: 0, object: 361, card: 'library_card', private: true },
+      { kind: 'looked_at', player: 0, object: 430, card: 'a_dime', private: true },
+    ];
+    expect(lookedAt(events, 0)).toEqual([
+      { id: 361, card: 'library_card' },
+      { id: 430, card: 'a_dime' },
+    ]);
+  });
 });

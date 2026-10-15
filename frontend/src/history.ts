@@ -96,9 +96,17 @@ export interface Looked {
 }
 
 // lookedAt is the cards this viewer looks at in one update's events,
-// for the look dialog (V-07).
+// for the look dialog (V-07). A card looked at twice in one update
+// shows once (19.13).
 export function lookedAt(events: GameEvent[], you: number): Looked[] {
-  return events.flatMap((e) => (e.kind === 'looked_at' && e.player === you && e.card ? [{ id: e.object ?? 0, card: e.card }] : []));
+  const seen = new Set<number>();
+  return events.flatMap((e) => {
+    if (e.kind !== 'looked_at' || e.player !== you || !e.card) return [];
+    const id = e.object ?? 0;
+    if (seen.has(id)) return [];
+    seen.add(id);
+    return [{ id, card: e.card }];
+  });
 }
 
 // Turn step names, in Go's order (pkg/rules_engine/turn.go).

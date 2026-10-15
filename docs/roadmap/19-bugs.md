@@ -452,6 +452,12 @@ This step never closes; new reports are appended.
    4. That update has `looked_at` 361 twice.
    5. `lookedAt` keeps every event, so 361 is listed twice.
    6. `LookDialog` keys its cards by object id: React warns.
+6. Result (2026-10-15)
+   1. `lookedAt` keeps the first look at each object in one update.
+   2. The history still logs both looks; each was a real look.
+   3. Engine, server, protocol and records unchanged.
+   4. Vitest in `history.test.ts`.
+   5. No screenshots: the state needs that one seed's deal.
 
 ### [ ] 19.14 e2e: a guest's Join click can miss under load
 
@@ -474,6 +480,10 @@ This step never closes; new reports are appended.
 4. Done when:
    1. Cause found and written here.
    2. `make e2e` passes several runs in a row.
+5. Findings so far
+   1. Gate run for 19.13: the same miss in `info.spec.ts` (15.47), webkit.
+   2. Again with e2e Vite watching no files.
+   3. The rerun passed; its run overwrote the evidence.
 
 ### [x] 19.15 A full hand: the end cards are hard to play
 
