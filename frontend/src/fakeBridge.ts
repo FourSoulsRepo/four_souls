@@ -252,11 +252,18 @@ w.go = {
           effectCast: '/cardimg/assets/sounds/effect-cast.mp3',
           effectImpact: '/cardimg/assets/sounds/effect-impact.mp3',
         }),
-      // One mat image, at its real path; the e2e tests serve it only for
-      // screenshots, else it fails to load as in a public clone.
+      // The mat images, at their real paths; the e2e tests serve them only
+      // for screenshots, else they fail to load as in a public clone.
       // ?nomats lists none, as Go does without the private images.
       Mats: () =>
-        Promise.resolve(params.has('nomats') ? [] : [{ id: 'basement', name: 'Basement', image: '/cardimg/assets/mats/basement.webp' }]),
+        Promise.resolve(
+          params.has('nomats')
+            ? []
+            : [
+                { id: 'basement', name: 'Basement', image: '/cardimg/assets/mats/basement.webp' },
+                { id: 'cathedral', name: 'Cathedral', image: '/cardimg/assets/mats/cathedral.webp' },
+              ],
+        ),
       SaveRecord: (link: string) => Promise.resolve(`/fake/${new URL(link).searchParams.get('game') ?? ''}.fsrec`),
       // The LAN holds one hosting app: the test server (?server=PORT).
       // ?nolan finds nothing.

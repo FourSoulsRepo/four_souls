@@ -1798,3 +1798,4 @@ Images come first, so the new table is built with backs and mats.
    2. Fixed: `faceStyle` turns the face about its own middle.
    3. Plain dice and the throw animation are unchanged.
    4. Screenshot: `.cache/screenshots/15.64/rotated/`.
+   5. Owner marks 15.64 solved.
