@@ -606,7 +606,7 @@ This step never closes; new reports are appended.
    5. Not caused by 19.17; the engine and client behave as designed.
    6. Evidence kept outside the repo before the rerun.
 
-### [ ] 19.19 Trigger order: "on the stack first" is unclear
+### [x] 19.19 Trigger order: "on the stack first" is unclear
 
 1. Goal: the player knows which trigger resolves first.
 2. Report (owner, 2026-10-15)
@@ -634,3 +634,5 @@ This step never closes; new reports are appended.
    4. Engine, protocol and records unchanged.
    5. Vitest and e2e test in `actions.spec.ts`.
    6. Screenshots: `.cache/screenshots/19.19/before/` and `after/`.
+7. Owner notes (2026-10-15)
+   1. Owner marks 19.19 solved.
