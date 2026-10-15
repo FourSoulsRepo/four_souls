@@ -1667,6 +1667,8 @@ Images come first, so the new table is built with backs and mats.
    8. Client: protocol 3 and the throw enums; no button yet (15.61).
    9. UC-06, UC-07, Server wiki, CHANGELOG updated.
    10. No screen change; no screenshots.
+5. Owner notes (2026-10-15)
+   1. Owner marks 15.60 solved.
 
 ### [x] 15.61 Throw button and waiting
 
@@ -1696,6 +1698,8 @@ Images come first, so the new table is built with backs and mats.
    12. Full `make e2e` passes: the app no longer waits at rolls.
    13. UC-13, UC-14, Client and Animations wiki, CHANGELOG updated.
    14. Screenshots: `screen-throw-button.png`, `screen-throw-others.png`.
+5. Owner notes (2026-10-15)
+   1. Owner marks 15.61 solved.
 
 ### [x] 15.62 Throw animation
 
@@ -1723,6 +1727,8 @@ Images come first, so the new table is built with backs and mats.
    12. Screenshots: `screen-dice-in-air.png`, `screen-dice-landed.png`.
    13. The fast-burst e2e test looks for its fly on every frame.
    14. The longer throw left the fly too short for `toBeVisible`'s polling.
+5. Owner notes (2026-10-15)
+   1. Owner marks 15.62 solved.
 
 ### [x] 15.63 Last roll by the stack
 
@@ -1743,3 +1749,5 @@ Images come first, so the new table is built with backs and mats.
    7. e2e: after the attack, both screens show the final value; hover names it.
    8. UC-14, Client wiki, CHANGELOG updated.
    9. Screenshot: `screen-last-roll.png`.
+5. Owner notes (2026-10-15)
+   1. Owner marks 15.63 solved.
