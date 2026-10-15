@@ -115,6 +115,9 @@
   * It lies face up on the monster deck, for every player.
   * The slot dialog shows it above the slot buttons.
   * It leaves the deck when it flies into the chosen slot.
+* **1s. A big hand (19.15):** the fan tightens; the end cards drop only a little.
+  * Every card's top stays on screen, even with 12 cards.
+  * Each card can be hovered and played.
 
 ## Postconditions
 

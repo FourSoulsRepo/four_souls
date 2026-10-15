@@ -237,12 +237,22 @@ function PlayCard({ card, size, ui }: { card: CardView; size: CardSize; ui: Inte
 }
 
 // fan spreads a hand of n cards: a smaller angle and more overlap the
-// more cards there are, so a big hand still fits (H-03).
+// more cards there are, so a big hand still fits (H-03). The ends drop
+// at most fanDrop pixels, so their tops stay in reach (19.15).
 function fan(n: number): CSSProperties {
   const step = Math.min(7, 40 / Math.max(n, 1));
   const overlap = n <= 3 ? 20 : Math.min(64, 20 + (n - 3) * 7);
-  return { '--fan-step': `${String(step)}deg`, '--fan-overlap': `${String(overlap)}px` } as CSSProperties;
+  const half = Math.max((n - 1) / 2, 1);
+  const drop = Math.min(4, fanDrop / (half * half));
+  return {
+    '--fan-step': `${String(step)}deg`,
+    '--fan-overlap': `${String(overlap)}px`,
+    '--fan-drop': `${String(drop)}px`,
+  } as CSSProperties;
 }
+
+// fanDrop is how far the end cards of a big hand drop, in pixels.
+const fanDrop = 24;
 
 // onPlayArea: the point is over the board, where loot cards are played.
 function onPlayArea(x: number, y: number): boolean {

@@ -474,3 +474,28 @@ This step never closes; new reports are appended.
 4. Done when:
    1. Cause found and written here.
    2. `make e2e` passes several runs in a row.
+
+### [ ] 19.15 A full hand: the end cards are hard to play
+
+1. Goal: every card of a big hand can be hovered and played.
+2. Report (owner, 2026-10-15)
+   1. A hand of 12 cards.
+   2. The cards at the sides are almost impossible to play.
+3. Tasks:
+   1. Find the cause in the fan layout.
+   2. Keep every card's top in reach, however big the hand.
+4. Done when:
+   1. e2e test: a 12-card hand; each card shows a top to point at.
+   2. Screenshots before and after.
+5. Cause
+   1. `fan` dropped each card by `spread² × 4px`, with no limit.
+   2. 12 cards: the end spread is ±5.5, so a drop of about 121 px.
+   3. The hand box is 104 px high; the table clips below it.
+   4. So the end cards sank off screen.
+   5. Their raised neighbours covered what was left.
+   6. e2e measure: the first card had 0 px² the pointer could hit.
+6. Result (2026-10-15)
+   1. The end cards drop at most 24 px (`fanDrop`), any hand size.
+   2. Hands of up to 5 cards keep their old shape.
+   3. Every card of a 12-card hand shows its top and name.
+   4. Screenshots: `.cache/screenshots/19.15/before/` and `after/`.

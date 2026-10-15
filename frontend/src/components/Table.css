@@ -560,7 +560,7 @@
 /* The fan: each card turns by its place from the middle and drops a
    little toward the ends. --spread is set per card, the rest on .hand. */
 .own .hand-card {
-  transform: translateY(calc(var(--spread) * var(--spread) * 4px)) rotate(calc(var(--spread) * var(--fan-step)));
+  transform: translateY(calc(var(--spread) * var(--spread) * var(--fan-drop))) rotate(calc(var(--spread) * var(--fan-step)));
   transform-origin: 50% 160%;
 }
 

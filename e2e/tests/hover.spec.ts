@@ -104,3 +104,64 @@ test('the zoom shows keyword tips beside the card (15.27)', async ({ page }) => 
   await expect(zoom.locator('.card.size-zoom')).toHaveAttribute('aria-label', 'Isaac');
   await expect(tips).toHaveCount(0);
 });
+
+// reach is how much of each hand card the pointer can hit, in square
+// pixels: the points inside the window where that card is on top.
+function reach(page: Page): Promise<number[]> {
+  return page.evaluate(() =>
+    [...document.querySelectorAll('.own .hand-card')].map((el) => {
+      const r = el.getBoundingClientRect();
+      let hits = 0;
+      for (let x = Math.ceil(r.left); x < r.right; x += 2) {
+        for (let y = Math.ceil(r.top); y < Math.min(r.bottom, window.innerHeight); y += 2) {
+          if (document.elementFromPoint(x, y)?.closest('.hand-card') === el) {
+            hits++;
+          }
+        }
+      }
+      return hits * 4;
+    }),
+  );
+}
+
+test('every card of a 12-card hand can be pointed at (19.15)', async ({ browser }) => {
+  const pages = await startGame(browser, ['Ful', 'Lan'], { url: fast() });
+  const page = await activePage(pages, click);
+  await expect(page.getByRole('group', { name: 'Your hand' }).locator('.card').first()).toBeVisible();
+  // Copies of the own hand stand in for a hand of 12; only the screen
+  // changes, nobody acts on it.
+  await page.evaluate(() => {
+    interface Card {
+      id: number;
+      card: string;
+    }
+    interface S {
+      game: { view: { players: { id: number; hand?: Card[]; hand_size: number }[] } } | null;
+    }
+    const { store } = (window as unknown as { fourSouls: { store: { getState: () => S; setState: (s: Partial<S>) => void } } })
+      .fourSouls;
+    const { game } = store.getState();
+    if (!game) {
+      throw new Error('no game');
+    }
+    const players = game.view.players.map((p) => {
+      const own = p.hand;
+      if (!own?.length) {
+        return p;
+      }
+      const hand = Array.from({ length: 12 }, (_, i) => ({ ...own[i % own.length], id: 9000 + i }) as Card);
+      return { ...p, hand, hand_size: hand.length };
+    });
+    store.setState({ game: { ...game, view: { ...game.view, players } } });
+  });
+  const cards = page.getByRole('group', { name: 'Your hand' }).locator('.hand-card');
+  await expect(cards).toHaveCount(12);
+  await page.mouse.move(0, 0);
+  await shot(page, 'hand-12');
+  // Each card, the end ones too, shows at least a strip of 30 by 50
+  // pixels to the pointer.
+  const areas = await reach(page);
+  for (const [i, a] of areas.entries()) {
+    expect(a, `card ${String(i)}`).toBeGreaterThanOrEqual(30 * 50);
+  }
+});
