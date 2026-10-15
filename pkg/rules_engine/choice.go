@@ -34,6 +34,8 @@ type Choice struct {
 	Rule         string           `json:"rule"`
 	Replacements []ReplacementRef `json:"replacements,omitempty"`
 	Objects      []ObjectID       `json:"objects,omitempty"`
+	// Previews say what each order of Replacements gives (19.17).
+	Previews []ReplacementPreview `json:"previews,omitempty"`
 	// Deck adds the monster deck as the last option (attack targets).
 	Deck bool `json:"deck,omitempty"`
 	// Slots are monster slot indexes (where a revealed card goes).

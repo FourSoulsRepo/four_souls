@@ -127,6 +127,27 @@ type OptionView struct {
 	IsPlayer bool     `json:"is_player,omitempty"`
 	Deck     bool     `json:"deck,omitempty"`     // the monster or treasure deck
 	StackID  int      `json:"stack_id,omitempty"` // a stack item
+	// Outcome is what the option leads to, when the engine can tell
+	// (replacement order, 19.17).
+	Outcome *OutcomeView `json:"outcome,omitempty"`
+}
+
+// OutcomeView is what an order of replacements gives (19.17).
+// Actions are what then happens; Unused are the cards whose effect no
+// longer applies; Again means the player orders the rest next.
+type OutcomeView struct {
+	Actions []OutcomeAction `json:"actions,omitempty"`
+	Unused  []CardRef       `json:"unused,omitempty"`
+	Again   bool            `json:"again,omitempty"`
+}
+
+// OutcomeAction is one action of an outcome: its kind, player, amount,
+// and the card it acts on, if any (Bum-Bo! levels up).
+type OutcomeAction struct {
+	Kind   ActionKind `json:"kind"`
+	Player PlayerID   `json:"player"`
+	Amount int        `json:"amount"`
+	Card   CardRef    `json:"card,omitempty"`
 }
 
 // sees reports whether the viewer may see player p's hand.
@@ -277,8 +298,32 @@ func (g *Game) optionViews() []OptionView {
 		for i, p := range c.Slots {
 			set(i, func(o *OptionView) { o.Player, o.IsPlayer = PlayerID(p), true })
 		}
-	case ChooseReplacement, ChooseTriggerOrder, ChooseMode, ChooseAnswer, ChooseCopyAbility, ChooseDie, ChooseOrder:
+	case ChooseReplacement:
+		for i, r := range c.Replacements {
+			set(i, func(o *OptionView) { o.Object, o.Outcome = r.Object, g.outcomeView(c, i) })
+		}
+	case ChooseTriggerOrder, ChooseMode, ChooseAnswer, ChooseCopyAbility, ChooseDie, ChooseOrder:
 		// Text options.
+	}
+	return out
+}
+
+// outcomeView is the preview of option i of a replacement choice.
+func (g *Game) outcomeView(c *Choice, i int) *OutcomeView {
+	if i >= len(c.Previews) {
+		return nil
+	}
+	p := c.Previews[i]
+	out := &OutcomeView{Again: p.Again}
+	for _, a := range p.Actions {
+		oa := OutcomeAction{Kind: a.Kind, Player: a.Player, Amount: a.Amount}
+		if a.Object != 0 {
+			oa.Card = g.CardOf(a.Object)
+		}
+		out.Actions = append(out.Actions, oa)
+	}
+	for _, r := range p.Unused {
+		out.Unused = append(out.Unused, g.CardOf(r.Object))
 	}
 	return out
 }

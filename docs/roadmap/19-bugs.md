@@ -541,3 +541,64 @@ This step never closes; new reports are appended.
    13. Screenshots: `.cache/screenshots/19.16/before/` and `after/`.
 7. Owner notes (2026-10-15)
    1. Owner marks 19.16 solved.
+
+### [ ] 19.17 Two "instead" effects: the order choice is unclear
+
+1. Goal: the player sees what each order of effects gives.
+2. Report (owner, 2026-10-15)
+   1. Bum-Bo! and Counterfeit Penny in play; the player gains ¢.
+   2. The game asks which effect goes first.
+   3. The question is confusing.
+   4. The owner wants Bum-Bo! to level up by more, and cannot tell how.
+3. Tasks:
+   1. Find the cause in the code.
+   2. Name the card of each option.
+   3. Say what each order does.
+4. Done when:
+   1. Cause found and written here.
+   2. e2e test: the dialog names both cards and each result.
+   3. Screenshots before and after.
+5. Cause
+   1. Both cards are replacements ("instead"), not triggers.
+   2. `processQueue` asks `ChooseReplacement` (R-ABIL-33).
+   3. Title: "Choose which happens first".
+   4. Each option is only the card's rule text; no card name.
+   5. Nothing says what each order does.
+   6. Order matters: the first one rewrites the gain.
+   7. Penny first: gain 3¢ → 4¢, then Bum-Bo! levels up by 4.
+   8. Bum-Bo! first: it levels up by 3; no ¢ left for the Penny.
+   9. The player must work this out from two card texts.
+   10. Poker Chip (fsp2) is the third such card; it rolls a die.
+6. Result (2026-10-15)
+   1. Owner's pick: show what each order gives.
+   2. The engine plays each order on a copy of the game (`previewReplacement`).
+   3. The choice keeps the results as `Previews`.
+   4. The view sends them as each option's `outcome`.
+   5. Each option is now the card itself: image and name.
+   6. Title: "Gaining 10¢: which card applies first?".
+   7. Under each card: "→ Bum-Bo! levels up by 11".
+   8. A card that then does nothing: "→ Counterfeit Penny does nothing".
+   9. Three or more cards: "Then you pick the next card".
+   10. Poker Chip: "→ Poker Chip rolls for 4¢"; the roll is unknown.
+   11. No protocol bump: older clients ignore the new field.
+   12. Screenshots: `.cache/screenshots/19.17/before/` and `after/`.
+
+### [ ] 19.18 e2e: a played Dagaz waits for a player target
+
+1. Goal: the stack test plays any loot card the deal gives.
+2. Report (agent, 2026-10-15)
+   1. Found by `make e2e` during 19.17.
+   2. `stack.spec.ts`: "a played loot card shows on the stack".
+   3. Chromium; the hand had Dagaz.
+   4. The stack stayed empty; the status said "You: Choose a target".
+3. Tasks:
+   1. Answer a target picked on the table, not only in a dialog.
+4. Done when:
+   1. The test passes with Dagaz in the hand.
+5. Cause
+   1. Dagaz asks its mode, then a player to protect.
+   2. A player target is picked on the table (15.25), not in a dialog.
+   3. The test's loop clicks only `.choice-option` buttons.
+   4. So it never answers the target; the card never reaches the stack.
+   5. Not caused by 19.17; the engine and client behave as designed.
+   6. Evidence kept outside the repo before the rerun.

@@ -68,6 +68,12 @@
   * The card stays in hand; nothing goes on the stack.
   * A card with no valid target cannot be played; the engine decides.
   * A target that is not on the table keeps the dialog.
+* **5c. Order of "instead" effects (19.17):** two cards replace one gain, e.g. Bum-Bo! and Counterfeit Penny.
+  * The title names the gain: "Gaining 10¢: which card applies first?".
+  * Each option is a card, with what picking it first gives below.
+  * E.g. "→ Bum-Bo! levels up by 11".
+  * A card whose effect then does nothing says so.
+  * With three or more cards: "Then you pick the next card".
 
 ## Postconditions
 

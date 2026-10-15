@@ -1,5 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { actionsFor, aimedOption, IntentKind, orderIntent, PromptKind, Purpose, sameTarget } from './actions';
+import {
+  ActionKind,
+  actionsFor,
+  aimedOption,
+  IntentKind,
+  orderIntent,
+  outcomeLines,
+  PromptKind,
+  Purpose,
+  sameTarget,
+} from './actions';
 import type { Update } from './protocol';
 
 function update(partial: Partial<Update['view']>, allowed: Update['allowed']): Update {
@@ -196,5 +206,37 @@ describe('aims', () => {
     expect(sameTarget(ann, { object: 0, player: 0 })).toBe(false);
     expect(sameTarget({ stack_id: 2, player: 1 }, { stack_id: 2, player: 0 })).toBe(true);
     expect(sameTarget({ player: -1 }, { player: -1 })).toBe(false);
+  });
+});
+
+// 19.17: each order of replacement effects says what it gives.
+describe('outcomeLines', () => {
+  const names = new Map([
+    ['bum_bo', 'Bum-Bo!'],
+    ['counterfeit_penny', 'Counterfeit Penny'],
+    ['poker_chip', 'Poker Chip'],
+  ]);
+  const name = (ref: string) => names.get(ref) ?? ref;
+
+  it('names the card that levels up and the one that does nothing', () => {
+    const o = { actions: [{ kind: ActionKind.addCounters, player: 0, amount: 3, card: 'bum_bo' }], unused: ['counterfeit_penny'] };
+    expect(outcomeLines(o, name)).toEqual(['Bum-Bo! levels up by 3', 'Counterfeit Penny does nothing']);
+  });
+
+  it('says a gain, a roll, a prevention and a second pick', () => {
+    expect(outcomeLines({ actions: [{ kind: ActionKind.gainCents, player: 0, amount: 4 }] }, name)).toEqual(['You gain 4¢']);
+    expect(outcomeLines({ actions: [{ kind: ActionKind.pushLingering, player: 0, amount: 4, card: 'poker_chip' }] }, name)).toEqual([
+      'Poker Chip rolls for 4¢',
+    ]);
+    expect(outcomeLines({}, name)).toEqual(['Nothing happens']);
+    expect(outcomeLines({ again: true }, name)).toEqual(['Then you pick the next card']);
+  });
+
+  it('passes the outcome on to the choice option', () => {
+    const outcome = { actions: [{ kind: ActionKind.gainCents, player: 0, amount: 4 }] };
+    const u = update({ waiting: { kind: PromptKind.choose, player: 0, options: ['counterfeit_penny'] }, options: [{ object: 7, player: -1, outcome }] }, [
+      { player: 0, kind: IntentKind.choose, choice: 0 },
+    ]);
+    expect(actionsFor(u, () => true).choice?.options[0]?.outcome).toEqual(outcome);
   });
 });

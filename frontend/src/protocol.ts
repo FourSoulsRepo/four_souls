@@ -336,6 +336,18 @@ export interface OptionView {
   is_player?: boolean;
   deck?: boolean;
   stack_id?: number;
+  // outcome is what the option leads to, when the engine can tell
+  // (replacement order, 19.17).
+  outcome?: OutcomeView;
+}
+
+// OutcomeView is what an order of replacements gives (19.17): what then
+// happens, the cards whose effect no longer applies, or that the player
+// orders the rest next.
+export interface OutcomeView {
+  actions?: { kind: number; player: number; amount: number; card?: string }[];
+  unused?: string[];
+  again?: boolean;
 }
 
 // Aim is what the allowed intent at index intent asks to target first.

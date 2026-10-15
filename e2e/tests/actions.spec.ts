@@ -399,3 +399,54 @@ test('"put them back in any order" shows each card in its place (19.16)', async 
   const sent = await olaf.evaluate(() => (window as unknown as { sentOrder: unknown }).sentOrder);
   expect(sent).toMatchObject({ kind: 8, objects: [901, 903, 902] });
 });
+
+test('two "instead" effects: each card says what it gives first (19.17)', async ({ browser }) => {
+  const [ugo] = await startGame(browser, ['Ugo', 'Wren'], { url: fast() });
+  if (!ugo) {
+    throw new Error('no pages');
+  }
+  // Bum-Bo! and Counterfeit Penny replace a gain of 10¢; the order
+  // prompt as the server sends it to the chooser. act is caught.
+  const title = 'Gaining 10¢: which card applies first?';
+  await ugo.evaluate((text) => {
+    interface S {
+      game: { view: Record<string, unknown>; allowed: unknown[] };
+      lobby: { table: { you: number } };
+      receive: (env: unknown) => void;
+    }
+    const store = (window as unknown as { fourSouls: { store: { getState: () => S; setState: (s: object) => void } } }).fourSouls.store;
+    const s = store.getState();
+    const game = structuredClone(s.game);
+    const you = s.lobby.table.you;
+    game.view.waiting = { kind: 4, player: you, purpose: 0, options: ['counterfeit_penny', 'bum_bo'], text };
+    game.view.options = [
+      { object: 901, player: -1, outcome: { actions: [{ kind: 14, player: you, amount: 11, card: 'bum_bo' }] } },
+      {
+        object: 902,
+        player: -1,
+        outcome: { actions: [{ kind: 14, player: you, amount: 10, card: 'bum_bo' }], unused: ['counterfeit_penny'] },
+      },
+    ];
+    game.allowed = [
+      { player: you, kind: 4, choice: 0 },
+      { player: you, kind: 4, choice: 1 },
+    ];
+    store.setState({
+      act: (intent: unknown) => {
+        (window as unknown as { sentChoice: unknown }).sentChoice = intent;
+      },
+    });
+    s.receive({ type: 'update', data: { ...game, step: 2, events: [] } });
+  }, title);
+  const dialog = ugo.getByRole('dialog', { name: title });
+  await expect(dialog).toBeVisible();
+  const option = (card: string) => dialog.locator('.choice-option').filter({ has: ugo.getByRole('button', { name: card, exact: true }) });
+  await expect(option('Counterfeit Penny').getByRole('list', { name: 'Result' })).toHaveText('→ Bum-Bo! levels up by 11');
+  await expect(option('Bum-Bo!').getByRole('list', { name: 'Result' })).toHaveText(
+    '→ Bum-Bo! levels up by 10→ Counterfeit Penny does nothing',
+  );
+  await shot(ugo, 'instead-order');
+  await option('Counterfeit Penny').locator('button').click();
+  const sent = await ugo.evaluate(() => (window as unknown as { sentChoice: unknown }).sentChoice);
+  expect(sent).toMatchObject({ kind: 4, choice: 0 });
+});

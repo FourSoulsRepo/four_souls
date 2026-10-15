@@ -189,6 +189,8 @@ Stats: `StatPlayerATK`, `StatPlayerHP`, `StatMonsterDC`, `StatMonsterATK`, `Stat
 
 A `Replacement` has a `When` (does it apply to this pending action?) and a `Do` (what happens instead). Returning no actions prevents the event. Each replacement applies once per event; if several apply, the affected player chooses the order.
 
+When it asks for that order, the engine plays each order on a copy of the game first (`previewReplacement`). The choice keeps the results as `Previews`; the view sends each as an option's `outcome`, so the dialog can say "Bum-Bo! levels up by 11" under the card (19.17).
+
 ## Testing a card
 
 Each card gets `<card>_test.go` next to it; the [status report](Rules-engine) counts a card as tested when that file exists. The `enginetest` package builds a table and plays it:

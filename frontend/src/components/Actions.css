@@ -287,6 +287,16 @@
   gap: 6px;
 }
 
+/* What an order of effects gives (19.17), under its card. */
+.choice-outcome {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-width: 180px;
+  font-size: 13px;
+  text-align: center;
+}
+
 /* The order dialog (19.16): the deck's places in a row, top first, and
    the cards not placed yet below. */
 .order-hint {

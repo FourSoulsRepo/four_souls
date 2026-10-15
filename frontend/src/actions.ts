@@ -1,6 +1,6 @@
 // What the player may do now, from the update's allowed intents (7.7).
 // Pure: the table only offers what the server allows.
-import type { Intent, OptionView, Prompt, Update } from './protocol';
+import type { Intent, OptionView, OutcomeView, Prompt, Update } from './protocol';
 
 // Engine enums, in Go's order (pkg/rules_engine/prompt.go, choice.go).
 export const IntentKind = {
@@ -17,9 +17,12 @@ export const IntentKind = {
 
 export const PromptKind = { none: 0, priority: 1, discard: 2, gameOver: 3, choose: 4, order: 5 } as const;
 
+// The engine actions an outcome shows, in Go's order (actions.go).
+export const ActionKind = { gainCents: 0, addCounters: 14, pushLingering: 20 } as const;
+
 // Choice titles, by purpose, in Go's order.
 const purposeTitles = [
-  'Choose which happens first',
+  'Choose which card applies first',
   'Choose what to attack',
   'Choose a slot for the monster',
   'Choose an item to lose',
@@ -56,6 +59,34 @@ export interface ChoiceOption extends Action {
   card?: string;
   // target is what the option points at on the table, if anything.
   target?: OptionView;
+  // outcome is what picking it leads to (19.17).
+  outcome?: OutcomeView;
+}
+
+// outcomeLines says what an order of replacement effects gives, for the
+// chooser (19.17). name gives a card's title.
+export function outcomeLines(o: OutcomeView, name: (card: string) => string): string[] {
+  if (o.again) {
+    return ['Then you pick the next card'];
+  }
+  const lines: string[] = [];
+  for (const a of o.actions ?? []) {
+    const card = name(a.card ?? '');
+    if (a.kind === ActionKind.gainCents) {
+      lines.push(`You gain ${String(a.amount)}¢`);
+    } else if (a.kind === ActionKind.addCounters) {
+      lines.push(`${card} levels up by ${String(a.amount)}`); // Bum-Bo!
+    } else if (a.kind === ActionKind.pushLingering) {
+      lines.push(`${card} rolls for ${String(a.amount)}¢`); // Poker Chip
+    }
+  }
+  if ((o.actions ?? []).length === 0) {
+    lines.push('Nothing happens');
+  }
+  for (const c of o.unused ?? []) {
+    lines.push(`${name(c)} does nothing`);
+  }
+  return lines;
 }
 
 export interface Choice {
@@ -163,6 +194,7 @@ export function actionsFor(u: Update, isCard: (label: string) => boolean): Actio
           intent,
           ...(isCard(label) ? { card: label } : {}),
           ...(target && (target.object || target.is_player || target.deck || target.stack_id) ? { target } : {}),
+          ...(target?.outcome ? { outcome: target.outcome } : {}),
         };
       }),
     };
