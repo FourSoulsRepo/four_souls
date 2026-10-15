@@ -821,16 +821,11 @@ Images come first, so the new table is built with backs and mats.
 7. Owner notes (2026-10-13)
    1. Owner marks 15.25 solved.
 
-### [ ] 15.26 Click modes
+### [-] 15.26 Click modes
 
-1. Goal: the player picks one-click or drag play (V-28).
-2. Tasks:
-   1. Click card, then click target, still works.
-   2. One-click mode: a click plays the card at once.
-   3. A setting chooses the mode; both send the same intent.
-3. Done when:
-   1. e2e test: the bomb play by two clicks.
-   2. e2e test: the same play in one-click mode.
+1. Dropped by the owner, 2026-10-15.
+2. Every play is one click or tap; a second one picks the target.
+3. Drag play is not needed, so no mode setting.
 
 ### [ ] 15.27 Hand hover and glow
 

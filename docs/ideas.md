@@ -180,6 +180,7 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    2. Drag and drop: as in Hearthstone (V-16).
    3. A setting chooses the mode.
    4. Both modes send the same intent.
+   5. Dropped (2026-10-15): one click, then a click on the target (15.26).
 29. V-29. No number badges on cards.
    1. Owner rejected 1–9 badges on valid targets (15.1, F-14).
    2. Targets glow instead (V-20).
