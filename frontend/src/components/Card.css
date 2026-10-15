@@ -101,10 +101,6 @@
   margin: 0 0 2cqi;
 }
 
-.card-footnote {
-  opacity: 0.8;
-}
-
 .card-icon {
   display: inline-block;
   min-width: 1.2em;
@@ -158,8 +154,56 @@
   z-index: 10;
   display: flex;
   align-items: center;
+  justify-content: center;
   padding: 24px;
   pointer-events: none;
+}
+
+/* A mouse zoom is placed beside the hovered card, or rises from a hand
+   card (15.27, zoom.ts); translate sets its place. */
+.card-zoom:not(.card-zoom-touch) .card-zoom-body {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+/* The card and its keyword tips, on the side away from the hovered
+   card (H-13). */
+.card-zoom-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.card-zoom-body.tips-left {
+  flex-direction: row-reverse;
+}
+
+.card-zoom-tips {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 200px;
+}
+
+.card-zoom-tip {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 8px 10px;
+  border: 2px solid #ffd27a;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--fg);
+  background: rgb(10 16 24 / 92%);
+  box-shadow: 0 0 14px rgb(0 0 0 / 55%);
+}
+
+.card-zoom-tip b {
+  font-size: 15px;
+  color: #ffd27a;
 }
 
 .card-zoom-figure {
@@ -211,16 +255,7 @@
   font-weight: 700;
 }
 
-.card-zoom-left {
-  justify-content: flex-start;
-}
-
-.card-zoom-right {
-  justify-content: flex-end;
-}
-
 .card-zoom-touch {
-  justify-content: center;
   pointer-events: auto;
   background: rgb(0 0 0 / 45%);
 }

@@ -319,7 +319,7 @@ function HandCard({ card, ui, spread }: { card: CardView; ui: Interact; spread: 
         }
       }}
     >
-      <Card cardRef={card.card} size="hand" objectId={card.id} {...handle} />
+      <Card cardRef={card.card} size="hand" objectId={card.id} rise {...handle} />
     </div>
   );
 }

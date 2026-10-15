@@ -568,9 +568,15 @@
   margin-left: calc(var(--fan-overlap) * -1);
 }
 
-/* A hovered card comes to the front of the fan; 15.27 makes it rise. */
+/* A hovered card comes to the front of the fan; its zoom rises from it
+   (15.27, H-13). */
 .own .hand-card:hover:not(.dragging) {
   z-index: 10;
+}
+
+/* A playable hand card glows green; the rest stay plain (15.27, H-12). */
+.own .hand .card.hl-act {
+  box-shadow: 0 0 0 3px #5ee04a, 0 0 16px 3px rgb(94 224 74 / 70%);
 }
 
 /* Dragging a hand card to play it (7.7); only transform changes. */

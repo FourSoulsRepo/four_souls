@@ -31,6 +31,7 @@ import type { CardInfo, Kind } from './cards';
 import { loadFonts } from './fonts';
 import { entriesFor, lookedAt, type Entry, type Looked } from './history';
 import type { LinePart } from './stack';
+import type { Box } from './zoom';
 import { emptyLobby, leftTable, lost, onMessage, remember, type Screen, type Session } from './lobby';
 import { connect, disconnect, drop, send } from './net';
 import { claimEffect, nextBeat } from './animations';
@@ -55,7 +56,10 @@ export type { Screen } from './lobby';
 export interface Zoom {
   ref: string;
   touch: boolean;
-  side: 'left' | 'right';
+  // at is the hovered card or row; the zoom opens beside it (15.27).
+  at: Box;
+  // rise: a hand card's zoom rises from it instead (H-13).
+  rise?: boolean;
   // caption goes below the card: who owns it, and the used ability's
   // words, highlighted (S-06, S-07).
   caption?: ZoomCaption;

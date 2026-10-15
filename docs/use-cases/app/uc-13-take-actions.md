@@ -9,7 +9,7 @@
 ## Main scenario (happy path)
 
 1. The table highlights what the player may do now.
-   1. Yellow: cards to play or use.
+   1. Yellow: cards to play or use; green in the hand (15.27).
    2. The stack panel: Pass.
    3. Icons by own name: Buy and Attack; lit when usable, dim when not.
    4. A big End turn button at the board's right edge.

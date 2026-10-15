@@ -827,7 +827,7 @@ Images come first, so the new table is built with backs and mats.
 2. Every play is one click or tap; a second one picks the target.
 3. Drag play is not needed, so no mode setting.
 
-### [ ] 15.27 Hand hover and glow
+### [x] 15.27 Hand hover and glow
 
 1. Goal: the hand shows what can be played and what it does.
 2. Tasks:
@@ -836,6 +836,26 @@ Images come first, so the new table is built with backs and mats.
    3. Playable cards glow green; the rest stay plain (H-12).
 3. Done when:
    1. e2e test: playable cards glow, others do not.
+4. Result (2026-10-15)
+   1. A hand card the player may play or use glows green, not yellow.
+   2. The rest of the hand stays plain; table cards keep yellow.
+   3. The class stays `hl-act`, so e2e helpers find it as before.
+   4. A hovered hand card's zoom rises from it.
+   5. It stands on the window's bottom edge, centered over the card.
+   6. Every other zoom opens right beside its card or row.
+   7. It opens toward the window's middle and stays inside the window.
+   8. Stack rows, history icons, and history entries zoom the same way.
+   9. A touch zoom stays centered, as before.
+   10. Keyword tips beside the zoom: the card's footnotes.
+   11. Today: Eternal, Trinket, Curse, Guppy; name and meaning.
+   12. They stand on the side away from the card.
+   13. The blank zoom face no longer repeats them.
+   14. `zoom.ts`: `placeZoom` is pure; the zoom measures itself first.
+   15. Unit tests: beside, both sides, window edges, rise; keyword names.
+   16. e2e test: playable cards glow green; the other player's do not.
+   17. e2e test: the hand zoom rises over its card; a monster's is beside it.
+   18. e2e test: The D6's zoom shows the Eternal tip; Isaac's has none.
+   19. Screenshots: `.cache/screenshots/15.27/before/` and `after/`.
 
 ### [ ] 15.28 Prompt banners
 

@@ -4,6 +4,7 @@ import type { GameView, Intent, StackItem } from '../protocol';
 import { stackCard, stackIcon, stackParts, stackWait, type LinePart, type Names } from '../stack';
 import { useApp, type Zoom } from '../store';
 import { playerColor } from '../table';
+import { boxOf } from '../zoom';
 import { Card } from './Card';
 import { Die } from './Die';
 import { skullPath } from './marks';
@@ -120,13 +121,13 @@ function StackRow({ it, view, names }: { it: StackItem; view: GameView; names: N
 // itemZoom is the large card of a stack item: the used ability's words
 // and the owner in their color below it (S-06, S-07). An item without
 // words says what it did instead, naming its target (15.22). It opens
-// on the side away from the pointer.
+// beside the row (15.27).
 export function itemZoom(it: StackItem, card: string, view: GameView, names: Names, e: PointerEvent, touch: boolean): Zoom {
   const owner = it.controller >= 0 ? names.player(it.controller) : undefined;
   return {
     ref: card,
     touch,
-    side: e.clientX < window.innerWidth / 2 ? 'right' : 'left',
+    at: boxOf(e.currentTarget),
     caption: {
       owner,
       color: playerColor(it.controller),

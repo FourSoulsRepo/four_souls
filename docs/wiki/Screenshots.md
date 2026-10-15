@@ -46,5 +46,9 @@ The fixture copies the fan-game notice. `internal/legal` has a test that fails w
 | Damage bursts on every target at once | `screen-damage-bursts.png` |
 | Hurt health in red | `screen-damage-red-hp.png` |
 | A skull on a dying monster | `screen-death-skull.png` |
+| Playable hand cards glow green | `screen-hand-glow.png` |
+| A hovered hand card rises large | `screen-hand-hover.png` |
+| A monster's zoom right beside it | `screen-monster-hover.png` |
+| Keyword tips beside a zoomed card | `screen-zoom-tips.png` |
 
 When a screen is added, call `shot` in its test and add a row here.

@@ -1,10 +1,11 @@
 import { motion } from 'motion/react';
-import { useEffect, useRef, useState, type PointerEvent } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { claimed } from '../animations';
 import { iconText, kindOf, textParts, unknownCard, type CardInfo, type Kind } from '../cards';
 import { scaleFor } from '../playback';
 import type { MonsterStats } from '../protocol';
 import { useApp } from '../store';
+import { boxOf } from '../zoom';
 import './Card.css';
 
 // How long a touch must rest on a card to zoom it (B-06).
@@ -38,6 +39,8 @@ interface Props {
   monster?: MonsterStats;
   // noZoom: the card does not zoom itself; its row does (15.21).
   noZoom?: boolean;
+  // rise: the zoom rises from the card, as from a hand (15.27, H-13).
+  rise?: boolean;
   onClick?: () => void;
 }
 
@@ -56,6 +59,7 @@ export function Card({
   stats,
   monster,
   noZoom = false,
+  rise = false,
   onClick,
 }: Props) {
   const info = useApp((s) => (cardRef ? s.cards.get(cardRef) : undefined));
@@ -108,7 +112,6 @@ export function Card({
   const zoomable = size !== 'zoom' && !noZoom;
   // The zoomed card shows no badges: its words stay readable.
   const badges = size !== 'zoom';
-  const side = (e: PointerEvent) => (e.clientX < window.innerWidth / 2 ? 'right' : 'left');
   const cancelPress = () => {
     window.clearTimeout(pressRef.current);
     downRef.current = null;
@@ -130,7 +133,7 @@ export function Card({
       onPointerEnter={(e) => {
         if (zoomable && e.pointerType === 'mouse') {
           zoomedRef.current = true;
-          setZoom({ ref: card.ref, touch: false, side: side(e) });
+          setZoom({ ref: card.ref, touch: false, at: boxOf(e.currentTarget), rise });
         }
       }}
       onPointerLeave={(e) => {
@@ -142,10 +145,10 @@ export function Card({
       }}
       onPointerDown={(e) => {
         if (zoomable && e.pointerType !== 'mouse') {
-          const s = side(e);
+          const at = boxOf(e.currentTarget);
           downRef.current = { x: e.clientX, y: e.clientY };
           pressRef.current = window.setTimeout(() => {
-            setZoom({ ref: card.ref, touch: true, side: s });
+            setZoom({ ref: card.ref, touch: true, at });
           }, LONG_PRESS_MS);
         }
       }}
@@ -240,7 +243,8 @@ function Badge({ kind, value, label, title, hurt = false }: BadgeProps) {
   );
 }
 
-// BlankFace shows a card's text; full adds the effects and keywords.
+// BlankFace shows a card's text; full adds the effects. The zoom shows
+// the keywords beside the card (15.27).
 function BlankFace({ card, full }: { card: CardInfo; full: boolean }) {
   return (
     <div className="card-blank">
@@ -251,11 +255,6 @@ function BlankFace({ card, full }: { card: CardInfo; full: boolean }) {
           {card.effects.map((effect) => (
             <p key={effect}>
               <CardText text={effect} />
-            </p>
-          ))}
-          {card.footnotes.map((f) => (
-            <p key={f.title} className="card-footnote">
-              <b>{f.title}</b> <CardText text={f.text} />
             </p>
           ))}
         </div>
@@ -276,7 +275,7 @@ function BlankFace({ card, full }: { card: CardInfo; full: boolean }) {
   );
 }
 
-function CardText({ text }: { text: string }) {
+export function CardText({ text }: { text: string }) {
   return (
     <>
       {textParts(text).map((p, i) =>

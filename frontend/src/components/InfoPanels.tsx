@@ -3,6 +3,7 @@ import { stepName } from '../history';
 import type { GameView } from '../protocol';
 import type { Names } from '../stack';
 import { useApp } from '../store';
+import { boxOf } from '../zoom';
 import './InfoPanels.css';
 
 // TurnBadge shows the turn number, whose turn it is and its step (V-05).
@@ -44,7 +45,7 @@ export function HistoryPanel({ hide }: { hide: () => void }) {
             title={`Turn ${String(e.turn)}: ${e.text}`}
             onPointerEnter={(ev) => {
               if (e.card && ev.pointerType === 'mouse') {
-                setZoom({ ref: e.card, touch: false, side: 'right' });
+                setZoom({ ref: e.card, touch: false, at: boxOf(ev.currentTarget) });
               }
             }}
             onPointerLeave={(ev) => {
@@ -52,9 +53,9 @@ export function HistoryPanel({ hide }: { hide: () => void }) {
                 setZoom(null);
               }
             }}
-            onClick={() => {
+            onClick={(ev) => {
               if (e.card) {
-                setZoom({ ref: e.card, touch: true, side: 'right' });
+                setZoom({ ref: e.card, touch: true, at: boxOf(ev.currentTarget) });
               }
             }}
           >
