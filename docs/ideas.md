@@ -243,6 +243,10 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    1. A purchase gets its own history entry.
    2. The entry names the buyer and the item.
    3. Hovering the entry shows the item card.
+45. V-45. "Choose one-" cards ask like The Bone.
+   1. The mode dialog shows the card large, as the ability dialog does.
+   2. One parchment line per mode, in the card's own words.
+   3. Same look as The Bone's ability lines (15.24).
 
 ## Rules
 

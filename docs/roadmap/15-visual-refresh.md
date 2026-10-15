@@ -2,12 +2,12 @@
 
 Goal: a clearer table, using fouronlinesouls.net as a second reference.
 
-Ideas: V-09, V-12, V-13, V-15 – V-31, V-33 – V-44, GS-06.
+Ideas: V-09, V-12, V-13, V-15 – V-31, V-33 – V-45, GS-06.
 
 Order: 15.1, 15.15, 15.9 – 15.11, 15.16, 15.17, 15.38, 15.18 – 15.24,
 15.3, 15.37, 15.25, 15.32 – 15.34, 15.26, 15.27, 15.5, 15.6,
 15.28 – 15.31, 15.35, 15.36, 15.39 – 15.46, 15.51, 15.52,
-15.54 – 15.57.
+15.54 – 15.58.
 Images come first, so the new table is built with backs and mats.
 
 ## Rules for this step (owner, 2026-10-12)
@@ -1519,3 +1519,21 @@ Images come first, so the new table is built with backs and mats.
    1. Vitest: a purchase event becomes a history entry.
    2. e2e test: buy an item; the History names it.
    3. UC-12 updated.
+
+### [ ] 15.58 "Choose one-" cards ask like The Bone
+
+1. Goal: picking a mode looks like picking an ability (V-45).
+2. Tasks:
+   1. The engine names the card in the mode prompt's `subject`.
+   2. Only the chooser sees it, as with other subjects.
+   3. The mode dialog shows that card large, like the ability dialog.
+   4. One line per mode, styled like The Bone's lines.
+   5. Cancel and a click outside still send the prompt's cancel.
+   6. Played from hand (Dagaz) and from an item (Chaos Card) alike.
+   7. A dragged card still asks its mode first, then aims (15.26).
+   8. **Owner** decides: modes with no valid target hidden, or greyed.
+3. Done when:
+   1. Engine test: a mode prompt names its card as the subject.
+   2. e2e test: Dagaz opens the dialog with the card; the picked mode is sent.
+   3. `make screenshots` shows the mode dialog.
+   4. UC-13 updated.
