@@ -542,7 +542,7 @@ This step never closes; new reports are appended.
 7. Owner notes (2026-10-15)
    1. Owner marks 19.16 solved.
 
-### [ ] 19.17 Two "instead" effects: the order choice is unclear
+### [x] 19.17 Two "instead" effects: the order choice is unclear
 
 1. Goal: the player sees what each order of effects gives.
 2. Report (owner, 2026-10-15)
@@ -582,6 +582,9 @@ This step never closes; new reports are appended.
    10. Poker Chip: "→ Poker Chip rolls for 4¢"; the roll is unknown.
    11. No protocol bump: older clients ignore the new field.
    12. Screenshots: `.cache/screenshots/19.17/before/` and `after/`.
+7. Owner notes (2026-10-15)
+   1. Owner marks 19.17 solved.
+   2. Trigger order on the stack is a separate bug: 19.19.
 
 ### [ ] 19.18 e2e: a played Dagaz waits for a player target
 
@@ -602,3 +605,25 @@ This step never closes; new reports are appended.
    4. So it never answers the target; the card never reaches the stack.
    5. Not caused by 19.17; the engine and client behave as designed.
    6. Evidence kept outside the repo before the rerun.
+
+### [ ] 19.19 Trigger order: "on the stack first" is unclear
+
+1. Goal: the player knows which trigger resolves first.
+2. Report (owner, 2026-10-15)
+   1. Several triggers fire at once; the player orders them.
+   2. The title: "Choose which goes on the stack first".
+   3. It does not say that the first one in resolves last.
+3. Tasks:
+   1. Say in the title that the first one resolves last.
+   2. Show each option as its card, with name and ability text.
+4. Done when:
+   1. e2e test: the dialog says "resolves last" and names each card.
+   2. Screenshots before and after.
+5. Cause
+   1. `placeNextTrigger` asks `ChooseTriggerOrder` (R-ABIL-15).
+   2. The client title: "Choose which goes on the stack first".
+   3. The stack resolves last in, first out; the title hides that.
+   4. Each option label is `abilityText`: "card_ref: text".
+   5. The client shows the raw ref, not the card's name.
+   6. No preview as in 19.17: a trigger resolves later.
+   7. Responses, rolls and new triggers may come between.
