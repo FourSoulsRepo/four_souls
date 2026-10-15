@@ -868,6 +868,8 @@ Images come first, so the new table is built with backs and mats.
    7. The card's fan slot draws the aura: class `usable`, beside `hl-act`.
    8. e2e test reads the aura from the slot, not a ring on the card.
    9. Screenshots: `.cache/screenshots/15.27/fix/`.
+7. Owner notes (2026-10-15)
+   1. Owner marks 15.27 solved.
 
 ### [ ] 15.28 Prompt banners
 
