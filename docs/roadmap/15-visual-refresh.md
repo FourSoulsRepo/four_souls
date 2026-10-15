@@ -5,7 +5,7 @@ Goal: a clearer table, using fouronlinesouls.net as a second reference.
 Ideas: V-09, V-12, V-13, V-15 – V-31, V-33 – V-45, GS-06.
 
 Order: 15.1, 15.15, 15.9 – 15.11, 15.16, 15.17, 15.38, 15.18 – 15.24,
-15.3, 15.37, 15.25, 15.32 – 15.34, 15.26, 15.27, 15.5, 15.6,
+15.3, 15.37, 15.25, 15.32 – 15.34, 15.26, 15.27, 15.59 – 15.63, 15.6,
 15.28 – 15.31, 15.35, 15.36, 15.39 – 15.46, 15.51, 15.52,
 15.54 – 15.58.
 Images come first, so the new table is built with backs and mats.
@@ -191,7 +191,7 @@ Images come first, so the new table is built with backs and mats.
 1. Goal: cards are played by dragging them to a place or target (V-16).
 2. Split into 15.25 – 15.27; tasks moved there.
 
-### [ ] 15.5 Dice throw
+### [~] 15.5 Dice throw
 
 1. Goal: dice look real and the player throws them (V-17).
 2. Tasks:
@@ -206,6 +206,13 @@ Images come first, so the new table is built with backs and mats.
 3. Done when:
    1. e2e screenshot of a die in the air.
    2. The rolled value matches the engine in every test.
+4. Owner decisions (2026-10-15)
+   1. A new throw intent from the roller.
+   2. The engine draws the value only when the intent arrives.
+   3. No timer by default; the response timer throws for an idle player.
+   4. Kicked seats throw at once; bots will too (step 11).
+   5. A disconnected player pauses the game, as now.
+5. Split into 15.59 – 15.63; tasks moved there.
 
 ### [ ] 15.6 Each player's own dice
 
@@ -1566,3 +1573,70 @@ Images come first, so the new table is built with backs and mats.
    2. e2e test: Dagaz opens the dialog with the card; the picked mode is sent.
    3. `make screenshots` shows the mode dialog.
    4. UC-13 updated.
+
+### [ ] 15.59 Throw in the engine
+
+1. Goal: every roll waits for the roller's throw (V-17, 15.5).
+2. Tasks:
+   1. A throw prompt and a throw intent.
+   2. The value is drawn when the intent arrives, never before.
+   3. Covers attack, reward, effect, and many-dice rolls.
+   4. A reroll asks the roll's own player to throw again.
+   5. The first-player roll stays automatic until 15.43.
+   6. Test runner and fuzz harness throw for the roller.
+   7. ADR for the throw intent.
+   8. Old records cannot replay: bump the record format, or refuse them clearly.
+3. Done when:
+   1. Engine test: no value exists before the throw.
+   2. Engine test: forced rolls still decide the value.
+   3. All engine tests and fuzz runs pass.
+
+### [ ] 15.60 Throw on the server
+
+1. Goal: the server carries the throw and answers for idle seats.
+2. Tasks:
+   1. Throw intent in the protocol; protocol docs and golden files.
+   2. A kicked seat throws at once.
+   3. The response timer throws for an idle player.
+   4. "Skip all" and "wait for my turn" never throw for a player.
+   5. Records keep the throw intent.
+   6. UC-06 and UC-07 updated.
+3. Done when:
+   1. Server test: the timer throws; a kicked seat throws.
+   2. Server test: a record with throws replays to the same game.
+
+### [ ] 15.61 Throw button and waiting
+
+1. Goal: the roller always sees the game waits for their throw (V-17).
+2. Tasks:
+   1. A big glowing Throw button where the die will land.
+   2. The stack panel says "Waiting for you to throw" (V-11).
+   3. Others see "Ann is throwing…" and a shaking die.
+   4. The die uses the player's dice look (V-19).
+   5. e2e helpers throw when a test waits for a roll.
+   6. UC-13 and UC-14 updated.
+3. Done when:
+   1. e2e test: attack, throw, the result matches the engine.
+   2. `make screenshots` shows the button and the others' view.
+
+### [ ] 15.62 Throw animation
+
+1. Goal: the die falls, bounces, and rolls to the engine's value (V-17).
+2. Tasks:
+   1. Only `transform` and `opacity`.
+   2. Follows the animation speed setting (ST-05).
+   3. Tag and row in `docs/wiki/Animations.md` (ADR 012).
+   4. Plain die without a texture, as now.
+3. Done when:
+   1. e2e screenshot of a die in the air.
+   2. The rolled value matches the engine in every test.
+
+### [ ] 15.63 Last roll by the stack
+
+1. Goal: the last roll stays visible as a small die by the stack (F-21).
+2. Tasks:
+   1. Shows the final value, after changes and rerolls.
+   2. Hovering it names the roller and what the roll was for.
+3. Done when:
+   1. e2e test: after a roll the small die shows its value.
+   2. `make screenshots` shows it.

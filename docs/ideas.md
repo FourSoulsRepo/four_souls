@@ -105,6 +105,7 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    16. So nobody, the roller included, can see it early.
    17. The record keeps the intent, so replays stay exact.
    18. Items 5–17 are open; the owner decides them in roadmap step 15.5.
+   19. Decided (owner, 2026-10-15): proposals 11–17 accepted (15.5).
 18. V-18. Simple but informative interface.
    1. Do not overload the screen with numbers and panels.
    2. Do not hide what players need to know.

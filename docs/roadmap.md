@@ -244,6 +244,7 @@ Step numbers stay as IDs; the table lists steps in work order.
 40. Soul cards shown by hovering a soul crystal (V-43, 15.56).
 41. Purchases shown in the history (V-44, 15.57).
 42. "Choose one-" cards ask in a dialog like The Bone (V-45, 15.58).
+43. Dice throw split into engine, server, button, animation, last roll (15.59 – 15.63).
 
 ## 16. Localization
 
