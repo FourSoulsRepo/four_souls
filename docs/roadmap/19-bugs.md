@@ -666,3 +666,26 @@ This step never closes; new reports are appended.
    2. Fix the client or the test, whichever is wrong.
 4. Done when:
    1. The test passes ten runs in a row.
+
+### [x] 19.21 e2e: Eden's starting choice hides the soul crystals
+
+1. Goal: the 15.56 soul test passes on every deal.
+2. Report (agent, 2026-10-15)
+   1. Found by `make e2e` during 15.6.
+   2. `table.spec.ts`: "soul cards hide behind the crystals …".
+   3. Chromium; hovering the second own crystal timed out.
+   4. "Choose your starting item" stood over the own area.
+   5. Evidence: `.cache/e2e-evidence/15.6-souls/`.
+3. Cause
+   1. The deal gave the viewer Eden (R-SETUP-09).
+   2. Eden's choice opens at the bottom edge, as agreed in 15.16.
+   3. So the dialog is right; the test expects a plain board.
+4. Tasks:
+   1. Ban Eden in that test, with the reason (CLAUDE.md 5.16).
+5. Done when:
+   1. The test passes with the ban.
+6. Result (2026-10-15)
+   1. The test bans Eden; a comment says why.
+   2. Eden is the only character with a starting choice.
+   3. Three separate runs pass.
+   4. No screen change; no screenshots.

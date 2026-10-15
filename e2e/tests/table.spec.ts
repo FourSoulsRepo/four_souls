@@ -487,7 +487,9 @@ test('souls show as crystals left of the character; a gained soul fills one more
 });
 
 test('soul cards hide behind the crystals; hovering one zooms its card (15.56)', async ({ browser }) => {
-  const [page] = await startGame(browser, ['Sigrid', 'Soren']);
+  // Eden's starting choice opens over the own area and hides the
+  // crystals the test hovers (19.21).
+  const [page] = await startGame(browser, ['Sigrid', 'Soren'], { bans: ['eden'] });
   if (!page) {
     throw new Error('no pages');
   }
