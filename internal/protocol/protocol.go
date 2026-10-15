@@ -16,7 +16,8 @@ import (
 // renaming or removing a field of any message, or of the engine's view,
 // event or intent JSON, or changing its meaning, bumps it.
 // 2: the order prompt (19.16); an older client cannot answer it.
-const Version = 2
+// 3: the throw prompt and intent (15.60).
+const Version = 3
 
 // DefaultPort is the server's TCP port unless configured.
 const DefaultPort = 4774

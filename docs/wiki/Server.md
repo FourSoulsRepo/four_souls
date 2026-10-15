@@ -32,7 +32,9 @@ The server answers for a player only in these cases, never choosing among real o
 * the player can only pass (auto-skip, N-05);
 * the player turned on "skip all" for the stack they saw (N-06);
 * the player waits for their turn: until the seat before them declares the end of its turn, dies, or reaches its end phase; the end window then asks them (N-16);
-* the response timer ran out, or the seat was kicked: pass or end the turn, the first cards for a discard, the first option of a choice (N-07, N-08).
+* the response timer ran out, or the seat was kicked: pass or end the turn, the first cards for a discard, the first option of a choice, a throw for a roll (N-07, N-08, 15.60).
+
+"Skip all" and "wait for my turn" only pass: a roll always waits for its own player's throw (ADR 014).
 
 ## LAN discovery
 

@@ -80,6 +80,7 @@ Use options 1, 3, 5 and 10.
    5. Renaming or removing a field, or changing its meaning, bumps it.
    6. A new prompt an older client cannot answer bumps it too.
    7. Version 2: the order prompt (19.16).
+   8. Version 3: the throw prompt and intent (15.60).
 6. Cards
    1. Messages carry card refs (`the_d6`, `the_d6@2`), never card text.
    2. A client shows an unknown ref as a blank card with the ref (SP-05).

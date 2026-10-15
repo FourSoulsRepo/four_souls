@@ -29,6 +29,7 @@
 * **1b. The app was closed:** the app keeps the last game's server and seat token in its settings.
   * Joining that server again sends the token; the player is back in their seat.
   * The welcome names the seat, so the app knows which player it is.
+* **2e. A kicked seat rolls:** the server throws its die at once (15.60).
 
 ## Postconditions
 

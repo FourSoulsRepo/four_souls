@@ -1611,7 +1611,7 @@ Images come first, so the new table is built with backs and mats.
    2. 15.59 – 15.61 stay together and land together.
    3. The app and e2e wait at rolls until 15.61; e2e gates it then.
 
-### [ ] 15.60 Throw on the server
+### [x] 15.60 Throw on the server
 
 1. Goal: the server carries the throw and answers for idle seats.
 2. Tasks:
@@ -1624,6 +1624,17 @@ Images come first, so the new table is built with backs and mats.
 3. Done when:
    1. Server test: the timer throws; a kicked seat throws.
    2. Server test: a record with throws replays to the same game.
+4. Result (2026-10-15)
+   1. Protocol 3: the throw prompt and intent; golden line added; ADR 006.
+   2. The server needed no new code: `forcedIntent` throws since 15.59.
+   3. Kicked seats and the response timer throw through it.
+   4. `autoIntent` passes only at a priority prompt, so skip and wait never throw.
+   5. Records keep every intent, the throw too.
+   6. Tests: `TestKickedSeatThrows`, `TestTimerThrows`, `TestSkipAndWaitNeverThrow`.
+   7. `TestRecordReplays` now attacks, so its record holds throws and replays.
+   8. Client: protocol 3 and the throw enums; no button yet (15.61).
+   9. UC-06, UC-07, Server wiki, CHANGELOG updated.
+   10. No screen change; no screenshots.
 
 ### [ ] 15.61 Throw button and waiting
 

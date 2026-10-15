@@ -51,6 +51,7 @@ func TestGolden(t *testing.T) {
 		{TypeSaved, 0, Saved{Save: "g1"}},
 		{TypeLoad, 14, Load{Save: "g1"}},
 		{TypeWaitTurn, 15, WaitTurn{On: true}},
+		{TypeIntent, 16, Intent{Intent: engine.Intent{Kind: engine.IntentThrow}}},
 	}
 	var got bytes.Buffer
 	for _, m := range messages {

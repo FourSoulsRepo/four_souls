@@ -29,13 +29,18 @@ func TestRecordReplays(t *testing.T) {
 	stopped := make(chan struct{})
 	go func() { h.Run(ctx); close(stopped) }()
 	players := startTable(t, h, 2)
-	for range 30 { // whoever is asked answers with the first allowed intent
+	for range 30 { // whoever is asked attacks, or answers with the first allowed intent
 		for _, p := range players {
 			up, ok := p.latest()
 			if !ok || len(up.Allowed) == 0 || up.View.Over {
 				continue
 			}
 			in := up.Allowed[0]
+			for _, a := range up.Allowed {
+				if a.Kind == engine.IntentAttack {
+					in = a // attacks roll, so the record keeps throws (15.60)
+				}
+			}
 			if in.Kind == engine.IntentDiscard {
 				in.Objects = in.Objects[:up.View.Waiting.Count]
 			}
@@ -76,12 +81,19 @@ func TestRecordReplays(t *testing.T) {
 		setup.Banned = append(setup.Banned, engine.CardRef(c))
 	}
 	var steps []engine.StepRecord
+	throws := 0
 	for _, st := range rec.Steps {
 		var in engine.Intent
 		if err := json.Unmarshal(st.Intent, &in); err != nil {
 			t.Fatal(err)
 		}
+		if in.Kind == engine.IntentThrow {
+			throws++
+		}
 		steps = append(steps, engine.StepRecord{Intent: in, Checksum: st.Checksum})
+	}
+	if throws == 0 {
+		t.Error("the record keeps no throw")
 	}
 	if _, err := engine.Replay(setup, steps); err != nil {
 		t.Fatalf("the record does not replay: %v", err)

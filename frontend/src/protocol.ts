@@ -2,7 +2,7 @@
 // Only what the client uses so far; protocol.test.ts checks these types
 // against Go's golden file. Go sends a nil list as null.
 
-export const protocolVersion = 2;
+export const protocolVersion = 3;
 export const defaultPort = 4774;
 
 export interface Envelope {

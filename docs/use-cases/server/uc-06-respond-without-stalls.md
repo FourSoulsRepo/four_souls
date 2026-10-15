@@ -24,6 +24,9 @@
 * **7a. Choices and discards:** they still ask the waiting player.
 * **7b. Cancel wait:** the player is asked again from the next pass on.
 * **1a. A client misses an update:** it asks for a resync and gets the whole view again.
+* **6b. A roll waits for its throw:** when the timer runs out, the server throws for the roller (15.60).
+* **7c. A roll waits for its throw:** "Skip all" and "Wait for my turn" never throw.
+  * The server only passes for a player; the roller is always asked to throw.
 
 ## Postconditions
 

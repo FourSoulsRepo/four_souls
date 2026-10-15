@@ -138,3 +138,75 @@ func TestResponseTimer(t *testing.T) {
 		t.Errorf("the game did not move on: step %d", u.Step)
 	}
 }
+
+// atThrow is a game where Isaac (seat 0) attacks Pin and must throw
+// the attack roll (15.59).
+func atThrow(t *testing.T) *engine.Game {
+	t.Helper()
+	g, err := engine.BuildTable(engine.SituationSetup{
+		Players:  []engine.SituationPlayer{{Character: "isaac"}, {Character: "cain"}},
+		Monsters: []engine.CardRef{"pin"},
+	}, b2.Set)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, in := range []engine.Intent{
+		{Player: 0, Kind: engine.IntentAttack},
+		{Player: 0, Kind: engine.IntentPass},
+		{Player: 1, Kind: engine.IntentPass},
+		{Player: 0, Kind: engine.IntentChoose}, // Pin
+	} {
+		if _, err := g.Apply(in); err != nil {
+			t.Fatalf("%+v: %v", in, err)
+		}
+	}
+	if w := g.Prompt(); w.Kind != engine.PromptThrow || w.Player != 0 {
+		t.Fatalf("prompt %+v, want Isaac's throw", w)
+	}
+	return g
+}
+
+// thrown: the throw prompt is gone and the attack roll has its value.
+func thrown(t *testing.T, g *engine.Game) {
+	t.Helper()
+	if w := g.Prompt(); w.Kind == engine.PromptThrow {
+		t.Fatalf("still waiting for the throw: %+v", w)
+	}
+	if len(g.Stack) == 0 || g.Stack[len(g.Stack)-1].Roll == 0 {
+		t.Fatalf("stack %+v: the roll has no value", g.Stack)
+	}
+}
+
+// TestKickedSeatThrows: a kicked seat throws at once (15.60).
+func TestKickedSeatThrows(t *testing.T) {
+	g := atThrow(t)
+	r := &Room{game: g, seats: []roomSeat{{kicked: true}, {client: &Client{}}}}
+	in, ok := r.autoIntent()
+	if !ok || in.Kind != engine.IntentThrow || in.Player != 0 {
+		t.Fatalf("auto intent %+v %v, want Isaac's throw", in, ok)
+	}
+	r.after(nil, false)
+	thrown(t, g)
+}
+
+// TestTimerThrows: the response timer throws for an idle player (15.60).
+func TestTimerThrows(t *testing.T) {
+	g := atThrow(t)
+	r := &Room{game: g, seats: []roomSeat{{client: &Client{}}, {client: &Client{}}}}
+	r.timeUp(r.timerGen)
+	thrown(t, g)
+}
+
+// TestSkipAndWaitNeverThrow: "skip all" and "wait for my turn" pass,
+// but never throw for the player (15.60).
+func TestSkipAndWaitNeverThrow(t *testing.T) {
+	g := atThrow(t)
+	r := &Room{game: g, seats: []roomSeat{{client: &Client{}, wait: true}, {client: &Client{}, wait: true}}}
+	r.seats[0].skip = []int{g.Stack[len(g.Stack)-1].ID}
+	if in, ok := r.autoIntent(); ok {
+		t.Fatalf("the server answered %+v for the roller", in)
+	}
+	if g.Prompt().Kind != engine.PromptThrow {
+		t.Error("the throw prompt is gone")
+	}
+}

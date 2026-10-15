@@ -13,9 +13,10 @@ export const IntentKind = {
   purchase: 6,
   activate: 7,
   order: 8,
+  throw: 9,
 } as const;
 
-export const PromptKind = { none: 0, priority: 1, discard: 2, gameOver: 3, choose: 4, order: 5 } as const;
+export const PromptKind = { none: 0, priority: 1, discard: 2, gameOver: 3, choose: 4, order: 5, throw: 6 } as const;
 
 // The engine actions an outcome shows, in Go's order (actions.go).
 export const ActionKind = { gainCents: 0, addCounters: 14, pushLingering: 20 } as const;
