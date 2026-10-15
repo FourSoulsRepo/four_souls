@@ -177,6 +177,8 @@ export function waitText(view: GameView, you: number, n: Names, choiceTitle?: st
       return mine ? 'Discard down to your hand size' : `${who} is discarding`;
     case PromptKind.order:
       return mine ? (choiceTitle ?? 'Put the cards in order') : `${who} is putting cards back`;
+    case PromptKind.throw:
+      return mine ? 'Throw the die' : `${who} is throwing`;
     case PromptKind.priority:
       if ((stack ?? []).length > 0) {
         return mine ? 'Respond, or pass' : `${who} may respond`;
@@ -209,6 +211,9 @@ export function stackWait(view: GameView, you: number, n: Names): StackWait {
   } else if (w.kind === PromptKind.discard) {
     const count = w.count ?? 0;
     out.prompt = `${name(w.player)}: Discard ${String(count)} loot card${count === 1 ? '' : 's'}`;
+  } else if (w.kind === PromptKind.throw) {
+    // The roller can never miss that the game waits for them (V-17).
+    out.prompt = w.player === you ? 'Waiting for you to throw' : `${n.player(w.player)} is throwing…`;
   }
   return out;
 }

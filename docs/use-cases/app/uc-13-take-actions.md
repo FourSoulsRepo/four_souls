@@ -78,6 +78,12 @@
   * The title: "Choose which goes on the stack first; it resolves last".
   * Each option is the ability's card, with its name and ability text.
   * No preview: other effects may come before a trigger resolves.
+* **6a. Throw (15.61):** every roll waits for its roller's throw.
+  * The roller sees a big glowing Throw button where the die lands.
+  * The button holds the player's die; the roll's name shows below.
+  * The player clicks it, or presses Space.
+  * The die lands with the engine's value; then the others may respond.
+  * A reroll asks the roll's own player to throw again.
 
 ## Postconditions
 

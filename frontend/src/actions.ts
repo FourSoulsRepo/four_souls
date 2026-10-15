@@ -113,6 +113,8 @@ export interface Actions {
   // order puts cards back on a deck (19.16): send intent with the cards
   // top first.
   order: { title: string; intent: Intent } | null;
+  // throw throws the die of a roll (15.61); the prompt's text names it.
+  throw: { label: string; intent: Intent } | null;
 }
 
 // TurnActions are the declare intents and ending the turn, when allowed.
@@ -129,7 +131,7 @@ const buttonLabels = new Map<number, string>([[IntentKind.pass, 'Pass']]);
 // actionsFor lists the viewer's actions. isCard tells whether an option
 // label is a card ref.
 export function actionsFor(u: Update, isCard: (label: string) => boolean): Actions {
-  const out: Actions = { buttons: [], turn: {}, cards: new Map(), choice: null, discard: null, order: null };
+  const out: Actions = { buttons: [], turn: {}, cards: new Map(), choice: null, discard: null, order: null, throw: null };
   const allowed = u.allowed ?? [];
   const abilities = new Map<number, number>();
   for (const a of allowed) {
@@ -175,6 +177,8 @@ export function actionsFor(u: Update, isCard: (label: string) => boolean): Actio
       out.discard = { count: u.view.waiting.count ?? 0, from: a.objects ?? [], intent: a };
     } else if (a.kind === IntentKind.order) {
       out.order = { title: choiceTitle(u.view.waiting), intent: a };
+    } else if (a.kind === IntentKind.throw) {
+      out.throw = { label: u.view.waiting.text ?? '', intent: a };
     }
   }
   if (out.turn.endTurn && allowed.every((a) => a.kind === IntentKind.endTurn || a.kind === IntentKind.pass)) {

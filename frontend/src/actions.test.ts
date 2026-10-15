@@ -166,6 +166,13 @@ describe('actionsFor', () => {
     expect(a.order).toEqual({ title: text, intent });
     expect(orderIntent(intent, [7, 5, 6]).objects).toEqual([7, 5, 6]);
   });
+
+  it('offers the throw of a roll, named by the prompt (15.61)', () => {
+    const intent = { player: 0, kind: IntentKind.throw };
+    const a = actionsFor(update({ waiting: { kind: PromptKind.throw, player: 0, text: 'attack roll' } }, [intent]), isCard);
+    expect(a.throw).toEqual({ label: 'attack roll', intent });
+    expect(a.buttons).toEqual([]);
+  });
 });
 
 describe('aims', () => {

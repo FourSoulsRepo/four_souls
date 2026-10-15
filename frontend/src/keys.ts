@@ -1,5 +1,5 @@
 // Table hotkeys (15.19, 15.20): B buys, A attacks, E ends the turn,
-// Space passes (F-15).
+// Space passes (F-15), or throws a roll's die (15.61).
 import { useEffect, useRef } from 'react';
 
 // useKey calls run when key is pressed on the table. Keys typed into a

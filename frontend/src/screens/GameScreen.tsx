@@ -13,6 +13,7 @@ import { GameMenu } from '../components/GameMenu';
 import { HistoryStrip } from '../components/HistoryStrip';
 import { EndOverlay, LostOverlay, PauseOverlay } from '../components/Overlays';
 import { StackPanel } from '../components/StackPanel';
+import { Throw } from '../components/Throw';
 import { EndTurn, TurnActions } from '../components/TurnActions';
 import { matLook } from '../mats';
 import type { Update } from '../protocol';
@@ -22,7 +23,7 @@ import { seatPositions } from '../table';
 import '../components/Table.css';
 import './screens.css';
 
-const noActions: Actions = { buttons: [], turn: {}, cards: new Map(), choice: null, discard: null, order: null };
+const noActions: Actions = { buttons: [], turn: {}, cards: new Map(), choice: null, discard: null, order: null, throw: null };
 
 // GameScreen is the game table (7.5), drawn from the update on screen.
 export function GameScreen() {
@@ -175,6 +176,9 @@ function Table({ game, you }: { game: Update; you: number }) {
           />
         )}
       </Board>
+      {!view.over && !game.pause && (
+        <Throw waiting={view.waiting} you={you} names={names} action={actions.throw} disabled={!canAct} />
+      )}
       <ActionBar
         status={game.pause ? 'Paused' : waitText(view, you, names, actions.choice?.title ?? actions.order?.title)}
         deadline={game.deadline ?? 0}

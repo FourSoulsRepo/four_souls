@@ -48,6 +48,11 @@
 * **2i. A player takes damage (15.47):** the line names the card that deals it.
   * Boom Fly: "Boom Fly deals 1 damage to Ann", one line per player.
   * No card to name: "Ann takes 1 damage".
+* **2j. A roll waits for its throw (15.61):** the roll's row shows "?".
+  * The roller's panel says "Waiting for you to throw".
+  * The others read "Ann is throwing…" in the panel.
+  * The others see Ann's die shaking where it will land.
+  * The action bar says "Throw the die", or "Ann is throwing".
 
 ## Postconditions
 

@@ -1,7 +1,7 @@
-// Drives prompts through the UI the way a careful player would: answer
-// choices with the first option, discard the first cards, pass when
-// only responding, attack when the turn cannot end otherwise. Used to
-// get through a turn in tests.
+// Drives prompts through the UI the way a careful player would: throw
+// a roll's die, answer choices with the first option, discard the first
+// cards, pass when only responding, attack when the turn cannot end
+// otherwise. Used to get through a turn in tests.
 import { expect, type Locator, type Page } from '@playwright/test';
 
 export interface Seen {
@@ -84,6 +84,12 @@ async function answer(pages: Page[], press: Tap, steps: number[]): Promise<boole
     }
     if (!s.ready || s.waiting !== s.you) {
       continue;
+    }
+    // A roll waits for its roller's throw (15.61).
+    const roll = throwButton(page);
+    if (await enabled(roll)) {
+      await press(page, roll);
+      return true;
     }
     // exact: a question may mention "discard" too.
     const discard = page.getByRole('dialog', { name: 'Discard', exact: true });
@@ -180,6 +186,11 @@ export async function settle(pages: Page[], press: Tap, done: () => Promise<bool
 // turnAction is an icon button by own name (15.19): "Buy" or "Attack".
 export function turnAction(page: Page, name: 'Buy' | 'Attack') {
   return page.getByRole('toolbar', { name: 'Turn actions' }).getByRole('button', { name, exact: true });
+}
+
+// throwButton is the roller's Throw button where the die lands (15.61).
+export function throwButton(page: Page) {
+  return page.getByRole('region', { name: 'Throw' }).getByRole('button', { name: /Throw/ });
 }
 
 // passButton is Pass in the stack panel (15.21).

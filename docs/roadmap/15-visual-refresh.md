@@ -1636,7 +1636,7 @@ Images come first, so the new table is built with backs and mats.
    9. UC-06, UC-07, Server wiki, CHANGELOG updated.
    10. No screen change; no screenshots.
 
-### [ ] 15.61 Throw button and waiting
+### [x] 15.61 Throw button and waiting
 
 1. Goal: the roller always sees the game waits for their throw (V-17).
 2. Tasks:
@@ -1649,6 +1649,21 @@ Images come first, so the new table is built with backs and mats.
 3. Done when:
    1. e2e test: attack, throw, the result matches the engine.
    2. `make screenshots` shows the button and the others' view.
+4. Result (2026-10-15)
+   1. `Throw.tsx`: the roller's big glowing Throw button, mid-screen.
+   2. The button holds the player's die; the roll's name shows below.
+   3. Space throws too; it never passes during a throw prompt.
+   4. Others see "Ann is throwing…" and the die shaking (`throw-shake`).
+   5. The halo breathes (`throw-glow`); both only `transform` and `opacity`.
+   6. Hidden while an effect plays, so only the landing die shows.
+   7. Stack panel: "Waiting for you to throw", or "Ann is throwing…".
+   8. Action bar: "Throw the die", or "Ann is throwing".
+   9. The die is the viewer's dice look until 15.6 sends each seat's.
+   10. e2e `answer` and the random-games driver throw.
+   11. e2e test: attack, throw; both screens get the shown value.
+   12. Full `make e2e` passes: the app no longer waits at rolls.
+   13. UC-13, UC-14, Client and Animations wiki, CHANGELOG updated.
+   14. Screenshots: `screen-throw-button.png`, `screen-throw-others.png`.
 
 ### [ ] 15.62 Throw animation
 

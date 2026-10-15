@@ -16,6 +16,7 @@ import {
   playLoot,
   settle,
   tap,
+  throwButton,
   turnAction,
   turnNumber,
   type Tap,
@@ -500,3 +501,86 @@ test('trigger order: the title says the first one resolves last (19.19)', async 
   const sent = await quill.evaluate(() => (window as unknown as { sentChoice: unknown }).sentChoice);
   expect(sent).toMatchObject({ kind: 4, choice: 1 });
 });
+
+// recordRolls keeps every dice_rolled the page's updates bring, in
+// window.rolls: the values the engine drew.
+async function recordRolls(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    interface S {
+      game: { step: number; events: { kind: string; amount?: number }[] | null } | null;
+    }
+    const w = window as unknown as {
+      rolls: number[];
+      fourSouls: { store: { subscribe: (f: (s: S, old: S) => void) => void } };
+    };
+    w.rolls = [];
+    w.fourSouls.store.subscribe((s, old) => {
+      if (s.game && s.game.step !== old.game?.step) {
+        for (const e of s.game.events ?? []) {
+          if (e.kind === 'dice_rolled' && e.amount !== undefined) {
+            w.rolls.push(e.amount);
+          }
+        }
+      }
+    });
+  });
+}
+
+async function rolls(page: Page): Promise<number[]> {
+  return page.evaluate(() => (window as unknown as { rolls: number[] }).rolls);
+}
+
+test('an attack waits for the roller to throw; the die shows the engine\'s value (15.61)', async ({ browser }) => {
+  const pages = await startGame(browser, ['Thea', 'Ruan']);
+  const active = await activePage(pages, click);
+  const other = pages.find((p) => p !== active);
+  if (!other) {
+    throw new Error('no other page');
+  }
+  await expect(turnAction(active, 'Attack')).toBeEnabled();
+  await click(active, turnAction(active, 'Attack'));
+  // Settle stops before the throw: the attack's target is picked first.
+  await settle(pages, click, async () => (await throwButton(active).count()) > 0);
+
+  // The roller sees the glowing button and the stack says it waits for them.
+  const stack = (page: Page) => page.getByRole('complementary', { name: 'Stack' });
+  await expect(throwButton(active)).toBeEnabled();
+  await expect(stack(active).getByLabel('Waiting for')).toHaveText('Waiting for you to throw');
+  await expect(active.locator('.action-status')).toHaveText(/^Throw the die/);
+  await shot(active, 'throw-button');
+  // The others see who throws, and the die shaking in their hand.
+  const roller = await nameOf(active);
+  const shaking = other.getByRole('region', { name: 'Throw' });
+  await expect(shaking.locator('.throw-shake .die')).toHaveAttribute('aria-label', `${String(roller)}'s die`);
+  await expect(shaking).toContainText(`${String(roller)} is throwing…`);
+  await expect(throwButton(other)).toHaveCount(0);
+  await expect(stack(other).getByLabel('Waiting for')).toHaveText(`${String(roller)} is throwing…`);
+  await shot(other, 'throw-others');
+
+  // Space throws. The die that lands shows the engine's value, the same
+  // on both screens.
+  for (const page of pages) {
+    await recordRolls(page);
+  }
+  await active.keyboard.press(' ');
+  const effect = active.getByTestId('effect-dice').locator('.die');
+  await expect(effect).toBeVisible();
+  const label = await effect.getAttribute('aria-label');
+  await expect(active.getByRole('region', { name: 'Throw' })).toHaveCount(0);
+  await expect(other.getByRole('region', { name: 'Throw' })).toHaveCount(0, { timeout: 10_000 });
+  for (const page of pages) {
+    await expect.poll(async () => (await rolls(page)).map((v) => `Rolled ${String(v)}`)).toEqual([label]);
+  }
+});
+
+// nameOf is the page's own nickname, from the seats of its update.
+async function nameOf(page: Page): Promise<string | undefined> {
+  return page.evaluate(() => {
+    interface S {
+      game: { seats: { seat: number; name: string }[] | null } | null;
+      lobby: { table: { you: number } | null };
+    }
+    const s = (window as unknown as { fourSouls: { store: { getState: () => S } } }).fourSouls.store.getState();
+    return s.game?.seats?.find((x) => x.seat === s.lobby.table?.you)?.name;
+  });
+}

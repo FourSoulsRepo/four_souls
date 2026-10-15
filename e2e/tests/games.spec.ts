@@ -12,7 +12,7 @@ import type { CDPSession, Locator, Page } from '@playwright/test';
 import { expect, test } from './fixtures';
 import { startGame } from './game';
 import { serverPort } from './server';
-import { enabled, endTurnButton, passButton, reachable, seen, turnAction, type Seen } from './turn';
+import { enabled, endTurnButton, passButton, reachable, seen, throwButton, turnAction, type Seen } from './turn';
 
 const maxTurns = Number(process.env.GAME_TURNS ?? 300);
 // stallMs: no step for this long fails the game.
@@ -104,6 +104,11 @@ const weights = { attack: 6, buy: 3, card: 2, endTurn: 1, passOwn: 1, passOther:
 // move makes one random move for a page that must act. It returns what
 // it did, or null when nothing on the page could be pressed.
 async function move(page: Page, s: Seen, rnd: Rnd): Promise<string | null> {
+  const roll = throwButton(page);
+  if (await enabled(roll)) {
+    await roll.click();
+    return 'throw';
+  }
   const discard = page.getByRole('dialog', { name: 'Discard', exact: true });
   if (await discard.isVisible()) {
     const done = discard.getByRole('button', { name: /^Discard/ });

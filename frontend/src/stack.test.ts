@@ -181,6 +181,14 @@ describe('stackWait', () => {
     const discarding = { ...view, waiting: { kind: PromptKind.discard, player: 1, count: 2 } };
     expect(stackWait(discarding, 0, names).prompt).toBe('Bo: Discard 2 loot cards');
   });
+
+  it('says who must throw a roll (15.61)', () => {
+    const throwing = { ...view, waiting: { kind: PromptKind.throw, player: 1, text: 'attack roll' } };
+    expect(stackWait(throwing, 1, names).prompt).toBe('Waiting for you to throw');
+    expect(stackWait(throwing, 0, names).prompt).toBe('Bo is throwing…');
+    expect(waitText(throwing, 1, names)).toBe('Throw the die');
+    expect(waitText(throwing, 0, names)).toBe('Bo is throwing');
+  });
 });
 
 describe('secondsLeft', () => {
