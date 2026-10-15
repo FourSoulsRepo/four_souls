@@ -240,3 +240,31 @@ describe('outcomeLines', () => {
     expect(actionsFor(u, () => true).choice?.options[0]?.outcome).toEqual(outcome);
   });
 });
+
+// 19.19: a trigger option is its card with the ability's words.
+describe('trigger order', () => {
+  const choice = (options: string[]) =>
+    actionsFor(
+      update({ waiting: { kind: PromptKind.choose, player: 0, purpose: Purpose.triggerOrder, options } }, [
+        { player: 0, kind: IntentKind.choose, choice: 0 },
+      ]),
+      (l) => l === 'cains_eye',
+    ).choice;
+
+  it('says the first one resolves last', () => {
+    expect(choice(['cains_eye'])?.title).toMatch(/resolves last/);
+  });
+
+  it('splits the label into the card and its ability text', () => {
+    expect(choice(['cains_eye: At the start of your turn, look.'])?.options[0]).toMatchObject({
+      card: 'cains_eye',
+      line: 'At the start of your turn, look.',
+    });
+  });
+
+  it('keeps a label that names no card as text', () => {
+    const o = choice(['unknown: text'])?.options[0];
+    expect(o?.card).toBeUndefined();
+    expect(o?.line).toBeUndefined();
+  });
+});

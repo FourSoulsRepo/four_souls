@@ -450,3 +450,53 @@ test('two "instead" effects: each card says what it gives first (19.17)', async 
   const sent = await ugo.evaluate(() => (window as unknown as { sentChoice: unknown }).sentChoice);
   expect(sent).toMatchObject({ kind: 4, choice: 0 });
 });
+
+test('trigger order: the title says the first one resolves last (19.19)', async ({ browser }) => {
+  const [quill] = await startGame(browser, ['Quill', 'Zinnia'], { url: fast() });
+  if (!quill) {
+    throw new Error('no pages');
+  }
+  // Cain's Eye and Golden Horseshoe trigger at the start of the turn;
+  // the order prompt as the server sends it to the chooser. act is caught.
+  await quill.evaluate(() => {
+    interface S {
+      game: { view: Record<string, unknown>; allowed: unknown[] };
+      lobby: { table: { you: number } };
+      receive: (env: unknown) => void;
+    }
+    const store = (window as unknown as { fourSouls: { store: { getState: () => S; setState: (s: object) => void } } }).fourSouls.store;
+    const s = store.getState();
+    const game = structuredClone(s.game);
+    const you = s.lobby.table.you;
+    game.view.waiting = {
+      kind: 4,
+      player: you,
+      purpose: 7,
+      options: [
+        'cains_eye: At the start of your turn, look at the top card of the loot deck. You may put it on the bottom.',
+        'golden_horseshoe: At the start of your turn, look at the top card of the treasure deck. You may put it on the bottom.',
+      ],
+    };
+    game.view.options = [{ player: -1 }, { player: -1 }];
+    game.allowed = [
+      { player: you, kind: 4, choice: 0 },
+      { player: you, kind: 4, choice: 1 },
+    ];
+    store.setState({
+      act: (intent: unknown) => {
+        (window as unknown as { sentChoice: unknown }).sentChoice = intent;
+      },
+    });
+    s.receive({ type: 'update', data: { ...game, step: 2, events: [] } });
+  });
+  const dialog = quill.getByRole('dialog', { name: /resolves last/ });
+  await shot(quill, 'trigger-order');
+  await expect(dialog).toBeVisible();
+  const option = (card: string) => dialog.locator('.choice-option').filter({ has: quill.getByRole('button', { name: card, exact: true }) });
+  await expect(option('Cain’s Eye')).toContainText('look at the top card of the loot deck');
+  await expect(option('Golden Horseshoe')).toContainText('look at the top card of the treasure deck');
+  await expect(dialog).not.toContainText('cains_eye');
+  await option('Golden Horseshoe').locator('button').click();
+  const sent = await quill.evaluate(() => (window as unknown as { sentChoice: unknown }).sentChoice);
+  expect(sent).toMatchObject({ kind: 4, choice: 1 });
+});

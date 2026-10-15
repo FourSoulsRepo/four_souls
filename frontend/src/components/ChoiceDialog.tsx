@@ -11,7 +11,8 @@ import './Actions.css';
 // there too. subject is the card the choice is about, e.g. the monster
 // a deck attack drew (19.9) or the deck top a player looks at (19.11);
 // it shows beside the options, and option labels name it by its title.
-// An option with an outcome says what picking it gives (19.17).
+// An option with an outcome says what picking it gives (19.17); a
+// trigger option says its ability's words (19.19).
 export function ChoiceDialog({ choice, subject }: { choice: NonNullable<Actions['choice']>; subject?: string | undefined }) {
   const act = useApp((s) => s.act);
   const cardName = (ref: string) => useApp.getState().cards.get(ref)?.name ?? ref;
@@ -46,6 +47,7 @@ export function ChoiceDialog({ choice, subject }: { choice: NonNullable<Actions[
             >
               {o.card ? (useApp.getState().cards.get(o.card)?.name ?? o.label) : label(o.label)}
             </button>
+            {o.line && <p className="choice-line">{o.line}</p>}
             {o.outcome && (
               <ul className="choice-outcome" aria-label="Result">
                 {outcomeLines(o.outcome, cardName).map((l) => (

@@ -74,6 +74,10 @@
   * E.g. "→ Bum-Bo! levels up by 11".
   * A card whose effect then does nothing says so.
   * With three or more cards: "Then you pick the next card".
+* **5d. Order of triggers (19.19):** two of a player's abilities trigger at once.
+  * The title: "Choose which goes on the stack first; it resolves last".
+  * Each option is the ability's card, with its name and ability text.
+  * No preview: other effects may come before a trigger resolves.
 
 ## Postconditions
 

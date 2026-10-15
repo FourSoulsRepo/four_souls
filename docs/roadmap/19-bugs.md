@@ -627,3 +627,10 @@ This step never closes; new reports are appended.
    5. The client shows the raw ref, not the card's name.
    6. No preview as in 19.17: a trigger resolves later.
    7. Responses, rolls and new triggers may come between.
+6. Result (2026-10-15)
+   1. Title: "Choose which goes on the stack first; it resolves last".
+   2. Each option shows its card, the card's name, and the ability text.
+   3. The client splits the label "card_ref: text" into card and text.
+   4. Engine, protocol and records unchanged.
+   5. Vitest and e2e test in `actions.spec.ts`.
+   6. Screenshots: `.cache/screenshots/19.19/before/` and `after/`.

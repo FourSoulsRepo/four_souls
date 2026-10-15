@@ -29,7 +29,7 @@ const purposeTitles = [
   'Choose a loot card to lose',
   'Choose what to buy',
   'Choose a target',
-  'Choose which goes on the stack first',
+  'Choose which goes on the stack first; it resolves last',
   'Choose one',
   'Answer',
   'Choose your starting item',
@@ -97,7 +97,7 @@ export interface Choice {
 
 // Purpose.purchase: a "deck" option means the treasure deck, otherwise
 // the monster deck.
-export const Purpose = { attackTarget: 1, monsterSlot: 2, purchase: 5, target: 6, answer: 9 } as const;
+export const Purpose = { attackTarget: 1, monsterSlot: 2, purchase: 5, target: 6, triggerOrder: 7, answer: 9 } as const;
 
 export interface Actions {
   // buttons are the actions that need no card: pass.
@@ -189,10 +189,12 @@ export function actionsFor(u: Update, isCard: (label: string) => boolean): Actio
         const i = intent.choice ?? 0;
         const label = w.options?.at(i) ?? `Option ${String(i + 1)}`;
         const target = u.view.options?.at(i);
+        const trigger = w.purpose === Purpose.triggerOrder ? triggerLabel(label, isCard) : undefined;
         return {
           label,
           intent,
           ...(isCard(label) ? { card: label } : {}),
+          ...trigger,
           ...(target && (target.object || target.is_player || target.deck || target.stack_id) ? { target } : {}),
           ...(target?.outcome ? { outcome: target.outcome } : {}),
         };
@@ -200,6 +202,14 @@ export function actionsFor(u: Update, isCard: (label: string) => boolean): Actio
     };
   }
   return out;
+}
+
+// triggerLabel splits a trigger order label, "card_ref: ability text",
+// into its card and the ability's words (19.19).
+function triggerLabel(label: string, isCard: (label: string) => boolean): { card: string; line: string } | undefined {
+  const at = label.indexOf(': ');
+  const card = label.slice(0, at);
+  return at > 0 && isCard(card) ? { card, line: label.slice(at + 2) } : undefined;
 }
 
 // orderIntent puts the cards back in the given order, top first.
