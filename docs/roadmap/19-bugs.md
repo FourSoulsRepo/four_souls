@@ -429,7 +429,7 @@ This step never closes; new reports are appended.
    9. More than 20 games since, with the diagnostics on: no hang.
    10. Paused by the owner (2026-10-15); see `docs/wiki/Frontend-tests.md`.
 
-### [ ] 19.13 The look dialog shows one card twice
+### [x] 19.13 The look dialog shows one card twice
 
 1. Goal: the look dialog shows each card it is about once.
 2. Report (agent, 2026-10-15)
@@ -458,6 +458,10 @@ This step never closes; new reports are appended.
    3. Engine, server, protocol and records unchanged.
    4. Vitest in `history.test.ts`.
    5. No screenshots: the state needs that one seed's deal.
+7. Owner notes (2026-10-15)
+   1. Owner marks 19.13 solved.
+   2. The animation inventory could not catch it: no animation ran.
+   3. Idea TS-06: every e2e test fails on a console error.
 
 ### [ ] 19.14 e2e: a guest's Join click can miss under load
 

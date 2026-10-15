@@ -607,6 +607,12 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    7. Focused mode is run for new or changed cards.
    8. Real fuzzing runs locally only, not in CI.
    9. CI only checks the fuzz tests still work (short smoke run).
+6. TS-06. Every e2e test fails on a console error.
+   1. Today the shared fixture checks only animation clashes.
+   2. React warnings and page errors pass silently.
+   3. `games.spec.ts` already fails on them; 19.13 was found that way.
+   4. Move that check into `e2e/tests/fixtures.ts`.
+   5. Harmless errors get a fix or a named allowance.
 
 ## Localization
 
