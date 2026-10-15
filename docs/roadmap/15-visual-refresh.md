@@ -1504,7 +1504,7 @@ Images come first, so the new table is built with backs and mats.
    3. Reference: the stat icons on fouronlinesouls.net characters.
    4. Study them first; borrow ideas only, no assets (15.1).
 
-### [ ] 15.55 Curses left of the player
+### [x] 15.55 Curses left of the player
 
 1. Goal: curses read apart from items (V-42).
 2. Tasks:
@@ -1531,6 +1531,8 @@ Images come first, so the new table is built with backs and mats.
    8. UC-12, Client wiki, CHANGELOG updated.
    9. A flaky aim test, also on the base commit, logged as 19.20.
    10. Screenshots: `.cache/screenshots/15.55/before/` and `after/`.
+6. Owner notes (2026-10-15)
+   1. Owner marks 15.55 solved.
 
 ### [x] 15.56 Soul cards behind the crystals
 
