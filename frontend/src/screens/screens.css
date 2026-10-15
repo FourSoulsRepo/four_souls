@@ -198,6 +198,20 @@
   border-radius: 8px;
 }
 
+/* Every face of the picked dice look (15.64). */
+.dice-preview {
+  display: flex;
+  gap: 10px;
+}
+
+.dice-preview .die {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  font-size: 22px;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 45%);
+}
+
 /* LAN games on the join screen (N-13). */
 .lan-head {
   align-items: center;

@@ -661,6 +661,7 @@ This step never closes; new reports are appended.
    4. The hand had two "Dagaz" buttons; the test expects one.
    5. Fails about 1 run in 5, also without the 15.55 change.
    6. Evidence: `.cache/e2e-evidence/15.55-aim-*`.
+   7. Seen again in `make e2e` during 15.64: `.cache/e2e-evidence/15.64-aim/`.
 3. Tasks:
    1. Find why the hand shows Dagaz twice after the cancel.
    2. Fix the client or the test, whichever is wrong.

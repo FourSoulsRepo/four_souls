@@ -132,6 +132,7 @@ export function getCards(): Promise<CardInfo[]> {
 export interface DiceSkin {
   id: string;
   name: string;
+  set: string; // "Holy" or "Unholy", for the settings menu
   // image is the texture URL (see Die); '' when missing: a plain die.
   image: string;
 }

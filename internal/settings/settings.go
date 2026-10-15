@@ -92,7 +92,10 @@ type Rejoin struct {
 var (
 	Speeds = []string{"normal", "fast", "slow", "off"}
 	Themes = []string{"dark", "light"}
-	Dice   = []string{"tear"}
+	Dice   = []string{
+		"tear", "blue_fly", "cent", "moms_knife", "the_bible",
+		"brimstone", "guppy_paw", "pentagram", "poop", "tinted_rock",
+	}
 )
 
 // ColorMats are the mats drawn without images; the first is the default

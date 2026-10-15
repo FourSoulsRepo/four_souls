@@ -218,6 +218,7 @@ export namespace main {
 	export class DiceSkin {
 	    id: string;
 	    name: string;
+	    set: string;
 	    image: string;
 	
 	    static createFrom(source: any = {}) {
@@ -228,6 +229,7 @@ export namespace main {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.id = source["id"];
 	        this.name = source["name"];
+	        this.set = source["set"];
 	        this.image = source["image"];
 	    }
 	}

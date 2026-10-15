@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { diceImage, faceOf, lastRollAfter, lastRollText, tumbleFaces } from './dice';
+import { diceChoices, diceImage, faceOf, lastRollAfter, lastRollText, tumbleFaces } from './dice';
 
 describe('faceOf', () => {
   it('finds each face of a d6 in the texture', () => {
@@ -81,5 +81,24 @@ describe('diceImage', () => {
     expect(diceImage(looks, seats, 2)).toBe('');
     expect(diceImage(looks, seats, 3)).toBe('');
     expect(diceImage([], seats, 1)).toBe('');
+  });
+});
+
+describe('diceChoices', () => {
+  it('groups the looks with a texture by set, in order (15.64)', () => {
+    const looks = [
+      { id: 'tear', set: 'Holy', image: '/tear.webp' },
+      { id: 'poop', set: 'Unholy', image: '/poop.webp' },
+      { id: 'cent', set: 'Holy', image: '/cent.webp' },
+      { id: 'lost', set: 'Unholy', image: '' },
+    ];
+    expect(diceChoices(looks).map((g) => [g.set, g.looks.map((d) => d.id)])).toEqual([
+      ['Holy', ['tear', 'cent']],
+      ['Unholy', ['poop']],
+    ]);
+  });
+
+  it('offers nothing without the images', () => {
+    expect(diceChoices([{ id: 'tear', set: 'Holy', image: '' }])).toEqual([]);
   });
 });

@@ -26,6 +26,30 @@ export function diceImage(looks: readonly { id: string; image: string }[], seats
   return look?.image ?? '';
 }
 
+// DiceGroup is one set of dice looks in the settings menu (15.64).
+export interface DiceGroup<T> {
+  set: string;
+  looks: T[];
+}
+
+// diceChoices groups the looks that have a texture by their set, in
+// order. Without the private images there are none: dice stay plain.
+export function diceChoices<T extends { set: string; image: string }>(looks: readonly T[]): DiceGroup<T>[] {
+  const groups: DiceGroup<T>[] = [];
+  for (const look of looks) {
+    if (!look.image) {
+      continue;
+    }
+    const group = groups.find((g) => g.set === look.set);
+    if (group) {
+      group.looks.push(look);
+    } else {
+      groups.push({ set: look.set, looks: [look] });
+    }
+  }
+  return groups;
+}
+
 // tumbleFaces are the faces a thrown die shows as it lands and bounces
 // (15.62): two others, then the value it rolled.
 export function tumbleFaces(value: number): number[] {

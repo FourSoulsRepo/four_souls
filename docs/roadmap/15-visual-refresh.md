@@ -5,7 +5,7 @@ Goal: a clearer table, using fouronlinesouls.net as a second reference.
 Ideas: V-09, V-12, V-13, V-15 – V-31, V-33 – V-45, GS-06.
 
 Order: 15.1, 15.15, 15.9 – 15.11, 15.16, 15.17, 15.38, 15.18 – 15.24,
-15.3, 15.37, 15.25, 15.32 – 15.34, 15.26, 15.27, 15.59 – 15.63, 15.6,
+15.3, 15.37, 15.25, 15.32 – 15.34, 15.26, 15.27, 15.59 – 15.63, 15.6, 15.64,
 15.28 – 15.31, 15.35, 15.36, 15.39 – 15.46, 15.51, 15.52,
 15.54 – 15.58.
 Images come first, so the new table is built with backs and mats.
@@ -1765,3 +1765,31 @@ Images come first, so the new table is built with backs and mats.
    9. Screenshot: `screen-last-roll.png`.
 5. Owner notes (2026-10-15)
    1. Owner marks 15.63 solved.
+
+### [x] 15.64 Dice look in the settings
+
+1. Goal: the player picks their dice look in the settings (V-19).
+2. Asked by the owner after 15.6 (2026-10-15).
+3. Tasks:
+   1. Every d6 of the holy and unholy sets in the images.
+   2. A dice field in Settings, grouped by set.
+   3. A preview of the picked look's faces.
+   4. Without the images: no field; dice stay plain.
+   5. The pick goes out in the next hello (15.6).
+4. Done when:
+   1. Go test: every look's texture is found and served.
+   2. e2e test: pick a look, save, the preview and setting follow.
+5. Result (2026-10-15)
+   1. `diceSkins` and `settings.Dice`: ten looks; Tear stays the default.
+   2. Holy: Tear, Blue Fly, Cent, Mom's Knife, The Bible.
+   3. Unholy: Brimstone, Guppy's Paw, Pentagram, Poop, Tinted Rock.
+   4. All ten share the tear's 3×3 layout; `Die` needs no change.
+   5. `DiceSkin.Set` names the group; `diceChoices` (`dice.ts`) groups them.
+   6. Settings: a Dice field with Holy and Unholy groups.
+   7. Under the mat preview, the six faces of the picked look.
+   8. No texture: no field and no preview.
+   9. Fake bridge: all ten looks; `?nodice` has no textures.
+   10. Tests: `TestDiceTexturesServed` covers all ten; `diceChoices` unit tests.
+   11. e2e: pick Poop, save, reload; without textures, no field.
+   12. UC-10, Client wiki, CHANGELOG updated.
+   13. Screenshots: `.cache/screenshots/15.64/before/` and `after/`.

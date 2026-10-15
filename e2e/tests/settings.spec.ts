@@ -88,3 +88,41 @@ test('without mat images the table shows colors', async ({ browser }) => {
     await expect(page.getByLabel('Game mat preview')).not.toHaveClass(/mat-image/);
   }
 });
+
+// Dice looks (15.64, V-19): the menu groups every d6 by its set, the
+// preview shows the picked look's six faces, and the pick is saved; the
+// next hello sends it (15.6).
+test('the dice menu picks the look of your dice', async ({ page }) => {
+  if (!process.env.SCREENSHOTS) {
+    // Any small image does: the test checks which texture is asked for.
+    const pixel = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=', 'base64');
+    await page.route(/\/cardimg\/assets\/dices\//, (route) => route.fulfill({ contentType: 'image/png', body: pixel }));
+  }
+  await realAssets(page);
+  await page.goto('/?fake&nosplash');
+  await page.getByRole('button', { name: 'Settings' }).click();
+  const dice = page.getByRole('combobox', { name: 'Dice' });
+  await expect(dice).toHaveValue('tear');
+  expect(await dice.locator('optgroup').evaluateAll((gs) => gs.map((g) => g.getAttribute('label')))).toEqual(['Holy', 'Unholy']);
+  await expect(dice.getByRole('option')).toHaveCount(10);
+  const faces = page.getByRole('group', { name: 'Dice preview' }).locator('.die img');
+  await expect(faces).toHaveCount(6);
+  await expect(faces.first()).toHaveAttribute('src', /d6_tear\.webp$/);
+
+  await dice.selectOption('poop');
+  await expect(faces.first()).toHaveAttribute('src', /unholy_set\/d6_poop\.webp$/);
+  await shot(page, 'settings-dice');
+  await page.getByRole('button', { name: 'Save' }).click();
+  await expect(page.getByRole('status')).toHaveText('Saved.');
+  await page.reload();
+  await page.getByRole('button', { name: 'Settings' }).click();
+  await expect(page.getByRole('combobox', { name: 'Dice' })).toHaveValue('poop');
+});
+
+test('without dice images there is no dice menu', async ({ page }) => {
+  await page.goto('/?fake&nosplash&nodice');
+  await page.getByRole('button', { name: 'Settings' }).click();
+  await expect(page.getByRole('combobox', { name: 'Game mat' })).toBeVisible();
+  await expect(page.getByRole('combobox', { name: 'Dice' })).toHaveCount(0);
+  await expect(page.getByRole('group', { name: 'Dice preview' })).toHaveCount(0);
+});

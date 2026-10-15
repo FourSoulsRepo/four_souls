@@ -204,9 +204,29 @@ w.go = {
       SaveSettings: saveSettings,
       CardSets: () => Promise.resolve(['b2', 'g2', 'fsp2']),
       Cards: () => Promise.resolve([...cards, ...realCards()]),
-      // The dice texture at its real path; like the mat, the e2e tests
-      // serve it only for screenshots, else it fails: a plain die.
-      Dice: () => Promise.resolve([{ id: 'tear', name: 'Tear', image: '/cardimg/assets/dices/holy_set/d6_tear.webp' }]),
+      // The dice textures at their real paths; like the mat, the e2e
+      // tests serve them only for screenshots, else they fail: plain dice.
+      // ?nodice has no textures, as Go without the private images.
+      Dice: () =>
+        Promise.resolve(
+          [
+            ['tear', 'Tear', 'holy'],
+            ['blue_fly', 'Blue Fly', 'holy'],
+            ['cent', 'Cent', 'holy'],
+            ['moms_knife', "Mom's Knife", 'holy'],
+            ['the_bible', 'The Bible', 'holy'],
+            ['brimstone', 'Brimstone', 'unholy'],
+            ['guppy_paw', "Guppy's Paw", 'unholy'],
+            ['pentagram', 'Pentagram', 'unholy'],
+            ['poop', 'Poop', 'unholy'],
+            ['tinted_rock', 'Tinted Rock', 'unholy'],
+          ].map(([id = '', name, set = '']) => ({
+            id,
+            name,
+            set: set === 'holy' ? 'Holy' : 'Unholy',
+            image: params.has('nodice') ? '' : `/cardimg/assets/dices/${set}_set/d6_${id}.webp`,
+          })),
+        ),
       // Card backs at their real paths; like the mat, the e2e tests serve
       // them only for screenshots, else they fail to load: plain backs.
       Backs: () =>

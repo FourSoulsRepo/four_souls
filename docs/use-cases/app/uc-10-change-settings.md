@@ -38,6 +38,11 @@
   * Default: the first mat image; Basement without images.
 * **1a. First start (ST-06):** after the splash, a Welcome screen asks for the nickname.
   * Continue saves it and opens the main menu; it is asked only once.
+* **3f. Dice (V-19, 15.64):** the look of the player's dice.
+  * Ten looks, grouped as Holy and Unholy; default: Tear.
+  * A preview shows the picked look's six faces.
+  * The next hello sends it; every screen draws this player's rolls in it.
+  * Without the private images there is no dice field; dice stay plain.
 
 ## Postconditions
 
