@@ -1793,3 +1793,8 @@ Images come first, so the new table is built with backs and mats.
    11. e2e: pick Poop, save, reload; without textures, no field.
    12. UC-10, Client wiki, CHANGELOG updated.
    13. Screenshots: `.cache/screenshots/15.64/before/` and `after/`.
+6. Owner notes (2026-10-15)
+   1. Every dice texture is upside down; turn it 180°.
+   2. Fixed: `faceStyle` turns the face about its own middle.
+   3. Plain dice and the throw animation are unchanged.
+   4. Screenshot: `.cache/screenshots/15.64/rotated/`.

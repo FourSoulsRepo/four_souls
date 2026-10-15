@@ -26,6 +26,19 @@ export function diceImage(looks: readonly { id: string; image: string }[], seats
   return look?.image ?? '';
 }
 
+// faceStyle places the texture, three dice wide, so one face fills the
+// die. The textures are upside down, so the face turns half a turn
+// about its own middle (15.64).
+export function faceStyle(face: { col: number; row: number }) {
+  const middle = (n: number) => `${String(((n + 0.5) / 3) * 100)}%`;
+  return {
+    left: `${String(-face.col * 100)}%`,
+    top: `${String(-face.row * 100)}%`,
+    transform: 'rotate(180deg)',
+    transformOrigin: `${middle(face.col)} ${middle(face.row)}`,
+  };
+}
+
 // DiceGroup is one set of dice looks in the settings menu (15.64).
 export interface DiceGroup<T> {
   set: string;

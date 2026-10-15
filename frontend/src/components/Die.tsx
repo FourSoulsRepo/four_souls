@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { faceOf } from '../dice';
+import { faceOf, faceStyle } from '../dice';
 import './Die.css';
 
 // Die draws one d6 value with the player's dice look (V-19). Without a
@@ -23,7 +23,7 @@ export function Die({ value, image, label, hidden }: { value: number; image: str
         src={image}
         alt=""
         draggable={false}
-        style={{ left: `${String(-face.col * 100)}%`, top: `${String(-face.row * 100)}%` }}
+        style={faceStyle(face)}
         onError={() => {
           setBroken(image);
         }}

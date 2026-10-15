@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { diceChoices, diceImage, faceOf, lastRollAfter, lastRollText, tumbleFaces } from './dice';
+import { diceChoices, diceImage, faceOf, faceStyle, lastRollAfter, lastRollText, tumbleFaces } from './dice';
 
 describe('faceOf', () => {
   it('finds each face of a d6 in the texture', () => {
@@ -100,5 +100,16 @@ describe('diceChoices', () => {
 
   it('offers nothing without the images', () => {
     expect(diceChoices([{ id: 'tear', set: 'Holy', image: '' }])).toEqual([]);
+  });
+});
+
+describe('faceStyle', () => {
+  it('turns the face half a turn about its own middle (15.64)', () => {
+    expect(faceStyle({ col: 2, row: 1 })).toEqual({
+      left: '-200%',
+      top: '-100%',
+      transform: 'rotate(180deg)',
+      transformOrigin: '83.33333333333334% 50%',
+    });
   });
 });
