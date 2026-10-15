@@ -15,7 +15,9 @@ import (
 // Version is the protocol version (ADR 006). Adding a field keeps it;
 // renaming or removing a field of any message, or of the engine's view,
 // event or intent JSON, or changing its meaning, bumps it.
-const Version = 1
+// 2: the order prompt (19.16); an older client cannot answer it.
+// 3: the throw prompt and intent (15.60).
+const Version = 3
 
 // DefaultPort is the server's TCP port unless configured.
 const DefaultPort = 4774
@@ -47,7 +49,8 @@ const (
 	TypePick  = "pick"  // client → server: pick one of your offered characters
 
 	// Turn flow (6.7).
-	TypeSkipAll = "skip_all" // client → server: pass on the visible stack (N-06)
+	TypeSkipAll  = "skip_all"  // client → server: pass on the visible stack (N-06)
+	TypeWaitTurn = "wait_turn" // client → server: pass until the turn before mine ends (N-16)
 
 	// Disconnects (6.8).
 	TypeVote = "vote" // client → server: wait for the missing player, or kick them
@@ -84,6 +87,7 @@ type Hello struct {
 	Role     Role     `json:"role"`
 	Sets     []string `json:"sets"`            // card set codes the client has (CD-03)
 	Token    string   `json:"token,omitempty"` // to reclaim a seat
+	Dice     string   `json:"dice,omitempty"`  // the player's dice look (V-19)
 }
 
 // Welcome accepts a client.
@@ -93,6 +97,9 @@ type Welcome struct {
 	Engine   string `json:"engine"`
 	Token    string `json:"token"`
 	Seat     int    `json:"seat"` // -1 when not seated
+	// Create is set when this client may open a game here: always on a
+	// dedicated server, only for the host's own app on a hosted one (N-17).
+	Create bool `json:"create,omitempty"`
 }
 
 // Intent asks the server to do something; the server fills in the
@@ -108,12 +115,17 @@ type Update struct {
 	Events  []engine.Event  `json:"events"`
 	View    engine.GameView `json:"view"`
 	Allowed []engine.Intent `json:"allowed"`
-	Seats   []Seat          `json:"seats"`
+	// Aims are the targets an allowed play or use asks first, by its
+	// index in Allowed, to light while a card is dragged (15.25).
+	Aims  []engine.Aim `json:"aims,omitempty"`
+	Seats []Seat       `json:"seats"`
 	// Deadline is when the response timer answers for the waiting player,
 	// Unix ms; 0: no timer (N-07).
 	Deadline int64 `json:"deadline,omitempty"`
 	// SkipAll is set while this player skips the visible stack (N-06).
 	SkipAll bool `json:"skip_all,omitempty"`
+	// WaitTurn is set while this player waits for their turn (N-16).
+	WaitTurn bool `json:"wait_turn,omitempty"`
 	// Pause is set while the game waits for a disconnected player (N-08).
 	Pause *Pause `json:"pause,omitempty"`
 }
@@ -136,6 +148,11 @@ type SkipAll struct {
 	On bool `json:"on"`
 }
 
+// WaitTurn turns "wait for my turn" on or off (N-16).
+type WaitTurn struct {
+	On bool `json:"on"`
+}
+
 // Seat is one seat at the table: who sits there and whether they are
 // connected now.
 type Seat struct {
@@ -144,6 +161,8 @@ type Seat struct {
 	Connected bool   `json:"connected"`
 	Ready     bool   `json:"ready,omitempty"`  // in the lobby
 	Kicked    bool   `json:"kicked,omitempty"` // the seat is empty for good (N-08)
+	// Dice is the seat's dice look (V-19); "" draws the default one.
+	Dice string `json:"dice,omitempty"`
 }
 
 // GameInfo is one game in the lobby list.
@@ -209,7 +228,7 @@ type Options struct {
 	DraftSize int              `json:"draft_size,omitempty"` // characters offered in a draft; default 3
 	BanRounds int              `json:"ban_rounds,omitempty"` // each player bans one character per round
 	BanTimer  int              `json:"ban_timer,omitempty"`  // seconds per ban; 0: no timer
-	HostBans  []engine.CardRef `json:"host_bans,omitempty"`  // never dealt (GS-02)
+	HostBans  []engine.CardRef `json:"host_bans,omitempty"`  // any card; never in the game (GS-02, GS-13)
 	// NoBonusSouls plays without the 3 bonus souls (R-SETUP-06).
 	NoBonusSouls bool `json:"no_bonus_souls,omitempty"`
 	// ResponseTimer is seconds to answer a prompt: 0 is off, else at
@@ -373,6 +392,24 @@ func CleanName(name string) (string, bool) {
 		}
 	}
 	return name, true
+}
+
+// MaxDice is the longest dice look ID, in bytes.
+const MaxDice = 32
+
+// CleanDice checks a dice look ID from hello: up to MaxDice lowercase
+// letters, digits, '_' or '-'. Anything else is "", the default look.
+// The server keeps unknown IDs; each client draws them plain (V-19).
+func CleanDice(id string) string {
+	if len(id) > MaxDice {
+		return ""
+	}
+	for _, r := range id {
+		if (r < 'a' || r > 'z') && (r < '0' || r > '9') && r != '_' && r != '-' {
+			return ""
+		}
+	}
+	return id
 }
 
 // UniqueName makes name differ from the taken ones: "Ann", then "Ann (2)".

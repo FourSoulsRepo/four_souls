@@ -4,7 +4,9 @@ package rulesengine
 // is accepted by Apply; anything else is refused with a rule ID.
 //
 // For a discard prompt it returns one template intent whose Objects are
-// the cards to pick from; send Prompt().Count of them.
+// the cards to pick from; send Prompt().Count of them. For an order
+// prompt it returns one intent with the cards in their order now; send
+// them in the order wanted.
 func (g *Game) Allowed(p PlayerID) []Intent {
 	if g.Over || g.Waiting.Player != p {
 		return nil
@@ -35,6 +37,11 @@ func (g *Game) Allowed(p PlayerID) []Intent {
 		}
 	case PromptDiscard:
 		out = append(out, Intent{Player: p, Kind: IntentDiscard, Objects: append([]ObjectID(nil), g.Players[p].Hand...)})
+	case PromptOrder:
+		// One intent: the cards in their order now; send them reordered.
+		out = append(out, Intent{Player: p, Kind: IntentOrder, Objects: append([]ObjectID(nil), g.Choice.Objects...)})
+	case PromptThrow:
+		out = append(out, Intent{Player: p, Kind: IntentThrow})
 	case PromptNone, PromptGameOver:
 	}
 	return out

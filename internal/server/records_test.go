@@ -3,10 +3,12 @@ package server
 import (
 	"context"
 	"encoding/json"
+	"mime"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -27,13 +29,18 @@ func TestRecordReplays(t *testing.T) {
 	stopped := make(chan struct{})
 	go func() { h.Run(ctx); close(stopped) }()
 	players := startTable(t, h, 2)
-	for range 30 { // whoever is asked answers with the first allowed intent
+	for range 30 { // whoever is asked attacks, or answers with the first allowed intent
 		for _, p := range players {
 			up, ok := p.latest()
 			if !ok || len(up.Allowed) == 0 || up.View.Over {
 				continue
 			}
 			in := up.Allowed[0]
+			for _, a := range up.Allowed {
+				if a.Kind == engine.IntentAttack {
+					in = a // attacks roll, so the record keeps throws (15.60)
+				}
+			}
 			if in.Kind == engine.IntentDiscard {
 				in.Objects = in.Objects[:up.View.Waiting.Count]
 			}
@@ -47,6 +54,9 @@ func TestRecordReplays(t *testing.T) {
 	files, err := filepath.Glob(filepath.Join(dir, "*"+record.Ext))
 	if err != nil || len(files) != 1 {
 		t.Fatalf("records %v, %v", files, err)
+	}
+	if name := filepath.Base(files[0]); !strings.HasSuffix(name, "_P0_P1"+record.Ext) {
+		t.Errorf("record %s does not name its players", name)
 	}
 	rec, err := record.ReadFile(files[0])
 	if err != nil {
@@ -67,13 +77,23 @@ func TestRecordReplays(t *testing.T) {
 	for _, c := range s.Characters {
 		setup.Characters = append(setup.Characters, engine.CardRef(c))
 	}
+	for _, c := range s.Banned {
+		setup.Banned = append(setup.Banned, engine.CardRef(c))
+	}
 	var steps []engine.StepRecord
+	throws := 0
 	for _, st := range rec.Steps {
 		var in engine.Intent
 		if err := json.Unmarshal(st.Intent, &in); err != nil {
 			t.Fatal(err)
 		}
+		if in.Kind == engine.IntentThrow {
+			throws++
+		}
 		steps = append(steps, engine.StepRecord{Intent: in, Checksum: st.Checksum})
+	}
+	if throws == 0 {
+		t.Error("the record keeps no throw")
 	}
 	if _, err := engine.Replay(setup, steps); err != nil {
 		t.Fatalf("the record does not replay: %v", err)
@@ -84,7 +104,7 @@ func TestRecordReplays(t *testing.T) {
 // (RP-05).
 func TestDownloadRecord(t *testing.T) {
 	dir := t.TempDir()
-	path := filepath.Join(dir, "g1"+record.Ext)
+	path := filepath.Join(dir, "g1_Иван"+record.Ext)
 	if err := os.WriteFile(path, []byte("rec"), 0o600); err != nil {
 		t.Fatal(err)
 	}
@@ -98,12 +118,14 @@ func TestDownloadRecord(t *testing.T) {
 	<-done
 	srv := httptest.NewServer(http.HandlerFunc(h.downloadRecord))
 	defer srv.Close()
+	var disposition string
 	get := func(q string) int {
 		resp, err := http.Get(srv.URL + "/record?" + q) //nolint:noctx // test
 		if err != nil {
 			t.Fatal(err)
 		}
 		_ = resp.Body.Close() //nolint:errcheck // test
+		disposition = resp.Header.Get("Content-Disposition")
 		return resp.StatusCode
 	}
 	if code := get("game=g1&token=tok"); code != http.StatusConflict {
@@ -118,5 +140,8 @@ func TestDownloadRecord(t *testing.T) {
 	}
 	if code := get("game=g1&token=tok"); code != http.StatusOK {
 		t.Errorf("a player after the end: %d", code)
+	}
+	if _, params, err := mime.ParseMediaType(disposition); err != nil || params["filename"] != "g1_Иван"+record.Ext {
+		t.Errorf("Content-Disposition %q: %v %v", disposition, params, err)
 	}
 }

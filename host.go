@@ -41,6 +41,7 @@ func (h *Host) Start() (HostInfo, error) {
 	cfg.Records, cfg.Retention = appPath("records"), 0 // kept until the user deletes them (RP-07)
 	cfg.Saves = appPath("saves")
 	cfg.Discovery = true // friends on the LAN find the game (N-13)
+	cfg.HostOnly = true  // friends join; only this app opens games (N-17)
 	srv, err := server.Start(context.Background(), cfg)
 	if err != nil {
 		return HostInfo{}, err //nolint:wrapcheck // shown to the player as is

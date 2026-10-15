@@ -28,12 +28,12 @@ const modeled: Record<string, Envelope> = {
   hello: {
     type: 'hello',
     id: 1,
-    data: { protocol: 1, app: '0.1.0', name: 'Ann', role: 'player', sets: ['b2'] } satisfies Hello,
+    data: { protocol: 3, app: '0.1.0', name: 'Ann', role: 'player', sets: ['b2'], dice: 'tear' } satisfies Hello,
   },
   welcome: {
     type: 'welcome',
     id: 1,
-    data: { protocol: 1, app: '0.1.0', engine: '0.1.0', token: 't0k3n', seat: 0 } satisfies Welcome,
+    data: { protocol: 3, app: '0.1.0', engine: '0.1.0', token: 't0k3n', seat: 0 } satisfies Welcome,
   },
   error: {
     type: 'error',
@@ -85,14 +85,31 @@ const modeled: Record<string, Envelope> = {
           { top: { id: 306, card: 'breakfast', role: 2, charged: true } },
         ],
         monsters: [
-          { top: { id: 308, card: 'pin', role: 3, charged: true } },
-          { top: { id: 309, card: 'pestilence', role: 3, charged: true } },
+          {
+            top: {
+              id: 308,
+              card: 'pin',
+              role: 3,
+              charged: true,
+              stats: { hp: 2, dc: 4, atk: 1, printed_hp: 2, printed_dc: 4, printed_atk: 1 },
+            },
+          },
+          {
+            top: {
+              id: 309,
+              card: 'pestilence',
+              role: 3,
+              charged: true,
+              stats: { hp: 4, dc: 4, atk: 1, printed_hp: 4, printed_dc: 4, printed_atk: 1 },
+            },
+          },
         ],
         deck_sizes: [96, 98, 101, 0],
         discards: [null, null, null, null],
         stack: null,
         turn: { active: 1, number: 1, step: 1, loot_plays: 0, attacks: 0, purchases: 0, entered: true },
         waiting: { kind: 1, player: 1 },
+        win_souls: 4,
         responding: [1, 0],
       },
       allowed: [
@@ -100,8 +117,18 @@ const modeled: Record<string, Envelope> = {
         { player: 1, kind: 7, objects: [312] },
         { player: 1, kind: 7, objects: [313] },
       ],
+      aims: [
+        {
+          intent: 0,
+          targets: [
+            { object: 320, player: -1 },
+            { player: 1, is_player: true },
+          ],
+          reason: 'Pick a monster or a player.',
+        },
+      ],
       seats: [
-        { seat: 0, name: 'Ann', connected: true },
+        { seat: 0, name: 'Ann', connected: true, dice: 'tear' },
         { seat: 1, name: 'Bo', connected: false },
       ],
     } satisfies Update,
@@ -139,7 +166,7 @@ const modeled: Record<string, Envelope> = {
       game: 'g1',
       you: 1,
       seats: [
-        { seat: 0, name: 'Ann', connected: true, ready: true },
+        { seat: 0, name: 'Ann', connected: true, ready: true, dice: 'tear' },
         { seat: 1, name: 'Bo', connected: true },
       ],
       sets: ['b2'],
@@ -148,7 +175,15 @@ const modeled: Record<string, Envelope> = {
   },
   saved: { type: 'saved', data: { save: 'g1' } satisfies Saved },
   load: { type: 'load', id: 14, data: { save: 'g1' } satisfies Load },
+  wait_turn: { type: 'wait_turn', id: 15, data: { on: true } },
+  // A second line of one type is keyed by type and ID.
+  'intent#16': { type: 'intent', id: 16, data: { intent: { player: 0, kind: 9 } satisfies Intent } },
 };
+
+// model is the expected envelope of a golden line, if the client models it.
+function model(env: Envelope): Envelope | undefined {
+  return modeled[`${env.type}#${String(env.id)}`] ?? modeled[env.type];
+}
 
 // Messages the client does not read or send yet; later steps model them.
 const notYet = ['resync', 'setup', 'ban', 'pick', 'skip_all', 'vote', 'save'];
@@ -161,12 +196,12 @@ const lines = golden
 describe('golden protocol file', () => {
   it('has every message type either modeled or listed as not yet', () => {
     for (const env of lines) {
-      expect(Object.keys(modeled).includes(env.type) || notYet.includes(env.type), env.type).toBe(true);
+      expect(model(env) !== undefined || notYet.includes(env.type), env.type).toBe(true);
     }
   });
 
-  it.each(lines.filter((env) => env.type in modeled))('$type matches the TS types', (env) => {
-    expect(env).toEqual(modeled[env.type]);
+  it.each(lines.filter((env) => model(env) !== undefined))('$type $id matches the TS types', (env) => {
+    expect(env).toEqual(model(env));
   });
 });
 

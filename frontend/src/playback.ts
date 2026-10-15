@@ -2,7 +2,7 @@
 // first their events as short effects, then the update's view is shown.
 // Playback only changes what is drawn; the game state is the server's.
 import { kindOf, type CardInfo, type Kind } from './cards';
-import type { GameEvent, Update } from './protocol';
+import type { GameEvent, GameView, Update } from './protocol';
 
 export type Speed = 'normal' | 'fast' | 'slow' | 'off';
 
@@ -11,15 +11,39 @@ export type Speed = 'normal' | 'fast' | 'slow' | 'off';
 export type Effect =
   | { kind: 'fly'; from: string[]; to: string[]; card?: string; back: Kind }
   | { kind: 'popup'; at: string[]; text: string; tone: 'good' | 'bad' }
-  | { kind: 'dice'; value: number; label: string }
+  // dice: thrown for a fresh roll or a reroll (15.62); a changed roll
+  // spins in.
+  | { kind: 'dice'; value: number; label: string; player: number; thrown?: boolean }
   | { kind: 'banner'; text: string }
-  | { kind: 'reveal'; card: string };
+  | { kind: 'reveal'; card: string }
+  // place: a card flies into a slot and stays there until the view is
+  // shown, so later effects play over it (19.3).
+  | { kind: 'place'; from: string[]; to: string[]; card: string; back: Kind }
+  // lunge: the attacker's card hits the target and returns (15.3, V-12).
+  | { kind: 'lunge'; from: string[]; to: string[]; amount: number }
+  // hits: other damage flies from its source and bursts on every
+  // damaged card at once (15.37, T-15, T-24).
+  | { kind: 'hits'; hits: Hit[] }
+  // deaths: a big skull on each dying card before it leaves (T-26).
+  | { kind: 'deaths'; at: string[][] };
+
+export interface Hit {
+  from: string[];
+  to: string[];
+  amount: number;
+}
 
 const noPlayer = -1;
 
 interface Context {
   card: (ref: string) => CardInfo | undefined;
   name: (player: number) => string;
+  // character is a player's character object, if known.
+  character: (player: number) => number | undefined;
+  // slot is the zone of the slot an object is the top card of, if any.
+  slot: (object: number) => string | undefined;
+  // seen tells if the update before revealed the card (19.4).
+  seen: (card: string) => boolean;
 }
 
 function playerZones(p: number): string[] {
@@ -33,6 +57,30 @@ function handZones(p: number): string[] {
 // targetZones: an object, else a player.
 function targetZones(e: GameEvent): string[] {
   return e.object ? [`obj-${String(e.object)}`, ...playerZones(e.player)] : playerZones(e.player);
+}
+
+// hitZones: the damaged object, else the player's character card.
+function hitZones(e: GameEvent, ctx: Context): string[] {
+  if (e.object) {
+    return [`obj-${String(e.object)}`];
+  }
+  const c = ctx.character(e.player);
+  return c === undefined ? playerZones(e.player) : [`obj-${String(c)}`, ...playerZones(e.player)];
+}
+
+// slotZone is the zone of the monster or shop slot whose top card is
+// object, as the board names it.
+export function slotZone(view: GameView, object: number): string | undefined {
+  for (const [name, slots] of [
+    ['monster', view.monsters],
+    ['shop', view.shop],
+  ] as const) {
+    const i = (slots ?? []).findIndex((s) => s.top?.id === object);
+    if (i >= 0) {
+      return `${name}-slot-${String(i)}`;
+    }
+  }
+  return undefined;
 }
 
 // effectsFor turns one update's events into effects. Events without an
@@ -62,8 +110,10 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
         break;
       }
       case 'dice_rolled':
+        out.push({ kind: 'dice', value: amount, label: e.text ?? '', player: e.player, thrown: true });
+        break;
       case 'roll_changed':
-        out.push({ kind: 'dice', value: amount, label: e.text ?? '' });
+        out.push({ kind: 'dice', value: amount, label: e.text ?? '', player: e.player });
         break;
       case 'gained_cents':
         out.push({ kind: 'popup', at: playerZones(e.player), text: `+${String(amount)}¢`, tone: 'good' });
@@ -71,20 +121,59 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
       case 'healed':
         out.push({ kind: 'popup', at: targetZones(e), text: `+${String(amount)} HP`, tone: 'good' });
         break;
-      case 'damage_pending':
-        out.push({ kind: 'popup', at: targetZones(e), text: `−${String(amount)}`, tone: 'bad' });
+      case 'damaged': {
+        // Damage shows when it lands. Attack damage: its source lunges
+        // at the target. Other damage flies from its source: a card on
+        // the table, else its stack row.
+        if (e.text === 'combat' && e.source) {
+          out.push({ kind: 'lunge', from: [`obj-${String(e.source)}`], to: hitZones(e, ctx), amount });
+          break;
+        }
+        const from = e.source ? [`obj-${String(e.source)}`, `stack-src-${String(e.source)}`] : [];
+        const hit = { from, to: hitZones(e, ctx), amount };
+        const last = out.at(-1);
+        if (last?.kind === 'hits') {
+          last.hits.push(hit);
+        } else {
+          out.push({ kind: 'hits', hits: [hit] });
+        }
         break;
+      }
+      case 'died': {
+        // A monster's card left its place under a new ID (prev).
+        const at = e.prev ? [`obj-${String(e.prev)}`] : hitZones(e, ctx);
+        const last = out.at(-1);
+        if (last?.kind === 'deaths') {
+          last.at.push(at);
+        } else {
+          out.push({ kind: 'deaths', at: [at] });
+        }
+        break;
+      }
       case 'prevented':
         out.push({ kind: 'popup', at: targetZones(e), text: 'Prevented', tone: 'good' });
         break;
       case 'stole':
         out.push({ kind: 'popup', at: playerZones(e.player), text: `+${String(amount)}¢ stolen`, tone: 'good' });
         break;
-      case 'card_revealed':
-        if (e.card) {
+      case 'card_revealed': {
+        if (!e.card) {
+          break;
+        }
+        // A deck attack reveals its card, then puts it in a slot in the
+        // next update: it shows large once (19.4).
+        if (!ctx.seen(e.card)) {
           out.push({ kind: 'reveal', card: e.card });
         }
+        // A card put into a slot, e.g. a deck attack's monster, is there
+        // before the attack roll that follows it.
+        const slot = e.object ? ctx.slot(e.object) : undefined;
+        if (slot) {
+          const kind = kindOf(ctx.card(e.card)?.type ?? '');
+          out.push({ kind: 'place', from: [`deck-${kind}`], to: [slot], card: e.card, back: kind });
+        }
         break;
+      }
       case 'turn_started':
         out.push({ kind: 'banner', text: `${ctx.name(e.player)}'s turn` });
         break;
@@ -124,6 +213,8 @@ export function scaleFor(speed: Speed, pending: number, effects: number): number
 }
 
 interface Deps {
+  // begin starts an update, before its effects (animations.ts).
+  begin: () => void;
   // show draws an update's view.
   show: (u: Update) => void;
   // run plays one effect and resolves when it ends.
@@ -180,6 +271,7 @@ export function createPlayback(deps: Deps): Playback {
 
   async function play(): Promise<void> {
     for (let u = queue.shift(); u; u = queue.shift()) {
+      deps.begin();
       // The first update has no table to play on yet.
       if (deps.shown() !== null) {
         const effects = deps.effects(u);

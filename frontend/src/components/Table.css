@@ -1,5 +1,6 @@
 /* The game table (7.5): a grid with the viewer at the bottom, the others
-   left, top and right, and the board in the middle. Fits 1280x720. */
+   left, top and right, and the board in the middle. Fits 1280x720.
+   Players sit on the mat itself, with no seat boxes (H-05). */
 
 .game {
   display: grid;
@@ -38,37 +39,126 @@
   grid-area: bottom;
 }
 
-.board {
-  position: relative;
+/* The board cell measures the space left by the players; the board
+   takes the largest size of its fixed shape that fits (F-01, H-06).
+   Its content never changes its size (V-23). --u is the width of a
+   slot card; everything on the board is sized in it. */
+.board-cell {
   grid-area: board;
   display: grid;
-  grid-template-columns: minmax(0, auto) auto;
-  grid-template-rows: auto auto;
-  gap: 6px 32px;
-  align-content: center;
-  justify-content: center;
+  place-items: center;
+  min-width: 0;
+  min-height: 0;
+  container-type: size;
 }
 
-.board-row {
+.board {
+  --u: min((100cqw - 4px) / 12.75, (100cqh - 4px) / 3.6, 92px);
+  position: relative;
+  display: grid;
+  grid-template-columns:
+    calc(var(--u) * 0.45) calc(var(--u) * 2.9) minmax(0, 1fr) calc(var(--u) * 0.75)
+    calc(var(--u) * 1.58) calc(var(--u) * 1.3);
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  grid-template-areas:
+    "strip info monsters souls decks end"
+    "strip info shop souls decks end";
+  gap: calc(var(--u) * 0.1) calc(var(--u) * 0.2);
+  /* Four slot cards and their gaps fit the slots column; 4px is the border. */
+  width: calc(var(--u) * 12.75 + 4px);
+  height: calc(var(--u) * 3.6 + 4px);
+  padding: calc(var(--u) * 0.15);
+  border: 2px solid rgb(255 255 255 / 18%);
+  border-radius: 14px;
+  box-sizing: border-box;
+  background: rgb(8 12 18 / 55%);
+  box-shadow:
+    inset 0 0 24px rgb(0 0 0 / 60%),
+    0 4px 18px rgb(0 0 0 / 45%);
+}
+
+.board .card.size-table,
+.board .pile-empty.size-table {
+  width: var(--u);
+}
+
+.board .card.size-small,
+.board .pile-empty.size-small {
+  width: calc(var(--u) * 0.75);
+}
+
+.board .stack-icon .card.size-small {
+  width: 42px;
+}
+
+.board-strip {
+  grid-area: strip;
+  display: flex;
+  min-height: 0;
+}
+
+.board-info {
+  grid-area: info;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 0;
+}
+
+.board-slots {
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  gap: calc(var(--u) * 0.1);
   min-width: 0;
 }
 
-.board-side {
-  grid-row: 1 / 3;
-  grid-column: 2;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 8px;
+.board-monsters {
+  grid-area: monsters;
+}
+
+.board-shop {
+  grid-area: shop;
+}
+
+/* Up to four slots show full size; more slots share the row. */
+.board-slots > .pile,
+.board-slots > .pile-empty {
+  flex: 0 1 var(--u);
+  min-width: 0;
+}
+
+.board-slots .card.size-table {
+  width: 100%;
 }
 
 .bonus-souls {
+  grid-area: souls;
   display: flex;
-  gap: 4px;
-  margin-left: 12px;
+  flex-direction: column;
+  justify-content: center;
+  gap: calc(var(--u) * 0.04);
+}
+
+/* The decks at the board's right edge (H-16), each with its discard. */
+.board-decks {
+  grid-area: decks;
+  display: grid;
+  grid-template-rows: repeat(3, minmax(0, 1fr));
+  align-items: center;
+}
+
+/* The End turn button at the board's right edge (15.20, H-04). */
+.board-end {
+  grid-area: end;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.deck-pair {
+  display: flex;
+  gap: calc(var(--u) * 0.08);
 }
 
 .pile {
@@ -119,33 +209,10 @@
   padding: 4px 8px 6px;
   border: 2px solid transparent;
   border-radius: 8px;
-  background: rgb(0 0 0 / 28%);
-}
-
-.player.active {
-  border-color: var(--accent);
 }
 
 .player.dead {
   opacity: 0.6;
-}
-
-.player-left,
-.player-right {
-  width: 200px;
-  box-sizing: border-box;
-}
-
-.player-header {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 2px 10px;
-  font-size: 13px;
-}
-
-.player-stats {
-  color: var(--muted);
 }
 
 .player-cards,
@@ -158,25 +225,487 @@
   overflow-x: auto;
 }
 
+/* Opponents (15.18): a small name with coins outside the
+   board (F-07, H-21), the character with live stats, the items, and
+   the hand as fanned backs with a count (F-08, H-17). */
+.opp-status {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  text-shadow: 0 1px 3px rgb(0 0 0 / 80%);
+}
+
+.opp-name {
+  font-size: 13px;
+}
+
+/* A player's own color (15.21), as the stack names them. */
+.player-dot {
+  display: inline-block;
+  width: 0.6em;
+  height: 0.6em;
+  margin-right: 0.35em;
+  border: 1px solid rgb(0 0 0 / 70%);
+  border-radius: 50%;
+  vertical-align: 0.05em;
+}
+
+.player.active .opp-name {
+  color: var(--accent);
+}
+
+.opp-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 2px 10px;
+}
+
+.opp-coins {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 20px;
+  font-weight: 800;
+  line-height: 1.1;
+  color: #ffd27a;
+}
+
+.opp-coins .coin {
+  width: 18px;
+  height: 18px;
+  border-width: 1px;
+  font-size: 11px;
+}
+
+.opp-coins .coin-image {
+  width: 20px;
+  height: 20px;
+}
+
+.player-dead {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.hidden-hand {
+  position: relative;
+  display: flex;
+  flex: none;
+}
+
+.hidden-back {
+  flex: none;
+  transition: transform 150ms ease-out;
+}
+
+/* Top: the own area mirrored. The character keeps the middle column,
+   so it sits centered at the top edge; the hand hangs past the edge,
+   its backs upside down, as across a real table (H-02, H-17). */
+.player-top.opponent {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-areas:
+    "hand hand hand"
+    "status character items";
+  align-items: start;
+  column-gap: 14px;
+  row-gap: 0;
+  padding: 0 8px;
+}
+
+.player-top .hidden-hand {
+  grid-area: hand;
+  justify-self: center;
+  align-items: flex-end;
+  height: 34px;
+}
+
+.player-top .hidden-back {
+  transform: translateY(calc(var(--spread) * var(--spread) * -2px)) rotate(calc(var(--spread) * -5deg));
+  transform-origin: 50% -80%;
+}
+
+.player-top .hidden-back .card {
+  transform: rotate(180deg);
+}
+
+.player-top .hidden-back + .hidden-back {
+  margin-left: -42px;
+}
+
+.player-top .opp-left {
+  grid-area: status;
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-start;
+  gap: 14px;
+  min-width: 0;
+}
+
+.player-top .opp-status {
+  flex: none;
+  align-items: flex-end;
+  padding-top: 6px;
+  text-align: right;
+}
+
+.player-top .opp-line {
+  justify-content: flex-end;
+}
+
+.player-top .opp-character {
+  grid-area: character;
+}
+
+.player-top .opp-items {
+  grid-area: items;
+}
+
+/* Sides (F-09): one narrow column, so the board keeps most of the
+   width; with three players the free top lets it grow. */
+.player-left,
+.player-right {
+  width: 150px;
+  box-sizing: border-box;
+  padding: 4px;
+}
+
+/* The curses and the name are items of the column itself. */
+.player-left .opp-left,
+.player-right .opp-left {
+  display: contents;
+}
+
+/* The name comes first, clear of the corner menu; the hand below it. */
+.player-left .opp-status,
+.player-right .opp-status {
+  order: -1;
+}
+
+.player-left .hidden-hand,
+.player-right .hidden-hand {
+  align-self: center;
+  margin: 4px 0 6px;
+}
+
+.player-left .hidden-back,
+.player-right .hidden-back {
+  transform: translateY(calc(var(--spread) * var(--spread) * 1.5px)) rotate(calc(var(--spread) * 5deg));
+  transform-origin: 50% 160%;
+}
+
+.player-left .hidden-back + .hidden-back,
+.player-right .hidden-back + .hidden-back {
+  margin-left: -50px;
+}
+
 .player-left .player-cards,
 .player-right .player-cards {
   flex-wrap: wrap;
-}
-
-.player-bottom {
-  flex-direction: row;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  column-gap: 16px;
-}
-
-.player-bottom .player-header {
-  flex-basis: 100%;
-}
-
-.hand {
-  flex: 1;
   justify-content: center;
+  overflow: visible;
+}
+
+/* No room beside the character: the curses are a row above it, at the
+   column's left (V-42). */
+.player-left .curses,
+.player-right .curses {
+  justify-content: flex-start;
+}
+
+/* The own area (15.17): status | character | items, the hand below.
+   The character sits in the middle column, so it stays centered at
+   the bottom edge whatever the status and the items take (H-02). */
+.player.own {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  grid-template-areas:
+    "status character items"
+    "hand hand hand";
+  align-items: end;
+  column-gap: 14px;
+  row-gap: 0;
+  padding: 0 8px;
+}
+
+/* Status text, then the turn actions in a column beside it (15.19).
+   The curses take the far left of the cell (V-42). */
+.own-left {
+  grid-area: status;
+  display: flex;
+  justify-content: flex-end;
+  align-items: flex-end;
+  gap: 12px;
+  min-width: 0;
+}
+
+.own-left > * {
+  flex: none;
+}
+
+/* Curses stand at the far left of the player, apart from the items
+   (V-42); many of them scroll, as the items do. */
+.own-left > .curses,
+.player-top .curses {
+  flex: 0 1 auto;
+  margin-right: auto;
+}
+
+.own-left .turn-actions {
+  flex-direction: column;
+  padding-bottom: 6px;
+}
+
+.own-status {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  padding-bottom: 4px;
+  text-align: right;
+  text-shadow: 0 1px 3px rgb(0 0 0 / 80%);
+}
+
+.own-name {
+  font-size: 16px;
+}
+
+.player.active .own-name {
+  color: var(--accent);
+}
+
+/* Coins are big, like mana in Hearthstone (H-18). */
+.own-coins {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1.1;
+  color: #ffd27a;
+}
+
+.coin {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border: 2px solid #8a6212;
+  border-radius: 50%;
+  box-sizing: border-box;
+  font-size: 15px;
+  color: #6b4a0a;
+  text-shadow: none;
+  background: radial-gradient(circle at 35% 30%, #ffe9a3, #e0a82e);
+}
+
+/* The game's own coin (15.38): the image is the whole coin. */
+.coin-image {
+  width: 30px;
+  height: 30px;
+  border: none;
+  background: none;
+  filter: drop-shadow(0 1px 1px rgb(0 0 0 / 60%));
+}
+
+.own-character {
+  grid-area: character;
+}
+
+/* Soul crystals (15.39): a column of gem slots left of the character,
+   like mana crystals in Hearthstone (V-30, V-31). The character cell
+   pads its right side as wide, so the card stays centered. */
+.own {
+  --crystal: 16px;
+}
+
+.opponent {
+  --crystal: 12px;
+}
+
+.own-character,
+.opp-character {
+  align-items: flex-end;
+  padding-right: calc(4px + var(--crystal) + 6px);
+}
+
+.souls {
+  display: flex;
+  flex: none;
+  flex-direction: column-reverse;
+  gap: 3px;
+  padding-bottom: 6px;
+  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 80%));
+}
+
+/* The rim, and the gem inset in it; both cut as a six-sided gem. */
+.soul-slot {
+  position: relative;
+  width: var(--crystal);
+  aspect-ratio: 4 / 5;
+}
+
+.soul-slot::before,
+.soul-slot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  clip-path: polygon(50% 0, 100% 28%, 100% 72%, 50% 100%, 0 72%, 0 28%);
+}
+
+.soul-slot::before {
+  background: rgb(255 255 255 / 35%);
+}
+
+.soul-slot::after {
+  inset: 2px;
+  background: rgb(8 14 28 / 80%);
+}
+
+.soul-slot.filled {
+  filter: drop-shadow(0 0 3px #6fd0ff);
+}
+
+.soul-slot.filled::before {
+  background: #d8f4ff;
+}
+
+.soul-slot.filled::after {
+  background: radial-gradient(circle at 35% 30%, #f2fdff, #62c9ff 45%, #1d5bd0);
+}
+
+/* A crystal an effect may aim at or pick (V-43), in the card colors.
+   It grows, so a blue pick still stands out on a blue gem. */
+.soul-slot.hl-act,
+.soul-slot.hl-pick,
+.soul-slot.hl-aim {
+  scale: 1.35;
+}
+
+.soul-slot.hl-act,
+.soul-slot.hl-pick {
+  cursor: pointer;
+}
+
+.soul-slot.hl-act {
+  filter: drop-shadow(0 0 2px #f5c542) drop-shadow(0 0 5px #f5c542);
+}
+
+.soul-slot.hl-act::before {
+  background: #f5c542;
+}
+
+.soul-slot.hl-pick {
+  filter: drop-shadow(0 0 2px #fff) drop-shadow(0 0 5px #4fc3f7);
+}
+
+.soul-slot.hl-pick::before {
+  background: #fff;
+}
+
+.soul-slot.hl-aim {
+  filter: drop-shadow(0 0 2px #ff4b3e) drop-shadow(0 0 5px #ff4b3e);
+}
+
+.soul-slot.hl-aim::before {
+  background: #ff4b3e;
+}
+
+.own-items {
+  grid-area: items;
+}
+
+/* The hand box is shorter than its cards: they hang past the bottom
+   edge, where the table clips them (H-03). The box stays on screen. */
+.own .hand {
+  grid-area: hand;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 0;
+  height: 104px;
+  padding: 12px 0 0;
+  overflow: visible;
+}
+
+/* The fan: each card turns by its place from the middle and drops a
+   little toward the ends. --spread is set per card, the rest on .hand. */
+.own .hand-card {
+  transform: translateY(calc(var(--spread) * var(--spread) * var(--fan-drop))) rotate(calc(var(--spread) * var(--fan-step)));
+  transform-origin: 50% 160%;
+}
+
+.own .hand-card + .hand-card {
+  margin-left: calc(var(--fan-overlap) * -1);
+}
+
+/* A hovered card comes to the front of the fan; its zoom rises from it
+   (15.27, H-13). */
+.own .hand-card:hover:not(.dragging) {
+  z-index: 10;
+}
+
+/* A playable hand card glows green; the rest stay plain (15.27, H-12).
+   Like Hearthstone's: no hard ring. A thin light rim on the card's
+   edge, light falling inward over the art, and behind the card a soft
+   aura in layers, bright near the edge and fading out. The aura
+   breathes slowly; only its opacity moves. */
+.own .hand .card.hl-act {
+  box-shadow: 0 2px 6px rgb(0 0 0 / 40%);
+}
+
+.own .hand .card.hl-act::after {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow:
+    inset 0 0 0 1px rgb(236 255 222 / 55%),
+    inset 0 0 8px 1px rgb(150 255 110 / 30%);
+  content: "";
+  pointer-events: none;
+}
+
+.own .hand-card.usable {
+  position: relative;
+  isolation: isolate;
+}
+
+.own .hand-card.usable::before,
+.own .hand-card.usable::after {
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  border-radius: 6px;
+  content: "";
+  pointer-events: none;
+}
+
+/* The steady part: a crisp light edge and a tight bright halo. */
+.own .hand-card.usable::before {
+  box-shadow:
+    0 0 1px 1px rgb(220 255 190 / 75%),
+    0 0 5px 1px rgb(110 255 70 / 80%),
+    0 0 12px 3px rgb(60 210 45 / 50%);
+}
+
+/* The breathing part: the wide, soft falloff. */
+.own .hand-card.usable::after {
+  box-shadow:
+    0 0 22px 6px rgb(50 200 45 / 40%),
+    0 0 44px 14px rgb(25 150 35 / 22%);
+  animation: hand-glow 2.4s ease-in-out infinite alternate;
+}
+
+/* anim: hand-glow */
+@keyframes hand-glow {
+  from {
+    opacity: 0.45;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 /* Dragging a hand card to play it (7.7); only transform changes. */
@@ -197,7 +726,200 @@
   transition: none;
 }
 
+/* A card that aims stays in the fan, lifted, while its arrow points
+   (15.25). */
+.own .hand-card.aiming {
+  z-index: 10;
+  transform: translateY(-40px) scale(1.08);
+}
+
+/* The aiming arrow (15.32, Aim.tsx), after Hearthstone's: a chain of
+   thick red blocks from the card, placed once with translate and
+   rotate, and a big head whose tip is at the pointer. The chain marches
+   toward the head; the first block fades in and the last fades out in
+   step, so the loop has no seam. On a valid target a ring with cross
+   ticks marks the tip. A little see-through, drawn over everything,
+   outlined so it reads on red art, and never hit by the pointer. Only
+   transform and opacity move; --march follows the animation speed. */
+.aim-arrow {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  pointer-events: none;
+  opacity: 0.85;
+  filter: drop-shadow(0 0 1px #000) drop-shadow(0 2px 3px rgb(0 0 0 / 70%));
+}
+
+.aim-chain,
+.aim-head,
+.aim-ring {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.aim-march {
+  animation: aim-march var(--march) linear infinite;
+}
+
+.aim-block {
+  position: absolute;
+  top: -13px;
+  left: 0;
+}
+
+.aim-block > div {
+  width: 28px;
+  height: 26px;
+  box-sizing: border-box;
+  border: 2px solid #6e0d08;
+  border-radius: 3px;
+  background: linear-gradient(to bottom, #ff7a63, #e53228 40%, #a8170f);
+}
+
+.aim-block > .first {
+  animation: aim-fade-in var(--march) linear infinite;
+}
+
+.aim-block > .last {
+  animation: aim-fade-out var(--march) linear infinite;
+}
+
+.aim-head {
+  width: 48px;
+  height: 60px;
+  margin-top: -30px;
+  margin-left: -48px;
+  clip-path: polygon(0 0, 100% 50%, 0 100%, 24% 50%);
+  transform-origin: 48px 50%;
+  background: linear-gradient(to bottom, #ff7a63, #e53228 40%, #a8170f);
+}
+
+.aim-ring > div {
+  position: absolute;
+  top: -34px;
+  left: -34px;
+  width: 68px;
+  height: 68px;
+  box-sizing: border-box;
+  border: 6px solid #e53228;
+  border-radius: 50%;
+  opacity: 0;
+  transform: scale(1.5);
+  transition:
+    opacity calc(var(--march) / 2),
+    transform calc(var(--march) / 2);
+}
+
+/* The cross ticks: two bars, see-through in the middle. */
+.aim-ring > div::before,
+.aim-ring > div::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 88px;
+  height: 5px;
+  margin: -2.5px 0 0 -44px;
+  background: linear-gradient(
+    to right,
+    #e53228 0 18px,
+    transparent 18px calc(100% - 18px),
+    #e53228 calc(100% - 18px)
+  );
+}
+
+.aim-ring > div::after {
+  transform: rotate(90deg);
+}
+
+.aim-arrow.on .aim-ring > div {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.aim-arrow.still *,
+.aim-arrow.still *::before,
+.aim-arrow.still *::after {
+  animation: none;
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aim-arrow *,
+  .own .hand-card.usable::after {
+    animation: none;
+  }
+}
+
+/* anim: aim-march */
+@keyframes aim-march {
+  to {
+    transform: translateX(36px);
+  }
+}
+
+/* anim: aim-fade-in */
+@keyframes aim-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+/* anim: aim-fade-out */
+@keyframes aim-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+/* Why a wrong click is no target (15.33, T-05): a short note just
+   above the pointer, over everything; it fades out near the end of its
+   2.5 s. The pointer passes through it. */
+.aim-why {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1001;
+  pointer-events: none;
+}
+
+.aim-why > div {
+  position: absolute;
+  bottom: 14px;
+  left: 0;
+  width: max-content;
+  max-width: 260px;
+  padding: 6px 12px;
+  transform: translateX(-50%);
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  color: #fff;
+  background: rgb(60 10 10 / 92%);
+  border: 1px solid #e0473c;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 60%);
+  animation: aim-why 2.5s linear forwards;
+}
+
+/* anim: aim-why */
+@keyframes aim-why {
+  80% {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
 .player-allowance {
   font-size: 12px;
   color: #ffd27a;
+}
+
+/* A narrow column wraps only between the parts. */
+.player-allowance > span {
+  white-space: nowrap;
 }

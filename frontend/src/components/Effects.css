@@ -24,6 +24,11 @@
   gap: 10px;
 }
 
+/* The thrown die starts above the screen (15.62). */
+.effect-thrown {
+  opacity: 0;
+}
+
 .effect-label {
   padding: 4px 12px;
   border-radius: 12px;
@@ -53,4 +58,79 @@
 
 .effect-bad {
   color: #ff8a80;
+}
+
+/* The attack lunge and its starburst (15.3) play in a layer of their
+   own, above the table and the effects. */
+.effects-trail {
+  position: fixed;
+  inset: 0;
+  z-index: 21;
+  pointer-events: none;
+}
+
+.effect-lunge {
+  position: fixed;
+  margin: 0;
+  box-shadow: 0 10px 24px rgb(0 0 0 / 60%);
+}
+
+.effect-burst {
+  position: absolute;
+  width: 76px;
+  height: 76px;
+  translate: -50% -50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.effect-burst svg {
+  position: absolute;
+  inset: 0;
+  fill: #ffd23f;
+  stroke: #7a3d00;
+  stroke-width: 3;
+  filter: drop-shadow(0 3px 6px rgb(0 0 0 / 60%));
+}
+
+.effect-burst span {
+  position: relative;
+  font-family: var(--font-game);
+  font-size: 30px;
+  font-weight: 800;
+  color: #fff;
+  -webkit-text-stroke: 2px #3a1400;
+  paint-order: stroke fill;
+}
+
+/* Hit and death marks (15.37) share the lunge's layer. A shot: a
+   glowing ball that flies from the damage's source to its target. */
+.effect-shot {
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  translate: -50% -50%;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fff 0 22%, #ffd23f 45%, #e8501a 75%, rgb(232 80 26 / 0%) 100%);
+  box-shadow: 0 0 14px 6px rgb(255 160 40 / 55%);
+}
+
+/* A dying card's skull: bone white with an ink edge, over the card. */
+.effect-skull {
+  position: absolute;
+  aspect-ratio: 1;
+  translate: -50% -50%;
+}
+
+.effect-skull svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  fill: #f3ead2;
+  fill-rule: evenodd;
+  stroke: #1d120a;
+  stroke-width: 1.1;
+  stroke-linejoin: round;
+  filter: drop-shadow(0 4px 0 #1d120a) drop-shadow(0 6px 10px rgb(0 0 0 / 60%));
 }

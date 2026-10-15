@@ -60,11 +60,27 @@ func (tb *Table) Find(p int, card engine.CardRef) engine.ObjectID {
 // test if the engine refuses. It returns every event on the way.
 func (tb *Table) Do(in engine.Intent, choices ...string) []engine.Event {
 	tb.T.Helper()
+	thrown := tb.ThrowPending()
 	ev, err := tb.G.Apply(in)
 	if err != nil {
 		tb.T.Fatalf("%+v refused: %v", in, err)
 	}
-	return append(ev, tb.Settle(choices...)...)
+	return append(append(thrown, ev...), tb.Settle(choices...)...)
+}
+
+// ThrowPending throws the die of every roll that waits for it: tests
+// throw for the roller (15.59). Other helpers call it first.
+func (tb *Table) ThrowPending() []engine.Event {
+	tb.T.Helper()
+	var out []engine.Event
+	for w := tb.G.Prompt(); w.Kind == engine.PromptThrow; w = tb.G.Prompt() {
+		ev, err := tb.G.Apply(engine.Intent{Player: w.Player, Kind: engine.IntentThrow})
+		if err != nil {
+			tb.T.Fatal(err)
+		}
+		out = append(out, ev...)
+	}
+	return out
 }
 
 // Settle answers prompts by label and passes until the stack is empty.
@@ -87,6 +103,7 @@ func (tb *Table) Activate(p int, card engine.CardRef, i int, choices ...string) 
 // if it is allowed.
 func (tb *Table) Refused(p int, card engine.CardRef, i int) string {
 	tb.T.Helper()
+	tb.ThrowPending()
 	_, err := tb.G.Apply(engine.Intent{Player: engine.PlayerID(p), Kind: engine.IntentActivate, Objects: []engine.ObjectID{tb.Find(p, card)}, Choice: i})
 	var re *engine.RuleError
 	if !errors.As(err, &re) {
@@ -116,8 +133,20 @@ func (tb *Table) EndTurn(choices ...string) {
 			}
 			in = engine.Intent{Player: w.Player, Kind: engine.IntentChoose, Choice: tb.option(w, choices[0])}
 			choices = choices[1:]
+		case engine.PromptOrder:
+			if len(choices) < w.Count {
+				tb.T.Fatalf("an order of %d cards is needed, choices %v", w.Count, choices)
+			}
+			order, err := tb.G.OrderOf(choices[:w.Count])
+			if err != nil {
+				tb.T.Fatal(err)
+			}
+			in = engine.Intent{Player: w.Player, Kind: engine.IntentOrder, Objects: order}
+			choices = choices[w.Count:]
 		case engine.PromptDiscard:
 			in = engine.Intent{Player: w.Player, Kind: engine.IntentDiscard, Objects: tb.G.Players[w.Player].Hand[:w.Count]}
+		case engine.PromptThrow:
+			in = engine.Intent{Player: w.Player, Kind: engine.IntentThrow}
 		case engine.PromptPriority:
 			in = engine.Intent{Player: w.Player, Kind: engine.IntentPass}
 		default:
@@ -168,6 +197,7 @@ func Has(events []engine.Event, kind engine.EventKind, p engine.PlayerID) bool {
 // may act on the active player's turn.
 func (tb *Table) Pass(p int) {
 	tb.T.Helper()
+	tb.ThrowPending()
 	if _, err := tb.G.Apply(engine.Intent{Player: engine.PlayerID(p), Kind: engine.IntentPass}); err != nil {
 		tb.T.Fatal(err)
 	}
@@ -177,6 +207,7 @@ func (tb *Table) Pass(p int) {
 // stack, so other players may respond.
 func (tb *Table) Start(p int, card engine.CardRef, i int) {
 	tb.T.Helper()
+	tb.ThrowPending()
 	in := engine.Intent{Player: engine.PlayerID(p), Kind: engine.IntentActivate, Objects: []engine.ObjectID{tb.Find(p, card)}, Choice: i}
 	if _, err := tb.G.Apply(in); err != nil {
 		tb.T.Fatalf("%+v refused: %v", in, err)
@@ -192,6 +223,7 @@ func (tb *Table) Play(p int, card engine.CardRef, choices ...string) []engine.Ev
 // Choose answers the open choose prompt by label, without passing.
 func (tb *Table) Choose(label string) {
 	tb.T.Helper()
+	tb.ThrowPending()
 	w := tb.G.Prompt()
 	if _, err := tb.G.Apply(engine.Intent{Player: w.Player, Kind: engine.IntentChoose, Choice: tb.option(w, label)}); err != nil {
 		tb.T.Fatal(err)

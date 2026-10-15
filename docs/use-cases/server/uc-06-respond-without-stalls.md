@@ -14,11 +14,19 @@
 4. A player may press "Skip all": the server passes for them on the stack they see (N-06).
 5. "Skip all" ends when the stack is empty, or when a new item arrives; then they are asked again.
 6. With a response timer, everyone sees when the waiting player's time ends (N-07).
+7. On another's turn a player may press "Wait for my turn" (N-16).
+8. The server then passes for them until the player before them ends the turn.
+9. In that end window they are asked again: their last chance to act.
 
 ## Alternative scenarios and errors
 
 * **6a. The response timer runs out:** the server answers for the player: it passes, or ends their turn, or discards their first cards, or takes the first option of a choice.
+* **7a. Choices and discards:** they still ask the waiting player.
+* **7b. Cancel wait:** the player is asked again from the next pass on.
 * **1a. A client misses an update:** it asks for a resync and gets the whole view again.
+* **6b. A roll waits for its throw:** when the timer runs out, the server throws for the roller (15.60).
+* **7c. A roll waits for its throw:** "Skip all" and "Wait for my turn" never throw.
+  * The server only passes for a player; the roller is always asked to throw.
 
 ## Postconditions
 

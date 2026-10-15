@@ -13,6 +13,8 @@ allowed := g.Allowed(p.Player)               // every intent that would be accep
 events, err = g.Apply(intent)                // validate, then run until input is needed
 ```
 
+`Setup.Banned` lists cards the host left out (GS-13): no copy goes into a deck, a banned character is never dealt, and the list stays in `Game.Banned`. A starting item cannot be banned; ban its character instead.
+
 `Apply` either refuses the intent with a `RuleError` (rule ID plus reason, state unchanged) or applies it and runs automatic work until the game waits on a player again. The engine never picks for a player, even when only one option exists.
 
 ## State
@@ -40,7 +42,7 @@ Every card is an object with an ID. Moving a card to another zone gives it a new
 | `ability.go`, `activate.go` | effect blocks, activating abilities, targets |
 | `triggers.go`, `statics.go` | triggered and static abilities |
 | `choice.go` | `Choose` prompts (targets, order of replacements and triggers, penalties) |
-| `allowed.go`, `view.go` | allowed intents; per-viewer hidden information |
+| `allowed.go`, `aims.go`, `view.go` | allowed intents and their first targets; per-viewer hidden information |
 | `record.go`, `situation.go` | step records, replay, save/load; situation payloads |
 | `invariants.go` | state checks used by tests and fuzzing |
 
@@ -90,13 +92,17 @@ A test fails when the committed report is out of date, so run the command after 
 
 `GameView.Options` tells the chooser what each option of a choose prompt points at (`OptionView`: an object, a player, a deck, or a stack item), one per `Waiting.Options`. Clients use it to let the player pick on the table. It is built from `g.Choice` at view time, so it is not saved state and does not change checksums.
 
+`GameView.Activating` names the card whose mode or targets the open choice asks for, while a play or use is being put on the stack (`g.Activating`). Only the chooser gets it, like `Options`, so a hand card is never named to others. Clients aim from that card (15.34).
+
 ## Counts in views
 
-`PlayerView.LootPlays`, `Attacks` and `Purchases` are what a player may still do now, bonuses included (attacks and purchases only for the active player). `CardView.Counters` copies the object's counters. Like `Options`, they are computed at view time.
+`PlayerView.LootPlays`, `Attacks` and `Purchases` are what a player may still do now, bonuses included (attacks and purchases only for the active player). `CardView.Counters` copies the object's counters. `CardView.Stats` is set on monsters only: live `HP`, `DC` and `ATK` from `HP`, `Evasion` and `MonsterATK`, and the printed ones from the card definition (the printed DC clamped like `Evasion`). Like `Options`, they are computed at view time.
 
 ## Who the stack waits for
 
 In an open priority window, `GameView.Passed` lists the players who passed in a row (first passer first) and `GameView.Responding` lists those who may still respond, the waiting player first (V-11). Priority goes round once in turn order, so both come from `Priority.Holder` and `Priority.Passes`. Outside a window (a choice, a discard) both are empty. The server's automatic passes (N-05, N-06) go through the engine, so skipped players show up in `Passed`.
+
+`GameView.WinSouls` is the soul value that wins (`Game.WinSouls`, R-WIN-01), so clients can show how close each player is (V-30).
 
 ## Private events
 

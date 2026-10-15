@@ -16,6 +16,7 @@
 * [Linters](Linters)
 * [Screenshots](Screenshots)
 * [Client](Client)
+* [Animations](Animations)
 * [Frontend tests](Frontend-tests)
 * [Internal builds](Internal-builds)
 * [Releases](Releases)

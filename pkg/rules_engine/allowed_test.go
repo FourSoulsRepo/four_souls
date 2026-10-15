@@ -2,6 +2,7 @@ package rulesengine
 
 import (
 	"errors"
+	"slices"
 	"testing"
 )
 
@@ -23,7 +24,8 @@ func TestAllowedIntentsAreAccepted(t *testing.T) {
 		if len(allowed) == 0 {
 			t.Fatalf("step %d: no allowed intent for the waiting player, prompt %+v", step, p)
 		}
-		for _, in := range allowed {
+		aims := g.Aims(allowed)
+		for i, in := range allowed {
 			c, err := g.Clone()
 			if err != nil {
 				t.Fatal(err)
@@ -34,6 +36,7 @@ func TestAllowedIntentsAreAccepted(t *testing.T) {
 			if _, err := c.Apply(in); err != nil {
 				t.Fatalf("step %d: allowed intent %+v refused: %v", step, in, err)
 			}
+			checkAim(t, c, in, aims, i)
 		}
 		// Others have nothing allowed while one player is asked.
 		for _, pl := range g.Players {
@@ -79,7 +82,7 @@ func TestCanAct(t *testing.T) {
 	if !g.CanAct(a) {
 		t.Error("the active player in the action phase can act")
 	}
-	g.push(StackItem{Kind: StackRoll, Controller: a})
+	g.push(StackItem{Kind: StackRoll, Roll: 3, Controller: a})
 	pass(t, g)
 	if g.Prompt().Player != b {
 		t.Fatal("b should have priority")
@@ -108,5 +111,35 @@ func TestUnknownObjectsAreRefused(t *testing.T) {
 				}
 			}()
 		}
+	}
+}
+
+// checkAim: an intent has an aim exactly when applying it asks for a
+// target at once, and the aim lists that prompt's targets (15.25).
+func checkAim(t *testing.T, after *Game, in Intent, aims []Aim, i int) {
+	t.Helper()
+	var aim *Aim
+	for j := range aims {
+		if aims[j].Intent == i {
+			aim = &aims[j]
+		}
+	}
+	asked := in.Kind != IntentChoose && after.Choice != nil && after.Choice.Purpose == ChooseTarget
+	if !asked {
+		if aim != nil {
+			t.Fatalf("intent %+v has aim %+v but asks no target", in, *aim)
+		}
+		return
+	}
+	if aim == nil {
+		t.Fatalf("intent %+v asks a target but has no aim", in)
+	}
+	if aim.Reason == "" {
+		t.Fatalf("intent %+v: aim has no reason", in)
+	}
+	want := after.optionViews()
+	want = want[:len(want)-1] // the last option cancels
+	if !slices.Equal(aim.Targets, want) {
+		t.Fatalf("intent %+v: aim %+v, the prompt offers %+v", in, aim.Targets, want)
 	}
 }

@@ -136,8 +136,8 @@ func TestPlayerOrdersSeveralReplacements(t *testing.T) {
 		first string
 		want  int
 	}{
-		{"+1¢", (3 + 1) * 2},
-		{"double ¢", 3*2 + 1},
+		{"plus_one", (3 + 1) * 2},
+		{"doubler", 3*2 + 1},
 	} {
 		g := newReplacementGame(t)
 		giveItem(g, 0, "plus_one")
@@ -148,11 +148,20 @@ func TestPlayerOrdersSeveralReplacements(t *testing.T) {
 		if pr.Kind != PromptChoose || pr.Purpose != ChooseReplacement || pr.Player != 0 || len(pr.Options) != 2 {
 			t.Fatalf("prompt %+v; the affected player orders the replacements (R-ABIL-33)", pr)
 		}
+		if pr.Text != "Gaining 3¢: which card applies first?" {
+			t.Errorf("question %q; it names the gain (19.17)", pr.Text)
+		}
 		choice := 0
 		for i, o := range pr.Options {
 			if o == tc.first {
 				choice = i
 			}
+		}
+		// Each option shows what that order gives (19.17).
+		ov := g.View(Viewer{Kind: ViewPlayer, Player: 0}).Options[choice]
+		if ov.Object == 0 || ov.Outcome == nil || len(ov.Outcome.Actions) != 1 ||
+			ov.Outcome.Actions[0].Kind != ActGainCents || ov.Outcome.Actions[0].Amount != tc.want || len(ov.Outcome.Unused) != 0 {
+			t.Errorf("%s first: option %+v, outcome %+v; want a gain of %d", tc.first, ov, ov.Outcome, tc.want)
 		}
 		if _, err := g.Apply(Intent{Player: 1, Kind: IntentChoose, Choice: choice}); err == nil {
 			t.Fatal("another player chose the order")
@@ -166,6 +175,25 @@ func TestPlayerOrdersSeveralReplacements(t *testing.T) {
 		if got := g.Players[0].Cents - before; got != tc.want {
 			t.Errorf("%s first: gained %d, want %d", tc.first, got, tc.want)
 		}
+	}
+}
+
+// With three replacements, the first pick leaves two to order: the
+// preview says the player chooses again instead of guessing (19.17).
+func TestReplacementPreviewChoosesAgain(t *testing.T) {
+	g := newReplacementGame(t)
+	giveItem(g, 0, "plus_one")
+	giveItem(g, 0, "plus_one")
+	giveItem(g, 0, "doubler")
+	runAction(g, Action{Kind: ActGainCents, Player: 0, Amount: 3})
+	before := g.Players[0].Cents
+	for i, ov := range g.View(Viewer{Kind: ViewPlayer, Player: 0}).Options {
+		if ov.Outcome == nil || !ov.Outcome.Again || len(ov.Outcome.Actions) != 0 {
+			t.Errorf("option %d outcome %+v; want choose again", i, ov.Outcome)
+		}
+	}
+	if g.Players[0].Cents != before || len(g.Queue) != 1 {
+		t.Errorf("the preview changed the game: cents %d, queue %v", g.Players[0].Cents, g.Queue)
 	}
 }
 

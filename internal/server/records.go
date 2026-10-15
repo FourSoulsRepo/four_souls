@@ -2,6 +2,7 @@ package server
 
 import (
 	"log"
+	"mime"
 	"net/http"
 	"path/filepath"
 	"slices"
@@ -45,6 +46,10 @@ func (r *Room) openRecord(s engine.Setup) {
 	for i, c := range s.Characters {
 		chars[i] = string(c)
 	}
+	banned := make([]string, len(s.Banned))
+	for i, c := range s.Banned {
+		banned[i] = string(c)
+	}
 	seats := make([]record.Seat, len(r.seats))
 	for i, st := range r.seats {
 		seats[i] = record.Seat{Seat: i, Name: st.name}
@@ -53,7 +58,7 @@ func (r *Room) openRecord(s engine.Setup) {
 	now := time.Now()
 	h := record.Header{
 		App: v.App, Engine: v.Engine, Protocol: protocol.Version, Game: r.recInfo.game, Started: now.UTC(),
-		Setup: record.Setup{Seed: s.Seed, Players: s.Players, Sets: r.recInfo.sets, BonusSouls: s.BonusSouls, Characters: chars},
+		Setup: record.Setup{Seed: s.Seed, Players: s.Players, Sets: r.recInfo.sets, BonusSouls: s.BonusSouls, Characters: chars, Banned: banned},
 		Seats: seats, Cards: r.recInfo.cards,
 	}
 	w, err := record.Create(r.path, h)
@@ -85,9 +90,14 @@ func (r *Room) closeRecord(finished bool) {
 	}
 }
 
-// recordPath names a game's record: started time and game ID.
-func recordPath(dir, game string, now time.Time) string {
-	return filepath.Join(dir, now.UTC().Format("2006-01-02-150405")+"-"+game+record.Ext)
+// recordPath names a game's record: started time, game ID and the
+// seats' nicknames, cleaned for file systems (record.FileName).
+func recordPath(dir, game string, seats []roomSeat, now time.Time) string {
+	names := make([]string, len(seats))
+	for i, s := range seats {
+		names[i] = s.name
+	}
+	return filepath.Join(dir, record.FileName(now, game, names))
 }
 
 // downloadRecord serves a finished game's record to one of its players
@@ -110,7 +120,7 @@ func (h *Hub) downloadRecord(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, "the record is ready when the game is over (RP-05)", http.StatusConflict)
 	default:
 		w.Header().Set("Content-Type", "application/octet-stream")
-		w.Header().Set("Content-Disposition", `attachment; filename="`+filepath.Base(room.path)+`"`)
+		w.Header().Set("Content-Disposition", mime.FormatMediaType("attachment", map[string]string{"filename": filepath.Base(room.path)}))
 		http.ServeFile(w, req, room.path)
 	}
 }

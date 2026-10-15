@@ -1,5 +1,8 @@
 import { useState } from 'react';
-import type { Mat, Settings, Theme } from '../bridge';
+import type { Settings, Theme } from '../bridge';
+import { Die } from '../components/Die';
+import { diceChoices } from '../dice';
+import { matChoices, matLook, matOf } from '../mats';
 import type { Speed } from '../playback';
 import { useApp } from '../store';
 import './screens.css';
@@ -12,19 +15,21 @@ function themeOf(v: string): Theme {
   return v === 'light' ? 'light' : 'dark';
 }
 
-function matOf(v: string): Mat {
-  return v === 'basement' || v === 'cathedral' ? v : 'felt';
-}
-
-// SettingsScreen: ST-01, ST-02, ST-03, ST-05, ST-06. Saved settings
-// apply at once.
+// SettingsScreen: ST-01, ST-02, ST-03, ST-05, ST-06, and the dice look
+// (V-19, 15.64). Saved settings apply at once; the dice look goes out
+// in the next hello.
 export function SettingsScreen() {
   const settings = useApp((s) => s.settings);
   const error = useApp((s) => s.error);
   const save = useApp((s) => s.saveSettings);
   const show = useApp((s) => s.show);
+  const mats = useApp((s) => s.mats);
+  const dice = useApp((s) => s.dice);
+  const diceGroups = diceChoices(dice);
   const [form, setForm] = useState<Settings>(settings);
   const [saved, setSaved] = useState(false);
+  const preview = matLook(form.mat, mats);
+  const diceImage = dice.find((d) => d.id === form.dice)?.image ?? '';
   const change = (s: Partial<Settings>) => {
     setForm({ ...form, ...s });
     setSaved(false);
@@ -80,14 +85,16 @@ export function SettingsScreen() {
           <label className="field">
             Game mat
             <select
-              value={form.mat}
+              value={matOf(form.mat, mats)}
               onChange={(e) => {
-                change({ mat: matOf(e.target.value) });
+                change({ mat: e.target.value });
               }}
             >
-              <option value="felt">Green felt</option>
-              <option value="basement">Basement</option>
-              <option value="cathedral">Cathedral</option>
+              {matChoices(mats).map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.name}
+                </option>
+              ))}
             </select>
           </label>
           <label className="field">
@@ -104,8 +111,36 @@ export function SettingsScreen() {
               <option value="off">Off</option>
             </select>
           </label>
+          {diceGroups.length > 0 && (
+            <label className="field">
+              Dice
+              <select
+                value={form.dice}
+                onChange={(e) => {
+                  change({ dice: e.target.value });
+                }}
+              >
+                {diceGroups.map((g) => (
+                  <optgroup key={g.set} label={g.set}>
+                    {g.looks.map((d) => (
+                      <option key={d.id} value={d.id}>
+                        {d.name}
+                      </option>
+                    ))}
+                  </optgroup>
+                ))}
+              </select>
+            </label>
+          )}
         </div>
-        <div className={`mat-preview mat-${form.mat}`} aria-label="Game mat preview" />
+        <div className={`mat-preview ${preview.className}`} style={preview.style} aria-label="Game mat preview" />
+        {diceGroups.length > 0 && (
+          <div className="dice-preview" role="group" aria-label="Dice preview">
+            {[1, 2, 3, 4, 5, 6].map((v) => (
+              <Die key={v} value={v} image={diceImage} />
+            ))}
+          </div>
+        )}
         <button type="submit" className="primary">
           Save
         </button>

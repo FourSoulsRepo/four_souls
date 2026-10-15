@@ -47,6 +47,7 @@ type Setup struct {
 	Sets       []string `json:"sets"`
 	BonusSouls bool     `json:"bonus_souls"`
 	Characters []string `json:"characters,omitempty"`
+	Banned     []string `json:"banned,omitempty"` // left out of the game (GS-13)
 }
 
 // Seat is one player of the match.

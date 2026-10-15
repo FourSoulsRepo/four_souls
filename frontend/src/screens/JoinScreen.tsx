@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { lanRows } from '../lobby';
+import { canCreate, lanRows } from '../lobby';
 import { protocolVersion } from '../protocol';
 import { setList } from '../sets';
 import { useApp } from '../store';
@@ -147,13 +147,17 @@ function GameList() {
   const joinGame = useApp((s) => s.joinGame);
   const loadSave = useApp((s) => s.loadSave);
   const quit = useApp((s) => s.quit);
+  const show = useApp((s) => s.show);
+  const create = useApp((s) => canCreate(s.lobby, s.hosting !== null));
 
   return (
     <div className="screen">
       <h1>Games</h1>
       {lobby.saved && <p className="muted">The game was saved. Continue it from this list later.</p>}
       <div className="panel">
-        {lobby.games.length === 0 && <span className="muted">No games yet. Ask the host to open one.</span>}
+        {lobby.games.length === 0 && (
+          <span className="muted">{create ? 'No games yet. Create one.' : 'No games yet. Ask the host to open one.'}</span>
+        )}
         <ul className="list">
           {lobby.games.map((g) => (
             <li key={g.id}>
@@ -187,6 +191,17 @@ function GameList() {
             </li>
           ))}
         </ul>
+        {create && (
+          <button
+            type="button"
+            className="primary"
+            onClick={() => {
+              show('host');
+            }}
+          >
+            Create a game
+          </button>
+        )}
       </div>
       {lobby.saves.length > 0 && (
         <div className="panel">

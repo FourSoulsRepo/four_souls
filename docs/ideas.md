@@ -105,6 +105,7 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    16. So nobody, the roller included, can see it early.
    17. The record keeps the intent, so replays stay exact.
    18. Items 5–17 are open; the owner decides them in roadmap step 15.5.
+   19. Decided (owner, 2026-10-15): proposals 11–17 accepted (15.5).
 18. V-18. Simple but informative interface.
    1. Do not overload the screen with numbers and panels.
    2. Do not hide what players need to know.
@@ -142,6 +143,112 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    7. One status line or badge on the active seat says it in a few words.
    8. Same marks on every screen, spectators included.
    9. Built from game state; no new intents needed.
+22. V-22. Compare with real Hearthstone screenshots.
+   1. Find Hearthstone screenshots on the internet.
+   2. Keep them in `.cache/screenshots/`, never in the repo.
+   3. Compare board shape, hand, hero, and buttons with our table.
+23. V-23. Table areas keep their size.
+   1. An empty zone keeps its place and size.
+   2. Nothing on the table grows or shrinks when a zone empties.
+   3. As on fouronlinesouls.net today.
+24. V-24. Game mat image as the table background.
+   1. First mat: `pkg/card_db/images/assets/mats/basement.jpg`.
+   2. Every image in `assets/mats/` becomes a choice in the mat setting (ST-03).
+   3. A new mat needs only a new file in that folder.
+   4. A build without images uses plain colors, as now.
+25. V-25. Mats and dice in WebP, like the cards.
+   1. Mats are JPG today; dice are JPG and PNG.
+   2. Convert them to WebP for size.
+   3. The conversion lives in `FourSoulsRepo/tools`, not here.
+   4. The result amends the images repo; it stays one commit.
+26. V-26. Card backs for decks and opponent hands.
+   1. Each deck shows its own back: loot, treasure, monster.
+   2. An opponent's hand shows backs, not blank boxes.
+   3. No back images exist yet; the tools repo must collect them.
+   4. Without images: plain colored backs, as now.
+   5. Owner: backs come from the official foursouls.com site.
+   6. The tools repo downloads them, like the card images.
+27. V-27. Study more of fouronlinesouls.net.
+   1. Counters: how they look and change.
+   2. Stack window with card icons; it looks good.
+   3. Stack history strip with icons; it looks good.
+   4. Their room has "Allow cheat options" (on by default).
+   5. Cheat menu sits in the game menu ("Cheat view").
+   6. It gives any card, which makes testing a card quick.
+   7. Later: study it as a model for our sandbox (LR-01).
+28. V-28. Two ways to play a card; the player picks.
+   1. One click: the card plays at once, as on fouronlinesouls.net.
+   2. Drag and drop: as in Hearthstone (V-16).
+   3. A setting chooses the mode.
+   4. Both modes send the same intent.
+   5. Dropped (2026-10-15): one click, then a click on the target (15.26).
+29. V-29. No number badges on cards.
+   1. Owner rejected 1–9 badges on valid targets (15.1, F-14).
+   2. Targets glow instead (V-20).
+30. V-30. Souls look like mana crystals in Hearthstone.
+   1. A row of slots; filled ones are gained souls.
+   2. Shows at a glance how close a player is to winning.
+31. V-31. Gained souls sit left of the character, not right.
+32. V-32. Switch character or eternal item art between reprints.
+   1. Right click, or long tap on touch, cycles the art.
+   2. Only cards that have reprints in other sets.
+   3. Open question: only reprints from enabled sets, or always?
+   4. It is only an image, so "always" may be fine.
+   5. Related: alt art (CD-11), per-copy art (CD-12).
+33. V-33. Title screen uses the Isaac fonts.
+   1. The fonts in `assets/fonts` of the private images repo.
+   2. Without images: the plain UI font, as now.
+34. V-34. Top image of foursouls.ru on the home screen.
+   1. The banner at the top of the foursouls.ru main page.
+   2. The tools repo downloads it; it lives with the private images.
+   3. Without images: the home screen as now.
+35. V-35. Background animation of foursouls.ru.
+   1. On the home screen and the game setup screens.
+   2. Same look as the site; our own code.
+   3. Without images: a plain background.
+36. V-36. Declarations show on the stack.
+   1. "Buy" and "Attack" show as stack entries.
+   2. Other declarations too, wherever the rules use the stack.
+   3. Each entry names the player and the target.
+37. V-37. After the game, everyone may look at the table.
+   1. The winner is announced; the table stays open.
+   2. All hands are revealed to everyone.
+   3. Players can discuss how the game was played.
+   4. The end overlay can be closed and opened again.
+38. V-38. Failed effects show in the history.
+   1. A fizzled ability gets its own history entry.
+   2. Example: a purchase fails because the player cannot pay.
+   3. The entry says what failed and why.
+39. V-39. Stack and history rows move with animation.
+   1. A new row fades in.
+   2. Other rows slide to their new place, not jump.
+   3. A leaving row fades out before it is gone.
+   4. Same for the stack panel and the history strip.
+40. V-40. Played cards fly to the stack and on to the discard.
+   1. The card flies from the hand to the stack.
+   2. There it turns into its stack row.
+   3. Shrink, or another effect; the owner picks.
+   4. Resolved, the card flies from the stack to the discard pile.
+   5. Damage and death marks play first; then the card flies.
+41. V-41. Stat boosts show what gives them.
+   1. A character with extra HP or ATK shows small icons on its card.
+   2. One icon per card or effect that changes the stat.
+   3. Hover an icon to see its source card.
+42. V-42. Curses sit left of the player.
+   1. Not on the right with the items.
+   2. Each player's curses form their own group.
+43. V-43. Soul cards hide behind the soul crystals.
+   1. Gained soul cards are not on the table.
+   2. Hovering a filled crystal zooms its soul card.
+   3. A killed monster shows with its soul.
+44. V-44. History shows what a player bought.
+   1. A purchase gets its own history entry.
+   2. The entry names the buyer and the item.
+   3. Hovering the entry shows the item card.
+45. V-45. "Choose one-" cards ask like The Bone.
+   1. The mode dialog shows the card large, as the ability dialog does.
+   2. One parchment line per mode, in the card's own words.
+   3. Same look as The Bone's ability lines (15.24).
 
 ## Rules
 
@@ -158,6 +265,8 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
       2. Charlie on Reddit: https://www.reddit.com/user/Yuggy
       3. Sean "Kizzycocoa", foursouls.com developer: https://twitter.com/Kizzycocoa
       4. Edmund McMillen, designer: https://x.com/edmundmcmillen
+   6. BoardGameGeek rules forum:
+      https://boardgamegeek.com/boardgame/255664/the-binding-of-isaac-four-souls/forums/66
 3. R-03. Disputed cases are resolved one by one.
    1. We discuss each case together.
    2. The decision becomes a rules engine test.
@@ -384,6 +493,28 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
 14. N-14. A game can have a password.
    1. Set by whoever creates the game.
    2. The games list shows a lock; joining asks for the password.
+15. N-15. Live aiming and hover reach the other players.
+   1. Others see the aiming arrow while it moves (15.15, T-08).
+   2. Others see which card is hovered or aimed at (T-10, T-21).
+   3. A hidden card shows only as a back from its hand slot (T-09, A-16).
+   4. A separate kind of message: not an intent, not a game event.
+   5. The engine never sees these messages.
+   6. Never recorded, so replays never show them.
+   7. Lost or late ones do no harm; the next one replaces them.
+   8. The server limits how often a player may send them.
+   9. Open: whether viewers see them too (step 9).
+16. N-16. "Wait for my turn" button (owner, 2026-10-13).
+   1. Offered to a player on another player's turn.
+   2. The server passes for them on everything.
+   3. Choices and discards still ask them.
+   4. It ends when the player before them ends the turn.
+   5. That end window is their last chance to act.
+   6. The player can cancel it at any time.
+17. N-17. Create a game on a dedicated server (owner, 2026-10-14).
+   1. A player connected to a dedicated server opens a new game there.
+   2. The Games list shows "Create a game" only on a dedicated server.
+   3. A game hosted in an app: only that app creates or loads games.
+   4. Friends there join; they never open games on the host's app.
 
 ## Learning
 
@@ -442,6 +573,8 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    4. Each answer links to the rule IDs it rests on.
    5. Where possible, an entry has a situation payload to try it.
    6. Shown in the app's rules viewer and on the rules website.
+   7. BoardGameGeek rules forum is a source too (R-02).
+   8. Its answered questions also become test cases (R-03).
 9. LR-09. Payload setup holds any event on the stack.
    1. Not only dice rolls: loot cards, abilities, attacks, triggers.
    2. Each event has its owner, targets, and choices made.
@@ -475,6 +608,12 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    7. Focused mode is run for new or changed cards.
    8. Real fuzzing runs locally only, not in CI.
    9. CI only checks the fuzz tests still work (short smoke run).
+6. TS-06. Every e2e test fails on a console error.
+   1. Today the shared fixture checks only animation clashes.
+   2. React warnings and page errors pass silently.
+   3. `games.spec.ts` already fails on them; 19.13 was found that way.
+   4. Move that check into `e2e/tests/fixtures.ts`.
+   5. Harmless errors get a fix or a named allowance.
 
 ## Localization
 
@@ -514,6 +653,14 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
 
 1. AU-01. Sound effects and music.
    1. Taken from any Isaac game: the Flash original or the C++ remake.
+2. AU-02. Sounds for game actions.
+   1. First list: dice roll, attack, damage dealt.
+   2. Sources follow AU-01.
+3. AU-03. Damage sounds (owner, 2026-10-13).
+   1. A card hitting a card when anyone deals damage.
+   2. Hearthstone's Jaina fireball for bombs and other effects.
+   3. No background music in the files.
+   4. Small files.
 
 ## Menu
 
@@ -548,6 +695,8 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
 6. GS-06. First player is chosen by a dice roll.
    1. The roll is shown to everyone.
    2. Check the rules: some characters may change this.
+   3. Today the roll is silent; only the result shows.
+   4. Everyone sees each player's die, re-rolls on ties included.
 7. GS-07. Optional: deck ratios.
    1. When sets are mixed, decks follow Ed's recommended ratios.
    2. The official TTS table has the same option.
@@ -563,6 +712,17 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    2. Official challenges, each against a boss (Rag Man, Mom, Greed, ...).
    3. Difficulty: Normal, Hard, Ultra Hard.
    4. Not part of the first main goal.
+12. GS-12. Optional house rule: no damage loops at 0 HP.
+   1. Official rules: damage at 0 HP still fires "when you take damage" (R-MECH-51).
+   2. Example: Forever Alone with Gurdy Jr. loops while the death waits.
+   3. With the option on, damage at 0 HP fires no "take damage" triggers.
+   4. Off by default; the host turns it on per match.
+   5. Detailed setup shows a hint that explains it.
+   6. Research: Q-13 in `pkg/rules_engine/docs/rules/open-questions.md`.
+13. GS-13. Host bans cards before hosting (owner, 2026-10-13).
+   1. Banned cards are left out of every deck and never dealt.
+   2. Players see the ban list (A-16: banned cards are public).
+   3. Tests use the same bans for fixed deals.
 
 ## Spectators
 

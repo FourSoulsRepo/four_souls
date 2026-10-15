@@ -74,3 +74,52 @@ func TestThreePlusMatchesCardDB(t *testing.T) {
 		}
 	}
 }
+
+// soulCount sums the soul icons in a card's reward box.
+func soulCount(c carddb.Card) int {
+	n := 0
+	for _, r := range c.Rewards {
+		if k, ok := rewardCount(r.Count); ok && r.Kind == "Soul" {
+			n += k
+		}
+	}
+	return n
+}
+
+// TestBossesHaveSouls: every boss gives a soul. foursouls.com left the
+// soul off Famine; overrides/b2.json puts it back.
+func TestBossesHaveSouls(t *testing.T) {
+	db, err := carddb.Load(os.DirFS("../../pkg/card_db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, ref := range db.Refs() {
+		c, _ := db.Get(ref)
+		if c.Type == "Boss Card" && soulCount(c) == 0 {
+			t.Errorf("%s: boss without a soul", ref)
+		}
+	}
+}
+
+// TestSoulsMatchCardDB: the engine's Soul matches the card_db reward box.
+func TestSoulsMatchCardDB(t *testing.T) {
+	db, err := carddb.Load(os.DirFS("../../pkg/card_db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, set := range cards.Sets() {
+		for _, d := range set.Cards {
+			ref, err := carddb.ParseRef(string(d.Ref))
+			if err != nil {
+				t.Fatal(err)
+			}
+			c, ok := db.Get(ref)
+			if !ok {
+				continue
+			}
+			if want := soulCount(c); d.Soul != want {
+				t.Errorf("%s: card_db souls %d, engine Soul %d", d.Ref, want, d.Soul)
+			}
+		}
+	}
+}

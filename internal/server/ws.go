@@ -1,6 +1,7 @@
 package server
 
 import (
+	"net"
 	"net/http"
 	"sync"
 	"time"
@@ -42,10 +43,11 @@ type wsConn struct {
 	out   chan []byte
 	once  sync.Once
 	close chan struct{}
+	local bool // the peer is on this computer
 }
 
 func serveWS(h *Hub, ws *websocket.Conn) {
-	c := &wsConn{ws: ws, out: make(chan []byte, sendQueue), close: make(chan struct{})}
+	c := &wsConn{ws: ws, out: make(chan []byte, sendQueue), close: make(chan struct{}), local: loopback(ws.RemoteAddr())}
 	go c.write()
 	client := h.Connect(c)
 	defer client.Leave()
@@ -75,6 +77,15 @@ func (c *wsConn) Send(msg []byte) bool {
 	default:
 		return false
 	}
+}
+
+// Local reports whether the peer is on this computer.
+func (c *wsConn) Local() bool { return c.local }
+
+// loopback reports whether a is a loopback address.
+func loopback(a net.Addr) bool {
+	t, ok := a.(*net.TCPAddr)
+	return ok && t.IP.IsLoopback()
 }
 
 // Close ends the connection once.

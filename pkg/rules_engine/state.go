@@ -229,6 +229,8 @@ type Game struct {
 
 	// Choice is the open question of a choose prompt.
 	Choice *Choice `json:"choice,omitempty"`
+	// Throw is the roll waiting for its die to be thrown (PromptThrow).
+	Throw *Throw `json:"throw,omitempty"`
 	// Activating is an ability being put on the stack (targets pending).
 	Activating *Activation `json:"activating,omitempty"`
 	// PendingTriggers wait to go on the stack (R-ABIL-14).
@@ -263,6 +265,8 @@ type Game struct {
 	// Sets lists the card sets in play; definitions are looked up by name
 	// when a saved game is loaded.
 	Sets []string `json:"sets"`
+	// Banned lists the cards the host left out of the game (GS-13).
+	Banned []CardRef `json:"banned,omitempty"`
 
 	// AskSeq numbers Ask effects; asks holds the waiting ones (not saved:
 	// see Asking.Key).

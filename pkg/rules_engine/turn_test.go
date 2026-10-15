@@ -3,6 +3,7 @@ package rulesengine
 import (
 	"errors"
 	"reflect"
+	"slices"
 	"testing"
 )
 
@@ -59,6 +60,35 @@ func TestSetup(t *testing.T) {
 	for _, id := range g.Decks[TreasureDeck] {
 		if c := g.Object(id).Card; c == "item_a" || c == "item_b" {
 			t.Error("starting items must not be in the treasure deck")
+		}
+	}
+}
+
+func TestBannedCardsAreLeftOut(t *testing.T) {
+	banned := []CardRef{"boss", "hero_c", "soul_w"}
+	for seed := range uint64(20) {
+		g, _, err := NewGame(Setup{Seed: seed, Players: 3, Sets: []CardSet{testSet}, BonusSouls: true, Banned: banned})
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, o := range g.Objects {
+			if slices.Contains(banned, o.Card) {
+				t.Fatalf("seed %d: banned %s is in the game, zone %+v (GS-13)", seed, o.Card, o.Zone)
+			}
+		}
+		if !reflect.DeepEqual(g.Banned, banned) {
+			t.Errorf("game ban list %v, want %v", g.Banned, banned)
+		}
+	}
+	for name, s := range map[string]Setup{
+		"unknown card":     {Banned: []CardRef{"nope"}},
+		"starting item":    {Banned: []CardRef{"item_a"}},
+		"banned pick":      {Banned: []CardRef{"hero_a"}, Characters: []CardRef{"hero_a", "hero_b"}},
+		"no monsters left": {Banned: []CardRef{"gaper", "boss", "dummy"}},
+	} {
+		s.Seed, s.Players, s.Sets = 1, 2, []CardSet{testSet}
+		if _, _, err := NewGame(s); err == nil {
+			t.Errorf("%s: the setup was accepted", name)
 		}
 	}
 }

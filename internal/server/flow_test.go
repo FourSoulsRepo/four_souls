@@ -83,6 +83,42 @@ func TestSkipAll(t *testing.T) {
 	}
 }
 
+// TestWaitTurn: a waiting player is passed for until the player before
+// them ends the turn; then they are asked again (N-16).
+func TestWaitTurn(t *testing.T) {
+	g, err := engine.BuildTable(engine.SituationSetup{
+		Players: []engine.SituationPlayer{{Character: "isaac"}, {Character: "cain"}, {Character: "maggy"}},
+		Stack:   []engine.SituationStack{{DiceRoll: 3, Owner: 0}},
+	}, b2.Set)
+	if err != nil {
+		t.Fatal(err)
+	}
+	r := &Room{game: g, seats: []roomSeat{{client: &Client{}}, {client: &Client{}}, {client: &Client{}}}}
+	if _, err := g.Apply(engine.Intent{Player: 0, Kind: engine.IntentPass}); err != nil {
+		t.Fatal(err)
+	}
+	if w := g.Prompt(); w.Player != 1 {
+		t.Fatalf("player %d has priority, want 1", w.Player)
+	}
+	if _, ok := r.autoIntent(); ok {
+		t.Fatal("a player who can act was skipped") // Cain's character is charged
+	}
+	r.seats[0].wait, r.seats[1].wait, r.seats[2].wait = true, true, true
+	if in, ok := r.autoIntent(); !ok || in.Kind != engine.IntentPass || in.Player != 1 {
+		t.Fatalf("wait for my turn did not pass: %+v %v", in, ok)
+	}
+	if r.seats[0].wait {
+		t.Error("the active player still waits for their turn")
+	}
+	g.Turn.EndDeclared = true // player 0 ends the turn: player 1 is next
+	if _, ok := r.autoIntent(); ok || r.seats[1].wait {
+		t.Error("the end of the turn before did not return control")
+	}
+	if !r.seats[2].wait {
+		t.Error("player 2 stopped waiting at the end of player 0's turn")
+	}
+}
+
 // TestResponseTimer: with nobody answering, the timer moves the game on
 // (N-07).
 func TestResponseTimer(t *testing.T) {
@@ -100,5 +136,77 @@ func TestResponseTimer(t *testing.T) {
 	}
 	if u.Step < first+5 {
 		t.Errorf("the game did not move on: step %d", u.Step)
+	}
+}
+
+// atThrow is a game where Isaac (seat 0) attacks Pin and must throw
+// the attack roll (15.59).
+func atThrow(t *testing.T) *engine.Game {
+	t.Helper()
+	g, err := engine.BuildTable(engine.SituationSetup{
+		Players:  []engine.SituationPlayer{{Character: "isaac"}, {Character: "cain"}},
+		Monsters: []engine.CardRef{"pin"},
+	}, b2.Set)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, in := range []engine.Intent{
+		{Player: 0, Kind: engine.IntentAttack},
+		{Player: 0, Kind: engine.IntentPass},
+		{Player: 1, Kind: engine.IntentPass},
+		{Player: 0, Kind: engine.IntentChoose}, // Pin
+	} {
+		if _, err := g.Apply(in); err != nil {
+			t.Fatalf("%+v: %v", in, err)
+		}
+	}
+	if w := g.Prompt(); w.Kind != engine.PromptThrow || w.Player != 0 {
+		t.Fatalf("prompt %+v, want Isaac's throw", w)
+	}
+	return g
+}
+
+// thrown: the throw prompt is gone and the attack roll has its value.
+func thrown(t *testing.T, g *engine.Game) {
+	t.Helper()
+	if w := g.Prompt(); w.Kind == engine.PromptThrow {
+		t.Fatalf("still waiting for the throw: %+v", w)
+	}
+	if len(g.Stack) == 0 || g.Stack[len(g.Stack)-1].Roll == 0 {
+		t.Fatalf("stack %+v: the roll has no value", g.Stack)
+	}
+}
+
+// TestKickedSeatThrows: a kicked seat throws at once (15.60).
+func TestKickedSeatThrows(t *testing.T) {
+	g := atThrow(t)
+	r := &Room{game: g, seats: []roomSeat{{kicked: true}, {client: &Client{}}}}
+	in, ok := r.autoIntent()
+	if !ok || in.Kind != engine.IntentThrow || in.Player != 0 {
+		t.Fatalf("auto intent %+v %v, want Isaac's throw", in, ok)
+	}
+	r.after(nil, false)
+	thrown(t, g)
+}
+
+// TestTimerThrows: the response timer throws for an idle player (15.60).
+func TestTimerThrows(t *testing.T) {
+	g := atThrow(t)
+	r := &Room{game: g, seats: []roomSeat{{client: &Client{}}, {client: &Client{}}}}
+	r.timeUp(r.timerGen)
+	thrown(t, g)
+}
+
+// TestSkipAndWaitNeverThrow: "skip all" and "wait for my turn" pass,
+// but never throw for the player (15.60).
+func TestSkipAndWaitNeverThrow(t *testing.T) {
+	g := atThrow(t)
+	r := &Room{game: g, seats: []roomSeat{{client: &Client{}, wait: true}, {client: &Client{}, wait: true}}}
+	r.seats[0].skip = []int{g.Stack[len(g.Stack)-1].ID}
+	if in, ok := r.autoIntent(); ok {
+		t.Fatalf("the server answered %+v for the roller", in)
+	}
+	if g.Prompt().Kind != engine.PromptThrow {
+		t.Error("the throw prompt is gone")
 	}
 }

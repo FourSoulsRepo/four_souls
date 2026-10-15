@@ -28,6 +28,7 @@ Each step ends in something that runs and is tested.
 | 11 | Learning | Rules viewer, sandbox, tutorial, bot | 8 |
 | 12 | Rules website | Engine in WebAssembly on GitHub Pages | 11 |
 | 13 | Web client | Browser client served by the game server | 9 |
+| 19 | Bugs | Every bug report, logged and fixed under the roadmap rules | — |
 | — | Future | Not scheduled yet | — |
 
 Step 3 reuses the browser scraping tool from step 2.
@@ -153,6 +154,7 @@ Step numbers stay as IDs; the table lists steps in work order.
 3. Show or hide hands.
 4. Optional check against the current engine.
 5. Ideas: RP-02, RP-04, RP-10, RP-11, M-01.
+6. Replays never show live aiming or hover (N-15).
 
 ## 11. Learning
 
@@ -163,6 +165,8 @@ Step numbers stay as IDs; the table lists steps in work order.
 5. FAQ from frequent rules questions, linked to rule IDs.
 6. Ideas: LR-01 – LR-06, LR-08.
 7. Any event on the stack in payloads (LR-09).
+8. Sandbox tools modelled on the fouronlinesouls.net cheat menu.
+9. BoardGameGeek rules forum: a source for the FAQ and tests (R-02, 11.7).
 
 ## 12. Rules website
 
@@ -189,6 +193,12 @@ Step numbers stay as IDs; the table lists steps in work order.
 5. Deck ratios never reveal the dealt decks (A-16).
 6. Reprints add copies; every copy keeps its own art (CD-12, ADR 010).
 7. The host picks the card sets; the Base Game is always in (14.6).
+8. Switch character and eternal item art between reprints (V-32, 14.7).
+9. House rule option: no damage loops at 0 HP (GS-12, 14.8).
+10. Host bans cards before hosting (GS-13, 14.9).
+11. Tests ban stat-changing monsters for fixed deals (14.10).
+12. Draft pick screen for normal games, no bans (GS-01, 14.11).
+13. Ban list in the host screen (GS-13, 14.12).
 
 ## 15. Visual refresh
 
@@ -204,6 +214,37 @@ Step numbers stay as IDs; the table lists steps in work order.
 10. Everyone sees the roller's own dice look (V-19).
 11. The game always shows clearly when it waits for the player (V-20).
 12. Everyone sees what the active player is doing now (V-21).
+13. Compare with Hearthstone screenshots from the internet (V-22).
+14. Table areas keep their size when a zone empties (V-23).
+15. Game mat images as the background; colors without images (V-24).
+16. Mats and dice in WebP, like the cards (V-25).
+17. Card backs on decks and opponent hands (V-26).
+18. Study counters, stack window, and cheat menu of the reference (V-27).
+19. Play a card by one click or by drag; a setting picks (V-28).
+20. No number badges on cards (V-29).
+21. Turn action icons with hotkeys (15.12).
+22. Stack panel and history strip with icons (15.13).
+23. Counters and live stats on the cards (15.14).
+24. First study how Hearthstone aims at targets (15.15).
+25. Big sub-steps split into one-session ones (15.16 – 15.31).
+26. Aiming like Hearthstone: arrow, start, cancel (15.32 – 15.34).
+27. Others see live aiming; never recorded (N-15, 15.35, 15.36).
+28. Hit and death marks: starbursts, red HP, skull (15.37).
+29. Souls as Hearthstone-style crystals, left of the character (V-30, V-31, 15.39).
+30. Isaac fonts, foursouls.ru banner and background (V-33 – V-35, 15.40 – 15.42).
+31. Everyone sees the first-player roll (GS-06, 15.43).
+32. "Buy" and "Attack" declarations on the stack (V-36, 15.44).
+33. After the game, all hands are revealed (V-37, 15.45).
+34. Failed effects show in the history (V-38, 15.46).
+35. Damage a player takes names its card (play test, 15.47).
+36. Stack and history rows fade and slide (V-39, 15.51).
+37. Played cards fly hand → stack → discard (V-40, 15.52).
+38. Icons for the sources of HP and ATK boosts (V-41, 15.54).
+39. Curses left of the player (V-42, 15.55).
+40. Soul cards shown by hovering a soul crystal (V-43, 15.56).
+41. Purchases shown in the history (V-44, 15.57).
+42. "Choose one-" cards ask in a dialog like The Bone (V-45, 15.58).
+43. Dice throw split into engine, server, button, animation, last roll (15.59 – 15.63).
 
 ## 16. Localization
 
@@ -231,6 +272,12 @@ Step numbers stay as IDs; the table lists steps in work order.
 5. Ideas: B-04, B-05.
 6. Review the multi-instance solution (UC-16).
 
+## 19. Bugs
+
+1. Every bug report from play gets an item in `roadmap/19-bugs.md`.
+2. Each fix follows the roadmap rules: tests, docs, screenshots, review.
+3. Open the whole time; never closed as a step.
+
 ## Future
 
 Not scheduled; revisit after the MVP.
@@ -242,7 +289,7 @@ Not scheduled; revisit after the MVP.
 5. Co-op and solitaire modes (GS-11).
 6. Phase stops (N-10).
 7. Localization: moved to step 16.
-8. Audio (AU-01).
+8. Audio (AU-01, AU-02).
 9. Card gallery (CD-05).
 10. Keyboard shortcuts (ST-04).
 11. Fan-made sets (CD-10).
@@ -251,3 +298,4 @@ Not scheduled; revisit after the MVP.
    1. Ban and pick screen (GS-01 – GS-04 UI); server part is done.
    2. Judges: role, all-hands view, plain-text log (SP-02, V-04).
    3. Delayed view for viewers (SP-01).
+   4. The plain draft pick screen moved to 14.11.

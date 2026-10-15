@@ -1,25 +1,24 @@
 import { useEffect, useState } from 'react';
-import type { Action } from '../actions';
 import { secondsLeft } from '../stack';
 import { useApp } from '../store';
 import './Actions.css';
 
 interface Props {
   status: string;
-  buttons: Action[];
-  disabled: boolean;
   // deadline is when the response timer answers, Unix ms; 0: no timer.
   deadline: number;
   // skip: "Skip all" is offered, or on (N-06).
   skip: 'offer' | 'on' | 'none';
+  // wait: "Wait for my turn" is offered, or on (N-16).
+  wait: 'offer' | 'on' | 'none';
 }
 
-// ActionBar shows whose move it is and why the game waits, the actions
-// that need no card, the response timer, and why the last action was
-// refused (7.7, 7.8).
-export function ActionBar({ status, buttons, disabled, deadline, skip }: Props) {
-  const act = useApp((s) => s.act);
+// ActionBar shows whose move it is and why the game waits, the response
+// timer, "Skip all", "Wait for my turn", and why the last action was refused (7.7, 7.8).
+// Pass lives in the stack panel (15.21).
+export function ActionBar({ status, deadline, skip, wait }: Props) {
   const skipAll = useApp((s) => s.skipAll);
+  const waitTurn = useApp((s) => s.waitTurn);
   const error = useApp((s) => s.error);
   return (
     <div className="action-bar" role="region" aria-label="Actions">
@@ -27,20 +26,8 @@ export function ActionBar({ status, buttons, disabled, deadline, skip }: Props) 
         {status}
         {deadline > 0 && <Timer deadline={deadline} />}
       </div>
-      {(buttons.length > 0 || skip !== 'none') && (
+      {(skip !== 'none' || wait !== 'none') && (
         <div className="action-buttons">
-          {buttons.map((b) => (
-            <button
-              key={b.label}
-              type="button"
-              disabled={disabled}
-              onClick={() => {
-                act(b.intent);
-              }}
-            >
-              {b.label}
-            </button>
-          ))}
           {skip !== 'none' && (
             <button
               type="button"
@@ -50,6 +37,18 @@ export function ActionBar({ status, buttons, disabled, deadline, skip }: Props) 
               }}
             >
               {skip === 'offer' ? 'Skip all' : 'Cancel skip'}
+            </button>
+          )}
+          {wait !== 'none' && (
+            <button
+              type="button"
+              className="secondary"
+              title="Pass until the turn before yours ends"
+              onClick={() => {
+                waitTurn(wait === 'offer');
+              }}
+            >
+              {wait === 'offer' ? 'Wait for my turn' : 'Cancel wait'}
             </button>
           )}
         </div>

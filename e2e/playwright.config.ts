@@ -26,6 +26,8 @@ export default defineConfig({
     {
       command: `npx vite --host 127.0.0.1 --port ${port} --strictPort`,
       cwd: '../frontend',
+      // No file watching: see frontend/vite.config.ts.
+      env: { FOUR_SOULS_E2E: '1' },
       url: `http://127.0.0.1:${port}`,
       reuseExistingServer: false,
     },

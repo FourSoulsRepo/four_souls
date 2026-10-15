@@ -63,6 +63,10 @@ Use options 1, 3, 5 and 10.
    5. Nicknames are 1–20 characters, trimmed; control characters are refused.
    6. Two equal names in one game: the server adds " (2)" to the later one.
    7. `update` lists each seat's nickname, so the table shows names.
+   8. `welcome` sets `create` when this client may open games (N-17).
+   9. `hello` carries the player's dice look (V-19).
+      1. `table` and `update` list each seat's look.
+      2. The server only checks its form; each client draws unknown ones plain.
    4. A different protocol version gets `error` `client_outdated` or `server_outdated`, then close.
 4. Playing
    1. The client sends `intent`: an engine intent; the server fills in the seat.
@@ -77,6 +81,9 @@ Use options 1, 3, 5 and 10.
    3. A golden test pins the JSON of each message.
    4. Adding a field keeps the version; clients ignore unknown fields.
    5. Renaming or removing a field, or changing its meaning, bumps it.
+   6. A new prompt an older client cannot answer bumps it too.
+   7. Version 2: the order prompt (19.16).
+   8. Version 3: the throw prompt and intent (15.60).
 6. Cards
    1. Messages carry card refs (`the_d6`, `the_d6@2`), never card text.
    2. A client shows an unknown ref as a blank card with the ref (SP-05).
@@ -85,6 +92,10 @@ Use options 1, 3, 5 and 10.
    1. LAN first: no accounts; the token only proves "same seat as before".
    2. Tokens are 128 random bits.
    3. No encryption yet; `wss://` comes with online play.
+   4. A dedicated server lets every client create or load games.
+   5. A server in a player's app lets only loopback clients do so.
+      1. That is the host's own app; friends join.
+      2. Others get `error` `not_host` (N-17).
 8. Later messages use the same envelope.
    1. Lobby (6.5), match setup (6.6), pause and votes (6.8), saves (6.11).
    2. Spectators send `hello` with role `spectator` or `judge`.
@@ -98,6 +109,11 @@ Use options 1, 3, 5 and 10.
    10. Passwords: `create` may set one; `join` must match it (N-14).
    11. `games` marks such a game `locked`; a wrong one gets error `password`.
    12. The password is never sent back, logged, recorded or saved.
+   13. Turn flow: `wait_turn`; `update` shows it while on (N-16).
+   14. Aiming: `update` → `aims` lists the first targets of allowed plays and uses (15.25).
+   15. Each aim has a `reason`: what it may target, for a wrong click (15.33).
+   16. `view.activating`: the card whose mode or targets the chooser picks (15.34).
+   17. Only the chooser gets it; a client aims from that card.
 9. Playing over the internet, until a relay exists
    1. A virtual LAN (Tailscale, ZeroTier, Hamachi, Radmin VPN), or port forwarding.
    2. Or a dedicated server on a rented VPS.

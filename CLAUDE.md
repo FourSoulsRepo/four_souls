@@ -43,6 +43,7 @@
    15. `make e2e`: Playwright UI tests in `e2e/`.
    16. Frontend testing rules: `docs/wiki/Frontend-tests.md`.
    17. `make internal`: play-test build with card images; see `docs/wiki/Internal-builds.md`.
+   18. `make e2e-games`: whole random games, every set, 2–4 players (slow).
 5. Workflow
    1. Work follows `docs/roadmap/`, one sub-step at a time.
    2. Commit after every finished sub-step.
@@ -57,6 +58,34 @@
    11. Ideas from the owner are not tasks; never implement them unasked.
    12. Ideas go to `docs/ideas.md` and get planned in `docs/roadmap/`.
    13. Open questions wait for the owner at that roadmap step.
+   14. A step file may add its own rules in its header; they win.
+   15. Step 15: stop after every sub-step, with screenshots, for review.
+   16. Unlucky deals in e2e tests: fixed by host bans (14.10).
+       1. A random deal can break a test that expects a plain board.
+       2. Such a test bans the cards: `startGame(…, { bans })`.
+       3. A deal-dependent failure is a bug; find why the card breaks it.
+       4. A test that fails again on rerun is a real failure.
+       5. Ban only the fewest cards the test needs.
+       6. Each ban needs a reason: what the card changes that the test checks.
+       7. Write the reason in a comment next to the bans.
+       8. Never ban a card only because the test failed on it.
+       9. Such a failure may be an engine or client bug; fix that instead.
+   17. Bug reports go to `docs/roadmap/19-bugs.md`, one item each.
+       1. Log the item before any code change.
+       2. Fix it under the roadmap rules and that file's rules.
+   18. Animations: one card, one animation per job (ADR 012).
+       1. Rules and inventory: `docs/wiki/Animations.md`.
+       2. Every animation has an `anim: <id>` tag and a row there.
+       3. One that brings or shows a card claims it (`animations.ts`).
+       4. A replaced animation loses its code, tag and row.
+       5. e2e specs import `test` from `e2e/tests/fixtures.ts`.
+       6. Its fixture fails any test that logs an animation clash.
+   19. Keep a failed e2e run's evidence before the next run (19.12).
+       1. A run start deletes `.cache/e2e/<port>/` and `e2e/test-results/`.
+       2. Copy the match records and test results out first.
+       3. A random test logs its seed when it starts, not only on a pass.
+       4. `games.spec.ts` keeps its failed records in `.cache/e2e-games/`.
+       5. Never rerun to "check again" before the evidence is saved.
 6. Licenses
    1. Code is MIT (`LICENSE`).
    2. `NOTICE` lists every third-party item and its license.
@@ -64,3 +93,7 @@
    4. Card images live only in the private submodule `pkg/card_db/images`.
    5. Submodule repo: private `FourSoulsRepo/card_db` (images only).
    6. Public clones build without it; cards then show as text.
+   7. Every change must still build and run without the private images.
+   8. That covers cards, card backs, dice, and mats.
+   9. Without them: text cards, plain backs, plain dice, color table.
+   10. Check: `wails build -tags embed` (no `cardimages`) and `make e2e`.

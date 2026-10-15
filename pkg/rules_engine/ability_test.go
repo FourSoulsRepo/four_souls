@@ -41,6 +41,12 @@ var abilitySet = CardSet{Name: "abilities", Cards: []CardDef{
 	{Ref: "isaac_like", Kind: CharacterCard, Outside: true, HP: 2, ATK: 1, Abilities: []Ability{
 		{Kind: Activated, Text: "↷: Play an additional loot card this turn.", Costs: []Cost{Tap()}, Effects: []Effect{AddLootPlays(1)}},
 	}},
+	{Ref: "dagaz_like", Kind: LootCard, Outside: true, Abilities: []Ability{ // like Dagaz
+		{Kind: LootAbility, Text: "Choose one- Gain 1¢. Choose a player.", Modes: []Mode{
+			{Text: "Gain 1¢.", Effects: []Effect{GainCents(1)}},
+			{Text: "Choose a player.", Targets: []TargetSpec{Choose(TargetPlayer)}, Effects: []Effect{GainCents(1)}},
+		}},
+	}},
 	{Ref: "stoney_like", Kind: MonsterCard, Outside: true, HP: 3, DC: 3, ATK: 1, Statics: []Static{MonstersHave(StatMonsterDC, 1)}},
 }}
 
@@ -62,6 +68,7 @@ func addToHand(g *Game, p PlayerID, card CardRef) ObjectID {
 
 func activate(t *testing.T, g *Game, p PlayerID, obj ObjectID, i int) {
 	t.Helper()
+	throwPending(t, g)
 	if _, err := g.Apply(Intent{Player: p, Kind: IntentActivate, Objects: []ObjectID{obj}, Choice: i}); err != nil {
 		t.Fatal(err)
 	}
@@ -290,11 +297,11 @@ func TestExtraLootPlayOnAnotherTurn(t *testing.T) {
 	g.Object(isaac).Card = "isaac_like" // give b an Isaac-like character
 	g.Object(isaac).Charged = true
 	penny := addToHand(g, b, "penny")
-	g.push(StackItem{Kind: StackRoll, Controller: a})
+	g.push(StackItem{Kind: StackRoll, Roll: 3, Controller: a})
 	pass(t, g) // a passes; b has priority on a's turn
 	activate(t, g, b, isaac, 0)
 	resolveAll(t, g)
-	g.push(StackItem{Kind: StackRoll, Controller: a})
+	g.push(StackItem{Kind: StackRoll, Roll: 3, Controller: a})
 	pass(t, g)
 	if _, err := g.Apply(Intent{Player: b, Kind: IntentPlayLoot, Objects: []ObjectID{penny}}); err != nil {
 		t.Errorf("an extra loot play works on another player's turn: %v", err)
@@ -328,5 +335,70 @@ func TestStaticAbilities(t *testing.T) {
 	}
 	if g.Players[a].Cents != 0 {
 		t.Errorf("cents %d; a shop item costs 10-5 with a sale, want 0", g.Players[a].Cents)
+	}
+}
+
+func TestAimsListTheFirstTargets(t *testing.T) {
+	g := newAbilityGame(t)
+	a := g.Turn.Active
+	m := putMonster(g, 0, "gaper")
+	bomb := addToHand(g, a, "bomb_loot")
+	pills := addToHand(g, a, "pills_loot")
+	dagaz := addToHand(g, a, "dagaz_like")
+	allowed := []Intent{
+		{Player: a, Kind: IntentPlayLoot, Objects: []ObjectID{bomb}},
+		{Player: a, Kind: IntentPlayLoot, Objects: []ObjectID{pills}},
+		{Player: a, Kind: IntentPlayLoot, Objects: []ObjectID{dagaz}},
+		{Player: a, Kind: IntentPass},
+	}
+	aims := g.Aims(allowed)
+	if len(aims) != 1 || aims[0].Intent != 0 {
+		t.Fatalf("aims %+v; only the bomb aims: pills has no target, Dagaz asks a mode first", aims)
+	}
+	var monster, players int
+	for _, o := range aims[0].Targets {
+		switch {
+		case o.Object == m:
+			monster++
+		case o.IsPlayer:
+			players++
+		}
+	}
+	if monster != 1 || players != len(g.Players) {
+		t.Errorf("bomb targets %+v; want the monster and every player", aims[0].Targets)
+	}
+}
+
+// TestViewNamesTheActivatingCard: while a play asks its mode and then its
+// target, the chooser sees which card asks, so a client aims from it
+// (15.34). Others never see it; a cancel leaves the card in hand.
+func TestViewNamesTheActivatingCard(t *testing.T) {
+	g := newAbilityGame(t)
+	a := g.Turn.Active
+	dagaz := addToHand(g, a, "dagaz_like")
+	if _, err := g.Apply(Intent{Player: a, Kind: IntentPlayLoot, Objects: []ObjectID{dagaz}}); err != nil {
+		t.Fatal(err)
+	}
+	own := func() *ObjectID { return g.View(Viewer{Kind: ViewPlayer, Player: a}).Activating }
+	if src := own(); src == nil || *src != dagaz {
+		t.Fatalf("mode prompt: activating %v, want the card %d", src, dagaz)
+	}
+	if _, err := g.Apply(Intent{Player: a, Kind: IntentChoose, Choice: 1}); err != nil {
+		t.Fatal(err)
+	}
+	if p := g.Prompt(); p.Purpose != ChooseTarget {
+		t.Fatalf("prompt %+v; the second mode asks a player", p)
+	}
+	if src := own(); src == nil || *src != dagaz {
+		t.Fatalf("target prompt: activating %v, want the card %d", src, dagaz)
+	}
+	if g.View(Viewer{Kind: ViewPlayer, Player: g.next(a)}).Activating != nil {
+		t.Error("others must not see which hand card is played")
+	}
+	if _, err := g.Apply(Intent{Player: a, Kind: IntentChoose, Choice: len(g.Prompt().Options) - 1}); err != nil {
+		t.Fatal(err)
+	}
+	if !contains(g.Players[a].Hand, dagaz) || own() != nil {
+		t.Error("a cancelled aim leaves the card in hand and asks nothing")
 	}
 }

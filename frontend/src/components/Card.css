@@ -101,10 +101,6 @@
   margin: 0 0 2cqi;
 }
 
-.card-footnote {
-  opacity: 0.8;
-}
-
 .card-icon {
   display: inline-block;
   min-width: 1.2em;
@@ -158,41 +154,114 @@
   z-index: 10;
   display: flex;
   align-items: center;
+  justify-content: center;
   padding: 24px;
   pointer-events: none;
 }
 
-.card-zoom-left {
-  justify-content: flex-start;
+/* A mouse zoom is placed beside the hovered card, or rises from a hand
+   card (15.27, zoom.ts); translate sets its place. */
+.card-zoom:not(.card-zoom-touch) .card-zoom-body {
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
-.card-zoom-right {
-  justify-content: flex-end;
+/* The card and its keyword tips, on the side away from the hovered
+   card (H-13). */
+.card-zoom-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.card-zoom-body.tips-left {
+  flex-direction: row-reverse;
+}
+
+.card-zoom-tips {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 200px;
+}
+
+.card-zoom-tip {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 0;
+  padding: 8px 10px;
+  border: 2px solid #ffd27a;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--fg);
+  background: rgb(10 16 24 / 92%);
+  box-shadow: 0 0 14px rgb(0 0 0 / 55%);
+}
+
+.card-zoom-tip b {
+  font-size: 15px;
+  color: #ffd27a;
+}
+
+.card-zoom-figure {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 320px;
+  margin: 0;
+}
+
+/* Below a stack card: the used ability, highlighted, then the owner
+   (S-06, S-07). */
+.card-zoom-caption {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  padding: 8px;
+  border-radius: 10px;
+  box-sizing: border-box;
+  text-align: center;
+  background: rgb(10 16 24 / 90%);
+}
+
+.card-zoom-caption p {
+  margin: 0;
+}
+
+.card-zoom-ability {
+  padding: 6px 10px;
+  border: 2px solid #ffd27a;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #1d120a;
+  background: #ffe9b0;
+  box-shadow: 0 0 14px rgb(255 210 122 / 55%);
+}
+
+/* An item without ability words: its line, colored as on the stack. */
+.card-zoom-line {
+  color: var(--fg);
+  background: rgb(10 16 24 / 92%);
+  box-shadow: 0 0 14px rgb(0 0 0 / 55%);
+}
+
+.card-zoom-owner {
+  font-size: 15px;
+  font-weight: 700;
 }
 
 .card-zoom-touch {
-  justify-content: center;
   pointer-events: auto;
   background: rgb(0 0 0 / 45%);
 }
 
 .card.spent {
   filter: brightness(0.55) saturate(0.6);
-}
-
-.card-damage {
-  position: absolute;
-  top: 6cqi;
-  right: 6cqi;
-  min-width: 18cqi;
-  padding: 1cqi 3cqi;
-  border-radius: 9cqi;
-  box-sizing: border-box;
-  font-size: 13cqi;
-  font-weight: 700;
-  text-align: center;
-  color: #fff;
-  background: #b3261e;
 }
 
 /* Highlights (7.7): yellow for "you may act", blue for "pick this". */
@@ -209,17 +278,128 @@
   box-shadow: 0 0 0 3px #4fc3f7, 0 0 14px 2px rgb(79 195 247 / 70%);
 }
 
-.card-counters {
+/* A target of the card being dragged (15.25). */
+.card.hl-aim {
+  box-shadow: 0 0 0 3px #ff4b3e, 0 0 16px 3px rgb(255 75 62 / 75%);
+}
+
+/* Badges (15.23): numbers on a card, drawn like the game's cut-out art
+   and its End turn button: a shape with a thick ink outline and a hard
+   shadow, a slight tilt, and the number in the game's hand-drawn
+   letters with an ink edge. Sizes follow the card (cqi). */
+.card-badge {
+  --ink: #1d120a;
+  --fill: #d8302a;
+  --digit: #fff;
   position: absolute;
-  bottom: 6cqi;
-  left: 6cqi;
-  min-width: 18cqi;
-  padding: 1cqi 3cqi;
-  border-radius: 9cqi;
-  box-sizing: border-box;
-  font-size: 13cqi;
-  font-weight: 700;
-  text-align: center;
-  color: #1d1d1d;
-  background: #ffd27a;
+  display: grid;
+  place-items: center;
+  width: 34cqi;
+  aspect-ratio: 1;
+  filter: drop-shadow(0 1.6cqi 0 var(--ink)) drop-shadow(0 2cqi 3cqi rgb(0 0 0 / 50%));
+  pointer-events: none;
+}
+
+.card-badge-shape {
+  position: absolute;
+  inset: 0;
+  overflow: visible;
+}
+
+.card-badge-shape path {
+  fill: var(--fill);
+  stroke: var(--ink);
+  stroke-width: 7;
+  stroke-linejoin: round;
+}
+
+.card-badge-shape .card-badge-shine {
+  fill: rgb(255 255 255 / 45%);
+  stroke: none;
+}
+
+.card-badge-value {
+  position: relative;
+  font-family: var(--font-game);
+  font-size: 22cqi;
+  font-weight: 400;
+  line-height: 1;
+  color: var(--digit);
+  -webkit-text-stroke: 2.4cqi var(--ink);
+  paint-order: stroke fill;
+}
+
+/* Health and attack sit on the bottom corners (H-15), the dice between. */
+.card-hp,
+.card-dc,
+.card-atk {
+  bottom: 2cqi;
+}
+
+.card-hp {
+  left: 2cqi;
+  rotate: -6deg;
+}
+
+/* The heart's middle is high; so is its number. */
+.card-hp .card-badge-value {
+  translate: 0 -2cqi;
+}
+
+/* Health below full (T-25): a pale heart, so the red number reads. */
+.card-hp.hurt {
+  --fill: #f3ead2;
+  --digit: #e0261c;
+}
+
+.card-atk {
+  right: 2cqi;
+  --fill: #f0b83a;
+  rotate: 5deg;
+}
+
+/* A monster's dice to hit (C-03): a bone-white die with an ink number. */
+.card-dc {
+  left: 50%;
+  --fill: #f3ead2;
+  --digit: #1d120a;
+  translate: -50% 0;
+  rotate: -3deg;
+}
+
+.card-dc .card-badge-value {
+  -webkit-text-stroke: 0;
+}
+
+/* Counters (C-01): a green blob on the card's art, clear of the stats. */
+.card-counters {
+  top: 30cqi;
+  left: 4cqi;
+  --fill: #5cb83a;
+  rotate: -4deg;
+}
+
+/* A text card has no art: the counter takes the top corner, and the
+   name keeps clear of it, so no words hide under it. */
+.card.blank .card-counters {
+  top: 3cqi;
+  right: 3cqi;
+  left: auto;
+}
+
+.card.blank.has-counters .card-name {
+  padding-right: 36cqi;
+}
+
+/* Damage on a character: a smaller dark-red blob at the top corner. */
+.card-damage {
+  top: 4cqi;
+  right: 4cqi;
+  width: 24cqi;
+  --fill: #8e1b14;
+  rotate: 4deg;
+}
+
+.card-damage .card-badge-value {
+  font-size: 15cqi;
 }

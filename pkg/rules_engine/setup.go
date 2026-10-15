@@ -3,6 +3,7 @@ package rulesengine
 import (
 	"errors"
 	"fmt"
+	"slices"
 )
 
 // Setup describes a new game.
@@ -14,6 +15,9 @@ type Setup struct {
 	// Characters, when set, gives seat i the character Characters[i]
 	// instead of a random one (character picks, tests).
 	Characters []CardRef
+	// Banned cards are left out of the game: no copy goes into a deck,
+	// and none is dealt (GS-13).
+	Banned []CardRef
 }
 
 // Defaults of the official rules.
@@ -38,6 +42,17 @@ func NewGame(s Setup) (*Game, []Event, error) {
 	for _, set := range s.Sets {
 		g.Sets = append(g.Sets, set.Name)
 	}
+	for _, b := range s.Banned {
+		d, ok := idx.find(b)
+		if !ok {
+			return nil, nil, fmt.Errorf("setup: banned card %q is in none of the sets", b)
+		}
+		if d.Outside {
+			// A starting item comes with its character; ban the character.
+			return nil, nil, fmt.Errorf("setup: banned card %q starts outside the game", b)
+		}
+	}
+	g.Banned = slices.Clone(s.Banned)
 	for i := range s.Players {
 		g.Players = append(g.Players, Player{ID: PlayerID(i)})
 	}
@@ -45,6 +60,9 @@ func NewGame(s Setup) (*Game, []Event, error) {
 	var characters, bonus []CardRef
 	for i, d := range idx.defs {
 		if d.Outside || (d.ThreePlus && s.Players < 3) { // R-CARD-32
+			continue
+		}
+		if slices.Contains(s.Banned, d.Ref) { // GS-13
 			continue
 		}
 		deck, hasDeck := d.Kind.Deck()
@@ -75,6 +93,9 @@ func NewGame(s Setup) (*Game, []Event, error) {
 		for _, c := range s.Characters {
 			if d, ok := idx.find(c); !ok || d.Kind != CharacterCard {
 				return nil, nil, fmt.Errorf("setup: %q is not a character", c)
+			}
+			if slices.Contains(s.Banned, c) {
+				return nil, nil, fmt.Errorf("setup: %q is banned", c)
 			}
 		}
 		characters = s.Characters

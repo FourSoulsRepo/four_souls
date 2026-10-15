@@ -31,6 +31,7 @@ const (
 	ActChooseDie                            // the chooser of ManyDice picks the result of the roll Amount
 	ActPlayLootFree                         // Player plays the loot card Object without using a loot play
 	ActPushLingering                        // put lingering ability From of Object on the stack; EventPlayer Player, EventAmount Amount
+	ActThrow                                // Player throws the die of the roll Amount (15.59)
 )
 
 // Action is a pending change. It sits in the queue, may be rewritten by
@@ -42,6 +43,8 @@ type Action struct {
 	Amount int        `json:"amount"`
 	From   PlayerID   `json:"from,omitempty"` // the other player, e.g. of a steal
 	Ask    *Asking    `json:"ask,omitempty"`
+	// Reroll marks a throw that rolls a roll again (ActThrow).
+	Reroll bool `json:"reroll,omitempty"`
 	// Applied lists replacements already applied; each applies once
 	// (R-ABIL-32).
 	Applied []ReplacementRef `json:"applied,omitempty"`
@@ -126,17 +129,75 @@ func (g *Game) processQueue() {
 	refs := g.replacementsFor(a)
 	switch {
 	case len(refs) > 1:
+		// Each option is the card, with what that order gives (19.17).
 		opts := make([]string, len(refs))
+		previews := make([]ReplacementPreview, len(refs))
 		for i, r := range refs {
-			opts[i] = g.replacement(r).Text
+			opts[i] = string(g.CardOf(r.Object))
+			previews[i] = g.previewReplacement(r, refs)
 		}
-		g.ask(Choice{Purpose: ChooseReplacement, Player: g.affected(a), Rule: "R-ABIL-33", Replacements: refs}, opts)
+		g.ask(Choice{
+			Purpose: ChooseReplacement, Player: g.affected(a), Rule: "R-ABIL-33", Replacements: refs,
+			Previews: previews, Question: replacementQuestion(a),
+		}, opts)
 	case len(refs) == 1:
 		g.applyReplacement(refs[0])
 	default:
 		g.Queue = g.Queue[1:]
 		g.perform(a)
 	}
+}
+
+// ReplacementPreview is what the queued action becomes when one
+// replacement applies first (19.17). Actions are what then happens.
+// Unused are the other replacements that no longer apply. Again means
+// the rest still need an order, so the player chooses again.
+type ReplacementPreview struct {
+	Actions []Action         `json:"actions,omitempty"`
+	Unused  []ReplacementRef `json:"unused,omitempty"`
+	Again   bool             `json:"again,omitempty"`
+}
+
+// previewReplacement applies ref first on a copy of the game, then any
+// single replacement left, and reports the result. A copy keeps the
+// game untouched: a replacement may mark its card used (Poker Chip).
+func (g *Game) previewReplacement(ref ReplacementRef, all []ReplacementRef) ReplacementPreview {
+	c, err := g.Clone()
+	if err != nil {
+		return ReplacementPreview{}
+	}
+	c.Queue = c.Queue[:1]
+	c.applyReplacement(ref)
+	used := map[ReplacementRef]bool{ref: true}
+	var p ReplacementPreview
+	for len(c.Queue) > 0 {
+		a := c.Queue[0]
+		refs := c.replacementsFor(a)
+		switch {
+		case len(refs) > 1:
+			return ReplacementPreview{Again: true}
+		case len(refs) == 1:
+			used[refs[0]] = true
+			c.applyReplacement(refs[0])
+		default:
+			p.Actions = append(p.Actions, a)
+			c.Queue = c.Queue[1:]
+		}
+	}
+	for _, r := range all {
+		if !used[r] {
+			p.Unused = append(p.Unused, r)
+		}
+	}
+	return p
+}
+
+// replacementQuestion asks for the order of replacements of a.
+func replacementQuestion(a Action) string {
+	if a.Kind == ActGainCents {
+		return fmt.Sprintf("Gaining %d¢: which card applies first?", a.Amount)
+	}
+	return "Which card applies first?"
 }
 
 // applyReplacement rewrites the first queued action with one replacement.
@@ -256,6 +317,8 @@ func (g *Game) perform(a Action) {
 			Kind: StackTrigger, Controller: g.abilityController(a.Object), Source: a.Object, Card: ref.Card,
 			Ability: ref, Label: g.abilityText(ref), EventPlayer: a.Player, EventAmount: a.Amount,
 		})
+	case ActThrow:
+		g.askThrow(a)
 	case ActRewardsDone:
 		before := len(g.PendingTriggers)
 		g.emit(Event{Kind: EvRewardsGained, Player: a.Player, Object: a.Object, Card: g.Object(a.Object).Card, Prev: a.Object})

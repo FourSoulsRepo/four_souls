@@ -17,7 +17,7 @@ WebSocket (ws.go) ──Conn──▶ Client ──▶ Hub (lobby goroutine)
 
 ## A game's life
 
-1. Hello: protocol version, nickname, card sets; the server keeps or makes a token.
+1. Hello: protocol version, nickname, card sets, dice look; the server keeps or makes a token. The seat keeps the look (`CleanDice`: a bad ID is the default), even while its player is away, and every table and update lists it (V-19).
 2. Lobby: create (seats, sets, options) or join; ready. A full, ready table becomes a Room.
 3. Setup: host bans out; ban rounds in snake order with an optional timer; random or draft picks.
 4. Play: each intent is applied for the client's own seat; then `after` runs automatic passes, restarts the response timer, sends every client its update and records the steps.
@@ -31,11 +31,18 @@ The server answers for a player only in these cases, never choosing among real o
 
 * the player can only pass (auto-skip, N-05);
 * the player turned on "skip all" for the stack they saw (N-06);
-* the response timer ran out, or the seat was kicked: pass or end the turn, the first cards for a discard, the first option of a choice (N-07, N-08).
+* the player waits for their turn: until the seat before them declares the end of its turn, dies, or reaches its end phase; the end window then asks them (N-16);
+* the response timer ran out, or the seat was kicked: pass or end the turn, the first cards for a discard, the first option of a choice, a throw for a roll (N-07, N-08, 15.60).
+
+"Skip all" and "wait for my turn" only pass: a roll always waits for its own player's throw (ADR 014).
 
 ## LAN discovery
 
 `internal/lan` (ADR 009). A joining app sends a UDP probe to port 4774: to 255.255.255.255, to each interface's broadcast address, and to 127.0.0.1 (several copies on one computer, UC-16). A server started with `Config.Discovery` answers the sender by unicast with its waiting games; with none waiting it stays silent. Only the app's `Host` sets `Discovery`; it has no JSON name, so `cmd/server` never answers. Answers carry a random server ID, so the same server reached over loopback and the LAN shows once, with its LAN address.
+
+## Who opens games
+
+Any client of a dedicated server may create a game or load a saved one. A server started with `Config.HostOnly` lets only clients on its own computer do that (loopback address, `wsConn.Local`); everyone else gets `not_host` and only joins (N-17). Only the app's `Host` sets it, so friends of an app's host never open games on that app. `welcome.create` tells each client which case it is; the app shows **Create a game** only then.
 
 ## Leak audit (A-16)
 
@@ -45,11 +52,12 @@ Step 8.12 checked every message the server sends for hidden cards. Hidden means:
 |---|---|---|
 | `welcome` | versions, your token, your seat | Tokens never reach other clients; `Seat` has no token. |
 | `games` | host nickname, seats, set codes; saves with nicknames | No cards. |
-| `table` | seats, set codes, options | Host bans are public by design (GS-02). |
+| `table` | seats, set codes, options | Host bans are public by design (GS-02, GS-13). |
 | `setup` | pool, bans, who picked | `Offers` go only to their own seat. |
-| `update` → `view` | `engine.View` for the seat | Other hands are sizes only; deck contents and order never leave; choice labels and `Options` only for the chooser; the top treasure only for a player who may peek. |
+| `update` → `view` | `engine.View` for the seat | Other hands are sizes only; deck contents and order never leave; choice labels, `Options` and `Activating` only for the chooser; the top treasure only for a player who may peek. |
 | `update` → `events` | `engine.FilterEvents` | Private events keep `Card` and `Object` only for `Player` and `SeenBy`. Every non-private event with a card was checked: each moves a card from or to a public place (stack, slot, discard, play), or is a public reveal. |
 | `update` → `allowed` | this seat's intents | Only the seat's own objects and choice indexes. |
+| `update` → `aims` | first targets of allowed plays and uses, and a `reason` saying what they may be | Targets are public objects, players and stack items; a "your hand card" target goes only to its own seat. |
 | `error` | code, message, rule | Engine refusals name only cards in play; an activation checks the zone before it names the card. |
 | `/record` | the match record (all hidden info) | Only to the game's players, only after the game is over (RP-05); `TestDownloadRecord`. |
 

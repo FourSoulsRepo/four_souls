@@ -46,10 +46,11 @@ func (r *Room) after(events []engine.Event, applied bool) {
 }
 
 // autoIntent is a pass the server makes for the waiting player: one who
-// can do nothing but pass (N-05, N-09), or one skipping the stack they
-// saw (N-06).
+// can do nothing but pass (N-05, N-09), one skipping the stack they saw
+// (N-06), or one waiting for their turn (N-16).
 func (r *Room) autoIntent() (engine.Intent, bool) {
 	g := r.game
+	r.endWaits()
 	if g.Over || r.paused() {
 		return engine.Intent{}, false
 	}
@@ -65,6 +66,9 @@ func (r *Room) autoIntent() (engine.Intent, bool) {
 		return pass, true
 	}
 	s := &r.seats[w.Player]
+	if s.wait {
+		return pass, true
+	}
 	if s.skip == nil {
 		return engine.Intent{}, false
 	}
@@ -101,6 +105,42 @@ func (r *Room) skipAll(c *Client, env protocol.Envelope) {
 		}
 	}
 	r.after(nil, false)
+}
+
+// waitTurn turns "wait for my turn" on or off (N-16).
+func (r *Room) waitTurn(c *Client, env protocol.Envelope) {
+	var m protocol.WaitTurn
+	if err := env.Unpack(&m); err != nil {
+		c.fail(env.ID, protocol.ErrBadMessage, err.Error())
+		return
+	}
+	if c.seat < 0 || r.game == nil {
+		c.fail(env.ID, protocol.ErrNotSeated, "only a seated player in a game")
+		return
+	}
+	r.seats[c.seat].wait = m.On
+	r.after(nil, false)
+}
+
+// endWaits stops "wait for my turn" once the turn before the player's
+// own ends: the end window is their last chance to act (N-16).
+func (r *Room) endWaits() {
+	for i := range r.seats {
+		if r.seats[i].wait && r.waitOver(engine.PlayerID(i)) {
+			r.seats[i].wait = false
+		}
+	}
+}
+
+// waitOver: it is p's turn, or the player before p in seat order has
+// declared the end of the turn, died, or reached its end phase.
+func (r *Room) waitOver(p engine.PlayerID) bool {
+	t := r.game.Turn
+	if r.game.Over || t.Active == p {
+		return true
+	}
+	before := (int(t.Active)+1)%len(r.game.Players) == int(p)
+	return before && (t.EndDeclared || t.DeathEnd || t.Step >= engine.StepEndTriggers)
 }
 
 // restartTimer starts the response timer for whoever must answer now.
@@ -206,7 +246,8 @@ func (r *Room) vote(c *Client, env protocol.Envelope) {
 
 // forcedIntent is the minimal answer for the waiting player, when the
 // player is out of time or kicked: pass or end the turn; a discard
-// takes the first cards; a choice takes the first option.
+// takes the first cards; a choice takes the first option; an order
+// keeps the cards as they are; a throw throws (15.59).
 func (r *Room) forcedIntent() (engine.Intent, bool) {
 	w := r.game.Prompt()
 	allowed := r.game.Allowed(w.Player)
@@ -225,7 +266,7 @@ func (r *Room) forcedIntent() (engine.Intent, bool) {
 		in := allowed[0]
 		in.Objects = in.Objects[:w.Count]
 		return in, true
-	case engine.PromptChoose:
+	case engine.PromptChoose, engine.PromptOrder, engine.PromptThrow:
 		return allowed[0], true
 	case engine.PromptNone, engine.PromptGameOver:
 		return engine.Intent{}, false

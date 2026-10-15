@@ -1,5 +1,7 @@
 package rulesengine
 
+import "slices"
+
 // StackKind is what a stack item is (R-STACK-01).
 type StackKind int
 
@@ -51,6 +53,13 @@ type StackItem struct {
 	// "would roll" trigger it is the value (+1) the trigger saw: it
 	// fizzles if the roll no longer has it (R-DICE-07).
 	Checked int `json:"checked,omitempty"`
+	// Text is the words of the ability it uses, or of its chosen mode,
+	// for display. Only views set it (15.21, S-07).
+	Text string `json:"text,omitempty"`
+	// SourceCard and TargetCard are the cards of Source and Target, for
+	// display, while anyone may see them. Only views set them (15.22).
+	SourceCard CardRef `json:"source_card,omitempty"`
+	TargetCard CardRef `json:"target_card,omitempty"`
 }
 
 // Events about the stack.
@@ -69,20 +78,25 @@ func (g *Game) push(it StackItem) int {
 	g.StackSeq++
 	it.ID = g.StackSeq
 	if it.Kind == StackRoll && it.Controller != NoPlayer && len(g.ManyDice) > 0 && g.ManyDice[0].StackID == 0 {
-		// "They instead roll 4 dice. You choose one of the rolls."
-		md := &g.ManyDice[0]
-		md.StackID, md.Values = it.ID, []int{it.Roll}
-		for range md.Dice - 1 {
-			md.Values = append(md.Values, g.d6())
-		}
-		g.enqueue(Action{Kind: ActChooseDie, Player: md.Chooser, Amount: it.ID})
+		// "They instead roll 4 dice. You choose one of the rolls." The
+		// dice are drawn with the throw.
+		g.ManyDice[0].StackID = it.ID
+	}
+	if it.Kind == StackRoll && it.Roll == 0 {
+		// The roll waits for its throw before anyone gets priority; its
+		// value is drawn only then (15.59).
+		g.enqueue(Action{Kind: ActThrow, Player: it.Controller, Amount: it.ID})
 	}
 	g.Stack = append(g.Stack, it)
 	g.emit(Event{Kind: EvStackAdded, Player: it.Controller, Object: it.Source, Card: it.Card, Amount: it.Roll, Text: it.Label})
 	// "Would take damage" and "would die" triggers look at these.
 	switch it.Kind { //nolint:exhaustive // only damage and death have "would" triggers
 	case StackDamage:
-		g.emit(Event{Kind: EvDamagePending, Player: it.Target.player(), Object: it.Target.Object, Amount: it.Amount})
+		e := Event{Kind: EvDamagePending, Player: it.Target.player(), Object: it.Target.Object, Amount: it.Amount}
+		if it.Attack {
+			e.Text = "combat" // as on the damaged event
+		}
+		g.emit(e)
 	case StackDeath:
 		g.emit(Event{Kind: EvDeathPending, Player: it.Target.player(), Object: it.Target.Object})
 	}
@@ -111,7 +125,11 @@ func (g *Game) resolveTop() {
 	}
 	it := g.Stack[n-1]
 	g.Stack = g.Stack[:n-1]
-	g.emit(Event{Kind: EvStackResolved, Player: it.Controller, Object: it.Source, Card: it.Card, Amount: it.Roll, Text: it.Label})
+	shown := g.shown(it)
+	g.emit(Event{
+		Kind: EvStackResolved, Player: it.Controller, Object: it.Source, Card: it.Card, Amount: it.Roll, Text: it.Label,
+		StackID: it.ID, Item: &shown,
+	})
 	// Priority after a resolution starts with the active player
 	// (R-STACK-04); items pushed by the resolution set it again.
 	g.givePriority(g.Turn.Active)
@@ -197,11 +215,65 @@ func (g *Game) resolveTop() {
 	}
 }
 
-// roll rolls a D6 for p and puts the roll on the stack (R-DICE-02).
+// roll puts a roll of p on the stack; p throws its die first (R-DICE-02).
 func (g *Game) roll(p PlayerID, label string) int {
-	r := g.d6()
-	g.emit(Event{Kind: EvDiceRolled, Player: p, Amount: r, Text: label})
-	return g.push(StackItem{Kind: StackRoll, Controller: p, Roll: r, Label: label})
+	return g.push(StackItem{Kind: StackRoll, Controller: p, Label: label})
+}
+
+// Throw is a roll on the stack waiting for its die to be thrown (15.59).
+// Reroll marks a throw that rolls the roll again (R-MECH-47).
+type Throw struct {
+	StackID int  `json:"stack_id"`
+	Reroll  bool `json:"reroll,omitempty"`
+}
+
+// askThrow asks the roller of a queued throw to throw. A roll that left
+// the stack before its throw is never thrown; the game's own rolls are
+// thrown at once.
+func (g *Game) askThrow(a Action) {
+	it, ok := g.StackItemByID(a.Amount)
+	if !ok || it.Kind != StackRoll {
+		return
+	}
+	t := Throw{StackID: it.ID, Reroll: a.Reroll}
+	if it.Controller == NoPlayer {
+		g.throwDie(t)
+		return
+	}
+	g.Throw = &t
+	g.Waiting = Prompt{Kind: PromptThrow, Player: it.Controller, Text: it.Label}
+}
+
+// throw answers the throw prompt.
+func (g *Game) throw() {
+	t := *g.Throw
+	g.Throw, g.Waiting = nil, Prompt{}
+	g.throwDie(t)
+}
+
+// throwDie draws the value of a thrown roll (R-DICE-01). Many dice
+// (R-DICE-11) are drawn here too; the chooser then picks the result.
+func (g *Game) throwDie(t Throw) {
+	i := slices.IndexFunc(g.Stack, func(it StackItem) bool { return it.ID == t.StackID })
+	if i < 0 {
+		return
+	}
+	it := &g.Stack[i]
+	it.Roll = g.d6()
+	text := it.Label
+	if t.Reroll {
+		text = "reroll"
+	}
+	r, p := it.Roll, it.Controller
+	if !t.Reroll && len(g.ManyDice) > 0 && g.ManyDice[0].StackID == t.StackID && g.ManyDice[0].Values == nil {
+		md := &g.ManyDice[0]
+		md.Values = []int{r}
+		for range md.Dice - 1 {
+			md.Values = append(md.Values, g.d6())
+		}
+		g.enqueue(Action{Kind: ActChooseDie, Player: md.Chooser, Amount: t.StackID})
+	}
+	g.emit(Event{Kind: EvDiceRolled, Player: p, Amount: r, Text: text, StackID: t.StackID})
 }
 
 // playLoot moves a loot card from hand to the stack (R-MECH-45).
@@ -298,12 +370,13 @@ func (g *Game) StackItemByID(id int) (StackItem, bool) {
 	return StackItem{}, false
 }
 
-// Reroll rolls a dice roll on the stack again (R-MECH-47).
+// Reroll rolls a dice roll on the stack again (R-MECH-47): the roll's
+// own player throws again before anyone gets priority (15.59).
 func (g *Game) Reroll(stackID int) {
 	for i := range g.Stack {
 		if it := &g.Stack[i]; it.ID == stackID && it.Kind == StackRoll {
-			it.Roll = g.d6()
-			g.emit(Event{Kind: EvDiceRolled, Player: it.Controller, Amount: it.Roll, Text: "reroll"})
+			it.Roll = 0
+			g.enqueue(Action{Kind: ActThrow, Player: it.Controller, Amount: it.ID, Reroll: true})
 		}
 	}
 }

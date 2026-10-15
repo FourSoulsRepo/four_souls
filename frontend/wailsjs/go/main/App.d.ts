@@ -6,6 +6,8 @@ import {legal} from '../models';
 import {settings} from '../models';
 import {version} from '../models';
 
+export function Backs():Promise<Array<main.CardBack>>;
+
 export function CardSets():Promise<Array<string>>;
 
 export function Cards():Promise<Array<main.CardInfo>>;
@@ -14,6 +16,12 @@ export function Dice():Promise<Array<main.DiceSkin>>;
 
 export function FindGames():Promise<Array<lan.Found>>;
 
+export function Fonts():Promise<main.Fonts>;
+
+export function Icons():Promise<main.Icons>;
+
+export function Mats():Promise<Array<main.MatInfo>>;
+
 export function Notice():Promise<Array<legal.Line>>;
 
 export function SaveRecord(arg1:string):Promise<string>;
@@ -21,5 +29,7 @@ export function SaveRecord(arg1:string):Promise<string>;
 export function SaveSettings(arg1:settings.Settings):Promise<settings.Settings>;
 
 export function Settings():Promise<settings.Settings>;
+
+export function Sounds():Promise<main.Sounds>;
 
 export function Versions():Promise<version.Info>;

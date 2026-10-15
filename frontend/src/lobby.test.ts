@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { emptyLobby, lanRows, leftTable, lost, onMessage, optionsText, remember, type Session } from './lobby';
+import { canCreate, emptyLobby, lanRows, leftTable, lost, onMessage, optionsText, remember, type Session } from './lobby';
 import type { Table } from './protocol';
 
 const start: Session = { screen: 'join', lobby: emptyLobby, game: null, error: '' };
@@ -110,5 +110,22 @@ describe('lanRows', () => {
         joinable: false,
       },
     ]);
+  });
+});
+
+describe('canCreate', () => {
+  const welcome = { protocol: 1, app: '', engine: '', token: 't', seat: -1 };
+
+  it('offers "Create a game" when the server allows it (N-17)', () => {
+    expect(canCreate({ ...emptyLobby, welcome: { ...welcome, create: true } }, false)).toBe(true);
+  });
+
+  it('hides it on a friend\'s hosted game, which never allows it', () => {
+    expect(canCreate({ ...emptyLobby, welcome }, false)).toBe(false);
+    expect(canCreate(emptyLobby, false)).toBe(false);
+  });
+
+  it('hides it from the host, who uses the host screen', () => {
+    expect(canCreate({ ...emptyLobby, welcome: { ...welcome, create: true } }, true)).toBe(false);
   });
 });

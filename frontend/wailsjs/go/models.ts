@@ -155,6 +155,20 @@ export namespace legal {
 
 export namespace main {
 	
+	export class CardBack {
+	    kind: string;
+	    image: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new CardBack(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.kind = source["kind"];
+	        this.image = source["image"];
+	    }
+	}
 	export class CardInfo {
 	    ref: string;
 	    set: string;
@@ -204,6 +218,7 @@ export namespace main {
 	export class DiceSkin {
 	    id: string;
 	    name: string;
+	    set: string;
 	    image: string;
 	
 	    static createFrom(source: any = {}) {
@@ -214,7 +229,24 @@ export namespace main {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.id = source["id"];
 	        this.name = source["name"];
+	        this.set = source["set"];
 	        this.image = source["image"];
+	    }
+	}
+	export class Fonts {
+	    title: string;
+	    body: string;
+	    cyrillic: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new Fonts(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.title = source["title"];
+	        this.body = source["body"];
+	        this.cyrillic = source["cyrillic"];
 	    }
 	}
 	export class HostInfo {
@@ -231,6 +263,52 @@ export namespace main {
 	        this.running = source["running"];
 	        this.port = source["port"];
 	        this.addresses = source["addresses"];
+	    }
+	}
+	export class Icons {
+	    coin: string;
+	    sword: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new Icons(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.coin = source["coin"];
+	        this.sword = source["sword"];
+	    }
+	}
+	export class MatInfo {
+	    id: string;
+	    name: string;
+	    image: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new MatInfo(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.name = source["name"];
+	        this.image = source["image"];
+	    }
+	}
+	export class Sounds {
+	    attackHit: string;
+	    effectCast: string;
+	    effectImpact: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new Sounds(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.attackHit = source["attackHit"];
+	        this.effectCast = source["effectCast"];
+	        this.effectImpact = source["effectImpact"];
 	    }
 	}
 

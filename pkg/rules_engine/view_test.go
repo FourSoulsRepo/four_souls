@@ -146,6 +146,29 @@ func TestChoiceOptionsPointAtTheTable(t *testing.T) {
 	}
 }
 
+func TestViewShowsTheDrawnMonsterUntilPlaced(t *testing.T) {
+	g := toAction(t, 2)
+	a := g.Turn.Active
+	putMonster(g, 0, "gaper")
+	g.Decks[MonsterDeck] = append(g.Decks[MonsterDeck], g.newObject("dummy", DeckZone(MonsterDeck), NoPlayer))
+	if v := g.View(Viewer{Kind: ViewSpectator}); v.Revealed != nil {
+		t.Fatalf("revealed %+v before the deck attack", *v.Revealed)
+	}
+	attack(t, g)
+	choose(t, g, "monster deck")
+	for _, v := range []Viewer{{Kind: ViewPlayer, Player: a}, {Kind: ViewPlayer, Player: g.next(a)}, {Kind: ViewSpectator}} {
+		if r := g.View(v).Revealed; r == nil || r.Card != "dummy" {
+			t.Errorf("viewer %+v: revealed %+v, want the dummy (19.9)", v, r)
+		}
+	}
+	if _, err := g.Apply(Intent{Player: a, Kind: IntentChoose, Choice: 0}); err != nil {
+		t.Fatal(err)
+	}
+	if r := g.View(Viewer{Kind: ViewSpectator}).Revealed; r != nil {
+		t.Errorf("revealed %+v after it went into its slot", *r)
+	}
+}
+
 func TestViewCountsWhatIsLeft(t *testing.T) {
 	g := toAction(t, 2)
 	a := g.Turn.Active
@@ -165,12 +188,46 @@ func TestViewCountsWhatIsLeft(t *testing.T) {
 	}
 }
 
+func TestViewSaysHowManySoulsWin(t *testing.T) {
+	g := toAction(t, 2)
+	g.WinSouls = 5
+	if v := g.View(Viewer{Kind: ViewSpectator}); v.WinSouls != 5 {
+		t.Errorf("win souls %d, want 5", v.WinSouls)
+	}
+}
+
+func TestViewSaysWhatEachSoulIsWorth(t *testing.T) {
+	g := toAction(t, 2)
+	p := g.Turn.Active
+	boss := g.newObject("boss", Zone{Kind: ZoneInPlay}, p)
+	bonus := g.newObject("soul_x", Zone{Kind: ZoneInPlay}, p)
+	g.Object(boss).Role, g.Object(bonus).Role = RoleSoul, RoleSoul
+	g.Players[p].InPlay = append(g.Players[p].InPlay, boss, bonus)
+	v := g.View(Viewer{Kind: ViewSpectator})
+	worth := map[ObjectID]int{}
+	for _, c := range v.Players[p].InPlay {
+		worth[c.ID] = c.Souls
+	}
+	// A soul without a printed value is still worth one (R-CARD-18).
+	if worth[boss] != 1 || worth[bonus] != 1 {
+		t.Errorf("souls boss %d, bonus %d; want 1 and 1", worth[boss], worth[bonus])
+	}
+	for _, c := range v.Players[p].InPlay {
+		if c.ID != boss && c.ID != bonus && c.Souls != 0 {
+			t.Errorf("%s is no soul but worth %d", c.Card, c.Souls)
+		}
+	}
+	if v.Players[p].Souls != 2 || v.Players[p].Character.Souls != 0 {
+		t.Errorf("player souls %d, character %d; want 2 and 0", v.Players[p].Souls, v.Players[p].Character.Souls)
+	}
+}
+
 func TestViewNamesWhoPassedAndWhoMayRespond(t *testing.T) {
 	g := toAction(t, 4)
 	a := g.Turn.Active
 	b := g.next(a)
 	c, d := g.next(b), g.next(g.next(b))
-	g.push(StackItem{Kind: StackRoll, Controller: b, Label: "x"})
+	g.push(StackItem{Kind: StackRoll, Roll: 3, Controller: b, Label: "x"})
 	pass(t, g)
 	pass(t, g)
 	// Every viewer sees the same lists (V-11).
@@ -215,5 +272,117 @@ func TestGivenCardIsSeenByBothHands(t *testing.T) {
 		if got[0].Text != "0" {
 			t.Errorf("viewer %+v: giver %q, want everyone to know it", c.v, got[0].Text)
 		}
+	}
+}
+
+func TestViewStackNamesTheUsedAbility(t *testing.T) {
+	g := newAbilityGame(t)
+	a := g.Turn.Active
+	activate(t, g, a, giveItem(g, a, "coin_bag"), 0)
+	g.push(StackItem{Kind: StackLoot, Controller: a, Ability: AbilityRef{Card: "dagaz_like", Index: 0}, Mode: 1})
+	g.push(StackItem{Kind: StackRoll, Roll: 3, Controller: a})
+	gv := g.View(Viewer{Kind: ViewSpectator})
+	want := []string{"↷: Gain 3¢.", "Choose a player.", ""}
+	for i, it := range gv.Stack {
+		if it.Text != want[i] {
+			t.Errorf("stack item %d says %q, want %q", i, it.Text, want[i])
+		}
+	}
+	if g.Stack[0].Text != "" {
+		t.Errorf("the game's own stack got text %q; only views have it", g.Stack[0].Text)
+	}
+}
+
+func TestResolvedEventCarriesTheItem(t *testing.T) {
+	g := newAbilityGame(t)
+	a := g.Turn.Active
+	id := g.push(StackItem{Kind: StackLoot, Controller: a, Ability: AbilityRef{Card: "dagaz_like", Index: 0}, Mode: 1, Attack: true})
+	g.resolveTop()
+	for _, e := range g.events {
+		if e.Kind != EvStackResolved {
+			continue
+		}
+		if e.StackID != id || e.Item == nil || e.Item.ID != id || !e.Item.Attack {
+			t.Fatalf("resolved event %+v does not carry item %d", e, id)
+		}
+		if e.Item.Text != "Choose a player." {
+			t.Errorf("resolved item says %q, want the chosen mode's words", e.Item.Text)
+		}
+		return
+	}
+	t.Fatal("no stack_resolved event")
+}
+
+func TestRollTextSplitsByResult(t *testing.T) {
+	tests := []struct {
+		text   string
+		result int
+		start  string
+		line   string
+	}{
+		{"Roll- 1: Gain 1¢. 2: Take 2 damage. 3: Loot 3. 4: Lose 4¢. 5: Gain 5¢. 6: Gain +1 treasure.", 2, "Roll.", "2: Take 2 damage."},
+		{"↷: Roll- 1-2: Loot 1. 3-4: Gain 4¢.", 4, "↷: Roll.", "3-4: Gain 4¢."},
+		{"↷: Roll- 1-2: Loot 1. 3-4: Gain 4¢.", 6, "↷: Roll.", "6: Nothing happens."},
+		{"When this dies, after gaining rewards, the active player rolls- 1 or 6: Put this on top of the monster deck.", 6, "When this dies, after gaining rewards, the active player rolls.", "1 or 6: Put this on top of the monster deck."},
+		{"Each time you would die, roll- 1-3: Prevent death. If it's your turn, cancel everything that hasn't resolved and end your turn.", 1, "Each time you would die, roll.", "1-3: Prevent death. If it's your turn, cancel everything that hasn't resolved and end your turn."},
+		{"Choose a player or monster, then roll- Deal damage to them equal to the result.", 5, "Choose a player or monster, then roll.", "Deal damage to them equal to the result."},
+		{"Roll- 1-3: Take 1 damage. 4-5: Take 2 damage. 6: Search the treasure deck for a Guppy item, gain it, then shuffle the treasure deck.", 6, "Roll.", "6: Search the treasure deck for a Guppy item, gain it, then shuffle the treasure deck."},
+		{"Gain 3¢.", 2, "Gain 3¢.", "Gain 3¢."},
+	}
+	for _, tt := range tests {
+		if got := rollStartText(tt.text); got != tt.start {
+			t.Errorf("rollStartText(%q) = %q, want %q", tt.text, got, tt.start)
+		}
+		if got := rollResultText(tt.text, tt.result); got != tt.line {
+			t.Errorf("rollResultText(%q, %d) = %q, want %q", tt.text, tt.result, got, tt.line)
+		}
+	}
+}
+
+func TestViewNamesSourceAndTargetCards(t *testing.T) {
+	g := newAbilityGame(t)
+	a := g.Turn.Active
+	monster, ok := g.Monsters[0].TopOf()
+	if !ok {
+		t.Fatal("no monster in the first slot")
+	}
+	g.push(StackItem{Kind: StackDamage, Controller: NoPlayer, Source: monster, Amount: 1, Target: Target{Player: a, IsPlayer: true}})
+	g.push(StackItem{Kind: StackRoll, Roll: 3, Controller: a, Attack: true, Target: Target{Object: monster}})
+	gv := g.View(Viewer{Kind: ViewSpectator})
+	card := g.Object(monster).Card
+	if gv.Stack[0].SourceCard != card || gv.Stack[0].TargetCard != "" {
+		t.Errorf("monster damage names source %q and target %q, want %q and none", gv.Stack[0].SourceCard, gv.Stack[0].TargetCard, card)
+	}
+	if gv.Stack[1].TargetCard != card {
+		t.Errorf("attack roll names target %q, want %q", gv.Stack[1].TargetCard, card)
+	}
+	if g.Stack[1].TargetCard != "" {
+		t.Error("the game's own stack got a target card; only views have it")
+	}
+}
+
+func TestViewShowsLiveMonsterStats(t *testing.T) {
+	g := newAbilityGame(t)
+	monster, ok := g.Monsters[0].TopOf()
+	if !ok {
+		t.Fatal("no monster in the first slot")
+	}
+	d := g.def(monster)
+	g.Object(monster).Damage = 1
+	g.Boosts = append(g.Boosts, Boost{Stat: StatMonsterATK, Object: monster, Amount: 2})
+	gv := g.View(Viewer{Kind: ViewSpectator})
+	s := gv.Monsters[0].Top.Stats
+	if s == nil {
+		t.Fatal("a monster's view has no stats")
+	}
+	want := MonsterStats{
+		HP: d.HP - 1, DC: d.DC, ATK: d.ATK + 2,
+		PrintedHP: d.HP, PrintedDC: d.DC, PrintedATK: d.ATK,
+	}
+	if *s != want {
+		t.Errorf("stats = %+v, want %+v", *s, want)
+	}
+	if gv.Players[0].Character.Stats != nil {
+		t.Error("a character got monster stats")
 	}
 }

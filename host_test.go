@@ -13,8 +13,9 @@ import (
 	engine "github.com/FourSoulsRepo/rules_engine"
 )
 
-// TestHostAndRemoteClient: the app hosts; the host and a friend join
-// over the LAN address and both play (6.4).
+// TestHostAndRemoteClient: the app hosts; the host joins over loopback,
+// as the app does, and a friend over the LAN address; both play (6.4).
+// Only the host may open the game (N-17).
 func TestHostAndRemoteClient(t *testing.T) {
 	h := &Host{}
 	info, err := h.Start()
@@ -29,14 +30,14 @@ func TestHostAndRemoteClient(t *testing.T) {
 	if _, again := h.Start(); !errors.Is(again, ErrHosting) {
 		t.Error("hosted twice")
 	}
-	addr := "127.0.0.1"
+	addrs := [2]string{"127.0.0.1", "127.0.0.1"}
 	if len(info.Addresses) > 0 {
-		addr = info.Addresses[0] // as a friend on the LAN would
+		addrs[1] = info.Addresses[0] // as a friend on the LAN would
 	}
-	url := "ws://" + net.JoinHostPort(addr, strconv.Itoa(info.Port)) + "/ws"
 	var players [2]*websocket.Conn
 	var seats [2]int
 	for i := range players {
+		url := "ws://" + net.JoinHostPort(addrs[i], strconv.Itoa(info.Port)) + "/ws"
 		ws, resp, err := websocket.DefaultDialer.Dial(url, nil)
 		if err != nil {
 			t.Fatal(err)
@@ -45,7 +46,18 @@ func TestHostAndRemoteClient(t *testing.T) {
 		defer ws.Close()      //nolint:errcheck // test
 		players[i] = ws
 		say(t, ws, protocol.TypeHello, protocol.Hello{Protocol: protocol.Version, Name: "P" + strconv.Itoa(i), Sets: []string{"b2"}})
-		readType(t, ws, protocol.TypeWelcome, &protocol.Welcome{})
+		var w protocol.Welcome
+		readType(t, ws, protocol.TypeWelcome, &w)
+		if friend := addrs[i] != "127.0.0.1"; w.Create == friend {
+			t.Errorf("player %d over %s: create %v", i, addrs[i], w.Create)
+		}
+	}
+	if addrs[1] != "127.0.0.1" {
+		say(t, players[1], protocol.TypeCreate, protocol.Create{Seats: 2})
+		var er protocol.Error
+		if readType(t, players[1], protocol.TypeError, &er); er.Code != protocol.ErrNotHost {
+			t.Errorf("a friend creates: %+v", er)
+		}
 	}
 	// The host creates a game in its own lobby; the friend joins it.
 	say(t, players[0], protocol.TypeCreate, protocol.Create{Seats: 2})

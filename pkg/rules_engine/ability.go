@@ -52,6 +52,8 @@ type Ctx struct {
 	EventObject ObjectID
 	// EventSource is what caused the event, e.g. the monster that dealt damage.
 	EventSource ObjectID
+	// Order is the answer of an Ask's order question, top first (19.16).
+	Order []ObjectID
 
 	// Where the effect is, so an Ask can find it again.
 	ref    AbilityRef
@@ -250,13 +252,7 @@ type rerollEffect struct{ target int }
 func RerollRoll(t int) Effect { return rerollEffect{t} }
 
 func (e rerollEffect) apply(c *Ctx) {
-	id := c.Targets[e.target].StackID
-	for i := range c.G.Stack {
-		if c.G.Stack[i].ID == id {
-			c.G.Stack[i].Roll = c.G.d6()
-			c.G.emit(Event{Kind: EvDiceRolled, Player: c.G.Stack[i].Controller, Amount: c.G.Stack[i].Roll, Text: "reroll"})
-		}
-	}
+	c.G.Reroll(c.Targets[e.target].StackID)
 }
 
 // RollTable maps roll results to effects: index 0 is a roll of 1.
@@ -269,10 +265,8 @@ type rollEffect struct{ table RollTable }
 func Roll(t RollTable) Effect { return rollEffect{t} }
 
 func (e rollEffect) apply(c *Ctx) {
-	r := c.G.d6()
-	c.G.emit(Event{Kind: EvDiceRolled, Player: c.Controller, Amount: r, Text: "roll"})
 	c.G.push(StackItem{
-		Kind: StackRoll, Controller: c.Controller, Source: c.Source, Roll: r, Label: "roll",
+		Kind: StackRoll, Controller: c.Controller, Source: c.Source, Label: "roll",
 		RollFor: c.ref, Mode: c.mode, Targets: c.Targets,
 		EventPlayer: c.EventPlayer, EventAmount: c.EventAmount, EventStack: c.EventStack, EventObject: c.EventObject, EventSource: c.EventSource,
 	})
@@ -637,21 +631,30 @@ func (sunEffect) apply(c *Ctx) {
 	}
 }
 
-type preventDeathEffect struct{}
+type preventDeathEffect struct{ full bool }
 
 // PreventYourDeath removes the controller's death from the stack and
 // heals them to 1 HP (R-MECH-46): "Prevent death".
 func PreventYourDeath() Effect { return preventDeathEffect{} }
 
-func (preventDeathEffect) apply(c *Ctx) {
+// PreventYourDeathHealFull is PreventYourDeath that heals to full HP:
+// "prevent death, heal to full HP". The heal is one event.
+func PreventYourDeathHealFull() Effect { return preventDeathEffect{full: true} }
+
+func (e preventDeathEffect) apply(c *Ctx) {
 	g := c.G
 	for _, it := range g.Stack {
 		if it.Kind == StackDeath && it.Target.IsPlayer && it.Target.Player == c.Controller {
 			g.CancelStackItem(it.ID)
 			pl := &g.Players[c.Controller]
-			maxHP := g.PlayerHP(c.Controller) + pl.Damage
-			pl.Damage = min(pl.Damage, max(maxHP-1, 0))
+			left := 0
+			if !e.full {
+				maxHP := g.PlayerHP(c.Controller) + pl.Damage
+				left = min(pl.Damage, max(maxHP-1, 0))
+			}
 			g.emit(Event{Kind: EvPrevented, Player: c.Controller, Text: "death"})
+			// The HP given back shows as a heal (19.2).
+			g.HealPlayer(c.Controller, pl.Damage-left)
 			return
 		}
 	}

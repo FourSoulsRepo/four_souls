@@ -31,24 +31,30 @@ func TestCards(t *testing.T) {
 
 func TestCardImages(t *testing.T) {
 	files := fstest.MapFS{
-		"images/b2/isaac.webp":  {Data: []byte("RIFF")},
-		"images/assets/die.png": {Data: []byte("PNG")},
-		"data/b2.json":          {Data: []byte("{}")},
+		"images/b2/isaac.webp":            {Data: []byte("RIFF")},
+		"images/assets/die.webp":          {Data: []byte("RIFF")},
+		"images/assets/die.png":           {Data: []byte("PNG")},
+		"images/assets/fonts/title.ttf":   {Data: []byte("\x00\x01\x00\x00")},
+		"images/assets/fonts/LICENSE.txt": {Data: []byte("MIT")},
+		"data/b2.json":                    {Data: []byte("{}")},
 	}
 	frontend := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusTeapot)
 	})
 	h := cardImages(files)(frontend)
 	for path, want := range map[string]int{
-		"/cardimg/b2/isaac.webp":       http.StatusOK,
-		"/cardimg/b2/cain.webp":        http.StatusNotFound,
-		"/cardimg/../data/b2.json":     http.StatusNotFound,
-		"/cardimg/b2/":                 http.StatusNotFound,
-		"/index.html":                  http.StatusTeapot,
-		"/cardimgs/b2/isaac.webp":      http.StatusTeapot,
-		"/cardimg/b2/../b2/isaac.webp": http.StatusNotFound,
-		"/cardimg/assets/die.png":      http.StatusOK,
-		"/cardimg/assets/die.jpg":      http.StatusNotFound,
+		"/cardimg/b2/isaac.webp":            http.StatusOK,
+		"/cardimg/b2/cain.webp":             http.StatusNotFound,
+		"/cardimg/../data/b2.json":          http.StatusNotFound,
+		"/cardimg/b2/":                      http.StatusNotFound,
+		"/index.html":                       http.StatusTeapot,
+		"/cardimgs/b2/isaac.webp":           http.StatusTeapot,
+		"/cardimg/b2/../b2/isaac.webp":      http.StatusNotFound,
+		"/cardimg/assets/die.webp":          http.StatusOK,
+		"/cardimg/assets/die.png":           http.StatusNotFound,
+		"/cardimg/assets/die.jpg":           http.StatusNotFound,
+		"/cardimg/assets/fonts/title.ttf":   http.StatusOK,
+		"/cardimg/assets/fonts/LICENSE.txt": http.StatusNotFound,
 	} {
 		rec := httptest.NewRecorder()
 		h.ServeHTTP(rec, httptest.NewRequestWithContext(t.Context(), http.MethodGet, "http://wails.localhost"+path, nil))

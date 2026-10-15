@@ -14,6 +14,12 @@ const (
 	// PromptChoose asks the player to pick one of Options; Purpose says
 	// what for (see Choice).
 	PromptChoose
+	// PromptOrder asks the player to put Count cards in order, top
+	// first, with one IntentOrder (19.16).
+	PromptOrder
+	// PromptThrow asks the player to throw the die of a roll with
+	// IntentThrow; Text names the roll (15.59).
+	PromptThrow
 )
 
 // Prompt names who must answer and what kind of answer is expected.
@@ -39,6 +45,8 @@ const (
 	IntentAttack                     // declare an attack (R-ATK-01)
 	IntentPurchase                   // declare a purchase (R-SHOP-01)
 	IntentActivate                   // use ability Choice of Objects[0] (R-ABIL-08)
+	IntentOrder                      // the cards of an order prompt in Objects, top first
+	IntentThrow                      // throw the die of a throw prompt (R-DICE-02)
 )
 
 // Intent is one player's request. The engine checks it against the
@@ -174,6 +182,17 @@ func (g *Game) check(in Intent) error {
 		if in.Choice < 0 || in.Choice >= len(w.Options) {
 			return refuse(g.Choice.Rule, "choose one of the %d options", len(w.Options))
 		}
+	case IntentOrder:
+		if w.Kind != PromptOrder || g.Choice == nil {
+			return refuse("R-PRIO-01", "no order is asked for")
+		}
+		if !samePermutation(in.Objects, g.Choice.Objects) {
+			return refuse(g.Choice.Rule, "put all %d cards in order, each once", len(g.Choice.Objects))
+		}
+	case IntentThrow:
+		if w.Kind != PromptThrow || g.Throw == nil {
+			return refuse("R-DICE-02", "no throw is asked for")
+		}
 	default:
 		return refuse("R-PRIO-01", "unknown intent")
 	}
@@ -184,6 +203,21 @@ func (g *Game) allInHand(p PlayerID, ids []ObjectID) bool {
 	seen := []ObjectID{}
 	for _, id := range ids {
 		if contains(seen, id) || !contains(g.Players[p].Hand, id) {
+			return false
+		}
+		seen = append(seen, id)
+	}
+	return true
+}
+
+// samePermutation reports whether order holds each of cards exactly once.
+func samePermutation(order, cards []ObjectID) bool {
+	if len(order) != len(cards) {
+		return false
+	}
+	seen := []ObjectID{}
+	for _, id := range order {
+		if contains(seen, id) || !contains(cards, id) {
 			return false
 		}
 		seen = append(seen, id)
@@ -231,6 +265,10 @@ func (g *Game) apply(in Intent) {
 		})
 	case IntentChoose:
 		g.answer(in.Choice)
+	case IntentOrder:
+		g.answerOrder(in.Objects)
+	case IntentThrow:
+		g.throw()
 	case IntentAttack:
 		g.declareAttack(in.Player)
 	case IntentPurchase:

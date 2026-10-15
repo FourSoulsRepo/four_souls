@@ -19,3 +19,5 @@
 | UC-15 | Read the history | `frontend` | Implemented | [app/uc-15-read-the-history.md](app/uc-15-read-the-history.md) |
 | UC-16 | Run several copies on one computer | `internal/instance`, `main.go` | Implemented | [app/uc-16-run-several-copies.md](app/uc-16-run-several-copies.md) |
 | UC-17 | Join a game found on the LAN | `internal/lan`, `frontend` | Implemented | [server/uc-17-join-a-lan-game.md](server/uc-17-join-a-lan-game.md) |
+| UC-18 | See a hidden card | `frontend`, `rules_engine` | Implemented | [app/uc-18-see-a-hidden-card.md](app/uc-18-see-a-hidden-card.md) |
+| UC-19 | Create a game on a dedicated server | `internal/server`, `frontend` | Implemented | [server/uc-19-create-on-a-dedicated-server.md](server/uc-19-create-on-a-dedicated-server.md) |

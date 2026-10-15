@@ -25,3 +25,18 @@ func TestStoney(t *testing.T) {
 		t.Error("Stoney did not die with the fly")
 	}
 }
+
+// A covered Stoney is not in play: the monster on top of it dying does
+// not kill it, and it comes back into play.
+func TestStoneyCovered(t *testing.T) {
+	tb := enginetest.NewSetup(t, engine.SituationSetup{Players: []engine.SituationPlayer{seat("isaac"), seat("cain")}, Monsters: items("stoney", "fly")}, Set)
+	tb.G.PutOnDeck(engine.MonsterDeck, "pooter")
+	tb.G.CoverMonsterSlot(0)
+	pooter, _ := tb.G.Monsters[0].TopOf()
+	tb.G.KillObject(pooter)
+	tb.Settle()
+	stoney, ok := tb.G.Monsters[0].TopOf()
+	if !ok || tb.G.Object(stoney).Card != "stoney" || tb.G.Object(stoney).Zone.Kind != engine.ZoneInPlay {
+		t.Error("Stoney died with the monster that covered it")
+	}
+}

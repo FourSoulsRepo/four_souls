@@ -1,8 +1,11 @@
 import { motion } from 'motion/react';
-import { useEffect, useRef, useState, type PointerEvent } from 'react';
+import { useEffect, useRef, useState, type MouseEvent, type PointerEvent } from 'react';
+import { claimed } from '../animations';
 import { iconText, kindOf, textParts, unknownCard, type CardInfo, type Kind } from '../cards';
 import { scaleFor } from '../playback';
+import type { MonsterStats } from '../protocol';
 import { useApp } from '../store';
+import { boxOf } from '../zoom';
 import './Card.css';
 
 // How long a touch must rest on a card to zoom it (B-06).
@@ -21,12 +24,23 @@ interface Props {
   // spent dims a used (uncharged) card.
   spent?: boolean;
   // objectId is the card's object on the table; effects find it by it,
-  // and a new one pops in.
+  // and a new one pops in, unless an effect just brought it (19.6).
   objectId?: number;
+  // player marks a character card as its player: aiming at the player
+  // picks the character (15.33).
+  player?: number;
   // counters is how many counters the card carries (7.9).
   counters?: number;
   // highlight marks a card the player may act on or pick (7.7).
-  highlight?: 'act' | 'pick';
+  highlight?: 'act' | 'pick' | 'aim';
+  // stats shows live health and attack as big numbers (H-15).
+  stats?: { hp: number; atk: number };
+  // monster shows the stats that differ from the print (C-03).
+  monster?: MonsterStats;
+  // noZoom: the card does not zoom itself; its row does (15.21).
+  noZoom?: boolean;
+  // rise: the zoom rises from the card, as from a hand (15.27, H-13).
+  rise?: boolean;
   onClick?: () => void;
 }
 
@@ -40,15 +54,100 @@ export function Card({
   spent = false,
   counters = 0,
   objectId,
+  player,
   highlight,
+  stats,
+  monster,
+  noZoom = false,
+  rise = false,
   onClick,
 }: Props) {
   const info = useApp((s) => (cardRef ? s.cards.get(cardRef) : undefined));
-  const setZoom = useApp((s) => s.setZoom);
+  const backImage = useApp((s) => s.backs.get(back) ?? '');
   const scale = useApp((s) => scaleFor(s.settings.animation, 0, 0));
+  const [brokenImage, setBrokenImage] = useState('');
+  const zoomable = size !== 'zoom' && !noZoom;
+  const zoomHandlers = useZoom(cardRef, zoomable, rise);
+
+  if (cardRef === undefined) {
+    return (
+      <div
+        className={`card size-${size} kind-${back}${highlight ? ` hl-${highlight}` : ''}`}
+        role={onClick ? 'button' : 'img'}
+        aria-label={`Face-down ${back} card`}
+        onClick={onClick}
+      >
+        {backImage !== '' && backImage !== brokenImage ? (
+          <img
+            src={backImage}
+            alt="" // the card itself carries the label
+            draggable={false}
+            onError={() => {
+              setBrokenImage(backImage);
+            }}
+          />
+        ) : (
+          <div className="card-back-face">{back}</div>
+        )}
+      </div>
+    );
+  }
+
+  const card = info ?? unknownCard(cardRef);
+  const image = card.image !== '' && card.image !== brokenImage;
+  // The zoomed card shows no badges: its words stay readable.
+  const badges = size !== 'zoom';
+
+  const pop = objectId !== undefined && scale > 0 && !claimed(card.ref, 'arrive');
+  return (
+    // anim: card-pop
+    <motion.div
+      initial={pop ? { scale: 0.6, opacity: 0 } : false}
+      animate={{ scale: 1, opacity: 1 }}
+      transition={{ duration: 0.25 * scale }}
+      data-zone={objectId === undefined ? undefined : `obj-${String(objectId)}`}
+      data-player={player}
+      className={`card size-${size} kind-${kindOf(card.type)}${image ? '' : ' blank'}${counters > 0 ? ' has-counters' : ''}${spent ? ' spent' : ''}${highlight ? ` hl-${highlight}` : ''}`}
+      role={onClick ? 'button' : 'img'}
+      aria-label={card.name}
+      onClick={onClick}
+      {...zoomHandlers}
+    >
+      {image ? (
+        <img
+          src={card.image}
+          alt="" // the card itself carries the name
+          draggable={false}
+          onError={() => {
+            setBrokenImage(card.image);
+          }}
+        />
+      ) : (
+        <BlankFace card={card} full={size === 'zoom'} />
+      )}
+      {badges && counters > 0 && <Badge kind="counters" value={counters} label="counters" />}
+      {/* Damage shows as the lower, red health; the mark is for the rest. */}
+      {badges && damage > 0 && !monster && !stats && <Badge kind="damage" value={damage} label="damage" />}
+      {badges && stats && (
+        <>
+          <Badge kind="hp" value={stats.hp} label="health" title="Health" hurt={damage > 0} />
+          <Badge kind="atk" value={stats.atk} label="attack" title="Attack" />
+        </>
+      )}
+      {badges && monster && <MonsterBadges stats={monster} hurt={damage > 0} />}
+    </motion.div>
+  );
+}
+
+// useZoom zooms a card from the element it is spread on: on mouse
+// hover, beside it or rising from it, or after a long touch (B-06). A
+// card and a soul crystal share it (V-43). Nothing zooms without a
+// card ref or when zoomable is false.
+export function useZoom(cardRef: string | undefined, zoomable: boolean, rise = false) {
+  const setZoom = useApp((s) => s.setZoom);
   const pressRef = useRef(0);
   const downRef = useRef<{ x: number; y: number } | null>(null);
-  const [brokenImage, setBrokenImage] = useState('');
+  const on = zoomable && cardRef !== undefined;
 
   // A card that leaves the screen while hovered gets no pointer-leave:
   // the card that started a mouse zoom ends it then.
@@ -63,101 +162,102 @@ export function Card({
     [cardRef],
   );
 
-  if (cardRef === undefined) {
-    return (
-      <div
-        className={`card size-${size} kind-${back}${highlight ? ` hl-${highlight}` : ''}`}
-        role={onClick ? 'button' : 'img'}
-        aria-label={`Face-down ${back} card`}
-        onClick={onClick}
-      >
-        <div className="card-back-face">{back}</div>
-      </div>
-    );
-  }
-
-  const card = info ?? unknownCard(cardRef);
-  const image = card.image !== '' && card.image !== brokenImage;
-  const zoomable = size !== 'zoom';
-  const side = (e: PointerEvent) => (e.clientX < window.innerWidth / 2 ? 'right' : 'left');
   const cancelPress = () => {
     window.clearTimeout(pressRef.current);
     downRef.current = null;
   };
-
-  const pop = objectId !== undefined && scale > 0;
-  return (
-    <motion.div
-      initial={pop ? { scale: 0.6, opacity: 0 } : false}
-      animate={{ scale: 1, opacity: 1 }}
-      transition={{ duration: 0.25 * scale }}
-      data-zone={objectId === undefined ? undefined : `obj-${String(objectId)}`}
-      className={`card size-${size} kind-${kindOf(card.type)}${spent ? ' spent' : ''}${highlight ? ` hl-${highlight}` : ''}`}
-      role={onClick ? 'button' : 'img'}
-      aria-label={card.name}
-      onClick={onClick}
-      onPointerEnter={(e) => {
-        if (zoomable && e.pointerType === 'mouse') {
-          zoomedRef.current = true;
-          setZoom({ ref: card.ref, touch: false, side: side(e) });
-        }
-      }}
-      onPointerLeave={(e) => {
+  return {
+    onPointerEnter: (e: PointerEvent<HTMLElement>) => {
+      if (on && e.pointerType === 'mouse') {
+        zoomedRef.current = true;
+        setZoom({ ref: cardRef, touch: false, at: boxOf(e.currentTarget), rise });
+      }
+    },
+    onPointerLeave: (e: PointerEvent<HTMLElement>) => {
+      cancelPress();
+      if (on && e.pointerType === 'mouse') {
+        zoomedRef.current = false;
+        setZoom(null);
+      }
+    },
+    onPointerDown: (e: PointerEvent<HTMLElement>) => {
+      if (on && e.pointerType !== 'mouse') {
+        const at = boxOf(e.currentTarget);
+        downRef.current = { x: e.clientX, y: e.clientY };
+        pressRef.current = window.setTimeout(() => {
+          setZoom({ ref: cardRef, touch: true, at });
+        }, LONG_PRESS_MS);
+      }
+    },
+    onPointerMove: (e: PointerEvent<HTMLElement>) => {
+      // A finger that moves is dragging, not pressing.
+      const d = downRef.current;
+      if (d && Math.hypot(e.clientX - d.x, e.clientY - d.y) > 8) {
         cancelPress();
-        if (zoomable && e.pointerType === 'mouse') {
-          zoomedRef.current = false;
-          setZoom(null);
-        }
-      }}
-      onPointerDown={(e) => {
-        if (zoomable && e.pointerType !== 'mouse') {
-          const s = side(e);
-          downRef.current = { x: e.clientX, y: e.clientY };
-          pressRef.current = window.setTimeout(() => {
-            setZoom({ ref: card.ref, touch: true, side: s });
-          }, LONG_PRESS_MS);
-        }
-      }}
-      onPointerMove={(e) => {
-        // A finger that moves is dragging, not pressing.
-        const d = downRef.current;
-        if (d && Math.hypot(e.clientX - d.x, e.clientY - d.y) > 8) {
-          cancelPress();
-        }
-      }}
-      onPointerUp={cancelPress}
-      onPointerCancel={cancelPress}
-      onContextMenu={(e) => {
-        e.preventDefault(); // a long press must not open the menu
-      }}
-    >
-      {image ? (
-        <img
-          src={card.image}
-          alt="" // the card itself carries the name
-          draggable={false}
-          onError={() => {
-            setBrokenImage(card.image);
-          }}
-        />
-      ) : (
-        <BlankFace card={card} full={size === 'zoom'} />
+      }
+    },
+    onPointerUp: cancelPress,
+    onPointerCancel: cancelPress,
+    onContextMenu: (e: MouseEvent<HTMLElement>) => {
+      e.preventDefault(); // a long press must not open the menu
+    },
+  };
+}
+
+// MonsterBadges shows a monster's health, dice and attack, each only
+// while it differs from the print (C-03): the card shows the rest.
+// Health also shows, in red, while the monster is hurt (T-25).
+function MonsterBadges({ stats, hurt }: { stats: MonsterStats; hurt: boolean }) {
+  const printed = (n: number) => `printed ${String(n)}`;
+  return (
+    <>
+      {(stats.hp !== stats.printed_hp || hurt) && (
+        <Badge kind="hp" value={stats.hp} label="health" title={`Health (${printed(stats.printed_hp)})`} hurt={hurt} />
       )}
-      {counters > 0 && (
-        <span className="card-counters" aria-label={`${String(counters)} counters`}>
-          {counters}
-        </span>
+      {stats.dc !== stats.printed_dc && (
+        <Badge kind="dc" value={stats.dc} label="dice" title={`Dice to hit (${printed(stats.printed_dc)})`} />
       )}
-      {damage > 0 && (
-        <span className="card-damage" aria-label={`${String(damage)} damage`}>
-          {damage}
-        </span>
+      {stats.atk !== stats.printed_atk && (
+        <Badge kind="atk" value={stats.atk} label="attack" title={`Attack (${printed(stats.printed_atk)})`} />
       )}
-    </motion.div>
+    </>
   );
 }
 
-// BlankFace shows a card's text; full adds the effects and keywords.
+// Badge shapes, drawn like the game's cut-out art (15.23): a heart for
+// health, a die for the dice, and lumpy blobs for the rest.
+const blob = 'M52 6C78 5 95 24 94 50C93 77 74 95 48 94C22 93 5 76 6 49C7 22 26 7 52 6Z';
+type BadgeKind = 'hp' | 'dc' | 'atk' | 'counters' | 'damage';
+const shapes = new Map<BadgeKind, string>([
+  ['hp', 'M50 92C24 72 5 55 6 33C7 15 22 6 35 7C43 8 48 13 50 20C52 13 57 8 65 7C78 6 93 15 94 33C95 55 76 72 50 92Z'],
+  ['dc', 'M22 8L78 6C88 6 94 12 94 22L93 78C93 88 87 94 77 94L23 93C13 93 7 87 7 77L6 23C6 13 12 8 22 8Z'],
+]);
+
+interface BadgeProps {
+  kind: BadgeKind;
+  value: number;
+  label: string;
+  title?: string;
+  hurt?: boolean;
+}
+
+// Badge is one number on a card: its shape in ink with a hard shadow,
+// the number in the game's hand-drawn letters. A hurt health number is
+// red while below full (T-25).
+function Badge({ kind, value, label, title, hurt = false }: BadgeProps) {
+  return (
+    <span className={`card-badge card-${kind}${hurt ? ' hurt' : ''}`} title={title} aria-label={`${String(value)} ${label}`}>
+      <svg className="card-badge-shape" viewBox="0 0 100 100" aria-hidden="true">
+        <path d={shapes.get(kind) ?? blob} />
+        <path className="card-badge-shine" d="M30 26C36 18 46 16 52 18C44 22 38 28 34 36C31 34 29 30 30 26Z" />
+      </svg>
+      <span className="card-badge-value">{value}</span>
+    </span>
+  );
+}
+
+// BlankFace shows a card's text; full adds the effects. The zoom shows
+// the keywords beside the card (15.27).
 function BlankFace({ card, full }: { card: CardInfo; full: boolean }) {
   return (
     <div className="card-blank">
@@ -168,11 +268,6 @@ function BlankFace({ card, full }: { card: CardInfo; full: boolean }) {
           {card.effects.map((effect) => (
             <p key={effect}>
               <CardText text={effect} />
-            </p>
-          ))}
-          {card.footnotes.map((f) => (
-            <p key={f.title} className="card-footnote">
-              <b>{f.title}</b> <CardText text={f.text} />
             </p>
           ))}
         </div>
@@ -193,7 +288,7 @@ function BlankFace({ card, full }: { card: CardInfo; full: boolean }) {
   );
 }
 
-function CardText({ text }: { text: string }) {
+export function CardText({ text }: { text: string }) {
   return (
     <>
       {textParts(text).map((p, i) =>

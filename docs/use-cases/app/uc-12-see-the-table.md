@@ -15,20 +15,37 @@
    3. Two players: the other one on top.
    4. Three players: left and right.
    5. Four players: left, top, right.
-3. The middle shows the board.
-   1. Monster deck, monster slots, monster discard, bonus souls.
-   2. Treasure deck, shop slots, treasure discard.
-   3. Loot deck and loot discard on the side.
+3. The middle shows the board, in one frame (F-01).
+   1. Left: the turn, the stack and the history.
+   2. Middle: monster slots above shop slots, then bonus souls.
+   3. Right edge: monster, treasure and loot decks, each with its discard.
+   4. The board keeps one shape; it scales with the window only (V-23).
+   5. Nothing lies over the board (F-02).
+   6. Left edge: a thin history strip, before the turn and stack (15.22).
 4. Each player area shows HP, ATK, cents, souls and hand size.
-5. The active player's area has a red frame.
+5. The active player's name is in the accent color.
+6. The player's own area reads at a glance (15.17).
+   1. Left: name and coins as a big number.
+   2. The character sits centered under the board; items to its right.
+   3. Health and attack are big numbers on the character card.
+   4. The hand fans out at the bottom edge, partly off screen.
+   5. Hover a card to read it in full (V-18).
+   6. The coins show the game's own coin (15.38).
+7. Opponents read at a glance too (15.18).
+   1. A small name and coins with the coin icon.
+   2. The character with big health and attack; items beside it.
+   3. The hand: one back per card, fanned, with the count.
+   4. Top: mirrors the own area; the hand hangs past the top edge.
+   5. Sides: one narrow column; with three players the board grows.
 
 ## Alternative scenarios and errors
 
 * **2a. Used cards:** a character or item that is not charged is dimmed.
-* **2b. Damage:** a red counter on the card shows damage taken.
+* **2b. Damage:** a red counter on a character shows damage taken.
 * **2c. Dead player:** the area fades and says "dead".
 * **3a. Empty deck or discard:** a dashed outline keeps its place.
 * **3b. Covered slot:** a "+N" badge shows the cards under the top one.
+* **3c. More than four slots:** the slots share the row; the board stays the same.
 * **1a. Bans or a draft first:** "Setting up the match…" until 7.14.
 * **1b. Events play first (V-08):** each update's events play one at a time.
   * Looted and discarded cards fly between deck, hand and discard.
@@ -40,6 +57,82 @@
 * **1d. Animations off:** updates show at once.
 * **1e. Dice look (V-19):** a roll shows the face of the player's dice texture.
   * No texture (public clone) or a value past 1–6: a plain die with the number.
+  * Every screen draws a roll in the roller's look, not the viewer's (15.6).
+  * A seat without a look, as a bot's, gets the default one.
+  * A look this app does not have: a plain die.
+* **1f. Card backs (V-26):** each deck shows its own back.
+  * An opponent's hand is fanned loot backs with its card count.
+  * No back images (public clone): plain dark backs with the deck name.
+* **1g. No coin image (public clone):** a drawn ¢ coin by the cents.
+* **2d. Counters (15.23):** a big green blob with the count, on the card art.
+  * A text card shows it in its top corner, clear of the words.
+* **2e. Changed monster stats (15.23):** a badge per changed value.
+  * Red health, a white die for the dice, gold attack.
+  * A value as printed shows no badge; the card shows it.
+  * A damaged monster shows its lower health instead of a damage mark.
+* **1h. Attack hit (15.3):** the attacker's card lunges into the target.
+  * It winds up, hits, and goes back to its place.
+  * A yellow starburst "−N" pops on the card that was hit.
+  * The target's health drops at the hit, while the card goes back.
+  * A monster's hit on a player lunges the monster at the character.
+  * Damage shows no popup when it goes on the stack.
+* **1i. Other damage (15.37):** a glowing shot flies from its source.
+  * The source: its card on the table, else its stack row.
+  * Every damaged card bursts "−N" at once.
+* **1j. Hurt health (15.37):** the health number is red below full.
+  * The heart turns pale, so the red number reads.
+  * A hurt monster shows its health even when it matches the print.
+  * A character has no damage mark in its corner; the health shows it.
+* **1k. Death (15.37):** a big skull pops on the dying card.
+  * The card leaves while the skull fades.
+  * A dead player's skull sits on their character.
+* **1l. Damage sounds (15.50):** an attack hit sounds as a punch.
+  * Other damage sounds as a fireball: a cast, then an impact.
+  * All shots of one update share one fireball.
+  * No private images (public clone): no sound.
+  * With animations off, no sound plays.
+* **1m. Soul crystals (15.39):** souls show as gem slots left of the character.
+  * One slot per soul the game needs to win; four today.
+  * Filled slots are gained souls, from the bottom up.
+  * A card worth two souls fills two slots.
+  * Opponents get the same column, smaller.
+  * Hover the column to read "Souls: N of 4".
+  * Pure CSS: the same without the card images.
+* **1n. A card put into a slot (19.3):** it flies there from its deck.
+  * It stays on the slot while the update's later effects play.
+  * A deck attack: the monster is in its slot before the attack roll.
+  * Then the table shows the update and the copy goes away.
+* **1o. A card revealed twice (19.4):** it shows large only the first time.
+  * A deck attack shows its monster large when it is drawn.
+  * In the next update it only flies into its slot.
+* **1p. A revealed hand (19.5):** the opponent's cards show face up.
+  * Guppy's Eye reveals each other player's hand.
+  * Same fan and place as the backs, with the count.
+  * At the top the cards hang past the edge, turned to their owner.
+  * Hover a card to read it in full.
+* **1q. A card that flew to its place (19.6):** it does not pop in there again.
+  * A deck attack's monster lands in its slot once.
+  * A looted or discarded card lands in the hand or pile once.
+  * Cards no effect brought still pop in.
+* **1r. A deck attack's drawn card (19.9):** it stays in view until placed.
+  * It lies face up on the monster deck, for every player.
+  * The slot dialog shows it above the slot buttons.
+  * It leaves the deck when it flies into the chosen slot.
+* **1s. A big hand (19.15):** the fan tightens; the end cards drop only a little.
+  * Every card's top stays on screen, even with 12 cards.
+  * Each card can be hovered and played.
+* **1t. Soul cards behind the crystals (15.56):** gained souls are no cards on the table.
+  * Each filled crystal holds its soul card.
+  * A card worth two souls holds both of its crystals.
+  * Hover a filled crystal to zoom its card; on touch, a long tap.
+  * A killed monster zooms as the soul it gave; a bonus soul zooms too.
+  * A character's own soul value zooms the character.
+  * An effect that picks a soul highlights its crystal; click it to pick.
+* **1u. Curses apart from items (15.55):** curses are not in the items row.
+  * Own area and top: at the far left of the player area.
+  * Not next to the soul crystals.
+  * Side columns: their own row above the character, at its left.
+  * No curse: the areas keep their size and look as before.
 
 ## Postconditions
 

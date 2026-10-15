@@ -14,6 +14,7 @@ func putMonster(g *Game, i int, card CardRef) ObjectID {
 func passWhile(t *testing.T, g *Game, cond func() bool) {
 	t.Helper()
 	for range 200 {
+		throwPending(t, g)
 		if g.Prompt().Kind != PromptPriority || !cond() {
 			return
 		}
@@ -24,6 +25,7 @@ func passWhile(t *testing.T, g *Game, cond func() bool) {
 
 func choose(t *testing.T, g *Game, label string) {
 	t.Helper()
+	throwPending(t, g)
 	p := g.Prompt()
 	if p.Kind != PromptChoose {
 		t.Fatalf("prompt %+v, want a choice containing %q", p, label)
@@ -84,6 +86,20 @@ func TestKillAMonster(t *testing.T) {
 	}
 }
 
+func TestAttackRollWaitsForTheThrow(t *testing.T) {
+	g := toAction(t, 2)
+	a := g.Turn.Active
+	putMonster(g, 0, "gaper")
+	attack(t, g)
+	choose(t, g, "gaper")
+	if w := g.Prompt(); w.Kind != PromptThrow || w.Player != a || w.Text != "attack roll" {
+		t.Fatalf("prompt %+v; the attacker throws the attack roll (15.59)", w)
+	}
+	if top := g.Stack[len(g.Stack)-1]; top.Kind != StackRoll || top.Roll != 0 {
+		t.Fatalf("top %+v; the attack roll has no value before the throw", top)
+	}
+}
+
 func TestMissDamagesTheAttacker(t *testing.T) {
 	g := toAction(t, 2)
 	a := g.Turn.Active
@@ -96,6 +112,29 @@ func TestMissDamagesTheAttacker(t *testing.T) {
 	if g.Players[a].Damage != 1 {
 		t.Fatalf("player damage %d, want 1 from a miss", g.Players[a].Damage)
 	}
+}
+
+// Pending attack damage says so, like the damage it becomes, so the
+// client shows the attack's own hit instead (15.3).
+func TestPendingCombatDamageSaysCombat(t *testing.T) {
+	g := toAction(t, 2)
+	putMonster(g, 0, "gaper")
+	g.forcedRolls = []int{6}
+	attack(t, g)
+	if _, err := g.Apply(Intent{Player: g.Turn.Active, Kind: IntentChoose, Choice: 0}); err != nil {
+		t.Fatal(err)
+	}
+	for range 20 {
+		for _, e := range pass(t, g) {
+			if e.Kind == EvDamagePending {
+				if e.Text != "combat" {
+					t.Fatalf("pending attack damage text %q, want combat", e.Text)
+				}
+				return
+			}
+		}
+	}
+	t.Fatal("no pending damage")
 }
 
 func TestPlayerDeathPenalty(t *testing.T) {
@@ -190,7 +229,7 @@ func TestAttackTheMonsterDeck(t *testing.T) {
 
 func TestNoAttackWithAStack(t *testing.T) {
 	g := toAction(t, 2)
-	g.push(StackItem{Kind: StackRoll, Controller: g.Turn.Active})
+	g.push(StackItem{Kind: StackRoll, Roll: 3, Controller: g.Turn.Active})
 	if _, err := g.Apply(Intent{Player: g.Turn.Active, Kind: IntentAttack}); err == nil {
 		t.Error("declared an attack with something on the stack (R-ATK-01)")
 	}

@@ -64,3 +64,4 @@ Each sub-step is sized for one agent session.
 | 16 | [16-localization.md](16-localization.md) |
 | 17 | [17-rollback.md](17-rollback.md) |
 | 18 | [18-play-test.md](18-play-test.md) |
+| 19 | [19-bugs.md](19-bugs.md) |

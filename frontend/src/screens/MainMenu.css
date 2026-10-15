@@ -7,6 +7,13 @@
   height: 100%;
 }
 
+.menu h1 {
+  font-family: var(--font-title);
+  font-size: 56px;
+  /* Bold for the system font; the game font has no bold face. */
+  font-synthesis: none;
+}
+
 .menu-buttons {
   display: flex;
   flex-direction: column;
@@ -14,12 +21,10 @@
   min-width: 240px;
 }
 
+/* The paper look is in style.css; menu buttons are just bigger. */
 .menu-buttons button {
-  padding: 12px 24px;
-  border: none;
-  border-radius: 6px;
-  color: var(--fg);
-  background: var(--panel);
+  padding: 11px 24px 9px;
+  font-size: 20px;
 }
 
 .menu-versions {
@@ -28,9 +33,4 @@
   bottom: 12px;
   font-size: 12px;
   color: var(--muted);
-}
-
-.menu-buttons button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
 }

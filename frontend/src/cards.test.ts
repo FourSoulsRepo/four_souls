@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { iconText, kindOf, textParts, unknownCard } from './cards';
+import { abilityLine, iconText, kindOf, textParts, unknownCard } from './cards';
 
 describe('kindOf', () => {
   it('sorts every Base Game type into its deck family', () => {
@@ -52,5 +52,13 @@ describe('iconText', () => {
 describe('unknownCard', () => {
   it('shows the ref as its name', () => {
     expect(unknownCard('fan_card').name).toBe('fan_card');
+  });
+});
+
+describe('abilityLine', () => {
+  it('splits a line into its cost icon, cost, and effect', () => {
+    expect(abilityLine('↷: Put a counter on this.')).toEqual({ icon: 'tap', effect: 'Put a counter on this.' });
+    expect(abilityLine('Pay 5¢: Deal 1 damage.')).toEqual({ icon: 'paid', cost: 'Pay 5¢', effect: 'Deal 1 damage.' });
+    expect(abilityLine('Gain 1¢.')).toEqual({ effect: 'Gain 1¢.' });
   });
 });

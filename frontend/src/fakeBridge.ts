@@ -3,6 +3,7 @@
 // Keep the notice in sync with internal/legal/notice.go.
 
 import b2 from '../../pkg/card_db/data/b2.json?raw';
+import { protocolVersion } from './protocol';
 
 interface Part {
   text: string;
@@ -38,10 +39,11 @@ const notice: { parts: Part[] }[] = [
 const settingsKey = 'fake-settings';
 
 function loadSettings(): unknown {
-  // ?anim=off starts with animations off; ?firstrun starts without a
-  // nickname, as on the first start.
+  // ?anim=off starts with animations off; ?mat=basement starts on that
+  // mat; ?firstrun starts without a nickname, as on the first start.
   const params = new URLSearchParams(window.location.search);
   const animation = params.get('anim') ?? 'normal';
+  const mat = params.get('mat') ?? '';
   const nickname = params.has('firstrun') ? '' : 'Player';
   const fresh = {
     nickname,
@@ -49,7 +51,7 @@ function loadSettings(): unknown {
     animation,
     fullscreen: false,
     theme: 'dark',
-    mat: 'felt',
+    mat,
     dice: 'tear',
     rejoin: { address: '', token: '', game: '' },
     host: { seats: 0, sets: null, detailed: false, response_timer: 0, no_bonus_souls: false },
@@ -83,7 +85,9 @@ function saveSettings(s: FakeSettings): Promise<unknown> {
 
 // A few cards: one with an image, one whose image fails to load, and
 // some without images, so tests see both faces of the Card component.
-// The real card text follows them, without images, as in a public clone.
+// The real card text follows them, with images at their real paths; the
+// e2e tests serve those only for screenshots, else they fail to load and
+// the cards show their text, as in a public clone.
 const isaacImage =
   'data:image/svg+xml,' +
   encodeURIComponent(
@@ -113,7 +117,8 @@ const cards = [
     name: 'The D6',
     effects: ['{Tap Effect}Choose a dice roll. Its controller rerolls it.', 'At the end of your turn, recharge this.'],
     footnotes: [{ title: '-Eternal-', text: "This can't be destroyed or put into discard." }],
-    image: '/cardimg/b2/the_d6.webp',
+    // A path with no file, so its image always fails, screenshots too.
+    image: '/cardimg/b2/missing_the_d6.webp',
   },
   {
     ...none,
@@ -157,6 +162,7 @@ interface DataCard {
   text: { en?: { name: string; effects?: string[]; footnotes?: { title: string; text: string }[] } };
   stats?: { name: string; value: string }[];
   rewards?: { count: string; kind: string }[];
+  images?: string[]; // one per copy; the first stands for the card
 }
 
 function realCards(): unknown[] {
@@ -172,7 +178,7 @@ function realCards(): unknown[] {
       footnotes: c.text.en?.footnotes ?? [],
       stats: c.stats ?? [],
       rewards: c.rewards ?? [],
-      image: '',
+      image: c.images?.[0] ? `/cardimg/${c.images[0]}` : '',
     }));
 }
 
@@ -198,8 +204,66 @@ w.go = {
       SaveSettings: saveSettings,
       CardSets: () => Promise.resolve(['b2', 'g2', 'fsp2']),
       Cards: () => Promise.resolve([...cards, ...realCards()]),
-      // Dice textures are private images too: a plain die, as in a public clone.
-      Dice: () => Promise.resolve([{ id: 'tear', name: 'Tear', image: '' }]),
+      // The dice textures at their real paths; like the mat, the e2e
+      // tests serve them only for screenshots, else they fail: plain dice.
+      // ?nodice has no textures, as Go without the private images.
+      Dice: () =>
+        Promise.resolve(
+          [
+            ['tear', 'Tear', 'holy'],
+            ['blue_fly', 'Blue Fly', 'holy'],
+            ['cent', 'Cent', 'holy'],
+            ['moms_knife', "Mom's Knife", 'holy'],
+            ['the_bible', 'The Bible', 'holy'],
+            ['brimstone', 'Brimstone', 'unholy'],
+            ['guppy_paw', "Guppy's Paw", 'unholy'],
+            ['pentagram', 'Pentagram', 'unholy'],
+            ['poop', 'Poop', 'unholy'],
+            ['tinted_rock', 'Tinted Rock', 'unholy'],
+          ].map(([id = '', name, set = '']) => ({
+            id,
+            name,
+            set: set === 'holy' ? 'Holy' : 'Unholy',
+            image: params.has('nodice') ? '' : `/cardimg/assets/dices/${set}_set/d6_${id}.webp`,
+          })),
+        ),
+      // Card backs at their real paths; like the mat, the e2e tests serve
+      // them only for screenshots, else they fail to load: plain backs.
+      Backs: () =>
+        Promise.resolve(
+          ['loot', 'treasure', 'monster'].map((kind) => ({ kind, image: `/cardimg/assets/backs/${kind}.webp` })),
+        ),
+      // The coin and sword icons at their real paths; like the backs, they
+      // load only in screenshots, else the drawn ones show.
+      Icons: () => Promise.resolve({ coin: '/cardimg/assets/icons/coin.webp', sword: '/cardimg/assets/icons/sword.webp' }),
+      // The fonts at their real paths; they load only in screenshots, else
+      // the system font shows.
+      Fonts: () =>
+        Promise.resolve({
+          title: '/cardimg/assets/fonts/font-souls-title.ttf',
+          body: '/cardimg/assets/fonts/font-souls-body.ttf',
+          cyrillic: '/cardimg/assets/fonts/tboi4s-original.ttf',
+        }),
+      // The damage sounds at their real paths; like the fonts, they load
+      // only in screenshots, else they fail to load and stay silent.
+      Sounds: () =>
+        Promise.resolve({
+          attackHit: '/cardimg/assets/sounds/attack-hit.mp3',
+          effectCast: '/cardimg/assets/sounds/effect-cast.mp3',
+          effectImpact: '/cardimg/assets/sounds/effect-impact.mp3',
+        }),
+      // The mat images, at their real paths; the e2e tests serve them only
+      // for screenshots, else they fail to load as in a public clone.
+      // ?nomats lists none, as Go does without the private images.
+      Mats: () =>
+        Promise.resolve(
+          params.has('nomats')
+            ? []
+            : [
+                { id: 'basement', name: 'Basement', image: '/cardimg/assets/mats/basement.webp' },
+                { id: 'cathedral', name: 'Cathedral', image: '/cardimg/assets/mats/cathedral.webp' },
+              ],
+        ),
       SaveRecord: (link: string) => Promise.resolve(`/fake/${new URL(link).searchParams.get('game') ?? ''}.fsrec`),
       // The LAN holds one hosting app: the test server (?server=PORT).
       // ?nolan finds nothing.
@@ -207,7 +271,7 @@ w.go = {
         Promise.resolve(
           params.has('nolan')
             ? []
-            : [{ address: `127.0.0.1:${String(hostPort)}`, protocol: 1, app: 'demo', games: [{ host: 'Lan', seats: 2, taken: 1 }] }],
+            : [{ address: `127.0.0.1:${String(hostPort)}`, protocol: protocolVersion, app: 'demo', games: [{ host: 'Lan', seats: 2, taken: 1 }] }],
         ),
     },
     Host: {

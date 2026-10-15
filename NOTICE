@@ -20,12 +20,31 @@ Card images are not in this repository. They live in the private
 repository FourSoulsRepo/card_db (git submodule pkg/card_db/images) and
 ship inside release binaries built with -tags cardimages.
 
+The game's fonts live there too (assets/fonts) and ship the same way:
+  font-souls Title and Body, fan replicas of the card fonts (Latin).
+    Copyright (c) 2020 Matheus Assis. MIT.
+    https://github.com/AssisrMatheus/font-souls
+  TBoI4SOriginal, the card font of foursouls.ru (Cyrillic). It belongs
+    to its owners.
+
 This project is an unofficial, free, fan-made game. It is not affiliated
 with, endorsed by or sponsored by Edmund McMillen, Maestro Media or
 Studio71, and claims no ownership of their material. If the rights holders
 object to its use here, it will be removed.
 
 Buy the physical game: https://foursouls.com
+
+--------------------------------------------------------------------------
+Sounds
+--------------------------------------------------------------------------
+Damage sounds (assets/sounds in the private images), from Hearthstone:
+  attack-hit.mp3     WoW_unarmedparrymetala
+  effect-cast.mp3    FX_FireballEvent01_BirthStart_01 (Fireball spell)
+  effect-impact.mp3  FX_FireballEvent04_SpellImpact_01 (Fireball spell)
+  Via sounds.spriters-resource.com and hearthstone.wiki.gg.
+  Hearthstone is (c) Blizzard Entertainment, Inc. They belong to their
+  owners, are not in this repository, and ship the same way as the card
+  images. Converted to mono MP3.
 
 --------------------------------------------------------------------------
 Wails template images — build/appicon.png, build/windows/icon.ico

@@ -17,7 +17,8 @@ if (import.meta.env.DEV && new URLSearchParams(window.location.search).get('scre
 // With fake bindings, tests reach the store to play event bursts.
 if (import.meta.env.DEV && new URLSearchParams(window.location.search).has('fake')) {
   const { useApp, dropConnection } = await import('./store');
-  (window as unknown as { fourSouls: unknown }).fourSouls = { store: useApp, drop: dropConnection };
+  const { clashes } = await import('./animations');
+  (window as unknown as { fourSouls: unknown }).fourSouls = { store: useApp, drop: dropConnection, clashes };
 }
 
 const container = document.getElementById('root');

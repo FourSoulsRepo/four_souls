@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"slices"
 )
 
 // Situation is a shareable table position with one action to check
@@ -263,6 +264,25 @@ func (s Situation) intent(g *Game) (Intent, error) {
 	}
 }
 
+// OrderOf answers the open order prompt by card refs, top first: each
+// ref names the next card of the prompt not used yet.
+func (g *Game) OrderOf(refs []string) ([]ObjectID, error) {
+	if g.Waiting.Kind != PromptOrder || g.Choice == nil {
+		return nil, fmt.Errorf("situation: no order prompt is open")
+	}
+	left := append([]ObjectID(nil), g.Choice.Objects...)
+	var order []ObjectID
+	for _, ref := range refs {
+		i := slices.IndexFunc(left, func(id ObjectID) bool { return string(g.Object(id).Card) == ref })
+		if i < 0 {
+			return nil, fmt.Errorf("situation: %q is not a card left to order", ref)
+		}
+		order = append(order, left[i])
+		left = slices.Delete(left, i, i+1)
+	}
+	return order, nil
+}
+
 // settle answers choices by label and lets everyone pass until the stack
 // is empty and the action is over.
 func (g *Game) settle(choices []string) ([]Event, error) {
@@ -288,6 +308,18 @@ func (g *Game) settle(choices []string) ([]Event, error) {
 			}
 			choices = choices[1:]
 			in = Intent{Player: w.Player, Kind: IntentChoose, Choice: i}
+		case w.Kind == PromptOrder:
+			if len(choices) < w.Count {
+				return out, fmt.Errorf("situation: an order of %d cards is needed, %d choices left", w.Count, len(choices))
+			}
+			order, err := g.OrderOf(choices[:w.Count])
+			if err != nil {
+				return out, err
+			}
+			choices = choices[w.Count:]
+			in = Intent{Player: w.Player, Kind: IntentOrder, Objects: order}
+		case w.Kind == PromptThrow:
+			in = Intent{Player: w.Player, Kind: IntentThrow}
 		case w.Kind == PromptPriority && (len(g.Stack) > 0 || g.Attack.On || g.Purchase.On):
 			in = Intent{Player: w.Player, Kind: IntentPass}
 		default:

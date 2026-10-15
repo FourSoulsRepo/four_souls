@@ -34,7 +34,10 @@ Use options 1 and 5.
 
 1. File
    1. Extension `.fsrec`; gzip stream of JSON lines.
-   2. Name: start time and game ID, e.g. `2026-10-10-120000-g3.fsrec`.
+   2. Name: start time, game ID, nicknames: `2026-10-10-120000-g3_Ann_Bob.fsrec`.
+   3. Nicknames keep letters and digits; other runs become `-` (`record.FileName`).
+   4. A seat with nothing left is `p1`, `p2`, ….
+   5. The app cleans the server's suggested name again (`record.SafeFileName`).
 2. Lines
    1. First a header: format, app, engine and protocol versions, game ID, start time.
    2. The header also holds the setup: seed, players, set codes, bonus souls, characters.
@@ -54,6 +57,7 @@ Use options 1 and 5.
 5. Replay
    1. Rebuild the engine setup from the header and the set codes.
    2. Apply the steps' intents; every checksum must match (`engine.Replay`).
+   3. Records of engines before 0.2.0 cannot replay (`engine.CanReplay`, ADR 014).
 
 ## Consequences
 

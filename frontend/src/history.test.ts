@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { entriesFor, stepName } from './history';
+import { entriesFor, lookedAt, stepName } from './history';
 
 const n = { player: (p: number) => ['Ann', 'Bo', 'Cy'].at(p) ?? '?', card: (ref: string) => ref.toUpperCase() };
 
@@ -22,6 +22,41 @@ describe('entriesFor', () => {
       { key: 11, turn: 4, icon: '✦', text: 'A_DIME', card: 'a_dime' },
       { key: 12, turn: 4, icon: '✦', text: 'Roll — attack roll (rolled 5)' },
     ]);
+  });
+
+  it('keeps the resolved stack item for the strip (15.22)', () => {
+    const item = { id: 3, kind: 0, controller: 1, source: 7, card: 'a_dime', target: { player: 0 }, ability: { card: 'a_dime', index: 0 }, roll_for: { card: '', index: 0 } };
+    const [entry] = entriesFor([{ kind: 'stack_resolved', player: 1, object: 7, card: 'a_dime', stack_id: 3, item }], 1, 0, n, 0);
+    expect(entry.item).toEqual(item);
+    expect(entriesFor([{ kind: 'looted', player: 0, card: 'a_dime' }], 1, 0, n, 0)[0]?.item).toBeUndefined();
+  });
+
+  it('shows a changed roll result next to its die', () => {
+    const item = { id: 3, kind: 3, controller: 1, source: 0, roll: 6, attack: true, target: { player: 0 }, ability: { card: '', index: 0 }, roll_for: { card: '', index: 0 } };
+    const [changed] = entriesFor(
+      [
+        { kind: 'stack_resolved', player: 1, amount: 6, text: 'attack roll', stack_id: 3, item },
+        { kind: 'roll_resolved', player: 1, amount: 4, text: 'attack' },
+      ],
+      1,
+      0,
+      n,
+      0,
+    );
+    expect(changed.text).toBe('Roll — attack roll (rolled 6 → 4)');
+    expect(changed.item?.roll).toBe(4);
+    expect(item.roll).toBe(6);
+    const [same] = entriesFor(
+      [
+        { kind: 'stack_resolved', player: 1, amount: 6, text: 'attack roll' },
+        { kind: 'roll_resolved', player: 1, amount: 6, text: 'attack' },
+      ],
+      1,
+      0,
+      n,
+      0,
+    );
+    expect(same.text).toBe('Roll — attack roll (rolled 6)');
   });
 
   it('keeps hidden loots hidden', () => {
@@ -47,5 +82,32 @@ describe('stepName', () => {
   it('names the turn steps', () => {
     expect(stepName(4)).toBe('Action');
     expect(stepName(99)).toBe('');
+  });
+});
+
+describe('lookedAt', () => {
+  it('gives the looker the cards, and others only that a card was seen (V-07)', () => {
+    const events = [
+      { kind: 'looked_at', player: 0, object: 9, card: 'a_dime', private: true },
+      { kind: 'looked_at', player: 1, private: true },
+      { kind: 'looted', player: 0, card: 'a_nickel' },
+    ];
+    expect(lookedAt(events, 0)).toEqual([{ id: 9, card: 'a_dime' }]);
+    expect(lookedAt(events, 1)).toEqual([]);
+    const mine = entriesFor(events, 1, 0, n, 0);
+    expect(mine[0]).toMatchObject({ text: 'You look at A_DIME', card: 'a_dime' });
+    expect(mine[1]?.text).toBe('Bo looks at a card');
+  });
+
+  it('shows a card looked at twice in one update once (19.13)', () => {
+    const events = [
+      { kind: 'looked_at', player: 0, object: 361, card: 'library_card', private: true },
+      { kind: 'looked_at', player: 0, object: 361, card: 'library_card', private: true },
+      { kind: 'looked_at', player: 0, object: 430, card: 'a_dime', private: true },
+    ];
+    expect(lookedAt(events, 0)).toEqual([
+      { id: 361, card: 'library_card' },
+      { id: 430, card: 'a_dime' },
+    ]);
   });
 });

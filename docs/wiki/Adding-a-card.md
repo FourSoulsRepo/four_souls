@@ -133,6 +133,7 @@ Useful tools, all in `enginetest` and `cards/b2/common_test.go`:
 * `Activate`, `Play`, `Attack`, `EndTurn`: act and settle; the strings answer the prompts in order.
 * `Start`, `Choose`, `Pass`: step by step, so another player can respond.
 * `tb.G.ForceRolls(6, 1, …)`: fix the next dice results.
+* Every roll waits for its roller's throw; the helpers throw for them. `ThrowPending` throws by hand.
 * `RevealFromDeck(card)`: put a monster deck card into play through an attack, for events.
 
 Run the tests and update the status report:

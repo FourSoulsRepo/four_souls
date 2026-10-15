@@ -12,7 +12,7 @@ Sources: S-OFF Game Zones; S-RU Игровые Зоны.
 8. **R-ZONE-08** A hand holds only loot cards and is hidden from other players; its size is public.
 9. **R-ZONE-09** Putting a non-loot card into a hand does nothing.
 10. **R-ZONE-10** A card under another card in a slot is **covered** and not in play. There is no limit to covered cards.
-11. **R-ZONE-11** When the covering object leaves play, the card below enters play again (ambushes and trinkets become monsters and items again).
+11. **R-ZONE-11** When the covering object leaves play, the card below enters play again (ambushes and trinkets become monsters and items again). It enters after the covering object left: a covered monster does not see the death of the one above it.
 12. **R-ZONE-12** Covered cards are public.
 13. **R-ZONE-13** **Outside the game** holds unused characters, starting items and bonus souls, removed cards, and cards put under an object outside a slot.
 14. **R-ZONE-14** Cards outside the game have no abilities, except the active bonus souls.

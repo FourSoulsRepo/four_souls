@@ -1,11 +1,17 @@
 // The app's one store (ADR 008). Screens read it; only bridge results
 // and server messages write it.
 import { create } from 'zustand';
+import type { Choice } from './actions';
 import {
   findGames,
   setFullscreen,
   getCards,
   getDice,
+  getBacks,
+  getFonts,
+  getSounds,
+  getIcons,
+  getMats,
   getCardSets,
   saveRecord,
   getSettings,
@@ -15,15 +21,23 @@ import {
   stopHosting,
   type DiceSkin,
   type HostInfo,
+  type Icons,
   type LanServer,
+  type MatInfo,
   type Settings,
 } from './bridge';
 import { noHostSetup } from './hostSetup';
-import type { CardInfo } from './cards';
-import { entriesFor, type Entry } from './history';
+import type { CardInfo, Kind } from './cards';
+import { loadFonts } from './fonts';
+import { entriesFor, lookedAt, type Entry, type Looked } from './history';
+import type { LinePart } from './stack';
+import type { Box } from './zoom';
 import { emptyLobby, leftTable, lost, onMessage, remember, type Screen, type Session } from './lobby';
 import { connect, disconnect, drop, send } from './net';
-import { createPlayback, effectsFor, type Effect } from './playback';
+import { claimEffect, nextBeat } from './animations';
+import { lastRollAfter, type LastRoll } from './dice';
+import { createPlayback, effectsFor, slotZone, type Effect } from './playback';
+import { loadSounds } from './sounds';
 import {
   protocolVersion,
   recordURL,
@@ -32,6 +46,7 @@ import {
   type Envelope,
   type Hello,
   type Intent,
+  type OptionView,
   type Update,
 } from './protocol';
 
@@ -42,7 +57,40 @@ export type { Screen } from './lobby';
 export interface Zoom {
   ref: string;
   touch: boolean;
-  side: 'left' | 'right';
+  // at is the hovered card or row; the zoom opens beside it (15.27).
+  at: Box;
+  // rise: a hand card's zoom rises from it instead (H-13).
+  rise?: boolean;
+  // caption goes below the card: who owns it, and the used ability's
+  // words, highlighted (S-06, S-07).
+  caption?: ZoomCaption;
+}
+
+export interface ZoomCaption {
+  owner?: string;
+  color?: string;
+  ability?: string;
+  // line says what a stack item without ability words did: whom an
+  // attack roll was against, who dealt damage to whom (15.22).
+  line?: LinePart[];
+}
+
+// Aiming is a click-started aim (15.25): the card, its play or use,
+// the targets it may pick, and why anything else is wrong (15.33).
+// A card already placed aims at its target prompt's options instead
+// of a play or use (15.34).
+export interface Aiming {
+  source: number;
+  intent?: Intent;
+  choice?: Choice;
+  targets: OptionView[];
+  reason?: string;
+}
+
+// Aimed is a played card's target, kept until the target prompt.
+export interface Aimed {
+  step: number;
+  target: OptionView;
 }
 
 // Playing is the effect on screen now; done ends it (playback.ts).
@@ -53,11 +101,27 @@ export interface Playing {
   done: () => void;
 }
 
+// Placed is a card a place effect left on its slot, at a screen point,
+// until the next view is shown (19.3).
+export interface Placed {
+  key: number;
+  card: string;
+  x: number;
+  y: number;
+}
+
 interface AppState extends Session {
   // playing is the event effect on screen, if any.
   playing: Playing | null;
+  placed: Placed[];
   // history is the match so far, as this viewer saw it (7.9).
   history: Entry[];
+  // lastRoll is the last roll shown, for the small die by the stack (15.63).
+  lastRoll: LastRoll | null;
+  // looking is the cards an effect lets this player look at, shown
+  // until endLook (V-07).
+  looking: Looked[];
+  endLook: () => void;
   // receive handles one server message.
   receive: (env: Envelope) => void;
   // behind is set while updates wait to be shown: the player acts only
@@ -69,8 +133,20 @@ interface AppState extends Session {
   // selected is the card whose action menu is open.
   selected: number | null;
   act: (intent: Intent) => void;
+  // aiming is the card the player aims with; its targets glow (15.25).
+  aiming: Aiming | null;
+  setAiming: (aiming: Aiming | null) => void;
+  // aimed is the target a card was aimed at, at the step its play was
+  // sent; the target prompt that follows picks it (15.25).
+  aimed: Aimed | null;
+  // playAt sends a play and remembers its target.
+  playAt: (intent: Intent, target: OptionView) => void;
+  // takeAimed returns aimed and forgets it.
+  takeAimed: () => Aimed | null;
   // skipAll turns "skip all" on or off (N-06).
   skipAll: (on: boolean) => void;
+  // waitTurn turns "wait for my turn" on or off (N-16).
+  waitTurn: (on: boolean) => void;
   // address is the server this app is connected to, for reconnecting.
   address: string;
   // reconnect says hello again with the seat's token (N-08).
@@ -92,6 +168,12 @@ interface AppState extends Session {
   cards: Map<string, CardInfo>;
   // dice are the dice looks (V-19); empty until loaded.
   dice: DiceSkin[];
+  // mats are the mat images (V-24); empty until loaded or without images.
+  mats: MatInfo[];
+  // backs are the deck back images by kind (V-26); a missing kind is plain.
+  backs: Map<Kind, string>;
+  // icons are the game's own icon images (15.38); '' draws our own.
+  icons: Icons;
   zoom: Zoom | null;
   loadCards: () => Promise<void>;
   setZoom: (zoom: Zoom | null) => void;
@@ -109,6 +191,9 @@ interface AppState extends Session {
   // host runs the server in this app and opens a game on it; sets
   // defaults to every set this app has.
   host: (game: Omit<Create, 'sets'> & { sets?: string[] }) => Promise<void>;
+  // createGame opens a game on the connected server, which runs
+  // elsewhere (N-17); sets defaults to every set this app has.
+  createGame: (game: Omit<Create, 'sets'> & { sets?: string[] }) => void;
   // hostSaved runs the server in this app and shows its games and saved
   // games, to continue one (N-11).
   hostSaved: () => Promise<void>;
@@ -161,6 +246,7 @@ export const useApp = create<AppState>()((set, get) => {
     card: (ref: string) => get().cards.get(ref)?.name ?? ref,
   });
   const playback = createPlayback({
+    begin: nextBeat,
     show: (u) => {
       const s = get();
       const entries = entriesFor(
@@ -170,10 +256,23 @@ export const useApp = create<AppState>()((set, get) => {
         names(u),
         (s.history.at(-1)?.key ?? 0) + 1,
       );
-      set({ game: u, behind: playback.pending() > 0, history: [...s.history, ...entries] });
+      const looked = lookedAt(u.events ?? [], seatOf(s));
+      set({
+        game: u,
+        placed: [],
+        behind: playback.pending() > 0,
+        history: [...s.history, ...entries],
+        lastRoll: lastRollAfter(s.lastRoll, u.events ?? []),
+        ...(looked.length > 0 ? { looking: looked } : {}),
+      });
     },
     run: (effect, scale) =>
       new Promise((resolve) => {
+        // A clashing effect is logged and skipped (19.6).
+        if (!claimEffect(effect)) {
+          resolve();
+          return;
+        }
         const key = ++effectKey;
         const done = () => {
           window.clearTimeout(timer);
@@ -190,6 +289,9 @@ export const useApp = create<AppState>()((set, get) => {
       effectsFor(u.events ?? [], {
         card: (ref) => get().cards.get(ref),
         name: names(u).player,
+        character: (p) => u.view.players.find((x) => x.id === p)?.character.id,
+        slot: (id) => slotZone(u.view, id),
+        seen: (ref) => (get().game?.events ?? []).some((e) => e.kind === 'card_revealed' && e.card === ref),
       }),
     speed: () => get().settings.animation,
     shown: () => get().game,
@@ -209,7 +311,7 @@ export const useApp = create<AppState>()((set, get) => {
   const stopPlayback = () => {
     playback.clear();
     get().playing?.done();
-    set({ history: [] });
+    set({ history: [], lastRoll: null, looking: [], placed: [] });
   };
 
   // open connects to address and says hello; the server answers with
@@ -253,6 +355,7 @@ export const useApp = create<AppState>()((set, get) => {
         role: 'player',
         sets,
         ...(token ? { token } : {}),
+        dice: get().settings.dice,
       };
       send('hello', hello);
       return true;
@@ -264,7 +367,13 @@ export const useApp = create<AppState>()((set, get) => {
 
   return {
     playing: null,
+    placed: [],
     history: [],
+    lastRoll: null,
+    looking: [],
+    endLook: () => {
+      set({ looking: [] });
+    },
     behind: false,
     sent: null,
     selected: null,
@@ -278,9 +387,10 @@ export const useApp = create<AppState>()((set, get) => {
         playback.push(env.data as Update);
       }
       if (env.type === 'error') {
-        set({ sent: null });
+        set({ sent: null, aimed: null });
       }
       if (env.type === 'table') {
+        set({ aiming: null, aimed: null });
         keepSeat();
       }
     },
@@ -288,8 +398,25 @@ export const useApp = create<AppState>()((set, get) => {
       send('intent', { intent });
       set({ sent: get().game?.step ?? null, selected: null, error: '' });
     },
+    aiming: null,
+    setAiming: (aiming) => {
+      set({ aiming, selected: null });
+    },
+    aimed: null,
+    playAt: (intent, target) => {
+      get().act(intent);
+      set({ aiming: null, aimed: { step: get().game?.step ?? 0, target } });
+    },
+    takeAimed: () => {
+      const { aimed } = get();
+      set({ aimed: null });
+      return aimed;
+    },
     skipAll: (on) => {
       send('skip_all', { on });
+    },
+    waitTurn: (on) => {
+      send('wait_turn', { on });
     },
     address: '',
     reconnect: async () => {
@@ -327,7 +454,7 @@ export const useApp = create<AppState>()((set, get) => {
       animation: 'normal',
       fullscreen: false,
       theme: 'dark',
-      mat: 'felt',
+      mat: '',
       dice: 'tear',
       rejoin: { address: '', token: '', game: '' },
       host: noHostSetup,
@@ -338,11 +465,30 @@ export const useApp = create<AppState>()((set, get) => {
     cardSets: [],
     cards: new Map(),
     dice: [],
+    mats: [],
+    backs: new Map(),
+    icons: { coin: '', sword: '' },
     zoom: null,
     loadCards: async () => {
       try {
-        const [list, dice] = await Promise.all([getCards(), getDice()]);
-        set({ cards: new Map(list.map((c) => [c.ref, c])), dice });
+        const [list, dice, mats, backs, icons, fonts, sounds] = await Promise.all([
+          getCards(),
+          getDice(),
+          getMats(),
+          getBacks(),
+          getIcons(),
+          getFonts(),
+          getSounds(),
+        ]);
+        loadFonts(fonts);
+        loadSounds(sounds);
+        set({
+          cards: new Map(list.map((c) => [c.ref, c])),
+          dice,
+          mats,
+          backs: new Map(backs.filter((b) => b.image !== '').map((b) => [b.kind, b.image])),
+          icons,
+        });
       } catch (e) {
         set({ error: `Card data: ${messageOf(e)}` });
       }
@@ -404,6 +550,9 @@ export const useApp = create<AppState>()((set, get) => {
       if (info && (await open(`127.0.0.1:${String(info.port)}`))) {
         send('create', { ...game, sets: game.sets ?? get().cardSets });
       }
+    },
+    createGame: (game) => {
+      send('create', { ...game, sets: game.sets ?? get().cardSets });
     },
     hostSaved: async () => {
       const info = await startHost();

@@ -8,6 +8,13 @@
   text-align: center;
 }
 
+.splash h1 {
+  font-family: var(--font-title);
+  font-size: 56px;
+  /* Bold for the system font; the game font has no bold face. */
+  font-synthesis: none;
+}
+
 .splash-notice {
   max-width: 640px;
   color: var(--muted);

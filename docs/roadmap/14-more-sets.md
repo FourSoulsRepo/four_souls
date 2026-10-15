@@ -3,7 +3,7 @@
 Goal: official sets beyond the Base Game.
 Order: Gold Box, Four Souls+, Requiem, Warp Zone, promos.
 
-Ideas: CD-02, GS-07, GS-08, CD-11, A-16, CD-12.
+Ideas: CD-02, GS-07, GS-08, CD-11, A-16, CD-12, V-32, GS-12, GS-13, GS-01.
 
 ---
 
@@ -115,3 +115,120 @@ Alt art (CD-11) comes after all sets.
    4. The host screen remembers the last setup in the settings.
    5. IDs `a_penny_6`, `dice_shard_3`, `soul_heart_2` became `a_penny`, `dice_shard`, `soul_heart`.
    6. Old saved games with those IDs no longer load.
+
+### [ ] 14.7 Switch reprint art
+
+1. Goal: a player picks which print of a card they see (V-32).
+2. Tasks:
+   1. Only characters and eternal items with reprints.
+   2. Right click, or long tap on touch, cycles the art.
+   3. Needs the per-copy art from 14.5.
+   4. **Owner** decides: only prints from enabled sets, or every print.
+   5. **Owner** decides: only the viewer sees it, or everyone.
+   6. Card text and stats never change; it is only the image.
+3. Done when:
+   1. e2e test: a right click on a reprinted character changes its image.
+   2. A card without reprints ignores the click.
+   3. Use case.
+
+### [ ] 14.8 House rule: no damage loops at 0 HP
+
+1. Goal: the host may stop damage loops at 0 HP for a match (GS-12).
+2. Tasks:
+   1. Detailed setup: a checkbox, off by default.
+   2. A hint next to it explains the rule in plain words.
+   3. Hint text: damage to a player at 0 HP no longer fires "take damage" effects.
+   4. Hint example: Forever Alone with Gurdy Jr. stops looping.
+   5. Engine: a setup flag; R-MECH-51 skips the triggers when it is on.
+   6. The flag goes into the record header and saved games.
+   7. The game list and the table show that the house rule is on.
+3. Done when:
+   1. Engine test: Forever Alone with Gurdy Jr. loops when off, not when on.
+   2. Server test: the flag reaches the game.
+   3. e2e test: the checkbox and its hint.
+   4. Use case for the option; Q-13 updated.
+
+### [x] 14.9 Host bans cards
+
+1. Goal: the host leaves chosen cards out of the game (GS-13).
+2. Tasks:
+   1. Detailed setup: pick cards to ban, from the chosen sets.
+   2. Banned cards are never in a deck and never dealt.
+   3. The ban list goes into the record header and saved games.
+   4. The game list and the table show the ban list.
+3. Done when:
+   1. Engine test: a banned card is in no deck.
+   2. Server test: the ban list reaches the game.
+   3. e2e test: ban a card in the host screen.
+   4. Use case for the option.
+4. Split (owner, 2026-10-15):
+   1. This step: engine and server only; no host screen yet.
+   2. Host screen, game list, table, their e2e test, use case: 14.12.
+5. Result (2026-10-15):
+   1. `engine.Setup.Banned`: no copy goes into a deck, none is dealt.
+   2. The list stays in `Game.Banned`, so saved games keep it.
+   3. `host_bans` takes any card of the sets, not only characters.
+   4. A starting item cannot be banned; ban its character.
+   5. A ban that leaves a deck too small is refused (`bad_setup`).
+   6. The record header has `setup.banned`.
+   7. Tests: `TestBannedCardsAreLeftOut`, `TestHostBansAnyCard`.
+   8. UC-05 updated: host bans of any card.
+6. Owner notes (2026-10-15)
+   1. Owner marks 14.9 solved; the host screen goes on in 14.12.
+
+### [x] 14.10 Tests deal without stat-changing monsters
+
+1. Goal: e2e tests stop failing on unlucky deals.
+2. Found in 15.3 (2026-10-13):
+   1. The 15.23 badge test expects no badge on a fresh monster.
+   2. Delirium and Stoney give other monsters +1 DC.
+   3. Dealt into a slot, they put a dice badge on the first monster.
+   4. A probe: 3 of 120 deals failed the check (2.5%).
+3. Tasks:
+   1. Depends on 14.9; use its bans, no test-only deal code.
+   2. Tests that check monster stats ban such monsters.
+   3. Find the list in card statics: each monster that changes others.
+   4. Base Game: Delirium, Stoney; then each new set.
+4. Done when:
+   1. The 15.23 test bans them and checks the untouched monster.
+   2. Many deals in a row show no stat badge on a fresh monster.
+5. Result (2026-10-15):
+   1. `startGame` takes `bans`; Playwright adds them to `create`.
+   2. `statMonsters` in `e2e/tests/game.ts`: Delirium, Stoney.
+   3. The 15.23 test bans them.
+   4. `TestStatMonsterBans`: 400 deals, no fresh monster changed.
+   5. It also fails if the Base Game gets a new such monster.
+   6. Gold Box and Four Souls+: e2e tests play the Base Game only.
+6. Owner notes (2026-10-15)
+   1. Owner marks 14.10 solved.
+   2. Rule: a test bans only the cards it needs, each with a reason.
+
+### [ ] 14.11 Draft pick screen
+
+1. Goal: normal games can use draft picking (GS-01).
+2. Tasks:
+   1. The server part is done in 6.6 (UC-05); this is the client.
+   2. Detailed setup: picking (random or draft) and draft size.
+   3. Pick screen: each player sees only their own offers.
+   4. A click on a character picks it.
+   5. Others see who has picked, not what.
+   6. Without card images, the offers show as text cards.
+   7. No bans here; ban rounds stay with the tournament tools.
+3. Done when:
+   1. e2e test: host a draft game, each player picks, the game starts.
+   2. UC-05 updated; use case for the pick screen.
+
+### [ ] 14.12 Ban list in the host screen
+
+1. Goal: the host picks banned cards in the app (GS-13).
+2. Tasks:
+   1. Engine and server are done in 14.9; this is the client.
+   2. Detailed setup: pick cards to ban, from the chosen sets.
+   3. Unchecking a set drops its cards from the list.
+   4. Starting items are not offered; their character is.
+   5. Without card images, the picker shows text cards.
+   6. The game list and the table show the ban list.
+3. Done when:
+   1. e2e test: ban a card in the host screen; it is in no deck.
+   2. e2e test: the table shows the ban list to every player.
+   3. Use case for the option.

@@ -23,6 +23,7 @@ const (
 	ChooseCopyAbility                       // the ↷ ability a loot card copies ("? Card")
 	ChooseDie                               // which of several dice is the result (Mutant Spider)
 	ChooseRedirect                          // which monster another player attacks (Mom\'s Eye Shadow)
+	ChooseOrder                             // the order of cards put back on a deck (PromptOrder, 19.16)
 )
 
 // Choice is an open question to one player. Options are listed in the
@@ -33,6 +34,8 @@ type Choice struct {
 	Rule         string           `json:"rule"`
 	Replacements []ReplacementRef `json:"replacements,omitempty"`
 	Objects      []ObjectID       `json:"objects,omitempty"`
+	// Previews say what each order of Replacements gives (19.17).
+	Previews []ReplacementPreview `json:"previews,omitempty"`
 	// Deck adds the monster deck as the last option (attack targets).
 	Deck bool `json:"deck,omitempty"`
 	// Slots are monster slot indexes (where a revealed card goes).
@@ -50,6 +53,9 @@ type Choice struct {
 	Ask *Asking `json:"ask,omitempty"`
 	// Question is the text of the question, for display.
 	Question string `json:"question,omitempty"`
+	// Subject is the card the question is about; only the chooser sees
+	// it (19.11).
+	Subject ObjectID `json:"subject,omitempty"`
 	// Owner is whose death penalty a penalty choice is for; To, if not
 	// NoPlayer, gains the discarded loot card instead (Shadow).
 	Owner PlayerID `json:"owner"`
@@ -116,6 +122,8 @@ func (g *Game) answer(i int) {
 			return
 		}
 		g.startActivation(Activation{Player: c.Player, Source: c.Objects[0], Loot: true, Ability: c.Abilities[i]})
+	case ChooseOrder:
+		// Answered with IntentOrder (answerOrder), never by index.
 	case ChooseRecharge:
 		g.Object(c.Objects[i]).Charged = true
 		g.emit(Event{Kind: EvRecharged, Player: c.Player})

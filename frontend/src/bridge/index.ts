@@ -2,17 +2,22 @@
 // Everything else imports from here, so a move to Wails v3 or a browser
 // build replaces this folder and nothing else (A-14).
 import { noHostSetup, type HostSetup } from '../hostSetup';
-import type { CardInfo } from '../cards';
+import type { CardInfo, Kind } from '../cards';
 import type { Speed } from '../playback';
 import {
+  Backs as wailsBacks,
   Cards as wailsCards,
   CardSets as wailsCardSets,
   Dice as wailsDice,
   FindGames as wailsFindGames,
+  Fonts as wailsFonts,
+  Icons as wailsIcons,
+  Mats as wailsMats,
   Notice as wailsNotice,
   SaveRecord as wailsSaveRecord,
   SaveSettings as wailsSaveSettings,
   Settings as wailsSettings,
+  Sounds as wailsSounds,
   Versions as wailsVersions,
 } from '../../wailsjs/go/main/App';
 import { settings } from '../../wailsjs/go/models';
@@ -40,7 +45,7 @@ export interface Settings {
   animation: Speed;
   fullscreen: boolean; // ST-01
   theme: Theme; // ST-02, menus and panels
-  mat: Mat; // ST-03
+  mat: string; // ST-03, V-24: a MatInfo or color mat id, '' for the default; Go checks it
   dice: string; // V-19, a DiceSkin id; Go checks it
   // rejoin is the last game joined, so a restarted app takes its seat
   // back (N-08).
@@ -56,7 +61,6 @@ export interface Rejoin {
 }
 
 export type Theme = 'dark' | 'light';
-export type Mat = 'felt' | 'basement' | 'cathedral';
 
 // fromGo reads Go's settings; Go checks the choices, so anything else is
 // only possible from an older app.
@@ -77,7 +81,7 @@ function fromGo(s: {
     animation: speed(s.animation),
     fullscreen: s.fullscreen,
     theme: s.theme === 'light' ? 'light' : 'dark',
-    mat: s.mat === 'basement' || s.mat === 'cathedral' ? s.mat : 'felt',
+    mat: s.mat,
     dice: s.dice,
     rejoin: { address: s.rejoin.address, token: s.rejoin.token, game: s.rejoin.game },
     host: s.host ? { ...noHostSetup, ...s.host } : noHostSetup,
@@ -128,6 +132,7 @@ export function getCards(): Promise<CardInfo[]> {
 export interface DiceSkin {
   id: string;
   name: string;
+  set: string; // "Holy" or "Unholy", for the settings menu
   // image is the texture URL (see Die); '' when missing: a plain die.
   image: string;
 }
@@ -135,6 +140,68 @@ export interface DiceSkin {
 // getDice returns every dice look the app knows.
 export function getDice(): Promise<DiceSkin[]> {
   return wailsDice();
+}
+
+// CardBack is the back image of one deck (V-26).
+export interface CardBack {
+  kind: Kind;
+  image: string; // URL; '' when missing: a plain back
+}
+
+// getBacks returns the deck backs; images are '' without the private images.
+export async function getBacks(): Promise<CardBack[]> {
+  // Go sends only deck kinds, so the cast is safe.
+  return (await wailsBacks()) as CardBack[];
+}
+
+// Icons are the game's own small images (15.38); each URL is '' without
+// the private images, and the app draws its own.
+export interface Icons {
+  coin: string;
+  sword: string;
+}
+
+// getIcons returns the icon URLs.
+export function getIcons(): Promise<Icons> {
+  return wailsIcons();
+}
+
+// Fonts are the game's own fonts (15.20); each URL is '' without the
+// private images, and the app uses the system font.
+export interface Fonts {
+  title: string;
+  body: string;
+  cyrillic: string;
+}
+
+// getFonts returns the font URLs.
+export function getFonts(): Promise<Fonts> {
+  return wailsFonts();
+}
+
+// Sounds are the damage sounds (15.50); each URL is '' without the
+// private images, and that sound stays silent.
+export interface Sounds {
+  attackHit: string;
+  effectCast: string;
+  effectImpact: string;
+}
+
+// getSounds returns the sound URLs.
+export function getSounds(): Promise<Sounds> {
+  return wailsSounds();
+}
+
+// MatInfo is one game mat image (ST-03, V-24).
+export interface MatInfo {
+  id: string;
+  name: string;
+  image: string; // URL; '' for a color mat
+}
+
+// getMats returns the mat images; empty without the private images.
+export function getMats(): Promise<MatInfo[]> {
+  return wailsMats();
 }
 
 // startHosting runs the game server inside the app. If it runs already,

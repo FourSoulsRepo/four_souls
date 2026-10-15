@@ -2,7 +2,7 @@
 // Only what the client uses so far; protocol.test.ts checks these types
 // against Go's golden file. Go sends a nil list as null.
 
-export const protocolVersion = 1;
+export const protocolVersion = 3;
 export const defaultPort = 4774;
 
 export interface Envelope {
@@ -18,6 +18,7 @@ export interface Hello {
   role: 'player' | 'spectator' | 'judge';
   sets: string[];
   token?: string;
+  dice?: string; // the player's dice look (V-19)
 }
 
 export interface Welcome {
@@ -26,6 +27,8 @@ export interface Welcome {
   engine: string;
   token: string;
   seat: number;
+  // create is set when this app may open a game on the server (N-17).
+  create?: boolean;
 }
 
 export interface ProtocolError {
@@ -96,6 +99,8 @@ export interface Seat {
   connected: boolean;
   ready?: boolean;
   kicked?: boolean;
+  // dice is the seat's dice look (V-19); none draws the default one.
+  dice?: string;
 }
 
 export interface Table {
@@ -172,6 +177,28 @@ export interface CardView {
   charged: boolean;
   damage?: number;
   counters?: { name?: string; count: number }[];
+  stats?: MonsterStats; // only on monsters
+  // abilities: each ability's words by the activate intent's choice;
+  // only on a played card with two or more to pick from (C-05).
+  abilities?: string[];
+  // souls: the soul value the card adds to its owner, on a soul in play
+  // or a character; older servers send none (V-43).
+  souls?: number;
+}
+
+// counted is how many counters a card carries, of any kind.
+export function counted(c: CardView): number {
+  return (c.counters ?? []).reduce((n, x) => n + x.count, 0);
+}
+
+// MonsterStats are a monster's stats now and as printed (C-03).
+export interface MonsterStats {
+  hp: number;
+  dc: number;
+  atk: number;
+  printed_hp: number;
+  printed_dc: number;
+  printed_atk: number;
 }
 
 export interface SlotView {
@@ -189,7 +216,7 @@ export interface PlayerView {
   dead?: boolean;
   in_play: CardView[] | null;
   hand_size: number;
-  hand?: CardView[]; // only the viewer's own hand
+  hand?: CardView[]; // the viewer's own hand, or one revealed to all (Guppy's Eye)
   treasure_top?: CardView;
   // What the player may still do now; attacks and purchases on their turn.
   loot_plays: number;
@@ -258,6 +285,12 @@ export interface StackItem {
   event_object?: number;
   reward?: number;
   checked?: number;
+  // text is the used ability's words, or its chosen mode's (15.21).
+  text?: string;
+  // source_card and target_card name the cards of source and target
+  // while anyone may see them (15.22).
+  source_card?: string;
+  target_card?: string;
 }
 
 export interface Prompt {
@@ -276,13 +309,26 @@ export interface GameView {
   deck_sizes: number[];
   discards: (CardView[] | null)[];
   bonus_souls?: CardView[];
+  // revealed is the card a deck attack drew, until its slot is picked (19.9).
+  revealed?: CardView;
+  // subject is the card the open question is about, e.g. the deck top
+  // a player looks at; only for the chooser (19.11).
+  subject?: CardView;
+  // ordering are the cards of an open order prompt, in their order now;
+  // only for the chooser (19.16).
+  ordering?: CardView[];
   stack: StackItem[] | null;
   turn: Turn;
   waiting: Prompt;
   over?: boolean;
   winners?: number[];
+  // win_souls is the soul value that wins; older servers send none (V-30).
+  win_souls?: number;
   // options says what each choice option points at; only for the chooser.
   options?: OptionView[];
+  // activating is the card whose mode or targets the chooser picks now
+  // (15.34); only for the chooser.
+  activating?: number;
   // Who passed in a row in the open priority window, and who may still
   // respond, the waiting player first (V-11).
   passed?: number[];
@@ -296,6 +342,25 @@ export interface OptionView {
   is_player?: boolean;
   deck?: boolean;
   stack_id?: number;
+  // outcome is what the option leads to, when the engine can tell
+  // (replacement order, 19.17).
+  outcome?: OutcomeView;
+}
+
+// OutcomeView is what an order of replacements gives (19.17): what then
+// happens, the cards whose effect no longer applies, or that the player
+// orders the rest next.
+export interface OutcomeView {
+  actions?: { kind: number; player: number; amount: number; card?: string }[];
+  unused?: string[];
+  again?: boolean;
+}
+
+// Aim is what the allowed intent at index intent asks to target first.
+export interface Aim {
+  intent: number;
+  targets: OptionView[];
+  reason?: string; // what it may target, for a wrong click (15.33)
 }
 
 export interface Intent {
@@ -318,6 +383,8 @@ export interface GameEvent {
   prev?: number;
   source?: number;
   stack_id?: number;
+  // item: the stack item that resolved, on stack_resolved (15.22).
+  item?: StackItem;
 }
 
 export interface Vote {
@@ -336,8 +403,10 @@ export interface Update {
   events: GameEvent[] | null;
   view: GameView;
   allowed: Intent[] | null;
+  aims?: Aim[]; // the first targets of allowed plays and uses (15.25)
   seats: Seat[] | null;
   deadline?: number; // Unix ms; the response timer
   skip_all?: boolean;
+  wait_turn?: boolean;
   pause?: Pause;
 }

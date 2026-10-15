@@ -11,6 +11,13 @@ type Question struct {
 	// Random: nobody answers; the game picks an option at random
 	// ("choose a player at random").
 	Random bool
+	// Subject, if set, is the card the question is about, e.g. the deck
+	// top a player looks at; the chooser sees it while deciding (19.11).
+	Subject func(c *Ctx, answers []int) ObjectID
+	// Order, if set, makes this an order question (19.16): the chooser
+	// puts these cards in order, top first, in one answer. Its answer
+	// is 0; do reads the order from c.Order. No cards skips it (-1).
+	Order func(c *Ctx, answers []int) []ObjectID
 }
 
 type askEffect struct {
@@ -40,6 +47,8 @@ type Asking struct {
 	Source     ObjectID `json:"source"`
 	Targets    []Chosen `json:"targets,omitempty"`
 	Answers    []int    `json:"answers,omitempty"`
+	// Order is the answer of an order question, top first.
+	Order []ObjectID `json:"order,omitempty"`
 	// EventPlayer and EventAmount come from the trigger, if any.
 	EventPlayer PlayerID `json:"event_player,omitempty"`
 	EventAmount int      `json:"event_amount,omitempty"`
@@ -75,7 +84,8 @@ func (a *Asking) ctx(g *Game) *Ctx {
 	return &Ctx{
 		G: g, Controller: a.Controller, Source: a.Source, Targets: a.Targets,
 		EventPlayer: a.EventPlayer, EventAmount: a.EventAmount, EventStack: a.EventStack, EventObject: a.EventObject, EventSource: a.EventSource,
-		ref: a.Ability, mode: a.Mode, roll: a.RollResult, effect: a.Effect,
+		Order: a.Order,
+		ref:   a.Ability, mode: a.Mode, roll: a.RollResult, effect: a.Effect,
 	}
 }
 
@@ -97,6 +107,12 @@ func (g *Game) continueAsk(a *Asking) {
 	c := a.ctx(g)
 	for len(a.Answers) < len(e.questions) {
 		q := e.questions[len(a.Answers)]
+		if q.Order != nil {
+			if g.askOrder(a, q, c) {
+				return
+			}
+			continue
+		}
 		opts := q.Options(c, a.Answers)
 		if len(opts) == 0 {
 			a.Answers = append(a.Answers, -1)
@@ -112,7 +128,11 @@ func (g *Game) continueAsk(a *Asking) {
 		if q.Player != nil {
 			who = q.Player(c, a.Answers)
 		}
-		g.ask(Choice{Purpose: ChooseAnswer, Player: who, Rule: "R-ABIL-05", Ask: a, Question: q.Text}, opts)
+		ch := Choice{Purpose: ChooseAnswer, Player: who, Rule: "R-ABIL-05", Ask: a, Question: q.Text}
+		if q.Subject != nil {
+			ch.Subject = q.Subject(c, a.Answers)
+		}
+		g.ask(ch, opts)
 		return
 	}
 	// What the effect queues goes before the rest of the queue.
@@ -121,6 +141,37 @@ func (g *Game) continueAsk(a *Asking) {
 	delete(g.asks, a.Key)
 	e.do(c, a.Answers)
 	g.Queue = append(g.Queue, rest...)
+}
+
+// askOrder opens the order prompt of q and reports true, or answers it
+// at once when there is nothing to order: no cards (-1) or one (0).
+func (g *Game) askOrder(a *Asking, q Question, c *Ctx) bool {
+	cards := q.Order(c, a.Answers)
+	switch len(cards) {
+	case 0:
+		a.Answers = append(a.Answers, -1)
+		return false
+	case 1:
+		a.Order = cards
+		a.Answers = append(a.Answers, 0)
+		return false
+	}
+	who := a.Controller
+	if q.Player != nil {
+		who = q.Player(c, a.Answers)
+	}
+	g.Choice = &Choice{Purpose: ChooseOrder, Player: who, Rule: "R-ABIL-05", Ask: a, Question: q.Text, Objects: cards}
+	g.Waiting = Prompt{Kind: PromptOrder, Player: who, Count: len(cards), Purpose: ChooseOrder, Text: q.Text}
+	return true
+}
+
+// answerOrder carries out the order the chooser sent, top first.
+func (g *Game) answerOrder(order []ObjectID) {
+	c := *g.Choice
+	g.Choice, g.Waiting = nil, Prompt{}
+	c.Ask.Order = append([]ObjectID(nil), order...)
+	c.Ask.Answers = append(c.Ask.Answers, 0)
+	g.continueAsk(c.Ask)
 }
 
 func (g *Game) answerAsk(c Choice, i int) {

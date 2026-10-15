@@ -1,7 +1,26 @@
 // Event playback and animations (7.6).
-import { expect, test } from '@playwright/test';
+import type { Page } from '@playwright/test';
+import { expect, test } from './fixtures';
 import { startGame } from './game';
 import { shot } from './shot';
+
+// listenSounds records the file of every sound played from now on, in
+// window.played (15.50). Each sound still plays.
+async function listenSounds(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const w = window as unknown as { played: string[] };
+    w.played = [];
+    const play = HTMLMediaElement.prototype.play;
+    HTMLMediaElement.prototype.play = function (this: HTMLMediaElement) {
+      w.played.push(new URL(this.src).pathname);
+      return play.call(this);
+    };
+  });
+}
+
+function played(page: Page): Promise<string[]> {
+  return page.evaluate(() => (window as unknown as { played: string[] }).played);
+}
 
 test('the animation speed setting survives a restart', async ({ page }) => {
   await page.goto('/?fake&nosplash');
@@ -58,9 +77,446 @@ test('a fast burst of updates plays in order and ends on the last one', async ({
   await expect(kai.getByTestId('effect-dice')).toBeVisible();
   await kai.waitForTimeout(300); // let the dice settle for the picture
   await shot(kai, 'effect-dice');
-  await expect(kai.getByTestId('effect-fly')).toBeVisible();
+  // A fly plays between throws only briefly in a fast burst: look for it
+  // on every frame (15.62).
+  await kai.waitForFunction(() => document.querySelector('[data-testid="effect-fly"]') !== null);
   await expect(kai.getByRole('main', { name: 'Turn 21' })).toBeVisible({ timeout: 20_000 });
   await expect(kai.locator('.effects')).toHaveCount(0);
   await expect(character).toHaveAttribute('data-mark', 'kept');
   await expect(character).toHaveCSS('opacity', '1');
+});
+
+test('a thrown die falls, bounces and lands on the engine\'s value (15.62)', async ({ browser }) => {
+  const [mira] = await startGame(browser, ['Mira', 'Noor']);
+  if (!mira) {
+    throw new Error('no pages');
+  }
+  // Replay the view with one fresh attack roll of a 4.
+  await mira.evaluate(() => {
+    interface Store {
+      getState: () => {
+        game: { step: number } | null;
+        lobby: { table: { you: number } | null };
+        receive: (env: unknown) => void;
+      };
+    }
+    const s = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store.getState();
+    const game = structuredClone(s.game);
+    if (!game) {
+      throw new Error('no game');
+    }
+    const you = s.lobby.table?.you ?? 0;
+    s.receive({ type: 'update', data: { ...game, step: game.step + 1, events: [{ kind: 'dice_rolled', player: you, amount: 4, text: 'attack roll' }] } });
+  });
+  const thrown = mira.getByTestId('thrown-die');
+  await expect(thrown).toBeAttached();
+  // seek holds the throw at a part of its length.
+  const seek = (at: number) =>
+    thrown.evaluate((el, part) => {
+      for (const a of el.getAnimations()) {
+        a.pause();
+        a.currentTime = part * Number(a.effect?.getTiming().duration ?? 0);
+      }
+    }, at);
+  // In the air: still falling, well above where it lands. The die says
+  // the engine's value from the start.
+  await seek(0.15);
+  const air = await thrown.boundingBox();
+  const middle = (mira.viewportSize()?.height ?? 0) / 2;
+  expect(air && air.y + air.height / 2).toBeLessThan(middle - 100);
+  await expect(thrown.locator('.die')).toHaveAttribute('aria-label', 'Rolled 4');
+  await shot(mira, 'dice-in-air');
+  // Landed: it lies still in the middle, with the roll's name below.
+  await seek(0.75);
+  const landed = await thrown.boundingBox();
+  expect(landed && Math.abs(landed.y + landed.height / 2 - middle)).toBeLessThan(80);
+  await expect(mira.getByTestId('effect-dice')).toContainText('attack roll');
+  await expect(thrown.locator('.die')).toHaveAttribute('aria-label', 'Rolled 4');
+  await shot(mira, 'dice-landed');
+  await thrown.evaluate((el) => {
+    for (const a of el.getAnimations()) {
+      a.play();
+    }
+  });
+  await expect(mira.locator('.effects')).toHaveCount(0);
+});
+
+test('an attack lunges at the monster and drops its HP at the hit', async ({ browser }) => {
+  const [vee] = await startGame(browser, ['Vee', 'Wyn']);
+  if (!vee) {
+    throw new Error('no pages');
+  }
+  await listenSounds(vee);
+  // Replay the view with one hit of the own character on the first
+  // monster, whose HP is one lower after it.
+  const ids = await vee.evaluate(() => {
+    interface Card {
+      id: number;
+      stats?: { hp: number };
+    }
+    interface Store {
+      getState: () => {
+        game: { view: { players: { id: number; character: Card }[]; monsters: { top?: Card }[] } } | null;
+        lobby: { table: { you: number } | null };
+        receive: (env: unknown) => void;
+      };
+    }
+    const store = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store;
+    const s = store.getState();
+    const game = structuredClone(s.game);
+    const you = s.lobby.table?.you ?? 0;
+    const character = game?.view.players.find((p) => p.id === you)?.character;
+    const monster = game?.view.monsters.find((m) => m.top?.stats)?.top;
+    if (!game || !character || !monster?.stats) {
+      throw new Error('no game');
+    }
+    const hp = monster.stats.hp;
+    monster.stats.hp = hp - 1;
+    s.receive({
+      type: 'update',
+      data: {
+        ...game,
+        step: 2,
+        events: [{ kind: 'damaged', player: -1, object: monster.id, amount: 1, source: character.id, text: 'combat' }],
+      },
+    });
+    return { character: character.id, monster: monster.id, hp };
+  });
+  const character = vee.locator(`[data-zone="obj-${String(ids.character)}"]`);
+  const monster = vee.locator(`[data-zone="obj-${String(ids.monster)}"]`);
+  // The card's copy flies; the card itself waits hidden at home.
+  await expect(vee.getByTestId('lunge')).toBeVisible();
+  await expect(character).toBeHidden();
+  if (process.env.SCREENSHOTS) {
+    // Hold the copy on its way into the monster for the picture.
+    const lunge = vee.getByTestId('lunge');
+    await lunge.evaluate((el) => {
+      for (const a of el.getAnimations()) {
+        a.pause();
+        a.currentTime = 0.42 * Number(a.effect?.getTiming().duration ?? 0);
+      }
+    });
+    await shot(vee, 'attack-lunge');
+    await lunge.evaluate((el) => {
+      for (const a of el.getAnimations()) {
+        a.play();
+      }
+    });
+  }
+  await expect(vee.getByTestId('burst')).toHaveText('−1');
+  // The hit lands with the attack hit sound.
+  expect(await played(vee)).toEqual(['/cardimg/assets/sounds/attack-hit.mp3']);
+  await vee.waitForTimeout(200); // the burst pops
+  await shot(vee, 'attack-hit');
+  await expect(monster.getByLabel(`${String(ids.hp - 1)} health`)).toBeVisible();
+  await expect(vee.locator('.effects-trail > *')).toHaveCount(0);
+  await expect(character).toBeVisible();
+});
+
+// The view parts the replays below change.
+interface Card {
+  id: number;
+  card: string;
+  damage?: number;
+  stats?: { hp: number };
+}
+interface View {
+  players: { id: number; hp: number; character: Card }[];
+  monsters: { top?: Card }[];
+}
+interface Store {
+  getState: () => {
+    game: { view: View } | null;
+    lobby: { table: { you: number } | null };
+    receive: (env: unknown) => void;
+  };
+}
+
+test('damage from a card hits every target at once and reddens their HP', async ({ browser }) => {
+  const [mo] = await startGame(browser, ['Mo', 'Nia']);
+  if (!mo) {
+    throw new Error('no pages');
+  }
+  await listenSounds(mo);
+  // The own character's ability deals 1 damage to two monsters and to
+  // its own player.
+  const ids = await mo.evaluate(() => {
+    const store = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store;
+    const s = store.getState();
+    const game = structuredClone(s.game);
+    const you = s.lobby.table?.you ?? 0;
+    const me = game?.view.players.find((p) => p.id === you);
+    const tops = (game?.view.monsters ?? []).flatMap((m) => (m.top?.stats ? [m.top] : [])).slice(0, 2);
+    if (!game || !me || tops.length < 2) {
+      throw new Error('no game');
+    }
+    const hps = tops.map((t) => t.stats?.hp ?? 0);
+    const events: unknown[] = tops.map((t) => {
+      if (t.stats) {
+        t.stats.hp -= 1;
+      }
+      t.damage = 1;
+      return { kind: 'damaged', player: -1, object: t.id, amount: 1, source: me.character.id };
+    });
+    me.hp -= 1;
+    me.character.damage = 1;
+    events.push({ kind: 'damaged', player: you, amount: 1, source: me.character.id });
+    s.receive({ type: 'update', data: { ...game, step: 2, events } });
+    return { character: me.character.id, monsters: tops.map((t) => t.id), hps };
+  });
+  // A shot flies from the source to each target.
+  await expect(mo.getByTestId('shot')).toHaveCount(3);
+  if (process.env.SCREENSHOTS) {
+    // Hold the shots on their way for the picture.
+    await mo.evaluate(() => {
+      for (const a of document.getAnimations()) {
+        a.pause();
+        a.currentTime = 0.6 * Number(a.effect?.getTiming().duration ?? 0);
+      }
+    });
+    await shot(mo, 'damage-shots');
+    await mo.evaluate(() => {
+      for (const a of document.getAnimations()) {
+        a.play();
+      }
+    });
+  }
+  // Every target bursts at once.
+  await expect(mo.getByTestId('burst')).toHaveCount(3);
+  // One fireball for all shots: the cast as they leave, the impact as
+  // they land.
+  expect(await played(mo)).toEqual(['/cardimg/assets/sounds/effect-cast.mp3', '/cardimg/assets/sounds/effect-impact.mp3']);
+  await mo.waitForTimeout(200); // the bursts pop
+  await shot(mo, 'damage-bursts');
+  for (const [i, id] of ids.monsters.entries()) {
+    const health = mo.locator(`[data-zone="obj-${String(id)}"]`).getByLabel(`${String((ids.hps[i] ?? 0) - 1)} health`);
+    await expect(health).toHaveClass(/hurt/);
+  }
+  await expect(mo.locator(`[data-zone="obj-${String(ids.character)}"] .card-hp`)).toHaveClass(/hurt/);
+  // The red health is the damage mark; no corner mark.
+  await expect(mo.locator(`[data-zone="obj-${String(ids.character)}"] .card-damage`)).toHaveCount(0);
+  await expect(mo.locator('.effects-trail > *')).toHaveCount(0);
+  await shot(mo, 'damage-red-hp');
+});
+
+test('a dying monster gets a skull before it leaves', async ({ browser }) => {
+  const [ola] = await startGame(browser, ['Ola', 'Pim']);
+  if (!ola) {
+    throw new Error('no pages');
+  }
+  const id = await ola.evaluate(() => {
+    const store = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store;
+    const s = store.getState();
+    const game = structuredClone(s.game);
+    const slot = game?.view.monsters.find((m) => m.top?.stats);
+    const top = slot?.top;
+    if (!game || !slot || !top) {
+      throw new Error('no game');
+    }
+    slot.top = undefined;
+    const events = [{ kind: 'died', player: -1, object: 999, card: top.card, prev: top.id }];
+    s.receive({ type: 'update', data: { ...game, step: 2, events } });
+    return top.id;
+  });
+  const monster = ola.locator(`[data-zone="obj-${String(id)}"]`);
+  await expect(ola.getByTestId('skull')).toBeVisible();
+  await expect(monster).toBeVisible();
+  await ola.waitForTimeout(250); // the skull pops
+  await shot(ola, 'death-skull');
+  await expect(monster).toHaveCount(0);
+  await expect(ola.locator('.effects-trail > *')).toHaveCount(0);
+});
+
+test('a deck attack places the monster in its slot before the attack roll', async ({ browser }) => {
+  const [dax] = await startGame(browser, ['Dax', 'Ivo']);
+  if (!dax) {
+    throw new Error('no pages');
+  }
+  // Replay the slot pick of a deck attack: the revealed card covers the
+  // first slot, the attack starts, and the first roll is made.
+  const ids = await dax.evaluate(() => {
+    const store = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store;
+    const s = store.getState();
+    const game = structuredClone(s.game);
+    const you = s.lobby.table?.you ?? 0;
+    const [first, second] = game?.view.monsters ?? [];
+    const old = first?.top;
+    if (!game || !first || !old || !second?.top) {
+      throw new Error('no game');
+    }
+    const top = { ...second.top, id: 990 };
+    first.top = top;
+    const events = [
+      { kind: 'card_revealed', player: -1, object: top.id, card: top.card },
+      { kind: 'attack_target', player: you, object: top.id, card: top.card },
+      { kind: 'dice_rolled', player: you, amount: 4, text: 'attack roll' },
+    ];
+    s.receive({ type: 'update', data: { ...game, step: 2, events } });
+    return { old: old.id, top: top.id };
+  });
+  // The card flies to the slot and stays there while the dice rolls.
+  await expect(dax.getByTestId('effect-dice')).toBeVisible({ timeout: 5000 });
+  await dax.waitForTimeout(300); // let the dice settle for the picture
+  await shot(dax, 'deck-attack-roll');
+  const placed = dax.getByTestId('placed');
+  await expect(placed).toBeVisible();
+  const slot = await dax.locator(`[data-zone="obj-${String(ids.old)}"]`).boundingBox();
+  const box = await placed.boundingBox();
+  expect(Math.abs((box?.x ?? 0) - (slot?.x ?? 0))).toBeLessThan(2);
+  expect(Math.abs((box?.y ?? 0) - (slot?.y ?? 0))).toBeLessThan(2);
+  // Then the board shows the card in its slot, and the copy is gone.
+  await expect(dax.locator(`[data-zone="obj-${String(ids.top)}"]`)).toBeVisible();
+  await expect(placed).toHaveCount(0);
+});
+
+test('a deck attack shows the revealed monster large once (19.4)', async ({ browser }) => {
+  const [vix] = await startGame(browser, ['Vix', 'Wen']);
+  if (!vix) {
+    throw new Error('no pages');
+  }
+  // Replay a deck attack: the top card is revealed, then it covers the
+  // first slot and the first roll is made. Every effect is recorded.
+  await vix.evaluate(() => {
+    interface Effects {
+      subscribe: (f: (s: { playing: { key: number; effect: { kind: string } } | null }) => void) => void;
+    }
+    const w = window as unknown as { fourSouls: { store: Store & Effects }; effects: string[] };
+    const store = w.fourSouls.store;
+    w.effects = [];
+    let last = 0;
+    store.subscribe((s) => {
+      if (s.playing && s.playing.key !== last) {
+        last = s.playing.key;
+        w.effects.push(s.playing.effect.kind);
+      }
+    });
+    const s = store.getState();
+    const you = s.lobby.table?.you ?? 0;
+    const drawn = structuredClone(s.game);
+    const placed = structuredClone(s.game);
+    const [first, second] = placed?.view.monsters ?? [];
+    const card = second?.top?.card;
+    if (!drawn || !placed || !first || !second?.top || !card) {
+      throw new Error('no game');
+    }
+    first.top = { ...second.top, id: 990 };
+    s.receive({
+      type: 'update',
+      data: { ...drawn, step: 2, events: [{ kind: 'card_revealed', player: you, object: 989, card }] },
+    });
+    const events = [
+      { kind: 'card_revealed', player: -1, object: 990, card },
+      { kind: 'attack_target', player: you, object: 990, card },
+      { kind: 'dice_rolled', player: you, amount: 4, text: 'attack roll' },
+    ];
+    s.receive({ type: 'update', data: { ...placed, step: 3, events } });
+  });
+  // The drawn card shows large; in its slot it only flies there.
+  await expect(vix.getByTestId('effect-dice')).toBeVisible({ timeout: 8000 });
+  await vix.waitForTimeout(300); // let the dice settle for the picture
+  await shot(vix, 'deck-attack-once');
+  await expect(vix.locator('[data-zone="obj-990"]')).toBeVisible();
+  const effects = await vix.evaluate(() => (window as unknown as { effects: string[] }).effects);
+  expect(effects).toEqual(['reveal', 'place', 'dice']);
+});
+
+test('a deck attack monster does not pop in after it lands (19.6)', async ({ browser }) => {
+  const [yara] = await startGame(browser, ['Yara', 'Bram']);
+  if (!yara) {
+    throw new Error('no pages');
+  }
+  // Replay the slot pick of a deck attack, as above. When the board
+  // draws the card in its slot, record how see-through it is then.
+  await yara.evaluate(() => {
+    const w = window as unknown as { fourSouls: { store: Store }; landed: Promise<number> };
+    w.landed = new Promise((resolve) => {
+      const seen = new MutationObserver(() => {
+        const el = document.querySelector('[data-zone="obj-990"]');
+        if (el) {
+          seen.disconnect();
+          requestAnimationFrame(() => {
+            resolve(Number(getComputedStyle(el).opacity));
+          });
+        }
+      });
+      seen.observe(document.body, { childList: true, subtree: true });
+    });
+    const s = w.fourSouls.store.getState();
+    const game = structuredClone(s.game);
+    const you = s.lobby.table?.you ?? 0;
+    const [first, second] = game?.view.monsters ?? [];
+    if (!game || !first || !second?.top) {
+      throw new Error('no game');
+    }
+    first.top = { ...second.top, id: 990 };
+    const events = [
+      { kind: 'card_revealed', player: -1, object: 990, card: second.top.card },
+      { kind: 'attack_target', player: you, object: 990, card: second.top.card },
+      { kind: 'dice_rolled', player: you, amount: 4, text: 'attack roll' },
+    ];
+    s.receive({ type: 'update', data: { ...game, step: 2, events } });
+  });
+  const card = yara.locator('[data-zone="obj-990"]');
+  await expect(card).toBeVisible({ timeout: 8000 });
+  await yara.waitForTimeout(60); // a pop would be half way now
+  await shot(yara, 'deck-attack-landed');
+  // The card that flew there is already whole: no second arrival.
+  const opacity = await yara.evaluate(() => (window as unknown as { landed: Promise<number> }).landed);
+  expect(opacity).toBe(1);
+});
+
+test('a deck attack keeps the drawn monster in view while its slot is picked (19.9)', async ({ browser }) => {
+  const [odo] = await startGame(browser, ['Odo', 'Kye']);
+  if (!odo) {
+    throw new Error('no pages');
+  }
+  // Replay the draw of a deck attack: the top card is revealed and the
+  // attacker is asked for a slot to put it in.
+  const name = await odo.evaluate(() => {
+    const store = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store;
+    const s = store.getState();
+    const game = structuredClone(s.game);
+    const you = s.lobby.table?.you ?? 0;
+    const slots = game?.view.monsters ?? [];
+    const card = slots[1]?.top?.card;
+    if (!game || !card || slots.some((m) => !m.top)) {
+      throw new Error('no game');
+    }
+    game.view.revealed = { id: 989, card, charged: false };
+    game.view.waiting = { kind: 4, player: you, purpose: 2, options: slots.map((_, i) => `slot ${String(i + 1)}`) };
+    game.view.options = slots.map((m) => ({ object: m.top?.id ?? 0, player: -1 }));
+    game.allowed = slots.map((_, i) => ({ player: you, kind: 4, choice: i }));
+    const events = [{ kind: 'card_revealed', player: you, object: 989, card }];
+    s.receive({ type: 'update', data: { ...game, step: 2, events } });
+    return s.cards.get(card)?.name ?? card;
+  });
+  // After the large reveal, the card stays face up on the monster deck
+  // and in the dialog until the slot is picked.
+  const dialog = odo.getByRole('dialog', { name: 'Choose a slot for the monster' });
+  await expect(dialog).toBeVisible({ timeout: 8000 });
+  await expect(odo.getByTestId('effect-reveal')).toHaveCount(0);
+  await odo.waitForTimeout(400); // the deck card pops in
+  await shot(odo, 'deck-attack-pick-slot');
+  await expect(odo.locator('[data-zone="deck-monster"] [data-zone="obj-989"]')).toBeVisible();
+  await expect(dialog.getByLabel(name, { exact: true })).toBeVisible();
+  // Once it flies into its slot, the deck no longer shows it.
+  await odo.evaluate(() => {
+    const s = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store.getState();
+    const game = structuredClone(s.game);
+    const [first] = game?.view.monsters ?? [];
+    const drawn = game?.view.revealed;
+    if (!game || !first || !drawn) {
+      throw new Error('no game');
+    }
+    first.top = { ...drawn, id: 990 };
+    delete game.view.revealed;
+    game.view.waiting = { kind: 1, player: s.lobby.table?.you ?? 0 };
+    game.allowed = [];
+    const events = [{ kind: 'card_revealed', player: -1, object: 990, card: drawn.card }];
+    s.receive({ type: 'update', data: { ...game, step: 3, events } });
+  });
+  await expect(odo.getByTestId('effect-place')).toBeVisible({ timeout: 5000 });
+  await expect(odo.locator('[data-zone="obj-989"]')).toHaveCount(0);
+  await expect(odo.locator('[data-zone="obj-990"]')).toBeVisible();
+  await expect(dialog).toHaveCount(0);
 });

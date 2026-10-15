@@ -1,0 +1,692 @@
+# Step 19. Bugs
+
+Goal: every bug report is logged, fixed, and reviewed the same way.
+
+This step never closes; new reports are appended.
+
+## Rules for this step (owner, 2026-10-14)
+
+1. Every bug report gets an item here: `19.N`, the next free number.
+   1. Logged before any code change.
+   2. Appended at the end; numbers never change.
+2. An item has the sub-step format plus:
+   1. Report: who, when, and what they saw.
+   2. Cause: found in the match record or the code.
+3. A fix follows the roadmap rules (`README.md`).
+   1. Tests come with the fix.
+   2. Docs in the same change: use cases, ADRs, wiki.
+   3. Gates pass: `make lint`; `make frontend e2e` for frontend changes.
+4. A screen change gets before and after screenshots.
+   1. They go to `.cache/screenshots/19.N/before/` and `after/`.
+   2. Never committed to the repo.
+   3. The review message links each screenshot file.
+5. Commit after each fixed bug; stop for the owner's review.
+   1. The owner marks it solved; then "Owner notes".
+6. Branch: the fix goes on the step branch in work.
+   1. No `step-19` branch; fixes merge with that step.
+
+---
+
+### [x] 19.1 Roll results in the history
+
+1. Goal: the history shows the roll result the game used.
+2. Report (owner, 2026-10-14)
+   1. Play test; record `2026-10-14-173137-g1_Gaijin_Oleg.fsrec`.
+   2. Polycephalus: "the next attack roll this turn has -2".
+   3. The history did not show the -2; it looked ignored.
+3. Tasks:
+   1. Find the cause in the match record.
+   2. Show the die and the result when they differ.
+   3. The strip's die shows the result.
+4. Done when:
+   1. Vitest: a changed roll shows both numbers; an unchanged one, one.
+   2. e2e test: a changed attack roll in the strip and the panel.
+   3. Use case UC-15 updated.
+5. Cause
+   1. Engine is right: Polycephalus's trigger adds a one-shot boost.
+   2. The next attack roll uses it up (`useNextAttackRoll`).
+   3. Record: die 6, `roll_resolved` 4; the 4 hit.
+   4. The history used `stack_resolved`: the die before changes.
+   5. `roll_resolved`, the result, was never shown.
+   6. Same for every roll change, e.g. a +1: "rolled 5" for a 6.
+6. Result (2026-10-14)
+   1. A changed roll reads "Roll — attack roll (rolled 6 → 4)".
+   2. The strip's die and line show the result: "rolls 4".
+   3. An unchanged roll reads as before: "(rolled 6)".
+   4. Engine, protocol and records unchanged.
+   5. Screenshots: `.cache/screenshots/19.1/before/` and `after/`.
+7. Owner notes (2026-10-14)
+   1. Owner marks 19.1 solved.
+
+### [x] 19.2 Heal popup after 1-Up
+
+1. Goal: the heal popup shows the HP a player got back.
+2. Report (owner, 2026-10-14)
+   1. Play test; record `2026-10-14-173137-g1_Gaijin_Oleg.fsrec`.
+   2. Lazarus died on his turn with 1-Up.
+   3. The popup said +1 HP; his HP went up by 2.
+3. Tasks:
+   1. Find the cause in the match record.
+   2. Every HP a death prevention gives back gets a `healed` event.
+   3. 1-Up shows one popup with the full amount.
+4. Done when:
+   1. Engine test: 1-Up heals in one event for the full amount.
+   2. Engine test: Guppy's Collar emits a `healed` event for 1 HP.
+   3. Old records still replay.
+5. Cause
+   1. Step 196: Leech's combat damage leaves Lazarus at 0 of 2 HP.
+   2. Step 198: 1-Up resolves; `healed` amount 1.
+   3. `PreventYourDeath` sets HP to 1 with no `healed` event.
+   4. 1-Up's heal to full then emits only the rest: +1.
+   5. Broken Ankh and Guppy's Collar show no heal at all.
+6. Result (2026-10-14)
+   1. `PreventYourDeath` emits `healed` for the HP it gives back.
+   2. New block `PreventYourDeathHealFull`: one `healed` to full.
+   3. 1-Up uses it: popup "+2 HP" for Lazarus at 0 of 2 HP.
+   4. Broken Ankh and Guppy's Collar now show "+1 HP".
+   5. Events are not in the checksum; the owner's record replays.
+   6. No frontend change; the popup is short, so no screenshots.
+7. Owner notes (2026-10-14)
+   1. Owner marks 19.2 solved.
+
+### [x] 19.3 Deck attack: the monster lands before the roll
+
+1. Goal: on a deck attack the monster is in its slot before the dice roll.
+2. Report (owner, 2026-10-14)
+   1. A player attacks the top of the monster deck.
+   2. The dice roll plays first.
+   3. Only then the monster appears in the chosen slot.
+3. Tasks:
+   1. Find the cause in the code.
+   2. A card put into a slot flies there and stays until the board redraws.
+   3. Effects after it, like the attack roll, play over the placed card.
+4. Done when:
+   1. Vitest: a slot reveal gives a place effect before the dice.
+   2. e2e test: the placed card is on the slot while the dice plays.
+   3. Use case updated.
+5. Cause
+   1. Engine order is right: `placeRevealed` puts the card in the slot.
+   2. `startAttack` then rolls; both land in one update.
+   3. Playback plays an update's effects, then draws its board.
+   4. So the dice plays before the board shows the monster in the slot.
+6. Result (2026-10-14)
+   1. New `place` effect: the card flies from its deck to the slot.
+   2. It stays there, drawn by `Effects`, until the board redraws.
+   3. Order now: reveal, the card lands in its slot, the attack roll.
+   4. Shop refills get the same fly into their slot.
+   5. Engine, protocol and records unchanged.
+   6. Screenshots: `.cache/screenshots/19.3/before/` and `after/`.
+7. Owner notes (2026-10-14)
+   1. Owner marks 19.3 solved.
+
+### [x] 19.4 Deck attack shows the monster large twice
+
+1. Goal: a deck attack shows the revealed monster large once.
+2. Report (owner, 2026-10-14)
+   1. Found while fixing 19.3.
+   2. The monster shows large when it is drawn.
+   3. It shows large again when it goes into the slot.
+3. Tasks:
+   1. Find the cause in the code.
+   2. A card shown large in the update before is not shown again.
+   3. It still flies into its slot (19.3).
+4. Done when:
+   1. Vitest: a card revealed in the update before gets no second reveal.
+   2. e2e test: one large reveal for a deck attack.
+   3. Use case updated.
+5. Cause
+   1. `attackDeck` emits `card_revealed` for the drawn card.
+   2. `placeRevealed` puts it in the slot; `putInSlot` emits it again.
+   3. Playback shows every `card_revealed` large.
+6. Result (2026-10-14)
+   1. A card the update before revealed gets no second large reveal.
+   2. A deck attack: one large reveal, then the card flies to its slot.
+   3. Other reveals and refills show large as before.
+   4. Engine, protocol and records unchanged.
+   5. Screenshots: `.cache/screenshots/19.4/before/` and `after/`.
+7. Owner notes (2026-10-14)
+   1. Owner marks 19.4 solved.
+
+### [x] 19.5 Revealed hands show as backs
+
+1. Goal: a revealed opponent's hand shows its cards face up.
+2. Report (owner, 2026-10-14)
+   1. A player controls Guppy's Eye.
+   2. "Each other player plays with their hand revealed."
+   3. The opponents' hands still show only card backs.
+3. Tasks:
+   1. Find the cause in the code.
+   2. An opponent's hand the view sends shows face up, fanned.
+   3. Each card zooms on hover, like other table cards.
+   4. A hidden hand stays backs with its count.
+4. Done when:
+   1. e2e test: a revealed hand shows its cards at the top and sides.
+   2. e2e test: the hand zooms a card on hover.
+   3. Use case UC-12 updated.
+5. Cause
+   1. Engine is right: `View` sends the hand under `StatRevealHand`.
+   2. `OpponentArea` always draws `HiddenHand` from `hand_size`.
+   3. It never reads `player.hand`; no screen ever drew it.
+6. Result (2026-10-14)
+   1. A hand the view sends shows face up: `RevealedHand`.
+   2. Same fan, place and count as the backs; every card shows.
+   3. At the top the cards hang past the edge, turned to their owner.
+   4. Hover a card to read it in full.
+   5. Engine, protocol and records unchanged.
+   6. Screenshots: `.cache/screenshots/19.5/before/` and `after/`.
+7. Owner notes (2026-10-15)
+   1. Owner marks 19.5 solved.
+
+### [x] 19.6 Deck attack: the monster lands in its slot twice
+
+1. Goal: a card that flies into its place does not appear there again.
+2. Report (owner, 2026-10-15)
+   1. A player attacks the top of the monster deck.
+   2. The monster flies to its slot; the dice roll plays.
+   3. Then the same monster appears in the slot again.
+   4. Not the first animation clash: 19.3 and 19.4 were the same kind.
+   5. Owner asks for a rule and a check against animation clashes.
+3. Tasks:
+   1. Find the cause in the code.
+   2. One card gets one arrival animation per update.
+   3. List every animation in one place, with what it owns.
+   4. A check that finds two animations on one card.
+   5. A rule for new animations; research how others solve it.
+4. Done when:
+   1. Vitest: the clash check finds a double arrival and a double reveal.
+   2. e2e test: a deck attack's monster does not pop in after it lands.
+   3. Every e2e test fails on an animation clash.
+   4. ADR and wiki page for the rule; use case updated.
+5. Cause
+   1. The client has two sources of animation.
+   2. Events: the `place` effect flies the monster to its slot (19.3).
+   3. The view: `Card` pops in whenever a new `objectId` mounts.
+   4. The slot's card gets a new ID, so it popped in after it landed.
+   5. Looted and discarded cards did the same after their fly.
+   6. Nothing listed the animations or checked two on one card.
+6. Result (2026-10-15)
+   1. Effects claim the card they bring or show: `animations.ts`.
+   2. `Card` does not pop in a card an effect brought that update.
+   3. A clash is logged and skipped; e2e tests fail on any.
+   4. Every animation has an `anim: <id>` tag.
+   5. `docs/wiki/Animations.md` lists them; Vitest checks the list.
+   6. ADR 012 holds the rule and the research.
+   7. Engine, protocol and records unchanged.
+   8. Screenshots: `.cache/screenshots/19.6/before/` and `after/`.
+7. Owner notes (2026-10-15)
+   1. Owner marks 19.6 solved.
+   2. Claims stay on cards; zones get them with a second source.
+
+### [x] 19.7 Buy is lit, then the purchase fails
+
+1. Goal: e2e `settle` answers only a state its done check saw.
+2. Report (agent, 2026-10-15)
+   1. Found in `make e2e` while fixing 19.6; chromium.
+   2. Test: "buy and attack icons are lit only when the engine allows them".
+   3. `actions.spec.ts:149`: "the game never settled".
+   4. Tia had Buy lit and pressed B at step 10.
+   5. The engine answered `purchase_failed`, amount 10.
+   6. No choice dialog opened; the test waited until it timed out.
+   7. Passed twice when rerun alone: the deal may matter.
+3. Tasks:
+   1. Find the cause: engine, client, or the test.
+   2. Find which dealt card makes Buy allowed but unaffordable.
+4. Done when:
+   1. Cause found and written here.
+   2. A test that forces the race, fails before the fix, passes after.
+5. Cause
+   1. The test helper `settle`, not the engine or the client.
+   2. Buy needs no cents: a failed payment is a rule (R-SHOP-04).
+   3. Players start with 3 cents; every price is 10.
+   4. So every purchase on turn 1 fails; no card in the deal matters.
+   5. `purchase_failed` comes only after the purchase choice is answered.
+   6. So the dialog opened, and `settle` picked its first option.
+   7. Each `settle` loop runs `done()`, then `answer()`.
+   8. `done()` saw no dialog: Tia's update had not come yet.
+   9. It came while `answer()` read the pages, one by one.
+   10. `answer()` found the dialog and answered it.
+   11. The purchase failed; no dialog again; `done()` never held.
+   12. Timing decides it: reruns pass.
+6. Result (2026-10-15)
+   1. `settle` keeps each page's step from before `done()`.
+   2. `answer()` makes no move when a page's step changed since.
+   3. The next loop checks `done()` against the new state first.
+   4. e2e test: updates come 150 ms late; `done()` is slow.
+   5. It failed 2 of 2 before the fix and passes 3 of 3 after.
+   6. Engine, client, protocol and records unchanged.
+7. Owner notes (2026-10-15)
+   1. Owner marks 19.7 solved.
+
+### [x] 19.8 Intent waits forever after a pass
+
+1. Goal: a sent intent always ends: by an update or a refusal.
+2. Report (agent, 2026-10-15)
+   1. Found in `make e2e` while fixing 19.6; webkit.
+   2. Test: "a resolved loot card goes to the history strip (15.22)".
+   3. `info.spec.ts:99`: "the game never settled".
+   4. Both pages were at step 21, turn 2, Ada's turn.
+   5. Ada's page still had `sent: 19`; the other page `sent: 20`.
+   6. Last event: `passed_priority` by player 1.
+   7. Ada showed "Your turn" with no buttons.
+   8. Passed 4 of 4 fresh runs alone: timing may matter.
+3. Tasks:
+   1. Find the cause: client `sent`, server, or the test.
+   2. Find why `sent` stays set after later updates arrive.
+4. Done when:
+   1. Cause found and written here.
+   2. A test that reproduces it.
+5. Cause
+   1. The test, not the client or the server.
+   2. `sent` was not stuck: Ada had `sent: 19` at step 21.
+   3. The client blocks only while `sent === game.step`.
+   4. Turn 1 was Ben's; the test kept his page as `active`.
+   5. Ben's loot card ended his turn early.
+   6. Such cards: The Fool, `EndYourTurn` cards, damage that kills him.
+   7. Turn 2 was Ada's; Ben's page showed "Their turn".
+   8. `settle` waited for `canEndTurn(active)` on Ben's page: never true.
+   9. `answer()` never ends a turn, so nothing moved on.
+   10. The dump lists only the `Actions` region's buttons.
+   11. End turn sits in the `Board` region, so it looked like no buttons.
+   12. Rare: only deals where that loot card is the first playable one.
+6. Fix
+   1. The wait also ends when the turn moved on or the game ended.
+   2. Same check as `backToMe` in `actions.spec.ts`.
+   3. No test reproduces it: that needs a rigged hand.
+   4. The owner chose no rig hook for e2e (2026-10-15).
+7. Owner notes (2026-10-15)
+   1. Owner marks 19.8 solved.
+
+### [x] 19.9 Deck attack: the drawn card hides during the slot choice
+
+1. Goal: the drawn card stays in view until the player places it.
+2. Report (owner, 2026-10-15)
+   1. A player attacks the top of the monster deck.
+   2. The new card shows for a few seconds, then hides.
+   3. The player then picks the slot to put it in.
+   4. A player who missed the reveal does not know the card.
+   5. The slot choice may depend on the card.
+3. Tasks:
+   1. Find the cause in the code.
+   2. Show the drawn card while the slot choice is open.
+   3. It hides once the card is placed.
+4. Done when:
+   1. e2e test: the drawn card is visible during the slot choice.
+   2. Use case updated.
+5. Cause
+   1. Engine order is right: `attackDeck` reveals, then asks for the slot.
+   2. The card waits outside the table in `Attack.Revealed`.
+   3. `View` never sent it; only the `card_revealed` event named it.
+   4. The client showed that event large for a moment, then nothing.
+   5. The slot dialog lists only "slot 1", "slot 2".
+6. Result (2026-10-15)
+   1. The view sends the waiting card as `revealed`, to every viewer.
+   2. The board shows it face up on the monster deck.
+   3. The slot dialog shows it above the slot buttons.
+   4. It leaves the deck when it flies to the chosen slot.
+   5. New view field: protocol stays version 1 (ADR 006).
+   6. Records unchanged; they hold intents, not views.
+   7. Screenshots: `.cache/screenshots/19.9/before/` and `after/`.
+7. Owner notes (2026-10-15)
+   1. Owner marks 19.9 solved.
+
+### [x] 19.10 e2e `settle` cannot answer a target aimed from a card
+
+1. Goal: `settle` answers every prompt a player can answer.
+2. Report (agent, 2026-10-15)
+   1. Found in a loop of the 19.8 test; webkit, run 54 of 80.
+   2. Same error: "the game never settled".
+   3. Ada played Dagaz: choose one, then choose a player.
+   4. Ada showed "Choose a target"; no dialog, empty stack.
+   5. Her loot was not played yet: still in hand, "Loot 1".
+3. Tasks:
+   1. Find the cause.
+   2. Teach `settle` to answer that prompt.
+4. Done when:
+   1. Cause found and written here.
+   2. The 19.8 test passes in a long loop.
+5. Cause
+   1. Since 15.34 a target prompt of one's own card aims from it.
+   2. The dialog hides; the targets glow `hl-aim` on the table.
+   3. `answer()` picks table targets only while a `.choice` dialog shows.
+   4. Then Pass is disabled and Attack does not apply: no move.
+   5. `playLoot` aims before the play, so most cards never hit this.
+   6. A modal card (Dagaz) asks its mode first, its target after.
+   7. That target prompt comes as a fresh aim: nobody clicks it.
+6. Fix
+   1. `answer()` clicks the first uncovered `hl-aim` target.
+   2. It runs when no dialog shows, before Pass.
+7. Owner notes (2026-10-15)
+   1. Owner marks 19.10 solved.
+
+### [x] 19.11 Look at the top card: only its name shows
+
+1. Goal: the player sees the card they decide about.
+2. Report (owner, 2026-10-15)
+   1. Golden Horseshoe and Cain's Eye trigger at turn start.
+   2. The screen shows only the card's name in the buttons.
+   3. The card itself never shows while the player decides.
+3. Tasks:
+   1. Find the cause in the code.
+   2. Show the card in the dialog while the choice is open.
+   3. Only the chooser sees it; the deck top stays hidden to others.
+4. Done when:
+   1. Engine test: the chooser's view has the card; others' do not.
+   2. e2e test: the card shows in the dialog.
+   3. Use case updated.
+5. Cause
+   1. Both use `cardkit.LookMayBottom`: one question, then `LookAt`.
+   2. The card is only text in the options: "keep X on top".
+   3. `LookAt` runs after the answer; the look dialog comes too late.
+   4. The view has no field for the card a question is about.
+   5. Same for Sack Head and fsp2 `lookMayDiscard`.
+   6. Options also showed the raw ref: "keep a_dime on top".
+6. Result (2026-10-15)
+   1. New `Question.Subject`: the card a question is about.
+   2. The view sends it as `subject`, only to the chooser.
+   3. The choice dialog shows it above the buttons.
+   4. Buttons name it by title: "keep A Dime!! on top".
+   5. Set for `LookMayBottom`, Sack Head, `lookMayDiscard`.
+   6. Also for fsp2 curse and boss reveals ("Give X to which player?").
+   7. New view field: protocol stays version 1 (ADR 006).
+   8. Screenshots: `.cache/screenshots/19.11/before/` and `after/`.
+7. Owner notes (2026-10-15)
+   1. Owner marks 19.11 solved.
+
+### [ ] 19.12 A whole random game hangs: Escape never returns
+
+1. Goal: a whole random game never freezes a page.
+2. Report (agent, 2026-10-15)
+   1. New e2e `games.spec.ts`: random moves, every set, chromium.
+   2. 3 of 12 games hung until the 60-minute test timeout.
+   3. Two 4-player games, one 2-player game.
+   4. Each hung in `page.keyboard.press('Escape')`.
+   5. That runs after a move found nothing to press.
+   6. One hung after turn 30; no progress line came after it.
+   7. The 60-second stall check never fired: the loop was blocked.
+   8. A key press waits for the page to take input.
+   9. So the page likely stopped running its event loop.
+   10. The error snapshot shows only an old finished page.
+   11. Seeds and match records of the three were lost.
+   12. The spec logged a seed only on a win.
+   13. The next run's start deleted the server's records folder.
+3. Tasks:
+   1. Make the spec record a hang: page state, screenshot, last events.
+   2. Bound every wait in the loop, so a hang fails in seconds.
+   3. Rerun until a hang repeats; find the cause.
+   4. Fix it in the client or the server.
+4. Done when:
+   1. Cause found and written here.
+   2. `make e2e-games` passes five rounds with no hang.
+5. Findings so far
+   1. A rerun at 11:10 lost three games: every page reloaded.
+   2. The owner's own Wails build rewrote `frontend/wailsjs`.
+   3. The e2e Vite server watched it and reloaded every page.
+   4. Not the cause of the first hangs: no build ran then.
+   5. e2e Vite now watches no files (`FOUR_SOULS_E2E`).
+   6. The spec now fails a hang in 30 s and keeps its evidence.
+   7. Evidence: seed, record, screenshots, store, a frozen page's stack.
+   8. Cause still unknown; waiting for a hang to repeat.
+   9. More than 20 games since, with the diagnostics on: no hang.
+   10. Paused by the owner (2026-10-15); see `docs/wiki/Frontend-tests.md`.
+
+### [x] 19.13 The look dialog shows one card twice
+
+1. Goal: the look dialog shows each card it is about once.
+2. Report (agent, 2026-10-15)
+   1. Found by the new `games.spec.ts`; 2 players, seed 371908.
+   2. Record `2026-10-15-071253-g1_Rnd2r0Ann_Rnd2r0Bob.fsrec`.
+   3. Bob's page logged a React error: two children with key 361.
+   4. 361 is a Library Card Bob looked at twice.
+   5. Step 2314: Forever Alone, "look at the top card of a deck".
+   6. Step 2316: More Options looks at the top 2 treasures: 361, 430.
+3. Tasks:
+   1. Find the cause.
+   2. Show each looked-at card once.
+4. Done when:
+   1. Cause found and written here.
+   2. Vitest: the same card looked at twice in one update shows once.
+5. Cause
+   1. The server views have no duplicate: a replay checked each list.
+   2. Steps 2315 and 2316 are server auto-passes (`after`, N-05).
+   3. Their events join step 2314's in one update.
+   4. That update has `looked_at` 361 twice.
+   5. `lookedAt` keeps every event, so 361 is listed twice.
+   6. `LookDialog` keys its cards by object id: React warns.
+6. Result (2026-10-15)
+   1. `lookedAt` keeps the first look at each object in one update.
+   2. The history still logs both looks; each was a real look.
+   3. Engine, server, protocol and records unchanged.
+   4. Vitest in `history.test.ts`.
+   5. No screenshots: the state needs that one seed's deal.
+7. Owner notes (2026-10-15)
+   1. Owner marks 19.13 solved.
+   2. The animation inventory could not catch it: no animation ran.
+   3. Idea TS-06: every e2e test fails on a console error.
+
+### [ ] 19.14 e2e: a guest's Join click can miss under load
+
+1. Goal: `startGame` joins every guest, however busy the lobby is.
+2. Report (agent, 2026-10-15)
+   1. `make e2e`, webkit: N-16 test in `stack.spec.ts` failed.
+   2. Oti clicked Join on "Wan's game · 1/2 players".
+   3. The page stayed on the list; no error; Join still enabled.
+   4. About 20 other test games were starting in the same lobby.
+   5. Passed 3 of 3 separate reruns.
+   6. Evidence: `.cache/e2e-fails/20261015-120743-gate/` (not in git).
+   7. Next full run: the same miss in `table.spec.ts` (15.24), webkit.
+   8. Evidence: `.cache/e2e-fails/20261015-121014-gate2/`.
+   9. Full runs with e2e Vite watching no files: 2 of 4 failed.
+   10. Full runs with watching on: 2 of 2 passed.
+   11. Too few runs to blame the no-watch setting; check it first.
+3. Tasks:
+   1. Find why the click did not join: a re-rendered row or a lost reply.
+   2. Make `startGame` join reliably, or fix the lobby if it drops it.
+4. Done when:
+   1. Cause found and written here.
+   2. `make e2e` passes several runs in a row.
+5. Findings so far
+   1. Gate run for 19.13: the same miss in `info.spec.ts` (15.47), webkit.
+   2. Again with e2e Vite watching no files.
+   3. The rerun passed; its run overwrote the evidence.
+
+### [x] 19.15 A full hand: the end cards are hard to play
+
+1. Goal: every card of a big hand can be hovered and played.
+2. Report (owner, 2026-10-15)
+   1. A hand of 12 cards.
+   2. The cards at the sides are almost impossible to play.
+3. Tasks:
+   1. Find the cause in the fan layout.
+   2. Keep every card's top in reach, however big the hand.
+4. Done when:
+   1. e2e test: a 12-card hand; each card shows a top to point at.
+   2. Screenshots before and after.
+5. Cause
+   1. `fan` dropped each card by `spread² × 4px`, with no limit.
+   2. 12 cards: the end spread is ±5.5, so a drop of about 121 px.
+   3. The hand box is 104 px high; the table clips below it.
+   4. So the end cards sank off screen.
+   5. Their raised neighbours covered what was left.
+   6. e2e measure: the first card had 0 px² the pointer could hit.
+6. Result (2026-10-15)
+   1. The end cards drop at most 24 px (`fanDrop`), any hand size.
+   2. Hands of up to 5 cards keep their old shape.
+   3. Every card of a 12-card hand shows its top and name.
+   4. Screenshots: `.cache/screenshots/19.15/before/` and `after/`.
+7. Owner notes (2026-10-15)
+   1. Owner marks 19.15 solved.
+
+### [x] 19.16 Put back in any order: the final order is unclear
+
+1. Goal: the player sees and sets where each card goes.
+2. Report (owner, 2026-10-15)
+   1. Look at the top 5 cards; put them back in any order.
+   2. The screens are confusing.
+   3. In the end the player does not know which card is where.
+3. Tasks:
+   1. Find the cause in the code.
+   2. Show the whole order while the player builds it.
+   3. After the choice, show the cards in their new order.
+4. Done when:
+   1. Cause found and written here.
+   2. e2e test: the dialog shows each card's place in the deck.
+   3. Screenshots before and after.
+5. Cause
+   1. `PutBackInOrder` asks one question per card.
+   2. Each has the same text: "Which card goes next, from the top?".
+   3. The dialog shows only the cards left, never the placed ones.
+   4. No position number: card 3 of 5 looks like card 1.
+   5. The last card is asked too, with one option.
+   6. Then `LookAt` shows the cards in the old order, not the new one.
+   7. Same code in Sleight of Hand and fsp2 `reorderADeck`.
+6. Result (2026-10-15)
+   1. Owner's pick: arrange all cards, then confirm.
+   2. New engine prompt `PromptOrder`, answered by `IntentOrder`.
+   3. The intent holds every card, top first.
+   4. An `Ask` question with `Order` opens it; `do` reads `c.Order`.
+   5. `PutBackInOrder`, Sleight of Hand and `reorderADeck` use it.
+   6. The view sends the cards as `ordering`, only to the chooser.
+   7. `OrderDialog`: numbered places, "1 · top" first; cards below.
+   8. A click places a card; a click on a placed card takes it back.
+   9. "Put back" sends the order once every card has a place.
+   10. No "You look at" dialog after it.
+   11. Protocol 2: an older client cannot answer the new prompt.
+   12. Card tests unchanged: test drivers answer an order by card refs.
+   13. Screenshots: `.cache/screenshots/19.16/before/` and `after/`.
+7. Owner notes (2026-10-15)
+   1. Owner marks 19.16 solved.
+
+### [x] 19.17 Two "instead" effects: the order choice is unclear
+
+1. Goal: the player sees what each order of effects gives.
+2. Report (owner, 2026-10-15)
+   1. Bum-Bo! and Counterfeit Penny in play; the player gains ¢.
+   2. The game asks which effect goes first.
+   3. The question is confusing.
+   4. The owner wants Bum-Bo! to level up by more, and cannot tell how.
+3. Tasks:
+   1. Find the cause in the code.
+   2. Name the card of each option.
+   3. Say what each order does.
+4. Done when:
+   1. Cause found and written here.
+   2. e2e test: the dialog names both cards and each result.
+   3. Screenshots before and after.
+5. Cause
+   1. Both cards are replacements ("instead"), not triggers.
+   2. `processQueue` asks `ChooseReplacement` (R-ABIL-33).
+   3. Title: "Choose which happens first".
+   4. Each option is only the card's rule text; no card name.
+   5. Nothing says what each order does.
+   6. Order matters: the first one rewrites the gain.
+   7. Penny first: gain 3¢ → 4¢, then Bum-Bo! levels up by 4.
+   8. Bum-Bo! first: it levels up by 3; no ¢ left for the Penny.
+   9. The player must work this out from two card texts.
+   10. Poker Chip (fsp2) is the third such card; it rolls a die.
+6. Result (2026-10-15)
+   1. Owner's pick: show what each order gives.
+   2. The engine plays each order on a copy of the game (`previewReplacement`).
+   3. The choice keeps the results as `Previews`.
+   4. The view sends them as each option's `outcome`.
+   5. Each option is now the card itself: image and name.
+   6. Title: "Gaining 10¢: which card applies first?".
+   7. Under each card: "→ Bum-Bo! levels up by 11".
+   8. A card that then does nothing: "→ Counterfeit Penny does nothing".
+   9. Three or more cards: "Then you pick the next card".
+   10. Poker Chip: "→ Poker Chip rolls for 4¢"; the roll is unknown.
+   11. No protocol bump: older clients ignore the new field.
+   12. Screenshots: `.cache/screenshots/19.17/before/` and `after/`.
+7. Owner notes (2026-10-15)
+   1. Owner marks 19.17 solved.
+   2. Trigger order on the stack is a separate bug: 19.19.
+
+### [ ] 19.18 e2e: a played Dagaz waits for a player target
+
+1. Goal: the stack test plays any loot card the deal gives.
+2. Report (agent, 2026-10-15)
+   1. Found by `make e2e` during 19.17.
+   2. `stack.spec.ts`: "a played loot card shows on the stack".
+   3. Chromium; the hand had Dagaz.
+   4. The stack stayed empty; the status said "You: Choose a target".
+3. Tasks:
+   1. Answer a target picked on the table, not only in a dialog.
+4. Done when:
+   1. The test passes with Dagaz in the hand.
+5. Cause
+   1. Dagaz asks its mode, then a player to protect.
+   2. A player target is picked on the table (15.25), not in a dialog.
+   3. The test's loop clicks only `.choice-option` buttons.
+   4. So it never answers the target; the card never reaches the stack.
+   5. Not caused by 19.17; the engine and client behave as designed.
+   6. Evidence kept outside the repo before the rerun.
+
+### [x] 19.19 Trigger order: "on the stack first" is unclear
+
+1. Goal: the player knows which trigger resolves first.
+2. Report (owner, 2026-10-15)
+   1. Several triggers fire at once; the player orders them.
+   2. The title: "Choose which goes on the stack first".
+   3. It does not say that the first one in resolves last.
+3. Tasks:
+   1. Say in the title that the first one resolves last.
+   2. Show each option as its card, with name and ability text.
+4. Done when:
+   1. e2e test: the dialog says "resolves last" and names each card.
+   2. Screenshots before and after.
+5. Cause
+   1. `placeNextTrigger` asks `ChooseTriggerOrder` (R-ABIL-15).
+   2. The client title: "Choose which goes on the stack first".
+   3. The stack resolves last in, first out; the title hides that.
+   4. Each option label is `abilityText`: "card_ref: text".
+   5. The client shows the raw ref, not the card's name.
+   6. No preview as in 19.17: a trigger resolves later.
+   7. Responses, rolls and new triggers may come between.
+6. Result (2026-10-15)
+   1. Title: "Choose which goes on the stack first; it resolves last".
+   2. Each option shows its card, the card's name, and the ability text.
+   3. The client splits the label "card_ref: text" into card and text.
+   4. Engine, protocol and records unchanged.
+   5. Vitest and e2e test in `actions.spec.ts`.
+   6. Screenshots: `.cache/screenshots/19.19/before/` and `after/`.
+7. Owner notes (2026-10-15)
+   1. Owner marks 19.19 solved.
+
+### [ ] 19.20 e2e: a cancelled Dagaz shows twice in the hand
+
+1. Goal: the aim test passes every run.
+2. Report (agent, 2026-10-15)
+   1. Found by `make screenshots` during 15.55.
+   2. `aim.spec.ts`: "a card placed first aims after its mode …".
+   3. Chromium; after the right-click cancel.
+   4. The hand had two "Dagaz" buttons; the test expects one.
+   5. Fails about 1 run in 5, also without the 15.55 change.
+   6. Evidence: `.cache/e2e-evidence/15.55-aim-*`.
+   7. Seen again in `make e2e` during 15.64: `.cache/e2e-evidence/15.64-aim/`.
+3. Tasks:
+   1. Find why the hand shows Dagaz twice after the cancel.
+   2. Fix the client or the test, whichever is wrong.
+4. Done when:
+   1. The test passes ten runs in a row.
+
+### [x] 19.21 e2e: Eden's starting choice hides the soul crystals
+
+1. Goal: the 15.56 soul test passes on every deal.
+2. Report (agent, 2026-10-15)
+   1. Found by `make e2e` during 15.6.
+   2. `table.spec.ts`: "soul cards hide behind the crystals …".
+   3. Chromium; hovering the second own crystal timed out.
+   4. "Choose your starting item" stood over the own area.
+   5. Evidence: `.cache/e2e-evidence/15.6-souls/`.
+3. Cause
+   1. The deal gave the viewer Eden (R-SETUP-09).
+   2. Eden's choice opens at the bottom edge, as agreed in 15.16.
+   3. So the dialog is right; the test expects a plain board.
+4. Tasks:
+   1. Ban Eden in that test, with the reason (CLAUDE.md 5.16).
+5. Done when:
+   1. The test passes with the ban.
+6. Result (2026-10-15)
+   1. The test bans Eden; a comment says why.
+   2. Eden is the only character with a starting choice.
+   3. Three separate runs pass.
+   4. No screen change; no screenshots.

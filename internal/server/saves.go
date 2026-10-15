@@ -159,6 +159,10 @@ func (h *Hub) load(c *Client, env protocol.Envelope) {
 		h.joinLoaded(c, env, m.Save)
 		return
 	}
+	if !h.mayCreate(c) {
+		c.fail(env.ID, protocol.ErrNotHost, "only the host continues saved games here")
+		return
+	}
 	f, err := readSave(h.saves, m.Save)
 	if err != nil {
 		c.fail(env.ID, protocol.ErrNoSave, err.Error())

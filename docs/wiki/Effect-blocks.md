@@ -117,6 +117,7 @@ Effects refer to targets by number: `DealDamage(1, 0)` hits the first target. `T
 | `EachMonsterTakesDamage(n)` | Each monster takes 1 damage. (the active player picks the order) |
 | `AddAttacks(n, t)` | They may attack an additional time this turn. |
 | `PreventYourDeath()` | Prevent death. (heals to 1 HP) |
+| `PreventYourDeathHealFull()` | Prevent death, heal to full HP. |
 | `ThisToLootBottomExtraTurn()` | Put this on the bottom of the loot deck … take an extra turn (The Sun) |
 | `Ask(do, questions…)` | Anything decided on resolution: "a deck", "a card from your hand" |
 | `EffectFunc(func(c *Ctx){…})` | Anything the blocks do not cover |
@@ -134,7 +135,7 @@ Effects refer to targets by number: `DealDamage(1, 0)` hits the first target. `T
 
 ## Questions on resolution
 
-What is not a target is decided when the ability resolves (R-ABIL-05). `Ask` asks the controller its questions in order, then calls `do` with the answers. A question whose `Options` are empty is skipped and its answer is `-1`. The answers are saved in the game state, so a saved game continues mid-question.
+What is not a target is decided when the ability resolves (R-ABIL-05). `Ask` asks the controller its questions in order, then calls `do` with the answers. A question whose `Options` are empty is skipped and its answer is `-1`. The answers are saved in the game state, so a saved game continues mid-question. A question with `Order` set is an order question (19.16): the chooser gets one order prompt with those cards and sends them back top first in one intent (`IntentOrder`); its answer is `0` and `do` reads the cards from `c.Order`. No cards skip it (`-1`); one card needs no prompt. `PutBackInOrder(deck, n)` is the whole "look at the top n cards, put them back in any order".
 
 ```go
 Ask(func(c *Ctx, a []int) {
@@ -187,6 +188,8 @@ Stats: `StatPlayerATK`, `StatPlayerHP`, `StatMonsterDC`, `StatMonsterATK`, `Stat
 ## Replacement effects
 
 A `Replacement` has a `When` (does it apply to this pending action?) and a `Do` (what happens instead). Returning no actions prevents the event. Each replacement applies once per event; if several apply, the affected player chooses the order.
+
+When it asks for that order, the engine plays each order on a copy of the game first (`previewReplacement`). The choice keeps the results as `Previews`; the view sends each as an option's `outcome`, so the dialog can say "Bum-Bo! levels up by 11" under the card (19.17).
 
 ## Testing a card
 

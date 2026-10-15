@@ -30,6 +30,9 @@ var sackHead = engine.CardDef{
 				}
 			}, engine.DeckQuestion("Look at the top card of which deck?"), engine.Question{
 				Text: "Put it on the bottom?",
+				Subject: func(c *engine.Ctx, a []int) engine.ObjectID {
+					return c.G.DeckTop(c.Deck(a[0]), 1)[0]
+				},
 				Options: func(c *engine.Ctx, a []int) []string {
 					top := c.G.DeckTop(c.Deck(a[0]), 1)
 					if len(top) == 0 {
