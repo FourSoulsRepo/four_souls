@@ -502,7 +502,7 @@ This step never closes; new reports are appended.
 7. Owner notes (2026-10-15)
    1. Owner marks 19.15 solved.
 
-### [ ] 19.16 Put back in any order: the final order is unclear
+### [x] 19.16 Put back in any order: the final order is unclear
 
 1. Goal: the player sees and sets where each card goes.
 2. Report (owner, 2026-10-15)
@@ -539,3 +539,5 @@ This step never closes; new reports are appended.
    11. Protocol 2: an older client cannot answer the new prompt.
    12. Card tests unchanged: test drivers answer an order by card refs.
    13. Screenshots: `.cache/screenshots/19.16/before/` and `after/`.
+7. Owner notes (2026-10-15)
+   1. Owner marks 19.16 solved.
