@@ -1,5 +1,5 @@
 import type { PointerEvent } from 'react';
-import { lastRollText } from '../dice';
+import { diceImage, lastRollText } from '../dice';
 import { useKey } from '../keys';
 import type { GameView, Intent, StackItem } from '../protocol';
 import { stackCard, stackIcon, stackParts, stackWait, type LinePart, type Names } from '../stack';
@@ -139,9 +139,9 @@ export function itemZoom(it: StackItem, card: string, view: GameView, names: Nam
 }
 
 // ItemIcon is a stack item's square icon (S-04): card art, a die in the
-// viewer's dice look, a blood drop with the damage, or a skull.
+// roller's dice look (15.6), a blood drop with the damage, or a skull.
 export function ItemIcon({ it }: { it: StackItem }) {
-  const diceImage = useApp((s) => s.dice.find((d) => d.id === s.settings.dice)?.image ?? '');
+  const image = useApp((s) => diceImage(s.dice, s.game?.seats, it.controller));
   const icon = stackIcon(it);
   return (
     <span className="stack-icon" aria-hidden="true">
@@ -151,7 +151,7 @@ export function ItemIcon({ it }: { it: StackItem }) {
         it.roll === undefined ? (
           <span className="stack-die">?</span>
         ) : (
-          <Die value={it.roll} image={diceImage} />
+          <Die value={it.roll} image={image} />
         )
       ) : icon === 'damage' ? (
         <span className="stack-mark">
@@ -207,14 +207,14 @@ function SkullIcon() {
 // roller and what the roll was for.
 function LastRollDie({ names }: { names: Names }) {
   const last = useApp((s) => s.lastRoll);
-  const diceImage = useApp((s) => s.dice.find((d) => d.id === s.settings.dice)?.image ?? '');
+  const image = useApp((s) => diceImage(s.dice, s.game?.seats, s.lastRoll?.player ?? -1));
   if (!last) {
     return null;
   }
   const text = lastRollText(last, names.player);
   return (
     <span className="last-roll" role="group" aria-label="Last roll" tabIndex={0}>
-      <Die value={last.value} image={diceImage} />
+      <Die value={last.value} image={image} />
       <span className="last-roll-tip" role="tooltip">
         {text}
       </span>

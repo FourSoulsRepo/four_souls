@@ -64,6 +64,9 @@ Use options 1, 3, 5 and 10.
    6. Two equal names in one game: the server adds " (2)" to the later one.
    7. `update` lists each seat's nickname, so the table shows names.
    8. `welcome` sets `create` when this client may open games (N-17).
+   9. `hello` carries the player's dice look (V-19).
+      1. `table` and `update` list each seat's look.
+      2. The server only checks its form; each client draws unknown ones plain.
    4. A different protocol version gets `error` `client_outdated` or `server_outdated`, then close.
 4. Playing
    1. The client sends `intent`: an engine intent; the server fills in the seat.

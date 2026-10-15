@@ -38,7 +38,7 @@ describe('effectsFor', () => {
       { kind: 'passed_priority', player: 0 },
     ];
     expect(effectsFor(events, ctx)).toEqual([
-      { kind: 'dice', value: 5, label: 'attack roll', thrown: true },
+      { kind: 'dice', value: 5, label: 'attack roll', player: 0, thrown: true },
       { kind: 'popup', at: ['player-0'], text: '+3¢', tone: 'good' },
       { kind: 'banner', text: "Bo's turn" },
     ]);
@@ -96,8 +96,8 @@ describe('effectsFor', () => {
       { kind: 'roll_changed', player: 0, amount: 3 },
     ];
     expect(effectsFor(events, ctx)).toEqual([
-      { kind: 'dice', value: 2, label: 'reroll', thrown: true },
-      { kind: 'dice', value: 3, label: '' },
+      { kind: 'dice', value: 2, label: 'reroll', player: 0, thrown: true },
+      { kind: 'dice', value: 3, label: '', player: 0 },
     ]);
   });
 
@@ -110,7 +110,7 @@ describe('effectsFor', () => {
     expect(effectsFor(events, ctx)).toEqual([
       { kind: 'reveal', card: 'fly' },
       { kind: 'place', from: ['deck-loot'], to: ['monster-slot-1'], card: 'fly', back: 'loot' },
-      { kind: 'dice', value: 4, label: 'attack roll', thrown: true },
+      { kind: 'dice', value: 4, label: 'attack roll', player: 0, thrown: true },
     ]);
   });
 
@@ -193,7 +193,7 @@ describe('createPlayback', () => {
     playback.push(update(2));
     await playback.idle();
     expect(shown).toEqual([1, 2]);
-    expect(played).toEqual([{ kind: 'dice', value: 2, label: '', thrown: true }]);
+    expect(played).toEqual([{ kind: 'dice', value: 2, label: '', player: 0, thrown: true }]);
   });
 
   it('shows every update of a fast burst, in order, ending on the last', async () => {
@@ -205,7 +205,7 @@ describe('createPlayback', () => {
     expect(shown).toEqual(Array.from({ length: 30 }, (_, i) => i + 1));
     // A long queue skips effects until it catches up.
     expect(played.length).toBeLessThan(29);
-    expect(played.at(-1)).toEqual({ kind: 'dice', value: 30, label: '', thrown: true });
+    expect(played.at(-1)).toEqual({ kind: 'dice', value: 30, label: '', player: 0, thrown: true });
   });
 
   it('clear drops what is still queued', async () => {

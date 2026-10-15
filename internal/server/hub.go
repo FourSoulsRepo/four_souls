@@ -46,6 +46,7 @@ type Client struct {
 	name  string
 	token string
 	sets  []string
+	dice  string // the dice look from hello (V-19)
 	table *table
 
 	// Owned by the room goroutine.
@@ -261,7 +262,7 @@ func (h *Hub) hello(c *Client, env protocol.Envelope) {
 		c.fail(env.ID, protocol.ErrBadName, fmt.Sprintf("a nickname has 1 to %d characters", protocol.MaxName))
 		return
 	}
-	c.hello, c.name, c.sets = true, name, m.Sets
+	c.hello, c.name, c.sets, c.dice = true, name, m.Sets, protocol.CleanDice(m.Dice)
 	v := version.Get()
 	welcome := protocol.Welcome{Protocol: protocol.Version, App: v.App, Engine: v.Engine, Seat: -1, Create: h.mayCreate(c)}
 	if m.Token != "" {
@@ -284,7 +285,7 @@ func (h *Hub) hello(c *Client, env protocol.Envelope) {
 				welcome.Token, welcome.Seat = m.Token, g.room.seatOf(m.Token)
 				c.send(protocol.TypeWelcome, env.ID, welcome)
 				c.room.Store(g.room)
-				g.room.send(request{client: c, attach: m.Token})
+				g.room.send(request{client: c, attach: m.Token, dice: c.dice})
 				return
 			}
 		}
@@ -452,6 +453,9 @@ func (h *Hub) start(t *table) {
 	seats := make([]roomSeat, len(t.seats))
 	for i, s := range t.seats {
 		seats[i] = roomSeat{name: s.name, token: s.token, client: s.client}
+		if s.client != nil {
+			seats[i].dice = s.client.dice
+		}
 	}
 	gameSeed := seed()
 	if h.seed != 0 {
@@ -522,6 +526,9 @@ func (h *Hub) tableChanged(t *table) {
 	seats := make([]protocol.Seat, len(t.seats))
 	for i, s := range t.seats {
 		seats[i] = protocol.Seat{Seat: i, Name: s.name, Connected: s.client != nil, Ready: s.ready}
+		if s.client != nil {
+			seats[i].Dice = s.client.dice
+		}
 	}
 	for i, s := range t.seats {
 		if s.client != nil {

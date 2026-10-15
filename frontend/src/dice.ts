@@ -1,6 +1,6 @@
 // Dice looks (V-19). A dice texture is a 3×3 grid of faces, as in
 // Tabletop Simulator: the top row is unused, then 2 4 5 and 1 3 6.
-import type { GameEvent } from './protocol';
+import type { GameEvent, Seat } from './protocol';
 
 const faces = new Map([
   [2, { col: 0, row: 1 }],
@@ -15,6 +15,15 @@ const faces = new Map([
 // no face for (a modified roll can be 0 or 7), drawn as plain numbers.
 export function faceOf(value: number): { col: number; row: number } | null {
   return faces.get(value) ?? null;
+}
+
+// diceImage is a player's dice texture (15.6, V-19): their seat's look,
+// or the default (the first) for a seat without one, as a bot's. An
+// unknown look or a missing file gives "": a plain die.
+export function diceImage(looks: readonly { id: string; image: string }[], seats: readonly Seat[] | null | undefined, player: number): string {
+  const id = seats?.find((s) => s.seat === player)?.dice;
+  const look = id ? looks.find((d) => d.id === id) : looks[0];
+  return look?.image ?? '';
 }
 
 // tumbleFaces are the faces a thrown die shows as it lands and bounces

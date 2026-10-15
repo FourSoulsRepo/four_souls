@@ -294,6 +294,52 @@ func TestReconnect(t *testing.T) {
 	}
 }
 
+// arriveWithDice connects a player whose hello carries a dice look.
+func arriveWithDice(t *testing.T, h *Hub, name, token, dice string) *player {
+	t.Helper()
+	p := &player{t: t, conn: newMemConn()}
+	p.c = h.Connect(p.conn)
+	p.say(protocol.TypeHello, protocol.Hello{Protocol: protocol.Version, Name: name, Role: protocol.RolePlayer, Sets: []string{"b2"}, Token: token, Dice: dice})
+	p.next(protocol.TypeWelcome, nil)
+	return p
+}
+
+// TestSeatsShowDice: each seat's dice look reaches the other players,
+// at the table and in the game; a bad ID is the default (V-19).
+func TestSeatsShowDice(t *testing.T) {
+	h := startHub(t)
+	ann := arriveWithDice(t, h, "Ann", "", "tear")
+	ann.say(protocol.TypeCreate, protocol.Create{Seats: 2})
+	var tb protocol.Table
+	ann.next(protocol.TypeTable, &tb)
+	bob := arriveWithDice(t, h, "Bob", "", "Bad look!")
+	bob.say(protocol.TypeJoin, protocol.Join{Game: tb.Game})
+	bob.next(protocol.TypeTable, &tb)
+	if tb.Seats[0].Dice != "tear" || tb.Seats[1].Dice != "" {
+		t.Errorf("table seats %+v; want tear and the default", tb.Seats)
+	}
+	ann.say(protocol.TypeReady, protocol.Ready{Ready: true})
+	bob.say(protocol.TypeReady, protocol.Ready{Ready: true})
+	var u protocol.Update
+	bob.next(protocol.TypeUpdate, &u)
+	if u.Seats[0].Dice != "tear" || u.Seats[1].Dice != "" {
+		t.Errorf("game seats %+v; want tear and the default", u.Seats)
+	}
+
+	// Away, the seat keeps its look; back, it takes the new hello's.
+	token := ann.c.token
+	ann.c.Leave()
+	u = bob.untilUpdate(func(u protocol.Update) bool { return u.Pause != nil })
+	if u.Seats[0].Dice != "tear" {
+		t.Errorf("away seat %+v; want it to keep tear", u.Seats[0])
+	}
+	arriveWithDice(t, h, "Ann", token, "gold")
+	u = bob.untilUpdate(func(u protocol.Update) bool { return u.Pause == nil })
+	if u.Seats[0].Dice != "gold" {
+		t.Errorf("returned seat %+v; want gold", u.Seats[0])
+	}
+}
+
 // TestFourClientsRace: four clients play random allowed intents at the
 // same time; run with -race (6.2).
 func TestFourClientsRace(t *testing.T) {

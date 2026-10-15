@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"flag"
 	"os"
+	"strings"
 	"testing"
 
 	engine "github.com/FourSoulsRepo/rules_engine"
@@ -28,12 +29,12 @@ func TestGolden(t *testing.T) {
 		id   int
 		data any
 	}{
-		{TypeHello, 1, Hello{Protocol: Version, App: "0.1.0", Name: "Ann", Role: RolePlayer, Sets: []string{"b2"}}},
+		{TypeHello, 1, Hello{Protocol: Version, App: "0.1.0", Name: "Ann", Role: RolePlayer, Sets: []string{"b2"}, Dice: "tear"}},
 		// A fixed sample: an engine version bump is not a wire change.
 		{TypeWelcome, 1, Welcome{Protocol: Version, App: "0.1.0", Engine: "0.1.0", Token: "t0k3n", Seat: 0}},
 		{TypeIntent, 2, Intent{Intent: engine.Intent{Kind: engine.IntentPass}}},
 		{TypeResync, 3, struct{}{}},
-		{TypeUpdate, 0, Update{Step: 1, Events: []engine.Event{{Kind: engine.EvLooted, Player: 0, Card: "a_dime"}}, View: view, Allowed: g.Allowed(p), Aims: []engine.Aim{{Intent: 0, Targets: []engine.OptionView{{Object: 320, Player: engine.NoPlayer}, {Player: 1, IsPlayer: true}}, Reason: "Pick a monster or a player."}}, Seats: []Seat{{Seat: 0, Name: "Ann", Connected: true}, {Seat: 1, Name: "Bo"}}}},
+		{TypeUpdate, 0, Update{Step: 1, Events: []engine.Event{{Kind: engine.EvLooted, Player: 0, Card: "a_dime"}}, View: view, Allowed: g.Allowed(p), Aims: []engine.Aim{{Intent: 0, Targets: []engine.OptionView{{Object: 320, Player: engine.NoPlayer}, {Player: 1, IsPlayer: true}}, Reason: "Pick a monster or a player."}}, Seats: []Seat{{Seat: 0, Name: "Ann", Connected: true, Dice: "tear"}, {Seat: 1, Name: "Bo"}}}},
 		{TypeError, 2, Error{Code: ErrRefused, Message: "no loot play available", Rule: "R-CARD-08"}},
 		{TypeList, 4, struct{}{}},
 		{TypeGames, 4, Games{Games: []GameInfo{{ID: "g1", Host: "Ann", Seats: 4, Taken: 2, Sets: []string{"b2"}}}}},
@@ -41,7 +42,7 @@ func TestGolden(t *testing.T) {
 		{TypeJoin, 6, Join{Game: "g1"}},
 		{TypeReady, 7, Ready{Ready: true}},
 		{TypeLeave, 8, struct{}{}},
-		{TypeTable, 0, Table{Game: "g1", You: 1, Seats: []Seat{{Seat: 0, Name: "Ann", Connected: true, Ready: true}, {Seat: 1, Name: "Bo", Connected: true}}, Sets: []string{"b2"}, Options: &Options{Picking: PickRandom}}},
+		{TypeTable, 0, Table{Game: "g1", You: 1, Seats: []Seat{{Seat: 0, Name: "Ann", Connected: true, Ready: true, Dice: "tear"}, {Seat: 1, Name: "Bo", Connected: true}}, Sets: []string{"b2"}, Options: &Options{Picking: PickRandom}}},
 		{TypeSetup, 0, Setup{Phase: PhaseBan, Round: 1, Turn: 0, Pool: []engine.CardRef{"isaac", "cain"}, Banned: []Ban{{Seat: -1, Card: "eden"}}, Deadline: 1760000000000, Seats: []Seat{{Seat: 0, Name: "Ann"}}}},
 		{TypeBan, 9, BanCard{Card: "cain"}},
 		{TypePick, 10, PickCard{Card: "isaac"}},
@@ -121,5 +122,20 @@ func TestNames(t *testing.T) {
 	}
 	if got := UniqueName("Ann", []string{"Ann", "Ann (2)"}); got != "Ann (3)" {
 		t.Errorf("UniqueName = %q", got)
+	}
+}
+
+func TestCleanDice(t *testing.T) {
+	for id, want := range map[string]string{
+		"tear":                  "tear",
+		"holy_set-2":            "holy_set-2",
+		"":                      "",
+		"Tear":                  "",
+		"../x":                  "",
+		strings.Repeat("a", 33): "",
+	} {
+		if got := CleanDice(id); got != want {
+			t.Errorf("CleanDice(%q) = %q, want %q", id, got, want)
+		}
 	}
 }

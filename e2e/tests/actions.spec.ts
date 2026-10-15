@@ -592,6 +592,76 @@ test('an attack waits for the roller to throw; the die shows the engine\'s value
   await shot(active, 'last-roll');
 });
 
+// giveLooks gives the page two dice looks of plain colors, so a test
+// tells them apart without the private textures, and picks one as the
+// viewer's own. The game's seats keep the looks sent in hello.
+async function giveLooks(page: Page, own: string): Promise<Record<string, string>> {
+  return page.evaluate((own) => {
+    interface S {
+      settings: { dice: string };
+    }
+    const store = (window as unknown as { fourSouls: { store: { getState: () => S; setState: (p: object) => void } } }).fourSouls.store;
+    const paint = (color: string) => {
+      const c = document.createElement('canvas');
+      c.width = c.height = 96;
+      const g = c.getContext('2d');
+      if (g) {
+        g.fillStyle = color;
+        g.fillRect(0, 0, 96, 96);
+      }
+      return c.toDataURL();
+    };
+    const images = { tear: paint('#b33'), gold: paint('#db3') };
+    store.setState({
+      dice: Object.entries(images).map(([id, image]) => ({ id, name: id, image })),
+      settings: { ...store.getState().settings, dice: own },
+    });
+    return images;
+  }, own);
+}
+
+test("every screen draws a roll with the roller's dice look (15.6)", async ({ browser }) => {
+  const pages = await startGame(browser, ['Odile', 'Pavo']);
+  const active = await activePage(pages, click);
+  const other = pages.find((p) => p !== active);
+  if (!other) {
+    throw new Error('no other page');
+  }
+  // Both said hello with the default look; each seat lists it.
+  for (const page of pages) {
+    const looks = await page.evaluate(() => {
+      interface S {
+        game: { seats: { dice?: string }[] | null } | null;
+      }
+      const s = (window as unknown as { fourSouls: { store: { getState: () => S } } }).fourSouls.store.getState();
+      return s.game?.seats?.map((x) => x.dice);
+    });
+    expect(looks).toEqual(['tear', 'tear']);
+  }
+  // The other player now likes gold dice; the roller's look still wins.
+  const images = await giveLooks(active, 'tear');
+  await giveLooks(other, 'gold');
+  const image = (die: ReturnType<Page['locator']>) => die.locator('img').getAttribute('src');
+
+  await expect(turnAction(active, 'Attack')).toBeEnabled();
+  await click(active, turnAction(active, 'Attack'));
+  await settle(pages, click, async () => (await throwButton(active).count()) > 0);
+  const shaking = other.getByRole('region', { name: 'Throw' }).locator('.throw-shake .die');
+  await expect(shaking).toBeVisible();
+  expect(await image(shaking)).toBe(images.tear);
+  await shot(other, 'dice-roller-look');
+
+  await active.keyboard.press(' ');
+  const landed = active.getByTestId('effect-dice').locator('.die');
+  await expect(landed).toBeVisible();
+  expect(await image(landed)).toBe(images.tear);
+  await settle(pages, click, backToMe(active, await turnNumber(active)));
+  for (const page of pages) {
+    const last = page.getByRole('complementary', { name: 'Stack' }).getByRole('group', { name: 'Last roll' }).locator('.die');
+    expect(await image(last)).toBe(images.tear);
+  }
+});
+
 // nameOf is the page's own nickname, from the seats of its update.
 async function nameOf(page: Page): Promise<string | undefined> {
   return page.evaluate(() => {

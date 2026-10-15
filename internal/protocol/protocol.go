@@ -87,6 +87,7 @@ type Hello struct {
 	Role     Role     `json:"role"`
 	Sets     []string `json:"sets"`            // card set codes the client has (CD-03)
 	Token    string   `json:"token,omitempty"` // to reclaim a seat
+	Dice     string   `json:"dice,omitempty"`  // the player's dice look (V-19)
 }
 
 // Welcome accepts a client.
@@ -160,6 +161,8 @@ type Seat struct {
 	Connected bool   `json:"connected"`
 	Ready     bool   `json:"ready,omitempty"`  // in the lobby
 	Kicked    bool   `json:"kicked,omitempty"` // the seat is empty for good (N-08)
+	// Dice is the seat's dice look (V-19); "" draws the default one.
+	Dice string `json:"dice,omitempty"`
 }
 
 // GameInfo is one game in the lobby list.
@@ -389,6 +392,24 @@ func CleanName(name string) (string, bool) {
 		}
 	}
 	return name, true
+}
+
+// MaxDice is the longest dice look ID, in bytes.
+const MaxDice = 32
+
+// CleanDice checks a dice look ID from hello: up to MaxDice lowercase
+// letters, digits, '_' or '-'. Anything else is "", the default look.
+// The server keeps unknown IDs; each client draws them plain (V-19).
+func CleanDice(id string) string {
+	if len(id) > MaxDice {
+		return ""
+	}
+	for _, r := range id {
+		if (r < 'a' || r > 'z') && (r < '0' || r > '9') && r != '_' && r != '-' {
+			return ""
+		}
+	}
+	return id
 }
 
 // UniqueName makes name differ from the taken ones: "Ann", then "Ann (2)".

@@ -23,9 +23,10 @@ type roomSeat struct {
 	name   string
 	token  string
 	client *Client
-	skip   []int // stack item IDs a "skip all" passes on (N-06); nil: off
-	wait   bool  // "wait for my turn": pass until the turn before ends (N-16)
-	kicked bool  // empty for good after a vote (N-08)
+	skip   []int  // stack item IDs a "skip all" passes on (N-06); nil: off
+	wait   bool   // "wait for my turn": pass until the turn before ends (N-16)
+	kicked bool   // empty for good after a vote (N-08)
+	dice   string // the dice look (V-19); kept while the player is away
 }
 
 type request struct {
@@ -33,6 +34,7 @@ type request struct {
 	msg     []byte
 	leave   bool
 	attach  string // the token of a client coming back
+	dice    string // the returning client's dice look (V-19)
 	timeout int    // a ban turn's timer ran out (its turn number)
 	respond int    // the response timer ran out (its number)
 }
@@ -146,7 +148,7 @@ func (r *Room) handle(req request) {
 		r.drop(c)
 		return
 	case req.attach != "":
-		r.attach(c, req.attach)
+		r.attach(c, req.attach, req.dice)
 		return
 	case req.timeout > 0:
 		r.banTimeout(req.timeout)
@@ -183,7 +185,7 @@ func (r *Room) handle(req request) {
 }
 
 // attach gives a returning player their seat back (N-08).
-func (r *Room) attach(c *Client, token string) {
+func (r *Room) attach(c *Client, token, dice string) {
 	i := slices.Index(r.tokens, token)
 	if i < 0 || r.seats[i].kicked {
 		c.fail(0, protocol.ErrNotSeated, "no seat for this token")
@@ -194,7 +196,7 @@ func (r *Room) attach(c *Client, token string) {
 		old.seat = -1
 		old.conn.Close()
 	}
-	r.seats[i].client = c
+	r.seats[i].client, r.seats[i].dice = c, dice
 	c.seat = i
 	r.clients = append(r.clients, c)
 	if r.match != nil {
@@ -250,7 +252,7 @@ func (r *Room) broadcast(events []engine.Event) {
 func (r *Room) seatViews() []protocol.Seat {
 	seats := make([]protocol.Seat, len(r.seats))
 	for i, s := range r.seats {
-		seats[i] = protocol.Seat{Seat: i, Name: s.name, Connected: s.client != nil, Kicked: s.kicked}
+		seats[i] = protocol.Seat{Seat: i, Name: s.name, Connected: s.client != nil, Kicked: s.kicked, Dice: s.dice}
 	}
 	return seats
 }

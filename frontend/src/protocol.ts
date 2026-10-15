@@ -18,6 +18,7 @@ export interface Hello {
   role: 'player' | 'spectator' | 'judge';
   sets: string[];
   token?: string;
+  dice?: string; // the player's dice look (V-19)
 }
 
 export interface Welcome {
@@ -98,6 +99,8 @@ export interface Seat {
   connected: boolean;
   ready?: boolean;
   kicked?: boolean;
+  // dice is the seat's dice look (V-19); none draws the default one.
+  dice?: string;
 }
 
 export interface Table {

@@ -1,6 +1,6 @@
 import { motion } from 'motion/react';
 import { useEffect, useRef, useState } from 'react';
-import { tumbleFaces } from '../dice';
+import { diceImage, tumbleFaces } from '../dice';
 import { useApp, type Playing } from '../store';
 import { Card } from './Card';
 import { Die } from './Die';
@@ -62,7 +62,8 @@ export function Effects() {
 
 function Effect({ playing }: { playing: Playing }) {
   const { effect, scale, done } = playing;
-  const diceImage = useApp((s) => s.dice.find((d) => d.id === s.settings.dice)?.image ?? '');
+  // A die is drawn in its roller's look (15.6).
+  const image = useApp((s) => (effect.kind === 'dice' ? diceImage(s.dice, s.game?.seats, effect.player) : ''));
   const duration = (seconds: number) => seconds * scale;
   switch (effect.kind) {
     case 'fly':
@@ -73,7 +74,7 @@ function Effect({ playing }: { playing: Playing }) {
       return <Popup at={effect.at} text={effect.text} tone={effect.tone} playing={playing} />;
     case 'dice':
       if (effect.thrown) {
-        return <ThrownDie value={effect.value} label={effect.label} image={diceImage} playing={playing} />;
+        return <ThrownDie value={effect.value} label={effect.label} image={image} playing={playing} />;
       }
       return (
         // anim: dice
@@ -84,7 +85,7 @@ function Effect({ playing }: { playing: Playing }) {
           transition={{ duration: duration(1.1), times: [0, 0.3, 0.8, 1] }}
           onAnimationComplete={done}
         >
-          <Die value={effect.value} image={diceImage} />
+          <Die value={effect.value} image={image} />
           {effect.label && <div className="effect-label">{effect.label}</div>}
         </motion.div>
       );

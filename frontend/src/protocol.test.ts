@@ -28,7 +28,7 @@ const modeled: Record<string, Envelope> = {
   hello: {
     type: 'hello',
     id: 1,
-    data: { protocol: 3, app: '0.1.0', name: 'Ann', role: 'player', sets: ['b2'] } satisfies Hello,
+    data: { protocol: 3, app: '0.1.0', name: 'Ann', role: 'player', sets: ['b2'], dice: 'tear' } satisfies Hello,
   },
   welcome: {
     type: 'welcome',
@@ -128,7 +128,7 @@ const modeled: Record<string, Envelope> = {
         },
       ],
       seats: [
-        { seat: 0, name: 'Ann', connected: true },
+        { seat: 0, name: 'Ann', connected: true, dice: 'tear' },
         { seat: 1, name: 'Bo', connected: false },
       ],
     } satisfies Update,
@@ -166,7 +166,7 @@ const modeled: Record<string, Envelope> = {
       game: 'g1',
       you: 1,
       seats: [
-        { seat: 0, name: 'Ann', connected: true, ready: true },
+        { seat: 0, name: 'Ann', connected: true, ready: true, dice: 'tear' },
         { seat: 1, name: 'Bo', connected: true },
       ],
       sets: ['b2'],

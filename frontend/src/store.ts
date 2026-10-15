@@ -355,6 +355,7 @@ export const useApp = create<AppState>()((set, get) => {
         role: 'player',
         sets,
         ...(token ? { token } : {}),
+        dice: get().settings.dice,
       };
       send('hello', hello);
       return true;

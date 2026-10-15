@@ -214,7 +214,7 @@ Images come first, so the new table is built with backs and mats.
    5. A disconnected player pauses the game, as now.
 5. Split into 15.59 – 15.63; tasks moved there.
 
-### [ ] 15.6 Each player's own dice
+### [x] 15.6 Each player's own dice
 
 1. Goal: everyone sees the roller's dice, not their own (V-19).
 2. Tasks:
@@ -227,6 +227,20 @@ Images come first, so the new table is built with backs and mats.
 3. Done when:
    1. Server test: each seat's look reaches the other players.
    2. e2e test: two players see the same look for one roll.
+4. Result (2026-10-15)
+   1. `hello` and `Seat` gain `dice`; added fields keep protocol 3 (ADR 006).
+   2. `CleanDice`: lowercase letters, digits, `_`, `-`; else the default.
+   3. The table seat shows its client's look; the game seat keeps it.
+   4. Away, the seat keeps its look; a return takes the new hello's.
+   5. `diceImage` (`dice.ts`) finds the roller's texture in the seats.
+   6. Throw, landing die, stack roll icons and last roll use it.
+   7. No look (a bot): the default; an unknown look: a plain die.
+   8. Golden files: hello and seats carry a look.
+   9. Tests: `TestSeatsShowDice`, `TestCleanDice`, `diceImage` unit tests.
+   10. e2e: the other player picks gold; the roller's tear shows on both.
+   11. `make e2e` hit 19.21 (Eden in the soul test); fixed first.
+   12. UC-12, ADR 006, Client and Server wiki, CHANGELOG updated.
+   13. Screenshots: `.cache/screenshots/15.6/before/` and `after/`.
 
 ### [~] 15.7 Never leave the player lost
 

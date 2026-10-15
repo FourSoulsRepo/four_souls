@@ -17,7 +17,7 @@ WebSocket (ws.go) ──Conn──▶ Client ──▶ Hub (lobby goroutine)
 
 ## A game's life
 
-1. Hello: protocol version, nickname, card sets; the server keeps or makes a token.
+1. Hello: protocol version, nickname, card sets, dice look; the server keeps or makes a token. The seat keeps the look (`CleanDice`: a bad ID is the default), even while its player is away, and every table and update lists it (V-19).
 2. Lobby: create (seats, sets, options) or join; ready. A full, ready table becomes a Room.
 3. Setup: host bans out; ban rounds in snake order with an optional timer; random or draft picks.
 4. Play: each intent is applied for the client's own seat; then `after` runs automatic passes, restarts the response timer, sends every client its update and records the steps.

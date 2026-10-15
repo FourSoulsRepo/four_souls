@@ -13,7 +13,7 @@ export type Effect =
   | { kind: 'popup'; at: string[]; text: string; tone: 'good' | 'bad' }
   // dice: thrown for a fresh roll or a reroll (15.62); a changed roll
   // spins in.
-  | { kind: 'dice'; value: number; label: string; thrown?: boolean }
+  | { kind: 'dice'; value: number; label: string; player: number; thrown?: boolean }
   | { kind: 'banner'; text: string }
   | { kind: 'reveal'; card: string }
   // place: a card flies into a slot and stays there until the view is
@@ -110,10 +110,10 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
         break;
       }
       case 'dice_rolled':
-        out.push({ kind: 'dice', value: amount, label: e.text ?? '', thrown: true });
+        out.push({ kind: 'dice', value: amount, label: e.text ?? '', player: e.player, thrown: true });
         break;
       case 'roll_changed':
-        out.push({ kind: 'dice', value: amount, label: e.text ?? '' });
+        out.push({ kind: 'dice', value: amount, label: e.text ?? '', player: e.player });
         break;
       case 'gained_cents':
         out.push({ kind: 'popup', at: playerZones(e.player), text: `+${String(amount)}¢`, tone: 'good' });

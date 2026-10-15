@@ -57,6 +57,9 @@
 * **1d. Animations off:** updates show at once.
 * **1e. Dice look (V-19):** a roll shows the face of the player's dice texture.
   * No texture (public clone) or a value past 1–6: a plain die with the number.
+  * Every screen draws a roll in the roller's look, not the viewer's (15.6).
+  * A seat without a look, as a bot's, gets the default one.
+  * A look this app does not have: a plain die.
 * **1f. Card backs (V-26):** each deck shows its own back.
   * An opponent's hand is fanned loot backs with its card count.
   * No back images (public clone): plain dark backs with the deck name.

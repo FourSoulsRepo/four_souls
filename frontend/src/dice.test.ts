@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { faceOf, lastRollAfter, lastRollText, tumbleFaces } from './dice';
+import { diceImage, faceOf, lastRollAfter, lastRollText, tumbleFaces } from './dice';
 
 describe('faceOf', () => {
   it('finds each face of a d6 in the texture', () => {
@@ -52,5 +52,34 @@ describe('lastRollAfter', () => {
     const name = (p: number) => ['Ann', 'Bo'].at(p) ?? '?';
     expect(lastRollText({ player: 0, value: 4, label: 'attack roll' }, name)).toBe('Ann rolled 4 — attack roll');
     expect(lastRollText({ player: 1, value: 2, label: '' }, name)).toBe('Bo rolled 2');
+  });
+});
+
+describe('diceImage', () => {
+  const looks = [
+    { id: 'tear', image: '/tear.webp' },
+    { id: 'gold', image: '/gold.webp' },
+    { id: 'lost', image: '' },
+  ];
+  const seats = [
+    { seat: 0, name: 'Ann', connected: true, dice: 'gold' },
+    { seat: 1, name: 'Bot', connected: true },
+    { seat: 2, name: 'Cy', connected: true, dice: 'd20' },
+    { seat: 3, name: 'Di', connected: true, dice: 'lost' },
+  ];
+
+  it("draws each roller's own look (15.6)", () => {
+    expect(diceImage(looks, seats, 0)).toBe('/gold.webp');
+  });
+
+  it('gives a seat without a look the default one', () => {
+    expect(diceImage(looks, seats, 1)).toBe('/tear.webp');
+    expect(diceImage(looks, null, 0)).toBe('/tear.webp');
+  });
+
+  it('draws an unknown look or a missing file plain', () => {
+    expect(diceImage(looks, seats, 2)).toBe('');
+    expect(diceImage(looks, seats, 3)).toBe('');
+    expect(diceImage([], seats, 1)).toBe('');
   });
 });

@@ -46,7 +46,7 @@ describe('claims', () => {
   });
 
   it('claims nothing for effects that bring no card', () => {
-    expect(claimEffect({ kind: 'dice', value: 3, label: '' })).toBe(true);
+    expect(claimEffect({ kind: 'dice', value: 3, label: '', player: 0 })).toBe(true);
     expect(claimEffect({ kind: 'fly', from: ['deck-loot'], to: ['hand-1'], back: 'loot' })).toBe(true);
     expect(clashes).toEqual([]);
   });
