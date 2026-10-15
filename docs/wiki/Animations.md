@@ -39,6 +39,7 @@ Claims are counted in *beats*: a beat is one update, from the start of its effec
 | `aim-fade-in` | The arrow's first block fades in, in step with the march. | Aiming a card. | Nothing; not a game event. | `components/Table.css` |
 | `aim-fade-out` | The arrow's last block fades out, in step with the march. | Aiming a card. | Nothing; not a game event. | `components/Table.css` |
 | `aim-why` | The hint under an invalid aim fades out. | Aiming at a card that is not a target. | Nothing; not a game event. | `components/Table.css` |
+| `hand-glow` | The green aura behind a playable hand card breathes slowly. | CSS class `.hand-card.usable` (15.27). | Nothing; not a game event. | `components/Table.css` |
 
 CSS `transition`s on hover and focus are not listed: they answer the pointer, not the game, and cannot clash with an effect.
 

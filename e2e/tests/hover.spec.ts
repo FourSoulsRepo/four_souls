@@ -11,10 +11,15 @@ import { activePage, click } from './turn';
 
 const fast = () => `${appURL()}&anim=off`;
 const gallery = '/?fake&nosplash&screen=cards';
-// green is the glow of a playable hand card.
-const green = /rgb\(94, 224, 74\)/;
+// green is the halo behind a playable hand card.
+const green = /rgba\(110, 255, 70, /;
 
 test.setTimeout(120_000);
+
+// glow is the halo behind a hand card, drawn by its slot in the fan.
+function glow(card: Locator): Promise<string> {
+  return card.evaluate((el) => (el.parentElement ? getComputedStyle(el.parentElement, '::before').boxShadow : ''));
+}
 
 async function box(l: Locator) {
   const b = await l.boundingBox();
@@ -45,16 +50,16 @@ test('playable hand cards glow green; a hovered one rises large (15.27)', async 
   // The active player may play loot: those cards glow green.
   await expect(playable.first()).toBeVisible();
   for (const card of await playable.all()) {
-    await expect(card).toHaveCSS('box-shadow', green);
+    expect(await glow(card)).toMatch(green);
   }
   for (const card of await active.locator('.hand .card:not(.hl-act)').all()) {
-    await expect(card).not.toHaveCSS('box-shadow', green);
+    expect(await glow(card)).not.toMatch(green);
   }
   // The other player holds no priority: nothing in their hand glows.
   await expect(hand(other).first()).toBeVisible();
   await expect(other.locator('.hand .card.hl-act')).toHaveCount(0);
   for (const card of await hand(other).all()) {
-    await expect(card).not.toHaveCSS('box-shadow', green);
+    expect(await glow(card)).not.toMatch(green);
   }
 
   // A hovered hand card rises: its zoom stands on the window's bottom

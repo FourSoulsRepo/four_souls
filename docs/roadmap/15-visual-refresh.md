@@ -856,6 +856,18 @@ Images come first, so the new table is built with backs and mats.
    17. e2e test: the hand zoom rises over its card; a monster's is beside it.
    18. e2e test: The D6's zoom shows the Eternal tip; Isaac's has none.
    19. Screenshots: `.cache/screenshots/15.27/before/` and `after/`.
+5. Owner notes (2026-10-15)
+   1. Owner: the green glow looks cheap; make it look like a serious game.
+6. Result of the fixes (2026-10-15)
+   1. No hard 3 px ring any more.
+   2. A thin light rim on the card's edge; light falls a little inward.
+   3. Behind the card, a soft aura in layers: bright near, fading out.
+   4. The wide aura breathes slowly; only its opacity moves.
+   5. Reduced motion stands it still.
+   6. New animation `hand-glow`, listed in the Animations wiki page.
+   7. The card's fan slot draws the aura: class `usable`, beside `hl-act`.
+   8. e2e test reads the aura from the slot, not a ring on the card.
+   9. Screenshots: `.cache/screenshots/15.27/fix/`.
 
 ### [ ] 15.28 Prompt banners
 

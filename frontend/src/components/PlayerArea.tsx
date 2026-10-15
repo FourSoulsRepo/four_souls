@@ -276,7 +276,7 @@ function HandCard({ card, ui, spread }: { card: CardView; ui: Interact; spread: 
   };
   return (
     <div
-      className={`hand-card${play ? ' playable' : ''}${offset ? ' dragging' : ''}${aiming ? ' aiming' : ''}`}
+      className={`hand-card${play ? ' playable' : ''}${handle.highlight === 'act' ? ' usable' : ''}${offset ? ' dragging' : ''}${aiming ? ' aiming' : ''}`}
       style={
         offset
           ? { transform: `translate(${String(offset.x)}px, ${String(offset.y)}px) scale(1.08)` }

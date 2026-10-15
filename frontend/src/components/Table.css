@@ -574,9 +574,66 @@
   z-index: 10;
 }
 
-/* A playable hand card glows green; the rest stay plain (15.27, H-12). */
+/* A playable hand card glows green; the rest stay plain (15.27, H-12).
+   Like Hearthstone's: no hard ring. A thin light rim on the card's
+   edge, light falling inward over the art, and behind the card a soft
+   aura in layers, bright near the edge and fading out. The aura
+   breathes slowly; only its opacity moves. */
 .own .hand .card.hl-act {
-  box-shadow: 0 0 0 3px #5ee04a, 0 0 16px 3px rgb(94 224 74 / 70%);
+  box-shadow: 0 2px 6px rgb(0 0 0 / 40%);
+}
+
+.own .hand .card.hl-act::after {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow:
+    inset 0 0 0 1px rgb(236 255 222 / 55%),
+    inset 0 0 8px 1px rgb(150 255 110 / 30%);
+  content: "";
+  pointer-events: none;
+}
+
+.own .hand-card.usable {
+  position: relative;
+  isolation: isolate;
+}
+
+.own .hand-card.usable::before,
+.own .hand-card.usable::after {
+  position: absolute;
+  inset: -1px;
+  z-index: -1;
+  border-radius: 6px;
+  content: "";
+  pointer-events: none;
+}
+
+/* The steady part: a crisp light edge and a tight bright halo. */
+.own .hand-card.usable::before {
+  box-shadow:
+    0 0 1px 1px rgb(220 255 190 / 75%),
+    0 0 5px 1px rgb(110 255 70 / 80%),
+    0 0 12px 3px rgb(60 210 45 / 50%);
+}
+
+/* The breathing part: the wide, soft falloff. */
+.own .hand-card.usable::after {
+  box-shadow:
+    0 0 22px 6px rgb(50 200 45 / 40%),
+    0 0 44px 14px rgb(25 150 35 / 22%);
+  animation: hand-glow 2.4s ease-in-out infinite alternate;
+}
+
+/* anim: hand-glow */
+@keyframes hand-glow {
+  from {
+    opacity: 0.45;
+  }
+
+  to {
+    opacity: 1;
+  }
 }
 
 /* Dragging a hand card to play it (7.7); only transform changes. */
@@ -717,7 +774,8 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .aim-arrow * {
+  .aim-arrow *,
+  .own .hand-card.usable::after {
     animation: none;
   }
 }
