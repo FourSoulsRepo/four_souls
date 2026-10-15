@@ -35,6 +35,7 @@ import type { Box } from './zoom';
 import { emptyLobby, leftTable, lost, onMessage, remember, type Screen, type Session } from './lobby';
 import { connect, disconnect, drop, send } from './net';
 import { claimEffect, nextBeat } from './animations';
+import { lastRollAfter, type LastRoll } from './dice';
 import { createPlayback, effectsFor, slotZone, type Effect } from './playback';
 import { loadSounds } from './sounds';
 import {
@@ -115,6 +116,8 @@ interface AppState extends Session {
   placed: Placed[];
   // history is the match so far, as this viewer saw it (7.9).
   history: Entry[];
+  // lastRoll is the last roll shown, for the small die by the stack (15.63).
+  lastRoll: LastRoll | null;
   // looking is the cards an effect lets this player look at, shown
   // until endLook (V-07).
   looking: Looked[];
@@ -259,6 +262,7 @@ export const useApp = create<AppState>()((set, get) => {
         placed: [],
         behind: playback.pending() > 0,
         history: [...s.history, ...entries],
+        lastRoll: lastRollAfter(s.lastRoll, u.events ?? []),
         ...(looked.length > 0 ? { looking: looked } : {}),
       });
     },
@@ -307,7 +311,7 @@ export const useApp = create<AppState>()((set, get) => {
   const stopPlayback = () => {
     playback.clear();
     get().playing?.done();
-    set({ history: [], looking: [], placed: [] });
+    set({ history: [], lastRoll: null, looking: [], placed: [] });
   };
 
   // open connects to address and says hello; the server answers with
@@ -364,6 +368,7 @@ export const useApp = create<AppState>()((set, get) => {
     playing: null,
     placed: [],
     history: [],
+    lastRoll: null,
     looking: [],
     endLook: () => {
       set({ looking: [] });

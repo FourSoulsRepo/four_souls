@@ -53,6 +53,10 @@
   * The others read "Ann is throwing…" in the panel.
   * The others see Ann's die shaking where it will land.
   * The action bar says "Throw the die", or "Ann is throwing".
+* **2k. The last roll (15.63):** a small die by the "Stack" title shows it.
+  * It shows the final value, after changes and rerolls.
+  * Hovering it names the roller and the roll: "Ann rolled 4 — attack roll".
+  * It stays until the next roll; before the first one there is none.
 
 ## Postconditions
 

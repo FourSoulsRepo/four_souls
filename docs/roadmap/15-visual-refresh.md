@@ -1692,7 +1692,7 @@ Images come first, so the new table is built with backs and mats.
    13. The fast-burst e2e test looks for its fly on every frame.
    14. The longer throw left the fly too short for `toBeVisible`'s polling.
 
-### [ ] 15.63 Last roll by the stack
+### [x] 15.63 Last roll by the stack
 
 1. Goal: the last roll stays visible as a small die by the stack (F-21).
 2. Tasks:
@@ -1701,3 +1701,13 @@ Images come first, so the new table is built with backs and mats.
 3. Done when:
    1. e2e test: after a roll the small die shows its value.
    2. `make screenshots` shows it.
+4. Result (2026-10-15)
+   1. A small die right of the "Stack" title, in the viewer's dice look.
+   2. `lastRollAfter` (`dice.ts`) follows the shown events.
+   3. A throw starts a new last roll; reroll, change and result set its value.
+   4. Hover or focus: "Ann rolled 4 — attack roll" (`lastRollText`).
+   5. None before the first roll; reset with the history.
+   6. Unit tests: the fold and the text.
+   7. e2e: after the attack, both screens show the final value; hover names it.
+   8. UC-14, Client wiki, CHANGELOG updated.
+   9. Screenshot: `screen-last-roll.png`.

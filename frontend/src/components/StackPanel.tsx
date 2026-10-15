@@ -1,4 +1,5 @@
 import type { PointerEvent } from 'react';
+import { lastRollText } from '../dice';
 import { useKey } from '../keys';
 import type { GameView, Intent, StackItem } from '../protocol';
 import { stackCard, stackIcon, stackParts, stackWait, type LinePart, type Names } from '../stack';
@@ -38,6 +39,7 @@ export function StackPanel({ view, you, names, pass, disabled }: Props) {
     <aside className={`stack${stack.length === 0 ? ' stack-empty' : ''}`} aria-label="Stack">
       <header>
         <h2>Stack</h2>
+        <LastRollDie names={names} />
         <button type="button" className="stack-pass" title="Pass (Space)" disabled={!lit} onClick={press}>
           Pass
         </button>
@@ -197,5 +199,25 @@ function SkullIcon() {
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <path d={skullPath} />
     </svg>
+  );
+}
+
+// LastRollDie is the last roll as a small die by the title (15.63, F-21):
+// its final value, after changes and rerolls. Hover or focus names the
+// roller and what the roll was for.
+function LastRollDie({ names }: { names: Names }) {
+  const last = useApp((s) => s.lastRoll);
+  const diceImage = useApp((s) => s.dice.find((d) => d.id === s.settings.dice)?.image ?? '');
+  if (!last) {
+    return null;
+  }
+  const text = lastRollText(last, names.player);
+  return (
+    <span className="last-roll" role="group" aria-label="Last roll" tabIndex={0}>
+      <Die value={last.value} image={diceImage} />
+      <span className="last-roll-tip" role="tooltip">
+        {text}
+      </span>
+    </span>
   );
 }

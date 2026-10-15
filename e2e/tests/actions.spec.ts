@@ -511,14 +511,20 @@ async function recordRolls(page: Page): Promise<void> {
     }
     const w = window as unknown as {
       rolls: number[];
+      finals: number[];
       fourSouls: { store: { subscribe: (f: (s: S, old: S) => void) => void } };
     };
     w.rolls = [];
+    w.finals = [];
     w.fourSouls.store.subscribe((s, old) => {
       if (s.game && s.game.step !== old.game?.step) {
         for (const e of s.game.events ?? []) {
           if (e.kind === 'dice_rolled' && e.amount !== undefined) {
             w.rolls.push(e.amount);
+          }
+          // Every value a roll takes; the last one is the final (15.63).
+          if (['dice_rolled', 'roll_changed', 'roll_resolved'].includes(e.kind) && e.amount) {
+            w.finals.push(e.amount);
           }
         }
       }
@@ -530,7 +536,7 @@ async function rolls(page: Page): Promise<number[]> {
   return page.evaluate(() => (window as unknown as { rolls: number[] }).rolls);
 }
 
-test('an attack waits for the roller to throw; the die shows the engine\'s value (15.61)', async ({ browser }) => {
+test('an attack waits for the roller to throw; the die shows the engine\'s value; the last roll stays (15.61, 15.63)', async ({ browser }) => {
   const pages = await startGame(browser, ['Thea', 'Ruan']);
   const active = await activePage(pages, click);
   const other = pages.find((p) => p !== active);
@@ -571,6 +577,19 @@ test('an attack waits for the roller to throw; the die shows the engine\'s value
   for (const page of pages) {
     await expect.poll(async () => (await rolls(page)).map((v) => `Rolled ${String(v)}`)).toEqual([label]);
   }
+
+  // Once the attack is over, the last roll stays as a small die by the
+  // stack with its final value (15.63); hover names the roller.
+  await settle(pages, click, backToMe(active, await turnNumber(active)));
+  for (const page of pages) {
+    const last = stack(page).getByRole('group', { name: 'Last roll' });
+    const final = await page.evaluate(() => (window as unknown as { finals: number[] }).finals.at(-1));
+    await expect(last.locator('.die')).toHaveAttribute('aria-label', `Rolled ${String(final)}`);
+    await last.hover();
+    await expect(last.getByRole('tooltip')).toBeVisible();
+    await expect(last.getByRole('tooltip')).toHaveText(new RegExp(`^(Thea|Ruan) rolled ${String(final)}( — .+)?$`));
+  }
+  await shot(active, 'last-roll');
 });
 
 // nameOf is the page's own nickname, from the seats of its update.

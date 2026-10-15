@@ -387,6 +387,50 @@
   color: var(--muted);
 }
 
+/* The last roll, a small die by the title (15.63, F-21). Hover or
+   focus shows who rolled it and what for. */
+.last-roll {
+  position: relative;
+  display: grid;
+  place-items: center;
+  margin-right: auto;
+  border-radius: 6px;
+  outline: none;
+}
+
+.last-roll .die {
+  width: 22px;
+  height: 22px;
+  border-radius: 5px;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 60%);
+}
+
+.last-roll .die-plain {
+  font-size: 13px;
+}
+
+.last-roll:focus-visible {
+  box-shadow: 0 0 0 2px var(--muted);
+}
+
+.last-roll-tip {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 5;
+  display: none;
+  padding: 4px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  white-space: nowrap;
+  background: rgb(0 0 0 / 85%);
+}
+
+.last-roll:hover .last-roll-tip,
+.last-roll:focus .last-roll-tip {
+  display: block;
+}
+
 .stack ol {
   display: flex;
   flex-direction: column;

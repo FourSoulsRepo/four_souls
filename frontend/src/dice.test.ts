@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { faceOf, tumbleFaces } from './dice';
+import { faceOf, lastRollAfter, lastRollText, tumbleFaces } from './dice';
 
 describe('faceOf', () => {
   it('finds each face of a d6 in the texture', () => {
@@ -29,5 +29,28 @@ describe('tumbleFaces', () => {
       expect(new Set(faces).size).toBe(3);
       expect(faces.every((f) => f >= 1 && f <= 6)).toBe(true);
     }
+  });
+});
+
+describe('lastRollAfter', () => {
+  it('keeps the final value after changes and rerolls (15.63)', () => {
+    let last = lastRollAfter(null, [{ kind: 'dice_rolled', player: 1, amount: 2, text: 'attack roll' }]);
+    expect(last).toEqual({ player: 1, value: 2, label: 'attack roll' });
+    last = lastRollAfter(last, [{ kind: 'dice_rolled', player: 1, amount: 5, text: 'reroll' }]);
+    expect(last).toEqual({ player: 1, value: 5, label: 'attack roll' });
+    last = lastRollAfter(last, [
+      { kind: 'roll_changed', player: 1, amount: 6 },
+      { kind: 'roll_resolved', player: 1, amount: 4, text: 'attack' },
+    ]);
+    expect(last).toEqual({ player: 1, value: 4, label: 'attack roll' });
+    expect(lastRollAfter(last, [{ kind: 'looted', player: 0 }])).toBe(last);
+    // A new roll replaces it.
+    expect(lastRollAfter(last, [{ kind: 'dice_rolled', player: 0, amount: 3, text: 'roll' }])).toEqual({ player: 0, value: 3, label: 'roll' });
+  });
+
+  it('names the roller and what the roll was for', () => {
+    const name = (p: number) => ['Ann', 'Bo'].at(p) ?? '?';
+    expect(lastRollText({ player: 0, value: 4, label: 'attack roll' }, name)).toBe('Ann rolled 4 — attack roll');
+    expect(lastRollText({ player: 1, value: 2, label: '' }, name)).toBe('Bo rolled 2');
   });
 });
