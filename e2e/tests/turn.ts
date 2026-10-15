@@ -4,20 +4,21 @@
 // get through a turn in tests.
 import { expect, type Locator, type Page } from '@playwright/test';
 
-interface Seen {
+export interface Seen {
   step: number;
   waiting: number;
   you: number;
   ready: boolean;
   turn: number;
+  active: number;
   over: boolean;
 }
 
 // seen reads who must act from the store (?fake exposes it).
-async function seen(page: Page): Promise<Seen> {
+export async function seen(page: Page): Promise<Seen> {
   return page.evaluate(() => {
     interface S {
-      game: { step: number; view: { waiting: { player: number }; turn: { number: number }; over?: boolean } } | null;
+      game: { step: number; view: { waiting: { player: number }; turn: { number: number; active: number }; over?: boolean } } | null;
       lobby: { table: { you: number } | null };
       behind: boolean;
       sent: number | null;
@@ -29,13 +30,14 @@ async function seen(page: Page): Promise<Seen> {
       you: s.lobby.table?.you ?? -1,
       ready: s.game !== null && !s.behind && s.sent !== s.game.step,
       turn: s.game?.view.turn.number ?? 0,
+      active: s.game?.view.turn.active ?? -1,
       over: s.game?.view.over ?? false,
     };
   });
 }
 
 // enabled: the element is there and enabled, without waiting for it.
-async function enabled(l: ReturnType<Page['locator']>): Promise<boolean> {
+export async function enabled(l: ReturnType<Page['locator']>): Promise<boolean> {
   return (await l.count()) > 0 && (await l.isEnabled());
 }
 
@@ -57,6 +59,17 @@ async function uncovered(targets: Locator): Promise<Locator | undefined> {
     }
   }
   return undefined;
+}
+
+// reachable are all the targets a click would reach.
+export async function reachable(targets: Locator): Promise<Locator[]> {
+  const out: Locator[] = [];
+  for (const t of await targets.all()) {
+    if (await t.click({ trial: true, timeout: 300 }).then(() => true, () => false)) {
+      out.push(t);
+    }
+  }
+  return out;
 }
 
 // answer makes one move for whichever page must act, if any. It returns

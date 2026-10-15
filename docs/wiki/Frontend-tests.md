@@ -55,3 +55,45 @@ The fake bridge also reads the real card text from `pkg/card_db/data` (no images
 Match dialogs and buttons by exact name where a question could contain the same word (`{ name: 'Discard', exact: true }`).
 
 Network play runs against the real Go server: `e2e/playwright.config.ts` starts `cmd/server` next to Vite, one per browser project (Chromium on port 4799, WebKit on 4797; `e2e/tests/ports.ts`), so the two runs never see each other's games. Tests reach theirs with `serverPort()` and `appURL()` (`e2e/tests/server.ts`). The fake `Host` binding points at it (`?server=PORT`), so one page "hosts" and others join it by address. Use separate browser contexts for separate players: each has its own `localStorage`, like a separate app.
+
+## Whole random games
+
+`e2e/tests/games.spec.ts` plays one whole game each for 2, 3 and 4 players, with every card set, by random moves through the UI. It clicks only what a player could: menus, dialogs, glowing targets, Attack, Buy, Pass and End turn. Attacks weigh most, so games move toward a winner; a player mostly passes on others' stack. A game fails when:
+
+* it has no winner after `GAME_TURNS` turns (default 300), or no step for a minute;
+* any page logs a console error or warning, or throws;
+* the server sends an `error` message or closes a socket;
+* a page reloads, which drops its game;
+* one round of moves takes over 30 seconds.
+
+It is slow, so `make e2e` skips it. Run it with `make e2e-games` (Chromium only). Every 10 turns a test prints the turn, step, time and each player's souls; at the end, its seed, time, turns, steps and moves. `GAME_SEED=N` repeats the moves' choices; the server's deal stays random.
+
+A failed game leaves what is needed to find the cause. Its match record (the deal and every move) is copied to `.cache/e2e-games/`, since the next run deletes the test servers' folders. Each page gets a screenshot and its store in the test's report; a page that stops answering gives the script stack it is stuck in, through a DevTools session opened with the page (19.12).
+
+The Vite server that Playwright starts watches no files (`FOUR_SOULS_E2E=1`, `frontend/vite.config.ts`). Otherwise a Wails build or an edit elsewhere would reload every test page in the middle of a game.
+
+### Results so far (2026-10-15)
+
+Measured on one Mac, Chromium. Some runs played three games at once, which makes each game a little slower. Random play makes the spread wide.
+
+| Players | Games | Average | Range | Average turns |
+|---|---|---|---|---|
+| 2 | 13 | 410 s (6.8 min) | 109–835 s | 37 |
+| 3 | 10 | 643 s (10.7 min) | 122–1244 s | 46 |
+| 4 | 8 | 878 s (14.6 min) | 307–1547 s | 58 |
+
+So one round of `make e2e-games` (one game per player count, one after another) takes about 30 minutes, and longer when a 4-player game drags. Some games stay near a winner for dozens of turns: cards take souls away again. Steps also get slower as a game grows long (about 9 steps per second early in a 4-player game, under 5 after turn 80); nobody has looked at why yet.
+
+### Open items
+
+* **19.12** (`docs/roadmap/19-bugs.md`): in one serial run, 3 of 12 games hung for an hour in `page.keyboard.press('Escape')`, as if a page stopped taking input. Their seeds and records were lost. The cause is unknown: no page reload (the owner confirmed no build ran then), and no endless loop found by reading the code. The spec now catches a hang in 30 seconds and keeps its evidence, but more than 20 games since have not hung again. Next step: run rounds until one hangs, then read its stack and record.
+* **19.13**: the look dialog lists one card twice when one update looks at it twice. The server sends the events of its auto-passes in the same update (`after` in `internal/server/flow.go`), and `lookedAt` in `frontend/src/history.ts` keeps every event. React logs a duplicate key, and the spec fails on it. Cause found; not fixed yet.
+
+### Working on it
+
+* Run one setup: `cd e2e && FULL_GAMES=1 npx playwright test games --project chromium -g "4 players"`.
+* More games: add `--repeat-each N`; `--workers 3` plays three at once. Each repeat hosts under its own names (`Rnd<players>r<repeat><Name>`), since a finished game stays in the lobby list.
+* Progress lines start with the host's name, so games played at once stay apart.
+* A failed game's record lands in `.cache/e2e-games/`. Replay it in Go with `engine.Replay` or by applying each step's intent to `engine.NewGame`; the header's `setup` (seed, sets, characters) rebuilds the deal.
+* `e2e/test-results/` and the test servers' folders are emptied when a run starts: copy anything you need before the next run.
+* A Wails build during a run no longer breaks it: e2e Vite watches no files. Before that setting, the owner's build at 11:10 reloaded every test page and failed three games.

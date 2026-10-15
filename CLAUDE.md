@@ -43,6 +43,7 @@
    15. `make e2e`: Playwright UI tests in `e2e/`.
    16. Frontend testing rules: `docs/wiki/Frontend-tests.md`.
    17. `make internal`: play-test build with card images; see `docs/wiki/Internal-builds.md`.
+   18. `make e2e-games`: whole random games, every set, 2–4 players (slow).
 5. Workflow
    1. Work follows `docs/roadmap/`, one sub-step at a time.
    2. Commit after every finished sub-step.
@@ -79,6 +80,12 @@
        4. A replaced animation loses its code, tag and row.
        5. e2e specs import `test` from `e2e/tests/fixtures.ts`.
        6. Its fixture fails any test that logs an animation clash.
+   19. Keep a failed e2e run's evidence before the next run (19.12).
+       1. A run start deletes `.cache/e2e/<port>/` and `e2e/test-results/`.
+       2. Copy the match records and test results out first.
+       3. A random test logs its seed when it starts, not only on a pass.
+       4. `games.spec.ts` keeps its failed records in `.cache/e2e-games/`.
+       5. Never rerun to "check again" before the evidence is saved.
 6. Licenses
    1. Code is MIT (`LICENSE`).
    2. `NOTICE` lists every third-party item and its license.
