@@ -1557,6 +1557,8 @@ Images come first, so the new table is built with backs and mats.
    14. e2e: no soul card in the items row; hover zooms; a pick by crystal.
    15. UC-12, Client wiki, CHANGELOG updated.
    16. Screenshots: `.cache/screenshots/15.56/before/` and `after/`.
+6. Owner notes (2026-10-15)
+   1. Owner marks 15.56 solved.
 
 ### [ ] 15.57 Purchases in the history
 
