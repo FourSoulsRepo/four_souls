@@ -1665,7 +1665,7 @@ Images come first, so the new table is built with backs and mats.
    13. UC-13, UC-14, Client and Animations wiki, CHANGELOG updated.
    14. Screenshots: `screen-throw-button.png`, `screen-throw-others.png`.
 
-### [ ] 15.62 Throw animation
+### [x] 15.62 Throw animation
 
 1. Goal: the die falls, bounces, and rolls to the engine's value (V-17).
 2. Tasks:
@@ -1676,6 +1676,21 @@ Images come first, so the new table is built with backs and mats.
 3. Done when:
    1. e2e screenshot of a die in the air.
    2. The rolled value matches the engine in every test.
+4. Result (2026-10-15)
+   1. `ThrownDie` in `Effects.tsx`: `dice_rolled` (fresh roll or reroll).
+   2. Falls from above, spinning; bounces twice; lies still; fades.
+   3. Web Animations on `transform` and `opacity`; tag `dice-throw`.
+   4. It tumbles through two other faces and lands on the value (`tumbleFaces`).
+   5. Its label says "Rolled N" all along: the engine's value.
+   6. Length scales with the animation speed; Off skips it, as every effect.
+   7. A plain die without a texture, as before.
+   8. `roll_changed` keeps the old spin-in (`dice`).
+   9. e2e test: held in the air, then landed; both say the engine's value.
+   10. The 15.61 test still checks the value on both screens.
+   11. UC-13, Animations wiki, CHANGELOG updated.
+   12. Screenshots: `screen-dice-in-air.png`, `screen-dice-landed.png`.
+   13. The fast-burst e2e test looks for its fly on every frame.
+   14. The longer throw left the fly too short for `toBeVisible`'s polling.
 
 ### [ ] 15.63 Last roll by the stack
 

@@ -77,11 +77,68 @@ test('a fast burst of updates plays in order and ends on the last one', async ({
   await expect(kai.getByTestId('effect-dice')).toBeVisible();
   await kai.waitForTimeout(300); // let the dice settle for the picture
   await shot(kai, 'effect-dice');
-  await expect(kai.getByTestId('effect-fly')).toBeVisible();
+  // A fly plays between throws only briefly in a fast burst: look for it
+  // on every frame (15.62).
+  await kai.waitForFunction(() => document.querySelector('[data-testid="effect-fly"]') !== null);
   await expect(kai.getByRole('main', { name: 'Turn 21' })).toBeVisible({ timeout: 20_000 });
   await expect(kai.locator('.effects')).toHaveCount(0);
   await expect(character).toHaveAttribute('data-mark', 'kept');
   await expect(character).toHaveCSS('opacity', '1');
+});
+
+test('a thrown die falls, bounces and lands on the engine\'s value (15.62)', async ({ browser }) => {
+  const [mira] = await startGame(browser, ['Mira', 'Noor']);
+  if (!mira) {
+    throw new Error('no pages');
+  }
+  // Replay the view with one fresh attack roll of a 4.
+  await mira.evaluate(() => {
+    interface Store {
+      getState: () => {
+        game: { step: number } | null;
+        lobby: { table: { you: number } | null };
+        receive: (env: unknown) => void;
+      };
+    }
+    const s = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store.getState();
+    const game = structuredClone(s.game);
+    if (!game) {
+      throw new Error('no game');
+    }
+    const you = s.lobby.table?.you ?? 0;
+    s.receive({ type: 'update', data: { ...game, step: game.step + 1, events: [{ kind: 'dice_rolled', player: you, amount: 4, text: 'attack roll' }] } });
+  });
+  const thrown = mira.getByTestId('thrown-die');
+  await expect(thrown).toBeAttached();
+  // seek holds the throw at a part of its length.
+  const seek = (at: number) =>
+    thrown.evaluate((el, part) => {
+      for (const a of el.getAnimations()) {
+        a.pause();
+        a.currentTime = part * Number(a.effect?.getTiming().duration ?? 0);
+      }
+    }, at);
+  // In the air: still falling, well above where it lands. The die says
+  // the engine's value from the start.
+  await seek(0.15);
+  const air = await thrown.boundingBox();
+  const middle = (mira.viewportSize()?.height ?? 0) / 2;
+  expect(air && air.y + air.height / 2).toBeLessThan(middle - 100);
+  await expect(thrown.locator('.die')).toHaveAttribute('aria-label', 'Rolled 4');
+  await shot(mira, 'dice-in-air');
+  // Landed: it lies still in the middle, with the roll's name below.
+  await seek(0.75);
+  const landed = await thrown.boundingBox();
+  expect(landed && Math.abs(landed.y + landed.height / 2 - middle)).toBeLessThan(80);
+  await expect(mira.getByTestId('effect-dice')).toContainText('attack roll');
+  await expect(thrown.locator('.die')).toHaveAttribute('aria-label', 'Rolled 4');
+  await shot(mira, 'dice-landed');
+  await thrown.evaluate((el) => {
+    for (const a of el.getAnimations()) {
+      a.play();
+    }
+  });
+  await expect(mira.locator('.effects')).toHaveCount(0);
 });
 
 test('an attack lunges at the monster and drops its HP at the hit', async ({ browser }) => {

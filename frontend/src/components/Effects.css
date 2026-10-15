@@ -24,6 +24,11 @@
   gap: 10px;
 }
 
+/* The thrown die starts above the screen (15.62). */
+.effect-thrown {
+  opacity: 0;
+}
+
 .effect-label {
   padding: 4px 12px;
   border-radius: 12px;

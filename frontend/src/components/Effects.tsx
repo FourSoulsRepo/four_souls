@@ -1,5 +1,6 @@
 import { motion } from 'motion/react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { tumbleFaces } from '../dice';
 import { useApp, type Playing } from '../store';
 import { Card } from './Card';
 import { Die } from './Die';
@@ -71,6 +72,9 @@ function Effect({ playing }: { playing: Playing }) {
     case 'popup':
       return <Popup at={effect.at} text={effect.text} tone={effect.tone} playing={playing} />;
     case 'dice':
+      if (effect.thrown) {
+        return <ThrownDie value={effect.value} label={effect.label} image={diceImage} playing={playing} />;
+      }
       return (
         // anim: dice
         <motion.div
@@ -226,5 +230,83 @@ function Popup({ at, text, tone, playing }: { at: string[]; text: string; tone: 
     >
       {text}
     </motion.div>
+  );
+}
+
+// The normal length of a throw, in ms.
+const throwMs = 1600;
+// When the die lands, bounces and lands again, as parts of the throw;
+// it shows the next face at each landing (tumbleFaces).
+const landings = [0.28, 0.5] as const;
+
+// fall is the thrown die's path (15.62, V-17): it falls from above the
+// screen, spinning, bounces twice, lies still, then fades.
+const fall: Keyframe[] = [
+  { offset: 0, transform: 'translateY(-60vh) rotate(-540deg)', opacity: 0, easing: 'ease-in' },
+  { offset: 0.05, opacity: 1, easing: 'ease-in' },
+  { offset: landings[0], transform: 'translateY(0) rotate(-150deg)', easing: 'ease-out' },
+  { offset: 0.39, transform: 'translateY(-70px) rotate(-60deg)', easing: 'ease-in' },
+  { offset: landings[1], transform: 'translateY(0) rotate(-15deg)', easing: 'ease-out' },
+  { offset: 0.56, transform: 'translateY(-16px) rotate(-5deg)', easing: 'ease-in' },
+  { offset: 0.62, transform: 'translateY(0) rotate(0deg)' },
+  { offset: 0.88, transform: 'translateY(0) rotate(0deg)', opacity: 1 },
+  { offset: 1, transform: 'translateY(0) rotate(0deg)', opacity: 0 },
+];
+
+// The label shows once the die has landed.
+const labelIn: Keyframe[] = [
+  { offset: 0, opacity: 0 },
+  { offset: landings[0], opacity: 0 },
+  { offset: 0.4, opacity: 1 },
+  { offset: 0.88, opacity: 1 },
+  { offset: 1, opacity: 0 },
+];
+
+// ThrownDie throws a fresh roll's die: it falls, bounces and tumbles to
+// the engine's value (15.62). Its label says the value all along, so the
+// result never differs from the engine. Web Animations on transform and
+// opacity only (ADR 002); scale follows the animation speed (ST-05).
+function ThrownDie({ value, label, image, playing }: { value: number; label: string; image: string; playing: Playing }) {
+  const dieRef = useRef<HTMLDivElement>(null);
+  const wordsRef = useRef<HTMLDivElement>(null);
+  const faces = tumbleFaces(value);
+  const [face, setFace] = useState(0);
+  const { scale, done } = playing;
+  useEffect(() => {
+    const el = dieRef.current;
+    if (!el) {
+      return;
+    }
+    const ms = throwMs * scale;
+    // anim: dice-throw
+    const a = el.animate(fall, { duration: ms, fill: 'forwards' });
+    // anim: dice-throw
+    const b = wordsRef.current?.animate(labelIn, { duration: ms, fill: 'forwards' });
+    a.onfinish = done;
+    const [first, second] = landings;
+    const t1 = window.setTimeout(() => {
+      setFace(1);
+    }, first * ms);
+    const t2 = window.setTimeout(() => {
+      setFace(2);
+    }, second * ms);
+    return () => {
+      a.cancel();
+      b?.cancel();
+      window.clearTimeout(t1);
+      window.clearTimeout(t2);
+    };
+  }, [scale, done]);
+  return (
+    <div className="effect-center">
+      <div ref={dieRef} className="effect-thrown" data-testid="thrown-die">
+        <Die value={faces.at(face) ?? value} image={image} label={`Rolled ${String(value)}`} />
+      </div>
+      {label && (
+        <div ref={wordsRef} className="effect-label">
+          {label}
+        </div>
+      )}
+    </div>
   );
 }

@@ -15,3 +15,10 @@ const faces = new Map([
 export function faceOf(value: number): { col: number; row: number } | null {
   return faces.get(value) ?? null;
 }
+
+// tumbleFaces are the faces a thrown die shows as it lands and bounces
+// (15.62): two others, then the value it rolled.
+export function tumbleFaces(value: number): number[] {
+  const other = (n: number) => ((value + n - 1) % 6 + 6) % 6 + 1;
+  return [other(2), other(4), value];
+}

@@ -11,7 +11,9 @@ export type Speed = 'normal' | 'fast' | 'slow' | 'off';
 export type Effect =
   | { kind: 'fly'; from: string[]; to: string[]; card?: string; back: Kind }
   | { kind: 'popup'; at: string[]; text: string; tone: 'good' | 'bad' }
-  | { kind: 'dice'; value: number; label: string }
+  // dice: thrown for a fresh roll or a reroll (15.62); a changed roll
+  // spins in.
+  | { kind: 'dice'; value: number; label: string; thrown?: boolean }
   | { kind: 'banner'; text: string }
   | { kind: 'reveal'; card: string }
   // place: a card flies into a slot and stays there until the view is
@@ -108,6 +110,8 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
         break;
       }
       case 'dice_rolled':
+        out.push({ kind: 'dice', value: amount, label: e.text ?? '', thrown: true });
+        break;
       case 'roll_changed':
         out.push({ kind: 'dice', value: amount, label: e.text ?? '' });
         break;

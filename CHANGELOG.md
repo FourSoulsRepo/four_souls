@@ -15,6 +15,7 @@ Rules engine versions are in each release's notes.
 - Several copies of the app can run on one computer; each one is its own player.
 - "Put them back in any order" (Sleight of Hand, The Compass, The Map): one dialog shows every card's place, top first; confirm when done.
 - Dice: every roll waits for its player to press Throw (or Space); the others see who is throwing.
+- Dice: a thrown die falls onto the table, bounces, and tumbles to its result.
 - Network protocol 3: older apps can't join newer games, and the other way round.
 - Rules engine 0.2.0: match records and saved games of older versions can't be replayed or loaded.
 

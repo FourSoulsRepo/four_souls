@@ -84,6 +84,12 @@
   * The player clicks it, or presses Space.
   * The die lands with the engine's value; then the others may respond.
   * A reroll asks the roll's own player to throw again.
+* **6b. The die lands (15.62):** the die falls from above and bounces twice.
+  * It tumbles through other faces and stops on the engine's value.
+  * The roll's name shows below it once it lands.
+  * The animation speed setting makes it faster or slower; Off skips it.
+  * Without a dice texture it is a plain die with numbers.
+  * A changed roll ("the next roll gets +1") only spins in, as before.
 
 ## Postconditions
 
