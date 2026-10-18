@@ -720,7 +720,7 @@ This step never closes; new reports are appended.
 7. Owner notes (2026-10-19)
    1. Owner marks 19.22 solved.
 
-### [ ] 19.23 Deck attack reveals Stoney; the fight goes on
+### [x] 19.23 Deck attack reveals Stoney; the fight goes on
 
 1. Goal: a revealed monster that can't be attacked cancels the attack.
 2. Report (owner, 2026-10-19)
@@ -747,6 +747,8 @@ This step never closes; new reports are appended.
    5. Old records replay apart from such a reveal on.
    6. UC-13 gets alternative 5e.
    7. Engine only; no screen change, no screenshots.
+7. Owner notes (2026-10-19)
+   1. Owner marks 19.23 solved.
 ### [x] 19.25 Krampus revealed mid-turn: no forced attack
 
 1. Goal: "when this enters play" works for every card entering play.
