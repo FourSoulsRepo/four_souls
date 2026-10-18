@@ -750,7 +750,7 @@ This step never closes; new reports are appended.
 7. Owner notes (2026-10-19)
    1. Owner marks 19.23 solved.
 
-### [ ] 19.24 Wrong rewards: Ring of Flies, The Lamb, Mom's Dead Hand
+### [x] 19.24 Wrong rewards: Ring of Flies, The Lamb, Mom's Dead Hand
 
 1. Goal: the three monsters pay what their printed cards show.
 2. Report (owner, 2026-10-19)
@@ -787,6 +787,8 @@ This step never closes; new reports are appended.
    12. Owner's finding; the page does not mark those rows.
    13. Tools repo: `scraper build` now stops on such a monster.
    14. It names the card until an override sets its `rewards`.
+7. Owner notes (2026-10-19)
+   1. Owner marks 19.24 solved.
 ### [x] 19.25 Krampus revealed mid-turn: no forced attack
 
 1. Goal: "when this enters play" works for every card entering play.
