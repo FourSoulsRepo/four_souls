@@ -1799,3 +1799,20 @@ Images come first, so the new table is built with backs and mats.
    3. Plain dice and the throw animation are unchanged.
    4. Screenshot: `.cache/screenshots/15.64/rotated/`.
    5. Owner marks 15.64 solved.
+
+### [x] 15.65 Cathedral mat image
+
+1. Goal: the owner's new Cathedral picture is a mat image (V-24).
+2. Asked by the owner after 15.64 (2026-10-19).
+3. Tasks:
+   1. Convert `assets/mats/cathedral.png` with `scraper assets` (tools repo).
+   2. The fake bridge lists it, so screenshots show it.
+4. Done when:
+   1. Settings and the table show the Cathedral image.
+5. Result (2026-10-19)
+   1. 4000×2000 PNG to 3840×1920 WebP: 4.5 MB to 0.2 MB.
+   2. Original kept in `.cache/assets-originals-2026-10-15/mats/`.
+   3. No code change: an image mat named `cathedral` replaces its color mat.
+   4. Basement stays the default: it is the first image.
+   5. Owner amended the images repo's single commit (`3ed5075`).
+   6. Screenshots: `.cache/screenshots/mat-cathedral/before/` and `after/`.
