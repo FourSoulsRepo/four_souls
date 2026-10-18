@@ -749,6 +749,40 @@ This step never closes; new reports are appended.
    7. Engine only; no screen change, no screenshots.
 7. Owner notes (2026-10-19)
    1. Owner marks 19.23 solved.
+
+### [ ] 19.24 Wrong rewards: Ring of Flies, The Lamb, Mom's Dead Hand
+
+1. Goal: the three monsters pay what their printed cards show.
+2. Report (owner, 2026-10-19)
+   1. Ring of Flies should give 3¢.
+   2. The Lamb should give 3¢ and 1 soul.
+   3. Mom's Dead Hand should give 4¢.
+3. Cause
+   1. The card images show those rewards.
+   2. foursouls.com reward tables add extra icons.
+   3. Ring of Flies: an extra 1x Loot.
+   4. The Lamb: 1x Soul listed twice.
+   5. Mom's Dead Hand: an extra 1x Treasure.
+   6. `scraper build` copied them into `data/b2.json`.
+   7. `cardgen` stubs took the rewards and souls from there.
+   8. Same kind of site error as Famine.
+4. Tasks:
+   1. Overrides in `pkg/card_db/overrides/b2.json`; rebuild `data/b2.json`.
+   2. Engine cards get the printed rewards; The Lamb gets `Soul: 1`.
+5. Done when:
+   1. Go test: engine rewards match the card_db reward box, every card.
+   2. Go test: The Lamb's kill gives 1 soul.
+6. Result (2026-10-19)
+   1. Overrides set the printed reward boxes; `data/b2.json` rebuilt.
+   2. The rebuild changed only these three cards.
+   3. Ring of Flies: 3¢; Mom's Dead Hand: 4¢.
+   4. The Lamb: 3¢ and `Soul: 1`.
+   5. Test `TestRewardsMatchCardDB`: every monster, fixed rewards.
+   6. It failed on Ring of Flies and Mom's Dead Hand only.
+   7. `TestSoulsMatchCardDB` failed on The Lamb; both pass now.
+   8. `TestTheLamb` expects soul value 2: its 1 and the stolen soul.
+   9. Old records replay apart from a kill of one of these cards on.
+   10. Engine and data only; no screen change, no screenshots.
 ### [x] 19.25 Krampus revealed mid-turn: no forced attack
 
 1. Goal: "when this enters play" works for every card entering play.

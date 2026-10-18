@@ -2,11 +2,13 @@ package main
 
 import (
 	"bytes"
+	"maps"
 	"os"
 	"path/filepath"
 	"testing"
 
 	carddb "github.com/FourSoulsRepo/card_db"
+	engine "github.com/FourSoulsRepo/rules_engine"
 	"github.com/FourSoulsRepo/rules_engine/cards"
 )
 
@@ -119,6 +121,50 @@ func TestSoulsMatchCardDB(t *testing.T) {
 			}
 			if want := soulCount(c); d.Soul != want {
 				t.Errorf("%s: card_db souls %d, engine Soul %d", d.Ref, want, d.Soul)
+			}
+		}
+	}
+}
+
+// rewardSums totals the printed cents, loot and treasure of a reward box.
+// Rolled counts and other icons are left out.
+func rewardSums(c carddb.Card) map[string]int {
+	out := map[string]int{}
+	for _, r := range c.Rewards {
+		if k, ok := rewardCount(r.Count); ok && rewardKinds[r.Kind] != "" {
+			out[r.Kind] += k
+		}
+	}
+	return out
+}
+
+// TestRewardsMatchCardDB: a monster's fixed rewards match the card_db
+// reward box. foursouls.com added extra icons to Ring of Flies and
+// Mom's Dead Hand; overrides/b2.json fixes them.
+func TestRewardsMatchCardDB(t *testing.T) {
+	db, err := carddb.Load(os.DirFS("../../pkg/card_db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	names := map[engine.RewardKind]string{engine.RewardCents: "Coin", engine.RewardLoot: "Loot", engine.RewardTreasure: "Treasure"}
+	for _, set := range cards.Sets() {
+		for _, d := range set.Cards {
+			ref, err := carddb.ParseRef(string(d.Ref))
+			if err != nil {
+				t.Fatal(err)
+			}
+			c, ok := db.Get(ref)
+			if !ok || d.Kind != engine.MonsterCard {
+				continue
+			}
+			got := map[string]int{}
+			for _, r := range d.Rewards {
+				if !r.Roll {
+					got[names[r.Kind]] += r.Amount
+				}
+			}
+			if want := rewardSums(c); !maps.Equal(got, want) {
+				t.Errorf("%s: card_db rewards %v, engine %v", d.Ref, want, got)
 			}
 		}
 	}

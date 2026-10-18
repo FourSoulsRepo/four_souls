@@ -12,7 +12,7 @@ var ringOfFlies = engine.CardDef{
 	HP:      3,
 	DC:      3,
 	ATK:     1,
-	Rewards: []engine.Reward{{Kind: engine.RewardLoot, Amount: 1}, {Kind: engine.RewardCents, Amount: 3}},
+	Rewards: []engine.Reward{{Kind: engine.RewardCents, Amount: 3}},
 	Abilities: []engine.Ability{
 		{
 			Kind:    engine.Triggered,

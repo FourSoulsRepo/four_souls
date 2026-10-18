@@ -9,7 +9,7 @@ var theLamb = engine.CardDef{
 	Ref:     "the_lamb",
 	Kind:    engine.MonsterCard,
 	Copies:  1,
-	Soul:    2,
+	Soul:    1,
 	HP:      6,
 	DC:      3,
 	ATK:     6,

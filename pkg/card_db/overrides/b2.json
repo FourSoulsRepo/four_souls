@@ -52,5 +52,21 @@
       {"count": "1x", "kind": "Soul"},
       {"count": "3x", "kind": "Loot"}
     ]
+  },
+  "ring_of_flies": {
+    "rewards": [
+      {"count": "3x", "kind": "Coin"}
+    ]
+  },
+  "the_lamb": {
+    "rewards": [
+      {"count": "3x", "kind": "Coin"},
+      {"count": "1x", "kind": "Soul"}
+    ]
+  },
+  "moms_dead_hand": {
+    "rewards": [
+      {"count": "4x", "kind": "Coin"}
+    ]
   }
 }

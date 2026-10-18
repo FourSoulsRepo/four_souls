@@ -12,7 +12,7 @@ var momsDeadHand = engine.CardDef{
 	HP:      2,
 	DC:      5,
 	ATK:     1,
-	Rewards: []engine.Reward{{Kind: engine.RewardTreasure, Amount: 1}, {Kind: engine.RewardCents, Amount: 4}},
+	Rewards: []engine.Reward{{Kind: engine.RewardCents, Amount: 4}},
 	Abilities: []engine.Ability{
 		{
 			Kind:    engine.Triggered,
