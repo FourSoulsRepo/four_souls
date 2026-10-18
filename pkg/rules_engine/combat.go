@@ -351,6 +351,12 @@ func (g *Game) placeRevealed(slot int) {
 		g.enterMonsterSlot(id)
 		return
 	}
+	if g.def(id).Unattackable {
+		// It stays in the slot; the attack is cancelled (R-ATK-10).
+		g.endAttack()
+		g.openWindow(g.Turn.Active)
+		return
+	}
 	g.startAttack(id)
 }
 

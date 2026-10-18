@@ -90,6 +90,9 @@
   * The animation speed setting makes it faster or slower; Off skips it.
   * Without a dice texture it is a plain die with numbers.
   * A changed roll ("the next roll gets +1") only spins in, as before.
+* **5e. Deck attack reveals an unattackable monster (19.23):** e.g. Stoney.
+  * It stays in the chosen slot; the attack is cancelled (R-ATK-10).
+  * No attack roll; the player goes on with the turn.
 
 ## Postconditions
 

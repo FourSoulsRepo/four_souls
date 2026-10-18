@@ -40,3 +40,25 @@ func TestStoneyCovered(t *testing.T) {
 		t.Error("Stoney died with the monster that covered it")
 	}
 }
+
+// A deck attack that reveals Stoney is cancelled: Stoney stays in the
+// slot and no attack roll is made (R-ATK-10, 19.23).
+func TestStoneyFromTheDeck(t *testing.T) {
+	tb := enginetest.NewSetup(t, engine.SituationSetup{Players: []engine.SituationPlayer{seat("isaac"), seat("cain")}, Monsters: items("fly", "pooter")}, Set)
+	events := tb.RevealFromDeck("stoney")
+	for _, e := range events {
+		if e.Kind == engine.EvAttackTarget {
+			t.Errorf("Stoney was attacked: %+v", e)
+		}
+	}
+	if tb.G.Attack.On {
+		t.Error("the attack goes on after revealing Stoney")
+	}
+	stoney, ok := tb.G.Monsters[0].TopOf()
+	if !ok || tb.G.Object(stoney).Card != "stoney" || tb.G.Object(stoney).Zone.Kind != engine.ZoneInPlay {
+		t.Error("Stoney did not stay in the slot")
+	}
+	if p := tb.G.Prompt(); p.Kind != engine.PromptPriority || p.Player != 0 {
+		t.Errorf("prompt %+v; the active player goes on with the turn", p)
+	}
+}

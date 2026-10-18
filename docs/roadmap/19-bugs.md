@@ -720,6 +720,33 @@ This step never closes; new reports are appended.
 7. Owner notes (2026-10-19)
    1. Owner marks 19.22 solved.
 
+### [ ] 19.23 Deck attack reveals Stoney; the fight goes on
+
+1. Goal: a revealed monster that can't be attacked cancels the attack.
+2. Report (owner, 2026-10-19)
+   1. Play test; the game is not remembered.
+   2. A deck attack revealed Stoney ("This can't be attacked").
+   3. The attack went on: attack rolls against Stoney.
+3. Cause
+   1. Record `2026-10-15-190346-g1_Oleg_jеня.fsrec`, step 9.
+   2. `card_revealed` stoney, then `attack_target` stoney.
+   3. `placeRevealed` (combat.go) starts the attack on any monster.
+   4. Only the target list checks `Unattackable`.
+   5. Rule R-ATK-10 was never coded.
+   6. Same for Death's Head (g2).
+4. Tasks:
+   1. `placeRevealed`: an `Unattackable` card stays; the attack ends.
+5. Done when:
+   1. Go test: a deck attack reveals Stoney; no roll; the attack is over.
+   2. Stoney stays in the slot; the turn goes on.
+6. Result (2026-10-19)
+   1. `placeRevealed`: an `Unattackable` card stays in the slot.
+   2. The attack ends; the active player gets priority back.
+   3. Covers Stoney (b2) and Death's Head (g2).
+   4. Test `TestStoneyFromTheDeck`: fails before the fix, passes after.
+   5. Old records replay apart from such a reveal on.
+   6. UC-13 gets alternative 5e.
+   7. Engine only; no screen change, no screenshots.
 ### [x] 19.25 Krampus revealed mid-turn: no forced attack
 
 1. Goal: "when this enters play" works for every card entering play.
