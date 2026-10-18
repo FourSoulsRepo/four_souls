@@ -691,6 +691,33 @@ This step never closes; new reports are appended.
    3. Three separate runs pass.
    4. No screen change; no screenshots.
 
+### [ ] 19.22 The D10 puts an event in a slot; it never resolves
+
+1. Goal: an event put in a monster slot by a card resolves at once.
+2. Report (owner, 2026-10-19)
+   1. Play test; record `2026-10-18-075512-g4_Hitokiri-Battosai_KING_jеня.fsrec`.
+   2. A monster died; its slot was empty.
+   3. Another player's D10 put the monster deck's top card there.
+   4. It was Gold Chest; it never resolved, up to the end of the game.
+3. Cause
+   1. Record step 1188: D10 resolves; only `card_revealed` gold_chest.
+   2. No `entered_play` event; no roll; the chest stays in the slot.
+   3. `CoverMonsterSlot` (zones.go) never calls `enterMonsterSlot`.
+   4. `PlaceFromDeck` and `placeRevealed` do call it.
+   5. Same bug for every `coverASlot` card in g2 (Dad's Key).
+4. Tasks:
+   1. `CoverMonsterSlot` runs `enterMonsterSlot` on the new card.
+5. Done when:
+   1. Go test: the D10 puts Gold Chest in a slot; it rolls and pays.
+   2. After it, the chest is in the discard; the covered card is back.
+6. Result (2026-10-19)
+   1. `CoverMonsterSlot` runs `enterMonsterSlot`, like `PlaceFromDeck`.
+   2. An event rolls at once, goes to discard; the covered card returns.
+   3. A curse goes to a player, as from a deck attack.
+   4. Test `TestTheD10Event`: fails before the fix, passes after.
+   5. Old records replay apart from such a placement on.
+   6. Engine only; no screen change, no screenshots.
+
 ### [x] 19.25 Krampus revealed mid-turn: no forced attack
 
 1. Goal: "when this enters play" works for every card entering play.
