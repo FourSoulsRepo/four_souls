@@ -691,7 +691,7 @@ This step never closes; new reports are appended.
    3. Three separate runs pass.
    4. No screen change; no screenshots.
 
-### [ ] 19.22 The D10 puts an event in a slot; it never resolves
+### [x] 19.22 The D10 puts an event in a slot; it never resolves
 
 1. Goal: an event put in a monster slot by a card resolves at once.
 2. Report (owner, 2026-10-19)
@@ -717,6 +717,8 @@ This step never closes; new reports are appended.
    4. Test `TestTheD10Event`: fails before the fix, passes after.
    5. Old records replay apart from such a placement on.
    6. Engine only; no screen change, no screenshots.
+7. Owner notes (2026-10-19)
+   1. Owner marks 19.22 solved.
 
 ### [x] 19.25 Krampus revealed mid-turn: no forced attack
 
