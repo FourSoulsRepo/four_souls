@@ -783,6 +783,10 @@ This step never closes; new reports are appended.
    8. `TestTheLamb` expects soul value 2: its 1 and the stolen soul.
    9. Old records replay apart from a kill of one of these cards on.
    10. Engine and data only; no screen change, no screenshots.
+   11. Why: the site's "Potential Rewards" lists what a card may steal.
+   12. Owner's finding; the page does not mark those rows.
+   13. Tools repo: `scraper build` now stops on such a monster.
+   14. It names the card until an override sets its `rewards`.
 ### [x] 19.25 Krampus revealed mid-turn: no forced attack
 
 1. Goal: "when this enters play" works for every card entering play.
