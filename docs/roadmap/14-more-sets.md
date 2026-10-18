@@ -26,6 +26,17 @@ Ideas: CD-02, GS-07, GS-08, CD-11, A-16, CD-12, V-32, GS-12, GS-13, GS-01.
    8. Every copy now has its own image, Base Game too.
    9. Base Game IDs did not change.
    10. Steps 14.2 and 14.3 for these sets are still open.
+   11. Requiem (`r`): 247 cards, 269 with copies; 2026-10-19.
+   12. **Owner:** Requiem goes through 14.1–14.3 in full; Warp Zone later.
+   13. TTS bag "Requiem"; set order 4, released 2022-10 (ADR 010).
+   14. 12 reprints: Eden, coins, Bomb!, Butter Bean!, and others.
+   15. Tools: two-sided names ("The Enigma/amginE ehT") match TTS.
+   16. Tools: one card listed twice by the site is one card (`r-eden`).
+   17. Overrides from the printed cards: Lunch, Shell Game, Experimental Treatment.
+   18. Overrides: Charmed Dip stats, Charmed Monstro's soul.
+   19. Each other card is checked against its image in 14.3.
+   20. The Harbingers ("Outside Card") has no engine kind yet; 14.3.
+   21. Rooms are printed landscape; the client must show them so.
 
 ### [ ] 14.2 New mechanics
 

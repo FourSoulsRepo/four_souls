@@ -14,6 +14,7 @@ What the tools do, in short:
 Sets are built oldest first (Base Game, Gold Box, Four Souls+, …), because `build` looks at the older sets' files: a card with the same name, type, stats and text becomes a reprint entry that adds copies and images to the older card, and a different card whose ID is taken gets the set code as a suffix (`isaac_fsp2`). See ADR 010.
 
 In the official TTS table, Gold Box is the bag named "Kickstarter" (`scraper tts -origin g2 -bag Kickstarter`).
+Requiem is the bag "Requiem" (`scraper tts -origin r -bag Requiem`). A two-sided card is named "Front/Back" on the site and only by its front in TTS (`The Enigma`); the tools match both. When the site lists one card twice (Requiem's `r-eden` and `r-eden_2`), the build makes one card with both images.
 
 After regenerating data, validate it here:
 

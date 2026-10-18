@@ -49,6 +49,7 @@ Use options 1 and 4; images become a list.
    4. `b2` 1 (2018-12), `g2` 2 (2018-12), `fsp2` 3 (2019-06).
    5. Base Game comes before Gold Box, its add-on.
    6. The loader reads sets in this order.
+   7. `r` 4 (2022-10): Requiem, shipped to backers in fall 2022.
 2. Images
    1. `images` replaces `image`.
    2. One path: every copy shows it.
@@ -56,6 +57,8 @@ Use options 1 and 4; images become a list.
    4. Other counts are a load error.
    5. Copy files: `<id>.webp`, `<id>-2.webp`, `<id>-3.webp`, …
    6. File names come from the site slug, inside the set folder.
+   7. One card listed twice by the site is one card with both images.
+   8. Example: Requiem's `r-eden` and `r-eden_2`.
 3. Reprints
    1. Same type, name, stats and effects as a card of an older set.
    2. Case and a final period do not count ("Gain 5¢" = "Gain 5¢.").
