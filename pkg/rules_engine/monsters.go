@@ -217,7 +217,7 @@ func (g *Game) GiveCurseFromDeck(curse ObjectID, p PlayerID) {
 	g.emit(Event{Kind: EvCursed, Player: p, Object: nid, Card: g.Object(nid).Card})
 }
 
-// CanGainSouls: nothing stops p from gaining souls (Curse of the
+// CanGainSouls reports whether p may gain souls (Curse of the
 // Soulless). Being given or stealing a soul is not gaining (R-MECH-35).
 func (g *Game) CanGainSouls(p PlayerID) bool { return g.bonus(StatNoSouls, p, 0) == 0 }
 

@@ -718,7 +718,7 @@ func rerollAnyNumber(most int) engine.Effect {
 	}, qs...)
 }
 
-// damageAChosenPlayer: "Choose a player. They take n damage."
+// damageAChosenPlayer is "Choose a player. They take n damage.".
 func damageAChosenPlayer(n int) engine.Effect {
 	return engine.Ask(func(c *engine.Ctx, a []int) {
 		if ps := cardkit.LivingPlayers(c.G, engine.NoPlayer); a[0] >= 0 && a[0] < len(ps) {

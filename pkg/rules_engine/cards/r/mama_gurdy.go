@@ -3,6 +3,8 @@ package r
 import engine "github.com/FourSoulsRepo/rules_engine"
 
 // Mama Gurdy (Boss Card)
+//
+// No text: a soul and "Roll- loot x" rewards.
 var mamaGurdy = engine.CardDef{
 	Ref:     "mama_gurdy",
 	Kind:    engine.MonsterCard,
