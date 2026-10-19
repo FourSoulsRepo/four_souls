@@ -1913,3 +1913,19 @@ Images come first, so the new table is built with backs and mats.
    11. Screenshots: `.cache/screenshots/15.67/before/` and `after/`.
 7. Owner notes (2026-10-19)
    1. Owner marks 15.67 solved.
+
+### [ ] 15.68 Every view field is read by the client
+
+1. Goal: a field the server sends but the client ignores fails a test (TS-07).
+2. Asked by the owner after 19.30 (2026-10-19).
+3. Tasks:
+   1. Go test: reflect the JSON fields of `GameView` and the types under it.
+   2. It fails when a field is missing from `frontend/src/protocol.ts`.
+   3. Vitest: each such field is read outside `protocol.ts`.
+   4. An allow list names fields unread on purpose, each with a reason.
+   5. Fix or list every field the first run finds.
+   6. Wiki `Frontend-tests.md`: how to add a field.
+4. Done when:
+   1. Removing the `treasure_top` read from `Board.tsx` fails the Vitest.
+   2. Adding a field to `PlayerView` in Go fails the Go test.
+   3. `make lint test frontend` pass.

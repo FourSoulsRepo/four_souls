@@ -614,6 +614,13 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    3. `games.spec.ts` already fails on them; 19.13 was found that way.
    4. Move that check into `e2e/tests/fixtures.ts`.
    5. Harmless errors get a fix or a named allowance.
+7. TS-07. The client reads every field the server sends.
+   1. 19.29 and 19.30: the engine sent a field; the client never drew it.
+   2. Engine tests pass; store-injected e2e tests cannot see it.
+   3. Go test: every JSON field of the view types is in `protocol.ts`.
+   4. Vitest: every view field in `protocol.ts` is read in `frontend/src`.
+   5. A field left unread on purpose is listed with its reason.
+   6. The golden file covers sample messages only, not empty fields.
 
 ## Localization
 
