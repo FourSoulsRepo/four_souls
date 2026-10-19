@@ -6,6 +6,8 @@ Rules engine versions are in each release's notes.
 
 ## Unreleased
 
+- Dice: a thrown die is a 3D cube that tumbles onto the table and clatters as it lands; every die has light and shade.
+
 ## 0.1.1 - 2026-10-19
 
 - Rules: Sacred Heart and similar "would roll" items no longer change a roll that was already changed.

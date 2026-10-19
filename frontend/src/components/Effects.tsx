@@ -1,9 +1,10 @@
 import { motion } from 'motion/react';
 import { useEffect, useRef, useState } from 'react';
-import { diceImage, tumbleFaces } from '../dice';
+import { diceImage } from '../dice';
+import { playSound } from '../sounds';
 import { useApp, type Playing } from '../store';
 import { Card } from './Card';
-import { Die } from './Die';
+import { Die, DieCube } from './Die';
 import './Effects.css';
 import { lunge } from './lunge';
 import { hits, skulls } from './marks';
@@ -251,22 +252,44 @@ function Popup({ at, text, tone, playing }: { at: string[]; text: string; tone: 
 
 // The normal length of a throw, in ms.
 const throwMs = 1600;
-// When the die lands, bounces and lands again, as parts of the throw;
-// it shows the next face at each landing (tumbleFaces).
+// When the die lands, bounces and lands again, as parts of the throw.
 const landings = [0.28, 0.5] as const;
 
 // fall is the thrown die's path (15.62, V-17): it falls from above the
-// screen, spinning, bounces twice, lies still, then fades.
+// screen, bounces twice, lies still, then fades.
 const fall: Keyframe[] = [
-  { offset: 0, transform: 'translateY(-60vh) rotate(-540deg)', opacity: 0, easing: 'ease-in' },
+  { offset: 0, transform: 'translateY(-60vh)', opacity: 0, easing: 'ease-in' },
   { offset: 0.05, opacity: 1, easing: 'ease-in' },
-  { offset: landings[0], transform: 'translateY(0) rotate(-150deg)', easing: 'ease-out' },
-  { offset: 0.39, transform: 'translateY(-70px) rotate(-60deg)', easing: 'ease-in' },
-  { offset: landings[1], transform: 'translateY(0) rotate(-15deg)', easing: 'ease-out' },
-  { offset: 0.56, transform: 'translateY(-16px) rotate(-5deg)', easing: 'ease-in' },
-  { offset: 0.62, transform: 'translateY(0) rotate(0deg)' },
-  { offset: 0.88, transform: 'translateY(0) rotate(0deg)', opacity: 1 },
-  { offset: 1, transform: 'translateY(0) rotate(0deg)', opacity: 0 },
+  { offset: landings[0], transform: 'translateY(0)', easing: 'ease-out' },
+  { offset: 0.39, transform: 'translateY(-70px)', easing: 'ease-in' },
+  { offset: landings[1], transform: 'translateY(0)', easing: 'ease-out' },
+  { offset: 0.56, transform: 'translateY(-16px)', easing: 'ease-in' },
+  { offset: 0.62, transform: 'translateY(0)' },
+  { offset: 0.88, transform: 'translateY(0)', opacity: 1 },
+  { offset: 1, transform: 'translateY(0)', opacity: 0 },
+];
+
+// tumble turns the cube as it falls (15.69): fast in the air, slower at
+// each bounce, then at rest with the value in front, tilted to show
+// two more faces.
+const rest = 'rotateX(-20deg) rotateY(-24deg) rotateZ(0deg)';
+const tumble: Keyframe[] = [
+  { offset: 0, transform: 'rotateX(740deg) rotateY(-560deg) rotateZ(150deg)', easing: 'linear' },
+  { offset: landings[0], transform: 'rotateX(200deg) rotateY(-170deg) rotateZ(40deg)', easing: 'ease-out' },
+  { offset: landings[1], transform: 'rotateX(20deg) rotateY(-50deg) rotateZ(8deg)', easing: 'ease-out' },
+  { offset: 0.62, transform: rest },
+  { offset: 1, transform: rest },
+];
+
+// shadow is the die's shadow on the table: small and faint while the
+// die is high, full where it lands.
+const shadow: Keyframe[] = [
+  { offset: 0, transform: 'scale(0.3)', opacity: 0, easing: 'ease-in' },
+  { offset: landings[0], transform: 'scale(1)', opacity: 0.6, easing: 'ease-out' },
+  { offset: 0.39, transform: 'scale(0.75)', opacity: 0.35, easing: 'ease-in' },
+  { offset: landings[1], transform: 'scale(1)', opacity: 0.6 },
+  { offset: 0.88, transform: 'scale(1)', opacity: 0.6 },
+  { offset: 1, transform: 'scale(1)', opacity: 0 },
 ];
 
 // The label shows once the die has landed.
@@ -278,15 +301,16 @@ const labelIn: Keyframe[] = [
   { offset: 1, opacity: 0 },
 ];
 
-// ThrownDie throws a fresh roll's die: it falls, bounces and tumbles to
-// the engine's value (15.62). Its label says the value all along, so the
-// result never differs from the engine. Web Animations on transform and
-// opacity only (ADR 002); scale follows the animation speed (ST-05).
+// ThrownDie throws a fresh roll's die: a cube falls, bounces and tumbles
+// to the engine's value (15.62, 15.69), and clatters as it first lands.
+// Its label says the value all along, so the result never differs from
+// the engine. Web Animations on transform and opacity only (ADR 002);
+// scale follows the animation speed (ST-05).
 function ThrownDie({ value, label, image, playing }: { value: number; label: string; image: string; playing: Playing }) {
   const dieRef = useRef<HTMLDivElement>(null);
+  const cubeRef = useRef<HTMLDivElement>(null);
+  const shadowRef = useRef<HTMLDivElement>(null);
   const wordsRef = useRef<HTMLDivElement>(null);
-  const faces = tumbleFaces(value);
-  const [face, setFace] = useState(0);
   const { scale, done } = playing;
   useEffect(() => {
     const el = dieRef.current;
@@ -294,29 +318,29 @@ function ThrownDie({ value, label, image, playing }: { value: number; label: str
       return;
     }
     const ms = throwMs * scale;
+    const timing = { duration: ms, fill: 'forwards' } as const;
     // anim: dice-throw
-    const a = el.animate(fall, { duration: ms, fill: 'forwards' });
-    // anim: dice-throw
-    const b = wordsRef.current?.animate(labelIn, { duration: ms, fill: 'forwards' });
+    const a = el.animate(fall, timing);
     a.onfinish = done;
-    const [first, second] = landings;
-    const t1 = window.setTimeout(() => {
-      setFace(1);
-    }, first * ms);
-    const t2 = window.setTimeout(() => {
-      setFace(2);
-    }, second * ms);
+    // anim: dice-throw
+    const parts = [a, cubeRef.current?.animate(tumble, timing), shadowRef.current?.animate(shadow, timing), wordsRef.current?.animate(labelIn, timing)];
+    const landed = window.setTimeout(() => {
+      playSound('diceRoll');
+    }, landings[0] * ms);
     return () => {
-      a.cancel();
-      b?.cancel();
-      window.clearTimeout(t1);
-      window.clearTimeout(t2);
+      for (const p of parts) {
+        p?.cancel();
+      }
+      window.clearTimeout(landed);
     };
   }, [scale, done]);
   return (
     <div className="effect-center">
-      <div ref={dieRef} className="effect-thrown" data-testid="thrown-die">
-        <Die value={faces.at(face) ?? value} image={image} label={`Rolled ${String(value)}`} />
+      <div className="effect-throw-spot">
+        <div ref={shadowRef} className="effect-thrown-shadow" />
+        <div ref={dieRef} className="effect-thrown" data-testid="thrown-die">
+          <DieCube ref={cubeRef} value={value} image={image} />
+        </div>
       </div>
       {label && (
         <div ref={wordsRef} className="effect-label">

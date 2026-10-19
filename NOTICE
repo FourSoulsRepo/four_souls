@@ -45,6 +45,10 @@ Damage sounds (assets/sounds in the private images), from Hearthstone:
   Hearthstone is (c) Blizzard Entertainment, Inc. They belong to their
   owners, are not in this repository, and ship the same way as the card
   images. Converted to mono MP3.
+Dice sound (assets/sounds in the private images):
+  dice-roll.mp3      PlasticDice_on_WoodBoard_1, from the owner; source
+  unknown, so it ships only with the private images. Converted to mono
+  MP3.
 
 --------------------------------------------------------------------------
 Wails template images — build/appicon.png, build/windows/icon.ico

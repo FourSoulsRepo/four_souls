@@ -299,6 +299,7 @@ export namespace main {
 	    attackHit: string;
 	    effectCast: string;
 	    effectImpact: string;
+	    diceRoll: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new Sounds(source);
@@ -309,6 +310,7 @@ export namespace main {
 	        this.attackHit = source["attackHit"];
 	        this.effectCast = source["effectCast"];
 	        this.effectImpact = source["effectImpact"];
+	        this.diceRoll = source["diceRoll"];
 	    }
 	}
 

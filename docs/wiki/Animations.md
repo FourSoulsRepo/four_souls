@@ -28,7 +28,7 @@ Claims are counted in *beats*: a beat is one update, from the start of its effec
 | `fly` | A card flies from one zone to another. As a `place` effect it stays on the slot until the view is drawn (19.3). | `looted`, `discarded` (`fly`); `card_revealed` of a slot's new top card (`place`). | `arrive` of the card, as `fly` or `place`. | `components/Effects.tsx` (`Fly`) |
 | `reveal` | A card shows large in the middle. | `card_revealed`, unless the update before revealed it (19.4). | `show` of the card. | `components/Effects.tsx` |
 | `dice` | A die spins in with the changed roll and its label. | `roll_changed`. | Nothing. | `components/Effects.tsx` |
-| `dice-throw` | The thrown die falls from above, bounces twice and tumbles to the engine's value; its label fades in after the landing (15.62). | `dice_rolled`: a fresh roll or a reroll. | Nothing. | `components/Effects.tsx` (`ThrownDie`) |
+| `dice-throw` | The thrown die, a 3D cube (`DieCube`, 15.69), falls from above, bounces twice and tumbles to rest with the engine's value in front; its shadow grows on the table, and its label fades in after the landing (15.62). | `dice_rolled`: a fresh roll or a reroll. | Nothing. | `components/Effects.tsx` (`ThrownDie`) |
 | `banner` | A text banner in the middle. | `turn_started`, `game_won`. | Nothing. | `components/Effects.tsx` |
 | `popup` | A short "+N" text rises from a zone. | `gained_cents`, `healed`, `prevented`, `stole`. | Nothing. | `components/Effects.tsx` (`Popup`) |
 | `lunge` | A copy of the attacker jumps into the target and back; the card hides meanwhile. | `damaged` with `text: "combat"` and a `source`. | Nothing; it moves a copy. | `components/lunge.ts` |

@@ -85,11 +85,14 @@
   * The die lands with the engine's value; then the others may respond.
   * A reroll asks the roll's own player to throw again.
 * **6b. The die lands (15.62):** the die falls from above and bounces twice.
-  * It tumbles through other faces and stops on the engine's value.
+  * It tumbles as a 3D cube and stops on the engine's value (15.69).
   * The roll's name shows below it once it lands.
   * The animation speed setting makes it faster or slower; Off skips it.
   * Without a dice texture it is a plain die with numbers.
   * A changed roll ("the next roll gets +1") only spins in, as before.
+  * At rest it is tilted, so two more faces show (15.69).
+  * Its shadow on the table grows as it falls.
+  * It clatters as it first lands; silent without the private sound.
 * **5e. Deck attack reveals an unattackable monster (19.23):** e.g. Stoney.
   * It stays in the chosen slot; the attack is cancelled (R-ATK-10).
   * No attack roll; the player goes on with the turn.

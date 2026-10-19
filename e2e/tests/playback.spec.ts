@@ -91,6 +91,7 @@ test('a thrown die falls, bounces and lands on the engine\'s value (15.62)', asy
   if (!mira) {
     throw new Error('no pages');
   }
+  await listenSounds(mira);
   // Replay the view with one fresh attack roll of a 4.
   await mira.evaluate(() => {
     interface Store {
@@ -110,10 +111,15 @@ test('a thrown die falls, bounces and lands on the engine\'s value (15.62)', asy
   });
   const thrown = mira.getByTestId('thrown-die');
   await expect(thrown).toBeAttached();
-  // seek holds the throw at a part of its length.
+  // The die is a cube of six faces (15.69); only the cube is named.
+  await expect(thrown.locator('.die-face')).toHaveCount(6);
+  await expect(thrown.getByRole('img')).toHaveAttribute('aria-label', 'Rolled 4');
+  // seek holds the throw at a part of its length: the fall, the cube's
+  // turn, its shadow and the label.
+  const effect = mira.getByTestId('effect-dice');
   const seek = (at: number) =>
-    thrown.evaluate((el, part) => {
-      for (const a of el.getAnimations()) {
+    effect.evaluate((el, part) => {
+      for (const a of el.getAnimations({ subtree: true })) {
         a.pause();
         a.currentTime = part * Number(a.effect?.getTiming().duration ?? 0);
       }
@@ -133,12 +139,14 @@ test('a thrown die falls, bounces and lands on the engine\'s value (15.62)', asy
   await expect(mira.getByTestId('effect-dice')).toContainText('attack roll');
   await expect(thrown.locator('.die')).toHaveAttribute('aria-label', 'Rolled 4');
   await shot(mira, 'dice-landed');
-  await thrown.evaluate((el) => {
-    for (const a of el.getAnimations()) {
+  await effect.evaluate((el) => {
+    for (const a of el.getAnimations({ subtree: true })) {
       a.play();
     }
   });
   await expect(mira.locator('.effects')).toHaveCount(0);
+  // It clattered on the table as it landed (15.69).
+  expect(await played(mira)).toEqual(['/cardimg/assets/sounds/dice-roll.mp3']);
 });
 
 test('an attack lunges at the monster and drops its HP at the hit', async ({ browser }) => {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { diceChoices, diceImage, faceOf, faceStyle, lastRollAfter, lastRollText, tumbleFaces } from './dice';
+import { cubeFaces, diceChoices, diceImage, faceOf, faceStyle, lastRollAfter, lastRollText } from './dice';
 
 describe('faceOf', () => {
   it('finds each face of a d6 in the texture', () => {
@@ -21,14 +21,19 @@ describe('faceOf', () => {
   });
 });
 
-describe('tumbleFaces', () => {
-  it('shows two other faces, then lands on the value (15.62)', () => {
+describe('cubeFaces', () => {
+  it('puts the value in front of a real d6 (15.69)', () => {
     for (let v = 1; v <= 6; v++) {
-      const faces = tumbleFaces(v);
-      expect(faces.at(-1)).toBe(v);
-      expect(new Set(faces).size).toBe(3);
-      expect(faces.every((f) => f >= 1 && f <= 6)).toBe(true);
+      const f = cubeFaces(v);
+      expect(f.front).toBe(v);
+      expect(new Set(Object.values(f))).toEqual(new Set([1, 2, 3, 4, 5, 6]));
+      expect([f.front + f.back, f.top + f.bottom, f.left + f.right]).toEqual([7, 7, 7]);
     }
+  });
+
+  it('shows a modified value in front of a one', () => {
+    expect(cubeFaces(7)).toEqual({ ...cubeFaces(1), front: 7 });
+    expect(cubeFaces(0).front).toBe(0);
   });
 });
 

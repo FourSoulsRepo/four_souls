@@ -1962,3 +1962,38 @@ Images come first, so the new table is built with backs and mats.
    1. Removing the `treasure_top` read from `Board.tsx` fails the Vitest.
    2. Adding a field to `PlayerView` in Go fails the Go test.
    3. `make lint test frontend` pass.
+
+### [ ] 15.69 Dice in 3D, with a sound
+
+1. Goal: dice look like solid cubes, and a throw is heard (V-17).
+2. Asked by the owner (2026-10-19).
+3. Tasks:
+   1. Every die gets light and shade on its face: a bevel.
+   2. The thrown die is a cube of six faces that tumbles in 3D.
+   3. It lands on the engine's value, tilted to show two more faces.
+   4. A shadow on the table grows as it falls.
+   5. A plastic die on wood plays at the first landing.
+   6. The sound's source is unknown: private images only.
+   7. Without the texture: a plain cube, numbers on its faces.
+4. Done when:
+   1. e2e: the thrown die is a cube, says the value, plays the sound.
+   2. Go test: the sound is served; none without the private images.
+   3. Screenshots before and after.
+5. Result (2026-10-19)
+   1. `Die.css`: every die gets a bevel and a gloss, sized in `cqi`.
+   2. `DieCube` in `Die.tsx`: six faces with `preserve-3d`.
+   3. `cubeFaces` (`dice.ts`): value in front; opposite faces add up to 7.
+   4. It replaces `tumbleFaces`: the cube really turns now.
+   5. The throw: fall, tumble, shadow and label share one length.
+   6. At rest: `rotateX(-20deg) rotateY(-24deg)`, top and right showing.
+   7. Faces are shaded by side; light comes from above.
+   8. Sound: `dice-roll.mp3`, mono MP3 64 kbit/s, 3 KB.
+   9. It plays at the first landing; served by `App.Sounds()`.
+   10. The file sits in the submodule, not committed there yet.
+   11. e2e: six faces, "Rolled 4", and the sound in `playback.spec.ts`.
+   12. `actions.spec.ts` reads the look from the cube's front face.
+   13. NOTICE, UC-13, wikis `Client` and `Animations`, CHANGELOG updated.
+   14. Screenshots: `.cache/screenshots/15.69/before/` and `after/`.
+   15. Playwright's headless WebKit draws any CSS cube flat: one face shows.
+   16. A textbook cube does the same there; Chromium draws it right.
+   17. Owner saw a test cube in real Safari: it draws in 3D.

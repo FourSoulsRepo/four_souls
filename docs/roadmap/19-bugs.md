@@ -620,6 +620,9 @@ This step never closes; new reports are appended.
    4. So it never answers the target; the card never reaches the stack.
    5. Not caused by 19.17; the engine and client behave as designed.
    6. Evidence kept outside the repo before the rerun.
+   7. Seen again in 15.69, WebKit: "every player sees whom the stack waits for".
+   8. Same loop in that test; the panel said "Choose a target".
+   9. Evidence: `.cache/e2e-evidence-15.69/`.
 
 ### [x] 19.19 Trigger order: "on the stack first" is unclear
 

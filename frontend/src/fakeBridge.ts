@@ -261,13 +261,14 @@ w.go = {
           body: '/cardimg/assets/fonts/font-souls-body.ttf',
           cyrillic: '/cardimg/assets/fonts/tboi4s-original.ttf',
         }),
-      // The damage sounds at their real paths; like the fonts, they load
+      // The sounds at their real paths; like the fonts, they load
       // only in screenshots, else they fail to load and stay silent.
       Sounds: () =>
         Promise.resolve({
           attackHit: '/cardimg/assets/sounds/attack-hit.mp3',
           effectCast: '/cardimg/assets/sounds/effect-cast.mp3',
           effectImpact: '/cardimg/assets/sounds/effect-impact.mp3',
+          diceRoll: '/cardimg/assets/sounds/dice-roll.mp3',
         }),
       // The mat images, at their real paths; the e2e tests serve them only
       // for screenshots, else they fail to load as in a public clone.
