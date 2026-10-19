@@ -7,7 +7,7 @@ import { expect, test } from './fixtures';
 import { startGame } from './game';
 import { appURL } from './server';
 import { shot } from './shot';
-import { activePage, click } from './turn';
+import { activePage, click, settle, throwButton, turnAction } from './turn';
 
 const fast = () => `${appURL()}&anim=off`;
 
@@ -194,4 +194,27 @@ test('answers glow and the rest dims while the player picks (15.28)', async ({ b
   await shot(active, 'prompt-aim');
   await active.keyboard.press('Escape');
   await expect(active.locator('main.game')).not.toHaveClass(/picking/);
+});
+
+test('the others see what the active player does (15.30)', async ({ browser }) => {
+  const pages = await startGame(browser, ['Tarn', 'Ulla'], { url: fast() });
+  const active = await activePage(pages, click);
+  const other = pages.find((p) => p !== active);
+  if (!other) {
+    throw new Error('no other page');
+  }
+  const name = await nameOf(active);
+  const doing = other.locator('.player.active .player-activity');
+  // Holding priority on their turn: thinking. The own seat says nothing.
+  await expect(doing).toHaveText(`${name} is thinking`);
+  await expect(active.locator('.player-activity')).toHaveCount(0);
+  await shot(other, 'activity-thinking');
+
+  // Attacking: the line names the monster, as the stack's roll does.
+  await click(active, turnAction(active, 'Attack'));
+  await settle(pages, click, async () => (await throwButton(active).count()) > 0);
+  const monster = await other.getByRole('complementary', { name: 'Stack' }).locator('.stack-row .stack-target').first().textContent();
+  await expect(doing).toHaveText(`${name} attacks ${monster ?? ''}`);
+  await expect(doing.locator('.stack-target')).toHaveText(monster ?? '');
+  await shot(other, 'activity-attacks');
 });

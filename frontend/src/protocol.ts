@@ -336,6 +336,17 @@ export interface GameView {
   // respond, the waiting player first (V-11).
   passed?: number[];
   responding?: number[];
+  // attack is the active player's attack while it lasts; buying a
+  // declared purchase (15.30). Older servers send neither.
+  attack?: AttackView;
+  buying?: boolean;
+}
+
+// AttackView is an attack in progress: its target once chosen, and
+// whether it was declared on the monster deck.
+export interface AttackView {
+  target?: number;
+  deck?: boolean;
 }
 
 // OptionView is what one option of a choose prompt points at.

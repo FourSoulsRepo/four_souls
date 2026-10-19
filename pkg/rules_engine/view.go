@@ -123,6 +123,18 @@ type GameView struct {
 	// waiting player first (V-11). Both are empty outside a window.
 	Passed     []PlayerID `json:"passed,omitempty"`
 	Responding []PlayerID `json:"responding,omitempty"`
+	// Attack is the active player's attack while it lasts; Buying is a
+	// declared purchase. Both are public, so every seat can say what the
+	// active player does (15.30, V-21).
+	Attack *AttackView `json:"attack,omitempty"`
+	Buying bool        `json:"buying,omitempty"`
+}
+
+// AttackView is an attack in progress: its target once chosen, and
+// whether it was declared on the monster deck.
+type AttackView struct {
+	Target ObjectID `json:"target,omitempty"`
+	Deck   bool     `json:"deck,omitempty"`
 }
 
 // OptionView is what one option of a choose prompt points at, so a
@@ -232,6 +244,10 @@ func (g *Game) View(v Viewer) GameView {
 		}
 	}
 	out.Passed, out.Responding = g.responders()
+	if g.Attack.On {
+		out.Attack = &AttackView{Target: g.Attack.Target, Deck: g.Attack.Deck}
+	}
+	out.Buying = g.Purchase.On
 	return out
 }
 

@@ -1,10 +1,12 @@
 import { useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { counted, Role, type CardView, type PlayerView } from '../protocol';
 import { useApp } from '../store';
+import type { LinePart } from '../stack';
 import { isCurse, isSoul, playerColor, soulCards, soulSlots, type Position } from '../table';
 import { Card, useZoom, type CardSize } from './Card';
 import type { Interact } from './Interact';
 import { HiddenHand, RevealedHand } from './Pile';
+import { Part } from './StackPanel';
 import './Table.css';
 
 interface Props {
@@ -18,6 +20,8 @@ interface Props {
   ui: Interact;
   // tools are the viewer's turn actions, shown by own name (15.19).
   tools?: ReactNode;
+  // doing is what this active player does now, for the others (15.30).
+  doing?: LinePart[] | null;
 }
 
 // spent: a character or item that is used up until it recharges.
@@ -37,7 +41,7 @@ export function PlayerArea({ you, position, tools, ...rest }: Props) {
 // up when the view sends it (19.5). Curses stand at the far left
 // (15.55). At the top it mirrors the own area, the hand hanging past the top edge; in
 // a side column everything stacks in a narrow column (F-09).
-function OpponentArea({ player, name, position, active, winSouls, ui }: Omit<Props, 'you' | 'tools'>) {
+function OpponentArea({ player, name, position, active, winSouls, ui, doing }: Omit<Props, 'you' | 'tools'>) {
   const size: CardSize = position === 'left' || position === 'right' ? 'small' : 'table';
   const pick = ui.player(player.id);
   const { character } = player;
@@ -66,6 +70,7 @@ function OpponentArea({ player, name, position, active, winSouls, ui }: Omit<Pro
             </span>
             {player.dead && <span className="player-dead">dead</span>}
           </span>
+          {active && doing && <Activity parts={doing} />}
           {active && <Allowance player={player} />}
           {pick.onClick && (
             <button type="button" className="player-pick" onClick={pick.onClick}>
@@ -261,6 +266,20 @@ function Curses({ player, label, size, ui }: { player: PlayerView; label: string
         <PlayCard key={c.id} card={c} owner={player.id} size={size} ui={ui} />
       ))}
     </div>
+  );
+}
+
+// Activity is what the active player does now, as the stack words it:
+// "Ann attacks Pooter" (15.30, V-21).
+function Activity({ parts }: { parts: LinePart[] }) {
+  return (
+    <span className="player-activity" role="status" aria-label={parts.map((p) => p.text).join('')}>
+      {parts.map((p, i) => (
+        // A line's parts never change order, so the index is a stable key.
+        // eslint-disable-next-line @eslint-react/no-array-index-key
+        <Part key={i} part={p} />
+      ))}
+    </span>
   );
 }
 

@@ -914,6 +914,13 @@
   }
 }
 
+/* What the active player does now (15.30): one line, stack colors. */
+.player-activity {
+  font-size: 12px;
+  font-style: italic;
+  color: #fff;
+}
+
 .player-allowance {
   font-size: 12px;
   color: #ffd27a;

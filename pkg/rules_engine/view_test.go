@@ -386,3 +386,41 @@ func TestViewShowsLiveMonsterStats(t *testing.T) {
 		t.Error("a character got monster stats")
 	}
 }
+
+func TestViewShowsTheAttackToEveryone(t *testing.T) {
+	g := toAction(t, 2)
+	a := g.Turn.Active
+	m := putMonster(g, 0, "gaper")
+	if v := g.View(Viewer{Kind: ViewSpectator}); v.Attack != nil {
+		t.Fatalf("attack %+v before one is declared", *v.Attack)
+	}
+	attack(t, g)
+	if v := g.View(Viewer{Kind: ViewSpectator}); v.Attack == nil || v.Attack.Target != 0 {
+		t.Fatalf("declared attack %+v, want one with no target yet (15.30)", v.Attack)
+	}
+	g.forcedRolls = []int{1}
+	choose(t, g, "gaper")
+	for _, v := range []Viewer{{Kind: ViewPlayer, Player: a}, {Kind: ViewPlayer, Player: g.next(a)}, {Kind: ViewSpectator}} {
+		if at := g.View(v).Attack; at == nil || at.Target != m || at.Deck {
+			t.Errorf("viewer %+v: attack %+v, want the gaper %d", v, at, m)
+		}
+	}
+	g.endAttack()
+	if v := g.View(Viewer{Kind: ViewSpectator}); v.Attack != nil {
+		t.Errorf("attack %+v after it ended", *v.Attack)
+	}
+}
+
+func TestViewShowsADeclaredPurchase(t *testing.T) {
+	g := toAction(t, 2)
+	a := g.Turn.Active
+	if g.View(Viewer{Kind: ViewSpectator}).Buying {
+		t.Fatal("buying before a purchase is declared")
+	}
+	if _, err := g.Apply(Intent{Player: a, Kind: IntentPurchase}); err != nil {
+		t.Fatal(err)
+	}
+	if !g.View(Viewer{Kind: ViewPlayer, Player: g.next(a)}).Buying {
+		t.Error("another player does not see the declared purchase (15.30)")
+	}
+}

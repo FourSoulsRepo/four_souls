@@ -967,7 +967,7 @@ Images come first, so the new table is built with backs and mats.
    1. Card options repeat the card's name in a button under it; see 15.66.
    2. Owner marks 15.29 solved.
 
-### [ ] 15.30 Activity status
+### [x] 15.30 Activity status
 
 1. Goal: every player knows what the active player is doing (V-21).
 2. Tasks:
@@ -980,6 +980,21 @@ Images come first, so the new table is built with backs and mats.
 3. Done when:
    1. e2e test: a second player sees the status line.
    2. `make screenshots` covers "Ann attacks" and "Ann is thinking".
+4. Result (2026-10-19)
+   1. Activities: play, use, death penalty, attack, buy, think.
+   2. The active seat shows one line under the name: "Ann attacks Pooter".
+   3. Names in seat color, targets in red, as on the stack.
+   4. Engine: `GameView.attack` (target, deck) and `buying`, public.
+   5. The rest comes from the stack top and the open prompt.
+   6. "Thinking": any prompt that waits for the active player.
+   7. No line while the game waits for others with nothing going on.
+   8. The viewer's own seat shows none; the banner covers it.
+   9. Spectators: public state only; no spectator screen yet (step 9).
+   10. Shared with 15.28: `activity` in `prompt.ts`, the stack's `Part`.
+   11. Engine tests: attack and purchase in every viewer's view.
+   12. Vitest: every activity; e2e `prompt.spec.ts`: the other seat.
+   13. Use case UC-23; wiki `Client`, `Rules-engine`.
+   14. Screenshots: `.cache/screenshots/15.30/before/` and `after/`.
 
 ### [ ] 15.31 Fight marks and played cards
 

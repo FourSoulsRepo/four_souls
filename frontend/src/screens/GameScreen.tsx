@@ -19,7 +19,7 @@ import { EndTurn, TurnActions } from '../components/TurnActions';
 import { matLook } from '../mats';
 import type { Update } from '../protocol';
 import { seatOf, useApp } from '../store';
-import { picking, promptBanner, stackPrompt } from '../prompt';
+import { activity, picking, promptBanner, stackPrompt } from '../prompt';
 import { waitTurn, type Names } from '../stack';
 import { seatPositions } from '../table';
 import '../components/Table.css';
@@ -110,6 +110,8 @@ function Table({ game, you }: { game: Update; you: number }) {
   // the player picks a target, the cards that answer glow; the rest dim.
   const banner = promptBanner(view, you, names, actions, aiming);
   const dim = canAct && picking(actions, aiming);
+  // What the active player does, on their seat for everyone else (15.30).
+  const doing = activity(view, names);
   return (
     <main className={`game ${look.className}${dim ? ' picking' : ''}`} style={look.style} aria-label={`Turn ${String(view.turn.number)}`}>
       {seatPositions(view.players.length, you).map(({ position, player }) => {
@@ -123,6 +125,7 @@ function Table({ game, you }: { game: Update; you: number }) {
               position={position}
               you={p.id === you}
               active={view.turn.active === p.id}
+              doing={doing}
               winSouls={view.win_souls ?? 0}
               ui={ui}
               tools={

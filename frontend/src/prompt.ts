@@ -1,8 +1,8 @@
 // The prompt banner (15.28, V-20): what the game waits for, in a few
 // words. Pure, so every prompt is tested without a browser.
-import { choiceTitle, PromptKind, type Actions } from './actions';
+import { choiceTitle, PromptKind, Purpose, type Actions } from './actions';
 import type { GameView } from './protocol';
-import { findCard, stackLine, type Names } from './stack';
+import { findCard, StackKind, stackLine, type LinePart, type Names } from './stack';
 import type { Aiming } from './store';
 
 // BannerKind is the prompt a banner is about. "aim" is the player's own
@@ -128,4 +128,53 @@ export function stackPrompt(b: Banner | null, n: Names): string | undefined {
     return undefined;
   }
   return b.mine ? b.title : `${n.player(b.player)}: ${b.hint ?? ''}`;
+}
+
+// activity says what the active player is doing, for every other seat
+// (15.30, V-21): their own play or use on top of the stack, the death
+// penalty, an attack, a purchase, or thinking while the game waits for
+// them. Only public state, so spectators get the same words. Nothing
+// while the game waits for others with none of these going on.
+export function activity(view: GameView, n: Names): LinePart[] | null {
+  if (view.over) {
+    return null;
+  }
+  const { active } = view.turn;
+  const who: LinePart = { text: n.player(active), role: 'player', player: active };
+  const card = (ref: string | undefined): LinePart => ({ text: ref ? n.card(ref) : 'a card', role: 'card' });
+  const w = view.waiting;
+  const top = (view.stack ?? []).at(-1);
+  if (top?.controller === active && top.kind === StackKind.loot) {
+    return [who, { text: ' plays ' }, card(top.card)];
+  }
+  if (top?.controller === active && top.kind === StackKind.ability) {
+    return [who, { text: ' uses ' }, card(top.card ?? top.source_card ?? findCard(view, top.source))];
+  }
+  const penalty =
+    (top?.kind === StackKind.penalty && top.target.player === active) ||
+    (w.player === active && w.kind === PromptKind.choose && (w.purpose === Purpose.penaltyItem || w.purpose === Purpose.penaltyLoot));
+  if (penalty) {
+    return [who, { text: ' pays the death penalty' }];
+  }
+  const { attack } = view;
+  if (attack) {
+    const target = attack.target ?? 0;
+    if (target === 0) {
+      return attack.deck ? [who, { text: ' attacks the monster deck' }] : [who, { text: ' declares an attack' }];
+    }
+    // An attacked player is named, not their character (R-ATK-20).
+    const victim = view.players.find((p) => p.character.id === target);
+    const ref = findCard(view, target);
+    const aim: LinePart = victim
+      ? { text: n.player(victim.id), role: 'target', player: victim.id }
+      : { text: ref ? n.card(ref) : 'a monster', role: 'target' };
+    return [who, { text: ' attacks ' }, aim];
+  }
+  if (view.buying) {
+    return [who, { text: ' is buying' }];
+  }
+  if (w.player === active && w.kind !== PromptKind.none) {
+    return [who, { text: ' is thinking' }];
+  }
+  return null;
 }

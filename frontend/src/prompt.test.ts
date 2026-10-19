@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { IntentKind, PromptKind, type Actions } from './actions';
+import { IntentKind, PromptKind, Purpose, type Actions } from './actions';
 import type { GameView, Intent, StackItem } from './protocol';
-import { picking, promptBanner, stackPrompt } from './prompt';
+import { activity, picking, promptBanner, stackPrompt } from './prompt';
 import { StackKind } from './stack';
 
 const view: GameView = {
@@ -104,5 +104,48 @@ describe('picking', () => {
     expect(picking(dialog, null)).toBe(false);
     const table = { ...none, choice: { title: 'Choose a target', purpose: 6, options: [{ ...option, target: { object: 9, player: 0 } }] } };
     expect(picking(table, null)).toBe(true);
+  });
+});
+
+describe('activity', () => {
+  const said = (v: GameView) =>
+    activity(v, names)
+      ?.map((p) => p.text)
+      .join('') ?? null;
+  const top = (it: Partial<StackItem>): GameView => ({ ...view, waiting: { kind: PromptKind.priority, player: 1 }, stack: [{ ...loot, ...it }] });
+
+  it('says the active player is thinking while the game waits for them', () => {
+    expect(said(view)).toBe('Ann is thinking');
+    const choice = { ...view, waiting: { kind: PromptKind.choose, player: 0, purpose: Purpose.target } };
+    expect(said(choice)).toBe('Ann is thinking');
+  });
+
+  it('says nothing while others answer, or once the game is over', () => {
+    expect(said({ ...view, waiting: { kind: PromptKind.priority, player: 1 } })).toBeNull();
+    expect(said({ ...view, over: true })).toBeNull();
+  });
+
+  it('names the card the active player plays or uses', () => {
+    expect(said(top({ controller: 0 }))).toBe('Ann plays A_PENNY');
+    expect(said(top({ controller: 0, kind: StackKind.ability, card: 'the_d6' }))).toBe('Ann uses THE_D6');
+    // A response of another player is not the active player's doing.
+    expect(said(top({ controller: 1 }))).toBeNull();
+  });
+
+  it('names what the active player attacks', () => {
+    expect(said({ ...view, attack: {} })).toBe('Ann declares an attack');
+    expect(said({ ...view, attack: { deck: true } })).toBe('Ann attacks the monster deck');
+    expect(said({ ...view, attack: { target: 9 } })).toBe('Ann attacks GAPER');
+    const parts = activity({ ...view, attack: { target: 2 } }, names);
+    expect(parts?.at(-1)).toEqual({ text: 'Bo', role: 'target', player: 1 });
+    // The attack stays the activity while another player responds.
+    expect(said({ ...top({ controller: 1 }), attack: { target: 9 } })).toBe('Ann attacks GAPER');
+  });
+
+  it('says the active player buys or pays the death penalty', () => {
+    expect(said({ ...view, buying: true })).toBe('Ann is buying');
+    expect(said(top({ controller: -1, kind: StackKind.penalty, target: { player: 0, is_player: true } }))).toBe('Ann pays the death penalty');
+    const lose = { ...view, waiting: { kind: PromptKind.choose, player: 0, purpose: Purpose.penaltyItem } };
+    expect(said(lose)).toBe('Ann pays the death penalty');
   });
 });

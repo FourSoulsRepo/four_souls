@@ -98,7 +98,7 @@ export interface Choice {
 
 // Purpose.purchase: a "deck" option means the treasure deck, otherwise
 // the monster deck.
-export const Purpose = { attackTarget: 1, monsterSlot: 2, purchase: 5, target: 6, triggerOrder: 7, answer: 9 } as const;
+export const Purpose = { attackTarget: 1, monsterSlot: 2, penaltyItem: 3, penaltyLoot: 4, purchase: 5, target: 6, triggerOrder: 7, answer: 9 } as const;
 
 export interface Actions {
   // buttons are the actions that need no card: pass.
