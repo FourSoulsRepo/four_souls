@@ -943,3 +943,15 @@ func (g *Game) CancelAttackAfterDamage() {
 		g.Attack.StopAfter = true
 	}
 }
+
+// attackTax is what p pays the other players to attack (Tax for the
+// Mighty).
+func (g *Game) attackTax(p PlayerID) int {
+	return g.bonus(StatAttackTax, p, 0) * (len(g.Players) - 1)
+}
+
+// canAttack reports whether p could declare an attack now: "must attack
+// if able" lets a player who can't attack end the turn (R-ABIL-12).
+func (g *Game) canAttack(p PlayerID) bool {
+	return g.attacksLeft() > 0 && g.attackTax(p) <= g.Players[p].Cents
+}

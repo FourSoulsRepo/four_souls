@@ -37,7 +37,7 @@ func TestSimulations(t *testing.T) {
 // simulate plays one game; it reports whether it ended and its length.
 func simulate(t *testing.T, seed uint64, players int) (bool, int) {
 	t.Helper()
-	s := engine.Setup{Seed: seed, Players: players, Sets: Sets(), BonusSouls: true}
+	s := engine.Setup{Seed: seed, Players: players, Sets: Sets(), BonusSouls: true, Rooms: seed%2 == 1}
 	g, _, err := engine.NewGame(s)
 	if err != nil {
 		t.Fatal(err)

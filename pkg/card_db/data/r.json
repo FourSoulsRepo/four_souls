@@ -915,24 +915,6 @@
           ]
         }
       },
-      "rewards": [
-        {
-          "count": "5x",
-          "kind": "Coin"
-        },
-        {
-          "count": "1x",
-          "kind": "Loot"
-        },
-        {
-          "count": "1x",
-          "kind": "Treasure"
-        },
-        {
-          "count": "1x",
-          "kind": "Soul"
-        }
-      ],
       "artists": [
         {
           "role": "Front character artist",
@@ -8163,20 +8145,6 @@
         {
           "name": "ATK",
           "value": "1/2"
-        }
-      ],
-      "rewards": [
-        {
-          "count": "2x",
-          "kind": "Soul"
-        },
-        {
-          "count": "1x",
-          "kind": "Treasure"
-        },
-        {
-          "count": "6x",
-          "kind": "Loot"
         }
       ],
       "artists": [

@@ -139,6 +139,9 @@ Ideas: CD-02, GS-07, GS-08, CD-11, A-16, CD-12, V-32, GS-12, GS-13, GS-01.
    52. Requiem: the other 20 rooms tested, Gus included.
    53. Engine: Magic Marker numbers (R-ABIL-39); a room from the deck onto a room slot.
    54. Requiem: Hagalaz, Broken Remote, Red Key and Magic Marker tested; the report is 235/235.
+   55. Requiem registered in `cards.Sets()` and named in the host screen; new hosts get it ticked.
+   56. FuzzSets and the simulations turn the room deck on in some games.
+   57. Fix from the simulations: a player who can't pay Tax for the Mighty may end the turn.
 
 ### [ ] 14.4 Setup options
 

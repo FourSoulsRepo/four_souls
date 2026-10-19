@@ -70,5 +70,11 @@
         ]
       }
     }
+  },
+  "betrayal": {
+    "rewards": []
+  },
+  "the_harbingers": {
+    "rewards": []
   }
 }

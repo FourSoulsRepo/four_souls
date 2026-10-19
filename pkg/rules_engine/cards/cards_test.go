@@ -61,7 +61,7 @@ func FuzzSets(f *testing.F) {
 	f.Add(uint64(5), uint8(2), bytes.Repeat([]byte{1, 0, 3, 2}, 100))
 	f.Add(uint64(9), uint8(1), bytes.Repeat([]byte{0}, 300))
 	f.Fuzz(func(t *testing.T, seed uint64, players uint8, choices []byte) {
-		s := engine.Setup{Seed: seed, Players: 2 + int(players%3), Sets: Sets(), BonusSouls: true}
+		s := engine.Setup{Seed: seed, Players: 2 + int(players%3), Sets: Sets(), BonusSouls: true, Rooms: players&4 != 0}
 		g, _, err := engine.NewGame(s)
 		if err != nil {
 			t.Fatal(err)
