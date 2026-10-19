@@ -137,6 +137,8 @@ Ideas: CD-02, GS-07, GS-08, CD-11, A-16, CD-12, V-32, GS-12, GS-13, GS-01.
    50. **Owner:** Social Goals counts every player's progress (Q-20); Pity for the Poor makes every purchase free (Q-21).
    51. Engine: giving ¢, killing a player, attack tax, one ability and one loot a turn, rooms kept in play.
    52. Requiem: the other 20 rooms tested, Gus included.
+   53. Engine: Magic Marker numbers (R-ABIL-39); a room from the deck onto a room slot.
+   54. Requiem: Hagalaz, Broken Remote, Red Key and Magic Marker tested; the report is 235/235.
 
 ### [ ] 14.4 Setup options
 

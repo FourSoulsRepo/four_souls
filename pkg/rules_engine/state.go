@@ -278,6 +278,8 @@ type Game struct {
 	Shields []Shield `json:"shields,omitempty"`
 	// Lingering abilities last till end of turn (Linger).
 	Lingering []Lingering `json:"lingering,omitempty"`
+	// Markers change numbers in effect text till end of turn (Magic Marker).
+	Markers []Marker `json:"markers,omitempty"`
 	// ManyDice: the next roll is made with Dice dice and Chooser picks the
 	// result (Mutant Spider, R-DICE-11).
 	ManyDice []ManyDice `json:"many_dice,omitempty"`

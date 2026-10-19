@@ -104,7 +104,7 @@ func (g *Game) askEffectOf(a *Asking) askEffect {
 	if e, ok := g.asks[a.Key]; ok {
 		return e
 	}
-	effects := g.effectsOf(a.Ability, a.Mode, a.RollResult)
+	effects := g.effectsOf(a.Source, a.Ability, a.Mode, a.RollResult)
 	e, ok := effects[a.Effect].(askEffect)
 	if !ok {
 		panic("rulesengine: asking a non-ask effect of " + string(a.Ability.Card))

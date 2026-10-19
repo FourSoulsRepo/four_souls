@@ -357,7 +357,7 @@ func (g *Game) stillValid(c Chosen) bool {
 // resolveAbility runs an ability's effects, or fizzles it when a target
 // is gone (R-ABIL-06). A roll ability's result runs its table instead.
 func (g *Game) resolveAbility(it StackItem) {
-	effects := g.effectsOf(it.Ability, it.Mode, it.RollResult)
+	effects := g.effectsOf(it.Source, it.Ability, it.Mode, it.RollResult)
 	defer g.afterEventAbility(it.Source)
 	// A "would roll N" trigger needs the roll to still be N (R-DICE-07).
 	if it.Kind == StackTrigger && it.Checked > 0 && !g.rollStillIs(it.EventStack, it.Checked-1) {

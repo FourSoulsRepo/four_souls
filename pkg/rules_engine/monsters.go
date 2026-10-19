@@ -163,6 +163,20 @@ func (g *Game) PlaceFromDeck(id ObjectID, i int) {
 	g.enterMonsterSlot(g.coverMonsterSlot(id, i))
 }
 
+// PlaceRoomFromDeck takes a card out of the room deck and puts it on
+// top of room slot i, covering the room there (Red Key).
+func (g *Game) PlaceRoomFromDeck(id ObjectID, i int) {
+	if i < 0 || i >= len(g.Rooms) {
+		return
+	}
+	g.Decks[RoomDeck] = remove(g.Decks[RoomDeck], id)
+	if top, ok := g.Rooms[i].TopOf(); ok {
+		o := g.Object(top)
+		o.Zone, o.Role = Zone{Kind: ZoneCovered, Slot: RoomSlot, Index: i}, RoleNone
+	}
+	g.putInSlot(id, RoomSlot, i)
+}
+
 // checkBonusSouls gives each active bonus soul to the first player, in
 // turn order from the active player, who meets its condition (R-ZONE-14).
 func (g *Game) checkBonusSouls() bool {

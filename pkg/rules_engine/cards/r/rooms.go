@@ -148,3 +148,63 @@ func eachMonsterToDiscard(notAttacked bool) engine.Effect {
 		c.G.RefillSlots()
 	})
 }
+
+// monsterOrRoomDecks are the options of "the monster or room deck".
+func monsterOrRoomDecks(g *engine.Game) []engine.DeckKind {
+	out := []engine.DeckKind{engine.MonsterDeck}
+	if len(g.Rooms) > 0 {
+		out = append(out, engine.RoomDeck)
+	}
+	return out
+}
+
+// deckLabels names decks as the prompts do.
+func deckLabels(ds []engine.DeckKind) []string {
+	out := make([]string, len(ds))
+	for i, d := range ds {
+		out[i] = d.String() + " deck"
+	}
+	return out
+}
+
+// roomsAndMonstersToDiscard lists the rooms and the monsters not being
+// attacked that may be put into discard.
+func roomsAndMonstersToDiscard(g *engine.Game) []engine.ObjectID {
+	var out []engine.ObjectID
+	for _, id := range monstersInPlay(g) {
+		if !g.Attack.On || g.Attack.Target != id {
+			out = append(out, id)
+		}
+	}
+	for _, s := range g.Rooms {
+		if top, ok := s.TopOf(); ok && g.Object(top).Role == engine.RoleRoom {
+			if stay := g.Def(top).NoDiscard; stay == nil || !stay(g, top) {
+				out = append(out, top)
+			}
+		}
+	}
+	return out
+}
+
+// roomOrMonsterToDiscard: "put a room or monster not being attacked into
+// discard"; with may, "none" is an option.
+func roomOrMonsterToDiscard(may bool) engine.Effect {
+	return engine.Ask(func(c *engine.Ctx, a []int) {
+		ids := roomsAndMonstersToDiscard(c.G)
+		if a[0] < 0 || a[0] >= len(ids) {
+			return
+		}
+		if c.G.Object(ids[a[0]]).Role == engine.RoleRoom {
+			c.G.DiscardRoom(ids[a[0]])
+			return
+		}
+		c.G.DiscardMonster(ids[a[0]])
+		c.G.RefillSlots()
+	}, engine.Question{Text: "Put which into discard?", Options: func(c *engine.Ctx, _ []int) []string {
+		out := labelsOf(c.G, roomsAndMonstersToDiscard(c.G))
+		if may {
+			out = append(out, "none")
+		}
+		return out
+	}})
+}

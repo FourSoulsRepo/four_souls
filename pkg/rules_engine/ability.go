@@ -212,7 +212,7 @@ type lootEffect struct{ n int }
 func Loot(n int) Effect { return lootEffect{n} }
 
 func (e lootEffect) apply(c *Ctx) {
-	c.G.enqueue(Action{Kind: ActLoot, Player: c.Controller, Amount: e.n})
+	c.G.enqueue(Action{Kind: ActLoot, Player: c.Controller, Amount: c.G.number(c.Source, NumLoot, e.n)})
 }
 
 type gainCentsEffect struct{ n int }
@@ -221,7 +221,7 @@ type gainCentsEffect struct{ n int }
 func GainCents(n int) Effect { return gainCentsEffect{n} }
 
 func (e gainCentsEffect) apply(c *Ctx) {
-	c.G.enqueue(Action{Kind: ActGainCents, Player: c.Controller, Amount: e.n})
+	c.G.enqueue(Action{Kind: ActGainCents, Player: c.Controller, Amount: c.G.number(c.Source, NumCents, e.n)})
 }
 
 type loseCentsEffect struct{ n int }
@@ -257,7 +257,8 @@ func (e damageEffect) apply(c *Ctx) {
 	if t.Kind == TargetPlayer {
 		tgt = Target{Player: t.Player, IsPlayer: true}
 	}
-	c.G.push(StackItem{Kind: StackDamage, Controller: c.Controller, Source: c.Source, Amount: e.n, Label: "damage", Target: tgt})
+	n := c.G.number(c.Source, NumDamage, e.n)
+	c.G.push(StackItem{Kind: StackDamage, Controller: c.Controller, Source: c.Source, Amount: n, Label: "damage", Target: tgt})
 }
 
 type extraLootEffect struct{ n int }
@@ -524,7 +525,7 @@ func (c *Ctx) target(t int) Chosen {
 
 // effectsOf returns the effects that run for an ability: those of the
 // chosen mode, or of a roll result.
-func (g *Game) effectsOf(ref AbilityRef, mode, roll int) []Effect {
+func (g *Game) effectsOf(src ObjectID, ref AbilityRef, mode, roll int) []Effect {
 	ab := g.ability(ref)
 	effects := ab.Effects
 	if len(ab.Modes) > 0 {
@@ -532,7 +533,7 @@ func (g *Game) effectsOf(ref AbilityRef, mode, roll int) []Effect {
 	}
 	if roll > 0 {
 		if r, ok := findRoll(effects); ok {
-			return r.table[roll-1]
+			return g.markedTable(src, r.table)[roll-1]
 		}
 		return nil
 	}

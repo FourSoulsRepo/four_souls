@@ -374,7 +374,7 @@ func (g *Game) healAll() {
 	for _, id := range g.inPlay() {
 		g.Object(id).Damage, g.Object(id).HitsThisTurn = 0, 0
 	}
-	g.Boosts, g.Shields, g.Lingering = nil, nil, nil // till end of turn effects end
+	g.Boosts, g.Shields, g.Lingering, g.Markers = nil, nil, nil, nil // till end of turn effects end
 	for _, pl := range g.Players {
 		for _, id := range append([]ObjectID{pl.Character}, pl.InPlay...) {
 			o := g.Object(id)
