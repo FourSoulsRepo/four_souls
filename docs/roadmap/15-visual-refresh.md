@@ -927,6 +927,8 @@ Images come first, so the new table is built with backs and mats.
    19. e2e: Pass glow, pick dimming, own aim.
    20. `make e2e`: only 19.18 failed (Dagaz in the deal), twice.
    21. Screenshots: `.cache/screenshots/15.28/before/` and `after/`.
+5. Owner notes (2026-10-19)
+   1. Owner marks 15.28 solved.
 
 ### [ ] 15.29 Reasons and choice dialogs
 
