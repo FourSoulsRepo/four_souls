@@ -21,3 +21,7 @@
 {"type":"load","id":14,"data":{"save":"g1"}}
 {"type":"wait_turn","id":15,"data":{"on":true}}
 {"type":"intent","id":16,"data":{"intent":{"player":0,"kind":9}}}
+{"type":"presence","id":17,"data":{"seat":0,"from":{"hand":2},"point":{"x":0.25,"y":0.5}}}
+{"type":"presence","data":{"seat":1,"from":{"object":314},"at":{"player":0}}}
+{"type":"presence","data":{"seat":1,"at":{"deck":2}}}
+{"type":"presence","data":{"seat":1,"at":{"stack_id":3}}}

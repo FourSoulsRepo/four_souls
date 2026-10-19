@@ -14,6 +14,8 @@ import (
 
 var update = flag.Bool("update", false, "rewrite testdata/golden.jsonl")
 
+func ptr[T any](v T) *T { return &v }
+
 // TestGolden pins the JSON of every message (ADR 006). If it fails, the
 // wire format changed: if a field was renamed or removed, bump Version;
 // then run with -update.
@@ -53,6 +55,10 @@ func TestGolden(t *testing.T) {
 		{TypeLoad, 14, Load{Save: "g1"}},
 		{TypeWaitTurn, 15, WaitTurn{On: true}},
 		{TypeIntent, 16, Intent{Intent: engine.Intent{Kind: engine.IntentThrow}}},
+		{TypePresence, 17, Presence{From: &Spot{Hand: 2}, Point: &Point{X: 0.25, Y: 0.5}}},
+		{TypePresence, 0, Presence{Seat: 1, From: &Spot{Object: 314}, At: &Spot{Player: ptr(engine.PlayerID(0))}}},
+		{TypePresence, 0, Presence{Seat: 1, At: &Spot{Deck: ptr(engine.MonsterDeck)}}},
+		{TypePresence, 0, Presence{Seat: 1, At: &Spot{StackID: 3}}},
 	}
 	var got bytes.Buffer
 	for _, m := range messages {

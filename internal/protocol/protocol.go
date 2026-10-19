@@ -59,6 +59,9 @@ const (
 	TypeSave  = "save"  // client → server: the host saves the game; it stops
 	TypeSaved = "saved" // server → client: the game was saved under this ID
 	TypeLoad  = "load"  // client → server: open a saved game's table again
+
+	// Live aiming and hover (15.35, N-15): never an intent or an event.
+	TypePresence = "presence" // client → server → the other players
 )
 
 // Envelope wraps every message. ID is set by the client on requests;
@@ -167,6 +170,39 @@ type Seat struct {
 	// Dice is the seat's dice look (V-19); "" draws the default one.
 	Dice string `json:"dice,omitempty"`
 }
+
+// Presence is what a player points at now (N-15): the card they aim
+// from, and the card or spot the arrow or pointer is over. The engine
+// never sees it and records never keep it. Each one replaces the
+// sender's last; an empty one means nothing. The server fills in Seat,
+// keeps only spots every player can see, and drops the rest.
+type Presence struct {
+	Seat  int    `json:"seat"`            // the sender; set by the server
+	From  *Spot  `json:"from,omitempty"`  // what aims; nil: not aiming
+	At    *Spot  `json:"at,omitempty"`    // what the arrow or pointer is over
+	Point *Point `json:"point,omitempty"` // the pointer, while over no spot
+}
+
+// Spot is one thing on the table a player points at; exactly one field
+// is set. A card in the sender's hand is its slot, never its object, so
+// the others learn nothing about it (A-16).
+type Spot struct {
+	Object  engine.ObjectID  `json:"object,omitempty"`   // a card every player can see
+	Hand    int              `json:"hand,omitempty"`     // the sender's hand slot, from 1
+	Player  *engine.PlayerID `json:"player,omitempty"`   // a player
+	Deck    *engine.DeckKind `json:"deck,omitempty"`     // a deck
+	StackID int              `json:"stack_id,omitempty"` // a stack item
+}
+
+// Point is a spot on the board frame, 0 to 1 from its top left corner.
+type Point struct {
+	X float64 `json:"x"`
+	Y float64 `json:"y"`
+}
+
+// MaxPresence is how many presence messages a player may send each
+// second; the server drops the rest.
+const MaxPresence = 20
 
 // GameInfo is one game in the lobby list.
 type GameInfo struct {

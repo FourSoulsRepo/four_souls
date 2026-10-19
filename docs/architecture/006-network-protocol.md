@@ -116,6 +116,7 @@ Use options 1, 3, 5 and 10.
    17. Only the chooser gets it; a client aims from that card.
    18. `update` → `blocked`: why a seat can't use a card or turn action now (15.29).
    19. Each has the intent kind, the card's object, and a short `reason`.
+   20. Live aiming and hover: `presence`, relayed, never an intent (ADR 016).
 9. Playing over the internet, until a relay exists
    1. A virtual LAN (Tailscale, ZeroTier, Hamachi, Radmin VPN), or port forwarding.
    2. Or a dedicated server on a rented VPS.

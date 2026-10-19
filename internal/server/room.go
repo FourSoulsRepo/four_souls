@@ -27,6 +27,7 @@ type roomSeat struct {
 	wait   bool   // "wait for my turn": pass until the turn before ends (N-16)
 	kicked bool   // empty for good after a vote (N-08)
 	dice   string // the dice look (V-19); kept while the player is away
+	pace   pace   // presence messages (15.35)
 }
 
 type request struct {
@@ -72,6 +73,12 @@ type Room struct {
 	timer    *time.Timer // the response timer (N-07)
 	timerGen int
 	deadline time.Time
+
+	// pub is the public table presence checks against, for pubStep of
+	// pubGame (15.35).
+	pub     *publicTable
+	pubGame *engine.Game
+	pubStep int
 }
 
 // NewRoom prepares a game for seated players; it starts in Run. The
@@ -179,6 +186,8 @@ func (r *Room) handle(req request) {
 		r.vote(c, env)
 	case protocol.TypeSave:
 		r.save(c, env)
+	case protocol.TypePresence:
+		r.presence(c, env)
 	default:
 		c.fail(env.ID, protocol.ErrBadMessage, "not during a game: "+env.Type)
 	}
@@ -298,6 +307,7 @@ func (r *Room) drop(c *Client) {
 		r.seats[c.seat].client = nil
 		r.seats[c.seat].skip = nil
 		r.seats[c.seat].wait = false
+		r.relayPresence(c, protocol.Presence{Seat: c.seat}) // its arrow goes
 		if r.paused() {
 			r.restartTimer() // stops it while paused
 		}

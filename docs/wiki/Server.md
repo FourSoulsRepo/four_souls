@@ -36,6 +36,14 @@ The server answers for a player only in these cases, never choosing among real o
 
 "Skip all" and "wait for my turn" only pass: a roll always waits for its own player's throw (ADR 014).
 
+## Presence
+
+`presence.go` (15.35, N-15, ADR 016). A seated player sends `presence` while aiming or hovering: `from` (what aims), `at` (what the arrow or pointer is over), `point` (the pointer on the board frame, 0 to 1). The room fills in `seat` and sends it to every other seated player; the sender gets nothing back. Each one replaces the sender's last, so a lost or late one does no harm. When a player's connection drops, the others get an empty presence of that seat, so its arrow goes.
+
+The engine never sees it and no record or save keeps it. It is never answered: a message that does not decode, comes before the game starts, or comes too fast is dropped. `pace` allows `protocol.MaxPresence` a second per seat, with a burst of as many.
+
+A spot names exactly one thing: a card every player can see (`object`), a slot of the sender's own hand (`hand`, from 1), a player, a deck, or a stack item. The room checks it against the table as a spectator sees it, built once per step (`publicTable`). Anything else becomes no spot, so a hand card's object never leaves the server (A-16).
+
 ## LAN discovery
 
 `internal/lan` (ADR 009). A joining app sends a UDP probe to port 4774: to 255.255.255.255, to each interface's broadcast address, and to 127.0.0.1 (several copies on one computer, UC-16). A server started with `Config.Discovery` answers the sender by unicast with its waiting games; with none waiting it stays silent. Only the app's `Host` sets `Discovery`; it has no JSON name, so `cmd/server` never answers. Answers carry a random server ID, so the same server reached over loopback and the LAN shows once, with its LAN address.
@@ -59,6 +67,7 @@ Step 8.12 checked every message the server sends for hidden cards. Hidden means:
 | `update` → `allowed` | this seat's intents | Only the seat's own objects and choice indexes. |
 | `update` → `aims` | first targets of allowed plays and uses, and a `reason` saying what they may be | Targets are public objects, players and stack items; a "your hand card" target goes only to its own seat. |
 | `update` → `blocked` | why the seat can't use a card or turn action now: kind, object, `reason` (15.29) | Only the seat's own hand cards, its own cards in play, and rooms. Reasons are fixed words; none names a card. |
+| `presence` | another seat's aim and hover (15.35) | Spots are public cards, players, decks, stack items, or the sender's hand slot; a hidden object is dropped by the server (`TestPresenceHidesHandCards`). |
 | `error` | code, message, rule | Engine refusals name only cards in play; an activation checks the zone before it names the card. |
 | `/record` | the match record (all hidden info) | Only to the game's players, only after the game is over (RP-05); `TestDownloadRecord`. |
 
@@ -74,7 +83,7 @@ Found and fixed: an `activate` intent with an unknown object ID made the engine 
 
 ## Tests
 
-* `hub_test.go`, `setup_test.go`, `flow_test.go`, `pause_test.go`, `records_test.go`, `saves_test.go`: in-memory connections.
+* `hub_test.go`, `setup_test.go`, `flow_test.go`, `pause_test.go`, `records_test.go`, `saves_test.go`, `presence_test.go`: in-memory connections.
 * `integration_test.go`: whole games of bots over real WebSockets, a drop and a reconnect, a save and a load; every record must replay in the engine. Under `-race` only the 2-player game runs.
 * `internal/protocol/testdata/golden.jsonl` pins the JSON of every message: rename or remove a field, bump `protocol.Version`; then `go test ./internal/protocol -update`.
 * Timers count `Hub.second`, so tests make a second one millisecond.

@@ -190,7 +190,7 @@ function model(env: Envelope): Envelope | undefined {
 }
 
 // Messages the client does not read or send yet; later steps model them.
-const notYet = ['resync', 'setup', 'ban', 'pick', 'skip_all', 'vote', 'save'];
+const notYet = ['resync', 'setup', 'ban', 'pick', 'skip_all', 'vote', 'save', 'presence'];
 
 const lines = golden
   .split('\n')

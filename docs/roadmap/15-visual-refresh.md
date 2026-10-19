@@ -1156,6 +1156,22 @@ Images come first, so the new table is built with backs and mats.
    1. Server test: an aim message reaches the others, not the sender.
    2. Server test: the record has no presence messages.
    3. Server test: a hidden card's aim carries no card ID.
+4. Result (2026-10-20)
+   1. ADR 016: presence messages; ADR 006 and ADR 007 point to it.
+   2. `protocol.Presence`: `from`, `at`, `point`; the server sets `seat`.
+   3. `protocol.Spot`: one of object, hand slot, player, deck, stack item.
+   4. `server/presence.go`: relayed to the other seated players only.
+   5. Spots are checked against the spectator view of this step.
+   6. A hidden object becomes no spot; a hand card travels as its slot.
+   7. 20 a second per seat, a burst of as many; the rest are dropped.
+   8. Never answered, never recorded; the engine never sees it.
+   9. A dropped player's arrow goes: the others get an empty presence.
+   10. Protocol stays version 3: an older client ignores the new type.
+   11. Golden file: one sent and three relayed presence lines.
+   12. The client does not read it yet (15.36); TS test lists it as not yet.
+   13. Tests in `presence_test.go`: reach, hidden card, pace, drop, record.
+   14. Wiki `Server`: a Presence section and a leak audit row.
+   15. No screen changes, so no screenshots.
 
 ### [ ] 15.36 Others' aim and hover
 
