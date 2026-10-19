@@ -852,3 +852,33 @@ This step never closes; new reports are appended.
    10. Screenshots: `.cache/screenshots/19.26/before/` and `after/`.
 7. Owner notes (2026-10-19)
    1. Owner marks 19.26 solved.
+
+### [ ] 19.27 Cards to the bottom: no order prompt
+
+1. Goal: cards put on a deck's bottom go there in random order.
+2. Report (owner, 2026-10-19)
+   1. Players are asked to order cards going to the bottom.
+   2. No card reads the bottom of a deck; the prompt seems useless.
+   3. Decision: always random; marked questionable (Q-22).
+3. Cause:
+   1. The Moon, The Emperor, The Hermit, Flush!, Eden ask the order.
+   2. Black Candle says "in any order" but keeps deck order.
+   3. Bobby Bomb, Mom's Bottle of Pills keep deck order.
+   4. Deck order leaks hidden cards: everyone saw what went down.
+4. Tasks:
+   1. One engine helper puts cards on the bottom in random order.
+   2. Every multi-card "to the bottom" uses it.
+   3. Remove the order questions and Eden's lowest-card choice.
+   4. Q-22 in `open-questions.md`, basis House.
+5. Done when:
+   1. Card tests: no order question; the cards end at the bottom.
+   2. `make lint test` pass.
+6. Result (2026-10-19)
+   1. `Game.ToBottomRandom` shuffles the cards onto the bottom.
+   2. Used by The Moon, The Emperor, The Hermit, Flush!, Eden.
+   3. Also Black Candle, Ouija Board, Bobby Bomb, Mom's Bottle of Pills.
+   4. Black Candle's "in any order" is House-overridden (Q-22).
+   5. `ChooseLowest` is never asked; kept so purpose numbers stay.
+   6. One-card "you may put it on the bottom" is unchanged.
+   7. Tests: Eden, Flush!, The Moon, The Emperor, The Hermit.
+   8. No screen change, so no screenshots.

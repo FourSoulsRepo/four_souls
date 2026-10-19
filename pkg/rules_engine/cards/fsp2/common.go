@@ -455,9 +455,7 @@ var revealGiveCurses = engine.EffectFunc(func(c *engine.Ctx) {
 				c.G.GiveCurseFromDeck(id, ps[a[i]])
 			}
 		}
-		for _, id := range rest {
-			c.G.DeckToBottom(engine.MonsterDeck, id)
-		}
+		c.G.ToBottomRandom(engine.MonsterDeck, rest) // House: not "any order" (Q-22)
 	}, qs...))
 })
 

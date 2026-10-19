@@ -30,7 +30,7 @@
   * Options on the table glow; every other card dims.
   * The stack panel says the same (UC-14).
 * **3d. Discard:** "Discard 1 loot card".
-* **3e. Put cards back:** the order question, e.g. "Choose the card for the very bottom".
+* **3e. Put cards back:** the order question, e.g. "Put the cards back in any order".
 * **3f. Throw (15.61):** "Throw the die", hint "For the attack roll".
 * **3g. Own aim (15.25):** "Choose a target".
   * The hint names the card and says Esc cancels.

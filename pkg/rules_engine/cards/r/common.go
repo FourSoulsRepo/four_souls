@@ -383,13 +383,15 @@ func revealTenTakeNamed(match func(engine.CardRef) bool) engine.Effect {
 		for _, pl := range c.G.Players {
 			c.G.LookAt(pl.ID, top...)
 		}
+		var rest []engine.ObjectID
 		for _, id := range top {
 			if match(c.G.Object(id).Card) {
 				c.G.DeckToHand(engine.LootDeck, id, c.Controller)
 			} else {
-				c.G.DeckToBottom(engine.LootDeck, id)
+				rest = append(rest, id)
 			}
 		}
+		c.G.ToBottomRandom(engine.LootDeck, rest)
 	})
 }
 

@@ -248,6 +248,19 @@ On 2026-10-09 the owner parked every open decision for later.
 4. Status: **Resolved** (2026-10-19): (a); the number of purchases is unchanged.
 5. Basis: **House**: no ruling found.
 
+### Q-22 Cards put on the bottom: in what order
+
+1. Question: who orders several cards put on a deck's bottom?
+2. Sources:
+   1. Most cards don't say; Black Candle says "in any order".
+   2. Ouija Board says "in a random order".
+   3. No card looks at or takes from the bottom.
+   4. The order matters only when the deck runs out.
+   5. No ruling found (2026-10-19).
+3. Options: (a) the player orders them; (b) always random.
+4. Status: **Resolved** (2026-10-19): (b), even for Black Candle (19.27).
+5. Basis: **House**: questionable; the owner saw no use for the prompt.
+
 ## Old rulings re-checked (R-07)
 
 | # | Ruling (Ed's Notes, 2018–2019) | Check against current rules and V2 text | Status |
@@ -408,3 +421,4 @@ Every row of "Card rulings from Discord (S-DIS)" is Community too.
 | Q-19 | Berkano | Steal only if the item was destroyed | Community |
 | Q-20 | Social Goals | One shared tally for all players | House |
 | Q-21 | Pity for the Poor | Every purchase costs 0¢ | House |
+| Q-22 | Black Candle, The Moon, Flush!, Eden, … | Cards go to the bottom in random order | House (questionable) |
