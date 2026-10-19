@@ -690,3 +690,24 @@ This step never closes; new reports are appended.
    2. Eden is the only character with a starting choice.
    3. Three separate runs pass.
    4. No screen change; no screenshots.
+
+### [ ] 19.25 Krampus revealed mid-turn: no forced attack
+
+1. Goal: "when this enters play" works for every card entering play.
+2. Report (agent, 2026-10-19)
+   1. Found in the code while adding Requiem's Keeper's Box.
+   2. Krampus: "The active player must attack this once each turn if able."
+   3. Revealed mid-turn (a slot refill), it does not force an attack.
+   4. It forces one only from the next start of turn.
+3. Cause:
+   1. Only events and trinkets emit the "entered play" event.
+   2. A monster, shop item or treasure entering play never did.
+   3. So Krampus's "when this enters play" ability never triggers.
+4. Tasks:
+   1. Monsters and shop items entering a slot emit it; not during setup.
+   2. Treasure gained from a deck emits it.
+   3. A purchase does not: the item was in play in the shop already.
+   4. Shop items' "enters play" abilities work in the shop (R-CARD-05, S-YUG).
+5. Done when:
+   1. Test: Krampus revealed mid-turn must be attacked that turn.
+   2. Test: an item gained from the deck triggers "when this enters play".

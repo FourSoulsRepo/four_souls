@@ -355,6 +355,7 @@ func (g *Game) gainTreasure(p PlayerID, n int) []ObjectID {
 		g.enterAsItem(p, nid)
 		g.emit(Event{Kind: EvGainedTreasure, Player: p, Object: nid, Card: o.Card})
 		g.emit(Event{Kind: EvGainedItem, Player: p, Object: nid, Card: o.Card})
+		g.emit(Event{Kind: EvEnteredPlay, Player: p, Object: nid, Card: o.Card})
 		out = append(out, nid)
 	}
 	return out

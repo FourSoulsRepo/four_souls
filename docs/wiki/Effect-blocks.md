@@ -171,7 +171,7 @@ Roll(RollTable{}.Results(1, 2, Loot(1)).Results(3, 4, GainCents(3)).Results(5, 6
 | `AfterYourDeathPenalty()` | each time you die, after paying penalties |
 | `WhenYouWouldTakeDamage()` | when damage aimed at you goes on the stack (resolves first) |
 | `WhenYouWouldDie()` | when your death goes on the stack (resolves first) |
-| `WhenThisEntersPlay()` | when this object enters play |
+| `WhenThisEntersPlay()` | when this object enters play: an event or monster in a slot, a shop item (it works in the shop), a treasure gained from a deck, a trinket; not a purchase |
 | `WhenThisDies()` | when this monster dies, before its rewards (R-DEATH-05); `c.EventObject` is the dead card |
 | `AfterThisRewards()` | after this dead monster's rewards (R-DEATH-07) |
 | `WhenARollWouldBe(n)` | each time a player would roll n (R-DICE-05); `c.EventStack` is the roll |

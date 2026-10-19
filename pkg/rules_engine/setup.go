@@ -173,6 +173,11 @@ func (g *Game) putInSlot(id ObjectID, kind SlotKind, i int) ObjectID {
 		g.Rooms[i].Cards = append(g.Rooms[i].Cards, nid)
 	}
 	g.emit(Event{Kind: EvCardRevealed, Player: NoPlayer, Object: nid, Card: o.Card})
+	// A card entering a slot enters play; an event does so in
+	// enterMonsterSlot. Setup cards (turn 0) trigger nothing (19.25).
+	if g.Turn.Number > 0 && o.Role != RoleEvent {
+		g.emit(Event{Kind: EvEnteredPlay, Player: NoPlayer, Object: nid, Card: o.Card})
+	}
 	return nid
 }
 
