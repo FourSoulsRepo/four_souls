@@ -91,6 +91,9 @@ type CardDef struct {
 	CopiesTapOnPlay bool
 	// Unattackable: "This can't be attacked."
 	Unattackable bool
+	// Back is the definition of the card's other face (R-MECH-33): a
+	// card defined in the same set with Outside set, never dealt.
+	Back CardRef
 	// Indomitable: it can't be covered; put in a monster slot, it expands
 	// monster slots by 1 and takes the new one (R-ABIL-23).
 	Indomitable bool

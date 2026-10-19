@@ -316,7 +316,7 @@ func (g *Game) rollForFirst() PlayerID {
 func (g *Game) CharactersOutside() []CardRef {
 	var out []CardRef
 	for i, d := range g.cards.defs {
-		if d.Kind != CharacterCard || g.cards.borrowed[i] || slices.Contains(g.Banned, d.Ref) || (d.ThreePlus && len(g.Players) < 3) {
+		if d.Kind != CharacterCard || d.Outside || g.cards.borrowed[i] || slices.Contains(g.Banned, d.Ref) || (d.ThreePlus && len(g.Players) < 3) {
 			continue
 		}
 		used := 0

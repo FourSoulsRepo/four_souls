@@ -21,6 +21,7 @@ var (
 	damageAnything = cardkit.DamageAnything
 	monstersInPlay = cardkit.MonstersInPlay
 	discardOne     = cardkit.DiscardOne
+	extraLoot      = cardkit.ExtraLoot
 )
 
 // eachOtherThan deals n damage from the controller to each player but
@@ -782,4 +783,61 @@ func discardN(n int) engine.Effect {
 			left = append(left[:x:x], left[x+1:]...)
 		}
 	}, qs...)
+}
+
+// mustAttackThis is "The active player must attack this once each turn
+// if able".
+var mustAttackThis = engine.EffectFunc(func(c *engine.Ctx) {
+	if c.G.Object(c.Source).Zone.Kind == engine.ZoneInPlay && (!c.G.Attack.Started || c.G.Attack.Target != c.Source) {
+		c.G.Turn.MustAttack = c.Source
+	}
+})
+
+// lowestRollDies: each player rolls; each player who rolls the lowest or
+// tied for the lowest dies (The Beast!). The last result to resolve
+// compares them; results are kept as marks on this card.
+var lowestRollDies = engine.EachPlayer(engine.Roll(lowestTable()))
+
+func lowestTable() engine.RollTable {
+	var t engine.RollTable
+	for r := 1; r <= 6; r++ {
+		t = t.Results(r, r, engine.EffectFunc(func(c *engine.Ctx) {
+			cardkit.MarkUsedOn(c.G, c.Source, 100+10*r+int(c.Controller))
+			results := map[engine.PlayerID]int{}
+			for _, b := range c.G.Boosts {
+				if b.Stat == engine.StatUsed && b.Object == c.Source && b.Amount >= 100 {
+					results[engine.PlayerID((b.Amount-100)%10)] = (b.Amount - 100) / 10
+				}
+			}
+			if len(results) < len(c.G.Players) {
+				return
+			}
+			low := 7
+			for _, v := range results {
+				low = min(low, v)
+			}
+			// Deaths go on the stack in reverse turn order (R-MECH-28).
+			order := c.G.TurnOrderFrom(c.G.Turn.Active)
+			for i := len(order) - 1; i >= 0; i-- {
+				if p := order[i]; results[p] == low {
+					them := *c
+					them.Targets = []engine.Chosen{{Kind: engine.TargetPlayer, Player: p}}
+					them.Do(engine.Kill(0))
+				}
+			}
+			clearMarks(c.G, c.Source)
+		}))
+	}
+	return t
+}
+
+// clearMarks removes the roll marks lowestTable keeps on id.
+func clearMarks(g *engine.Game, id engine.ObjectID) {
+	kept := g.Boosts[:0]
+	for _, b := range g.Boosts {
+		if b.Stat != engine.StatUsed || b.Object != id || b.Amount < 100 {
+			kept = append(kept, b)
+		}
+	}
+	g.Boosts = kept
 }

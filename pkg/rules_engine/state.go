@@ -100,6 +100,9 @@ type Object struct {
 	// CopyTillYourTurn ends the copy at the start of its controller's next
 	// turn (Undefined).
 	CopyTillYourTurn bool `json:"copy_till_your_turn,omitempty"`
+	// Flipped: the back face is up (R-MECH-33); the object acts as its
+	// card's Back. Counters, damage and charge stay (R-MECH-53).
+	Flipped bool `json:"flipped,omitempty"`
 	// LostEternal: an effect took Eternal away ("This loses eternal":
 	// Birthright).
 	LostEternal bool `json:"lost_eternal,omitempty"`

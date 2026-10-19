@@ -9,7 +9,10 @@ import (
 )
 
 // Requiem cards are played with the Base Game; its reprints need it.
-var sets = []engine.CardSet{b2.Set, Set}
+// It is filled in init, after backs.go added the back faces to Set.
+var sets []engine.CardSet
+
+func init() { sets = []engine.CardSet{b2.Set, Set} }
 
 // seat is a player with a character and items.
 var seat = enginetest.Seat

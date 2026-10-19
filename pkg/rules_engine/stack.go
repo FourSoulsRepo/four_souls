@@ -103,7 +103,7 @@ func (g *Game) push(it StackItem) int {
 		}
 		g.emit(e)
 	case StackDeath:
-		g.emit(Event{Kind: EvDeathPending, Player: it.Target.player(), Object: it.Target.Object})
+		g.emit(Event{Kind: EvDeathPending, Player: it.Target.player(), Object: it.Target.Object, StackID: it.ID})
 	}
 	start := it.Controller
 	if start == NoPlayer {

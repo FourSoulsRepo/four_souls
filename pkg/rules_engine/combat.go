@@ -69,10 +69,57 @@ func (g *Game) def(id ObjectID) CardDef {
 // its own (Diplopia, Modeling Clay). Where it goes when it leaves play
 // still follows its own card.
 func (g *Game) CardOf(id ObjectID) CardRef {
-	if o := g.Object(id); o.CopyOf != "" {
+	o := g.Object(id)
+	if o.CopyOf != "" {
 		return o.CopyOf
 	}
-	return g.Object(id).Card
+	if o.Flipped {
+		if d, ok := g.cards.find(o.Card); ok && d.Back != "" {
+			return d.Back
+		}
+	}
+	return o.Card
+}
+
+// EvFlipped means Object turned to its other face; Card is the face now up.
+const EvFlipped EventKind = "flipped"
+
+// Flip turns an object in play to its other face, if its card has one
+// (R-MECH-33). It reports whether it flipped.
+func (g *Game) Flip(id ObjectID) bool {
+	o := g.Object(id)
+	d, ok := g.cards.find(o.Card)
+	if !ok || d.Back == "" || o.Zone.Kind != ZoneInPlay {
+		return false
+	}
+	o.Flipped = !o.Flipped
+	g.emit(Event{Kind: EvFlipped, Player: o.Controller, Object: id, Card: g.CardOf(id)})
+	return true
+}
+
+// WhenFlippedToThisSide triggers when this object is flipped to the face
+// that has the trigger.
+func WhenFlippedToThisSide() Trigger {
+	return Trigger{On: EvFlipped, Match: func(_ *Game, self ObjectID, e Event) bool { return e.Object == self }}
+}
+
+// PlaceFromOutside puts a card of the game's sets that is outside the
+// game on top of monster slot i ("put a card named The Harbingers from
+// outside the game into a monster slot"). It does nothing if no copy is
+// outside the game (R-ZONE-15) and returns the new object, or 0.
+func (g *Game) PlaceFromOutside(card CardRef, i int) ObjectID {
+	if _, ok := g.cards.find(card); !ok || i < 0 || i >= len(g.Monsters) {
+		return 0
+	}
+	for _, o := range g.Objects {
+		if o.Card == card && o.Zone.Kind != ZoneGone && o.Zone.Kind != ZoneOutside {
+			return 0 // the one copy is in the game already
+		}
+	}
+	id := g.newObject(card, Zone{Kind: ZoneOutside}, NoPlayer)
+	nid := g.coverMonsterSlot(id, i)
+	g.enterMonsterSlot(nid)
+	return nid
 }
 
 // Eternal reports whether an object is eternal: printed or gained
