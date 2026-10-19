@@ -1188,7 +1188,7 @@ Images come first, so the new table is built with backs and mats.
 7. Owner notes (2026-10-20)
    1. Owner marks 15.35 solved.
 
-### [ ] 15.36 Others' aim and hover
+### [x] 15.36 Others' aim and hover
 
 1. Goal: everyone sees what the active player is aiming at (T-08 – T-10, T-21, T-22).
 2. Tasks:
@@ -1228,6 +1228,8 @@ Images come first, so the new table is built with backs and mats.
    3. Marks and arrows now change together, in one pass per frame.
    4. e2e test: the head ends on the marked monster's middle.
    5. Screenshots: `.cache/screenshots/15.36/after/`, retaken.
+8. Owner notes (2026-10-20)
+   1. Owner marks 15.36 solved.
 
 ### [x] 15.37 Hit and death marks
 
