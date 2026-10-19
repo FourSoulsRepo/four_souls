@@ -936,7 +936,7 @@ This step never closes; new reports are appended.
 7. Owner notes (2026-10-19)
    1. Owner marks 19.29 solved.
 
-### [ ] 19.30 There's Options: the top treasure card is not shown
+### [x] 19.30 There's Options: the top treasure card is not shown
 
 1. Goal: There's Options lets its owner see the top treasure card.
 2. Report (owner, 2026-10-19)
@@ -959,3 +959,5 @@ This step never closes; new reports are appended.
    4. e2e test: `table.spec.ts`, "There's Options shows its owner …".
    5. UC-18 1a added.
    6. Screenshots: `.cache/screenshots/19.30/before/` and `after/`.
+7. Owner notes (2026-10-19)
+   1. Owner marks 19.30 solved.
