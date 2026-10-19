@@ -160,7 +160,7 @@ function GameList() {
         )}
         <ul className="list">
           {lobby.games.map((g) => (
-            <li key={g.id}>
+            <li key={g.id} data-game={g.id}>
               <span>
                 {g.locked && <span aria-label="Locked">🔒 </span>}
                 {g.host}&apos;s game · {g.taken}/{g.seats} players{g.started ? ' · playing' : ''}

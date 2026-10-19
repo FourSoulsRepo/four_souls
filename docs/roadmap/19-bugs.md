@@ -961,3 +961,33 @@ This step never closes; new reports are appended.
    6. Screenshots: `.cache/screenshots/19.30/before/` and `after/`.
 7. Owner notes (2026-10-19)
    1. Owner marks 19.30 solved.
+
+### [ ] 19.31 e2e: a reused host name breaks two tests
+
+1. Goal: e2e tests never clash on player names.
+2. Report (owner, 2026-10-19)
+   1. Tests failed again on names; seen in 19.30 ("Wen").
+   2. Asked for a fix once and for all.
+3. Cause
+   1. All tests share one server lobby.
+   2. Guests join by the row text "<host>'s game".
+   3. Two games with one host name: strict-mode failure in both.
+   4. Finished games stay listed, so `--repeat-each` always clashes.
+   5. The only guard was a rule to grep names by hand.
+4. Tasks:
+   1. Each lobby row carries its game id (`data-game`).
+   2. Guests find the row by the host's game id, not its name.
+   3. `startGame` and `lobby.spec.ts` use one helper.
+   4. Docs drop the unique-names rule.
+5. Done when:
+   1. Two tests with the same names pass together.
+   2. `--repeat-each 3` passes on the table tests.
+   3. `make lint frontend e2e` pass.
+6. Result (2026-10-19)
+   1. Each Games row has `data-game` with its game id.
+   2. `gameId(page)` reads the host's game id; `lobbyGame` finds its row.
+   3. `startGame` and every `lobby.spec.ts` join use them.
+   4. Names may now repeat; the unique-names rule is gone.
+   5. `table` and `lobby` specs passed with `--repeat-each 3` (168 runs).
+   6. Wiki `Frontend-tests.md` updated.
+   7. No screen change, so no screenshots.

@@ -40,7 +40,7 @@ URL flags, dev server only:
 
 Every new screen gets a Playwright test. Find elements the way a player does: by role and visible text (`getByRole('button', { name: 'Save' })`), not by CSS classes.
 
-`e2e/tests/game.ts` has `startGame(browser, names)`: a real game with one page per player, and `expectFits(page)`, which fails when the table scrolls or leaves the window. Tests share one server, so each test uses its own host name.
+`e2e/tests/game.ts` has `startGame(browser, names)`: a real game with one page per player, and `expectFits(page)`, which fails when the table scrolls or leaves the window. Tests share one server and its game list, so guests join the host's game by its id (`lobbyGame`, 19.31); player names may repeat.
 
 Specs import `test` and `expect` from `e2e/tests/fixtures.ts`, not from `@playwright/test`. Its automatic fixture fails a test when any app page logged an animation clash (ADR 012, [Animations](Animations)); `fixtures.spec.ts` fails a spec that imports `test` from elsewhere. Types like `Page` still come from `@playwright/test`.
 
@@ -92,7 +92,7 @@ So one round of `make e2e-games` (one game per player count, one after another) 
 ### Working on it
 
 * Run one setup: `cd e2e && FULL_GAMES=1 npx playwright test games --project chromium -g "4 players"`.
-* More games: add `--repeat-each N`; `--workers 3` plays three at once. Each repeat hosts under its own names (`Rnd<players>r<repeat><Name>`), since a finished game stays in the lobby list.
+* More games: add `--repeat-each N`; `--workers 3` plays three at once. Each repeat hosts under its own names (`Rnd<players>r<repeat><Name>`), so its progress lines stay apart.
 * Progress lines start with the host's name, so games played at once stay apart.
 * A failed game's record lands in `.cache/e2e-games/`. Replay it in Go with `engine.Replay` or by applying each step's intent to `engine.NewGame`; the header's `setup` (seed, sets, characters) rebuilds the deal.
 * `e2e/test-results/` and the test servers' folders are emptied when a run starts: copy anything you need before the next run.

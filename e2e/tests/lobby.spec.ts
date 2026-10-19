@@ -1,5 +1,6 @@
 // Host and join screens (7.3), against the real Go server.
 import { expect, test } from './fixtures';
+import { gameId, lobbyGame } from './game';
 import { appURL, serverPort } from './server';
 import { realAssets, shot } from './shot';
 
@@ -21,6 +22,7 @@ test('two apps reach the same lobby and start the game', async ({ browser }) => 
   const annSeats = ann.getByRole('list', { name: 'Seats' });
   await expect(annSeats).toContainText('Ann (you)');
   await expect(ann.getByText(address())).toBeVisible();
+  const id = await gameId(ann);
 
   await realAssets(bo);
   await bo.goto(appURL());
@@ -28,8 +30,8 @@ test('two apps reach the same lobby and start the game', async ({ browser }) => 
   await bo.getByLabel('Nickname').fill('Bo');
   await bo.getByLabel('Host address').fill(address());
   await bo.getByRole('button', { name: 'Connect' }).click();
-  const game = bo.getByRole('listitem').filter({ hasText: "Ann's game" });
-  await expect(game).toContainText('1/2 players');
+  const game = lobbyGame(bo, id);
+  await expect(game).toContainText("Ann's game · 1/2 players");
   await shot(bo, 'games');
   await game.getByRole('button', { name: 'Join' }).click();
   await expect(bo.getByRole('list', { name: 'Seats' })).toContainText('Bo (you)');
@@ -75,6 +77,7 @@ test('a game found on the LAN is joined without typing (N-13)', async ({ browser
   await host.getByLabel('Nickname').fill('Lex');
   await host.getByRole('button', { name: 'Host', exact: true }).click();
   await expect(host.getByRole('list', { name: 'Seats' })).toContainText('Lex (you)');
+  const id = await gameId(host);
 
   // The fake LAN holds the test server; its real games list follows.
   const guest = await (await browser.newContext()).newPage();
@@ -87,7 +90,7 @@ test('a game found on the LAN is joined without typing (N-13)', async ({ browser
   await expect(found).toContainText('1/2 players');
   await shot(guest, 'join-lan');
   await found.getByRole('button', { name: 'Join' }).click();
-  await guest.getByRole('listitem').filter({ hasText: "Lex's game" }).getByRole('button', { name: 'Join' }).click();
+  await lobbyGame(guest, id).getByRole('button', { name: 'Join' }).click();
   await expect(guest.getByRole('list', { name: 'Seats' })).toContainText('Mio (you)');
 });
 
@@ -107,6 +110,7 @@ test('a game password keeps others out (N-14)', async ({ browser }) => {
   await host.getByLabel('Password (optional)').fill('pw-123');
   await host.getByRole('button', { name: 'Host', exact: true }).click();
   await expect(host.getByRole('list', { name: 'Seats' })).toContainText('Nox (you)');
+  const id = await gameId(host);
 
   const guest = await (await browser.newContext()).newPage();
   await realAssets(guest);
@@ -115,7 +119,7 @@ test('a game password keeps others out (N-14)', async ({ browser }) => {
   await guest.getByLabel('Nickname').fill('Pip');
   await guest.getByLabel('Host address').fill(address());
   await guest.getByRole('button', { name: 'Connect' }).click();
-  const game = guest.getByRole('listitem').filter({ hasText: "Nox's game" });
+  const game = lobbyGame(guest, id);
   await expect(game.getByLabel('Locked')).toBeVisible();
   const join = game.getByRole('button', { name: 'Join' });
   const status = guest.getByRole('status');
@@ -154,13 +158,15 @@ test('the host picks card sets; the choice is remembered', async ({ browser }) =
   await shot(host, 'host-sets');
   await host.getByRole('button', { name: 'Host', exact: true }).click();
   await expect(host.getByRole('list', { name: 'Seats' })).toContainText('Tess (you)');
+  const id = await gameId(host);
 
   await guest.goto(appURL());
   await guest.getByRole('button', { name: 'Join a game' }).click();
   await guest.getByLabel('Nickname').fill('Lu');
   await guest.getByLabel('Host address').fill(address());
   await guest.getByRole('button', { name: 'Connect' }).click();
-  const game = guest.getByRole('listitem').filter({ hasText: "Tess's game" });
+  const game = lobbyGame(guest, id);
+  await expect(game).toContainText("Tess's game");
   await expect(game).toContainText('Base Game, Gold Box');
   await expect(game).not.toContainText('Four Souls+');
 
@@ -202,6 +208,7 @@ test('a player creates a game on a dedicated server; another joins (N-17)', asyn
   await shot(ivy, 'create');
   await ivy.getByRole('button', { name: 'Create', exact: true }).click();
   await expect(ivy.getByRole('list', { name: 'Seats' })).toContainText('Ivy (you)');
+  const id = await gameId(ivy);
 
   const jon = await (await browser.newContext()).newPage();
   await jon.goto(appURL());
@@ -209,7 +216,7 @@ test('a player creates a game on a dedicated server; another joins (N-17)', asyn
   await jon.getByLabel('Nickname').fill('Jon');
   await jon.getByLabel('Host address').fill(address());
   await jon.getByRole('button', { name: 'Connect' }).click();
-  await jon.getByRole('listitem').filter({ hasText: "Ivy's game" }).getByRole('button', { name: 'Join' }).click();
+  await lobbyGame(jon, id).getByRole('button', { name: 'Join' }).click();
   await expect(jon.getByRole('list', { name: 'Seats' })).toContainText('Jon (you)');
   await expect(ivy.getByRole('list', { name: 'Seats' })).toContainText('Jon');
 });

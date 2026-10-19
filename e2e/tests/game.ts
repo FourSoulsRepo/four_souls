@@ -1,5 +1,5 @@
 // Starts a real game on the test server with one page per player.
-import { expect, type Browser, type Page } from '@playwright/test';
+import { expect, type Browser, type Locator, type Page } from '@playwright/test';
 import { appURL, serverPort } from './server';
 import { realAssets } from './shot';
 
@@ -33,8 +33,29 @@ function hostBans(page: Page, bans: string[]): Promise<() => string[]> {
     .then(() => () => echoed);
 }
 
+// gameId is the id of the game page sits at, as the server named it.
+export async function gameId(page: Page): Promise<string> {
+  const id = await page.evaluate(() => {
+    interface S {
+      lobby: { table?: { game: string } };
+    }
+    return (window as unknown as { fourSouls: { store: { getState: () => S } } }).fourSouls.store.getState().lobby.table?.game;
+  });
+  if (!id) {
+    throw new Error('not at a table');
+  }
+  return id;
+}
+
+// lobbyGame is the game's row in page's Games list. Tests share one
+// server and its list, so a row is found by its game id: host names
+// may repeat (19.31).
+export function lobbyGame(page: Page, id: string): Locator {
+  return page.locator(`li[data-game="${id}"]`);
+}
+
 // startGame: the first name hosts a game with a seat per name, the others
-// join. Tests share one server, so each test needs its own host name.
+// join it by its id, so names may repeat across tests (19.31).
 // Everyone gets ready and waits for the table. Each player has its
 // own browser context, like its own app.
 export async function startGame(
@@ -79,6 +100,7 @@ export async function startGame(
   await host.getByRole('button', { name: 'Host', exact: true }).click();
   await expect(host.getByRole('list', { name: 'Seats' })).toBeVisible();
   expect(banned()).toEqual(bans);
+  const id = await gameId(host);
 
   for (const [i, page] of guests.entries()) {
     await page.goto(url);
@@ -86,11 +108,7 @@ export async function startGame(
     await page.getByLabel('Nickname').fill(names[i + 1] ?? '');
     await page.getByLabel('Host address').fill(`127.0.0.1:${String(serverPort())}`);
     await page.getByRole('button', { name: 'Connect' }).click();
-    await page
-      .getByRole('listitem')
-      .filter({ hasText: `${names[0] ?? ''}'s game` })
-      .getByRole('button', { name: 'Join' })
-      .click();
+    await lobbyGame(page, id).getByRole('button', { name: 'Join' }).click();
     await expect(page.getByRole('list', { name: 'Seats' })).toBeVisible();
   }
   for (const page of pages) {
