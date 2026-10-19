@@ -29,7 +29,14 @@ Cards are Go values built from small blocks (ADR 005). This page lists every blo
 | `Unattackable` | "This can't be attacked." |
 | `CombatMod` | Changes combat damage by attack roll: "This takes no combat damage on attack rolls of 6." |
 | `BonusSoul` | A bonus soul's condition: "The first player to have 25¢ or more gains this soul." |
-| `DamageMod` | Changes damage about to be marked: "Damage you would take is reduced to 1." |
+| `DamageMod` | Changes damage about to be marked: "Damage you would take is reduced to 1."; its `combat` flag marks combat damage ("Prevent all non-combat damage you would take": Callus) |
+| `Attackable` | An item or room that can be attacked, with its own stats; killed, it is destroyed and its rewards and soul go to the active player (R-MECH-04, R-MECH-05: Punching Bag, Gus) |
+| `GainsAbilities` | Cards whose abilities this object has too, computed: "This has the abilities of other items with gold counters on them" (Golden Trinket); `GainAbilities(id, card, till)` does it for a time (Glitch) |
+| `Back` | A two-sided card's other face: a card defined in the same set with `Outside`; `Flip(id)` turns it, `WhenFlippedToThisSide()` triggers on it (R-MECH-33: Anima Sola, The Enigma, The Harbingers) |
+| `Indomitable` | It can't be covered; put in a monster slot, it takes a new one (R-ABIL-23: Mega Satan) |
+| `RewardsToKiller` | "The player who kills this gains its rewards", and its soul (Ultra Greed) |
+| `OwnRechargeOnly` | "This can't be recharged except by its own abilities" (Car Battery); `RechargeSelf` still works |
+| `InsteadOfDestroy` | Replaces this object's destruction and reports it did: "If this would be destroyed, if it has no counters on it, put a counter on it instead" (Bag Lunch) |
 | `EntersDeactivated`, `EntersWithCounters` | "This enters play deactivated." / "starts with 9 counters" |
 | `CopiesTapAbilities` | Placebo: may use any ↷ ability of another non-eternal item (`AbilitiesOf`) |
 | `TakesPenalties` | Shadow: you choose the item and gain the loot and ¢ of others' death penalties |
@@ -56,11 +63,13 @@ Cards are Go values built from small blocks (ADR 005). This page lists every blo
 |---|---|
 | `Tap()` | ↷: deactivate the item (it must be charged) |
 | `PayCents(n)` | Pay 5¢: … |
+| `PayHPCost(n)` | Pay 1 HP: … (rooms: Blood Donation) |
 | `DestroySelf()` | Destroy this: … (not on eternal objects) |
 | `RemoveCounters(n)` | Remove 2 counters from this: … |
 | `DiscardChosen(t)` | Discard a loot card: … (with `Choose(TargetYourHandCard)`) |
 | `GiveChosen(item, player)` | Give an item you control to another player: … |
 | `DestroyChosen(t…)` | Destroy 2 items you control: … (targets filtered with `NotChosen`) |
+| `If(text, ok)` | A condition, not a payment: "if there are no cards under this" (Friendly Ball) |
 
 ## Targets
 
@@ -77,6 +86,7 @@ Targets are always asked, with a "cancel" option before anything is paid. A targ
 | `Choose(TargetStackAbility)` | an item's ↷ or $ ability, or a loot being played |
 | `Choose(TargetCurse)` | a curse a player has |
 | `Choose(TargetYourItem)` | an item you control |
+| `Choose(TargetStackTrigger)` | a triggered ability on the stack (Dead Weight) |
 | `Choose(TargetItemOrSoul)` | an item or soul a player controls |
 | `ChooseWhere(kind, filter)` | e.g. the player with the most souls; `NotThis` is "another item" |
 
@@ -119,6 +129,8 @@ Effects refer to targets by number: `DealDamage(1, 0)` hits the first target. `T
 | `PreventYourDeath()` | Prevent death. (heals to 1 HP) |
 | `PreventYourDeathHealFull()` | Prevent death, heal to full HP. |
 | `ThisToLootBottomExtraTurn()` | Put this on the bottom of the loot deck … take an extra turn (The Sun) |
+| `RollTimes(n, table)` | Roll `n(c)` times on one table: "roll 3x instead" (Bomb Bum) |
+| `AskWithRoll(do, table, questions…)` | An Ask whose `do` rolls with `Roll(table)`: "choose another player; they roll and gain ¢ equal to the result" |
 | `Ask(do, questions…)` | Anything decided on resolution: "a deck", "a card from your hand" |
 | `EffectFunc(func(c *Ctx){…})` | Anything the blocks do not cover |
 
@@ -145,7 +157,7 @@ Ask(func(c *Ctx, a []int) {
 }, DeckQuestion("Put the top card of which deck into discard?"))
 ```
 
-A question with `Random: true` is answered by the game at random ("choose a player at random"). A triggered ability's `c.EventPlayer` and `c.EventAmount` tell who rolled or how much damage was taken. A question's `Player` func picks who answers, e.g. the chosen player (Judgement). Ready questions: `DeckQuestion(text)` (read with `c.Deck(i)`) and `HandQuestion(text)` (read with `c.HandCard(i)`). Game methods for `do` and `EffectFunc`: `LookAt`, `DeckTop`, `SetDeckTop`, `DeckToBottom`, `MillTop`, `DiscardTopToDeck`, `HandToDeckTop`, `GiveHandCard`, `DiscardFromHand`, `DestroyObject`, `GainControl`, `ShopItems`, `DiscardMonster`, `RefillSlots`, `SetRoll`, `CancelStackItem`, `EndTurnNow`. `c.Do(effects…)` runs ordinary blocks.
+A question with `Random: true` is answered by the game at random ("choose a player at random"). A triggered ability's `c.EventPlayer` and `c.EventAmount` tell who rolled or how much damage was taken. A question's `Player` func picks who answers, e.g. the chosen player (Judgement). Ready questions: `DeckQuestion(text)` (read with `c.Deck(i)`) and `HandQuestion(text)` (read with `c.HandCard(i)`). Game methods for `do` and `EffectFunc`: `LookAt`, `DeckTop`, `SetDeckTop`, `DeckToBottom`, `MillTop`, `DiscardTopToDeck`, `HandToDeckTop`, `GiveHandCard`, `DiscardFromHand`, `DestroyObject`, `GainControl`, `ShopItems`, `DiscardMonster`, `RefillSlots`, `SetRoll`, `CancelStackItem`, `EndTurnNow`, `AddCountersTo`, `AddNamedCounters` ("a gold counter"), `DiscardToHand` (a card from a discard into a hand), `PlaceFromDiscard` (a monster card from the discard into a slot), `DeckToHand`, `PutUnder` and `FromUnder` (cards kept under an item: Friendly Ball), `TurnOrderFrom`, `CharactersOutside` and `ReplaceCharacter` (The Clicker). `PlaceFromOutside(card, slot)` brings a card from outside the game into a monster slot (Dogma). `RerollWithDice(roll, n, chooser)` rerolls with n dice, chooser picking the result (Classic Roller). An object's `ATKSet` fixes its ATK (Hemoptysis). The death penalty's loss of ¢ is an `ActLoseCents` with `Penalty` set (Soulbond). Souls: `CanGainSouls`, `GainSoul` and `YouHave(StatNoSouls, 1)` (Curse of the Soulless); `PassCurse` lets a curse's holder give it to another player. `CancelAttackAfterDamage` ends the attack once this roll's combat damage resolved (Turdlings). A pending damage event (`EvDamagePending`) carries its stack item and source, so a trigger can stop that damage with `CancelStackItem(c.EventStack)`. Attacks: a static or boost of `StatPlayerAttackDC` lets the active player attack a player, who has that DC; the newest effect wins (R-ATK-20, R-MECH-06). An attacked player is the attack's target through their character (`AttackedPlayer`); their own `CombatMod`s change the damage they take and deal (R-ATK-24). `AddAttackHelpers` makes players roll after each attack roll of the active player (Team Up, R-ATK-21); `HelpNextAttack(p, share)` does it for the next attack this turn, with a share of the rewards (Sibling Rivalry). `GivePenaltyItem(p, to)`: p's death-penalty item is given instead of destroyed this turn (Lust for Blood). An item or room that dies emits `EvObjectDied`, not `EvDied`, so monster-death triggers don't see it. `c.Do(effects…)` runs ordinary blocks. Rooms: "you" on a room is the active player, who controls its triggers and uses its $ abilities (R-CARD-36); `DiscardRoom` puts a room into discard and refills its slot ("Put this into discard"). `EvLootDone` comes once per loot ("each time a player loots": Laser Eye), after the `EvLooted` of each card. Bonus souls that are active take counters and trigger outside the game; `GainBonusSoul(id, p)` gives one (Soul of Lust). `GiveCents(from, to, n)` gives ¢ to another player and emits `EvGaveCents` (Magnet, Social Goals). `KillPlayer(p, by)` kills a player (Conjoined Twin). A trigger's `c.EventBy` is the damage dealer plus 1 (Splash Damage). Statics `StatOneAbility` and `StatOneLoot` allow one activation and one loot card a turn (Shadow of Famine); `StatAttackTax` makes a player pay that much ¢ to each other player to attack (Tax for the Mighty). A room's `NoDiscard` keeps it in play while it returns true (Social Goals). `PlaceRoomFromDeck(id, slot)` puts a room from the deck on a room slot, covering the room there (Red Key). Magic Marker (R-ABIL-39): `NumbersOf(id)` lists the numbers in an object's effect text that the engine knows (`Loot`, `GainCents`, `DealDamage`, roll-table results); `MarkNumber(id, n, delta)` changes one till end of turn, kept between 1 and 6. A changed roll result moves a single result or grows or shrinks a range at that end.
 
 A roll table is built with `Results`:
 
@@ -168,7 +180,7 @@ Roll(RollTable{}.Results(1, 2, Loot(1)).Results(3, 4, GainCents(3)).Results(5, 6
 | `AfterYourDeathPenalty()` | each time you die, after paying penalties |
 | `WhenYouWouldTakeDamage()` | when damage aimed at you goes on the stack (resolves first) |
 | `WhenYouWouldDie()` | when your death goes on the stack (resolves first) |
-| `WhenThisEntersPlay()` | when this object enters play |
+| `WhenThisEntersPlay()` | when this object enters play: an event or monster in a slot, a shop item (it works in the shop), a treasure gained from a deck, a trinket; not a purchase |
 | `WhenThisDies()` | when this monster dies, before its rewards (R-DEATH-05); `c.EventObject` is the dead card |
 | `AfterThisRewards()` | after this dead monster's rewards (R-DEATH-07) |
 | `WhenARollWouldBe(n)` | each time a player would roll n (R-DICE-05); `c.EventStack` is the roll |
@@ -183,7 +195,7 @@ Roll(RollTable{}.Results(1, 2, Loot(1)).Results(3, 4, GainCents(3)).Results(5, 6
 
 Stats: `StatPlayerATK`, `StatPlayerHP`, `StatMonsterDC`, `StatMonsterATK`, `StatMonsterHP`, `StatShopPrice`, `StatRoll`, `StatAttackRoll`, `StatLootPlays`, `StatAttacks`, `StatPurchases`, `StatLootStep`.
 
-`YouHave(StatLootPlays, 1)` is "You may play an additional loot card on your turn"; `YouHave(StatLootStep, 1)` is "Loot +1 during your loot step"; `YouHave(StatAttackRoll, 1)` is "+1 to attack rolls"; `YouHave(StatLockOthers, 1)` is Trinity Shield; a `StatLootDouble` boost doubles a player's loot. A roll that would resolve lets "would roll" triggers act first and tries again only if its value changed. Shop items' abilities do not work in the shop (R-CARD-05).
+A static's `Value` func, if set, gives its amount: "You have +1 HP for each counter on this", "monsters have -x DC" (Handicapped Placard). `YouHave(StatLootPlays, 1)` is "You may play an additional loot card on your turn"; `YouHave(StatLootStep, 1)` is "Loot +1 during your loot step"; `YouHave(StatAttackRoll, 1)` is "+1 to attack rolls"; `YouHave(StatLockOthers, 1)` is Trinity Shield; a `StatLootDouble` boost doubles a player's loot; a `StatDoubleRewards` boost or static doubles monster rewards, once however many apply (A Lucky Penny!); a `StatEternal` boost on an object makes it eternal till end of turn (Algiz); `YouHave(StatNoForcedLoss, 1)` stops abilities and the death penalty from making the player discard or lose ¢, while costs and steals still work (Rib of Greed); `MonstersHave(StatTwoDiceLeftChooses, 1)` makes every player's roll two dice, the player to their left picking the result (Cursed Lil Haunt); a `StatRollToOne` boost turns players' rolls of 2 or 3 into 1 as they resolve (Eternal D6, R-DICE-12); `YouHave(StatPaidDiscount, 1)` makes the $ abilities of your items 1¢ cheaper (Trick Penny). A treasure that becomes a soul keeps its abilities unless the effect says it loses them (`BecomeSoul`, The Chest): R-CARD-38. A roll that would resolve lets "would roll" triggers act first and tries again only if its value changed. Shop items' abilities do not work in the shop (R-CARD-05).
 
 ## Replacement effects
 
@@ -201,7 +213,7 @@ tb.Activate(0, "the_d6", 0, "roll of 2") // answer prompts by label
 tb.EndTurn()                             // run to the next player's action phase
 ```
 
-`NewSetup` takes a full `SituationSetup` (hands, monsters, a roll on the stack). `ForceRolls` fixes dice results, `Attack` attacks with given rolls, `Start` and `Pass` leave something on the stack so another player can respond.
+`NewSetup` takes a full `SituationSetup` (hands, monsters, a roll on the stack). `ForceRolls` fixes dice results, `Attack` attacks with given rolls, `Start` and `Pass` leave something on the stack so another player can respond. A setup's `Rooms` and `BonusSouls` fill the room slots and the active bonus souls. After direct calls such as `RefillSlots`, `G.Run()` does the queued work and gives priority again.
 
 ## Events and the monster deck
 

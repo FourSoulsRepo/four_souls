@@ -286,7 +286,12 @@ func (g *Game) optionViews() []OptionView {
 	switch c.Purpose {
 	case ChooseAttackTarget, ChoosePurchase, ChoosePenaltyItem, ChoosePenaltyLoot, ChooseStartingItem, ChooseLowest, ChooseRecharge, ChooseRedirect:
 		for i, id := range c.Objects {
-			set(i, func(o *OptionView) { o.Object = id })
+			set(i, func(o *OptionView) {
+				o.Object = id
+				if p, ok := g.characterOf(id); ok && c.Purpose == ChooseAttackTarget {
+					o.Player, o.IsPlayer = p, true // attacking a player (R-ATK-20)
+				}
+			})
 		}
 		if c.Deck {
 			set(len(c.Objects), func(o *OptionView) { o.Deck = true })
@@ -301,7 +306,11 @@ func (g *Game) optionViews() []OptionView {
 				set(i, func(o *OptionView) { o.Object = top })
 			}
 		}
-	case ChooseCursed:
+	case ChooseRoom:
+		for i, id := range c.Objects {
+			set(i, func(o *OptionView) { o.Object = id })
+		}
+	case ChooseCursed, ChoosePassCurse:
 		for i, p := range c.Slots {
 			set(i, func(o *OptionView) { o.Player, o.IsPlayer = PlayerID(p), true })
 		}
@@ -341,7 +350,7 @@ func targetView(t Chosen) OptionView {
 	switch t.Kind {
 	case TargetPlayer, TargetOtherPlayer:
 		o.Player, o.IsPlayer = t.Player, true
-	case TargetDiceRoll, TargetStackAbility:
+	case TargetDiceRoll, TargetStackAbility, TargetStackTrigger:
 		o.StackID = t.StackID
 	case TargetMonster, TargetMonsterOrPlayer, TargetItem, TargetCurse, TargetYourItem,
 		TargetYourHandCard, TargetItemOrSoul:

@@ -52,6 +52,8 @@ type Ctx struct {
 	EventObject ObjectID
 	// EventSource is what caused the event, e.g. the monster that dealt damage.
 	EventSource ObjectID
+	// EventBy is the player who dealt the damage, plus 1 (Event.By).
+	EventBy int
 	// Order is the answer of an Ask's order question, top first (19.16).
 	Order []ObjectID
 
@@ -96,12 +98,37 @@ type centsCost struct{ n int }
 // PayCents pays n¢ to the game's pool (R-MECH-44).
 func PayCents(n int) Cost { return centsCost{n} }
 
-func (c centsCost) canPay(g *Game, p PlayerID, _ ObjectID) bool { return g.Players[p].Cents >= c.n }
-func (c centsCost) pay(g *Game, p PlayerID, _ ObjectID) {
-	g.Players[p].Cents -= c.n
-	g.emit(Event{Kind: EvPaid, Player: p, Amount: c.n})
+func (c centsCost) canPay(g *Game, p PlayerID, self ObjectID) bool {
+	return g.Players[p].Cents >= c.amount(g, p, self)
+}
+
+func (c centsCost) pay(g *Game, p PlayerID, self ObjectID) {
+	n := c.amount(g, p, self)
+	g.Players[p].Cents -= n
+	g.emit(Event{Kind: EvPaid, Player: p, Amount: n})
+}
+
+// amount is the price: "$ items you control cost 1¢ less to activate"
+// (Trick Penny) lowers it for items.
+func (c centsCost) amount(g *Game, p PlayerID, self ObjectID) int {
+	if g.Object(self).Role != RoleItem {
+		return c.n
+	}
+	return max(c.n-g.bonus(StatPaidDiscount, p, 0), 0)
 }
 func (c centsCost) label() string { return "pay ¢" }
+
+type hpCost struct{ n int }
+
+// PayHPCost pays n HP as a cost ("Pay 1{HP}:"); a player at 0 HP dies
+// (R-MECH-44).
+func PayHPCost(n int) Cost { return hpCost{n} }
+
+func (c hpCost) canPay(g *Game, p PlayerID, _ ObjectID) bool {
+	return !g.Players[p].Dead && g.PlayerHP(p) >= c.n
+}
+func (c hpCost) pay(g *Game, p PlayerID, _ ObjectID) { g.PayHP(p, c.n) }
+func (c hpCost) label() string                       { return "pay HP" }
 
 type destroySelfCost struct{}
 
@@ -146,6 +173,7 @@ const (
 	TargetYourItem                          // an item you control
 	TargetYourHandCard                      // a loot card in your hand (for costs)
 	TargetItemOrSoul                        // an item or a soul a player controls
+	TargetStackTrigger                      // a triggered ability on the stack (Dead Weight)
 )
 
 // TargetSpec says what to choose; the engine always asks (ADR 005).
@@ -184,7 +212,7 @@ type lootEffect struct{ n int }
 func Loot(n int) Effect { return lootEffect{n} }
 
 func (e lootEffect) apply(c *Ctx) {
-	c.G.enqueue(Action{Kind: ActLoot, Player: c.Controller, Amount: e.n})
+	c.G.enqueue(Action{Kind: ActLoot, Player: c.Controller, Amount: c.G.number(c.Source, NumLoot, e.n)})
 }
 
 type gainCentsEffect struct{ n int }
@@ -193,7 +221,7 @@ type gainCentsEffect struct{ n int }
 func GainCents(n int) Effect { return gainCentsEffect{n} }
 
 func (e gainCentsEffect) apply(c *Ctx) {
-	c.G.enqueue(Action{Kind: ActGainCents, Player: c.Controller, Amount: e.n})
+	c.G.enqueue(Action{Kind: ActGainCents, Player: c.Controller, Amount: c.G.number(c.Source, NumCents, e.n)})
 }
 
 type loseCentsEffect struct{ n int }
@@ -229,7 +257,8 @@ func (e damageEffect) apply(c *Ctx) {
 	if t.Kind == TargetPlayer {
 		tgt = Target{Player: t.Player, IsPlayer: true}
 	}
-	c.G.push(StackItem{Kind: StackDamage, Controller: c.Controller, Source: c.Source, Amount: e.n, Label: "damage", Target: tgt})
+	n := c.G.number(c.Source, NumDamage, e.n)
+	c.G.push(StackItem{Kind: StackDamage, Controller: c.Controller, Source: c.Source, Amount: n, Label: "damage", Target: tgt})
 }
 
 type extraLootEffect struct{ n int }
@@ -268,8 +297,22 @@ func (e rollEffect) apply(c *Ctx) {
 	c.G.push(StackItem{
 		Kind: StackRoll, Controller: c.Controller, Source: c.Source, Label: "roll",
 		RollFor: c.ref, Mode: c.mode, Targets: c.Targets,
-		EventPlayer: c.EventPlayer, EventAmount: c.EventAmount, EventStack: c.EventStack, EventObject: c.EventObject, EventSource: c.EventSource,
+		EventPlayer: c.EventPlayer, EventAmount: c.EventAmount, EventStack: c.EventStack, EventObject: c.EventObject, EventSource: c.EventSource, EventBy: c.EventBy,
 	})
+}
+
+type rollTimesEffect struct {
+	n func(c *Ctx) int
+	t RollTable
+}
+
+// RollTimes rolls n(c) times on one table: "roll 3x instead" (Bomb Bum).
+func RollTimes(n func(c *Ctx) int, t RollTable) Effect { return rollTimesEffect{n, t} }
+
+func (e rollTimesEffect) apply(c *Ctx) {
+	for range e.n(c) {
+		rollEffect{e.t}.apply(c)
+	}
 }
 
 // Results fills a roll table: Results(1, 2, Loot(1)) for "1-2: Loot 1".
@@ -338,6 +381,9 @@ func (becomeSoulEffect) apply(c *Ctx) {
 		// An event in a monster slot: "This becomes a soul. Gain it."
 		// (Holy Chest); its slot is refilled.
 		g := c.G
+		if !g.CanGainSouls(c.Controller) {
+			return // it goes to discard like any event
+		}
 		g.removeFromSlot(c.Source)
 		nid := g.move(c.Source, Zone{Kind: ZoneInPlay}, c.Controller)
 		g.Object(nid).Role = RoleSoul
@@ -346,10 +392,10 @@ func (becomeSoulEffect) apply(c *Ctx) {
 		g.RefillSlots()
 		return
 	}
-	if o.Zone.Kind != ZoneInPlay || o.Controller != c.Controller {
+	if o.Zone.Kind != ZoneInPlay || o.Controller != c.Controller || !c.G.CanGainSouls(c.Controller) {
 		return
 	}
-	o.Role, o.Charged, o.Counters = RoleSoul, false, nil
+	o.Role, o.Charged, o.Counters, o.NoAbilities = RoleSoul, false, nil, true
 	c.G.emit(Event{Kind: EvGainedSoul, Player: c.Controller, Object: c.Source, Card: o.Card})
 }
 
@@ -432,7 +478,7 @@ func (e rechargeAllEffect) apply(c *Ctx) {
 // Recharge turns an object in play upright (R-MECH-22).
 func (g *Game) Recharge(id ObjectID) {
 	o := g.Object(id)
-	if o.Zone.Kind != ZoneInPlay || o.Charged {
+	if o.Zone.Kind != ZoneInPlay || o.Charged || g.def(id).OwnRechargeOnly {
 		return
 	}
 	o.Charged = true
@@ -448,9 +494,7 @@ func Kill(t int) Effect { return killEffect{t} }
 func (e killEffect) apply(c *Ctx) {
 	t := c.target(e.target)
 	if t.Kind == TargetPlayer {
-		c.G.Players[t.Player].Damage += c.G.PlayerHP(t.Player) // HP to 0 (R-MECH-23)
-		c.G.Players[t.Player].KilledBy = int(c.Controller) + 1
-		c.G.push(StackItem{Kind: StackDeath, Controller: NoPlayer, Label: "death", Target: Target{Player: t.Player, IsPlayer: true}})
+		c.G.KillPlayer(t.Player, c.Controller)
 		return
 	}
 	if c.G.Eternal(t.Object) {
@@ -481,7 +525,7 @@ func (c *Ctx) target(t int) Chosen {
 
 // effectsOf returns the effects that run for an ability: those of the
 // chosen mode, or of a roll result.
-func (g *Game) effectsOf(ref AbilityRef, mode, roll int) []Effect {
+func (g *Game) effectsOf(src ObjectID, ref AbilityRef, mode, roll int) []Effect {
 	ab := g.ability(ref)
 	effects := ab.Effects
 	if len(ab.Modes) > 0 {
@@ -489,7 +533,7 @@ func (g *Game) effectsOf(ref AbilityRef, mode, roll int) []Effect {
 	}
 	if roll > 0 {
 		if r, ok := findRoll(effects); ok {
-			return r.table[roll-1]
+			return g.markedTable(src, r.table)[roll-1]
 		}
 		return nil
 	}
@@ -503,6 +547,8 @@ func findRoll(effects []Effect) (rollEffect, bool) {
 		switch x := e.(type) {
 		case rollEffect:
 			return x, true
+		case rollTimesEffect:
+			return rollEffect{x.t}, true
 		case destroySelfThen:
 			if r, ok := findRoll(x.then); ok {
 				return r, true
@@ -510,6 +556,10 @@ func findRoll(effects []Effect) (rollEffect, bool) {
 		case eachPlayerEffect:
 			if r, ok := findRoll(x.effects); ok {
 				return r, true
+			}
+		case askEffect:
+			if x.roll != nil {
+				return rollEffect{*x.roll}, true
 			}
 		}
 	}
@@ -722,7 +772,7 @@ func (discardChosenCost) canPay(g *Game, p PlayerID, _ ObjectID) bool {
 func (discardChosenCost) pay(*Game, PlayerID, ObjectID) {}
 func (discardChosenCost) label() string                 { return "discard a loot card" }
 func (c discardChosenCost) payChosen(g *Game, p PlayerID, chosen []Chosen) {
-	g.DiscardFromHand(p, chosen[c.target].Object)
+	g.discardFromHand(p, chosen[c.target].Object) // a cost is paid by choice
 	chosen[c.target].Spent = true
 }
 
@@ -853,4 +903,27 @@ func PreventThisDeath() Effect {
 			}
 		}
 	})
+}
+
+type condCost struct {
+	text string
+	ok   func(g *Game, p PlayerID, self ObjectID) bool
+}
+
+// If is a condition the ability needs to be activated, as a cost that
+// pays nothing: "if there are no cards under this" (Friendly Ball).
+func If(text string, ok func(g *Game, p PlayerID, self ObjectID) bool) Cost {
+	return condCost{text, ok}
+}
+
+func (c condCost) canPay(g *Game, p PlayerID, self ObjectID) bool { return c.ok(g, p, self) }
+func (condCost) pay(*Game, PlayerID, ObjectID)                    {}
+func (c condCost) label() string                                  { return c.text }
+
+// KillPlayer kills p: their HP goes to 0 and their death goes on the
+// stack (R-MECH-23); by is the killer, or NoPlayer.
+func (g *Game) KillPlayer(p, by PlayerID) {
+	g.Players[p].Damage += g.PlayerHP(p)
+	g.Players[p].KilledBy = int(by) + 1
+	g.push(StackItem{Kind: StackDeath, Controller: NoPlayer, Label: "death", Target: Target{Player: p, IsPlayer: true}})
 }

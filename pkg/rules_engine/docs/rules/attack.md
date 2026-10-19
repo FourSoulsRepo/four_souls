@@ -21,3 +21,8 @@ Sources: S-OFF Attacking; S-RU Атака.
 17. **R-ATK-17** If a player and a monster take lethal damage at the same moment, the monster's death resolves first.
 18. **R-ATK-18** Evasion is between 1 and 6.
 19. **R-ATK-19** *(Gold Box)* **Next attack roll**: "the next attack roll this turn has -2" changes the next attack roll that resolves this turn, by anyone; "their next attack roll" only that player's. It then ends; an unused one ends with the turn.
+20. **R-ATK-20** *(Requiem)* **Attacking a player**: the target uses the evasion the ability sets and their own HP and ATK; a miss deals their ATK to the attacker; killing them ends the attack (R-MECH-06, S-OFF).
+21. **R-ATK-21** *(Requiem)* **Extra attack rolls** (Team Up, Ultra Greed, Sisters Vis, Gus, Sibling Rivalry): after the active player's roll and its combat damage resolve, each chosen player rolls in turn order, one at a time. A helper who dies stops rolling; the attack goes on (S-YUG, R-ATK-16).
+22. **R-ATK-22** *(Requiem)* "Must attack this once each turn if able" (The Harbingers, Blind Rage): one attack of the turn must go there while any attack is possible; other attacks may go anywhere. If two such effects clash, the attacker picks (S-YUG, R-ATK-03).
+23. **R-ATK-23** *(Requiem)* Monster slots have no maximum (S-YUG).
+24. **R-ATK-24** *(Requiem)* "You take no combat damage on attack rolls of N" also covers attack rolls made against you by an attacking player (S-YUG: Halo of Flies).

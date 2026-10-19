@@ -23,6 +23,8 @@ type Question struct {
 type askEffect struct {
 	questions []Question
 	do        func(c *Ctx, answers []int)
+	// roll is the table of a roll that do makes (AskWithRoll).
+	roll *RollTable
 }
 
 // Ask asks the controller questions in order while the ability resolves,
@@ -31,6 +33,13 @@ type askEffect struct {
 // What do queues happens before the ability's later effects.
 func Ask(do func(c *Ctx, answers []int), questions ...Question) Effect {
 	return askEffect{questions: questions, do: do}
+}
+
+// AskWithRoll is Ask whose do makes a roll with c.Do(Roll(table)): the
+// roll's result runs table ("choose another player; they roll and gain
+// ¢ equal to the result").
+func AskWithRoll(do func(c *Ctx, answers []int), table RollTable, questions ...Question) Effect {
+	return askEffect{questions: questions, do: do, roll: &table}
 }
 
 // Asking is an Ask effect waiting for answers. It is plain data, so a
@@ -56,13 +65,15 @@ type Asking struct {
 	EventObject ObjectID `json:"event_object,omitempty"`
 	// EventSource is what caused the event, e.g. the monster that dealt damage.
 	EventSource ObjectID `json:"event_source,omitempty"`
+	// EventBy is the player who dealt the damage, plus 1 (Event.By).
+	EventBy int `json:"event_by,omitempty"`
 }
 
 func (e askEffect) apply(c *Ctx) {
 	a := &Asking{
 		Ability: c.ref, Mode: c.mode, RollResult: c.roll, Effect: c.effect,
 		Controller: c.Controller, Source: c.Source, Targets: c.Targets,
-		EventPlayer: c.EventPlayer, EventAmount: c.EventAmount, EventStack: c.EventStack, EventObject: c.EventObject, EventSource: c.EventSource,
+		EventPlayer: c.EventPlayer, EventAmount: c.EventAmount, EventStack: c.EventStack, EventObject: c.EventObject, EventSource: c.EventSource, EventBy: c.EventBy,
 	}
 	c.G.AskSeq++
 	a.Key = c.G.AskSeq
@@ -83,7 +94,7 @@ func (c *Ctx) Do(effects ...Effect) {
 func (a *Asking) ctx(g *Game) *Ctx {
 	return &Ctx{
 		G: g, Controller: a.Controller, Source: a.Source, Targets: a.Targets,
-		EventPlayer: a.EventPlayer, EventAmount: a.EventAmount, EventStack: a.EventStack, EventObject: a.EventObject, EventSource: a.EventSource,
+		EventPlayer: a.EventPlayer, EventAmount: a.EventAmount, EventStack: a.EventStack, EventObject: a.EventObject, EventSource: a.EventSource, EventBy: a.EventBy,
 		Order: a.Order,
 		ref:   a.Ability, mode: a.Mode, roll: a.RollResult, effect: a.Effect,
 	}
@@ -93,7 +104,7 @@ func (g *Game) askEffectOf(a *Asking) askEffect {
 	if e, ok := g.asks[a.Key]; ok {
 		return e
 	}
-	effects := g.effectsOf(a.Ability, a.Mode, a.RollResult)
+	effects := g.effectsOf(a.Source, a.Ability, a.Mode, a.RollResult)
 	e, ok := effects[a.Effect].(askEffect)
 	if !ok {
 		panic("rulesengine: asking a non-ask effect of " + string(a.Ability.Card))

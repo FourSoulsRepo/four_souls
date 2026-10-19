@@ -13,6 +13,9 @@ const (
 	StepEndTriggers               // R-TURN-10
 	StepHandSize                  // R-TURN-11, nobody has priority
 	StepCleanup                   // R-TURN-13
+	// StepRoom comes between StepHandSize and StepCleanup; it is listed
+	// last so the older steps keep their numbers (R-TURN-12).
+	StepRoom
 )
 
 // Turn is the state of the current turn.
@@ -44,6 +47,18 @@ type Turn struct {
 	FreeShopItem bool `json:"free_shop_item,omitempty"`
 	EndDeclared  bool `json:"end_declared,omitempty"`
 	DeathEnd     bool `json:"death_end,omitempty"` // the active player died (R-DEATH-16)
+	// NextHelpers help the active player's next attack this turn;
+	// NextShare also gain its rewards (Sibling Rivalry).
+	NextHelpers []PlayerID `json:"next_helpers,omitempty"`
+	NextShare   []PlayerID `json:"next_share,omitempty"`
+	// MonsterDied: a monster died this turn, so the active player may
+	// replace a room (R-TURN-12). RoomReplaced opens a priority window
+	// for the new room's abilities.
+	MonsterDied  bool `json:"monster_died,omitempty"`
+	RoomReplaced bool `json:"room_replaced,omitempty"`
+	// LateRooms entered in the end phase: their ↷ and $ abilities wait
+	// for the next turn (R-TURN-18).
+	LateRooms []ObjectID `json:"late_rooms,omitempty"`
 	// entered is true once the current step's automatic work is done.
 	Entered bool `json:"entered,omitempty"`
 }
@@ -134,6 +149,8 @@ func (g *Game) windowClosed() {
 		}
 	case StepEndTriggers:
 		g.goTo(StepHandSize)
+	case StepRoom:
+		g.goTo(StepCleanup)
 	}
 }
 
@@ -191,6 +208,13 @@ func (g *Game) advanceFrom(s Step) {
 	case StepLoot:
 		g.goTo(StepLootWindow)
 	case StepHandSize:
+		g.goTo(StepRoom)
+	case StepRoom:
+		if g.Turn.RoomReplaced {
+			g.Turn.RoomReplaced = false
+			g.openWindow(g.Turn.Active) // the new room's "enters play" (R-TURN-18)
+			return
+		}
 		g.goTo(StepCleanup)
 	case StepCleanup:
 		g.startNextTurn()
@@ -205,6 +229,7 @@ func (g *Game) enterStep() {
 	p := g.Turn.Active
 	switch g.Turn.Step {
 	case StepRecharge:
+		g.endCopiesTillYourTurn(p)
 		g.recharge(p)
 	case StepStartTriggers:
 		g.emit(Event{Kind: EvStartOfTurn, Player: p}) // R-TURN-03
@@ -223,6 +248,8 @@ func (g *Game) enterStep() {
 		if extra := len(g.Players[p].Hand) - g.maxHand(p); extra > 0 {
 			g.Waiting = Prompt{Kind: PromptDiscard, Player: p, Count: extra}
 		}
+	case StepRoom:
+		g.askRoomStep(p)
 	case StepCleanup:
 		g.healAll()
 		g.emit(Event{Kind: EvTurnEnded, Player: p})
@@ -272,27 +299,61 @@ func (g *Game) recharge(p PlayerID) {
 		return
 	}
 	for _, id := range pl.InPlay {
-		g.Object(id).Charged = true
+		if !g.def(id).OwnRechargeOnly {
+			g.Object(id).Charged = true
+		}
 	}
 	g.emit(Event{Kind: EvRecharged, Player: p})
 }
 
+// endCopiesTillYourTurn ends p's copies that last till the start of
+// their next turn (Undefined).
+func (g *Game) endCopiesTillYourTurn(p PlayerID) {
+	for _, id := range g.Players[p].InPlay {
+		o := g.Object(id)
+		if o.CopyTillYourTurn {
+			o.CopyOf, o.CopyTillYourTurn = "", false
+		}
+		if o.GainedTill == GainTillYourTurn {
+			o.Gained, o.GainedTill = "", 0
+		}
+	}
+}
+
 // loot draws n loot cards into a hand (R-CARD-06).
 func (g *Game) loot(p PlayerID, n int) {
+	drawn := 0
 	for range n {
 		id, ok := g.drawTop(LootDeck)
 		if !ok {
-			return
+			break
 		}
 		nid := g.move(id, Zone{Kind: ZoneHand}, p)
 		g.Players[p].Hand = append(g.Players[p].Hand, nid)
 		g.emit(Event{Kind: EvLooted, Player: p, Object: nid, Card: g.Object(nid).Card, Private: true})
+		drawn++
+	}
+	if drawn > 0 && g.Turn.Number > 0 {
+		g.emit(Event{Kind: EvLootDone, Player: p, Amount: drawn})
 	}
 }
 
 // DiscardFromHand puts a loot card from p's hand into the loot discard
-// (R-MECH-25).
-func (g *Game) DiscardFromHand(p PlayerID, id ObjectID) { g.discardFromHand(p, id) }
+// (R-MECH-25). It is for effects: a player whom abilities can't make
+// discard keeps the card (Rib of Greed). Costs use discardFromHand.
+func (g *Game) DiscardFromHand(p PlayerID, id ObjectID) {
+	if g.protectedFromLoss(p) {
+		g.emit(Event{Kind: EvPrevented, Player: p, Text: "discard"})
+		return
+	}
+	g.discardFromHand(p, id)
+}
+
+// protectedFromLoss: abilities and the death penalty can't make p discard
+// loot cards or lose ¢ (Rib of Greed).
+func (g *Game) protectedFromLoss(p PlayerID) bool {
+	return p != NoPlayer && g.bonus(StatNoForcedLoss, p, 0) > 0
+}
 
 func (g *Game) discardFromHand(p PlayerID, id ObjectID) {
 	g.Players[p].Hand = remove(g.Players[p].Hand, id)
@@ -307,16 +368,21 @@ func (g *Game) healAll() {
 		g.Players[i].Dead = false // alive again (R-DEATH-19)
 		g.Players[i].ExtraLootPlays = 0
 		g.Players[i].TimesDamaged = 0
+		g.Players[i].Activations, g.Players[i].LootPlayed = 0, 0
 		g.Players[i].Rolls, g.Players[i].LastRoll, g.Players[i].LastAttack, g.Players[i].KilledBy = 0, 0, 0, 0
 	}
 	for _, id := range g.inPlay() {
 		g.Object(id).Damage, g.Object(id).HitsThisTurn = 0, 0
 	}
-	g.Boosts, g.Shields, g.Lingering = nil, nil, nil // till end of turn effects end
+	g.Boosts, g.Shields, g.Lingering, g.Markers = nil, nil, nil, nil // till end of turn effects end
 	for _, pl := range g.Players {
-		for _, id := range pl.InPlay {
-			if o := g.Object(id); o.CopyThisTurn {
+		for _, id := range append([]ObjectID{pl.Character}, pl.InPlay...) {
+			o := g.Object(id)
+			if o.CopyThisTurn {
 				o.CopyOf, o.CopyThisTurn = "", false
+			}
+			if o.GainedTill == GainEndOfTurn {
+				o.Gained, o.GainedTill = "", 0
 			}
 		}
 		g.Players[pl.ID].CopyNextLoot = false
@@ -388,13 +454,15 @@ func (g *Game) PlayerBefore(p PlayerID) PlayerID {
 func (g *Game) maxHand(p PlayerID) int {
 	limit := g.MaxHand
 	for _, id := range g.inPlay() {
-		d, ok := g.cards.find(g.CardOf(id))
-		if !ok {
-			continue
-		}
-		for _, s := range d.Statics {
-			if s.Stat == StatHandCap && s.Applies(g, id, p, 0) {
-				limit = min(limit, s.Amount)
+		for _, face := range g.facesOf(id) {
+			d, ok := g.cards.find(face)
+			if !ok {
+				continue
+			}
+			for _, s := range d.Statics {
+				if s.Stat == StatHandCap && s.Applies(g, id, p, 0) {
+					limit = min(limit, s.amount(g, id))
+				}
 			}
 		}
 	}
@@ -410,4 +478,28 @@ func (g *Game) WinGame(p PlayerID) {
 	g.Over, g.Winners = true, []PlayerID{p}
 	g.Waiting = Prompt{Kind: PromptGameOver, Player: NoPlayer}
 	g.emit(Event{Kind: EvGameWon, Player: p})
+}
+
+// askRoomStep lets the active player put a room into discard if a
+// monster died this turn (R-TURN-12). A room that put itself into
+// discard doesn't count (R-TURN-17).
+func (g *Game) askRoomStep(p PlayerID) {
+	if !g.Turn.MonsterDied {
+		return
+	}
+	var rooms []ObjectID
+	var labels []string
+	for _, s := range g.Rooms {
+		if top, ok := s.TopOf(); ok && g.Object(top).Zone.Kind == ZoneInPlay {
+			if stay := g.def(top).NoDiscard; stay != nil && stay(g, top) {
+				continue
+			}
+			rooms = append(rooms, top)
+			labels = append(labels, string(g.Object(top).Card))
+		}
+	}
+	if len(rooms) == 0 {
+		return
+	}
+	g.ask(Choice{Purpose: ChooseRoom, Player: p, Rule: "R-TURN-12", Objects: rooms, Question: "Put a room into discard?"}, append(labels, "keep"))
 }

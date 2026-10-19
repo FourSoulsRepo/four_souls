@@ -24,6 +24,8 @@ const (
 	ChooseDie                               // which of several dice is the result (Mutant Spider)
 	ChooseRedirect                          // which monster another player attacks (Mom\'s Eye Shadow)
 	ChooseOrder                             // the order of cards put back on a deck (PromptOrder, 19.16)
+	ChoosePassCurse                         // who gets a curse passed on (Curse of the Soulless)
+	ChooseRoom                              // a room to put into discard, or keep (R-TURN-12)
 )
 
 // Choice is an open question to one player. Options are listed in the
@@ -80,7 +82,7 @@ func (g *Game) answer(i int) {
 			g.attackDeck()
 			return
 		}
-		if q, ok := g.redirector(); ok {
+		if q, ok := g.redirector(); ok && g.Object(c.Objects[i]).Role == RoleMonster {
 			g.askRedirect(q, c.Objects[i])
 			return
 		}
@@ -88,6 +90,10 @@ func (g *Game) answer(i int) {
 	case ChooseMonsterSlot:
 		g.placeRevealed(c.Slots[i])
 	case ChoosePenaltyItem:
+		if c.To != NoPlayer {
+			g.GainControl(c.To, c.Objects[i]) // given, not destroyed (Lust for Blood)
+			return
+		}
 		g.destroyItem(c.Owner, c.Objects[i])
 	case ChoosePenaltyLoot:
 		if c.To != NoPlayer {
@@ -122,6 +128,13 @@ func (g *Game) answer(i int) {
 			return
 		}
 		g.startActivation(Activation{Player: c.Player, Source: c.Objects[0], Loot: true, Ability: c.Abilities[i]})
+	case ChoosePassCurse:
+		g.passCurse(c.Objects[0], PlayerID(c.Slots[i]))
+	case ChooseRoom:
+		if i < len(c.Objects) {
+			g.DiscardRoom(c.Objects[i])
+			g.Turn.RoomReplaced = true
+		}
 	case ChooseOrder:
 		// Answered with IntentOrder (answerOrder), never by index.
 	case ChooseRecharge:

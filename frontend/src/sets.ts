@@ -8,9 +8,10 @@ const names = new Map([
   ['b2', 'Base Game'],
   ['g2', 'Gold Box'],
   ['fsp2', 'Four Souls+'],
+  ['r', 'Requiem'],
 ]);
 
-const order = ['b2', 'g2', 'fsp2'];
+const order = ['b2', 'g2', 'fsp2', 'r'];
 
 // setName names a set code; unknown codes stay as they are.
 export function setName(code: string): string {

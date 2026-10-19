@@ -32,6 +32,7 @@ const (
 	ActPlayLootFree                         // Player plays the loot card Object without using a loot play
 	ActPushLingering                        // put lingering ability From of Object on the stack; EventPlayer Player, EventAmount Amount
 	ActThrow                                // Player throws the die of the roll Amount (15.59)
+	ActPassCurse                            // Player gives the curse Object to another player of their choice
 )
 
 // Action is a pending change. It sits in the queue, may be rewritten by
@@ -45,6 +46,11 @@ type Action struct {
 	Ask    *Asking    `json:"ask,omitempty"`
 	// Reroll marks a throw that rolls a roll again (ActThrow).
 	Reroll bool `json:"reroll,omitempty"`
+	// Penalty marks the death penalty's loss of ¢ (Soulbond).
+	Penalty bool `json:"penalty,omitempty"`
+	// Purchase marks treasure gained by buying the top of the deck; the
+	// first card gained is the purchase (Damocles still adds one).
+	Purchase bool `json:"purchase,omitempty"`
 	// Applied lists replacements already applied; each applies once
 	// (R-ABIL-32).
 	Applied []ReplacementRef `json:"applied,omitempty"`
@@ -219,6 +225,10 @@ func (g *Game) perform(a Action) {
 		g.Players[a.Player].Cents += a.Amount
 		g.emit(Event{Kind: EvGainedCents, Player: a.Player, Amount: a.Amount})
 	case ActLoseCents:
+		if g.protectedFromLoss(a.Player) {
+			g.emit(Event{Kind: EvPrevented, Player: a.Player, Text: "lose cents"})
+			return
+		}
 		n := min(a.Amount, g.Players[a.Player].Cents) // R-MECH-42
 		g.Players[a.Player].Cents -= n
 		g.emit(Event{Kind: EvLostCents, Player: a.Player, Amount: n})
@@ -239,15 +249,17 @@ func (g *Game) perform(a Action) {
 			g.emit(Event{Kind: EvCounters, Player: o.Controller, Object: a.Object, Card: o.Card, Amount: a.Amount})
 		}
 	case ActGainTreasure:
-		g.gainTreasure(a.Player, a.Amount)
+		ids := g.gainTreasure(a.Player, a.Amount)
+		if a.Purchase && len(ids) > 0 {
+			g.emit(Event{Kind: EvPurchased, Player: a.Player, Object: ids[0], Card: g.Object(ids[0]).Card, Text: "treasure deck"})
+		}
 	case ActBecomeSoul:
 		if g.Object(a.Object).Zone.Kind == ZoneGone {
 			return // moved by an effect already
 		}
-		nid := g.move(a.Object, Zone{Kind: ZoneInPlay}, a.Player)
-		g.Object(nid).Role = RoleSoul
-		g.Players[a.Player].InPlay = append(g.Players[a.Player].InPlay, nid)
-		g.emit(Event{Kind: EvGainedSoul, Player: a.Player, Object: nid, Card: g.Object(nid).Card})
+		if !g.GainSoul(a.Object, a.Player) {
+			g.perform(Action{Kind: ActDiscardObject, Player: NoPlayer, Object: a.Object}) // can't gain it
+		}
 	case ActDiscardObject:
 		if g.Object(a.Object).Zone.Kind == ZoneGone {
 			return
@@ -269,9 +281,12 @@ func (g *Game) perform(a Action) {
 			if s := g.shadowOf(a.Player); s != NoPlayer {
 				chooser = s
 			}
-			g.ask(Choice{Purpose: ChoosePenaltyItem, Player: chooser, Owner: a.Player, To: NoPlayer, Rule: "R-DEATH-14", Objects: items}, g.labels(items))
+			g.ask(Choice{Purpose: ChoosePenaltyItem, Player: chooser, Owner: a.Player, To: g.penaltyItemTo(a.Player), Rule: "R-DEATH-14", Objects: items}, g.labels(items))
 		}
 	case ActPenaltyLoot:
+		if g.protectedFromLoss(a.Player) {
+			return // Rib of Greed: nothing is lost, so a Shadow gains nothing
+		}
 		if hand := g.Players[a.Player].Hand; len(hand) > 0 {
 			g.ask(Choice{Purpose: ChoosePenaltyLoot, Player: a.Player, Owner: a.Player, To: g.shadowOf(a.Player), Rule: "R-DEATH-14", Objects: append([]ObjectID(nil), hand...)}, g.labels(hand))
 		}
@@ -319,6 +334,8 @@ func (g *Game) perform(a Action) {
 		})
 	case ActThrow:
 		g.askThrow(a)
+	case ActPassCurse:
+		g.askPassCurse(a.Player, a.Object)
 	case ActRewardsDone:
 		before := len(g.PendingTriggers)
 		g.emit(Event{Kind: EvRewardsGained, Player: a.Player, Object: a.Object, Card: g.Object(a.Object).Card, Prev: a.Object})
@@ -334,16 +351,22 @@ func (g *Game) perform(a Action) {
 	}
 }
 
-// gainTreasure puts the top n treasure cards into play under p (R-CARD-02).
-func (g *Game) gainTreasure(p PlayerID, n int) {
+// gainTreasure puts the top n treasure cards into play under p
+// (R-CARD-02) and returns the new items.
+func (g *Game) gainTreasure(p PlayerID, n int) []ObjectID {
+	var out []ObjectID
 	for range n {
 		id, ok := g.drawTop(TreasureDeck)
 		if !ok {
-			return
+			return out
 		}
 		nid := g.move(id, Zone{Kind: ZoneInPlay}, p)
 		o := g.Object(nid)
 		g.enterAsItem(p, nid)
 		g.emit(Event{Kind: EvGainedTreasure, Player: p, Object: nid, Card: o.Card})
+		g.emit(Event{Kind: EvGainedItem, Player: p, Object: nid, Card: o.Card})
+		g.emit(Event{Kind: EvEnteredPlay, Player: p, Object: nid, Card: o.Card})
+		out = append(out, nid)
 	}
+	return out
 }

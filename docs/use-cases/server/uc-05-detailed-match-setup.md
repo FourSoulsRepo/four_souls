@@ -20,6 +20,7 @@
 10. Host bans may name any card of the sets, not only characters (GS-13).
 11. No copy of a host-banned card goes into a deck.
 12. The match record header lists the host bans.
+13. Deck ratios: on unless the host turns them off (UC-20).
 
 ## Alternative scenarios and errors
 

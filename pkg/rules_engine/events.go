@@ -5,13 +5,18 @@ type EventKind string
 
 // Events emitted so far; the list grows with the engine.
 const (
-	EvGameStarted      EventKind = "game_started"
-	EvFirstPlayer      EventKind = "first_player"
-	EvDiceRolled       EventKind = "dice_rolled"
-	EvTurnStarted      EventKind = "turn_started"
-	EvPhase            EventKind = "phase"
-	EvRecharged        EventKind = "recharged"
-	EvLooted           EventKind = "looted"
+	EvGameStarted EventKind = "game_started"
+	EvFirstPlayer EventKind = "first_player"
+	EvDiceRolled  EventKind = "dice_rolled"
+	EvTurnStarted EventKind = "turn_started"
+	EvPhase       EventKind = "phase"
+	EvRecharged   EventKind = "recharged"
+	EvLooted      EventKind = "looted"
+	// EvLootDone: Player looted Amount cards in one go ("each time a
+	// player loots": Laser Eye).
+	EvLootDone EventKind = "loot_done"
+	// EvGaveCents: Player gave Amount¢ to player By-1 (Social Goals).
+	EvGaveCents        EventKind = "gave_cents"
 	EvDiscarded        EventKind = "discarded"
 	EvGainedCents      EventKind = "gained_cents"
 	EvHealed           EventKind = "healed"

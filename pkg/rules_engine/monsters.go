@@ -66,6 +66,9 @@ func (g *Game) giveCurse(curse ObjectID, p PlayerID) {
 func (g *Game) dropCurses(p PlayerID) {
 	for _, id := range append([]ObjectID(nil), g.Players[p].InPlay...) {
 		if g.Object(id).Role == RoleCurse {
+			if f := g.def(id).InsteadOfDestroy; f != nil && f(g, id) {
+				continue // "If this would be put into discard, instead …"
+			}
 			g.Players[p].InPlay = remove(g.Players[p].InPlay, id)
 			nid := g.discard(id, MonsterDeck)
 			g.emit(Event{Kind: EvDiscarded, Player: p, Object: nid, Card: g.Object(nid).Card, Prev: id})
@@ -110,6 +113,8 @@ func (g *Game) TakeFromDeck(d DeckKind, id ObjectID, p PlayerID) {
 	nid := g.move(id, Zone{Kind: ZoneInPlay}, p)
 	g.enterAsItem(p, nid)
 	g.emit(Event{Kind: EvGainedTreasure, Player: p, Object: nid, Card: g.Object(nid).Card, Text: "searched"})
+	g.emit(Event{Kind: EvGainedItem, Player: p, Object: nid, Card: g.Object(nid).Card})
+	g.emit(Event{Kind: EvEnteredPlay, Player: p, Object: nid, Card: g.Object(nid).Card})
 }
 
 // HealPlayer removes up to n damage from a living player (R-MECH-40).
@@ -155,11 +160,21 @@ func (g *Game) PutIntoDeck(d DeckKind, id ObjectID, n int) {
 // top of monster slot i ("put it in a monster slot").
 func (g *Game) PlaceFromDeck(id ObjectID, i int) {
 	g.Decks[MonsterDeck] = remove(g.Decks[MonsterDeck], id)
-	if top, had := g.Monsters[i].TopOf(); had {
-		g.Object(top).Zone = Zone{Kind: ZoneCovered, Slot: MonsterSlot, Index: i}
+	g.enterMonsterSlot(g.coverMonsterSlot(id, i))
+}
+
+// PlaceRoomFromDeck takes a card out of the room deck and puts it on
+// top of room slot i, covering the room there (Red Key).
+func (g *Game) PlaceRoomFromDeck(id ObjectID, i int) {
+	if i < 0 || i >= len(g.Rooms) {
+		return
 	}
-	nid := g.putInSlot(id, MonsterSlot, i)
-	g.enterMonsterSlot(nid)
+	g.Decks[RoomDeck] = remove(g.Decks[RoomDeck], id)
+	if top, ok := g.Rooms[i].TopOf(); ok {
+		o := g.Object(top)
+		o.Zone, o.Role = Zone{Kind: ZoneCovered, Slot: RoomSlot, Index: i}, RoleNone
+	}
+	g.putInSlot(id, RoomSlot, i)
 }
 
 // checkBonusSouls gives each active bonus soul to the first player, in
@@ -172,7 +187,7 @@ func (g *Game) checkBonusSouls() bool {
 			continue
 		}
 		for _, p := range g.turnOrderFrom(g.Turn.Active) {
-			if cond(g, p) {
+			if cond(g, p) && g.CanGainSouls(p) {
 				g.BonusSouls = remove(g.BonusSouls, id)
 				nid := g.move(id, Zone{Kind: ZoneInPlay}, p)
 				g.Object(nid).Role = RoleSoul
@@ -194,6 +209,9 @@ func (g *Game) SoulFromDiscard(d DeckKind, card CardRef, p PlayerID) {
 		if g.Object(pile[i]).Card != card {
 			continue
 		}
+		if !g.CanGainSouls(p) {
+			return
+		}
 		g.Discards[d] = remove(pile, pile[i])
 		nid := g.move(pile[i], Zone{Kind: ZoneInPlay}, p)
 		g.Object(nid).Role = RoleSoul
@@ -211,4 +229,64 @@ func (g *Game) GiveCurseFromDeck(curse ObjectID, p PlayerID) {
 	g.Object(nid).Role = RoleCurse
 	g.Players[p].InPlay = append(g.Players[p].InPlay, nid)
 	g.emit(Event{Kind: EvCursed, Player: p, Object: nid, Card: g.Object(nid).Card})
+}
+
+// CanGainSouls reports whether p may gain souls (Curse of the
+// Soulless). Being given or stealing a soul is not gaining (R-MECH-35).
+func (g *Game) CanGainSouls(p PlayerID) bool { return g.bonus(StatNoSouls, p, 0) == 0 }
+
+// GainSoul makes a card outside the game (a dead monster) a soul of p.
+// It reports false if p can't gain souls.
+func (g *Game) GainSoul(id ObjectID, p PlayerID) bool {
+	if !g.CanGainSouls(p) {
+		return false
+	}
+	nid := g.move(id, Zone{Kind: ZoneInPlay}, p)
+	g.Object(nid).Role = RoleSoul
+	g.Players[p].InPlay = append(g.Players[p].InPlay, nid)
+	g.emit(Event{Kind: EvGainedSoul, Player: p, Object: nid, Card: g.Object(nid).Card})
+	return true
+}
+
+// PassCurse queues "give this curse to another player" for its holder,
+// who chooses (Curse of the Soulless).
+func (g *Game) PassCurse(curse ObjectID) {
+	g.enqueue(Action{Kind: ActPassCurse, Player: g.Object(curse).Controller, Object: curse})
+}
+
+func (g *Game) askPassCurse(p PlayerID, curse ObjectID) {
+	if o := g.Object(curse); o.Zone.Kind != ZoneInPlay || o.Controller != p {
+		return
+	}
+	others := g.choosablePlayers(g.turnOrderFrom(p)[1:])
+	labels := make([]string, len(others))
+	slots := make([]int, len(others))
+	for i, q := range others {
+		labels[i] = "player " + strconv.Itoa(int(q)+1) + " (" + string(g.Object(g.Players[q].Character).Card) + ")"
+		slots[i] = int(q)
+	}
+	g.ask(Choice{Purpose: ChoosePassCurse, Player: p, Rule: "R-ABIL-20", Objects: []ObjectID{curse}, Slots: slots, Question: "Give the curse to which player?"}, labels)
+}
+
+// passCurse moves a curse from its holder to p.
+func (g *Game) passCurse(curse ObjectID, p PlayerID) {
+	o := g.Object(curse)
+	g.Players[o.Controller].InPlay = remove(g.Players[o.Controller].InPlay, curse)
+	o.Controller = p
+	g.Players[p].InPlay = append(g.Players[p].InPlay, curse)
+	g.emit(Event{Kind: EvCursed, Player: p, Object: curse, Card: o.Card})
+}
+
+// GainBonusSoul gives an active bonus soul to p ("the active player
+// gains this soul"); it reports false if p can't gain souls.
+func (g *Game) GainBonusSoul(id ObjectID, p PlayerID) bool {
+	if !contains(g.BonusSouls, id) || g.Object(id).Zone.Kind != ZoneOutside || !g.CanGainSouls(p) {
+		return false
+	}
+	g.BonusSouls = remove(g.BonusSouls, id)
+	nid := g.move(id, Zone{Kind: ZoneInPlay}, p)
+	g.Object(nid).Role = RoleSoul
+	g.Players[p].InPlay = append(g.Players[p].InPlay, nid)
+	g.emit(Event{Kind: EvGainedSoul, Player: p, Object: nid, Card: g.Object(nid).Card, Text: "bonus soul"})
+	return true
 }

@@ -94,3 +94,38 @@ func TestWriteKeepsFinishedCards(t *testing.T) {
 		}
 	}
 }
+
+// A reprint of a Gold Box card names Gold Box, so a game without it can
+// borrow the definition (ADR 010); Base Game reprints need nothing.
+func TestSetListReprintFrom(t *testing.T) {
+	list, err := setList(carddb.Set{Code: "r", Name: "Requiem"}, nil, []reprint{
+		{ref: "a_sack", copies: 1, from: "g2"},
+		{ref: "bomb", copies: 3, from: "b2"},
+	}, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	src := string(list.src)
+	for _, want := range []string{
+		`"github.com/FourSoulsRepo/rules_engine/cards/g2"`,
+		`{Ref: "a_sack", Copies: 1, From: &g2.Set}`,
+		`{Ref: "bomb", Copies: 3}`,
+	} {
+		if !strings.Contains(src, want) {
+			t.Errorf("set list lacks %s:\n%s", want, src)
+		}
+	}
+}
+
+// Each card of a deck gets its deck ratio group (R-SETUP-17).
+func TestSetListGroups(t *testing.T) {
+	list, err := setList(carddb.Set{Code: "b2", Name: "Base Game V2"}, nil, nil, []group{
+		{ref: "bomb", name: "GroupBombs"},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if want := `"bomb": engine.GroupBombs,`; !strings.Contains(string(list.src), want) {
+		t.Errorf("set list lacks %s:\n%s", want, list.src)
+	}
+}

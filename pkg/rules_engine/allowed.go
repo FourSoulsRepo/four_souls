@@ -26,7 +26,7 @@ func (g *Game) Allowed(p PlayerID) []Intent {
 		for _, id := range g.Players[p].Hand {
 			try(Intent{Player: p, Kind: IntentPlayLoot, Objects: []ObjectID{id}})
 		}
-		for _, id := range g.controlled(p) {
+		for _, id := range append(g.controlled(p), g.roomsInPlay()...) {
 			for i := range g.AbilitiesOf(id) {
 				try(Intent{Player: p, Kind: IntentActivate, Objects: []ObjectID{id}, Choice: i})
 			}
@@ -61,4 +61,16 @@ func (g *Game) CanAct(p PlayerID) bool {
 // controlled lists the character and in-play objects of p.
 func (g *Game) controlled(p PlayerID) []ObjectID {
 	return append([]ObjectID{g.Players[p].Character}, g.Players[p].InPlay...)
+}
+
+// roomsInPlay lists the rooms on top of the room slots; the active
+// player uses their abilities (R-CARD-36).
+func (g *Game) roomsInPlay() []ObjectID {
+	var out []ObjectID
+	for _, s := range g.Rooms {
+		if top, ok := s.TopOf(); ok && g.Object(top).Role == RoleRoom {
+			out = append(out, top)
+		}
+	}
+	return out
 }

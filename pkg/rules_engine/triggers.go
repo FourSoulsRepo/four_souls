@@ -1,5 +1,7 @@
 package rulesengine
 
+import "slices"
+
 // AbilityRef names one ability of one card.
 type AbilityRef struct {
 	Card  CardRef `json:"card"`
@@ -155,6 +157,8 @@ type PendingTrigger struct {
 	EventObject ObjectID  `json:"event_object,omitempty"`
 	// EventSource is what caused the event, e.g. the monster that dealt damage.
 	EventSource ObjectID `json:"event_source,omitempty"`
+	// EventBy is the player who dealt the damage, plus 1 (Event.By).
+	EventBy int `json:"event_by,omitempty"`
 }
 
 // collectTriggers finds triggered abilities that match an event. Objects
@@ -162,21 +166,28 @@ type PendingTrigger struct {
 // "when this is destroyed" still sees itself.
 func (g *Game) collectTriggers(e Event) {
 	check := func(id ObjectID) {
-		def, ok := g.cards.find(g.CardOf(id))
-		if !ok {
-			return
-		}
-		for i, a := range def.Abilities {
-			if a.Kind == Triggered && a.Trigger.On == e.Kind && a.Trigger.Match != nil && a.Trigger.Match(g, id, e) {
-				g.PendingTriggers = append(g.PendingTriggers, PendingTrigger{
-					Ability: AbilityRef{Card: g.CardOf(id), Index: i}, Source: id, Controller: g.abilityController(id),
-					On: e.Kind, EventPlayer: e.Player, EventAmount: e.Amount, EventStack: e.StackID, EventObject: e.Object, EventSource: e.Source,
-				})
+		for _, face := range g.facesOf(id) {
+			def, ok := g.cards.find(face)
+			if !ok {
+				continue
+			}
+			for i, a := range def.Abilities {
+				if a.Kind == Triggered && a.Trigger.On == e.Kind && a.Trigger.Match != nil && a.Trigger.Match(g, id, e) {
+					g.PendingTriggers = append(g.PendingTriggers, PendingTrigger{
+						Ability: AbilityRef{Card: face, Index: i}, Source: id, Controller: g.abilityController(id),
+						On: e.Kind, EventPlayer: e.Player, EventAmount: e.Amount, EventStack: e.StackID, EventObject: e.Object, EventSource: e.Source, EventBy: e.By,
+					})
+				}
 			}
 		}
 	}
 	for _, id := range g.inPlay() {
 		check(id)
+	}
+	for _, id := range g.BonusSouls {
+		if g.Object(id).Zone.Kind == ZoneOutside {
+			check(id) // the active bonus souls work outside the game (R-ZONE-14)
+		}
 	}
 	if e.Prev != 0 && g.Object(e.Prev).Zone.Kind != ZoneInPlay {
 		check(e.Prev)
@@ -184,12 +195,17 @@ func (g *Game) collectTriggers(e Event) {
 	if e.Kind == EvGainedSoul && e.Object != 0 {
 		check(e.Object) // "When a player gains this soul" (Mom's Heart)
 	}
+	if e.Kind == EvEnteredPlay && e.Object != 0 && slices.Contains(g.ShopItems(), e.Object) {
+		// A shop item's "enters play" abilities work in the shop
+		// (R-CARD-05, S-YUG).
+		check(e.Object)
+	}
 	for _, l := range g.Lingering {
 		a := g.ability(l.Ability)
 		if a.Trigger.On == e.Kind && a.Trigger.Match != nil && a.Trigger.Match(g, l.Source, e) {
 			g.PendingTriggers = append(g.PendingTriggers, PendingTrigger{
 				Ability: l.Ability, Source: l.Source, Controller: l.Controller,
-				On: e.Kind, EventPlayer: e.Player, EventAmount: e.Amount, EventStack: e.StackID, EventObject: e.Object, EventSource: e.Source,
+				On: e.Kind, EventPlayer: e.Player, EventAmount: e.Amount, EventStack: e.StackID, EventObject: e.Object, EventSource: e.Source, EventBy: e.By,
 			})
 		}
 	}
@@ -244,7 +260,7 @@ func (g *Game) pushTrigger(i int) {
 	it := StackItem{
 		Kind: StackTrigger, Controller: t.Controller, Source: t.Source, Card: t.Ability.Card,
 		Ability: t.Ability, Label: g.abilityText(t.Ability),
-		EventPlayer: t.EventPlayer, EventAmount: t.EventAmount, EventStack: t.EventStack, EventObject: t.EventObject, EventSource: t.EventSource,
+		EventPlayer: t.EventPlayer, EventAmount: t.EventAmount, EventStack: t.EventStack, EventObject: t.EventObject, EventSource: t.EventSource, EventBy: t.EventBy,
 	}
 	if t.On == EvRollWouldResolve {
 		it.Checked = t.EventAmount + 1 // R-DICE-07
@@ -282,14 +298,14 @@ func (g *Game) abilityText(ref AbilityRef) string {
 }
 
 // abilityController controls an object's triggered abilities: its
-// controller, or the active player for monster cards ("you" on a monster
-// card is the active player, R-CARD-10).
+// controller, or the active player for monster and room cards ("you" on
+// them is the active player, R-CARD-10, R-CARD-36).
 func (g *Game) abilityController(id ObjectID) PlayerID {
 	o := g.Object(id)
 	if o.Controller != NoPlayer {
 		return o.Controller
 	}
-	if k := g.kindOf(id); k == MonsterCard || k == EventCard {
+	if k := g.kindOf(id); k == MonsterCard || k == EventCard || k == RoomCard { // R-CARD-36
 		return g.Turn.Active
 	}
 	return NoPlayer

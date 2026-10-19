@@ -7,7 +7,7 @@ describe('sets', () => {
     expect(setName('zz')).toBe('zz');
   });
   it('sorts by release, unknown last', () => {
-    expect(sortSets(['zz', 'fsp2', 'b2', 'g2'])).toEqual(['b2', 'g2', 'fsp2', 'zz']);
+    expect(sortSets(['zz', 'r', 'fsp2', 'b2', 'g2'])).toEqual(['b2', 'g2', 'fsp2', 'r', 'zz']);
   });
   it('lists names for the game list', () => {
     expect(setList(['fsp2', 'b2'])).toBe('Base Game, Four Souls+');

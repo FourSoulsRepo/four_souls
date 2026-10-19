@@ -10,21 +10,23 @@ ROOT := $(CURDIR)
 
 # Fuzzing (docs/wiki/Fuzzing.md): how long to fuzz, how long to shrink a
 # failing input, which cards fuzz-focused keeps in play (comma-separated;
-# empty: the test's own list), how many games sims plays.
+# empty: the test's own list), how many games sims plays, which set
+# codes fuzz-new plays with (comma-separated; empty: all).
 FUZZTIME ?= 10m
 MINIMIZE ?= 5s
 FOCUS ?=
 SIMS ?= 3000
+SETS ?=
 
 .DEFAULT_GOAL := help
-.PHONY: help test vet build wasm lint frontend e2e e2e-games screenshots internal fuzz fuzz-engine fuzz-focused fuzz-sets sims
+.PHONY: help test vet build wasm lint frontend e2e e2e-games screenshots internal fuzz fuzz-engine fuzz-focused fuzz-sets fuzz-new sims
 
 help: ## Show this help
 	@echo "Usage: make <target> [VAR=value]"
 	@echo
 	@awk 'BEGIN {FS = ":.*## "} /^[a-z0-9-]+:.*## / {printf "  %-14s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 	@echo
-	@echo "Variables: TAGS, GOLANGCI, PLATFORM, FUZZTIME=$(FUZZTIME), MINIMIZE=$(MINIMIZE), FOCUS=$(FOCUS), SIMS=$(SIMS)"
+	@echo "Variables: TAGS, GOLANGCI, PLATFORM, FUZZTIME=$(FUZZTIME), MINIMIZE=$(MINIMIZE), FOCUS=$(FOCUS), SIMS=$(SIMS), SETS=$(SETS)"
 
 test: ## Run tests in every Go module, plus embed mode
 	@for m in $(MODULES); do (cd $$m && go test -tags "$(TAGS)" ./... && go test -tags "$(TAGS) embed" ./...) || exit 1; done
@@ -84,6 +86,9 @@ fuzz-focused: ## Fuzz with FOCUS cards in every play area (FuzzFocused)
 
 fuzz-sets: ## Fuzz with every real card set (FuzzSets)
 	@cd pkg/rules_engine && go test -run '^$$' -fuzz=FuzzSets -fuzztime=$(FUZZTIME) -fuzzminimizetime=$(MINIMIZE) ./cards/
+
+fuzz-new: ## Fuzz with only the SETS card sets, rooms mostly on (FuzzFocusedSets)
+	@cd pkg/rules_engine && FOUR_SOULS_SETS=$(SETS) go test -run '^$$' -fuzz=FuzzFocusedSets -fuzztime=$(FUZZTIME) -fuzzminimizetime=$(MINIMIZE) ./cards/
 
 sims: ## Play SIMS whole random games with the real sets
 	@cd pkg/rules_engine && FOUR_SOULS_SIMS=$(SIMS) go test -count=1 -timeout 60m -run '^TestSimulations$$' -v ./cards/

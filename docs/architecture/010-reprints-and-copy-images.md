@@ -49,6 +49,7 @@ Use options 1 and 4; images become a list.
    4. `b2` 1 (2018-12), `g2` 2 (2018-12), `fsp2` 3 (2019-06).
    5. Base Game comes before Gold Box, its add-on.
    6. The loader reads sets in this order.
+   7. `r` 4 (2022-10): Requiem, shipped to backers in fall 2022.
 2. Images
    1. `images` replaces `image`.
    2. One path: every copy shows it.
@@ -56,6 +57,8 @@ Use options 1 and 4; images become a list.
    4. Other counts are a load error.
    5. Copy files: `<id>.webp`, `<id>-2.webp`, `<id>-3.webp`, …
    6. File names come from the site slug, inside the set folder.
+   7. One card listed twice by the site is one card with both images.
+   8. Example: Requiem's `r-eden` and `r-eden_2`.
 3. Reprints
    1. Same type, name, stats and effects as a card of an older set.
    2. Case and a final period do not count ("Gain 5¢" = "Gain 5¢.").
@@ -70,6 +73,11 @@ Use options 1 and 4; images become a list.
    2. `Card.Prints` lists them: own set first, then reprints.
    3. Each copy will keep its image index for display (14.5).
    4. The engine counts them: `CardSet.Reprints` (14.3); copy images are 14.5.
+   5. A reprint of a non-Base-Game card names its set: `Reprint.From`.
+   6. Without that set the engine borrows the definition only.
+   7. The card then has only the reprints' copies.
+   8. Example: Requiem's A Sack is a Gold Box card.
+   9. With deck ratios (GS-07) these copies are the pool each group picks from.
 6. Sources
    1. Copies per card: the official TTS table.
    2. Copy images: the numbered copy pages on foursouls.com.

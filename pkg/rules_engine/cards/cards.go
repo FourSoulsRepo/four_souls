@@ -9,11 +9,12 @@ import (
 	"github.com/FourSoulsRepo/rules_engine/cards/b2"
 	"github.com/FourSoulsRepo/rules_engine/cards/fsp2"
 	"github.com/FourSoulsRepo/rules_engine/cards/g2"
+	"github.com/FourSoulsRepo/rules_engine/cards/r"
 )
 
 // Sets returns every known set, in a fixed order.
 func Sets() []engine.CardSet {
-	return []engine.CardSet{b2.Set, g2.Set, fsp2.Set}
+	return []engine.CardSet{b2.Set, g2.Set, fsp2.Set, r.Set}
 }
 
 // Find returns the set with the given code, e.g. "b2".

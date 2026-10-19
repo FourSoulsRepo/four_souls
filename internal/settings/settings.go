@@ -49,6 +49,7 @@ type HostSetup struct {
 	Detailed      bool     `json:"detailed"`
 	ResponseTimer int      `json:"response_timer"` // seconds, one of ResponseTimers
 	NoBonusSouls  bool     `json:"no_bonus_souls"`
+	NoDeckRatios  bool     `json:"no_deck_ratios"`
 }
 
 // ResponseTimers are the host screen's response timer choices; 0 is off.

@@ -98,6 +98,10 @@ export function optionsText(o: Options | undefined): string {
   if (o?.no_bonus_souls) {
     parts.push('no bonus souls');
   }
+  // The server turns the deck ratios off when the sets are too small.
+  if (o && !o.no_deck_ratios) {
+    parts.push('deck ratios');
+  }
   return parts.join(' · ');
 }
 

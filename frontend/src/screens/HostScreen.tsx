@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getCardSets } from '../bridge';
+import { deckRatiosBlocked, getCardSets } from '../bridge';
 import type { Options } from '../protocol';
 import { baseGame, setName, sortSets } from '../sets';
 import { useApp } from '../store';
@@ -31,12 +31,15 @@ export function HostScreen() {
     ...simple,
     response_timer: last.response_timer,
     no_bonus_souls: last.no_bonus_souls,
+    no_deck_ratios: last.no_deck_ratios,
   });
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
   // available are the sets this app has; chosen always holds the Base Game.
   const [available, setAvailable] = useState<string[]>([baseGame]);
   const [chosen, setChosen] = useState<string[]>([baseGame]);
+  // blocked says why the deck ratios can't be used; null while unknown.
+  const [blocked, setBlocked] = useState<string | null>(null);
 
   useEffect(() => {
     void getCardSets().then((sets) => {
@@ -47,6 +50,19 @@ export function HostScreen() {
       setChosen(kept.includes(baseGame) ? kept : [baseGame, ...kept]);
     });
   }, [last.sets]);
+
+  // The deck ratios need enough cards in each group (GS-07).
+  useEffect(() => {
+    let live = true;
+    void deckRatiosBlocked(chosen, seats).then((why) => {
+      if (live) {
+        setBlocked(why);
+      }
+    });
+    return () => {
+      live = false;
+    };
+  }, [chosen, seats]);
 
   const option = (o: Options) => {
     setOptions({ ...options, ...o });
@@ -73,6 +89,7 @@ export function HostScreen() {
                   detailed,
                   response_timer: options.response_timer ?? 0,
                   no_bonus_souls: options.no_bonus_souls ?? false,
+                  no_deck_ratios: options.no_deck_ratios ?? false,
                 },
               });
               const game = { seats, sets: chosen, options: detailed ? options : undefined, password: password || undefined };
@@ -180,6 +197,19 @@ export function HostScreen() {
                 }}
               />
               Bonus souls
+            </label>
+            {/* Off and locked when the sets are too small; the tooltip
+                names the short groups. */}
+            <label className="check" title={blocked ?? undefined}>
+              <input
+                type="checkbox"
+                checked={blocked === '' && !options.no_deck_ratios}
+                disabled={blocked !== ''}
+                onChange={(e) => {
+                  option({ no_deck_ratios: !e.target.checked });
+                }}
+              />
+              Deck ratios
             </label>
           </>
         )}

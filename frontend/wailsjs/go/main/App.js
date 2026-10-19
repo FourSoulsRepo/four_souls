@@ -14,6 +14,10 @@ export function Cards() {
   return window['go']['main']['App']['Cards']();
 }
 
+export function DeckRatios(arg1, arg2) {
+  return window['go']['main']['App']['DeckRatios'](arg1, arg2);
+}
+
 export function Dice() {
   return window['go']['main']['App']['Dice']();
 }

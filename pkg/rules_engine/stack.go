@@ -46,6 +46,8 @@ type StackItem struct {
 	EventObject ObjectID `json:"event_object,omitempty"`
 	// EventSource is what caused the event, e.g. the monster that dealt damage.
 	EventSource ObjectID `json:"event_source,omitempty"`
+	// EventBy is the player who dealt the damage, plus 1 (Event.By).
+	EventBy int `json:"event_by,omitempty"`
 	// Reward is a roll reward's kind + 1: the result is how much is gained.
 	Reward int `json:"reward,omitempty"`
 	// Checked is the roll value (+1) that "would roll" triggers last saw
@@ -77,6 +79,11 @@ func (g *Game) push(it StackItem) int {
 	}
 	g.StackSeq++
 	it.ID = g.StackSeq
+	if it.Kind == StackRoll && it.Controller != NoPlayer && it.Roll == 0 && len(g.ManyDice) == 0 && g.bonus(StatTwoDiceLeftChooses, NoPlayer, 0) > 0 {
+		// "If a player would roll a dice, they instead roll 2 dice. The
+		// player to their left chooses one of the rolls as the result."
+		g.ManyDice = append(g.ManyDice, ManyDice{Chooser: g.next(it.Controller), Dice: 2})
+	}
 	if it.Kind == StackRoll && it.Controller != NoPlayer && len(g.ManyDice) > 0 && g.ManyDice[0].StackID == 0 {
 		// "They instead roll 4 dice. You choose one of the rolls." The
 		// dice are drawn with the throw.
@@ -92,13 +99,13 @@ func (g *Game) push(it StackItem) int {
 	// "Would take damage" and "would die" triggers look at these.
 	switch it.Kind { //nolint:exhaustive // only damage and death have "would" triggers
 	case StackDamage:
-		e := Event{Kind: EvDamagePending, Player: it.Target.player(), Object: it.Target.Object, Amount: it.Amount}
+		e := Event{Kind: EvDamagePending, Player: it.Target.player(), Object: it.Target.Object, Amount: it.Amount, StackID: it.ID, Source: it.Source}
 		if it.Attack {
 			e.Text = "combat" // as on the damaged event
 		}
 		g.emit(e)
 	case StackDeath:
-		g.emit(Event{Kind: EvDeathPending, Player: it.Target.player(), Object: it.Target.Object})
+		g.emit(Event{Kind: EvDeathPending, Player: it.Target.player(), Object: it.Target.Object, StackID: it.ID})
 	}
 	start := it.Controller
 	if start == NoPlayer {
@@ -159,6 +166,9 @@ func (g *Game) resolveTop() {
 				bonus += g.useNextAttackRoll(it.Controller)
 			}
 			it.Roll = min(max(it.Roll+bonus, 1), 6)
+			if (it.Roll == 2 || it.Roll == 3) && g.bonus(StatRollToOne, NoPlayer, 0) > 0 {
+				it.Roll = 1 // a replacement as the roll resolves (R-DICE-12)
+			}
 		}
 		re := Event{Kind: EvRollResolved, Player: it.Controller, Amount: it.Roll}
 		if it.Attack {
@@ -190,7 +200,7 @@ func (g *Game) resolveTop() {
 			g.push(StackItem{
 				Kind: StackTrigger, Controller: it.Controller, Source: it.Source, Card: it.RollFor.Card,
 				Ability: it.RollFor, Mode: it.Mode, Targets: it.Targets, RollResult: it.Roll, Label: "roll result",
-				EventPlayer: it.EventPlayer, EventAmount: it.EventAmount, EventStack: it.EventStack, EventObject: it.EventObject, EventSource: it.EventSource,
+				EventPlayer: it.EventPlayer, EventAmount: it.EventAmount, EventStack: it.EventStack, EventObject: it.EventObject, EventSource: it.EventSource, EventBy: it.EventBy,
 			})
 		}
 	case StackDamage:
@@ -265,7 +275,7 @@ func (g *Game) throwDie(t Throw) {
 		text = "reroll"
 	}
 	r, p := it.Roll, it.Controller
-	if !t.Reroll && len(g.ManyDice) > 0 && g.ManyDice[0].StackID == t.StackID && g.ManyDice[0].Values == nil {
+	if len(g.ManyDice) > 0 && g.ManyDice[0].StackID == t.StackID && g.ManyDice[0].Values == nil {
 		md := &g.ManyDice[0]
 		md.Values = []int{r}
 		for range md.Dice - 1 {
@@ -282,6 +292,7 @@ func (g *Game) playLoot(p PlayerID, id ObjectID) {
 	g.useLootPlay(p)
 	nid := g.move(id, Zone{Kind: ZoneStack}, p)
 	card := g.Object(nid).Card
+	g.Players[p].LootPlayed++
 	g.emit(Event{Kind: EvLootPlayed, Player: p, Object: nid, Card: card})
 	g.push(StackItem{Kind: StackLoot, Controller: p, Source: nid, Card: card})
 }
@@ -322,6 +333,7 @@ func (g *Game) trinketToPlay(p PlayerID, id ObjectID) {
 	nid := g.move(id, Zone{Kind: ZoneInPlay}, p)
 	g.enterAsItem(p, nid)
 	g.emit(Event{Kind: EvEnteredPlay, Player: p, Object: nid, Card: g.Object(nid).Card})
+	g.emit(Event{Kind: EvGainedItem, Player: p, Object: nid, Card: g.Object(nid).Card})
 }
 
 // CancelStackItem removes an item from the stack without resolving it;
@@ -417,4 +429,15 @@ func (g *Game) useNextAttackRoll(p PlayerID) int {
 	}
 	g.Boosts = kept
 	return total
+}
+
+// RerollWithDice rerolls a roll on the stack with several dice; chooser
+// picks the result ("Its controller rerolls it, but rolls 2 dice
+// instead. … That player chooses one of the rolls": Classic Roller).
+func (g *Game) RerollWithDice(stackID, dice int, chooser PlayerID) {
+	if _, ok := g.StackItemByID(stackID); !ok {
+		return
+	}
+	g.ManyDice = append([]ManyDice{{Chooser: chooser, Dice: dice, StackID: stackID}}, g.ManyDice...)
+	g.Reroll(stackID)
 }

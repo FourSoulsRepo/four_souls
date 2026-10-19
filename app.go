@@ -6,12 +6,15 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strconv"
+	"strings"
 
 	"github.com/FourSoulsRepo/four_souls/internal/assets"
 	"github.com/FourSoulsRepo/four_souls/internal/instance"
 	"github.com/FourSoulsRepo/four_souls/internal/legal"
 	"github.com/FourSoulsRepo/four_souls/internal/settings"
 	"github.com/FourSoulsRepo/four_souls/internal/version"
+	engine "github.com/FourSoulsRepo/rules_engine"
 	"github.com/FourSoulsRepo/rules_engine/cards"
 )
 
@@ -76,4 +79,28 @@ func (a *App) CardSets() []string {
 		codes = append(codes, s.Code)
 	}
 	return codes
+}
+
+// DeckRatios says why a game with these sets and players can't use the
+// deck ratios, or "" when it can (GS-07). The host screen shows it as
+// the reason the box is off.
+func (a *App) DeckRatios(sets []string, players int) string {
+	s := engine.Setup{Players: players}
+	for _, code := range sets {
+		if set, ok := cards.Find(code); ok {
+			s.Sets = append(s.Sets, set)
+		}
+	}
+	short, err := engine.RatioShortfall(s)
+	if err != nil {
+		return err.Error()
+	}
+	if len(short) == 0 {
+		return ""
+	}
+	parts := make([]string, len(short))
+	for i, sh := range short {
+		parts[i] = sh.String()
+	}
+	return "Too few cards in these sets for " + strconv.Itoa(players) + " players: " + strings.Join(parts, ", ") + "."
 }

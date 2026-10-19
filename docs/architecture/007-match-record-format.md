@@ -46,6 +46,7 @@ Use options 1 and 5.
    5. Rejected intents are never recorded (RP-03).
    6. Last an `end` line: finished or not, winners.
    7. A saved game loaded again adds a gzip part with a `resume` line (N-11).
+   8. The setup also says `deck_ratios` when the ratios built the decks (GS-07).
 3. Writing
    1. Each line is flushed: a crash leaves a readable record without `end`.
    2. A server that stops writes `end` with finished false (RP-08).

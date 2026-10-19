@@ -809,6 +809,10 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    2. A reprint in a newer set adds its copies to the same card.
    3. With Base Game and Gold Box, all copies of both go into the deck.
    4. Sets are ordered by release date, oldest first.
+13. CD-13. Magic Marker changes any number in a card's text (future).
+   1. Each card lists the numbers it may change.
+   2. Until then only numbers in common blocks count (Q-14).
+   3. Owner, 2026-10-19: a task for later.
 
 ## Build
 

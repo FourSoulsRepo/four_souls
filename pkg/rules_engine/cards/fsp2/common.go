@@ -33,6 +33,9 @@ var (
 
 	forcedDiscardQuestions = cardkit.ForcedDiscardQuestions
 	onYourAttackRollOf     = cardkit.OnYourAttackRollOf
+	itemsOf                = cardkit.ItemsOf
+	freeSlots              = cardkit.FreeSlots
+	lookMayDiscard         = cardkit.LookMayDiscard
 )
 
 // whenAnotherPlayerDies triggers each time another player dies.
@@ -59,22 +62,6 @@ func reorderADeck(n int) engine.Effect {
 			return c.G.DeckTop(c.Deck(a[0]), n)
 		},
 	})
-}
-
-// itemsOf lists the items p controls, or every player's for NoPlayer.
-func itemsOf(g *engine.Game, p engine.PlayerID) []engine.ObjectID {
-	var out []engine.ObjectID
-	for _, pl := range g.Players {
-		if p != engine.NoPlayer && pl.ID != p {
-			continue
-		}
-		for _, id := range pl.InPlay {
-			if g.Object(id).Role == engine.RoleItem {
-				out = append(out, id)
-			}
-		}
-	}
-	return out
 }
 
 // rerollAnItem is "Reroll an item" (yours only, if set), picked on
@@ -298,9 +285,7 @@ var giveLootThenPlay = engine.Ask(func(c *engine.Ctx, a []int) {
 // then an item, both of their choice.
 var divorce = engine.EffectFunc(func(c *engine.Ctx) {
 	from := c.Targets[0].Player
-	n := c.G.Players[from].Cents / 2
-	c.G.Players[from].Cents -= n
-	c.G.Players[c.Controller].Cents += n
+	c.G.GiveCents(from, c.Controller, c.G.Players[from].Cents/2)
 	cards := len(c.G.Players[from].Hand) / 2
 	qs := make([]engine.Question, 0, cards+1)
 	for range cards {
@@ -403,31 +388,6 @@ func chargedItems(g *engine.Game) []engine.ObjectID {
 	}
 	return out
 }
-
-// lookMayDiscard is "Look at the top card of a deck. You may put it into
-// discard or put it back on top".
-var lookMayDiscard = engine.Ask(func(c *engine.Ctx, a []int) {
-	if a[0] < 0 {
-		return
-	}
-	d := c.Deck(a[0])
-	c.G.LookAt(c.Controller, c.G.DeckTop(d, 1)...)
-	if a[1] == 1 {
-		c.G.MillTop(d)
-	}
-}, engine.DeckQuestion("Look at the top card of which deck?"), engine.Question{
-	Text: "Put it into discard?",
-	Subject: func(c *engine.Ctx, a []int) engine.ObjectID {
-		return c.G.DeckTop(c.Deck(a[0]), 1)[0]
-	},
-	Options: func(c *engine.Ctx, a []int) []string {
-		if a[0] < 0 || len(c.G.DeckTop(c.Deck(a[0]), 1)) == 0 {
-			return nil
-		}
-		card := string(c.G.Object(c.G.DeckTop(c.Deck(a[0]), 1)[0]).Card)
-		return []string{"keep " + card + " on top", "put " + card + " into discard"}
-	},
-})
 
 // storeRoll keeps the roll's result for Telepathy for Dummies.
 func storeRoll() engine.RollTable {
@@ -605,14 +565,3 @@ var revealTwoBosses = engine.EffectFunc(func(c *engine.Ctx) {
 		c.G.ForceAttacks(1, false)
 	}, qs...))
 })
-
-// freeSlots lists monster slots whose monster is not being attacked.
-func freeSlots(g *engine.Game) []int {
-	var out []int
-	for i, s := range g.Monsters {
-		if top, ok := s.TopOf(); !ok || !g.Attack.On || top != g.Attack.Target {
-			out = append(out, i)
-		}
-	}
-	return out
-}

@@ -49,3 +49,6 @@ Sources: S-OFF Abilities, Effects; S-RU Способности, Эффекты.
 34. **R-ABIL-34** A target that changes controller but stays in its zone is still the same target; the ability acts on it under its new controller (S-YUG).
 35. **R-ABIL-35** A dead player can't be chosen as a target while a living player could be; with no living choice, the dead may be chosen. Untargeted effects still reach the dead (S-YUG, Q-07).
 36. **R-ABIL-36** Wording matters: "loot double that number" doubles once, however many uses are active; Two of Clubs doesn't stack (S-RU FAQ, Q-09).
+37. **R-ABIL-37** *(Requiem)* "Up to N" includes zero (S-YUG: Rag Mega).
+38. **R-ABIL-38** *(Requiem)* **Gaining abilities** (Glitch, Golden Trinket) keeps the object's own abilities, Eternal too; a gained "Destroy this. If you do" does nothing on an eternal object (S-YUG).
+39. **R-ABIL-39** *(Requiem, engine limit)* **Magic Marker** changes only numbers the engine knows: loot N, gain N¢, deal N damage, and roll results in a roll table (owner, Q-14).

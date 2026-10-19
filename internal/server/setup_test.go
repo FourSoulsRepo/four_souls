@@ -213,3 +213,68 @@ func TestOptionChecks(t *testing.T) {
 		}
 	}
 }
+
+// GS-07: deck ratios are on by default when the sets have the cards for
+// them, off with too few cards or when the host turns them off; the
+// record keeps whether a game used them.
+func TestDeckRatiosOption(t *testing.T) {
+	dir := t.TempDir()
+	h := NewHub()
+	h.records = dir
+	ctx, cancel := context.WithCancel(context.Background())
+	stopped := make(chan struct{})
+	go func() { h.Run(ctx); close(stopped) }()
+	all := []string{"b2", "g2", "fsp2", "r"}
+	hello := func(name string) *player {
+		p := &player{t: t, conn: newMemConn()}
+		p.c = h.Connect(p.conn)
+		p.say(protocol.TypeHello, protocol.Hello{Protocol: protocol.Version, Name: name, Role: protocol.RolePlayer, Sets: all})
+		p.next(protocol.TypeWelcome, nil)
+		return p
+	}
+	for name, c := range map[string]struct {
+		sets []string
+		opts *protocol.Options
+		off  bool
+	}{
+		"every set":        {sets: all},
+		"Base Game only":   {sets: []string{"b2"}, off: true},
+		"turned off":       {sets: all, opts: &protocol.Options{NoDeckRatios: true}, off: true},
+		"detailed, on":     {sets: all, opts: &protocol.Options{}},
+		"too few for 2":    {sets: []string{"b2", "r"}, opts: &protocol.Options{}, off: true},
+		"bans make it few": {sets: all, opts: &protocol.Options{HostBans: []engine.CardRef{"lost_soul"}}, off: true},
+	} {
+		p := hello("Ann")
+		p.say(protocol.TypeCreate, protocol.Create{Seats: 2, Sets: c.sets, Options: c.opts})
+		var tb protocol.Table
+		p.next(protocol.TypeTable, &tb)
+		if tb.Options == nil || tb.Options.NoDeckRatios != c.off {
+			t.Errorf("%s: options %+v, want no_deck_ratios %v", name, tb.Options, c.off)
+		}
+	}
+
+	host := hello("Bo")
+	host.say(protocol.TypeCreate, protocol.Create{Seats: 2, Sets: all})
+	var tb protocol.Table
+	host.next(protocol.TypeTable, &tb)
+	guest := hello("Cy")
+	guest.say(protocol.TypeJoin, protocol.Join{Game: tb.Game})
+	guest.next(protocol.TypeTable, nil)
+	for _, p := range []*player{host, guest} {
+		p.say(protocol.TypeReady, protocol.Ready{Ready: true})
+	}
+	host.next(protocol.TypeUpdate, nil)
+	cancel()
+	<-stopped
+	files, err := filepath.Glob(filepath.Join(dir, "*"+record.Ext))
+	if err != nil || len(files) != 1 {
+		t.Fatalf("records %v, %v", files, err)
+	}
+	rec, err := record.ReadFile(files[0])
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !rec.Header.Setup.DeckRatios {
+		t.Error("the record header lacks deck_ratios")
+	}
+}

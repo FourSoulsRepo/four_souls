@@ -111,10 +111,10 @@ func (g *Game) check(in Intent) error {
 		if w.Kind != PromptPriority || !g.inOpenActionPhase() || in.Player != g.Turn.Active {
 			return refuse("R-TURN-06", "only the active player can end the turn, in the action phase, with an empty stack")
 		}
-		if m := g.Turn.MustAttack; m != 0 && g.attacksLeft() > 0 && g.Object(m).Zone.Kind == ZoneInPlay {
+		if m := g.Turn.MustAttack; m != 0 && g.canAttack(in.Player) && g.Object(m).Zone.Kind == ZoneInPlay {
 			return refuse("R-ABIL-12", "this turn you must attack %s first", g.Object(m).Card)
 		}
-		if g.Turn.MustAttacks > 0 && g.attacksLeft() > 0 {
+		if g.Turn.MustAttacks > 0 && g.canAttack(in.Player) {
 			return refuse("R-ABIL-12", "you must make %d more attacks this turn", g.Turn.MustAttacks)
 		}
 	case IntentDiscard:
@@ -136,6 +136,9 @@ func (g *Game) check(in Intent) error {
 		}
 		if g.lootPlaysFor(in.Player) < 1 {
 			return refuse("R-CARD-08", "no loot play available")
+		}
+		if g.bonus(StatOneLoot, in.Player, 0) > 0 && g.Players[in.Player].LootPlayed > 0 {
+			return refuse("R-ABIL-12", "only one loot card each turn")
 		}
 		if g.locked(in.Player) {
 			return refuse("R-ABIL-12", "the active player's card forbids playing loot on their turn")
@@ -167,6 +170,9 @@ func (g *Game) check(in Intent) error {
 		}
 		if g.attacksLeft() < 1 {
 			return refuse("R-TURN-07", "no attack left this turn")
+		}
+		if tax := g.attackTax(in.Player); tax > g.Players[in.Player].Cents {
+			return refuse("R-ABIL-12", "attacking costs %d¢", tax)
 		}
 	case IntentPurchase:
 		if w.Kind != PromptPriority || !g.inOpenActionPhase() || in.Player != g.Turn.Active {

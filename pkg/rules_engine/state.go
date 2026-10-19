@@ -78,6 +78,7 @@ const (
 	RoleEvent                 // R-CARD-09
 	RoleSoul                  // R-CARD-18
 	RoleCurse                 // R-ABIL-20
+	RoleRoom                  // R-CARD-33
 )
 
 // Object is one card in one zone.
@@ -97,12 +98,39 @@ type Object struct {
 	// copy at the end of the turn.
 	CopyOf       CardRef `json:"copy_of,omitempty"`
 	CopyThisTurn bool    `json:"copy_this_turn,omitempty"`
+	// CopyTillYourTurn ends the copy at the start of its controller's next
+	// turn (Undefined).
+	CopyTillYourTurn bool `json:"copy_till_your_turn,omitempty"`
+	// Gained is a card whose abilities this object has too (R-ABIL-38:
+	// Glitch); GainedTill ends it: GainEndOfTurn or GainTillYourTurn.
+	Gained     CardRef `json:"gained,omitempty"`
+	GainedTill int     `json:"gained_till,omitempty"`
+	// ATKSet, if not 0, is the object's ATK plus 1 ("Its ATK becomes 1":
+	// Hemoptysis).
+	ATKSet int `json:"atk_set,omitempty"`
+	// Flipped: the back face is up (R-MECH-33); the object acts as its
+	// card's Back. Counters, damage and charge stay (R-MECH-53).
+	Flipped bool `json:"flipped,omitempty"`
+	// LostEternal: an effect took Eternal away ("This loses eternal":
+	// Birthright).
+	LostEternal bool `json:"lost_eternal,omitempty"`
+	// NoAbilities: the card "loses all abilities" (a soul made by
+	// BecomeSoul, The Chest). Other treasure souls keep theirs (R-CARD-38).
+	NoAbilities bool `json:"no_abilities,omitempty"`
+	// StartingItem marks a character's starting item (R-CARD-26), also
+	// one picked at the start (Eden).
+	StartingItem bool `json:"starting_item,omitempty"`
+	// Under lists cards put under this object; they are outside the game
+	// (R-ZONE-13: Friendly Ball).
+	Under []ObjectID `json:"under,omitempty"`
 	// KilledBy is who dealt the damage that brought it to 0 HP, plus 1
 	// (0: nobody yet); KilledOn is the attack roll, if it was combat.
 	KilledBy int `json:"killed_by,omitempty"`
 	KilledOn int `json:"killed_on,omitempty"`
 	// DoubleRewards doubles a dying monster's rewards (Dinga).
 	DoubleRewards bool `json:"double_rewards,omitempty"`
+	// ShareRewards also gain a dead card's rewards (Sibling Rivalry).
+	ShareRewards []PlayerID `json:"share_rewards,omitempty"`
 	// HitsThisTurn counts the times it took damage this turn.
 	HitsThisTurn int `json:"hits_this_turn,omitempty"`
 }
@@ -178,6 +206,10 @@ type Player struct {
 	CopyNextLoot bool `json:"copy_next_loot,omitempty"`
 	// SkipTurns: the player skips this many of their next turns (Famine).
 	SkipTurns int `json:"skip_turns,omitempty"`
+	// Activations and LootPlayed count this turn's activated abilities
+	// and loot cards played (Shadow of Famine).
+	Activations int `json:"activations,omitempty"`
+	LootPlayed  int `json:"loot_played,omitempty"`
 	// TimesDamaged counts this turn's damage ("the first time you take
 	// damage each turn").
 	TimesDamaged int `json:"times_damaged,omitempty"`
@@ -246,6 +278,8 @@ type Game struct {
 	Shields []Shield `json:"shields,omitempty"`
 	// Lingering abilities last till end of turn (Linger).
 	Lingering []Lingering `json:"lingering,omitempty"`
+	// Markers change numbers in effect text till end of turn (Magic Marker).
+	Markers []Marker `json:"markers,omitempty"`
 	// ManyDice: the next roll is made with Dice dice and Chooser picks the
 	// result (Mutant Spider, R-DICE-11).
 	ManyDice []ManyDice `json:"many_dice,omitempty"`
@@ -337,7 +371,7 @@ func (g *Game) inPlay() []ObjectID {
 	for _, pl := range g.Players {
 		out = append(out, pl.Character)
 		for _, id := range pl.InPlay {
-			if g.Object(id).Role != RoleSoul {
+			if g.Object(id).Role != RoleSoul || g.soulKeepsAbilities(id) {
 				out = append(out, id)
 			}
 		}
@@ -360,4 +394,38 @@ type ManyDice struct {
 	// Values and StackID are set once the roll is made.
 	Values  []int `json:"values,omitempty"`
 	StackID int   `json:"stack_id,omitempty"`
+}
+
+// soulKeepsAbilities: a treasure that became a soul keeps its abilities
+// unless it says it loses them (R-CARD-38: Experimental Treatment).
+func (g *Game) soulKeepsAbilities(id ObjectID) bool {
+	o := g.Object(id)
+	return o.Role == RoleSoul && !o.NoAbilities && g.kindOf(id) == TreasureCard
+}
+
+// How long a gained card's abilities last (Object.GainedTill).
+const (
+	GainEndOfTurn    = 1
+	GainTillYourTurn = 2
+)
+
+// facesOf lists the cards whose abilities an object has: the card it
+// acts as, then any it gained (R-ABIL-38: Glitch, Golden Trinket).
+func (g *Game) facesOf(id ObjectID) []CardRef {
+	out := []CardRef{g.CardOf(id)}
+	o := g.Object(id)
+	if o.Gained != "" {
+		out = append(out, o.Gained)
+	}
+	if d, ok := g.cards.find(out[0]); ok && d.GainsAbilities != nil {
+		out = append(out, d.GainsAbilities(g, id)...)
+	}
+	return out
+}
+
+// GainAbilities gives an object the abilities of card till the end of
+// this turn, or till the start of its controller's next turn.
+func (g *Game) GainAbilities(id ObjectID, card CardRef, till int) {
+	o := g.Object(id)
+	o.Gained, o.GainedTill = card, till
 }

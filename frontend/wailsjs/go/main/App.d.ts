@@ -12,6 +12,8 @@ export function CardSets():Promise<Array<string>>;
 
 export function Cards():Promise<Array<main.CardInfo>>;
 
+export function DeckRatios(arg1:Array<string>,arg2:number):Promise<string>;
+
 export function Dice():Promise<Array<main.DiceSkin>>;
 
 export function FindGames():Promise<Array<lan.Found>>;

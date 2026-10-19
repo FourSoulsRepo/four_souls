@@ -26,6 +26,17 @@ Ideas: CD-02, GS-07, GS-08, CD-11, A-16, CD-12, V-32, GS-12, GS-13, GS-01.
    8. Every copy now has its own image, Base Game too.
    9. Base Game IDs did not change.
    10. Steps 14.2 and 14.3 for these sets are still open.
+   11. Requiem (`r`): 247 cards, 269 with copies; 2026-10-19.
+   12. **Owner:** Requiem goes through 14.1–14.3 in full; Warp Zone later.
+   13. TTS bag "Requiem"; set order 4, released 2022-10 (ADR 010).
+   14. 12 reprints: Eden, coins, Bomb!, Butter Bean!, and others.
+   15. Tools: two-sided names ("The Enigma/amginE ehT") match TTS.
+   16. Tools: one card listed twice by the site is one card (`r-eden`).
+   17. Overrides from the printed cards: Lunch, Shell Game, Experimental Treatment.
+   18. Overrides: Charmed Dip stats, Charmed Monstro's soul.
+   19. Each other card is checked against its image in 14.3.
+   20. The Harbingers ("Outside Card") has no engine kind yet; 14.3.
+   21. Rooms are printed landscape; the client must show them so.
 
 ### [ ] 14.2 New mechanics
 
@@ -51,6 +62,19 @@ Ideas: CD-02, GS-07, GS-08, CD-11, A-16, CD-12, V-32, GS-12, GS-13, GS-01.
    12. Blocks: attack-roll repeats, roll change once, several dice, stored roll.
    13. Blocks: revealed hands, attack redirect, win by a card, play lock.
    14. Blocks: forced attacks, cents-gain hooks, free loot play, curse giving.
+   15. Requiem: rulings from S-OFF, S-YUG, S-DIS, Reddit, X; 2026-10-19.
+   16. New rules: R-CARD-36 – 40, R-SETUP-16, R-TURN-17 – 19, R-ATK-20 – 24.
+   17. New rules: R-ABIL-37 – 39, R-MECH-53, R-DICE-12.
+   18. **Owner:** the room deck is a host option, off by default (R-SETUP-16).
+   19. **Owner:** Requiem is ticked by default in the host screen.
+   20. **Owner:** Magic Marker changes only common numbers (Q-14, CD-13).
+   21. **Owner:** Requiem's client work goes to 14.13 – 14.15.
+   22. Open for the **Owner**: Q-15 – Q-18; the engine follows the proposals.
+   23. Engine: room deck and slot, the room step, a room's "you".
+   24. Engine: attack a player, attackable items and rooms.
+   25. Engine: extra attack rolls, flip, voting, outside cards.
+   26. **Owner** resolved Q-15 – Q-18 (2026-10-19); Lemegeton as written.
+   27. Spindown Dice follows the Russian print: non-eternal, "if you do" (Q-16).
 
 ### [ ] 14.3 Cards per set
 
@@ -71,6 +95,56 @@ Ideas: CD-02, GS-07, GS-08, CD-11, A-16, CD-12, V-32, GS-12, GS-13, GS-01.
    8. Engine: copy a ↷ ability, several dice, revealed hands, attack redirect.
    9. Engine: win by a card, free loot play, lingering push, damage dealer.
    10. Simulations found two bugs with copies (Placebo, Diplopia); fixed, tested.
+   11. Requiem: 19 loot cards tested; Hagalaz, Broken Remote wait for rooms.
+   12. Golden Trinket waits for "gains abilities" (Glitch); Magic Marker for Q-14.
+   13. Engine: doubled rewards, eternal till end of turn, Rib of Greed's protection.
+   14. Engine: destruction replaced (Bag Lunch), combat flag on damage changes.
+   15. Engine: a reprint borrows its card from a set not in the game (ADR 010).
+   16. Engine: the D10 fix 19.22 copied from step 15; identical lines.
+   17. Requiem: 27 active, paid, one-use and soul treasures tested; Red Key waits for rooms.
+   18. Engine: copies till your next turn, lost eternal, cards under an item, a gained-item event.
+   19. Engine: Car Battery's recharge rule, cheaper $ costs, a 2-or-3-to-1 roll replacement.
+   20. Engine: a character replaced from outside the game (The Clicker, Q-18).
+   21. Engine: a treasure soul keeps its abilities unless it loses them (R-CARD-38).
+   22. Purchases from the treasure deck now emit "purchased" too; shop steals are "stolen".
+   23. **Owner:** Berkano and Spindown Dice steal only if the item was destroyed (Q-16, Q-19).
+   24. Requiem: 23 passive treasures tested; Backstabber, Punching Bag wait for attacks.
+   25. Engine: statics with a computed amount; level counters by name.
+   26. Engine: buying the treasure deck's top is a treasure gain; Damocles applies (S-YUG).
+   27. Engine: attacks on players and on attackable items and rooms (R-ATK-20, R-MECH-04).
+   28. Engine: helpers' attack rolls (R-ATK-21), rewards to the killer, Indomitable (R-ABIL-23).
+   29. Requiem: Backstabber, Punching Bag, The Siren, Mega Satan, Ultra Greed, Sisters Vis tested.
+   30. Requiem: Sibling Rivalry, Lust for Blood tested; Backstabber's DC fixed by an override.
+   31. Requiem: 23 basic, cursed, holy and charmed monsters tested.
+   32. Engine: attack rolls counted per attack (Null), two dice for every roll (Cursed Lil Haunt).
+   33. Engine: AskWithRoll, a roll made after a question finds its result table.
+   34. Every Requiem card has its own test file, as the status report counts them.
+   35. Requiem: 11 bosses, 8 events and 4 curses tested; Dogma waits for flip.
+   36. Engine: "can't gain souls" checked everywhere a soul is gained; a curse passed on.
+   37. Engine: an attack cancelled after combat damage; pending damage names its stack item.
+   38. Card tests draw plain cards first (Clotty, Book of Sin): no test depends on the deal.
+   39. Engine: two-sided cards flip; the back face is its own definition (R-MECH-33).
+   40. Back faces: The Revenant, amginE ehT, The Beast!, checked against foursouls.ru images.
+   41. Requiem: Anima Sola, The Enigma, Flip, The Harbingers, Dogma tested.
+   42. Requiem: 19 characters and 17 eternal items tested.
+   43. Engine: gained abilities (Glitch); rerolls with 2 dice (Classic Roller); ATK set (Hemoptysis).
+   44. Engine: triggered abilities as targets (Dead Weight); the penalty's ¢ loss marked (Soulbond).
+   45. Requiem: Golden Trinket and the 5 bonus souls tested.
+   46. Engine: active bonus souls trigger and take counters outside the game.
+   47. Engine: the room deck as a setup option, one room slot, the room step after hand size.
+   48. Engine: the active player controls rooms and uses their $ abilities (R-CARD-36).
+   49. Requiem: 37 rooms tested (statics, turn triggers, $ rooms, Dice Rooms).
+   50. **Owner:** Social Goals counts every player's progress (Q-20); Pity for the Poor makes every purchase free (Q-21).
+   51. Engine: giving ¢, killing a player, attack tax, one ability and one loot a turn, rooms kept in play.
+   52. Requiem: the other 20 rooms tested, Gus included.
+   53. Engine: Magic Marker numbers (R-ABIL-39); a room from the deck onto a room slot.
+   54. Requiem: Hagalaz, Broken Remote, Red Key and Magic Marker tested; the report is 235/235.
+   55. Requiem registered in `cards.Sets()` and named in the host screen; new hosts get it ticked.
+   56. FuzzSets and the simulations turn the room deck on in some games.
+   57. Fix from the simulations: a player who can't pay Tax for the Mighty may end the turn.
+   58. card_db: Betrayal! and The Harbingers have no reward box (site icons, back face's souls).
+   59. New `make fuzz-new SETS=b2,r` (FuzzFocusedSets): fuzz a new set with the Base Game.
+   60. Checks: 3000 simulations, 15 min of `fuzz-new SETS=b2,r` (9590 games), `make e2e`.
 
 ### [ ] 14.4 Setup options
 
@@ -83,6 +157,21 @@ Ideas: CD-02, GS-07, GS-08, CD-11, A-16, CD-12, V-32, GS-12, GS-13, GS-01.
    5. The deck takes every chosen set's copies of a card (ADR 010).
 3. Done when:
    1. Each option has a server test and a use case.
+4. Progress (owner's jump ahead, 2026-10-19):
+   1. Deck ratios (GS-07) done; Bonus Souls, Rooms, GS-08 still open.
+   2. Ratios from S-OFF Deck Ratios: 100 cards a deck (R-SETUP-17).
+   3. Groups are the site's card types; cardgen writes `CardSet.Groups`.
+   4. `engine.Setup.DeckRatios` picks each group's count at random.
+   5. `engine.RatioShortfall` names the groups short of cards.
+   6. 2 players drop 3+ cards, so a few set mixes fit 3 players only.
+   7. **Owner:** on by default; the host screen locks the box when short.
+   8. The tooltip names the short groups; binding `App.DeckRatios`.
+   9. Protocol `no_deck_ratios`; the server sets it when the sets are short.
+   10. Only all four sets fit 2 players today; Base Game alone does not.
+   11. The record header has `deck_ratios`; the table shows "deck ratios".
+   12. A-16 holds: the client still gets whole sets, never the dealt decks.
+   13. FuzzSets and the simulations turn the ratios on in some games.
+   14. Use case UC-20; tests `TestDeckRatios`, `TestDeckRatiosOption`, e2e.
 
 ### [ ] 14.5 Copy art on the table
 
@@ -232,3 +321,42 @@ Alt art (CD-11) comes after all sets.
    1. e2e test: ban a card in the host screen; it is in no deck.
    2. e2e test: the table shows the ban list to every player.
    3. Use case for the option.
+
+### [ ] 14.13 Rooms on the table
+
+1. Goal: the room deck plays in the app (Requiem).
+2. Tasks:
+   1. Detailed setup: a "Room deck" checkbox, off by default (R-SETUP-16).
+   2. The checkbox shows only when Requiem is chosen.
+   3. A room row on the table; rooms are landscape cards.
+   4. The active player uses a room's activated abilities.
+   5. The end-phase room step: put a room into discard, or keep it.
+   6. Without card images, rooms show as landscape text cards.
+3. Done when:
+   1. e2e test: host with rooms, use a room, change it in the end phase.
+   2. Use case for rooms; UC-05 updated.
+
+### [ ] 14.14 Attack a player or an item
+
+1. Goal: Requiem's new attack targets work in the app.
+2. Tasks:
+   1. Players are offered as targets when an ability allows it (R-ATK-20).
+   2. Attackable items and rooms are offered too (R-MECH-04).
+   3. Extra attack rolls show whose roll it is (R-ATK-21).
+   4. Aiming works as it does for monsters (15.32).
+3. Done when:
+   1. e2e test: The Siren lets the active player attack a player.
+   2. e2e test: Punching Bag can be attacked.
+   3. UC-13 updated.
+
+### [ ] 14.15 Two-sided cards
+
+1. Goal: a flipped card shows its other face (R-CARD-39).
+2. Tasks:
+   1. card_db: a back face with name, text, stats and image (ADR).
+   2. Tools: the back image from the card page (`r-the_enigma_back`).
+   3. The table shows the face-up side; the zoom shows both.
+   4. The history names the flip.
+3. Done when:
+   1. e2e test: Anima Sola flips to The Revenant and back.
+   2. Use case.

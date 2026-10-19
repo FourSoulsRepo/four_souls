@@ -1,0 +1,80 @@
+{
+  "lunch": {
+    "text": {
+      "en": {
+        "name": "Lunch",
+        "effects": [
+          "+1{HP}"
+        ],
+        "notes": [
+          "\"For I was hungry and you gave me something to eat...\"\n-Matthew 25:35"
+        ]
+      }
+    }
+  },
+  "shell_game": {
+    "text": {
+      "en": {
+        "name": "Shell Game",
+        "effects": [
+          "{Paid Effect}Pay 3¢: roll-\n3: Gain 1¢.\n4: Loot 1.\n5: Gain 5¢.\n6: Gain +1 treasure. Put this into discard."
+        ]
+      }
+    }
+  },
+  "experimental_treatment": {
+    "text": {
+      "en": {
+        "name": "Experimental Treatment",
+        "effects": [
+          "{Paid Effect}Destroy this: roll-\n1: You die.\n2: Loot 3.\n3: Gain 9¢.\n4: Gain +1 treasure.\n5: Gain +2 treasure.\n6: This becomes a soul. Gain it."
+        ]
+      }
+    }
+  },
+  "charmed_dip": {
+    "stats": [
+      {
+        "name": "HP",
+        "value": "1"
+      },
+      {
+        "name": "DC",
+        "value": "4"
+      },
+      {
+        "name": "ATK",
+        "value": "1"
+      }
+    ]
+  },
+  "charmed_monstro": {
+    "rewards": [
+      {
+        "count": "1x",
+        "kind": "Soul"
+      },
+      {
+        "count": "2x",
+        "kind": "Treasure"
+      }
+    ]
+  },
+  "backstabber": {
+    "text": {
+      "en": {
+        "name": "Backstabber",
+        "effects": [
+          "You may attack players who control more souls than you. They have 3+{DC} for the attack.",
+          "Each time you kill a player, loot 1."
+        ]
+      }
+    }
+  },
+  "betrayal": {
+    "rewards": []
+  },
+  "the_harbingers": {
+    "rewards": []
+  }
+}

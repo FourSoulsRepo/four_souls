@@ -2,6 +2,9 @@ package cards
 
 import (
 	"bytes"
+	"os"
+	"slices"
+	"strings"
 	"testing"
 
 	engine "github.com/FourSoulsRepo/rules_engine"
@@ -61,38 +64,69 @@ func FuzzSets(f *testing.F) {
 	f.Add(uint64(5), uint8(2), bytes.Repeat([]byte{1, 0, 3, 2}, 100))
 	f.Add(uint64(9), uint8(1), bytes.Repeat([]byte{0}, 300))
 	f.Fuzz(func(t *testing.T, seed uint64, players uint8, choices []byte) {
-		s := engine.Setup{Seed: seed, Players: 2 + int(players%3), Sets: Sets(), BonusSouls: true}
-		g, _, err := engine.NewGame(s)
-		if err != nil {
-			t.Fatal(err)
-		}
-		var steps []engine.StepRecord
-		for i, c := range choices[:min(len(choices), 2000)] {
-			if g.Over {
-				break
-			}
-			p := g.Prompt()
-			allowed := g.Allowed(p.Player)
-			if len(allowed) == 0 {
-				t.Fatalf("step %d: nothing allowed, prompt %+v", i, p)
-			}
-			in := allowed[int(c)%len(allowed)]
-			if in.Kind == engine.IntentDiscard {
-				in.Objects = in.Objects[:p.Count]
-			}
-			st, err := g.Step(in)
-			if err != nil {
-				t.Fatalf("step %d: allowed %+v refused: %v", i, in, err)
-			}
-			steps = append(steps, st)
-			if err := g.CheckInvariants(); err != nil {
-				t.Fatalf("step %d after %+v: %v", i, in, err)
-			}
-		}
-		if _, err := engine.Replay(s, steps); err != nil {
-			t.Fatalf("replay: %v", err)
-		}
+		playSets(t, engine.Setup{Seed: seed, Players: 2 + int(players%3), Sets: Sets(), BonusSouls: true, Rooms: players&4 != 0, DeckRatios: players&8 != 0}, choices)
 	})
+}
+
+// FuzzFocusedSets is FuzzSets with only the sets named in
+// FOUR_SOULS_SETS (comma-separated codes; empty: all), so a new set's
+// cards come up often. The room deck is on in 3 games of 4. It keeps its
+// own corpus, so a run fuzzes new inputs from the start.
+//
+//	FOUR_SOULS_SETS=b2,r go test -run '^$' -fuzz=FuzzFocusedSets -fuzztime=10m ./cards/
+func FuzzFocusedSets(f *testing.F) {
+	sets := Sets()
+	if env := os.Getenv("FOUR_SOULS_SETS"); env != "" {
+		sets = nil
+		for _, code := range strings.Split(env, ",") {
+			s, ok := Find(strings.TrimSpace(code))
+			if !ok {
+				f.Fatalf("FOUR_SOULS_SETS: unknown set %q", code)
+			}
+			sets = append(sets, s)
+		}
+	}
+	f.Add(uint64(2), uint8(4), bytes.Repeat([]byte{2, 1, 0, 3}, 100))
+	f.Add(uint64(7), uint8(5), bytes.Repeat([]byte{1}, 300))
+	f.Fuzz(func(t *testing.T, seed uint64, players uint8, choices []byte) {
+		playSets(t, engine.Setup{Seed: seed, Players: 2 + int(players%3), Sets: sets, BonusSouls: true, Rooms: players&12 != 0}, choices)
+	})
+}
+
+// playSets plays one fuzz game: every step is an allowed intent, the
+// state stays valid and the game replays exactly.
+func playSets(t *testing.T, s engine.Setup, choices []byte) {
+	t.Helper()
+	g, _, err := engine.NewGame(s)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var steps []engine.StepRecord
+	for i, c := range choices[:min(len(choices), 2000)] {
+		if g.Over {
+			break
+		}
+		p := g.Prompt()
+		allowed := g.Allowed(p.Player)
+		if len(allowed) == 0 {
+			t.Fatalf("step %d: nothing allowed, prompt %+v", i, p)
+		}
+		in := allowed[int(c)%len(allowed)]
+		if in.Kind == engine.IntentDiscard {
+			in.Objects = in.Objects[:p.Count]
+		}
+		st, err := g.Step(in)
+		if err != nil {
+			t.Fatalf("step %d: allowed %+v refused: %v", i, in, err)
+		}
+		steps = append(steps, st)
+		if err := g.CheckInvariants(); err != nil {
+			t.Fatalf("step %d after %+v: %v", i, in, err)
+		}
+	}
+	if _, err := engine.Replay(s, steps); err != nil {
+		t.Fatalf("replay: %v", err)
+	}
 }
 
 // TestStatMonsterBans: with the monsters that change other monsters
@@ -122,5 +156,51 @@ func TestStatMonsterBans(t *testing.T) {
 	}
 	if n := changed(statMonsters); n > 0 {
 		t.Errorf("%d fresh monsters changed with %v banned; a monster is missing from the list", n, statMonsters)
+	}
+}
+
+// TestDeckRatios: with every set the ratios fit for any player count,
+// and each group has its count in the game; the Base Game alone is short
+// (R-SETUP-17, GS-07).
+func TestDeckRatios(t *testing.T) {
+	groups := map[engine.CardRef]engine.RatioGroup{}
+	for _, s := range Sets() {
+		for ref, g := range s.Groups {
+			groups[ref] = g
+		}
+	}
+	for players := 2; players <= 4; players++ {
+		s := engine.Setup{Seed: uint64(players), Players: players, Sets: Sets(), BonusSouls: true, DeckRatios: true}
+		short, err := engine.RatioShortfall(s)
+		if err != nil || short != nil {
+			t.Fatalf("%d players: shortfall %v, %v", players, short, err)
+		}
+		g, _, err := engine.NewGame(s)
+		if err != nil {
+			t.Fatalf("%d players: %v", players, err)
+		}
+		counts := map[engine.RatioGroup]int{}
+		for _, o := range g.Objects {
+			if o.Zone.Kind != engine.ZoneGone && o.Zone.Kind != engine.ZoneOutside {
+				counts[groups[o.Card]]++
+			}
+		}
+		for grp := engine.GroupPassiveItems; grp.Count() > 0; grp++ {
+			if counts[grp] != grp.Count() {
+				t.Errorf("%d players: %s %d cards, want %d", players, grp.Name(), counts[grp], grp.Count())
+			}
+		}
+	}
+	base := engine.Setup{Seed: 1, Players: 2, Sets: []engine.CardSet{b2.Set}, DeckRatios: true}
+	short, err := engine.RatioShortfall(base)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := engine.RatioShort{Group: engine.GroupButterBeans, Have: 3, Need: 5}
+	if !slices.Contains(short, want) {
+		t.Errorf("Base Game shortfall %v lacks %v", short, want)
+	}
+	if _, _, err := engine.NewGame(base); err == nil {
+		t.Error("the Base Game alone started with deck ratios")
 	}
 }

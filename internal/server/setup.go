@@ -86,9 +86,15 @@ func checkOptions(o *protocol.Options, sets []engine.CardSet, players int) error
 	if left < need {
 		return fmt.Errorf("%d characters left after bans; the setup needs %d", left, need)
 	}
+	// Deck ratios are on unless the host turns them off or the sets
+	// have too few cards for them (GS-07).
+	if !o.NoDeckRatios {
+		short, err := engine.RatioShortfall(engine.Setup{Players: players, Sets: sets, Banned: o.HostBans})
+		o.NoDeckRatios = err != nil || len(short) > 0
+	}
 	// Any card of the sets may be banned (GS-13); a trial deal shows the
 	// decks still fill the slots.
-	if _, _, err := engine.NewGame(engine.Setup{Players: players, Sets: sets, Banned: o.HostBans}); err != nil {
+	if _, _, err := engine.NewGame(engine.Setup{Players: players, Sets: sets, Banned: o.HostBans, DeckRatios: !o.NoDeckRatios}); err != nil {
 		return err
 	}
 	return nil

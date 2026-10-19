@@ -55,8 +55,16 @@ type CardDef struct {
 	Outside bool
 	// DamageMod changes damage about to be marked on a target while this
 	// object is in play: "Damage you would take is reduced to 1." It
-	// returns the new amount; 0 prevents it.
-	DamageMod func(g *Game, self ObjectID, t Target, n int) int
+	// returns the new amount; 0 prevents it. combat marks combat damage.
+	DamageMod func(g *Game, self ObjectID, t Target, n int, combat bool) int
+	// OwnRechargeOnly: "This can't be recharged except by its own
+	// abilities" (Car Battery).
+	OwnRechargeOnly bool
+	// InsteadOfDestroy replaces this object's destruction: it does what
+	// the card says instead and returns true, or false to be destroyed
+	// ("If this would be destroyed, if it has no counters on it, put a
+	// counter on it instead": Bag Lunch).
+	InsteadOfDestroy func(g *Game, self ObjectID) bool
 	// EntersDeactivated and EntersWithCounters apply when the item enters
 	// play under a player.
 	EntersDeactivated  bool
@@ -83,6 +91,25 @@ type CardDef struct {
 	CopiesTapOnPlay bool
 	// Unattackable: "This can't be attacked."
 	Unattackable bool
+	// GainsAbilities lists cards whose abilities this object has too:
+	// "This has the abilities of other items with gold counters on them"
+	// (Golden Trinket).
+	GainsAbilities func(g *Game, self ObjectID) []CardRef
+	// Back is the definition of the card's other face (R-MECH-33): a
+	// card defined in the same set with Outside set, never dealt.
+	Back CardRef
+	// Indomitable: it can't be covered; put in a monster slot, it expands
+	// monster slots by 1 and takes the new one (R-ABIL-23).
+	Indomitable bool
+	// NoDiscard: this room can't be put into discard while it returns
+	// true ("till 4 goals are completed": Social Goals).
+	NoDiscard func(g *Game, self ObjectID) bool
+	// Attackable: an item or room that can be attacked, with its own stat
+	// block (R-MECH-04: Punching Bag, Gus; Familiar).
+	Attackable bool
+	// RewardsToKiller: "The player who kills this gains its rewards"
+	// (Ultra Greed); its soul too.
+	RewardsToKiller bool
 	// TakesPenalties: "If another player would pay the death penalty, you
 	// choose what item they would destroy and you gain any loot cards and
 	// ¢ they would lose" (Shadow).
@@ -127,6 +154,8 @@ type CardSet struct {
 	Cards []CardDef
 	// Reprints add this set's copies of cards an older set defines.
 	Reprints []Reprint
+	// Groups are the cards' deck ratio groups (R-SETUP-17).
+	Groups map[CardRef]RatioGroup
 }
 
 // Reprint is a set's copies of a card that an older set defines: the Gold
@@ -134,6 +163,10 @@ type CardSet struct {
 type Reprint struct {
 	Ref    CardRef
 	Copies int
+	// From is the set that defines the card, if not the Base Game. A game
+	// without that set borrows the definition from it; the card then has
+	// only the reprints' copies (ADR 010).
+	From *CardSet
 }
 
 // cardIndex finds definitions by ref. It is rebuilt from the sets and is
@@ -142,6 +175,10 @@ type cardIndex struct {
 	defs  []CardDef
 	byRef map[CardRef]int
 	extra []int // reprinted copies, by index into defs
+	// borrowed marks definitions taken from a set not in the game: they
+	// have no copies of their own (ADR 010).
+	borrowed []bool
+	groups   []RatioGroup // deck ratio group, by index into defs
 }
 
 func newCardIndex(sets ...CardSet) (cardIndex, error) {
@@ -153,6 +190,24 @@ func newCardIndex(sets ...CardSet) (cardIndex, error) {
 			}
 			idx.byRef[d.Ref] = len(idx.defs)
 			idx.defs = append(idx.defs, d)
+			idx.groups = append(idx.groups, s.Groups[d.Ref])
+		}
+	}
+	idx.borrowed = make([]bool, len(idx.defs))
+	for _, s := range sets {
+		for _, r := range s.Reprints {
+			if _, ok := idx.byRef[r.Ref]; ok || r.From == nil {
+				continue
+			}
+			for _, d := range r.From.Cards {
+				if d.Ref == r.Ref {
+					idx.byRef[d.Ref] = len(idx.defs)
+					idx.defs = append(idx.defs, d)
+					idx.borrowed = append(idx.borrowed, true)
+					idx.groups = append(idx.groups, r.From.Groups[d.Ref])
+					break
+				}
+			}
 		}
 	}
 	idx.extra = make([]int, len(idx.defs))
@@ -171,6 +226,9 @@ func newCardIndex(sets ...CardSet) (cardIndex, error) {
 // copies is how many copies of defs[i] the game uses: its own set's and
 // every reprint's (ADR 010).
 func (idx cardIndex) copies(i int) int {
+	if idx.borrowed[i] {
+		return idx.extra[i] // the defining set is not in the game (ADR 010)
+	}
 	return max(idx.defs[i].Copies, 1) + idx.extra[i]
 }
 

@@ -2,6 +2,7 @@
 package cardkit
 
 import (
+	"slices"
 	"strconv"
 
 	engine "github.com/FourSoulsRepo/rules_engine"
@@ -542,3 +543,94 @@ func UsedOn(g *engine.Game, id engine.ObjectID, n int) bool {
 func MarkUsedOn(g *engine.Game, id engine.ObjectID, n int) {
 	g.Boosts = append(g.Boosts, engine.Boost{Stat: engine.StatUsed, Player: engine.NoPlayer, Object: id, Amount: n})
 }
+
+// ItemsOf lists the items p controls, or every player's for NoPlayer.
+func ItemsOf(g *engine.Game, p engine.PlayerID) []engine.ObjectID {
+	var out []engine.ObjectID
+	for _, pl := range g.Players {
+		if p != engine.NoPlayer && pl.ID != p {
+			continue
+		}
+		for _, id := range pl.InPlay {
+			if g.Object(id).Role == engine.RoleItem {
+				out = append(out, id)
+			}
+		}
+	}
+	return out
+}
+
+// FreeSlots lists monster slots whose monster is not being attacked.
+func FreeSlots(g *engine.Game) []int {
+	var out []int
+	for i, s := range g.Monsters {
+		if top, ok := s.TopOf(); !ok || !g.Attack.On || top != g.Attack.Target {
+			out = append(out, i)
+		}
+	}
+	return out
+}
+
+// WhenYouGainThis triggers when the controller gains this item: from the
+// treasure deck, by a purchase, or by a search; not when it is given or
+// stolen (R-MECH-35: "When you gain or purchase this").
+func WhenYouGainThis() engine.Trigger {
+	return engine.Trigger{On: engine.EvGainedItem, Match: func(_ *engine.Game, self engine.ObjectID, e engine.Event) bool {
+		return e.Object == self
+	}}
+}
+
+// WhenAPlayerGainsATreasure triggers when a player gains a treasure: a card
+// from the treasure deck, bought from it too; not a shop item (R-CARD-37).
+func WhenAPlayerGainsATreasure() engine.Trigger {
+	return engine.Trigger{On: engine.EvGainedTreasure, Match: func(_ *engine.Game, _ engine.ObjectID, e engine.Event) bool {
+		return e.Text == "" || e.Text == "searched"
+	}}
+}
+
+// LookMayDiscard is "Look at the top card of a deck. You may put it into
+// discard or put it back on top".
+var LookMayDiscard = engine.Ask(func(c *engine.Ctx, a []int) {
+	if a[0] < 0 {
+		return
+	}
+	d := c.Deck(a[0])
+	c.G.LookAt(c.Controller, c.G.DeckTop(d, 1)...)
+	if a[1] == 1 {
+		c.G.MillTop(d)
+	}
+}, engine.DeckQuestion("Look at the top card of which deck?"), engine.Question{
+	Text: "Put it into discard?",
+	Subject: func(c *engine.Ctx, a []int) engine.ObjectID {
+		return c.G.DeckTop(c.Deck(a[0]), 1)[0]
+	},
+	Options: func(c *engine.Ctx, a []int) []string {
+		if a[0] < 0 || len(c.G.DeckTop(c.Deck(a[0]), 1)) == 0 {
+			return nil
+		}
+		card := string(c.G.Object(c.G.DeckTop(c.Deck(a[0]), 1)[0]).Card)
+		return []string{"keep " + card + " on top", "put " + card + " into discard"}
+	},
+})
+
+// NotAttacked is a target filter: a monster that is not the one being attacked.
+func NotAttacked(g *engine.Game, _ engine.ObjectID, c engine.Chosen) bool {
+	return !g.Attack.On || g.Attack.Target != c.Object
+}
+
+// InShop is a target filter: an item in a shop slot.
+func InShop(g *engine.Game, _ engine.ObjectID, c engine.Chosen) bool {
+	return slices.Contains(g.ShopItems(), c.Object)
+}
+
+// DiscardTarget puts target 0, a monster or a shop item, into discard;
+// its slot is refilled.
+var DiscardTarget = engine.EffectFunc(func(c *engine.Ctx) {
+	id := c.Targets[0].Object
+	if slices.Contains(c.G.ShopItems(), id) {
+		c.G.DiscardShopItem(id) // refills its slot
+		return
+	}
+	c.G.DiscardMonster(id)
+	c.G.RefillSlots()
+})

@@ -12,12 +12,18 @@ type Setup struct {
 	Players    int
 	Sets       []CardSet
 	BonusSouls bool // play with 3 random bonus souls (R-SETUP-06)
+	// Rooms plays with the room deck (R-SETUP-16); without it, room
+	// cards stay out of the game.
+	Rooms bool
 	// Characters, when set, gives seat i the character Characters[i]
 	// instead of a random one (character picks, tests).
 	Characters []CardRef
 	// Banned cards are left out of the game: no copy goes into a deck,
 	// and none is dealt (GS-13).
 	Banned []CardRef
+	// DeckRatios builds the treasure, loot and monster decks from the
+	// official count per group, 100 cards each (R-SETUP-17, GS-07).
+	DeckRatios bool
 }
 
 // Defaults of the official rules.
@@ -59,13 +65,13 @@ func NewGame(s Setup) (*Game, []Event, error) {
 
 	var characters, bonus []CardRef
 	for i, d := range idx.defs {
-		if d.Outside || (d.ThreePlus && s.Players < 3) { // R-CARD-32
-			continue
-		}
-		if slices.Contains(s.Banned, d.Ref) { // GS-13
+		if !inDecks(d, s) {
 			continue
 		}
 		deck, hasDeck := d.Kind.Deck()
+		if hasDeck && s.DeckRatios && d.Kind != RoomCard {
+			continue // added by addRatioDecks
+		}
 		for range idx.copies(i) {
 			switch {
 			case hasDeck:
@@ -77,11 +83,21 @@ func NewGame(s Setup) (*Game, []Event, error) {
 			}
 		}
 	}
+	if s.DeckRatios {
+		if err := g.addRatioDecks(s); err != nil {
+			return nil, nil, err
+		}
+	}
 	for d := range deckCount {
 		g.ShuffleDeck(d) // R-SETUP-01
 	}
 	if err := g.fillSlots(); err != nil {
 		return nil, nil, err
+	}
+	if len(g.Decks[RoomDeck]) > 0 {
+		g.Rooms = append(g.Rooms, Slot{}) // R-SETUP-12
+		id, _ := g.drawTop(RoomDeck)
+		g.putInSlot(id, RoomSlot, 0)
 	}
 	if s.BonusSouls {
 		g.pickBonusSouls(bonus)
@@ -170,9 +186,18 @@ func (g *Game) putInSlot(id ObjectID, kind SlotKind, i int) ObjectID {
 		}
 		g.Monsters[i].Cards = append(g.Monsters[i].Cards, nid)
 	case RoomSlot:
+		o.Role = RoleRoom
+		if g.Turn.Step >= StepEndTriggers {
+			g.Turn.LateRooms = append(g.Turn.LateRooms, nid) // R-TURN-18
+		}
 		g.Rooms[i].Cards = append(g.Rooms[i].Cards, nid)
 	}
 	g.emit(Event{Kind: EvCardRevealed, Player: NoPlayer, Object: nid, Card: o.Card})
+	// A card entering a slot enters play; an event does so in
+	// enterMonsterSlot. Setup cards (turn 0) trigger nothing (19.25).
+	if g.Turn.Number > 0 && o.Role != RoleEvent {
+		g.emit(Event{Kind: EvEnteredPlay, Player: NoPlayer, Object: nid, Card: o.Card})
+	}
 	return nid
 }
 
@@ -214,7 +239,7 @@ func (g *Game) dealCharacters(pool []CardRef, random bool) error {
 		}
 		item := g.newObject(def.StartingItem, Zone{Kind: ZoneInPlay}, p)
 		o := g.Object(item)
-		o.Role, o.Charged = RoleItem, true // starts charged (R-SETUP-08)
+		o.Role, o.Charged, o.StartingItem = RoleItem, true, true // starts charged (R-SETUP-08)
 		g.Players[i].InPlay = append(g.Players[i].InPlay, item)
 	}
 	return nil
@@ -264,7 +289,7 @@ func (g *Game) chooseStartingItem(c Choice, i int) {
 	}
 	nid := g.move(c.Objects[i], Zone{Kind: ZoneInPlay}, c.Player)
 	o := g.Object(nid)
-	o.Role, o.Charged, o.Eternal = RoleItem, true, true
+	o.Role, o.Charged, o.Eternal, o.StartingItem = RoleItem, true, true, true
 	g.Players[c.Player].InPlay = append(g.Players[c.Player].InPlay, nid)
 	g.emit(Event{Kind: EvGainedTreasure, Player: c.Player, Object: nid, Card: o.Card, Text: "starting item"})
 	if len(rest) > 1 {
@@ -303,4 +328,61 @@ func (g *Game) rollForFirst() PlayerID {
 	}
 	g.emit(Event{Kind: EvFirstPlayer, Player: contenders[0]})
 	return contenders[0]
+}
+
+// CharactersOutside lists the character cards outside the game that a
+// player could get: the game's characters with a copy not in play, not
+// banned, and not 3+ in a 2-player game (R-ZONE-15: The Clicker).
+func (g *Game) CharactersOutside() []CardRef {
+	var out []CardRef
+	for i, d := range g.cards.defs {
+		if d.Kind != CharacterCard || d.Outside || g.cards.borrowed[i] || slices.Contains(g.Banned, d.Ref) || (d.ThreePlus && len(g.Players) < 3) {
+			continue
+		}
+		used := 0
+		for _, pl := range g.Players {
+			if g.Object(pl.Character).Card == d.Ref {
+				used++
+			}
+		}
+		if used < g.cards.copies(i) {
+			out = append(out, d.Ref)
+		}
+	}
+	return out
+}
+
+// ReplaceCharacter puts card into play as p's character, charged (Q-18);
+// the old character and p's starting item go outside the game, and the
+// new character's starting item enters play under p (The Clicker).
+// Damage stays with the player (R-MECH-19); counters on the old
+// character go with it (R-MECH-13).
+func (g *Game) ReplaceCharacter(p PlayerID, card CardRef) {
+	if d, ok := g.cards.find(card); !ok || d.Kind != CharacterCard {
+		return
+	}
+	pl := &g.Players[p]
+	old := pl.Character
+	oldItem := g.def(old).StartingItem
+	for _, id := range append([]ObjectID(nil), pl.InPlay...) {
+		o := g.Object(id)
+		if o.Role == RoleItem && (o.StartingItem || (oldItem != "" && o.Card == oldItem)) {
+			pl.InPlay = remove(pl.InPlay, id)
+			g.move(id, Zone{Kind: ZoneOutside}, NoPlayer)
+			g.emit(Event{Kind: EvDiscarded, Player: p, Card: o.Card, Prev: id, Text: "outside the game"})
+		}
+	}
+	g.move(old, Zone{Kind: ZoneOutside}, NoPlayer)
+	ch := g.newObject(card, Zone{Kind: ZoneInPlay}, p)
+	o := g.Object(ch)
+	o.Role, o.Charged = RoleCharacter, true
+	pl.Character = ch
+	g.emit(Event{Kind: EvCharacterDealt, Player: p, Object: ch, Card: card, Prev: old, Text: "replaced"})
+	if item := g.def(ch).StartingItem; item != "" {
+		id := g.newObject(item, Zone{Kind: ZoneInPlay}, p)
+		io := g.Object(id)
+		io.Role, io.Charged, io.StartingItem = RoleItem, true, true
+		pl.InPlay = append(pl.InPlay, id)
+		g.emit(Event{Kind: EvGainedTreasure, Player: p, Object: id, Card: item, Text: "starting item"})
+	}
 }

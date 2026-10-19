@@ -29,8 +29,18 @@ func (g *Game) activatable(p PlayerID, src ObjectID, i int) error {
 		return refuse("R-ABIL-09", "only the controller uses an item's or character's abilities")
 	}
 	o := g.Object(src)
-	if o.Zone.Kind != ZoneInPlay || o.Controller != p || (o.Role != RoleItem && o.Role != RoleCharacter) {
+	if o.Zone.Kind == ZoneInPlay && o.Role == RoleRoom {
+		if p != g.Turn.Active {
+			return refuse("R-CARD-36", "only the active player uses a room's abilities")
+		}
+		if contains(g.Turn.LateRooms, src) {
+			return refuse("R-TURN-18", "a room that entered in the end phase can't be used this turn")
+		}
+	} else if o.Zone.Kind != ZoneInPlay || o.Controller != p || (o.Role != RoleItem && o.Role != RoleCharacter && !g.soulKeepsAbilities(src)) {
 		return refuse("R-ABIL-09", "only the controller uses an item's or character's abilities")
+	}
+	if g.bonus(StatOneAbility, p, 0) > 0 && g.Players[p].Activations > 0 {
+		return refuse("R-ABIL-12", "only one ability each turn")
 	}
 	refs := g.AbilitiesOf(src)
 	if i < 0 || i >= len(refs) || g.ability(refs[i]).Kind != Activated {
@@ -159,6 +169,7 @@ func (g *Game) finishActivation() {
 		g.useLootPlay(a.Player)
 		nid := g.move(a.Source, Zone{Kind: ZoneStack}, a.Player)
 		card := g.Object(nid).Card
+		g.Players[a.Player].LootPlayed++
 		g.emit(Event{Kind: EvLootPlayed, Player: a.Player, Object: nid, Card: card})
 		g.push(StackItem{Kind: StackLoot, Controller: a.Player, Source: nid, Card: card, Ability: a.Ability, Mode: a.Mode, Targets: a.Chosen})
 		if pl := &g.Players[a.Player]; pl.CopyNextLoot && !g.def(nid).Trinket {
@@ -178,6 +189,7 @@ func (g *Game) finishActivation() {
 		}
 		c.pay(g, a.Player, a.Source)
 	}
+	g.Players[a.Player].Activations++
 	g.emit(Event{Kind: EvActivated, Player: a.Player, Object: a.Source, Card: a.Ability.Card, Text: ab.Text})
 	g.push(StackItem{
 		Kind: StackAbility, Controller: a.Player, Source: a.Source, Card: a.Ability.Card,
@@ -250,6 +262,17 @@ func (g *Game) targetOptions(t TargetSpec, p PlayerID, src ObjectID) ([]Chosen, 
 				labels = append(labels, label)
 			}
 		}
+	case TargetStackTrigger:
+		for _, it := range g.Stack {
+			if it.Kind == StackTrigger {
+				opts = append(opts, Chosen{Kind: TargetStackTrigger, Player: it.Controller, StackID: it.ID})
+				label := string(it.Card)
+				if it.Label != "" {
+					label += ": " + it.Label
+				}
+				labels = append(labels, label)
+			}
+		}
 	case TargetYourHandCard:
 		for _, id := range g.Players[p].Hand {
 			opts = append(opts, Chosen{Kind: TargetYourHandCard, Player: p, Object: id})
@@ -315,7 +338,7 @@ func (g *Game) stillValid(c Chosen) bool {
 	case TargetItem:
 		o := g.Object(c.Object)
 		return o.Zone.Kind == ZoneInPlay && o.Role == RoleItem
-	case TargetDiceRoll, TargetStackAbility:
+	case TargetDiceRoll, TargetStackAbility, TargetStackTrigger:
 		for _, it := range g.Stack {
 			if it.ID == c.StackID {
 				return true
@@ -334,7 +357,7 @@ func (g *Game) stillValid(c Chosen) bool {
 // resolveAbility runs an ability's effects, or fizzles it when a target
 // is gone (R-ABIL-06). A roll ability's result runs its table instead.
 func (g *Game) resolveAbility(it StackItem) {
-	effects := g.effectsOf(it.Ability, it.Mode, it.RollResult)
+	effects := g.effectsOf(it.Source, it.Ability, it.Mode, it.RollResult)
 	defer g.afterEventAbility(it.Source)
 	// A "would roll N" trigger needs the roll to still be N (R-DICE-07).
 	if it.Kind == StackTrigger && it.Checked > 0 && !g.rollStillIs(it.EventStack, it.Checked-1) {
@@ -354,7 +377,7 @@ func (g *Game) resolveAbility(it StackItem) {
 	for i, e := range effects {
 		e.apply(&Ctx{
 			G: g, Controller: it.Controller, Source: it.Source, Targets: it.Targets,
-			EventPlayer: it.EventPlayer, EventAmount: it.EventAmount, EventStack: it.EventStack, EventObject: it.EventObject, EventSource: it.EventSource,
+			EventPlayer: it.EventPlayer, EventAmount: it.EventAmount, EventStack: it.EventStack, EventObject: it.EventObject, EventSource: it.EventSource, EventBy: it.EventBy,
 			ref: it.Ability, mode: it.Mode, roll: it.RollResult, effect: i,
 		})
 	}
@@ -387,11 +410,14 @@ func (g *Game) useLootPlay(p PlayerID) {
 // non-eternal items in play: players' items, then shop items, which count
 // as in play for targeting (S-YUG).
 func (g *Game) AbilitiesOf(id ObjectID) []AbilityRef {
-	card := g.CardOf(id)
 	if !g.def(id).CopiesTapAbilities {
-		refs := make([]AbilityRef, len(g.def(id).Abilities))
-		for i := range refs {
-			refs[i] = AbilityRef{Card: card, Index: i}
+		var refs []AbilityRef
+		for _, face := range g.facesOf(id) {
+			if d, ok := g.cards.find(face); ok {
+				for i := range d.Abilities {
+					refs = append(refs, AbilityRef{Card: face, Index: i})
+				}
+			}
 		}
 		return refs
 	}

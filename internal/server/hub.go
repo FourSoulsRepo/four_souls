@@ -461,7 +461,7 @@ func (h *Hub) start(t *table) {
 	if h.seed != 0 {
 		gameSeed = h.seed + uint64(t.n) //nolint:gosec // n is positive
 	}
-	setup := engine.Setup{Seed: gameSeed, Players: len(t.seats), Sets: setsOf(t.sets), BonusSouls: !t.opts.NoBonusSouls, Banned: t.opts.HostBans}
+	setup := engine.Setup{Seed: gameSeed, Players: len(t.seats), Sets: setsOf(t.sets), BonusSouls: !t.opts.NoBonusSouls, Banned: t.opts.HostBans, DeckRatios: !t.opts.NoDeckRatios}
 	room, err := NewRoom(setup, t.opts, seats)
 	if err == nil {
 		room.second, room.hub, room.saves, room.loaded = h.second, h, h.saves, t.loaded

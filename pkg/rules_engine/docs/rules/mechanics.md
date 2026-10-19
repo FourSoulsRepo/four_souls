@@ -54,3 +54,4 @@ Sources: S-OFF Specific Mechanics; S-RU Специальные механики.
 50. **R-MECH-50** *(later sets)* **Additional names**: "This is also named …" works in every zone.
 51. **R-MECH-51** A player at 0 HP still **takes damage** when damage aimed at them resolves: nothing is marked, but "when you take damage" triggers (S-OFF, S-DIS).
 52. **R-MECH-52** *(Gold Box)* **Cancel everything that hasn't resolved**: cancel every item on the stack (R-MECH-07); "and end the turn" then starts the end phase (R-TURN-14).
+53. **R-MECH-53** *(Requiem)* A flipped object keeps its counters, damage and charge state (S-OFF Counters).

@@ -6,6 +6,11 @@ Resolved cases later become situation payload tests (step 4.11).
 
 Status: **Owner** = needs the owner's decision; **Resolved**; **Parked**.
 
+Basis of an answer (see "Rulings to revisit" at the end):
+1. **Official**: the rulebook (S-OFF), the designers or the rules team.
+2. **Community**: only players answered (Discord, Reddit); we follow them.
+3. **House**: no ruling found, or the sources disagree; the owner chose.
+
 On 2026-10-09 the owner parked every open decision for later.
 
 ## Decisions for the owner
@@ -65,6 +70,7 @@ On 2026-10-09 the owner parked every open decision for later.
 4. Options: (a) keep; (b) dead players can't be chosen when a living one could be.
 5. Proposal: (b), with the source note; R-07 #4 then means untargeted damage only.
 6. Status: **Resolved** (2026-10-12): (b), as Yuggy rules (R-ABIL-35).
+7. Basis: **Official**: Yuggy and Edmund.
 
 ### Q-08 The 3+ player symbol
 
@@ -77,6 +83,7 @@ On 2026-10-09 the owner parked every open decision for later.
    1. Monsters: Dople, Evil Twin, Rage Creep, Satan.
    2. Treasure: Brimstone, Curse of the Tower, Golden Razor Blade, Monster Manual.
    3. Treasure: Razor Blade, Remote Detonator, Trinity Shield.
+7. Basis: **Official**: S-OFF and Yuggy.
 
 ### Q-09 Two of Clubs twice
 
@@ -89,6 +96,7 @@ On 2026-10-09 the owner parked every open decision for later.
 5. Status: **Resolved** (2026-10-12): (a) no stacking (R-ABIL-36).
    1. The S-RU FAQ says the wording matters; the card doubles once.
 6. FAQ: explain this case in the rules FAQ (11.7); players often ask.
+7. Basis: **House**: the sources disagree (Ed and S-RU against Yuggy as quoted).
 
 ### Q-10 Fruitcake: whose rolls are "in a row"
 
@@ -102,6 +110,7 @@ On 2026-10-09 the owner parked every open decision for later.
 3. Options: (a) per player; (b) any two rolls in a row.
 4. Engine now: (a), as R-DICE-08.
 5. Status: **Owner**, open (2026-10-13); keep (a) until a ruling is found.
+6. Basis: **House**: no ruling found; the engine keeps (a) meanwhile.
 
 ### Q-11 PHD: once per roll
 
@@ -111,6 +120,7 @@ On 2026-10-09 the owner parked every open decision for later.
 2. Sources: no ruling in S-OFF, S-YUG, S-DIS, Reddit, X, or the web (2026-10-13).
 3. Options: (a) once per roll; (b) any number of times.
 4. Status: **Resolved** (2026-10-13): (a); (b) looks like a bug (R-DICE-10).
+5. Basis: **House**: no ruling found.
 
 ### Q-12 Euthanasia: which rolls are "in a row"
 
@@ -124,6 +134,7 @@ On 2026-10-09 the owner parked every open decision for later.
 4. Engine now: (a), as R-DICE-09.
 5. Status: **Owner**, open (2026-10-13); keep (a) until a ruling is found.
 6. FAQ: explain the difference from Fruitcake (R-DICE-08) in the rules FAQ (11.7).
+7. Basis: **House**: no ruling found; the engine keeps (a) meanwhile.
 
 ### Q-13 Damage loops at 0 HP
 
@@ -145,6 +156,97 @@ On 2026-10-09 the owner parked every open decision for later.
    (c) house rule: damage at 0 HP fires no "take damage" triggers.
 5. Engine now: (a).
 6. Status: **Resolved** (2026-10-13): (a) by default; (c) as a match option (GS-12, 14.8).
+7. Basis: **Official** for (a); (c) is a house option.
+
+### Q-14 Magic Marker: which numbers
+
+1. Question: "Change a number in the effect text of a card in play or loot being played by 1".
+   1. Cards are Go code; the engine does not know every number in the text.
+2. Options: (a) only numbers in common blocks; (b) every card lists its numbers.
+3. Status: **Resolved** (2026-10-19): (a) now (R-ABIL-39); (b) is future work (CD-13).
+4. Basis: **House**: an engine limit, not a rules question.
+
+### Q-15 Lemegeton used more than once
+
+1. Question: after two uses, must two different items be destroyed?
+   1. "The next time your turn ends, destroy a non-eternal item you control."
+2. Sources:
+   1. S-DIS (2024–2026): the same item may be chosen each time; the rest do nothing.
+   2. Reddit: "every activation destroys an item".
+3. Our rules: the item is a target, chosen as each trigger goes on the stack (R-ABIL-05).
+   1. All triggers may target one item; the first destroys it, the others fizzle.
+4. Options: (a) as our rules and S-DIS; (b) each trigger destroys a different item.
+5. Status: **Resolved** (2026-10-19): (a), rules as written.
+6. Basis: **Community**: S-DIS and the rules as written.
+
+### Q-16 Spindown Dice on a Bag Lunch without counters
+
+1. Question: "Destroy an item. If it was controlled by a player, they may steal an item from the shop."
+   1. Bag Lunch replaces its destruction with a counter.
+   2. May its controller still steal from the shop?
+2. Sources: S-DIS split; no ruling in S-OFF, S-YUG, Reddit, X (2026-10-19).
+3. Options: (a) yes, the second sentence is not "if you do" (R-MECH-02); (b) no, nothing was destroyed.
+4. The English print says "Destroy an item."; an earlier text said "a non-eternal item".
+5. The Russian print: "a non-eternal item"; it has no "if you do" either.
+6. Status: **Resolved** (2026-10-19): (b); the engine follows the Russian print.
+   1. Only a non-eternal item can be chosen; Bag Lunch can.
+   2. The steal needs the destruction; Bag Lunch's counter stops it.
+   3. The same as Berkano (Q-19).
+7. Basis: **House**: no ruling found; the Russian print decides.
+
+### Q-17 Rib of Greed and stealing
+
+1. Question: "Abilities and the death penalty can't make you discard loot cards or lose ¢."
+   1. Does it stop another player stealing your ¢ (Magnet)?
+2. Sources: Reddit asked Yuggy; no answer found (2026-10-19).
+3. Our rules: stealing is giving, not losing (R-MECH-35, R-MECH-38).
+4. S-OFF: "lose" moves ¢ to the game's pool; a steal is the other player giving ¢.
+5. Options: (a) steals still work; (b) Rib of Greed stops them too.
+6. Status: **Resolved** (2026-10-19): (a).
+7. Basis: **House**: no ruling found; follows our rules on giving.
+
+### Q-18 The Clicker: the new character's state
+
+1. Question: The Clicker replaces your character; is the new one charged?
+2. Sources:
+   1. S-DIS: cards enter play charged; the player is not healed.
+   2. Damage stays with the player (R-MECH-19).
+3. Options: (a) charged, as any card entering play; (b) keeps the old character's state.
+4. Status: **Resolved** (2026-10-19): (a).
+5. Basis: **Community**: S-DIS.
+
+### Q-19 Berkano: a steal without a destruction
+
+1. Question: "Destroy an item. If that item was controlled by a player, they steal an item from the shop."
+   1. If the item is not destroyed (eternal, Bag Lunch), do they still steal?
+2. Sources:
+   1. English and Russian prints: no "if you do"; an earlier English text said "non-eternal".
+   2. S-DIS (2025-04-11): an eternal item may be chosen; nothing is destroyed, nobody steals.
+   3. No ruling in S-OFF, S-YUG, Reddit, X, or the web (2026-10-19).
+3. Options: (a) they steal anyway; (b) only if the item was destroyed.
+4. Status: **Resolved** (2026-10-19): (b), as Spindown Dice (Q-16).
+5. Basis: **Community**: one S-DIS answer.
+
+### Q-20 Social Goals: whose progress counts
+
+1. Question: "Note each goal as players complete them."
+   1. Does every player add to one tally, or must one player reach a goal alone?
+2. Sources:
+   1. English and Russian prints say the same.
+   2. No ruling in S-OFF, S-YUG, S-DIS, or the web (2026-10-19).
+3. Options: (a) one shared tally; (b) one player alone; (c) one player in one turn.
+4. Status: **Resolved** (2026-10-19): (a), while the room is in play.
+5. Basis: **House**: no ruling found.
+
+### Q-21 Pity for the Poor: how many free purchases
+
+1. Question: "may purchase a shop item for 0¢ on their turn."
+2. Sources:
+   1. English and Russian prints say the same.
+   2. No ruling found (2026-10-19).
+3. Options: (a) every purchase costs 0¢; (b) the first each turn; (c) an extra purchase.
+4. Status: **Resolved** (2026-10-19): (a); the number of purchases is unchanged.
+5. Basis: **House**: no ruling found.
 
 ## Old rulings re-checked (R-07)
 
@@ -181,6 +283,8 @@ Tests: FAQ row 1 is in `cards/b2/interactions_test.go`, with Yuggy's "above 6 co
 ## Card rulings from Yuggy (S-YUG)
 
 Searched 2026-10-12 (8.7): his r/FourSouls comments and tweets that name a Base Game card, 294 questions. Rulings on V1 wording that V2 changed (Placebo, Butter Bean, Evil Twin, Eve, Judas) are left out. Tests: `cards/b2/yuggy_test.go`.
+
+Requiem searched 2026-10-19 (14.2): 96 of his posts and tweets name a Requiem card; rows 36 on. Tests come with the cards in 14.3.
 
 | # | Cards | Ruling (our words) | Status |
 |---|---|---|---|
@@ -219,10 +323,46 @@ Searched 2026-10-12 (8.7): his r/FourSouls comments and tweets that name a Base 
 | 33 | Headless Horseman | It prevents its death and heals; the attack goes on | Four Souls+; test |
 | 34 | Hourglass and circled numbers | A circled number triggers on any roll that resolves as it | Four Souls+ (R-DICE-06) |
 | 35 | Abaddon | Printed +3 ATK; the site text lacks the number (fixed by an override) | Four Souls+ |
+| 36 | Experimental Treatment, Pandora's Box | An item that becomes a soul keeps its abilities | Requiem (R-CARD-38) |
+| 37 | Experimental Treatment, Butter Bean | "Destroy this:" is a cost: a cancelled use still destroys it | Requiem |
+| 38 | Punching Bag | Killed means destroyed; the active player gets its rewards | Requiem (R-MECH-05) |
+| 39 | Rag Mega | "Up to 3" may be none | Requiem (R-ABIL-37) |
+| 40 | Rag Mega, Bomb | A loot already on the stack is not discarded by it | Requiem |
+| 41 | The Harbingers | One attack each turn must go there; an attack already used means no attack on it | Requiem (R-ATK-22) |
+| 42 | Blind Rage, Krampus | The attacker picks which forced attack to make | Requiem (R-ATK-22) |
+| 43 | Soul of Wrath | A dying active player gains it before the turn ends | Requiem |
+| 44 | Cursed Mulligan | It triggers on its own death; slots have no maximum | Requiem (R-ATK-23) |
+| 45 | Jar of Flies | Shop items' triggers don't work in the shop | Requiem (R-CARD-05) |
+| 46 | Holy Brain, Lodestone | The -1 DC comes after the roll resolved; it does not save that roll | Requiem |
+| 47 | Dice Room | The room step is once per turn, after end-of-turn triggers | Requiem (R-TURN-17, R-TURN-18) |
+| 48 | Dice Room | Additional attacks gained in the end phase are lost | Requiem (R-TURN-19) |
+| 49 | Devil Beggar | Only the active player uses a room's activated abilities | Requiem (R-CARD-36) |
+| 50 | Battle Royale!!!!!, Curse of the Suspicious | The newest attack-a-player ability sets the evasion | Requiem (R-MECH-06) |
+| 51 | Eternal D6, Nightmare Tick | A replacement on a roll applies after "would roll" triggers | Requiem (R-DICE-12) |
+| 52 | Glitch, Magic Skin | Gained abilities keep Glitch eternal; it can still be given away | Requiem (R-ABIL-38) |
+| 53 | Glitch, Mama Mega | A gained "Destroy this. If you do" does nothing | Requiem (R-ABIL-38) |
+| 54 | Glitch, Keeper's Sack | Gaining abilities is not gaining the item: no 14¢ | Requiem |
+| 55 | Keeper's Sack, Keeper's Penny | Giving is not gaining: no ¢ when passed on | Requiem (R-MECH-35) |
+| 56 | Glitch, Sumptorium | Counters stay on the object when the copied ability ends | Requiem (R-MECH-12) |
+| 57 | Damocles | A bought shop item is not a treasure; the deck top is | Requiem (R-CARD-37) |
+| 58 | The Clicker, Curse of the Soulless | Becoming The Lost is not gaining a soul | Requiem |
+| 59 | Soul of Envy, Curse of the Soulless | The cursed player can't gain it; it is then never gained | Requiem |
+| 60 | Ultra Greed, Sisters Vis | Extra attack rolls come one at a time; a helper's death doesn't end the attack | Requiem (R-ATK-21) |
+| 61 | Sibling Rivalry | It may answer the attack declaration; the target is chosen after | Requiem |
+| 62 | Magic Skin | A destroyed item's ability on the stack still resolves | Requiem (R-ABIL-03) |
+| 63 | Magic Skin | Its start-of-turn trigger is on the stack before priority; giving it away then doesn't change the target | Requiem (R-ABIL-34) |
+| 64 | Anima Sola | It must be recharged before it flips again | Requiem |
+| 65 | The Mirror | A player at 1 HP pays 0 HP and still gets the bonus | Requiem |
+| 66 | MOTHER! | Evasion never goes above 6 | Requiem (R-ATK-18) |
+| 67 | The Fettered (Dead Weight), Resurrected Rag Man | Replacement effects are not triggers; Dead Weight can't cancel them | Requiem |
+| 68 | Friendly Ball | It may hold an Indomitable monster | Requiem |
+| 69 | Halo of Flies | Its 6 also stops damage from a player attacking you | Requiem (R-ATK-24) |
 
 ## Card rulings from Discord (S-DIS)
 
 Searched 2026-10-12 (8.7) with each card's Russian name from foursouls.ru (the owner's database migrations, not in the repo): 188 Base Game cards are named in the channel. Read: every question to "@Судья" (the judges) that names one, 87 threads. Medium trust; kept where it agrees with S-OFF or fills a gap.
+
+Requiem searched 2026-10-19 (14.2) with the Russian names of the owner's Requiem migrations: 77 judge threads; rows 12 on. Reddit (digest, 63 threads) agreed with these rows or with S-OFF.
 
 | # | Cards | Ruling (our words) | Status |
 |---|---|---|---|
@@ -237,3 +377,34 @@ Searched 2026-10-12 (8.7) with each card's Russian name from foursouls.ru (the o
 | 9 | Fruitcake, Mutant Spider | Only Mutant Spider's chosen result counts as a roll | Gold Box (R-DICE-08) |
 | 10 | Euthanasia | It works on bosses; a rerolled second roll counts by its final value | Four Souls+; test |
 | 11 | Euthanasia | It triggers before combat damage; you must control it as the roll resolves | Four Souls+; test |
+| 12 | Lemegeton | Used twice, the same item may be chosen twice | Requiem (Q-15) |
+| 13 | Blind Rage, The Revenant | The monster deck must be attacked first; The Revenant gives an extra attack after | Requiem |
+| 14 | Betrayal | Only a non-eternal item can be stolen (English text wins) | Requiem |
+| 15 | All Hallows' Eve, The Lamb | Stealing a soul is not gaining it | Requiem (R-MECH-35) |
+| 16 | Gello | It can't choose a monster at 0 HP; a bomb in response makes it fizzle | Requiem |
+| 17 | Damocles, Dice Room | Rerolling 6 items gains 12 treasures: each reroll is its own gain | Requiem |
+| 18 | Spindown Dice, Bag Lunch | Split answers; the owner follows the Russian print: no steal | Requiem (Q-16) |
+| 20 | Berkano | An eternal item may be chosen; not destroyed, so nobody steals | Requiem (Q-19) |
+| 19 | The Clicker | Damage stays with the player; the new character is not healed | Requiem (Q-18) |
+
+## Rulings to revisit
+
+House and community answers, made for this game.
+They may change when an official ruling appears.
+Check here first when a card plays oddly.
+Every row of "Card rulings from Discord (S-DIS)" is Community too.
+
+| Q | Cards | The engine now | Basis |
+|---|---|---|---|
+| Q-09 | Two of Clubs | A second copy does not double again | House |
+| Q-10 | Fruitcake | Each player's own rolls in a row | House (open) |
+| Q-11 | PHD | Changes a roll once | House |
+| Q-12 | Euthanasia | Two attack rolls in a row | House (open) |
+| Q-14 | Magic Marker | Only loot, ¢, damage and roll-table numbers | House |
+| Q-15 | Lemegeton | Every trigger may pick the same item | Community |
+| Q-16 | Spindown Dice | Non-eternal items only; steal only if destroyed | House |
+| Q-17 | Rib of Greed | Steals still work | House |
+| Q-18 | The Clicker | The new character enters charged | Community |
+| Q-19 | Berkano | Steal only if the item was destroyed | Community |
+| Q-20 | Social Goals | One shared tally for all players | House |
+| Q-21 | Pity for the Poor | Every purchase costs 0¢ | House |

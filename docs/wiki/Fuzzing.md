@@ -19,7 +19,8 @@ A game is capped at `maxFuzzSteps` (2000) steps. Every step hashes the whole sta
 
 * `FuzzAllCards` — every card in the fuzz sets can show up.
 * `FuzzFocused` — the given cards are put into every player's play area at the start, so their abilities come up often. Use it for a new card. The focused game is not replayed, because a replay starts without those items.
-* `FuzzSets` (in `pkg/rules_engine/cards`) — the same checks with the real card sets, all of them together.
+* `FuzzSets` (in `pkg/rules_engine/cards`) — the same checks with the real card sets, all of them together. The room deck and the deck ratios are on in some games.
+* `FuzzFocusedSets` (same package) — `FuzzSets` with only the sets named in `FOUR_SOULS_SETS`, the room deck on in most games. Use it for a new set: `SETS=b2,r` puts the Base Game with Requiem, so the new cards come up often. It keeps its own corpus, so a run fuzzes new inputs at once instead of replaying the big `FuzzSets` corpus first.
 
 ## Simulations
 
@@ -40,6 +41,7 @@ CI runs only the seed corpus, as normal tests (`go test ./...`). Real fuzzing ru
 make fuzz                          # fuzz-engine, then fuzz-sets, 10 minutes each
 make fuzz-sets FUZZTIME=2m
 make fuzz-focused FOCUS=razor,d6   # cards of the engine's test sets
+make fuzz-new SETS=b2,r            # a new set with the Base Game
 make sims SIMS=3000
 ```
 
