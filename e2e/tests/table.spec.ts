@@ -396,6 +396,38 @@ test('counters and changed monster stats show on the card, not in its zoom (15.2
   await shot(page, 'monster-stats-zoom');
 });
 
+test('a bonus soul shows its counters (19.29)', async ({ browser }) => {
+  const [page] = await startGame(browser, ['Rua', 'Vik'], { bans: plainBoard });
+  if (!page) {
+    throw new Error('no pages');
+  }
+  const soul = page.getByRole('group', { name: 'Bonus souls' }).locator('.card').first();
+  await expect(soul).toBeVisible();
+  await expect(soul.locator('.card-badge')).toHaveCount(0);
+
+  // Two players died: the first bonus soul gets 2 counters, as the
+  // server would send it (Soul of Wrath). Only the screen changes.
+  await page.evaluate(() => {
+    interface Card {
+      counters?: { count: number }[];
+    }
+    interface S {
+      game: { view: { bonus_souls?: Card[] } } | null;
+    }
+    const { store } = (window as unknown as { fourSouls: { store: { getState: () => S; setState: (s: Partial<S>) => void } } })
+      .fourSouls;
+    const game = store.getState().game;
+    const souls = game?.view.bonus_souls;
+    if (!game || !souls?.length) {
+      throw new Error('no bonus souls');
+    }
+    const bonus_souls = souls.map((c, i) => (i === 0 ? { ...c, counters: [{ count: 2 }] } : c));
+    store.setState({ game: { ...game, view: { ...game.view, bonus_souls } } });
+  });
+  await shot(page, 'bonus-soul-counters');
+  await expect(soul.getByLabel('2 counters')).toBeVisible();
+});
+
 test('a card with many abilities opens a dialog that uses the picked line (15.24)', async ({ browser }) => {
   const [page] = await startGame(browser, ['Lux', 'Ivy']);
   if (!page) {

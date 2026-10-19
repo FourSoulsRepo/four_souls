@@ -913,7 +913,7 @@ This step never closes; new reports are appended.
    2. The 4-player test is marked slow: 90 s.
    3. The test passed ten runs in a row (single runs and full suites).
 
-### [ ] 19.29 Bonus souls show no counters
+### [x] 19.29 Bonus souls show no counters
 
 1. Goal: a bonus soul's counters read on its card.
 2. Report (owner, 2026-10-19)
@@ -927,3 +927,9 @@ This step never closes; new reports are appended.
 5. Done when:
    1. e2e test: a bonus soul with counters shows the badge.
    2. Screenshots: `.cache/screenshots/19.29/before/` and `after/`.
+6. Result (2026-10-19)
+   1. The board passes each bonus soul's counters to its card.
+   2. The green counter badge shows, as on other cards (15.23).
+   3. e2e test: `table.spec.ts`, "a bonus soul shows its counters".
+   4. UC-12 2d updated.
+   5. Screenshots: `.cache/screenshots/19.29/before/` and `after/`.

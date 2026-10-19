@@ -44,7 +44,7 @@ export function Board({
         </div>
         <div className="bonus-souls" role="group" aria-label="Bonus souls">
           {view.bonus_souls?.map((c) => (
-            <Card key={c.id} cardRef={c.card} size="small" objectId={c.id} />
+            <Card key={c.id} cardRef={c.card} size="small" counters={counted(c)} objectId={c.id} />
           ))}
         </div>
         <div className="board-decks">

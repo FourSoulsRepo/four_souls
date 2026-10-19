@@ -66,6 +66,7 @@
 * **1g. No coin image (public clone):** a drawn ¢ coin by the cents.
 * **2d. Counters (15.23):** a big green blob with the count, on the card art.
   * A text card shows it in its top corner, clear of the words.
+  * Bonus souls show it too: Soul of Wrath's progress (19.29).
 * **2e. Changed monster stats (15.23):** a badge per changed value.
   * Red health, a white die for the dice, gold attack.
   * A value as printed shows no badge; the card shows it.
