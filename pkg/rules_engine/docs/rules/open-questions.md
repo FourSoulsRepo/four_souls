@@ -6,6 +6,11 @@ Resolved cases later become situation payload tests (step 4.11).
 
 Status: **Owner** = needs the owner's decision; **Resolved**; **Parked**.
 
+Basis of an answer (see "Rulings to revisit" at the end):
+1. **Official**: the rulebook (S-OFF), the designers or the rules team.
+2. **Community**: only players answered (Discord, Reddit); we follow them.
+3. **House**: no ruling found, or the sources disagree; the owner chose.
+
 On 2026-10-09 the owner parked every open decision for later.
 
 ## Decisions for the owner
@@ -65,6 +70,7 @@ On 2026-10-09 the owner parked every open decision for later.
 4. Options: (a) keep; (b) dead players can't be chosen when a living one could be.
 5. Proposal: (b), with the source note; R-07 #4 then means untargeted damage only.
 6. Status: **Resolved** (2026-10-12): (b), as Yuggy rules (R-ABIL-35).
+7. Basis: **Official**: Yuggy and Edmund.
 
 ### Q-08 The 3+ player symbol
 
@@ -77,6 +83,7 @@ On 2026-10-09 the owner parked every open decision for later.
    1. Monsters: Dople, Evil Twin, Rage Creep, Satan.
    2. Treasure: Brimstone, Curse of the Tower, Golden Razor Blade, Monster Manual.
    3. Treasure: Razor Blade, Remote Detonator, Trinity Shield.
+7. Basis: **Official**: S-OFF and Yuggy.
 
 ### Q-09 Two of Clubs twice
 
@@ -89,6 +96,7 @@ On 2026-10-09 the owner parked every open decision for later.
 5. Status: **Resolved** (2026-10-12): (a) no stacking (R-ABIL-36).
    1. The S-RU FAQ says the wording matters; the card doubles once.
 6. FAQ: explain this case in the rules FAQ (11.7); players often ask.
+7. Basis: **House**: the sources disagree (Ed and S-RU against Yuggy as quoted).
 
 ### Q-10 Fruitcake: whose rolls are "in a row"
 
@@ -102,6 +110,7 @@ On 2026-10-09 the owner parked every open decision for later.
 3. Options: (a) per player; (b) any two rolls in a row.
 4. Engine now: (a), as R-DICE-08.
 5. Status: **Owner**, open (2026-10-13); keep (a) until a ruling is found.
+6. Basis: **House**: no ruling found; the engine keeps (a) meanwhile.
 
 ### Q-11 PHD: once per roll
 
@@ -111,6 +120,7 @@ On 2026-10-09 the owner parked every open decision for later.
 2. Sources: no ruling in S-OFF, S-YUG, S-DIS, Reddit, X, or the web (2026-10-13).
 3. Options: (a) once per roll; (b) any number of times.
 4. Status: **Resolved** (2026-10-13): (a); (b) looks like a bug (R-DICE-10).
+5. Basis: **House**: no ruling found.
 
 ### Q-12 Euthanasia: which rolls are "in a row"
 
@@ -124,6 +134,7 @@ On 2026-10-09 the owner parked every open decision for later.
 4. Engine now: (a), as R-DICE-09.
 5. Status: **Owner**, open (2026-10-13); keep (a) until a ruling is found.
 6. FAQ: explain the difference from Fruitcake (R-DICE-08) in the rules FAQ (11.7).
+7. Basis: **House**: no ruling found; the engine keeps (a) meanwhile.
 
 ### Q-13 Damage loops at 0 HP
 
@@ -145,6 +156,7 @@ On 2026-10-09 the owner parked every open decision for later.
    (c) house rule: damage at 0 HP fires no "take damage" triggers.
 5. Engine now: (a).
 6. Status: **Resolved** (2026-10-13): (a) by default; (c) as a match option (GS-12, 14.8).
+7. Basis: **Official** for (a); (c) is a house option.
 
 ### Q-14 Magic Marker: which numbers
 
@@ -152,6 +164,7 @@ On 2026-10-09 the owner parked every open decision for later.
    1. Cards are Go code; the engine does not know every number in the text.
 2. Options: (a) only numbers in common blocks; (b) every card lists its numbers.
 3. Status: **Resolved** (2026-10-19): (a) now (R-ABIL-39); (b) is future work (CD-13).
+4. Basis: **House**: an engine limit, not a rules question.
 
 ### Q-15 Lemegeton used more than once
 
@@ -164,6 +177,7 @@ On 2026-10-09 the owner parked every open decision for later.
    1. All triggers may target one item; the first destroys it, the others fizzle.
 4. Options: (a) as our rules and S-DIS; (b) each trigger destroys a different item.
 5. Status: **Resolved** (2026-10-19): (a), rules as written.
+6. Basis: **Community**: S-DIS and the rules as written.
 
 ### Q-16 Spindown Dice on a Bag Lunch without counters
 
@@ -178,6 +192,7 @@ On 2026-10-09 the owner parked every open decision for later.
    1. Only a non-eternal item can be chosen; Bag Lunch can.
    2. The steal needs the destruction; Bag Lunch's counter stops it.
    3. The same as Berkano (Q-19).
+7. Basis: **House**: no ruling found; the Russian print decides.
 
 ### Q-17 Rib of Greed and stealing
 
@@ -188,6 +203,7 @@ On 2026-10-09 the owner parked every open decision for later.
 4. S-OFF: "lose" moves ¢ to the game's pool; a steal is the other player giving ¢.
 5. Options: (a) steals still work; (b) Rib of Greed stops them too.
 6. Status: **Resolved** (2026-10-19): (a).
+7. Basis: **House**: no ruling found; follows our rules on giving.
 
 ### Q-18 The Clicker: the new character's state
 
@@ -197,6 +213,7 @@ On 2026-10-09 the owner parked every open decision for later.
    2. Damage stays with the player (R-MECH-19).
 3. Options: (a) charged, as any card entering play; (b) keeps the old character's state.
 4. Status: **Resolved** (2026-10-19): (a).
+5. Basis: **Community**: S-DIS.
 
 ### Q-19 Berkano: a steal without a destruction
 
@@ -208,6 +225,7 @@ On 2026-10-09 the owner parked every open decision for later.
    3. No ruling in S-OFF, S-YUG, Reddit, X, or the web (2026-10-19).
 3. Options: (a) they steal anyway; (b) only if the item was destroyed.
 4. Status: **Resolved** (2026-10-19): (b), as Spindown Dice (Q-16).
+5. Basis: **Community**: one S-DIS answer.
 
 ### Q-20 Social Goals: whose progress counts
 
@@ -218,6 +236,7 @@ On 2026-10-09 the owner parked every open decision for later.
    2. No ruling in S-OFF, S-YUG, S-DIS, or the web (2026-10-19).
 3. Options: (a) one shared tally; (b) one player alone; (c) one player in one turn.
 4. Status: **Resolved** (2026-10-19): (a), while the room is in play.
+5. Basis: **House**: no ruling found.
 
 ### Q-21 Pity for the Poor: how many free purchases
 
@@ -227,6 +246,7 @@ On 2026-10-09 the owner parked every open decision for later.
    2. No ruling found (2026-10-19).
 3. Options: (a) every purchase costs 0¢; (b) the first each turn; (c) an extra purchase.
 4. Status: **Resolved** (2026-10-19): (a); the number of purchases is unchanged.
+5. Basis: **House**: no ruling found.
 
 ## Old rulings re-checked (R-07)
 
@@ -366,3 +386,25 @@ Requiem searched 2026-10-19 (14.2) with the Russian names of the owner's Requiem
 | 18 | Spindown Dice, Bag Lunch | Split answers; the owner follows the Russian print: no steal | Requiem (Q-16) |
 | 20 | Berkano | An eternal item may be chosen; not destroyed, so nobody steals | Requiem (Q-19) |
 | 19 | The Clicker | Damage stays with the player; the new character is not healed | Requiem (Q-18) |
+
+## Rulings to revisit
+
+House and community answers, made for this game.
+They may change when an official ruling appears.
+Check here first when a card plays oddly.
+Every row of "Card rulings from Discord (S-DIS)" is Community too.
+
+| Q | Cards | The engine now | Basis |
+|---|---|---|---|
+| Q-09 | Two of Clubs | A second copy does not double again | House |
+| Q-10 | Fruitcake | Each player's own rolls in a row | House (open) |
+| Q-11 | PHD | Changes a roll once | House |
+| Q-12 | Euthanasia | Two attack rolls in a row | House (open) |
+| Q-14 | Magic Marker | Only loot, ¢, damage and roll-table numbers | House |
+| Q-15 | Lemegeton | Every trigger may pick the same item | Community |
+| Q-16 | Spindown Dice | Non-eternal items only; steal only if destroyed | House |
+| Q-17 | Rib of Greed | Steals still work | House |
+| Q-18 | The Clicker | The new character enters charged | Community |
+| Q-19 | Berkano | Steal only if the item was destroyed | Community |
+| Q-20 | Social Goals | One shared tally for all players | House |
+| Q-21 | Pity for the Poor | Every purchase costs 0¢ | House |
