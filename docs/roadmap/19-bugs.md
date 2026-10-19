@@ -814,7 +814,7 @@ This step never closes; new reports are appended.
    2. Engine only; no screen change, no screenshots.
 7. Owner notes (2026-10-19)
    1. Owner marks 19.25 solved.
-### [ ] 19.26 Card zoom under the discard window
+### [x] 19.26 Card zoom under the discard window
 
 1. Goal: a window that must be on top is always on top.
 2. Report (owner, 2026-10-19)
@@ -849,3 +849,5 @@ This step never closes; new reports are appended.
    8. The e2e test failed before the fix; passes after.
    9. Use case UC-11 gets 3e: a card in a window.
    10. Screenshots: `.cache/screenshots/19.26/before/` and `after/`.
+7. Owner notes (2026-10-19)
+   1. Owner marks 19.26 solved.
