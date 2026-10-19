@@ -96,3 +96,55 @@ func settleAny(tb *enginetest.Table) {
 	}
 	tb.T.Fatal("settleAny: the stack never emptied")
 }
+
+// Tests of the simple passive treasures; the others have their own files.
+
+// table2 seats Isaac with the items and Cain.
+
+func table2(t *testing.T, items ...engine.CardRef) *enginetest.Table {
+	t.Helper()
+	return setup(t, engine.SituationSetup{Players: []engine.SituationPlayer{seat("isaac", items...), seat("cain")}})
+}
+
+// Attacks on players, attackable items and helpers (R-ATK-20, R-ATK-21,
+// R-MECH-04), through the cards that allow them.
+
+func sirenTable(t *testing.T, isaacItems, cainItems []engine.CardRef) *enginetest.Table {
+	t.Helper()
+	return setup(t, engine.SituationSetup{
+		Players:  []engine.SituationPlayer{seat("isaac", isaacItems...), seat("cain", cainItems...)},
+		Monsters: []engine.CardRef{"the_siren", "fly"},
+	})
+}
+
+// fight: Isaac (active), Cain and Samson; the monster in slot 1, a fly
+
+// in slot 2.
+
+func fight(t *testing.T, monster engine.CardRef, isaacItems ...engine.CardRef) *enginetest.Table {
+	t.Helper()
+	return setup(t, engine.SituationSetup{
+		Players:  []engine.SituationPlayer{seat("isaac", isaacItems...), seat("cain"), seat("samson")},
+		Monsters: []engine.CardRef{monster, "fly"},
+	})
+}
+
+// hurt leaves the monster in slot i with n HP.
+
+func hurt(tb *enginetest.Table, i, n int) {
+	id := tb.G.Monsters[i].Cards[len(tb.G.Monsters[i].Cards)-1]
+	tb.G.Object(id).Damage = tb.G.Def(id).HP - n
+}
+
+// charmedGift kills the charmed monster (1 HP left) and gives its gift
+
+// to Cain, with extra answers before that.
+
+func charmedGift(t *testing.T, card engine.CardRef, extra ...string) *enginetest.Table {
+	t.Helper()
+	tb := fight(t, card)
+	hurt(tb, 0, 1)
+	tb.G.ForceRolls(6)
+	tb.Do(engine.Intent{Player: 0, Kind: engine.IntentAttack}, append(append([]string{string(card)}, extra...), foe)...)
+	return tb
+}

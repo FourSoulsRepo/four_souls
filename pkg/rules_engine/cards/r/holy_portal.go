@@ -5,9 +5,6 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 // Holy Portal (Holy/Charmed Monster Card)
 //
 //	Each time a monster dies, the active player may attack an additional time this turn.
-//
-// TODO(card): implement the text above, then delete this line.
-// Until then `go run ./cmd/cardgen` rewrites this file from card_db.
 var holyPortal = engine.CardDef{
 	Ref:     "holy_portal",
 	Kind:    engine.MonsterCard,
@@ -16,4 +13,10 @@ var holyPortal = engine.CardDef{
 	DC:      4,
 	ATK:     1,
 	Rewards: []engine.Reward{{Kind: engine.RewardCents, Amount: 5}},
+	Abilities: []engine.Ability{{
+		Kind:    engine.Triggered,
+		Text:    "Each time a monster dies, the active player may attack an additional time this turn.",
+		Trigger: engine.WhenAMonsterDies(),
+		Effects: []engine.Effect{engine.ActivePlayerAttacksAgain()},
+	}},
 }

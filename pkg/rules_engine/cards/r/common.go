@@ -468,3 +468,80 @@ func markedHelper(c *engine.Ctx) (engine.PlayerID, bool) {
 	}
 	return engine.NoPlayer, false
 }
+
+// randomPlayerTakes: this deals n damage to a living player chosen at
+// random; non-active players only if nonActive.
+func randomPlayerTakes(n int, nonActive bool) engine.Effect {
+	players := func(g *engine.Game) []engine.PlayerID {
+		skip := engine.NoPlayer
+		if nonActive {
+			skip = g.Turn.Active
+		}
+		return cardkit.LivingPlayers(g, skip)
+	}
+	return engine.Ask(func(c *engine.Ctx, a []int) {
+		if ps := players(c.G); a[0] >= 0 && a[0] < len(ps) {
+			c.G.DealDamageTo(engine.Target{Player: ps[a[0]], IsPlayer: true}, n, engine.NoPlayer, c.Source)
+		}
+	}, engine.Question{Text: "A player at random", Random: true, Options: func(c *engine.Ctx, _ []int) []string {
+		return playerLabels(c.G, players(c.G))
+	}})
+}
+
+// damageActive: this deals n damage to the active player.
+func damageActive(n int) engine.Effect {
+	return engine.EffectFunc(func(c *engine.Ctx) {
+		c.G.DealDamageTo(engine.Target{Player: c.G.Turn.Active, IsPlayer: true}, n, engine.NoPlayer, c.Source)
+	})
+}
+
+// afterRewardsAnotherPlayer is the charmed monsters' "When this dies,
+// after gaining rewards, choose another player. They …": the active
+// player chooses; the effects run as that player's.
+func afterRewardsAnotherPlayer(they string, effects ...engine.Effect) engine.Ability {
+	return engine.Ability{
+		Kind:    engine.Triggered,
+		Text:    "When this dies, after gaining rewards, choose another player. " + they,
+		Trigger: engine.AfterThisRewards(),
+		Effects: []engine.Effect{engine.Ask(func(c *engine.Ctx, a []int) {
+			ps := othersOfActive(c.G)
+			if a[0] < 0 || a[0] >= len(ps) {
+				return
+			}
+			them := *c
+			them.Controller = ps[a[0]]
+			them.Do(effects...)
+		}, engine.Question{Text: "Choose another player.", Options: func(c *engine.Ctx, _ []int) []string {
+			return playerLabels(c.G, othersOfActive(c.G))
+		}})},
+	}
+}
+
+// rechargeYourItem: the controller recharges a deactivated item they
+// control.
+var rechargeYourItem = engine.Ask(func(c *engine.Ctx, a []int) {
+	if ids := deactivatedItems(c.G, c.Controller); a[0] >= 0 && a[0] < len(ids) {
+		c.G.Recharge(ids[a[0]])
+	}
+}, engine.Question{Text: "Recharge which item?", Options: func(c *engine.Ctx, _ []int) []string {
+	return labelsOf(c.G, deactivatedItems(c.G, c.Controller))
+}})
+
+func deactivatedItems(g *engine.Game, p engine.PlayerID) []engine.ObjectID {
+	var out []engine.ObjectID
+	for _, id := range itemsOf(g, p) {
+		if !g.Object(id).Charged {
+			out = append(out, id)
+		}
+	}
+	return out
+}
+
+// centsEqualToRoll: the roller gains ¢ equal to the result.
+func centsEqualToRoll() engine.RollTable {
+	var t engine.RollTable
+	for r := 1; r <= 6; r++ {
+		t = t.Results(r, r, engine.GainCents(r))
+	}
+	return t
+}

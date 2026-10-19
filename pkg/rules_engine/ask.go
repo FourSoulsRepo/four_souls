@@ -23,6 +23,8 @@ type Question struct {
 type askEffect struct {
 	questions []Question
 	do        func(c *Ctx, answers []int)
+	// roll is the table of a roll that do makes (AskWithRoll).
+	roll *RollTable
 }
 
 // Ask asks the controller questions in order while the ability resolves,
@@ -31,6 +33,13 @@ type askEffect struct {
 // What do queues happens before the ability's later effects.
 func Ask(do func(c *Ctx, answers []int), questions ...Question) Effect {
 	return askEffect{questions: questions, do: do}
+}
+
+// AskWithRoll is Ask whose do makes a roll with c.Do(Roll(table)): the
+// roll's result runs table ("choose another player; they roll and gain
+// ¢ equal to the result").
+func AskWithRoll(do func(c *Ctx, answers []int), table RollTable, questions ...Question) Effect {
+	return askEffect{questions: questions, do: do, roll: &table}
 }
 
 // Asking is an Ask effect waiting for answers. It is plain data, so a

@@ -29,6 +29,9 @@ type AttackState struct {
 	// player, in turn order (R-ATK-21); Queue holds those still to roll
 	// this round. Share also gain the rewards if the target dies this
 	// attack (Sibling Rivalry).
+	// Rolls counts the attack rolls made against the target this attack
+	// ("every other attack roll made against it": Null).
+	Rolls   int        `json:"rolls,omitempty"`
 	Helpers []PlayerID `json:"helpers,omitempty"`
 	Queue   []PlayerID `json:"queue,omitempty"`
 	Share   []PlayerID `json:"share,omitempty"`
@@ -330,6 +333,7 @@ func (g *Game) resolveAttackRoll(it StackItem) {
 		g.Attack.Queue = g.helpersToRoll()
 	}
 	g.Attack.LastRoll = it.Roll
+	g.Attack.Rolls++
 	target := it.Target.Object
 	tp, onPlayer := g.characterOf(target)
 	mod := g.def(target).CombatMod

@@ -77,6 +77,11 @@ func (g *Game) push(it StackItem) int {
 	}
 	g.StackSeq++
 	it.ID = g.StackSeq
+	if it.Kind == StackRoll && it.Controller != NoPlayer && it.Roll == 0 && len(g.ManyDice) == 0 && g.bonus(StatTwoDiceLeftChooses, NoPlayer, 0) > 0 {
+		// "If a player would roll a dice, they instead roll 2 dice. The
+		// player to their left chooses one of the rolls as the result."
+		g.ManyDice = append(g.ManyDice, ManyDice{Chooser: g.next(it.Controller), Dice: 2})
+	}
 	if it.Kind == StackRoll && it.Controller != NoPlayer && len(g.ManyDice) > 0 && g.ManyDice[0].StackID == 0 {
 		// "They instead roll 4 dice. You choose one of the rolls." The
 		// dice are drawn with the throw.

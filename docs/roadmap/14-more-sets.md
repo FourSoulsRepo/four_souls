@@ -115,6 +115,10 @@ Ideas: CD-02, GS-07, GS-08, CD-11, A-16, CD-12, V-32, GS-12, GS-13, GS-01.
    28. Engine: helpers' attack rolls (R-ATK-21), rewards to the killer, Indomitable (R-ABIL-23).
    29. Requiem: Backstabber, Punching Bag, The Siren, Mega Satan, Ultra Greed, Sisters Vis tested.
    30. Requiem: Sibling Rivalry, Lust for Blood tested; Backstabber's DC fixed by an override.
+   31. Requiem: 23 basic, cursed, holy and charmed monsters tested.
+   32. Engine: attack rolls counted per attack (Null), two dice for every roll (Cursed Lil Haunt).
+   33. Engine: AskWithRoll, a roll made after a question finds its result table.
+   34. Every Requiem card has its own test file, as the status report counts them.
 
 ### [ ] 14.4 Setup options
 

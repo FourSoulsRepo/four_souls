@@ -6,9 +6,6 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 //
 //	Each time a player declares an attack, the active player rolls-
 //	1-2: This deals 1 damage to that player.
-//
-// TODO(card): implement the text above, then delete this line.
-// Until then `go run ./cmd/cardgen` rewrites this file from card_db.
 var whipper = engine.CardDef{
 	Ref:     "whipper",
 	Kind:    engine.MonsterCard,
@@ -17,4 +14,10 @@ var whipper = engine.CardDef{
 	DC:      4,
 	ATK:     1,
 	Rewards: []engine.Reward{{Kind: engine.RewardCents, Amount: 5}},
+	Abilities: []engine.Ability{{
+		Kind:    engine.Triggered,
+		Text:    "Each time a player declares an attack, the active player rolls- 1-2: This deals 1 damage to that player.",
+		Trigger: engine.Trigger{On: engine.EvAttackDeclared, Match: func(*engine.Game, engine.ObjectID, engine.Event) bool { return true }},
+		Effects: []engine.Effect{engine.Roll(engine.RollTable{}.Results(1, 2, damageActive(1)))},
+	}},
 }

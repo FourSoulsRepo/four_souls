@@ -524,6 +524,10 @@ func findRoll(effects []Effect) (rollEffect, bool) {
 			if r, ok := findRoll(x.effects); ok {
 				return r, true
 			}
+		case askEffect:
+			if x.roll != nil {
+				return rollEffect{*x.roll}, true
+			}
 		}
 	}
 	return rollEffect{}, false
