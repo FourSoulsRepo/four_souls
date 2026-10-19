@@ -42,6 +42,7 @@ func (r *Room) after(events []engine.Event, applied bool) {
 	r.broadcast(events)
 	if r.game.Over {
 		r.closeRecord(true)
+		r.over.Store(true) // after the close: a download reads the whole record
 	}
 }
 

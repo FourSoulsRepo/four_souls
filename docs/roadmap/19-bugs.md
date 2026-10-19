@@ -993,3 +993,33 @@ This step never closes; new reports are appended.
    7. No screen change, so no screenshots.
 7. Owner notes (2026-10-19)
    1. Owner marks 19.31 solved.
+
+### [ ] 19.32 Dedicated server: a finished game takes the player back
+
+1. Goal: after a finished game, the player can open a new game.
+2. Report (owner, 2026-10-19)
+   1. Dedicated server; the game finished; the player left it.
+   2. They connected again to create a new game.
+   3. The server always took them back to the finished game.
+3. Cause
+   1. The client keeps the seat token in `rejoin` (N-08).
+   2. Its next hello to that server sends the token.
+   3. `Hub.hello` attaches a token to any started game with it.
+   4. A finished game stays in `h.games` while the server runs.
+   5. So the hello lands in the finished game, every time.
+   6. A hosted game is not hit: leaving stops the app's server.
+4. Tasks:
+   1. Hello never attaches a token to a finished game.
+   2. The player keeps the token; the record download still works.
+5. Done when:
+   1. Go test: hello after the game is over gets the lobby.
+   2. Go test: a new game with that token is joined, not the old one.
+   3. `make lint test` pass.
+6. Result (2026-10-19)
+   1. `Hub.hello` skips a started game that is over.
+   2. Room `over` is set at every game end, records or not.
+   3. Before, it was set only when the server kept records.
+   4. Go test: `TestFinishedGameLetsGo` in `hub_test.go`.
+   5. It fails without the fix: the hello got seat 0 of the old game.
+   6. UC-07 3c added; wiki `Server.md` updated.
+   7. No screen change, so no screenshots.

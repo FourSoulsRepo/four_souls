@@ -85,9 +85,6 @@ func (r *Room) closeRecord(finished bool) {
 		log.Printf("server: record %s: %v", r.path, err)
 	}
 	r.rec = nil
-	if finished {
-		r.over.Store(true)
-	}
 }
 
 // recordPath names a game's record: started time, game ID and the

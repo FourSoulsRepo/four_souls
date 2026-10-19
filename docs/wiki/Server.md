@@ -21,7 +21,7 @@ WebSocket (ws.go) ──Conn──▶ Client ──▶ Hub (lobby goroutine)
 2. Lobby: create (seats, sets, options) or join; ready. A full, ready table becomes a Room.
 3. Setup: host bans out; ban rounds in snake order with an optional timer; random or draft picks. Deck ratios are on unless the host turns them off; `checkOptions` turns them off when the sets are too small (GS-07).
 4. Play: each intent is applied for the client's own seat; then `after` runs automatic passes, restarts the response timer, sends every client its update and records the steps.
-5. Disconnects pause the game; a vote can kick; a token brings a player back.
+5. Disconnects pause the game; a vote can kick; a token brings a player back. A finished game never takes a token back: the hello goes to the lobby, so the player can start a new game (19.32).
 6. The host may save: the game stops and can be loaded again from the lobby.
 7. At the end the record is closed and its players may download it.
 

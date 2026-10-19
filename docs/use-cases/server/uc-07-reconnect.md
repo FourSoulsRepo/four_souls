@@ -30,6 +30,9 @@
   * Joining that server again sends the token; the player is back in their seat.
   * The welcome names the seat, so the app knows which player it is.
 * **2e. A kicked seat rolls:** the server throws its die at once (15.60).
+* **3c. The game is over:** the token takes the player to the lobby, not back (19.32).
+  * The player keeps the token; the record download still works.
+  * A new game with that token is the one a later hello comes back to.
 
 ## Postconditions
 

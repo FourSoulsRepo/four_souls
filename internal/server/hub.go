@@ -279,7 +279,8 @@ func (h *Hub) hello(c *Client, env protocol.Envelope) {
 			return
 		}
 		for _, g := range h.games {
-			if g.room.hasToken(m.Token) {
+			// A finished game never takes its players back (19.32).
+			if g.room.hasToken(m.Token) && !g.room.over.Load() {
 				c.token = m.Token
 				// The seat tells a restarted app which player it is.
 				welcome.Token, welcome.Seat = m.Token, g.room.seatOf(m.Token)

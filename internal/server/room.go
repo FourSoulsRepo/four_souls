@@ -58,7 +58,7 @@ type Room struct {
 	votes  []protocol.Vote // while paused (N-08)
 
 	// The match record (6.9). path is fixed when the room is made; over
-	// is read by the hub for downloads.
+	// is read by the hub for downloads and hellos (19.32).
 	recDir   string
 	recInfo  recordInfo
 	steps    int // applied steps, for the record of a saved game
