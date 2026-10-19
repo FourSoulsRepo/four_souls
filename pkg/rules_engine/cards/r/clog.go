@@ -5,9 +5,6 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 // Clog (Boss Card)
 //
 //	When this dies, each player gives their hand to the player to their left.
-//
-// TODO(card): implement the text above, then delete this line.
-// Until then `go run ./cmd/cardgen` rewrites this file from card_db.
 var clog = engine.CardDef{
 	Ref:     "clog",
 	Kind:    engine.MonsterCard,
@@ -17,4 +14,20 @@ var clog = engine.CardDef{
 	ATK:     1,
 	Soul:    1,
 	Rewards: []engine.Reward{{Kind: engine.RewardLoot, Amount: 3}},
+	Abilities: []engine.Ability{{
+		Kind:    engine.Triggered,
+		Text:    "When this dies, each player gives their hand to the player to their left.",
+		Trigger: engine.WhenThisDies(),
+		Effects: []engine.Effect{engine.EffectFunc(func(c *engine.Ctx) {
+			hands := make([][]engine.ObjectID, len(c.G.Players))
+			for i, pl := range c.G.Players {
+				hands[i] = append([]engine.ObjectID(nil), pl.Hand...)
+			}
+			for i, hand := range hands {
+				for _, id := range hand {
+					c.G.GiveHandCard(engine.PlayerID(i), c.G.PlayerAfter(engine.PlayerID(i)), id)
+				}
+			}
+		})},
+	}},
 }

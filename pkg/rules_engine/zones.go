@@ -193,7 +193,7 @@ func (g *Game) DestroyObject(p PlayerID, id ObjectID) bool {
 	if f := g.def(id).InsteadOfDestroy; f != nil && f(g, id) {
 		return false // replaced (Bag Lunch)
 	}
-	if g.def(id).SoulWhenDestroyed && o.Role == RoleItem {
+	if g.def(id).SoulWhenDestroyed && o.Role == RoleItem && g.CanGainSouls(p) {
 		o.Role, o.Charged, o.Counters, o.NoAbilities = RoleSoul, false, nil, true // The Chest
 		g.emit(Event{Kind: EvGainedSoul, Player: p, Object: id, Card: o.Card})
 		return false

@@ -14,10 +14,17 @@ var sets = []engine.CardSet{b2.Set, Set}
 // seat is a player with a character and items.
 var seat = enginetest.Seat
 
-// setup builds a table from a full setup.
+// setup builds a table from a full setup. Refills and treasure gains
+// draw plain cards first, so a test never depends on the deal: Clotty
+// has no abilities, Book of Sin only a ↷ one.
 func setup(t *testing.T, s engine.SituationSetup) *enginetest.Table {
 	t.Helper()
-	return enginetest.NewSetup(t, s, sets...)
+	tb := enginetest.NewSetup(t, s, sets...)
+	for range 6 {
+		tb.G.PutOnDeck(engine.MonsterDeck, "clotty")
+		tb.G.PutOnDeck(engine.TreasureDeck, "book_of_sin")
+	}
+	return tb
 }
 
 // lootTable: player 0 (Isaac) holds the cards, player 1 is Cain; a fly
@@ -147,4 +154,12 @@ func charmedGift(t *testing.T, card engine.CardRef, extra ...string) *enginetest
 	tb.G.ForceRolls(6)
 	tb.Do(engine.Intent{Player: 0, Kind: engine.IntentAttack}, append(append([]string{string(card)}, extra...), foe)...)
 	return tb
+}
+
+// giveCurse puts a curse card in play under player p.
+func giveCurse(tb *enginetest.Table, p int, curse engine.CardRef) {
+	tb.T.Helper()
+	tb.G.PutOnDeck(engine.MonsterDeck, curse)
+	top := tb.G.DeckTop(engine.MonsterDeck, 1)[0]
+	tb.G.GiveCurseFromDeck(top, engine.PlayerID(p))
 }

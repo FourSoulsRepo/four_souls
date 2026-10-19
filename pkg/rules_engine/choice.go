@@ -24,6 +24,7 @@ const (
 	ChooseDie                               // which of several dice is the result (Mutant Spider)
 	ChooseRedirect                          // which monster another player attacks (Mom\'s Eye Shadow)
 	ChooseOrder                             // the order of cards put back on a deck (PromptOrder, 19.16)
+	ChoosePassCurse                         // who gets a curse passed on (Curse of the Soulless)
 )
 
 // Choice is an open question to one player. Options are listed in the
@@ -126,6 +127,8 @@ func (g *Game) answer(i int) {
 			return
 		}
 		g.startActivation(Activation{Player: c.Player, Source: c.Objects[0], Loot: true, Ability: c.Abilities[i]})
+	case ChoosePassCurse:
+		g.passCurse(c.Objects[0], PlayerID(c.Slots[i]))
 	case ChooseOrder:
 		// Answered with IntentOrder (answerOrder), never by index.
 	case ChooseRecharge:

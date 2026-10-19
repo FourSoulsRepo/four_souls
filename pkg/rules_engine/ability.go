@@ -351,6 +351,9 @@ func (becomeSoulEffect) apply(c *Ctx) {
 		// An event in a monster slot: "This becomes a soul. Gain it."
 		// (Holy Chest); its slot is refilled.
 		g := c.G
+		if !g.CanGainSouls(c.Controller) {
+			return // it goes to discard like any event
+		}
 		g.removeFromSlot(c.Source)
 		nid := g.move(c.Source, Zone{Kind: ZoneInPlay}, c.Controller)
 		g.Object(nid).Role = RoleSoul
@@ -359,7 +362,7 @@ func (becomeSoulEffect) apply(c *Ctx) {
 		g.RefillSlots()
 		return
 	}
-	if o.Zone.Kind != ZoneInPlay || o.Controller != c.Controller {
+	if o.Zone.Kind != ZoneInPlay || o.Controller != c.Controller || !c.G.CanGainSouls(c.Controller) {
 		return
 	}
 	o.Role, o.Charged, o.Counters, o.NoAbilities = RoleSoul, false, nil, true

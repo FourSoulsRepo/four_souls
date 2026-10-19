@@ -34,12 +34,13 @@ const (
 	StatNoForcedLoss                   // abilities and the death penalty can't make the player discard or lose ¢ (Rib of Greed)
 	StatRollToOne                      // a boost: a player's roll of 2 or 3 becomes a 1 as it resolves (Eternal D6, R-DICE-12)
 	StatPaidDiscount                   // $ abilities of the player's items cost this much less (Trick Penny)
+	StatNoSouls                        // the player can't gain souls (Curse of the Soulless, All Hallows' Eve)
 	StatTwoDiceLeftChooses             // players roll 2 dice for each roll; the player to their left picks the result (Cursed Lil Haunt)
 	StatPenaltyItemTo                  // a boost: the player's death-penalty item goes to player Amount-1 this turn instead (Lust for Blood)
 	StatPlayerAttackDC                 // the active player may attack this player, who has this DC (R-ATK-20); the newest effect wins (R-MECH-06)
 )
 
-var statNames = []string{"ATK", "HP", "DC", "ATK", "HP", "price", "roll", "attack roll", "loot plays", "attacks", "purchases", "loot step", "lock", "double loot", "death ward", "DC of attacked monsters", "recharge limit", "max hand size", "next attack roll", "lock this turn", "no character recharge", "revealed hand", "choose attacks", "used", "double rewards", "eternal", "no forced loss", "2 or 3 becomes 1", "cheaper $ abilities", "two dice, left chooses", "penalty item given", "DC when attacked"}
+var statNames = []string{"ATK", "HP", "DC", "ATK", "HP", "price", "roll", "attack roll", "loot plays", "attacks", "purchases", "loot step", "lock", "double loot", "death ward", "DC of attacked monsters", "recharge limit", "max hand size", "next attack roll", "lock this turn", "no character recharge", "revealed hand", "choose attacks", "used", "double rewards", "eternal", "no forced loss", "2 or 3 becomes 1", "cheaper $ abilities", "no souls", "two dice, left chooses", "penalty item given", "DC when attacked"}
 
 func (s Stat) String() string { return statNames[s] }
 

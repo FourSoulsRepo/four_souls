@@ -6,9 +6,6 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 //
 //	When an attack is declared on this, each non-active player discards a loot card.
 //	When this dies, the active player kills up to 3 other players.
-//
-// TODO(card): implement the text above, then delete this line.
-// Until then `go run ./cmd/cardgen` rewrites this file from card_db.
 var ragMega = engine.CardDef{
 	Ref:     "rag_mega",
 	Kind:    engine.MonsterCard,
@@ -18,4 +15,24 @@ var ragMega = engine.CardDef{
 	ATK:     1,
 	Soul:    1,
 	Rewards: []engine.Reward{{Kind: engine.RewardTreasure, Amount: 1}},
+	Abilities: []engine.Ability{
+		{
+			Kind:    engine.Triggered,
+			Text:    "When an attack is declared on this, each non-active player discards a loot card.",
+			Trigger: whenAttackedThis(),
+			Effects: []engine.Effect{engine.EffectFunc(func(c *engine.Ctx) {
+				for _, p := range othersOfActive(c.G) {
+					them := *c
+					them.Controller = p
+					them.Do(discardOne)
+				}
+			})},
+		},
+		{
+			Kind:    engine.Triggered,
+			Text:    "When this dies, the active player kills up to 3 other players.",
+			Trigger: engine.WhenThisDies(),
+			Effects: []engine.Effect{killUpTo(3)},
+		},
+	},
 }

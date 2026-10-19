@@ -66,6 +66,9 @@ func (g *Game) giveCurse(curse ObjectID, p PlayerID) {
 func (g *Game) dropCurses(p PlayerID) {
 	for _, id := range append([]ObjectID(nil), g.Players[p].InPlay...) {
 		if g.Object(id).Role == RoleCurse {
+			if f := g.def(id).InsteadOfDestroy; f != nil && f(g, id) {
+				continue // "If this would be put into discard, instead …"
+			}
 			g.Players[p].InPlay = remove(g.Players[p].InPlay, id)
 			nid := g.discard(id, MonsterDeck)
 			g.emit(Event{Kind: EvDiscarded, Player: p, Object: nid, Card: g.Object(nid).Card, Prev: id})
@@ -170,7 +173,7 @@ func (g *Game) checkBonusSouls() bool {
 			continue
 		}
 		for _, p := range g.turnOrderFrom(g.Turn.Active) {
-			if cond(g, p) {
+			if cond(g, p) && g.CanGainSouls(p) {
 				g.BonusSouls = remove(g.BonusSouls, id)
 				nid := g.move(id, Zone{Kind: ZoneInPlay}, p)
 				g.Object(nid).Role = RoleSoul
@@ -192,6 +195,9 @@ func (g *Game) SoulFromDiscard(d DeckKind, card CardRef, p PlayerID) {
 		if g.Object(pile[i]).Card != card {
 			continue
 		}
+		if !g.CanGainSouls(p) {
+			return
+		}
 		g.Discards[d] = remove(pile, pile[i])
 		nid := g.move(pile[i], Zone{Kind: ZoneInPlay}, p)
 		g.Object(nid).Role = RoleSoul
@@ -209,4 +215,50 @@ func (g *Game) GiveCurseFromDeck(curse ObjectID, p PlayerID) {
 	g.Object(nid).Role = RoleCurse
 	g.Players[p].InPlay = append(g.Players[p].InPlay, nid)
 	g.emit(Event{Kind: EvCursed, Player: p, Object: nid, Card: g.Object(nid).Card})
+}
+
+// CanGainSouls: nothing stops p from gaining souls (Curse of the
+// Soulless). Being given or stealing a soul is not gaining (R-MECH-35).
+func (g *Game) CanGainSouls(p PlayerID) bool { return g.bonus(StatNoSouls, p, 0) == 0 }
+
+// GainSoul makes a card outside the game (a dead monster) a soul of p.
+// It reports false if p can't gain souls.
+func (g *Game) GainSoul(id ObjectID, p PlayerID) bool {
+	if !g.CanGainSouls(p) {
+		return false
+	}
+	nid := g.move(id, Zone{Kind: ZoneInPlay}, p)
+	g.Object(nid).Role = RoleSoul
+	g.Players[p].InPlay = append(g.Players[p].InPlay, nid)
+	g.emit(Event{Kind: EvGainedSoul, Player: p, Object: nid, Card: g.Object(nid).Card})
+	return true
+}
+
+// PassCurse queues "give this curse to another player" for its holder,
+// who chooses (Curse of the Soulless).
+func (g *Game) PassCurse(curse ObjectID) {
+	g.enqueue(Action{Kind: ActPassCurse, Player: g.Object(curse).Controller, Object: curse})
+}
+
+func (g *Game) askPassCurse(p PlayerID, curse ObjectID) {
+	if o := g.Object(curse); o.Zone.Kind != ZoneInPlay || o.Controller != p {
+		return
+	}
+	others := g.choosablePlayers(g.turnOrderFrom(p)[1:])
+	labels := make([]string, len(others))
+	slots := make([]int, len(others))
+	for i, q := range others {
+		labels[i] = "player " + strconv.Itoa(int(q)+1) + " (" + string(g.Object(g.Players[q].Character).Card) + ")"
+		slots[i] = int(q)
+	}
+	g.ask(Choice{Purpose: ChoosePassCurse, Player: p, Rule: "R-ABIL-20", Objects: []ObjectID{curse}, Slots: slots, Question: "Give the curse to which player?"}, labels)
+}
+
+// passCurse moves a curse from its holder to p.
+func (g *Game) passCurse(curse ObjectID, p PlayerID) {
+	o := g.Object(curse)
+	g.Players[o.Controller].InPlay = remove(g.Players[o.Controller].InPlay, curse)
+	o.Controller = p
+	g.Players[p].InPlay = append(g.Players[p].InPlay, curse)
+	g.emit(Event{Kind: EvCursed, Player: p, Object: curse, Card: o.Card})
 }

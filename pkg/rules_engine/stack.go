@@ -97,7 +97,7 @@ func (g *Game) push(it StackItem) int {
 	// "Would take damage" and "would die" triggers look at these.
 	switch it.Kind { //nolint:exhaustive // only damage and death have "would" triggers
 	case StackDamage:
-		e := Event{Kind: EvDamagePending, Player: it.Target.player(), Object: it.Target.Object, Amount: it.Amount}
+		e := Event{Kind: EvDamagePending, Player: it.Target.player(), Object: it.Target.Object, Amount: it.Amount, StackID: it.ID, Source: it.Source}
 		if it.Attack {
 			e.Text = "combat" // as on the damaged event
 		}

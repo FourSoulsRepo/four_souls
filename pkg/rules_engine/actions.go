@@ -32,6 +32,7 @@ const (
 	ActPlayLootFree                         // Player plays the loot card Object without using a loot play
 	ActPushLingering                        // put lingering ability From of Object on the stack; EventPlayer Player, EventAmount Amount
 	ActThrow                                // Player throws the die of the roll Amount (15.59)
+	ActPassCurse                            // Player gives the curse Object to another player of their choice
 )
 
 // Action is a pending change. It sits in the queue, may be rewritten by
@@ -254,10 +255,9 @@ func (g *Game) perform(a Action) {
 		if g.Object(a.Object).Zone.Kind == ZoneGone {
 			return // moved by an effect already
 		}
-		nid := g.move(a.Object, Zone{Kind: ZoneInPlay}, a.Player)
-		g.Object(nid).Role = RoleSoul
-		g.Players[a.Player].InPlay = append(g.Players[a.Player].InPlay, nid)
-		g.emit(Event{Kind: EvGainedSoul, Player: a.Player, Object: nid, Card: g.Object(nid).Card})
+		if !g.GainSoul(a.Object, a.Player) {
+			g.perform(Action{Kind: ActDiscardObject, Player: NoPlayer, Object: a.Object}) // can't gain it
+		}
 	case ActDiscardObject:
 		if g.Object(a.Object).Zone.Kind == ZoneGone {
 			return
@@ -332,6 +332,8 @@ func (g *Game) perform(a Action) {
 		})
 	case ActThrow:
 		g.askThrow(a)
+	case ActPassCurse:
+		g.askPassCurse(a.Player, a.Object)
 	case ActRewardsDone:
 		before := len(g.PendingTriggers)
 		g.emit(Event{Kind: EvRewardsGained, Player: a.Player, Object: a.Object, Card: g.Object(a.Object).Card, Prev: a.Object})

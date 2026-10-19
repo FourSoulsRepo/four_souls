@@ -31,10 +31,13 @@ type AttackState struct {
 	// attack (Sibling Rivalry).
 	// Rolls counts the attack rolls made against the target this attack
 	// ("every other attack roll made against it": Null).
-	Rolls   int        `json:"rolls,omitempty"`
-	Helpers []PlayerID `json:"helpers,omitempty"`
-	Queue   []PlayerID `json:"queue,omitempty"`
-	Share   []PlayerID `json:"share,omitempty"`
+	Rolls int `json:"rolls,omitempty"`
+	// StopAfter ends the attack once the current roll's combat damage has
+	// resolved (Turdlings).
+	StopAfter bool       `json:"stop_after,omitempty"`
+	Helpers   []PlayerID `json:"helpers,omitempty"`
+	Queue     []PlayerID `json:"queue,omitempty"`
+	Share     []PlayerID `json:"share,omitempty"`
 }
 
 // Events about combat and death.
@@ -418,7 +421,7 @@ func (g *Game) HelpNextAttack(p PlayerID, share bool) {
 // side dies or has 0 HP (R-ATK-14).
 func (g *Game) continueAttack() {
 	t := g.Attack.Target
-	if g.PlayerHP(g.Turn.Active) == 0 || g.Object(t).Zone.Kind != ZoneInPlay || g.HP(t) == 0 {
+	if g.Attack.StopAfter || g.PlayerHP(g.Turn.Active) == 0 || g.Object(t).Zone.Kind != ZoneInPlay || g.HP(t) == 0 {
 		g.endAttack()
 		g.openWindow(g.Turn.Active)
 		return
@@ -867,4 +870,12 @@ func (g *Game) penaltyItemTo(p PlayerID) PlayerID {
 		}
 	}
 	return NoPlayer
+}
+
+// CancelAttackAfterDamage cancels the attack after the current roll's
+// combat damage: "after combat damage, cancel the attack" (Turdlings).
+func (g *Game) CancelAttackAfterDamage() {
+	if g.Attack.Started {
+		g.Attack.StopAfter = true
+	}
 }

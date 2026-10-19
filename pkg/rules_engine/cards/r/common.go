@@ -2,6 +2,7 @@ package r
 
 import (
 	"slices"
+	"strings"
 
 	engine "github.com/FourSoulsRepo/rules_engine"
 	"github.com/FourSoulsRepo/rules_engine/cards/cardkit"
@@ -19,6 +20,7 @@ var (
 	playerLabel    = cardkit.PlayerLabel
 	damageAnything = cardkit.DamageAnything
 	monstersInPlay = cardkit.MonstersInPlay
+	discardOne     = cardkit.DiscardOne
 )
 
 // eachOtherThan deals n damage from the controller to each player but
@@ -544,4 +546,240 @@ func centsEqualToRoll() engine.RollTable {
 		t = t.Results(r, r, engine.GainCents(r))
 	}
 	return t
+}
+
+// damageNeighbour: this deals 1 damage to the player to the active
+// player's left (next in turn order, R-TURN-01) or right.
+func damageNeighbour(left bool) engine.Effect {
+	return engine.EffectFunc(func(c *engine.Ctx) {
+		p := c.G.PlayerBefore(c.G.Turn.Active)
+		if left {
+			p = c.G.PlayerAfter(c.G.Turn.Active)
+		}
+		c.G.DealDamageTo(engine.Target{Player: p, IsPlayer: true}, 1, engine.NoPlayer, c.Source)
+	})
+}
+
+// thisGains gives this monster n of a stat till end of turn.
+func thisGains(stat engine.Stat, n int) engine.Effect {
+	return engine.EffectFunc(func(c *engine.Ctx) {
+		c.G.Boosts = append(c.G.Boosts, engine.Boost{Stat: stat, Player: engine.NoPlayer, Object: c.Source, Amount: n})
+	})
+}
+
+// killUpTo: the active player kills up to n other players, one at a
+// time; "none" stops (S-YUG: up to includes none).
+func killUpTo(n int) engine.Effect {
+	left := func(c *engine.Ctx, a []int) []engine.PlayerID {
+		ps := othersOfActive(c.G)
+		for _, x := range a {
+			if x < 0 || x >= len(ps) {
+				return nil
+			}
+			ps = append(ps[:x:x], ps[x+1:]...)
+		}
+		return ps
+	}
+	qs := make([]engine.Question, n)
+	for i := range qs {
+		qs[i] = engine.Question{Text: "Kill which player?", Options: func(c *engine.Ctx, a []int) []string {
+			ps := left(c, a[:i])
+			if len(ps) == 0 {
+				return nil
+			}
+			return append(playerLabels(c.G, ps), "none")
+		}}
+	}
+	return engine.Ask(func(c *engine.Ctx, a []int) {
+		ps := othersOfActive(c.G)
+		var picked []engine.PlayerID
+		for _, x := range a {
+			if x < 0 || x >= len(ps) {
+				break
+			}
+			picked = append(picked, ps[x])
+			ps = append(ps[:x:x], ps[x+1:]...)
+		}
+		for _, p := range picked {
+			them := *c
+			them.Targets = []engine.Chosen{{Kind: engine.TargetPlayer, Player: p}}
+			them.Do(engine.Kill(0))
+		}
+	}, qs...)
+}
+
+// cursesInDeck lists the curse cards in the monster deck.
+func cursesInDeck(g *engine.Game) []engine.ObjectID {
+	var out []engine.ObjectID
+	for _, id := range g.Decks[engine.MonsterDeck] {
+		if g.Def(id).Curse {
+			out = append(out, id)
+		}
+	}
+	return out
+}
+
+// slotQuestionAfterPick asks for a free monster slot once the question
+// before it picked something.
+func slotQuestionAfterPick(text string) engine.Question {
+	q := slotQuestion(text)
+	opts := q.Options
+	q.Options = func(c *engine.Ctx, a []int) []string {
+		if a[len(a)-1] < 0 {
+			return nil
+		}
+		return opts(c, a)
+	}
+	return q
+}
+
+// vote: each living player, in turn order from the active player, votes
+// for one option (R-MECH-49); decide gets the votes per option.
+func vote(options []string, decide func(c *engine.Ctx, votes []int)) engine.Effect {
+	voters := func(c *engine.Ctx) []engine.PlayerID { return cardkit.LivingPlayers(c.G, engine.NoPlayer) }
+	inOrder := func(c *engine.Ctx) []engine.PlayerID {
+		var out []engine.PlayerID
+		for _, p := range c.G.TurnOrderFrom(c.G.Turn.Active) {
+			if slices.Contains(voters(c), p) {
+				out = append(out, p)
+			}
+		}
+		return out
+	}
+	qs := make([]engine.Question, 4)
+	for i := range qs {
+		qs[i] = engine.Question{
+			Text:   "Vote: " + strings.Join(options, " or ") + "?",
+			Player: func(c *engine.Ctx, _ []int) engine.PlayerID { return inOrder(c)[i] },
+			Options: func(c *engine.Ctx, _ []int) []string {
+				if i >= len(inOrder(c)) {
+					return nil
+				}
+				return options
+			},
+		}
+	}
+	return engine.Ask(func(c *engine.Ctx, a []int) {
+		votes := make([]int, len(options))
+		for _, x := range a {
+			if x >= 0 && x < len(votes) {
+				votes[x]++
+			}
+		}
+		decide(c, votes)
+	}, qs...)
+}
+
+// rerollAnyNumber: the controller rerolls any number of their
+// non-eternal items, picked one at a time (up to max).
+func rerollAnyNumber(most int) engine.Effect {
+	items := func(c *engine.Ctx) []engine.ObjectID {
+		var out []engine.ObjectID
+		for _, id := range itemsOf(c.G, c.Controller) {
+			if !c.G.Eternal(id) {
+				out = append(out, id)
+			}
+		}
+		return out
+	}
+	left := func(c *engine.Ctx, a []int) ([]engine.ObjectID, bool) {
+		ids := items(c)
+		for _, x := range a {
+			if x < 0 || x >= len(ids) {
+				return nil, true
+			}
+			ids = append(ids[:x:x], ids[x+1:]...)
+		}
+		return ids, false
+	}
+	qs := make([]engine.Question, most)
+	for i := range qs {
+		qs[i] = engine.Question{Text: "Reroll which item?", Options: func(c *engine.Ctx, a []int) []string {
+			ids, done := left(c, a[:i])
+			if done || len(ids) == 0 {
+				return nil
+			}
+			return append(labelsOf(c.G, ids), "done")
+		}}
+	}
+	return engine.Ask(func(c *engine.Ctx, a []int) {
+		ids := items(c)
+		var picked []engine.ObjectID
+		for _, x := range a {
+			if x < 0 || x >= len(ids) {
+				break
+			}
+			picked = append(picked, ids[x])
+			ids = append(ids[:x:x], ids[x+1:]...)
+		}
+		for _, id := range picked {
+			c.G.RerollItem(id)
+		}
+	}, qs...)
+}
+
+// damageAChosenPlayer: "Choose a player. They take n damage."
+func damageAChosenPlayer(n int) engine.Effect {
+	return engine.Ask(func(c *engine.Ctx, a []int) {
+		if ps := cardkit.LivingPlayers(c.G, engine.NoPlayer); a[0] >= 0 && a[0] < len(ps) {
+			c.G.DealDamageTo(engine.Target{Player: ps[a[0]], IsPlayer: true}, n, c.Controller, c.Source)
+		}
+	}, cardkit.PickAPlayer("Choose a player."))
+}
+
+// backIntoDeck puts this event into the monster deck n cards from the
+// top; its slot is refilled.
+func backIntoDeck(n int) engine.Effect {
+	return engine.EffectFunc(func(c *engine.Ctx) {
+		if c.G.Object(c.Source).Zone.Kind == engine.ZoneInPlay {
+			c.G.PutIntoDeck(engine.MonsterDeck, c.Source, n)
+			c.G.RefillSlots()
+		}
+	})
+}
+
+// monstersAndPlayers lists the monsters in play and the living players,
+// as chosen targets.
+func monstersAndPlayers(g *engine.Game) []engine.Chosen {
+	var out []engine.Chosen
+	for _, id := range monstersInPlay(g) {
+		out = append(out, engine.Chosen{Kind: engine.TargetMonster, Player: engine.NoPlayer, Object: id})
+	}
+	for _, p := range cardkit.LivingPlayers(g, engine.NoPlayer) {
+		out = append(out, engine.Chosen{Kind: engine.TargetPlayer, Player: p})
+	}
+	return out
+}
+
+// chosenLabels names chosen targets as the prompts do.
+func chosenLabels(g *engine.Game, cs []engine.Chosen) []string {
+	out := make([]string, len(cs))
+	for i, c := range cs {
+		if c.Kind == engine.TargetPlayer {
+			out[i] = playerLabel(g, c.Player)
+		} else {
+			out[i] = string(g.Object(c.Object).Card)
+		}
+	}
+	return out
+}
+
+// discardN: the controller discards n loot cards of their choice.
+func discardN(n int) engine.Effect {
+	qs := make([]engine.Question, n)
+	for i := range qs {
+		qs[i] = engine.Question{Text: "Discard which loot card?", Options: func(c *engine.Ctx, a []int) []string {
+			return labelsOf(c.G, handLeft(c, a[:i]))
+		}}
+	}
+	return engine.Ask(func(c *engine.Ctx, a []int) {
+		left := append([]engine.ObjectID(nil), c.G.Players[c.Controller].Hand...)
+		for _, x := range a {
+			if x < 0 || x >= len(left) {
+				return
+			}
+			c.G.DiscardFromHand(c.Controller, left[x])
+			left = append(left[:x:x], left[x+1:]...)
+		}
+	}, qs...)
 }

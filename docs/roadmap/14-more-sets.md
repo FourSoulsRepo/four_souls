@@ -119,6 +119,10 @@ Ideas: CD-02, GS-07, GS-08, CD-11, A-16, CD-12, V-32, GS-12, GS-13, GS-01.
    32. Engine: attack rolls counted per attack (Null), two dice for every roll (Cursed Lil Haunt).
    33. Engine: AskWithRoll, a roll made after a question finds its result table.
    34. Every Requiem card has its own test file, as the status report counts them.
+   35. Requiem: 11 bosses, 8 events and 4 curses tested; Dogma waits for flip.
+   36. Engine: "can't gain souls" checked everywhere a soul is gained; a curse passed on.
+   37. Engine: an attack cancelled after combat damage; pending damage names its stack item.
+   38. Card tests draw plain cards first (Clotty, Book of Sin): no test depends on the deal.
 
 ### [ ] 14.4 Setup options
 
