@@ -963,6 +963,9 @@ Images come first, so the new table is built with backs and mats.
    19. The soul pick test presses "View board" before it picks on the table.
    20. 19.28: the Eden ban made the 4-player test check too early; fixed.
    21. `make e2e`: 194 passed; earlier failures under load are kept as evidence.
+5. Owner notes (2026-10-19)
+   1. Card options repeat the card's name in a button under it; see 15.66.
+   2. Owner marks 15.29 solved.
 
 ### [ ] 15.30 Activity status
 
@@ -1862,3 +1865,17 @@ Images come first, so the new table is built with backs and mats.
    4. Basement stays the default: it is the first image.
    5. Owner amended the images repo's single commit (`3ed5075`).
    6. Screenshots: `.cache/screenshots/mat-cathedral/before/` and `after/`.
+
+### [ ] 15.66 Choice cards without name buttons
+
+1. Goal: a card option is only its card, with no button repeating its name.
+2. Asked by the owner after 15.29 (2026-10-19).
+3. Tasks:
+   1. Card options: the big card is the button; no name button under it.
+   2. Text options ("yes", "keep", "monster deck") keep their buttons.
+   3. Ability lines and outcomes under an option stay.
+   4. Discard and order dialogs: check they repeat no names either.
+   5. e2e helpers that click `.choice-option button` also click the card.
+4. Done when:
+   1. e2e test: a card option has no name button and its card answers.
+   2. `make screenshots` covers a card choice and a text choice.
