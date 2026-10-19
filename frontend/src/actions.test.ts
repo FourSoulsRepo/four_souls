@@ -216,6 +216,36 @@ describe('aims', () => {
   });
 });
 
+// 15.29: what the player can't use now says why.
+describe('blocked', () => {
+  it('maps blocked cards and turn actions to their reasons', () => {
+    const u = update({}, [{ player: 0, kind: IntentKind.pass }]);
+    const a = actionsFor(
+      {
+        ...u,
+        blocked: [
+          { kind: IntentKind.attack, object: 0, reason: 'No attacks left' },
+          { kind: IntentKind.endTurn, object: 0, reason: 'You must attack first' },
+          { kind: IntentKind.playLoot, object: 7, reason: 'No loot plays left' },
+          { kind: IntentKind.activate, object: 9, reason: 'Used; it recharges on your turn' },
+          { kind: IntentKind.activate, object: 9, reason: 'Not enough ¢' },
+        ],
+      },
+      isCard,
+    );
+    expect(a.turn.why).toEqual({ attack: 'No attacks left', endTurn: 'You must attack first' });
+    expect(a.blocked.get(7)).toBe('No loot plays left');
+    expect(a.blocked.get(9)).toBe('Used; it recharges on your turn');
+    expect(a.blocked.has(0)).toBe(false);
+  });
+
+  it('is empty when the server sends no reasons', () => {
+    const a = actionsFor(update({}, []), isCard);
+    expect(a.blocked.size).toBe(0);
+    expect(a.turn.why).toBeUndefined();
+  });
+});
+
 // 19.17: each order of replacement effects says what it gives.
 describe('outcomeLines', () => {
   const names = new Map([

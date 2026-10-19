@@ -364,6 +364,14 @@ export interface Aim {
   reason?: string; // what it may target, for a wrong click (15.33)
 }
 
+// Block says why the intent of that kind, on object if a card, can't be
+// sent now (15.29).
+export interface Block {
+  kind: number;
+  object: number;
+  reason: string;
+}
+
 export interface Intent {
   player: number;
   kind: number;
@@ -405,6 +413,7 @@ export interface Update {
   view: GameView;
   allowed: Intent[] | null;
   aims?: Aim[]; // the first targets of allowed plays and uses (15.25)
+  blocked?: Block[]; // why other cards and turn actions can't be used (15.29)
   seats: Seat[] | null;
   deadline?: number; // Unix ms; the response timer
   skip_all?: boolean;

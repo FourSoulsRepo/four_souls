@@ -320,46 +320,102 @@
   box-shadow: 0 4px 0 #1d120a;
 }
 
-/* A choice sits at the bottom edge, over the viewer's own area, so the
-   board and its targets stay in view (F-02). */
-.choice {
+/* A choice: big cards over the dimmed board, nothing else in view
+   (15.29, H-11). "View board" hides it (F-20). */
+.choice-backdrop {
   position: fixed;
-  bottom: 8px;
-  left: 50%;
+  inset: 0;
   z-index: var(--z-choice);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(0 0 0 / 66%);
+}
+
+.choice {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  max-width: min(90vw, 760px);
+  gap: 14px;
+  max-width: min(94vw, 1100px);
+  max-height: 94vh;
   padding: 14px 18px;
-  border-radius: 10px;
-  translate: -50% 0;
-  background: rgb(20 28 40 / 92%);
-  box-shadow: 0 8px 32px rgb(0 0 0 / 60%);
+  box-sizing: border-box;
+  overflow: auto;
 }
 
 /* A look sits in the middle, over a choice that may come with it. */
 .choice.look {
+  position: fixed;
   top: 50%;
-  bottom: auto;
+  left: 50%;
   z-index: var(--z-look);
+  max-width: min(90vw, 760px);
+  border-radius: 10px;
   translate: -50% -50%;
+  background: rgb(20 28 40 / 92%);
+  box-shadow: 0 8px 32px rgb(0 0 0 / 60%);
 }
 
 .choice h2 {
   margin: 0;
   font-family: var(--font-game);
-  font-size: 24px;
+  font-size: 32px;
   font-weight: 400;
   letter-spacing: 0.03em;
+  text-shadow: 0 2px 8px rgb(0 0 0 / 80%);
+}
+
+.choice.look h2 {
+  font-size: 24px;
 }
 
 .choice-options {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 10px;
+  gap: 18px;
+}
+
+/* "View board" stands apart from the answers: plain, not red. */
+.choice button.choice-view,
+.choice-peek button {
+  border: 1px solid rgb(255 255 255 / 35%);
+  background: rgb(20 28 40 / 85%);
+}
+
+.choice button.choice-view:hover,
+.choice-peek button:hover {
+  border-color: #ffd27a;
+}
+
+/* While the player views the board: the choice's title and a button
+   to bring it back, small, at the bottom edge (F-20). */
+.choice-peek {
+  position: fixed;
+  bottom: 8px;
+  left: 50%;
+  z-index: var(--z-choice);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 8px 6px 16px;
+  border-radius: 10px;
+  translate: -50% 0;
+  font-family: var(--font-game);
+  font-size: 20px;
+  letter-spacing: 0.03em;
+  background: rgb(20 28 40 / 92%);
+  box-shadow: 0 8px 32px rgb(0 0 0 / 60%);
+}
+
+.choice-peek button {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-family: var(--font-card);
+  font-size: 16px;
+  color: var(--fg);
+  cursor: pointer;
 }
 
 .choice-option {
@@ -819,8 +875,10 @@
     0 8px 14px rgb(0 0 0 / 55%);
 }
 
-/* Own turn, but the engine does not allow ending it yet. */
-.end-turn.own:disabled {
+/* Own turn, but the engine does not allow ending it yet; a click on
+   it then says why (15.29). */
+.end-turn.own:disabled,
+.end-turn.own[aria-disabled='true'] {
   filter: saturate(0.55) brightness(0.8);
   opacity: 0.8;
 }
@@ -829,7 +887,12 @@
   cursor: pointer;
 }
 
-.end-turn.own:enabled:hover {
+.end-turn.own[aria-disabled='true'],
+.turn-action[aria-disabled='true'] {
+  cursor: help;
+}
+
+.end-turn.own:enabled:not([aria-disabled='true']):hover {
   translate: 0 -2px;
   box-shadow:
     0 6px 0 var(--ink),
@@ -860,7 +923,7 @@
 }
 
 /* Pressed: the sticker sinks onto its shadow. */
-.end-turn.own:enabled:active,
+.end-turn.own:enabled:not([aria-disabled='true']):active,
 .end-turn.down {
   translate: 0 3px;
   box-shadow:

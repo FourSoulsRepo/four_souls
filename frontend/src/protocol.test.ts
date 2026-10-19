@@ -127,6 +127,10 @@ const modeled: Record<string, Envelope> = {
           reason: 'Pick a monster or a player.',
         },
       ],
+      blocked: [
+        { kind: 5, object: 0, reason: 'Not your turn' },
+        { kind: 3, object: 314, reason: 'Loot is played on your turn' },
+      ],
       seats: [
         { seat: 0, name: 'Ann', connected: true, dice: 'tear' },
         { seat: 1, name: 'Bo', connected: false },

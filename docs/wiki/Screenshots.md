@@ -55,5 +55,9 @@ The fixture copies the fan-game notice. `internal/legal` has a test that fails w
 | Prompt banners: respond, choose, discard, order, throw | `screen-prompt-*.png` |
 | Picking a target: answers glow, the rest dims | `screen-prompt-pick.png` |
 | Own aim: the banner names the card | `screen-prompt-aim.png` |
+| An unusable card's zoom says why | `screen-zoom-why.png` |
+| A click on an unusable card says why | `screen-why-click.png` |
+| A choice: big cards over the dimmed board | `screen-choice-big.png` |
+| A choice hidden to view the board | `screen-choice-view-board.png` |
 
 When a screen is added, call `shot` in its test and add a row here.

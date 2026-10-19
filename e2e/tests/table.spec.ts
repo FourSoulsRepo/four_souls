@@ -4,6 +4,30 @@ import { expect, test } from './fixtures';
 import { expectFits, startGame, statMonsters } from './game';
 import { serverPort } from './server';
 import { shot } from './shot';
+import { seen } from './turn';
+
+// settled waits until the page has played every update and no new one
+// came for a moment: while the start of the game plays, its effects
+// still move cards in and out of the player areas (19.28).
+async function settled(page: Page): Promise<void> {
+  let last = -1;
+  await expect
+    .poll(
+      async () => {
+        const s = await seen(page);
+        const still = s.ready && s.step === last;
+        last = s.ready ? s.step : -1;
+        return still;
+      },
+      { intervals: [300] },
+    )
+    .toBe(true);
+}
+
+// plainBoard bans Eden from tests that check a clear board: Eden's
+// starting choice opens over the whole table (15.29, H-11) and covers
+// every deck and discard (14.10).
+const plainBoard = ['eden'];
 
 // expectDecksClear fails when anything lies over a deck or a discard
 // (F-02): their corners and middle must hit the pile itself.
@@ -119,6 +143,7 @@ const treasureRefs = ['baby_haunt', 'belly_button', 'bobs_brain', 'breakfast', '
 async function startPair(browser: Browser, names: [string, string], change: (view: View) => void): Promise<[Page, Page]> {
   let opened = 0;
   const [plain, changed] = await startGame(browser, names, {
+    bans: plainBoard,
     open: (page) => (opened++ === 1 ? rewriteView(page, change) : Promise.resolve()),
   });
   if (!plain || !changed) {
@@ -140,7 +165,7 @@ async function slotBoxes(page: Page, row: string) {
 }
 
 test('two players face each other; the table fits 1280x720', async ({ browser }) => {
-  const [eve, fay] = await startGame(browser, ['Eve', 'Fay']);
+  const [eve, fay] = await startGame(browser, ['Eve', 'Fay'], { bans: plainBoard });
   if (!eve || !fay) {
     throw new Error('no pages');
   }
@@ -154,6 +179,7 @@ test('two players face each other; the table fits 1280x720', async ({ browser })
     await expect(page.getByRole('group', { name: /^Loot deck: \d+ cards$/ })).toBeVisible();
     await expect(page.getByRole('group', { name: 'Shop' }).getByRole('img')).not.toHaveCount(0);
     await expect(page.getByRole('group', { name: 'Monsters' }).getByRole('img')).not.toHaveCount(0);
+    await settled(page);
     await expectFits(page);
     await expectDecksClear(page);
     await expectOwnArea(page);
@@ -213,7 +239,10 @@ test('the Attack icon shows the sword image, or a drawn sword without it (15.24)
 });
 
 test('four players sit left, top and right in turn order', async ({ browser }) => {
-  const pages = await startGame(browser, ['Gus', 'Hal', 'Ivy', 'Jo']);
+  // Four players, and a host whose socket the bans go through: the
+  // start alone can pass 30 s on a busy run (19.28).
+  test.slow();
+  const pages = await startGame(browser, ['Gus', 'Hal', 'Ivy', 'Jo'], { bans: plainBoard });
   const hal = pages[1];
   if (!hal) {
     throw new Error('no pages');
@@ -223,6 +252,7 @@ test('four players sit left, top and right in turn order', async ({ browser }) =
   await expect(hal.locator('.player-top')).toHaveAccessibleName('Jo');
   await expect(hal.locator('.player-right')).toHaveAccessibleName('Gus');
   for (const page of pages) {
+    await settled(page);
     await expectFits(page);
     await expectDecksClear(page);
     await expectOwnArea(page);
@@ -232,7 +262,7 @@ test('four players sit left, top and right in turn order', async ({ browser }) =
 });
 
 test('three players sit left and right; nothing covers the decks', async ({ browser }) => {
-  const pages = await startGame(browser, ['Kip', 'Lea', 'Max']);
+  const pages = await startGame(browser, ['Kip', 'Lea', 'Max'], { bans: plainBoard });
   const kip = pages[0];
   if (!kip) {
     throw new Error('no pages');
@@ -240,6 +270,7 @@ test('three players sit left and right; nothing covers the decks', async ({ brow
   await expect(kip.locator('.player-left')).toHaveAccessibleName('Lea');
   await expect(kip.locator('.player-right')).toHaveAccessibleName('Max');
   for (const page of pages) {
+    await settled(page);
     await expectFits(page);
     await expectDecksClear(page);
     await expectOpponents(page);
@@ -307,8 +338,9 @@ for (const [n, names] of [
 }
 
 test('counters and changed monster stats show on the card, not in its zoom (15.23)', async ({ browser }) => {
-  // Delirium or Stoney dealt into a slot would change the other monster (14.10).
-  const [page] = await startGame(browser, ['Flo', 'Hux'], { bans: statMonsters });
+  // Delirium or Stoney dealt into a slot would change the other monster
+  // (14.10); Eden's starting choice would cover the monsters it hovers.
+  const [page] = await startGame(browser, ['Flo', 'Hux'], { bans: [...statMonsters, ...plainBoard] });
   if (!page) {
     throw new Error('no pages');
   }
@@ -597,6 +629,9 @@ test('soul cards hide behind the crystals; hovering one zooms its card (15.56)',
   await expect(pin).toHaveClass(/hl-pick/);
   await expect(page.getByRole('dialog', { name: 'Choose a target' })).toBeVisible();
   await shot(page, 'soul-pick');
+  // The choice covers the table; the player views the board to pick
+  // there (15.29, F-20).
+  await page.getByRole('button', { name: 'View board' }).click();
   await pin.click();
   const sent = await page.evaluate(() => (window as unknown as { sentChoice: unknown }).sentChoice);
   expect(sent).toMatchObject({ kind: 4, choice: 1 });
@@ -681,7 +716,8 @@ test('curses sit at the far left of the player, apart from the items (15.55)', a
 });
 
 test('a revealed hand shows face up; a hidden one stays backs (19.5)', async ({ browser }) => {
-  const pages = await startGame(browser, ['Tam', 'Una', 'Vera', 'Wynn']);
+  // Eden's starting choice would cover the revealed hand it hovers.
+  const pages = await startGame(browser, ['Tam', 'Una', 'Vera', 'Wynn'], { bans: plainBoard });
   const una = pages[1];
   if (!una) {
     throw new Error('no pages');

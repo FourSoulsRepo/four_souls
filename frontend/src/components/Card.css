@@ -33,6 +33,11 @@
   width: 320px;
 }
 
+/* A choice's big cards (15.29, H-11). */
+.card.size-choice {
+  width: clamp(110px, 13vw, 180px);
+}
+
 .card img {
   display: block;
   width: 100%;
@@ -253,6 +258,22 @@
 .card-zoom-owner {
   font-size: 15px;
   font-weight: 700;
+}
+
+/* Why the player can't use the card now (15.29, F-17), in the red of a
+   wrong aim's reason. */
+.card-zoom-why {
+  width: 100%;
+  margin: 0;
+  padding: 6px 10px;
+  box-sizing: border-box;
+  font-size: 15px;
+  font-weight: 600;
+  text-align: center;
+  color: #fff;
+  background: rgb(60 10 10 / 92%);
+  border: 1px solid #e0473c;
+  border-radius: 8px;
 }
 
 .card-zoom-touch {

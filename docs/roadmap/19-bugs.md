@@ -884,3 +884,31 @@ This step never closes; new reports are appended.
    8. No screen change, so no screenshots.
 7. Owner notes (2026-10-19)
    1. Owner marks 19.27 solved.
+
+### [x] 19.28 e2e: the 4-player table test hangs on a hand back
+
+1. Goal: the 4-player table test passes every run.
+2. Report (agent, 2026-10-19)
+   1. Found by `make e2e` during 15.29; Chromium.
+   2. `table.spec.ts`: "four players sit left, top and right in turn order".
+   3. `expectOpponents` waits on `.hidden-back` nth(2) of the top player.
+   4. The element was gone; `boundingBox` waited until the 30 s timeout.
+   5. Passed five reruns in a row.
+   6. Evidence: `.cache/e2e-evidence/15.29-run4/`.
+   7. Seen again in `make screenshots`: `.cache/e2e-evidence/15.29-shots2/`.
+3. Tasks:
+   1. Find why the top player's hand backs change during the check.
+   2. Fix the client or the test, whichever is wrong.
+4. Done when:
+   1. The test passes ten runs in a row.
+5. Cause
+   1. Came with 15.29: the test now bans Eden (its choice covers the decks).
+   2. Bans route the host's socket through the test runner; updates come later.
+   3. The checks then ran while the start's effects still moved cards.
+   4. A hand back or character measured a moment before was gone.
+   5. Under heavy load the 4-player start alone also passed 30 s.
+   6. The client is right; the test checked too early.
+6. Result (2026-10-19)
+   1. Board-layout tests wait until each page has played its updates (`settled`).
+   2. The 4-player test is marked slow: 90 s.
+   3. The test passed ten runs in a row (single runs and full suites).

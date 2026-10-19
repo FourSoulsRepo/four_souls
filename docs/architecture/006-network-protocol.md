@@ -114,6 +114,8 @@ Use options 1, 3, 5 and 10.
    15. Each aim has a `reason`: what it may target, for a wrong click (15.33).
    16. `view.activating`: the card whose mode or targets the chooser picks (15.34).
    17. Only the chooser gets it; a client aims from that card.
+   18. `update` → `blocked`: why a seat can't use a card or turn action now (15.29).
+   19. Each has the intent kind, the card's object, and a short `reason`.
 9. Playing over the internet, until a relay exists
    1. A virtual LAN (Tailscale, ZeroTier, Hamachi, Radmin VPN), or port forwarding.
    2. Or a dedicated server on a rented VPS.

@@ -14,6 +14,7 @@ import { HistoryStrip } from '../components/HistoryStrip';
 import { EndOverlay, LostOverlay, PauseOverlay } from '../components/Overlays';
 import { StackPanel } from '../components/StackPanel';
 import { Throw } from '../components/Throw';
+import { WhyNote } from '../components/Why';
 import { EndTurn, TurnActions } from '../components/TurnActions';
 import { matLook } from '../mats';
 import type { Update } from '../protocol';
@@ -24,7 +25,7 @@ import { seatPositions } from '../table';
 import '../components/Table.css';
 import './screens.css';
 
-const noActions: Actions = { buttons: [], turn: {}, cards: new Map(), choice: null, discard: null, order: null, throw: null };
+const noActions: Actions = { buttons: [], turn: {}, cards: new Map(), blocked: new Map(), choice: null, discard: null, order: null, throw: null };
 
 // GameScreen is the game table (7.5), drawn from the update on screen.
 export function GameScreen() {
@@ -161,6 +162,7 @@ function Table({ game, you }: { game: Update; you: number }) {
               own={view.turn.active === you}
               disabled={!canAct}
               step={game.step}
+              why={actions.turn.why?.endTurn}
             />
           ) : undefined
         }
@@ -196,6 +198,7 @@ function Table({ game, you }: { game: Update; you: number }) {
       />
       <ActionMenu actions={offered.cards} />
       {canAct && <AimLayer />}
+      <WhyNote />
       {offered.choice && !aiming?.choice && (
         <ChoiceDialog
           key={game.step}

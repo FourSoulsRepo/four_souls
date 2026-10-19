@@ -31,16 +31,16 @@ func (g *Game) activatable(p PlayerID, src ObjectID, i int) error {
 	o := g.Object(src)
 	if o.Zone.Kind == ZoneInPlay && o.Role == RoleRoom {
 		if p != g.Turn.Active {
-			return refuse("R-CARD-36", "only the active player uses a room's abilities")
+			return deny("R-CARD-36", "Only on your turn", "only the active player uses a room's abilities")
 		}
 		if contains(g.Turn.LateRooms, src) {
-			return refuse("R-TURN-18", "a room that entered in the end phase can't be used this turn")
+			return deny("R-TURN-18", "Usable from next turn", "a room that entered in the end phase can't be used this turn")
 		}
 	} else if o.Zone.Kind != ZoneInPlay || o.Controller != p || (o.Role != RoleItem && o.Role != RoleCharacter && !g.soulKeepsAbilities(src)) {
 		return refuse("R-ABIL-09", "only the controller uses an item's or character's abilities")
 	}
 	if g.bonus(StatOneAbility, p, 0) > 0 && g.Players[p].Activations > 0 {
-		return refuse("R-ABIL-12", "only one ability each turn")
+		return deny("R-ABIL-12", "Only one ability each turn", "only one ability each turn")
 	}
 	refs := g.AbilitiesOf(src)
 	if i < 0 || i >= len(refs) || g.ability(refs[i]).Kind != Activated {
@@ -49,7 +49,7 @@ func (g *Game) activatable(p PlayerID, src ObjectID, i int) error {
 	a := g.ability(refs[i])
 	for _, c := range a.Costs {
 		if !c.canPay(g, p, src) {
-			return refuse("R-ABIL-07", "cannot pay the cost (%s)", c.label())
+			return deny("R-ABIL-07", costSay(c), "cannot pay the cost (%s)", c.label())
 		}
 	}
 	return g.targetsAvailable(a, p, src)
@@ -60,12 +60,12 @@ func (g *Game) activatable(p PlayerID, src ObjectID, i int) error {
 func (g *Game) targetsAvailable(a Ability, p PlayerID, src ObjectID) error {
 	if len(a.Modes) > 0 {
 		if len(g.availableModes(a, p, src)) == 0 {
-			return refuse("R-ABIL-06", "no option has a valid target")
+			return deny("R-ABIL-06", "No valid target now", "no option has a valid target")
 		}
 		return nil
 	}
 	if !g.hasTargets(a.Targets, p, src) {
-		return refuse("R-ABIL-06", "no valid target")
+		return deny("R-ABIL-06", "No valid target now", "no valid target")
 	}
 	return nil
 }

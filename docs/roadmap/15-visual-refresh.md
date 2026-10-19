@@ -930,7 +930,7 @@ Images come first, so the new table is built with backs and mats.
 5. Owner notes (2026-10-19)
    1. Owner marks 15.28 solved.
 
-### [ ] 15.29 Reasons and choice dialogs
+### [x] 15.29 Reasons and choice dialogs
 
 1. Goal: the player sees why something is not possible, and chooses calmly.
 2. Tasks:
@@ -941,6 +941,28 @@ Images come first, so the new table is built with backs and mats.
 3. Done when:
    1. e2e test: an unusable card's zoom shows the reason.
    2. e2e test: "View board" hides and restores a choice.
+4. Result (2026-10-19)
+   1. Engine: `Game.Blocked(p)` says why each card or turn action is not allowed.
+   2. It checks each intent as if p had priority; `RuleError.Say` holds the words.
+   3. No refusal then: "Wait for your priority" or "Answer the prompt first".
+   4. Server sends it as `update.blocked`, only to its seat; ADR 006 updated.
+   5. Zoom: a red line under the card, e.g. "No loot plays left".
+   6. A click on that card shows the same note where it was clicked.
+   7. Buy, Attack and own End turn: dim, but a click says why.
+   8. One shared note for all of these and the aim's wrong click (`WhyNote`).
+   9. Choice, discard and order: big cards over the dimmed table.
+   10. "View board" hides the window; a bar brings it back.
+   11. Meanwhile table options glow and answer as before.
+   12. Order dialog keeps its smaller cards, so long rows fit.
+   13. Rooms get reasons from the engine; the client draws no rooms yet.
+   14. Use case UC-22; UC-13, Client, engine, Layers, Animations wikis updated.
+   15. e2e `reasons.spec.ts`: zoom, click note, icon note, View board.
+   16. Screenshots: `.cache/screenshots/15.29/before/` and `after/`.
+   17. The Menu button now draws above a choice: leave and save stay reachable.
+   18. Board-layout tests ban Eden: its starting choice now covers the decks.
+   19. The soul pick test presses "View board" before it picks on the table.
+   20. 19.28: the Eden ban made the 4-player test check too early; fixed.
+   21. `make e2e`: 194 passed; earlier failures under load are kept as evidence.
 
 ### [ ] 15.30 Activity status
 

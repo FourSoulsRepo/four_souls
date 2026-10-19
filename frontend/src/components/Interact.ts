@@ -14,6 +14,8 @@ import type { Aiming } from "../store";
 export interface Handle {
   highlight?: "act" | "pick" | "aim";
   onClick?: () => void;
+  // why says why the player can't use the card now (15.29).
+  why?: string;
 }
 
 export interface Interact {
@@ -74,7 +76,8 @@ export function interact(
     }
     const list = actions.cards.get(id);
     if (!list) {
-      return {};
+      const why = actions.blocked.get(id);
+      return why ? { why } : {};
     }
     const only = list.length === 1 ? list[0] : undefined;
     if (only?.targets && only.targets.length > 0) {

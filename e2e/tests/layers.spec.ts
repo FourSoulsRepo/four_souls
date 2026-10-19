@@ -1,7 +1,7 @@
 // Layers (19.26, ADR 015): a window that must be on top is on top. The
 // order is docs/wiki/Layers.md; these tests check the pairs a player
 // meets.
-import type { Locator, Page } from '@playwright/test';
+import type { Locator } from '@playwright/test';
 import { expect, test } from './fixtures';
 import { startGame } from './game';
 import { appURL } from './server';
@@ -21,8 +21,9 @@ async function box(l: Locator) {
 
 // onTop is true when the element drawn at the middle of where a and b
 // overlap belongs to a. The zoom lets the pointer through, so the probe
-// turns hit testing back on for it first.
-async function onTop(page: Page, a: Locator, b: Locator): Promise<boolean> {
+// turns hit testing back on for it first, and off again in the same
+// task: a hover check in between would close the zoom.
+async function onTop(a: Locator, b: Locator): Promise<boolean> {
   const [ba, bb] = [await box(a), await box(b)];
   const left = Math.max(ba.x, bb.x);
   const right = Math.min(ba.x + ba.width, bb.x + bb.width);
@@ -30,18 +31,17 @@ async function onTop(page: Page, a: Locator, b: Locator): Promise<boolean> {
   const bottom = Math.min(ba.y + ba.height, bb.y + bb.height);
   expect(right - left, 'the two overlap').toBeGreaterThan(0);
   expect(bottom - top, 'the two overlap').toBeGreaterThan(0);
-  const probe = await page.addStyleTag({ content: '.card-zoom, .card-zoom * { pointer-events: auto !important; }' });
-  const hit = await a.evaluate(
+  return a.evaluate(
     (el, p) => {
+      const probe = document.createElement('style');
+      probe.textContent = '.card-zoom, .card-zoom * { pointer-events: auto !important; }';
+      document.head.append(probe);
       const at = document.elementFromPoint(p.x, p.y);
+      probe.remove();
       return at !== null && el.contains(at);
     },
     { x: (left + right) / 2, y: (top + bottom) / 2 },
   );
-  await probe.evaluate((el) => {
-    el.remove();
-  });
-  return hit;
 }
 
 test('a card zoomed from the discard window shows above it (19.26)', async ({ browser }) => {
@@ -72,5 +72,35 @@ test('a card zoomed from the discard window shows above it (19.26)', async ({ br
   const zoom = lyra.getByTestId('card-zoom').locator('.card-zoom-body');
   await expect(zoom).toBeVisible();
   await shot(lyra, 'discard-zoom');
-  expect(await onTop(lyra, zoom, dialog)).toBe(true);
+  expect(await onTop(zoom, dialog)).toBe(true);
+});
+
+test('the Menu button stays above a choice and opens over it (15.29)', async ({ browser }) => {
+  const [tamsin] = await startGame(browser, ['Tamsin', 'Ivor'], { url: fast() });
+  if (!tamsin) {
+    throw new Error('no pages');
+  }
+  // A choice as the server sends it: its backdrop dims the whole table.
+  await tamsin.evaluate(() => {
+    interface S {
+      game: { view: { waiting: unknown }; allowed: unknown[] };
+      lobby: { table: { you: number } };
+      receive: (env: unknown) => void;
+    }
+    const s = (window as unknown as { fourSouls: { store: { getState: () => S } } }).fourSouls.store.getState();
+    const game = structuredClone(s.game);
+    const you = s.lobby.table.you;
+    game.view.waiting = { kind: 4, player: you, purpose: 9, text: 'Keep going?', options: ['yes', 'no'] };
+    game.allowed = [
+      { player: you, kind: 4, choice: 0 },
+      { player: you, kind: 4, choice: 1 },
+    ];
+    s.receive({ type: 'update', data: { ...game, step: 2, events: [] } });
+  });
+  const backdrop = tamsin.locator('.choice-backdrop');
+  await expect(backdrop).toBeVisible();
+  const menu = tamsin.getByRole('button', { name: 'Menu' });
+  expect(await onTop(menu, backdrop)).toBe(true);
+  await menu.click();
+  await expect(tamsin.getByRole('dialog', { name: 'Game menu' })).toBeVisible();
 });

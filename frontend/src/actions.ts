@@ -1,6 +1,6 @@
 // What the player may do now, from the update's allowed intents (7.7).
 // Pure: the table only offers what the server allows.
-import type { Intent, OptionView, OutcomeView, Prompt, Update } from './protocol';
+import type { Block, Intent, OptionView, OutcomeView, Prompt, Update } from './protocol';
 
 // Engine enums, in Go's order (pkg/rules_engine/prompt.go, choice.go).
 export const IntentKind = {
@@ -108,6 +108,8 @@ export interface Actions {
   turn: TurnActions;
   // cards maps an object to what it can do: play it, use its abilities.
   cards: Map<number, Action[]>;
+  // blocked maps a card the player can't play or use now to why (15.29).
+  blocked: Map<number, string>;
   choice: Choice | null;
   discard: { count: number; from: number[]; intent: Intent } | null;
   // order puts cards back on a deck (19.16): send intent with the cards
@@ -124,6 +126,8 @@ export interface TurnActions {
   endTurn?: Intent;
   // idle: nothing is left to do but pass or end the turn (H-20).
   idle?: boolean;
+  // why says why each turn action that is not allowed can't be (15.29).
+  why?: { attack?: string; buy?: string; endTurn?: string };
 }
 
 const buttonLabels = new Map<number, string>([[IntentKind.pass, 'Pass']]);
@@ -131,7 +135,17 @@ const buttonLabels = new Map<number, string>([[IntentKind.pass, 'Pass']]);
 // actionsFor lists the viewer's actions. isCard tells whether an option
 // label is a card ref.
 export function actionsFor(u: Update, isCard: (label: string) => boolean): Actions {
-  const out: Actions = { buttons: [], turn: {}, cards: new Map(), choice: null, discard: null, order: null, throw: null };
+  const why = turnWhy(u.blocked ?? []);
+  const out: Actions = {
+    buttons: [],
+    turn: Object.keys(why).length > 0 ? { why } : {},
+    cards: new Map(),
+    blocked: blockedCards(u.blocked ?? []),
+    choice: null,
+    discard: null,
+    order: null,
+    throw: null,
+  };
   const allowed = u.allowed ?? [];
   const abilities = new Map<number, number>();
   for (const a of allowed) {
@@ -207,6 +221,27 @@ export function actionsFor(u: Update, isCard: (label: string) => boolean): Actio
     };
   }
   return out;
+}
+
+// blockedCards maps each blocked card to its reason (15.29). A card
+// with two blocked abilities keeps the first one's.
+function blockedCards(blocked: Block[]): Map<number, string> {
+  const out = new Map<number, string>();
+  for (const b of blocked) {
+    if ((b.kind === IntentKind.playLoot || b.kind === IntentKind.activate) && !out.has(b.object)) {
+      out.set(b.object, b.reason);
+    }
+  }
+  return out;
+}
+
+// turnWhy is why attack, buy, and end turn can't be used (15.29).
+function turnWhy(blocked: Block[]): NonNullable<TurnActions['why']> {
+  const reason = (kind: number) => blocked.find((b) => b.kind === kind)?.reason;
+  const attack = reason(IntentKind.attack);
+  const buy = reason(IntentKind.purchase);
+  const endTurn = reason(IntentKind.endTurn);
+  return { ...(attack ? { attack } : {}), ...(buy ? { buy } : {}), ...(endTurn ? { endTurn } : {}) };
 }
 
 // triggerLabel splits a trigger order label, "card_ref: ability text",

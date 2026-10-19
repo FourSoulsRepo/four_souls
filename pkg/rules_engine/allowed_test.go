@@ -40,6 +40,7 @@ func TestAllowedIntentsAreAccepted(t *testing.T) {
 		}
 		// Others have nothing allowed while one player is asked.
 		for _, pl := range g.Players {
+			checkBlocked(t, g, pl.ID)
 			if pl.ID != p.Player && len(g.Allowed(pl.ID)) > 0 {
 				t.Fatalf("player %d has allowed intents while player %d is asked", pl.ID, p.Player)
 			}

@@ -16,7 +16,7 @@ A layer only counts on the window's own stacking: these elements sit in `.game` 
 
 | ID | What | Above everything below because | Code |
 |----|------|--------------------------------|------|
-| `aim-why` | The note why an aim is no target. | It answers the pointer, right under it; it covers its own arrow. | `components/Table.css` |
+| `aim-why` | The note why a click did nothing: an aim at no target, or a card or turn icon not usable now (15.29). | It answers the pointer, right under it; it covers its own arrow. | `components/Table.css` |
 | `aim` | The aiming arrow. | It is the pointer while aiming; the target under it may be any window's card. | `components/Table.css` |
 | `trail` | The attack lunge and its starburst. | It plays over the effects of the same hit. | `components/Effects.css` |
 | `effects` | Event effects: flying cards, reveal, dice, banner, popups. | A game event must be seen, even over a zoom or an overlay. It never catches the pointer. | `components/Effects.css` |
@@ -26,9 +26,9 @@ A layer only counts on the window's own stacking: these elements sit in `.game` 
 | `throw` | The roll waiting for its throw, with its button. | The thrown die lands here; only the button catches clicks. | `components/Throw.css` |
 | `menu` | A card's action menu and the ability dialog, with their backdrop. | The player opened it on purpose, over any prompt. | `components/Actions.css` |
 | `look` | The "you look at" window in the middle. | It may come with a choice; the cards to look at come first. | `components/Actions.css` |
-| `choice` | Choice, discard and order windows at the bottom. | A prompt the game waits on; it covers the player's own area. | `components/Actions.css` |
+| `menu-button` | The Menu button. | Over the table and a choice's backdrop: the player can always leave or save (15.29). Under every other window. | `components/Overlays.css` |
+| `choice` | Choice, discard and order windows with their backdrop; the bar back to a hidden one (15.29). | A prompt the game waits on; it dims and covers the whole table, the hand and the action bar (H-11). "View board" hides it. | `components/Actions.css` |
 | `hand` | A hovered or aiming hand card. | It comes to the front of the fan, but never over a prompt's buttons. | `components/Table.css` |
-| `menu-button` | The Menu button. | Over the table, under every window. | `components/Overlays.css` |
 | `action-bar` | The status, timer and skip buttons, bottom right. | Over the table, under every window. | `components/Actions.css` |
 
 ## Adding a layer

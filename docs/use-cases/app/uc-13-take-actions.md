@@ -93,6 +93,14 @@
 * **5e. Deck attack reveals an unattackable monster (19.23):** e.g. Stoney.
   * It stays in the chosen slot; the attack is cancelled (R-ATK-10).
   * No attack roll; the player goes on with the turn.
+* **5f. Choice window (15.29):** a choice opens in the middle over the dimmed table.
+  * Its options are big cards; nothing else takes clicks.
+  * Discards and orders open the same way.
+* **5g. View board (15.29):** the player presses "View board".
+  * The window hides; a small bar at the bottom names the choice.
+  * Options on the table glow and can be clicked there.
+  * "Back to the choice" opens the window again.
+* **2g. Why not (15.29):** a card or icon that can't be used says why (UC-22).
 
 ## Postconditions
 

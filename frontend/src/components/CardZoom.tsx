@@ -9,7 +9,8 @@ import './Card.css';
 // hovered card, or rises from a hand card, and lets clicks through
 // (15.27); a touch zoom stays centered until the next tap. A caption
 // names the owner and highlights the used ability (S-06, S-07); the
-// card's keywords stand beside it (H-13).
+// card's keywords stand beside it (H-13). A card the player can't use
+// now says why under it (15.29, F-17, C-06).
 export function CardZoom() {
   const zoom = useApp((s) => s.zoom);
   const setZoom = useApp((s) => s.setZoom);
@@ -49,6 +50,11 @@ export function CardZoom() {
       >
         <figure className="card-zoom-figure">
           <Card cardRef={zoom.ref} size="zoom" />
+          {zoom.why && (
+            <p className="card-zoom-why" role="note">
+              {zoom.why}
+            </p>
+          )}
           {zoom.caption && (
             <figcaption className="card-zoom-caption">
               {zoom.caption.ability && <p className="card-zoom-ability">{zoom.caption.ability}</p>}

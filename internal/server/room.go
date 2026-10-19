@@ -267,13 +267,15 @@ func (r *Room) update(c *Client, events []engine.Event) {
 	}
 	v := engine.Viewer{Kind: engine.ViewSpectator}
 	var allowed []engine.Intent
+	var blocked []engine.Block
 	if c.seat >= 0 {
 		v = engine.Viewer{Kind: engine.ViewPlayer, Player: engine.PlayerID(c.seat)}
 		allowed = r.game.Allowed(engine.PlayerID(c.seat))
+		blocked = r.game.Blocked(engine.PlayerID(c.seat))
 	}
 	u := protocol.Update{
 		Step: r.step, Events: engine.FilterEvents(events, v), View: r.game.View(v), Allowed: allowed, Seats: r.seatViews(),
-		Aims: r.game.Aims(allowed),
+		Aims: r.game.Aims(allowed), Blocked: blocked,
 	}
 	if !r.deadline.IsZero() {
 		u.Deadline = r.deadline.UnixMilli()

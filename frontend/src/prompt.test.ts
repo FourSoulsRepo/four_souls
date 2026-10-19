@@ -23,7 +23,7 @@ const names = {
   card: (ref: string) => ref.toUpperCase(),
 };
 
-const none: Actions = { buttons: [], turn: {}, cards: new Map(), choice: null, discard: null, order: null, throw: null };
+const none: Actions = { buttons: [], turn: {}, cards: new Map(), blocked: new Map(), choice: null, discard: null, order: null, throw: null };
 const intent = (kind: number): Intent => ({ player: 0, kind });
 
 const loot: StackItem = {

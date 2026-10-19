@@ -71,8 +71,10 @@ test('playable hand cards glow green; a hovered one rises large (15.27)', async 
   await shot(active, 'hand-hover');
   const c = await box(card);
   const z = await box(zoom);
-  expect(z.y + z.height).toBeGreaterThan(720 - 40);
-  expect(z.y + z.height).toBeLessThanOrEqual(720);
+  // The zoom's body: an unusable card's reason stands under it (15.29).
+  const body = await box(active.getByTestId('card-zoom').locator('.card-zoom-body'));
+  expect(body.y + body.height).toBeGreaterThan(720 - 40);
+  expect(body.y + body.height).toBeLessThanOrEqual(720);
   expect(z.x).toBeLessThan(c.x + c.width / 2);
   expect(z.x + z.width).toBeGreaterThan(c.x + c.width / 2);
 

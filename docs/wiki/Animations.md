@@ -39,7 +39,7 @@ Claims are counted in *beats*: a beat is one update, from the start of its effec
 | `aim-march` | The aiming arrow's blocks march toward its head. | Aiming a card (15.32). | Nothing; not a game event. | `components/Table.css` |
 | `aim-fade-in` | The arrow's first block fades in, in step with the march. | Aiming a card. | Nothing; not a game event. | `components/Table.css` |
 | `aim-fade-out` | The arrow's last block fades out, in step with the march. | Aiming a card. | Nothing; not a game event. | `components/Table.css` |
-| `aim-why` | The hint under an invalid aim fades out. | Aiming at a card that is not a target. | Nothing; not a game event. | `components/Table.css` |
+| `aim-why` | The hint under an invalid aim fades out. | Aiming at a card that is not a target; a click on a card or turn icon the player can't use now (15.29). | Nothing; not a game event. | `components/Table.css` |
 | `hand-glow` | The green aura behind a playable hand card breathes slowly. | CSS class `.hand-card.usable` (15.27). | Nothing; not a game event. | `components/Table.css` |
 | `prompt-glow` | The gold glow behind the prompt banner, and behind Pass when passing answers it, breathes. | A prompt for the viewer (15.28). | Nothing; not a game event. | `components/Actions.css` |
 | `throw-glow` | The halo behind the roller's Throw button breathes. | A throw prompt for the viewer (15.61). | Nothing; not a game event. | `components/Throw.css` |

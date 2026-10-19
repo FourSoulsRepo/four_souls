@@ -117,8 +117,11 @@ type Update struct {
 	Allowed []engine.Intent `json:"allowed"`
 	// Aims are the targets an allowed play or use asks first, by its
 	// index in Allowed, to light while a card is dragged (15.25).
-	Aims  []engine.Aim `json:"aims,omitempty"`
-	Seats []Seat       `json:"seats"`
+	Aims []engine.Aim `json:"aims,omitempty"`
+	// Blocked says why this player's other cards and turn actions can't
+	// be used now (15.29).
+	Blocked []engine.Block `json:"blocked,omitempty"`
+	Seats   []Seat         `json:"seats"`
 	// Deadline is when the response timer answers for the waiting player,
 	// Unix ms; 0: no timer (N-07).
 	Deadline int64 `json:"deadline,omitempty"`

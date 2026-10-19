@@ -58,6 +58,7 @@ Step 8.12 checked every message the server sends for hidden cards. Hidden means:
 | `update` → `events` | `engine.FilterEvents` | Private events keep `Card` and `Object` only for `Player` and `SeenBy`. Every non-private event with a card was checked: each moves a card from or to a public place (stack, slot, discard, play), or is a public reveal. |
 | `update` → `allowed` | this seat's intents | Only the seat's own objects and choice indexes. |
 | `update` → `aims` | first targets of allowed plays and uses, and a `reason` saying what they may be | Targets are public objects, players and stack items; a "your hand card" target goes only to its own seat. |
+| `update` → `blocked` | why the seat can't use a card or turn action now: kind, object, `reason` (15.29) | Only the seat's own hand cards, its own cards in play, and rooms. Reasons are fixed words; none names a card. |
 | `error` | code, message, rule | Engine refusals name only cards in play; an activation checks the zone before it names the card. |
 | `/record` | the match record (all hidden info) | Only to the game's players, only after the game is over (RP-05); `TestDownloadRecord`. |
 

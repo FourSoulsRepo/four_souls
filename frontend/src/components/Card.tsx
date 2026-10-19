@@ -11,7 +11,7 @@ import './Card.css';
 // How long a touch must rest on a card to zoom it (B-06).
 const LONG_PRESS_MS = 450;
 
-export type CardSize = 'hand' | 'table' | 'small' | 'zoom';
+export type CardSize = 'hand' | 'table' | 'small' | 'zoom' | 'choice';
 
 interface Props {
   // cardRef is the card to show; undefined shows a face-down card.
@@ -41,6 +41,9 @@ interface Props {
   noZoom?: boolean;
   // rise: the zoom rises from the card, as from a hand (15.27, H-13).
   rise?: boolean;
+  // why says why the player can't use the card now: its zoom says it,
+  // and so does a click on it (15.29, F-17, F-18).
+  why?: string;
   onClick?: () => void;
 }
 
@@ -60,6 +63,7 @@ export function Card({
   monster,
   noZoom = false,
   rise = false,
+  why,
   onClick,
 }: Props) {
   const info = useApp((s) => (cardRef ? s.cards.get(cardRef) : undefined));
@@ -67,7 +71,15 @@ export function Card({
   const scale = useApp((s) => scaleFor(s.settings.animation, 0, 0));
   const [brokenImage, setBrokenImage] = useState('');
   const zoomable = size !== 'zoom' && !noZoom;
-  const zoomHandlers = useZoom(cardRef, zoomable, rise);
+  const zoomHandlers = useZoom(cardRef, zoomable, rise, why);
+  const showWhy = useApp((s) => s.showWhy);
+  const click =
+    onClick ??
+    (why
+      ? (e: MouseEvent) => {
+          showWhy(why, e.clientX, e.clientY);
+        }
+      : undefined);
 
   if (cardRef === undefined) {
     return (
@@ -110,7 +122,7 @@ export function Card({
       className={`card size-${size} kind-${kindOf(card.type)}${image ? '' : ' blank'}${counters > 0 ? ' has-counters' : ''}${spent ? ' spent' : ''}${highlight ? ` hl-${highlight}` : ''}`}
       role={onClick ? 'button' : 'img'}
       aria-label={card.name}
-      onClick={onClick}
+      onClick={click}
       {...zoomHandlers}
     >
       {image ? (
@@ -143,7 +155,7 @@ export function Card({
 // hover, beside it or rising from it, or after a long touch (B-06). A
 // card and a soul crystal share it (V-43). Nothing zooms without a
 // card ref or when zoomable is false.
-export function useZoom(cardRef: string | undefined, zoomable: boolean, rise = false) {
+export function useZoom(cardRef: string | undefined, zoomable: boolean, rise = false, why?: string) {
   const setZoom = useApp((s) => s.setZoom);
   const pressRef = useRef(0);
   const downRef = useRef<{ x: number; y: number } | null>(null);
@@ -170,7 +182,7 @@ export function useZoom(cardRef: string | undefined, zoomable: boolean, rise = f
     onPointerEnter: (e: PointerEvent<HTMLElement>) => {
       if (on && e.pointerType === 'mouse') {
         zoomedRef.current = true;
-        setZoom({ ref: cardRef, touch: false, at: boxOf(e.currentTarget), rise });
+        setZoom({ ref: cardRef, touch: false, at: boxOf(e.currentTarget), rise, ...(why ? { why } : {}) });
       }
     },
     onPointerLeave: (e: PointerEvent<HTMLElement>) => {
@@ -185,7 +197,7 @@ export function useZoom(cardRef: string | undefined, zoomable: boolean, rise = f
         const at = boxOf(e.currentTarget);
         downRef.current = { x: e.clientX, y: e.clientY };
         pressRef.current = window.setTimeout(() => {
-          setZoom({ ref: cardRef, touch: true, at });
+          setZoom({ ref: cardRef, touch: true, at, ...(why ? { why } : {}) });
         }, LONG_PRESS_MS);
       }
     },

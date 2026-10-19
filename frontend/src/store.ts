@@ -61,6 +61,8 @@ export interface Zoom {
   at: Box;
   // rise: a hand card's zoom rises from it instead (H-13).
   rise?: boolean;
+  // why says why the player can't use the card now (15.29, F-17).
+  why?: string;
   // caption goes below the card: who owns it, and the used ability's
   // words, highlighted (S-06, S-07).
   caption?: ZoomCaption;
@@ -85,6 +87,16 @@ export interface Aiming {
   choice?: Choice;
   targets: OptionView[];
   reason?: string;
+}
+
+// Why is a reason shown where the player clicked (15.29, F-18): a
+// wrong aim, or a card or action they can't use now. n restarts its
+// fade when the same reason shows again.
+export interface Why {
+  text: string;
+  x: number;
+  y: number;
+  n: number;
 }
 
 // Aimed is a played card's target, kept until the target prompt.
@@ -136,6 +148,10 @@ interface AppState extends Session {
   // aiming is the card the player aims with; its targets glow (15.25).
   aiming: Aiming | null;
   setAiming: (aiming: Aiming | null) => void;
+  // why is the reason shown by the last refused click, if any.
+  why: Why | null;
+  showWhy: (text: string, x: number, y: number) => void;
+  endWhy: () => void;
   // aimed is the target a card was aimed at, at the step its play was
   // sent; the target prompt that follows picks it (15.25).
   aimed: Aimed | null;
@@ -401,6 +417,13 @@ export const useApp = create<AppState>()((set, get) => {
     aiming: null,
     setAiming: (aiming) => {
       set({ aiming, selected: null });
+    },
+    why: null,
+    showWhy: (text, x, y) => {
+      set((s) => ({ why: { text, x, y, n: (s.why?.n ?? 0) + 1 } }));
+    },
+    endWhy: () => {
+      set({ why: null });
     },
     aimed: null,
     playAt: (intent, target) => {

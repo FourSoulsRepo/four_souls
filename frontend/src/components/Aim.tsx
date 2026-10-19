@@ -10,7 +10,8 @@ import { useApp, type Aiming } from '../store';
 // target starts it, the next click picks the target. A click on empty
 // space, a right click, or Esc cancels it. A click on the card again
 // does nothing, unless it may target itself. A click on a card, pile,
-// or stack row that is no target keeps aiming and says why (15.33). While the mouse moves, an arrow
+// or stack row that is no target keeps aiming and says why (15.33), in
+// the shared WhyNote (15.29). While the mouse moves, an arrow
 // runs from the card to the pointer. A card already placed answers its
 // target prompt; cancelling it sends the prompt's cancel, and the card
 // goes back (15.34, T-13).
@@ -23,9 +24,8 @@ function Aim({ aiming }: { aiming: Aiming }) {
   const setAiming = useApp((s) => s.setAiming);
   const playAt = useApp((s) => s.playAt);
   const act = useApp((s) => s.act);
+  const showWhy = useApp((s) => s.showWhy);
   const [line, setLine] = useState<{ from: Point; to: Point; on: boolean } | null>(null);
-  // why is the reason shown beside a wrong click; n restarts its fade.
-  const [why, setWhy] = useState<{ at: Point; n: number } | null>(null);
   useKey('escape', () => {
     cancel(aiming, act, setAiming);
   });
@@ -46,7 +46,7 @@ function Aim({ aiming }: { aiming: Aiming }) {
       if (what.kind === 'pick') {
         pick(aiming, what.target);
       } else if (what.kind === 'wrong') {
-        setWhy((w) => ({ at: { x: e.clientX, y: e.clientY }, n: (w?.n ?? 0) + 1 }));
+        showWhy(aiming.reason ?? 'Not a valid target.', e.clientX, e.clientY);
       } else if (what.kind === 'cancel') {
         cancel(aiming, act, setAiming);
       }
@@ -74,34 +74,8 @@ function Aim({ aiming }: { aiming: Aiming }) {
       window.removeEventListener('click', click, true);
       window.removeEventListener('contextmenu', menu, true);
     };
-  }, [aiming, act, playAt, setAiming]);
-  // The reason goes after a while; a new wrong click shows it again.
-  useEffect(() => {
-    if (!why) {
-      return;
-    }
-    const t = setTimeout(() => {
-      setWhy(null);
-    }, whyMs);
-    return () => {
-      clearTimeout(t);
-    };
-  }, [why]);
-  return (
-    <>
-      {line && <AimArrow {...line} />}
-      {why && (
-        <div
-          key={why.n}
-          className="aim-why"
-          role="status"
-          style={{ transform: `translate(${String(why.at.x)}px, ${String(why.at.y)}px)` }}
-        >
-          <div>{aiming.reason ?? 'Not a valid target.'}</div>
-        </div>
-      )}
-    </>
-  );
+  }, [aiming, act, playAt, setAiming, showWhy]);
+  return line && <AimArrow {...line} />;
 }
 
 // cancel ends an aim; a placed card's prompt is cancelled with it.
@@ -112,9 +86,6 @@ function cancel(aiming: Aiming, act: (i: Intent) => void, setAiming: (a: Aiming 
     act(c);
   }
 }
-
-// How long a wrong click's reason stays, in milliseconds.
-const whyMs = 2500;
 
 // The head's length and the chain's step, as in Table.css.
 const headLength = 48;

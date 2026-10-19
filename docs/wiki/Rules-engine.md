@@ -42,7 +42,7 @@ Every card is an object with an ID. Moving a card to another zone gives it a new
 | `ability.go`, `activate.go` | effect blocks, activating abilities, targets |
 | `triggers.go`, `statics.go` | triggered and static abilities |
 | `choice.go` | `Choose` prompts (targets, order of replacements and triggers, penalties) |
-| `allowed.go`, `aims.go`, `view.go` | allowed intents and their first targets; per-viewer hidden information |
+| `allowed.go`, `aims.go`, `blocked.go`, `view.go` | allowed intents, their first targets, and why the rest are not; per-viewer hidden information |
 | `record.go`, `situation.go` | step records, replay, save/load; situation payloads |
 | `invariants.go` | state checks used by tests and fuzzing |
 
@@ -93,6 +93,10 @@ A test fails when the committed report is out of date, so run the command after 
 `GameView.Options` tells the chooser what each option of a choose prompt points at (`OptionView`: an object, a player, a deck, or a stack item), one per `Waiting.Options`. Clients use it to let the player pick on the table. It is built from `g.Choice` at view time, so it is not saved state and does not change checksums.
 
 `GameView.Activating` names the card whose mode or targets the open choice asks for, while a play or use is being put on the stack (`g.Activating`). Only the chooser gets it, like `Options`, so a hand card is never named to others. Clients aim from that card (15.34).
+
+## Why an intent is not allowed
+
+`Game.Blocked(p)` (`blocked.go`, 15.29) lists what player p can't do now, each with a short reason for the player: every loot card in their hand, every card of theirs with an activated ability, every room with one, and attack, purchase and end turn. Allowed intents are left out. Each intent is run through `check` as if p held priority, with `Waiting` put back after: a refusal then gives the real reason, from `RuleError.Say`; no refusal means p only waits ("Wait for your priority", or "Answer the prompt first" while p has another prompt open). The turn actions first say why the turn itself stops them ("Not your turn", "Wait for the stack to resolve"). `Say` is set with `deny` at the refusals a player meets; a cost that can't be paid says which (`costSay`). A refusal without words reads "Not usable now". Reasons never name a card, so they leak nothing. The server sends them as `update.blocked`; the engine itself never reads them.
 
 ## Counts in views
 
