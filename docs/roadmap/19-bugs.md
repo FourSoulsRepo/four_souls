@@ -994,7 +994,7 @@ This step never closes; new reports are appended.
 7. Owner notes (2026-10-19)
    1. Owner marks 19.31 solved.
 
-### [ ] 19.32 Dedicated server: a finished game takes the player back
+### [x] 19.32 Dedicated server: a finished game takes the player back
 
 1. Goal: after a finished game, the player can open a new game.
 2. Report (owner, 2026-10-19)
@@ -1023,3 +1023,5 @@ This step never closes; new reports are appended.
    5. It fails without the fix: the hello got seat 0 of the old game.
    6. UC-07 3c added; wiki `Server.md` updated.
    7. No screen change, so no screenshots.
+7. Owner notes (2026-10-19)
+   1. Owner marks 19.32 solved.
