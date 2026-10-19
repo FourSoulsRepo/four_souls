@@ -57,3 +57,8 @@ Sources: S-OFF Card Types; S-RU Типы карт.
 33. **R-CARD-33** *(later sets)* Rooms sit in room slots; only the active player uses a room's activated abilities.
 34. **R-CARD-34** An ability that chooses "an item" may choose a shop item; one that says "an item a player controls" may not. A destroyed shop item goes to the treasure discard and its slot is refilled (S-OFF, S-YUG).
 35. **R-CARD-35** *(Gold Box)* A character's soul value counts toward its player's total soul value (S-OFF: The Lost provides 1).
+36. **R-CARD-36** *(Requiem)* A room's text that names no player ("you") means the active player; on their turn the active player uses its activated abilities as if they controlled it (S-OFF, S-YUG).
+37. **R-CARD-37** *(Requiem)* "Gain a treasure" takes a card from the treasure deck, also when buying the top of the deck; a bought shop item is gained as an item, not as a treasure (S-YUG: Damocles; Soul of Pride).
+38. **R-CARD-38** *(Requiem)* An item that becomes a soul keeps its abilities unless it says it loses them (S-YUG: Experimental Treatment, Pandora's Box).
+39. **R-CARD-39** *(Requiem)* **Two-sided cards** (The Enigma, Anima Sola, The Harbingers) start front up; only the face-up side's name, stats and abilities count (R-MECH-33).
+40. **R-CARD-40** *(Requiem)* The Harbingers starts outside the game and is never in the monster deck; only an ability puts it into play (Dogma) (S-OFF, S-YUG).

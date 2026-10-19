@@ -17,3 +17,4 @@ Sources: S-OFF Setup, Variants; S-RU Подготовка к игре.
 13. **R-SETUP-13** There is no mulligan in the official rules.
 14. **R-SETUP-14** Variant *Mini-draft* (recommended for 2 players): reveal (players + 1) treasure cards; players pick one each in turn order, the rest go to the bottom; second round picks in reverse order. Each player ends with 2 extra items.
 15. **R-SETUP-15** Variant *Eden Only*: every player is dealt Eden instead of a random character.
+16. **R-SETUP-16** *(Requiem)* The room deck is a host option, off by default (owner, 2026-10-19); with it, one room slot starts with the top room card (R-SETUP-12).

@@ -29,3 +29,6 @@ Sources: S-OFF Turn Structure, Round; S-RU Структура хода.
 
 15. **R-TURN-15** A round runs from the start of a player's turn to the start of their next turn. For the game's objects it is counted from the starting player.
 16. **R-TURN-16** Extra turns and skipped turns do not change where a round starts or ends; a skipped turn still counts as taken.
+17. **R-TURN-17** *(Requiem)* The room step (R-TURN-12) happens once per turn, after the end-of-turn triggers. A room that puts itself into discard (Dice Room) does not use it (S-YUG).
+18. **R-TURN-18** *(Requiem)* A room that enters during the end phase does its "enters play" abilities, but its end-of-turn trigger waits for the next turn; its activated abilities can't be used that turn (S-YUG, S-DIS).
+19. **R-TURN-19** *(Requiem)* Attacks are declared only in the action phase: an additional attack gained in the end phase is lost (S-YUG).

@@ -62,6 +62,17 @@ Ideas: CD-02, GS-07, GS-08, CD-11, A-16, CD-12, V-32, GS-12, GS-13, GS-01.
    12. Blocks: attack-roll repeats, roll change once, several dice, stored roll.
    13. Blocks: revealed hands, attack redirect, win by a card, play lock.
    14. Blocks: forced attacks, cents-gain hooks, free loot play, curse giving.
+   15. Requiem: rulings from S-OFF, S-YUG, S-DIS, Reddit, X; 2026-10-19.
+   16. New rules: R-CARD-36 – 40, R-SETUP-16, R-TURN-17 – 19, R-ATK-20 – 24.
+   17. New rules: R-ABIL-37 – 39, R-MECH-53, R-DICE-12.
+   18. **Owner:** the room deck is a host option, off by default (R-SETUP-16).
+   19. **Owner:** Requiem is ticked by default in the host screen.
+   20. **Owner:** Magic Marker changes only common numbers (Q-14, CD-13).
+   21. **Owner:** Requiem's client work goes to 14.13 – 14.15.
+   22. Open for the **Owner**: Q-15 – Q-18; the engine follows the proposals.
+   23. Engine: room deck and slot, the room step, a room's "you".
+   24. Engine: attack a player, attackable items and rooms.
+   25. Engine: extra attack rolls, flip, voting, outside cards.
 
 ### [ ] 14.3 Cards per set
 
@@ -243,3 +254,42 @@ Alt art (CD-11) comes after all sets.
    1. e2e test: ban a card in the host screen; it is in no deck.
    2. e2e test: the table shows the ban list to every player.
    3. Use case for the option.
+
+### [ ] 14.13 Rooms on the table
+
+1. Goal: the room deck plays in the app (Requiem).
+2. Tasks:
+   1. Detailed setup: a "Room deck" checkbox, off by default (R-SETUP-16).
+   2. The checkbox shows only when Requiem is chosen.
+   3. A room row on the table; rooms are landscape cards.
+   4. The active player uses a room's activated abilities.
+   5. The end-phase room step: put a room into discard, or keep it.
+   6. Without card images, rooms show as landscape text cards.
+3. Done when:
+   1. e2e test: host with rooms, use a room, change it in the end phase.
+   2. Use case for rooms; UC-05 updated.
+
+### [ ] 14.14 Attack a player or an item
+
+1. Goal: Requiem's new attack targets work in the app.
+2. Tasks:
+   1. Players are offered as targets when an ability allows it (R-ATK-20).
+   2. Attackable items and rooms are offered too (R-MECH-04).
+   3. Extra attack rolls show whose roll it is (R-ATK-21).
+   4. Aiming works as it does for monsters (15.32).
+3. Done when:
+   1. e2e test: The Siren lets the active player attack a player.
+   2. e2e test: Punching Bag can be attacked.
+   3. UC-13 updated.
+
+### [ ] 14.15 Two-sided cards
+
+1. Goal: a flipped card shows its other face (R-CARD-39).
+2. Tasks:
+   1. card_db: a back face with name, text, stats and image (ADR).
+   2. Tools: the back image from the card page (`r-the_enigma_back`).
+   3. The table shows the face-up side; the zoom shows both.
+   4. The history names the flip.
+3. Done when:
+   1. e2e test: Anima Sola flips to The Revenant and back.
+   2. Use case.

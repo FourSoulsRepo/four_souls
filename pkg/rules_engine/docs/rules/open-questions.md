@@ -146,6 +146,52 @@ On 2026-10-09 the owner parked every open decision for later.
 5. Engine now: (a).
 6. Status: **Resolved** (2026-10-13): (a) by default; (c) as a match option (GS-12, 14.8).
 
+### Q-14 Magic Marker: which numbers
+
+1. Question: "Change a number in the effect text of a card in play or loot being played by 1".
+   1. Cards are Go code; the engine does not know every number in the text.
+2. Options: (a) only numbers in common blocks; (b) every card lists its numbers.
+3. Status: **Resolved** (2026-10-19): (a) now (R-ABIL-39); (b) is future work (CD-13).
+
+### Q-15 Lemegeton used more than once
+
+1. Question: after two uses, must two different items be destroyed?
+   1. "The next time your turn ends, destroy a non-eternal item you control."
+2. Sources:
+   1. S-DIS (2024–2026): the same item may be chosen each time; the rest do nothing.
+   2. Reddit: "every activation destroys an item".
+3. Our rules: the item is a target, chosen as each trigger goes on the stack (R-ABIL-05).
+   1. All triggers may target one item; the first destroys it, the others fizzle.
+4. Options: (a) as our rules and S-DIS; (b) each trigger destroys a different item.
+5. Status: **Owner**; the engine follows (a) until decided.
+
+### Q-16 Spindown Dice on a Bag Lunch without counters
+
+1. Question: "Destroy an item. If it was controlled by a player, they may steal an item from the shop."
+   1. Bag Lunch replaces its destruction with a counter.
+   2. May its controller still steal from the shop?
+2. Sources: S-DIS split; no ruling in S-OFF, S-YUG, Reddit, X (2026-10-19).
+3. Options: (a) yes, the second sentence is not "if you do" (R-MECH-02); (b) no, nothing was destroyed.
+4. Status: **Owner**; the engine follows (a) until decided.
+
+### Q-17 Rib of Greed and stealing
+
+1. Question: "Abilities and the death penalty can't make you discard loot cards or lose ¢."
+   1. Does it stop another player stealing your ¢ (Magnet)?
+2. Sources: Reddit asked Yuggy; no answer found (2026-10-19).
+3. Our rules: stealing is giving, not losing (R-MECH-35, R-MECH-38).
+4. Options: (a) steals still work; (b) Rib of Greed stops them too.
+5. Status: **Owner**; the engine follows (a) until decided.
+
+### Q-18 The Clicker: the new character's state
+
+1. Question: The Clicker replaces your character; is the new one charged?
+2. Sources:
+   1. S-DIS: cards enter play charged; the player is not healed.
+   2. Damage stays with the player (R-MECH-19).
+3. Options: (a) charged, as any card entering play; (b) keeps the old character's state.
+4. Status: **Owner**; the engine follows (a) until decided.
+
 ## Old rulings re-checked (R-07)
 
 | # | Ruling (Ed's Notes, 2018–2019) | Check against current rules and V2 text | Status |
@@ -181,6 +227,8 @@ Tests: FAQ row 1 is in `cards/b2/interactions_test.go`, with Yuggy's "above 6 co
 ## Card rulings from Yuggy (S-YUG)
 
 Searched 2026-10-12 (8.7): his r/FourSouls comments and tweets that name a Base Game card, 294 questions. Rulings on V1 wording that V2 changed (Placebo, Butter Bean, Evil Twin, Eve, Judas) are left out. Tests: `cards/b2/yuggy_test.go`.
+
+Requiem searched 2026-10-19 (14.2): 96 of his posts and tweets name a Requiem card; rows 36 on. Tests come with the cards in 14.3.
 
 | # | Cards | Ruling (our words) | Status |
 |---|---|---|---|
@@ -219,10 +267,46 @@ Searched 2026-10-12 (8.7): his r/FourSouls comments and tweets that name a Base 
 | 33 | Headless Horseman | It prevents its death and heals; the attack goes on | Four Souls+; test |
 | 34 | Hourglass and circled numbers | A circled number triggers on any roll that resolves as it | Four Souls+ (R-DICE-06) |
 | 35 | Abaddon | Printed +3 ATK; the site text lacks the number (fixed by an override) | Four Souls+ |
+| 36 | Experimental Treatment, Pandora's Box | An item that becomes a soul keeps its abilities | Requiem (R-CARD-38) |
+| 37 | Experimental Treatment, Butter Bean | "Destroy this:" is a cost: a cancelled use still destroys it | Requiem |
+| 38 | Punching Bag | Killed means destroyed; the active player gets its rewards | Requiem (R-MECH-05) |
+| 39 | Rag Mega | "Up to 3" may be none | Requiem (R-ABIL-37) |
+| 40 | Rag Mega, Bomb | A loot already on the stack is not discarded by it | Requiem |
+| 41 | The Harbingers | One attack each turn must go there; an attack already used means no attack on it | Requiem (R-ATK-22) |
+| 42 | Blind Rage, Krampus | The attacker picks which forced attack to make | Requiem (R-ATK-22) |
+| 43 | Soul of Wrath | A dying active player gains it before the turn ends | Requiem |
+| 44 | Cursed Mulligan | It triggers on its own death; slots have no maximum | Requiem (R-ATK-23) |
+| 45 | Jar of Flies | Shop items' triggers don't work in the shop | Requiem (R-CARD-05) |
+| 46 | Holy Brain, Lodestone | The -1 DC comes after the roll resolved; it does not save that roll | Requiem |
+| 47 | Dice Room | The room step is once per turn, after end-of-turn triggers | Requiem (R-TURN-17, R-TURN-18) |
+| 48 | Dice Room | Additional attacks gained in the end phase are lost | Requiem (R-TURN-19) |
+| 49 | Devil Beggar | Only the active player uses a room's activated abilities | Requiem (R-CARD-36) |
+| 50 | Battle Royale!!!!!, Curse of the Suspicious | The newest attack-a-player ability sets the evasion | Requiem (R-MECH-06) |
+| 51 | Eternal D6, Nightmare Tick | A replacement on a roll applies after "would roll" triggers | Requiem (R-DICE-12) |
+| 52 | Glitch, Magic Skin | Gained abilities keep Glitch eternal; it can still be given away | Requiem (R-ABIL-38) |
+| 53 | Glitch, Mama Mega | A gained "Destroy this. If you do" does nothing | Requiem (R-ABIL-38) |
+| 54 | Glitch, Keeper's Sack | Gaining abilities is not gaining the item: no 14¢ | Requiem |
+| 55 | Keeper's Sack, Keeper's Penny | Giving is not gaining: no ¢ when passed on | Requiem (R-MECH-35) |
+| 56 | Glitch, Sumptorium | Counters stay on the object when the copied ability ends | Requiem (R-MECH-12) |
+| 57 | Damocles | A bought shop item is not a treasure; the deck top is | Requiem (R-CARD-37) |
+| 58 | The Clicker, Curse of the Soulless | Becoming The Lost is not gaining a soul | Requiem |
+| 59 | Soul of Envy, Curse of the Soulless | The cursed player can't gain it; it is then never gained | Requiem |
+| 60 | Ultra Greed, Sisters Vis | Extra attack rolls come one at a time; a helper's death doesn't end the attack | Requiem (R-ATK-21) |
+| 61 | Sibling Rivalry | It may answer the attack declaration; the target is chosen after | Requiem |
+| 62 | Magic Skin | A destroyed item's ability on the stack still resolves | Requiem (R-ABIL-03) |
+| 63 | Magic Skin | Its start-of-turn trigger is on the stack before priority; giving it away then doesn't change the target | Requiem (R-ABIL-34) |
+| 64 | Anima Sola | It must be recharged before it flips again | Requiem |
+| 65 | The Mirror | A player at 1 HP pays 0 HP and still gets the bonus | Requiem |
+| 66 | MOTHER! | Evasion never goes above 6 | Requiem (R-ATK-18) |
+| 67 | The Fettered (Dead Weight), Resurrected Rag Man | Replacement effects are not triggers; Dead Weight can't cancel them | Requiem |
+| 68 | Friendly Ball | It may hold an Indomitable monster | Requiem |
+| 69 | Halo of Flies | Its 6 also stops damage from a player attacking you | Requiem (R-ATK-24) |
 
 ## Card rulings from Discord (S-DIS)
 
 Searched 2026-10-12 (8.7) with each card's Russian name from foursouls.ru (the owner's database migrations, not in the repo): 188 Base Game cards are named in the channel. Read: every question to "@Судья" (the judges) that names one, 87 threads. Medium trust; kept where it agrees with S-OFF or fills a gap.
+
+Requiem searched 2026-10-19 (14.2) with the Russian names of the owner's Requiem migrations: 77 judge threads; rows 12 on. Reddit (digest, 63 threads) agreed with these rows or with S-OFF.
 
 | # | Cards | Ruling (our words) | Status |
 |---|---|---|---|
@@ -237,3 +321,11 @@ Searched 2026-10-12 (8.7) with each card's Russian name from foursouls.ru (the o
 | 9 | Fruitcake, Mutant Spider | Only Mutant Spider's chosen result counts as a roll | Gold Box (R-DICE-08) |
 | 10 | Euthanasia | It works on bosses; a rerolled second roll counts by its final value | Four Souls+; test |
 | 11 | Euthanasia | It triggers before combat damage; you must control it as the roll resolves | Four Souls+; test |
+| 12 | Lemegeton | Used twice, the same item may be chosen twice | Requiem (Q-15) |
+| 13 | Blind Rage, The Revenant | The monster deck must be attacked first; The Revenant gives an extra attack after | Requiem |
+| 14 | Betrayal | Only a non-eternal item can be stolen (English text wins) | Requiem |
+| 15 | All Hallows' Eve, The Lamb | Stealing a soul is not gaining it | Requiem (R-MECH-35) |
+| 16 | Gello | It can't choose a monster at 0 HP; a bomb in response makes it fizzle | Requiem |
+| 17 | Damocles, Dice Room | Rerolling 6 items gains 12 treasures: each reroll is its own gain | Requiem |
+| 18 | Spindown Dice, Bag Lunch | Split answers | Requiem (Q-16) |
+| 19 | The Clicker | Damage stays with the player; the new character is not healed | Requiem (Q-18) |

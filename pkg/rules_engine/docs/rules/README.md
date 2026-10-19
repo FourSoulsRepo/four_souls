@@ -38,3 +38,4 @@ The engine implements these rules; tests and sandbox answers cite their IDs.
 4. Every section names its sources; S-OFF is the official Extended Rulebook.
 5. Open questions: [open-questions.md](open-questions.md).
 6. Step 14 adds Gold Box V2 and Four Souls+ V2; their new rules say so.
+7. Requiem (`r`) rules say so too; rooms, flip and attacking players are now in use.

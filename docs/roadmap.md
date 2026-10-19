@@ -199,6 +199,9 @@ Step numbers stay as IDs; the table lists steps in work order.
 11. Tests ban stat-changing monsters for fixed deals (14.10).
 12. Draft pick screen for normal games, no bans (GS-01, 14.11).
 13. Ban list in the host screen (GS-13, 14.12).
+14. Requiem: rooms on the table (14.13).
+15. Requiem: attack a player or an attackable item in the app (14.14).
+16. Requiem: two-sided cards (14.15).
 
 ## 15. Visual refresh
 
@@ -299,3 +302,4 @@ Not scheduled; revisit after the MVP.
    2. Judges: role, all-hands view, plain-text log (SP-02, V-04).
    3. Delayed view for viewers (SP-01).
    4. The plain draft pick screen moved to 14.11.
+14. Magic Marker: every card lists the numbers it may change (CD-13).
