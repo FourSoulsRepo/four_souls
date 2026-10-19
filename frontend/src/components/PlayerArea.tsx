@@ -92,7 +92,7 @@ function OpponentArea({ player, name, position, active, winSouls, ui }: Omit<Pro
         {(player.in_play ?? [])
           .filter((c) => !isSoul(c) && !isCurse(c))
           .map((c) => (
-            <PlayCard key={c.id} card={c} size={size} ui={ui} />
+            <PlayCard key={c.id} card={c} owner={player.id} size={size} ui={ui} />
           ))}
       </div>
     </section>
@@ -184,7 +184,7 @@ function OwnArea({ player, name, active, winSouls, ui, tools }: Omit<Props, 'you
         {(player.in_play ?? [])
           .filter((c) => !isSoul(c) && !isCurse(c))
           .map((c) => (
-            <PlayCard key={c.id} card={c} size="table" ui={ui} />
+            <PlayCard key={c.id} card={c} owner={player.id} size="table" ui={ui} />
           ))}
       </div>
       <div
@@ -258,7 +258,7 @@ function Curses({ player, label, size, ui }: { player: PlayerView; label: string
   return (
     <div className="player-cards curses" role="group" aria-label={label}>
       {curses.map((c) => (
-        <PlayCard key={c.id} card={c} size={size} ui={ui} />
+        <PlayCard key={c.id} card={c} owner={player.id} size={size} ui={ui} />
       ))}
     </div>
   );
@@ -274,8 +274,9 @@ function Allowance({ player }: { player: PlayerView }) {
   );
 }
 
-// PlayCard is a character or item in play.
-function PlayCard({ card, size, ui }: { card: CardView; size: CardSize; ui: Interact }) {
+// PlayCard is a character or item in play; owner's dice look draws the
+// numbers it keeps (15.67).
+function PlayCard({ card, owner, size, ui }: { card: CardView; owner: number; size: CardSize; ui: Interact }) {
   return (
     <Card
       cardRef={card.card}
@@ -283,6 +284,8 @@ function PlayCard({ card, size, ui }: { card: CardView; size: CardSize; ui: Inte
       damage={card.damage}
       spent={spent(card)}
       counters={counted(card)}
+      dice={card.dice}
+      owner={owner}
       monster={card.stats}
       objectId={card.id}
       {...ui.object(card.id)}

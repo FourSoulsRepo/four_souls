@@ -71,6 +71,11 @@
   * Red health, a white die for the dice, gold attack.
   * A value as printed shows no badge; the card shows it.
   * A damaged monster shows its lower health instead of a damage mark.
+* **2f. Kept die numbers (15.67):** a die on the card art per number.
+  * Telepathy for Dummies: the roll it stored this turn.
+  * Red Candle and Crystal Ball: the number chosen.
+  * Drawn in the owner's dice look; a plain die without one.
+  * The die goes when the number is used or the turn ends.
 * **1h. Attack hit (15.3):** the attacker's card lunges into the target.
   * It winds up, hits, and goes back to its place.
   * A yellow starburst "−N" pops on the card that was hit.

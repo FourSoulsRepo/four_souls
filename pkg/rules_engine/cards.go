@@ -129,6 +129,10 @@ type CardDef struct {
 	// treasure cards at the start and picks one as an eternal starting
 	// item; the rest go to the bottom (Eden, R-SETUP-09).
 	StartingChoice int
+	// Dice are the die numbers the card keeps, so a client can show them
+	// ("You may change the result of your next roll this turn to this
+	// result": Telepathy For Dummies); nil if none (15.67).
+	Dice func(g *Game, self ObjectID) []int
 
 	// Replacements are the card's replacement effects (R-ABIL-29).
 	Replacements []Replacement

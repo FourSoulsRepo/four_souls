@@ -127,6 +127,9 @@ type Object struct {
 	// (0: nobody yet); KilledOn is the attack roll, if it was combat.
 	KilledBy int `json:"killed_by,omitempty"`
 	KilledOn int `json:"killed_on,omitempty"`
+	// Chosen is a number the card's ability chose and keeps, not a
+	// counter (Crystal Ball's guess); 0 if none.
+	Chosen int `json:"chosen,omitempty"`
 	// DoubleRewards doubles a dying monster's rewards (Dinga).
 	DoubleRewards bool `json:"double_rewards,omitempty"`
 	// ShareRewards also gain a dead card's rewards (Sibling Rivalry).

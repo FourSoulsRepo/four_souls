@@ -43,6 +43,9 @@ type CardView struct {
 	// play or a player's character, so a client can tie crystals to it
 	// (V-43).
 	Souls int `json:"souls,omitempty"`
+	// Dice are the die numbers the card keeps (CardDef.Dice), e.g. a
+	// stored roll or a chosen number (15.67).
+	Dice []int `json:"dice,omitempty"`
 }
 
 // MonsterStats are a monster's stats now and as printed, so a client can
@@ -364,6 +367,9 @@ func (g *Game) cardView(id ObjectID) CardView {
 	cv := CardView{
 		ID: id, Card: o.Card, Role: o.Role, Charged: o.Charged, Damage: o.Damage,
 		Counters: append([]Counter(nil), o.Counters...),
+	}
+	if d := g.def(id); d.Dice != nil {
+		cv.Dice = d.Dice(g, id)
 	}
 	if o.Role == RoleMonster {
 		d := g.def(id)

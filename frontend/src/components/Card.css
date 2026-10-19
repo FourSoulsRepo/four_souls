@@ -38,7 +38,7 @@
   width: clamp(110px, 13vw, 180px);
 }
 
-.card img {
+.card > img {
   display: block;
   width: 100%;
   height: 100%;
@@ -421,6 +421,47 @@
 
 .card.blank.has-counters .card-name {
   padding-right: 36cqi;
+}
+
+/* Kept die numbers (15.67): a die in the owner's dice look on the art,
+   across from the counters, with the badges' ink edge and hard shadow.
+   More than one stack downwards. */
+.card-dice {
+  position: absolute;
+  top: 30cqi;
+  right: 4cqi;
+  display: flex;
+  flex-direction: column;
+  gap: 3cqi;
+  pointer-events: none;
+}
+
+.card-die {
+  display: block;
+  width: 30cqi;
+  aspect-ratio: 1;
+  rotate: 4deg;
+  filter: drop-shadow(0 1.6cqi 0 #1d120a) drop-shadow(0 2cqi 3cqi rgb(0 0 0 / 50%));
+}
+
+.card-die .die {
+  width: 100%;
+  height: 100%;
+  border: 1.6cqi solid #1d120a;
+  border-radius: 20%;
+  box-shadow: none;
+}
+
+.card-die .die-plain {
+  font-family: var(--font-game);
+  font-size: 20cqi;
+  font-weight: 400;
+}
+
+/* A text card: the die sits below the counter's corner. */
+.card.blank .card-dice {
+  top: 40cqi;
+  right: 3cqi;
 }
 
 /* Damage on a character: a smaller dark-red blob at the top corner. */

@@ -1880,7 +1880,7 @@ Images come first, so the new table is built with backs and mats.
    1. e2e test: a card option has no name button and its card answers.
    2. `make screenshots` covers a card choice and a text choice.
 
-### [ ] 15.67 Kept die numbers on the card
+### [x] 15.67 Kept die numbers on the card
 
 1. Goal: a card that keeps a die number shows it as a die badge.
 2. Asked by the owner (2026-10-19).
@@ -1899,3 +1899,15 @@ Images come first, so the new table is built with backs and mats.
    1. Engine tests: the three cards' view `dice`.
    2. e2e test: a die badge on an item that keeps a number.
    3. `make screenshots` covers a card with a die badge.
+6. Result (2026-10-19)
+   1. Engine: `CardDef.Dice`; the card view sends `dice`.
+   2. Telepathy reads its stored roll; Red Candle its numbers this turn.
+   3. Crystal Ball's guess moved to `Object.Chosen`; it was a counter.
+   4. So it no longer shows a green counter or counts as one.
+   5. Client: a die per number on the card art, right side.
+   6. Drawn in the owner's dice look, with the badges' ink edge.
+   7. Fix: `.card img` stretched the die texture; now `.card > img`.
+   8. Engine tests: view `dice` of the three cards, gone after use.
+   9. e2e test: `table.spec.ts`, "a card that keeps a die number".
+   10. UC-12 2f; wiki `Client`, `Effect-blocks`.
+   11. Screenshots: `.cache/screenshots/15.67/before/` and `after/`.

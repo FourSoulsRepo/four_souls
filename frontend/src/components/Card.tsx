@@ -2,10 +2,12 @@ import { motion } from 'motion/react';
 import { useEffect, useRef, useState, type MouseEvent, type PointerEvent } from 'react';
 import { claimed } from '../animations';
 import { iconText, kindOf, textParts, unknownCard, type CardInfo, type Kind } from '../cards';
+import { diceImage } from '../dice';
 import { scaleFor } from '../playback';
 import type { MonsterStats } from '../protocol';
 import { useApp } from '../store';
 import { boxOf } from '../zoom';
+import { Die } from './Die';
 import './Card.css';
 
 // How long a touch must rest on a card to zoom it (B-06).
@@ -31,6 +33,10 @@ interface Props {
   player?: number;
   // counters is how many counters the card carries (7.9).
   counters?: number;
+  // dice are the die numbers the card keeps, drawn in owner's dice look
+  // (15.67).
+  dice?: number[];
+  owner?: number;
   // highlight marks a card the player may act on or pick (7.7).
   highlight?: 'act' | 'pick' | 'aim';
   // stats shows live health and attack as big numbers (H-15).
@@ -56,6 +62,8 @@ export function Card({
   damage = 0,
   spent = false,
   counters = 0,
+  dice,
+  owner = -1,
   objectId,
   player,
   highlight,
@@ -138,6 +146,7 @@ export function Card({
         <BlankFace card={card} full={size === 'zoom'} />
       )}
       {badges && counters > 0 && <Badge kind="counters" value={counters} label="counters" />}
+      {badges && dice && dice.length > 0 && <DieBadges values={dice} owner={owner} />}
       {/* Damage shows as the lower, red health; the mark is for the rest. */}
       {badges && damage > 0 && !monster && !stats && <Badge kind="damage" value={damage} label="damage" />}
       {badges && stats && (
@@ -233,6 +242,21 @@ function MonsterBadges({ stats, hurt }: { stats: MonsterStats; hurt: boolean }) 
         <Badge kind="atk" value={stats.atk} label="attack" title={`Attack (${printed(stats.printed_atk)})`} />
       )}
     </>
+  );
+}
+
+// DieBadges are the die numbers a card keeps (15.67): a stored roll or
+// a chosen number, each a die in its owner's dice look, on the art.
+function DieBadges({ values, owner }: { values: number[]; owner: number }) {
+  const image = useApp((s) => diceImage(s.dice, s.game?.seats, owner));
+  return (
+    <span className="card-dice">
+      {values.map((v) => (
+        <span key={v} className="card-die" title={`Kept die: ${String(v)}`}>
+          <Die value={v} image={image} label={`Kept die ${String(v)}`} />
+        </span>
+      ))}
+    </span>
   );
 }
 

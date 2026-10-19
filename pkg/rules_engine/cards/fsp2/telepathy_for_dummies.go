@@ -13,6 +13,12 @@ var telepathyForDummies = engine.CardDef{
 	Ref:    "telepathy_for_dummies",
 	Kind:   engine.TreasureCard,
 	Copies: 1,
+	Dice: func(g *engine.Game, self engine.ObjectID) []int {
+		if n := storedRoll(g, self); n > 0 {
+			return []int{n}
+		}
+		return nil
+	},
 	Abilities: []engine.Ability{
 		{
 			Kind:    engine.Triggered,

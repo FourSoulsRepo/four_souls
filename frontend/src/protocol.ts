@@ -185,6 +185,8 @@ export interface CardView {
   // souls: the soul value the card adds to its owner, on a soul in play
   // or a character; older servers send none (V-43).
   souls?: number;
+  // dice: the die numbers the card keeps, e.g. a stored roll (15.67).
+  dice?: number[];
 }
 
 // counted is how many counters a card carries, of any kind.

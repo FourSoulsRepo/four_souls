@@ -428,6 +428,58 @@ test('a bonus soul shows its counters (19.29)', async ({ browser }) => {
   await expect(soul.getByLabel('2 counters')).toBeVisible();
 });
 
+test('a card that keeps a die number shows it as a die, not in its zoom (15.67)', async ({ browser }) => {
+  const [page] = await startGame(browser, ['Ash', 'Bix'], { bans: plainBoard });
+  if (!page) {
+    throw new Error('no pages');
+  }
+  // The viewer gets Crystal Ball with a guessed 4 and a card with two
+  // chosen numbers, as the server would send them. Red Candle keeps two
+  // after a recharge, but its set is not in this game, so Mystery Sack
+  // stands in. Only the screen changes; nobody acts on it.
+  await page.evaluate(() => {
+    interface Card {
+      id: number;
+      card: string;
+      role?: number;
+      charged: boolean;
+      dice?: number[];
+    }
+    interface S {
+      game: { view: { players: { id: number; in_play: Card[] | null }[] } } | null;
+    }
+    const { store } = (window as unknown as { fourSouls: { store: { getState: () => S; setState: (s: Partial<S>) => void } } })
+      .fourSouls;
+    const { game } = store.getState();
+    if (!game) {
+      throw new Error('no game');
+    }
+    const kept: Card[] = [
+      { id: 9201, card: 'crystal_ball', role: 2, charged: true, dice: [4] },
+      { id: 9202, card: 'mystery_sack', role: 2, charged: true, dice: [2, 5] },
+    ];
+    const you = Number(document.querySelector('.player-bottom')?.getAttribute('data-zone')?.replace('player-', ''));
+    const players = game.view.players.map((p) => (p.id === you ? { ...p, in_play: [...(p.in_play ?? []), ...kept] } : p));
+    store.setState({ game: { ...game, view: { ...game.view, players } } });
+  });
+  const items = page.getByRole('group', { name: 'Your items' });
+  const ball = items.locator('[data-zone="obj-9201"]');
+  const two = items.locator('[data-zone="obj-9202"]');
+  await expect(ball.getByLabel('Kept die 4')).toBeVisible();
+  await expect(two.getByLabel('Kept die 2')).toBeVisible();
+  await expect(two.getByLabel('Kept die 5')).toBeVisible();
+  await expect(ball.getByLabel('counters')).toHaveCount(0);
+  await expect(ball).toHaveCSS('opacity', '1'); // it has popped in
+  await shot(page, 'kept-dice');
+
+  // The zoom shows no badges, as for the others (owner, 15.23).
+  await ball.hover();
+  const zoom = page.getByTestId('card-zoom').locator('.card.size-zoom');
+  await expect(zoom).toBeVisible();
+  await expect(zoom.locator('.card-die')).toHaveCount(0);
+  await shot(page, 'kept-dice-zoom');
+});
+
 test('a card with many abilities opens a dialog that uses the picked line (15.24)', async ({ browser }) => {
   const [page] = await startGame(browser, ['Lux', 'Ivy']);
   if (!page) {

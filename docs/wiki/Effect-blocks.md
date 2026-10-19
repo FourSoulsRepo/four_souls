@@ -44,6 +44,7 @@ Cards are Go values built from small blocks (ADR 005). This page lists every blo
 | `SoulWhenDestroyed` | "If this would be destroyed, it becomes a soul instead." |
 | `GoesFirst` | A character whose player goes first (Cain) |
 | `StartingChoice` | Look at this many top treasures at the start, pick an eternal starting item (Eden) |
+| `Dice` | Die numbers the card keeps, shown on it: a stored roll or a chosen number (Telepathy for Dummies, Red Candle); keep a chosen number in `Object.Chosen`, not in counters (Crystal Ball) |
 | `Rewards` | Reward box, e.g. `[]Reward{{Kind: RewardCents, Amount: 3}}` |
 | `Abilities` | Activated, loot and triggered abilities |
 | `Statics` | Static abilities that change numbers |

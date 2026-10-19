@@ -185,3 +185,16 @@ func testStats(t *testing.T, card engine.CardRef, hp, dc, atk int) {
 		t.Errorf("%s: HP %d DC %d ATK %d, want %d %d %d", card, tb.G.HP(id), tb.G.Evasion(id), tb.G.MonsterATK(id), hp, dc, atk)
 	}
 }
+
+// viewDice are the die numbers the spectator view shows on player p's
+// card ref (15.67).
+func viewDice(tb *enginetest.Table, p int, ref engine.CardRef) []int {
+	tb.T.Helper()
+	for _, c := range tb.G.View(engine.Viewer{Kind: engine.ViewSpectator}).Players[p].InPlay {
+		if c.Card == ref {
+			return c.Dice
+		}
+	}
+	tb.T.Fatalf("%s is not in play", ref)
+	return nil
+}

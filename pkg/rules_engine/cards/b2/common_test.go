@@ -250,3 +250,16 @@ func runSome(t *testing.T, g *engine.Game) {
 		t.Fatal(err)
 	}
 }
+
+// viewDice are the die numbers the spectator view shows on player p's
+// card ref (15.67).
+func viewDice(tb *enginetest.Table, p int, ref engine.CardRef) []int {
+	tb.T.Helper()
+	for _, c := range tb.G.View(engine.Viewer{Kind: engine.ViewSpectator}).Players[p].InPlay {
+		if c.Card == ref {
+			return c.Dice
+		}
+	}
+	tb.T.Fatalf("%s is not in play", ref)
+	return nil
+}
