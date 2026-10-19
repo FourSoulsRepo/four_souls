@@ -15,7 +15,7 @@
    3. Each row: a square icon and one short line.
    4. Icons: card art, a die, a blood drop, or a skull.
    5. Players show in their seat color; targets in red.
-3. The action bar says who may respond: "Bo may respond".
+3. The prompt banner says whom it waits for: "Waiting for Bo" (UC-21).
 4. The player who may respond sees "Respond, or pass".
 5. That player passes or acts (UC-13).
 6. The item resolves; the panel shows what is left, or "Nothing on the stack".
@@ -26,9 +26,9 @@
   * The server passes for them on everything now on the stack.
   * The button turns into "Cancel skip".
 * **3b. Response timer (N-07):** the host set one in the detailed setup.
-  * The action bar counts down the seconds left.
+  * The prompt banner counts down the seconds left.
   * When it runs out, the server answers for the player.
-* **3c. Choices and discards:** the bar says "Ann is choosing" or "Ann is discarding".
+* **3c. Choices and discards:** the banner says "Waiting for Ann" and what for.
 * **2c. Whom it waits for (V-11):** the panel says "Waiting for Bo, Cy".
   * "Passed: Ann" lists who passed, auto-skipped players too.
   * Every client names the same players; the viewer is "You".
@@ -49,14 +49,17 @@
   * Boom Fly: "Boom Fly deals 1 damage to Ann", one line per player.
   * No card to name: "Ann takes 1 damage".
 * **2j. A roll waits for its throw (15.61):** the roll's row shows "?".
-  * The roller's panel says "Waiting for you to throw".
-  * The others read "Ann is throwing…" in the panel.
+  * The roller's panel says "Throw the die".
+  * The others read "Ann: Throw the die for the attack roll" in the panel.
   * The others see Ann's die shaking where it will land.
-  * The action bar says "Throw the die", or "Ann is throwing".
+  * The banner says "Throw the die", or "Waiting for Ann".
 * **2k. The last roll (15.63):** a small die by the "Stack" title shows it.
   * It shows the final value, after changes and rerolls.
   * Hovering it names the roller and the roll: "Ann rolled 4 — attack roll".
   * It stays until the next roll; before the first one there is none.
+* **2l. A prompt of the viewer's (15.28):** the panel says what to do.
+  * The same words as the banner: "Choose a target".
+  * Pass glows when passing answers the prompt.
 
 ## Postconditions
 

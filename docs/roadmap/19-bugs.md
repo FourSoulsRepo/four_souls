@@ -608,6 +608,7 @@ This step never closes; new reports are appended.
    2. `stack.spec.ts`: "a played loot card shows on the stack".
    3. Chromium; the hand had Dagaz.
    4. The stack stayed empty; the status said "You: Choose a target".
+   5. Seen again in 15.28, Chromium and WebKit; the panel said "Choose a target".
 3. Tasks:
    1. Answer a target picked on the table, not only in a dialog.
 4. Done when:

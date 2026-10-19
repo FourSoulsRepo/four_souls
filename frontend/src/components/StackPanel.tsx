@@ -18,13 +18,17 @@ interface Props {
   // pass passes priority, when the engine allows it now.
   pass?: Intent;
   disabled: boolean;
+  // prompt is the banner's prompt, when it is not priority (15.28).
+  prompt?: string | undefined;
+  // answer: Pass answers the banner's prompt, so it glows (15.28).
+  answer: boolean;
 }
 
 // StackPanel is the stack inside the board (15.21, F-03): newest on
 // top, one icon and one short line per item (S-01 – S-04), whom it
 // waits for (V-11), and the Pass button; Space presses it (S-08). An
-// empty stack says so (S-09).
-export function StackPanel({ view, you, names, pass, disabled }: Props) {
+// empty stack says so (S-09). Pass glows when it answers the prompt.
+export function StackPanel({ view, you, names, pass, disabled, prompt, answer }: Props) {
   const act = useApp((s) => s.act);
   const stack = view.stack ?? [];
   const wait = stackWait(view, you, names);
@@ -40,7 +44,13 @@ export function StackPanel({ view, you, names, pass, disabled }: Props) {
       <header>
         <h2>Stack</h2>
         <LastRollDie names={names} />
-        <button type="button" className="stack-pass" title="Pass (Space)" disabled={!lit} onClick={press}>
+        <button
+          type="button"
+          className={`stack-pass${lit && answer ? ' answer' : ''}`}
+          title="Pass (Space)"
+          disabled={!lit}
+          onClick={press}
+        >
           Pass
         </button>
       </header>
@@ -53,9 +63,9 @@ export function StackPanel({ view, you, names, pass, disabled }: Props) {
           ))}
         </ol>
       )}
-      {wait.prompt && (
+      {prompt && (
         <p className="stack-wait" aria-label="Waiting for">
-          {wait.prompt}
+          {prompt}
         </p>
       )}
       {wait.responding.length > 0 && (

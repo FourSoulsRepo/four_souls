@@ -166,7 +166,7 @@ export async function settle(pages: Page[], press: Tap, done: () => Promise<bool
   const states = await Promise.all(
     pages.map(async (p) => ({
       ...(await seen(p)),
-      status: await p.locator('.action-status').textContent({ timeout: 1000 }).catch(() => null),
+      status: await p.locator('.prompt-banner').textContent({ timeout: 1000 }).catch(() => null),
       buttons: await p.getByRole('region', { name: 'Actions' }).getByRole('button').allTextContents(),
       dialog: await p.locator('.choice').textContent({ timeout: 1000 }).catch(() => null),
       error: await p.locator('.action-error').textContent({ timeout: 1000 }).catch(() => null),

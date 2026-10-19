@@ -283,6 +283,17 @@
   box-shadow: 0 0 0 3px #ff4b3e, 0 0 16px 3px rgb(255 75 62 / 75%);
 }
 
+/* While the player picks a target (15.28, V-20), the cards that answer
+   glow and the rest of the table dims. A player picked as a whole
+   keeps their cards lit; dialogs and the stack are not dimmed. */
+.game.picking :is(.board-slots, .board-decks, .bonus-souls, .player:not(.hl-pick)) .card:not(.hl-act, .hl-pick, .hl-aim) {
+  filter: brightness(0.45) saturate(0.6);
+}
+
+.game :is(.board-slots, .board-decks, .bonus-souls, .player) .card {
+  transition: filter 150ms ease;
+}
+
 /* Badges (15.23): numbers on a card, drawn like the game's cut-out art
    and its End turn button: a shape with a thick ink outline and a hard
    shadow, a slight tilt, and the number in the game's hand-drawn

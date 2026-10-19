@@ -892,7 +892,7 @@ Images come first, so the new table is built with backs and mats.
 7. Owner notes (2026-10-15)
    1. Owner marks 15.27 solved.
 
-### [ ] 15.28 Prompt banners
+### [x] 15.28 Prompt banners
 
 1. Goal: the player always knows when the game waits for them (V-20).
 2. Tasks:
@@ -905,6 +905,28 @@ Images come first, so the new table is built with backs and mats.
 3. Done when:
    1. e2e test: every prompt type shows its banner and highlights.
    2. `make screenshots` covers "your turn to act" and "waiting for Ann".
+4. Result (2026-10-19)
+   1. The status line, bottom right, became the prompt banner.
+   2. Asked player: a gold plate, the game's letters, a breathing glow.
+   3. Others: a dark plate, "Waiting for Ann", her name in her color.
+   4. A hint under the title says more.
+   5. Prompts covered: turn, respond, act out of turn.
+   6. Also: choice, discard, put back in order, throw.
+   7. The player's own aim counts too: "Choose a target", Esc cancels.
+   8. Own turn lists what is left: "Play a card, attack, buy, or end the turn".
+   9. Words live in `prompt.ts` (`promptBanner`); `waitText` is gone.
+   10. The stack panel repeats prompts other than priority (V-11).
+   11. Its words match the banner; "Waiting for you to throw" is gone.
+   12. Pass glows when passing answers the prompt.
+   13. Picking a target: answers glow, every other card dims.
+   14. While aiming, other playable cards no longer glow.
+   15. New animation `prompt-glow`, in the Animations wiki page.
+   16. Optional sound or window flash: not done; left for the owner.
+   17. Use case UC-21; UC-14 and the Client wiki updated.
+   18. e2e `prompt.spec.ts`: every prompt, for both players.
+   19. e2e: Pass glow, pick dimming, own aim.
+   20. `make e2e`: only 19.18 failed (Dagaz in the deal), twice.
+   21. Screenshots: `.cache/screenshots/15.28/before/` and `after/`.
 
 ### [ ] 15.29 Reasons and choice dialogs
 

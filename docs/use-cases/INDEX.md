@@ -22,3 +22,4 @@
 | UC-18 | See a hidden card | `frontend`, `rules_engine` | Implemented | [app/uc-18-see-a-hidden-card.md](app/uc-18-see-a-hidden-card.md) |
 | UC-19 | Create a game on a dedicated server | `internal/server`, `frontend` | Implemented | [server/uc-19-create-on-a-dedicated-server.md](server/uc-19-create-on-a-dedicated-server.md) |
 | UC-20 | Play with deck ratios | `internal/server`, `rules_engine`, `frontend` | Implemented | [server/uc-20-deck-ratios.md](server/uc-20-deck-ratios.md) |
+| UC-21 | Know when the game waits for me | `frontend` | Implemented | [app/uc-21-know-when-the-game-waits.md](app/uc-21-know-when-the-game-waits.md) |

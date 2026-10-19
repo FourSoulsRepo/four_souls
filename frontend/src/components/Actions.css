@@ -13,11 +13,93 @@
   max-width: 320px;
 }
 
-.action-status {
-  padding: 4px 10px;
-  border-radius: 6px;
+/* Prompt banner (15.28, V-20): what the game waits for. Waiting for
+   someone else: a dark plate, the name in its color. Waiting for this
+   player: a gold-rimmed plate in the game's letters, its glow
+   breathing, so the player cannot miss it. */
+.prompt-banner {
+  position: relative;
+  max-width: 320px;
+  padding: 6px 12px;
+  border: 2px solid rgb(255 255 255 / 12%);
+  border-radius: 8px;
+  text-align: right;
+  background: rgb(0 0 0 / 62%);
+}
+
+.prompt-title {
   font-weight: 700;
-  background: rgb(0 0 0 / 55%);
+}
+
+.prompt-hint {
+  margin-top: 2px;
+  font-size: 13px;
+  color: #d9d1c3;
+}
+
+.prompt-banner.mine {
+  --ink: #1d120a;
+  padding: 8px 16px 7px;
+  border: 3px solid var(--ink);
+  border-radius: 14px 18px 16px 12px / 12px 16px 18px 14px;
+  color: #2b1a0c;
+  background:
+    radial-gradient(ellipse at 30% 20%, rgb(255 255 255 / 45%), transparent 50%),
+    linear-gradient(#ffe08a, #e9b23c);
+  box-shadow:
+    0 3px 0 var(--ink),
+    0 6px 12px rgb(0 0 0 / 50%);
+}
+
+.prompt-banner.mine .prompt-title {
+  font-family: var(--font-game);
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: 0.02em;
+}
+
+.prompt-banner.mine .prompt-hint {
+  color: #4a3214;
+  font-weight: 600;
+}
+
+/* The glow behind a prompt the player answers, and behind Pass when
+   passing answers it; only its opacity moves. */
+.prompt-banner.mine,
+.stack .stack-pass.answer {
+  position: relative;
+  isolation: isolate;
+}
+
+.prompt-banner.mine::before,
+.stack .stack-pass.answer::before {
+  position: absolute;
+  inset: -3px;
+  z-index: -1; /* layer: local */
+  border-radius: inherit;
+  box-shadow: 0 0 16px 6px rgb(255 205 80 / 75%);
+  content: "";
+  animation: prompt-glow 1.2s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+/* anim: prompt-glow */
+@keyframes prompt-glow {
+  from {
+    opacity: 0.35;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .prompt-banner.mine::before,
+  .stack .stack-pass.answer::before {
+    animation: none;
+  }
 }
 
 .action-buttons {

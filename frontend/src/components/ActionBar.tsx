@@ -1,10 +1,15 @@
 import { useEffect, useState } from 'react';
+import type { Banner } from '../prompt';
 import { secondsLeft } from '../stack';
 import { useApp } from '../store';
+import { playerColor } from '../table';
 import './Actions.css';
 
 interface Props {
-  status: string;
+  // banner is what the game waits for (15.28); none once it is over.
+  banner: Banner | null;
+  paused: boolean;
+  name: (player: number) => string;
   // deadline is when the response timer answers, Unix ms; 0: no timer.
   deadline: number;
   // skip: "Skip all" is offered, or on (N-06).
@@ -13,19 +18,18 @@ interface Props {
   wait: 'offer' | 'on' | 'none';
 }
 
-// ActionBar shows whose move it is and why the game waits, the response
-// timer, "Skip all", "Wait for my turn", and why the last action was refused (7.7, 7.8).
-// Pass lives in the stack panel (15.21).
-export function ActionBar({ status, deadline, skip, wait }: Props) {
+// ActionBar shows the prompt banner with the response timer, "Skip
+// all", "Wait for my turn", and why the last action was refused (7.7,
+// 7.8). Pass lives in the stack panel (15.21).
+export function ActionBar({ banner, paused, name, deadline, skip, wait }: Props) {
   const skipAll = useApp((s) => s.skipAll);
   const waitTurn = useApp((s) => s.waitTurn);
   const error = useApp((s) => s.error);
   return (
     <div className="action-bar" role="region" aria-label="Actions">
-      <div className="action-status">
-        {status}
-        {deadline > 0 && <Timer deadline={deadline} />}
-      </div>
+      {(paused || banner) && (
+        <PromptBanner banner={paused ? null : banner} name={name} deadline={paused ? 0 : deadline} />
+      )}
       {(skip !== 'none' || wait !== 'none') && (
         <div className="action-buttons">
           {skip !== 'none' && (
@@ -57,6 +61,36 @@ export function ActionBar({ status, deadline, skip, wait }: Props) {
         {error}
       </div>
     </div>
+  );
+}
+
+// PromptBanner says what the game waits for (15.28, V-20): what to do,
+// in a few words, when it waits for this player; whom it waits for and
+// what for, in their color, when it waits for someone else. No banner
+// means the game is paused.
+function PromptBanner({ banner, name, deadline }: { banner: Banner | null; name: (player: number) => string; deadline: number }) {
+  const mine = banner?.mine ?? false;
+  return (
+    <section
+      className={`prompt-banner${mine ? ' mine' : ''}`}
+      aria-label="Prompt"
+      aria-live="polite"
+      data-kind={banner?.kind}
+    >
+      <div className="prompt-title">
+        {!banner ? (
+          'Paused'
+        ) : mine ? (
+          banner.title
+        ) : (
+          <>
+            Waiting for <b style={{ color: playerColor(banner.player) }}>{name(banner.player)}</b>
+          </>
+        )}
+        {deadline > 0 && <Timer deadline={deadline} />}
+      </div>
+      {banner?.hint && <div className="prompt-hint">{banner.hint}</div>}
+    </section>
   );
 }
 

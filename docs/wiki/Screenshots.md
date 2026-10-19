@@ -50,5 +50,10 @@ The fixture copies the fan-game notice. `internal/legal` has a test that fails w
 | A hovered hand card rises large | `screen-hand-hover.png` |
 | A monster's zoom right beside it | `screen-monster-hover.png` |
 | Keyword tips beside a zoomed card | `screen-zoom-tips.png` |
+| Prompt banner: your turn | `screen-prompt-your-turn.png` |
+| Prompt banner: waiting for another player | `screen-prompt-waiting.png` |
+| Prompt banners: respond, choose, discard, order, throw | `screen-prompt-*.png` |
+| Picking a target: answers glow, the rest dims | `screen-prompt-pick.png` |
+| Own aim: the banner names the card | `screen-prompt-aim.png` |
 
 When a screen is added, call `shot` in its test and add a row here.

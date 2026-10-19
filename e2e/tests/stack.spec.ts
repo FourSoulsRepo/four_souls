@@ -35,8 +35,8 @@ test('a played loot card shows on the stack; others may skip all', async ({ brow
     await expect(page.getByRole('complementary', { name: 'Stack' })).toContainText(`plays ${name ?? ''}`);
   }
   // Both always see why the game waits.
-  await expect(active.locator('.action-status')).toHaveText(/Respond, or pass|is choosing|Choose/);
-  await expect(other.locator('.action-status')).toHaveText(/(Sam|Tia) (may respond|is choosing)/);
+  await expect(active.locator('.prompt-title')).toHaveText(/Respond, or pass|Choose|Waiting for (Sam|Tia)/);
+  await expect(other.locator('.prompt-title')).toHaveText(/Waiting for (Sam|Tia)/);
   await shot(other, 'stack');
 
   const bar = other.getByRole('region', { name: 'Actions' });
@@ -67,7 +67,7 @@ test('a player may wait for their turn; the end of the turn before asks them (N-
   await endTurnButton(active).click();
   await expect(bar.getByRole('button', { name: /Cancel wait|Wait for my turn/ })).toHaveCount(0);
   if (await passButton(other).isEnabled()) {
-    await expect(other.locator('.action-status')).toHaveText(/You may act|Respond, or pass/);
+    await expect(other.locator('.prompt-title')).toHaveText(/You may act|Respond, or pass/);
     await shot(other, 'wait-turn-last-chance');
   }
 });

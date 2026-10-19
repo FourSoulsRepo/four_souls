@@ -63,6 +63,11 @@ export function interact(
     if (aimed(targets, (t) => !t.is_player && t.object === id)) {
       return aimHandle;
     }
+    // While aiming, only targets answer; the aiming card keeps its
+    // glow (15.28).
+    if (targets) {
+      return id === aiming?.source ? { highlight: "act" } : {};
+    }
     const o = options.find((x) => x.target?.object === id);
     if (o) {
       return pick(o);

@@ -1,6 +1,5 @@
 // Words for the stack and for why the game waits (7.8). Pure, so it is
 // tested without a browser.
-import { choiceTitle, PromptKind } from './actions';
 import type { GameView, StackItem } from './protocol';
 
 // Stack item kinds, in Go's order (pkg/rules_engine/stack.go).
@@ -162,60 +161,18 @@ export function stackBadge(it: StackItem): StackBadge | undefined {
   return it.kind === StackKind.loot ? 'spell' : undefined;
 }
 
-// waitText says who the game waits for and why, so nobody is lost.
-export function waitText(view: GameView, you: number, n: Names, choiceTitle?: string): string {
-  const { waiting, turn, over, stack } = view;
-  if (over) {
-    return 'Game over';
-  }
-  const mine = waiting.player === you;
-  const who = mine ? 'You' : n.player(waiting.player);
-  switch (waiting.kind) {
-    case PromptKind.choose:
-      return mine ? (choiceTitle ?? 'Your choice') : `${who} is choosing`;
-    case PromptKind.discard:
-      return mine ? 'Discard down to your hand size' : `${who} is discarding`;
-    case PromptKind.order:
-      return mine ? (choiceTitle ?? 'Put the cards in order') : `${who} is putting cards back`;
-    case PromptKind.throw:
-      return mine ? 'Throw the die' : `${who} is throwing`;
-    case PromptKind.priority:
-      if ((stack ?? []).length > 0) {
-        return mine ? 'Respond, or pass' : `${who} may respond`;
-      }
-      if (turn.active === waiting.player) {
-        return mine ? 'Your turn' : `${who}'s turn`;
-      }
-      return mine ? 'You may act' : `${who} may act`;
-    default:
-      return '';
-  }
-}
-
 // StackWait is whom the stack waits for (V-11): the players who may still
-// respond, the waiting one first, and those who passed; or the player who
-// must answer a prompt, and what.
+// respond, the waiting one first, and those who passed. Other prompts
+// get the banner's words (15.28, stackPrompt).
 export interface StackWait {
   responding: string[];
   passed: string[];
-  prompt?: string;
 }
 
 // stackWait names whom the stack waits for, as the server says.
 export function stackWait(view: GameView, you: number, n: Names): StackWait {
   const name = (p: number) => (p === you ? 'You' : n.player(p));
-  const w = view.waiting;
-  const out: StackWait = { responding: (view.responding ?? []).map(name), passed: (view.passed ?? []).map(name) };
-  if (w.kind === PromptKind.choose || w.kind === PromptKind.order) {
-    out.prompt = `${name(w.player)}: ${choiceTitle(w)}`;
-  } else if (w.kind === PromptKind.discard) {
-    const count = w.count ?? 0;
-    out.prompt = `${name(w.player)}: Discard ${String(count)} loot card${count === 1 ? '' : 's'}`;
-  } else if (w.kind === PromptKind.throw) {
-    // The roller can never miss that the game waits for them (V-17).
-    out.prompt = w.player === you ? 'Waiting for you to throw' : `${n.player(w.player)} is throwing…`;
-  }
-  return out;
+  return { responding: (view.responding ?? []).map(name), passed: (view.passed ?? []).map(name) };
 }
 
 // secondsLeft is the response timer, whole seconds, never negative.

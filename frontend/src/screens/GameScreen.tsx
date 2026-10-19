@@ -18,7 +18,8 @@ import { EndTurn, TurnActions } from '../components/TurnActions';
 import { matLook } from '../mats';
 import type { Update } from '../protocol';
 import { seatOf, useApp } from '../store';
-import { waitText, waitTurn, type Names } from '../stack';
+import { picking, promptBanner, stackPrompt } from '../prompt';
+import { waitTurn, type Names } from '../stack';
 import { seatPositions } from '../table';
 import '../components/Table.css';
 import './screens.css';
@@ -104,8 +105,12 @@ function Table({ game, you }: { game: Update; you: number }) {
   const me = view.players.at(you);
   const stacked = (view.stack ?? []).length > 0;
   const skip = game.skip_all ? 'on' : stacked && !view.over ? 'offer' : 'none';
+  // The banner and the stack say what the game waits for (15.28). While
+  // the player picks a target, the cards that answer glow; the rest dim.
+  const banner = promptBanner(view, you, names, actions, aiming);
+  const dim = canAct && picking(actions, aiming);
   return (
-    <main className={`game ${look.className}`} style={look.style} aria-label={`Turn ${String(view.turn.number)}`}>
+    <main className={`game ${look.className}${dim ? ' picking' : ''}`} style={look.style} aria-label={`Turn ${String(view.turn.number)}`}>
       {seatPositions(view.players.length, you).map(({ position, player }) => {
         const p = view.players.at(player);
         return (
@@ -167,6 +172,8 @@ function Table({ game, you }: { game: Update; you: number }) {
           names={names}
           pass={actions.buttons.find((b) => b.intent.kind === IntentKind.pass)?.intent}
           disabled={!canAct}
+          prompt={stackPrompt(banner, names)}
+          answer={banner?.mine === true && (banner.kind === 'respond' || banner.kind === 'act')}
         />
         {historyOpen && (
           <HistoryPanel
@@ -180,7 +187,9 @@ function Table({ game, you }: { game: Update; you: number }) {
         <Throw waiting={view.waiting} you={you} names={names} action={actions.throw} disabled={!canAct} />
       )}
       <ActionBar
-        status={game.pause ? 'Paused' : waitText(view, you, names, actions.choice?.title ?? actions.order?.title)}
+        banner={banner}
+        paused={!!game.pause}
+        name={name}
         deadline={game.deadline ?? 0}
         skip={skip}
         wait={waitTurn(view, you, game.wait_turn ?? false)}
