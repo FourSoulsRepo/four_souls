@@ -100,6 +100,13 @@ type Object struct {
 	// CopyTillYourTurn ends the copy at the start of its controller's next
 	// turn (Undefined).
 	CopyTillYourTurn bool `json:"copy_till_your_turn,omitempty"`
+	// Gained is a card whose abilities this object has too (R-ABIL-38:
+	// Glitch); GainedTill ends it: GainEndOfTurn or GainTillYourTurn.
+	Gained     CardRef `json:"gained,omitempty"`
+	GainedTill int     `json:"gained_till,omitempty"`
+	// ATKSet, if not 0, is the object's ATK plus 1 ("Its ATK becomes 1":
+	// Hemoptysis).
+	ATKSet int `json:"atk_set,omitempty"`
 	// Flipped: the back face is up (R-MECH-33); the object acts as its
 	// card's Back. Counters, damage and charge stay (R-MECH-53).
 	Flipped bool `json:"flipped,omitempty"`
@@ -387,4 +394,31 @@ type ManyDice struct {
 func (g *Game) soulKeepsAbilities(id ObjectID) bool {
 	o := g.Object(id)
 	return o.Role == RoleSoul && !o.NoAbilities && g.kindOf(id) == TreasureCard
+}
+
+// How long a gained card's abilities last (Object.GainedTill).
+const (
+	GainEndOfTurn    = 1
+	GainTillYourTurn = 2
+)
+
+// facesOf lists the cards whose abilities an object has: the card it
+// acts as, then any it gained (R-ABIL-38: Glitch, Golden Trinket).
+func (g *Game) facesOf(id ObjectID) []CardRef {
+	out := []CardRef{g.CardOf(id)}
+	o := g.Object(id)
+	if o.Gained != "" {
+		out = append(out, o.Gained)
+	}
+	if d, ok := g.cards.find(out[0]); ok && d.GainsAbilities != nil {
+		out = append(out, d.GainsAbilities(g, id)...)
+	}
+	return out
+}
+
+// GainAbilities gives an object the abilities of card till the end of
+// this turn, or till the start of its controller's next turn.
+func (g *Game) GainAbilities(id ObjectID, card CardRef, till int) {
+	o := g.Object(id)
+	o.Gained, o.GainedTill = card, till
 }

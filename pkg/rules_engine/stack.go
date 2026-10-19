@@ -273,7 +273,7 @@ func (g *Game) throwDie(t Throw) {
 		text = "reroll"
 	}
 	r, p := it.Roll, it.Controller
-	if !t.Reroll && len(g.ManyDice) > 0 && g.ManyDice[0].StackID == t.StackID && g.ManyDice[0].Values == nil {
+	if len(g.ManyDice) > 0 && g.ManyDice[0].StackID == t.StackID && g.ManyDice[0].Values == nil {
 		md := &g.ManyDice[0]
 		md.Values = []int{r}
 		for range md.Dice - 1 {
@@ -426,4 +426,15 @@ func (g *Game) useNextAttackRoll(p PlayerID) int {
 	}
 	g.Boosts = kept
 	return total
+}
+
+// RerollWithDice rerolls a roll on the stack with several dice; chooser
+// picks the result ("Its controller rerolls it, but rolls 2 dice
+// instead. … That player chooses one of the rolls": Classic Roller).
+func (g *Game) RerollWithDice(stackID, dice int, chooser PlayerID) {
+	if _, ok := g.StackItemByID(stackID); !ok {
+		return
+	}
+	g.ManyDice = append([]ManyDice{{Chooser: chooser, Dice: dice, StackID: stackID}}, g.ManyDice...)
+	g.Reroll(stackID)
 }

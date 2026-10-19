@@ -230,6 +230,9 @@ func (g *Game) MonsterATK(id ObjectID) int {
 	if p, ok := g.characterOf(id); ok {
 		return g.PlayerATK(p)
 	}
+	if set := g.Object(id).ATKSet; set > 0 {
+		return set - 1
+	}
 	return max(g.def(id).ATK+g.monsterBonus(StatMonsterATK, id), 0)
 }
 
@@ -857,7 +860,7 @@ func (g *Game) penaltyCents(p PlayerID) Action {
 	if s := g.shadowOf(p); s != NoPlayer && !g.protectedFromLoss(p) {
 		return Action{Kind: ActStealCents, Player: s, From: p, Amount: 1}
 	}
-	return Action{Kind: ActLoseCents, Player: p, Amount: 1}
+	return Action{Kind: ActLoseCents, Player: p, Amount: 1, Penalty: true}
 }
 
 // Def returns the card definition an object acts as.

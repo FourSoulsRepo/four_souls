@@ -288,8 +288,12 @@ func (g *Game) recharge(p PlayerID) {
 // their next turn (Undefined).
 func (g *Game) endCopiesTillYourTurn(p PlayerID) {
 	for _, id := range g.Players[p].InPlay {
-		if o := g.Object(id); o.CopyTillYourTurn {
+		o := g.Object(id)
+		if o.CopyTillYourTurn {
 			o.CopyOf, o.CopyTillYourTurn = "", false
+		}
+		if o.GainedTill == GainTillYourTurn {
+			o.Gained, o.GainedTill = "", 0
 		}
 	}
 }
@@ -344,9 +348,13 @@ func (g *Game) healAll() {
 	}
 	g.Boosts, g.Shields, g.Lingering = nil, nil, nil // till end of turn effects end
 	for _, pl := range g.Players {
-		for _, id := range pl.InPlay {
-			if o := g.Object(id); o.CopyThisTurn {
+		for _, id := range append([]ObjectID{pl.Character}, pl.InPlay...) {
+			o := g.Object(id)
+			if o.CopyThisTurn {
 				o.CopyOf, o.CopyThisTurn = "", false
+			}
+			if o.GainedTill == GainEndOfTurn {
+				o.Gained, o.GainedTill = "", 0
 			}
 		}
 		g.Players[pl.ID].CopyNextLoot = false
@@ -418,13 +426,15 @@ func (g *Game) PlayerBefore(p PlayerID) PlayerID {
 func (g *Game) maxHand(p PlayerID) int {
 	limit := g.MaxHand
 	for _, id := range g.inPlay() {
-		d, ok := g.cards.find(g.CardOf(id))
-		if !ok {
-			continue
-		}
-		for _, s := range d.Statics {
-			if s.Stat == StatHandCap && s.Applies(g, id, p, 0) {
-				limit = min(limit, s.amount(g, id))
+		for _, face := range g.facesOf(id) {
+			d, ok := g.cards.find(face)
+			if !ok {
+				continue
+			}
+			for _, s := range d.Statics {
+				if s.Stat == StatHandCap && s.Applies(g, id, p, 0) {
+					limit = min(limit, s.amount(g, id))
+				}
 			}
 		}
 	}

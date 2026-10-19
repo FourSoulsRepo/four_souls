@@ -5,9 +5,6 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 // The Deceiver (Character Card)
 //
 //	{Tap Effect}Play an additional loot card this turn.
-//
-// TODO(card): implement the text above, then delete this line.
-// Until then `go run ./cmd/cardgen` rewrites this file from card_db.
 var theDeceiver = engine.CardDef{
 	Ref:          "the_deceiver",
 	Kind:         engine.CharacterCard,
@@ -16,4 +13,5 @@ var theDeceiver = engine.CardDef{
 	ATK:          1,
 	StartingItem: "ceremonial_blade",
 	Tap:          true,
+	Abilities:    []engine.Ability{extraLoot},
 }

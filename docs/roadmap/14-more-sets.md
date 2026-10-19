@@ -126,6 +126,9 @@ Ideas: CD-02, GS-07, GS-08, CD-11, A-16, CD-12, V-32, GS-12, GS-13, GS-01.
    39. Engine: two-sided cards flip; the back face is its own definition (R-MECH-33).
    40. Back faces: The Revenant, amginE ehT, The Beast!, checked against foursouls.ru images.
    41. Requiem: Anima Sola, The Enigma, Flip, The Harbingers, Dogma tested.
+   42. Requiem: 19 characters and 17 eternal items tested.
+   43. Engine: gained abilities (Glitch); rerolls with 2 dice (Classic Roller); ATK set (Hemoptysis).
+   44. Engine: triggered abilities as targets (Dead Weight); the penalty's ¢ loss marked (Soulbond).
 
 ### [ ] 14.4 Setup options
 

@@ -5,9 +5,6 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 // The Savage (Character Card)
 //
 //	{Tap Effect}Play an additional loot card this turn
-//
-// TODO(card): implement the text above, then delete this line.
-// Until then `go run ./cmd/cardgen` rewrites this file from card_db.
 var theSavage = engine.CardDef{
 	Ref:          "the_savage",
 	Kind:         engine.CharacterCard,
@@ -16,4 +13,5 @@ var theSavage = engine.CardDef{
 	ATK:          1,
 	StartingItem: "berserk",
 	Tap:          true,
+	Abilities:    []engine.Ability{extraLoot},
 }

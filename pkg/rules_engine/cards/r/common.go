@@ -841,3 +841,69 @@ func clearMarks(g *engine.Game, id engine.ObjectID) {
 	}
 	g.Boosts = kept
 }
+
+// othersOf lists the players other than p, in turn order from p.
+func othersOf(g *engine.Game, p engine.PlayerID) []engine.PlayerID {
+	return g.TurnOrderFrom(p)[1:]
+}
+
+// otherMonsters lists the monsters in play but m.
+func otherMonsters(g *engine.Game, m engine.ObjectID) []engine.ObjectID {
+	var out []engine.ObjectID
+	for _, id := range monstersInPlay(g) {
+		if id != m {
+			out = append(out, id)
+		}
+	}
+	return out
+}
+
+// nonEternalItems lists the non-eternal items p controls.
+func nonEternalItems(g *engine.Game, p engine.PlayerID) []engine.ObjectID {
+	var out []engine.ObjectID
+	for _, id := range itemsOf(g, p) {
+		if !g.Eternal(id) {
+			out = append(out, id)
+		}
+	}
+	return out
+}
+
+// damageUpTo deals n damage to each of up to most different monsters or
+// players, picked one at a time.
+func damageUpTo(most, n int) engine.Effect {
+	left := func(c *engine.Ctx, a []int) ([]engine.Chosen, bool) {
+		ts := monstersAndPlayers(c.G)
+		for _, x := range a {
+			if x < 0 || x >= len(ts) {
+				return nil, true
+			}
+			ts = append(ts[:x:x], ts[x+1:]...)
+		}
+		return ts, false
+	}
+	qs := make([]engine.Question, most)
+	for i := range qs {
+		qs[i] = engine.Question{Text: "Deal damage to?", Options: func(c *engine.Ctx, a []int) []string {
+			ts, done := left(c, a[:i])
+			if done || len(ts) == 0 {
+				return nil
+			}
+			return append(chosenLabels(c.G, ts), "done")
+		}}
+	}
+	return engine.Ask(func(c *engine.Ctx, a []int) {
+		ts := monstersAndPlayers(c.G)
+		for _, x := range a {
+			if x < 0 || x >= len(ts) {
+				return
+			}
+			t := engine.Target{Object: ts[x].Object}
+			if ts[x].Kind == engine.TargetPlayer {
+				t = engine.Target{Player: ts[x].Player, IsPlayer: true}
+			}
+			c.G.DealDamageTo(t, n, c.Controller, c.Source)
+			ts = append(ts[:x:x], ts[x+1:]...)
+		}
+	}, qs...)
+}

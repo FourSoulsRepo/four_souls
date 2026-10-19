@@ -346,7 +346,7 @@ func targetView(t Chosen) OptionView {
 	switch t.Kind {
 	case TargetPlayer, TargetOtherPlayer:
 		o.Player, o.IsPlayer = t.Player, true
-	case TargetDiceRoll, TargetStackAbility:
+	case TargetDiceRoll, TargetStackAbility, TargetStackTrigger:
 		o.StackID = t.StackID
 	case TargetMonster, TargetMonsterOrPlayer, TargetItem, TargetCurse, TargetYourItem,
 		TargetYourHandCard, TargetItemOrSoul:

@@ -85,14 +85,15 @@ func (g *Game) bonus(stat Stat, p PlayerID, subject ObjectID) int {
 		}
 	}
 	for _, id := range g.inPlay() {
-		o := g.Object(id)
-		d, ok := g.cards.find(g.CardOf(id))
-		if !ok {
-			continue
-		}
-		for _, s := range d.Statics {
-			if s.Stat == stat && s.Applies(g, o.ID, p, subject) {
-				total += s.amount(g, o.ID)
+		for _, face := range g.facesOf(id) {
+			d, ok := g.cards.find(face)
+			if !ok {
+				continue
+			}
+			for _, s := range d.Statics {
+				if s.Stat == stat && s.Applies(g, id, p, subject) {
+					total += s.amount(g, id)
+				}
 			}
 		}
 	}

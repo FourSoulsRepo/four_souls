@@ -159,6 +159,7 @@ const (
 	TargetYourItem                          // an item you control
 	TargetYourHandCard                      // a loot card in your hand (for costs)
 	TargetItemOrSoul                        // an item or a soul a player controls
+	TargetStackTrigger                      // a triggered ability on the stack (Dead Weight)
 )
 
 // TargetSpec says what to choose; the engine always asks (ADR 005).

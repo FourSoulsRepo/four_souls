@@ -5,9 +5,6 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 // The Hoarder (Character Card)
 //
 //	{Tap Effect}Play an additional loot card this turn.
-//
-// TODO(card): implement the text above, then delete this line.
-// Until then `go run ./cmd/cardgen` rewrites this file from card_db.
 var theHoarder = engine.CardDef{
 	Ref:          "the_hoarder",
 	Kind:         engine.CharacterCard,
@@ -16,4 +13,5 @@ var theHoarder = engine.CardDef{
 	ATK:          1,
 	StartingItem: "bag_of_crafting",
 	Tap:          true,
+	Abilities:    []engine.Ability{extraLoot},
 }

@@ -46,6 +46,8 @@ type Action struct {
 	Ask    *Asking    `json:"ask,omitempty"`
 	// Reroll marks a throw that rolls a roll again (ActThrow).
 	Reroll bool `json:"reroll,omitempty"`
+	// Penalty marks the death penalty's loss of ¢ (Soulbond).
+	Penalty bool `json:"penalty,omitempty"`
 	// Purchase marks treasure gained by buying the top of the deck; the
 	// first card gained is the purchase (Damocles still adds one).
 	Purchase bool `json:"purchase,omitempty"`

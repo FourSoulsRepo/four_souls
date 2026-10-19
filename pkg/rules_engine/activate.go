@@ -250,6 +250,17 @@ func (g *Game) targetOptions(t TargetSpec, p PlayerID, src ObjectID) ([]Chosen, 
 				labels = append(labels, label)
 			}
 		}
+	case TargetStackTrigger:
+		for _, it := range g.Stack {
+			if it.Kind == StackTrigger {
+				opts = append(opts, Chosen{Kind: TargetStackTrigger, Player: it.Controller, StackID: it.ID})
+				label := string(it.Card)
+				if it.Label != "" {
+					label += ": " + it.Label
+				}
+				labels = append(labels, label)
+			}
+		}
 	case TargetYourHandCard:
 		for _, id := range g.Players[p].Hand {
 			opts = append(opts, Chosen{Kind: TargetYourHandCard, Player: p, Object: id})
@@ -315,7 +326,7 @@ func (g *Game) stillValid(c Chosen) bool {
 	case TargetItem:
 		o := g.Object(c.Object)
 		return o.Zone.Kind == ZoneInPlay && o.Role == RoleItem
-	case TargetDiceRoll, TargetStackAbility:
+	case TargetDiceRoll, TargetStackAbility, TargetStackTrigger:
 		for _, it := range g.Stack {
 			if it.ID == c.StackID {
 				return true
@@ -387,11 +398,14 @@ func (g *Game) useLootPlay(p PlayerID) {
 // non-eternal items in play: players' items, then shop items, which count
 // as in play for targeting (S-YUG).
 func (g *Game) AbilitiesOf(id ObjectID) []AbilityRef {
-	card := g.CardOf(id)
 	if !g.def(id).CopiesTapAbilities {
-		refs := make([]AbilityRef, len(g.def(id).Abilities))
-		for i := range refs {
-			refs[i] = AbilityRef{Card: card, Index: i}
+		var refs []AbilityRef
+		for _, face := range g.facesOf(id) {
+			if d, ok := g.cards.find(face); ok {
+				for i := range d.Abilities {
+					refs = append(refs, AbilityRef{Card: face, Index: i})
+				}
+			}
 		}
 		return refs
 	}

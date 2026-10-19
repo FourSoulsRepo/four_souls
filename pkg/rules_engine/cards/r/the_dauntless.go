@@ -5,9 +5,6 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 // The Dauntless (Character Card)
 //
 //	{Tap Effect}Play an additional loot card this turn.
-//
-// TODO(card): implement the text above, then delete this line.
-// Until then `go run ./cmd/cardgen` rewrites this file from card_db.
 var theDauntless = engine.CardDef{
 	Ref:          "the_dauntless",
 	Kind:         engine.CharacterCard,
@@ -16,4 +13,5 @@ var theDauntless = engine.CardDef{
 	ATK:          1,
 	StartingItem: "hypercoagulation",
 	Tap:          true,
+	Abilities:    []engine.Ability{extraLoot},
 }

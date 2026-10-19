@@ -91,6 +91,10 @@ type CardDef struct {
 	CopiesTapOnPlay bool
 	// Unattackable: "This can't be attacked."
 	Unattackable bool
+	// GainsAbilities lists cards whose abilities this object has too:
+	// "This has the abilities of other items with gold counters on them"
+	// (Golden Trinket).
+	GainsAbilities func(g *Game, self ObjectID) []CardRef
 	// Back is the definition of the card's other face (R-MECH-33): a
 	// card defined in the same set with Outside set, never dealt.
 	Back CardRef

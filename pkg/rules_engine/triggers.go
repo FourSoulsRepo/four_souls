@@ -164,16 +164,18 @@ type PendingTrigger struct {
 // "when this is destroyed" still sees itself.
 func (g *Game) collectTriggers(e Event) {
 	check := func(id ObjectID) {
-		def, ok := g.cards.find(g.CardOf(id))
-		if !ok {
-			return
-		}
-		for i, a := range def.Abilities {
-			if a.Kind == Triggered && a.Trigger.On == e.Kind && a.Trigger.Match != nil && a.Trigger.Match(g, id, e) {
-				g.PendingTriggers = append(g.PendingTriggers, PendingTrigger{
-					Ability: AbilityRef{Card: g.CardOf(id), Index: i}, Source: id, Controller: g.abilityController(id),
-					On: e.Kind, EventPlayer: e.Player, EventAmount: e.Amount, EventStack: e.StackID, EventObject: e.Object, EventSource: e.Source,
-				})
+		for _, face := range g.facesOf(id) {
+			def, ok := g.cards.find(face)
+			if !ok {
+				continue
+			}
+			for i, a := range def.Abilities {
+				if a.Kind == Triggered && a.Trigger.On == e.Kind && a.Trigger.Match != nil && a.Trigger.Match(g, id, e) {
+					g.PendingTriggers = append(g.PendingTriggers, PendingTrigger{
+						Ability: AbilityRef{Card: face, Index: i}, Source: id, Controller: g.abilityController(id),
+						On: e.Kind, EventPlayer: e.Player, EventAmount: e.Amount, EventStack: e.StackID, EventObject: e.Object, EventSource: e.Source,
+					})
+				}
 			}
 		}
 	}
