@@ -1963,7 +1963,7 @@ Images come first, so the new table is built with backs and mats.
    2. Adding a field to `PlayerView` in Go fails the Go test.
    3. `make lint test frontend` pass.
 
-### [ ] 15.69 Dice in 3D, with a sound
+### [x] 15.69 Dice in 3D, with a sound
 
 1. Goal: dice look like solid cubes, and a throw is heard (V-17).
 2. Asked by the owner (2026-10-19).
@@ -1997,3 +1997,6 @@ Images come first, so the new table is built with backs and mats.
    15. Playwright's headless WebKit draws any CSS cube flat: one face shows.
    16. A textbook cube does the same there; Chromium draws it right.
    17. Owner saw a test cube in real Safari: it draws in 3D.
+6. Owner notes (2026-10-20)
+   1. Owner merged the dice sound into the private images.
+   2. Owner marks 15.69 solved.
