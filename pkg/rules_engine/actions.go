@@ -341,16 +341,21 @@ func (g *Game) perform(a Action) {
 	}
 }
 
-// gainTreasure puts the top n treasure cards into play under p (R-CARD-02).
-func (g *Game) gainTreasure(p PlayerID, n int) {
+// gainTreasure puts the top n treasure cards into play under p
+// (R-CARD-02) and returns the new items.
+func (g *Game) gainTreasure(p PlayerID, n int) []ObjectID {
+	var out []ObjectID
 	for range n {
 		id, ok := g.drawTop(TreasureDeck)
 		if !ok {
-			return
+			return out
 		}
 		nid := g.move(id, Zone{Kind: ZoneInPlay}, p)
 		o := g.Object(nid)
 		g.enterAsItem(p, nid)
 		g.emit(Event{Kind: EvGainedTreasure, Player: p, Object: nid, Card: o.Card})
+		g.emit(Event{Kind: EvGainedItem, Player: p, Object: nid, Card: o.Card})
+		out = append(out, nid)
 	}
+	return out
 }

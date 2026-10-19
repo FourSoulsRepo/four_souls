@@ -70,3 +70,29 @@ func top(tb *enginetest.Table, i int) engine.CardRef {
 	id, _ := tb.G.Monsters[i].TopOf()
 	return tb.G.Object(id).Card
 }
+
+// settleAny settles, answering every question with its first option.
+func settleAny(tb *enginetest.Table) {
+	tb.T.Helper()
+	for range 200 {
+		tb.ThrowPending()
+		w := tb.G.Prompt()
+		switch {
+		case w.Kind == engine.PromptChoose:
+			tb.Choose(w.Options[0])
+			continue
+		case w.Kind == engine.PromptDiscard:
+			if _, err := tb.G.Apply(engine.Intent{Player: w.Player, Kind: engine.IntentDiscard, Objects: tb.G.Players[w.Player].Hand[:w.Count]}); err != nil {
+				tb.T.Fatal(err)
+			}
+			continue
+		case len(tb.G.Stack) == 0 && w.Kind == engine.PromptPriority && !tb.G.Attack.On:
+			return
+		case w.Kind == engine.PromptPriority:
+			tb.Pass(int(w.Player))
+			continue
+		}
+		return
+	}
+	tb.T.Fatal("settleAny: the stack never emptied")
+}

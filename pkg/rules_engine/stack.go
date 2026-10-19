@@ -159,6 +159,9 @@ func (g *Game) resolveTop() {
 				bonus += g.useNextAttackRoll(it.Controller)
 			}
 			it.Roll = min(max(it.Roll+bonus, 1), 6)
+			if (it.Roll == 2 || it.Roll == 3) && g.bonus(StatRollToOne, NoPlayer, 0) > 0 {
+				it.Roll = 1 // a replacement as the roll resolves (R-DICE-12)
+			}
 		}
 		re := Event{Kind: EvRollResolved, Player: it.Controller, Amount: it.Roll}
 		if it.Attack {
@@ -322,6 +325,7 @@ func (g *Game) trinketToPlay(p PlayerID, id ObjectID) {
 	nid := g.move(id, Zone{Kind: ZoneInPlay}, p)
 	g.enterAsItem(p, nid)
 	g.emit(Event{Kind: EvEnteredPlay, Player: p, Object: nid, Card: g.Object(nid).Card})
+	g.emit(Event{Kind: EvGainedItem, Player: p, Object: nid, Card: g.Object(nid).Card})
 }
 
 // CancelStackItem removes an item from the stack without resolving it;

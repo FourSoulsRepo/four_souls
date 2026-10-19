@@ -14,13 +14,14 @@ var dadsNote = engine.CardDef{
 	Abilities: []engine.Ability{{
 		Kind:    engine.LootAbility,
 		Text:    "Choose up to 3 non-event monster cards in discard. Put them in one or more monster slots not being attacked.",
-		Effects: []engine.Effect{dadsNotePick(3)},
+		Effects: []engine.Effect{discardMonsterToSlot(3, true)},
 	}},
 }
 
-// dadsNotePick asks n times for a monster card in the discard (or done)
-// and a slot for it, then places them in order.
-func dadsNotePick(n int) engine.Effect {
+// discardMonsterToSlot asks n times for a non-event monster card in the
+// monster discard and a slot not being attacked for it, then places them
+// in order. With upTo the player may stop early ("up to 3").
+func discardMonsterToSlot(n int, upTo bool) engine.Effect {
 	var qs []engine.Question
 	for i := range n {
 		qs = append(qs, engine.Question{Text: "Put which monster card from the discard in a slot?", Options: func(c *engine.Ctx, a []int) []string {
@@ -30,6 +31,9 @@ func dadsNotePick(n int) engine.Effect {
 			left := discardMonstersLeft(c, a[:2*i])
 			if len(left) == 0 {
 				return nil
+			}
+			if !upTo {
+				return labelsOf(c.G, left)
 			}
 			return append(labelsOf(c.G, left), "done")
 		}}, slotQuestionAfter(2*i))

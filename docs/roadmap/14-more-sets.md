@@ -101,6 +101,12 @@ Ideas: CD-02, GS-07, GS-08, CD-11, A-16, CD-12, V-32, GS-12, GS-13, GS-01.
    14. Engine: destruction replaced (Bag Lunch), combat flag on damage changes.
    15. Engine: a reprint borrows its card from a set not in the game (ADR 010).
    16. Engine: the D10 fix 19.22 copied from step 15; identical lines.
+   17. Requiem: 27 active, paid, one-use and soul treasures tested; Red Key waits for rooms.
+   18. Engine: copies till your next turn, lost eternal, cards under an item, a gained-item event.
+   19. Engine: Car Battery's recharge rule, cheaper $ costs, a 2-or-3-to-1 roll replacement.
+   20. Engine: a character replaced from outside the game (The Clicker, Q-18).
+   21. Engine: a treasure soul keeps its abilities unless it loses them (R-CARD-38).
+   22. Purchases from the treasure deck now emit "purchased" too; shop steals are "stolen".
 
 ### [ ] 14.4 Setup options
 

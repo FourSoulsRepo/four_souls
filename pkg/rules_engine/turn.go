@@ -205,6 +205,7 @@ func (g *Game) enterStep() {
 	p := g.Turn.Active
 	switch g.Turn.Step {
 	case StepRecharge:
+		g.endCopiesTillYourTurn(p)
 		g.recharge(p)
 	case StepStartTriggers:
 		g.emit(Event{Kind: EvStartOfTurn, Player: p}) // R-TURN-03
@@ -272,9 +273,21 @@ func (g *Game) recharge(p PlayerID) {
 		return
 	}
 	for _, id := range pl.InPlay {
-		g.Object(id).Charged = true
+		if !g.def(id).OwnRechargeOnly {
+			g.Object(id).Charged = true
+		}
 	}
 	g.emit(Event{Kind: EvRecharged, Player: p})
+}
+
+// endCopiesTillYourTurn ends p's copies that last till the start of
+// their next turn (Undefined).
+func (g *Game) endCopiesTillYourTurn(p PlayerID) {
+	for _, id := range g.Players[p].InPlay {
+		if o := g.Object(id); o.CopyTillYourTurn {
+			o.CopyOf, o.CopyTillYourTurn = "", false
+		}
+	}
 }
 
 // loot draws n loot cards into a hand (R-CARD-06).

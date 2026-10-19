@@ -35,6 +35,7 @@ var (
 	onYourAttackRollOf     = cardkit.OnYourAttackRollOf
 	itemsOf                = cardkit.ItemsOf
 	freeSlots              = cardkit.FreeSlots
+	lookMayDiscard         = cardkit.LookMayDiscard
 )
 
 // whenAnotherPlayerDies triggers each time another player dies.
@@ -389,31 +390,6 @@ func chargedItems(g *engine.Game) []engine.ObjectID {
 	}
 	return out
 }
-
-// lookMayDiscard is "Look at the top card of a deck. You may put it into
-// discard or put it back on top".
-var lookMayDiscard = engine.Ask(func(c *engine.Ctx, a []int) {
-	if a[0] < 0 {
-		return
-	}
-	d := c.Deck(a[0])
-	c.G.LookAt(c.Controller, c.G.DeckTop(d, 1)...)
-	if a[1] == 1 {
-		c.G.MillTop(d)
-	}
-}, engine.DeckQuestion("Look at the top card of which deck?"), engine.Question{
-	Text: "Put it into discard?",
-	Subject: func(c *engine.Ctx, a []int) engine.ObjectID {
-		return c.G.DeckTop(c.Deck(a[0]), 1)[0]
-	},
-	Options: func(c *engine.Ctx, a []int) []string {
-		if a[0] < 0 || len(c.G.DeckTop(c.Deck(a[0]), 1)) == 0 {
-			return nil
-		}
-		card := string(c.G.Object(c.G.DeckTop(c.Deck(a[0]), 1)[0]).Card)
-		return []string{"keep " + card + " on top", "put " + card + " into discard"}
-	},
-})
 
 // storeRoll keeps the roll's result for Telepathy for Dummies.
 func storeRoll() engine.RollTable {

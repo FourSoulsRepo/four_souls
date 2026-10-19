@@ -57,6 +57,9 @@ type CardDef struct {
 	// object is in play: "Damage you would take is reduced to 1." It
 	// returns the new amount; 0 prevents it. combat marks combat damage.
 	DamageMod func(g *Game, self ObjectID, t Target, n int, combat bool) int
+	// OwnRechargeOnly: "This can't be recharged except by its own
+	// abilities" (Car Battery).
+	OwnRechargeOnly bool
 	// InsteadOfDestroy replaces this object's destruction: it does what
 	// the card says instead and returns true, or false to be destroyed
 	// ("If this would be destroyed, if it has no counters on it, put a

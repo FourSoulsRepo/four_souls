@@ -33,8 +33,12 @@ const (
 	EvDied           EventKind = "died"
 	EvGainedSoul     EventKind = "gained_soul"
 	EvGainedTreasure EventKind = "gained_treasure"
-	EvDestroyed      EventKind = "destroyed"
-	EvDeactivated    EventKind = "deactivated"
+	// EvGainedItem: Player gained the item Object: from the treasure deck,
+	// bought, searched for, or a trinket; never stolen or given
+	// (R-MECH-35). "When you gain or purchase this" looks at it.
+	EvGainedItem  EventKind = "gained_item"
+	EvDestroyed   EventKind = "destroyed"
+	EvDeactivated EventKind = "deactivated"
 )
 
 func (g *Game) def(id ObjectID) CardDef {
@@ -55,7 +59,8 @@ func (g *Game) CardOf(id ObjectID) CardRef {
 // Eternal reports whether an object is eternal: printed or gained
 // (R-ABIL-18).
 func (g *Game) Eternal(id ObjectID) bool {
-	return g.def(id).Eternal || g.Object(id).Eternal || g.boosted(StatEternal, id)
+	o := g.Object(id)
+	return (g.def(id).Eternal && !o.LostEternal) || o.Eternal || g.boosted(StatEternal, id)
 }
 
 // boosted reports whether the object has a till-end-of-turn boost of stat.

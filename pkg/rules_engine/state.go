@@ -97,6 +97,21 @@ type Object struct {
 	// copy at the end of the turn.
 	CopyOf       CardRef `json:"copy_of,omitempty"`
 	CopyThisTurn bool    `json:"copy_this_turn,omitempty"`
+	// CopyTillYourTurn ends the copy at the start of its controller's next
+	// turn (Undefined).
+	CopyTillYourTurn bool `json:"copy_till_your_turn,omitempty"`
+	// LostEternal: an effect took Eternal away ("This loses eternal":
+	// Birthright).
+	LostEternal bool `json:"lost_eternal,omitempty"`
+	// NoAbilities: the card "loses all abilities" (a soul made by
+	// BecomeSoul, The Chest). Other treasure souls keep theirs (R-CARD-38).
+	NoAbilities bool `json:"no_abilities,omitempty"`
+	// StartingItem marks a character's starting item (R-CARD-26), also
+	// one picked at the start (Eden).
+	StartingItem bool `json:"starting_item,omitempty"`
+	// Under lists cards put under this object; they are outside the game
+	// (R-ZONE-13: Friendly Ball).
+	Under []ObjectID `json:"under,omitempty"`
 	// KilledBy is who dealt the damage that brought it to 0 HP, plus 1
 	// (0: nobody yet); KilledOn is the attack roll, if it was combat.
 	KilledBy int `json:"killed_by,omitempty"`
@@ -337,7 +352,7 @@ func (g *Game) inPlay() []ObjectID {
 	for _, pl := range g.Players {
 		out = append(out, pl.Character)
 		for _, id := range pl.InPlay {
-			if g.Object(id).Role != RoleSoul {
+			if g.Object(id).Role != RoleSoul || g.soulKeepsAbilities(id) {
 				out = append(out, id)
 			}
 		}
@@ -360,4 +375,11 @@ type ManyDice struct {
 	// Values and StackID are set once the roll is made.
 	Values  []int `json:"values,omitempty"`
 	StackID int   `json:"stack_id,omitempty"`
+}
+
+// soulKeepsAbilities: a treasure that became a soul keeps its abilities
+// unless it says it loses them (R-CARD-38: Experimental Treatment).
+func (g *Game) soulKeepsAbilities(id ObjectID) bool {
+	o := g.Object(id)
+	return o.Role == RoleSoul && !o.NoAbilities && g.kindOf(id) == TreasureCard
 }

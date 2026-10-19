@@ -29,7 +29,7 @@ func (g *Game) activatable(p PlayerID, src ObjectID, i int) error {
 		return refuse("R-ABIL-09", "only the controller uses an item's or character's abilities")
 	}
 	o := g.Object(src)
-	if o.Zone.Kind != ZoneInPlay || o.Controller != p || (o.Role != RoleItem && o.Role != RoleCharacter) {
+	if o.Zone.Kind != ZoneInPlay || o.Controller != p || (o.Role != RoleItem && o.Role != RoleCharacter && !g.soulKeepsAbilities(src)) {
 		return refuse("R-ABIL-09", "only the controller uses an item's or character's abilities")
 	}
 	refs := g.AbilitiesOf(src)

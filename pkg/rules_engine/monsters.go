@@ -110,6 +110,7 @@ func (g *Game) TakeFromDeck(d DeckKind, id ObjectID, p PlayerID) {
 	nid := g.move(id, Zone{Kind: ZoneInPlay}, p)
 	g.enterAsItem(p, nid)
 	g.emit(Event{Kind: EvGainedTreasure, Player: p, Object: nid, Card: g.Object(nid).Card, Text: "searched"})
+	g.emit(Event{Kind: EvGainedItem, Player: p, Object: nid, Card: g.Object(nid).Card})
 }
 
 // HealPlayer removes up to n damage from a living player (R-MECH-40).

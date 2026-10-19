@@ -60,7 +60,9 @@ func (g *Game) purchase(item ObjectID, fromDeck bool) {
 	g.Players[p].Cents -= price // pay into the game's pool (R-MECH-44)
 	g.emit(Event{Kind: EvPaid, Player: p, Amount: price})
 	if fromDeck {
-		g.gainTreasure(p, 1)
+		for _, id := range g.gainTreasure(p, 1) {
+			g.emit(Event{Kind: EvPurchased, Player: p, Object: id, Card: g.Object(id).Card, Text: "treasure deck"})
+		}
 		return
 	}
 	g.Turn.ShopBought++
@@ -69,6 +71,7 @@ func (g *Game) purchase(item ObjectID, fromDeck bool) {
 	o := g.Object(nid)
 	g.enterAsItem(p, nid)
 	g.emit(Event{Kind: EvPurchased, Player: p, Object: nid, Card: o.Card})
+	g.emit(Event{Kind: EvGainedItem, Player: p, Object: nid, Card: o.Card})
 	g.enqueue(Action{Kind: ActRefillSlots, Player: NoPlayer}) // R-SHOP-06
 }
 

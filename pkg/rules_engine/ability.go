@@ -96,10 +96,23 @@ type centsCost struct{ n int }
 // PayCents pays n¢ to the game's pool (R-MECH-44).
 func PayCents(n int) Cost { return centsCost{n} }
 
-func (c centsCost) canPay(g *Game, p PlayerID, _ ObjectID) bool { return g.Players[p].Cents >= c.n }
-func (c centsCost) pay(g *Game, p PlayerID, _ ObjectID) {
-	g.Players[p].Cents -= c.n
-	g.emit(Event{Kind: EvPaid, Player: p, Amount: c.n})
+func (c centsCost) canPay(g *Game, p PlayerID, self ObjectID) bool {
+	return g.Players[p].Cents >= c.amount(g, p, self)
+}
+
+func (c centsCost) pay(g *Game, p PlayerID, self ObjectID) {
+	n := c.amount(g, p, self)
+	g.Players[p].Cents -= n
+	g.emit(Event{Kind: EvPaid, Player: p, Amount: n})
+}
+
+// amount is the price: "$ items you control cost 1¢ less to activate"
+// (Trick Penny) lowers it for items.
+func (c centsCost) amount(g *Game, p PlayerID, self ObjectID) int {
+	if g.Object(self).Role != RoleItem {
+		return c.n
+	}
+	return max(c.n-g.bonus(StatPaidDiscount, p, 0), 0)
 }
 func (c centsCost) label() string { return "pay ¢" }
 
@@ -349,7 +362,7 @@ func (becomeSoulEffect) apply(c *Ctx) {
 	if o.Zone.Kind != ZoneInPlay || o.Controller != c.Controller {
 		return
 	}
-	o.Role, o.Charged, o.Counters = RoleSoul, false, nil
+	o.Role, o.Charged, o.Counters, o.NoAbilities = RoleSoul, false, nil, true
 	c.G.emit(Event{Kind: EvGainedSoul, Player: c.Controller, Object: c.Source, Card: o.Card})
 }
 
@@ -432,7 +445,7 @@ func (e rechargeAllEffect) apply(c *Ctx) {
 // Recharge turns an object in play upright (R-MECH-22).
 func (g *Game) Recharge(id ObjectID) {
 	o := g.Object(id)
-	if o.Zone.Kind != ZoneInPlay || o.Charged {
+	if o.Zone.Kind != ZoneInPlay || o.Charged || g.def(id).OwnRechargeOnly {
 		return
 	}
 	o.Charged = true
@@ -854,3 +867,18 @@ func PreventThisDeath() Effect {
 		}
 	})
 }
+
+type condCost struct {
+	text string
+	ok   func(g *Game, p PlayerID, self ObjectID) bool
+}
+
+// If is a condition the ability needs to be activated, as a cost that
+// pays nothing: "if there are no cards under this" (Friendly Ball).
+func If(text string, ok func(g *Game, p PlayerID, self ObjectID) bool) Cost {
+	return condCost{text, ok}
+}
+
+func (c condCost) canPay(g *Game, p PlayerID, self ObjectID) bool { return c.ok(g, p, self) }
+func (condCost) pay(*Game, PlayerID, ObjectID)                    {}
+func (c condCost) label() string                                  { return c.text }

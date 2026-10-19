@@ -1,7 +1,6 @@
 package g2
 
 import (
-	"slices"
 	"strconv"
 
 	engine "github.com/FourSoulsRepo/rules_engine"
@@ -22,6 +21,9 @@ var (
 	whenThisTakesDamage = cardkit.WhenThisTakesDamage
 	attackRollOnThis    = cardkit.AttackRollOnThis
 	putBackInOrder      = cardkit.PutBackInOrder
+	notAttacked         = cardkit.NotAttacked
+	inShop              = cardkit.InShop
+	discardTarget       = cardkit.DiscardTarget
 )
 
 // centsEqualToRoll: "that player gains ¢ equal to the result" for
@@ -37,28 +39,6 @@ func centsEqualToRoll() engine.RollTable {
 	}
 	return t
 }
-
-// notAttacked: a monster that is not the one being attacked.
-func notAttacked(g *engine.Game, _ engine.ObjectID, c engine.Chosen) bool {
-	return !g.Attack.On || g.Attack.Target != c.Object
-}
-
-// inShop: an item in a shop slot.
-func inShop(g *engine.Game, _ engine.ObjectID, c engine.Chosen) bool {
-	return slices.Contains(g.ShopItems(), c.Object)
-}
-
-// discardTarget puts target 0, a monster or a shop item, into discard;
-// its slot is refilled.
-var discardTarget = engine.EffectFunc(func(c *engine.Ctx) {
-	id := c.Targets[0].Object
-	if slices.Contains(c.G.ShopItems(), id) {
-		c.G.DiscardShopItem(id) // refills its slot
-		return
-	}
-	c.G.DiscardMonster(id)
-	c.G.RefillSlots()
-})
 
 // pickAnotherPlayer asks the controller for another living player.
 func pickAnotherPlayer(text string) engine.Question {
