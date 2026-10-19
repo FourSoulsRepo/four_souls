@@ -38,11 +38,14 @@ type Config struct {
 	// game: the app's host. Friends join (N-17). A dedicated server
 	// lets everyone create.
 	HostOnly bool `json:"-"`
+	// Presence relays live aiming and hover (15.35, ADR 016). An
+	// operator short of CPU or bandwidth may turn it off.
+	Presence bool `json:"presence"`
 }
 
 // DefaultConfig is used for settings the flags and file leave out.
 func DefaultConfig() Config {
-	return Config{Port: protocol.DefaultPort, Records: "records", Retention: 30, Saves: "saves"}
+	return Config{Port: protocol.DefaultPort, Records: "records", Retention: 30, Saves: "saves", Presence: true}
 }
 
 // LoadConfig reads a JSON config file over the defaults.
@@ -93,7 +96,7 @@ func Start(ctx context.Context, cfg Config) (*Server, error) {
 	s := &Server{cfg: cfg, ln: ln, cancel: cancel}
 	hub := NewHub()
 	hub.records, hub.cards, hub.seed, hub.saves = cfg.Records, cardTexts(), cfg.Seed, cfg.Saves
-	hub.hostOnly = cfg.HostOnly
+	hub.hostOnly, hub.presence = cfg.HostOnly, cfg.Presence
 	s.hub.Add(2)
 	go func() {
 		defer s.hub.Done()

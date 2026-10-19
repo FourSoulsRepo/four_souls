@@ -69,6 +69,7 @@ func parse(args []string) (server.Config, error) {
 	records := fs.String("records", def.Records, "folder for match records")
 	retention := fs.Int("retention", def.Retention, "days to keep records; 0 keeps them forever")
 	saves := fs.String("saves", def.Saves, "folder for saved games")
+	presence := fs.Bool("presence", def.Presence, "relay live aiming and hover; false saves CPU and bandwidth")
 	if err := fs.Parse(args); err != nil {
 		return def, fmt.Errorf("flags: %w", err)
 	}
@@ -91,6 +92,8 @@ func parse(args []string) (server.Config, error) {
 			cfg.Retention = *retention
 		case "saves":
 			cfg.Saves = *saves
+		case "presence":
+			cfg.Presence = *presence
 		}
 	})
 	return cfg, cfg.Check()

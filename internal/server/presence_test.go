@@ -59,7 +59,11 @@ func playing(t *testing.T, h *Hub, n int) ([]*player, []protocol.Update) {
 // TestPresenceReachesOthers: an aim reaches the other players with the
 // sender's seat, never the sender (15.35).
 func TestPresenceReachesOthers(t *testing.T) {
-	players, _ := playing(t, startHub(t), 3)
+	h := startHub(t)
+	if _, w := arrive(t, h, "Ann", ""); !w.Presence {
+		t.Error("welcome says presence is off")
+	}
+	players, _ := playing(t, h, 3)
 	target := engine.PlayerID(2)
 	deck := engine.MonsterDeck
 	players[1].say(protocol.TypePresence, protocol.Presence{Seat: 0, At: &protocol.Spot{Player: &target}, Point: &protocol.Point{X: 2, Y: 0.5}})
@@ -187,5 +191,23 @@ func TestPresenceNotRecorded(t *testing.T) {
 	}
 	if len(rec.Steps) == 0 {
 		t.Error("the record keeps no step; the check above proves nothing")
+	}
+}
+
+// TestPresenceOff: a server with presence off says so and relays none.
+func TestPresenceOff(t *testing.T) {
+	h := NewHub()
+	h.presence = false
+	ctx, cancel := context.WithCancel(context.Background())
+	go h.Run(ctx)
+	t.Cleanup(cancel)
+	if _, w := arrive(t, h, "Ann", ""); w.Presence {
+		t.Error("welcome says presence is on")
+	}
+	players, _ := playing(t, h, 2)
+	players[0].say(protocol.TypePresence, protocol.Presence{Point: &protocol.Point{X: 0.5, Y: 0.5}})
+	players[0].c.Leave()
+	if got := players[1].presences(200 * time.Millisecond); len(got) != 0 {
+		t.Errorf("got %+v with presence off", got)
 	}
 }

@@ -103,6 +103,9 @@ type Welcome struct {
 	// Create is set when this client may open a game here: always on a
 	// dedicated server, only for the host's own app on a hosted one (N-17).
 	Create bool `json:"create,omitempty"`
+	// Presence is set when the server relays live aiming and hover; a
+	// client sends none otherwise (15.35, ADR 016).
+	Presence bool `json:"presence,omitempty"`
 }
 
 // Intent asks the server to do something; the server fills in the

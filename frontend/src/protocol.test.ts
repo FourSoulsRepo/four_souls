@@ -33,7 +33,7 @@ const modeled: Record<string, Envelope> = {
   welcome: {
     type: 'welcome',
     id: 1,
-    data: { protocol: 3, app: '0.1.0', engine: '0.1.0', token: 't0k3n', seat: 0 } satisfies Welcome,
+    data: { protocol: 3, app: '0.1.0', engine: '0.1.0', token: 't0k3n', seat: 0, presence: true } satisfies Welcome,
   },
   error: {
     type: 'error',

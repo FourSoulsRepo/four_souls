@@ -38,9 +38,11 @@ The server answers for a player only in these cases, never choosing among real o
 
 ## Presence
 
-`presence.go` (15.35, N-15, ADR 016). A seated player sends `presence` while aiming or hovering: `from` (what aims), `at` (what the arrow or pointer is over), `point` (the pointer on the board frame, 0 to 1). The room fills in `seat` and sends it to every other seated player; the sender gets nothing back. Each one replaces the sender's last, so a lost or late one does no harm. When a player's connection drops, the others get an empty presence of that seat, so its arrow goes.
+`presence.go` (15.35, N-15, ADR 016). A seated player sends `presence` while aiming or hovering: `from` (what aims), `at` (what the arrow or pointer is over), `point` (the pointer on the board frame, 0 to 1). The room fills in `seat` and sends it to every other client of the game, spectators too once step 9 seats them; the sender gets nothing back. Each one replaces the sender's last, so a lost or late one does no harm. When a player's connection drops, the others get an empty presence of that seat, so its arrow goes.
 
 The engine never sees it and no record or save keeps it. It is never answered: a message that does not decode, comes before the game starts, or comes too fast is dropped. `pace` allows `protocol.MaxPresence` a second per seat, with a burst of as many.
+
+An operator may turn it off (`Config.Presence`, `-presence=false`): the room then drops every presence and relays none, and `welcome.presence` is unset so clients send none. It is on by default, and always for the app's own host.
 
 A spot names exactly one thing: a card every player can see (`object`), a slot of the sender's own hand (`hand`, from 1), a player, a deck, or a stack item. The room checks it against the table as a spectator sees it, built once per step (`publicTable`). Anything else becomes no spot, so a hand card's object never leaves the server (A-16).
 

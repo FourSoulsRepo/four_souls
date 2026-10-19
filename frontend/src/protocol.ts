@@ -29,6 +29,9 @@ export interface Welcome {
   seat: number;
   // create is set when this app may open a game on the server (N-17).
   create?: boolean;
+  // presence is set when the server relays live aiming and hover; the
+  // app sends none otherwise (15.35, ADR 016).
+  presence?: boolean;
 }
 
 export interface ProtocolError {

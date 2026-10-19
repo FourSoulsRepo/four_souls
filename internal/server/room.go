@@ -79,6 +79,8 @@ type Room struct {
 	pub     *publicTable
 	pubGame *engine.Game
 	pubStep int
+	// presenceOn relays presence; the server's operator may turn it off.
+	presenceOn bool
 }
 
 // NewRoom prepares a game for seated players; it starts in Run. The

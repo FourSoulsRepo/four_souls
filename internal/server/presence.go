@@ -7,11 +7,12 @@ import (
 	engine "github.com/FourSoulsRepo/rules_engine"
 )
 
-// presence relays what a player points at to the other players (15.35,
-// N-15). It never reaches the engine or the record and is never
-// answered: a bad or too fast one is dropped.
+// presence relays what a player points at to everyone else at the
+// game (15.35, N-15). It never reaches the engine or the record and is
+// never answered: a bad or too fast one is dropped, and so is every one
+// while the server has presence off.
 func (r *Room) presence(c *Client, env protocol.Envelope) {
-	if c.seat < 0 || r.game == nil || !r.seats[c.seat].pace.take(time.Now(), r.second) {
+	if !r.presenceOn || c.seat < 0 || r.game == nil || !r.seats[c.seat].pace.take(time.Now(), r.second) {
 		return
 	}
 	var m protocol.Presence
@@ -22,11 +23,14 @@ func (r *Room) presence(c *Client, env protocol.Envelope) {
 	r.relayPresence(c, protocol.Presence{Seat: c.seat, From: pub.spot(m.From, c.seat), At: pub.spot(m.At, c.seat), Point: onBoard(m.Point)})
 }
 
-// relayPresence sends a seat's presence to every other seated player.
-// Spectators get none until step 9 decides (N-15).
+// relayPresence sends a seat's presence to every other client of the
+// game: the other players and, from step 9, spectators (N-15).
 func (r *Room) relayPresence(from *Client, p protocol.Presence) {
+	if !r.presenceOn {
+		return
+	}
 	for _, c := range r.clients {
-		if c != from && c.seat >= 0 {
+		if c != from {
 			c.send(protocol.TypePresence, 0, p)
 		}
 	}

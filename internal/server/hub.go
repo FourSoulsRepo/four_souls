@@ -145,11 +145,13 @@ type Hub struct {
 	saves string
 	// hostOnly lets only local clients create or load games (N-17).
 	hostOnly bool
+	// presence relays live aiming and hover (15.35); off drops it.
+	presence bool
 }
 
 // NewHub makes a lobby with the card sets the engine knows.
 func NewHub() *Hub {
-	return &Hub{in: make(chan hubRequest, 64), done: make(chan struct{}), sets: cards.Sets(), second: time.Second}
+	return &Hub{in: make(chan hubRequest, 64), done: make(chan struct{}), sets: cards.Sets(), second: time.Second, presence: true}
 }
 
 // Connect adds a connection; its first message must be hello.
@@ -264,7 +266,7 @@ func (h *Hub) hello(c *Client, env protocol.Envelope) {
 	}
 	c.hello, c.name, c.sets, c.dice = true, name, m.Sets, protocol.CleanDice(m.Dice)
 	v := version.Get()
-	welcome := protocol.Welcome{Protocol: protocol.Version, App: v.App, Engine: v.Engine, Seat: -1, Create: h.mayCreate(c)}
+	welcome := protocol.Welcome{Protocol: protocol.Version, App: v.App, Engine: v.Engine, Seat: -1, Create: h.mayCreate(c), Presence: h.presence}
 	if m.Token != "" {
 		if t, i := h.tableSeat(m.Token); t != nil {
 			welcome.Token, welcome.Seat = m.Token, i
@@ -466,6 +468,7 @@ func (h *Hub) start(t *table) {
 	room, err := NewRoom(setup, t.opts, seats)
 	if err == nil {
 		room.second, room.hub, room.saves, room.loaded = h.second, h, h.saves, t.loaded
+		room.presenceOn = h.presence
 		room.recDir = h.records
 		room.recInfo = recordInfo{game: t.id, sets: t.sets, cards: h.cards}
 		room.path = recordPath(h.records, t.id, seats, time.Now())

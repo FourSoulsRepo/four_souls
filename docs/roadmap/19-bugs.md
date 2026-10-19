@@ -623,6 +623,9 @@ This step never closes; new reports are appended.
    7. Seen again in 15.69, WebKit: "every player sees whom the stack waits for".
    8. Same loop in that test; the panel said "Choose a target".
    9. Evidence: `.cache/e2e-evidence-15.69/`.
+   10. Seen again in 15.35, WebKit, the same test, both tries.
+   11. Records: one played Dagaz, the other Lil Battery (an item target).
+   12. Evidence: `.cache/e2e-evidence-15.35/`.
 
 ### [x] 19.19 Trigger order: "on the stack first" is unclear
 

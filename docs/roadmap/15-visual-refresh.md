@@ -1172,6 +1172,19 @@ Images come first, so the new table is built with backs and mats.
    13. Tests in `presence_test.go`: reach, hidden card, pace, drop, record.
    14. Wiki `Server`: a Presence section and a leak audit row.
    15. No screen changes, so no screenshots.
+5. Owner notes (2026-10-20)
+   1. Spectators should see presence too.
+   2. 20 a second is fine.
+   3. A dedicated server may turn presence off, to save resources.
+6. Result of the fixes (2026-10-20)
+   1. Relayed to every other client of the game, spectators too (N-15).
+   2. No spectator joins yet; step 9 brings them.
+   3. `Config.Presence`, flag `-presence`, JSON `presence`; on by default.
+   4. Off: the room drops every presence and relays none.
+   5. `welcome.presence` tells the client; it sends none when unset.
+   6. ADR 016, wikis `Server` and `Dedicated-server-on-a-VPS` updated.
+   7. Tests: `TestPresenceOff`; `TestParse` reads the file and the flag.
+   8. Open for 15.36: should waiting players send hover, or only aims?
 
 ### [ ] 15.36 Others' aim and hover
 

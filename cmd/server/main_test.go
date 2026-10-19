@@ -17,7 +17,7 @@ import (
 
 func TestParse(t *testing.T) {
 	cfg, err := parse(nil)
-	if err != nil || cfg.Port != protocol.DefaultPort || cfg.Retention != 30 {
+	if err != nil || cfg.Port != protocol.DefaultPort || cfg.Retention != 30 || !cfg.Presence {
 		t.Fatalf("defaults %+v, %v", cfg, err)
 	}
 	file := filepath.Join(t.TempDir(), "server.json")
@@ -27,6 +27,15 @@ func TestParse(t *testing.T) {
 	cfg, err = parse([]string{"-config", file, "-retention", "0"})
 	if err != nil || cfg.Port != 5000 || cfg.Retention != 0 {
 		t.Fatalf("file and flag %+v, %v", cfg, err)
+	}
+	if werr := os.WriteFile(file, []byte(`{"presence": false}`), 0o600); werr != nil {
+		t.Fatal(werr)
+	}
+	if cfg, err = parse([]string{"-config", file}); err != nil || cfg.Presence {
+		t.Fatalf("presence off in the file: %+v, %v", cfg, err)
+	}
+	if cfg, err = parse([]string{"-config", file, "-presence"}); err != nil || !cfg.Presence {
+		t.Fatalf("presence on by flag over the file: %+v, %v", cfg, err)
 	}
 	if _, err := parse([]string{"-port", "0"}); err == nil {
 		t.Error("port 0 accepted")

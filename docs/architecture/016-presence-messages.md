@@ -46,7 +46,7 @@ Use options 1 and 4.
 3. Server
    1. Only a seated player, only while the game runs.
    2. The room fills in `seat`; the client's value is ignored.
-   3. It sends it to the other seated players, not the sender.
+   3. It sends it to every other client of the game, not the sender.
    4. Spots are checked against the spectator view of this step.
    5. A spot that fails the check becomes no spot.
    6. A point is moved inside the board frame.
@@ -54,9 +54,14 @@ Use options 1 and 4.
    8. It is never answered, not even with an error.
    9. A dropped connection sends the others an empty presence of its seat.
 4. Engine, records and saves never see it.
-5. Spectators get none for now; step 9 decides (N-15).
+5. Spectators get it too, once step 9 seats them (owner, 2026-10-20).
 6. Adding the type keeps protocol version 3.
    1. An older client ignores a type it does not know.
+7. The operator may turn it off.
+   1. `-presence=false`, or `"presence": false` in the config file.
+   2. Then the server drops every presence and relays none.
+   3. `welcome.presence` says it is on; a client sends none otherwise.
+   4. On by default; the app's own host always has it on.
 
 ```json
 {"type": "presence", "id": 17, "data": {"seat": 0, "from": {"hand": 2}, "point": {"x": 0.25, "y": 0.5}}}
@@ -74,6 +79,7 @@ Use options 1 and 4.
 ### Negative and risks
 
 1. The room builds a spectator view once per step for the check.
+   1. A server short of CPU or bandwidth turns presence off.
 2. Replays never show where a player aimed.
 3. A spot between steps may name a card that just left; clients ignore it.
 
