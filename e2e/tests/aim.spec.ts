@@ -379,6 +379,14 @@ test('the other player sees the arrow and the red mark', async ({ browser }) => 
   await expect(arrow).toHaveClass(/\bon\b/);
   await expect(lifted).toHaveCount(1);
   await expect(await there(monster)).toHaveAttribute('data-presence', 'at');
+  // The head ends on the marked monster, not on a card passed on the way.
+  const ringAt = async () => middle(other.locator('.aim-arrow.others .aim-ring > div'));
+  const near = async (to: { x: number; y: number }) => {
+    const r = await ringAt();
+    return Math.hypot(r.x - to.x, r.y - to.y);
+  };
+  const mm = await middle(await there(monster));
+  await expect.poll(() => near(mm)).toBeLessThan(3);
   await shot(other, 'presence-aim');
 
   // Over empty space the arrow stays, with no mark.
@@ -386,12 +394,7 @@ test('the other player sees the arrow and the red mark', async ({ browser }) => 
   await expect(arrow).not.toHaveClass(/\bon\b/);
   await expect(await there(monster)).not.toHaveAttribute('data-presence');
   // Both boards are drawn alike, so the head ends at the same point.
-  await expect
-    .poll(async () => {
-      const r = await middle(other.locator('.aim-arrow.others .aim-ring > div'));
-      return Math.hypot(r.x - space.x, r.y - space.y);
-    })
-    .toBeLessThan(3);
+  await expect.poll(() => near(space)).toBeLessThan(3);
   await shot(other, 'presence-aim-off');
 
   // Cancelled, the arrow and the lifted back go.

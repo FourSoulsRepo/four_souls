@@ -1220,6 +1220,14 @@ Images come first, so the new table is built with backs and mats.
    15. e2e test: a waiting player's hover reaches nobody.
    16. e2e test: another player's arrow stays under a choice.
    17. Screenshots: `.cache/screenshots/15.36/before/` and `after/`.
+6. Owner notes (2026-10-20)
+   1. The aim shot framed the monster, but the head was on a shop item.
+7. Result of the fixes (2026-10-20)
+   1. Cause: the frame showed at once, the arrow one frame later.
+   2. The pointer crossed the shop on its way; the shot caught both.
+   3. Marks and arrows now change together, in one pass per frame.
+   4. e2e test: the head ends on the marked monster's middle.
+   5. Screenshots: `.cache/screenshots/15.36/after/`, retaken.
 
 ### [x] 15.37 Hit and death marks
 

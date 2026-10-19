@@ -104,43 +104,57 @@ export function PresenceLayer({ you }: { you: number }) {
   const presence = useApp((s) => s.presence);
   const game = useApp((s) => s.game);
   const [arrows, setArrows] = useState<OtherArrow[]>([]);
+  // markedRef holds the elements marked now; the next pass clears them.
+  const markedRef = useRef<Element[]>([]);
+  // Marks and arrows change together, in one pass on the next frame,
+  // so a mark never shows beside an older arrow.
   useLayoutEffect(() => {
-    const marks = new Map<Element, Set<string>>();
-    const mark = (el: Element, what: string) => {
-      marks.set(el, (marks.get(el) ?? new Set()).add(what));
-    };
-    const box = boardBox();
-    const out: OtherArrow[] = [];
-    for (const p of Object.values(presence)) {
-      if (p.seat === you) {
-        continue;
-      }
-      const from = spotElement(p.from, p.seat);
-      const at = spotElement(p.at, p.seat);
-      const to = at ? middle(at) : p.point && box ? fromFrame(p.point, box) : undefined;
-      if (from && to) {
-        out.push({ seat: p.seat, from: middle(from), to, on: !!at });
-      }
-      if (from && p.from?.hand) {
-        mark(from, 'from');
-      }
-      if (at) {
-        mark(at, 'at');
-      }
-    }
-    for (const [el, what] of marks) {
-      el.setAttribute('data-presence', [...what].join(' '));
-    }
-    // The arrows follow on the next frame, from the marked table.
     const frame = requestAnimationFrame(() => {
+      const marks = new Map<Element, Set<string>>();
+      const mark = (el: Element, what: string) => {
+        marks.set(el, (marks.get(el) ?? new Set()).add(what));
+      };
+      const box = boardBox();
+      const out: OtherArrow[] = [];
+      for (const p of Object.values(presence)) {
+        if (p.seat === you) {
+          continue;
+        }
+        const from = spotElement(p.from, p.seat);
+        const at = spotElement(p.at, p.seat);
+        const to = at ? middle(at) : p.point && box ? fromFrame(p.point, box) : undefined;
+        if (from && to) {
+          out.push({ seat: p.seat, from: middle(from), to, on: !!at });
+        }
+        if (from && p.from?.hand) {
+          mark(from, 'from');
+        }
+        if (at) {
+          mark(at, 'at');
+        }
+      }
+      unmark(markedRef.current);
+      for (const [el, what] of marks) {
+        el.setAttribute('data-presence', [...what].join(' '));
+      }
+      markedRef.current = [...marks.keys()];
       setArrows(out);
     });
     return () => {
       cancelAnimationFrame(frame);
-      for (const el of marks.keys()) {
-        el.removeAttribute('data-presence');
-      }
     };
   }, [presence, game, you]);
+  useEffect(
+    () => () => {
+      unmark(markedRef.current);
+    },
+    [],
+  );
   return arrows.map((a) => <AimArrow key={a.seat} from={a.from} to={a.to} on={a.on} others />);
+}
+
+function unmark(els: Element[]) {
+  for (const el of els) {
+    el.removeAttribute('data-presence');
+  }
 }
