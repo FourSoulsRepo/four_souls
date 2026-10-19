@@ -209,6 +209,25 @@ On 2026-10-09 the owner parked every open decision for later.
 3. Options: (a) they steal anyway; (b) only if the item was destroyed.
 4. Status: **Resolved** (2026-10-19): (b), as Spindown Dice (Q-16).
 
+### Q-20 Social Goals: whose progress counts
+
+1. Question: "Note each goal as players complete them."
+   1. Does every player add to one tally, or must one player reach a goal alone?
+2. Sources:
+   1. English and Russian prints say the same.
+   2. No ruling in S-OFF, S-YUG, S-DIS, or the web (2026-10-19).
+3. Options: (a) one shared tally; (b) one player alone; (c) one player in one turn.
+4. Status: **Resolved** (2026-10-19): (a), while the room is in play.
+
+### Q-21 Pity for the Poor: how many free purchases
+
+1. Question: "may purchase a shop item for 0¢ on their turn."
+2. Sources:
+   1. English and Russian prints say the same.
+   2. No ruling found (2026-10-19).
+3. Options: (a) every purchase costs 0¢; (b) the first each turn; (c) an extra purchase.
+4. Status: **Resolved** (2026-10-19): (a); the number of purchases is unchanged.
+
 ## Old rulings re-checked (R-07)
 
 | # | Ruling (Ed's Notes, 2018–2019) | Check against current rules and V2 text | Status |
