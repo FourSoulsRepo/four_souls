@@ -853,7 +853,7 @@ This step never closes; new reports are appended.
 7. Owner notes (2026-10-19)
    1. Owner marks 19.26 solved.
 
-### [ ] 19.27 Cards to the bottom: no order prompt
+### [x] 19.27 Cards to the bottom: no order prompt
 
 1. Goal: cards put on a deck's bottom go there in random order.
 2. Report (owner, 2026-10-19)
@@ -882,3 +882,5 @@ This step never closes; new reports are appended.
    6. One-card "you may put it on the bottom" is unchanged.
    7. Tests: Eden, Flush!, The Moon, The Emperor, The Hermit.
    8. No screen change, so no screenshots.
+7. Owner notes (2026-10-19)
+   1. Owner marks 19.27 solved.
