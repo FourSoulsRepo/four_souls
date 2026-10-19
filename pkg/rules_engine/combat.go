@@ -19,6 +19,9 @@ type AttackState struct {
 	Target   ObjectID `json:"target,omitempty"`
 	// Revealed is the monster-deck card waiting for a slot (R-ATK-08).
 	Revealed ObjectID `json:"revealed,omitempty"`
+	// Deck: the attack was declared on the monster deck; it is not an
+	// attack on a monster even when a monster is revealed (R-ATK-05).
+	Deck bool `json:"deck,omitempty"`
 }
 
 // Events about combat and death.
@@ -52,7 +55,17 @@ func (g *Game) CardOf(id ObjectID) CardRef {
 // Eternal reports whether an object is eternal: printed or gained
 // (R-ABIL-18).
 func (g *Game) Eternal(id ObjectID) bool {
-	return g.def(id).Eternal || g.Object(id).Eternal
+	return g.def(id).Eternal || g.Object(id).Eternal || g.boosted(StatEternal, id)
+}
+
+// boosted reports whether the object has a till-end-of-turn boost of stat.
+func (g *Game) boosted(stat Stat, id ObjectID) bool {
+	for _, b := range g.Boosts {
+		if b.Stat == stat && b.Object == id {
+			return true
+		}
+	}
+	return false
 }
 
 // HP is an object's remaining health.
@@ -133,7 +146,7 @@ func (g *Game) attackDeck() {
 		g.endAttack()
 		return
 	}
-	g.Attack.Revealed = g.move(id, Zone{Kind: ZoneOutside}, NoPlayer)
+	g.Attack.Revealed, g.Attack.Deck = g.move(id, Zone{Kind: ZoneOutside}, NoPlayer), true
 	g.emit(Event{Kind: EvCardRevealed, Player: g.Turn.Active, Object: g.Attack.Revealed, Card: g.Object(g.Attack.Revealed).Card})
 	slots := make([]int, len(g.Monsters))
 	labels := make([]string, len(g.Monsters))
@@ -256,7 +269,7 @@ func (g *Game) resolveDamage(it StackItem) {
 	}
 	for _, id := range g.inPlay() { // e.g. Dry Baby, The Dead Cat
 		if mod := g.def(id).DamageMod; mod != nil {
-			if it.Amount = mod(g, id, it.Target, it.Amount); it.Amount <= 0 {
+			if it.Amount = mod(g, id, it.Target, it.Amount, it.Attack); it.Amount <= 0 {
 				g.emit(Event{Kind: EvPrevented, Player: it.Target.player(), Object: it.Target.Object, Source: id})
 				return
 			}
@@ -378,8 +391,8 @@ const (
 func (g *Game) rewardsStep(holding ObjectID) {
 	active := g.Turn.Active
 	times := 1
-	if g.Object(holding).DoubleRewards {
-		times = 2 // e.g. Dinga
+	if g.Object(holding).DoubleRewards || g.bonus(StatDoubleRewards, NoPlayer, 0) > 0 {
+		times = 2 // e.g. Dinga; doubled once however many apply (R-ABIL-36)
 	}
 	for _, r := range g.def(holding).Rewards {
 		if r.Roll {
@@ -541,7 +554,7 @@ func (g *Game) shadowOf(p PlayerID) PlayerID {
 
 // penaltyCents is the penalty's 1¢: lost, or gained by a Shadow.
 func (g *Game) penaltyCents(p PlayerID) Action {
-	if s := g.shadowOf(p); s != NoPlayer {
+	if s := g.shadowOf(p); s != NoPlayer && !g.protectedFromLoss(p) {
 		return Action{Kind: ActStealCents, Player: s, From: p, Amount: 1}
 	}
 	return Action{Kind: ActLoseCents, Player: p, Amount: 1}

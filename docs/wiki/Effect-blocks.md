@@ -29,7 +29,8 @@ Cards are Go values built from small blocks (ADR 005). This page lists every blo
 | `Unattackable` | "This can't be attacked." |
 | `CombatMod` | Changes combat damage by attack roll: "This takes no combat damage on attack rolls of 6." |
 | `BonusSoul` | A bonus soul's condition: "The first player to have 25¢ or more gains this soul." |
-| `DamageMod` | Changes damage about to be marked: "Damage you would take is reduced to 1." |
+| `DamageMod` | Changes damage about to be marked: "Damage you would take is reduced to 1."; its `combat` flag marks combat damage ("Prevent all non-combat damage you would take": Callus) |
+| `InsteadOfDestroy` | Replaces this object's destruction and reports it did: "If this would be destroyed, if it has no counters on it, put a counter on it instead" (Bag Lunch) |
 | `EntersDeactivated`, `EntersWithCounters` | "This enters play deactivated." / "starts with 9 counters" |
 | `CopiesTapAbilities` | Placebo: may use any ↷ ability of another non-eternal item (`AbilitiesOf`) |
 | `TakesPenalties` | Shadow: you choose the item and gain the loot and ¢ of others' death penalties |
@@ -145,7 +146,7 @@ Ask(func(c *Ctx, a []int) {
 }, DeckQuestion("Put the top card of which deck into discard?"))
 ```
 
-A question with `Random: true` is answered by the game at random ("choose a player at random"). A triggered ability's `c.EventPlayer` and `c.EventAmount` tell who rolled or how much damage was taken. A question's `Player` func picks who answers, e.g. the chosen player (Judgement). Ready questions: `DeckQuestion(text)` (read with `c.Deck(i)`) and `HandQuestion(text)` (read with `c.HandCard(i)`). Game methods for `do` and `EffectFunc`: `LookAt`, `DeckTop`, `SetDeckTop`, `DeckToBottom`, `MillTop`, `DiscardTopToDeck`, `HandToDeckTop`, `GiveHandCard`, `DiscardFromHand`, `DestroyObject`, `GainControl`, `ShopItems`, `DiscardMonster`, `RefillSlots`, `SetRoll`, `CancelStackItem`, `EndTurnNow`. `c.Do(effects…)` runs ordinary blocks.
+A question with `Random: true` is answered by the game at random ("choose a player at random"). A triggered ability's `c.EventPlayer` and `c.EventAmount` tell who rolled or how much damage was taken. A question's `Player` func picks who answers, e.g. the chosen player (Judgement). Ready questions: `DeckQuestion(text)` (read with `c.Deck(i)`) and `HandQuestion(text)` (read with `c.HandCard(i)`). Game methods for `do` and `EffectFunc`: `LookAt`, `DeckTop`, `SetDeckTop`, `DeckToBottom`, `MillTop`, `DiscardTopToDeck`, `HandToDeckTop`, `GiveHandCard`, `DiscardFromHand`, `DestroyObject`, `GainControl`, `ShopItems`, `DiscardMonster`, `RefillSlots`, `SetRoll`, `CancelStackItem`, `EndTurnNow`, `AddCountersTo`, `AddNamedCounters` ("a gold counter"), `DiscardToHand` (a card from a discard into a hand), `PlaceFromDiscard` (a monster card from the discard into a slot). `c.Do(effects…)` runs ordinary blocks.
 
 A roll table is built with `Results`:
 
@@ -183,7 +184,7 @@ Roll(RollTable{}.Results(1, 2, Loot(1)).Results(3, 4, GainCents(3)).Results(5, 6
 
 Stats: `StatPlayerATK`, `StatPlayerHP`, `StatMonsterDC`, `StatMonsterATK`, `StatMonsterHP`, `StatShopPrice`, `StatRoll`, `StatAttackRoll`, `StatLootPlays`, `StatAttacks`, `StatPurchases`, `StatLootStep`.
 
-`YouHave(StatLootPlays, 1)` is "You may play an additional loot card on your turn"; `YouHave(StatLootStep, 1)` is "Loot +1 during your loot step"; `YouHave(StatAttackRoll, 1)` is "+1 to attack rolls"; `YouHave(StatLockOthers, 1)` is Trinity Shield; a `StatLootDouble` boost doubles a player's loot. A roll that would resolve lets "would roll" triggers act first and tries again only if its value changed. Shop items' abilities do not work in the shop (R-CARD-05).
+`YouHave(StatLootPlays, 1)` is "You may play an additional loot card on your turn"; `YouHave(StatLootStep, 1)` is "Loot +1 during your loot step"; `YouHave(StatAttackRoll, 1)` is "+1 to attack rolls"; `YouHave(StatLockOthers, 1)` is Trinity Shield; a `StatLootDouble` boost doubles a player's loot; a `StatDoubleRewards` boost or static doubles monster rewards, once however many apply (A Lucky Penny!); a `StatEternal` boost on an object makes it eternal till end of turn (Algiz); `YouHave(StatNoForcedLoss, 1)` stops abilities and the death penalty from making the player discard or lose ¢, while costs and steals still work (Rib of Greed). A roll that would resolve lets "would roll" triggers act first and tries again only if its value changed. Shop items' abilities do not work in the shop (R-CARD-05).
 
 ## Replacement effects
 

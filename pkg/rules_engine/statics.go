@@ -29,9 +29,12 @@ const (
 	StatRevealHand                 // the player's hand is revealed to everyone (Guppy's Eye; Applies picks whose)
 	StatChooseAttack               // the player may choose which monster another player attacks (Mom's Eye Shadow)
 	StatUsed                       // a boost marking an object's "once each turn" ability as used
+	StatDoubleRewards              // rewards are doubled (A Lucky Penny!, Blessing of the Sack)
+	StatEternal                    // a boost: the object is eternal till end of turn (Algiz)
+	StatNoForcedLoss               // abilities and the death penalty can't make the player discard or lose ¢ (Rib of Greed)
 )
 
-var statNames = []string{"ATK", "HP", "DC", "ATK", "HP", "price", "roll", "attack roll", "loot plays", "attacks", "purchases", "loot step", "lock", "double loot", "death ward", "DC of attacked monsters", "recharge limit", "max hand size", "next attack roll", "lock this turn", "no character recharge", "revealed hand", "choose attacks", "used"}
+var statNames = []string{"ATK", "HP", "DC", "ATK", "HP", "price", "roll", "attack roll", "loot plays", "attacks", "purchases", "loot step", "lock", "double loot", "death ward", "DC of attacked monsters", "recharge limit", "max hand size", "next attack roll", "lock this turn", "no character recharge", "revealed hand", "choose attacks", "used", "double rewards", "eternal", "no forced loss"}
 
 func (s Stat) String() string { return statNames[s] }
 

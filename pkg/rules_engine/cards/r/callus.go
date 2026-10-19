@@ -6,11 +6,15 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 //
 //	Prevent all non-combat damage you would take.
 //	-Trinket- This loot becomes an item under your control when it resolves.
-//
-// TODO(card): implement the text above, then delete this line.
-// Until then `go run ./cmd/cardgen` rewrites this file from card_db.
 var callus = engine.CardDef{
-	Ref:    "callus",
-	Kind:   engine.LootCard,
-	Copies: 1,
+	Ref:     "callus",
+	Kind:    engine.LootCard,
+	Copies:  1,
+	Trinket: true,
+	DamageMod: func(g *engine.Game, self engine.ObjectID, t engine.Target, n int, combat bool) int {
+		if o := g.Object(self); !combat && t.IsPlayer && t.Player == o.Controller && o.Role == engine.RoleItem {
+			return 0
+		}
+		return n
+	},
 }

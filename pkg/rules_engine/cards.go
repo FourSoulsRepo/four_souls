@@ -55,8 +55,13 @@ type CardDef struct {
 	Outside bool
 	// DamageMod changes damage about to be marked on a target while this
 	// object is in play: "Damage you would take is reduced to 1." It
-	// returns the new amount; 0 prevents it.
-	DamageMod func(g *Game, self ObjectID, t Target, n int) int
+	// returns the new amount; 0 prevents it. combat marks combat damage.
+	DamageMod func(g *Game, self ObjectID, t Target, n int, combat bool) int
+	// InsteadOfDestroy replaces this object's destruction: it does what
+	// the card says instead and returns true, or false to be destroyed
+	// ("If this would be destroyed, if it has no counters on it, put a
+	// counter on it instead": Bag Lunch).
+	InsteadOfDestroy func(g *Game, self ObjectID) bool
 	// EntersDeactivated and EntersWithCounters apply when the item enters
 	// play under a player.
 	EntersDeactivated  bool
@@ -134,6 +139,10 @@ type CardSet struct {
 type Reprint struct {
 	Ref    CardRef
 	Copies int
+	// From is the set that defines the card, if not the Base Game. A game
+	// without that set borrows the definition from it; the card then has
+	// only the reprints' copies (ADR 010).
+	From *CardSet
 }
 
 // cardIndex finds definitions by ref. It is rebuilt from the sets and is
@@ -142,6 +151,9 @@ type cardIndex struct {
 	defs  []CardDef
 	byRef map[CardRef]int
 	extra []int // reprinted copies, by index into defs
+	// borrowed marks definitions taken from a set not in the game: they
+	// have no copies of their own (ADR 010).
+	borrowed []bool
 }
 
 func newCardIndex(sets ...CardSet) (cardIndex, error) {
@@ -153,6 +165,22 @@ func newCardIndex(sets ...CardSet) (cardIndex, error) {
 			}
 			idx.byRef[d.Ref] = len(idx.defs)
 			idx.defs = append(idx.defs, d)
+		}
+	}
+	idx.borrowed = make([]bool, len(idx.defs))
+	for _, s := range sets {
+		for _, r := range s.Reprints {
+			if _, ok := idx.byRef[r.Ref]; ok || r.From == nil {
+				continue
+			}
+			for _, d := range r.From.Cards {
+				if d.Ref == r.Ref {
+					idx.byRef[d.Ref] = len(idx.defs)
+					idx.defs = append(idx.defs, d)
+					idx.borrowed = append(idx.borrowed, true)
+					break
+				}
+			}
 		}
 	}
 	idx.extra = make([]int, len(idx.defs))
@@ -171,6 +199,9 @@ func newCardIndex(sets ...CardSet) (cardIndex, error) {
 // copies is how many copies of defs[i] the game uses: its own set's and
 // every reprint's (ADR 010).
 func (idx cardIndex) copies(i int) int {
+	if idx.borrowed[i] {
+		return idx.extra[i] // the defining set is not in the game (ADR 010)
+	}
 	return max(idx.defs[i].Copies, 1) + idx.extra[i]
 }
 

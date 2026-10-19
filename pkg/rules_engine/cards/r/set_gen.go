@@ -2,7 +2,10 @@
 
 package r
 
-import engine "github.com/FourSoulsRepo/rules_engine"
+import (
+	engine "github.com/FourSoulsRepo/rules_engine"
+	"github.com/FourSoulsRepo/rules_engine/cards/g2"
+)
 
 // Set is every card of Requiem.
 var Set = engine.CardSet{
@@ -247,7 +250,7 @@ var Set = engine.CardSet{
 	},
 	Reprints: []engine.Reprint{
 		{Ref: "a_nickel", Copies: 1},
-		{Ref: "a_sack", Copies: 1},
+		{Ref: "a_sack", Copies: 1, From: &g2.Set},
 		{Ref: "bomb", Copies: 3},
 		{Ref: "butter_bean", Copies: 3},
 		{Ref: "dice_shard", Copies: 3},

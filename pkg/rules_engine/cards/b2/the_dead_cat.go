@@ -13,7 +13,7 @@ var theDeadCat = engine.CardDef{
 	Copies:             1,
 	Guppy:              true,
 	EntersWithCounters: 9,
-	DamageMod: func(g *engine.Game, self engine.ObjectID, t engine.Target, n int) int {
+	DamageMod: func(g *engine.Game, self engine.ObjectID, t engine.Target, n int, _ bool) int {
 		o := g.Object(self)
 		if !t.IsPlayer || t.Player != o.Controller || o.CountersOf("") == 0 {
 			return n

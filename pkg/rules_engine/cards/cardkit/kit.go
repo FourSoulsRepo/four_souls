@@ -542,3 +542,30 @@ func UsedOn(g *engine.Game, id engine.ObjectID, n int) bool {
 func MarkUsedOn(g *engine.Game, id engine.ObjectID, n int) {
 	g.Boosts = append(g.Boosts, engine.Boost{Stat: engine.StatUsed, Player: engine.NoPlayer, Object: id, Amount: n})
 }
+
+// ItemsOf lists the items p controls, or every player's for NoPlayer.
+func ItemsOf(g *engine.Game, p engine.PlayerID) []engine.ObjectID {
+	var out []engine.ObjectID
+	for _, pl := range g.Players {
+		if p != engine.NoPlayer && pl.ID != p {
+			continue
+		}
+		for _, id := range pl.InPlay {
+			if g.Object(id).Role == engine.RoleItem {
+				out = append(out, id)
+			}
+		}
+	}
+	return out
+}
+
+// FreeSlots lists monster slots whose monster is not being attacked.
+func FreeSlots(g *engine.Game) []int {
+	var out []int
+	for i, s := range g.Monsters {
+		if top, ok := s.TopOf(); !ok || !g.Attack.On || top != g.Attack.Target {
+			out = append(out, i)
+		}
+	}
+	return out
+}

@@ -722,7 +722,7 @@ func (discardChosenCost) canPay(g *Game, p PlayerID, _ ObjectID) bool {
 func (discardChosenCost) pay(*Game, PlayerID, ObjectID) {}
 func (discardChosenCost) label() string                 { return "discard a loot card" }
 func (c discardChosenCost) payChosen(g *Game, p PlayerID, chosen []Chosen) {
-	g.DiscardFromHand(p, chosen[c.target].Object)
+	g.discardFromHand(p, chosen[c.target].Object) // a cost is paid by choice
 	chosen[c.target].Spent = true
 }
 

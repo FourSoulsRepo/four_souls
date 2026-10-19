@@ -73,6 +73,10 @@ Use options 1 and 4; images become a list.
    2. `Card.Prints` lists them: own set first, then reprints.
    3. Each copy will keep its image index for display (14.5).
    4. The engine counts them: `CardSet.Reprints` (14.3); copy images are 14.5.
+   5. A reprint of a non-Base-Game card names its set: `Reprint.From`.
+   6. Without that set the engine borrows the definition only.
+   7. The card then has only the reprints' copies.
+   8. Example: Requiem's A Sack is a Gold Box card.
 6. Sources
    1. Copies per card: the official TTS table.
    2. Copy images: the numbered copy pages on foursouls.com.

@@ -6,11 +6,15 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 //
 //	Gain 1¢.
 //	Rewards are doubled till end of turn.
-//
-// TODO(card): implement the text above, then delete this line.
-// Until then `go run ./cmd/cardgen` rewrites this file from card_db.
 var aLuckyPenny = engine.CardDef{
 	Ref:    "a_lucky_penny",
 	Kind:   engine.LootCard,
 	Copies: 1,
+	Abilities: []engine.Ability{{
+		Kind: engine.LootAbility,
+		Text: "Gain 1¢. Rewards are doubled till end of turn.",
+		Effects: []engine.Effect{engine.GainCents(1), engine.EffectFunc(func(c *engine.Ctx) {
+			c.G.Boosts = append(c.G.Boosts, engine.Boost{Stat: engine.StatDoubleRewards, Player: engine.NoPlayer, Amount: 1})
+		})},
+	}},
 }

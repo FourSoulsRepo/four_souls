@@ -6,11 +6,20 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 //
 //	If you would loot, except during the loot step, instead loot that much +1.
 //	-Trinket- This loot becomes an item under your control when it resolves.
-//
-// TODO(card): implement the text above, then delete this line.
-// Until then `go run ./cmd/cardgen` rewrites this file from card_db.
 var luckyToe = engine.CardDef{
-	Ref:    "lucky_toe",
-	Kind:   engine.LootCard,
-	Copies: 1,
+	Ref:     "lucky_toe",
+	Kind:    engine.LootCard,
+	Copies:  1,
+	Trinket: true,
+	Replacements: []engine.Replacement{{
+		Text: "If you would loot, except during the loot step, instead loot that much +1.",
+		When: func(g *engine.Game, self engine.ObjectID, a engine.Action) bool {
+			return a.Kind == engine.ActLoot && a.Player == g.Object(self).Controller &&
+				(g.Turn.Step != engine.StepLoot || a.Player != g.Turn.Active)
+		},
+		Do: func(_ *engine.Game, _ engine.ObjectID, a engine.Action) []engine.Action {
+			a.Amount++
+			return []engine.Action{a}
+		},
+	}},
 }

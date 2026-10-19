@@ -33,6 +33,8 @@ var (
 
 	forcedDiscardQuestions = cardkit.ForcedDiscardQuestions
 	onYourAttackRollOf     = cardkit.OnYourAttackRollOf
+	itemsOf                = cardkit.ItemsOf
+	freeSlots              = cardkit.FreeSlots
 )
 
 // whenAnotherPlayerDies triggers each time another player dies.
@@ -59,22 +61,6 @@ func reorderADeck(n int) engine.Effect {
 			return c.G.DeckTop(c.Deck(a[0]), n)
 		},
 	})
-}
-
-// itemsOf lists the items p controls, or every player's for NoPlayer.
-func itemsOf(g *engine.Game, p engine.PlayerID) []engine.ObjectID {
-	var out []engine.ObjectID
-	for _, pl := range g.Players {
-		if p != engine.NoPlayer && pl.ID != p {
-			continue
-		}
-		for _, id := range pl.InPlay {
-			if g.Object(id).Role == engine.RoleItem {
-				out = append(out, id)
-			}
-		}
-	}
-	return out
 }
 
 // rerollAnItem is "Reroll an item" (yours only, if set), picked on
@@ -605,14 +591,3 @@ var revealTwoBosses = engine.EffectFunc(func(c *engine.Ctx) {
 		c.G.ForceAttacks(1, false)
 	}, qs...))
 })
-
-// freeSlots lists monster slots whose monster is not being attacked.
-func freeSlots(g *engine.Game) []int {
-	var out []int
-	for i, s := range g.Monsters {
-		if top, ok := s.TopOf(); !ok || !g.Attack.On || top != g.Attack.Target {
-			out = append(out, i)
-		}
-	}
-	return out
-}

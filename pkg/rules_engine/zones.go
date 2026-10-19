@@ -190,6 +190,9 @@ func (g *Game) DestroyObject(p PlayerID, id ObjectID) bool {
 		g.enqueue(Action{Kind: ActRefillSlots, Player: NoPlayer})
 		return true
 	}
+	if f := g.def(id).InsteadOfDestroy; f != nil && f(g, id) {
+		return false // replaced (Bag Lunch)
+	}
 	if g.def(id).SoulWhenDestroyed && o.Role == RoleItem {
 		o.Role, o.Charged, o.Counters = RoleSoul, false, nil // The Chest
 		g.emit(Event{Kind: EvGainedSoul, Player: p, Object: id, Card: o.Card})
@@ -362,7 +365,8 @@ func (g *Game) lootFromDiscard(p PlayerID, n int) {
 }
 
 // CoverMonsterSlot puts the top card of the monster deck on top of
-// monster slot i, covering the card there (R-ZONE-10).
+// monster slot i, covering the card there (R-ZONE-10); an event's
+// abilities trigger (R-CARD-15).
 func (g *Game) CoverMonsterSlot(i int) {
 	id, ok := g.drawTop(MonsterDeck)
 	if !ok {
@@ -371,7 +375,8 @@ func (g *Game) CoverMonsterSlot(i int) {
 	if top, had := g.Monsters[i].TopOf(); had {
 		g.Object(top).Zone = Zone{Kind: ZoneCovered, Slot: MonsterSlot, Index: i}
 	}
-	g.putInSlot(id, MonsterSlot, i)
+	nid := g.putInSlot(id, MonsterSlot, i)
+	g.enterMonsterSlot(nid)
 }
 
 // PutOnDeck puts new copies of cards on top of a deck, the last on top.
@@ -401,4 +406,49 @@ func (g *Game) LoseCentsNow(p PlayerID, n int) {
 // using a loot play (Distant Admiration).
 func (g *Game) PlayLootFree(p PlayerID, id ObjectID) {
 	g.enqueue(Action{Kind: ActPlayLootFree, Player: p, Object: id})
+}
+
+// DiscardToHand puts a card from a discard pile into p's hand ("put a
+// card named Pills! from the loot discard into your hand").
+func (g *Game) DiscardToHand(d DeckKind, id ObjectID, p PlayerID) {
+	if !contains(g.Discards[d], id) {
+		return
+	}
+	g.Discards[d] = remove(g.Discards[d], id)
+	nid := g.move(id, Zone{Kind: ZoneHand}, p)
+	g.Players[p].Hand = append(g.Players[p].Hand, nid)
+	g.emit(Event{Kind: EvLooted, Player: p, Object: nid, Card: g.Object(nid).Card, Text: "from the discard"})
+}
+
+// PlaceFromDiscard puts a monster card from the monster discard on top
+// of monster slot i, covering the card there ("put them in monster
+// slots": Dad's Note).
+func (g *Game) PlaceFromDiscard(id ObjectID, i int) {
+	if !contains(g.Discards[MonsterDeck], id) || i < 0 || i >= len(g.Monsters) {
+		return
+	}
+	g.Discards[MonsterDeck] = remove(g.Discards[MonsterDeck], id)
+	if top, had := g.Monsters[i].TopOf(); had {
+		o := g.Object(top)
+		o.Zone.Kind, o.Role = ZoneCovered, RoleNone // R-ZONE-10
+	}
+	g.enterMonsterSlot(g.putInSlot(id, MonsterSlot, i))
+}
+
+// AddCountersTo puts n generic counters on an object in play, or removes
+// them if n is negative.
+func (g *Game) AddCountersTo(id ObjectID, n int) { g.AddNamedCounters(id, "", n) }
+
+// AddNamedCounters puts n counters named name on an object in play ("a
+// gold counter", "levels up"), or removes them if n is negative.
+func (g *Game) AddNamedCounters(id ObjectID, name string, n int) {
+	o := g.Object(id)
+	if o.Zone.Kind != ZoneInPlay || n == 0 {
+		return
+	}
+	before := o.CountersOf(name)
+	o.addCounters(name, n)
+	if d := o.CountersOf(name) - before; d != 0 {
+		g.emit(Event{Kind: EvCounters, Player: o.Controller, Object: id, Card: o.Card, Amount: d, Text: name})
+	}
 }

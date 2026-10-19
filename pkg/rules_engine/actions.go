@@ -219,6 +219,10 @@ func (g *Game) perform(a Action) {
 		g.Players[a.Player].Cents += a.Amount
 		g.emit(Event{Kind: EvGainedCents, Player: a.Player, Amount: a.Amount})
 	case ActLoseCents:
+		if g.protectedFromLoss(a.Player) {
+			g.emit(Event{Kind: EvPrevented, Player: a.Player, Text: "lose cents"})
+			return
+		}
 		n := min(a.Amount, g.Players[a.Player].Cents) // R-MECH-42
 		g.Players[a.Player].Cents -= n
 		g.emit(Event{Kind: EvLostCents, Player: a.Player, Amount: n})
@@ -272,6 +276,9 @@ func (g *Game) perform(a Action) {
 			g.ask(Choice{Purpose: ChoosePenaltyItem, Player: chooser, Owner: a.Player, To: NoPlayer, Rule: "R-DEATH-14", Objects: items}, g.labels(items))
 		}
 	case ActPenaltyLoot:
+		if g.protectedFromLoss(a.Player) {
+			return // Rib of Greed: nothing is lost, so a Shadow gains nothing
+		}
 		if hand := g.Players[a.Player].Hand; len(hand) > 0 {
 			g.ask(Choice{Purpose: ChoosePenaltyLoot, Player: a.Player, Owner: a.Player, To: g.shadowOf(a.Player), Rule: "R-DEATH-14", Objects: append([]ObjectID(nil), hand...)}, g.labels(hand))
 		}

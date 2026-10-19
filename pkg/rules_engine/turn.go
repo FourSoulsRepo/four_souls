@@ -291,8 +291,21 @@ func (g *Game) loot(p PlayerID, n int) {
 }
 
 // DiscardFromHand puts a loot card from p's hand into the loot discard
-// (R-MECH-25).
-func (g *Game) DiscardFromHand(p PlayerID, id ObjectID) { g.discardFromHand(p, id) }
+// (R-MECH-25). It is for effects: a player whom abilities can't make
+// discard keeps the card (Rib of Greed). Costs use discardFromHand.
+func (g *Game) DiscardFromHand(p PlayerID, id ObjectID) {
+	if g.protectedFromLoss(p) {
+		g.emit(Event{Kind: EvPrevented, Player: p, Text: "discard"})
+		return
+	}
+	g.discardFromHand(p, id)
+}
+
+// protectedFromLoss: abilities and the death penalty can't make p discard
+// loot cards or lose ¢ (Rib of Greed).
+func (g *Game) protectedFromLoss(p PlayerID) bool {
+	return p != NoPlayer && g.bonus(StatNoForcedLoss, p, 0) > 0
+}
 
 func (g *Game) discardFromHand(p PlayerID, id ObjectID) {
 	g.Players[p].Hand = remove(g.Players[p].Hand, id)

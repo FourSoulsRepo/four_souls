@@ -95,6 +95,12 @@ Ideas: CD-02, GS-07, GS-08, CD-11, A-16, CD-12, V-32, GS-12, GS-13, GS-01.
    8. Engine: copy a ↷ ability, several dice, revealed hands, attack redirect.
    9. Engine: win by a card, free loot play, lingering push, damage dealer.
    10. Simulations found two bugs with copies (Placebo, Diplopia); fixed, tested.
+   11. Requiem: 19 loot cards tested; Hagalaz, Broken Remote wait for rooms.
+   12. Golden Trinket waits for "gains abilities" (Glitch); Magic Marker for Q-14.
+   13. Engine: doubled rewards, eternal till end of turn, Rib of Greed's protection.
+   14. Engine: destruction replaced (Bag Lunch), combat flag on damage changes.
+   15. Engine: a reprint borrows its card from a set not in the game (ADR 010).
+   16. Engine: the D10 fix 19.22 copied from step 15; identical lines.
 
 ### [ ] 14.4 Setup options
 
