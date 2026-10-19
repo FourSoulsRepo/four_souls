@@ -1141,7 +1141,7 @@ Images come first, so the new table is built with backs and mats.
 5. Owner notes (2026-10-14)
    1. Owner marks 15.34 solved.
 
-### [ ] 15.35 Presence messages
+### [x] 15.35 Presence messages
 
 1. Goal: a light message kind for live aiming and hover (N-15).
 2. Tasks:
@@ -1185,6 +1185,8 @@ Images come first, so the new table is built with backs and mats.
    6. ADR 016, wikis `Server` and `Dedicated-server-on-a-VPS` updated.
    7. Tests: `TestPresenceOff`; `TestParse` reads the file and the flag.
    8. Open for 15.36: should waiting players send hover, or only aims?
+7. Owner notes (2026-10-20)
+   1. Owner marks 15.35 solved.
 
 ### [ ] 15.36 Others' aim and hover
 
