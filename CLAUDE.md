@@ -86,6 +86,13 @@
        3. A random test logs its seed when it starts, not only on a pass.
        4. `games.spec.ts` keeps its failed records in `.cache/e2e-games/`.
        5. Never rerun to "check again" before the evidence is saved.
+   20. Window layers: one ordered list (ADR 015).
+       1. Rules and inventory: `docs/wiki/Layers.md`.
+       2. Numbers live only in `frontend/src/layers.css`, top first.
+       3. Code uses `z-index: var(--z-<id>)`, never a bare number.
+       4. Inside one element only: a number tagged `/* layer: local */`.
+       5. A new window gets a row there, with why it covers what.
+       6. Pairs that overlap get a test in `e2e/tests/layers.spec.ts`.
 6. Licenses
    1. Code is MIT (`LICENSE`).
    2. `NOTICE` lists every third-party item and its license.

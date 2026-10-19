@@ -16,3 +16,4 @@
 | [012](012-animation-ownership.md) | Animation ownership | Accepted |
 | [013](013-no-message-compression.md) | No WebSocket message compression | Accepted |
 | [014](014-dice-throw-intent.md) | Dice throw intent | Accepted |
+| [015](015-window-layers.md) | Window layers | Accepted |

@@ -3,7 +3,7 @@
 .overlay {
   position: fixed;
   inset: 0;
-  z-index: 18;
+  z-index: var(--z-overlay);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -71,7 +71,7 @@
   position: fixed;
   top: 10px;
   right: 12px;
-  z-index: 6;
+  z-index: var(--z-menu-button);
   padding: 4px 12px 2px;
   font-size: 14px;
 }

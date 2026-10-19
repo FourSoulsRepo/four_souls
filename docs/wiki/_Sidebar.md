@@ -17,6 +17,7 @@
 * [Screenshots](Screenshots)
 * [Client](Client)
 * [Animations](Animations)
+* [Layers](Layers)
 * [Frontend tests](Frontend-tests)
 * [Internal builds](Internal-builds)
 * [Releases](Releases)

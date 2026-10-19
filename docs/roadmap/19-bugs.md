@@ -814,3 +814,38 @@ This step never closes; new reports are appended.
    2. Engine only; no screen change, no screenshots.
 7. Owner notes (2026-10-19)
    1. Owner marks 19.25 solved.
+### [ ] 19.26 Card zoom under the discard window
+
+1. Goal: a window that must be on top is always on top.
+2. Report (owner, 2026-10-19)
+   1. The discard window asks which loot cards to discard.
+   2. Hovering a card there zooms it under the window.
+   3. The player cannot read the card they discard.
+   4. Other windows also show under ones they should cover.
+3. Cause:
+   1. `.card-zoom` has z-index 10; `.choice` has 12.
+   2. 19 z-index values in 6 CSS files, picked one by one.
+   3. No list says which layer must be above which.
+   4. Also wrong: the action backdrop (15) is above both choices.
+   5. Also wrong: the dragged hand card (30) is above the overlays.
+4. Tasks:
+   1. One ordered list of layers: CSS variables in `layers.css`.
+   2. Every z-index uses a variable, or is tagged local.
+   3. Wiki page `Layers.md`: a row per layer, in order.
+   4. Vitest test: code and wiki agree; no bare numbers.
+   5. ADR 015 for the rule.
+   6. Zoom above every window; effects above the zoom.
+5. Done when:
+   1. e2e test: a zoom from the discard window is on top.
+   2. Vitest `layer inventory` passes.
+6. Result (2026-10-19)
+   1. `frontend/src/layers.css`: 14 layers, top first.
+   2. Every z-index names one; four inner ones tagged local.
+   3. Zoom moved above every window, below effects.
+   4. Card menu and ability dialog above the prompts, on purpose now.
+   5. Dragged hand card moved under the overlays.
+   6. Rules and reasons: wiki `Layers.md`; decision: ADR 015.
+   7. Vitest `layer inventory`; e2e `layers.spec.ts`.
+   8. The e2e test failed before the fix; passes after.
+   9. Use case UC-11 gets 3e: a card in a window.
+   10. Screenshots: `.cache/screenshots/19.26/before/` and `after/`.

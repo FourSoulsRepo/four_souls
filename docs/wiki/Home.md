@@ -21,6 +21,7 @@ Pick your group: players, people who run a game server, or developers. Developer
 * [Screenshots](Screenshots) — capture the UI without a real window.
 * [Client](Client) — how the React client is put together: store, lobby, playback, table.
 * [Animations](Animations) — every animation, who owns a card, and the clash checks.
+* [Layers](Layers) — which window draws over which, and the order check.
 * [Frontend tests](Frontend-tests) — unit tests, UI tests, and how to keep the frontend testable.
 * [Internal builds](Internal-builds) — the app for play tests with friends.
 * [Releases](Releases) — version tags, draft releases, archives.

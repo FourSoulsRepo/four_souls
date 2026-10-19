@@ -643,7 +643,7 @@
 /* A hovered card comes to the front of the fan; its zoom rises from it
    (15.27, H-13). */
 .own .hand-card:hover:not(.dragging) {
-  z-index: 10;
+  z-index: var(--z-hand);
 }
 
 /* A playable hand card glows green; the rest stay plain (15.27, H-12).
@@ -675,7 +675,7 @@
 .own .hand-card.usable::after {
   position: absolute;
   inset: -1px;
-  z-index: -1;
+  z-index: -1; /* layer: local */
   border-radius: 6px;
   content: "";
   pointer-events: none;
@@ -721,7 +721,7 @@
 
 .hand-card.dragging {
   position: relative;
-  z-index: 30;
+  z-index: var(--z-drag);
   cursor: grabbing;
   transition: none;
 }
@@ -729,7 +729,7 @@
 /* A card that aims stays in the fan, lifted, while its arrow points
    (15.25). */
 .own .hand-card.aiming {
-  z-index: 10;
+  z-index: var(--z-hand);
   transform: translateY(-40px) scale(1.08);
 }
 
@@ -744,7 +744,7 @@
 .aim-arrow {
   position: fixed;
   inset: 0;
-  z-index: 1000;
+  z-index: var(--z-aim);
   pointer-events: none;
   opacity: 0.85;
   filter: drop-shadow(0 0 1px #000) drop-shadow(0 2px 3px rgb(0 0 0 / 70%));
@@ -880,7 +880,7 @@
   position: fixed;
   top: 0;
   left: 0;
-  z-index: 1001;
+  z-index: var(--z-aim-why);
   pointer-events: none;
 }
 

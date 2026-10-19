@@ -5,7 +5,7 @@
   position: fixed;
   right: 16px;
   bottom: 16px;
-  z-index: 5;
+  z-index: var(--z-action-bar);
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -64,7 +64,7 @@
 .action-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 15;
+  z-index: var(--z-menu);
 }
 
 .action-menu {
@@ -244,7 +244,7 @@
   position: fixed;
   bottom: 8px;
   left: 50%;
-  z-index: 12;
+  z-index: var(--z-choice);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -261,7 +261,7 @@
 .choice.look {
   top: 50%;
   bottom: auto;
-  z-index: 13;
+  z-index: var(--z-look);
   translate: -50% -50%;
 }
 
@@ -417,7 +417,7 @@
   position: absolute;
   top: calc(100% + 6px);
   left: 0;
-  z-index: 5;
+  z-index: 5; /* layer: local */
   display: none;
   padding: 4px 10px;
   border-radius: 8px;
@@ -631,7 +631,7 @@
   position: absolute;
   top: -10px;
   right: -9px;
-  z-index: 1;
+  z-index: 1; /* layer: local */
   display: grid;
   place-items: center;
   width: 20px;

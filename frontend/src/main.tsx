@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import './style.css';
+import './layers.css';
 
 // ?fake swaps in fake Wails bindings for make e2e and make screenshots.
 // Dev server only: production builds drop the fixture entirely.

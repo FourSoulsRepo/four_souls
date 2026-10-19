@@ -4,7 +4,7 @@
 .effects {
   position: fixed;
   inset: 0;
-  z-index: 20;
+  z-index: var(--z-effects);
   pointer-events: none;
 }
 
@@ -65,7 +65,7 @@
 .effects-trail {
   position: fixed;
   inset: 0;
-  z-index: 21;
+  z-index: var(--z-trail);
   pointer-events: none;
 }
 
