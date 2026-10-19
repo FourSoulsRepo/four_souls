@@ -1,0 +1,19 @@
+package r
+
+import engine "github.com/FourSoulsRepo/rules_engine"
+
+// Holy Greedling (Holy/Charmed Monster Card)
+//
+//	Each time a monster dies, the active player may gain 3¢.
+//
+// TODO(card): implement the text above, then delete this line.
+// Until then `go run ./cmd/cardgen` rewrites this file from card_db.
+var holyGreedling = engine.CardDef{
+	Ref:     "holy_greedling",
+	Kind:    engine.MonsterCard,
+	Copies:  1,
+	HP:      2,
+	DC:      3,
+	ATK:     1,
+	Rewards: []engine.Reward{{Kind: engine.RewardCents, Roll: true}},
+}

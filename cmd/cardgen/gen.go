@@ -57,6 +57,7 @@ var kinds = map[string]string{
 	"Good Event Card":           "EventCard",
 	"Bad Event Card":            "EventCard",
 	"Curse Card":                "EventCard",
+	"Outside Card":              "MonsterCard", // The Harbingers; the card sets Outside
 
 	"Bonus Soul Card": "BonusSoulCard",
 	"Room Card":       "RoomCard",
