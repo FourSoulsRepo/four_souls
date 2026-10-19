@@ -1022,6 +1022,8 @@ Images come first, so the new table is built with backs and mats.
    11. e2e `fight.spec.ts`: the frame and roll, the pop and the kept card.
    12. Use case UC-24; wiki `Client`, `Animations`.
    13. Screenshots: `.cache/screenshots/15.31/before/` and `after/`.
+5. Owner notes (2026-10-19)
+   1. Owner marks 15.31 solved.
 
 ### [x] 15.32 Aiming arrow
 
