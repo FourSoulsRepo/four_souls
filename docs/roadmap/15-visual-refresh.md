@@ -1199,6 +1199,27 @@ Images come first, so the new table is built with backs and mats.
    5. A late or missing message never breaks the table.
 3. Done when:
    1. e2e test: a second player sees the arrow and the red mark.
+4. Owner decision (2026-10-20)
+   1. A waiting player sends only aims, never hover: less noise.
+   2. The active player sends aims and hover.
+5. Result (2026-10-20)
+   1. `PresenceSender` shares the aim: source, and the spot or board point.
+   2. On the own turn it also shares the hovered card.
+   3. An own hand card goes as its slot only (A-16).
+   4. At most every 70 ms; a still one is renewed every 2 s.
+   5. `PresenceLayer` draws the other seats' arrows live (T-08).
+   6. A hidden source is a back lifted from its slot (T-09, T-22).
+   7. The spot under the head or pointer gets a red frame (T-10, T-21).
+   8. Not renewed in 5 s, a presence goes; a lost message heals.
+   9. Others' arrows are a little fainter, under every window.
+   10. New layer `presence`, under choices, over the hand.
+   11. ADR 016 gains the client rules; UC-25; wiki `Client`, `Layers`.
+   12. TS protocol test models the presence lines now.
+   13. Unit tests in `presence.test.ts`: spots, what is shared, frame points.
+   14. e2e test: the other sees the arrow, the lifted back, and the marks.
+   15. e2e test: a waiting player's hover reaches nobody.
+   16. e2e test: another player's arrow stays under a choice.
+   17. Screenshots: `.cache/screenshots/15.36/before/` and `after/`.
 
 ### [x] 15.37 Hit and death marks
 

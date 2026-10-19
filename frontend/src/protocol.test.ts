@@ -14,6 +14,7 @@ import {
   type Intent,
   type Join,
   type Load,
+  type Presence,
   type ProtocolError,
   type Ready,
   type Saved,
@@ -23,8 +24,9 @@ import {
 } from './protocol';
 
 // One expected envelope per golden line the client models. `satisfies`
-// makes the compiler check each against its type.
-const modeled: Record<string, Envelope> = {
+// makes the compiler check each against its type. A message the server
+// sends several times without an ID lists every line.
+const modeled: Record<string, Envelope | Envelope[]> = {
   hello: {
     type: 'hello',
     id: 1,
@@ -182,15 +184,26 @@ const modeled: Record<string, Envelope> = {
   wait_turn: { type: 'wait_turn', id: 15, data: { on: true } },
   // A second line of one type is keyed by type and ID.
   'intent#16': { type: 'intent', id: 16, data: { intent: { player: 0, kind: 9 } satisfies Intent } },
+  'presence#17': { type: 'presence', id: 17, data: { seat: 0, from: { hand: 2 }, point: { x: 0.25, y: 0.5 } } satisfies Presence },
+  presence: [
+    { type: 'presence', data: { seat: 1, from: { object: 314 }, at: { player: 0 } } satisfies Presence },
+    { type: 'presence', data: { seat: 1, at: { deck: 2 } } satisfies Presence },
+    { type: 'presence', data: { seat: 1, at: { stack_id: 3 } } satisfies Presence },
+  ],
 };
 
 // model is the expected envelope of a golden line, if the client models it.
+// Of a list, it is the line that matches, else the first.
 function model(env: Envelope): Envelope | undefined {
-  return modeled[`${env.type}#${String(env.id)}`] ?? modeled[env.type];
+  const m = modeled[`${env.type}#${String(env.id)}`] ?? modeled[env.type];
+  if (Array.isArray(m)) {
+    return m.find((x) => JSON.stringify(x) === JSON.stringify(env)) ?? m[0];
+  }
+  return m;
 }
 
 // Messages the client does not read or send yet; later steps model them.
-const notYet = ['resync', 'setup', 'ban', 'pick', 'skip_all', 'vote', 'save', 'presence'];
+const notYet = ['resync', 'setup', 'ban', 'pick', 'skip_all', 'vote', 'save'];
 
 const lines = golden
   .split('\n')

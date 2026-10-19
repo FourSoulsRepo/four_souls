@@ -838,6 +838,35 @@
   transform: scale(1);
 }
 
+/* Another player's arrow (15.36, Presence.tsx): the same arrow, under
+   the windows and a little fainter than the own one. */
+.aim-arrow.others {
+  z-index: var(--z-presence);
+  opacity: 0.7;
+}
+
+/* What another player's arrow or pointer is over (T-10, T-21): a red
+   frame outside the card, so it shows with any glow. */
+.card[data-presence~='at'],
+.hidden-back[data-presence~='at'] .card,
+.pile[data-presence~='at'] .card,
+.stack-row[data-presence~='at'] {
+  outline: 3px solid #ff4b3e;
+  outline-offset: 2px;
+  box-shadow: 0 0 16px 3px rgb(255 75 62 / 75%);
+}
+
+/* A hidden hand card another player aims with: its back lifts out of
+   the fan, toward the board (T-09, T-22). */
+.hidden-back[data-presence~='from'] {
+  translate: 0 -28px;
+  transition: transform 150ms ease-out, translate 150ms ease-out;
+}
+
+.player-top .hidden-back[data-presence~='from'] {
+  translate: 0 28px;
+}
+
 .aim-arrow.still *,
 .aim-arrow.still *::before,
 .aim-arrow.still *::after {

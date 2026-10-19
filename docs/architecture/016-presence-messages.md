@@ -62,6 +62,14 @@ Use options 1 and 4.
    2. Then the server drops every presence and relays none.
    3. `welcome.presence` says it is on; a client sends none otherwise.
    4. On by default; the app's own host always has it on.
+8. Client (15.36)
+   1. An aim is always sent: `from`, and `at` or `point`.
+   2. A hover is sent only on the sender's own turn (owner, 2026-10-20).
+   3. A waiting player's hover is not sent: the table stays quiet.
+   4. At most one every 70 ms, under the server's limit.
+   5. A still presence is sent again every 2 s.
+   6. A receiver drops a presence not renewed in 5 s.
+   7. Others' arrows sit under the windows (layer `presence`).
 
 ```json
 {"type": "presence", "id": 17, "data": {"seat": 0, "from": {"hand": 2}, "point": {"x": 0.25, "y": 0.5}}}
@@ -85,4 +93,4 @@ Use options 1 and 4.
 
 ### Neutral
 
-1. Clients draw it in 15.36; this ADR only fixes the wire and the server.
+1. Clients draw it since 15.36; see decision 8.

@@ -503,6 +503,7 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    7. Lost or late ones do no harm; the next one replaces them.
    8. The server limits how often a player may send them.
    9. Viewers see them too (owner, 2026-10-20).
+   10. A waiting player sends only aims, no hover (owner, 2026-10-20).
 16. N-16. "Wait for my turn" button (owner, 2026-10-13).
    1. Offered to a player on another player's turn.
    2. The server passes for them on everything.

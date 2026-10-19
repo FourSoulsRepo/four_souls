@@ -95,13 +95,14 @@ const step = 36;
 // and a head whose tip is at the pointer; on a valid target a ring
 // marks the tip. The blocks march toward the head at the animation
 // speed; the first fades in and the last fades out, so the loop has no
-// seam. Placed and moved with transform and opacity only.
-function AimArrow({ from, to, on }: { from: Point; to: Point; on: boolean }) {
+// seam. Placed and moved with transform and opacity only. Another
+// player's arrow (others, 15.36) sits under the windows.
+export function AimArrow({ from, to, on, others }: { from: Point; to: Point; on: boolean; others?: boolean }) {
   const scale = useApp((s) => scaleFor(s.settings.animation, 0, 0));
   const { length, angle } = arrow(from, to);
   const at = (p: Point) => `translate(${String(p.x)}px, ${String(p.y)}px) rotate(${String(angle)}deg)`;
   const n = blocks(length, step, headLength);
-  const cls = ['aim-arrow', on ? 'on' : '', scale > 0 ? '' : 'still'].filter(Boolean).join(' ');
+  const cls = ['aim-arrow', on ? 'on' : '', scale > 0 ? '' : 'still', others ? 'others' : ''].filter(Boolean).join(' ');
   const march = { '--march': `${String(0.5 * scale)}s` } as CSSProperties;
   return (
     <div className={cls} style={march} aria-hidden="true">

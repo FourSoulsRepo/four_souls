@@ -34,6 +34,28 @@ export interface Welcome {
   presence?: boolean;
 }
 
+// Presence is what a player points at now (15.35, ADR 016): the card
+// they aim from, and the spot the arrow or pointer is over. Each one
+// replaces the sender's last; an empty one means nothing. The server
+// fills in seat.
+export interface Presence {
+  seat: number;
+  from?: Spot;
+  at?: Spot;
+  // point is the pointer on the board frame, 0 to 1, while over no spot.
+  point?: { x: number; y: number };
+}
+
+// Spot is one thing on the table; exactly one field is set. hand is
+// the sender's own hand slot, from 1, never the card (A-16).
+export interface Spot {
+  object?: number;
+  hand?: number;
+  player?: number;
+  deck?: number;
+  stack_id?: number;
+}
+
 export interface ProtocolError {
   code: string;
   message: string;

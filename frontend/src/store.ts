@@ -47,6 +47,7 @@ import {
   type Hello,
   type Intent,
   type OptionView,
+  type Presence,
   type Update,
 } from './protocol';
 
@@ -163,6 +164,10 @@ interface AppState extends Session {
   skipAll: (on: boolean) => void;
   // waitTurn turns "wait for my turn" on or off (N-16).
   waitTurn: (on: boolean) => void;
+  // presence is what the other seats point at now, by seat (15.36).
+  presence: Record<number, Presence>;
+  // sendPresence shares what this player points at (ADR 016).
+  sendPresence: (p: Omit<Presence, 'seat'>) => void;
   // address is the server this app is connected to, for reconnecting.
   address: string;
   // reconnect says hello again with the seat's token (N-08).
@@ -250,6 +255,11 @@ export function messageOf(e: unknown): string {
   return 'something went wrong';
 }
 
+// presenceLife is how long a presence shows without being renewed, in
+// ms; presenceRenew is how often a sender renews a still one.
+export const presenceLife = 5000;
+export const presenceRenew = 2000;
+
 // dropConnection is for tests: it fails the connection as the network
 // would, so reconnecting can be checked.
 export const dropConnection = drop;
@@ -324,10 +334,27 @@ export const useApp = create<AppState>()((set, get) => {
     }
   };
 
+  // A seat's presence goes when it is not renewed in time: a lost
+  // message never leaves an arrow behind. Senders renew it sooner.
+  const presenceTimers = new Map<number, number>();
+  const forget = (seat: number) => {
+    window.clearTimeout(presenceTimers.get(seat));
+    presenceTimers.delete(seat);
+    set((s) => ({ presence: Object.fromEntries(Object.entries(s.presence).filter(([k]) => Number(k) !== seat)) }));
+  };
+  const clearPresence = () => {
+    for (const t of presenceTimers.values()) {
+      window.clearTimeout(t);
+    }
+    presenceTimers.clear();
+    set({ presence: {} });
+  };
+
   // stopPlayback drops queued updates and the effect on screen.
   const stopPlayback = () => {
     playback.clear();
     get().playing?.done();
+    clearPresence();
     set({ history: [], lastRoll: null, looking: [], placed: [] });
   };
 
@@ -361,6 +388,7 @@ export const useApp = create<AppState>()((set, get) => {
         if (get().screen !== 'game') {
           stopPlayback();
         }
+        clearPresence();
         set((s) => ({ ...lost(s), connected: false }));
       });
       // A reconnect keeps the table it comes back to.
@@ -410,6 +438,21 @@ export const useApp = create<AppState>()((set, get) => {
         set({ aiming: null, aimed: null });
         keepSeat();
       }
+      if (env.type === 'presence') {
+        const p = env.data as Presence;
+        if (!p.from && !p.at && !p.point) {
+          forget(p.seat);
+          return;
+        }
+        window.clearTimeout(presenceTimers.get(p.seat));
+        presenceTimers.set(
+          p.seat,
+          window.setTimeout(() => {
+            forget(p.seat);
+          }, presenceLife),
+        );
+        set((s) => ({ presence: { ...s.presence, [p.seat]: p } }));
+      }
     },
     act: (intent) => {
       send('intent', { intent });
@@ -441,6 +484,12 @@ export const useApp = create<AppState>()((set, get) => {
     },
     waitTurn: (on) => {
       send('wait_turn', { on });
+    },
+    presence: {},
+    sendPresence: (p) => {
+      if (get().lobby.welcome?.presence) {
+        send('presence', p);
+      }
     },
     address: '',
     reconnect: async () => {

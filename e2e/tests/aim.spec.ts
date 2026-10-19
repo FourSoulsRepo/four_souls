@@ -3,7 +3,7 @@
 // does nothing; empty space or a right click cancels (15.33). A card
 // with no target is dragged onto the board; one that asks its mode
 // first aims after it, and a cancelled aim puts it back (15.34).
-import type { Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 import { expect, test } from './fixtures';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -336,4 +336,85 @@ test('a card placed first aims after its mode; a cancelled aim leaves it in hand
   await active.mouse.click(to.x + to.width / 2, to.y + to.height / 2);
   await expect.poll(() => stackCards(active)).toContain('dagaz');
   await expect(dagaz).toHaveCount(0);
+});
+
+// Presence (15.36): the other player sees the aim live, from a back
+// lifted out of the aiming player's hand to the red-marked target, and
+// the card the active player hovers. A waiting player shares no hover.
+test('the other player sees the arrow and the red mark', async ({ browser }) => {
+  const pages = await startGame(browser, ['Hal', 'Ivy'], { url: fast() });
+  await activePage(pages, click);
+  await saveAndContinue(pages, 'Hal, Ivy');
+  const active = await activePage(pages, click);
+  const other = pages.find((p) => p !== active);
+  if (!other) {
+    throw new Error('no waiting player');
+  }
+  const bomb = active.getByRole('group', { name: 'Your hand' }).getByRole('button', { name: 'Bomb!' }).first();
+  const monster = active.getByRole('group', { name: 'Monsters' }).locator('.card').first();
+  const item = active.getByRole('group', { name: 'Shop' }).locator('.card').first();
+  const arrow = other.locator('.aim-arrow.others');
+  const lifted = other.locator('.hidden-back[data-presence~="from"]');
+  // The same card on the other screen, by its zone.
+  const there = async (l: Locator) => other.locator(`[data-zone="${(await l.getAttribute('data-zone')) ?? ''}"]`);
+  const middle = async (l: Locator) => {
+    const b = await l.boundingBox();
+    if (!b) {
+      throw new Error('no box');
+    }
+    return { x: b.x + b.width / 2, y: b.y + b.height / 2 };
+  };
+  // Empty board below the stack panel: no card, pile, or row.
+  const space = { x: 300, y: 420 };
+  const b = await bomb.boundingBox();
+  if (!b) {
+    throw new Error('no bomb box');
+  }
+
+  // Aiming: the arrow runs from a lifted back to the marked monster.
+  await active.mouse.click(b.x + b.width / 2, b.y + 30);
+  const m = await middle(monster);
+  await active.mouse.move(m.x, m.y, { steps: 8 });
+  await expect(arrow).toHaveCount(1);
+  await expect(arrow).toHaveClass(/\bon\b/);
+  await expect(lifted).toHaveCount(1);
+  await expect(await there(monster)).toHaveAttribute('data-presence', 'at');
+  await shot(other, 'presence-aim');
+
+  // Over empty space the arrow stays, with no mark.
+  await active.mouse.move(space.x, space.y, { steps: 4 });
+  await expect(arrow).not.toHaveClass(/\bon\b/);
+  await expect(await there(monster)).not.toHaveAttribute('data-presence');
+  // Both boards are drawn alike, so the head ends at the same point.
+  await expect
+    .poll(async () => {
+      const r = await middle(other.locator('.aim-arrow.others .aim-ring > div'));
+      return Math.hypot(r.x - space.x, r.y - space.y);
+    })
+    .toBeLessThan(3);
+  await shot(other, 'presence-aim-off');
+
+  // Cancelled, the arrow and the lifted back go.
+  await active.mouse.click(space.x, space.y, { button: 'right' });
+  await expect(arrow).toHaveCount(0);
+  await expect(lifted).toHaveCount(0);
+
+  // On the own turn, a hovered card is marked for the other.
+  const i = await middle(item);
+  await active.mouse.move(i.x, i.y, { steps: 4 });
+  await expect(await there(item)).toHaveAttribute('data-presence', 'at');
+  await shot(other, 'presence-hover');
+  await active.mouse.move(space.x, space.y, { steps: 4 });
+  await expect(await there(item)).not.toHaveAttribute('data-presence');
+
+  // The waiting player's hover reaches nobody.
+  const o = await middle(other.getByRole('group', { name: 'Shop' }).locator('.card').first());
+  await other.mouse.move(o.x, o.y, { steps: 4 });
+  await active.waitForTimeout(500);
+  const shown = await active.evaluate(() => {
+    const s = (window as unknown as { fourSouls: { store: { getState: () => { presence: object } } } }).fourSouls.store.getState();
+    return Object.keys(s.presence).length;
+  });
+  expect(shown).toBe(0);
+  await expect(active.locator('[data-presence]')).toHaveCount(0);
 });

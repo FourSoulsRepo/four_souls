@@ -8,6 +8,7 @@ import { Board } from '../components/Board';
 import { ChoiceDialog, DiscardDialog, LookDialog, OrderDialog } from '../components/ChoiceDialog';
 import { interact, noInteract } from '../components/Interact';
 import { PlayerArea } from '../components/PlayerArea';
+import { PresenceLayer, PresenceSender } from '../components/Presence';
 import { HistoryPanel, TurnBadge } from '../components/InfoPanels';
 import { GameMenu } from '../components/GameMenu';
 import { HistoryStrip } from '../components/HistoryStrip';
@@ -104,6 +105,8 @@ function Table({ game, you }: { game: Update; you: number }) {
   const name = (player: number) => game.seats?.find((s) => s.seat === player)?.name ?? `Player ${String(player + 1)}`;
   const names: Names = { player: name, card: (ref) => cards.get(ref)?.name ?? ref };
   const me = view.players.at(you);
+  // The hand's cards in order: a hand card is shared as its slot (A-16).
+  const hand = useMemo(() => (me?.hand ?? []).map((c) => c.id), [me]);
   const stacked = (view.stack ?? []).length > 0;
   const skip = game.skip_all ? 'on' : stacked && !view.over ? 'offer' : 'none';
   // The banner and the stack say what the game waits for (15.28). While
@@ -202,6 +205,8 @@ function Table({ game, you }: { game: Update; you: number }) {
       />
       <ActionMenu actions={offered.cards} />
       {canAct && <AimLayer />}
+      {me && !view.over && <PresenceSender active={view.turn.active === you} hand={hand} />}
+      <PresenceLayer you={you} />
       <WhyNote />
       {offered.choice && !aiming?.choice && (
         <ChoiceDialog
