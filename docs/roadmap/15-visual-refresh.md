@@ -1879,3 +1879,23 @@ Images come first, so the new table is built with backs and mats.
 4. Done when:
    1. e2e test: a card option has no name button and its card answers.
    2. `make screenshots` covers a card choice and a text choice.
+
+### [ ] 15.67 Kept die numbers on the card
+
+1. Goal: a card that keeps a die number shows it as a die badge.
+2. Asked by the owner (2026-10-19).
+3. Cards:
+   1. Telepathy for Dummies: the roll stored at the start of the turn.
+   2. Red Candle: the chosen number, till the end of the turn.
+   3. Crystal Ball: the guessed number, till the next roll.
+4. Tasks:
+   1. Engine: `CardDef.Dice` gives the numbers a card keeps.
+   2. The card view sends them as `dice`.
+   3. Crystal Ball keeps its guess outside counters; no counter badge.
+   4. Client: a die badge per number, in the controller's dice look.
+   5. Plain die with the number without a dice image.
+   6. No badge on the zoomed card, as for the other badges.
+5. Done when:
+   1. Engine tests: the three cards' view `dice`.
+   2. e2e test: a die badge on an item that keeps a number.
+   3. `make screenshots` covers a card with a die badge.

@@ -912,3 +912,18 @@ This step never closes; new reports are appended.
    1. Board-layout tests wait until each page has played its updates (`settled`).
    2. The 4-player test is marked slow: 90 s.
    3. The test passed ten runs in a row (single runs and full suites).
+
+### [ ] 19.29 Bonus souls show no counters
+
+1. Goal: a bonus soul's counters read on its card.
+2. Report (owner, 2026-10-19)
+   1. Soul of Wrath and the like show no counters.
+   2. The progress to the 6th counter is hard to track.
+3. Cause
+   1. The engine puts the counters on and the view sends them.
+   2. The board draws bonus souls without passing `counters`.
+4. Tasks:
+   1. Bonus souls on the board get the counter badge.
+5. Done when:
+   1. e2e test: a bonus soul with counters shows the badge.
+   2. Screenshots: `.cache/screenshots/19.29/before/` and `after/`.
