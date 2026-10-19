@@ -173,10 +173,11 @@ On 2026-10-09 the owner parked every open decision for later.
 2. Sources: S-DIS split; no ruling in S-OFF, S-YUG, Reddit, X (2026-10-19).
 3. Options: (a) yes, the second sentence is not "if you do" (R-MECH-02); (b) no, nothing was destroyed.
 4. The English print says "Destroy an item."; an earlier text said "a non-eternal item".
-5. The Russian print: "a non-eternal item", and the steal is "if you do".
+5. The Russian print: "a non-eternal item"; it has no "if you do" either.
 6. Status: **Resolved** (2026-10-19): (b); the engine follows the Russian print.
    1. Only a non-eternal item can be chosen; Bag Lunch can.
    2. The steal needs the destruction; Bag Lunch's counter stops it.
+   3. The same as Berkano (Q-19).
 
 ### Q-17 Rib of Greed and stealing
 
@@ -196,6 +197,17 @@ On 2026-10-09 the owner parked every open decision for later.
    2. Damage stays with the player (R-MECH-19).
 3. Options: (a) charged, as any card entering play; (b) keeps the old character's state.
 4. Status: **Resolved** (2026-10-19): (a).
+
+### Q-19 Berkano: a steal without a destruction
+
+1. Question: "Destroy an item. If that item was controlled by a player, they steal an item from the shop."
+   1. If the item is not destroyed (eternal, Bag Lunch), do they still steal?
+2. Sources:
+   1. English and Russian prints: no "if you do"; an earlier English text said "non-eternal".
+   2. S-DIS (2025-04-11): an eternal item may be chosen; nothing is destroyed, nobody steals.
+   3. No ruling in S-OFF, S-YUG, Reddit, X, or the web (2026-10-19).
+3. Options: (a) they steal anyway; (b) only if the item was destroyed.
+4. Status: **Resolved** (2026-10-19): (b), as Spindown Dice (Q-16).
 
 ## Old rulings re-checked (R-07)
 
@@ -333,4 +345,5 @@ Requiem searched 2026-10-19 (14.2) with the Russian names of the owner's Requiem
 | 16 | Gello | It can't choose a monster at 0 HP; a bomb in response makes it fizzle | Requiem |
 | 17 | Damocles, Dice Room | Rerolling 6 items gains 12 treasures: each reroll is its own gain | Requiem |
 | 18 | Spindown Dice, Bag Lunch | Split answers; the owner follows the Russian print: no steal | Requiem (Q-16) |
+| 20 | Berkano | An eternal item may be chosen; not destroyed, so nobody steals | Requiem (Q-19) |
 | 19 | The Clicker | Damage stays with the player; the new character is not healed | Requiem (Q-18) |

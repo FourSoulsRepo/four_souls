@@ -16,9 +16,8 @@ var berkano = engine.CardDef{
 		Effects: []engine.Effect{engine.EffectFunc(func(c *engine.Ctx) {
 			id := c.Targets[0].Object
 			p := c.G.Object(id).Controller
-			c.G.DestroyObject(p, id)
-			if p != engine.NoPlayer {
-				// Not "if you do": it follows the English print (Q-16).
+			// Only a destroyed item gives the steal (Q-19, owner).
+			if c.G.DestroyObject(p, id) && p != engine.NoPlayer {
 				c.Do(stealFromShop(p, false))
 			}
 		})},

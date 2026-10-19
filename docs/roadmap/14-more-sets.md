@@ -107,6 +107,7 @@ Ideas: CD-02, GS-07, GS-08, CD-11, A-16, CD-12, V-32, GS-12, GS-13, GS-01.
    20. Engine: a character replaced from outside the game (The Clicker, Q-18).
    21. Engine: a treasure soul keeps its abilities unless it loses them (R-CARD-38).
    22. Purchases from the treasure deck now emit "purchased" too; shop steals are "stolen".
+   23. **Owner:** Berkano and Spindown Dice steal only if the item was destroyed (Q-16, Q-19).
 
 ### [ ] 14.4 Setup options
 

@@ -28,3 +28,14 @@ func TestBerkanoShopItem(t *testing.T) {
 		t.Error("nobody controlled it: nobody steals")
 	}
 }
+
+// An item that isn't destroyed gives no steal (Q-19).
+func TestBerkanoEternalNoSteal(t *testing.T) {
+	tb := setup(t, engine.SituationSetup{Players: []engine.SituationPlayer{
+		{Character: "isaac", Hand: []engine.CardRef{"berkano"}}, seat("cain", "sleight_of_hand"),
+	}, Shop: []engine.CardRef{"spoon_bender"}})
+	tb.Play(0, "berkano", "sleight_of_hand")
+	if !hasItem(tb.G, 1, "sleight_of_hand") || hasItem(tb.G, 1, "spoon_bender") {
+		t.Error("the eternal item stays and Cain steals nothing")
+	}
+}
