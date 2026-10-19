@@ -420,7 +420,7 @@ func (g *Game) maxHand(p PlayerID) int {
 		}
 		for _, s := range d.Statics {
 			if s.Stat == StatHandCap && s.Applies(g, id, p, 0) {
-				limit = min(limit, s.Amount)
+				limit = min(limit, s.amount(g, id))
 			}
 		}
 	}

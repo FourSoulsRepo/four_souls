@@ -47,6 +47,17 @@ type Static struct {
 	Stat    Stat
 	Amount  int
 	Applies func(g *Game, self ObjectID, player PlayerID, subject ObjectID) bool
+	// Value, if set, is the amount instead of Amount: "You have +1 HP for
+	// each counter on this".
+	Value func(g *Game, self ObjectID) int
+}
+
+// amount is the static's amount for its object.
+func (s Static) amount(g *Game, self ObjectID) int {
+	if s.Value != nil {
+		return s.Value(g, self)
+	}
+	return s.Amount
 }
 
 // YouHave changes a stat of the object's controller: YouHave(StatPlayerATK, 1).
@@ -77,7 +88,7 @@ func (g *Game) bonus(stat Stat, p PlayerID, subject ObjectID) int {
 		}
 		for _, s := range d.Statics {
 			if s.Stat == stat && s.Applies(g, o.ID, p, subject) {
-				total += s.Amount
+				total += s.amount(g, o.ID)
 			}
 		}
 	}

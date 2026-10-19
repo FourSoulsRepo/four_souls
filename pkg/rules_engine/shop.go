@@ -60,9 +60,9 @@ func (g *Game) purchase(item ObjectID, fromDeck bool) {
 	g.Players[p].Cents -= price // pay into the game's pool (R-MECH-44)
 	g.emit(Event{Kind: EvPaid, Player: p, Amount: price})
 	if fromDeck {
-		for _, id := range g.gainTreasure(p, 1) {
-			g.emit(Event{Kind: EvPurchased, Player: p, Object: id, Card: g.Object(id).Card, Text: "treasure deck"})
-		}
+		// Buying the deck top is gaining a treasure: replacements apply
+		// (Damocles, S-YUG).
+		g.enqueue(Action{Kind: ActGainTreasure, Player: p, Amount: 1, Purchase: true})
 		return
 	}
 	g.Turn.ShopBought++

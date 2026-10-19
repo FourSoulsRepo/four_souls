@@ -1,6 +1,8 @@
 package r
 
 import (
+	"slices"
+
 	engine "github.com/FourSoulsRepo/rules_engine"
 	"github.com/FourSoulsRepo/rules_engine/cards/cardkit"
 )
@@ -15,6 +17,8 @@ var (
 	otherPlayers   = cardkit.OtherPlayers
 	damageAMonster = cardkit.DamageAMonster
 	playerLabel    = cardkit.PlayerLabel
+	damageAnything = cardkit.DamageAnything
+	monstersInPlay = cardkit.MonstersInPlay
 )
 
 // eachOtherThan deals n damage from the controller to each player but
@@ -186,7 +190,14 @@ func cardsInPlay(g *engine.Game) []engine.ObjectID {
 // of a type already on it or remove a counter from it" (Marbles). With
 // items, only items, and a generic counter may always be added
 // (Playdough Cookie); with none, the controller may choose nothing.
-func changeACounter(items bool) engine.Effect {
+func changeACounter(items bool) engine.Effect { return changeCounters(items, nil) }
+
+// changeACounterOr is changeACounter for items: "Put a counter on that
+// item or remove one from it. Otherwise, …" runs otherwise on "none"
+// (Playdough Cookie).
+func changeACounterOr(otherwise engine.Effect) engine.Effect { return changeCounters(true, otherwise) }
+
+func changeCounters(items bool, otherwise engine.Effect) engine.Effect {
 	cards := func(g *engine.Game) []engine.ObjectID {
 		var out []engine.ObjectID
 		for _, id := range cardsInPlay(g) {
@@ -226,6 +237,9 @@ func changeACounter(items bool) engine.Effect {
 	return engine.Ask(func(c *engine.Ctx, a []int) {
 		ids := cards(c.G)
 		if a[0] < 0 || a[0] >= len(ids) || a[1] < 0 {
+			if otherwise != nil {
+				c.Do(otherwise)
+			}
 			return
 		}
 		ch := changes(c.G, ids[a[0]])[a[1]]
@@ -271,3 +285,140 @@ func discardHandLoot(n int) engine.Effect {
 		c.Do(engine.Loot(n))
 	})
 }
+
+// level is the name of level counters (R-MECH-41).
+const level = "level"
+
+// levelUp puts a level counter on this.
+var levelUp = engine.EffectFunc(func(c *engine.Ctx) { c.G.AddNamedCounters(c.Source, level, 1) })
+
+// atStartOfYourTurnAtLevel triggers at the start of the controller's turn
+// while this has at least n levels.
+func atStartOfYourTurnAtLevel(n int) engine.Trigger {
+	return engine.Trigger{On: engine.EvStartOfTurn, Match: func(g *engine.Game, self engine.ObjectID, e engine.Event) bool {
+		o := g.Object(self)
+		return e.Player == o.Controller && o.CountersOf(level) >= n
+	}}
+}
+
+// whenCounterReaches triggers when the nth counter is put on this.
+func whenCounterReaches(n int) engine.Trigger {
+	return engine.Trigger{On: engine.EvCounters, Match: func(g *engine.Game, self engine.ObjectID, e engine.Event) bool {
+		if e.Object != self || e.Amount <= 0 || e.Text != "" {
+			return false
+		}
+		now := g.Object(self).CountersOf("")
+		return now-e.Amount < n && n <= now
+	}}
+}
+
+// noCombatDamageTakenOn: "You take no combat damage on attack rolls of …".
+func noCombatDamageTakenOn(rolls ...int) func(*engine.Game, engine.ObjectID, int, bool, int) int {
+	return func(_ *engine.Game, _ engine.ObjectID, roll int, hit bool, n int) int {
+		if !hit && slices.Contains(rolls, roll) {
+			return 0
+		}
+		return n
+	}
+}
+
+// combatDamageToAMonster triggers when the controller deals combat damage
+// to a monster; c.EventObject is the monster.
+func combatDamageToAMonster() engine.Trigger {
+	return engine.Trigger{On: engine.EvDamaged, Match: func(g *engine.Game, self engine.ObjectID, e engine.Event) bool {
+		me := g.Object(self).Controller
+		return e.Text == "combat" && e.Player == engine.NoPlayer && e.Object != 0 && e.By == int(me)+1
+	}}
+}
+
+// damageOtherThanEvent deals 1 damage to a monster or player other than
+// the monster of the event ("another monster or player").
+var damageOtherThanEvent = engine.Ask(func(c *engine.Ctx, a []int) {
+	if ts := targetsBut(c); a[0] >= 0 && a[0] < len(ts) {
+		c.G.DealDamageTo(ts[a[0]], 1, c.Controller, c.Source)
+	}
+}, engine.Question{Text: "Deal 1 damage to?", Options: func(c *engine.Ctx, _ []int) []string {
+	var out []string
+	for _, t := range targetsBut(c) {
+		if t.IsPlayer {
+			out = append(out, playerLabel(c.G, t.Player))
+		} else {
+			out = append(out, string(c.G.Object(t.Object).Card))
+		}
+	}
+	return out
+}})
+
+func targetsBut(c *engine.Ctx) []engine.Target {
+	var out []engine.Target
+	for _, id := range monstersInPlay(c.G) {
+		if id != c.EventObject {
+			out = append(out, engine.Target{Object: id})
+		}
+	}
+	for _, p := range cardkit.LivingPlayers(c.G, engine.NoPlayer) {
+		out = append(out, engine.Target{Player: p, IsPlayer: true})
+	}
+	return out
+}
+
+// soulsBehind is how many souls the player with the most souls has more
+// than p.
+func soulsBehind(g *engine.Game, p engine.PlayerID) int {
+	most := 0
+	for _, pl := range g.Players {
+		most = max(most, g.SoulValue(pl.ID))
+	}
+	return most - g.SoulValue(p)
+}
+
+// revealTenTakeNamed reveals the top 10 loot cards; the controller takes
+// those match picks, the rest go to the bottom of the loot deck.
+func revealTenTakeNamed(match func(engine.CardRef) bool) engine.Effect {
+	return engine.EffectFunc(func(c *engine.Ctx) {
+		top := c.G.DeckTop(engine.LootDeck, 10)
+		for _, pl := range c.G.Players {
+			c.G.LookAt(pl.ID, top...)
+		}
+		for _, id := range top {
+			if match(c.G.Object(id).Card) {
+				c.G.DeckToHand(engine.LootDeck, id, c.Controller)
+			} else {
+				c.G.DeckToBottom(engine.LootDeck, id)
+			}
+		}
+	})
+}
+
+// lootDiscardToHand puts a card that match picks from the loot discard
+// into the controller's hand; the controller chooses which.
+func lootDiscardToHand(match func(engine.CardRef) bool) engine.Effect {
+	cards := func(g *engine.Game) []engine.ObjectID {
+		var out []engine.ObjectID
+		for _, id := range g.Discards[engine.LootDeck] {
+			if match(g.Object(id).Card) {
+				out = append(out, id)
+			}
+		}
+		return out
+	}
+	return engine.Ask(func(c *engine.Ctx, a []int) {
+		if ids := cards(c.G); a[0] >= 0 && a[0] < len(ids) {
+			c.G.DiscardToHand(engine.LootDeck, ids[a[0]], c.Controller)
+		}
+	}, engine.Question{Text: "Take which card from the loot discard?", Options: func(c *engine.Ctx, _ []int) []string {
+		return labelsOf(c.G, cards(c.G))
+	}})
+}
+
+// mayDeckQuestion asks for a deck, or "none"; check the answer with
+// deckChosen before reading it with c.Deck.
+func mayDeckQuestion(text string) engine.Question {
+	q := engine.DeckQuestion(text)
+	opts := q.Options
+	q.Options = func(c *engine.Ctx, a []int) []string { return append(opts(c, a), "none") }
+	return q
+}
+
+// deckChosen: answer a picked a deck, not "none".
+func deckChosen(c *engine.Ctx, a int) bool { return a >= 0 && a < len(c.G.DecksInPlay()) }

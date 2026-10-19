@@ -108,6 +108,9 @@ Ideas: CD-02, GS-07, GS-08, CD-11, A-16, CD-12, V-32, GS-12, GS-13, GS-01.
    21. Engine: a treasure soul keeps its abilities unless it loses them (R-CARD-38).
    22. Purchases from the treasure deck now emit "purchased" too; shop steals are "stolen".
    23. **Owner:** Berkano and Spindown Dice steal only if the item was destroyed (Q-16, Q-19).
+   24. Requiem: 23 passive treasures tested; Backstabber, Punching Bag wait for attacks.
+   25. Engine: statics with a computed amount; level counters by name.
+   26. Engine: buying the treasure deck's top is a treasure gain; Damocles applies (S-YUG).
 
 ### [ ] 14.4 Setup options
 

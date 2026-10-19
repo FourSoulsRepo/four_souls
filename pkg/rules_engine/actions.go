@@ -45,6 +45,9 @@ type Action struct {
 	Ask    *Asking    `json:"ask,omitempty"`
 	// Reroll marks a throw that rolls a roll again (ActThrow).
 	Reroll bool `json:"reroll,omitempty"`
+	// Purchase marks treasure gained by buying the top of the deck; the
+	// first card gained is the purchase (Damocles still adds one).
+	Purchase bool `json:"purchase,omitempty"`
 	// Applied lists replacements already applied; each applies once
 	// (R-ABIL-32).
 	Applied []ReplacementRef `json:"applied,omitempty"`
@@ -243,7 +246,10 @@ func (g *Game) perform(a Action) {
 			g.emit(Event{Kind: EvCounters, Player: o.Controller, Object: a.Object, Card: o.Card, Amount: a.Amount})
 		}
 	case ActGainTreasure:
-		g.gainTreasure(a.Player, a.Amount)
+		ids := g.gainTreasure(a.Player, a.Amount)
+		if a.Purchase && len(ids) > 0 {
+			g.emit(Event{Kind: EvPurchased, Player: a.Player, Object: ids[0], Card: g.Object(ids[0]).Card, Text: "treasure deck"})
+		}
 	case ActBecomeSoul:
 		if g.Object(a.Object).Zone.Kind == ZoneGone {
 			return // moved by an effect already
