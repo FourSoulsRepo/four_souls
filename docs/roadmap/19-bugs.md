@@ -935,3 +935,27 @@ This step never closes; new reports are appended.
    5. Screenshots: `.cache/screenshots/19.29/before/` and `after/`.
 7. Owner notes (2026-10-19)
    1. Owner marks 19.29 solved.
+
+### [ ] 19.30 There's Options: the top treasure card is not shown
+
+1. Goal: There's Options lets its owner see the top treasure card.
+2. Report (owner, 2026-10-19)
+   1. There's Options does not work.
+   2. Its owner does not see the top treasure card.
+3. Cause
+   1. The engine is right: the view sends `treasure_top` (`PlayerView`).
+   2. Only to the owner, only on their turn.
+   3. The client never reads `treasure_top`; the deck stays face down.
+4. Tasks:
+   1. The treasure deck shows the top card face up to its owner.
+   2. A click on the deck still buys from it.
+5. Done when:
+   1. e2e test: the owner sees the top card face up on the deck.
+   2. Screenshots: `.cache/screenshots/19.30/before/` and `after/`.
+6. Result (2026-10-19)
+   1. The treasure deck shows `treasure_top` face up to its owner.
+   2. The deck keeps its click, so buying from it works as before.
+   3. Engine unchanged; its test already covers who gets the card.
+   4. e2e test: `table.spec.ts`, "There's Options shows its owner …".
+   5. UC-18 1a added.
+   6. Screenshots: `.cache/screenshots/19.30/before/` and `after/`.

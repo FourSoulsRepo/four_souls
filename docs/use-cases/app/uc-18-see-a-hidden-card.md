@@ -36,6 +36,10 @@
   * "Put back" is enabled once every card has a place.
   * Only the chooser sees the cards; others read "Ann is putting cards back".
   * No "You look at" dialog follows; the order dialog showed them.
+* **1a. Look at any time (19.30):** e.g. There's Options.
+  * On the owner's turn the treasure deck's top card lies face up.
+  * Only the owner sees it; others see the card back.
+  * A click on the deck still buys from it.
 
 ## Postconditions
 

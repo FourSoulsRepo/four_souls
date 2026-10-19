@@ -849,3 +849,40 @@ test('a revealed hand shows face up; a hidden one stays backs (19.5)', async ({ 
   await expectFits(una);
   await shot(una, 'revealed-hand');
 });
+
+test("There's Options shows its owner the top treasure card (19.30)", async ({ browser }) => {
+  const [page] = await startGame(browser, ['Tao', 'Fen'], { bans: plainBoard });
+  if (!page) {
+    throw new Error('no pages');
+  }
+  const deck = page.locator('[data-zone="deck-treasure"]');
+  const back = deck.getByLabel('Face-down treasure card');
+  await expect(back).toBeVisible();
+
+  // The viewer owns There's Options on their turn: the server sends them
+  // the top treasure card. The first shop card stands in for it. Only
+  // the screen changes; nobody acts on it.
+  const name = await page.evaluate(() => {
+    interface CardView {
+      id: number;
+      card: string;
+    }
+    interface S {
+      game: { view: { players: { treasure_top?: CardView }[]; shop: { top?: CardView }[] } } | null;
+    }
+    const { store } = (window as unknown as { fourSouls: { store: { getState: () => S; setState: (s: Partial<S>) => void } } })
+      .fourSouls;
+    const game = store.getState().game;
+    const card = game?.view.shop[0]?.top;
+    if (!game || !card) {
+      throw new Error('no shop card');
+    }
+    const treasure_top = { id: 9999, card: card.card };
+    const players = game.view.players.map((p, i) => (i === 0 ? { ...p, treasure_top } : p));
+    store.setState({ game: { ...game, view: { ...game.view, players } } });
+    return document.querySelector('[data-zone="shop-slot-0"] .card')?.getAttribute('aria-label') ?? '';
+  });
+  await shot(page, 'treasure-top');
+  await expect(back).toHaveCount(0);
+  await expect(deck.getByRole('img', { name })).toBeVisible();
+});

@@ -60,6 +60,7 @@ export function Board({
             count={view.deck_sizes[DeckKind.treasure] ?? 0}
             discard={view.discards[DeckKind.treasure] ?? null}
             ui={ui}
+            peek={view.players.find((p) => p.treasure_top)?.treasure_top}
           />
           <DeckPair
             kind="loot"
@@ -76,19 +77,22 @@ export function Board({
 
 // DeckPair is a deck and its discard, side by side. top is a drawn card
 // waiting on the deck for its slot (19.9); it leaves the deck once a
-// place effect flies it to the slot.
+// place effect flies it to the slot. peek is the top card only the
+// viewer may look at, e.g. under There's Options (19.30).
 function DeckPair({
   kind,
   count,
   discard,
   ui,
   top,
+  peek,
 }: {
   kind: Kind;
   count: number;
   discard: CardView[] | null;
   ui: Interact;
   top?: CardView | undefined;
+  peek?: CardView | undefined;
 }) {
   const leaving = useApp(
     (s) =>
@@ -98,7 +102,7 @@ function DeckPair({
   );
   return (
     <div className="deck-pair">
-      <Deck kind={kind} count={count} size="small" handle={ui.deck(kind)} top={leaving ? undefined : top} />
+      <Deck kind={kind} count={count} size="small" handle={ui.deck(kind)} top={leaving ? undefined : top} peek={peek} />
       <Discard kind={kind} cards={discard} size="small" />
     </div>
   );
