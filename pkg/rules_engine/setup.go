@@ -12,6 +12,9 @@ type Setup struct {
 	Players    int
 	Sets       []CardSet
 	BonusSouls bool // play with 3 random bonus souls (R-SETUP-06)
+	// Rooms plays with the room deck (R-SETUP-16); without it, room
+	// cards stay out of the game.
+	Rooms bool
 	// Characters, when set, gives seat i the character Characters[i]
 	// instead of a random one (character picks, tests).
 	Characters []CardRef
@@ -65,6 +68,9 @@ func NewGame(s Setup) (*Game, []Event, error) {
 		if slices.Contains(s.Banned, d.Ref) { // GS-13
 			continue
 		}
+		if d.Kind == RoomCard && !s.Rooms { // R-SETUP-16
+			continue
+		}
 		deck, hasDeck := d.Kind.Deck()
 		for range idx.copies(i) {
 			switch {
@@ -82,6 +88,11 @@ func NewGame(s Setup) (*Game, []Event, error) {
 	}
 	if err := g.fillSlots(); err != nil {
 		return nil, nil, err
+	}
+	if len(g.Decks[RoomDeck]) > 0 {
+		g.Rooms = append(g.Rooms, Slot{}) // R-SETUP-12
+		id, _ := g.drawTop(RoomDeck)
+		g.putInSlot(id, RoomSlot, 0)
 	}
 	if s.BonusSouls {
 		g.pickBonusSouls(bonus)
@@ -170,6 +181,10 @@ func (g *Game) putInSlot(id ObjectID, kind SlotKind, i int) ObjectID {
 		}
 		g.Monsters[i].Cards = append(g.Monsters[i].Cards, nid)
 	case RoomSlot:
+		o.Role = RoleRoom
+		if g.Turn.Step >= StepEndTriggers {
+			g.Turn.LateRooms = append(g.Turn.LateRooms, nid) // R-TURN-18
+		}
 		g.Rooms[i].Cards = append(g.Rooms[i].Cards, nid)
 	}
 	g.emit(Event{Kind: EvCardRevealed, Player: NoPlayer, Object: nid, Card: o.Card})

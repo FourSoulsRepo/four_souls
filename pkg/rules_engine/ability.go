@@ -116,6 +116,18 @@ func (c centsCost) amount(g *Game, p PlayerID, self ObjectID) int {
 }
 func (c centsCost) label() string { return "pay ¢" }
 
+type hpCost struct{ n int }
+
+// PayHPCost pays n HP as a cost ("Pay 1{HP}:"); a player at 0 HP dies
+// (R-MECH-44).
+func PayHPCost(n int) Cost { return hpCost{n} }
+
+func (c hpCost) canPay(g *Game, p PlayerID, _ ObjectID) bool {
+	return !g.Players[p].Dead && g.PlayerHP(p) >= c.n
+}
+func (c hpCost) pay(g *Game, p PlayerID, _ ObjectID) { g.PayHP(p, c.n) }
+func (c hpCost) label() string                       { return "pay HP" }
+
 type destroySelfCost struct{}
 
 // DestroySelf destroys the object as the cost.
@@ -284,6 +296,20 @@ func (e rollEffect) apply(c *Ctx) {
 		RollFor: c.ref, Mode: c.mode, Targets: c.Targets,
 		EventPlayer: c.EventPlayer, EventAmount: c.EventAmount, EventStack: c.EventStack, EventObject: c.EventObject, EventSource: c.EventSource,
 	})
+}
+
+type rollTimesEffect struct {
+	n func(c *Ctx) int
+	t RollTable
+}
+
+// RollTimes rolls n(c) times on one table: "roll 3x instead" (Bomb Bum).
+func RollTimes(n func(c *Ctx) int, t RollTable) Effect { return rollTimesEffect{n, t} }
+
+func (e rollTimesEffect) apply(c *Ctx) {
+	for range e.n(c) {
+		rollEffect{e.t}.apply(c)
+	}
 }
 
 // Results fills a roll table: Results(1, 2, Loot(1)) for "1-2: Loot 1".
@@ -520,6 +546,8 @@ func findRoll(effects []Effect) (rollEffect, bool) {
 		switch x := e.(type) {
 		case rollEffect:
 			return x, true
+		case rollTimesEffect:
+			return rollEffect{x.t}, true
 		case destroySelfThen:
 			if r, ok := findRoll(x.then); ok {
 				return r, true

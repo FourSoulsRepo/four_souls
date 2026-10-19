@@ -5,11 +5,9 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 // Blessing Of Steam (Room Card)
 //
 //	Shop items the active player purchases cost 5¢ less.
-//
-// TODO(card): implement the text above, then delete this line.
-// Until then `go run ./cmd/cardgen` rewrites this file from card_db.
 var blessingOfSteam = engine.CardDef{
-	Ref:    "blessing_of_steam",
-	Kind:   engine.RoomCard,
-	Copies: 1,
+	Ref:     "blessing_of_steam",
+	Kind:    engine.RoomCard,
+	Copies:  1,
+	Statics: []engine.Static{activePlayerHas(engine.StatShopPrice, -5)},
 }

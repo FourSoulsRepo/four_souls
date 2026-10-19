@@ -29,7 +29,14 @@ func (g *Game) activatable(p PlayerID, src ObjectID, i int) error {
 		return refuse("R-ABIL-09", "only the controller uses an item's or character's abilities")
 	}
 	o := g.Object(src)
-	if o.Zone.Kind != ZoneInPlay || o.Controller != p || (o.Role != RoleItem && o.Role != RoleCharacter && !g.soulKeepsAbilities(src)) {
+	if o.Zone.Kind == ZoneInPlay && o.Role == RoleRoom {
+		if p != g.Turn.Active {
+			return refuse("R-CARD-36", "only the active player uses a room's abilities")
+		}
+		if contains(g.Turn.LateRooms, src) {
+			return refuse("R-TURN-18", "a room that entered in the end phase can't be used this turn")
+		}
+	} else if o.Zone.Kind != ZoneInPlay || o.Controller != p || (o.Role != RoleItem && o.Role != RoleCharacter && !g.soulKeepsAbilities(src)) {
 		return refuse("R-ABIL-09", "only the controller uses an item's or character's abilities")
 	}
 	refs := g.AbilitiesOf(src)

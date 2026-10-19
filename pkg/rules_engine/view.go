@@ -306,6 +306,10 @@ func (g *Game) optionViews() []OptionView {
 				set(i, func(o *OptionView) { o.Object = top })
 			}
 		}
+	case ChooseRoom:
+		for i, id := range c.Objects {
+			set(i, func(o *OptionView) { o.Object = id })
+		}
 	case ChooseCursed, ChoosePassCurse:
 		for i, p := range c.Slots {
 			set(i, func(o *OptionView) { o.Player, o.IsPlayer = PlayerID(p), true })

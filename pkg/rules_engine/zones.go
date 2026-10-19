@@ -251,6 +251,18 @@ func (g *Game) DiscardMonster(id ObjectID) {
 	g.emit(Event{Kind: EvDiscarded, Player: NoPlayer, Object: nid, Card: g.Object(nid).Card, Prev: id})
 }
 
+// DiscardRoom puts a room in a room slot into discard; the slot is
+// refilled (R-TURN-12, R-SHOP-06).
+func (g *Game) DiscardRoom(id ObjectID) {
+	if o := g.Object(id); o.Zone.Kind != ZoneInPlay || o.Zone.Slot != RoomSlot {
+		return
+	}
+	g.removeFromSlot(id)
+	nid := g.discard(id, RoomDeck)
+	g.emit(Event{Kind: EvDiscarded, Player: NoPlayer, Object: nid, Card: g.Object(nid).Card, Prev: id})
+	g.RefillSlots()
+}
+
 // RefillSlots queues the refill of empty slots (R-SHOP-06).
 func (g *Game) RefillSlots() { g.enqueue(Action{Kind: ActRefillSlots, Player: NoPlayer}) }
 

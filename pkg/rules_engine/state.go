@@ -78,6 +78,7 @@ const (
 	RoleEvent                 // R-CARD-09
 	RoleSoul                  // R-CARD-18
 	RoleCurse                 // R-ABIL-20
+	RoleRoom                  // R-CARD-33
 )
 
 // Object is one card in one zone.

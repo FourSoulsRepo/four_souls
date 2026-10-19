@@ -30,6 +30,8 @@ type SituationSetup struct {
 	LootPlays *int `json:"loot_plays,omitempty"`
 	// BonusSouls are the active bonus souls (R-SETUP-06).
 	BonusSouls []CardRef `json:"bonus_souls,omitempty"`
+	// Rooms fill the room slots, one each (R-SETUP-12).
+	Rooms []CardRef `json:"rooms,omitempty"`
 }
 
 // SituationPlayer is one seat.
@@ -214,6 +216,13 @@ func (s Situation) build(sets []CardSet) (*Game, error) {
 		g.Shop = append(g.Shop, Slot{})
 		g.putInSlot(g.newObject(ref, Zone{Kind: ZoneOutside}, NoPlayer), ShopSlot, i)
 	}
+	for i, ref := range s.Setup.Rooms {
+		if err := need(ref); err != nil {
+			return nil, err
+		}
+		g.Rooms = append(g.Rooms, Slot{})
+		g.putInSlot(g.newObject(ref, Zone{Kind: ZoneOutside}, NoPlayer), RoomSlot, i)
+	}
 	for _, ref := range s.Setup.BonusSouls {
 		if err := need(ref); err != nil {
 			return nil, err
@@ -396,6 +405,17 @@ func BuildTable(setup SituationSetup, sets ...CardSet) (*Game, error) {
 // is going on.
 func (g *Game) Settle(choices ...string) ([]Event, error) {
 	return g.settle(choices)
+}
+
+// Run does the queued automatic work after direct calls (RefillSlots),
+// then gives priority again. Only for tests and the sandbox.
+func (g *Game) Run() []Event {
+	if g.Waiting.Kind == PromptPriority {
+		g.Priority.Deferred, g.Priority.Holder = true, g.Waiting.Player
+		g.Waiting = Prompt{}
+	}
+	g.run()
+	return g.takeEvents()
 }
 
 // ForceRolls makes the next dice rolls come out as given. Only for

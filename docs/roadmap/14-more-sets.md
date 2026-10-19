@@ -131,6 +131,9 @@ Ideas: CD-02, GS-07, GS-08, CD-11, A-16, CD-12, V-32, GS-12, GS-13, GS-01.
    44. Engine: triggered abilities as targets (Dead Weight); the penalty's ¢ loss marked (Soulbond).
    45. Requiem: Golden Trinket and the 5 bonus souls tested.
    46. Engine: active bonus souls trigger and take counters outside the game.
+   47. Engine: the room deck as a setup option, one room slot, the room step after hand size.
+   48. Engine: the active player controls rooms and uses their $ abilities (R-CARD-36).
+   49. Requiem: 37 rooms tested (statics, turn triggers, $ rooms, Dice Rooms).
 
 ### [ ] 14.4 Setup options
 

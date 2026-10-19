@@ -203,3 +203,60 @@ func soulOf(tb *enginetest.Table, p int, card engine.CardRef) engine.ObjectID {
 	o.Zone, o.Role, o.Controller = engine.Zone{Kind: engine.ZoneInPlay}, engine.RoleSoul, engine.PlayerID(p)
 	return id
 }
+
+// roomTable: Isaac (active) and Cain, a fly and a leech, and the room.
+func roomTable(t *testing.T, room engine.CardRef) *enginetest.Table {
+	t.Helper()
+	return lootRoomTable(t, room)
+}
+
+// room returns the room on top of room slot 0.
+func room(tb *enginetest.Table) engine.ObjectID {
+	id, _ := tb.G.Rooms[0].TopOf()
+	return id
+}
+
+// useRoom activates ability i of the room for player p.
+func useRoom(tb *enginetest.Table, p, i int, choices ...string) {
+	tb.T.Helper()
+	tb.Do(engine.Intent{Player: engine.PlayerID(p), Kind: engine.IntentActivate, Objects: []engine.ObjectID{room(tb)}, Choice: i}, choices...)
+}
+
+// lootRoomTable is roomTable with Isaac's hand; no room if room is "".
+func lootRoomTable(t *testing.T, room engine.CardRef, hand ...engine.CardRef) *enginetest.Table {
+	t.Helper()
+	s := engine.SituationSetup{
+		Players:  []engine.SituationPlayer{{Character: "isaac", Hand: hand}, seat("cain")},
+		Monsters: []engine.CardRef{"fly", "leech"},
+	}
+	if room != "" {
+		s.Rooms = []engine.CardRef{room}
+	}
+	return setup(t, s)
+}
+
+// fightRoom: Isaac (active) and Cain; the monster in slot 1, a fly in
+// slot 2, and the room.
+func fightRoom(t *testing.T, room, monster engine.CardRef) *enginetest.Table {
+	t.Helper()
+	return setup(t, engine.SituationSetup{
+		Players:  []engine.SituationPlayer{seat("isaac"), seat("cain")},
+		Monsters: []engine.CardRef{monster, "fly"},
+		Rooms:    []engine.CardRef{room},
+	})
+}
+
+// enterRoom puts the room into play mid-turn, as a refill would, and
+// settles its "enters play" abilities.
+func enterRoom(tb *enginetest.Table, card engine.CardRef) {
+	tb.T.Helper()
+	tb.G.PutOnDeck(engine.RoomDeck, card)
+	if len(tb.G.Rooms) == 0 {
+		tb.G.Rooms = append(tb.G.Rooms, engine.Slot{})
+	} else if id, ok := tb.G.Rooms[0].TopOf(); ok {
+		tb.G.DiscardRoom(id)
+	}
+	tb.G.RefillSlots()
+	tb.G.Run()
+	settleAny(tb)
+}

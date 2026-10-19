@@ -13,6 +13,9 @@ const (
 	StepEndTriggers               // R-TURN-10
 	StepHandSize                  // R-TURN-11, nobody has priority
 	StepCleanup                   // R-TURN-13
+	// StepRoom comes between StepHandSize and StepCleanup; it is listed
+	// last so the older steps keep their numbers (R-TURN-12).
+	StepRoom
 )
 
 // Turn is the state of the current turn.
@@ -48,6 +51,14 @@ type Turn struct {
 	// NextShare also gain its rewards (Sibling Rivalry).
 	NextHelpers []PlayerID `json:"next_helpers,omitempty"`
 	NextShare   []PlayerID `json:"next_share,omitempty"`
+	// MonsterDied: a monster died this turn, so the active player may
+	// replace a room (R-TURN-12). RoomReplaced opens a priority window
+	// for the new room's abilities.
+	MonsterDied  bool `json:"monster_died,omitempty"`
+	RoomReplaced bool `json:"room_replaced,omitempty"`
+	// LateRooms entered in the end phase: their ↷ and $ abilities wait
+	// for the next turn (R-TURN-18).
+	LateRooms []ObjectID `json:"late_rooms,omitempty"`
 	// entered is true once the current step's automatic work is done.
 	Entered bool `json:"entered,omitempty"`
 }
@@ -138,6 +149,8 @@ func (g *Game) windowClosed() {
 		}
 	case StepEndTriggers:
 		g.goTo(StepHandSize)
+	case StepRoom:
+		g.goTo(StepCleanup)
 	}
 }
 
@@ -195,6 +208,13 @@ func (g *Game) advanceFrom(s Step) {
 	case StepLoot:
 		g.goTo(StepLootWindow)
 	case StepHandSize:
+		g.goTo(StepRoom)
+	case StepRoom:
+		if g.Turn.RoomReplaced {
+			g.Turn.RoomReplaced = false
+			g.openWindow(g.Turn.Active) // the new room's "enters play" (R-TURN-18)
+			return
+		}
 		g.goTo(StepCleanup)
 	case StepCleanup:
 		g.startNextTurn()
@@ -228,6 +248,8 @@ func (g *Game) enterStep() {
 		if extra := len(g.Players[p].Hand) - g.maxHand(p); extra > 0 {
 			g.Waiting = Prompt{Kind: PromptDiscard, Player: p, Count: extra}
 		}
+	case StepRoom:
+		g.askRoomStep(p)
 	case StepCleanup:
 		g.healAll()
 		g.emit(Event{Kind: EvTurnEnded, Player: p})
@@ -300,14 +322,19 @@ func (g *Game) endCopiesTillYourTurn(p PlayerID) {
 
 // loot draws n loot cards into a hand (R-CARD-06).
 func (g *Game) loot(p PlayerID, n int) {
+	drawn := 0
 	for range n {
 		id, ok := g.drawTop(LootDeck)
 		if !ok {
-			return
+			break
 		}
 		nid := g.move(id, Zone{Kind: ZoneHand}, p)
 		g.Players[p].Hand = append(g.Players[p].Hand, nid)
 		g.emit(Event{Kind: EvLooted, Player: p, Object: nid, Card: g.Object(nid).Card, Private: true})
+		drawn++
+	}
+	if drawn > 0 && g.Turn.Number > 0 {
+		g.emit(Event{Kind: EvLootDone, Player: p, Amount: drawn})
 	}
 }
 
@@ -450,4 +477,25 @@ func (g *Game) WinGame(p PlayerID) {
 	g.Over, g.Winners = true, []PlayerID{p}
 	g.Waiting = Prompt{Kind: PromptGameOver, Player: NoPlayer}
 	g.emit(Event{Kind: EvGameWon, Player: p})
+}
+
+// askRoomStep lets the active player put a room into discard if a
+// monster died this turn (R-TURN-12). A room that put itself into
+// discard doesn't count (R-TURN-17).
+func (g *Game) askRoomStep(p PlayerID) {
+	if !g.Turn.MonsterDied {
+		return
+	}
+	var rooms []ObjectID
+	var labels []string
+	for _, s := range g.Rooms {
+		if top, ok := s.TopOf(); ok && g.Object(top).Zone.Kind == ZoneInPlay {
+			rooms = append(rooms, top)
+			labels = append(labels, string(g.Object(top).Card))
+		}
+	}
+	if len(rooms) == 0 {
+		return
+	}
+	g.ask(Choice{Purpose: ChooseRoom, Player: p, Rule: "R-TURN-12", Objects: rooms, Question: "Put a room into discard?"}, append(labels, "keep"))
 }

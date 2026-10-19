@@ -25,6 +25,7 @@ const (
 	ChooseRedirect                          // which monster another player attacks (Mom\'s Eye Shadow)
 	ChooseOrder                             // the order of cards put back on a deck (PromptOrder, 19.16)
 	ChoosePassCurse                         // who gets a curse passed on (Curse of the Soulless)
+	ChooseRoom                              // a room to put into discard, or keep (R-TURN-12)
 )
 
 // Choice is an open question to one player. Options are listed in the
@@ -129,6 +130,11 @@ func (g *Game) answer(i int) {
 		g.startActivation(Activation{Player: c.Player, Source: c.Objects[0], Loot: true, Ability: c.Abilities[i]})
 	case ChoosePassCurse:
 		g.passCurse(c.Objects[0], PlayerID(c.Slots[i]))
+	case ChooseRoom:
+		if i < len(c.Objects) {
+			g.DiscardRoom(c.Objects[i])
+			g.Turn.RoomReplaced = true
+		}
 	case ChooseOrder:
 		// Answered with IntentOrder (answerOrder), never by index.
 	case ChooseRecharge:

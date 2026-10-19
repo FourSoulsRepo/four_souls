@@ -640,6 +640,8 @@ func (g *Game) monsterDeath(id ObjectID) {
 	kind := EvDied
 	if text != "" {
 		kind = EvObjectDied
+	} else {
+		g.Turn.MonsterDied = true // R-TURN-12
 	}
 	g.emit(Event{Kind: kind, Player: NoPlayer, Object: holding, Card: card, Prev: id, Text: text})
 	if text == "item" {
@@ -805,6 +807,13 @@ func (g *Game) refillSlots() {
 		if len(g.Shop[i].Cards) == 0 {
 			if id, ok := g.drawTop(TreasureDeck); ok {
 				g.putInSlot(id, ShopSlot, i)
+			}
+		}
+	}
+	for i := range g.Rooms {
+		if len(g.Rooms[i].Cards) == 0 {
+			if id, ok := g.drawTop(RoomDeck); ok {
+				g.putInSlot(id, RoomSlot, i)
 			}
 		}
 	}

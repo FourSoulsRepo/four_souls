@@ -296,14 +296,14 @@ func (g *Game) abilityText(ref AbilityRef) string {
 }
 
 // abilityController controls an object's triggered abilities: its
-// controller, or the active player for monster cards ("you" on a monster
-// card is the active player, R-CARD-10).
+// controller, or the active player for monster and room cards ("you" on
+// them is the active player, R-CARD-10, R-CARD-36).
 func (g *Game) abilityController(id ObjectID) PlayerID {
 	o := g.Object(id)
 	if o.Controller != NoPlayer {
 		return o.Controller
 	}
-	if k := g.kindOf(id); k == MonsterCard || k == EventCard {
+	if k := g.kindOf(id); k == MonsterCard || k == EventCard || k == RoomCard { // R-CARD-36
 		return g.Turn.Active
 	}
 	return NoPlayer
