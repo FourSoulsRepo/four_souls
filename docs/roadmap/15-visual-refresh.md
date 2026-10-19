@@ -995,6 +995,8 @@ Images come first, so the new table is built with backs and mats.
    12. Vitest: every activity; e2e `prompt.spec.ts`: the other seat.
    13. Use case UC-23; wiki `Client`, `Rules-engine`.
    14. Screenshots: `.cache/screenshots/15.30/before/` and `after/`.
+5. Owner notes (2026-10-19)
+   1. Owner marks 15.30 solved.
 
 ### [ ] 15.31 Fight marks and played cards
 
