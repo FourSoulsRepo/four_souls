@@ -962,7 +962,7 @@ This step never closes; new reports are appended.
 7. Owner notes (2026-10-19)
    1. Owner marks 19.30 solved.
 
-### [ ] 19.31 e2e: a reused host name breaks two tests
+### [x] 19.31 e2e: a reused host name breaks two tests
 
 1. Goal: e2e tests never clash on player names.
 2. Report (owner, 2026-10-19)
@@ -991,3 +991,5 @@ This step never closes; new reports are appended.
    5. `table` and `lobby` specs passed with `--repeat-each 3` (168 runs).
    6. Wiki `Frontend-tests.md` updated.
    7. No screen change, so no screenshots.
+7. Owner notes (2026-10-19)
+   1. Owner marks 19.31 solved.
