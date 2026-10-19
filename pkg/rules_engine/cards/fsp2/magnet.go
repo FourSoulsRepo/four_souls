@@ -16,10 +16,7 @@ var magnet = engine.CardDef{
 			return e.Player != engine.NoPlayer && e.Player != g.Object(self).Controller && e.Amount > 0
 		}},
 		Effects: []engine.Effect{engine.EffectFunc(func(c *engine.Ctx) {
-			if c.G.Players[c.EventPlayer].Cents > 0 {
-				c.G.Players[c.EventPlayer].Cents--
-				c.G.Players[c.Controller].Cents++
-			}
+			c.G.GiveCents(c.EventPlayer, c.Controller, 1)
 		})},
 	}},
 }

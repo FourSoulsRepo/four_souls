@@ -257,6 +257,9 @@ func (g *Game) DiscardRoom(id ObjectID) {
 	if o := g.Object(id); o.Zone.Kind != ZoneInPlay || o.Zone.Slot != RoomSlot {
 		return
 	}
+	if stay := g.def(id).NoDiscard; stay != nil && stay(g, id) {
+		return
+	}
 	g.removeFromSlot(id)
 	nid := g.discard(id, RoomDeck)
 	g.emit(Event{Kind: EvDiscarded, Player: NoPlayer, Object: nid, Card: g.Object(nid).Card, Prev: id})
@@ -520,4 +523,17 @@ func (g *Game) newMonsterSlot() int {
 	g.Monsters = append(g.Monsters, Slot{})
 	g.emit(Event{Kind: EvExpanded, Player: NoPlayer, Amount: 1, Text: "monster"})
 	return len(g.Monsters) - 1
+}
+
+// GiveCents makes from give up to n¢ to another player and returns how
+// much was given; giving is not losing (R-MECH-35).
+func (g *Game) GiveCents(from, to PlayerID, n int) int {
+	n = min(n, g.Players[from].Cents)
+	if n <= 0 || from == to {
+		return 0
+	}
+	g.Players[from].Cents -= n
+	g.Players[to].Cents += n
+	g.emit(Event{Kind: EvGaveCents, Player: from, Amount: n, By: int(to) + 1})
+	return n
 }

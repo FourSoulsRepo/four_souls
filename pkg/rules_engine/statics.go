@@ -38,6 +38,9 @@ const (
 	StatTwoDiceLeftChooses             // players roll 2 dice for each roll; the player to their left picks the result (Cursed Lil Haunt)
 	StatPenaltyItemTo                  // a boost: the player's death-penalty item goes to player Amount-1 this turn instead (Lust for Blood)
 	StatPlayerAttackDC                 // the active player may attack this player, who has this DC (R-ATK-20); the newest effect wins (R-MECH-06)
+	StatOneAbility                     // the player can't activate more than one ability each turn (Shadow of Famine)
+	StatOneLoot                        // the player can't play more than one loot card each turn (Shadow of Famine)
+	StatAttackTax                      // to attack, the player pays this much ¢ to each other player (Tax for the Mighty)
 )
 
 var statNames = []string{"ATK", "HP", "DC", "ATK", "HP", "price", "roll", "attack roll", "loot plays", "attacks", "purchases", "loot step", "lock", "double loot", "death ward", "DC of attacked monsters", "recharge limit", "max hand size", "next attack roll", "lock this turn", "no character recharge", "revealed hand", "choose attacks", "used", "double rewards", "eternal", "no forced loss", "2 or 3 becomes 1", "cheaper $ abilities", "no souls", "two dice, left chooses", "penalty item given", "DC when attacked"}

@@ -134,6 +134,9 @@ Ideas: CD-02, GS-07, GS-08, CD-11, A-16, CD-12, V-32, GS-12, GS-13, GS-01.
    47. Engine: the room deck as a setup option, one room slot, the room step after hand size.
    48. Engine: the active player controls rooms and uses their $ abilities (R-CARD-36).
    49. Requiem: 37 rooms tested (statics, turn triggers, $ rooms, Dice Rooms).
+   50. **Owner:** Social Goals counts every player's progress (Q-20); Pity for the Poor makes every purchase free (Q-21).
+   51. Engine: giving ¢, killing a player, attack tax, one ability and one loot a turn, rooms kept in play.
+   52. Requiem: the other 20 rooms tested, Gus included.
 
 ### [ ] 14.4 Setup options
 

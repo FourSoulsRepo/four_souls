@@ -285,9 +285,7 @@ var giveLootThenPlay = engine.Ask(func(c *engine.Ctx, a []int) {
 // then an item, both of their choice.
 var divorce = engine.EffectFunc(func(c *engine.Ctx) {
 	from := c.Targets[0].Player
-	n := c.G.Players[from].Cents / 2
-	c.G.Players[from].Cents -= n
-	c.G.Players[c.Controller].Cents += n
+	c.G.GiveCents(from, c.Controller, c.G.Players[from].Cents/2)
 	cards := len(c.G.Players[from].Hand) / 2
 	qs := make([]engine.Question, 0, cards+1)
 	for range cards {

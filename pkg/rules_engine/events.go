@@ -14,7 +14,9 @@ const (
 	EvLooted      EventKind = "looted"
 	// EvLootDone: Player looted Amount cards in one go ("each time a
 	// player loots": Laser Eye).
-	EvLootDone         EventKind = "loot_done"
+	EvLootDone EventKind = "loot_done"
+	// EvGaveCents: Player gave Amount¢ to player By-1 (Social Goals).
+	EvGaveCents        EventKind = "gave_cents"
 	EvDiscarded        EventKind = "discarded"
 	EvGainedCents      EventKind = "gained_cents"
 	EvHealed           EventKind = "healed"

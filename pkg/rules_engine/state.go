@@ -206,6 +206,10 @@ type Player struct {
 	CopyNextLoot bool `json:"copy_next_loot,omitempty"`
 	// SkipTurns: the player skips this many of their next turns (Famine).
 	SkipTurns int `json:"skip_turns,omitempty"`
+	// Activations and LootPlayed count this turn's activated abilities
+	// and loot cards played (Shadow of Famine).
+	Activations int `json:"activations,omitempty"`
+	LootPlayed  int `json:"loot_played,omitempty"`
 	// TimesDamaged counts this turn's damage ("the first time you take
 	// damage each turn").
 	TimesDamaged int `json:"times_damaged,omitempty"`

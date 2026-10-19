@@ -157,6 +157,8 @@ type PendingTrigger struct {
 	EventObject ObjectID  `json:"event_object,omitempty"`
 	// EventSource is what caused the event, e.g. the monster that dealt damage.
 	EventSource ObjectID `json:"event_source,omitempty"`
+	// EventBy is the player who dealt the damage, plus 1 (Event.By).
+	EventBy int `json:"event_by,omitempty"`
 }
 
 // collectTriggers finds triggered abilities that match an event. Objects
@@ -173,7 +175,7 @@ func (g *Game) collectTriggers(e Event) {
 				if a.Kind == Triggered && a.Trigger.On == e.Kind && a.Trigger.Match != nil && a.Trigger.Match(g, id, e) {
 					g.PendingTriggers = append(g.PendingTriggers, PendingTrigger{
 						Ability: AbilityRef{Card: face, Index: i}, Source: id, Controller: g.abilityController(id),
-						On: e.Kind, EventPlayer: e.Player, EventAmount: e.Amount, EventStack: e.StackID, EventObject: e.Object, EventSource: e.Source,
+						On: e.Kind, EventPlayer: e.Player, EventAmount: e.Amount, EventStack: e.StackID, EventObject: e.Object, EventSource: e.Source, EventBy: e.By,
 					})
 				}
 			}
@@ -203,7 +205,7 @@ func (g *Game) collectTriggers(e Event) {
 		if a.Trigger.On == e.Kind && a.Trigger.Match != nil && a.Trigger.Match(g, l.Source, e) {
 			g.PendingTriggers = append(g.PendingTriggers, PendingTrigger{
 				Ability: l.Ability, Source: l.Source, Controller: l.Controller,
-				On: e.Kind, EventPlayer: e.Player, EventAmount: e.Amount, EventStack: e.StackID, EventObject: e.Object, EventSource: e.Source,
+				On: e.Kind, EventPlayer: e.Player, EventAmount: e.Amount, EventStack: e.StackID, EventObject: e.Object, EventSource: e.Source, EventBy: e.By,
 			})
 		}
 	}
@@ -258,7 +260,7 @@ func (g *Game) pushTrigger(i int) {
 	it := StackItem{
 		Kind: StackTrigger, Controller: t.Controller, Source: t.Source, Card: t.Ability.Card,
 		Ability: t.Ability, Label: g.abilityText(t.Ability),
-		EventPlayer: t.EventPlayer, EventAmount: t.EventAmount, EventStack: t.EventStack, EventObject: t.EventObject, EventSource: t.EventSource,
+		EventPlayer: t.EventPlayer, EventAmount: t.EventAmount, EventStack: t.EventStack, EventObject: t.EventObject, EventSource: t.EventSource, EventBy: t.EventBy,
 	}
 	if t.On == EvRollWouldResolve {
 		it.Checked = t.EventAmount + 1 // R-DICE-07

@@ -251,6 +251,11 @@ func (g *Game) declareAttack(p PlayerID) {
 	} else {
 		g.Turn.BonusAttacksUsed++
 	}
+	if tax := g.bonus(StatAttackTax, p, 0); tax > 0 {
+		for _, q := range g.turnOrderFrom(p)[1:] {
+			g.GiveCents(p, q, tax) // Tax for the Mighty
+		}
+	}
 	g.Attack = AttackState{On: true}
 	g.emit(Event{Kind: EvAttackDeclared, Player: p})
 	g.openWindow(p)

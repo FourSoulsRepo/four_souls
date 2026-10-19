@@ -71,3 +71,12 @@ func TestOnlyTheActivePlayerUsesRooms(t *testing.T) {
 		t.Error("Cain used the room on Isaac's turn (R-CARD-36)")
 	}
 }
+
+func TestSocialGoalsStaysTillFourGoals(t *testing.T) {
+	tb := roomTable(t, "social_goals")
+	tb.Attack("fly", 6)
+	tb.EndTurn() // no room question: it can't be put into discard
+	if tb.G.Object(room(tb)).Card != "social_goals" {
+		t.Error("Social Goals stays till 4 goals are completed")
+	}
+}

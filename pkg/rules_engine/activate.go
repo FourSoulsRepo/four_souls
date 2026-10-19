@@ -39,6 +39,9 @@ func (g *Game) activatable(p PlayerID, src ObjectID, i int) error {
 	} else if o.Zone.Kind != ZoneInPlay || o.Controller != p || (o.Role != RoleItem && o.Role != RoleCharacter && !g.soulKeepsAbilities(src)) {
 		return refuse("R-ABIL-09", "only the controller uses an item's or character's abilities")
 	}
+	if g.bonus(StatOneAbility, p, 0) > 0 && g.Players[p].Activations > 0 {
+		return refuse("R-ABIL-12", "only one ability each turn")
+	}
 	refs := g.AbilitiesOf(src)
 	if i < 0 || i >= len(refs) || g.ability(refs[i]).Kind != Activated {
 		return refuse("R-ABIL-08", "%s has no such activated ability", o.Card)
@@ -166,6 +169,7 @@ func (g *Game) finishActivation() {
 		g.useLootPlay(a.Player)
 		nid := g.move(a.Source, Zone{Kind: ZoneStack}, a.Player)
 		card := g.Object(nid).Card
+		g.Players[a.Player].LootPlayed++
 		g.emit(Event{Kind: EvLootPlayed, Player: a.Player, Object: nid, Card: card})
 		g.push(StackItem{Kind: StackLoot, Controller: a.Player, Source: nid, Card: card, Ability: a.Ability, Mode: a.Mode, Targets: a.Chosen})
 		if pl := &g.Players[a.Player]; pl.CopyNextLoot && !g.def(nid).Trinket {
@@ -185,6 +189,7 @@ func (g *Game) finishActivation() {
 		}
 		c.pay(g, a.Player, a.Source)
 	}
+	g.Players[a.Player].Activations++
 	g.emit(Event{Kind: EvActivated, Player: a.Player, Object: a.Source, Card: a.Ability.Card, Text: ab.Text})
 	g.push(StackItem{
 		Kind: StackAbility, Controller: a.Player, Source: a.Source, Card: a.Ability.Card,
@@ -372,7 +377,7 @@ func (g *Game) resolveAbility(it StackItem) {
 	for i, e := range effects {
 		e.apply(&Ctx{
 			G: g, Controller: it.Controller, Source: it.Source, Targets: it.Targets,
-			EventPlayer: it.EventPlayer, EventAmount: it.EventAmount, EventStack: it.EventStack, EventObject: it.EventObject, EventSource: it.EventSource,
+			EventPlayer: it.EventPlayer, EventAmount: it.EventAmount, EventStack: it.EventStack, EventObject: it.EventObject, EventSource: it.EventSource, EventBy: it.EventBy,
 			ref: it.Ability, mode: it.Mode, roll: it.RollResult, effect: i,
 		})
 	}

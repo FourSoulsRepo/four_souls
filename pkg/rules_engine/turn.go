@@ -368,6 +368,7 @@ func (g *Game) healAll() {
 		g.Players[i].Dead = false // alive again (R-DEATH-19)
 		g.Players[i].ExtraLootPlays = 0
 		g.Players[i].TimesDamaged = 0
+		g.Players[i].Activations, g.Players[i].LootPlayed = 0, 0
 		g.Players[i].Rolls, g.Players[i].LastRoll, g.Players[i].LastAttack, g.Players[i].KilledBy = 0, 0, 0, 0
 	}
 	for _, id := range g.inPlay() {
@@ -490,6 +491,9 @@ func (g *Game) askRoomStep(p PlayerID) {
 	var labels []string
 	for _, s := range g.Rooms {
 		if top, ok := s.TopOf(); ok && g.Object(top).Zone.Kind == ZoneInPlay {
+			if stay := g.def(top).NoDiscard; stay != nil && stay(g, top) {
+				continue
+			}
 			rooms = append(rooms, top)
 			labels = append(labels, string(g.Object(top).Card))
 		}

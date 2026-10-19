@@ -65,13 +65,15 @@ type Asking struct {
 	EventObject ObjectID `json:"event_object,omitempty"`
 	// EventSource is what caused the event, e.g. the monster that dealt damage.
 	EventSource ObjectID `json:"event_source,omitempty"`
+	// EventBy is the player who dealt the damage, plus 1 (Event.By).
+	EventBy int `json:"event_by,omitempty"`
 }
 
 func (e askEffect) apply(c *Ctx) {
 	a := &Asking{
 		Ability: c.ref, Mode: c.mode, RollResult: c.roll, Effect: c.effect,
 		Controller: c.Controller, Source: c.Source, Targets: c.Targets,
-		EventPlayer: c.EventPlayer, EventAmount: c.EventAmount, EventStack: c.EventStack, EventObject: c.EventObject, EventSource: c.EventSource,
+		EventPlayer: c.EventPlayer, EventAmount: c.EventAmount, EventStack: c.EventStack, EventObject: c.EventObject, EventSource: c.EventSource, EventBy: c.EventBy,
 	}
 	c.G.AskSeq++
 	a.Key = c.G.AskSeq
@@ -92,7 +94,7 @@ func (c *Ctx) Do(effects ...Effect) {
 func (a *Asking) ctx(g *Game) *Ctx {
 	return &Ctx{
 		G: g, Controller: a.Controller, Source: a.Source, Targets: a.Targets,
-		EventPlayer: a.EventPlayer, EventAmount: a.EventAmount, EventStack: a.EventStack, EventObject: a.EventObject, EventSource: a.EventSource,
+		EventPlayer: a.EventPlayer, EventAmount: a.EventAmount, EventStack: a.EventStack, EventObject: a.EventObject, EventSource: a.EventSource, EventBy: a.EventBy,
 		Order: a.Order,
 		ref:   a.Ability, mode: a.Mode, roll: a.RollResult, effect: a.Effect,
 	}

@@ -52,6 +52,8 @@ type Ctx struct {
 	EventObject ObjectID
 	// EventSource is what caused the event, e.g. the monster that dealt damage.
 	EventSource ObjectID
+	// EventBy is the player who dealt the damage, plus 1 (Event.By).
+	EventBy int
 	// Order is the answer of an Ask's order question, top first (19.16).
 	Order []ObjectID
 
@@ -294,7 +296,7 @@ func (e rollEffect) apply(c *Ctx) {
 	c.G.push(StackItem{
 		Kind: StackRoll, Controller: c.Controller, Source: c.Source, Label: "roll",
 		RollFor: c.ref, Mode: c.mode, Targets: c.Targets,
-		EventPlayer: c.EventPlayer, EventAmount: c.EventAmount, EventStack: c.EventStack, EventObject: c.EventObject, EventSource: c.EventSource,
+		EventPlayer: c.EventPlayer, EventAmount: c.EventAmount, EventStack: c.EventStack, EventObject: c.EventObject, EventSource: c.EventSource, EventBy: c.EventBy,
 	})
 }
 
@@ -491,9 +493,7 @@ func Kill(t int) Effect { return killEffect{t} }
 func (e killEffect) apply(c *Ctx) {
 	t := c.target(e.target)
 	if t.Kind == TargetPlayer {
-		c.G.Players[t.Player].Damage += c.G.PlayerHP(t.Player) // HP to 0 (R-MECH-23)
-		c.G.Players[t.Player].KilledBy = int(c.Controller) + 1
-		c.G.push(StackItem{Kind: StackDeath, Controller: NoPlayer, Label: "death", Target: Target{Player: t.Player, IsPlayer: true}})
+		c.G.KillPlayer(t.Player, c.Controller)
 		return
 	}
 	if c.G.Eternal(t.Object) {
@@ -918,3 +918,11 @@ func If(text string, ok func(g *Game, p PlayerID, self ObjectID) bool) Cost {
 func (c condCost) canPay(g *Game, p PlayerID, self ObjectID) bool { return c.ok(g, p, self) }
 func (condCost) pay(*Game, PlayerID, ObjectID)                    {}
 func (c condCost) label() string                                  { return c.text }
+
+// KillPlayer kills p: their HP goes to 0 and their death goes on the
+// stack (R-MECH-23); by is the killer, or NoPlayer.
+func (g *Game) KillPlayer(p, by PlayerID) {
+	g.Players[p].Damage += g.PlayerHP(p)
+	g.Players[p].KilledBy = int(by) + 1
+	g.push(StackItem{Kind: StackDeath, Controller: NoPlayer, Label: "death", Target: Target{Player: p, IsPlayer: true}})
+}
