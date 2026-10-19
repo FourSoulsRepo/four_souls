@@ -142,6 +142,9 @@ Ideas: CD-02, GS-07, GS-08, CD-11, A-16, CD-12, V-32, GS-12, GS-13, GS-01.
    55. Requiem registered in `cards.Sets()` and named in the host screen; new hosts get it ticked.
    56. FuzzSets and the simulations turn the room deck on in some games.
    57. Fix from the simulations: a player who can't pay Tax for the Mighty may end the turn.
+   58. card_db: Betrayal! and The Harbingers have no reward box (site icons, back face's souls).
+   59. New `make fuzz-new SETS=b2,r` (FuzzFocusedSets): fuzz a new set with the Base Game.
+   60. Checks: 3000 simulations, 15 min of `fuzz-new SETS=b2,r` (9590 games), `make e2e`.
 
 ### [ ] 14.4 Setup options
 
