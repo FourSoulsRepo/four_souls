@@ -16,6 +16,9 @@ export type Effect =
   | { kind: 'dice'; value: number; label: string; player: number; thrown?: boolean }
   | { kind: 'banner'; text: string }
   | { kind: 'reveal'; card: string }
+  // played: another player's loot card shows large for a moment as it
+  // goes on the stack (15.31, H-10).
+  | { kind: 'played'; card: string; who: string }
   // place: a card flies into a slot and stays there until the view is
   // shown, so later effects play over it (19.3).
   | { kind: 'place'; from: string[]; to: string[]; card: string; back: Kind }
@@ -44,6 +47,8 @@ interface Context {
   slot: (object: number) => string | undefined;
   // seen tells if the update before revealed the card (19.4).
   seen: (card: string) => boolean;
+  // you is the viewer's seat; -1 for none.
+  you: number;
 }
 
 function playerZones(p: number): string[] {
@@ -174,6 +179,12 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
         }
         break;
       }
+      case 'loot_played':
+        // The player's own play needs no reminder (15.31).
+        if (e.card && e.player !== ctx.you) {
+          out.push({ kind: 'played', card: e.card, who: ctx.name(e.player) });
+        }
+        break;
       case 'turn_started':
         out.push({ kind: 'banner', text: `${ctx.name(e.player)}'s turn` });
         break;

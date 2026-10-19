@@ -998,7 +998,7 @@ Images come first, so the new table is built with backs and mats.
 5. Owner notes (2026-10-19)
    1. Owner marks 15.30 solved.
 
-### [ ] 15.31 Fight marks and played cards
+### [x] 15.31 Fight marks and played cards
 
 1. Goal: fights and played cards are easy to follow for everyone.
 2. Tasks:
@@ -1008,6 +1008,20 @@ Images come first, so the new table is built with backs and mats.
    4. It stays large while its effect resolves (T-16).
 3. Done when:
    1. e2e test: a second player sees the fight mark.
+4. Result (2026-10-19)
+   1. Attacker's character and target: red frame on every screen.
+   2. The frame comes with the target; a deck attack waits for its card.
+   3. Rolls, targets and damage were already public; now tested.
+   4. Owner picked the place for played cards: pop, then by the stack.
+   5. Another player's loot card pops large in the middle, "Ann plays".
+   6. It then stays under the stack panel until the item resolves.
+   7. It is still there while its own resolution effects play.
+   8. Only loot cards; the viewer's own plays show neither.
+   9. New animation `played`; claims the card's `show` (ADR 012).
+   10. Vitest: `fighters`, `playedCard`, the `played` effect.
+   11. e2e `fight.spec.ts`: the frame and roll, the pop and the kept card.
+   12. Use case UC-24; wiki `Client`, `Animations`.
+   13. Screenshots: `.cache/screenshots/15.31/before/` and `after/`.
 
 ### [x] 15.32 Aiming arrow
 

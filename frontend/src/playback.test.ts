@@ -12,6 +12,7 @@ const ctx = {
   character: (p: number) => (p === 1 ? 31 : undefined),
   slot: (id: number) => (id === 50 ? 'monster-slot-1' : undefined),
   seen: (card: string) => card === 'pin',
+  you: 0,
 };
 
 describe('effectsFor', () => {
@@ -42,6 +43,14 @@ describe('effectsFor', () => {
       { kind: 'popup', at: ['player-0'], text: '+3¢', tone: 'good' },
       { kind: 'banner', text: "Bo's turn" },
     ]);
+  });
+
+  it("shows another player's played loot card large, not the viewer's own (15.31)", () => {
+    const events: GameEvent[] = [
+      { kind: 'loot_played', player: 1, object: 70, card: 'bomb' },
+      { kind: 'loot_played', player: 0, object: 71, card: 'a_penny' },
+    ];
+    expect(effectsFor(events, ctx)).toEqual([{ kind: 'played', card: 'bomb', who: 'Bo' }]);
   });
 
   it('lunges the attacker at what its attack damaged, with no pending popup', () => {

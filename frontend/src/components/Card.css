@@ -304,6 +304,13 @@
   box-shadow: 0 0 0 3px #ff4b3e, 0 0 16px 3px rgb(255 75 62 / 75%);
 }
 
+/* A card in a fight (15.31, F-19): a red frame outside the card, so
+   it shows with any glow. */
+.card.fight {
+  outline: 3px solid #e53935;
+  outline-offset: 2px;
+}
+
 /* While the player picks a target (15.28, V-20), the cards that answer
    glow and the rest of the table dims. A player picked as a whole
    keeps their cards lit; dialogs and the stack are not dimmed. */

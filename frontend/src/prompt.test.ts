@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { IntentKind, PromptKind, Purpose, type Actions } from './actions';
 import type { GameView, Intent, StackItem } from './protocol';
-import { activity, picking, promptBanner, stackPrompt } from './prompt';
+import { activity, fighters, picking, promptBanner, stackPrompt } from './prompt';
 import { StackKind } from './stack';
 
 const view: GameView = {
@@ -147,5 +147,16 @@ describe('activity', () => {
     expect(said(top({ controller: -1, kind: StackKind.penalty, target: { player: 0, is_player: true } }))).toBe('Ann pays the death penalty');
     const lose = { ...view, waiting: { kind: PromptKind.choose, player: 0, purpose: Purpose.penaltyItem } };
     expect(said(lose)).toBe('Ann pays the death penalty');
+  });
+});
+
+describe('fighters', () => {
+  it('frames the attacker and its target once it is chosen (15.31)', () => {
+    expect(fighters(view)).toEqual([]);
+    expect(fighters({ ...view, attack: { deck: true } })).toEqual([]);
+    expect(fighters({ ...view, attack: { target: 9 } })).toEqual([1, 9]);
+    // A player attacked by another: both characters.
+    expect(fighters({ ...view, attack: { target: 2 } })).toEqual([1, 2]);
+    expect(fighters({ ...view, attack: { target: 9 }, over: true })).toEqual([]);
   });
 });

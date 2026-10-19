@@ -115,6 +115,21 @@ function Effect({ playing }: { playing: Playing }) {
           <Card cardRef={effect.card} size="zoom" />
         </motion.div>
       );
+    case 'played':
+      return (
+        // anim: played
+        <motion.div
+          className="effect-center"
+          initial={{ opacity: 0, scale: 0.6 }}
+          animate={{ opacity: [0, 1, 1, 0], scale: [0.6, 1, 1, 0.5] }}
+          transition={{ duration: duration(1.2), times: [0, 0.2, 0.8, 1] }}
+          onAnimationComplete={done}
+          data-testid="played-pop"
+        >
+          <div className="effect-label">{effect.who} plays</div>
+          <Card cardRef={effect.card} size="zoom" />
+        </motion.div>
+      );
     case 'lunge':
       return (
         <Layered

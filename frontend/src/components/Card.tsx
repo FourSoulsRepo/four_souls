@@ -4,6 +4,7 @@ import { claimed } from '../animations';
 import { iconText, kindOf, textParts, unknownCard, type CardInfo, type Kind } from '../cards';
 import { diceImage } from '../dice';
 import { scaleFor } from '../playback';
+import { fighters } from '../prompt';
 import type { MonsterStats } from '../protocol';
 import { useApp } from '../store';
 import { boxOf } from '../zoom';
@@ -81,6 +82,8 @@ export function Card({
   const zoomable = size !== 'zoom' && !noZoom;
   const zoomHandlers = useZoom(cardRef, zoomable, rise, why);
   const showWhy = useApp((s) => s.showWhy);
+  // A card in a fight has a red frame for everyone (15.31, F-19).
+  const fight = useApp((s) => objectId !== undefined && !!s.game && fighters(s.game.view).includes(objectId));
   const click =
     onClick ??
     (why
@@ -127,7 +130,7 @@ export function Card({
       transition={{ duration: 0.25 * scale }}
       data-zone={objectId === undefined ? undefined : `obj-${String(objectId)}`}
       data-player={player}
-      className={`card size-${size} kind-${kindOf(card.type)}${image ? '' : ' blank'}${counters > 0 ? ' has-counters' : ''}${spent ? ' spent' : ''}${highlight ? ` hl-${highlight}` : ''}`}
+      className={`card size-${size} kind-${kindOf(card.type)}${image ? '' : ' blank'}${counters > 0 ? ' has-counters' : ''}${spent ? ' spent' : ''}${fight ? ' fight' : ''}${highlight ? ` hl-${highlight}` : ''}`}
       role={onClick ? 'button' : 'img'}
       aria-label={card.name}
       onClick={click}

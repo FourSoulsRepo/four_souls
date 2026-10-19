@@ -178,3 +178,15 @@ export function activity(view: GameView, n: Names): LinePart[] | null {
   }
   return null;
 }
+
+// fighters are the cards in a fight, framed red for everyone (15.31,
+// F-19): the active player's character and what it attacks, once the
+// target is chosen.
+export function fighters(view: GameView): number[] {
+  const target = view.attack?.target ?? 0;
+  const attacker = view.players.find((p) => p.id === view.turn.active)?.character.id;
+  if (view.over || target === 0 || attacker === undefined) {
+    return [];
+  }
+  return [attacker, target];
+}

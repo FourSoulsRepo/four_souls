@@ -161,6 +161,12 @@ export function stackBadge(it: StackItem): StackBadge | undefined {
   return it.kind === StackKind.loot ? 'spell' : undefined;
 }
 
+// playedCard is the newest loot card another player has on the stack:
+// it shows large by the stack until it resolves (15.31, H-10, T-16).
+export function playedCard(view: GameView, you: number): StackItem | undefined {
+  return (view.stack ?? []).findLast((it) => it.kind === StackKind.loot && it.controller !== you && !!it.card);
+}
+
 // StackWait is whom the stack waits for (V-11): the players who may still
 // respond, the waiting one first, and those who passed. Other prompts
 // get the banner's words (15.28, stackPrompt).

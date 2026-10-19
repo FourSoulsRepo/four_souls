@@ -25,3 +25,4 @@
 | UC-21 | Know when the game waits for me | `frontend` | Implemented | [app/uc-21-know-when-the-game-waits.md](app/uc-21-know-when-the-game-waits.md) |
 | UC-22 | See why I can't act | `frontend`, `rules_engine` | Implemented | [app/uc-22-see-why-i-cant-act.md](app/uc-22-see-why-i-cant-act.md) |
 | UC-23 | See what the active player does | `frontend`, `rules_engine` | Implemented | [app/uc-23-see-what-the-active-player-does.md](app/uc-23-see-what-the-active-player-does.md) |
+| UC-24 | Follow fights and played cards | `frontend` | Implemented | [app/uc-24-follow-fights-and-played-cards.md](app/uc-24-follow-fights-and-played-cards.md) |

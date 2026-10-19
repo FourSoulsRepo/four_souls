@@ -1004,3 +1004,25 @@
 .stack-row.hl-aim {
   box-shadow: inset 0 0 0 2px #ff4b3e;
 }
+
+/* Another player's loot card, large under the stack while it is there
+   (15.31, H-10). It takes the height left in the info column. */
+.played {
+  display: flex;
+  flex: 1 1 0;
+  align-items: flex-start;
+  gap: 8px;
+  min-height: 0;
+  margin: 0;
+}
+
+.played .card.size-hand {
+  width: auto;
+  height: 100%;
+  max-height: calc(var(--u) * 1.9);
+}
+
+.played figcaption {
+  font-size: 13px;
+  font-style: italic;
+}

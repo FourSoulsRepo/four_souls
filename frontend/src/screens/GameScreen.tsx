@@ -12,7 +12,7 @@ import { HistoryPanel, TurnBadge } from '../components/InfoPanels';
 import { GameMenu } from '../components/GameMenu';
 import { HistoryStrip } from '../components/HistoryStrip';
 import { EndOverlay, LostOverlay, PauseOverlay } from '../components/Overlays';
-import { StackPanel } from '../components/StackPanel';
+import { PlayedCard, StackPanel } from '../components/StackPanel';
 import { Throw } from '../components/Throw';
 import { WhyNote } from '../components/Why';
 import { EndTurn, TurnActions } from '../components/TurnActions';
@@ -180,6 +180,7 @@ function Table({ game, you }: { game: Update; you: number }) {
           prompt={stackPrompt(banner, names)}
           answer={banner?.mine === true && (banner.kind === 'respond' || banner.kind === 'act')}
         />
+        <PlayedCard view={view} you={you} names={names} />
         {historyOpen && (
           <HistoryPanel
             hide={() => {

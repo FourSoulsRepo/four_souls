@@ -44,6 +44,7 @@ Claims are counted in *beats*: a beat is one update, from the start of its effec
 | `prompt-glow` | The gold glow behind the prompt banner, and behind Pass when passing answers it, breathes. | A prompt for the viewer (15.28). | Nothing; not a game event. | `components/Actions.css` |
 | `throw-glow` | The halo behind the roller's Throw button breathes. | A throw prompt for the viewer (15.61). | Nothing; not a game event. | `components/Throw.css` |
 | `throw-shake` | The roller's die shakes in their hand while the others wait. | A throw prompt for another player (15.61). | Nothing; not a game event. | `components/Throw.css` |
+| `played` | Another player's loot card shows large in the middle with "Ann plays", then fades (15.31, H-10). | `loot_played` by another player. | `show` of the card. | `components/Effects.tsx` |
 
 CSS `transition`s on hover and focus are not listed: they answer the pointer, not the game, and cannot clash with an effect.
 

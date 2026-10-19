@@ -3,6 +3,7 @@ import { PromptKind } from './actions';
 import type { GameView, StackItem } from './protocol';
 import {
   findCard,
+  playedCard,
   secondsLeft,
   stackBadge,
   stackCard,
@@ -125,6 +126,18 @@ describe('stackBadge', () => {
     expect(stackBadge(item({ card: 'a_dime' }))).toBe('spell');
     expect(stackBadge(item({ kind: StackKind.ability }))).toBeUndefined();
     expect(stackBadge(item({ kind: StackKind.roll }))).toBeUndefined();
+  });
+});
+
+describe('playedCard', () => {
+  it("is the newest loot card another player has on the stack (15.31)", () => {
+    const bomb = item({ id: 1, controller: 1, card: 'bomb' });
+    const penny = item({ id: 2, controller: 0, card: 'a_penny' });
+    const roll = item({ id: 3, controller: 1, kind: StackKind.roll });
+    expect(playedCard({ ...view, stack: [bomb, penny, roll] }, 0)).toBe(bomb);
+    expect(playedCard({ ...view, stack: [bomb, penny, roll] }, 1)).toBe(penny);
+    expect(playedCard({ ...view, stack: [penny] }, 0)).toBeUndefined();
+    expect(playedCard(view, 0)).toBeUndefined();
   });
 });
 

@@ -2,7 +2,7 @@ import type { PointerEvent } from 'react';
 import { diceImage, lastRollText } from '../dice';
 import { useKey } from '../keys';
 import type { GameView, Intent, StackItem } from '../protocol';
-import { stackCard, stackIcon, stackParts, stackWait, type LinePart, type Names } from '../stack';
+import { playedCard, stackCard, stackIcon, stackParts, stackWait, type LinePart, type Names } from '../stack';
 import { useApp, type Zoom } from '../store';
 import { playerColor } from '../table';
 import { boxOf } from '../zoom';
@@ -79,6 +79,29 @@ export function StackPanel({ view, you, names, pass, disabled, prompt, answer }:
         </p>
       )}
     </aside>
+  );
+}
+
+// PlayedCard is another player's loot card on the stack, large under
+// the stack until it resolves and its effects have played (15.31,
+// H-10, T-16). The view changes only after an update's effects, so it
+// stays while they play.
+export function PlayedCard({ view, you, names }: { view: GameView; you: number; names: Names }) {
+  const it = playedCard(view, you);
+  if (!it?.card) {
+    return null;
+  }
+  const who = names.player(it.controller);
+  return (
+    <figure className="played" aria-label={`${who} plays ${names.card(it.card)}`}>
+      <Card cardRef={it.card} size="hand" />
+      <figcaption>
+        <b className="stack-player" style={{ color: playerColor(it.controller) }}>
+          {who}
+        </b>{' '}
+        plays
+      </figcaption>
+    </figure>
   );
 }
 
