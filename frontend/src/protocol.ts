@@ -69,6 +69,7 @@ export interface Options {
   ban_timer?: number; // seconds; 0: no timer
   host_bans?: string[];
   no_bonus_souls?: boolean;
+  no_deck_ratios?: boolean;
   response_timer?: number; // seconds; 0: off, else at least 60
 }
 

@@ -157,6 +157,21 @@ Ideas: CD-02, GS-07, GS-08, CD-11, A-16, CD-12, V-32, GS-12, GS-13, GS-01.
    5. The deck takes every chosen set's copies of a card (ADR 010).
 3. Done when:
    1. Each option has a server test and a use case.
+4. Progress (owner's jump ahead, 2026-10-19):
+   1. Deck ratios (GS-07) done; Bonus Souls, Rooms, GS-08 still open.
+   2. Ratios from S-OFF Deck Ratios: 100 cards a deck (R-SETUP-17).
+   3. Groups are the site's card types; cardgen writes `CardSet.Groups`.
+   4. `engine.Setup.DeckRatios` picks each group's count at random.
+   5. `engine.RatioShortfall` names the groups short of cards.
+   6. 2 players drop 3+ cards, so a few set mixes fit 3 players only.
+   7. **Owner:** on by default; the host screen locks the box when short.
+   8. The tooltip names the short groups; binding `App.DeckRatios`.
+   9. Protocol `no_deck_ratios`; the server sets it when the sets are short.
+   10. Only all four sets fit 2 players today; Base Game alone does not.
+   11. The record header has `deck_ratios`; the table shows "deck ratios".
+   12. A-16 holds: the client still gets whole sets, never the dealt decks.
+   13. FuzzSets and the simulations turn the ratios on in some games.
+   14. Use case UC-20; tests `TestDeckRatios`, `TestDeckRatiosOption`, e2e.
 
 ### [ ] 14.5 Copy art on the table
 

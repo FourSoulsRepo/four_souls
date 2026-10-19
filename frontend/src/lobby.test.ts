@@ -87,8 +87,9 @@ describe('optionsText', () => {
   it('sums up the simple and the detailed setup', () => {
     expect(optionsText(undefined)).toBe('Random characters');
     expect(optionsText({ picking: 'draft', draft_size: 4, ban_rounds: 2, response_timer: 90, no_bonus_souls: true })).toBe(
-      'Draft of 4 · 2 ban rounds · 90 s to respond · no bonus souls',
+      'Draft of 4 · 2 ban rounds · 90 s to respond · no bonus souls · deck ratios',
     );
+    expect(optionsText({ no_deck_ratios: true })).toBe('Random characters');
   });
 });
 

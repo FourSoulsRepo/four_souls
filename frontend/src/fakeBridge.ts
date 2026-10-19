@@ -54,7 +54,7 @@ function loadSettings(): unknown {
     mat,
     dice: 'tear',
     rejoin: { address: '', token: '', game: '' },
-    host: { seats: 0, sets: null, detailed: false, response_timer: 0, no_bonus_souls: false },
+    host: { seats: 0, sets: null, detailed: false, response_timer: 0, no_bonus_souls: false, no_deck_ratios: false },
   };
   return JSON.parse(localStorage.getItem(settingsKey) ?? JSON.stringify(fresh));
 }
@@ -70,7 +70,14 @@ interface FakeSettings {
   mat: string;
   dice: string;
   rejoin: { address: string; token: string; game: string };
-  host?: { seats: number; sets: string[] | null; detailed: boolean; response_timer: number; no_bonus_souls: boolean };
+  host?: {
+    seats: number;
+    sets: string[] | null;
+    detailed: boolean;
+    response_timer: number;
+    no_bonus_souls: boolean;
+    no_deck_ratios: boolean;
+  };
 }
 
 function saveSettings(s: FakeSettings): Promise<unknown> {
@@ -202,7 +209,17 @@ w.go = {
       Notice: () => Promise.resolve(notice),
       Settings: () => Promise.resolve(loadSettings()),
       SaveSettings: saveSettings,
-      CardSets: () => Promise.resolve(['b2', 'g2', 'fsp2']),
+      // ?requiem adds Requiem, the only set the deck ratios need; other
+      // tests keep the older sets.
+      CardSets: () => Promise.resolve(['b2', 'g2', 'fsp2', ...(params.has('requiem') ? ['r'] : [])]),
+      // Go's answer for today's card data (App.DeckRatios): the ratios
+      // need Requiem, and Four Souls+ too in a 2-player game.
+      DeckRatios: (sets: string[], players: number) =>
+        Promise.resolve(
+          sets.includes('r') && (sets.includes('fsp2') || players >= 3)
+            ? ''
+            : `Too few cards in these sets for ${String(players)} players.`,
+        ),
       Cards: () => Promise.resolve([...cards, ...realCards()]),
       // The dice textures at their real paths; like the mat, the e2e
       // tests serve them only for screenshots, else they fail: plain dice.

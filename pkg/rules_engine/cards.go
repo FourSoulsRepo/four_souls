@@ -154,6 +154,8 @@ type CardSet struct {
 	Cards []CardDef
 	// Reprints add this set's copies of cards an older set defines.
 	Reprints []Reprint
+	// Groups are the cards' deck ratio groups (R-SETUP-17).
+	Groups map[CardRef]RatioGroup
 }
 
 // Reprint is a set's copies of a card that an older set defines: the Gold
@@ -176,6 +178,7 @@ type cardIndex struct {
 	// borrowed marks definitions taken from a set not in the game: they
 	// have no copies of their own (ADR 010).
 	borrowed []bool
+	groups   []RatioGroup // deck ratio group, by index into defs
 }
 
 func newCardIndex(sets ...CardSet) (cardIndex, error) {
@@ -187,6 +190,7 @@ func newCardIndex(sets ...CardSet) (cardIndex, error) {
 			}
 			idx.byRef[d.Ref] = len(idx.defs)
 			idx.defs = append(idx.defs, d)
+			idx.groups = append(idx.groups, s.Groups[d.Ref])
 		}
 	}
 	idx.borrowed = make([]bool, len(idx.defs))
@@ -200,6 +204,7 @@ func newCardIndex(sets ...CardSet) (cardIndex, error) {
 					idx.byRef[d.Ref] = len(idx.defs)
 					idx.defs = append(idx.defs, d)
 					idx.borrowed = append(idx.borrowed, true)
+					idx.groups = append(idx.groups, r.From.Groups[d.Ref])
 					break
 				}
 			}

@@ -77,6 +77,7 @@ Use options 1 and 4; images become a list.
    6. Without that set the engine borrows the definition only.
    7. The card then has only the reprints' copies.
    8. Example: Requiem's A Sack is a Gold Box card.
+   9. With deck ratios (GS-07) these copies are the pool each group picks from.
 6. Sources
    1. Copies per card: the official TTS table.
    2. Copy images: the numbered copy pages on foursouls.com.

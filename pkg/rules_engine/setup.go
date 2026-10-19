@@ -21,6 +21,9 @@ type Setup struct {
 	// Banned cards are left out of the game: no copy goes into a deck,
 	// and none is dealt (GS-13).
 	Banned []CardRef
+	// DeckRatios builds the treasure, loot and monster decks from the
+	// official count per group, 100 cards each (R-SETUP-17, GS-07).
+	DeckRatios bool
 }
 
 // Defaults of the official rules.
@@ -62,16 +65,13 @@ func NewGame(s Setup) (*Game, []Event, error) {
 
 	var characters, bonus []CardRef
 	for i, d := range idx.defs {
-		if d.Outside || (d.ThreePlus && s.Players < 3) { // R-CARD-32
-			continue
-		}
-		if slices.Contains(s.Banned, d.Ref) { // GS-13
-			continue
-		}
-		if d.Kind == RoomCard && !s.Rooms { // R-SETUP-16
+		if !inDecks(d, s) {
 			continue
 		}
 		deck, hasDeck := d.Kind.Deck()
+		if hasDeck && s.DeckRatios && d.Kind != RoomCard {
+			continue // added by addRatioDecks
+		}
 		for range idx.copies(i) {
 			switch {
 			case hasDeck:
@@ -81,6 +81,11 @@ func NewGame(s Setup) (*Game, []Event, error) {
 			case d.Kind == BonusSoulCard:
 				bonus = append(bonus, d.Ref)
 			}
+		}
+	}
+	if s.DeckRatios {
+		if err := g.addRatioDecks(s); err != nil {
+			return nil, nil, err
 		}
 	}
 	for d := range deckCount {

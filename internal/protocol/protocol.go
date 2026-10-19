@@ -231,6 +231,10 @@ type Options struct {
 	HostBans  []engine.CardRef `json:"host_bans,omitempty"`  // any card; never in the game (GS-02, GS-13)
 	// NoBonusSouls plays without the 3 bonus souls (R-SETUP-06).
 	NoBonusSouls bool `json:"no_bonus_souls,omitempty"`
+	// NoDeckRatios plays with whole decks instead of the deck ratios
+	// (R-SETUP-17, GS-07). The server sets it when the chosen sets have
+	// too few cards for the ratios.
+	NoDeckRatios bool `json:"no_deck_ratios,omitempty"`
 	// ResponseTimer is seconds to answer a prompt: 0 is off, else at
 	// least 60; an allowance for animations is added (N-07).
 	ResponseTimer int `json:"response_timer,omitempty"`

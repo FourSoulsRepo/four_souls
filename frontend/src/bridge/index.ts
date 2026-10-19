@@ -8,6 +8,7 @@ import {
   Backs as wailsBacks,
   Cards as wailsCards,
   CardSets as wailsCardSets,
+  DeckRatios as wailsDeckRatios,
   Dice as wailsDice,
   FindGames as wailsFindGames,
   Fonts as wailsFonts,
@@ -121,6 +122,12 @@ export async function saveSettings(s: Settings): Promise<Settings> {
 // getCardSets lists the card set codes this app has (CD-03).
 export function getCardSets(): Promise<string[]> {
   return wailsCardSets();
+}
+
+// deckRatiosBlocked says why a game with these sets and players can't
+// use the deck ratios, or '' when it can (GS-07).
+export function deckRatiosBlocked(sets: string[], players: number): Promise<string> {
+  return wailsDeckRatios(sets, players);
 }
 
 // getCards returns every card the app knows (7.4).

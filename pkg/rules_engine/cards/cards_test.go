@@ -3,6 +3,7 @@ package cards
 import (
 	"bytes"
 	"os"
+	"slices"
 	"strings"
 	"testing"
 
@@ -63,7 +64,7 @@ func FuzzSets(f *testing.F) {
 	f.Add(uint64(5), uint8(2), bytes.Repeat([]byte{1, 0, 3, 2}, 100))
 	f.Add(uint64(9), uint8(1), bytes.Repeat([]byte{0}, 300))
 	f.Fuzz(func(t *testing.T, seed uint64, players uint8, choices []byte) {
-		playSets(t, engine.Setup{Seed: seed, Players: 2 + int(players%3), Sets: Sets(), BonusSouls: true, Rooms: players&4 != 0}, choices)
+		playSets(t, engine.Setup{Seed: seed, Players: 2 + int(players%3), Sets: Sets(), BonusSouls: true, Rooms: players&4 != 0, DeckRatios: players&8 != 0}, choices)
 	})
 }
 
@@ -155,5 +156,51 @@ func TestStatMonsterBans(t *testing.T) {
 	}
 	if n := changed(statMonsters); n > 0 {
 		t.Errorf("%d fresh monsters changed with %v banned; a monster is missing from the list", n, statMonsters)
+	}
+}
+
+// TestDeckRatios: with every set the ratios fit for any player count,
+// and each group has its count in the game; the Base Game alone is short
+// (R-SETUP-17, GS-07).
+func TestDeckRatios(t *testing.T) {
+	groups := map[engine.CardRef]engine.RatioGroup{}
+	for _, s := range Sets() {
+		for ref, g := range s.Groups {
+			groups[ref] = g
+		}
+	}
+	for players := 2; players <= 4; players++ {
+		s := engine.Setup{Seed: uint64(players), Players: players, Sets: Sets(), BonusSouls: true, DeckRatios: true}
+		short, err := engine.RatioShortfall(s)
+		if err != nil || short != nil {
+			t.Fatalf("%d players: shortfall %v, %v", players, short, err)
+		}
+		g, _, err := engine.NewGame(s)
+		if err != nil {
+			t.Fatalf("%d players: %v", players, err)
+		}
+		counts := map[engine.RatioGroup]int{}
+		for _, o := range g.Objects {
+			if o.Zone.Kind != engine.ZoneGone && o.Zone.Kind != engine.ZoneOutside {
+				counts[groups[o.Card]]++
+			}
+		}
+		for grp := engine.GroupPassiveItems; grp.Count() > 0; grp++ {
+			if counts[grp] != grp.Count() {
+				t.Errorf("%d players: %s %d cards, want %d", players, grp.Name(), counts[grp], grp.Count())
+			}
+		}
+	}
+	base := engine.Setup{Seed: 1, Players: 2, Sets: []engine.CardSet{b2.Set}, DeckRatios: true}
+	short, err := engine.RatioShortfall(base)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := engine.RatioShort{Group: engine.GroupButterBeans, Have: 3, Need: 5}
+	if !slices.Contains(short, want) {
+		t.Errorf("Base Game shortfall %v lacks %v", short, want)
+	}
+	if _, _, err := engine.NewGame(base); err == nil {
+		t.Error("the Base Game alone started with deck ratios")
 	}
 }

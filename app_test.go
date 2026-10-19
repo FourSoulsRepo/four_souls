@@ -2,6 +2,7 @@ package main
 
 import (
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/FourSoulsRepo/four_souls/internal/instance"
@@ -51,5 +52,18 @@ func TestSecondCopySettings(t *testing.T) {
 	}
 	if settings.Load(first).Rejoin.Token != "t1" {
 		t.Error("the first copy lost its seat")
+	}
+}
+
+// TestDeckRatios: every set together fits the deck ratios; the Base Game
+// alone names the groups it is short of (GS-07).
+func TestDeckRatios(t *testing.T) {
+	a := &App{}
+	if why := a.DeckRatios(a.CardSets(), 2); why != "" {
+		t.Errorf("every set: %q", why)
+	}
+	why := a.DeckRatios([]string{"b2"}, 2)
+	if !strings.Contains(why, "Butter Beans 3 of 5") {
+		t.Errorf("Base Game: %q", why)
 	}
 }

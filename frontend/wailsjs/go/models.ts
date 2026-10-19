@@ -322,6 +322,7 @@ export namespace settings {
 	    detailed: boolean;
 	    response_timer: number;
 	    no_bonus_souls: boolean;
+	    no_deck_ratios: boolean;
 	
 	    static createFrom(source: any = {}) {
 	        return new HostSetup(source);
@@ -334,6 +335,7 @@ export namespace settings {
 	        this.detailed = source["detailed"];
 	        this.response_timer = source["response_timer"];
 	        this.no_bonus_souls = source["no_bonus_souls"];
+	        this.no_deck_ratios = source["no_deck_ratios"];
 	    }
 	}
 	export class Rejoin {

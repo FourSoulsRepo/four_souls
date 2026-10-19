@@ -8,7 +8,15 @@ export interface HostSetup {
   detailed: boolean;
   response_timer: number;
   no_bonus_souls: boolean;
+  no_deck_ratios: boolean;
 }
 
 // noHostSetup is the setup before the first host.
-export const noHostSetup: HostSetup = { seats: 0, sets: null, detailed: false, response_timer: 0, no_bonus_souls: false };
+export const noHostSetup: HostSetup = {
+  seats: 0,
+  sets: null,
+  detailed: false,
+  response_timer: 0,
+  no_bonus_souls: false,
+  no_deck_ratios: false,
+};

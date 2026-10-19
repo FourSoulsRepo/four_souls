@@ -222,3 +222,38 @@ test('an app that hosts offers no "Create a game" in its Games list (N-17)', asy
   await expect(page.getByRole('heading', { name: 'Games' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Create a game' })).toHaveCount(0);
 });
+
+test('deck ratios are on by default and locked when the sets are too small (GS-07)', async ({ page }) => {
+  await realAssets(page);
+  await page.goto(`${appURL()}&requiem`);
+  await page.getByRole('button', { name: 'Host a game' }).click();
+  await page.getByLabel('Nickname').fill('Ratia');
+  await page.getByLabel('Detailed setup').check();
+  const sets = page.getByRole('group', { name: 'Card sets' });
+  const ratios = page.getByLabel('Deck ratios');
+  const label = page.locator('label', { has: ratios });
+  // Every set together has the cards for the ratios.
+  await expect(ratios).toBeChecked();
+  await expect(ratios).toBeEnabled();
+
+  // Without Requiem the groups are short: the box is off and locked,
+  // and the tooltip says why.
+  await sets.getByLabel('Requiem').uncheck();
+  await expect(ratios).toBeDisabled();
+  await expect(ratios).not.toBeChecked();
+  await expect(label).toHaveAttribute('title', /^Too few cards/);
+  await shot(page, 'host-deck-ratios-locked');
+
+  // Requiem without Four Souls+ is enough for 3 players, not for 2.
+  await sets.getByLabel('Requiem').check();
+  await sets.getByLabel('Four Souls+').uncheck();
+  await expect(ratios).toBeDisabled();
+  await page.getByLabel('Players').selectOption('3');
+  await expect(ratios).toBeEnabled();
+  await expect(ratios).toBeChecked();
+  await expect(label).not.toHaveAttribute('title', /./);
+
+  await page.getByRole('button', { name: 'Host', exact: true }).click();
+  await expect(page.getByRole('list', { name: 'Seats' })).toContainText('Ratia (you)');
+  await expect(page.getByText(/deck ratios/)).toBeVisible();
+});
