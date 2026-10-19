@@ -163,7 +163,7 @@ On 2026-10-09 the owner parked every open decision for later.
 3. Our rules: the item is a target, chosen as each trigger goes on the stack (R-ABIL-05).
    1. All triggers may target one item; the first destroys it, the others fizzle.
 4. Options: (a) as our rules and S-DIS; (b) each trigger destroys a different item.
-5. Status: **Owner**; the engine follows (a) until decided.
+5. Status: **Resolved** (2026-10-19): (a), rules as written.
 
 ### Q-16 Spindown Dice on a Bag Lunch without counters
 
@@ -172,7 +172,11 @@ On 2026-10-09 the owner parked every open decision for later.
    2. May its controller still steal from the shop?
 2. Sources: S-DIS split; no ruling in S-OFF, S-YUG, Reddit, X (2026-10-19).
 3. Options: (a) yes, the second sentence is not "if you do" (R-MECH-02); (b) no, nothing was destroyed.
-4. Status: **Owner**; the engine follows (a) until decided.
+4. The English print says "Destroy an item."; an earlier text said "a non-eternal item".
+5. The Russian print: "a non-eternal item", and the steal is "if you do".
+6. Status: **Resolved** (2026-10-19): (b); the engine follows the Russian print.
+   1. Only a non-eternal item can be chosen; Bag Lunch can.
+   2. The steal needs the destruction; Bag Lunch's counter stops it.
 
 ### Q-17 Rib of Greed and stealing
 
@@ -180,8 +184,9 @@ On 2026-10-09 the owner parked every open decision for later.
    1. Does it stop another player stealing your ¢ (Magnet)?
 2. Sources: Reddit asked Yuggy; no answer found (2026-10-19).
 3. Our rules: stealing is giving, not losing (R-MECH-35, R-MECH-38).
-4. Options: (a) steals still work; (b) Rib of Greed stops them too.
-5. Status: **Owner**; the engine follows (a) until decided.
+4. S-OFF: "lose" moves ¢ to the game's pool; a steal is the other player giving ¢.
+5. Options: (a) steals still work; (b) Rib of Greed stops them too.
+6. Status: **Resolved** (2026-10-19): (a).
 
 ### Q-18 The Clicker: the new character's state
 
@@ -190,7 +195,7 @@ On 2026-10-09 the owner parked every open decision for later.
    1. S-DIS: cards enter play charged; the player is not healed.
    2. Damage stays with the player (R-MECH-19).
 3. Options: (a) charged, as any card entering play; (b) keeps the old character's state.
-4. Status: **Owner**; the engine follows (a) until decided.
+4. Status: **Resolved** (2026-10-19): (a).
 
 ## Old rulings re-checked (R-07)
 
@@ -327,5 +332,5 @@ Requiem searched 2026-10-19 (14.2) with the Russian names of the owner's Requiem
 | 15 | All Hallows' Eve, The Lamb | Stealing a soul is not gaining it | Requiem (R-MECH-35) |
 | 16 | Gello | It can't choose a monster at 0 HP; a bomb in response makes it fizzle | Requiem |
 | 17 | Damocles, Dice Room | Rerolling 6 items gains 12 treasures: each reroll is its own gain | Requiem |
-| 18 | Spindown Dice, Bag Lunch | Split answers | Requiem (Q-16) |
+| 18 | Spindown Dice, Bag Lunch | Split answers; the owner follows the Russian print: no steal | Requiem (Q-16) |
 | 19 | The Clicker | Damage stays with the player; the new character is not healed | Requiem (Q-18) |

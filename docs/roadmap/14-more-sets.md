@@ -73,6 +73,8 @@ Ideas: CD-02, GS-07, GS-08, CD-11, A-16, CD-12, V-32, GS-12, GS-13, GS-01.
    23. Engine: room deck and slot, the room step, a room's "you".
    24. Engine: attack a player, attackable items and rooms.
    25. Engine: extra attack rolls, flip, voting, outside cards.
+   26. **Owner** resolved Q-15 – Q-18 (2026-10-19); Lemegeton as written.
+   27. Spindown Dice follows the Russian print: non-eternal, "if you do" (Q-16).
 
 ### [ ] 14.3 Cards per set
 
