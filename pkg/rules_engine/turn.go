@@ -44,6 +44,10 @@ type Turn struct {
 	FreeShopItem bool `json:"free_shop_item,omitempty"`
 	EndDeclared  bool `json:"end_declared,omitempty"`
 	DeathEnd     bool `json:"death_end,omitempty"` // the active player died (R-DEATH-16)
+	// NextHelpers help the active player's next attack this turn;
+	// NextShare also gain its rewards (Sibling Rivalry).
+	NextHelpers []PlayerID `json:"next_helpers,omitempty"`
+	NextShare   []PlayerID `json:"next_share,omitempty"`
 	// entered is true once the current step's automatic work is done.
 	Entered bool `json:"entered,omitempty"`
 }

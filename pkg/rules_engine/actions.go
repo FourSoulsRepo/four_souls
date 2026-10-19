@@ -279,7 +279,7 @@ func (g *Game) perform(a Action) {
 			if s := g.shadowOf(a.Player); s != NoPlayer {
 				chooser = s
 			}
-			g.ask(Choice{Purpose: ChoosePenaltyItem, Player: chooser, Owner: a.Player, To: NoPlayer, Rule: "R-DEATH-14", Objects: items}, g.labels(items))
+			g.ask(Choice{Purpose: ChoosePenaltyItem, Player: chooser, Owner: a.Player, To: g.penaltyItemTo(a.Player), Rule: "R-DEATH-14", Objects: items}, g.labels(items))
 		}
 	case ActPenaltyLoot:
 		if g.protectedFromLoss(a.Player) {

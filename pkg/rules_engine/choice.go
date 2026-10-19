@@ -80,7 +80,7 @@ func (g *Game) answer(i int) {
 			g.attackDeck()
 			return
 		}
-		if q, ok := g.redirector(); ok {
+		if q, ok := g.redirector(); ok && g.Object(c.Objects[i]).Role == RoleMonster {
 			g.askRedirect(q, c.Objects[i])
 			return
 		}
@@ -88,6 +88,10 @@ func (g *Game) answer(i int) {
 	case ChooseMonsterSlot:
 		g.placeRevealed(c.Slots[i])
 	case ChoosePenaltyItem:
+		if c.To != NoPlayer {
+			g.GainControl(c.To, c.Objects[i]) // given, not destroyed (Lust for Blood)
+			return
+		}
 		g.destroyItem(c.Owner, c.Objects[i])
 	case ChoosePenaltyLoot:
 		if c.To != NoPlayer {

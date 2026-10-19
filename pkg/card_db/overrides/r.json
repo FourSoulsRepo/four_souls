@@ -59,5 +59,16 @@
         "kind": "Treasure"
       }
     ]
+  },
+  "backstabber": {
+    "text": {
+      "en": {
+        "name": "Backstabber",
+        "effects": [
+          "You may attack players who control more souls than you. They have 3+{DC} for the attack.",
+          "Each time you kill a player, loot 1."
+        ]
+      }
+    }
   }
 }

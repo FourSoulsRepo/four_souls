@@ -91,6 +91,15 @@ type CardDef struct {
 	CopiesTapOnPlay bool
 	// Unattackable: "This can't be attacked."
 	Unattackable bool
+	// Indomitable: it can't be covered; put in a monster slot, it expands
+	// monster slots by 1 and takes the new one (R-ABIL-23).
+	Indomitable bool
+	// Attackable: an item or room that can be attacked, with its own stat
+	// block (R-MECH-04: Punching Bag, Gus; Familiar).
+	Attackable bool
+	// RewardsToKiller: "The player who kills this gains its rewards"
+	// (Ultra Greed); its soul too.
+	RewardsToKiller bool
 	// TakesPenalties: "If another player would pay the death penalty, you
 	// choose what item they would destroy and you gain any loot cards and
 	// ¢ they would lose" (Shadow).

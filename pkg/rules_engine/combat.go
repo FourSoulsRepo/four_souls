@@ -1,6 +1,9 @@
 package rulesengine
 
-import "strconv"
+import (
+	"slices"
+	"strconv"
+)
 
 // Target is what a stack item aims at.
 type Target struct {
@@ -22,6 +25,13 @@ type AttackState struct {
 	// Deck: the attack was declared on the monster deck; it is not an
 	// attack on a monster even when a monster is revealed (R-ATK-05).
 	Deck bool `json:"deck,omitempty"`
+	// Helpers make an attack roll after each attack roll of the active
+	// player, in turn order (R-ATK-21); Queue holds those still to roll
+	// this round. Share also gain the rewards if the target dies this
+	// attack (Sibling Rivalry).
+	Helpers []PlayerID `json:"helpers,omitempty"`
+	Queue   []PlayerID `json:"queue,omitempty"`
+	Share   []PlayerID `json:"share,omitempty"`
 }
 
 // Events about combat and death.
@@ -31,6 +41,9 @@ const (
 	EvAttackEnded    EventKind = "attack_ended"
 	EvDamaged        EventKind = "damaged"
 	EvDied           EventKind = "died"
+	// EvObjectDied: an attackable item or room died (R-MECH-05); Text is
+	// "item" or "room". Monster-death triggers don't see it.
+	EvObjectDied     EventKind = "object_died"
 	EvGainedSoul     EventKind = "gained_soul"
 	EvGainedTreasure EventKind = "gained_treasure"
 	// EvGainedItem: Player gained the item Object: from the treasure deck,
@@ -73,9 +86,67 @@ func (g *Game) boosted(stat Stat, id ObjectID) bool {
 	return false
 }
 
-// HP is an object's remaining health.
+// HP is an object's remaining health; an attacked player's character
+// stands for the player (R-ATK-20).
 func (g *Game) HP(id ObjectID) int {
-	return max(g.def(id).HP+g.bonus(StatMonsterHP, NoPlayer, id)-g.Object(id).Damage, 0)
+	if p, ok := g.characterOf(id); ok {
+		return g.PlayerHP(p)
+	}
+	return max(g.def(id).HP+g.monsterBonus(StatMonsterHP, id)-g.Object(id).Damage, 0)
+}
+
+// characterOf: id is a player's character; p is that player.
+func (g *Game) characterOf(id ObjectID) (PlayerID, bool) {
+	o := g.Object(id)
+	if o.Role != RoleCharacter || o.Controller == NoPlayer || g.Players[o.Controller].Character != id {
+		return NoPlayer, false
+	}
+	return o.Controller, true
+}
+
+// monsterBonus is bonus for a monster stat; items and rooms that can be
+// attacked are not monsters (R-MECH-04).
+func (g *Game) monsterBonus(stat Stat, id ObjectID) int {
+	if g.Object(id).Role != RoleMonster {
+		return 0
+	}
+	return g.bonus(stat, NoPlayer, id)
+}
+
+// AttackedPlayer is the player being attacked, if the attack is on a
+// player (R-ATK-20).
+func (g *Game) AttackedPlayer() (PlayerID, bool) {
+	if !g.Attack.Started {
+		return NoPlayer, false
+	}
+	return g.characterOf(g.Attack.Target)
+}
+
+// PlayerAttackDC is the evasion of player p for the active player's
+// attack, and whether p may be attacked at all: the newest effect that
+// allows it sets it (R-MECH-06).
+func (g *Game) PlayerAttackDC(p PlayerID) (int, bool) {
+	if p == g.Turn.Active || g.Players[p].Dead {
+		return 0, false
+	}
+	for i := len(g.Boosts) - 1; i >= 0; i-- {
+		if b := g.Boosts[i]; b.Stat == StatPlayerAttackDC && b.Object == 0 && b.Player == p {
+			return b.Amount, true // an effect of this turn is the newest
+		}
+	}
+	dc, newest := 0, ObjectID(-1)
+	for _, id := range g.inPlay() {
+		d, ok := g.cards.find(g.CardOf(id))
+		if !ok {
+			continue
+		}
+		for _, s := range d.Statics {
+			if s.Stat == StatPlayerAttackDC && s.Applies(g, id, p, 0) && id > newest {
+				dc, newest = s.amount(g, id), id
+			}
+		}
+	}
+	return dc, newest >= 0
 }
 
 // PlayerHP is a player's remaining health (R-CARD-25, R-MECH-19).
@@ -85,7 +156,11 @@ func (g *Game) PlayerHP(p PlayerID) int {
 
 // Evasion is the dice check to hit a monster, between 1 and 6 (R-ATK-18).
 func (g *Game) Evasion(id ObjectID) int {
-	dc := g.def(id).DC + g.bonus(StatMonsterDC, NoPlayer, id)
+	if p, ok := g.characterOf(id); ok {
+		dc, _ := g.PlayerAttackDC(p)
+		return min(max(dc, 1), 6)
+	}
+	dc := g.def(id).DC + g.monsterBonus(StatMonsterDC, id)
 	if g.Attack.On && g.Attack.Target == id {
 		dc += g.bonus(StatAttackedDC, g.Turn.Active, 0) // "monsters you attack have -1 DC"
 	}
@@ -99,7 +174,10 @@ func (g *Game) PlayerATK(p PlayerID) int {
 
 // MonsterATK is a monster's attack.
 func (g *Game) MonsterATK(id ObjectID) int {
-	return max(g.def(id).ATK+g.bonus(StatMonsterATK, NoPlayer, id), 0)
+	if p, ok := g.characterOf(id); ok {
+		return g.PlayerATK(p)
+	}
+	return max(g.def(id).ATK+g.monsterBonus(StatMonsterATK, id), 0)
 }
 
 // declareAttack: priority passes before a target is chosen (R-ATK-02).
@@ -130,17 +208,53 @@ func (g *Game) askAttackTarget() {
 		return
 	}
 	if m := g.Turn.MustAttack; m != 0 && g.Object(m).Zone.Kind == ZoneInPlay {
-		g.ask(Choice{Purpose: ChooseAttackTarget, Player: g.Turn.Active, Rule: "R-ATK-02", Objects: []ObjectID{m}}, g.labels([]ObjectID{m}))
+		g.ask(Choice{Purpose: ChooseAttackTarget, Player: g.Turn.Active, Rule: "R-ATK-02", Objects: []ObjectID{m}}, g.targetLabels([]ObjectID{m}))
 		return
 	}
-	var monsters []ObjectID
+	targets := g.attackTargets()
+	labels := append(g.targetLabels(targets), "monster deck")
+	g.ask(Choice{Purpose: ChooseAttackTarget, Player: g.Turn.Active, Rule: "R-ATK-02", Objects: targets, Deck: true}, labels)
+}
+
+// attackTargets lists what the active player may attack besides the
+// monster deck: monsters, attackable items and rooms (R-MECH-04), and
+// players an effect lets them attack (R-ATK-20).
+func (g *Game) attackTargets() []ObjectID {
+	var out []ObjectID
 	for _, s := range g.Monsters {
 		if top, ok := s.TopOf(); ok && g.Object(top).Role == RoleMonster && !g.def(top).Unattackable {
-			monsters = append(monsters, top)
+			out = append(out, top)
 		}
 	}
-	labels := append(g.labels(monsters), "monster deck")
-	g.ask(Choice{Purpose: ChooseAttackTarget, Player: g.Turn.Active, Rule: "R-ATK-02", Objects: monsters, Deck: true}, labels)
+	for _, pl := range g.Players {
+		for _, id := range pl.InPlay {
+			if g.Object(id).Role == RoleItem && g.def(id).Attackable {
+				out = append(out, id)
+			}
+		}
+	}
+	for _, s := range g.Rooms {
+		if top, ok := s.TopOf(); ok && g.def(top).Attackable {
+			out = append(out, top)
+		}
+	}
+	for _, p := range g.turnOrderFrom(g.Turn.Active)[1:] {
+		if _, ok := g.PlayerAttackDC(p); ok {
+			out = append(out, g.Players[p].Character)
+		}
+	}
+	return out
+}
+
+// targetLabels names attack targets: a card, or "player N (character)".
+func (g *Game) targetLabels(ids []ObjectID) []string {
+	out := g.labels(ids)
+	for i, id := range ids {
+		if p, ok := g.characterOf(id); ok {
+			out[i] = "player " + strconv.Itoa(int(p)+1) + " (" + string(g.Object(id).Card) + ")"
+		}
+	}
+	return out
 }
 
 // attackDeck reveals the top monster card; the attacker picks its slot
@@ -169,11 +283,7 @@ func (g *Game) attackDeck() {
 func (g *Game) placeRevealed(slot int) {
 	revealed := g.Attack.Revealed
 	g.Attack.Revealed = 0
-	if top, ok := g.Monsters[slot].TopOf(); ok {
-		o := g.Object(top)
-		o.Zone.Kind, o.Role = ZoneCovered, RoleNone // covered: not in play (R-ZONE-10)
-	}
-	id := g.putInSlot(revealed, MonsterSlot, slot)
+	id := g.coverMonsterSlot(revealed, slot)
 	if g.Object(id).Role == RoleEvent {
 		// The event's abilities trigger; the attack is over (R-ATK-09).
 		g.endAttack()
@@ -186,6 +296,11 @@ func (g *Game) placeRevealed(slot int) {
 // startAttack begins attack rolls against a target (R-ATK-11).
 func (g *Game) startAttack(target ObjectID) {
 	g.Attack.Started, g.Attack.Target = true, target
+	// Sibling Rivalry may answer the declaration: its helpers join once
+	// the target is chosen (S-YUG).
+	g.AddAttackHelpers(g.Turn.NextHelpers...)
+	g.Attack.Share = append(g.Attack.Share, g.Turn.NextShare...)
+	g.Turn.NextHelpers, g.Turn.NextShare = nil, nil
 	if g.Turn.MustAttack == target {
 		g.Turn.MustAttack = 0 // the forced attack is made (Monster Manual, Krampus)
 	}
@@ -193,9 +308,13 @@ func (g *Game) startAttack(target ObjectID) {
 	g.attackRoll()
 }
 
-func (g *Game) attackRoll() {
+func (g *Game) attackRoll() { g.attackRollBy(g.Turn.Active) }
+
+// attackRollBy pushes an attack roll of p against the attack's target;
+// helpers roll too (R-ATK-21).
+func (g *Game) attackRollBy(p PlayerID) {
 	g.push(StackItem{
-		Kind: StackRoll, Controller: g.Turn.Active, Label: "attack roll", Attack: true,
+		Kind: StackRoll, Controller: p, Label: "attack roll", Attack: true,
 		Target: Target{Object: g.Attack.Target},
 	})
 }
@@ -205,35 +324,89 @@ func (g *Game) resolveAttackRoll(it StackItem) {
 	if !g.Attack.Started || it.Target.Object != g.Attack.Target {
 		return
 	}
-	p := g.Turn.Active
-	g.Turn.AttackRolls++ // e.g. "your first attack roll each turn"
+	p := it.Controller
+	if p == g.Turn.Active {
+		g.Turn.AttackRolls++ // e.g. "your first attack roll each turn"
+		g.Attack.Queue = g.helpersToRoll()
+	}
 	g.Attack.LastRoll = it.Roll
-	mod := g.def(it.Target.Object).CombatMod
-	if it.Roll >= g.Evasion(it.Target.Object) {
+	target := it.Target.Object
+	tp, onPlayer := g.characterOf(target)
+	mod := g.def(target).CombatMod
+	if onPlayer {
+		mod = nil // the attacked player's own cards change it below (R-ATK-24)
+	}
+	if it.Roll >= g.Evasion(target) {
 		atk := g.PlayerATK(p)
 		if mod != nil {
-			atk = mod(g, it.Target.Object, it.Roll, true, atk)
+			atk = mod(g, target, it.Roll, true, atk)
 		}
 		atk = g.attackerCombatMod(p, it.Roll, true, atk)
+		dt := Target{Object: target}
+		if onPlayer {
+			atk = g.attackerCombatMod(tp, it.Roll, false, atk) // damage the attacked player takes
+			dt = Target{Player: tp, IsPlayer: true}
+		}
 		if atk > 0 {
 			g.push(StackItem{
 				Kind: StackDamage, Controller: p, Source: g.Players[p].Character, Amount: atk, Label: "combat damage", Attack: true,
-				Target: Target{Object: it.Target.Object},
+				Target: dt,
 			})
 		}
 		return
 	}
 	// Nobody deals 0 damage (R-MECH-20).
-	atk := g.MonsterATK(it.Target.Object)
+	atk := g.MonsterATK(target)
 	if mod != nil {
-		atk = mod(g, it.Target.Object, it.Roll, false, atk)
+		atk = mod(g, target, it.Roll, false, atk)
+	}
+	ctrl := NoPlayer
+	if onPlayer {
+		atk = g.attackerCombatMod(tp, it.Roll, true, atk) // damage the attacked player deals
+		ctrl = tp
 	}
 	atk = g.attackerCombatMod(p, it.Roll, false, atk)
 	if atk > 0 {
 		g.push(StackItem{
-			Kind: StackDamage, Controller: NoPlayer, Source: it.Target.Object, Amount: atk,
+			Kind: StackDamage, Controller: ctrl, Source: target, Amount: atk,
 			Label: "combat damage", Attack: true, Target: Target{Player: p, IsPlayer: true},
 		})
+	}
+}
+
+// helpersToRoll lists the living helpers, in turn order from the active
+// player, who roll after the active player's attack roll (R-ATK-21).
+func (g *Game) helpersToRoll() []PlayerID {
+	var out []PlayerID
+	tp, _ := g.characterOf(g.Attack.Target)
+	for _, p := range g.turnOrderFrom(g.Turn.Active)[1:] {
+		if slices.Contains(g.Attack.Helpers, p) && !g.Players[p].Dead && p != tp {
+			out = append(out, p)
+		}
+	}
+	return out
+}
+
+// AddAttackHelpers makes players roll after each attack roll of the
+// active player this attack (Team Up, R-ATK-21).
+func (g *Game) AddAttackHelpers(ps ...PlayerID) {
+	for _, p := range ps {
+		if p != g.Turn.Active && !slices.Contains(g.Attack.Helpers, p) {
+			g.Attack.Helpers = append(g.Attack.Helpers, p)
+		}
+	}
+}
+
+// HelpNextAttack makes p a helper of the active player's next attack
+// this turn; with share p also gains the rewards if the target dies
+// (Sibling Rivalry).
+func (g *Game) HelpNextAttack(p PlayerID, share bool) {
+	if p == g.Turn.Active {
+		return
+	}
+	g.Turn.NextHelpers = append(g.Turn.NextHelpers, p)
+	if share {
+		g.Turn.NextShare = append(g.Turn.NextShare, p)
 	}
 }
 
@@ -245,6 +418,14 @@ func (g *Game) continueAttack() {
 		g.endAttack()
 		g.openWindow(g.Turn.Active)
 		return
+	}
+	for len(g.Attack.Queue) > 0 {
+		p := g.Attack.Queue[0]
+		g.Attack.Queue = g.Attack.Queue[1:]
+		if !g.Players[p].Dead && g.PlayerHP(p) > 0 { // R-ATK-16
+			g.attackRollBy(p)
+			return
+		}
 	}
 	g.attackRoll()
 }
@@ -363,20 +544,55 @@ func (g *Game) resolveDeath(it StackItem) {
 	}
 }
 
+// deathText marks the death event of an item or room that could be
+// attacked; a monster's death has none (R-MECH-05).
+func (g *Game) deathText(id ObjectID) string {
+	switch g.kindOf(id) { //nolint:exhaustive // only these two can be attacked besides monsters
+	case TreasureCard:
+		return "item"
+	case RoomCard:
+		return "room"
+	}
+	return ""
+}
+
 // monsterDeath follows the monster death steps (R-DEATH-04 to R-DEATH-10).
 // Steps after the first are queued actions: they do not use the stack.
 func (g *Game) monsterDeath(id ObjectID) {
-	card := g.Object(id).Card
+	o := g.Object(id)
+	card, killedBy := o.Card, o.KilledBy
+	var share []PlayerID
 	if g.Attack.Target == id {
+		share = g.Attack.Share // Sibling Rivalry: died this attack
 		g.endAttack()
 	}
-	z := g.takeFromSlot(id)
+	text := g.deathText(id)
+	inSlot := o.Zone.Slot == MonsterSlot || o.Zone.Slot == RoomSlot
+	var z Zone
+	if inSlot && o.Controller == NoPlayer {
+		z = g.takeFromSlot(id)
+	} else if o.Controller != NoPlayer {
+		// An attackable item: it is destroyed (R-MECH-05).
+		g.Players[o.Controller].InPlay = remove(g.Players[o.Controller].InPlay, id)
+		inSlot = false
+	}
 	holding := g.move(id, Zone{Kind: ZoneOutside}, NoPlayer) // R-DEATH-04
+	h := g.Object(holding)
+	h.KilledBy, h.ShareRewards = killedBy, share
 	before := len(g.PendingTriggers)
-	g.emit(Event{Kind: EvDied, Player: NoPlayer, Object: holding, Card: card, Prev: id})
+	kind := EvDied
+	if text != "" {
+		kind = EvObjectDied
+	}
+	g.emit(Event{Kind: kind, Player: NoPlayer, Object: holding, Card: card, Prev: id, Text: text})
+	if text == "item" {
+		g.emit(Event{Kind: EvDestroyed, Player: o.Controller, Object: holding, Card: card, Prev: id})
+	}
 	triggered := len(g.PendingTriggers) > before
-	// The card below was covered when this died: it misses the death (R-ZONE-11).
-	g.uncover(z)
+	if inSlot {
+		// The card below was covered when this died: it misses the death (R-ZONE-11).
+		g.uncover(z)
+	}
 	if triggered {
 		// "When this dies" triggers resolve before the rewards (R-DEATH-05).
 		g.push(StackItem{Kind: StackDeathStep, Controller: NoPlayer, Label: "rewards", Target: Target{Object: holding}, Amount: stepRewards})
@@ -394,7 +610,7 @@ const (
 // rewardsStep gives the active player the rewards (R-DEATH-06); then
 // "after rewards" triggers trigger (R-DEATH-07).
 func (g *Game) rewardsStep(holding ObjectID) {
-	active := g.Turn.Active
+	active := g.receiver(holding)
 	times := 1
 	if g.Object(holding).DoubleRewards || g.bonus(StatDoubleRewards, NoPlayer, 0) > 0 {
 		times = 2 // e.g. Dinga; doubled once however many apply (R-ABIL-36)
@@ -406,7 +622,25 @@ func (g *Game) rewardsStep(holding ObjectID) {
 		}
 		g.enqueue(Action{Kind: r.action(), Player: active, Amount: r.Amount * times})
 	}
+	for _, p := range g.Object(holding).ShareRewards {
+		// Sibling Rivalry: the helper gains the rewards too.
+		for _, r := range g.def(holding).Rewards {
+			if !r.Roll {
+				g.enqueue(Action{Kind: r.action(), Player: p, Amount: r.Amount * times})
+			}
+		}
+	}
 	g.enqueue(Action{Kind: ActRewardsDone, Player: active, Object: holding})
+}
+
+// receiver gets a dead card's rewards and soul: the active player
+// (R-CARD-13), or its killer for "The player who kills this gains its
+// rewards" (Ultra Greed).
+func (g *Game) receiver(holding ObjectID) PlayerID {
+	if k := g.Object(holding).Killer(); g.def(holding).RewardsToKiller && k != NoPlayer {
+		return k
+	}
+	return g.Turn.Active
 }
 
 // soulStep makes the dead monster a soul of the active player or puts it
@@ -415,7 +649,7 @@ func (g *Game) rewardsStep(holding ObjectID) {
 func (g *Game) soulStep(holding ObjectID) {
 	if g.Object(holding).Zone.Kind == ZoneOutside {
 		if g.def(holding).Soul > 0 {
-			g.enqueue(Action{Kind: ActBecomeSoul, Player: g.Turn.Active, Object: holding})
+			g.enqueue(Action{Kind: ActBecomeSoul, Player: g.receiver(holding), Object: holding})
 		} else {
 			g.enqueue(Action{Kind: ActDiscardObject, Player: NoPlayer, Object: holding})
 		}
@@ -431,6 +665,9 @@ func (g *Game) playerDeath(p PlayerID) {
 	if p == g.Turn.Active {
 		g.endAttack() // R-DEATH-12
 		g.Turn.DeathEnd = true
+	}
+	if tp, ok := g.AttackedPlayer(); ok && tp == p {
+		g.endAttack() // killing the attacked player ends the attack (R-ATK-20)
 	}
 	if n := len(g.PendingTriggers); n > 0 && g.triggeredBy(EvDied, p) {
 		// "When a player dies" triggers resolve first: the penalty waits
@@ -520,6 +757,10 @@ func (g *Game) refillSlots() {
 			if !ok {
 				break
 			}
+			if g.def(id).Indomitable && g.Turn.Number > 0 {
+				g.putInSlot(id, MonsterSlot, g.newMonsterSlot()) // R-ABIL-23; slot i still needs a card
+				continue
+			}
 			nid := g.putInSlot(id, MonsterSlot, i)
 			if g.Object(nid).Role == RoleEvent {
 				g.enterMonsterSlot(nid) // it stays until its abilities are done
@@ -605,4 +846,21 @@ func (g *Game) askRedirect(q PlayerID, declared ObjectID) {
 		}
 	}
 	g.ask(Choice{Purpose: ChooseRedirect, Player: q, Rule: "R-ATK-03", Objects: options, Question: "Which monster do they attack?"}, g.labels(options))
+}
+
+// GivePenaltyItem makes p, if p dies this turn, give player to the item
+// they would destroy for the death penalty instead ("they give the active player
+// the item they would destroy": Lust for Blood).
+func (g *Game) GivePenaltyItem(p, to PlayerID) {
+	g.Boosts = append(g.Boosts, Boost{Stat: StatPenaltyItemTo, Player: p, Amount: int(to) + 1})
+}
+
+// penaltyItemTo is who gets p's death-penalty item this turn, or NoPlayer.
+func (g *Game) penaltyItemTo(p PlayerID) PlayerID {
+	for _, b := range g.Boosts {
+		if b.Stat == StatPenaltyItemTo && b.Object == 0 && b.Player == p {
+			return PlayerID(b.Amount - 1)
+		}
+	}
+	return NoPlayer
 }

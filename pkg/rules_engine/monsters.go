@@ -157,11 +157,7 @@ func (g *Game) PutIntoDeck(d DeckKind, id ObjectID, n int) {
 // top of monster slot i ("put it in a monster slot").
 func (g *Game) PlaceFromDeck(id ObjectID, i int) {
 	g.Decks[MonsterDeck] = remove(g.Decks[MonsterDeck], id)
-	if top, had := g.Monsters[i].TopOf(); had {
-		g.Object(top).Zone = Zone{Kind: ZoneCovered, Slot: MonsterSlot, Index: i}
-	}
-	nid := g.putInSlot(id, MonsterSlot, i)
-	g.enterMonsterSlot(nid)
+	g.enterMonsterSlot(g.coverMonsterSlot(id, i))
 }
 
 // checkBonusSouls gives each active bonus soul to the first player, in

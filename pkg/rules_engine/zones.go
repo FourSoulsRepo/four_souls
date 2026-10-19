@@ -372,11 +372,7 @@ func (g *Game) CoverMonsterSlot(i int) {
 	if !ok {
 		return
 	}
-	if top, had := g.Monsters[i].TopOf(); had {
-		g.Object(top).Zone = Zone{Kind: ZoneCovered, Slot: MonsterSlot, Index: i}
-	}
-	nid := g.putInSlot(id, MonsterSlot, i)
-	g.enterMonsterSlot(nid)
+	g.enterMonsterSlot(g.coverMonsterSlot(id, i))
 }
 
 // PutOnDeck puts new copies of cards on top of a deck, the last on top.
@@ -428,11 +424,7 @@ func (g *Game) PlaceFromDiscard(id ObjectID, i int) {
 		return
 	}
 	g.Discards[MonsterDeck] = remove(g.Discards[MonsterDeck], id)
-	if top, had := g.Monsters[i].TopOf(); had {
-		o := g.Object(top)
-		o.Zone.Kind, o.Role = ZoneCovered, RoleNone // R-ZONE-10
-	}
-	g.enterMonsterSlot(g.putInSlot(id, MonsterSlot, i))
+	g.enterMonsterSlot(g.coverMonsterSlot(id, i))
 }
 
 // AddCountersTo puts n generic counters on an object in play, or removes
@@ -476,11 +468,7 @@ func (g *Game) FromUnder(holder, id ObjectID, i int) ObjectID {
 		return 0
 	}
 	h.Under = remove(h.Under, id)
-	if top, had := g.Monsters[i].TopOf(); had {
-		t := g.Object(top)
-		t.Zone.Kind, t.Role = ZoneCovered, RoleNone // R-ZONE-10
-	}
-	nid := g.putInSlot(id, MonsterSlot, i)
+	nid := g.coverMonsterSlot(id, i)
 	g.enterMonsterSlot(nid)
 	return nid
 }
@@ -498,3 +486,26 @@ func (g *Game) DeckToHand(d DeckKind, id ObjectID, p PlayerID) {
 
 // TurnOrderFrom lists every player in turn order, starting with p.
 func (g *Game) TurnOrderFrom(p PlayerID) []PlayerID { return g.turnOrderFrom(p) }
+
+// coverMonsterSlot puts a card on top of monster slot i, covering the
+// card there (R-ZONE-10). An Indomitable card, or one that would cover
+// an Indomitable monster, goes into a new slot instead (R-ABIL-23).
+func (g *Game) coverMonsterSlot(id ObjectID, i int) ObjectID {
+	top, had := g.Monsters[i].TopOf()
+	if g.def(id).Indomitable || (had && g.Object(top).Zone.Kind == ZoneInPlay && g.def(top).Indomitable) {
+		return g.putInSlot(id, MonsterSlot, g.newMonsterSlot())
+	}
+	if had {
+		o := g.Object(top)
+		o.Zone, o.Role = Zone{Kind: ZoneCovered, Slot: MonsterSlot, Index: i}, RoleNone
+	}
+	return g.putInSlot(id, MonsterSlot, i)
+}
+
+// newMonsterSlot expands monster slots by 1 and returns the new slot
+// (R-MECH-31).
+func (g *Game) newMonsterSlot() int {
+	g.Monsters = append(g.Monsters, Slot{})
+	g.emit(Event{Kind: EvExpanded, Player: NoPlayer, Amount: 1, Text: "monster"})
+	return len(g.Monsters) - 1
+}

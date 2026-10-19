@@ -118,6 +118,8 @@ type Object struct {
 	KilledOn int `json:"killed_on,omitempty"`
 	// DoubleRewards doubles a dying monster's rewards (Dinga).
 	DoubleRewards bool `json:"double_rewards,omitempty"`
+	// ShareRewards also gain a dead card's rewards (Sibling Rivalry).
+	ShareRewards []PlayerID `json:"share_rewards,omitempty"`
 	// HitsThisTurn counts the times it took damage this turn.
 	HitsThisTurn int `json:"hits_this_turn,omitempty"`
 }

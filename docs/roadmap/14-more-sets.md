@@ -111,6 +111,10 @@ Ideas: CD-02, GS-07, GS-08, CD-11, A-16, CD-12, V-32, GS-12, GS-13, GS-01.
    24. Requiem: 23 passive treasures tested; Backstabber, Punching Bag wait for attacks.
    25. Engine: statics with a computed amount; level counters by name.
    26. Engine: buying the treasure deck's top is a treasure gain; Damocles applies (S-YUG).
+   27. Engine: attacks on players and on attackable items and rooms (R-ATK-20, R-MECH-04).
+   28. Engine: helpers' attack rolls (R-ATK-21), rewards to the killer, Indomitable (R-ABIL-23).
+   29. Requiem: Backstabber, Punching Bag, The Siren, Mega Satan, Ultra Greed, Sisters Vis tested.
+   30. Requiem: Sibling Rivalry, Lust for Blood tested; Backstabber's DC fixed by an override.
 
 ### [ ] 14.4 Setup options
 

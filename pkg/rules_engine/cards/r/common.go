@@ -422,3 +422,49 @@ func mayDeckQuestion(text string) engine.Question {
 
 // deckChosen: answer a picked a deck, not "none".
 func deckChosen(c *engine.Ctx, a int) bool { return a >= 0 && a < len(c.G.DecksInPlay()) }
+
+// othersOfActive lists the players other than the active one, in turn
+// order from the active player.
+func othersOfActive(g *engine.Game) []engine.PlayerID {
+	return g.TurnOrderFrom(g.Turn.Active)[1:]
+}
+
+// playersCanBeAttacked: "The active player may attack other players.
+// Attacked players have n+ DC" (R-ATK-20).
+func playersCanBeAttacked(n int) engine.Static {
+	return engine.Static{Stat: engine.StatPlayerAttackDC, Amount: n, Applies: func(*engine.Game, engine.ObjectID, engine.PlayerID, engine.ObjectID) bool {
+		return true
+	}}
+}
+
+// whenAttackedThis triggers when an attack is declared on this, also
+// when it was revealed by an attack on the deck (R-ATK-06).
+func whenAttackedThis() engine.Trigger {
+	return engine.Trigger{On: engine.EvAttackTarget, Match: func(_ *engine.Game, self engine.ObjectID, e engine.Event) bool {
+		return e.Object == self
+	}}
+}
+
+// whenYouKillAPlayer triggers when another player the controller killed
+// dies.
+func whenYouKillAPlayer() engine.Trigger {
+	return engine.Trigger{On: engine.EvDied, Match: func(g *engine.Game, self engine.ObjectID, e engine.Event) bool {
+		me := g.Object(self).Controller
+		return e.Player != engine.NoPlayer && e.Player != me && g.Players[e.Player].KilledBy == int(me)+1
+	}}
+}
+
+// markHelper remembers, till end of turn, the player this card
+// chose (Sisters Vis); markedHelper reads it.
+func markHelper(c *engine.Ctx, p engine.PlayerID) {
+	cardkit.MarkUsedOn(c.G, c.Source, int(p)+1)
+}
+
+func markedHelper(c *engine.Ctx) (engine.PlayerID, bool) {
+	for _, b := range c.G.Boosts {
+		if b.Stat == engine.StatUsed && b.Object == c.Source && b.Amount > 0 {
+			return engine.PlayerID(b.Amount - 1), true
+		}
+	}
+	return engine.NoPlayer, false
+}
