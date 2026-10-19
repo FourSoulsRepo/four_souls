@@ -182,6 +182,11 @@ func (g *Game) collectTriggers(e Event) {
 	for _, id := range g.inPlay() {
 		check(id)
 	}
+	for _, id := range g.BonusSouls {
+		if g.Object(id).Zone.Kind == ZoneOutside {
+			check(id) // the active bonus souls work outside the game (R-ZONE-14)
+		}
+	}
 	if e.Prev != 0 && g.Object(e.Prev).Zone.Kind != ZoneInPlay {
 		check(e.Prev)
 	}

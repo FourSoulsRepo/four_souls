@@ -129,6 +129,8 @@ Ideas: CD-02, GS-07, GS-08, CD-11, A-16, CD-12, V-32, GS-12, GS-13, GS-01.
    42. Requiem: 19 characters and 17 eternal items tested.
    43. Engine: gained abilities (Glitch); rerolls with 2 dice (Classic Roller); ATK set (Hemoptysis).
    44. Engine: triggered abilities as targets (Dead Weight); the penalty's ¢ loss marked (Soulbond).
+   45. Requiem: Golden Trinket and the 5 bonus souls tested.
+   46. Engine: active bonus souls trigger and take counters outside the game.
 
 ### [ ] 14.4 Setup options
 

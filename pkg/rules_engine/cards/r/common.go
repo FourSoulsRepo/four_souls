@@ -907,3 +907,50 @@ func damageUpTo(most, n int) engine.Effect {
 		}
 	}, qs...)
 }
+
+// firstTime marks a bonus soul's "the first time" ability as used.
+const firstTime = "first time"
+
+// counterOnBonusSoul puts a counter on this bonus soul.
+var counterOnBonusSoul = engine.EffectFunc(func(c *engine.Ctx) { c.G.AddCountersTo(c.Source, 1) })
+
+// sixthCounterGivesSoul: when the 6th counter is put on this, the
+// active player gains this soul.
+var sixthCounterGivesSoul = engine.Ability{
+	Kind:    engine.Triggered,
+	Text:    "When the 6th counter is put on this, the active player gains this soul.",
+	Trigger: whenCounterReaches(6),
+	Effects: []engine.Effect{engine.EffectFunc(func(c *engine.Ctx) { c.G.GainBonusSoul(c.Source, c.G.Turn.Active) })},
+}
+
+// fewestGetsThis: the active player chooses a player with the fewest of
+// count, or tied; that player gains this bonus soul. It happens once,
+// gained or not (S-YUG: Soul of Envy).
+func fewestGetsThis(count func(g *engine.Game, p engine.PlayerID) int) engine.Effect {
+	fewest := func(g *engine.Game) []engine.PlayerID {
+		low := 1 << 30
+		for _, pl := range g.Players {
+			low = min(low, count(g, pl.ID))
+		}
+		var out []engine.PlayerID
+		for _, p := range g.TurnOrderFrom(g.Turn.Active) {
+			if count(g, p) == low {
+				out = append(out, p)
+			}
+		}
+		return out
+	}
+	return engine.Ask(func(c *engine.Ctx, a []int) {
+		if c.G.Object(c.Source).CountersOf(firstTime) > 0 {
+			return
+		}
+		c.G.AddNamedCounters(c.Source, firstTime, 1)
+		if ps := fewest(c.G); a[0] >= 0 && a[0] < len(ps) {
+			c.G.GainBonusSoul(c.Source, ps[a[0]])
+		}
+	}, engine.Question{
+		Text:    "Who gains the soul?",
+		Player:  func(c *engine.Ctx, _ []int) engine.PlayerID { return c.G.Turn.Active },
+		Options: func(c *engine.Ctx, _ []int) []string { return playerLabels(c.G, fewest(c.G)) },
+	})
+}

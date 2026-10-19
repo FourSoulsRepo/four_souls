@@ -262,3 +262,17 @@ func (g *Game) passCurse(curse ObjectID, p PlayerID) {
 	g.Players[p].InPlay = append(g.Players[p].InPlay, curse)
 	g.emit(Event{Kind: EvCursed, Player: p, Object: curse, Card: o.Card})
 }
+
+// GainBonusSoul gives an active bonus soul to p ("the active player
+// gains this soul"); it reports false if p can't gain souls.
+func (g *Game) GainBonusSoul(id ObjectID, p PlayerID) bool {
+	if !contains(g.BonusSouls, id) || g.Object(id).Zone.Kind != ZoneOutside || !g.CanGainSouls(p) {
+		return false
+	}
+	g.BonusSouls = remove(g.BonusSouls, id)
+	nid := g.move(id, Zone{Kind: ZoneInPlay}, p)
+	g.Object(nid).Role = RoleSoul
+	g.Players[p].InPlay = append(g.Players[p].InPlay, nid)
+	g.emit(Event{Kind: EvGainedSoul, Player: p, Object: nid, Card: g.Object(nid).Card, Text: "bonus soul"})
+	return true
+}

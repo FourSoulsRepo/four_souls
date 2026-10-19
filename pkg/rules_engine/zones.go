@@ -435,8 +435,8 @@ func (g *Game) AddCountersTo(id ObjectID, n int) { g.AddNamedCounters(id, "", n)
 // gold counter", "levels up"), or removes them if n is negative.
 func (g *Game) AddNamedCounters(id ObjectID, name string, n int) {
 	o := g.Object(id)
-	if o.Zone.Kind != ZoneInPlay || n == 0 {
-		return
+	if (o.Zone.Kind != ZoneInPlay && !contains(g.BonusSouls, id)) || n == 0 {
+		return // in play, or an active bonus soul (Soul of Lust)
 	}
 	before := o.CountersOf(name)
 	o.addCounters(name, n)

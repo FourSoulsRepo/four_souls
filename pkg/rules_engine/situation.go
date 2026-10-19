@@ -28,6 +28,8 @@ type SituationSetup struct {
 	Stack    []SituationStack  `json:"stack,omitempty"`    // bottom first
 	// LootPlays overrides the active player's loot plays left.
 	LootPlays *int `json:"loot_plays,omitempty"`
+	// BonusSouls are the active bonus souls (R-SETUP-06).
+	BonusSouls []CardRef `json:"bonus_souls,omitempty"`
 }
 
 // SituationPlayer is one seat.
@@ -211,6 +213,12 @@ func (s Situation) build(sets []CardSet) (*Game, error) {
 		}
 		g.Shop = append(g.Shop, Slot{})
 		g.putInSlot(g.newObject(ref, Zone{Kind: ZoneOutside}, NoPlayer), ShopSlot, i)
+	}
+	for _, ref := range s.Setup.BonusSouls {
+		if err := need(ref); err != nil {
+			return nil, err
+		}
+		g.BonusSouls = append(g.BonusSouls, g.newObject(ref, Zone{Kind: ZoneOutside}, NoPlayer))
 	}
 	active := PlayerID(s.Setup.Active)
 	g.Turn = Turn{Active: active, Number: 1, Step: StepAction, Entered: true, LootPlays: 1, Attacks: 1, Purchases: 1}
