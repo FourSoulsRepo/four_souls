@@ -1911,3 +1911,5 @@ Images come first, so the new table is built with backs and mats.
    9. e2e test: `table.spec.ts`, "a card that keeps a die number".
    10. UC-12 2f; wiki `Client`, `Effect-blocks`.
    11. Screenshots: `.cache/screenshots/15.67/before/` and `after/`.
+7. Owner notes (2026-10-19)
+   1. Owner marks 15.67 solved.

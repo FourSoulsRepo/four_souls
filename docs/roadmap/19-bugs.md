@@ -933,3 +933,5 @@ This step never closes; new reports are appended.
    3. e2e test: `table.spec.ts`, "a bonus soul shows its counters".
    4. UC-12 2d updated.
    5. Screenshots: `.cache/screenshots/19.29/before/` and `after/`.
+7. Owner notes (2026-10-19)
+   1. Owner marks 19.29 solved.
