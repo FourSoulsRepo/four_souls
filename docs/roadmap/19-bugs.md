@@ -691,7 +691,7 @@ This step never closes; new reports are appended.
    3. Three separate runs pass.
    4. No screen change; no screenshots.
 
-### [ ] 19.25 Krampus revealed mid-turn: no forced attack
+### [x] 19.25 Krampus revealed mid-turn: no forced attack
 
 1. Goal: "when this enters play" works for every card entering play.
 2. Report (agent, 2026-10-19)
@@ -711,3 +711,8 @@ This step never closes; new reports are appended.
 5. Done when:
    1. Test: Krampus revealed mid-turn must be attacked that turn.
    2. Test: an item gained from the deck triggers "when this enters play".
+6. Result (2026-10-19)
+   1. Test `TestKrampusRevealedMidTurn`; engine tests `TestGainedItemEntersPlay`, `TestShopItemEntersPlay`.
+   2. Engine only; no screen change, no screenshots.
+7. Owner notes (2026-10-19)
+   1. Owner marks 19.25 solved.
