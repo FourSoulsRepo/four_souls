@@ -139,13 +139,16 @@ test('a thrown die falls, bounces and lands on the engine\'s value (15.62)', asy
   await expect(mira.getByTestId('effect-dice')).toContainText('attack roll');
   await expect(thrown.locator('.die')).toHaveAttribute('aria-label', 'Rolled 4');
   await shot(mira, 'dice-landed');
+  // It clattered on the table as it landed (15.69). The clatter keeps
+  // real time, not the paused throw: wait for it before the throw ends,
+  // or the ended effect takes its timer along (19.34).
+  await expect.poll(() => played(mira)).toEqual(['/cardimg/assets/sounds/dice-roll.mp3']);
   await effect.evaluate((el) => {
     for (const a of el.getAnimations({ subtree: true })) {
       a.play();
     }
   });
   await expect(mira.locator('.effects')).toHaveCount(0);
-  // It clattered on the table as it landed (15.69).
   expect(await played(mira)).toEqual(['/cardimg/assets/sounds/dice-roll.mp3']);
 });
 

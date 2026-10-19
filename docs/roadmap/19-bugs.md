@@ -1031,3 +1031,44 @@ This step never closes; new reports are appended.
    7. No screen change, so no screenshots.
 7. Owner notes (2026-10-19)
    1. Owner marks 19.32 solved.
+
+### [ ] 19.33 e2e: a Ready click in the lobby never returns
+
+1. Goal: `startGame` never hangs on the Ready click.
+2. Report (agent, 2026-10-20)
+   1. Seen once in `make e2e` during the 15.36 fix.
+   2. Test: "curses sit at the far left …" (15.55), chromium, 4 players.
+   3. Playwright clicked Ready; the click never returned; 30 s timeout.
+   4. Rerun alone 8 times: all passed.
+   5. Evidence: `.cache/e2e-evidence/19.33-ready-click/`.
+   6. The error snapshot shows a page of another test, not this one.
+3. Cause
+   1. Not found yet.
+   2. It hangs before the table, so the 15.36 presence code is not mounted.
+4. Tasks:
+   1. Find why the click never returns; fix the client or the test.
+5. Done when:
+   1. The cause is named here; a test covers it if it is in the code.
+
+### [x] 19.34 e2e: the thrown die test misses its sound
+
+1. Goal: the 15.62 throw test checks the sound every run.
+2. Report (agent, 2026-10-20)
+   1. Seen in `make e2e` during the 15.36 fix, webkit.
+   2. "a thrown die falls, bounces and lands …": no sound was played.
+   3. Rerun 10 times: 2 failed; 10 of 10 passed on the 15.35 commit.
+   4. Evidence: `.cache/e2e-evidence/15.36-throw/`.
+3. Cause
+   1. The sound is a real-time timer: 28% of 1600 ms after the start.
+   2. The test seeks the paused throw to 75%, then plays it.
+   3. The rest ends in 400 ms; the effect unmounts and clears the timer.
+   4. So the sound plays only if the test's own steps took long enough.
+   5. In the app the throw is never sought, so it always clatters.
+4. Tasks:
+   1. The test waits for the sound while the throw is paused.
+5. Done when:
+   1. The test passes 20 runs in a row on webkit and chromium.
+6. Result (2026-10-20)
+   1. The test polls for the sound before it plays the throw on.
+   2. Repeated 20 times on webkit and chromium: 40 of 40 passed.
+   3. No app change; no screenshots.
