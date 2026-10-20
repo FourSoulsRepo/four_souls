@@ -340,6 +340,20 @@ export namespace settings {
 	        this.no_deck_ratios = source["no_deck_ratios"];
 	    }
 	}
+	export class RecentServer {
+	    address: string;
+	    name: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new RecentServer(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.address = source["address"];
+	        this.name = source["name"];
+	    }
+	}
 	export class Rejoin {
 	    address: string;
 	    token: string;
@@ -358,7 +372,7 @@ export namespace settings {
 	}
 	export class Settings {
 	    nickname: string;
-	    recent: string[];
+	    recent: RecentServer[];
 	    animation: string;
 	    fullscreen: boolean;
 	    theme: string;
@@ -375,7 +389,7 @@ export namespace settings {
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.nickname = source["nickname"];
-	        this.recent = source["recent"];
+	        this.recent = this.convertValues(source["recent"], RecentServer);
 	        this.animation = source["animation"];
 	        this.fullscreen = source["fullscreen"];
 	        this.theme = source["theme"];

@@ -33,7 +33,7 @@ func TestGolden(t *testing.T) {
 	}{
 		{TypeHello, 1, Hello{Protocol: Version, App: "0.1.0", Name: "Ann", Role: RolePlayer, Sets: []string{"b2"}, Dice: "tear"}},
 		// A fixed sample: an engine version bump is not a wire change.
-		{TypeWelcome, 1, Welcome{Protocol: Version, App: "0.1.0", Engine: "0.1.0", Token: "t0k3n", Seat: 0, Presence: true}},
+		{TypeWelcome, 1, Welcome{Protocol: Version, App: "0.1.0", Engine: "0.1.0", Token: "t0k3n", Seat: 0, Presence: true, Name: "Basement"}},
 		{TypeIntent, 2, Intent{Intent: engine.Intent{Kind: engine.IntentPass}}},
 		{TypeResync, 3, struct{}{}},
 		{TypeUpdate, 0, Update{Step: 1, Events: []engine.Event{{Kind: engine.EvLooted, Player: 0, Card: "a_dime"}}, View: view, Allowed: g.Allowed(p), Aims: []engine.Aim{{Intent: 0, Targets: []engine.OptionView{{Object: 320, Player: engine.NoPlayer}, {Player: 1, IsPlayer: true}}, Reason: "Pick a monster or a player."}}, Blocked: []engine.Block{{Kind: engine.IntentAttack, Reason: "Not your turn"}, {Kind: engine.IntentPlayLoot, Object: 314, Reason: "Loot is played on your turn"}}, Seats: []Seat{{Seat: 0, Name: "Ann", Connected: true, Dice: "tear"}, {Seat: 1, Name: "Bo"}}}},
@@ -125,6 +125,13 @@ func TestNames(t *testing.T) {
 		if _, ok := CleanName(bad); ok {
 			t.Errorf("CleanName(%q) accepted", bad)
 		}
+	}
+	// A server name may be longer than a nickname (N-18).
+	if got, ok := CleanServerName(" ThisNameIsWayTooLongForUs "); !ok || got != "ThisNameIsWayTooLongForUs" {
+		t.Errorf("CleanServerName = %q, %v", got, ok)
+	}
+	if _, ok := CleanServerName(strings.Repeat("x", MaxServerName+1)); ok {
+		t.Error("CleanServerName accepted a too long name")
 	}
 	if got := UniqueName("Ann", []string{"Ann", "Ann (2)"}); got != "Ann (3)" {
 		t.Errorf("UniqueName = %q", got)

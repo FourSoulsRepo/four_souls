@@ -614,3 +614,19 @@ func TestLoopback(t *testing.T) {
 		}
 	}
 }
+
+// TestServerName: the welcome carries the server's name; an app's own
+// host has none (N-18).
+func TestServerName(t *testing.T) {
+	if _, w := arrive(t, startHub(t), "Ann", ""); w.Name != "" {
+		t.Errorf("default hub sends name %q", w.Name)
+	}
+	h := NewHub()
+	h.name = "Basement"
+	ctx, cancel := context.WithCancel(context.Background())
+	go h.Run(ctx)
+	t.Cleanup(cancel)
+	if _, w := arrive(t, h, "Ann", ""); w.Name != "Basement" {
+		t.Errorf("welcome name %q", w.Name)
+	}
+}

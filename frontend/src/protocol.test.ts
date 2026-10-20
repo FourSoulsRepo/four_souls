@@ -35,7 +35,7 @@ const modeled: Record<string, Envelope | Envelope[]> = {
   welcome: {
     type: 'welcome',
     id: 1,
-    data: { protocol: 3, app: '0.1.0', engine: '0.1.0', token: 't0k3n', seat: 0, presence: true } satisfies Welcome,
+    data: { protocol: 3, app: '0.1.0', engine: '0.1.0', token: 't0k3n', seat: 0, presence: true, name: 'Basement' } satisfies Welcome,
   },
   error: {
     type: 'error',

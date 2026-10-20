@@ -37,6 +37,20 @@ func TestParse(t *testing.T) {
 	if cfg, err = parse([]string{"-config", file, "-presence"}); err != nil || !cfg.Presence {
 		t.Fatalf("presence on by flag over the file: %+v, %v", cfg, err)
 	}
+	if werr := os.WriteFile(file, []byte(`{"name": "Basement"}`), 0o600); werr != nil {
+		t.Fatal(werr)
+	}
+	if cfg, err = parse([]string{"-config", file}); err != nil || cfg.Name != "Basement" {
+		t.Fatalf("name in the file: %+v, %v", cfg, err)
+	}
+	if cfg, err = parse([]string{"-config", file, "-name", "Cathedral"}); err != nil || cfg.Name != "Cathedral" {
+		t.Fatalf("name by flag over the file: %+v, %v", cfg, err)
+	}
+	for _, bad := range []string{" ", "a\tb", strings.Repeat("x", protocol.MaxServerName+1)} {
+		if _, err := parse([]string{"-name", bad}); err == nil {
+			t.Errorf("name %q accepted", bad)
+		}
+	}
 	if _, err := parse([]string{"-port", "0"}); err == nil {
 		t.Error("port 0 accepted")
 	}
@@ -61,11 +75,12 @@ func (s *syncBuffer) String() string {
 }
 
 // TestRun starts the server, connects a client, and stops it cleanly.
+// The welcome carries the server's name (N-18).
 func TestRun(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	var out syncBuffer
 	done := make(chan error, 1)
-	go func() { done <- run(ctx, []string{"-addr", "127.0.0.1", "-port", "47741"}, &out) }()
+	go func() { done <- run(ctx, []string{"-addr", "127.0.0.1", "-port", "47741", "-name", "Basement"}, &out) }()
 
 	var ws *websocket.Conn
 	for range 50 {
@@ -87,7 +102,7 @@ func TestRun(t *testing.T) {
 	if err := ws.WriteMessage(websocket.TextMessage, msg); err != nil {
 		t.Fatal(err)
 	}
-	if _, got, err := ws.ReadMessage(); err != nil || !strings.Contains(string(got), `"welcome"`) {
+	if _, got, err := ws.ReadMessage(); err != nil || !strings.Contains(string(got), `"welcome"`) || !strings.Contains(string(got), `"name":"Basement"`) {
 		t.Fatalf("got %s, %v", got, err)
 	}
 	cancel()

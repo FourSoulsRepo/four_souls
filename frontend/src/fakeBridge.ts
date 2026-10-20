@@ -65,7 +65,7 @@ function loadSettings(): unknown {
 // tests see the Go error.
 interface FakeSettings {
   nickname: string;
-  recent: string[];
+  recent: { address: string; name: string }[];
   animation: string;
   fullscreen: boolean;
   theme: string;

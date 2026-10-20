@@ -67,6 +67,10 @@ Use options 1, 3, 5 and 10.
    9. `hello` carries the player's dice look (V-19).
       1. `table` and `update` list each seat's look.
       2. The server only checks its form; each client draws unknown ones plain.
+   10. `welcome` carries the server's `name`, set by its operator (N-18).
+      1. 1–40 characters, trimmed; control characters are refused at start.
+      2. Empty on an app's own host; the app then shows the address.
+      3. Added in protocol version 3; older clients ignore it.
    4. A different protocol version gets `error` `client_outdated` or `server_outdated`, then close.
 4. Playing
    1. The client sends `intent`: an engine intent; the server fills in the seat.

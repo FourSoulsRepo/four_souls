@@ -70,6 +70,7 @@ func parse(args []string) (server.Config, error) {
 	retention := fs.Int("retention", def.Retention, "days to keep records; 0 keeps them forever")
 	saves := fs.String("saves", def.Saves, "folder for saved games")
 	presence := fs.Bool("presence", def.Presence, "relay live aiming and hover; false saves CPU and bandwidth")
+	name := fs.String("name", def.Name, "server name players see instead of the address")
 	if err := fs.Parse(args); err != nil {
 		return def, fmt.Errorf("flags: %w", err)
 	}
@@ -94,6 +95,8 @@ func parse(args []string) (server.Config, error) {
 			cfg.Saves = *saves
 		case "presence":
 			cfg.Presence = *presence
+		case "name":
+			cfg.Name = *name
 		}
 	})
 	return cfg, cfg.Check()

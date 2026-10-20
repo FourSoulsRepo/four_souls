@@ -32,7 +32,7 @@ import { loadFonts } from './fonts';
 import { entriesFor, lookedAt, type Entry, type Looked } from './history';
 import type { LinePart } from './stack';
 import type { Box } from './zoom';
-import { emptyLobby, leftTable, lost, onMessage, remember, type Screen, type Session } from './lobby';
+import { emptyLobby, forgotten, leftTable, lost, onMessage, remember, renamed, type Screen, type Session } from './lobby';
 import { connect, disconnect, drop, send } from './net';
 import { claimEffect, nextBeat } from './animations';
 import { lastRollAfter, type LastRoll } from './dice';
@@ -49,6 +49,7 @@ import {
   type OptionView,
   type Presence,
   type Update,
+  type Welcome,
 } from './protocol';
 
 export type { Screen } from './lobby';
@@ -206,6 +207,8 @@ interface AppState extends Session {
   saveNickname: (nickname: string) => Promise<boolean>;
   // joinServer connects to address and shows its game list.
   joinServer: (address: string) => Promise<void>;
+  // forgetServer drops an address from the Recent list (N-18).
+  forgetServer: (address: string) => Promise<void>;
   // lan is the last search for games on the local network (N-13).
   lan: { searching: boolean; found: LanServer[]; error: string };
   findLanGames: () => Promise<void>;
@@ -334,6 +337,21 @@ export const useApp = create<AppState>()((set, get) => {
     }
   };
 
+  // remembering is the save that put the joined address in Recent; the
+  // server's name waits for it, so neither save undoes the other.
+  let remembering: Promise<unknown> = Promise.resolve();
+  // nameServer keeps the name from the server's welcome on its Recent
+  // entry (N-18).
+  const nameServer = (address: string, name: string) => {
+    void remembering.then(() => {
+      const s = get().settings;
+      const recent = renamed(s.recent, address, name);
+      if (recent !== s.recent) {
+        void get().saveSettings({ ...s, recent });
+      }
+    });
+  };
+
   // A seat's presence goes when it is not renewed in time: a lost
   // message never leaves an arrow behind. Senders renew it sooner.
   const presenceTimers = new Map<number, number>();
@@ -437,6 +455,9 @@ export const useApp = create<AppState>()((set, get) => {
       if (env.type === 'table') {
         set({ aiming: null, aimed: null });
         keepSeat();
+      }
+      if (env.type === 'welcome') {
+        nameServer(get().address, (env.data as Welcome).name ?? '');
       }
       if (env.type === 'presence') {
         const p = env.data as Presence;
@@ -616,8 +637,12 @@ export const useApp = create<AppState>()((set, get) => {
     joinServer: async (address) => {
       if (await open(address)) {
         const s = get().settings;
-        void get().saveSettings({ ...s, recent: remember(s.recent, address) });
+        remembering = get().saveSettings({ ...s, recent: remember(s.recent, address) });
       }
+    },
+    forgetServer: async (address) => {
+      const s = get().settings;
+      await get().saveSettings({ ...s, recent: forgotten(s.recent, address) });
     },
     host: async (game) => {
       const info = await startHost();

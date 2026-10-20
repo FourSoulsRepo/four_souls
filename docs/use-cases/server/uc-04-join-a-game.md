@@ -27,7 +27,7 @@
   * In the app, a "Connection lost" dialog offers Reconnect (UC-07).
 * **1a. In the app:** Main menu, **Join a game**, nickname and host address.
   * A bare address uses port 4774.
-  * The last 5 addresses show as buttons under **Recent**.
+  * The last 5 servers show as buttons under **Recent**.
 * **1b. Not an address:** the app says how one looks and does not connect.
 * **1c. Nobody answers:** "Could not connect to the server.".
 * **3a. The game list:** each game shows its host, taken and free seats.
@@ -36,6 +36,11 @@
 * **4d. A locked game (N-14):** its row shows a lock and a password field.
   * No password: "this game needs a password".
   * A wrong one: "wrong password"; the player may try again.
+* **1e. A named server (N-18):** its welcome gives the name.
+  * The **Recent** button shows the name; hovering shows the address.
+  * The Games list shows the name under its heading.
+  * A server without a name shows its address.
+* **1f. Remove from Recent:** the × next to an entry removes it for good.
 
 ## Postconditions
 

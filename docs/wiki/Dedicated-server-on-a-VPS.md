@@ -98,10 +98,11 @@ A JSON config file can set the same values; flags override it.
 | `-retention` | 30 | days to keep records; 0 keeps them forever (RP-07) |
 | `-saves` | `saves` | where saved games wait to be continued (N-11) |
 | `-presence` | true | show others where a player aims and points; `-presence=false` saves CPU and bandwidth |
+| `-name` | none | the server's name; players see it instead of the address (up to 40 characters) |
 | `-config` | none | a JSON file with the same settings |
 
 ```json
-{"port": 4774, "records": "/var/lib/four-souls/records", "retention": 30, "saves": "/var/lib/four-souls/saves", "presence": true}
+{"port": 4774, "records": "/var/lib/four-souls/records", "retention": 30, "saves": "/var/lib/four-souls/saves", "presence": true, "name": "Basement"}
 ```
 
 ## Updating

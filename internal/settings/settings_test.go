@@ -11,7 +11,7 @@ import (
 
 func TestSurvivesRestart(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "FourSouls", "settings.json")
-	saved, err := Save(path, Settings{Nickname: "  Ann  ", Recent: []string{"10.0.0.2"}})
+	saved, err := Save(path, Settings{Nickname: "  Ann  ", Recent: []RecentServer{{Address: "10.0.0.2", Name: "Basement"}}})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -26,7 +26,7 @@ func TestSurvivesRestart(t *testing.T) {
 
 func TestDefaults(t *testing.T) {
 	dir := t.TempDir()
-	want := Settings{Recent: []string{}, Animation: "normal", Theme: "dark", Dice: "tear"}
+	want := Settings{Recent: []RecentServer{}, Animation: "normal", Theme: "dark", Dice: "tear"}
 	if got := Load(filepath.Join(dir, "none.json")); !reflect.DeepEqual(got, want) {
 		t.Fatalf("missing file: %+v", got)
 	}
@@ -56,12 +56,26 @@ func TestBadNicknameKeepsFile(t *testing.T) {
 
 func TestRecentIsCleanedAndCapped(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "settings.json")
-	got, err := Save(path, Settings{Recent: []string{" a ", "", "b", "c", "d", "e", "f"}})
+	in := []RecentServer{{Address: " a ", Name: " A "}, {Address: "", Name: "none"}, {Address: "b", Name: "x\ny"}, {Address: "c"}, {Address: "d"}, {Address: "e"}, {Address: "f"}}
+	got, err := Save(path, Settings{Recent: in})
 	if err != nil {
 		t.Fatal(err)
 	}
-	if want := []string{"a", "b", "c", "d", "e"}; !reflect.DeepEqual(got.Recent, want) {
-		t.Fatalf("recent %q, want %q", got.Recent, want)
+	want := []RecentServer{{Address: "a", Name: "A"}, {Address: "b"}, {Address: "c"}, {Address: "d"}, {Address: "e"}}
+	if !reflect.DeepEqual(got.Recent, want) {
+		t.Fatalf("recent %+v, want %+v", got.Recent, want)
+	}
+}
+
+// TestOldRecentLoads: a file from before N-18 keeps bare addresses.
+func TestOldRecentLoads(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "settings.json")
+	if err := os.WriteFile(path, []byte(`{"recent": ["10.0.0.2", {"address": "10.0.0.3", "name": "Basement"}]}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	want := []RecentServer{{Address: "10.0.0.2"}, {Address: "10.0.0.3", Name: "Basement"}}
+	if got := Load(path).Recent; !reflect.DeepEqual(got, want) {
+		t.Fatalf("recent %+v, want %+v", got, want)
 	}
 }
 
@@ -87,7 +101,7 @@ func TestAnimationSpeed(t *testing.T) {
 
 func TestWindowThemeAndMat(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "settings.json")
-	want := Settings{Recent: []string{}, Animation: "normal", Fullscreen: true, Theme: "light", Mat: "cathedral", Dice: "tear"}
+	want := Settings{Recent: []RecentServer{}, Animation: "normal", Fullscreen: true, Theme: "light", Mat: "cathedral", Dice: "tear"}
 	got, err := Save(path, Settings{Fullscreen: true, Theme: "light", Mat: "cathedral"})
 	if err != nil || !reflect.DeepEqual(got, want) {
 		t.Fatalf("saved %+v, %v; want %+v", got, err, want)

@@ -2,7 +2,7 @@
 // tested without a socket.
 import type { Envelope, GameInfo, Games, Options, ProtocolError, Saved, SaveInfo, Table, Update, Welcome } from './protocol';
 import { errorText } from './protocol';
-import type { LanServer } from './bridge';
+import type { LanServer, RecentServer } from './bridge';
 
 // 'cards' is a dev-only card gallery for tests (?screen=cards).
 export type Screen = 'splash' | 'welcome' | 'menu' | 'settings' | 'host' | 'join' | 'table' | 'game' | 'cards';
@@ -80,10 +80,33 @@ export function canCreate(lobby: Lobby, hosting: boolean): boolean {
   return !hosting && lobby.welcome?.create === true;
 }
 
-// remember puts an address first in the recent list, once.
-export function remember(recent: string[], address: string, max = 5): string[] {
+// remember puts an address first in the recent list, once; it keeps
+// the name the server gave before.
+export function remember(recent: RecentServer[], address: string, max = 5): RecentServer[] {
   const a = address.trim();
-  return [a, ...recent.filter((r) => r !== a)].slice(0, max);
+  const name = recent.find((r) => r.address === a)?.name ?? '';
+  return [{ address: a, name }, ...recent.filter((r) => r.address !== a)].slice(0, max);
+}
+
+// renamed gives the address's entry the name from the server's welcome
+// (N-18). It returns the same list when nothing changes, so nothing is
+// saved; an address not in the list stays out.
+export function renamed(recent: RecentServer[], address: string, name: string): RecentServer[] {
+  const a = address.trim();
+  if (!recent.some((r) => r.address === a && r.name !== name)) {
+    return recent;
+  }
+  return recent.map((r) => (r.address === a ? { ...r, name } : r));
+}
+
+// forgotten drops the address from the recent list (N-18).
+export function forgotten(recent: RecentServer[], address: string): RecentServer[] {
+  return recent.filter((r) => r.address !== address);
+}
+
+// serverLabel is how a recent server shows: its name, else its address.
+export function serverLabel(r: RecentServer): string {
+  return r.name || r.address;
 }
 
 // optionsText sums up the match setup for the table.

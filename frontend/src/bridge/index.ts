@@ -40,8 +40,8 @@ export type NoticeLine = NoticePart[];
 // Settings are kept by Go in the user's config folder.
 export interface Settings {
   nickname: string;
-  // recent are the last addresses joined, newest first.
-  recent: string[];
+  // recent are the last servers joined, newest first.
+  recent: RecentServer[];
   // animation is the animation speed (ST-05).
   animation: Speed;
   fullscreen: boolean; // ST-01
@@ -57,6 +57,13 @@ export interface Settings {
   host: HostSetup;
 }
 
+// RecentServer is a server joined lately; name is the one it gave in
+// its welcome, '' to show the address (N-18).
+export interface RecentServer {
+  address: string;
+  name: string;
+}
+
 export interface Rejoin {
   address: string;
   token: string;
@@ -69,7 +76,7 @@ export type Theme = 'dark' | 'light';
 // only possible from an older app.
 function fromGo(s: {
   nickname: string;
-  recent: string[];
+  recent: RecentServer[];
   animation: string;
   fullscreen: boolean;
   theme: string;
@@ -81,7 +88,7 @@ function fromGo(s: {
 }): Settings {
   return {
     nickname: s.nickname,
-    recent: s.recent,
+    recent: s.recent.map((r) => ({ address: r.address, name: r.name })),
     animation: speed(s.animation),
     fullscreen: s.fullscreen,
     theme: s.theme === 'light' ? 'light' : 'dark',

@@ -19,8 +19,8 @@ import (
 type Settings struct {
 	// Nickname is sent when joining a game (ST-06); "" until set.
 	Nickname string `json:"nickname"`
-	// Recent are the last addresses joined, newest first.
-	Recent []string `json:"recent"`
+	// Recent are the last servers joined, newest first.
+	Recent []RecentServer `json:"recent"`
 	// Animation is the animation speed (ST-05): one of Speeds.
 	Animation string `json:"animation"`
 	// Fullscreen starts the window fullscreen (ST-01).
@@ -42,6 +42,29 @@ type Settings struct {
 	// Host is the last game setup the player hosted, for the next one.
 	// The password is never kept (N-14).
 	Host HostSetup `json:"host"`
+}
+
+// RecentServer is a server joined lately (N-18).
+type RecentServer struct {
+	Address string `json:"address"`
+	// Name is the server's name from its welcome; "" shows the address.
+	Name string `json:"name"`
+}
+
+// UnmarshalJSON also reads a bare address, as older files keep them.
+func (r *RecentServer) UnmarshalJSON(data []byte) error {
+	var address string
+	if json.Unmarshal(data, &address) == nil {
+		*r = RecentServer{Address: address}
+		return nil
+	}
+	type plain RecentServer
+	var p plain
+	if err := json.Unmarshal(data, &p); err != nil {
+		return fmt.Errorf("recent server: %w", err)
+	}
+	*r = RecentServer(p)
+	return nil
 }
 
 // HostSetup is a remembered host screen.
@@ -116,7 +139,7 @@ func ValidMat(name string) bool {
 	return matName.MatchString(name)
 }
 
-// MaxRecent is how many recent addresses are kept.
+// MaxRecent is how many recent servers are kept.
 const MaxRecent = 5
 
 // ErrChoice means a setting is not one of its choices.
@@ -141,7 +164,7 @@ func (s *Settings) choices() []struct {
 // Recent is never nil, so the frontend always gets a list; an unknown
 // choice reads as its default.
 func Load(path string) Settings {
-	def := Settings{Recent: []string{}, Animation: Speeds[0], Theme: Themes[0], Dice: Dice[0]}
+	def := Settings{Recent: []RecentServer{}, Animation: Speeds[0], Theme: Themes[0], Dice: Dice[0]}
 	data, err := os.ReadFile(path) //nolint:gosec // the app names the file
 	if err != nil {
 		return def
@@ -151,7 +174,7 @@ func Load(path string) Settings {
 		return def
 	}
 	if s.Recent == nil {
-		s.Recent = []string{}
+		s.Recent = []RecentServer{}
 	}
 	s.Host = s.Host.clean()
 	for _, c := range s.choices() {
@@ -186,10 +209,13 @@ func Save(path string, s Settings) (Settings, error) {
 	if s.Mat != "" && !ValidMat(s.Mat) {
 		return Settings{}, fmt.Errorf("%w: %q", ErrChoice, s.Mat)
 	}
-	recent := []string{}
-	for _, a := range s.Recent {
-		if a = strings.TrimSpace(a); a != "" && len(recent) < MaxRecent {
-			recent = append(recent, a)
+	recent := []RecentServer{}
+	for _, r := range s.Recent {
+		r.Address = strings.TrimSpace(r.Address)
+		// A name that fails the check shows the address instead.
+		r.Name, _ = protocol.CleanServerName(r.Name)
+		if r.Address != "" && len(recent) < MaxRecent {
+			recent = append(recent, r)
 		}
 	}
 	s.Recent = recent

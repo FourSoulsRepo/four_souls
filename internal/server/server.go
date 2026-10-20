@@ -41,6 +41,9 @@ type Config struct {
 	// Presence relays live aiming and hover (15.35, ADR 016). An
 	// operator short of CPU or bandwidth may turn it off.
 	Presence bool `json:"presence"`
+	// Name is shown in the app instead of the address (N-18); empty
+	// shows the address. Up to protocol.MaxServerName characters.
+	Name string `json:"name"`
 }
 
 // DefaultConfig is used for settings the flags and file leave out.
@@ -68,8 +71,16 @@ func (c Config) Check() error {
 		return fmt.Errorf("server: port %d is not 1 to 65535", c.Port)
 	case c.Retention < 0:
 		return errors.New("server: retention is days, 0 or more")
+	case c.Name != "" && !validName(c.Name):
+		return fmt.Errorf("server: name must be 1–%d characters, without control characters", protocol.MaxServerName)
 	}
 	return nil
+}
+
+// validName reports whether a server name passes CleanServerName.
+func validName(name string) bool {
+	_, ok := protocol.CleanServerName(name)
+	return ok
 }
 
 // Server listens for clients and runs their rooms.
@@ -97,6 +108,7 @@ func Start(ctx context.Context, cfg Config) (*Server, error) {
 	hub := NewHub()
 	hub.records, hub.cards, hub.seed, hub.saves = cfg.Records, cardTexts(), cfg.Seed, cfg.Saves
 	hub.hostOnly, hub.presence = cfg.HostOnly, cfg.Presence
+	hub.name, _ = protocol.CleanServerName(cfg.Name)
 	s.hub.Add(2)
 	go func() {
 		defer s.hub.Done()

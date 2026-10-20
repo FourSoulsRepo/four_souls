@@ -147,6 +147,8 @@ type Hub struct {
 	hostOnly bool
 	// presence relays live aiming and hover (15.35); off drops it.
 	presence bool
+	// name is the server's name for the welcome (N-18).
+	name string
 }
 
 // NewHub makes a lobby with the card sets the engine knows.
@@ -266,7 +268,7 @@ func (h *Hub) hello(c *Client, env protocol.Envelope) {
 	}
 	c.hello, c.name, c.sets, c.dice = true, name, m.Sets, protocol.CleanDice(m.Dice)
 	v := version.Get()
-	welcome := protocol.Welcome{Protocol: protocol.Version, App: v.App, Engine: v.Engine, Seat: -1, Create: h.mayCreate(c), Presence: h.presence}
+	welcome := protocol.Welcome{Protocol: protocol.Version, App: v.App, Engine: v.Engine, Seat: -1, Create: h.mayCreate(c), Presence: h.presence, Name: h.name}
 	if m.Token != "" {
 		if t, i := h.tableSeat(m.Token); t != nil {
 			welcome.Token, welcome.Seat = m.Token, i

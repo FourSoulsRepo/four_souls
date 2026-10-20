@@ -32,6 +32,8 @@ export interface Welcome {
   // presence is set when the server relays live aiming and hover; the
   // app sends none otherwise (15.35, ADR 016).
   presence?: boolean;
+  // name is the server's name, shown instead of its address (N-18).
+  name?: string;
 }
 
 // Presence is what a player points at now (15.35, ADR 016): the card

@@ -8,6 +8,8 @@ Rules engine versions are in each release's notes.
 
 - Dice: a thrown die is a 3D cube that tumbles onto the table and clatters as it lands; every die has light and shade.
 - End turn asks first while you can still play something, and lists what is left; Settings can turn the question off.
+- A dedicated server can have a name (`-name`); players see it instead of its address.
+- Join a game: remove a server from Recent with its × button.
 
 ## 0.1.1 - 2026-10-19
 

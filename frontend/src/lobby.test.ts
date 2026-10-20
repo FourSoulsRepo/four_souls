@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canCreate, emptyLobby, lanRows, leftTable, lost, onMessage, optionsText, remember, type Session } from './lobby';
+import { canCreate, emptyLobby, lanRows, leftTable, forgotten, lost, onMessage, optionsText, remember, renamed, serverLabel, type Session } from './lobby';
 import type { Table } from './protocol';
 
 const start: Session = { screen: 'join', lobby: emptyLobby, game: null, error: '' };
@@ -76,10 +76,43 @@ describe('leaving', () => {
   });
 });
 
+// at makes recent entries without names.
+const at = (...addresses: string[]) => addresses.map((address) => ({ address, name: '' }));
+
 describe('remember', () => {
   it('puts the address first, once, and keeps five', () => {
-    expect(remember(['a', 'b'], ' b ')).toEqual(['b', 'a']);
-    expect(remember(['a', 'b', 'c', 'd', 'e'], 'f')).toEqual(['f', 'a', 'b', 'c', 'd']);
+    expect(remember(at('a', 'b'), ' b ')).toEqual(at('b', 'a'));
+    expect(remember(at('a', 'b', 'c', 'd', 'e'), 'f')).toEqual(at('f', 'a', 'b', 'c', 'd'));
+  });
+  it('keeps the name the server gave', () => {
+    expect(remember([{ address: 'a', name: '' }, { address: 'b', name: 'Basement' }], 'b')).toEqual([
+      { address: 'b', name: 'Basement' },
+      { address: 'a', name: '' },
+    ]);
+  });
+});
+
+describe('server names (N-18)', () => {
+  it('names the entry of the address', () => {
+    expect(renamed(at('a', 'b'), ' b ', 'Basement')).toEqual([
+      { address: 'a', name: '' },
+      { address: 'b', name: 'Basement' },
+    ]);
+  });
+  it('keeps the same list when nothing changes', () => {
+    const recent = [{ address: 'a', name: 'Basement' }];
+    expect(renamed(recent, 'a', 'Basement')).toBe(recent);
+    expect(renamed(recent, 'b', 'Cathedral')).toBe(recent);
+  });
+  it('drops a name the server no longer gives', () => {
+    expect(renamed([{ address: 'a', name: 'Basement' }], 'a', '')).toEqual(at('a'));
+  });
+  it('forgets an address', () => {
+    expect(forgotten(at('a', 'b', 'c'), 'b')).toEqual(at('a', 'c'));
+  });
+  it('shows the name, else the address', () => {
+    expect(serverLabel({ address: 'a', name: 'Basement' })).toBe('Basement');
+    expect(serverLabel({ address: 'a', name: '' })).toBe('a');
   });
 });
 

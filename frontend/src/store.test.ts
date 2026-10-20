@@ -75,3 +75,30 @@ describe('seatOf', () => {
     expect(seatOf({ lobby: { ...initial.lobby, welcome: { ...welcome, seat: -1 } } })).toBe(0);
   });
 });
+
+describe('recent servers (N-18)', () => {
+  const settings = { nickname: 'Ann', recent: [{ address: 'a', name: '' }, { address: 'b', name: '' }], animation: 'normal' as const, fullscreen: false, theme: 'dark' as const, mat: 'felt', dice: 'tear', no_end_turn_ask: false, rejoin: { address: '', token: '', game: '' }, host: noHostSetup };
+
+  beforeEach(() => {
+    vi.mocked(saveSettings).mockImplementation((s) => Promise.resolve(s));
+    useApp.setState({ settings, address: 'b' });
+  });
+
+  it('a welcome names the server in Recent', async () => {
+    useApp.getState().receive({ type: 'welcome', data: { protocol: 3, app: '0.1.0', engine: '0.1.0', token: 't', seat: -1, name: 'Basement' } });
+    await vi.waitFor(() => {
+      expect(useApp.getState().settings.recent).toEqual([{ address: 'a', name: '' }, { address: 'b', name: 'Basement' }]);
+    });
+  });
+
+  it('a welcome without a change saves nothing', async () => {
+    useApp.getState().receive({ type: 'welcome', data: { protocol: 3, app: '0.1.0', engine: '0.1.0', token: 't', seat: -1 } });
+    await Promise.resolve();
+    expect(saveSettings).not.toHaveBeenCalled();
+  });
+
+  it('forgetServer drops the address', async () => {
+    await useApp.getState().forgetServer('a');
+    expect(useApp.getState().settings.recent).toEqual([{ address: 'b', name: '' }]);
+  });
+});

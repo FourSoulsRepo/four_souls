@@ -19,6 +19,9 @@
 
 * **1a. The port is taken:** the server prints the error and exits.
 * **1b. A bad flag or config file:** the server prints the problem and exits.
+* **1c. A server name (N-18):** `-name` or `"name"` in the config file.
+  * Players see it instead of the address (UC-04).
+  * A name over 40 characters or with control characters stops the start (1b).
 
 ## Postconditions
 

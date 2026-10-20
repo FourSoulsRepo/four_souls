@@ -45,16 +45,33 @@ test('two apps reach the same lobby and start the game', async ({ browser }) => 
   await expect(bo.getByRole('main', { name: 'Turn 1' })).toBeVisible();
 });
 
-test('a joined address is remembered', async ({ page }) => {
+test('a joined server is remembered by its name, until removed (N-18)', async ({ page }) => {
   await page.goto(appURL());
   await page.getByRole('button', { name: 'Join a game' }).click();
   await page.getByLabel('Nickname').fill('Cy');
   await page.getByLabel('Host address').fill(address());
   await page.getByRole('button', { name: 'Connect' }).click();
   await expect(page.getByRole('heading', { name: 'Games' })).toBeVisible();
+  await expect(page.getByText('Test server', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Back' }).click();
   await page.getByRole('button', { name: 'Join a game' }).click();
-  await expect(page.getByRole('button', { name: address() })).toBeVisible();
+  const recent = page.getByRole('list', { name: 'Recent' });
+  const server = recent.getByRole('button', { name: 'Test server', exact: true });
+  await expect(server).toHaveAttribute('title', address());
+  await shot(page, 'join-recent');
+
+  // The name joins the address it stands for.
+  await page.getByLabel('Host address').fill('');
+  await server.click();
+  await expect(page.getByRole('heading', { name: 'Games' })).toBeVisible();
+  await page.getByRole('button', { name: 'Back' }).click();
+  await page.getByRole('button', { name: 'Join a game' }).click();
+
+  await page.getByRole('button', { name: 'Remove Test server from Recent' }).click();
+  await expect(recent).toBeHidden();
+  await page.reload();
+  await page.getByRole('button', { name: 'Join a game' }).click();
+  await expect(page.getByRole('list', { name: 'Recent' })).toBeHidden();
 });
 
 test('a wrong address says why', async ({ page }) => {

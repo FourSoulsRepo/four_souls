@@ -2101,7 +2101,7 @@ Images come first, so the new table is built with backs and mats.
 7. Owner notes (2026-10-20)
    1. Owner marks 15.70 solved.
 
-### [ ] 15.71 Server names and an editable Recent list
+### [x] 15.71 Server names and an editable Recent list
 
 1. Goal: the app shows a server's name, and the player prunes Recent (N-18).
 2. Asked by the owner (2026-10-20).
@@ -2119,3 +2119,18 @@ Images come first, so the new table is built with backs and mats.
    3. Vitest: remembering a name, forgetting an entry.
    4. e2e: a joined server shows by name; removing it hides it.
    5. `make screenshots` covers the join screen with Recent.
+5. Result (2026-10-20)
+   1. `Config.Name`, `-name`; `Config.Check` refuses a bad name.
+   2. `protocol.CleanServerName`: like a nickname, up to 40 characters.
+   3. `welcome.name`; protocol version stays 3 (ADR 006).
+   4. Settings `recent`: `{address, name}`; bare addresses still load.
+   5. A name that fails the check is dropped; the address shows.
+   6. The name is saved after the join's own save, so neither undoes the other.
+   7. A welcome without a name clears an old one.
+   8. Join screen: name button, address tooltip, × removes the entry.
+   9. Games list: the name under the heading.
+   10. e2e servers run as "Test server".
+   11. Go tests `TestParse`, `TestRun`, `TestServerName`, `TestOldRecentLoads`.
+   12. Vitest `lobby.test.ts`, `store.test.ts`; e2e `lobby.spec.ts`.
+   13. ADR 006; UC-02 1c, UC-04 1e, 1f; wikis; CHANGELOG.
+   14. Screenshots: `.cache/screenshots/15.71/before/` and `after/`.

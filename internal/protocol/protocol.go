@@ -106,6 +106,9 @@ type Welcome struct {
 	// Presence is set when the server relays live aiming and hover; a
 	// client sends none otherwise (15.35, ADR 016).
 	Presence bool `json:"presence,omitempty"`
+	// Name is the server's name, set by its operator; the app shows it
+	// instead of the address (N-18). Empty on an app's own host.
+	Name string `json:"name,omitempty"`
 }
 
 // Intent asks the server to do something; the server fills in the
@@ -424,12 +427,27 @@ func CheckVersion(client int) string {
 // MaxName is the longest nickname, in characters (ST-06).
 const MaxName = 20
 
+// MaxServerName is the longest server name, in characters (N-18).
+const MaxServerName = 40
+
 // CleanName checks a nickname: trimmed, 1 to MaxName characters, no
 // control characters. It returns the cleaned name and whether it is ok.
 func CleanName(name string) (string, bool) {
+	return cleanText(name, MaxName)
+}
+
+// CleanServerName checks a server name as CleanName does a nickname,
+// with up to MaxServerName characters (N-18).
+func CleanServerName(name string) (string, bool) {
+	return cleanText(name, MaxServerName)
+}
+
+// cleanText trims name and checks it has 1 to most characters and no
+// control characters.
+func cleanText(name string, most int) (string, bool) {
 	name = strings.TrimSpace(name)
 	n := utf8.RuneCountInString(name)
-	if n == 0 || n > MaxName || !utf8.ValidString(name) {
+	if n == 0 || n > most || !utf8.ValidString(name) {
 		return "", false
 	}
 	for _, r := range name {

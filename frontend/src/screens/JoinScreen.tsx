@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { canCreate, lanRows } from '../lobby';
+import { canCreate, lanRows, serverLabel } from '../lobby';
 import { protocolVersion } from '../protocol';
 import { setList } from '../sets';
 import { useApp } from '../store';
@@ -16,9 +16,10 @@ function Connect() {
   const error = useApp((s) => s.error);
   const joinServer = useApp((s) => s.joinServer);
   const saveNickname = useApp((s) => s.saveNickname);
+  const forgetServer = useApp((s) => s.forgetServer);
   const show = useApp((s) => s.show);
   const [nickname, setNickname] = useState(settings.nickname);
-  const [address, setAddress] = useState(settings.recent[0] ?? '');
+  const [address, setAddress] = useState(settings.recent[0]?.address ?? '');
   const [busy, setBusy] = useState(false);
   const lan = useApp((s) => s.lan);
   const findLanGames = useApp((s) => s.findLanGames);
@@ -73,21 +74,36 @@ function Connect() {
         {settings.recent.length > 0 && (
           <>
             <span className="muted">Recent</span>
-            <div className="row">
-              {settings.recent.map((a) => (
-                <button
-                  key={a}
-                  type="button"
-                  disabled={busy}
-                  onClick={() => {
-                    setAddress(a);
-                    go(a);
-                  }}
-                >
-                  {a}
-                </button>
+            {/* A server shows by its name, the address on hover (N-18). */}
+            <ul className="row recent" aria-label="Recent">
+              {settings.recent.map((r) => (
+                <li key={r.address}>
+                  <button
+                    type="button"
+                    title={r.address}
+                    disabled={busy}
+                    onClick={() => {
+                      setAddress(r.address);
+                      go(r.address);
+                    }}
+                  >
+                    {serverLabel(r)}
+                  </button>
+                  <button
+                    type="button"
+                    className="forget"
+                    aria-label={`Remove ${serverLabel(r)} from Recent`}
+                    title="Remove from Recent"
+                    disabled={busy}
+                    onClick={() => {
+                      void forgetServer(r.address);
+                    }}
+                  >
+                    ×
+                  </button>
+                </li>
               ))}
-            </div>
+            </ul>
           </>
         )}
       </form>
@@ -149,10 +165,12 @@ function GameList() {
   const quit = useApp((s) => s.quit);
   const show = useApp((s) => s.show);
   const create = useApp((s) => canCreate(s.lobby, s.hosting !== null));
+  const server = useApp((s) => s.lobby.welcome?.name ?? '');
 
   return (
     <div className="screen">
       <h1>Games</h1>
+      {server && <p className="server-name">{server}</p>}
       {lobby.saved && <p className="muted">The game was saved. Continue it from this list later.</p>}
       <div className="panel">
         {lobby.games.length === 0 && (
