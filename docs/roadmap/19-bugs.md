@@ -1160,6 +1160,8 @@ This step never closes; new reports are appended.
    6. Evidence: `.cache/e2e-fails/20261020-15.42-gate/` and `-rerun/` (not in git).
    7. Again in the 15.80 gate, webkit: y off by 31.7 px.
    8. Evidence: `.cache/e2e-evidence/15.80-run2/` (not in git).
+   9. Again in the 19.40 gate, webkit: y off by 30.5 px.
+   10. Evidence: `.cache/e2e-evidence/19.40-run1/` (not in git).
 3. Tasks:
    1. Find why the first tracked box is late: sampling or the shot's start.
    2. Fix the shot if it starts off the player; else the test.
