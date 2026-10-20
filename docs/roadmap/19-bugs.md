@@ -35,7 +35,7 @@ This step never closes; new reports are appended.
 |----|------------------------------------------|------------|--------------------------------------------------------|-------|
 | A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36                      | 5     |
 | B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39                               | 4     |
-| C  | Card data: wrong values in `card_db`     | Card data  | 19.24                                                  | 1     |
+| C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30                                     | 3     |
 | E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41                   | 6     |
 | F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40                                    | 3     |
@@ -44,12 +44,12 @@ This step never closes; new reports are appended.
 | I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37 | 9 |
 | J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44 | 8     |
 
-Totals by system (44 items):
+Totals by system (45 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
 | Engine    | A, B    | 9     |
-| Card data | C       | 1     |
+| Card data | C       | 2     |
 | Client    | D–G     | 16    |
 | Server    | H       | 1     |
 | e2e       | I, J    | 17    |
@@ -1408,3 +1408,31 @@ Totals by system (44 items):
 5. Done when:
    1. Cause written here; three full runs in a row pass.
 
+### [ ] 19.45 Abyss never uncharges after use
+
+1. Goal: Abyss taps to activate, like its printed card.
+2. Report (owner, 2026-10-21)
+   1. Abyss stays charged after its ability is used.
+3. Cause
+   1. The printed card shows the ↷ (Tap) icon.
+   2. foursouls.com shows the Paid icon instead.
+   3. `scraper build` copied `{Paid Effect}` into `data/r.json`.
+   4. The text has no "cost:" part, so the engine card got no cost.
+   5. With no cost, nothing taps it; it can be used any number of times.
+   6. `TestAbyss` even activates it twice in one turn.
+   7. It is the only `{Paid Effect}` text with no cost in card_db.
+4. Tasks:
+   1. Override in `pkg/card_db/overrides/r.json`; rebuild `data/r.json`.
+   2. Engine Abyss gets the `Tap()` cost and "↷:" text.
+5. Done when:
+   1. Go test: a second use in one turn is refused.
+   2. Go test: it works again after it recharges.
+6. Result (2026-10-21)
+   1. Override sets the printed `{Tap Effect}` in `overrides/r.json`.
+   2. `data/r.json` rebuilt; the rebuild changed only Abyss.
+   3. Engine Abyss: `Tap()` cost, `Tap: true`, "↷:" text.
+   4. `Tap: true` lets the death penalty deactivate it (R-DEATH-14).
+   5. `TestAbyss`: a second use is refused (R-ABIL-07, no cost).
+   6. It destroys a second item after its next turn recharges it.
+   7. Old records that use Abyss twice in a turn no longer replay.
+   8. Engine and data only; no screen change, no screenshots.
