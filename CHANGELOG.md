@@ -32,6 +32,7 @@ Rules engine versions are in each release's notes.
 - The dedicated server has its own downloads, `four-souls-server-<system>-<cpu>`; the game archives no longer include it. Its Linux build runs on any distribution, Alpine included.
 - Join a game: type just a domain, e.g. `games.example.com`; the app tries a secure connection (`wss://`) first, then the plain port 4774. A typed `wss://` or `ws://` is kept.
 - Dedicated server in Docker: `deploy/docker/Dockerfile` builds an Alpine image from the latest release; `/healthz` tells Docker the server is healthy.
+- Dedicated server with HTTPS: `deploy/docker/docker-compose.yml` runs it behind Caddy, which gets the certificate by itself; players type only the domain.
 - Each release also has "for-poor" archives: the game without card images, with cards shown as text.
 
 ## 0.1.1 - 2026-10-19

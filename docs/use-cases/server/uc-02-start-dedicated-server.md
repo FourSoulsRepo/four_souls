@@ -32,6 +32,11 @@
   * Records and saves live in the `/data` volume.
   * `GET /healthz` answers 200 while the lobby runs; Docker marks it healthy.
   * `docker stop` stops it as SIGTERM does (6).
+* **1f. Compose with Caddy (8.20):** `docker compose up -d --build`.
+  * `.env` sets `DOMAIN` and the server's settings.
+  * Caddy starts once the server is healthy and gets an HTTPS certificate.
+  * Players type only the domain and connect with `wss://` (UC-27).
+  * `docker compose ps` shows whether the server is healthy.
 
 ## Postconditions
 

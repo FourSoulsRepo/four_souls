@@ -238,7 +238,7 @@ Ideas: B-03 – B-05, L-03, V-10, V-11, DO-01, V-14, A-16, N-13, N-14, V-19, N-1
 3. Done when:
    1. The image builds and the healthcheck passes.
 
-### [ ] 8.20 Docker Compose with Caddy
+### [x] 8.20 Docker Compose with Caddy
 
 1. Goal: HTTPS server with one command (N-19).
 2. Tasks:

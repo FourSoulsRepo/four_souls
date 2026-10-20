@@ -1,0 +1,7 @@
+# HTTPS for the Four Souls server (8.20). Caddy gets and renews the
+# certificate for the domain by itself; ports 80 and 443 must be open
+# and the domain must point at this machine.
+{$DOMAIN} {
+	# WebSocket (/ws), record downloads (/record) and /healthz.
+	reverse_proxy server:4774
+}
