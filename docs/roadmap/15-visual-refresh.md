@@ -2436,6 +2436,7 @@ Images come first, so the new table is built with backs and mats.
    2. Done: two `.row`s; the previews stay under the mat and dice line.
    3. e2e "animations sit above the game mat and the dice".
    4. Screenshots: `.cache/screenshots/15.80/rows/`.
+   5. Owner marks 15.80 solved.
 
 ### [x] 15.81 No Green felt mat
 
@@ -2457,3 +2458,5 @@ Images come first, so the new table is built with backs and mats.
    5. Vitest `mats.test.ts`; Go `TestFeltIsDefault`; e2e `settings.spec.ts`.
    6. UC-10 3e; wiki `Client`; CHANGELOG.
    7. Screenshots: `.cache/screenshots/15.81/before/` and `after/`.
+6. Owner notes (2026-10-20)
+   1. Owner marks 15.81 solved.
