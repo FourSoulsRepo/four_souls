@@ -12,8 +12,9 @@ var pillsFsp2 = engine.CardDef{
 	Kind:   engine.LootCard,
 	Copies: 1,
 	Abilities: []engine.Ability{{
-		Kind: engine.LootAbility,
-		Text: "Roll- 1-2: Cancel the effect of a loot being played. 3-4: Each other player discards a loot card.",
+		Kind:  engine.LootAbility,
+		Text:  "Roll- 1-2: Cancel the effect of a loot being played. 3-4: Each other player discards a loot card.",
+		Takes: engine.TakesOthers,
 		Effects: []engine.Effect{engine.Roll(engine.RollTable{}.
 			Results(1, 2, cancelALoot).
 			Results(3, 4, engine.EachOtherPlayer(discardOne)))},

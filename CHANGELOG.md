@@ -8,6 +8,7 @@ Rules engine versions are in each release's notes.
 
 - The "Skip all" button is gone.
 - "Wait for my turn" stops as soon as another player targets you or your cards, so you can answer before they steal from you.
+- It also stops for cards that pick their victim only as they resolve, such as XV. The Devil, Joker and Dead Bird.
 - Wording: the turn counters say "Shop" instead of "Buys"; roll texts say "dice", so "die" only means death.
 - Dice: a thrown die is a 3D cube that tumbles onto the table and clatters as it lands; every die has light and shade.
 - End turn asks first while you can still play something, and lists what is left; Settings can turn the question off.

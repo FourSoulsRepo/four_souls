@@ -112,6 +112,44 @@ func TestWaitEndsOnTarget(t *testing.T) {
 	}
 }
 
+// TestWaitEndsOnTake: XV. The Devil picks the item it steals as it
+// resolves; it ends every other player's wait at once (15.85).
+func TestWaitEndsOnTake(t *testing.T) {
+	tb := enginetest.NewSetup(t, engine.SituationSetup{Players: []engine.SituationPlayer{
+		{Character: "isaac", Items: []engine.CardRef{"jawbone"}, Hand: []engine.CardRef{"xv_the_devil"}}, {Character: "cain"}, {Character: "maggy"},
+	}}, b2.Set)
+	r := &Room{game: tb.G, seats: []roomSeat{{client: &Client{}}, {client: &Client{}, wait: true}, {client: &Client{}, wait: true}}}
+	in := engine.Intent{Player: 0, Kind: engine.IntentPlayLoot, Objects: []engine.ObjectID{tb.Find(0, "xv_the_devil")}}
+	if _, err := tb.G.Apply(in); err != nil {
+		t.Fatal(err)
+	}
+	if tb.G.Prompt().Kind == engine.PromptChoose {
+		tb.Choose("jawbone")
+	}
+	r.endWaits()
+	if r.seats[1].wait || r.seats[2].wait {
+		t.Errorf("XV. The Devil is on the stack; still waiting: %v, %v", r.seats[1].wait, r.seats[2].wait)
+	}
+}
+
+// TestWaitEndsOnEventTake: Dead Bird steals from the player who rolled;
+// only that player stops waiting (15.85).
+func TestWaitEndsOnEventTake(t *testing.T) {
+	tb := enginetest.New(t, b2.Set, enginetest.Seat("isaac"), enginetest.Seat("cain"), enginetest.Seat("maggy", "dead_bird"))
+	g := tb.G
+	r := &Room{game: g, seats: []roomSeat{{client: &Client{}, wait: true}, {client: &Client{}, wait: true}, {client: &Client{}, wait: true}}}
+	g.Stack = []engine.StackItem{{ID: 1, Kind: engine.StackTrigger, Controller: 2, Ability: engine.AbilityRef{Card: "dead_bird"}, EventPlayer: 1}}
+	if !r.targeted(1, 0) {
+		t.Error("Dead Bird steals from player 1, who rolled; their wait goes on")
+	}
+	if r.targeted(0, 0) {
+		t.Error("player 0 did not roll; Dead Bird ended their wait")
+	}
+	if r.targeted(2, 0) {
+		t.Error("Dead Bird is player 2's own; it ended their wait")
+	}
+}
+
 // TestTargeted: a target on the player's items or hand cards counts; a
 // target from before the wait, of their own, or on another player does
 // not (15.84).

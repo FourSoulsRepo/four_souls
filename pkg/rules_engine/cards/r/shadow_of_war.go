@@ -12,6 +12,7 @@ var shadowOfWar = engine.CardDef{
 	Abilities: []engine.Ability{{
 		Kind:    engine.Triggered,
 		Text:    "When a player dies, before paying penalties, they must destroy an item they control.",
+		Takes:   engine.TakesEventPlayer,
 		Trigger: engine.WhenAPlayerDies(),
 		Effects: []engine.Effect{engine.Ask(func(c *engine.Ctx, a []int) {
 			if ids := nonEternalItems(c.G, c.EventPlayer); a[0] >= 0 && a[0] < len(ids) {

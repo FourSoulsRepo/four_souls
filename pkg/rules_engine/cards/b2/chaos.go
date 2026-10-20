@@ -14,6 +14,7 @@ var chaos = engine.CardDef{
 		{
 			Kind:  engine.Activated,
 			Text:  "↷: Each player gives their hand to the player to their left.",
+			Takes: engine.TakesOthers,
 			Costs: []engine.Cost{engine.Tap()},
 			Effects: []engine.Effect{engine.EffectFunc(func(c *engine.Ctx) {
 				hands := make([][]engine.ObjectID, len(c.G.Players))

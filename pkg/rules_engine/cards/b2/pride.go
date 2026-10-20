@@ -16,8 +16,9 @@ var pride = engine.CardDef{
 	Rewards: []engine.Reward{{Kind: engine.RewardCents, Amount: 5}},
 	Abilities: []engine.Ability{
 		{
-			Kind: engine.Triggered,
-			Text: "When an attack is declared on this, the active player chooses a player. That player discards 2 loot cards.",
+			Kind:  engine.Triggered,
+			Text:  "When an attack is declared on this, the active player chooses a player. That player discards 2 loot cards.",
+			Takes: engine.TakesOthers,
 			Trigger: engine.Trigger{On: engine.EvAttackTarget, Match: func(_ *engine.Game, self engine.ObjectID, e engine.Event) bool {
 				return e.Object == self
 			}},

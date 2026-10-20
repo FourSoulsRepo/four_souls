@@ -10,5 +10,5 @@ var diceRoom2 = engine.CardDef{
 	Ref:       "dice_room_2",
 	Kind:      engine.RoomCard,
 	Copies:    1,
-	Abilities: diceRoom("When this enters play, each player discards their hands and loots 3.", engine.EachPlayer(discardHandLoot(3))),
+	Abilities: diceRoomTakes("When this enters play, each player discards their hands and loots 3.", engine.EachPlayer(discardHandLoot(3))),
 }

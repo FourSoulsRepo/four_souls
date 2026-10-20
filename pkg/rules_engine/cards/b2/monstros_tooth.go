@@ -13,6 +13,7 @@ var monstrosTooth = engine.CardDef{
 		{
 			Kind:    engine.Triggered,
 			Text:    "At the start of your turn, choose a player at random. That player destroys an item they control.",
+			Takes:   engine.TakesOthers,
 			Trigger: engine.AtStartOfYourTurn(),
 			Effects: []engine.Effect{engine.Ask(toothDestroy, toothPlayer, toothItem)},
 		},

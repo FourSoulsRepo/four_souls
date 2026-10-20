@@ -17,6 +17,7 @@ var momsDeadHand = engine.CardDef{
 		{
 			Kind:    engine.Triggered,
 			Text:    "When this dies, the active player may steal a non-eternal item another player controls.",
+			Takes:   engine.TakesOthers,
 			Trigger: engine.WhenThisDies(),
 			Effects: []engine.Effect{engine.Ask(func(c *engine.Ctx, a []int) {
 				if ids := othersItems(c); a[0] >= 0 && a[0] < len(ids) {

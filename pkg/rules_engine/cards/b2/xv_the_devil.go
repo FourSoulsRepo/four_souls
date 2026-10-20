@@ -13,6 +13,7 @@ var xvTheDevil = engine.CardDef{
 		{
 			Kind:    engine.LootAbility,
 			Text:    "Destroy an item you control. If you do, steal a non-eternal item from a player or from the shop.",
+			Takes:   engine.TakesOthers,
 			Targets: []engine.TargetSpec{engine.Choose(engine.TargetYourItem)},
 			Effects: []engine.Effect{engine.Ask(devil, devilQuestion)},
 		},

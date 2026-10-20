@@ -17,6 +17,7 @@ var clog = engine.CardDef{
 	Abilities: []engine.Ability{{
 		Kind:    engine.Triggered,
 		Text:    "When this dies, each player gives their hand to the player to their left.",
+		Takes:   engine.TakesOthers,
 		Trigger: engine.WhenThisDies(),
 		Effects: []engine.Effect{engine.EffectFunc(func(c *engine.Ctx) {
 			hands := make([][]engine.ObjectID, len(c.G.Players))

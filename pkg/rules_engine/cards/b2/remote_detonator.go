@@ -15,6 +15,7 @@ var remoteDetonator = engine.CardDef{
 		{
 			Kind:    engine.Activated,
 			Text:    "↷: Each player votes on an item in play. Destroy the item with the most votes. If there is a tie, nothing happens.",
+			Takes:   engine.TakesOthers,
 			Costs:   []engine.Cost{engine.Tap()},
 			Effects: []engine.Effect{engine.Ask(detonate, voteQuestions()...)},
 		},

@@ -17,6 +17,7 @@ var cursedKeeperHead = engine.CardDef{
 		{
 			Kind:    engine.Triggered,
 			Text:    "Each time a player rolls a 1, they lose 2¢.",
+			Takes:   engine.TakesEventPlayer,
 			Trigger: playerRollOf(1),
 			Effects: []engine.Effect{forRoller(engine.LoseCents(2))},
 		},

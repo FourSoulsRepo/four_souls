@@ -17,6 +17,7 @@ var ringOfFlies = engine.CardDef{
 		{
 			Kind:    engine.Triggered,
 			Text:    "Each time the attacking player rolls an attack roll of 3, they must steal a loot card from another player at random.",
+			Takes:   engine.TakesOthers,
 			Trigger: attackRollOnThis(3),
 			Effects: []engine.Effect{engine.Ask(ringSteal, ringPlayer, ringCard)},
 		},

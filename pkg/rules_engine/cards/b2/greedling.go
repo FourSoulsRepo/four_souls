@@ -17,6 +17,7 @@ var greedling = engine.CardDef{
 		{
 			Kind:    engine.Triggered,
 			Text:    "When this dies, the active player chooses a player. They lose 7¢.",
+			Takes:   engine.TakesOthers,
 			Trigger: engine.WhenThisDies(),
 			Effects: []engine.Effect{engine.Ask(func(c *engine.Ctx, a []int) {
 				if a[0] >= 0 {

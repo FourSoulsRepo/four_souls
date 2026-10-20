@@ -10,8 +10,9 @@ var joker = engine.CardDef{
 	Kind:   engine.LootCard,
 	Copies: 1,
 	Abilities: []engine.Ability{{
-		Kind: engine.LootAbility,
-		Text: "Look at a player's hand. You may steal a loot card from them.",
+		Kind:  engine.LootAbility,
+		Text:  "Look at a player's hand. You may steal a loot card from them.",
+		Takes: engine.TakesOthers,
 		Effects: []engine.Effect{engine.Ask(func(c *engine.Ctx, a []int) {
 			ps := livingPlayers(c.G, c.Controller)
 			if a[0] < 0 || a[0] >= len(ps) {

@@ -35,6 +35,7 @@ var charmedKeeper = engine.CardDef{
 		{
 			Kind:    engine.Triggered,
 			Text:    "Each time this deals combat damage to a player, they lose 2¢.",
+			Takes:   engine.TakesEventPlayer,
 			Trigger: cardkit.WhenThisDealsDamage(true),
 			Effects: []engine.Effect{cardkit.ForRoller(engine.LoseCents(2))},
 		},

@@ -10,7 +10,7 @@ var diceRoom6 = engine.CardDef{
 	Ref:    "dice_room_6",
 	Kind:   engine.RoomCard,
 	Copies: 1,
-	Abilities: diceRoom("When this enters play, reroll each item in play, each player discards their hand and loots 3. Put each monster into discard.",
+	Abilities: diceRoomTakes("When this enters play, reroll each item in play, each player discards their hand and loots 3. Put each monster into discard.",
 		engine.EffectFunc(func(c *engine.Ctx) {
 			rerollAll(c.G, append(itemsOf(c.G, engine.NoPlayer), shopItems(c.G)...))
 		}),

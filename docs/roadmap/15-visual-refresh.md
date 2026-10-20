@@ -2544,3 +2544,34 @@ Images come first, so the new table is built with backs and mats.
    10. e2e: no "Skip all" button for either player.
    11. UC-06, UC-14; wiki `Server`, `Client`, `Rules-engine`; CHANGELOG.
    12. Screenshots: `.cache/screenshots/15.84/before/` and `after/`.
+
+### [x] 15.85 Cards that take without a target end the wait
+
+1. Goal: a waiting player can answer a steal that names no target.
+2. Asked by the owner (2026-10-20), after 15.84.
+3. Why
+   1. 15.84 reads only the targets on a stack item.
+   2. XV. The Devil, Joker, Mom's Shovel pick the victim on resolution.
+   3. The waiter is passed for; then it is too late for Butter Bean.
+4. Tasks:
+   1. Engine: an ability says whom it may take from with no target.
+   2. Values: nobody, every other player, the event's player.
+   3. Mark every such card of every set.
+   4. Server: such an item ends the wait of those players.
+5. Done when:
+   1. Go test: XV. The Devil ends every other waiter's wait.
+   2. Go test: Dead Bird ends only the roller's wait.
+   3. Go test: the list of marked cards.
+   4. Wiki `Adding-a-card` says when to mark a card.
+6. Result (2026-10-20)
+   1. `Ability.Takes`: `TakesNobody`, `TakesOthers`, `TakesEventPlayer`.
+   2. `Game.MayTake(item, player)`; never the item's own controller.
+   3. The server checks it with the 15.84 targets.
+   4. Marked 33 abilities in b2, g2, fsp2, r; list in `TestTakes`.
+   5. Others: steals and "each player discards" chosen on resolution.
+   6. Event player: Dead Bird, Tarot Cloth, Cursed Fatty, Scolex, Magnet, ….
+   7. Not marked: targeted ones (Jawbone), damage, gifts, haunts.
+   8. Not marked: Battle Royale, Lust for Blood: attacks, not takes.
+   9. Engine version unchanged: no rule changed.
+   10. No screen changed; no screenshots.
+   11. UC-06; wiki `Server`, `Adding-a-card`; CHANGELOG.

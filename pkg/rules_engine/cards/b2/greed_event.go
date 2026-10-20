@@ -13,6 +13,7 @@ var greedEvent = engine.CardDef{
 		{
 			Kind:    engine.Triggered,
 			Text:    "Choose the player with the most ¢ or tied for the most. That player loses all their ¢.",
+			Takes:   engine.TakesOthers,
 			Trigger: engine.WhenThisEntersPlay(),
 			Effects: []engine.Effect{engine.Ask(func(c *engine.Ctx, a []int) {
 				if a[0] >= 0 {

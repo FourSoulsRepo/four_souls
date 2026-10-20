@@ -32,6 +32,8 @@
   * Damage to them or their cards counts too.
   * Only items put on the stack after the press count.
   * They are asked as usual and may answer, e.g. play a card before it is stolen.
+  * A card that picks its victim as it resolves counts too (15.85).
+  * E.g. XV. The Devil, Joker; Dead Bird only for the player who rolled.
 
 ## Postconditions
 

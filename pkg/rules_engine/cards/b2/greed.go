@@ -18,6 +18,7 @@ var greed = engine.CardDef{
 		{
 			Kind:    engine.Triggered,
 			Text:    "Each time this deals damage, each player loses 4¢.",
+			Takes:   engine.TakesOthers,
 			Trigger: whenThisDealsDamage(false),
 			Effects: []engine.Effect{engine.EachPlayer(engine.LoseCents(4))},
 		},

@@ -17,6 +17,7 @@ var momsShovel = engine.CardDef{
 		{
 			Kind:  engine.Activated,
 			Text:  "↷: Destroy this. If you do, steal a soul from another player.",
+			Takes: engine.TakesOthers,
 			Costs: []engine.Cost{engine.Tap()},
 			Effects: []engine.Effect{engine.DestroyThis(engine.Ask(func(c *engine.Ctx, a []int) {
 				if a[0] >= 0 {

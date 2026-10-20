@@ -17,6 +17,7 @@ var wizoob = engine.CardDef{
 		{
 			Kind:    engine.Triggered,
 			Text:    "When this dies, the active player chooses a player. That player destroys a soul they control.",
+			Takes:   engine.TakesOthers,
 			Trigger: engine.WhenThisDies(),
 			Effects: []engine.Effect{engine.Ask(wizoobDestroy, pickAPlayer("Who destroys a soul?"), wizoobSoul)},
 		},

@@ -26,7 +26,22 @@ type Ability struct {
 	// targets (R-ABIL-04). An ability with modes uses the targets and
 	// effects of the chosen mode instead of its own.
 	Modes []Mode
+	// Takes: whom it may take from with no target naming them (15.85).
+	Takes Takes
 }
+
+// Takes says whom an ability may take loot cards, ¢, items or souls
+// from, or make discard or destroy them, although no target names
+// them: it picks the victim as it resolves (15.85). The server then
+// asks a player who waits for their turn, so they can still answer.
+type Takes int
+
+// Whom an ability may take from.
+const (
+	TakesNobody      Takes = iota // its targets name every victim
+	TakesOthers                   // any player but its controller
+	TakesEventPlayer              // the player of the event that triggered it
+)
 
 // Mode is one "choose one-" option.
 type Mode struct {

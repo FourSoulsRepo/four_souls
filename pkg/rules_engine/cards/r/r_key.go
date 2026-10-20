@@ -15,6 +15,7 @@ var rKey = engine.CardDef{
 	Abilities: []engine.Ability{{
 		Kind:  engine.Activated,
 		Text:  "↷: Destroy this. If you do, destroy all souls. Each player discards their hand and loots 3.",
+		Takes: engine.TakesOthers,
 		Costs: []engine.Cost{engine.Tap()},
 		Effects: []engine.Effect{engine.DestroyThis(engine.EffectFunc(func(c *engine.Ctx) {
 			for _, pl := range c.G.Players {

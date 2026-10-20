@@ -2,6 +2,7 @@ package cards
 
 import (
 	"bytes"
+	"fmt"
 	"os"
 	"slices"
 	"strings"
@@ -202,5 +203,39 @@ func TestDeckRatios(t *testing.T) {
 	}
 	if _, _, err := engine.NewGame(base); err == nil {
 		t.Error("the Base Game alone started with deck ratios")
+	}
+}
+
+// TestTakes pins the abilities that take from players no target names
+// (Ability.Takes, 15.85). A new card that steals, or makes a player
+// discard, lose or destroy, picking them as it resolves, joins the list.
+func TestTakes(t *testing.T) {
+	want := []string{
+		"b2/chaos/0 others", "b2/cursed_fatty/0 event", "b2/cursed_keeper_head/0 event",
+		"b2/dank_globin/0 others", "b2/dead_bird/0 event", "b2/finger/0 event",
+		"b2/greed/0 others", "b2/greed_event/0 others", "b2/greedling/0 others",
+		"b2/keeper_head/0 event", "b2/moms_dead_hand/0 others", "b2/moms_shovel/0 others",
+		"b2/monstros_tooth/0 others", "b2/pride/0 others", "b2/remote_detonator/0 others",
+		"b2/ring_of_flies/0 others", "b2/scolex/0 event", "b2/tarot_cloth/0 event",
+		"b2/the_lamb/0 others", "b2/wizoob/0 others", "b2/xv_the_devil/0 others",
+		"g2/joker/0 others",
+		"fsp2/forget_me_now/0 others", "fsp2/magnet/0 event", "fsp2/pills_fsp2/0 others",
+		"r/betrayal/0 others", "r/charmed_fatty/1 event", "r/charmed_keeper/1 event",
+		"r/clog/0 others", "r/dice_room_2/0 others", "r/dice_room_6/0 others",
+		"r/r_key/0 others", "r/shadow_of_war/0 event",
+	}
+	names := map[engine.Takes]string{engine.TakesOthers: "others", engine.TakesEventPlayer: "event"}
+	var got []string
+	for _, set := range Sets() {
+		for _, c := range set.Cards {
+			for i, a := range c.Abilities {
+				if a.Takes != engine.TakesNobody {
+					got = append(got, fmt.Sprintf("%s/%s/%d %s", set.Code, c.Ref, i, names[a.Takes]))
+				}
+			}
+		}
+	}
+	if !slices.Equal(got, want) {
+		t.Errorf("marked abilities:\n%s\nwant:\n%s", strings.Join(got, "\n"), strings.Join(want, "\n"))
 	}
 }

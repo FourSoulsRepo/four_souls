@@ -110,7 +110,8 @@ func (r *Room) waitOver(p engine.PlayerID) bool {
 
 // targeted: a stack item newer than seq, of another player, targets p,
 // or p's character, items, souls, curses, or hand cards (15.84). Damage
-// to them counts too.
+// to them counts too, and an item that may take from p with no target
+// (15.85).
 func (r *Room) targeted(p engine.PlayerID, seq int) bool {
 	g := r.game
 	owns := func(id engine.ObjectID) bool {
@@ -129,6 +130,9 @@ func (r *Room) targeted(p engine.PlayerID, seq int) bool {
 	for _, it := range g.Stack {
 		if it.ID <= seq || it.Controller == p || it.Controller == engine.NoPlayer {
 			continue
+		}
+		if g.MayTake(it, p) {
+			return true // it picks its victim as it resolves (15.85)
 		}
 		if it.Kind == engine.StackDamage {
 			if it.Target.IsPlayer && it.Target.Player == p {

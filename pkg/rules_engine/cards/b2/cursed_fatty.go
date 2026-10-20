@@ -17,6 +17,7 @@ var cursedFatty = engine.CardDef{
 		{
 			Kind:    engine.Triggered,
 			Text:    "Each time a player rolls a 5, they discard a loot card.",
+			Takes:   engine.TakesEventPlayer,
 			Trigger: playerRollOf(5),
 			Effects: []engine.Effect{rollerDiscards},
 		},

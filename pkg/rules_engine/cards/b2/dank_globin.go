@@ -17,6 +17,7 @@ var dankGlobin = engine.CardDef{
 		{
 			Kind:    engine.Triggered,
 			Text:    "When this dies, the active player forces a player to discard 2 loot cards.",
+			Takes:   engine.TakesOthers,
 			Trigger: engine.WhenThisDies(),
 			Effects: []engine.Effect{engine.Ask(forcedDiscard(2), forcedDiscardQuestions(2)...)},
 		},

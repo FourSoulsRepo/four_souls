@@ -535,6 +535,7 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    7. It also ends when another player targets them (owner, 2026-10-20).
    8. Or targets their items, souls, curses, or hand cards.
    9. So they can answer before cards are stolen from them.
+   10. Cards that pick the victim on resolution end it too (owner, 2026-10-20).
 17. N-17. Create a game on a dedicated server (owner, 2026-10-14).
    1. A player connected to a dedicated server opens a new game there.
    2. The Games list shows "Create a game" only on a dedicated server.
