@@ -33,7 +33,7 @@ This step never closes; new reports are appended.
 
 | ID | Group                                    | System     | Items                                                  | Count |
 |----|------------------------------------------|------------|--------------------------------------------------------|-------|
-| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36                      | 5     |
+| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46               | 6     |
 | B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39                               | 4     |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30                                     | 3     |
@@ -44,11 +44,11 @@ This step never closes; new reports are appended.
 | I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37 | 9 |
 | J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44 | 8     |
 
-Totals by system (45 items):
+Totals by system (46 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
-| Engine    | A, B    | 9     |
+| Engine    | A, B    | 10    |
 | Card data | C       | 2     |
 | Client    | D–G     | 16    |
 | Server    | H       | 1     |
@@ -1438,3 +1438,40 @@ Totals by system (45 items):
    8. Engine and data only; no screen change, no screenshots.
 7. Owner notes (2026-10-21)
    1. Owner marks 19.45 solved.
+
+### [ ] 19.46 A lost {HP} bonus takes HP from the bottom
+
+1. Goal: lowering max HP removes marked damage first (R-MECH-21).
+2. Report (owner, 2026-10-21)
+   1. Play test; record `2026-10-20-182229-g1_Hitokiri-Battosai_jеня.fsrec`.
+   2. The Empty used Abyss on Bag Lunch (with a counter) in an attack.
+   3. HP became 0; the game stood still; the attack ended.
+   4. HP should go down from the top, not from the bottom.
+3. Cause
+   1. Replay on `f289001`, step 909: max HP 3, damage 2, HP 1.
+   2. Step 910: Bag Lunch destroyed; max HP 2, damage still 2, HP 0.
+   3. `PlayerHP` is max minus damage; nothing applies R-MECH-21.
+   4. A death goes on the stack only when damage resolves.
+   5. So the player stood at 0 HP with no death (R-DEATH-01).
+   6. Step 916: the attack ended at 0 HP (R-ATK-14), with no death.
+   7. Same hole for monsters that lose a {HP} bonus.
+4. Tasks:
+   1. Any drop in max HP removes that much damage, down to 0.
+   2. Players and monsters; checked after every change in `Apply`.
+   3. An object left at 0 HP this way gets its death on the stack.
+5. Done when:
+   1. Go test: Bag Lunch destroyed at 1 HP of 3 leaves 1 HP of 2.
+   2. Go test: a monster that loses a {HP} bonus keeps its HP left.
+6. Result (2026-10-21)
+   1. New `checkMaxHP` in `combat.go` applies R-MECH-21.
+   2. It runs at the start of `Apply`, after the intent, and each `run()` step.
+   3. Players and in-play objects with HP; damage never below 0.
+   4. Left at 0 HP this way (max HP 0): death on the stack.
+   5. The last max HP is not saved; checksums of other states stay.
+   6. The record's case: Bag Lunch destroyed at 1 HP of 3 leaves 1 HP of 2.
+   7. Tests: `TestAbyssOnBagLunchKeepsHP`, `TestLowerMaxHPRemovesDamage`.
+   8. Test: `TestMaxHPToZeroKills`.
+   9. The new test fails without the fix: HP 0, damage 2.
+   10. Records with such a drop while damaged no longer replay.
+   11. Wiki: "Max HP going down" in `Rules-engine.md`.
+   12. Engine only; no screen change, no screenshots.

@@ -234,3 +234,43 @@ func TestNoAttackWithAStack(t *testing.T) {
 		t.Error("declared an attack with something on the stack (R-ATK-01)")
 	}
 }
+
+// TestLowerMaxHPRemovesDamage: max HP that goes down removes that much
+// damage, never below 0; HP left only drops past the damage (R-MECH-21).
+func TestLowerMaxHPRemovesDamage(t *testing.T) {
+	g := newTestGame(t, 2)
+	// The boss has 4 HP, 6 with its boost; the player 2, 4 with theirs.
+	m := putMonster(g, 0, "boss")
+	g.Boosts = append(g.Boosts, Boost{Stat: StatMonsterHP, Object: m, Amount: 2})
+	g.Object(m).Damage = 3
+	g.Boosts = append(g.Boosts, Boost{Stat: StatPlayerHP, Player: 1, Amount: 2})
+	g.Players[1].Damage = 1
+	g.checkMaxHP()
+	g.Boosts = nil
+	g.checkMaxHP()
+	if hp, dmg := g.HP(m), g.Object(m).Damage; hp != 3 || dmg != 1 {
+		t.Errorf("monster: HP %d, damage %d; want 3 of 4, damage 1", hp, dmg)
+	}
+	if hp, dmg := g.PlayerHP(1), g.Players[1].Damage; hp != 2 || dmg != 0 {
+		t.Errorf("player: HP %d, damage %d; want 2 of 2, damage 0", hp, dmg)
+	}
+	if len(g.Stack) != 0 {
+		t.Errorf("no death: stack %v", g.Stack)
+	}
+}
+
+// TestMaxHPToZeroKills: a player whose max HP drops to 0 gets their death
+// on the stack (R-MECH-21, R-DEATH-01).
+func TestMaxHPToZeroKills(t *testing.T) {
+	g := newTestGame(t, 2)
+	g.checkMaxHP()
+	g.Boosts = append(g.Boosts, Boost{Stat: StatPlayerHP, Player: 1, Amount: -2})
+	g.checkMaxHP()
+	if n := len(g.Stack); n != 1 || g.Stack[0].Kind != StackDeath || g.Stack[0].Target.Player != 1 {
+		t.Fatalf("stack %v, want player 1's death", g.Stack)
+	}
+	g.checkMaxHP()
+	if len(g.Stack) != 1 {
+		t.Error("one death only")
+	}
+}

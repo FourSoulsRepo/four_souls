@@ -175,6 +175,7 @@ func (g *Game) run() {
 		if steps > maxRunSteps {
 			panic("rulesengine: the game does not settle (bug)")
 		}
+		g.checkMaxHP()
 		g.checkBonusSouls()
 		if g.checkWin() {
 			return

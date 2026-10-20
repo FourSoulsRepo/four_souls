@@ -217,7 +217,55 @@ func (g *Game) PlayerAttackDC(p PlayerID) (int, bool) {
 
 // PlayerHP is a player's remaining health (R-CARD-25, R-MECH-19).
 func (g *Game) PlayerHP(p PlayerID) int {
-	return max(g.def(g.Players[p].Character).HP+g.bonus(StatPlayerHP, p, 0)-g.Players[p].Damage, 0)
+	return max(g.playerMaxHP(p)-g.Players[p].Damage, 0)
+}
+
+// playerMaxHP is a player's max HP: the character's HP and its bonuses.
+func (g *Game) playerMaxHP(p PlayerID) int {
+	return g.def(g.Players[p].Character).HP + g.bonus(StatPlayerHP, p, 0)
+}
+
+// hpKey names a player (id 0) or an object with HP for checkMaxHP.
+type hpKey struct {
+	p  PlayerID
+	id ObjectID
+}
+
+// checkMaxHP applies R-MECH-21: max HP that went down since the last
+// check also removes that much marked damage; this is not healing. A
+// player or monster left at 0 HP this way gets its death on the stack
+// (R-DEATH-01). The last max HP is not saved: between Apply calls it is
+// always the current max HP.
+func (g *Game) checkMaxHP() {
+	seen := make(map[hpKey]int, len(g.maxHP))
+	for i := range g.Players {
+		p, pl := PlayerID(i), &g.Players[i]
+		k, m := hpKey{p: p}, g.playerMaxHP(p)
+		seen[k] = m
+		if was, ok := g.maxHP[k]; ok && m < was {
+			alive := !pl.Dead && was > pl.Damage
+			pl.Damage = max(pl.Damage-(was-m), 0)
+			if alive && g.PlayerHP(p) == 0 {
+				g.push(StackItem{Kind: StackDeath, Controller: NoPlayer, Label: "death", Target: Target{Player: p, IsPlayer: true}})
+			}
+		}
+	}
+	for _, id := range g.inPlay() {
+		if _, ok := g.characterOf(id); ok || g.def(id).HP == 0 {
+			continue
+		}
+		o := g.Object(id)
+		k, m := hpKey{id: id}, g.def(id).HP+g.monsterBonus(StatMonsterHP, id)
+		seen[k] = m
+		if was, ok := g.maxHP[k]; ok && m < was {
+			alive := was > o.Damage
+			o.Damage = max(o.Damage-(was-m), 0)
+			if alive && g.HP(id) == 0 && !g.Eternal(id) {
+				g.push(StackItem{Kind: StackDeath, Controller: NoPlayer, Label: "death", Target: Target{Object: id}})
+			}
+		}
+	}
+	g.maxHP = seen
 }
 
 // Evasion is the dice check to hit a monster, between 1 and 6 (R-ATK-18).

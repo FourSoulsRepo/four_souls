@@ -81,6 +81,10 @@ A test fails when the committed report is out of date, so run the command after 
 * priority given while actions are queued is deferred (`Priority.Deferred`) and opened once the queue is empty;
 * `maxRunSteps` turns an endless loop into a panic with a clear message, so tests and fuzzing fail instead of hanging.
 
+## Max HP going down
+
+HP left is max HP minus marked damage, and max HP comes from bonuses that can go away at any time (an item leaves play, a counter goes, a room changes). R-MECH-21 says a lower max HP also removes that much damage, so the HP left only drops when there was less damage than the loss. `checkMaxHP()` (`combat.go`) applies this for players and for in-play objects with HP: it runs at the start of `Apply`, after the intent, and on every `run()` step, and compares each max HP with the one from its last run. A player or monster that ends at 0 HP this way gets its death on the stack (R-DEATH-01). The last max HP (`g.maxHP`) is not saved and not in the checksum: between `Apply` calls it always equals the current max HP (19.46).
+
 ## Testing
 
 * Rules tests name the rule they check (`R-…` IDs from the rules document).

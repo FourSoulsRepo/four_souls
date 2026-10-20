@@ -88,7 +88,9 @@ func (g *Game) Apply(in Intent) ([]Event, error) {
 		return nil, err
 	}
 	g.events = nil
+	g.checkMaxHP() // the last max HP, also after a load
 	g.apply(in)
+	g.checkMaxHP()
 	g.run()
 	// Bonus souls and the win are checked whenever the game stops too,
 	// not only between automatic steps.

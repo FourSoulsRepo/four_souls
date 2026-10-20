@@ -309,6 +309,8 @@ type Game struct {
 	// see Asking.Key).
 	AskSeq int `json:"ask_seq,omitempty"`
 	asks   map[int]askEffect
+	// maxHP is the max HP at the last checkMaxHP (R-MECH-21; not saved).
+	maxHP map[hpKey]int
 
 	cards  cardIndex
 	events []Event
@@ -352,6 +354,7 @@ func (g *Game) Clone() (*Game, error) {
 	}
 	c.cards = g.cards // definitions are not part of the saved state
 	c.asks = maps.Clone(g.asks)
+	c.maxHP = maps.Clone(g.maxHP)
 	return &c, nil
 }
 
