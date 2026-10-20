@@ -1189,3 +1189,24 @@ This step never closes; new reports are appended.
    1. Find what else loads the machine; maybe fewer workers for webkit.
 4. Done when:
    1. Cause written here; three full runs in a row pass.
+
+### [ ] 19.39 Many dice show as one thrown die
+
+1. Goal: a roll of several dice throws every die at once.
+2. Report (owner, 2026-10-20)
+   1. Classic Roller: "rolls 2 dice instead".
+   2. The screen shows one thrown die; it is confusing.
+   3. Mutant Spider should throw 4 dice the same way.
+3. Cause
+   1. The engine draws all the dice in `throwDie` (`ManyDice`).
+   2. `dice_rolled` carries only the first die's value.
+   3. So the client throws one die.
+   4. Same for Cursed Lil Haunt's 2 dice.
+4. Tasks:
+   1. `dice_rolled` carries every die: `dice`.
+   2. The client throws them side by side, together.
+5. Done when:
+   1. Go test: Classic Roller's and Mutant Spider's events carry all dice.
+   2. Vitest: the effect keeps every value.
+   3. e2e test: a 2-dice roll throws two dice.
+   4. Wiki `Animations.md` row updated.
