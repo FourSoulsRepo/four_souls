@@ -24,6 +24,35 @@ This step never closes; new reports are appended.
    1. The owner marks it solved; then "Owner notes".
 6. Branch: the fix goes on the step branch in work.
    1. No `step-19` branch; fixes merge with that step.
+7. Every item gets a group in "Bugs by system" below.
+   1. The group is where the cause was, not where it showed.
+   2. Add the item to its row and update the count.
+   3. A new kind of cause gets a new row at the end.
+
+## Bugs by system
+
+| ID | Group                                    | System     | Items                                                  | Count |
+|----|------------------------------------------|------------|--------------------------------------------------------|-------|
+| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36                      | 5     |
+| B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39                               | 4     |
+| C  | Card data: wrong values in `card_db`     | Card data  | 19.24                                                  | 1     |
+| D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30                                     | 3     |
+| E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41                   | 6     |
+| F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40                                    | 3     |
+| G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19                                    | 3     |
+| H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
+| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37 | 9 |
+| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38               | 6     |
+
+Totals by system (41 items):
+
+| System    | Groups  | Count |
+|-----------|---------|-------|
+| Engine    | A, B    | 9     |
+| Card data | C       | 1     |
+| Client    | D–G     | 15    |
+| Server    | H       | 1     |
+| e2e       | I, J    | 15    |
 
 ---
 
