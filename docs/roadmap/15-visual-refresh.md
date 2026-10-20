@@ -2575,3 +2575,28 @@ Images come first, so the new table is built with backs and mats.
    9. Engine version unchanged: no rule changed.
    10. No screen changed; no screenshots.
    11. UC-06; wiki `Server`, `Adding-a-card`; CHANGELOG.
+
+### [x] 15.86 One engine check for "this item may hurt that player"
+
+1. Goal: one place decides which stack items end a player's wait.
+2. Asked by the owner (2026-10-20), after 15.85.
+3. Why
+   1. 15.84 reads targets and damage in the server.
+   2. 15.85 reads `Takes` in the engine.
+   3. The server repeats what the engine knows: target kinds, controllers.
+4. Tasks:
+   1. Engine: `Game.Threatens(item, player)`: targets, damage, `Takes`.
+   2. Server keeps only "newer than the press" and calls it.
+   3. No change seen by players.
+5. Done when:
+   1. Go tests of 15.84 and 15.85 cases move to the engine.
+   2. Server tests still pass unchanged in behavior.
+6. Result (2026-10-20)
+   1. `Game.Threatens` in `pkg/rules_engine/threat.go`.
+   2. It covers targets, damage, and `Takes`; `MayTake` is gone.
+   3. Server `targeted` keeps only "newer than the press".
+   4. `TestThreatens` in the engine: 13 cases, fake cards for `Takes`.
+   5. Server tests: Jawbone, XV. The Devil, Dead Bird, the press.
+   6. Engine version unchanged: no rule changed.
+   7. No screen changed; no screenshots.
+   8. Wiki `Server`, `Rules-engine`.

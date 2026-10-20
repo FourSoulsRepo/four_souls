@@ -150,34 +150,17 @@ func TestWaitEndsOnEventTake(t *testing.T) {
 	}
 }
 
-// TestTargeted: a target on the player's items or hand cards counts; a
-// target from before the wait, of their own, or on another player does
-// not (15.84).
+// TestTargeted: only stack items newer than the press end the wait;
+// what counts as a threat is the engine's (Game.Threatens, 15.86).
 func TestTargeted(t *testing.T) {
-	tb := enginetest.NewSetup(t, engine.SituationSetup{Players: []engine.SituationPlayer{
-		{Character: "isaac"}, {Character: "cain", Items: []engine.CardRef{"jawbone"}, Hand: []engine.CardRef{"a_penny"}}, {Character: "maggy"},
-	}}, b2.Set)
-	g := tb.G
-	r := &Room{game: g}
-	item, card := tb.Find(1, "jawbone"), tb.Find(1, "a_penny")
-	cases := []struct {
-		name string
-		it   engine.StackItem
-		want bool
-	}{
-		{"their item", engine.StackItem{ID: 1, Controller: 0, Targets: []engine.Chosen{{Kind: engine.TargetItem, Object: item}}}, true},
-		{"their hand card", engine.StackItem{ID: 1, Controller: 2, Targets: []engine.Chosen{{Kind: engine.TargetYourHandCard, Object: card}}}, true},
-		{"damage to them", engine.StackItem{ID: 1, Kind: engine.StackDamage, Controller: 0, Target: engine.Target{Player: 1, IsPlayer: true}}, true},
-		{"another player", engine.StackItem{ID: 1, Controller: 0, Targets: []engine.Chosen{{Kind: engine.TargetPlayer, Player: 2}}}, false},
-		{"their own", engine.StackItem{ID: 1, Controller: 1, Targets: []engine.Chosen{{Kind: engine.TargetPlayer, Player: 1}}}, false},
-		{"before the wait", engine.StackItem{ID: 0, Controller: 0, Targets: []engine.Chosen{{Kind: engine.TargetPlayer, Player: 1}}}, false},
-		{"a spent cost", engine.StackItem{ID: 1, Controller: 0, Targets: []engine.Chosen{{Kind: engine.TargetItem, Object: item, Spent: true}}}, false},
+	tb := enginetest.New(t, b2.Set, enginetest.Seat("isaac"), enginetest.Seat("cain"))
+	r := &Room{game: tb.G}
+	tb.G.Stack = []engine.StackItem{{ID: 5, Controller: 0, Targets: []engine.Chosen{{Kind: engine.TargetPlayer, Player: 1}}}}
+	if !r.targeted(1, 4) {
+		t.Error("an item after the press did not end the wait")
 	}
-	for _, c := range cases {
-		g.Stack = []engine.StackItem{c.it}
-		if got := r.targeted(1, 0); got != c.want {
-			t.Errorf("%s: targeted %v, want %v", c.name, got, c.want)
-		}
+	if r.targeted(1, 5) {
+		t.Error("an item from before the press ended the wait")
 	}
 }
 

@@ -290,30 +290,6 @@ func (g *Game) ability(ref AbilityRef) Ability {
 	return d.Abilities[ref.Index]
 }
 
-// MayTake reports whether stack item it may take from p as it resolves,
-// although no target names p (Ability.Takes, 15.85).
-func (g *Game) MayTake(it StackItem, p PlayerID) bool {
-	d, ok := g.cards.find(it.Ability.Card)
-	if !ok || it.Controller == p {
-		return false
-	}
-	abs := d.Abilities
-	if it.Ability.Lingering {
-		abs = d.Lingering
-	}
-	if it.Ability.Index < 0 || it.Ability.Index >= len(abs) {
-		return false
-	}
-	switch abs[it.Ability.Index].Takes {
-	case TakesOthers:
-		return true
-	case TakesEventPlayer:
-		return it.EventPlayer == p
-	case TakesNobody:
-	}
-	return false
-}
-
 func (g *Game) abilityText(ref AbilityRef) string {
 	if t := g.ability(ref).Text; t != "" {
 		return string(ref.Card) + ": " + t

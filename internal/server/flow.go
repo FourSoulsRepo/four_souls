@@ -108,44 +108,12 @@ func (r *Room) waitOver(p engine.PlayerID) bool {
 	return before && (t.EndDeclared || t.DeathEnd || t.Step >= engine.StepEndTriggers)
 }
 
-// targeted: a stack item newer than seq, of another player, targets p,
-// or p's character, items, souls, curses, or hand cards (15.84). Damage
-// to them counts too, and an item that may take from p with no target
-// (15.85).
+// targeted: a stack item newer than seq may hurt p (Game.Threatens:
+// targets, damage, takes; 15.84 – 15.86).
 func (r *Room) targeted(p engine.PlayerID, seq int) bool {
-	g := r.game
-	owns := func(id engine.ObjectID) bool {
-		return id >= 0 && int(id) < len(g.Objects) && g.Objects[id].Controller == p
-	}
-	hits := func(c engine.Chosen) bool {
-		switch c.Kind {
-		case engine.TargetPlayer, engine.TargetOtherPlayer, engine.TargetMonsterOrPlayer:
-			return c.Player == p
-		case engine.TargetItem, engine.TargetCurse, engine.TargetYourItem, engine.TargetYourHandCard, engine.TargetItemOrSoul:
-			return owns(c.Object)
-		case engine.TargetMonster, engine.TargetDiceRoll, engine.TargetStackAbility, engine.TargetStackTrigger:
-		}
-		return false
-	}
-	for _, it := range g.Stack {
-		if it.ID <= seq || it.Controller == p || it.Controller == engine.NoPlayer {
-			continue
-		}
-		if g.MayTake(it, p) {
-			return true // it picks its victim as it resolves (15.85)
-		}
-		if it.Kind == engine.StackDamage {
-			if it.Target.IsPlayer && it.Target.Player == p {
-				return true
-			}
-			if !it.Target.IsPlayer && owns(it.Target.Object) {
-				return true
-			}
-		}
-		for _, c := range it.Targets {
-			if !c.Spent && hits(c) {
-				return true
-			}
+	for _, it := range r.game.Stack {
+		if it.ID > seq && r.game.Threatens(it, p) {
+			return true
 		}
 	}
 	return false

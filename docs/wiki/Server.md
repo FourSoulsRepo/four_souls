@@ -30,7 +30,7 @@ WebSocket (ws.go) ──Conn──▶ Client ──▶ Hub (lobby goroutine)
 The server answers for a player only in these cases, never choosing among real options otherwise:
 
 * the player can only pass (auto-skip, N-05);
-* the player waits for their turn: until the seat before them declares the end of its turn, dies, or reaches its end phase; the end window then asks them (N-16). A stack item of another player that targets them, or their character, items, souls, curses or hand cards, or deals them damage, ends the wait at once, if it came after the press (`targeted` in `flow.go`, 15.84). So does one whose ability may take from them with no target, e.g. XV. The Devil, which picks the item it steals as it resolves (`Ability.Takes`, `Game.MayTake`, 15.85);
+* the player waits for their turn: until the seat before them declares the end of its turn, dies, or reaches its end phase; the end window then asks them (N-16). A stack item of another player that targets them, or their character, items, souls, curses or hand cards, or deals them damage, ends the wait at once, if it came after the press (15.84). So does one whose ability may take from them with no target, e.g. XV. The Devil, which picks the item it steals as it resolves (`Ability.Takes`, 15.85). The engine decides what threatens a player (`Game.Threatens` in `threat.go`); the server only keeps the stack ID of the press (`targeted` in `flow.go`, 15.86);
 * the response timer ran out, or the seat was kicked: pass or end the turn, the first cards for a discard, the first option of a choice, a throw for a roll (N-07, N-08, 15.60).
 
 "Wait for my turn" only passes: a roll always waits for its own player's throw (ADR 014).
