@@ -1158,6 +1158,8 @@ This step never closes; new reports are appended.
    4. Reruns: 1 of 16 failed with 15.42; 2 of 12 failed without it.
    5. So it is older than 15.42; the sky is not on the game table.
    6. Evidence: `.cache/e2e-fails/20261020-15.42-gate/` and `-rerun/` (not in git).
+   7. Again in the 15.80 gate, webkit: y off by 31.7 px.
+   8. Evidence: `.cache/e2e-evidence/15.80-run2/` (not in git).
 3. Tasks:
    1. Find why the first tracked box is late: sampling or the shot's start.
    2. Fix the shot if it starts off the player; else the test.
@@ -1178,6 +1180,11 @@ This step never closes; new reports are appended.
    7. The next full run passed: 238 passed.
    8. Evidence: `.cache/e2e-evidence/15.79-run1/` (not in git).
    9. Same signs as 19.35, solved with 3 workers.
+   10. Again in the 15.80 gate: chromium `prompt.spec.ts:199`, 120 s.
+   11. It waited for the stack's attack target after the throw button.
+   12. The error snapshot shows another test's game (Max, Nia).
+   13. Alone, 6 repeats per browser: 12 of 12 passed.
+   14. Evidence: `.cache/e2e-evidence/15.80-run1/` (not in git).
 3. Tasks:
    1. Find what else loads the machine; maybe fewer workers for webkit.
 4. Done when:

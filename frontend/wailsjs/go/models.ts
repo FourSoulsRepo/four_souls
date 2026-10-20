@@ -379,7 +379,6 @@ export namespace settings {
 	    recent: RecentServer[];
 	    animation: string;
 	    fullscreen: boolean;
-	    theme: string;
 	    mat: string;
 	    dice: string;
 	    no_end_turn_ask: boolean;
@@ -396,7 +395,6 @@ export namespace settings {
 	        this.recent = this.convertValues(source["recent"], RecentServer);
 	        this.animation = source["animation"];
 	        this.fullscreen = source["fullscreen"];
-	        this.theme = source["theme"];
 	        this.mat = source["mat"];
 	        this.dice = source["dice"];
 	        this.no_end_turn_ask = source["no_end_turn_ask"];

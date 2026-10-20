@@ -32,7 +32,6 @@ The fixture copies the fan-game notice. `internal/legal` has a test that fails w
 | The stack, seen by a player who may respond | `screen-stack.png` |
 | History, turn badge, what is left this turn | `screen-history.png` |
 | First start: choose a nickname | `screen-welcome.png` |
-| Settings in the light theme | `screen-settings-light.png` |
 | Paused: waiting for a player who left | `screen-paused.png` |
 | Connection lost, with Reconnect | `screen-connection-lost.png` |
 | Game over: the winner and the record | `screen-game-over.png` |

@@ -2,18 +2,13 @@
    layers, far first, each one tile larger than the window. A layer
    slides one tile down and left per loop, then starts over on the same
    picture, so the loop has no seam. Only transform moves; the screens
-   draw over it, and it never catches the pointer. The light theme keeps
-   its plain menus (ST-02). */
+   draw over it, and it never catches the pointer. */
 .sky {
   position: fixed;
   inset: 0;
   z-index: var(--z-sky);
   overflow: hidden;
   pointer-events: none;
-}
-
-:root[data-theme="light"] .sky {
-  display: none;
 }
 
 .sky-layer {

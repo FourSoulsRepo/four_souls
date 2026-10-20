@@ -238,14 +238,6 @@ export function seatOf(s: Pick<Session, 'lobby'>): number {
   return s.lobby.table?.you ?? Math.max(s.lobby.welcome?.seat ?? 0, 0);
 }
 
-// applyTheme colours menus and panels (ST-02).
-// Unit tests run without a document.
-function applyTheme(s: Settings): void {
-  if (typeof document !== 'undefined') {
-    document.documentElement.dataset.theme = s.theme;
-  }
-}
-
 // messageOf turns a rejected call into a message for the player. Wails
 // rejects with Go's error string.
 export function messageOf(e: unknown): string {
@@ -548,7 +540,6 @@ export const useApp = create<AppState>()((set, get) => {
       recent: [],
       animation: 'normal',
       fullscreen: false,
-      theme: 'dark',
       mat: '',
       dice: 'tear',
       no_end_turn_ask: false,
@@ -599,7 +590,6 @@ export const useApp = create<AppState>()((set, get) => {
       try {
         const s = await getSettings();
         set({ settings: s });
-        applyTheme(s);
       } catch {
         // Keep the defaults; Go already falls back to them.
       }
@@ -610,7 +600,6 @@ export const useApp = create<AppState>()((set, get) => {
         const saved = await saveSettings(s);
         set({ settings: saved, error: '' });
         // Settings apply at once, without a restart.
-        applyTheme(saved);
         if (saved.fullscreen !== before.fullscreen) {
           setFullscreen(saved.fullscreen);
         }

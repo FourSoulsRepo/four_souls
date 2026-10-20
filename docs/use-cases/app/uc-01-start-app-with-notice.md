@@ -25,7 +25,6 @@
 * **7a. No private images, or the banner fails to load:** The menu shows the text title.
 * **8a. No private images:** The menu screens keep their plain color.
 * **8b. Animations off:** The sky stands still.
-* **8c. Light theme:** The menu screens keep their plain light color.
 
 ## Postconditions
 

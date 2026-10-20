@@ -28,8 +28,8 @@
   * Saved with the nickname; it applies to the next effect.
 * **3c. Fullscreen (ST-01):** the window switches when saved.
   * The next start opens in the saved mode.
-* **3d. Theme (ST-02):** Dark or Light, for menus and panels.
-  * The game table keeps its dark overlays on the mat.
+* **3d. Theme (ST-07):** no choice; the app has one dark theme (15.80).
+  * An older settings file's theme is ignored.
 * **3e. Game mat (ST-03):** Green felt, Basement or Cathedral.
   * A preview shows the mat; the table uses it at once.
   * With the private images, every mat image is a choice (V-24).

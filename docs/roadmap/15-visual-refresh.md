@@ -2409,7 +2409,7 @@ Images come first, so the new table is built with backs and mats.
    1. Owner marks 15.79 solved.
    2. 15.80 and 15.81 go on without a stop; one review after both.
 
-### [ ] 15.80 One dark theme
+### [x] 15.80 One dark theme
 
 1. Goal: the app has one theme, dark (ST-07).
 2. Asked by the owner (2026-10-20).
@@ -2422,6 +2422,15 @@ Images come first, so the new table is built with backs and mats.
    1. Go test: an old settings file with `theme` still loads.
    2. e2e: Settings has no Theme field.
    3. `make screenshots`: no light settings shot.
+5. Result (2026-10-20)
+   1. `Settings.Theme` and `Themes` gone from Go; `encoding/json` skips an old `theme`.
+   2. Bridge, store and fake bridge: no `theme`, no `data-theme`.
+   3. CSS: the light tokens, the hidden sky and the table's own dark tokens go.
+   4. The table's tokens equalled `:root`; panels keep their own `--muted`.
+   5. Go `TestOldThemeIgnored`; e2e "there is no theme to pick".
+   6. The sky test drops its light-theme step.
+   7. UC-01 8c removed; UC-10 3d; wikis `Client`, `Screenshots`; CHANGELOG.
+   8. Screenshots: `.cache/screenshots/15.80/before/` and `after/`.
 
 ### [ ] 15.81 No Green felt mat
 

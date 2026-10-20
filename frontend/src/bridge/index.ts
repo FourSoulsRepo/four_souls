@@ -45,7 +45,6 @@ export interface Settings {
   // animation is the animation speed (ST-05).
   animation: Speed;
   fullscreen: boolean; // ST-01
-  theme: Theme; // ST-02, menus and panels
   mat: string; // ST-03, V-24: a MatInfo or color mat id, '' for the default; Go checks it
   dice: string; // V-19, a DiceSkin id; Go checks it
   // no_end_turn_ask ends the turn without asking while plays are left (V-46).
@@ -70,8 +69,6 @@ export interface Rejoin {
   game: string;
 }
 
-export type Theme = 'dark' | 'light';
-
 // fromGo reads Go's settings; Go checks the choices, so anything else is
 // only possible from an older app.
 function fromGo(s: {
@@ -79,7 +76,6 @@ function fromGo(s: {
   recent: RecentServer[];
   animation: string;
   fullscreen: boolean;
-  theme: string;
   mat: string;
   dice: string;
   no_end_turn_ask?: boolean;
@@ -91,7 +87,6 @@ function fromGo(s: {
     recent: s.recent.map((r) => ({ address: r.address, name: r.name })),
     animation: speed(s.animation),
     fullscreen: s.fullscreen,
-    theme: s.theme === 'light' ? 'light' : 'dark',
     mat: s.mat,
     dice: s.dice,
     no_end_turn_ask: s.no_end_turn_ask ?? false,

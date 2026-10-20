@@ -51,7 +51,6 @@ function loadSettings(): unknown {
     recent: [],
     animation,
     fullscreen: false,
-    theme: 'dark',
     mat,
     dice: 'tear',
     no_end_turn_ask: params.has('noendask'),
@@ -68,7 +67,6 @@ interface FakeSettings {
   recent: { address: string; name: string }[];
   animation: string;
   fullscreen: boolean;
-  theme: string;
   mat: string;
   dice: string;
   no_end_turn_ask?: boolean;

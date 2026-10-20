@@ -26,7 +26,7 @@ func TestSurvivesRestart(t *testing.T) {
 
 func TestDefaults(t *testing.T) {
 	dir := t.TempDir()
-	want := Settings{Recent: []RecentServer{}, Animation: "normal", Theme: "dark", Dice: "tear"}
+	want := Settings{Recent: []RecentServer{}, Animation: "normal", Dice: "tear"}
 	if got := Load(filepath.Join(dir, "none.json")); !reflect.DeepEqual(got, want) {
 		t.Fatalf("missing file: %+v", got)
 	}
@@ -99,20 +99,44 @@ func TestAnimationSpeed(t *testing.T) {
 	}
 }
 
-func TestWindowThemeAndMat(t *testing.T) {
+func TestWindowAndMat(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "settings.json")
-	want := Settings{Recent: []RecentServer{}, Animation: "normal", Fullscreen: true, Theme: "light", Mat: "cathedral", Dice: "tear"}
-	got, err := Save(path, Settings{Fullscreen: true, Theme: "light", Mat: "cathedral"})
+	want := Settings{Recent: []RecentServer{}, Animation: "normal", Fullscreen: true, Mat: "cathedral", Dice: "tear"}
+	got, err := Save(path, Settings{Fullscreen: true, Mat: "cathedral"})
 	if err != nil || !reflect.DeepEqual(got, want) {
 		t.Fatalf("saved %+v, %v; want %+v", got, err, want)
 	}
 	if got := Load(path); !reflect.DeepEqual(got, want) {
 		t.Fatalf("loaded %+v, want %+v", got, want)
 	}
-	for _, bad := range []Settings{{Theme: "pink"}, {Mat: "../lava"}, {Mat: "Lava"}, {Dice: "d20"}} {
+	for _, bad := range []Settings{{Mat: "../lava"}, {Mat: "Lava"}, {Dice: "d20"}} {
 		if _, err := Save(path, bad); !errors.Is(err, ErrChoice) {
 			t.Fatalf("%+v: err %v, want ErrChoice", bad, err)
 		}
+	}
+}
+
+// TestOldThemeIgnored: a file from before ST-07 keeps a theme; the rest
+// of it still loads, and the next save drops it.
+func TestOldThemeIgnored(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "settings.json")
+	if err := os.WriteFile(path, []byte(`{"nickname": "Ann", "theme": "light", "mat": "cathedral"}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	got := Load(path)
+	want := Settings{Nickname: "Ann", Recent: []RecentServer{}, Animation: "normal", Mat: "cathedral", Dice: "tear"}
+	if !reflect.DeepEqual(got, want) {
+		t.Fatalf("loaded %+v, want %+v", got, want)
+	}
+	if _, err := Save(path, got); err != nil {
+		t.Fatal(err)
+	}
+	data, err := os.ReadFile(path) //nolint:gosec // the test names the file
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(string(data), "theme") {
+		t.Fatalf("saved file keeps the theme: %s", data)
 	}
 }
 

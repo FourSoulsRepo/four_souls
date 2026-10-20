@@ -19,6 +19,7 @@ Rules engine versions are in each release's notes.
 - The menu screens drift on the starry sky of foursouls.ru.
 - A match record names the dedicated server the game ran on.
 - The main menu has an Exit button.
+- The light theme is gone; the app has one dark theme, and Settings no longer has a Theme field.
 
 ## 0.1.1 - 2026-10-19
 

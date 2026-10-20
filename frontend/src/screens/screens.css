@@ -20,7 +20,7 @@
 }
 
 /* A panel is a dark board with an ink frame, like the game's dialogs
-   (15.40); it keeps its dark colors in the light theme too. */
+   (15.40). */
 .panel {
   --fg: #f2f2f2;
   --muted: #c9bfa6;

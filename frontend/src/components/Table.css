@@ -15,11 +15,7 @@
   padding: 6px;
   box-sizing: border-box;
   overflow: hidden;
-  /* The table stays dark in both themes; the mat is a mat-* class. */
-  --bg: #1b2636;
-  --fg: #f2f2f2;
-  --muted: #9aa5b5;
-  --panel: #243248;
+  /* The mat is a mat-* class. */
   color: var(--fg);
 }
 

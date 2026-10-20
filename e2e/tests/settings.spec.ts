@@ -1,8 +1,17 @@
-// Settings screen (7.10): ST-01, ST-02, ST-03, ST-06, V-46.
+// Settings screen (7.10): ST-01, ST-03, ST-06, ST-07, V-46.
 import { expect, test } from './fixtures';
 import { startGame } from './game';
 import { appURL } from './server';
 import { realAssets, shot } from './shot';
+
+// One dark theme (15.80, ST-07): nothing to pick, nothing on the page.
+test('there is no theme to pick', async ({ page }) => {
+  await page.goto('/?fake&nosplash');
+  await page.getByRole('button', { name: 'Settings' }).click();
+  await expect(page.getByRole('combobox', { name: 'Game mat' })).toBeVisible();
+  await expect(page.getByLabel('Theme')).toHaveCount(0);
+  await expect(page.locator('html')).not.toHaveAttribute('data-theme');
+});
 
 test('the first start asks for a nickname, once', async ({ page }) => {
   await realAssets(page);
@@ -31,21 +40,17 @@ test('the question before ending the turn can be turned off (V-46)', async ({ pa
   await expect(ask).not.toBeChecked();
 });
 
-test('fullscreen, theme and mat apply at once and survive a restart', async ({ page }) => {
+test('fullscreen and mat apply at once and survive a restart', async ({ page }) => {
   await page.goto('/?fake&nosplash');
   await page.getByRole('button', { name: 'Settings' }).click();
   await page.getByLabel('Fullscreen').check();
-  await page.getByLabel('Theme').selectOption('light');
   await page.getByRole('combobox', { name: 'Game mat' }).selectOption('basement');
   await expect(page.getByLabel('Game mat preview')).toHaveClass(/mat-basement/);
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(page.getByRole('status')).toHaveText('Saved.');
-  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
   expect(await page.evaluate(() => (window as unknown as { fakeFullscreen: boolean }).fakeFullscreen)).toBe(true);
-  await shot(page, 'settings-light');
 
   await page.reload();
-  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
   await page.getByRole('button', { name: 'Settings' }).click();
   await expect(page.getByLabel('Fullscreen')).toBeChecked();
   await expect(page.getByRole('combobox', { name: 'Game mat' })).toHaveValue('basement');

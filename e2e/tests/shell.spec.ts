@@ -89,14 +89,9 @@ test('the menus drift on the night sky, still with animations off (15.42)', asyn
   await page.getByRole('button', { name: 'Host a game' }).click();
   await expect(page.getByRole('heading', { name: 'Host a game' })).toBeVisible();
   await expect(layers).toHaveCount(6);
-  // The light theme keeps its plain menus.
+  // Animations off: the sky stands still.
   await page.getByRole('button', { name: 'Back' }).click();
   await page.getByRole('button', { name: 'Settings' }).click();
-  await page.getByLabel('Theme').selectOption('light');
-  await page.getByRole('button', { name: 'Save' }).click();
-  await expect(page.locator('.sky')).toBeHidden();
-  // Animations off: the sky stands still.
-  await page.getByLabel('Theme').selectOption('dark');
   await page.getByLabel('Animations').selectOption('off');
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(layers).toHaveCount(6);

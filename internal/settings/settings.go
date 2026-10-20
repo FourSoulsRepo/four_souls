@@ -25,8 +25,7 @@ type Settings struct {
 	Animation string `json:"animation"`
 	// Fullscreen starts the window fullscreen (ST-01).
 	Fullscreen bool `json:"fullscreen"`
-	// Theme colours menus and panels (ST-02): one of Themes.
-	Theme string `json:"theme"`
+	// An older file's "theme" is ignored: the app has one theme (ST-07).
 	// Mat is the game mat under the table (ST-03, V-24): a mat image
 	// name or one of ColorMats; see ValidMat. "" is the default: the
 	// first mat image, or the first color mat without images.
@@ -118,7 +117,6 @@ type Rejoin struct {
 // the default.
 var (
 	Speeds = []string{"normal", "fast", "slow", "off"}
-	Themes = []string{"dark", "light"}
 	Dice   = []string{
 		"tear", "blue_fly", "cent", "moms_knife", "the_bible",
 		"brimstone", "guppy_paw", "pentagram", "poop", "tinted_rock",
@@ -157,14 +155,14 @@ func (s *Settings) choices() []struct {
 	return []struct {
 		value   *string
 		allowed []string
-	}{{&s.Animation, Speeds}, {&s.Theme, Themes}, {&s.Dice, Dice}}
+	}{{&s.Animation, Speeds}, {&s.Dice, Dice}}
 }
 
 // Load reads the settings. A missing or broken file gives the defaults.
 // Recent is never nil, so the frontend always gets a list; an unknown
 // choice reads as its default.
 func Load(path string) Settings {
-	def := Settings{Recent: []RecentServer{}, Animation: Speeds[0], Theme: Themes[0], Dice: Dice[0]}
+	def := Settings{Recent: []RecentServer{}, Animation: Speeds[0], Dice: Dice[0]}
 	data, err := os.ReadFile(path) //nolint:gosec // the app names the file
 	if err != nil {
 		return def

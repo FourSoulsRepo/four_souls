@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { Settings, Theme } from '../bridge';
+import type { Settings } from '../bridge';
 import { Die } from '../components/Die';
 import { diceChoices } from '../dice';
 import { matChoices, matLook, matOf } from '../mats';
@@ -11,11 +11,7 @@ function speedOf(v: string): Speed {
   return v === 'fast' || v === 'slow' || v === 'off' ? v : 'normal';
 }
 
-function themeOf(v: string): Theme {
-  return v === 'light' ? 'light' : 'dark';
-}
-
-// SettingsScreen: ST-01, ST-02, ST-03, ST-05, ST-06, the dice look
+// SettingsScreen: ST-01, ST-03, ST-05, ST-06, the dice look
 // (V-19, 15.64), and the question before ending the turn (V-46). Saved
 // settings apply at once; the dice look goes out in the next hello.
 export function SettingsScreen() {
@@ -80,18 +76,6 @@ export function SettingsScreen() {
           Ask before ending the turn while plays are left
         </label>
         <div className="row">
-          <label className="field">
-            Theme
-            <select
-              value={form.theme}
-              onChange={(e) => {
-                change({ theme: themeOf(e.target.value) });
-              }}
-            >
-              <option value="dark">Dark</option>
-              <option value="light">Light</option>
-            </select>
-          </label>
           <label className="field">
             Game mat
             <select
