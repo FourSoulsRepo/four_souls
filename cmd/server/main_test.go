@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"context"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -139,6 +140,12 @@ func TestRun(t *testing.T) {
 	}
 	if ws == nil {
 		t.Fatal("could not connect")
+	}
+	// Docker's healthcheck asks /healthz (8.19).
+	if resp, err := http.Get("http://127.0.0.1:47741/healthz"); err != nil || resp.StatusCode != http.StatusOK { //nolint:noctx // test
+		t.Fatalf("healthz: %v, %v", resp, err)
+	} else {
+		_ = resp.Body.Close() //nolint:errcheck // test
 	}
 	msg, err := protocol.Encode(protocol.TypeHello, 1, protocol.Hello{Protocol: protocol.Version, Name: "Ann"})
 	if err != nil {

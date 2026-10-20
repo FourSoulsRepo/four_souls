@@ -227,7 +227,7 @@ Ideas: B-03 – B-05, L-03, V-10, V-11, DO-01, V-14, A-16, N-13, N-14, V-19, N-1
 3. Done when:
    1. Vitest for every address form; e2e for the fallback.
 
-### [ ] 8.19 Dockerfile
+### [x] 8.19 Dockerfile
 
 1. Goal: one file builds a server image from the latest release (N-19).
 2. Tasks:

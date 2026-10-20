@@ -130,6 +130,7 @@ func Start(ctx context.Context, cfg Config) (*Server, error) {
 	mux := http.NewServeMux()
 	mux.Handle("/ws", Handler(hub))
 	mux.HandleFunc("/record", hub.downloadRecord)
+	mux.HandleFunc("/healthz", hub.healthz)
 	s.http = &http.Server{Handler: mux, ReadHeaderTimeout: 10 * time.Second}
 	go func() { _ = s.http.Serve(ln) }() //nolint:errcheck // ends with ErrServerClosed on Shutdown
 	return s, nil

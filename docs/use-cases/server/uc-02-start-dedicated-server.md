@@ -27,6 +27,11 @@
   * ENV overrides the config file; flags override ENV.
   * An empty variable counts as unset.
   * A bad value names the variable and stops the start (1b).
+* **1e. In Docker (8.19):** the owner builds `deploy/docker/Dockerfile`.
+  * The image gets the latest release's server; no source code needed.
+  * Records and saves live in the `/data` volume.
+  * `GET /healthz` answers 200 while the lobby runs; Docker marks it healthy.
+  * `docker stop` stops it as SIGTERM does (6).
 
 ## Postconditions
 

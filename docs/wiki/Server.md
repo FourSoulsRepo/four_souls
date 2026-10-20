@@ -13,7 +13,8 @@ WebSocket (ws.go) ──Conn──▶ Client ──▶ Hub (lobby goroutine)
 * **Hub** owns the lobby: hello, the game list, tables, ready checks, saved games. Only its goroutine touches that state; everything reaches it as a request on a channel.
 * **Room** owns one game: the ban and pick phase, then the engine game. Only its goroutine touches the engine.
 * **Client.Receive** sends a message to the hub until the client's game starts, then straight to its room.
-* **Server** (`server.go`) is the HTTP server with `/ws` and `/record`; `cmd/server` and the app's Host binding both start it.
+* **Server** (`server.go`) is the HTTP server with `/ws`, `/record` and `/healthz`; `cmd/server` and the app's Host binding both start it.
+* **`/healthz`** (`health.go`, 8.19) answers 200 while the hub goroutine runs a request within two hub seconds, else 503. Docker's healthcheck asks it; it tells nothing about games.
 
 ## A game's life
 
