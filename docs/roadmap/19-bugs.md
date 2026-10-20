@@ -1032,7 +1032,7 @@ This step never closes; new reports are appended.
 7. Owner notes (2026-10-19)
    1. Owner marks 19.32 solved.
 
-### [ ] 19.33 e2e: a Ready click in the lobby never returns
+### [x] 19.33 e2e: a Ready click in the lobby never returns
 
 1. Goal: `startGame` never hangs on the Ready click.
 2. Report (agent, 2026-10-20)
@@ -1049,6 +1049,10 @@ This step never closes; new reports are appended.
    1. Find why the click never returns; fix the client or the test.
 5. Done when:
    1. The cause is named here; a test covers it if it is in the code.
+6. Owner notes (2026-10-20)
+   1. Owner marks 19.33 solved; likely the same cause as 19.35.
+   2. Not seen since the e2e runs use three workers.
+   3. If it shows up again, this item reopens.
 
 ### [x] 19.34 e2e: the thrown die test misses its sound
 
