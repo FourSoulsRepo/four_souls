@@ -761,23 +761,35 @@ test('a revealed card that stays in its deck shrinks back onto it (15.73)', asyn
 
 // trackBoxes records, every frame, the box of the first element each
 // selector finds, in window.tracked (15.74). It stops as trackCards does.
+// An element's first box is taken when it joins the page, before the
+// test can pause or jump its animation (19.37).
 async function trackBoxes(page: Page, selectors: Record<string, string>): Promise<void> {
   await page.evaluate((sel) => {
     const w = window as unknown as { tracked: Record<string, { x: number; y: number; w: number; hidden: boolean }[]>; tracking: boolean };
     w.tracked = Object.fromEntries(Object.keys(sel).map((k) => [k, []]));
     w.tracking = true;
     const end = performance.now() + 10_000;
-    const frame = () => {
+    const sample = (firstOnly: boolean) => {
       for (const [k, s] of Object.entries(sel)) {
+        const list = w.tracked[k];
         const el = document.querySelector(s);
-        if (el) {
+        if (el && list && (!firstOnly || list.length === 0)) {
           const r = el.getBoundingClientRect();
           const hidden = getComputedStyle(el).visibility === 'hidden';
-          w.tracked[k]?.push({ x: r.left + r.width / 2, y: r.top + r.height / 2, w: r.width, hidden });
+          list.push({ x: r.left + r.width / 2, y: r.top + r.height / 2, w: r.width, hidden });
         }
       }
+    };
+    const added = new MutationObserver(() => {
+      sample(true);
+    });
+    added.observe(document.body, { childList: true, subtree: true });
+    const frame = () => {
+      sample(false);
       if (w.tracking && performance.now() < end) {
         requestAnimationFrame(frame);
+      } else {
+        added.disconnect();
       }
     };
     requestAnimationFrame(frame);

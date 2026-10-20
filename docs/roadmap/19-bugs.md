@@ -1168,6 +1168,22 @@ This step never closes; new reports are appended.
 4. Done when:
    1. Cause found and written here.
    2. The test passes 30 repeats in a row, both browsers.
+5. Cause
+   1. The shot starts on the player; the test measures it late.
+   2. `trackBoxes` sampled only on animation frames.
+   3. The test pauses the shot and jumps it to 150 ms for its picture.
+   4. Playwright can see the shot before the browser draws a frame.
+   5. Then the pause wins: the first box is at 150 of 450 ms.
+   6. With `ease-in`, that is about 0.106 of a ~290 px flight.
+   7. So the miss is the same each time: 30.55 px twice, 31.67 once.
+   8. A busy machine (webkit, full run) makes the race likelier.
+6. Result (2026-10-20)
+   1. Test only; the shot is unchanged.
+   2. `trackBoxes` takes each first box when the element joins the page.
+   3. A `MutationObserver` runs before the test can pause the shot.
+   4. Every `trackBoxes` test gains it, 15.76's roll shot too.
+   5. 15.77 alone: 30 repeats per browser, 60 of 60 passed.
+   6. `make lint frontend e2e` passed.
 
 ### [ ] 19.38 e2e: game starts time out again in a full run
 
