@@ -2134,3 +2134,5 @@ Images come first, so the new table is built with backs and mats.
    12. Vitest `lobby.test.ts`, `store.test.ts`; e2e `lobby.spec.ts`.
    13. ADR 006; UC-02 1c, UC-04 1e, 1f; wikis; CHANGELOG.
    14. Screenshots: `.cache/screenshots/15.71/before/` and `after/`.
+6. Owner notes (2026-10-20)
+   1. Owner marks 15.71 solved.
