@@ -7,6 +7,7 @@ Rules engine versions are in each release's notes.
 ## Unreleased
 
 - Dice: a thrown die is a 3D cube that tumbles onto the table and clatters as it lands; every die has light and shade.
+- End turn asks first while you can still play something, and lists what is left; Settings can turn the question off.
 
 ## 0.1.1 - 2026-10-19
 

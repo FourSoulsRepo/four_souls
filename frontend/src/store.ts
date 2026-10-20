@@ -529,6 +529,7 @@ export const useApp = create<AppState>()((set, get) => {
       theme: 'dark',
       mat: '',
       dice: 'tear',
+      no_end_turn_ask: false,
       rejoin: { address: '', token: '', game: '' },
       host: noHostSetup,
     },

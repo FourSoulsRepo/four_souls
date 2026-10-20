@@ -75,3 +75,11 @@
   padding: 4px 12px 2px;
   font-size: 14px;
 }
+
+/* The plays left, in End turn's question (V-46). */
+.end-turn-left {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-weight: 600;
+}

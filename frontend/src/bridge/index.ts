@@ -48,6 +48,8 @@ export interface Settings {
   theme: Theme; // ST-02, menus and panels
   mat: string; // ST-03, V-24: a MatInfo or color mat id, '' for the default; Go checks it
   dice: string; // V-19, a DiceSkin id; Go checks it
+  // no_end_turn_ask ends the turn without asking while plays are left (V-46).
+  no_end_turn_ask: boolean;
   // rejoin is the last game joined, so a restarted app takes its seat
   // back (N-08).
   rejoin: Rejoin;
@@ -73,6 +75,7 @@ function fromGo(s: {
   theme: string;
   mat: string;
   dice: string;
+  no_end_turn_ask?: boolean;
   rejoin: Rejoin;
   host?: HostSetup;
 }): Settings {
@@ -84,6 +87,7 @@ function fromGo(s: {
     theme: s.theme === 'light' ? 'light' : 'dark',
     mat: s.mat,
     dice: s.dice,
+    no_end_turn_ask: s.no_end_turn_ask ?? false,
     rejoin: { address: s.rejoin.address, token: s.rejoin.token, game: s.rejoin.game },
     host: s.host ? { ...noHostSetup, ...s.host } : noHostSetup,
   };

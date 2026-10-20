@@ -104,6 +104,12 @@
   * Options on the table glow and can be clicked there.
   * "Back to the choice" opens the window again.
 * **2g. Why not (15.29):** a card or icon that can't be used says why (UC-22).
+* **7e. Plays left (V-46, 15.70):** End turn asks "End turn?" while it does not glow.
+  * The question lists what is left: Attack, Buy, Play loot, Use abilities.
+  * End turn, E, or Enter ends the turn.
+  * Keep playing, Esc, or a click outside keeps the turn; nothing is sent.
+  * A glowing End turn ends the turn at once.
+  * Settings can turn the question off (UC-10, 3g).
 
 ## Postconditions
 

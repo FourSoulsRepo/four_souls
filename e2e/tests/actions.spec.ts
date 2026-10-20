@@ -9,7 +9,9 @@ import {
   activePage,
   canEndTurn,
   click,
+  endTurn,
   endTurnButton,
+  endTurnQuestion,
   expectNextTurn,
   gameOver,
   passButton,
@@ -43,10 +45,10 @@ async function attack(pages: Page[], active: Page, press: Tap, turn: number) {
   await settle(pages, press, backToMe(active, turn));
 }
 
-// endTurn ends the turn if it is still the active player's.
-async function endTurn(active: Page, press: Tap) {
+// endTurnIfMine ends the turn if it is still the active player's.
+async function endTurnIfMine(active: Page, press: Tap) {
   if (await canEndTurn(active)) {
-    await press(active, endTurnButton(active));
+    await endTurn(active, press);
   }
 }
 
@@ -70,7 +72,7 @@ test('a full turn with the mouse: drag a loot card, attack, end the turn', async
     await settle(pages, click, backToMe(active, turn));
   }
   await attack(pages, active, click, turn);
-  await endTurn(active, click);
+  await endTurnIfMine(active, click);
   await expectNextTurn(pages, click, turn);
 });
 
@@ -85,7 +87,7 @@ test('a full turn with touch: tap a loot card to play it, attack, end the turn',
     await settle(pages, tap, backToMe(active, turn));
   }
   await attack(pages, active, tap, turn);
-  await endTurn(active, tap);
+  await endTurnIfMine(active, tap);
   await expectNextTurn(pages, tap, turn);
 });
 
@@ -264,12 +266,62 @@ test('the big End turn button: E ends the turn, Space passes', async ({ browser 
   expect(await lastAct(page)).toBe(0);
   await settle(pages, click, backToMe(active, turn));
 
-  // E ends the turn, like the button.
+  // E ends the turn, like the button. With plays left it asks first,
+  // and E again confirms (V-46).
   if (await canEndTurn(active)) {
+    const asks = !(await endTurnButton(active).evaluate((b) => b.classList.contains('idle')));
     await active.keyboard.press('e');
+    if (asks) {
+      await expect(endTurnQuestion(active)).toBeVisible();
+      await active.keyboard.press('e');
+    }
     expect(await lastAct(active)).toBe(1);
     await expectNextTurn(pages, click, turn);
   }
+});
+
+test('End turn asks first while plays are left (V-46)', async ({ browser }) => {
+  const pages = await startGame(browser, ['Ida', 'Jon'], { url: fast() });
+  const active = await activePage(pages, click);
+  const turn = await turnNumber(active);
+  const button = endTurnButton(active);
+  // A turn starts with its attack left, so End turn does not glow.
+  await expect(button).not.toHaveClass(/idle/);
+  await recordActs(active);
+
+  const question = endTurnQuestion(active);
+  await button.click();
+  await expect(question).toBeVisible();
+  await expect(question.getByRole('listitem').first()).toBeVisible();
+  await shot(active, 'end-turn-question');
+  await question.getByRole('button', { name: 'Keep playing' }).click();
+  await expect(question).toBeHidden();
+
+  // E asks too; Esc keeps playing.
+  await active.keyboard.press('e');
+  await expect(question).toBeVisible();
+  await active.keyboard.press('Escape');
+  await expect(question).toBeHidden();
+  expect(await lastAct(active)).toBeUndefined();
+  expect(await turnNumber(active)).toBe(turn);
+
+  await button.click();
+  await question.getByRole('button', { name: 'End turn' }).click();
+  expect(await lastAct(active)).toBe(1);
+  await expectNextTurn(pages, click, turn);
+});
+
+test('with the question off in the settings, End turn ends at once (V-46)', async ({ browser }) => {
+  const pages = await startGame(browser, ['Kit', 'Lev'], { url: `${fast()}&noendask` });
+  const active = await activePage(pages, click);
+  const turn = await turnNumber(active);
+  const button = endTurnButton(active);
+  await expect(button).not.toHaveClass(/idle/);
+  await recordActs(active);
+  await button.click();
+  expect(await lastAct(active)).toBe(1);
+  await expect(endTurnQuestion(active)).toHaveCount(0);
+  await expectNextTurn(pages, click, turn);
 });
 
 // feed plays the current view again as the next update, with events;

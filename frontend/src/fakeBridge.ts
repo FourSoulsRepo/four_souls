@@ -40,7 +40,8 @@ const settingsKey = 'fake-settings';
 
 function loadSettings(): unknown {
   // ?anim=off starts with animations off; ?mat=basement starts on that
-  // mat; ?firstrun starts without a nickname, as on the first start.
+  // mat; ?firstrun starts without a nickname, as on the first start;
+  // ?noendask ends the turn without asking (V-46).
   const params = new URLSearchParams(window.location.search);
   const animation = params.get('anim') ?? 'normal';
   const mat = params.get('mat') ?? '';
@@ -53,6 +54,7 @@ function loadSettings(): unknown {
     theme: 'dark',
     mat,
     dice: 'tear',
+    no_end_turn_ask: params.has('noendask'),
     rejoin: { address: '', token: '', game: '' },
     host: { seats: 0, sets: null, detailed: false, response_timer: 0, no_bonus_souls: false, no_deck_ratios: false },
   };
@@ -69,6 +71,7 @@ interface FakeSettings {
   theme: string;
   mat: string;
   dice: string;
+  no_end_turn_ask?: boolean;
   rejoin: { address: string; token: string; game: string };
   host?: {
     seats: number;

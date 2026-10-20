@@ -151,3 +151,17 @@ func TestHostSetupRemembered(t *testing.T) {
 		t.Errorf("bad values: %+v, %v; want them dropped", out.Host, err)
 	}
 }
+
+// End turn asks by default (V-46); the switch to stop it is kept.
+func TestNoEndTurnAsk(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "settings.json")
+	if Load(path).NoEndTurnAsk {
+		t.Fatal("a fresh start does not ask before ending the turn")
+	}
+	if _, err := Save(path, Settings{NoEndTurnAsk: true}); err != nil {
+		t.Fatal(err)
+	}
+	if !Load(path).NoEndTurnAsk {
+		t.Fatal("the switch was lost")
+	}
+}

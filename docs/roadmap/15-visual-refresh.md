@@ -2063,7 +2063,7 @@ Images come first, so the new table is built with backs and mats.
    1. Owner merged the dice sound into the private images.
    2. Owner marks 15.69 solved.
 
-### [ ] 15.70 Ask before ending the turn
+### [x] 15.70 Ask before ending the turn
 
 1. Goal: End turn asks first while the player can still play (V-46).
 2. Asked by the owner (2026-10-20).
@@ -2083,3 +2083,18 @@ Images come first, so the new table is built with backs and mats.
    2. e2e: End turn with plays left asks; Keep playing keeps the turn.
    3. e2e: with the setting off, End turn ends at once.
    4. `make screenshots` covers the dialog.
+6. Result (2026-10-20)
+   1. `actionsFor` fills `TurnActions.left` when End turn does not glow.
+   2. Order: Attack, Buy, Play loot, Use abilities.
+   3. `EndTurnQuestion` in `TurnActions.tsx`: "End turn?" and that list.
+   4. It opens through a portal to `body`, so the board does not clip it.
+   5. A new update closes it; nothing is sent until End turn.
+   6. Setting `no_end_turn_ask`: false by default, so old files ask.
+   7. Settings checkbox: "Ask before ending the turn while plays are left".
+   8. Layers: it joins the `overlay` row; no new layer was needed.
+   9. e2e helper `endTurn` confirms the question; `games.spec` answers it.
+   10. Fake bridge `?noendask` starts with the question off.
+   11. Vitest `actions.test.ts`; e2e `actions.spec.ts`, `settings.spec.ts`.
+   12. Go test `TestNoEndTurnAsk`.
+   13. UC-13 7e, UC-10 3g; wikis `Client` and `Layers`; CHANGELOG.
+   14. Screenshots: `.cache/screenshots/15.70/before/` and `after/`.

@@ -33,6 +33,9 @@ type Settings struct {
 	Mat string `json:"mat"`
 	// Dice is the look of the player's dice (V-19): one of Dice.
 	Dice string `json:"dice"`
+	// NoEndTurnAsk ends the turn at once, without asking while plays are
+	// left (V-46); false, the default, asks.
+	NoEndTurnAsk bool `json:"no_end_turn_ask"`
 	// Rejoin is the last game joined, so a restarted app takes its seat
 	// back (N-08).
 	Rejoin Rejoin `json:"rejoin"`

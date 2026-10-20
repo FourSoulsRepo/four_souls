@@ -165,6 +165,7 @@ function Table({ game, you }: { game: Update; you: number }) {
             <EndTurn
               intent={actions.turn.endTurn}
               idle={actions.turn.idle ?? false}
+              left={actions.turn.left}
               own={view.turn.active === you}
               disabled={!canAct}
               step={game.step}

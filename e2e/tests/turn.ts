@@ -204,6 +204,22 @@ export function endTurnButton(page: Page, name: 'End turn' | 'Their turn' = 'End
   return page.getByRole('region', { name: 'Board' }).getByRole('button', { name, exact: true });
 }
 
+// endTurnQuestion asks before the turn ends while plays are left (V-46).
+export function endTurnQuestion(page: Page) {
+  return page.getByRole('dialog', { name: 'End turn?' });
+}
+
+// endTurn presses End turn and confirms when it asks: it asks unless it
+// glows, as nothing is left to do then (H-20, V-46).
+export async function endTurn(page: Page, press: Tap = click) {
+  const button = endTurnButton(page);
+  const asks = !(await button.evaluate((b) => b.classList.contains('idle')));
+  await press(page, button);
+  if (asks) {
+    await press(page, endTurnQuestion(page).getByRole('button', { name: 'End turn' }));
+  }
+}
+
 // canEndTurn: the page may end the turn now (offered and enabled).
 export async function canEndTurn(page: Page): Promise<boolean> {
   return (await seen(page)).ready && (await enabled(endTurnButton(page)));

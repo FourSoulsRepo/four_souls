@@ -1,9 +1,11 @@
 import { useState, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { IntentKind, PromptKind, Purpose, type TurnActions as Allowed } from '../actions';
 import { useKey } from '../keys';
 import type { Intent, Prompt } from '../protocol';
 import { useApp } from '../store';
 import './Actions.css';
+import './Overlays.css';
 
 interface Props {
   allowed: Allowed;
@@ -134,6 +136,8 @@ interface EndProps {
   intent?: Intent;
   // idle: nothing is left to do but end the turn (H-20).
   idle: boolean;
+  // left names what the player may still do; the question lists it (V-46).
+  left?: string[] | undefined;
   // own: it is the viewer's turn.
   own: boolean;
   disabled: boolean;
@@ -146,39 +150,117 @@ interface EndProps {
 // (15.20, H-04): yellow on own turn, grey "Their turn" otherwise
 // (H-19), glowing green once nothing is left to do (H-20). E presses
 // it (F-15). On own turn, a click on it while it is dim says why
-// (15.29, F-18).
-export function EndTurn({ intent, idle, own, disabled, step, why: reason }: EndProps) {
+// (15.29, F-18). While plays are left it asks first, unless the
+// settings say not to (V-46).
+export function EndTurn({ intent, idle, left, own, disabled, step, why: reason }: EndProps) {
   const act = useApp((s) => s.act);
   const showWhy = useApp((s) => s.showWhy);
+  const ask = useApp((s) => !s.settings.no_end_turn_ask) && !idle;
   const [pressed, setPressed] = useState(-1);
+  // asking is the step the question was asked at; a new update drops it.
+  const [asking, setAsking] = useState(-1);
   const lit = own && intent !== undefined && !disabled;
-  const press = () => {
+  const open = lit && asking === step;
+  const end = () => {
     if (lit) {
+      setAsking(-1);
       setPressed(step);
       act(intent);
     }
+  };
+  const press = () => {
+    if (lit && ask && !open) {
+      setAsking(step);
+      return;
+    }
+    end();
   };
   useKey('e', press);
   const label = own ? 'End turn' : 'Their turn';
   const state = !own ? 'theirs' : lit && idle ? 'own idle' : 'own';
   const why = own && !lit && !disabled ? reason : undefined;
   return (
-    <button
-      type="button"
-      className={`end-turn ${state}${pressed === step ? ' down' : ''}`}
-      title={own ? `End turn (E)${why ? ` · ${why}` : ''}` : 'Their turn'}
-      aria-disabled={why ? true : undefined}
-      disabled={!lit && !why}
+    <>
+      <button
+        type="button"
+        className={`end-turn ${state}${pressed === step ? ' down' : ''}`}
+        title={own ? `End turn (E)${why ? ` · ${why}` : ''}` : 'Their turn'}
+        aria-disabled={why ? true : undefined}
+        disabled={!lit && !why}
+        onClick={(e) => {
+          if (why) {
+            showWhy(why, e.clientX, e.clientY);
+            return;
+          }
+          press();
+        }}
+      >
+        {label}
+      </button>
+      {open &&
+        createPortal(
+          <EndTurnQuestion
+            left={left ?? []}
+            end={end}
+            cancel={() => {
+              setAsking(-1);
+            }}
+          />,
+          document.body,
+        )}
+    </>
+  );
+}
+
+// EndTurnQuestion asks before a turn ends while plays are left (V-46).
+// E confirms, as does Enter on its focused End turn; Esc or a click
+// outside keeps playing.
+function EndTurnQuestion({ left, end, cancel }: { left: string[]; end: () => void; cancel: () => void }) {
+  return (
+    <div
+      className="overlay end-turn-question"
+      role="dialog"
+      aria-modal="true"
+      aria-label="End turn?"
       onClick={(e) => {
-        if (why) {
-          showWhy(why, e.clientX, e.clientY);
-          return;
+        if (e.target === e.currentTarget) {
+          cancel();
         }
-        press();
+      }}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          cancel();
+        } else if (e.key.toLowerCase() === 'e' && !e.repeat && !e.ctrlKey && !e.metaKey && !e.altKey) {
+          e.preventDefault();
+          end();
+        }
       }}
     >
-      {label}
-    </button>
+      <div className="overlay-box">
+        <h2>End turn?</h2>
+        {left.length > 0 ? (
+          <>
+            <p className="muted">You can still:</p>
+            <ul className="end-turn-left">
+              {left.map((l) => (
+                <li key={l}>{l}</li>
+              ))}
+            </ul>
+          </>
+        ) : (
+          <p className="muted">You can still play.</p>
+        )}
+        <div className="overlay-buttons">
+          <button type="button" className="primary" autoFocus onClick={end}>
+            End turn
+          </button>
+          <button type="button" onClick={cancel}>
+            Keep playing
+          </button>
+        </div>
+      </div>
+    </div>
   );
 }
 

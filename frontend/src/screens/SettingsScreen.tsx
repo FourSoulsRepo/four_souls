@@ -15,9 +15,9 @@ function themeOf(v: string): Theme {
   return v === 'light' ? 'light' : 'dark';
 }
 
-// SettingsScreen: ST-01, ST-02, ST-03, ST-05, ST-06, and the dice look
-// (V-19, 15.64). Saved settings apply at once; the dice look goes out
-// in the next hello.
+// SettingsScreen: ST-01, ST-02, ST-03, ST-05, ST-06, the dice look
+// (V-19, 15.64), and the question before ending the turn (V-46). Saved
+// settings apply at once; the dice look goes out in the next hello.
 export function SettingsScreen() {
   const settings = useApp((s) => s.settings);
   const error = useApp((s) => s.error);
@@ -68,6 +68,16 @@ export function SettingsScreen() {
             }}
           />
           Fullscreen
+        </label>
+        <label className="check">
+          <input
+            type="checkbox"
+            checked={!form.no_end_turn_ask}
+            onChange={(e) => {
+              change({ no_end_turn_ask: !e.target.checked });
+            }}
+          />
+          Ask before ending the turn while plays are left
         </label>
         <div className="row">
           <label className="field">

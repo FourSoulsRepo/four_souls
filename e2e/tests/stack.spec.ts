@@ -4,7 +4,7 @@ import { expect, test } from './fixtures';
 import { startGame } from './game';
 import { appURL } from './server';
 import { shot } from './shot';
-import { activePage, click, endTurnButton, passButton, playLoot } from './turn';
+import { activePage, click, endTurn, passButton, playLoot } from './turn';
 
 const fast = () => `${appURL()}&anim=off`;
 
@@ -64,7 +64,7 @@ test('a player may wait for their turn; the end of the turn before asks them (N-
   await expect(bar.getByRole('button', { name: 'Cancel wait' })).toBeVisible();
 
   // The turn before ends: waiting is over, and nothing more is offered.
-  await endTurnButton(active).click();
+  await endTurn(active);
   await expect(bar.getByRole('button', { name: /Cancel wait|Wait for my turn/ })).toHaveCount(0);
   if (await passButton(other).isEnabled()) {
     await expect(other.locator('.prompt-title')).toHaveText(/You may act|Respond, or pass/);

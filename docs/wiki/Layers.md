@@ -21,7 +21,7 @@ A layer only counts on the window's own stacking: these elements sit in `.game` 
 | `trail` | The attack lunge and its starburst. | It plays over the effects of the same hit. | `components/Effects.css` |
 | `effects` | Event effects: flying cards, reveal, dice, banner, popups. | A game event must be seen, even over a zoom or an overlay. It never catches the pointer. | `components/Effects.css` |
 | `zoom` | The large copy of a hovered or held card. | The player reads a card from any window: discard, choice, look, order, a dialog (19.26). A mouse zoom lets the pointer through. | `components/Card.css` |
-| `overlay` | Connection lost, paused, game over, the game menu. | Modal: the table and its windows wait under it. | `components/Overlays.css` |
+| `overlay` | Connection lost, paused, game over, the game menu, the End turn question (V-46). | Modal: the table and its windows wait under it. | `components/Overlays.css` |
 | `drag` | A hand card being dragged to play. | It follows the pointer over the table and its windows. | `components/Table.css` |
 | `throw` | The roll waiting for its throw, with its button. | The thrown die lands here; only the button catches clicks. | `components/Throw.css` |
 | `menu` | A card's action menu and the ability dialog, with their backdrop. | The player opened it on purpose, over any prompt. | `components/Actions.css` |

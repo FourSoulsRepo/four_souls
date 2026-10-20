@@ -94,6 +94,32 @@ describe('actionsFor', () => {
     );
     expect(a.buttons.map((b) => b.label)).toEqual(['Pass']);
     expect(a.turn.idle).toBe(true);
+    expect(a.turn.left).toBeUndefined();
+  });
+
+  it('lists what is left before ending the turn (V-46)', () => {
+    const all = actionsFor(
+      update({}, [
+        { player: 0, kind: IntentKind.activate, objects: [3] },
+        { player: 0, kind: IntentKind.playLoot, objects: [7] },
+        { player: 0, kind: IntentKind.playLoot, objects: [8] },
+        { player: 0, kind: IntentKind.purchase },
+        { player: 0, kind: IntentKind.attack },
+        { player: 0, kind: IntentKind.endTurn },
+      ]),
+      isCard,
+    );
+    expect(all.turn.left).toEqual(['Attack', 'Buy', 'Play loot', 'Use abilities']);
+    const loot = actionsFor(
+      update({}, [
+        { player: 0, kind: IntentKind.playLoot, objects: [7] },
+        { player: 0, kind: IntentKind.endTurn },
+      ]),
+      isCard,
+    );
+    expect(loot.turn.left).toEqual(['Play loot']);
+    const notMine = actionsFor(update({}, [{ player: 0, kind: IntentKind.playLoot, objects: [7] }]), isCard);
+    expect(notMine.turn.left).toBeUndefined();
   });
 
   it('offers nothing when it is not the viewer’s move', () => {

@@ -43,6 +43,8 @@
   * A preview shows the picked look's six faces.
   * The next hello sends it; every screen draws this player's rolls in it.
   * Without the private images there is no dice field; dice stay plain.
+* **3g. Ask before ending the turn (V-46):** on by default.
+  * Off: End turn ends the turn at once, even with plays left (UC-13, 7e).
 
 ## Postconditions
 

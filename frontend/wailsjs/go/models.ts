@@ -364,6 +364,7 @@ export namespace settings {
 	    theme: string;
 	    mat: string;
 	    dice: string;
+	    no_end_turn_ask: boolean;
 	    rejoin: Rejoin;
 	    host: HostSetup;
 	
@@ -380,6 +381,7 @@ export namespace settings {
 	        this.theme = source["theme"];
 	        this.mat = source["mat"];
 	        this.dice = source["dice"];
+	        this.no_end_turn_ask = source["no_end_turn_ask"];
 	        this.rejoin = this.convertValues(source["rejoin"], Rejoin);
 	        this.host = this.convertValues(source["host"], HostSetup);
 	    }

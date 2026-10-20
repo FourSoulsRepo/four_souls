@@ -128,7 +128,18 @@ export interface TurnActions {
   idle?: boolean;
   // why says why each turn action that is not allowed can't be (15.29).
   why?: { attack?: string; buy?: string; endTurn?: string };
+  // left names what the player may still do besides passing and ending
+  // the turn, for the question before ending it (V-46).
+  left?: string[];
 }
+
+// leftLabels name the plays End turn's question lists, in its order.
+const leftLabels = new Map<number, string>([
+  [IntentKind.attack, 'Attack'],
+  [IntentKind.purchase, 'Buy'],
+  [IntentKind.playLoot, 'Play loot'],
+  [IntentKind.activate, 'Use abilities'],
+]);
 
 const buttonLabels = new Map<number, string>([[IntentKind.pass, 'Pass']]);
 
@@ -197,6 +208,8 @@ export function actionsFor(u: Update, isCard: (label: string) => boolean): Actio
   }
   if (out.turn.endTurn && allowed.every((a) => a.kind === IntentKind.endTurn || a.kind === IntentKind.pass)) {
     out.turn.idle = true;
+  } else if (out.turn.endTurn) {
+    out.turn.left = [...leftLabels].filter(([kind]) => allowed.some((a) => a.kind === kind)).map(([, label]) => label);
   }
   const choose = allowed.filter((a) => a.kind === IntentKind.choose);
   if (choose.length > 0) {

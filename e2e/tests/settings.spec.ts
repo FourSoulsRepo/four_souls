@@ -1,4 +1,4 @@
-// Settings screen (7.10): ST-01, ST-02, ST-03, ST-06.
+// Settings screen (7.10): ST-01, ST-02, ST-03, ST-06, V-46.
 import { expect, test } from './fixtures';
 import { startGame } from './game';
 import { appURL } from './server';
@@ -16,6 +16,19 @@ test('the first start asks for a nickname, once', async ({ page }) => {
   await expect(page.getByRole('button', { name: 'Host a game' })).toBeVisible();
   await page.getByRole('button', { name: 'Settings' }).click();
   await expect(page.getByLabel('Nickname')).toHaveValue('Ada');
+});
+
+test('the question before ending the turn can be turned off (V-46)', async ({ page }) => {
+  await page.goto('/?fake&nosplash');
+  await page.getByRole('button', { name: 'Settings' }).click();
+  const ask = page.getByLabel('Ask before ending the turn while plays are left');
+  await expect(ask).toBeChecked();
+  await ask.uncheck();
+  await page.getByRole('button', { name: 'Save' }).click();
+  await expect(page.getByRole('status')).toHaveText('Saved.');
+  await page.reload();
+  await page.getByRole('button', { name: 'Settings' }).click();
+  await expect(ask).not.toBeChecked();
 });
 
 test('fullscreen, theme and mat apply at once and survive a restart', async ({ page }) => {
