@@ -31,7 +31,7 @@ var wizoobSoul = engine.Question{
 			return nil
 		}
 		var out []string
-		for _, id := range souls(c.G, livingPlayers(c.G, engine.NoPlayer)[a[0]]) {
+		for _, id := range c.G.DestroyableSouls(livingPlayers(c.G, engine.NoPlayer)[a[0]]) {
 			out = append(out, string(c.G.Object(id).Card))
 		}
 		return out
@@ -43,5 +43,5 @@ func wizoobDestroy(c *engine.Ctx, a []int) {
 		return
 	}
 	p := livingPlayers(c.G, engine.NoPlayer)[a[0]]
-	c.G.DestroyObject(p, souls(c.G, p)[a[1]])
+	c.G.DestroyObject(p, c.G.DestroyableSouls(p)[a[1]])
 }

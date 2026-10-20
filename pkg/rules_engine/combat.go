@@ -123,10 +123,23 @@ func (g *Game) PlaceFromOutside(card CardRef, i int) ObjectID {
 }
 
 // Eternal reports whether an object is eternal: printed or gained
-// (R-ABIL-18).
+// (R-ABIL-18). A card that lost all abilities lost Eternal too (Q-23).
 func (g *Game) Eternal(id ObjectID) bool {
 	o := g.Object(id)
-	return (g.def(id).Eternal && !o.LostEternal) || o.Eternal || g.boosted(StatEternal, id)
+	kept := !o.NoAbilities && ((g.def(id).Eternal && !o.LostEternal) || o.Eternal)
+	return kept || g.boosted(StatEternal, id)
+}
+
+// DestroyableSouls are the souls p controls that can be destroyed: the
+// options of "destroy a soul you control" (Q-23).
+func (g *Game) DestroyableSouls(p PlayerID) []ObjectID {
+	var out []ObjectID
+	for _, id := range g.Players[p].InPlay {
+		if g.Object(id).Role == RoleSoul && !g.Eternal(id) {
+			out = append(out, id)
+		}
+	}
+	return out
 }
 
 // boosted reports whether the object has a till-end-of-turn boost of stat.

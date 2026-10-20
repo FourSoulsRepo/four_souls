@@ -1113,3 +1113,35 @@ This step never closes; new reports are appended.
    8. 19.33 may share this cause; left open until it is seen again.
 8. Owner notes (2026-10-20)
    1. Owner marks 19.35 solved.
+
+### [ ] 19.36 XX Judgement destroys no soul
+
+1. Goal: "destroy a soul you control" always destroys one, if able.
+2. Report (owner, 2026-10-20)
+   1. Play test; record `2026-10-20-104330-g1_Hitokiri-Battosai_jеня_KING.fsrec`.
+   2. The Miser played XX Judgement on The Forgotten.
+   3. The Forgotten kept every soul.
+3. Cause
+   1. Replay to step 1633: options `the_bone`, `lost_soul`, `blastocyst`.
+   2. The player picked The Bone, a soul made from the starting item.
+   3. A starting item is Eternal; it stayed Eternal as a soul.
+   4. `DestroyObject` refuses Eternal objects; the card did nothing.
+   5. Same hole: Wizoob, Curse of Loss, Forget Me Now.
+4. Owner answers (2026-10-20)
+   1. A soul that "loses all abilities" loses Eternal too (The Bone).
+   2. Souls that can't be destroyed stay; they are not offered.
+   3. The Lost's own soul is one of them.
+5. Tasks:
+   1. `Eternal` is false for a card with no abilities.
+   2. Destroy-a-soul choices list only souls that can be destroyed.
+6. Done when:
+   1. Tests: a Bone soul is destroyed; an Eternal soul is not offered.
+   2. The record's case: Judgement on The Forgotten destroys a soul.
+7. Result (2026-10-20)
+   1. `Eternal` is false for a card with no abilities (`combat.go`).
+   2. New `Game.DestroyableSouls`: souls that are not Eternal.
+   3. XX Judgement, Wizoob, Curse of Loss, Forget Me Now use it.
+   4. The record replayed: the same pick now destroys The Bone.
+   5. Ruling: Q-23 in `open-questions.md`, House, in "Rulings to revisit".
+   6. Tests: `TestTheBoneSoulCanBeDestroyed`, `TestXXJudgementSkipsEternalSouls`.
+   7. Engine only; no screen change, no screenshots.

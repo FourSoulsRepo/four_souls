@@ -232,12 +232,12 @@ var eachPlayerDestroysASoul = engine.EffectFunc(func(c *engine.Ctx) {
 		them := *c
 		them.Controller = pl
 		them.Do(engine.Ask(func(c *engine.Ctx, a []int) {
-			if ids := soulsOf(c.G, c.Controller); a[0] >= 0 && a[0] < len(ids) {
+			if ids := c.G.DestroyableSouls(c.Controller); a[0] >= 0 && a[0] < len(ids) {
 				c.G.DestroyObject(c.Controller, ids[a[0]])
 			}
 		}, engine.Question{Text: "Destroy which soul?", Options: func(c *engine.Ctx, _ []int) []string {
 			var out []string
-			for _, id := range soulsOf(c.G, c.Controller) {
+			for _, id := range c.G.DestroyableSouls(c.Controller) {
 				out = append(out, string(c.G.Object(id).Card))
 			}
 			return out
@@ -245,16 +245,6 @@ var eachPlayerDestroysASoul = engine.EffectFunc(func(c *engine.Ctx) {
 		p = c.G.PlayerAfter(p)
 	}
 })
-
-func soulsOf(g *engine.Game, p engine.PlayerID) []engine.ObjectID {
-	var out []engine.ObjectID
-	for _, id := range g.Players[p].InPlay {
-		if g.Object(id).Role == engine.RoleSoul {
-			out = append(out, id)
-		}
-	}
-	return out
-}
 
 // giveLootThenPlay: target 0 gives the controller a loot card of their
 // choice; it is revealed, then played for free if able.

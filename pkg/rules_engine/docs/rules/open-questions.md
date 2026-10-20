@@ -261,6 +261,22 @@ On 2026-10-09 the owner parked every open decision for later.
 4. Status: **Resolved** (2026-10-19): (b), even for Black Candle (19.27).
 5. Basis: **House**: questionable; the owner saw no use for the prompt.
 
+### Q-23 A soul that can't be destroyed
+
+1. Question: what does "destroy a soul you control" do to an Eternal soul?
+   1. Example: The Bone became a soul; it was a starting item, so Eternal.
+   2. XX Judgement offered it; picking it destroyed nothing (19.36).
+2. Sources:
+   1. R-ABIL-18: an Eternal object can't be destroyed.
+   2. The Bone's soul "loses all abilities".
+   3. No ruling found on Eternal souls (2026-10-20).
+3. Options:
+   1. (a) A soul with no abilities is not Eternal.
+   2. (b) Souls that can't be destroyed are not offered.
+4. Status: **Resolved** (2026-10-20): both (a) and (b).
+   1. The Lost's own soul is a character soul; it is never offered.
+5. Basis: **House**: no ruling found.
+
 ## Old rulings re-checked (R-07)
 
 | # | Ruling (Ed's Notes, 2018–2019) | Check against current rules and V2 text | Status |
@@ -422,3 +438,4 @@ Every row of "Card rulings from Discord (S-DIS)" is Community too.
 | Q-20 | Social Goals | One shared tally for all players | House |
 | Q-21 | Pity for the Poor | Every purchase costs 0¢ | House |
 | Q-22 | Black Candle, The Moon, Flush!, Eden, … | Cards go to the bottom in random order | House (questionable) |
+| Q-23 | The Bone, XX Judgement, Wizoob, … | No Eternal on a soul without abilities; Eternal souls not offered | House |
