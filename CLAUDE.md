@@ -25,6 +25,7 @@
    13. `e2e/`: Playwright UI tests; also makes screenshots.
    14. Wiki groups: players, server admins, developers.
    15. A new wiki page goes into one group in `Home.md` and `_Sidebar.md`.
+   16. `deploy/`: server setups: systemd, Docker, compose with Caddy (ADR 018).
 4. Commands
    1. `wails dev`: run with hot reload.
    2. `wails build`: release binary to `build/bin/`.

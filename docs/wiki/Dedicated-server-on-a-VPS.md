@@ -2,93 +2,51 @@
 
 Any player can rent a small server on the internet (a VPS) and run the game's dedicated server there. Friends then join its address from anywhere; nobody needs a virtual LAN or port forwarding (see [Playing over the internet](Playing-over-the-internet)).
 
+This page has what every setup shares. Then pick one way to run the server:
+
+| Setup | Good for | Players type |
+|---|---|---|
+| [Server as a systemd service](Server-as-a-systemd-service) | the smallest setup: one binary, no Docker | `1.2.3.4` or `games.example.com:4774` |
+| [Server in Docker](Server-in-Docker) | a VPS that already runs Docker; one file to download | `1.2.3.4` or `games.example.com:4774` |
+| [Server with Docker Compose and Caddy](Server-with-Docker-Compose-and-Caddy) | a domain with HTTPS: encrypted, players type only the domain | `games.example.com` |
+
 ## What you need
 
 * A Linux VPS. The server is small: 1 CPU and 512 MB–1 GB of memory are plenty for a few games. Any provider works (Hetzner, DigitalOcean, Vultr, OVH, Linode, a local one); the cheapest plan is usually enough. Pick a location close to your friends.
 * SSH access to it (the provider shows the address and the login).
-* The `four-souls-server` binary for Linux from the game's releases, matching your CPU (`x64` or `arm64`). Everyone's app must speak the same protocol version as the server; using the same release is safest.
+* For HTTPS only: a domain (or a subdomain) whose DNS `A` record points at the VPS address.
+* Everyone's app must speak the same protocol version as the server; using the same release is safest. Every setup below gets the server of the latest release.
 
-## 1. Install
+## Downloads
 
-Log in and create a user that runs the server, so it never runs as root:
+Each release has server archives apart from the game, with no version in their names, for example `four-souls-server-linux-amd64.tar.gz` (or `-linux-arm64` for an ARM VPS). So this link always gets the newest server:
 
-```sh
-ssh root@<server address>
-adduser --system --group --home /var/lib/four-souls four-souls
+```
+https://github.com/FourSoulsRepo/four_souls/releases/latest/download/four-souls-server-linux-amd64.tar.gz
 ```
 
-Copy the binary and make it runnable (from your computer):
+The archive holds `four_souls_server`, a static binary that runs on any Linux distribution. The ready setup files live in the repository under `deploy/`.
 
-```sh
-scp four-souls-server root@<server address>:/usr/local/bin/
-ssh root@<server address> chmod 755 /usr/local/bin/four-souls-server
-```
+## Open the port
 
-Or build it yourself on any machine with Go (version in `go.mod`), for the server's CPU:
-
-```sh
-GOOS=linux GOARCH=amd64 go build -o four-souls-server ./cmd/server   # or GOARCH=arm64
-```
-
-## 2. Try it
-
-```sh
-sudo -u four-souls four-souls-server -port 4774 -records /var/lib/four-souls/records
-```
-
-It prints the fan-game notice, its versions and the address it listens on, then waits for players. Stop it with Ctrl+C (or `systemctl stop`); it closes every connection cleanly and closes the records of running games as unfinished.
-
-## 3. Open the port
-
-The game uses **TCP port 4774** (or the one you chose). With `ufw`:
+The plain setups use **TCP port 4774** (or the one you chose); the HTTPS setup uses **80 and 443** instead. With `ufw`:
 
 ```sh
 ufw allow OpenSSH
-ufw allow 4774/tcp
+ufw allow 4774/tcp            # plain setups
+ufw allow 80/tcp; ufw allow 443/tcp   # HTTPS setup
 ufw enable
 ```
 
-Many providers also have a firewall in their web panel; allow the port there too.
+Many providers also have a firewall in their web panel; allow the ports there too. Docker publishes ports past `ufw`, so with Docker check the provider's firewall too.
 
-## 4. Run it as a service
+## Play
 
-So it starts on boot and restarts after a crash, add `/etc/systemd/system/four-souls.service`:
-
-```ini
-[Unit]
-Description=Four Souls game server
-After=network-online.target
-Wants=network-online.target
-
-[Service]
-User=four-souls
-Group=four-souls
-ExecStart=/usr/local/bin/four-souls-server -port 4774 -records /var/lib/four-souls/records
-Restart=on-failure
-NoNewPrivileges=true
-ProtectSystem=strict
-ReadWritePaths=/var/lib/four-souls
-
-[Install]
-WantedBy=multi-user.target
-```
-
-Then:
-
-```sh
-systemctl daemon-reload
-systemctl enable --now four-souls
-systemctl status four-souls        # is it running?
-journalctl -u four-souls -f        # its output
-```
-
-## 5. Play
-
-Friends open the game, choose **Join a game**, and enter the server's address (and the port, if it is not 4774). One of them clicks **Create a game** under the server's games, sets it up and clicks **Create**; the others join it from the same list. Nobody needs to host in their app.
+Friends open the game, choose **Join a game**, and type the server's address: the IP, or the domain (add `:4774` only for a port other than 4774 with a plain setup). A bare domain first tries a secure connection, then the plain port 4774 (ADR 017). One of them clicks **Create a game** under the server's games, sets it up and clicks **Create**; the others join it from the same list. Nobody needs to host in their app.
 
 ## Options
 
-A JSON config file can set the same values, and so can ENV variables (handy for Docker). ENV overrides the file; flags override both. An empty ENV variable counts as unset.
+Every option is a flag, an ENV variable, or a value in a JSON config file. ENV overrides the file; flags override both. An empty ENV variable counts as unset.
 
 | Flag | ENV | Default | Meaning |
 |---|---|---|---|
@@ -105,20 +63,15 @@ A JSON config file can set the same values, and so can ENV variables (handy for 
 {"port": 4774, "records": "/var/lib/four-souls/records", "retention": 30, "saves": "/var/lib/four-souls/saves", "presence": true, "name": "Basement"}
 ```
 
+`GET /healthz` answers `ok` while the server runs; the Docker setups use it as their healthcheck.
+
 ## Updating
 
-When the game gets a new release, players update their apps and you replace the binary:
-
-```sh
-systemctl stop four-souls
-scp four-souls-server root@<server address>:/usr/local/bin/
-systemctl start four-souls
-```
-
-Stopping ends the running games; their records stay in the records folder, marked unfinished (ADR 007).
+When the game gets a new release, players update their apps and you update the server; each setup page says how. Stopping the server ends the running games; their records stay in the records folder, marked unfinished (ADR 007), and saved games stay too.
 
 ## Safety
 
-* The game has no accounts and does not encrypt its traffic yet (ADR 006). Anyone who knows the address can connect; share it only with your friends.
-* Keep the VPS updated (`apt update && apt upgrade` on Debian or Ubuntu), log in with SSH keys, and do not run the server as root.
-* For encryption today, combine both pages: put the VPS into the same Tailscale or ZeroTier network as the players, and do not open port 4774 to the internet at all.
+* The game has no accounts. Anyone who knows the address can connect; share it only with your friends.
+* The plain setups do not encrypt traffic (ADR 006). The HTTPS setup does: Caddy serves `wss://` (ADR 017).
+* Keep the VPS updated (`apt update && apt upgrade` on Debian or Ubuntu), log in with SSH keys, and do not run the server as root. Every setup here runs it as its own user.
+* Without a domain, for encryption put the VPS into the same Tailscale or ZeroTier network as the players, and do not open port 4774 to the internet at all.

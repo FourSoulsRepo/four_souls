@@ -12,6 +12,9 @@ Pick your group: players, people who run a game server, or developers. Developer
 ## Server admins
 
 * [Dedicated server on a VPS](Dedicated-server-on-a-VPS) — rent a server and host games for friends.
+* [Server as a systemd service](Server-as-a-systemd-service) — the server binary, started by systemd.
+* [Server in Docker](Server-in-Docker) — one Dockerfile builds the latest release.
+* [Server with Docker Compose and Caddy](Server-with-Docker-Compose-and-Caddy) — HTTPS on your domain.
 
 ## Developers
 

@@ -123,6 +123,17 @@ npm (build only, not shipped):
   globals                                   MIT
 
 --------------------------------------------------------------------------
+Server setups in deploy/ (not shipped)
+--------------------------------------------------------------------------
+Pulled by Docker on the operator's machine when the image is built or
+the compose file is started; nothing of them is in this repository or
+in the release archives.
+
+  Alpine Linux base image (alpine)          MIT and others per package;
+                                            BusyBox GPL-2.0, musl MIT
+  Caddy (caddy image)                       Apache-2.0
+
+--------------------------------------------------------------------------
 Build tools (not shipped)
 --------------------------------------------------------------------------
   Go toolchain                              BSD-3-Clause

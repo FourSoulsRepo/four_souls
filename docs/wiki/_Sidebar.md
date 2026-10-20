@@ -8,6 +8,9 @@
 **Server admins**
 
 * [Dedicated server on a VPS](Dedicated-server-on-a-VPS)
+* [Server as a systemd service](Server-as-a-systemd-service)
+* [Server in Docker](Server-in-Docker)
+* [Server with Docker Compose and Caddy](Server-with-Docker-Compose-and-Caddy)
 
 **Developers**
 

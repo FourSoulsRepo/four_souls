@@ -35,7 +35,7 @@ pack() {
 	cp release/SERVER.txt "$work/$1/README.txt"
 	cp LICENSE NOTICE "$work/$1/"
 	case $2 in
-	tar) tar -czf "$out/$1.tar.gz" -C "$work" "$1" ;;
+	tar) tar --no-xattrs --no-mac-metadata -czf "$out/$1.tar.gz" -C "$work" "$1" ;;
 	zip) (cd "$work" && zip -qrX "$out/$1.zip" "$1") ;;
 	esac
 }

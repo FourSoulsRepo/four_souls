@@ -1,0 +1,30 @@
+# Four Souls dedicated server as a systemd service (8.21).
+# Install: wiki page "Server as a systemd service".
+#   /etc/systemd/system/four-souls.service
+# Settings: flags on ExecStart, or FOUR_SOULS_* lines in
+# /etc/four-souls.env (optional; see the Options table on the wiki).
+
+[Unit]
+Description=Four Souls game server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=four-souls
+Group=four-souls
+WorkingDirectory=/var/lib/four-souls
+Environment=FOUR_SOULS_RECORDS=/var/lib/four-souls/records
+Environment=FOUR_SOULS_SAVES=/var/lib/four-souls/saves
+EnvironmentFile=-/etc/four-souls.env
+ExecStart=/usr/local/bin/four_souls_server
+Restart=on-failure
+# The server closes every game within 10 seconds of SIGTERM.
+TimeoutStopSec=15
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/var/lib/four-souls
+
+[Install]
+WantedBy=multi-user.target

@@ -62,3 +62,9 @@ A release needs the private card images. The workflow checks them out with `.git
 `.github/actions/build` builds the app for one target; CI (`ci.yml`, job `app`) and the release workflow both use it.
 
 `release/server.sh <version> <dir>` builds and packs every server archive on one macOS runner (it needs `lipo` for the universal binary); CI (job `server`), the release workflow and `make server-archives` use it. CI also checks that the Linux servers are statically linked.
+
+## Server setups
+
+`deploy/` holds the operator setups (ADR 018): the systemd unit, the Dockerfile, and compose with Caddy. The Dockerfile downloads the server of the latest release, so a release needs no change there. A release must be published as a full release, not a pre-release, or `releases/latest` skips it.
+
+The base images are pinned and bumped by hand: `ARG ALPINE=` in `deploy/docker/Dockerfile` and `image: caddy:…` in `deploy/docker/docker-compose.yml`. Pick a tag at least two weeks old, then check both files once: `docker build` and `docker compose up -d --build` with `DOMAIN=localhost` in `.env` (`curl -k https://localhost/healthz` answers `ok`). Operators get the new pins by downloading the files again, as their wiki pages say.
