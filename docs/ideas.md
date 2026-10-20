@@ -546,6 +546,15 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    2. The app shows that name instead of the bare address.
    3. The player removes a server from the Recent list.
    4. A match record names the server it ran on (owner, 2026-10-20).
+19. N-19. Easy server setup: systemd, Docker, compose with Caddy (owner, 2026-10-21).
+   1. The operator picks one of three ready setups.
+   2. ENV variables configure the server, for Docker.
+   3. One Dockerfile, downloaded alone, builds the latest release.
+   4. Server archives have no version in their names.
+   5. Desktop app archives keep their versions.
+   6. Caddy gives HTTPS; the client speaks `wss://`.
+   7. A bare domain tries `wss://` first, then plain `ws://` on 4774.
+   8. Compose tracks the server with a healthcheck.
 
 ## Learning
 

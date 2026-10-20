@@ -3,7 +3,7 @@
 Goal: the full Base Game for 2–4 players over LAN.
 Public downloads for all platforms.
 
-Ideas: B-03 – B-05, L-03, V-10, V-11, DO-01, V-14, A-16, N-13, N-14, V-19.
+Ideas: B-03 – B-05, L-03, V-10, V-11, DO-01, V-14, A-16, N-13, N-14, V-19, N-19.
 
 ---
 
@@ -191,3 +191,71 @@ Ideas: B-03 – B-05, L-03, V-10, V-11, DO-01, V-14, A-16, N-13, N-14, V-19.
 3. Done when:
    1. Go and Vitest tests for the catalog, setting, and faces.
    2. All six faces checked on two real textures.
+
+### [ ] 8.16 Server ENV config
+
+1. Goal: Docker sets every server option by ENV (N-19).
+2. Tasks:
+   1. `FOUR_SOULS_<OPTION>` for every flag, and `FOUR_SOULS_CONFIG`.
+   2. Order: defaults, then JSON file, then ENV, then flags.
+   3. A bad value stops the server with a clear error.
+3. Done when:
+   1. Tests for each variable, the order, and bad values.
+
+### [ ] 8.17 Server release archives
+
+1. Goal: server downloads apart from the app (N-19).
+2. Tasks:
+   1. A release job builds only the server, with `CGO_ENABLED=0`.
+   2. Names without a version: `four-souls-server-<os>-<arch>`.
+   3. Each has the server, its README, `LICENSE`, `NOTICE`.
+   4. App archives keep their versions and lose the server.
+3. Done when:
+   1. CI builds the server archives.
+   2. The Linux server binaries are statically linked.
+
+### [ ] 8.18 Secure WebSocket in the client
+
+1. Goal: join a server behind HTTPS by its domain (N-19).
+2. Tasks:
+   1. `wss://` and `ws://` typed by the player are kept.
+   2. A bare domain tries `wss://` first, then `ws://` on 4774.
+   3. IPs, `localhost`, LAN names, and a port keep plain `ws://`.
+   4. The record link follows: `https://` for `wss://`.
+   5. ADR for `wss://` through a reverse proxy.
+   6. Use case: join a server by its domain.
+3. Done when:
+   1. Vitest for every address form; e2e for the fallback.
+
+### [ ] 8.19 Dockerfile
+
+1. Goal: one file builds a server image from the latest release (N-19).
+2. Tasks:
+   1. Alpine image; the server runs as a non-root user.
+   2. Downloads `releases/latest/download/…` for the build's CPU.
+   3. Records and saves in the `/data` volume.
+   4. `/healthz` on the server; `HEALTHCHECK` uses it.
+3. Done when:
+   1. The image builds and the healthcheck passes.
+
+### [ ] 8.20 Docker Compose with Caddy
+
+1. Goal: HTTPS server with one command (N-19).
+2. Tasks:
+   1. `docker-compose.yml`, `Caddyfile`, `.env.example`.
+   2. Caddy gets the certificate; only ports 80 and 443 open.
+   3. A healthcheck tracks the server; Caddy waits for it.
+3. Done when:
+   1. `docker compose up` serves `wss://` on a test domain.
+
+### [ ] 8.21 Server setup pages
+
+1. Goal: the operator picks systemd, Docker, or compose (N-19).
+2. Tasks:
+   1. VPS page keeps the shared parts and the options table.
+   2. Options table gets an ENV column.
+   3. One wiki page per setup; how to update each.
+   4. ADR: server deployment from releases.
+   5. `NOTICE` lists Alpine and Caddy.
+3. Done when:
+   1. Each page's commands were run once.
