@@ -11,6 +11,7 @@ Rules engine versions are in each release's notes.
 - A dedicated server can have a name (`-name`); players see it instead of its address.
 - Join a game: remove a server from Recent with its × button.
 - A revealed card grows out of its deck; a new monster or shop card then flies from the middle into its slot, and any other card goes back onto its deck.
+- A played loot card rises from its player's hand to the stack, and flies from the stack to the discard when it resolves.
 
 ## 0.1.1 - 2026-10-19
 

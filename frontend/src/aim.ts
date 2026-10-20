@@ -6,7 +6,11 @@ import type { Intent, OptionView } from './protocol';
 // zonesAt lists the zones under a point, topmost first: data-zone of
 // cards ("obj-N") and piles, data-stack of stack rows. A player is aimed
 // at by the character card (data-player, "player-N"), never by the area
-// around it (15.33), so the areas' own zones are left out.
+// around it (15.33), so the areas' own zones are left out. The stack
+// panel and the large played card are zones only for effects (15.74):
+// a click there is a click on empty space.
+const effectOnly = /^(player-|played-|stack$)/;
+
 export function zonesAt(x: number, y: number): string[] {
   const out: string[] = [];
   for (const el of document.elementsFromPoint(x, y)) {
@@ -16,7 +20,7 @@ export function zonesAt(x: number, y: number): string[] {
     if (stack) {
       out.push(`stack-${stack}`);
     }
-    if (zone && !zone.startsWith('player-')) {
+    if (zone && !effectOnly.test(zone)) {
       out.push(zone);
     }
     if (player) {

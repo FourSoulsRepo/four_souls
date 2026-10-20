@@ -50,7 +50,16 @@ describe('effectsFor', () => {
       { kind: 'loot_played', player: 1, object: 70, card: 'bomb' },
       { kind: 'loot_played', player: 0, object: 71, card: 'a_penny' },
     ];
-    expect(effectsFor(events, ctx)).toEqual([{ kind: 'played', card: 'bomb', who: 'Bo' }]);
+    expect(effectsFor(events, ctx)).toEqual([
+      { kind: 'played', card: 'bomb', who: 'Bo', from: ['hand-1', 'player-1'], to: ['stack'] },
+    ]);
+  });
+
+  it('flies a loot card that leaves the stack from the stack (15.74)', () => {
+    const e: GameEvent = { kind: 'discarded', player: 1, object: 80, prev: 70, card: 'bomb', text: 'stack' };
+    expect(effectsFor([e], ctx)).toEqual([
+      { kind: 'fly', from: ['played-70', 'stack-src-70', 'obj-70', 'deck-loot'], to: ['discard-loot'], card: 'bomb', back: 'loot' },
+    ]);
   });
 
   it('lunges the attacker at what its attack damaged, with no pending popup', () => {

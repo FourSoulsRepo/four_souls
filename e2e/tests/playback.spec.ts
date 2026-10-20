@@ -533,7 +533,9 @@ test('a deck attack keeps the drawn monster in view while its slot is picked (19
 });
 
 // trackCards records, every frame, the box of the large revealed card
-// and of a card flying to its place, in window.boxes (15.73).
+// and of a card flying to its place, in window.boxes (15.73). It stops
+// when the boxes are read, or after 10 s: the test's pages stay open
+// until the worker ends, and a loop left running slows later tests.
 async function trackCards(page: Page): Promise<void> {
   await page.evaluate(() => {
     interface Box {
@@ -541,8 +543,10 @@ async function trackCards(page: Page): Promise<void> {
       y: number;
       w: number;
     }
-    const w = window as unknown as { boxes: { reveal: Box[]; place: Box[] } };
+    const w = window as unknown as { boxes: { reveal: Box[]; place: Box[] }; tracking: boolean };
     w.boxes = { reveal: [], place: [] };
+    w.tracking = true;
+    const end = performance.now() + 10_000;
     const box = (sel: string): Box | null => {
       const el = document.querySelector(sel);
       if (!el) {
@@ -560,7 +564,9 @@ async function trackCards(page: Page): Promise<void> {
       if (place) {
         w.boxes.place.push(place);
       }
-      requestAnimationFrame(frame);
+      if (w.tracking && performance.now() < end) {
+        requestAnimationFrame(frame);
+      }
     };
     requestAnimationFrame(frame);
   });
@@ -572,7 +578,11 @@ interface Boxes {
 }
 
 function boxes(page: Page): Promise<Boxes> {
-  return page.evaluate(() => (window as unknown as { boxes: Boxes }).boxes);
+  return page.evaluate(() => {
+    const w = window as unknown as { boxes: Boxes; tracking: boolean };
+    w.tracking = false;
+    return w.boxes;
+  });
 }
 
 async function centre(page: Page, selector: string): Promise<{ x: number; y: number }> {
@@ -656,3 +666,136 @@ test('a revealed card that stays in its deck shrinks back onto it (15.73)', asyn
   expect(Math.abs(end.y - deck.y)).toBeLessThan(30);
   expect(end.w).toBeLessThan(160);
 });
+
+// trackBoxes records, every frame, the box of the first element each
+// selector finds, in window.tracked (15.74). It stops as trackCards does.
+async function trackBoxes(page: Page, selectors: Record<string, string>): Promise<void> {
+  await page.evaluate((sel) => {
+    const w = window as unknown as { tracked: Record<string, { x: number; y: number; w: number; hidden: boolean }[]>; tracking: boolean };
+    w.tracked = Object.fromEntries(Object.keys(sel).map((k) => [k, []]));
+    w.tracking = true;
+    const end = performance.now() + 10_000;
+    const frame = () => {
+      for (const [k, s] of Object.entries(sel)) {
+        const el = document.querySelector(s);
+        if (el) {
+          const r = el.getBoundingClientRect();
+          const hidden = getComputedStyle(el).visibility === 'hidden';
+          w.tracked[k]?.push({ x: r.left + r.width / 2, y: r.top + r.height / 2, w: r.width, hidden });
+        }
+      }
+      if (w.tracking && performance.now() < end) {
+        requestAnimationFrame(frame);
+      }
+    };
+    requestAnimationFrame(frame);
+  }, selectors);
+}
+
+function tracked(page: Page): Promise<Record<string, { x: number; y: number; w: number; hidden: boolean }[]>> {
+  return page.evaluate(() => {
+    const w = window as unknown as { tracked: Record<string, { x: number; y: number; w: number; hidden: boolean }[]>; tracking: boolean };
+    w.tracking = false;
+    return w.tracked;
+  });
+}
+
+// putLoot shows a loot card of the viewer's hand on the stack as
+// object 700, played by the viewer (mine) or the other player. With
+// played, the update says it was just played.
+async function putLoot(page: Page, mine: boolean, played: boolean): Promise<void> {
+  await page.evaluate(
+    ({ mine, played }) => {
+      const s = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store.getState();
+      const game = structuredClone(s.game) as unknown as {
+        view: { players: { id: number; hand?: { card: string }[] }[]; stack?: unknown[] };
+      } | null;
+      const you = s.lobby.table?.you ?? 0;
+      const other = game?.view.players.find((p) => p.id !== you)?.id ?? 1;
+      const card = game?.view.players.find((p) => p.id === you)?.hand?.[0]?.card;
+      if (!game || !card) {
+        throw new Error('no game');
+      }
+      const controller = mine ? you : other;
+      const none = { card: '', index: 0 };
+      game.view.stack = [{ id: 50, kind: 0, controller, source: 700, card, target: { player: -1 }, ability: none, roll_for: none }];
+      const events = played ? [{ kind: 'loot_played', player: controller, object: 700, card }] : [];
+      s.receive({ type: 'update', data: { ...game, step: 2, events } });
+    },
+    { mine, played },
+  );
+}
+
+test("another player's loot card rises from their hand and shrinks into the stack (15.74)", async ({ browser }) => {
+  const [ula] = await startGame(browser, ['Ula', 'Vic']);
+  if (!ula) {
+    throw new Error('no pages');
+  }
+  const other = await ula.evaluate(() => {
+    const s = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store.getState();
+    return s.lobby.table?.you === 0 ? 1 : 0;
+  });
+  const hand = await centre(ula, `[data-zone="hand-${String(other)}"]`);
+  const stack = await centre(ula, '[data-zone="stack"]');
+  await trackBoxes(ula, { pop: '[data-testid="played-pop"] .card' });
+  await putLoot(ula, false, true);
+  await expect(ula.getByTestId('played-pop')).toBeVisible();
+  await shot(ula, 'played-from-hand');
+  await ula.waitForTimeout(1250);
+  await shot(ula, 'played-to-stack');
+  await expect(ula.locator('[data-zone="played-700"]')).toBeVisible({ timeout: 5000 });
+  await shot(ula, 'played-under-stack');
+  const { pop } = await tracked(ula);
+  const first = pop?.[0];
+  const last = pop?.at(-1);
+  if (!first || !last) {
+    throw new Error('no boxes');
+  }
+  expect(Math.abs(first.x - hand.x)).toBeLessThan(40);
+  expect(Math.abs(first.y - hand.y)).toBeLessThan(40);
+  expect(first.w).toBeLessThan(120);
+  expect(Math.abs(last.x - stack.x)).toBeLessThan(40);
+  expect(Math.abs(last.y - stack.y)).toBeLessThan(40);
+  expect(last.w).toBeLessThan(140);
+});
+
+for (const mine of [false, true]) {
+  const from = mine ? 'its stack row' : 'the large card under the stack';
+  test(`a resolved loot card flies to the discard from ${from} (15.74)`, async ({ browser }) => {
+    const [wes] = await startGame(browser, ['Wes', 'Xia']);
+    if (!wes) {
+      throw new Error('no pages');
+    }
+    await putLoot(wes, mine, false);
+    const at = mine ? '[data-zone="stack-src-700"]' : '[data-zone="played-700"] .card';
+    await expect(wes.locator(at)).toBeVisible();
+    const start = await centre(wes, at);
+    await trackBoxes(wes, { fly: '[data-testid="effect-fly"] .effect-fly .card', played: '[data-zone="played-700"]' });
+    // The loot resolves: it leaves the stack for the loot discard.
+    await wes.evaluate(() => {
+      const s = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store.getState();
+      const game = structuredClone(s.game) as unknown as { view: { stack?: { controller: number; card: string }[] } } | null;
+      const item = game?.view.stack?.[0];
+      if (!game || !item) {
+        throw new Error('no game');
+      }
+      game.view.stack = [];
+      const events = [{ kind: 'discarded', player: item.controller, object: 900, prev: 700, card: item.card, text: 'stack' }];
+      s.receive({ type: 'update', data: { ...game, step: 3, events } });
+    });
+    await expect(wes.getByTestId('effect-fly')).toBeVisible();
+    await shot(wes, mine ? 'discard-from-stack-row' : 'discard-from-played');
+    await expect(wes.getByTestId('effect-fly')).toHaveCount(0, { timeout: 5000 });
+    const boxes = await tracked(wes);
+    const first = boxes.fly?.[0];
+    if (!first) {
+      throw new Error('no boxes');
+    }
+    expect(Math.abs(first.x - start.x)).toBeLessThan(30);
+    expect(Math.abs(first.y - start.y)).toBeLessThan(30);
+    if (!mine) {
+      // The large card hides while its copy flies, so it is seen once.
+      expect(boxes.played?.some((b) => b.hidden)).toBe(true);
+    }
+  });
+}

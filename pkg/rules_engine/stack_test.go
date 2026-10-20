@@ -139,6 +139,41 @@ func TestPlayLoot(t *testing.T) {
 	}
 }
 
+// A loot card that leaves the stack says so, from its object on the
+// stack (15.74): resolved or cancelled.
+func TestLootLeavesTheStackWithAnEvent(t *testing.T) {
+	discarded := func(ev []Event, prev ObjectID) bool {
+		for _, e := range ev {
+			if e.Kind == EvDiscarded && e.Prev == prev && e.Text == "stack" && e.Card != "" {
+				return true
+			}
+		}
+		return false
+	}
+	g := toAction(t, 2)
+	a := g.Turn.Active
+	if _, err := g.Apply(Intent{Player: a, Kind: IntentPlayLoot, Objects: []ObjectID{g.Players[a].Hand[0]}}); err != nil {
+		t.Fatal(err)
+	}
+	src := g.Stack[0].Source
+	ev := pass(t, g)
+	ev = append(ev, pass(t, g)...)
+	if !discarded(ev, src) {
+		t.Errorf("resolved loot: no discarded event from object %d in %v", src, ev)
+	}
+	g = toAction(t, 2)
+	a = g.Turn.Active
+	if _, err := g.Apply(Intent{Player: a, Kind: IntentPlayLoot, Objects: []ObjectID{g.Players[a].Hand[0]}}); err != nil {
+		t.Fatal(err)
+	}
+	it := g.Stack[0]
+	g.events = nil
+	g.CancelStackItem(it.ID)
+	if !discarded(g.events, it.Source) {
+		t.Errorf("cancelled loot: no discarded event from object %d in %v", it.Source, g.events)
+	}
+}
+
 func TestOnlyTheActivePlayerHasALootPlay(t *testing.T) {
 	g := toAction(t, 2)
 	a := g.Turn.Active

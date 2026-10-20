@@ -143,6 +143,10 @@
   * Moved in the same update, e.g. a slot refill: it flies from the middle.
   * It shrinks to a table card on the way to its place.
   * Not moved: it shrinks back onto its deck.
+* **1w. A played loot card's path (15.74):** another player's card rises from their hand.
+  * It shows large in the middle, then shrinks into the stack panel.
+  * Resolved or cancelled, it flies from the stack to the loot discard.
+  * That flight shows for the viewer's own loot cards too.
 
 ## Postconditions
 

@@ -153,7 +153,7 @@ func (g *Game) resolveTop() {
 		case g.def(it.Source).Trinket:
 			g.trinketToPlay(it.Controller, it.Source) // R-ABIL-19
 		default:
-			g.discard(it.Source, LootDeck)
+			g.discardFromStack(it)
 		}
 	case StackRoll:
 		// Continuous roll changes apply, then the result is final (R-DICE-06).
@@ -349,10 +349,18 @@ func (g *Game) CancelStackItem(id int) {
 			g.enqueue(Action{Kind: ActFinishEvent, Player: NoPlayer, Object: it.Source}) // R-CARD-15
 		}
 		if it.Kind == StackLoot && g.Object(it.Source).Zone.Kind == ZoneStack {
-			g.discard(it.Source, LootDeck)
+			g.discardFromStack(it)
 		}
 		return
 	}
+}
+
+// discardFromStack puts a loot card that left the stack into the loot
+// discard. Prev is its object on the stack, so the client flies it from
+// there (15.74).
+func (g *Game) discardFromStack(it StackItem) {
+	nid := g.discard(it.Source, LootDeck)
+	g.emit(Event{Kind: EvDiscarded, Player: it.Controller, Object: nid, Card: it.Card, Prev: it.Source, Text: "stack"})
 }
 
 // EndTurnNow cancels everything that has not resolved and ends the

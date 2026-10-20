@@ -15,18 +15,22 @@ const cardH = 112;
 // The width of a large card (size-zoom); its height follows.
 const zoomW = 320;
 const zoomH = (zoomW * cardH) / cardW;
+// The width of a hand card (size-hand).
+const handW = 100;
 
 interface Point {
   x: number;
   y: number;
 }
 
-// zoneRect finds the first zone on screen (data-zone) and its box.
+// zoneRect finds the first zone on screen (data-zone) and its box. The
+// large played card's zone is its caption too; its card is used (15.74).
 function zoneRect(zones: string[]): DOMRect | null {
   for (const z of zones) {
     const el = document.querySelector(`[data-zone="${CSS.escape(z)}"]`);
     if (el) {
-      return el.getBoundingClientRect();
+      const card = z.startsWith('played-') ? el.querySelector('.card') : null;
+      return (card ?? el).getBoundingClientRect();
     }
   }
   return null;
@@ -36,6 +40,13 @@ function zoneRect(zones: string[]): DOMRect | null {
 function zoneCenter(zones: string[]): Point | null {
   const r = zoneRect(zones);
   return r && { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+}
+
+// playedWidth is the width of the large played card when it is the
+// first of the zones on screen, else 0.
+function playedWidth(zones: string[]): number {
+  const z = zones.find((z) => document.querySelector(`[data-zone="${CSS.escape(z)}"]`));
+  return z?.startsWith('played-') ? (zoneRect([z])?.width ?? 0) : 0;
 }
 
 // middle is the centre of the window, where large cards show.
@@ -123,20 +134,7 @@ function Effect({ playing }: { playing: Playing }) {
     case 'reveal':
       return <Reveal card={effect.card} deck={effect.deck} hold={effect.hold ?? false} playing={playing} />;
     case 'played':
-      return (
-        // anim: played
-        <motion.div
-          className="effect-center"
-          initial={{ opacity: 0, scale: 0.6 }}
-          animate={{ opacity: [0, 1, 1, 0], scale: [0.6, 1, 1, 0.5] }}
-          transition={{ duration: duration(1.2), times: [0, 0.2, 0.8, 1] }}
-          onAnimationComplete={done}
-          data-testid="played-pop"
-        >
-          <div className="effect-label">{effect.who} plays</div>
-          <Card cardRef={effect.card} size="zoom" />
-        </motion.div>
-      );
+      return <Played card={effect.card} who={effect.who} from={effect.from} to={effect.to} playing={playing} />;
     case 'lunge':
       return (
         <Layered
@@ -208,8 +206,9 @@ function Fly({
   // stay leaves the card where it landed until the next view (19.3).
   stay?: boolean;
 }) {
-  // Read the zones once, when the effect starts.
-  const [path] = useState(() => ({ a: zoneCenter(from), b: zoneCenter(to) }));
+  // Read the zones once, when the effect starts. A card leaving the
+  // large played card starts at its size (15.74).
+  const [path] = useState(() => ({ a: zoneCenter(from), b: zoneCenter(to), grow: playedWidth(from) / cardW }));
   useSkip(!path.a || !path.b, playing.done);
   if (!path.a || !path.b) {
     return null;
@@ -225,7 +224,7 @@ function Fly({
     // anim: fly
     <motion.div
       className="effect-fly"
-      initial={{ x: path.a.x - cardW / 2, y: path.a.y - cardH / 2, scale: 0.9 }}
+      initial={{ x: path.a.x - cardW / 2, y: path.a.y - cardH / 2, scale: path.grow || 0.9 }}
       animate={{ ...end, scale: 1 }}
       transition={{ duration: 0.45 * playing.scale, ease: 'easeInOut' }}
       onAnimationComplete={land}
@@ -262,6 +261,55 @@ function Reveal({ card, deck, hold, playing }: { card: string; deck: string[]; h
       transition={{ duration: 1.5 * playing.scale, times: [0, 0.25, 0.75, 0.95, 1], ease: 'easeInOut' }}
       onAnimationComplete={playing.done}
     >
+      <Card cardRef={card} size="zoom" />
+    </motion.div>
+  );
+}
+
+// cardOffset is where a zone's card is, from the middle, and the scale
+// that makes a large card its size; null when the zone is not drawn.
+function cardOffset(zones: string[], width: (r: DOMRect) => number): { x: number; y: number; scale: number } | null {
+  const r = zoneRect(zones);
+  if (!r) {
+    return null;
+  }
+  const m = middle();
+  return { x: r.left + r.width / 2 - m.x, y: r.top + r.height / 2 - m.y, scale: Math.min(1, width(r) / zoomW) };
+}
+
+// Played shows another player's loot card (15.31, 15.74): it rises from
+// their hand to the middle, stays a moment with "Ann plays", then
+// shrinks into the stack panel, to the size of a hand card.
+function Played({ card, who, from, to, playing }: { card: string; who: string; from: string[]; to: string[]; playing: Playing }) {
+  const [path] = useState(() => ({
+    a: cardOffset(from, () => cardW),
+    b: cardOffset(to, () => handW),
+  }));
+  const a = path.a ?? { x: 0, y: 0, scale: 0.6 };
+  const b = path.b ?? { x: 0, y: 0, scale: 0.5 };
+  return (
+    // anim: played
+    <motion.div
+      className="effect-center"
+      initial={{ x: a.x, y: a.y, scale: a.scale, opacity: 0 }}
+      animate={{
+        x: [a.x, 0, 0, b.x],
+        y: [a.y, 0, 0, b.y],
+        scale: [a.scale, 1, 1, b.scale],
+        opacity: [0, 1, 1, path.b ? 1 : 0],
+      }}
+      transition={{ duration: 1.5 * playing.scale, times: [0, 0.25, 0.75, 1], ease: 'easeInOut' }}
+      onAnimationComplete={playing.done}
+      data-testid="played-pop"
+    >
+      {/* anim: played */}
+      <motion.div
+        className="effect-label"
+        animate={{ opacity: [1, 1, 0] }}
+        transition={{ duration: 1.5 * playing.scale, times: [0, 0.75, 0.85] }}
+      >
+        {who} plays
+      </motion.div>
       <Card cardRef={card} size="zoom" />
     </motion.div>
   );

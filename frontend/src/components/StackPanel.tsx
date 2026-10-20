@@ -40,7 +40,7 @@ export function StackPanel({ view, you, names, pass, disabled, prompt, answer }:
   };
   useKey(' ', press);
   return (
-    <aside className={`stack${stack.length === 0 ? ' stack-empty' : ''}`} aria-label="Stack">
+    <aside className={`stack${stack.length === 0 ? ' stack-empty' : ''}`} aria-label="Stack" data-zone="stack">
       <header>
         <h2>Stack</h2>
         <LastRollDie names={names} />
@@ -88,12 +88,22 @@ export function StackPanel({ view, you, names, pass, disabled, prompt, answer }:
 // stays while they play.
 export function PlayedCard({ view, you, names }: { view: GameView; you: number; names: Names }) {
   const it = playedCard(view, you);
+  // It hides while its card flies from it to the discard (15.74).
+  const leaving = useApp((s) => {
+    const e = s.playing?.effect;
+    return !!it && e?.kind === 'fly' && e.from[0] === `played-${String(it.source)}` && e.card === it.card;
+  });
   if (!it?.card) {
     return null;
   }
   const who = names.player(it.controller);
   return (
-    <figure className="played" aria-label={`${who} plays ${names.card(it.card)}`}>
+    <figure
+      className="played"
+      aria-label={`${who} plays ${names.card(it.card)}`}
+      data-zone={`played-${String(it.source)}`}
+      style={leaving ? { visibility: 'hidden' } : undefined}
+    >
       <Card cardRef={it.card} size="hand" />
       <figcaption>
         <b className="stack-player" style={{ color: playerColor(it.controller) }}>

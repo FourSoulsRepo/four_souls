@@ -20,9 +20,9 @@ export type Effect =
   // reveal: the card grows out of its deck to the middle; it holds
   // there when the next effect moves it, else shrinks back (15.73).
   | { kind: 'reveal'; card: string; deck: string[]; hold?: boolean }
-  // played: another player's loot card shows large for a moment as it
-  // goes on the stack (15.31, H-10).
-  | { kind: 'played'; card: string; who: string }
+  // played: another player's loot card rises from their hand, shows
+  // large for a moment and goes on the stack (15.31, H-10, 15.74).
+  | { kind: 'played'; card: string; who: string; from: string[]; to: string[] }
   // place: a card flies into a slot and stays there until the view is
   // shown, so later effects play over it (19.3).
   | { kind: 'place'; from: string[]; to: string[]; card: string; back: Kind; middle?: boolean }
@@ -109,6 +109,13 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
         });
         break;
       case 'discarded': {
+        // A loot card leaves the stack from its large card under the
+        // stack, else its stack row (15.74).
+        if (e.text === 'stack' && e.prev) {
+          const from = [`played-${String(e.prev)}`, `stack-src-${String(e.prev)}`, `obj-${String(e.prev)}`, 'deck-loot'];
+          out.push({ kind: 'fly', from, to: ['discard-loot'], card: e.card, back: 'loot' });
+          break;
+        }
         const kind = e.card ? kindOf(ctx.card(e.card)?.type ?? '') : 'loot';
         const from = [`obj-${String(e.prev ?? e.object ?? 0)}`];
         if (e.player !== noPlayer) {
@@ -186,7 +193,7 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
       case 'loot_played':
         // The player's own play needs no reminder (15.31).
         if (e.card && e.player !== ctx.you) {
-          out.push({ kind: 'played', card: e.card, who: ctx.name(e.player) });
+          out.push({ kind: 'played', card: e.card, who: ctx.name(e.player), from: handZones(e.player), to: ['stack'] });
         }
         break;
       case 'turn_started':

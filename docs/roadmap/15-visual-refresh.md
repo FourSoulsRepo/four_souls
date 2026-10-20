@@ -2196,7 +2196,7 @@ Images come first, so the new table is built with backs and mats.
    3. Each is marked done when it is finished.
    4. The owner reviews all four together at the end.
 
-### [ ] 15.74 Another player's loot goes from the hand to the stack to the discard
+### [x] 15.74 Another player's loot goes from the hand to the stack to the discard
 
 1. Goal: a played loot card travels its real path (15.72 gaps 2, 6).
 2. Asked by the owner (2026-10-20).
@@ -2213,6 +2213,27 @@ Images come first, so the new table is built with backs and mats.
    2. Vitest: the discard `fly` starts at the stack.
    3. e2e: a resolved loot card flies from the stack to the discard.
    4. `make screenshots` covers both flights.
+5. Result (2026-10-20)
+   1. Engine `discardFromStack`: `discarded` with `prev` and text `stack`.
+   2. It covers a resolved loot card and a cancelled one.
+   3. Rules unchanged: no engine version bump; protocol stays 3.
+   4. `played` carries `from` (the hand) and `to` (the stack panel).
+   5. It rises from the hand, holds, then shrinks to a hand card in the stack.
+   6. The stack panel is the zone `stack`; `PlayedCard` is `played-<id>`.
+   7. A stack `discarded` flies from `played-<id>` at its card's size, else the row.
+   8. `PlayedCard` hides while its card flies away.
+   9. Tasks said "the played card" as the end of `played`; it ends in the panel.
+   10. A spot for it would take room from the history panel.
+   11. Go `TestLootLeavesTheStackWithAnEvent`; Vitest `playback.test.ts`.
+   12. e2e `playback.spec.ts`: three tests.
+   13. UC-12 1w; wikis `Client`, `Animations`; CHANGELOG.
+   14. Screenshots: `.cache/screenshots/15.74/before/` and `after/`.
+   15. Aiming skips the zones `stack` and `played-<id>`: a click there cancels.
+   16. Found by `aim.spec.ts`; evidence in `.cache/e2e-evidence/15.74/`.
+   17. The e2e frame trackers stop when read, or after 10 s.
+   18. Left running, they slowed later tests in the same worker to timeouts.
+   19. `startGame` pages stay open until the worker ends; evidence in `15.74-run*`.
+   20. One host start timed out at 5 s under load; it passed 8 of 8 alone.
 
 ### [ ] 15.75 Stolen cents move from the victim to the thief
 
