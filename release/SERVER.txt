@@ -1,0 +1,48 @@
+Four Souls dedicated server
+===========================
+
+An unofficial, free, fan-made version of the card game
+"The Binding of Isaac: Four Souls" for 2-4 players over the network.
+
+The game belongs to Edmund McMillen and Maestro Media.
+Please buy the physical game: https://foursouls.com
+
+This archive has only the server. The game itself (the app players
+start) is in the four-souls-<version>-... archives of the same release.
+
+
+What is in this archive
+-----------------------
+
+  four_souls_server (.exe on Windows)   the dedicated server
+  LICENSE, NOTICE                        licenses
+
+
+Run
+---
+
+  ./four_souls_server -port 4774
+
+Players choose "Join a game" in the app and type the server's
+address. Records go to ./records, saved games to ./saves.
+
+Every option is a flag, or an ENV variable: FOUR_SOULS_ and the flag's
+name in capitals, e.g. FOUR_SOULS_PORT=4774. Flags win over ENV.
+Run "./four_souls_server -h" for all options.
+
+Players' apps must speak the same protocol version as the server;
+using the same release is safest.
+
+
+Setups
+------
+
+The wiki has three ready setups: a systemd service, Docker, and
+Docker Compose with Caddy (HTTPS). Start at the page
+"Dedicated server on a VPS".
+
+
+Licenses
+--------
+
+The code is MIT (LICENSE). Third-party items are listed in NOTICE.

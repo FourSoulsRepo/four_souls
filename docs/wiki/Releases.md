@@ -27,15 +27,20 @@ The version shown in the app's main menu is the tag without the `v`.
 
 | Archive | Contents |
 |---|---|
-| `four-souls-<version>-windows-amd64.zip`, `-windows-arm64.zip` | `four_souls.exe`, `four_souls_server.exe` |
-| `four-souls-<version>-macos-universal.zip` | `four_souls.app`, `four_souls_server` (Intel and Apple silicon) |
-| `four-souls-<version>-linux-amd64.tar.gz`, `-linux-arm64.tar.gz` | `four_souls`, `four_souls_server` |
+| `four-souls-<version>-windows-amd64.zip`, `-windows-arm64.zip` | `four_souls.exe` |
+| `four-souls-<version>-macos-universal.zip` | `four_souls.app` (Intel and Apple silicon) |
+| `four-souls-<version>-linux-amd64.tar.gz`, `-linux-arm64.tar.gz` | `four_souls` |
+| `four-souls-server-windows-amd64.zip`, `-windows-arm64.zip` | `four_souls_server.exe` |
+| `four-souls-server-macos-universal.zip` | `four_souls_server` (Intel and Apple silicon) |
+| `four-souls-server-linux-amd64.tar.gz`, `-linux-arm64.tar.gz` | `four_souls_server`, statically linked |
 
 Each platform also gets a `for-poor` archive, e.g. `four-souls-<version>-for-poor-linux-amd64.tar.gz`: the same game without card images, just for fun. Cards, backs, dice and mats then show as text and plain colors.
 
-Every archive also has `README.txt` (from `release/README.txt`), `LICENSE` and `NOTICE`.
+Every archive also has `README.txt` (from `release/README.txt`, or `release/SERVER.txt` for the server), `LICENSE` and `NOTICE`.
 
-The app is built with `-tags "embed cardimages"` (`for-poor`: `embed` only); the server only with `embed` (it needs card text, not images). Linux builds use WebKitGTK 4.1 (`webkit2_41`), so players need `libwebkit2gtk-4.1` (Ubuntu 22.04 and later).
+Server archives carry no version in their names (8.17), so `https://github.com/FourSoulsRepo/four_souls/releases/latest/download/four-souls-server-linux-amd64.tar.gz` always gets the newest server; the Dockerfile relies on it. "Latest" skips drafts and pre-releases. App archives keep their versions.
+
+The app is built with `-tags "embed cardimages"` (`for-poor`: `embed` only); the server only with `embed` (it needs card text, not images) and `CGO_ENABLED=0`, so its Linux binaries run on any distribution, Alpine included. Linux builds use WebKitGTK 4.1 (`webkit2_41`), so players need `libwebkit2gtk-4.1` (Ubuntu 22.04 and later).
 
 ## App identity
 
@@ -54,4 +59,6 @@ A release needs the private card images. The workflow checks them out with `.git
 
 ## Shared build steps
 
-`.github/actions/build` builds the app and the server for one target; CI (`ci.yml`, job `app`) and the release workflow both use it.
+`.github/actions/build` builds the app for one target; CI (`ci.yml`, job `app`) and the release workflow both use it.
+
+`release/server.sh <version> <dir>` builds and packs every server archive on one macOS runner (it needs `lipo` for the universal binary); CI (job `server`), the release workflow and `make server-archives` use it. CI also checks that the Linux servers are statically linked.

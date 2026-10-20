@@ -31,7 +31,7 @@ The app uses WebKitGTK 4.1:
 | Fedora | `sudo dnf install webkit2gtk4.1` |
 | Arch | `sudo pacman -S webkit2gtk-4.1` |
 
-Then `tar -xzf four-souls-*.tar.gz` and `./four_souls`. If it does not start, `chmod +x four_souls four_souls_server`.
+Then `tar -xzf four-souls-*.tar.gz` and `./four_souls`. If it does not start, `chmod +x four_souls`.
 
 ## Firewall
 

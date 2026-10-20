@@ -202,7 +202,7 @@ Ideas: B-03 – B-05, L-03, V-10, V-11, DO-01, V-14, A-16, N-13, N-14, V-19, N-1
 3. Done when:
    1. Tests for each variable, the order, and bad values.
 
-### [ ] 8.17 Server release archives
+### [x] 8.17 Server release archives
 
 1. Goal: server downloads apart from the app (N-19).
 2. Tasks:

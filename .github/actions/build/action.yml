@@ -1,7 +1,8 @@
 name: Build
 description: >
-  Builds the desktop app (Wails) and the dedicated server for one target
-  into build/bin. Shared by CI and the release workflow.
+  Builds the desktop app (Wails) for one target into build/bin. Shared by
+  CI and the release workflow. The server has its own archives
+  (release/server.sh, 8.17).
 
 inputs:
   platform:
@@ -10,14 +11,8 @@ inputs:
   tags:
     description: Go build tags, e.g. "embed cardimages webkit2_41".
     required: true
-  goos:
-    description: GOOS of the server binary.
-    required: true
-  goarch:
-    description: GOARCH of the server binary (ignored for darwin, which is universal).
-    required: true
   version:
-    description: App version stamped into both binaries.
+    description: App version stamped into the app.
     required: true
   node-version:
     description: Node.js version for the frontend.
@@ -61,22 +56,3 @@ runs:
       run: |
         wails build -platform "${{ inputs.platform }}" -tags "${{ inputs.tags }}" \
           -ldflags "-X github.com/FourSoulsRepo/four_souls/internal/version.App=${{ inputs.version }}"
-    - name: Build server
-      shell: bash
-      env:
-        GOOS: ${{ inputs.goos }}
-        GOARCH: ${{ inputs.goarch }}
-        TAGS: ${{ inputs.tags }}
-        LDFLAGS: -X github.com/FourSoulsRepo/four_souls/internal/version.App=${{ inputs.version }}
-      run: |
-        # The server needs card text, not card images.
-        TAGS="${TAGS//cardimages/}"
-        if [ "$GOOS" = darwin ]; then
-          # One server binary for Intel and Apple silicon, like the app.
-          GOARCH=amd64 go build -tags "$TAGS" -ldflags "$LDFLAGS" -o build/server-amd64 ./cmd/server
-          GOARCH=arm64 go build -tags "$TAGS" -ldflags "$LDFLAGS" -o build/server-arm64 ./cmd/server
-          lipo -create -output build/bin/four_souls_server build/server-amd64 build/server-arm64
-        else
-          ext=""; [ "$GOOS" = windows ] && ext=".exe"
-          go build -tags "$TAGS" -ldflags "$LDFLAGS" -o "build/bin/four_souls_server$ext" ./cmd/server
-        fi

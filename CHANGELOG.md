@@ -28,6 +28,8 @@ Rules engine versions are in each release's notes.
 - A thrown die rests with its result on top, seen from above, with two sides still showing.
 - Before turn 1 every player throws a die for the first player; everyone sees each die, ties roll again, and a banner names who goes first. Cain still goes first without a roll.
 - Records from older versions no longer replay: the first-player roll is now part of every record.
+- Dedicated server: every option can also be set by an ENV variable, e.g. `FOUR_SOULS_PORT`.
+- The dedicated server has its own downloads, `four-souls-server-<system>-<cpu>`; the game archives no longer include it. Its Linux build runs on any distribution, Alpine included.
 - Each release also has "for-poor" archives: the game without card images, with cards shown as text.
 
 ## 0.1.1 - 2026-10-19

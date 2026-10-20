@@ -12,7 +12,6 @@ What is in this archive
 -----------------------
 
   four_souls (.app on macOS, .exe on Windows)   the game
-  four_souls_server                              a dedicated server, optional
   LICENSE, NOTICE                                licenses
 
 A "for-poor" archive is the same game without card images: cards
@@ -49,7 +48,7 @@ Linux
      Arch: sudo pacman -S webkit2gtk-4.1
   2. Unpack: tar -xzf four-souls-*.tar.gz
   3. Run: ./four_souls
-     If it does not start: chmod +x four_souls four_souls_server
+     If it does not start: chmod +x four_souls
 
 The firewall may ask whether the game may use the network the first
 time you host: allow it, or friends cannot connect.
@@ -77,10 +76,9 @@ Terminal: open -n /Applications/four_souls.app
 Dedicated server
 ----------------
 
-  four_souls_server -port 4774
-
-Players join the server's address. Records go to ./records, saved
-games to ./saves. Run "four_souls_server -h" for all options.
+The dedicated server has its own archives in the same release:
+four-souls-server-<system>-<cpu>. Players join the server's address.
+See the wiki page "Dedicated server on a VPS".
 
 
 Licenses
