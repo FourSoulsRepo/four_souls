@@ -2544,6 +2544,8 @@ Images come first, so the new table is built with backs and mats.
    10. e2e: no "Skip all" button for either player.
    11. UC-06, UC-14; wiki `Server`, `Client`, `Rules-engine`; CHANGELOG.
    12. Screenshots: `.cache/screenshots/15.84/before/` and `after/`.
+6. Owner notes (2026-10-20)
+   1. Owner marks 15.84 solved.
 
 ### [x] 15.85 Cards that take without a target end the wait
 
@@ -2575,6 +2577,8 @@ Images come first, so the new table is built with backs and mats.
    9. Engine version unchanged: no rule changed.
    10. No screen changed; no screenshots.
    11. UC-06; wiki `Server`, `Adding-a-card`; CHANGELOG.
+7. Owner notes (2026-10-20)
+   1. Owner marks 15.85 solved.
 
 ### [x] 15.86 One engine check for "this item may hurt that player"
 
@@ -2600,3 +2604,5 @@ Images come first, so the new table is built with backs and mats.
    6. Engine version unchanged: no rule changed.
    7. No screen changed; no screenshots.
    8. Wiki `Server`, `Rules-engine`.
+7. Owner notes (2026-10-20)
+   1. Owner marks 15.86 solved.
