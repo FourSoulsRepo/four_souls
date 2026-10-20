@@ -2484,4 +2484,5 @@ Images come first, so the new table is built with backs and mats.
    6. Vitest `dice.test.ts`; e2e `actions.spec.ts` reads `.die-top`.
    7. UC-13 6b; wikis `Client` and `Animations`; CHANGELOG.
    8. Screenshots: `.cache/screenshots/15.82/before/` and `after/`.
-   9. Headless WebKit still draws the cube flat: only the top face shows.
+   9. Headless WebKit still draws the cube flat: one side face shows, not the top.
+   10. Real Safari draws it in 3D (15.69); the label always says the value.
