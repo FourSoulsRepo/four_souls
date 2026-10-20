@@ -2512,3 +2512,6 @@ Images come first, so the new table is built with backs and mats.
    6. Code names (`Die`, `.die`) and card texts stay as they are.
    7. UC-12 2f, UC-14, UC-21 3f; wiki `Client`; CHANGELOG.
    8. Screenshots: `.cache/screenshots/15.83/before/` and `after/`.
+6. Owner notes (2026-10-20)
+   1. "Which dice is the result?" stays, with "dice".
+   2. Owner marks 15.83 solved.
