@@ -31,6 +31,9 @@ export type Effect =
   // hits: other damage flies from its source and bursts on every
   // damaged card at once (15.37, T-15, T-24).
   | { kind: 'hits'; hits: Hit[] }
+  // steal: cents leave the victim as a coin that flies to the thief
+  // (15.75).
+  | { kind: 'steal'; from: string[]; to: string[]; amount: number }
   // deaths: a big skull on each dying card before it leaves (T-26).
   | { kind: 'deaths'; at: string[][] };
 
@@ -169,9 +172,16 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
       case 'prevented':
         out.push({ kind: 'popup', at: targetZones(e), text: 'Prevented', tone: 'good' });
         break;
-      case 'stole':
-        out.push({ kind: 'popup', at: playerZones(e.player), text: `+${String(amount)}¢ stolen`, tone: 'good' });
+      case 'stole': {
+        // The text names the player robbed (15.75).
+        const victim = Number(e.text ?? '');
+        if (e.text && Number.isInteger(victim) && victim >= 0) {
+          out.push({ kind: 'steal', from: playerZones(victim), to: playerZones(e.player), amount });
+        } else {
+          out.push({ kind: 'popup', at: playerZones(e.player), text: `+${String(amount)}¢ stolen`, tone: 'good' });
+        }
         break;
+      }
       case 'card_revealed': {
         if (!e.card) {
           break;

@@ -585,8 +585,24 @@ function boxes(page: Page): Promise<Boxes> {
   });
 }
 
+// centre is where an element's middle is, once its box holds still: the
+// coin, for one, is drawn anew when its image fails to load.
 async function centre(page: Page, selector: string): Promise<{ x: number; y: number }> {
-  const b = await page.locator(selector).boundingBox();
+  let last = '';
+  let box: { x: number; y: number; width: number; height: number } | null = null;
+  await expect
+    .poll(
+      async () => {
+        box = await page.locator(selector).boundingBox();
+        const now = JSON.stringify(box);
+        const still = box !== null && now === last;
+        last = now;
+        return still;
+      },
+      { intervals: [100] },
+    )
+    .toBe(true);
+  const b = box as { x: number; y: number; width: number; height: number } | null;
   if (!b) {
     throw new Error(`no ${selector}`);
   }
@@ -799,3 +815,41 @@ for (const mine of [false, true]) {
     }
   });
 }
+
+test('stolen cents fly as a coin from the victim to the thief (15.75)', async ({ browser }) => {
+  const [yan] = await startGame(browser, ['Yan', 'Zed']);
+  if (!yan) {
+    throw new Error('no pages');
+  }
+  const ids = await yan.evaluate(() => {
+    const s = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store.getState();
+    const you = s.lobby.table?.you ?? 0;
+    return { you, other: you === 0 ? 1 : 0 };
+  });
+  const thief = await centre(yan, `[data-zone="player-${String(ids.you)}"] .coin`);
+  const victim = await centre(yan, `[data-zone="player-${String(ids.other)}"] .coin`);
+  await trackBoxes(yan, { coin: '[data-testid="coin-shot"]' });
+  // The viewer steals 2¢ from the other player.
+  await yan.evaluate((ids) => {
+    const s = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store.getState();
+    const game = structuredClone(s.game);
+    const events = [{ kind: 'stole', player: ids.you, amount: 2, text: String(ids.other) }];
+    s.receive({ type: 'update', data: { ...game, step: 2, events } });
+  }, ids);
+  await expect(yan.locator('.effects .effect-popup').first()).toBeVisible();
+  await yan.waitForTimeout(150);
+  await shot(yan, 'steal-coin');
+  await expect(yan.getByText('+2¢ stolen')).toBeVisible();
+  await shot(yan, 'steal-landed');
+  await expect(yan.locator('.effects .effect-popup')).toHaveCount(0, { timeout: 5000 });
+  const { coin } = await tracked(yan);
+  const first = coin?.[0];
+  const last = coin?.at(-1);
+  if (!first || !last) {
+    throw new Error('no boxes');
+  }
+  expect(Math.abs(first.x - victim.x)).toBeLessThan(30);
+  expect(Math.abs(first.y - victim.y)).toBeLessThan(30);
+  expect(Math.abs(last.x - thief.x)).toBeLessThan(30);
+  expect(Math.abs(last.y - thief.y)).toBeLessThan(30);
+});

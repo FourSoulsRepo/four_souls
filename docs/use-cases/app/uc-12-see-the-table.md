@@ -147,6 +147,9 @@
   * It shows large in the middle, then shrinks into the stack panel.
   * Resolved or cancelled, it flies from the stack to the loot discard.
   * That flight shows for the viewer's own loot cards too.
+* **1x. Stolen cents (15.75):** "−N¢" rises on the victim's coins.
+  * A coin flies from the victim's coins to the thief's.
+  * "+N¢ stolen" rises on the thief's coins when it lands.
 
 ## Postconditions
 

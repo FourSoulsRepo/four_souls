@@ -55,6 +55,15 @@ describe('effectsFor', () => {
     ]);
   });
 
+  it('moves stolen cents from the victim to the thief (15.75)', () => {
+    const e: GameEvent = { kind: 'stole', player: 1, amount: 2, text: '0' };
+    expect(effectsFor([e], ctx)).toEqual([{ kind: 'steal', from: ['player-0'], to: ['player-1'], amount: 2 }]);
+    // Without a victim only the thief's text shows.
+    expect(effectsFor([{ ...e, text: '' }], ctx)).toEqual([
+      { kind: 'popup', at: ['player-1'], text: '+2¢ stolen', tone: 'good' },
+    ]);
+  });
+
   it('flies a loot card that leaves the stack from the stack (15.74)', () => {
     const e: GameEvent = { kind: 'discarded', player: 1, object: 80, prev: 70, card: 'bomb', text: 'stack' };
     expect(effectsFor([e], ctx)).toEqual([

@@ -2235,7 +2235,7 @@ Images come first, so the new table is built with backs and mats.
    19. `startGame` pages stay open until the worker ends; evidence in `15.74-run*`.
    20. One host start timed out at 5 s under load; it passed 8 of 8 alone.
 
-### [ ] 15.75 Stolen cents move from the victim to the thief
+### [x] 15.75 Stolen cents move from the victim to the thief
 
 1. Goal: a steal shows who lost and who gained (15.72 gap 3).
 2. Asked by the owner (2026-10-20).
@@ -2248,6 +2248,19 @@ Images come first, so the new table is built with backs and mats.
    1. Vitest: the steal's effects, in order.
    2. e2e: a steal shows the coin and both texts.
    3. `make screenshots` covers the coin in flight.
+5. Result (2026-10-20)
+   1. `stole` with a victim becomes a `steal` effect; without one, the old popup.
+   2. `Steal` in `Effects.tsx`: "−N¢", the coin, then "+N¢ stolen".
+   3. The coin is the panel's `Coin`, now exported; it arcs between coin counters.
+   4. The texts keep the `popup` id; the coin is the new `coin-shot`.
+   5. Vitest `playback.test.ts`; e2e `playback.spec.ts`.
+   6. UC-12 1x; wikis `Client`, `Animations`; CHANGELOG.
+   7. Screenshots: `.cache/screenshots/15.75/before/` and `after/`.
+   8. e2e `centre` waits until its element's box holds still.
+   9. A coin image that fails to load is redrawn, and moved the box.
+   10. It failed on WebKit before; evidence in `.cache/e2e-evidence/15.75*/`.
+   11. After: 72 of 72 runs of the 15.73 – 15.75 tests passed.
+   12. Full runs still time out at game start now and then: bug 19.35.
 
 ### [ ] 15.76 A changed roll shows what changed it
 

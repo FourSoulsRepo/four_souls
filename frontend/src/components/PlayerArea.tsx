@@ -106,7 +106,7 @@ function OpponentArea({ player, name, position, active, winSouls, ui, doing }: O
 
 // Coin is the game's coin image (15.38), or a drawn ¢ coin without the
 // private images or when the image fails to load.
-function Coin() {
+export function Coin() {
   const image = useApp((s) => s.icons.coin);
   const [broken, setBroken] = useState('');
   if (image !== '' && image !== broken) {

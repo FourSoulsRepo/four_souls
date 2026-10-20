@@ -78,6 +78,12 @@
   color: #ff8a80;
 }
 
+/* A stolen coin (15.75): the panel's coin, centred on its path. */
+.effect-coin {
+  position: absolute;
+  translate: -50% -50%;
+}
+
 /* The attack lunge and its starburst (15.3) play in a layer of their
    own, above the table and the effects. */
 .effects-trail {

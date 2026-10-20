@@ -5,6 +5,7 @@ import { playSound } from '../sounds';
 import { useApp, type Playing } from '../store';
 import { Card } from './Card';
 import { Die, DieCube } from './Die';
+import { Coin } from './PlayerArea';
 import './Effects.css';
 import { lunge } from './lunge';
 import { hits, skulls } from './marks';
@@ -99,6 +100,8 @@ function Effect({ playing }: { playing: Playing }) {
       return (
         <Fly from={effect.from} to={effect.to} card={effect.card} back={effect.back} playing={playing} stay={effect.kind === 'place'} />
       );
+    case 'steal':
+      return <Steal from={effect.from} to={effect.to} amount={effect.amount} playing={playing} />;
     case 'popup':
       return <Popup at={effect.at} text={effect.text} tone={effect.tone} playing={playing} />;
     case 'dice':
@@ -362,6 +365,70 @@ function Popup({ at, text, tone, playing }: { at: string[]; text: string; tone: 
     >
       {text}
     </motion.div>
+  );
+}
+
+// coinAt is the coin counter of a player's zone, else the zone's
+// centre (15.75).
+function coinAt(zones: string[]): Point | null {
+  for (const z of zones) {
+    const el = document.querySelector(`[data-zone="${CSS.escape(z)}"]`);
+    if (el) {
+      const r = (el.querySelector('.coin') ?? el).getBoundingClientRect();
+      return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+    }
+  }
+  return null;
+}
+
+// Steal shows cents changing hands (15.75): "−N¢" rises on the victim's
+// coins as a coin leaves them, and "+N¢ stolen" rises on the thief's
+// when it lands.
+function Steal({ from, to, amount, playing }: { from: string[]; to: string[]; amount: number; playing: Playing }) {
+  const [path] = useState(() => ({ a: coinAt(from), b: coinAt(to) }));
+  useSkip(!path.a || !path.b, playing.done);
+  if (!path.a || !path.b) {
+    return null;
+  }
+  const { a, b } = path;
+  const total = 1.5 * playing.scale;
+  // The coin flies in the first part; the thief's text follows.
+  const fly = 0.45;
+  return (
+    <>
+      {/* anim: popup */}
+      <motion.div
+        className="effect-popup effect-bad"
+        style={{ left: a.x, top: a.y }}
+        initial={{ opacity: 0, y: 0 }}
+        animate={{ opacity: [0, 1, 1, 0], y: [0, -12, -24, -32] }}
+        transition={{ duration: 0.8 * playing.scale }}
+      >
+        −{amount}¢
+      </motion.div>
+      {/* anim: coin-shot */}
+      <motion.div
+        className="effect-coin"
+        style={{ left: a.x, top: a.y }}
+        initial={{ x: 0, y: 0, scale: 1, opacity: 0 }}
+        animate={{ x: [0, (b.x - a.x) / 2, b.x - a.x], y: [0, (b.y - a.y) / 2 - 40, b.y - a.y], scale: [1, 1.6, 1], opacity: [1, 1, 0] }}
+        transition={{ duration: total * fly, ease: 'easeInOut', opacity: { duration: total * fly, times: [0, 0.9, 1] } }}
+        data-testid="coin-shot"
+      >
+        <Coin />
+      </motion.div>
+      {/* anim: popup */}
+      <motion.div
+        className="effect-popup effect-good"
+        style={{ left: b.x, top: b.y }}
+        initial={{ opacity: 0, y: 0 }}
+        animate={{ opacity: [0, 0, 1, 1, 0], y: [0, 0, -12, -24, -32] }}
+        transition={{ duration: total, times: [0, fly, fly + 0.1, 0.85, 1] }}
+        onAnimationComplete={playing.done}
+      >
+        +{amount}¢ stolen
+      </motion.div>
+    </>
   );
 }
 
