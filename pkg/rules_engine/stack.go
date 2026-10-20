@@ -275,15 +275,17 @@ func (g *Game) throwDie(t Throw) {
 		text = "reroll"
 	}
 	r, p := it.Roll, it.Controller
+	var dice []int
 	if len(g.ManyDice) > 0 && g.ManyDice[0].StackID == t.StackID && g.ManyDice[0].Values == nil {
 		md := &g.ManyDice[0]
 		md.Values = []int{r}
 		for range md.Dice - 1 {
 			md.Values = append(md.Values, g.d6())
 		}
+		dice = slices.Clone(md.Values)
 		g.enqueue(Action{Kind: ActChooseDie, Player: md.Chooser, Amount: t.StackID})
 	}
-	g.emit(Event{Kind: EvDiceRolled, Player: p, Amount: r, Text: text, StackID: t.StackID})
+	g.emit(Event{Kind: EvDiceRolled, Player: p, Amount: r, Text: text, StackID: t.StackID, Dice: dice})
 }
 
 // playLoot moves a loot card from hand to the stack (R-MECH-45).

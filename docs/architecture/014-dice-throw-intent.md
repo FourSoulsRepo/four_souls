@@ -50,6 +50,7 @@ Use option 1.
    3. Many dice (Mutant Spider) are drawn with the throw.
    4. A roll that left the stack before its throw is never thrown.
    5. A game-controlled roll (no player) is thrown at once.
+   6. `dice_rolled` of many dice lists them all in `dice` (19.39).
 4. Rerolls
    1. A reroll clears the value and queues a throw.
    2. The roll's own player throws again; the event says `reroll`.

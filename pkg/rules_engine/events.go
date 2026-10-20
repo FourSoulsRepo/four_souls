@@ -68,6 +68,9 @@ type Event struct {
 	Source ObjectID `json:"source,omitempty"`
 	// StackID is the stack item the event is about (a roll).
 	StackID int `json:"stack_id,omitempty"`
+	// Dice are all the dice of a roll of several dice, the first is
+	// Amount (R-DICE-11, 19.39).
+	Dice []int `json:"dice,omitempty"`
 	// By is the player who dealt damage, plus 1 (0: a monster or nobody).
 	By int `json:"by,omitempty"`
 	// Item is the stack item that resolved, with its used ability's

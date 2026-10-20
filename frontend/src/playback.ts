@@ -15,8 +15,9 @@ export type Effect =
   | { kind: 'popup'; at: string[]; text: string; tone: 'good' | 'bad' }
   // dice: thrown for a fresh roll or a reroll (15.62); a changed roll
   // spins in with its old value, a shot comes from the card that
-  // changes it, and it turns to the new one (15.76).
-  | { kind: 'dice'; value: number; label: string; player: number; thrown?: boolean; old?: number; source?: string[] }
+  // changes it, and it turns to the new one (15.76). dice: every die of
+  // a roll of several dice, thrown together (19.39).
+  | { kind: 'dice'; value: number; label: string; player: number; thrown?: boolean; old?: number; source?: string[]; dice?: number[] }
   | { kind: 'banner'; text: string }
   // reveal: the card grows out of its deck to the middle; it holds
   // there when the next effect moves it, else shrinks back (15.73).
@@ -158,7 +159,14 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
         if (e.stack_id) {
           rolls.set(e.stack_id, amount);
         }
-        out.push({ kind: 'dice', value: amount, label: e.text ?? '', player: e.player, thrown: true });
+        out.push({
+          kind: 'dice',
+          value: amount,
+          label: e.text ?? '',
+          player: e.player,
+          thrown: true,
+          ...(e.dice && e.dice.length > 1 ? { dice: e.dice } : {}),
+        });
         break;
       case 'roll_changed': {
         // "Ann's roll: 3 → 4", from the card that changed it (15.76).

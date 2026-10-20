@@ -1210,3 +1210,10 @@ This step never closes; new reports are appended.
    2. Vitest: the effect keeps every value.
    3. e2e test: a 2-dice roll throws two dice.
    4. Wiki `Animations.md` row updated.
+6. Result (2026-10-20)
+   1. `dice_rolled` of many dice carries them all: `dice`.
+   2. The throw drops every die in a row, each a bit later.
+   3. Classic Roller throws 2; Mutant Spider 4; Cursed Lil Haunt 2.
+   4. A single die throws as before.
+   5. Records gain the field; older records still play.
+   6. Screenshots: `.cache/screenshots/19.39/before/` and `after/`.

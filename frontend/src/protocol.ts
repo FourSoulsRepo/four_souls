@@ -432,6 +432,9 @@ export interface GameEvent {
   prev?: number;
   source?: number;
   stack_id?: number;
+  // dice: every die of a roll of several dice on dice_rolled; the first
+  // is amount (19.39).
+  dice?: number[];
   // by: the player who dealt damage, plus 1; 0 or none for a monster
   // or nobody (15.77).
   by?: number;

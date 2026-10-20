@@ -146,6 +146,11 @@ describe('effectsFor', () => {
     ]);
   });
 
+  it('throws every die of a roll of several dice (19.39)', () => {
+    const events: GameEvent[] = [{ kind: 'dice_rolled', player: 1, amount: 2, dice: [2, 6, 3, 5], text: 'reroll' }];
+    expect(effectsFor(events, ctx)).toEqual([{ kind: 'dice', value: 2, label: 'reroll', player: 1, thrown: true, dice: [2, 6, 3, 5] }]);
+  });
+
   it('changes a roll from its old value, from the card that changed it (15.76)', () => {
     // The shown stack holds roll 7 at 2; roll 8 is thrown in this update.
     const events: GameEvent[] = [

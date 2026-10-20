@@ -107,7 +107,7 @@ function Effect({ playing }: { playing: Playing }) {
       return <Popup at={effect.at} text={effect.text} tone={effect.tone} playing={playing} />;
     case 'dice':
       if (effect.thrown) {
-        return <ThrownDie value={effect.value} label={effect.label} image={image} playing={playing} />;
+        return <ThrownDie values={effect.dice ?? [effect.value]} label={effect.label} image={image} playing={playing} />;
       }
       return (
         <ChangedDie
@@ -522,6 +522,8 @@ function Steal({ from, to, amount, playing }: { from: string[]; to: string[]; am
 
 // The normal length of a throw, in ms.
 const throwMs = 1600;
+// Each of several dice starts this part of a throw after the one before.
+const diceStagger = 0.04;
 // When the die lands, bounces and lands again, as parts of the throw.
 const landings = [0.28, 0.5] as const;
 
@@ -573,27 +575,32 @@ const labelIn: Keyframe[] = [
 
 // ThrownDie throws a fresh roll's die: a cube falls, bounces and tumbles
 // to the engine's value (15.62, 15.69), and clatters as it first lands.
-// Its label says the value all along, so the result never differs from
-// the engine. Web Animations on transform and opacity only (ADR 002);
-// scale follows the animation speed (ST-05).
-function ThrownDie({ value, label, image, playing }: { value: number; label: string; image: string; playing: Playing }) {
-  const dieRef = useRef<HTMLDivElement>(null);
-  const cubeRef = useRef<HTMLDivElement>(null);
-  const shadowRef = useRef<HTMLDivElement>(null);
+// A roll of several dice throws them all at once, side by side, each a
+// little after the one before (19.39). Its label says the value all
+// along, so the result never differs from the engine. Web Animations on
+// transform and opacity only (ADR 002); scale follows the animation
+// speed (ST-05).
+function ThrownDie({ values, label, image, playing }: { values: number[]; label: string; image: string; playing: Playing }) {
+  const rowRef = useRef<HTMLDivElement>(null);
   const wordsRef = useRef<HTMLDivElement>(null);
   const { scale, done } = playing;
+  const count = values.length;
   useEffect(() => {
-    const el = dieRef.current;
-    if (!el) {
-      return;
-    }
+    const spots = [...(rowRef.current?.children ?? [])];
     const ms = throwMs * scale;
-    const timing = { duration: ms, fill: 'forwards' } as const;
+    const parts: (Animation | undefined)[] = [];
+    spots.forEach((spot, i) => {
+      const timing = { duration: ms, delay: i * diceStagger * ms, fill: 'both' } as const;
+      // anim: dice-throw
+      const a = spot.querySelector('.effect-thrown')?.animate(fall, timing);
+      if (a && i === spots.length - 1) {
+        a.onfinish = done;
+      }
+      // anim: dice-throw
+      parts.push(a, spot.querySelector('.die-cube')?.animate(tumble, timing), spot.querySelector('.effect-thrown-shadow')?.animate(shadow, timing));
+    });
     // anim: dice-throw
-    const a = el.animate(fall, timing);
-    a.onfinish = done;
-    // anim: dice-throw
-    const parts = [a, cubeRef.current?.animate(tumble, timing), shadowRef.current?.animate(shadow, timing), wordsRef.current?.animate(labelIn, timing)];
+    parts.push(wordsRef.current?.animate(labelIn, { duration: ms, fill: 'forwards' }));
     const landed = window.setTimeout(() => {
       playSound('diceRoll');
     }, landings[0] * ms);
@@ -603,14 +610,20 @@ function ThrownDie({ value, label, image, playing }: { value: number; label: str
       }
       window.clearTimeout(landed);
     };
-  }, [scale, done]);
+  }, [count, scale, done]);
   return (
     <div className="effect-center">
-      <div className="effect-throw-spot">
-        <div ref={shadowRef} className="effect-thrown-shadow" />
-        <div ref={dieRef} className="effect-thrown" data-testid="thrown-die">
-          <DieCube ref={cubeRef} value={value} image={image} />
-        </div>
+      <div ref={rowRef} className="effect-throw-row">
+        {values.map((value, i) => (
+          // The dice keep their order while they fall.
+          // eslint-disable-next-line @eslint-react/no-array-index-key
+          <div key={i} className="effect-throw-spot">
+            <div className="effect-thrown-shadow" />
+            <div className="effect-thrown" data-testid="thrown-die">
+              <DieCube value={value} image={image} />
+            </div>
+          </div>
+        ))}
       </div>
       {label && (
         <div ref={wordsRef} className="effect-label">

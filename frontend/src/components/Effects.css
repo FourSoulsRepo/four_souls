@@ -31,6 +31,12 @@
   margin-bottom: 16px;
 }
 
+/* Several dice land side by side (19.39). */
+.effect-throw-row {
+  display: flex;
+  gap: 28px;
+}
+
 .effect-thrown {
   opacity: 0;
   perspective: 600px;

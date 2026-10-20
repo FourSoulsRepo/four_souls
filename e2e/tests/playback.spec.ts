@@ -152,6 +152,52 @@ test('a thrown die falls, bounces and lands on the engine\'s value (15.62)', asy
   expect(await played(mira)).toEqual(['/cardimg/assets/sounds/dice-roll.mp3']);
 });
 
+test('a roll of several dice throws every die at once (19.39)', async ({ browser }) => {
+  const [ola] = await startGame(browser, ['Ola', 'Pim']);
+  if (!ola) {
+    throw new Error('no pages');
+  }
+  // Replay the view with a reroll of 4 dice, as Mutant Spider's.
+  await ola.evaluate(() => {
+    interface Store {
+      getState: () => {
+        game: { step: number } | null;
+        lobby: { table: { you: number } | null };
+        receive: (env: unknown) => void;
+      };
+    }
+    const s = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store.getState();
+    const game = structuredClone(s.game);
+    if (!game) {
+      throw new Error('no game');
+    }
+    const you = s.lobby.table?.you ?? 0;
+    const events = [{ kind: 'dice_rolled', player: you, amount: 2, dice: [2, 6, 3, 5], text: 'reroll' }];
+    s.receive({ type: 'update', data: { ...game, step: game.step + 1, events } });
+  });
+  const effect = ola.getByTestId('effect-dice');
+  await expect(effect).toBeAttached();
+  await effect.evaluate((el) => {
+    for (const a of el.getAnimations({ subtree: true })) {
+      a.pause();
+      a.currentTime = 0.75 * Number(a.effect?.getTiming().duration ?? 0);
+    }
+  });
+  await shot(ola, 'dice-many-landed');
+  const thrown = ola.getByTestId('thrown-die');
+  await expect(thrown).toHaveCount(4);
+  const labels = await thrown.locator('.die').evaluateAll((els) => els.map((el) => el.getAttribute('aria-label')));
+  expect(labels).toEqual(['Rolled 2', 'Rolled 6', 'Rolled 3', 'Rolled 5']);
+  // They land in a row in the middle, none on another.
+  const boxes = await thrown.evaluateAll((els) => els.map((el) => el.getBoundingClientRect().toJSON() as DOMRect));
+  for (let i = 1; i < boxes.length; i++) {
+    const [a, b] = [boxes[i - 1], boxes[i]];
+    expect(a && b && b.left - a.right).toBeGreaterThan(0);
+    expect(a && b && Math.abs(a.top - b.top)).toBeLessThan(1);
+  }
+  await expect(effect).toContainText('reroll');
+});
+
 test('an attack lunges at the monster and drops its HP at the hit', async ({ browser }) => {
   const [vee] = await startGame(browser, ['Vee', 'Wyn']);
   if (!vee) {
