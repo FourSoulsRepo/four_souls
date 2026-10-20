@@ -2,7 +2,7 @@
 
 Goal: a clearer table, using fouronlinesouls.net as a second reference.
 
-Ideas: V-09, V-12, V-13, V-15 – V-31, V-33 – V-46, GS-06.
+Ideas: V-09, V-12, V-13, V-15 – V-31, V-33 – V-46, GS-06, N-18.
 
 Order: 15.1, 15.15, 15.9 – 15.11, 15.16, 15.17, 15.38, 15.18 – 15.24,
 15.3, 15.37, 15.25, 15.32 – 15.34, 15.26, 15.27, 15.59 – 15.63, 15.6, 15.64,
@@ -2100,3 +2100,22 @@ Images come first, so the new table is built with backs and mats.
    14. Screenshots: `.cache/screenshots/15.70/before/` and `after/`.
 7. Owner notes (2026-10-20)
    1. Owner marks 15.70 solved.
+
+### [ ] 15.71 Server names and an editable Recent list
+
+1. Goal: the app shows a server's name, and the player prunes Recent (N-18).
+2. Asked by the owner (2026-10-20).
+3. Tasks:
+   1. Server: `-name` flag and `"name"` in the config file.
+   2. `welcome.name` carries it; empty on an app's own host.
+   3. Settings: each Recent entry keeps its address and name.
+   4. An old settings file with bare addresses still loads.
+   5. Join screen: a Recent button shows the name; the address is its tooltip.
+   6. A remove button next to each Recent entry.
+   7. Games screen: the server's name under the heading.
+4. Done when:
+   1. Go tests: the flag, the config file, a bad name, the welcome.
+   2. Go tests: old and new Recent in the settings file.
+   3. Vitest: remembering a name, forgetting an entry.
+   4. e2e: a joined server shows by name; removing it hides it.
+   5. `make screenshots` covers the join screen with Recent.

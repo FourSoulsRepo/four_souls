@@ -521,6 +521,10 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    2. The Games list shows "Create a game" only on a dedicated server.
    3. A game hosted in an app: only that app creates or loads games.
    4. Friends there join; they never open games on the host's app.
+18. N-18. Server names and a Recent list the player edits (owner, 2026-10-20).
+   1. A dedicated server's operator sets its name in the setup.
+   2. The app shows that name instead of the bare address.
+   3. The player removes a server from the Recent list.
 
 ## Learning
 
