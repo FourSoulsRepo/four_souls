@@ -95,7 +95,7 @@ describe('effectsFor', () => {
       { kind: 'gained_cents', player: 0, amount: 1 },
       { kind: 'damaged', player: -1, object: 41, amount: 1, source: 7 },
     ];
-    const from = ['obj-7', 'stack-src-7'];
+    const from = ['obj-7', 'played-7', 'stack-src-7'];
     expect(effectsFor(events, ctx)).toEqual([
       {
         kind: 'hits',
@@ -108,6 +108,23 @@ describe('effectsFor', () => {
       { kind: 'popup', at: ['player-0'], text: '+1¢', tone: 'good' },
       { kind: 'hits', hits: [{ from, to: ['obj-41'], amount: 1 }] },
     ]);
+  });
+
+  it('flies damage from its source, else from the player who dealt it (15.77)', () => {
+    const hits = (e: GameEvent) => {
+      const first = effectsFor([e], ctx).at(0);
+      return first?.kind === 'hits' ? first.hits.at(0)?.from : undefined;
+    };
+    // Bo (by 2) has the character 31; Ann (by 1) has none known.
+    expect(hits({ kind: 'damaged', player: 0, amount: 1, source: 7, by: 2 })).toEqual([
+      'obj-7',
+      'played-7',
+      'stack-src-7',
+      'obj-31',
+      'player-1',
+    ]);
+    expect(hits({ kind: 'damaged', player: 1, amount: 1, by: 1 })).toEqual(['player-0']);
+    expect(hits({ kind: 'damaged', player: 1, amount: 1 })).toEqual([]);
   });
 
   it('marks dying cards with skulls, where they were', () => {

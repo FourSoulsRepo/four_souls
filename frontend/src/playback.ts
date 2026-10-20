@@ -83,6 +83,26 @@ function hitZones(e: GameEvent, ctx: Context): string[] {
   return c === undefined ? playerZones(e.player) : [`obj-${String(c)}`, ...playerZones(e.player)];
 }
 
+// damageFrom is where damage outside a fight flies from (15.37, 15.77):
+// its source card, the large played card or its stack row, then the
+// player who dealt it (by, plus 1): their character, else their area.
+function damageFrom(e: GameEvent, ctx: Context): string[] {
+  const out: string[] = [];
+  if (e.source) {
+    const s = String(e.source);
+    out.push(`obj-${s}`, `played-${s}`, `stack-src-${s}`);
+  }
+  if (e.by) {
+    const p = e.by - 1;
+    const c = ctx.character(p);
+    if (c !== undefined) {
+      out.push(`obj-${String(c)}`);
+    }
+    out.push(...playerZones(p));
+  }
+  return out;
+}
+
 // slotZone is the zone of the monster or shop slot whose top card is
 // object, as the board names it.
 export function slotZone(view: GameView, object: number): string | undefined {
@@ -166,14 +186,12 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
         break;
       case 'damaged': {
         // Damage shows when it lands. Attack damage: its source lunges
-        // at the target. Other damage flies from its source: a card on
-        // the table, else its stack row.
+        // at the target. Other damage flies from its source (damageFrom).
         if (e.text === 'combat' && e.source) {
           out.push({ kind: 'lunge', from: [`obj-${String(e.source)}`], to: hitZones(e, ctx), amount });
           break;
         }
-        const from = e.source ? [`obj-${String(e.source)}`, `stack-src-${String(e.source)}`] : [];
-        const hit = { from, to: hitZones(e, ctx), amount };
+        const hit = { from: damageFrom(e, ctx), to: hitZones(e, ctx), amount };
         const last = out.at(-1);
         if (last?.kind === 'hits') {
           last.hits.push(hit);

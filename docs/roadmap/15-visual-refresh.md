@@ -2292,7 +2292,7 @@ Images come first, so the new table is built with backs and mats.
    10. UC-12 1y; wikis `Client`, `Animations`, `Effect-blocks`; CHANGELOG.
    11. Screenshots: `.cache/screenshots/15.76/before/` and `after/`.
 
-### [ ] 15.77 Damage always shows where it came from
+### [x] 15.77 Damage always shows where it came from
 
 1. Goal: no damage lands from nowhere (15.72 gap 5).
 2. Asked by the owner (2026-10-20).
@@ -2305,3 +2305,14 @@ Images come first, so the new table is built with backs and mats.
    1. Vitest: the start point for each fallback.
    2. e2e: damage from a resolved loot card flies from the player.
    3. `make screenshots` covers it.
+5. Result (2026-10-20)
+   1. `damageFrom` in `playback.ts`: source, played card, stack row, dealer.
+   2. The dealer: `by` minus 1; their character card, else their area.
+   3. The client reads `by`, which the server already sent.
+   4. A monster's damage has no `by`; its own card is the source.
+   5. Tasks said "its slot"; a monster that left has no slot to show.
+   6. The large played card is a new start, before the stack row.
+   7. No engine change: `by` on a dead player's damage would change Splash Damage.
+   8. Vitest and e2e `playback`; the e2e pauses the shot for its picture.
+   9. UC-12 1z; wikis `Client`, `Animations`; CHANGELOG.
+   10. Screenshots: `.cache/screenshots/15.77/before/` and `after/`.

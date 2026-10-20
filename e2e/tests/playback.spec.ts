@@ -907,3 +907,64 @@ test('a changed roll turns from its old value, hit by the card that changed it (
   expect(Math.abs(last.x - at.x)).toBeLessThan(40);
   expect(Math.abs(last.y - at.y)).toBeLessThan(40);
 });
+
+test('damage from a card no longer on screen flies from the player who dealt it (15.77)', async ({ browser }) => {
+  const [cy] = await startGame(browser, ['Cy', 'Di']);
+  if (!cy) {
+    throw new Error('no pages');
+  }
+  const ids = await cy.evaluate(() => {
+    const s = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store.getState();
+    const game = s.game as unknown as { view: { players: { id: number; character: { id: number } }[]; monsters: { top?: { id: number } }[] } } | null;
+    const you = s.lobby.table?.you ?? 0;
+    const character = game?.view.players.find((p) => p.id === you)?.character.id;
+    const monster = game?.view.monsters.find((m) => m.top)?.top?.id;
+    if (character === undefined || monster === undefined) {
+      throw new Error('no game');
+    }
+    return { you, character, monster };
+  });
+  const from = await centre(cy, `[data-zone="obj-${String(ids.character)}"]`);
+  await trackBoxes(cy, { shot: '[data-testid="shot"]' });
+  // A resolved Bomb (object 999, gone) deals 1 damage to a monster.
+  await cy.evaluate((ids) => {
+    const s = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store.getState();
+    const game = structuredClone(s.game);
+    const events = [{ kind: 'damaged', player: -1, object: ids.monster, amount: 1, source: 999, by: ids.you + 1 }];
+    s.receive({ type: 'update', data: { ...game, step: 2, events } });
+  }, ids);
+  // The picture shows the shot in flight, paused a third of the way;
+  // the client before 15.77 sent none.
+  const flying = await cy
+    .getByTestId('shot')
+    .waitFor({ timeout: 1000 })
+    .then(() => true)
+    .catch(() => false);
+  const pause = (on: boolean) =>
+    cy.evaluate((on) => {
+      for (const a of document.getAnimations()) {
+        if (on) {
+          a.pause();
+          a.currentTime = Math.max(Number(a.currentTime ?? 0), 150);
+        } else {
+          a.play();
+        }
+      }
+    }, on);
+  if (flying) {
+    await pause(true);
+  }
+  await shot(cy, 'damage-start');
+  if (flying) {
+    await pause(false);
+  }
+  await expect(cy.getByTestId('burst')).toBeVisible();
+  await shot(cy, 'damage-from-player');
+  const { shot: path } = await tracked(cy);
+  const first = path?.[0];
+  if (!first) {
+    throw new Error('no shot');
+  }
+  expect(Math.abs(first.x - from.x)).toBeLessThan(30);
+  expect(Math.abs(first.y - from.y)).toBeLessThan(30);
+});

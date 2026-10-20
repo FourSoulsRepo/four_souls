@@ -153,6 +153,9 @@
 * **1y. A changed roll (15.76):** the die shows its old value first.
   * A shot flies to it from the card that changed it.
   * The die turns to the new value: "Ann's roll: 3 → 4".
+* **1z. Damage from a card that left (15.77):** the shot comes from its player.
+  * From their character card, else their area.
+  * Only damage with no known dealer shows the hit alone.
 
 ## Postconditions
 

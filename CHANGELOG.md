@@ -14,6 +14,7 @@ Rules engine versions are in each release's notes.
 - A played loot card rises from its player's hand to the stack, and flies from the stack to the discard when it resolves.
 - Stolen cents fly as a coin from the player robbed to the thief.
 - A changed roll shows the old value, a shot from the card that changed it, then the new value.
+- Damage from a card that already left the table flies from the player who dealt it.
 
 ## 0.1.1 - 2026-10-19
 

@@ -432,6 +432,9 @@ export interface GameEvent {
   prev?: number;
   source?: number;
   stack_id?: number;
+  // by: the player who dealt damage, plus 1; 0 or none for a monster
+  // or nobody (15.77).
+  by?: number;
   // item: the stack item that resolved, on stack_resolved (15.22).
   item?: StackItem;
 }
