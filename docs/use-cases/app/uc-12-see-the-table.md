@@ -139,6 +139,10 @@
   * Not next to the soul crystals.
   * Side columns: their own row above the character, at its left.
   * No curse: the areas keep their size and look as before.
+* **1v. A revealed card's path (15.73):** it grows out of its deck to the middle.
+  * Moved in the same update, e.g. a slot refill: it flies from the middle.
+  * It shrinks to a table card on the way to its place.
+  * Not moved: it shrinks back onto its deck.
 
 ## Postconditions
 

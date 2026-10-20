@@ -12,22 +12,35 @@ import { hits, skulls } from './marks';
 // The size of a table card, for flying cards.
 const cardW = 80;
 const cardH = 112;
+// The width of a large card (size-zoom); its height follows.
+const zoomW = 320;
+const zoomH = (zoomW * cardH) / cardW;
 
 interface Point {
   x: number;
   y: number;
 }
 
-// zoneCenter finds the first zone on screen (data-zone) and its centre.
-function zoneCenter(zones: string[]): Point | null {
+// zoneRect finds the first zone on screen (data-zone) and its box.
+function zoneRect(zones: string[]): DOMRect | null {
   for (const z of zones) {
     const el = document.querySelector(`[data-zone="${CSS.escape(z)}"]`);
     if (el) {
-      const r = el.getBoundingClientRect();
-      return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+      return el.getBoundingClientRect();
     }
   }
   return null;
+}
+
+// zoneCenter finds the first zone on screen (data-zone) and its centre.
+function zoneCenter(zones: string[]): Point | null {
+  const r = zoneRect(zones);
+  return r && { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+}
+
+// middle is the centre of the window, where large cards show.
+function middle(): Point {
+  return { x: window.innerWidth / 2, y: window.innerHeight / 2 };
 }
 
 // Effects draws the event effect playing now (7.6). Each effect calls
@@ -68,9 +81,13 @@ function Effect({ playing }: { playing: Playing }) {
   const duration = (seconds: number) => seconds * scale;
   switch (effect.kind) {
     case 'fly':
-      return <Fly from={effect.from} to={effect.to} card={effect.card} back={effect.back} playing={playing} />;
     case 'place':
-      return <Fly from={effect.from} to={effect.to} card={effect.card} back={effect.back} playing={playing} stay />;
+      if (effect.middle && effect.card) {
+        return <FlyFromMiddle to={effect.to} card={effect.card} playing={playing} stay={effect.kind === 'place'} />;
+      }
+      return (
+        <Fly from={effect.from} to={effect.to} card={effect.card} back={effect.back} playing={playing} stay={effect.kind === 'place'} />
+      );
     case 'popup':
       return <Popup at={effect.at} text={effect.text} tone={effect.tone} playing={playing} />;
     case 'dice':
@@ -104,18 +121,7 @@ function Effect({ playing }: { playing: Playing }) {
         </motion.div>
       );
     case 'reveal':
-      return (
-        // anim: reveal
-        <motion.div
-          className="effect-center"
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: [0, 1, 1, 0], scale: [0.8, 1, 1, 0.9] }}
-          transition={{ duration: duration(1.3), times: [0, 0.2, 0.8, 1] }}
-          onAnimationComplete={done}
-        >
-          <Card cardRef={effect.card} size="zoom" />
-        </motion.div>
-      );
+      return <Reveal card={effect.card} deck={effect.deck} hold={effect.hold ?? false} playing={playing} />;
     case 'played':
       return (
         // anim: played
@@ -225,6 +231,67 @@ function Fly({
       onAnimationComplete={land}
     >
       <Card cardRef={card} back={back} size="table" />
+    </motion.div>
+  );
+}
+
+// Reveal shows a card large (15.73): it grows out of its deck to the
+// middle and stays a moment. Held, it ends there for the move after it;
+// else it shrinks back onto the deck, where the card stays.
+function Reveal({ card, deck, hold, playing }: { card: string; deck: string[]; hold: boolean; playing: Playing }) {
+  const [from] = useState(() => {
+    const r = zoneRect(deck);
+    const m = middle();
+    return r && { x: r.left + r.width / 2 - m.x, y: r.top + r.height / 2 - m.y, scale: Math.min(1, r.width / zoomW) };
+  });
+  // Without the deck on screen, the card fades in and out in the middle.
+  const off = from ?? { x: 0, y: 0, scale: 0.8 };
+  const fade = from ? 1 : 0;
+  const end = hold ? { x: 0, y: 0, scale: 1, opacity: 1 } : { ...off, opacity: 0 };
+  return (
+    // anim: reveal
+    <motion.div
+      className="effect-center"
+      initial={{ x: off.x, y: off.y, scale: off.scale, opacity: fade }}
+      animate={{
+        x: [off.x, 0, 0, end.x, end.x],
+        y: [off.y, 0, 0, end.y, end.y],
+        scale: [off.scale, 1, 1, end.scale, end.scale],
+        opacity: [fade, 1, 1, hold ? 1 : fade, end.opacity],
+      }}
+      transition={{ duration: 1.5 * playing.scale, times: [0, 0.25, 0.75, 0.95, 1], ease: 'easeInOut' }}
+      onAnimationComplete={playing.done}
+    >
+      <Card cardRef={card} size="zoom" />
+    </motion.div>
+  );
+}
+
+// FlyFromMiddle moves a card a held reveal left large in the middle to
+// its place, shrinking to a table card on the way (15.73).
+function FlyFromMiddle({ to, card, playing, stay }: { to: string[]; card: string; playing: Playing; stay: boolean }) {
+  const [path] = useState(() => ({ a: middle(), b: zoneCenter(to) }));
+  useSkip(!path.b, playing.done);
+  if (!path.b) {
+    return null;
+  }
+  const b = path.b;
+  const land = () => {
+    if (stay) {
+      useApp.setState((s) => ({ placed: [...s.placed, { key: playing.key, card, x: b.x - cardW / 2, y: b.y - cardH / 2 }] }));
+    }
+    playing.done();
+  };
+  return (
+    // anim: fly
+    <motion.div
+      className="effect-fly"
+      initial={{ x: path.a.x - zoomW / 2, y: path.a.y - zoomH / 2, scale: 1 }}
+      animate={{ x: b.x - zoomW / 2, y: b.y - zoomH / 2, scale: cardW / zoomW }}
+      transition={{ duration: 0.55 * playing.scale, ease: 'easeInOut' }}
+      onAnimationComplete={land}
+    >
+      <Card cardRef={card} size="zoom" />
     </motion.div>
   );
 }

@@ -531,3 +531,128 @@ test('a deck attack keeps the drawn monster in view while its slot is picked (19
   await expect(odo.locator('[data-zone="obj-990"]')).toBeVisible();
   await expect(dialog).toHaveCount(0);
 });
+
+// trackCards records, every frame, the box of the large revealed card
+// and of a card flying to its place, in window.boxes (15.73).
+async function trackCards(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    interface Box {
+      x: number;
+      y: number;
+      w: number;
+    }
+    const w = window as unknown as { boxes: { reveal: Box[]; place: Box[] } };
+    w.boxes = { reveal: [], place: [] };
+    const box = (sel: string): Box | null => {
+      const el = document.querySelector(sel);
+      if (!el) {
+        return null;
+      }
+      const r = el.getBoundingClientRect();
+      return { x: r.left + r.width / 2, y: r.top + r.height / 2, w: r.width };
+    };
+    const frame = () => {
+      const reveal = box('[data-testid="effect-reveal"] .card');
+      const place = box('[data-testid="effect-place"] .effect-fly');
+      if (reveal) {
+        w.boxes.reveal.push(reveal);
+      }
+      if (place) {
+        w.boxes.place.push(place);
+      }
+      requestAnimationFrame(frame);
+    };
+    requestAnimationFrame(frame);
+  });
+}
+
+interface Boxes {
+  reveal: { x: number; y: number; w: number }[];
+  place: { x: number; y: number; w: number }[];
+}
+
+function boxes(page: Page): Promise<Boxes> {
+  return page.evaluate(() => (window as unknown as { boxes: Boxes }).boxes);
+}
+
+async function centre(page: Page, selector: string): Promise<{ x: number; y: number }> {
+  const b = await page.locator(selector).boundingBox();
+  if (!b) {
+    throw new Error(`no ${selector}`);
+  }
+  return { x: b.x + b.width / 2, y: b.y + b.height / 2 };
+}
+
+test('a refilled slot\'s card grows out of its deck, then flies from the middle (15.73)', async ({ browser }) => {
+  const [lia] = await startGame(browser, ['Lia', 'Otto']);
+  if (!lia) {
+    throw new Error('no pages');
+  }
+  const deck = await centre(lia, '[data-zone="deck-monster"]');
+  await trackCards(lia);
+  // Replay a slot refill: a new monster is revealed into the first slot.
+  await lia.evaluate(() => {
+    const s = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store.getState();
+    const game = structuredClone(s.game);
+    const [first, second] = game?.view.monsters ?? [];
+    if (!game || !first || !second?.top) {
+      throw new Error('no game');
+    }
+    first.top = { ...second.top, id: 990 };
+    const events = [{ kind: 'card_revealed', player: -1, object: 990, card: second.top.card }];
+    s.receive({ type: 'update', data: { ...game, step: 2, events } });
+  });
+  await expect(lia.getByTestId('effect-reveal')).toBeVisible();
+  await shot(lia, 'reveal-from-deck');
+  await lia.waitForTimeout(700);
+  await shot(lia, 'reveal-held');
+  await expect(lia.getByTestId('effect-place')).toBeVisible({ timeout: 5000 });
+  await shot(lia, 'reveal-to-slot');
+  await expect(lia.locator('[data-zone="obj-990"]')).toBeVisible();
+  // The reveal starts small on the deck; the flight starts large in
+  // the middle of the window.
+  const { reveal, place } = await boxes(lia);
+  const start = reveal[0];
+  const flight = place[0];
+  if (!start || !flight) {
+    throw new Error('no boxes');
+  }
+  expect(Math.abs(start.x - deck.x)).toBeLessThan(30);
+  expect(Math.abs(start.y - deck.y)).toBeLessThan(30);
+  expect(start.w).toBeLessThan(160);
+  expect(Math.abs(flight.x - 640)).toBeLessThan(30);
+  expect(Math.abs(flight.y - 360)).toBeLessThan(30);
+  expect(flight.w).toBeGreaterThan(200);
+});
+
+test('a revealed card that stays in its deck shrinks back onto it (15.73)', async ({ browser }) => {
+  const [noa] = await startGame(browser, ['Noa', 'Pim']);
+  if (!noa) {
+    throw new Error('no pages');
+  }
+  const deck = await centre(noa, '[data-zone="deck-monster"]');
+  await trackCards(noa);
+  // Replay a reveal of the deck's top card that leaves it there.
+  await noa.evaluate(() => {
+    const s = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store.getState();
+    const game = structuredClone(s.game);
+    const card = game?.view.monsters?.[1]?.top?.card;
+    if (!game || !card) {
+      throw new Error('no game');
+    }
+    const events = [{ kind: 'card_revealed', player: -1, object: 991, card, text: 'monster deck' }];
+    s.receive({ type: 'update', data: { ...game, step: 2, events } });
+  });
+  await expect(noa.getByTestId('effect-reveal')).toBeVisible();
+  await noa.waitForTimeout(1250);
+  await shot(noa, 'reveal-back-to-deck');
+  await expect(noa.getByTestId('effect-reveal')).toHaveCount(0, { timeout: 5000 });
+  const { reveal } = await boxes(noa);
+  const end = reveal.at(-1);
+  if (!end) {
+    throw new Error('no boxes');
+  }
+  expect(Math.abs(end.x - deck.x)).toBeLessThan(30);
+  expect(Math.abs(end.y - deck.y)).toBeLessThan(30);
+  expect(end.w).toBeLessThan(160);
+});

@@ -2179,6 +2179,16 @@ Images come first, so the new table is built with backs and mats.
    1. Vitest: the start point of a move after a show.
    2. e2e: a deck attack shows the card, then places it from the middle.
    3. `make screenshots` covers the reveal in flight.
+5. Result (2026-10-20)
+   1. `reveal` carries its `deck`; the card grows from there to the middle.
+   2. `holdReveals` joins a reveal to a move of its card right after it.
+   3. Joined: the reveal holds; `FlyFromMiddle` flies the large card, shrinking.
+   4. Not joined: the reveal shrinks back onto its deck.
+   5. No deck on screen: it fades in the middle, as before.
+   6. A deck attack is not joined: its card waits on the deck (19.9).
+   7. Vitest `playback.test.ts`; e2e `playback.spec.ts`, two tests.
+   8. UC-12 1v; wikis `Client`, `Animations`; CHANGELOG.
+   9. Screenshots: `.cache/screenshots/15.73/before/` and `after/`.
 
 ### [ ] 15.74 Another player's loot goes from the hand to the stack to the discard
 

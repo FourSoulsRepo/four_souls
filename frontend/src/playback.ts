@@ -9,19 +9,23 @@ export type Speed = 'normal' | 'fast' | 'slow' | 'off';
 // An effect names the places it plays at by zone (data-zone on the
 // table), most precise first; the first one on screen is used.
 export type Effect =
-  | { kind: 'fly'; from: string[]; to: string[]; card?: string; back: Kind }
+  // fly: middle starts the card large in the middle, where the reveal
+  // before it held it (15.73).
+  | { kind: 'fly'; from: string[]; to: string[]; card?: string; back: Kind; middle?: boolean }
   | { kind: 'popup'; at: string[]; text: string; tone: 'good' | 'bad' }
   // dice: thrown for a fresh roll or a reroll (15.62); a changed roll
   // spins in.
   | { kind: 'dice'; value: number; label: string; player: number; thrown?: boolean }
   | { kind: 'banner'; text: string }
-  | { kind: 'reveal'; card: string }
+  // reveal: the card grows out of its deck to the middle; it holds
+  // there when the next effect moves it, else shrinks back (15.73).
+  | { kind: 'reveal'; card: string; deck: string[]; hold?: boolean }
   // played: another player's loot card shows large for a moment as it
   // goes on the stack (15.31, H-10).
   | { kind: 'played'; card: string; who: string }
   // place: a card flies into a slot and stays there until the view is
   // shown, so later effects play over it (19.3).
-  | { kind: 'place'; from: string[]; to: string[]; card: string; back: Kind }
+  | { kind: 'place'; from: string[]; to: string[]; card: string; back: Kind; middle?: boolean }
   // lunge: the attacker's card hits the target and returns (15.3, V-12).
   | { kind: 'lunge'; from: string[]; to: string[]; amount: number }
   // hits: other damage flies from its source and bursts on every
@@ -167,14 +171,14 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
         }
         // A deck attack reveals its card, then puts it in a slot in the
         // next update: it shows large once (19.4).
+        const kind = kindOf(ctx.card(e.card)?.type ?? '');
         if (!ctx.seen(e.card)) {
-          out.push({ kind: 'reveal', card: e.card });
+          out.push({ kind: 'reveal', card: e.card, deck: [`deck-${kind}`] });
         }
         // A card put into a slot, e.g. a deck attack's monster, is there
         // before the attack roll that follows it.
         const slot = e.object ? ctx.slot(e.object) : undefined;
         if (slot) {
-          const kind = kindOf(ctx.card(e.card)?.type ?? '');
           out.push({ kind: 'place', from: [`deck-${kind}`], to: [slot], card: e.card, back: kind });
         }
         break;
@@ -193,7 +197,21 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
         break;
     }
   }
+  holdReveals(out);
   return out;
+}
+
+// holdReveals joins a reveal to a move of its card right after it: the
+// reveal holds the card large in the middle, and the move starts there
+// (15.73). The card is seen on one path, from its deck to its place.
+function holdReveals(effects: Effect[]): void {
+  effects.forEach((e, i) => {
+    const next = effects.at(i + 1);
+    if (e.kind === 'reveal' && (next?.kind === 'fly' || next?.kind === 'place') && next.card === e.card) {
+      e.hold = true;
+      next.middle = true;
+    }
+  });
 }
 
 function speedScale(speed: Speed): number {

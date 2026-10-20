@@ -117,8 +117,8 @@ describe('effectsFor', () => {
       { kind: 'dice_rolled', player: 0, amount: 4, text: 'attack roll' },
     ];
     expect(effectsFor(events, ctx)).toEqual([
-      { kind: 'reveal', card: 'fly' },
-      { kind: 'place', from: ['deck-loot'], to: ['monster-slot-1'], card: 'fly', back: 'loot' },
+      { kind: 'reveal', card: 'fly', deck: ['deck-loot'], hold: true },
+      { kind: 'place', from: ['deck-loot'], to: ['monster-slot-1'], card: 'fly', back: 'loot', middle: true },
       { kind: 'dice', value: 4, label: 'attack roll', player: 0, thrown: true },
     ]);
   });
@@ -132,7 +132,19 @@ describe('effectsFor', () => {
 
   it('only reveals a card that is in no slot', () => {
     const e: GameEvent = { kind: 'card_revealed', player: 0, object: 51, card: 'fly' };
-    expect(effectsFor([e], ctx)).toEqual([{ kind: 'reveal', card: 'fly' }]);
+    expect(effectsFor([e], ctx)).toEqual([{ kind: 'reveal', card: 'fly', deck: ['deck-loot'] }]);
+  });
+
+  it('holds a reveal only for a move of its card right after it (15.73)', () => {
+    const reveal: GameEvent = { kind: 'card_revealed', player: -1, object: 51, card: 'fly', text: 'loot deck' };
+    const discard = (card: string): GameEvent => ({ kind: 'discarded', player: -1, object: 60, card });
+    expect(effectsFor([reveal, discard('fly')], ctx)).toEqual([
+      { kind: 'reveal', card: 'fly', deck: ['deck-loot'], hold: true },
+      { kind: 'fly', from: ['obj-60', 'deck-loot'], to: ['discard-loot'], card: 'fly', back: 'loot', middle: true },
+    ]);
+    expect(effectsFor([reveal, discard('cain')], ctx)[0]).toEqual({ kind: 'reveal', card: 'fly', deck: ['deck-loot'] });
+    const later: GameEvent[] = [reveal, { kind: 'gained_cents', player: 0, amount: 1 }, discard('fly')];
+    expect(effectsFor(later, ctx)[0]).toEqual({ kind: 'reveal', card: 'fly', deck: ['deck-loot'] });
   });
 });
 
