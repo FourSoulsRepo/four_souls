@@ -2359,3 +2359,5 @@ Images come first, so the new table is built with backs and mats.
    5. Go tests `TestServerName` (`pkg/record`), `TestRecordReplays`.
    6. ADR 007 2.10; UC-08 1b; wikis `Server`, `Dedicated-server-on-a-VPS`; CHANGELOG.
    7. No screen changed; no screenshots.
+6. Owner notes (2026-10-20)
+   1. Owner marks 15.78 solved.
