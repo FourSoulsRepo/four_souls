@@ -2431,6 +2431,11 @@ Images come first, so the new table is built with backs and mats.
    6. The sky test drops its light-theme step.
    7. UC-01 8c removed; UC-10 3d; wikis `Client`, `Screenshots`; CHANGELOG.
    8. Screenshots: `.cache/screenshots/15.80/before/` and `after/`.
+6. Owner notes (2026-10-20)
+   1. Settings fields on separate lines: Animations, then Game mat and Dice.
+   2. Done: two `.row`s; the previews stay under the mat and dice line.
+   3. e2e "animations sit above the game mat and the dice".
+   4. Screenshots: `.cache/screenshots/15.80/rows/`.
 
 ### [x] 15.81 No Green felt mat
 

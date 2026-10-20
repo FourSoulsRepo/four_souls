@@ -77,6 +77,23 @@ export function SettingsScreen() {
         </label>
         <div className="row">
           <label className="field">
+            Animations
+            <select
+              value={form.animation}
+              onChange={(e) => {
+                change({ animation: speedOf(e.target.value) });
+              }}
+            >
+              <option value="normal">Normal</option>
+              <option value="fast">Fast</option>
+              <option value="slow">Slow</option>
+              <option value="off">Off</option>
+            </select>
+          </label>
+        </div>
+        {/* The looks sit on one line, above their previews (15.80). */}
+        <div className="row">
+          <label className="field">
             Game mat
             <select
               value={matOf(form.mat, mats)}
@@ -89,20 +106,6 @@ export function SettingsScreen() {
                   {m.name}
                 </option>
               ))}
-            </select>
-          </label>
-          <label className="field">
-            Animations
-            <select
-              value={form.animation}
-              onChange={(e) => {
-                change({ animation: speedOf(e.target.value) });
-              }}
-            >
-              <option value="normal">Normal</option>
-              <option value="fast">Fast</option>
-              <option value="slow">Slow</option>
-              <option value="off">Off</option>
             </select>
           </label>
           {diceGroups.length > 0 && (

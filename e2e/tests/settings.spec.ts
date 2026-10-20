@@ -13,6 +13,24 @@ test('there is no theme to pick', async ({ page }) => {
   await expect(page.locator('html')).not.toHaveAttribute('data-theme');
 });
 
+// Owner review of 15.80: Animations on its own line, then the game mat
+// and the dice side by side.
+test('animations sit above the game mat and the dice', async ({ page }) => {
+  await page.goto('/?fake&nosplash');
+  await page.getByRole('button', { name: 'Settings' }).click();
+  const box = async (name: string) => {
+    const b = await page.getByRole('combobox', { name }).boundingBox();
+    if (!b) {
+      throw new Error(`no ${name} field`);
+    }
+    return b;
+  };
+  const [animations, mat, dice] = [await box('Animations'), await box('Game mat'), await box('Dice')];
+  expect(animations.y + animations.height).toBeLessThan(mat.y);
+  expect(Math.abs(mat.y - dice.y)).toBeLessThan(1);
+  expect(mat.x).toBeLessThan(dice.x);
+});
+
 test('the first start asks for a nickname, once', async ({ page }) => {
   await realAssets(page);
   await page.goto('/?fake&nosplash&firstrun');
