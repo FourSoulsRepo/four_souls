@@ -22,36 +22,36 @@ Claims are counted in *beats*: a beat is one update, from the start of its effec
 
 ## Inventory
 
-| ID | What it does | Started by | Claims | Code |
-|----|--------------|------------|--------|------|
-| `card-pop` | A table card scales and fades in when it first appears. | The view draws a `Card` with a new `objectId`. | Nothing; stays still when the card is claimed `arrive` this beat (19.6). | `components/Card.tsx` |
-| `fly` | A card flies from one zone to another. As a `place` effect it stays on the slot until the view is drawn (19.3). | `looted`, `discarded` (`fly`); `card_revealed` of a slot's new top card (`place`). | `arrive` of the card, as `fly` or `place`. | `components/Effects.tsx` (`Fly`) |
-| `reveal` | A card shows large in the middle. | `card_revealed`, unless the update before revealed it (19.4). | `show` of the card. | `components/Effects.tsx` |
-| `dice` | A die spins in with the changed roll and its label. | `roll_changed`. | Nothing. | `components/Effects.tsx` |
-| `dice-throw` | The thrown die, a 3D cube (`DieCube`, 15.69), falls from above, bounces twice and tumbles to rest with the engine's value in front; its shadow grows on the table, and its label fades in after the landing (15.62). | `dice_rolled`: a fresh roll or a reroll. | Nothing. | `components/Effects.tsx` (`ThrownDie`) |
-| `banner` | A text banner in the middle. | `turn_started`, `game_won`. | Nothing. | `components/Effects.tsx` |
-| `popup` | A short "+N" text rises from a zone. | `gained_cents`, `healed`, `prevented`, `stole`. | Nothing. | `components/Effects.tsx` (`Popup`) |
-| `lunge` | A copy of the attacker jumps into the target and back; the card hides meanwhile. | `damaged` with `text: "combat"` and a `source`. | Nothing; it moves a copy. | `components/lunge.ts` |
-| `burst` | A starburst "−N" on a damaged card. | The hit of a `lunge`, or of a `hit-shot`. | Nothing. | `components/lunge.ts` (`burst`) |
-| `hit-shot` | A glowing shot flies from a damage source to its target. | `damaged` without combat (`hits` effect). | Nothing. | `components/marks.ts` |
-| `death-skull` | A big skull pops on a dying card. | `died` (`deaths` effect). | Nothing. | `components/marks.ts` |
-| `end-turn-glow` | The End turn button glows while the player may end the turn. | CSS class `.end-turn.idle`. | Nothing; not a game event. | `components/Actions.css` |
-| `aim-march` | The aiming arrow's blocks march toward its head. | Aiming a card (15.32). | Nothing; not a game event. | `components/Table.css` |
-| `aim-fade-in` | The arrow's first block fades in, in step with the march. | Aiming a card. | Nothing; not a game event. | `components/Table.css` |
-| `aim-fade-out` | The arrow's last block fades out, in step with the march. | Aiming a card. | Nothing; not a game event. | `components/Table.css` |
-| `aim-why` | The hint under an invalid aim fades out. | Aiming at a card that is not a target; a click on a card or turn icon the player can't use now (15.29). | Nothing; not a game event. | `components/Table.css` |
-| `hand-glow` | The green aura behind a playable hand card breathes slowly. | CSS class `.hand-card.usable` (15.27). | Nothing; not a game event. | `components/Table.css` |
-| `prompt-glow` | The gold glow behind the prompt banner, and behind Pass when passing answers it, breathes. | A prompt for the viewer (15.28). | Nothing; not a game event. | `components/Actions.css` |
-| `throw-glow` | The halo behind the roller's Throw button breathes. | A throw prompt for the viewer (15.61). | Nothing; not a game event. | `components/Throw.css` |
-| `throw-shake` | The roller's die shakes in their hand while the others wait. | A throw prompt for another player (15.61). | Nothing; not a game event. | `components/Throw.css` |
-| `played` | Another player's loot card shows large in the middle with "Ann plays", then fades (15.31, H-10). | `loot_played` by another player. | `show` of the card. | `components/Effects.tsx` |
+| ID | What it does | Why: what the player learns | Direction | Started by | Claims | Code |
+|----|--------------|-----------------------------|-----------|------------|--------|------|
+| `card-pop` | A table card scales and fades in when it first appears. | A card is new on the table. | In place: grows from 60 % where the card sits. | The view draws a `Card` with a new `objectId`. | Nothing; stays still when the card is claimed `arrive` this beat (19.6). | `components/Card.tsx` |
+| `fly` | A card flies from one zone to another. As a `place` effect it stays on the slot until the view is drawn (19.3). | Where a card went: who drew loot, what was thrown away, which card filled a slot. | `looted`: loot deck (or loot discard) → the player's hand, else their panel. `discarded`: the card's spot on the table, else the player's hand, else its deck → that kind's discard. `place`: the kind's deck → the monster or shop slot. | `looted`, `discarded` (`fly`); `card_revealed` of a slot's new top card (`place`). | `arrive` of the card, as `fly` or `place`. | `components/Effects.tsx` (`Fly`) |
+| `reveal` | A card shows large in the middle. | Which card just turned up, so everyone can read it. | Middle of the screen; grows from 80 %, then fades. Not tied to the deck it came from. | `card_revealed`, unless the update before revealed it (19.4). | `show` of the card. | `components/Effects.tsx` |
+| `dice` | A die spins in with the changed roll and its label. | A roll was changed, and its new value. | Middle of the screen; spins half a turn in from 40 %. Not tied to the roller. | `roll_changed`. | Nothing. | `components/Effects.tsx` |
+| `dice-throw` | The thrown die, a 3D cube (`DieCube`, 15.69), falls from above, bounces twice and tumbles to rest with the engine's value in front; its shadow grows on the table, and its label fades in after the landing (15.62). | A die was thrown, and the value it landed on. | Middle of the screen, where the Throw button waited; straight down from above the screen. | `dice_rolled`: a fresh roll or a reroll. | Nothing. | `components/Effects.tsx` (`ThrownDie`) |
+| `banner` | A text banner in the middle. | Whose turn starts; who won. | Middle of the screen; fades in place. | `turn_started`, `game_won`. | Nothing. | `components/Effects.tsx` |
+| `popup` | A short "+N" text rises from a zone. | A player gained or stole cents; a card or player healed; damage was prevented. | Rises up from the receiver: the player's panel (cents, stolen), else the healed or protected card. | `gained_cents`, `healed`, `prevented`, `stole`. | Nothing. | `components/Effects.tsx` (`Popup`) |
+| `lunge` | A copy of the attacker jumps into the target and back; the card hides meanwhile. | Who attacks whom in a fight. | Attacker's card → target card (short of its centre) → back; a small pull-back first. | `damaged` with `text: "combat"` and a `source`. | Nothing; it moves a copy. | `components/lunge.ts` |
+| `burst` | A starburst "−N" on a damaged card. | Which card took damage, and how much. | In place, on the damaged card (or the player's character). | The hit of a `lunge`, or of a `hit-shot`. | Nothing. | `components/lunge.ts` (`burst`) |
+| `hit-shot` | A glowing shot flies from a damage source to its target. | Where damage outside a fight came from, and what it hit. | Source card on the table, else its stack row → the damaged card. No source on screen: no shot, only the `burst`. | `damaged` without combat (`hits` effect). | Nothing. | `components/marks.ts` |
+| `death-skull` | A big skull pops on a dying card. | Which card died. | In place, on the dying card. | `died` (`deaths` effect). | Nothing. | `components/marks.ts` |
+| `end-turn-glow` | The End turn button glows while the player may end the turn. | Nothing is left to do; end the turn. | In place, on End turn. | CSS class `.end-turn.idle`. | Nothing; not a game event. | `components/Actions.css` |
+| `aim-march` | The aiming arrow's blocks march toward its head. | Which way the play goes: from the card to its target. | Along the arrow: the played card → the arrow's head at the pointer. | Aiming a card (15.32). | Nothing; not a game event. | `components/Table.css` |
+| `aim-fade-in` | The arrow's first block fades in, in step with the march. | None of its own; keeps the march seamless. | In place, at the arrow's tail by the card. | Aiming a card. | Nothing; not a game event. | `components/Table.css` |
+| `aim-fade-out` | The arrow's last block fades out, in step with the march. | None of its own; keeps the march seamless. | In place, at the arrow's head. | Aiming a card. | Nothing; not a game event. | `components/Table.css` |
+| `aim-why` | The hint under an invalid aim fades out. | Why that click does nothing; it leaves by itself. | In place, just above the pointer. | Aiming at a card that is not a target; a click on a card or turn icon the player can't use now (15.29). | Nothing; not a game event. | `components/Table.css` |
+| `hand-glow` | The green aura behind a playable hand card breathes slowly. | This hand card can be played now. | In place, behind the hand card. | CSS class `.hand-card.usable` (15.27). | Nothing; not a game event. | `components/Table.css` |
+| `prompt-glow` | The gold glow behind the prompt banner, and behind Pass when passing answers it, breathes. | The game waits for you; Pass answers it. | In place, behind the banner and Pass. | A prompt for the viewer (15.28). | Nothing; not a game event. | `components/Actions.css` |
+| `throw-glow` | The halo behind the roller's Throw button breathes. | It is your roll: press Throw. | In place, behind Throw in the middle. | A throw prompt for the viewer (15.61). | Nothing; not a game event. | `components/Throw.css` |
+| `throw-shake` | The roller's die shakes in their hand while the others wait. | Another player is about to roll; wait. | In place, in the middle where the die will land, under the roller's name. | A throw prompt for another player (15.61). | Nothing; not a game event. | `components/Throw.css` |
+| `played` | Another player's loot card shows large in the middle with "Ann plays", then fades (15.31, H-10). | Which loot card another player played. | Middle of the screen; grows from 60 %, shrinks to 50 % as it fades. Not tied to the player's hand. | `loot_played` by another player. | `show` of the card. | `components/Effects.tsx` |
 
 CSS `transition`s on hover and focus are not listed: they answer the pointer, not the game, and cannot clash with an effect.
 
 ## Adding an animation
 
 1. Pick an id; add the `anim: <id>` comment above the animation in the code.
-2. Add its row to the table above.
+2. Add its row to the table above, with its Why and Direction.
 3. If it brings a card to its place or shows it large, claim the card (`claimEffect` or `claim`).
 4. If it replaces an older animation for the same event, remove the old one with its tag and row.
 5. Add an e2e test that plays it; the clash fixture then checks it with every other test.

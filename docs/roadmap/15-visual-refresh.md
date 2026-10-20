@@ -2149,3 +2149,15 @@ Images come first, so the new table is built with backs and mats.
 4. Done when:
    1. Every inventory row has both columns.
    2. The `animation inventory` Vitest still passes.
+5. Result (2026-10-20)
+   1. `Animations.md`: Why and Direction columns in the inventory.
+   2. "Adding an animation" asks for both in a new row.
+   3. Directions read from `playback.ts`, `Effects.tsx`, `lunge.ts`, `marks.ts`.
+   4. No code changed; no screenshots.
+6. Gaps for the owner to check
+   1. `reveal` then `place`: the card shows in the middle, then flies from the deck.
+   2. `played` then `fly`: shown in the middle, then flies from the hand.
+   3. `stole`: "+N stolen" rises on the thief only; the victim shows nothing.
+   4. `dice`: a changed roll spins in the middle; nothing ties it to the roller.
+   5. `hit-shot`: a source not on screen sends no shot; only the burst shows.
+   6. `reveal` and `played` fade in place; nothing shows where the card goes.
