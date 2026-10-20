@@ -2156,7 +2156,7 @@ Images come first, so the new table is built with backs and mats.
    4. No code changed; no screenshots.
 6. Gaps for the owner to check
    1. `reveal` then `place`: the card shows in the middle, then flies from the deck.
-   2. `played` then `fly`: shown in the middle, then flies from the hand.
+   2. `played`: on resolve, the discard `fly` starts at its table spot, else the loot deck.
    3. `stole`: "+N stolen" rises on the thief only; the victim shows nothing.
    4. `dice`: a changed roll spins in the middle; nothing ties it to the roller.
    5. `hit-shot`: a source not on screen sends no shot; only the burst shows.
