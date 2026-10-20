@@ -1114,7 +1114,7 @@ This step never closes; new reports are appended.
 8. Owner notes (2026-10-20)
    1. Owner marks 19.35 solved.
 
-### [ ] 19.36 XX Judgement destroys no soul
+### [x] 19.36 XX Judgement destroys no soul
 
 1. Goal: "destroy a soul you control" always destroys one, if able.
 2. Report (owner, 2026-10-20)
@@ -1145,3 +1145,5 @@ This step never closes; new reports are appended.
    5. Ruling: Q-23 in `open-questions.md`, House, in "Rulings to revisit".
    6. Tests: `TestTheBoneSoulCanBeDestroyed`, `TestXXJudgementSkipsEternalSouls`.
    7. Engine only; no screen change, no screenshots.
+8. Owner notes (2026-10-20)
+   1. Owner marks 19.36 solved.
