@@ -1148,7 +1148,7 @@ This step never closes; new reports are appended.
 8. Owner notes (2026-10-20)
    1. Owner marks 19.36 solved.
 
-### [ ] 19.37 e2e: the 15.77 shot test misses its start by a pixel
+### [x] 19.37 e2e: the 15.77 shot test misses its start by a pixel
 
 1. Goal: the 15.77 test checks the shot's start without flaking.
 2. Report (agent, 2026-10-20)
@@ -1184,6 +1184,8 @@ This step never closes; new reports are appended.
    4. Every `trackBoxes` test gains it, 15.76's roll shot too.
    5. 15.77 alone: 30 repeats per browser, 60 of 60 passed.
    6. `make lint frontend e2e` passed.
+7. Owner notes (2026-10-20)
+   1. Owner marks 19.37 solved.
 
 ### [ ] 19.38 e2e: game starts time out again in a full run
 
