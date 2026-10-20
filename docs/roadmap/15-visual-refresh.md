@@ -2,7 +2,7 @@
 
 Goal: a clearer table, using fouronlinesouls.net as a second reference.
 
-Ideas: V-09, V-12, V-13, V-15 – V-31, V-33 – V-45, GS-06.
+Ideas: V-09, V-12, V-13, V-15 – V-31, V-33 – V-46, GS-06.
 
 Order: 15.1, 15.15, 15.9 – 15.11, 15.16, 15.17, 15.38, 15.18 – 15.24,
 15.3, 15.37, 15.25, 15.32 – 15.34, 15.26, 15.27, 15.59 – 15.63, 15.6, 15.64,
@@ -2062,3 +2062,24 @@ Images come first, so the new table is built with backs and mats.
 6. Owner notes (2026-10-20)
    1. Owner merged the dice sound into the private images.
    2. Owner marks 15.69 solved.
+
+### [ ] 15.70 Ask before ending the turn
+
+1. Goal: End turn asks first while the player can still play (V-46).
+2. Asked by the owner (2026-10-20).
+3. Owner answers (2026-10-20)
+   1. Ask whenever End turn is not glowing: anything allowed counts.
+   2. The question lists what is left; a setting turns it off.
+4. Tasks:
+   1. `actions.ts`: list what is left besides passing and ending.
+   2. A dialog: "End turn?" with that list.
+   3. Buttons: End turn and Keep playing.
+   4. E or Enter confirms; Esc or a click outside cancels.
+   5. A glowing End turn ends at once, as now.
+   6. Setting "Ask before ending the turn", on by default.
+   7. The dialog gets a row in `docs/wiki/Layers.md`.
+5. Done when:
+   1. Vitest: the list for attack, buy, loot and abilities.
+   2. e2e: End turn with plays left asks; Keep playing keeps the turn.
+   3. e2e: with the setting off, End turn ends at once.
+   4. `make screenshots` covers the dialog.

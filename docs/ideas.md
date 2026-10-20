@@ -249,6 +249,11 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    1. The mode dialog shows the card large, as the ability dialog does.
    2. One parchment line per mode, in the card's own words.
    3. Same look as The Bone's ability lines (15.24).
+46. V-46. Ask before ending the turn while plays are left (owner, 2026-10-20).
+   1. Stops an End turn pressed by mistake.
+   2. Asks whenever End turn is not glowing (H-20).
+   3. The question lists what is left: attack, buy, loot, abilities.
+   4. A setting turns it off; on by default.
 
 ## Rules
 
