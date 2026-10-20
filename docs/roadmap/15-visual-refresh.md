@@ -1404,7 +1404,7 @@ Images come first, so the new table is built with backs and mats.
    1. Owner pushed the tools, images and game repos.
    2. Owner marks 15.41 solved.
 
-### [ ] 15.42 Animated background
+### [x] 15.42 Animated background
 
 1. Goal: home and setup screens feel alive (V-35).
 2. Tasks:
@@ -1439,6 +1439,8 @@ Images come first, so the new table is built with backs and mats.
    17. Tests: Go `TestIconsFromFiles`, Vitest `sky.test.ts`, e2e `shell.spec.ts`.
    18. UC-01; wikis `Client`, `Build-modes`, `Animations`, `Layers`; `NOTICE`; CHANGELOG.
    19. Screenshots: `.cache/screenshots/15.42/before/` and `after/`.
+6. Owner review (2026-10-20)
+   1. Owner marks 15.42 solved.
 
 ### [ ] 15.43 First player roll for everyone
 
