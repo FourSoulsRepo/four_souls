@@ -2,7 +2,7 @@
 
 Goal: a clearer table, using fouronlinesouls.net as a second reference.
 
-Ideas: V-09, V-12, V-13, V-15 – V-31, V-33 – V-47, GS-06, N-18,
+Ideas: V-09, V-12, V-13, V-15 – V-31, V-33 – V-48, GS-06, N-18,
 M-02, ST-07, ST-08.
 
 Order: 15.1, 15.15, 15.9 – 15.11, 15.16, 15.17, 15.38, 15.18 – 15.24,
@@ -2460,3 +2460,18 @@ Images come first, so the new table is built with backs and mats.
    7. Screenshots: `.cache/screenshots/15.81/before/` and `after/`.
 6. Owner notes (2026-10-20)
    1. Owner marks 15.81 solved.
+
+### [ ] 15.82 Dice seen from above
+
+1. Goal: a thrown die rests with its value on top, seen from above (V-48).
+2. Asked by the owner (2026-10-20).
+3. Tasks:
+   1. `cubeFaces` puts the value on the top face.
+   2. The cube rests tilted far back: the top face fills most of it.
+   3. The front and right sides still show as narrow strips.
+   4. The tumble ends on the new rest; shades still light the top.
+   5. UC-13, wikis `Client` and `Animations`, CHANGELOG.
+4. Done when:
+   1. Vitest: the value is on top; opposite faces add up to seven.
+   2. e2e: the landed die's top face shows the roller's look.
+   3. Screenshots before and after.

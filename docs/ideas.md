@@ -258,6 +258,10 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    1. The animation list says what each one tells the player.
    2. It says where the motion goes: from where to where.
    3. The owner checks every animation against that idea.
+48. V-48. A die at rest is seen from above (owner, 2026-10-20).
+   1. The value is on the top face, as on a real table.
+   2. The top face fills most of the die.
+   3. Two sides still show, so the die looks solid.
 
 ## Rules
 
