@@ -2234,6 +2234,8 @@ Images come first, so the new table is built with backs and mats.
    18. Left running, they slowed later tests in the same worker to timeouts.
    19. `startGame` pages stay open until the worker ends; evidence in `15.74-run*`.
    20. One host start timed out at 5 s under load; it passed 8 of 8 alone.
+6. Owner notes (2026-10-20)
+   1. Owner marks 15.74 solved.
 
 ### [x] 15.75 Stolen cents move from the victim to the thief
 
@@ -2261,6 +2263,8 @@ Images come first, so the new table is built with backs and mats.
    10. It failed on WebKit before; evidence in `.cache/e2e-evidence/15.75*/`.
    11. After: 72 of 72 runs of the 15.73 – 15.75 tests passed.
    12. Full runs still time out at game start now and then: bug 19.35.
+6. Owner notes (2026-10-20)
+   1. Owner marks 15.75 solved.
 
 ### [x] 15.76 A changed roll shows what changed it
 
@@ -2291,6 +2295,8 @@ Images come first, so the new table is built with backs and mats.
    9. Go `TestRollChangedNamesItsSource`; Vitest and e2e `playback`.
    10. UC-12 1y; wikis `Client`, `Animations`, `Effect-blocks`; CHANGELOG.
    11. Screenshots: `.cache/screenshots/15.76/before/` and `after/`.
+6. Owner notes (2026-10-20)
+   1. Owner marks 15.76 solved.
 
 ### [x] 15.77 Damage always shows where it came from
 
@@ -2316,3 +2322,5 @@ Images come first, so the new table is built with backs and mats.
    8. Vitest and e2e `playback`; the e2e pauses the shot for its picture.
    9. UC-12 1z; wikis `Client`, `Animations`; CHANGELOG.
    10. Screenshots: `.cache/screenshots/15.77/before/` and `after/`.
+6. Owner notes (2026-10-20)
+   1. Owner marks 15.77 solved.
