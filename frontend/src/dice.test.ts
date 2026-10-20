@@ -22,18 +22,18 @@ describe('faceOf', () => {
 });
 
 describe('cubeFaces', () => {
-  it('puts the value in front of a real d6 (15.69)', () => {
+  it('puts the value on top of a real d6 (15.69, 15.82)', () => {
     for (let v = 1; v <= 6; v++) {
       const f = cubeFaces(v);
-      expect(f.front).toBe(v);
+      expect(f.top).toBe(v);
       expect(new Set(Object.values(f))).toEqual(new Set([1, 2, 3, 4, 5, 6]));
       expect([f.front + f.back, f.top + f.bottom, f.left + f.right]).toEqual([7, 7, 7]);
     }
   });
 
-  it('shows a modified value in front of a one', () => {
-    expect(cubeFaces(7)).toEqual({ ...cubeFaces(1), front: 7 });
-    expect(cubeFaces(0).front).toBe(0);
+  it('shows a modified value on top of a one', () => {
+    expect(cubeFaces(7)).toEqual({ ...cubeFaces(1), top: 7 });
+    expect(cubeFaces(0).top).toBe(0);
   });
 });
 

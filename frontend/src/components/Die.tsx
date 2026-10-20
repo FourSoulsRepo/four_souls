@@ -39,7 +39,7 @@ function Face({ value, image, hidden, onBroken }: { value: number; image: string
 }
 
 // DieCube is a die as a solid cube of six faces (15.69), for a throw: it
-// turns in 3D and comes to rest with the value in front. The cube is the
+// turns in 3D and comes to rest with the value on top (15.82). The cube is the
 // element to turn; its faces are hidden from screen readers.
 export function DieCube({ value, image, label, ref }: { value: number; image: string; label?: string; ref?: Ref<HTMLDivElement> }) {
   const [broken, setBroken] = useState('');

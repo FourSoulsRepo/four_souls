@@ -2475,3 +2475,13 @@ Images come first, so the new table is built with backs and mats.
    1. Vitest: the value is on top; opposite faces add up to seven.
    2. e2e: the landed die's top face shows the roller's look.
    3. Screenshots before and after.
+5. Result (2026-10-20)
+   1. `cubeFaces` (`dice.ts`): the value on top; front and right are a free pair.
+   2. At rest: `rotateX(-58deg) rotateY(-28deg)`, in `Die.css` and `Effects.tsx`.
+   3. The top fills most of the die; front and right show as strips.
+   4. The tumble's second landing moves toward the new rest.
+   5. The front face gets a light shade; the top stays the lit one.
+   6. Vitest `dice.test.ts`; e2e `actions.spec.ts` reads `.die-top`.
+   7. UC-13 6b; wikis `Client` and `Animations`; CHANGELOG.
+   8. Screenshots: `.cache/screenshots/15.82/before/` and `after/`.
+   9. Headless WebKit still draws the cube flat: only the top face shows.

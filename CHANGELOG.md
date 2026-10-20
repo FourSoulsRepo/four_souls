@@ -21,6 +21,7 @@ Rules engine versions are in each release's notes.
 - The main menu has an Exit button.
 - The light theme is gone; the app has one dark theme, and Settings no longer has a Theme field.
 - The Green felt game mat is gone; a table that used it gets the default mat.
+- A thrown die rests with its result on top, seen from above, with two sides still showing.
 
 ## 0.1.1 - 2026-10-19
 

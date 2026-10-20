@@ -93,6 +93,8 @@
   * At rest it is tilted, so two more faces show (15.69).
   * Its shadow on the table grows as it falls.
   * It clatters as it first lands; silent without the private sound.
+  * At rest the value is on top, seen from above (15.82).
+  * The top fills most of the die; the front and right show as strips.
 * **5e. Deck attack reveals an unattackable monster (19.23):** e.g. Stoney.
   * It stays in the chosen slot; the attack is cancelled (R-ATK-10).
   * No attack roll; the player goes on with the turn.

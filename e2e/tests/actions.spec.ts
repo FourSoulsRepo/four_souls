@@ -705,8 +705,8 @@ test("every screen draws a roll with the roller's dice look (15.6)", async ({ br
   await shot(other, 'dice-roller-look');
 
   await active.keyboard.press(' ');
-  // A thrown die is a cube; its front face shows the roll (15.69).
-  const landed = active.getByTestId('effect-dice').locator('.die-front');
+  // A thrown die is a cube; its top face shows the roll (15.69, 15.82).
+  const landed = active.getByTestId('effect-dice').locator('.die-top');
   await expect(landed).toBeVisible();
   expect(await image(landed)).toBe(images.tear);
   await settle(pages, click, backToMe(active, await turnNumber(active)));

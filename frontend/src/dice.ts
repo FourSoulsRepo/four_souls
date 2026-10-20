@@ -67,14 +67,15 @@ export function diceChoices<T extends { set: string; image: string }>(looks: rea
 // and back add up to seven, and so do top and bottom, left and right.
 export type CubeFaces = Record<'front' | 'back' | 'top' | 'bottom' | 'left' | 'right', number>;
 
-// cubeFaces puts the value in front. A value no face shows (a modified
-// roll) still goes in front, around the faces of a one.
+// cubeFaces puts the value on top, as a die lies on a table (15.82). A
+// value no face shows (a modified roll) still goes on top, around the
+// faces of a one.
 export function cubeFaces(value: number): CubeFaces {
   const base = faceOf(value) ? value : 1;
   // The sides come in pairs that add up to seven: the first two are
   // never a pair.
-  const [top = 2, right = 3] = [1, 2, 3, 4, 5, 6].filter((n) => n !== base && n !== 7 - base);
-  return { front: value, back: 7 - base, top, bottom: 7 - top, right, left: 7 - right };
+  const [front = 2, right = 3] = [1, 2, 3, 4, 5, 6].filter((n) => n !== base && n !== 7 - base);
+  return { top: value, bottom: 7 - base, front, back: 7 - front, right, left: 7 - right };
 }
 
 // LastRoll is the last roll, kept as a small die by the stack (15.63,

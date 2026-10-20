@@ -540,13 +540,13 @@ const fall: Keyframe[] = [
 ];
 
 // tumble turns the cube as it falls (15.69): fast in the air, slower at
-// each bounce, then at rest with the value in front, tilted to show
-// two more faces.
-const rest = 'rotateX(-20deg) rotateY(-24deg) rotateZ(0deg)';
+// each bounce, then at rest with the value on top, seen from above with
+// two sides showing (15.82).
+const rest = 'rotateX(-58deg) rotateY(-28deg) rotateZ(0deg)';
 const tumble: Keyframe[] = [
   { offset: 0, transform: 'rotateX(740deg) rotateY(-560deg) rotateZ(150deg)', easing: 'linear' },
   { offset: landings[0], transform: 'rotateX(200deg) rotateY(-170deg) rotateZ(40deg)', easing: 'ease-out' },
-  { offset: landings[1], transform: 'rotateX(20deg) rotateY(-50deg) rotateZ(8deg)', easing: 'ease-out' },
+  { offset: landings[1], transform: 'rotateX(-30deg) rotateY(-55deg) rotateZ(8deg)', easing: 'ease-out' },
   { offset: 0.62, transform: rest },
   { offset: 1, transform: rest },
 ];
