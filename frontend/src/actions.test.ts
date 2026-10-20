@@ -167,7 +167,7 @@ describe('actionsFor', () => {
 
   it('uses the question as the title of an answer', () => {
     const a = actionsFor(
-      update({ waiting: { kind: PromptKind.choose, player: 0, purpose: 9, options: ['yes', 'no'], text: 'Pay 3¢?' } }, [
+      update({ waiting: { kind: PromptKind.choose, player: 0, purpose: 9, options: ['yes', 'No'], text: 'Pay 3¢?' } }, [
         { player: 0, kind: IntentKind.choose },
       ]),
       isCard,

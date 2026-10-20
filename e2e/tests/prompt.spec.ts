@@ -218,3 +218,29 @@ test('the others see what the active player does (15.30)', async ({ browser }) =
   await expect(doing.locator('.stack-target')).toHaveText(monster ?? '');
   await shot(other, 'activity-attacks');
 });
+
+test('a word answer is a plain button, not a card (19.42)', async ({ browser }) => {
+  const [lyra] = await startGame(browser, ['Lyra', 'Bram'], { url: fast() });
+  if (!lyra) {
+    throw new Error('no pages');
+  }
+  // P.H.D.'s question as the server sends it. "no" is the ref of No!,
+  // so the decline word is "No", which is no card.
+  await lyra.evaluate(() => {
+    interface S {
+      game: { view: { waiting: unknown }; allowed: unknown[] };
+      lobby: { table: { you: number } };
+      receive: (env: unknown) => void;
+    }
+    const s = (window as unknown as { fourSouls: { store: { getState: () => S } } }).fourSouls.store.getState();
+    const game = structuredClone(s.game);
+    const you = s.lobby.table.you;
+    game.view.waiting = { kind: 4, player: you, purpose: 9, text: 'Change your roll?', options: ['+1', '-1', 'No'] };
+    game.allowed = [0, 1, 2].map((choice) => ({ player: you, kind: 4, choice }));
+    s.receive({ type: 'update', data: { ...game, step: 2, events: [] } });
+  });
+  const options = lyra.locator('.choice-options');
+  await expect(options.getByRole('button', { name: 'No', exact: true })).toBeVisible();
+  await expect(options.locator('.card')).toHaveCount(0);
+  await shot(lyra, 'choice-word-answers');
+});

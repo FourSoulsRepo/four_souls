@@ -33,5 +33,5 @@ var rollerMayReroll = engine.Ask(func(c *engine.Ctx, a []int) {
 }, engine.Question{
 	Text:    "Reroll it?",
 	Player:  func(c *engine.Ctx, _ []int) engine.PlayerID { return c.EventPlayer },
-	Options: func(*engine.Ctx, []int) []string { return []string{"yes", "no"} },
+	Options: func(*engine.Ctx, []int) []string { return []string{"yes", "No"} },
 })

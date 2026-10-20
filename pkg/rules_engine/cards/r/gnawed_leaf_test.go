@@ -10,7 +10,7 @@ func TestGnawedLeafNotYourTurn(t *testing.T) {
 	tb := setup(t, engine.SituationSetup{Players: []engine.SituationPlayer{
 		{Character: "cain", Hand: []engine.CardRef{"mega_bomb"}}, seat("isaac", "gnawed_leaf"), seat("samson"),
 	}})
-	tb.Play(0, "mega_bomb", "player 2 (isaac)", "no")
+	tb.Play(0, "mega_bomb", "player 2 (isaac)", "No")
 	if tb.G.Players[1].Damage != 0 {
 		t.Error("damage is prevented while it's not his turn")
 	}

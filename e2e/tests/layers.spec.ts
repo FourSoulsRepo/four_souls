@@ -91,7 +91,7 @@ test('the Menu button stays above a choice and opens over it (15.29)', async ({ 
     const s = (window as unknown as { fourSouls: { store: { getState: () => S } } }).fourSouls.store.getState();
     const game = structuredClone(s.game);
     const you = s.lobby.table.you;
-    game.view.waiting = { kind: 4, player: you, purpose: 9, text: 'Keep going?', options: ['yes', 'no'] };
+    game.view.waiting = { kind: 4, player: you, purpose: 9, text: 'Keep going?', options: ['yes', 'No'] };
     game.allowed = [
       { player: you, kind: 4, choice: 0 },
       { player: you, kind: 4, choice: 1 },
@@ -123,7 +123,7 @@ test("another player's arrow stays under a choice (15.36)", async ({ browser }) 
     const game = structuredClone(s.game);
     const you = s.lobby.table.you;
     const other = 1 - you;
-    game.view.waiting = { kind: 4, player: you, purpose: 9, text: 'Keep going?', options: ['yes', 'no'] };
+    game.view.waiting = { kind: 4, player: you, purpose: 9, text: 'Keep going?', options: ['yes', 'No'] };
     game.allowed = [
       { player: you, kind: 4, choice: 0 },
       { player: you, kind: 4, choice: 1 },

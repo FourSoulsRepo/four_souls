@@ -104,7 +104,7 @@ func eachOtherMay(question string, do func(c *engine.Ctx, yes []engine.PlayerID)
 				if i >= len(othersInOrder(c)) {
 					return nil
 				}
-				return []string{"yes", "no"}
+				return []string{"yes", "No"}
 			},
 		}
 	}

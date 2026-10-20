@@ -39,20 +39,20 @@ This step never closes; new reports are appended.
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30                                     | 3     |
 | E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41                   | 6     |
 | F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40                                    | 3     |
-| G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19                                    | 3     |
+| G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
 | I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37 | 9 |
-| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38               | 6     |
+| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44 | 8     |
 
-Totals by system (41 items):
+Totals by system (44 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
 | Engine    | A, B    | 9     |
 | Card data | C       | 1     |
-| Client    | D–G     | 15    |
+| Client    | D–G     | 16    |
 | Server    | H       | 1     |
-| e2e       | I, J    | 15    |
+| e2e       | I, J    | 17    |
 
 ---
 
@@ -1234,6 +1234,15 @@ Totals by system (41 items):
    12. The error snapshot shows another test's game (Max, Nia).
    13. Alone, 6 repeats per browser: 12 of 12 passed.
    14. Evidence: `.cache/e2e-evidence/15.80-run1/` (not in git).
+   15. Again in the 19.42 gate, webkit: the 5 s Seats check.
+   16. `actions.spec.ts:676`, `table.spec.ts:191`; load average 13.
+   17. The two alone, 3 repeats each: 6 of 6 passed.
+   18. Evidence: `.cache/e2e-evidence/19.42-run1/` (not in git).
+   19. Again in the third 19.42 gate run, chromium, two tests.
+   20. `table.spec.ts:724`: 30 s, waiting for Join a game.
+   21. `table.spec.ts:802`: the 5 s check for the table.
+   22. Load average 34 during the run; the run took 10.3 min.
+   23. Evidence: `.cache/e2e-evidence/19.42-run3/` (not in git).
 3. Tasks:
    1. Find what else loads the machine; maybe fewer workers for webkit.
 4. Done when:
@@ -1330,3 +1339,72 @@ Totals by system (41 items):
    5. Screenshots: `.cache/screenshots/19.41/before/` and `after/`.
 7. Owner notes (2026-10-20)
    1. Owner marks 19.41 solved.
+
+### [x] 19.42 A "no" answer shows the No! card
+
+1. Goal: a word answer shows as a plain button, never as a card.
+2. Report (owner, 2026-10-20)
+   1. P.H.D. and Mom's Box ask the player to change something.
+   2. The "no" button shows the No! card above it.
+   3. The card has nothing to do with the choice.
+3. Cause
+   1. The client draws an option as a card when its label is a card ref.
+   2. Rule: `isCard(label)` in `actionsFor` (`actions.ts`).
+   3. No! has the ref `no`; the answer word is also `no`.
+   4. So every yes/no question shows No! on its "no" option.
+   5. A scan of engine option words against 696 refs: `no` is the only clash.
+
+4. Tasks:
+   1. The decline word is `No`, not `no` (owner, 2026-10-20).
+   2. A later translation may replace the word with a token.
+5. Done when:
+   1. Go test: P.H.D.'s and Mom's Box's answers are no card refs.
+   2. e2e test: a word answer is a button, with no card.
+6. Result (2026-10-20)
+   1. Every "no" answer reads `No`.
+   2. P.H.D., Mom's Box, every "may" question, Isaac's Blessing, Telepathy.
+   3. The client is unchanged; `No` is no card ref.
+   4. Records keep answers by index; older records still play.
+   5. Screenshots: `.cache/screenshots/19.42/before/` and `after/`.
+7. Owner notes (2026-10-20)
+   1. Owner marks 19.42 solved.
+   2. Committed with `make e2e` failing on 19.38, 19.43, 19.44 (owner).
+
+### [ ] 19.43 e2e: the 15.74 fly test misses the fly in a full run
+
+1. Goal: the test sees the fly in a busy full run too.
+2. Report (agent, 2026-10-20)
+   1. Second `make e2e` gate run for 19.42.
+   2. chromium `playback.spec.ts:868`, the stack row case.
+   3. `effect-fly` never became visible in 5 s.
+   4. Load average 25 at the end of the run.
+   5. Alone, 6 repeats per case and browser: 24 of 24 passed.
+   6. Evidence: `.cache/e2e-evidence/19.42-run2/` (not in git).
+3. Cause
+   1. Not found yet.
+   2. Guess: the short fly ends between two checks under load.
+4. Tasks:
+   1. Find the cause in the evidence; fix the test or the app.
+5. Done when:
+   1. Cause written here; three full runs in a row pass.
+
+### [ ] 19.44 e2e: the V-11 test gives up on a target prompt
+
+1. Goal: the V-11 stack test passes with any loot card it plays.
+2. Report (agent, 2026-10-20)
+   1. Third `make e2e` gate run for 19.42, webkit.
+   2. `stack.spec.ts:109`: the stack shows no "Waiting for" line.
+   3. The stack said "Choose a target"; the loot waited for its target.
+   4. The test answers only `.choice` dialogs, for 10 tries of 200 ms.
+   5. Load average 34 during the run.
+   6. Alone, 3 repeats per browser: 6 of 6 passed.
+   7. Evidence: `.cache/e2e-evidence/19.42-run3/` (not in git).
+3. Cause
+   1. Not found yet; the loot card is not known.
+   2. Maybe a table target, which the test never picks.
+   3. Maybe the dialog came later than 2 s under load.
+4. Tasks:
+   1. Find the card in the match record; fix the test or the app.
+5. Done when:
+   1. Cause written here; three full runs in a row pass.
+

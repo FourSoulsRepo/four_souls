@@ -39,7 +39,7 @@ var telepathyForDummies = engine.CardDef{
 				if ok && a[0] == 0 && n > 0 {
 					c.G.SetRoll(it.ID, n, c.Source)
 				}
-			}, engine.Question{Text: "Change your roll to the stored result?", Options: func(*engine.Ctx, []int) []string { return []string{"yes", "no"} }})},
+			}, engine.Question{Text: "Change your roll to the stored result?", Options: func(*engine.Ctx, []int) []string { return []string{"yes", "No"} }})},
 		},
 	},
 }

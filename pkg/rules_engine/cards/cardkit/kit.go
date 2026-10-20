@@ -103,7 +103,7 @@ func May(question string, effects ...engine.Effect) engine.Effect {
 		if a[0] == 0 {
 			c.Do(effects...)
 		}
-	}, engine.Question{Text: question, Options: func(*engine.Ctx, []int) []string { return []string{"yes", "no"} }})
+	}, engine.Question{Text: question, Options: func(*engine.Ctx, []int) []string { return []string{"yes", "No"} }})
 }
 
 // PutBackInOrder is "look at the top n cards of the deck. Put them back in
