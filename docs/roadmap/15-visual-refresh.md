@@ -2137,7 +2137,7 @@ Images come first, so the new table is built with backs and mats.
 6. Owner notes (2026-10-20)
    1. Owner marks 15.71 solved.
 
-### [ ] 15.72 Reason and direction of every animation
+### [x] 15.72 Reason and direction of every animation
 
 1. Goal: the owner can check each animation against its idea (V-47).
 2. Asked by the owner (2026-10-20).
@@ -2163,8 +2163,9 @@ Images come first, so the new table is built with backs and mats.
    6. `reveal` and `played` fade in place; nothing shows where the card goes.
 7. Owner answers (2026-10-20)
    1. Fix every gap above: sub-steps 15.73 – 15.77.
+   2. Owner marks 15.72 solved.
 
-### [ ] 15.73 A revealed card comes from its deck and leaves to its place
+### [x] 15.73 A revealed card comes from its deck and leaves to its place
 
 1. Goal: a revealed card's path is visible end to end (15.72 gaps 1, 6).
 2. Asked by the owner (2026-10-20).
@@ -2189,6 +2190,11 @@ Images come first, so the new table is built with backs and mats.
    7. Vitest `playback.test.ts`; e2e `playback.spec.ts`, two tests.
    8. UC-12 1v; wikis `Client`, `Animations`; CHANGELOG.
    9. Screenshots: `.cache/screenshots/15.73/before/` and `after/`.
+6. Owner notes (2026-10-20)
+   1. Owner marks 15.73 solved.
+   2. 15.74 – 15.77 go without a stop between them.
+   3. Each is marked done when it is finished.
+   4. The owner reviews all four together at the end.
 
 ### [ ] 15.74 Another player's loot goes from the hand to the stack to the discard
 
