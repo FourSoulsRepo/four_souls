@@ -2461,7 +2461,7 @@ Images come first, so the new table is built with backs and mats.
 6. Owner notes (2026-10-20)
    1. Owner marks 15.81 solved.
 
-### [ ] 15.82 Dice seen from above
+### [x] 15.82 Dice seen from above
 
 1. Goal: a thrown die rests with its value on top, seen from above (V-48).
 2. Asked by the owner (2026-10-20).
@@ -2486,3 +2486,5 @@ Images come first, so the new table is built with backs and mats.
    8. Screenshots: `.cache/screenshots/15.82/before/` and `after/`.
    9. Headless WebKit still draws the cube flat: one side face shows, not the top.
    10. Real Safari draws it in 3D (15.69); the label always says the value.
+6. Owner notes (2026-10-20)
+   1. Owner marks 15.82 solved.
