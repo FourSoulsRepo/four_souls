@@ -1,6 +1,7 @@
 // The match history (7.9, V-03): one entry per resolved stack item, plus
 // turns, loots and the winner. Built from the events this viewer got, so
 // it shows only what the viewer may see (hidden cards stay hidden).
+import { firstPlayerText, tieText } from './dice';
 import type { GameEvent, StackItem } from './protocol';
 import type { Names } from './stack';
 
@@ -84,10 +85,25 @@ export function entriesFor(events: GameEvent[], turn: number, you: number, n: Na
       case 'game_won':
         add('♛', `${does(e.player, 'win')} the game`);
         break;
+      // The first-player roll keeps every die, ties too (15.43).
+      case 'dice_rolled':
+        if (e.text === firstRollLabel) {
+          add('⚄', `${does(e.player, 'roll')} ${String(e.amount ?? 0)} for the first player`);
+        }
+        break;
+      case 'first_roll_tied':
+        add('⚄', tieText(e, you, n.player));
+        break;
+      case 'first_player':
+        add('①', firstPlayerText(e, you, n.player, n.card), e.card);
+        break;
     }
   }
   return out;
 }
+
+// firstRollLabel is the label of the first-player roll's dice.
+export const firstRollLabel = 'first player roll';
 
 // Looked is one card this viewer looks at; id is its object.
 export interface Looked {

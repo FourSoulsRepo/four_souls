@@ -52,7 +52,7 @@ test('a fast burst of updates plays in order and ends on the last one', async ({
   await kai.evaluate(() => {
     interface Store {
       getState: () => {
-        game: { view: { turn: { number: number; active: number } } } | null;
+        game: { step: number; view: { turn: { number: number; active: number } } } | null;
         lobby: { table: { you: number } | null };
         receive: (env: unknown) => void;
       };
@@ -243,7 +243,7 @@ test('an attack lunges at the monster and drops its HP at the hit', async ({ bro
     }
     interface Store {
       getState: () => {
-        game: { view: { players: { id: number; character: Card }[]; monsters: { top?: Card }[] } } | null;
+        game: { step: number; view: { players: { id: number; character: Card }[]; monsters: { top?: Card }[] } } | null;
         lobby: { table: { you: number } | null };
         receive: (env: unknown) => void;
       };
@@ -263,7 +263,7 @@ test('an attack lunges at the monster and drops its HP at the hit', async ({ bro
       type: 'update',
       data: {
         ...game,
-        step: 2,
+        step: game.step + 1,
         events: [{ kind: 'damaged', player: -1, object: monster.id, amount: 1, source: character.id, text: 'combat' }],
       },
     });
@@ -313,7 +313,7 @@ interface View {
 }
 interface Store {
   getState: () => {
-    game: { view: View } | null;
+    game: { step: number; view: View } | null;
     lobby: { table: { you: number } | null };
     receive: (env: unknown) => void;
   };
@@ -348,7 +348,7 @@ test('damage from a card hits every target at once and reddens their HP', async 
     me.hp -= 1;
     me.character.damage = 1;
     events.push({ kind: 'damaged', player: you, amount: 1, source: me.character.id });
-    s.receive({ type: 'update', data: { ...game, step: 2, events } });
+    s.receive({ type: 'update', data: { ...game, step: game.step + 1, events } });
     return { character: me.character.id, monsters: tops.map((t) => t.id), hps };
   });
   // A shot flies from the source to each target.
@@ -402,7 +402,7 @@ test('a dying monster gets a skull before it leaves', async ({ browser }) => {
     }
     slot.top = undefined;
     const events = [{ kind: 'died', player: -1, object: 999, card: top.card, prev: top.id }];
-    s.receive({ type: 'update', data: { ...game, step: 2, events } });
+    s.receive({ type: 'update', data: { ...game, step: game.step + 1, events } });
     return top.id;
   });
   const monster = ola.locator(`[data-zone="obj-${String(id)}"]`);
@@ -438,7 +438,7 @@ test('a deck attack places the monster in its slot before the attack roll', asyn
       { kind: 'attack_target', player: you, object: top.id, card: top.card },
       { kind: 'dice_rolled', player: you, amount: 4, text: 'attack roll' },
     ];
-    s.receive({ type: 'update', data: { ...game, step: 2, events } });
+    s.receive({ type: 'update', data: { ...game, step: game.step + 1, events } });
     return { old: old.id, top: top.id };
   });
   // The card flies to the slot and stays there while the dice rolls.
@@ -489,14 +489,14 @@ test('a deck attack shows the revealed monster large once (19.4)', async ({ brow
     first.top = { ...second.top, id: 990 };
     s.receive({
       type: 'update',
-      data: { ...drawn, step: 2, events: [{ kind: 'card_revealed', player: you, object: 989, card }] },
+      data: { ...drawn, step: drawn.step + 1, events: [{ kind: 'card_revealed', player: you, object: 989, card }] },
     });
     const events = [
       { kind: 'card_revealed', player: -1, object: 990, card },
       { kind: 'attack_target', player: you, object: 990, card },
       { kind: 'dice_rolled', player: you, amount: 4, text: 'attack roll' },
     ];
-    s.receive({ type: 'update', data: { ...placed, step: 3, events } });
+    s.receive({ type: 'update', data: { ...placed, step: placed.step + 2, events } });
   });
   // The drawn card shows large; in its slot it only flies there.
   await expect(vix.getByTestId('effect-dice')).toBeVisible({ timeout: 8000 });
@@ -541,7 +541,7 @@ test('a deck attack monster does not pop in after it lands (19.6)', async ({ bro
       { kind: 'attack_target', player: you, object: 990, card: second.top.card },
       { kind: 'dice_rolled', player: you, amount: 4, text: 'attack roll' },
     ];
-    s.receive({ type: 'update', data: { ...game, step: 2, events } });
+    s.receive({ type: 'update', data: { ...game, step: game.step + 1, events } });
   });
   const card = yara.locator('[data-zone="obj-990"]');
   await expect(card).toBeVisible({ timeout: 8000 });
@@ -574,7 +574,7 @@ test('a deck attack keeps the drawn monster in view while its slot is picked (19
     game.view.options = slots.map((m) => ({ object: m.top?.id ?? 0, player: -1 }));
     game.allowed = slots.map((_, i) => ({ player: you, kind: 4, choice: i }));
     const events = [{ kind: 'card_revealed', player: you, object: 989, card }];
-    s.receive({ type: 'update', data: { ...game, step: 2, events } });
+    s.receive({ type: 'update', data: { ...game, step: game.step + 1, events } });
     return s.cards.get(card)?.name ?? card;
   });
   // After the large reveal, the card stays face up on the monster deck
@@ -600,7 +600,7 @@ test('a deck attack keeps the drawn monster in view while its slot is picked (19
     game.view.waiting = { kind: 1, player: s.lobby.table?.you ?? 0 };
     game.allowed = [];
     const events = [{ kind: 'card_revealed', player: -1, object: 990, card: drawn.card }];
-    s.receive({ type: 'update', data: { ...game, step: 3, events } });
+    s.receive({ type: 'update', data: { ...game, step: game.step + 2, events } });
   });
   await expect(odo.getByTestId('effect-place')).toBeVisible({ timeout: 5000 });
   await expect(odo.locator('[data-zone="obj-989"]')).toHaveCount(0);
@@ -702,7 +702,7 @@ test('a refilled slot\'s card grows out of its deck, then flies from the middle 
     }
     first.top = { ...second.top, id: 990 };
     const events = [{ kind: 'card_revealed', player: -1, object: 990, card: second.top.card }];
-    s.receive({ type: 'update', data: { ...game, step: 2, events } });
+    s.receive({ type: 'update', data: { ...game, step: game.step + 1, events } });
   });
   await expect(lia.getByTestId('effect-reveal')).toBeVisible();
   await shot(lia, 'reveal-from-deck');
@@ -743,7 +743,7 @@ test('a revealed card that stays in its deck shrinks back onto it (15.73)', asyn
       throw new Error('no game');
     }
     const events = [{ kind: 'card_revealed', player: -1, object: 991, card, text: 'monster deck' }];
-    s.receive({ type: 'update', data: { ...game, step: 2, events } });
+    s.receive({ type: 'update', data: { ...game, step: game.step + 1, events } });
   });
   await expect(noa.getByTestId('effect-reveal')).toBeVisible();
   await noa.waitForTimeout(1250);
@@ -812,6 +812,7 @@ async function putLoot(page: Page, mine: boolean, played: boolean): Promise<void
     ({ mine, played }) => {
       const s = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store.getState();
       const game = structuredClone(s.game) as unknown as {
+        step: number;
         view: { players: { id: number; hand?: { card: string }[] }[]; stack?: unknown[] };
       } | null;
       const you = s.lobby.table?.you ?? 0;
@@ -824,7 +825,7 @@ async function putLoot(page: Page, mine: boolean, played: boolean): Promise<void
       const none = { card: '', index: 0 };
       game.view.stack = [{ id: 50, kind: 0, controller, source: 700, card, target: { player: -1 }, ability: none, roll_for: none }];
       const events = played ? [{ kind: 'loot_played', player: controller, object: 700, card }] : [];
-      s.receive({ type: 'update', data: { ...game, step: 2, events } });
+      s.receive({ type: 'update', data: { ...game, step: game.step + 1, events } });
     },
     { mine, played },
   );
@@ -883,7 +884,7 @@ for (const mine of [false, true]) {
     // its effect plays (19.41).
     await wes.evaluate(() => {
       const s = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store.getState();
-      const game = structuredClone(s.game) as unknown as { view: { stack?: { controller: number; card: string }[] } } | null;
+      const game = structuredClone(s.game) as unknown as { step: number; view: { stack?: { controller: number; card: string }[] } } | null;
       const item = game?.view.stack?.[0];
       if (!game || !item) {
         throw new Error('no game');
@@ -893,7 +894,7 @@ for (const mine of [false, true]) {
         { kind: 'discarded', player: item.controller, object: 900, prev: 700, card: item.card, text: 'stack' },
         { kind: 'gained_cents', player: item.controller, amount: 1 },
       ];
-      s.receive({ type: 'update', data: { ...game, step: 3, events } });
+      s.receive({ type: 'update', data: { ...game, step: game.step + 2, events } });
     });
     await expect(wes.getByTestId('effect-fly')).toBeVisible();
     await shot(wes, mine ? 'discard-from-stack-row' : 'discard-from-played');
@@ -938,7 +939,7 @@ test('stolen cents fly as a coin from the victim to the thief (15.75)', async ({
     const s = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store.getState();
     const game = structuredClone(s.game);
     const events = [{ kind: 'stole', player: ids.you, amount: 2, text: String(ids.other) }];
-    s.receive({ type: 'update', data: { ...game, step: 2, events } });
+    s.receive({ type: 'update', data: { ...game, step: game.step + 1, events } });
   }, ids);
   await expect(yan.locator('.effects .effect-popup').first()).toBeVisible();
   await yan.waitForTimeout(150);
@@ -967,6 +968,7 @@ test('a changed roll turns from its old value, hit by the card that changed it (
   const ids = await abe.evaluate(() => {
     const s = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store.getState();
     const game = structuredClone(s.game) as unknown as {
+      step: number;
       view: { players: { id: number; character: { id: number } }[]; stack?: unknown[] };
     } | null;
     const you = s.lobby.table?.you ?? 0;
@@ -976,7 +978,7 @@ test('a changed roll turns from its old value, hit by the card that changed it (
     }
     const none = { card: '', index: 0 };
     game.view.stack = [{ id: 60, kind: 3, controller: you, source: 0, roll: 3, target: { player: you }, ability: none, roll_for: none }];
-    s.receive({ type: 'update', data: { ...game, step: 2, events: [] } });
+    s.receive({ type: 'update', data: { ...game, step: game.step + 1, events: [] } });
     return { you, character };
   });
   const from = await centre(abe, `[data-zone="obj-${String(ids.character)}"]`);
@@ -986,7 +988,7 @@ test('a changed roll turns from its old value, hit by the card that changed it (
     const s = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store.getState();
     const game = structuredClone(s.game);
     const events = [{ kind: 'roll_changed', player: ids.you, amount: 5, stack_id: 60, source: ids.character }];
-    s.receive({ type: 'update', data: { ...game, step: 3, events } });
+    s.receive({ type: 'update', data: { ...game, step: game.step + 2, events } });
   }, ids);
   await expect(abe.locator('.effects')).toBeVisible();
   await shot(abe, 'roll-change-start');
@@ -1035,7 +1037,7 @@ test('damage from a card no longer on screen flies from the player who dealt it 
     const s = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store.getState();
     const game = structuredClone(s.game);
     const events = [{ kind: 'damaged', player: -1, object: ids.monster, amount: 1, source: 999, by: ids.you + 1 }];
-    s.receive({ type: 'update', data: { ...game, step: 2, events } });
+    s.receive({ type: 'update', data: { ...game, step: game.step + 1, events } });
   }, ids);
   // The picture shows the shot in flight, paused a third of the way;
   // the client before 15.77 sent none.

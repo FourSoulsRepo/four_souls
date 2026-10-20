@@ -266,6 +266,8 @@ type Game struct {
 	Choice *Choice `json:"choice,omitempty"`
 	// Throw is the roll waiting for its die to be thrown (PromptThrow).
 	Throw *Throw `json:"throw,omitempty"`
+	// FirstRoll is the first-player roll before turn 1 (15.43).
+	FirstRoll *FirstRoll `json:"first_roll,omitempty"`
 	// Activating is an ability being put on the stack (targets pending).
 	Activating *Activation `json:"activating,omitempty"`
 	// PendingTriggers wait to go on the stack (R-ABIL-14).

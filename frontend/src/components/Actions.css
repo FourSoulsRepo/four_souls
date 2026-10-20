@@ -690,6 +690,48 @@
   color: var(--muted);
 }
 
+/* The first-player roll before turn 1 (15.43): one row per player of
+   this round, their die once thrown. */
+.first-roll-title {
+  margin: 0 0 4px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.first-roll ol {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.first-roll-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 26px;
+  font-size: 14px;
+}
+
+.first-roll-row .die {
+  width: 24px;
+  height: 24px;
+  border-radius: 5px;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 60%);
+}
+
+.first-roll-row .die-plain {
+  font-size: 14px;
+}
+
+.first-roll-wait {
+  font-size: 13px;
+  font-style: italic;
+  color: var(--muted);
+}
+
 .stack-wait {
   margin: 4px 0 0;
   font-size: 12px;

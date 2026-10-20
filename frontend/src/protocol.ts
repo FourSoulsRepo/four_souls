@@ -367,6 +367,18 @@ export interface GameView {
   // declared purchase (15.30). Older servers send neither.
   attack?: AttackView;
   buying?: boolean;
+  // first_roll is the first-player roll before turn 1: who still rolls,
+  // in seat order, and this round's dice so far (GS-06, 15.43).
+  first_roll?: FirstRoll;
+}
+
+// FirstRoll is the first-player roll in progress: the lowest goes
+// first; a tie among the lowest rolls again, with only those players.
+export interface FirstRoll {
+  // round counts from 1; each tie starts the next.
+  round: number;
+  players: number[];
+  rolls?: number[];
 }
 
 // AttackView is an attack in progress: its target once chosen, and

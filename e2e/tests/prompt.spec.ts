@@ -228,7 +228,7 @@ test('a word answer is a plain button, not a card (19.42)', async ({ browser }) 
   // so the decline word is "No", which is no card.
   await lyra.evaluate(() => {
     interface S {
-      game: { view: { waiting: unknown }; allowed: unknown[] };
+      game: { step: number; view: { waiting: unknown }; allowed: unknown[] };
       lobby: { table: { you: number } };
       receive: (env: unknown) => void;
     }
@@ -237,7 +237,7 @@ test('a word answer is a plain button, not a card (19.42)', async ({ browser }) 
     const you = s.lobby.table.you;
     game.view.waiting = { kind: 4, player: you, purpose: 9, text: 'Change your roll?', options: ['+1', '-1', 'No'] };
     game.allowed = [0, 1, 2].map((choice) => ({ player: you, kind: 4, choice }));
-    s.receive({ type: 'update', data: { ...game, step: 2, events: [] } });
+    s.receive({ type: 'update', data: { ...game, step: game.step + 1, events: [] } });
   });
   const options = lyra.locator('.choice-options');
   await expect(options.getByRole('button', { name: 'No', exact: true })).toBeVisible();

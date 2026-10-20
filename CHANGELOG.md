@@ -26,6 +26,8 @@ Rules engine versions are in each release's notes.
 - The light theme is gone; the app has one dark theme, and Settings no longer has a Theme field.
 - The Green felt game mat is gone; a table that used it gets the default mat.
 - A thrown die rests with its result on top, seen from above, with two sides still showing.
+- Before turn 1 every player throws a die for the first player; everyone sees each die, ties roll again, and a banner names who goes first. Cain still goes first without a roll.
+- Records from older versions no longer replay: the first-player roll is now part of every record.
 
 ## 0.1.1 - 2026-10-19
 

@@ -53,7 +53,7 @@ test('a card zoomed from the discard window shows above it (19.26)', async ({ br
   // The discard prompt as the server sends it: one card from the hand.
   await lyra.evaluate(() => {
     interface S {
-      game: { view: { players: { hand?: { id: number }[] }[]; waiting: unknown }; allowed: unknown[] };
+      game: { step: number; view: { players: { hand?: { id: number }[] }[]; waiting: unknown }; allowed: unknown[] };
       lobby: { table: { you: number } };
       receive: (env: unknown) => void;
     }
@@ -64,7 +64,7 @@ test('a card zoomed from the discard window shows above it (19.26)', async ({ br
     const hand = (game.view.players[you]?.hand ?? []).map((c) => c.id);
     game.view.waiting = { kind: 2, player: you, count: 1 };
     game.allowed = [{ player: you, kind: 2, objects: hand }];
-    s.receive({ type: 'update', data: { ...game, step: 2, events: [] } });
+    s.receive({ type: 'update', data: { ...game, step: game.step + 1, events: [] } });
   });
   const dialog = lyra.getByRole('dialog', { name: 'Discard', exact: true });
   const card = dialog.locator('.card').first();
@@ -84,7 +84,7 @@ test('the Menu button stays above a choice and opens over it (15.29)', async ({ 
   // A choice as the server sends it: its backdrop dims the whole table.
   await tamsin.evaluate(() => {
     interface S {
-      game: { view: { waiting: unknown }; allowed: unknown[] };
+      game: { step: number; view: { waiting: unknown }; allowed: unknown[] };
       lobby: { table: { you: number } };
       receive: (env: unknown) => void;
     }
@@ -96,7 +96,7 @@ test('the Menu button stays above a choice and opens over it (15.29)', async ({ 
       { player: you, kind: 4, choice: 0 },
       { player: you, kind: 4, choice: 1 },
     ];
-    s.receive({ type: 'update', data: { ...game, step: 2, events: [] } });
+    s.receive({ type: 'update', data: { ...game, step: game.step + 1, events: [] } });
   });
   const backdrop = tamsin.locator('.choice-backdrop');
   await expect(backdrop).toBeVisible();
@@ -115,7 +115,7 @@ test("another player's arrow stays under a choice (15.36)", async ({ browser }) 
   // character at the board's middle, as the server relays it.
   await wren.evaluate(() => {
     interface S {
-      game: { view: { waiting: unknown; players: { character: { id: number } }[] }; allowed: unknown[] };
+      game: { step: number; view: { waiting: unknown; players: { character: { id: number } }[] }; allowed: unknown[] };
       lobby: { table: { you: number } };
       receive: (env: unknown) => void;
     }
@@ -128,7 +128,7 @@ test("another player's arrow stays under a choice (15.36)", async ({ browser }) 
       { player: you, kind: 4, choice: 0 },
       { player: you, kind: 4, choice: 1 },
     ];
-    s.receive({ type: 'update', data: { ...game, step: 2, events: [] } });
+    s.receive({ type: 'update', data: { ...game, step: game.step + 1, events: [] } });
     const from = game.view.players[other]?.character.id ?? 0;
     s.receive({ type: 'presence', data: { seat: other, from: { object: from }, point: { x: 0.5, y: 0.5 } } });
   });

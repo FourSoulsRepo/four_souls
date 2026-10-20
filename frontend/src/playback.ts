@@ -2,6 +2,7 @@
 // first their events as short effects, then the update's view is shown.
 // Playback only changes what is drawn; the game state is the server's.
 import { kindOf, type CardInfo, type Kind } from './cards';
+import { firstPlayerText, tieText } from './dice';
 import type { GameEvent, GameView, Update } from './protocol';
 
 export type Speed = 'normal' | 'fast' | 'slow' | 'off';
@@ -19,7 +20,8 @@ export type Effect =
   // changes it, and it turns to the new one (15.76). dice: every die of
   // a roll of several dice, thrown together (19.39).
   | { kind: 'dice'; value: number; label: string; player: number; thrown?: boolean; old?: number; source?: string[]; dice?: number[] }
-  | { kind: 'banner'; text: string }
+  // banner: long stays twice as long, for the start of the game (15.43).
+  | { kind: 'banner'; text: string; long?: boolean }
   // reveal: the card grows out of its deck to the middle; it holds
   // there when the next effect moves it, else shrinks back (15.73).
   | { kind: 'reveal'; card: string; deck: string[]; hold?: boolean }
@@ -263,6 +265,13 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
       case 'game_won':
         out.push({ kind: 'banner', text: `${ctx.name(e.player)} wins!` });
         break;
+      // After the first-player dice: a tie, or who goes first (15.43).
+      case 'first_roll_tied':
+        out.push({ kind: 'banner', text: tieText(e, ctx.you, ctx.name), long: true });
+        break;
+      case 'first_player':
+        out.push({ kind: 'banner', text: firstPlayerText(e, ctx.you, ctx.name, (ref) => ctx.card(ref)?.name ?? ref), long: true });
+        break;
     }
   }
   holdReveals(out);
@@ -366,19 +375,28 @@ export function createPlayback(deps: Deps): Playback {
     void drain();
   }
 
+  async function playEffects(u: Update): Promise<void> {
+    const effects = deps.effects(u);
+    const scale = scaleFor(deps.speed(), queue.length, effects.length);
+    if (scale > 0) {
+      for (const e of effects) {
+        await deps.run(e, scale);
+      }
+    }
+  }
+
   async function play(): Promise<void> {
     for (let u = queue.shift(); u; u = queue.shift()) {
       deps.begin();
-      // The first update has no table to play on yet.
-      if (deps.shown() !== null) {
-        const effects = deps.effects(u);
-        const scale = scaleFor(deps.speed(), queue.length, effects.length);
-        if (scale > 0) {
-          for (const e of effects) {
-            await deps.run(e, scale);
-          }
-        }
+      // The first update has no table to play on yet: it is drawn
+      // first, then its effects play on it. Only a game start brings
+      // events then: who goes first without a roll (Cain, 15.43).
+      if (deps.shown() === null) {
+        deps.show(u);
+        await playEffects(u);
+        continue;
       }
+      await playEffects(u);
       deps.show(u);
     }
   }

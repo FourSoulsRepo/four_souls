@@ -46,6 +46,9 @@ const (
 	EvExpanded         EventKind = "expanded"           // Amount slots of kind Text were added
 	EvRandomPick       EventKind = "random_pick"        // Text is the picked option
 	EvRollWouldResolve EventKind = "roll_would_resolve" // a roll of Amount tries to resolve (R-DICE-05)
+	// EvFirstRollTied: the lowest first-player roll, Amount, tied; Text
+	// lists the tied players, who roll again, as "0,2" (15.43).
+	EvFirstRollTied EventKind = "first_roll_tied"
 )
 
 // Event is one thing that happened, in order. Hidden cards (e.g. a looted

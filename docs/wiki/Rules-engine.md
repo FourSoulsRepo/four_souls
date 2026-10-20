@@ -7,11 +7,13 @@ Notes on `pkg/rules_engine` as it is now. The design and its reasons are in ADR 
 The engine is a pure state machine. It has no files, network, clock or `math/rand` (enforced by `depguard`), so the same code runs on the server and in the browser (WASM).
 
 ```go
-g, events, err := rulesengine.NewGame(setup) // deals, shuffles, rolls for first
+g, events, err := rulesengine.NewGame(setup) // deals, shuffles, asks the first throw
 p := g.Prompt()                              // who must answer what
 allowed := g.Allowed(p.Player)               // every intent that would be accepted
 events, err = g.Apply(intent)                // validate, then run until input is needed
 ```
+
+`NewGame` stops at the first-player roll (R-SETUP-11, 15.43): turn 0, `Game.FirstRoll` set, a throw prompt for seat 0 with the text "first player roll". Each player throws in seat order (`Throw.First`); the lowest goes first, and the tied lowest throw again in a new round (`first_roll_tied`, its text the tied seats, "0,2"). Then `first_player` names the winner and the roll, `game_started` follows, and turn 1 begins. The roll comes before start-of-game abilities (Eden). A character with `GoesFirst` (Cain) skips the roll: `first_player` with text `character` and the card. The view has the roll as `first_roll`: round, players, this round's dice. Tests throw it with `enginetest.ThrowFirstRoll`.
 
 `Setup.Banned` lists cards the host left out (GS-13): no copy goes into a deck, a banned character is never dealt, and the list stays in `Game.Banned`. A starting item cannot be banned; ban its character instead.
 

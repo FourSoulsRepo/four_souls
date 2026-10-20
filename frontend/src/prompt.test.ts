@@ -114,6 +114,11 @@ describe('activity', () => {
       .join('') ?? null;
   const top = (it: Partial<StackItem>): GameView => ({ ...view, waiting: { kind: PromptKind.priority, player: 1 }, stack: [{ ...loot, ...it }] });
 
+  it('says nothing before turn 1, while the first player is rolled for (15.43)', () => {
+    const rolling = { ...view, waiting: { kind: PromptKind.throw, player: 0, text: 'first player roll' }, first_roll: { round: 1, players: [0, 1] } };
+    expect(said(rolling)).toBeNull();
+  });
+
   it('says the active player is thinking while the game waits for them', () => {
     expect(said(view)).toBe('Ann is thinking');
     const choice = { ...view, waiting: { kind: PromptKind.choose, player: 0, purpose: Purpose.target } };

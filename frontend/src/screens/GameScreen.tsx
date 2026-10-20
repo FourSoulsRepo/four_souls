@@ -113,6 +113,9 @@ function Table({ game, you }: { game: Update; you: number }) {
   const dim = canAct && picking(actions, aiming);
   // What the active player does, on their seat for everyone else (15.30).
   const doing = activity(view, names);
+  // Before turn 1, while the first player is rolled for, nobody has a
+  // turn: no active seat, no turn buttons (15.43).
+  const started = !view.first_roll;
   return (
     <main className={`game ${look.className}${dim ? ' picking' : ''}`} style={look.style} aria-label={`Turn ${String(view.turn.number)}`}>
       {seatPositions(view.players.length, you).map(({ position, player }) => {
@@ -125,12 +128,12 @@ function Table({ game, you }: { game: Update; you: number }) {
               name={name(p.id)}
               position={position}
               you={p.id === you}
-              active={view.turn.active === p.id}
+              active={started && view.turn.active === p.id}
               doing={doing}
               winSouls={view.win_souls ?? 0}
               ui={ui}
               tools={
-                p.id === you && !view.over ? (
+                p.id === you && !view.over && started ? (
                   <TurnActions
                     allowed={actions.turn}
                     disabled={!canAct}
@@ -159,7 +162,7 @@ function Table({ game, you }: { game: Update; you: number }) {
           />
         }
         end={
-          me && !view.over ? (
+          me && !view.over && started ? (
             <EndTurn
               intent={actions.turn.endTurn}
               idle={actions.turn.idle ?? false}
@@ -203,7 +206,7 @@ function Table({ game, you }: { game: Update; you: number }) {
       />
       <ActionMenu actions={offered.cards} />
       {canAct && <AimLayer />}
-      {me && !view.over && <PresenceSender active={view.turn.active === you} hand={hand} />}
+      {me && !view.over && <PresenceSender active={started && view.turn.active === you} hand={hand} />}
       <PresenceLayer you={you} />
       <WhyNote />
       {offered.choice && !aiming?.choice && (

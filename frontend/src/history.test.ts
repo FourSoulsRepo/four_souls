@@ -4,6 +4,34 @@ import { entriesFor, lookedAt, stepName } from './history';
 const n = { player: (p: number) => ['Ann', 'Bo', 'Cy'].at(p) ?? '?', card: (ref: string) => ref.toUpperCase() };
 
 describe('entriesFor', () => {
+  it('keeps every first-player die, a tie and who goes first (15.43)', () => {
+    const entries = entriesFor(
+      [
+        { kind: 'dice_rolled', player: 0, amount: 2, text: 'first player roll' },
+        { kind: 'dice_rolled', player: 1, amount: 2, text: 'first player roll' },
+        { kind: 'first_roll_tied', player: -1, amount: 2, text: '0,1' },
+        { kind: 'dice_rolled', player: 1, amount: 1, text: 'first player roll' },
+        { kind: 'first_player', player: 1, amount: 1 },
+      ],
+      0,
+      0,
+      n,
+      0,
+    );
+    expect(entries.map((e) => e.text)).toEqual([
+      'You roll 2 for the first player',
+      'Bo rolls 2 for the first player',
+      'Tie at 2: You and Bo roll again',
+      'Bo rolls 1 for the first player',
+      'Bo goes first — rolled 1',
+    ]);
+    expect(entriesFor([{ kind: 'first_player', player: 2, card: 'cain', text: 'character' }], 1, 0, n, 0)).toEqual([
+      { key: 0, turn: 1, icon: '①', text: 'Cy goes first — CAIN', card: 'cain' },
+    ]);
+    // Other rolls are in their stack item's entry.
+    expect(entriesFor([{ kind: 'dice_rolled', player: 0, amount: 4, text: 'attack roll' }], 1, 0, n, 0)).toEqual([]);
+  });
+
   it('makes one entry per resolved stack item and marks turns', () => {
     const entries = entriesFor(
       [

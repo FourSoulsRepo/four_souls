@@ -17,6 +17,21 @@ const ctx = {
 };
 
 describe('effectsFor', () => {
+  it('throws each first-player die, then names a tie or who goes first (15.43)', () => {
+    const events: GameEvent[] = [
+      { kind: 'dice_rolled', player: 1, amount: 2, text: 'first player roll' },
+      { kind: 'first_roll_tied', player: -1, amount: 2, text: '0,1' },
+    ];
+    expect(effectsFor(events, ctx)).toEqual([
+      { kind: 'dice', value: 2, label: 'first player roll', player: 1, thrown: true },
+      { kind: 'banner', text: 'Tie at 2: You and Bo roll again', long: true },
+    ]);
+    expect(effectsFor([{ kind: 'first_player', player: 1, amount: 1 }], ctx)).toEqual([{ kind: 'banner', text: 'Bo goes first — rolled 1', long: true }]);
+    expect(effectsFor([{ kind: 'first_player', player: 0, card: 'cain', text: 'character' }], ctx)).toEqual([
+      { kind: 'banner', text: 'You go first — Cain', long: true },
+    ]);
+  });
+
   it('flies looted cards from the loot deck to the hand', () => {
     const e: GameEvent = { kind: 'looted', player: 1, object: 9, card: 'a_dime', private: true };
     expect(effectsFor([e], ctx)).toEqual([
@@ -266,11 +281,36 @@ describe('createPlayback', () => {
 
   it('shows the first update at once, then plays effects before each view', async () => {
     const { playback, shown, played } = setup();
-    playback.push(update(1));
+    playback.push({ ...update(1), events: [] });
     playback.push(update(2));
     await playback.idle();
     expect(shown).toEqual([1, 2]);
     expect(played).toEqual([{ kind: 'dice', value: 2, label: '', player: 0, thrown: true }]);
+  });
+
+  it("plays the first update's effects once it is drawn: Cain goes first (15.43)", async () => {
+    const shown: number[] = [];
+    const order: string[] = [];
+    let current: Update | null = null;
+    const playback = createPlayback({
+      begin: () => undefined,
+      show: (u) => {
+        current = u;
+        shown.push(u.step);
+        order.push('show');
+      },
+      run: (e) => {
+        order.push(e.kind);
+        return Promise.resolve();
+      },
+      effects: (u) => effectsFor(u.events ?? [], ctx),
+      speed: () => 'normal',
+      shown: () => current,
+    });
+    playback.push({ ...update(0), events: [{ kind: 'first_player', player: 1, card: 'cain', text: 'character' }] });
+    await playback.idle();
+    expect(shown).toEqual([0]);
+    expect(order).toEqual(['show', 'banner']);
   });
 
   it('shows every update of a fast burst, in order, ending on the last', async () => {

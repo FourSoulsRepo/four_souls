@@ -231,10 +231,12 @@ func (g *Game) roll(p PlayerID, label string) int {
 }
 
 // Throw is a roll on the stack waiting for its die to be thrown (15.59).
-// Reroll marks a throw that rolls the roll again (R-MECH-47).
+// Reroll marks a throw that rolls the roll again (R-MECH-47). First marks
+// a die of the first-player roll, which is not on the stack (15.43).
 type Throw struct {
 	StackID int  `json:"stack_id"`
 	Reroll  bool `json:"reroll,omitempty"`
+	First   bool `json:"first,omitempty"`
 }
 
 // askThrow asks the roller of a queued throw to throw. A roll that left
@@ -256,8 +258,12 @@ func (g *Game) askThrow(a Action) {
 
 // throw answers the throw prompt.
 func (g *Game) throw() {
-	t := *g.Throw
+	t, p := *g.Throw, g.Waiting.Player
 	g.Throw, g.Waiting = nil, Prompt{}
+	if t.First {
+		g.throwFirst(p)
+		return
+	}
 	g.throwDie(t)
 }
 

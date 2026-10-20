@@ -58,5 +58,10 @@ The fixture copies the fan-game notice. `internal/legal` has a test that fails w
 | A click on an unusable card says why | `screen-why-click.png` |
 | A choice: big cards over the dimmed board | `screen-choice-big.png` |
 | A choice hidden to view the board | `screen-choice-view-board.png` |
+| First-player roll: waiting for the first throw | `screen-first-roll-waiting.png` |
+| First-player roll: one die thrown | `screen-first-roll-one-die.png` |
+| First-player roll: a tie rolls again | `screen-first-roll-tie.png` |
+| First-player roll: who goes first | `screen-first-roll-winner.png` |
+| First-player roll in the history | `screen-first-roll-history.png` |
 
 When a screen is added, call `shot` in its test and add a row here.

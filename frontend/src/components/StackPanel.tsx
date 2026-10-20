@@ -1,7 +1,7 @@
 import type { PointerEvent } from 'react';
-import { diceImage, lastRollText } from '../dice';
+import { diceImage, firstRollRows, lastRollText } from '../dice';
 import { useKey } from '../keys';
-import type { GameView, Intent, StackItem } from '../protocol';
+import type { FirstRoll, GameView, Intent, StackItem } from '../protocol';
 import { playedCard, stackCard, stackIcon, stackParts, stackWait, type LinePart, type Names } from '../stack';
 import { useApp, type Zoom } from '../store';
 import { playerColor } from '../table';
@@ -54,7 +54,9 @@ export function StackPanel({ view, you, names, pass, disabled, prompt, answer }:
           Pass
         </button>
       </header>
-      {stack.length === 0 ? (
+      {view.first_roll ? (
+        <FirstRollList roll={view.first_roll} names={names} />
+      ) : stack.length === 0 ? (
         <p className="stack-nothing">Nothing on the stack</p>
       ) : (
         <ol>
@@ -79,6 +81,35 @@ export function StackPanel({ view, you, names, pass, disabled, prompt, answer }:
         </p>
       )}
     </aside>
+  );
+}
+
+// FirstRollList is the first-player roll before turn 1 (15.43, GS-06):
+// each player of this round with their die once thrown, in their own
+// dice look, and "…" for the next to throw. After a tie, it says so.
+function FirstRollList({ roll, names }: { roll: FirstRoll; names: Names }) {
+  return (
+    <div className="first-roll" role="group" aria-label="First player roll">
+      <p className="first-roll-title">{roll.round > 1 ? 'Tie: roll again, lowest goes first' : 'Lowest roll goes first'}</p>
+      <ol>
+        {firstRollRows(roll).map((r) => (
+          <FirstRollRow key={r.player} player={r.player} value={r.value} next={r.next} names={names} />
+        ))}
+      </ol>
+    </div>
+  );
+}
+
+function FirstRollRow({ player, value, next, names }: { player: number; value: number | undefined; next: boolean; names: Names }) {
+  const image = useApp((s) => diceImage(s.dice, s.game?.seats, player));
+  const who = names.player(player);
+  return (
+    <li className={`first-roll-row${next ? ' next' : ''}`} aria-label={value === undefined ? `${who}: not rolled yet` : `${who}: ${String(value)}`}>
+      <b className="stack-player" style={{ color: playerColor(player) }}>
+        {who}
+      </b>
+      {value === undefined ? <span className="first-roll-wait">{next ? 'throwing…' : '…'}</span> : <Die value={value} image={image} />}
+    </li>
   );
 }
 

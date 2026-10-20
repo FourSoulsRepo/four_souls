@@ -359,7 +359,7 @@ test('counters and changed monster stats show on the card, not in its zoom (15.2
       stats?: { hp: number; dc: number; atk: number; printed_hp: number; printed_dc: number; printed_atk: number };
     }
     interface S {
-      game: { view: { monsters: { top?: Card }[] } } | null;
+      game: { step: number; view: { monsters: { top?: Card }[] } } | null;
     }
     const { store } = (window as unknown as { fourSouls: { store: { getState: () => S; setState: (s: Partial<S>) => void } } })
       .fourSouls;
@@ -412,7 +412,7 @@ test('a bonus soul shows its counters (19.29)', async ({ browser }) => {
       counters?: { count: number }[];
     }
     interface S {
-      game: { view: { bonus_souls?: Card[] } } | null;
+      game: { step: number; view: { bonus_souls?: Card[] } } | null;
     }
     const { store } = (window as unknown as { fourSouls: { store: { getState: () => S; setState: (s: Partial<S>) => void } } })
       .fourSouls;
@@ -446,7 +446,7 @@ test('a card that keeps a die number shows it as a die, not in its zoom (15.67)'
       dice?: number[];
     }
     interface S {
-      game: { view: { players: { id: number; in_play: Card[] | null }[] } } | null;
+      game: { step: number; view: { players: { id: number; in_play: Card[] | null }[] } } | null;
     }
     const { store } = (window as unknown as { fourSouls: { store: { getState: () => S; setState: (s: Partial<S>) => void } } })
       .fourSouls;
@@ -567,7 +567,7 @@ test('souls show as crystals left of the character; a gained soul fills one more
   const setSouls = (souls: number[]) =>
     page.evaluate((next) => {
       interface S {
-        game: { view: { players: { souls: number }[] } } | null;
+        game: { step: number; view: { players: { souls: number }[] } } | null;
       }
       const { store } = (window as unknown as { fourSouls: { store: { getState: () => S; setState: (s: Partial<S>) => void } } })
         .fourSouls;
@@ -622,7 +622,7 @@ test('soul cards hide behind the crystals; hovering one zooms its card (15.56)',
       souls?: number;
     }
     interface S {
-      game: { view: { players: { id: number; souls: number; in_play: Card[] | null }[] } } | null;
+      game: { step: number; view: { players: { id: number; souls: number; in_play: Card[] | null }[] } } | null;
     }
     const { store } = (window as unknown as { fourSouls: { store: { getState: () => S; setState: (s: Partial<S>) => void } } })
       .fourSouls;
@@ -679,7 +679,7 @@ test('soul cards hide behind the crystals; hovering one zooms its card (15.56)',
       in_play: unknown[] | null;
     }
     interface S {
-      game: { view: { players: Player[] } & Record<string, unknown>; allowed: unknown[] };
+      game: { step: number; view: { players: Player[] } & Record<string, unknown>; allowed: unknown[] };
       lobby: { table: { you: number } };
       receive: (env: unknown) => void;
     }
@@ -706,7 +706,7 @@ test('soul cards hide behind the crystals; hovering one zooms its card (15.56)',
         (window as unknown as { sentChoice: unknown }).sentChoice = intent;
       },
     });
-    s.receive({ type: 'update', data: { ...game, step: 2, events: [] } });
+    s.receive({ type: 'update', data: { ...game, step: game.step + 1, events: [] } });
   });
   const pin = page.locator('.player-top .soul-slot.filled');
   await expect(pin).toHaveAttribute('data-zone', 'obj-9103');
@@ -745,7 +745,7 @@ test('curses sit at the far left of the player, apart from the items (15.55)', a
       charged: boolean;
     }
     interface S {
-      game: { view: { players: { id: number; in_play: Card[] | null }[] } } | null;
+      game: { step: number; view: { players: { id: number; in_play: Card[] | null }[] } } | null;
     }
     const { store } = (window as unknown as { fourSouls: { store: { getState: () => S; setState: (s: Partial<S>) => void } } })
       .fourSouls;
@@ -815,7 +815,7 @@ test('a revealed hand shows face up; a hidden one stays backs (19.5)', async ({ 
       card: string;
     }
     interface S {
-      game: { view: { players: { id: number; hand?: Card[]; hand_size: number }[] } } | null;
+      game: { step: number; view: { players: { id: number; hand?: Card[]; hand_size: number }[] } } | null;
     }
     const { store } = (window as unknown as { fourSouls: { store: { getState: () => S; setState: (s: Partial<S>) => void } } })
       .fourSouls;
@@ -868,7 +868,7 @@ test("There's Options shows its owner the top treasure card (19.30)", async ({ b
       card: string;
     }
     interface S {
-      game: { view: { players: { treasure_top?: CardView }[]; shop: { top?: CardView }[] } } | null;
+      game: { step: number; view: { players: { treasure_top?: CardView }[]; shop: { top?: CardView }[] } } | null;
     }
     const { store } = (window as unknown as { fourSouls: { store: { getState: () => S; setState: (s: Partial<S>) => void } } })
       .fourSouls;

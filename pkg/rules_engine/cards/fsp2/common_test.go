@@ -58,6 +58,7 @@ func newGame(t *testing.T, characters ...engine.CardRef) *engine.Game {
 	if err != nil {
 		t.Fatal(err)
 	}
+	enginetest.ThrowFirstRoll(t, g)
 	return g
 }
 

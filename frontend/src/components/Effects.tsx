@@ -127,7 +127,7 @@ function Effect({ playing }: { playing: Playing }) {
           className="effect-center effect-banner"
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: [0, 1, 1, 0], scale: [0.9, 1, 1, 1] }}
-          transition={{ duration: duration(1.1), times: [0, 0.2, 0.8, 1] }}
+          transition={{ duration: duration(effect.long ? 2.2 : 1.1), times: effect.long ? [0, 0.1, 0.9, 1] : [0, 0.2, 0.8, 1] }}
           onAnimationComplete={done}
         >
           {effect.text}

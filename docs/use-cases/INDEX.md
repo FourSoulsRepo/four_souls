@@ -27,3 +27,4 @@
 | UC-23 | See what the active player does | `frontend`, `rules_engine` | Implemented | [app/uc-23-see-what-the-active-player-does.md](app/uc-23-see-what-the-active-player-does.md) |
 | UC-24 | Follow fights and played cards | `frontend` | Implemented | [app/uc-24-follow-fights-and-played-cards.md](app/uc-24-follow-fights-and-played-cards.md) |
 | UC-25 | See what others aim at | `frontend`, `internal/server` | Implemented | [app/uc-25-see-what-others-aim-at.md](app/uc-25-see-what-others-aim-at.md) |
+| UC-26 | Roll for the first player | `rules_engine`, `internal/server`, `frontend` | Implemented | [app/uc-26-roll-for-the-first-player.md](app/uc-26-roll-for-the-first-player.md) |

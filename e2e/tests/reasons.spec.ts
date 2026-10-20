@@ -20,7 +20,7 @@ const note = (page: Page) => page.locator('.aim-why');
 async function blocked(page: Page): Promise<{ id: number; reason: string }> {
   return page.evaluate(() => {
     interface S {
-      game: { view: { players: { hand?: { id: number }[] }[] }; blocked?: { kind: number; object: number; reason: string }[] };
+      game: { step: number; view: { players: { hand?: { id: number }[] }[] }; blocked?: { kind: number; object: number; reason: string }[] };
       lobby: { table: { you: number } };
     }
     const s = (window as unknown as { fourSouls: { store: { getState: () => S } } }).fourSouls.store.getState();
@@ -72,7 +72,7 @@ test('"View board" hides a choice and brings it back (15.29)', async ({ browser 
       card: string;
     }
     interface S {
-      game: { view: { monsters: { top?: Card }[]; waiting: unknown; options?: unknown }; allowed: unknown[] };
+      game: { step: number; view: { monsters: { top?: Card }[]; waiting: unknown; options?: unknown }; allowed: unknown[] };
       lobby: { table: { you: number } };
       receive: (env: unknown) => void;
     }
@@ -83,7 +83,7 @@ test('"View board" hides a choice and brings it back (15.29)', async ({ browser 
     game.view.waiting = { kind: 4, player: you, purpose: 1, options: [m.card] };
     game.view.options = [{ object: m.id, player: 0 }];
     game.allowed = [{ player: you, kind: 4, choice: 0 }];
-    s.receive({ type: 'update', data: { ...game, step: 2, events: [] } });
+    s.receive({ type: 'update', data: { ...game, step: game.step + 1, events: [] } });
     return m.id;
   });
   const dialog = corin.getByRole('dialog', { name: 'Choose what to attack' });

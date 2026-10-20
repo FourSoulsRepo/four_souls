@@ -83,6 +83,17 @@ func (tb *Table) ThrowPending() []engine.Event {
 	return out
 }
 
+// ThrowFirstRoll throws every die of the first-player roll of a new
+// game, so the game is in turn 1 (15.43).
+func ThrowFirstRoll(t testing.TB, g *engine.Game) {
+	t.Helper()
+	for g.FirstRoll != nil {
+		if _, err := g.Apply(engine.Intent{Player: g.Prompt().Player, Kind: engine.IntentThrow}); err != nil {
+			t.Fatal(err)
+		}
+	}
+}
+
 // Settle answers prompts by label and passes until the stack is empty.
 func (tb *Table) Settle(choices ...string) []engine.Event {
 	tb.T.Helper()

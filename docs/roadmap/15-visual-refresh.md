@@ -1443,7 +1443,7 @@ Images come first, so the new table is built with backs and mats.
 6. Owner review (2026-10-20)
    1. Owner marks 15.42 solved.
 
-### [ ] 15.43 First player roll for everyone
+### [x] 15.43 First player roll for everyone
 
 1. Goal: everyone sees who goes first and why (GS-06).
 2. Tasks:
@@ -1455,6 +1455,36 @@ Images come first, so the new table is built with backs and mats.
 3. Done when:
    1. e2e test: every player's roll shows before the first turn.
    2. Use case.
+4. Owner decisions (2026-10-21)
+   1. Each player throws, with the Throw button (ADR 014).
+   2. A banner over the table names the winner.
+5. Result (2026-10-21)
+   1. The engine waits before turn 1: turn 0, `Game.FirstRoll`.
+   2. Each player throws in seat order (`Throw.First`).
+   3. The lowest goes first; the tied lowest throw again.
+   4. Events: `dice_rolled` "first player roll", `first_roll_tied`.
+   5. Then `first_player` with the roll, `game_started`, turn 1.
+   6. The roll comes before Eden's choice.
+   7. Cain skips it: `first_player` names his card.
+   8. The view has `first_roll`: round, players, dice so far.
+   9. The server sends Cain's `first_player` with the first update.
+   10. The client plays a first update's effects after drawing it.
+   11. Before turn 1: no active seat, no turn buttons.
+   12. The turn badge says "Before turn 1 · First player roll".
+   13. The stack panel lists the round's dice, in each look.
+   14. A tie and the winner are long banners (2.2 s).
+   15. History: each die, each tie, "Bo goes first — rolled 1".
+   16. Engine 0.3.0; `CanReplay` refuses older records.
+   17. Kicked seats and the response timer throw, as for other rolls.
+   18. Go tests: `TestFirstPlayerRoll*`, `TestCainGoesFirstWithoutARoll`.
+   19. Server tests: `TestFirstRollKickedSeatThrows`, `TestStartEventsNameCain`.
+   20. Vitest: history, banners, rows, activity, first update.
+   21. e2e: `first-roll.spec.ts`; every die shows before turn 1.
+   22. e2e `startGame` throws the roll (`throwFirstRoll`).
+   23. Fake updates in e2e count their step from the real one.
+   24. UC-26; ADR 007, 014; wiki `Rules-engine`, `Server`, `Client`.
+   25. Wiki `Animations`, `Frontend-tests`, `Screenshots`; CHANGELOG.
+   26. Screenshots: `.cache/screenshots/15.43/before/` and `after/`.
 
 ### [ ] 15.44 Declarations on the stack
 

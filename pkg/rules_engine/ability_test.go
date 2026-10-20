@@ -56,6 +56,7 @@ func newAbilityGame(t *testing.T) *Game {
 	if err != nil {
 		t.Fatal(err)
 	}
+	throwFirstRoll(t, g)
 	passUntilStep(t, g, StepAction)
 	return g
 }

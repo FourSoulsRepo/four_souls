@@ -1,6 +1,6 @@
 // Dice looks (V-19). A dice texture is a 3×3 grid of faces, as in
 // Tabletop Simulator: the top row is unused, then 2 4 5 and 1 3 6.
-import type { GameEvent, Seat } from './protocol';
+import type { FirstRoll, GameEvent, Seat } from './protocol';
 
 const faces = new Map([
   [2, { col: 0, row: 1 }],
@@ -128,4 +128,41 @@ export function diceDelays(count: number): number[] {
     at += diceGaps.at(i % diceGaps.length) ?? 0;
   }
   return delays;
+}
+
+// FirstRollRow is one player of this round of the first-player roll
+// (15.43): their die once thrown; next is the one who throws now.
+export interface FirstRollRow {
+  player: number;
+  value?: number;
+  next: boolean;
+}
+
+export function firstRollRows(fr: FirstRoll): FirstRollRow[] {
+  const rolls = fr.rolls ?? [];
+  return fr.players.map((player, i) => {
+    const value = rolls.at(i);
+    return { player, ...(value === undefined ? {} : { value }), next: i === rolls.length };
+  });
+}
+
+// firstPlayerText names who goes first and why: "Bo goes first —
+// rolled 1", "You go first — Cain". character names the card that
+// says so (first_player with text "character").
+export function firstPlayerText(e: GameEvent, you: number, player: (p: number) => string, card: (ref: string) => string): string {
+  const who = e.player === you ? 'You go first' : `${player(e.player)} goes first`;
+  if (e.text === 'character') {
+    return e.card ? `${who} — ${card(e.card)}` : who;
+  }
+  return e.amount ? `${who} — rolled ${String(e.amount)}` : who;
+}
+
+// tieText says who ties the first-player roll: "Tie at 2: Ann and Bo
+// roll again". The event's text lists the tied seats ("0,2").
+export function tieText(e: GameEvent, you: number, player: (p: number) => string): string {
+  const seats = (e.text ?? '').split(',').filter(Boolean).map(Number);
+  const names = seats.map((p) => (p === you ? 'You' : player(p)));
+  const last = names.pop() ?? '';
+  const who = names.length > 0 ? `${names.join(', ')} and ${last}` : last;
+  return `Tie at ${String(e.amount ?? 0)}: ${who} roll again`;
 }

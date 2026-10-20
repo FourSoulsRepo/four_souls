@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cubeFaces, diceChoices, diceDelays, diceImage, faceOf, faceStyle, lastRollAfter, lastRollText } from './dice';
+import { cubeFaces, diceChoices, diceDelays, diceImage, faceOf, faceStyle, firstRollRows, lastRollAfter, lastRollText } from './dice';
 
 describe('faceOf', () => {
   it('finds each face of a d6 in the texture', () => {
@@ -127,5 +127,19 @@ describe('diceDelays', () => {
     expect(d[0]).toBe(0);
     expect(gaps.every((g) => g > 0.05 && g < 0.2)).toBe(true);
     expect(new Set(gaps).size).toBe(gaps.length);
+  });
+});
+
+describe('firstRollRows', () => {
+  it('lists this round in seat order, with the dice so far and the next roller (15.43)', () => {
+    expect(firstRollRows({ round: 1, players: [0, 1, 2], rolls: [4] })).toEqual([
+      { player: 0, value: 4, next: false },
+      { player: 1, next: true },
+      { player: 2, next: false },
+    ]);
+    expect(firstRollRows({ round: 2, players: [1, 2] })).toEqual([
+      { player: 1, next: true },
+      { player: 2, next: false },
+    ]);
   });
 });

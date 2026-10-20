@@ -101,7 +101,7 @@ func TestSaveAndLoadContinueIdentically(t *testing.T) {
 }
 
 func TestCanReplay(t *testing.T) {
-	for v, ok := range map[string]bool{"0.1.1": false, "0.1.9": false, "x": false, Version: true, "0.2.1": true, "1.0.0": true} {
+	for v, ok := range map[string]bool{"0.1.1": false, "0.2.0": false, "x": false, Version: true, "0.3.1": true, "1.0.0": true} {
 		if err := CanReplay(v); (err == nil) != ok {
 			t.Errorf("CanReplay(%q) = %v, want ok %v", v, err, ok)
 		}

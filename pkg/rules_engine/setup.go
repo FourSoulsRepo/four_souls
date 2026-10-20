@@ -4,6 +4,8 @@ import (
 	"errors"
 	"fmt"
 	"slices"
+	"strconv"
+	"strings"
 )
 
 // Setup describes a new game.
@@ -129,10 +131,15 @@ func NewGame(s Setup) (*Game, []Event, error) {
 			g.enqueue(Action{Kind: ActChooseStartingItem, Player: PlayerID(p), Amount: n})
 		}
 	}
-	g.Turn = Turn{Active: g.firstPlayer(), Number: 1, Step: StepRecharge}
-	g.emit(Event{Kind: EvGameStarted, Player: g.Turn.Active})
+	g.chooseFirstPlayer()
 	g.run()
 	return g, g.takeEvents(), nil
+}
+
+// startGame starts turn 1 with the first player p.
+func (g *Game) startGame(p PlayerID) {
+	g.Turn = Turn{Active: p, Number: 1, Step: StepRecharge}
+	g.emit(Event{Kind: EvGameStarted, Player: p})
 }
 
 // fillSlots reveals 2 shop items and 2 monsters (R-SETUP-03 to R-SETUP-05).
@@ -245,16 +252,21 @@ func (g *Game) dealCharacters(pool []CardRef, random bool) error {
 	return nil
 }
 
-// firstPlayer is the player whose character says they go first (Cain),
-// or else the winner of the roll.
-func (g *Game) firstPlayer() PlayerID {
+// chooseFirstPlayer starts the game with the player whose character
+// says they go first (Cain), or else starts the first-player roll.
+func (g *Game) chooseFirstPlayer() {
 	for _, pl := range g.Players {
 		if g.def(pl.Character).GoesFirst {
-			g.emit(Event{Kind: EvFirstPlayer, Player: pl.ID, Text: "character"})
-			return pl.ID
+			g.emit(Event{Kind: EvFirstPlayer, Player: pl.ID, Card: g.Object(pl.Character).Card, Text: "character"})
+			g.startGame(pl.ID)
+			return
 		}
 	}
-	return g.rollForFirst()
+	all := make([]PlayerID, len(g.Players))
+	for i := range all {
+		all[i] = PlayerID(i)
+	}
+	g.FirstRoll = &FirstRoll{Round: 1, Players: all}
 }
 
 // askStartingItem shows p the top n treasure cards to pick a starting
@@ -295,30 +307,55 @@ func (g *Game) chooseStartingItem(c Choice, i int) {
 	g.emit(Event{Kind: EvGainedTreasure, Player: c.Player, Object: nid, Card: o.Card, Text: "starting item"})
 }
 
-// rollForFirst: each player rolls a D6; the lowest goes first; ties among
-// the lowest roll again (R-SETUP-11, GS-06).
-func (g *Game) rollForFirst() PlayerID {
-	contenders := make([]PlayerID, len(g.Players))
-	for i := range contenders {
-		contenders[i] = PlayerID(i)
+// FirstRoll is the first-player roll in progress (R-SETUP-11, GS-06,
+// 15.43). Each player in it throws a D6, in seat order; the lowest goes
+// first; ties among the lowest throw again.
+type FirstRoll struct {
+	// Round counts from 1; each tie starts the next.
+	Round int `json:"round"`
+	// Players still roll, in seat order.
+	Players []PlayerID `json:"players"`
+	// Rolls are this round's dice so far, one per player in order.
+	Rolls []int `json:"rolls,omitempty"`
+}
+
+// askFirstThrow asks the next player of the first-player roll to throw.
+// The game has not started: turn 0, nobody has priority.
+func (g *Game) askFirstThrow() {
+	fr := g.FirstRoll
+	g.Throw = &Throw{First: true}
+	g.Waiting = Prompt{Kind: PromptThrow, Player: fr.Players[len(fr.Rolls)], Text: "first player roll"}
+}
+
+// throwFirst draws one die of the first-player roll. After the last die
+// of a round, the lowest goes first, or the tied lowest roll again.
+func (g *Game) throwFirst(p PlayerID) {
+	fr := g.FirstRoll
+	r := g.RNG.D6()
+	fr.Rolls = append(fr.Rolls, r)
+	g.emit(Event{Kind: EvDiceRolled, Player: p, Amount: r, Text: "first player roll"})
+	if len(fr.Rolls) < len(fr.Players) {
+		return
 	}
-	for len(contenders) > 1 {
-		lowest := 7
-		var low []PlayerID
-		for _, p := range contenders {
-			r := g.RNG.D6()
-			g.emit(Event{Kind: EvDiceRolled, Player: p, Amount: r, Text: "first player"})
-			switch {
-			case r < lowest:
-				lowest, low = r, []PlayerID{p}
-			case r == lowest:
-				low = append(low, p)
-			}
+	lowest := slices.Min(fr.Rolls)
+	var low []PlayerID
+	for i, v := range fr.Rolls {
+		if v == lowest {
+			low = append(low, fr.Players[i])
 		}
-		contenders = low
 	}
-	g.emit(Event{Kind: EvFirstPlayer, Player: contenders[0]})
-	return contenders[0]
+	if len(low) > 1 {
+		g.FirstRoll = &FirstRoll{Round: fr.Round + 1, Players: low}
+		seats := make([]string, len(low))
+		for i, q := range low {
+			seats[i] = strconv.Itoa(int(q))
+		}
+		g.emit(Event{Kind: EvFirstRollTied, Player: NoPlayer, Amount: lowest, Text: strings.Join(seats, ",")})
+		return
+	}
+	g.FirstRoll = nil
+	g.emit(Event{Kind: EvFirstPlayer, Player: low[0], Amount: lowest})
+	g.startGame(low[0])
 }
 
 // CharactersOutside lists the character cards outside the game that a

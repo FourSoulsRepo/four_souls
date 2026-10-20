@@ -46,6 +46,8 @@ Every new screen gets a Playwright test. Find elements the way a player does: by
 
 Specs import `test` and `expect` from `e2e/tests/fixtures.ts`, not from `@playwright/test`. Its automatic fixture fails a test when any app page logged an animation clash (ADR 012, [Animations](Animations)); `fixtures.spec.ts` fails a spec that imports `test` from elsewhere. Types like `Page` still come from `@playwright/test`.
 
+A game opens before turn 1, with the first-player roll (15.43). `startGame` throws it for everyone with `throwFirstRoll`, which only presses Throw and then waits until every page is idle; so a test starts in turn 1 with nobody's action spent. `{ roll: false }` leaves the roll to the test (`first-roll.spec.ts`). A fake update a test sends counts its step from the real one (`game.step + 1`): a page acts once per step, so a step it already acted on would show its buttons disabled.
+
 A random deal can change what a test sees. `startGame(browser, names, { bans })` leaves cards out of the game (GS-13): it adds `host_bans` to the host's `create` message through Playwright's WebSocket routing, since the host screen has no ban list yet. A test that checks a fresh monster's stats passes `bans: statMonsters` (Delirium and Stoney, 14.10); `TestStatMonsterBans` in `pkg/rules_engine/cards` proves that list is complete for the Base Game.
 
 Bans are a last resort, not a way to silence a failure. A test bans only the fewest cards it needs, and a comment next to the bans says what each card changes that the test checks. A test never bans a card just because it failed on that card: such a failure may be a real engine or client bug, so find the cause first.

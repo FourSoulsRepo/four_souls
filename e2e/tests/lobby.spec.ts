@@ -1,6 +1,6 @@
 // Host and join screens (7.3), against the real Go server.
 import { expect, test } from './fixtures';
-import { gameId, lobbyGame } from './game';
+import { gameId, lobbyGame, throwFirstRoll } from './game';
 import { appURL, serverPort } from './server';
 import { realAssets, shot } from './shot';
 
@@ -41,6 +41,9 @@ test('two apps reach the same lobby and start the game', async ({ browser }) => 
   await ann.getByRole('button', { name: 'Ready', exact: true }).click();
   await expect(bo.getByRole('list', { name: 'Seats' })).toContainText('Ready');
   await bo.getByRole('button', { name: 'Ready', exact: true }).click();
+  // The table opens before turn 1, for the first-player roll (15.43).
+  await expect(ann.getByRole('main', { name: /^Turn / })).toBeVisible();
+  await throwFirstRoll([ann, bo]);
   await expect(ann.getByRole('main', { name: 'Turn 1' })).toBeVisible();
   await expect(bo.getByRole('main', { name: 'Turn 1' })).toBeVisible();
 });

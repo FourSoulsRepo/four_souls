@@ -136,7 +136,8 @@ export function stackPrompt(b: Banner | null, n: Names): string | undefined {
 // them. Only public state, so spectators get the same words. Nothing
 // while the game waits for others with none of these going on.
 export function activity(view: GameView, n: Names): LinePart[] | null {
-  if (view.over) {
+  // Before turn 1 nobody is active: the first-player roll (15.43).
+  if (view.over || view.first_roll) {
     return null;
   }
   const { active } = view.turn;

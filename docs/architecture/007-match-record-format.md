@@ -60,7 +60,7 @@ Use options 1 and 5.
 5. Replay
    1. Rebuild the engine setup from the header and the set codes.
    2. Apply the steps' intents; every checksum must match (`engine.Replay`).
-   3. Records of engines before 0.2.0 cannot replay (`engine.CanReplay`, ADR 014).
+   3. Records of engines before 0.3.0 cannot replay (`engine.CanReplay`, ADR 014).
 
 ## Consequences
 

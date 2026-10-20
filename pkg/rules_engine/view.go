@@ -128,6 +128,9 @@ type GameView struct {
 	// active player does (15.30, V-21).
 	Attack *AttackView `json:"attack,omitempty"`
 	Buying bool        `json:"buying,omitempty"`
+	// FirstRoll is the first-player roll before turn 1: who still rolls
+	// and this round's dice so far. It is public (GS-06, 15.43).
+	FirstRoll *FirstRoll `json:"first_roll,omitempty"`
 }
 
 // AttackView is an attack in progress: its target once chosen, and
@@ -248,6 +251,9 @@ func (g *Game) View(v Viewer) GameView {
 		out.Attack = &AttackView{Target: g.Attack.Target, Deck: g.Attack.Deck}
 	}
 	out.Buying = g.Purchase.On
+	if fr := g.FirstRoll; fr != nil {
+		out.FirstRoll = &FirstRoll{Round: fr.Round, Players: slices.Clone(fr.Players), Rolls: slices.Clone(fr.Rolls)}
+	}
 	return out
 }
 

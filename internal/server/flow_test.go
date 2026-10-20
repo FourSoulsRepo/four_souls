@@ -254,3 +254,30 @@ func TestWaitNeverThrows(t *testing.T) {
 		t.Error("the throw prompt is gone")
 	}
 }
+
+// TestFirstRollKickedSeatThrows: a kicked seat throws its first-player
+// die at once; the next seat is asked (15.43).
+func TestFirstRollKickedSeatThrows(t *testing.T) {
+	g, _, err := engine.NewGame(engine.Setup{Seed: 1, Players: 2, Sets: []engine.CardSet{b2.Set}, Characters: []engine.CardRef{"isaac", "eve"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	r := &Room{game: g, seats: []roomSeat{{kicked: true}, {client: &Client{}}}}
+	r.after(nil, false)
+	if w := g.Prompt(); w.Kind != engine.PromptThrow || w.Player != 1 || len(g.FirstRoll.Rolls) != 1 {
+		t.Fatalf("prompt %+v, first roll %+v; want seat 1 to throw after seat 0's die", w, g.FirstRoll)
+	}
+}
+
+// TestStartEventsNameCain: of the setup events, clients get who goes
+// first without a roll (15.43).
+func TestStartEventsNameCain(t *testing.T) {
+	_, ev, err := engine.NewGame(engine.Setup{Seed: 1, Players: 2, Sets: []engine.CardSet{b2.Set}, Characters: []engine.CardRef{"isaac", "cain"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := startEvents(ev)
+	if len(got) != 2 || got[0].Kind != engine.EvFirstPlayer || got[0].Player != 1 || got[1].Kind != engine.EvGameStarted {
+		t.Fatalf("start events %+v, want Cain's first_player and game_started", got)
+	}
+}

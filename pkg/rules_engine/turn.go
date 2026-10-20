@@ -180,6 +180,11 @@ func (g *Game) run() {
 		if g.checkWin() {
 			return
 		}
+		if g.FirstRoll != nil {
+			// The roll comes before start-of-game abilities (Eden).
+			g.askFirstThrow()
+			continue
+		}
 		if len(g.Queue) > 0 {
 			g.processQueue()
 			continue

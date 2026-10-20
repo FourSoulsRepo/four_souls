@@ -2,6 +2,7 @@
 import { expect, type Browser, type Locator, type Page } from '@playwright/test';
 import { appURL, serverPort } from './server';
 import { realAssets } from './shot';
+import { enabled, seen, throwButton } from './turn';
 
 // statMonsters change other monsters' stats (14.10). A test that checks
 // a fresh monster bans them, or a lucky deal puts a badge on it.
@@ -71,6 +72,9 @@ export async function startGame(
     open = (_: Page) => Promise.resolve(),
     // bans are cards the host leaves out of the game (GS-13).
     bans = [] as string[],
+    // roll throws every first-player die (15.43), so the test starts in
+    // turn 1; false leaves the roll to the test.
+    roll = true,
   } = {},
 ): Promise<Page[]> {
   const pages: Page[] = [];
@@ -117,7 +121,44 @@ export async function startGame(
   for (const page of pages) {
     await expect(page.getByRole('main', { name: /^Turn / })).toBeVisible();
   }
+  if (roll) {
+    await throwFirstRoll(pages);
+  }
   return pages;
+}
+
+// idle: the page plays no effect and shows the latest update.
+function idle(): boolean {
+  interface S {
+    playing: unknown;
+    behind: boolean;
+  }
+  const s = (window as unknown as { fourSouls: { store: { getState: () => S } } }).fourSouls.store.getState();
+  return s.playing === null && !s.behind;
+}
+
+// throwFirstRoll throws every die of the first-player roll, ties too,
+// until every page shows turn 1 (15.43). A Cain deal has no roll. It
+// only throws: the game waits in turn 1 as it started.
+export async function throwFirstRoll(pages: Page[]): Promise<void> {
+  for (let i = 0; i < 600; i++) {
+    const states = await Promise.all(pages.map(seen));
+    if (states.every((s) => s.turn >= 1)) {
+      // Cain's banner plays on the drawn table: wait for it too.
+      await Promise.all(pages.map((page) => page.waitForFunction(idle)));
+      return;
+    }
+    const roller = pages.find((_, j) => states[j]?.ready && states[j].turn < 1 && states[j].waiting === states[j].you);
+    const button = roller ? throwButton(roller) : null;
+    if (roller && button && (await enabled(button))) {
+      await button.click();
+      // Off the cards, so no zoom covers the table.
+      await roller.mouse.move(1, 1);
+    } else {
+      await pages[0]?.waitForTimeout(100);
+    }
+  }
+  throw new Error('the first-player roll never ended');
 }
 
 // fitsScreen fails when the table scrolls or a part of it leaves the

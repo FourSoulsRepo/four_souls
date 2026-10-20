@@ -56,7 +56,7 @@ Use option 1.
    2. The roll's own player throws again; the event says `reroll`.
 5. Covered rolls
    1. Attack, reward, effect (`Roll`), and many-dice rolls.
-   2. The first-player roll stays automatic until 15.43.
+   2. The first-player roll too, since 15.43 (`Throw.First`).
 6. Tests
    1. `enginetest` helpers and `settle` throw for the roller.
    2. The fuzz harness throws through `Allowed`.
@@ -64,6 +64,8 @@ Use option 1.
    1. Engine version 0.2.0 is the first with throws.
    2. `engine.CanReplay(version)` refuses records of older engines.
    3. The record format stays 1: old records stay readable.
+   4. Engine 0.3.0 adds the first-player throws (15.43).
+   5. `CanReplay` refuses records older than 0.3.0.
 
 ## Consequences
 

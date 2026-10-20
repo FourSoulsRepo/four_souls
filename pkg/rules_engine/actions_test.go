@@ -62,6 +62,7 @@ func newReplacementGame(t *testing.T) *Game {
 	if err != nil {
 		t.Fatal(err)
 	}
+	throwFirstRoll(t, g)
 	return g
 }
 
@@ -202,6 +203,7 @@ func TestLootStepGoesThroughReplacements(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	throwFirstRoll(t, g)
 	// Give the next player Two-of-Clubs style doubling before their turn.
 	nextP := g.next(g.Turn.Active)
 	giveItem(g, nextP, "two_clubs")
