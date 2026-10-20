@@ -1217,3 +1217,12 @@ This step never closes; new reports are appended.
    4. A single die throws as before.
    5. Records gain the field; older records still play.
    6. Screenshots: `.cache/screenshots/19.39/before/` and `after/`.
+7. Owner review (2026-10-20)
+   1. One clatter for many dice sounds wrong.
+   2. Each die plays its own clatter as it lands.
+   3. Dice land at small, uneven gaps, not all at once.
+   4. It should feel like a real throw with a friend.
+8. Result after review (2026-10-20)
+   1. Dice start at small uneven gaps: `diceDelays` in `dice.ts`.
+   2. Each die clatters as it lands: 4 dice, 4 clatters.
+   3. Screenshot mid-throw: `after/screen-dice-many-falling.png`.

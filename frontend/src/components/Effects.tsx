@@ -1,6 +1,6 @@
 import { motion } from 'motion/react';
 import { useEffect, useRef, useState } from 'react';
-import { diceImage } from '../dice';
+import { diceDelays, diceImage } from '../dice';
 import { playSound } from '../sounds';
 import { useApp, type Playing } from '../store';
 import { Card } from './Card';
@@ -522,8 +522,6 @@ function Steal({ from, to, amount, playing }: { from: string[]; to: string[]; am
 
 // The normal length of a throw, in ms.
 const throwMs = 1600;
-// Each of several dice starts this part of a throw after the one before.
-const diceStagger = 0.04;
 // When the die lands, bounces and lands again, as parts of the throw.
 const landings = [0.28, 0.5] as const;
 
@@ -575,8 +573,8 @@ const labelIn: Keyframe[] = [
 
 // ThrownDie throws a fresh roll's die: a cube falls, bounces and tumbles
 // to the engine's value (15.62, 15.69), and clatters as it first lands.
-// A roll of several dice throws them all at once, side by side, each a
-// little after the one before (19.39). Its label says the value all
+// A roll of several dice throws them all side by side, at small uneven
+// gaps, and each die clatters as it lands (19.39). Its label says the value all
 // along, so the result never differs from the engine. Web Animations on
 // transform and opacity only (ADR 002); scale follows the animation
 // speed (ST-05).
@@ -587,10 +585,13 @@ function ThrownDie({ values, label, image, playing }: { values: number[]; label:
   const count = values.length;
   useEffect(() => {
     const spots = [...(rowRef.current?.children ?? [])];
+    const delays = diceDelays(spots.length);
     const ms = throwMs * scale;
+    const start = performance.now();
     const parts: (Animation | undefined)[] = [];
     spots.forEach((spot, i) => {
-      const timing = { duration: ms, delay: i * diceStagger * ms, fill: 'both' } as const;
+      const delay = (delays.at(i) ?? 0) * ms;
+      const timing = { duration: ms, delay, fill: 'both' } as const;
       // anim: dice-throw
       const a = spot.querySelector('.effect-thrown')?.animate(fall, timing);
       if (a && i === spots.length - 1) {
@@ -601,14 +602,24 @@ function ThrownDie({ values, label, image, playing }: { values: number[]; label:
     });
     // anim: dice-throw
     parts.push(wordsRef.current?.animate(labelIn, { duration: ms, fill: 'forwards' }));
-    const landed = window.setTimeout(() => {
-      playSound('diceRoll');
-    }, landings[0] * ms);
+    // Each die clatters as it first lands, one after another.
+    const lands = delays.map((at) => (at + landings[0]) * ms);
+    let heard = 0;
+    const clatter = window.setInterval(() => {
+      const now = performance.now() - start;
+      while (heard < lands.length && (lands.at(heard) ?? 0) <= now) {
+        playSound('diceRoll');
+        heard++;
+      }
+      if (heard >= lands.length) {
+        window.clearInterval(clatter);
+      }
+    }, 15);
     return () => {
       for (const p of parts) {
         p?.cancel();
       }
-      window.clearTimeout(landed);
+      window.clearInterval(clatter);
     };
   }, [count, scale, done]);
   return (

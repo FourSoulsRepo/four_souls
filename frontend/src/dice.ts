@@ -113,3 +113,19 @@ export function lastRollAfter(prev: LastRoll | null, events: GameEvent[]): LastR
 export function lastRollText(r: LastRoll, player: (p: number) => string): string {
   return `${player(r.player)} rolled ${String(r.value)}${r.label ? ` — ${r.label}` : ''}`;
 }
+
+// Gaps between dice of one throw, as parts of a throw: small and uneven,
+// as dice leave a hand one by one (19.39).
+const diceGaps = [0.13, 0.08, 0.17, 0.1, 0.15];
+
+// diceDelays is when each die of a throw starts, as parts of a throw:
+// the first at once, each next one a gap later.
+export function diceDelays(count: number): number[] {
+  const delays: number[] = [];
+  let at = 0;
+  for (let i = 0; i < count; i++) {
+    delays.push(at);
+    at += diceGaps.at(i % diceGaps.length) ?? 0;
+  }
+  return delays;
+}

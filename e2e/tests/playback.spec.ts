@@ -18,6 +18,11 @@ async function listenSounds(page: Page): Promise<void> {
   });
 }
 
+// thrownBox is where the i-th thrown die is now.
+function thrownBox(page: Page, i: number) {
+  return page.getByTestId('thrown-die').nth(i).boundingBox();
+}
+
 function played(page: Page): Promise<string[]> {
   return page.evaluate(() => (window as unknown as { played: string[] }).played);
 }
@@ -152,11 +157,12 @@ test('a thrown die falls, bounces and lands on the engine\'s value (15.62)', asy
   expect(await played(mira)).toEqual(['/cardimg/assets/sounds/dice-roll.mp3']);
 });
 
-test('a roll of several dice throws every die at once (19.39)', async ({ browser }) => {
+test('a roll of several dice throws every die, each with its clatter (19.39)', async ({ browser }) => {
   const [ola] = await startGame(browser, ['Ola', 'Pim']);
   if (!ola) {
     throw new Error('no pages');
   }
+  await listenSounds(ola);
   // Replay the view with a reroll of 4 dice, as Mutant Spider's.
   await ola.evaluate(() => {
     interface Store {
@@ -177,14 +183,29 @@ test('a roll of several dice throws every die at once (19.39)', async ({ browser
   });
   const effect = ola.getByTestId('effect-dice');
   await expect(effect).toBeAttached();
+  const thrown = ola.getByTestId('thrown-die');
+  // Each die clatters as it lands, one after another; the clatters keep
+  // real time, so wait for them before pausing the throw.
+  await expect.poll(() => played(ola)).toEqual(Array(4).fill('/cardimg/assets/sounds/dice-roll.mp3'));
+  // At one moment the first die lies still while the last still falls.
   await effect.evaluate((el) => {
     for (const a of el.getAnimations({ subtree: true })) {
       a.pause();
-      a.currentTime = 0.75 * Number(a.effect?.getTiming().duration ?? 0);
+      a.currentTime = 0.5 * Number(a.effect?.getTiming().duration ?? 0);
+    }
+  });
+  const [first, last] = await Promise.all([thrownBox(ola, 0), thrownBox(ola, 3)]);
+  expect(first && last && first.y - last.y).toBeGreaterThan(20);
+  await shot(ola, 'dice-many-falling');
+  // Hold every die three quarters into its own fall: all have landed.
+  await effect.evaluate((el) => {
+    for (const a of el.getAnimations({ subtree: true })) {
+      const t = a.effect?.getTiming();
+      a.pause();
+      a.currentTime = Number(t?.delay ?? 0) + 0.75 * Number(t?.duration ?? 0);
     }
   });
   await shot(ola, 'dice-many-landed');
-  const thrown = ola.getByTestId('thrown-die');
   await expect(thrown).toHaveCount(4);
   const labels = await thrown.locator('.die').evaluateAll((els) => els.map((el) => el.getAttribute('aria-label')));
   expect(labels).toEqual(['Rolled 2', 'Rolled 6', 'Rolled 3', 'Rolled 5']);
@@ -196,6 +217,13 @@ test('a roll of several dice throws every die at once (19.39)', async ({ browser
     expect(a && b && Math.abs(a.top - b.top)).toBeLessThan(1);
   }
   await expect(effect).toContainText('reroll');
+  await effect.evaluate((el) => {
+    for (const a of el.getAnimations({ subtree: true })) {
+      a.play();
+    }
+  });
+  await expect(ola.locator('.effects')).toHaveCount(0);
+  expect(await played(ola)).toHaveLength(4);
 });
 
 test('an attack lunges at the monster and drops its HP at the hit', async ({ browser }) => {

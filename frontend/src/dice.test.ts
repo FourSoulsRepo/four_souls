@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cubeFaces, diceChoices, diceImage, faceOf, faceStyle, lastRollAfter, lastRollText } from './dice';
+import { cubeFaces, diceChoices, diceDelays, diceImage, faceOf, faceStyle, lastRollAfter, lastRollText } from './dice';
 
 describe('faceOf', () => {
   it('finds each face of a d6 in the texture', () => {
@@ -116,5 +116,16 @@ describe('faceStyle', () => {
       transform: 'rotate(180deg)',
       transformOrigin: '83.33333333333334% 50%',
     });
+  });
+});
+
+describe('diceDelays', () => {
+  it('starts one die at once and several at small uneven gaps (19.39)', () => {
+    expect(diceDelays(1)).toEqual([0]);
+    const d = diceDelays(4);
+    const gaps = d.slice(1).map((x, i) => x - (d.at(i) ?? 0));
+    expect(d[0]).toBe(0);
+    expect(gaps.every((g) => g > 0.05 && g < 0.2)).toBe(true);
+    expect(new Set(gaps).size).toBe(gaps.length);
   });
 });
