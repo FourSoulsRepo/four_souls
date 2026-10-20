@@ -17,7 +17,7 @@ var libra = engine.CardDef{
 		Targets: []engine.TargetSpec{engine.Choose(engine.TargetDiceRoll)},
 		Effects: []engine.Effect{engine.EffectFunc(func(c *engine.Ctx) {
 			if it, ok := c.G.StackItemByID(c.Targets[0].StackID); ok {
-				c.G.SetRoll(it.ID, 3)
+				c.G.SetRoll(it.ID, 3, c.Source)
 			}
 		})},
 	}},

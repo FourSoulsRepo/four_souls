@@ -321,6 +321,7 @@ export const useApp = create<AppState>()((set, get) => {
         character: (p) => u.view.players.find((x) => x.id === p)?.character.id,
         slot: (id) => slotZone(u.view, id),
         seen: (ref) => (get().game?.events ?? []).some((e) => e.kind === 'card_revealed' && e.card === ref),
+        roll: (stack) => get().game?.view.stack?.find((it) => it.id === stack)?.roll,
         you: seatOf(get()),
       }),
     speed: () => get().settings.animation,

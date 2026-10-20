@@ -16,7 +16,7 @@ var sacredHeart = engine.CardDef{
 			Trigger: engine.Trigger{On: engine.EvRollWouldResolve, Match: func(g *engine.Game, self engine.ObjectID, e engine.Event) bool {
 				return e.Amount == 1 && e.Player == g.Object(self).Controller
 			}},
-			Effects: []engine.Effect{may("Change the 1 to a 6?", engine.EffectFunc(func(c *engine.Ctx) { c.G.SetRoll(c.EventStack, 6) }))},
+			Effects: []engine.Effect{may("Change the 1 to a 6?", engine.EffectFunc(func(c *engine.Ctx) { c.G.SetRoll(c.EventStack, 6, c.Source) }))},
 		},
 	},
 }

@@ -15,7 +15,7 @@ var iTheMagician = engine.CardDef{
 			Text:    "Change the result of a dice roll to a number of your choosing.",
 			Targets: []engine.TargetSpec{engine.Choose(engine.TargetDiceRoll)},
 			Effects: []engine.Effect{engine.Ask(func(c *engine.Ctx, a []int) {
-				c.G.SetRoll(c.Targets[0].StackID, a[0]+1)
+				c.G.SetRoll(c.Targets[0].StackID, a[0]+1, c.Source)
 			}, engine.Question{
 				Text:    "Change the roll to?",
 				Options: func(*engine.Ctx, []int) []string { return []string{"1", "2", "3", "4", "5", "6"} },

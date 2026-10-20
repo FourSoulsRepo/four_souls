@@ -5,6 +5,7 @@ import { playSound } from '../sounds';
 import { useApp, type Playing } from '../store';
 import { Card } from './Card';
 import { Die, DieCube } from './Die';
+import { playerColor } from '../table';
 import { Coin } from './PlayerArea';
 import './Effects.css';
 import { lunge } from './lunge';
@@ -109,17 +110,15 @@ function Effect({ playing }: { playing: Playing }) {
         return <ThrownDie value={effect.value} label={effect.label} image={image} playing={playing} />;
       }
       return (
-        // anim: dice
-        <motion.div
-          className="effect-center"
-          initial={{ opacity: 0, scale: 0.4, rotate: -180 }}
-          animate={{ opacity: [0, 1, 1, 0], scale: [0.4, 1.15, 1, 1], rotate: [-180, 0, 0, 0] }}
-          transition={{ duration: duration(1.1), times: [0, 0.3, 0.8, 1] }}
-          onAnimationComplete={done}
-        >
-          <Die value={effect.value} image={image} />
-          {effect.label && <div className="effect-label">{effect.label}</div>}
-        </motion.div>
+        <ChangedDie
+          value={effect.value}
+          old={effect.old}
+          source={effect.source}
+          label={effect.label}
+          player={effect.player}
+          image={image}
+          playing={playing}
+        />
       );
     case 'banner':
       return (
@@ -365,6 +364,95 @@ function Popup({ at, text, tone, playing }: { at: string[]; text: string; tone: 
     >
       {text}
     </motion.div>
+  );
+}
+
+// When a changed roll's die is in, its shot lands, and its face turns,
+// as parts of the effect (15.76).
+const dieIn = 0.15;
+const shotLands = 0.4;
+const faceTurns = 0.47;
+
+// ChangedDie shows a roll change (15.76): the die spins in with its old
+// value, a shot flies to it from the card that changes it, and it turns
+// to the new value. Without an old value it shows the new one only.
+function ChangedDie({
+  value,
+  old,
+  source,
+  label,
+  player,
+  image,
+  playing,
+}: {
+  value: number;
+  old: number | undefined;
+  source: string[] | undefined;
+  label: string;
+  player: number;
+  image: string;
+  playing: Playing;
+}) {
+  const total = 1.8 * playing.scale;
+  const [face, setFace] = useState(old ?? value);
+  const dieRef = useRef<HTMLDivElement>(null);
+  const [shot, setShot] = useState<{ a: Point; b: Point } | null>(null);
+  useEffect(() => {
+    const el = dieRef.current;
+    const a = source ? zoneCenter(source) : null;
+    if (el && a) {
+      const r = el.getBoundingClientRect();
+      setShot({ a, b: { x: r.left + r.width / 2, y: r.top + r.height / 2 } });
+    }
+    const turn = window.setTimeout(() => {
+      setFace(value);
+    }, faceTurns * total * 1000);
+    return () => {
+      window.clearTimeout(turn);
+    };
+  }, [source, value, total]);
+  return (
+    <>
+      <div className="effect-center">
+        {/* anim: dice */}
+        <motion.div
+          ref={dieRef}
+          initial={{ opacity: 0, scale: 0.4, rotate: -180 }}
+          animate={{ opacity: [0, 1, 1, 0], scale: [0.4, 1, 1, 1.15, 1, 1], rotate: [-180, 0, 0, 360, 360] }}
+          transition={{
+            opacity: { duration: total, times: [0, dieIn, 0.88, 1] },
+            scale: { duration: total, times: [0, dieIn, shotLands, faceTurns, 0.55, 1] },
+            rotate: { duration: total, times: [0, dieIn, shotLands, 0.55, 1] },
+          }}
+          onAnimationComplete={playing.done}
+          data-testid="changed-die"
+          data-face={face}
+        >
+          <Die value={face} image={image} />
+        </motion.div>
+        {label && (
+          <div className="effect-label" style={{ color: playerColor(player) }}>
+            {label}
+          </div>
+        )}
+      </div>
+      {shot && (
+        // anim: roll-shot
+        <motion.div
+          className="effect-shot effect-shot-roll"
+          style={{ left: shot.a.x, top: shot.a.y }}
+          initial={{ x: 0, y: 0, scale: 0.4, opacity: 0 }}
+          animate={{ x: [0, 0, shot.b.x - shot.a.x], y: [0, 0, shot.b.y - shot.a.y], scale: [0.4, 1, 1.2], opacity: [0, 1, 1, 0] }}
+          transition={{
+            duration: total * shotLands,
+            times: [0, dieIn / shotLands, 1],
+            ease: 'easeIn',
+            opacity: { duration: total * shotLands, times: [0, dieIn / shotLands, 0.95, 1] },
+          }}
+          data-testid="roll-shot"
+        />
+      )}
+    </>
   );
 }
 

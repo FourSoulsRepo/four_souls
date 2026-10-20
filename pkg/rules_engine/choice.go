@@ -118,7 +118,7 @@ func (g *Game) answer(i int) {
 	case ChooseDie:
 		g.ManyDice = g.ManyDice[1:]
 		if it, ok := g.StackItemByID(c.Indexes[0]); ok && it.Roll != c.Slots[i] {
-			g.SetRoll(it.ID, c.Slots[i])
+			g.SetRoll(it.ID, c.Slots[i], 0) // many dice, no one card
 		}
 	case ChooseRedirect:
 		g.startAttack(c.Objects[i])

@@ -25,7 +25,7 @@ var phd = engine.CardDef{
 			if !ok || a[0] < 0 || a[0] == 2 {
 				return
 			}
-			c.G.SetRoll(it.ID, min(max(it.Roll+[]int{1, -1}[a[0]], 1), 6))
+			c.G.SetRoll(it.ID, min(max(it.Roll+[]int{1, -1}[a[0]], 1), 6), c.Source)
 		}, engine.Question{Text: "Change your roll?", Options: func(*engine.Ctx, []int) []string { return []string{"+1", "-1", "no"} }})},
 	}},
 }

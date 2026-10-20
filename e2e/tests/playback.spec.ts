@@ -853,3 +853,57 @@ test('stolen cents fly as a coin from the victim to the thief (15.75)', async ({
   expect(Math.abs(last.x - thief.x)).toBeLessThan(30);
   expect(Math.abs(last.y - thief.y)).toBeLessThan(30);
 });
+
+test('a changed roll turns from its old value, hit by the card that changed it (15.76)', async ({ browser }) => {
+  const [abe] = await startGame(browser, ['Abe', 'Bea']);
+  if (!abe) {
+    throw new Error('no pages');
+  }
+  // A roll of 3 by the viewer is on the stack.
+  const ids = await abe.evaluate(() => {
+    const s = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store.getState();
+    const game = structuredClone(s.game) as unknown as {
+      view: { players: { id: number; character: { id: number } }[]; stack?: unknown[] };
+    } | null;
+    const you = s.lobby.table?.you ?? 0;
+    const character = game?.view.players.find((p) => p.id === you)?.character.id;
+    if (!game || character === undefined) {
+      throw new Error('no game');
+    }
+    const none = { card: '', index: 0 };
+    game.view.stack = [{ id: 60, kind: 3, controller: you, source: 0, roll: 3, target: { player: you }, ability: none, roll_for: none }];
+    s.receive({ type: 'update', data: { ...game, step: 2, events: [] } });
+    return { you, character };
+  });
+  const from = await centre(abe, `[data-zone="obj-${String(ids.character)}"]`);
+  await trackBoxes(abe, { shot: '[data-testid="roll-shot"]', die: '[data-testid="changed-die"]' });
+  // The viewer's character changes it to 5.
+  await abe.evaluate((ids) => {
+    const s = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store.getState();
+    const game = structuredClone(s.game);
+    const events = [{ kind: 'roll_changed', player: ids.you, amount: 5, stack_id: 60, source: ids.character }];
+    s.receive({ type: 'update', data: { ...game, step: 3, events } });
+  }, ids);
+  await expect(abe.locator('.effects')).toBeVisible();
+  await shot(abe, 'roll-change-start');
+  const die = abe.getByTestId('changed-die');
+  await expect(die).toHaveAttribute('data-face', /[35]/);
+  await expect(abe.getByText("Abe's roll: 3 → 5")).toBeVisible();
+  await expect(abe.getByTestId('roll-shot')).toBeVisible();
+  await shot(abe, 'roll-change-shot');
+  await expect(die).toHaveAttribute('data-face', '5');
+  await shot(abe, 'roll-change-turned');
+  await expect(die).toHaveCount(0, { timeout: 5000 });
+  // The shot starts on the character and ends on the die.
+  const boxes = await tracked(abe);
+  const first = boxes.shot?.[0];
+  const last = boxes.shot?.at(-1);
+  const at = boxes.die?.at(-1);
+  if (!first || !last || !at) {
+    throw new Error('no boxes');
+  }
+  expect(Math.abs(first.x - from.x)).toBeLessThan(30);
+  expect(Math.abs(first.y - from.y)).toBeLessThan(30);
+  expect(Math.abs(last.x - at.x)).toBeLessThan(40);
+  expect(Math.abs(last.y - at.y)).toBeLessThan(40);
+});

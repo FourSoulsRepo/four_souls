@@ -364,7 +364,7 @@ func (e modifyRollEffect) apply(c *Ctx) {
 	for i := range c.G.Stack {
 		if it := &c.G.Stack[i]; it.ID == id {
 			it.Roll = min(max(it.Roll+e.n, 1), 6)
-			c.G.emit(Event{Kind: EvRollChanged, Player: it.Controller, Amount: it.Roll})
+			c.G.emit(Event{Kind: EvRollChanged, Player: it.Controller, Amount: it.Roll, Source: c.Source, StackID: it.ID})
 		}
 	}
 }

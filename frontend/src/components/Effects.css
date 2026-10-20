@@ -140,6 +140,12 @@
   box-shadow: 0 0 14px 6px rgb(255 160 40 / 55%);
 }
 
+/* A roll change's shot (15.76): cool blue, apart from damage. */
+.effect-shot-roll {
+  background: radial-gradient(circle, #fff 0 22%, #9fd8ff 45%, #3a7bd5 75%, rgb(58 123 213 / 0%) 100%);
+  box-shadow: 0 0 14px 6px rgb(110 180 255 / 55%);
+}
+
 /* A dying card's skull: bone white with an ink edge, over the card. */
 .effect-skull {
   position: absolute;

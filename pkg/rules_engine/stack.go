@@ -310,12 +310,14 @@ func (g *Game) givePriority(p PlayerID) {
 }
 
 // SetRoll changes a dice roll on the stack to n, between 1 and 6
-// (R-DICE-04): "change the result of a dice roll".
-func (g *Game) SetRoll(stackID, n int) {
+// (R-DICE-04): "change the result of a dice roll". Source is the card
+// that changes it, 0 for none; the client shows the change coming
+// from it (15.76).
+func (g *Game) SetRoll(stackID, n int, source ObjectID) {
 	for i := range g.Stack {
 		if it := &g.Stack[i]; it.ID == stackID && it.Kind == StackRoll {
 			it.Roll = min(max(n, 1), 6)
-			g.emit(Event{Kind: EvRollChanged, Player: it.Controller, Amount: it.Roll})
+			g.emit(Event{Kind: EvRollChanged, Player: it.Controller, Amount: it.Roll, Source: source, StackID: it.ID})
 		}
 	}
 }

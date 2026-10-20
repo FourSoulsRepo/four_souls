@@ -17,7 +17,7 @@ var godhead = engine.CardDef{
 			Costs:   []engine.Cost{engine.Tap()},
 			Targets: []engine.TargetSpec{engine.Choose(engine.TargetDiceRoll)},
 			Effects: []engine.Effect{engine.Ask(func(c *engine.Ctx, a []int) {
-				c.G.SetRoll(c.Targets[0].StackID, []int{1, 6}[a[0]])
+				c.G.SetRoll(c.Targets[0].StackID, []int{1, 6}[a[0]], c.Source)
 			}, engine.Question{Text: "Change it to?", Options: func(*engine.Ctx, []int) []string { return []string{"1", "6"} }})},
 		},
 	},

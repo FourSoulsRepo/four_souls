@@ -12,6 +12,7 @@ const ctx = {
   character: (p: number) => (p === 1 ? 31 : undefined),
   slot: (id: number) => (id === 50 ? 'monster-slot-1' : undefined),
   seen: (card: string) => card === 'pin',
+  roll: (stack: number) => (stack === 7 ? 2 : undefined),
   you: 0,
 };
 
@@ -124,7 +125,22 @@ describe('effectsFor', () => {
     ];
     expect(effectsFor(events, ctx)).toEqual([
       { kind: 'dice', value: 2, label: 'reroll', player: 0, thrown: true },
-      { kind: 'dice', value: 3, label: '', player: 0 },
+      { kind: 'dice', value: 3, label: "Ann's roll: 3", player: 0 },
+    ]);
+  });
+
+  it('changes a roll from its old value, from the card that changed it (15.76)', () => {
+    // The shown stack holds roll 7 at 2; roll 8 is thrown in this update.
+    const events: GameEvent[] = [
+      { kind: 'roll_changed', player: 1, amount: 3, stack_id: 7, source: 44 },
+      { kind: 'roll_changed', player: 1, amount: 4, stack_id: 7 },
+      { kind: 'dice_rolled', player: 0, amount: 5, stack_id: 8 },
+      { kind: 'roll_changed', player: 0, amount: 6, stack_id: 8, source: 45 },
+    ];
+    expect(effectsFor(events, ctx).filter((e) => e.kind === 'dice' && !e.thrown)).toEqual([
+      { kind: 'dice', value: 3, label: "Bo's roll: 2 → 3", player: 1, old: 2, source: ['obj-44', 'stack-src-44'] },
+      { kind: 'dice', value: 4, label: "Bo's roll: 3 → 4", player: 1, old: 3 },
+      { kind: 'dice', value: 6, label: "Ann's roll: 5 → 6", player: 0, old: 5, source: ['obj-45', 'stack-src-45'] },
     ]);
   });
 

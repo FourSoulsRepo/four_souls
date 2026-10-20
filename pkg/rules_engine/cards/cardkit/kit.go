@@ -124,7 +124,7 @@ const PutBackText = "Put the cards back in any order"
 func ChangeRollBy(amounts ...int) engine.Effect {
 	return engine.Ask(func(c *engine.Ctx, a []int) {
 		if it, ok := c.G.StackItemByID(c.Targets[0].StackID); ok {
-			c.G.SetRoll(it.ID, it.Roll+amounts[a[0]])
+			c.G.SetRoll(it.ID, it.Roll+amounts[a[0]], c.Source)
 		}
 	}, engine.Question{Text: "Change the roll by?", Options: func(*engine.Ctx, []int) []string {
 		var out []string

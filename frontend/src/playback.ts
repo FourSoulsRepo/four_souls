@@ -14,8 +14,9 @@ export type Effect =
   | { kind: 'fly'; from: string[]; to: string[]; card?: string; back: Kind; middle?: boolean }
   | { kind: 'popup'; at: string[]; text: string; tone: 'good' | 'bad' }
   // dice: thrown for a fresh roll or a reroll (15.62); a changed roll
-  // spins in.
-  | { kind: 'dice'; value: number; label: string; player: number; thrown?: boolean }
+  // spins in with its old value, a shot comes from the card that
+  // changes it, and it turns to the new one (15.76).
+  | { kind: 'dice'; value: number; label: string; player: number; thrown?: boolean; old?: number; source?: string[] }
   | { kind: 'banner'; text: string }
   // reveal: the card grows out of its deck to the middle; it holds
   // there when the next effect moves it, else shrinks back (15.73).
@@ -54,6 +55,8 @@ interface Context {
   slot: (object: number) => string | undefined;
   // seen tells if the update before revealed the card (19.4).
   seen: (card: string) => boolean;
+  // roll is the value of a roll on the stack shown now, if any (15.76).
+  roll: (stack: number) => number | undefined;
   // you is the viewer's seat; -1 for none.
   you: number;
 }
@@ -99,6 +102,9 @@ export function slotZone(view: GameView, object: number): string | undefined {
 // effect still change the table when the view is shown.
 export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
   const out: Effect[] = [];
+  // rolls: values the update's own events gave rolls on the stack.
+  const rolls = new Map<number, number>();
+  const rollOf = (stack: number | undefined) => (stack ? (rolls.get(stack) ?? ctx.roll(stack)) : undefined);
   for (const e of events) {
     const amount = e.amount ?? 0;
     switch (e.kind) {
@@ -129,11 +135,29 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
         break;
       }
       case 'dice_rolled':
+        if (e.stack_id) {
+          rolls.set(e.stack_id, amount);
+        }
         out.push({ kind: 'dice', value: amount, label: e.text ?? '', player: e.player, thrown: true });
         break;
-      case 'roll_changed':
-        out.push({ kind: 'dice', value: amount, label: e.text ?? '', player: e.player });
+      case 'roll_changed': {
+        // "Ann's roll: 3 → 4", from the card that changed it (15.76).
+        const old = rollOf(e.stack_id);
+        const label = `${ctx.name(e.player)}'s roll: ${old === undefined ? '' : `${String(old)} → `}${String(amount)}`;
+        const source = e.source ? [`obj-${String(e.source)}`, `stack-src-${String(e.source)}`] : undefined;
+        if (e.stack_id) {
+          rolls.set(e.stack_id, amount);
+        }
+        out.push({
+          kind: 'dice',
+          value: amount,
+          label,
+          player: e.player,
+          ...(old === undefined ? {} : { old }),
+          ...(source ? { source } : {}),
+        });
         break;
+      }
       case 'gained_cents':
         out.push({ kind: 'popup', at: playerZones(e.player), text: `+${String(amount)}¢`, tone: 'good' });
         break;

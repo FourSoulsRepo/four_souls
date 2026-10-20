@@ -2262,7 +2262,7 @@ Images come first, so the new table is built with backs and mats.
    11. After: 72 of 72 runs of the 15.73 – 15.75 tests passed.
    12. Full runs still time out at game start now and then: bug 19.35.
 
-### [ ] 15.76 A changed roll shows what changed it
+### [x] 15.76 A changed roll shows what changed it
 
 1. Goal: a roll change ties the die to its cause (15.72 gap 4).
 2. Asked by the owner (2026-10-20).
@@ -2279,6 +2279,18 @@ Images come first, so the new table is built with backs and mats.
    2. Vitest: the old value comes from the last roll.
    3. e2e: a roll change shows the shot and both values.
    4. `make screenshots` covers the change.
+5. Result (2026-10-20)
+   1. `SetRoll(stackID, n, source)`; every card passes `c.Source`.
+   2. Mutant Spider's die choice passes none: no single card changes it.
+   3. `roll_changed` and `ModifyRoll` emit `source` and `stack_id`.
+   4. Rules unchanged: no engine version bump; protocol stays 3.
+   5. Old value: this update's events, else the shown stack's roll.
+   6. Tasks said "from the last roll"; the stack is exact with many rolls.
+   7. `ChangedDie`: old face, blue `roll-shot`, a full turn to the new face.
+   8. The label is in the roller's color; no old value: the new one only.
+   9. Go `TestRollChangedNamesItsSource`; Vitest and e2e `playback`.
+   10. UC-12 1y; wikis `Client`, `Animations`, `Effect-blocks`; CHANGELOG.
+   11. Screenshots: `.cache/screenshots/15.76/before/` and `after/`.
 
 ### [ ] 15.77 Damage always shows where it came from
 

@@ -277,3 +277,26 @@ func hasEvent(ev []Event, kind EventKind, amount int, text string) bool {
 	}
 	return false
 }
+
+// A changed roll names the card that changed it and the roll (15.76).
+func TestRollChangedNamesItsSource(t *testing.T) {
+	g := toAction(t, 2)
+	p := g.Turn.Active
+	id := g.push(StackItem{Kind: StackRoll, Roll: 3, Controller: p})
+	src := g.Players[p].Character
+	changed := func(want int) {
+		t.Helper()
+		for _, e := range g.events {
+			if e.Kind == EvRollChanged && e.Amount == want && e.Source == src && e.StackID == id && e.Player == p {
+				return
+			}
+		}
+		t.Errorf("no roll_changed to %d from %d for roll %d in %+v", want, src, id, g.events)
+	}
+	g.events = nil
+	g.SetRoll(id, 5, src)
+	changed(5)
+	g.events = nil
+	ModifyRoll(1, 0).apply(&Ctx{G: g, Controller: p, Source: src, Targets: []Chosen{{StackID: id}}})
+	changed(6)
+}

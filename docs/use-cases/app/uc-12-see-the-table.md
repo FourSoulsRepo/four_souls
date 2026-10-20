@@ -150,6 +150,9 @@
 * **1x. Stolen cents (15.75):** "−N¢" rises on the victim's coins.
   * A coin flies from the victim's coins to the thief's.
   * "+N¢ stolen" rises on the thief's coins when it lands.
+* **1y. A changed roll (15.76):** the die shows its old value first.
+  * A shot flies to it from the card that changed it.
+  * The die turns to the new value: "Ann's roll: 3 → 4".
 
 ## Postconditions
 
