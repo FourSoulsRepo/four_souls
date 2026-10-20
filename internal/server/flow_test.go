@@ -9,6 +9,7 @@ import (
 	"github.com/FourSoulsRepo/four_souls/internal/protocol"
 	engine "github.com/FourSoulsRepo/rules_engine"
 	"github.com/FourSoulsRepo/rules_engine/cards/b2"
+	"github.com/FourSoulsRepo/rules_engine/enginetest"
 )
 
 // TestNoWaitingWithoutOptions: in a played game, no update ever asks a
@@ -59,30 +60,6 @@ func TestNoWaitingWithoutOptions(t *testing.T) {
 	<-done
 }
 
-// TestSkipAll: the player passes on the stack they saw; a new item
-// returns control; an empty stack ends it (N-06).
-func TestSkipAll(t *testing.T) {
-	g, err := engine.BuildTable(engine.SituationSetup{
-		Players: []engine.SituationPlayer{{Character: "isaac"}, {Character: "cain"}},
-		Stack:   []engine.SituationStack{{DiceRoll: 3, Owner: 0}},
-	}, b2.Set)
-	if err != nil {
-		t.Fatal(err)
-	}
-	r := &Room{game: g, seats: []roomSeat{{client: &Client{}}, {client: &Client{}}}} // both connected
-	if _, ok := r.autoIntent(); ok {
-		t.Fatal("a player who can act was skipped") // Isaac's character is charged
-	}
-	r.seats[0].skip = []int{g.Stack[0].ID}
-	if in, ok := r.autoIntent(); !ok || in.Kind != engine.IntentPass || in.Player != 0 {
-		t.Fatalf("skip all did not pass: %+v %v", in, ok)
-	}
-	r.seats[0].skip = []int{999} // the stack holds an item the player has not seen
-	if _, ok := r.autoIntent(); ok || r.seats[0].skip != nil {
-		t.Error("a new stack item did not return control")
-	}
-}
-
 // TestWaitTurn: a waiting player is passed for until the player before
 // them ends the turn; then they are asked again (N-16).
 func TestWaitTurn(t *testing.T) {
@@ -116,6 +93,53 @@ func TestWaitTurn(t *testing.T) {
 	}
 	if !r.seats[2].wait {
 		t.Error("player 2 stopped waiting at the end of player 0's turn")
+	}
+}
+
+// TestWaitEndsOnTarget: another player's ability that targets a waiting
+// player ends their wait; other waiting players keep waiting (15.84).
+func TestWaitEndsOnTarget(t *testing.T) {
+	tb := enginetest.New(t, b2.Set, enginetest.Seat("isaac", "jawbone"), enginetest.Seat("cain"), enginetest.Seat("maggy"))
+	r := &Room{game: tb.G, seats: []roomSeat{{client: &Client{}}, {client: &Client{}, wait: true}, {client: &Client{}, wait: true}}}
+	tb.Start(0, "jawbone", 0)
+	tb.Choose("player 3 (maggy)")
+	r.endWaits()
+	if r.seats[2].wait {
+		t.Error("Jawbone targets player 2, who still waits")
+	}
+	if !r.seats[1].wait {
+		t.Error("player 1 stopped waiting, but nobody targets them")
+	}
+}
+
+// TestTargeted: a target on the player's items or hand cards counts; a
+// target from before the wait, of their own, or on another player does
+// not (15.84).
+func TestTargeted(t *testing.T) {
+	tb := enginetest.NewSetup(t, engine.SituationSetup{Players: []engine.SituationPlayer{
+		{Character: "isaac"}, {Character: "cain", Items: []engine.CardRef{"jawbone"}, Hand: []engine.CardRef{"a_penny"}}, {Character: "maggy"},
+	}}, b2.Set)
+	g := tb.G
+	r := &Room{game: g}
+	item, card := tb.Find(1, "jawbone"), tb.Find(1, "a_penny")
+	cases := []struct {
+		name string
+		it   engine.StackItem
+		want bool
+	}{
+		{"their item", engine.StackItem{ID: 1, Controller: 0, Targets: []engine.Chosen{{Kind: engine.TargetItem, Object: item}}}, true},
+		{"their hand card", engine.StackItem{ID: 1, Controller: 2, Targets: []engine.Chosen{{Kind: engine.TargetYourHandCard, Object: card}}}, true},
+		{"damage to them", engine.StackItem{ID: 1, Kind: engine.StackDamage, Controller: 0, Target: engine.Target{Player: 1, IsPlayer: true}}, true},
+		{"another player", engine.StackItem{ID: 1, Controller: 0, Targets: []engine.Chosen{{Kind: engine.TargetPlayer, Player: 2}}}, false},
+		{"their own", engine.StackItem{ID: 1, Controller: 1, Targets: []engine.Chosen{{Kind: engine.TargetPlayer, Player: 1}}}, false},
+		{"before the wait", engine.StackItem{ID: 0, Controller: 0, Targets: []engine.Chosen{{Kind: engine.TargetPlayer, Player: 1}}}, false},
+		{"a spent cost", engine.StackItem{ID: 1, Controller: 0, Targets: []engine.Chosen{{Kind: engine.TargetItem, Object: item, Spent: true}}}, false},
+	}
+	for _, c := range cases {
+		g.Stack = []engine.StackItem{c.it}
+		if got := r.targeted(1, 0); got != c.want {
+			t.Errorf("%s: targeted %v, want %v", c.name, got, c.want)
+		}
 	}
 }
 
@@ -197,12 +221,11 @@ func TestTimerThrows(t *testing.T) {
 	thrown(t, g)
 }
 
-// TestSkipAndWaitNeverThrow: "skip all" and "wait for my turn" pass,
-// but never throw for the player (15.60).
-func TestSkipAndWaitNeverThrow(t *testing.T) {
+// TestWaitNeverThrows: "wait for my turn" passes, but never throws for
+// the player (15.60).
+func TestWaitNeverThrows(t *testing.T) {
 	g := atThrow(t)
 	r := &Room{game: g, seats: []roomSeat{{client: &Client{}, wait: true}, {client: &Client{}, wait: true}}}
-	r.seats[0].skip = []int{g.Stack[len(g.Stack)-1].ID}
 	if in, ok := r.autoIntent(); ok {
 		t.Fatalf("the server answered %+v for the roller", in)
 	}

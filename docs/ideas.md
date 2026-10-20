@@ -461,6 +461,7 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    3. It skips only the events visible when the button was pressed.
    4. Lasts until the stack is empty.
    5. The player can cancel it at any time.
+   6. Removed (owner, 2026-10-20): play tests showed it unused.
 7. N-07. Response timer.
    1. Host sets it when creating a game.
    2. Can be disabled.
@@ -531,6 +532,9 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    4. It ends when the player before them ends the turn.
    5. That end window is their last chance to act.
    6. The player can cancel it at any time.
+   7. It also ends when another player targets them (owner, 2026-10-20).
+   8. Or targets their items, souls, curses, or hand cards.
+   9. So they can answer before cards are stolen from them.
 17. N-17. Create a game on a dedicated server (owner, 2026-10-14).
    1. A player connected to a dedicated server opens a new game there.
    2. The Games list shows "Create a game" only on a dedicated server.

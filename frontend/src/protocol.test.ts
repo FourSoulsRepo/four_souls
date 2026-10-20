@@ -30,12 +30,12 @@ const modeled: Record<string, Envelope | Envelope[]> = {
   hello: {
     type: 'hello',
     id: 1,
-    data: { protocol: 3, app: '0.1.0', name: 'Ann', role: 'player', sets: ['b2'], dice: 'tear' } satisfies Hello,
+    data: { protocol: 4, app: '0.1.0', name: 'Ann', role: 'player', sets: ['b2'], dice: 'tear' } satisfies Hello,
   },
   welcome: {
     type: 'welcome',
     id: 1,
-    data: { protocol: 3, app: '0.1.0', engine: '0.1.0', token: 't0k3n', seat: 0, presence: true, name: 'Basement' } satisfies Welcome,
+    data: { protocol: 4, app: '0.1.0', engine: '0.1.0', token: 't0k3n', seat: 0, presence: true, name: 'Basement' } satisfies Welcome,
   },
   error: {
     type: 'error',
@@ -203,7 +203,7 @@ function model(env: Envelope): Envelope | undefined {
 }
 
 // Messages the client does not read or send yet; later steps model them.
-const notYet = ['resync', 'setup', 'ban', 'pick', 'skip_all', 'vote', 'save'];
+const notYet = ['resync', 'setup', 'ban', 'pick', 'vote', 'save'];
 
 const lines = golden
   .split('\n')

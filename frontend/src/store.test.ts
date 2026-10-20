@@ -85,14 +85,14 @@ describe('recent servers (N-18)', () => {
   });
 
   it('a welcome names the server in Recent', async () => {
-    useApp.getState().receive({ type: 'welcome', data: { protocol: 3, app: '0.1.0', engine: '0.1.0', token: 't', seat: -1, name: 'Basement' } });
+    useApp.getState().receive({ type: 'welcome', data: { protocol: 4, app: '0.1.0', engine: '0.1.0', token: 't', seat: -1, name: 'Basement' } });
     await vi.waitFor(() => {
       expect(useApp.getState().settings.recent).toEqual([{ address: 'a', name: '' }, { address: 'b', name: 'Basement' }]);
     });
   });
 
   it('a welcome without a change saves nothing', async () => {
-    useApp.getState().receive({ type: 'welcome', data: { protocol: 3, app: '0.1.0', engine: '0.1.0', token: 't', seat: -1 } });
+    useApp.getState().receive({ type: 'welcome', data: { protocol: 4, app: '0.1.0', engine: '0.1.0', token: 't', seat: -1 } });
     await Promise.resolve();
     expect(saveSettings).not.toHaveBeenCalled();
   });

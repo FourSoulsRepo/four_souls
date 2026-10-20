@@ -164,8 +164,6 @@ interface AppState extends Session {
   playAt: (intent: Intent, target: OptionView) => void;
   // takeAimed returns aimed and forgets it.
   takeAimed: () => Aimed | null;
-  // skipAll turns "skip all" on or off (N-06).
-  skipAll: (on: boolean) => void;
   // waitTurn turns "wait for my turn" on or off (N-16).
   waitTurn: (on: boolean) => void;
   // presence is what the other seats point at now, by seat (15.36).
@@ -503,9 +501,6 @@ export const useApp = create<AppState>()((set, get) => {
       const { aimed } = get();
       set({ aimed: null });
       return aimed;
-    },
-    skipAll: (on) => {
-      send('skip_all', { on });
     },
     waitTurn: (on) => {
       send('wait_turn', { on });

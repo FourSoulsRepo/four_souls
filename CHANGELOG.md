@@ -6,6 +6,8 @@ Rules engine versions are in each release's notes.
 
 ## Unreleased
 
+- The "Skip all" button is gone.
+- "Wait for my turn" stops as soon as another player targets you or your cards, so you can answer before they steal from you.
 - Wording: the turn counters say "Shop" instead of "Buys"; roll texts say "dice", so "die" only means death.
 - Dice: a thrown die is a 3D cube that tumbles onto the table and clatters as it lands; every die has light and shade.
 - End turn asks first while you can still play something, and lists what is left; Settings can turn the question off.

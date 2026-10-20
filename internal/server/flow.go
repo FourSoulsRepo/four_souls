@@ -47,8 +47,8 @@ func (r *Room) after(events []engine.Event, applied bool) {
 }
 
 // autoIntent is a pass the server makes for the waiting player: one who
-// can do nothing but pass (N-05, N-09), one skipping the stack they saw
-// (N-06), or one waiting for their turn (N-16).
+// can do nothing but pass (N-05, N-09), or one waiting for their turn
+// (N-16).
 func (r *Room) autoIntent() (engine.Intent, bool) {
 	g := r.game
 	r.endWaits()
@@ -63,49 +63,10 @@ func (r *Room) autoIntent() (engine.Intent, bool) {
 		return engine.Intent{}, false
 	}
 	pass := engine.Intent{Player: w.Player, Kind: engine.IntentPass}
-	if !g.CanAct(w.Player) {
+	if !g.CanAct(w.Player) || r.seats[w.Player].wait {
 		return pass, true
 	}
-	s := &r.seats[w.Player]
-	if s.wait {
-		return pass, true
-	}
-	if s.skip == nil {
-		return engine.Intent{}, false
-	}
-	if len(g.Stack) == 0 {
-		s.skip = nil // "skip all" lasts until the stack is empty
-		return engine.Intent{}, false
-	}
-	for _, it := range g.Stack {
-		if !slices.Contains(s.skip, it.ID) {
-			s.skip = nil // something new: control returns to the player
-			return engine.Intent{}, false
-		}
-	}
-	return pass, true
-}
-
-// skipAll turns "skip all" on for the stack the player sees now.
-func (r *Room) skipAll(c *Client, env protocol.Envelope) {
-	var m protocol.SkipAll
-	if err := env.Unpack(&m); err != nil {
-		c.fail(env.ID, protocol.ErrBadMessage, err.Error())
-		return
-	}
-	if c.seat < 0 || r.game == nil {
-		c.fail(env.ID, protocol.ErrNotSeated, "only a seated player in a game")
-		return
-	}
-	s := &r.seats[c.seat]
-	s.skip = nil
-	if m.On && len(r.game.Stack) > 0 {
-		s.skip = []int{}
-		for _, it := range r.game.Stack {
-			s.skip = append(s.skip, it.ID)
-		}
-	}
-	r.after(nil, false)
+	return engine.Intent{}, false
 }
 
 // waitTurn turns "wait for my turn" on or off (N-16).
@@ -120,14 +81,17 @@ func (r *Room) waitTurn(c *Client, env protocol.Envelope) {
 		return
 	}
 	r.seats[c.seat].wait = m.On
+	r.seats[c.seat].waitSeq = r.game.StackSeq
 	r.after(nil, false)
 }
 
 // endWaits stops "wait for my turn" once the turn before the player's
-// own ends: the end window is their last chance to act (N-16).
+// own ends: the end window is their last chance to act (N-16). It also
+// stops when another player targets them or their cards (15.84).
 func (r *Room) endWaits() {
 	for i := range r.seats {
-		if r.seats[i].wait && r.waitOver(engine.PlayerID(i)) {
+		p := engine.PlayerID(i)
+		if r.seats[i].wait && (r.waitOver(p) || r.targeted(p, r.seats[i].waitSeq)) {
 			r.seats[i].wait = false
 		}
 	}
@@ -142,6 +106,45 @@ func (r *Room) waitOver(p engine.PlayerID) bool {
 	}
 	before := (int(t.Active)+1)%len(r.game.Players) == int(p)
 	return before && (t.EndDeclared || t.DeathEnd || t.Step >= engine.StepEndTriggers)
+}
+
+// targeted: a stack item newer than seq, of another player, targets p,
+// or p's character, items, souls, curses, or hand cards (15.84). Damage
+// to them counts too.
+func (r *Room) targeted(p engine.PlayerID, seq int) bool {
+	g := r.game
+	owns := func(id engine.ObjectID) bool {
+		return id >= 0 && int(id) < len(g.Objects) && g.Objects[id].Controller == p
+	}
+	hits := func(c engine.Chosen) bool {
+		switch c.Kind {
+		case engine.TargetPlayer, engine.TargetOtherPlayer, engine.TargetMonsterOrPlayer:
+			return c.Player == p
+		case engine.TargetItem, engine.TargetCurse, engine.TargetYourItem, engine.TargetYourHandCard, engine.TargetItemOrSoul:
+			return owns(c.Object)
+		case engine.TargetMonster, engine.TargetDiceRoll, engine.TargetStackAbility, engine.TargetStackTrigger:
+		}
+		return false
+	}
+	for _, it := range g.Stack {
+		if it.ID <= seq || it.Controller == p || it.Controller == engine.NoPlayer {
+			continue
+		}
+		if it.Kind == engine.StackDamage {
+			if it.Target.IsPlayer && it.Target.Player == p {
+				return true
+			}
+			if !it.Target.IsPlayer && owns(it.Target.Object) {
+				return true
+			}
+		}
+		for _, c := range it.Targets {
+			if !c.Spent && hits(c) {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 // restartTimer starts the response timer for whoever must answer now.

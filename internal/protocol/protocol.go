@@ -17,7 +17,8 @@ import (
 // event or intent JSON, or changing its meaning, bumps it.
 // 2: the order prompt (19.16); an older client cannot answer it.
 // 3: the throw prompt and intent (15.60).
-const Version = 3
+// 4: no "skip all" message or field (15.84).
+const Version = 4
 
 // DefaultPort is the server's TCP port unless configured.
 const DefaultPort = 4774
@@ -49,7 +50,6 @@ const (
 	TypePick  = "pick"  // client → server: pick one of your offered characters
 
 	// Turn flow (6.7).
-	TypeSkipAll  = "skip_all"  // client → server: pass on the visible stack (N-06)
 	TypeWaitTurn = "wait_turn" // client → server: pass until the turn before mine ends (N-16)
 
 	// Disconnects (6.8).
@@ -134,8 +134,6 @@ type Update struct {
 	// Deadline is when the response timer answers for the waiting player,
 	// Unix ms; 0: no timer (N-07).
 	Deadline int64 `json:"deadline,omitempty"`
-	// SkipAll is set while this player skips the visible stack (N-06).
-	SkipAll bool `json:"skip_all,omitempty"`
 	// WaitTurn is set while this player waits for their turn (N-16).
 	WaitTurn bool `json:"wait_turn,omitempty"`
 	// Pause is set while the game waits for a disconnected player (N-08).
@@ -153,11 +151,6 @@ type Pause struct {
 type Vote struct {
 	Seat int  `json:"seat"`
 	Kick bool `json:"kick"`
-}
-
-// SkipAll turns "skip all" on or off (N-06).
-type SkipAll struct {
-	On bool `json:"on"`
 }
 
 // WaitTurn turns "wait for my turn" on or off (N-16).

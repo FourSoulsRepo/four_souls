@@ -22,9 +22,8 @@
 
 ## Alternative scenarios and errors
 
-* **3a. Skip all (N-06):** any player presses "Skip all" while the stack is not empty.
-  * The server passes for them on everything now on the stack.
-  * The button turns into "Cancel skip".
+* **3a. No "Skip all" (15.84):** the button is gone.
+  * A player who can act passes each item, or waits for their turn (UC-06).
 * **3b. Response timer (N-07):** the host set one in the detailed setup.
   * The prompt banner counts down the seconds left.
   * When it runs out, the server answers for the player.

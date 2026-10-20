@@ -107,8 +107,6 @@ function Table({ game, you }: { game: Update; you: number }) {
   const me = view.players.at(you);
   // The hand's cards in order: a hand card is shared as its slot (A-16).
   const hand = useMemo(() => (me?.hand ?? []).map((c) => c.id), [me]);
-  const stacked = (view.stack ?? []).length > 0;
-  const skip = game.skip_all ? 'on' : stacked && !view.over ? 'offer' : 'none';
   // The banner and the stack say what the game waits for (15.28). While
   // the player picks a target, the cards that answer glow; the rest dim.
   const banner = promptBanner(view, you, names, actions, aiming);
@@ -201,7 +199,6 @@ function Table({ game, you }: { game: Update; you: number }) {
         paused={!!game.pause}
         name={name}
         deadline={game.deadline ?? 0}
-        skip={skip}
         wait={waitTurn(view, you, game.wait_turn ?? false)}
       />
       <ActionMenu actions={offered.cards} />

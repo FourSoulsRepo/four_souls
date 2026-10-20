@@ -2515,3 +2515,32 @@ Images come first, so the new table is built with backs and mats.
 6. Owner notes (2026-10-20)
    1. "Which dice is the result?" stays, with "dice".
    2. Owner marks 15.83 solved.
+
+### [x] 15.84 No "Skip all"; a target ends the wait
+
+1. Goal: a waiting player never loses cards without a chance to answer.
+2. Asked by the owner (2026-10-20), from play tests.
+3. Tasks:
+   1. Remove "Skip all" (N-06): play tests show nobody needs it.
+   2. "Wait for my turn" ends when another player targets the player.
+   3. Or targets their character, items, souls, curses, or hand cards.
+   4. Only stack items added after the press count.
+   5. Then the player is asked as usual and may answer.
+4. Done when:
+   1. Go test: a target on the player or their item ends the wait.
+   2. Go test: a target on someone else keeps it.
+   3. e2e test: no "Skip all" button.
+   4. Screenshots before and after.
+5. Result (2026-10-20)
+   1. "Skip all" is gone: button, message `skip_all`, field `skip_all`.
+   2. Protocol version 4: a field was removed (ADR 006).
+   3. The server keeps the last stack ID when the wait begins.
+   4. A newer item of another player that targets the waiter ends it.
+   5. Counted: the player, their character, items, souls, curses, hand.
+   6. Damage to them or their cards counts too.
+   7. Not counted: their own items, costs paid, items from before.
+   8. A card that picks its victim only when it resolves is not seen.
+   9. Go tests: `TestWaitEndsOnTarget` (Jawbone), `TestTargeted`.
+   10. e2e: no "Skip all" button for either player.
+   11. UC-06, UC-14; wiki `Server`, `Client`, `Rules-engine`; CHANGELOG.
+   12. Screenshots: `.cache/screenshots/15.84/before/` and `after/`.

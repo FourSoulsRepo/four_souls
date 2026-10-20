@@ -23,11 +23,13 @@ type roomSeat struct {
 	name   string
 	token  string
 	client *Client
-	skip   []int  // stack item IDs a "skip all" passes on (N-06); nil: off
-	wait   bool   // "wait for my turn": pass until the turn before ends (N-16)
-	kicked bool   // empty for good after a vote (N-08)
-	dice   string // the dice look (V-19); kept while the player is away
-	pace   pace   // presence messages (15.35)
+	wait   bool // "wait for my turn": pass until the turn before ends (N-16)
+	// waitSeq is the last stack ID when the wait began; a newer item
+	// that targets the player ends it (15.84).
+	waitSeq int
+	kicked  bool   // empty for good after a vote (N-08)
+	dice    string // the dice look (V-19); kept while the player is away
+	pace    pace   // presence messages (15.35)
 }
 
 type request struct {
@@ -180,8 +182,6 @@ func (r *Room) handle(req request) {
 		r.ban(c, env)
 	case protocol.TypePick:
 		r.pick(c, env)
-	case protocol.TypeSkipAll:
-		r.skipAll(c, env)
 	case protocol.TypeWaitTurn:
 		r.waitTurn(c, env)
 	case protocol.TypeVote:
@@ -292,7 +292,6 @@ func (r *Room) update(c *Client, events []engine.Event) {
 		u.Deadline = r.deadline.UnixMilli()
 	}
 	if c.seat >= 0 {
-		u.SkipAll = r.seats[c.seat].skip != nil
 		u.WaitTurn = r.seats[c.seat].wait
 	}
 	if r.paused() {
@@ -307,7 +306,6 @@ func (r *Room) drop(c *Client) {
 	r.clients = slices.DeleteFunc(r.clients, func(x *Client) bool { return x == c })
 	if c.seat >= 0 && r.seats[c.seat].client == c {
 		r.seats[c.seat].client = nil
-		r.seats[c.seat].skip = nil
 		r.seats[c.seat].wait = false
 		r.relayPresence(c, protocol.Presence{Seat: c.seat}) // its arrow goes
 		if r.paused() {

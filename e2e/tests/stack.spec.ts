@@ -10,7 +10,7 @@ const fast = () => `${appURL()}&anim=off`;
 
 test.setTimeout(90_000);
 
-test('a played loot card shows on the stack; others may skip all', async ({ browser }) => {
+test('a played loot card shows on the stack; nobody is offered skip all', async ({ browser }) => {
   const pages = await startGame(browser, ['Sam', 'Tia'], { url: fast() });
   const active = await activePage(pages, click);
   const other = pages.find((p) => p !== active);
@@ -39,11 +39,10 @@ test('a played loot card shows on the stack; others may skip all', async ({ brow
   await expect(other.locator('.prompt-title')).toHaveText(/Waiting for (Sam|Tia)/);
   await shot(other, 'stack');
 
-  const bar = other.getByRole('region', { name: 'Actions' });
-  await bar.getByRole('button', { name: 'Skip all' }).click();
-  await expect(bar.getByRole('button', { name: 'Cancel skip' })).toBeVisible();
-  await bar.getByRole('button', { name: 'Cancel skip' }).click();
-  await expect(bar.getByRole('button', { name: 'Skip all' })).toBeVisible();
+  // "Skip all" is gone (15.84); "Wait for my turn" stays.
+  for (const page of [active, other]) {
+    await expect(page.getByRole('button', { name: /Skip all|Cancel skip/ })).toHaveCount(0);
+  }
 });
 
 test('a player may wait for their turn; the end of the turn before asks them (N-16)', async ({ browser }) => {

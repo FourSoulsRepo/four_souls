@@ -299,7 +299,7 @@
   stroke-linejoin: round;
 }
 
-/* Cancel in the plain-paper look of Skip all. */
+/* Cancel in the plain-paper look of Wait for my turn. */
 .ability-cancel {
   align-self: flex-end;
   margin-top: 4px;
@@ -942,8 +942,9 @@
   }
 }
 
-/* Pass and Skip all (15.20): the same cut-out look, smaller. Pass is
-   blood red, Skip all plain paper. Pass sits in the stack panel (15.21). */
+/* Pass and Wait for my turn (15.20): the same cut-out look, smaller.
+   Pass is blood red, Wait plain paper. Pass sits in the stack panel
+   (15.21). */
 .action-buttons button,
 .stack .stack-pass {
   --ink: #1d120a;

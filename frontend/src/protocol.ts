@@ -2,7 +2,7 @@
 // Only what the client uses so far; protocol.test.ts checks these types
 // against Go's golden file. Go sends a nil list as null.
 
-export const protocolVersion = 3;
+export const protocolVersion = 4;
 export const defaultPort = 4774;
 
 export interface Envelope {
@@ -462,7 +462,6 @@ export interface Update {
   blocked?: Block[]; // why other cards and turn actions can't be used (15.29)
   seats: Seat[] | null;
   deadline?: number; // Unix ms; the response timer
-  skip_all?: boolean;
   wait_turn?: boolean;
   pause?: Pause;
 }

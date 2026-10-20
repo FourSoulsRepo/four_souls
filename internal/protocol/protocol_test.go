@@ -48,7 +48,6 @@ func TestGolden(t *testing.T) {
 		{TypeSetup, 0, Setup{Phase: PhaseBan, Round: 1, Turn: 0, Pool: []engine.CardRef{"isaac", "cain"}, Banned: []Ban{{Seat: -1, Card: "eden"}}, Deadline: 1760000000000, Seats: []Seat{{Seat: 0, Name: "Ann"}}}},
 		{TypeBan, 9, BanCard{Card: "cain"}},
 		{TypePick, 10, PickCard{Card: "isaac"}},
-		{TypeSkipAll, 11, SkipAll{On: true}},
 		{TypeVote, 12, Vote{Kick: true}},
 		{TypeSave, 13, struct{}{}},
 		{TypeSaved, 0, Saved{Save: "g1"}},
