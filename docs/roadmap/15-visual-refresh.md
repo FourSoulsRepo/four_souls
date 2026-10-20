@@ -1400,6 +1400,9 @@ Images come first, so the new table is built with backs and mats.
    8. Go `TestIconsFromFiles`; e2e `shell.spec.ts`.
    9. UC-01 7; wikis `Client`, `Build-modes`; `NOTICE`; CHANGELOG.
    10. Screenshots: `.cache/screenshots/15.41/before/` and `after/`.
+5. Owner notes (2026-10-20)
+   1. Owner pushed the tools, images and game repos.
+   2. Owner marks 15.41 solved.
 
 ### [ ] 15.42 Animated background
 
