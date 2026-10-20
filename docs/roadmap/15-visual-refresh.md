@@ -2161,3 +2161,85 @@ Images come first, so the new table is built with backs and mats.
    4. `dice`: a changed roll spins in the middle; nothing ties it to the roller.
    5. `hit-shot`: a source not on screen sends no shot; only the burst shows.
    6. `reveal` and `played` fade in place; nothing shows where the card goes.
+7. Owner answers (2026-10-20)
+   1. Fix every gap above: sub-steps 15.73 – 15.77.
+
+### [ ] 15.73 A revealed card comes from its deck and leaves to its place
+
+1. Goal: a revealed card's path is visible end to end (15.72 gaps 1, 6).
+2. Asked by the owner (2026-10-20).
+3. Tasks:
+   1. `reveal`: the card flies out of its deck to the middle, growing.
+   2. A `fly` or `place` of a card just shown large starts in the middle.
+   3. "Just shown": a `show` claim in this beat or the one before.
+   4. It shrinks from the large size to the table size as it flies.
+   5. With no move after it, the reveal fades in the middle, as now.
+   6. `Animations.md`: Direction of `reveal`, `fly`.
+4. Done when:
+   1. Vitest: the start point of a move after a show.
+   2. e2e: a deck attack shows the card, then places it from the middle.
+   3. `make screenshots` covers the reveal in flight.
+
+### [ ] 15.74 Another player's loot goes from the hand to the stack to the discard
+
+1. Goal: a played loot card travels its real path (15.72 gaps 2, 6).
+2. Asked by the owner (2026-10-20).
+3. Tasks:
+   1. `played`: the card rises from the player's hand to the middle.
+   2. It then shrinks toward the stack panel.
+   3. Engine: a resolved or cancelled loot card emits `discarded`.
+   4. The event's `prev` is the card on the stack.
+   5. Client: that `fly` starts at the stack row or the played card.
+   6. The viewer's own loot also flies to the discard on resolve.
+   7. `Animations.md`: Direction of `played`, `fly`.
+4. Done when:
+   1. Go test: resolve and cancel emit `discarded` with `prev`.
+   2. Vitest: the discard `fly` starts at the stack.
+   3. e2e: a resolved loot card flies from the stack to the discard.
+   4. `make screenshots` covers both flights.
+
+### [ ] 15.75 Stolen cents move from the victim to the thief
+
+1. Goal: a steal shows who lost and who gained (15.72 gap 3).
+2. Asked by the owner (2026-10-20).
+3. Tasks:
+   1. "−N¢" rises on the victim's panel; the victim is the event's text.
+   2. A gold coin flies from the victim's panel to the thief's.
+   3. "+N¢ stolen" rises on the thief's panel when it lands.
+   4. A new id `coin-shot` in `Animations.md`.
+4. Done when:
+   1. Vitest: the steal's effects, in order.
+   2. e2e: a steal shows the coin and both texts.
+   3. `make screenshots` covers the coin in flight.
+
+### [ ] 15.76 A changed roll shows what changed it
+
+1. Goal: a roll change ties the die to its cause (15.72 gap 4).
+2. Asked by the owner (2026-10-20).
+3. Tasks:
+   1. Engine: `roll_changed` carries `source` and `stack_id`.
+   2. Every `SetRoll` caller passes the card that changes the roll.
+   3. The die appears in the middle with the old value.
+   4. A shot flies from the source card, else its stack row, to the die.
+   5. On the hit the die spins to the new value.
+   6. The label reads "Ann's roll: 3 → 4", in Ann's color.
+   7. `Animations.md`: Direction of `dice`.
+4. Done when:
+   1. Go test: `roll_changed` names its source and roll.
+   2. Vitest: the old value comes from the last roll.
+   3. e2e: a roll change shows the shot and both values.
+   4. `make screenshots` covers the change.
+
+### [ ] 15.77 Damage always shows where it came from
+
+1. Goal: no damage lands from nowhere (15.72 gap 5).
+2. Asked by the owner (2026-10-20).
+3. Tasks:
+   1. The shot's start: source card, its stack row, then the dealer's panel.
+   2. The dealer is the event's `by`; a monster's is its slot, if known.
+   3. Only with none of these on screen: the burst alone, as now.
+   4. `Animations.md`: Direction of `hit-shot`.
+4. Done when:
+   1. Vitest: the start point for each fallback.
+   2. e2e: damage from a resolved loot card flies from the player.
+   3. `make screenshots` covers it.
