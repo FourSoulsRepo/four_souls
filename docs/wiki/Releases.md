@@ -31,9 +31,11 @@ The version shown in the app's main menu is the tag without the `v`.
 | `four-souls-<version>-macos-universal.zip` | `four_souls.app`, `four_souls_server` (Intel and Apple silicon) |
 | `four-souls-<version>-linux-amd64.tar.gz`, `-linux-arm64.tar.gz` | `four_souls`, `four_souls_server` |
 
+Each platform also gets a `for-poor` archive, e.g. `four-souls-<version>-for-poor-linux-amd64.tar.gz`: the same game without card images, just for fun. Cards, backs, dice and mats then show as text and plain colors.
+
 Every archive also has `README.txt` (from `release/README.txt`), `LICENSE` and `NOTICE`.
 
-The app is built with `-tags "embed cardimages"`; the server only with `embed` (it needs card text, not images). Linux builds use WebKitGTK 4.1 (`webkit2_41`), so players need `libwebkit2gtk-4.1` (Ubuntu 22.04 and later).
+The app is built with `-tags "embed cardimages"` (`for-poor`: `embed` only); the server only with `embed` (it needs card text, not images). Linux builds use WebKitGTK 4.1 (`webkit2_41`), so players need `libwebkit2gtk-4.1` (Ubuntu 22.04 and later).
 
 ## App identity
 

@@ -15,6 +15,9 @@ What is in this archive
   four_souls_server                              a dedicated server, optional
   LICENSE, NOTICE                                licenses
 
+A "for-poor" archive is the same game without card images: cards
+show as text. Players with either archive can play together.
+
 
 First start
 -----------

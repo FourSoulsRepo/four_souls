@@ -2,7 +2,8 @@ name: Release
 
 # A version tag (v1.2.3, or v1.2.3-test for a trial) builds every platform
 # with card images and makes a draft GitHub release; the owner checks it
-# and publishes it by hand.
+# and publishes it by hand. Each platform also gets a "for-poor" archive:
+# the same game without card images, so cards show as text.
 on:
   push:
     tags: ["v*"]
@@ -44,11 +45,18 @@ jobs:
           retention-days: 7
 
   build:
-    name: Build ${{ matrix.target.name }}
+    name: Build ${{ matrix.edition.prefix }}${{ matrix.target.name }}
     needs: notes
     strategy:
       fail-fast: false
       matrix:
+        edition:
+          - prefix: ""
+            images: true
+            tags: embed cardimages
+          - prefix: for-poor-
+            images: false
+            tags: embed
         target:
           - name: linux-amd64
             os: ubuntu-24.04
@@ -85,11 +93,12 @@ jobs:
       - uses: actions/checkout@v5
       - name: Card images
         id: images
+        if: matrix.edition.images
         uses: ./.github/actions/card-images
         with:
           ssh-key: ${{ secrets.CARD_DB_DEPLOY_KEY }}
       - name: Require card images
-        if: steps.images.outputs.available != 'true'
+        if: matrix.edition.images && steps.images.outputs.available != 'true'
         shell: bash
         run: |
           echo "::error::A release needs the card images: set the CARD_DB_DEPLOY_KEY secret."
@@ -98,7 +107,7 @@ jobs:
         uses: ./.github/actions/build
         with:
           platform: ${{ matrix.target.platform }}
-          tags: embed cardimages ${{ matrix.target.tags }}
+          tags: ${{ matrix.edition.tags }} ${{ matrix.target.tags }}
           goos: ${{ matrix.target.goos }}
           goarch: ${{ matrix.target.goarch }}
           version: ${{ needs.notes.outputs.version }}
@@ -108,7 +117,7 @@ jobs:
         id: pack
         shell: bash
         env:
-          NAME: four-souls-${{ needs.notes.outputs.version }}-${{ matrix.target.name }}
+          NAME: four-souls-${{ needs.notes.outputs.version }}-${{ matrix.edition.prefix }}${{ matrix.target.name }}
         run: |
           mkdir -p "dist/$NAME"
           cp -R build/bin/. "dist/$NAME/"
@@ -124,7 +133,7 @@ jobs:
           ls -la
       - uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.target.name }}
+          name: ${{ matrix.edition.prefix }}${{ matrix.target.name }}
           path: dist/*
           if-no-files-found: error
           retention-days: 7

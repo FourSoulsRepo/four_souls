@@ -2638,3 +2638,24 @@ Images come first, so the new table is built with backs and mats.
    8. Wiki `Server`, `Rules-engine`.
 7. Owner notes (2026-10-20)
    1. Owner marks 15.86 solved.
+
+### [x] 15.87 "For-poor" release archives without card images
+
+1. Goal: each release also has the game without card images.
+2. Asked by the owner (2026-10-21), just for fun.
+3. Tasks:
+   1. Release workflow: an `edition` axis next to `target`.
+   2. `for-poor` builds with `embed` only; no card images checkout.
+   3. Archives: `four-souls-<version>-for-poor-<target>`.
+4. Done when:
+   1. A tag makes 10 archives: 5 full, 5 `for-poor`.
+   2. Full builds still need `CARD_DB_DEPLOY_KEY`.
+5. Result (2026-10-21)
+   1. `release.yml`: matrix `edition` × `target`.
+   2. Job, archive and artifact names get the `for-poor-` prefix.
+   3. `for-poor` skips the card images and their check.
+   4. Not yet run on a tag; YAML checked to parse.
+   5. No screen changed; no screenshots.
+   6. Wiki `Releases`; `release/README.txt`; CHANGELOG.
+6. Owner notes (2026-10-21)
+   1. Owner marks 15.87 solved.
