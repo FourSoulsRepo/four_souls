@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { CardZoom } from './components/CardZoom';
 import { Effects } from './components/Effects';
+import { Sky } from './components/Sky';
 import { CardGallery } from './screens/CardGallery';
 import { GameScreen } from './screens/GameScreen';
 import { HostScreen } from './screens/HostScreen';
@@ -10,6 +11,7 @@ import { SettingsScreen } from './screens/SettingsScreen';
 import { Splash } from './screens/Splash';
 import { TableScreen } from './screens/TableScreen';
 import { WelcomeScreen } from './screens/WelcomeScreen';
+import { onSky } from './sky';
 import { useApp, type Screen as ScreenName } from './store';
 
 export function App() {
@@ -31,6 +33,7 @@ export function App() {
 
   return (
     <>
+      {onSky(screen) && <Sky />}
       <Screen screen={screen} onSplashDone={showMenu} />
       <Effects />
       <CardZoom />

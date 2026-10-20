@@ -269,6 +269,7 @@ export namespace main {
 	    coin: string;
 	    sword: string;
 	    banner: string;
+	    sky: string[];
 	
 	    static createFrom(source: any = {}) {
 	        return new Icons(source);
@@ -279,6 +280,7 @@ export namespace main {
 	        this.coin = source["coin"];
 	        this.sword = source["sword"];
 	        this.banner = source["banner"];
+	        this.sky = source["sky"];
 	    }
 	}
 	export class MatInfo {

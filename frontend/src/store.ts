@@ -563,7 +563,7 @@ export const useApp = create<AppState>()((set, get) => {
     dice: [],
     mats: [],
     backs: new Map(),
-    icons: { coin: '', sword: '', banner: '' },
+    icons: { coin: '', sword: '', banner: '', sky: [] },
     zoom: null,
     loadCards: async () => {
       try {

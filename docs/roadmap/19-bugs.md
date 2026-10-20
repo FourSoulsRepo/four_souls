@@ -1147,3 +1147,20 @@ This step never closes; new reports are appended.
    7. Engine only; no screen change, no screenshots.
 8. Owner notes (2026-10-20)
    1. Owner marks 19.36 solved.
+
+### [ ] 19.37 e2e: the 15.77 shot test misses its start by a pixel
+
+1. Goal: the 15.77 test checks the shot's start without flaking.
+2. Report (agent, 2026-10-20)
+   1. `make e2e` gate for 15.42, chromium.
+   2. `playback.spec.ts`: "damage from a card no longer on screen…".
+   3. The shot's first tracked box was 30.5 px from the player; limit < 30.
+   4. Reruns: 1 of 16 failed with 15.42; 2 of 12 failed without it.
+   5. So it is older than 15.42; the sky is not on the game table.
+   6. Evidence: `.cache/e2e-fails/20261020-15.42-gate/` and `-rerun/` (not in git).
+3. Tasks:
+   1. Find why the first tracked box is late: sampling or the shot's start.
+   2. Fix the shot if it starts off the player; else the test.
+4. Done when:
+   1. Cause found and written here.
+   2. The test passes 30 repeats in a row, both browsers.

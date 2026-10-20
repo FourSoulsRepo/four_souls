@@ -253,14 +253,15 @@ w.go = {
         Promise.resolve(
           ['loot', 'treasure', 'monster'].map((kind) => ({ kind, image: `/cardimg/assets/backs/${kind}.webp` })),
         ),
-      // The coin and sword icons and the banner at their real paths; like
-      // the backs, they load only in screenshots, else the drawn ones and
-      // the text title show.
+      // The coin and sword icons, the banner and the sky at their real
+      // paths; like the backs, they load only in screenshots, else the
+      // drawn ones, the text title and a plain background show.
       Icons: () =>
         Promise.resolve({
           coin: '/cardimg/assets/icons/coin.webp',
           sword: '/cardimg/assets/icons/sword.webp',
           banner: '/cardimg/assets/banner.webp',
+          sky: ['sky', 'stars-1', 'stars-2', 'stars-3', 'stars-4', 'stars-5'].map((n) => `/cardimg/assets/background/${n}.webp`),
         }),
       // The fonts at their real paths; they load only in screenshots, else
       // the system font shows.

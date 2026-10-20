@@ -1409,13 +1409,36 @@ Images come first, so the new table is built with backs and mats.
 1. Goal: home and setup screens feel alive (V-35).
 2. Tasks:
    1. Study the background animation of foursouls.ru.
-   2. Rebuild it with our own CSS; copy no code.
+   2. Download its images; copy its animation logic, not its CSS files.
    3. Use it on the home screen and the game setup screens.
    4. Respect the animation speed setting (ST-05).
    5. Without images: a plain background.
 3. Done when:
    1. `make screenshots` shows both screens.
    2. Owner compares it with the site.
+4. Owner notes (2026-10-20)
+   1. Download the site's images; never draw or generate our own.
+   2. Copy the animation logic; never copy the site's CSS files.
+5. Result (2026-10-20)
+   1. The site: a sky tile and five see-through star layers.
+   2. All drift down-left in a 120 s loop.
+   3. Each moves a whole number of tiles per loop: 1, then 4 to 12.
+   4. So the loop has no seam; the nearer stars move faster.
+   5. Tools repo: `scraper background -game <dir>` (commit f398c32).
+   6. Written to `images/assets/background/`: `sky.webp`, `stars-1` – `stars-5`.
+   7. The sky is lossy (17 KB); the star layers are lossless.
+   8. The images repo's one commit is amended; not pushed yet.
+   9. `App.Icons` gives `sky`: all six URLs, or none.
+   10. `Sky.tsx`: one fixed layer per tile, under every screen (`--z-sky`).
+   11. Each layer slides one tile per loop: 120 s, then 30 s to 10 s.
+   12. Only `transform` moves, so the window is not repainted.
+   13. Shown on every screen but the splash and the game table.
+   14. The speed setting scales the loop; Off stands it still.
+   15. The light theme keeps its plain menus.
+   16. Without images, or a layer missing: the plain color, as before.
+   17. Tests: Go `TestIconsFromFiles`, Vitest `sky.test.ts`, e2e `shell.spec.ts`.
+   18. UC-01; wikis `Client`, `Build-modes`, `Animations`, `Layers`; `NOTICE`; CHANGELOG.
+   19. Screenshots: `.cache/screenshots/15.42/before/` and `after/`.
 
 ### [ ] 15.43 First player roll for everyone
 

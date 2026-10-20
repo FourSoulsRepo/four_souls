@@ -66,3 +66,30 @@ test('a bad nickname shows why', async ({ page }) => {
   await page.getByRole('button', { name: 'Back' }).click();
   await expect(page.getByRole('button', { name: 'Host a game' })).toBeVisible();
 });
+
+test('the menus drift on the night sky, still with animations off (15.42)', async ({ page }) => {
+  // The sky is a decoration with no role; its layers are found by class.
+  const layers = page.locator('.sky .sky-layer');
+  const transform = () => layers.last().evaluate((e) => getComputedStyle(e).transform);
+  await page.goto('/?fake&nosplash');
+  // The sky, then five star layers, behind the menu and moving.
+  await expect(layers).toHaveCount(6);
+  const start = await transform();
+  await expect.poll(transform).not.toBe(start);
+  // The menu draws over it, and clicks reach its buttons.
+  await page.getByRole('button', { name: 'Host a game' }).click();
+  await expect(page.getByRole('heading', { name: 'Host a game' })).toBeVisible();
+  await expect(layers).toHaveCount(6);
+  // The light theme keeps its plain menus.
+  await page.getByRole('button', { name: 'Back' }).click();
+  await page.getByRole('button', { name: 'Settings' }).click();
+  await page.getByLabel('Theme').selectOption('light');
+  await page.getByRole('button', { name: 'Save' }).click();
+  await expect(page.locator('.sky')).toBeHidden();
+  // Animations off: the sky stands still.
+  await page.getByLabel('Theme').selectOption('dark');
+  await page.getByLabel('Animations').selectOption('off');
+  await page.getByRole('button', { name: 'Save' }).click();
+  await expect(layers).toHaveCount(6);
+  expect(await layers.last().evaluate((e) => getComputedStyle(e).animationName)).toBe('none');
+});

@@ -31,6 +31,7 @@ A layer only counts on the window's own stacking: these elements sit in `.game` 
 | `presence` | Another player's aiming arrow (15.36). | It points at the table and the hands; windows, the zoom, and the own arrow cover it, so a prompt stays readable. | `components/Table.css` |
 | `hand` | A hovered or aiming hand card. | It comes to the front of the fan, but never over a prompt's buttons. | `components/Table.css` |
 | `action-bar` | The status, timer and skip buttons, bottom right. | Over the table, under every window. | `components/Actions.css` |
+| `sky` | The drifting night sky behind the menu screens (15.42). | Nothing: it is under everything, even the screen's own plain blocks. It is not drawn on the game table. | `components/Sky.css` |
 
 ## Adding a layer
 

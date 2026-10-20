@@ -178,6 +178,9 @@ export interface Icons {
   coin: string;
   sword: string;
   banner: string;
+  // sky is the menu background (15.42): the sky, then its star layers,
+  // far to near; empty without the images.
+  sky: string[];
 }
 
 // getIcons returns the icon URLs.
