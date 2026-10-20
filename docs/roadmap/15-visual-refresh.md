@@ -2,7 +2,7 @@
 
 Goal: a clearer table, using fouronlinesouls.net as a second reference.
 
-Ideas: V-09, V-12, V-13, V-15 – V-31, V-33 – V-46, GS-06, N-18.
+Ideas: V-09, V-12, V-13, V-15 – V-31, V-33 – V-47, GS-06, N-18.
 
 Order: 15.1, 15.15, 15.9 – 15.11, 15.16, 15.17, 15.38, 15.18 – 15.24,
 15.3, 15.37, 15.25, 15.32 – 15.34, 15.26, 15.27, 15.59 – 15.63, 15.6, 15.64,
@@ -2136,3 +2136,16 @@ Images come first, so the new table is built with backs and mats.
    14. Screenshots: `.cache/screenshots/15.71/before/` and `after/`.
 6. Owner notes (2026-10-20)
    1. Owner marks 15.71 solved.
+
+### [ ] 15.72 Reason and direction of every animation
+
+1. Goal: the owner can check each animation against its idea (V-47).
+2. Asked by the owner (2026-10-20).
+3. Tasks:
+   1. `docs/wiki/Animations.md`: a Why column, what the player learns.
+   2. A Direction column: from where to where, or where it stays.
+   3. Directions come from the code, not from the plan.
+   4. List the animations whose motion does not show the reason well.
+4. Done when:
+   1. Every inventory row has both columns.
+   2. The `animation inventory` Vitest still passes.

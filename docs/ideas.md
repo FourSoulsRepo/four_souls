@@ -254,6 +254,10 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    2. Asks whenever End turn is not glowing (H-20).
    3. The question lists what is left: attack, buy, loot, abilities.
    4. A setting turns it off; on by default.
+47. V-47. Each animation states its reason and direction (owner, 2026-10-20).
+   1. The animation list says what each one tells the player.
+   2. It says where the motion goes: from where to where.
+   3. The owner checks every animation against that idea.
 
 ## Rules
 
