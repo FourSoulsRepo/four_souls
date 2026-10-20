@@ -31,6 +31,7 @@ type Header struct {
 	Engine   string    `json:"engine"`
 	Protocol int       `json:"protocol"`
 	Game     string    `json:"game"`
+	Server   string    `json:"server,omitempty"` // the server's name; none on an app's own host (N-18)
 	Started  time.Time `json:"started"`
 	Setup    Setup     `json:"setup"`
 	Seats    []Seat    `json:"seats"`

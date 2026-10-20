@@ -529,6 +529,7 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    1. A dedicated server's operator sets its name in the setup.
    2. The app shows that name instead of the bare address.
    3. The player removes a server from the Recent list.
+   4. A match record names the server it ran on (owner, 2026-10-20).
 
 ## Learning
 

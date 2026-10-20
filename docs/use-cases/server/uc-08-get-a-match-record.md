@@ -27,6 +27,8 @@
   * The dialog suggests the server's file name, cleaned again.
 * **1a. The file name:** start time, game ID, and the players' nicknames.
   * Nicknames lose every character but letters and digits (ADR 007).
+* **1b. A named dedicated server:** the record header holds its name (N-18).
+  * A game hosted in the app has no server name.
 
 ## Postconditions
 

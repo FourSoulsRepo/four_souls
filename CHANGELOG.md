@@ -16,6 +16,7 @@ Rules engine versions are in each release's notes.
 - A changed roll shows the old value, a shot from the card that changed it, then the new value.
 - Damage from a card that already left the table flies from the player who dealt it.
 - The main menu shows the Four Souls logo of foursouls.ru at the top.
+- A match record names the dedicated server the game ran on.
 
 ## 0.1.1 - 2026-10-19
 

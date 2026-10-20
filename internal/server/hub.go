@@ -472,7 +472,7 @@ func (h *Hub) start(t *table) {
 		room.second, room.hub, room.saves, room.loaded = h.second, h, h.saves, t.loaded
 		room.presenceOn = h.presence
 		room.recDir = h.records
-		room.recInfo = recordInfo{game: t.id, sets: t.sets, cards: h.cards}
+		room.recInfo = recordInfo{game: t.id, server: h.name, sets: t.sets, cards: h.cards}
 		room.path = recordPath(h.records, t.id, seats, time.Now())
 	}
 	if err != nil {

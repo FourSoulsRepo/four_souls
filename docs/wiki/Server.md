@@ -56,7 +56,7 @@ Any client of a dedicated server may create a game or load a saved one. A server
 
 ## Server name
 
-An operator may name the server (`Config.Name`, `-name`, N-18). `Config.Check` refuses a name that `protocol.CleanServerName` rejects: empty after trimming, over `protocol.MaxServerName` (40) characters, or with control characters. Every `welcome` carries it in `name`; the app shows it instead of the address. The app's own host has none.
+An operator may name the server (`Config.Name`, `-name`, N-18). `Config.Check` refuses a name that `protocol.CleanServerName` rejects: empty after trimming, over `protocol.MaxServerName` (40) characters, or with control characters. Every `welcome` carries it in `name`; the app shows it instead of the address. Each match record's header keeps it in `server` too. The app's own host has none.
 
 ## Leak audit (A-16)
 

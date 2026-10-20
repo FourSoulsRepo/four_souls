@@ -2338,3 +2338,24 @@ Images come first, so the new table is built with backs and mats.
    10. Screenshots: `.cache/screenshots/15.77/before/` and `after/`.
 6. Owner notes (2026-10-20)
    1. Owner marks 15.77 solved.
+
+### [x] 15.78 Server name in the record
+
+1. Goal: a record says which server the game ran on (N-18).
+2. Asked by the owner (2026-10-20).
+3. Tasks:
+   1. Record header: `server`, the server's cleaned name.
+   2. Left out when the server has no name (an app's own host).
+   3. Optional field: record format stays 1; old records still read.
+   4. ADR 007 and UC-08 updated.
+4. Done when:
+   1. Go test: a named server's record header carries its name.
+   2. Go test: an unnamed server's header has no `server`.
+5. Result (2026-10-20)
+   1. `record.Header.Server`, JSON `server`, `omitempty`.
+   2. The hub passes its cleaned name in `recordInfo`.
+   3. A loaded save keeps its first header; it appends steps only.
+   4. File name unchanged: start time, game ID, nicknames.
+   5. Go tests `TestServerName` (`pkg/record`), `TestRecordReplays`.
+   6. ADR 007 2.10; UC-08 1b; wikis `Server`, `Dedicated-server-on-a-VPS`; CHANGELOG.
+   7. No screen changed; no screenshots.

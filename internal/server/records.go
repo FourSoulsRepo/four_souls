@@ -16,9 +16,10 @@ import (
 
 // recordInfo is what a room needs to start its record.
 type recordInfo struct {
-	game  string
-	sets  []string
-	cards []record.Card
+	game   string
+	server string // the server's name (N-18)
+	sets   []string
+	cards  []record.Card
 }
 
 // apply applies an intent and appends it to the record (RP-01, RP-03).
@@ -57,7 +58,7 @@ func (r *Room) openRecord(s engine.Setup) {
 	v := version.Get()
 	now := time.Now()
 	h := record.Header{
-		App: v.App, Engine: v.Engine, Protocol: protocol.Version, Game: r.recInfo.game, Started: now.UTC(),
+		App: v.App, Engine: v.Engine, Protocol: protocol.Version, Game: r.recInfo.game, Server: r.recInfo.server, Started: now.UTC(),
 		Setup: record.Setup{Seed: s.Seed, Players: s.Players, Sets: r.recInfo.sets, BonusSouls: s.BonusSouls, Characters: chars, Banned: banned, DeckRatios: s.DeckRatios},
 		Seats: seats, Cards: r.recInfo.cards,
 	}
