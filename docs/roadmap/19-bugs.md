@@ -1273,7 +1273,7 @@ This step never closes; new reports are appended.
 7. Owner notes (2026-10-20)
    1. Owner marks 19.40 solved.
 
-### [ ] 19.41 A resolved card shows on the stack again after its fly
+### [x] 19.41 A resolved card shows on the stack again after its fly
 
 1. Goal: a card that flew from the stack to the discard is gone.
 2. Report (owner, 2026-10-20)
@@ -1299,3 +1299,5 @@ This step never closes; new reports are appended.
    3. The large card and the stack row stay hidden meanwhile.
    4. Popups and loot flies after it play over an empty spot.
    5. Screenshots: `.cache/screenshots/19.41/before/` and `after/`.
+7. Owner notes (2026-10-20)
+   1. Owner marks 19.41 solved.
