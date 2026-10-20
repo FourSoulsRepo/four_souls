@@ -68,7 +68,7 @@ describe('effectsFor', () => {
   it('flies a loot card that leaves the stack from the stack (15.74)', () => {
     const e: GameEvent = { kind: 'discarded', player: 1, object: 80, prev: 70, card: 'bomb', text: 'stack' };
     expect(effectsFor([e], ctx)).toEqual([
-      { kind: 'fly', from: ['played-70', 'stack-src-70', 'obj-70', 'deck-loot'], to: ['discard-loot'], card: 'bomb', back: 'loot' },
+      { kind: 'fly', from: ['played-70', 'stack-src-70', 'obj-70', 'deck-loot'], to: ['discard-loot'], card: 'bomb', back: 'loot', leaves: 70 },
     ]);
   });
 

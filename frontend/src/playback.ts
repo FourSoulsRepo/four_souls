@@ -10,8 +10,9 @@ export type Speed = 'normal' | 'fast' | 'slow' | 'off';
 // table), most precise first; the first one on screen is used.
 export type Effect =
   // fly: middle starts the card large in the middle, where the reveal
-  // before it held it (15.73).
-  | { kind: 'fly'; from: string[]; to: string[]; card?: string; back: Kind; middle?: boolean }
+  // before it held it (15.73). leaves is the source of the stack item
+  // the card leaves; it hides until the next view (19.41).
+  | { kind: 'fly'; from: string[]; to: string[]; card?: string; back: Kind; middle?: boolean; leaves?: number }
   | { kind: 'popup'; at: string[]; text: string; tone: 'good' | 'bad' }
   // dice: thrown for a fresh roll or a reroll (15.62); a changed roll
   // spins in with its old value, a shot comes from the card that
@@ -143,7 +144,7 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
         // stack, else its stack row (15.74).
         if (e.text === 'stack' && e.prev) {
           const from = [`played-${String(e.prev)}`, `stack-src-${String(e.prev)}`, `obj-${String(e.prev)}`, 'deck-loot'];
-          out.push({ kind: 'fly', from, to: ['discard-loot'], card: e.card, back: 'loot' });
+          out.push({ kind: 'fly', from, to: ['discard-loot'], card: e.card, back: 'loot', leaves: e.prev });
           break;
         }
         const kind = e.card ? kindOf(ctx.card(e.card)?.type ?? '') : 'loot';

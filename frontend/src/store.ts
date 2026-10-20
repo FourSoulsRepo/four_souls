@@ -128,6 +128,9 @@ interface AppState extends Session {
   // playing is the event effect on screen, if any.
   playing: Playing | null;
   placed: Placed[];
+  // left is the sources of stack items whose card flew away; they hide
+  // until the next view is shown (19.41).
+  left: number[];
   // history is the match so far, as this viewer saw it (7.9).
   history: Entry[];
   // lastRoll is the last roll shown, for the small die by the stack (15.63).
@@ -281,6 +284,7 @@ export const useApp = create<AppState>()((set, get) => {
       set({
         game: u,
         placed: [],
+        left: [],
         behind: playback.pending() > 0,
         history: [...s.history, ...entries],
         lastRoll: lastRollAfter(s.lastRoll, u.events ?? []),
@@ -289,6 +293,12 @@ export const useApp = create<AppState>()((set, get) => {
     },
     run: (effect, scale) =>
       new Promise((resolve) => {
+        // A card that leaves the stack is gone from it, even when its
+        // fly is skipped (19.41).
+        const leaves = effect.kind === 'fly' ? effect.leaves : undefined;
+        if (leaves !== undefined) {
+          set((s) => ({ left: [...s.left, leaves] }));
+        }
         // A clashing effect is logged and skipped (19.6).
         if (!claimEffect(effect)) {
           resolve();
@@ -366,7 +376,7 @@ export const useApp = create<AppState>()((set, get) => {
     playback.clear();
     get().playing?.done();
     clearPresence();
-    set({ history: [], lastRoll: null, looking: [], placed: [] });
+    set({ history: [], lastRoll: null, looking: [], placed: [], left: [] });
   };
 
   // open connects to address and says hello; the server answers with
@@ -424,6 +434,7 @@ export const useApp = create<AppState>()((set, get) => {
   return {
     playing: null,
     placed: [],
+    left: [],
     history: [],
     lastRoll: null,
     looking: [],

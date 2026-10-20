@@ -88,11 +88,9 @@ export function StackPanel({ view, you, names, pass, disabled, prompt, answer }:
 // stays while they play.
 export function PlayedCard({ view, you, names }: { view: GameView; you: number; names: Names }) {
   const it = playedCard(view, you);
-  // It hides while its card flies from it to the discard (15.74).
-  const leaving = useApp((s) => {
-    const e = s.playing?.effect;
-    return !!it && e?.kind === 'fly' && e.from[0] === `played-${String(it.source)}` && e.card === it.card;
-  });
+  // It hides once its card flies from it to the discard (15.74), until
+  // the next view (19.41).
+  const leaving = useApp((s) => !!it && s.left.includes(it.source));
   if (!it?.card) {
     return null;
   }
@@ -122,6 +120,8 @@ function StackRow({ it, view, names }: { it: StackItem; view: GameView; names: N
   const card = stackCard(it, view);
   const parts = stackParts(it, view, names);
   const aimed = useApp((s) => s.aiming?.targets.some((t) => t.stack_id === it.id) ?? false);
+  // Its card flew away; the row hides until the next view (19.41).
+  const left = useApp((s) => !!it.source && s.left.includes(it.source));
   const show = (e: PointerEvent, touch: boolean) => {
     if (card) {
       setZoom(itemZoom(it, card, view, names, e, touch));
@@ -135,6 +135,7 @@ function StackRow({ it, view, names }: { it: StackItem; view: GameView; names: N
       // A dragged card may aim at this item (15.25).
       data-stack={it.id}
       aria-label={parts.map((p) => p.text).join('')}
+      style={left ? { visibility: 'hidden' } : undefined}
       onPointerEnter={(e) => {
         if (e.pointerType === 'mouse') {
           show(e, false);

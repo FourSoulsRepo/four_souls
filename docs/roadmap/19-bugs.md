@@ -1272,3 +1272,30 @@ This step never closes; new reports are appended.
    4. Screenshots: `.cache/screenshots/19.40/before/` and `after/`.
 7. Owner notes (2026-10-20)
    1. Owner marks 19.40 solved.
+
+### [ ] 19.41 A resolved card shows on the stack again after its fly
+
+1. Goal: a card that flew from the stack to the discard is gone.
+2. Report (owner, 2026-10-20)
+   1. A card on the stack resolves and flies to the discard.
+   2. Then it shows on the stack again, hides, and shows again.
+   3. The fly already said the card moved.
+3. Cause
+   1. The large played card hides only while its fly plays (15.74).
+   2. The stack row never hides.
+   3. More effects of the same update often follow the fly.
+   4. Records: `discarded` then `gained_cents` (A Penny), or `looted` (A Sack).
+   5. Between and after them, the old view shows the card again.
+   6. It goes only when the update's view is drawn.
+4. Tasks:
+   1. A card that left the stack stays hidden until the next view.
+   2. Both its large card and its stack row.
+5. Done when:
+   1. Vitest: the fly names the stack item it leaves.
+   2. e2e test: after the fly, while a popup plays, the card stays hidden.
+6. Result (2026-10-20)
+   1. The fly names the stack item it leaves: `leaves`.
+   2. The store keeps it in `left` until the next view is shown.
+   3. The large card and the stack row stay hidden meanwhile.
+   4. Popups and loot flies after it play over an empty spot.
+   5. Screenshots: `.cache/screenshots/19.41/before/` and `after/`.

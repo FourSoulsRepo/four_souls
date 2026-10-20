@@ -874,8 +874,13 @@ for (const mine of [false, true]) {
     const at = mine ? '[data-zone="stack-src-700"]' : '[data-zone="played-700"] .card';
     await expect(wes.locator(at)).toBeVisible();
     const start = await centre(wes, at);
-    await trackBoxes(wes, { fly: '[data-testid="effect-fly"] .effect-fly .card', played: '[data-zone="played-700"]' });
-    // The loot resolves: it leaves the stack for the loot discard.
+    await trackBoxes(wes, {
+      fly: '[data-testid="effect-fly"] .effect-fly .card',
+      played: '[data-zone="played-700"]',
+      row: '[data-zone="stack-src-700"]',
+    });
+    // The loot resolves: it leaves the stack for the loot discard, then
+    // its effect plays (19.41).
     await wes.evaluate(() => {
       const s = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store.getState();
       const game = structuredClone(s.game) as unknown as { view: { stack?: { controller: number; card: string }[] } } | null;
@@ -884,12 +889,17 @@ for (const mine of [false, true]) {
         throw new Error('no game');
       }
       game.view.stack = [];
-      const events = [{ kind: 'discarded', player: item.controller, object: 900, prev: 700, card: item.card, text: 'stack' }];
+      const events = [
+        { kind: 'discarded', player: item.controller, object: 900, prev: 700, card: item.card, text: 'stack' },
+        { kind: 'gained_cents', player: item.controller, amount: 1 },
+      ];
       s.receive({ type: 'update', data: { ...game, step: 3, events } });
     });
     await expect(wes.getByTestId('effect-fly')).toBeVisible();
     await shot(wes, mine ? 'discard-from-stack-row' : 'discard-from-played');
-    await expect(wes.getByTestId('effect-fly')).toHaveCount(0, { timeout: 5000 });
+    await expect(wes.getByText('+1¢')).toBeVisible({ timeout: 5000 });
+    await shot(wes, mine ? 'discard-then-popup-row' : 'discard-then-popup-played');
+    await expect(wes.locator('[data-zone="stack-src-700"]')).toHaveCount(0, { timeout: 5000 });
     const boxes = await tracked(wes);
     const first = boxes.fly?.[0];
     if (!first) {
@@ -900,6 +910,12 @@ for (const mine of [false, true]) {
     if (!mine) {
       // The large card hides while its copy flies, so it is seen once.
       expect(boxes.played?.some((b) => b.hidden)).toBe(true);
+    }
+    // Once hidden, the card never shows on the stack again (19.41).
+    for (const list of mine ? [boxes.row ?? []] : [boxes.played ?? [], boxes.row ?? []]) {
+      const hid = list.findIndex((b) => b.hidden);
+      expect(hid).toBeGreaterThanOrEqual(0);
+      expect(list.slice(hid).every((b) => b.hidden)).toBe(true);
     }
   });
 }
