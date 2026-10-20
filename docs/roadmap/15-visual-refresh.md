@@ -2405,6 +2405,9 @@ Images come first, so the new table is built with backs and mats.
    3. e2e `shell.spec.ts`: the button order and the quit.
    4. UC-01 9; wiki `Client`; CHANGELOG.
    5. Screenshots: `.cache/screenshots/15.79/before/` and `after/`.
+6. Owner notes (2026-10-20)
+   1. Owner marks 15.79 solved.
+   2. 15.80 and 15.81 go on without a stop; one review after both.
 
 ### [ ] 15.80 One dark theme
 
