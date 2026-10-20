@@ -1073,7 +1073,7 @@ This step never closes; new reports are appended.
    2. Repeated 20 times on webkit and chromium: 40 of 40 passed.
    3. No app change; no screenshots.
 
-### [ ] 19.35 e2e: game starts time out in a busy full run
+### [x] 19.35 e2e: game starts time out in a busy full run
 
 1. Goal: a full `make e2e` passes on a busy machine.
 2. Report (agent, 2026-10-20)
@@ -1107,3 +1107,5 @@ This step never closes; new reports are appended.
    6. As fast as with 5 workers, which took 4.5 – 5 min.
    7. Wiki `Frontend-tests`.
    8. 19.33 may share this cause; left open until it is seen again.
+8. Owner notes (2026-10-20)
+   1. Owner marks 19.35 solved.
