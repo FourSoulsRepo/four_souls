@@ -1243,3 +1243,8 @@ This step never closes; new reports are appended.
 5. Done when:
    1. e2e test: cube faces have no round corners.
    2. Screenshot: no gaps at the edges.
+6. Result (2026-10-20)
+   1. Cube faces are square; the sides meet edge to edge.
+   2. The bevel's light and shade still soften the edges.
+   3. Flat dice (stack icons, last roll) keep round corners.
+   4. Screenshots: `.cache/screenshots/19.40/before/` and `after/`.

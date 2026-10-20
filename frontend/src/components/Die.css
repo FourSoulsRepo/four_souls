@@ -67,11 +67,13 @@
   content: none;
 }
 
+/* Faces meet edge to edge: round corners would leave holes at the
+   cube's edges and corners (19.40). */
 .die-face {
   position: absolute;
   inset: 0;
   overflow: hidden;
-  border-radius: 14%;
+  border-radius: 0;
   backface-visibility: hidden;
 }
 

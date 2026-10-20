@@ -118,6 +118,8 @@ test('a thrown die falls, bounces and lands on the engine\'s value (15.62)', asy
   await expect(thrown).toBeAttached();
   // The die is a cube of six faces (15.69); only the cube is named.
   await expect(thrown.locator('.die-face')).toHaveCount(6);
+  // The faces meet edge to edge, with no holes at the corners (19.40).
+  await expect(thrown.locator('.die-face').first()).toHaveCSS('border-top-left-radius', '0px');
   await expect(thrown.getByRole('img')).toHaveAttribute('aria-label', 'Rolled 4');
   // seek holds the throw at a part of its length: the fall, the cube's
   // turn, its shadow and the label.
