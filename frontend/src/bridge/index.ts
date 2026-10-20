@@ -177,6 +177,7 @@ export async function getBacks(): Promise<CardBack[]> {
 export interface Icons {
   coin: string;
   sword: string;
+  banner: string;
 }
 
 // getIcons returns the icon URLs.

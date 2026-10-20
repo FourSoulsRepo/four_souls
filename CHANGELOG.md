@@ -15,6 +15,7 @@ Rules engine versions are in each release's notes.
 - Stolen cents fly as a coin from the player robbed to the thief.
 - A changed roll shows the old value, a shot from the card that changed it, then the new value.
 - Damage from a card that already left the table flies from the player who dealt it.
+- The main menu shows the Four Souls logo of foursouls.ru at the top.
 
 ## 0.1.1 - 2026-10-19
 

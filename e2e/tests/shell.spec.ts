@@ -27,6 +27,22 @@ test('titles and menu buttons use the game fonts (15.40)', async ({ page }) => {
   await expect.poll(() => family(page.getByRole('heading', { name: 'Settings' }))).toMatch(/^Four Souls Cyrillic,/);
 });
 
+test('the menu shows the banner, or the text title without it (15.41)', async ({ page }) => {
+  const banner = page.getByRole('heading', { name: 'Four Souls' }).locator('img');
+  // Served, the banner image is the title.
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="9"><rect width="16" height="9" fill="#a33"/></svg>';
+  await page.route('**/cardimg/assets/banner.webp', (route) => route.fulfill({ body: svg, contentType: 'image/svg+xml' }));
+  await page.goto('/?fake&nosplash');
+  await expect(banner).toHaveAttribute('src', '/cardimg/assets/banner.webp');
+  await expect(banner).toBeVisible();
+  // Failing to load, as without the images, the text title shows.
+  await page.unroute('**/cardimg/assets/banner.webp');
+  await page.route('**/cardimg/assets/banner.webp', (route) => route.abort());
+  await page.reload();
+  await expect(page.getByRole('heading', { name: 'Four Souls' })).toHaveText('Four Souls');
+  await expect(banner).toHaveCount(0);
+});
+
 test('nickname survives a restart', async ({ page }) => {
   await page.goto('/?fake&nosplash');
   await page.getByRole('button', { name: 'Settings' }).click();

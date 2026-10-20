@@ -15,7 +15,7 @@ export function MainMenu() {
 
   return (
     <div className="menu">
-      <h1>Four Souls</h1>
+      <Title />
       <nav className="menu-buttons">
         <button
           type="button"
@@ -49,5 +49,27 @@ export function MainMenu() {
         </div>
       )}
     </div>
+  );
+}
+
+// Title is the foursouls.ru banner (15.41), or the text title without the
+// private images or when the banner fails to load.
+function Title() {
+  const image = useApp((s) => s.icons.banner);
+  const [broken, setBroken] = useState('');
+  if (image === '' || image === broken) {
+    return <h1>Four Souls</h1>;
+  }
+  return (
+    <h1 className="menu-banner">
+      <img
+        src={image}
+        alt="Four Souls"
+        draggable={false}
+        onError={() => {
+          setBroken(image);
+        }}
+      />
+    </h1>
   );
 }

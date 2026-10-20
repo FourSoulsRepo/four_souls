@@ -1377,7 +1377,7 @@ Images come first, so the new table is built with backs and mats.
 7. Owner notes after the rework (2026-10-14)
    1. Owner marks 15.40 solved.
 
-### [ ] 15.41 foursouls.ru banner on the home screen
+### [x] 15.41 foursouls.ru banner on the home screen
 
 1. Goal: the home screen greets like foursouls.ru (V-34).
 2. Tasks:
@@ -1389,6 +1389,17 @@ Images come first, so the new table is built with backs and mats.
 3. Done when:
    1. `make screenshots` shows the banner.
    2. e2e passes without images.
+4. Result (2026-10-20)
+   1. Tools repo: `scraper banner -game <dir>` (commit 7df8fba).
+   2. Source: `FourSoulsLogo-1024x584.png`, the logo atop foursouls.ru.
+   3. Written as `images/assets/banner.webp`, 1024×584, 40 KB.
+   4. The images repo's one commit is amended; not pushed yet.
+   5. `App.Icons` gives `banner`; `Title` in `MainMenu.tsx` shows it.
+   6. The image sits in the `h1`, alt "Four Souls"; the heading keeps its name.
+   7. Missing or broken: the text title, as before.
+   8. Go `TestIconsFromFiles`; e2e `shell.spec.ts`.
+   9. UC-01 7; wikis `Client`, `Build-modes`; `NOTICE`; CHANGELOG.
+   10. Screenshots: `.cache/screenshots/15.41/before/` and `after/`.
 
 ### [ ] 15.42 Animated background
 

@@ -14,6 +14,18 @@
   font-synthesis: none;
 }
 
+/* The banner keeps the logo's aspect; short windows shrink it. */
+.menu-banner {
+  margin: 0 0 24px;
+  line-height: 0;
+}
+
+.menu-banner img {
+  width: min(526px, 80vw);
+  max-height: 40vh;
+  object-fit: contain;
+}
+
 .menu-buttons {
   display: flex;
   flex-direction: column;

@@ -14,16 +14,20 @@ const coinIcon = "assets/icons/coin.webp"
 // swordIcon is the game's pixel sword, the Attack icon (15.24).
 const swordIcon = "assets/icons/sword.webp"
 
+// bannerImage is the foursouls.ru logo, the home screen banner (15.41).
+const bannerImage = "assets/banner.webp"
+
 // Icons are the game's own small images; each is "" when its file is
 // missing, and the frontend draws its own.
 type Icons struct {
-	Coin  string `json:"coin"`  // coin image URL, next to a player's cents
-	Sword string `json:"sword"` // sword image URL, on the Attack icon
+	Coin   string `json:"coin"`   // coin image URL, next to a player's cents
+	Sword  string `json:"sword"`  // sword image URL, on the Attack icon
+	Banner string `json:"banner"` // banner image URL, atop the home screen
 }
 
 // Icons returns the icon URLs.
 func (a *App) Icons() Icons {
-	return Icons{Coin: a.imageURL(coinIcon), Sword: a.imageURL(swordIcon)}
+	return Icons{Coin: a.imageURL(coinIcon), Sword: a.imageURL(swordIcon), Banner: a.imageURL(bannerImage)}
 }
 
 // imageURL is the URL of file inside the card images folder, or "" when

@@ -13,11 +13,14 @@ func TestIconsFromFiles(t *testing.T) {
 	a := &App{cardFiles: fstest.MapFS{
 		"images/assets/icons/coin.webp":  {Data: []byte("RIFF")},
 		"images/assets/icons/sword.webp": {Data: []byte("RIFF")},
+		"images/assets/banner.webp":      {Data: []byte("RIFF")},
 	}}
-	if got := a.Icons(); got.Coin != "/cardimg/assets/icons/coin.webp" || got.Sword != "/cardimg/assets/icons/sword.webp" {
+	if got := a.Icons(); got.Coin != "/cardimg/assets/icons/coin.webp" || got.Sword != "/cardimg/assets/icons/sword.webp" ||
+		got.Banner != "/cardimg/assets/banner.webp" {
 		t.Fatalf("%+v", got)
 	}
-	// Without the private images the coin and the sword are drawn.
+	// Without the private images the coin and the sword are drawn, and
+	// the home screen shows its text title.
 	a = &App{cardFiles: os.DirFS(t.TempDir())}
 	if got := a.Icons(); got != (Icons{}) {
 		t.Fatalf("%+v without images", got)
