@@ -1192,7 +1192,7 @@ This step never closes; new reports are appended.
 4. Done when:
    1. Cause written here; three full runs in a row pass.
 
-### [ ] 19.39 Many dice show as one thrown die
+### [x] 19.39 Many dice show as one thrown die
 
 1. Goal: a roll of several dice throws every die at once.
 2. Report (owner, 2026-10-20)
@@ -1228,8 +1228,10 @@ This step never closes; new reports are appended.
    1. Dice start at small uneven gaps: `diceDelays` in `dice.ts`.
    2. Each die clatters as it lands: 4 dice, 4 clatters.
    3. Screenshot mid-throw: `after/screen-dice-many-falling.png`.
+9. Owner notes (2026-10-20)
+   1. Owner marks 19.39 solved.
 
-### [ ] 19.40 Thrown dice show gaps between their sides
+### [x] 19.40 Thrown dice show gaps between their sides
 
 1. Goal: a thrown die looks like one solid cube.
 2. Report (owner, 2026-10-20)
@@ -1250,3 +1252,5 @@ This step never closes; new reports are appended.
    2. The bevel's light and shade still soften the edges.
    3. Flat dice (stack icons, last roll) keep round corners.
    4. Screenshots: `.cache/screenshots/19.40/before/` and `after/`.
+7. Owner notes (2026-10-20)
+   1. Owner marks 19.40 solved.
