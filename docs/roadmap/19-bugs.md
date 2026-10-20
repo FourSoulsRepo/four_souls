@@ -1439,7 +1439,7 @@ Totals by system (46 items):
 7. Owner notes (2026-10-21)
    1. Owner marks 19.45 solved.
 
-### [ ] 19.46 A lost {HP} bonus takes HP from the bottom
+### [x] 19.46 A lost {HP} bonus takes HP from the bottom
 
 1. Goal: lowering max HP removes marked damage first (R-MECH-21).
 2. Report (owner, 2026-10-21)
@@ -1475,3 +1475,5 @@ Totals by system (46 items):
    10. Records with such a drop while damaged no longer replay.
    11. Wiki: "Max HP going down" in `Rules-engine.md`.
    12. Engine only; no screen change, no screenshots.
+7. Owner notes (2026-10-21)
+   1. Owner marks 19.46 solved.
