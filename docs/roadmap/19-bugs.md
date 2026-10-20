@@ -1226,3 +1226,20 @@ This step never closes; new reports are appended.
    1. Dice start at small uneven gaps: `diceDelays` in `dice.ts`.
    2. Each die clatters as it lands: 4 dice, 4 clatters.
    3. Screenshot mid-throw: `after/screen-dice-many-falling.png`.
+
+### [ ] 19.40 Thrown dice show gaps between their sides
+
+1. Goal: a thrown die looks like one solid cube.
+2. Report (owner, 2026-10-20)
+   1. Seen while reviewing 19.39.
+   2. The sides have gaps between them.
+   3. The die looks like image on image, not a 3D object.
+3. Cause
+   1. Each cube face has round corners: `border-radius: 14%`.
+   2. The texture's faces are full squares.
+   3. So every edge and corner of the cube has a hole.
+4. Tasks:
+   1. Cube faces meet edge to edge.
+5. Done when:
+   1. e2e test: cube faces have no round corners.
+   2. Screenshot: no gaps at the edges.
