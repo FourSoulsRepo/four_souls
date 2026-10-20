@@ -88,18 +88,18 @@ Friends open the game, choose **Join a game**, and enter the server's address (a
 
 ## Options
 
-A JSON config file can set the same values; flags override it.
+A JSON config file can set the same values, and so can ENV variables (handy for Docker). ENV overrides the file; flags override both. An empty ENV variable counts as unset.
 
-| Flag | Default | Meaning |
-|---|---|---|
-| `-port` | 4774 | TCP port for players |
-| `-addr` | all addresses | listen only on this address |
-| `-records` | `records` | where match records are saved (A-12) |
-| `-retention` | 30 | days to keep records; 0 keeps them forever (RP-07) |
-| `-saves` | `saves` | where saved games wait to be continued (N-11) |
-| `-presence` | true | show others where a player aims and points; `-presence=false` saves CPU and bandwidth |
-| `-name` | none | the server's name; players see it instead of the address, and records keep it (up to 40 characters) |
-| `-config` | none | a JSON file with the same settings |
+| Flag | ENV | Default | Meaning |
+|---|---|---|---|
+| `-port` | `FOUR_SOULS_PORT` | 4774 | TCP port for players |
+| `-addr` | `FOUR_SOULS_ADDR` | all addresses | listen only on this address |
+| `-records` | `FOUR_SOULS_RECORDS` | `records` | where match records are saved (A-12) |
+| `-retention` | `FOUR_SOULS_RETENTION` | 30 | days to keep records; 0 keeps them forever (RP-07) |
+| `-saves` | `FOUR_SOULS_SAVES` | `saves` | where saved games wait to be continued (N-11) |
+| `-presence` | `FOUR_SOULS_PRESENCE` | true | show others where a player aims and points; `false` saves CPU and bandwidth |
+| `-name` | `FOUR_SOULS_NAME` | none | the server's name; players see it instead of the address, and records keep it (up to 40 characters) |
+| `-config` | `FOUR_SOULS_CONFIG` | none | a JSON file with the same settings |
 
 ```json
 {"port": 4774, "records": "/var/lib/four-souls/records", "retention": 30, "saves": "/var/lib/four-souls/saves", "presence": true, "name": "Basement"}

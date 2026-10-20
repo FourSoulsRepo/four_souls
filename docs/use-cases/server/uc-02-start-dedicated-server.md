@@ -22,6 +22,11 @@
 * **1c. A server name (N-18):** `-name` or `"name"` in the config file.
   * Players see it instead of the address (UC-04).
   * A name over 40 characters or with control characters stops the start (1b).
+* **1d. ENV settings (N-19):** `FOUR_SOULS_` and a flag's name in capitals.
+  * Example: `FOUR_SOULS_PORT=5000` acts like `-port 5000`.
+  * ENV overrides the config file; flags override ENV.
+  * An empty variable counts as unset.
+  * A bad value names the variable and stops the start (1b).
 
 ## Postconditions
 

@@ -56,6 +56,51 @@ func TestParse(t *testing.T) {
 	}
 }
 
+// TestParseEnv: every flag has a FOUR_SOULS_ variable; ENV overrides the
+// file and flags override ENV (N-19).
+func TestParseEnv(t *testing.T) {
+	dir := t.TempDir()
+	file := filepath.Join(dir, "server.json")
+	if err := os.WriteFile(file, []byte(`{"port": 5000, "retention": 7, "name": "File"}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("FOUR_SOULS_CONFIG", file)
+	t.Setenv("FOUR_SOULS_ADDR", "127.0.0.1")
+	t.Setenv("FOUR_SOULS_PORT", "5001")
+	t.Setenv("FOUR_SOULS_RECORDS", "/data/records")
+	t.Setenv("FOUR_SOULS_SAVES", "/data/saves")
+	t.Setenv("FOUR_SOULS_PRESENCE", "false")
+	t.Setenv("FOUR_SOULS_NAME", "Basement")
+	t.Setenv("FOUR_SOULS_RETENTION", "")
+	cfg, err := parse(nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := cfg
+	want.Addr, want.Port, want.Records, want.Saves, want.Presence, want.Name = "127.0.0.1", 5001, "/data/records", "/data/saves", false, "Basement"
+	want.Retention = 7 // an empty variable is unset: the file's value stays
+	if cfg != want {
+		t.Fatalf("env over the file: got %+v, want %+v", cfg, want)
+	}
+	if cfg, err = parse([]string{"-port", "5002", "-presence", "-name", "Cathedral"}); err != nil || cfg.Port != 5002 || !cfg.Presence || cfg.Name != "Cathedral" {
+		t.Fatalf("flags over env: %+v, %v", cfg, err)
+	}
+	for key, bad := range map[string]string{"FOUR_SOULS_PORT": "abc", "FOUR_SOULS_PRESENCE": "maybe", "FOUR_SOULS_RETENTION": "-x", "FOUR_SOULS_NAME": "a\tb"} {
+		t.Run(key, func(t *testing.T) {
+			t.Setenv(key, bad)
+			if _, err := parse(nil); err == nil {
+				t.Errorf("%s=%q accepted", key, bad)
+			} else if key != "FOUR_SOULS_NAME" && !strings.Contains(err.Error(), key) {
+				t.Errorf("error %q does not name %s", err, key)
+			}
+		})
+	}
+	t.Setenv("FOUR_SOULS_CONFIG", filepath.Join(dir, "missing.json"))
+	if _, err := parse(nil); err == nil {
+		t.Error("a missing config file from env accepted")
+	}
+}
+
 // syncBuffer is a bytes.Buffer safe for the server goroutine and the test.
 type syncBuffer struct {
 	mu sync.Mutex

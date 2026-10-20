@@ -192,7 +192,7 @@ Ideas: B-03 – B-05, L-03, V-10, V-11, DO-01, V-14, A-16, N-13, N-14, V-19, N-1
    1. Go and Vitest tests for the catalog, setting, and faces.
    2. All six faces checked on two real textures.
 
-### [ ] 8.16 Server ENV config
+### [x] 8.16 Server ENV config
 
 1. Goal: Docker sets every server option by ENV (N-19).
 2. Tasks:
