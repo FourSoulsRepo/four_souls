@@ -33,7 +33,7 @@ import { entriesFor, lookedAt, type Entry, type Looked } from './history';
 import type { LinePart } from './stack';
 import type { Box } from './zoom';
 import { emptyLobby, forgotten, leftTable, lost, onMessage, remember, renamed, type Screen, type Session } from './lobby';
-import { connect, disconnect, drop, send } from './net';
+import { connectFirst, disconnect, drop, send } from './net';
 import { claimEffect, nextBeat } from './animations';
 import { lastRollAfter, type LastRoll } from './dice';
 import { createPlayback, effectsFor, slotZone, type Effect } from './playback';
@@ -41,7 +41,7 @@ import { loadSounds } from './sounds';
 import {
   protocolVersion,
   recordURL,
-  wsURL,
+  wsURLs,
   type Create,
   type Envelope,
   type Hello,
@@ -338,6 +338,9 @@ export const useApp = create<AppState>()((set, get) => {
     }
   };
 
+  // serverURL is the WebSocket URL that opened for address: wss:// or
+  // ws:// (8.18). The record download follows its scheme.
+  let serverURL = '';
   // remembering is the save that put the joined address in Recent; the
   // server's name waits for it, so neither save undoes the other.
   let remembering: Promise<unknown> = Promise.resolve();
@@ -395,14 +398,14 @@ export const useApp = create<AppState>()((set, get) => {
     // A restarted app still holds the seat of its last game there.
     const rejoin = get().settings.rejoin;
     const token = reconnect ?? (rejoin.address === address && rejoin.token ? rejoin.token : undefined);
-    const url = wsURL(address);
-    if (!url) {
-      set({ error: 'Type an address like 192.168.1.5 or 192.168.1.5:4774.' });
+    const urls = wsURLs(address);
+    if (!urls) {
+      set({ error: 'Type an address like 192.168.1.5, 192.168.1.5:4774 or games.example.com.' });
       return false;
     }
     try {
       const [versions, sets] = await Promise.all([getVersions(), getCardSets()]);
-      await connect(url, get().receive, () => {
+      serverURL = await connectFirst(urls, get().receive, () => {
         // A game keeps its table and history, to reconnect to.
         if (get().screen !== 'game') {
           stopPlayback();
@@ -523,7 +526,7 @@ export const useApp = create<AppState>()((set, get) => {
     },
     saveRecord: async () => {
       const s = get();
-      const link = recordURL(s.address, s.lobby.table?.game ?? s.settings.rejoin.game, s.lobby.welcome?.token ?? '');
+      const link = recordURL(serverURL, s.lobby.table?.game ?? s.settings.rejoin.game, s.lobby.welcome?.token ?? '');
       if (!link) {
         return '';
       }

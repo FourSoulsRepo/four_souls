@@ -18,3 +18,4 @@
 | [014](014-dice-throw-intent.md) | Dice throw intent | Accepted |
 | [015](015-window-layers.md) | Window layers | Accepted |
 | [016](016-presence-messages.md) | Presence messages | Accepted |
+| [017](017-wss-through-a-proxy.md) | Secure WebSocket through a reverse proxy | Accepted |

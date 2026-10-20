@@ -28,3 +28,4 @@
 | UC-24 | Follow fights and played cards | `frontend` | Implemented | [app/uc-24-follow-fights-and-played-cards.md](app/uc-24-follow-fights-and-played-cards.md) |
 | UC-25 | See what others aim at | `frontend`, `internal/server` | Implemented | [app/uc-25-see-what-others-aim-at.md](app/uc-25-see-what-others-aim-at.md) |
 | UC-26 | Roll for the first player | `rules_engine`, `internal/server`, `frontend` | Implemented | [app/uc-26-roll-for-the-first-player.md](app/uc-26-roll-for-the-first-player.md) |
+| UC-27 | Join a server by its domain | `frontend` | Implemented | [server/uc-27-join-by-domain.md](server/uc-27-join-by-domain.md) |

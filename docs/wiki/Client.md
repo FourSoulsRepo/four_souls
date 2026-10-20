@@ -7,8 +7,8 @@ The desktop client is React + TypeScript in `frontend/` (ADR 002), with three li
 | File | What it does |
 |---|---|
 | `src/bridge/` | The only code that calls Wails: settings, versions, card data, hosting. |
-| `src/net.ts` | The one WebSocket to the game server. |
-| `src/protocol.ts` | Message and engine view types, mirroring `internal/protocol` and the engine; `wsURL`, `errorText`. |
+| `src/net.ts` | The one WebSocket to the game server; `connectFirst` tries `wss://` then `ws://` (ADR 017). |
+| `src/protocol.ts` | Message and engine view types, mirroring `internal/protocol` and the engine; `wsURLs` (what a typed address tries, ADR 017), `recordURL`, `errorText`. |
 | `src/lobby.ts` | Pure: how server messages change the session (screen, lobby, error). |
 | `src/playback.ts` | Pure: event → effect mapping, speed, and the update queue. |
 | `src/animations.ts` | Animation claims: which effect brought or showed a card, and clashes ([Animations](Animations)). |

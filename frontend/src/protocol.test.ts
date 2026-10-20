@@ -6,7 +6,7 @@ import golden from '../../internal/protocol/testdata/golden.jsonl?raw';
 import {
   errorText,
   recordURL,
-  wsURL,
+  wsURLs,
   type Create,
   type Envelope,
   type Games,
@@ -222,16 +222,37 @@ describe('golden protocol file', () => {
   });
 });
 
-describe('wsURL', () => {
+describe('wsURLs', () => {
   it('adds the default port and the path', () => {
-    expect(wsURL(' 192.168.1.5 ')).toBe('ws://192.168.1.5:4774/ws');
-    expect(wsURL('host.lan:5000')).toBe('ws://host.lan:5000/ws');
-    expect(wsURL('[::1]:4774')).toBe('ws://[::1]:4774/ws');
+    expect(wsURLs(' 192.168.1.5 ')).toEqual(['ws://192.168.1.5:4774/ws']);
+    expect(wsURLs('host.lan:5000')).toEqual(['ws://host.lan:5000/ws']);
+    expect(wsURLs('[::1]:4774')).toEqual(['ws://[::1]:4774/ws']);
+  });
+
+  it('keeps plain ws:// for IPs, LAN names and a typed port', () => {
+    for (const a of ['localhost', 'pc', '10.0.0.7', 'pc.lan', 'pc.local', 'nas.home.arpa', '[::1]']) {
+      expect(wsURLs(a), a).toHaveLength(1);
+      expect(wsURLs(a)?.[0], a).toMatch(/^ws:\/\/.+:4774\/ws$/);
+    }
+    expect(wsURLs('games.example.com:4774')).toEqual(['ws://games.example.com:4774/ws']);
+  });
+
+  it('tries wss:// first for a bare domain, then ws:// on 4774 (8.18)', () => {
+    expect(wsURLs('games.example.com')).toEqual(['wss://games.example.com/ws', 'ws://games.example.com:4774/ws']);
+  });
+
+  it('keeps a typed scheme', () => {
+    expect(wsURLs('wss://games.example.com')).toEqual(['wss://games.example.com/ws']);
+    expect(wsURLs('WSS://games.example.com/ws')).toEqual(['wss://games.example.com/ws']);
+    expect(wsURLs('https://games.example.com/')).toEqual(['wss://games.example.com/ws']);
+    expect(wsURLs('wss://games.example.com:8443')).toEqual(['wss://games.example.com:8443/ws']);
+    expect(wsURLs('ws://games.example.com')).toEqual(['ws://games.example.com:4774/ws']);
+    expect(wsURLs('http://10.0.0.7:5000/ws/')).toEqual(['ws://10.0.0.7:5000/ws']);
   });
 
   it('rejects what is not an address', () => {
-    for (const bad of ['', 'a b', 'http://x', 'x:0', 'x:70000', 'x:y']) {
-      expect(wsURL(bad), bad).toBeNull();
+    for (const bad of ['', 'a b', 'ftp://x', 'wss://', 'wss://x/other', 'x:', 'x:0', 'x:70000', 'x:y']) {
+      expect(wsURLs(bad), bad).toBeNull();
     }
   });
 });
@@ -246,7 +267,8 @@ describe('errorText', () => {
 
 describe('recordURL', () => {
   it('points at the record download of the same server', () => {
-    expect(recordURL('192.168.1.5', 'g1', 't0k3n')).toBe('http://192.168.1.5:4774/record?game=g1&token=t0k3n');
-    expect(recordURL('not an address', 'g1', 't')).toBeNull();
+    expect(recordURL('ws://192.168.1.5:4774/ws', 'g1', 't0k3n')).toBe('http://192.168.1.5:4774/record?game=g1&token=t0k3n');
+    expect(recordURL('wss://games.example.com/ws', 'g1', 't')).toBe('https://games.example.com/record?game=g1&token=t');
+    expect(recordURL('', 'g1', 't')).toBeNull();
   });
 });

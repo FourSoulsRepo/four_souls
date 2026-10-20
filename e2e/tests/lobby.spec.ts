@@ -83,11 +83,42 @@ test('a wrong address says why', async ({ page }) => {
   await page.getByLabel('Nickname').fill('Di');
   await page.getByLabel('Host address').fill('not an address');
   await page.getByRole('button', { name: 'Connect' }).click();
-  await expect(page.getByRole('status')).toHaveText('Type an address like 192.168.1.5 or 192.168.1.5:4774.');
+  await expect(page.getByRole('status')).toHaveText('Type an address like 192.168.1.5, 192.168.1.5:4774 or games.example.com.');
   // Nobody listens on the port next to the test server.
   await page.getByLabel('Host address').fill(`127.0.0.1:${String(serverPort() - 1)}`);
   await page.getByRole('button', { name: 'Connect' }).click();
   await expect(page.getByRole('status')).toHaveText('Could not connect to the server.', { timeout: 8000 });
+});
+
+test('a typed ws:// address joins the server (8.18)', async ({ page }) => {
+  await page.goto(appURL());
+  await page.getByRole('button', { name: 'Join a game' }).click();
+  await page.getByLabel('Nickname').fill('Wes');
+  await page.getByLabel('Host address').fill(`ws://${address()}/ws`);
+  await page.getByRole('button', { name: 'Connect' }).click();
+  await expect(page.getByRole('heading', { name: 'Games' })).toBeVisible();
+  await expect(page.getByText('Test server', { exact: true })).toBeVisible();
+});
+
+// games.test never resolves, so wss:// fails for real; the plain socket
+// on 4774 is caught here, so no server is needed (N-19). A caught socket
+// fires no "websocket" event: `opened` lists only the real attempts.
+test('a bare domain tries wss:// first, then ws:// on 4774 (8.18)', async ({ page }) => {
+  const opened: string[] = [];
+  page.on('websocket', (ws) => opened.push(ws.url()));
+  let hello = '';
+  await page.routeWebSocket('ws://games.test:4774/ws', (ws) => {
+    ws.onMessage((m) => {
+      hello ||= String(m);
+    });
+  });
+  await page.goto(appURL());
+  await page.getByRole('button', { name: 'Join a game' }).click();
+  await page.getByLabel('Nickname').fill('Dom');
+  await page.getByLabel('Host address').fill('games.test');
+  await page.getByRole('button', { name: 'Connect' }).click();
+  await expect.poll(() => hello, { timeout: 8000 }).toContain('"type":"hello"');
+  expect(opened.filter((u) => u.includes('games.test'))).toEqual(['wss://games.test/ws']);
 });
 
 test('a game found on the LAN is joined without typing (N-13)', async ({ browser }) => {

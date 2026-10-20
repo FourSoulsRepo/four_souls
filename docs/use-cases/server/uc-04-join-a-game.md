@@ -41,6 +41,7 @@
   * The Games list shows the name under its heading.
   * A server without a name shows its address.
 * **1f. Remove from Recent:** the × next to an entry removes it for good.
+* **1g. A domain or a typed scheme (8.18):** see UC-27.
 
 ## Postconditions
 

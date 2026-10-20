@@ -214,7 +214,7 @@ Ideas: B-03 – B-05, L-03, V-10, V-11, DO-01, V-14, A-16, N-13, N-14, V-19, N-1
    1. CI builds the server archives.
    2. The Linux server binaries are statically linked.
 
-### [ ] 8.18 Secure WebSocket in the client
+### [x] 8.18 Secure WebSocket in the client
 
 1. Goal: join a server behind HTTPS by its domain (N-19).
 2. Tasks:

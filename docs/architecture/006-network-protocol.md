@@ -96,7 +96,7 @@ Use options 1, 3, 5 and 10.
 7. Trust
    1. LAN first: no accounts; the token only proves "same seat as before".
    2. Tokens are 128 random bits.
-   3. No encryption yet; `wss://` comes with online play.
+   3. No encryption in the server; `wss://` through a proxy ([017](017-wss-through-a-proxy.md)).
    4. A dedicated server lets every client create or load games.
    5. A server in a player's app lets only loopback clients do so.
       1. That is the host's own app; friends join.
@@ -151,4 +151,4 @@ Use options 1, 3, 5 and 10.
 
 ### Neutral
 
-1. No accounts or encryption until online play (future).
+1. No accounts until online play (future); encryption by a proxy only (ADR 017).

@@ -144,33 +144,60 @@ export interface Saved {
   save: string;
 }
 
-// wsURL turns what a player types ("192.168.1.5", "host:4774",
-// "[::1]:4774") into the server's WebSocket URL, or null.
-export function wsURL(address: string): string | null {
-  const a = address.trim();
+// lanName and ipv4 are hosts never behind an HTTPS proxy: a bare one
+// goes straight to plain ws:// (N-19).
+const lanName = /\.(local|lan|home|internal|home\.arpa)$/i;
+const ipv4 = /^[\d.]+$/;
+
+// wsURLs turns what a player types into the server's WebSocket URLs to
+// try in turn, or null (8.18, N-19):
+//   - "192.168.1.5", "host:4774", "[::1]:4774", "localhost", "pc.lan":
+//     ws:// on that port, 4774 by default;
+//   - "wss://games.example.com", "ws://host:5000", "https://…",
+//     "http://…": that scheme only; wss:// on 443 by default;
+//   - "games.example.com": wss:// on 443 first, for a server behind an
+//     HTTPS proxy (ADR 017), then ws:// on 4774.
+export function wsURLs(address: string): string[] | null {
+  let a = address.trim();
+  let secure: boolean | null = null; // null: try both
+  const scheme = /^(wss?|https?):\/\//i.exec(a);
+  if (scheme) {
+    secure = /^(wss|https):/i.test(a);
+    a = a.slice(scheme[0].length);
+    const tail = ['/ws/', '/ws', '/'].find((t) => a.endsWith(t));
+    if (tail) {
+      a = a.slice(0, -tail.length);
+    }
+  }
   const close = a.startsWith('[') ? a.indexOf(']') + 1 : 0; // IPv6 in brackets
   const colon = a.indexOf(':', close);
   const host = colon < 0 ? a : a.slice(0, colon);
-  const portText = colon < 0 ? String(defaultPort) : a.slice(colon + 1);
-  if (!/^(\[[0-9a-fA-F:.]+\]|[\w.-]+)$/.test(host) || !/^\d{1,5}$/.test(portText)) {
+  const portText = colon < 0 ? '' : a.slice(colon + 1);
+  if (!/^(\[[0-9a-fA-F:.]+\]|[\w.-]+)$/.test(host) || (colon >= 0 && !/^\d{1,5}$/.test(portText))) {
     return null;
   }
-  const port = Number(portText);
-  if (port < 1 || port > 65535) {
+  const port = portText ? Number(portText) : null;
+  if (port !== null && (port < 1 || port > 65535)) {
     return null;
   }
-  return `ws://${host}:${String(port)}/ws`;
+  const plain = `ws://${host}:${String(port ?? defaultPort)}/ws`;
+  const tls = port === null ? `wss://${host}/ws` : `wss://${host}:${String(port)}/ws`;
+  if (secure !== null) {
+    return [secure ? tls : plain];
+  }
+  const domain = port === null && host.includes('.') && !host.startsWith('[') && !ipv4.test(host) && !lanName.test(host);
+  return domain ? [tls, plain] : [plain];
 }
 
-// recordURL is where the server serves a finished game's record to one
-// of its players (RP-05).
-export function recordURL(address: string, game: string, token: string): string | null {
-  const ws = wsURL(address);
-  if (!ws) {
+// recordURL is where the server at a WebSocket URL serves a finished
+// game's record to one of its players (RP-05): http:// for ws://,
+// https:// for wss://.
+export function recordURL(ws: string, game: string, token: string): string | null {
+  if (!/^wss?:\/\/.+\/ws$/.test(ws)) {
     return null;
   }
   const q = new URLSearchParams({ game, token });
-  return `${ws.replace(/^ws:/, 'http:').replace(/\/ws$/, '/record')}?${q.toString()}`;
+  return `${ws.replace(/^ws/, 'http').replace(/\/ws$/, '/record')}?${q.toString()}`;
 }
 
 // errorText is what the player reads for a server error.
