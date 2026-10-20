@@ -47,7 +47,7 @@ A dice effect draws `Die`: one face cut out of the player's dice texture (V-19).
 
 ## Game mats
 
-The table lies on a mat (ST-03, V-24), drawn by `mats.matLook`. Three color mats are CSS: Green felt, Basement and Cathedral. Image mats come from `App.Mats`, one per file in `assets/mats/`; an image mat with a color mat's id takes its place in the menu, and a new id is added after them. The image is drawn under a dark shade, so cards and text stay readable, and over its colors (Basement for a new id), so a missing or unloadable image leaves the colors. The `mat` setting keeps any mat file name, so a saved mat whose image is gone also falls back to colors. An empty `mat` is the default: the first mat image, or Basement without images (`mats.matOf`). Green felt stays a choice but is never the default: with seat boxes it read as a poker table (H-05).
+The table lies on a mat (ST-03, V-24), drawn by `mats.matLook`. Two color mats are CSS: Basement and Cathedral. Image mats come from `App.Mats`, one per file in `assets/mats/`; an image mat with a color mat's id takes its place in the menu, and a new id is added after them. The image is drawn under a dark shade, so cards and text stay readable, and over its colors (Basement for a new id), so a missing or unloadable image leaves the colors. The `mat` setting keeps any mat file name, so a saved mat whose image is gone also falls back to colors. An empty `mat` is the default: the first mat image, or Basement without images (`mats.matOf`). Green felt was a third color mat until 15.81 (ST-08): it read as a poker table (H-05). A saved `felt` is the default now, in Go's `Load` and in `matOf`.
 
 ## Board
 

@@ -20,6 +20,7 @@ Rules engine versions are in each release's notes.
 - A match record names the dedicated server the game ran on.
 - The main menu has an Exit button.
 - The light theme is gone; the app has one dark theme, and Settings no longer has a Theme field.
+- The Green felt game mat is gone; a table that used it gets the default mat.
 
 ## 0.1.1 - 2026-10-19
 

@@ -54,12 +54,6 @@ button {
 }
 
 /* Game mats (ST-03): colors, and the fallback for a missing mat image. */
-.mat-felt {
-  --mat-colors: radial-gradient(ellipse at center, #2f5a3c 0%, #21412c 65%, #172e20 100%);
-
-  background: var(--mat-colors);
-}
-
 .mat-basement {
   --mat-colors: radial-gradient(ellipse at center, #5a4330 0%, #3e2d1f 65%, #2a1e14 100%);
 

@@ -158,6 +158,18 @@ func TestImageMatKept(t *testing.T) {
 	}
 }
 
+// TestFeltIsDefault: Green felt is gone (ST-08); a saved one loads as
+// the default mat.
+func TestFeltIsDefault(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "settings.json")
+	if err := os.WriteFile(path, []byte(`{"mat":"felt"}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if got := Load(path).Mat; got != "" {
+		t.Fatalf("felt reads as %q, want the default", got)
+	}
+}
+
 func TestRejoinSurvivesRestart(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "settings.json")
 	r := Rejoin{Address: "192.168.1.5", Token: "t0k3n", Game: "g1"}

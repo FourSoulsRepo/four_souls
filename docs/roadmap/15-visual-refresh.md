@@ -2432,7 +2432,7 @@ Images come first, so the new table is built with backs and mats.
    7. UC-01 8c removed; UC-10 3d; wikis `Client`, `Screenshots`; CHANGELOG.
    8. Screenshots: `.cache/screenshots/15.80/before/` and `after/`.
 
-### [ ] 15.81 No Green felt mat
+### [x] 15.81 No Green felt mat
 
 1. Goal: the mat list has no Green felt (ST-08).
 2. Asked by the owner (2026-10-20).
@@ -2444,3 +2444,11 @@ Images come first, so the new table is built with backs and mats.
    1. Vitest: the choices have no felt; `felt` gives the default.
    2. Go test: a saved `felt` loads as the default.
    3. e2e: the mat list has no Green felt.
+5. Result (2026-10-20)
+   1. `mats.ts`: no `felt`; `matOf` reads a saved `felt` as the default.
+   2. Go: `ColorMats` without `felt`; `Load` turns a saved `felt` into "".
+   3. `Save` still takes any mat file name, as for image mats.
+   4. `.mat-felt` gone from `style.css`.
+   5. Vitest `mats.test.ts`; Go `TestFeltIsDefault`; e2e `settings.spec.ts`.
+   6. UC-10 3e; wiki `Client`; CHANGELOG.
+   7. Screenshots: `.cache/screenshots/15.81/before/` and `after/`.

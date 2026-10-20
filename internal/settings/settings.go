@@ -127,7 +127,11 @@ var (
 // when there are no mat images.
 // Image mats come from the files, so any ValidMat name is kept: a mat
 // whose image is missing shows as colors.
-var ColorMats = []string{"felt", "basement", "cathedral"}
+var ColorMats = []string{"basement", "cathedral"}
+
+// droppedMat was a color mat (Green felt) until ST-08; a file that still
+// names it gets the default mat.
+const droppedMat = "felt"
 
 // matName is a mat file name without its extension.
 var matName = regexp.MustCompile(`^[a-z0-9_-]{1,40}$`)
@@ -180,7 +184,7 @@ func Load(path string) Settings {
 			*c.value = c.allowed[0]
 		}
 	}
-	if s.Mat != "" && !ValidMat(s.Mat) {
+	if s.Mat == droppedMat || (s.Mat != "" && !ValidMat(s.Mat)) {
 		s.Mat = ""
 	}
 	return s

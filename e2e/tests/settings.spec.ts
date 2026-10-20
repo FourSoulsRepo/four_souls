@@ -78,7 +78,7 @@ test('the mat menu lists the mat images', async ({ page }) => {
   await page.goto('/?fake&nosplash');
   await page.getByRole('button', { name: 'Settings' }).click();
   const mats = page.getByRole('combobox', { name: 'Game mat' });
-  await expect(mats.getByRole('option')).toHaveText(['Green felt', 'Basement', 'Cathedral']);
+  await expect(mats.getByRole('option')).toHaveText(['Basement', 'Cathedral']);
   await mats.selectOption('basement');
   await expect(page.getByLabel('Game mat preview')).toHaveClass(/mat-image/);
   await shot(page, 'settings-mat');
@@ -96,7 +96,9 @@ test('the first mat image is the default', async ({ page }) => {
 test('without mat images the table shows colors', async ({ browser }) => {
   for (const [query, colors] of [
     ['&nomats', 'mat-basement'],
-    ['&nomats&mat=felt', 'mat-felt'],
+    ['&nomats&mat=cathedral', 'mat-cathedral'],
+    // Green felt is gone (ST-08): a saved one is the default.
+    ['&nomats&mat=felt', 'mat-basement'],
     ['&mat=dark_room', 'mat-basement'],
   ]) {
     const page = await (await browser.newContext()).newPage();
