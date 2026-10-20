@@ -322,7 +322,7 @@ func (g *Game) perform(a Action) {
 		for i, v := range md.Values {
 			labels[i] = strconv.Itoa(v)
 		}
-		g.ask(Choice{Purpose: ChooseDie, Player: a.Player, Rule: "R-DICE-11", Slots: md.Values, Indexes: []int{md.StackID}, Question: "Which die is the result?"}, labels)
+		g.ask(Choice{Purpose: ChooseDie, Player: a.Player, Rule: "R-DICE-11", Slots: md.Values, Indexes: []int{md.StackID}, Question: "Which dice is the result?"}, labels)
 	case ActPushLingering:
 		// A replacement that rolls first (Poker Chip): its card's lingering
 		// ability goes on the stack with the replaced amount. A copy

@@ -76,6 +76,7 @@
   * Red Candle and Crystal Ball: the number chosen.
   * Drawn in the owner's dice look; a plain die without one.
   * The die goes when the number is used or the turn ends.
+  * Its tooltip reads "Kept dice: 4" (15.83).
 * **1h. Attack hit (15.3):** the attacker's card lunges into the target.
   * It winds up, hits, and goes back to its place.
   * A yellow starburst "−N" pops on the card that was hit.

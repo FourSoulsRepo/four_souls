@@ -70,7 +70,7 @@ test('the turn badge, what is left, and hiding the history', async ({ browser })
   if (!other) {
     throw new Error('no other page');
   }
-  await expect(other.getByLabel('Left this turn')).toHaveText(/Loot \d+ · Attacks \d+ · Buys \d+/);
+  await expect(other.getByLabel('Left this turn')).toHaveText(/Loot \d+ · Attacks \d+ · Shop \d+/);
   await expect(other.getByLabel(/^\d+ left$/)).toHaveCount(0);
 
   // The full history is closed; the strip opens it, Hide closes it.

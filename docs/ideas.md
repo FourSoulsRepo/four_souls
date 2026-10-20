@@ -262,6 +262,13 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    1. The value is on the top face, as on a real table.
    2. The top face fills most of the die.
    3. Two sides still show, so the die looks solid.
+49. V-49. The turn counters say "Shop", not "Buys" (owner, 2026-10-20).
+   1. The line reads "Loot · Attacks · Shop".
+   2. It reads better next to the other counters.
+50. V-50. Texts say "dice", never "die", for a roll (owner, 2026-10-20).
+   1. "Die" also means a character's death.
+   2. Players could not tell which one the game meant.
+   3. Card texts keep "die" for death.
 
 ## Rules
 

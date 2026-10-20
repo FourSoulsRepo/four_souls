@@ -2488,3 +2488,27 @@ Images come first, so the new table is built with backs and mats.
    10. Real Safari draws it in 3D (15.69); the label always says the value.
 6. Owner notes (2026-10-20)
    1. Owner marks 15.82 solved.
+
+### [x] 15.83 "Shop" and "dice" wordings
+
+1. Goal: clearer words on the table (V-49, V-50).
+2. Asked by the owner (2026-10-20).
+3. Tasks:
+   1. The turn counters read "Shop N", not "Buys N".
+   2. Texts about a roll say "dice", not "die".
+   3. "Throw the dice", "Kept dice", "Your dice", "Ann's dice".
+   4. Engine question: "Which dice is the result?".
+   5. Card texts keep "die" for death.
+   6. UCs 12, 14, 21; wiki `Client`; CHANGELOG.
+4. Done when:
+   1. Vitest and e2e read the new words.
+   2. Screenshots before and after.
+5. Result (2026-10-20)
+   1. An opponent's turn line: "Loot 1 · Attacks 1 · Shop 1".
+   2. Banner and stack panel: "Throw the dice".
+   3. Labels: "Your dice", "Ann's dice", "Kept dice 4".
+   4. Mutant Spider asks "Which dice is the result?".
+   5. Go test checks that question; Vitest and e2e read the new words.
+   6. Code names (`Die`, `.die`) and card texts stay as they are.
+   7. UC-12 2f, UC-14, UC-21 3f; wiki `Client`; CHANGELOG.
+   8. Screenshots: `.cache/screenshots/15.83/before/` and `after/`.

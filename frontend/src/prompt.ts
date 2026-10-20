@@ -83,7 +83,7 @@ function asked(view: GameView, n: Names): { kind: BannerKind; title: string; hin
       return { kind: 'order', title, other: title };
     }
     case PromptKind.throw: {
-      const title = 'Throw the die';
+      const title = 'Throw the dice';
       return w.text
         ? { kind: 'throw', title, hint: `For the ${w.text}`, other: `${title} for the ${w.text}` }
         : { kind: 'throw', title, other: title };

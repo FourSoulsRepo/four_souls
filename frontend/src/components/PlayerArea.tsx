@@ -288,7 +288,7 @@ function Allowance({ player }: { player: PlayerView }) {
   return (
     <span className="player-allowance" aria-label="Left this turn">
       <span>Loot {player.loot_plays}</span> · <span>Attacks {player.attacks}</span> ·{' '}
-      <span>Buys {player.purchases}</span>
+      <span>Shop {player.purchases}</span>
     </span>
   );
 }

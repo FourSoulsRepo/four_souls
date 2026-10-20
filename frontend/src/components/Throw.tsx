@@ -46,7 +46,7 @@ export function Throw({ waiting, you, names, action, disabled }: Props) {
     return (
       <div className="throw" role="region" aria-label="Throw">
         <button type="button" className="throw-button" title="Throw (Space)" onClick={press}>
-          <Die value={handFace} image={image} label="Your die" hidden />
+          <Die value={handFace} image={image} label="Your dice" hidden />
           <span className="throw-word">Throw</span>
         </button>
         {label && <div className="throw-label">{label}</div>}
@@ -57,7 +57,7 @@ export function Throw({ waiting, you, names, action, disabled }: Props) {
   return (
     <div className="throw" role="region" aria-label="Throw">
       <div className="throw-shake">
-        <Die value={handFace} image={image} label={mine ? 'Your die' : `${names.player(waiting.player)}'s die`} hidden />
+        <Die value={handFace} image={image} label={mine ? 'Your dice' : `${names.player(waiting.player)}'s dice`} hidden />
       </div>
       <div className="throw-label" style={{ color: playerColor(waiting.player) }}>
         {who} throwing…

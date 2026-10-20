@@ -71,8 +71,8 @@ describe('promptBanner', () => {
     expect(banner(at({ kind: PromptKind.discard, player: 0, count: 2 }), 1)?.hint).toBe('Discard 2 loot cards');
     expect(banner(at({ kind: PromptKind.order, player: 0, purpose: 12 }), 0)).toMatchObject({ kind: 'order', title: 'Choose the card for the very bottom' });
     const throwing = at({ kind: PromptKind.throw, player: 0, text: 'attack roll' });
-    expect(banner(throwing, 0)).toMatchObject({ kind: 'throw', title: 'Throw the die', hint: 'For the attack roll' });
-    expect(banner(throwing, 1)?.hint).toBe('Throw the die for the attack roll');
+    expect(banner(throwing, 0)).toMatchObject({ kind: 'throw', title: 'Throw the dice', hint: 'For the attack roll' });
+    expect(banner(throwing, 1)?.hint).toBe('Throw the dice for the attack roll');
   });
 
   it("says the player's own aim, and how to cancel it", () => {

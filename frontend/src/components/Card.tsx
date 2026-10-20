@@ -255,8 +255,8 @@ function DieBadges({ values, owner }: { values: number[]; owner: number }) {
   return (
     <span className="card-dice">
       {values.map((v) => (
-        <span key={v} className="card-die" title={`Kept die: ${String(v)}`}>
-          <Die value={v} image={image} label={`Kept die ${String(v)}`} />
+        <span key={v} className="card-die" title={`Kept dice: ${String(v)}`}>
+          <Die value={v} image={image} label={`Kept dice ${String(v)}`} />
         </span>
       ))}
     </span>

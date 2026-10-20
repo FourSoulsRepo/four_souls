@@ -49,10 +49,10 @@
   * Boom Fly: "Boom Fly deals 1 damage to Ann", one line per player.
   * No card to name: "Ann takes 1 damage".
 * **2j. A roll waits for its throw (15.61):** the roll's row shows "?".
-  * The roller's panel says "Throw the die".
-  * The others read "Ann: Throw the die for the attack roll" in the panel.
+  * The roller's panel says "Throw the dice".
+  * The others read "Ann: Throw the dice for the attack roll" in the panel.
   * The others see Ann's die shaking where it will land.
-  * The banner says "Throw the die", or "Waiting for Ann".
+  * The banner says "Throw the dice", or "Waiting for Ann".
 * **2k. The last roll (15.63):** a small die by the "Stack" title shows it.
   * It shows the final value, after changes and rerolls.
   * Hovering it names the roller and the roll: "Ann rolled 4 — attack roll".

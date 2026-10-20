@@ -131,7 +131,7 @@ test('the banner says what to do, or whom the game waits for (15.28)', async ({ 
     { name: 'choose', a: { waiting: { kind: 4, purpose: 6 }, answer: 'choose' }, title: 'Choose a target' },
     { name: 'discard', a: { waiting: { kind: 2, count: 1 }, answer: 'discard' }, title: 'Discard 1 loot card' },
     { name: 'order', a: { waiting: { kind: 5, purpose: 12, count: 2 }, answer: 'order' }, title: 'Choose the card for the very bottom' },
-    { name: 'throw', a: { waiting: { kind: 6, text: 'attack roll' }, answer: 'throw' }, title: 'Throw the die', hint: 'For the attack roll' },
+    { name: 'throw', a: { waiting: { kind: 6, text: 'attack roll' }, answer: 'throw' }, title: 'Throw the dice', hint: 'For the attack roll' },
   ];
   let step = 100;
   for (const p of prompts) {

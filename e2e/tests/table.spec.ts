@@ -465,9 +465,9 @@ test('a card that keeps a die number shows it as a die, not in its zoom (15.67)'
   const items = page.getByRole('group', { name: 'Your items' });
   const ball = items.locator('[data-zone="obj-9201"]');
   const two = items.locator('[data-zone="obj-9202"]');
-  await expect(ball.getByLabel('Kept die 4')).toBeVisible();
-  await expect(two.getByLabel('Kept die 2')).toBeVisible();
-  await expect(two.getByLabel('Kept die 5')).toBeVisible();
+  await expect(ball.getByLabel('Kept dice 4')).toBeVisible();
+  await expect(two.getByLabel('Kept dice 2')).toBeVisible();
+  await expect(two.getByLabel('Kept dice 5')).toBeVisible();
   await expect(ball.getByLabel('counters')).toHaveCount(0);
   await expect(ball).toHaveCSS('opacity', '1'); // it has popped in
   await shot(page, 'kept-dice');

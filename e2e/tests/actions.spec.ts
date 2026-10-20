@@ -603,16 +603,16 @@ test('an attack waits for the roller to throw; the die shows the engine\'s value
   // The roller sees the glowing button and the stack says it waits for them.
   const stack = (page: Page) => page.getByRole('complementary', { name: 'Stack' });
   await expect(throwButton(active)).toBeEnabled();
-  await expect(stack(active).getByLabel('Waiting for')).toHaveText('Throw the die');
-  await expect(active.locator('.prompt-banner.mine .prompt-title')).toHaveText(/^Throw the die/);
+  await expect(stack(active).getByLabel('Waiting for')).toHaveText('Throw the dice');
+  await expect(active.locator('.prompt-banner.mine .prompt-title')).toHaveText(/^Throw the dice/);
   await shot(active, 'throw-button');
   // The others see who throws, and the die shaking in their hand.
   const roller = await nameOf(active);
   const shaking = other.getByRole('region', { name: 'Throw' });
-  await expect(shaking.locator('.throw-shake .die')).toHaveAttribute('aria-label', `${String(roller)}'s die`);
+  await expect(shaking.locator('.throw-shake .die')).toHaveAttribute('aria-label', `${String(roller)}'s dice`);
   await expect(shaking).toContainText(`${String(roller)} is throwing…`);
   await expect(throwButton(other)).toHaveCount(0);
-  await expect(stack(other).getByLabel('Waiting for')).toHaveText(new RegExp(`^${String(roller)}: Throw the die`));
+  await expect(stack(other).getByLabel('Waiting for')).toHaveText(new RegExp(`^${String(roller)}: Throw the dice`));
   await expect(other.locator('.prompt-title')).toHaveText(`Waiting for ${String(roller)}`);
   await shot(other, 'throw-others');
 
