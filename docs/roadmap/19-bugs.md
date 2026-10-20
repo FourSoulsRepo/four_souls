@@ -1408,7 +1408,7 @@ Totals by system (45 items):
 5. Done when:
    1. Cause written here; three full runs in a row pass.
 
-### [ ] 19.45 Abyss never uncharges after use
+### [x] 19.45 Abyss never uncharges after use
 
 1. Goal: Abyss taps to activate, like its printed card.
 2. Report (owner, 2026-10-21)
@@ -1436,3 +1436,5 @@ Totals by system (45 items):
    6. It destroys a second item after its next turn recharges it.
    7. Old records that use Abyss twice in a turn no longer replay.
    8. Engine and data only; no screen change, no screenshots.
+7. Owner notes (2026-10-21)
+   1. Owner marks 19.45 solved.
