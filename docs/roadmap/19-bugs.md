@@ -1164,3 +1164,21 @@ This step never closes; new reports are appended.
 4. Done when:
    1. Cause found and written here.
    2. The test passes 30 repeats in a row, both browsers.
+
+### [ ] 19.38 e2e: game starts time out again in a full run
+
+1. Goal: a full `make e2e` passes on the first run again.
+2. Report (agent, 2026-10-20)
+   1. `make e2e` gate for 15.79, webkit, 3 workers.
+   2. Three tests failed in `startGame`, before the table.
+   3. `info.spec.ts:12`: the 5 s Seats check.
+   4. `playback.spec.ts:89`, `table.spec.ts:264`: 30 s, waiting for Nickname.
+   5. Load average 17 after the run, 34 at the end of the next.
+   6. The three alone, 4 repeats each: 12 of 12 passed.
+   7. The next full run passed: 238 passed.
+   8. Evidence: `.cache/e2e-evidence/15.79-run1/` (not in git).
+   9. Same signs as 19.35, solved with 3 workers.
+3. Tasks:
+   1. Find what else loads the machine; maybe fewer workers for webkit.
+4. Done when:
+   1. Cause written here; three full runs in a row pass.

@@ -203,6 +203,8 @@ const w = window as unknown as {
   runtime: Record<string, (...args: never[]) => void>;
   // fakeFullscreen lets tests see the window mode.
   fakeFullscreen: boolean;
+  // fakeQuit lets tests see that the app was asked to close.
+  fakeQuit: boolean;
 };
 
 w.go = {
@@ -310,8 +312,12 @@ w.go = {
   },
 };
 w.fakeFullscreen = false;
+w.fakeQuit = false;
 w.runtime = {
   BrowserOpenURL: () => undefined,
+  Quit: () => {
+    w.fakeQuit = true;
+  },
   WindowFullscreen: () => {
     w.fakeFullscreen = true;
   },

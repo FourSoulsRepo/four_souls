@@ -23,7 +23,7 @@ import {
 } from '../../wailsjs/go/main/App';
 import { settings } from '../../wailsjs/go/models';
 import { Info as hostInfo, Start as hostStart, Stop as hostStop } from '../../wailsjs/go/main/Host';
-import { BrowserOpenURL, WindowFullscreen, WindowUnfullscreen } from '../../wailsjs/runtime/runtime';
+import { BrowserOpenURL, Quit, WindowFullscreen, WindowUnfullscreen } from '../../wailsjs/runtime/runtime';
 
 export interface Versions {
   app: string;
@@ -286,6 +286,11 @@ export function setFullscreen(on: boolean): void {
   } else {
     WindowUnfullscreen();
   }
+}
+
+// quitApp closes the app (M-02).
+export function quitApp(): void {
+  Quit();
 }
 
 // Opens an https link in the system browser; anything else is ignored.

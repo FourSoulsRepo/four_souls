@@ -2388,7 +2388,7 @@ Images come first, so the new table is built with backs and mats.
 6. Owner notes (2026-10-20)
    1. Owner marks 15.78 solved.
 
-### [ ] 15.79 Exit button in the main menu
+### [x] 15.79 Exit button in the main menu
 
 1. Goal: the player can close the app from the main menu (M-02).
 2. Asked by the owner (2026-10-20).
@@ -2399,6 +2399,12 @@ Images come first, so the new table is built with backs and mats.
 4. Done when:
    1. e2e: the menu lists Exit last; a click calls the fake `Quit`.
    2. `make screenshots` covers the main menu.
+5. Result (2026-10-20)
+   1. `quitApp` in the bridge calls the runtime's `Quit`.
+   2. The fake runtime sets `window.fakeQuit`.
+   3. e2e `shell.spec.ts`: the button order and the quit.
+   4. UC-01 9; wiki `Client`; CHANGELOG.
+   5. Screenshots: `.cache/screenshots/15.79/before/` and `after/`.
 
 ### [ ] 15.80 One dark theme
 

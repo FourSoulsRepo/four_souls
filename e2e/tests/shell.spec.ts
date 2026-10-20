@@ -13,6 +13,15 @@ test('splash shows the fan-game notice, then the menu', async ({ page }) => {
   await shot(page, 'menu');
 });
 
+test('Exit is the last menu button and closes the app (15.79)', async ({ page }) => {
+  await page.goto('/?fake&nosplash');
+  await expect(page.getByRole('navigation').getByRole('button')).toHaveText(['Host a game', 'Join a game', 'Records', 'Settings', 'Exit']);
+  const quit = () => page.evaluate(() => (window as unknown as { fakeQuit: boolean }).fakeQuit);
+  expect(await quit()).toBe(false);
+  await page.getByRole('button', { name: 'Exit' }).click();
+  expect(await quit()).toBe(true);
+});
+
 test('titles and menu buttons use the game fonts (15.40)', async ({ page }) => {
   await page.goto('/?fake&nosplash');
   // WebKit drops the quotes around family names; Chromium keeps them.

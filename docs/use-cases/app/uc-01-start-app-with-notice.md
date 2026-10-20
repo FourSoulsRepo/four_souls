@@ -16,6 +16,7 @@
 6. The main menu shows app and rules engine versions in the corner.
 7. The main menu shows the foursouls.ru banner at the top (15.41).
 8. The main menu and the game setup screens drift on a starry sky (15.42).
+9. The player clicks Exit, the last menu button; the app closes (15.79).
 
 ## Alternative scenarios and errors
 
@@ -28,4 +29,4 @@
 
 ## Postconditions
 
-* The main menu is open.
+* The main menu is open, or the app closed on Exit.

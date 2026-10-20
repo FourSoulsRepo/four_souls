@@ -18,6 +18,7 @@ Rules engine versions are in each release's notes.
 - The main menu shows the Four Souls logo of foursouls.ru at the top.
 - The menu screens drift on the starry sky of foursouls.ru.
 - A match record names the dedicated server the game ran on.
+- The main menu has an Exit button.
 
 ## 0.1.1 - 2026-10-19
 

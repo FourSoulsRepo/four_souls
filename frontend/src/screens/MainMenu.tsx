@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { getVersions, type Versions } from '../bridge';
+import { getVersions, quitApp, type Versions } from '../bridge';
 import { useApp } from '../store';
 import './MainMenu.css';
 
@@ -41,6 +41,9 @@ export function MainMenu() {
           }}
         >
           Settings
+        </button>
+        <button type="button" onClick={quitApp}>
+          Exit
         </button>
       </nav>
       {versions && (
