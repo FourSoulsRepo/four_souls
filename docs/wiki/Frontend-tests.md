@@ -10,6 +10,8 @@ The frontend is tested like the Go code (ADR 008). Three layers, from fast to sl
 
 Frontend changes gate on `make frontend e2e`, next to the Go gate. `make e2e` runs every test in Chromium and in WebKit (the engine of macOS's WKWebView, and the nearest check for Linux's WebKitGTK).
 
+It runs three Playwright workers at once (`workers` in `e2e/playwright.config.ts`; `make e2e E2E_WORKERS=N` for another number). Each test opens two to four app pages, and a worker keeps its pages open until it ends; with the default of half the CPU cores, a laptop slowed into 30 s game-start timeouts (19.35).
+
 ## Keep it simple
 
 The frontend follows the same KISS rules as the backend:

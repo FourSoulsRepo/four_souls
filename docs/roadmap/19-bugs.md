@@ -1072,3 +1072,38 @@ This step never closes; new reports are appended.
    1. The test polls for the sound before it plays the throw on.
    2. Repeated 20 times on webkit and chromium: 40 of 40 passed.
    3. No app change; no screenshots.
+
+### [ ] 19.35 e2e: game starts time out in a busy full run
+
+1. Goal: a full `make e2e` passes on a busy machine.
+2. Report (agent, 2026-10-20)
+   1. Seen in most full runs during 15.74 and 15.75.
+   2. Mostly chromium `table.spec.ts`, around tests 103 – 107: 30 s timeouts.
+   3. Also the 5 s Seats check in `startGame`, and `shell.spec.ts` once.
+   4. Each failed test passes alone, 8 of 8.
+   5. Load average 20 – 35 during the runs; chromium logs CVDisplayLink errors.
+   6. The error snapshots show another test's page, as in 19.33.
+   7. Evidence: `.cache/e2e-evidence/15.74-run*`, `15.75*`, `19.35-ab/`.
+3. Cause
+   1. Not found yet; not the 15.74 or 15.75 changes.
+   2. A/B, two full runs each: the 15.73 commit failed 4, then 0.
+   3. The current code failed 2, then 1, in other tests.
+   4. `startGame` contexts stay open until the worker ends.
+   5. One Go server and one Vite server serve every test of a browser.
+   6. Maybe the same cause as 19.33.
+4. Tasks:
+   1. Find what the slow tests wait for; fix the tests or the client.
+5. Done when:
+   1. The cause is named here; three full runs in a row pass.
+6. Owner answers (2026-10-20)
+   1. Every test ran at once; no PC handles that.
+   2. Give the tests room: a sensible number of workers.
+7. Result (2026-10-20)
+   1. Cause: 5 workers (half of 10 cores), each keeping 2 – 4 pages per test.
+   2. 46 browser processes were alive at once; game starts hit 30 s.
+   3. `workers: 3` in `e2e/playwright.config.ts`.
+   4. Makefile `E2E_WORKERS ?= 3` for `e2e` and `screenshots`; `make` lists it.
+   5. Three full runs in a row: 228 passed each, in 4.6 – 4.9 min.
+   6. As fast as with 5 workers, which took 4.5 – 5 min.
+   7. Wiki `Frontend-tests`.
+   8. 19.33 may share this cause; left open until it is seen again.

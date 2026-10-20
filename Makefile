@@ -18,6 +18,9 @@ FOCUS ?=
 SIMS ?= 3000
 SETS ?=
 
+# How many Playwright workers e2e and screenshots run at once (19.35).
+E2E_WORKERS ?= 3
+
 .DEFAULT_GOAL := help
 .PHONY: help test vet build wasm lint frontend e2e e2e-games screenshots internal fuzz fuzz-engine fuzz-focused fuzz-sets fuzz-new sims
 
@@ -26,7 +29,7 @@ help: ## Show this help
 	@echo
 	@awk 'BEGIN {FS = ":.*## "} /^[a-z0-9-]+:.*## / {printf "  %-14s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 	@echo
-	@echo "Variables: TAGS, GOLANGCI, PLATFORM, FUZZTIME=$(FUZZTIME), MINIMIZE=$(MINIMIZE), FOCUS=$(FOCUS), SIMS=$(SIMS), SETS=$(SETS)"
+	@echo "Variables: TAGS, GOLANGCI, PLATFORM, FUZZTIME=$(FUZZTIME), MINIMIZE=$(MINIMIZE), FOCUS=$(FOCUS), SIMS=$(SIMS), SETS=$(SETS), E2E_WORKERS=$(E2E_WORKERS)"
 
 test: ## Run tests in every Go module, plus embed mode
 	@for m in $(MODULES); do (cd $$m && go test -tags "$(TAGS)" ./... && go test -tags "$(TAGS) embed" ./...) || exit 1; done
@@ -55,13 +58,13 @@ frontend: ## Typecheck, lint and unit-test the frontend
 E2E := cd e2e && npm install --no-audit --no-fund && npx playwright install chromium webkit &&
 
 e2e: ## Run end-to-end UI tests (Playwright)
-	@$(E2E) npx playwright test
+	@$(E2E) npx playwright test --workers $(E2E_WORKERS)
 
 e2e-games: ## Play whole random games with every set through the UI (slow)
 	@$(E2E) FULL_GAMES=1 npx playwright test games --project chromium --workers 1
 
 screenshots: ## Run e2e and save UI screenshots into .cache/screenshots
-	@$(E2E) SCREENSHOTS=1 npx playwright test --project chromium
+	@$(E2E) SCREENSHOTS=1 npx playwright test --project chromium --workers $(E2E_WORKERS)
 
 # Internal play-test build (7.12): card images embedded, the version
 # names the commit. Needs the private images submodule. PLATFORM picks
