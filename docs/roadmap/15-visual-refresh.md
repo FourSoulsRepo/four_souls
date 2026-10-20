@@ -2098,3 +2098,5 @@ Images come first, so the new table is built with backs and mats.
    12. Go test `TestNoEndTurnAsk`.
    13. UC-13 7e, UC-10 3g; wikis `Client` and `Layers`; CHANGELOG.
    14. Screenshots: `.cache/screenshots/15.70/before/` and `after/`.
+7. Owner notes (2026-10-20)
+   1. Owner marks 15.70 solved.
