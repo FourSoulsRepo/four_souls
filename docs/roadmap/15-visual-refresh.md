@@ -1485,6 +1485,8 @@ Images come first, so the new table is built with backs and mats.
    24. UC-26; ADR 007, 014; wiki `Rules-engine`, `Server`, `Client`.
    25. Wiki `Animations`, `Frontend-tests`, `Screenshots`; CHANGELOG.
    26. Screenshots: `.cache/screenshots/15.43/before/` and `after/`.
+6. Owner notes (2026-10-21)
+   1. Owner marks 15.43 solved.
 
 ### [ ] 15.44 Declarations on the stack
 
