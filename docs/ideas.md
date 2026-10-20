@@ -657,6 +657,7 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
 1. ST-01. Fullscreen or windowed mode.
 2. ST-02. Theme: dark or light.
    1. Changes menus and panels only for now.
+   2. Replaced by ST-07 (owner, 2026-10-20).
 3. ST-03. Game mat: choose one of the official mats.
    1. Mat images are collected by the scraping script (CD-07).
    2. Bad images are replaced by hand.
@@ -670,6 +671,12 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    2. Sent when joining a game; shown in the lobby, at the table and in the history.
    3. 1–20 characters; the server makes equal names in one game unique.
    4. Can be changed in the settings; a running game keeps the old one.
+7. ST-07. One dark theme; no theme choice (owner, 2026-10-20).
+   1. Replaces ST-02.
+   2. The light theme and the Theme field go away.
+8. ST-08. No Green felt mat (owner, 2026-10-20).
+   1. It read as a poker table (H-05).
+   2. A saved Green felt falls back to the default mat.
 
 ## Audio (later)
 
@@ -690,6 +697,9 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    1. Host a game.
    2. Join a game.
    3. Records: list, watch, export, and delete saved matches.
+2. M-02. Exit button in the main menu (owner, 2026-10-20).
+   1. Last button of the menu.
+   2. Closes the app.
 
 ## Game setup
 

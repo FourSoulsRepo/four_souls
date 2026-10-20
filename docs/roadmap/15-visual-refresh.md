@@ -2,7 +2,8 @@
 
 Goal: a clearer table, using fouronlinesouls.net as a second reference.
 
-Ideas: V-09, V-12, V-13, V-15 – V-31, V-33 – V-47, GS-06, N-18.
+Ideas: V-09, V-12, V-13, V-15 – V-31, V-33 – V-47, GS-06, N-18,
+M-02, ST-07, ST-08.
 
 Order: 15.1, 15.15, 15.9 – 15.11, 15.16, 15.17, 15.38, 15.18 – 15.24,
 15.3, 15.37, 15.25, 15.32 – 15.34, 15.26, 15.27, 15.59 – 15.63, 15.6, 15.64,
@@ -2386,3 +2387,42 @@ Images come first, so the new table is built with backs and mats.
    7. No screen changed; no screenshots.
 6. Owner notes (2026-10-20)
    1. Owner marks 15.78 solved.
+
+### [ ] 15.79 Exit button in the main menu
+
+1. Goal: the player can close the app from the main menu (M-02).
+2. Asked by the owner (2026-10-20).
+3. Tasks:
+   1. "Exit" is the last main menu button.
+   2. It quits the app through the bridge (Wails `Quit`).
+   3. UC-01 gains the step; wiki `Client`; CHANGELOG.
+4. Done when:
+   1. e2e: the menu lists Exit last; a click calls the fake `Quit`.
+   2. `make screenshots` covers the main menu.
+
+### [ ] 15.80 One dark theme
+
+1. Goal: the app has one theme, dark (ST-07).
+2. Asked by the owner (2026-10-20).
+3. Tasks:
+   1. Settings: no Theme field.
+   2. Go `settings`: no `theme`; an old file's `theme` is ignored.
+   3. CSS: the light theme rules go away.
+   4. UC-01, UC-10; wikis `Client`, `Screenshots`; CHANGELOG.
+4. Done when:
+   1. Go test: an old settings file with `theme` still loads.
+   2. e2e: Settings has no Theme field.
+   3. `make screenshots`: no light settings shot.
+
+### [ ] 15.81 No Green felt mat
+
+1. Goal: the mat list has no Green felt (ST-08).
+2. Asked by the owner (2026-10-20).
+3. Tasks:
+   1. `mats.ts`, Go `ColorMats` and `.mat-felt` lose `felt`.
+   2. A saved `felt` falls back to the default mat.
+   3. UC-10; wiki `Client`; CHANGELOG.
+4. Done when:
+   1. Vitest: the choices have no felt; `felt` gives the default.
+   2. Go test: a saved `felt` loads as the default.
+   3. e2e: the mat list has no Green felt.
