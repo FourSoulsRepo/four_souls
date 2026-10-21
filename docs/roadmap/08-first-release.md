@@ -407,3 +407,18 @@ Ideas: B-03 – B-05, L-03, V-10, V-11, DO-01, V-14, A-16, N-13, N-14, V-19, N-1
    1. PNG and ICO are rendered from the SVG in Chromium (Playwright).
    2. ImageMagick's own SVG renderer drops gradients and filters.
    3. Below 32 px the souls blend into the digit; the "4" still reads.
+
+### [ ] 8.29 Image embedding moves into the images repo
+
+1. Goal: the private images repo owns how its images are embedded.
+2. Tasks:
+   1. A Go package in `pkg/card_db/images` holds the `//go:embed`.
+   2. It returns the images as an `fs.FS`.
+   3. `pkg/card_db/embed_images.go` only calls that package.
+   4. The embed patterns list the image folders explicitly.
+   5. The package's `.go` files never end up in the binary.
+   6. Builds without `cardimages` or without the submodule stay as now.
+   7. Details live in the images repo `README.md`.
+3. Done when:
+   1. `wails build -tags "embed cardimages"` shows every card image.
+   2. `wails build -tags embed` and `make e2e` pass without the submodule.
