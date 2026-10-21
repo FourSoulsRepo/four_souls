@@ -12,6 +12,7 @@ import {
   StackKind,
   stackLine,
   stackParts,
+  stackRows,
   stackWait,
   waitTurn,
 } from './stack';
@@ -203,5 +204,28 @@ describe('declaration', () => {
     expect(declaration(view, names)).toBeNull();
     expect(declaration({ ...view, buying: true, over: true }, names)).toBeNull();
     expect(declaration({ ...view, attack: {}, first_roll: { round: 1, players: [0, 1] } }, names)).toBeNull();
+  });
+});
+
+describe('stackRows', () => {
+  const keys = (v: GameView) => stackRows(v, names).map((r) => r.key);
+
+  it('keeps every row key while the stack grows and shrinks (15.51)', () => {
+    const a = item({ id: 4, card: 'a_dime' });
+    const b = item({ id: 7, kind: StackKind.roll, roll: 3 });
+    const c = item({ id: 9, kind: StackKind.damage, amount: 1 });
+    expect(keys({ ...view, stack: [a] })).toEqual(['item-4']);
+    expect(keys({ ...view, stack: [a, b, c] })).toEqual(['item-9', 'item-7', 'item-4']);
+    // The top resolves: the others keep their keys, so they move.
+    expect(keys({ ...view, stack: [a, b] })).toEqual(['item-7', 'item-4']);
+    // An item in the middle goes too, e.g. a cancelled roll.
+    expect(keys({ ...view, stack: [a, c] })).toEqual(['item-9', 'item-4']);
+  });
+
+  it('puts an open declaration on top, under its own key', () => {
+    const a = item({ id: 4, kind: StackKind.roll, roll: 2, attack: true });
+    const rows = stackRows({ ...view, attack: { target: 9 }, stack: [a] }, names);
+    expect(rows.map((r) => r.key)).toEqual(['declared', 'item-4']);
+    expect(keys({ ...view, attack: { target: 9 } })).toEqual(['declared']);
   });
 });

@@ -151,17 +151,11 @@ test('every player sees whom the stack waits for (V-11)', async ({ browser }) =>
   await expectSameLines(pages, names, (await waitLine(active, me, 'Waiting for')) + (await waitLine(active, me, 'Passed')));
 });
 
-test('the stack panel: icons, colored names, and a hover with card and owner (15.21)', async ({ browser }) => {
-  const pages = await startGame(browser, ['Ike', 'Jud'], { url: fast() });
-  const active = await activePage(pages, click);
-  const stack = active.getByRole('complementary', { name: 'Stack' });
-  // An empty stack says so, and Pass stays in the panel (S-08, S-09).
-  await expect(stack).toContainText('Nothing on the stack');
-  await expect(passButton(active)).toBeVisible();
-
-  // Three items, as the server would send them: a loot card, a roll,
-  // and damage. Only the screen changes; nobody acts on it.
-  await active.evaluate(() => {
+// fakeStack shows stack items as the server would send them: a loot
+// card (1), a roll (2), and damage (3), the ones in ids. Only the
+// screen changes; nobody acts on it.
+async function fakeStack(page: Page, ids: number[]): Promise<void> {
+  await page.evaluate((ids) => {
     interface Item {
       id: number;
       kind: number;
@@ -203,8 +197,20 @@ test('the stack panel: icons, colored names, and a hover with card and owner (15
       { id: 2, kind: 3, controller: other, source: 0, roll: 5, target: { player: -1 }, ability: none, roll_for: none },
       { id: 3, kind: 4, controller: me, source: 0, amount: 1, target: { player: other, is_player: true }, ability: none, roll_for: none },
     ];
-    store.setState({ game: { ...game, view: { ...game.view, stack } } });
-  });
+    store.setState({ game: { ...game, view: { ...game.view, stack: stack.filter((it) => ids.includes(it.id)) } } });
+  }, ids);
+}
+
+test('the stack panel: icons, colored names, and a hover with card and owner (15.21)', async ({ browser }) => {
+  const pages = await startGame(browser, ['Ike', 'Jud'], { url: fast() });
+  const active = await activePage(pages, click);
+  const stack = active.getByRole('complementary', { name: 'Stack' });
+  // An empty stack says so, and Pass stays in the panel (S-08, S-09).
+  await expect(stack).toContainText('Nothing on the stack');
+  await expect(passButton(active)).toBeVisible();
+
+  // Three items: a loot card, a roll, and damage.
+  await fakeStack(active, [1, 2, 3]);
 
   const rows = stack.locator('.stack-row');
   await expect(rows).toHaveCount(3);
@@ -266,4 +272,96 @@ test('a declared buy shows on top of the stack until it ends (15.91)', async ({ 
   for (const page of pages) {
     await expect(declared(page)).toHaveCount(0);
   }
+});
+
+// Frame is one animation frame after the top stack item resolved.
+interface Frame {
+  // there: the resolved row is still in the list; opacity is its own.
+  there: boolean;
+  opacity: number;
+  // next is the top of the row below it.
+  next: number;
+}
+
+// resolveTop takes the top item (3) off the stack and samples the
+// rows on every frame for a second, from the next one (15.51). top and next are where the two top rows
+// were before.
+async function resolveTop(page: Page): Promise<{ top: number; next: number; frames: Frame[] }> {
+  return page.evaluate(async () => {
+    interface S {
+      game: { view: { stack: { id: number }[] | null } } | null;
+    }
+    const { store } = (window as unknown as { fourSouls: { store: { getState: () => S; setState: (s: Partial<S>) => void } } })
+      .fourSouls;
+    const rows = [...document.querySelectorAll('.stack ol > li')];
+    const [gone, below] = rows;
+    const game = store.getState().game;
+    if (!gone || !below || !game) {
+      throw new Error('no rows to resolve');
+    }
+    const top = gone.getBoundingClientRect().top;
+    const next = below.getBoundingClientRect().top;
+    store.setState({ game: { ...game, view: { ...game.view, stack: (game.view.stack ?? []).filter((it) => it.id !== 3) } } });
+    const frames: Frame[] = [];
+    const start = performance.now();
+    while (performance.now() - start < 1000) {
+      await new Promise((r) => requestAnimationFrame(r));
+      frames.push({ there: gone.isConnected, opacity: Number(getComputedStyle(gone).opacity), next: below.getBoundingClientRect().top });
+    }
+    return { top, next, frames };
+  });
+}
+
+// quiet waits until the game's own effects are over, so its next view
+// does not replace the faked stack.
+async function quiet(page: Page): Promise<void> {
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const s = (window as unknown as { fourSouls: { store: { getState: () => { behind: boolean; playing: unknown } } } }).fourSouls.store.getState();
+        return !s.behind && s.playing === null;
+      }),
+    )
+    .toBe(true);
+}
+
+test('a resolved stack row fades out, then the next slides up (15.51)', async ({ browser }) => {
+  const pages = await startGame(browser, ['Kai', 'Lou'], { url: appURL() });
+  const active = await activePage(pages, click);
+  await quiet(active);
+  await fakeStack(active, [1, 2, 3]);
+  const rows = active.getByRole('complementary', { name: 'Stack' }).locator('.stack-row');
+  await expect(rows).toHaveCount(3);
+  // The new rows have faded in.
+  await expect.poll(() => rows.evaluateAll((els) => els.every((el) => getComputedStyle(el).opacity === '1'))).toBe(true);
+
+  await shot(active, 'stack-rows-before-resolve');
+  const sampled = resolveTop(active);
+  // Mid-fade, then mid-slide; screenshots only.
+  if (process.env.SCREENSHOTS) {
+    await active.waitForTimeout(100);
+    await shot(active, 'stack-row-fading');
+    await active.waitForTimeout(200);
+    await shot(active, 'stack-rows-sliding');
+  }
+  const { top, next, frames } = await sampled;
+  await shot(active, 'stack-rows-after-resolve');
+  // It fades out while it still holds its place.
+  expect(frames.some((f) => f.there && f.opacity > 0 && f.opacity < 1 && f.next === next)).toBe(true);
+  // Then it is gone, and the row below slides up into its place, not at once.
+  expect(frames.at(-1)?.there).toBe(false);
+  expect(frames.some((f) => !f.there && f.next < next - 1 && f.next > top + 1)).toBe(true);
+  expect(Math.abs((frames.at(-1)?.next ?? 0) - top)).toBeLessThan(1);
+  await expect(rows).toHaveCount(2);
+});
+
+test('with animations off, stack rows change at once (15.51)', async ({ browser }) => {
+  const pages = await startGame(browser, ['Mia', 'Ned'], { url: fast() });
+  const active = await activePage(pages, click);
+  await fakeStack(active, [1, 2, 3]);
+  await expect(active.getByRole('complementary', { name: 'Stack' }).locator('.stack-row')).toHaveCount(3);
+
+  const { top, frames } = await resolveTop(active);
+  // From the first frame: the row is gone and the next one is in its place.
+  expect(frames.every((f) => !f.there && Math.abs(f.next - top) < 1)).toBe(true);
 });

@@ -87,6 +87,19 @@ describe('effectsFor', () => {
     ]);
   });
 
+  it('plays the hits and deaths of a resolved loot before its discard flight (15.51)', () => {
+    const discarded: GameEvent = { kind: 'discarded', player: 0, object: 80, prev: 70, card: 'bomb', text: 'stack' };
+    const damaged: GameEvent = { kind: 'damaged', player: 1, amount: 1, source: 70, by: 1 };
+    const died: GameEvent = { kind: 'died', player: 1 };
+    const kinds = (events: GameEvent[]) => effectsFor(events, ctx).map((e) => e.kind);
+    expect(kinds([discarded, damaged, died])).toEqual(['hits', 'deaths', 'fly']);
+    // The shot flies from the card, which is still there.
+    expect(effectsFor([discarded, damaged], ctx)[0]).toMatchObject({ kind: 'hits', hits: [{ from: ['obj-70', 'played-70', 'stack-src-70', 'player-0'] }] });
+    expect(kinds([damaged, died, discarded])).toEqual(['hits', 'deaths', 'fly']);
+    // Damage from another source does not hold the card.
+    expect(kinds([discarded, { ...damaged, source: 9 }])).toEqual(['fly', 'hits']);
+  });
+
   it('lunges the attacker at what its attack damaged, with no pending popup', () => {
     const events: GameEvent[] = [
       { kind: 'damaged', player: -1, object: 40, amount: 1, source: 30, text: 'combat' },

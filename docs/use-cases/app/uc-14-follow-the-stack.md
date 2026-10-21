@@ -66,6 +66,10 @@
   * A buy: "Bo buys…".
   * Every player sees the same row.
   * It goes when the attack or the buy ends.
+* **2n. Rows move (15.51):** the panel never jumps.
+  * A new row fades in; the rows below slide down.
+  * A resolved row fades out; then the rows below slide up.
+  * The animation speed setting applies; with animations off, rows change at once.
 
 ## Postconditions
 

@@ -1652,7 +1652,7 @@ Images come first, so the new table is built with backs and mats.
    1. Owner merged the sounds into the private images.
    2. Owner marks 15.50 solved.
 
-### [ ] 15.51 Stack and history rows move
+### [x] 15.51 Stack and history rows move
 
 1. Goal: rows of the stack and history never jump (V-39).
 2. Tasks:
@@ -1668,6 +1668,23 @@ Images come first, so the new table is built with backs and mats.
    1. Vitest: rows keep their keys when the stack grows and shrinks.
    2. e2e test: a resolved row fades out; the next slides up.
    3. e2e test: with animations off, rows change at once.
+4. Result (2026-10-22)
+   1. `Rows` and `Row` in `components/Rows.tsx`: motion's `AnimatePresence`.
+   2. A new row fades in; the others slide (`layout="position"`).
+   3. A leaving row fades out, then the rest close the gap.
+   4. Fade 0.2 s, slide 0.25 s, times `scaleFor` of the speed setting.
+   5. Animations off: no `AnimatePresence`; rows change at once.
+   6. A leaving row drops its zones and is `aria-hidden`.
+   7. Stable keys: `stackRows` in `stack.ts`, `stripEntries` in `history.ts`.
+   8. Task 7: `marksFirst` in `playback.ts`.
+   9. A loot's hits and deaths in its update play before its discard flight.
+   10. Today the engine puts that damage on the stack; it never shares the update.
+   11. Checked in match records of 2026-10-20 – 22.
+   12. Task 8: an item's or ability's row fades out like any other.
+   13. Animation `row-move` in `Animations.md`.
+   14. Vitest: `stack.test.ts`, `history.test.ts`, `playback.test.ts`.
+   15. e2e: `stack.spec.ts`, two tests; `fakeStack` shared with 15.21's.
+   16. UC-14 2n, UC-12 3g; wiki `Client`; CHANGELOG.
 
 ### [~] 15.52 Played cards fly through the stack
 

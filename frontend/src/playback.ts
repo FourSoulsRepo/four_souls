@@ -275,7 +275,30 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
     }
   }
   holdReveals(out);
+  marksFirst(out);
   return out;
+}
+
+// marksFirst lets a loot card that leaves the stack wait for the damage
+// its own effect dealt in the same update, and the deaths after it: the
+// shots fly from the card, then the card flies to its discard (15.51,
+// 15.52).
+function marksFirst(effects: Effect[]): void {
+  for (let i = effects.length - 1; i >= 0; i--) {
+    const e = effects.at(i);
+    if (e?.kind !== 'fly' || e.leaves === undefined) {
+      continue;
+    }
+    const from = `played-${String(e.leaves)}`;
+    let last = effects.findLastIndex((x, j) => j > i && x.kind === 'hits' && x.hits.some((h) => h.from.includes(from)));
+    if (last < 0) {
+      continue;
+    }
+    while (effects.at(last + 1)?.kind === 'deaths') {
+      last++;
+    }
+    effects.splice(last, 0, ...effects.splice(i, 1));
+  }
 }
 
 // holdReveals joins a reveal to a move of its card right after it: the

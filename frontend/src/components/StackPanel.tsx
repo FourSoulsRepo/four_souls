@@ -2,12 +2,13 @@ import type { PointerEvent } from 'react';
 import { diceImage, firstRollRows, lastRollText } from '../dice';
 import { useKey } from '../keys';
 import type { FirstRoll, GameView, Intent, StackItem } from '../protocol';
-import { declaration, playedCard, stackCard, stackIcon, stackParts, stackWait, type LinePart, type Names } from '../stack';
+import { playedCard, stackCard, stackIcon, stackParts, stackRows, stackWait, type LinePart, type Names } from '../stack';
 import { useApp, type Zoom } from '../store';
 import { playerColor } from '../table';
 import { boxOf } from '../zoom';
 import { Card } from './Card';
 import { Die } from './Die';
+import { Row, Rows } from './Rows';
 import { skullPath } from './marks';
 import './Actions.css';
 
@@ -27,13 +28,13 @@ interface Props {
 // StackPanel is the stack inside the board (15.21, F-03): newest on
 // top, one icon and one short line per item (S-01 – S-04), whom it
 // waits for (V-11), and the Pass button; Space presses it (S-08). An
-// open attack or buy is a row on top (15.91). An empty stack says so
-// (S-09). Pass glows when it answers the prompt.
+// open attack or buy is a row on top (15.91). Rows fade in and out and
+// slide (15.51). An empty stack says so (S-09). Pass glows when it
+// answers the prompt.
 export function StackPanel({ view, you, names, pass, disabled, prompt, answer }: Props) {
   const act = useApp((s) => s.act);
-  const stack = view.stack ?? [];
-  const declared = declaration(view, names);
-  const empty = stack.length === 0 && !declared;
+  const rows = stackRows(view, names);
+  const empty = rows.length === 0;
   const wait = stackWait(view, you, names);
   const lit = pass !== undefined && !disabled;
   const press = () => {
@@ -63,10 +64,11 @@ export function StackPanel({ view, you, names, pass, disabled, prompt, answer }:
         <p className="stack-nothing">Nothing on the stack</p>
       ) : (
         <ol>
-          {declared && <DeclaredRow parts={declared} />}
-          {[...stack].reverse().map((it) => (
-            <StackRow key={it.id} it={it} view={view} names={names} />
-          ))}
+          <Rows>
+            {rows.map((r) =>
+              'declared' in r ? <DeclaredRow key={r.key} parts={r.declared} /> : <StackRow key={r.key} it={r.item} view={view} names={names} />,
+            )}
+          </Rows>
         </ol>
       )}
       {prompt && (
@@ -163,7 +165,7 @@ function StackRow({ it, view, names }: { it: StackItem; view: GameView; names: N
     }
   };
   return (
-    <li
+    <Row
       className={`stack-row stack-${stackIcon(it)}${aimed ? ' hl-aim' : ''}`}
       // Damage from this item's source flies from here (15.37).
       data-zone={it.source ? `stack-src-${String(it.source)}` : undefined}
@@ -195,7 +197,7 @@ function StackRow({ it, view, names }: { it: StackItem; view: GameView; names: N
           <Part key={i} part={p} />
         ))}
       </span>
-    </li>
+    </Row>
   );
 }
 
@@ -203,7 +205,7 @@ function StackRow({ it, view, names }: { it: StackItem; view: GameView; names: N
 // item (R-ATK-02, R-SHOP-02), so it has no icon frame and a dashed edge.
 function DeclaredRow({ parts }: { parts: LinePart[] }) {
   return (
-    <li className="stack-declared" aria-label={parts.map((p) => p.text).join('')}>
+    <Row className="stack-declared" aria-label={parts.map((p) => p.text).join('')}>
       <span className="stack-line">
         {parts.map((p, i) => (
           // A line's parts never change order, so the index is a stable key.
@@ -211,7 +213,7 @@ function DeclaredRow({ parts }: { parts: LinePart[] }) {
           <Part key={i} part={p} />
         ))}
       </span>
-    </li>
+    </Row>
   );
 }
 

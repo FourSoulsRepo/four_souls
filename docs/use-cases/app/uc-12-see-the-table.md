@@ -175,6 +175,9 @@
   * Damage: the dealer large; the target with a starburst and the number.
   * A kill: the killer large; the dead card under a skull, then the rewards.
   * A buy: the buyer large; the bought item.
+* **3g. New tiles (15.51):** a new strip tile fades in on top.
+  * The older tiles slide down; none jumps.
+  * With animations off, tiles change at once.
 
 ## Postconditions
 

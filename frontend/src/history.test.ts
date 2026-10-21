@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import kindList from '../../pkg/rules_engine/testdata/event_kinds.txt?raw';
 import { PromptKind } from './actions';
-import { entriesFor as entries, historyKinds, lookedAt, stepName } from './history';
+import { entriesFor as entries, historyKinds, lookedAt, stepName, stripEntries } from './history';
 import type { GameEvent, GameView, StackItem } from './protocol';
 import { StackKind, stackLine } from './stack';
 
@@ -470,3 +470,15 @@ describe('outcome', () => {
   });
 });
 
+
+describe('stripEntries', () => {
+  it('keeps every tile key when the history grows (15.51)', () => {
+    const first = entriesFor([{ kind: 'purchased', player: 1, object: 12, card: 'spoon_bender' }], 1, 0, n, 0);
+    const before = stripEntries(first).map((e) => e.key);
+    const next = entriesFor([{ kind: 'died', player: -1, object: 9, card: 'gaper', prev: 5, by: 2 }], 1, 0, n, first.length);
+    const after = stripEntries([...first, ...next]).map((e) => e.key);
+    // The new tile is on top; the old ones keep their keys below it.
+    expect(after.slice(1)).toEqual(before);
+    expect(after).toHaveLength(before.length + 1);
+  });
+});

@@ -394,6 +394,13 @@ function dies(it: StackItem, e: GameEvent): boolean {
   return it.target.is_player ? e.player >= 0 && it.target.player === e.player : e.player < 0 && it.target.object === e.prev;
 }
 
+// stripEntries are the history strip's tiles, newest on top (15.89):
+// the headlines. Each keeps its entry's key, so an older tile slides
+// down when a new one comes, instead of being drawn again (15.51).
+export function stripEntries(history: Entry[]): Entry[] {
+  return history.filter((e) => e.headline).reverse();
+}
+
 // firstRollLabel is the label of the first-player roll's dice.
 export const firstRollLabel = 'first player roll';
 

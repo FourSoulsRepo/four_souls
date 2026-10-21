@@ -1,10 +1,11 @@
 import type { PointerEvent } from 'react';
-import type { Entry } from '../history';
+import { stripEntries, type Entry } from '../history';
 import type { GameView } from '../protocol';
 import { stackBadge, stackCard, stackIcon, stackLine, type Names } from '../stack';
 import { useApp, type Zoom } from '../store';
 import { boxOf } from '../zoom';
 import { Card } from './Card';
+import { Row, Rows } from './Rows';
 import { ItemIcon, itemZoom, SkullIcon } from './StackPanel';
 import './InfoPanels.css';
 
@@ -20,11 +21,12 @@ interface Props {
 // board's left edge (15.22, 15.89, H-07): resolved stack items with the
 // stack's icons, buys and kills, newest on top (S-10, F-04). A badge
 // marks each kind (H-08): a sword, a bolt, a coin or a skull. Hover shows
-// the large card (S-11, H-09). A line marks each new turn. The button on
-// top opens the full History panel.
+// the large card (S-11, H-09). A line marks each new turn. A new tile
+// fades in and the others slide down (15.51). The button on top opens
+// the full History panel.
 export function HistoryStrip({ view, names, open, toggle }: Props) {
   const history = useApp((s) => s.history);
-  const items = history.filter((e) => e.headline).reverse();
+  const items = stripEntries(history);
   return (
     <aside className="history-strip" aria-label="History strip">
       <button
@@ -38,9 +40,11 @@ export function HistoryStrip({ view, names, open, toggle }: Props) {
         <ScrollIcon />
       </button>
       <ol>
-        {items.map((e, i) => (
-          <StripItem key={e.key} entry={e} view={view} names={names} newTurn={(items.at(i + 1)?.turn ?? e.turn) !== e.turn} />
-        ))}
+        <Rows>
+          {items.map((e, i) => (
+            <StripItem key={e.key} entry={e} view={view} names={names} newTurn={(items.at(i + 1)?.turn ?? e.turn) !== e.turn} />
+          ))}
+        </Rows>
       </ol>
     </aside>
   );
@@ -65,7 +69,7 @@ function StripItem({ entry, view, names, newTurn }: { entry: Entry; view: GameVi
     ...(outcome ? { outcome } : {}),
   });
   return (
-    <li
+    <Row
       className={`strip-item stack-${plain ? stackIcon(plain) : 'card'}${newTurn ? ' strip-turn' : ''}`}
       aria-label={line}
       title={`Turn ${String(entry.turn)}: ${line}`}
@@ -97,7 +101,7 @@ function StripItem({ entry, view, names, newTurn }: { entry: Entry; view: GameVi
           {badge === 'attack' ? <SwordIcon /> : badge === 'spell' ? <BoltIcon /> : badge === 'buy' ? <CoinIcon /> : <SkullIcon />}
         </span>
       )}
-    </li>
+    </Row>
   );
 }
 

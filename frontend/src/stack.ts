@@ -144,6 +144,19 @@ export function declaration(view: GameView, n: Names): LinePart[] | null {
   return view.buying ? [who, { text: ' buys…' }] : null;
 }
 
+// StackRowData is one row of the stack panel: the open declaration, or
+// a stack item. key is stable while the row stays, so the row moves
+// instead of being drawn again (15.51).
+export type StackRowData = { key: string; declared: LinePart[] } | { key: string; item: StackItem };
+
+// stackRows are the stack panel's rows, top first: the open
+// declaration (15.91), then the items, newest first (S-01).
+export function stackRows(view: GameView, n: Names): StackRowData[] {
+  const declared = declaration(view, n);
+  const items = [...(view.stack ?? [])].reverse().map((item) => ({ key: `item-${String(item.id)}`, item }));
+  return declared ? [{ key: 'declared', declared }, ...items] : items;
+}
+
 // stackLine says what one stack item is, as plain text.
 export function stackLine(it: StackItem, view: GameView, n: Names): string {
   return stackParts(it, view, n)
