@@ -2789,6 +2789,8 @@ Images come first, so the new table is built with backs and mats.
    12. No new layer or animation: the popout is part of the zoom.
    13. UC-12 3f; wiki `Client`; CHANGELOG.
    14. Screenshots: `.cache/screenshots/15.90/before/` and `after/`.
+6. Owner notes (2026-10-22)
+   1. Owner marks 15.90 solved.
 
 ### [ ] 15.91 Open declarations in the stack panel
 
