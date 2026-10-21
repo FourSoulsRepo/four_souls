@@ -1712,6 +1712,9 @@ Images come first, so the new table is built with backs and mats.
    4. Left: task 7, marks before the flight; not checked yet.
    5. Left: task 8, a row fades out; that is 15.51.
    6. Moved to 15.51.
+5. Owner notes (2026-10-22)
+   1. 15.51 did tasks 7 and 8; nothing is left here.
+   2. Owner marks 15.52 solved by 15.74 and 15.51.
 
 ### [x] 15.53 Create a game on a dedicated server
 
