@@ -610,8 +610,8 @@ test('a deck attack keeps the drawn monster in view while its slot is picked (19
 
 // trackCards records, every frame, the box of the large revealed card
 // and of a card flying to its place, in window.boxes (15.73). It stops
-// when the boxes are read, or after 10 s: the test's pages stay open
-// until the worker ends, and a loop left running slows later tests.
+// when the boxes are read, or after 10 s, so a loop left running never
+// slows the rest of the test.
 async function trackCards(page: Page): Promise<void> {
   await page.evaluate(() => {
     interface Box {

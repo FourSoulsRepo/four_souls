@@ -1245,10 +1245,34 @@ Totals by system (47 items):
    21. `table.spec.ts:802`: the 5 s check for the table.
    22. Load average 34 during the run; the run took 10.3 min.
    23. Evidence: `.cache/e2e-evidence/19.42-run3/` (not in git).
+   24. Again in five 8.24 gate runs on 2026-10-21, one failure each.
+   25. Each a different test; once the `?fake` Settings page alone.
+   26. A full run took 7.9 – 10.7 min; 3.5 – 4.9 min the day before.
+   27. Two workers instead of three: 10.7 min, still a failure.
+   28. Evidence: `.cache/e2e-evidence/8.24-*/` (not in git).
 3. Tasks:
    1. Find what else loads the machine; maybe fewer workers for webkit.
 4. Done when:
    1. Cause written here; three full runs in a row pass.
+5. Cause
+   1. `startGame` opens a context per player; nothing closed them.
+   2. They lived until the worker ended: ~175 game pages per browser.
+   3. Each keeps a WebSocket and a looping glow (end turn, prompt, hand).
+   4. Headless pages are never hidden, so the glows never stop.
+   5. The laptop has 16 GB; ~12 GB was in use before the run.
+   6. Chromium alone: browser processes rose from 52 to 214.
+   7. ~1.3M pages (~20 GB) went to swap in 4 min; load 24.
+   8. Later tests of each browser ran ~2× slower than earlier ones.
+   9. A failure hit whichever test ran while the machine swapped.
+   10. Fewer workers did not help: the pages per run stay the same.
+6. Result (2026-10-21)
+   1. The automatic fixture closes every context a test opened.
+   2. It runs after the clash check, in `e2e/tests/fixtures.ts`.
+   3. Chromium alone: 2.8 min instead of 4.1; 19 – 26 processes.
+   4. Swap: ~2,400 pages instead of ~1.3M.
+   5. Three full runs in a row: 258 passed each, 5.8 – 6.3 min, load < 10.
+   6. The first try failed once on another test, a separate bug.
+   7. Wiki `Frontend-tests`.
 
 ### [x] 19.39 Many dice show as one thrown die
 
@@ -1385,6 +1409,7 @@ Totals by system (47 items):
 3. Cause
    1. Not found yet.
    2. Guess: the short fly ends between two checks under load.
+   3. Likely 19.38: the machine swapped; check again after it.
 4. Tasks:
    1. Find the cause in the evidence; fix the test or the app.
 5. Done when:
@@ -1405,6 +1430,7 @@ Totals by system (47 items):
    1. Not found yet; the loot card is not known.
    2. Maybe a table target, which the test never picks.
    3. Maybe the dialog came later than 2 s under load.
+   4. Likely 19.38: the machine swapped; check again after it.
 4. Tasks:
    1. Find the card in the match record; fix the test or the app.
 5. Done when:
@@ -1510,3 +1536,4 @@ Totals by system (47 items):
    7. Release files only; no screen change, no screenshots.
 7. Owner notes (2026-10-21)
    1. Owner marks 19.47 solved.
+
