@@ -185,7 +185,7 @@ describe('historyKinds', () => {
     );
     expect(lines.map((e) => [e.text, e.headline ?? false])).toEqual([
       ['Bo declares an attack', false],
-      ['Bo attacks GAPER', true],
+      ['Bo attacks GAPER', false],
       ['Bo kills GAPER', true],
       ['Bo gains the rewards of GAPER', false],
       ['Bo gains 3¢', false],
@@ -193,6 +193,39 @@ describe('historyKinds', () => {
       ['Bo buys SPOON_BENDER', true],
     ]);
     expect(lines[6]?.card).toBe('spoon_bender');
+    expect(lines.map((e) => e.badge)).toEqual([undefined, undefined, 'kill', undefined, undefined, undefined, 'buy']);
+  });
+
+  it('turns a resolved death into the kill, once, with the dead card (15.89)', () => {
+    const none = { card: '', index: 0 };
+    const death = { id: 7, kind: 5, controller: -1, source: 0, text: 'death', target: { player: -1, object: 5 }, ability: none, roll_for: none };
+    const lines = entriesFor(
+      [
+        { kind: 'stack_resolved', player: -1, text: 'death', stack_id: 7, item: death },
+        { kind: 'died', player: -1, object: 9, card: 'gaper', prev: 5, by: 2 },
+      ],
+      1,
+      0,
+      n,
+      0,
+    );
+    expect(lines).toEqual([{ key: 0, turn: 1, icon: '☠', text: 'Bo kills GAPER', card: 'gaper', item: death, headline: true, badge: 'kill' }]);
+    // A player's death item ends only that player's death.
+    const mine = { ...death, target: { player: 0, is_player: true } };
+    const two = entriesFor(
+      [
+        { kind: 'stack_resolved', player: -1, text: 'death', stack_id: 7, item: mine },
+        { kind: 'died', player: 1, object: 2, card: 'cain' },
+      ],
+      1,
+      0,
+      n,
+      0,
+    );
+    expect(two.map((e) => [e.text, e.badge])).toEqual([
+      ['Roll — death', undefined],
+      ['Bo dies', 'kill'],
+    ]);
   });
 
   it('gives a bought treasure deck top one line, though its gain comes first', () => {

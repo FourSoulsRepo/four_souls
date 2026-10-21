@@ -165,6 +165,11 @@
   * Deaths, destroyed items, fizzled and cancelled effects.
   * Hovering a line zooms its card.
   * Others' hidden cards stay hidden: "Bo loots a card".
+* **3e. The history strip (15.89):** one tile per headline, newest on top.
+  * Played cards, abilities and rolls: as on the stack, with a sword or bolt.
+  * A buy: the bought card with a coin badge.
+  * A kill: the dead card with a skull badge, "Bo kills Gaper".
+  * Hover a tile: its card large, with the line under it.
 
 ## Postconditions
 

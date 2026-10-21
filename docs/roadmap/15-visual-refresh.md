@@ -2720,7 +2720,7 @@ Images come first, so the new table is built with backs and mats.
 6. Owner notes (2026-10-21)
    1. Owner marks 15.88 solved.
 
-### [ ] 15.89 Headlines in the strip
+### [x] 15.89 Headlines in the strip
 
 1. Goal: the strip shows a turn's big moments at a glance (V-51).
 2. Asked by the owner (2026-10-21); answers the 15.57 strip question.
@@ -2734,6 +2734,20 @@ Images come first, so the new table is built with backs and mats.
    1. Vitest: which entries are headlines.
    2. e2e test: a buy and a kill each add one tile.
    3. `make screenshots` covers the strip with both badges.
+5. Result (2026-10-21)
+   1. The strip shows `headline` entries, not only stack items.
+   2. **Owner:** an attack's target line is no headline (2026-10-21).
+   3. The attack roll's tile names the monster already.
+   4. A buy: the bought card with a gold coin badge.
+   5. A kill: every death resolves a death stack item first.
+   6. Its entry becomes the kill: the dead card, a skull badge, "Bo kills Gaper".
+   7. So the History has one line per death, not "Roll — death" and a kill.
+   8. Hover a buy or a kill: its card large, its line under it.
+   9. Vitest: badges, the death merge, a player death apart.
+   10. e2e `info.spec.ts`: a buy and a kill add two tiles.
+   11. The 15.22 and 15.47 strip tests mark their sent entries `headline`.
+   12. UC-12 3e; wiki `Client`; CHANGELOG.
+   13. Screenshots: `.cache/screenshots/15.89/before/` and `after/`.
 
 ### [ ] 15.90 Strip popout
 

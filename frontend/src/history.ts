@@ -3,7 +3,7 @@
 // only what the viewer may see (hidden cards stay hidden).
 import { firstPlayerText, tieText } from './dice';
 import type { GameEvent, StackItem } from './protocol';
-import type { Names } from './stack';
+import { StackKind, type Names } from './stack';
 
 export interface Entry {
   key: number;
@@ -14,8 +14,12 @@ export interface Entry {
   card?: string;
   // item is the stack item that resolved, for the history strip (15.22).
   item?: StackItem;
-  // headline: a play, an ability, an attack, a buy or a kill (15.88).
+  // headline: a play, an ability, a buy or a kill (15.88); the strip
+  // shows these (15.89).
   headline?: boolean;
+  // badge marks a strip tile that is no plain stack item: a buy, or a
+  // death that shows the dead card (15.89).
+  badge?: 'buy' | 'kill';
 }
 
 // told marks an event kind that gives a history line in historyKinds.
@@ -183,7 +187,8 @@ export function entriesFor(events: GameEvent[], turn: number, you: number, n: Na
         add('⚔', `${does(e.player, 'declare')} an attack`);
         break;
       case 'attack_target':
-        add('⚔', `${does(e.player, 'attack')} ${card || 'a card'}`, e.card, undefined, true);
+        // Not a headline: the attack roll's tile names the monster (15.89).
+        add('⚔', `${does(e.player, 'attack')} ${card || 'a card'}`, e.card);
         break;
       case 'purchase_declared':
         add('¢', `${does(e.player, 'declare')} a purchase`);
@@ -191,6 +196,7 @@ export function entriesFor(events: GameEvent[], turn: number, you: number, n: Na
       case 'purchased':
         first(e.object);
         add('¢', `${does(e.player, 'buy')} ${card}${e.text === 'treasure deck' ? ' from the treasure deck' : ''}`, e.card, undefined, true);
+        out[out.length - 1].badge = 'buy';
         break;
       case 'purchase_failed':
         add('✗', `${who(e.player)} can't buy: the price is ${String(e.amount ?? 0)}¢`);
@@ -210,12 +216,26 @@ export function entriesFor(events: GameEvent[], turn: number, you: number, n: Na
       case 'object_died': {
         first(e.object);
         const by = (e.by ?? 0) - 1;
+        let text: string;
         if (e.player >= 0) {
-          add('☠', by >= 0 && by !== e.player ? `${does(by, 'kill')} ${whom(e.player)}` : `${who(e.player)} ${e.player === you ? 'die' : 'dies'}`, e.card, undefined, true);
+          text = by >= 0 && by !== e.player ? `${does(by, 'kill')} ${whom(e.player)}` : `${who(e.player)} ${e.player === you ? 'die' : 'dies'}`;
         } else if (e.kind === 'object_died') {
-          add('☠', by >= 0 ? `${does(by, 'destroy')} ${card}` : `${card} is destroyed`, e.card, undefined, true);
+          text = by >= 0 ? `${does(by, 'destroy')} ${card}` : `${card} is destroyed`;
         } else {
-          add('☠', by >= 0 ? `${does(by, 'kill')} ${card}` : `${card} dies`, e.card, undefined, true);
+          text = by >= 0 ? `${does(by, 'kill')} ${card}` : `${card} dies`;
+        }
+        // Every death resolves a death stack item first: its entry
+        // becomes the kill, with the dead card, so the strip and the
+        // History name it once (15.89).
+        const death = out.findLast((d) => d.item?.kind === StackKind.death && dies(d.item, e));
+        if (death) {
+          death.icon = '☠';
+          death.text = text;
+          death.badge = 'kill';
+          if (e.card) death.card = e.card;
+        } else {
+          add('☠', text, e.card, undefined, true);
+          out[out.length - 1].badge = 'kill';
         }
         break;
       }
@@ -289,6 +309,12 @@ export function entriesFor(events: GameEvent[], turn: number, you: number, n: Na
     }
   }
   return out;
+}
+
+// dies says whether a death stack item is the one a death event ends:
+// the same player, or the object that moved away as it died.
+function dies(it: StackItem, e: GameEvent): boolean {
+  return it.target.is_player ? e.player >= 0 && it.target.player === e.player : e.player < 0 && it.target.object === e.prev;
 }
 
 // firstRollLabel is the label of the first-player roll's dice.

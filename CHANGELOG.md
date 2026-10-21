@@ -6,6 +6,7 @@ Rules engine versions are in each release's notes.
 
 ## Unreleased
 
+- The history strip shows each buy with a coin and each kill with a skull, on the card that was bought or killed.
 - The History names every play: who attacked what, who bought which item, who killed which monster, souls, thefts, cents, deaths, and effects that failed.
 - The "Skip all" button is gone.
 - "Wait for my turn" stops as soon as another player targets you or your cards, so you can answer before they steal from you.

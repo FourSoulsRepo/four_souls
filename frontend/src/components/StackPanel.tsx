@@ -269,7 +269,7 @@ function DamageIcon() {
   );
 }
 
-function SkullIcon() {
+export function SkullIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <path d={skullPath} />

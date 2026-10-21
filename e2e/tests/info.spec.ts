@@ -194,7 +194,7 @@ test('the history strip: icons, badges, and a hover with card and owner (15.22)'
       },
       { id: 103, kind: 4, controller: me, source: 0, amount: 2, attack: true, target: { player: other, is_player: true }, ability: none, roll_for: none },
     ];
-    const history = items.map((item, i) => ({ key: i + 1, turn, icon: '✦', text: '', ...(item.card ? { card: item.card } : {}), item }));
+    const history = items.map((item, i) => ({ key: i + 1, turn, icon: '✦', text: '', ...(item.card ? { card: item.card } : {}), item, headline: true }));
     store.setState({ history });
   });
 
@@ -269,6 +269,7 @@ test('damage a player takes names its card in the history strip (15.47)', async 
         ability: none,
         roll_for: none,
       },
+      headline: true,
     }));
     store.setState({ history });
   });
@@ -399,4 +400,70 @@ test('the history names every play: a buy, an attack and a kill (15.88)', async 
   await kill.hover();
   await expect(active.getByTestId('card-zoom').locator('.card.size-zoom')).toBeVisible();
   await shot(active, 'history-every-play-zoom');
+});
+
+test('a buy and a kill each add one tile to the history strip (15.89)', async ({ browser }) => {
+  const pages = await startGame(browser, ['Nia', 'Oto'], { url: fast() });
+  const active = await activePage(pages, click);
+  const strip = active.getByRole('complementary', { name: 'History strip' });
+  const tiles = strip.locator('.strip-item');
+  const before = await tiles.count();
+  // A kill resolves a death stack item first, then the monster dies; a
+  // buy comes with its gain. Each is one tile.
+  await active.evaluate(() => {
+    interface Store {
+      getState: () => {
+        game: {
+          view: {
+            turn: { active: number };
+            monsters: { top?: { id: number; card: string; stats?: unknown } }[];
+            shop: { top?: { id: number; card: string } }[];
+          };
+        } | null;
+        receive: (env: unknown) => void;
+      };
+    }
+    const store = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store;
+    const s = store.getState();
+    const game = structuredClone(s.game);
+    const monster = game?.view.monsters.find((m) => m.top?.stats)?.top;
+    const item = game?.view.shop.find((m) => m.top)?.top;
+    if (!game || !monster || !item) {
+      throw new Error('no game');
+    }
+    const p = game.view.turn.active;
+    const none = { card: '', index: 0 };
+    const death = { id: 950, kind: 5, controller: -1, source: 0, text: 'death', target: { player: -1, object: monster.id }, ability: none, roll_for: none };
+    s.receive({
+      type: 'update',
+      data: {
+        ...game,
+        step: 900,
+        events: [
+          { kind: 'stack_resolved', player: -1, text: 'death', stack_id: 950, item: death },
+          { kind: 'died', player: -1, object: 951, card: monster.card, prev: monster.id, by: p + 1 },
+          { kind: 'gained_cents', player: p, amount: 3 },
+          { kind: 'purchase_declared', player: p },
+          { kind: 'purchased', player: p, object: 952, card: item.card },
+          { kind: 'gained_item', player: p, object: 952, card: item.card },
+        ],
+      },
+    });
+  });
+  await expect(tiles).toHaveCount(before + 2);
+  const buy = tiles.nth(0);
+  const kill = tiles.nth(1);
+  await expect(buy).toHaveAttribute('aria-label', /^You buy \S/);
+  await expect(buy.locator('.strip-buy')).toBeAttached();
+  await expect(buy.locator('.card')).toBeAttached();
+  await expect(kill).toHaveAttribute('aria-label', /^You kill \S/);
+  await expect(kill.locator('.strip-kill')).toBeAttached();
+  await expect(kill.locator('.card')).toBeAttached();
+  await shot(active, 'history-strip-buy-kill');
+  // Hover: the dead monster large, with the line under it.
+  await kill.hover();
+  const zoom = active.getByTestId('card-zoom');
+  await expect(zoom.locator('.card.size-zoom')).toBeVisible();
+  await expect(zoom.locator('.card-zoom-line')).toHaveText(/^You kill \S/);
+  await shot(active, 'history-strip-kill-hover');
 });
