@@ -555,6 +555,17 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    6. Caddy gives HTTPS; the client speaks `wss://`.
    7. A bare domain tries `wss://` first, then plain `ws://` on 4774.
    8. Compose tracks the server with a healthcheck.
+20. N-20. Seamless server restart and idle game limits (owner, 2026-10-21).
+   1. A server update or restart does not end the games.
+   2. Players reconnect by themselves and play on.
+   3. Same engine version: the game goes on silently.
+   4. Newer engine that still reads the game: a notice to the players.
+   5. The notice says cards may now behave differently.
+   6. A game the new server cannot read ends with an apology.
+   7. "Can read": the state checksum after loading matches the saved one.
+   8. No drain mode: games can last an hour, or never end.
+   9. A game with no player connected for 30 minutes ends.
+   10. A game ends 24 hours after it started, even if still played.
 
 ## Learning
 

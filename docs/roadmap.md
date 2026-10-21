@@ -137,6 +137,7 @@ Step numbers stay as IDs; the table lists steps in work order.
 13. Game passwords (N-14).
 14. New-user check, play-test and docs check: moved to step 18.
 15. Dice looks: a real dice texture; core for choosing one (V-19).
+16. Seamless server restart and idle game limits (N-20).
 
 ## 9. Spectators
 

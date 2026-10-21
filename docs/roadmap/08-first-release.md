@@ -3,7 +3,7 @@
 Goal: the full Base Game for 2–4 players over LAN.
 Public downloads for all platforms.
 
-Ideas: B-03 – B-05, L-03, V-10, V-11, DO-01, V-14, A-16, N-13, N-14, V-19, N-19.
+Ideas: B-03 – B-05, L-03, V-10, V-11, DO-01, V-14, A-16, N-13, N-14, V-19, N-19, N-20.
 
 ---
 
@@ -259,3 +259,86 @@ Ideas: B-03 – B-05, L-03, V-10, V-11, DO-01, V-14, A-16, N-13, N-14, V-19, N-1
    5. `NOTICE` lists Alpine and Caddy.
 3. Done when:
    1. Each page's commands were run once.
+
+### [ ] 8.22 Server keeps its games over a restart
+
+1. Goal: a stopped server leaves its tables for the next start (N-20).
+2. Tasks:
+   1. On stop, every client gets a new `restarting` message.
+   2. Every table goes to a handoff file in the saves folder.
+   3. That covers started games and lobby tables.
+   4. A file keeps seats, tokens, options, and the timer's time left.
+   5. It keeps the state checksum and the record's path.
+   6. The record gets no `end` line on such a stop.
+   7. On start, the tables come back; seats wait for their tokens.
+   8. The record goes on with a `resume` part (ADR 007).
+   9. A loaded handoff file is deleted.
+   10. Protocol version goes up.
+   11. ADR: seamless server restart.
+3. Done when:
+   1. Go test: stop, start on the same folder, rejoin by token.
+   2. The state checksum is the same after the restart.
+
+### [ ] 8.23 Games from another engine version
+
+1. Goal: a newer engine goes on with every game it can read (N-20).
+2. Tasks:
+   1. Same engine version: the game goes on silently.
+   2. Other version: load, then compare the state checksum.
+   3. Equal checksum and meaning number: the game goes on.
+   4. Its players see "The engine was updated; cards may behave differently."
+   5. Else the game ends unfinished; the record gets `end`.
+   6. Its players see "Sorry, the server was updated; please start a new game."
+   7. The server logs why; the handoff file stays on disk.
+   8. The ended table answers its tokens with that apology for 30 minutes.
+   9. Meaning number: a constant in the engine, raised by hand.
+   10. Raise it when a field keeps its name but changes meaning.
+   11. New state fields use `omitempty`, so old games still match.
+   12. A test checks every state field for `omitempty` or an allow list.
+   13. Use case: a game goes on after a server update.
+3. Done when:
+   1. Go tests for the three cases.
+   2. A renamed field and a new field each have a test.
+
+### [ ] 8.24 Client reconnects by itself
+
+1. Goal: players do not notice a short server restart (N-20).
+2. Tasks:
+   1. A lost game connection reconnects by itself.
+   2. Retries: at once, then 1, 2, 4 … seconds, at most 10.
+   3. First a small "Reconnecting…" badge, no dialog.
+   4. The "Connection lost" dialog comes after 30 seconds.
+   5. Its Reconnect button still works.
+   6. The engine notice and the apology show as dialogs.
+   7. No kick vote for 60 seconds after the server starts.
+   8. Animations, history, and the board are kept.
+3. Done when:
+   1. Vitest for the retry delays.
+   2. e2e: restart the server mid-game; the game goes on, no dialog.
+   3. Screenshots of the badge and both dialogs.
+
+### [ ] 8.25 Idle game limits
+
+1. Goal: stuck and endless games do not live forever (N-20).
+2. Tasks:
+   1. No player connected for 30 minutes: the game ends.
+   2. Server downtime counts toward those 30 minutes.
+   3. A game ends 24 hours after it started, even if still played.
+   4. It ends unfinished; the record gets `end`.
+   5. Connected players see why it ended.
+   6. Both limits are server options with ENV variables.
+   7. 0 turns a limit off.
+   8. Use case: a game ends by an idle limit.
+3. Done when:
+   1. Go tests with a fake clock for both limits.
+
+### [ ] 8.26 Restart docs for server admins
+
+1. Goal: admins know an update keeps the games (N-20).
+2. Tasks:
+   1. Each setup page: an update keeps games; the version cases.
+   2. Options table: both idle limits.
+   3. Saves folder must stay on disk between restarts.
+   4. Docker: `stop_grace_period` is enough for the handoff.
+3. Done when:
+   1. A compose update was run once mid-game.
