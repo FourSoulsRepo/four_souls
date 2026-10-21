@@ -18,8 +18,8 @@ FOCUS ?=
 SIMS ?= 3000
 SETS ?=
 
-# How many Playwright workers e2e and screenshots run at once (19.35).
-E2E_WORKERS ?= 3
+# How many Playwright workers e2e and screenshots run at once (19.38).
+E2E_WORKERS ?= 5
 
 .DEFAULT_GOAL := help
 .PHONY: help test vet build wasm lint frontend e2e e2e-games screenshots internal server-archives fuzz fuzz-engine fuzz-focused fuzz-sets fuzz-new sims

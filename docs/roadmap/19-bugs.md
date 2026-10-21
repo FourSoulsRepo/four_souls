@@ -1325,6 +1325,8 @@ Totals by system (51 items):
    11. 5 workers: 3.6 – 3.9 min, 3 of 4 clean (19.49, 19.50).
    12. 6 workers: 3.4 min, 1 of 1; 8 workers: 2.9 min, failed (19.14).
    13. Workers stay 3 until those items are fixed; then try 5.
+   14. After 19.14 – 19.51: 5 workers, three full runs, 264 passed each.
+   15. 3.9 – 4.2 min instead of 6; load at most 12; no swap.
 7. Owner notes (2026-10-21)
    1. Owner marks 19.38 solved.
 

@@ -11,9 +11,9 @@ export default defineConfig({
   testDir: 'tests',
   fullyParallel: true,
   // Each test opens two to four pages; they close when it ends (19.38).
-  // More workers made known flaky tests fail more often (19.38 sweep);
+  // Five since its flaky tests were fixed (19.38 sweep, 19.14 – 19.51);
   // E2E_WORKERS in the Makefile overrides it.
-  workers: 3,
+  workers: 5,
   reporter: 'list',
   use: {
     baseURL: `http://127.0.0.1:${port}`,

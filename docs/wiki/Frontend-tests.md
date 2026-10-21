@@ -10,7 +10,7 @@ The frontend is tested like the Go code (ADR 008). Three layers, from fast to sl
 
 Frontend changes gate on `make frontend e2e`, next to the Go gate. `make e2e` runs every test in Chromium and in WebKit (the engine of macOS's WKWebView, and the nearest check for Linux's WebKitGTK).
 
-It runs three Playwright workers at once (`workers` in `e2e/playwright.config.ts`; `make e2e E2E_WORKERS=N` for another number). Each test opens two to four app pages; with the default of half the CPU cores, a laptop slowed into 30 s game-start timeouts (19.35).
+It runs five Playwright workers at once (`workers` in `e2e/playwright.config.ts`; `make e2e E2E_WORKERS=N` for another number). Each test opens two to four app pages. Before 19.38 the pages of past tests stayed open, and five workers slowed a laptop into 30 s game-start timeouts (19.35); three became the default. Since each test closes its pages, a sweep showed no swapping up to eight workers; past three, flaky tests failed more often, and once they were fixed (19.14 – 19.51) the default became five: about 3.7 minutes for a full run instead of 6.
 
 The automatic fixture in `e2e/tests/fixtures.ts` closes every context a test opened when the test ends. Before that, `startGame`'s pages stayed open until the worker ended: about 175 live game pages per browser by the end of a run, each with a WebSocket and a looping glow animation. The laptop ran out of memory and swapped, and whichever test ran then timed out (19.38). A test that opens its own contexts needs no cleanup of its own.
 
