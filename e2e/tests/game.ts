@@ -112,7 +112,12 @@ export async function startGame(
     await page.getByLabel('Nickname').fill(names[i + 1] ?? '');
     await page.getByLabel('Host address').fill(`127.0.0.1:${String(serverPort())}`);
     await page.getByRole('button', { name: 'Connect' }).click();
-    await lobbyGame(page, id).getByRole('button', { name: 'Join' }).click();
+    // The click goes to the button, not to a point: a table above that
+    // starts moves the row up under the pointer, and a click there hit
+    // a started game's disabled Join (19.14).
+    const join = lobbyGame(page, id).getByRole('button', { name: 'Join' });
+    await expect(join).toBeEnabled();
+    await join.dispatchEvent('click');
     await expect(page.getByRole('list', { name: 'Seats' })).toBeVisible();
   }
   for (const page of pages) {

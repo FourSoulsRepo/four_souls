@@ -523,6 +523,20 @@ Totals by system (51 items):
    5. 8 workers, webkit, `first-roll.spec.ts:58`: the 5 s Seats check.
    6. 4 workers, webkit, `table.spec.ts:399`: the same; load 7.4.
    7. Evidence: `.cache/e2e-evidence/sweep-w8-184425/`, `sweep-w4-191256/`.
+6. Cause (2026-10-21)
+   1. A probe logged the guest's WebSocket: no `join` was ever sent.
+   2. So the click never reached the Join button's handler.
+   3. The list shows waiting tables first, then started games.
+   4. A table above that starts moves every waiting row below up 46 px.
+   5. Playwright checks the button, then clicks at its screen point.
+   6. A row that moved in between left a started game's disabled Join there.
+   7. More tests at once start more tables: more workers, more misses.
+   8. Evidence: `.cache/e2e-evidence/19.14-probe-195313/` (not in git).
+7. Result (2026-10-21)
+   1. `startGame` waits for its row's Join to be enabled.
+   2. Then it sends the click to that button (`dispatchEvent`), not to a point.
+   3. The Join screen itself is still clicked by the lobby tests.
+   4. Test only; no app change, no screenshots.
 
 ### [x] 19.15 A full hand: the end cards are hard to play
 
