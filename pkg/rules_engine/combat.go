@@ -715,7 +715,7 @@ func (g *Game) monsterDeath(id ObjectID) {
 	} else {
 		g.Turn.MonsterDied = true // R-TURN-12
 	}
-	g.emit(Event{Kind: kind, Player: NoPlayer, Object: holding, Card: card, Prev: id, Text: text})
+	g.emit(Event{Kind: kind, Player: NoPlayer, Object: holding, Card: card, Prev: id, Text: text, By: killedBy})
 	if text == "item" {
 		g.emit(Event{Kind: EvDestroyed, Player: o.Controller, Object: holding, Card: card, Prev: id})
 	}
@@ -792,7 +792,7 @@ func (g *Game) soulStep(holding ObjectID) {
 func (g *Game) playerDeath(p PlayerID) {
 	g.Players[p].Dead = true // R-DEATH-17
 	defer g.dropCurses(p)
-	g.emit(Event{Kind: EvDied, Player: p, Object: g.Players[p].Character, Card: g.Object(g.Players[p].Character).Card})
+	g.emit(Event{Kind: EvDied, Player: p, Object: g.Players[p].Character, Card: g.Object(g.Players[p].Character).Card, By: g.Players[p].KilledBy})
 	if p == g.Turn.Active {
 		g.endAttack() // R-DEATH-12
 		g.Turn.DeathEnd = true

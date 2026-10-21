@@ -2680,7 +2680,7 @@ Images come first, so the new table is built with backs and mats.
 6. Owner notes (2026-10-21)
    1. Owner marks 15.87 solved.
 
-### [ ] 15.88 History tells every play
+### [x] 15.88 History tells every play
 
 1. Goal: the History panel names every play: who did what (V-51).
 2. Asked by the owner (2026-10-21); replaces 15.46 and 15.57.
@@ -2701,6 +2701,22 @@ Images come first, so the new table is built with backs and mats.
    3. e2e test: buy an item and kill a monster; the History names both.
    4. `make screenshots` covers the full History panel.
    5. UC-12 updated.
+5. Result (2026-10-21)
+   1. `historyKinds` in `history.ts`: 68 kinds; 36 give lines, 32 skip with a reason.
+   2. New lines: declared attack and purchase, the attack's target, a buy.
+   3. Also: a failed buy, gains, souls, thefts, cents, kills, deaths.
+   4. Also: destroyed, fizzled, cancelled, prevented, penalty, turn changes.
+   5. A bought item gets one line; its gain events give none.
+   6. Engine: a death event's `By` names the killer; no rule changed.
+   7. Engine version unchanged; protocol stays 3: only a field filled.
+   8. Go `TestEventKindsListed` keeps `testdata/event_kinds.txt`.
+   9. Go `TestDeathNamesTheKiller`.
+   10. Vitest: a kind missing from the table fails; each told kind gives a line.
+   11. e2e `info.spec.ts`: a real purchase, then a sent kill.
+   12. A real kill needs lucky dice, so its events are sent to the store.
+   13. Headlines are marked; the strip uses them in 15.89.
+   14. UC-12 3d; wikis `Client`, `Rules-engine`; CHANGELOG.
+   15. Screenshots: `.cache/screenshots/15.88/before/` and `after/`.
 
 ### [ ] 15.89 Headlines in the strip
 

@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { entriesFor, lookedAt, stepName } from './history';
+import kindList from '../../pkg/rules_engine/testdata/event_kinds.txt?raw';
+import { entriesFor, historyKinds, lookedAt, stepName } from './history';
+import type { GameEvent } from './protocol';
 
 const n = { player: (p: number) => ['Ann', 'Bo', 'Cy'].at(p) ?? '?', card: (ref: string) => ref.toUpperCase() };
 
@@ -47,8 +49,8 @@ describe('entriesFor', () => {
     );
     expect(entries).toEqual([
       { key: 10, turn: 4, icon: '▶', text: 'Turn 4: Bo' },
-      { key: 11, turn: 4, icon: '✦', text: 'A_DIME', card: 'a_dime' },
-      { key: 12, turn: 4, icon: '✦', text: 'Roll — attack roll (rolled 5)' },
+      { key: 11, turn: 4, icon: '✦', text: 'A_DIME', card: 'a_dime', headline: true },
+      { key: 12, turn: 4, icon: '✦', text: 'Roll — attack roll (rolled 5)', headline: true },
     ]);
   });
 
@@ -139,3 +141,140 @@ describe('lookedAt', () => {
     ]);
   });
 });
+
+describe('historyKinds', () => {
+  const kinds = kindList.split('\n').filter(Boolean);
+  // sample: an event of a told kind that gives a line; others need only
+  // their kind and a player.
+  const sample = new Map<string, Partial<GameEvent>>([['dice_rolled', { text: 'first player roll', amount: 3 }]]);
+
+  it('tells or skips every engine event kind, with a reason (15.88)', () => {
+    expect(Object.keys(historyKinds).sort()).toEqual(kinds);
+    for (const [kind, why] of Object.entries(historyKinds)) {
+      expect(why, kind).not.toBe('');
+    }
+  });
+
+  it('gives a line for every told kind and none for a skipped one', () => {
+    for (const [kind, why] of Object.entries(historyKinds)) {
+      const lines = entriesFor([{ kind, player: 1, card: 'gaper', amount: 1, ...sample.get(kind) }], 1, 0, n, 0);
+      if (why === 'line') {
+        expect(lines.length, kind).toBeGreaterThan(0);
+      } else if (kind !== 'roll_resolved') {
+        expect(lines, kind).toEqual([]);
+      }
+    }
+  });
+
+  it('names who attacks, buys and kills, as headlines', () => {
+    const lines = entriesFor(
+      [
+        { kind: 'attack_declared', player: 1 },
+        { kind: 'attack_target', player: 1, object: 5, card: 'gaper' },
+        { kind: 'died', player: -1, object: 9, card: 'gaper', prev: 5, by: 2 },
+        { kind: 'rewards_gained', player: 1, object: 9, card: 'gaper' },
+        { kind: 'gained_cents', player: 1, amount: 3 },
+        { kind: 'purchase_declared', player: 1 },
+        { kind: 'purchased', player: 1, object: 12, card: 'spoon_bender' },
+        { kind: 'gained_item', player: 1, object: 12, card: 'spoon_bender' },
+      ],
+      1,
+      0,
+      n,
+      0,
+    );
+    expect(lines.map((e) => [e.text, e.headline ?? false])).toEqual([
+      ['Bo declares an attack', false],
+      ['Bo attacks GAPER', true],
+      ['Bo kills GAPER', true],
+      ['Bo gains the rewards of GAPER', false],
+      ['Bo gains 3¢', false],
+      ['Bo declares a purchase', false],
+      ['Bo buys SPOON_BENDER', true],
+    ]);
+    expect(lines[6]?.card).toBe('spoon_bender');
+  });
+
+  it('gives a bought treasure deck top one line, though its gain comes first', () => {
+    const lines = entriesFor(
+      [
+        { kind: 'gained_treasure', player: 0, object: 4, card: 'the_d6' },
+        { kind: 'gained_item', player: 0, object: 4, card: 'the_d6' },
+        { kind: 'entered_play', player: 0, object: 4, card: 'the_d6' },
+        { kind: 'purchased', player: 0, object: 4, card: 'the_d6', text: 'treasure deck' },
+      ],
+      1,
+      0,
+      n,
+      0,
+    );
+    expect(lines.map((e) => e.text)).toEqual(['You buy THE_D6 from the treasure deck']);
+  });
+
+  it('names gains, thefts and losses once each', () => {
+    const lines = entriesFor(
+      [
+        { kind: 'gained_treasure', player: 0, object: 4, card: 'the_d6' },
+        { kind: 'gained_item', player: 0, object: 4, card: 'the_d6' },
+        { kind: 'gained_treasure', player: 1, object: 6, card: 'sack', text: 'stolen' },
+        { kind: 'stole', player: 1, amount: 2, text: '0' },
+        { kind: 'gave_cents', player: 0, amount: 1, by: 3 },
+        { kind: 'lost_cents', player: 2, amount: 4 },
+        { kind: 'gained_soul', player: 2, object: 8, card: 'gaper' },
+        { kind: 'gained_soul', player: 0, object: 9, card: 'greed', text: 'bonus soul' },
+        { kind: 'purchase_failed', player: 0, amount: 10 },
+      ],
+      1,
+      0,
+      n,
+      0,
+    );
+    expect(lines.map((e) => e.text)).toEqual([
+      'You gain THE_D6',
+      'Bo steals SACK',
+      'Bo steals 2¢ from you',
+      'You give 1¢ to Cy',
+      'Cy loses 4¢',
+      'Cy gains the soul of GAPER',
+      'You gain the bonus soul GREED',
+      "You can't buy: the price is 10¢",
+    ]);
+  });
+
+  it('names deaths, a destroyed item once, fizzles and cancels', () => {
+    const lines = entriesFor(
+      [
+        { kind: 'died', player: 1, object: 2, card: 'cain', by: 1 },
+        { kind: 'died', player: 0, object: 3, card: 'isaac' },
+        { kind: 'object_died', player: -1, object: 20, card: 'guppys_head', prev: 7, text: 'item', by: 2 },
+        { kind: 'destroyed', player: 1, object: 20, card: 'guppys_head', prev: 7 },
+        { kind: 'destroyed', player: 1, object: 21, card: 'sack', prev: 8 },
+        { kind: 'fizzled', player: 1, object: 5, card: 'bomb' },
+        { kind: 'cancelled', player: 1, object: 5, card: 'bomb' },
+        { kind: 'penalty_paid', player: 1 },
+      ],
+      1,
+      0,
+      n,
+      0,
+    );
+    expect(lines.map((e) => e.text)).toEqual([
+      'You kill Bo',
+      'You die',
+      'Bo destroys GUPPYS_HEAD',
+      'SACK is destroyed',
+      'BOMB fizzles: its target is gone',
+      'BOMB is cancelled',
+      'Bo pays the death penalty',
+    ]);
+  });
+
+  it("shows a stack card's discard only as its resolved line", () => {
+    const events = [
+      { kind: 'discarded', player: 1, object: 30, card: 'bomb', text: 'stack' },
+      { kind: 'discarded', player: 1, object: 31, card: 'a_penny' },
+    ];
+    expect(entriesFor(events, 1, 0, n, 0).map((e) => e.text)).toEqual(['Bo discards A_PENNY']);
+  });
+});
+

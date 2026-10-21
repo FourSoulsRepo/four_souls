@@ -1,6 +1,6 @@
-// The match history (7.9, V-03): one entry per resolved stack item, plus
-// turns, loots and the winner. Built from the events this viewer got, so
-// it shows only what the viewer may see (hidden cards stay hidden).
+// The match history (7.9, V-03, V-51): a line for every play, under turn
+// lines: who did what. Built from the events this viewer got, so it shows
+// only what the viewer may see (hidden cards stay hidden).
 import { firstPlayerText, tieText } from './dice';
 import type { GameEvent, StackItem } from './protocol';
 import type { Names } from './stack';
@@ -14,7 +14,86 @@ export interface Entry {
   card?: string;
   // item is the stack item that resolved, for the history strip (15.22).
   item?: StackItem;
+  // headline: a play, an ability, an attack, a buy or a kill (15.88).
+  headline?: boolean;
 }
+
+// told marks an event kind that gives a history line in historyKinds.
+const told = 'line';
+
+// historyKinds says what the history does with each engine event kind
+// (15.88): told gives a line; any other text is why it gives none. A kind
+// missing here fails history.test.ts, so no play goes untold.
+export const historyKinds: Record<string, string> = {
+  activated: 'Its stack item resolves as a line, or is cancelled.',
+  attack_declared: told,
+  attack_ended: 'The rolls, the damage and the kill tell how it ended.',
+  attack_roll_repeated: 'A trigger cause; the trigger resolves as a line.',
+  attack_target: told,
+  boosted: 'The boosting card resolves as a line; the card shows its stats.',
+  cancelled: told,
+  card_revealed: 'The table shows it; an attack on it names it.',
+  character_dealt: 'Setup: the pick screen shows the characters.',
+  counters: 'The card shows its counters (15.23).',
+  cursed: told,
+  damage_pending: 'A stack item; it resolves as a line.',
+  damaged: 'The damage stack item resolves as a line.',
+  deactivated: 'The causing card resolves as a line; the table shows the cards.',
+  death_pending: 'A stack item; it resolves as a line.',
+  destroyed: told,
+  dice_rolled: told,
+  died: told,
+  discarded: told,
+  end_of_turn: 'A trigger window, not a play.',
+  entered_play: 'The gain, the buy or the play names the card.',
+  expanded: told,
+  extra_turn: told,
+  first_player: told,
+  first_roll_tied: told,
+  fizzled: told,
+  flipped: told,
+  gained_cents: told,
+  gained_item: told,
+  gained_soul: told,
+  gained_treasure: told,
+  game_started: 'The first turn line follows.',
+  game_won: told,
+  gave_card: told,
+  gave_cents: told,
+  healed: 'Healing at the end of a turn is for everyone; HP shows on the card.',
+  looked_at: told,
+  loot_done: 'Each looted card has its line.',
+  loot_played: 'The loot card resolves as a line, or is cancelled.',
+  looted: told,
+  lost_cents: told,
+  moved_to_deck: 'Cards put back into a deck are mostly hidden.',
+  object_died: told,
+  paid: 'The buy or the ability names what was paid for.',
+  passed_priority: 'Passing is no play.',
+  penalty_paid: told,
+  phase: 'The turn badge shows the step.',
+  prevented: told,
+  purchase_declared: told,
+  purchase_failed: told,
+  purchased: told,
+  random_pick: 'Its card resolves as a line, with the results after it.',
+  recharged: 'The table shows charged cards.',
+  replaced: 'The results that replace the event have their lines.',
+  rewards_gained: told,
+  roll_changed: "The roll's line shows the change.",
+  roll_repeated: 'A trigger cause; the trigger resolves as a line.',
+  roll_resolved: "It changes the roll's line; no new line.",
+  roll_would_resolve: 'The roll resolves as a line.',
+  shielded: 'The shielding card resolves as a line; a prevent has its line.',
+  stack_added: 'The stack panel shows it; it resolves as a line.',
+  stack_resolved: told,
+  start_of_turn: 'A trigger window, not a play.',
+  stole: told,
+  turn_ended: 'The next turn line follows.',
+  turn_ended_early: told,
+  turn_skipped: told,
+  turn_started: told,
+};
 
 // entriesFor turns one update's events into history entries; key is the
 // first entry's key.
@@ -24,8 +103,23 @@ export function entriesFor(events: GameEvent[], turn: number, you: number, n: Na
   const who = (p: number) => (p === you ? 'You' : n.player(p));
   // does: "You loot", "Bo loots".
   const does = (p: number, verb: string) => (p === you ? `You ${verb}` : `${n.player(p)} ${verb}s`);
-  const add = (icon: string, text: string, card?: string, item?: StackItem) => {
-    out.push({ key: key + out.length, turn: t, icon, text, ...(card ? { card } : {}), ...(item ? { item } : {}) });
+  // whom: "you", "Bo"; whose: "Your", "Bo's".
+  const whom = (p: number) => (p === you ? 'you' : n.player(p));
+  const whose = (p: number) => (p === you ? 'Your' : `${n.player(p)}'s`);
+  const add = (icon: string, text: string, card?: string, item?: StackItem, headline?: boolean) => {
+    out.push({ key: key + out.length, turn: t, icon, text, ...(card ? { card } : {}), ...(item ? { item } : {}), ...(headline ? { headline } : {}) });
+  };
+  // A bought item also comes as a gain; the buy line names it alone.
+  const bought = new Set(events.filter((e) => e.kind === 'purchased').map((e) => e.object));
+  // named: objects a line names already; a second event about one (a
+  // gained treasure is also a gained item; a dead item is destroyed)
+  // gives no second line.
+  const named = new Set<number>();
+  const first = (o?: number) => {
+    if (o === undefined) return true;
+    if (named.has(o)) return false;
+    named.add(o);
+    return true;
   };
   // roll is the last resolved roll's entry and its die, for its result.
   let roll: { entry: Entry; die: number } | undefined;
@@ -39,7 +133,7 @@ export function entriesFor(events: GameEvent[], turn: number, you: number, n: Na
       case 'stack_resolved': {
         const rolled = e.amount ? ` (rolled ${String(e.amount)})` : '';
         const label = e.text && !e.text.startsWith(e.card ?? '\u0000') ? ` — ${e.text}` : '';
-        add('✦', `${card || 'Roll'}${label}${rolled}`, e.card, e.item);
+        add('✦', `${card || 'Roll'}${label}${rolled}`, e.card, e.item, true);
         roll = e.amount ? { entry: out[out.length - 1], die: e.amount } : undefined;
         break;
       }
@@ -84,6 +178,101 @@ export function entriesFor(events: GameEvent[], turn: number, you: number, n: Na
         break;
       case 'game_won':
         add('♛', `${does(e.player, 'win')} the game`);
+        break;
+      case 'attack_declared':
+        add('⚔', `${does(e.player, 'declare')} an attack`);
+        break;
+      case 'attack_target':
+        add('⚔', `${does(e.player, 'attack')} ${card || 'a card'}`, e.card, undefined, true);
+        break;
+      case 'purchase_declared':
+        add('¢', `${does(e.player, 'declare')} a purchase`);
+        break;
+      case 'purchased':
+        first(e.object);
+        add('¢', `${does(e.player, 'buy')} ${card}${e.text === 'treasure deck' ? ' from the treasure deck' : ''}`, e.card, undefined, true);
+        break;
+      case 'purchase_failed':
+        add('✗', `${who(e.player)} can't buy: the price is ${String(e.amount ?? 0)}¢`);
+        break;
+      case 'gained_treasure':
+      case 'gained_item':
+        if (bought.has(e.object) || !first(e.object)) break;
+        if (e.text === 'starting item') {
+          add('+', `${who(e.player)} ${e.player === you ? 'start' : 'starts'} with ${card}`, e.card);
+        } else if (e.text === 'stolen') {
+          add('⇄', `${does(e.player, 'steal')} ${card}`, e.card);
+        } else {
+          add('+', `${does(e.player, 'gain')} ${card}`, e.card);
+        }
+        break;
+      case 'died':
+      case 'object_died': {
+        first(e.object);
+        const by = (e.by ?? 0) - 1;
+        if (e.player >= 0) {
+          add('☠', by >= 0 && by !== e.player ? `${does(by, 'kill')} ${whom(e.player)}` : `${who(e.player)} ${e.player === you ? 'die' : 'dies'}`, e.card, undefined, true);
+        } else if (e.kind === 'object_died') {
+          add('☠', by >= 0 ? `${does(by, 'destroy')} ${card}` : `${card} is destroyed`, e.card, undefined, true);
+        } else {
+          add('☠', by >= 0 ? `${does(by, 'kill')} ${card}` : `${card} dies`, e.card, undefined, true);
+        }
+        break;
+      }
+      case 'destroyed':
+        if (e.prev !== undefined && named.has(e.prev)) break;
+        if (first(e.object)) add('✗', `${card} is destroyed`, e.card);
+        break;
+      case 'gained_soul':
+        add('♥', `${does(e.player, 'gain')} ${e.text === 'bonus soul' ? 'the bonus soul' : 'the soul of'} ${card}`, e.card);
+        break;
+      case 'gained_cents':
+        add('¢', `${does(e.player, 'gain')} ${String(e.amount ?? 0)}¢`);
+        break;
+      case 'lost_cents':
+        add('¢', `${who(e.player)} ${e.player === you ? 'lose' : 'loses'} ${String(e.amount ?? 0)}¢`);
+        break;
+      case 'stole':
+        add('⇄', `${does(e.player, 'steal')} ${String(e.amount ?? 0)}¢ from ${whom(Number(e.text))}`);
+        break;
+      case 'gave_cents':
+        add('⇄', `${does(e.player, 'give')} ${String(e.amount ?? 0)}¢ to ${whom((e.by ?? 0) - 1)}`);
+        break;
+      case 'discarded':
+        // A discard from a hand or a dead player's curses; a stack card's
+        // discard is its resolved line (15.74).
+        if (e.player >= 0 && !e.text) add('↓', `${does(e.player, 'discard')} ${card}`, e.card);
+        break;
+      case 'cancelled':
+        add('✗', `${card || (e.text ?? 'An ability')} is cancelled`, e.card);
+        break;
+      case 'fizzled':
+        add('✗', `${card || 'An ability'} fizzles: its target is gone`, e.card);
+        break;
+      case 'prevented':
+        if (!e.text) {
+          add('⊘', e.player >= 0 ? `Damage to ${whom(e.player)} is prevented` : 'Damage is prevented');
+        } else if (e.text === 'death' && e.player >= 0) {
+          add('⊘', `${whose(e.player)} death is prevented`);
+        }
+        break;
+      case 'penalty_paid':
+        add('☠', `${who(e.player)} ${e.player === you ? 'pay' : 'pays'} the death penalty`);
+        break;
+      case 'turn_skipped':
+        add('▶', `${whose(e.player)} turn is skipped`);
+        break;
+      case 'extra_turn':
+        add('▶', `${who(e.player)} ${e.player === you ? 'take' : 'takes'} an extra turn`);
+        break;
+      case 'turn_ended_early':
+        add('▶', `${whose(e.player)} turn ends early`);
+        break;
+      case 'expanded':
+        add('+', `The table gets ${String(e.amount ?? 1)} more ${e.text ?? ''} ${e.amount === 1 ? 'slot' : 'slots'}`);
+        break;
+      case 'flipped':
+        add('⇅', `${card || 'A card'} flips`, e.card);
         break;
       // The first-player roll keeps every die, ties too (15.43).
       case 'dice_rolled':

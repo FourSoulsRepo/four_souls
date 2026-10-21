@@ -158,6 +158,13 @@
 * **1z. Damage from a card that left (15.77):** the shot comes from its player.
   * From their character card, else their area.
   * Only damage with no known dealer shows the hit alone.
+* **3d. The History panel (15.88):** one line per play, under turn lines.
+  * Each line names who: "Bo attacks Gaper", "You kill Gaper".
+  * Buys: "Bo buys Spoon Bender"; a failed one: "Bo can't buy: the price is 10¢".
+  * Declared attacks and purchases, gains, souls, thefts, cents.
+  * Deaths, destroyed items, fizzled and cancelled effects.
+  * Hovering a line zooms its card.
+  * Others' hidden cards stay hidden: "Bo loots a card".
 
 ## Postconditions
 

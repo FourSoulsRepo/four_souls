@@ -337,3 +337,66 @@ test('a changed roll shows the die and the result in the history (19.1)', async 
   await expect(icon.locator('.die')).toHaveAttribute('aria-label', 'Rolled 4');
   await expect(history).toContainText('Roll — attack roll (rolled 6 → 4)');
 });
+
+test('the history names every play: a buy, an attack and a kill (15.88)', async ({ browser }) => {
+  const names = ['Lev', 'Mia'];
+  const pages = await startGame(browser, names, { url: fast() });
+  const active = await activePage(pages, click);
+  const activeName = names[pages.indexOf(active)] ?? '';
+  const other = pages.find((p) => p !== active) ?? active;
+  const turn = await turnNumber(active);
+  // A real purchase: with the starting cents it most likely fails, which
+  // the history names too (15.46).
+  await active.keyboard.press('b');
+  await settle(pages, click, async () => (await canEndTurn(active)) || (await turnNumber(active)) !== turn || (await gameOver(active)));
+  for (const page of pages) {
+    await page.getByRole('button', { name: 'History', exact: true }).click();
+  }
+  const history = (p: typeof active) => p.getByRole('complementary', { name: 'History', exact: true });
+  await expect(history(active)).toContainText('You declare a purchase');
+  await expect(history(active)).toContainText(/You (buy \S|can't buy: the price is \d+¢)/);
+  await expect(history(other)).toContainText(`${activeName} declares a purchase`);
+  await expect(history(other)).toContainText(new RegExp(`${activeName} (buys \\S|can't buy)`));
+
+  // A kill needs lucky dice; its events come as the engine sends them.
+  await active.evaluate(() => {
+    interface Store {
+      getState: () => {
+        game: { view: { turn: { active: number }; monsters: { top?: { id: number; card: string; stats?: unknown } }[] } } | null;
+        receive: (env: unknown) => void;
+      };
+    }
+    const store = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store;
+    const s = store.getState();
+    const game = structuredClone(s.game);
+    const monster = game?.view.monsters.find((m) => m.top?.stats)?.top;
+    if (!game || !monster) {
+      throw new Error('no game');
+    }
+    const p = game.view.turn.active;
+    s.receive({
+      type: 'update',
+      data: {
+        ...game,
+        step: 900,
+        events: [
+          { kind: 'attack_declared', player: p },
+          { kind: 'attack_target', player: p, object: monster.id, card: monster.card },
+          { kind: 'died', player: -1, object: 901, card: monster.card, prev: monster.id, by: p + 1 },
+          { kind: 'gained_cents', player: p, amount: 3 },
+        ],
+      },
+    });
+  });
+  await expect(history(active)).toContainText('You declare an attack');
+  const kill = history(active).getByText(/^You kill \S/);
+  await expect(kill).toBeVisible();
+  await expect(history(active)).toContainText(/You attack \S/);
+  await expect(history(active)).toContainText('You gain 3¢');
+  await shot(active, 'history-every-play');
+  await shot(other, 'history-every-play-other');
+  // The line zooms the dead monster.
+  await kill.hover();
+  await expect(active.getByTestId('card-zoom').locator('.card.size-zoom')).toBeVisible();
+  await shot(active, 'history-every-play-zoom');
+});
