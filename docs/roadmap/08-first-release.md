@@ -387,3 +387,23 @@ Ideas: B-03 – B-05, L-03, V-10, V-11, DO-01, V-14, A-16, N-13, N-14, V-19, N-1
    2. `.gitignore` keeps `/four_souls`: a plain `go build .` makes it.
    3. A local `wails build` gives `FourSouls.app`, same bundle ID.
    4. No test tag was pushed; the release job copies the same `build/bin/`.
+
+### [x] 8.28 App icon
+
+1. Goal: the app has its own icon, not the Wails template one.
+2. Tasks:
+   1. Dark tile with a pixel-style "4": four souls win the game.
+   2. Four souls fly around and through the digit.
+   3. Some fly behind the digit, some in front, two twine around it.
+   4. Original drawing; souls only in the spirit of the logo.
+   5. Source `build/appicon.svg`; renders `build/appicon.png`, 1024 px.
+   6. `build/windows/icon.ico` with sizes 16–256.
+   7. `NOTICE` drops the Wails template icon entry.
+3. Done when:
+   1. `wails build` shows the new icon on macOS and Windows.
+4. Owner notes (2026-10-22)
+   1. Owner picked variant G out of several drafts.
+5. Notes
+   1. PNG and ICO are rendered from the SVG in Chromium (Playwright).
+   2. ImageMagick's own SVG renderer drops gradients and filters.
+   3. Below 32 px the souls blend into the digit; the "4" still reads.

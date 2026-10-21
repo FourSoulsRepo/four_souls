@@ -59,12 +59,10 @@ Dice sound (assets/sounds in the private images):
   MP3.
 
 --------------------------------------------------------------------------
-Wails template images — build/appicon.png, build/windows/icon.ico
+App icon — build/appicon.svg, build/appicon.png, build/windows/icon.ico
 --------------------------------------------------------------------------
-Default application icon from the Wails project template.
-Copyright (c) Lea Anthony and the Wails contributors. MIT.
-Upstream: https://github.com/wailsapp/wails
-Placeholders; to be replaced by project artwork.
+Original artwork made for this project; no third-party parts. MIT, as
+the code (LICENSE). Replaces the Wails template icon.
 
 --------------------------------------------------------------------------
 Dependencies
