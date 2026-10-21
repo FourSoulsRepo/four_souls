@@ -37,7 +37,7 @@ This step never closes; new reports are appended.
 | B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39                               | 4     |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30                                     | 3     |
-| E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41                   | 6     |
+| E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52            | 7     |
 | F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50                      | 5     |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
@@ -45,13 +45,13 @@ This step never closes; new reports are appended.
 | J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51 | 9 |
 | K  | Build and release files                  | Release    | 19.47                                                  | 1     |
 
-Totals by system (51 items):
+Totals by system (52 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
 | Engine    | A, B    | 10    |
 | Card data | C       | 2     |
-| Client    | D–G     | 18    |
+| Client    | D–G     | 19    |
 | Server    | H       | 1     |
 | e2e       | I, J    | 19    |
 | Release   | K       | 1     |
@@ -1741,3 +1741,26 @@ Totals by system (51 items):
    2. Test only; no app change, no screenshots.
 8. Owner notes (2026-10-21)
    1. Owner marks 19.51 solved.
+
+### [ ] 19.52 History: card-less stack items read "Roll — …"
+
+1. Goal: the History says what a resolved stack item did, as the strip does.
+2. Report (agent, 2026-10-21)
+   1. Found while checking the 15.89 screenshots.
+   2. Damage reads "Roll — damage", not "Bo deals 1 damage to Gaper".
+   3. Also "Roll — death", "Roll — soul", "Roll — rewards", "Roll — death penalty".
+   4. The strip shows the same items with the right words.
+3. Cause
+   1. `history.ts` builds the line as `card || 'Roll'` plus the label.
+   2. It takes every stack item without a card for a roll.
+   3. Damage, death, death step and penalty items have no card.
+   4. Written in 7.9; its tests had only a loot card and a roll.
+   5. 15.22 and 15.47 fixed the strip's words (`stackLine`), not the History.
+   6. 15.88 counted `stack_resolved` as told without checking its words.
+4. Tasks:
+   1. A resolved item's History line uses `stackParts`, as the strip does.
+   2. Rolls keep "(rolled 6 → 4)" (19.1).
+5. Done when:
+   1. Vitest: each stack item kind gives the strip's words in the History.
+   2. e2e: a damage line in the full History names who and whom.
+

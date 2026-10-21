@@ -2748,6 +2748,8 @@ Images come first, so the new table is built with backs and mats.
    11. The 15.22 and 15.47 strip tests mark their sent entries `headline`.
    12. UC-12 3e; wiki `Client`; CHANGELOG.
    13. Screenshots: `.cache/screenshots/15.89/before/` and `after/`.
+6. Owner notes (2026-10-21)
+   1. Owner marks 15.89 solved.
 
 ### [ ] 15.90 Strip popout
 
