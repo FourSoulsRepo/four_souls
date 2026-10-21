@@ -270,3 +270,26 @@ export async function playLoot(page: Page, card: Locator, press: Tap): Promise<v
   await expect(menu.or(target)).toBeVisible();
   await press(page, (await menu.isVisible()) ? menu.getByRole('menuitem', { name: 'Play' }) : target);
 }
+
+// answerPlay answers what a played loot card asks before it goes on the
+// stack: its mode in a dialog, or its target, aimed at on the table
+// (19.18): Dagaz protects a player, Lil Battery charges an item.
+export async function answerPlay(page: Page, press: Tap): Promise<void> {
+  const rows = page.getByRole('complementary', { name: 'Stack' }).locator('.stack-row');
+  await expect
+    .poll(
+      async () => {
+        if ((await rows.count()) > 0) {
+          return true;
+        }
+        const option = page.locator('.choice .choice-option button').first();
+        const aim = (await option.isVisible()) ? option : await uncovered(page.locator('.card.hl-aim, .stack-row.hl-aim'));
+        if (aim) {
+          await press(page, aim);
+        }
+        return false;
+      },
+      { timeout: 10_000 },
+    )
+    .toBe(true);
+}

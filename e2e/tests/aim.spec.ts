@@ -5,10 +5,9 @@
 // first aims after it, and a cancelled aim puts it back (15.34).
 import type { Locator, Page } from '@playwright/test';
 import { expect, test } from './fixtures';
-import { readFileSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { startGame } from './game';
-import { appURL, serverPort } from './server';
+import { appURL } from './server';
+import { saveAndContinue } from './saves';
 import { shot } from './shot';
 import { activePage, click, settle } from './turn';
 
@@ -28,60 +27,6 @@ interface Store {
 interface StackItem {
   card?: string;
   targets?: { object?: number }[];
-}
-
-// gameID is the id of the page's table, which names its save file.
-async function gameID(page: Page): Promise<string> {
-  return page.evaluate(() => {
-    const store = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store;
-    return store.getState().lobby.table?.game ?? '';
-  });
-}
-
-// giveCard rewrites a saved game: the active player's first hand card
-// becomes the card. The test server keeps saves under .cache/e2e.
-function giveCard(game: string, card: string) {
-  const file = join(import.meta.dirname, '..', '..', '.cache', 'e2e', String(serverPort()), 'saves', `${game}.fssave`);
-  const save = JSON.parse(readFileSync(file, 'utf8')) as {
-    state: { turn: { active: number }; players: { hand: number[] }[]; objects: { card: string }[] };
-  };
-  const { state } = save;
-  const id = state.players[state.turn.active]?.hand[0];
-  const obj = id === undefined ? undefined : state.objects[id];
-  if (!obj) {
-    throw new Error('the active player has no hand card');
-  }
-  obj.card = card;
-  writeFileSync(file, JSON.stringify(save));
-}
-
-// saveAndContinue: the host saves, the active player gets the card,
-// then everyone comes back to it.
-async function saveAndContinue(pages: Page[], names: string, card = 'bomb') {
-  const [host, ...guests] = pages;
-  if (!host) {
-    throw new Error('no pages');
-  }
-  const game = await gameID(host);
-  await host.getByRole('button', { name: 'Menu' }).click();
-  await host.getByRole('button', { name: 'Save and leave' }).click();
-  for (const page of pages) {
-    await expect(page.getByText('The game was saved.')).toBeVisible();
-  }
-  giveCard(game, card);
-  await host.getByRole('button', { name: 'Back' }).click();
-  await host.getByRole('button', { name: 'Host a game' }).click();
-  await host.getByRole('button', { name: 'Continue a saved game' }).click();
-  await host.getByRole('listitem').filter({ hasText: names }).getByRole('button', { name: 'Continue' }).click();
-  for (const page of guests) {
-    await page.getByRole('listitem').filter({ hasText: names }).getByRole('button', { name: 'Continue' }).click();
-  }
-  for (const page of pages) {
-    await page.getByRole('button', { name: 'Ready', exact: true }).click();
-  }
-  for (const page of pages) {
-    await expect(page.getByRole('main', { name: /^Turn / })).toBeVisible();
-  }
 }
 
 test('a bomb aimed at a monster by two clicks damages it', async ({ browser }) => {

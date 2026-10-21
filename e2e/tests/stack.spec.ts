@@ -2,9 +2,10 @@
 import type { Page } from '@playwright/test';
 import { expect, test } from './fixtures';
 import { startGame } from './game';
+import { saveAndContinue } from './saves';
 import { appURL } from './server';
 import { shot } from './shot';
-import { activePage, click, endTurn, passButton, playLoot } from './turn';
+import { activePage, answerPlay, click, endTurn, passButton, playLoot } from './turn';
 
 const fast = () => `${appURL()}&anim=off`;
 
@@ -21,15 +22,8 @@ test('a played loot card shows on the stack; nobody is offered skip all', async 
   test.skip(!(await loot.isVisible()), 'no playable loot card in this deal');
   const name = await loot.getAttribute('aria-label');
   await playLoot(active, loot, click);
-  // Some loot cards ask for a target before they go on the stack.
-  const stack = active.getByRole('complementary', { name: 'Stack' });
-  for (let i = 0; i < 10 && (await stack.locator('.stack-row').count()) === 0; i++) {
-    const option = active.locator('.choice .choice-option button').first();
-    if (await option.isVisible()) {
-      await option.click();
-    }
-    await active.waitForTimeout(200);
-  }
+  // Some loot cards ask for a mode or a target before they go on the stack.
+  await answerPlay(active, click);
 
   for (const page of [active, other]) {
     await expect(page.getByRole('complementary', { name: 'Stack' })).toContainText(`plays ${name ?? ''}`);
@@ -43,6 +37,18 @@ test('a played loot card shows on the stack; nobody is offered skip all', async 
   for (const page of [active, other]) {
     await expect(page.getByRole('button', { name: /Skip all|Cancel skip/ })).toHaveCount(0);
   }
+});
+
+// A loot card that aims after its mode still reaches the stack: the
+// test picks its player on the table, not in a dialog (19.18).
+test('a played Dagaz goes on the stack once its player is picked (19.18)', async ({ browser }) => {
+  const pages = await startGame(browser, ['Kit', 'Lev'], { url: fast() });
+  await activePage(pages, click);
+  await saveAndContinue(pages, 'Kit, Lev', 'dagaz');
+  const active = await activePage(pages, click);
+  await playLoot(active, active.getByRole('group', { name: 'Your hand' }).getByRole('button', { name: 'Dagaz' }), click);
+  await answerPlay(active, click);
+  await expect(active.getByRole('complementary', { name: 'Stack' })).toContainText('plays Dagaz');
 });
 
 test('a player may wait for their turn; the end of the turn before asks them (N-16)', async ({ browser }) => {
@@ -114,13 +120,7 @@ test('every player sees whom the stack waits for (V-11)', async ({ browser }) =>
   test.skip(!(await loot.isVisible()), 'no playable loot card in this deal');
   await playLoot(active, loot, click);
   const stack = active.getByRole('complementary', { name: 'Stack' });
-  for (let i = 0; i < 10 && (await stack.locator('.stack-row').count()) === 0; i++) {
-    const option = active.locator('.choice .choice-option button').first();
-    if (await option.isVisible()) {
-      await option.click();
-    }
-    await active.waitForTimeout(200);
-  }
+  await answerPlay(active, click);
   await expect(stack).toContainText(/Waiting for|: /);
   const want = (await waitLine(active, me, 'Waiting for')) + (await waitLine(active, me, 'Passed'));
   expect(want).not.toBe('');

@@ -661,6 +661,16 @@ Totals by system (51 items):
    10. Seen again in 15.35, WebKit, the same test, both tries.
    11. Records: one played Dagaz, the other Lil Battery (an item target).
    12. Evidence: `.cache/e2e-evidence-15.35/`.
+   13. 19.44 is the same: Dagaz again, found in its record.
+6. Result (2026-10-21)
+   1. New `answerPlay` in `turn.ts`: a mode in a dialog, or a target on the table.
+   2. It clicks the first uncovered `.hl-aim` card or stack row, as `settle` does.
+   3. It waits up to 10 s for the stack row, not 10 tries of 200 ms.
+   4. Both stack tests use it.
+   5. Test: "a played Dagaz goes on the stack once its player is picked".
+   6. It gets Dagaz from a changed save; helpers moved to `saves.ts`.
+   7. It fails without the table click, both browsers; passes with it.
+   8. Test only; no app change, no screenshots.
 
 ### [x] 19.19 Trigger order: "on the stack first" is unclear
 
@@ -1452,6 +1462,8 @@ Totals by system (51 items):
    7. The test picked its mode; then "Choose a player" waited.
    8. The test answers only dialogs; Dagaz's player is picked on the table.
    9. Fails whenever the deal gives the active player such a card.
+6. Result (2026-10-21)
+   1. Fixed with 19.18: the stack tests answer table targets.
 4. Tasks:
    1. Find the card in the match record; fix the test or the app.
 5. Done when:
