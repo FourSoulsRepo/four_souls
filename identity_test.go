@@ -39,3 +39,39 @@ func TestStableIdentity(t *testing.T) {
 		}
 	}
 }
+
+// TestVersionFields checks that every version field takes the stamped
+// release version (19.47); Wails fills the template from wails.json.
+func TestVersionFields(t *testing.T) {
+	const want = "{{.Info.ProductVersion}}"
+	plist, err := os.ReadFile("build/darwin/Info.plist")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, key := range []string{"CFBundleVersion", "CFBundleShortVersionString"} {
+		if !strings.Contains(string(plist), "<key>"+key+"</key>\n        <string>"+want+"</string>") {
+			t.Errorf("Info.plist %s is not %s", key, want)
+		}
+	}
+	var info struct {
+		Fixed map[string]string            `json:"fixed"`
+		Info  map[string]map[string]string `json:"info"`
+	}
+	data, err := os.ReadFile("build/windows/info.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := json.Unmarshal(data, &info); err != nil {
+		t.Fatal(err)
+	}
+	for _, key := range []string{"file_version", "product_version"} {
+		if info.Fixed[key] != want {
+			t.Errorf("info.json fixed %s = %q, want %s", key, info.Fixed[key], want)
+		}
+	}
+	for _, key := range []string{"FileVersion", "ProductVersion"} {
+		if info.Info["0000"][key] != want {
+			t.Errorf("info.json %s = %q, want %s", key, info.Info["0000"][key], want)
+		}
+	}
+}

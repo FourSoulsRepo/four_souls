@@ -43,8 +43,9 @@ This step never closes; new reports are appended.
 | H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
 | I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37 | 9 |
 | J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44 | 8     |
+| K  | Build and release files                  | Release    | 19.47                                                  | 1     |
 
-Totals by system (46 items):
+Totals by system (47 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
@@ -53,6 +54,7 @@ Totals by system (46 items):
 | Client    | D–G     | 16    |
 | Server    | H       | 1     |
 | e2e       | I, J    | 17    |
+| Release   | K       | 1     |
 
 ---
 
@@ -1477,3 +1479,32 @@ Totals by system (46 items):
    12. Engine only; no screen change, no screenshots.
 7. Owner notes (2026-10-21)
    1. Owner marks 19.46 solved.
+
+### [ ] 19.47 Windows file details miss the release version
+
+1. Goal: macOS and Windows show the git tag's version.
+2. Report (owner, 2026-10-21)
+   1. Releases ship macOS and Windows binaries.
+   2. `Info.plist` and the Windows details must show the tag's version.
+3. Cause
+   1. The build stamps `wails.json` `info.productVersion` (8.3).
+   2. Wails renders `Info.plist` and `info.json` from it.
+   3. Local build at 1.4.2: `Info.plist` shows 1.4.2 in both keys.
+   4. The `.exe`: fixed product version 0.0.0.0; no `FileVersion` string.
+   5. `info.json` set only the fixed file version and the product string.
+   6. Docs said trial tags give 0.0.0; the build strips `-test` instead.
+4. Tasks:
+   1. `info.json`: fixed product version and `FileVersion` string too.
+   2. Test: every version field uses `{{.Info.ProductVersion}}`.
+   3. Fix the build action comment and `Releases.md`.
+5. Done when:
+   1. A local Windows build at 1.4.2 has 1.4.2 in all four fields.
+   2. Go test fails if a version field drops the template.
+6. Result (2026-10-21)
+   1. `info.json`: fixed `product_version` and the `FileVersion` string.
+   2. Local Windows build at 1.4.2: all four fields show 1.4.2.
+   3. Local macOS build at 1.4.2: both `Info.plist` keys show 1.4.2.
+   4. Test: `TestVersionFields` in `identity_test.go`.
+   5. It fails without the fix: `product_version` and `FileVersion` empty.
+   6. Build action comment and `Releases.md` now say `-test` gives 1.2.3.
+   7. Release files only; no screen change, no screenshots.

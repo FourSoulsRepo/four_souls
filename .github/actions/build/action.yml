@@ -40,9 +40,10 @@ runs:
     - name: Install Wails CLI
       shell: bash
       run: go install github.com/wailsapp/wails/v2/cmd/wails@${{ inputs.wails-version }}
-    # The release version goes into the app's product info (8.3).
-    # Windows wants numbers only, so a suffix (-test) or a CI build
-    # (ci-<sha>) gives 0.0.0 there.
+    # The release version goes into the app's product info (8.3):
+    # Info.plist and the Windows file details (19.47). They want numbers
+    # only, so a suffix is dropped (1.2.3-test gives 1.2.3) and a CI
+    # build (ci-<sha>) gives 0.0.0.
     - name: Stamp the product version
       shell: bash
       env:

@@ -48,7 +48,7 @@ Every release has the same identity (B-03), so the OS treats it as the same app:
 
 * Bundle ID `io.github.foursoulsrepo.foursouls` on macOS (`build/darwin/Info.plist`) and in the Windows manifest (`build/windows/wails.exe.manifest`).
 * Product name "Four Souls", company "FourSoulsRepo" (`wails.json`, `info`); Windows shows them in the file's details.
-* The build stamps the release version into the product version; Windows takes numbers only, so trial and CI builds show 0.0.0.
+* The build stamps the release version into `wails.json` `info.productVersion`; Wails puts it into `Info.plist` (`CFBundleVersion`, `CFBundleShortVersionString`) and the Windows file and product versions (`build/windows/info.json`). These take numbers only: a trial tag drops its suffix (`v1.2.3-test` shows 1.2.3), and CI builds show 0.0.0.
 * No code signing; see `README.txt` for the first start.
 
 `identity_test.go` fails if any of these drift.
