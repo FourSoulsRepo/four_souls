@@ -21,7 +21,8 @@ interface Props {
 // in the stack panel (15.21).
 export function ActionBar({ banner, paused, name, deadline, wait }: Props) {
   const waitTurn = useApp((s) => s.waitTurn);
-  const error = useApp((s) => s.error);
+  // A lost connection says so in its badge or dialog, not here (N-20).
+  const error = useApp((s) => (s.connected ? s.error : ''));
   return (
     <div className="action-bar" role="region" aria-label="Actions">
       {(paused || banner) && (

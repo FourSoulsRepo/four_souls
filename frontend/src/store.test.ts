@@ -102,3 +102,24 @@ describe('recent servers (N-18)', () => {
     expect(useApp.getState().settings.recent).toEqual([{ address: 'b', name: '' }]);
   });
 });
+
+describe('server notices (N-20)', () => {
+  it('a lost game goes back to the game list and shows the notice', () => {
+    useApp.setState({ screen: 'game', connected: true });
+    useApp.getState().receive({ type: 'notice', data: { kind: 'game_lost', game: 'g1' } });
+    expect(useApp.getState()).toMatchObject({ screen: 'join', game: null, notice: { kind: 'game_lost' } });
+    useApp.getState().endNotice();
+    expect(useApp.getState().notice).toBeNull();
+  });
+
+  it('a newer engine keeps the game on screen', () => {
+    useApp.setState({ screen: 'game', connected: true });
+    useApp.getState().receive({ type: 'notice', data: { kind: 'engine_updated' } });
+    expect(useApp.getState()).toMatchObject({ screen: 'game', notice: { kind: 'engine_updated' } });
+  });
+
+  it('restarting is remembered for the badge', () => {
+    useApp.getState().receive({ type: 'restarting' });
+    expect(useApp.getState().restarting).toBe(true);
+  });
+});

@@ -12,7 +12,7 @@ import { PresenceLayer, PresenceSender } from '../components/Presence';
 import { HistoryPanel, TurnBadge } from '../components/InfoPanels';
 import { GameMenu } from '../components/GameMenu';
 import { HistoryStrip } from '../components/HistoryStrip';
-import { EndOverlay, LostOverlay, PauseOverlay } from '../components/Overlays';
+import { EndOverlay, LostOverlay, PauseOverlay, ReconnectBadge } from '../components/Overlays';
 import { PlayedCard, StackPanel } from '../components/StackPanel';
 import { Throw } from '../components/Throw';
 import { WhyNote } from '../components/Why';
@@ -59,6 +59,7 @@ function Table({ game, you }: { game: Update; you: number }) {
   const mats = useApp((s) => s.mats);
   const look = matLook(mat, mats);
   const connected = useApp((s) => s.connected);
+  const quiet = useApp((s) => s.reconnecting && !s.lostLong);
   const behind = useApp((s) => s.behind);
   const sent = useApp((s) => s.sent);
   const act = useApp((s) => s.act);
@@ -220,7 +221,9 @@ function Table({ game, you }: { game: Update; you: number }) {
       {offered.order && <OrderDialog key={game.step} order={offered.order} cards={view.ordering ?? []} />}
       {looking.length > 0 && <LookDialog cards={looking} />}
       {connected && !view.over && <GameMenu host={you === 0} />}
-      {!connected ? (
+      {!connected && quiet ? (
+        <ReconnectBadge />
+      ) : !connected ? (
         <LostOverlay />
       ) : view.over ? (
         <EndOverlay game={game} you={you} name={name} />

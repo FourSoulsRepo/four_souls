@@ -45,7 +45,9 @@ func run(ctx context.Context, args []string, out io.Writer) error {
 		return err
 	}
 	cfg.KeepGames = true // an update or restart does not end the games (N-20)
-	s, err := server.Start(ctx, cfg)
+	// Shutdown stops the server, not the signal: the players hear of the
+	// restart before their games stop.
+	s, err := server.Start(context.WithoutCancel(ctx), cfg)
 	if err != nil {
 		return err
 	}

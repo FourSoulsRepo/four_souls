@@ -10,7 +10,7 @@ export function serverPort(): number {
 }
 
 // appURL opens the app with fake bindings, no splash, hosting on the
-// project's test server.
-export function appURL(): string {
-  return `/?fake&nosplash&server=${String(serverPort())}`;
+// project's test server, or on port.
+export function appURL(port = serverPort()): string {
+  return `/?fake&nosplash&server=${String(port)}`;
 }

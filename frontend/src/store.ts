@@ -38,6 +38,7 @@ import { claimEffect, nextBeat } from './animations';
 import { lastRollAfter, type LastRoll } from './dice';
 import { createPlayback, effectsFor, slotZone, type Effect } from './playback';
 import { loadSounds } from './sounds';
+import { endsGame, lostDialogAfter, retryDelay } from './reconnect';
 import {
   protocolVersion,
   recordURL,
@@ -46,6 +47,7 @@ import {
   type Envelope,
   type Hello,
   type Intent,
+  type Notice,
   type OptionView,
   type Presence,
   type Update,
@@ -174,6 +176,16 @@ interface AppState extends Session {
   address: string;
   // reconnect says hello again with the seat's token (N-08).
   reconnect: () => Promise<void>;
+  // reconnecting is set while the app reconnects by itself to a game
+  // whose connection dropped (N-20); lostLong once it took long enough
+  // for the "Connection lost" dialog.
+  reconnecting: boolean;
+  lostLong: boolean;
+  // restarting is set when the server said it restarts (N-20).
+  restarting: boolean;
+  // notice is the server notice to show; endNotice closes it (N-20).
+  notice: Notice | null;
+  endNotice: () => void;
   // vote: kick the missing players, or wait for them (N-08).
   vote: (kick: boolean) => void;
   // saveRecord saves the finished game's record; it returns the file,
@@ -394,6 +406,48 @@ export const useApp = create<AppState>()((set, get) => {
     }
   }
 
+  // retry reconnects by itself to a game whose connection dropped: at
+  // once, then ever less often; the badge turns into the "Connection
+  // lost" dialog after a while (N-20, 8.24).
+  const retry = { timer: 0, dialog: 0, attempt: 0, busy: false };
+  const retryLater = () => {
+    if (!get().reconnecting) {
+      retry.attempt = 0;
+      window.clearTimeout(retry.dialog);
+      retry.dialog = window.setTimeout(() => {
+        set({ lostLong: true });
+      }, lostDialogAfter());
+      set({ reconnecting: true, lostLong: false });
+    }
+    window.clearTimeout(retry.timer);
+    retry.timer = window.setTimeout(() => void retryNow(), retryDelay(retry.attempt++));
+  };
+  const retryNow = async () => {
+    const token = get().lobby.welcome?.token;
+    if (!get().reconnecting || retry.busy || !token) {
+      return;
+    }
+    window.clearTimeout(retry.timer);
+    retry.busy = true;
+    const ok = await open(get().address, token);
+    retry.busy = false;
+    if (!get().reconnecting) {
+      return; // the player left meanwhile
+    }
+    if (ok) {
+      endRetry();
+    } else {
+      retryLater();
+    }
+  };
+  const endRetry = () => {
+    if (get().reconnecting) {
+      window.clearTimeout(retry.timer);
+      window.clearTimeout(retry.dialog);
+    }
+    set({ reconnecting: false, lostLong: false, restarting: false });
+  };
+
   async function open(address: string, reconnect?: string): Promise<boolean> {
     // A restarted app still holds the seat of its last game there.
     const rejoin = get().settings.rejoin;
@@ -412,6 +466,10 @@ export const useApp = create<AppState>()((set, get) => {
         }
         clearPresence();
         set((s) => ({ ...lost(s), connected: false }));
+        const s = get();
+        if (s.screen === 'game' && !s.game?.view.over && s.lobby.welcome?.token) {
+          retryLater();
+        }
       });
       // A reconnect keeps the table it comes back to.
       set(token ? { connected: true, address, error: '' } : { connected: true, address, cardSets: sets, lobby: emptyLobby, error: '' });
@@ -463,6 +521,18 @@ export const useApp = create<AppState>()((set, get) => {
       }
       if (env.type === 'welcome') {
         nameServer(get().address, (env.data as Welcome).name ?? '');
+      }
+      if (env.type === 'restarting') {
+        set({ restarting: true });
+      }
+      if (env.type === 'notice') {
+        const n = env.data as Notice;
+        set({ notice: n });
+        if (endsGame(n)) {
+          endRetry();
+          stopPlayback();
+          set((s) => ({ screen: 'join', lobby: { ...s.lobby, table: null }, game: null }));
+        }
       }
       if (env.type === 'presence') {
         const p = env.data as Presence;
@@ -517,9 +587,21 @@ export const useApp = create<AppState>()((set, get) => {
     address: '',
     reconnect: async () => {
       const token = get().lobby.welcome?.token;
-      if (token) {
-        await open(get().address, token);
+      if (!token) {
+        return;
       }
+      if (get().reconnecting) {
+        await retryNow();
+        return;
+      }
+      await open(get().address, token);
+    },
+    reconnecting: false,
+    lostLong: false,
+    restarting: false,
+    notice: null,
+    endNotice: () => {
+      set({ notice: null });
     },
     vote: (kick) => {
       send('vote', { kick });
@@ -680,6 +762,7 @@ export const useApp = create<AppState>()((set, get) => {
       set((s) => leftTable(s));
     },
     quit: async () => {
+      endRetry();
       disconnect();
       stopPlayback();
       const hosting = get().hosting;

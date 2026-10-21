@@ -302,7 +302,7 @@ Ideas: B-03 – B-05, L-03, V-10, V-11, DO-01, V-14, A-16, N-13, N-14, V-19, N-1
    1. Go tests for the three cases.
    2. A renamed field and a new field each have a test.
 
-### [ ] 8.24 Client reconnects by itself
+### [x] 8.24 Client reconnects by itself
 
 1. Goal: players do not notice a short server restart (N-20).
 2. Tasks:
@@ -314,6 +314,8 @@ Ideas: B-03 – B-05, L-03, V-10, V-11, DO-01, V-14, A-16, N-13, N-14, V-19, N-1
    6. The engine notice and the apology show as dialogs.
    7. No kick vote for 60 seconds after the server starts.
    8. Animations, history, and the board are kept.
+   9. A failed retry's error shows in the dialog, not in the action bar.
+   10. `cmd/server` stops its games after the warning, not on the signal.
 3. Done when:
    1. Vitest for the retry delays.
    2. e2e: restart the server mid-game; the game goes on, no dialog.

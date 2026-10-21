@@ -68,6 +68,12 @@ Use option 1.
    5. `StateMeaning` must match; raise it when a field changes meaning.
    6. A test lists every field without `omitempty`; new ones must not join.
    7. A game that goes on: each player gets `notice` `engine_updated` once.
+8. The app (8.24)
+   1. A dropped game connection reconnects by itself, with backoff.
+   2. A badge first; the "Connection lost" dialog after 30 seconds.
+   3. A kept game takes no kick vote for 60 seconds (`pause.grace`).
+   4. `cmd/server` starts the server without the signal's context.
+   5. So SIGTERM reaches `Shutdown`, which warns before the rooms stop.
 
 ## Consequences
 

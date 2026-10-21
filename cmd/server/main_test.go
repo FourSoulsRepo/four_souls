@@ -121,12 +121,15 @@ func (s *syncBuffer) String() string {
 }
 
 // TestRun starts the server, connects a client, and stops it cleanly.
-// The welcome carries the server's name (N-18).
+// The welcome carries the server's name (N-18). The signal that stops
+// it lets the client hear of the restart first (N-20).
 func TestRun(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	var out syncBuffer
 	done := make(chan error, 1)
-	go func() { done <- run(ctx, []string{"-addr", "127.0.0.1", "-port", "47741", "-name", "Basement"}, &out) }()
+	dir := t.TempDir()
+	args := []string{"-addr", "127.0.0.1", "-port", "47741", "-name", "Basement", "-records", filepath.Join(dir, "records"), "-saves", filepath.Join(dir, "saves")}
+	go func() { done <- run(ctx, args, &out) }()
 
 	var ws *websocket.Conn
 	for range 50 {
@@ -171,13 +174,19 @@ func TestRun(t *testing.T) {
 	if err := ws.SetReadDeadline(time.Now().Add(5 * time.Second)); err != nil {
 		t.Fatal(err)
 	}
+	restarting := false
 	for {
-		if _, _, err := ws.ReadMessage(); err != nil {
+		_, got, err := ws.ReadMessage()
+		if err != nil {
 			if strings.Contains(err.Error(), "timeout") {
 				t.Error("the connection is still open after shutdown")
 			}
 			break
 		}
+		restarting = restarting || strings.Contains(string(got), `"type":"restarting"`)
+	}
+	if !restarting {
+		t.Error("no restarting message before the connection closed")
 	}
 	for _, want := range []string{"Four Souls dedicated server", "listening on 127.0.0.1:47741", "stopped"} {
 		if !strings.Contains(out.String(), want) {

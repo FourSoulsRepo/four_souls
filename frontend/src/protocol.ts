@@ -144,6 +144,15 @@ export interface Saved {
   save: string;
 }
 
+// Notice tells the player something the game screen does not show
+// (N-20): engine_updated, game_lost, game_idle.
+export interface Notice {
+  kind: string;
+  game?: string;
+  // reason of game_idle: 'empty' (nobody connected) or 'long' (24 hours).
+  reason?: string;
+}
+
 // lanName and ipv4 are hosts never behind an HTTPS proxy: a bare one
 // goes straight to plain ws:// (N-19).
 const lanName = /\.(local|lan|home|internal|home\.arpa)$/i;
@@ -489,6 +498,9 @@ export interface Vote {
 export interface Pause {
   away: number[];
   votes: Vote[] | null;
+  // grace is when a kick vote opens, Unix ms, after a server restart
+  // (N-20); absent: open now.
+  grace?: number;
 }
 
 // Update is the state for this client after a step (N-04).

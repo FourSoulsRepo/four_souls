@@ -196,6 +196,10 @@ func (r *Room) vote(c *Client, env protocol.Envelope) {
 		c.fail(env.ID, protocol.ErrBadMessage, "nothing to vote on")
 		return
 	}
+	if m.Kick && time.Now().Before(r.grace) {
+		c.fail(env.ID, protocol.ErrBadMessage, "the server restarted; players are still coming back (N-20)")
+		return
+	}
 	r.votes = slices.DeleteFunc(r.votes, func(v protocol.Vote) bool { return v.Seat == c.seat })
 	r.votes = append(r.votes, protocol.Vote{Seat: c.seat, Kick: m.Kick})
 	connected, kicks := 0, 0

@@ -92,6 +92,7 @@ type Room struct {
 	setupWait bool         // kept bans and picks start over once all are back
 	notice    string       // told to each returning player once (N-20)
 	noticed   []bool       // by seat
+	grace     time.Time    // no kick vote before it: players come back
 }
 
 // NewRoom prepares a game for seated players; it starts in Run. The
@@ -317,6 +318,9 @@ func (r *Room) update(c *Client, events []engine.Event) {
 	}
 	if r.paused() {
 		u.Pause = &protocol.Pause{Away: r.away(), Votes: slices.Clone(r.votes)}
+		if time.Now().Before(r.grace) {
+			u.Pause.Grace = r.grace.UnixMilli()
+		}
 	}
 	c.send(protocol.TypeUpdate, 0, u)
 }

@@ -11,10 +11,10 @@ export const statMonsters = ['delirium', 'stoney'];
 // hostBans adds the cards to the host's create message on its way to
 // the server: the host screen has no ban list yet (14.9). The getter it
 // resolves to returns the bans the server's table names, as a check.
-function hostBans(page: Page, bans: string[]): Promise<() => string[]> {
+function hostBans(page: Page, bans: string[], port: number): Promise<() => string[]> {
   let echoed: string[] = [];
   return page
-    .routeWebSocket(`ws://127.0.0.1:${String(serverPort())}/ws`, (ws) => {
+    .routeWebSocket(`ws://127.0.0.1:${String(port)}/ws`, (ws) => {
       const server = ws.connectToServer();
       ws.onMessage((msg) => {
         const env = JSON.parse(String(msg)) as { type: string; data?: { options?: Record<string, unknown> } };
@@ -65,7 +65,9 @@ export async function startGame(
   {
     viewport = { width: 1280, height: 720 },
     touch = false,
-    url = appURL(),
+    // port is the server's; the project's test server by default.
+    port = serverPort(),
+    url = appURL(port),
     // setup changes the host form before Host is pressed.
     setup = (_: Page) => Promise.resolve(),
     // open runs on each new page before it loads the app.
@@ -89,7 +91,7 @@ export async function startGame(
   if (!host) {
     throw new Error('no players');
   }
-  const banned = bans.length > 0 ? await hostBans(host, bans) : () => [];
+  const banned = bans.length > 0 ? await hostBans(host, bans, port) : () => [];
   await host.goto(url);
   await host.getByRole('button', { name: 'Host a game' }).click();
   await host.getByLabel('Nickname').fill(names[0] ?? '');
@@ -110,7 +112,7 @@ export async function startGame(
     await page.goto(url);
     await page.getByRole('button', { name: 'Join a game' }).click();
     await page.getByLabel('Nickname').fill(names[i + 1] ?? '');
-    await page.getByLabel('Host address').fill(`127.0.0.1:${String(serverPort())}`);
+    await page.getByLabel('Host address').fill(`127.0.0.1:${String(port)}`);
     await page.getByRole('button', { name: 'Connect' }).click();
     // The click goes to the button, not to a point: a table above that
     // starts moves the row up under the pointer, and a click there hit

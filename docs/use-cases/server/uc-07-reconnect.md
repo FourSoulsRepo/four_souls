@@ -33,6 +33,10 @@
 * **3c. The game is over:** the token takes the player to the lobby, not back (19.32).
   * The player keeps the token; the record download still works.
   * A new game with that token is the one a later hello comes back to.
+* **1c. The app reconnects by itself (N-20):** at once, then after 1, 2, 4, 8, then every 10 seconds.
+  * A small "Reconnecting…" badge shows; the table stays in view.
+  * The "Connection lost" dialog replaces it after 30 seconds.
+  * A failed retry's error shows only in that dialog.
 
 ## Postconditions
 

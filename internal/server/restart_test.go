@@ -425,3 +425,22 @@ func TestRestartLostGame(t *testing.T) {
 		t.Errorf("end %+v, want unfinished", rec.End)
 	}
 }
+
+// TestRestartVoteGrace: the first player back cannot vote the others
+// out while they reconnect; the pause says until when (8.24).
+func TestRestartVoteGrace(t *testing.T) {
+	dir := t.TempDir()
+	bots, _ := stoppedGame(t, dir)
+	reconnect(startKeeping(t, dir), bots[0])
+	var u protocol.Update
+	bots[0].expect(protocol.TypeUpdate, &u)
+	if u.Pause == nil || u.Pause.Grace <= time.Now().UnixMilli() {
+		t.Fatalf("pause %+v, want a grace in the future", u.Pause)
+	}
+	bots[0].send(protocol.TypeVote, protocol.Vote{Kick: true})
+	var e protocol.Error
+	bots[0].expect(protocol.TypeError, &e)
+	if e.Code != protocol.ErrBadMessage {
+		t.Errorf("kick vote: %q, want refused", e.Code)
+	}
+}

@@ -6,7 +6,7 @@ import { shot } from './shot';
 
 const fast = () => `${appURL()}&anim=off`;
 
-test('a dropped player reconnects to the same seat; the others wait', async ({ browser }) => {
+test('a dropped player reconnects by itself to the same seat', async ({ browser }) => {
   const [amy, ben] = await startGame(browser, ['Amy', 'Ben'], { url: fast() });
   if (!amy || !ben) {
     throw new Error('no pages');
@@ -14,15 +14,11 @@ test('a dropped player reconnects to the same seat; the others wait', async ({ b
   await ben.evaluate(() => {
     (window as unknown as { fourSouls: { drop: () => void } }).fourSouls.drop();
   });
-  await expect(ben.getByRole('dialog', { name: 'Connection lost' })).toBeVisible();
-  await expect(amy.getByRole('dialog', { name: 'Paused' })).toContainText('Waiting for Ben');
-  await shot(amy, 'paused');
-  await shot(ben, 'connection-lost');
-
-  await ben.getByRole('button', { name: 'Reconnect' }).click();
+  // The app reconnects at once (N-20): no dialog, the pause ends.
+  await expect(ben.locator('.player-bottom')).toHaveAccessibleName('Ben (you)');
+  await expect(ben.getByRole('status', { name: 'Reconnecting' })).toHaveCount(0);
   await expect(ben.getByRole('dialog', { name: 'Connection lost' })).toHaveCount(0);
   await expect(amy.getByRole('dialog', { name: 'Paused' })).toHaveCount(0);
-  await expect(ben.locator('.player-bottom')).toHaveAccessibleName('Ben (you)');
 });
 
 test('a player who closed the app comes back to the same seat', async ({ browser }) => {
@@ -54,6 +50,7 @@ test('players vote to go on without one who left', async ({ browser }) => {
   await dee.close();
   const paused = cal.getByRole('dialog', { name: 'Paused' });
   await expect(paused).toContainText('Waiting for Dee');
+  await shot(cal, 'paused');
   await paused.getByRole('button', { name: 'Go on without them' }).click();
   await expect(paused).toHaveCount(0);
 });

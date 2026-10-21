@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef } from 'react';
 import { CardZoom } from './components/CardZoom';
+import { NoticeOverlay } from './components/Overlays';
 import { Effects } from './components/Effects';
 import { Sky } from './components/Sky';
 import { CardGallery } from './screens/CardGallery';
@@ -37,6 +38,7 @@ export function App() {
       <Screen screen={screen} onSplashDone={showMenu} />
       <Effects />
       <CardZoom />
+      <NoticeOverlay />
     </>
   );
 }

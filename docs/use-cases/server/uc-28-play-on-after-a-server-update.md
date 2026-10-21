@@ -1,7 +1,7 @@
 # UC-28: Play on after a server update
 
-**Module:** `internal/server`, `rules_engine`
-**Status:** In progress
+**Module:** `internal/server`, `rules_engine`, `frontend`
+**Status:** Implemented
 **Actors:** The server's operator; the players of its games
 **Goal:** An update or restart of the dedicated server does not end the games
 **Preconditions:** A dedicated server runs games (UC-02)
@@ -29,6 +29,12 @@
 * **4d. Bans and picks were under way:** they start over once every player is back.
 * **4e. The game was over:** it is not kept.
 * **1a. An app's own host stops:** its games end as before; nothing is kept.
+* **2a. In the app:** "The server is restarting. Reconnecting…" shows over the table.
+  * The app reconnects by itself (UC-07 1c); no dialog in a short restart.
+* **6a. The first player back:** the pause shows, without a kick vote.
+  * The kick vote opens 60 seconds after the server started.
+* **4f. The notices in the app:** a dialog with OK, on any screen.
+  * After the apology the app shows the server's game list.
 
 ## Postconditions
 

@@ -148,6 +148,9 @@ type Update struct {
 type Pause struct {
 	Away  []int  `json:"away"`  // seats whose player is gone
 	Votes []Vote `json:"votes"` // the connected players' votes so far
+	// Grace is when a kick vote opens, Unix ms, after a server restart:
+	// the players are still reconnecting (N-20). 0: open now.
+	Grace int64 `json:"grace,omitempty"`
 }
 
 // Vote is one player's vote while the game is paused: Kick true kicks

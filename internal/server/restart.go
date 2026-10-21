@@ -58,6 +58,10 @@ type restartFile struct {
 	Meaning int `json:"meaning,omitempty"`
 }
 
+// voteGrace is how many seconds a game kept over a restart takes no kick
+// vote: its players are still reconnecting.
+const voteGrace = 60
+
 // lostFor is how long the players of a game that could not go on after
 // a restart are told so when they reconnect.
 const lostFor = 30 * time.Minute
@@ -254,6 +258,7 @@ func (r *Room) resumeKept() {
 		return
 	}
 	r.step, r.steps = f.Step, f.Steps
+	r.grace = time.Now().Add(voteGrace * r.second)
 	if r.recDir != "" && f.Record != "" {
 		if w, err := record.Append(f.Record, f.Steps, time.Now().UTC()); err == nil {
 			r.rec = w

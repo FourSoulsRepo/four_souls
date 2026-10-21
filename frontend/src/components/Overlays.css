@@ -61,6 +61,23 @@
   color: var(--muted);
 }
 
+/* Reconnecting by itself (N-20): a small note over the table, which
+   stays visible; no backdrop, no pointer. */
+.reconnect-badge {
+  position: fixed;
+  top: 10px;
+  left: 50%;
+  z-index: var(--z-overlay);
+  padding: 4px 14px 3px;
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  font-size: 14px;
+  color: #f2f2f2;
+  background: rgb(20 28 40 / 92%);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
 .overlay-status {
   min-height: 1.2em;
   font-size: 13px;
