@@ -1,9 +1,25 @@
 import { describe, expect, it } from 'vitest';
 import kindList from '../../pkg/rules_engine/testdata/event_kinds.txt?raw';
-import { entriesFor, historyKinds, lookedAt, stepName } from './history';
-import type { GameEvent } from './protocol';
+import { PromptKind } from './actions';
+import { entriesFor as entries, historyKinds, lookedAt, stepName } from './history';
+import type { GameEvent, GameView, StackItem } from './protocol';
+import { StackKind, stackLine } from './stack';
 
 const n = { player: (p: number) => ['Ann', 'Bo', 'Cy'].at(p) ?? '?', card: (ref: string) => ref.toUpperCase() };
+
+const view: GameView = {
+  players: [],
+  shop: null,
+  monsters: [{ top: { id: 9, card: 'gaper', charged: true } }],
+  deck_sizes: [1, 1, 1, 0],
+  discards: [null, null, null, null],
+  stack: null,
+  turn: { active: 1, number: 1, step: 4, loot_plays: 0, attacks: 0, purchases: 0 },
+  waiting: { kind: PromptKind.priority, player: 1 },
+};
+
+// entriesFor is the history's, with the table above.
+const entriesFor = (events: GameEvent[], turn: number, you: number, names: typeof n, key: number) => entries(events, turn, you, names, key, view);
 
 describe('entriesFor', () => {
   it('keeps every first-player die, a tie and who goes first (15.43)', () => {
@@ -73,7 +89,7 @@ describe('entriesFor', () => {
       n,
       0,
     );
-    expect(changed.text).toBe('Roll — attack roll (rolled 6 → 4)');
+    expect(changed.text).toBe('Attack: Bo rolls 6 → 4');
     expect(changed.item?.roll).toBe(4);
     expect(item.roll).toBe(6);
     const [same] = entriesFor(
@@ -87,6 +103,27 @@ describe('entriesFor', () => {
       0,
     );
     expect(same.text).toBe('Roll — attack roll (rolled 6)');
+  });
+
+  it("says what a card-less stack item did, in the strip's words (19.52)", () => {
+    const none = { card: '', index: 0 };
+    const base = { id: 7, controller: 1, source: 0, ability: none, roll_for: none };
+    const gaper = { player: -1, object: 9 };
+    const items: StackItem[] = [
+      { ...base, kind: StackKind.damage, amount: 2, label: 'damage', target: gaper },
+      { ...base, kind: StackKind.damage, controller: -1, amount: 1, label: 'damage', source_card: 'gaper', target: { player: 1, is_player: true } },
+      { ...base, kind: StackKind.death, controller: -1, label: 'death', target: gaper },
+      { ...base, kind: StackKind.penalty, controller: -1, label: 'death penalty', target: { player: 1, is_player: true } },
+      { ...base, kind: StackKind.deathStep, controller: -1, label: 'soul', target: gaper },
+      { ...base, kind: StackKind.roll, roll: 5, attack: true, label: 'attack roll', target: gaper },
+      { ...base, kind: StackKind.roll, roll: 3, label: 'roll', target: { player: -1 } },
+    ];
+    for (const item of items) {
+      const [entry] = entriesFor([{ kind: 'stack_resolved', player: item.controller, amount: item.roll, text: item.label, stack_id: 7, item }], 1, 0, n, 0);
+      expect(entry.text).toBe(stackLine(item, view, n));
+      expect(entry.text).not.toMatch(/^Roll/);
+    }
+    expect(entriesFor([{ kind: 'stack_resolved', player: 1, text: 'damage', item: items[0] }], 1, 0, n, 0)[0]?.text).toBe('Bo deals 2 damage to GAPER');
   });
 
   it('keeps hidden loots hidden', () => {
@@ -223,7 +260,7 @@ describe('historyKinds', () => {
       0,
     );
     expect(two.map((e) => [e.text, e.badge])).toEqual([
-      ['Roll — death', undefined],
+      ['Ann dies', undefined],
       ['Bo dies', 'kill'],
     ]);
   });

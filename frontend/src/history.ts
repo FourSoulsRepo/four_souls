@@ -2,8 +2,8 @@
 // lines: who did what. Built from the events this viewer got, so it shows
 // only what the viewer may see (hidden cards stay hidden).
 import { firstPlayerText, tieText } from './dice';
-import type { GameEvent, StackItem } from './protocol';
-import { StackKind, type Names } from './stack';
+import type { GameEvent, GameView, StackItem } from './protocol';
+import { StackKind, stackLine, type Names } from './stack';
 
 export interface Entry {
   key: number;
@@ -101,7 +101,9 @@ export const historyKinds: Record<string, string> = {
 
 // entriesFor turns one update's events into history entries; key is the
 // first entry's key.
-export function entriesFor(events: GameEvent[], turn: number, you: number, n: Names, key: number): Entry[] {
+// view is the table after them: a stack item's words may name its cards
+// from it, as on the strip (19.52).
+export function entriesFor(events: GameEvent[], turn: number, you: number, n: Names, key: number, view: GameView): Entry[] {
   const out: Entry[] = [];
   let t = turn;
   const who = (p: number) => (p === you ? 'You' : n.player(p));
@@ -135,9 +137,13 @@ export function entriesFor(events: GameEvent[], turn: number, you: number, n: Na
         add('▶', `Turn ${String(t)}: ${who(e.player)}`);
         break;
       case 'stack_resolved': {
+        // A card's item names the card and its ability's words; any
+        // other item (a roll, damage, a death) says what it did in the
+        // strip's words (19.52).
         const rolled = e.amount ? ` (rolled ${String(e.amount)})` : '';
         const label = e.text && !e.text.startsWith(e.card ?? '\u0000') ? ` — ${e.text}` : '';
-        add('✦', `${card || 'Roll'}${label}${rolled}`, e.card, e.item, true);
+        const text = !card && e.item ? stackLine(e.item, view, n) : `${card || 'Roll'}${label}${rolled}`;
+        add('✦', text, e.card, e.item, true);
         roll = e.amount ? { entry: out[out.length - 1], die: e.amount } : undefined;
         break;
       }
@@ -146,7 +152,8 @@ export function entriesFor(events: GameEvent[], turn: number, you: number, n: Na
         // differ from the die; show both, and the result on the strip.
         if (roll && e.amount && e.amount !== roll.die) {
           const { entry, die } = roll;
-          entry.text = entry.text.replace(`(rolled ${String(die)})`, `(rolled ${String(die)} → ${String(e.amount)})`);
+          const was = entry.item && !entry.card ? ` rolls ${String(die)}` : `(rolled ${String(die)}`;
+          entry.text = entry.text.replace(was, `${was} → ${String(e.amount)}`);
           if (entry.item) {
             entry.item = { ...entry.item, roll: e.amount };
           }

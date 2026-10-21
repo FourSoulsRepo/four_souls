@@ -1742,7 +1742,7 @@ Totals by system (52 items):
 8. Owner notes (2026-10-21)
    1. Owner marks 19.51 solved.
 
-### [ ] 19.52 History: card-less stack items read "Roll — …"
+### [x] 19.52 History: card-less stack items read "Roll — …"
 
 1. Goal: the History says what a resolved stack item did, as the strip does.
 2. Report (agent, 2026-10-21)
@@ -1763,4 +1763,18 @@ Totals by system (52 items):
 5. Done when:
    1. Vitest: each stack item kind gives the strip's words in the History.
    2. e2e: a damage line in the full History names who and whom.
+6. Result (2026-10-21)
+   1. A resolved item without a card takes the strip's words (`stackLine`).
+   2. Damage: "Bo deals 2 damage to Gaper"; a death: "Gaper dies".
+   3. Penalty, death step and rolls the same; a card's item as before.
+   4. A changed roll: "Attack: Bo rolls 6 → 4 against Fly" (19.1).
+   5. `entriesFor` takes the update's view, to name cards as the strip does.
+   6. These lines use names, not "You", as the strip does.
+   7. Vitest: seven card-less items give the strip's words, none "Roll".
+   8. e2e `info.spec.ts`: two damage lines name who and whom.
+   9. The 19.1 test now reads the strip's roll words.
+   10. Its first rerun failed on a too strict test pattern; the app was right.
+   11. Evidence: `.cache/e2e-evidence/19.52-run1/` (not in git).
+   12. Wiki `Client`; CHANGELOG.
+   13. Screenshots: `.cache/screenshots/19.52/before/` and `after/`.
 

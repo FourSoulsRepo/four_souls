@@ -289,6 +289,7 @@ export const useApp = create<AppState>()((set, get) => {
         seatOf(s),
         names(u),
         (s.history.at(-1)?.key ?? 0) + 1,
+        u.view,
       );
       const looked = lookedAt(u.events ?? [], seatOf(s));
       set({
