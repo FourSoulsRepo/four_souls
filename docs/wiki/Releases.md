@@ -27,9 +27,9 @@ The version shown in the app's main menu is the tag without the `v`.
 
 | Archive | Contents |
 |---|---|
-| `four-souls-<version>-windows-amd64.zip`, `-windows-arm64.zip` | `four_souls.exe` |
-| `four-souls-<version>-macos-universal.zip` | `four_souls.app` (Intel and Apple silicon) |
-| `four-souls-<version>-linux-amd64.tar.gz`, `-linux-arm64.tar.gz` | `four_souls` |
+| `four-souls-<version>-windows-amd64.zip`, `-windows-arm64.zip` | `FourSouls.exe` |
+| `four-souls-<version>-macos-universal.zip` | `FourSouls.app` (Intel and Apple silicon) |
+| `four-souls-<version>-linux-amd64.tar.gz`, `-linux-arm64.tar.gz` | `FourSouls` |
 | `four-souls-server-windows-amd64.zip`, `-windows-arm64.zip` | `four_souls_server.exe` |
 | `four-souls-server-macos-universal.zip` | `four_souls_server` (Intel and Apple silicon) |
 | `four-souls-server-linux-amd64.tar.gz`, `-linux-arm64.tar.gz` | `four_souls_server`, statically linked |

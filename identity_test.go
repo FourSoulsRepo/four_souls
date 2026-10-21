@@ -13,8 +13,9 @@ const bundleID = "io.github.foursoulsrepo.foursouls"
 
 func TestStableIdentity(t *testing.T) {
 	var cfg struct {
-		Name string `json:"name"`
-		Info struct {
+		Name           string `json:"name"`
+		OutputFilename string `json:"outputfilename"`
+		Info           struct {
 			CompanyName string `json:"companyName"`
 			ProductName string `json:"productName"`
 		} `json:"info"`
@@ -26,8 +27,13 @@ func TestStableIdentity(t *testing.T) {
 	if err := json.Unmarshal(data, &cfg); err != nil {
 		t.Fatal(err)
 	}
-	if cfg.Name != "four_souls" || cfg.Info.ProductName != "Four Souls" || cfg.Info.CompanyName != "FourSoulsRepo" {
+	if cfg.Name != "FourSouls" || cfg.Info.ProductName != "Four Souls" || cfg.Info.CompanyName != "FourSoulsRepo" {
 		t.Errorf("wails.json identity changed: %+v", cfg)
+	}
+	// Release archives hold FourSouls.app (from name), FourSouls.exe, or a
+	// bare FourSouls (8.27).
+	if cfg.OutputFilename != "FourSouls" {
+		t.Errorf("wails.json outputfilename = %q, want FourSouls", cfg.OutputFilename)
 	}
 	for _, f := range []string{"build/darwin/Info.plist", "build/windows/wails.exe.manifest"} {
 		data, err := os.ReadFile(f) //nolint:gosec // fixed repo files

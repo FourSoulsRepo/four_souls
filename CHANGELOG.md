@@ -6,6 +6,7 @@ Rules engine versions are in each release's notes.
 
 ## Unreleased
 
+- The app is now named FourSouls: `FourSouls.app`, `FourSouls.exe`, and `FourSouls` on Linux. Settings carry over.
 - Stack and history strip rows no longer jump: new rows fade in, resolved ones fade out, and the rest slide into place.
 - The stack panel shows an open attack or buy on top, "Bo attacks Pooter" or "Bo buys…", until it ends.
 - Hovering a history strip tile shows what the play did: its target, the damage, the dead card with a skull, and the rewards.

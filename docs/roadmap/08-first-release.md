@@ -359,3 +359,30 @@ Ideas: B-03 – B-05, L-03, V-10, V-11, DO-01, V-14, A-16, N-13, N-14, V-19, N-1
    1. A real server was stopped and started mid-game, without Docker (owner's choice).
 4. Owner notes (2026-10-21)
    1. Owner marks 8.26 solved.
+
+### [x] 8.27 Binary named FourSouls
+
+1. Goal: release binaries are named `FourSouls`, not `four_souls`.
+2. Tasks:
+   1. `wails.json`: `outputfilename` becomes `FourSouls`.
+   2. Archives hold `FourSouls.app`, `FourSouls.exe`, `FourSouls`.
+   3. Bundle ID and the config folder `FourSouls` stay the same (8.3).
+   4. `TestStableIdentity` checks the new file name.
+   5. `release.yml` and `ci.yml` steps that name the binary.
+   6. `README.md`, `release/README.txt`, `.gitignore`.
+   7. Wiki: First start, Internal builds, Releases.
+   8. Use case UC-16: `open -n FourSouls.app`.
+   9. `wails.json` `name` becomes `FourSouls` too.
+   10. On macOS Wails names the `.app` after `name`.
+3. Done when:
+   1. A test tag's archives hold `FourSouls` on every platform.
+   2. An old release's settings still load after the update.
+4. Owner notes (2026-10-22)
+   1. Server binary keeps `four_souls_server`.
+   2. Archive names `four-souls-<version>-…` stay.
+   3. `name` changes too, so macOS gets `FourSouls.app`.
+5. Notes
+   1. The workflows never name the app binary; they copy `build/bin/`.
+   2. `.gitignore` keeps `/four_souls`: a plain `go build .` makes it.
+   3. A local `wails build` gives `FourSouls.app`, same bundle ID.
+   4. No test tag was pushed; the release job copies the same `build/bin/`.
