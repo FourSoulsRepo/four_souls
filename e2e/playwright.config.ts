@@ -10,9 +10,9 @@ const port = 5199;
 export default defineConfig({
   testDir: 'tests',
   fullyParallel: true,
-  // Each test opens two to four pages, and a worker keeps them until it
-  // ends. More workers than this slowed a laptop into game-start
-  // timeouts (19.35); E2E_WORKERS in the Makefile overrides it.
+  // Each test opens two to four pages; they close when it ends (19.38).
+  // More workers made known flaky tests fail more often (19.38 sweep);
+  // E2E_WORKERS in the Makefile overrides it.
   workers: 3,
   reporter: 'list',
   use: {

@@ -42,10 +42,10 @@ This step never closes; new reports are appended.
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
 | I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48 | 10 |
-| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44 | 8     |
+| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.49, 19.50, 19.51 | 11 |
 | K  | Build and release files                  | Release    | 19.47                                                  | 1     |
 
-Totals by system (48 items):
+Totals by system (51 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
@@ -53,7 +53,7 @@ Totals by system (48 items):
 | Card data | C       | 2     |
 | Client    | D–G     | 16    |
 | Server    | H       | 1     |
-| e2e       | I, J    | 18    |
+| e2e       | I, J    | 21    |
 | Release   | K       | 1     |
 
 ---
@@ -519,6 +519,10 @@ Totals by system (48 items):
    1. Gate run for 19.13: the same miss in `info.spec.ts` (15.47), webkit.
    2. Again with e2e Vite watching no files.
    3. The rerun passed; its run overwrote the evidence.
+   4. Seen again in the 19.38 worker sweep (2026-10-21), no swap.
+   5. 8 workers, webkit, `first-roll.spec.ts:58`: the 5 s Seats check.
+   6. 4 workers, webkit, `table.spec.ts:399`: the same; load 7.4.
+   7. Evidence: `.cache/e2e-evidence/sweep-w8-184425/`, `sweep-w4-191256/`.
 
 ### [x] 19.15 A full hand: the end cards are hard to play
 
@@ -1273,6 +1277,12 @@ Totals by system (48 items):
    5. Three full runs in a row: 258 passed each, 5.8 – 6.3 min, load < 10.
    6. The first try failed once on 19.48, a separate bug.
    7. Wiki `Frontend-tests`.
+   8. Worker sweep after 19.48, full runs, none swapped.
+   9. 3 workers: 6.1 min, 4 of 4 clean.
+   10. 4 workers: 4.5 – 4.7 min, 2 of 4 clean (19.14, 19.20, 19.51).
+   11. 5 workers: 3.6 – 3.9 min, 3 of 4 clean (19.49, 19.50).
+   12. 6 workers: 3.4 min, 1 of 1; 8 workers: 2.9 min, failed (19.14).
+   13. Workers stay 3 until those items are fixed; then try 5.
 
 ### [x] 19.39 Many dice show as one thrown die
 
@@ -1410,6 +1420,10 @@ Totals by system (48 items):
    1. Not found yet.
    2. Guess: the short fly ends between two checks under load.
    3. Likely 19.38: the machine swapped; check again after it.
+   4. The discard fly lasts 0.45 s; the test polls it with `toBeVisible`.
+   5. A swapping page can stall longer; the poll then misses the fly.
+   6. Same kind as 19.37: `trackBoxes` already records the fly.
+   7. Not seen in any full run since 19.38 (3 – 8 workers).
 4. Tasks:
    1. Find the cause in the evidence; fix the test or the app.
 5. Done when:
@@ -1431,6 +1445,11 @@ Totals by system (48 items):
    2. Maybe a table target, which the test never picks.
    3. Maybe the dialog came later than 2 s under load.
    4. Likely 19.38: the machine swapped; check again after it.
+   5. Found (2026-10-21): the same cause as 19.18, not load.
+   6. Record replayed at `f289001`: Bea played Dagaz (object 334).
+   7. The test picked its mode; then "Choose a player" waited.
+   8. The test answers only dialogs; Dagaz's player is picked on the table.
+   9. Fails whenever the deal gives the active player such a card.
 4. Tasks:
    1. Find the card in the match record; fix the test or the app.
 5. Done when:
@@ -1563,3 +1582,59 @@ Totals by system (48 items):
    1. `noPresence` in `layers.spec.ts`, through `startGame`'s `open`.
    2. 30 repeats per browser: 60 of 60 passed; before, 3 of 30 failed.
    3. Test only; the app is unchanged; no screenshots.
+
+### [ ] 19.49 e2e: a Settings click in the main menu is lost
+
+1. Goal: the main menu opens Settings on the first click.
+2. Report (agent, 2026-10-21)
+   1. `settings.spec.ts:8`, chromium, 8.24 run 4, 3 workers.
+   2. `playback.spec.ts:30`, webkit, worker sweep, 5 workers.
+   3. Both: `?fake&nosplash`, then a click on Settings.
+   4. The page still showed the main menu after the click.
+   5. Load 9.6 in the sweep; no swap.
+   6. Alone, both tests, 40 repeats each, both browsers: 160 of 160 passed.
+   7. Evidence: `.cache/e2e-evidence/8.24-run4-125028/` (not in git).
+   8. Evidence: `.cache/e2e-evidence/sweep-w5-185635/` (not in git).
+3. Cause
+   1. Not found yet.
+   2. Not a Vite reload: e2e runs watch no files (19.12).
+   3. `loadSettings` and `show` never set the screen back to the menu.
+4. Tasks:
+   1. Find what undoes the click, or why it never lands.
+5. Done when:
+   1. Cause written here; three full runs in a row pass.
+
+### [ ] 19.50 e2e: the Menu button is under a choice once
+
+1. Goal: the 15.29 layers test passes every run.
+2. Report (agent, 2026-10-21)
+   1. `layers.spec.ts:79`, chromium, worker sweep, 5 workers.
+   2. `onTop(menu, backdrop)` was false.
+   3. The test injects a choice into a live game, like 19.48.
+   4. The table said "Start of turn"; load 9.6, no swap.
+   5. Evidence: `.cache/e2e-evidence/sweep-w5-185635/` (not in git).
+3. Cause
+   1. Not found yet.
+   2. Maybe a live update or prompt raced the injected one (19.48).
+4. Tasks:
+   1. Find what was drawn over the Menu button.
+5. Done when:
+   1. Cause written here; 30 repeats in both browsers pass.
+
+### [ ] 19.51 e2e: the fast burst test runs out of time
+
+1. Goal: the burst test passes on a busy machine.
+2. Report (agent, 2026-10-21)
+   1. `playback.spec.ts:41`, webkit, worker sweep, 4 workers.
+   2. "Turn 21" not shown in 20 s; load 6.7, no swap.
+   3. The whole test took 15 – 16 s on 2026-10-20.
+   4. On 2026-10-21 it took 17 – 26 s; no failure until this one.
+   5. Evidence: `.cache/e2e-evidence/sweep-w4-190815/` (not in git).
+3. Cause
+   1. Not found yet.
+   2. Twenty rolls play at full speed; the 20 s wait is close to that.
+   3. Maybe the 15.43 first roll or the 19.39 dice made it longer.
+4. Tasks:
+   1. Measure the burst's playback; fix the app or the budget.
+5. Done when:
+   1. Cause written here; three full runs in a row pass.
