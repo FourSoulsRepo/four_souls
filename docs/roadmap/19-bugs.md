@@ -1777,4 +1777,6 @@ Totals by system (52 items):
    11. Evidence: `.cache/e2e-evidence/19.52-run1/` (not in git).
    12. Wiki `Client`; CHANGELOG.
    13. Screenshots: `.cache/screenshots/19.52/before/` and `after/`.
+7. Owner notes (2026-10-21)
+   1. Owner marks 19.52 solved.
 
