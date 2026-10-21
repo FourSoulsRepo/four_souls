@@ -1,10 +1,10 @@
 // Layers (19.26, ADR 015): a window that must be on top is on top. The
 // order is docs/wiki/Layers.md; these tests check the pairs a player
 // meets.
-import type { Locator } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 import { expect, test } from './fixtures';
 import { startGame } from './game';
-import { appURL } from './server';
+import { appURL, serverPort } from './server';
 import { shot } from './shot';
 
 const fast = () => `${appURL()}&anim=off`;
@@ -106,8 +106,21 @@ test('the Menu button stays above a choice and opens over it (15.29)', async ({ 
   await expect(tamsin.getByRole('dialog', { name: 'Game menu' })).toBeVisible();
 });
 
+// noPresence drops the server's presence frames on the way to the page:
+// the other seat's real pointer would replace the injected one (19.48).
+function noPresence(page: Page): Promise<void> {
+  return page.routeWebSocket(`ws://127.0.0.1:${String(serverPort())}/ws`, (ws) => {
+    const server = ws.connectToServer();
+    server.onMessage((msg) => {
+      if ((JSON.parse(String(msg)) as { type: string }).type !== 'presence') {
+        ws.send(msg);
+      }
+    });
+  });
+}
+
 test("another player's arrow stays under a choice (15.36)", async ({ browser }) => {
-  const [wren] = await startGame(browser, ['Wren', 'Abel'], { url: fast() });
+  const [wren] = await startGame(browser, ['Wren', 'Abel'], { url: fast(), open: noPresence });
   if (!wren) {
     throw new Error('no pages');
   }

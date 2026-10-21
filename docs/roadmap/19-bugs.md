@@ -41,11 +41,11 @@ This step never closes; new reports are appended.
 | F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40                                    | 3     |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
-| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37 | 9 |
+| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48 | 10 |
 | J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44 | 8     |
 | K  | Build and release files                  | Release    | 19.47                                                  | 1     |
 
-Totals by system (47 items):
+Totals by system (48 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
@@ -53,7 +53,7 @@ Totals by system (47 items):
 | Card data | C       | 2     |
 | Client    | D–G     | 16    |
 | Server    | H       | 1     |
-| e2e       | I, J    | 17    |
+| e2e       | I, J    | 18    |
 | Release   | K       | 1     |
 
 ---
@@ -1271,7 +1271,7 @@ Totals by system (47 items):
    3. Chromium alone: 2.8 min instead of 4.1; 19 – 26 processes.
    4. Swap: ~2,400 pages instead of ~1.3M.
    5. Three full runs in a row: 258 passed each, 5.8 – 6.3 min, load < 10.
-   6. The first try failed once on another test, a separate bug.
+   6. The first try failed once on 19.48, a separate bug.
    7. Wiki `Frontend-tests`.
 
 ### [x] 19.39 Many dice show as one thrown die
@@ -1537,3 +1537,29 @@ Totals by system (47 items):
 7. Owner notes (2026-10-21)
    1. Owner marks 19.47 solved.
 
+### [ ] 19.48 e2e: the layers arrow test loses the other's arrow
+
+1. Goal: the 15.36 layers test keeps the other player's arrow.
+2. Report (agent, 2026-10-21)
+   1. `layers.spec.ts:109`, webkit, in 3 of 7 full runs on 2026-10-21.
+   2. The arrow head is not found, or is gone one line later.
+   3. Never failed before 2026-10-21.
+   4. Alone, 30 repeats, webkit: 3 failed; load was low.
+   5. Evidence: `.cache/e2e-evidence/19.38-gate1-140102/` (not in git).
+   6. Evidence: `.cache/e2e-evidence/layers-arrow-repeat-*/` (not in git).
+3. Cause
+   1. The test injects a presence for the other seat on its own page.
+   2. The other seat's real page sends presence too.
+   3. A probe logged the store: `{}` from that seat 10 – 50 ms later.
+   4. Only when that seat has the turn; its sender then shares hovers.
+   5. Since 15.43, `throwFirstRoll` moves each roller's mouse in the game.
+   6. Before, a guest's sender saw no mouse move and stayed silent.
+   7. The app is right: it is that seat's real pointer.
+4. Tasks:
+   1. The test drops the server's presence frames; only its own shows.
+5. Done when:
+   1. 30 repeats in webkit and chromium pass.
+6. Result (2026-10-21)
+   1. `noPresence` in `layers.spec.ts`, through `startGame`'s `open`.
+   2. 30 repeats per browser: 60 of 60 passed; before, 3 of 30 failed.
+   3. Test only; the app is unchanged; no screenshots.
