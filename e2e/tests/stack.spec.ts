@@ -46,7 +46,7 @@ test('a played Dagaz goes on the stack once its player is picked (19.18)', async
   await activePage(pages, click);
   await saveAndContinue(pages, 'Kit, Lev', 'dagaz');
   const active = await activePage(pages, click);
-  await playLoot(active, active.getByRole('group', { name: 'Your hand' }).getByRole('button', { name: 'Dagaz' }), click);
+  await playLoot(active, active.getByRole('group', { name: 'Your hand' }).getByRole('button', { name: 'Dagaz' }).first(), click);
   await answerPlay(active, click);
   await expect(active.getByRole('complementary', { name: 'Stack' })).toContainText('plays Dagaz');
 });

@@ -233,7 +233,9 @@ test('a loot card with no target dragged onto the board plays', async ({ browser
 });
 
 test('a card placed first aims after its mode; a cancelled aim leaves it in hand', async ({ browser }) => {
-  const pages = await startGame(browser, ['Fay', 'Gus'], { url: fast() });
+  // Dagaz is banned from the deal: the test gives one and counts it; a
+  // dealt Dagaz made two in the hand (19.20).
+  const pages = await startGame(browser, ['Fay', 'Gus'], { url: fast(), bans: ['dagaz'] });
   await activePage(pages, click);
   await saveAndContinue(pages, 'Fay, Gus', 'dagaz');
   const active = await activePage(pages, click);

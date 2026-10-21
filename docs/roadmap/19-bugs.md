@@ -719,6 +719,18 @@ Totals by system (51 items):
    2. Fix the client or the test, whichever is wrong.
 4. Done when:
    1. The test passes ten runs in a row.
+5. Cause (2026-10-21)
+   1. An unlucky deal; the app is right.
+   2. `giveCard` turns the active player's first hand card into Dagaz.
+   3. Sometimes the deal had already given that player a Dagaz.
+   4. A probe dumped the store: two Dagaz objects in the hand (319, 320).
+   5. 30 repeats per browser: 2 of 60 failed, both like that.
+   6. Evidence: `.cache/e2e-evidence/19.20-probe-193048/` (not in git).
+6. Result (2026-10-21)
+   1. The test bans Dagaz from the deal (14.10); the reason is in a comment.
+   2. `giveCard` still makes the one Dagaz the test needs.
+   3. 40 repeats per browser: 80 of 80 passed.
+   4. Test only; no app change, no screenshots.
 
 ### [x] 19.21 e2e: Eden's starting choice hides the soul crystals
 
