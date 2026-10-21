@@ -2717,6 +2717,8 @@ Images come first, so the new table is built with backs and mats.
    13. Headlines are marked; the strip uses them in 15.89.
    14. UC-12 3d; wikis `Client`, `Rules-engine`; CHANGELOG.
    15. Screenshots: `.cache/screenshots/15.88/before/` and `after/`.
+6. Owner notes (2026-10-21)
+   1. Owner marks 15.88 solved.
 
 ### [ ] 15.89 Headlines in the strip
 
