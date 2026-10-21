@@ -38,11 +38,11 @@ This step never closes; new reports are appended.
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30                                     | 3     |
 | E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41                   | 6     |
-| F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40                                    | 3     |
+| F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49                             | 4     |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
 | I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48 | 10 |
-| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.49, 19.50, 19.51 | 11 |
+| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.50, 19.51 | 10 |
 | K  | Build and release files                  | Release    | 19.47                                                  | 1     |
 
 Totals by system (51 items):
@@ -51,9 +51,9 @@ Totals by system (51 items):
 |-----------|---------|-------|
 | Engine    | A, B    | 10    |
 | Card data | C       | 2     |
-| Client    | D–G     | 16    |
+| Client    | D–G     | 17    |
 | Server    | H       | 1     |
-| e2e       | I, J    | 21    |
+| e2e       | I, J    | 20    |
 | Release   | K       | 1     |
 
 ---
@@ -1651,6 +1651,21 @@ Totals by system (51 items):
    1. Find what undoes the click, or why it never lands.
 5. Done when:
    1. Cause written here; three full runs in a row pass.
+6. Cause (2026-10-21)
+   1. The menu is centred; its title changed size after the menu showed.
+   2. Text title first, then the banner image, then text again if it failed.
+   3. e2e has no images, so the banner always fails there.
+   4. A probe: Settings moved 48 px (chromium) and 95 px (webkit) in ~20 ms.
+   5. A click in between hit Records, which is disabled: nothing happened.
+   6. With the images the menu moved too, once the banner loaded.
+7. Result (2026-10-21)
+   1. `Title` shows the text until the banner has loaded, then swaps once.
+   2. A banner that fails never shows; the menu never moves for it.
+   3. Test: "the menu buttons never move after they show (19.49)".
+   4. Without the fix it failed 7 of 10; with it 10 of 10 passed.
+   5. Screenshots: `.cache/screenshots/19.49/before/` and `after/`.
+   6. The settled menu looks the same, with and without images.
+   7. Wiki `Client`; UC-01 7a.
 
 ### [ ] 19.50 e2e: the Menu button is under a choice once
 

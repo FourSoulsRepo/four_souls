@@ -23,6 +23,7 @@
 * **4a. The player clicks a link:** The system browser opens it; the splash keeps running.
 * **2a. The notice fails to load:** The splash shows only the title for 5 seconds.
 * **7a. No private images, or the banner fails to load:** The menu shows the text title.
+  * The text title also shows until the banner has loaded; the buttons do not move.
 * **8a. No private images:** The menu screens keep their plain color.
 * **8b. Animations off:** The sky stands still.
 

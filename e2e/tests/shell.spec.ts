@@ -13,6 +13,34 @@ test('splash shows the fan-game notice, then the menu', async ({ page }) => {
   await shot(page, 'menu');
 });
 
+// The menu buttons stay put once they show: a title that changed size
+// after the menu showed moved them, and a quick click hit the wrong
+// button (19.49). Without the images the banner fails to load.
+test('the menu buttons never move after they show (19.49)', async ({ page }) => {
+  await page.addInitScript(() => {
+    const w = window as unknown as { ys: number[] };
+    w.ys = [];
+    const t0 = performance.now();
+    const frame = () => {
+      const b = [...document.querySelectorAll('nav button')].find((x) => x.textContent === 'Settings');
+      if (b) {
+        const y = b.getBoundingClientRect().y;
+        if (w.ys.at(-1) !== y) {
+          w.ys.push(y);
+        }
+      }
+      if (performance.now() - t0 < 2000) {
+        requestAnimationFrame(frame);
+      }
+    };
+    requestAnimationFrame(frame);
+  });
+  await page.goto('/?fake&nosplash');
+  await expect(page.getByRole('button', { name: 'Settings' })).toBeVisible();
+  await page.waitForTimeout(2000);
+  expect(await page.evaluate(() => (window as unknown as { ys: number[] }).ys)).toHaveLength(1);
+});
+
 test('Exit is the last menu button and closes the app (15.79)', async ({ page }) => {
   await page.goto('/?fake&nosplash');
   await expect(page.getByRole('navigation').getByRole('button')).toHaveText(['Host a game', 'Join a game', 'Records', 'Settings', 'Exit']);
