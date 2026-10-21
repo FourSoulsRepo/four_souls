@@ -83,6 +83,13 @@ type Room struct {
 	pubStep int
 	// presenceOn relays presence; the server's operator may turn it off.
 	presenceOn bool
+
+	// Kept over a server restart (N-20).
+	n         int          // the game's number on the server
+	host      string       // the nickname that opened the table
+	born      time.Time    // when the game left the lobby
+	kept      *restartFile // the restart file this room continues, if any
+	setupWait bool         // kept bans and picks start over once all are back
 }
 
 // NewRoom prepares a game for seated players; it starts in Run. The
@@ -137,14 +144,18 @@ func (r *Room) Run(ctx context.Context) {
 			c.conn.Close()
 		}
 	}()
-	if r.loaded != nil {
+	switch {
+	case r.kept != nil:
+		r.resumeKept()
+	case r.loaded != nil:
 		r.resumeLoaded()
-	} else {
+	default:
 		r.beginSetup()
 	}
 	for !r.stopped {
 		select {
 		case <-ctx.Done():
+			r.keep()
 			return
 		case req := <-r.in:
 			r.handle(req)
@@ -210,6 +221,11 @@ func (r *Room) attach(c *Client, token, dice string) {
 	r.seats[i].client, r.seats[i].dice = c, dice
 	c.seat = i
 	r.clients = append(r.clients, c)
+	if r.setupWait && r.everyoneBack() {
+		r.setupWait = false
+		r.beginSetup()
+		return
+	}
 	if r.match != nil {
 		r.broadcastSetup()
 		return

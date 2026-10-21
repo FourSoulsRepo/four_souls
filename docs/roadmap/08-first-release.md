@@ -260,21 +260,23 @@ Ideas: B-03 – B-05, L-03, V-10, V-11, DO-01, V-14, A-16, N-13, N-14, V-19, N-1
 3. Done when:
    1. Each page's commands were run once.
 
-### [ ] 8.22 Server keeps its games over a restart
+### [x] 8.22 Server keeps its games over a restart
 
 1. Goal: a stopped server leaves its tables for the next start (N-20).
 2. Tasks:
    1. On stop, every client gets a new `restarting` message.
    2. Every table goes to a handoff file in the saves folder.
    3. That covers started games and lobby tables.
-   4. A file keeps seats, tokens, options, and the timer's time left.
+   4. A file keeps seats, tokens, and options.
    5. It keeps the state checksum and the record's path.
    6. The record gets no `end` line on such a stop.
    7. On start, the tables come back; seats wait for their tokens.
    8. The record goes on with a `resume` part (ADR 007).
    9. A loaded handoff file is deleted.
-   10. Protocol version goes up.
+   10. Protocol version stays: older apps ignore the new messages.
    11. ADR: seamless server restart.
+   12. Bans and picks start over once every player is back.
+   13. Only the dedicated server keeps games; an app's host does not.
 3. Done when:
    1. Go test: stop, start on the same folder, rejoin by token.
    2. The state checksum is the same after the restart.

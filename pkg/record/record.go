@@ -139,6 +139,19 @@ func (w *Writer) Close(end End) error {
 	return err
 }
 
+// Stop closes the file without an end line: the game goes on after a
+// server restart, and Append continues the record (N-20).
+func (w *Writer) Stop() error {
+	err := w.gz.Close()
+	if err != nil {
+		err = fmt.Errorf("record: %w", err)
+	}
+	if cerr := w.f.Close(); err == nil && cerr != nil {
+		err = fmt.Errorf("record: %w", cerr)
+	}
+	return err
+}
+
 func (w *Writer) write(v any) error {
 	if err := w.enc.Encode(v); err != nil {
 		return fmt.Errorf("record: %w", err)
@@ -256,7 +269,8 @@ func Prune(dir string, days int, now time.Time) (int, error) {
 	return n, nil
 }
 
-// Resume marks where a saved game was loaded again (N-11).
+// Resume marks where a saved game was loaded again (N-11), or where a
+// game went on after a server restart (N-20).
 type Resume struct {
 	Kind    string    `json:"kind"` // "resume"
 	Resumed time.Time `json:"resumed"`

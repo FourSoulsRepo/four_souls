@@ -62,6 +62,10 @@ const (
 
 	// Live aiming and hover (15.35, N-15): never an intent or an event.
 	TypePresence = "presence" // client → server → the other players
+
+	// Server restarts and game ends (N-20). An older client ignores them.
+	TypeRestarting = "restarting" // server → client: back in a moment; reconnect
+	TypeNotice     = "notice"     // server → client: something to tell the player
 )
 
 // Envelope wraps every message. ID is set by the client on requests;
@@ -232,6 +236,22 @@ type SaveInfo struct {
 // Saved tells the players their game was saved and stopped.
 type Saved struct {
 	Save string `json:"save"`
+}
+
+// Notice kinds (N-20).
+const (
+	// NoticeEngine: the game went on after a restart on a newer engine.
+	NoticeEngine = "engine_updated"
+	// NoticeLost: the new server could not read the game; it ended.
+	NoticeLost = "game_lost"
+	// NoticeIdle: the game ran into an idle limit and ended.
+	NoticeIdle = "game_idle"
+)
+
+// Notice tells the player something the game screen does not show.
+type Notice struct {
+	Kind string `json:"kind"`
+	Game string `json:"game,omitempty"`
 }
 
 // Load opens a saved game's table; its players take their seats back.

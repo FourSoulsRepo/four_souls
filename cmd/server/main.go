@@ -44,6 +44,7 @@ func run(ctx context.Context, args []string, out io.Writer) error {
 	if err = printBanner(out); err != nil {
 		return err
 	}
+	cfg.KeepGames = true // an update or restart does not end the games (N-20)
 	s, err := server.Start(ctx, cfg)
 	if err != nil {
 		return err

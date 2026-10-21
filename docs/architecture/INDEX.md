@@ -20,3 +20,4 @@
 | [016](016-presence-messages.md) | Presence messages | Accepted |
 | [017](017-wss-through-a-proxy.md) | Secure WebSocket through a reverse proxy | Accepted |
 | [018](018-server-deployment.md) | Server deployment from releases | Accepted |
+| [019](019-seamless-server-restart.md) | Seamless server restart | Accepted |

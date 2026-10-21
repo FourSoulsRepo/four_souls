@@ -9,6 +9,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 	"sync"
 	"time"
@@ -44,6 +45,9 @@ type Config struct {
 	// Name is shown in the app instead of the address (N-18); empty
 	// shows the address. Up to protocol.MaxServerName characters.
 	Name string `json:"name"`
+	// KeepGames keeps the tables and games over a restart, in the saves
+	// folder (N-20). The dedicated server sets it; an app's host does not.
+	KeepGames bool `json:"-"`
 }
 
 // DefaultConfig is used for settings the flags and file leave out.
@@ -86,6 +90,7 @@ func validName(name string) bool {
 // Server listens for clients and runs their rooms.
 type Server struct {
 	cfg    Config
+	h      *Hub
 	http   *http.Server
 	ln     net.Listener
 	cancel context.CancelFunc
@@ -109,6 +114,10 @@ func Start(ctx context.Context, cfg Config) (*Server, error) {
 	hub.records, hub.cards, hub.seed, hub.saves = cfg.Records, cardTexts(), cfg.Seed, cfg.Saves
 	hub.hostOnly, hub.presence = cfg.HostOnly, cfg.Presence
 	hub.name, _ = protocol.CleanServerName(cfg.Name)
+	if cfg.KeepGames && cfg.Saves != "" {
+		hub.restart = filepath.Join(cfg.Saves, restartFolder)
+	}
+	s.h = hub
 	s.hub.Add(2)
 	go func() {
 		defer s.hub.Done()
@@ -140,9 +149,16 @@ func Start(ctx context.Context, cfg Config) (*Server, error) {
 func (s *Server) Addr() string { return s.ln.Addr().String() }
 
 // Shutdown stops accepting clients and stops the lobby and every game.
-// Saving running records joins here with 6.9.
+// With KeepGames they wait in restart files for the next start (N-20).
 func (s *Server) Shutdown(ctx context.Context) error {
 	err := s.http.Shutdown(ctx)
+	if s.h.restart != "" {
+		s.h.send(hubRequest{run: (*Hub).warnRestart})
+		select {
+		case <-time.After(restartWarning):
+		case <-ctx.Done():
+		}
+	}
 	s.cancel()
 	s.hub.Wait()
 	if err != nil && !errors.Is(err, http.ErrServerClosed) {

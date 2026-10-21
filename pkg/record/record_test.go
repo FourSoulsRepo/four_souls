@@ -147,6 +147,46 @@ func TestAppend(t *testing.T) {
 	}
 }
 
+// TestStopThenAppend: a server restart stops the record without an end
+// line; the next server goes on with it (N-20).
+func TestStopThenAppend(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "g4"+Ext)
+	w, err := Create(path, header())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if serr := w.Step(0, nil, 1); serr != nil {
+		t.Fatal(serr)
+	}
+	if serr := w.Stop(); serr != nil {
+		t.Fatal(serr)
+	}
+	rec, err := ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(rec.Steps) != 1 || rec.End != nil {
+		t.Fatalf("stopped: steps %d, end %+v; want 1 and none", len(rec.Steps), rec.End)
+	}
+	w, err = Append(path, 1, time.Date(2026, 10, 21, 0, 0, 0, 0, time.UTC))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if serr := w.Step(1, nil, 2); serr != nil {
+		t.Fatal(serr)
+	}
+	if cerr := w.Close(End{Finished: true}); cerr != nil {
+		t.Fatal(cerr)
+	}
+	rec, err = ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(rec.Steps) != 2 || rec.Steps[1].N != 2 || rec.Resumes != 1 || rec.End == nil {
+		t.Errorf("steps %d, resumes %d, end %+v", len(rec.Steps), rec.Resumes, rec.End)
+	}
+}
+
 // TestServerName: the header names a named server; an app's own host
 // has no name, and the header leaves the field out (N-18).
 func TestServerName(t *testing.T) {

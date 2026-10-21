@@ -94,7 +94,7 @@ type table struct {
 	opts   protocol.Options
 	seats  []tableSeat
 	// password is needed to join; "" means none (N-14). Never sent,
-	// logged, recorded or saved.
+	// logged, recorded or saved; only a restart file keeps it (N-20).
 	password string
 }
 
@@ -149,6 +149,8 @@ type Hub struct {
 	presence bool
 	// name is the server's name for the welcome (N-18).
 	name string
+	// restart is the folder for restart files (N-20); "" keeps nothing.
+	restart string
 }
 
 // NewHub makes a lobby with the card sets the engine knows.
@@ -184,9 +186,15 @@ func (h *Hub) Run(ctx context.Context) {
 			c.conn.Close()
 		}
 	}()
+	if h.restart != "" {
+		h.restore()
+	}
 	for {
 		select {
 		case <-ctx.Done():
+			if h.restart != "" {
+				h.keepTables()
+			}
 			return
 		case req := <-h.in:
 			h.handle(req)
@@ -468,25 +476,35 @@ func (h *Hub) start(t *table) {
 	}
 	setup := engine.Setup{Seed: gameSeed, Players: len(t.seats), Sets: setsOf(t.sets), BonusSouls: !t.opts.NoBonusSouls, Banned: t.opts.HostBans, DeckRatios: !t.opts.NoDeckRatios}
 	room, err := NewRoom(setup, t.opts, seats)
-	if err == nil {
-		room.second, room.hub, room.saves, room.loaded = h.second, h, h.saves, t.loaded
-		room.presenceOn = h.presence
-		room.recDir = h.records
-		room.recInfo = recordInfo{game: t.id, server: h.name, sets: t.sets, cards: h.cards}
-		room.path = recordPath(h.records, t.id, seats, time.Now())
-	}
 	if err != nil {
 		for _, s := range t.seats {
 			s.client.fail(0, protocol.ErrBadSetup, err.Error())
 		}
 		return
 	}
+	now := time.Now()
+	h.setUpRoom(room, t.n, t.id, t.host, t.sets)
+	room.loaded, room.path, room.born = t.loaded, recordPath(h.records, t.id, seats, now), now
 	h.tables = slices.DeleteFunc(h.tables, func(x *table) bool { return x == t })
-	h.games = append(h.games, started{info: protocol.GameInfo{ID: t.id, Host: t.host, Seats: len(t.seats), Taken: len(t.seats), Sets: t.sets, Started: true}, room: room})
 	for _, s := range t.seats {
 		s.client.table = nil
 		s.client.room.Store(room)
 	}
+	h.run(room, protocol.GameInfo{ID: t.id, Host: t.host, Seats: len(t.seats), Taken: len(t.seats), Sets: t.sets, Started: true})
+}
+
+// setUpRoom gives a new room the server's settings.
+func (h *Hub) setUpRoom(room *Room, n int, id, host string, sets []string) {
+	room.second, room.hub, room.saves = h.second, h, h.saves
+	room.presenceOn = h.presence
+	room.recDir = h.records
+	room.recInfo = recordInfo{game: id, server: h.name, sets: sets, cards: h.cards}
+	room.n, room.host = n, host
+}
+
+// run lists a room's game and runs the room.
+func (h *Hub) run(room *Room, info protocol.GameInfo) {
+	h.games = append(h.games, started{info: info, room: room})
 	h.rooms.Add(1)
 	go func() {
 		defer h.rooms.Done()

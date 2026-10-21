@@ -113,7 +113,7 @@ Use options 1, 3, 5 and 10.
    9. Saves: the host sends `save`; all get `saved`; `games` lists saves; `load` reopens one (6.11).
    10. Passwords: `create` may set one; `join` must match it (N-14).
    11. `games` marks such a game `locked`; a wrong one gets error `password`.
-   12. The password is never sent back, logged, recorded or saved.
+   12. The password is never sent back, logged, recorded or saved; only a restart file keeps it.
    13. Turn flow: `wait_turn`; `update` shows it while on (N-16).
    14. Aiming: `update` → `aims` lists the first targets of allowed plays and uses (15.25).
    15. Each aim has a `reason`: what it may target, for a wrong click (15.33).
@@ -122,6 +122,7 @@ Use options 1, 3, 5 and 10.
    18. `update` → `blocked`: why a seat can't use a card or turn action now (15.29).
    19. Each has the intent kind, the card's object, and a short `reason`.
    20. Live aiming and hover: `presence`, relayed, never an intent (ADR 016).
+   21. Server restart: `restarting` before it stops; `notice` after (ADR 019).
 9. Playing over the internet, until a relay exists
    1. A virtual LAN (Tailscale, ZeroTier, Hamachi, Radmin VPN), or port forwarding.
    2. Or a dedicated server on a rented VPS.
