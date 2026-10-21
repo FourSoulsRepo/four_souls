@@ -494,7 +494,7 @@ Totals by system (51 items):
    2. The animation inventory could not catch it: no animation ran.
    3. Idea TS-06: every e2e test fails on a console error.
 
-### [ ] 19.14 e2e: a guest's Join click can miss under load
+### [x] 19.14 e2e: a guest's Join click can miss under load
 
 1. Goal: `startGame` joins every guest, however busy the lobby is.
 2. Report (agent, 2026-10-15)
@@ -537,6 +537,8 @@ Totals by system (51 items):
    2. Then it sends the click to that button (`dispatchEvent`), not to a point.
    3. The Join screen itself is still clicked by the lobby tests.
    4. Test only; no app change, no screenshots.
+8. Owner notes (2026-10-21)
+   1. Owner marks 19.14 solved.
 
 ### [x] 19.15 A full hand: the end cards are hard to play
 
@@ -649,7 +651,7 @@ Totals by system (51 items):
    1. Owner marks 19.17 solved.
    2. Trigger order on the stack is a separate bug: 19.19.
 
-### [ ] 19.18 e2e: a played Dagaz waits for a player target
+### [x] 19.18 e2e: a played Dagaz waits for a player target
 
 1. Goal: the stack test plays any loot card the deal gives.
 2. Report (agent, 2026-10-15)
@@ -685,6 +687,8 @@ Totals by system (51 items):
    6. It gets Dagaz from a changed save; helpers moved to `saves.ts`.
    7. It fails without the table click, both browsers; passes with it.
    8. Test only; no app change, no screenshots.
+7. Owner notes (2026-10-21)
+   1. Owner marks 19.18 solved.
 
 ### [x] 19.19 Trigger order: "on the stack first" is unclear
 
@@ -717,7 +721,7 @@ Totals by system (51 items):
 7. Owner notes (2026-10-15)
    1. Owner marks 19.19 solved.
 
-### [ ] 19.20 e2e: a cancelled Dagaz shows twice in the hand
+### [x] 19.20 e2e: a cancelled Dagaz shows twice in the hand
 
 1. Goal: the aim test passes every run.
 2. Report (agent, 2026-10-15)
@@ -745,6 +749,8 @@ Totals by system (51 items):
    2. `giveCard` still makes the one Dagaz the test needs.
    3. 40 repeats per browser: 80 of 80 passed.
    4. Test only; no app change, no screenshots.
+7. Owner notes (2026-10-21)
+   1. Owner marks 19.20 solved.
 
 ### [x] 19.21 e2e: Eden's starting choice hides the soul crystals
 
@@ -1444,7 +1450,7 @@ Totals by system (51 items):
    1. Owner marks 19.42 solved.
    2. Committed with `make e2e` failing on 19.38, 19.43, 19.44 (owner).
 
-### [ ] 19.43 e2e: the 15.74 fly test misses the fly in a full run
+### [x] 19.43 e2e: the 15.74 fly test misses the fly in a full run
 
 1. Goal: the test sees the fly in a busy full run too.
 2. Report (agent, 2026-10-20)
@@ -1472,8 +1478,10 @@ Totals by system (51 items):
    1. Find the cause in the evidence; fix the test or the app.
 5. Done when:
    1. Cause written here; three full runs in a row pass.
+7. Owner notes (2026-10-21)
+   1. Owner marks 19.43 solved.
 
-### [ ] 19.44 e2e: the V-11 test gives up on a target prompt
+### [x] 19.44 e2e: the V-11 test gives up on a target prompt
 
 1. Goal: the V-11 stack test passes with any loot card it plays.
 2. Report (agent, 2026-10-20)
@@ -1500,6 +1508,8 @@ Totals by system (51 items):
    1. Find the card in the match record; fix the test or the app.
 5. Done when:
    1. Cause written here; three full runs in a row pass.
+7. Owner notes (2026-10-21)
+   1. Owner marks 19.44 solved, with 19.18.
 
 ### [x] 19.45 Abyss never uncharges after use
 
@@ -1631,7 +1641,7 @@ Totals by system (51 items):
 7. Owner notes (2026-10-21)
    1. Owner marks 19.48 solved.
 
-### [ ] 19.49 e2e: a Settings click in the main menu is lost
+### [x] 19.49 e2e: a Settings click in the main menu is lost
 
 1. Goal: the main menu opens Settings on the first click.
 2. Report (agent, 2026-10-21)
@@ -1666,8 +1676,10 @@ Totals by system (51 items):
    5. Screenshots: `.cache/screenshots/19.49/before/` and `after/`.
    6. The settled menu looks the same, with and without images.
    7. Wiki `Client`; UC-01 7a.
+8. Owner notes (2026-10-21)
+   1. Owner marks 19.49 solved.
 
-### [ ] 19.50 e2e: the Menu button is under a choice once
+### [x] 19.50 e2e: the Menu button is under a choice once
 
 1. Goal: the 15.29 layers test passes every run.
 2. Report (agent, 2026-10-21)
@@ -1698,8 +1710,10 @@ Totals by system (51 items):
    3. It removes the hovered node, then moves away; it failed before the fix.
    4. The layers test: 300 of 300 repeats passed.
    5. Wiki `Client`. Nothing changes on screen; no screenshots.
+8. Owner notes (2026-10-21)
+   1. Owner marks 19.50 solved.
 
-### [ ] 19.51 e2e: the fast burst test runs out of time
+### [x] 19.51 e2e: the fast burst test runs out of time
 
 1. Goal: the burst test passes on a busy machine.
 2. Report (agent, 2026-10-21)
@@ -1723,3 +1737,5 @@ Totals by system (51 items):
 7. Result (2026-10-21)
    1. The wait for "Turn 21" is 40 s; the test's limit is 90 s.
    2. Test only; no app change, no screenshots.
+8. Owner notes (2026-10-21)
+   1. Owner marks 19.51 solved.
