@@ -39,6 +39,7 @@ test('the animation speed setting survives a restart', async ({ page }) => {
 });
 
 test('a fast burst of updates plays in order and ends on the last one', async ({ browser }) => {
+  test.setTimeout(90_000); // the burst alone plays for 13.6 s (19.51)
   const [kai] = await startGame(browser, ['Kai', 'Lu']);
   if (!kai) {
     throw new Error('no pages');
@@ -85,7 +86,9 @@ test('a fast burst of updates plays in order and ends on the last one', async ({
   // A fly plays between throws only briefly in a fast burst: look for it
   // on every frame (15.62).
   await kai.waitForFunction(() => document.querySelector('[data-testid="effect-fly"]') !== null);
-  await expect(kai.getByRole('main', { name: 'Turn 21' })).toBeVisible({ timeout: 20_000 });
+  // The burst plays for 13.6 s on a quiet machine: the last updates play
+  // at full speed. 20 s left too little room on a busy one (19.51).
+  await expect(kai.getByRole('main', { name: 'Turn 21' })).toBeVisible({ timeout: 40_000 });
   await expect(kai.locator('.effects')).toHaveCount(0);
   await expect(character).toHaveAttribute('data-mark', 'kept');
   await expect(character).toHaveCSS('opacity', '1');

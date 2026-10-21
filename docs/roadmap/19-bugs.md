@@ -1686,3 +1686,10 @@ Totals by system (51 items):
    1. Measure the burst's playback; fix the app or the budget.
 5. Done when:
    1. Cause written here; three full runs in a row pass.
+6. Cause (2026-10-21)
+   1. Measured on a quiet machine: the burst plays for 13.6 s, both browsers.
+   2. As designed: a long queue skips or speeds effects; the last ones play in full.
+   3. The 20 s wait left about 40% room; the 30 s test limit was close too.
+7. Result (2026-10-21)
+   1. The wait for "Turn 21" is 40 s; the test's limit is 90 s.
+   2. Test only; no app change, no screenshots.
