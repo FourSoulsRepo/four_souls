@@ -276,6 +276,119 @@
   border-radius: 8px;
 }
 
+/* What a history headline did (15.90): an arrow, then its results,
+   two to a row, beside the card. */
+.card-zoom-outcome {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  align-self: center;
+  padding: 10px;
+  border: 1px solid rgb(255 210 122 / 45%);
+  border-radius: 10px;
+  background: rgb(10 16 24 / 92%);
+  box-shadow: 0 0 14px rgb(0 0 0 / 55%);
+}
+
+.card-zoom-arrow {
+  flex: none;
+  width: 40px;
+  height: 40px;
+  fill: #ffd27a;
+  filter: drop-shadow(0 2px 6px rgb(0 0 0 / 70%));
+}
+
+.tips-left .card-zoom-arrow {
+  transform: scaleX(-1);
+}
+
+.card-zoom-results {
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+  gap: 10px;
+  max-width: 220px;
+}
+
+.card-zoom-result {
+  position: relative;
+  display: grid;
+  place-items: center;
+  margin: 0;
+}
+
+.card-zoom-result .card {
+  box-shadow: 0 0 14px rgb(0 0 0 / 60%);
+}
+
+/* The hit's starburst and number, as the 15.37 mark draws it. */
+.result-burst {
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+}
+
+.result-burst svg {
+  position: absolute;
+  inset: 0;
+  fill: #ffd23f;
+  stroke: #7a3d00;
+  stroke-width: 3;
+  filter: drop-shadow(0 3px 6px rgb(0 0 0 / 60%));
+}
+
+.result-burst b {
+  position: relative;
+  font-family: var(--font-game);
+  font-size: 26px;
+  color: #fff;
+  -webkit-text-stroke: 2px #3a1400;
+  paint-order: stroke fill;
+}
+
+/* A death: the card dims under a big skull. */
+.result-death .card {
+  filter: brightness(0.6) saturate(0.6);
+}
+
+.result-skull {
+  position: absolute;
+  width: 64px;
+  height: 64px;
+}
+
+.result-skull svg {
+  width: 100%;
+  height: 100%;
+  fill: #f4ecdc;
+  filter: drop-shadow(0 3px 6px rgb(0 0 0 / 80%));
+}
+
+/* Cents: the coin's gold with the amount; a result without a card is
+   its words. */
+.result-coin,
+.result-text {
+  display: grid;
+  place-items: center;
+  min-width: 64px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  font-weight: 800;
+  color: #1d120a;
+  background: #e8b84a;
+  border: 2px solid #7a5200;
+  box-shadow: 0 0 10px rgb(0 0 0 / 55%);
+}
+
+.result-text {
+  border-radius: 8px;
+  font-weight: 600;
+  color: var(--fg);
+  background: rgb(10 16 24 / 92%);
+  border-color: #ffd27a;
+}
+
 .card-zoom-touch {
   pointer-events: auto;
   background: rgb(0 0 0 / 45%);

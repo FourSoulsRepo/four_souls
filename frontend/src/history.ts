@@ -3,7 +3,7 @@
 // only what the viewer may see (hidden cards stay hidden).
 import { firstPlayerText, tieText } from './dice';
 import type { GameEvent, GameView, StackItem } from './protocol';
-import { StackKind, stackLine, type Names } from './stack';
+import { findCard, StackKind, stackLine, type Names } from './stack';
 
 export interface Entry {
   key: number;
@@ -20,6 +20,22 @@ export interface Entry {
   // badge marks a strip tile that is no plain stack item: a buy, or a
   // death that shows the dead card (15.89).
   badge?: 'buy' | 'kill';
+  // from is the card the strip's popout shows large: the played card,
+  // the dealer, the killer or the buyer (15.90).
+  from?: string;
+  // outcome is what the headline did, for the popout (15.90).
+  outcome?: Outcome[];
+}
+
+// Outcome is one result in the strip's popout (15.90): a card, with a
+// red damage number or a skull, or cents as a plain mark.
+export interface Outcome {
+  // text names it, for screen readers and cards without a ref.
+  text: string;
+  card?: string;
+  mark?: 'damage' | 'death' | 'cents';
+  // amount: the damage, or the cents won (negative if lost).
+  amount?: number;
 }
 
 // told marks an event kind that gives a history line in historyKinds.
@@ -112,8 +128,27 @@ export function entriesFor(events: GameEvent[], turn: number, you: number, n: Na
   // whom: "you", "Bo"; whose: "Your", "Bo's".
   const whom = (p: number) => (p === you ? 'you' : n.player(p));
   const whose = (p: number) => (p === you ? 'Your' : `${n.player(p)}'s`);
+  // current is this update's last headline: the lines after it are
+  // what it did, for the popout (15.90).
+  let current: Entry | undefined;
   const add = (icon: string, text: string, card?: string, item?: StackItem, headline?: boolean) => {
-    out.push({ key: key + out.length, turn: t, icon, text, ...(card ? { card } : {}), ...(item ? { item } : {}), ...(headline ? { headline } : {}) });
+    const entry: Entry = { key: key + out.length, turn: t, icon, text, ...(card ? { card } : {}), ...(item ? { item } : {}), ...(headline ? { headline } : {}) };
+    out.push(entry);
+    if (headline) current = entry;
+    return entry;
+  };
+  // gave adds a result to the current headline.
+  const gave = (o: Outcome) => {
+    if (current) current.outcome = [...(current.outcome ?? []), o];
+  };
+  // character is a player's character card.
+  const character = (p: number) => view.players.find((pl) => pl.id === p)?.character.card;
+  // targetOf is the card a stack item aims at, a player's character
+  // for a player.
+  const targetOf = (it: StackItem): Outcome | undefined => {
+    const ref = it.target.is_player ? character(it.target.player) : (it.target_card ?? findCard(view, it.target.object ?? 0));
+    if (it.target.is_player) return { text: n.player(it.target.player), ...(ref ? { card: ref } : {}) };
+    return ref ? { text: n.card(ref), card: ref } : undefined;
   };
   // A bought item also comes as a gain; the buy line names it alone.
   const bought = new Set(events.filter((e) => e.kind === 'purchased').map((e) => e.object));
@@ -134,6 +169,7 @@ export function entriesFor(events: GameEvent[], turn: number, you: number, n: Na
     switch (e.kind) {
       case 'turn_started':
         t = e.amount ?? t;
+        current = undefined;
         add('▶', `Turn ${String(t)}: ${who(e.player)}`);
         break;
       case 'stack_resolved': {
@@ -143,8 +179,22 @@ export function entriesFor(events: GameEvent[], turn: number, you: number, n: Na
         const rolled = e.amount ? ` (rolled ${String(e.amount)})` : '';
         const label = e.text && !e.text.startsWith(e.card ?? '\u0000') ? ` — ${e.text}` : '';
         const text = !card && e.item ? stackLine(e.item, view, n) : `${card || 'Roll'}${label}${rolled}`;
-        add('✦', text, e.card, e.item, true);
-        roll = e.amount ? { entry: out[out.length - 1], die: e.amount } : undefined;
+        const entry = add('✦', text, e.card, e.item, true);
+        roll = e.amount ? { entry, die: e.amount } : undefined;
+        // The popout: a card's item points at its target; damage at the
+        // card it hit, with the number (15.90).
+        const it = e.item;
+        const aim = it ? targetOf(it) : undefined;
+        if (it && card && aim) {
+          entry.from = e.card;
+          entry.outcome = [aim];
+        } else if (it?.kind === StackKind.damage && aim) {
+          // The dealer: the damage's card, else its player (stackCard
+          // would fall back to the target).
+          const from = it.source_card ?? findCard(view, it.source) ?? character(it.controller);
+          if (from) entry.from = from;
+          entry.outcome = [{ ...aim, mark: 'damage', amount: it.amount ?? 0 }];
+        }
         break;
       }
       case 'roll_resolved':
@@ -163,6 +213,7 @@ export function entriesFor(events: GameEvent[], turn: number, you: number, n: Na
       case 'looted':
         // A private loot comes without its card to everyone but its player.
         add('+', card ? `${does(e.player, 'loot')} ${card}` : `${does(e.player, 'loot')} a card`, e.card);
+        gave(e.card ? { text: card, card: e.card } : { text: 'a loot card' });
         break;
       case 'gave_card': {
         // A hand card changed hands (V-14): text is the giver. Only the
@@ -202,8 +253,15 @@ export function entriesFor(events: GameEvent[], turn: number, you: number, n: Na
         break;
       case 'purchased':
         first(e.object);
-        add('¢', `${does(e.player, 'buy')} ${card}${e.text === 'treasure deck' ? ' from the treasure deck' : ''}`, e.card, undefined, true);
-        out[out.length - 1].badge = 'buy';
+        {
+          const entry = add('¢', `${does(e.player, 'buy')} ${card}${e.text === 'treasure deck' ? ' from the treasure deck' : ''}`, e.card, undefined, true);
+          entry.badge = 'buy';
+          const buyer = character(e.player);
+          if (buyer && e.card) {
+            entry.from = buyer;
+            entry.outcome = [{ text: card, card: e.card }];
+          }
+        }
         break;
       case 'purchase_failed':
         add('✗', `${who(e.player)} can't buy: the price is ${String(e.amount ?? 0)}¢`);
@@ -218,6 +276,7 @@ export function entriesFor(events: GameEvent[], turn: number, you: number, n: Na
         } else {
           add('+', `${does(e.player, 'gain')} ${card}`, e.card);
         }
+        if (e.card) gave({ text: card, card: e.card });
         break;
       case 'died':
       case 'object_died': {
@@ -234,15 +293,22 @@ export function entriesFor(events: GameEvent[], turn: number, you: number, n: Na
         // Every death resolves a death stack item first: its entry
         // becomes the kill, with the dead card, so the strip and the
         // History name it once (15.89).
-        const death = out.findLast((d) => d.item?.kind === StackKind.death && dies(d.item, e));
+        let death = out.findLast((d) => d.item?.kind === StackKind.death && dies(d.item, e));
         if (death) {
           death.icon = '☠';
           death.text = text;
-          death.badge = 'kill';
           if (e.card) death.card = e.card;
+          current = death;
         } else {
-          add('☠', text, e.card, undefined, true);
-          out[out.length - 1].badge = 'kill';
+          death = add('☠', text, e.card, undefined, true);
+        }
+        death.badge = 'kill';
+        // The popout: the killer, then the dead card with its skull; the
+        // rewards follow (15.90). Without a killer the dead card is large.
+        const killer = by >= 0 ? character(by) : undefined;
+        if (killer && e.card) {
+          death.from = killer;
+          death.outcome = [{ text: e.player >= 0 ? n.player(e.player) : card, card: e.card, mark: 'death' }];
         }
         break;
       }
@@ -252,15 +318,19 @@ export function entriesFor(events: GameEvent[], turn: number, you: number, n: Na
         break;
       case 'gained_soul':
         add('♥', `${does(e.player, 'gain')} ${e.text === 'bonus soul' ? 'the bonus soul' : 'the soul of'} ${card}`, e.card);
+        if (e.card) gave({ text: card, card: e.card });
         break;
       case 'gained_cents':
         add('¢', `${does(e.player, 'gain')} ${String(e.amount ?? 0)}¢`);
+        gave({ text: `+${String(e.amount ?? 0)}¢`, mark: 'cents', amount: e.amount ?? 0 });
         break;
       case 'lost_cents':
         add('¢', `${who(e.player)} ${e.player === you ? 'lose' : 'loses'} ${String(e.amount ?? 0)}¢`);
+        gave({ text: `−${String(e.amount ?? 0)}¢`, mark: 'cents', amount: -(e.amount ?? 0) });
         break;
       case 'stole':
         add('⇄', `${does(e.player, 'steal')} ${String(e.amount ?? 0)}¢ from ${whom(Number(e.text))}`);
+        gave({ text: `+${String(e.amount ?? 0)}¢`, mark: 'cents', amount: e.amount ?? 0 });
         break;
       case 'gave_cents':
         add('⇄', `${does(e.player, 'give')} ${String(e.amount ?? 0)}¢ to ${whom((e.by ?? 0) - 1)}`);

@@ -53,11 +53,17 @@ function StripItem({ entry, view, names, newTurn }: { entry: Entry; view: GameVi
   const it = entry.item;
   // A buy or a kill shows its card with the line; a stack item as on the stack.
   const plain = it && !entry.badge ? it : undefined;
-  const card = plain ? (stackCard(plain, view) ?? entry.card) : entry.card;
+  const tile = plain ? (stackCard(plain, view) ?? entry.card) : entry.card;
   const badge = entry.badge ?? (plain ? stackBadge(plain) : undefined);
   const line = plain ? stackLine(plain, view, names) : entry.text;
-  const zoom = (ref: string, e: PointerEvent, touch: boolean): Zoom =>
-    plain ? itemZoom(plain, ref, view, names, e, touch) : { ref, touch, at: boxOf(e.currentTarget), caption: { line: [{ text: line }] } };
+  // The popout (15.90): the play, the dealer, the killer or the buyer
+  // large, then what it did.
+  const outcome = entry.outcome && entry.outcome.length > 0 ? entry.outcome : undefined;
+  const card = (outcome && entry.from) ?? tile;
+  const zoom = (ref: string, e: PointerEvent, touch: boolean): Zoom => ({
+    ...(plain ? itemZoom(plain, ref, view, names, e, touch) : { ref, touch, at: boxOf(e.currentTarget), caption: { line: [{ text: line }] } }),
+    ...(outcome ? { outcome } : {}),
+  });
   return (
     <li
       className={`strip-item stack-${plain ? stackIcon(plain) : 'card'}${newTurn ? ' strip-turn' : ''}`}
@@ -83,7 +89,7 @@ function StripItem({ entry, view, names, newTurn }: { entry: Entry; view: GameVi
         <ItemIcon it={plain} />
       ) : (
         <span className="stack-icon" aria-hidden="true">
-          {card && <Card cardRef={card} size="small" noZoom />}
+          {tile && <Card cardRef={tile} size="small" noZoom />}
         </span>
       )}
       {badge && (

@@ -2751,13 +2751,17 @@ Images come first, so the new table is built with backs and mats.
 6. Owner notes (2026-10-21)
    1. Owner marks 15.89 solved.
 
-### [ ] 15.90 Strip popout
+### [x] 15.90 Strip popout
 
 1. Goal: hovering a tile shows what the play did, as in Hearthstone (V-51).
 2. Asked by the owner (2026-10-21).
 3. Tasks:
    1. The played card large, an arrow, then its outcome cards.
-   2. Outcome: the lines after a headline in the same resolution.
+   2. Outcome by tile (owner, 2026-10-21):
+      1. A played card or ability: its target, then what it gave at once.
+      2. Damage: the dealer large; the target with the number.
+      3. A kill: the killer large; the dead card with a skull, then rewards.
+      4. A buy: the buyer large; the bought item.
    3. Damage shows its red number; a death its skull (15.37).
    4. A gain shows its card: a bought item, a soul, a treasure.
    5. Cents show as a plain mark with the amount.
@@ -2770,6 +2774,21 @@ Images come first, so the new table is built with backs and mats.
    2. e2e test: a kill tile's popout shows the monster with its skull.
    3. `make screenshots` covers a popout with two outcomes.
    4. UC-12 updated.
+5. Result (2026-10-21)
+   1. History entries get `from` (the large card) and `outcome`.
+   2. Lines after a headline in one update are its results.
+   3. Results: cents, loots, gained items, souls; a new update starts empty.
+   4. Bomb! resolves before its damage: its damage is a tile of its own.
+   5. The zoom shows an arrow and the results, on a dark panel.
+   6. A hit: the 15.37 starburst with the number; a death: a skull, dimmed card.
+   7. Cents: a gold mark with the amount.
+   8. The starburst's points come from `starPolygon` in `lunge.ts`.
+   9. A damage's dealer: its card, else its player; never its target.
+   10. Vitest: grouping with a trigger in the middle; each tile kind.
+   11. e2e `info.spec.ts`: hover a kill, its damage and the play.
+   12. No new layer or animation: the popout is part of the zoom.
+   13. UC-12 3f; wiki `Client`; CHANGELOG.
+   14. Screenshots: `.cache/screenshots/15.90/before/` and `after/`.
 
 ### [ ] 15.91 Open declarations in the stack panel
 

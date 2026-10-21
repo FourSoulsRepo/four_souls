@@ -38,17 +38,23 @@ export function layer(): HTMLElement {
 
 const svgNS = 'http://www.w3.org/2000/svg';
 
-function star(): SVGSVGElement {
+// starPolygon is the starburst's points in a 100 × 100 box; the strip's
+// popout draws the same star (15.90).
+export function starPolygon(): string {
   const pts: string[] = [];
   for (let i = 0; i < starPoints * 2; i++) {
     const r = i % 2 === 0 ? 50 : 34;
     const a = (Math.PI * i) / starPoints - Math.PI / 2;
     pts.push(`${(50 + r * Math.cos(a)).toFixed(1)},${(50 + r * Math.sin(a)).toFixed(1)}`);
   }
+  return pts.join(' ');
+}
+
+function star(): SVGSVGElement {
   const svg = document.createElementNS(svgNS, 'svg');
   svg.setAttribute('viewBox', '0 0 100 100');
   const poly = document.createElementNS(svgNS, 'polygon');
-  poly.setAttribute('points', pts.join(' '));
+  poly.setAttribute('points', starPolygon());
   svg.append(poly);
   return svg;
 }

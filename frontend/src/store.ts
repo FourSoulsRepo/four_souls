@@ -29,7 +29,7 @@ import {
 import { noHostSetup } from './hostSetup';
 import type { CardInfo, Kind } from './cards';
 import { loadFonts } from './fonts';
-import { entriesFor, lookedAt, type Entry, type Looked } from './history';
+import { entriesFor, lookedAt, type Entry, type Looked, type Outcome } from './history';
 import type { LinePart } from './stack';
 import type { Box } from './zoom';
 import { emptyLobby, forgotten, leftTable, lost, onMessage, remember, renamed, type Screen, type Session } from './lobby';
@@ -70,6 +70,8 @@ export interface Zoom {
   // caption goes below the card: who owns it, and the used ability's
   // words, highlighted (S-06, S-07).
   caption?: ZoomCaption;
+  // outcome: what a history headline did, beside the card (15.90).
+  outcome?: Outcome[];
 }
 
 export interface ZoomCaption {

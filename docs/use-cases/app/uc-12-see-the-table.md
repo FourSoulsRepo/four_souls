@@ -170,6 +170,11 @@
   * A buy: the bought card with a coin badge.
   * A kill: the dead card with a skull badge, "Bo kills Gaper".
   * Hover a tile: its card large, with the line under it.
+* **3f. What a play did (15.90):** hovering a strip tile shows an arrow and the results.
+  * A played card: its target, then what it gave at once, such as cents.
+  * Damage: the dealer large; the target with a starburst and the number.
+  * A kill: the killer large; the dead card under a skull, then the rewards.
+  * A buy: the buyer large; the bought item.
 
 ## Postconditions
 

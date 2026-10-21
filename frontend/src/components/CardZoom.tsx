@@ -1,7 +1,10 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import { useApp } from '../store';
 import { keyword, placeZoom, type Place } from '../zoom';
+import type { Outcome } from '../history';
 import { Card, CardText } from './Card';
+import { starPolygon } from './lunge';
+import { skullPath } from './marks';
 import { Part } from './StackPanel';
 import './Card.css';
 
@@ -10,7 +13,8 @@ import './Card.css';
 // (15.27); a touch zoom stays centered until the next tap. A caption
 // names the owner and highlights the used ability (S-06, S-07); the
 // card's keywords stand beside it (H-13). A card the player can't use
-// now says why under it (15.29, F-17, C-06).
+// now says why under it (15.29, F-17, C-06). A history headline's zoom
+// shows what it did beside the card, after an arrow (15.90).
 export function CardZoom() {
   const zoom = useApp((s) => s.zoom);
   const setZoom = useApp((s) => s.setZoom);
@@ -75,6 +79,7 @@ export function CardZoom() {
             </figcaption>
           )}
         </figure>
+        {zoom.outcome && zoom.outcome.length > 0 && <Outcomes list={zoom.outcome} />}
         {footnotes && footnotes.length > 0 && (
           <aside className="card-zoom-tips" role="note" aria-label="Keywords">
             {footnotes.map((f) => (
@@ -88,4 +93,56 @@ export function CardZoom() {
       </div>
     </div>
   );
+}
+
+// Outcomes is what a play did (15.90, V-51): an arrow, then each card it
+// hit or gave, with a starburst and the damage, or a skull; cents are a
+// plain coin with the amount.
+function Outcomes({ list }: { list: Outcome[] }) {
+  return (
+    <div className="card-zoom-outcome" role="list" aria-label="What it did">
+      <svg className="card-zoom-arrow" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M3 10h12V5l7 7-7 7v-5H3Z" />
+      </svg>
+      <div className="card-zoom-results">
+        {list.map((o, i) => (
+          // A popout's results never change order, so the index is a stable key.
+          // eslint-disable-next-line @eslint-react/no-array-index-key
+          <figure key={i} className={`card-zoom-result${o.mark ? ` result-${o.mark}` : ''}`} role="listitem" aria-label={resultLabel(o)}>
+            {o.card ? (
+              <Card cardRef={o.card} size="hand" noZoom />
+            ) : o.mark === 'cents' ? (
+              <span className="result-coin" aria-hidden="true">
+                {o.text}
+              </span>
+            ) : (
+              <span className="result-text">{o.text}</span>
+            )}
+            {o.mark === 'damage' && (
+              <span className="result-burst" aria-hidden="true">
+                <svg viewBox="0 0 100 100">
+                  <polygon points={starPolygon()} />
+                </svg>
+                <b>−{o.amount}</b>
+              </span>
+            )}
+            {o.mark === 'death' && (
+              <span className="result-skull" aria-hidden="true">
+                <svg viewBox="0 0 24 24">
+                  <path d={skullPath} />
+                </svg>
+              </span>
+            )}
+          </figure>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// resultLabel names one result: "Gaper: 2 damage", "Gaper dies", "+3¢".
+function resultLabel(o: Outcome): string {
+  if (o.mark === 'damage') return `${o.text}: ${String(o.amount ?? 0)} damage`;
+  if (o.mark === 'death') return `${o.text} dies`;
+  return o.text;
 }

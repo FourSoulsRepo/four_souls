@@ -6,6 +6,7 @@ Rules engine versions are in each release's notes.
 
 ## Unreleased
 
+- Hovering a history strip tile shows what the play did: its target, the damage, the dead card with a skull, and the rewards.
 - The history strip shows each buy with a coin and each kill with a skull, on the card that was bought or killed.
 - The History says what damage, deaths and rolls did, "Bo deals 2 damage to Gaper", instead of "Roll — damage".
 - The History names every play: who attacked what, who bought which item, who killed which monster, souls, thefts, cents, deaths, and effects that failed.

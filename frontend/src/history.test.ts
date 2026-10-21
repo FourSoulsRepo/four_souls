@@ -7,8 +7,22 @@ import { StackKind, stackLine } from './stack';
 
 const n = { player: (p: number) => ['Ann', 'Bo', 'Cy'].at(p) ?? '?', card: (ref: string) => ref.toUpperCase() };
 
+const player = (id: number, card: string) => ({
+  id,
+  character: { id: 100 + id, card, charged: true },
+  hp: 2,
+  atk: 1,
+  cents: 3,
+  souls: 0,
+  in_play: null,
+  hand_size: 3,
+  loot_plays: 0,
+  attacks: 0,
+  purchases: 0,
+});
+
 const view: GameView = {
-  players: [],
+  players: [player(0, 'isaac'), player(1, 'cain'), player(2, 'eve')],
   shop: null,
   monsters: [{ top: { id: 9, card: 'gaper', charged: true } }],
   deck_sizes: [1, 1, 1, 0],
@@ -246,7 +260,20 @@ describe('historyKinds', () => {
       n,
       0,
     );
-    expect(lines).toEqual([{ key: 0, turn: 1, icon: '☠', text: 'Bo kills GAPER', card: 'gaper', item: death, headline: true, badge: 'kill' }]);
+    expect(lines).toEqual([
+      {
+        key: 0,
+        turn: 1,
+        icon: '☠',
+        text: 'Bo kills GAPER',
+        card: 'gaper',
+        item: death,
+        headline: true,
+        badge: 'kill',
+        from: 'cain',
+        outcome: [{ text: 'GAPER', card: 'gaper', mark: 'death' }],
+      },
+    ]);
     // A player's death item ends only that player's death.
     const mine = { ...death, target: { player: 0, is_player: true } };
     const two = entriesFor(
@@ -345,6 +372,101 @@ describe('historyKinds', () => {
       { kind: 'discarded', player: 1, object: 31, card: 'a_penny' },
     ];
     expect(entriesFor(events, 1, 0, n, 0).map((e) => e.text)).toEqual(['Bo discards A_PENNY']);
+  });
+});
+
+describe('outcome', () => {
+  const none = { card: '', index: 0 };
+  const bomb: StackItem = { id: 3, kind: StackKind.loot, controller: 1, source: 40, card: 'bomb', target: { player: -1, object: 9 }, ability: { card: 'bomb', index: 0 }, roll_for: none };
+
+  it('shows a played card, its target and what it gave right away (15.90)', () => {
+    const penny: StackItem = { ...bomb, card: 'a_penny', target: { player: 1, is_player: true } };
+    const [play] = entriesFor(
+      [
+        { kind: 'stack_resolved', player: 1, object: 40, card: 'a_penny', stack_id: 3, item: penny },
+        { kind: 'gained_cents', player: 1, amount: 1 },
+        { kind: 'looted', player: 1, private: true },
+      ],
+      1,
+      0,
+      n,
+      0,
+    );
+    expect(play.from).toBe('a_penny');
+    expect(play.outcome).toEqual([
+      { text: 'Bo', card: 'cain' },
+      { text: '+1¢', mark: 'cents', amount: 1 },
+      { text: 'a loot card' },
+    ]);
+  });
+
+  it('gives a later line to the newest headline: a trigger in the middle', () => {
+    const trigger: StackItem = { ...bomb, id: 4, kind: StackKind.trigger, card: 'greed', target: { player: 0, is_player: true } };
+    const lines = entriesFor(
+      [
+        { kind: 'stack_resolved', player: 1, object: 40, card: 'bomb', stack_id: 3, item: bomb },
+        { kind: 'stack_added', player: 1 },
+        { kind: 'gained_cents', player: 1, amount: 2 },
+        { kind: 'stack_resolved', player: 1, object: 41, card: 'greed', stack_id: 4, item: trigger },
+        { kind: 'lost_cents', player: 0, amount: 3 },
+      ],
+      1,
+      0,
+      n,
+      0,
+    );
+    const [play, trig] = lines.filter((e) => e.headline);
+    expect(play.outcome).toEqual([
+      { text: 'GAPER', card: 'gaper' },
+      { text: '+2¢', mark: 'cents', amount: 2 },
+    ]);
+    expect(trig.outcome).toEqual([
+      { text: 'Ann', card: 'isaac' },
+      { text: '−3¢', mark: 'cents', amount: -3 },
+    ]);
+    // A new update starts with no headline: its gains go nowhere.
+    expect(entriesFor([{ kind: 'gained_cents', player: 1, amount: 1 }], 1, 0, n, 0)[0]?.outcome).toBeUndefined();
+  });
+
+  it('shows damage from its dealer, a kill from its killer with the rewards, a buy from its buyer', () => {
+    const hit: StackItem = { ...bomb, id: 5, kind: StackKind.damage, card: undefined, source: 0, amount: 2, target: { player: -1, object: 9 } };
+    const [damage] = entriesFor([{ kind: 'stack_resolved', player: 1, text: 'damage', stack_id: 5, item: hit }], 1, 0, n, 0);
+    expect(damage.from).toBe('cain');
+    expect(damage.outcome).toEqual([{ text: 'GAPER', card: 'gaper', mark: 'damage', amount: 2 }]);
+
+    const death: StackItem = { ...bomb, id: 6, kind: StackKind.death, controller: -1, card: undefined, source: 0, target: { player: -1, object: 9 } };
+    const kill = entriesFor(
+      [
+        { kind: 'stack_resolved', player: -1, text: 'death', stack_id: 6, item: death },
+        { kind: 'died', player: -1, object: 50, card: 'gaper', prev: 9, by: 2 },
+        { kind: 'rewards_gained', player: 1, object: 50, card: 'gaper' },
+        { kind: 'gained_cents', player: 1, amount: 1 },
+        { kind: 'gained_soul', player: 1, object: 50, card: 'gaper' },
+      ],
+      1,
+      0,
+      n,
+      0,
+    ).find((e) => e.badge === 'kill');
+    expect(kill?.from).toBe('cain');
+    expect(kill?.outcome).toEqual([
+      { text: 'GAPER', card: 'gaper', mark: 'death' },
+      { text: '+1¢', mark: 'cents', amount: 1 },
+      { text: 'GAPER', card: 'gaper' },
+    ]);
+
+    const [buy] = entriesFor(
+      [
+        { kind: 'purchased', player: 2, object: 12, card: 'spoon_bender' },
+        { kind: 'gained_item', player: 2, object: 12, card: 'spoon_bender' },
+      ],
+      1,
+      0,
+      n,
+      0,
+    );
+    expect(buy.from).toBe('eve');
+    expect(buy.outcome).toEqual([{ text: 'SPOON_BENDER', card: 'spoon_bender' }]);
   });
 });
 
