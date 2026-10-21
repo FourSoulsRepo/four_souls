@@ -93,6 +93,8 @@ type table struct {
 	sets   []string
 	opts   protocol.Options
 	seats  []tableSeat
+	// emptySince is when the table last had nobody at it (N-20).
+	emptySince time.Time
 	// password is needed to join; "" means none (N-14). Never sent,
 	// logged, recorded or saved; only a restart file keeps it (N-20).
 	password string
@@ -151,13 +153,21 @@ type Hub struct {
 	name string
 	// restart is the folder for restart files (N-20); "" keeps nothing.
 	restart string
-	// lost are the games that could not go on after a restart (N-20).
+	// lost are the games that ended while their players were away: they
+	// hear why when they come back (N-20).
 	lost []lostGame
+	// emptyLimit ends a game or table nobody is connected to for that
+	// long; gameLimit a game that long after it started. 0: never (N-20).
+	emptyLimit time.Duration
+	gameLimit  time.Duration
+	// now and limitTick drive the limits; tests use a fake clock.
+	now       func() time.Time
+	limitTick time.Duration
 }
 
 // NewHub makes a lobby with the card sets the engine knows.
 func NewHub() *Hub {
-	return &Hub{in: make(chan hubRequest, 64), done: make(chan struct{}), sets: cards.Sets(), second: time.Second, presence: true}
+	return &Hub{in: make(chan hubRequest, 64), done: make(chan struct{}), sets: cards.Sets(), second: time.Second, presence: true, now: time.Now, limitTick: time.Minute}
 }
 
 // Connect adds a connection; its first message must be hello.
@@ -191,6 +201,8 @@ func (h *Hub) Run(ctx context.Context) {
 	if h.restart != "" {
 		h.restore()
 	}
+	tick := time.NewTicker(h.limitTick)
+	defer tick.Stop()
 	for {
 		select {
 		case <-ctx.Done():
@@ -200,6 +212,8 @@ func (h *Hub) Run(ctx context.Context) {
 			return
 		case req := <-h.in:
 			h.handle(req)
+		case <-tick.C:
+			h.checkTables()
 		}
 	}
 }
@@ -485,7 +499,7 @@ func (h *Hub) start(t *table) {
 		}
 		return
 	}
-	now := time.Now()
+	now := h.now()
 	h.setUpRoom(room, t.n, t.id, t.host, t.sets)
 	room.loaded, room.path, room.born = t.loaded, recordPath(h.records, t.id, seats, now), now
 	h.tables = slices.DeleteFunc(h.tables, func(x *table) bool { return x == t })
@@ -503,6 +517,7 @@ func (h *Hub) setUpRoom(room *Room, n int, id, host string, sets []string) {
 	room.recDir = h.records
 	room.recInfo = recordInfo{game: id, server: h.name, sets: sets, cards: h.cards}
 	room.n, room.host = n, host
+	room.emptyLimit, room.gameLimit, room.now, room.limitTick = h.emptyLimit, h.gameLimit, h.now, h.limitTick
 }
 
 // run lists a room's game and runs the room.

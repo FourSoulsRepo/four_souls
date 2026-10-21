@@ -81,6 +81,8 @@ func parse(args []string) (server.Config, error) {
 	saves := fs.String("saves", def.Saves, "folder for saved games")
 	presence := fs.Bool("presence", def.Presence, "relay live aiming and hover; false saves CPU and bandwidth")
 	name := fs.String("name", def.Name, "server name players see instead of the address")
+	emptyMinutes := fs.Int("empty_minutes", def.EmptyMinutes, "end a game nobody is connected to for this many minutes; 0 never")
+	gameHours := fs.Int("game_hours", def.GameHours, "end a game this many hours after it started; 0 never")
 	// ENV is set like a flag before the flags, so a flag wins. An empty
 	// value counts as unset, as compose passes one for a blank setting.
 	var envErr error
@@ -121,6 +123,10 @@ func parse(args []string) (server.Config, error) {
 			cfg.Presence = *presence
 		case "name":
 			cfg.Name = *name
+		case "empty_minutes":
+			cfg.EmptyMinutes = *emptyMinutes
+		case "game_hours":
+			cfg.GameHours = *gameHours
 		}
 	})
 	return cfg, cfg.Check()

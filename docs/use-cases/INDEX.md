@@ -30,3 +30,4 @@
 | UC-26 | Roll for the first player | `rules_engine`, `internal/server`, `frontend` | Implemented | [app/uc-26-roll-for-the-first-player.md](app/uc-26-roll-for-the-first-player.md) |
 | UC-27 | Join a server by its domain | `frontend` | Implemented | [server/uc-27-join-by-domain.md](server/uc-27-join-by-domain.md) |
 | UC-28 | Play on after a server update | `internal/server`, `rules_engine`, `frontend` | Implemented | [server/uc-28-play-on-after-a-server-update.md](server/uc-28-play-on-after-a-server-update.md) |
+| UC-29 | A game ends by an idle limit | `internal/server`, `frontend` | Implemented | [server/uc-29-idle-game-limits.md](server/uc-29-idle-game-limits.md) |

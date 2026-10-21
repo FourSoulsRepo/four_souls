@@ -93,6 +93,13 @@ type Room struct {
 	notice    string       // told to each returning player once (N-20)
 	noticed   []bool       // by seat
 	grace     time.Time    // no kick vote before it: players come back
+
+	// Idle limits (N-20): the hub's, with its clock.
+	emptyLimit time.Duration
+	gameLimit  time.Duration
+	emptySince time.Time // when the last player left
+	now        func() time.Time
+	limitTick  time.Duration
 }
 
 // NewRoom prepares a game for seated players; it starts in Run. The
@@ -101,7 +108,7 @@ func NewRoom(setup engine.Setup, opts protocol.Options, seats []roomSeat) (*Room
 	if setup.Players != len(seats) {
 		return nil, fmt.Errorf("server: %d seats for %d players", len(seats), setup.Players)
 	}
-	r := &Room{in: make(chan request, 64), done: make(chan struct{}), setup: setup, opts: opts, seats: seats, second: time.Second}
+	r := &Room{in: make(chan request, 64), done: make(chan struct{}), setup: setup, opts: opts, seats: seats, second: time.Second, now: time.Now, limitTick: time.Minute}
 	for i, s := range seats {
 		r.tokens = append(r.tokens, s.token)
 		if s.client != nil {
@@ -155,6 +162,8 @@ func (r *Room) Run(ctx context.Context) {
 	default:
 		r.beginSetup()
 	}
+	tick := time.NewTicker(r.limitTick)
+	defer tick.Stop()
 	for !r.stopped {
 		select {
 		case <-ctx.Done():
@@ -162,6 +171,8 @@ func (r *Room) Run(ctx context.Context) {
 			return
 		case req := <-r.in:
 			r.handle(req)
+		case <-tick.C:
+			r.checkLimits()
 		}
 	}
 }

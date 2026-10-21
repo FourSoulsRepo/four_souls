@@ -66,10 +66,11 @@ const voteGrace = 60
 // a restart are told so when they reconnect.
 const lostFor = 30 * time.Minute
 
-// lostGame is a game the new server could not go on with: its players
-// get an apology when they come back (N-20).
+// lostGame is a game that ended while its players were away: the new
+// server could not go on with it, or it ran into an idle limit. They
+// hear why when they come back (N-20).
 type lostGame struct {
-	game   string
+	notice protocol.Notice
 	tokens []string // the players not told yet
 	until  time.Time
 }
@@ -172,10 +173,14 @@ func (h *Hub) restore() {
 
 func (h *Hub) restoreTable(f *restartFile) {
 	t := &table{n: f.N, id: f.Game, host: f.Host, sets: f.Sets, opts: f.Options, password: f.Password, seats: make([]tableSeat, len(f.Seats))}
+	t.emptySince = f.Saved // the downtime counts (N-20)
 	for i, s := range f.Seats {
 		t.seats[i] = tableSeat{name: s.Name, token: s.Token}
 	}
 	h.tables = append(h.tables, t)
+	if h.restart == "" {
+		return
+	}
 	if err := os.Remove(restartPath(h.restart, f.Game)); err != nil {
 		log.Printf("server: restart file %s: %v", f.Game, err)
 	}
@@ -205,6 +210,7 @@ func (h *Hub) restoreRoom(f *restartFile) {
 	}
 	h.setUpRoom(room, f.N, f.Game, f.Host, f.Sets)
 	room.kept, room.path, room.born, room.game = f, f.Record, f.Started, g
+	room.emptySince = f.Saved // the downtime counts toward the empty limit
 	if g != nil && f.Engine != engine.Version {
 		room.notice = protocol.NoticeEngine // the rules may have changed
 	}
@@ -289,24 +295,36 @@ func (h *Hub) lose(f *restartFile, why error) {
 	if err := os.Rename(path, path+lostExt); err != nil {
 		log.Printf("server: restart file %s: %v", f.Game, err)
 	}
-	lost := lostGame{game: f.Game, until: time.Now().Add(lostFor)}
+	var tokens []string
 	for _, s := range f.Seats {
-		lost.tokens = append(lost.tokens, s.Token)
+		tokens = append(tokens, s.Token)
 	}
-	h.lost = append(h.lost, lost)
+	h.remember(protocol.Notice{Kind: protocol.NoticeLost, Game: f.Game}, tokens)
 }
 
-// tellLost sends the apology to a player of a lost game, once.
+// remember keeps a notice for the players of tokens until they come back.
+func (h *Hub) remember(n protocol.Notice, tokens []string) {
+	if len(tokens) > 0 {
+		h.lost = append(h.lost, lostGame{notice: n, tokens: tokens, until: h.now().Add(lostFor)})
+	}
+}
+
+// tellLost tells a returning player, once, why their game ended.
 func (h *Hub) tellLost(c *Client) {
-	now := time.Now()
-	h.lost = slices.DeleteFunc(h.lost, func(l lostGame) bool { return now.After(l.until) || len(l.tokens) == 0 })
+	h.forgetLost()
 	for i := range h.lost {
 		l := &h.lost[i]
 		if j := slices.Index(l.tokens, c.token); j >= 0 {
 			l.tokens = slices.Delete(l.tokens, j, j+1)
-			c.send(protocol.TypeNotice, 0, protocol.Notice{Kind: protocol.NoticeLost, Game: l.game})
+			c.send(protocol.TypeNotice, 0, l.notice)
 		}
 	}
+}
+
+// forgetLost drops the notices everyone heard or nobody came for.
+func (h *Hub) forgetLost() {
+	now := h.now()
+	h.lost = slices.DeleteFunc(h.lost, func(l lostGame) bool { return now.After(l.until) || len(l.tokens) == 0 })
 }
 
 // tellEngine tells a returning player, once, that the game went on

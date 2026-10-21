@@ -321,7 +321,7 @@ Ideas: B-03 – B-05, L-03, V-10, V-11, DO-01, V-14, A-16, N-13, N-14, V-19, N-1
    2. e2e: restart the server mid-game; the game goes on, no dialog.
    3. Screenshots of the badge and both dialogs.
 
-### [ ] 8.25 Idle game limits
+### [x] 8.25 Idle game limits
 
 1. Goal: stuck and endless games do not live forever (N-20).
 2. Tasks:
@@ -333,6 +333,9 @@ Ideas: B-03 – B-05, L-03, V-10, V-11, DO-01, V-14, A-16, N-13, N-14, V-19, N-1
    6. Both limits are server options with ENV variables.
    7. 0 turns a limit off.
    8. Use case: a game ends by an idle limit.
+   9. Flags `-empty_minutes`, `-game_hours`; ENV `FOUR_SOULS_EMPTY_MINUTES`, `FOUR_SOULS_GAME_HOURS`.
+   10. Players away when it ended hear why when they come back.
+   11. A table kept over a restart closes after the empty limit too.
 3. Done when:
    1. Go tests with a fake clock for both limits.
 

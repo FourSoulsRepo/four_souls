@@ -45,6 +45,10 @@ type Config struct {
 	// Name is shown in the app instead of the address (N-18); empty
 	// shows the address. Up to protocol.MaxServerName characters.
 	Name string `json:"name"`
+	// EmptyMinutes ends a game with no player connected for that long;
+	// GameHours ends a game that long after it started (N-20). 0: never.
+	EmptyMinutes int `json:"empty_minutes"`
+	GameHours    int `json:"game_hours"`
 	// KeepGames keeps the tables and games over a restart, in the saves
 	// folder (N-20). The dedicated server sets it; an app's host does not.
 	KeepGames bool `json:"-"`
@@ -52,7 +56,7 @@ type Config struct {
 
 // DefaultConfig is used for settings the flags and file leave out.
 func DefaultConfig() Config {
-	return Config{Port: protocol.DefaultPort, Records: "records", Retention: 30, Saves: "saves", Presence: true}
+	return Config{Port: protocol.DefaultPort, Records: "records", Retention: 30, Saves: "saves", Presence: true, EmptyMinutes: 30, GameHours: 24}
 }
 
 // LoadConfig reads a JSON config file over the defaults.
@@ -75,6 +79,8 @@ func (c Config) Check() error {
 		return fmt.Errorf("server: port %d is not 1 to 65535", c.Port)
 	case c.Retention < 0:
 		return errors.New("server: retention is days, 0 or more")
+	case c.EmptyMinutes < 0 || c.GameHours < 0:
+		return errors.New("server: empty_minutes and game_hours are 0 or more")
 	case c.Name != "" && !validName(c.Name):
 		return fmt.Errorf("server: name must be 1–%d characters, without control characters", protocol.MaxServerName)
 	}
@@ -114,6 +120,8 @@ func Start(ctx context.Context, cfg Config) (*Server, error) {
 	hub.records, hub.cards, hub.seed, hub.saves = cfg.Records, cardTexts(), cfg.Seed, cfg.Saves
 	hub.hostOnly, hub.presence = cfg.HostOnly, cfg.Presence
 	hub.name, _ = protocol.CleanServerName(cfg.Name)
+	hub.emptyLimit = time.Duration(cfg.EmptyMinutes) * time.Minute
+	hub.gameLimit = time.Duration(cfg.GameHours) * time.Hour
 	if cfg.KeepGames && cfg.Saves != "" {
 		hub.restart = filepath.Join(cfg.Saves, restartFolder)
 	}

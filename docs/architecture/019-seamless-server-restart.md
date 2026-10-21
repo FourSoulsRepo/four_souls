@@ -74,6 +74,15 @@ Use option 1.
    3. A kept game takes no kick vote for 60 seconds (`pause.grace`).
    4. `cmd/server` starts the server without the signal's context.
    5. So SIGTERM reaches `Shutdown`, which warns before the rooms stop.
+9. Idle limits (8.25)
+   1. Kept games would otherwise live on, even if nobody plays them.
+   2. No player connected for `empty_minutes` (30): the game ends.
+   3. `game_hours` (24) after it started: the game ends, even if played.
+   4. The downtime of a restart counts toward the empty limit.
+   5. A kept table nobody comes back to closes after the empty limit.
+   6. Players get `notice` `game_idle` with reason `empty` or `long`.
+   7. Players away then hear it when they come back, within 30 minutes.
+   8. 0 turns a limit off; flags, ENV, and the config file set them.
 
 ## Consequences
 

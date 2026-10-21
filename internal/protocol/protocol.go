@@ -251,10 +251,17 @@ const (
 	NoticeIdle = "game_idle"
 )
 
+// Why a game ran into an idle limit (NoticeIdle).
+const (
+	IdleEmpty = "empty" // nobody was connected for too long
+	IdleLong  = "long"  // the game ran for the longest time allowed
+)
+
 // Notice tells the player something the game screen does not show.
 type Notice struct {
-	Kind string `json:"kind"`
-	Game string `json:"game,omitempty"`
+	Kind   string `json:"kind"`
+	Game   string `json:"game,omitempty"`
+	Reason string `json:"reason,omitempty"` // of NoticeIdle: IdleEmpty or IdleLong
 }
 
 // Load opens a saved game's table; its players take their seats back.
