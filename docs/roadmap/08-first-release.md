@@ -280,6 +280,8 @@ Ideas: B-03 – B-05, L-03, V-10, V-11, DO-01, V-14, A-16, N-13, N-14, V-19, N-1
 3. Done when:
    1. Go test: stop, start on the same folder, rejoin by token.
    2. The state checksum is the same after the restart.
+4. Owner notes (2026-10-21)
+   1. Owner marks 8.22 solved.
 
 ### [x] 8.23 Games from another engine version
 
@@ -301,6 +303,8 @@ Ideas: B-03 – B-05, L-03, V-10, V-11, DO-01, V-14, A-16, N-13, N-14, V-19, N-1
 3. Done when:
    1. Go tests for the three cases.
    2. A renamed field and a new field each have a test.
+4. Owner notes (2026-10-21)
+   1. Owner marks 8.23 solved.
 
 ### [x] 8.24 Client reconnects by itself
 
@@ -320,6 +324,8 @@ Ideas: B-03 – B-05, L-03, V-10, V-11, DO-01, V-14, A-16, N-13, N-14, V-19, N-1
    1. Vitest for the retry delays.
    2. e2e: restart the server mid-game; the game goes on, no dialog.
    3. Screenshots of the badge and both dialogs.
+4. Owner notes (2026-10-21)
+   1. Owner marks 8.24 solved.
 
 ### [x] 8.25 Idle game limits
 
@@ -338,6 +344,8 @@ Ideas: B-03 – B-05, L-03, V-10, V-11, DO-01, V-14, A-16, N-13, N-14, V-19, N-1
    11. A table kept over a restart closes after the empty limit too.
 3. Done when:
    1. Go tests with a fake clock for both limits.
+4. Owner notes (2026-10-21)
+   1. Owner marks 8.25 solved.
 
 ### [x] 8.26 Restart docs for server admins
 
@@ -349,3 +357,5 @@ Ideas: B-03 – B-05, L-03, V-10, V-11, DO-01, V-14, A-16, N-13, N-14, V-19, N-1
    4. Docker: `stop_grace_period` is enough for the handoff.
 3. Done when:
    1. A real server was stopped and started mid-game, without Docker (owner's choice).
+4. Owner notes (2026-10-21)
+   1. Owner marks 8.26 solved.
