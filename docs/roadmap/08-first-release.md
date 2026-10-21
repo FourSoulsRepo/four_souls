@@ -381,6 +381,7 @@ Ideas: B-03 – B-05, L-03, V-10, V-11, DO-01, V-14, A-16, N-13, N-14, V-19, N-1
    1. Server binary keeps `four_souls_server`.
    2. Archive names `four-souls-<version>-…` stay.
    3. `name` changes too, so macOS gets `FourSouls.app`.
+   4. Owner marks 8.27 solved.
 5. Notes
    1. The workflows never name the app binary; they copy `build/bin/`.
    2. `.gitignore` keeps `/four_souls`: a plain `go build .` makes it.
