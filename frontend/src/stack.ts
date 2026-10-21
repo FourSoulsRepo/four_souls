@@ -112,6 +112,38 @@ export function stackParts(it: StackItem, view: GameView, n: Names): LinePart[] 
   }
 }
 
+// attackTarget names what an attack aims at: an attacked player by name,
+// not their character (R-ATK-20), else the monster.
+export function attackTarget(view: GameView, target: number, n: Names): LinePart {
+  const victim = view.players.find((p) => p.character.id === target);
+  if (victim) {
+    return { text: n.player(victim.id), role: 'target', player: victim.id };
+  }
+  const ref = findCard(view, target);
+  return { text: ref ? n.card(ref) : 'a monster', role: 'target' };
+}
+
+// declaration says what the active player declared that is still open
+// (15.91, V-51): an attack, by its target once aimed, or a buy. Neither
+// is a stack item (R-ATK-02, R-SHOP-02); the stack panel shows it in a
+// row of its own, on top. It goes when the attack or the buy ends.
+export function declaration(view: GameView, n: Names): LinePart[] | null {
+  if (view.over || view.first_roll) {
+    return null;
+  }
+  const { active } = view.turn;
+  const who: LinePart = { text: n.player(active), role: 'player', player: active };
+  const { attack } = view;
+  if (attack) {
+    const target = attack.target ?? 0;
+    if (target === 0) {
+      return [who, { text: attack.deck ? ' attacks the monster deck' : ' attacks…' }];
+    }
+    return [who, { text: ' attacks ' }, attackTarget(view, target, n)];
+  }
+  return view.buying ? [who, { text: ' buys…' }] : null;
+}
+
 // stackLine says what one stack item is, as plain text.
 export function stackLine(it: StackItem, view: GameView, n: Names): string {
   return stackParts(it, view, n)

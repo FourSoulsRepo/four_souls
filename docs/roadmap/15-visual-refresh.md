@@ -2809,3 +2809,16 @@ Images come first, so the new table is built with backs and mats.
    2. e2e test: a declared attack and a declared buy show the row.
    3. `make screenshots` covers both rows.
    4. UC-14 updated.
+5. Result (2026-10-22)
+   1. The view already had both: `attack` and `buying` (15.30).
+   2. No engine or protocol change.
+   3. `declaration` in `stack.ts`; `DeclaredRow` in the stack panel.
+   4. Attack: "Bo attacks…", then the target; a player by name (R-ATK-20).
+   5. A monster deck attack: "Bo attacks the monster deck".
+   6. A buy is only "Bo buys…": the chosen item is bought at once.
+   7. So "then the item" (task 3.4) never shows; owner to decide.
+   8. The top stack item keeps its "resolves next" tint under the row.
+   9. `activity` and the row share `attackTarget`.
+   10. Vitest `stack.test.ts`; e2e `stack.spec.ts`, two tests.
+   11. UC-14 2m; wiki `Client`; CHANGELOG.
+   12. Screenshots: `.cache/screenshots/15.91/before/` and `after/`.

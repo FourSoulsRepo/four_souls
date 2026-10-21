@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { PromptKind } from './actions';
 import type { GameView, StackItem } from './protocol';
 import {
+  declaration,
   findCard,
   playedCard,
   secondsLeft,
@@ -173,5 +174,34 @@ describe('secondsLeft', () => {
   it('rounds up and stops at zero', () => {
     expect(secondsLeft(10_500, 0)).toBe(11);
     expect(secondsLeft(0, 5000)).toBe(0);
+  });
+});
+
+describe('declaration', () => {
+  const line = (v: GameView) =>
+    declaration(v, names)
+      ?.map((p) => p.text)
+      .join('');
+
+  it('says an open attack, then its target once aimed (15.91)', () => {
+    expect(line({ ...view, attack: {} })).toBe('Ann attacks…');
+    expect(line({ ...view, attack: { target: 9 } })).toBe('Ann attacks GAPER');
+    expect(line({ ...view, attack: { deck: true } })).toBe('Ann attacks the monster deck');
+  });
+
+  it('names an attacked player, not their character (R-ATK-20)', () => {
+    const parts = declaration({ ...view, attack: { target: 2 } }, names);
+    expect(parts?.at(-1)).toEqual({ text: 'Bo', role: 'target', player: 1 });
+  });
+
+  it('says an open buy', () => {
+    expect(line({ ...view, buying: true })).toBe('Ann buys…');
+    expect(line({ ...view, turn: { ...view.turn, active: 1 }, buying: true })).toBe('Bo buys…');
+  });
+
+  it('is nothing without one, after the game, and before turn 1', () => {
+    expect(declaration(view, names)).toBeNull();
+    expect(declaration({ ...view, buying: true, over: true }, names)).toBeNull();
+    expect(declaration({ ...view, attack: {}, first_roll: { round: 1, players: [0, 1] } }, names)).toBeNull();
   });
 });

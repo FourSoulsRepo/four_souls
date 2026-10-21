@@ -5,7 +5,20 @@ import { startGame } from './game';
 import { saveAndContinue } from './saves';
 import { appURL } from './server';
 import { shot } from './shot';
-import { activePage, answerPlay, click, endTurn, passButton, playLoot } from './turn';
+import {
+  activePage,
+  answerPlay,
+  canEndTurn,
+  click,
+  endTurn,
+  gameOver,
+  passButton,
+  playLoot,
+  settle,
+  throwButton,
+  turnAction,
+  turnNumber,
+} from './turn';
 
 const fast = () => `${appURL()}&anim=off`;
 
@@ -212,4 +225,45 @@ test('the stack panel: icons, colored names, and a hover with card and owner (15
   await active.mouse.move(1200, 420);
   await expect(zoom).toBeHidden();
   await shot(active, 'stack-panel');
+});
+
+// An open attack or buy is no stack item (R-ATK-02, R-SHOP-02); the
+// stack panel shows it on top for every player while it lasts (15.91).
+const declared = (page: Page) => page.getByRole('complementary', { name: 'Stack' }).locator('.stack-declared');
+
+test('a declared attack shows on top of the stack, then its target (15.91)', async ({ browser }) => {
+  const names = ['Ada', 'Bex'];
+  const pages = await startGame(browser, names, { url: fast() });
+  const active = await activePage(pages, click);
+  const who = names[pages.indexOf(active)] ?? '';
+  await click(active, turnAction(active, 'Attack'));
+  // Until the target is picked, the attack has none.
+  for (const page of pages) {
+    await expect(declared(page)).toHaveText(`${who} attacks…`);
+  }
+  await shot(pages.find((p) => p !== active) ?? active, 'stack-declared-attack');
+  await settle(pages, click, async () => (await throwButton(active).count()) > 0);
+  const monster = await active.locator('.board-monsters .card.fight').getAttribute('aria-label');
+  for (const page of pages) {
+    await expect(declared(page)).toHaveText(`${who} attacks ${monster ?? ''}`);
+    await expect(declared(page).locator('.stack-target')).toHaveText(monster ?? '');
+  }
+  await shot(active, 'stack-declared-attack-aimed');
+});
+
+test('a declared buy shows on top of the stack until it ends (15.91)', async ({ browser }) => {
+  const names = ['Cid', 'Dot'];
+  const pages = await startGame(browser, names, { url: fast() });
+  const active = await activePage(pages, click);
+  const who = names[pages.indexOf(active)] ?? '';
+  const turn = await turnNumber(active);
+  await active.keyboard.press('b');
+  for (const page of pages) {
+    await expect(declared(page)).toHaveText(`${who} buys…`);
+  }
+  await shot(pages.find((p) => p !== active) ?? active, 'stack-declared-buy');
+  await settle(pages, click, async () => (await canEndTurn(active)) || (await turnNumber(active)) !== turn || (await gameOver(active)));
+  for (const page of pages) {
+    await expect(declared(page)).toHaveCount(0);
+  }
 });

@@ -2,7 +2,7 @@ import type { PointerEvent } from 'react';
 import { diceImage, firstRollRows, lastRollText } from '../dice';
 import { useKey } from '../keys';
 import type { FirstRoll, GameView, Intent, StackItem } from '../protocol';
-import { playedCard, stackCard, stackIcon, stackParts, stackWait, type LinePart, type Names } from '../stack';
+import { declaration, playedCard, stackCard, stackIcon, stackParts, stackWait, type LinePart, type Names } from '../stack';
 import { useApp, type Zoom } from '../store';
 import { playerColor } from '../table';
 import { boxOf } from '../zoom';
@@ -27,10 +27,13 @@ interface Props {
 // StackPanel is the stack inside the board (15.21, F-03): newest on
 // top, one icon and one short line per item (S-01 – S-04), whom it
 // waits for (V-11), and the Pass button; Space presses it (S-08). An
-// empty stack says so (S-09). Pass glows when it answers the prompt.
+// open attack or buy is a row on top (15.91). An empty stack says so
+// (S-09). Pass glows when it answers the prompt.
 export function StackPanel({ view, you, names, pass, disabled, prompt, answer }: Props) {
   const act = useApp((s) => s.act);
   const stack = view.stack ?? [];
+  const declared = declaration(view, names);
+  const empty = stack.length === 0 && !declared;
   const wait = stackWait(view, you, names);
   const lit = pass !== undefined && !disabled;
   const press = () => {
@@ -40,7 +43,7 @@ export function StackPanel({ view, you, names, pass, disabled, prompt, answer }:
   };
   useKey(' ', press);
   return (
-    <aside className={`stack${stack.length === 0 ? ' stack-empty' : ''}`} aria-label="Stack" data-zone="stack">
+    <aside className={`stack${empty ? ' stack-empty' : ''}`} aria-label="Stack" data-zone="stack">
       <header>
         <h2>Stack</h2>
         <LastRollDie names={names} />
@@ -56,10 +59,11 @@ export function StackPanel({ view, you, names, pass, disabled, prompt, answer }:
       </header>
       {view.first_roll ? (
         <FirstRollList roll={view.first_roll} names={names} />
-      ) : stack.length === 0 ? (
+      ) : empty ? (
         <p className="stack-nothing">Nothing on the stack</p>
       ) : (
         <ol>
+          {declared && <DeclaredRow parts={declared} />}
           {[...stack].reverse().map((it) => (
             <StackRow key={it.id} it={it} view={view} names={names} />
           ))}
@@ -184,6 +188,22 @@ function StackRow({ it, view, names }: { it: StackItem; view: GameView; names: N
       }}
     >
       <ItemIcon it={it} />
+      <span className="stack-line">
+        {parts.map((p, i) => (
+          // A line's parts never change order, so the index is a stable key.
+          // eslint-disable-next-line @eslint-react/no-array-index-key
+          <Part key={i} part={p} />
+        ))}
+      </span>
+    </li>
+  );
+}
+
+// DeclaredRow is an open attack or buy (15.91, V-51). It is no stack
+// item (R-ATK-02, R-SHOP-02), so it has no icon frame and a dashed edge.
+function DeclaredRow({ parts }: { parts: LinePart[] }) {
+  return (
+    <li className="stack-declared" aria-label={parts.map((p) => p.text).join('')}>
       <span className="stack-line">
         {parts.map((p, i) => (
           // A line's parts never change order, so the index is a stable key.

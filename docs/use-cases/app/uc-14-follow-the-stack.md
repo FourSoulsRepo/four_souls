@@ -59,6 +59,13 @@
 * **2l. A prompt of the viewer's (15.28):** the panel says what to do.
   * The same words as the banner: "Choose a target".
   * Pass glows when passing answers the prompt.
+* **2m. An open attack or buy (15.91):** a row on top of the stack says it.
+  * It is not a stack item: no icon, a dashed edge.
+  * "Bo attacks…", then "Bo attacks Pooter" once aimed.
+  * A monster deck attack: "Bo attacks the monster deck".
+  * A buy: "Bo buys…".
+  * Every player sees the same row.
+  * It goes when the attack or the buy ends.
 
 ## Postconditions
 

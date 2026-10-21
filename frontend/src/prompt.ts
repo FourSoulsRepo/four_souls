@@ -2,7 +2,7 @@
 // words. Pure, so every prompt is tested without a browser.
 import { choiceTitle, PromptKind, Purpose, type Actions } from './actions';
 import type { GameView } from './protocol';
-import { findCard, StackKind, stackLine, type LinePart, type Names } from './stack';
+import { attackTarget, findCard, StackKind, stackLine, type LinePart, type Names } from './stack';
 import type { Aiming } from './store';
 
 // BannerKind is the prompt a banner is about. "aim" is the player's own
@@ -163,13 +163,7 @@ export function activity(view: GameView, n: Names): LinePart[] | null {
     if (target === 0) {
       return attack.deck ? [who, { text: ' attacks the monster deck' }] : [who, { text: ' declares an attack' }];
     }
-    // An attacked player is named, not their character (R-ATK-20).
-    const victim = view.players.find((p) => p.character.id === target);
-    const ref = findCard(view, target);
-    const aim: LinePart = victim
-      ? { text: n.player(victim.id), role: 'target', player: victim.id }
-      : { text: ref ? n.card(ref) : 'a monster', role: 'target' };
-    return [who, { text: ' attacks ' }, aim];
+    return [who, { text: ' attacks ' }, attackTarget(view, target, n)];
   }
   if (view.buying) {
     return [who, { text: ' is buying' }];

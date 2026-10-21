@@ -594,9 +594,24 @@
   background: rgb(255 255 255 / 10%);
 }
 
-/* The top item resolves next. */
-.stack-row:first-child {
+/* The top item resolves next; an open declaration is above it. */
+.stack-row:first-child,
+.stack-declared + .stack-row {
   background: rgb(255 210 122 / 12%);
+}
+
+/* An open attack or buy (15.91, V-51) is no stack item: no icon frame,
+   a dashed edge. It is as tall as a row with an icon. */
+.stack-declared {
+  display: flex;
+  align-items: center;
+  min-height: 28px;
+  padding: 1px 8px;
+  border: 1px dashed rgb(255 255 255 / 40%);
+  border-radius: 6px;
+  box-sizing: border-box;
+  font-size: 13px;
+  font-style: italic;
 }
 
 /* Every icon is the same square; a card shows its art, cropped. */
