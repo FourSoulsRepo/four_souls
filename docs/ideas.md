@@ -269,6 +269,16 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    1. "Die" also means a character's death.
    2. Players could not tell which one the game meant.
    3. Card texts keep "die" for death.
+51. V-51. Stack and history are the players' source of truth (owner, 2026-10-21).
+   1. Players can read every step before: who did what.
+   2. Who played which card, bought which item, killed which monster.
+   3. The stack is now; the history is what happened.
+   4. Simple, with no repeats between them.
+   5. History: flat lines under turn headers.
+   6. History strip: headlines only, Hearthstone-style tiles.
+   7. Hover a tile: the card, an arrow, and what it did.
+   8. An open "Attack" or "Buy": a top row in the stack panel.
+   9. One design for V-36, V-38, and V-44.
 
 ## Rules
 

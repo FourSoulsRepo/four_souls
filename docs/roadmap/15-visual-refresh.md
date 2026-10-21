@@ -3,11 +3,11 @@
 Goal: a clearer table, using fouronlinesouls.net as a second reference.
 
 Ideas: V-09, V-12, V-13, V-15 – V-31, V-33 – V-48, GS-06, N-18,
-M-02, ST-07, ST-08.
+M-02, ST-07, ST-08, V-51.
 
 Order: 15.1, 15.15, 15.9 – 15.11, 15.16, 15.17, 15.38, 15.18 – 15.24,
 15.3, 15.37, 15.25, 15.32 – 15.34, 15.26, 15.27, 15.59 – 15.63, 15.6, 15.64,
-15.28 – 15.31, 15.35, 15.36, 15.39 – 15.46, 15.51, 15.52,
+15.28 – 15.31, 15.35, 15.36, 15.39 – 15.46, 15.88 – 15.91, 15.51, 15.52,
 15.54 – 15.58.
 Images come first, so the new table is built with backs and mats.
 
@@ -1488,7 +1488,7 @@ Images come first, so the new table is built with backs and mats.
 6. Owner notes (2026-10-21)
    1. Owner marks 15.43 solved.
 
-### [ ] 15.44 Declarations on the stack
+### [~] 15.44 Declarations on the stack
 
 1. Goal: everyone sees a "Buy" or "Attack" before it resolves (V-36).
 2. Tasks:
@@ -1498,6 +1498,10 @@ Images come first, so the new table is built with backs and mats.
 3. Done when:
    1. e2e test: a purchase and an attack show on the stack.
    2. UC for the stack panel updated.
+4. Moved (owner, 2026-10-21)
+   1. A declaration is not a stack item (R-ATK-02, R-SHOP-02).
+   2. It shows as a top row of the stack panel instead.
+   3. Moved to 15.91.
 
 ### [ ] 15.45 Look at the table after the game
 
@@ -1512,7 +1516,7 @@ Images come first, so the new table is built with backs and mats.
    2. e2e test: close the overlay, see an opponent's hand.
    3. Use case.
 
-### [ ] 15.46 Failed effects in the history
+### [~] 15.46 Failed effects in the history
 
 1. Goal: nothing fails silently (V-38).
 2. Tasks:
@@ -1523,6 +1527,9 @@ Images come first, so the new table is built with backs and mats.
 3. Done when:
    1. Vitest: a fizzle event becomes a history entry.
    2. e2e test: a failed purchase shows in the history.
+4. Moved (owner, 2026-10-21)
+   1. One history design for every play (V-51).
+   2. Moved to 15.88.
 
 ### [x] 15.47 Who deals damage a player takes
 
@@ -1655,12 +1662,14 @@ Images come first, so the new table is built with backs and mats.
    4. Stack panel and history strip both.
    5. Follow the animation speed setting (ST-05); off means none.
    6. Rows keep a stable key, so React moves them, not redraws.
+   7. From 15.52: damage and death marks play before the discard flight.
+   8. From 15.52: an item's or ability's row fades out on resolve.
 3. Done when:
    1. Vitest: rows keep their keys when the stack grows and shrinks.
    2. e2e test: a resolved row fades out; the next slides up.
    3. e2e test: with animations off, rows change at once.
 
-### [ ] 15.52 Played cards fly through the stack
+### [~] 15.52 Played cards fly through the stack
 
 1. Goal: everyone follows a played card to the end (V-40).
 2. Tasks:
@@ -1677,6 +1686,13 @@ Images come first, so the new table is built with backs and mats.
    1. Vitest: a resolved loot gives hits, then the discard flight.
    2. e2e test: a played loot flies to the stack, then to the discard.
    3. `make screenshots` shows the card mid-flight.
+4. Moved (owner, 2026-10-21)
+   1. 15.74 made the flights: hand, stack panel, discard.
+   2. It covers every player's loot, the viewer's own too.
+   3. Its effect: the card shrinks into the stack panel.
+   4. Left: task 7, marks before the flight; not checked yet.
+   5. Left: task 8, a row fades out; that is 15.51.
+   6. Moved to 15.51.
 
 ### [x] 15.53 Create a game on a dedicated server
 
@@ -1803,7 +1819,7 @@ Images come first, so the new table is built with backs and mats.
 6. Owner notes (2026-10-15)
    1. Owner marks 15.56 solved.
 
-### [ ] 15.57 Purchases in the history
+### [~] 15.57 Purchases in the history
 
 1. Goal: everyone sees what a player bought (V-44).
 2. Tasks:
@@ -1817,6 +1833,10 @@ Images come first, so the new table is built with backs and mats.
    1. Vitest: a purchase event becomes a history entry.
    2. e2e test: buy an item; the History names it.
    3. UC-12 updated.
+4. Moved (owner, 2026-10-21)
+   1. One history design for every play (V-51).
+   2. The strip question: headlines only, with a coin badge (15.89).
+   3. Moved to 15.88 and 15.89.
 
 ### [ ] 15.58 "Choose one-" cards ask like The Bone
 
@@ -2659,3 +2679,78 @@ Images come first, so the new table is built with backs and mats.
    6. Wiki `Releases`; `release/README.txt`; CHANGELOG.
 6. Owner notes (2026-10-21)
    1. Owner marks 15.87 solved.
+
+### [ ] 15.88 History tells every play
+
+1. Goal: the History panel names every play: who did what (V-51).
+2. Asked by the owner (2026-10-21); replaces 15.46 and 15.57.
+3. Tasks:
+   1. One table in `history.ts`: each event kind gives a line or is skipped.
+   2. A skipped kind names its reason.
+   3. New lines: attack declared, its target, a purchase, a failed purchase.
+   4. Also: a kill, a soul, a gained item or treasure, a theft, a fizzle.
+   5. Flat lines under turn headers; each line names who.
+   6. Hovering a line zooms its card.
+   7. A line may be a headline: a play, an ability, an attack, a buy, a kill.
+   8. Hidden cards stay hidden: lines come from the viewer's own events.
+   9. Check that `died` names the killer; the engine adds it if not.
+   10. A Go test lists every `EventKind` for the client.
+4. Done when:
+   1. Vitest: each new event kind gives its line.
+   2. Vitest: an `EventKind` missing from the table fails.
+   3. e2e test: buy an item and kill a monster; the History names both.
+   4. `make screenshots` covers the full History panel.
+   5. UC-12 updated.
+
+### [ ] 15.89 Headlines in the strip
+
+1. Goal: the strip shows a turn's big moments at a glance (V-51).
+2. Asked by the owner (2026-10-21); answers the 15.57 strip question.
+3. Tasks:
+   1. Strip tiles: every headline from 15.88, not only stack items.
+   2. A buy gets a coin badge; a kill gets a skull badge.
+   3. Attacks and spells keep the sword and bolt badges (H-08).
+   4. Other lines stay in the full History only.
+   5. Hovering a tile zooms its card, as today.
+4. Done when:
+   1. Vitest: which entries are headlines.
+   2. e2e test: a buy and a kill each add one tile.
+   3. `make screenshots` covers the strip with both badges.
+
+### [ ] 15.90 Strip popout
+
+1. Goal: hovering a tile shows what the play did, as in Hearthstone (V-51).
+2. Asked by the owner (2026-10-21).
+3. Tasks:
+   1. The played card large, an arrow, then its outcome cards.
+   2. Outcome: the lines after a headline in the same resolution.
+   3. Damage shows its red number; a death its skull (15.37).
+   4. A gain shows its card: a bought item, a soul, a treasure.
+   5. Cents show as a plain mark with the amount.
+   6. The headline's line stays as the caption.
+   7. Text cards without images get the same popout.
+   8. Touch: a tap opens it, as the zoom does today.
+   9. If a trigger lands on the wrong headline, events name their cause.
+4. Done when:
+   1. Vitest: outcome grouping, with a trigger in the middle.
+   2. e2e test: a kill tile's popout shows the monster with its skull.
+   3. `make screenshots` covers a popout with two outcomes.
+   4. UC-12 updated.
+
+### [ ] 15.91 Open declarations in the stack panel
+
+1. Goal: everyone sees an attack or a buy while it waits (V-51).
+2. Asked by the owner (2026-10-21); replaces 15.44.
+3. Tasks:
+   1. A declaration is not a stack item (R-ATK-02, R-SHOP-02).
+   2. While it is open, the stack panel shows a top row for it.
+   3. The row: "Bo attacks…", then "Bo attacks Pooter" once aimed.
+   4. Same for a buy: "Bo buys…", then the item.
+   5. The row looks unlike a stack item: no icon frame, a dashed edge.
+   6. It goes when the attack or the buy ends.
+   7. The view tells the client what is declared, if it does not yet.
+4. Done when:
+   1. Vitest: the row's words for each state.
+   2. e2e test: a declared attack and a declared buy show the row.
+   3. `make screenshots` covers both rows.
+   4. UC-14 updated.
