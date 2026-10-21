@@ -1685,6 +1685,8 @@ Images come first, so the new table is built with backs and mats.
    14. Vitest: `stack.test.ts`, `history.test.ts`, `playback.test.ts`.
    15. e2e: `stack.spec.ts`, two tests; `fakeStack` shared with 15.21's.
    16. UC-14 2n, UC-12 3g; wiki `Client`; CHANGELOG.
+5. Owner notes (2026-10-22)
+   1. Owner marks 15.51 solved.
 
 ### [~] 15.52 Played cards fly through the stack
 
