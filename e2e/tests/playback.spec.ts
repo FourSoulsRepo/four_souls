@@ -896,7 +896,11 @@ for (const mine of [false, true]) {
       ];
       s.receive({ type: 'update', data: { ...game, step: game.step + 2, events } });
     });
-    await expect(wes.getByTestId('effect-fly')).toBeVisible();
+    // The fly lasts 0.45 s: a poll on a busy machine can miss it, so the
+    // test waits for the box trackBoxes took when it joined (19.43).
+    await expect
+      .poll(() => wes.evaluate(() => (window as unknown as { tracked: { fly: unknown[] } }).tracked.fly.length))
+      .toBeGreaterThan(0);
     await shot(wes, mine ? 'discard-from-stack-row' : 'discard-from-played');
     await expect(wes.getByText('+1¢')).toBeVisible({ timeout: 5000 });
     await shot(wes, mine ? 'discard-then-popup-row' : 'discard-then-popup-played');

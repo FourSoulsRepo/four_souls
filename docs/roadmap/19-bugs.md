@@ -1462,6 +1462,12 @@ Totals by system (51 items):
    5. A swapping page can stall longer; the poll then misses the fly.
    6. Same kind as 19.37: `trackBoxes` already records the fly.
    7. Not seen in any full run since 19.38 (3 – 8 workers).
+6. Result (2026-10-21)
+   1. The test waits for the fly's box from `trackBoxes`, not a poll.
+   2. `trackBoxes` takes it when the fly joins the page (19.37).
+   3. Not reproduced under CPU load: 80 of 80 passed before the change too.
+   4. The failure needed a swapping machine (19.38); the poll window is gone.
+   5. Test only; no app change, no screenshots.
 4. Tasks:
    1. Find the cause in the evidence; fix the test or the app.
 5. Done when:
