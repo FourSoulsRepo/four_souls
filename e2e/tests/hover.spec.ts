@@ -167,3 +167,24 @@ test('every card of a 12-card hand can be pointed at (19.15)', async ({ browser 
     expect(a, `card ${String(i)}`).toBeGreaterThanOrEqual(30 * 50);
   }
 });
+
+// A zoom closes when the pointer leaves its card, even when the part
+// under the pointer was redrawn meanwhile: a card whose image failed to
+// load swaps it for a drawn face, and no leave event came (19.50).
+test('a zoom closes when the pointer leaves a card whose face was redrawn (19.50)', async ({ page }) => {
+  await page.goto(gallery);
+  const card = page.getByLabel('Table size').getByRole('img', { name: 'Big Spider' });
+  await card.hover();
+  const zoom = page.getByTestId('card-zoom');
+  await expect(zoom).toBeVisible();
+  // The deepest hovered node inside the card goes, as a redraw does.
+  await card.evaluate((el) => {
+    const hovered = [...el.querySelectorAll(':hover')].at(-1);
+    if (!hovered) {
+      throw new Error('nothing hovered in the card');
+    }
+    hovered.remove();
+  });
+  await page.mouse.move(2, 2);
+  await expect(zoom).toHaveCount(0);
+});

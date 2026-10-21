@@ -38,11 +38,11 @@ This step never closes; new reports are appended.
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30                                     | 3     |
 | E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41                   | 6     |
-| F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49                             | 4     |
+| F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50                      | 5     |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
 | I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48 | 10 |
-| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.50, 19.51 | 10 |
+| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51 | 9 |
 | K  | Build and release files                  | Release    | 19.47                                                  | 1     |
 
 Totals by system (51 items):
@@ -51,9 +51,9 @@ Totals by system (51 items):
 |-----------|---------|-------|
 | Engine    | A, B    | 10    |
 | Card data | C       | 2     |
-| Client    | D–G     | 17    |
+| Client    | D–G     | 18    |
 | Server    | H       | 1     |
-| e2e       | I, J    | 20    |
+| e2e       | I, J    | 19    |
 | Release   | K       | 1     |
 
 ---
@@ -1683,6 +1683,21 @@ Totals by system (51 items):
    1. Find what was drawn over the Menu button.
 5. Done when:
    1. Cause written here; 30 repeats in both browsers pass.
+6. Cause (2026-10-21)
+   1. A probe: a shop card's zoom covered the Menu button; the app was wrong.
+   2. The player threw the first roll; the pointer stayed on the Throw button.
+   3. The button went; the pointer was now over a shop card: its zoom opened.
+   4. The card's image failed (no images in e2e) and became the drawn face.
+   5. The hovered node left the page, so no leave event ever came.
+   6. The pointer moved away; the zoom stayed open over everything.
+   7. Players can meet it too: a hovered badge or image that is redrawn.
+   8. 5 – 7 of 240 – 300 repeats failed, chromium.
+7. Result (2026-10-21)
+   1. `useZoom` also ends a mouse zoom on a pointer-over outside the card.
+   2. Test: "a zoom closes when the pointer leaves a card whose face was redrawn".
+   3. It removes the hovered node, then moves away; it failed before the fix.
+   4. The layers test: 300 of 300 repeats passed.
+   5. Wiki `Client`. Nothing changes on screen; no screenshots.
 
 ### [ ] 19.51 e2e: the fast burst test runs out of time
 

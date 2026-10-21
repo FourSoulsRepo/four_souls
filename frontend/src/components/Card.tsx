@@ -176,8 +176,17 @@ export function useZoom(cardRef: string | undefined, zoomable: boolean, rise = f
   // A card that leaves the screen while hovered gets no pointer-leave:
   // the card that started a mouse zoom ends it then.
   const zoomedRef = useRef(false);
+  // Nor does a card whose hovered part was redrawn, such as an image
+  // that failed and became a drawn face (19.50): the zoom also ends on
+  // the first pointer-over outside the card. unwatch stops that watch.
+  const unwatchRef = useRef<(() => void) | null>(null);
+  const unwatch = () => {
+    unwatchRef.current?.();
+    unwatchRef.current = null;
+  };
   useEffect(
     () => () => {
+      unwatch();
       const { zoom, setZoom: clear } = useApp.getState();
       if (zoomedRef.current && zoom && zoom.ref === cardRef && !zoom.touch) {
         clear(null);
@@ -185,6 +194,24 @@ export function useZoom(cardRef: string | undefined, zoomable: boolean, rise = f
     },
     [cardRef],
   );
+  const watch = (el: HTMLElement) => {
+    unwatch();
+    const over = (e: Event) => {
+      if (e.target instanceof Node && el.contains(e.target)) {
+        return;
+      }
+      unwatch();
+      zoomedRef.current = false;
+      const { zoom, setZoom: clear } = useApp.getState();
+      if (zoom && zoom.ref === cardRef && !zoom.touch) {
+        clear(null);
+      }
+    };
+    document.addEventListener('pointerover', over, true);
+    unwatchRef.current = () => {
+      document.removeEventListener('pointerover', over, true);
+    };
+  };
 
   const cancelPress = () => {
     window.clearTimeout(pressRef.current);
@@ -194,12 +221,14 @@ export function useZoom(cardRef: string | undefined, zoomable: boolean, rise = f
     onPointerEnter: (e: PointerEvent<HTMLElement>) => {
       if (on && e.pointerType === 'mouse') {
         zoomedRef.current = true;
+        watch(e.currentTarget);
         setZoom({ ref: cardRef, touch: false, at: boxOf(e.currentTarget), rise, ...(why ? { why } : {}) });
       }
     },
     onPointerLeave: (e: PointerEvent<HTMLElement>) => {
       cancelPress();
       if (on && e.pointerType === 'mouse') {
+        unwatch();
         zoomedRef.current = false;
         setZoom(null);
       }
