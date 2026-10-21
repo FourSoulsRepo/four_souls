@@ -2792,7 +2792,7 @@ Images come first, so the new table is built with backs and mats.
 6. Owner notes (2026-10-22)
    1. Owner marks 15.90 solved.
 
-### [ ] 15.91 Open declarations in the stack panel
+### [x] 15.91 Open declarations in the stack panel
 
 1. Goal: everyone sees an attack or a buy while it waits (V-51).
 2. Asked by the owner (2026-10-21); replaces 15.44.
@@ -2822,3 +2822,5 @@ Images come first, so the new table is built with backs and mats.
    10. Vitest `stack.test.ts`; e2e `stack.spec.ts`, two tests.
    11. UC-14 2m; wiki `Client`; CHANGELOG.
    12. Screenshots: `.cache/screenshots/15.91/before/` and `after/`.
+6. Owner notes (2026-10-22)
+   1. Owner marks 15.91 solved.
