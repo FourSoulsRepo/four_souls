@@ -45,6 +45,7 @@
    16. Frontend testing rules: `docs/wiki/Frontend-tests.md`.
    17. `make internal`: play-test build with card images; see `docs/wiki/Internal-builds.md`.
    18. `make e2e-games`: whole random games, every set, 2–4 players (slow).
+   19. Before a `cardimages` build or test: `go generate ./pkg/card_db/images`.
 5. Workflow
    1. Work follows `docs/roadmap/`, one sub-step at a time.
    2. Commit after every finished sub-step.

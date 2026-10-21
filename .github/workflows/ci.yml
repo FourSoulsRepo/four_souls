@@ -49,10 +49,13 @@ jobs:
         uses: ./.github/actions/card-images
         with:
           ssh-key: ${{ secrets.CARD_DB_DEPLOY_KEY }}
+      - name: Prepare card images
+        if: steps.images.outputs.available == 'true'
+        run: go generate ./pkg/card_db/images
       - name: Test card data with embedded images
         if: steps.images.outputs.available == 'true'
         working-directory: pkg/card_db
-        run: go test -v -tags "embed cardimages" -run TestEmbedded ./...
+        run: go test -v -tags "embed cardimages" -run 'TestEmbedded|TestFS' ./...
       - name: Test app asset loading with embedded images
         if: steps.images.outputs.available == 'true'
         run: go test -v -tags "embed cardimages" ./internal/assets/

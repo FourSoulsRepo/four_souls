@@ -26,6 +26,7 @@ wails dev
 ## Build
 
 ```sh
+go generate ./pkg/card_db/images
 wails build -tags "embed cardimages"
 ```
 

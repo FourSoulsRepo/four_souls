@@ -40,7 +40,7 @@ Every archive also has `README.txt` (from `release/README.txt`, or `release/SERV
 
 Server archives carry no version in their names (8.17), so `https://github.com/FourSoulsRepo/four_souls/releases/latest/download/four-souls-server-linux-amd64.tar.gz` always gets the newest server; the Dockerfile relies on it. "Latest" skips drafts and pre-releases. App archives keep their versions.
 
-The app is built with `-tags "embed cardimages"` (`for-poor`: `embed` only); the server only with `embed` (it needs card text, not images) and `CGO_ENABLED=0`, so its Linux binaries run on any distribution, Alpine included. Linux builds use WebKitGTK 4.1 (`webkit2_41`), so players need `libwebkit2gtk-4.1` (Ubuntu 22.04 and later).
+The app is built with `-tags "embed cardimages"` after `go generate ./pkg/card_db/images` (`for-poor`: `embed` only); the server only with `embed` (it needs card text, not images) and `CGO_ENABLED=0`, so its Linux binaries run on any distribution, Alpine included. Linux builds use WebKitGTK 4.1 (`webkit2_41`), so players need `libwebkit2gtk-4.1` (Ubuntu 22.04 and later).
 
 ## App identity
 

@@ -3,15 +3,12 @@
 package carddb
 
 import (
-	"embed"
 	"io/fs"
+
+	"github.com/FourSoulsRepo/card_db/images"
 )
 
-// The images pattern has no all: prefix, so the submodule's .git is skipped.
-//
-//go:embed images
-var imagesFiles embed.FS
-
+// The images submodule embeds its own files (8.29).
 func embeddedImages() fs.FS {
-	return imagesFiles
+	return images.FS()
 }

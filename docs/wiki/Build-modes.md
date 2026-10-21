@@ -9,7 +9,7 @@ App files (sounds and similar) are reached through `internal/assets.FS()`.
 | `-tags embed` | packed into the binary from `internal/assets/files/` |
 | default (`wails dev`) | `$FOUR_SOULS_ASSETS`, else `assets/` next to the binary, else `internal/assets/files/` |
 
-Card data and images (`pkg/card_db`, see ADR 004) follow the same idea through `internal/assets.CardsFS()`: card data is embedded with `-tags embed`, and images too with `-tags "embed cardimages"` (needs the private images submodule); otherwise `$FOUR_SOULS_CARDS`, else `cards/` next to the binary, else `pkg/card_db/` (for `wails dev`).
+Card data and images (`pkg/card_db`, see ADR 004) follow the same idea through `internal/assets.CardsFS()`: card data is embedded with `-tags embed`, and images too with `-tags "embed cardimages"` (needs the private images submodule, prepared first with `go generate ./pkg/card_db/images`); otherwise `$FOUR_SOULS_CARDS`, else `cards/` next to the binary, else `pkg/card_db/` (for `wails dev`).
 
 The app serves card images to the frontend under `/cardimg/<set>/<file>.webp` (an asset server middleware in `cards.go`); `App.Cards()` gives each card's text and image URL, or no URL when the file is missing.
 

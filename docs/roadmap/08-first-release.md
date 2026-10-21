@@ -408,7 +408,7 @@ Ideas: B-03 – B-05, L-03, V-10, V-11, DO-01, V-14, A-16, N-13, N-14, V-19, N-1
    2. ImageMagick's own SVG renderer drops gradients and filters.
    3. Below 32 px the souls blend into the digit; the "4" still reads.
 
-### [ ] 8.29 Image embedding moves into the images repo
+### [x] 8.29 Image embedding moves into the images repo
 
 1. Goal: the private images repo owns how its images are embedded.
 2. Tasks:
@@ -422,3 +422,10 @@ Ideas: B-03 – B-05, L-03, V-10, V-11, DO-01, V-14, A-16, N-13, N-14, V-19, N-1
 3. Done when:
    1. `wails build -tags "embed cardimages"` shows every card image.
    2. `wails build -tags embed` and `make e2e` pass without the submodule.
+4. Notes
+   1. `go generate ./pkg/card_db/images` prepares 810 files in 0.2–0.4 s.
+   2. `make internal`, the build action and the CI image tests run it.
+   3. Without it a `cardimages` build fails: the embed pattern finds no files.
+   4. `TestFS` in the submodule checks every image against its source.
+5. Owner notes (2026-10-22)
+   1. Owner marks 8.29 solved.
