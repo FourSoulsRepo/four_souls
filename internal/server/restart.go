@@ -54,8 +54,20 @@ type restartFile struct {
 	Seed uint64 `json:"seed,omitempty"`
 	// Password of a lobby table (N-14); the file is deleted on load.
 	Password string `json:"password,omitempty"`
-	// Checksum is the engine's checksum of State.
-	Checksum uint64 `json:"checksum,omitempty"`
+	// Meaning is the saving engine's StateMeaning (engine.Resume).
+	Meaning int `json:"meaning,omitempty"`
+}
+
+// lostFor is how long the players of a game that could not go on after
+// a restart are told so when they reconnect.
+const lostFor = 30 * time.Minute
+
+// lostGame is a game the new server could not go on with: its players
+// get an apology when they come back (N-20).
+type lostGame struct {
+	game   string
+	tokens []string // the players not told yet
+	until  time.Time
 }
 
 // restartPath names the restart file of a game.
@@ -166,6 +178,14 @@ func (h *Hub) restoreTable(f *restartFile) {
 }
 
 func (h *Hub) restoreRoom(f *restartFile) {
+	var g *engine.Game
+	if f.Kind == keptGame {
+		var err error
+		if g, err = engine.Resume(f.State, f.Meaning, setsOf(f.Sets)...); err != nil {
+			h.lose(f, err)
+			return
+		}
+	}
 	seats := make([]roomSeat, len(f.Seats))
 	for i, s := range f.Seats {
 		seats[i] = roomSeat{name: s.Name, token: s.Token, kicked: s.Kicked, dice: s.Dice}
@@ -180,7 +200,10 @@ func (h *Hub) restoreRoom(f *restartFile) {
 		return
 	}
 	h.setUpRoom(room, f.N, f.Game, f.Host, f.Sets)
-	room.kept, room.path, room.born = f, f.Record, f.Started
+	room.kept, room.path, room.born, room.game = f, f.Record, f.Started, g
+	if g != nil && f.Engine != engine.Version {
+		room.notice = protocol.NoticeEngine // the rules may have changed
+	}
 	h.run(room, protocol.GameInfo{ID: f.Game, Host: f.Host, Seats: len(seats), Taken: len(seats), Sets: f.Sets, Started: true})
 }
 
@@ -205,12 +228,7 @@ func (r *Room) keep() {
 			log.Printf("server: keep %s: %v", f.Game, err)
 			return
 		}
-		sum, err := r.game.Checksum()
-		if err != nil {
-			log.Printf("server: keep %s: %v", f.Game, err)
-			return
-		}
-		f.Kind, f.State, f.Checksum, f.Step, f.Steps = keptGame, state, sum, r.step, r.steps
+		f.Kind, f.State, f.Meaning, f.Step, f.Steps = keptGame, state, engine.StateMeaning, r.step, r.steps
 	}
 	if err := writeRestart(r.hub.restart, f); err != nil {
 		log.Printf("server: keep %s: %v", f.Game, err)
@@ -224,25 +242,18 @@ func (r *Room) keep() {
 	}
 }
 
-// resumeKept starts a room from its restart file. Bans and picks start
-// over once every player is back; a game waits paused for them.
+// resumeKept starts a room from its restart file; the hub has loaded its
+// game. Bans and picks start over once every player is back; a game
+// waits paused for them.
 func (r *Room) resumeKept() {
 	f := r.kept
+	r.noticed = make([]bool, len(r.seats))
 	if f.Kind == keptSetup {
 		r.setupWait = true
 		r.forgetKept()
 		return
 	}
-	if f.Engine != engine.Version {
-		r.lose(fmt.Errorf("engine %s, this server runs %s", f.Engine, engine.Version))
-		return
-	}
-	g, err := engine.Load(f.State, r.setup.Sets...)
-	if err != nil {
-		r.lose(err)
-		return
-	}
-	r.game, r.step, r.steps = g, f.Step, f.Steps
+	r.step, r.steps = f.Step, f.Steps
 	if r.recDir != "" && f.Record != "" {
 		if w, err := record.Append(f.Record, f.Steps, time.Now().UTC()); err == nil {
 			r.rec = w
@@ -255,20 +266,52 @@ func (r *Room) resumeKept() {
 }
 
 // lose ends a kept game the new server cannot go on with. Its record
-// gets its end; the restart file stays for the operator as .lost.
-func (r *Room) lose(why error) {
-	f := r.kept
+// gets its end; the restart file stays for the operator as .lost. Its
+// players get an apology when they come back.
+func (h *Hub) lose(f *restartFile, why error) {
 	log.Printf("server: game %s cannot go on after the restart: %v", f.Game, why)
-	if r.recDir != "" && f.Record != "" {
-		if w, err := record.Append(f.Record, f.Steps, time.Now().UTC()); err == nil {
-			r.rec = w // closed with finished false when Run ends
+	if h.records != "" && f.Record != "" {
+		now := time.Now().UTC()
+		w, err := record.Append(f.Record, f.Steps, now)
+		if err == nil {
+			err = w.Close(record.End{Ended: now, Finished: false})
+		}
+		if err != nil {
+			log.Printf("server: record %s: %v", f.Record, err)
 		}
 	}
-	path := restartPath(r.hub.restart, f.Game)
+	path := restartPath(h.restart, f.Game)
 	if err := os.Rename(path, path+lostExt); err != nil {
 		log.Printf("server: restart file %s: %v", f.Game, err)
 	}
-	r.stopped = true
+	lost := lostGame{game: f.Game, until: time.Now().Add(lostFor)}
+	for _, s := range f.Seats {
+		lost.tokens = append(lost.tokens, s.Token)
+	}
+	h.lost = append(h.lost, lost)
+}
+
+// tellLost sends the apology to a player of a lost game, once.
+func (h *Hub) tellLost(c *Client) {
+	now := time.Now()
+	h.lost = slices.DeleteFunc(h.lost, func(l lostGame) bool { return now.After(l.until) || len(l.tokens) == 0 })
+	for i := range h.lost {
+		l := &h.lost[i]
+		if j := slices.Index(l.tokens, c.token); j >= 0 {
+			l.tokens = slices.Delete(l.tokens, j, j+1)
+			c.send(protocol.TypeNotice, 0, protocol.Notice{Kind: protocol.NoticeLost, Game: l.game})
+		}
+	}
+}
+
+// tellEngine tells a returning player, once, that the game went on
+// with a newer engine.
+func (r *Room) tellEngine(c *Client) {
+	if r.notice == "" || c.seat < 0 || r.noticed[c.seat] {
+		return
+	}
+	r.noticed[c.seat] = true
+	c.send(protocol.TypeNotice, 0, protocol.Notice{Kind: r.notice, Game: r.recInfo.game})
 }
 
 // forgetKept deletes the room's restart file once it runs again.

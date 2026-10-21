@@ -44,7 +44,7 @@ Use option 1.
    2. Kinds: `table`, `setup`, `game`.
    3. Seats keep name, token, kicked, dice.
    4. A table keeps its password; the file is deleted on load.
-   5. A game keeps the engine state and its checksum.
+   5. A game keeps the engine state and `engine.StateMeaning`.
 4. On start
    1. Tables and rooms come back before the hub takes requests.
    2. Game numbers go on after the highest kept one.
@@ -56,9 +56,18 @@ Use option 1.
 5. A game the new server cannot go on with
    1. It ends; its record gets `end` with finished false.
    2. Its file is renamed to `.fsrestart.lost` for the operator.
+   3. Its players get `notice` `game_lost` once, within 30 minutes.
 6. The protocol version stays.
    1. `restarting` and `notice` are new messages.
    2. An older app ignores them.
+7. Another engine version (`engine.Resume`)
+   1. Load the state, then save it again.
+   2. The bytes must be equal; the same idea as the step checksum.
+   3. A renamed, removed, or retyped field fails.
+   4. A new field fails unless it has `omitempty` (`omitzero` for a struct).
+   5. `StateMeaning` must match; raise it when a field changes meaning.
+   6. A test lists every field without `omitempty`; new ones must not join.
+   7. A game that goes on: each player gets `notice` `engine_updated` once.
 
 ## Consequences
 

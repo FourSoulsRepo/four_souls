@@ -151,6 +151,8 @@ type Hub struct {
 	name string
 	// restart is the folder for restart files (N-20); "" keeps nothing.
 	restart string
+	// lost are the games that could not go on after a restart (N-20).
+	lost []lostGame
 }
 
 // NewHub makes a lobby with the card sets the engine knows.
@@ -310,6 +312,7 @@ func (h *Hub) hello(c *Client, env protocol.Envelope) {
 	welcome.Token = c.token
 	c.send(protocol.TypeWelcome, env.ID, welcome)
 	c.send(protocol.TypeGames, 0, h.list())
+	h.tellLost(c)
 }
 
 func (h *Hub) tableSeat(token string) (*table, int) {

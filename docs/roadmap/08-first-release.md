@@ -281,17 +281,17 @@ Ideas: B-03 – B-05, L-03, V-10, V-11, DO-01, V-14, A-16, N-13, N-14, V-19, N-1
    1. Go test: stop, start on the same folder, rejoin by token.
    2. The state checksum is the same after the restart.
 
-### [ ] 8.23 Games from another engine version
+### [x] 8.23 Games from another engine version
 
 1. Goal: a newer engine goes on with every game it can read (N-20).
 2. Tasks:
    1. Same engine version: the game goes on silently.
-   2. Other version: load, then compare the state checksum.
-   3. Equal checksum and meaning number: the game goes on.
+   2. Other version: load, save again; the bytes must be equal.
+   3. Equal bytes and meaning number: the game goes on.
    4. Its players see "The engine was updated; cards may behave differently."
    5. Else the game ends unfinished; the record gets `end`.
    6. Its players see "Sorry, the server was updated; please start a new game."
-   7. The server logs why; the handoff file stays on disk.
+   7. The server logs why; the restart file stays, renamed `.lost`.
    8. The ended table answers its tokens with that apology for 30 minutes.
    9. Meaning number: a constant in the engine, raised by hand.
    10. Raise it when a field keeps its name but changes meaning.

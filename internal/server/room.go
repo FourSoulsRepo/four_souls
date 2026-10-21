@@ -90,6 +90,8 @@ type Room struct {
 	born      time.Time    // when the game left the lobby
 	kept      *restartFile // the restart file this room continues, if any
 	setupWait bool         // kept bans and picks start over once all are back
+	notice    string       // told to each returning player once (N-20)
+	noticed   []bool       // by seat
 }
 
 // NewRoom prepares a game for seated players; it starts in Run. The
@@ -221,6 +223,9 @@ func (r *Room) attach(c *Client, token, dice string) {
 	r.seats[i].client, r.seats[i].dice = c, dice
 	c.seat = i
 	r.clients = append(r.clients, c)
+	if r.kept != nil {
+		r.tellEngine(c)
+	}
 	if r.setupWait && r.everyoneBack() {
 		r.setupWait = false
 		r.beginSetup()

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -283,5 +284,144 @@ func TestNoKeepingWithoutTheSetting(t *testing.T) {
 	}
 	if _, err := os.Stat(filepath.Join(cfg.Saves, restartFolder)); !os.IsNotExist(err) {
 		t.Errorf("restart folder: %v, want none", err)
+	}
+}
+
+// stoppedGame starts a game of two bots, plays a few steps, and stops the
+// server; it returns the bots and the game's restart file.
+func stoppedGame(t *testing.T, dir string) ([]*bot, string) {
+	t.Helper()
+	srv := startKeeping(t, dir)
+	bots := seatTwo(t, "ws://"+srv.Addr()+"/ws", nil)
+	for _, b := range bots {
+		b.send(protocol.TypeReady, protocol.Ready{Ready: true})
+	}
+	step := 0
+	for tries := 0; step < 5 && tries < 20000; tries++ {
+		for _, b := range bots {
+			e, ok := b.read(2 * time.Millisecond)
+			if !ok || e.Type != protocol.TypeUpdate {
+				continue
+			}
+			var u protocol.Update
+			if err := e.Unpack(&u); err != nil {
+				t.Fatal(err)
+			}
+			step = max(step, u.Step)
+			b.act(u)
+		}
+	}
+	if err := srv.Shutdown(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	files, err := filepath.Glob(filepath.Join(dir, "saves", restartFolder, "*"+restartExt))
+	if err != nil || len(files) != 1 {
+		t.Fatalf("restart files %v, %v; want one", files, err)
+	}
+	return bots, files[0]
+}
+
+// editRestart changes a restart file as an older engine would have
+// written it.
+func editRestart(t *testing.T, path string, edit func([]byte) []byte) {
+	t.Helper()
+	data, err := os.ReadFile(path) //nolint:gosec // test
+	if err != nil {
+		t.Fatal(err)
+	}
+	changed := edit(data)
+	if string(changed) == string(data) {
+		t.Fatal("the edit changed nothing")
+	}
+	if err := os.WriteFile(path, changed, 0o600); err != nil {
+		t.Fatal(err)
+	}
+}
+
+// reconnect points the bots at a new server and says hello again.
+func reconnect(srv *Server, bots ...*bot) {
+	for _, b := range bots {
+		_ = b.ws.Close() //nolint:errcheck // test
+		b.url = "ws://" + srv.Addr() + "/ws"
+		b.connect()
+	}
+}
+
+// TestRestartNewerEngine: a game kept by another engine version that
+// reads back exactly goes on; each player is told once (8.23).
+func TestRestartNewerEngine(t *testing.T) {
+	dir := t.TempDir()
+	bots, path := stoppedGame(t, dir)
+	editRestart(t, path, func(data []byte) []byte {
+		var f map[string]json.RawMessage
+		if err := json.Unmarshal(data, &f); err != nil {
+			t.Fatal(err)
+		}
+		f["engine"] = json.RawMessage(`"0.0.1"`)
+		out, err := json.Marshal(f)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return out
+	})
+	reconnect(startKeeping(t, dir), bots...)
+	for _, b := range bots {
+		var n protocol.Notice
+		b.expect(protocol.TypeNotice, &n)
+		if n.Kind != protocol.NoticeEngine {
+			t.Errorf("%s: notice %q, want %q", b.name, n.Kind, protocol.NoticeEngine)
+		}
+		b.untilBack()
+	}
+}
+
+// TestRestartLostGame: a game whose state the new engine reads back
+// differently ends; its players get an apology, its record its end, and
+// the operator keeps the file (8.23).
+func TestRestartLostGame(t *testing.T) {
+	dir := t.TempDir()
+	bots, path := stoppedGame(t, dir)
+	editRestart(t, path, func(data []byte) []byte {
+		return []byte(strings.Replace(string(data), `"max_hand":`, `"hand_limit":`, 1)) // a renamed field
+	})
+	srv := startKeeping(t, dir)
+	reconnect(srv, bots...)
+	for _, b := range bots {
+		var n protocol.Notice
+		b.expect(protocol.TypeNotice, &n)
+		if n.Kind != protocol.NoticeLost || n.Game == "" {
+			t.Errorf("%s: notice %+v, want %q", b.name, n, protocol.NoticeLost)
+		}
+	}
+	if _, err := os.Stat(path + lostExt); err != nil {
+		t.Errorf("the lost game's file: %v", err)
+	}
+	// Told once: a second hello hears nothing more.
+	reconnect(srv, bots[0])
+	bots[0].send(protocol.TypeList, struct{}{})
+	var games protocol.Games
+	bots[0].expect(protocol.TypeGames, &games)
+	if len(games.Games) != 0 {
+		t.Errorf("games %+v, want none", games.Games)
+	}
+	for {
+		e, ok := bots[0].read(200 * time.Millisecond)
+		if !ok {
+			break
+		}
+		if e.Type == protocol.TypeNotice {
+			t.Error("the apology came twice")
+		}
+	}
+	files, err := filepath.Glob(filepath.Join(dir, "records", "*"+record.Ext))
+	if err != nil || len(files) != 1 {
+		t.Fatalf("records %v, %v", files, err)
+	}
+	rec, err := record.ReadFile(files[0])
+	if err != nil {
+		t.Fatal(err)
+	}
+	if rec.End == nil || rec.End.Finished {
+		t.Errorf("end %+v, want unfinished", rec.End)
 	}
 }
