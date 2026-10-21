@@ -1222,7 +1222,7 @@ Totals by system (51 items):
 7. Owner notes (2026-10-20)
    1. Owner marks 19.37 solved.
 
-### [ ] 19.38 e2e: game starts time out again in a full run
+### [x] 19.38 e2e: game starts time out again in a full run
 
 1. Goal: a full `make e2e` passes on the first run again.
 2. Report (agent, 2026-10-20)
@@ -1283,6 +1283,8 @@ Totals by system (51 items):
    11. 5 workers: 3.6 – 3.9 min, 3 of 4 clean (19.49, 19.50).
    12. 6 workers: 3.4 min, 1 of 1; 8 workers: 2.9 min, failed (19.14).
    13. Workers stay 3 until those items are fixed; then try 5.
+7. Owner notes (2026-10-21)
+   1. Owner marks 19.38 solved.
 
 ### [x] 19.39 Many dice show as one thrown die
 
@@ -1556,7 +1558,7 @@ Totals by system (51 items):
 7. Owner notes (2026-10-21)
    1. Owner marks 19.47 solved.
 
-### [ ] 19.48 e2e: the layers arrow test loses the other's arrow
+### [x] 19.48 e2e: the layers arrow test loses the other's arrow
 
 1. Goal: the 15.36 layers test keeps the other player's arrow.
 2. Report (agent, 2026-10-21)
@@ -1582,6 +1584,8 @@ Totals by system (51 items):
    1. `noPresence` in `layers.spec.ts`, through `startGame`'s `open`.
    2. 30 repeats per browser: 60 of 60 passed; before, 3 of 30 failed.
    3. Test only; the app is unchanged; no screenshots.
+7. Owner notes (2026-10-21)
+   1. Owner marks 19.48 solved.
 
 ### [ ] 19.49 e2e: a Settings click in the main menu is lost
 
