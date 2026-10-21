@@ -1480,7 +1480,7 @@ Totals by system (47 items):
 7. Owner notes (2026-10-21)
    1. Owner marks 19.46 solved.
 
-### [ ] 19.47 Windows file details miss the release version
+### [x] 19.47 Windows file details miss the release version
 
 1. Goal: macOS and Windows show the git tag's version.
 2. Report (owner, 2026-10-21)
@@ -1508,3 +1508,5 @@ Totals by system (47 items):
    5. It fails without the fix: `product_version` and `FileVersion` empty.
    6. Build action comment and `Releases.md` now say `-test` gives 1.2.3.
    7. Release files only; no screen change, no screenshots.
+7. Owner notes (2026-10-21)
+   1. Owner marks 19.47 solved.
