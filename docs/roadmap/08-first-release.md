@@ -339,7 +339,7 @@ Ideas: B-03 – B-05, L-03, V-10, V-11, DO-01, V-14, A-16, N-13, N-14, V-19, N-1
 3. Done when:
    1. Go tests with a fake clock for both limits.
 
-### [ ] 8.26 Restart docs for server admins
+### [x] 8.26 Restart docs for server admins
 
 1. Goal: admins know an update keeps the games (N-20).
 2. Tasks:
@@ -348,4 +348,4 @@ Ideas: B-03 – B-05, L-03, V-10, V-11, DO-01, V-14, A-16, N-13, N-14, V-19, N-1
    3. Saves folder must stay on disk between restarts.
    4. Docker: `stop_grace_period` is enough for the handoff.
 3. Done when:
-   1. A compose update was run once mid-game.
+   1. A real server was stopped and started mid-game, without Docker (owner's choice).
