@@ -20,6 +20,8 @@ services:
       FOUR_SOULS_NAME: ${FOUR_SOULS_NAME:-}
       FOUR_SOULS_RETENTION: ${FOUR_SOULS_RETENTION:-}
       FOUR_SOULS_PRESENCE: ${FOUR_SOULS_PRESENCE:-}
+      FOUR_SOULS_EMPTY_MINUTES: ${FOUR_SOULS_EMPTY_MINUTES:-}
+      FOUR_SOULS_GAME_HOURS: ${FOUR_SOULS_GAME_HOURS:-}
     volumes:
       - data:/data
     # Only Caddy reaches it. To let players also join without HTTPS
@@ -32,7 +34,8 @@ services:
       timeout: 5s
       start_period: 10s
       retries: 3
-    # The server closes every game within 10 seconds of SIGTERM.
+    # On SIGTERM the server keeps its games in /data within a second;
+    # the next start goes on with them (N-20).
     stop_grace_period: 15s
 
   caddy:

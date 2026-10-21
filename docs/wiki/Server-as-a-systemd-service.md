@@ -73,4 +73,4 @@ systemctl restart four-souls
 journalctl -u four-souls -n 5 | grep app   # the new version shows at start
 ```
 
-Restarting ends the running games; their records stay, marked unfinished.
+Restarting keeps the running games: players see a short "Reconnecting…" and play on (see Updating on [Dedicated server on a VPS](Dedicated-server-on-a-VPS)). The games wait in `/var/lib/four-souls/saves/restart/` while the server is down.

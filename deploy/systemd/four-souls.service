@@ -18,7 +18,8 @@ Environment=FOUR_SOULS_SAVES=/var/lib/four-souls/saves
 EnvironmentFile=-/etc/four-souls.env
 ExecStart=/usr/local/bin/four_souls_server
 Restart=on-failure
-# The server closes every game within 10 seconds of SIGTERM.
+# On SIGTERM the server keeps its games in the saves folder within a
+# second; the next start goes on with them (N-20).
 TimeoutStopSec=15
 NoNewPrivileges=true
 ProtectSystem=strict

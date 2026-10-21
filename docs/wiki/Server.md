@@ -25,6 +25,8 @@ WebSocket (ws.go) ──Conn──▶ Client ──▶ Hub (lobby goroutine)
 5. Disconnects pause the game; a vote can kick; a token brings a player back. A finished game never takes a token back: the hello goes to the lobby, so the player can start a new game (19.32).
 6. The host may save: the game stops and can be loaded again from the lobby.
 7. At the end the record is closed and its players may download it.
+8. A dedicated server that stops keeps every table and game in `<saves>/restart/`; the next start brings them back (`restart.go`, ADR 019). A game from another engine must load and save back to the same bytes (`engine.Resume`); else it ends and its players hear why when they return.
+9. Idle limits end a game nobody is connected to, or one past its longest time (`limits.go`, 8.25). Each room checks once a minute on the hub's clock; tests pass a fake one.
 
 ## Automatic answers
 

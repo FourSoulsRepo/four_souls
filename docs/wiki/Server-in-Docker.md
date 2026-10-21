@@ -31,7 +31,7 @@ docker logs -f four-souls         # its output
 * Settings are the `FOUR_SOULS_*` variables of the Options table, each with its own `-e`. Leave `FOUR_SOULS_RECORDS`, `FOUR_SOULS_SAVES` and `FOUR_SOULS_PORT` as they are; change the outside port with `-p 5000:4774` instead.
 * The server runs as the user `four-souls`, not root.
 * The healthcheck asks `/healthz` every 30 seconds; `docker ps` and `docker inspect` show the result. Docker does not restart an unhealthy container by itself; `--restart unless-stopped` restarts it when it exits.
-* `docker stop four-souls` closes every game cleanly.
+* `docker stop four-souls` keeps every game in the volume; the next container goes on with them (N-20).
 
 ## Updating
 
@@ -48,6 +48,8 @@ docker run -d --name four-souls --restart unless-stopped \
 docker logs four-souls | grep '^app'   # the new version
 docker image prune -f                  # removes the old image
 ```
+
+Replacing the container keeps the running games, as long as the new one gets the same volume; players see a short "Reconnecting…" and play on (see Updating on [Dedicated server on a VPS](Dedicated-server-on-a-VPS)).
 
 To also pick up a newer Alpine base after a new Dockerfile, download the Dockerfile again first (step 1); it pins the Alpine version.
 

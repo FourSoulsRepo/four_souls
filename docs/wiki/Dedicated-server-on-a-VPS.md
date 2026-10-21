@@ -57,17 +57,29 @@ Every option is a flag, an ENV variable, or a value in a JSON config file. ENV o
 | `-saves` | `FOUR_SOULS_SAVES` | `saves` | where saved games wait to be continued (N-11) |
 | `-presence` | `FOUR_SOULS_PRESENCE` | true | show others where a player aims and points; `false` saves CPU and bandwidth |
 | `-name` | `FOUR_SOULS_NAME` | none | the server's name; players see it instead of the address, and records keep it (up to 40 characters) |
+| `-empty_minutes` | `FOUR_SOULS_EMPTY_MINUTES` | 30 | end a game nobody is connected to for this many minutes; 0 never (N-20) |
+| `-game_hours` | `FOUR_SOULS_GAME_HOURS` | 24 | end a game this many hours after it started, even while played; 0 never (N-20) |
 | `-config` | `FOUR_SOULS_CONFIG` | none | a JSON file with the same settings |
 
 ```json
-{"port": 4774, "records": "/var/lib/four-souls/records", "retention": 30, "saves": "/var/lib/four-souls/saves", "presence": true, "name": "Basement"}
+{"port": 4774, "records": "/var/lib/four-souls/records", "retention": 30, "saves": "/var/lib/four-souls/saves", "presence": true, "name": "Basement", "empty_minutes": 30, "game_hours": 24}
 ```
 
 `GET /healthz` answers `ok` while the server runs; the Docker setups use it as their healthcheck.
 
 ## Updating
 
-When the game gets a new release, players update their apps and you update the server; each setup page says how. Stopping the server ends the running games; their records stay in the records folder, marked unfinished (ADR 007), and saved games stay too.
+When the game gets a new release, players update their apps and you update the server; each setup page says how.
+
+An update or a restart keeps the games (N-20, ADR 019). On stop the server tells the players it restarts and writes every table and game to `restart/` in the saves folder; the next start loads them, and the players' apps reconnect by themselves. Players see a short "Reconnecting…" note; a game goes on where it stopped once everyone is back.
+
+* **Keep the saves folder** between the old and the new server: the same folder, or the same Docker volume. Without it the games are gone.
+* **Same rules engine:** the games go on as if nothing happened.
+* **Newer rules engine:** a game goes on if the new server reads it back exactly; its players are told that cards may now behave differently. A game it cannot read ends; its players get an apology, its record ends unfinished, and its file stays as `restart/<game>.fsrestart.lost` (the log says why).
+* **Newer protocol:** players must update their apps before they can come back; the release notes say so.
+* **A crash or `kill -9`** writes nothing: those games end, as before.
+
+Games nobody plays do not live forever: one with no player connected for `empty_minutes` ends, and every game ends `game_hours` after it started. A server restart's downtime counts toward the first.
 
 ## Safety
 

@@ -30,6 +30,8 @@ DOMAIN=games.example.com
 FOUR_SOULS_NAME=Basement
 FOUR_SOULS_RETENTION=
 FOUR_SOULS_PRESENCE=
+FOUR_SOULS_EMPTY_MINUTES=
+FOUR_SOULS_GAME_HOURS=
 ```
 
 Another `FOUR_SOULS_*` setting from the Options table goes into `.env` and into the `environment` list of `server` in `docker-compose.yml`.
@@ -56,6 +58,8 @@ docker compose up -d --build   # builds the newest release, if any, and replaces
 docker compose logs --no-log-prefix server | grep '^app'   # the new version
 docker image prune -f          # removes the old image
 ```
+
+The running games go on: the `data` volume keeps them over the replacement, and players see a short "Reconnecting…" (see Updating on [Dedicated server on a VPS](Dedicated-server-on-a-VPS)).
 
 As in [Server in Docker](Server-in-Docker), the build always asks for the latest server and downloads only when a new release is out. To update Caddy or the Alpine base, download the three files again (not `.env`, which holds your settings), then run `docker compose pull caddy` and the same commands.
 
