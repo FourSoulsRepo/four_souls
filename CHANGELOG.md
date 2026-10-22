@@ -6,6 +6,10 @@ Rules engine versions are in each release's notes.
 
 ## Unreleased
 
+## 0.2.0 - 2026-10-22
+
+The first public release.
+
 - If the app closed during a game, the main menu offers "Rejoin" while that game is still on. Leaving a game on purpose, or its end, forgets it.
 - Online: type a server's address or pick it from Recent; it no longer lists LAN games. Back and Esc go one screen up.
 - LAN: Host a game sits on top; games on your network show up by themselves, without "Search again". A game in progress stays listed, and if your app closed during it, Rejoin takes your seat back. The address field remembers the last address you typed.
@@ -52,6 +56,8 @@ Rules engine versions are in each release's notes.
 - Dedicated server with HTTPS: `deploy/docker/docker-compose.yml` runs it behind Caddy, which gets the certificate by itself; players type only the domain.
 - Dedicated server guides: pick a systemd service, Docker, or Docker Compose with Caddy; each says how to update.
 - Each release also has "for-poor" archives: the game without card images, with cards shown as text.
+- Network protocol 4: older apps can't join newer games, and the other way round.
+- Rules engine 0.3.0: match records and saved games of older versions can't be replayed or loaded.
 
 ## 0.1.1 - 2026-10-19
 
