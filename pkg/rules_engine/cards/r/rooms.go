@@ -110,6 +110,14 @@ func diceRoom(text string, effects ...engine.Effect) []engine.Ability {
 	}
 }
 
+// diceRoomTakes is diceRoom for a room that takes the players' hands
+// (Ability.Takes, 15.85).
+func diceRoomTakes(text string, effects ...engine.Effect) []engine.Ability {
+	abs := diceRoom(text, effects...)
+	abs[0].Takes = engine.TakesOthers
+	return abs
+}
+
 // rerollAll rerolls each of the items; each reroll is its own gain
 // (S-DIS: Damocles, Dice Room).
 func rerollAll(g *engine.Game, ids []engine.ObjectID) {

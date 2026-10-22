@@ -1,6 +1,7 @@
 package rulesengine
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -103,4 +104,31 @@ func Load(data []byte, sets ...CardSet) (*Game, error) {
 	}
 	g.cards = idx
 	return &g, nil
+}
+
+// ErrIncompatible means a game saved by another engine version does not
+// read back exactly here; it cannot go on (N-20).
+var ErrIncompatible = errors.New("load: the saved game does not fit this engine")
+
+// Resume loads a game saved by any engine version, for a server restart
+// (N-20). The game must write back to the same bytes: a renamed,
+// removed, or retyped field fails, and so does a new field the old game
+// lacks, unless it has omitempty (omitzero for a struct). meaning is
+// the saving engine's StateMeaning.
+func Resume(data []byte, meaning int, sets ...CardSet) (*Game, error) {
+	if meaning != StateMeaning {
+		return nil, fmt.Errorf("%w: state meaning %d, this engine %d", ErrIncompatible, meaning, StateMeaning)
+	}
+	g, err := Load(data, sets...)
+	if err != nil {
+		return nil, err
+	}
+	again, err := g.Save()
+	if err != nil {
+		return nil, err
+	}
+	if !bytes.Equal(again, data) {
+		return nil, fmt.Errorf("%w: it writes back differently", ErrIncompatible)
+	}
+	return g, nil
 }

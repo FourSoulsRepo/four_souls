@@ -71,8 +71,10 @@ test('playable hand cards glow green; a hovered one rises large (15.27)', async 
   await shot(active, 'hand-hover');
   const c = await box(card);
   const z = await box(zoom);
-  expect(z.y + z.height).toBeGreaterThan(720 - 40);
-  expect(z.y + z.height).toBeLessThanOrEqual(720);
+  // The zoom's body: an unusable card's reason stands under it (15.29).
+  const body = await box(active.getByTestId('card-zoom').locator('.card-zoom-body'));
+  expect(body.y + body.height).toBeGreaterThan(720 - 40);
+  expect(body.y + body.height).toBeLessThanOrEqual(720);
   expect(z.x).toBeLessThan(c.x + c.width / 2);
   expect(z.x + z.width).toBeGreaterThan(c.x + c.width / 2);
 
@@ -164,4 +166,25 @@ test('every card of a 12-card hand can be pointed at (19.15)', async ({ browser 
   for (const [i, a] of areas.entries()) {
     expect(a, `card ${String(i)}`).toBeGreaterThanOrEqual(30 * 50);
   }
+});
+
+// A zoom closes when the pointer leaves its card, even when the part
+// under the pointer was redrawn meanwhile: a card whose image failed to
+// load swaps it for a drawn face, and no leave event came (19.50).
+test('a zoom closes when the pointer leaves a card whose face was redrawn (19.50)', async ({ page }) => {
+  await page.goto(gallery);
+  const card = page.getByLabel('Table size').getByRole('img', { name: 'Big Spider' });
+  await card.hover();
+  const zoom = page.getByTestId('card-zoom');
+  await expect(zoom).toBeVisible();
+  // The deepest hovered node inside the card goes, as a redraw does.
+  await card.evaluate((el) => {
+    const hovered = [...el.querySelectorAll(':hover')].at(-1);
+    if (!hovered) {
+      throw new Error('nothing hovered in the card');
+    }
+    hovered.remove();
+  });
+  await page.mouse.move(2, 2);
+  await expect(zoom).toHaveCount(0);
 });

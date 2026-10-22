@@ -13,6 +13,7 @@ var finger = engine.CardDef{
 		{
 			Kind:    engine.Triggered,
 			Text:    "Each time a player rolls a 2, you may swap a non-eternal item you control with a non-eternal item they control.",
+			Takes:   engine.TakesEventPlayer,
 			Trigger: engine.OnRollOf(2),
 			Effects: []engine.Effect{engine.Ask(fingerSwap, fingerMine, fingerTheirs)},
 		},

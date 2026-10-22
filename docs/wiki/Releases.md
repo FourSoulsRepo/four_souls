@@ -27,13 +27,20 @@ The version shown in the app's main menu is the tag without the `v`.
 
 | Archive | Contents |
 |---|---|
-| `four-souls-<version>-windows-amd64.zip`, `-windows-arm64.zip` | `four_souls.exe`, `four_souls_server.exe` |
-| `four-souls-<version>-macos-universal.zip` | `four_souls.app`, `four_souls_server` (Intel and Apple silicon) |
-| `four-souls-<version>-linux-amd64.tar.gz`, `-linux-arm64.tar.gz` | `four_souls`, `four_souls_server` |
+| `four-souls-<version>-windows-amd64.zip`, `-windows-arm64.zip` | `FourSouls.exe` |
+| `four-souls-<version>-macos-universal.zip` | `FourSouls.app` (Intel and Apple silicon) |
+| `four-souls-<version>-linux-amd64.tar.gz`, `-linux-arm64.tar.gz` | `FourSouls` |
+| `four-souls-server-windows-amd64.zip`, `-windows-arm64.zip` | `four_souls_server.exe` |
+| `four-souls-server-macos-universal.zip` | `four_souls_server` (Intel and Apple silicon) |
+| `four-souls-server-linux-amd64.tar.gz`, `-linux-arm64.tar.gz` | `four_souls_server`, statically linked |
 
-Every archive also has `README.txt` (from `release/README.txt`), `LICENSE` and `NOTICE`.
+Each platform also gets a `for-poor` archive, e.g. `four-souls-<version>-for-poor-linux-amd64.tar.gz`: the same game without card images, just for fun. Cards, backs, dice and mats then show as text and plain colors.
 
-The app is built with `-tags "embed cardimages"`; the server only with `embed` (it needs card text, not images). Linux builds use WebKitGTK 4.1 (`webkit2_41`), so players need `libwebkit2gtk-4.1` (Ubuntu 22.04 and later).
+Every archive also has `README.txt` (from `release/README.txt`, or `release/SERVER.txt` for the server), `LICENSE` and `NOTICE`.
+
+Server archives carry no version in their names (8.17), so `https://github.com/FourSoulsRepo/four_souls/releases/latest/download/four-souls-server-linux-amd64.tar.gz` always gets the newest server; the Dockerfile relies on it. "Latest" skips drafts and pre-releases. App archives keep their versions.
+
+The app is built with `-tags "embed cardimages"` after `go generate ./pkg/card_db/images` (`for-poor`: `embed` only); the server only with `embed` (it needs card text, not images) and `CGO_ENABLED=0`, so its Linux binaries run on any distribution, Alpine included. Linux builds use WebKitGTK 4.1 (`webkit2_41`), so players need `libwebkit2gtk-4.1` (Ubuntu 22.04 and later).
 
 ## App identity
 
@@ -41,7 +48,7 @@ Every release has the same identity (B-03), so the OS treats it as the same app:
 
 * Bundle ID `io.github.foursoulsrepo.foursouls` on macOS (`build/darwin/Info.plist`) and in the Windows manifest (`build/windows/wails.exe.manifest`).
 * Product name "Four Souls", company "FourSoulsRepo" (`wails.json`, `info`); Windows shows them in the file's details.
-* The build stamps the release version into the product version; Windows takes numbers only, so trial and CI builds show 0.0.0.
+* The build stamps the release version into `wails.json` `info.productVersion`; Wails puts it into `Info.plist` (`CFBundleVersion`, `CFBundleShortVersionString`) and the Windows file and product versions (`build/windows/info.json`). These take numbers only: a trial tag drops its suffix (`v1.2.3-test` shows 1.2.3), and CI builds show 0.0.0.
 * No code signing; see `README.txt` for the first start.
 
 `identity_test.go` fails if any of these drift.
@@ -52,4 +59,12 @@ A release needs the private card images. The workflow checks them out with `.git
 
 ## Shared build steps
 
-`.github/actions/build` builds the app and the server for one target; CI (`ci.yml`, job `app`) and the release workflow both use it.
+`.github/actions/build` builds the app for one target; CI (`ci.yml`, job `app`) and the release workflow both use it.
+
+`release/server.sh <version> <dir>` builds and packs every server archive on one macOS runner (it needs `lipo` for the universal binary); CI (job `server`), the release workflow and `make server-archives` use it. CI also checks that the Linux servers are statically linked.
+
+## Server setups
+
+`deploy/` holds the operator setups (ADR 018): the systemd unit, the Dockerfile, and compose with Caddy. The Dockerfile downloads the server of the latest release, so a release needs no change there. A release must be published as a full release, not a pre-release, or `releases/latest` skips it.
+
+The base images are pinned and bumped by hand: `ARG ALPINE=` in `deploy/docker/Dockerfile` and `image: caddy:…` in `deploy/docker/docker-compose.yml`. Pick a tag at least two weeks old, then check both files once: `docker build` and `docker compose up -d --build` with `DOMAIN=localhost` in `.env` (`curl -k https://localhost/healthz` answers `ok`). Operators get the new pins by downloading the files again, as their wiki pages say.

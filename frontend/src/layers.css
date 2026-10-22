@@ -1,0 +1,23 @@
+/* Layers (19.26, ADR 015): every z-index on the window, top first. Only
+   this file holds the numbers; the rest use var(--z-<id>). The order
+   and the reasons are docs/wiki/Layers.md; the test "layer inventory"
+   (layers.test.ts) fails when the two disagree. */
+
+:root {
+  --z-aim-why: 140;
+  --z-aim: 130;
+  --z-trail: 120;
+  --z-effects: 110;
+  --z-zoom: 100;
+  --z-overlay: 90;
+  --z-drag: 80;
+  --z-throw: 70;
+  --z-menu: 60;
+  --z-look: 50;
+  --z-menu-button: 45;
+  --z-choice: 40;
+  --z-presence: 35;
+  --z-hand: 30;
+  --z-action-bar: 10;
+  --z-sky: -1;
+}

@@ -30,6 +30,23 @@
   * Joining that server again sends the token; the player is back in their seat.
   * The welcome names the seat, so the app knows which player it is.
 * **2e. A kicked seat rolls:** the server throws its die at once (15.60).
+* **3c. The game is over:** the token takes the player to the lobby, not back (19.32).
+  * The player keeps the token; the record download still works.
+  * A new game with that token is the one a later hello comes back to.
+* **1c. The app reconnects by itself (N-20):** at once, then after 1, 2, 4, 8, then every 10 seconds.
+  * A small "Reconnecting…" badge shows; the table stays in view.
+  * The "Connection lost" dialog replaces it after 30 seconds.
+  * A failed retry's error shows only in that dialog.
+* **1d. The menu offers Rejoin (15.99):** a restarted app asks the saved seat's server.
+  * The seat is still on: "Rejoin: Ann's game · LAN" (or Online) in the top corner.
+  * One click takes the seat back, by the path it was joined by.
+  * The menu never waits for the answer; nothing in it moves.
+  * The seat is gone: no button; the app forgets the seat.
+  * No answer: no button; the seat is kept for the next check.
+* **1e. The seat is forgotten (15.99):** when the game ends, or the player leaves on purpose.
+  * **Leave game**, **Leave** in "Connection lost", leaving a table.
+  * A crash or a closed window keeps it.
+  * A crashed LAN host has nothing to rejoin; it continues from a save (UC-09).
 
 ## Postconditions
 

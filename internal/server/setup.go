@@ -247,13 +247,26 @@ func (r *Room) pick(c *Client, env protocol.Envelope) {
 func (r *Room) play(characters []engine.CardRef) {
 	s := r.setup
 	s.Characters = slices.Clone(characters)
-	g, _, err := engine.NewGame(s)
+	g, events, err := engine.NewGame(s)
 	if err != nil {
 		panic(fmt.Sprintf("server: the checked setup failed: %v", err))
 	}
 	r.game, r.match = g, nil
 	r.openRecord(s)
-	r.after(nil, false) // the start is step 0
+	r.after(startEvents(events), false) // the start is step 0
+}
+
+// startEvents are the setup events clients get with the first view: who
+// goes first without a roll (Cain, 15.43). The rest of the setup is in
+// the view already.
+func startEvents(events []engine.Event) []engine.Event {
+	var out []engine.Event
+	for _, e := range events {
+		if e.Kind == engine.EvFirstPlayer || e.Kind == engine.EvGameStarted {
+			out = append(out, e)
+		}
+	}
+	return out
 }
 
 // broadcastSetup sends every client the setup state.

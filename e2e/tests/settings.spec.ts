@@ -1,8 +1,35 @@
-// Settings screen (7.10): ST-01, ST-02, ST-03, ST-06.
+// Settings screen (7.10): ST-01, ST-03, ST-06, ST-07, V-46.
 import { expect, test } from './fixtures';
 import { startGame } from './game';
 import { appURL } from './server';
 import { realAssets, shot } from './shot';
+
+// One dark theme (15.80, ST-07): nothing to pick, nothing on the page.
+test('there is no theme to pick', async ({ page }) => {
+  await page.goto('/?fake&nosplash');
+  await page.getByRole('button', { name: 'Settings' }).click();
+  await expect(page.getByRole('combobox', { name: 'Game mat' })).toBeVisible();
+  await expect(page.getByLabel('Theme')).toHaveCount(0);
+  await expect(page.locator('html')).not.toHaveAttribute('data-theme');
+});
+
+// Owner review of 15.80: Animations on its own line, then the game mat
+// and the dice side by side.
+test('animations sit above the game mat and the dice', async ({ page }) => {
+  await page.goto('/?fake&nosplash');
+  await page.getByRole('button', { name: 'Settings' }).click();
+  const box = async (name: string) => {
+    const b = await page.getByRole('combobox', { name }).boundingBox();
+    if (!b) {
+      throw new Error(`no ${name} field`);
+    }
+    return b;
+  };
+  const [animations, mat, dice] = [await box('Animations'), await box('Game mat'), await box('Dice')];
+  expect(animations.y + animations.height).toBeLessThan(mat.y);
+  expect(Math.abs(mat.y - dice.y)).toBeLessThan(1);
+  expect(mat.x).toBeLessThan(dice.x);
+});
 
 test('the first start asks for a nickname, once', async ({ page }) => {
   await realAssets(page);
@@ -11,28 +38,37 @@ test('the first start asks for a nickname, once', async ({ page }) => {
   await shot(page, 'welcome');
   await page.getByLabel('Nickname').fill('Ada');
   await page.getByRole('button', { name: 'Continue' }).click();
-  await expect(page.getByRole('button', { name: 'Host a game' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Play', exact: true })).toBeVisible();
   await page.reload();
-  await expect(page.getByRole('button', { name: 'Host a game' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Play', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Settings' }).click();
   await expect(page.getByLabel('Nickname')).toHaveValue('Ada');
 });
 
-test('fullscreen, theme and mat apply at once and survive a restart', async ({ page }) => {
+test('the question before ending the turn can be turned off (V-46)', async ({ page }) => {
+  await page.goto('/?fake&nosplash');
+  await page.getByRole('button', { name: 'Settings' }).click();
+  const ask = page.getByLabel('Ask before ending the turn while plays are left');
+  await expect(ask).toBeChecked();
+  await ask.uncheck();
+  await page.getByRole('button', { name: 'Save' }).click();
+  await expect(page.getByRole('status')).toHaveText('Saved.');
+  await page.reload();
+  await page.getByRole('button', { name: 'Settings' }).click();
+  await expect(ask).not.toBeChecked();
+});
+
+test('fullscreen and mat apply at once and survive a restart', async ({ page }) => {
   await page.goto('/?fake&nosplash');
   await page.getByRole('button', { name: 'Settings' }).click();
   await page.getByLabel('Fullscreen').check();
-  await page.getByLabel('Theme').selectOption('light');
   await page.getByRole('combobox', { name: 'Game mat' }).selectOption('basement');
   await expect(page.getByLabel('Game mat preview')).toHaveClass(/mat-basement/);
   await page.getByRole('button', { name: 'Save' }).click();
   await expect(page.getByRole('status')).toHaveText('Saved.');
-  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
   expect(await page.evaluate(() => (window as unknown as { fakeFullscreen: boolean }).fakeFullscreen)).toBe(true);
-  await shot(page, 'settings-light');
 
   await page.reload();
-  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light');
   await page.getByRole('button', { name: 'Settings' }).click();
   await expect(page.getByLabel('Fullscreen')).toBeChecked();
   await expect(page.getByRole('combobox', { name: 'Game mat' })).toHaveValue('basement');
@@ -60,7 +96,7 @@ test('the mat menu lists the mat images', async ({ page }) => {
   await page.goto('/?fake&nosplash');
   await page.getByRole('button', { name: 'Settings' }).click();
   const mats = page.getByRole('combobox', { name: 'Game mat' });
-  await expect(mats.getByRole('option')).toHaveText(['Green felt', 'Basement', 'Cathedral']);
+  await expect(mats.getByRole('option')).toHaveText(['Basement', 'Cathedral']);
   await mats.selectOption('basement');
   await expect(page.getByLabel('Game mat preview')).toHaveClass(/mat-image/);
   await shot(page, 'settings-mat');
@@ -78,7 +114,9 @@ test('the first mat image is the default', async ({ page }) => {
 test('without mat images the table shows colors', async ({ browser }) => {
   for (const [query, colors] of [
     ['&nomats', 'mat-basement'],
-    ['&nomats&mat=felt', 'mat-felt'],
+    ['&nomats&mat=cathedral', 'mat-cathedral'],
+    // Green felt is gone (ST-08): a saved one is the default.
+    ['&nomats&mat=felt', 'mat-basement'],
     ['&mat=dark_room', 'mat-basement'],
   ]) {
     const page = await (await browser.newContext()).newPage();

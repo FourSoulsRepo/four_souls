@@ -25,6 +25,7 @@
    13. `e2e/`: Playwright UI tests; also makes screenshots.
    14. Wiki groups: players, server admins, developers.
    15. A new wiki page goes into one group in `Home.md` and `_Sidebar.md`.
+   16. `deploy/`: server setups: systemd, Docker, compose with Caddy (ADR 018).
 4. Commands
    1. `wails dev`: run with hot reload.
    2. `wails build`: release binary to `build/bin/`.
@@ -44,6 +45,7 @@
    16. Frontend testing rules: `docs/wiki/Frontend-tests.md`.
    17. `make internal`: play-test build with card images; see `docs/wiki/Internal-builds.md`.
    18. `make e2e-games`: whole random games, every set, 2–4 players (slow).
+   19. Before a `cardimages` build or test: `go generate ./pkg/card_db/images`.
 5. Workflow
    1. Work follows `docs/roadmap/`, one sub-step at a time.
    2. Commit after every finished sub-step.
@@ -86,6 +88,13 @@
        3. A random test logs its seed when it starts, not only on a pass.
        4. `games.spec.ts` keeps its failed records in `.cache/e2e-games/`.
        5. Never rerun to "check again" before the evidence is saved.
+   20. Window layers: one ordered list (ADR 015).
+       1. Rules and inventory: `docs/wiki/Layers.md`.
+       2. Numbers live only in `frontend/src/layers.css`, top first.
+       3. Code uses `z-index: var(--z-<id>)`, never a bare number.
+       4. Inside one element only: a number tagged `/* layer: local */`.
+       5. A new window gets a row there, with why it covers what.
+       6. Pairs that overlap get a test in `e2e/tests/layers.spec.ts`.
 6. Licenses
    1. Code is MIT (`LICENSE`).
    2. `NOTICE` lists every third-party item and its license.

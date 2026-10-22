@@ -16,3 +16,8 @@
 | [012](012-animation-ownership.md) | Animation ownership | Accepted |
 | [013](013-no-message-compression.md) | No WebSocket message compression | Accepted |
 | [014](014-dice-throw-intent.md) | Dice throw intent | Accepted |
+| [015](015-window-layers.md) | Window layers | Accepted |
+| [016](016-presence-messages.md) | Presence messages | Accepted |
+| [017](017-wss-through-a-proxy.md) | Secure WebSocket through a reverse proxy | Accepted |
+| [018](018-server-deployment.md) | Server deployment from releases | Accepted |
+| [019](019-seamless-server-restart.md) | Seamless server restart | Accepted |

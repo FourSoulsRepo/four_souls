@@ -62,6 +62,11 @@ type StackItem struct {
 	// display, while anyone may see them. Only views set them (15.22).
 	SourceCard CardRef `json:"source_card,omitempty"`
 	TargetCard CardRef `json:"target_card,omitempty"`
+
+	// Sources and Final are a thrown roll's changes and the result they
+	// give as it resolves, in a view only (15.94).
+	Sources []StatSourceView `json:"sources,omitempty"`
+	Final   int              `json:"final,omitempty"`
 }
 
 // Events about the stack.
@@ -153,11 +158,13 @@ func (g *Game) resolveTop() {
 		case g.def(it.Source).Trinket:
 			g.trinketToPlay(it.Controller, it.Source) // R-ABIL-19
 		default:
-			g.discard(it.Source, LootDeck)
+			g.discardFromStack(it)
 		}
 	case StackRoll:
 		// Continuous roll changes apply, then the result is final (R-DICE-06).
+		var changed []StatSourceView
 		if it.Controller != NoPlayer {
+			changed = g.sourceViews(g.rollParts(it.Controller, it.Attack)) // before the next roll's boosts are used
 			bonus := g.bonus(StatRoll, it.Controller, 0)
 			if it.Attack {
 				bonus += g.bonus(StatAttackRoll, it.Controller, 0)
@@ -165,12 +172,9 @@ func (g *Game) resolveTop() {
 			if it.Attack {
 				bonus += g.useNextAttackRoll(it.Controller)
 			}
-			it.Roll = min(max(it.Roll+bonus, 1), 6)
-			if (it.Roll == 2 || it.Roll == 3) && g.bonus(StatRollToOne, NoPlayer, 0) > 0 {
-				it.Roll = 1 // a replacement as the roll resolves (R-DICE-12)
-			}
+			it.Roll = g.rollResult(it.Roll, bonus)
 		}
-		re := Event{Kind: EvRollResolved, Player: it.Controller, Amount: it.Roll}
+		re := Event{Kind: EvRollResolved, Player: it.Controller, Amount: it.Roll, Sources: changed}
 		if it.Attack {
 			re.Text = "attack"
 		}
@@ -231,10 +235,12 @@ func (g *Game) roll(p PlayerID, label string) int {
 }
 
 // Throw is a roll on the stack waiting for its die to be thrown (15.59).
-// Reroll marks a throw that rolls the roll again (R-MECH-47).
+// Reroll marks a throw that rolls the roll again (R-MECH-47). First marks
+// a die of the first-player roll, which is not on the stack (15.43).
 type Throw struct {
 	StackID int  `json:"stack_id"`
 	Reroll  bool `json:"reroll,omitempty"`
+	First   bool `json:"first,omitempty"`
 }
 
 // askThrow asks the roller of a queued throw to throw. A roll that left
@@ -256,8 +262,12 @@ func (g *Game) askThrow(a Action) {
 
 // throw answers the throw prompt.
 func (g *Game) throw() {
-	t := *g.Throw
+	t, p := *g.Throw, g.Waiting.Player
 	g.Throw, g.Waiting = nil, Prompt{}
+	if t.First {
+		g.throwFirst(p)
+		return
+	}
 	g.throwDie(t)
 }
 
@@ -275,15 +285,17 @@ func (g *Game) throwDie(t Throw) {
 		text = "reroll"
 	}
 	r, p := it.Roll, it.Controller
+	var dice []int
 	if len(g.ManyDice) > 0 && g.ManyDice[0].StackID == t.StackID && g.ManyDice[0].Values == nil {
 		md := &g.ManyDice[0]
 		md.Values = []int{r}
 		for range md.Dice - 1 {
 			md.Values = append(md.Values, g.d6())
 		}
+		dice = slices.Clone(md.Values)
 		g.enqueue(Action{Kind: ActChooseDie, Player: md.Chooser, Amount: t.StackID})
 	}
-	g.emit(Event{Kind: EvDiceRolled, Player: p, Amount: r, Text: text, StackID: t.StackID})
+	g.emit(Event{Kind: EvDiceRolled, Player: p, Amount: r, Text: text, StackID: t.StackID, Dice: dice})
 }
 
 // playLoot moves a loot card from hand to the stack (R-MECH-45).
@@ -310,12 +322,14 @@ func (g *Game) givePriority(p PlayerID) {
 }
 
 // SetRoll changes a dice roll on the stack to n, between 1 and 6
-// (R-DICE-04): "change the result of a dice roll".
-func (g *Game) SetRoll(stackID, n int) {
+// (R-DICE-04): "change the result of a dice roll". Source is the card
+// that changes it, 0 for none; the client shows the change coming
+// from it (15.76).
+func (g *Game) SetRoll(stackID, n int, source ObjectID) {
 	for i := range g.Stack {
 		if it := &g.Stack[i]; it.ID == stackID && it.Kind == StackRoll {
 			it.Roll = min(max(n, 1), 6)
-			g.emit(Event{Kind: EvRollChanged, Player: it.Controller, Amount: it.Roll})
+			g.emit(Event{Kind: EvRollChanged, Player: it.Controller, Amount: it.Roll, Source: source, StackID: it.ID})
 		}
 	}
 }
@@ -349,10 +363,18 @@ func (g *Game) CancelStackItem(id int) {
 			g.enqueue(Action{Kind: ActFinishEvent, Player: NoPlayer, Object: it.Source}) // R-CARD-15
 		}
 		if it.Kind == StackLoot && g.Object(it.Source).Zone.Kind == ZoneStack {
-			g.discard(it.Source, LootDeck)
+			g.discardFromStack(it)
 		}
 		return
 	}
+}
+
+// discardFromStack puts a loot card that left the stack into the loot
+// discard. Prev is its object on the stack, so the client flies it from
+// there (15.74).
+func (g *Game) discardFromStack(it StackItem) {
+	nid := g.discard(it.Source, LootDeck)
+	g.emit(Event{Kind: EvDiscarded, Player: it.Controller, Object: nid, Card: it.Card, Prev: it.Source, Text: "stack"})
 }
 
 // EndTurnNow cancels everything that has not resolved and ends the
@@ -421,7 +443,7 @@ func (g *Game) useNextAttackRoll(p PlayerID) int {
 	total := 0
 	kept := g.Boosts[:0]
 	for _, b := range g.Boosts {
-		if b.Stat == StatNextAttackRoll && b.Object == 0 && (b.Player == p || b.Player == NoPlayer) {
+		if b.nextAttackRollOf(p) {
 			total += b.Amount
 			continue
 		}
@@ -429,6 +451,52 @@ func (g *Game) useNextAttackRoll(p PlayerID) int {
 	}
 	g.Boosts = kept
 	return total
+}
+
+// rollResult is a die of n with the continuous changes bonus, as the
+// roll resolves: 1 to 6 (R-DICE-06), and a 2 or 3 becomes a 1 while
+// Eternal D6's boost lasts, a replacement (R-DICE-12). The roll and the
+// odds a client shows (15.94) share it.
+func (g *Game) rollResult(n, bonus int) int {
+	r := min(max(n+bonus, 1), 6)
+	if (r == 2 || r == 3) && g.bonus(StatRollToOne, NoPlayer, 0) > 0 {
+		r = 1
+	}
+	return r
+}
+
+// rollParts lists what changes p's roll as it resolves: an attack roll
+// also counts attack-roll changes and the next attack roll's boosts, as
+// the resolution adds them.
+func (g *Game) rollParts(p PlayerID, attack bool) []Part {
+	parts := g.Parts(StatRoll, p, 0)
+	if !attack {
+		return parts
+	}
+	parts = append(parts, g.Parts(StatAttackRoll, p, 0)...)
+	for _, b := range g.Boosts {
+		if b.nextAttackRollOf(p) {
+			parts = append(parts, Part{Stat: StatNextAttackRoll, Source: b.Source, Amount: b.Amount, Lasts: LastsNextRoll})
+		}
+	}
+	return parts
+}
+
+// nextAttackRollOf: the boost applies to p's next attack roll.
+func (b Boost) nextAttackRollOf(p PlayerID) bool {
+	return b.Stat == StatNextAttackRoll && b.Object == 0 && (b.Player == p || b.Player == NoPlayer)
+}
+
+// nextAttackRollParts lists the boosts p's next attack roll will use;
+// anyone's go to the active player, who makes the attack rolls.
+func (g *Game) nextAttackRollParts(p PlayerID) []Part {
+	var out []Part
+	for _, b := range g.Boosts {
+		if b.nextAttackRollOf(p) && (b.Player == p || p == g.Turn.Active) {
+			out = append(out, Part{Stat: StatNextAttackRoll, Source: b.Source, Amount: b.Amount, Lasts: LastsNextRoll})
+		}
+	}
+	return out
 }
 
 // RerollWithDice rerolls a roll on the stack with several dice; chooser

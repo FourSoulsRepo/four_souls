@@ -127,6 +127,9 @@ type Object struct {
 	// (0: nobody yet); KilledOn is the attack roll, if it was combat.
 	KilledBy int `json:"killed_by,omitempty"`
 	KilledOn int `json:"killed_on,omitempty"`
+	// Chosen is a number the card's ability chose and keeps, not a
+	// counter (Crystal Ball's guess); 0 if none.
+	Chosen int `json:"chosen,omitempty"`
 	// DoubleRewards doubles a dying monster's rewards (Dinga).
 	DoubleRewards bool `json:"double_rewards,omitempty"`
 	// ShareRewards also gain a dead card's rewards (Sibling Rivalry).
@@ -182,6 +185,9 @@ type Boost struct {
 	Player PlayerID `json:"player"`
 	Object ObjectID `json:"object,omitempty"`
 	Amount int      `json:"amount"`
+	// Source is the object whose ability gave the boost, so a client can
+	// show why a stat changed (V-41); 0 in states from before 15.54.
+	Source ObjectID `json:"source,omitempty"`
 }
 
 // Counter is a counter on an object; Name is "" for a generic counter
@@ -263,6 +269,8 @@ type Game struct {
 	Choice *Choice `json:"choice,omitempty"`
 	// Throw is the roll waiting for its die to be thrown (PromptThrow).
 	Throw *Throw `json:"throw,omitempty"`
+	// FirstRoll is the first-player roll before turn 1 (15.43).
+	FirstRoll *FirstRoll `json:"first_roll,omitempty"`
 	// Activating is an ability being put on the stack (targets pending).
 	Activating *Activation `json:"activating,omitempty"`
 	// PendingTriggers wait to go on the stack (R-ABIL-14).
@@ -306,6 +314,8 @@ type Game struct {
 	// see Asking.Key).
 	AskSeq int `json:"ask_seq,omitempty"`
 	asks   map[int]askEffect
+	// maxHP is the max HP at the last checkMaxHP (R-MECH-21; not saved).
+	maxHP map[hpKey]int
 
 	cards  cardIndex
 	events []Event
@@ -349,6 +359,7 @@ func (g *Game) Clone() (*Game, error) {
 	}
 	c.cards = g.cards // definitions are not part of the saved state
 	c.asks = maps.Clone(g.asks)
+	c.maxHP = maps.Clone(g.maxHP)
 	return &c, nil
 }
 

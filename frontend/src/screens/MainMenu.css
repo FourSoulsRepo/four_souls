@@ -14,17 +14,87 @@
   font-synthesis: none;
 }
 
+/* The banner keeps the logo's aspect; short windows shrink it. */
+.menu-banner {
+  margin: 0 0 24px;
+  line-height: 0;
+}
+
+.menu-banner img {
+  width: min(526px, 80vw);
+  max-height: 40vh;
+  object-fit: contain;
+}
+
 .menu-buttons {
   display: flex;
   flex-direction: column;
   gap: 12px;
-  min-width: 240px;
+  min-width: 300px;
+}
+
+/* The menu keeps the open Play group's height; nothing shrinks to fit. */
+.menu-buttons > * {
+  flex-shrink: 0;
 }
 
 /* The paper look is in style.css; menu buttons are just bigger. */
 .menu-buttons button {
   padding: 11px 24px 9px;
   font-size: 20px;
+  white-space: nowrap;
+}
+
+/* The Play group (M-06): indented under Play. Its margins cancel the
+   gaps and the room it keeps for the buttons' shadows, so it adds
+   nothing while it grows from 0. */
+.menu-group {
+  margin: -12px -16px;
+  overflow: hidden;
+  /* Nor does it widen the menu: the buttons keep their size. */
+  contain: inline-size;
+}
+
+.menu-group-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px 16px 12px 32px;
+}
+
+/* The group's tilts start the other way round: Play leans left, LAN
+   right, and Learn to play leans with Records, never into it. */
+.menu-group-buttons button:nth-of-type(odd) {
+  rotate: 0.6deg;
+}
+
+.menu-group-buttons button:nth-of-type(even) {
+  rotate: -0.6deg;
+}
+
+/* A feature still to come (M-07). */
+.menu-buttons .soon {
+  margin-left: 10px;
+  padding: 1px 7px 0;
+  border: 2px solid var(--ink);
+  border-radius: 8px;
+  font-size: 13px;
+  vertical-align: 2px;
+  background: #f7de8f;
+}
+
+/* Rejoin (M-05): a gold button in the top corner, clear of the menu. */
+.menu-rejoin {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  min-width: 0;
+  max-width: calc(100% - 32px);
+}
+
+.menu-rejoin button {
+  background: var(--gold);
+  white-space: normal;
 }
 
 .menu-versions {

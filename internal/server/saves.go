@@ -42,8 +42,10 @@ type saveFile struct {
 }
 
 type savedSeat struct {
-	Name  string `json:"name"`
-	Token string `json:"token"`
+	Name   string `json:"name"`
+	Token  string `json:"token"`
+	Kicked bool   `json:"kicked,omitempty"` // kept over a restart (N-20)
+	Dice   string `json:"dice,omitempty"`   // kept over a restart (N-20)
 }
 
 // save writes the game to the saves folder and stops the room: only

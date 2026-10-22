@@ -51,6 +51,26 @@ export function connect(
   });
 }
 
+// connectFirst tries each URL in turn, e.g. wss:// then ws:// (8.18),
+// and resolves with the one that opened. It rejects with the last
+// error when none does.
+export async function connectFirst(
+  urls: string[],
+  onMessage: (env: Envelope) => void,
+  onClose: () => void,
+): Promise<string> {
+  let last: unknown = new Error('Could not connect to the server.');
+  for (const url of urls) {
+    try {
+      await connect(url, onMessage, onClose);
+      return url;
+    } catch (e) {
+      last = e;
+    }
+  }
+  throw last;
+}
+
 // send sends one message and returns its ID; replies carry the same ID.
 export function send(type: string, data: unknown = {}): number {
   const id = nextID++;

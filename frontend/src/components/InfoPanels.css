@@ -201,3 +201,13 @@
 .strip-spell {
   background: #2f6fb3;
 }
+
+/* A buy (15.89): a gold coin. */
+.strip-buy {
+  background: #b8860b;
+}
+
+/* A kill (15.89): a dark skull. */
+.strip-kill {
+  background: #3a2a2a;
+}

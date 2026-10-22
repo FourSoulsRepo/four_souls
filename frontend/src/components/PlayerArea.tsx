@@ -1,10 +1,12 @@
 import { useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { counted, Role, type CardView, type PlayerView } from '../protocol';
 import { useApp } from '../store';
+import type { LinePart } from '../stack';
 import { isCurse, isSoul, playerColor, soulCards, soulSlots, type Position } from '../table';
 import { Card, useZoom, type CardSize } from './Card';
 import type { Interact } from './Interact';
 import { HiddenHand, RevealedHand } from './Pile';
+import { Part } from './StackPanel';
 import './Table.css';
 
 interface Props {
@@ -13,11 +15,15 @@ interface Props {
   position: Position;
   you: boolean;
   active: boolean;
+  // asked: the game waits for this player now (15.95).
+  asked: boolean;
   // winSouls is the soul value that wins; 0 when the view has none (V-30).
   winSouls: number;
   ui: Interact;
   // tools are the viewer's turn actions, shown by own name (15.19).
   tools?: ReactNode;
+  // doing is what this active player does now, for the others (15.30).
+  doing?: LinePart[] | null;
 }
 
 // spent: a character or item that is used up until it recharges.
@@ -37,7 +43,7 @@ export function PlayerArea({ you, position, tools, ...rest }: Props) {
 // up when the view sends it (19.5). Curses stand at the far left
 // (15.55). At the top it mirrors the own area, the hand hanging past the top edge; in
 // a side column everything stacks in a narrow column (F-09).
-function OpponentArea({ player, name, position, active, winSouls, ui }: Omit<Props, 'you' | 'tools'>) {
+function OpponentArea({ player, name, position, active, asked, winSouls, ui, doing }: Omit<Props, 'you' | 'tools'>) {
   const size: CardSize = position === 'left' || position === 'right' ? 'small' : 'table';
   const pick = ui.player(player.id);
   const { character } = player;
@@ -58,6 +64,7 @@ function OpponentArea({ player, name, position, active, winSouls, ui }: Omit<Pro
           <b className="opp-name">
             <PlayerDot player={player.id} />
             {name}
+            {asked && <Hourglass player={player.id} />}
           </b>
           <span className="opp-line">
             <span className="opp-coins" title="Coins" aria-label={`${String(player.cents)} cents`}>
@@ -66,6 +73,7 @@ function OpponentArea({ player, name, position, active, winSouls, ui }: Omit<Pro
             </span>
             {player.dead && <span className="player-dead">dead</span>}
           </span>
+          {active && doing && <Activity parts={doing} />}
           {active && <Allowance player={player} />}
           {pick.onClick && (
             <button type="button" className="player-pick" onClick={pick.onClick}>
@@ -82,7 +90,7 @@ function OpponentArea({ player, name, position, active, winSouls, ui }: Omit<Pro
           damage={character.damage}
           spent={spent(character)}
           counters={counted(character)}
-          stats={{ hp: player.hp, atk: player.atk }}
+          stats={statsOf(player)}
           objectId={character.id}
           player={player.id}
           {...ui.character(player.id, character.id)}
@@ -92,7 +100,7 @@ function OpponentArea({ player, name, position, active, winSouls, ui }: Omit<Pro
         {(player.in_play ?? [])
           .filter((c) => !isSoul(c) && !isCurse(c))
           .map((c) => (
-            <PlayCard key={c.id} card={c} size={size} ui={ui} />
+            <PlayCard key={c.id} card={c} owner={player.id} size={size} ui={ui} />
           ))}
       </div>
     </section>
@@ -101,7 +109,7 @@ function OpponentArea({ player, name, position, active, winSouls, ui }: Omit<Pro
 
 // Coin is the game's coin image (15.38), or a drawn ¢ coin without the
 // private images or when the image fails to load.
-function Coin() {
+export function Coin() {
   const image = useApp((s) => s.icons.coin);
   const [broken, setBroken] = useState('');
   if (image !== '' && image !== broken) {
@@ -130,7 +138,7 @@ function Coin() {
 // (15.55), the souls and the character centered with its live health
 // and attack, items to its right, and the hand fanned below, partly
 // off screen (F-05, F-06, H-02, H-03, H-15, H-18).
-function OwnArea({ player, name, active, winSouls, ui, tools }: Omit<Props, 'you' | 'position'>) {
+function OwnArea({ player, name, active, asked, winSouls, ui, tools }: Omit<Props, 'you' | 'position'>) {
   const label = `${name} (you)`;
   const pick = ui.player(player.id);
   const hand = player.hand ?? [];
@@ -147,6 +155,7 @@ function OwnArea({ player, name, active, winSouls, ui, tools }: Omit<Props, 'you
           <b className="own-name">
             <PlayerDot player={player.id} />
             {label}
+            {asked && <Hourglass player={player.id} />}
           </b>
           <span className="own-coins" title="Coins" aria-label={`${String(player.cents)} cents`}>
             <Coin />
@@ -174,7 +183,7 @@ function OwnArea({ player, name, active, winSouls, ui, tools }: Omit<Props, 'you
           damage={character.damage}
           spent={spent(character)}
           counters={counted(character)}
-          stats={{ hp: player.hp, atk: player.atk }}
+          stats={statsOf(player)}
           objectId={character.id}
           player={player.id}
           {...ui.character(player.id, character.id)}
@@ -184,7 +193,7 @@ function OwnArea({ player, name, active, winSouls, ui, tools }: Omit<Props, 'you
         {(player.in_play ?? [])
           .filter((c) => !isSoul(c) && !isCurse(c))
           .map((c) => (
-            <PlayCard key={c.id} card={c} size="table" ui={ui} />
+            <PlayCard key={c.id} card={c} owner={player.id} size="table" ui={ui} />
           ))}
       </div>
       <div
@@ -258,9 +267,23 @@ function Curses({ player, label, size, ui }: { player: PlayerView; label: string
   return (
     <div className="player-cards curses" role="group" aria-label={label}>
       {curses.map((c) => (
-        <PlayCard key={c.id} card={c} size={size} ui={ui} />
+        <PlayCard key={c.id} card={c} owner={player.id} size={size} ui={ui} />
       ))}
     </div>
+  );
+}
+
+// Activity is what the active player does now, as the stack words it:
+// "Ann attacks Pooter" (15.30, V-21).
+function Activity({ parts }: { parts: LinePart[] }) {
+  return (
+    <span className="player-activity" role="status" aria-label={parts.map((p) => p.text).join('')}>
+      {parts.map((p, i) => (
+        // A line's parts never change order, so the index is a stable key.
+        // eslint-disable-next-line @eslint-react/no-array-index-key
+        <Part key={i} part={p} />
+      ))}
+    </span>
   );
 }
 
@@ -269,13 +292,20 @@ function Allowance({ player }: { player: PlayerView }) {
   return (
     <span className="player-allowance" aria-label="Left this turn">
       <span>Loot {player.loot_plays}</span> · <span>Attacks {player.attacks}</span> ·{' '}
-      <span>Buys {player.purchases}</span>
+      <span>Shop {player.purchases}</span>
     </span>
   );
 }
 
-// PlayCard is a character or item in play.
-function PlayCard({ card, size, ui }: { card: CardView; size: CardSize; ui: Interact }) {
+// statsOf is a character's live stats, its print and their sources
+// (15.92, V-41).
+function statsOf(player: PlayerView) {
+  return { hp: player.hp, atk: player.atk, printed_hp: player.printed_hp, printed_atk: player.printed_atk, sources: player.sources };
+}
+
+// PlayCard is a character or item in play; owner's dice look draws the
+// numbers it keeps (15.67).
+function PlayCard({ card, owner, size, ui }: { card: CardView; owner: number; size: CardSize; ui: Interact }) {
   return (
     <Card
       cardRef={card.card}
@@ -283,6 +313,8 @@ function PlayCard({ card, size, ui }: { card: CardView; size: CardSize; ui: Inte
       damage={card.damage}
       spent={spent(card)}
       counters={counted(card)}
+      dice={card.dice}
+      owner={owner}
       monster={card.stats}
       objectId={card.id}
       {...ui.object(card.id)}
@@ -392,4 +424,16 @@ function HandCard({ card, ui, spread }: { card: CardView; ui: Interact; spread: 
 // them in it (15.21, S-03).
 function PlayerDot({ player }: { player: number }) {
   return <span className="player-dot" style={{ background: playerColor(player) }} aria-hidden="true" />;
+}
+
+// Hourglass marks the player the game waits for, on every screen
+// (15.95, V-52). A shape in the player's color, not a hue alone, so
+// color-blind players read it too.
+function Hourglass({ player }: { player: number }) {
+  return (
+    <svg className="player-asked" viewBox="0 0 12 16" role="img" aria-label="The game waits for this player" style={{ color: playerColor(player) }}>
+      <path d="M1 1h10M1 15h10M2 1c0 4 3 5 3 7s-3 3-3 7M10 1c0 4-3 5-3 7s3 3 3 7" />
+      <path className="player-asked-sand" d="M3.5 4h5L6 7zM3 14.5c0-2 3-3 3-3s3 1 3 3z" />
+    </svg>
+  );
 }

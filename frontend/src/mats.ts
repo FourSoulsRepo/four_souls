@@ -5,7 +5,6 @@ import type { CSSProperties } from 'react';
 import type { MatInfo } from './bridge';
 
 export const colorMats: readonly MatInfo[] = [
-  { id: 'felt', name: 'Green felt', image: '' },
   { id: 'basement', name: 'Basement', image: '' },
   { id: 'cathedral', name: 'Cathedral', image: '' },
 ];
@@ -17,11 +16,14 @@ export function matChoices(images: readonly MatInfo[]): MatInfo[] {
   return [...out, ...images.filter((m) => !colorMats.some((c) => c.id === m.id))];
 }
 
+// droppedMat was the Green felt color mat; it read as a poker table
+// (H-05), so it is gone (ST-08) and a saved one is the default.
+const droppedMat = 'felt';
+
 // matOf resolves the mat setting: '' is the default, the first mat
-// image, or Basement without images. Green felt is never the default:
-// it reads as a poker table (H-05).
+// image, or Basement without images.
 export function matOf(id: string, images: readonly MatInfo[]): string {
-  return id || (images[0]?.id ?? 'basement');
+  return (id !== droppedMat && id) || (images[0]?.id ?? 'basement');
 }
 
 export interface MatLook {

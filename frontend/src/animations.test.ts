@@ -30,18 +30,18 @@ describe('claims', () => {
   });
 
   it('finds a card shown large twice in one update', () => {
-    expect(claimEffect({ kind: 'reveal', card: 'pin' })).toBe(true);
-    expect(claimEffect({ kind: 'reveal', card: 'pin' })).toBe(false);
+    expect(claimEffect({ kind: 'reveal', card: 'pin', deck: ['deck-monster'] })).toBe(true);
+    expect(claimEffect({ kind: 'reveal', card: 'pin', deck: ['deck-monster'] })).toBe(false);
     expect(clashes).toEqual([{ card: 'pin', job: 'show', first: 'reveal', second: 'reveal' }]);
   });
 
   it('finds a card shown large in two updates in a row (19.4)', () => {
-    expect(claimEffect({ kind: 'reveal', card: 'pin' })).toBe(true);
+    expect(claimEffect({ kind: 'reveal', card: 'pin', deck: ['deck-monster'] })).toBe(true);
     nextBeat();
-    expect(claimEffect({ kind: 'reveal', card: 'pin' })).toBe(false);
+    expect(claimEffect({ kind: 'reveal', card: 'pin', deck: ['deck-monster'] })).toBe(false);
     nextBeat();
     nextBeat();
-    expect(claimEffect({ kind: 'reveal', card: 'pin' })).toBe(true);
+    expect(claimEffect({ kind: 'reveal', card: 'pin', deck: ['deck-monster'] })).toBe(true);
     expect(clashes).toEqual([{ card: 'pin', job: 'show', first: 'reveal', second: 'reveal' }]);
   });
 

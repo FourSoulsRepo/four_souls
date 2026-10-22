@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { Update } from '../protocol';
+import { noticeText } from '../reconnect';
 import { useApp } from '../store';
 import './Overlays.css';
 
@@ -44,21 +45,80 @@ export function LostOverlay() {
   );
 }
 
+// ReconnectBadge: the connection dropped and the app reconnects by
+// itself; the table stays usable to look at (N-20). The "Connection
+// lost" dialog replaces it after a while.
+export function ReconnectBadge() {
+  const restarting = useApp((s) => s.restarting);
+  return (
+    <div className="reconnect-badge" role="status" aria-label="Reconnecting">
+      {restarting ? 'The server is restarting. Reconnecting…' : 'Reconnecting…'}
+    </div>
+  );
+}
+
+// NoticeOverlay: a server notice, on any screen (N-20).
+export function NoticeOverlay() {
+  const notice = useApp((s) => s.notice);
+  const endNotice = useApp((s) => s.endNotice);
+  if (!notice) {
+    return null;
+  }
+  const { title, text } = noticeText(notice);
+  return (
+    <div className="overlay" role="dialog" aria-label={title}>
+      <div className="overlay-box">
+        <h2>{title}</h2>
+        <p>{text}</p>
+        <div className="overlay-buttons">
+          <button type="button" className="primary" onClick={endNotice}>
+            OK
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// useNow is the time, renewed at until so the screen changes then.
+function useNow(until: number): number {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (until <= now) {
+      return;
+    }
+    const t = window.setTimeout(() => {
+      setNow(Date.now());
+    }, until - now);
+    return () => {
+      window.clearTimeout(t);
+    };
+  }, [until, now]);
+  return now;
+}
+
 // PauseOverlay: the game waits for players who left; the others vote
-// to wait or to kick them (N-08).
+// to wait or to kick them (N-08). Right after a server restart there is
+// no kick vote for a while: the players are coming back (N-20).
 export function PauseOverlay({ game, you, name }: { game: Update; you: number; name: (p: number) => string }) {
   const vote = useApp((s) => s.vote);
   const pause = game.pause;
+  const now = useNow(pause?.grace ?? 0);
   if (!pause) {
     return null;
   }
   const votes = pause.votes ?? [];
   const mine = votes.find((v) => v.seat === you);
+  const grace = (pause.grace ?? 0) > now;
   return (
     <div className="overlay" role="dialog" aria-label="Paused">
       <div className="overlay-box">
         <h2>Waiting for {pause.away.map(name).join(', ')}</h2>
-        <p className="muted">They left the game. Wait for them to come back, or go on without them.</p>
+        <p className="muted">
+          {grace
+            ? 'The server restarted. The others are coming back.'
+            : 'They left the game. Wait for them to come back, or go on without them.'}
+        </p>
         <ul className="overlay-votes">
           {votes.map((v) => (
             <li key={v.seat}>
@@ -79,6 +139,7 @@ export function PauseOverlay({ game, you, name }: { game: Update; you: number; n
           <button
             type="button"
             className={mine?.kick ? 'chosen' : ''}
+            disabled={grace}
             onClick={() => {
               vote(true);
             }}

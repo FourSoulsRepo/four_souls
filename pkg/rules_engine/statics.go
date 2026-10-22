@@ -57,6 +57,37 @@ type Static struct {
 	// Value, if set, is the amount instead of Amount: "You have +1 HP for
 	// each counter on this".
 	Value func(g *Game, self ObjectID) int
+	// When names the condition under which it applies, for a client to
+	// show beside the change: "first attack roll" (V-41).
+	When string
+}
+
+// Lasting says how long a stat change lasts (V-41).
+type Lasting int
+
+// The lastings.
+const (
+	LastsInPlay   Lasting = iota // a static ability: while its card is in play
+	LastsTurn                    // a boost: till end of turn (R-TURN-13)
+	LastsNextRoll                // a boost: till the next attack roll uses it (R-ATK-19)
+)
+
+// Part is one source of a stat change: a static ability in play or a
+// boost of this turn (V-41). Source is 0 when the boost names none.
+type Part struct {
+	Stat   Stat
+	Source ObjectID
+	Amount int
+	Lasts  Lasting
+	When   string
+}
+
+// Parts lists the sources that change stat for the subject now, in the
+// order bonus adds them; their amounts sum to bonus.
+func (g *Game) Parts(stat Stat, p PlayerID, subject ObjectID) []Part {
+	var out []Part
+	g.eachPart(stat, p, subject, func(pt Part) { out = append(out, pt) })
+	return out
 }
 
 // amount is the static's amount for its object.
@@ -82,9 +113,16 @@ func MonstersHave(s Stat, n int) Static {
 // bonus sums the statics in play that change stat for the subject.
 func (g *Game) bonus(stat Stat, p PlayerID, subject ObjectID) int {
 	total := 0
+	g.eachPart(stat, p, subject, func(pt Part) { total += pt.Amount })
+	return total
+}
+
+// eachPart calls f for every boost and static in play that changes stat
+// for the subject: bonus and Parts share it, so they never drift.
+func (g *Game) eachPart(stat Stat, p PlayerID, subject ObjectID, f func(Part)) {
 	for _, b := range g.Boosts {
 		if b.Stat == stat && ((b.Object != 0 && b.Object == subject) || (b.Object == 0 && subject == 0 && b.Player == p)) {
-			total += b.Amount
+			f(Part{Stat: stat, Source: b.Source, Amount: b.Amount, Lasts: b.lasts()})
 		}
 	}
 	for _, id := range g.inPlay() {
@@ -95,10 +133,17 @@ func (g *Game) bonus(stat Stat, p PlayerID, subject ObjectID) int {
 			}
 			for _, s := range d.Statics {
 				if s.Stat == stat && s.Applies(g, id, p, subject) {
-					total += s.amount(g, id)
+					f(Part{Stat: stat, Source: id, Amount: s.amount(g, id), When: s.When})
 				}
 			}
 		}
 	}
-	return total
+}
+
+// lasts is how long the boost lasts.
+func (b Boost) lasts() Lasting {
+	if b.Stat == StatNextAttackRoll {
+		return LastsNextRoll
+	}
+	return LastsTurn
 }

@@ -2,7 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { PromptKind } from './actions';
 import type { GameView, StackItem } from './protocol';
 import {
+  declaration,
   findCard,
+  playedCard,
   secondsLeft,
   stackBadge,
   stackCard,
@@ -10,8 +12,8 @@ import {
   StackKind,
   stackLine,
   stackParts,
+  stackRows,
   stackWait,
-  waitText,
   waitTurn,
 } from './stack';
 
@@ -59,6 +61,28 @@ describe('stackLine', () => {
     expect(stackLine(item({ kind: StackKind.death, target: { player: 1, is_player: true } }), view, names)).toBe(
       'Bo dies',
     );
+  });
+
+  it('names what changes a thrown roll, and its result (15.94)', () => {
+    const roll = item({
+      kind: StackKind.roll,
+      roll: 2,
+      attack: true,
+      target: { player: -1, object: 9 },
+      sources: [{ stat: 'attack_roll', source: 5, card: 'meat', amount: 1, lasts: 'in_play' }],
+      final: 3,
+    });
+    expect(stackLine(roll, view, names)).toBe('Attack: Ann rolls 2 against GAPER (+1 MEAT = 3)');
+    // Changes that cancel out: the result is the die.
+    const even = item({
+      kind: StackKind.roll,
+      roll: 4,
+      sources: [
+        { stat: 'roll', amount: 1, lasts: 'turn' },
+        { stat: 'roll', amount: -1, lasts: 'turn' },
+      ],
+    });
+    expect(stackLine(even, view, names)).toBe('Ann rolls 4 (+1 a hidden card (this turn), −1 a hidden card (this turn) = 4)');
   });
 
   it('names whom an attack is against and who hits back (15.22)', () => {
@@ -129,28 +153,23 @@ describe('stackBadge', () => {
   });
 });
 
+describe('playedCard', () => {
+  it("is the newest loot card another player has on the stack (15.31)", () => {
+    const bomb = item({ id: 1, controller: 1, card: 'bomb' });
+    const penny = item({ id: 2, controller: 0, card: 'a_penny' });
+    const roll = item({ id: 3, controller: 1, kind: StackKind.roll });
+    expect(playedCard({ ...view, stack: [bomb, penny, roll] }, 0)).toBe(bomb);
+    expect(playedCard({ ...view, stack: [bomb, penny, roll] }, 1)).toBe(penny);
+    expect(playedCard({ ...view, stack: [penny] }, 0)).toBeUndefined();
+    expect(playedCard(view, 0)).toBeUndefined();
+  });
+});
+
 describe('findCard', () => {
   it('finds characters and monsters by object', () => {
     expect(findCard(view, 2)).toBe('cain');
     expect(findCard(view, 9)).toBe('gaper');
     expect(findCard(view, 99)).toBeUndefined();
-  });
-});
-
-describe('waitText', () => {
-  it('says whose turn it is, or who may respond', () => {
-    expect(waitText(view, 0, names)).toBe('Your turn');
-    expect(waitText(view, 1, names)).toBe("Ann's turn");
-    const stacked = { ...view, stack: [item({})], waiting: { kind: PromptKind.priority, player: 1 } };
-    expect(waitText(stacked, 0, names)).toBe('Bo may respond');
-    expect(waitText(stacked, 1, names)).toBe('Respond, or pass');
-  });
-
-  it('says who is choosing or discarding', () => {
-    const choosing = { ...view, waiting: { kind: PromptKind.choose, player: 1 } };
-    expect(waitText(choosing, 0, names)).toBe('Bo is choosing');
-    expect(waitText(choosing, 1, names, 'Choose a target')).toBe('Choose a target');
-    expect(waitText({ ...view, over: true }, 0, names)).toBe('Game over');
   });
 });
 
@@ -172,28 +191,63 @@ describe('stackWait', () => {
     expect(stackWait(stacked, 0, names)).toEqual({ responding: ['You'], passed: ['Bo'] });
     expect(stackWait(stacked, 1, names)).toEqual({ responding: ['Ann'], passed: ['You'] });
   });
-
-  it('names who must answer a prompt, and what', () => {
-    const choosing = { ...view, waiting: { kind: PromptKind.choose, player: 1, purpose: 6 } };
-    expect(stackWait(choosing, 0, names).prompt).toBe('Bo: Choose a target');
-    const asked = { ...view, waiting: { kind: PromptKind.choose, player: 0, text: 'Pay 1¢?' } };
-    expect(stackWait(asked, 0, names).prompt).toBe('You: Pay 1¢?');
-    const discarding = { ...view, waiting: { kind: PromptKind.discard, player: 1, count: 2 } };
-    expect(stackWait(discarding, 0, names).prompt).toBe('Bo: Discard 2 loot cards');
-  });
-
-  it('says who must throw a roll (15.61)', () => {
-    const throwing = { ...view, waiting: { kind: PromptKind.throw, player: 1, text: 'attack roll' } };
-    expect(stackWait(throwing, 1, names).prompt).toBe('Waiting for you to throw');
-    expect(stackWait(throwing, 0, names).prompt).toBe('Bo is throwing…');
-    expect(waitText(throwing, 1, names)).toBe('Throw the die');
-    expect(waitText(throwing, 0, names)).toBe('Bo is throwing');
-  });
 });
 
 describe('secondsLeft', () => {
   it('rounds up and stops at zero', () => {
     expect(secondsLeft(10_500, 0)).toBe(11);
     expect(secondsLeft(0, 5000)).toBe(0);
+  });
+});
+
+describe('declaration', () => {
+  const line = (v: GameView) =>
+    declaration(v, names)
+      ?.map((p) => p.text)
+      .join('');
+
+  it('says an open attack, then its target once aimed (15.91)', () => {
+    expect(line({ ...view, attack: {} })).toBe('Ann attacks…');
+    expect(line({ ...view, attack: { target: 9 } })).toBe('Ann attacks GAPER');
+    expect(line({ ...view, attack: { deck: true } })).toBe('Ann attacks the monster deck');
+  });
+
+  it('names an attacked player, not their character (R-ATK-20)', () => {
+    const parts = declaration({ ...view, attack: { target: 2 } }, names);
+    expect(parts?.at(-1)).toEqual({ text: 'Bo', role: 'target', player: 1 });
+  });
+
+  it('says an open buy', () => {
+    expect(line({ ...view, buying: true })).toBe('Ann buys…');
+    expect(line({ ...view, turn: { ...view.turn, active: 1 }, buying: true })).toBe('Bo buys…');
+  });
+
+  it('is nothing without one, after the game, and before turn 1', () => {
+    expect(declaration(view, names)).toBeNull();
+    expect(declaration({ ...view, buying: true, over: true }, names)).toBeNull();
+    expect(declaration({ ...view, attack: {}, first_roll: { round: 1, players: [0, 1] } }, names)).toBeNull();
+  });
+});
+
+describe('stackRows', () => {
+  const keys = (v: GameView) => stackRows(v, names).map((r) => r.key);
+
+  it('keeps every row key while the stack grows and shrinks (15.51)', () => {
+    const a = item({ id: 4, card: 'a_dime' });
+    const b = item({ id: 7, kind: StackKind.roll, roll: 3 });
+    const c = item({ id: 9, kind: StackKind.damage, amount: 1 });
+    expect(keys({ ...view, stack: [a] })).toEqual(['item-4']);
+    expect(keys({ ...view, stack: [a, b, c] })).toEqual(['item-9', 'item-7', 'item-4']);
+    // The top resolves: the others keep their keys, so they move.
+    expect(keys({ ...view, stack: [a, b] })).toEqual(['item-7', 'item-4']);
+    // An item in the middle goes too, e.g. a cancelled roll.
+    expect(keys({ ...view, stack: [a, c] })).toEqual(['item-9', 'item-4']);
+  });
+
+  it('puts an open declaration on top, under its own key', () => {
+    const a = item({ id: 4, kind: StackKind.roll, roll: 2, attack: true });
+    const rows = stackRows({ ...view, attack: { target: 9 }, stack: [a] }, names);
+    expect(rows.map((r) => r.key)).toEqual(['declared', 'item-4']);
+    expect(keys({ ...view, attack: { target: 9 } })).toEqual(['declared']);
   });
 });

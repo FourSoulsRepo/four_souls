@@ -12,11 +12,12 @@ var momsDeadHand = engine.CardDef{
 	HP:      2,
 	DC:      5,
 	ATK:     1,
-	Rewards: []engine.Reward{{Kind: engine.RewardTreasure, Amount: 1}, {Kind: engine.RewardCents, Amount: 4}},
+	Rewards: []engine.Reward{{Kind: engine.RewardCents, Amount: 4}},
 	Abilities: []engine.Ability{
 		{
 			Kind:    engine.Triggered,
 			Text:    "When this dies, the active player may steal a non-eternal item another player controls.",
+			Takes:   engine.TakesOthers,
 			Trigger: engine.WhenThisDies(),
 			Effects: []engine.Effect{engine.Ask(func(c *engine.Ctx, a []int) {
 				if ids := othersItems(c); a[0] >= 0 && a[0] < len(ids) {

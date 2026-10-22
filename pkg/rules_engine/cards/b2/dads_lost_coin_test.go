@@ -14,7 +14,7 @@ func TestDadsLostCoin(t *testing.T) {
 func TestDadsLostCoinDeclined(t *testing.T) {
 	tb := itemTable(t, items("dads_lost_coin", "mystery_sack"))
 	tb.G.ForceRolls(1)
-	tb.Activate(0, "mystery_sack", 0, "no")
+	tb.Activate(0, "mystery_sack", 0, "No")
 	if h := len(tb.G.Players[0].Hand); h != 1 {
 		t.Errorf("hand = %d, want 1 (the 1 stands)", h)
 	}

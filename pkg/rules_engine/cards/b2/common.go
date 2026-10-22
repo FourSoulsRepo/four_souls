@@ -40,7 +40,6 @@ var (
 	rechargeAtEndOfTurn     = cardkit.RechargeAtEndOfTurn
 	rollerDiscards          = cardkit.RollerDiscards
 	searchGuppy             = cardkit.SearchGuppy
-	toBottom                = cardkit.ToBottom
 	whenThisDealsDamage     = cardkit.WhenThisDealsDamage
 	whenThisTakesDamage     = cardkit.WhenThisTakesDamage
 	whenYouDealCombatDamage = cardkit.WhenYouDealCombatDamage

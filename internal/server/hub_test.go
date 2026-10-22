@@ -294,6 +294,57 @@ func TestReconnect(t *testing.T) {
 	}
 }
 
+// TestFinishedGameLetsGo: a token from a finished game gets the lobby,
+// keeps the token, and takes its player to a new game instead (19.32).
+func TestFinishedGameLetsGo(t *testing.T) {
+	h := startHub(t)
+	const token = "0123456789abcdef0123456789abcdef"
+	old := &Room{tokens: []string{token, "other"}}
+	old.over.Store(true)
+	done := make(chan struct{})
+	h.send(hubRequest{run: func(h *Hub) {
+		h.games = append(h.games, started{info: protocol.GameInfo{ID: "g0", Started: true}, room: old})
+		close(done)
+	}})
+	<-done
+
+	ann, w := arrive(t, h, "Ann", token)
+	if w.Token != token || w.Seat != -1 {
+		t.Fatalf("token %q, seat %d; want the old token and no seat", w.Token, w.Seat)
+	}
+	ann.next(protocol.TypeGames, nil)
+	if ann.c.room.Load() != nil {
+		t.Fatal("the hello took Ann back to the finished game")
+	}
+
+	// A new game with the same token is the one she comes back to.
+	ann.say(protocol.TypeCreate, protocol.Create{Seats: 2})
+	var tb protocol.Table
+	ann.next(protocol.TypeTable, &tb)
+	bob, _ := arrive(t, h, "Bob", "")
+	bob.say(protocol.TypeJoin, protocol.Join{Game: tb.Game})
+	bob.next(protocol.TypeTable, nil)
+	ann.say(protocol.TypeReady, protocol.Ready{Ready: true})
+	bob.say(protocol.TypeReady, protocol.Ready{Ready: true})
+	ann.next(protocol.TypeUpdate, nil)
+	ann.c.Leave()
+	var u protocol.Update
+	for u.Seats == nil || u.Seats[0].Connected {
+		bob.next(protocol.TypeUpdate, &u)
+	}
+	ann2, back := arrive(t, h, "Ann", token)
+	if back.Seat != 0 {
+		t.Fatalf("seat %d; want 0 in the new game", back.Seat)
+	}
+	ann2.next(protocol.TypeUpdate, &u)
+	if !u.Seats[0].Connected {
+		t.Errorf("not back in the new game: %+v", u.Seats)
+	}
+	if r := ann2.c.room.Load(); r == nil || r == old {
+		t.Errorf("room %p; want the new game, not %p", r, old)
+	}
+}
+
 // arriveWithDice connects a player whose hello carries a dice look.
 func arriveWithDice(t *testing.T, h *Hub, name, token, dice string) *player {
 	t.Helper()
@@ -561,5 +612,21 @@ func TestLoopback(t *testing.T) {
 		if got := loopback(c.addr); got != c.want {
 			t.Errorf("%v: %v", c.addr, got)
 		}
+	}
+}
+
+// TestServerName: the welcome carries the server's name; an app's own
+// host has none (N-18).
+func TestServerName(t *testing.T) {
+	if _, w := arrive(t, startHub(t), "Ann", ""); w.Name != "" {
+		t.Errorf("default hub sends name %q", w.Name)
+	}
+	h := NewHub()
+	h.name = "Basement"
+	ctx, cancel := context.WithCancel(context.Background())
+	go h.Run(ctx)
+	t.Cleanup(cancel)
+	if _, w := arrive(t, h, "Ann", ""); w.Name != "Basement" {
+		t.Errorf("welcome name %q", w.Name)
 	}
 }

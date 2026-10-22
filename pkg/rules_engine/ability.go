@@ -26,7 +26,22 @@ type Ability struct {
 	// targets (R-ABIL-04). An ability with modes uses the targets and
 	// effects of the chosen mode instead of its own.
 	Modes []Mode
+	// Takes: whom it may take from with no target naming them (15.85).
+	Takes Takes
 }
+
+// Takes says whom an ability may take loot cards, ¢, items or souls
+// from, or make discard or destroy them, although no target names
+// them: it picks the victim as it resolves (15.85). The server then
+// asks a player who waits for their turn, so they can still answer.
+type Takes int
+
+// Whom an ability may take from.
+const (
+	TakesNobody      Takes = iota // its targets name every victim
+	TakesOthers                   // any player but its controller
+	TakesEventPlayer              // the player of the event that triggered it
+)
 
 // Mode is one "choose one-" option.
 type Mode struct {
@@ -364,7 +379,7 @@ func (e modifyRollEffect) apply(c *Ctx) {
 	for i := range c.G.Stack {
 		if it := &c.G.Stack[i]; it.ID == id {
 			it.Roll = min(max(it.Roll+e.n, 1), 6)
-			c.G.emit(Event{Kind: EvRollChanged, Player: it.Controller, Amount: it.Roll})
+			c.G.emit(Event{Kind: EvRollChanged, Player: it.Controller, Amount: it.Roll, Source: c.Source, StackID: it.ID})
 		}
 	}
 }
@@ -427,9 +442,9 @@ func GainRollBonusThisTurn(n, t int) Effect { return boostEffect{StatRoll, StatR
 
 func (e boostEffect) apply(c *Ctx) {
 	t := c.target(e.target)
-	b := Boost{Stat: e.monster, Player: NoPlayer, Object: t.Object, Amount: e.n}
+	b := Boost{Stat: e.monster, Player: NoPlayer, Object: t.Object, Amount: e.n, Source: c.Source}
 	if t.Kind == TargetPlayer {
-		b = Boost{Stat: e.player, Player: t.Player, Amount: e.n}
+		b = Boost{Stat: e.player, Player: t.Player, Amount: e.n, Source: c.Source}
 	}
 	c.G.Boosts = append(c.G.Boosts, b)
 	c.G.emit(Event{Kind: EvBoosted, Player: b.Player, Object: b.Object, Amount: e.n, Text: b.Stat.String()})
@@ -830,7 +845,7 @@ func (g *Game) Ability(ref AbilityRef) Ability { return g.ability(ref) }
 func WardDeath(t int) Effect {
 	return EffectFunc(func(c *Ctx) {
 		if t < len(c.Targets) {
-			c.G.Boosts = append(c.G.Boosts, Boost{Stat: StatDeathWard, Player: c.Targets[t].Player, Amount: 1})
+			c.G.Boosts = append(c.G.Boosts, Boost{Source: c.Source, Stat: StatDeathWard, Player: c.Targets[t].Player, Amount: 1})
 		}
 	})
 }
@@ -877,7 +892,7 @@ func NextAttackRoll(n int, active bool) Effect {
 		if active {
 			p = c.G.Turn.Active
 		}
-		c.G.Boosts = append(c.G.Boosts, Boost{Stat: StatNextAttackRoll, Player: p, Amount: n})
+		c.G.Boosts = append(c.G.Boosts, Boost{Source: c.Source, Stat: StatNextAttackRoll, Player: p, Amount: n})
 	})
 }
 

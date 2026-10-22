@@ -1,7 +1,7 @@
 // Words for the stack and for why the game waits (7.8). Pure, so it is
 // tested without a browser.
-import { choiceTitle, PromptKind } from './actions';
 import type { GameView, StackItem } from './protocol';
+import { oddsLine, rollChanges, type Name } from './stats';
 
 // Stack item kinds, in Go's order (pkg/rules_engine/stack.go).
 export const StackKind = {
@@ -81,16 +81,12 @@ export function stackParts(it: StackItem, view: GameView, n: Names): LinePart[] 
     case StackKind.trigger:
       return [card, { text: ' triggers' }];
     case StackKind.roll: {
+      // A thrown roll names what will change it, and the result (15.94).
+      const changes = rollChanges(it.sources, sourceName(n));
+      const result = changes ? ` (${changes} = ${String(it.final ?? it.roll ?? 0)})` : '';
       const rolls: LinePart = { text: ` rolls${it.roll ? ` ${String(it.roll)}` : ''}` };
-      if (it.attack && targetCard) {
-        // An attack roll names the monster it is against.
-        return [...attack, who, rolls, { text: ' against ' }, target];
-      }
-      // A card's roll names the card; other rolls their label.
-      if (it.roll_for.card) {
-        return [who, { text: `${rolls.text} for ` }, { text: n.card(it.roll_for.card), role: 'card' }];
-      }
-      return [...attack, who, { text: `${rolls.text}${it.label ? ` for ${it.label}` : ''}` }];
+      const parts = rollParts(it, n, rolls, who, target, attack, !!targetCard);
+      return result ? [...parts, { text: result }] : parts;
     }
     case StackKind.damage: {
       if (dealer.length === 0 && self) {
@@ -111,6 +107,83 @@ export function stackParts(it: StackItem, view: GameView, n: Names): LinePart[] 
     default:
       return [card.text ? card : { text: 'Something' }];
   }
+}
+
+// rollParts says who rolls for what: an attack roll names the monster
+// it is against, a card's roll the card, other rolls their label.
+function rollParts(it: StackItem, n: Names, rolls: LinePart, who: LinePart, target: LinePart, attack: LinePart[], against: boolean): LinePart[] {
+  if (it.attack && against) {
+    return [...attack, who, rolls, { text: ' against ' }, target];
+  }
+  if (it.roll_for.card) {
+    return [who, { text: `${rolls.text} for ` }, { text: n.card(it.roll_for.card), role: 'card' }];
+  }
+  return [...attack, who, { text: `${rolls.text}${it.label ? ` for ${it.label}` : ''}` }];
+}
+
+// sourceName names a stat source's card for rollChanges and oddsLine.
+function sourceName(n: Names): Name {
+  return (ref) => (ref ? n.card(ref) : 'a hidden card');
+}
+
+// attackTarget names what an attack aims at: an attacked player by name,
+// not their character (R-ATK-20), else the monster.
+export function attackTarget(view: GameView, target: number, n: Names): LinePart {
+  const victim = view.players.find((p) => p.character.id === target);
+  if (victim) {
+    return { text: n.player(victim.id), role: 'target', player: victim.id };
+  }
+  const ref = findCard(view, target);
+  return { text: ref ? n.card(ref) : 'a monster', role: 'target' };
+}
+
+// declaration says what the active player declared that is still open
+// (15.91, V-51): an attack, by its target once aimed, or a buy. Neither
+// is a stack item (R-ATK-02, R-SHOP-02); the stack panel shows it in a
+// row of its own, on top. It goes when the attack or the buy ends.
+export function declaration(view: GameView, n: Names): LinePart[] | null {
+  if (view.over || view.first_roll) {
+    return null;
+  }
+  const { active } = view.turn;
+  const who: LinePart = { text: n.player(active), role: 'player', player: active };
+  const { attack } = view;
+  if (attack) {
+    const target = attack.target ?? 0;
+    if (target === 0) {
+      return [who, { text: attack.deck ? ' attacks the monster deck' : ' attacks…' }];
+    }
+    return [who, { text: ' attacks ' }, attackTarget(view, target, n)];
+  }
+  return view.buying ? [who, { text: ' buys…' }] : null;
+}
+
+// StackRowData is one row of the stack panel: the open declaration, or
+// a stack item. key is stable while the row stays, so the row moves
+// instead of being drawn again (15.51).
+export type StackRowData = { key: string; declared: LinePart[]; odds?: string } | { key: string; item: StackItem };
+
+// stackRows are the stack panel's rows, top first: the open
+// declaration (15.91), then the items, newest first (S-01).
+export function stackRows(view: GameView, n: Names): StackRowData[] {
+  const declared = declaration(view, n);
+  const items = [...(view.stack ?? [])].reverse().map((item) => ({ key: `item-${String(item.id)}`, item }));
+  if (!declared) {
+    return items;
+  }
+  const odds = attackOdds(view, n);
+  return [{ key: 'declared', declared, ...(odds ? { odds } : {}) }, ...items];
+}
+
+// attackOdds is the open attack's fight line, once aimed (15.94): what
+// the next roll needs and the ATK of a hit, with what changes them.
+export function attackOdds(view: GameView, n: Names): string | undefined {
+  const odds = view.attack?.odds;
+  if (!odds || view.over) {
+    return undefined;
+  }
+  const attacker = view.players.find((p) => p.id === view.turn.active);
+  return oddsLine(odds, attacker?.printed_atk ?? odds.atk, sourceName(n));
 }
 
 // stackLine says what one stack item is, as plain text.
@@ -162,60 +235,24 @@ export function stackBadge(it: StackItem): StackBadge | undefined {
   return it.kind === StackKind.loot ? 'spell' : undefined;
 }
 
-// waitText says who the game waits for and why, so nobody is lost.
-export function waitText(view: GameView, you: number, n: Names, choiceTitle?: string): string {
-  const { waiting, turn, over, stack } = view;
-  if (over) {
-    return 'Game over';
-  }
-  const mine = waiting.player === you;
-  const who = mine ? 'You' : n.player(waiting.player);
-  switch (waiting.kind) {
-    case PromptKind.choose:
-      return mine ? (choiceTitle ?? 'Your choice') : `${who} is choosing`;
-    case PromptKind.discard:
-      return mine ? 'Discard down to your hand size' : `${who} is discarding`;
-    case PromptKind.order:
-      return mine ? (choiceTitle ?? 'Put the cards in order') : `${who} is putting cards back`;
-    case PromptKind.throw:
-      return mine ? 'Throw the die' : `${who} is throwing`;
-    case PromptKind.priority:
-      if ((stack ?? []).length > 0) {
-        return mine ? 'Respond, or pass' : `${who} may respond`;
-      }
-      if (turn.active === waiting.player) {
-        return mine ? 'Your turn' : `${who}'s turn`;
-      }
-      return mine ? 'You may act' : `${who} may act`;
-    default:
-      return '';
-  }
+// playedCard is the newest loot card another player has on the stack:
+// it shows large by the stack until it resolves (15.31, H-10, T-16).
+export function playedCard(view: GameView, you: number): StackItem | undefined {
+  return (view.stack ?? []).findLast((it) => it.kind === StackKind.loot && it.controller !== you && !!it.card);
 }
 
 // StackWait is whom the stack waits for (V-11): the players who may still
-// respond, the waiting one first, and those who passed; or the player who
-// must answer a prompt, and what.
+// respond, the waiting one first, and those who passed. Other prompts
+// get the banner's words (15.28, stackPrompt).
 export interface StackWait {
   responding: string[];
   passed: string[];
-  prompt?: string;
 }
 
 // stackWait names whom the stack waits for, as the server says.
 export function stackWait(view: GameView, you: number, n: Names): StackWait {
   const name = (p: number) => (p === you ? 'You' : n.player(p));
-  const w = view.waiting;
-  const out: StackWait = { responding: (view.responding ?? []).map(name), passed: (view.passed ?? []).map(name) };
-  if (w.kind === PromptKind.choose || w.kind === PromptKind.order) {
-    out.prompt = `${name(w.player)}: ${choiceTitle(w)}`;
-  } else if (w.kind === PromptKind.discard) {
-    const count = w.count ?? 0;
-    out.prompt = `${name(w.player)}: Discard ${String(count)} loot card${count === 1 ? '' : 's'}`;
-  } else if (w.kind === PromptKind.throw) {
-    // The roller can never miss that the game waits for them (V-17).
-    out.prompt = w.player === you ? 'Waiting for you to throw' : `${n.player(w.player)} is throwing…`;
-  }
-  return out;
+  return { responding: (view.responding ?? []).map(name), passed: (view.passed ?? []).map(name) };
 }
 
 // secondsLeft is the response timer, whole seconds, never negative.

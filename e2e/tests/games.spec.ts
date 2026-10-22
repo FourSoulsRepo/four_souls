@@ -12,7 +12,7 @@ import type { CDPSession, Locator, Page } from '@playwright/test';
 import { expect, test } from './fixtures';
 import { startGame } from './game';
 import { serverPort } from './server';
-import { enabled, endTurnButton, passButton, reachable, seen, throwButton, turnAction, type Seen } from './turn';
+import { enabled, endTurnButton, endTurnQuestion, passButton, reachable, seen, throwButton, turnAction, type Seen } from './turn';
 
 const maxTurns = Number(process.env.GAME_TURNS ?? 300);
 // stallMs: no step for this long fails the game.
@@ -151,6 +151,12 @@ async function move(page: Page, s: Seen, rnd: Rnd): Promise<string | null> {
     const item = one(rnd, await menu.getByRole('menuitem').filter({ hasNotText: 'Cancel' }).all());
     await (item ?? menu.getByRole('menuitem', { name: 'Cancel' })).click();
     return 'menu';
+  }
+  // End turn asks while plays are left (V-46): mostly yes, sometimes no.
+  const question = endTurnQuestion(page);
+  if (await question.isVisible()) {
+    await question.getByRole('button', { name: rnd() < 0.75 ? 'End turn' : 'Keep playing' }).click();
+    return 'end turn question';
   }
   const ability = page.locator('.ability-dialog');
   if (await ability.isVisible()) {

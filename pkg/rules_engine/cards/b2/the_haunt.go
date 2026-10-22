@@ -22,7 +22,7 @@ var theHaunt = engine.CardDef{
 				return e.Object == self && g.Object(self).HitsThisTurn%2 == 0
 			}},
 			Effects: []engine.Effect{engine.EffectFunc(func(c *engine.Ctx) {
-				c.G.Boosts = append(c.G.Boosts, engine.Boost{Stat: engine.StatMonsterDC, Player: engine.NoPlayer, Object: c.Source, Amount: 1})
+				c.G.Boosts = append(c.G.Boosts, engine.Boost{Source: c.Source, Stat: engine.StatMonsterDC, Player: engine.NoPlayer, Object: c.Source, Amount: 1})
 			})},
 		},
 	},

@@ -22,3 +22,12 @@
 | UC-18 | See a hidden card | `frontend`, `rules_engine` | Implemented | [app/uc-18-see-a-hidden-card.md](app/uc-18-see-a-hidden-card.md) |
 | UC-19 | Create a game on a dedicated server | `internal/server`, `frontend` | Implemented | [server/uc-19-create-on-a-dedicated-server.md](server/uc-19-create-on-a-dedicated-server.md) |
 | UC-20 | Play with deck ratios | `internal/server`, `rules_engine`, `frontend` | Implemented | [server/uc-20-deck-ratios.md](server/uc-20-deck-ratios.md) |
+| UC-21 | Know when the game waits for me | `frontend` | Implemented | [app/uc-21-know-when-the-game-waits.md](app/uc-21-know-when-the-game-waits.md) |
+| UC-22 | See why I can't act | `frontend`, `rules_engine` | Implemented | [app/uc-22-see-why-i-cant-act.md](app/uc-22-see-why-i-cant-act.md) |
+| UC-23 | See what the active player does | `frontend`, `rules_engine` | Implemented | [app/uc-23-see-what-the-active-player-does.md](app/uc-23-see-what-the-active-player-does.md) |
+| UC-24 | Follow fights and played cards | `frontend` | Implemented | [app/uc-24-follow-fights-and-played-cards.md](app/uc-24-follow-fights-and-played-cards.md) |
+| UC-25 | See what others aim at | `frontend`, `internal/server` | Implemented | [app/uc-25-see-what-others-aim-at.md](app/uc-25-see-what-others-aim-at.md) |
+| UC-26 | Roll for the first player | `rules_engine`, `internal/server`, `frontend` | Implemented | [app/uc-26-roll-for-the-first-player.md](app/uc-26-roll-for-the-first-player.md) |
+| UC-27 | Join a server by its domain | `frontend` | Implemented | [server/uc-27-join-by-domain.md](server/uc-27-join-by-domain.md) |
+| UC-28 | Play on after a server update | `internal/server`, `rules_engine`, `frontend` | Implemented | [server/uc-28-play-on-after-a-server-update.md](server/uc-28-play-on-after-a-server-update.md) |
+| UC-29 | A game ends by an idle limit | `internal/server`, `frontend` | Implemented | [server/uc-29-idle-game-limits.md](server/uc-29-idle-game-limits.md) |

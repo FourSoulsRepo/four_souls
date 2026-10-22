@@ -22,6 +22,7 @@ var charmedFatty = engine.CardDef{
 		{
 			Kind:    engine.Triggered,
 			Text:    "Each time this deals damage to a player, they discard a loot card.",
+			Takes:   engine.TakesEventPlayer,
 			Trigger: cardkit.WhenThisDealsDamage(false),
 			Effects: []engine.Effect{cardkit.RollerDiscards},
 		},

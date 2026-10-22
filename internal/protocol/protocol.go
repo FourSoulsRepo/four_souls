@@ -17,7 +17,8 @@ import (
 // event or intent JSON, or changing its meaning, bumps it.
 // 2: the order prompt (19.16); an older client cannot answer it.
 // 3: the throw prompt and intent (15.60).
-const Version = 3
+// 4: no "skip all" message or field (15.84).
+const Version = 4
 
 // DefaultPort is the server's TCP port unless configured.
 const DefaultPort = 4774
@@ -49,7 +50,6 @@ const (
 	TypePick  = "pick"  // client → server: pick one of your offered characters
 
 	// Turn flow (6.7).
-	TypeSkipAll  = "skip_all"  // client → server: pass on the visible stack (N-06)
 	TypeWaitTurn = "wait_turn" // client → server: pass until the turn before mine ends (N-16)
 
 	// Disconnects (6.8).
@@ -59,6 +59,13 @@ const (
 	TypeSave  = "save"  // client → server: the host saves the game; it stops
 	TypeSaved = "saved" // server → client: the game was saved under this ID
 	TypeLoad  = "load"  // client → server: open a saved game's table again
+
+	// Live aiming and hover (15.35, N-15): never an intent or an event.
+	TypePresence = "presence" // client → server → the other players
+
+	// Server restarts and game ends (N-20). An older client ignores them.
+	TypeRestarting = "restarting" // server → client: back in a moment; reconnect
+	TypeNotice     = "notice"     // server → client: something to tell the player
 )
 
 // Envelope wraps every message. ID is set by the client on requests;
@@ -100,6 +107,12 @@ type Welcome struct {
 	// Create is set when this client may open a game here: always on a
 	// dedicated server, only for the host's own app on a hosted one (N-17).
 	Create bool `json:"create,omitempty"`
+	// Presence is set when the server relays live aiming and hover; a
+	// client sends none otherwise (15.35, ADR 016).
+	Presence bool `json:"presence,omitempty"`
+	// Name is the server's name, set by its operator; the app shows it
+	// instead of the address (N-18). Empty on an app's own host.
+	Name string `json:"name,omitempty"`
 }
 
 // Intent asks the server to do something; the server fills in the
@@ -117,13 +130,14 @@ type Update struct {
 	Allowed []engine.Intent `json:"allowed"`
 	// Aims are the targets an allowed play or use asks first, by its
 	// index in Allowed, to light while a card is dragged (15.25).
-	Aims  []engine.Aim `json:"aims,omitempty"`
-	Seats []Seat       `json:"seats"`
+	Aims []engine.Aim `json:"aims,omitempty"`
+	// Blocked says why this player's other cards and turn actions can't
+	// be used now (15.29).
+	Blocked []engine.Block `json:"blocked,omitempty"`
+	Seats   []Seat         `json:"seats"`
 	// Deadline is when the response timer answers for the waiting player,
 	// Unix ms; 0: no timer (N-07).
 	Deadline int64 `json:"deadline,omitempty"`
-	// SkipAll is set while this player skips the visible stack (N-06).
-	SkipAll bool `json:"skip_all,omitempty"`
 	// WaitTurn is set while this player waits for their turn (N-16).
 	WaitTurn bool `json:"wait_turn,omitempty"`
 	// Pause is set while the game waits for a disconnected player (N-08).
@@ -134,6 +148,9 @@ type Update struct {
 type Pause struct {
 	Away  []int  `json:"away"`  // seats whose player is gone
 	Votes []Vote `json:"votes"` // the connected players' votes so far
+	// Grace is when a kick vote opens, Unix ms, after a server restart:
+	// the players are still reconnecting (N-20). 0: open now.
+	Grace int64 `json:"grace,omitempty"`
 }
 
 // Vote is one player's vote while the game is paused: Kick true kicks
@@ -141,11 +158,6 @@ type Pause struct {
 type Vote struct {
 	Seat int  `json:"seat"`
 	Kick bool `json:"kick"`
-}
-
-// SkipAll turns "skip all" on or off (N-06).
-type SkipAll struct {
-	On bool `json:"on"`
 }
 
 // WaitTurn turns "wait for my turn" on or off (N-16).
@@ -165,6 +177,39 @@ type Seat struct {
 	Dice string `json:"dice,omitempty"`
 }
 
+// Presence is what a player points at now (N-15): the card they aim
+// from, and the card or spot the arrow or pointer is over. The engine
+// never sees it and records never keep it. Each one replaces the
+// sender's last; an empty one means nothing. The server fills in Seat,
+// keeps only spots every player can see, and drops the rest.
+type Presence struct {
+	Seat  int    `json:"seat"`            // the sender; set by the server
+	From  *Spot  `json:"from,omitempty"`  // what aims; nil: not aiming
+	At    *Spot  `json:"at,omitempty"`    // what the arrow or pointer is over
+	Point *Point `json:"point,omitempty"` // the pointer, while over no spot
+}
+
+// Spot is one thing on the table a player points at; exactly one field
+// is set. A card in the sender's hand is its slot, never its object, so
+// the others learn nothing about it (A-16).
+type Spot struct {
+	Object  engine.ObjectID  `json:"object,omitempty"`   // a card every player can see
+	Hand    int              `json:"hand,omitempty"`     // the sender's hand slot, from 1
+	Player  *engine.PlayerID `json:"player,omitempty"`   // a player
+	Deck    *engine.DeckKind `json:"deck,omitempty"`     // a deck
+	StackID int              `json:"stack_id,omitempty"` // a stack item
+}
+
+// Point is a spot on the board frame, 0 to 1 from its top left corner.
+type Point struct {
+	X float64 `json:"x"`
+	Y float64 `json:"y"`
+}
+
+// MaxPresence is how many presence messages a player may send each
+// second; the server drops the rest.
+const MaxPresence = 20
+
 // GameInfo is one game in the lobby list.
 type GameInfo struct {
 	ID      string   `json:"id"`
@@ -174,6 +219,16 @@ type GameInfo struct {
 	Sets    []string `json:"sets"`
 	Started bool     `json:"started"`
 	Locked  bool     `json:"locked,omitempty"` // joining needs the password (N-14)
+}
+
+// SeatInfo answers GET /seat?token=… (15.99): whether the token still
+// holds a seat at a table or in a game that has not finished, so a
+// restarted app offers Rejoin. Only the token's holder knows it.
+type SeatInfo struct {
+	Live    bool   `json:"live"`
+	Game    string `json:"game,omitempty"`
+	Host    string `json:"host,omitempty"` // the nickname of who created it
+	Started bool   `json:"started,omitempty"`
 }
 
 // Games lists the games on the server, and the saved ones.
@@ -194,6 +249,29 @@ type SaveInfo struct {
 // Saved tells the players their game was saved and stopped.
 type Saved struct {
 	Save string `json:"save"`
+}
+
+// Notice kinds (N-20).
+const (
+	// NoticeEngine: the game went on after a restart on a newer engine.
+	NoticeEngine = "engine_updated"
+	// NoticeLost: the new server could not read the game; it ended.
+	NoticeLost = "game_lost"
+	// NoticeIdle: the game ran into an idle limit and ended.
+	NoticeIdle = "game_idle"
+)
+
+// Why a game ran into an idle limit (NoticeIdle).
+const (
+	IdleEmpty = "empty" // nobody was connected for too long
+	IdleLong  = "long"  // the game ran for the longest time allowed
+)
+
+// Notice tells the player something the game screen does not show.
+type Notice struct {
+	Kind   string `json:"kind"`
+	Game   string `json:"game,omitempty"`
+	Reason string `json:"reason,omitempty"` // of NoticeIdle: IdleEmpty or IdleLong
 }
 
 // Load opens a saved game's table; its players take their seats back.
@@ -382,12 +460,27 @@ func CheckVersion(client int) string {
 // MaxName is the longest nickname, in characters (ST-06).
 const MaxName = 20
 
+// MaxServerName is the longest server name, in characters (N-18).
+const MaxServerName = 40
+
 // CleanName checks a nickname: trimmed, 1 to MaxName characters, no
 // control characters. It returns the cleaned name and whether it is ok.
 func CleanName(name string) (string, bool) {
+	return cleanText(name, MaxName)
+}
+
+// CleanServerName checks a server name as CleanName does a nickname,
+// with up to MaxServerName characters (N-18).
+func CleanServerName(name string) (string, bool) {
+	return cleanText(name, MaxServerName)
+}
+
+// cleanText trims name and checks it has 1 to most characters and no
+// control characters.
+func cleanText(name string, most int) (string, bool) {
 	name = strings.TrimSpace(name)
 	n := utf8.RuneCountInString(name)
-	if n == 0 || n > MaxName || !utf8.ValidString(name) {
+	if n == 0 || n > most || !utf8.ValidString(name) {
 		return "", false
 	}
 	for _, r := range name {

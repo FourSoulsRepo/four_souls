@@ -25,7 +25,7 @@
 * **1b. In the app:** the host opens **Menu** in the game, then **Save and leave**.
   * Others see only **Leave game** in their menu.
   * Everyone lands on the game list with "The game was saved.".
-* **4c. Continue in the app:** **Host a game**, then **Continue a saved game**.
+* **4c. Continue in the app:** **Play**, **LAN**, **Host a game**, then **Continue a saved game**.
   * The game list shows saved games: who played and when, with **Continue**.
 * **5b. Who is back:** the saved game's table marks seats "back" or "not back yet".
   * Everyone presses Ready; the game goes on where it stopped.

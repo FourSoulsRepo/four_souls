@@ -18,11 +18,11 @@ var curseOfLoss = engine.CardDef{
 			Trigger: engine.WhenYouDie(),
 			Effects: []engine.Effect{engine.Ask(func(c *engine.Ctx, a []int) {
 				if a[0] >= 0 {
-					c.G.DestroyObject(c.Controller, souls(c.G, c.Controller)[a[0]])
+					c.G.DestroyObject(c.Controller, c.G.DestroyableSouls(c.Controller)[a[0]])
 				}
 			}, engine.Question{Text: "Destroy which soul?", Options: func(c *engine.Ctx, _ []int) []string {
 				var out []string
-				for _, id := range souls(c.G, c.Controller) {
+				for _, id := range c.G.DestroyableSouls(c.Controller) {
 					out = append(out, string(c.G.Object(id).Card))
 				}
 				return out

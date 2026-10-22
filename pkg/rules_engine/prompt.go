@@ -59,15 +59,22 @@ type Intent struct {
 }
 
 // RuleError explains why an intent is not allowed, citing a rule ID.
+// Say, if set, is the same in a few words for the player (15.29).
 type RuleError struct {
 	Rule   string
 	Reason string
+	Say    string
 }
 
 func (e *RuleError) Error() string { return e.Reason + " (" + e.Rule + ")" }
 
 func refuse(rule, format string, args ...any) error {
 	return &RuleError{Rule: rule, Reason: fmt.Sprintf(format, args...)}
+}
+
+// deny is refuse with the words a player reads (15.29).
+func deny(rule, say, format string, args ...any) error {
+	return &RuleError{Rule: rule, Reason: fmt.Sprintf(format, args...), Say: say}
 }
 
 // Prompt returns what the engine waits for.
@@ -81,7 +88,9 @@ func (g *Game) Apply(in Intent) ([]Event, error) {
 		return nil, err
 	}
 	g.events = nil
+	g.checkMaxHP() // the last max HP, also after a load
 	g.apply(in)
+	g.checkMaxHP()
 	g.run()
 	// Bonus souls and the win are checked whenever the game stops too,
 	// not only between automatic steps.
@@ -112,10 +121,10 @@ func (g *Game) check(in Intent) error {
 			return refuse("R-TURN-06", "only the active player can end the turn, in the action phase, with an empty stack")
 		}
 		if m := g.Turn.MustAttack; m != 0 && g.canAttack(in.Player) && g.Object(m).Zone.Kind == ZoneInPlay {
-			return refuse("R-ABIL-12", "this turn you must attack %s first", g.Object(m).Card)
+			return deny("R-ABIL-12", "You must attack first", "this turn you must attack %s first", g.Object(m).Card)
 		}
 		if g.Turn.MustAttacks > 0 && g.canAttack(in.Player) {
-			return refuse("R-ABIL-12", "you must make %d more attacks this turn", g.Turn.MustAttacks)
+			return deny("R-ABIL-12", "You must attack first", "you must make %d more attacks this turn", g.Turn.MustAttacks)
 		}
 	case IntentDiscard:
 		if w.Kind != PromptDiscard {
@@ -135,16 +144,16 @@ func (g *Game) check(in Intent) error {
 			return refuse("R-CARD-08", "play one loot card from your hand")
 		}
 		if g.lootPlaysFor(in.Player) < 1 {
-			return refuse("R-CARD-08", "no loot play available")
+			return deny("R-CARD-08", g.noLootSay(in.Player), "no loot play available")
 		}
 		if g.bonus(StatOneLoot, in.Player, 0) > 0 && g.Players[in.Player].LootPlayed > 0 {
-			return refuse("R-ABIL-12", "only one loot card each turn")
+			return deny("R-ABIL-12", "Only one loot card each turn", "only one loot card each turn")
 		}
 		if g.locked(in.Player) {
-			return refuse("R-ABIL-12", "the active player's card forbids playing loot on their turn")
+			return deny("R-ABIL-12", "A card forbids loot this turn", "the active player's card forbids playing loot on their turn")
 		}
 		if g.def(in.Objects[0]).CopiesTapOnPlay && len(g.tapAbilitiesInPlay(in.Objects[0])) == 0 {
-			return refuse("R-ABIL-04", "no item in play has a ↷ ability to copy")
+			return deny("R-ABIL-04", "No item with a ↷ ability to copy", "no item in play has a ↷ ability to copy")
 		}
 		if ab, ok := g.lootAbility(in.Objects[0]); ok {
 			if err := g.targetsAvailable(ab, in.Player, in.Objects[0]); err != nil {
@@ -162,24 +171,24 @@ func (g *Game) check(in Intent) error {
 			return err
 		}
 		if g.locked(in.Player) && g.Object(in.Objects[0]).Role == RoleItem {
-			return refuse("R-ABIL-12", "the active player's card forbids activating items on their turn")
+			return deny("R-ABIL-12", "A card forbids items this turn", "the active player's card forbids activating items on their turn")
 		}
 	case IntentAttack:
 		if w.Kind != PromptPriority || !g.inOpenActionPhase() || in.Player != g.Turn.Active {
 			return refuse("R-ATK-01", "only the active player attacks, in the action phase, with an empty stack")
 		}
 		if g.attacksLeft() < 1 {
-			return refuse("R-TURN-07", "no attack left this turn")
+			return deny("R-TURN-07", "No attacks left", "no attack left this turn")
 		}
 		if tax := g.attackTax(in.Player); tax > g.Players[in.Player].Cents {
-			return refuse("R-ABIL-12", "attacking costs %d¢", tax)
+			return deny("R-ABIL-12", fmt.Sprintf("Attacking costs %d¢", tax), "attacking costs %d¢", tax)
 		}
 	case IntentPurchase:
 		if w.Kind != PromptPriority || !g.inOpenActionPhase() || in.Player != g.Turn.Active {
 			return refuse("R-SHOP-01", "only the active player purchases, in the action phase, with an empty stack")
 		}
 		if g.purchasesLeft() < 1 {
-			return refuse("R-SHOP-05", "no purchase left this turn")
+			return deny("R-SHOP-05", "No purchases left", "no purchase left this turn")
 		}
 	case IntentChoose:
 		if w.Kind != PromptChoose || g.Choice == nil {

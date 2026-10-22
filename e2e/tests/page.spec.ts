@@ -3,6 +3,7 @@
 import type { Locator, Page } from '@playwright/test';
 import { expect, test } from './fixtures';
 import { startGame } from './game';
+import { backToMenu, openHost, openLan, openOnline } from './menu';
 import { appURL } from './server';
 import { activePage, click } from './turn';
 
@@ -45,15 +46,17 @@ test('menu screens never scroll, even in a small window', async ({ page }) => {
   await page.setViewportSize({ width: 560, height: 360 });
   await page.goto(appURL());
   await expectNoPageScroll(page);
+  const settings = (p: Page) => p.getByRole('button', { name: 'Settings' }).click();
   for (const [open, sign] of [
-    ['Settings', 'Nickname'],
-    ['Host a game', 'Players'],
-    ['Join a game', 'Host address'],
+    [settings, 'Nickname'],
+    [openHost, 'Players'],
+    [openLan, 'Host address'],
+    [openOnline, 'Server address'],
   ] as const) {
-    await page.getByRole('button', { name: open }).click();
+    await open(page);
     await expect(page.getByLabel(sign)).toBeVisible();
     await expectNoPageScroll(page);
-    await page.getByRole('button', { name: 'Back' }).click();
+    await backToMenu(page);
   }
 });
 
@@ -81,7 +84,7 @@ test('a drag across the table selects nothing; the history and address do', asyn
 
 test('the host address can be copied', async ({ page }) => {
   await page.goto(appURL());
-  await page.getByRole('button', { name: 'Host a game' }).click();
+  await openHost(page);
   await page.getByLabel('Nickname').fill('Max');
   await page.getByRole('button', { name: 'Host', exact: true }).click();
   const address = page.getByRole('list', { name: 'Addresses' }).getByRole('listitem').first();

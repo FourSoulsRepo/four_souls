@@ -1,6 +1,6 @@
 // Dice looks (V-19). A dice texture is a 3×3 grid of faces, as in
 // Tabletop Simulator: the top row is unused, then 2 4 5 and 1 3 6.
-import type { GameEvent, Seat } from './protocol';
+import type { FirstRoll, GameEvent, Seat } from './protocol';
 
 const faces = new Map([
   [2, { col: 0, row: 1 }],
@@ -63,11 +63,19 @@ export function diceChoices<T extends { set: string; image: string }>(looks: rea
   return groups;
 }
 
-// tumbleFaces are the faces a thrown die shows as it lands and bounces
-// (15.62): two others, then the value it rolled.
-export function tumbleFaces(value: number): number[] {
-  const other = (n: number) => ((value + n - 1) % 6 + 6) % 6 + 1;
-  return [other(2), other(4), value];
+// CubeFaces are the six faces of a thrown die (15.69), as a d6: front
+// and back add up to seven, and so do top and bottom, left and right.
+export type CubeFaces = Record<'front' | 'back' | 'top' | 'bottom' | 'left' | 'right', number>;
+
+// cubeFaces puts the value on top, as a die lies on a table (15.82). A
+// value no face shows (a modified roll) still goes on top, around the
+// faces of a one.
+export function cubeFaces(value: number): CubeFaces {
+  const base = faceOf(value) ? value : 1;
+  // The sides come in pairs that add up to seven: the first two are
+  // never a pair.
+  const [front = 2, right = 3] = [1, 2, 3, 4, 5, 6].filter((n) => n !== base && n !== 7 - base);
+  return { top: value, bottom: 7 - base, front, back: 7 - front, right, left: 7 - right };
 }
 
 // LastRoll is the last roll, kept as a small die by the stack (15.63,
@@ -104,4 +112,57 @@ export function lastRollAfter(prev: LastRoll | null, events: GameEvent[]): LastR
 // "Ann rolled 4 — attack roll".
 export function lastRollText(r: LastRoll, player: (p: number) => string): string {
   return `${player(r.player)} rolled ${String(r.value)}${r.label ? ` — ${r.label}` : ''}`;
+}
+
+// Gaps between dice of one throw, as parts of a throw: small and uneven,
+// as dice leave a hand one by one (19.39).
+const diceGaps = [0.13, 0.08, 0.17, 0.1, 0.15];
+
+// diceDelays is when each die of a throw starts, as parts of a throw:
+// the first at once, each next one a gap later.
+export function diceDelays(count: number): number[] {
+  const delays: number[] = [];
+  let at = 0;
+  for (let i = 0; i < count; i++) {
+    delays.push(at);
+    at += diceGaps.at(i % diceGaps.length) ?? 0;
+  }
+  return delays;
+}
+
+// FirstRollRow is one player of this round of the first-player roll
+// (15.43): their die once thrown; next is the one who throws now.
+export interface FirstRollRow {
+  player: number;
+  value?: number;
+  next: boolean;
+}
+
+export function firstRollRows(fr: FirstRoll): FirstRollRow[] {
+  const rolls = fr.rolls ?? [];
+  return fr.players.map((player, i) => {
+    const value = rolls.at(i);
+    return { player, ...(value === undefined ? {} : { value }), next: i === rolls.length };
+  });
+}
+
+// firstPlayerText names who goes first and why: "Bo goes first —
+// rolled 1", "You go first — Cain". character names the card that
+// says so (first_player with text "character").
+export function firstPlayerText(e: GameEvent, you: number, player: (p: number) => string, card: (ref: string) => string): string {
+  const who = e.player === you ? 'You go first' : `${player(e.player)} goes first`;
+  if (e.text === 'character') {
+    return e.card ? `${who} — ${card(e.card)}` : who;
+  }
+  return e.amount ? `${who} — rolled ${String(e.amount)}` : who;
+}
+
+// tieText says who ties the first-player roll: "Tie at 2: Ann and Bo
+// roll again". The event's text lists the tied seats ("0,2").
+export function tieText(e: GameEvent, you: number, player: (p: number) => string): string {
+  const seats = (e.text ?? '').split(',').filter(Boolean).map(Number);
+  const names = seats.map((p) => (p === you ? 'You' : player(p)));
+  const last = names.pop() ?? '';
+  const who = names.length > 0 ? `${names.join(', ')} and ${last}` : last;
+  return `Tie at ${String(e.amount ?? 0)}: ${who} roll again`;
 }

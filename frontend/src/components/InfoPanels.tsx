@@ -7,11 +7,18 @@ import { boxOf } from '../zoom';
 import './InfoPanels.css';
 
 // TurnBadge shows the turn number, whose turn it is and its step (V-05).
+// Before turn 1 it names the first-player roll (15.43).
 export function TurnBadge({ view, names }: { view: GameView; names: Names }) {
   const { turn } = view;
   return (
     <div className="turn-badge" role="status" aria-label="Turn">
-      Turn {turn.number} · {names.player(turn.active)} · {stepName(turn.step)}
+      {view.first_roll ? (
+        <>Before turn 1 · First player roll</>
+      ) : (
+        <>
+          Turn {turn.number} · {names.player(turn.active)} · {stepName(turn.step)}
+        </>
+      )}
     </div>
   );
 }
@@ -42,7 +49,7 @@ export function HistoryPanel({ hide }: { hide: () => void }) {
           <li
             key={e.key}
             className={e.icon === '▶' ? 'history-turn' : undefined}
-            title={`Turn ${String(e.turn)}: ${e.text}`}
+            title={e.turn > 0 ? `Turn ${String(e.turn)}: ${e.text}` : e.text}
             onPointerEnter={(ev) => {
               if (e.card && ev.pointerType === 'mouse') {
                 setZoom({ ref: e.card, touch: false, at: boxOf(ev.currentTarget) });

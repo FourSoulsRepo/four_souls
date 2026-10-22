@@ -16,6 +16,7 @@ import {
   saveRecord,
   getSettings,
   getVersions,
+  checkSeat,
   saveSettings,
   startHosting,
   stopHosting,
@@ -24,30 +25,36 @@ import {
   type Icons,
   type LanServer,
   type MatInfo,
+  type Rejoin,
   type Settings,
 } from './bridge';
 import { noHostSetup } from './hostSetup';
 import type { CardInfo, Kind } from './cards';
 import { loadFonts } from './fonts';
-import { entriesFor, lookedAt, type Entry, type Looked } from './history';
+import { entriesFor, lookedAt, type Entry, type Looked, type Outcome } from './history';
 import type { LinePart } from './stack';
 import type { Box } from './zoom';
-import { emptyLobby, leftTable, lost, onMessage, remember, type Screen, type Session } from './lobby';
-import { connect, disconnect, drop, send } from './net';
+import { emptyLobby, forgotten, leftTable, lost, onMessage, remember, renamed, type Screen, type Session } from './lobby';
+import { connectFirst, disconnect, drop, send } from './net';
 import { claimEffect, nextBeat } from './animations';
 import { lastRollAfter, type LastRoll } from './dice';
 import { createPlayback, effectsFor, slotZone, type Effect } from './playback';
 import { loadSounds } from './sounds';
+import { endsGame, lostDialogAfter, retryDelay } from './reconnect';
 import {
+  httpBases,
   protocolVersion,
   recordURL,
-  wsURL,
+  wsURLs,
   type Create,
   type Envelope,
   type Hello,
   type Intent,
+  type Notice,
   type OptionView,
+  type Presence,
   type Update,
+  type Welcome,
 } from './protocol';
 
 export type { Screen } from './lobby';
@@ -61,9 +68,16 @@ export interface Zoom {
   at: Box;
   // rise: a hand card's zoom rises from it instead (H-13).
   rise?: boolean;
+  // why says why the player can't use the card now (15.29, F-17).
+  why?: string;
   // caption goes below the card: who owns it, and the used ability's
   // words, highlighted (S-06, S-07).
   caption?: ZoomCaption;
+  // outcome: what a history headline did, beside the card (15.90).
+  outcome?: Outcome[];
+  // stats: why the card's stats are not its print, or what an effect of
+  // this turn does, below the card (15.92, V-41).
+  stats?: string[];
 }
 
 export interface ZoomCaption {
@@ -85,6 +99,16 @@ export interface Aiming {
   choice?: Choice;
   targets: OptionView[];
   reason?: string;
+}
+
+// Why is a reason shown where the player clicked (15.29, F-18): a
+// wrong aim, or a card or action they can't use now. n restarts its
+// fade when the same reason shows again.
+export interface Why {
+  text: string;
+  x: number;
+  y: number;
+  n: number;
 }
 
 // Aimed is a played card's target, kept until the target prompt.
@@ -114,6 +138,9 @@ interface AppState extends Session {
   // playing is the event effect on screen, if any.
   playing: Playing | null;
   placed: Placed[];
+  // left is the sources of stack items whose card flew away; they hide
+  // until the next view is shown (19.41).
+  left: number[];
   // history is the match so far, as this viewer saw it (7.9).
   history: Entry[];
   // lastRoll is the last roll shown, for the small die by the stack (15.63).
@@ -136,6 +163,10 @@ interface AppState extends Session {
   // aiming is the card the player aims with; its targets glow (15.25).
   aiming: Aiming | null;
   setAiming: (aiming: Aiming | null) => void;
+  // why is the reason shown by the last refused click, if any.
+  why: Why | null;
+  showWhy: (text: string, x: number, y: number) => void;
+  endWhy: () => void;
   // aimed is the target a card was aimed at, at the step its play was
   // sent; the target prompt that follows picks it (15.25).
   aimed: Aimed | null;
@@ -143,14 +174,26 @@ interface AppState extends Session {
   playAt: (intent: Intent, target: OptionView) => void;
   // takeAimed returns aimed and forgets it.
   takeAimed: () => Aimed | null;
-  // skipAll turns "skip all" on or off (N-06).
-  skipAll: (on: boolean) => void;
   // waitTurn turns "wait for my turn" on or off (N-16).
   waitTurn: (on: boolean) => void;
+  // presence is what the other seats point at now, by seat (15.36).
+  presence: Record<number, Presence>;
+  // sendPresence shares what this player points at (ADR 016).
+  sendPresence: (p: Omit<Presence, 'seat'>) => void;
   // address is the server this app is connected to, for reconnecting.
   address: string;
   // reconnect says hello again with the seat's token (N-08).
   reconnect: () => Promise<void>;
+  // reconnecting is set while the app reconnects by itself to a game
+  // whose connection dropped (N-20); lostLong once it took long enough
+  // for the "Connection lost" dialog.
+  reconnecting: boolean;
+  lostLong: boolean;
+  // restarting is set when the server said it restarts (N-20).
+  restarting: boolean;
+  // notice is the server notice to show; endNotice closes it (N-20).
+  notice: Notice | null;
+  endNotice: () => void;
   // vote: kick the missing players, or wait for them (N-08).
   vote: (kick: boolean) => void;
   // saveRecord saves the finished game's record; it returns the file,
@@ -178,13 +221,33 @@ interface AppState extends Session {
   loadCards: () => Promise<void>;
   setZoom: (zoom: Zoom | null) => void;
   show: (screen: Screen) => void;
+  // playOpen: the main menu's Play group shows (M-06); it stays open
+  // while the player is on its screens.
+  playOpen: boolean;
+  setPlayOpen: (open: boolean) => void;
+  // path is the Play screen the player came by (M-03): its join screen
+  // shows the LAN games or the Online servers.
+  path: Path;
+  openPath: (path: Path) => void;
+  // rejoinable is the saved seat's game while its server says the seat
+  // is still on: the menu offers Rejoin (15.99). null: none.
+  rejoinable: { host: string; via: Rejoin['via'] } | null;
+  // checkRejoin asks the saved seat's server whether it is still on; a
+  // dead seat is forgotten, no answer keeps it for later.
+  checkRejoin: () => Promise<void>;
+  // rejoin takes the saved seat back, by the path it was joined by.
+  rejoin: () => Promise<void>;
   loadSettings: () => Promise<void>;
   // saveSettings reports whether Go stored them.
   saveSettings: (s: Settings) => Promise<boolean>;
   // saveNickname saves the nickname if it changed (ST-06).
   saveNickname: (nickname: string) => Promise<boolean>;
-  // joinServer connects to address and shows its game list.
-  joinServer: (address: string) => Promise<void>;
+  // joinServer connects to address and shows its game list. The
+  // address goes to Recent unless recent is false (the LAN screen); a
+  // token takes that seat back (15.97).
+  joinServer: (address: string, opts?: { recent?: boolean; token?: string }) => Promise<void>;
+  // forgetServer drops an address from the Recent list (N-18).
+  forgetServer: (address: string) => Promise<void>;
   // lan is the last search for games on the local network (N-13).
   lan: { searching: boolean; found: LanServer[]; error: string };
   findLanGames: () => Promise<void>;
@@ -204,22 +267,21 @@ interface AppState extends Session {
   loadSave: (save: string) => void;
   setReady: (ready: boolean) => void;
   leaveTable: () => Promise<void>;
-  // quit closes the connection, stops hosting, and goes to the menu.
-  quit: () => Promise<void>;
+  // quit closes the connection, stops hosting, and goes to the menu,
+  // or to another screen: the join screen, one level up from its games.
+  quit: (to?: Screen) => Promise<void>;
 }
+
+// Path is a way to play from the main menu's Play group (M-03).
+export type Path = 'lan' | 'online';
+
+// noSeat is a forgotten saved seat.
+const noSeat: Rejoin = { address: '', token: '', game: '', via: '' };
 
 // seatOf is this player's seat: from the table, or, for an app that came
 // back to a running game after a restart, from the welcome.
 export function seatOf(s: Pick<Session, 'lobby'>): number {
   return s.lobby.table?.you ?? Math.max(s.lobby.welcome?.seat ?? 0, 0);
-}
-
-// applyTheme colours menus and panels (ST-02).
-// Unit tests run without a document.
-function applyTheme(s: Settings): void {
-  if (typeof document !== 'undefined') {
-    document.documentElement.dataset.theme = s.theme;
-  }
 }
 
 // messageOf turns a rejected call into a message for the player. Wails
@@ -233,6 +295,11 @@ export function messageOf(e: unknown): string {
   }
   return 'something went wrong';
 }
+
+// presenceLife is how long a presence shows without being renewed, in
+// ms; presenceRenew is how often a sender renews a still one.
+export const presenceLife = 5000;
+export const presenceRenew = 2000;
 
 // dropConnection is for tests: it fails the connection as the network
 // would, so reconnecting can be checked.
@@ -255,11 +322,13 @@ export const useApp = create<AppState>()((set, get) => {
         seatOf(s),
         names(u),
         (s.history.at(-1)?.key ?? 0) + 1,
+        u.view,
       );
       const looked = lookedAt(u.events ?? [], seatOf(s));
       set({
         game: u,
         placed: [],
+        left: [],
         behind: playback.pending() > 0,
         history: [...s.history, ...entries],
         lastRoll: lastRollAfter(s.lastRoll, u.events ?? []),
@@ -268,6 +337,12 @@ export const useApp = create<AppState>()((set, get) => {
     },
     run: (effect, scale) =>
       new Promise((resolve) => {
+        // A card that leaves the stack is gone from it, even when its
+        // fly is skipped (19.41).
+        const leaves = effect.kind === 'fly' ? effect.leaves : undefined;
+        if (leaves !== undefined) {
+          set((s) => ({ left: [...s.left, leaves] }));
+        }
         // A clashing effect is logged and skipped (19.6).
         if (!claimEffect(effect)) {
           resolve();
@@ -292,6 +367,8 @@ export const useApp = create<AppState>()((set, get) => {
         character: (p) => u.view.players.find((x) => x.id === p)?.character.id,
         slot: (id) => slotZone(u.view, id),
         seen: (ref) => (get().game?.events ?? []).some((e) => e.kind === 'card_revealed' && e.card === ref),
+        roll: (stack) => get().game?.view.stack?.find((it) => it.id === stack)?.roll,
+        you: seatOf(get()),
       }),
     speed: () => get().settings.animation,
     shown: () => get().game,
@@ -300,18 +377,67 @@ export const useApp = create<AppState>()((set, get) => {
   // can take the seat back after a restart (N-08).
   const keepSeat = () => {
     const s = get();
-    const r = { address: s.address, token: s.lobby.welcome?.token ?? '', game: s.lobby.table?.game ?? '' };
+    const r = { address: s.address, token: s.lobby.welcome?.token ?? '', game: s.lobby.table?.game ?? '', via: s.path };
     const old = s.settings.rejoin;
-    if (r.token && (r.address !== old.address || r.token !== old.token || r.game !== old.game)) {
+    if (r.token && (r.address !== old.address || r.token !== old.token || r.game !== old.game || r.via !== old.via)) {
       void s.saveSettings({ ...s.settings, rejoin: r });
     }
+  };
+  // endedGame is the forgotten seat's game, for its record download.
+  let endedGame = '';
+  // forgetSeat drops the saved seat: its game ended, or the player left
+  // it on purpose (15.99). A crash or a closed window keeps it.
+  const forgetSeat = () => {
+    const s = get().settings;
+    set({ rejoinable: null });
+    if (s.rejoin.token) {
+      endedGame = s.rejoin.game;
+      void get().saveSettings({ ...s, rejoin: noSeat });
+    }
+  };
+  // seated: the player sits at a table or plays a game.
+  const seated = () => get().screen === 'game' || get().lobby.table !== null;
+
+  // serverURL is the WebSocket URL that opened for address: wss:// or
+  // ws:// (8.18). The record download follows its scheme.
+  let serverURL = '';
+  // remembering is the save that put the joined address in Recent; the
+  // server's name waits for it, so neither save undoes the other.
+  let remembering: Promise<unknown> = Promise.resolve();
+  // nameServer keeps the name from the server's welcome on its Recent
+  // entry (N-18).
+  const nameServer = (address: string, name: string) => {
+    void remembering.then(() => {
+      const s = get().settings;
+      const recent = renamed(s.recent, address, name);
+      if (recent !== s.recent) {
+        void get().saveSettings({ ...s, recent });
+      }
+    });
+  };
+
+  // A seat's presence goes when it is not renewed in time: a lost
+  // message never leaves an arrow behind. Senders renew it sooner.
+  const presenceTimers = new Map<number, number>();
+  const forget = (seat: number) => {
+    window.clearTimeout(presenceTimers.get(seat));
+    presenceTimers.delete(seat);
+    set((s) => ({ presence: Object.fromEntries(Object.entries(s.presence).filter(([k]) => Number(k) !== seat)) }));
+  };
+  const clearPresence = () => {
+    for (const t of presenceTimers.values()) {
+      window.clearTimeout(t);
+    }
+    presenceTimers.clear();
+    set({ presence: {} });
   };
 
   // stopPlayback drops queued updates and the effect on screen.
   const stopPlayback = () => {
     playback.clear();
     get().playing?.done();
-    set({ history: [], lastRoll: null, looking: [], placed: [] });
+    clearPresence();
+    set({ history: [], lastRoll: null, looking: [], placed: [], left: [] });
   };
 
   // open connects to address and says hello; the server answers with
@@ -328,23 +454,70 @@ export const useApp = create<AppState>()((set, get) => {
     }
   }
 
+  // retry reconnects by itself to a game whose connection dropped: at
+  // once, then ever less often; the badge turns into the "Connection
+  // lost" dialog after a while (N-20, 8.24).
+  const retry = { timer: 0, dialog: 0, attempt: 0, busy: false };
+  const retryLater = () => {
+    if (!get().reconnecting) {
+      retry.attempt = 0;
+      window.clearTimeout(retry.dialog);
+      retry.dialog = window.setTimeout(() => {
+        set({ lostLong: true });
+      }, lostDialogAfter());
+      set({ reconnecting: true, lostLong: false });
+    }
+    window.clearTimeout(retry.timer);
+    retry.timer = window.setTimeout(() => void retryNow(), retryDelay(retry.attempt++));
+  };
+  const retryNow = async () => {
+    const token = get().lobby.welcome?.token;
+    if (!get().reconnecting || retry.busy || !token) {
+      return;
+    }
+    window.clearTimeout(retry.timer);
+    retry.busy = true;
+    const ok = await open(get().address, token);
+    retry.busy = false;
+    if (!get().reconnecting) {
+      return; // the player left meanwhile
+    }
+    if (ok) {
+      endRetry();
+    } else {
+      retryLater();
+    }
+  };
+  const endRetry = () => {
+    if (get().reconnecting) {
+      window.clearTimeout(retry.timer);
+      window.clearTimeout(retry.dialog);
+    }
+    set({ reconnecting: false, lostLong: false, restarting: false });
+  };
+
   async function open(address: string, reconnect?: string): Promise<boolean> {
     // A restarted app still holds the seat of its last game there.
     const rejoin = get().settings.rejoin;
     const token = reconnect ?? (rejoin.address === address && rejoin.token ? rejoin.token : undefined);
-    const url = wsURL(address);
-    if (!url) {
-      set({ error: 'Type an address like 192.168.1.5 or 192.168.1.5:4774.' });
+    const urls = wsURLs(address);
+    if (!urls) {
+      set({ error: 'Type an address like 192.168.1.5, 192.168.1.5:4774 or games.example.com.' });
       return false;
     }
     try {
       const [versions, sets] = await Promise.all([getVersions(), getCardSets()]);
-      await connect(url, get().receive, () => {
+      serverURL = await connectFirst(urls, get().receive, () => {
         // A game keeps its table and history, to reconnect to.
         if (get().screen !== 'game') {
           stopPlayback();
         }
+        clearPresence();
         set((s) => ({ ...lost(s), connected: false }));
+        const s = get();
+        if (s.screen === 'game' && !s.game?.view.over && s.lobby.welcome?.token) {
+          retryLater();
+        }
       });
       // A reconnect keeps the table it comes back to.
       set(token ? { connected: true, address, error: '' } : { connected: true, address, cardSets: sets, lobby: emptyLobby, error: '' });
@@ -368,6 +541,7 @@ export const useApp = create<AppState>()((set, get) => {
   return {
     playing: null,
     placed: [],
+    left: [],
     history: [],
     lastRoll: null,
     looking: [],
@@ -385,6 +559,9 @@ export const useApp = create<AppState>()((set, get) => {
       if (env.type === 'update') {
         set({ behind: true });
         playback.push(env.data as Update);
+        if ((env.data as Update).view.over) {
+          forgetSeat();
+        }
       }
       if (env.type === 'error') {
         set({ sent: null, aimed: null });
@@ -392,6 +569,37 @@ export const useApp = create<AppState>()((set, get) => {
       if (env.type === 'table') {
         set({ aiming: null, aimed: null });
         keepSeat();
+      }
+      if (env.type === 'welcome') {
+        nameServer(get().address, (env.data as Welcome).name ?? '');
+      }
+      if (env.type === 'restarting') {
+        set({ restarting: true });
+      }
+      if (env.type === 'notice') {
+        const n = env.data as Notice;
+        set({ notice: n });
+        if (endsGame(n)) {
+          forgetSeat();
+          endRetry();
+          stopPlayback();
+          set((s) => ({ screen: 'join', lobby: { ...s.lobby, table: null }, game: null }));
+        }
+      }
+      if (env.type === 'presence') {
+        const p = env.data as Presence;
+        if (!p.from && !p.at && !p.point) {
+          forget(p.seat);
+          return;
+        }
+        window.clearTimeout(presenceTimers.get(p.seat));
+        presenceTimers.set(
+          p.seat,
+          window.setTimeout(() => {
+            forget(p.seat);
+          }, presenceLife),
+        );
+        set((s) => ({ presence: { ...s.presence, [p.seat]: p } }));
       }
     },
     act: (intent) => {
@@ -401,6 +609,13 @@ export const useApp = create<AppState>()((set, get) => {
     aiming: null,
     setAiming: (aiming) => {
       set({ aiming, selected: null });
+    },
+    why: null,
+    showWhy: (text, x, y) => {
+      set((s) => ({ why: { text, x, y, n: (s.why?.n ?? 0) + 1 } }));
+    },
+    endWhy: () => {
+      set({ why: null });
     },
     aimed: null,
     playAt: (intent, target) => {
@@ -412,25 +627,40 @@ export const useApp = create<AppState>()((set, get) => {
       set({ aimed: null });
       return aimed;
     },
-    skipAll: (on) => {
-      send('skip_all', { on });
-    },
     waitTurn: (on) => {
       send('wait_turn', { on });
+    },
+    presence: {},
+    sendPresence: (p) => {
+      if (get().lobby.welcome?.presence) {
+        send('presence', p);
+      }
     },
     address: '',
     reconnect: async () => {
       const token = get().lobby.welcome?.token;
-      if (token) {
-        await open(get().address, token);
+      if (!token) {
+        return;
       }
+      if (get().reconnecting) {
+        await retryNow();
+        return;
+      }
+      await open(get().address, token);
+    },
+    reconnecting: false,
+    lostLong: false,
+    restarting: false,
+    notice: null,
+    endNotice: () => {
+      set({ notice: null });
     },
     vote: (kick) => {
       send('vote', { kick });
     },
     saveRecord: async () => {
       const s = get();
-      const link = recordURL(s.address, s.lobby.table?.game ?? s.settings.rejoin.game, s.lobby.welcome?.token ?? '');
+      const link = recordURL(serverURL, s.lobby.table?.game ?? (s.settings.rejoin.game || endedGame), s.lobby.welcome?.token ?? '');
       if (!link) {
         return '';
       }
@@ -453,11 +683,12 @@ export const useApp = create<AppState>()((set, get) => {
       recent: [],
       animation: 'normal',
       fullscreen: false,
-      theme: 'dark',
       mat: '',
       dice: 'tear',
-      rejoin: { address: '', token: '', game: '' },
+      no_end_turn_ask: false,
+      rejoin: { address: '', token: '', game: '', via: '' },
       host: noHostSetup,
+      lan_address: '',
     },
     hosting: null,
     lan: { searching: false, found: [], error: '' },
@@ -467,7 +698,7 @@ export const useApp = create<AppState>()((set, get) => {
     dice: [],
     mats: [],
     backs: new Map(),
-    icons: { coin: '', sword: '' },
+    icons: { coin: '', sword: '', banner: '', sky: [] },
     zoom: null,
     loadCards: async () => {
       try {
@@ -499,11 +730,49 @@ export const useApp = create<AppState>()((set, get) => {
     show: (screen) => {
       set({ screen, error: '', zoom: null });
     },
+    playOpen: false,
+    setPlayOpen: (open) => {
+      set({ playOpen: open });
+    },
+    path: 'lan',
+    openPath: (path) => {
+      set({ path, screen: 'join', error: '', zoom: null });
+    },
+    rejoinable: null,
+    checkRejoin: async () => {
+      const r = get().settings.rejoin;
+      const bases = r.token ? httpBases(r.address) : null;
+      if (!bases) {
+        set({ rejoinable: null });
+        return;
+      }
+      try {
+        const seat = await checkSeat(bases, r.token);
+        if (get().settings.rejoin.token !== r.token) {
+          return; // another seat was saved meanwhile
+        }
+        if (seat.live) {
+          set({ rejoinable: { host: seat.host, via: r.via } });
+        } else {
+          forgetSeat();
+        }
+      } catch {
+        set({ rejoinable: null });
+      }
+    },
+    rejoin: async () => {
+      const r = get().settings.rejoin;
+      if (!r.token) {
+        return;
+      }
+      set({ rejoinable: null });
+      get().openPath(r.via || 'online');
+      await get().joinServer(r.address, { token: r.token, recent: r.via !== 'lan' });
+    },
     loadSettings: async () => {
       try {
         const s = await getSettings();
         set({ settings: s });
-        applyTheme(s);
       } catch {
         // Keep the defaults; Go already falls back to them.
       }
@@ -514,7 +783,6 @@ export const useApp = create<AppState>()((set, get) => {
         const saved = await saveSettings(s);
         set({ settings: saved, error: '' });
         // Settings apply at once, without a restart.
-        applyTheme(saved);
         if (saved.fullscreen !== before.fullscreen) {
           setFullscreen(saved.fullscreen);
         }
@@ -539,11 +807,15 @@ export const useApp = create<AppState>()((set, get) => {
         set({ lan: { searching: false, found: [], error: messageOf(e) } });
       }
     },
-    joinServer: async (address) => {
-      if (await open(address)) {
+    joinServer: async (address, opts) => {
+      if ((await open(address, opts?.token)) && opts?.recent !== false) {
         const s = get().settings;
-        void get().saveSettings({ ...s, recent: remember(s.recent, address) });
+        remembering = get().saveSettings({ ...s, recent: remember(s.recent, address) });
       }
+    },
+    forgetServer: async (address) => {
+      const s = get().settings;
+      await get().saveSettings({ ...s, recent: forgotten(s.recent, address) });
     },
     host: async (game) => {
       const info = await startHost();
@@ -578,14 +850,19 @@ export const useApp = create<AppState>()((set, get) => {
         return;
       }
       send('leave');
+      forgetSeat();
       stopPlayback();
       set((s) => leftTable(s));
     },
-    quit: async () => {
+    quit: async (to = 'menu') => {
+      if (seated()) {
+        forgetSeat();
+      }
+      endRetry();
       disconnect();
       stopPlayback();
       const hosting = get().hosting;
-      set({ connected: false, hosting: null, lobby: emptyLobby, game: null, screen: 'menu', error: '' });
+      set({ connected: false, hosting: null, lobby: emptyLobby, game: null, screen: to, error: '' });
       if (hosting) {
         await stopHosting().catch(() => undefined);
       }

@@ -6743,10 +6743,6 @@
       ],
       "rewards": [
         {
-          "count": "1x",
-          "kind": "Treasure"
-        },
-        {
           "count": "4x",
           "kind": "Coin"
         }
@@ -8393,10 +8389,6 @@
         }
       ],
       "rewards": [
-        {
-          "count": "1x",
-          "kind": "Loot"
-        },
         {
           "count": "3x",
           "kind": "Coin"
@@ -10316,10 +10308,6 @@
         }
       ],
       "rewards": [
-        {
-          "count": "1x",
-          "kind": "Soul"
-        },
         {
           "count": "3x",
           "kind": "Coin"

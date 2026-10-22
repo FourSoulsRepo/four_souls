@@ -102,6 +102,8 @@ Effects: []engine.Effect{engine.EffectFunc(func(c *engine.Ctx) {
 
 Things decided while the card resolves ("choose a deck", "a card from your hand") are questions: see "Questions on resolution" on [Effect blocks](Effect-blocks). Targets and "choose one-" are chosen when the card is played, never on resolution (R-ABIL-04).
 
+A card that takes from a player no target names sets `Takes` on that ability: it steals, or makes a player discard, lose ¢, or destroy an item or soul, and picks that player only as it resolves (XV. The Devil, Joker, "each player discards their hand"). `TakesOthers` means any player but its controller; `TakesEventPlayer` means the player of the triggering event, e.g. Dead Bird's "a player rolls a 3". The server then stops "Wait for my turn" for those players while the card is on the stack, so they can still answer it (15.85). Add the card to `TestTakes` in `pkg/rules_engine/cards/cards_test.go`. A card whose targets name every victim (Jawbone) and damage need no `Takes`: the server sees them already.
+
 Rules follow our rules text in `pkg/rules_engine/docs/rules/`; each rule has an ID such as `R-DEATH-14`. When the card text and a rule seem to disagree, add the case to `open-questions.md` instead of guessing.
 
 ## 3. Test it
@@ -180,3 +182,4 @@ If the set also has display data (names, text, images), add `pkg/card_db/data/my
 * `<card>_test.go` exists and passes.
 * The status report is regenerated.
 * `make lint` passes (see [Linters](Linters)).
+* A card that takes from a player no target names sets `Takes`.

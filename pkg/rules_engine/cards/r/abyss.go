@@ -4,7 +4,7 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 
 // Abyss (Eternal Treasure Card)
 //
-//	{Paid Effect}Destroy an item you control. If you do, put a counter on this.
+//	{Tap Effect}Destroy an item you control. If you do, put a counter on this.
 //	You have +1{ATK} for every 2 counters on this.
 //	-Eternal- This can't be destroyed or put into discard.
 var abyss = engine.CardDef{
@@ -13,9 +13,11 @@ var abyss = engine.CardDef{
 	Copies:  1,
 	Eternal: true,
 	Outside: true,
+	Tap:     true,
 	Abilities: []engine.Ability{{
 		Kind:    engine.Activated,
-		Text:    "$ Destroy an item you control. If you do, put a counter on this.",
+		Text:    "↷: Destroy an item you control. If you do, put a counter on this.",
+		Costs:   []engine.Cost{engine.Tap()},
 		Targets: []engine.TargetSpec{engine.ChooseWhere(engine.TargetYourItem, engine.NotThis)},
 		Effects: []engine.Effect{engine.EffectFunc(func(c *engine.Ctx) {
 			if c.G.DestroyObject(c.Controller, c.Targets[0].Object) {

@@ -11,7 +11,7 @@ func TestTheMissingPage(t *testing.T) {
 	}
 	tb2 := table(t, seat("isaac", "the_butter_bean"), seat("cain", "the_missing_page"))
 	tb2.G.ForceRolls(5, 6)
-	tb2.Activate(0, "the_butter_bean", 0, "no")
+	tb2.Activate(0, "the_butter_bean", 0, "No")
 	if tb2.G.Object(tb2.Find(0, "the_butter_bean")).Charged {
 		t.Error("declined: the 5 stays")
 	}

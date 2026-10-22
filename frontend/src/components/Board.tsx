@@ -14,22 +14,25 @@ import './Table.css';
 // (end, H-04). An empty zone keeps its place, so the board never
 // changes size (V-23).
 // The board is also where loot cards are dropped to play them (7.7).
+// glow: the game waits for the viewer, so the board glows (15.95).
 export function Board({
   view,
   ui,
+  glow = false,
   strip,
   end,
   children,
 }: {
   view: GameView;
   ui: Interact;
+  glow?: boolean;
   strip?: ReactNode;
   end?: ReactNode;
   children?: ReactNode;
 }) {
   return (
     <div className="board-cell">
-      <section className="board" aria-label="Board" data-drop="play">
+      <section className={`board${glow ? ' my-move' : ''}`} aria-label="Board" data-drop="play">
         <div className="board-strip">{strip}</div>
         <div className="board-info">{children}</div>
         <div className="board-slots board-monsters" role="group" aria-label="Monsters">
@@ -44,7 +47,7 @@ export function Board({
         </div>
         <div className="bonus-souls" role="group" aria-label="Bonus souls">
           {view.bonus_souls?.map((c) => (
-            <Card key={c.id} cardRef={c.card} size="small" objectId={c.id} />
+            <Card key={c.id} cardRef={c.card} size="small" counters={counted(c)} objectId={c.id} />
           ))}
         </div>
         <div className="board-decks">
@@ -60,6 +63,7 @@ export function Board({
             count={view.deck_sizes[DeckKind.treasure] ?? 0}
             discard={view.discards[DeckKind.treasure] ?? null}
             ui={ui}
+            peek={view.players.find((p) => p.treasure_top)?.treasure_top}
           />
           <DeckPair
             kind="loot"
@@ -76,19 +80,22 @@ export function Board({
 
 // DeckPair is a deck and its discard, side by side. top is a drawn card
 // waiting on the deck for its slot (19.9); it leaves the deck once a
-// place effect flies it to the slot.
+// place effect flies it to the slot. peek is the top card only the
+// viewer may look at, e.g. under There's Options (19.30).
 function DeckPair({
   kind,
   count,
   discard,
   ui,
   top,
+  peek,
 }: {
   kind: Kind;
   count: number;
   discard: CardView[] | null;
   ui: Interact;
   top?: CardView | undefined;
+  peek?: CardView | undefined;
 }) {
   const leaving = useApp(
     (s) =>
@@ -98,7 +105,7 @@ function DeckPair({
   );
   return (
     <div className="deck-pair">
-      <Deck kind={kind} count={count} size="small" handle={ui.deck(kind)} top={leaving ? undefined : top} />
+      <Deck kind={kind} count={count} size="small" handle={ui.deck(kind)} top={leaving ? undefined : top} peek={peek} />
       <Discard kind={kind} cards={discard} size="small" />
     </div>
   );

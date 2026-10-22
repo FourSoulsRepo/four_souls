@@ -73,6 +73,8 @@ export function claimEffect(e: Effect): boolean {
       return e.card === undefined || claim(e.card, 'arrive', e.kind);
     case 'reveal':
       return claim(e.card, 'show', 'reveal');
+    case 'played':
+      return claim(e.card, 'show', 'played');
     default:
       return true;
   }

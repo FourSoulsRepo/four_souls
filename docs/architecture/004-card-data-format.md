@@ -67,9 +67,10 @@ Use options 1 and 4; stats and rewards stay strings (option 5 lost).
 6. Build modes
    1. `-tags embed`: `carddb.Embedded()` packs `data/`.
    4. `-tags "embed cardimages"`: also packs `images/` (needs the submodule).
-   5. The images pattern skips dot-files, so the submodule's `.git` stays out.
+   5. The submodule's own Go package embeds its image folders; `.git` stays out.
    2. Otherwise `assets.CardsFS()` reads `$FOUR_SOULS_CARDS`.
    3. Then `cards/` next to the binary, then `pkg/card_db/` (dev).
+   6. A `cardimages` build first runs `go generate ./pkg/card_db/images`.
 
 ## Consequences
 

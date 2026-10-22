@@ -20,7 +20,7 @@
 }
 
 /* A panel is a dark board with an ink frame, like the game's dialogs
-   (15.40); it keeps its dark colors in the light theme too. */
+   (15.40). */
 .panel {
   --fg: #f2f2f2;
   --muted: #c9bfa6;
@@ -172,6 +172,11 @@
   -webkit-user-select: text;
 }
 
+/* A field that takes the row's free width, next to its button. */
+.field.grow {
+  flex: 1;
+}
+
 .list {
   display: flex;
   flex-direction: column;
@@ -216,6 +221,33 @@
 .lan-head {
   align-items: center;
   justify-content: space-between;
+}
+
+/* Recent servers: each joins by its name and has a remove button (N-18). */
+.recent {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.recent li {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.screen .recent button.forget {
+  padding: 2px 9px 0;
+  font-size: 15px;
+  line-height: 1.2;
+}
+
+/* The server's name under the Games heading (N-18). */
+.server-name {
+  margin: -8px 0 0;
+  font-family: var(--font-game);
+  font-size: 20px;
+  color: #f7de8f;
 }
 
 /* A locked game asks for its password in its row (N-14). */

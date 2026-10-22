@@ -27,12 +27,12 @@ var ErrRecordSize = errors.New("record: the file is too large")
 const maxRecord = 64 << 20
 
 // SaveRecord downloads a finished game's record from the game server
-// and asks where to save it (RP-05). link is http://host:port/record?…;
-// the dialog suggests the server's file name, cleaned again. The result
+// and asks where to save it (RP-05). link is http://host:port/record?…,
+// or https://… for a server behind an HTTPS proxy (8.18); the dialog suggests the server's file name, cleaned again. The result
 // is the saved file, or "" when the player cancelled.
 func (a *App) SaveRecord(link string) (string, error) {
 	u, err := url.Parse(link)
-	if err != nil || u.Scheme != "http" || u.Path != "/record" || u.Host == "" {
+	if err != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Path != "/record" || u.Host == "" {
 		return "", ErrRecordURL
 	}
 	data, name, err := fetchRecord(a.ctx, u.String())

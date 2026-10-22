@@ -14,6 +14,7 @@ var curvedHorn = engine.CardDef{
 	Statics: []engine.Static{{
 		Stat:   engine.StatPlayerATK,
 		Amount: 1,
+		When:   "first attack roll",
 		// Only while the first attack roll of the turn deals its damage.
 		Applies: func(g *engine.Game, self engine.ObjectID, p engine.PlayerID, _ engine.ObjectID) bool {
 			return g.Object(self).Controller == p && p == g.Turn.Active && g.Attack.On && g.Turn.AttackRolls == 1

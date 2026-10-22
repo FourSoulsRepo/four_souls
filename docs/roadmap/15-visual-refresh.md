@@ -2,12 +2,13 @@
 
 Goal: a clearer table, using fouronlinesouls.net as a second reference.
 
-Ideas: V-09, V-12, V-13, V-15 – V-31, V-33 – V-45, GS-06.
+Ideas: V-09, V-12, V-13, V-15 – V-31, V-33 – V-48, GS-06, N-18,
+M-02, ST-07, ST-08, V-51, V-52, M-03 – M-07, N-13.
 
 Order: 15.1, 15.15, 15.9 – 15.11, 15.16, 15.17, 15.38, 15.18 – 15.24,
 15.3, 15.37, 15.25, 15.32 – 15.34, 15.26, 15.27, 15.59 – 15.63, 15.6, 15.64,
-15.28 – 15.31, 15.35, 15.36, 15.39 – 15.46, 15.51, 15.52,
-15.54 – 15.58.
+15.28 – 15.31, 15.35, 15.36, 15.39 – 15.46, 15.88 – 15.91, 15.51, 15.52,
+15.54, 15.92 – 15.95, 15.55 – 15.58, 15.96 – 15.100.
 Images come first, so the new table is built with backs and mats.
 
 ## Rules for this step (owner, 2026-10-12)
@@ -22,6 +23,12 @@ Images come first, so the new table is built with backs and mats.
    1. Before and after shots of every changed screen.
    2. Owner reviews the changes and the screenshots.
    3. The review message links each screenshot file; no bare paths.
+6. Owner (2026-10-22): 15.54 and 15.92 – 15.94 go without a stop.
+   1. One commit per sub-step, as always.
+   2. Stop only for a question; owner reviews all four at the end.
+7. Owner (2026-10-22): 15.96 – 15.100 go without a stop.
+   1. One commit per sub-step, as always.
+   2. Stop only for a question; owner reviews all five at the end.
 
 ---
 
@@ -892,7 +899,7 @@ Images come first, so the new table is built with backs and mats.
 7. Owner notes (2026-10-15)
    1. Owner marks 15.27 solved.
 
-### [ ] 15.28 Prompt banners
+### [x] 15.28 Prompt banners
 
 1. Goal: the player always knows when the game waits for them (V-20).
 2. Tasks:
@@ -905,8 +912,32 @@ Images come first, so the new table is built with backs and mats.
 3. Done when:
    1. e2e test: every prompt type shows its banner and highlights.
    2. `make screenshots` covers "your turn to act" and "waiting for Ann".
+4. Result (2026-10-19)
+   1. The status line, bottom right, became the prompt banner.
+   2. Asked player: a gold plate, the game's letters, a breathing glow.
+   3. Others: a dark plate, "Waiting for Ann", her name in her color.
+   4. A hint under the title says more.
+   5. Prompts covered: turn, respond, act out of turn.
+   6. Also: choice, discard, put back in order, throw.
+   7. The player's own aim counts too: "Choose a target", Esc cancels.
+   8. Own turn lists what is left: "Play a card, attack, buy, or end the turn".
+   9. Words live in `prompt.ts` (`promptBanner`); `waitText` is gone.
+   10. The stack panel repeats prompts other than priority (V-11).
+   11. Its words match the banner; "Waiting for you to throw" is gone.
+   12. Pass glows when passing answers the prompt.
+   13. Picking a target: answers glow, every other card dims.
+   14. While aiming, other playable cards no longer glow.
+   15. New animation `prompt-glow`, in the Animations wiki page.
+   16. Optional sound or window flash: not done; left for the owner.
+   17. Use case UC-21; UC-14 and the Client wiki updated.
+   18. e2e `prompt.spec.ts`: every prompt, for both players.
+   19. e2e: Pass glow, pick dimming, own aim.
+   20. `make e2e`: only 19.18 failed (Dagaz in the deal), twice.
+   21. Screenshots: `.cache/screenshots/15.28/before/` and `after/`.
+5. Owner notes (2026-10-19)
+   1. Owner marks 15.28 solved.
 
-### [ ] 15.29 Reasons and choice dialogs
+### [x] 15.29 Reasons and choice dialogs
 
 1. Goal: the player sees why something is not possible, and chooses calmly.
 2. Tasks:
@@ -917,8 +948,33 @@ Images come first, so the new table is built with backs and mats.
 3. Done when:
    1. e2e test: an unusable card's zoom shows the reason.
    2. e2e test: "View board" hides and restores a choice.
+4. Result (2026-10-19)
+   1. Engine: `Game.Blocked(p)` says why each card or turn action is not allowed.
+   2. It checks each intent as if p had priority; `RuleError.Say` holds the words.
+   3. No refusal then: "Wait for your priority" or "Answer the prompt first".
+   4. Server sends it as `update.blocked`, only to its seat; ADR 006 updated.
+   5. Zoom: a red line under the card, e.g. "No loot plays left".
+   6. A click on that card shows the same note where it was clicked.
+   7. Buy, Attack and own End turn: dim, but a click says why.
+   8. One shared note for all of these and the aim's wrong click (`WhyNote`).
+   9. Choice, discard and order: big cards over the dimmed table.
+   10. "View board" hides the window; a bar brings it back.
+   11. Meanwhile table options glow and answer as before.
+   12. Order dialog keeps its smaller cards, so long rows fit.
+   13. Rooms get reasons from the engine; the client draws no rooms yet.
+   14. Use case UC-22; UC-13, Client, engine, Layers, Animations wikis updated.
+   15. e2e `reasons.spec.ts`: zoom, click note, icon note, View board.
+   16. Screenshots: `.cache/screenshots/15.29/before/` and `after/`.
+   17. The Menu button now draws above a choice: leave and save stay reachable.
+   18. Board-layout tests ban Eden: its starting choice now covers the decks.
+   19. The soul pick test presses "View board" before it picks on the table.
+   20. 19.28: the Eden ban made the 4-player test check too early; fixed.
+   21. `make e2e`: 194 passed; earlier failures under load are kept as evidence.
+5. Owner notes (2026-10-19)
+   1. Card options repeat the card's name in a button under it; see 15.66.
+   2. Owner marks 15.29 solved.
 
-### [ ] 15.30 Activity status
+### [x] 15.30 Activity status
 
 1. Goal: every player knows what the active player is doing (V-21).
 2. Tasks:
@@ -931,8 +987,25 @@ Images come first, so the new table is built with backs and mats.
 3. Done when:
    1. e2e test: a second player sees the status line.
    2. `make screenshots` covers "Ann attacks" and "Ann is thinking".
+4. Result (2026-10-19)
+   1. Activities: play, use, death penalty, attack, buy, think.
+   2. The active seat shows one line under the name: "Ann attacks Pooter".
+   3. Names in seat color, targets in red, as on the stack.
+   4. Engine: `GameView.attack` (target, deck) and `buying`, public.
+   5. The rest comes from the stack top and the open prompt.
+   6. "Thinking": any prompt that waits for the active player.
+   7. No line while the game waits for others with nothing going on.
+   8. The viewer's own seat shows none; the banner covers it.
+   9. Spectators: public state only; no spectator screen yet (step 9).
+   10. Shared with 15.28: `activity` in `prompt.ts`, the stack's `Part`.
+   11. Engine tests: attack and purchase in every viewer's view.
+   12. Vitest: every activity; e2e `prompt.spec.ts`: the other seat.
+   13. Use case UC-23; wiki `Client`, `Rules-engine`.
+   14. Screenshots: `.cache/screenshots/15.30/before/` and `after/`.
+5. Owner notes (2026-10-19)
+   1. Owner marks 15.30 solved.
 
-### [ ] 15.31 Fight marks and played cards
+### [x] 15.31 Fight marks and played cards
 
 1. Goal: fights and played cards are easy to follow for everyone.
 2. Tasks:
@@ -942,6 +1015,22 @@ Images come first, so the new table is built with backs and mats.
    4. It stays large while its effect resolves (T-16).
 3. Done when:
    1. e2e test: a second player sees the fight mark.
+4. Result (2026-10-19)
+   1. Attacker's character and target: red frame on every screen.
+   2. The frame comes with the target; a deck attack waits for its card.
+   3. Rolls, targets and damage were already public; now tested.
+   4. Owner picked the place for played cards: pop, then by the stack.
+   5. Another player's loot card pops large in the middle, "Ann plays".
+   6. It then stays under the stack panel until the item resolves.
+   7. It is still there while its own resolution effects play.
+   8. Only loot cards; the viewer's own plays show neither.
+   9. New animation `played`; claims the card's `show` (ADR 012).
+   10. Vitest: `fighters`, `playedCard`, the `played` effect.
+   11. e2e `fight.spec.ts`: the frame and roll, the pop and the kept card.
+   12. Use case UC-24; wiki `Client`, `Animations`.
+   13. Screenshots: `.cache/screenshots/15.31/before/` and `after/`.
+5. Owner notes (2026-10-19)
+   1. Owner marks 15.31 solved.
 
 ### [x] 15.32 Aiming arrow
 
@@ -1059,7 +1148,7 @@ Images come first, so the new table is built with backs and mats.
 5. Owner notes (2026-10-14)
    1. Owner marks 15.34 solved.
 
-### [ ] 15.35 Presence messages
+### [x] 15.35 Presence messages
 
 1. Goal: a light message kind for live aiming and hover (N-15).
 2. Tasks:
@@ -1074,8 +1163,39 @@ Images come first, so the new table is built with backs and mats.
    1. Server test: an aim message reaches the others, not the sender.
    2. Server test: the record has no presence messages.
    3. Server test: a hidden card's aim carries no card ID.
+4. Result (2026-10-20)
+   1. ADR 016: presence messages; ADR 006 and ADR 007 point to it.
+   2. `protocol.Presence`: `from`, `at`, `point`; the server sets `seat`.
+   3. `protocol.Spot`: one of object, hand slot, player, deck, stack item.
+   4. `server/presence.go`: relayed to the other seated players only.
+   5. Spots are checked against the spectator view of this step.
+   6. A hidden object becomes no spot; a hand card travels as its slot.
+   7. 20 a second per seat, a burst of as many; the rest are dropped.
+   8. Never answered, never recorded; the engine never sees it.
+   9. A dropped player's arrow goes: the others get an empty presence.
+   10. Protocol stays version 3: an older client ignores the new type.
+   11. Golden file: one sent and three relayed presence lines.
+   12. The client does not read it yet (15.36); TS test lists it as not yet.
+   13. Tests in `presence_test.go`: reach, hidden card, pace, drop, record.
+   14. Wiki `Server`: a Presence section and a leak audit row.
+   15. No screen changes, so no screenshots.
+5. Owner notes (2026-10-20)
+   1. Spectators should see presence too.
+   2. 20 a second is fine.
+   3. A dedicated server may turn presence off, to save resources.
+6. Result of the fixes (2026-10-20)
+   1. Relayed to every other client of the game, spectators too (N-15).
+   2. No spectator joins yet; step 9 brings them.
+   3. `Config.Presence`, flag `-presence`, JSON `presence`; on by default.
+   4. Off: the room drops every presence and relays none.
+   5. `welcome.presence` tells the client; it sends none when unset.
+   6. ADR 016, wikis `Server` and `Dedicated-server-on-a-VPS` updated.
+   7. Tests: `TestPresenceOff`; `TestParse` reads the file and the flag.
+   8. Open for 15.36: should waiting players send hover, or only aims?
+7. Owner notes (2026-10-20)
+   1. Owner marks 15.35 solved.
 
-### [ ] 15.36 Others' aim and hover
+### [x] 15.36 Others' aim and hover
 
 1. Goal: everyone sees what the active player is aiming at (T-08 – T-10, T-21, T-22).
 2. Tasks:
@@ -1086,6 +1206,37 @@ Images come first, so the new table is built with backs and mats.
    5. A late or missing message never breaks the table.
 3. Done when:
    1. e2e test: a second player sees the arrow and the red mark.
+4. Owner decision (2026-10-20)
+   1. A waiting player sends only aims, never hover: less noise.
+   2. The active player sends aims and hover.
+5. Result (2026-10-20)
+   1. `PresenceSender` shares the aim: source, and the spot or board point.
+   2. On the own turn it also shares the hovered card.
+   3. An own hand card goes as its slot only (A-16).
+   4. At most every 70 ms; a still one is renewed every 2 s.
+   5. `PresenceLayer` draws the other seats' arrows live (T-08).
+   6. A hidden source is a back lifted from its slot (T-09, T-22).
+   7. The spot under the head or pointer gets a red frame (T-10, T-21).
+   8. Not renewed in 5 s, a presence goes; a lost message heals.
+   9. Others' arrows are a little fainter, under every window.
+   10. New layer `presence`, under choices, over the hand.
+   11. ADR 016 gains the client rules; UC-25; wiki `Client`, `Layers`.
+   12. TS protocol test models the presence lines now.
+   13. Unit tests in `presence.test.ts`: spots, what is shared, frame points.
+   14. e2e test: the other sees the arrow, the lifted back, and the marks.
+   15. e2e test: a waiting player's hover reaches nobody.
+   16. e2e test: another player's arrow stays under a choice.
+   17. Screenshots: `.cache/screenshots/15.36/before/` and `after/`.
+6. Owner notes (2026-10-20)
+   1. The aim shot framed the monster, but the head was on a shop item.
+7. Result of the fixes (2026-10-20)
+   1. Cause: the frame showed at once, the arrow one frame later.
+   2. The pointer crossed the shop on its way; the shot caught both.
+   3. Marks and arrows now change together, in one pass per frame.
+   4. e2e test: the head ends on the marked monster's middle.
+   5. Screenshots: `.cache/screenshots/15.36/after/`, retaken.
+8. Owner notes (2026-10-20)
+   1. Owner marks 15.36 solved.
 
 ### [x] 15.37 Hit and death marks
 
@@ -1233,7 +1384,7 @@ Images come first, so the new table is built with backs and mats.
 7. Owner notes after the rework (2026-10-14)
    1. Owner marks 15.40 solved.
 
-### [ ] 15.41 foursouls.ru banner on the home screen
+### [x] 15.41 foursouls.ru banner on the home screen
 
 1. Goal: the home screen greets like foursouls.ru (V-34).
 2. Tasks:
@@ -1245,21 +1396,60 @@ Images come first, so the new table is built with backs and mats.
 3. Done when:
    1. `make screenshots` shows the banner.
    2. e2e passes without images.
+4. Result (2026-10-20)
+   1. Tools repo: `scraper banner -game <dir>` (commit 7df8fba).
+   2. Source: `FourSoulsLogo-1024x584.png`, the logo atop foursouls.ru.
+   3. Written as `images/assets/banner.webp`, 1024×584, 40 KB.
+   4. The images repo's one commit is amended; not pushed yet.
+   5. `App.Icons` gives `banner`; `Title` in `MainMenu.tsx` shows it.
+   6. The image sits in the `h1`, alt "Four Souls"; the heading keeps its name.
+   7. Missing or broken: the text title, as before.
+   8. Go `TestIconsFromFiles`; e2e `shell.spec.ts`.
+   9. UC-01 7; wikis `Client`, `Build-modes`; `NOTICE`; CHANGELOG.
+   10. Screenshots: `.cache/screenshots/15.41/before/` and `after/`.
+5. Owner notes (2026-10-20)
+   1. Owner pushed the tools, images and game repos.
+   2. Owner marks 15.41 solved.
 
-### [ ] 15.42 Animated background
+### [x] 15.42 Animated background
 
 1. Goal: home and setup screens feel alive (V-35).
 2. Tasks:
    1. Study the background animation of foursouls.ru.
-   2. Rebuild it with our own CSS; copy no code.
+   2. Download its images; copy its animation logic, not its CSS files.
    3. Use it on the home screen and the game setup screens.
    4. Respect the animation speed setting (ST-05).
    5. Without images: a plain background.
 3. Done when:
    1. `make screenshots` shows both screens.
    2. Owner compares it with the site.
+4. Owner notes (2026-10-20)
+   1. Download the site's images; never draw or generate our own.
+   2. Copy the animation logic; never copy the site's CSS files.
+5. Result (2026-10-20)
+   1. The site: a sky tile and five see-through star layers.
+   2. All drift down-left in a 120 s loop.
+   3. Each moves a whole number of tiles per loop: 1, then 4 to 12.
+   4. So the loop has no seam; the nearer stars move faster.
+   5. Tools repo: `scraper background -game <dir>` (commit f398c32).
+   6. Written to `images/assets/background/`: `sky.webp`, `stars-1` – `stars-5`.
+   7. The sky is lossy (17 KB); the star layers are lossless.
+   8. The images repo's one commit is amended; not pushed yet.
+   9. `App.Icons` gives `sky`: all six URLs, or none.
+   10. `Sky.tsx`: one fixed layer per tile, under every screen (`--z-sky`).
+   11. Each layer slides one tile per loop: 120 s, then 30 s to 10 s.
+   12. Only `transform` moves, so the window is not repainted.
+   13. Shown on every screen but the splash and the game table.
+   14. The speed setting scales the loop; Off stands it still.
+   15. The light theme keeps its plain menus.
+   16. Without images, or a layer missing: the plain color, as before.
+   17. Tests: Go `TestIconsFromFiles`, Vitest `sky.test.ts`, e2e `shell.spec.ts`.
+   18. UC-01; wikis `Client`, `Build-modes`, `Animations`, `Layers`; `NOTICE`; CHANGELOG.
+   19. Screenshots: `.cache/screenshots/15.42/before/` and `after/`.
+6. Owner review (2026-10-20)
+   1. Owner marks 15.42 solved.
 
-### [ ] 15.43 First player roll for everyone
+### [x] 15.43 First player roll for everyone
 
 1. Goal: everyone sees who goes first and why (GS-06).
 2. Tasks:
@@ -1271,8 +1461,40 @@ Images come first, so the new table is built with backs and mats.
 3. Done when:
    1. e2e test: every player's roll shows before the first turn.
    2. Use case.
+4. Owner decisions (2026-10-21)
+   1. Each player throws, with the Throw button (ADR 014).
+   2. A banner over the table names the winner.
+5. Result (2026-10-21)
+   1. The engine waits before turn 1: turn 0, `Game.FirstRoll`.
+   2. Each player throws in seat order (`Throw.First`).
+   3. The lowest goes first; the tied lowest throw again.
+   4. Events: `dice_rolled` "first player roll", `first_roll_tied`.
+   5. Then `first_player` with the roll, `game_started`, turn 1.
+   6. The roll comes before Eden's choice.
+   7. Cain skips it: `first_player` names his card.
+   8. The view has `first_roll`: round, players, dice so far.
+   9. The server sends Cain's `first_player` with the first update.
+   10. The client plays a first update's effects after drawing it.
+   11. Before turn 1: no active seat, no turn buttons.
+   12. The turn badge says "Before turn 1 · First player roll".
+   13. The stack panel lists the round's dice, in each look.
+   14. A tie and the winner are long banners (2.2 s).
+   15. History: each die, each tie, "Bo goes first — rolled 1".
+   16. Engine 0.3.0; `CanReplay` refuses older records.
+   17. Kicked seats and the response timer throw, as for other rolls.
+   18. Go tests: `TestFirstPlayerRoll*`, `TestCainGoesFirstWithoutARoll`.
+   19. Server tests: `TestFirstRollKickedSeatThrows`, `TestStartEventsNameCain`.
+   20. Vitest: history, banners, rows, activity, first update.
+   21. e2e: `first-roll.spec.ts`; every die shows before turn 1.
+   22. e2e `startGame` throws the roll (`throwFirstRoll`).
+   23. Fake updates in e2e count their step from the real one.
+   24. UC-26; ADR 007, 014; wiki `Rules-engine`, `Server`, `Client`.
+   25. Wiki `Animations`, `Frontend-tests`, `Screenshots`; CHANGELOG.
+   26. Screenshots: `.cache/screenshots/15.43/before/` and `after/`.
+6. Owner notes (2026-10-21)
+   1. Owner marks 15.43 solved.
 
-### [ ] 15.44 Declarations on the stack
+### [~] 15.44 Declarations on the stack
 
 1. Goal: everyone sees a "Buy" or "Attack" before it resolves (V-36).
 2. Tasks:
@@ -1282,6 +1504,10 @@ Images come first, so the new table is built with backs and mats.
 3. Done when:
    1. e2e test: a purchase and an attack show on the stack.
    2. UC for the stack panel updated.
+4. Moved (owner, 2026-10-21)
+   1. A declaration is not a stack item (R-ATK-02, R-SHOP-02).
+   2. It shows as a top row of the stack panel instead.
+   3. Moved to 15.91.
 
 ### [ ] 15.45 Look at the table after the game
 
@@ -1296,7 +1522,7 @@ Images come first, so the new table is built with backs and mats.
    2. e2e test: close the overlay, see an opponent's hand.
    3. Use case.
 
-### [ ] 15.46 Failed effects in the history
+### [~] 15.46 Failed effects in the history
 
 1. Goal: nothing fails silently (V-38).
 2. Tasks:
@@ -1307,6 +1533,9 @@ Images come first, so the new table is built with backs and mats.
 3. Done when:
    1. Vitest: a fizzle event becomes a history entry.
    2. e2e test: a failed purchase shows in the history.
+4. Moved (owner, 2026-10-21)
+   1. One history design for every play (V-51).
+   2. Moved to 15.88.
 
 ### [x] 15.47 Who deals damage a player takes
 
@@ -1429,7 +1658,7 @@ Images come first, so the new table is built with backs and mats.
    1. Owner merged the sounds into the private images.
    2. Owner marks 15.50 solved.
 
-### [ ] 15.51 Stack and history rows move
+### [x] 15.51 Stack and history rows move
 
 1. Goal: rows of the stack and history never jump (V-39).
 2. Tasks:
@@ -1439,12 +1668,33 @@ Images come first, so the new table is built with backs and mats.
    4. Stack panel and history strip both.
    5. Follow the animation speed setting (ST-05); off means none.
    6. Rows keep a stable key, so React moves them, not redraws.
+   7. From 15.52: damage and death marks play before the discard flight.
+   8. From 15.52: an item's or ability's row fades out on resolve.
 3. Done when:
    1. Vitest: rows keep their keys when the stack grows and shrinks.
    2. e2e test: a resolved row fades out; the next slides up.
    3. e2e test: with animations off, rows change at once.
+4. Result (2026-10-22)
+   1. `Rows` and `Row` in `components/Rows.tsx`: motion's `AnimatePresence`.
+   2. A new row fades in; the others slide (`layout="position"`).
+   3. A leaving row fades out, then the rest close the gap.
+   4. Fade 0.2 s, slide 0.25 s, times `scaleFor` of the speed setting.
+   5. Animations off: no `AnimatePresence`; rows change at once.
+   6. A leaving row drops its zones and is `aria-hidden`.
+   7. Stable keys: `stackRows` in `stack.ts`, `stripEntries` in `history.ts`.
+   8. Task 7: `marksFirst` in `playback.ts`.
+   9. A loot's hits and deaths in its update play before its discard flight.
+   10. Today the engine puts that damage on the stack; it never shares the update.
+   11. Checked in match records of 2026-10-20 – 22.
+   12. Task 8: an item's or ability's row fades out like any other.
+   13. Animation `row-move` in `Animations.md`.
+   14. Vitest: `stack.test.ts`, `history.test.ts`, `playback.test.ts`.
+   15. e2e: `stack.spec.ts`, two tests; `fakeStack` shared with 15.21's.
+   16. UC-14 2n, UC-12 3g; wiki `Client`; CHANGELOG.
+5. Owner notes (2026-10-22)
+   1. Owner marks 15.51 solved.
 
-### [ ] 15.52 Played cards fly through the stack
+### [~] 15.52 Played cards fly through the stack
 
 1. Goal: everyone follows a played card to the end (V-40).
 2. Tasks:
@@ -1461,6 +1711,16 @@ Images come first, so the new table is built with backs and mats.
    1. Vitest: a resolved loot gives hits, then the discard flight.
    2. e2e test: a played loot flies to the stack, then to the discard.
    3. `make screenshots` shows the card mid-flight.
+4. Moved (owner, 2026-10-21)
+   1. 15.74 made the flights: hand, stack panel, discard.
+   2. It covers every player's loot, the viewer's own too.
+   3. Its effect: the card shrinks into the stack panel.
+   4. Left: task 7, marks before the flight; not checked yet.
+   5. Left: task 8, a row fades out; that is 15.51.
+   6. Moved to 15.51.
+5. Owner notes (2026-10-22)
+   1. 15.51 did tasks 7 and 8; nothing is left here.
+   2. Owner marks 15.52 solved by 15.74 and 15.51.
 
 ### [x] 15.53 Create a game on a dedicated server
 
@@ -1495,7 +1755,7 @@ Images come first, so the new table is built with backs and mats.
 6. Owner notes (2026-10-14)
    1. Owner marks 15.53 solved.
 
-### [ ] 15.54 Sources of stat boosts
+### [x] 15.54 Sources of stat boosts
 
 1. Goal: a player sees why a character's HP or ATK changed (V-41).
 2. Tasks:
@@ -1517,6 +1777,62 @@ Images come first, so the new table is built with backs and mats.
    2. Monsters get the icons too, not only characters.
    3. Reference: the stat icons on fouronlinesouls.net characters.
    4. Study them first; borrow ideas only, no assets (15.1).
+5. Study of the reference (2026-10-22)
+   1. Hot-seat game; cheats gave XI. Strength, Meat!, Champion Belt, Polyphemus.
+   2. Screenshots: `.cache/screenshots/reference/boosts/`.
+   3. SB-01. A column of small rounded icons on the card's right edge.
+   4. SB-02. Each icon is cut from the source card's art.
+   5. SB-03. Hover an icon: its card zooms, captioned "Temporary effect".
+   6. SB-04. Icons show only temporary effects, not lasting items.
+   7. SB-05. Also non-stat effects: Eve's extra loot play gets one.
+   8. SB-06. Lasting items: the live number over the printed one, plain black.
+   9. SB-07. No sign whether a number went up or down, or why.
+   10. SB-08. Monsters: Polyphemus's +1 DC changes the number; no icon.
+   11. SB-09. A roll reads "rolled a 3 (+1)"; the source is not named.
+   12. SB-10. No "hits on N+" anywhere.
+   13. SB-11. Conditional ATK never shows: Champion Belt's +1 on the first roll.
+   14. SB-12. A one-shot boost (Round Worm) loses its icon when used.
+   15. SB-13. At end of turn all icons go at once, no animation.
+6. Owner decisions (2026-10-22)
+   1. Icons only for temporary effects: "this turn" and "next roll".
+   2. They replace "one icon per source" (task 2.4).
+   3. Lasting sources show only in the badge's hover sum.
+   4. Only stat and dice effects; no icons for loot plays or attacks (SB-05).
+   5. Badge green when a stat went up, red when it went down.
+   6. Monsters the same: temporary icons and the hover sum.
+   7. Split into 15.54 and 15.92 – 15.94; this one is the engine part.
+7. Tasks after the split
+   1. A breakdown per stat: one row per source, sharing `bonus()`'s loop.
+   2. A row: source card, amount, and when: lasting, this turn, next roll.
+   3. A row also says a condition: "first attack roll each turn".
+   4. `bonus()` is the sum of the breakdown; the two never drift.
+   5. `Boost` gets a `Source`; every place that adds a boost fills it.
+   6. Stats: player HP, ATK; monster HP, DC, ATK; roll and attack roll.
+   7. The view sends the rows for every character and every monster.
+   8. The view sends a player's printed HP and ATK, as for monsters.
+   9. Done when: engine test, a boosted character lists its sources.
+   10. Done when: engine test, `bonus()` equals the breakdown's sum.
+   11. Done when: view test, rows reach every player, hidden cards kept hidden.
+8. Result (2026-10-22)
+   1. `Part`, `Lasting`, `Parts()` in `statics.go`; `bonus()` sums `eachPart()`.
+   2. `Static.When` labels a condition; set on first-attack-roll statics.
+   3. Champion Belt, Polydactyly, Curved Horn, Bum-bo carry it.
+   4. A conditional static is listed only while it applies.
+   5. Belt's +1 ATK shows once the first roll resolved, for its damage.
+   6. 15.94 must show it ahead of the roll; noted there.
+   7. `Boost.Source` is `Ctx.Source`; set at every ability's boost.
+   8. Used marks and the death-penalty item leave it 0: never shown.
+   9. A played loot's source is its stack object, the card that resolved.
+   10. `nextAttackRollParts`: anyone's next roll shows on the active player.
+   11. View: `PlayerView` `printed_hp`, `printed_atk`, `sources`.
+   12. View: `MonsterStats.sources`, with the attacker's DC change on the target.
+   13. A source in a hand or deck shows no card and no id.
+   14. Protocol only gained fields: golden updated, version kept (ADR 006).
+   15. Engine version kept: no rules change; old states load with source 0.
+   16. Tests: `statics_test.go`, `view_test.go`, b2 `champion_belt_test.go`.
+   17. `protocol.ts` types; wiki `Rules-engine`. No UI change: no screenshots.
+9. Owner notes (2026-10-22)
+   1. Owner marks 15.54 solved.
 
 ### [x] 15.55 Curses left of the player
 
@@ -1587,7 +1903,7 @@ Images come first, so the new table is built with backs and mats.
 6. Owner notes (2026-10-15)
    1. Owner marks 15.56 solved.
 
-### [ ] 15.57 Purchases in the history
+### [~] 15.57 Purchases in the history
 
 1. Goal: everyone sees what a player bought (V-44).
 2. Tasks:
@@ -1601,6 +1917,10 @@ Images come first, so the new table is built with backs and mats.
    1. Vitest: a purchase event becomes a history entry.
    2. e2e test: buy an item; the History names it.
    3. UC-12 updated.
+4. Moved (owner, 2026-10-21)
+   1. One history design for every play (V-51).
+   2. The strip question: headlines only, with a coin badge (15.89).
+   3. Moved to 15.88 and 15.89.
 
 ### [ ] 15.58 "Choose one-" cards ask like The Bone
 
@@ -1816,3 +2136,1098 @@ Images come first, so the new table is built with backs and mats.
    4. Basement stays the default: it is the first image.
    5. Owner amended the images repo's single commit (`3ed5075`).
    6. Screenshots: `.cache/screenshots/mat-cathedral/before/` and `after/`.
+
+### [ ] 15.66 Choice cards without name buttons
+
+1. Goal: a card option is only its card, with no button repeating its name.
+2. Asked by the owner after 15.29 (2026-10-19).
+3. Tasks:
+   1. Card options: the big card is the button; no name button under it.
+   2. Text options ("yes", "keep", "monster deck") keep their buttons.
+   3. Ability lines and outcomes under an option stay.
+   4. Discard and order dialogs: check they repeat no names either.
+   5. e2e helpers that click `.choice-option button` also click the card.
+4. Done when:
+   1. e2e test: a card option has no name button and its card answers.
+   2. `make screenshots` covers a card choice and a text choice.
+
+### [x] 15.67 Kept die numbers on the card
+
+1. Goal: a card that keeps a die number shows it as a die badge.
+2. Asked by the owner (2026-10-19).
+3. Cards:
+   1. Telepathy for Dummies: the roll stored at the start of the turn.
+   2. Red Candle: the chosen number, till the end of the turn.
+   3. Crystal Ball: the guessed number, till the next roll.
+4. Tasks:
+   1. Engine: `CardDef.Dice` gives the numbers a card keeps.
+   2. The card view sends them as `dice`.
+   3. Crystal Ball keeps its guess outside counters; no counter badge.
+   4. Client: a die badge per number, in the controller's dice look.
+   5. Plain die with the number without a dice image.
+   6. No badge on the zoomed card, as for the other badges.
+5. Done when:
+   1. Engine tests: the three cards' view `dice`.
+   2. e2e test: a die badge on an item that keeps a number.
+   3. `make screenshots` covers a card with a die badge.
+6. Result (2026-10-19)
+   1. Engine: `CardDef.Dice`; the card view sends `dice`.
+   2. Telepathy reads its stored roll; Red Candle its numbers this turn.
+   3. Crystal Ball's guess moved to `Object.Chosen`; it was a counter.
+   4. So it no longer shows a green counter or counts as one.
+   5. Client: a die per number on the card art, right side.
+   6. Drawn in the owner's dice look, with the badges' ink edge.
+   7. Fix: `.card img` stretched the die texture; now `.card > img`.
+   8. Engine tests: view `dice` of the three cards, gone after use.
+   9. e2e test: `table.spec.ts`, "a card that keeps a die number".
+   10. UC-12 2f; wiki `Client`, `Effect-blocks`.
+   11. Screenshots: `.cache/screenshots/15.67/before/` and `after/`.
+7. Owner notes (2026-10-19)
+   1. Owner marks 15.67 solved.
+
+### [ ] 15.68 Every view field is read by the client
+
+1. Goal: a field the server sends but the client ignores fails a test (TS-07).
+2. Asked by the owner after 19.30 (2026-10-19).
+3. Tasks:
+   1. Go test: reflect the JSON fields of `GameView` and the types under it.
+   2. It fails when a field is missing from `frontend/src/protocol.ts`.
+   3. Vitest: each such field is read outside `protocol.ts`.
+   4. An allow list names fields unread on purpose, each with a reason.
+   5. Fix or list every field the first run finds.
+   6. Wiki `Frontend-tests.md`: how to add a field.
+4. Done when:
+   1. Removing the `treasure_top` read from `Board.tsx` fails the Vitest.
+   2. Adding a field to `PlayerView` in Go fails the Go test.
+   3. `make lint test frontend` pass.
+
+### [x] 15.69 Dice in 3D, with a sound
+
+1. Goal: dice look like solid cubes, and a throw is heard (V-17).
+2. Asked by the owner (2026-10-19).
+3. Tasks:
+   1. Every die gets light and shade on its face: a bevel.
+   2. The thrown die is a cube of six faces that tumbles in 3D.
+   3. It lands on the engine's value, tilted to show two more faces.
+   4. A shadow on the table grows as it falls.
+   5. A plastic die on wood plays at the first landing.
+   6. The sound's source is unknown: private images only.
+   7. Without the texture: a plain cube, numbers on its faces.
+4. Done when:
+   1. e2e: the thrown die is a cube, says the value, plays the sound.
+   2. Go test: the sound is served; none without the private images.
+   3. Screenshots before and after.
+5. Result (2026-10-19)
+   1. `Die.css`: every die gets a bevel and a gloss, sized in `cqi`.
+   2. `DieCube` in `Die.tsx`: six faces with `preserve-3d`.
+   3. `cubeFaces` (`dice.ts`): value in front; opposite faces add up to 7.
+   4. It replaces `tumbleFaces`: the cube really turns now.
+   5. The throw: fall, tumble, shadow and label share one length.
+   6. At rest: `rotateX(-20deg) rotateY(-24deg)`, top and right showing.
+   7. Faces are shaded by side; light comes from above.
+   8. Sound: `dice-roll.mp3`, mono MP3 64 kbit/s, 3 KB.
+   9. It plays at the first landing; served by `App.Sounds()`.
+   10. The file sits in the submodule, not committed there yet.
+   11. e2e: six faces, "Rolled 4", and the sound in `playback.spec.ts`.
+   12. `actions.spec.ts` reads the look from the cube's front face.
+   13. NOTICE, UC-13, wikis `Client` and `Animations`, CHANGELOG updated.
+   14. Screenshots: `.cache/screenshots/15.69/before/` and `after/`.
+   15. Playwright's headless WebKit draws any CSS cube flat: one face shows.
+   16. A textbook cube does the same there; Chromium draws it right.
+   17. Owner saw a test cube in real Safari: it draws in 3D.
+6. Owner notes (2026-10-20)
+   1. Owner merged the dice sound into the private images.
+   2. Owner marks 15.69 solved.
+
+### [x] 15.70 Ask before ending the turn
+
+1. Goal: End turn asks first while the player can still play (V-46).
+2. Asked by the owner (2026-10-20).
+3. Owner answers (2026-10-20)
+   1. Ask whenever End turn is not glowing: anything allowed counts.
+   2. The question lists what is left; a setting turns it off.
+4. Tasks:
+   1. `actions.ts`: list what is left besides passing and ending.
+   2. A dialog: "End turn?" with that list.
+   3. Buttons: End turn and Keep playing.
+   4. E or Enter confirms; Esc or a click outside cancels.
+   5. A glowing End turn ends at once, as now.
+   6. Setting "Ask before ending the turn", on by default.
+   7. The dialog gets a row in `docs/wiki/Layers.md`.
+5. Done when:
+   1. Vitest: the list for attack, buy, loot and abilities.
+   2. e2e: End turn with plays left asks; Keep playing keeps the turn.
+   3. e2e: with the setting off, End turn ends at once.
+   4. `make screenshots` covers the dialog.
+6. Result (2026-10-20)
+   1. `actionsFor` fills `TurnActions.left` when End turn does not glow.
+   2. Order: Attack, Buy, Play loot, Use abilities.
+   3. `EndTurnQuestion` in `TurnActions.tsx`: "End turn?" and that list.
+   4. It opens through a portal to `body`, so the board does not clip it.
+   5. A new update closes it; nothing is sent until End turn.
+   6. Setting `no_end_turn_ask`: false by default, so old files ask.
+   7. Settings checkbox: "Ask before ending the turn while plays are left".
+   8. Layers: it joins the `overlay` row; no new layer was needed.
+   9. e2e helper `endTurn` confirms the question; `games.spec` answers it.
+   10. Fake bridge `?noendask` starts with the question off.
+   11. Vitest `actions.test.ts`; e2e `actions.spec.ts`, `settings.spec.ts`.
+   12. Go test `TestNoEndTurnAsk`.
+   13. UC-13 7e, UC-10 3g; wikis `Client` and `Layers`; CHANGELOG.
+   14. Screenshots: `.cache/screenshots/15.70/before/` and `after/`.
+7. Owner notes (2026-10-20)
+   1. Owner marks 15.70 solved.
+
+### [x] 15.71 Server names and an editable Recent list
+
+1. Goal: the app shows a server's name, and the player prunes Recent (N-18).
+2. Asked by the owner (2026-10-20).
+3. Tasks:
+   1. Server: `-name` flag and `"name"` in the config file.
+   2. `welcome.name` carries it; empty on an app's own host.
+   3. Settings: each Recent entry keeps its address and name.
+   4. An old settings file with bare addresses still loads.
+   5. Join screen: a Recent button shows the name; the address is its tooltip.
+   6. A remove button next to each Recent entry.
+   7. Games screen: the server's name under the heading.
+4. Done when:
+   1. Go tests: the flag, the config file, a bad name, the welcome.
+   2. Go tests: old and new Recent in the settings file.
+   3. Vitest: remembering a name, forgetting an entry.
+   4. e2e: a joined server shows by name; removing it hides it.
+   5. `make screenshots` covers the join screen with Recent.
+5. Result (2026-10-20)
+   1. `Config.Name`, `-name`; `Config.Check` refuses a bad name.
+   2. `protocol.CleanServerName`: like a nickname, up to 40 characters.
+   3. `welcome.name`; protocol version stays 3 (ADR 006).
+   4. Settings `recent`: `{address, name}`; bare addresses still load.
+   5. A name that fails the check is dropped; the address shows.
+   6. The name is saved after the join's own save, so neither undoes the other.
+   7. A welcome without a name clears an old one.
+   8. Join screen: name button, address tooltip, × removes the entry.
+   9. Games list: the name under the heading.
+   10. e2e servers run as "Test server".
+   11. Go tests `TestParse`, `TestRun`, `TestServerName`, `TestOldRecentLoads`.
+   12. Vitest `lobby.test.ts`, `store.test.ts`; e2e `lobby.spec.ts`.
+   13. ADR 006; UC-02 1c, UC-04 1e, 1f; wikis; CHANGELOG.
+   14. Screenshots: `.cache/screenshots/15.71/before/` and `after/`.
+6. Owner notes (2026-10-20)
+   1. Owner marks 15.71 solved.
+
+### [x] 15.72 Reason and direction of every animation
+
+1. Goal: the owner can check each animation against its idea (V-47).
+2. Asked by the owner (2026-10-20).
+3. Tasks:
+   1. `docs/wiki/Animations.md`: a Why column, what the player learns.
+   2. A Direction column: from where to where, or where it stays.
+   3. Directions come from the code, not from the plan.
+   4. List the animations whose motion does not show the reason well.
+4. Done when:
+   1. Every inventory row has both columns.
+   2. The `animation inventory` Vitest still passes.
+5. Result (2026-10-20)
+   1. `Animations.md`: Why and Direction columns in the inventory.
+   2. "Adding an animation" asks for both in a new row.
+   3. Directions read from `playback.ts`, `Effects.tsx`, `lunge.ts`, `marks.ts`.
+   4. No code changed; no screenshots.
+6. Gaps for the owner to check
+   1. `reveal` then `place`: the card shows in the middle, then flies from the deck.
+   2. `played`: on resolve, the discard `fly` starts at its table spot, else the loot deck.
+   3. `stole`: "+N stolen" rises on the thief only; the victim shows nothing.
+   4. `dice`: a changed roll spins in the middle; nothing ties it to the roller.
+   5. `hit-shot`: a source not on screen sends no shot; only the burst shows.
+   6. `reveal` and `played` fade in place; nothing shows where the card goes.
+7. Owner answers (2026-10-20)
+   1. Fix every gap above: sub-steps 15.73 – 15.77.
+   2. Owner marks 15.72 solved.
+
+### [x] 15.73 A revealed card comes from its deck and leaves to its place
+
+1. Goal: a revealed card's path is visible end to end (15.72 gaps 1, 6).
+2. Asked by the owner (2026-10-20).
+3. Tasks:
+   1. `reveal`: the card flies out of its deck to the middle, growing.
+   2. A `fly` or `place` of a card just shown large starts in the middle.
+   3. "Just shown": a `show` claim in this beat or the one before.
+   4. It shrinks from the large size to the table size as it flies.
+   5. With no move after it, the reveal fades in the middle, as now.
+   6. `Animations.md`: Direction of `reveal`, `fly`.
+4. Done when:
+   1. Vitest: the start point of a move after a show.
+   2. e2e: a deck attack shows the card, then places it from the middle.
+   3. `make screenshots` covers the reveal in flight.
+5. Result (2026-10-20)
+   1. `reveal` carries its `deck`; the card grows from there to the middle.
+   2. `holdReveals` joins a reveal to a move of its card right after it.
+   3. Joined: the reveal holds; `FlyFromMiddle` flies the large card, shrinking.
+   4. Not joined: the reveal shrinks back onto its deck.
+   5. No deck on screen: it fades in the middle, as before.
+   6. A deck attack is not joined: its card waits on the deck (19.9).
+   7. Vitest `playback.test.ts`; e2e `playback.spec.ts`, two tests.
+   8. UC-12 1v; wikis `Client`, `Animations`; CHANGELOG.
+   9. Screenshots: `.cache/screenshots/15.73/before/` and `after/`.
+6. Owner notes (2026-10-20)
+   1. Owner marks 15.73 solved.
+   2. 15.74 – 15.77 go without a stop between them.
+   3. Each is marked done when it is finished.
+   4. The owner reviews all four together at the end.
+
+### [x] 15.74 Another player's loot goes from the hand to the stack to the discard
+
+1. Goal: a played loot card travels its real path (15.72 gaps 2, 6).
+2. Asked by the owner (2026-10-20).
+3. Tasks:
+   1. `played`: the card rises from the player's hand to the middle.
+   2. It then shrinks toward the stack panel.
+   3. Engine: a resolved or cancelled loot card emits `discarded`.
+   4. The event's `prev` is the card on the stack.
+   5. Client: that `fly` starts at the stack row or the played card.
+   6. The viewer's own loot also flies to the discard on resolve.
+   7. `Animations.md`: Direction of `played`, `fly`.
+4. Done when:
+   1. Go test: resolve and cancel emit `discarded` with `prev`.
+   2. Vitest: the discard `fly` starts at the stack.
+   3. e2e: a resolved loot card flies from the stack to the discard.
+   4. `make screenshots` covers both flights.
+5. Result (2026-10-20)
+   1. Engine `discardFromStack`: `discarded` with `prev` and text `stack`.
+   2. It covers a resolved loot card and a cancelled one.
+   3. Rules unchanged: no engine version bump; protocol stays 3.
+   4. `played` carries `from` (the hand) and `to` (the stack panel).
+   5. It rises from the hand, holds, then shrinks to a hand card in the stack.
+   6. The stack panel is the zone `stack`; `PlayedCard` is `played-<id>`.
+   7. A stack `discarded` flies from `played-<id>` at its card's size, else the row.
+   8. `PlayedCard` hides while its card flies away.
+   9. Tasks said "the played card" as the end of `played`; it ends in the panel.
+   10. A spot for it would take room from the history panel.
+   11. Go `TestLootLeavesTheStackWithAnEvent`; Vitest `playback.test.ts`.
+   12. e2e `playback.spec.ts`: three tests.
+   13. UC-12 1w; wikis `Client`, `Animations`; CHANGELOG.
+   14. Screenshots: `.cache/screenshots/15.74/before/` and `after/`.
+   15. Aiming skips the zones `stack` and `played-<id>`: a click there cancels.
+   16. Found by `aim.spec.ts`; evidence in `.cache/e2e-evidence/15.74/`.
+   17. The e2e frame trackers stop when read, or after 10 s.
+   18. Left running, they slowed later tests in the same worker to timeouts.
+   19. `startGame` pages stay open until the worker ends; evidence in `15.74-run*`.
+   20. One host start timed out at 5 s under load; it passed 8 of 8 alone.
+6. Owner notes (2026-10-20)
+   1. Owner marks 15.74 solved.
+
+### [x] 15.75 Stolen cents move from the victim to the thief
+
+1. Goal: a steal shows who lost and who gained (15.72 gap 3).
+2. Asked by the owner (2026-10-20).
+3. Tasks:
+   1. "−N¢" rises on the victim's panel; the victim is the event's text.
+   2. A gold coin flies from the victim's panel to the thief's.
+   3. "+N¢ stolen" rises on the thief's panel when it lands.
+   4. A new id `coin-shot` in `Animations.md`.
+4. Done when:
+   1. Vitest: the steal's effects, in order.
+   2. e2e: a steal shows the coin and both texts.
+   3. `make screenshots` covers the coin in flight.
+5. Result (2026-10-20)
+   1. `stole` with a victim becomes a `steal` effect; without one, the old popup.
+   2. `Steal` in `Effects.tsx`: "−N¢", the coin, then "+N¢ stolen".
+   3. The coin is the panel's `Coin`, now exported; it arcs between coin counters.
+   4. The texts keep the `popup` id; the coin is the new `coin-shot`.
+   5. Vitest `playback.test.ts`; e2e `playback.spec.ts`.
+   6. UC-12 1x; wikis `Client`, `Animations`; CHANGELOG.
+   7. Screenshots: `.cache/screenshots/15.75/before/` and `after/`.
+   8. e2e `centre` waits until its element's box holds still.
+   9. A coin image that fails to load is redrawn, and moved the box.
+   10. It failed on WebKit before; evidence in `.cache/e2e-evidence/15.75*/`.
+   11. After: 72 of 72 runs of the 15.73 – 15.75 tests passed.
+   12. Full runs still time out at game start now and then: bug 19.35.
+6. Owner notes (2026-10-20)
+   1. Owner marks 15.75 solved.
+
+### [x] 15.76 A changed roll shows what changed it
+
+1. Goal: a roll change ties the die to its cause (15.72 gap 4).
+2. Asked by the owner (2026-10-20).
+3. Tasks:
+   1. Engine: `roll_changed` carries `source` and `stack_id`.
+   2. Every `SetRoll` caller passes the card that changes the roll.
+   3. The die appears in the middle with the old value.
+   4. A shot flies from the source card, else its stack row, to the die.
+   5. On the hit the die spins to the new value.
+   6. The label reads "Ann's roll: 3 → 4", in Ann's color.
+   7. `Animations.md`: Direction of `dice`.
+4. Done when:
+   1. Go test: `roll_changed` names its source and roll.
+   2. Vitest: the old value comes from the last roll.
+   3. e2e: a roll change shows the shot and both values.
+   4. `make screenshots` covers the change.
+5. Result (2026-10-20)
+   1. `SetRoll(stackID, n, source)`; every card passes `c.Source`.
+   2. Mutant Spider's die choice passes none: no single card changes it.
+   3. `roll_changed` and `ModifyRoll` emit `source` and `stack_id`.
+   4. Rules unchanged: no engine version bump; protocol stays 3.
+   5. Old value: this update's events, else the shown stack's roll.
+   6. Tasks said "from the last roll"; the stack is exact with many rolls.
+   7. `ChangedDie`: old face, blue `roll-shot`, a full turn to the new face.
+   8. The label is in the roller's color; no old value: the new one only.
+   9. Go `TestRollChangedNamesItsSource`; Vitest and e2e `playback`.
+   10. UC-12 1y; wikis `Client`, `Animations`, `Effect-blocks`; CHANGELOG.
+   11. Screenshots: `.cache/screenshots/15.76/before/` and `after/`.
+6. Owner notes (2026-10-20)
+   1. Owner marks 15.76 solved.
+
+### [x] 15.77 Damage always shows where it came from
+
+1. Goal: no damage lands from nowhere (15.72 gap 5).
+2. Asked by the owner (2026-10-20).
+3. Tasks:
+   1. The shot's start: source card, its stack row, then the dealer's panel.
+   2. The dealer is the event's `by`; a monster's is its slot, if known.
+   3. Only with none of these on screen: the burst alone, as now.
+   4. `Animations.md`: Direction of `hit-shot`.
+4. Done when:
+   1. Vitest: the start point for each fallback.
+   2. e2e: damage from a resolved loot card flies from the player.
+   3. `make screenshots` covers it.
+5. Result (2026-10-20)
+   1. `damageFrom` in `playback.ts`: source, played card, stack row, dealer.
+   2. The dealer: `by` minus 1; their character card, else their area.
+   3. The client reads `by`, which the server already sent.
+   4. A monster's damage has no `by`; its own card is the source.
+   5. Tasks said "its slot"; a monster that left has no slot to show.
+   6. The large played card is a new start, before the stack row.
+   7. No engine change: `by` on a dead player's damage would change Splash Damage.
+   8. Vitest and e2e `playback`; the e2e pauses the shot for its picture.
+   9. UC-12 1z; wikis `Client`, `Animations`; CHANGELOG.
+   10. Screenshots: `.cache/screenshots/15.77/before/` and `after/`.
+6. Owner notes (2026-10-20)
+   1. Owner marks 15.77 solved.
+
+### [x] 15.78 Server name in the record
+
+1. Goal: a record says which server the game ran on (N-18).
+2. Asked by the owner (2026-10-20).
+3. Tasks:
+   1. Record header: `server`, the server's cleaned name.
+   2. Left out when the server has no name (an app's own host).
+   3. Optional field: record format stays 1; old records still read.
+   4. ADR 007 and UC-08 updated.
+4. Done when:
+   1. Go test: a named server's record header carries its name.
+   2. Go test: an unnamed server's header has no `server`.
+5. Result (2026-10-20)
+   1. `record.Header.Server`, JSON `server`, `omitempty`.
+   2. The hub passes its cleaned name in `recordInfo`.
+   3. A loaded save keeps its first header; it appends steps only.
+   4. File name unchanged: start time, game ID, nicknames.
+   5. Go tests `TestServerName` (`pkg/record`), `TestRecordReplays`.
+   6. ADR 007 2.10; UC-08 1b; wikis `Server`, `Dedicated-server-on-a-VPS`; CHANGELOG.
+   7. No screen changed; no screenshots.
+6. Owner notes (2026-10-20)
+   1. Owner marks 15.78 solved.
+
+### [x] 15.79 Exit button in the main menu
+
+1. Goal: the player can close the app from the main menu (M-02).
+2. Asked by the owner (2026-10-20).
+3. Tasks:
+   1. "Exit" is the last main menu button.
+   2. It quits the app through the bridge (Wails `Quit`).
+   3. UC-01 gains the step; wiki `Client`; CHANGELOG.
+4. Done when:
+   1. e2e: the menu lists Exit last; a click calls the fake `Quit`.
+   2. `make screenshots` covers the main menu.
+5. Result (2026-10-20)
+   1. `quitApp` in the bridge calls the runtime's `Quit`.
+   2. The fake runtime sets `window.fakeQuit`.
+   3. e2e `shell.spec.ts`: the button order and the quit.
+   4. UC-01 9; wiki `Client`; CHANGELOG.
+   5. Screenshots: `.cache/screenshots/15.79/before/` and `after/`.
+6. Owner notes (2026-10-20)
+   1. Owner marks 15.79 solved.
+   2. 15.80 and 15.81 go on without a stop; one review after both.
+
+### [x] 15.80 One dark theme
+
+1. Goal: the app has one theme, dark (ST-07).
+2. Asked by the owner (2026-10-20).
+3. Tasks:
+   1. Settings: no Theme field.
+   2. Go `settings`: no `theme`; an old file's `theme` is ignored.
+   3. CSS: the light theme rules go away.
+   4. UC-01, UC-10; wikis `Client`, `Screenshots`; CHANGELOG.
+4. Done when:
+   1. Go test: an old settings file with `theme` still loads.
+   2. e2e: Settings has no Theme field.
+   3. `make screenshots`: no light settings shot.
+5. Result (2026-10-20)
+   1. `Settings.Theme` and `Themes` gone from Go; `encoding/json` skips an old `theme`.
+   2. Bridge, store and fake bridge: no `theme`, no `data-theme`.
+   3. CSS: the light tokens, the hidden sky and the table's own dark tokens go.
+   4. The table's tokens equalled `:root`; panels keep their own `--muted`.
+   5. Go `TestOldThemeIgnored`; e2e "there is no theme to pick".
+   6. The sky test drops its light-theme step.
+   7. UC-01 8c removed; UC-10 3d; wikis `Client`, `Screenshots`; CHANGELOG.
+   8. Screenshots: `.cache/screenshots/15.80/before/` and `after/`.
+6. Owner notes (2026-10-20)
+   1. Settings fields on separate lines: Animations, then Game mat and Dice.
+   2. Done: two `.row`s; the previews stay under the mat and dice line.
+   3. e2e "animations sit above the game mat and the dice".
+   4. Screenshots: `.cache/screenshots/15.80/rows/`.
+   5. Owner marks 15.80 solved.
+
+### [x] 15.81 No Green felt mat
+
+1. Goal: the mat list has no Green felt (ST-08).
+2. Asked by the owner (2026-10-20).
+3. Tasks:
+   1. `mats.ts`, Go `ColorMats` and `.mat-felt` lose `felt`.
+   2. A saved `felt` falls back to the default mat.
+   3. UC-10; wiki `Client`; CHANGELOG.
+4. Done when:
+   1. Vitest: the choices have no felt; `felt` gives the default.
+   2. Go test: a saved `felt` loads as the default.
+   3. e2e: the mat list has no Green felt.
+5. Result (2026-10-20)
+   1. `mats.ts`: no `felt`; `matOf` reads a saved `felt` as the default.
+   2. Go: `ColorMats` without `felt`; `Load` turns a saved `felt` into "".
+   3. `Save` still takes any mat file name, as for image mats.
+   4. `.mat-felt` gone from `style.css`.
+   5. Vitest `mats.test.ts`; Go `TestFeltIsDefault`; e2e `settings.spec.ts`.
+   6. UC-10 3e; wiki `Client`; CHANGELOG.
+   7. Screenshots: `.cache/screenshots/15.81/before/` and `after/`.
+6. Owner notes (2026-10-20)
+   1. Owner marks 15.81 solved.
+
+### [x] 15.82 Dice seen from above
+
+1. Goal: a thrown die rests with its value on top, seen from above (V-48).
+2. Asked by the owner (2026-10-20).
+3. Tasks:
+   1. `cubeFaces` puts the value on the top face.
+   2. The cube rests tilted far back: the top face fills most of it.
+   3. The front and right sides still show as narrow strips.
+   4. The tumble ends on the new rest; shades still light the top.
+   5. UC-13, wikis `Client` and `Animations`, CHANGELOG.
+4. Done when:
+   1. Vitest: the value is on top; opposite faces add up to seven.
+   2. e2e: the landed die's top face shows the roller's look.
+   3. Screenshots before and after.
+5. Result (2026-10-20)
+   1. `cubeFaces` (`dice.ts`): the value on top; front and right are a free pair.
+   2. At rest: `rotateX(-58deg) rotateY(-28deg)`, in `Die.css` and `Effects.tsx`.
+   3. The top fills most of the die; front and right show as strips.
+   4. The tumble's second landing moves toward the new rest.
+   5. The front face gets a light shade; the top stays the lit one.
+   6. Vitest `dice.test.ts`; e2e `actions.spec.ts` reads `.die-top`.
+   7. UC-13 6b; wikis `Client` and `Animations`; CHANGELOG.
+   8. Screenshots: `.cache/screenshots/15.82/before/` and `after/`.
+   9. Headless WebKit still draws the cube flat: one side face shows, not the top.
+   10. Real Safari draws it in 3D (15.69); the label always says the value.
+6. Owner notes (2026-10-20)
+   1. Owner marks 15.82 solved.
+
+### [x] 15.83 "Shop" and "dice" wordings
+
+1. Goal: clearer words on the table (V-49, V-50).
+2. Asked by the owner (2026-10-20).
+3. Tasks:
+   1. The turn counters read "Shop N", not "Buys N".
+   2. Texts about a roll say "dice", not "die".
+   3. "Throw the dice", "Kept dice", "Your dice", "Ann's dice".
+   4. Engine question: "Which dice is the result?".
+   5. Card texts keep "die" for death.
+   6. UCs 12, 14, 21; wiki `Client`; CHANGELOG.
+4. Done when:
+   1. Vitest and e2e read the new words.
+   2. Screenshots before and after.
+5. Result (2026-10-20)
+   1. An opponent's turn line: "Loot 1 · Attacks 1 · Shop 1".
+   2. Banner and stack panel: "Throw the dice".
+   3. Labels: "Your dice", "Ann's dice", "Kept dice 4".
+   4. Mutant Spider asks "Which dice is the result?".
+   5. Go test checks that question; Vitest and e2e read the new words.
+   6. Code names (`Die`, `.die`) and card texts stay as they are.
+   7. UC-12 2f, UC-14, UC-21 3f; wiki `Client`; CHANGELOG.
+   8. Screenshots: `.cache/screenshots/15.83/before/` and `after/`.
+6. Owner notes (2026-10-20)
+   1. "Which dice is the result?" stays, with "dice".
+   2. Owner marks 15.83 solved.
+
+### [x] 15.84 No "Skip all"; a target ends the wait
+
+1. Goal: a waiting player never loses cards without a chance to answer.
+2. Asked by the owner (2026-10-20), from play tests.
+3. Tasks:
+   1. Remove "Skip all" (N-06): play tests show nobody needs it.
+   2. "Wait for my turn" ends when another player targets the player.
+   3. Or targets their character, items, souls, curses, or hand cards.
+   4. Only stack items added after the press count.
+   5. Then the player is asked as usual and may answer.
+4. Done when:
+   1. Go test: a target on the player or their item ends the wait.
+   2. Go test: a target on someone else keeps it.
+   3. e2e test: no "Skip all" button.
+   4. Screenshots before and after.
+5. Result (2026-10-20)
+   1. "Skip all" is gone: button, message `skip_all`, field `skip_all`.
+   2. Protocol version 4: a field was removed (ADR 006).
+   3. The server keeps the last stack ID when the wait begins.
+   4. A newer item of another player that targets the waiter ends it.
+   5. Counted: the player, their character, items, souls, curses, hand.
+   6. Damage to them or their cards counts too.
+   7. Not counted: their own items, costs paid, items from before.
+   8. A card that picks its victim only when it resolves is not seen.
+   9. Go tests: `TestWaitEndsOnTarget` (Jawbone), `TestTargeted`.
+   10. e2e: no "Skip all" button for either player.
+   11. UC-06, UC-14; wiki `Server`, `Client`, `Rules-engine`; CHANGELOG.
+   12. Screenshots: `.cache/screenshots/15.84/before/` and `after/`.
+6. Owner notes (2026-10-20)
+   1. Owner marks 15.84 solved.
+
+### [x] 15.85 Cards that take without a target end the wait
+
+1. Goal: a waiting player can answer a steal that names no target.
+2. Asked by the owner (2026-10-20), after 15.84.
+3. Why
+   1. 15.84 reads only the targets on a stack item.
+   2. XV. The Devil, Joker, Mom's Shovel pick the victim on resolution.
+   3. The waiter is passed for; then it is too late for Butter Bean.
+4. Tasks:
+   1. Engine: an ability says whom it may take from with no target.
+   2. Values: nobody, every other player, the event's player.
+   3. Mark every such card of every set.
+   4. Server: such an item ends the wait of those players.
+5. Done when:
+   1. Go test: XV. The Devil ends every other waiter's wait.
+   2. Go test: Dead Bird ends only the roller's wait.
+   3. Go test: the list of marked cards.
+   4. Wiki `Adding-a-card` says when to mark a card.
+6. Result (2026-10-20)
+   1. `Ability.Takes`: `TakesNobody`, `TakesOthers`, `TakesEventPlayer`.
+   2. `Game.MayTake(item, player)`; never the item's own controller.
+   3. The server checks it with the 15.84 targets.
+   4. Marked 33 abilities in b2, g2, fsp2, r; list in `TestTakes`.
+   5. Others: steals and "each player discards" chosen on resolution.
+   6. Event player: Dead Bird, Tarot Cloth, Cursed Fatty, Scolex, Magnet, ….
+   7. Not marked: targeted ones (Jawbone), damage, gifts, haunts.
+   8. Not marked: Battle Royale, Lust for Blood: attacks, not takes.
+   9. Engine version unchanged: no rule changed.
+   10. No screen changed; no screenshots.
+   11. UC-06; wiki `Server`, `Adding-a-card`; CHANGELOG.
+7. Owner notes (2026-10-20)
+   1. Owner marks 15.85 solved.
+
+### [x] 15.86 One engine check for "this item may hurt that player"
+
+1. Goal: one place decides which stack items end a player's wait.
+2. Asked by the owner (2026-10-20), after 15.85.
+3. Why
+   1. 15.84 reads targets and damage in the server.
+   2. 15.85 reads `Takes` in the engine.
+   3. The server repeats what the engine knows: target kinds, controllers.
+4. Tasks:
+   1. Engine: `Game.Threatens(item, player)`: targets, damage, `Takes`.
+   2. Server keeps only "newer than the press" and calls it.
+   3. No change seen by players.
+5. Done when:
+   1. Go tests of 15.84 and 15.85 cases move to the engine.
+   2. Server tests still pass unchanged in behavior.
+6. Result (2026-10-20)
+   1. `Game.Threatens` in `pkg/rules_engine/threat.go`.
+   2. It covers targets, damage, and `Takes`; `MayTake` is gone.
+   3. Server `targeted` keeps only "newer than the press".
+   4. `TestThreatens` in the engine: 13 cases, fake cards for `Takes`.
+   5. Server tests: Jawbone, XV. The Devil, Dead Bird, the press.
+   6. Engine version unchanged: no rule changed.
+   7. No screen changed; no screenshots.
+   8. Wiki `Server`, `Rules-engine`.
+7. Owner notes (2026-10-20)
+   1. Owner marks 15.86 solved.
+
+### [x] 15.87 "For-poor" release archives without card images
+
+1. Goal: each release also has the game without card images.
+2. Asked by the owner (2026-10-21), just for fun.
+3. Tasks:
+   1. Release workflow: an `edition` axis next to `target`.
+   2. `for-poor` builds with `embed` only; no card images checkout.
+   3. Archives: `four-souls-<version>-for-poor-<target>`.
+4. Done when:
+   1. A tag makes 10 archives: 5 full, 5 `for-poor`.
+   2. Full builds still need `CARD_DB_DEPLOY_KEY`.
+5. Result (2026-10-21)
+   1. `release.yml`: matrix `edition` × `target`.
+   2. Job, archive and artifact names get the `for-poor-` prefix.
+   3. `for-poor` skips the card images and their check.
+   4. Not yet run on a tag; YAML checked to parse.
+   5. No screen changed; no screenshots.
+   6. Wiki `Releases`; `release/README.txt`; CHANGELOG.
+6. Owner notes (2026-10-21)
+   1. Owner marks 15.87 solved.
+
+### [x] 15.88 History tells every play
+
+1. Goal: the History panel names every play: who did what (V-51).
+2. Asked by the owner (2026-10-21); replaces 15.46 and 15.57.
+3. Tasks:
+   1. One table in `history.ts`: each event kind gives a line or is skipped.
+   2. A skipped kind names its reason.
+   3. New lines: attack declared, its target, a purchase, a failed purchase.
+   4. Also: a kill, a soul, a gained item or treasure, a theft, a fizzle.
+   5. Flat lines under turn headers; each line names who.
+   6. Hovering a line zooms its card.
+   7. A line may be a headline: a play, an ability, an attack, a buy, a kill.
+   8. Hidden cards stay hidden: lines come from the viewer's own events.
+   9. Check that `died` names the killer; the engine adds it if not.
+   10. A Go test lists every `EventKind` for the client.
+4. Done when:
+   1. Vitest: each new event kind gives its line.
+   2. Vitest: an `EventKind` missing from the table fails.
+   3. e2e test: buy an item and kill a monster; the History names both.
+   4. `make screenshots` covers the full History panel.
+   5. UC-12 updated.
+5. Result (2026-10-21)
+   1. `historyKinds` in `history.ts`: 68 kinds; 36 give lines, 32 skip with a reason.
+   2. New lines: declared attack and purchase, the attack's target, a buy.
+   3. Also: a failed buy, gains, souls, thefts, cents, kills, deaths.
+   4. Also: destroyed, fizzled, cancelled, prevented, penalty, turn changes.
+   5. A bought item gets one line; its gain events give none.
+   6. Engine: a death event's `By` names the killer; no rule changed.
+   7. Engine version unchanged; protocol stays 3: only a field filled.
+   8. Go `TestEventKindsListed` keeps `testdata/event_kinds.txt`.
+   9. Go `TestDeathNamesTheKiller`.
+   10. Vitest: a kind missing from the table fails; each told kind gives a line.
+   11. e2e `info.spec.ts`: a real purchase, then a sent kill.
+   12. A real kill needs lucky dice, so its events are sent to the store.
+   13. Headlines are marked; the strip uses them in 15.89.
+   14. UC-12 3d; wikis `Client`, `Rules-engine`; CHANGELOG.
+   15. Screenshots: `.cache/screenshots/15.88/before/` and `after/`.
+6. Owner notes (2026-10-21)
+   1. Owner marks 15.88 solved.
+
+### [x] 15.89 Headlines in the strip
+
+1. Goal: the strip shows a turn's big moments at a glance (V-51).
+2. Asked by the owner (2026-10-21); answers the 15.57 strip question.
+3. Tasks:
+   1. Strip tiles: every headline from 15.88, not only stack items.
+   2. A buy gets a coin badge; a kill gets a skull badge.
+   3. Attacks and spells keep the sword and bolt badges (H-08).
+   4. Other lines stay in the full History only.
+   5. Hovering a tile zooms its card, as today.
+4. Done when:
+   1. Vitest: which entries are headlines.
+   2. e2e test: a buy and a kill each add one tile.
+   3. `make screenshots` covers the strip with both badges.
+5. Result (2026-10-21)
+   1. The strip shows `headline` entries, not only stack items.
+   2. **Owner:** an attack's target line is no headline (2026-10-21).
+   3. The attack roll's tile names the monster already.
+   4. A buy: the bought card with a gold coin badge.
+   5. A kill: every death resolves a death stack item first.
+   6. Its entry becomes the kill: the dead card, a skull badge, "Bo kills Gaper".
+   7. So the History has one line per death, not "Roll — death" and a kill.
+   8. Hover a buy or a kill: its card large, its line under it.
+   9. Vitest: badges, the death merge, a player death apart.
+   10. e2e `info.spec.ts`: a buy and a kill add two tiles.
+   11. The 15.22 and 15.47 strip tests mark their sent entries `headline`.
+   12. UC-12 3e; wiki `Client`; CHANGELOG.
+   13. Screenshots: `.cache/screenshots/15.89/before/` and `after/`.
+6. Owner notes (2026-10-21)
+   1. Owner marks 15.89 solved.
+
+### [x] 15.90 Strip popout
+
+1. Goal: hovering a tile shows what the play did, as in Hearthstone (V-51).
+2. Asked by the owner (2026-10-21).
+3. Tasks:
+   1. The played card large, an arrow, then its outcome cards.
+   2. Outcome by tile (owner, 2026-10-21):
+      1. A played card or ability: its target, then what it gave at once.
+      2. Damage: the dealer large; the target with the number.
+      3. A kill: the killer large; the dead card with a skull, then rewards.
+      4. A buy: the buyer large; the bought item.
+   3. Damage shows its red number; a death its skull (15.37).
+   4. A gain shows its card: a bought item, a soul, a treasure.
+   5. Cents show as a plain mark with the amount.
+   6. The headline's line stays as the caption.
+   7. Text cards without images get the same popout.
+   8. Touch: a tap opens it, as the zoom does today.
+   9. If a trigger lands on the wrong headline, events name their cause.
+4. Done when:
+   1. Vitest: outcome grouping, with a trigger in the middle.
+   2. e2e test: a kill tile's popout shows the monster with its skull.
+   3. `make screenshots` covers a popout with two outcomes.
+   4. UC-12 updated.
+5. Result (2026-10-21)
+   1. History entries get `from` (the large card) and `outcome`.
+   2. Lines after a headline in one update are its results.
+   3. Results: cents, loots, gained items, souls; a new update starts empty.
+   4. Bomb! resolves before its damage: its damage is a tile of its own.
+   5. The zoom shows an arrow and the results, on a dark panel.
+   6. A hit: the 15.37 starburst with the number; a death: a skull, dimmed card.
+   7. Cents: a gold mark with the amount.
+   8. The starburst's points come from `starPolygon` in `lunge.ts`.
+   9. A damage's dealer: its card, else its player; never its target.
+   10. Vitest: grouping with a trigger in the middle; each tile kind.
+   11. e2e `info.spec.ts`: hover a kill, its damage and the play.
+   12. No new layer or animation: the popout is part of the zoom.
+   13. UC-12 3f; wiki `Client`; CHANGELOG.
+   14. Screenshots: `.cache/screenshots/15.90/before/` and `after/`.
+6. Owner notes (2026-10-22)
+   1. Owner marks 15.90 solved.
+
+### [x] 15.91 Open declarations in the stack panel
+
+1. Goal: everyone sees an attack or a buy while it waits (V-51).
+2. Asked by the owner (2026-10-21); replaces 15.44.
+3. Tasks:
+   1. A declaration is not a stack item (R-ATK-02, R-SHOP-02).
+   2. While it is open, the stack panel shows a top row for it.
+   3. The row: "Bo attacks…", then "Bo attacks Pooter" once aimed.
+   4. Same for a buy: "Bo buys…", then the item.
+   5. The row looks unlike a stack item: no icon frame, a dashed edge.
+   6. It goes when the attack or the buy ends.
+   7. The view tells the client what is declared, if it does not yet.
+4. Done when:
+   1. Vitest: the row's words for each state.
+   2. e2e test: a declared attack and a declared buy show the row.
+   3. `make screenshots` covers both rows.
+   4. UC-14 updated.
+5. Result (2026-10-22)
+   1. The view already had both: `attack` and `buying` (15.30).
+   2. No engine or protocol change.
+   3. `declaration` in `stack.ts`; `DeclaredRow` in the stack panel.
+   4. Attack: "Bo attacks…", then the target; a player by name (R-ATK-20).
+   5. A monster deck attack: "Bo attacks the monster deck".
+   6. A buy is only "Bo buys…": the chosen item is bought at once.
+   7. So "then the item" (task 3.4) never shows; owner to decide.
+   8. The top stack item keeps its "resolves next" tint under the row.
+   9. `activity` and the row share `attackTarget`.
+   10. Vitest `stack.test.ts`; e2e `stack.spec.ts`, two tests.
+   11. UC-14 2m; wiki `Client`; CHANGELOG.
+   12. Screenshots: `.cache/screenshots/15.91/before/` and `after/`.
+6. Owner notes (2026-10-22)
+   1. Owner marks 15.91 solved.
+
+### [x] 15.92 Stat badges, hover sum, and temporary icons
+
+1. Goal: everyone sees a card's real stats and why (V-41).
+2. Planned by the owner (2026-10-22) after the 15.54 study.
+3. Needs 15.54: the breakdown in the view.
+4. Tasks:
+   1. Characters and monsters: a badge whenever a stat differs from print.
+   2. Green when the stat went up, red when it went down.
+   3. Hover a badge: the sum, "ATK 4 = 1 printed + 2 Polyphemus + 1 XI. Strength".
+   4. Temporary rows say "this turn" in the sum; conditions say theirs.
+   5. Temporary sources only: a column of small icons on the card's edge (SB-01).
+   6. Each icon cut from the source card's art (SB-02).
+   7. Text cards without images: a plain mark with the card's initial.
+   8. Hover an icon: its card zooms, "this turn" below it (SB-03).
+   9. Own area, opponents, and monster slots alike.
+   10. No icons for loot plays, attacks, or purchases (owner).
+5. Done when:
+   1. Vitest: badge color and the sum's words for each kind of row.
+   2. e2e test: XI. Strength gives one icon and a green ATK badge.
+   3. e2e test: a lasting item changes the badge but adds no icon.
+   4. `make screenshots` shows a character and a monster with sources.
+   5. UC-12 updated.
+6. Result (2026-10-22)
+   1. `stats.ts`: `trend`, `statLines`, `tempSources`; Vitest `stats.test.ts`.
+   2. Badges get `up` or `down`: a green or red number (`Card.css`).
+   3. Hurt health keeps its pale heart and red number; it wins over green.
+   4. The sum shows in the card's zoom, under the card (`Zoom.stats`).
+   5. So hovering the badge, or anywhere on the card, shows it; touch too.
+   6. Badges keep `pointer-events: none`: they never block the card's zoom.
+   7. Lasting sources first, then this turn's, then roll changes.
+   8. Icons: `SourceIcons` on the right edge, below the name (SB-01).
+   9. One icon per source and lasting; two stats of one source share it.
+   10. Icon hover zooms its card with what it does; leaving it re-zooms the card.
+   11. A text card's icon shows its initial; a hidden source a "?".
+   12. The die mark for next-roll boosts is drawn here already (15.93 task 1).
+   13. e2e `stats.spec.ts`: Brimstone, XI. Strength, Baby Haunt via saves.
+   14. `saveAndContinue` can swap the first card in play (`item`).
+   15. No new layer: icons sit inside the card.
+   16. UC-12 3h; wiki `Client`, `Screenshots`; CHANGELOG.
+   17. Screenshots: `.cache/screenshots/15.92/before/` and `after/`.
+   18. First full e2e: the new test raced the stack; it now waits for the play.
+   19. Two older tests flaked in that run, then passed: logged as 19.53, 19.54.
+   20. Evidence: `.cache/e2e-evidence/15.92-run1/` (not in git).
+7. Owner notes (2026-10-22)
+   1. Owner marks 15.92 solved.
+
+### [x] 15.93 Next-roll boosts and the end of turn
+
+1. Goal: a one-shot boost shows until it is used; boosts end visibly.
+2. Planned by the owner (2026-10-22) after the 15.54 study.
+3. Needs 15.92.
+4. Tasks:
+   1. A "next roll" boost is one more temporary icon, with a small die mark.
+   2. Example: Round Worm's "+1 to your next attack roll this turn".
+   3. Used by a roll: the icon leaves with a short animation (SB-12).
+   4. End of turn: temporary icons fade out (SB-13).
+   5. Badges go back to the printed number, or hide, after the fade.
+   6. Follow the animation speed setting (ST-05); off means none.
+   7. Each animation gets its `anim:` tag and a row in `Animations.md`.
+5. Done when:
+   1. Vitest: a used next-roll boost leaves the icon list.
+   2. e2e test: icons are gone after the end of turn.
+   3. e2e test: with animations off, icons go at once.
+   4. `make screenshots` shows a next-roll icon.
+   5. UC-12 updated.
+6. Result (2026-10-22)
+   1. Task 1: the die mark came with 15.92 (`card-source-die`).
+   2. `SourceIcons` wraps the icons in `AnimatePresence` (`source-icon`).
+   3. A new icon grows in from 40 %; a used next-roll icon grows and fades.
+   4. At the end of the turn an icon shrinks to 50 % and fades.
+   5. Times follow `scaleFor`; animations off: no `AnimatePresence`.
+   6. A leaving icon takes no pointer, no zoom; screen readers skip it.
+   7. Task 5 not done as written: badges change with the view, at once.
+   8. Holding the old number through the fade would show a stale stat.
+   9. **Owner** to check this choice in the review.
+   10. No Base Game card gives a next-roll boost; Round Worm is Gold Box.
+   11. e2e: `saveAndContinue` can add one from the first monster (`nextRoll`).
+   12. Its stat number is pinned by `TestNextAttackRollStatNumber`.
+   13. Vitest: a used next-roll boost leaves `tempSources`.
+   14. e2e `stats.spec.ts`: icons go at turn end, animations on and off.
+   15. e2e: a next-roll icon goes once the attack roll uses it.
+   16. `Animations.md` row; UC-12 3i; wiki `Client`; CHANGELOG.
+   17. Screenshots: `.cache/screenshots/15.93/before/` and `after/`.
+7. Owner notes (2026-10-22)
+   1. Owner marks 15.93 solved.
+
+### [x] 15.94 Real odds in a fight
+
+1. Goal: the attacker and everyone see what the roll needs (SB-09 – SB-11).
+2. Planned by the owner (2026-10-22) after the 15.54 study.
+3. Needs 15.54; best after 15.92.
+4. Tasks:
+   1. While an attack is open, the fight shows "Hits on 4+ (DC 5 − 1 Meat!)".
+   2. It counts every roll and DC change: lasting, this turn, next roll.
+   3. Conditional ATK shows for that attack: "ATK 3 (+1 Champion Belt, first roll)".
+   4. A roll's stack row names its sources: "rolled 3 +1 Meat! = 4".
+   5. The same words in the history entry of the roll.
+   6. DC stays between 1 and 6 (R-ATK-18); the line uses that DC.
+   7. **Owner** picks where the line sits: stack row, or by the monster.
+5. Done when:
+   1. Engine test: the needed number matches the hit check for each case.
+   2. Vitest: the line's words with one, two, and no modifiers.
+   3. e2e test: Meat! makes the line read one lower.
+   4. `make screenshots` shows an open attack with the line.
+   5. UC-14 updated.
+6. Owner decisions (2026-10-22)
+   1. The line sits in the open-attack row of the stack panel (15.91).
+7. Notes from 15.54
+   1. Champion Belt's +1 ATK applies only after the first roll resolves.
+   2. So the line counts first-roll ATK as if the open roll hits.
+8. Result (2026-10-22)
+   1. `rollResult` (`stack.go`): the roll's clamp and Eternal D6, shared.
+   2. `rollParts`: what a roll counts, next-roll boosts as they get used.
+   3. `AttackView.Odds`: DC, the faces that hit, the ATK of a hit, sources.
+   4. Hit ATK from a game copy with `AttackRolls` + 1: Belt counts ahead.
+   5. Combat changes (`CombatMod`) and helpers' rolls are not counted.
+   6. A thrown roll's item: `sources`, and `final` when they change it.
+   7. `EvRollResolved.Sources`: taken before next-roll boosts are used.
+   8. Engine test: odds match the hit check, 8 cases × 6 faces.
+   9. b2 test: Champion Belt's +1 ATK in the odds before the first roll.
+   10. Client: `oddsLine`, `hitsText`, `rollChanges` in `stats.ts`.
+   11. The line sits in the open-attack row (owner): `stack-odds`.
+   12. "Hits on 4+ (DC 5 − 1 Meat!) · ATK 1": roll changes come off the DC.
+   13. A 2 or 3 that becomes a 1 lists the faces: "Hits on 1, 4, 5, 6".
+   14. Roll row: "(+1 Meat! = 2)"; History: "rolls 1 → 2 (+1 Meat!)".
+   15. Vitest: `stats`, `stack`, `history`; e2e `stats.spec.ts` with Meat!.
+   16. Protocol only gained fields; engine version kept: no rules change.
+   17. UC-14 2o, 2p; wiki `Rules-engine`, `Client`, `Screenshots`; CHANGELOG.
+   18. Screenshots: `.cache/screenshots/15.94/before/` and `after/`.
+   19. Saved state holds the view type now: its fields got `omitempty` (N-20).
+   20. The 15.91 e2e test now reads the declaration's own line.
+   21. Full e2e: 19.53 and 19.54 again; 19.54 failed its rerun too.
+   22. 19.54's cause is 15.51's row fade, not 15.94; fixed right after, as 19.54.
+   23. Evidence: `.cache/e2e-evidence/15.94-run1/` (not in git).
+9. Owner notes (2026-10-22)
+   1. Owner marks 15.94 solved.
+
+### [x] 15.95 The table shows who holds priority
+
+1. Goal: a player sees at a glance that the game waits for them (V-52).
+2. Planned by the owner (2026-10-22).
+3. Tasks:
+   1. The game waits for the viewer: the center board glows green.
+   2. Same for the active and a non-active player.
+   3. It pulses once when priority comes, then glows softly.
+   4. It waits a short moment, so an instant answer shows no flash.
+   5. Off while the player aims or picks a target, and while paused.
+   6. Every seat marks the asked player: an hourglass by the name.
+   7. No glow on the board while the game waits for someone else.
+   8. Give the pulse its `anim:` tag and a row in `Animations.md`.
+4. Done when:
+   1. Vitest: who is asked, and when the board glows.
+   2. e2e test: the asked player's board glows; the other's does not.
+   3. e2e test: both see the hourglass on the asked seat.
+   4. `make screenshots` shows both sides.
+   5. UC-21 updated.
+5. Result (2026-10-22)
+   1. `myMove` (`prompt.ts`): any prompt that asks the viewer, not aim or pick.
+   2. `GameScreen` adds: the player can act now, and no pause.
+   3. `Board` gets `my-move`: green rim, soft inner tint, outer halo.
+   4. The halo starts 150 ms late, pulses once, stays at 55 % (`board-my-move`).
+   5. Outer shadows only, no pointer: the halo covers no card and no click.
+   6. Reduced motion: the soft halo without the pulse.
+   7. `askedSeat`: whom the game waits for; -1 for nobody or game over.
+   8. Every seat draws an hourglass in that player's color by the name.
+   9. The hourglass is a shape, so it reads without color.
+   10. It shows on the own seat too, next to the green board.
+   11. Vitest: `myMove`, `askedSeat`.
+   12. e2e `prompt.spec.ts`: turn, out-of-turn response, pick.
+   13. UC-21 2a, 4a; wiki `Client`, `Animations`, `Screenshots`; CHANGELOG.
+   14. Screenshots: `.cache/screenshots/15.95/before/` and `after/`.
+6. Owner notes (2026-10-22)
+   1. Owner marks 15.95 solved.
+
+### [x] 15.96 Play group in the main menu
+
+1. Goal: the menu starts by where you play (M-03, M-06, M-07).
+2. Planned by the owner (2026-10-22).
+3. Tasks:
+   1. Main menu: Play, Records, Settings, Exit.
+   2. Play opens LAN, Online, Learn to play in place, indented.
+   3. Buttons below Play slide down; the ones above stay put.
+   4. A second click on Play or Esc closes the group.
+   5. Learn to play and Records are disabled, marked "Soon".
+   6. LAN and Online open the old Join screen until 15.97 and 15.98.
+   7. The slide gets its `anim:` tag and a row in `Animations.md`.
+4. Done when:
+   1. e2e test: Play opens and closes the group; Esc closes it.
+   2. e2e test: Learn to play and Records are disabled with "Soon".
+   3. `make screenshots` shows the menu closed and open.
+   4. UC-01 updated.
+5. Result (2026-10-22)
+   1. `MainMenu`: Play, Records, Settings, Exit; Play has `aria-expanded`.
+   2. The group is a `motion.div` that grows from 0 (`menu-group`).
+   3. `useOpenHeight`: the menu always keeps its open height.
+   4. So nothing above Play moves, and Exit fits a 1024×768 window.
+   5. `contain: inline-size`: the group never widens the buttons.
+   6. `playOpen` in the store: Back from LAN or Online finds it open.
+   7. Esc closes it; animations off: it opens at once.
+   8. `Soon`: disabled, a "Soon" badge, name "Learn to play (soon)".
+   9. The Join screen got "Host a game" on top until 15.97.
+   10. e2e helpers in `e2e/tests/menu.ts`: `openLan`, `openOnline`, `openHost`.
+   11. e2e `shell.spec.ts`: the group, its slide, Esc, the way back.
+   12. UC-01 10 – 12; wiki `Client`, `Animations`, `Screenshots`; CHANGELOG.
+   13. Screenshots: `.cache/screenshots/15.96/before/` and `after/`.
+6. Owner notes (2026-10-22)
+   1. Owner marks 15.96 solved.
+
+### [x] 15.97 LAN screen
+
+1. Goal: LAN play on one screen, no internet servers there (M-03, N-13).
+2. Planned by the owner (2026-10-22).
+3. Tasks:
+   1. Host button on top; it always hosts in this app.
+   2. Below: LAN games, searched all the time; no "Search again".
+   3. Below them: an address field that keeps the last typed value.
+   4. No Recent list on this screen.
+   5. A started game keeps announcing, marked "In progress".
+   6. Only a player who held a seat can rejoin it; others see it greyed.
+   7. Back and Esc return to the menu with the Play group open.
+   8. The setup screen goes back to the LAN screen.
+4. Done when:
+   1. Go test: a started game still announces, marked in progress.
+   2. e2e test: a host's game shows up without a click.
+   3. e2e test: a player who closed the app rejoins from the list.
+   4. e2e test: the typed address is there after a restart.
+   5. UC-03, UC-17 updated.
+5. Result (2026-10-22)
+   1. Go `lanGames`: every table and every unfinished started game.
+   2. `lan.Game` has `id` and `started`; ADR 009 updated in place.
+   3. Go test: waiting, full, started, then gone once over.
+   4. `LanConnect`: Host a game, nickname, the list, the address form.
+   5. `useLanSearch`: a new search 2 s after each one ends.
+   6. `lanRows`: "In progress"; Rejoin when `rejoin.game` is its id.
+   7. Rejoin sends the saved token, whatever address it joined by.
+   8. `settings.lan_address`: kept on a typed Connect; trimmed, capped.
+   9. LAN joins pass `recent: false`; nothing goes to Recent.
+   10. `store.path`, `openPath`; `quit('join')` goes one level up.
+   11. `useEscape` (`keys.ts`): Esc goes up on the menu screens.
+   12. The host setup goes back to the LAN screen.
+   13. e2e `lobby.spec.ts`: the list fills, rejoin, the address, Back and Esc.
+   14. The fake LAN takes `window.fakeLan` from a test.
+   15. UC-03, UC-09, UC-17; wiki `Client`, `Server`, `First-start`, `Internal-builds`, `Screenshots`; CHANGELOG.
+   16. Found and fixed on the way: 19.58 (a test, not the app).
+   17. Screenshots: `.cache/screenshots/15.97/before/` and `after/`.
+6. Owner notes (2026-10-22)
+   1. Owner marks 15.97 solved.
+
+### [x] 15.98 Online screen
+
+1. Goal: online play on one screen (M-03, N-17, N-18).
+2. Planned by the owner (2026-10-22).
+3. Tasks:
+   1. An address field and the Recent list.
+   2. Connecting opens the server's games; a game is created there.
+   3. The Host screen no longer switches between app and server.
+   4. Back and Esc go up one level; setup goes back to the games.
+4. Done when:
+   1. e2e test: join a dedicated server, create a game, go back.
+   2. e2e test: no LAN games on this screen.
+   3. UC-04, UC-19, UC-27 updated.
+5. Result (2026-10-22)
+   1. `OnlineConnect`: nickname, Server address, Connect, Recent.
+   2. No LAN list; the address starts from the newest Recent entry.
+   3. The Games list's Back and Esc: the Online screen; then the menu.
+   4. The host screen still decides by the connection, not by the path.
+   5. So a dedicated server joined from LAN still creates there.
+   6. e2e `lobby.spec.ts`: Online, create, Esc up three levels.
+   7. Online tests type into "Server address"; LAN keeps "Host address".
+   8. UC-04, UC-19, UC-27; wiki `Client`, server guides, `Screenshots`; CHANGELOG.
+   9. Screenshots: `.cache/screenshots/15.98/before/` and `after/`.
+6. Owner notes (2026-10-22)
+   1. Owner marks 15.98 solved.
+
+### [x] 15.99 Rejoin button
+
+1. Goal: a player whose app closed mid-game gets back in one click (M-05).
+2. Planned by the owner (2026-10-22).
+3. Tasks:
+   1. Clear the saved seat when the game ends.
+   2. Clear it when the player leaves on purpose.
+   3. On menu open, ask the saved server once whether the seat is live.
+   4. Live: "Rejoin: <game> · LAN/Online" on top of the menu.
+   5. Not live or no answer: no button; a dead seat is cleared.
+   6. The check never delays the menu.
+4. Done when:
+   1. Go test: the server tells whether a token holds a live seat.
+   2. e2e test: kill a player's app mid-game; the restarted menu rejoins.
+   3. e2e test: after the game ends the button is gone.
+   4. UC-07 updated.
+5. Result (2026-10-22)
+   1. Go `GET /seat?token=…` (`seat.go`): live at a table or in an unfinished game.
+   2. It answers `protocol.SeatInfo`: live, game, host, started; CORS `*`.
+   3. Go `App.CheckSeat` (`servers.go`): tries each http(s) base in order.
+   4. `httpBases`: the bases in `wsURLs`' order, wss first for a domain.
+   5. `settings.rejoin.via`: the path it was joined by; Go cleans it.
+   6. `checkRejoin` on every menu visit; it never delays the menu.
+   7. Live: "Rejoin: Ann's game · LAN" in the top corner.
+   8. In the corner, not above Play: an answer that moved the menu repeated 19.49.
+   9. Dead: no button, the seat is forgotten; no answer: the seat is kept.
+   10. `forgetSeat`: game over, a game-ending notice, `leaveTable`, `quit` while seated.
+   11. `endedGame` keeps the record download working after that.
+   12. Go tests: `TestSeatTellsALiveSeat`, `TestCheckSeat`, `TestRejoinKeepsItsPath`.
+   13. Vitest: live, dead, no answer, nothing saved.
+   14. e2e `pause.spec.ts`: restart, Rejoin by Online and LAN, leave, game over, a dead seat.
+   15. UC-07 1d, 1e; wiki `Client`, `Server`, `Screenshots`; CHANGELOG.
+   16. Screenshots: `.cache/screenshots/15.99/before/` and `after/`.
+6. Owner (2026-10-22): stop after 15.99 for review; 15.100 waits.
+7. Owner notes (2026-10-22)
+   1. Owner marks 15.99 solved.
+
+### [ ] 15.100 Recent servers show live status
+
+1. Goal: the player sees which saved servers are up (M-04).
+2. Planned by the owner (2026-10-22).
+3. Tasks:
+   1. A quick check of every Recent row when the Online screen opens.
+   2. Each row shows up or down, and the number of open games.
+   3. Rows show at once; the status fills in as answers come.
+4. Done when:
+   1. e2e test: a running and a stopped server in Recent.
+   2. UC-04 updated.

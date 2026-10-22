@@ -4,6 +4,30 @@ import { expect, test } from './fixtures';
 import { expectFits, startGame, statMonsters } from './game';
 import { serverPort } from './server';
 import { shot } from './shot';
+import { seen } from './turn';
+
+// settled waits until the page has played every update and no new one
+// came for a moment: while the start of the game plays, its effects
+// still move cards in and out of the player areas (19.28).
+async function settled(page: Page): Promise<void> {
+  let last = -1;
+  await expect
+    .poll(
+      async () => {
+        const s = await seen(page);
+        const still = s.ready && s.step === last;
+        last = s.ready ? s.step : -1;
+        return still;
+      },
+      { intervals: [300] },
+    )
+    .toBe(true);
+}
+
+// plainBoard bans Eden from tests that check a clear board: Eden's
+// starting choice opens over the whole table (15.29, H-11) and covers
+// every deck and discard (14.10).
+const plainBoard = ['eden'];
 
 // expectDecksClear fails when anything lies over a deck or a discard
 // (F-02): their corners and middle must hit the pile itself.
@@ -119,6 +143,7 @@ const treasureRefs = ['baby_haunt', 'belly_button', 'bobs_brain', 'breakfast', '
 async function startPair(browser: Browser, names: [string, string], change: (view: View) => void): Promise<[Page, Page]> {
   let opened = 0;
   const [plain, changed] = await startGame(browser, names, {
+    bans: plainBoard,
     open: (page) => (opened++ === 1 ? rewriteView(page, change) : Promise.resolve()),
   });
   if (!plain || !changed) {
@@ -140,7 +165,7 @@ async function slotBoxes(page: Page, row: string) {
 }
 
 test('two players face each other; the table fits 1280x720', async ({ browser }) => {
-  const [eve, fay] = await startGame(browser, ['Eve', 'Fay']);
+  const [eve, fay] = await startGame(browser, ['Eve', 'Fay'], { bans: plainBoard });
   if (!eve || !fay) {
     throw new Error('no pages');
   }
@@ -154,6 +179,7 @@ test('two players face each other; the table fits 1280x720', async ({ browser })
     await expect(page.getByRole('group', { name: /^Loot deck: \d+ cards$/ })).toBeVisible();
     await expect(page.getByRole('group', { name: 'Shop' }).getByRole('img')).not.toHaveCount(0);
     await expect(page.getByRole('group', { name: 'Monsters' }).getByRole('img')).not.toHaveCount(0);
+    await settled(page);
     await expectFits(page);
     await expectDecksClear(page);
     await expectOwnArea(page);
@@ -213,7 +239,10 @@ test('the Attack icon shows the sword image, or a drawn sword without it (15.24)
 });
 
 test('four players sit left, top and right in turn order', async ({ browser }) => {
-  const pages = await startGame(browser, ['Gus', 'Hal', 'Ivy', 'Jo']);
+  // Four players, and a host whose socket the bans go through: the
+  // start alone can pass 30 s on a busy run (19.28).
+  test.slow();
+  const pages = await startGame(browser, ['Gus', 'Hal', 'Ivy', 'Jo'], { bans: plainBoard });
   const hal = pages[1];
   if (!hal) {
     throw new Error('no pages');
@@ -223,6 +252,7 @@ test('four players sit left, top and right in turn order', async ({ browser }) =
   await expect(hal.locator('.player-top')).toHaveAccessibleName('Jo');
   await expect(hal.locator('.player-right')).toHaveAccessibleName('Gus');
   for (const page of pages) {
+    await settled(page);
     await expectFits(page);
     await expectDecksClear(page);
     await expectOwnArea(page);
@@ -232,7 +262,7 @@ test('four players sit left, top and right in turn order', async ({ browser }) =
 });
 
 test('three players sit left and right; nothing covers the decks', async ({ browser }) => {
-  const pages = await startGame(browser, ['Kip', 'Lea', 'Max']);
+  const pages = await startGame(browser, ['Kip', 'Lea', 'Max'], { bans: plainBoard });
   const kip = pages[0];
   if (!kip) {
     throw new Error('no pages');
@@ -240,6 +270,7 @@ test('three players sit left and right; nothing covers the decks', async ({ brow
   await expect(kip.locator('.player-left')).toHaveAccessibleName('Lea');
   await expect(kip.locator('.player-right')).toHaveAccessibleName('Max');
   for (const page of pages) {
+    await settled(page);
     await expectFits(page);
     await expectDecksClear(page);
     await expectOpponents(page);
@@ -307,8 +338,9 @@ for (const [n, names] of [
 }
 
 test('counters and changed monster stats show on the card, not in its zoom (15.23)', async ({ browser }) => {
-  // Delirium or Stoney dealt into a slot would change the other monster (14.10).
-  const [page] = await startGame(browser, ['Flo', 'Hux'], { bans: statMonsters });
+  // Delirium or Stoney dealt into a slot would change the other monster
+  // (14.10); Eden's starting choice would cover the monsters it hovers.
+  const [page] = await startGame(browser, ['Flo', 'Hux'], { bans: [...statMonsters, ...plainBoard] });
   if (!page) {
     throw new Error('no pages');
   }
@@ -327,7 +359,7 @@ test('counters and changed monster stats show on the card, not in its zoom (15.2
       stats?: { hp: number; dc: number; atk: number; printed_hp: number; printed_dc: number; printed_atk: number };
     }
     interface S {
-      game: { view: { monsters: { top?: Card }[] } } | null;
+      game: { step: number; view: { monsters: { top?: Card }[] } } | null;
     }
     const { store } = (window as unknown as { fourSouls: { store: { getState: () => S; setState: (s: Partial<S>) => void } } })
       .fourSouls;
@@ -362,6 +394,90 @@ test('counters and changed monster stats show on the card, not in its zoom (15.2
   await expect(zoom).toBeVisible();
   await expect(zoom.locator('.card-badge')).toHaveCount(0);
   await shot(page, 'monster-stats-zoom');
+});
+
+test('a bonus soul shows its counters (19.29)', async ({ browser }) => {
+  const [page] = await startGame(browser, ['Rua', 'Vik'], { bans: plainBoard });
+  if (!page) {
+    throw new Error('no pages');
+  }
+  const soul = page.getByRole('group', { name: 'Bonus souls' }).locator('.card').first();
+  await expect(soul).toBeVisible();
+  await expect(soul.locator('.card-badge')).toHaveCount(0);
+
+  // Two players died: the first bonus soul gets 2 counters, as the
+  // server would send it (Soul of Wrath). Only the screen changes.
+  await page.evaluate(() => {
+    interface Card {
+      counters?: { count: number }[];
+    }
+    interface S {
+      game: { step: number; view: { bonus_souls?: Card[] } } | null;
+    }
+    const { store } = (window as unknown as { fourSouls: { store: { getState: () => S; setState: (s: Partial<S>) => void } } })
+      .fourSouls;
+    const game = store.getState().game;
+    const souls = game?.view.bonus_souls;
+    if (!game || !souls?.length) {
+      throw new Error('no bonus souls');
+    }
+    const bonus_souls = souls.map((c, i) => (i === 0 ? { ...c, counters: [{ count: 2 }] } : c));
+    store.setState({ game: { ...game, view: { ...game.view, bonus_souls } } });
+  });
+  await shot(page, 'bonus-soul-counters');
+  await expect(soul.getByLabel('2 counters')).toBeVisible();
+});
+
+test('a card that keeps a die number shows it as a die, not in its zoom (15.67)', async ({ browser }) => {
+  const [page] = await startGame(browser, ['Ash', 'Bix'], { bans: plainBoard });
+  if (!page) {
+    throw new Error('no pages');
+  }
+  // The viewer gets Crystal Ball with a guessed 4 and a card with two
+  // chosen numbers, as the server would send them. Red Candle keeps two
+  // after a recharge, but its set is not in this game, so Mystery Sack
+  // stands in. Only the screen changes; nobody acts on it.
+  await page.evaluate(() => {
+    interface Card {
+      id: number;
+      card: string;
+      role?: number;
+      charged: boolean;
+      dice?: number[];
+    }
+    interface S {
+      game: { step: number; view: { players: { id: number; in_play: Card[] | null }[] } } | null;
+    }
+    const { store } = (window as unknown as { fourSouls: { store: { getState: () => S; setState: (s: Partial<S>) => void } } })
+      .fourSouls;
+    const { game } = store.getState();
+    if (!game) {
+      throw new Error('no game');
+    }
+    const kept: Card[] = [
+      { id: 9201, card: 'crystal_ball', role: 2, charged: true, dice: [4] },
+      { id: 9202, card: 'mystery_sack', role: 2, charged: true, dice: [2, 5] },
+    ];
+    const you = Number(document.querySelector('.player-bottom')?.getAttribute('data-zone')?.replace('player-', ''));
+    const players = game.view.players.map((p) => (p.id === you ? { ...p, in_play: [...(p.in_play ?? []), ...kept] } : p));
+    store.setState({ game: { ...game, view: { ...game.view, players } } });
+  });
+  const items = page.getByRole('group', { name: 'Your items' });
+  const ball = items.locator('[data-zone="obj-9201"]');
+  const two = items.locator('[data-zone="obj-9202"]');
+  await expect(ball.getByLabel('Kept dice 4')).toBeVisible();
+  await expect(two.getByLabel('Kept dice 2')).toBeVisible();
+  await expect(two.getByLabel('Kept dice 5')).toBeVisible();
+  await expect(ball.getByLabel('counters')).toHaveCount(0);
+  await expect(ball).toHaveCSS('opacity', '1'); // it has popped in
+  await shot(page, 'kept-dice');
+
+  // The zoom shows no badges, as for the others (owner, 15.23).
+  await ball.hover();
+  const zoom = page.getByTestId('card-zoom').locator('.card.size-zoom');
+  await expect(zoom).toBeVisible();
+  await expect(zoom.locator('.card-die')).toHaveCount(0);
+  await shot(page, 'kept-dice-zoom');
 });
 
 test('a card with many abilities opens a dialog that uses the picked line (15.24)', async ({ browser }) => {
@@ -451,7 +567,7 @@ test('souls show as crystals left of the character; a gained soul fills one more
   const setSouls = (souls: number[]) =>
     page.evaluate((next) => {
       interface S {
-        game: { view: { players: { souls: number }[] } } | null;
+        game: { step: number; view: { players: { souls: number }[] } } | null;
       }
       const { store } = (window as unknown as { fourSouls: { store: { getState: () => S; setState: (s: Partial<S>) => void } } })
         .fourSouls;
@@ -506,7 +622,7 @@ test('soul cards hide behind the crystals; hovering one zooms its card (15.56)',
       souls?: number;
     }
     interface S {
-      game: { view: { players: { id: number; souls: number; in_play: Card[] | null }[] } } | null;
+      game: { step: number; view: { players: { id: number; souls: number; in_play: Card[] | null }[] } } | null;
     }
     const { store } = (window as unknown as { fourSouls: { store: { getState: () => S; setState: (s: Partial<S>) => void } } })
       .fourSouls;
@@ -563,7 +679,7 @@ test('soul cards hide behind the crystals; hovering one zooms its card (15.56)',
       in_play: unknown[] | null;
     }
     interface S {
-      game: { view: { players: Player[] } & Record<string, unknown>; allowed: unknown[] };
+      game: { step: number; view: { players: Player[] } & Record<string, unknown>; allowed: unknown[] };
       lobby: { table: { you: number } };
       receive: (env: unknown) => void;
     }
@@ -590,13 +706,16 @@ test('soul cards hide behind the crystals; hovering one zooms its card (15.56)',
         (window as unknown as { sentChoice: unknown }).sentChoice = intent;
       },
     });
-    s.receive({ type: 'update', data: { ...game, step: 2, events: [] } });
+    s.receive({ type: 'update', data: { ...game, step: game.step + 1, events: [] } });
   });
   const pin = page.locator('.player-top .soul-slot.filled');
   await expect(pin).toHaveAttribute('data-zone', 'obj-9103');
   await expect(pin).toHaveClass(/hl-pick/);
   await expect(page.getByRole('dialog', { name: 'Choose a target' })).toBeVisible();
   await shot(page, 'soul-pick');
+  // The choice covers the table; the player views the board to pick
+  // there (15.29, F-20).
+  await page.getByRole('button', { name: 'View board' }).click();
   await pin.click();
   const sent = await page.evaluate(() => (window as unknown as { sentChoice: unknown }).sentChoice);
   expect(sent).toMatchObject({ kind: 4, choice: 1 });
@@ -626,7 +745,7 @@ test('curses sit at the far left of the player, apart from the items (15.55)', a
       charged: boolean;
     }
     interface S {
-      game: { view: { players: { id: number; in_play: Card[] | null }[] } } | null;
+      game: { step: number; view: { players: { id: number; in_play: Card[] | null }[] } } | null;
     }
     const { store } = (window as unknown as { fourSouls: { store: { getState: () => S; setState: (s: Partial<S>) => void } } })
       .fourSouls;
@@ -681,7 +800,8 @@ test('curses sit at the far left of the player, apart from the items (15.55)', a
 });
 
 test('a revealed hand shows face up; a hidden one stays backs (19.5)', async ({ browser }) => {
-  const pages = await startGame(browser, ['Tam', 'Una', 'Vera', 'Wynn']);
+  // Eden's starting choice would cover the revealed hand it hovers.
+  const pages = await startGame(browser, ['Tam', 'Una', 'Vera', 'Wynn'], { bans: plainBoard });
   const una = pages[1];
   if (!una) {
     throw new Error('no pages');
@@ -695,7 +815,7 @@ test('a revealed hand shows face up; a hidden one stays backs (19.5)', async ({ 
       card: string;
     }
     interface S {
-      game: { view: { players: { id: number; hand?: Card[]; hand_size: number }[] } } | null;
+      game: { step: number; view: { players: { id: number; hand?: Card[]; hand_size: number }[] } } | null;
     }
     const { store } = (window as unknown as { fourSouls: { store: { getState: () => S; setState: (s: Partial<S>) => void } } })
       .fourSouls;
@@ -728,4 +848,41 @@ test('a revealed hand shows face up; a hidden one stays backs (19.5)', async ({ 
   await una.mouse.move(0, 0);
   await expectFits(una);
   await shot(una, 'revealed-hand');
+});
+
+test("There's Options shows its owner the top treasure card (19.30)", async ({ browser }) => {
+  const [page] = await startGame(browser, ['Tao', 'Fen'], { bans: plainBoard });
+  if (!page) {
+    throw new Error('no pages');
+  }
+  const deck = page.locator('[data-zone="deck-treasure"]');
+  const back = deck.getByLabel('Face-down treasure card');
+  await expect(back).toBeVisible();
+
+  // The viewer owns There's Options on their turn: the server sends them
+  // the top treasure card. The first shop card stands in for it. Only
+  // the screen changes; nobody acts on it.
+  const name = await page.evaluate(() => {
+    interface CardView {
+      id: number;
+      card: string;
+    }
+    interface S {
+      game: { step: number; view: { players: { treasure_top?: CardView }[]; shop: { top?: CardView }[] } } | null;
+    }
+    const { store } = (window as unknown as { fourSouls: { store: { getState: () => S; setState: (s: Partial<S>) => void } } })
+      .fourSouls;
+    const game = store.getState().game;
+    const card = game?.view.shop[0]?.top;
+    if (!game || !card) {
+      throw new Error('no shop card');
+    }
+    const treasure_top = { id: 9999, card: card.card };
+    const players = game.view.players.map((p, i) => (i === 0 ? { ...p, treasure_top } : p));
+    store.setState({ game: { ...game, view: { ...game.view, players } } });
+    return document.querySelector('[data-zone="shop-slot-0"] .card')?.getAttribute('aria-label') ?? '';
+  });
+  await shot(page, 'treasure-top');
+  await expect(back).toHaveCount(0);
+  await expect(deck.getByRole('img', { name })).toBeVisible();
 });

@@ -16,7 +16,7 @@ var algiz = engine.CardDef{
 		Effects: []engine.Effect{engine.EffectFunc(func(c *engine.Ctx) {
 			// Only the items they control now; later ones don't (S-DIS).
 			for _, id := range itemsOf(c.G, c.Targets[0].Player) {
-				c.G.Boosts = append(c.G.Boosts, engine.Boost{Stat: engine.StatEternal, Player: engine.NoPlayer, Object: id, Amount: 1})
+				c.G.Boosts = append(c.G.Boosts, engine.Boost{Source: c.Source, Stat: engine.StatEternal, Player: engine.NoPlayer, Object: id, Amount: 1})
 			}
 		})},
 	}},

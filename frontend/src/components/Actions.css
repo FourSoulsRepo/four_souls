@@ -5,7 +5,7 @@
   position: fixed;
   right: 16px;
   bottom: 16px;
-  z-index: 5;
+  z-index: var(--z-action-bar);
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -13,11 +13,93 @@
   max-width: 320px;
 }
 
-.action-status {
-  padding: 4px 10px;
-  border-radius: 6px;
+/* Prompt banner (15.28, V-20): what the game waits for. Waiting for
+   someone else: a dark plate, the name in its color. Waiting for this
+   player: a gold-rimmed plate in the game's letters, its glow
+   breathing, so the player cannot miss it. */
+.prompt-banner {
+  position: relative;
+  max-width: 320px;
+  padding: 6px 12px;
+  border: 2px solid rgb(255 255 255 / 12%);
+  border-radius: 8px;
+  text-align: right;
+  background: rgb(0 0 0 / 62%);
+}
+
+.prompt-title {
   font-weight: 700;
-  background: rgb(0 0 0 / 55%);
+}
+
+.prompt-hint {
+  margin-top: 2px;
+  font-size: 13px;
+  color: #d9d1c3;
+}
+
+.prompt-banner.mine {
+  --ink: #1d120a;
+  padding: 8px 16px 7px;
+  border: 3px solid var(--ink);
+  border-radius: 14px 18px 16px 12px / 12px 16px 18px 14px;
+  color: #2b1a0c;
+  background:
+    radial-gradient(ellipse at 30% 20%, rgb(255 255 255 / 45%), transparent 50%),
+    linear-gradient(#ffe08a, #e9b23c);
+  box-shadow:
+    0 3px 0 var(--ink),
+    0 6px 12px rgb(0 0 0 / 50%);
+}
+
+.prompt-banner.mine .prompt-title {
+  font-family: var(--font-game);
+  font-size: 22px;
+  font-weight: 400;
+  line-height: 1.1;
+  letter-spacing: 0.02em;
+}
+
+.prompt-banner.mine .prompt-hint {
+  color: #4a3214;
+  font-weight: 600;
+}
+
+/* The glow behind a prompt the player answers, and behind Pass when
+   passing answers it; only its opacity moves. */
+.prompt-banner.mine,
+.stack .stack-pass.answer {
+  position: relative;
+  isolation: isolate;
+}
+
+.prompt-banner.mine::before,
+.stack .stack-pass.answer::before {
+  position: absolute;
+  inset: -3px;
+  z-index: -1; /* layer: local */
+  border-radius: inherit;
+  box-shadow: 0 0 16px 6px rgb(255 205 80 / 75%);
+  content: "";
+  animation: prompt-glow 1.2s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+
+/* anim: prompt-glow */
+@keyframes prompt-glow {
+  from {
+    opacity: 0.35;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .prompt-banner.mine::before,
+  .stack .stack-pass.answer::before {
+    animation: none;
+  }
 }
 
 .action-buttons {
@@ -64,7 +146,7 @@
 .action-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 15;
+  z-index: var(--z-menu);
 }
 
 .action-menu {
@@ -217,7 +299,7 @@
   stroke-linejoin: round;
 }
 
-/* Cancel in the plain-paper look of Skip all. */
+/* Cancel in the plain-paper look of Wait for my turn. */
 .ability-cancel {
   align-self: flex-end;
   margin-top: 4px;
@@ -238,46 +320,102 @@
   box-shadow: 0 4px 0 #1d120a;
 }
 
-/* A choice sits at the bottom edge, over the viewer's own area, so the
-   board and its targets stay in view (F-02). */
-.choice {
+/* A choice: big cards over the dimmed board, nothing else in view
+   (15.29, H-11). "View board" hides it (F-20). */
+.choice-backdrop {
   position: fixed;
-  bottom: 8px;
-  left: 50%;
-  z-index: 12;
+  inset: 0;
+  z-index: var(--z-choice);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(0 0 0 / 66%);
+}
+
+.choice {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  max-width: min(90vw, 760px);
+  gap: 14px;
+  max-width: min(94vw, 1100px);
+  max-height: 94vh;
   padding: 14px 18px;
-  border-radius: 10px;
-  translate: -50% 0;
-  background: rgb(20 28 40 / 92%);
-  box-shadow: 0 8px 32px rgb(0 0 0 / 60%);
+  box-sizing: border-box;
+  overflow: auto;
 }
 
 /* A look sits in the middle, over a choice that may come with it. */
 .choice.look {
+  position: fixed;
   top: 50%;
-  bottom: auto;
-  z-index: 13;
+  left: 50%;
+  z-index: var(--z-look);
+  max-width: min(90vw, 760px);
+  border-radius: 10px;
   translate: -50% -50%;
+  background: rgb(20 28 40 / 92%);
+  box-shadow: 0 8px 32px rgb(0 0 0 / 60%);
 }
 
 .choice h2 {
   margin: 0;
   font-family: var(--font-game);
-  font-size: 24px;
+  font-size: 32px;
   font-weight: 400;
   letter-spacing: 0.03em;
+  text-shadow: 0 2px 8px rgb(0 0 0 / 80%);
+}
+
+.choice.look h2 {
+  font-size: 24px;
 }
 
 .choice-options {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 10px;
+  gap: 18px;
+}
+
+/* "View board" stands apart from the answers: plain, not red. */
+.choice button.choice-view,
+.choice-peek button {
+  border: 1px solid rgb(255 255 255 / 35%);
+  background: rgb(20 28 40 / 85%);
+}
+
+.choice button.choice-view:hover,
+.choice-peek button:hover {
+  border-color: #ffd27a;
+}
+
+/* While the player views the board: the choice's title and a button
+   to bring it back, small, at the bottom edge (F-20). */
+.choice-peek {
+  position: fixed;
+  bottom: 8px;
+  left: 50%;
+  z-index: var(--z-choice);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 8px 6px 16px;
+  border-radius: 10px;
+  translate: -50% 0;
+  font-family: var(--font-game);
+  font-size: 20px;
+  letter-spacing: 0.03em;
+  background: rgb(20 28 40 / 92%);
+  box-shadow: 0 8px 32px rgb(0 0 0 / 60%);
+}
+
+.choice-peek button {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-family: var(--font-card);
+  font-size: 16px;
+  color: var(--fg);
+  cursor: pointer;
 }
 
 .choice-option {
@@ -417,7 +555,7 @@
   position: absolute;
   top: calc(100% + 6px);
   left: 0;
-  z-index: 5;
+  z-index: 5; /* layer: local */
   display: none;
   padding: 4px 10px;
   border-radius: 8px;
@@ -456,9 +594,41 @@
   background: rgb(255 255 255 / 10%);
 }
 
-/* The top item resolves next. */
-.stack-row:first-child {
+/* A row whose card flew away (19.41, 19.54); a class, as a slide
+   rewrites the row's style. */
+.stack-row.flown {
+  visibility: hidden;
+}
+
+/* The top item resolves next; an open declaration is above it. */
+.stack-row:first-child,
+.stack-declared + .stack-row {
   background: rgb(255 210 122 / 12%);
+}
+
+/* An open attack or buy (15.91, V-51) is no stack item: no icon frame,
+   a dashed edge. It is as tall as a row with an icon. */
+.stack-declared {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  min-height: 28px;
+  padding: 1px 8px;
+  border: 1px dashed rgb(255 255 255 / 40%);
+  border-radius: 6px;
+  box-sizing: border-box;
+  font-size: 13px;
+  font-style: italic;
+}
+
+/* An aimed attack's fight line (15.94): what the roll needs, and the
+   ATK of a hit, on a line of its own under the declaration. */
+.stack-odds {
+  flex-basis: 100%;
+  padding-bottom: 2px;
+  font-size: 12px;
+  font-style: normal;
+  color: #ffe9b0;
 }
 
 /* Every icon is the same square; a card shows its art, cropped. */
@@ -552,6 +722,48 @@
   color: var(--muted);
 }
 
+/* The first-player roll before turn 1 (15.43): one row per player of
+   this round, their die once thrown. */
+.first-roll-title {
+  margin: 0 0 4px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.first-roll ol {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.first-roll-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 26px;
+  font-size: 14px;
+}
+
+.first-roll-row .die {
+  width: 24px;
+  height: 24px;
+  border-radius: 5px;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 60%);
+}
+
+.first-roll-row .die-plain {
+  font-size: 14px;
+}
+
+.first-roll-wait {
+  font-size: 13px;
+  font-style: italic;
+  color: var(--muted);
+}
+
 .stack-wait {
   margin: 4px 0 0;
   font-size: 12px;
@@ -631,7 +843,7 @@
   position: absolute;
   top: -10px;
   right: -9px;
-  z-index: 1;
+  z-index: 1; /* layer: local */
   display: grid;
   place-items: center;
   width: 20px;
@@ -737,8 +949,10 @@
     0 8px 14px rgb(0 0 0 / 55%);
 }
 
-/* Own turn, but the engine does not allow ending it yet. */
-.end-turn.own:disabled {
+/* Own turn, but the engine does not allow ending it yet; a click on
+   it then says why (15.29). */
+.end-turn.own:disabled,
+.end-turn.own[aria-disabled='true'] {
   filter: saturate(0.55) brightness(0.8);
   opacity: 0.8;
 }
@@ -747,7 +961,12 @@
   cursor: pointer;
 }
 
-.end-turn.own:enabled:hover {
+.end-turn.own[aria-disabled='true'],
+.turn-action[aria-disabled='true'] {
+  cursor: help;
+}
+
+.end-turn.own:enabled:not([aria-disabled='true']):hover {
   translate: 0 -2px;
   box-shadow:
     0 6px 0 var(--ink),
@@ -778,7 +997,7 @@
 }
 
 /* Pressed: the sticker sinks onto its shadow. */
-.end-turn.own:enabled:active,
+.end-turn.own:enabled:not([aria-disabled='true']):active,
 .end-turn.down {
   translate: 0 3px;
   box-shadow:
@@ -797,8 +1016,9 @@
   }
 }
 
-/* Pass and Skip all (15.20): the same cut-out look, smaller. Pass is
-   blood red, Skip all plain paper. Pass sits in the stack panel (15.21). */
+/* Pass and Wait for my turn (15.20): the same cut-out look, smaller.
+   Pass is blood red, Wait plain paper. Pass sits in the stack panel
+   (15.21). */
 .action-buttons button,
 .stack .stack-pass {
   --ink: #1d120a;
@@ -858,4 +1078,26 @@
    character card (15.33). */
 .stack-row.hl-aim {
   box-shadow: inset 0 0 0 2px #ff4b3e;
+}
+
+/* Another player's loot card, large under the stack while it is there
+   (15.31, H-10). It takes the height left in the info column. */
+.played {
+  display: flex;
+  flex: 1 1 0;
+  align-items: flex-start;
+  gap: 8px;
+  min-height: 0;
+  margin: 0;
+}
+
+.played .card.size-hand {
+  width: auto;
+  height: 100%;
+  max-height: calc(var(--u) * 1.9);
+}
+
+.played figcaption {
+  font-size: 13px;
+  font-style: italic;
 }

@@ -22,7 +22,7 @@ var lustForBlood = engine.CardDef{
 					return
 				}
 				p := others[a[0]]
-				c.G.Boosts = append(c.G.Boosts, engine.Boost{Stat: engine.StatPlayerAttackDC, Player: p, Amount: 4})
+				c.G.Boosts = append(c.G.Boosts, engine.Boost{Source: c.Source, Stat: engine.StatPlayerAttackDC, Player: p, Amount: 4})
 				c.G.ForceAttacks(1, false)
 				c.G.Turn.MustAttack = c.G.Players[p].Character
 				c.G.GivePenaltyItem(p, c.G.Turn.Active)

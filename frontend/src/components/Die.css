@@ -26,3 +26,90 @@
   color: #1d1d1d;
   background: #f4f1e8;
 }
+
+/* Light and shade (15.69): a lit top-left edge, a shaded bottom-right
+   one, and a soft gloss, so a flat face reads as a solid die. Each die
+   is a size container: the bevel scales with it. */
+.die,
+.die-face {
+  container-type: size;
+}
+
+.die::after,
+.die-face::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    radial-gradient(circle at 28% 22%, rgb(255 255 255 / 35%), transparent 45%),
+    linear-gradient(145deg, transparent 55%, rgb(0 0 0 / 22%)),
+    var(--shade, transparent);
+  box-shadow:
+    inset 4cqi 5cqi 5cqi -1cqi rgb(255 255 255 / 45%),
+    inset -5cqi -7cqi 8cqi -1cqi rgb(0 0 0 / 45%);
+  pointer-events: none;
+}
+
+/* A thrown die is a cube of six faces (15.69). The cube turns; each face
+   sits half a die (50cqi of the cube) out from its middle. At rest it is
+   seen from above: the top fills most of it, the front and right show as
+   strips (15.82). */
+.die-cube {
+  overflow: visible;
+  border-radius: 0;
+  box-shadow: none;
+  transform: rotateX(-58deg) rotateY(-28deg);
+  transform-style: preserve-3d;
+}
+
+.die-cube::after {
+  content: none;
+}
+
+/* Faces meet edge to edge: round corners would leave holes at the
+   cube's edges and corners (19.40). */
+.die-face {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: 0;
+  backface-visibility: hidden;
+}
+
+/* Light comes from above: the top is lit, the sides and bottom shaded. */
+.die-front {
+  --shade: rgb(0 0 0 / 20%);
+
+  transform: translateZ(50cqi);
+}
+
+.die-back {
+  --shade: rgb(0 0 0 / 35%);
+
+  transform: rotateY(180deg) translateZ(50cqi);
+}
+
+.die-top {
+  --shade: rgb(255 255 255 / 18%);
+
+  transform: rotateX(90deg) translateZ(50cqi);
+}
+
+.die-bottom {
+  --shade: rgb(0 0 0 / 45%);
+
+  transform: rotateX(-90deg) translateZ(50cqi);
+}
+
+.die-left {
+  --shade: rgb(0 0 0 / 15%);
+
+  transform: rotateY(-90deg) translateZ(50cqi);
+}
+
+.die-right {
+  --shade: rgb(0 0 0 / 30%);
+
+  transform: rotateY(90deg) translateZ(50cqi);
+}

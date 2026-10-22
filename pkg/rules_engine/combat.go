@@ -123,10 +123,23 @@ func (g *Game) PlaceFromOutside(card CardRef, i int) ObjectID {
 }
 
 // Eternal reports whether an object is eternal: printed or gained
-// (R-ABIL-18).
+// (R-ABIL-18). A card that lost all abilities lost Eternal too (Q-23).
 func (g *Game) Eternal(id ObjectID) bool {
 	o := g.Object(id)
-	return (g.def(id).Eternal && !o.LostEternal) || o.Eternal || g.boosted(StatEternal, id)
+	kept := !o.NoAbilities && ((g.def(id).Eternal && !o.LostEternal) || o.Eternal)
+	return kept || g.boosted(StatEternal, id)
+}
+
+// DestroyableSouls are the souls p controls that can be destroyed: the
+// options of "destroy a soul you control" (Q-23).
+func (g *Game) DestroyableSouls(p PlayerID) []ObjectID {
+	var out []ObjectID
+	for _, id := range g.Players[p].InPlay {
+		if g.Object(id).Role == RoleSoul && !g.Eternal(id) {
+			out = append(out, id)
+		}
+	}
+	return out
 }
 
 // boosted reports whether the object has a till-end-of-turn boost of stat.
@@ -204,7 +217,55 @@ func (g *Game) PlayerAttackDC(p PlayerID) (int, bool) {
 
 // PlayerHP is a player's remaining health (R-CARD-25, R-MECH-19).
 func (g *Game) PlayerHP(p PlayerID) int {
-	return max(g.def(g.Players[p].Character).HP+g.bonus(StatPlayerHP, p, 0)-g.Players[p].Damage, 0)
+	return max(g.playerMaxHP(p)-g.Players[p].Damage, 0)
+}
+
+// playerMaxHP is a player's max HP: the character's HP and its bonuses.
+func (g *Game) playerMaxHP(p PlayerID) int {
+	return g.def(g.Players[p].Character).HP + g.bonus(StatPlayerHP, p, 0)
+}
+
+// hpKey names a player (id 0) or an object with HP for checkMaxHP.
+type hpKey struct {
+	p  PlayerID
+	id ObjectID
+}
+
+// checkMaxHP applies R-MECH-21: max HP that went down since the last
+// check also removes that much marked damage; this is not healing. A
+// player or monster left at 0 HP this way gets its death on the stack
+// (R-DEATH-01). The last max HP is not saved: between Apply calls it is
+// always the current max HP.
+func (g *Game) checkMaxHP() {
+	seen := make(map[hpKey]int, len(g.maxHP))
+	for i := range g.Players {
+		p, pl := PlayerID(i), &g.Players[i]
+		k, m := hpKey{p: p}, g.playerMaxHP(p)
+		seen[k] = m
+		if was, ok := g.maxHP[k]; ok && m < was {
+			alive := !pl.Dead && was > pl.Damage
+			pl.Damage = max(pl.Damage-(was-m), 0)
+			if alive && g.PlayerHP(p) == 0 {
+				g.push(StackItem{Kind: StackDeath, Controller: NoPlayer, Label: "death", Target: Target{Player: p, IsPlayer: true}})
+			}
+		}
+	}
+	for _, id := range g.inPlay() {
+		if _, ok := g.characterOf(id); ok || g.def(id).HP == 0 {
+			continue
+		}
+		o := g.Object(id)
+		k, m := hpKey{id: id}, g.def(id).HP+g.monsterBonus(StatMonsterHP, id)
+		seen[k] = m
+		if was, ok := g.maxHP[k]; ok && m < was {
+			alive := was > o.Damage
+			o.Damage = max(o.Damage-(was-m), 0)
+			if alive && g.HP(id) == 0 && !g.Eternal(id) {
+				g.push(StackItem{Kind: StackDeath, Controller: NoPlayer, Label: "death", Target: Target{Object: id}})
+			}
+		}
+	}
+	g.maxHP = seen
 }
 
 // Evasion is the dice check to hit a monster, between 1 and 6 (R-ATK-18).
@@ -349,6 +410,12 @@ func (g *Game) placeRevealed(slot int) {
 		// The event's abilities trigger; the attack is over (R-ATK-09).
 		g.endAttack()
 		g.enterMonsterSlot(id)
+		return
+	}
+	if g.def(id).Unattackable {
+		// It stays in the slot; the attack is cancelled (R-ATK-10).
+		g.endAttack()
+		g.openWindow(g.Turn.Active)
 		return
 	}
 	g.startAttack(id)
@@ -648,7 +715,7 @@ func (g *Game) monsterDeath(id ObjectID) {
 	} else {
 		g.Turn.MonsterDied = true // R-TURN-12
 	}
-	g.emit(Event{Kind: kind, Player: NoPlayer, Object: holding, Card: card, Prev: id, Text: text})
+	g.emit(Event{Kind: kind, Player: NoPlayer, Object: holding, Card: card, Prev: id, Text: text, By: killedBy})
 	if text == "item" {
 		g.emit(Event{Kind: EvDestroyed, Player: o.Controller, Object: holding, Card: card, Prev: id})
 	}
@@ -725,7 +792,7 @@ func (g *Game) soulStep(holding ObjectID) {
 func (g *Game) playerDeath(p PlayerID) {
 	g.Players[p].Dead = true // R-DEATH-17
 	defer g.dropCurses(p)
-	g.emit(Event{Kind: EvDied, Player: p, Object: g.Players[p].Character, Card: g.Object(g.Players[p].Character).Card})
+	g.emit(Event{Kind: EvDied, Player: p, Object: g.Players[p].Character, Card: g.Object(g.Players[p].Character).Card, By: g.Players[p].KilledBy})
 	if p == g.Turn.Active {
 		g.endAttack() // R-DEATH-12
 		g.Turn.DeathEnd = true

@@ -13,6 +13,7 @@ var tarotCloth = engine.CardDef{
 		{
 			Kind:    engine.Triggered,
 			Text:    "Each time a player rolls a 4, they must give you a loot card.",
+			Takes:   engine.TakesEventPlayer,
 			Trigger: engine.OnRollOf(4),
 			Effects: []engine.Effect{engine.Ask(func(c *engine.Ctx, a []int) {
 				if a[0] >= 0 {

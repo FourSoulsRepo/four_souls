@@ -49,10 +49,13 @@ jobs:
         uses: ./.github/actions/card-images
         with:
           ssh-key: ${{ secrets.CARD_DB_DEPLOY_KEY }}
+      - name: Prepare card images
+        if: steps.images.outputs.available == 'true'
+        run: go generate ./pkg/card_db/images
       - name: Test card data with embedded images
         if: steps.images.outputs.available == 'true'
         working-directory: pkg/card_db
-        run: go test -v -tags "embed cardimages" -run TestEmbedded ./...
+        run: go test -v -tags "embed cardimages" -run 'TestEmbedded|TestFS' ./...
       - name: Test app asset loading with embedded images
         if: steps.images.outputs.available == 'true'
         run: go test -v -tags "embed cardimages" ./internal/assets/
@@ -102,6 +105,34 @@ jobs:
       - run: npm run lint
       - run: npm run build
 
+  # The release server archives (8.17); Linux binaries must be static,
+  # so they run on Alpine (the Dockerfile).
+  server:
+    name: Server archives
+    needs: [go, go-lint]
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.work
+          cache-dependency-path: "**/go.sum"
+      - name: Build and pack
+        run: release/server.sh "ci-${{ github.sha }}" dist
+      - name: Linux servers are static
+        run: |
+          for arch in amd64 arm64; do
+            tar -xzf "dist/four-souls-server-linux-$arch.tar.gz" -C dist
+            info=$(file "dist/four-souls-server-linux-$arch/four_souls_server")
+            echo "$info"
+            [[ "$info" == *"statically linked"* ]]
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: four-souls-server
+          path: dist/*.*
+          retention-days: 7
+
   app:
     name: App ${{ matrix.target.name }} ${{ matrix.images && 'with images' || 'text only' }}
     needs: [go, go-lint, frontend]
@@ -114,32 +145,22 @@ jobs:
             os: ubuntu-24.04
             platform: linux/amd64
             tags: webkit2_41
-            goos: linux
-            goarch: amd64
           - name: linux-arm64
             os: ubuntu-24.04-arm
             platform: linux/arm64
             tags: webkit2_41
-            goos: linux
-            goarch: arm64
           - name: windows-amd64
             os: windows-latest
             platform: windows/amd64
             tags: ""
-            goos: windows
-            goarch: amd64
           - name: windows-arm64
             os: windows-latest
             platform: windows/arm64
             tags: ""
-            goos: windows
-            goarch: arm64
           - name: macos-universal
             os: macos-latest
             platform: darwin/universal
             tags: ""
-            goos: darwin
-            goarch: arm64
     runs-on: ${{ matrix.target.os }}
     steps:
       - uses: actions/checkout@v5
@@ -166,14 +187,12 @@ jobs:
             echo "tags=embed ${{ matrix.target.tags }}" >> "$GITHUB_OUTPUT"
             echo "suffix=text-only" >> "$GITHUB_OUTPUT"
           fi
-      - name: Build app and server
+      - name: Build app
         if: steps.build.outputs.run == 'true'
         uses: ./.github/actions/build
         with:
           platform: ${{ matrix.target.platform }}
           tags: ${{ steps.build.outputs.tags }}
-          goos: ${{ matrix.target.goos }}
-          goarch: ${{ matrix.target.goarch }}
           version: ci-${{ github.sha }}
           node-version: ${{ env.NODE_VERSION }}
           wails-version: ${{ env.WAILS_VERSION }}

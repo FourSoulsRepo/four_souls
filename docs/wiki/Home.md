@@ -12,6 +12,9 @@ Pick your group: players, people who run a game server, or developers. Developer
 ## Server admins
 
 * [Dedicated server on a VPS](Dedicated-server-on-a-VPS) — rent a server and host games for friends.
+* [Server as a systemd service](Server-as-a-systemd-service) — the server binary, started by systemd.
+* [Server in Docker](Server-in-Docker) — one Dockerfile builds the latest release.
+* [Server with Docker Compose and Caddy](Server-with-Docker-Compose-and-Caddy) — HTTPS on your domain.
 
 ## Developers
 
@@ -21,6 +24,7 @@ Pick your group: players, people who run a game server, or developers. Developer
 * [Screenshots](Screenshots) — capture the UI without a real window.
 * [Client](Client) — how the React client is put together: store, lobby, playback, table.
 * [Animations](Animations) — every animation, who owns a card, and the clash checks.
+* [Layers](Layers) — which window draws over which, and the order check.
 * [Frontend tests](Frontend-tests) — unit tests, UI tests, and how to keep the frontend testable.
 * [Internal builds](Internal-builds) — the app for play tests with friends.
 * [Releases](Releases) — version tags, draft releases, archives.

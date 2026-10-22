@@ -13,7 +13,19 @@ func newTestGame(t *testing.T, players int) *Game {
 	if err != nil {
 		t.Fatal(err)
 	}
+	throwFirstRoll(t, g)
 	return g
+}
+
+// throwFirstRoll throws every die of the first-player roll, so the game
+// is in turn 1 (15.43).
+func throwFirstRoll(t *testing.T, g *Game) {
+	t.Helper()
+	for g.FirstRoll != nil {
+		if _, err := g.Apply(Intent{Player: g.Prompt().Player, Kind: IntentThrow}); err != nil {
+			t.Fatal(err)
+		}
+	}
 }
 
 // passAll makes every player pass until the prompt is no longer priority

@@ -14,7 +14,7 @@ var aLuckyPenny = engine.CardDef{
 		Kind: engine.LootAbility,
 		Text: "Gain 1¢. Rewards are doubled till end of turn.",
 		Effects: []engine.Effect{engine.GainCents(1), engine.EffectFunc(func(c *engine.Ctx) {
-			c.G.Boosts = append(c.G.Boosts, engine.Boost{Stat: engine.StatDoubleRewards, Player: engine.NoPlayer, Amount: 1})
+			c.G.Boosts = append(c.G.Boosts, engine.Boost{Source: c.Source, Stat: engine.StatDoubleRewards, Player: engine.NoPlayer, Amount: 1})
 		})},
 	}},
 }

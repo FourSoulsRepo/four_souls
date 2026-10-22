@@ -8,22 +8,25 @@ import { Board } from '../components/Board';
 import { ChoiceDialog, DiscardDialog, LookDialog, OrderDialog } from '../components/ChoiceDialog';
 import { interact, noInteract } from '../components/Interact';
 import { PlayerArea } from '../components/PlayerArea';
+import { PresenceLayer, PresenceSender } from '../components/Presence';
 import { HistoryPanel, TurnBadge } from '../components/InfoPanels';
 import { GameMenu } from '../components/GameMenu';
 import { HistoryStrip } from '../components/HistoryStrip';
-import { EndOverlay, LostOverlay, PauseOverlay } from '../components/Overlays';
-import { StackPanel } from '../components/StackPanel';
+import { EndOverlay, LostOverlay, PauseOverlay, ReconnectBadge } from '../components/Overlays';
+import { PlayedCard, StackPanel } from '../components/StackPanel';
 import { Throw } from '../components/Throw';
+import { WhyNote } from '../components/Why';
 import { EndTurn, TurnActions } from '../components/TurnActions';
 import { matLook } from '../mats';
 import type { Update } from '../protocol';
 import { seatOf, useApp } from '../store';
-import { waitText, waitTurn, type Names } from '../stack';
+import { activity, askedSeat, myMove, picking, promptBanner, stackPrompt } from '../prompt';
+import { waitTurn, type Names } from '../stack';
 import { seatPositions } from '../table';
 import '../components/Table.css';
 import './screens.css';
 
-const noActions: Actions = { buttons: [], turn: {}, cards: new Map(), choice: null, discard: null, order: null, throw: null };
+const noActions: Actions = { buttons: [], turn: {}, cards: new Map(), blocked: new Map(), choice: null, discard: null, order: null, throw: null };
 
 // GameScreen is the game table (7.5), drawn from the update on screen.
 export function GameScreen() {
@@ -56,6 +59,7 @@ function Table({ game, you }: { game: Update; you: number }) {
   const mats = useApp((s) => s.mats);
   const look = matLook(mat, mats);
   const connected = useApp((s) => s.connected);
+  const quiet = useApp((s) => s.reconnecting && !s.lostLong);
   const behind = useApp((s) => s.behind);
   const sent = useApp((s) => s.sent);
   const act = useApp((s) => s.act);
@@ -102,10 +106,24 @@ function Table({ game, you }: { game: Update; you: number }) {
   const name = (player: number) => game.seats?.find((s) => s.seat === player)?.name ?? `Player ${String(player + 1)}`;
   const names: Names = { player: name, card: (ref) => cards.get(ref)?.name ?? ref };
   const me = view.players.at(you);
-  const stacked = (view.stack ?? []).length > 0;
-  const skip = game.skip_all ? 'on' : stacked && !view.over ? 'offer' : 'none';
+  // The hand's cards in order: a hand card is shared as its slot (A-16).
+  const hand = useMemo(() => (me?.hand ?? []).map((c) => c.id), [me]);
+  // The banner and the stack say what the game waits for (15.28). While
+  // the player picks a target, the cards that answer glow; the rest dim.
+  const banner = promptBanner(view, you, names, actions, aiming);
+  const picks = picking(actions, aiming);
+  const dim = canAct && picks;
+  // The board glows while the game waits for the player, and every seat
+  // marks whom it waits for (15.95, V-52).
+  const glow = canAct && !game.pause && myMove(banner, picks);
+  const asked = askedSeat(view);
+  // What the active player does, on their seat for everyone else (15.30).
+  const doing = activity(view, names);
+  // Before turn 1, while the first player is rolled for, nobody has a
+  // turn: no active seat, no turn buttons (15.43).
+  const started = !view.first_roll;
   return (
-    <main className={`game ${look.className}`} style={look.style} aria-label={`Turn ${String(view.turn.number)}`}>
+    <main className={`game ${look.className}${dim ? ' picking' : ''}`} style={look.style} aria-label={`Turn ${String(view.turn.number)}`}>
       {seatPositions(view.players.length, you).map(({ position, player }) => {
         const p = view.players.at(player);
         return (
@@ -116,11 +134,13 @@ function Table({ game, you }: { game: Update; you: number }) {
               name={name(p.id)}
               position={position}
               you={p.id === you}
-              active={view.turn.active === p.id}
+              active={started && view.turn.active === p.id}
+              asked={asked === p.id}
+              doing={doing}
               winSouls={view.win_souls ?? 0}
               ui={ui}
               tools={
-                p.id === you && !view.over ? (
+                p.id === you && !view.over && started ? (
                   <TurnActions
                     allowed={actions.turn}
                     disabled={!canAct}
@@ -138,6 +158,7 @@ function Table({ game, you }: { game: Update; you: number }) {
       <Board
         view={view}
         ui={ui}
+        glow={glow}
         strip={
           <HistoryStrip
             view={view}
@@ -149,13 +170,15 @@ function Table({ game, you }: { game: Update; you: number }) {
           />
         }
         end={
-          me && !view.over ? (
+          me && !view.over && started ? (
             <EndTurn
               intent={actions.turn.endTurn}
               idle={actions.turn.idle ?? false}
+              left={actions.turn.left}
               own={view.turn.active === you}
               disabled={!canAct}
               step={game.step}
+              why={actions.turn.why?.endTurn}
             />
           ) : undefined
         }
@@ -167,7 +190,10 @@ function Table({ game, you }: { game: Update; you: number }) {
           names={names}
           pass={actions.buttons.find((b) => b.intent.kind === IntentKind.pass)?.intent}
           disabled={!canAct}
+          prompt={stackPrompt(banner, names)}
+          answer={banner?.mine === true && (banner.kind === 'respond' || banner.kind === 'act')}
         />
+        <PlayedCard view={view} you={you} names={names} />
         {historyOpen && (
           <HistoryPanel
             hide={() => {
@@ -180,13 +206,17 @@ function Table({ game, you }: { game: Update; you: number }) {
         <Throw waiting={view.waiting} you={you} names={names} action={actions.throw} disabled={!canAct} />
       )}
       <ActionBar
-        status={game.pause ? 'Paused' : waitText(view, you, names, actions.choice?.title ?? actions.order?.title)}
+        banner={banner}
+        paused={!!game.pause}
+        name={name}
         deadline={game.deadline ?? 0}
-        skip={skip}
         wait={waitTurn(view, you, game.wait_turn ?? false)}
       />
       <ActionMenu actions={offered.cards} />
       {canAct && <AimLayer />}
+      {me && !view.over && <PresenceSender active={started && view.turn.active === you} hand={hand} />}
+      <PresenceLayer you={you} />
+      <WhyNote />
       {offered.choice && !aiming?.choice && (
         <ChoiceDialog
           key={game.step}
@@ -198,7 +228,9 @@ function Table({ game, you }: { game: Update; you: number }) {
       {offered.order && <OrderDialog key={game.step} order={offered.order} cards={view.ordering ?? []} />}
       {looking.length > 0 && <LookDialog cards={looking} />}
       {connected && !view.over && <GameMenu host={you === 0} />}
-      {!connected ? (
+      {!connected && quiet ? (
+        <ReconnectBadge />
+      ) : !connected ? (
         <LostOverlay />
       ) : view.over ? (
         <EndOverlay game={game} you={you} name={name} />

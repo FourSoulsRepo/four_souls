@@ -43,6 +43,9 @@ type CardView struct {
 	// play or a player's character, so a client can tie crystals to it
 	// (V-43).
 	Souls int `json:"souls,omitempty"`
+	// Dice are the die numbers the card keeps (CardDef.Dice), e.g. a
+	// stored roll or a chosen number (15.67).
+	Dice []int `json:"dice,omitempty"`
 }
 
 // MonsterStats are a monster's stats now and as printed, so a client can
@@ -54,6 +57,21 @@ type MonsterStats struct {
 	PrintedHP  int `json:"printed_hp"`
 	PrintedDC  int `json:"printed_dc"`
 	PrintedATK int `json:"printed_atk"`
+	// Sources are what changes the monster's HP, DC and ATK now (V-41).
+	Sources []StatSourceView `json:"sources,omitempty"`
+}
+
+// StatSourceView is one source of a stat change, so a client can show
+// why a stat changed (V-41). Stat is "hp", "atk", "dc", "roll",
+// "attack_roll" or "attacked_dc"; Lasts is "in_play", "turn" or
+// "next_roll". Card is the source's card, "" when it is hidden.
+type StatSourceView struct {
+	Stat   string   `json:"stat,omitempty"`
+	Source ObjectID `json:"source,omitempty"`
+	Card   CardRef  `json:"card,omitempty"`
+	Amount int      `json:"amount,omitempty"`
+	Lasts  string   `json:"lasts,omitempty"`
+	When   string   `json:"when,omitempty"`
 }
 
 // PlayerView is what a viewer sees of one player.
@@ -76,6 +94,12 @@ type PlayerView struct {
 	// TreasureTop is the top treasure card, when this player may look at
 	// it now (There's Options) and the viewer may see it.
 	TreasureTop *CardView `json:"treasure_top,omitempty"`
+
+	// PrintedHP and PrintedATK are the character's, so a client can mark
+	// a changed stat; Sources say why it changed (V-41).
+	PrintedHP  int              `json:"printed_hp"`
+	PrintedATK int              `json:"printed_atk"`
+	Sources    []StatSourceView `json:"sources,omitempty"`
 }
 
 // SlotView is a table slot: the top card and the covered ones below.
@@ -120,6 +144,36 @@ type GameView struct {
 	// waiting player first (V-11). Both are empty outside a window.
 	Passed     []PlayerID `json:"passed,omitempty"`
 	Responding []PlayerID `json:"responding,omitempty"`
+	// Attack is the active player's attack while it lasts; Buying is a
+	// declared purchase. Both are public, so every seat can say what the
+	// active player does (15.30, V-21).
+	Attack *AttackView `json:"attack,omitempty"`
+	Buying bool        `json:"buying,omitempty"`
+	// FirstRoll is the first-player roll before turn 1: who still rolls
+	// and this round's dice so far. It is public (GS-06, 15.43).
+	FirstRoll *FirstRoll `json:"first_roll,omitempty"`
+}
+
+// AttackView is an attack in progress: its target once chosen, and
+// whether it was declared on the monster deck.
+type AttackView struct {
+	Target ObjectID `json:"target,omitempty"`
+	Deck   bool     `json:"deck,omitempty"`
+	// Odds are what the attacker's next roll needs, once aimed (15.94).
+	Odds *OddsView `json:"odds,omitempty"`
+}
+
+// OddsView is the attacker's next attack roll against the target
+// (15.94): its DC, the die faces that hit once every roll change counts
+// (R-DICE-06), and the ATK a hit deals, conditions such as "first
+// attack roll" included. Sources are the roll changes ("roll",
+// "attack_roll", next roll ones too) and the ATK ones ("atk"). A card's
+// own combat changes (CombatMod) and helpers' rolls are not counted.
+type OddsView struct {
+	DC      int              `json:"dc"`
+	Hits    []int            `json:"hits"`
+	ATK     int              `json:"atk"`
+	Sources []StatSourceView `json:"sources,omitempty"`
 }
 
 // OptionView is what one option of a choose prompt points at, so a
@@ -176,6 +230,8 @@ func (g *Game) View(v Viewer) GameView {
 		if pl.ID == g.Turn.Active {
 			pv.Attacks, pv.Purchases = g.attacksLeft(), g.purchasesLeft()
 		}
+		d := g.def(pl.Character)
+		pv.PrintedHP, pv.PrintedATK, pv.Sources = d.HP, d.ATK, g.playerSources(pl.ID)
 		pv.Character.Souls = g.characterSouls(pl.Character)
 		for _, id := range pl.InPlay {
 			cv := g.playedView(id)
@@ -229,6 +285,13 @@ func (g *Game) View(v Viewer) GameView {
 		}
 	}
 	out.Passed, out.Responding = g.responders()
+	if g.Attack.On {
+		out.Attack = &AttackView{Target: g.Attack.Target, Deck: g.Attack.Deck, Odds: g.attackOdds()}
+	}
+	out.Buying = g.Purchase.On
+	if fr := g.FirstRoll; fr != nil {
+		out.FirstRoll = &FirstRoll{Round: fr.Round, Players: slices.Clone(fr.Players), Rolls: slices.Clone(fr.Rolls)}
+	}
 	return out
 }
 
@@ -365,6 +428,9 @@ func (g *Game) cardView(id ObjectID) CardView {
 		ID: id, Card: o.Card, Role: o.Role, Charged: o.Charged, Damage: o.Damage,
 		Counters: append([]Counter(nil), o.Counters...),
 	}
+	if d := g.def(id); d.Dice != nil {
+		cv.Dice = d.Dice(g, id)
+	}
 	if o.Role == RoleMonster {
 		d := g.def(id)
 		cv.Stats = &MonsterStats{
@@ -372,6 +438,7 @@ func (g *Game) cardView(id ObjectID) CardView {
 			// The printed dice clamp as Evasion does, so only a bonus
 			// marks it as changed.
 			PrintedHP: d.HP, PrintedDC: min(max(d.DC, 1), 6), PrintedATK: d.ATK,
+			Sources: g.monsterSources(id),
 		}
 	}
 	return cv
@@ -450,6 +517,14 @@ func (g *Game) shown(it StackItem) StackItem {
 	it.SourceCard = g.publicCard(it.Source)
 	if !it.Target.IsPlayer {
 		it.TargetCard = g.publicCard(it.Target.Object)
+	}
+	if it.Kind == StackRoll && it.Controller != NoPlayer && it.Roll > 0 {
+		// A thrown roll: what will change it as it resolves (15.94).
+		parts := g.rollParts(it.Controller, it.Attack)
+		it.Sources = g.sourceViews(parts)
+		if final := g.rollResult(it.Roll, sumParts(parts)); final != it.Roll {
+			it.Final = final
+		}
 	}
 	return it
 }
@@ -544,4 +619,87 @@ func rollResultText(text string, result int) string {
 // digit is a one-digit number; rollHead matches only those.
 func digit(s string) int {
 	return int(s[0] - '0')
+}
+
+// statKeys name the stats a client shows sources for (V-41).
+var statKeys = map[Stat]string{
+	StatPlayerHP: "hp", StatPlayerATK: "atk", StatMonsterHP: "hp", StatMonsterDC: "dc", StatMonsterATK: "atk",
+	StatRoll: "roll", StatAttackRoll: "attack_roll", StatNextAttackRoll: "attack_roll", StatAttackedDC: "attacked_dc",
+}
+
+var lastsKeys = [...]string{LastsInPlay: "in_play", LastsTurn: "turn", LastsNextRoll: "next_roll"}
+
+// playerSources lists what changes a player's stats and rolls now.
+func (g *Game) playerSources(p PlayerID) []StatSourceView {
+	var parts []Part
+	for _, s := range []Stat{StatPlayerHP, StatPlayerATK, StatRoll, StatAttackRoll, StatAttackedDC} {
+		parts = append(parts, g.Parts(s, p, 0)...)
+	}
+	return g.sourceViews(append(parts, g.nextAttackRollParts(p)...))
+}
+
+// monsterSources lists what changes a monster's stats now: its DC also
+// counts the attacker's "monsters you attack" changes, as Evasion does.
+func (g *Game) monsterSources(id ObjectID) []StatSourceView {
+	var parts []Part
+	for _, s := range []Stat{StatMonsterHP, StatMonsterDC, StatMonsterATK} {
+		parts = append(parts, g.Parts(s, NoPlayer, id)...)
+	}
+	if g.Attack.On && g.Attack.Target == id {
+		for _, pt := range g.Parts(StatAttackedDC, g.Turn.Active, 0) {
+			pt.Stat = StatMonsterDC
+			parts = append(parts, pt)
+		}
+	}
+	return g.sourceViews(parts)
+}
+
+// sourceViews turns parts into views; a hidden source shows no card.
+func (g *Game) sourceViews(parts []Part) []StatSourceView {
+	var out []StatSourceView
+	for _, pt := range parts {
+		if pt.Amount == 0 {
+			continue
+		}
+		sv := StatSourceView{Stat: statKeys[pt.Stat], Amount: pt.Amount, Lasts: lastsKeys[pt.Lasts], When: pt.When}
+		if card := g.publicCard(pt.Source); card != "" {
+			sv.Source, sv.Card = pt.Source, card
+		}
+		out = append(out, sv)
+	}
+	return out
+}
+
+// attackOdds are the active player's next attack roll against the
+// attack's target, once aimed at a card in play (15.94).
+func (g *Game) attackOdds() *OddsView {
+	target := g.Attack.Target
+	if target <= 0 || int(target) >= len(g.Objects) || g.Object(target).Zone.Kind != ZoneInPlay {
+		return nil
+	}
+	p := g.Turn.Active
+	dc := g.Evasion(target)
+	parts := g.rollParts(p, true)
+	bonus := sumParts(parts)
+	hits := []int{}
+	for d := 1; d <= 6; d++ {
+		if g.rollResult(d, bonus) >= dc { // the hit check (R-ATK-12)
+			hits = append(hits, d)
+		}
+	}
+	// The ATK if this roll hits: the roll counts as made, so "your first
+	// attack roll" changes apply (Champion Belt, 15.54).
+	next := *g
+	next.Turn.AttackRolls++
+	parts = append(parts, next.Parts(StatPlayerATK, p, 0)...)
+	return &OddsView{DC: dc, Hits: hits, ATK: next.PlayerATK(p), Sources: g.sourceViews(parts)}
+}
+
+// sumParts adds up the parts' amounts.
+func sumParts(parts []Part) int {
+	n := 0
+	for _, pt := range parts {
+		n += pt.Amount
+	}
+	return n
 }

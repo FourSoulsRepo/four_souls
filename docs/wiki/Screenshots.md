@@ -18,6 +18,11 @@ The fixture copies the fan-game notice. `internal/legal` has a test that fails w
 |--------|------|
 | Splash with the fan-game notice | `screen-splash.png` |
 | Main menu with versions | `screen-menu.png` |
+| Main menu, Play group open | `screen-menu-play.png` |
+| LAN screen with a typed address | `screen-lan.png` |
+| LAN screen: rejoin a game in progress | `screen-lan-rejoin.png` |
+| Online screen with Recent | `screen-online.png` |
+| Main menu offering Rejoin | `screen-menu-rejoin.png` |
 | Settings | `screen-settings.png` |
 | Host a game, detailed setup | `screen-host.png` |
 | Game list on a server | `screen-games.png` |
@@ -32,7 +37,6 @@ The fixture copies the fan-game notice. `internal/legal` has a test that fails w
 | The stack, seen by a player who may respond | `screen-stack.png` |
 | History, turn badge, what is left this turn | `screen-history.png` |
 | First start: choose a nickname | `screen-welcome.png` |
-| Settings in the light theme | `screen-settings-light.png` |
 | Paused: waiting for a player who left | `screen-paused.png` |
 | Connection lost, with Reconnect | `screen-connection-lost.png` |
 | Game over: the winner and the record | `screen-game-over.png` |
@@ -50,5 +54,29 @@ The fixture copies the fan-game notice. `internal/legal` has a test that fails w
 | A hovered hand card rises large | `screen-hand-hover.png` |
 | A monster's zoom right beside it | `screen-monster-hover.png` |
 | Keyword tips beside a zoomed card | `screen-zoom-tips.png` |
+| Prompt banner: your turn | `screen-prompt-your-turn.png` |
+| Prompt banner: waiting for another player | `screen-prompt-waiting.png` |
+| Prompt banners: respond, choose, discard, order, throw | `screen-prompt-*.png` |
+| Picking a target: answers glow, the rest dims | `screen-prompt-pick.png` |
+| Own aim: the banner names the card | `screen-prompt-aim.png` |
+| Board glows: your move; hourglass on the asked seat | `screen-priority-mine.png`, `screen-priority-respond.png` |
+| No glow while waiting; hourglass on the other seat | `screen-priority-waiting.png`, `screen-priority-respond-waiting.png` |
+| An unusable card's zoom says why | `screen-zoom-why.png` |
+| A click on an unusable card says why | `screen-why-click.png` |
+| A choice: big cards over the dimmed board | `screen-choice-big.png` |
+| A choice hidden to view the board | `screen-choice-view-board.png` |
+| First-player roll: waiting for the first throw | `screen-first-roll-waiting.png` |
+| First-player roll: one die thrown | `screen-first-roll-one-die.png` |
+| First-player roll: a tie rolls again | `screen-first-roll-tie.png` |
+| First-player roll: who goes first | `screen-first-roll-winner.png` |
+| First-player roll in the history | `screen-first-roll-history.png` |
+| A lasting item: a green ATK, its sum in the zoom | `screen-stats-lasting.png` |
+| An effect of this turn: an icon on the character | `screen-stats-temporary.png` |
+| A character's zoom with its ATK sum | `screen-stats-sum.png` |
+| Hovering an effect icon zooms its card | `screen-stats-icon.png` |
+| A monster's raised dice and its sum | `screen-stats-monster.png` |
+| A next-roll boost: an icon with a small die | `screen-stats-next-roll.png` |
+| An aimed attack: what the roll needs | `screen-stats-odds.png` |
+| A thrown roll names its changes | `screen-stats-roll.png` |
 
 When a screen is added, call `shot` in its test and add a row here.

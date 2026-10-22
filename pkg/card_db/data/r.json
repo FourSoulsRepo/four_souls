@@ -98,7 +98,7 @@
         "en": {
           "name": "Abyss",
           "effects": [
-            "{Paid Effect}Destroy an item you control. If you do, put a counter on this.",
+            "{Tap Effect}Destroy an item you control. If you do, put a counter on this.",
             "You have +1{ATK} for every 2 counters on this."
           ],
           "footnotes": [

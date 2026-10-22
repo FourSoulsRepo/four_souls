@@ -13,6 +13,12 @@ var telepathyForDummies = engine.CardDef{
 	Ref:    "telepathy_for_dummies",
 	Kind:   engine.TreasureCard,
 	Copies: 1,
+	Dice: func(g *engine.Game, self engine.ObjectID) []int {
+		if n := storedRoll(g, self); n > 0 {
+			return []int{n}
+		}
+		return nil
+	},
 	Abilities: []engine.Ability{
 		{
 			Kind:    engine.Triggered,
@@ -31,9 +37,9 @@ var telepathyForDummies = engine.CardDef{
 				clearStoredRoll(c.G, c.Source) // only the next roll
 				it, ok := c.G.StackItemByID(c.EventStack)
 				if ok && a[0] == 0 && n > 0 {
-					c.G.SetRoll(it.ID, n)
+					c.G.SetRoll(it.ID, n, c.Source)
 				}
-			}, engine.Question{Text: "Change your roll to the stored result?", Options: func(*engine.Ctx, []int) []string { return []string{"yes", "no"} }})},
+			}, engine.Question{Text: "Change your roll to the stored result?", Options: func(*engine.Ctx, []int) []string { return []string{"yes", "No"} }})},
 		},
 	},
 }

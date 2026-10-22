@@ -234,6 +234,9 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    1. A character with extra HP or ATK shows small icons on its card.
    2. One icon per card or effect that changes the stat.
    3. Hover an icon to see its source card.
+   4. Owner (2026-10-22): icons only for temporary effects (15.54).
+   5. Lasting sources show in the badge's hover sum.
+   6. A fight shows what the roll needs (15.94).
 42. V-42. Curses sit left of the player.
    1. Not on the right with the items.
    2. Each player's curses form their own group.
@@ -249,6 +252,44 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    1. The mode dialog shows the card large, as the ability dialog does.
    2. One parchment line per mode, in the card's own words.
    3. Same look as The Bone's ability lines (15.24).
+46. V-46. Ask before ending the turn while plays are left (owner, 2026-10-20).
+   1. Stops an End turn pressed by mistake.
+   2. Asks whenever End turn is not glowing (H-20).
+   3. The question lists what is left: attack, buy, loot, abilities.
+   4. A setting turns it off; on by default.
+47. V-47. Each animation states its reason and direction (owner, 2026-10-20).
+   1. The animation list says what each one tells the player.
+   2. It says where the motion goes: from where to where.
+   3. The owner checks every animation against that idea.
+48. V-48. A die at rest is seen from above (owner, 2026-10-20).
+   1. The value is on the top face, as on a real table.
+   2. The top face fills most of the die.
+   3. Two sides still show, so the die looks solid.
+49. V-49. The turn counters say "Shop", not "Buys" (owner, 2026-10-20).
+   1. The line reads "Loot · Attacks · Shop".
+   2. It reads better next to the other counters.
+50. V-50. Texts say "dice", never "die", for a roll (owner, 2026-10-20).
+   1. "Die" also means a character's death.
+   2. Players could not tell which one the game meant.
+   3. Card texts keep "die" for death.
+51. V-51. Stack and history are the players' source of truth (owner, 2026-10-21).
+   1. Players can read every step before: who did what.
+   2. Who played which card, bought which item, killed which monster.
+   3. The stack is now; the history is what happened.
+   4. Simple, with no repeats between them.
+   5. History: flat lines under turn headers.
+   6. History strip: headlines only, Hearthstone-style tiles.
+   7. Hover a tile: the card, an arrow, and what it did.
+   8. An open "Attack" or "Buy": a top row in the stack panel.
+   9. One design for V-36, V-38, and V-44.
+52. V-52. The table shows who holds priority (owner, 2026-10-22).
+   1. Players still miss that the game waits for them.
+   2. The banner sits at the edge; eyes stay on the middle.
+   3. Holding priority: the center board glows green, any seat.
+   4. It pulses once when priority comes, then glows softly.
+   5. No yellow "waiting" glow: green and yellow look alike to many.
+   6. Instead the asked player's seat is marked, for everyone.
+   7. Not holding priority: the board stays plain.
 
 ## Rules
 
@@ -441,6 +482,7 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    3. It skips only the events visible when the button was pressed.
    4. Lasts until the stack is empty.
    5. The player can cancel it at any time.
+   6. Removed (owner, 2026-10-20): play tests showed it unused.
 7. N-07. Response timer.
    1. Host sets it when creating a game.
    2. Can be disabled.
@@ -485,7 +527,9 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    1. A hosting app announces its waiting game on the LAN.
    2. The join screen lists the games it finds.
    3. Typing an address still works.
-   4. Announcements stop when the game starts.
+   4. A started game keeps announcing, marked "In progress" (owner, 2026-10-22).
+      1. Only a player who held a seat can rejoin it.
+      2. So a crashed player finds the game in the list again.
    5. A dedicated server never announces.
    6. Players join it by address and pick from its list of games.
    12. Accepted risk: the player knows the next roll after a rollback.
@@ -502,7 +546,8 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    6. Never recorded, so replays never show them.
    7. Lost or late ones do no harm; the next one replaces them.
    8. The server limits how often a player may send them.
-   9. Open: whether viewers see them too (step 9).
+   9. Viewers see them too (owner, 2026-10-20).
+   10. A waiting player sends only aims, no hover (owner, 2026-10-20).
 16. N-16. "Wait for my turn" button (owner, 2026-10-13).
    1. Offered to a player on another player's turn.
    2. The server passes for them on everything.
@@ -510,11 +555,40 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    4. It ends when the player before them ends the turn.
    5. That end window is their last chance to act.
    6. The player can cancel it at any time.
+   7. It also ends when another player targets them (owner, 2026-10-20).
+   8. Or targets their items, souls, curses, or hand cards.
+   9. So they can answer before cards are stolen from them.
+   10. Cards that pick the victim on resolution end it too (owner, 2026-10-20).
 17. N-17. Create a game on a dedicated server (owner, 2026-10-14).
    1. A player connected to a dedicated server opens a new game there.
    2. The Games list shows "Create a game" only on a dedicated server.
    3. A game hosted in an app: only that app creates or loads games.
    4. Friends there join; they never open games on the host's app.
+18. N-18. Server names and a Recent list the player edits (owner, 2026-10-20).
+   1. A dedicated server's operator sets its name in the setup.
+   2. The app shows that name instead of the bare address.
+   3. The player removes a server from the Recent list.
+   4. A match record names the server it ran on (owner, 2026-10-20).
+19. N-19. Easy server setup: systemd, Docker, compose with Caddy (owner, 2026-10-21).
+   1. The operator picks one of three ready setups.
+   2. ENV variables configure the server, for Docker.
+   3. One Dockerfile, downloaded alone, builds the latest release.
+   4. Server archives have no version in their names.
+   5. Desktop app archives keep their versions.
+   6. Caddy gives HTTPS; the client speaks `wss://`.
+   7. A bare domain tries `wss://` first, then plain `ws://` on 4774.
+   8. Compose tracks the server with a healthcheck.
+20. N-20. Seamless server restart and idle game limits (owner, 2026-10-21).
+   1. A server update or restart does not end the games.
+   2. Players reconnect by themselves and play on.
+   3. Same engine version: the game goes on silently.
+   4. Newer engine that still reads the game: a notice to the players.
+   5. The notice says cards may now behave differently.
+   6. A game the new server cannot read ends with an apology.
+   7. "Can read": the state checksum after loading matches the saved one.
+   8. No drain mode: games can last an hour, or never end.
+   9. A game with no player connected for 30 minutes ends.
+   10. A game ends 24 hours after it started, even if still played.
 
 ## Learning
 
@@ -614,6 +688,13 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    3. `games.spec.ts` already fails on them; 19.13 was found that way.
    4. Move that check into `e2e/tests/fixtures.ts`.
    5. Harmless errors get a fix or a named allowance.
+7. TS-07. The client reads every field the server sends.
+   1. 19.29 and 19.30: the engine sent a field; the client never drew it.
+   2. Engine tests pass; store-injected e2e tests cannot see it.
+   3. Go test: every JSON field of the view types is in `protocol.ts`.
+   4. Vitest: every view field in `protocol.ts` is read in `frontend/src`.
+   5. A field left unread on purpose is listed with its reason.
+   6. The golden file covers sample messages only, not empty fields.
 
 ## Localization
 
@@ -635,6 +716,7 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
 1. ST-01. Fullscreen or windowed mode.
 2. ST-02. Theme: dark or light.
    1. Changes menus and panels only for now.
+   2. Replaced by ST-07 (owner, 2026-10-20).
 3. ST-03. Game mat: choose one of the official mats.
    1. Mat images are collected by the scraping script (CD-07).
    2. Bad images are replaced by hand.
@@ -648,6 +730,12 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    2. Sent when joining a game; shown in the lobby, at the table and in the history.
    3. 1–20 characters; the server makes equal names in one game unique.
    4. Can be changed in the settings; a running game keeps the old one.
+7. ST-07. One dark theme; no theme choice (owner, 2026-10-20).
+   1. Replaces ST-02.
+   2. The light theme and the Theme field go away.
+8. ST-08. No Green felt mat (owner, 2026-10-20).
+   1. It read as a poker table (H-05).
+   2. A saved Green felt falls back to the default mat.
 
 ## Audio (later)
 
@@ -668,6 +756,41 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    1. Host a game.
    2. Join a game.
    3. Records: list, watch, export, and delete saved matches.
+2. M-02. Exit button in the main menu (owner, 2026-10-20).
+   1. Last button of the menu.
+   2. Closes the app.
+3. M-03. Menu split by where you play (owner, 2026-10-22).
+   1. Main menu: Play, Records, Settings, Exit.
+   2. Play: LAN, Online, Learn to play.
+   3. Learn to play is disabled, marked "Soon" (LR-03 later).
+   4. LAN: Host button on top.
+   5. Below it: LAN games, searched all the time; no "Search again".
+   6. Below them: an address field; it keeps the last typed value only.
+   7. LAN has no Recent list.
+   8. Online: an address field and the Recent list (N-18).
+   9. Online opens the server's games; create a game there (N-17).
+   10. LAN Host always hosts in this app; Online always on the server.
+   11. Back and Esc go up one level.
+   12. The setup screen goes back to the path that opened it.
+4. M-04. Recent servers show live status (owner, 2026-10-22).
+   1. A quick check when the Online screen opens.
+   2. Shows whether the server is up and how many games are open.
+5. M-05. "Rejoin" button in the main menu (owner, 2026-10-22).
+   1. Shows when the app closed during a game: "Rejoin: <game> · LAN/Online".
+   2. Uses the saved seat (`rejoin` in the settings, N-08).
+   3. The saved seat is cleared when the game ends.
+   4. Also cleared when the player leaves on purpose.
+   5. A crash or a force-quit keeps it.
+   6. On menu open the app asks that server once: is the seat still live?
+   7. Yes: the button shows. No: it hides and the seat is cleared.
+   8. A crashed LAN host has nothing to rejoin; it re-hosts from a save.
+6. M-06. The Play group opens in place (owner, 2026-10-22).
+   1. Play opens its buttons under itself, indented.
+   2. The buttons below slide down; the ones above stay put.
+   3. A second click on Play or Esc closes the group.
+   4. No separate Play screen and no Back button there.
+7. M-07. Records shows "Soon" while disabled (owner, 2026-10-22).
+   1. Same look as Learn to play.
 
 ## Game setup
 

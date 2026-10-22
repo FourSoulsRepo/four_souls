@@ -25,17 +25,26 @@
 * **5a. The nickname is taken at this table:** the server adds " (2)".
 * **6a. The connection drops during the game:** the player says hello again with their token and gets the seat back (N-08).
   * In the app, a "Connection lost" dialog offers Reconnect (UC-07).
-* **1a. In the app:** Main menu, **Join a game**, nickname and host address.
+* **1a. In the app:** Main menu, **Play**, **Online**, nickname and server address (15.98).
   * A bare address uses port 4774.
-  * The last 5 addresses show as buttons under **Recent**.
+  * The last 5 servers show as buttons under **Recent**.
 * **1b. Not an address:** the app says how one looks and does not connect.
 * **1c. Nobody answers:** "Could not connect to the server.".
 * **3a. The game list:** each game shows its host, taken and free seats.
   * Saved games show who played and when, with **Continue** (UC-09).
-* **1d. A game on the LAN:** the join screen lists it; no typing (UC-17).
+* **1d. A game on the LAN:** **Play**, **LAN** lists it; no typing (UC-17).
 * **4d. A locked game (N-14):** its row shows a lock and a password field.
   * No password: "this game needs a password".
   * A wrong one: "wrong password"; the player may try again.
+* **1e. A named server (N-18):** its welcome gives the name.
+  * The **Recent** button shows the name; hovering shows the address.
+  * The Games list shows the name under its heading.
+  * A server without a name shows its address.
+* **1f. Remove from Recent:** the × next to an entry removes it for good.
+* **1g. A domain or a typed scheme (8.18):** see UC-27.
+* **1h. Back or Esc (15.98):** one level up each time.
+  * The Games list goes back to the Online screen; it goes back to the menu.
+  * The Online screen lists no LAN games; those are on the LAN screen.
 
 ## Postconditions
 

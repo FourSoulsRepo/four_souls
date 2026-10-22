@@ -21,7 +21,8 @@ frontend/              React + TypeScript (Vite)
 e2e/                   Playwright UI tests and screenshots
 frontend/src/bridge/   the only code that talks to Wails
 docs/                  ideas, roadmap, ADRs, use cases, this wiki
-release/               README.txt for the release archives
+release/               READMEs for the release archives; server.sh packs the servers
+deploy/                server setups: systemd unit, Dockerfile, compose with Caddy
 .github/               CI, release workflow, shared build and card images actions
 ```
 

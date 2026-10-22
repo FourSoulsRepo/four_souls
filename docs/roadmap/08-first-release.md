@@ -3,7 +3,7 @@
 Goal: the full Base Game for 2–4 players over LAN.
 Public downloads for all platforms.
 
-Ideas: B-03 – B-05, L-03, V-10, V-11, DO-01, V-14, A-16, N-13, N-14, V-19.
+Ideas: B-03 – B-05, L-03, V-10, V-11, DO-01, V-14, A-16, N-13, N-14, V-19, N-19, N-20.
 
 ---
 
@@ -191,3 +191,241 @@ Ideas: B-03 – B-05, L-03, V-10, V-11, DO-01, V-14, A-16, N-13, N-14, V-19.
 3. Done when:
    1. Go and Vitest tests for the catalog, setting, and faces.
    2. All six faces checked on two real textures.
+
+### [x] 8.16 Server ENV config
+
+1. Goal: Docker sets every server option by ENV (N-19).
+2. Tasks:
+   1. `FOUR_SOULS_<OPTION>` for every flag, and `FOUR_SOULS_CONFIG`.
+   2. Order: defaults, then JSON file, then ENV, then flags.
+   3. A bad value stops the server with a clear error.
+3. Done when:
+   1. Tests for each variable, the order, and bad values.
+
+### [x] 8.17 Server release archives
+
+1. Goal: server downloads apart from the app (N-19).
+2. Tasks:
+   1. A release job builds only the server, with `CGO_ENABLED=0`.
+   2. Names without a version: `four-souls-server-<os>-<arch>`.
+   3. Each has the server, its README, `LICENSE`, `NOTICE`.
+   4. App archives keep their versions and lose the server.
+3. Done when:
+   1. CI builds the server archives.
+   2. The Linux server binaries are statically linked.
+
+### [x] 8.18 Secure WebSocket in the client
+
+1. Goal: join a server behind HTTPS by its domain (N-19).
+2. Tasks:
+   1. `wss://` and `ws://` typed by the player are kept.
+   2. A bare domain tries `wss://` first, then `ws://` on 4774.
+   3. IPs, `localhost`, LAN names, and a port keep plain `ws://`.
+   4. The record link follows: `https://` for `wss://`.
+   5. ADR for `wss://` through a reverse proxy.
+   6. Use case: join a server by its domain.
+3. Done when:
+   1. Vitest for every address form; e2e for the fallback.
+
+### [x] 8.19 Dockerfile
+
+1. Goal: one file builds a server image from the latest release (N-19).
+2. Tasks:
+   1. Alpine image; the server runs as a non-root user.
+   2. Downloads `releases/latest/download/…` for the build's CPU.
+   3. Records and saves in the `/data` volume.
+   4. `/healthz` on the server; `HEALTHCHECK` uses it.
+3. Done when:
+   1. The image builds and the healthcheck passes.
+
+### [x] 8.20 Docker Compose with Caddy
+
+1. Goal: HTTPS server with one command (N-19).
+2. Tasks:
+   1. `docker-compose.yml`, `Caddyfile`, `.env.example`.
+   2. Caddy gets the certificate; only ports 80 and 443 open.
+   3. A healthcheck tracks the server; Caddy waits for it.
+3. Done when:
+   1. `docker compose up` serves `wss://` on a test domain.
+
+### [x] 8.21 Server setup pages
+
+1. Goal: the operator picks systemd, Docker, or compose (N-19).
+2. Tasks:
+   1. VPS page keeps the shared parts and the options table.
+   2. Options table gets an ENV column.
+   3. One wiki page per setup; how to update each.
+   4. ADR: server deployment from releases.
+   5. `NOTICE` lists Alpine and Caddy.
+3. Done when:
+   1. Each page's commands were run once.
+
+### [x] 8.22 Server keeps its games over a restart
+
+1. Goal: a stopped server leaves its tables for the next start (N-20).
+2. Tasks:
+   1. On stop, every client gets a new `restarting` message.
+   2. Every table goes to a handoff file in the saves folder.
+   3. That covers started games and lobby tables.
+   4. A file keeps seats, tokens, and options.
+   5. It keeps the state checksum and the record's path.
+   6. The record gets no `end` line on such a stop.
+   7. On start, the tables come back; seats wait for their tokens.
+   8. The record goes on with a `resume` part (ADR 007).
+   9. A loaded handoff file is deleted.
+   10. Protocol version stays: older apps ignore the new messages.
+   11. ADR: seamless server restart.
+   12. Bans and picks start over once every player is back.
+   13. Only the dedicated server keeps games; an app's host does not.
+3. Done when:
+   1. Go test: stop, start on the same folder, rejoin by token.
+   2. The state checksum is the same after the restart.
+4. Owner notes (2026-10-21)
+   1. Owner marks 8.22 solved.
+
+### [x] 8.23 Games from another engine version
+
+1. Goal: a newer engine goes on with every game it can read (N-20).
+2. Tasks:
+   1. Same engine version: the game goes on silently.
+   2. Other version: load, save again; the bytes must be equal.
+   3. Equal bytes and meaning number: the game goes on.
+   4. Its players see "The engine was updated; cards may behave differently."
+   5. Else the game ends unfinished; the record gets `end`.
+   6. Its players see "Sorry, the server was updated; please start a new game."
+   7. The server logs why; the restart file stays, renamed `.lost`.
+   8. The ended table answers its tokens with that apology for 30 minutes.
+   9. Meaning number: a constant in the engine, raised by hand.
+   10. Raise it when a field keeps its name but changes meaning.
+   11. New state fields use `omitempty`, so old games still match.
+   12. A test checks every state field for `omitempty` or an allow list.
+   13. Use case: a game goes on after a server update.
+3. Done when:
+   1. Go tests for the three cases.
+   2. A renamed field and a new field each have a test.
+4. Owner notes (2026-10-21)
+   1. Owner marks 8.23 solved.
+
+### [x] 8.24 Client reconnects by itself
+
+1. Goal: players do not notice a short server restart (N-20).
+2. Tasks:
+   1. A lost game connection reconnects by itself.
+   2. Retries: at once, then 1, 2, 4 … seconds, at most 10.
+   3. First a small "Reconnecting…" badge, no dialog.
+   4. The "Connection lost" dialog comes after 30 seconds.
+   5. Its Reconnect button still works.
+   6. The engine notice and the apology show as dialogs.
+   7. No kick vote for 60 seconds after the server starts.
+   8. Animations, history, and the board are kept.
+   9. A failed retry's error shows in the dialog, not in the action bar.
+   10. `cmd/server` stops its games after the warning, not on the signal.
+3. Done when:
+   1. Vitest for the retry delays.
+   2. e2e: restart the server mid-game; the game goes on, no dialog.
+   3. Screenshots of the badge and both dialogs.
+4. Owner notes (2026-10-21)
+   1. Owner marks 8.24 solved.
+
+### [x] 8.25 Idle game limits
+
+1. Goal: stuck and endless games do not live forever (N-20).
+2. Tasks:
+   1. No player connected for 30 minutes: the game ends.
+   2. Server downtime counts toward those 30 minutes.
+   3. A game ends 24 hours after it started, even if still played.
+   4. It ends unfinished; the record gets `end`.
+   5. Connected players see why it ended.
+   6. Both limits are server options with ENV variables.
+   7. 0 turns a limit off.
+   8. Use case: a game ends by an idle limit.
+   9. Flags `-empty_minutes`, `-game_hours`; ENV `FOUR_SOULS_EMPTY_MINUTES`, `FOUR_SOULS_GAME_HOURS`.
+   10. Players away when it ended hear why when they come back.
+   11. A table kept over a restart closes after the empty limit too.
+3. Done when:
+   1. Go tests with a fake clock for both limits.
+4. Owner notes (2026-10-21)
+   1. Owner marks 8.25 solved.
+
+### [x] 8.26 Restart docs for server admins
+
+1. Goal: admins know an update keeps the games (N-20).
+2. Tasks:
+   1. Each setup page: an update keeps games; the version cases.
+   2. Options table: both idle limits.
+   3. Saves folder must stay on disk between restarts.
+   4. Docker: `stop_grace_period` is enough for the handoff.
+3. Done when:
+   1. A real server was stopped and started mid-game, without Docker (owner's choice).
+4. Owner notes (2026-10-21)
+   1. Owner marks 8.26 solved.
+
+### [x] 8.27 Binary named FourSouls
+
+1. Goal: release binaries are named `FourSouls`, not `four_souls`.
+2. Tasks:
+   1. `wails.json`: `outputfilename` becomes `FourSouls`.
+   2. Archives hold `FourSouls.app`, `FourSouls.exe`, `FourSouls`.
+   3. Bundle ID and the config folder `FourSouls` stay the same (8.3).
+   4. `TestStableIdentity` checks the new file name.
+   5. `release.yml` and `ci.yml` steps that name the binary.
+   6. `README.md`, `release/README.txt`, `.gitignore`.
+   7. Wiki: First start, Internal builds, Releases.
+   8. Use case UC-16: `open -n FourSouls.app`.
+   9. `wails.json` `name` becomes `FourSouls` too.
+   10. On macOS Wails names the `.app` after `name`.
+3. Done when:
+   1. A test tag's archives hold `FourSouls` on every platform.
+   2. An old release's settings still load after the update.
+4. Owner notes (2026-10-22)
+   1. Server binary keeps `four_souls_server`.
+   2. Archive names `four-souls-<version>-…` stay.
+   3. `name` changes too, so macOS gets `FourSouls.app`.
+   4. Owner marks 8.27 solved.
+5. Notes
+   1. The workflows never name the app binary; they copy `build/bin/`.
+   2. `.gitignore` keeps `/four_souls`: a plain `go build .` makes it.
+   3. A local `wails build` gives `FourSouls.app`, same bundle ID.
+   4. No test tag was pushed; the release job copies the same `build/bin/`.
+
+### [x] 8.28 App icon
+
+1. Goal: the app has its own icon, not the Wails template one.
+2. Tasks:
+   1. Dark tile with a pixel-style "4": four souls win the game.
+   2. Four souls fly around and through the digit.
+   3. Some fly behind the digit, some in front, two twine around it.
+   4. Original drawing; souls only in the spirit of the logo.
+   5. Source `build/appicon.svg`; renders `build/appicon.png`, 1024 px.
+   6. `build/windows/icon.ico` with sizes 16–256.
+   7. `NOTICE` drops the Wails template icon entry.
+3. Done when:
+   1. `wails build` shows the new icon on macOS and Windows.
+4. Owner notes (2026-10-22)
+   1. Owner picked variant G out of several drafts.
+5. Notes
+   1. PNG and ICO are rendered from the SVG in Chromium (Playwright).
+   2. ImageMagick's own SVG renderer drops gradients and filters.
+   3. Below 32 px the souls blend into the digit; the "4" still reads.
+
+### [x] 8.29 Image embedding moves into the images repo
+
+1. Goal: the private images repo owns how its images are embedded.
+2. Tasks:
+   1. A Go package in `pkg/card_db/images` holds the `//go:embed`.
+   2. It returns the images as an `fs.FS`.
+   3. `pkg/card_db/embed_images.go` only calls that package.
+   4. The embed patterns list the image folders explicitly.
+   5. The package's `.go` files never end up in the binary.
+   6. Builds without `cardimages` or without the submodule stay as now.
+   7. Details live in the images repo `README.md`.
+3. Done when:
+   1. `wails build -tags "embed cardimages"` shows every card image.
+   2. `wails build -tags embed` and `make e2e` pass without the submodule.
+4. Notes
+   1. `go generate ./pkg/card_db/images` prepares 810 files in 0.2–0.4 s.
+   2. `make internal`, the build action and the CI image tests run it.
+   3. Without it a `cardimages` build fails: the embed pattern finds no files.
+   4. `TestFS` in the submodule checks every image against its source.
+5. Owner notes (2026-10-22)
+   1. Owner marks 8.29 solved.

@@ -10,6 +10,10 @@ The frontend is tested like the Go code (ADR 008). Three layers, from fast to sl
 
 Frontend changes gate on `make frontend e2e`, next to the Go gate. `make e2e` runs every test in Chromium and in WebKit (the engine of macOS's WKWebView, and the nearest check for Linux's WebKitGTK).
 
+It runs five Playwright workers at once (`workers` in `e2e/playwright.config.ts`; `make e2e E2E_WORKERS=N` for another number). Each test opens two to four app pages. Before 19.38 the pages of past tests stayed open, and five workers slowed a laptop into 30 s game-start timeouts (19.35); three became the default. Since each test closes its pages, a sweep showed no swapping up to eight workers; past three, flaky tests failed more often, and once they were fixed (19.14 – 19.51) the default became five: about 3.7 minutes for a full run instead of 6.
+
+The automatic fixture in `e2e/tests/fixtures.ts` closes every context a test opened when the test ends. Before that, `startGame`'s pages stayed open until the worker ended: about 175 live game pages per browser by the end of a run, each with a WebSocket and a looping glow animation. The laptop ran out of memory and swapped, and whichever test ran then timed out (19.38). A test that opens its own contexts needs no cleanup of its own.
+
 ## Keep it simple
 
 The frontend follows the same KISS rules as the backend:
@@ -40,9 +44,11 @@ URL flags, dev server only:
 
 Every new screen gets a Playwright test. Find elements the way a player does: by role and visible text (`getByRole('button', { name: 'Save' })`), not by CSS classes.
 
-`e2e/tests/game.ts` has `startGame(browser, names)`: a real game with one page per player, and `expectFits(page)`, which fails when the table scrolls or leaves the window. Tests share one server, so each test uses its own host name.
+`e2e/tests/game.ts` has `startGame(browser, names)`: a real game with one page per player, and `expectFits(page)`, which fails when the table scrolls or leaves the window. Tests share one server and its game list, so guests join the host's game by its id (`lobbyGame`, 19.31); player names may repeat.
 
 Specs import `test` and `expect` from `e2e/tests/fixtures.ts`, not from `@playwright/test`. Its automatic fixture fails a test when any app page logged an animation clash (ADR 012, [Animations](Animations)); `fixtures.spec.ts` fails a spec that imports `test` from elsewhere. Types like `Page` still come from `@playwright/test`.
+
+A game opens before turn 1, with the first-player roll (15.43). `startGame` throws it for everyone with `throwFirstRoll`, which only presses Throw and then waits until every page is idle; so a test starts in turn 1 with nobody's action spent. `{ roll: false }` leaves the roll to the test (`first-roll.spec.ts`). A fake update a test sends counts its step from the real one (`game.step + 1`): a page acts once per step, so a step it already acted on would show its buttons disabled.
 
 A random deal can change what a test sees. `startGame(browser, names, { bans })` leaves cards out of the game (GS-13): it adds `host_bans` to the host's `create` message through Playwright's WebSocket routing, since the host screen has no ban list yet. A test that checks a fresh monster's stats passes `bans: statMonsters` (Delirium and Stoney, 14.10); `TestStatMonsterBans` in `pkg/rules_engine/cards` proves that list is complete for the Base Game.
 
@@ -92,7 +98,7 @@ So one round of `make e2e-games` (one game per player count, one after another) 
 ### Working on it
 
 * Run one setup: `cd e2e && FULL_GAMES=1 npx playwright test games --project chromium -g "4 players"`.
-* More games: add `--repeat-each N`; `--workers 3` plays three at once. Each repeat hosts under its own names (`Rnd<players>r<repeat><Name>`), since a finished game stays in the lobby list.
+* More games: add `--repeat-each N`; `--workers 3` plays three at once. Each repeat hosts under its own names (`Rnd<players>r<repeat><Name>`), so its progress lines stay apart.
 * Progress lines start with the host's name, so games played at once stay apart.
 * A failed game's record lands in `.cache/e2e-games/`. Replay it in Go with `engine.Replay` or by applying each step's intent to `engine.NewGame`; the header's `setup` (seed, sets, characters) rebuilds the deal.
 * `e2e/test-results/` and the test servers' folders are emptied when a run starts: copy anything you need before the next run.

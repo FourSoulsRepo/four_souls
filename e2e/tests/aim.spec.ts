@@ -3,12 +3,11 @@
 // does nothing; empty space or a right click cancels (15.33). A card
 // with no target is dragged onto the board; one that asks its mode
 // first aims after it, and a cancelled aim puts it back (15.34).
-import type { Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 import { expect, test } from './fixtures';
-import { readFileSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
 import { startGame } from './game';
-import { appURL, serverPort } from './server';
+import { appURL } from './server';
+import { saveAndContinue } from './saves';
 import { shot } from './shot';
 import { activePage, click, settle } from './turn';
 
@@ -28,60 +27,6 @@ interface Store {
 interface StackItem {
   card?: string;
   targets?: { object?: number }[];
-}
-
-// gameID is the id of the page's table, which names its save file.
-async function gameID(page: Page): Promise<string> {
-  return page.evaluate(() => {
-    const store = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store;
-    return store.getState().lobby.table?.game ?? '';
-  });
-}
-
-// giveCard rewrites a saved game: the active player's first hand card
-// becomes the card. The test server keeps saves under .cache/e2e.
-function giveCard(game: string, card: string) {
-  const file = join(import.meta.dirname, '..', '..', '.cache', 'e2e', String(serverPort()), 'saves', `${game}.fssave`);
-  const save = JSON.parse(readFileSync(file, 'utf8')) as {
-    state: { turn: { active: number }; players: { hand: number[] }[]; objects: { card: string }[] };
-  };
-  const { state } = save;
-  const id = state.players[state.turn.active]?.hand[0];
-  const obj = id === undefined ? undefined : state.objects[id];
-  if (!obj) {
-    throw new Error('the active player has no hand card');
-  }
-  obj.card = card;
-  writeFileSync(file, JSON.stringify(save));
-}
-
-// saveAndContinue: the host saves, the active player gets the card,
-// then everyone comes back to it.
-async function saveAndContinue(pages: Page[], names: string, card = 'bomb') {
-  const [host, ...guests] = pages;
-  if (!host) {
-    throw new Error('no pages');
-  }
-  const game = await gameID(host);
-  await host.getByRole('button', { name: 'Menu' }).click();
-  await host.getByRole('button', { name: 'Save and leave' }).click();
-  for (const page of pages) {
-    await expect(page.getByText('The game was saved.')).toBeVisible();
-  }
-  giveCard(game, card);
-  await host.getByRole('button', { name: 'Back' }).click();
-  await host.getByRole('button', { name: 'Host a game' }).click();
-  await host.getByRole('button', { name: 'Continue a saved game' }).click();
-  await host.getByRole('listitem').filter({ hasText: names }).getByRole('button', { name: 'Continue' }).click();
-  for (const page of guests) {
-    await page.getByRole('listitem').filter({ hasText: names }).getByRole('button', { name: 'Continue' }).click();
-  }
-  for (const page of pages) {
-    await page.getByRole('button', { name: 'Ready', exact: true }).click();
-  }
-  for (const page of pages) {
-    await expect(page.getByRole('main', { name: /^Turn / })).toBeVisible();
-  }
 }
 
 test('a bomb aimed at a monster by two clicks damages it', async ({ browser }) => {
@@ -288,7 +233,9 @@ test('a loot card with no target dragged onto the board plays', async ({ browser
 });
 
 test('a card placed first aims after its mode; a cancelled aim leaves it in hand', async ({ browser }) => {
-  const pages = await startGame(browser, ['Fay', 'Gus'], { url: fast() });
+  // Dagaz is banned from the deal: the test gives one and counts it; a
+  // dealt Dagaz made two in the hand (19.20).
+  const pages = await startGame(browser, ['Fay', 'Gus'], { url: fast(), bans: ['dagaz'] });
   await activePage(pages, click);
   await saveAndContinue(pages, 'Fay, Gus', 'dagaz');
   const active = await activePage(pages, click);
@@ -336,4 +283,88 @@ test('a card placed first aims after its mode; a cancelled aim leaves it in hand
   await active.mouse.click(to.x + to.width / 2, to.y + to.height / 2);
   await expect.poll(() => stackCards(active)).toContain('dagaz');
   await expect(dagaz).toHaveCount(0);
+});
+
+// Presence (15.36): the other player sees the aim live, from a back
+// lifted out of the aiming player's hand to the red-marked target, and
+// the card the active player hovers. A waiting player shares no hover.
+test('the other player sees the arrow and the red mark', async ({ browser }) => {
+  const pages = await startGame(browser, ['Hal', 'Ivy'], { url: fast() });
+  await activePage(pages, click);
+  await saveAndContinue(pages, 'Hal, Ivy');
+  const active = await activePage(pages, click);
+  const other = pages.find((p) => p !== active);
+  if (!other) {
+    throw new Error('no waiting player');
+  }
+  const bomb = active.getByRole('group', { name: 'Your hand' }).getByRole('button', { name: 'Bomb!' }).first();
+  const monster = active.getByRole('group', { name: 'Monsters' }).locator('.card').first();
+  const item = active.getByRole('group', { name: 'Shop' }).locator('.card').first();
+  const arrow = other.locator('.aim-arrow.others');
+  const lifted = other.locator('.hidden-back[data-presence~="from"]');
+  // The same card on the other screen, by its zone.
+  const there = async (l: Locator) => other.locator(`[data-zone="${(await l.getAttribute('data-zone')) ?? ''}"]`);
+  const middle = async (l: Locator) => {
+    const b = await l.boundingBox();
+    if (!b) {
+      throw new Error('no box');
+    }
+    return { x: b.x + b.width / 2, y: b.y + b.height / 2 };
+  };
+  // Empty board below the stack panel: no card, pile, or row.
+  const space = { x: 300, y: 420 };
+  const b = await bomb.boundingBox();
+  if (!b) {
+    throw new Error('no bomb box');
+  }
+
+  // Aiming: the arrow runs from a lifted back to the marked monster.
+  await active.mouse.click(b.x + b.width / 2, b.y + 30);
+  const m = await middle(monster);
+  await active.mouse.move(m.x, m.y, { steps: 8 });
+  await expect(arrow).toHaveCount(1);
+  await expect(arrow).toHaveClass(/\bon\b/);
+  await expect(lifted).toHaveCount(1);
+  await expect(await there(monster)).toHaveAttribute('data-presence', 'at');
+  // The head ends on the marked monster, not on a card passed on the way.
+  const ringAt = async () => middle(other.locator('.aim-arrow.others .aim-ring > div'));
+  const near = async (to: { x: number; y: number }) => {
+    const r = await ringAt();
+    return Math.hypot(r.x - to.x, r.y - to.y);
+  };
+  const mm = await middle(await there(monster));
+  await expect.poll(() => near(mm)).toBeLessThan(3);
+  await shot(other, 'presence-aim');
+
+  // Over empty space the arrow stays, with no mark.
+  await active.mouse.move(space.x, space.y, { steps: 4 });
+  await expect(arrow).not.toHaveClass(/\bon\b/);
+  await expect(await there(monster)).not.toHaveAttribute('data-presence');
+  // Both boards are drawn alike, so the head ends at the same point.
+  await expect.poll(() => near(space)).toBeLessThan(3);
+  await shot(other, 'presence-aim-off');
+
+  // Cancelled, the arrow and the lifted back go.
+  await active.mouse.click(space.x, space.y, { button: 'right' });
+  await expect(arrow).toHaveCount(0);
+  await expect(lifted).toHaveCount(0);
+
+  // On the own turn, a hovered card is marked for the other.
+  const i = await middle(item);
+  await active.mouse.move(i.x, i.y, { steps: 4 });
+  await expect(await there(item)).toHaveAttribute('data-presence', 'at');
+  await shot(other, 'presence-hover');
+  await active.mouse.move(space.x, space.y, { steps: 4 });
+  await expect(await there(item)).not.toHaveAttribute('data-presence');
+
+  // The waiting player's hover reaches nobody.
+  const o = await middle(other.getByRole('group', { name: 'Shop' }).locator('.card').first());
+  await other.mouse.move(o.x, o.y, { steps: 4 });
+  await active.waitForTimeout(500);
+  const shown = await active.evaluate(() => {
+    const s = (window as unknown as { fourSouls: { store: { getState: () => { presence: object } } } }).fourSouls.store.getState();
+    return Object.keys(s.presence).length;
+  });
+  expect(shown).toBe(0);
+  await expect(active.locator('[data-presence]')).toHaveCount(0);
 });

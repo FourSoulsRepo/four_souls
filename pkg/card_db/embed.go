@@ -20,6 +20,7 @@ func Embedded() (fs.FS, bool) {
 }
 
 // union serves images/... from the images FS and everything else from data.
+// The images FS has no images/ prefix: images/b2/x.webp is b2/x.webp there.
 type union struct {
 	data   fs.FS
 	images fs.FS // nil when images are not embedded
@@ -30,7 +31,11 @@ func (u union) Open(name string) (fs.File, error) {
 		if u.images == nil {
 			return nil, &fs.PathError{Op: "open", Path: name, Err: fs.ErrNotExist}
 		}
-		f, err := u.images.Open(name)
+		sub := strings.TrimPrefix(strings.TrimPrefix(name, ImagesDir), "/")
+		if sub == "" {
+			sub = "."
+		}
+		f, err := u.images.Open(sub)
 		if err != nil {
 			return nil, err //nolint:wrapcheck // keep fs errors as they are
 		}

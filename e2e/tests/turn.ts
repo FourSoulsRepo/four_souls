@@ -166,7 +166,7 @@ export async function settle(pages: Page[], press: Tap, done: () => Promise<bool
   const states = await Promise.all(
     pages.map(async (p) => ({
       ...(await seen(p)),
-      status: await p.locator('.action-status').textContent({ timeout: 1000 }).catch(() => null),
+      status: await p.locator('.prompt-banner').textContent({ timeout: 1000 }).catch(() => null),
       buttons: await p.getByRole('region', { name: 'Actions' }).getByRole('button').allTextContents(),
       dialog: await p.locator('.choice').textContent({ timeout: 1000 }).catch(() => null),
       error: await p.locator('.action-error').textContent({ timeout: 1000 }).catch(() => null),
@@ -202,6 +202,22 @@ export function passButton(page: Page) {
 // "End turn" on own turn, "Their turn" otherwise.
 export function endTurnButton(page: Page, name: 'End turn' | 'Their turn' = 'End turn') {
   return page.getByRole('region', { name: 'Board' }).getByRole('button', { name, exact: true });
+}
+
+// endTurnQuestion asks before the turn ends while plays are left (V-46).
+export function endTurnQuestion(page: Page) {
+  return page.getByRole('dialog', { name: 'End turn?' });
+}
+
+// endTurn presses End turn and confirms when it asks: it asks unless it
+// glows, as nothing is left to do then (H-20, V-46).
+export async function endTurn(page: Page, press: Tap = click) {
+  const button = endTurnButton(page);
+  const asks = !(await button.evaluate((b) => b.classList.contains('idle')));
+  await press(page, button);
+  if (asks) {
+    await press(page, endTurnQuestion(page).getByRole('button', { name: 'End turn' }));
+  }
 }
 
 // canEndTurn: the page may end the turn now (offered and enabled).
@@ -253,4 +269,27 @@ export async function playLoot(page: Page, card: Locator, press: Tap): Promise<v
   const target = page.locator('.card.hl-aim, .stack-row.hl-aim').first();
   await expect(menu.or(target)).toBeVisible();
   await press(page, (await menu.isVisible()) ? menu.getByRole('menuitem', { name: 'Play' }) : target);
+}
+
+// answerPlay answers what a played loot card asks before it goes on the
+// stack: its mode in a dialog, or its target, aimed at on the table
+// (19.18): Dagaz protects a player, Lil Battery charges an item.
+export async function answerPlay(page: Page, press: Tap): Promise<void> {
+  const rows = page.getByRole('complementary', { name: 'Stack' }).locator('.stack-row');
+  await expect
+    .poll(
+      async () => {
+        if ((await rows.count()) > 0) {
+          return true;
+        }
+        const option = page.locator('.choice .choice-option button').first();
+        const aim = (await option.isVisible()) ? option : await uncovered(page.locator('.card.hl-aim, .stack-row.hl-aim'));
+        if (aim) {
+          await press(page, aim);
+        }
+        return false;
+      },
+      { timeout: 10_000 },
+    )
+    .toBe(true);
 }

@@ -40,7 +40,8 @@ const settingsKey = 'fake-settings';
 
 function loadSettings(): unknown {
   // ?anim=off starts with animations off; ?mat=basement starts on that
-  // mat; ?firstrun starts without a nickname, as on the first start.
+  // mat; ?firstrun starts without a nickname, as on the first start;
+  // ?noendask ends the turn without asking (V-46).
   const params = new URLSearchParams(window.location.search);
   const animation = params.get('anim') ?? 'normal';
   const mat = params.get('mat') ?? '';
@@ -50,11 +51,12 @@ function loadSettings(): unknown {
     recent: [],
     animation,
     fullscreen: false,
-    theme: 'dark',
     mat,
     dice: 'tear',
-    rejoin: { address: '', token: '', game: '' },
+    no_end_turn_ask: params.has('noendask'),
+    rejoin: { address: '', token: '', game: '', via: '' },
     host: { seats: 0, sets: null, detailed: false, response_timer: 0, no_bonus_souls: false, no_deck_ratios: false },
+    lan_address: '',
   };
   return JSON.parse(localStorage.getItem(settingsKey) ?? JSON.stringify(fresh));
 }
@@ -63,13 +65,13 @@ function loadSettings(): unknown {
 // tests see the Go error.
 interface FakeSettings {
   nickname: string;
-  recent: string[];
+  recent: { address: string; name: string }[];
   animation: string;
   fullscreen: boolean;
-  theme: string;
   mat: string;
   dice: string;
-  rejoin: { address: string; token: string; game: string };
+  no_end_turn_ask?: boolean;
+  rejoin: { address: string; token: string; game: string; via?: string };
   host?: {
     seats: number;
     sets: string[] | null;
@@ -78,6 +80,7 @@ interface FakeSettings {
     no_bonus_souls: boolean;
     no_deck_ratios: boolean;
   };
+  lan_address?: string;
 }
 
 function saveSettings(s: FakeSettings): Promise<unknown> {
@@ -85,7 +88,7 @@ function saveSettings(s: FakeSettings): Promise<unknown> {
   if (s.nickname !== '' && (nickname === '' || Array.from(nickname).length > 20)) {
     return Promise.reject(new Error('nickname must be 1–20 characters'));
   }
-  const saved = { ...s, nickname, recent: s.recent.slice(0, 5) };
+  const saved = { ...s, nickname, recent: s.recent.slice(0, 5), lan_address: (s.lan_address ?? '').trim() };
   localStorage.setItem(settingsKey, JSON.stringify(saved));
   return Promise.resolve(saved);
 }
@@ -200,6 +203,10 @@ const w = window as unknown as {
   runtime: Record<string, (...args: never[]) => void>;
   // fakeFullscreen lets tests see the window mode.
   fakeFullscreen: boolean;
+  // fakeQuit lets tests see that the app was asked to close.
+  fakeQuit: boolean;
+  // fakeLan is what the LAN search finds, when a test sets it.
+  fakeLan?: unknown[];
 };
 
 w.go = {
@@ -250,9 +257,16 @@ w.go = {
         Promise.resolve(
           ['loot', 'treasure', 'monster'].map((kind) => ({ kind, image: `/cardimg/assets/backs/${kind}.webp` })),
         ),
-      // The coin and sword icons at their real paths; like the backs, they
-      // load only in screenshots, else the drawn ones show.
-      Icons: () => Promise.resolve({ coin: '/cardimg/assets/icons/coin.webp', sword: '/cardimg/assets/icons/sword.webp' }),
+      // The coin and sword icons, the banner and the sky at their real
+      // paths; like the backs, they load only in screenshots, else the
+      // drawn ones, the text title and a plain background show.
+      Icons: () =>
+        Promise.resolve({
+          coin: '/cardimg/assets/icons/coin.webp',
+          sword: '/cardimg/assets/icons/sword.webp',
+          banner: '/cardimg/assets/banner.webp',
+          sky: ['sky', 'stars-1', 'stars-2', 'stars-3', 'stars-4', 'stars-5'].map((n) => `/cardimg/assets/background/${n}.webp`),
+        }),
       // The fonts at their real paths; they load only in screenshots, else
       // the system font shows.
       Fonts: () =>
@@ -261,13 +275,14 @@ w.go = {
           body: '/cardimg/assets/fonts/font-souls-body.ttf',
           cyrillic: '/cardimg/assets/fonts/tboi4s-original.ttf',
         }),
-      // The damage sounds at their real paths; like the fonts, they load
+      // The sounds at their real paths; like the fonts, they load
       // only in screenshots, else they fail to load and stay silent.
       Sounds: () =>
         Promise.resolve({
           attackHit: '/cardimg/assets/sounds/attack-hit.mp3',
           effectCast: '/cardimg/assets/sounds/effect-cast.mp3',
           effectImpact: '/cardimg/assets/sounds/effect-impact.mp3',
+          diceRoll: '/cardimg/assets/sounds/dice-roll.mp3',
         }),
       // The mat images, at their real paths; the e2e tests serve them only
       // for screenshots, else they fail to load as in a public clone.
@@ -281,14 +296,31 @@ w.go = {
                 { id: 'cathedral', name: 'Cathedral', image: '/cardimg/assets/mats/cathedral.webp' },
               ],
         ),
+      // The real server's answer, like Go's App.CheckSeat: the first
+      // base that answers.
+      CheckSeat: async (bases: string[], token: string) => {
+        for (const b of bases) {
+          try {
+            const r = await fetch(`${b}/seat?token=${encodeURIComponent(token)}`);
+            if (r.ok) {
+              return (await r.json()) as unknown;
+            }
+          } catch {
+            // the next base
+          }
+        }
+        throw new Error('server: no answer');
+      },
       SaveRecord: (link: string) => Promise.resolve(`/fake/${new URL(link).searchParams.get('game') ?? ''}.fsrec`),
       // The LAN holds one hosting app: the test server (?server=PORT).
-      // ?nolan finds nothing.
+      // ?nolan finds nothing; a test sets window.fakeLan to list others,
+      // in this app's protocol unless it names one.
       FindGames: () =>
         Promise.resolve(
-          params.has('nolan')
-            ? []
-            : [{ address: `127.0.0.1:${String(hostPort)}`, protocol: protocolVersion, app: 'demo', games: [{ host: 'Lan', seats: 2, taken: 1 }] }],
+          w.fakeLan?.map((f) => ({ protocol: protocolVersion, ...(f as object) })) ??
+            (params.has('nolan')
+              ? []
+              : [{ address: `127.0.0.1:${String(hostPort)}`, protocol: protocolVersion, app: 'demo', games: [{ id: '', host: 'Lan', seats: 2, taken: 1 }] }]),
         ),
     },
     Host: {
@@ -299,8 +331,12 @@ w.go = {
   },
 };
 w.fakeFullscreen = false;
+w.fakeQuit = false;
 w.runtime = {
   BrowserOpenURL: () => undefined,
+  Quit: () => {
+    w.fakeQuit = true;
+  },
   WindowFullscreen: () => {
     w.fakeFullscreen = true;
   },

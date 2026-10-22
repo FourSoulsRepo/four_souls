@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	engine "github.com/FourSoulsRepo/rules_engine"
+	"github.com/FourSoulsRepo/rules_engine/enginetest"
 )
 
 func TestTheBone(t *testing.T) {
@@ -43,5 +44,26 @@ func TestTheBoneAddsToARoll(t *testing.T) {
 	ev := tb.Activate(0, "the_bone", 1, "roll of 3")
 	if got := resolvedRoll(t, ev); got != 4 {
 		t.Errorf("roll resolved as %d, want 4", got)
+	}
+}
+
+// TestTheBoneSoulCanBeDestroyed: the soul lost all abilities, Eternal
+// too, so XX Judgement destroys it (19.36, Q-23).
+func TestTheBoneSoulCanBeDestroyed(t *testing.T) {
+	tb := enginetest.NewSetup(t, engine.SituationSetup{Players: []engine.SituationPlayer{
+		{Character: "the_forgotten", Items: []engine.CardRef{"the_bone"}},
+		{Character: "isaac", Hand: []engine.CardRef{"xx_judgement"}},
+	}}, Set)
+	bone := tb.Find(0, "the_bone")
+	tb.G.Object(bone).Eternal = true // a starting item
+	tb.G.Object(bone).Counters = []engine.Counter{{Count: 5}}
+	tb.Activate(0, "the_bone", 3)
+	if tb.G.Eternal(bone) {
+		t.Fatal("the Bone's soul is still Eternal")
+	}
+	tb.EndTurn()
+	tb.Play(1, "xx_judgement", "player 1 (the_forgotten)", "the_bone")
+	if got := tb.G.SoulValue(0); got != 0 {
+		t.Errorf("soul value = %d, want 0", got)
 	}
 }

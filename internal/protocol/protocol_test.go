@@ -14,6 +14,8 @@ import (
 
 var update = flag.Bool("update", false, "rewrite testdata/golden.jsonl")
 
+func ptr[T any](v T) *T { return &v }
+
 // TestGolden pins the JSON of every message (ADR 006). If it fails, the
 // wire format changed: if a field was renamed or removed, bump Version;
 // then run with -update.
@@ -31,10 +33,10 @@ func TestGolden(t *testing.T) {
 	}{
 		{TypeHello, 1, Hello{Protocol: Version, App: "0.1.0", Name: "Ann", Role: RolePlayer, Sets: []string{"b2"}, Dice: "tear"}},
 		// A fixed sample: an engine version bump is not a wire change.
-		{TypeWelcome, 1, Welcome{Protocol: Version, App: "0.1.0", Engine: "0.1.0", Token: "t0k3n", Seat: 0}},
+		{TypeWelcome, 1, Welcome{Protocol: Version, App: "0.1.0", Engine: "0.1.0", Token: "t0k3n", Seat: 0, Presence: true, Name: "Basement"}},
 		{TypeIntent, 2, Intent{Intent: engine.Intent{Kind: engine.IntentPass}}},
 		{TypeResync, 3, struct{}{}},
-		{TypeUpdate, 0, Update{Step: 1, Events: []engine.Event{{Kind: engine.EvLooted, Player: 0, Card: "a_dime"}}, View: view, Allowed: g.Allowed(p), Aims: []engine.Aim{{Intent: 0, Targets: []engine.OptionView{{Object: 320, Player: engine.NoPlayer}, {Player: 1, IsPlayer: true}}, Reason: "Pick a monster or a player."}}, Seats: []Seat{{Seat: 0, Name: "Ann", Connected: true, Dice: "tear"}, {Seat: 1, Name: "Bo"}}}},
+		{TypeUpdate, 0, Update{Step: 1, Events: []engine.Event{{Kind: engine.EvLooted, Player: 0, Card: "a_dime"}}, View: view, Allowed: g.Allowed(p), Aims: []engine.Aim{{Intent: 0, Targets: []engine.OptionView{{Object: 320, Player: engine.NoPlayer}, {Player: 1, IsPlayer: true}}, Reason: "Pick a monster or a player."}}, Blocked: []engine.Block{{Kind: engine.IntentAttack, Reason: "Not your turn"}, {Kind: engine.IntentPlayLoot, Object: 314, Reason: "Loot is played on your turn"}}, Seats: []Seat{{Seat: 0, Name: "Ann", Connected: true, Dice: "tear"}, {Seat: 1, Name: "Bo"}}}},
 		{TypeError, 2, Error{Code: ErrRefused, Message: "no loot play available", Rule: "R-CARD-08"}},
 		{TypeList, 4, struct{}{}},
 		{TypeGames, 4, Games{Games: []GameInfo{{ID: "g1", Host: "Ann", Seats: 4, Taken: 2, Sets: []string{"b2"}}}}},
@@ -46,13 +48,16 @@ func TestGolden(t *testing.T) {
 		{TypeSetup, 0, Setup{Phase: PhaseBan, Round: 1, Turn: 0, Pool: []engine.CardRef{"isaac", "cain"}, Banned: []Ban{{Seat: -1, Card: "eden"}}, Deadline: 1760000000000, Seats: []Seat{{Seat: 0, Name: "Ann"}}}},
 		{TypeBan, 9, BanCard{Card: "cain"}},
 		{TypePick, 10, PickCard{Card: "isaac"}},
-		{TypeSkipAll, 11, SkipAll{On: true}},
 		{TypeVote, 12, Vote{Kick: true}},
 		{TypeSave, 13, struct{}{}},
 		{TypeSaved, 0, Saved{Save: "g1"}},
 		{TypeLoad, 14, Load{Save: "g1"}},
 		{TypeWaitTurn, 15, WaitTurn{On: true}},
 		{TypeIntent, 16, Intent{Intent: engine.Intent{Kind: engine.IntentThrow}}},
+		{TypePresence, 17, Presence{From: &Spot{Hand: 2}, Point: &Point{X: 0.25, Y: 0.5}}},
+		{TypePresence, 0, Presence{Seat: 1, From: &Spot{Object: 314}, At: &Spot{Player: ptr(engine.PlayerID(0))}}},
+		{TypePresence, 0, Presence{Seat: 1, At: &Spot{Deck: ptr(engine.MonsterDeck)}}},
+		{TypePresence, 0, Presence{Seat: 1, At: &Spot{StackID: 3}}},
 	}
 	var got bytes.Buffer
 	for _, m := range messages {
@@ -119,6 +124,13 @@ func TestNames(t *testing.T) {
 		if _, ok := CleanName(bad); ok {
 			t.Errorf("CleanName(%q) accepted", bad)
 		}
+	}
+	// A server name may be longer than a nickname (N-18).
+	if got, ok := CleanServerName(" ThisNameIsWayTooLongForUs "); !ok || got != "ThisNameIsWayTooLongForUs" {
+		t.Errorf("CleanServerName = %q, %v", got, ok)
+	}
+	if _, ok := CleanServerName(strings.Repeat("x", MaxServerName+1)); ok {
+		t.Error("CleanServerName accepted a too long name")
 	}
 	if got := UniqueName("Ann", []string{"Ann", "Ann (2)"}); got != "Ann (3)" {
 		t.Errorf("UniqueName = %q", got)

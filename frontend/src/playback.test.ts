@@ -12,9 +12,26 @@ const ctx = {
   character: (p: number) => (p === 1 ? 31 : undefined),
   slot: (id: number) => (id === 50 ? 'monster-slot-1' : undefined),
   seen: (card: string) => card === 'pin',
+  roll: (stack: number) => (stack === 7 ? 2 : undefined),
+  you: 0,
 };
 
 describe('effectsFor', () => {
+  it('throws each first-player die, then names a tie or who goes first (15.43)', () => {
+    const events: GameEvent[] = [
+      { kind: 'dice_rolled', player: 1, amount: 2, text: 'first player roll' },
+      { kind: 'first_roll_tied', player: -1, amount: 2, text: '0,1' },
+    ];
+    expect(effectsFor(events, ctx)).toEqual([
+      { kind: 'dice', value: 2, label: 'first player roll', player: 1, thrown: true },
+      { kind: 'banner', text: 'Tie at 2: You and Bo roll again', long: true },
+    ]);
+    expect(effectsFor([{ kind: 'first_player', player: 1, amount: 1 }], ctx)).toEqual([{ kind: 'banner', text: 'Bo goes first — rolled 1', long: true }]);
+    expect(effectsFor([{ kind: 'first_player', player: 0, card: 'cain', text: 'character' }], ctx)).toEqual([
+      { kind: 'banner', text: 'You go first — Cain', long: true },
+    ]);
+  });
+
   it('flies looted cards from the loot deck to the hand', () => {
     const e: GameEvent = { kind: 'looted', player: 1, object: 9, card: 'a_dime', private: true };
     expect(effectsFor([e], ctx)).toEqual([
@@ -44,6 +61,45 @@ describe('effectsFor', () => {
     ]);
   });
 
+  it("shows another player's played loot card large, not the viewer's own (15.31)", () => {
+    const events: GameEvent[] = [
+      { kind: 'loot_played', player: 1, object: 70, card: 'bomb' },
+      { kind: 'loot_played', player: 0, object: 71, card: 'a_penny' },
+    ];
+    expect(effectsFor(events, ctx)).toEqual([
+      { kind: 'played', card: 'bomb', who: 'Bo', from: ['hand-1', 'player-1'], to: ['stack'] },
+    ]);
+  });
+
+  it('moves stolen cents from the victim to the thief (15.75)', () => {
+    const e: GameEvent = { kind: 'stole', player: 1, amount: 2, text: '0' };
+    expect(effectsFor([e], ctx)).toEqual([{ kind: 'steal', from: ['player-0'], to: ['player-1'], amount: 2 }]);
+    // Without a victim only the thief's text shows.
+    expect(effectsFor([{ ...e, text: '' }], ctx)).toEqual([
+      { kind: 'popup', at: ['player-1'], text: '+2¢ stolen', tone: 'good' },
+    ]);
+  });
+
+  it('flies a loot card that leaves the stack from the stack (15.74)', () => {
+    const e: GameEvent = { kind: 'discarded', player: 1, object: 80, prev: 70, card: 'bomb', text: 'stack' };
+    expect(effectsFor([e], ctx)).toEqual([
+      { kind: 'fly', from: ['played-70', 'stack-src-70', 'obj-70', 'deck-loot'], to: ['discard-loot'], card: 'bomb', back: 'loot', leaves: 70 },
+    ]);
+  });
+
+  it('plays the hits and deaths of a resolved loot before its discard flight (15.51)', () => {
+    const discarded: GameEvent = { kind: 'discarded', player: 0, object: 80, prev: 70, card: 'bomb', text: 'stack' };
+    const damaged: GameEvent = { kind: 'damaged', player: 1, amount: 1, source: 70, by: 1 };
+    const died: GameEvent = { kind: 'died', player: 1 };
+    const kinds = (events: GameEvent[]) => effectsFor(events, ctx).map((e) => e.kind);
+    expect(kinds([discarded, damaged, died])).toEqual(['hits', 'deaths', 'fly']);
+    // The shot flies from the card, which is still there.
+    expect(effectsFor([discarded, damaged], ctx)[0]).toMatchObject({ kind: 'hits', hits: [{ from: ['obj-70', 'played-70', 'stack-src-70', 'player-0'] }] });
+    expect(kinds([damaged, died, discarded])).toEqual(['hits', 'deaths', 'fly']);
+    // Damage from another source does not hold the card.
+    expect(kinds([discarded, { ...damaged, source: 9 }])).toEqual(['fly', 'hits']);
+  });
+
   it('lunges the attacker at what its attack damaged, with no pending popup', () => {
     const events: GameEvent[] = [
       { kind: 'damaged', player: -1, object: 40, amount: 1, source: 30, text: 'combat' },
@@ -67,7 +123,7 @@ describe('effectsFor', () => {
       { kind: 'gained_cents', player: 0, amount: 1 },
       { kind: 'damaged', player: -1, object: 41, amount: 1, source: 7 },
     ];
-    const from = ['obj-7', 'stack-src-7'];
+    const from = ['obj-7', 'played-7', 'stack-src-7'];
     expect(effectsFor(events, ctx)).toEqual([
       {
         kind: 'hits',
@@ -80,6 +136,23 @@ describe('effectsFor', () => {
       { kind: 'popup', at: ['player-0'], text: '+1¢', tone: 'good' },
       { kind: 'hits', hits: [{ from, to: ['obj-41'], amount: 1 }] },
     ]);
+  });
+
+  it('flies damage from its source, else from the player who dealt it (15.77)', () => {
+    const hits = (e: GameEvent) => {
+      const first = effectsFor([e], ctx).at(0);
+      return first?.kind === 'hits' ? first.hits.at(0)?.from : undefined;
+    };
+    // Bo (by 2) has the character 31; Ann (by 1) has none known.
+    expect(hits({ kind: 'damaged', player: 0, amount: 1, source: 7, by: 2 })).toEqual([
+      'obj-7',
+      'played-7',
+      'stack-src-7',
+      'obj-31',
+      'player-1',
+    ]);
+    expect(hits({ kind: 'damaged', player: 1, amount: 1, by: 1 })).toEqual(['player-0']);
+    expect(hits({ kind: 'damaged', player: 1, amount: 1 })).toEqual([]);
   });
 
   it('marks dying cards with skulls, where they were', () => {
@@ -97,7 +170,27 @@ describe('effectsFor', () => {
     ];
     expect(effectsFor(events, ctx)).toEqual([
       { kind: 'dice', value: 2, label: 'reroll', player: 0, thrown: true },
-      { kind: 'dice', value: 3, label: '', player: 0 },
+      { kind: 'dice', value: 3, label: "Ann's roll: 3", player: 0 },
+    ]);
+  });
+
+  it('throws every die of a roll of several dice (19.39)', () => {
+    const events: GameEvent[] = [{ kind: 'dice_rolled', player: 1, amount: 2, dice: [2, 6, 3, 5], text: 'reroll' }];
+    expect(effectsFor(events, ctx)).toEqual([{ kind: 'dice', value: 2, label: 'reroll', player: 1, thrown: true, dice: [2, 6, 3, 5] }]);
+  });
+
+  it('changes a roll from its old value, from the card that changed it (15.76)', () => {
+    // The shown stack holds roll 7 at 2; roll 8 is thrown in this update.
+    const events: GameEvent[] = [
+      { kind: 'roll_changed', player: 1, amount: 3, stack_id: 7, source: 44 },
+      { kind: 'roll_changed', player: 1, amount: 4, stack_id: 7 },
+      { kind: 'dice_rolled', player: 0, amount: 5, stack_id: 8 },
+      { kind: 'roll_changed', player: 0, amount: 6, stack_id: 8, source: 45 },
+    ];
+    expect(effectsFor(events, ctx).filter((e) => e.kind === 'dice' && !e.thrown)).toEqual([
+      { kind: 'dice', value: 3, label: "Bo's roll: 2 → 3", player: 1, old: 2, source: ['obj-44', 'stack-src-44'] },
+      { kind: 'dice', value: 4, label: "Bo's roll: 3 → 4", player: 1, old: 3 },
+      { kind: 'dice', value: 6, label: "Ann's roll: 5 → 6", player: 0, old: 5, source: ['obj-45', 'stack-src-45'] },
     ]);
   });
 
@@ -108,8 +201,8 @@ describe('effectsFor', () => {
       { kind: 'dice_rolled', player: 0, amount: 4, text: 'attack roll' },
     ];
     expect(effectsFor(events, ctx)).toEqual([
-      { kind: 'reveal', card: 'fly' },
-      { kind: 'place', from: ['deck-loot'], to: ['monster-slot-1'], card: 'fly', back: 'loot' },
+      { kind: 'reveal', card: 'fly', deck: ['deck-loot'], hold: true },
+      { kind: 'place', from: ['deck-loot'], to: ['monster-slot-1'], card: 'fly', back: 'loot', middle: true },
       { kind: 'dice', value: 4, label: 'attack roll', player: 0, thrown: true },
     ]);
   });
@@ -123,7 +216,19 @@ describe('effectsFor', () => {
 
   it('only reveals a card that is in no slot', () => {
     const e: GameEvent = { kind: 'card_revealed', player: 0, object: 51, card: 'fly' };
-    expect(effectsFor([e], ctx)).toEqual([{ kind: 'reveal', card: 'fly' }]);
+    expect(effectsFor([e], ctx)).toEqual([{ kind: 'reveal', card: 'fly', deck: ['deck-loot'] }]);
+  });
+
+  it('holds a reveal only for a move of its card right after it (15.73)', () => {
+    const reveal: GameEvent = { kind: 'card_revealed', player: -1, object: 51, card: 'fly', text: 'loot deck' };
+    const discard = (card: string): GameEvent => ({ kind: 'discarded', player: -1, object: 60, card });
+    expect(effectsFor([reveal, discard('fly')], ctx)).toEqual([
+      { kind: 'reveal', card: 'fly', deck: ['deck-loot'], hold: true },
+      { kind: 'fly', from: ['obj-60', 'deck-loot'], to: ['discard-loot'], card: 'fly', back: 'loot', middle: true },
+    ]);
+    expect(effectsFor([reveal, discard('cain')], ctx)[0]).toEqual({ kind: 'reveal', card: 'fly', deck: ['deck-loot'] });
+    const later: GameEvent[] = [reveal, { kind: 'gained_cents', player: 0, amount: 1 }, discard('fly')];
+    expect(effectsFor(later, ctx)[0]).toEqual({ kind: 'reveal', card: 'fly', deck: ['deck-loot'] });
   });
 });
 
@@ -189,11 +294,36 @@ describe('createPlayback', () => {
 
   it('shows the first update at once, then plays effects before each view', async () => {
     const { playback, shown, played } = setup();
-    playback.push(update(1));
+    playback.push({ ...update(1), events: [] });
     playback.push(update(2));
     await playback.idle();
     expect(shown).toEqual([1, 2]);
     expect(played).toEqual([{ kind: 'dice', value: 2, label: '', player: 0, thrown: true }]);
+  });
+
+  it("plays the first update's effects once it is drawn: Cain goes first (15.43)", async () => {
+    const shown: number[] = [];
+    const order: string[] = [];
+    let current: Update | null = null;
+    const playback = createPlayback({
+      begin: () => undefined,
+      show: (u) => {
+        current = u;
+        shown.push(u.step);
+        order.push('show');
+      },
+      run: (e) => {
+        order.push(e.kind);
+        return Promise.resolve();
+      },
+      effects: (u) => effectsFor(u.events ?? [], ctx),
+      speed: () => 'normal',
+      shown: () => current,
+    });
+    playback.push({ ...update(0), events: [{ kind: 'first_player', player: 1, card: 'cain', text: 'character' }] });
+    await playback.idle();
+    expect(shown).toEqual([0]);
+    expect(order).toEqual(['show', 'banner']);
   });
 
   it('shows every update of a fast burst, in order, ending on the last', async () => {

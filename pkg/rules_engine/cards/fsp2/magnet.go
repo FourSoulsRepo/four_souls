@@ -10,8 +10,9 @@ var magnet = engine.CardDef{
 	Kind:   engine.TreasureCard,
 	Copies: 1,
 	Abilities: []engine.Ability{{
-		Kind: engine.Triggered,
-		Text: "Each time another player gains ¢, they must give you 1¢.",
+		Kind:  engine.Triggered,
+		Text:  "Each time another player gains ¢, they must give you 1¢.",
+		Takes: engine.TakesEventPlayer,
 		Trigger: engine.Trigger{On: engine.EvGainedCents, Match: func(g *engine.Game, self engine.ObjectID, e engine.Event) bool {
 			return e.Player != engine.NoPlayer && e.Player != g.Object(self).Controller && e.Amount > 0
 		}},

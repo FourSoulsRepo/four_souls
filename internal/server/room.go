@@ -23,10 +23,13 @@ type roomSeat struct {
 	name   string
 	token  string
 	client *Client
-	skip   []int  // stack item IDs a "skip all" passes on (N-06); nil: off
-	wait   bool   // "wait for my turn": pass until the turn before ends (N-16)
-	kicked bool   // empty for good after a vote (N-08)
-	dice   string // the dice look (V-19); kept while the player is away
+	wait   bool // "wait for my turn": pass until the turn before ends (N-16)
+	// waitSeq is the last stack ID when the wait began; a newer item
+	// that targets the player ends it (15.84).
+	waitSeq int
+	kicked  bool   // empty for good after a vote (N-08)
+	dice    string // the dice look (V-19); kept while the player is away
+	pace    pace   // presence messages (15.35)
 }
 
 type request struct {
@@ -58,7 +61,7 @@ type Room struct {
 	votes  []protocol.Vote // while paused (N-08)
 
 	// The match record (6.9). path is fixed when the room is made; over
-	// is read by the hub for downloads.
+	// is read by the hub for downloads and hellos (19.32).
 	recDir   string
 	recInfo  recordInfo
 	steps    int // applied steps, for the record of a saved game
@@ -72,6 +75,31 @@ type Room struct {
 	timer    *time.Timer // the response timer (N-07)
 	timerGen int
 	deadline time.Time
+
+	// pub is the public table presence checks against, for pubStep of
+	// pubGame (15.35).
+	pub     *publicTable
+	pubGame *engine.Game
+	pubStep int
+	// presenceOn relays presence; the server's operator may turn it off.
+	presenceOn bool
+
+	// Kept over a server restart (N-20).
+	n         int          // the game's number on the server
+	host      string       // the nickname that opened the table
+	born      time.Time    // when the game left the lobby
+	kept      *restartFile // the restart file this room continues, if any
+	setupWait bool         // kept bans and picks start over once all are back
+	notice    string       // told to each returning player once (N-20)
+	noticed   []bool       // by seat
+	grace     time.Time    // no kick vote before it: players come back
+
+	// Idle limits (N-20): the hub's, with its clock.
+	emptyLimit time.Duration
+	gameLimit  time.Duration
+	emptySince time.Time // when the last player left
+	now        func() time.Time
+	limitTick  time.Duration
 }
 
 // NewRoom prepares a game for seated players; it starts in Run. The
@@ -80,7 +108,7 @@ func NewRoom(setup engine.Setup, opts protocol.Options, seats []roomSeat) (*Room
 	if setup.Players != len(seats) {
 		return nil, fmt.Errorf("server: %d seats for %d players", len(seats), setup.Players)
 	}
-	r := &Room{in: make(chan request, 64), done: make(chan struct{}), setup: setup, opts: opts, seats: seats, second: time.Second}
+	r := &Room{in: make(chan request, 64), done: make(chan struct{}), setup: setup, opts: opts, seats: seats, second: time.Second, now: time.Now, limitTick: time.Minute}
 	for i, s := range seats {
 		r.tokens = append(r.tokens, s.token)
 		if s.client != nil {
@@ -126,17 +154,25 @@ func (r *Room) Run(ctx context.Context) {
 			c.conn.Close()
 		}
 	}()
-	if r.loaded != nil {
+	switch {
+	case r.kept != nil:
+		r.resumeKept()
+	case r.loaded != nil:
 		r.resumeLoaded()
-	} else {
+	default:
 		r.beginSetup()
 	}
+	tick := time.NewTicker(r.limitTick)
+	defer tick.Stop()
 	for !r.stopped {
 		select {
 		case <-ctx.Done():
+			r.keep()
 			return
 		case req := <-r.in:
 			r.handle(req)
+		case <-tick.C:
+			r.checkLimits()
 		}
 	}
 }
@@ -171,14 +207,14 @@ func (r *Room) handle(req request) {
 		r.ban(c, env)
 	case protocol.TypePick:
 		r.pick(c, env)
-	case protocol.TypeSkipAll:
-		r.skipAll(c, env)
 	case protocol.TypeWaitTurn:
 		r.waitTurn(c, env)
 	case protocol.TypeVote:
 		r.vote(c, env)
 	case protocol.TypeSave:
 		r.save(c, env)
+	case protocol.TypePresence:
+		r.presence(c, env)
 	default:
 		c.fail(env.ID, protocol.ErrBadMessage, "not during a game: "+env.Type)
 	}
@@ -199,6 +235,14 @@ func (r *Room) attach(c *Client, token, dice string) {
 	r.seats[i].client, r.seats[i].dice = c, dice
 	c.seat = i
 	r.clients = append(r.clients, c)
+	if r.kept != nil {
+		r.tellEngine(c)
+	}
+	if r.setupWait && r.everyoneBack() {
+		r.setupWait = false
+		r.beginSetup()
+		return
+	}
 	if r.match != nil {
 		r.broadcastSetup()
 		return
@@ -267,23 +311,27 @@ func (r *Room) update(c *Client, events []engine.Event) {
 	}
 	v := engine.Viewer{Kind: engine.ViewSpectator}
 	var allowed []engine.Intent
+	var blocked []engine.Block
 	if c.seat >= 0 {
 		v = engine.Viewer{Kind: engine.ViewPlayer, Player: engine.PlayerID(c.seat)}
 		allowed = r.game.Allowed(engine.PlayerID(c.seat))
+		blocked = r.game.Blocked(engine.PlayerID(c.seat))
 	}
 	u := protocol.Update{
 		Step: r.step, Events: engine.FilterEvents(events, v), View: r.game.View(v), Allowed: allowed, Seats: r.seatViews(),
-		Aims: r.game.Aims(allowed),
+		Aims: r.game.Aims(allowed), Blocked: blocked,
 	}
 	if !r.deadline.IsZero() {
 		u.Deadline = r.deadline.UnixMilli()
 	}
 	if c.seat >= 0 {
-		u.SkipAll = r.seats[c.seat].skip != nil
 		u.WaitTurn = r.seats[c.seat].wait
 	}
 	if r.paused() {
 		u.Pause = &protocol.Pause{Away: r.away(), Votes: slices.Clone(r.votes)}
+		if time.Now().Before(r.grace) {
+			u.Pause.Grace = r.grace.UnixMilli()
+		}
 	}
 	c.send(protocol.TypeUpdate, 0, u)
 }
@@ -294,8 +342,8 @@ func (r *Room) drop(c *Client) {
 	r.clients = slices.DeleteFunc(r.clients, func(x *Client) bool { return x == c })
 	if c.seat >= 0 && r.seats[c.seat].client == c {
 		r.seats[c.seat].client = nil
-		r.seats[c.seat].skip = nil
 		r.seats[c.seat].wait = false
+		r.relayPresence(c, protocol.Presence{Seat: c.seat}) // its arrow goes
 		if r.paused() {
 			r.restartTimer() // stops it while paused
 		}

@@ -2,6 +2,7 @@ package record
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"os"
 	"path/filepath"
@@ -143,5 +144,76 @@ func TestAppend(t *testing.T) {
 	}
 	if len(rec.Steps) != 3 || rec.Steps[2].N != 3 || rec.Resumes != 1 || rec.End == nil || !rec.End.Finished {
 		t.Errorf("steps %d (last %d), resumes %d, end %+v", len(rec.Steps), rec.Steps[len(rec.Steps)-1].N, rec.Resumes, rec.End)
+	}
+}
+
+// TestStopThenAppend: a server restart stops the record without an end
+// line; the next server goes on with it (N-20).
+func TestStopThenAppend(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "g4"+Ext)
+	w, err := Create(path, header())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if serr := w.Step(0, nil, 1); serr != nil {
+		t.Fatal(serr)
+	}
+	if serr := w.Stop(); serr != nil {
+		t.Fatal(serr)
+	}
+	rec, err := ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(rec.Steps) != 1 || rec.End != nil {
+		t.Fatalf("stopped: steps %d, end %+v; want 1 and none", len(rec.Steps), rec.End)
+	}
+	w, err = Append(path, 1, time.Date(2026, 10, 21, 0, 0, 0, 0, time.UTC))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if serr := w.Step(1, nil, 2); serr != nil {
+		t.Fatal(serr)
+	}
+	if cerr := w.Close(End{Finished: true}); cerr != nil {
+		t.Fatal(cerr)
+	}
+	rec, err = ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(rec.Steps) != 2 || rec.Steps[1].N != 2 || rec.Resumes != 1 || rec.End == nil {
+		t.Errorf("steps %d, resumes %d, end %+v", len(rec.Steps), rec.Resumes, rec.End)
+	}
+}
+
+// TestServerName: the header names a named server; an app's own host
+// has no name, and the header leaves the field out (N-18).
+func TestServerName(t *testing.T) {
+	for _, name := range []string{"Basement", ""} {
+		path := filepath.Join(t.TempDir(), "g1"+Ext)
+		h := header()
+		h.Server = name
+		w, err := Create(path, h)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if cerr := w.Close(End{}); cerr != nil {
+			t.Fatal(cerr)
+		}
+		rec, err := ReadFile(path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if rec.Header.Server != name {
+			t.Errorf("server %q, want %q", rec.Header.Server, name)
+		}
+		line, err := json.Marshal(rec.Header)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if has := bytes.Contains(line, []byte(`"server"`)); has != (name != "") {
+			t.Errorf("header %s: server field %v", line, has)
+		}
 	}
 }

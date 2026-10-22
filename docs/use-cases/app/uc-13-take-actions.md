@@ -85,11 +85,33 @@
   * The die lands with the engine's value; then the others may respond.
   * A reroll asks the roll's own player to throw again.
 * **6b. The die lands (15.62):** the die falls from above and bounces twice.
-  * It tumbles through other faces and stops on the engine's value.
+  * It tumbles as a 3D cube and stops on the engine's value (15.69).
   * The roll's name shows below it once it lands.
   * The animation speed setting makes it faster or slower; Off skips it.
   * Without a dice texture it is a plain die with numbers.
   * A changed roll ("the next roll gets +1") only spins in, as before.
+  * At rest it is tilted, so two more faces show (15.69).
+  * Its shadow on the table grows as it falls.
+  * It clatters as it first lands; silent without the private sound.
+  * At rest the value is on top, seen from above (15.82).
+  * The top fills most of the die; the front and right show as strips.
+* **5e. Deck attack reveals an unattackable monster (19.23):** e.g. Stoney.
+  * It stays in the chosen slot; the attack is cancelled (R-ATK-10).
+  * No attack roll; the player goes on with the turn.
+* **5f. Choice window (15.29):** a choice opens in the middle over the dimmed table.
+  * Its options are big cards; nothing else takes clicks.
+  * Discards and orders open the same way.
+* **5g. View board (15.29):** the player presses "View board".
+  * The window hides; a small bar at the bottom names the choice.
+  * Options on the table glow and can be clicked there.
+  * "Back to the choice" opens the window again.
+* **2g. Why not (15.29):** a card or icon that can't be used says why (UC-22).
+* **7e. Plays left (V-46, 15.70):** End turn asks "End turn?" while it does not glow.
+  * The question lists what is left: Attack, Buy, Play loot, Use abilities.
+  * End turn, E, or Enter ends the turn.
+  * Keep playing, Esc, or a click outside keeps the turn; nothing is sent.
+  * A glowing End turn ends the turn at once.
+  * Settings can turn the question off (UC-10, 3g).
 
 ## Postconditions
 

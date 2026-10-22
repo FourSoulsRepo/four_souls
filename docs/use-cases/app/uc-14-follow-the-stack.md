@@ -15,20 +15,19 @@
    3. Each row: a square icon and one short line.
    4. Icons: card art, a die, a blood drop, or a skull.
    5. Players show in their seat color; targets in red.
-3. The action bar says who may respond: "Bo may respond".
+3. The prompt banner says whom it waits for: "Waiting for Bo" (UC-21).
 4. The player who may respond sees "Respond, or pass".
 5. That player passes or acts (UC-13).
 6. The item resolves; the panel shows what is left, or "Nothing on the stack".
 
 ## Alternative scenarios and errors
 
-* **3a. Skip all (N-06):** any player presses "Skip all" while the stack is not empty.
-  * The server passes for them on everything now on the stack.
-  * The button turns into "Cancel skip".
+* **3a. No "Skip all" (15.84):** the button is gone.
+  * A player who can act passes each item, or waits for their turn (UC-06).
 * **3b. Response timer (N-07):** the host set one in the detailed setup.
-  * The action bar counts down the seconds left.
+  * The prompt banner counts down the seconds left.
   * When it runs out, the server answers for the player.
-* **3c. Choices and discards:** the bar says "Ann is choosing" or "Ann is discarding".
+* **3c. Choices and discards:** the banner says "Waiting for Ann" and what for.
 * **2c. Whom it waits for (V-11):** the panel says "Waiting for Bo, Cy".
   * "Passed: Ann" lists who passed, auto-skipped players too.
   * Every client names the same players; the viewer is "You".
@@ -49,14 +48,37 @@
   * Boom Fly: "Boom Fly deals 1 damage to Ann", one line per player.
   * No card to name: "Ann takes 1 damage".
 * **2j. A roll waits for its throw (15.61):** the roll's row shows "?".
-  * The roller's panel says "Waiting for you to throw".
-  * The others read "Ann is throwing…" in the panel.
+  * The roller's panel says "Throw the dice".
+  * The others read "Ann: Throw the dice for the attack roll" in the panel.
   * The others see Ann's die shaking where it will land.
-  * The action bar says "Throw the die", or "Ann is throwing".
+  * The banner says "Throw the dice", or "Waiting for Ann".
 * **2k. The last roll (15.63):** a small die by the "Stack" title shows it.
   * It shows the final value, after changes and rerolls.
   * Hovering it names the roller and the roll: "Ann rolled 4 — attack roll".
   * It stays until the next roll; before the first one there is none.
+* **2l. A prompt of the viewer's (15.28):** the panel says what to do.
+  * The same words as the banner: "Choose a target".
+  * Pass glows when passing answers the prompt.
+* **2m. An open attack or buy (15.91):** a row on top of the stack says it.
+  * It is not a stack item: no icon, a dashed edge.
+  * "Bo attacks…", then "Bo attacks Pooter" once aimed.
+  * A monster deck attack: "Bo attacks the monster deck".
+  * A buy: "Bo buys…".
+  * Every player sees the same row.
+  * It goes when the attack or the buy ends.
+* **2n. Rows move (15.51):** the panel never jumps.
+  * A new row fades in; the rows below slide down.
+  * A resolved row fades out; then the rows below slide up.
+  * The animation speed setting applies; with animations off, rows change at once.
+* **2o. What the attack needs (15.94):** an aimed attack's row has a fight line.
+  * "Hits on 4+ (DC 5 − 1 Meat!) · ATK 1".
+  * Every roll change is taken off the DC: lasting, this turn, next roll.
+  * The ATK is the hit's: Champion Belt's +1 counts on the first roll.
+  * A 2 or 3 that becomes a 1 lists the faces: "Hits on 1, 4, 5, 6".
+  * Every player sees it.
+* **2p. A thrown roll's changes (15.94):** its row names them and the result.
+  * "Attack: Jo rolls 1 against Greedling (+1 Meat! = 2)".
+  * The History says "rolls 1 → 2 (+1 Meat!)".
 
 ## Postconditions
 

@@ -67,6 +67,10 @@ Use options 1, 3, 5 and 10.
    9. `hello` carries the player's dice look (V-19).
       1. `table` and `update` list each seat's look.
       2. The server only checks its form; each client draws unknown ones plain.
+   10. `welcome` carries the server's `name`, set by its operator (N-18).
+      1. 1–40 characters, trimmed; control characters are refused at start.
+      2. Empty on an app's own host; the app then shows the address.
+      3. Added in protocol version 3; older clients ignore it.
    4. A different protocol version gets `error` `client_outdated` or `server_outdated`, then close.
 4. Playing
    1. The client sends `intent`: an engine intent; the server fills in the seat.
@@ -84,6 +88,7 @@ Use options 1, 3, 5 and 10.
    6. A new prompt an older client cannot answer bumps it too.
    7. Version 2: the order prompt (19.16).
    8. Version 3: the throw prompt and intent (15.60).
+   9. Version 4: `skip_all` message and field removed (15.84).
 6. Cards
    1. Messages carry card refs (`the_d6`, `the_d6@2`), never card text.
    2. A client shows an unknown ref as a blank card with the ref (SP-05).
@@ -91,7 +96,7 @@ Use options 1, 3, 5 and 10.
 7. Trust
    1. LAN first: no accounts; the token only proves "same seat as before".
    2. Tokens are 128 random bits.
-   3. No encryption yet; `wss://` comes with online play.
+   3. No encryption in the server; `wss://` through a proxy ([017](017-wss-through-a-proxy.md)).
    4. A dedicated server lets every client create or load games.
    5. A server in a player's app lets only loopback clients do so.
       1. That is the host's own app; friends join.
@@ -108,12 +113,16 @@ Use options 1, 3, 5 and 10.
    9. Saves: the host sends `save`; all get `saved`; `games` lists saves; `load` reopens one (6.11).
    10. Passwords: `create` may set one; `join` must match it (N-14).
    11. `games` marks such a game `locked`; a wrong one gets error `password`.
-   12. The password is never sent back, logged, recorded or saved.
+   12. The password is never sent back, logged, recorded or saved; only a restart file keeps it.
    13. Turn flow: `wait_turn`; `update` shows it while on (N-16).
    14. Aiming: `update` → `aims` lists the first targets of allowed plays and uses (15.25).
    15. Each aim has a `reason`: what it may target, for a wrong click (15.33).
    16. `view.activating`: the card whose mode or targets the chooser picks (15.34).
    17. Only the chooser gets it; a client aims from that card.
+   18. `update` → `blocked`: why a seat can't use a card or turn action now (15.29).
+   19. Each has the intent kind, the card's object, and a short `reason`.
+   20. Live aiming and hover: `presence`, relayed, never an intent (ADR 016).
+   21. Server restart: `restarting` before it stops; `notice` after (ADR 019).
 9. Playing over the internet, until a relay exists
    1. A virtual LAN (Tailscale, ZeroTier, Hamachi, Radmin VPN), or port forwarding.
    2. Or a dedicated server on a rented VPS.
@@ -143,4 +152,4 @@ Use options 1, 3, 5 and 10.
 
 ### Neutral
 
-1. No accounts or encryption until online play (future).
+1. No accounts until online play (future); encryption by a proxy only (ADR 017).

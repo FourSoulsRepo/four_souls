@@ -20,6 +20,7 @@ var betrayal = engine.CardDef{
 	Abilities: []engine.Ability{{
 		Kind:    engine.Triggered,
 		Text:    "Choose another player. Roll- 1-2: Steal 5¢ from them. 3-4: Steal a loot card from them at random. 5: Steal a non-eternal item they control. 6: Steal a soul they control.",
+		Takes:   engine.TakesOthers,
 		Trigger: engine.WhenThisEntersPlay(),
 		Effects: []engine.Effect{engine.AskWithRoll(func(c *engine.Ctx, a []int) {
 			if ps := othersOfActive(c.G); a[0] >= 0 && a[0] < len(ps) {

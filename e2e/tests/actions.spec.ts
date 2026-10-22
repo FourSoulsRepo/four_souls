@@ -9,7 +9,9 @@ import {
   activePage,
   canEndTurn,
   click,
+  endTurn,
   endTurnButton,
+  endTurnQuestion,
   expectNextTurn,
   gameOver,
   passButton,
@@ -43,10 +45,10 @@ async function attack(pages: Page[], active: Page, press: Tap, turn: number) {
   await settle(pages, press, backToMe(active, turn));
 }
 
-// endTurn ends the turn if it is still the active player's.
-async function endTurn(active: Page, press: Tap) {
+// endTurnIfMine ends the turn if it is still the active player's.
+async function endTurnIfMine(active: Page, press: Tap) {
   if (await canEndTurn(active)) {
-    await press(active, endTurnButton(active));
+    await endTurn(active, press);
   }
 }
 
@@ -70,7 +72,7 @@ test('a full turn with the mouse: drag a loot card, attack, end the turn', async
     await settle(pages, click, backToMe(active, turn));
   }
   await attack(pages, active, click, turn);
-  await endTurn(active, click);
+  await endTurnIfMine(active, click);
   await expectNextTurn(pages, click, turn);
 });
 
@@ -85,7 +87,7 @@ test('a full turn with touch: tap a loot card to play it, attack, end the turn',
     await settle(pages, tap, backToMe(active, turn));
   }
   await attack(pages, active, tap, turn);
-  await endTurn(active, tap);
+  await endTurnIfMine(active, tap);
   await expectNextTurn(pages, tap, turn);
 });
 
@@ -264,12 +266,62 @@ test('the big End turn button: E ends the turn, Space passes', async ({ browser 
   expect(await lastAct(page)).toBe(0);
   await settle(pages, click, backToMe(active, turn));
 
-  // E ends the turn, like the button.
+  // E ends the turn, like the button. With plays left it asks first,
+  // and E again confirms (V-46).
   if (await canEndTurn(active)) {
+    const asks = !(await endTurnButton(active).evaluate((b) => b.classList.contains('idle')));
     await active.keyboard.press('e');
+    if (asks) {
+      await expect(endTurnQuestion(active)).toBeVisible();
+      await active.keyboard.press('e');
+    }
     expect(await lastAct(active)).toBe(1);
     await expectNextTurn(pages, click, turn);
   }
+});
+
+test('End turn asks first while plays are left (V-46)', async ({ browser }) => {
+  const pages = await startGame(browser, ['Ida', 'Jon'], { url: fast() });
+  const active = await activePage(pages, click);
+  const turn = await turnNumber(active);
+  const button = endTurnButton(active);
+  // A turn starts with its attack left, so End turn does not glow.
+  await expect(button).not.toHaveClass(/idle/);
+  await recordActs(active);
+
+  const question = endTurnQuestion(active);
+  await button.click();
+  await expect(question).toBeVisible();
+  await expect(question.getByRole('listitem').first()).toBeVisible();
+  await shot(active, 'end-turn-question');
+  await question.getByRole('button', { name: 'Keep playing' }).click();
+  await expect(question).toBeHidden();
+
+  // E asks too; Esc keeps playing.
+  await active.keyboard.press('e');
+  await expect(question).toBeVisible();
+  await active.keyboard.press('Escape');
+  await expect(question).toBeHidden();
+  expect(await lastAct(active)).toBeUndefined();
+  expect(await turnNumber(active)).toBe(turn);
+
+  await button.click();
+  await question.getByRole('button', { name: 'End turn' }).click();
+  expect(await lastAct(active)).toBe(1);
+  await expectNextTurn(pages, click, turn);
+});
+
+test('with the question off in the settings, End turn ends at once (V-46)', async ({ browser }) => {
+  const pages = await startGame(browser, ['Kit', 'Lev'], { url: `${fast()}&noendask` });
+  const active = await activePage(pages, click);
+  const turn = await turnNumber(active);
+  const button = endTurnButton(active);
+  await expect(button).not.toHaveClass(/idle/);
+  await recordActs(active);
+  await button.click();
+  expect(await lastAct(active)).toBe(1);
+  await expect(endTurnQuestion(active)).toHaveCount(0);
+  await expectNextTurn(pages, click, turn);
 });
 
 // feed plays the current view again as the next update, with events;
@@ -322,7 +374,7 @@ test('a "look, you may put it on the bottom" question shows the card (19.11)', a
   // chooser: the question names the deck top and the view holds it.
   await opal.evaluate(() => {
     interface S {
-      game: { view: Record<string, unknown>; allowed: unknown[] };
+      game: { step: number; view: Record<string, unknown>; allowed: unknown[] };
       lobby: { table: { you: number } };
       receive: (env: unknown) => void;
     }
@@ -334,7 +386,7 @@ test('a "look, you may put it on the bottom" question shows the card (19.11)', a
     game.view.waiting = { kind: 4, player: you, purpose: 9, text: 'Put the top card on the bottom?', options };
     game.view.options = options.map(() => ({ player: -1 }));
     game.allowed = options.map((_, i) => ({ player: you, kind: 4, choice: i }));
-    s.receive({ type: 'update', data: { ...game, step: 2, events: [] } });
+    s.receive({ type: 'update', data: { ...game, step: game.step + 1, events: [] } });
   });
   const dialog = opal.getByRole('dialog', { name: 'Put the top card on the bottom?' });
   await expect(dialog).toBeVisible();
@@ -354,7 +406,7 @@ test('"put them back in any order" shows each card in its place (19.16)', async 
   const title = 'Put the cards back in any order';
   await olaf.evaluate((text) => {
     interface S {
-      game: { view: Record<string, unknown>; allowed: unknown[] };
+      game: { step: number; view: Record<string, unknown>; allowed: unknown[] };
       lobby: { table: { you: number } };
       receive: (env: unknown) => void;
     }
@@ -371,7 +423,7 @@ test('"put them back in any order" shows each card in its place (19.16)', async 
         (window as unknown as { sentOrder: unknown }).sentOrder = intent;
       },
     });
-    s.receive({ type: 'update', data: { ...game, step: 2, events: [] } });
+    s.receive({ type: 'update', data: { ...game, step: game.step + 1, events: [] } });
   }, title);
   const dialog = olaf.getByRole('dialog', { name: title });
   await expect(dialog).toBeVisible();
@@ -411,7 +463,7 @@ test('two "instead" effects: each card says what it gives first (19.17)', async 
   const title = 'Gaining 10¢: which card applies first?';
   await ugo.evaluate((text) => {
     interface S {
-      game: { view: Record<string, unknown>; allowed: unknown[] };
+      game: { step: number; view: Record<string, unknown>; allowed: unknown[] };
       lobby: { table: { you: number } };
       receive: (env: unknown) => void;
     }
@@ -437,7 +489,7 @@ test('two "instead" effects: each card says what it gives first (19.17)', async 
         (window as unknown as { sentChoice: unknown }).sentChoice = intent;
       },
     });
-    s.receive({ type: 'update', data: { ...game, step: 2, events: [] } });
+    s.receive({ type: 'update', data: { ...game, step: game.step + 1, events: [] } });
   }, title);
   const dialog = ugo.getByRole('dialog', { name: title });
   await expect(dialog).toBeVisible();
@@ -461,7 +513,7 @@ test('trigger order: the title says the first one resolves last (19.19)', async 
   // the order prompt as the server sends it to the chooser. act is caught.
   await quill.evaluate(() => {
     interface S {
-      game: { view: Record<string, unknown>; allowed: unknown[] };
+      game: { step: number; view: Record<string, unknown>; allowed: unknown[] };
       lobby: { table: { you: number } };
       receive: (env: unknown) => void;
     }
@@ -488,7 +540,7 @@ test('trigger order: the title says the first one resolves last (19.19)', async 
         (window as unknown as { sentChoice: unknown }).sentChoice = intent;
       },
     });
-    s.receive({ type: 'update', data: { ...game, step: 2, events: [] } });
+    s.receive({ type: 'update', data: { ...game, step: game.step + 1, events: [] } });
   });
   const dialog = quill.getByRole('dialog', { name: /resolves last/ });
   await shot(quill, 'trigger-order');
@@ -551,16 +603,17 @@ test('an attack waits for the roller to throw; the die shows the engine\'s value
   // The roller sees the glowing button and the stack says it waits for them.
   const stack = (page: Page) => page.getByRole('complementary', { name: 'Stack' });
   await expect(throwButton(active)).toBeEnabled();
-  await expect(stack(active).getByLabel('Waiting for')).toHaveText('Waiting for you to throw');
-  await expect(active.locator('.action-status')).toHaveText(/^Throw the die/);
+  await expect(stack(active).getByLabel('Waiting for')).toHaveText('Throw the dice');
+  await expect(active.locator('.prompt-banner.mine .prompt-title')).toHaveText(/^Throw the dice/);
   await shot(active, 'throw-button');
   // The others see who throws, and the die shaking in their hand.
   const roller = await nameOf(active);
   const shaking = other.getByRole('region', { name: 'Throw' });
-  await expect(shaking.locator('.throw-shake .die')).toHaveAttribute('aria-label', `${String(roller)}'s die`);
+  await expect(shaking.locator('.throw-shake .die')).toHaveAttribute('aria-label', `${String(roller)}'s dice`);
   await expect(shaking).toContainText(`${String(roller)} is throwing…`);
   await expect(throwButton(other)).toHaveCount(0);
-  await expect(stack(other).getByLabel('Waiting for')).toHaveText(`${String(roller)} is throwing…`);
+  await expect(stack(other).getByLabel('Waiting for')).toHaveText(new RegExp(`^${String(roller)}: Throw the dice`));
+  await expect(other.locator('.prompt-title')).toHaveText(`Waiting for ${String(roller)}`);
   await shot(other, 'throw-others');
 
   // Space throws. The die that lands shows the engine's value, the same
@@ -652,7 +705,8 @@ test("every screen draws a roll with the roller's dice look (15.6)", async ({ br
   await shot(other, 'dice-roller-look');
 
   await active.keyboard.press(' ');
-  const landed = active.getByTestId('effect-dice').locator('.die');
+  // A thrown die is a cube; its top face shows the roll (15.69, 15.82).
+  const landed = active.getByTestId('effect-dice').locator('.die-top');
   await expect(landed).toBeVisible();
   expect(await image(landed)).toBe(images.tear);
   await settle(pages, click, backToMe(active, await turnNumber(active)));

@@ -11,7 +11,9 @@ function title(kind: Kind): string {
 }
 
 // Deck is a face-down pile with its card count. A drawn card that waits
-// for its place (top) lies face up on it (19.9).
+// for its place (top) lies face up on it (19.9). A top card only the
+// viewer may look at (peek, 19.30) also lies face up; the deck still
+// takes clicks, e.g. to buy from it.
 const noHandle: Handle = {};
 
 export function Deck({
@@ -20,18 +22,22 @@ export function Deck({
   size,
   handle = noHandle,
   top,
+  peek,
 }: {
   kind: Kind;
   count: number;
   size: CardSize;
   handle?: Handle;
-  top?: CardView;
+  top?: CardView | undefined;
+  peek?: CardView | undefined;
 }) {
   const label = `${title(kind)} deck: ${String(count)} cards`;
   return (
     <div className="pile" role="group" aria-label={label} title={label} data-zone={`deck-${kind}`}>
       {top ? (
         <Card cardRef={top.card} size={size} objectId={top.id} highlight="pick" />
+      ) : peek ? (
+        <Card cardRef={peek.card} size={size} highlight={handle.highlight} onClick={handle.onClick} />
       ) : count > 0 ? (
         <Card size={size} back={kind} highlight={handle.highlight} onClick={handle.onClick} />
       ) : (

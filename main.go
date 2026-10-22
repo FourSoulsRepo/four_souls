@@ -1,4 +1,4 @@
-// Command four_souls is the Four Souls desktop app.
+// Command FourSouls is the Four Souls desktop app.
 package main
 
 import (

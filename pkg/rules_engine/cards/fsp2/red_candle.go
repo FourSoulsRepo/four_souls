@@ -13,6 +13,7 @@ var redCandle = engine.CardDef{
 	Kind:   engine.TreasureCard,
 	Copies: 1,
 	Tap:    true,
+	Dice:   chosenNumbers,
 	Abilities: []engine.Ability{{
 		Kind:  engine.Activated,
 		Text:  "↷: Before a dice is rolled, choose a number. Till the end of turn, each time that number is rolled, deal 1 damage to a monster or player.",
@@ -33,4 +34,16 @@ var redCandle = engine.CardDef{
 		}},
 		Effects: []engine.Effect{damageAnything(1)},
 	}},
+}
+
+// chosenNumbers are the numbers chosen this turn, kept as "used" marks
+// 1 to 6 (Red Candle).
+func chosenNumbers(g *engine.Game, self engine.ObjectID) []int {
+	var out []int
+	for n := 1; n <= 6; n++ {
+		if cardkit.UsedOn(g, self, n) {
+			out = append(out, n)
+		}
+	}
+	return out
 }

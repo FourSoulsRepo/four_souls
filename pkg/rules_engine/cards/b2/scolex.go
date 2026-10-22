@@ -18,6 +18,7 @@ var scolex = engine.CardDef{
 		{
 			Kind:    engine.Triggered,
 			Text:    "Each time this deals combat damage to a player, they discard a loot card.",
+			Takes:   engine.TakesEventPlayer,
 			Trigger: whenThisDealsDamage(true),
 			Effects: []engine.Effect{rollerDiscards},
 		},

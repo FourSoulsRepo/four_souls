@@ -34,6 +34,9 @@
   * Each names the keyword and says what it means.
   * They show with or without card images.
 * **3d. Near an edge:** the large copy stays inside the window.
+* **3e. Card in a window (19.26):** the large copy shows over it.
+  * Discard, choice, look and order windows alike.
+  * The player reads the card before picking it.
 
 ## Postconditions
 

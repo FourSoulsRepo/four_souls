@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { discardIntent, orderIntent, outcomeLines, type Actions } from '../actions';
 import type { Looked } from '../history';
 import type { CardView } from '../protocol';
@@ -13,17 +13,20 @@ import './Actions.css';
 // it shows beside the options, and option labels name it by its title.
 // An option with an outcome says what picking it gives (19.17); a
 // trigger option says its ability's words (19.19).
+//
+// A choice shows big cards over the dimmed board (15.29, H-11); "View
+// board" hides it to look at the table, where its targets still glow
+// and answer, and "Back to the choice" brings it back (F-20).
 export function ChoiceDialog({ choice, subject }: { choice: NonNullable<Actions['choice']>; subject?: string | undefined }) {
   const act = useApp((s) => s.act);
   const cardName = (ref: string) => useApp.getState().cards.get(ref)?.name ?? ref;
   const subjectName = subject ? useApp.getState().cards.get(subject)?.name : undefined;
   const label = (l: string) => (subject && subjectName ? l.replaceAll(subject, subjectName) : l);
   return (
-    <div className="choice" role="dialog" aria-label={choice.title}>
-      <h2>{choice.title}</h2>
+    <ChoiceFrame label={choice.title}>
       {subject && (
         <div className="choice-subject">
-          <Card cardRef={subject} size="table" />
+          <Card cardRef={subject} size="choice" />
         </div>
       )}
       <div className="choice-options">
@@ -32,7 +35,7 @@ export function ChoiceDialog({ choice, subject }: { choice: NonNullable<Actions[
             {o.card && (
               <Card
                 cardRef={o.card}
-                size="table"
+                size="choice"
                 highlight="pick"
                 onClick={() => {
                   act(o.intent);
@@ -57,6 +60,45 @@ export function ChoiceDialog({ choice, subject }: { choice: NonNullable<Actions[
             )}
           </div>
         ))}
+      </div>
+    </ChoiceFrame>
+  );
+}
+
+// ChoiceFrame is a choice over the dimmed board, or, while the player
+// views the board, a small bar to bring it back (15.29, F-20, H-11).
+// title is the heading when it says more than the label.
+function ChoiceFrame({ label, title, className = '', children }: { label: string; title?: ReactNode; className?: string; children: ReactNode }) {
+  const [board, setBoard] = useState(false);
+  if (board) {
+    return (
+      <div className="choice-peek" role="group" aria-label="Viewing the board">
+        <span>{title ?? label}</span>
+        <button
+          type="button"
+          onClick={() => {
+            setBoard(false);
+          }}
+        >
+          Back to the choice
+        </button>
+      </div>
+    );
+  }
+  return (
+    <div className="choice-backdrop">
+      <div className={`choice${className ? ` ${className}` : ''}`} role="dialog" aria-label={label}>
+        <h2>{title ?? label}</h2>
+        {children}
+        <button
+          type="button"
+          className="choice-view"
+          onClick={() => {
+            setBoard(true);
+          }}
+        >
+          View board
+        </button>
       </div>
     </div>
   );
@@ -92,8 +134,7 @@ export function OrderDialog({ order, cards }: { order: NonNullable<Actions['orde
   // One place per card, numbered from the top.
   const places = cards.map((_, i) => ({ n: i + 1, card: cards.find((x) => x.id === placed.at(i)) }));
   return (
-    <div className="choice order" role="dialog" aria-label={order.title}>
-      <h2>{order.title}</h2>
+    <ChoiceFrame label={order.title} className="order">
       <p className="order-hint">Click the cards top first. Click a placed card to take it back.</p>
       <div className="order-deck">
         {places.map(({ n, card: c }) => (
@@ -137,7 +178,7 @@ export function OrderDialog({ order, cards }: { order: NonNullable<Actions['orde
       >
         Put back
       </button>
-    </div>
+    </ChoiceFrame>
   );
 }
 
@@ -156,16 +197,13 @@ export function DiscardDialog({
     setChosen(chosen.includes(id) ? chosen.filter((x) => x !== id) : [...chosen, id]);
   };
   return (
-    <div className="choice" role="dialog" aria-label="Discard">
-      <h2>
-        Discard {discard.count} loot card{discard.count === 1 ? '' : 's'}
-      </h2>
+    <ChoiceFrame label="Discard" title={`Discard ${String(discard.count)} loot card${discard.count === 1 ? '' : 's'}`}>
       <div className="choice-options">
         {cards.map((c) => (
           <Card
             key={c.id}
             cardRef={c.card}
-            size="table"
+            size="choice"
             highlight={chosen.includes(c.id) ? 'pick' : 'act'}
             onClick={() => {
               toggle(c.id);
@@ -182,6 +220,6 @@ export function DiscardDialog({
       >
         Discard ({chosen.length}/{discard.count})
       </button>
-    </div>
+    </ChoiceFrame>
   );
 }

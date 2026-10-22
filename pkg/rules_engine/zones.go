@@ -1,6 +1,9 @@
 package rulesengine
 
-import "strconv"
+import (
+	"slices"
+	"strconv"
+)
 
 // DeckZone is the zone of a deck.
 func DeckZone(d DeckKind) Zone { return Zone{Kind: ZoneDeck, Deck: d} }
@@ -170,6 +173,21 @@ func (g *Game) turnOrderFrom(p PlayerID) []PlayerID {
 // same object.
 func (g *Game) DeckToBottom(d DeckKind, id ObjectID) {
 	g.Decks[d] = append([]ObjectID{id}, remove(g.Decks[d], id)...)
+}
+
+// ToBottomRandom puts cards on the bottom of a deck in random order; no
+// player orders them (Q-22). A card in a deck stays the same object; a
+// card in a slot leaves it.
+func (g *Game) ToBottomRandom(d DeckKind, ids []ObjectID) {
+	ids = slices.Clone(ids)
+	g.RNG.Shuffle(len(ids), func(i, j int) { ids[i], ids[j] = ids[j], ids[i] })
+	for _, id := range ids {
+		if g.Object(id).Zone.Kind == ZoneInPlay {
+			g.SlotToDeckBottom(id)
+		} else {
+			g.DeckToBottom(d, id)
+		}
+	}
 }
 
 // DestroyObject destroys an item, curse or soul that p controls: it goes

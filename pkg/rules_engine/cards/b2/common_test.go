@@ -46,6 +46,7 @@ func newGame(t *testing.T, characters ...engine.CardRef) *engine.Game {
 	if err != nil {
 		t.Fatal(err)
 	}
+	enginetest.ThrowFirstRoll(t, g)
 	return g
 }
 
@@ -125,16 +126,15 @@ func testOneOnTop(t *testing.T, card engine.CardRef, d engine.DeckKind) {
 			rest = append(rest, id)
 		}
 	}
-	// Pick the last of the rest as the lowest; keep the others in order.
-	lowest := tb.G.Object(rest[len(rest)-1]).Card
-	tb.Play(0, card, string(name), string(lowest), "the rest in their order")
+	// No order question: the rest go to the bottom at random (Q-22).
+	tb.Play(0, card, string(name))
+	if p := tb.G.Prompt(); p.Kind == engine.PromptChoose {
+		t.Errorf("prompt %+v after the top card, want no order question", p)
+	}
 	if got := tb.G.DeckTop(d, 1)[0]; got != top[kept] {
 		t.Errorf("top is %s, want the chosen %s", tb.G.Object(got).Card, name)
 	}
 	bottom := tb.G.Decks[d][:4]
-	if c := tb.G.Object(bottom[0]).Card; c != lowest {
-		t.Errorf("lowest card is %s, want %s", c, lowest)
-	}
 	for _, id := range rest {
 		if !slices.Contains(bottom, id) {
 			t.Errorf("%s is not on the bottom", tb.G.Object(id).Card)
@@ -250,4 +250,17 @@ func runSome(t *testing.T, g *engine.Game) {
 	if _, err := g.Apply(in); err != nil {
 		t.Fatal(err)
 	}
+}
+
+// viewDice are the die numbers the spectator view shows on player p's
+// card ref (15.67).
+func viewDice(tb *enginetest.Table, p int, ref engine.CardRef) []int {
+	tb.T.Helper()
+	for _, c := range tb.G.View(engine.Viewer{Kind: engine.ViewSpectator}).Players[p].InPlay {
+		if c.Card == ref {
+			return c.Dice
+		}
+	}
+	tb.T.Fatalf("%s is not in play", ref)
+	return nil
 }

@@ -13,6 +13,7 @@ var forgetMeNow = engine.CardDef{
 	Abilities: []engine.Ability{{
 		Kind:    engine.Activated,
 		Text:    "↷: Destroy this. If you do, each player destroys a soul they control.",
+		Takes:   engine.TakesOthers,
 		Costs:   []engine.Cost{engine.Tap()},
 		Effects: []engine.Effect{engine.DestroyThis(eachPlayerDestroysASoul)},
 	}},

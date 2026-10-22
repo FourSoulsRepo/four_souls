@@ -1,6 +1,7 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import './style.css';
+import './layers.css';
 
 // ?fake swaps in fake Wails bindings for make e2e and make screenshots.
 // Dev server only: production builds drop the fixture entirely.
@@ -18,7 +19,8 @@ if (import.meta.env.DEV && new URLSearchParams(window.location.search).get('scre
 if (import.meta.env.DEV && new URLSearchParams(window.location.search).has('fake')) {
   const { useApp, dropConnection } = await import('./store');
   const { clashes } = await import('./animations');
-  (window as unknown as { fourSouls: unknown }).fourSouls = { store: useApp, drop: dropConnection, clashes };
+  const { setLostDialogAfter } = await import('./reconnect');
+  (window as unknown as { fourSouls: unknown }).fourSouls = { store: useApp, drop: dropConnection, clashes, lostDialogAfter: setLostDialogAfter };
 }
 
 const container = document.getElementById('root');

@@ -66,10 +66,17 @@
 * **1g. No coin image (public clone):** a drawn ¢ coin by the cents.
 * **2d. Counters (15.23):** a big green blob with the count, on the card art.
   * A text card shows it in its top corner, clear of the words.
+  * Bonus souls show it too: Soul of Wrath's progress (19.29).
 * **2e. Changed monster stats (15.23):** a badge per changed value.
   * Red health, a white die for the dice, gold attack.
   * A value as printed shows no badge; the card shows it.
   * A damaged monster shows its lower health instead of a damage mark.
+* **2f. Kept die numbers (15.67):** a die on the card art per number.
+  * Telepathy for Dummies: the roll it stored this turn.
+  * Red Candle and Crystal Ball: the number chosen.
+  * Drawn in the owner's dice look; a plain die without one.
+  * The die goes when the number is used or the turn ends.
+  * Its tooltip reads "Kept dice: 4" (15.83).
 * **1h. Attack hit (15.3):** the attacker's card lunges into the target.
   * It winds up, hits, and goes back to its place.
   * A yellow starburst "−N" pops on the card that was hit.
@@ -133,6 +140,60 @@
   * Not next to the soul crystals.
   * Side columns: their own row above the character, at its left.
   * No curse: the areas keep their size and look as before.
+* **1v. A revealed card's path (15.73):** it grows out of its deck to the middle.
+  * Moved in the same update, e.g. a slot refill: it flies from the middle.
+  * It shrinks to a table card on the way to its place.
+  * Not moved: it shrinks back onto its deck.
+* **1w. A played loot card's path (15.74):** another player's card rises from their hand.
+  * It shows large in the middle, then shrinks into the stack panel.
+  * Resolved or cancelled, it flies from the stack to the loot discard.
+  * That flight shows for the viewer's own loot cards too.
+  * Once it flies, the card is gone from the stack, row and all (19.41).
+* **1x. Stolen cents (15.75):** "−N¢" rises on the victim's coins.
+  * A coin flies from the victim's coins to the thief's.
+  * "+N¢ stolen" rises on the thief's coins when it lands.
+* **1y. A changed roll (15.76):** the die shows its old value first.
+  * A shot flies to it from the card that changed it.
+  * The die turns to the new value: "Ann's roll: 3 → 4".
+* **1z. Damage from a card that left (15.77):** the shot comes from its player.
+  * From their character card, else their area.
+  * Only damage with no known dealer shows the hit alone.
+* **3d. The History panel (15.88):** one line per play, under turn lines.
+  * Each line names who: "Bo attacks Gaper", "You kill Gaper".
+  * Buys: "Bo buys Spoon Bender"; a failed one: "Bo can't buy: the price is 10¢".
+  * Declared attacks and purchases, gains, souls, thefts, cents.
+  * Deaths, destroyed items, fizzled and cancelled effects.
+  * Hovering a line zooms its card.
+  * Others' hidden cards stay hidden: "Bo loots a card".
+* **3e. The history strip (15.89):** one tile per headline, newest on top.
+  * Played cards, abilities and rolls: as on the stack, with a sword or bolt.
+  * A buy: the bought card with a coin badge.
+  * A kill: the dead card with a skull badge, "Bo kills Gaper".
+  * Hover a tile: its card large, with the line under it.
+* **3f. What a play did (15.90):** hovering a strip tile shows an arrow and the results.
+  * A played card: its target, then what it gave at once, such as cents.
+  * Damage: the dealer large; the target with a starburst and the number.
+  * A kill: the killer large; the dead card under a skull, then the rewards.
+  * A buy: the buyer large; the bought item.
+* **3g. New tiles (15.51):** a new strip tile fades in on top.
+  * The older tiles slide down; none jumps.
+  * With animations off, tiles change at once.
+* **3h. Why a stat changed (15.92, V-41):** a changed stat says why.
+  * A stat above its print is green, below it red.
+  * Characters and monsters alike, for every player.
+  * Hover the card: its zoom sums each stat below it.
+  * Example: "ATK 3 = 1 printed + 1 Brimstone + 1 XI. Strength (this turn)".
+  * Roll changes follow: "Attack rolls: +1 Meat!".
+  * Effects of this turn are small icons on the card's right edge.
+  * Each icon is cut from its source card's art.
+  * Hover an icon: its card zooms, with what it does.
+  * Lasting items get no icon; they show only in the sums.
+  * A text card's icon shows its initial; a hidden source a "?".
+* **3i. Effects that end (15.93):** an effect's icon leaves when it ends.
+  * A boost for the next attack roll has a small die on its icon.
+  * The roll that uses it makes the icon pop and fade.
+  * At the end of the turn, this turn's icons shrink away.
+  * With animations off, icons go at once.
 
 ## Postconditions
 

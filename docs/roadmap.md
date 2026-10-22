@@ -137,6 +137,7 @@ Step numbers stay as IDs; the table lists steps in work order.
 13. Game passwords (N-14).
 14. New-user check, play-test and docs check: moved to step 18.
 15. Dice looks: a real dice texture; core for choosing one (V-19).
+16. Seamless server restart and idle game limits (N-20).
 
 ## 9. Spectators
 
@@ -248,6 +249,8 @@ Step numbers stay as IDs; the table lists steps in work order.
 41. Purchases shown in the history (V-44, 15.57).
 42. "Choose one-" cards ask in a dialog like The Bone (V-45, 15.58).
 43. Dice throw split into engine, server, button, animation, last roll (15.59 – 15.63).
+44. Stack and history tell every play: who did what (V-51, 15.88 – 15.91).
+45. Real stats: breakdown, temporary icons, fight odds (V-41, 15.92 – 15.94).
 
 ## 16. Localization
 

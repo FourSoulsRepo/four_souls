@@ -48,10 +48,12 @@ export namespace carddb {
 export namespace lan {
 	
 	export class Game {
+	    id: string;
 	    host: string;
 	    seats: number;
 	    taken: number;
 	    locked?: boolean;
+	    started?: boolean;
 	
 	    static createFrom(source: any = {}) {
 	        return new Game(source);
@@ -59,10 +61,12 @@ export namespace lan {
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
 	        this.host = source["host"];
 	        this.seats = source["seats"];
 	        this.taken = source["taken"];
 	        this.locked = source["locked"];
+	        this.started = source["started"];
 	    }
 	}
 	export class Found {
@@ -268,6 +272,8 @@ export namespace main {
 	export class Icons {
 	    coin: string;
 	    sword: string;
+	    banner: string;
+	    sky: string[];
 	
 	    static createFrom(source: any = {}) {
 	        return new Icons(source);
@@ -277,6 +283,8 @@ export namespace main {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.coin = source["coin"];
 	        this.sword = source["sword"];
+	        this.banner = source["banner"];
+	        this.sky = source["sky"];
 	    }
 	}
 	export class MatInfo {
@@ -299,6 +307,7 @@ export namespace main {
 	    attackHit: string;
 	    effectCast: string;
 	    effectImpact: string;
+	    diceRoll: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new Sounds(source);
@@ -309,6 +318,30 @@ export namespace main {
 	        this.attackHit = source["attackHit"];
 	        this.effectCast = source["effectCast"];
 	        this.effectImpact = source["effectImpact"];
+	        this.diceRoll = source["diceRoll"];
+	    }
+	}
+
+}
+
+export namespace protocol {
+	
+	export class SeatInfo {
+	    live: boolean;
+	    game?: string;
+	    host?: string;
+	    started?: boolean;
+	
+	    static createFrom(source: any = {}) {
+	        return new SeatInfo(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.live = source["live"];
+	        this.game = source["game"];
+	        this.host = source["host"];
+	        this.started = source["started"];
 	    }
 	}
 
@@ -338,10 +371,25 @@ export namespace settings {
 	        this.no_deck_ratios = source["no_deck_ratios"];
 	    }
 	}
+	export class RecentServer {
+	    address: string;
+	    name: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new RecentServer(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.address = source["address"];
+	        this.name = source["name"];
+	    }
+	}
 	export class Rejoin {
 	    address: string;
 	    token: string;
 	    game: string;
+	    via: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new Rejoin(source);
@@ -352,18 +400,20 @@ export namespace settings {
 	        this.address = source["address"];
 	        this.token = source["token"];
 	        this.game = source["game"];
+	        this.via = source["via"];
 	    }
 	}
 	export class Settings {
 	    nickname: string;
-	    recent: string[];
+	    recent: RecentServer[];
 	    animation: string;
 	    fullscreen: boolean;
-	    theme: string;
 	    mat: string;
 	    dice: string;
+	    no_end_turn_ask: boolean;
 	    rejoin: Rejoin;
 	    host: HostSetup;
+	    lan_address: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new Settings(source);
@@ -372,14 +422,15 @@ export namespace settings {
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.nickname = source["nickname"];
-	        this.recent = source["recent"];
+	        this.recent = this.convertValues(source["recent"], RecentServer);
 	        this.animation = source["animation"];
 	        this.fullscreen = source["fullscreen"];
-	        this.theme = source["theme"];
 	        this.mat = source["mat"];
 	        this.dice = source["dice"];
+	        this.no_end_turn_ask = source["no_end_turn_ask"];
 	        this.rejoin = this.convertValues(source["rejoin"], Rejoin);
 	        this.host = this.convertValues(source["host"], HostSetup);
+	        this.lan_address = source["lan_address"];
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {

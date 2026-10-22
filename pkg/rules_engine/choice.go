@@ -18,7 +18,7 @@ const (
 	ChooseAnswer                            // a question while an ability resolves (R-ABIL-05)
 	ChooseStartingItem                      // a start-of-game choice, e.g. Eden (R-SETUP-09)
 	ChooseCursed                            // who gains a curse (R-ABIL-20)
-	ChooseLowest                            // which card goes to the very bottom of a deck
+	ChooseLowest                            // no longer asked: the bottom is random (Q-22); kept for the numbers
 	ChooseRecharge                          // the one item to recharge (Curse of Fatigue)
 	ChooseCopyAbility                       // the ↷ ability a loot card copies ("? Card")
 	ChooseDie                               // which of several dice is the result (Mutant Spider)
@@ -112,13 +112,13 @@ func (g *Game) answer(i int) {
 	case ChooseStartingItem:
 		g.chooseStartingItem(c, i)
 	case ChooseLowest:
-		g.chooseLowest(c, i)
+		// Never asked: the bottom is random (Q-22).
 	case ChooseCursed:
 		g.giveCurse(c.Objects[0], PlayerID(c.Slots[i]))
 	case ChooseDie:
 		g.ManyDice = g.ManyDice[1:]
 		if it, ok := g.StackItemByID(c.Indexes[0]); ok && it.Roll != c.Slots[i] {
-			g.SetRoll(it.ID, c.Slots[i])
+			g.SetRoll(it.ID, c.Slots[i], 0) // many dice, no one card
 		}
 	case ChooseRedirect:
 		g.startAttack(c.Objects[i])

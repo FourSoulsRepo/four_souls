@@ -17,6 +17,7 @@ var keeperHead = engine.CardDef{
 		{
 			Kind:    engine.Triggered,
 			Text:    "Each time this deals combat damage to a player, they lose 2¢.",
+			Takes:   engine.TakesEventPlayer,
 			Trigger: whenThisDealsDamage(true),
 			Effects: []engine.Effect{engine.EffectFunc(func(c *engine.Ctx) {
 				c.G.LoseCentsNow(c.EventPlayer, 2)

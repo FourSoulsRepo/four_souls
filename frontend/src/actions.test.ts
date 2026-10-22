@@ -94,6 +94,32 @@ describe('actionsFor', () => {
     );
     expect(a.buttons.map((b) => b.label)).toEqual(['Pass']);
     expect(a.turn.idle).toBe(true);
+    expect(a.turn.left).toBeUndefined();
+  });
+
+  it('lists what is left before ending the turn (V-46)', () => {
+    const all = actionsFor(
+      update({}, [
+        { player: 0, kind: IntentKind.activate, objects: [3] },
+        { player: 0, kind: IntentKind.playLoot, objects: [7] },
+        { player: 0, kind: IntentKind.playLoot, objects: [8] },
+        { player: 0, kind: IntentKind.purchase },
+        { player: 0, kind: IntentKind.attack },
+        { player: 0, kind: IntentKind.endTurn },
+      ]),
+      isCard,
+    );
+    expect(all.turn.left).toEqual(['Attack', 'Buy', 'Play loot', 'Use abilities']);
+    const loot = actionsFor(
+      update({}, [
+        { player: 0, kind: IntentKind.playLoot, objects: [7] },
+        { player: 0, kind: IntentKind.endTurn },
+      ]),
+      isCard,
+    );
+    expect(loot.turn.left).toEqual(['Play loot']);
+    const notMine = actionsFor(update({}, [{ player: 0, kind: IntentKind.playLoot, objects: [7] }]), isCard);
+    expect(notMine.turn.left).toBeUndefined();
   });
 
   it('offers nothing when it is not the viewer’s move', () => {
@@ -141,7 +167,7 @@ describe('actionsFor', () => {
 
   it('uses the question as the title of an answer', () => {
     const a = actionsFor(
-      update({ waiting: { kind: PromptKind.choose, player: 0, purpose: 9, options: ['yes', 'no'], text: 'Pay 3¢?' } }, [
+      update({ waiting: { kind: PromptKind.choose, player: 0, purpose: 9, options: ['yes', 'No'], text: 'Pay 3¢?' } }, [
         { player: 0, kind: IntentKind.choose },
       ]),
       isCard,
@@ -213,6 +239,36 @@ describe('aims', () => {
     expect(sameTarget(ann, { object: 0, player: 0 })).toBe(false);
     expect(sameTarget({ stack_id: 2, player: 1 }, { stack_id: 2, player: 0 })).toBe(true);
     expect(sameTarget({ player: -1 }, { player: -1 })).toBe(false);
+  });
+});
+
+// 15.29: what the player can't use now says why.
+describe('blocked', () => {
+  it('maps blocked cards and turn actions to their reasons', () => {
+    const u = update({}, [{ player: 0, kind: IntentKind.pass }]);
+    const a = actionsFor(
+      {
+        ...u,
+        blocked: [
+          { kind: IntentKind.attack, object: 0, reason: 'No attacks left' },
+          { kind: IntentKind.endTurn, object: 0, reason: 'You must attack first' },
+          { kind: IntentKind.playLoot, object: 7, reason: 'No loot plays left' },
+          { kind: IntentKind.activate, object: 9, reason: 'Used; it recharges on your turn' },
+          { kind: IntentKind.activate, object: 9, reason: 'Not enough ¢' },
+        ],
+      },
+      isCard,
+    );
+    expect(a.turn.why).toEqual({ attack: 'No attacks left', endTurn: 'You must attack first' });
+    expect(a.blocked.get(7)).toBe('No loot plays left');
+    expect(a.blocked.get(9)).toBe('Used; it recharges on your turn');
+    expect(a.blocked.has(0)).toBe(false);
+  });
+
+  it('is empty when the server sends no reasons', () => {
+    const a = actionsFor(update({}, []), isCard);
+    expect(a.blocked.size).toBe(0);
+    expect(a.turn.why).toBeUndefined();
   });
 });
 

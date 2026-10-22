@@ -19,26 +19,54 @@ import (
 type Settings struct {
 	// Nickname is sent when joining a game (ST-06); "" until set.
 	Nickname string `json:"nickname"`
-	// Recent are the last addresses joined, newest first.
-	Recent []string `json:"recent"`
+	// Recent are the last servers joined, newest first.
+	Recent []RecentServer `json:"recent"`
 	// Animation is the animation speed (ST-05): one of Speeds.
 	Animation string `json:"animation"`
 	// Fullscreen starts the window fullscreen (ST-01).
 	Fullscreen bool `json:"fullscreen"`
-	// Theme colours menus and panels (ST-02): one of Themes.
-	Theme string `json:"theme"`
+	// An older file's "theme" is ignored: the app has one theme (ST-07).
 	// Mat is the game mat under the table (ST-03, V-24): a mat image
 	// name or one of ColorMats; see ValidMat. "" is the default: the
 	// first mat image, or the first color mat without images.
 	Mat string `json:"mat"`
 	// Dice is the look of the player's dice (V-19): one of Dice.
 	Dice string `json:"dice"`
+	// NoEndTurnAsk ends the turn at once, without asking while plays are
+	// left (V-46); false, the default, asks.
+	NoEndTurnAsk bool `json:"no_end_turn_ask"`
 	// Rejoin is the last game joined, so a restarted app takes its seat
 	// back (N-08).
 	Rejoin Rejoin `json:"rejoin"`
 	// Host is the last game setup the player hosted, for the next one.
 	// The password is never kept (N-14).
 	Host HostSetup `json:"host"`
+	// LanAddress is the address last typed on the LAN screen (15.97);
+	// the LAN screen keeps no list.
+	LanAddress string `json:"lan_address"`
+}
+
+// RecentServer is a server joined lately (N-18).
+type RecentServer struct {
+	Address string `json:"address"`
+	// Name is the server's name from its welcome; "" shows the address.
+	Name string `json:"name"`
+}
+
+// UnmarshalJSON also reads a bare address, as older files keep them.
+func (r *RecentServer) UnmarshalJSON(data []byte) error {
+	var address string
+	if json.Unmarshal(data, &address) == nil {
+		*r = RecentServer{Address: address}
+		return nil
+	}
+	type plain RecentServer
+	var p plain
+	if err := json.Unmarshal(data, &p); err != nil {
+		return fmt.Errorf("recent server: %w", err)
+	}
+	*r = RecentServer(p)
+	return nil
 }
 
 // HostSetup is a remembered host screen.
@@ -86,13 +114,26 @@ type Rejoin struct {
 	Address string `json:"address"`
 	Token   string `json:"token"`
 	Game    string `json:"game"`
+	// Via is the Play path it was joined by, for the menu's Rejoin
+	// button (15.99): one of Paths, or "" from an older app.
+	Via string `json:"via"`
+}
+
+// Paths are the main menu's ways to play (M-03).
+var Paths = []string{"lan", "online"}
+
+// clean drops a path the menu does not know.
+func (r Rejoin) clean() Rejoin {
+	if !slices.Contains(Paths, r.Via) {
+		r.Via = ""
+	}
+	return r
 }
 
 // The choices of the settings that take one of a list; the first is
 // the default.
 var (
 	Speeds = []string{"normal", "fast", "slow", "off"}
-	Themes = []string{"dark", "light"}
 	Dice   = []string{
 		"tear", "blue_fly", "cent", "moms_knife", "the_bible",
 		"brimstone", "guppy_paw", "pentagram", "poop", "tinted_rock",
@@ -103,7 +144,11 @@ var (
 // when there are no mat images.
 // Image mats come from the files, so any ValidMat name is kept: a mat
 // whose image is missing shows as colors.
-var ColorMats = []string{"felt", "basement", "cathedral"}
+var ColorMats = []string{"basement", "cathedral"}
+
+// droppedMat was a color mat (Green felt) until ST-08; a file that still
+// names it gets the default mat.
+const droppedMat = "felt"
 
 // matName is a mat file name without its extension.
 var matName = regexp.MustCompile(`^[a-z0-9_-]{1,40}$`)
@@ -113,8 +158,11 @@ func ValidMat(name string) bool {
 	return matName.MatchString(name)
 }
 
-// MaxRecent is how many recent addresses are kept.
+// MaxRecent is how many recent servers are kept.
 const MaxRecent = 5
+
+// maxAddress caps a kept address; a longer one is not kept.
+const maxAddress = 255
 
 // ErrChoice means a setting is not one of its choices.
 var ErrChoice = errors.New("unknown setting value")
@@ -131,14 +179,14 @@ func (s *Settings) choices() []struct {
 	return []struct {
 		value   *string
 		allowed []string
-	}{{&s.Animation, Speeds}, {&s.Theme, Themes}, {&s.Dice, Dice}}
+	}{{&s.Animation, Speeds}, {&s.Dice, Dice}}
 }
 
 // Load reads the settings. A missing or broken file gives the defaults.
 // Recent is never nil, so the frontend always gets a list; an unknown
 // choice reads as its default.
 func Load(path string) Settings {
-	def := Settings{Recent: []string{}, Animation: Speeds[0], Theme: Themes[0], Dice: Dice[0]}
+	def := Settings{Recent: []RecentServer{}, Animation: Speeds[0], Dice: Dice[0]}
 	data, err := os.ReadFile(path) //nolint:gosec // the app names the file
 	if err != nil {
 		return def
@@ -148,15 +196,17 @@ func Load(path string) Settings {
 		return def
 	}
 	if s.Recent == nil {
-		s.Recent = []string{}
+		s.Recent = []RecentServer{}
 	}
 	s.Host = s.Host.clean()
+	s.Rejoin = s.Rejoin.clean()
+	s.LanAddress = cleanAddress(s.LanAddress)
 	for _, c := range s.choices() {
 		if !slices.Contains(c.allowed, *c.value) {
 			*c.value = c.allowed[0]
 		}
 	}
-	if s.Mat != "" && !ValidMat(s.Mat) {
+	if s.Mat == droppedMat || (s.Mat != "" && !ValidMat(s.Mat)) {
 		s.Mat = ""
 	}
 	return s
@@ -183,14 +233,19 @@ func Save(path string, s Settings) (Settings, error) {
 	if s.Mat != "" && !ValidMat(s.Mat) {
 		return Settings{}, fmt.Errorf("%w: %q", ErrChoice, s.Mat)
 	}
-	recent := []string{}
-	for _, a := range s.Recent {
-		if a = strings.TrimSpace(a); a != "" && len(recent) < MaxRecent {
-			recent = append(recent, a)
+	recent := []RecentServer{}
+	for _, r := range s.Recent {
+		r.Address = strings.TrimSpace(r.Address)
+		// A name that fails the check shows the address instead.
+		r.Name, _ = protocol.CleanServerName(r.Name)
+		if r.Address != "" && len(recent) < MaxRecent {
+			recent = append(recent, r)
 		}
 	}
 	s.Recent = recent
 	s.Host = s.Host.clean()
+	s.Rejoin = s.Rejoin.clean()
+	s.LanAddress = cleanAddress(s.LanAddress)
 	data, err := json.MarshalIndent(s, "", "  ")
 	if err != nil {
 		return Settings{}, fmt.Errorf("settings: %w", err)
@@ -206,4 +261,13 @@ func Save(path string, s Settings) (Settings, error) {
 		return Settings{}, errors.Join(fmt.Errorf("settings: %w", err), os.Remove(tmp))
 	}
 	return s, nil
+}
+
+// cleanAddress trims a typed address; one too long is dropped.
+func cleanAddress(a string) string {
+	a = strings.TrimSpace(a)
+	if len(a) > maxAddress {
+		return ""
+	}
+	return a
 }

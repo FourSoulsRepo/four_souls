@@ -8,6 +8,7 @@ import {
   Backs as wailsBacks,
   Cards as wailsCards,
   CardSets as wailsCardSets,
+  CheckSeat as wailsCheckSeat,
   DeckRatios as wailsDeckRatios,
   Dice as wailsDice,
   FindGames as wailsFindGames,
@@ -23,7 +24,7 @@ import {
 } from '../../wailsjs/go/main/App';
 import { settings } from '../../wailsjs/go/models';
 import { Info as hostInfo, Start as hostStart, Stop as hostStop } from '../../wailsjs/go/main/Host';
-import { BrowserOpenURL, WindowFullscreen, WindowUnfullscreen } from '../../wailsjs/runtime/runtime';
+import { BrowserOpenURL, Quit, WindowFullscreen, WindowUnfullscreen } from '../../wailsjs/runtime/runtime';
 
 export interface Versions {
   app: string;
@@ -40,52 +41,64 @@ export type NoticeLine = NoticePart[];
 // Settings are kept by Go in the user's config folder.
 export interface Settings {
   nickname: string;
-  // recent are the last addresses joined, newest first.
-  recent: string[];
+  // recent are the last servers joined, newest first.
+  recent: RecentServer[];
   // animation is the animation speed (ST-05).
   animation: Speed;
   fullscreen: boolean; // ST-01
-  theme: Theme; // ST-02, menus and panels
   mat: string; // ST-03, V-24: a MatInfo or color mat id, '' for the default; Go checks it
   dice: string; // V-19, a DiceSkin id; Go checks it
+  // no_end_turn_ask ends the turn without asking while plays are left (V-46).
+  no_end_turn_ask: boolean;
   // rejoin is the last game joined, so a restarted app takes its seat
   // back (N-08).
   rejoin: Rejoin;
   // host is the last hosted setup, for the next host screen; no password.
   host: HostSetup;
+  // lan_address is the address last typed on the LAN screen (15.97).
+  lan_address: string;
+}
+
+// RecentServer is a server joined lately; name is the one it gave in
+// its welcome, '' to show the address (N-18).
+export interface RecentServer {
+  address: string;
+  name: string;
 }
 
 export interface Rejoin {
   address: string;
   token: string;
   game: string;
+  // via is the Play path it was joined by (15.99); '' from an older app.
+  via: '' | 'lan' | 'online';
 }
-
-export type Theme = 'dark' | 'light';
 
 // fromGo reads Go's settings; Go checks the choices, so anything else is
 // only possible from an older app.
 function fromGo(s: {
   nickname: string;
-  recent: string[];
+  recent: RecentServer[];
   animation: string;
   fullscreen: boolean;
-  theme: string;
   mat: string;
   dice: string;
-  rejoin: Rejoin;
+  no_end_turn_ask?: boolean;
+  rejoin: Omit<Rejoin, 'via'> & { via?: string };
   host?: HostSetup;
+  lan_address?: string;
 }): Settings {
   return {
     nickname: s.nickname,
-    recent: s.recent,
+    recent: s.recent.map((r) => ({ address: r.address, name: r.name })),
     animation: speed(s.animation),
     fullscreen: s.fullscreen,
-    theme: s.theme === 'light' ? 'light' : 'dark',
     mat: s.mat,
     dice: s.dice,
-    rejoin: { address: s.rejoin.address, token: s.rejoin.token, game: s.rejoin.game },
+    no_end_turn_ask: s.no_end_turn_ask ?? false,
+    rejoin: { address: s.rejoin.address, token: s.rejoin.token, game: s.rejoin.game, via: via(s.rejoin.via) },
     host: s.host ? { ...noHostSetup, ...s.host } : noHostSetup,
+    lan_address: s.lan_address ?? '',
   };
 }
 
@@ -103,6 +116,10 @@ export async function getVersions(): Promise<Versions> {
 export async function getNotice(): Promise<NoticeLine[]> {
   const lines = await wailsNotice();
   return lines.map((line) => line.parts.map((p) => ({ text: p.text, url: p.url })));
+}
+
+function via(s: string | undefined): Rejoin['via'] {
+  return s === 'lan' || s === 'online' ? s : '';
 }
 
 function speed(s: string): Speed {
@@ -166,6 +183,10 @@ export async function getBacks(): Promise<CardBack[]> {
 export interface Icons {
   coin: string;
   sword: string;
+  banner: string;
+  // sky is the menu background (15.42): the sky, then its star layers,
+  // far to near; empty without the images.
+  sky: string[];
 }
 
 // getIcons returns the icon URLs.
@@ -186,12 +207,13 @@ export function getFonts(): Promise<Fonts> {
   return wailsFonts();
 }
 
-// Sounds are the damage sounds (15.50); each URL is '' without the
-// private images, and that sound stays silent.
+// Sounds are the damage sounds (15.50) and the dice sound (15.69); each
+// URL is '' without the private images, and that sound stays silent.
 export interface Sounds {
   attackHit: string;
   effectCast: string;
   effectImpact: string;
+  diceRoll: string;
 }
 
 // getSounds returns the sound URLs.
@@ -237,7 +259,7 @@ export function saveRecord(link: string): Promise<string> {
 }
 
 // LanServer is a hosting app found on the local network, with its games
-// that wait for players (N-13, ADR 009).
+// (N-13, ADR 009).
 export interface LanServer {
   address: string;
   protocol: number;
@@ -246,10 +268,13 @@ export interface LanServer {
 }
 
 export interface LanGame {
+  id: string;
   host: string;
   seats: number;
   taken: number;
   locked: boolean; // joining needs the password (N-14)
+  // started: in progress; only who held a seat can rejoin (15.97).
+  started: boolean;
 }
 
 // findGames searches the local network for about a second.
@@ -259,8 +284,30 @@ export async function findGames(): Promise<LanServer[]> {
     address: f.address,
     protocol: f.protocol,
     app: f.app,
-    games: f.games.map((g) => ({ host: g.host, seats: g.seats, taken: g.taken, locked: g.locked ?? false })),
+    games: f.games.map((g) => ({
+      id: g.id,
+      host: g.host,
+      seats: g.seats,
+      taken: g.taken,
+      locked: g.locked ?? false,
+      started: g.started ?? false,
+    })),
   }));
+}
+
+// SeatInfo says whether a token still holds a seat on a server (15.99).
+export interface SeatInfo {
+  live: boolean;
+  game: string;
+  host: string;
+  started: boolean;
+}
+
+// checkSeat asks the server at bases (httpBases) whether token still
+// holds a seat; it rejects when no base answers.
+export async function checkSeat(bases: string[], token: string): Promise<SeatInfo> {
+  const s = await wailsCheckSeat(bases, token);
+  return { live: s.live, game: s.game ?? '', host: s.host ?? '', started: s.started ?? false };
 }
 
 // setFullscreen switches the window (ST-01).
@@ -270,6 +317,11 @@ export function setFullscreen(on: boolean): void {
   } else {
     WindowUnfullscreen();
   }
+}
+
+// quitApp closes the app (M-02).
+export function quitApp(): void {
+  Quit();
 }
 
 // Opens an https link in the system browser; anything else is ignored.

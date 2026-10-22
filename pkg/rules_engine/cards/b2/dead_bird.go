@@ -13,6 +13,7 @@ var deadBird = engine.CardDef{
 		{
 			Kind:    engine.Triggered,
 			Text:    "Each time a player rolls a 3, you may look at their hand and steal a loot card from them.",
+			Takes:   engine.TakesEventPlayer,
 			Trigger: engine.OnRollOf(3),
 			Effects: []engine.Effect{engine.Ask(func(c *engine.Ctx, a []int) {
 				from := c.EventPlayer

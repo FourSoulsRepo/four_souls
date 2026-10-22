@@ -9,6 +9,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strconv"
 	"sync"
 	"time"
@@ -38,11 +39,24 @@ type Config struct {
 	// game: the app's host. Friends join (N-17). A dedicated server
 	// lets everyone create.
 	HostOnly bool `json:"-"`
+	// Presence relays live aiming and hover (15.35, ADR 016). An
+	// operator short of CPU or bandwidth may turn it off.
+	Presence bool `json:"presence"`
+	// Name is shown in the app instead of the address (N-18); empty
+	// shows the address. Up to protocol.MaxServerName characters.
+	Name string `json:"name"`
+	// EmptyMinutes ends a game with no player connected for that long;
+	// GameHours ends a game that long after it started (N-20). 0: never.
+	EmptyMinutes int `json:"empty_minutes"`
+	GameHours    int `json:"game_hours"`
+	// KeepGames keeps the tables and games over a restart, in the saves
+	// folder (N-20). The dedicated server sets it; an app's host does not.
+	KeepGames bool `json:"-"`
 }
 
 // DefaultConfig is used for settings the flags and file leave out.
 func DefaultConfig() Config {
-	return Config{Port: protocol.DefaultPort, Records: "records", Retention: 30, Saves: "saves"}
+	return Config{Port: protocol.DefaultPort, Records: "records", Retention: 30, Saves: "saves", Presence: true, EmptyMinutes: 30, GameHours: 24}
 }
 
 // LoadConfig reads a JSON config file over the defaults.
@@ -65,13 +79,24 @@ func (c Config) Check() error {
 		return fmt.Errorf("server: port %d is not 1 to 65535", c.Port)
 	case c.Retention < 0:
 		return errors.New("server: retention is days, 0 or more")
+	case c.EmptyMinutes < 0 || c.GameHours < 0:
+		return errors.New("server: empty_minutes and game_hours are 0 or more")
+	case c.Name != "" && !validName(c.Name):
+		return fmt.Errorf("server: name must be 1–%d characters, without control characters", protocol.MaxServerName)
 	}
 	return nil
+}
+
+// validName reports whether a server name passes CleanServerName.
+func validName(name string) bool {
+	_, ok := protocol.CleanServerName(name)
+	return ok
 }
 
 // Server listens for clients and runs their rooms.
 type Server struct {
 	cfg    Config
+	h      *Hub
 	http   *http.Server
 	ln     net.Listener
 	cancel context.CancelFunc
@@ -93,7 +118,14 @@ func Start(ctx context.Context, cfg Config) (*Server, error) {
 	s := &Server{cfg: cfg, ln: ln, cancel: cancel}
 	hub := NewHub()
 	hub.records, hub.cards, hub.seed, hub.saves = cfg.Records, cardTexts(), cfg.Seed, cfg.Saves
-	hub.hostOnly = cfg.HostOnly
+	hub.hostOnly, hub.presence = cfg.HostOnly, cfg.Presence
+	hub.name, _ = protocol.CleanServerName(cfg.Name)
+	hub.emptyLimit = time.Duration(cfg.EmptyMinutes) * time.Minute
+	hub.gameLimit = time.Duration(cfg.GameHours) * time.Hour
+	if cfg.KeepGames && cfg.Saves != "" {
+		hub.restart = filepath.Join(cfg.Saves, restartFolder)
+	}
+	s.h = hub
 	s.hub.Add(2)
 	go func() {
 		defer s.hub.Done()
@@ -108,13 +140,15 @@ func Start(ctx context.Context, cfg Config) (*Server, error) {
 		if a, ok := ln.Addr().(*net.TCPAddr); ok {
 			port = a.Port // the real one when cfg.Port is 0
 		}
-		if err := lan.Listen(ctx, port, waitingGames(hub, port)); err != nil {
+		if err := lan.Listen(ctx, port, lanGames(hub, port)); err != nil {
 			log.Printf("server: LAN discovery is off: %v", err) // joining by address still works
 		}
 	}
 	mux := http.NewServeMux()
 	mux.Handle("/ws", Handler(hub))
 	mux.HandleFunc("/record", hub.downloadRecord)
+	mux.HandleFunc("/healthz", hub.healthz)
+	mux.HandleFunc("/seat", hub.seat)
 	s.http = &http.Server{Handler: mux, ReadHeaderTimeout: 10 * time.Second}
 	go func() { _ = s.http.Serve(ln) }() //nolint:errcheck // ends with ErrServerClosed on Shutdown
 	return s, nil
@@ -124,9 +158,16 @@ func Start(ctx context.Context, cfg Config) (*Server, error) {
 func (s *Server) Addr() string { return s.ln.Addr().String() }
 
 // Shutdown stops accepting clients and stops the lobby and every game.
-// Saving running records joins here with 6.9.
+// With KeepGames they wait in restart files for the next start (N-20).
 func (s *Server) Shutdown(ctx context.Context) error {
 	err := s.http.Shutdown(ctx)
+	if s.h.restart != "" {
+		s.h.send(hubRequest{run: (*Hub).warnRestart})
+		select {
+		case <-time.After(restartWarning):
+		case <-ctx.Done():
+		}
+	}
 	s.cancel()
 	s.hub.Wait()
 	if err != nil && !errors.Is(err, http.ErrServerClosed) {
@@ -178,17 +219,23 @@ func cardTexts() []record.Card {
 	return out
 }
 
-// waitingGames answers a LAN probe with the games that wait for
-// players; none waiting means no answer (ADR 009).
-func waitingGames(hub *Hub, port int) func() (lan.Answer, bool) {
+// lanGames answers a LAN probe with the games here: the waiting ones,
+// and the started ones, so a player who held a seat finds the game
+// again (15.97). A finished game is left out; none means no answer
+// (ADR 009).
+func lanGames(hub *Hub, port int) func() (lan.Answer, bool) {
 	id := newToken()
 	return func() (lan.Answer, bool) {
 		reply := make(chan []lan.Game, 1)
 		hub.send(hubRequest{run: func(h *Hub) {
+			over := map[string]bool{}
+			for _, g := range h.games {
+				over[g.info.ID] = g.room.over.Load()
+			}
 			var out []lan.Game
 			for _, g := range h.list().Games {
-				if !g.Started && g.Taken < g.Seats {
-					out = append(out, lan.Game{Host: g.Host, Seats: g.Seats, Taken: g.Taken, Locked: g.Locked})
+				if !over[g.ID] {
+					out = append(out, lan.Game{ID: g.ID, Host: g.Host, Seats: g.Seats, Taken: g.Taken, Locked: g.Locked, Started: g.Started})
 				}
 			}
 			reply <- out

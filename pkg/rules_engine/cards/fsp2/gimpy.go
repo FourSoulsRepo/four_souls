@@ -23,7 +23,7 @@ var gimpy = engine.CardDef{
 			case 1:
 				c.Do(engine.Loot(1), discardOne)
 			case 2:
-				c.G.Boosts = append(c.G.Boosts, engine.Boost{Stat: engine.StatPlayerATK, Player: c.Controller, Amount: 2})
+				c.G.Boosts = append(c.G.Boosts, engine.Boost{Source: c.Source, Stat: engine.StatPlayerATK, Player: c.Controller, Amount: 2})
 			}
 		}, engine.Question{Text: "Choose one", Options: func(*engine.Ctx, []int) []string {
 			return []string{"gain 2¢", "loot 1, then discard a loot card", "+2 ATK till end of turn"}

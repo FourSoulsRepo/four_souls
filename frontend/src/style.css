@@ -19,15 +19,6 @@
   background-color: var(--bg);
 }
 
-/* Light theme for menus and panels (ST-02); the game table keeps its
-   dark overlays, which sit on the mat. */
-:root[data-theme="light"] {
-  --bg: #efeae0;
-  --fg: #1f2329;
-  --muted: #5e6672;
-  --panel: #ffffff;
-}
-
 /* Not a web page (V-10): the window never scrolls as a whole, and a
    mouse drag selects nothing. Lists scroll on their own; text worth
    copying opts back in with .selectable. */
@@ -63,12 +54,6 @@ button {
 }
 
 /* Game mats (ST-03): colors, and the fallback for a missing mat image. */
-.mat-felt {
-  --mat-colors: radial-gradient(ellipse at center, #2f5a3c 0%, #21412c 65%, #172e20 100%);
-
-  background: var(--mat-colors);
-}
-
 .mat-basement {
   --mat-colors: radial-gradient(ellipse at center, #5a4330 0%, #3e2d1f 65%, #2a1e14 100%);
 
@@ -94,8 +79,7 @@ button {
 
 /* Buttons off the table look like the ability lines (15.24, 15.40):
    cut-out parchment with an ink outline, a hard shadow and a slight
-   tilt, the game's letters; the main action is the gold of End turn.
-   The look stays the same in both themes, like the game's dialogs. */
+   tilt, the game's letters; the main action is the gold of End turn. */
 :root {
   --ink: #1d120a;
   --paper:

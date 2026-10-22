@@ -27,6 +27,14 @@ The game's fonts live there too (assets/fonts) and ship the same way:
   TBoI4SOriginal, the card font of foursouls.ru (Cyrillic). It belongs
     to its owners.
 
+The home screen banner lives there too (assets/banner.webp):
+  The Four Souls logo from the top of https://foursouls.ru. It belongs
+    to Edmund McMillen and Maestro Media.
+
+The menu background lives there too (assets/background):
+  The starry page background of https://foursouls.ru: its sky and five
+    star layers. It belongs to its owners.
+
 This project is an unofficial, free, fan-made game. It is not affiliated
 with, endorsed by or sponsored by Edmund McMillen, Maestro Media or
 Studio71, and claims no ownership of their material. If the rights holders
@@ -45,14 +53,16 @@ Damage sounds (assets/sounds in the private images), from Hearthstone:
   Hearthstone is (c) Blizzard Entertainment, Inc. They belong to their
   owners, are not in this repository, and ship the same way as the card
   images. Converted to mono MP3.
+Dice sound (assets/sounds in the private images):
+  dice-roll.mp3      PlasticDice_on_WoodBoard_1, from the owner; source
+  unknown, so it ships only with the private images. Converted to mono
+  MP3.
 
 --------------------------------------------------------------------------
-Wails template images — build/appicon.png, build/windows/icon.ico
+App icon — build/appicon.svg, build/appicon.png, build/windows/icon.ico
 --------------------------------------------------------------------------
-Default application icon from the Wails project template.
-Copyright (c) Lea Anthony and the Wails contributors. MIT.
-Upstream: https://github.com/wailsapp/wails
-Placeholders; to be replaced by project artwork.
+Original artwork made for this project; no third-party parts. MIT, as
+the code (LICENSE). Replaces the Wails template icon.
 
 --------------------------------------------------------------------------
 Dependencies
@@ -109,6 +119,17 @@ npm (build only, not shipped):
   eslint-plugin-security                    Apache-2.0
   eslint-plugin-no-unsanitized              MPL-2.0
   globals                                   MIT
+
+--------------------------------------------------------------------------
+Server setups in deploy/ (not shipped)
+--------------------------------------------------------------------------
+Pulled by Docker on the operator's machine when the image is built or
+the compose file is started; nothing of them is in this repository or
+in the release archives.
+
+  Alpine Linux base image (alpine)          MIT and others per package;
+                                            BusyBox GPL-2.0, musl MIT
+  Caddy (caddy image)                       Apache-2.0
 
 --------------------------------------------------------------------------
 Build tools (not shipped)

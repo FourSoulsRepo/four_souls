@@ -5,8 +5,9 @@ import { describe, expect, it } from 'vitest';
 import golden from '../../internal/protocol/testdata/golden.jsonl?raw';
 import {
   errorText,
+  httpBases,
   recordURL,
-  wsURL,
+  wsURLs,
   type Create,
   type Envelope,
   type Games,
@@ -14,6 +15,7 @@ import {
   type Intent,
   type Join,
   type Load,
+  type Presence,
   type ProtocolError,
   type Ready,
   type Saved,
@@ -23,17 +25,18 @@ import {
 } from './protocol';
 
 // One expected envelope per golden line the client models. `satisfies`
-// makes the compiler check each against its type.
-const modeled: Record<string, Envelope> = {
+// makes the compiler check each against its type. A message the server
+// sends several times without an ID lists every line.
+const modeled: Record<string, Envelope | Envelope[]> = {
   hello: {
     type: 'hello',
     id: 1,
-    data: { protocol: 3, app: '0.1.0', name: 'Ann', role: 'player', sets: ['b2'], dice: 'tear' } satisfies Hello,
+    data: { protocol: 4, app: '0.1.0', name: 'Ann', role: 'player', sets: ['b2'], dice: 'tear' } satisfies Hello,
   },
   welcome: {
     type: 'welcome',
     id: 1,
-    data: { protocol: 3, app: '0.1.0', engine: '0.1.0', token: 't0k3n', seat: 0 } satisfies Welcome,
+    data: { protocol: 4, app: '0.1.0', engine: '0.1.0', token: 't0k3n', seat: 0, presence: true, name: 'Basement' } satisfies Welcome,
   },
   error: {
     type: 'error',
@@ -60,6 +63,8 @@ const modeled: Record<string, Envelope> = {
             loot_plays: 0,
             attacks: 0,
             purchases: 0,
+            printed_hp: 2,
+            printed_atk: 1,
           },
           {
             id: 1,
@@ -78,6 +83,8 @@ const modeled: Record<string, Envelope> = {
             loot_plays: 0,
             attacks: 0,
             purchases: 0,
+            printed_hp: 2,
+            printed_atk: 1,
           },
         ],
         shop: [
@@ -126,6 +133,10 @@ const modeled: Record<string, Envelope> = {
           ],
           reason: 'Pick a monster or a player.',
         },
+      ],
+      blocked: [
+        { kind: 5, object: 0, reason: 'Not your turn' },
+        { kind: 3, object: 314, reason: 'Loot is played on your turn' },
       ],
       seats: [
         { seat: 0, name: 'Ann', connected: true, dice: 'tear' },
@@ -178,15 +189,26 @@ const modeled: Record<string, Envelope> = {
   wait_turn: { type: 'wait_turn', id: 15, data: { on: true } },
   // A second line of one type is keyed by type and ID.
   'intent#16': { type: 'intent', id: 16, data: { intent: { player: 0, kind: 9 } satisfies Intent } },
+  'presence#17': { type: 'presence', id: 17, data: { seat: 0, from: { hand: 2 }, point: { x: 0.25, y: 0.5 } } satisfies Presence },
+  presence: [
+    { type: 'presence', data: { seat: 1, from: { object: 314 }, at: { player: 0 } } satisfies Presence },
+    { type: 'presence', data: { seat: 1, at: { deck: 2 } } satisfies Presence },
+    { type: 'presence', data: { seat: 1, at: { stack_id: 3 } } satisfies Presence },
+  ],
 };
 
 // model is the expected envelope of a golden line, if the client models it.
+// Of a list, it is the line that matches, else the first.
 function model(env: Envelope): Envelope | undefined {
-  return modeled[`${env.type}#${String(env.id)}`] ?? modeled[env.type];
+  const m = modeled[`${env.type}#${String(env.id)}`] ?? modeled[env.type];
+  if (Array.isArray(m)) {
+    return m.find((x) => JSON.stringify(x) === JSON.stringify(env)) ?? m[0];
+  }
+  return m;
 }
 
 // Messages the client does not read or send yet; later steps model them.
-const notYet = ['resync', 'setup', 'ban', 'pick', 'skip_all', 'vote', 'save'];
+const notYet = ['resync', 'setup', 'ban', 'pick', 'vote', 'save'];
 
 const lines = golden
   .split('\n')
@@ -205,16 +227,37 @@ describe('golden protocol file', () => {
   });
 });
 
-describe('wsURL', () => {
+describe('wsURLs', () => {
   it('adds the default port and the path', () => {
-    expect(wsURL(' 192.168.1.5 ')).toBe('ws://192.168.1.5:4774/ws');
-    expect(wsURL('host.lan:5000')).toBe('ws://host.lan:5000/ws');
-    expect(wsURL('[::1]:4774')).toBe('ws://[::1]:4774/ws');
+    expect(wsURLs(' 192.168.1.5 ')).toEqual(['ws://192.168.1.5:4774/ws']);
+    expect(wsURLs('host.lan:5000')).toEqual(['ws://host.lan:5000/ws']);
+    expect(wsURLs('[::1]:4774')).toEqual(['ws://[::1]:4774/ws']);
+  });
+
+  it('keeps plain ws:// for IPs, LAN names and a typed port', () => {
+    for (const a of ['localhost', 'pc', '10.0.0.7', 'pc.lan', 'pc.local', 'nas.home.arpa', '[::1]']) {
+      expect(wsURLs(a), a).toHaveLength(1);
+      expect(wsURLs(a)?.[0], a).toMatch(/^ws:\/\/.+:4774\/ws$/);
+    }
+    expect(wsURLs('games.example.com:4774')).toEqual(['ws://games.example.com:4774/ws']);
+  });
+
+  it('tries wss:// first for a bare domain, then ws:// on 4774 (8.18)', () => {
+    expect(wsURLs('games.example.com')).toEqual(['wss://games.example.com/ws', 'ws://games.example.com:4774/ws']);
+  });
+
+  it('keeps a typed scheme', () => {
+    expect(wsURLs('wss://games.example.com')).toEqual(['wss://games.example.com/ws']);
+    expect(wsURLs('WSS://games.example.com/ws')).toEqual(['wss://games.example.com/ws']);
+    expect(wsURLs('https://games.example.com/')).toEqual(['wss://games.example.com/ws']);
+    expect(wsURLs('wss://games.example.com:8443')).toEqual(['wss://games.example.com:8443/ws']);
+    expect(wsURLs('ws://games.example.com')).toEqual(['ws://games.example.com:4774/ws']);
+    expect(wsURLs('http://10.0.0.7:5000/ws/')).toEqual(['ws://10.0.0.7:5000/ws']);
   });
 
   it('rejects what is not an address', () => {
-    for (const bad of ['', 'a b', 'http://x', 'x:0', 'x:70000', 'x:y']) {
-      expect(wsURL(bad), bad).toBeNull();
+    for (const bad of ['', 'a b', 'ftp://x', 'wss://', 'wss://x/other', 'x:', 'x:0', 'x:70000', 'x:y']) {
+      expect(wsURLs(bad), bad).toBeNull();
     }
   });
 });
@@ -227,9 +270,19 @@ describe('errorText', () => {
   });
 });
 
+describe('httpBases', () => {
+  it('follows wsURLs: wss first for a bare domain, the port kept (15.99)', () => {
+    expect(httpBases('games.example.com')).toEqual(['https://games.example.com', 'http://games.example.com:4774']);
+    expect(httpBases('192.168.1.5')).toEqual(['http://192.168.1.5:4774']);
+    expect(httpBases('wss://games.example.com:8443/ws')).toEqual(['https://games.example.com:8443']);
+    expect(httpBases('not an address')).toBeNull();
+  });
+});
+
 describe('recordURL', () => {
   it('points at the record download of the same server', () => {
-    expect(recordURL('192.168.1.5', 'g1', 't0k3n')).toBe('http://192.168.1.5:4774/record?game=g1&token=t0k3n');
-    expect(recordURL('not an address', 'g1', 't')).toBeNull();
+    expect(recordURL('ws://192.168.1.5:4774/ws', 'g1', 't0k3n')).toBe('http://192.168.1.5:4774/record?game=g1&token=t0k3n');
+    expect(recordURL('wss://games.example.com/ws', 'g1', 't')).toBe('https://games.example.com/record?game=g1&token=t');
+    expect(recordURL('', 'g1', 't')).toBeNull();
   });
 });

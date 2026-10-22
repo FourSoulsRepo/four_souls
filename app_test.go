@@ -26,7 +26,7 @@ func TestSecondCopySettings(t *testing.T) {
 	dir := t.TempDir()
 	first := filepath.Join(dir, "settings.json")
 	if _, err := settings.Save(first, settings.Settings{
-		Nickname: "Ann", Theme: "light",
+		Nickname: "Ann", Mat: "cathedral",
 		Rejoin: settings.Rejoin{Address: "localhost", Token: "t1", Game: "g1"},
 	}); err != nil {
 		t.Fatal(err)
@@ -47,8 +47,8 @@ func TestSecondCopySettings(t *testing.T) {
 		t.Fatal("second copy shares the first copy's settings")
 	}
 	s := settings.Load(path)
-	if s.Nickname != "" || s.Rejoin.Token != "" || s.Theme != "light" {
-		t.Errorf("second copy settings %+v; want light theme, no nickname, no seat", s)
+	if s.Nickname != "" || s.Rejoin.Token != "" || s.Mat != "cathedral" {
+		t.Errorf("second copy settings %+v; want the Cathedral mat, no nickname, no seat", s)
 	}
 	if settings.Load(first).Rejoin.Token != "t1" {
 		t.Error("the first copy lost its seat")

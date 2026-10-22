@@ -3,7 +3,7 @@
 .overlay {
   position: fixed;
   inset: 0;
-  z-index: 18;
+  z-index: var(--z-overlay);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -17,7 +17,7 @@
   gap: 8px;
   max-width: 460px;
   padding: 20px 26px;
-  /* The ink frame of the menu panels (15.40), dark in both themes. */
+  /* The ink frame of the menu panels (15.40). */
   --fg: #f2f2f2;
   --muted: #c9bfa6;
   border: 3px solid var(--ink);
@@ -61,6 +61,23 @@
   color: var(--muted);
 }
 
+/* Reconnecting by itself (N-20): a small note over the table, which
+   stays visible; no backdrop, no pointer. */
+.reconnect-badge {
+  position: fixed;
+  top: 10px;
+  left: 50%;
+  z-index: var(--z-overlay);
+  padding: 4px 14px 3px;
+  border: 2px solid var(--ink);
+  border-radius: 10px;
+  font-size: 14px;
+  color: #f2f2f2;
+  background: rgb(20 28 40 / 92%);
+  transform: translateX(-50%);
+  pointer-events: none;
+}
+
 .overlay-status {
   min-height: 1.2em;
   font-size: 13px;
@@ -71,7 +88,15 @@
   position: fixed;
   top: 10px;
   right: 12px;
-  z-index: 6;
+  z-index: var(--z-menu-button);
   padding: 4px 12px 2px;
   font-size: 14px;
+}
+
+/* The plays left, in End turn's question (V-46). */
+.end-turn-left {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-weight: 600;
 }

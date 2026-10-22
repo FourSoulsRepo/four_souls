@@ -19,12 +19,14 @@ import (
 )
 
 // TestRecordReplays: a game's record replays in the engine with every
-// checksum matching; a stopped game is marked unfinished (6.9).
+// checksum matching; a stopped game is marked unfinished (6.9). The
+// header names the server (N-18).
 func TestRecordReplays(t *testing.T) {
 	dir := t.TempDir()
 	h := NewHub()
 	h.records = dir
 	h.cards = []record.Card{{Ref: "the_d6", Name: "The D6"}}
+	h.name = "Basement"
 	ctx, cancel := context.WithCancel(context.Background())
 	stopped := make(chan struct{})
 	go func() { h.Run(ctx); close(stopped) }()
@@ -64,6 +66,9 @@ func TestRecordReplays(t *testing.T) {
 	}
 	if rec.End == nil || rec.End.Finished || len(rec.Steps) == 0 || rec.Header.Seats[0].Name != "P0" || len(rec.Header.Cards) != 1 {
 		t.Fatalf("record: %d steps, end %+v, header %+v", len(rec.Steps), rec.End, rec.Header.Seats)
+	}
+	if rec.Header.Server != "Basement" {
+		t.Errorf("record server %q", rec.Header.Server)
 	}
 	s := rec.Header.Setup
 	setup := engine.Setup{Seed: s.Seed, Players: s.Players, BonusSouls: s.BonusSouls}

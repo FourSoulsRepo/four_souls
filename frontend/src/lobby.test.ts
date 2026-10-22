@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canCreate, emptyLobby, lanRows, leftTable, lost, onMessage, optionsText, remember, type Session } from './lobby';
+import { canCreate, emptyLobby, lanRows, leftTable, forgotten, lost, onMessage, optionsText, remember, renamed, serverLabel, type Session } from './lobby';
 import type { Table } from './protocol';
 
 const start: Session = { screen: 'join', lobby: emptyLobby, game: null, error: '' };
@@ -76,10 +76,43 @@ describe('leaving', () => {
   });
 });
 
+// at makes recent entries without names.
+const at = (...addresses: string[]) => addresses.map((address) => ({ address, name: '' }));
+
 describe('remember', () => {
   it('puts the address first, once, and keeps five', () => {
-    expect(remember(['a', 'b'], ' b ')).toEqual(['b', 'a']);
-    expect(remember(['a', 'b', 'c', 'd', 'e'], 'f')).toEqual(['f', 'a', 'b', 'c', 'd']);
+    expect(remember(at('a', 'b'), ' b ')).toEqual(at('b', 'a'));
+    expect(remember(at('a', 'b', 'c', 'd', 'e'), 'f')).toEqual(at('f', 'a', 'b', 'c', 'd'));
+  });
+  it('keeps the name the server gave', () => {
+    expect(remember([{ address: 'a', name: '' }, { address: 'b', name: 'Basement' }], 'b')).toEqual([
+      { address: 'b', name: 'Basement' },
+      { address: 'a', name: '' },
+    ]);
+  });
+});
+
+describe('server names (N-18)', () => {
+  it('names the entry of the address', () => {
+    expect(renamed(at('a', 'b'), ' b ', 'Basement')).toEqual([
+      { address: 'a', name: '' },
+      { address: 'b', name: 'Basement' },
+    ]);
+  });
+  it('keeps the same list when nothing changes', () => {
+    const recent = [{ address: 'a', name: 'Basement' }];
+    expect(renamed(recent, 'a', 'Basement')).toBe(recent);
+    expect(renamed(recent, 'b', 'Cathedral')).toBe(recent);
+  });
+  it('drops a name the server no longer gives', () => {
+    expect(renamed([{ address: 'a', name: 'Basement' }], 'a', '')).toEqual(at('a'));
+  });
+  it('forgets an address', () => {
+    expect(forgotten(at('a', 'b', 'c'), 'b')).toEqual(at('a', 'c'));
+  });
+  it('shows the name, else the address', () => {
+    expect(serverLabel({ address: 'a', name: 'Basement' })).toBe('Basement');
+    expect(serverLabel({ address: 'a', name: '' })).toBe('a');
   });
 });
 
@@ -94,23 +127,50 @@ describe('optionsText', () => {
 });
 
 describe('lanRows', () => {
+  const none = { address: '', token: '', game: '', via: '' as const };
+  const game = { id: '', host: 'Ann', seats: 3, taken: 1, locked: false, started: false };
+
   it('lists each waiting game with its address and lock; another version cannot be joined', () => {
     const rows = lanRows(
       [
-        { address: '192.168.1.5:4774', protocol: 1, app: '1.0.0', games: [{ host: 'Ann', seats: 3, taken: 1, locked: true }] },
-        { address: '192.168.1.9:4774', protocol: 2, app: '2.0.0', games: [{ host: 'Bo', seats: 2, taken: 1, locked: false }] },
+        { address: '192.168.1.5:4774', protocol: 1, app: '1.0.0', games: [{ ...game, locked: true }] },
+        { address: '192.168.1.9:4774', protocol: 2, app: '2.0.0', games: [{ ...game, host: 'Bo', seats: 2 }] },
       ],
       1,
+      none,
     );
     expect(rows).toEqual([
-      { key: '192.168.1.5:4774#0', address: '192.168.1.5:4774', text: "🔒 Ann's game · 1/3 players · 192.168.1.5:4774", joinable: true },
+      { key: '192.168.1.5:4774#0', address: '192.168.1.5:4774', text: "🔒 Ann's game · 1/3 players · 192.168.1.5:4774", joinable: true, rejoin: false },
       {
         key: '192.168.1.9:4774#0',
         address: '192.168.1.9:4774',
         text: "Bo's game · 1/2 players · 192.168.1.9:4774 · needs app 2.0.0",
         joinable: false,
+        rejoin: false,
       },
     ]);
+  });
+
+  it('marks a started game in progress; only who held a seat rejoins it (15.97)', () => {
+    const found = [
+      {
+        address: '192.168.1.5:4774',
+        protocol: 1,
+        app: '1.0.0',
+        games: [
+          { ...game, id: 'g1', taken: 3, started: true },
+          { ...game, id: 'g2', taken: 3 },
+        ],
+      },
+    ];
+    const [started, full] = lanRows(found, 1, none);
+    expect(started).toMatchObject({ text: "Ann's game · 3/3 players · In progress · 192.168.1.5:4774", joinable: false, rejoin: false });
+    expect(full).toMatchObject({ joinable: false, rejoin: false });
+    const mine = lanRows(found, 1, { address: '192.168.1.5', token: 't', game: 'g1', via: 'lan' as const });
+    expect(mine[0]).toMatchObject({ joinable: true, rejoin: true });
+    expect(mine[1]).toMatchObject({ joinable: false, rejoin: false });
+    // A seat without a token holds nothing.
+    expect(lanRows(found, 1, { ...none, game: 'g1' })[0]).toMatchObject({ rejoin: false });
   });
 });
 

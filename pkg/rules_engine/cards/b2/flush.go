@@ -23,15 +23,15 @@ var flush = engine.CardDef{
 	},
 }
 
-func flushMonsters(c *engine.Ctx, _ []int) []engine.ObjectID { return notAttacked(c.G) }
+func flushMonsters(c *engine.Ctx) []engine.ObjectID { return notAttacked(c.G) }
 
-func flushShop(c *engine.Ctx, _ []int) []engine.ObjectID { return c.G.ShopItems() }
+func flushShop(c *engine.Ctx) []engine.ObjectID { return c.G.ShopItems() }
 
-// flushTo puts the cards on the bottom of the deck in the order the
-// player picks, the first one lowest; then the slots refill.
-func flushTo(d engine.DeckKind, cards func(c *engine.Ctx, a []int) []engine.ObjectID) engine.Effect {
-	return engine.Ask(func(c *engine.Ctx, a []int) {
-		toBottom(c.G, d, engine.Ordered(cards(c, nil), a))
+// flushTo puts the cards on the bottom of the deck in random order
+// (Q-22); then the slots refill.
+func flushTo(d engine.DeckKind, cards func(c *engine.Ctx) []engine.ObjectID) engine.Effect {
+	return engine.EffectFunc(func(c *engine.Ctx) {
+		c.G.ToBottomRandom(d, cards(c))
 		c.G.RefillSlots()
-	}, engine.OrderQuestions("Which card goes lowest?", "the rest in slot order", 0, 6, nil, cards)...)
+	})
 }

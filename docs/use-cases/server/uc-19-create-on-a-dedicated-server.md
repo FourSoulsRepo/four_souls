@@ -8,7 +8,7 @@
 
 ## Main scenario (happy path)
 
-1. The player opens **Join a game** and connects to the server (UC-04).
+1. The player opens **Play**, **Online** and connects to the server (UC-04).
 2. The server's `welcome` says this player may create games.
 3. The Games list shows **Create a game** under the games.
 4. The player clicks it; the setup screen says "On the server …".
@@ -23,6 +23,7 @@
   * A friend's `create` or `load` gets `not_host`.
 * **3b. This app hosts the server:** no **Create a game**; the host screen does it.
 * **4a. Back:** the Games list again; the connection stays.
+* **4b. Esc on the setup:** the same as Back (15.98).
 * **5a. No nickname field:** the nickname went with hello already.
 * **5b. No "Continue a saved game":** saved games are in the Games list.
 * **6a. A bad setup or missing set:** the error shows on the setup screen.

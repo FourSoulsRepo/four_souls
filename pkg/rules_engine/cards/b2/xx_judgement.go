@@ -44,7 +44,7 @@ var judgementQuestion = engine.Question{
 	Player: func(c *engine.Ctx, _ []int) engine.PlayerID { return c.Targets[0].Player },
 	Options: func(c *engine.Ctx, _ []int) []string {
 		var out []string
-		for _, id := range souls(c.G, c.Targets[0].Player) {
+		for _, id := range c.G.DestroyableSouls(c.Targets[0].Player) {
 			out = append(out, string(c.G.Object(id).Card))
 		}
 		return out
@@ -54,6 +54,6 @@ var judgementQuestion = engine.Question{
 func judgement(c *engine.Ctx, a []int) {
 	if a[0] >= 0 {
 		p := c.Targets[0].Player
-		c.G.DestroyObject(p, souls(c.G, p)[a[0]])
+		c.G.DestroyObject(p, c.G.DestroyableSouls(p)[a[0]])
 	}
 }

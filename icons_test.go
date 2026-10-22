@@ -5,21 +5,39 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"slices"
 	"testing"
 	"testing/fstest"
 )
 
 func TestIconsFromFiles(t *testing.T) {
-	a := &App{cardFiles: fstest.MapFS{
+	files := fstest.MapFS{
 		"images/assets/icons/coin.webp":  {Data: []byte("RIFF")},
 		"images/assets/icons/sword.webp": {Data: []byte("RIFF")},
-	}}
-	if got := a.Icons(); got.Coin != "/cardimg/assets/icons/coin.webp" || got.Sword != "/cardimg/assets/icons/sword.webp" {
+		"images/assets/banner.webp":      {Data: []byte("RIFF")},
+	}
+	for _, file := range skyLayers {
+		files["images/"+file] = &fstest.MapFile{Data: []byte("RIFF")}
+	}
+	a := &App{cardFiles: files}
+	got := a.Icons()
+	if got.Coin != "/cardimg/assets/icons/coin.webp" || got.Sword != "/cardimg/assets/icons/sword.webp" ||
+		got.Banner != "/cardimg/assets/banner.webp" {
 		t.Fatalf("%+v", got)
 	}
-	// Without the private images the coin and the sword are drawn.
+	if len(got.Sky) != len(skyLayers) || got.Sky[0] != "/cardimg/assets/background/sky.webp" ||
+		got.Sky[5] != "/cardimg/assets/background/stars-5.webp" {
+		t.Fatalf("sky %v", got.Sky)
+	}
+	// A missing star layer leaves the menus plain, not half a sky.
+	delete(files, "images/assets/background/stars-3.webp")
+	if sky := a.Icons().Sky; len(sky) != 0 {
+		t.Fatalf("sky %v with a layer missing", sky)
+	}
+	// Without the private images the coin and the sword are drawn, the
+	// home screen shows its text title, and the menus a plain color.
 	a = &App{cardFiles: os.DirFS(t.TempDir())}
-	if got := a.Icons(); got != (Icons{}) {
+	if got := a.Icons(); got.Coin != "" || got.Sword != "" || got.Banner != "" || !slices.Equal(got.Sky, []string{}) {
 		t.Fatalf("%+v without images", got)
 	}
 }

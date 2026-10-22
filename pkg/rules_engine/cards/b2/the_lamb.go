@@ -9,7 +9,7 @@ var theLamb = engine.CardDef{
 	Ref:     "the_lamb",
 	Kind:    engine.MonsterCard,
 	Copies:  1,
-	Soul:    2,
+	Soul:    1,
 	HP:      6,
 	DC:      3,
 	ATK:     6,
@@ -18,6 +18,7 @@ var theLamb = engine.CardDef{
 		{
 			Kind:    engine.Triggered,
 			Text:    "When this dies, the active player may choose another player. They give you a soul they control.",
+			Takes:   engine.TakesOthers,
 			Trigger: engine.WhenThisDies(),
 			Effects: []engine.Effect{engine.Ask(lamb, lambPlayer, lambSoul)},
 		},

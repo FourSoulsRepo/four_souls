@@ -2,9 +2,11 @@
 //
 //	server -port 4774 -records ./records
 //	server -config server.json
+//	FOUR_SOULS_PORT=4774 FOUR_SOULS_RECORDS=/data/records server
 //
-// Flags override the config file. See the wiki page "Dedicated server on
-// a VPS".
+// Every flag has an ENV variable: FOUR_SOULS_ and the flag's name in
+// capitals (N-19). ENV overrides the config file; flags override both.
+// See the wiki page "Dedicated server on a VPS".
 package main
 
 import (
@@ -15,6 +17,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -41,7 +44,10 @@ func run(ctx context.Context, args []string, out io.Writer) error {
 	if err = printBanner(out); err != nil {
 		return err
 	}
-	s, err := server.Start(ctx, cfg)
+	cfg.KeepGames = true // an update or restart does not end the games (N-20)
+	// Shutdown stops the server, not the signal: the players hear of the
+	// restart before their games stop.
+	s, err := server.Start(context.WithoutCancel(ctx), cfg)
 	if err != nil {
 		return err
 	}
@@ -59,16 +65,38 @@ func run(ctx context.Context, args []string, out io.Writer) error {
 	return err
 }
 
-// parse reads the config file, if any, then lets flags override it.
+// envPrefix starts the ENV variable of every flag (N-19).
+const envPrefix = "FOUR_SOULS_"
+
+// parse reads the config file, if any, then lets ENV and flags override
+// it.
 func parse(args []string) (server.Config, error) {
 	fs := flag.NewFlagSet("server", flag.ContinueOnError)
 	def := server.DefaultConfig()
-	config := fs.String("config", "", "JSON config file; flags override it")
+	config := fs.String("config", "", "JSON config file; ENV and flags override it")
 	addr := fs.String("addr", def.Addr, "listen only on this address (default: all)")
 	port := fs.Int("port", def.Port, "TCP port for players")
 	records := fs.String("records", def.Records, "folder for match records")
 	retention := fs.Int("retention", def.Retention, "days to keep records; 0 keeps them forever")
 	saves := fs.String("saves", def.Saves, "folder for saved games")
+	presence := fs.Bool("presence", def.Presence, "relay live aiming and hover; false saves CPU and bandwidth")
+	name := fs.String("name", def.Name, "server name players see instead of the address")
+	emptyMinutes := fs.Int("empty_minutes", def.EmptyMinutes, "end a game nobody is connected to for this many minutes; 0 never")
+	gameHours := fs.Int("game_hours", def.GameHours, "end a game this many hours after it started; 0 never")
+	// ENV is set like a flag before the flags, so a flag wins. An empty
+	// value counts as unset, as compose passes one for a blank setting.
+	var envErr error
+	fs.VisitAll(func(f *flag.Flag) {
+		key := envPrefix + strings.ToUpper(f.Name)
+		if v := os.Getenv(key); v != "" && envErr == nil {
+			if err := fs.Set(f.Name, v); err != nil {
+				envErr = fmt.Errorf("env %s=%q: %w", key, v, err)
+			}
+		}
+	})
+	if envErr != nil {
+		return def, envErr
+	}
 	if err := fs.Parse(args); err != nil {
 		return def, fmt.Errorf("flags: %w", err)
 	}
@@ -91,6 +119,14 @@ func parse(args []string) (server.Config, error) {
 			cfg.Retention = *retention
 		case "saves":
 			cfg.Saves = *saves
+		case "presence":
+			cfg.Presence = *presence
+		case "name":
+			cfg.Name = *name
+		case "empty_minutes":
+			cfg.EmptyMinutes = *emptyMinutes
+		case "game_hours":
+			cfg.GameHours = *gameHours
 		}
 	})
 	return cfg, cfg.Check()

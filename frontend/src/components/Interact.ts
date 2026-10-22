@@ -14,6 +14,8 @@ import type { Aiming } from "../store";
 export interface Handle {
   highlight?: "act" | "pick" | "aim";
   onClick?: () => void;
+  // why says why the player can't use the card now (15.29).
+  why?: string;
 }
 
 export interface Interact {
@@ -63,13 +65,19 @@ export function interact(
     if (aimed(targets, (t) => !t.is_player && t.object === id)) {
       return aimHandle;
     }
+    // While aiming, only targets answer; the aiming card keeps its
+    // glow (15.28).
+    if (targets) {
+      return id === aiming?.source ? { highlight: "act" } : {};
+    }
     const o = options.find((x) => x.target?.object === id);
     if (o) {
       return pick(o);
     }
     const list = actions.cards.get(id);
     if (!list) {
-      return {};
+      const why = actions.blocked.get(id);
+      return why ? { why } : {};
     }
     const only = list.length === 1 ? list[0] : undefined;
     if (only?.targets && only.targets.length > 0) {

@@ -10,6 +10,10 @@ const port = 5199;
 export default defineConfig({
   testDir: 'tests',
   fullyParallel: true,
+  // Each test opens two to four pages; they close when it ends (19.38).
+  // Five since its flaky tests were fixed (19.38 sweep, 19.14 – 19.51);
+  // E2E_WORKERS in the Makefile overrides it.
+  workers: 5,
   reporter: 'list',
   use: {
     baseURL: `http://127.0.0.1:${port}`,
@@ -33,7 +37,8 @@ export default defineConfig({
     },
     ...Object.values(serverPorts).map((p) => ({
       // A fresh folder per run: saved games from earlier runs would show.
-      command: `rm -rf .cache/e2e/${String(p)} && go run ./cmd/server -addr 127.0.0.1 -port ${String(p)} -records .cache/e2e/${String(p)}/records -saves .cache/e2e/${String(p)}/saves`,
+      // The name shows instead of the address (N-18).
+      command: `rm -rf .cache/e2e/${String(p)} && go run ./cmd/server -name "Test server" -addr 127.0.0.1 -port ${String(p)} -records .cache/e2e/${String(p)}/records -saves .cache/e2e/${String(p)}/saves`,
       cwd: '..',
       port: p,
       reuseExistingServer: false,

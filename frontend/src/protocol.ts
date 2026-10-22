@@ -2,7 +2,7 @@
 // Only what the client uses so far; protocol.test.ts checks these types
 // against Go's golden file. Go sends a nil list as null.
 
-export const protocolVersion = 3;
+export const protocolVersion = 4;
 export const defaultPort = 4774;
 
 export interface Envelope {
@@ -29,6 +29,33 @@ export interface Welcome {
   seat: number;
   // create is set when this app may open a game on the server (N-17).
   create?: boolean;
+  // presence is set when the server relays live aiming and hover; the
+  // app sends none otherwise (15.35, ADR 016).
+  presence?: boolean;
+  // name is the server's name, shown instead of its address (N-18).
+  name?: string;
+}
+
+// Presence is what a player points at now (15.35, ADR 016): the card
+// they aim from, and the spot the arrow or pointer is over. Each one
+// replaces the sender's last; an empty one means nothing. The server
+// fills in seat.
+export interface Presence {
+  seat: number;
+  from?: Spot;
+  at?: Spot;
+  // point is the pointer on the board frame, 0 to 1, while over no spot.
+  point?: { x: number; y: number };
+}
+
+// Spot is one thing on the table; exactly one field is set. hand is
+// the sender's own hand slot, from 1, never the card (A-16).
+export interface Spot {
+  object?: number;
+  hand?: number;
+  player?: number;
+  deck?: number;
+  stack_id?: number;
 }
 
 export interface ProtocolError {
@@ -117,33 +144,76 @@ export interface Saved {
   save: string;
 }
 
-// wsURL turns what a player types ("192.168.1.5", "host:4774",
-// "[::1]:4774") into the server's WebSocket URL, or null.
-export function wsURL(address: string): string | null {
-  const a = address.trim();
+// Notice tells the player something the game screen does not show
+// (N-20): engine_updated, game_lost, game_idle.
+export interface Notice {
+  kind: string;
+  game?: string;
+  // reason of game_idle: 'empty' (nobody connected) or 'long' (24 hours).
+  reason?: string;
+}
+
+// lanName and ipv4 are hosts never behind an HTTPS proxy: a bare one
+// goes straight to plain ws:// (N-19).
+const lanName = /\.(local|lan|home|internal|home\.arpa)$/i;
+const ipv4 = /^[\d.]+$/;
+
+// wsURLs turns what a player types into the server's WebSocket URLs to
+// try in turn, or null (8.18, N-19):
+//   - "192.168.1.5", "host:4774", "[::1]:4774", "localhost", "pc.lan":
+//     ws:// on that port, 4774 by default;
+//   - "wss://games.example.com", "ws://host:5000", "https://…",
+//     "http://…": that scheme only; wss:// on 443 by default;
+//   - "games.example.com": wss:// on 443 first, for a server behind an
+//     HTTPS proxy (ADR 017), then ws:// on 4774.
+export function wsURLs(address: string): string[] | null {
+  let a = address.trim();
+  let secure: boolean | null = null; // null: try both
+  const scheme = /^(wss?|https?):\/\//i.exec(a);
+  if (scheme) {
+    secure = /^(wss|https):/i.test(a);
+    a = a.slice(scheme[0].length);
+    const tail = ['/ws/', '/ws', '/'].find((t) => a.endsWith(t));
+    if (tail) {
+      a = a.slice(0, -tail.length);
+    }
+  }
   const close = a.startsWith('[') ? a.indexOf(']') + 1 : 0; // IPv6 in brackets
   const colon = a.indexOf(':', close);
   const host = colon < 0 ? a : a.slice(0, colon);
-  const portText = colon < 0 ? String(defaultPort) : a.slice(colon + 1);
-  if (!/^(\[[0-9a-fA-F:.]+\]|[\w.-]+)$/.test(host) || !/^\d{1,5}$/.test(portText)) {
+  const portText = colon < 0 ? '' : a.slice(colon + 1);
+  if (!/^(\[[0-9a-fA-F:.]+\]|[\w.-]+)$/.test(host) || (colon >= 0 && !/^\d{1,5}$/.test(portText))) {
     return null;
   }
-  const port = Number(portText);
-  if (port < 1 || port > 65535) {
+  const port = portText ? Number(portText) : null;
+  if (port !== null && (port < 1 || port > 65535)) {
     return null;
   }
-  return `ws://${host}:${String(port)}/ws`;
+  const plain = `ws://${host}:${String(port ?? defaultPort)}/ws`;
+  const tls = port === null ? `wss://${host}/ws` : `wss://${host}:${String(port)}/ws`;
+  if (secure !== null) {
+    return [secure ? tls : plain];
+  }
+  const domain = port === null && host.includes('.') && !host.startsWith('[') && !ipv4.test(host) && !lanName.test(host);
+  return domain ? [tls, plain] : [plain];
 }
 
-// recordURL is where the server serves a finished game's record to one
-// of its players (RP-05).
-export function recordURL(address: string, game: string, token: string): string | null {
-  const ws = wsURL(address);
-  if (!ws) {
+// httpBases are the server's http(s) addresses for what a player typed,
+// in the order wsURLs tries them: http:// for ws://, https:// for
+// wss:// (15.99). null when it is not an address.
+export function httpBases(address: string): string[] | null {
+  return wsURLs(address)?.map((u) => u.replace(/^ws/, 'http').replace(/\/ws$/, '')) ?? null;
+}
+
+// recordURL is where the server at a WebSocket URL serves a finished
+// game's record to one of its players (RP-05): http:// for ws://,
+// https:// for wss://.
+export function recordURL(ws: string, game: string, token: string): string | null {
+  if (!/^wss?:\/\/.+\/ws$/.test(ws)) {
     return null;
   }
   const q = new URLSearchParams({ game, token });
-  return `${ws.replace(/^ws:/, 'http:').replace(/\/ws$/, '/record')}?${q.toString()}`;
+  return `${ws.replace(/^ws/, 'http').replace(/\/ws$/, '/record')}?${q.toString()}`;
 }
 
 // errorText is what the player reads for a server error.
@@ -185,6 +255,8 @@ export interface CardView {
   // souls: the soul value the card adds to its owner, on a soul in play
   // or a character; older servers send none (V-43).
   souls?: number;
+  // dice: the die numbers the card keeps, e.g. a stored roll (15.67).
+  dice?: number[];
 }
 
 // counted is how many counters a card carries, of any kind.
@@ -200,6 +272,18 @@ export interface MonsterStats {
   printed_hp: number;
   printed_dc: number;
   printed_atk: number;
+  sources?: StatSource[]; // what changes HP, DC and ATK now (V-41)
+}
+
+// StatSource is one source of a stat change (V-41). card is "" or absent
+// when the source is hidden; older servers send no sources.
+export interface StatSource {
+  stat: "hp" | "atk" | "dc" | "roll" | "attack_roll" | "attacked_dc";
+  source?: number;
+  card?: string;
+  amount: number;
+  lasts: "in_play" | "turn" | "next_roll";
+  when?: string; // a condition, e.g. "first attack roll"
 }
 
 export interface SlotView {
@@ -223,6 +307,11 @@ export interface PlayerView {
   loot_plays: number;
   attacks: number;
   purchases: number;
+  // The character's printed stats and what changes them (V-41); older
+  // servers send none.
+  printed_hp?: number;
+  printed_atk?: number;
+  sources?: StatSource[];
 }
 
 export interface Turn {
@@ -292,6 +381,10 @@ export interface StackItem {
   // while anyone may see them (15.22).
   source_card?: string;
   target_card?: string;
+  // sources and final: a thrown roll's changes and its result as it
+  // resolves, if they change it (15.94).
+  sources?: StatSource[];
+  final?: number;
 }
 
 export interface Prompt {
@@ -334,6 +427,39 @@ export interface GameView {
   // respond, the waiting player first (V-11).
   passed?: number[];
   responding?: number[];
+  // attack is the active player's attack while it lasts; buying a
+  // declared purchase (15.30). Older servers send neither.
+  attack?: AttackView;
+  buying?: boolean;
+  // first_roll is the first-player roll before turn 1: who still rolls,
+  // in seat order, and this round's dice so far (GS-06, 15.43).
+  first_roll?: FirstRoll;
+}
+
+// FirstRoll is the first-player roll in progress: the lowest goes
+// first; a tie among the lowest rolls again, with only those players.
+export interface FirstRoll {
+  // round counts from 1; each tie starts the next.
+  round: number;
+  players: number[];
+  rolls?: number[];
+}
+
+// AttackView is an attack in progress: its target once chosen, and
+// whether it was declared on the monster deck.
+export interface AttackView {
+  target?: number;
+  deck?: boolean;
+  odds?: OddsView; // once aimed (15.94)
+}
+
+// OddsView is the attacker's next roll against the target (15.94): its
+// DC, the die faces that hit, the ATK of a hit, and what changes them.
+export interface OddsView {
+  dc: number;
+  hits: number[];
+  atk: number;
+  sources?: StatSource[];
 }
 
 // OptionView is what one option of a choose prompt points at.
@@ -364,6 +490,14 @@ export interface Aim {
   reason?: string; // what it may target, for a wrong click (15.33)
 }
 
+// Block says why the intent of that kind, on object if a card, can't be
+// sent now (15.29).
+export interface Block {
+  kind: number;
+  object: number;
+  reason: string;
+}
+
 export interface Intent {
   player: number;
   kind: number;
@@ -384,8 +518,16 @@ export interface GameEvent {
   prev?: number;
   source?: number;
   stack_id?: number;
+  // dice: every die of a roll of several dice on dice_rolled; the first
+  // is amount (19.39).
+  dice?: number[];
+  // by: the player who dealt damage, plus 1; 0 or none for a monster
+  // or nobody (15.77). On a death: the killer (15.88).
+  by?: number;
   // item: the stack item that resolved, on stack_resolved (15.22).
   item?: StackItem;
+  // sources: what changed a resolved roll, on roll_resolved (15.94).
+  sources?: StatSource[];
 }
 
 export interface Vote {
@@ -396,6 +538,9 @@ export interface Vote {
 export interface Pause {
   away: number[];
   votes: Vote[] | null;
+  // grace is when a kick vote opens, Unix ms, after a server restart
+  // (N-20); absent: open now.
+  grace?: number;
 }
 
 // Update is the state for this client after a step (N-04).
@@ -405,9 +550,9 @@ export interface Update {
   view: GameView;
   allowed: Intent[] | null;
   aims?: Aim[]; // the first targets of allowed plays and uses (15.25)
+  blocked?: Block[]; // why other cards and turn actions can't be used (15.29)
   seats: Seat[] | null;
   deadline?: number; // Unix ms; the response timer
-  skip_all?: boolean;
   wait_turn?: boolean;
   pause?: Pause;
 }

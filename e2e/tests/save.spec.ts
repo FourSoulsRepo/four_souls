@@ -25,6 +25,7 @@ test('the host saves the game; everyone comes back and plays on', async ({ brows
   }
 
   // The host continues it later, from the host screen.
+  // Back from the Games list is the LAN screen, with its Host button.
   await gil.getByRole('button', { name: 'Back' }).click();
   await gil.getByRole('button', { name: 'Host a game' }).click();
   await gil.getByRole('button', { name: 'Continue a saved game' }).click();

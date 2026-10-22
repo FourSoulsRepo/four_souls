@@ -2,7 +2,9 @@ name: Release
 
 # A version tag (v1.2.3, or v1.2.3-test for a trial) builds every platform
 # with card images and makes a draft GitHub release; the owner checks it
-# and publishes it by hand.
+# and publishes it by hand. Each platform also gets a "for-poor" archive:
+# the same game without card images, so cards show as text. The server
+# has its own archives, one per platform.
 on:
   push:
     tags: ["v*"]
@@ -44,63 +46,59 @@ jobs:
           retention-days: 7
 
   build:
-    name: Build ${{ matrix.target.name }}
+    name: Build ${{ matrix.edition.prefix }}${{ matrix.target.name }}
     needs: notes
     strategy:
       fail-fast: false
       matrix:
+        edition:
+          - prefix: ""
+            images: true
+            tags: embed cardimages
+          - prefix: for-poor-
+            images: false
+            tags: embed
         target:
           - name: linux-amd64
             os: ubuntu-24.04
             platform: linux/amd64
             tags: webkit2_41
-            goos: linux
-            goarch: amd64
           - name: linux-arm64
             os: ubuntu-24.04-arm
             platform: linux/arm64
             tags: webkit2_41
-            goos: linux
-            goarch: arm64
           - name: windows-amd64
             os: windows-latest
             platform: windows/amd64
             tags: ""
-            goos: windows
-            goarch: amd64
           - name: windows-arm64
             os: windows-latest
             platform: windows/arm64
             tags: ""
-            goos: windows
-            goarch: arm64
           - name: macos-universal
             os: macos-latest
             platform: darwin/universal
             tags: ""
-            goos: darwin
-            goarch: arm64
     runs-on: ${{ matrix.target.os }}
     steps:
       - uses: actions/checkout@v5
       - name: Card images
         id: images
+        if: matrix.edition.images
         uses: ./.github/actions/card-images
         with:
           ssh-key: ${{ secrets.CARD_DB_DEPLOY_KEY }}
       - name: Require card images
-        if: steps.images.outputs.available != 'true'
+        if: matrix.edition.images && steps.images.outputs.available != 'true'
         shell: bash
         run: |
           echo "::error::A release needs the card images: set the CARD_DB_DEPLOY_KEY secret."
           exit 1
-      - name: Build app and server
+      - name: Build app
         uses: ./.github/actions/build
         with:
           platform: ${{ matrix.target.platform }}
-          tags: embed cardimages ${{ matrix.target.tags }}
-          goos: ${{ matrix.target.goos }}
-          goarch: ${{ matrix.target.goarch }}
+          tags: ${{ matrix.edition.tags }} ${{ matrix.target.tags }}
           version: ${{ needs.notes.outputs.version }}
           node-version: ${{ env.NODE_VERSION }}
           wails-version: ${{ env.WAILS_VERSION }}
@@ -108,7 +106,7 @@ jobs:
         id: pack
         shell: bash
         env:
-          NAME: four-souls-${{ needs.notes.outputs.version }}-${{ matrix.target.name }}
+          NAME: four-souls-${{ needs.notes.outputs.version }}-${{ matrix.edition.prefix }}${{ matrix.target.name }}
         run: |
           mkdir -p "dist/$NAME"
           cp -R build/bin/. "dist/$NAME/"
@@ -124,14 +122,35 @@ jobs:
           ls -la
       - uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.target.name }}
+          name: ${{ matrix.edition.prefix }}${{ matrix.target.name }}
+          path: dist/*
+          if-no-files-found: error
+          retention-days: 7
+
+  # Server archives apart from the app, without a version in their names,
+  # so releases/latest/download/<name> always works (8.17, N-19).
+  server:
+    name: Build servers
+    needs: notes
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.work
+          cache-dependency-path: "**/go.sum"
+      - name: Build and pack
+        run: release/server.sh "${{ needs.notes.outputs.version }}" dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: server
           path: dist/*
           if-no-files-found: error
           retention-days: 7
 
   release:
     name: Draft release
-    needs: [notes, build]
+    needs: [notes, build, server]
     runs-on: ubuntu-24.04
     permissions:
       contents: write

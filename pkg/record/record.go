@@ -31,6 +31,7 @@ type Header struct {
 	Engine   string    `json:"engine"`
 	Protocol int       `json:"protocol"`
 	Game     string    `json:"game"`
+	Server   string    `json:"server,omitempty"` // the server's name; none on an app's own host (N-18)
 	Started  time.Time `json:"started"`
 	Setup    Setup     `json:"setup"`
 	Seats    []Seat    `json:"seats"`
@@ -131,6 +132,19 @@ func (w *Writer) Close(end End) error {
 	err := w.write(end)
 	if cerr := w.gz.Close(); err == nil && cerr != nil {
 		err = fmt.Errorf("record: %w", cerr)
+	}
+	if cerr := w.f.Close(); err == nil && cerr != nil {
+		err = fmt.Errorf("record: %w", cerr)
+	}
+	return err
+}
+
+// Stop closes the file without an end line: the game goes on after a
+// server restart, and Append continues the record (N-20).
+func (w *Writer) Stop() error {
+	err := w.gz.Close()
+	if err != nil {
+		err = fmt.Errorf("record: %w", err)
 	}
 	if cerr := w.f.Close(); err == nil && cerr != nil {
 		err = fmt.Errorf("record: %w", cerr)
@@ -255,7 +269,8 @@ func Prune(dir string, days int, now time.Time) (int, error) {
 	return n, nil
 }
 
-// Resume marks where a saved game was loaded again (N-11).
+// Resume marks where a saved game was loaded again (N-11), or where a
+// game went on after a server restart (N-20).
 type Resume struct {
 	Kind    string    `json:"kind"` // "resume"
 	Resumed time.Time `json:"resumed"`

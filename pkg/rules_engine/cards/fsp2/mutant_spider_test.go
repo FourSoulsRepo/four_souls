@@ -1,6 +1,7 @@
 package fsp2
 
 import (
+	"slices"
 	"testing"
 
 	engine "github.com/FourSoulsRepo/rules_engine"
@@ -13,14 +14,22 @@ func TestMutantSpider(t *testing.T) {
 	if _, err := tb.G.Apply(attackIntent(tb)); err != nil {
 		t.Fatal(err)
 	}
+	var dice []int
 	settleAny2 := func() {
 		for range 20 {
 			w := tb.G.Prompt()
 			if w.Kind == engine.PromptThrow {
-				tb.ThrowPending()
+				for _, e := range tb.ThrowPending() {
+					if e.Kind == engine.EvDiceRolled {
+						dice = e.Dice
+					}
+				}
 				continue
 			}
 			if len(w.Options) == 4 {
+				if w.Text != "Which dice is the result?" {
+					t.Errorf("the choice says dice, not die (15.83): %q", w.Text)
+				}
 				tb.Choose("6")
 				return
 			}
@@ -33,6 +42,9 @@ func TestMutantSpider(t *testing.T) {
 	}
 	settleAny2()
 	tb.Settle()
+	if !slices.Equal(dice, []int{1, 2, 6, 3}) {
+		t.Errorf("the throw shows all 4 dice (19.39): %v", dice)
+	}
 	if top(tb, 0) == "trite" {
 		t.Error("the chosen 6 hits the trite (DC 5)")
 	}

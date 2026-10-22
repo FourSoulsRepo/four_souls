@@ -76,17 +76,16 @@ func LookMayBottom(d engine.DeckKind) engine.Effect {
 }
 
 // OneOnTop is "Look at the top 5 cards of the deck. Put 1 on top and the
-// rest on the bottom".
-// The player then picks which of the rest goes lowest, and so on.
+// rest on the bottom". The rest go in random order (Q-22).
 func OneOnTop(d engine.DeckKind) engine.Effect {
-	others := func(c *engine.Ctx, a []int) []engine.ObjectID {
+	return engine.Ask(func(c *engine.Ctx, a []int) {
 		top := c.G.DeckTop(d, 5)
-		if len(a) == 0 || a[0] < 0 {
-			return nil
+		c.G.LookAt(c.Controller, top...)
+		if a[0] < 0 || a[0] >= len(top) {
+			return
 		}
-		return append(top[:a[0]:a[0]], top[a[0]+1:]...)
-	}
-	questions := append([]engine.Question{{
+		c.G.ToBottomRandom(d, append(top[:a[0]:a[0]], top[a[0]+1:]...))
+	}, engine.Question{
 		Text: "Which card stays on top? The rest go to the bottom.",
 		Options: func(c *engine.Ctx, _ []int) []string {
 			var out []string
@@ -95,23 +94,7 @@ func OneOnTop(d engine.DeckKind) engine.Effect {
 			}
 			return out
 		},
-	}}, engine.OrderQuestions("Which card goes lowest?", "the rest in their order", 1, 4, nil, others)...)
-	return engine.Ask(func(c *engine.Ctx, a []int) {
-		c.G.LookAt(c.Controller, c.G.DeckTop(d, 5)...)
-		ToBottom(c.G, d, engine.Ordered(others(c, a[:1]), a[1:]))
-	}, questions...)
-}
-
-// ToBottom puts cards on the bottom of a deck so that order[0] is the
-// lowest. Cards in a slot leave it.
-func ToBottom(g *engine.Game, d engine.DeckKind, order []engine.ObjectID) {
-	for i := len(order) - 1; i >= 0; i-- {
-		if g.Object(order[i]).Zone.Kind == engine.ZoneInPlay {
-			g.SlotToDeckBottom(order[i])
-		} else {
-			g.DeckToBottom(d, order[i])
-		}
-	}
+	})
 }
 
 // May asks "yes or no" and runs the effects on yes: "you may …".
@@ -120,7 +103,7 @@ func May(question string, effects ...engine.Effect) engine.Effect {
 		if a[0] == 0 {
 			c.Do(effects...)
 		}
-	}, engine.Question{Text: question, Options: func(*engine.Ctx, []int) []string { return []string{"yes", "no"} }})
+	}, engine.Question{Text: question, Options: func(*engine.Ctx, []int) []string { return []string{"yes", "No"} }})
 }
 
 // PutBackInOrder is "look at the top n cards of the deck. Put them back in
@@ -141,7 +124,7 @@ const PutBackText = "Put the cards back in any order"
 func ChangeRollBy(amounts ...int) engine.Effect {
 	return engine.Ask(func(c *engine.Ctx, a []int) {
 		if it, ok := c.G.StackItemByID(c.Targets[0].StackID); ok {
-			c.G.SetRoll(it.ID, it.Roll+amounts[a[0]])
+			c.G.SetRoll(it.ID, it.Roll+amounts[a[0]], c.Source)
 		}
 	}, engine.Question{Text: "Change the roll by?", Options: func(*engine.Ctx, []int) []string {
 		var out []string
@@ -164,6 +147,7 @@ func EndOfTurnIf(cond func(g *engine.Game, p engine.PlayerID) bool) engine.Trigg
 var FirstAttackRollATK = engine.Static{
 	Stat:   engine.StatPlayerATK,
 	Amount: 1,
+	When:   "first attack roll",
 	Applies: func(g *engine.Game, self engine.ObjectID, p engine.PlayerID, _ engine.ObjectID) bool {
 		return g.Object(self).Controller == p && p == g.Turn.Active && g.Attack.On && g.Turn.AttackRolls == 1
 	},
@@ -482,7 +466,7 @@ var RollerDiscards = ForRoller(DiscardOne)
 func EachMonsterGains(stat engine.Stat) engine.Effect {
 	return engine.EffectFunc(func(c *engine.Ctx) {
 		for _, id := range MonstersInPlay(c.G) {
-			c.G.Boosts = append(c.G.Boosts, engine.Boost{Stat: stat, Player: engine.NoPlayer, Object: id, Amount: 1})
+			c.G.Boosts = append(c.G.Boosts, engine.Boost{Source: c.Source, Stat: stat, Player: engine.NoPlayer, Object: id, Amount: 1})
 		}
 	})
 }

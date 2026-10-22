@@ -4,7 +4,7 @@
 .effects {
   position: fixed;
   inset: 0;
-  z-index: 20;
+  z-index: var(--z-effects);
   pointer-events: none;
 }
 
@@ -24,8 +24,32 @@
   gap: 10px;
 }
 
-/* The thrown die starts above the screen (15.62). */
+/* The thrown die starts above the screen (15.62). Its cube turns in
+   3D (15.69); its shadow stays on the table under it. */
+.effect-throw-spot {
+  position: relative;
+  margin-bottom: 16px;
+}
+
+/* Several dice land side by side (19.39). */
+.effect-throw-row {
+  display: flex;
+  gap: 28px;
+}
+
 .effect-thrown {
+  opacity: 0;
+  perspective: 600px;
+}
+
+.effect-thrown-shadow {
+  position: absolute;
+  top: 86%;
+  left: -15%;
+  width: 130%;
+  height: 34%;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgb(0 0 0 / 85%), rgb(0 0 0 / 0%));
   opacity: 0;
 }
 
@@ -60,12 +84,18 @@
   color: #ff8a80;
 }
 
+/* A stolen coin (15.75): the panel's coin, centred on its path. */
+.effect-coin {
+  position: absolute;
+  translate: -50% -50%;
+}
+
 /* The attack lunge and its starburst (15.3) play in a layer of their
    own, above the table and the effects. */
 .effects-trail {
   position: fixed;
   inset: 0;
-  z-index: 21;
+  z-index: var(--z-trail);
   pointer-events: none;
 }
 
@@ -114,6 +144,12 @@
   border-radius: 50%;
   background: radial-gradient(circle, #fff 0 22%, #ffd23f 45%, #e8501a 75%, rgb(232 80 26 / 0%) 100%);
   box-shadow: 0 0 14px 6px rgb(255 160 40 / 55%);
+}
+
+/* A roll change's shot (15.76): cool blue, apart from damage. */
+.effect-shot-roll {
+  background: radial-gradient(circle, #fff 0 22%, #9fd8ff 45%, #3a7bd5 75%, rgb(58 123 213 / 0%) 100%);
+  box-shadow: 0 0 14px 6px rgb(110 180 255 / 55%);
 }
 
 /* A dying card's skull: bone white with an ink edge, over the card. */

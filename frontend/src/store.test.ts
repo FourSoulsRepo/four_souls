@@ -1,9 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { getSettings, saveSettings } from './bridge';
+import { checkSeat, getSettings, saveSettings } from './bridge';
 import { noHostSetup } from './hostSetup';
 import { messageOf, seatOf, useApp } from './store';
 
 vi.mock('./bridge', () => ({
+  checkSeat: vi.fn(),
   getSettings: vi.fn(),
   saveSettings: vi.fn(),
 }));
@@ -30,7 +31,7 @@ describe('screens', () => {
 
 describe('settings', () => {
   it('loads what Go has', async () => {
-    vi.mocked(getSettings).mockResolvedValue({ nickname: 'Ann', recent: [], animation: 'normal', fullscreen: false, theme: 'dark', mat: 'felt', dice: 'tear', rejoin: { address: '', token: '', game: '' }, host: noHostSetup });
+    vi.mocked(getSettings).mockResolvedValue({ nickname: 'Ann', recent: [], animation: 'normal', fullscreen: false, mat: 'basement', dice: 'tear', no_end_turn_ask: false, rejoin: { address: '', token: '', game: '', via: '' as const }, host: noHostSetup, lan_address: '' });
     await useApp.getState().loadSettings();
     expect(useApp.getState().settings.nickname).toBe('Ann');
   });
@@ -42,15 +43,15 @@ describe('settings', () => {
   });
 
   it('keeps what Go stored, not what was typed', async () => {
-    vi.mocked(saveSettings).mockResolvedValue({ nickname: 'Ann', recent: [], animation: 'normal', fullscreen: false, theme: 'dark', mat: 'felt', dice: 'tear', rejoin: { address: '', token: '', game: '' }, host: noHostSetup });
-    expect(await useApp.getState().saveSettings({ nickname: '  Ann  ', recent: [], animation: 'normal', fullscreen: false, theme: 'dark', mat: 'felt', dice: 'tear', rejoin: { address: '', token: '', game: '' }, host: noHostSetup })).toBe(true);
+    vi.mocked(saveSettings).mockResolvedValue({ nickname: 'Ann', recent: [], animation: 'normal', fullscreen: false, mat: 'basement', dice: 'tear', no_end_turn_ask: false, rejoin: { address: '', token: '', game: '', via: '' as const }, host: noHostSetup, lan_address: '' });
+    expect(await useApp.getState().saveSettings({ nickname: '  Ann  ', recent: [], animation: 'normal', fullscreen: false, mat: 'basement', dice: 'tear', no_end_turn_ask: false, rejoin: { address: '', token: '', game: '', via: '' as const }, host: noHostSetup, lan_address: '' })).toBe(true);
     expect(useApp.getState().settings.nickname).toBe('Ann');
   });
 
   it('shows the Go error and keeps the old settings', async () => {
-    useApp.setState({ settings: { nickname: 'Ann', recent: [], animation: 'normal', fullscreen: false, theme: 'dark', mat: 'felt', dice: 'tear', rejoin: { address: '', token: '', game: '' }, host: noHostSetup } });
+    useApp.setState({ settings: { nickname: 'Ann', recent: [], animation: 'normal', fullscreen: false, mat: 'basement', dice: 'tear', no_end_turn_ask: false, rejoin: { address: '', token: '', game: '', via: '' as const }, host: noHostSetup, lan_address: '' } });
     vi.mocked(saveSettings).mockRejectedValue('nickname must be 1–20 characters');
-    expect(await useApp.getState().saveSettings({ nickname: ' ', recent: [], animation: 'normal', fullscreen: false, theme: 'dark', mat: 'felt', dice: 'tear', rejoin: { address: '', token: '', game: '' }, host: noHostSetup })).toBe(false);
+    expect(await useApp.getState().saveSettings({ nickname: ' ', recent: [], animation: 'normal', fullscreen: false, mat: 'basement', dice: 'tear', no_end_turn_ask: false, rejoin: { address: '', token: '', game: '', via: '' as const }, host: noHostSetup, lan_address: '' })).toBe(false);
     expect(useApp.getState()).toMatchObject({
       settings: { nickname: 'Ann' },
       error: 'nickname must be 1–20 characters',
@@ -73,5 +74,92 @@ describe('seatOf', () => {
     expect(seatOf({ lobby: { ...initial.lobby, welcome, table } })).toBe(0);
     expect(seatOf({ lobby: { ...initial.lobby, welcome } })).toBe(1);
     expect(seatOf({ lobby: { ...initial.lobby, welcome: { ...welcome, seat: -1 } } })).toBe(0);
+  });
+});
+
+describe('recent servers (N-18)', () => {
+  const settings = { nickname: 'Ann', recent: [{ address: 'a', name: '' }, { address: 'b', name: '' }], animation: 'normal' as const, fullscreen: false, mat: 'basement', dice: 'tear', no_end_turn_ask: false, rejoin: { address: '', token: '', game: '', via: '' as const }, host: noHostSetup, lan_address: '' };
+
+  beforeEach(() => {
+    vi.mocked(saveSettings).mockImplementation((s) => Promise.resolve(s));
+    useApp.setState({ settings, address: 'b' });
+  });
+
+  it('a welcome names the server in Recent', async () => {
+    useApp.getState().receive({ type: 'welcome', data: { protocol: 4, app: '0.1.0', engine: '0.1.0', token: 't', seat: -1, name: 'Basement' } });
+    await vi.waitFor(() => {
+      expect(useApp.getState().settings.recent).toEqual([{ address: 'a', name: '' }, { address: 'b', name: 'Basement' }]);
+    });
+  });
+
+  it('a welcome without a change saves nothing', async () => {
+    useApp.getState().receive({ type: 'welcome', data: { protocol: 4, app: '0.1.0', engine: '0.1.0', token: 't', seat: -1 } });
+    await Promise.resolve();
+    expect(saveSettings).not.toHaveBeenCalled();
+  });
+
+  it('forgetServer drops the address', async () => {
+    await useApp.getState().forgetServer('a');
+    expect(useApp.getState().settings.recent).toEqual([{ address: 'b', name: '' }]);
+  });
+});
+
+describe('server notices (N-20)', () => {
+  it('a lost game goes back to the game list and shows the notice', () => {
+    useApp.setState({ screen: 'game', connected: true });
+    useApp.getState().receive({ type: 'notice', data: { kind: 'game_lost', game: 'g1' } });
+    expect(useApp.getState()).toMatchObject({ screen: 'join', game: null, notice: { kind: 'game_lost' } });
+    useApp.getState().endNotice();
+    expect(useApp.getState().notice).toBeNull();
+  });
+
+  it('a newer engine keeps the game on screen', () => {
+    useApp.setState({ screen: 'game', connected: true });
+    useApp.getState().receive({ type: 'notice', data: { kind: 'engine_updated' } });
+    expect(useApp.getState()).toMatchObject({ screen: 'game', notice: { kind: 'engine_updated' } });
+  });
+
+  it('restarting is remembered for the badge', () => {
+    useApp.getState().receive({ type: 'restarting' });
+    expect(useApp.getState().restarting).toBe(true);
+  });
+});
+
+describe('the saved seat (15.99)', () => {
+  const rejoin = { address: '192.168.1.5', token: 't0k3n', game: 'g1', via: 'lan' as const };
+  const settings = { nickname: 'Ann', recent: [], animation: 'normal' as const, fullscreen: false, mat: '', dice: 'tear', no_end_turn_ask: false, rejoin, host: noHostSetup, lan_address: '' };
+  const none = { address: '', token: '', game: '', via: '' };
+
+  beforeEach(() => {
+    vi.mocked(saveSettings).mockImplementation((s) => Promise.resolve(s));
+    useApp.setState({ settings });
+  });
+
+  it('a live seat is offered with its path; the server is asked by its http address', async () => {
+    vi.mocked(checkSeat).mockResolvedValue({ live: true, game: 'g1', host: 'Bo', started: true });
+    await useApp.getState().checkRejoin();
+    expect(checkSeat).toHaveBeenCalledWith(['http://192.168.1.5:4774'], 't0k3n');
+    expect(useApp.getState().rejoinable).toEqual({ host: 'Bo', via: 'lan' });
+  });
+
+  it('a dead seat is forgotten', async () => {
+    vi.mocked(checkSeat).mockResolvedValue({ live: false, game: '', host: '', started: false });
+    await useApp.getState().checkRejoin();
+    expect(useApp.getState().rejoinable).toBeNull();
+    expect(useApp.getState().settings.rejoin).toEqual(none);
+  });
+
+  it('no answer keeps the seat for later, without a button', async () => {
+    vi.mocked(checkSeat).mockRejectedValue(new Error('server: no answer'));
+    useApp.setState({ rejoinable: { host: 'Bo', via: 'lan' } });
+    await useApp.getState().checkRejoin();
+    expect(useApp.getState().rejoinable).toBeNull();
+    expect(saveSettings).not.toHaveBeenCalled();
+  });
+
+  it('nothing saved: nothing to ask', async () => {
+    useApp.setState({ settings: { ...settings, rejoin: { ...none, via: '' as const } } });
+    await useApp.getState().checkRejoin();
+    expect(checkSeat).not.toHaveBeenCalled();
   });
 });

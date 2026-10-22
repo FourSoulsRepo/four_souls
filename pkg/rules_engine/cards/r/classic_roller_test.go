@@ -1,6 +1,7 @@
 package r
 
 import (
+	"slices"
 	"testing"
 
 	engine "github.com/FourSoulsRepo/rules_engine"
@@ -20,7 +21,11 @@ func TestClassicRoller(t *testing.T) {
 	tb.Pass(2)
 	tb.Choose("leech")
 	tb.ThrowPending() // a 1: the attack roll waits
-	tb.Activate(0, "classic_roller", 0, "roll of 1", "player 3 (samson)", "6")
+	ev := tb.Activate(0, "classic_roller", 0, "roll of 1", "player 3 (samson)", "6")
+	// The reroll throws both dice at once (19.39).
+	if i := slices.IndexFunc(ev, func(e engine.Event) bool { return e.Kind == engine.EvDiceRolled }); i < 0 || !slices.Equal(ev[i].Dice, []int{6, 2}) {
+		t.Errorf("the reroll shows dice 6 and 2: %+v", ev)
+	}
 	if top(tb, 0) == "leech" {
 		t.Error("Samson picks the 6: a hit kills the leech")
 	}

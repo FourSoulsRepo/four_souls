@@ -47,9 +47,13 @@ Use options 1 and 5.
    6. Last an `end` line: finished or not, winners.
    7. A saved game loaded again adds a gzip part with a `resume` line (N-11).
    8. The setup also says `deck_ratios` when the ratios built the decks (GS-07).
+   9. Presence messages are never recorded (ADR 016).
+   10. The header names the server (`server`); left out on an app's own host (N-18).
+   11. A game kept over a server restart adds a `resume` part too (ADR 019).
 3. Writing
    1. Each line is flushed: a crash leaves a readable record without `end`.
    2. A server that stops writes `end` with finished false (RP-08).
+   3. A game kept over a restart gets no `end`; it goes on (ADR 019).
 4. Server
    1. Records go to the configured folder; a hosted game uses the user's config folder.
    2. Retention: 30 days on a dedicated server, forever when hosted; 0 keeps them (RP-07).
@@ -58,7 +62,7 @@ Use options 1 and 5.
 5. Replay
    1. Rebuild the engine setup from the header and the set codes.
    2. Apply the steps' intents; every checksum must match (`engine.Replay`).
-   3. Records of engines before 0.2.0 cannot replay (`engine.CanReplay`, ADR 014).
+   3. Records of engines before 0.3.0 cannot replay (`engine.CanReplay`, ADR 014).
 
 ## Consequences
 

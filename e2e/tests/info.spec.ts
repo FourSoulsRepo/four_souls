@@ -70,7 +70,7 @@ test('the turn badge, what is left, and hiding the history', async ({ browser })
   if (!other) {
     throw new Error('no other page');
   }
-  await expect(other.getByLabel('Left this turn')).toHaveText(/Loot \d+ · Attacks \d+ · Buys \d+/);
+  await expect(other.getByLabel('Left this turn')).toHaveText(/Loot \d+ · Attacks \d+ · Shop \d+/);
   await expect(other.getByLabel(/^\d+ left$/)).toHaveCount(0);
 
   // The full history is closed; the strip opens it, Hide closes it.
@@ -194,7 +194,7 @@ test('the history strip: icons, badges, and a hover with card and owner (15.22)'
       },
       { id: 103, kind: 4, controller: me, source: 0, amount: 2, attack: true, target: { player: other, is_player: true }, ability: none, roll_for: none },
     ];
-    const history = items.map((item, i) => ({ key: i + 1, turn, icon: '✦', text: '', ...(item.card ? { card: item.card } : {}), item }));
+    const history = items.map((item, i) => ({ key: i + 1, turn, icon: '✦', text: '', ...(item.card ? { card: item.card } : {}), item, headline: true }));
     store.setState({ history });
   });
 
@@ -269,6 +269,7 @@ test('damage a player takes names its card in the history strip (15.47)', async 
         ability: none,
         roll_for: none,
       },
+      headline: true,
     }));
     store.setState({ history });
   });
@@ -330,10 +331,257 @@ test('a changed roll shows the die and the result in the history (19.1)', async 
   await active.mouse.move(1000, 420);
   await active.getByRole('button', { name: 'History', exact: true }).click();
   const history = active.getByRole('complementary', { name: 'History', exact: true });
-  await expect(history).toContainText('attack roll (rolled 6');
+  await expect(history).toContainText(/Attack: \S+ rolls 6/);
   await shot(active, 'history-roll-changed');
 
   await expect(icon).toHaveAttribute('aria-label', /rolls 4 against /);
   await expect(icon.locator('.die')).toHaveAttribute('aria-label', 'Rolled 4');
-  await expect(history).toContainText('Roll — attack roll (rolled 6 → 4)');
+  await expect(history).toContainText(/Attack: \S+ rolls 6 → 4 against /);
+});
+
+test('the history names every play: a buy, an attack and a kill (15.88)', async ({ browser }) => {
+  const names = ['Lev', 'Mia'];
+  const pages = await startGame(browser, names, { url: fast() });
+  const active = await activePage(pages, click);
+  const activeName = names[pages.indexOf(active)] ?? '';
+  const other = pages.find((p) => p !== active) ?? active;
+  const turn = await turnNumber(active);
+  // A real purchase: with the starting cents it most likely fails, which
+  // the history names too (15.46).
+  await active.keyboard.press('b');
+  await settle(pages, click, async () => (await canEndTurn(active)) || (await turnNumber(active)) !== turn || (await gameOver(active)));
+  for (const page of pages) {
+    await page.getByRole('button', { name: 'History', exact: true }).click();
+  }
+  const history = (p: typeof active) => p.getByRole('complementary', { name: 'History', exact: true });
+  await expect(history(active)).toContainText('You declare a purchase');
+  await expect(history(active)).toContainText(/You (buy \S|can't buy: the price is \d+¢)/);
+  await expect(history(other)).toContainText(`${activeName} declares a purchase`);
+  await expect(history(other)).toContainText(new RegExp(`${activeName} (buys \\S|can't buy)`));
+
+  // A kill needs lucky dice; its events come as the engine sends them.
+  await active.evaluate(() => {
+    interface Store {
+      getState: () => {
+        game: { view: { turn: { active: number }; monsters: { top?: { id: number; card: string; stats?: unknown } }[] } } | null;
+        receive: (env: unknown) => void;
+      };
+    }
+    const store = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store;
+    const s = store.getState();
+    const game = structuredClone(s.game);
+    const monster = game?.view.monsters.find((m) => m.top?.stats)?.top;
+    if (!game || !monster) {
+      throw new Error('no game');
+    }
+    const p = game.view.turn.active;
+    s.receive({
+      type: 'update',
+      data: {
+        ...game,
+        step: 900,
+        events: [
+          { kind: 'attack_declared', player: p },
+          { kind: 'attack_target', player: p, object: monster.id, card: monster.card },
+          { kind: 'died', player: -1, object: 901, card: monster.card, prev: monster.id, by: p + 1 },
+          { kind: 'gained_cents', player: p, amount: 3 },
+        ],
+      },
+    });
+  });
+  await expect(history(active)).toContainText('You declare an attack');
+  const kill = history(active).getByText(/^You kill \S/);
+  await expect(kill).toBeVisible();
+  await expect(history(active)).toContainText(/You attack \S/);
+  await expect(history(active)).toContainText('You gain 3¢');
+  await shot(active, 'history-every-play');
+  await shot(other, 'history-every-play-other');
+  // The line zooms the dead monster.
+  await kill.hover();
+  await expect(active.getByTestId('card-zoom').locator('.card.size-zoom')).toBeVisible();
+  await shot(active, 'history-every-play-zoom');
+});
+
+test('a buy and a kill each add one tile to the history strip (15.89)', async ({ browser }) => {
+  const pages = await startGame(browser, ['Nia', 'Oto'], { url: fast() });
+  const active = await activePage(pages, click);
+  const strip = active.getByRole('complementary', { name: 'History strip' });
+  const tiles = strip.locator('.strip-item');
+  const before = await tiles.count();
+  // A kill resolves a death stack item first, then the monster dies; a
+  // buy comes with its gain. Each is one tile.
+  await active.evaluate(() => {
+    interface Store {
+      getState: () => {
+        game: {
+          view: {
+            turn: { active: number };
+            monsters: { top?: { id: number; card: string; stats?: unknown } }[];
+            shop: { top?: { id: number; card: string } }[];
+          };
+        } | null;
+        receive: (env: unknown) => void;
+      };
+    }
+    const store = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store;
+    const s = store.getState();
+    const game = structuredClone(s.game);
+    const monster = game?.view.monsters.find((m) => m.top?.stats)?.top;
+    const item = game?.view.shop.find((m) => m.top)?.top;
+    if (!game || !monster || !item) {
+      throw new Error('no game');
+    }
+    const p = game.view.turn.active;
+    const none = { card: '', index: 0 };
+    const death = { id: 950, kind: 5, controller: -1, source: 0, text: 'death', target: { player: -1, object: monster.id }, ability: none, roll_for: none };
+    s.receive({
+      type: 'update',
+      data: {
+        ...game,
+        step: 900,
+        events: [
+          { kind: 'stack_resolved', player: -1, text: 'death', stack_id: 950, item: death },
+          { kind: 'died', player: -1, object: 951, card: monster.card, prev: monster.id, by: p + 1 },
+          { kind: 'gained_cents', player: p, amount: 3 },
+          { kind: 'purchase_declared', player: p },
+          { kind: 'purchased', player: p, object: 952, card: item.card },
+          { kind: 'gained_item', player: p, object: 952, card: item.card },
+        ],
+      },
+    });
+  });
+  await expect(tiles).toHaveCount(before + 2);
+  const buy = tiles.nth(0);
+  const kill = tiles.nth(1);
+  await expect(buy).toHaveAttribute('aria-label', /^You buy \S/);
+  await expect(buy.locator('.strip-buy')).toBeAttached();
+  await expect(buy.locator('.card')).toBeAttached();
+  await expect(kill).toHaveAttribute('aria-label', /^You kill \S/);
+  await expect(kill.locator('.strip-kill')).toBeAttached();
+  await expect(kill.locator('.card')).toBeAttached();
+  await shot(active, 'history-strip-buy-kill');
+  // Hover: the dead monster large, with the line under it.
+  await kill.hover();
+  const zoom = active.getByTestId('card-zoom');
+  await expect(zoom.locator('.card.size-zoom')).toBeVisible();
+  await expect(zoom.locator('.card-zoom-line')).toHaveText(/^You kill \S/);
+  await shot(active, 'history-strip-kill-hover');
+});
+
+test('a damage line in the full history names who and whom (19.52)', async ({ browser }) => {
+  const names = ['Pia', 'Quo'];
+  const pages = await startGame(browser, names, { url: fast() });
+  const active = await activePage(pages, click);
+  const activeName = names[pages.indexOf(active)] ?? '';
+  const otherName = names.find((x) => x !== activeName) ?? '';
+  // Damage, a death and its soul step resolve as the engine sends them.
+  await active.evaluate(() => {
+    interface Store {
+      getState: () => {
+        game: { view: { turn: { active: number }; monsters: { top?: { id: number; card: string; stats?: unknown } }[] } } | null;
+        receive: (env: unknown) => void;
+      };
+    }
+    const store = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store;
+    const s = store.getState();
+    const game = structuredClone(s.game);
+    const monster = game?.view.monsters.find((m) => m.top?.stats)?.top;
+    if (!game || !monster) {
+      throw new Error('no game');
+    }
+    const p = game.view.turn.active;
+    const none = { card: '', index: 0 };
+    const base = { controller: p, source: 0, ability: none, roll_for: none };
+    const damage = { ...base, id: 960, kind: 4, amount: 1, label: 'damage', target: { player: 1 - p, is_player: true } };
+    const hit = { ...base, id: 961, kind: 4, amount: 2, label: 'damage', target_card: monster.card, target: { player: -1, object: monster.id } };
+    s.receive({
+      type: 'update',
+      data: {
+        ...game,
+        step: 900,
+        events: [
+          { kind: 'stack_resolved', player: p, text: 'damage', stack_id: 960, item: damage },
+          { kind: 'stack_resolved', player: p, text: 'damage', stack_id: 961, item: hit },
+        ],
+      },
+    });
+  });
+  await active.getByRole('button', { name: 'History', exact: true }).click();
+  const history = active.getByRole('complementary', { name: 'History', exact: true });
+  await expect(history).toContainText(`${activeName} deals 1 damage to ${otherName}`);
+  await expect(history).toContainText(new RegExp(`${activeName} deals 2 damage to \\S`));
+  await expect(history).not.toContainText('Roll — damage');
+  await shot(active, 'history-damage-lines');
+});
+
+test('a strip tile shows what the play did: target, damage, kill and rewards (15.90)', async ({ browser }) => {
+  const pages = await startGame(browser, ['Ray', 'Sue'], { url: fast() });
+  const active = await activePage(pages, click);
+  // Bomb! at a monster, its damage, then the death and the rewards, as
+  // the engine sends them: each resolution in its own update.
+  await active.evaluate(() => {
+    interface Store {
+      getState: () => {
+        game: { view: { turn: { active: number }; monsters: { top?: { id: number; card: string; stats?: unknown } }[] } } | null;
+        receive: (env: unknown) => void;
+      };
+    }
+    const store = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store;
+    const game = structuredClone(store.getState().game);
+    const monster = game?.view.monsters.find((m) => m.top?.stats)?.top;
+    if (!game || !monster) {
+      throw new Error('no game');
+    }
+    const p = game.view.turn.active;
+    const none = { card: '', index: 0 };
+    const target = { player: -1, object: monster.id };
+    const bomb = { id: 970, kind: 0, controller: p, source: 0, card: 'bomb', target, target_card: monster.card, ability: { card: 'bomb', index: 0 }, roll_for: none };
+    const hit = { id: 971, kind: 4, controller: p, source: 0, source_card: 'bomb', amount: 1, label: 'damage', target, target_card: monster.card, ability: none, roll_for: none };
+    const death = { id: 972, kind: 5, controller: -1, source: 0, label: 'death', target, ability: none, roll_for: none };
+    const updates = [
+      [{ kind: 'stack_resolved', player: p, card: 'bomb', stack_id: 970, item: bomb }],
+      [{ kind: 'stack_resolved', player: p, text: 'damage', stack_id: 971, item: hit }],
+      [
+        { kind: 'stack_resolved', player: -1, text: 'death', stack_id: 972, item: death },
+        { kind: 'died', player: -1, object: 973, card: monster.card, prev: monster.id, by: p + 1 },
+        { kind: 'rewards_gained', player: p, object: 973, card: monster.card },
+        { kind: 'gained_cents', player: p, amount: 3 },
+      ],
+    ];
+    for (const [i, events] of updates.entries()) {
+      store.getState().receive({ type: 'update', data: { ...game, step: 900 + i, events } });
+    }
+  });
+  const strip = active.getByRole('complementary', { name: 'History strip' });
+  const kill = strip.locator('.strip-item').nth(0);
+  const damage = strip.locator('.strip-item').nth(1);
+  const play = strip.locator('.strip-item').nth(2);
+  await expect(kill).toHaveAttribute('aria-label', /^You kill \S/);
+  const zoom = active.getByTestId('card-zoom');
+  const results = zoom.getByRole('list', { name: 'What it did' }).getByRole('listitem');
+
+  // The kill: the killer large, then the monster with its skull and the cents.
+  await kill.hover();
+  await expect(results).toHaveCount(2);
+  await expect(results.nth(0)).toHaveAttribute('aria-label', /dies$/);
+  await expect(results.nth(0).locator('.result-skull')).toBeAttached();
+  await expect(results.nth(0).locator('.card')).toBeAttached();
+  await expect(results.nth(1)).toHaveAttribute('aria-label', '+3¢');
+  await expect(zoom.locator('.card-zoom-line')).toHaveText(/^You kill \S/);
+  await shot(active, 'history-popout-kill');
+
+  // The damage: Bomb! large, the monster with a starburst and the number.
+  await damage.hover();
+  await expect(zoom.locator('.card.size-zoom')).toHaveAttribute('aria-label', /^Bomb/);
+  await expect(results).toHaveCount(1);
+  await expect(results.nth(0)).toHaveAttribute('aria-label', /: 1 damage$/);
+  await expect(results.nth(0).locator('.result-burst')).toHaveText('−1');
+  await shot(active, 'history-popout-damage');
+
+  // The play: Bomb! large with its ability, an arrow to its target.
+  await play.hover();
+  await expect(zoom.locator('.card-zoom-ability')).toBeVisible();
+  await expect(results).toHaveCount(1);
+  await expect(results.nth(0).locator('.card')).toBeAttached();
+  await shot(active, 'history-popout-play');
 });

@@ -2,6 +2,7 @@
 // first their events as short effects, then the update's view is shown.
 // Playback only changes what is drawn; the game state is the server's.
 import { kindOf, type CardInfo, type Kind } from './cards';
+import { firstPlayerText, tieText } from './dice';
 import type { GameEvent, GameView, Update } from './protocol';
 
 export type Speed = 'normal' | 'fast' | 'slow' | 'off';
@@ -9,21 +10,35 @@ export type Speed = 'normal' | 'fast' | 'slow' | 'off';
 // An effect names the places it plays at by zone (data-zone on the
 // table), most precise first; the first one on screen is used.
 export type Effect =
-  | { kind: 'fly'; from: string[]; to: string[]; card?: string; back: Kind }
+  // fly: middle starts the card large in the middle, where the reveal
+  // before it held it (15.73). leaves is the source of the stack item
+  // the card leaves; it hides until the next view (19.41).
+  | { kind: 'fly'; from: string[]; to: string[]; card?: string; back: Kind; middle?: boolean; leaves?: number }
   | { kind: 'popup'; at: string[]; text: string; tone: 'good' | 'bad' }
   // dice: thrown for a fresh roll or a reroll (15.62); a changed roll
-  // spins in.
-  | { kind: 'dice'; value: number; label: string; player: number; thrown?: boolean }
-  | { kind: 'banner'; text: string }
-  | { kind: 'reveal'; card: string }
+  // spins in with its old value, a shot comes from the card that
+  // changes it, and it turns to the new one (15.76). dice: every die of
+  // a roll of several dice, thrown together (19.39).
+  | { kind: 'dice'; value: number; label: string; player: number; thrown?: boolean; old?: number; source?: string[]; dice?: number[] }
+  // banner: long stays twice as long, for the start of the game (15.43).
+  | { kind: 'banner'; text: string; long?: boolean }
+  // reveal: the card grows out of its deck to the middle; it holds
+  // there when the next effect moves it, else shrinks back (15.73).
+  | { kind: 'reveal'; card: string; deck: string[]; hold?: boolean }
+  // played: another player's loot card rises from their hand, shows
+  // large for a moment and goes on the stack (15.31, H-10, 15.74).
+  | { kind: 'played'; card: string; who: string; from: string[]; to: string[] }
   // place: a card flies into a slot and stays there until the view is
   // shown, so later effects play over it (19.3).
-  | { kind: 'place'; from: string[]; to: string[]; card: string; back: Kind }
+  | { kind: 'place'; from: string[]; to: string[]; card: string; back: Kind; middle?: boolean }
   // lunge: the attacker's card hits the target and returns (15.3, V-12).
   | { kind: 'lunge'; from: string[]; to: string[]; amount: number }
   // hits: other damage flies from its source and bursts on every
   // damaged card at once (15.37, T-15, T-24).
   | { kind: 'hits'; hits: Hit[] }
+  // steal: cents leave the victim as a coin that flies to the thief
+  // (15.75).
+  | { kind: 'steal'; from: string[]; to: string[]; amount: number }
   // deaths: a big skull on each dying card before it leaves (T-26).
   | { kind: 'deaths'; at: string[][] };
 
@@ -44,6 +59,10 @@ interface Context {
   slot: (object: number) => string | undefined;
   // seen tells if the update before revealed the card (19.4).
   seen: (card: string) => boolean;
+  // roll is the value of a roll on the stack shown now, if any (15.76).
+  roll: (stack: number) => number | undefined;
+  // you is the viewer's seat; -1 for none.
+  you: number;
 }
 
 function playerZones(p: number): string[] {
@@ -68,6 +87,26 @@ function hitZones(e: GameEvent, ctx: Context): string[] {
   return c === undefined ? playerZones(e.player) : [`obj-${String(c)}`, ...playerZones(e.player)];
 }
 
+// damageFrom is where damage outside a fight flies from (15.37, 15.77):
+// its source card, the large played card or its stack row, then the
+// player who dealt it (by, plus 1): their character, else their area.
+function damageFrom(e: GameEvent, ctx: Context): string[] {
+  const out: string[] = [];
+  if (e.source) {
+    const s = String(e.source);
+    out.push(`obj-${s}`, `played-${s}`, `stack-src-${s}`);
+  }
+  if (e.by) {
+    const p = e.by - 1;
+    const c = ctx.character(p);
+    if (c !== undefined) {
+      out.push(`obj-${String(c)}`);
+    }
+    out.push(...playerZones(p));
+  }
+  return out;
+}
+
 // slotZone is the zone of the monster or shop slot whose top card is
 // object, as the board names it.
 export function slotZone(view: GameView, object: number): string | undefined {
@@ -87,6 +126,9 @@ export function slotZone(view: GameView, object: number): string | undefined {
 // effect still change the table when the view is shown.
 export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
   const out: Effect[] = [];
+  // rolls: values the update's own events gave rolls on the stack.
+  const rolls = new Map<number, number>();
+  const rollOf = (stack: number | undefined) => (stack ? (rolls.get(stack) ?? ctx.roll(stack)) : undefined);
   for (const e of events) {
     const amount = e.amount ?? 0;
     switch (e.kind) {
@@ -100,6 +142,13 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
         });
         break;
       case 'discarded': {
+        // A loot card leaves the stack from its large card under the
+        // stack, else its stack row (15.74).
+        if (e.text === 'stack' && e.prev) {
+          const from = [`played-${String(e.prev)}`, `stack-src-${String(e.prev)}`, `obj-${String(e.prev)}`, 'deck-loot'];
+          out.push({ kind: 'fly', from, to: ['discard-loot'], card: e.card, back: 'loot', leaves: e.prev });
+          break;
+        }
         const kind = e.card ? kindOf(ctx.card(e.card)?.type ?? '') : 'loot';
         const from = [`obj-${String(e.prev ?? e.object ?? 0)}`];
         if (e.player !== noPlayer) {
@@ -110,11 +159,36 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
         break;
       }
       case 'dice_rolled':
-        out.push({ kind: 'dice', value: amount, label: e.text ?? '', player: e.player, thrown: true });
+        if (e.stack_id) {
+          rolls.set(e.stack_id, amount);
+        }
+        out.push({
+          kind: 'dice',
+          value: amount,
+          label: e.text ?? '',
+          player: e.player,
+          thrown: true,
+          ...(e.dice && e.dice.length > 1 ? { dice: e.dice } : {}),
+        });
         break;
-      case 'roll_changed':
-        out.push({ kind: 'dice', value: amount, label: e.text ?? '', player: e.player });
+      case 'roll_changed': {
+        // "Ann's roll: 3 → 4", from the card that changed it (15.76).
+        const old = rollOf(e.stack_id);
+        const label = `${ctx.name(e.player)}'s roll: ${old === undefined ? '' : `${String(old)} → `}${String(amount)}`;
+        const source = e.source ? [`obj-${String(e.source)}`, `stack-src-${String(e.source)}`] : undefined;
+        if (e.stack_id) {
+          rolls.set(e.stack_id, amount);
+        }
+        out.push({
+          kind: 'dice',
+          value: amount,
+          label,
+          player: e.player,
+          ...(old === undefined ? {} : { old }),
+          ...(source ? { source } : {}),
+        });
         break;
+      }
       case 'gained_cents':
         out.push({ kind: 'popup', at: playerZones(e.player), text: `+${String(amount)}¢`, tone: 'good' });
         break;
@@ -123,14 +197,12 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
         break;
       case 'damaged': {
         // Damage shows when it lands. Attack damage: its source lunges
-        // at the target. Other damage flies from its source: a card on
-        // the table, else its stack row.
+        // at the target. Other damage flies from its source (damageFrom).
         if (e.text === 'combat' && e.source) {
           out.push({ kind: 'lunge', from: [`obj-${String(e.source)}`], to: hitZones(e, ctx), amount });
           break;
         }
-        const from = e.source ? [`obj-${String(e.source)}`, `stack-src-${String(e.source)}`] : [];
-        const hit = { from, to: hitZones(e, ctx), amount };
+        const hit = { from: damageFrom(e, ctx), to: hitZones(e, ctx), amount };
         const last = out.at(-1);
         if (last?.kind === 'hits') {
           last.hits.push(hit);
@@ -153,36 +225,93 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
       case 'prevented':
         out.push({ kind: 'popup', at: targetZones(e), text: 'Prevented', tone: 'good' });
         break;
-      case 'stole':
-        out.push({ kind: 'popup', at: playerZones(e.player), text: `+${String(amount)}¢ stolen`, tone: 'good' });
+      case 'stole': {
+        // The text names the player robbed (15.75).
+        const victim = Number(e.text ?? '');
+        if (e.text && Number.isInteger(victim) && victim >= 0) {
+          out.push({ kind: 'steal', from: playerZones(victim), to: playerZones(e.player), amount });
+        } else {
+          out.push({ kind: 'popup', at: playerZones(e.player), text: `+${String(amount)}¢ stolen`, tone: 'good' });
+        }
         break;
+      }
       case 'card_revealed': {
         if (!e.card) {
           break;
         }
         // A deck attack reveals its card, then puts it in a slot in the
         // next update: it shows large once (19.4).
+        const kind = kindOf(ctx.card(e.card)?.type ?? '');
         if (!ctx.seen(e.card)) {
-          out.push({ kind: 'reveal', card: e.card });
+          out.push({ kind: 'reveal', card: e.card, deck: [`deck-${kind}`] });
         }
         // A card put into a slot, e.g. a deck attack's monster, is there
         // before the attack roll that follows it.
         const slot = e.object ? ctx.slot(e.object) : undefined;
         if (slot) {
-          const kind = kindOf(ctx.card(e.card)?.type ?? '');
           out.push({ kind: 'place', from: [`deck-${kind}`], to: [slot], card: e.card, back: kind });
         }
         break;
       }
+      case 'loot_played':
+        // The player's own play needs no reminder (15.31).
+        if (e.card && e.player !== ctx.you) {
+          out.push({ kind: 'played', card: e.card, who: ctx.name(e.player), from: handZones(e.player), to: ['stack'] });
+        }
+        break;
       case 'turn_started':
         out.push({ kind: 'banner', text: `${ctx.name(e.player)}'s turn` });
         break;
       case 'game_won':
         out.push({ kind: 'banner', text: `${ctx.name(e.player)} wins!` });
         break;
+      // After the first-player dice: a tie, or who goes first (15.43).
+      case 'first_roll_tied':
+        out.push({ kind: 'banner', text: tieText(e, ctx.you, ctx.name), long: true });
+        break;
+      case 'first_player':
+        out.push({ kind: 'banner', text: firstPlayerText(e, ctx.you, ctx.name, (ref) => ctx.card(ref)?.name ?? ref), long: true });
+        break;
     }
   }
+  holdReveals(out);
+  marksFirst(out);
   return out;
+}
+
+// marksFirst lets a loot card that leaves the stack wait for the damage
+// its own effect dealt in the same update, and the deaths after it: the
+// shots fly from the card, then the card flies to its discard (15.51,
+// 15.52).
+function marksFirst(effects: Effect[]): void {
+  for (let i = effects.length - 1; i >= 0; i--) {
+    const e = effects.at(i);
+    if (e?.kind !== 'fly' || e.leaves === undefined) {
+      continue;
+    }
+    const from = `played-${String(e.leaves)}`;
+    let last = effects.findLastIndex((x, j) => j > i && x.kind === 'hits' && x.hits.some((h) => h.from.includes(from)));
+    if (last < 0) {
+      continue;
+    }
+    while (effects.at(last + 1)?.kind === 'deaths') {
+      last++;
+    }
+    effects.splice(last, 0, ...effects.splice(i, 1));
+  }
+}
+
+// holdReveals joins a reveal to a move of its card right after it: the
+// reveal holds the card large in the middle, and the move starts there
+// (15.73). The card is seen on one path, from its deck to its place.
+function holdReveals(effects: Effect[]): void {
+  effects.forEach((e, i) => {
+    const next = effects.at(i + 1);
+    if (e.kind === 'reveal' && (next?.kind === 'fly' || next?.kind === 'place') && next.card === e.card) {
+      e.hold = true;
+      next.middle = true;
+    }
+  });
 }
 
 function speedScale(speed: Speed): number {
@@ -269,19 +398,28 @@ export function createPlayback(deps: Deps): Playback {
     void drain();
   }
 
+  async function playEffects(u: Update): Promise<void> {
+    const effects = deps.effects(u);
+    const scale = scaleFor(deps.speed(), queue.length, effects.length);
+    if (scale > 0) {
+      for (const e of effects) {
+        await deps.run(e, scale);
+      }
+    }
+  }
+
   async function play(): Promise<void> {
     for (let u = queue.shift(); u; u = queue.shift()) {
       deps.begin();
-      // The first update has no table to play on yet.
-      if (deps.shown() !== null) {
-        const effects = deps.effects(u);
-        const scale = scaleFor(deps.speed(), queue.length, effects.length);
-        if (scale > 0) {
-          for (const e of effects) {
-            await deps.run(e, scale);
-          }
-        }
+      // The first update has no table to play on yet: it is drawn
+      // first, then its effects play on it. Only a game start brings
+      // events then: who goes first without a roll (Cain, 15.43).
+      if (deps.shown() === null) {
+        deps.show(u);
+        await playEffects(u);
+        continue;
       }
+      await playEffects(u);
       deps.show(u);
     }
   }

@@ -17,7 +17,7 @@ var twoOfClubs = engine.CardDef{
 			Costs:   []engine.Cost{engine.Tap()},
 			Targets: []engine.TargetSpec{engine.Choose(engine.TargetPlayer)},
 			Effects: []engine.Effect{engine.EffectFunc(func(c *engine.Ctx) {
-				c.G.Boosts = append(c.G.Boosts, engine.Boost{Stat: engine.StatLootDouble, Player: c.Targets[0].Player, Amount: 1})
+				c.G.Boosts = append(c.G.Boosts, engine.Boost{Source: c.Source, Stat: engine.StatLootDouble, Player: c.Targets[0].Player, Amount: 1})
 			})},
 		},
 	},

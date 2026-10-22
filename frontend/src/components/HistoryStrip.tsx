@@ -1,8 +1,12 @@
-import type { Entry } from '../history';
+import type { PointerEvent } from 'react';
+import { stripEntries, type Entry } from '../history';
 import type { GameView } from '../protocol';
 import { stackBadge, stackCard, stackIcon, stackLine, type Names } from '../stack';
-import { useApp } from '../store';
-import { ItemIcon, itemZoom } from './StackPanel';
+import { useApp, type Zoom } from '../store';
+import { boxOf } from '../zoom';
+import { Card } from './Card';
+import { Row, Rows } from './Rows';
+import { ItemIcon, itemZoom, SkullIcon } from './StackPanel';
 import './InfoPanels.css';
 
 interface Props {
@@ -13,14 +17,16 @@ interface Props {
   toggle: () => void;
 }
 
-// HistoryStrip is a thin column of resolved stack items at the board's
-// left edge (15.22, H-07): the stack's icons, newest on top (S-10, F-04),
-// a sword or bolt badge (H-08), and the same large card on hover (S-11,
-// H-09). A line marks each new turn. The button on top opens the full
-// History panel.
+// HistoryStrip is a thin column of the history's headlines at the
+// board's left edge (15.22, 15.89, H-07): resolved stack items with the
+// stack's icons, buys and kills, newest on top (S-10, F-04). A badge
+// marks each kind (H-08): a sword, a bolt, a coin or a skull. Hover shows
+// the large card (S-11, H-09). A line marks each new turn. A new tile
+// fades in and the others slide down (15.51). The button on top opens
+// the full History panel.
 export function HistoryStrip({ view, names, open, toggle }: Props) {
   const history = useApp((s) => s.history);
-  const items = history.filter((e) => e.item).reverse();
+  const items = stripEntries(history);
   return (
     <aside className="history-strip" aria-label="History strip">
       <button
@@ -34,9 +40,11 @@ export function HistoryStrip({ view, names, open, toggle }: Props) {
         <ScrollIcon />
       </button>
       <ol>
-        {items.map((e, i) => (
-          <StripItem key={e.key} entry={e} view={view} names={names} newTurn={(items.at(i + 1)?.turn ?? e.turn) !== e.turn} />
-        ))}
+        <Rows>
+          {items.map((e, i) => (
+            <StripItem key={e.key} entry={e} view={view} names={names} newTurn={(items.at(i + 1)?.turn ?? e.turn) !== e.turn} />
+          ))}
+        </Rows>
       </ol>
     </aside>
   );
@@ -47,20 +55,27 @@ export function HistoryStrip({ view, names, open, toggle }: Props) {
 function StripItem({ entry, view, names, newTurn }: { entry: Entry; view: GameView; names: Names; newTurn: boolean }) {
   const setZoom = useApp((s) => s.setZoom);
   const it = entry.item;
-  if (!it) {
-    return null;
-  }
-  const card = stackCard(it, view) ?? entry.card;
-  const badge = stackBadge(it);
-  const line = stackLine(it, view, names);
+  // A buy or a kill shows its card with the line; a stack item as on the stack.
+  const plain = it && !entry.badge ? it : undefined;
+  const tile = plain ? (stackCard(plain, view) ?? entry.card) : entry.card;
+  const badge = entry.badge ?? (plain ? stackBadge(plain) : undefined);
+  const line = plain ? stackLine(plain, view, names) : entry.text;
+  // The popout (15.90): the play, the dealer, the killer or the buyer
+  // large, then what it did.
+  const outcome = entry.outcome && entry.outcome.length > 0 ? entry.outcome : undefined;
+  const card = (outcome && entry.from) ?? tile;
+  const zoom = (ref: string, e: PointerEvent, touch: boolean): Zoom => ({
+    ...(plain ? itemZoom(plain, ref, view, names, e, touch) : { ref, touch, at: boxOf(e.currentTarget), caption: { line: [{ text: line }] } }),
+    ...(outcome ? { outcome } : {}),
+  });
   return (
-    <li
-      className={`strip-item stack-${stackIcon(it)}${newTurn ? ' strip-turn' : ''}`}
+    <Row
+      className={`strip-item stack-${plain ? stackIcon(plain) : 'card'}${newTurn ? ' strip-turn' : ''}`}
       aria-label={line}
       title={`Turn ${String(entry.turn)}: ${line}`}
       onPointerEnter={(e) => {
         if (card && e.pointerType === 'mouse') {
-          setZoom(itemZoom(it, card, view, names, e, false));
+          setZoom(zoom(card, e, false));
         }
       }}
       onPointerLeave={(e) => {
@@ -70,17 +85,23 @@ function StripItem({ entry, view, names, newTurn }: { entry: Entry; view: GameVi
       }}
       onPointerUp={(e) => {
         if (card && e.pointerType !== 'mouse') {
-          setZoom(itemZoom(it, card, view, names, e, true));
+          setZoom(zoom(card, e, true));
         }
       }}
     >
-      <ItemIcon it={it} />
-      {badge && (
-        <span className={`strip-badge strip-${badge}`} aria-hidden="true">
-          {badge === 'attack' ? <SwordIcon /> : <BoltIcon />}
+      {plain ? (
+        <ItemIcon it={plain} />
+      ) : (
+        <span className="stack-icon" aria-hidden="true">
+          {tile && <Card cardRef={tile} size="small" noZoom />}
         </span>
       )}
-    </li>
+      {badge && (
+        <span className={`strip-badge strip-${badge}`} aria-hidden="true">
+          {badge === 'attack' ? <SwordIcon /> : badge === 'spell' ? <BoltIcon /> : badge === 'buy' ? <CoinIcon /> : <SkullIcon />}
+        </span>
+      )}
+    </Row>
   );
 }
 
@@ -96,6 +117,14 @@ function SwordIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <path d="M20.5 2.5 21 7l-9.6 9.6 1.4 1.4-1.4 1.4-2.1-2.1-3.2 3.2a1.5 1.5 0 0 1-2.1-2.1l3.2-3.2-2.1-2.1 1.4-1.4 1.4 1.4L17.5 3Z" />
+    </svg>
+  );
+}
+
+function CoinIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 2a10 10 0 1 1 0 20 10 10 0 0 1 0-20Zm1 4h-2v1.1A3.5 3.5 0 0 0 8 10.5c0 2 1.6 2.8 3.4 3.3 1.5.4 2.1.7 2.1 1.4 0 .6-.6 1-1.5 1-1 0-1.6-.4-1.8-1.2H8.1c.2 1.7 1.3 2.8 2.9 3.1V19h2v-1c1.8-.3 3-1.6 3-3.3 0-2.2-1.8-2.9-3.5-3.4-1.4-.4-2-.6-2-1.2 0-.5.5-.9 1.3-.9.9 0 1.4.4 1.5 1h2.1c-.1-1.5-1.1-2.6-2.4-3Z" />
     </svg>
   );
 }

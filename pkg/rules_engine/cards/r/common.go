@@ -104,7 +104,7 @@ func eachOtherMay(question string, do func(c *engine.Ctx, yes []engine.PlayerID)
 				if i >= len(othersInOrder(c)) {
 					return nil
 				}
-				return []string{"yes", "no"}
+				return []string{"yes", "No"}
 			},
 		}
 	}
@@ -383,13 +383,15 @@ func revealTenTakeNamed(match func(engine.CardRef) bool) engine.Effect {
 		for _, pl := range c.G.Players {
 			c.G.LookAt(pl.ID, top...)
 		}
+		var rest []engine.ObjectID
 		for _, id := range top {
 			if match(c.G.Object(id).Card) {
 				c.G.DeckToHand(engine.LootDeck, id, c.Controller)
 			} else {
-				c.G.DeckToBottom(engine.LootDeck, id)
+				rest = append(rest, id)
 			}
 		}
+		c.G.ToBottomRandom(engine.LootDeck, rest)
 	})
 }
 
@@ -564,7 +566,7 @@ func damageNeighbour(left bool) engine.Effect {
 // thisGains gives this monster n of a stat till end of turn.
 func thisGains(stat engine.Stat, n int) engine.Effect {
 	return engine.EffectFunc(func(c *engine.Ctx) {
-		c.G.Boosts = append(c.G.Boosts, engine.Boost{Stat: stat, Player: engine.NoPlayer, Object: c.Source, Amount: n})
+		c.G.Boosts = append(c.G.Boosts, engine.Boost{Source: c.Source, Stat: stat, Player: engine.NoPlayer, Object: c.Source, Amount: n})
 	})
 }
 
