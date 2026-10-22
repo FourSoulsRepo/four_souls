@@ -57,6 +57,21 @@ type MonsterStats struct {
 	PrintedHP  int `json:"printed_hp"`
 	PrintedDC  int `json:"printed_dc"`
 	PrintedATK int `json:"printed_atk"`
+	// Sources are what changes the monster's HP, DC and ATK now (V-41).
+	Sources []StatSourceView `json:"sources,omitempty"`
+}
+
+// StatSourceView is one source of a stat change, so a client can show
+// why a stat changed (V-41). Stat is "hp", "atk", "dc", "roll",
+// "attack_roll" or "attacked_dc"; Lasts is "in_play", "turn" or
+// "next_roll". Card is the source's card, "" when it is hidden.
+type StatSourceView struct {
+	Stat   string   `json:"stat"`
+	Source ObjectID `json:"source,omitempty"`
+	Card   CardRef  `json:"card,omitempty"`
+	Amount int      `json:"amount"`
+	Lasts  string   `json:"lasts"`
+	When   string   `json:"when,omitempty"`
 }
 
 // PlayerView is what a viewer sees of one player.
@@ -79,6 +94,12 @@ type PlayerView struct {
 	// TreasureTop is the top treasure card, when this player may look at
 	// it now (There's Options) and the viewer may see it.
 	TreasureTop *CardView `json:"treasure_top,omitempty"`
+
+	// PrintedHP and PrintedATK are the character's, so a client can mark
+	// a changed stat; Sources say why it changed (V-41).
+	PrintedHP  int              `json:"printed_hp"`
+	PrintedATK int              `json:"printed_atk"`
+	Sources    []StatSourceView `json:"sources,omitempty"`
 }
 
 // SlotView is a table slot: the top card and the covered ones below.
@@ -194,6 +215,8 @@ func (g *Game) View(v Viewer) GameView {
 		if pl.ID == g.Turn.Active {
 			pv.Attacks, pv.Purchases = g.attacksLeft(), g.purchasesLeft()
 		}
+		d := g.def(pl.Character)
+		pv.PrintedHP, pv.PrintedATK, pv.Sources = d.HP, d.ATK, g.playerSources(pl.ID)
 		pv.Character.Souls = g.characterSouls(pl.Character)
 		for _, id := range pl.InPlay {
 			cv := g.playedView(id)
@@ -400,6 +423,7 @@ func (g *Game) cardView(id ObjectID) CardView {
 			// The printed dice clamp as Evasion does, so only a bonus
 			// marks it as changed.
 			PrintedHP: d.HP, PrintedDC: min(max(d.DC, 1), 6), PrintedATK: d.ATK,
+			Sources: g.monsterSources(id),
 		}
 	}
 	return cv
@@ -572,4 +596,53 @@ func rollResultText(text string, result int) string {
 // digit is a one-digit number; rollHead matches only those.
 func digit(s string) int {
 	return int(s[0] - '0')
+}
+
+// statKeys name the stats a client shows sources for (V-41).
+var statKeys = map[Stat]string{
+	StatPlayerHP: "hp", StatPlayerATK: "atk", StatMonsterHP: "hp", StatMonsterDC: "dc", StatMonsterATK: "atk",
+	StatRoll: "roll", StatAttackRoll: "attack_roll", StatNextAttackRoll: "attack_roll", StatAttackedDC: "attacked_dc",
+}
+
+var lastsKeys = [...]string{LastsInPlay: "in_play", LastsTurn: "turn", LastsNextRoll: "next_roll"}
+
+// playerSources lists what changes a player's stats and rolls now.
+func (g *Game) playerSources(p PlayerID) []StatSourceView {
+	var parts []Part
+	for _, s := range []Stat{StatPlayerHP, StatPlayerATK, StatRoll, StatAttackRoll, StatAttackedDC} {
+		parts = append(parts, g.Parts(s, p, 0)...)
+	}
+	return g.sourceViews(append(parts, g.nextAttackRollParts(p)...))
+}
+
+// monsterSources lists what changes a monster's stats now: its DC also
+// counts the attacker's "monsters you attack" changes, as Evasion does.
+func (g *Game) monsterSources(id ObjectID) []StatSourceView {
+	var parts []Part
+	for _, s := range []Stat{StatMonsterHP, StatMonsterDC, StatMonsterATK} {
+		parts = append(parts, g.Parts(s, NoPlayer, id)...)
+	}
+	if g.Attack.On && g.Attack.Target == id {
+		for _, pt := range g.Parts(StatAttackedDC, g.Turn.Active, 0) {
+			pt.Stat = StatMonsterDC
+			parts = append(parts, pt)
+		}
+	}
+	return g.sourceViews(parts)
+}
+
+// sourceViews turns parts into views; a hidden source shows no card.
+func (g *Game) sourceViews(parts []Part) []StatSourceView {
+	var out []StatSourceView
+	for _, pt := range parts {
+		if pt.Amount == 0 {
+			continue
+		}
+		sv := StatSourceView{Stat: statKeys[pt.Stat], Amount: pt.Amount, Lasts: lastsKeys[pt.Lasts], When: pt.When}
+		if card := g.publicCard(pt.Source); card != "" {
+			sv.Source, sv.Card = pt.Source, card
+		}
+		out = append(out, sv)
+	}
+	return out
 }

@@ -265,6 +265,18 @@ export interface MonsterStats {
   printed_hp: number;
   printed_dc: number;
   printed_atk: number;
+  sources?: StatSource[]; // what changes HP, DC and ATK now (V-41)
+}
+
+// StatSource is one source of a stat change (V-41). card is "" or absent
+// when the source is hidden; older servers send no sources.
+export interface StatSource {
+  stat: "hp" | "atk" | "dc" | "roll" | "attack_roll" | "attacked_dc";
+  source?: number;
+  card?: string;
+  amount: number;
+  lasts: "in_play" | "turn" | "next_roll";
+  when?: string; // a condition, e.g. "first attack roll"
 }
 
 export interface SlotView {
@@ -288,6 +300,11 @@ export interface PlayerView {
   loot_plays: number;
   attacks: number;
   purchases: number;
+  // The character's printed stats and what changes them (V-41); older
+  // servers send none.
+  printed_hp?: number;
+  printed_atk?: number;
+  sources?: StatSource[];
 }
 
 export interface Turn {

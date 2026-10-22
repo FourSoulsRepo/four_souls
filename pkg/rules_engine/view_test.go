@@ -2,6 +2,7 @@ package rulesengine
 
 import (
 	"encoding/json"
+	"reflect"
 	"slices"
 	"strings"
 	"testing"
@@ -378,8 +379,9 @@ func TestViewShowsLiveMonsterStats(t *testing.T) {
 	want := MonsterStats{
 		HP: d.HP - 1, DC: d.DC, ATK: d.ATK + 2,
 		PrintedHP: d.HP, PrintedDC: d.DC, PrintedATK: d.ATK,
+		Sources: []StatSourceView{{Stat: "atk", Amount: 2, Lasts: "turn"}},
 	}
-	if *s != want {
+	if !reflect.DeepEqual(*s, want) {
 		t.Errorf("stats = %+v, want %+v", *s, want)
 	}
 	if gv.Players[0].Character.Stats != nil {

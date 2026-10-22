@@ -27,7 +27,7 @@ var sumptorium = engine.CardDef{
 			Costs:   []engine.Cost{engine.RemoveCounters(2)},
 			Targets: []engine.TargetSpec{engine.Choose(engine.TargetMonster)},
 			Effects: []engine.Effect{engine.EffectFunc(func(c *engine.Ctx) {
-				c.G.Boosts = append(c.G.Boosts, engine.Boost{Stat: engine.StatMonsterDC, Player: engine.NoPlayer, Object: c.Targets[0].Object, Amount: -1})
+				c.G.Boosts = append(c.G.Boosts, engine.Boost{Source: c.Source, Stat: engine.StatMonsterDC, Player: engine.NoPlayer, Object: c.Targets[0].Object, Amount: -1})
 			})},
 		},
 	},

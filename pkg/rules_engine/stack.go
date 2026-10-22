@@ -439,7 +439,7 @@ func (g *Game) useNextAttackRoll(p PlayerID) int {
 	total := 0
 	kept := g.Boosts[:0]
 	for _, b := range g.Boosts {
-		if b.Stat == StatNextAttackRoll && b.Object == 0 && (b.Player == p || b.Player == NoPlayer) {
+		if b.nextAttackRollOf(p) {
 			total += b.Amount
 			continue
 		}
@@ -447,6 +447,23 @@ func (g *Game) useNextAttackRoll(p PlayerID) int {
 	}
 	g.Boosts = kept
 	return total
+}
+
+// nextAttackRollOf: the boost applies to p's next attack roll.
+func (b Boost) nextAttackRollOf(p PlayerID) bool {
+	return b.Stat == StatNextAttackRoll && b.Object == 0 && (b.Player == p || b.Player == NoPlayer)
+}
+
+// nextAttackRollParts lists the boosts p's next attack roll will use;
+// anyone's go to the active player, who makes the attack rolls.
+func (g *Game) nextAttackRollParts(p PlayerID) []Part {
+	var out []Part
+	for _, b := range g.Boosts {
+		if b.nextAttackRollOf(p) && (b.Player == p || p == g.Turn.Active) {
+			out = append(out, Part{Stat: StatNextAttackRoll, Source: b.Source, Amount: b.Amount, Lasts: LastsNextRoll})
+		}
+	}
+	return out
 }
 
 // RerollWithDice rerolls a roll on the stack with several dice; chooser

@@ -442,9 +442,9 @@ func GainRollBonusThisTurn(n, t int) Effect { return boostEffect{StatRoll, StatR
 
 func (e boostEffect) apply(c *Ctx) {
 	t := c.target(e.target)
-	b := Boost{Stat: e.monster, Player: NoPlayer, Object: t.Object, Amount: e.n}
+	b := Boost{Stat: e.monster, Player: NoPlayer, Object: t.Object, Amount: e.n, Source: c.Source}
 	if t.Kind == TargetPlayer {
-		b = Boost{Stat: e.player, Player: t.Player, Amount: e.n}
+		b = Boost{Stat: e.player, Player: t.Player, Amount: e.n, Source: c.Source}
 	}
 	c.G.Boosts = append(c.G.Boosts, b)
 	c.G.emit(Event{Kind: EvBoosted, Player: b.Player, Object: b.Object, Amount: e.n, Text: b.Stat.String()})
@@ -845,7 +845,7 @@ func (g *Game) Ability(ref AbilityRef) Ability { return g.ability(ref) }
 func WardDeath(t int) Effect {
 	return EffectFunc(func(c *Ctx) {
 		if t < len(c.Targets) {
-			c.G.Boosts = append(c.G.Boosts, Boost{Stat: StatDeathWard, Player: c.Targets[t].Player, Amount: 1})
+			c.G.Boosts = append(c.G.Boosts, Boost{Source: c.Source, Stat: StatDeathWard, Player: c.Targets[t].Player, Amount: 1})
 		}
 	})
 }
@@ -892,7 +892,7 @@ func NextAttackRoll(n int, active bool) Effect {
 		if active {
 			p = c.G.Turn.Active
 		}
-		c.G.Boosts = append(c.G.Boosts, Boost{Stat: StatNextAttackRoll, Player: p, Amount: n})
+		c.G.Boosts = append(c.G.Boosts, Boost{Source: c.Source, Stat: StatNextAttackRoll, Player: p, Amount: n})
 	})
 }
 

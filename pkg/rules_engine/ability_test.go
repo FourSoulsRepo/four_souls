@@ -48,6 +48,12 @@ var abilitySet = CardSet{Name: "abilities", Cards: []CardDef{
 		}},
 	}},
 	{Ref: "stoney_like", Kind: MonsterCard, Outside: true, HP: 3, DC: 3, ATK: 1, Statics: []Static{MonstersHave(StatMonsterDC, 1)}},
+	{Ref: "strength_like", Kind: LootCard, Outside: true, Abilities: []Ability{ // like XI. Strength
+		{Kind: LootAbility, Text: "Choose a player. They gain +1 ATK till end of turn.", Targets: []TargetSpec{Choose(TargetPlayer)}, Effects: []Effect{GainATKThisTurn(1, 0)}},
+	}},
+	{Ref: "next_roll_loot", Kind: LootCard, Outside: true, Abilities: []Ability{ // like Round Worm's reward
+		{Kind: LootAbility, Text: "The next attack roll this turn has +1.", Effects: []Effect{NextAttackRoll(1, false)}},
+	}},
 }}
 
 func newAbilityGame(t *testing.T) *Game {

@@ -185,6 +185,9 @@ type Boost struct {
 	Player PlayerID `json:"player"`
 	Object ObjectID `json:"object,omitempty"`
 	Amount int      `json:"amount"`
+	// Source is the object whose ability gave the boost, so a client can
+	// show why a stat changed (V-41); 0 in states from before 15.54.
+	Source ObjectID `json:"source,omitempty"`
 }
 
 // Counter is a counter on an object; Name is "" for a generic counter

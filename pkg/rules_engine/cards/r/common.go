@@ -566,7 +566,7 @@ func damageNeighbour(left bool) engine.Effect {
 // thisGains gives this monster n of a stat till end of turn.
 func thisGains(stat engine.Stat, n int) engine.Effect {
 	return engine.EffectFunc(func(c *engine.Ctx) {
-		c.G.Boosts = append(c.G.Boosts, engine.Boost{Stat: stat, Player: engine.NoPlayer, Object: c.Source, Amount: n})
+		c.G.Boosts = append(c.G.Boosts, engine.Boost{Source: c.Source, Stat: stat, Player: engine.NoPlayer, Object: c.Source, Amount: n})
 	})
 }
 

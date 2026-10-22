@@ -385,7 +385,7 @@ func storeRoll() engine.RollTable {
 	for r := 1; r <= 6; r++ {
 		t = t.Results(r, r, engine.EffectFunc(func(c *engine.Ctx) {
 			clearStoredRoll(c.G, c.Source)
-			c.G.Boosts = append(c.G.Boosts, engine.Boost{Stat: engine.StatUsed, Player: engine.NoPlayer, Object: c.Source, Amount: -r})
+			c.G.Boosts = append(c.G.Boosts, engine.Boost{Source: c.Source, Stat: engine.StatUsed, Player: engine.NoPlayer, Object: c.Source, Amount: -r})
 		}))
 	}
 	return t
@@ -452,7 +452,7 @@ var revealGiveCurses = engine.EffectFunc(func(c *engine.Ctx) {
 // thisGains gives this monster +n of a stat till end of turn.
 func thisGains(stat engine.Stat, n int) engine.Effect {
 	return engine.EffectFunc(func(c *engine.Ctx) {
-		c.G.Boosts = append(c.G.Boosts, engine.Boost{Stat: stat, Player: engine.NoPlayer, Object: c.Source, Amount: n})
+		c.G.Boosts = append(c.G.Boosts, engine.Boost{Source: c.Source, Stat: stat, Player: engine.NoPlayer, Object: c.Source, Amount: n})
 	})
 }
 

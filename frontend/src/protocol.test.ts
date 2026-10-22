@@ -62,6 +62,8 @@ const modeled: Record<string, Envelope | Envelope[]> = {
             loot_plays: 0,
             attacks: 0,
             purchases: 0,
+            printed_hp: 2,
+            printed_atk: 1,
           },
           {
             id: 1,
@@ -80,6 +82,8 @@ const modeled: Record<string, Envelope | Envelope[]> = {
             loot_plays: 0,
             attacks: 0,
             purchases: 0,
+            printed_hp: 2,
+            printed_atk: 1,
           },
         ],
         shop: [

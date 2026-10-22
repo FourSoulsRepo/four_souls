@@ -22,7 +22,7 @@ var holyBrain = engine.CardDef{
 		Trigger: engine.OnRollOf(3),
 		Effects: []engine.Effect{engine.EffectFunc(func(c *engine.Ctx) {
 			for _, id := range cardkit.MonstersInPlay(c.G) {
-				c.G.Boosts = append(c.G.Boosts, engine.Boost{Stat: engine.StatMonsterDC, Player: engine.NoPlayer, Object: id, Amount: -1})
+				c.G.Boosts = append(c.G.Boosts, engine.Boost{Source: c.Source, Stat: engine.StatMonsterDC, Player: engine.NoPlayer, Object: id, Amount: -1})
 			}
 		})},
 	}},

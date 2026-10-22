@@ -1752,7 +1752,7 @@ Images come first, so the new table is built with backs and mats.
 6. Owner notes (2026-10-14)
    1. Owner marks 15.53 solved.
 
-### [ ] 15.54 Sources of stat boosts
+### [x] 15.54 Sources of stat boosts
 
 1. Goal: a player sees why a character's HP or ATK changed (V-41).
 2. Tasks:
@@ -1810,6 +1810,24 @@ Images come first, so the new table is built with backs and mats.
    9. Done when: engine test, a boosted character lists its sources.
    10. Done when: engine test, `bonus()` equals the breakdown's sum.
    11. Done when: view test, rows reach every player, hidden cards kept hidden.
+8. Result (2026-10-22)
+   1. `Part`, `Lasting`, `Parts()` in `statics.go`; `bonus()` sums `eachPart()`.
+   2. `Static.When` labels a condition; set on first-attack-roll statics.
+   3. Champion Belt, Polydactyly, Curved Horn, Bum-bo carry it.
+   4. A conditional static is listed only while it applies.
+   5. Belt's +1 ATK shows once the first roll resolved, for its damage.
+   6. 15.94 must show it ahead of the roll; noted there.
+   7. `Boost.Source` is `Ctx.Source`; set at every ability's boost.
+   8. Used marks and the death-penalty item leave it 0: never shown.
+   9. A played loot's source is its stack object, the card that resolved.
+   10. `nextAttackRollParts`: anyone's next roll shows on the active player.
+   11. View: `PlayerView` `printed_hp`, `printed_atk`, `sources`.
+   12. View: `MonsterStats.sources`, with the attacker's DC change on the target.
+   13. A source in a hand or deck shows no card and no id.
+   14. Protocol only gained fields: golden updated, version kept (ADR 006).
+   15. Engine version kept: no rules change; old states load with source 0.
+   16. Tests: `statics_test.go`, `view_test.go`, b2 `champion_belt_test.go`.
+   17. `protocol.ts` types; wiki `Rules-engine`. No UI change: no screenshots.
 
 ### [x] 15.55 Curses left of the player
 
@@ -2950,3 +2968,6 @@ Images come first, so the new table is built with backs and mats.
    5. UC-14 updated.
 6. Owner decisions (2026-10-22)
    1. The line sits in the open-attack row of the stack panel (15.91).
+7. Notes from 15.54
+   1. Champion Belt's +1 ATK applies only after the first roll resolves.
+   2. So the line counts first-roll ATK as if the open roll hits.

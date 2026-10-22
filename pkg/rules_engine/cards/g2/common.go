@@ -73,7 +73,7 @@ var rechargeYourItems = engine.EffectFunc(func(c *engine.Ctx) {
 // attackedDC: "Monsters you attack have +n DC till end of turn".
 func attackedDC(n int) engine.Effect {
 	return engine.EffectFunc(func(c *engine.Ctx) {
-		c.G.Boosts = append(c.G.Boosts, engine.Boost{Stat: engine.StatAttackedDC, Player: c.Controller, Amount: n})
+		c.G.Boosts = append(c.G.Boosts, engine.Boost{Source: c.Source, Stat: engine.StatAttackedDC, Player: c.Controller, Amount: n})
 	})
 }
 
@@ -264,7 +264,7 @@ func healThis(n int) engine.Effect {
 // thisGains gives this monster +n of a stat till end of turn.
 func thisGains(stat engine.Stat, n int) engine.Effect {
 	return engine.EffectFunc(func(c *engine.Ctx) {
-		c.G.Boosts = append(c.G.Boosts, engine.Boost{Stat: stat, Player: engine.NoPlayer, Object: c.Source, Amount: n})
+		c.G.Boosts = append(c.G.Boosts, engine.Boost{Source: c.Source, Stat: stat, Player: engine.NoPlayer, Object: c.Source, Amount: n})
 	})
 }
 

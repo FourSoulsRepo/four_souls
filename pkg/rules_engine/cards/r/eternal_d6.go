@@ -24,7 +24,7 @@ var eternalD6 = engine.CardDef{
 			Text:  "$ Remove 2 counters from this: Till end of turn, if a player would roll a 2 or 3, it becomes a 1 instead.",
 			Costs: []engine.Cost{engine.RemoveCounters(2)},
 			Effects: []engine.Effect{engine.EffectFunc(func(c *engine.Ctx) {
-				c.G.Boosts = append(c.G.Boosts, engine.Boost{Stat: engine.StatRollToOne, Player: engine.NoPlayer, Amount: 1})
+				c.G.Boosts = append(c.G.Boosts, engine.Boost{Source: c.Source, Stat: engine.StatRollToOne, Player: engine.NoPlayer, Amount: 1})
 			})},
 		},
 	},

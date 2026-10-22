@@ -147,6 +147,7 @@ func EndOfTurnIf(cond func(g *engine.Game, p engine.PlayerID) bool) engine.Trigg
 var FirstAttackRollATK = engine.Static{
 	Stat:   engine.StatPlayerATK,
 	Amount: 1,
+	When:   "first attack roll",
 	Applies: func(g *engine.Game, self engine.ObjectID, p engine.PlayerID, _ engine.ObjectID) bool {
 		return g.Object(self).Controller == p && p == g.Turn.Active && g.Attack.On && g.Turn.AttackRolls == 1
 	},
@@ -465,7 +466,7 @@ var RollerDiscards = ForRoller(DiscardOne)
 func EachMonsterGains(stat engine.Stat) engine.Effect {
 	return engine.EffectFunc(func(c *engine.Ctx) {
 		for _, id := range MonstersInPlay(c.G) {
-			c.G.Boosts = append(c.G.Boosts, engine.Boost{Stat: stat, Player: engine.NoPlayer, Object: id, Amount: 1})
+			c.G.Boosts = append(c.G.Boosts, engine.Boost{Source: c.Source, Stat: stat, Player: engine.NoPlayer, Object: id, Amount: 1})
 		}
 	})
 }

@@ -13,7 +13,7 @@ var getOutOfJailCard = engine.CardDef{
 		Kind: engine.LootAbility,
 		Text: "Other players can't play loot cards or activate items till end of turn.",
 		Effects: []engine.Effect{engine.EffectFunc(func(c *engine.Ctx) {
-			c.G.Boosts = append(c.G.Boosts, engine.Boost{Stat: engine.StatLockTurn, Player: c.Controller, Amount: 1})
+			c.G.Boosts = append(c.G.Boosts, engine.Boost{Source: c.Source, Stat: engine.StatLockTurn, Player: c.Controller, Amount: 1})
 		})},
 	}},
 }
