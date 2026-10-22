@@ -1932,7 +1932,7 @@ Totals by system (60 items):
    2. The build action, `make internal`, and the build docs.
    3. Go has no way to hide a tagged import from tidy.
 
-### [ ] 19.60 Distant Admiration: an unplayable given card leaves a loot play
+### [x] 19.60 Distant Admiration: an unplayable given card leaves a loot play
 
 1. Goal: the free play of a given loot card never adds a loot play.
 2. Report (owner, 2026-10-22)
@@ -1966,3 +1966,6 @@ Totals by system (60 items):
    2. The engine part is small.
    3. The client needs care: an aim with no cancel must not end on a click.
    4. Today a cancel leaves the card in hand, at no loot play cost.
+8. Owner notes (2026-10-22)
+   1. Owner marks 19.60 solved.
+   2. The open question in 7 is not answered yet.
