@@ -429,3 +429,6 @@ Ideas: B-03 – B-05, L-03, V-10, V-11, DO-01, V-14, A-16, N-13, N-14, V-19, N-1
    4. `TestFS` in the submodule checks every image against its source.
 5. Owner notes (2026-10-22)
    1. Owner marks 8.29 solved.
+6. Later
+   1. Builds without the submodule failed in `go mod tidy` (19.59).
+   2. Every `wails build` now passes `-m`.

@@ -20,15 +20,17 @@ External mode lets you change files and restart without rebuilding. A missing fo
 Release builds use embed mode:
 
 ```sh
-wails build -tags embed
+wails build -m -tags embed
 ```
+
+`-m` skips `go mod tidy`. Tidy reads files of every build tag, so without the private images submodule it fails on the import in `pkg/card_db/embed_images.go` (19.59). `wails dev -m` likewise.
 
 ## Versions
 
 * App version: `internal/version.App`, `dev` by default, stamped at link time:
 
   ```sh
-  wails build -ldflags "-X github.com/FourSoulsRepo/four_souls/internal/version.App=1.2.3"
+  wails build -m -ldflags "-X github.com/FourSoulsRepo/four_souls/internal/version.App=1.2.3"
   ```
 
 * Rules engine version: the constant `rulesengine.Version` in `pkg/rules_engine/version.go`.

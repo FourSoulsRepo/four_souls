@@ -57,8 +57,10 @@ runs:
       if: contains(inputs.tags, 'cardimages')
       shell: bash
       run: go generate ./pkg/card_db/images
+    # -m skips go mod tidy: it reads every build tag, so it needs the
+    # images package even when cardimages is off (19.59).
     - name: Build app
       shell: bash
       run: |
-        wails build -platform "${{ inputs.platform }}" -tags "${{ inputs.tags }}" \
+        wails build -m -platform "${{ inputs.platform }}" -tags "${{ inputs.tags }}" \
           -ldflags "-X github.com/FourSoulsRepo/four_souls/internal/version.App=${{ inputs.version }}"

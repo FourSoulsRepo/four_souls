@@ -20,17 +20,18 @@ On macOS start another copy with `open -n FourSouls.app`.
 ## Run in dev mode
 
 ```sh
-wails dev
+wails dev -m
 ```
 
 ## Build
 
 ```sh
 go generate ./pkg/card_db/images
-wails build -tags "embed cardimages"
+wails build -m -tags "embed cardimages"
 ```
 
 Card images come from a private submodule (`pkg/card_db/images`). Without access, build with `-tags embed`; cards then show as text.
+`-m` skips `go mod tidy`, which fails without the submodule.
 
 The binary lands in `build/bin/`.
 
