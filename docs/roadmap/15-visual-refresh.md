@@ -3114,6 +3114,8 @@ Images come first, so the new table is built with backs and mats.
    11. e2e `shell.spec.ts`: the group, its slide, Esc, the way back.
    12. UC-01 10 – 12; wiki `Client`, `Animations`, `Screenshots`; CHANGELOG.
    13. Screenshots: `.cache/screenshots/15.96/before/` and `after/`.
+6. Owner notes (2026-10-22)
+   1. Owner marks 15.96 solved.
 
 ### [x] 15.97 LAN screen
 
@@ -3152,6 +3154,8 @@ Images come first, so the new table is built with backs and mats.
    15. UC-03, UC-09, UC-17; wiki `Client`, `Server`, `First-start`, `Internal-builds`, `Screenshots`; CHANGELOG.
    16. Found and fixed on the way: 19.58 (a test, not the app).
    17. Screenshots: `.cache/screenshots/15.97/before/` and `after/`.
+6. Owner notes (2026-10-22)
+   1. Owner marks 15.97 solved.
 
 ### [x] 15.98 Online screen
 
@@ -3176,6 +3180,8 @@ Images come first, so the new table is built with backs and mats.
    7. Online tests type into "Server address"; LAN keeps "Host address".
    8. UC-04, UC-19, UC-27; wiki `Client`, server guides, `Screenshots`; CHANGELOG.
    9. Screenshots: `.cache/screenshots/15.98/before/` and `after/`.
+6. Owner notes (2026-10-22)
+   1. Owner marks 15.98 solved.
 
 ### [x] 15.99 Rejoin button
 
@@ -3211,6 +3217,8 @@ Images come first, so the new table is built with backs and mats.
    15. UC-07 1d, 1e; wiki `Client`, `Server`, `Screenshots`; CHANGELOG.
    16. Screenshots: `.cache/screenshots/15.99/before/` and `after/`.
 6. Owner (2026-10-22): stop after 15.99 for review; 15.100 waits.
+7. Owner notes (2026-10-22)
+   1. Owner marks 15.99 solved.
 
 ### [ ] 15.100 Recent servers show live status
 

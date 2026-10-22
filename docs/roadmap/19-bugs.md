@@ -1902,4 +1902,6 @@ Totals by system (58 items):
    5. The record holds only its header: the server stopped before a flush.
 6. Fix
    1. The test calls `answerPlay` after `playLoot`, as 19.18 does.
+7. Owner notes (2026-10-22)
+   1. Owner marks 19.58 solved.
 
