@@ -33,7 +33,7 @@ This step never closes; new reports are appended.
 
 | ID | Group                                    | System     | Items                                                  | Count |
 |----|------------------------------------------|------------|--------------------------------------------------------|-------|
-| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60        | 7     |
+| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61 | 8     |
 | B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39                               | 4     |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30                                     | 3     |
@@ -1969,3 +1969,35 @@ Totals by system (60 items):
 8. Owner notes (2026-10-22)
    1. Owner marks 19.60 solved.
    2. The open question in 7 is not answered yet.
+
+### [ ] 19.61 Boss Rush!: a boss put in its own slot leaves it covered
+
+1. Goal: an event goes to discard after it resolves, even when covered.
+2. Report (owner, 2026-10-22)
+   1. Play test; record `2026-10-22-190326-g2_Hitokiri-Battosai_jеня_bossrush_bug.fsrec`.
+   2. Boss Rush! came from the top of the monster deck.
+   3. It revealed Rag Mega and The Duke of Flies.
+   4. One boss went into Boss Rush's own slot.
+   5. Boss Rush stayed under that boss instead of going to discard.
+3. Tasks:
+   1. Find the cause in the match record.
+   2. A covered event still goes to discard when its abilities are done.
+   3. The card that covered it stays in the slot.
+4. Done when:
+   1. Engine test: Boss Rush with a boss in its own slot goes to discard.
+   2. Engine test: that boss stays in play; no covered card is left.
+   3. Engine test: when that boss dies, no event comes back into the slot.
+5. Cause
+   1. Step 100: Boss Rush resolves; step 102: both bosses enter play.
+   2. Its own slot counts as "not being attacked", so it can be picked.
+   3. `coverMonsterSlot` marks Boss Rush covered.
+   4. `finishEvent` acts only on an event in play; a covered one is skipped.
+   5. Step 515: Rag Mega dies and Boss Rush is uncovered.
+   6. It is back in the slot as an event with no trigger and no discard.
+   7. The game ended on that step; later it would block the slot.
+6. Fix
+   1. `finishEvent` also takes a covered event out of its slot.
+   2. The card on top stays; nothing is uncovered.
+   3. The event goes to the monster discard, as R-CARD-15 says.
+   4. Test `TestBossRushOwnSlot` covers the three done-when checks.
+   5. Without the fix it fails: slot 1 is `[fatty boss_rush monstro]`.
