@@ -4,7 +4,7 @@ import { expect, test } from './fixtures';
 import { startGame } from './game';
 import { appURL } from './server';
 import { shot } from './shot';
-import { activePage, click, playLoot, settle, throwButton, turnAction } from './turn';
+import { activePage, answerPlay, click, playLoot, settle, throwButton, turnAction } from './turn';
 
 const fast = () => `${appURL()}&anim=off`;
 
@@ -50,8 +50,10 @@ test("another player's loot card shows large, then by the stack (15.31)", async 
   await playLoot(active, loot, click);
 
   // The other sees it pop large in the middle, then it stays by the stack.
+  // A card may ask its mode or target first; the pop may come and go
+  // while that answer waits for the stack row, so both run at once (19.58).
   const pop = other.getByTestId('played-pop');
-  await expect(pop).toBeVisible({ timeout: 10_000 });
+  await Promise.all([answerPlay(active, click), expect(pop).toBeVisible({ timeout: 10_000 })]);
   await expect(pop.getByRole('img', { name })).toBeVisible();
   await other.waitForTimeout(400); // let it grow for the picture
   await shot(other, 'played-pop');

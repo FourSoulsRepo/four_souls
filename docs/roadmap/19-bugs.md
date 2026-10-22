@@ -41,11 +41,11 @@ This step never closes; new reports are appended.
 | F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50                      | 5     |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
-| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48 | 10 |
+| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58 | 11 |
 | J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57 | 13 |
 | K  | Build and release files                  | Release    | 19.47                                                  | 1     |
 
-Totals by system (57 items):
+Totals by system (58 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
@@ -53,7 +53,7 @@ Totals by system (57 items):
 | Card data | C       | 2     |
 | Client    | D–G     | 20    |
 | Server    | H       | 1     |
-| e2e       | I, J    | 23    |
+| e2e       | I, J    | 24    |
 | Release   | K       | 1     |
 
 ---
@@ -1880,3 +1880,26 @@ Totals by system (57 items):
    2. Check whether fewer e2e workers stop these load failures.
 4. Done when:
    1. The test passes ten full runs in a row.
+
+### [x] 19.58 e2e: a played "Choose one" loot card never reaches the stack
+
+1. Goal: the 15.31 played-card test passes whatever loot is dealt.
+2. Report (agent, 2026-10-22)
+   1. Found by `make e2e` during 15.97.
+   2. `fight.spec.ts`: "another player's loot card shows large, then by the stack (15.31)".
+   3. Webkit; line 54: no `played-pop` on the other page after 10 s.
+   4. Evidence: `.cache/e2e-evidence/15.97-fight-105217/`.
+3. Tasks:
+   1. Find what the active page waited for.
+   2. Fix the client or the test, whichever is wrong.
+4. Done when:
+   1. The test answers a mode or a target before it checks the pop.
+5. Cause
+   1. The page snapshot: Yol's prompt reads "Choose one".
+   2. The played card asks its mode before it goes on the stack.
+   3. The test played the card, then waited; nobody picked the mode.
+   4. The app was right: others see a loot card once it is on the stack.
+   5. The record holds only its header: the server stopped before a flush.
+6. Fix
+   1. The test calls `answerPlay` after `playLoot`, as 19.18 does.
+
