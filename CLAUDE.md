@@ -27,12 +27,12 @@
    15. A new wiki page goes into one group in `Home.md` and `_Sidebar.md`.
    16. `deploy/`: server setups: systemd, Docker, compose with Caddy (ADR 018).
 4. Commands
-   1. `wails dev`: run with hot reload.
-   2. `wails build`: release binary to `build/bin/`.
+   1. `wails dev -m`: run with hot reload.
+   2. `wails build -m`: release binary to `build/bin/`.
    3. `go build ./...`: quick backend check.
    4. `make build vet test lint wasm`: all Go modules.
    5. `cd frontend && npm run typecheck && npm run lint`.
-   6. Release-style build: `wails build -tags "embed cardimages"`.
+   6. Release-style build: `wails build -m -tags "embed cardimages"`.
    7. Linter setup and versions: `docs/wiki/Linters.md`.
    8. `make screenshots`: UI PNGs in `.cache/screenshots/` (not tracked).
    9. Use it to check UI changes; a real-window screenshot shows nothing.
@@ -46,6 +46,9 @@
    17. `make internal`: play-test build with card images; see `docs/wiki/Internal-builds.md`.
    18. `make e2e-games`: whole random games, every set, 2–4 players (slow).
    19. Before a `cardimages` build or test: `go generate ./pkg/card_db/images`.
+   20. `wails build` and `wails dev` always take `-m` (19.59).
+       1. It skips `go mod tidy`.
+       2. Tidy fails without the private images submodule.
 5. Workflow
    1. Work follows `docs/roadmap/`, one sub-step at a time.
    2. Commit after every finished sub-step.
@@ -105,4 +108,4 @@
    7. Every change must still build and run without the private images.
    8. That covers cards, card backs, dice, and mats.
    9. Without them: text cards, plain backs, plain dice, color table.
-   10. Check: `wails build -tags embed` (no `cardimages`) and `make e2e`.
+   10. Check: `wails build -m -tags embed` (no `cardimages`) and `make e2e`.

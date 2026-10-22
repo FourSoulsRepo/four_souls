@@ -43,9 +43,9 @@ This step never closes; new reports are appended.
 | H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
 | I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58 | 11 |
 | J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57 | 13 |
-| K  | Build and release files                  | Release    | 19.47                                                  | 1     |
+| K  | Build and release files                  | Release    | 19.47, 19.59                                           | 2     |
 
-Totals by system (58 items):
+Totals by system (59 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
@@ -54,7 +54,7 @@ Totals by system (58 items):
 | Client    | D–G     | 20    |
 | Server    | H       | 1     |
 | e2e       | I, J    | 24    |
-| Release   | K       | 1     |
+| Release   | K       | 2     |
 
 ---
 
@@ -1905,3 +1905,29 @@ Totals by system (58 items):
 7. Owner notes (2026-10-22)
    1. Owner marks 19.58 solved.
 
+
+### [x] 19.59 A build without the images submodule fails in `go mod tidy`
+
+1. Goal: `wails build -tags embed` works in a clone without the images.
+2. Report (owner, 2026-10-22)
+   1. CI job `app`, linux/amd64, on `main` after the 0.2.0 merge.
+   2. "Generating bindings" fails.
+   3. `card_db@latest … does not contain package github.com/FourSoulsRepo/card_db/images`.
+   4. The `for-poor` builds of the v0.2.0 release hit the same error.
+3. Tasks:
+   1. Find why a build without `cardimages` resolves that import.
+   2. Fix every scripted build and the build docs.
+4. Done when:
+   1. A worktree without the submodule builds with `-tags embed`.
+   2. CI job `app` passes.
+5. Cause
+   1. Since 8.29 `embed_images.go` imports the submodule's Go package.
+   2. The file has `//go:build embed && cardimages`; `go build` skips it.
+   3. `wails build` and `wails dev` run `go mod tidy` first.
+   4. Tidy reads files of every build tag, so it needs that package.
+   5. 8.29 was checked with the submodule present, so tidy passed.
+   6. The 198 commits reached CI only with the release push.
+6. Fix
+   1. Every `wails build` passes `-m`: skip `go mod tidy`.
+   2. The build action, `make internal`, and the build docs.
+   3. Go has no way to hide a tagged import from tidy.
