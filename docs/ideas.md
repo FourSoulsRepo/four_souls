@@ -527,7 +527,9 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    1. A hosting app announces its waiting game on the LAN.
    2. The join screen lists the games it finds.
    3. Typing an address still works.
-   4. Announcements stop when the game starts.
+   4. A started game keeps announcing, marked "In progress" (owner, 2026-10-22).
+      1. Only a player who held a seat can rejoin it.
+      2. So a crashed player finds the game in the list again.
    5. A dedicated server never announces.
    6. Players join it by address and pick from its list of games.
    12. Accepted risk: the player knows the next roll after a rollback.
@@ -757,6 +759,38 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
 2. M-02. Exit button in the main menu (owner, 2026-10-20).
    1. Last button of the menu.
    2. Closes the app.
+3. M-03. Menu split by where you play (owner, 2026-10-22).
+   1. Main menu: Play, Records, Settings, Exit.
+   2. Play: LAN, Online, Learn to play.
+   3. Learn to play is disabled, marked "Soon" (LR-03 later).
+   4. LAN: Host button on top.
+   5. Below it: LAN games, searched all the time; no "Search again".
+   6. Below them: an address field; it keeps the last typed value only.
+   7. LAN has no Recent list.
+   8. Online: an address field and the Recent list (N-18).
+   9. Online opens the server's games; create a game there (N-17).
+   10. LAN Host always hosts in this app; Online always on the server.
+   11. Back and Esc go up one level.
+   12. The setup screen goes back to the path that opened it.
+4. M-04. Recent servers show live status (owner, 2026-10-22).
+   1. A quick check when the Online screen opens.
+   2. Shows whether the server is up and how many games are open.
+5. M-05. "Rejoin" button in the main menu (owner, 2026-10-22).
+   1. Shows when the app closed during a game: "Rejoin: <game> · LAN/Online".
+   2. Uses the saved seat (`rejoin` in the settings, N-08).
+   3. The saved seat is cleared when the game ends.
+   4. Also cleared when the player leaves on purpose.
+   5. A crash or a force-quit keeps it.
+   6. On menu open the app asks that server once: is the seat still live?
+   7. Yes: the button shows. No: it hides and the seat is cleared.
+   8. A crashed LAN host has nothing to rejoin; it re-hosts from a save.
+6. M-06. The Play group opens in place (owner, 2026-10-22).
+   1. Play opens its buttons under itself, indented.
+   2. The buttons below slide down; the ones above stay put.
+   3. A second click on Play or Esc closes the group.
+   4. No separate Play screen and no Back button there.
+7. M-07. Records shows "Soon" while disabled (owner, 2026-10-22).
+   1. Same look as Learn to play.
 
 ## Game setup
 

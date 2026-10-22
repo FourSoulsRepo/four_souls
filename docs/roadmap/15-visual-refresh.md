@@ -3,12 +3,12 @@
 Goal: a clearer table, using fouronlinesouls.net as a second reference.
 
 Ideas: V-09, V-12, V-13, V-15 – V-31, V-33 – V-48, GS-06, N-18,
-M-02, ST-07, ST-08, V-51, V-52.
+M-02, ST-07, ST-08, V-51, V-52, M-03 – M-07, N-13.
 
 Order: 15.1, 15.15, 15.9 – 15.11, 15.16, 15.17, 15.38, 15.18 – 15.24,
 15.3, 15.37, 15.25, 15.32 – 15.34, 15.26, 15.27, 15.59 – 15.63, 15.6, 15.64,
 15.28 – 15.31, 15.35, 15.36, 15.39 – 15.46, 15.88 – 15.91, 15.51, 15.52,
-15.54, 15.92 – 15.95, 15.55 – 15.58.
+15.54, 15.92 – 15.95, 15.55 – 15.58, 15.96 – 15.100.
 Images come first, so the new table is built with backs and mats.
 
 ## Rules for this step (owner, 2026-10-12)
@@ -3079,3 +3079,84 @@ Images come first, so the new table is built with backs and mats.
    14. Screenshots: `.cache/screenshots/15.95/before/` and `after/`.
 6. Owner notes (2026-10-22)
    1. Owner marks 15.95 solved.
+
+### [ ] 15.96 Play group in the main menu
+
+1. Goal: the menu starts by where you play (M-03, M-06, M-07).
+2. Planned by the owner (2026-10-22).
+3. Tasks:
+   1. Main menu: Play, Records, Settings, Exit.
+   2. Play opens LAN, Online, Learn to play in place, indented.
+   3. Buttons below Play slide down; the ones above stay put.
+   4. A second click on Play or Esc closes the group.
+   5. Learn to play and Records are disabled, marked "Soon".
+   6. LAN and Online open the old Join screen until 15.97 and 15.98.
+   7. The slide gets its `anim:` tag and a row in `Animations.md`.
+4. Done when:
+   1. e2e test: Play opens and closes the group; Esc closes it.
+   2. e2e test: Learn to play and Records are disabled with "Soon".
+   3. `make screenshots` shows the menu closed and open.
+   4. UC-01 updated.
+
+### [ ] 15.97 LAN screen
+
+1. Goal: LAN play on one screen, no internet servers there (M-03, N-13).
+2. Planned by the owner (2026-10-22).
+3. Tasks:
+   1. Host button on top; it always hosts in this app.
+   2. Below: LAN games, searched all the time; no "Search again".
+   3. Below them: an address field that keeps the last typed value.
+   4. No Recent list on this screen.
+   5. A started game keeps announcing, marked "In progress".
+   6. Only a player who held a seat can rejoin it; others see it greyed.
+   7. Back and Esc return to the menu with the Play group open.
+   8. The setup screen goes back to the LAN screen.
+4. Done when:
+   1. Go test: a started game still announces, marked in progress.
+   2. e2e test: a host's game shows up without a click.
+   3. e2e test: a player who closed the app rejoins from the list.
+   4. e2e test: the typed address is there after a restart.
+   5. UC-03, UC-17 updated.
+
+### [ ] 15.98 Online screen
+
+1. Goal: online play on one screen (M-03, N-17, N-18).
+2. Planned by the owner (2026-10-22).
+3. Tasks:
+   1. An address field and the Recent list.
+   2. Connecting opens the server's games; a game is created there.
+   3. The Host screen no longer switches between app and server.
+   4. Back and Esc go up one level; setup goes back to the games.
+4. Done when:
+   1. e2e test: join a dedicated server, create a game, go back.
+   2. e2e test: no LAN games on this screen.
+   3. UC-04, UC-19, UC-27 updated.
+
+### [ ] 15.99 Rejoin button
+
+1. Goal: a player whose app closed mid-game gets back in one click (M-05).
+2. Planned by the owner (2026-10-22).
+3. Tasks:
+   1. Clear the saved seat when the game ends.
+   2. Clear it when the player leaves on purpose.
+   3. On menu open, ask the saved server once whether the seat is live.
+   4. Live: "Rejoin: <game> · LAN/Online" on top of the menu.
+   5. Not live or no answer: no button; a dead seat is cleared.
+   6. The check never delays the menu.
+4. Done when:
+   1. Go test: the server tells whether a token holds a live seat.
+   2. e2e test: kill a player's app mid-game; the restarted menu rejoins.
+   3. e2e test: after the game ends the button is gone.
+   4. UC-07 updated.
+
+### [ ] 15.100 Recent servers show live status
+
+1. Goal: the player sees which saved servers are up (M-04).
+2. Planned by the owner (2026-10-22).
+3. Tasks:
+   1. A quick check of every Recent row when the Online screen opens.
+   2. Each row shows up or down, and the number of open games.
+   3. Rows show at once; the status fills in as answers come.
+4. Done when:
+   1. e2e test: a running and a stopped server in Recent.
+   2. UC-04 updated.
