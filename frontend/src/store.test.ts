@@ -1,9 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { getSettings, saveSettings } from './bridge';
+import { checkSeat, getSettings, saveSettings } from './bridge';
 import { noHostSetup } from './hostSetup';
 import { messageOf, seatOf, useApp } from './store';
 
 vi.mock('./bridge', () => ({
+  checkSeat: vi.fn(),
   getSettings: vi.fn(),
   saveSettings: vi.fn(),
 }));
@@ -30,7 +31,7 @@ describe('screens', () => {
 
 describe('settings', () => {
   it('loads what Go has', async () => {
-    vi.mocked(getSettings).mockResolvedValue({ nickname: 'Ann', recent: [], animation: 'normal', fullscreen: false, mat: 'basement', dice: 'tear', no_end_turn_ask: false, rejoin: { address: '', token: '', game: '' }, host: noHostSetup, lan_address: '' });
+    vi.mocked(getSettings).mockResolvedValue({ nickname: 'Ann', recent: [], animation: 'normal', fullscreen: false, mat: 'basement', dice: 'tear', no_end_turn_ask: false, rejoin: { address: '', token: '', game: '', via: '' as const }, host: noHostSetup, lan_address: '' });
     await useApp.getState().loadSettings();
     expect(useApp.getState().settings.nickname).toBe('Ann');
   });
@@ -42,15 +43,15 @@ describe('settings', () => {
   });
 
   it('keeps what Go stored, not what was typed', async () => {
-    vi.mocked(saveSettings).mockResolvedValue({ nickname: 'Ann', recent: [], animation: 'normal', fullscreen: false, mat: 'basement', dice: 'tear', no_end_turn_ask: false, rejoin: { address: '', token: '', game: '' }, host: noHostSetup, lan_address: '' });
-    expect(await useApp.getState().saveSettings({ nickname: '  Ann  ', recent: [], animation: 'normal', fullscreen: false, mat: 'basement', dice: 'tear', no_end_turn_ask: false, rejoin: { address: '', token: '', game: '' }, host: noHostSetup, lan_address: '' })).toBe(true);
+    vi.mocked(saveSettings).mockResolvedValue({ nickname: 'Ann', recent: [], animation: 'normal', fullscreen: false, mat: 'basement', dice: 'tear', no_end_turn_ask: false, rejoin: { address: '', token: '', game: '', via: '' as const }, host: noHostSetup, lan_address: '' });
+    expect(await useApp.getState().saveSettings({ nickname: '  Ann  ', recent: [], animation: 'normal', fullscreen: false, mat: 'basement', dice: 'tear', no_end_turn_ask: false, rejoin: { address: '', token: '', game: '', via: '' as const }, host: noHostSetup, lan_address: '' })).toBe(true);
     expect(useApp.getState().settings.nickname).toBe('Ann');
   });
 
   it('shows the Go error and keeps the old settings', async () => {
-    useApp.setState({ settings: { nickname: 'Ann', recent: [], animation: 'normal', fullscreen: false, mat: 'basement', dice: 'tear', no_end_turn_ask: false, rejoin: { address: '', token: '', game: '' }, host: noHostSetup, lan_address: '' } });
+    useApp.setState({ settings: { nickname: 'Ann', recent: [], animation: 'normal', fullscreen: false, mat: 'basement', dice: 'tear', no_end_turn_ask: false, rejoin: { address: '', token: '', game: '', via: '' as const }, host: noHostSetup, lan_address: '' } });
     vi.mocked(saveSettings).mockRejectedValue('nickname must be 1–20 characters');
-    expect(await useApp.getState().saveSettings({ nickname: ' ', recent: [], animation: 'normal', fullscreen: false, mat: 'basement', dice: 'tear', no_end_turn_ask: false, rejoin: { address: '', token: '', game: '' }, host: noHostSetup, lan_address: '' })).toBe(false);
+    expect(await useApp.getState().saveSettings({ nickname: ' ', recent: [], animation: 'normal', fullscreen: false, mat: 'basement', dice: 'tear', no_end_turn_ask: false, rejoin: { address: '', token: '', game: '', via: '' as const }, host: noHostSetup, lan_address: '' })).toBe(false);
     expect(useApp.getState()).toMatchObject({
       settings: { nickname: 'Ann' },
       error: 'nickname must be 1–20 characters',
@@ -77,7 +78,7 @@ describe('seatOf', () => {
 });
 
 describe('recent servers (N-18)', () => {
-  const settings = { nickname: 'Ann', recent: [{ address: 'a', name: '' }, { address: 'b', name: '' }], animation: 'normal' as const, fullscreen: false, mat: 'basement', dice: 'tear', no_end_turn_ask: false, rejoin: { address: '', token: '', game: '' }, host: noHostSetup, lan_address: '' };
+  const settings = { nickname: 'Ann', recent: [{ address: 'a', name: '' }, { address: 'b', name: '' }], animation: 'normal' as const, fullscreen: false, mat: 'basement', dice: 'tear', no_end_turn_ask: false, rejoin: { address: '', token: '', game: '', via: '' as const }, host: noHostSetup, lan_address: '' };
 
   beforeEach(() => {
     vi.mocked(saveSettings).mockImplementation((s) => Promise.resolve(s));
@@ -121,5 +122,44 @@ describe('server notices (N-20)', () => {
   it('restarting is remembered for the badge', () => {
     useApp.getState().receive({ type: 'restarting' });
     expect(useApp.getState().restarting).toBe(true);
+  });
+});
+
+describe('the saved seat (15.99)', () => {
+  const rejoin = { address: '192.168.1.5', token: 't0k3n', game: 'g1', via: 'lan' as const };
+  const settings = { nickname: 'Ann', recent: [], animation: 'normal' as const, fullscreen: false, mat: '', dice: 'tear', no_end_turn_ask: false, rejoin, host: noHostSetup, lan_address: '' };
+  const none = { address: '', token: '', game: '', via: '' };
+
+  beforeEach(() => {
+    vi.mocked(saveSettings).mockImplementation((s) => Promise.resolve(s));
+    useApp.setState({ settings });
+  });
+
+  it('a live seat is offered with its path; the server is asked by its http address', async () => {
+    vi.mocked(checkSeat).mockResolvedValue({ live: true, game: 'g1', host: 'Bo', started: true });
+    await useApp.getState().checkRejoin();
+    expect(checkSeat).toHaveBeenCalledWith(['http://192.168.1.5:4774'], 't0k3n');
+    expect(useApp.getState().rejoinable).toEqual({ host: 'Bo', via: 'lan' });
+  });
+
+  it('a dead seat is forgotten', async () => {
+    vi.mocked(checkSeat).mockResolvedValue({ live: false, game: '', host: '', started: false });
+    await useApp.getState().checkRejoin();
+    expect(useApp.getState().rejoinable).toBeNull();
+    expect(useApp.getState().settings.rejoin).toEqual(none);
+  });
+
+  it('no answer keeps the seat for later, without a button', async () => {
+    vi.mocked(checkSeat).mockRejectedValue(new Error('server: no answer'));
+    useApp.setState({ rejoinable: { host: 'Bo', via: 'lan' } });
+    await useApp.getState().checkRejoin();
+    expect(useApp.getState().rejoinable).toBeNull();
+    expect(saveSettings).not.toHaveBeenCalled();
+  });
+
+  it('nothing saved: nothing to ask', async () => {
+    useApp.setState({ settings: { ...settings, rejoin: { ...none, via: '' as const } } });
+    await useApp.getState().checkRejoin();
+    expect(checkSeat).not.toHaveBeenCalled();
   });
 });

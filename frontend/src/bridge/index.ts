@@ -8,6 +8,7 @@ import {
   Backs as wailsBacks,
   Cards as wailsCards,
   CardSets as wailsCardSets,
+  CheckSeat as wailsCheckSeat,
   DeckRatios as wailsDeckRatios,
   Dice as wailsDice,
   FindGames as wailsFindGames,
@@ -69,6 +70,8 @@ export interface Rejoin {
   address: string;
   token: string;
   game: string;
+  // via is the Play path it was joined by (15.99); '' from an older app.
+  via: '' | 'lan' | 'online';
 }
 
 // fromGo reads Go's settings; Go checks the choices, so anything else is
@@ -81,7 +84,7 @@ function fromGo(s: {
   mat: string;
   dice: string;
   no_end_turn_ask?: boolean;
-  rejoin: Rejoin;
+  rejoin: Omit<Rejoin, 'via'> & { via?: string };
   host?: HostSetup;
   lan_address?: string;
 }): Settings {
@@ -93,7 +96,7 @@ function fromGo(s: {
     mat: s.mat,
     dice: s.dice,
     no_end_turn_ask: s.no_end_turn_ask ?? false,
-    rejoin: { address: s.rejoin.address, token: s.rejoin.token, game: s.rejoin.game },
+    rejoin: { address: s.rejoin.address, token: s.rejoin.token, game: s.rejoin.game, via: via(s.rejoin.via) },
     host: s.host ? { ...noHostSetup, ...s.host } : noHostSetup,
     lan_address: s.lan_address ?? '',
   };
@@ -113,6 +116,10 @@ export async function getVersions(): Promise<Versions> {
 export async function getNotice(): Promise<NoticeLine[]> {
   const lines = await wailsNotice();
   return lines.map((line) => line.parts.map((p) => ({ text: p.text, url: p.url })));
+}
+
+function via(s: string | undefined): Rejoin['via'] {
+  return s === 'lan' || s === 'online' ? s : '';
 }
 
 function speed(s: string): Speed {
@@ -286,6 +293,21 @@ export async function findGames(): Promise<LanServer[]> {
       started: g.started ?? false,
     })),
   }));
+}
+
+// SeatInfo says whether a token still holds a seat on a server (15.99).
+export interface SeatInfo {
+  live: boolean;
+  game: string;
+  host: string;
+  started: boolean;
+}
+
+// checkSeat asks the server at bases (httpBases) whether token still
+// holds a seat; it rejects when no base answers.
+export async function checkSeat(bases: string[], token: string): Promise<SeatInfo> {
+  const s = await wailsCheckSeat(bases, token);
+  return { live: s.live, game: s.game ?? '', host: s.host ?? '', started: s.started ?? false };
 }
 
 // setFullscreen switches the window (ST-01).

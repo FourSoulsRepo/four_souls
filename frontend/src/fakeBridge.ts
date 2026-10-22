@@ -54,7 +54,7 @@ function loadSettings(): unknown {
     mat,
     dice: 'tear',
     no_end_turn_ask: params.has('noendask'),
-    rejoin: { address: '', token: '', game: '' },
+    rejoin: { address: '', token: '', game: '', via: '' },
     host: { seats: 0, sets: null, detailed: false, response_timer: 0, no_bonus_souls: false, no_deck_ratios: false },
     lan_address: '',
   };
@@ -71,7 +71,7 @@ interface FakeSettings {
   mat: string;
   dice: string;
   no_end_turn_ask?: boolean;
-  rejoin: { address: string; token: string; game: string };
+  rejoin: { address: string; token: string; game: string; via?: string };
   host?: {
     seats: number;
     sets: string[] | null;
@@ -296,6 +296,21 @@ w.go = {
                 { id: 'cathedral', name: 'Cathedral', image: '/cardimg/assets/mats/cathedral.webp' },
               ],
         ),
+      // The real server's answer, like Go's App.CheckSeat: the first
+      // base that answers.
+      CheckSeat: async (bases: string[], token: string) => {
+        for (const b of bases) {
+          try {
+            const r = await fetch(`${b}/seat?token=${encodeURIComponent(token)}`);
+            if (r.ok) {
+              return (await r.json()) as unknown;
+            }
+          } catch {
+            // the next base
+          }
+        }
+        throw new Error('server: no answer');
+      },
       SaveRecord: (link: string) => Promise.resolve(`/fake/${new URL(link).searchParams.get('game') ?? ''}.fsrec`),
       // The LAN holds one hosting app: the test server (?server=PORT).
       // ?nolan finds nothing; a test sets window.fakeLan to list others,

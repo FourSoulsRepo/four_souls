@@ -5,6 +5,7 @@ import { describe, expect, it } from 'vitest';
 import golden from '../../internal/protocol/testdata/golden.jsonl?raw';
 import {
   errorText,
+  httpBases,
   recordURL,
   wsURLs,
   type Create,
@@ -266,6 +267,15 @@ describe('errorText', () => {
     expect(errorText({ code: 'server_outdated', message: '' })).toBe(
       'The server is older than this app. Ask the host to update.',
     );
+  });
+});
+
+describe('httpBases', () => {
+  it('follows wsURLs: wss first for a bare domain, the port kept (15.99)', () => {
+    expect(httpBases('games.example.com')).toEqual(['https://games.example.com', 'http://games.example.com:4774']);
+    expect(httpBases('192.168.1.5')).toEqual(['http://192.168.1.5:4774']);
+    expect(httpBases('wss://games.example.com:8443/ws')).toEqual(['https://games.example.com:8443']);
+    expect(httpBases('not an address')).toBeNull();
   });
 });
 

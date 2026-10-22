@@ -324,6 +324,29 @@ export namespace main {
 
 }
 
+export namespace protocol {
+	
+	export class SeatInfo {
+	    live: boolean;
+	    game?: string;
+	    host?: string;
+	    started?: boolean;
+	
+	    static createFrom(source: any = {}) {
+	        return new SeatInfo(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.live = source["live"];
+	        this.game = source["game"];
+	        this.host = source["host"];
+	        this.started = source["started"];
+	    }
+	}
+
+}
+
 export namespace settings {
 	
 	export class HostSetup {
@@ -366,6 +389,7 @@ export namespace settings {
 	    address: string;
 	    token: string;
 	    game: string;
+	    via: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new Rejoin(source);
@@ -376,6 +400,7 @@ export namespace settings {
 	        this.address = source["address"];
 	        this.token = source["token"];
 	        this.game = source["game"];
+	        this.via = source["via"];
 	    }
 	}
 	export class Settings {

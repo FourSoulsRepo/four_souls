@@ -233,3 +233,22 @@ func TestLanAddressSurvivesRestart(t *testing.T) {
 		t.Errorf("a too long address was kept: %q", saved.LanAddress)
 	}
 }
+
+// The saved seat keeps the path it was joined by (15.99).
+func TestRejoinKeepsItsPath(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "settings.json")
+	r := Rejoin{Address: "192.168.1.5", Token: "t0k3n", Game: "g1", Via: "lan"}
+	if _, err := Save(path, Settings{Rejoin: r}); err != nil {
+		t.Fatal(err)
+	}
+	if got := Load(path).Rejoin; got != r {
+		t.Fatalf("rejoin %+v, want %+v", got, r)
+	}
+	saved, err := Save(path, Settings{Rejoin: Rejoin{Token: "t", Via: "moon"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if saved.Rejoin.Via != "" {
+		t.Errorf("an unknown path was kept: %q", saved.Rejoin.Via)
+	}
+}

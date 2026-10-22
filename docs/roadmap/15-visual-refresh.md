@@ -3177,7 +3177,7 @@ Images come first, so the new table is built with backs and mats.
    8. UC-04, UC-19, UC-27; wiki `Client`, server guides, `Screenshots`; CHANGELOG.
    9. Screenshots: `.cache/screenshots/15.98/before/` and `after/`.
 
-### [ ] 15.99 Rejoin button
+### [x] 15.99 Rejoin button
 
 1. Goal: a player whose app closed mid-game gets back in one click (M-05).
 2. Planned by the owner (2026-10-22).
@@ -3193,6 +3193,24 @@ Images come first, so the new table is built with backs and mats.
    2. e2e test: kill a player's app mid-game; the restarted menu rejoins.
    3. e2e test: after the game ends the button is gone.
    4. UC-07 updated.
+5. Result (2026-10-22)
+   1. Go `GET /seat?token=…` (`seat.go`): live at a table or in an unfinished game.
+   2. It answers `protocol.SeatInfo`: live, game, host, started; CORS `*`.
+   3. Go `App.CheckSeat` (`servers.go`): tries each http(s) base in order.
+   4. `httpBases`: the bases in `wsURLs`' order, wss first for a domain.
+   5. `settings.rejoin.via`: the path it was joined by; Go cleans it.
+   6. `checkRejoin` on every menu visit; it never delays the menu.
+   7. Live: "Rejoin: Ann's game · LAN" in the top corner.
+   8. In the corner, not above Play: an answer that moved the menu repeated 19.49.
+   9. Dead: no button, the seat is forgotten; no answer: the seat is kept.
+   10. `forgetSeat`: game over, a game-ending notice, `leaveTable`, `quit` while seated.
+   11. `endedGame` keeps the record download working after that.
+   12. Go tests: `TestSeatTellsALiveSeat`, `TestCheckSeat`, `TestRejoinKeepsItsPath`.
+   13. Vitest: live, dead, no answer, nothing saved.
+   14. e2e `pause.spec.ts`: restart, Rejoin by Online and LAN, leave, game over, a dead seat.
+   15. UC-07 1d, 1e; wiki `Client`, `Server`, `Screenshots`; CHANGELOG.
+   16. Screenshots: `.cache/screenshots/15.99/before/` and `after/`.
+6. Owner (2026-10-22): stop after 15.99 for review; 15.100 waits.
 
 ### [ ] 15.100 Recent servers show live status
 

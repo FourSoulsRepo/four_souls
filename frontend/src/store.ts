@@ -16,6 +16,7 @@ import {
   saveRecord,
   getSettings,
   getVersions,
+  checkSeat,
   saveSettings,
   startHosting,
   stopHosting,
@@ -24,6 +25,7 @@ import {
   type Icons,
   type LanServer,
   type MatInfo,
+  type Rejoin,
   type Settings,
 } from './bridge';
 import { noHostSetup } from './hostSetup';
@@ -40,6 +42,7 @@ import { createPlayback, effectsFor, slotZone, type Effect } from './playback';
 import { loadSounds } from './sounds';
 import { endsGame, lostDialogAfter, retryDelay } from './reconnect';
 import {
+  httpBases,
   protocolVersion,
   recordURL,
   wsURLs,
@@ -226,6 +229,14 @@ interface AppState extends Session {
   // shows the LAN games or the Online servers.
   path: Path;
   openPath: (path: Path) => void;
+  // rejoinable is the saved seat's game while its server says the seat
+  // is still on: the menu offers Rejoin (15.99). null: none.
+  rejoinable: { host: string; via: Rejoin['via'] } | null;
+  // checkRejoin asks the saved seat's server whether it is still on; a
+  // dead seat is forgotten, no answer keeps it for later.
+  checkRejoin: () => Promise<void>;
+  // rejoin takes the saved seat back, by the path it was joined by.
+  rejoin: () => Promise<void>;
   loadSettings: () => Promise<void>;
   // saveSettings reports whether Go stored them.
   saveSettings: (s: Settings) => Promise<boolean>;
@@ -263,6 +274,9 @@ interface AppState extends Session {
 
 // Path is a way to play from the main menu's Play group (M-03).
 export type Path = 'lan' | 'online';
+
+// noSeat is a forgotten saved seat.
+const noSeat: Rejoin = { address: '', token: '', game: '', via: '' };
 
 // seatOf is this player's seat: from the table, or, for an app that came
 // back to a running game after a restart, from the welcome.
@@ -363,12 +377,26 @@ export const useApp = create<AppState>()((set, get) => {
   // can take the seat back after a restart (N-08).
   const keepSeat = () => {
     const s = get();
-    const r = { address: s.address, token: s.lobby.welcome?.token ?? '', game: s.lobby.table?.game ?? '' };
+    const r = { address: s.address, token: s.lobby.welcome?.token ?? '', game: s.lobby.table?.game ?? '', via: s.path };
     const old = s.settings.rejoin;
-    if (r.token && (r.address !== old.address || r.token !== old.token || r.game !== old.game)) {
+    if (r.token && (r.address !== old.address || r.token !== old.token || r.game !== old.game || r.via !== old.via)) {
       void s.saveSettings({ ...s.settings, rejoin: r });
     }
   };
+  // endedGame is the forgotten seat's game, for its record download.
+  let endedGame = '';
+  // forgetSeat drops the saved seat: its game ended, or the player left
+  // it on purpose (15.99). A crash or a closed window keeps it.
+  const forgetSeat = () => {
+    const s = get().settings;
+    set({ rejoinable: null });
+    if (s.rejoin.token) {
+      endedGame = s.rejoin.game;
+      void get().saveSettings({ ...s, rejoin: noSeat });
+    }
+  };
+  // seated: the player sits at a table or plays a game.
+  const seated = () => get().screen === 'game' || get().lobby.table !== null;
 
   // serverURL is the WebSocket URL that opened for address: wss:// or
   // ws:// (8.18). The record download follows its scheme.
@@ -531,6 +559,9 @@ export const useApp = create<AppState>()((set, get) => {
       if (env.type === 'update') {
         set({ behind: true });
         playback.push(env.data as Update);
+        if ((env.data as Update).view.over) {
+          forgetSeat();
+        }
       }
       if (env.type === 'error') {
         set({ sent: null, aimed: null });
@@ -549,6 +580,7 @@ export const useApp = create<AppState>()((set, get) => {
         const n = env.data as Notice;
         set({ notice: n });
         if (endsGame(n)) {
+          forgetSeat();
           endRetry();
           stopPlayback();
           set((s) => ({ screen: 'join', lobby: { ...s.lobby, table: null }, game: null }));
@@ -628,7 +660,7 @@ export const useApp = create<AppState>()((set, get) => {
     },
     saveRecord: async () => {
       const s = get();
-      const link = recordURL(serverURL, s.lobby.table?.game ?? s.settings.rejoin.game, s.lobby.welcome?.token ?? '');
+      const link = recordURL(serverURL, s.lobby.table?.game ?? (s.settings.rejoin.game || endedGame), s.lobby.welcome?.token ?? '');
       if (!link) {
         return '';
       }
@@ -654,7 +686,7 @@ export const useApp = create<AppState>()((set, get) => {
       mat: '',
       dice: 'tear',
       no_end_turn_ask: false,
-      rejoin: { address: '', token: '', game: '' },
+      rejoin: { address: '', token: '', game: '', via: '' },
       host: noHostSetup,
       lan_address: '',
     },
@@ -705,6 +737,37 @@ export const useApp = create<AppState>()((set, get) => {
     path: 'lan',
     openPath: (path) => {
       set({ path, screen: 'join', error: '', zoom: null });
+    },
+    rejoinable: null,
+    checkRejoin: async () => {
+      const r = get().settings.rejoin;
+      const bases = r.token ? httpBases(r.address) : null;
+      if (!bases) {
+        set({ rejoinable: null });
+        return;
+      }
+      try {
+        const seat = await checkSeat(bases, r.token);
+        if (get().settings.rejoin.token !== r.token) {
+          return; // another seat was saved meanwhile
+        }
+        if (seat.live) {
+          set({ rejoinable: { host: seat.host, via: r.via } });
+        } else {
+          forgetSeat();
+        }
+      } catch {
+        set({ rejoinable: null });
+      }
+    },
+    rejoin: async () => {
+      const r = get().settings.rejoin;
+      if (!r.token) {
+        return;
+      }
+      set({ rejoinable: null });
+      get().openPath(r.via || 'online');
+      await get().joinServer(r.address, { token: r.token, recent: r.via !== 'lan' });
     },
     loadSettings: async () => {
       try {
@@ -787,10 +850,14 @@ export const useApp = create<AppState>()((set, get) => {
         return;
       }
       send('leave');
+      forgetSeat();
       stopPlayback();
       set((s) => leftTable(s));
     },
     quit: async (to = 'menu') => {
+      if (seated()) {
+        forgetSeat();
+      }
       endRetry();
       disconnect();
       stopPlayback();

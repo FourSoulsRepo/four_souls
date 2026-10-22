@@ -1,8 +1,9 @@
 // Pause, vote, end of match (7.11).
+import type { Page } from '@playwright/test';
 import { expect, test } from './fixtures';
 import { startGame } from './game';
-import { appURL } from './server';
-import { shot } from './shot';
+import { appURL, serverPort } from './server';
+import { realAssets, shot } from './shot';
 import { openOnline } from './menu';
 
 const fast = () => `${appURL()}&anim=off`;
@@ -83,4 +84,87 @@ test('the end screen names the winner and saves the record', async ({ browser })
   await shot(eli, 'game-over');
   await end.getByRole('button', { name: 'Back to menu' }).click();
   await expect(eli.getByRole('button', { name: 'Play', exact: true })).toBeVisible();
+});
+
+// savedSeat is the seat token page's app keeps in its settings.
+function savedSeat(page: Page): Promise<string> {
+  return page.evaluate(() => {
+    interface S {
+      settings: { rejoin: { token: string } };
+    }
+    return (window as unknown as { fourSouls: { store: { getState: () => S } } }).fourSouls.store.getState().settings.rejoin.token;
+  });
+}
+
+// restart closes page's app and starts it again with the same settings.
+async function restart(page: Page): Promise<Page> {
+  const context = page.context();
+  await page.close();
+  const again = await context.newPage();
+  await realAssets(again);
+  await again.goto(fast());
+  return again;
+}
+
+// A crash or a closed window keeps the seat; the restarted menu offers
+// it, labelled by the path it was joined by. Leaving on purpose or the
+// end of the game forgets it (15.99, M-05).
+test('a restarted app offers Rejoin in the menu, until the seat is left (15.99)', async ({ browser }) => {
+  const [ann, bo] = await startGame(browser, ['Ann', 'Bo'], { url: fast() });
+  if (!ann || !bo) {
+    throw new Error('no pages');
+  }
+  // Bo joined by Online, Ann hosted on LAN.
+  const bo2 = await restart(bo);
+  const offer = bo2.getByRole('button', { name: "Rejoin: Ann's game · Online" });
+  await expect(offer).toBeVisible();
+  // The menu itself did not wait for the answer, nor move for it.
+  await expect(bo2.getByRole('button', { name: 'Play', exact: true })).toBeVisible();
+  await shot(bo2, 'menu-rejoin');
+  await offer.click();
+  await expect(bo2.locator('.player-bottom')).toHaveAccessibleName('Bo (you)');
+
+  const ann2 = await restart(ann);
+  await ann2.getByRole('button', { name: "Rejoin: Ann's game · LAN" }).click();
+  await expect(ann2.locator('.player-bottom')).toHaveAccessibleName('Ann (you)');
+  // Ann leaves on purpose: no Rejoin, also after a restart.
+  await ann2.getByRole('button', { name: 'Menu' }).click();
+  await ann2.getByRole('button', { name: 'Leave game' }).click();
+  await expect(ann2.getByRole('button', { name: 'Play', exact: true })).toBeVisible();
+  await expect.poll(() => savedSeat(ann2)).toBe('');
+  const ann3 = await restart(ann2);
+  await ann3.waitForLoadState('networkidle');
+  await expect(ann3.getByRole('button', { name: /^Rejoin/ })).toHaveCount(0);
+
+  // The game ends for Bo: the seat is forgotten.
+  await bo2.evaluate(() => {
+    interface S {
+      game: { step: number; events: unknown; view: { over?: boolean; winners?: number[] } };
+      receive: (env: unknown) => void;
+    }
+    const s = (window as unknown as { fourSouls: { store: { getState: () => S } } }).fourSouls.store.getState();
+    const g = structuredClone(s.game);
+    g.step += 1;
+    g.events = [];
+    g.view.over = true;
+    g.view.winners = [0];
+    s.receive({ type: 'update', data: g });
+  });
+  await expect(bo2.getByRole('dialog', { name: 'Game over' })).toBeVisible();
+  await expect.poll(() => savedSeat(bo2)).toBe('');
+});
+
+// A seat whose game is gone is forgotten when the menu asks (15.99).
+test('a dead saved seat shows no Rejoin and is forgotten (15.99)', async ({ page }) => {
+  await page.addInitScript((port) => {
+    const key = 'fake-settings';
+    if (!localStorage.getItem(key)) {
+      const rejoin = { address: `127.0.0.1:${String(port)}`, token: 'ab'.repeat(16), game: 'gone', via: 'online' };
+      localStorage.setItem(key, JSON.stringify({ nickname: 'Pam', recent: [], animation: 'off', fullscreen: false, mat: '', dice: 'tear', rejoin }));
+    }
+  }, serverPort());
+  await page.goto(fast());
+  await expect(page.getByRole('button', { name: 'Play', exact: true })).toBeVisible();
+  await expect.poll(() => savedSeat(page)).toBe('');
+  await expect(page.getByRole('button', { name: /^Rejoin/ })).toHaveCount(0);
 });

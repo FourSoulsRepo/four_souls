@@ -83,6 +83,20 @@
   background: #f7de8f;
 }
 
+/* Rejoin (M-05): a gold button in the top corner, clear of the menu. */
+.menu-rejoin {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  min-width: 0;
+  max-width: calc(100% - 32px);
+}
+
+.menu-rejoin button {
+  background: var(--gold);
+  white-space: normal;
+}
+
 .menu-versions {
   position: absolute;
   right: 16px;

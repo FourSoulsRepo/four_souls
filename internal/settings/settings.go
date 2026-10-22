@@ -114,6 +114,20 @@ type Rejoin struct {
 	Address string `json:"address"`
 	Token   string `json:"token"`
 	Game    string `json:"game"`
+	// Via is the Play path it was joined by, for the menu's Rejoin
+	// button (15.99): one of Paths, or "" from an older app.
+	Via string `json:"via"`
+}
+
+// Paths are the main menu's ways to play (M-03).
+var Paths = []string{"lan", "online"}
+
+// clean drops a path the menu does not know.
+func (r Rejoin) clean() Rejoin {
+	if !slices.Contains(Paths, r.Via) {
+		r.Via = ""
+	}
+	return r
 }
 
 // The choices of the settings that take one of a list; the first is
@@ -185,6 +199,7 @@ func Load(path string) Settings {
 		s.Recent = []RecentServer{}
 	}
 	s.Host = s.Host.clean()
+	s.Rejoin = s.Rejoin.clean()
 	s.LanAddress = cleanAddress(s.LanAddress)
 	for _, c := range s.choices() {
 		if !slices.Contains(c.allowed, *c.value) {
@@ -229,6 +244,7 @@ func Save(path string, s Settings) (Settings, error) {
 	}
 	s.Recent = recent
 	s.Host = s.Host.clean()
+	s.Rejoin = s.Rejoin.clean()
 	s.LanAddress = cleanAddress(s.LanAddress)
 	data, err := json.MarshalIndent(s, "", "  ")
 	if err != nil {

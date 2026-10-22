@@ -13,8 +13,9 @@ WebSocket (ws.go) ──Conn──▶ Client ──▶ Hub (lobby goroutine)
 * **Hub** owns the lobby: hello, the game list, tables, ready checks, saved games. Only its goroutine touches that state; everything reaches it as a request on a channel.
 * **Room** owns one game: the ban and pick phase, then the engine game. Only its goroutine touches the engine.
 * **Client.Receive** sends a message to the hub until the client's game starts, then straight to its room.
-* **Server** (`server.go`) is the HTTP server with `/ws`, `/record` and `/healthz`; `cmd/server` and the app's Host binding both start it.
+* **Server** (`server.go`) is the HTTP server with `/ws`, `/record`, `/healthz` and `/seat`; `cmd/server` and the app's Host binding both start it.
 * **`/healthz`** (`health.go`, 8.19) answers 200 while the hub goroutine runs a request within two hub seconds, else 503. Docker's healthcheck asks it; it tells nothing about games.
+* **`/seat?token=…`** (`seat.go`, 15.99) answers a `protocol.SeatInfo`: whether the token holds a seat at a table or in a game that has not finished, with the game's id and host. A restarted app asks it before the menu offers Rejoin. A malformed token is never looked up. It sends `Access-Control-Allow-Origin: *`: only the token's holder learns anything, and the e2e tests' fake bridge asks it from a browser page.
 
 ## A game's life
 
@@ -77,6 +78,7 @@ Step 8.12 checked every message the server sends for hidden cards. Hidden means:
 | `update` → `blocked` | why the seat can't use a card or turn action now: kind, object, `reason` (15.29) | Only the seat's own hand cards, its own cards in play, and rooms. Reasons are fixed words; none names a card. |
 | `presence` | another seat's aim and hover (15.35) | Spots are public cards, players, decks, stack items, or the sender's hand slot; a hidden object is dropped by the server (`TestPresenceHidesHandCards`). |
 | `error` | code, message, rule | Engine refusals name only cards in play; an activation checks the zone before it names the card. |
+| `/seat` | whether a token holds a live seat, its game and host (15.99) | Only the token's holder knows the token; any other token is "not live". |
 | `/record` | the match record (all hidden info) | Only to the game's players, only after the game is over (RP-05); `TestDownloadRecord`. |
 
 Rules that keep it so:

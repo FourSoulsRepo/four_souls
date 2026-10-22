@@ -198,6 +198,13 @@ export function wsURLs(address: string): string[] | null {
   return domain ? [tls, plain] : [plain];
 }
 
+// httpBases are the server's http(s) addresses for what a player typed,
+// in the order wsURLs tries them: http:// for ws://, https:// for
+// wss:// (15.99). null when it is not an address.
+export function httpBases(address: string): string[] | null {
+  return wsURLs(address)?.map((u) => u.replace(/^ws/, 'http').replace(/\/ws$/, '')) ?? null;
+}
+
 // recordURL is where the server at a WebSocket URL serves a finished
 // game's record to one of its players (RP-05): http:// for ws://,
 // https:// for wss://.

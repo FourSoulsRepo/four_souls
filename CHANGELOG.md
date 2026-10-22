@@ -6,6 +6,7 @@ Rules engine versions are in each release's notes.
 
 ## Unreleased
 
+- If the app closed during a game, the main menu offers "Rejoin" while that game is still on. Leaving a game on purpose, or its end, forgets it.
 - Online: type a server's address or pick it from Recent; it no longer lists LAN games. Back and Esc go one screen up.
 - LAN: Host a game sits on top; games on your network show up by themselves, without "Search again". A game in progress stays listed, and if your app closed during it, Rejoin takes your seat back. The address field remembers the last address you typed.
 - Main menu: Play opens LAN, Online and Learn to play right under it; Records and Learn to play are marked "Soon".

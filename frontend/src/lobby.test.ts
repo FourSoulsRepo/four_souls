@@ -127,7 +127,7 @@ describe('optionsText', () => {
 });
 
 describe('lanRows', () => {
-  const none = { address: '', token: '', game: '' };
+  const none = { address: '', token: '', game: '', via: '' as const };
   const game = { id: '', host: 'Ann', seats: 3, taken: 1, locked: false, started: false };
 
   it('lists each waiting game with its address and lock; another version cannot be joined', () => {
@@ -166,11 +166,11 @@ describe('lanRows', () => {
     const [started, full] = lanRows(found, 1, none);
     expect(started).toMatchObject({ text: "Ann's game · 3/3 players · In progress · 192.168.1.5:4774", joinable: false, rejoin: false });
     expect(full).toMatchObject({ joinable: false, rejoin: false });
-    const mine = lanRows(found, 1, { address: '192.168.1.5', token: 't', game: 'g1' });
+    const mine = lanRows(found, 1, { address: '192.168.1.5', token: 't', game: 'g1', via: 'lan' as const });
     expect(mine[0]).toMatchObject({ joinable: true, rejoin: true });
     expect(mine[1]).toMatchObject({ joinable: false, rejoin: false });
     // A seat without a token holds nothing.
-    expect(lanRows(found, 1, { address: '', token: '', game: 'g1' })[0]).toMatchObject({ rejoin: false });
+    expect(lanRows(found, 1, { ...none, game: 'g1' })[0]).toMatchObject({ rejoin: false });
   });
 });
 

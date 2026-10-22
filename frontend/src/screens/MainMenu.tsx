@@ -16,6 +16,10 @@ export function MainMenu() {
   const setOpen = useApp((s) => s.setPlayOpen);
   const scale = useApp((s) => scaleFor(s.settings.animation, 0, 0));
   const [nav, height] = useOpenHeight();
+  const rejoinable = useApp((s) => s.rejoinable);
+  const rejoin = useApp((s) => s.rejoin);
+  const checkRejoin = useApp((s) => s.checkRejoin);
+  const seat = useApp((s) => s.settings.rejoin.token);
 
   useEffect(() => {
     getVersions().then(setVersions, () => {
@@ -26,6 +30,12 @@ export function MainMenu() {
   useEscape(() => {
     setOpen(false);
   });
+
+  // Is the game this app left still on? Never waits: the menu shows
+  // at once, the button when the answer comes.
+  useEffect(() => {
+    void checkRejoin();
+  }, [checkRejoin, seat]);
 
   return (
     <div className="menu">
@@ -88,6 +98,20 @@ export function MainMenu() {
           Exit
         </button>
       </nav>
+      {rejoinable && (
+        // In the corner: the menu is centred, and a button that came
+        // with the answer moved the others under the pointer (19.49).
+        <div className="menu-buttons menu-rejoin">
+          <button
+            type="button"
+            onClick={() => {
+              void rejoin();
+            }}
+          >
+            Rejoin: {rejoinLabel(rejoinable)}
+          </button>
+        </div>
+      )}
       {versions && (
         <div className="menu-versions">
           app {versions.app} · rules engine {versions.engine}
@@ -95,6 +119,12 @@ export function MainMenu() {
       )}
     </div>
   );
+}
+
+// rejoinLabel names the game to rejoin and how it was joined (M-05).
+function rejoinLabel(r: { host: string; via: '' | 'lan' | 'online' }): string {
+  const game = r.host ? `${r.host}'s game` : 'your game';
+  return r.via ? `${game} · ${r.via === 'lan' ? 'LAN' : 'Online'}` : game;
 }
 
 // playGroup is how many buttons the Play group holds.

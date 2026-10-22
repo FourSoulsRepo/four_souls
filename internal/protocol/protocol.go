@@ -221,6 +221,16 @@ type GameInfo struct {
 	Locked  bool     `json:"locked,omitempty"` // joining needs the password (N-14)
 }
 
+// SeatInfo answers GET /seat?token=… (15.99): whether the token still
+// holds a seat at a table or in a game that has not finished, so a
+// restarted app offers Rejoin. Only the token's holder knows it.
+type SeatInfo struct {
+	Live    bool   `json:"live"`
+	Game    string `json:"game,omitempty"`
+	Host    string `json:"host,omitempty"` // the nickname of who created it
+	Started bool   `json:"started,omitempty"`
+}
+
 // Games lists the games on the server, and the saved ones.
 type Games struct {
 	Games []GameInfo `json:"games"`
