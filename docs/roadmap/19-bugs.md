@@ -1832,6 +1832,8 @@ Totals by system (57 items):
    6. That full run had two other flakes, both passed alone: logged as 19.55, 19.56.
    7. The next full run lost one other test, passed alone: logged as 19.57.
    8. The flight test passed in both full runs after the fix.
+7. Owner notes (2026-10-22)
+   1. Owner marks 19.54 solved.
 
 ### [ ] 19.55 e2e: whom the stack waits for, webkit, under load
 

@@ -1828,6 +1828,8 @@ Images come first, so the new table is built with backs and mats.
    15. Engine version kept: no rules change; old states load with source 0.
    16. Tests: `statics_test.go`, `view_test.go`, b2 `champion_belt_test.go`.
    17. `protocol.ts` types; wiki `Rules-engine`. No UI change: no screenshots.
+9. Owner notes (2026-10-22)
+   1. Owner marks 15.54 solved.
 
 ### [x] 15.55 Curses left of the player
 
@@ -2947,6 +2949,8 @@ Images come first, so the new table is built with backs and mats.
    18. First full e2e: the new test raced the stack; it now waits for the play.
    19. Two older tests flaked in that run, then passed: logged as 19.53, 19.54.
    20. Evidence: `.cache/e2e-evidence/15.92-run1/` (not in git).
+7. Owner notes (2026-10-22)
+   1. Owner marks 15.92 solved.
 
 ### [x] 15.93 Next-roll boosts and the end of turn
 
@@ -2985,6 +2989,8 @@ Images come first, so the new table is built with backs and mats.
    15. e2e: a next-roll icon goes once the attack roll uses it.
    16. `Animations.md` row; UC-12 3i; wiki `Client`; CHANGELOG.
    17. Screenshots: `.cache/screenshots/15.93/before/` and `after/`.
+7. Owner notes (2026-10-22)
+   1. Owner marks 15.93 solved.
 
 ### [x] 15.94 Real odds in a fight
 
@@ -3034,3 +3040,5 @@ Images come first, so the new table is built with backs and mats.
    21. Full e2e: 19.53 and 19.54 again; 19.54 failed its rerun too.
    22. 19.54's cause is 15.51's row fade, not 15.94; fixed right after, as 19.54.
    23. Evidence: `.cache/e2e-evidence/15.94-run1/` (not in git).
+9. Owner notes (2026-10-22)
+   1. Owner marks 15.94 solved.
