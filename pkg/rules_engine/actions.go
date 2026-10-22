@@ -312,8 +312,8 @@ func (g *Game) perform(a Action) {
 		g.askCurseTarget(a.Object)
 	case ActPlayLootFree:
 		// "You must play that loot card if able. This doesn't use a loot play."
-		if contains(g.Players[a.Player].Hand, a.Object) {
-			g.Players[a.Player].ExtraLootPlays++
+		if contains(g.Players[a.Player].Hand, a.Object) && g.lootPlayable(a.Player, a.Object) == nil {
+			g.FreeLoot = a.Object
 			g.apply(Intent{Player: a.Player, Kind: IntentPlayLoot, Objects: []ObjectID{a.Object}})
 		}
 	case ActChooseDie:

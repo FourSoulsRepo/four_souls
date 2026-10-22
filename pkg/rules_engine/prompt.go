@@ -146,19 +146,8 @@ func (g *Game) check(in Intent) error {
 		if g.lootPlaysFor(in.Player) < 1 {
 			return deny("R-CARD-08", g.noLootSay(in.Player), "no loot play available")
 		}
-		if g.bonus(StatOneLoot, in.Player, 0) > 0 && g.Players[in.Player].LootPlayed > 0 {
-			return deny("R-ABIL-12", "Only one loot card each turn", "only one loot card each turn")
-		}
-		if g.locked(in.Player) {
-			return deny("R-ABIL-12", "A card forbids loot this turn", "the active player's card forbids playing loot on their turn")
-		}
-		if g.def(in.Objects[0]).CopiesTapOnPlay && len(g.tapAbilitiesInPlay(in.Objects[0])) == 0 {
-			return deny("R-ABIL-04", "No item with a ↷ ability to copy", "no item in play has a ↷ ability to copy")
-		}
-		if ab, ok := g.lootAbility(in.Objects[0]); ok {
-			if err := g.targetsAvailable(ab, in.Player, in.Objects[0]); err != nil {
-				return err
-			}
+		if err := g.lootPlayable(in.Player, in.Objects[0]); err != nil {
+			return err
 		}
 	case IntentActivate:
 		if w.Kind != PromptPriority {
@@ -294,6 +283,24 @@ func (g *Game) apply(in Intent) {
 func (g *Game) emit(e Event) {
 	g.events = append(g.events, e)
 	g.collectTriggers(e)
+}
+
+// lootPlayable returns why p cannot play the loot card id now, loot
+// plays aside, or nil.
+func (g *Game) lootPlayable(p PlayerID, id ObjectID) error {
+	if g.bonus(StatOneLoot, p, 0) > 0 && g.Players[p].LootPlayed > 0 {
+		return deny("R-ABIL-12", "Only one loot card each turn", "only one loot card each turn")
+	}
+	if g.locked(p) {
+		return deny("R-ABIL-12", "A card forbids loot this turn", "the active player's card forbids playing loot on their turn")
+	}
+	if g.def(id).CopiesTapOnPlay && len(g.tapAbilitiesInPlay(id)) == 0 {
+		return deny("R-ABIL-04", "No item with a ↷ ability to copy", "no item in play has a ↷ ability to copy")
+	}
+	if ab, ok := g.lootAbility(id); ok {
+		return g.targetsAvailable(ab, p, id)
+	}
+	return nil
 }
 
 // lootAbility returns the loot ability of a loot card, if it has one.

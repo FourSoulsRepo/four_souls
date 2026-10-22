@@ -156,6 +156,7 @@ func (g *Game) chooseTarget(c Choice, i int) {
 func (g *Game) cancelActivation() {
 	a := g.Activating
 	g.Activating = nil
+	g.FreeLoot = 0 // a cancelled free play stays in hand, not free
 	g.emit(Event{Kind: EvCancelled, Player: a.Player, Object: a.Source})
 	g.openWindow(a.Window)
 }
@@ -166,7 +167,7 @@ func (g *Game) finishActivation() {
 	ab := g.ability(a.Ability)
 	if a.Loot {
 		g.Players[a.Player].Hand = remove(g.Players[a.Player].Hand, a.Source)
-		g.useLootPlay(a.Player)
+		g.spendLootPlay(a.Player, a.Source)
 		nid := g.move(a.Source, Zone{Kind: ZoneStack}, a.Player)
 		card := g.Object(nid).Card
 		g.Players[a.Player].LootPlayed++
@@ -390,6 +391,16 @@ func (g *Game) lootPlaysFor(p PlayerID) int {
 		n += g.Turn.LootPlays + max(g.bonus(StatLootPlays, p, 0)-g.Turn.BonusLootUsed, 0)
 	}
 	return n
+}
+
+// spendLootPlay uses a loot play for playing id, unless id is the free
+// play (FreeLoot), which uses none.
+func (g *Game) spendLootPlay(p PlayerID, id ObjectID) {
+	if g.FreeLoot != 0 && g.FreeLoot == id {
+		g.FreeLoot = 0
+		return
+	}
+	g.useLootPlay(p)
 }
 
 func (g *Game) useLootPlay(p PlayerID) {

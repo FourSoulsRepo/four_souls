@@ -273,6 +273,9 @@ type Game struct {
 	FirstRoll *FirstRoll `json:"first_roll,omitempty"`
 	// Activating is an ability being put on the stack (targets pending).
 	Activating *Activation `json:"activating,omitempty"`
+	// FreeLoot is the loot card being played without a loot play
+	// (Distant Admiration); 0 for none.
+	FreeLoot ObjectID `json:"free_loot,omitempty"`
 	// PendingTriggers wait to go on the stack (R-ABIL-14).
 	PendingTriggers []PendingTrigger `json:"pending_triggers,omitempty"`
 	// Boosts and Shields last till end of turn (R-TURN-13). A shield

@@ -33,7 +33,7 @@ This step never closes; new reports are appended.
 
 | ID | Group                                    | System     | Items                                                  | Count |
 |----|------------------------------------------|------------|--------------------------------------------------------|-------|
-| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46               | 6     |
+| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60        | 7     |
 | B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39                               | 4     |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30                                     | 3     |
@@ -45,11 +45,11 @@ This step never closes; new reports are appended.
 | J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57 | 13 |
 | K  | Build and release files                  | Release    | 19.47, 19.59                                           | 2     |
 
-Totals by system (59 items):
+Totals by system (60 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
-| Engine    | A, B    | 10    |
+| Engine    | A, B    | 11    |
 | Card data | C       | 2     |
 | Client    | D–G     | 20    |
 | Server    | H       | 1     |
@@ -1931,3 +1931,38 @@ Totals by system (59 items):
    1. Every `wails build` passes `-m`: skip `go mod tidy`.
    2. The build action, `make internal`, and the build docs.
    3. Go has no way to hide a tagged import from tidy.
+
+### [ ] 19.60 Distant Admiration: an unplayable given card leaves a loot play
+
+1. Goal: the free play of a given loot card never adds a loot play.
+2. Report (owner, 2026-10-22)
+   1. Play test; record `2026-10-22-163245-g2_Hitokiri-Battosai_Gaijin_distant_admiration_one_more_loot.fsrec`.
+   2. The Fettered played two loot cards: the turn's play and the extra one.
+   3. Distant Admiration took Butter Bean! from the other player.
+   4. Butter Bean had no target; it stayed in hand.
+   5. The player then had one more loot play.
+3. Tasks:
+   1. Find the cause in the match record.
+   2. A free play spends no loot play, played or not.
+   3. "If able": a card that cannot be played stays in hand.
+4. Done when:
+   1. Engine test: an unplayable given card leaves the loot plays as they were.
+   2. Engine test: a played given card spends no loot play.
+   3. Engine test: a cancelled free play leaves the plays as they were.
+5. Cause
+   1. Record steps 635 and 651: both loot plays used.
+   2. Step 662: Cain gives Butter Bean!; step 663: `cancelled`.
+   3. `ActPlayLootFree` added an extra loot play, then played the card.
+   4. Butter Bean! had no target: its prompt offered only "cancel".
+   5. The cancel kept the card in hand and the extra play stayed.
+6. Fix
+   1. `Game.FreeLoot` marks the card played for free.
+   2. Its play spends no loot play (`spendLootPlay`).
+   3. A cancel clears the mark.
+   4. "If able" uses the play checks, loot plays aside (`lootPlayable`).
+   5. An unplayable card stays in hand; nothing is asked.
+7. Open question for the owner
+   1. "You must play that loot card": should its prompts drop "cancel"?
+   2. The engine part is small.
+   3. The client needs care: an aim with no cancel must not end on a click.
+   4. Today a cancel leaves the card in hand, at no loot play cost.

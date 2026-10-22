@@ -301,7 +301,7 @@ func (g *Game) throwDie(t Throw) {
 // playLoot moves a loot card from hand to the stack (R-MECH-45).
 func (g *Game) playLoot(p PlayerID, id ObjectID) {
 	g.Players[p].Hand = remove(g.Players[p].Hand, id)
-	g.useLootPlay(p)
+	g.spendLootPlay(p, id)
 	nid := g.move(id, Zone{Kind: ZoneStack}, p)
 	card := g.Object(nid).Card
 	g.Players[p].LootPlayed++
