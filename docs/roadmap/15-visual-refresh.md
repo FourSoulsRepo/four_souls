@@ -3077,3 +3077,5 @@ Images come first, so the new table is built with backs and mats.
    12. e2e `prompt.spec.ts`: turn, out-of-turn response, pick.
    13. UC-21 2a, 4a; wiki `Client`, `Animations`, `Screenshots`; CHANGELOG.
    14. Screenshots: `.cache/screenshots/15.95/before/` and `after/`.
+6. Owner notes (2026-10-22)
+   1. Owner marks 15.95 solved.
