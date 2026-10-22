@@ -72,6 +72,9 @@ export interface Zoom {
   caption?: ZoomCaption;
   // outcome: what a history headline did, beside the card (15.90).
   outcome?: Outcome[];
+  // stats: why the card's stats are not its print, or what an effect of
+  // this turn does, below the card (15.92, V-41).
+  stats?: string[];
 }
 
 export interface ZoomCaption {

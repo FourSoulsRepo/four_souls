@@ -14,7 +14,8 @@ import './Card.css';
 // names the owner and highlights the used ability (S-06, S-07); the
 // card's keywords stand beside it (H-13). A card the player can't use
 // now says why under it (15.29, F-17, C-06). A history headline's zoom
-// shows what it did beside the card, after an arrow (15.90).
+// shows what it did beside the card, after an arrow (15.90). A changed
+// stat's sum goes under the card (15.92).
 export function CardZoom() {
   const zoom = useApp((s) => s.zoom);
   const setZoom = useApp((s) => s.setZoom);
@@ -58,6 +59,13 @@ export function CardZoom() {
             <p className="card-zoom-why" role="note">
               {zoom.why}
             </p>
+          )}
+          {zoom.stats && zoom.stats.length > 0 && (
+            <ul className="card-zoom-stats" aria-label="Stats">
+              {zoom.stats.map((line) => (
+                <li key={line}>{line}</li>
+              ))}
+            </ul>
           )}
           {zoom.caption && (
             <figcaption className="card-zoom-caption">

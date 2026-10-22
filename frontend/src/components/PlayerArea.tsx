@@ -87,7 +87,7 @@ function OpponentArea({ player, name, position, active, winSouls, ui, doing }: O
           damage={character.damage}
           spent={spent(character)}
           counters={counted(character)}
-          stats={{ hp: player.hp, atk: player.atk }}
+          stats={statsOf(player)}
           objectId={character.id}
           player={player.id}
           {...ui.character(player.id, character.id)}
@@ -179,7 +179,7 @@ function OwnArea({ player, name, active, winSouls, ui, tools }: Omit<Props, 'you
           damage={character.damage}
           spent={spent(character)}
           counters={counted(character)}
-          stats={{ hp: player.hp, atk: player.atk }}
+          stats={statsOf(player)}
           objectId={character.id}
           player={player.id}
           {...ui.character(player.id, character.id)}
@@ -291,6 +291,12 @@ function Allowance({ player }: { player: PlayerView }) {
       <span>Shop {player.purchases}</span>
     </span>
   );
+}
+
+// statsOf is a character's live stats, its print and their sources
+// (15.92, V-41).
+function statsOf(player: PlayerView) {
+  return { hp: player.hp, atk: player.atk, printed_hp: player.printed_hp, printed_atk: player.printed_atk, sources: player.sources };
 }
 
 // PlayCard is a character or item in play; owner's dice look draws the

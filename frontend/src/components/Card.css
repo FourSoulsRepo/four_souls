@@ -262,6 +262,23 @@
 
 /* Why the player can't use the card now (15.29, F-17), in the red of a
    wrong aim's reason. */
+/* Why a stat is not its print (15.92, V-41): one sum per line. */
+.card-zoom-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  margin: 0;
+  padding: 8px 10px;
+  box-sizing: border-box;
+  list-style: none;
+  font-size: 14px;
+  line-height: 1.3;
+  color: #fff;
+  background: rgb(10 16 24 / 90%);
+  border-radius: 8px;
+}
+
 .card-zoom-why {
   width: 100%;
   margin: 0;
@@ -498,6 +515,21 @@
   translate: 0 -2cqi;
 }
 
+/* A stat above its print is green, below it red (15.92, V-41). */
+.card-badge.up {
+  --digit: #7be35f;
+}
+
+.card-badge.down {
+  --digit: #ff5a4a;
+}
+
+/* A lower max health: a pale heart, so the red number reads. */
+.card-hp.down {
+  --fill: #f3ead2;
+  --digit: #e0261c;
+}
+
 /* Health below full (T-25): a pale heart, so the red number reads. */
 .card-hp.hurt {
   --fill: #f3ead2;
@@ -517,6 +549,15 @@
   --digit: #1d120a;
   translate: -50% 0;
   rotate: -3deg;
+}
+
+/* On the bone-white die the number has no ink edge: darker colors. */
+.card-dc.up {
+  --digit: #1f7a17;
+}
+
+.card-dc.down {
+  --digit: #c01d14;
 }
 
 .card-dc .card-badge-value {
@@ -595,4 +636,59 @@
 
 .card-damage .card-badge-value {
   font-size: 15cqi;
+}
+
+/* Effects of this turn (15.92, SB-01): a column of small icons on the
+   card's right edge, each cut from its source card's art. Hover zooms
+   the source, so the icons take the pointer, unlike the badges. */
+.card-sources {
+  position: absolute;
+  top: 20cqi;
+  right: 3cqi;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5cqi;
+}
+
+.card-source {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 22cqi;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border: 1.6cqi solid #1d120a;
+  border-radius: 22%;
+  background: #f3ead2;
+  filter: drop-shadow(0 1.2cqi 0 #1d120a) drop-shadow(0 1.6cqi 2cqi rgb(0 0 0 / 50%));
+  cursor: help;
+}
+
+/* The art sits in the card's upper half: zoom in on it. */
+.card-source img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 30%;
+  scale: 1.9;
+  transform-origin: 50% 34%;
+}
+
+.card-source-mark {
+  font-family: var(--font-game);
+  font-size: 14cqi;
+  line-height: 1;
+  color: #1d120a;
+}
+
+/* A boost for the next attack roll (15.93): a small die in the corner. */
+.card-source-die {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 9cqi;
+  aspect-ratio: 1;
+  border: 0.8cqi solid #1d120a;
+  border-radius: 25%;
+  background: radial-gradient(circle, #1d120a 0 22%, #f3ead2 26%);
 }

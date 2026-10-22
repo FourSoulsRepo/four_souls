@@ -5,7 +5,8 @@ import { iconText, kindOf, textParts, unknownCard, type CardInfo, type Kind } fr
 import { diceImage } from '../dice';
 import { scaleFor } from '../playback';
 import { fighters } from '../prompt';
-import type { MonsterStats } from '../protocol';
+import type { MonsterStats, StatSource } from '../protocol';
+import { statLines, sumOf, tempSources, trend, type Name, type TempSource, type Trend } from '../stats';
 import { useApp } from '../store';
 import { boxOf } from '../zoom';
 import { Die } from './Die';
@@ -40,8 +41,9 @@ interface Props {
   owner?: number;
   // highlight marks a card the player may act on or pick (7.7).
   highlight?: 'act' | 'pick' | 'aim';
-  // stats shows live health and attack as big numbers (H-15).
-  stats?: { hp: number; atk: number };
+  // stats shows live health and attack as big numbers (H-15); the print
+  // and the sources say why they changed (15.92, V-41).
+  stats?: { hp: number; atk: number; printed_hp?: number; printed_atk?: number; sources?: StatSource[] };
   // monster shows the stats that differ from the print (C-03).
   monster?: MonsterStats;
   // noZoom: the card does not zoom itself; its row does (15.21).
@@ -80,7 +82,19 @@ export function Card({
   const scale = useApp((s) => scaleFor(s.settings.animation, 0, 0));
   const [brokenImage, setBrokenImage] = useState('');
   const zoomable = size !== 'zoom' && !noZoom;
-  const zoomHandlers = useZoom(cardRef, zoomable, rise, why);
+  const cards = useApp((s) => s.cards);
+  const name: Name = (ref) => (ref ? (cards.get(ref)?.name ?? ref) : 'a hidden card');
+  const sources = stats?.sources ?? monster?.sources;
+  const lines = sources ? statLines(sources, printedOf(stats, monster), liveOf(stats, monster), name) : [];
+  const zoomHandlers = useZoom(cardRef, zoomable, rise, why, lines);
+  const cardElRef = useRef<HTMLDivElement>(null);
+  // Leaving an icon for the card zooms the card again.
+  const backToCard = (e: PointerEvent<HTMLElement>) => {
+    const el = cardElRef.current;
+    if (el && e.relatedTarget instanceof Node && el.contains(e.relatedTarget)) {
+      zoomHandlers.onPointerEnter({ ...e, currentTarget: el });
+    }
+  };
   const showWhy = useApp((s) => s.showWhy);
   // A card in a fight has a red frame for everyone (15.31, F-19).
   const fight = useApp((s) => objectId !== undefined && !!s.game && fighters(s.game.view).includes(objectId));
@@ -125,6 +139,7 @@ export function Card({
   return (
     // anim: card-pop
     <motion.div
+      ref={cardElRef}
       initial={pop ? { scale: 0.6, opacity: 0 } : false}
       animate={{ scale: 1, opacity: 1 }}
       transition={{ duration: 0.25 * scale }}
@@ -154,11 +169,12 @@ export function Card({
       {badges && damage > 0 && !monster && !stats && <Badge kind="damage" value={damage} label="damage" />}
       {badges && stats && (
         <>
-          <Badge kind="hp" value={stats.hp} label="health" title="Health" hurt={damage > 0} />
-          <Badge kind="atk" value={stats.atk} label="attack" title="Attack" />
+          <Badge kind="hp" value={stats.hp} label="health" title="Health" hurt={damage > 0} trend={trend(sumOf(stats.sources, 'hp'), 0)} />
+          <Badge kind="atk" value={stats.atk} label="attack" title="Attack" trend={stats.printed_atk === undefined ? undefined : trend(stats.atk, stats.printed_atk)} />
         </>
       )}
       {badges && monster && <MonsterBadges stats={monster} hurt={damage > 0} />}
+      {badges && <SourceIcons list={tempSources(sources)} name={name} onLeave={backToCard} />}
     </motion.div>
   );
 }
@@ -167,7 +183,7 @@ export function Card({
 // hover, beside it or rising from it, or after a long touch (B-06). A
 // card and a soul crystal share it (V-43). Nothing zooms without a
 // card ref or when zoomable is false.
-export function useZoom(cardRef: string | undefined, zoomable: boolean, rise = false, why?: string) {
+export function useZoom(cardRef: string | undefined, zoomable: boolean, rise = false, why?: string, stats: string[] = []) {
   const setZoom = useApp((s) => s.setZoom);
   const pressRef = useRef(0);
   const downRef = useRef<{ x: number; y: number } | null>(null);
@@ -222,7 +238,7 @@ export function useZoom(cardRef: string | undefined, zoomable: boolean, rise = f
       if (on && e.pointerType === 'mouse') {
         zoomedRef.current = true;
         watch(e.currentTarget);
-        setZoom({ ref: cardRef, touch: false, at: boxOf(e.currentTarget), rise, ...(why ? { why } : {}) });
+        setZoom({ ref: cardRef, touch: false, at: boxOf(e.currentTarget), rise, ...(why ? { why } : {}), ...(stats.length > 0 ? { stats } : {}) });
       }
     },
     onPointerLeave: (e: PointerEvent<HTMLElement>) => {
@@ -238,7 +254,7 @@ export function useZoom(cardRef: string | undefined, zoomable: boolean, rise = f
         const at = boxOf(e.currentTarget);
         downRef.current = { x: e.clientX, y: e.clientY };
         pressRef.current = window.setTimeout(() => {
-          setZoom({ ref: cardRef, touch: true, at, ...(why ? { why } : {}) });
+          setZoom({ ref: cardRef, touch: true, at, ...(why ? { why } : {}), ...(stats.length > 0 ? { stats } : {}) });
         }, LONG_PRESS_MS);
       }
     },
@@ -265,13 +281,13 @@ function MonsterBadges({ stats, hurt }: { stats: MonsterStats; hurt: boolean }) 
   return (
     <>
       {(stats.hp !== stats.printed_hp || hurt) && (
-        <Badge kind="hp" value={stats.hp} label="health" title={`Health (${printed(stats.printed_hp)})`} hurt={hurt} />
+        <Badge kind="hp" value={stats.hp} label="health" title={`Health (${printed(stats.printed_hp)})`} hurt={hurt} trend={trend(sumOf(stats.sources, 'hp'), 0)} />
       )}
       {stats.dc !== stats.printed_dc && (
-        <Badge kind="dc" value={stats.dc} label="dice" title={`Dice to hit (${printed(stats.printed_dc)})`} />
+        <Badge kind="dc" value={stats.dc} label="dice" title={`Dice to hit (${printed(stats.printed_dc)})`} trend={trend(stats.dc, stats.printed_dc)} />
       )}
       {stats.atk !== stats.printed_atk && (
-        <Badge kind="atk" value={stats.atk} label="attack" title={`Attack (${printed(stats.printed_atk)})`} />
+        <Badge kind="atk" value={stats.atk} label="attack" title={`Attack (${printed(stats.printed_atk)})`} trend={trend(stats.atk, stats.printed_atk)} />
       )}
     </>
   );
@@ -292,6 +308,68 @@ function DieBadges({ values, owner }: { values: number[]; owner: number }) {
   );
 }
 
+// printedOf and liveOf are a character's or monster's stats for its sums.
+function printedOf(stats: Props['stats'], monster: MonsterStats | undefined) {
+  if (monster) return { hp: monster.printed_hp, atk: monster.printed_atk, dc: monster.printed_dc };
+  return { hp: stats?.printed_hp ?? stats?.hp ?? 0, atk: stats?.printed_atk ?? stats?.atk ?? 0 };
+}
+
+function liveOf(stats: Props['stats'], monster: MonsterStats | undefined) {
+  if (monster) return { atk: monster.atk, dc: monster.dc };
+  return { atk: stats?.atk ?? 0 };
+}
+
+// SourceIcons are the effects of this turn on a character or monster
+// (15.92, SB-01): a column of small icons cut from each source card's
+// art; lasting sources show only in the zoom's sums.
+function SourceIcons({ list, name, onLeave }: { list: TempSource[]; name: Name; onLeave: (e: PointerEvent<HTMLElement>) => void }) {
+  if (list.length === 0) {
+    return null;
+  }
+  return (
+    <span className="card-sources">
+      {list.map((t) => (
+        <SourceIcon key={t.key} source={t} name={name(t.card)} onLeave={onLeave} />
+      ))}
+    </span>
+  );
+}
+
+// SourceIcon is one effect: hover zooms its card with what it does
+// (SB-03). A text card shows its initial; a hidden one a question mark.
+// A boost that waits for the next attack roll has a small die (15.93).
+function SourceIcon({ source, name, onLeave }: { source: TempSource; name: string; onLeave: (e: PointerEvent<HTMLElement>) => void }) {
+  const image = useApp((s) => (source.card ? (s.cards.get(source.card)?.image ?? '') : ''));
+  const [broken, setBroken] = useState(false);
+  const zoom = useZoom(source.card, source.card !== undefined, false, undefined, source.lines);
+  return (
+    <span
+      className={`card-source${source.nextRoll ? ' next-roll' : ''}`}
+      role="img"
+      aria-label={`${name}: ${source.lines.join(', ')}`}
+      {...zoom}
+      onPointerLeave={(e) => {
+        zoom.onPointerLeave(e);
+        onLeave(e);
+      }}
+    >
+      {image !== '' && !broken ? (
+        <img
+          src={image}
+          alt=""
+          draggable={false}
+          onError={() => {
+            setBroken(true);
+          }}
+        />
+      ) : (
+        <span className="card-source-mark">{source.card ? name.charAt(0) : '?'}</span>
+      )}
+      {source.nextRoll && <span className="card-source-die" aria-hidden="true" />}
+    </span>
+  );
+}
+
 // Badge shapes, drawn like the game's cut-out art (15.23): a heart for
 // health, a die for the dice, and lumpy blobs for the rest.
 const blob = 'M52 6C78 5 95 24 94 50C93 77 74 95 48 94C22 93 5 76 6 49C7 22 26 7 52 6Z';
@@ -307,14 +385,17 @@ interface BadgeProps {
   label: string;
   title?: string;
   hurt?: boolean;
+  // trend colors a stat that went up or down from its print (15.92).
+  trend?: Trend;
 }
 
 // Badge is one number on a card: its shape in ink with a hard shadow,
 // the number in the game's hand-drawn letters. A hurt health number is
-// red while below full (T-25).
-function Badge({ kind, value, label, title, hurt = false }: BadgeProps) {
+// red while below full (T-25); a stat above its print is green, below
+// it red (15.92).
+function Badge({ kind, value, label, title, hurt = false, trend: dir }: BadgeProps) {
   return (
-    <span className={`card-badge card-${kind}${hurt ? ' hurt' : ''}`} title={title} aria-label={`${String(value)} ${label}`}>
+    <span className={`card-badge card-${kind}${hurt ? ' hurt' : ''}${dir ? ` ${dir}` : ''}`} title={title} aria-label={`${String(value)} ${label}`}>
       <svg className="card-badge-shape" viewBox="0 0 100 100" aria-hidden="true">
         <path d={shapes.get(kind) ?? blob} />
         <path className="card-badge-shine" d="M30 26C36 18 46 16 52 18C44 22 38 28 34 36C31 34 29 30 30 26Z" />

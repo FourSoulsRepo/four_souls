@@ -63,5 +63,10 @@ The fixture copies the fan-game notice. `internal/legal` has a test that fails w
 | First-player roll: a tie rolls again | `screen-first-roll-tie.png` |
 | First-player roll: who goes first | `screen-first-roll-winner.png` |
 | First-player roll in the history | `screen-first-roll-history.png` |
+| A lasting item: a green ATK, its sum in the zoom | `screen-stats-lasting.png` |
+| An effect of this turn: an icon on the character | `screen-stats-temporary.png` |
+| A character's zoom with its ATK sum | `screen-stats-sum.png` |
+| Hovering an effect icon zooms its card | `screen-stats-icon.png` |
+| A monster's raised dice and its sum | `screen-stats-monster.png` |
 
 When a screen is added, call `shot` in its test and add a row here.

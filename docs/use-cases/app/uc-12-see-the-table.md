@@ -178,6 +178,17 @@
 * **3g. New tiles (15.51):** a new strip tile fades in on top.
   * The older tiles slide down; none jumps.
   * With animations off, tiles change at once.
+* **3h. Why a stat changed (15.92, V-41):** a changed stat says why.
+  * A stat above its print is green, below it red.
+  * Characters and monsters alike, for every player.
+  * Hover the card: its zoom sums each stat below it.
+  * Example: "ATK 3 = 1 printed + 1 Brimstone + 1 XI. Strength (this turn)".
+  * Roll changes follow: "Attack rolls: +1 Meat!".
+  * Effects of this turn are small icons on the card's right edge.
+  * Each icon is cut from its source card's art.
+  * Hover an icon: its card zooms, with what it does.
+  * Lasting items get no icon; they show only in the sums.
+  * A text card's icon shows its initial; a hidden source a "?".
 
 ## Postconditions
 

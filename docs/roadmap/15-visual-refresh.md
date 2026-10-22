@@ -2904,7 +2904,7 @@ Images come first, so the new table is built with backs and mats.
 6. Owner notes (2026-10-22)
    1. Owner marks 15.91 solved.
 
-### [ ] 15.92 Stat badges, hover sum, and temporary icons
+### [x] 15.92 Stat badges, hover sum, and temporary icons
 
 1. Goal: everyone sees a card's real stats and why (V-41).
 2. Planned by the owner (2026-10-22) after the 15.54 study.
@@ -2926,6 +2926,27 @@ Images come first, so the new table is built with backs and mats.
    3. e2e test: a lasting item changes the badge but adds no icon.
    4. `make screenshots` shows a character and a monster with sources.
    5. UC-12 updated.
+6. Result (2026-10-22)
+   1. `stats.ts`: `trend`, `statLines`, `tempSources`; Vitest `stats.test.ts`.
+   2. Badges get `up` or `down`: a green or red number (`Card.css`).
+   3. Hurt health keeps its pale heart and red number; it wins over green.
+   4. The sum shows in the card's zoom, under the card (`Zoom.stats`).
+   5. So hovering the badge, or anywhere on the card, shows it; touch too.
+   6. Badges keep `pointer-events: none`: they never block the card's zoom.
+   7. Lasting sources first, then this turn's, then roll changes.
+   8. Icons: `SourceIcons` on the right edge, below the name (SB-01).
+   9. One icon per source and lasting; two stats of one source share it.
+   10. Icon hover zooms its card with what it does; leaving it re-zooms the card.
+   11. A text card's icon shows its initial; a hidden source a "?".
+   12. The die mark for next-roll boosts is drawn here already (15.93 task 1).
+   13. e2e `stats.spec.ts`: Brimstone, XI. Strength, Baby Haunt via saves.
+   14. `saveAndContinue` can swap the first card in play (`item`).
+   15. No new layer: icons sit inside the card.
+   16. UC-12 3h; wiki `Client`, `Screenshots`; CHANGELOG.
+   17. Screenshots: `.cache/screenshots/15.92/before/` and `after/`.
+   18. First full e2e: the new test raced the stack; it now waits for the play.
+   19. Two older tests flaked in that run, then passed: logged as 19.53, 19.54.
+   20. Evidence: `.cache/e2e-evidence/15.92-run1/` (not in git).
 
 ### [ ] 15.93 Next-roll boosts and the end of turn
 

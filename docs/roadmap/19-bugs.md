@@ -42,10 +42,10 @@ This step never closes; new reports are appended.
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
 | I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48 | 10 |
-| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51 | 9 |
+| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.54 | 11 |
 | K  | Build and release files                  | Release    | 19.47                                                  | 1     |
 
-Totals by system (52 items):
+Totals by system (54 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
@@ -53,7 +53,7 @@ Totals by system (52 items):
 | Card data | C       | 2     |
 | Client    | D–G     | 19    |
 | Server    | H       | 1     |
-| e2e       | I, J    | 19    |
+| e2e       | I, J    | 21    |
 | Release   | K       | 1     |
 
 ---
@@ -1780,3 +1780,34 @@ Totals by system (52 items):
 7. Owner notes (2026-10-21)
    1. Owner marks 19.52 solved.
 
+### [ ] 19.53 e2e: the 3-player table test times out in the first roll
+
+1. Goal: the 3-player layout test passes every run.
+2. Report (agent, 2026-10-22)
+   1. Found by `make e2e` during 15.92.
+   2. `table.spec.ts`: "three players sit left and right; nothing covers the decks".
+   3. Chromium; the 30 s test timeout ran out in `throwFirstRoll`.
+   4. Passed on its rerun, alone, on both browsers.
+   5. 15.92 does not touch the first roll or the layout.
+   6. Evidence: `.cache/e2e-evidence/15.92-run1/`.
+3. Tasks:
+   1. Find why the first roll took too long in the full run.
+   2. Fix the client or the test, whichever is wrong.
+4. Done when:
+   1. The test passes ten full runs in a row.
+
+### [ ] 19.54 e2e: a loot card's flight from under the stack, webkit
+
+1. Goal: the 15.74 flight test passes every run.
+2. Report (agent, 2026-10-22)
+   1. Found by `make e2e` during 15.92.
+   2. `playback.spec.ts`: "a resolved loot card flies to the discard from the large card under the stack".
+   3. Webkit; line 926: not every box after the first hidden one was hidden.
+   4. Passed on its rerun, alone, on both browsers.
+   5. 15.92 does not touch the flights or the stack panel.
+   6. Evidence: `.cache/e2e-evidence/15.92-run1/`.
+3. Tasks:
+   1. Find which box showed while it should hide, and why.
+   2. Fix the client or the test, whichever is wrong.
+4. Done when:
+   1. The test passes ten full runs in a row.
