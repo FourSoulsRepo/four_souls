@@ -6,9 +6,10 @@ Rules engine versions are in each release's notes.
 
 ## Unreleased
 
-## 0.2.0 - 2026-10-22
+## 0.2.1 - 2026-10-22
 
 The first public release.
+0.2.0 was never published: its builds without card images failed.
 
 - If the app closed during a game, the main menu offers "Rejoin" while that game is still on. Leaving a game on purpose, or its end, forgets it.
 - Online: type a server's address or pick it from Recent; it no longer lists LAN games. Back and Esc go one screen up.
