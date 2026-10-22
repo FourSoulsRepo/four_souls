@@ -14,22 +14,25 @@ import './Table.css';
 // (end, H-04). An empty zone keeps its place, so the board never
 // changes size (V-23).
 // The board is also where loot cards are dropped to play them (7.7).
+// glow: the game waits for the viewer, so the board glows (15.95).
 export function Board({
   view,
   ui,
+  glow = false,
   strip,
   end,
   children,
 }: {
   view: GameView;
   ui: Interact;
+  glow?: boolean;
   strip?: ReactNode;
   end?: ReactNode;
   children?: ReactNode;
 }) {
   return (
     <div className="board-cell">
-      <section className="board" aria-label="Board" data-drop="play">
+      <section className={`board${glow ? ' my-move' : ''}`} aria-label="Board" data-drop="play">
         <div className="board-strip">{strip}</div>
         <div className="board-info">{children}</div>
         <div className="board-slots board-monsters" role="group" aria-label="Monsters">

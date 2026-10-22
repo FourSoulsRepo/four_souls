@@ -20,7 +20,7 @@ import { EndTurn, TurnActions } from '../components/TurnActions';
 import { matLook } from '../mats';
 import type { Update } from '../protocol';
 import { seatOf, useApp } from '../store';
-import { activity, picking, promptBanner, stackPrompt } from '../prompt';
+import { activity, askedSeat, myMove, picking, promptBanner, stackPrompt } from '../prompt';
 import { waitTurn, type Names } from '../stack';
 import { seatPositions } from '../table';
 import '../components/Table.css';
@@ -111,7 +111,12 @@ function Table({ game, you }: { game: Update; you: number }) {
   // The banner and the stack say what the game waits for (15.28). While
   // the player picks a target, the cards that answer glow; the rest dim.
   const banner = promptBanner(view, you, names, actions, aiming);
-  const dim = canAct && picking(actions, aiming);
+  const picks = picking(actions, aiming);
+  const dim = canAct && picks;
+  // The board glows while the game waits for the player, and every seat
+  // marks whom it waits for (15.95, V-52).
+  const glow = canAct && !game.pause && myMove(banner, picks);
+  const asked = askedSeat(view);
   // What the active player does, on their seat for everyone else (15.30).
   const doing = activity(view, names);
   // Before turn 1, while the first player is rolled for, nobody has a
@@ -130,6 +135,7 @@ function Table({ game, you }: { game: Update; you: number }) {
               position={position}
               you={p.id === you}
               active={started && view.turn.active === p.id}
+              asked={asked === p.id}
               doing={doing}
               winSouls={view.win_souls ?? 0}
               ui={ui}
@@ -152,6 +158,7 @@ function Table({ game, you }: { game: Update; you: number }) {
       <Board
         view={view}
         ui={ui}
+        glow={glow}
         strip={
           <HistoryStrip
             view={view}

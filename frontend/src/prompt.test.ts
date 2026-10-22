@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { IntentKind, PromptKind, Purpose, type Actions } from './actions';
 import type { GameView, Intent, StackItem } from './protocol';
-import { activity, fighters, picking, promptBanner, stackPrompt } from './prompt';
+import { activity, askedSeat, fighters, myMove, picking, promptBanner, stackPrompt } from './prompt';
 import { StackKind } from './stack';
 
 const view: GameView = {
@@ -104,6 +104,27 @@ describe('picking', () => {
     expect(picking(dialog, null)).toBe(false);
     const table = { ...none, choice: { title: 'Choose a target', purpose: 6, options: [{ ...option, target: { object: 9, player: 0 } }] } };
     expect(picking(table, null)).toBe(true);
+  });
+});
+
+describe('myMove', () => {
+  it('glows for the asked player, on any seat, but not while they pick (15.95)', () => {
+    expect(myMove(banner(view, 0), false)).toBe(true);
+    expect(myMove(banner(view, 1), false)).toBe(false);
+    const out = { ...view, waiting: { kind: PromptKind.priority, player: 1 } };
+    expect(myMove(banner(out, 1), false)).toBe(true);
+    expect(myMove(banner(view, 0), true)).toBe(false);
+    expect(myMove(promptBanner(view, 0, names, none, { source: 9, targets: [] }), false)).toBe(false);
+    expect(myMove(null, false)).toBe(false);
+  });
+});
+
+describe('askedSeat', () => {
+  it('is the player the game waits for, or nobody (15.95)', () => {
+    expect(askedSeat(view)).toBe(0);
+    expect(askedSeat({ ...view, waiting: { kind: PromptKind.throw, player: 1 } })).toBe(1);
+    expect(askedSeat({ ...view, waiting: { kind: PromptKind.none, player: 0 } })).toBe(-1);
+    expect(askedSeat({ ...view, over: true })).toBe(-1);
   });
 });
 

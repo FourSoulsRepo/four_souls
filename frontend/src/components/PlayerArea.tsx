@@ -15,6 +15,8 @@ interface Props {
   position: Position;
   you: boolean;
   active: boolean;
+  // asked: the game waits for this player now (15.95).
+  asked: boolean;
   // winSouls is the soul value that wins; 0 when the view has none (V-30).
   winSouls: number;
   ui: Interact;
@@ -41,7 +43,7 @@ export function PlayerArea({ you, position, tools, ...rest }: Props) {
 // up when the view sends it (19.5). Curses stand at the far left
 // (15.55). At the top it mirrors the own area, the hand hanging past the top edge; in
 // a side column everything stacks in a narrow column (F-09).
-function OpponentArea({ player, name, position, active, winSouls, ui, doing }: Omit<Props, 'you' | 'tools'>) {
+function OpponentArea({ player, name, position, active, asked, winSouls, ui, doing }: Omit<Props, 'you' | 'tools'>) {
   const size: CardSize = position === 'left' || position === 'right' ? 'small' : 'table';
   const pick = ui.player(player.id);
   const { character } = player;
@@ -62,6 +64,7 @@ function OpponentArea({ player, name, position, active, winSouls, ui, doing }: O
           <b className="opp-name">
             <PlayerDot player={player.id} />
             {name}
+            {asked && <Hourglass player={player.id} />}
           </b>
           <span className="opp-line">
             <span className="opp-coins" title="Coins" aria-label={`${String(player.cents)} cents`}>
@@ -135,7 +138,7 @@ export function Coin() {
 // (15.55), the souls and the character centered with its live health
 // and attack, items to its right, and the hand fanned below, partly
 // off screen (F-05, F-06, H-02, H-03, H-15, H-18).
-function OwnArea({ player, name, active, winSouls, ui, tools }: Omit<Props, 'you' | 'position'>) {
+function OwnArea({ player, name, active, asked, winSouls, ui, tools }: Omit<Props, 'you' | 'position'>) {
   const label = `${name} (you)`;
   const pick = ui.player(player.id);
   const hand = player.hand ?? [];
@@ -152,6 +155,7 @@ function OwnArea({ player, name, active, winSouls, ui, tools }: Omit<Props, 'you
           <b className="own-name">
             <PlayerDot player={player.id} />
             {label}
+            {asked && <Hourglass player={player.id} />}
           </b>
           <span className="own-coins" title="Coins" aria-label={`${String(player.cents)} cents`}>
             <Coin />
@@ -420,4 +424,16 @@ function HandCard({ card, ui, spread }: { card: CardView; ui: Interact; spread: 
 // them in it (15.21, S-03).
 function PlayerDot({ player }: { player: number }) {
   return <span className="player-dot" style={{ background: playerColor(player) }} aria-hidden="true" />;
+}
+
+// Hourglass marks the player the game waits for, on every screen
+// (15.95, V-52). A shape in the player's color, not a hue alone, so
+// color-blind players read it too.
+function Hourglass({ player }: { player: number }) {
+  return (
+    <svg className="player-asked" viewBox="0 0 12 16" role="img" aria-label="The game waits for this player" style={{ color: playerColor(player) }}>
+      <path d="M1 1h10M1 15h10M2 1c0 4 3 5 3 7s-3 3-3 7M10 1c0 4-3 5-3 7s3 3 3 7" />
+      <path className="player-asked-sand" d="M3.5 4h5L6 7zM3 14.5c0-2 3-3 3-3s3 1 3 3z" />
+    </svg>
+  );
 }

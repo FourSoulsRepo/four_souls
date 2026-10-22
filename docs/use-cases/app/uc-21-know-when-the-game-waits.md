@@ -38,8 +38,16 @@
 * **3h. Response timer (N-07):** the banner counts down the seconds.
 * **3i. Paused (N-08):** the banner says "Paused".
 * **3j. Game over:** no banner; the end window shows.
+* **2a. The board glows (15.95):** Ann's board, in the middle, glows green.
+  * It pulses once as the prompt comes, then stays soft.
+  * Also out of turn: a response, a choice, a throw.
+  * Not while she aims or picks a target; not while paused.
+  * Every other player's board stays plain.
+* **4a. Hourglass (15.95):** every screen shows an hourglass by Ann's name.
+  * It is in her seat color; it moves to whoever is asked next.
 
 ## Postconditions
 
 * No screen looks idle while it waits for its player.
 * Everyone else knows whom the game waits for, and what for.
+* The asked player sees it in the middle of the table, not only in the banner.

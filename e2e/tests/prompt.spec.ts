@@ -196,6 +196,54 @@ test('answers glow and the rest dims while the player picks (15.28)', async ({ b
   await expect(active.locator('main.game')).not.toHaveClass(/picking/);
 });
 
+// halo is how strong the board's green halo shows now (15.95).
+async function halo(page: Page): Promise<number> {
+  return page.locator('.board').evaluate((el) => Number(getComputedStyle(el, '::before').opacity));
+}
+
+test('the board glows for the asked player; every seat marks them (15.95)', async ({ browser }) => {
+  const pages = await startGame(browser, ['Rook', 'Wren'], { url: fast() });
+  const active = await activePage(pages, click);
+  const other = pages.find((p) => p !== active);
+  if (!other) {
+    throw new Error('no other page');
+  }
+  const hourglass = (page: Page) => page.locator('.player .player-asked');
+
+  // The active player's turn: their board glows, the other's stays
+  // plain; both see the hourglass on the active seat.
+  await expect(active.locator('.board')).toHaveClass(/my-move/);
+  await expect(other.locator('.board')).not.toHaveClass(/my-move/);
+  for (const page of pages) {
+    await expect(hourglass(page)).toHaveCount(1);
+    await expect(page.locator('.player.active .player-asked')).toHaveCount(1);
+  }
+  // The pulse settles on a soft glow; the other's board shows none.
+  await expect.poll(() => halo(active)).toBeCloseTo(0.55, 1);
+  expect(await halo(other)).toBe(0);
+  await shot(active, 'priority-mine');
+  await shot(other, 'priority-waiting');
+
+  // A response asks the other player: now their board glows, out of
+  // turn, and the hourglass moves to their seat.
+  await ask(other, { waiting: { kind: 1 }, answer: 'pass', mine: true, stack: true }, 100);
+  await ask(active, { waiting: { kind: 1 }, answer: 'none', mine: false, stack: true }, 100);
+  await expect(other.locator('.board')).toHaveClass(/my-move/);
+  await expect(active.locator('.board')).not.toHaveClass(/my-move/);
+  for (const page of pages) {
+    await expect(hourglass(page)).toHaveCount(1);
+    await expect(page.locator('.player.active .player-asked')).toHaveCount(0);
+  }
+  await expect.poll(() => halo(other)).toBeCloseTo(0.55, 1);
+  await shot(other, 'priority-respond');
+  await shot(active, 'priority-respond-waiting');
+
+  // Picking a target on the table: only the answers glow, not the board.
+  await ask(active, { waiting: { kind: 4, purpose: 6 }, answer: 'choose', mine: true }, 101);
+  await expect(active.locator('main.game')).toHaveClass(/picking/);
+  await expect(active.locator('.board')).not.toHaveClass(/my-move/);
+});
+
 test('the others see what the active player does (15.30)', async ({ browser }) => {
   const pages = await startGame(browser, ['Tarn', 'Ulla'], { url: fast() });
   const active = await activePage(pages, click);

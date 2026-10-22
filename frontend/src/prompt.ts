@@ -121,6 +121,19 @@ export function picking(actions: Actions, aiming: Aiming | null): boolean {
   return aiming !== null || (actions.choice?.options.some((o) => o.target) ?? false);
 }
 
+// myMove: the board glows green, as the game waits for the viewer
+// (15.95, V-52). Not while they aim or pick a target: then only the
+// answers glow.
+export function myMove(b: Banner | null, picks: boolean): boolean {
+  return b?.mine === true && b.kind !== 'aim' && !picks;
+}
+
+// askedSeat is the player the game waits for, marked on their seat for
+// everyone (15.95); -1 while it waits for nobody.
+export function askedSeat(view: GameView): number {
+  return view.over || view.waiting.kind === PromptKind.none ? -1 : view.waiting.player;
+}
+
 // stackPrompt is the banner's prompt as the stack panel's line (V-11):
 // only for prompts other than priority, whose players the panel lists.
 export function stackPrompt(b: Banner | null, n: Names): string | undefined {

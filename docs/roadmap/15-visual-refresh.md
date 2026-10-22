@@ -3,12 +3,12 @@
 Goal: a clearer table, using fouronlinesouls.net as a second reference.
 
 Ideas: V-09, V-12, V-13, V-15 – V-31, V-33 – V-48, GS-06, N-18,
-M-02, ST-07, ST-08, V-51.
+M-02, ST-07, ST-08, V-51, V-52.
 
 Order: 15.1, 15.15, 15.9 – 15.11, 15.16, 15.17, 15.38, 15.18 – 15.24,
 15.3, 15.37, 15.25, 15.32 – 15.34, 15.26, 15.27, 15.59 – 15.63, 15.6, 15.64,
 15.28 – 15.31, 15.35, 15.36, 15.39 – 15.46, 15.88 – 15.91, 15.51, 15.52,
-15.54, 15.92 – 15.94, 15.55 – 15.58.
+15.54, 15.92 – 15.95, 15.55 – 15.58.
 Images come first, so the new table is built with backs and mats.
 
 ## Rules for this step (owner, 2026-10-12)
@@ -3042,3 +3042,38 @@ Images come first, so the new table is built with backs and mats.
    23. Evidence: `.cache/e2e-evidence/15.94-run1/` (not in git).
 9. Owner notes (2026-10-22)
    1. Owner marks 15.94 solved.
+
+### [x] 15.95 The table shows who holds priority
+
+1. Goal: a player sees at a glance that the game waits for them (V-52).
+2. Planned by the owner (2026-10-22).
+3. Tasks:
+   1. The game waits for the viewer: the center board glows green.
+   2. Same for the active and a non-active player.
+   3. It pulses once when priority comes, then glows softly.
+   4. It waits a short moment, so an instant answer shows no flash.
+   5. Off while the player aims or picks a target, and while paused.
+   6. Every seat marks the asked player: an hourglass by the name.
+   7. No glow on the board while the game waits for someone else.
+   8. Give the pulse its `anim:` tag and a row in `Animations.md`.
+4. Done when:
+   1. Vitest: who is asked, and when the board glows.
+   2. e2e test: the asked player's board glows; the other's does not.
+   3. e2e test: both see the hourglass on the asked seat.
+   4. `make screenshots` shows both sides.
+   5. UC-21 updated.
+5. Result (2026-10-22)
+   1. `myMove` (`prompt.ts`): any prompt that asks the viewer, not aim or pick.
+   2. `GameScreen` adds: the player can act now, and no pause.
+   3. `Board` gets `my-move`: green rim, soft inner tint, outer halo.
+   4. The halo starts 150 ms late, pulses once, stays at 55 % (`board-my-move`).
+   5. Outer shadows only, no pointer: the halo covers no card and no click.
+   6. Reduced motion: the soft halo without the pulse.
+   7. `askedSeat`: whom the game waits for; -1 for nobody or game over.
+   8. Every seat draws an hourglass in that player's color by the name.
+   9. The hourglass is a shape, so it reads without color.
+   10. It shows on the own seat too, next to the green board.
+   11. Vitest: `myMove`, `askedSeat`.
+   12. e2e `prompt.spec.ts`: turn, out-of-turn response, pick.
+   13. UC-21 2a, 4a; wiki `Client`, `Animations`, `Screenshots`; CHANGELOG.
+   14. Screenshots: `.cache/screenshots/15.95/before/` and `after/`.

@@ -282,6 +282,14 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    7. Hover a tile: the card, an arrow, and what it did.
    8. An open "Attack" or "Buy": a top row in the stack panel.
    9. One design for V-36, V-38, and V-44.
+52. V-52. The table shows who holds priority (owner, 2026-10-22).
+   1. Players still miss that the game waits for them.
+   2. The banner sits at the edge; eyes stay on the middle.
+   3. Holding priority: the center board glows green, any seat.
+   4. It pulses once when priority comes, then glows softly.
+   5. No yellow "waiting" glow: green and yellow look alike to many.
+   6. Instead the asked player's seat is marked, for everyone.
+   7. Not holding priority: the board stays plain.
 
 ## Rules
 

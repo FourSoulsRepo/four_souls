@@ -54,6 +54,8 @@ The fixture copies the fan-game notice. `internal/legal` has a test that fails w
 | Prompt banners: respond, choose, discard, order, throw | `screen-prompt-*.png` |
 | Picking a target: answers glow, the rest dims | `screen-prompt-pick.png` |
 | Own aim: the banner names the card | `screen-prompt-aim.png` |
+| Board glows: your move; hourglass on the asked seat | `screen-priority-mine.png`, `screen-priority-respond.png` |
+| No glow while waiting; hourglass on the other seat | `screen-priority-waiting.png`, `screen-priority-respond-waiting.png` |
 | An unusable card's zoom says why | `screen-zoom-why.png` |
 | A click on an unusable card says why | `screen-why-click.png` |
 | A choice: big cards over the dimmed board | `screen-choice-big.png` |
