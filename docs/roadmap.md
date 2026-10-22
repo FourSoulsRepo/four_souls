@@ -250,6 +250,7 @@ Step numbers stay as IDs; the table lists steps in work order.
 42. "Choose one-" cards ask in a dialog like The Bone (V-45, 15.58).
 43. Dice throw split into engine, server, button, animation, last roll (15.59 – 15.63).
 44. Stack and history tell every play: who did what (V-51, 15.88 – 15.91).
+45. Real stats: breakdown, temporary icons, fight odds (V-41, 15.92 – 15.94).
 
 ## 16. Localization
 

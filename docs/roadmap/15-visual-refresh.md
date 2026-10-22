@@ -8,7 +8,7 @@ M-02, ST-07, ST-08, V-51.
 Order: 15.1, 15.15, 15.9 – 15.11, 15.16, 15.17, 15.38, 15.18 – 15.24,
 15.3, 15.37, 15.25, 15.32 – 15.34, 15.26, 15.27, 15.59 – 15.63, 15.6, 15.64,
 15.28 – 15.31, 15.35, 15.36, 15.39 – 15.46, 15.88 – 15.91, 15.51, 15.52,
-15.54 – 15.58.
+15.54, 15.92 – 15.94, 15.55 – 15.58.
 Images come first, so the new table is built with backs and mats.
 
 ## Rules for this step (owner, 2026-10-12)
@@ -23,6 +23,9 @@ Images come first, so the new table is built with backs and mats.
    1. Before and after shots of every changed screen.
    2. Owner reviews the changes and the screenshots.
    3. The review message links each screenshot file; no bare paths.
+6. Owner (2026-10-22): 15.54 and 15.92 – 15.94 go without a stop.
+   1. One commit per sub-step, as always.
+   2. Stop only for a question; owner reviews all four at the end.
 
 ---
 
@@ -1771,6 +1774,42 @@ Images come first, so the new table is built with backs and mats.
    2. Monsters get the icons too, not only characters.
    3. Reference: the stat icons on fouronlinesouls.net characters.
    4. Study them first; borrow ideas only, no assets (15.1).
+5. Study of the reference (2026-10-22)
+   1. Hot-seat game; cheats gave XI. Strength, Meat!, Champion Belt, Polyphemus.
+   2. Screenshots: `.cache/screenshots/reference/boosts/`.
+   3. SB-01. A column of small rounded icons on the card's right edge.
+   4. SB-02. Each icon is cut from the source card's art.
+   5. SB-03. Hover an icon: its card zooms, captioned "Temporary effect".
+   6. SB-04. Icons show only temporary effects, not lasting items.
+   7. SB-05. Also non-stat effects: Eve's extra loot play gets one.
+   8. SB-06. Lasting items: the live number over the printed one, plain black.
+   9. SB-07. No sign whether a number went up or down, or why.
+   10. SB-08. Monsters: Polyphemus's +1 DC changes the number; no icon.
+   11. SB-09. A roll reads "rolled a 3 (+1)"; the source is not named.
+   12. SB-10. No "hits on N+" anywhere.
+   13. SB-11. Conditional ATK never shows: Champion Belt's +1 on the first roll.
+   14. SB-12. A one-shot boost (Round Worm) loses its icon when used.
+   15. SB-13. At end of turn all icons go at once, no animation.
+6. Owner decisions (2026-10-22)
+   1. Icons only for temporary effects: "this turn" and "next roll".
+   2. They replace "one icon per source" (task 2.4).
+   3. Lasting sources show only in the badge's hover sum.
+   4. Only stat and dice effects; no icons for loot plays or attacks (SB-05).
+   5. Badge green when a stat went up, red when it went down.
+   6. Monsters the same: temporary icons and the hover sum.
+   7. Split into 15.54 and 15.92 – 15.94; this one is the engine part.
+7. Tasks after the split
+   1. A breakdown per stat: one row per source, sharing `bonus()`'s loop.
+   2. A row: source card, amount, and when: lasting, this turn, next roll.
+   3. A row also says a condition: "first attack roll each turn".
+   4. `bonus()` is the sum of the breakdown; the two never drift.
+   5. `Boost` gets a `Source`; every place that adds a boost fills it.
+   6. Stats: player HP, ATK; monster HP, DC, ATK; roll and attack roll.
+   7. The view sends the rows for every character and every monster.
+   8. The view sends a player's printed HP and ATK, as for monsters.
+   9. Done when: engine test, a boosted character lists its sources.
+   10. Done when: engine test, `bonus()` equals the breakdown's sum.
+   11. Done when: view test, rows reach every player, hidden cards kept hidden.
 
 ### [x] 15.55 Curses left of the player
 
@@ -2846,3 +2885,68 @@ Images come first, so the new table is built with backs and mats.
    12. Screenshots: `.cache/screenshots/15.91/before/` and `after/`.
 6. Owner notes (2026-10-22)
    1. Owner marks 15.91 solved.
+
+### [ ] 15.92 Stat badges, hover sum, and temporary icons
+
+1. Goal: everyone sees a card's real stats and why (V-41).
+2. Planned by the owner (2026-10-22) after the 15.54 study.
+3. Needs 15.54: the breakdown in the view.
+4. Tasks:
+   1. Characters and monsters: a badge whenever a stat differs from print.
+   2. Green when the stat went up, red when it went down.
+   3. Hover a badge: the sum, "ATK 4 = 1 printed + 2 Polyphemus + 1 XI. Strength".
+   4. Temporary rows say "this turn" in the sum; conditions say theirs.
+   5. Temporary sources only: a column of small icons on the card's edge (SB-01).
+   6. Each icon cut from the source card's art (SB-02).
+   7. Text cards without images: a plain mark with the card's initial.
+   8. Hover an icon: its card zooms, "this turn" below it (SB-03).
+   9. Own area, opponents, and monster slots alike.
+   10. No icons for loot plays, attacks, or purchases (owner).
+5. Done when:
+   1. Vitest: badge color and the sum's words for each kind of row.
+   2. e2e test: XI. Strength gives one icon and a green ATK badge.
+   3. e2e test: a lasting item changes the badge but adds no icon.
+   4. `make screenshots` shows a character and a monster with sources.
+   5. UC-12 updated.
+
+### [ ] 15.93 Next-roll boosts and the end of turn
+
+1. Goal: a one-shot boost shows until it is used; boosts end visibly.
+2. Planned by the owner (2026-10-22) after the 15.54 study.
+3. Needs 15.92.
+4. Tasks:
+   1. A "next roll" boost is one more temporary icon, with a small die mark.
+   2. Example: Round Worm's "+1 to your next attack roll this turn".
+   3. Used by a roll: the icon leaves with a short animation (SB-12).
+   4. End of turn: temporary icons fade out (SB-13).
+   5. Badges go back to the printed number, or hide, after the fade.
+   6. Follow the animation speed setting (ST-05); off means none.
+   7. Each animation gets its `anim:` tag and a row in `Animations.md`.
+5. Done when:
+   1. Vitest: a used next-roll boost leaves the icon list.
+   2. e2e test: icons are gone after the end of turn.
+   3. e2e test: with animations off, icons go at once.
+   4. `make screenshots` shows a next-roll icon.
+   5. UC-12 updated.
+
+### [ ] 15.94 Real odds in a fight
+
+1. Goal: the attacker and everyone see what the roll needs (SB-09 – SB-11).
+2. Planned by the owner (2026-10-22) after the 15.54 study.
+3. Needs 15.54; best after 15.92.
+4. Tasks:
+   1. While an attack is open, the fight shows "Hits on 4+ (DC 5 − 1 Meat!)".
+   2. It counts every roll and DC change: lasting, this turn, next roll.
+   3. Conditional ATK shows for that attack: "ATK 3 (+1 Champion Belt, first roll)".
+   4. A roll's stack row names its sources: "rolled 3 +1 Meat! = 4".
+   5. The same words in the history entry of the roll.
+   6. DC stays between 1 and 6 (R-ATK-18); the line uses that DC.
+   7. **Owner** picks where the line sits: stack row, or by the monster.
+5. Done when:
+   1. Engine test: the needed number matches the hit check for each case.
+   2. Vitest: the line's words with one, two, and no modifiers.
+   3. e2e test: Meat! makes the line read one lower.
+   4. `make screenshots` shows an open attack with the line.
+   5. UC-14 updated.
+6. Owner decisions (2026-10-22)
+   1. The line sits in the open-attack row of the stack panel (15.91).

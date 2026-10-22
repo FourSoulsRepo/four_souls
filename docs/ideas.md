@@ -234,6 +234,9 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    1. A character with extra HP or ATK shows small icons on its card.
    2. One icon per card or effect that changes the stat.
    3. Hover an icon to see its source card.
+   4. Owner (2026-10-22): icons only for temporary effects (15.54).
+   5. Lasting sources show in the badge's hover sum.
+   6. A fight shows what the roll needs (15.94).
 42. V-42. Curses sit left of the player.
    1. Not on the right with the items.
    2. Each player's curses form their own group.
