@@ -41,6 +41,9 @@ type Settings struct {
 	// Host is the last game setup the player hosted, for the next one.
 	// The password is never kept (N-14).
 	Host HostSetup `json:"host"`
+	// LanAddress is the address last typed on the LAN screen (15.97);
+	// the LAN screen keeps no list.
+	LanAddress string `json:"lan_address"`
 }
 
 // RecentServer is a server joined lately (N-18).
@@ -144,6 +147,9 @@ func ValidMat(name string) bool {
 // MaxRecent is how many recent servers are kept.
 const MaxRecent = 5
 
+// maxAddress caps a kept address; a longer one is not kept.
+const maxAddress = 255
+
 // ErrChoice means a setting is not one of its choices.
 var ErrChoice = errors.New("unknown setting value")
 
@@ -179,6 +185,7 @@ func Load(path string) Settings {
 		s.Recent = []RecentServer{}
 	}
 	s.Host = s.Host.clean()
+	s.LanAddress = cleanAddress(s.LanAddress)
 	for _, c := range s.choices() {
 		if !slices.Contains(c.allowed, *c.value) {
 			*c.value = c.allowed[0]
@@ -222,6 +229,7 @@ func Save(path string, s Settings) (Settings, error) {
 	}
 	s.Recent = recent
 	s.Host = s.Host.clean()
+	s.LanAddress = cleanAddress(s.LanAddress)
 	data, err := json.MarshalIndent(s, "", "  ")
 	if err != nil {
 		return Settings{}, fmt.Errorf("settings: %w", err)
@@ -237,4 +245,13 @@ func Save(path string, s Settings) (Settings, error) {
 		return Settings{}, errors.Join(fmt.Errorf("settings: %w", err), os.Remove(tmp))
 	}
 	return s, nil
+}
+
+// cleanAddress trims a typed address; one too long is dropped.
+func cleanAddress(a string) string {
+	a = strings.TrimSpace(a)
+	if len(a) > maxAddress {
+		return ""
+	}
+	return a
 }

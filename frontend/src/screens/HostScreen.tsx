@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { deckRatiosBlocked, getCardSets } from '../bridge';
+import { useEscape } from '../keys';
 import type { Options } from '../protocol';
 import { baseGame, setName, sortSets } from '../sets';
 import { useApp } from '../store';
@@ -40,6 +41,10 @@ export function HostScreen() {
   const [chosen, setChosen] = useState<string[]>([baseGame]);
   // blocked says why the deck ratios can't be used; null while unknown.
   const [blocked, setBlocked] = useState<string | null>(null);
+  // One level up: the LAN screen, or the server's games.
+  useEscape(() => {
+    show('join');
+  });
 
   useEffect(() => {
     void getCardSets().then((sets) => {
@@ -241,7 +246,7 @@ export function HostScreen() {
       <button
         type="button"
         onClick={() => {
-          show(remote ? 'join' : 'menu');
+          show('join');
         }}
       >
         Back

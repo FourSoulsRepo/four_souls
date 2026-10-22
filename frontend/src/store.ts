@@ -222,13 +222,19 @@ interface AppState extends Session {
   // while the player is on its screens.
   playOpen: boolean;
   setPlayOpen: (open: boolean) => void;
+  // path is the Play screen the player came by (M-03): its join screen
+  // shows the LAN games or the Online servers.
+  path: Path;
+  openPath: (path: Path) => void;
   loadSettings: () => Promise<void>;
   // saveSettings reports whether Go stored them.
   saveSettings: (s: Settings) => Promise<boolean>;
   // saveNickname saves the nickname if it changed (ST-06).
   saveNickname: (nickname: string) => Promise<boolean>;
-  // joinServer connects to address and shows its game list.
-  joinServer: (address: string) => Promise<void>;
+  // joinServer connects to address and shows its game list. The
+  // address goes to Recent unless recent is false (the LAN screen); a
+  // token takes that seat back (15.97).
+  joinServer: (address: string, opts?: { recent?: boolean; token?: string }) => Promise<void>;
   // forgetServer drops an address from the Recent list (N-18).
   forgetServer: (address: string) => Promise<void>;
   // lan is the last search for games on the local network (N-13).
@@ -250,9 +256,13 @@ interface AppState extends Session {
   loadSave: (save: string) => void;
   setReady: (ready: boolean) => void;
   leaveTable: () => Promise<void>;
-  // quit closes the connection, stops hosting, and goes to the menu.
-  quit: () => Promise<void>;
+  // quit closes the connection, stops hosting, and goes to the menu,
+  // or to another screen: the join screen, one level up from its games.
+  quit: (to?: Screen) => Promise<void>;
 }
+
+// Path is a way to play from the main menu's Play group (M-03).
+export type Path = 'lan' | 'online';
 
 // seatOf is this player's seat: from the table, or, for an app that came
 // back to a running game after a restart, from the welcome.
@@ -646,6 +656,7 @@ export const useApp = create<AppState>()((set, get) => {
       no_end_turn_ask: false,
       rejoin: { address: '', token: '', game: '' },
       host: noHostSetup,
+      lan_address: '',
     },
     hosting: null,
     lan: { searching: false, found: [], error: '' },
@@ -691,6 +702,10 @@ export const useApp = create<AppState>()((set, get) => {
     setPlayOpen: (open) => {
       set({ playOpen: open });
     },
+    path: 'lan',
+    openPath: (path) => {
+      set({ path, screen: 'join', error: '', zoom: null });
+    },
     loadSettings: async () => {
       try {
         const s = await getSettings();
@@ -729,8 +744,8 @@ export const useApp = create<AppState>()((set, get) => {
         set({ lan: { searching: false, found: [], error: messageOf(e) } });
       }
     },
-    joinServer: async (address) => {
-      if (await open(address)) {
+    joinServer: async (address, opts) => {
+      if ((await open(address, opts?.token)) && opts?.recent !== false) {
         const s = get().settings;
         remembering = get().saveSettings({ ...s, recent: remember(s.recent, address) });
       }
@@ -775,12 +790,12 @@ export const useApp = create<AppState>()((set, get) => {
       stopPlayback();
       set((s) => leftTable(s));
     },
-    quit: async () => {
+    quit: async (to = 'menu') => {
       endRetry();
       disconnect();
       stopPlayback();
       const hosting = get().hosting;
-      set({ connected: false, hosting: null, lobby: emptyLobby, game: null, screen: 'menu', error: '' });
+      set({ connected: false, hosting: null, lobby: emptyLobby, game: null, screen: to, error: '' });
       if (hosting) {
         await stopHosting().catch(() => undefined);
       }

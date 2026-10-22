@@ -39,4 +39,4 @@ The first time a player hosts, Windows and macOS ask whether the app may accept 
 
 ## Local network
 
-The join screen lists games hosted on your network. On macOS 15 and later, the first search asks whether Four Souls may find devices on your local network: allow it, or the list stays empty. If you said no, turn it on in **System Settings → Privacy & Security → Local Network**. Guest Wi-Fi and some routers block these searches; typing the host's address always works.
+**Play → LAN** lists games hosted on your network, and keeps looking while it is open; a game that already started shows "In progress", and if your app closed during it, **Rejoin** takes your seat back. On macOS 15 and later, the first search asks whether Four Souls may find devices on your local network: allow it, or the list stays empty. If you said no, turn it on in **System Settings → Privacy & Security → Local Network**. Guest Wi-Fi and some routers block these searches; typing the host's address always works.

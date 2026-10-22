@@ -1,6 +1,6 @@
 // Package lan finds hosted games on the local network (N-13, ADR 009).
 // A joining app broadcasts a probe over UDP; a hosting app with a game
-// waiting for players answers the sender.
+// answers the sender: waiting ones, and started ones to rejoin.
 package lan
 
 import (
@@ -23,13 +23,17 @@ const (
 	maxMessage = 8 << 10
 )
 
-// Game is one game that waits for players.
+// Game is one game on a hosting app.
 type Game struct {
+	// ID is the game's id, so a player who held a seat finds it again.
+	ID    string `json:"id"`
 	Host  string `json:"host"` // the nickname of who created it
 	Seats int    `json:"seats"`
 	Taken int    `json:"taken"`
 	// Locked: joining needs the password (N-14).
 	Locked bool `json:"locked,omitempty"`
+	// Started: in progress; only who held a seat can rejoin (15.97).
+	Started bool `json:"started,omitempty"`
 }
 
 // Answer is what a hosting app tells a probe.
@@ -57,7 +61,7 @@ type probe struct {
 }
 
 // Listen answers probes on UDP port until ctx ends. games returns the
-// answer now; ok false means no game waits, and nothing is sent.
+// answer now; ok false means there is no game, and nothing is sent.
 func Listen(ctx context.Context, port int, games func() (Answer, bool)) error {
 	var lc net.ListenConfig
 	conn, err := lc.ListenPacket(ctx, "udp4", ":"+strconv.Itoa(port))

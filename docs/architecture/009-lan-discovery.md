@@ -14,7 +14,7 @@
    1. Typing an address keeps working.
 3. Only an app that hosts announces.
    1. A dedicated server never does.
-   2. Announcements stop when no game waits for players.
+   2. Announcements stop when the app has no game left.
 4. Firewalls and OS prompts.
    1. Windows asks once per app for listening sockets.
    2. The hosting app already listens on TCP 4774.
@@ -50,8 +50,10 @@ Use option 1.
    2. Sent to 255.255.255.255, each interface's broadcast, and 127.0.0.1.
 4. Answer, hosting app → the probe's sender, unicast.
    1. JSON with `magic`, `kind: "games"`, a server `id`, `protocol`, `app`, `port`.
-   2. `games`: host nickname, seats, taken, for each waiting game.
-   3. Only sent when at least one game waits for players.
+   2. `games`: id, host nickname, seats, taken, locked, started.
+   3. Every game but a finished one: waiting, full, or started (15.97).
+   4. A started game lets a player who held a seat rejoin it.
+   5. Only sent when the app has at least one such game.
 5. The joining app collects answers for one second.
    1. Answers from one server `id` merge; a LAN address beats loopback.
    2. Each found game shows its address; a click connects there.
@@ -74,6 +76,7 @@ Use option 1.
 1. Routers and guest Wi-Fi may block broadcasts; the address field stays.
 2. Any computer on the LAN can see that a game waits, and who hosts.
    1. Game passwords (N-14) keep strangers out.
+   2. It also sees games in progress; only a seat's token gets in.
 3. macOS asks for Local Network access once; a "no" hides LAN games.
 
 ### Neutral

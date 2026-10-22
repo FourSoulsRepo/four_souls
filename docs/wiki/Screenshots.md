@@ -19,6 +19,8 @@ The fixture copies the fan-game notice. `internal/legal` has a test that fails w
 | Splash with the fan-game notice | `screen-splash.png` |
 | Main menu with versions | `screen-menu.png` |
 | Main menu, Play group open | `screen-menu-play.png` |
+| LAN screen with a typed address | `screen-lan.png` |
+| LAN screen: rejoin a game in progress | `screen-lan-rejoin.png` |
 | Settings | `screen-settings.png` |
 | Host a game, detailed setup | `screen-host.png` |
 | Game list on a server | `screen-games.png` |

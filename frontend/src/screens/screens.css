@@ -172,6 +172,11 @@
   -webkit-user-select: text;
 }
 
+/* A field that takes the row's free width, next to its button. */
+.field.grow {
+  flex: 1;
+}
+
 .list {
   display: flex;
   flex-direction: column;

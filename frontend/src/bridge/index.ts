@@ -54,6 +54,8 @@ export interface Settings {
   rejoin: Rejoin;
   // host is the last hosted setup, for the next host screen; no password.
   host: HostSetup;
+  // lan_address is the address last typed on the LAN screen (15.97).
+  lan_address: string;
 }
 
 // RecentServer is a server joined lately; name is the one it gave in
@@ -81,6 +83,7 @@ function fromGo(s: {
   no_end_turn_ask?: boolean;
   rejoin: Rejoin;
   host?: HostSetup;
+  lan_address?: string;
 }): Settings {
   return {
     nickname: s.nickname,
@@ -92,6 +95,7 @@ function fromGo(s: {
     no_end_turn_ask: s.no_end_turn_ask ?? false,
     rejoin: { address: s.rejoin.address, token: s.rejoin.token, game: s.rejoin.game },
     host: s.host ? { ...noHostSetup, ...s.host } : noHostSetup,
+    lan_address: s.lan_address ?? '',
   };
 }
 
@@ -248,7 +252,7 @@ export function saveRecord(link: string): Promise<string> {
 }
 
 // LanServer is a hosting app found on the local network, with its games
-// that wait for players (N-13, ADR 009).
+// (N-13, ADR 009).
 export interface LanServer {
   address: string;
   protocol: number;
@@ -257,10 +261,13 @@ export interface LanServer {
 }
 
 export interface LanGame {
+  id: string;
   host: string;
   seats: number;
   taken: number;
   locked: boolean; // joining needs the password (N-14)
+  // started: in progress; only who held a seat can rejoin (15.97).
+  started: boolean;
 }
 
 // findGames searches the local network for about a second.
@@ -270,7 +277,14 @@ export async function findGames(): Promise<LanServer[]> {
     address: f.address,
     protocol: f.protocol,
     app: f.app,
-    games: f.games.map((g) => ({ host: g.host, seats: g.seats, taken: g.taken, locked: g.locked ?? false })),
+    games: f.games.map((g) => ({
+      id: g.id,
+      host: g.host,
+      seats: g.seats,
+      taken: g.taken,
+      locked: g.locked ?? false,
+      started: g.started ?? false,
+    })),
   }));
 }
 

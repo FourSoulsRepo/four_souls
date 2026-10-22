@@ -3,7 +3,6 @@ import { expect, test } from './fixtures';
 import { startGame } from './game';
 import { appURL } from './server';
 import { shot } from './shot';
-import { openHost } from './menu';
 
 test.setTimeout(60_000);
 
@@ -26,8 +25,9 @@ test('the host saves the game; everyone comes back and plays on', async ({ brows
   }
 
   // The host continues it later, from the host screen.
+  // Back from the Games list is the LAN screen, with its Host button.
   await gil.getByRole('button', { name: 'Back' }).click();
-  await openHost(gil);
+  await gil.getByRole('button', { name: 'Host a game' }).click();
   await gil.getByRole('button', { name: 'Continue a saved game' }).click();
   const save = gil.getByRole('listitem').filter({ hasText: 'Gil, Hob' });
   await save.getByRole('button', { name: 'Continue' }).click();

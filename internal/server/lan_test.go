@@ -31,9 +31,9 @@ func find(t *testing.T, port int) []lan.Found {
 	return found
 }
 
-// A hosting app answers while a game waits, and stops when it starts
-// (N-13, ADR 009).
-func TestLANFindsOnlyWaitingGames(t *testing.T) {
+// A hosting app answers with its games: waiting, full, and started, so
+// a player who held a seat finds it again (N-13, 15.97, ADR 009).
+func TestLANFindsGamesUntilTheyEnd(t *testing.T) {
 	srv, port := startLAN(t, true)
 	if found := find(t, port); len(found) != 0 {
 		t.Fatalf("found %+v with no game, want nothing", found)
@@ -48,8 +48,8 @@ func TestLANFindsOnlyWaitingGames(t *testing.T) {
 	if len(found) != 1 || len(found[0].Games) != 1 {
 		t.Fatalf("found %+v, want Ann's game", found)
 	}
-	if g := found[0].Games[0]; g.Host != "Ann" || g.Seats != 2 || g.Taken != 1 {
-		t.Errorf("game %+v, want Ann's with 1 of 2 seats", g)
+	if g := found[0].Games[0]; g.ID != tb.Game || g.Host != "Ann" || g.Seats != 2 || g.Taken != 1 || g.Started {
+		t.Errorf("game %+v, want Ann's %s waiting with 1 of 2 seats", g, tb.Game)
 	}
 	if found[0].Protocol != protocol.Version {
 		t.Errorf("protocol %d, want %d", found[0].Protocol, protocol.Version)
@@ -57,8 +57,25 @@ func TestLANFindsOnlyWaitingGames(t *testing.T) {
 
 	bo.send(protocol.TypeJoin, protocol.Join{Game: tb.Game})
 	bo.expect(protocol.TypeTable, nil)
+	if found := find(t, port); len(found) != 1 || found[0].Games[0].Taken != 2 || found[0].Games[0].Started {
+		t.Errorf("found %+v with every seat taken, want the full game", found)
+	}
+	for _, b := range []*bot{ann, bo} {
+		b.send(protocol.TypeReady, protocol.Ready{Ready: true})
+	}
+	ann.expect(protocol.TypeUpdate, nil)
+	if found := find(t, port); len(found) != 1 || !found[0].Games[0].Started || found[0].Games[0].ID != tb.Game {
+		t.Errorf("found %+v after the start, want the game in progress", found)
+	}
+
+	// A finished game is gone from the answer.
+	srv.h.send(hubRequest{run: func(h *Hub) {
+		for _, g := range h.games {
+			g.room.over.Store(true)
+		}
+	}})
 	if found := find(t, port); len(found) != 0 {
-		t.Errorf("found %+v with every seat taken, want nothing", found)
+		t.Errorf("found %+v after the end, want nothing", found)
 	}
 }
 

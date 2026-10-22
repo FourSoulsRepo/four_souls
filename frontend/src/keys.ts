@@ -49,3 +49,23 @@ function aside(target: EventTarget | null): boolean {
     target.closest('[role="dialog"], [role="menu"]') !== null
   );
 }
+
+// useEscape calls back when Esc is pressed on a menu screen: one level
+// up (M-03).
+export function useEscape(back: () => void): void {
+  const backRef = useRef(back);
+  useEffect(() => {
+    backRef.current = back;
+  });
+  useEffect(() => {
+    const onDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && !e.repeat) {
+        backRef.current();
+      }
+    };
+    window.addEventListener('keydown', onDown);
+    return () => {
+      window.removeEventListener('keydown', onDown);
+    };
+  }, []);
+}

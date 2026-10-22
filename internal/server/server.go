@@ -140,7 +140,7 @@ func Start(ctx context.Context, cfg Config) (*Server, error) {
 		if a, ok := ln.Addr().(*net.TCPAddr); ok {
 			port = a.Port // the real one when cfg.Port is 0
 		}
-		if err := lan.Listen(ctx, port, waitingGames(hub, port)); err != nil {
+		if err := lan.Listen(ctx, port, lanGames(hub, port)); err != nil {
 			log.Printf("server: LAN discovery is off: %v", err) // joining by address still works
 		}
 	}
@@ -218,17 +218,23 @@ func cardTexts() []record.Card {
 	return out
 }
 
-// waitingGames answers a LAN probe with the games that wait for
-// players; none waiting means no answer (ADR 009).
-func waitingGames(hub *Hub, port int) func() (lan.Answer, bool) {
+// lanGames answers a LAN probe with the games here: the waiting ones,
+// and the started ones, so a player who held a seat finds the game
+// again (15.97). A finished game is left out; none means no answer
+// (ADR 009).
+func lanGames(hub *Hub, port int) func() (lan.Answer, bool) {
 	id := newToken()
 	return func() (lan.Answer, bool) {
 		reply := make(chan []lan.Game, 1)
 		hub.send(hubRequest{run: func(h *Hub) {
+			over := map[string]bool{}
+			for _, g := range h.games {
+				over[g.info.ID] = g.room.over.Load()
+			}
 			var out []lan.Game
 			for _, g := range h.list().Games {
-				if !g.Started && g.Taken < g.Seats {
-					out = append(out, lan.Game{Host: g.Host, Seats: g.Seats, Taken: g.Taken, Locked: g.Locked})
+				if !over[g.ID] {
+					out = append(out, lan.Game{ID: g.ID, Host: g.Host, Seats: g.Seats, Taken: g.Taken, Locked: g.Locked, Started: g.Started})
 				}
 			}
 			reply <- out

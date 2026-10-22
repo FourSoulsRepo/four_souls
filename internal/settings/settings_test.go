@@ -215,3 +215,21 @@ func TestNoEndTurnAsk(t *testing.T) {
 		t.Fatal("the switch was lost")
 	}
 }
+
+// The LAN screen keeps the last typed address, trimmed (15.97).
+func TestLanAddressSurvivesRestart(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "settings.json")
+	if _, err := Save(path, Settings{LanAddress: " 192.168.1.5:4774 "}); err != nil {
+		t.Fatal(err)
+	}
+	if got := Load(path).LanAddress; got != "192.168.1.5:4774" {
+		t.Fatalf("LAN address %q, want 192.168.1.5:4774", got)
+	}
+	saved, err := Save(path, Settings{LanAddress: strings.Repeat("a", maxAddress+1)})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if saved.LanAddress != "" {
+		t.Errorf("a too long address was kept: %q", saved.LanAddress)
+	}
+}

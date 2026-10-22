@@ -23,7 +23,7 @@
 * **4c. The host lacks a card set:** refused with `missing_sets` (CD-03).
 * **7a. Someone leaves before the start:** their seat is free again.
 * **7b. The host leaves:** the table stays while anyone sits at it.
-* **1a. In the app:** Main menu, **Host a game**.
+* **1a. In the app:** Main menu, **Play**, **LAN**, **Host a game** (15.97).
   * Nickname and players (2–4); "Detailed setup" shows the rest (GS-10).
   * Detailed: response timer, bonus souls.
   * Draft and bans wait for the tournament tools (roadmap, Future).
@@ -32,7 +32,7 @@
 * **2a. The port is taken:** the app shows the error and stays on the host screen.
 * **6a. The table screen:** the host sees "Friends join at" and the addresses.
 * **6b. Copy an address:** the addresses can be selected and copied (V-10).
-* **6c. LAN players:** while a seat is free, the app answers LAN searches (UC-17).
+* **6c. LAN players:** the app answers LAN searches until the game ends (UC-17).
 * **1b. Password (N-14):** the host may set one, up to 64 characters.
   * Friends need it to join; the game list shows a lock.
   * It is never shown again, logged, recorded or saved.
@@ -49,6 +49,7 @@
 * **1e. On a dedicated server:** the player creates the game there (UC-19).
 * **4d. A friend creates on the host's app:** refused with `not_host` (N-17).
   * The friend's app offers no "Create a game" there.
+* **1f. Back or Esc on the host screen:** the LAN screen (15.97).
 
 ## Postconditions
 

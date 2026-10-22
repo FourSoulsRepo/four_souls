@@ -2,7 +2,7 @@
 // tested without a socket.
 import type { Envelope, GameInfo, Games, Options, ProtocolError, Saved, SaveInfo, Table, Update, Welcome } from './protocol';
 import { errorText } from './protocol';
-import type { LanServer, RecentServer } from './bridge';
+import type { LanServer, RecentServer, Rejoin } from './bridge';
 
 // 'cards' is a dev-only card gallery for tests (?screen=cards).
 export type Screen = 'splash' | 'welcome' | 'menu' | 'settings' | 'host' | 'join' | 'table' | 'game' | 'cards';
@@ -128,27 +128,35 @@ export function optionsText(o: Options | undefined): string {
   return parts.join(' · ');
 }
 
-// LanRow is one game found on the local network, as the join screen
+// LanRow is one game found on the local network, as the LAN screen
 // lists it (N-13).
 export interface LanRow {
   key: string;
   address: string;
   text: string;
   joinable: boolean;
+  // rejoin: a started game this app held a seat in (15.97); joining
+  // takes the seat back.
+  rejoin: boolean;
 }
 
 // lanRows lists the found games. A server that speaks another protocol
-// version shows, but cannot be joined.
-export function lanRows(found: LanServer[], protocol: number): LanRow[] {
+// version shows, but cannot be joined; neither can a full or started
+// game, unless this app held a seat in it (rejoin is its saved seat).
+export function lanRows(found: LanServer[], protocol: number, rejoin: Rejoin): LanRow[] {
   return found.flatMap((f) =>
     f.games.map((g, i) => {
       const same = f.protocol === protocol;
       const version = same ? '' : ` · needs app ${f.app}`;
+      const mine = rejoin.token !== '' && g.id !== '' && g.id === rejoin.game;
+      const open = !g.started && g.taken < g.seats;
+      const state = g.started ? ' · In progress' : '';
       return {
         key: `${f.address}#${String(i)}`,
         address: f.address,
-        text: `${g.locked ? '🔒 ' : ''}${g.host}'s game · ${String(g.taken)}/${String(g.seats)} players · ${f.address}${version}`,
-        joinable: same,
+        text: `${g.locked ? '🔒 ' : ''}${g.host}'s game · ${String(g.taken)}/${String(g.seats)} players${state} · ${f.address}${version}`,
+        joinable: same && (open || mine),
+        rejoin: same && mine,
       };
     }),
   );

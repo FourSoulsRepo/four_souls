@@ -50,7 +50,7 @@ A spot names exactly one thing: a card every player can see (`object`), a slot o
 
 ## LAN discovery
 
-`internal/lan` (ADR 009). A joining app sends a UDP probe to port 4774: to 255.255.255.255, to each interface's broadcast address, and to 127.0.0.1 (several copies on one computer, UC-16). A server started with `Config.Discovery` answers the sender by unicast with its waiting games; with none waiting it stays silent. Only the app's `Host` sets `Discovery`; it has no JSON name, so `cmd/server` never answers. Answers carry a random server ID, so the same server reached over loopback and the LAN shows once, with its LAN address.
+`internal/lan` (ADR 009). A joining app sends a UDP probe to port 4774: to 255.255.255.255, to each interface's broadcast address, and to 127.0.0.1 (several copies on one computer, UC-16). A server started with `Config.Discovery` answers the sender by unicast with its games (`lanGames`): every table, full or not, and every started game that has not finished, each with its id and `started` (15.97); with none it stays silent. A started game shows so a player whose app closed finds it again. Only the app's `Host` sets `Discovery`; it has no JSON name, so `cmd/server` never answers. Answers carry a random server ID, so the same server reached over loopback and the LAN shows once, with its LAN address.
 
 ## Who opens games
 

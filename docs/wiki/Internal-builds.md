@@ -19,8 +19,8 @@ The build contains the licensed card images. Share it only with the people in th
 
 ## A LAN play test
 
-1. One player hosts: **Host a game**, players and setup, **Host**. The table shows the addresses to join.
-2. The others: **Join a game**, one of those addresses, **Connect**, then **Join** the game.
+1. One player hosts: **Play → LAN → Host a game**, players and setup, **Host**. The table shows the addresses to join.
+2. The others: **Play → LAN**, then **Join** next to the game on the list, or type one of those addresses and **Connect**; then **Join** the game.
 3. Everyone presses **Ready**; the game starts.
 
 Over the internet, use a virtual LAN: see [Playing over the internet](Playing-over-the-internet).

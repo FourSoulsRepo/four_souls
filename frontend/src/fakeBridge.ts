@@ -56,6 +56,7 @@ function loadSettings(): unknown {
     no_end_turn_ask: params.has('noendask'),
     rejoin: { address: '', token: '', game: '' },
     host: { seats: 0, sets: null, detailed: false, response_timer: 0, no_bonus_souls: false, no_deck_ratios: false },
+    lan_address: '',
   };
   return JSON.parse(localStorage.getItem(settingsKey) ?? JSON.stringify(fresh));
 }
@@ -79,6 +80,7 @@ interface FakeSettings {
     no_bonus_souls: boolean;
     no_deck_ratios: boolean;
   };
+  lan_address?: string;
 }
 
 function saveSettings(s: FakeSettings): Promise<unknown> {
@@ -86,7 +88,7 @@ function saveSettings(s: FakeSettings): Promise<unknown> {
   if (s.nickname !== '' && (nickname === '' || Array.from(nickname).length > 20)) {
     return Promise.reject(new Error('nickname must be 1–20 characters'));
   }
-  const saved = { ...s, nickname, recent: s.recent.slice(0, 5) };
+  const saved = { ...s, nickname, recent: s.recent.slice(0, 5), lan_address: (s.lan_address ?? '').trim() };
   localStorage.setItem(settingsKey, JSON.stringify(saved));
   return Promise.resolve(saved);
 }
@@ -203,6 +205,8 @@ const w = window as unknown as {
   fakeFullscreen: boolean;
   // fakeQuit lets tests see that the app was asked to close.
   fakeQuit: boolean;
+  // fakeLan is what the LAN search finds, when a test sets it.
+  fakeLan?: unknown[];
 };
 
 w.go = {
@@ -294,12 +298,14 @@ w.go = {
         ),
       SaveRecord: (link: string) => Promise.resolve(`/fake/${new URL(link).searchParams.get('game') ?? ''}.fsrec`),
       // The LAN holds one hosting app: the test server (?server=PORT).
-      // ?nolan finds nothing.
+      // ?nolan finds nothing; a test sets window.fakeLan to list others,
+      // in this app's protocol unless it names one.
       FindGames: () =>
         Promise.resolve(
-          params.has('nolan')
-            ? []
-            : [{ address: `127.0.0.1:${String(hostPort)}`, protocol: protocolVersion, app: 'demo', games: [{ host: 'Lan', seats: 2, taken: 1 }] }],
+          w.fakeLan?.map((f) => ({ protocol: protocolVersion, ...(f as object) })) ??
+            (params.has('nolan')
+              ? []
+              : [{ address: `127.0.0.1:${String(hostPort)}`, protocol: protocolVersion, app: 'demo', games: [{ id: '', host: 'Lan', seats: 2, taken: 1 }] }]),
         ),
     },
     Host: {

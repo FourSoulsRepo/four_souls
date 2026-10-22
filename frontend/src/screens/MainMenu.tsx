@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { getVersions, quitApp, type Versions } from '../bridge';
+import { useEscape } from '../keys';
 import { scaleFor } from '../playback';
 import { useApp } from '../store';
 import './MainMenu.css';
@@ -10,6 +11,7 @@ import './MainMenu.css';
 export function MainMenu() {
   const [versions, setVersions] = useState<Versions | null>(null);
   const show = useApp((s) => s.show);
+  const openPath = useApp((s) => s.openPath);
   const open = useApp((s) => s.playOpen);
   const setOpen = useApp((s) => s.setPlayOpen);
   const scale = useApp((s) => scaleFor(s.settings.animation, 0, 0));
@@ -21,17 +23,9 @@ export function MainMenu() {
     });
   }, []);
 
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setOpen(false);
-      }
-    };
-    window.addEventListener('keydown', onKey);
-    return () => {
-      window.removeEventListener('keydown', onKey);
-    };
-  }, [setOpen]);
+  useEscape(() => {
+    setOpen(false);
+  });
 
   return (
     <div className="menu">
@@ -63,7 +57,7 @@ export function MainMenu() {
               <button
                 type="button"
                 onClick={() => {
-                  show('join');
+                  openPath('lan');
                 }}
               >
                 LAN
@@ -71,7 +65,7 @@ export function MainMenu() {
               <button
                 type="button"
                 onClick={() => {
-                  show('join');
+                  openPath('online');
                 }}
               >
                 Online

@@ -4,7 +4,6 @@ import { expect, type Page } from '@playwright/test';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { serverPort } from './server';
-import { openHost } from './menu';
 
 // gameID is the id of the page's table, which names its save file.
 export async function gameID(page: Page): Promise<string> {
@@ -70,8 +69,9 @@ export async function saveAndContinue(pages: Page[], names: string, card = 'bomb
     await expect(page.getByText('The game was saved.')).toBeVisible();
   }
   giveCard(game, card, item, nextRoll);
+  // Back from the Games list is the LAN screen, with its Host button.
   await host.getByRole('button', { name: 'Back' }).click();
-  await openHost(host);
+  await host.getByRole('button', { name: 'Host a game' }).click();
   await host.getByRole('button', { name: 'Continue a saved game' }).click();
   await host.getByRole('listitem').filter({ hasText: names }).getByRole('button', { name: 'Continue' }).click();
   for (const page of guests) {

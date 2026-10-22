@@ -1,6 +1,7 @@
 // Host and join screens (7.3), against the real Go server.
+import type { Page } from '@playwright/test';
 import { expect, test } from './fixtures';
-import { gameId, lobbyGame, throwFirstRoll } from './game';
+import { gameId, lobbyGame, startGame, throwFirstRoll } from './game';
 import { appURL, serverPort } from './server';
 import { realAssets, shot } from './shot';
 import { openHost, openLan, openOnline } from './menu';
@@ -57,8 +58,8 @@ test('a joined server is remembered by its name, until removed (N-18)', async ({
   await page.getByRole('button', { name: 'Connect' }).click();
   await expect(page.getByRole('heading', { name: 'Games' })).toBeVisible();
   await expect(page.getByText('Test server', { exact: true })).toBeVisible();
+  // Back goes one level up: the Online screen.
   await page.getByRole('button', { name: 'Back' }).click();
-  await openOnline(page);
   const recent = page.getByRole('list', { name: 'Recent' });
   const server = recent.getByRole('button', { name: 'Test server', exact: true });
   await expect(server).toHaveAttribute('title', address());
@@ -69,7 +70,6 @@ test('a joined server is remembered by its name, until removed (N-18)', async ({
   await server.click();
   await expect(page.getByRole('heading', { name: 'Games' })).toBeVisible();
   await page.getByRole('button', { name: 'Back' }).click();
-  await openOnline(page);
 
   await page.getByRole('button', { name: 'Remove Test server from Recent' }).click();
   await expect(recent).toBeHidden();
@@ -150,8 +150,105 @@ test('with no game on the LAN, the address field is the way', async ({ page }) =
   await page.goto(`${appURL()}&nolan`);
   await openLan(page);
   const lan = page.getByRole('region', { name: 'On your network' });
-  await expect(lan).toContainText('No games found');
-  await expect(lan.getByRole('button', { name: 'Search again' })).toBeEnabled();
+  await expect(lan).toContainText('No games found yet. Still looking…');
+  await expect(lan.getByLabel('Host address')).toBeVisible();
+  // The search runs by itself: there is nothing to press.
+  await expect(lan.getByRole('button', { name: 'Search again' })).toHaveCount(0);
+});
+
+// lanGame is how the fake LAN lists a game on the test server.
+function lanGame(game: { id: string; host: string; taken: number; started: boolean }) {
+  return [{ address: address(), app: 'demo', games: [{ seats: 2, locked: false, ...game }] }];
+}
+
+// setLan makes page's LAN search find found from now on, also after a
+// reload; the fake gives it the app's own protocol.
+async function setLan(page: Page, found: ReturnType<typeof lanGame> | []) {
+  const run = (f: unknown[]) => {
+    (window as unknown as { fakeLan: unknown[] }).fakeLan = f;
+  };
+  await page.addInitScript(run, found);
+  await page.evaluate(run, found).catch(() => undefined);
+}
+
+test('the LAN list fills by itself, without a click (15.97)', async ({ page }) => {
+  await setLan(page, []);
+  await page.goto(appURL());
+  await openLan(page);
+  const lan = page.getByRole('region', { name: 'On your network' });
+  await expect(lan).toContainText('No games found yet');
+  // A host opens a game: the next search finds it.
+  await page.evaluate((f) => {
+    (window as unknown as { fakeLan: unknown[] }).fakeLan = f;
+  }, lanGame({ id: 'g-new', host: 'Neo', taken: 1, started: false }));
+  await expect(lan.getByRole('listitem').filter({ hasText: "Neo's game · 1/2 players" })).toBeVisible();
+});
+
+// A started game keeps showing, "In progress"; only a player who held a
+// seat can rejoin it (15.97, N-13).
+test('a player whose app closed rejoins from the LAN list (15.97)', async ({ browser }) => {
+  const [ann, bo] = await startGame(browser, ['Ann', 'Bo'], { url: `${appURL()}&anim=off` });
+  if (!ann || !bo) {
+    throw new Error('no pages');
+  }
+  const id = await gameId(bo);
+  const found = lanGame({ id, host: 'Ann', taken: 2, started: true });
+  // Bo's app closes; the same settings start it again.
+  const context = bo.context();
+  await bo.close();
+  const again = await context.newPage();
+  await realAssets(again);
+  await setLan(again, found);
+  await again.goto(`${appURL()}&anim=off`);
+  await openLan(again);
+  const row = again.getByRole('region', { name: 'On your network' }).getByRole('listitem').filter({ hasText: 'In progress' });
+  await expect(row).toContainText("Ann's game · 2/2 players · In progress");
+  await shot(again, 'lan-rejoin');
+
+  // Somebody else sees it too, but cannot join it.
+  const cy = await (await browser.newContext()).newPage();
+  await setLan(cy, found);
+  await cy.goto(appURL());
+  await openLan(cy);
+  const theirs = cy.getByRole('listitem').filter({ hasText: 'In progress' });
+  await expect(theirs.getByRole('button', { name: 'Join' })).toBeDisabled();
+  await expect(theirs.getByRole('button', { name: 'Rejoin' })).toHaveCount(0);
+
+  await row.getByRole('button', { name: 'Rejoin' }).click();
+  await expect(again.locator('.player-bottom')).toHaveAccessibleName('Bo (you)');
+  await expect(ann.getByRole('dialog', { name: 'Paused' })).toHaveCount(0);
+});
+
+test('the LAN screen keeps the typed address, not a Recent list (15.97)', async ({ page }) => {
+  await page.goto(`${appURL()}&nolan`);
+  await openLan(page);
+  await page.getByLabel('Nickname').fill('Tia');
+  await page.getByLabel('Host address').fill(address());
+  await page.getByRole('button', { name: 'Connect' }).click();
+  await expect(page.getByRole('heading', { name: 'Games' })).toBeVisible();
+  // Back goes one level up: the LAN screen; Esc then the menu.
+  await page.getByRole('button', { name: 'Back' }).click();
+  await expect(page.getByRole('heading', { name: 'LAN' })).toBeVisible();
+  await expect(page.getByLabel('Host address')).toHaveValue(address());
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('group', { name: 'Play' })).toBeVisible();
+
+  await page.reload();
+  await openLan(page);
+  await expect(page.getByLabel('Host address')).toHaveValue(address());
+  await expect(page.getByRole('list', { name: 'Recent' })).toHaveCount(0);
+  await shot(page, 'lan');
+});
+
+test('the host setup goes back to the LAN screen (15.97)', async ({ page }) => {
+  await page.goto(`${appURL()}&nolan`);
+  await openHost(page);
+  await expect(page.getByRole('heading', { name: 'Host a game' })).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('heading', { name: 'LAN' })).toBeVisible();
+  await page.getByRole('button', { name: 'Host a game' }).click();
+  await page.getByRole('button', { name: 'Back' }).click();
+  await expect(page.getByRole('heading', { name: 'LAN' })).toBeVisible();
 });
 
 test('a game password keeps others out (N-14)', async ({ browser }) => {
@@ -316,3 +413,4 @@ test('deck ratios are on by default and locked when the sets are too small (GS-0
   await expect(page.getByRole('list', { name: 'Seats' })).toContainText('Ratia (you)');
   await expect(page.getByText(/deck ratios/)).toBeVisible();
 });
+

@@ -3115,7 +3115,7 @@ Images come first, so the new table is built with backs and mats.
    12. UC-01 10 – 12; wiki `Client`, `Animations`, `Screenshots`; CHANGELOG.
    13. Screenshots: `.cache/screenshots/15.96/before/` and `after/`.
 
-### [ ] 15.97 LAN screen
+### [x] 15.97 LAN screen
 
 1. Goal: LAN play on one screen, no internet servers there (M-03, N-13).
 2. Planned by the owner (2026-10-22).
@@ -3134,6 +3134,24 @@ Images come first, so the new table is built with backs and mats.
    3. e2e test: a player who closed the app rejoins from the list.
    4. e2e test: the typed address is there after a restart.
    5. UC-03, UC-17 updated.
+5. Result (2026-10-22)
+   1. Go `lanGames`: every table and every unfinished started game.
+   2. `lan.Game` has `id` and `started`; ADR 009 updated in place.
+   3. Go test: waiting, full, started, then gone once over.
+   4. `LanConnect`: Host a game, nickname, the list, the address form.
+   5. `useLanSearch`: a new search 2 s after each one ends.
+   6. `lanRows`: "In progress"; Rejoin when `rejoin.game` is its id.
+   7. Rejoin sends the saved token, whatever address it joined by.
+   8. `settings.lan_address`: kept on a typed Connect; trimmed, capped.
+   9. LAN joins pass `recent: false`; nothing goes to Recent.
+   10. `store.path`, `openPath`; `quit('join')` goes one level up.
+   11. `useEscape` (`keys.ts`): Esc goes up on the menu screens.
+   12. The host setup goes back to the LAN screen.
+   13. e2e `lobby.spec.ts`: the list fills, rejoin, the address, Back and Esc.
+   14. The fake LAN takes `window.fakeLan` from a test.
+   15. UC-03, UC-09, UC-17; wiki `Client`, `Server`, `First-start`, `Internal-builds`, `Screenshots`; CHANGELOG.
+   16. Found and fixed on the way: 19.58 (a test, not the app).
+   17. Screenshots: `.cache/screenshots/15.97/before/` and `after/`.
 
 ### [ ] 15.98 Online screen
 

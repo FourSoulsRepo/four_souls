@@ -48,10 +48,12 @@ export namespace carddb {
 export namespace lan {
 	
 	export class Game {
+	    id: string;
 	    host: string;
 	    seats: number;
 	    taken: number;
 	    locked?: boolean;
+	    started?: boolean;
 	
 	    static createFrom(source: any = {}) {
 	        return new Game(source);
@@ -59,10 +61,12 @@ export namespace lan {
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
 	        this.host = source["host"];
 	        this.seats = source["seats"];
 	        this.taken = source["taken"];
 	        this.locked = source["locked"];
+	        this.started = source["started"];
 	    }
 	}
 	export class Found {
@@ -384,6 +388,7 @@ export namespace settings {
 	    no_end_turn_ask: boolean;
 	    rejoin: Rejoin;
 	    host: HostSetup;
+	    lan_address: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new Settings(source);
@@ -400,6 +405,7 @@ export namespace settings {
 	        this.no_end_turn_ask = source["no_end_turn_ask"];
 	        this.rejoin = this.convertValues(source["rejoin"], Rejoin);
 	        this.host = this.convertValues(source["host"], HostSetup);
+	        this.lan_address = source["lan_address"];
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {
