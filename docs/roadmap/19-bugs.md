@@ -37,23 +37,23 @@ This step never closes; new reports are appended.
 | B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39                               | 4     |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30                                     | 3     |
-| E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52            | 7     |
+| E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52, 19.54     | 8     |
 | F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50                      | 5     |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
 | I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48 | 10 |
-| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.54 | 11 |
+| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57 | 13 |
 | K  | Build and release files                  | Release    | 19.47                                                  | 1     |
 
-Totals by system (54 items):
+Totals by system (57 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
 | Engine    | A, B    | 10    |
 | Card data | C       | 2     |
-| Client    | D–G     | 19    |
+| Client    | D–G     | 20    |
 | Server    | H       | 1     |
-| e2e       | I, J    | 21    |
+| e2e       | I, J    | 23    |
 | Release   | K       | 1     |
 
 ---
@@ -1797,7 +1797,7 @@ Totals by system (54 items):
 4. Done when:
    1. The test passes ten full runs in a row.
 
-### [ ] 19.54 e2e: a loot card's flight from under the stack, webkit
+### [x] 19.54 e2e: a loot card's flight from under the stack, webkit
 
 1. Goal: the 15.74 flight test passes every run.
 2. Report (agent, 2026-10-22)
@@ -1812,5 +1812,69 @@ Totals by system (54 items):
 3. Tasks:
    1. Find which box showed while it should hide, and why.
    2. Fix the client or the test, whichever is wrong.
+4. Done when:
+   1. The test passes ten full runs in a row.
+5. Cause (2026-10-22)
+   1. A client bug; the test was right.
+   2. A probe logged the row's inline style each frame.
+   3. The row hid by `visibility: hidden` in its style (19.41).
+   4. Then the row slid 32 px up: a layout move of 15.51's `Rows`.
+   5. motion rewrites a moving row's style; the `visibility` went with it.
+   6. So the flown card's row showed again on the stack, sliding.
+   7. Also: a leaving row fades out (15.51) after the store clears `left`.
+   8. Evidence: `.cache/e2e-evidence/19.54-repeat1/` and the probe logs.
+6. Result (2026-10-22)
+   1. A flown row hides by the class `flown`, which motion never touches.
+   2. It stays hidden while it fades out, though `left` is cleared.
+   3. 12 repeats per case and browser: 48 of 48 passed (5 of 48 failed before).
+   4. Not ten full runs: a full run takes 7 minutes; one full run passed.
+   5. Grouped under E: playback, animations (the cause was in the client).
+   6. That full run had two other flakes, both passed alone: logged as 19.55, 19.56.
+   7. The next full run lost one other test, passed alone: logged as 19.57.
+   8. The flight test passed in both full runs after the fix.
+
+### [ ] 19.55 e2e: whom the stack waits for, webkit, under load
+
+1. Goal: the V-11 test passes every run.
+2. Report (agent, 2026-10-22)
+   1. Found by `make e2e` during the 19.54 fix.
+   2. `stack.spec.ts`: "every player sees whom the stack waits for (V-11)".
+   3. Webkit; line 150: the poll for "Passed" or an empty stack timed out.
+   4. Passed 6 of 6 alone, on both browsers.
+   5. Evidence: `.cache/e2e-evidence/19.54-run1/`.
+3. Tasks:
+   1. Find why the pass did not show in time in the full run.
+   2. Fix the client or the test, whichever is wrong.
+4. Done when:
+   1. The test passes ten full runs in a row.
+
+### [ ] 19.56 e2e: Chromium crashed during a full run
+
+1. Goal: know whether the app can crash the browser.
+2. Report (agent, 2026-10-22)
+   1. Found by `make e2e` during the 19.54 fix.
+   2. `actions.spec.ts`: "an attack waits for the roller to throw …" (15.61, 15.63).
+   3. Chromium: "Target crashed" in `seen()`, a page evaluate.
+   4. Passed 6 of 6 alone, on both browsers.
+   5. Evidence: `.cache/e2e-evidence/19.54-run1/`.
+3. Tasks:
+   1. Check the run for memory use; see if it crashes again.
+   2. If it repeats, find what the page did when it crashed.
+4. Done when:
+   1. No crash in ten full runs, or its cause is found.
+
+### [ ] 19.57 e2e: an order dialog keeps a card unplaced, webkit, under load
+
+1. Goal: the 19.16 order test passes every run.
+2. Report (agent, 2026-10-22)
+   1. Found by `make e2e` during the 19.54 fix.
+   2. `actions.spec.ts`: "put them back in any order" shows each card in its place (19.16).
+   3. Webkit; line 447: "Not placed" still had one card after 5 s.
+   4. Passed 10 of 10 alone, on both browsers.
+   5. Evidence: `.cache/e2e-evidence/19.54-run2/`.
+   6. 19.53, 19.55 – 19.57: each full run loses one to four tests, each passes alone.
+3. Tasks:
+   1. Find why the last placement did not register in the full run.
+   2. Check whether fewer e2e workers stop these load failures.
 4. Done when:
    1. The test passes ten full runs in a row.

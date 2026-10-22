@@ -1,4 +1,5 @@
-import type { PointerEvent } from 'react';
+import { useIsPresent } from 'motion/react';
+import { useState, type PointerEvent } from 'react';
 import { diceImage, firstRollRows, lastRollText } from '../dice';
 import { useKey } from '../keys';
 import type { FirstRoll, GameView, Intent, StackItem } from '../protocol';
@@ -157,8 +158,17 @@ function StackRow({ it, view, names }: { it: StackItem; view: GameView; names: N
   const card = stackCard(it, view);
   const parts = stackParts(it, view, names);
   const aimed = useApp((s) => s.aiming?.targets.some((t) => t.stack_id === it.id) ?? false);
-  // Its card flew away; the row hides until the next view (19.41).
+  // Its card flew away; the row hides until the next view (19.41). The
+  // next view drops it, and it fades out (15.51): it stays hidden then,
+  // though the store forgets its source. A class hides it, not the
+  // style: a row's slide (layout) rewrites its style (19.54).
   const left = useApp((s) => !!it.source && s.left.includes(it.source));
+  const present = useIsPresent();
+  const [flown, setFlown] = useState(false);
+  if (left && !flown) {
+    setFlown(true);
+  }
+  const hidden = left || (flown && !present);
   const show = (e: PointerEvent, touch: boolean) => {
     if (card) {
       setZoom(itemZoom(it, card, view, names, e, touch));
@@ -166,13 +176,12 @@ function StackRow({ it, view, names }: { it: StackItem; view: GameView; names: N
   };
   return (
     <Row
-      className={`stack-row stack-${stackIcon(it)}${aimed ? ' hl-aim' : ''}`}
+      className={`stack-row stack-${stackIcon(it)}${aimed ? ' hl-aim' : ''}${hidden ? ' flown' : ''}`}
       // Damage from this item's source flies from here (15.37).
       data-zone={it.source ? `stack-src-${String(it.source)}` : undefined}
       // A dragged card may aim at this item (15.25).
       data-stack={it.id}
       aria-label={parts.map((p) => p.text).join('')}
-      style={left ? { visibility: 'hidden' } : undefined}
       onPointerEnter={(e) => {
         if (e.pointerType === 'mouse') {
           show(e, false);

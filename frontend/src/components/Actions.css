@@ -594,6 +594,12 @@
   background: rgb(255 255 255 / 10%);
 }
 
+/* A row whose card flew away (19.41, 19.54); a class, as a slide
+   rewrites the row's style. */
+.stack-row.flown {
+  visibility: hidden;
+}
+
 /* The top item resolves next; an open declaration is above it. */
 .stack-row:first-child,
 .stack-declared + .stack-row {
