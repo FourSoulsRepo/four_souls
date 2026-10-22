@@ -604,6 +604,7 @@
    a dashed edge. It is as tall as a row with an icon. */
 .stack-declared {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   min-height: 28px;
   padding: 1px 8px;
@@ -612,6 +613,16 @@
   box-sizing: border-box;
   font-size: 13px;
   font-style: italic;
+}
+
+/* An aimed attack's fight line (15.94): what the roll needs, and the
+   ATK of a hit, on a line of its own under the declaration. */
+.stack-odds {
+  flex-basis: 100%;
+  padding-bottom: 2px;
+  font-size: 12px;
+  font-style: normal;
+  color: #ffe9b0;
 }
 
 /* Every icon is the same square; a card shows its art, cropped. */

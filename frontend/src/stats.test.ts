@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { StatSource } from './protocol';
-import { statLines, sumOf, tempSources, trend } from './stats';
+import { hitsText, oddsLine, rollChanges, statLines, sumOf, tempSources, trend } from './stats';
 
 const names = new Map([
   ['polyphemus', 'Polyphemus'],
@@ -83,5 +83,37 @@ describe('tempSources', () => {
       { key: 'x0-turn', nextRoll: false, lines: ['+1 ATK this turn'] },
       { key: 'x1-turn', nextRoll: false, lines: ['+1 max HP this turn'] },
     ]);
+  });
+});
+
+describe('hitsText', () => {
+  it('says the lowest face that hits, or the faces when a 2 or 3 turns into a 1', () => {
+    expect(hitsText([4, 5, 6])).toBe('Hits on 4+');
+    expect(hitsText([1, 2, 3, 4, 5, 6])).toBe('Always hits');
+    expect(hitsText([])).toBe("Can't hit");
+    expect(hitsText([1, 4, 5, 6])).toBe('Hits on 1, 4, 5, 6');
+  });
+});
+
+describe('oddsLine', () => {
+  it('has the DC and the ATK alone without changes', () => {
+    expect(oddsLine({ dc: 4, hits: [4, 5, 6], atk: 1 }, 1, name)).toBe('Hits on 4+ (DC 4) · ATK 1');
+  });
+  it('takes a roll change off the DC', () => {
+    expect(oddsLine({ dc: 5, hits: [4, 5, 6], atk: 1, sources: [meat] }, 1, name)).toBe('Hits on 4+ (DC 5 − 1 Meat!) · ATK 1');
+  });
+  it('names two roll changes and the ATK of a hit with its condition', () => {
+    const belt: StatSource = { stat: 'atk', source: 7, card: 'champion_belt', amount: 1, lasts: 'in_play', when: 'first attack roll' };
+    const curse: StatSource = { stat: 'attack_roll', source: 8, card: 'curse', amount: -2, lasts: 'next_roll' };
+    expect(oddsLine({ dc: 3, hits: [4, 5, 6], atk: 2, sources: [meat, curse, belt] }, 1, name)).toBe(
+      'Hits on 4+ (DC 3 − 1 Meat! + 2 Curse of the Blind (next roll)) · ATK 2 = 1 printed + 1 Champion Belt (first attack roll)',
+    );
+  });
+});
+
+describe('rollChanges', () => {
+  it('lists roll changes only', () => {
+    expect(rollChanges([meat, worm, poly], name)).toBe('+1 Meat!, +1 Round Worm (next roll)');
+    expect(rollChanges(undefined, name)).toBe('');
   });
 });

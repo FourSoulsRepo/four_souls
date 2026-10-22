@@ -114,3 +114,33 @@ test('a next-roll icon shows till the attack roll uses it (15.93)', async ({ bro
   await settle(pages, click, async () => (await icon.count()) === 0);
   await expect(icon).toHaveCount(0);
 });
+
+test('the open attack says what the roll needs; Meat! makes it one lower (15.94)', async ({ browser }) => {
+  const pages = await startGame(browser, ['Ivo', 'Jo'], { url: fast() });
+  await activePage(pages, click);
+  // The starting item becomes Meat!: a lasting +1 to attack rolls.
+  await saveAndContinue(pages, 'Ivo, Jo', 'bomb', 'meat');
+  const active = await activePage(pages, click);
+  const other = pages.find((p) => p !== active);
+  if (!other) {
+    throw new Error('no other page');
+  }
+  await click(active, turnAction(active, 'Attack'));
+  await settle(pages, click, async () => (await throwButton(active).count()) > 0);
+  for (const page of [active, other]) {
+    const line = page.getByRole('complementary', { name: 'Stack' }).locator('.stack-odds');
+    await expect(line).toContainText('− 1 Meat!');
+    const text = (await line.textContent()) ?? '';
+    const m = /^Hits on (\d)\+ \(DC (\d) − 1 Meat!\)/.exec(text);
+    const always = /^Always hits \(DC [12] − 1 Meat!\)/.test(text);
+    expect(m !== null || always, text).toBe(true);
+    if (m) {
+      expect(Number(m[1])).toBe(Number(m[2]) - 1);
+    }
+  }
+  await shot(active, 'stats-odds');
+  // The thrown roll names Meat! and its result.
+  await click(active, throwButton(active));
+  await expect(active.getByRole('complementary', { name: 'Stack' })).toContainText(/rolls \d against .+ \(\+1 Meat! = \d\)/);
+  await shot(active, 'stats-roll');
+});

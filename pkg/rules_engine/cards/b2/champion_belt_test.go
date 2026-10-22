@@ -46,3 +46,27 @@ func TestChampionBeltSourceDuringFirstRoll(t *testing.T) {
 		t.Errorf("first attack roll hit: sources = %q, want %q", got, want)
 	}
 }
+
+// The attack's odds count Champion Belt's +1 ATK before the first roll
+// is made, and name it with its condition (15.94).
+func TestChampionBeltInTheOdds(t *testing.T) {
+	tb := enginetest.NewSetup(t, engine.SituationSetup{
+		Players:  []engine.SituationPlayer{seat("isaac", "champion_belt"), seat("cain")},
+		Monsters: items("big_spider"),
+	}, Set)
+	attackRoll(tb, "big_spider")
+	odds := tb.G.View(engine.Viewer{Kind: engine.ViewSpectator}).Attack.Odds
+	if odds == nil {
+		t.Fatal("no odds during the attack")
+	}
+	if want := tb.G.PlayerATK(0) + 1; odds.ATK != want {
+		t.Errorf("odds ATK = %d, want %d: the first roll counts the belt", odds.ATK, want)
+	}
+	found := false
+	for _, s := range odds.Sources {
+		found = found || (s.Card == "champion_belt" && s.Stat == "atk" && s.When == "first attack roll")
+	}
+	if !found {
+		t.Errorf("sources %+v, want Champion Belt's +1 ATK for the first attack roll", odds.Sources)
+	}
+}

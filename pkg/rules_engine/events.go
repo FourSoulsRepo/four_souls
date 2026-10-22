@@ -80,4 +80,6 @@ type Event struct {
 	// Item is the stack item that resolved, with its used ability's
 	// words, for the history strip (15.22, S-10).
 	Item *StackItem `json:"item,omitempty"`
+	// Sources are what changed a resolved roll, for the history (15.94).
+	Sources []StatSourceView `json:"sources,omitempty"`
 }

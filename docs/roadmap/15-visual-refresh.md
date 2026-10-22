@@ -2986,7 +2986,7 @@ Images come first, so the new table is built with backs and mats.
    16. `Animations.md` row; UC-12 3i; wiki `Client`; CHANGELOG.
    17. Screenshots: `.cache/screenshots/15.93/before/` and `after/`.
 
-### [ ] 15.94 Real odds in a fight
+### [x] 15.94 Real odds in a fight
 
 1. Goal: the attacker and everyone see what the roll needs (SB-09 – SB-11).
 2. Planned by the owner (2026-10-22) after the 15.54 study.
@@ -3010,3 +3010,27 @@ Images come first, so the new table is built with backs and mats.
 7. Notes from 15.54
    1. Champion Belt's +1 ATK applies only after the first roll resolves.
    2. So the line counts first-roll ATK as if the open roll hits.
+8. Result (2026-10-22)
+   1. `rollResult` (`stack.go`): the roll's clamp and Eternal D6, shared.
+   2. `rollParts`: what a roll counts, next-roll boosts as they get used.
+   3. `AttackView.Odds`: DC, the faces that hit, the ATK of a hit, sources.
+   4. Hit ATK from a game copy with `AttackRolls` + 1: Belt counts ahead.
+   5. Combat changes (`CombatMod`) and helpers' rolls are not counted.
+   6. A thrown roll's item: `sources`, and `final` when they change it.
+   7. `EvRollResolved.Sources`: taken before next-roll boosts are used.
+   8. Engine test: odds match the hit check, 8 cases × 6 faces.
+   9. b2 test: Champion Belt's +1 ATK in the odds before the first roll.
+   10. Client: `oddsLine`, `hitsText`, `rollChanges` in `stats.ts`.
+   11. The line sits in the open-attack row (owner): `stack-odds`.
+   12. "Hits on 4+ (DC 5 − 1 Meat!) · ATK 1": roll changes come off the DC.
+   13. A 2 or 3 that becomes a 1 lists the faces: "Hits on 1, 4, 5, 6".
+   14. Roll row: "(+1 Meat! = 2)"; History: "rolls 1 → 2 (+1 Meat!)".
+   15. Vitest: `stats`, `stack`, `history`; e2e `stats.spec.ts` with Meat!.
+   16. Protocol only gained fields; engine version kept: no rules change.
+   17. UC-14 2o, 2p; wiki `Rules-engine`, `Client`, `Screenshots`; CHANGELOG.
+   18. Screenshots: `.cache/screenshots/15.94/before/` and `after/`.
+   19. Saved state holds the view type now: its fields got `omitempty` (N-20).
+   20. The 15.91 e2e test now reads the declaration's own line.
+   21. Full e2e: 19.53 and 19.54 again; 19.54 failed its rerun too.
+   22. 19.54's cause is 15.51's row fade, not 15.94; fixed right after, as 19.54.
+   23. Evidence: `.cache/e2e-evidence/15.94-run1/` (not in git).

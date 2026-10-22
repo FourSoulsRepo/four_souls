@@ -374,6 +374,10 @@ export interface StackItem {
   // while anyone may see them (15.22).
   source_card?: string;
   target_card?: string;
+  // sources and final: a thrown roll's changes and its result as it
+  // resolves, if they change it (15.94).
+  sources?: StatSource[];
+  final?: number;
 }
 
 export interface Prompt {
@@ -439,6 +443,16 @@ export interface FirstRoll {
 export interface AttackView {
   target?: number;
   deck?: boolean;
+  odds?: OddsView; // once aimed (15.94)
+}
+
+// OddsView is the attacker's next roll against the target (15.94): its
+// DC, the die faces that hit, the ATK of a hit, and what changes them.
+export interface OddsView {
+  dc: number;
+  hits: number[];
+  atk: number;
+  sources?: StatSource[];
 }
 
 // OptionView is what one option of a choose prompt points at.
@@ -505,6 +519,8 @@ export interface GameEvent {
   by?: number;
   // item: the stack item that resolved, on stack_resolved (15.22).
   item?: StackItem;
+  // sources: what changed a resolved roll, on roll_resolved (15.94).
+  sources?: StatSource[];
 }
 
 export interface Vote {

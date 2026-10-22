@@ -69,5 +69,7 @@ The fixture copies the fan-game notice. `internal/legal` has a test that fails w
 | Hovering an effect icon zooms its card | `screen-stats-icon.png` |
 | A monster's raised dice and its sum | `screen-stats-monster.png` |
 | A next-roll boost: an icon with a small die | `screen-stats-next-roll.png` |
+| An aimed attack: what the roll needs | `screen-stats-odds.png` |
+| A thrown roll names its changes | `screen-stats-roll.png` |
 
 When a screen is added, call `shot` in its test and add a row here.

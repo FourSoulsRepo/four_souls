@@ -1790,6 +1790,7 @@ Totals by system (54 items):
    4. Passed on its rerun, alone, on both browsers.
    5. 15.92 does not touch the first roll or the layout.
    6. Evidence: `.cache/e2e-evidence/15.92-run1/`.
+   7. Seen again in `make e2e` during 15.94, on webkit: `.cache/e2e-evidence/15.94-run1/`.
 3. Tasks:
    1. Find why the first roll took too long in the full run.
    2. Fix the client or the test, whichever is wrong.
@@ -1806,6 +1807,8 @@ Totals by system (54 items):
    4. Passed on its rerun, alone, on both browsers.
    5. 15.92 does not touch the flights or the stack panel.
    6. Evidence: `.cache/e2e-evidence/15.92-run1/`.
+   7. Seen again in `make e2e` during 15.94, on chromium, the "from its stack row" case.
+   8. Same line 926; evidence: `.cache/e2e-evidence/15.94-run1/`.
 3. Tasks:
    1. Find which box showed while it should hide, and why.
    2. Fix the client or the test, whichever is wrong.

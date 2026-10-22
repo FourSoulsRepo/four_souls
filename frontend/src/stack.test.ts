@@ -63,6 +63,28 @@ describe('stackLine', () => {
     );
   });
 
+  it('names what changes a thrown roll, and its result (15.94)', () => {
+    const roll = item({
+      kind: StackKind.roll,
+      roll: 2,
+      attack: true,
+      target: { player: -1, object: 9 },
+      sources: [{ stat: 'attack_roll', source: 5, card: 'meat', amount: 1, lasts: 'in_play' }],
+      final: 3,
+    });
+    expect(stackLine(roll, view, names)).toBe('Attack: Ann rolls 2 against GAPER (+1 MEAT = 3)');
+    // Changes that cancel out: the result is the die.
+    const even = item({
+      kind: StackKind.roll,
+      roll: 4,
+      sources: [
+        { stat: 'roll', amount: 1, lasts: 'turn' },
+        { stat: 'roll', amount: -1, lasts: 'turn' },
+      ],
+    });
+    expect(stackLine(even, view, names)).toBe('Ann rolls 4 (+1 a hidden card (this turn), −1 a hidden card (this turn) = 4)');
+  });
+
   it('names whom an attack is against and who hits back (15.22)', () => {
     const roll = item({ kind: StackKind.roll, roll: 3, attack: true, target: { player: -1, object: 9 } });
     expect(stackLine(roll, view, names)).toBe('Attack: Ann rolls 3 against GAPER');

@@ -66,7 +66,7 @@ export function StackPanel({ view, you, names, pass, disabled, prompt, answer }:
         <ol>
           <Rows>
             {rows.map((r) =>
-              'declared' in r ? <DeclaredRow key={r.key} parts={r.declared} /> : <StackRow key={r.key} it={r.item} view={view} names={names} />,
+              'declared' in r ? <DeclaredRow key={r.key} parts={r.declared} odds={r.odds} /> : <StackRow key={r.key} it={r.item} view={view} names={names} />,
             )}
           </Rows>
         </ol>
@@ -203,9 +203,11 @@ function StackRow({ it, view, names }: { it: StackItem; view: GameView; names: N
 
 // DeclaredRow is an open attack or buy (15.91, V-51). It is no stack
 // item (R-ATK-02, R-SHOP-02), so it has no icon frame and a dashed edge.
-function DeclaredRow({ parts }: { parts: LinePart[] }) {
+// An aimed attack adds its fight line: what the roll needs (15.94).
+function DeclaredRow({ parts, odds }: { parts: LinePart[]; odds?: string | undefined }) {
+  const line = parts.map((p) => p.text).join('');
   return (
-    <Row className="stack-declared" aria-label={parts.map((p) => p.text).join('')}>
+    <Row className="stack-declared" aria-label={odds ? `${line}. ${odds}` : line}>
       <span className="stack-line">
         {parts.map((p, i) => (
           // A line's parts never change order, so the index is a stable key.
@@ -213,6 +215,7 @@ function DeclaredRow({ parts }: { parts: LinePart[] }) {
           <Part key={i} part={p} />
         ))}
       </span>
+      {odds && <span className="stack-odds">{odds}</span>}
     </Row>
   );
 }

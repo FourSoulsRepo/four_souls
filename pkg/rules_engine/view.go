@@ -66,11 +66,11 @@ type MonsterStats struct {
 // "attack_roll" or "attacked_dc"; Lasts is "in_play", "turn" or
 // "next_roll". Card is the source's card, "" when it is hidden.
 type StatSourceView struct {
-	Stat   string   `json:"stat"`
+	Stat   string   `json:"stat,omitempty"`
 	Source ObjectID `json:"source,omitempty"`
 	Card   CardRef  `json:"card,omitempty"`
-	Amount int      `json:"amount"`
-	Lasts  string   `json:"lasts"`
+	Amount int      `json:"amount,omitempty"`
+	Lasts  string   `json:"lasts,omitempty"`
 	When   string   `json:"when,omitempty"`
 }
 
@@ -159,6 +159,21 @@ type GameView struct {
 type AttackView struct {
 	Target ObjectID `json:"target,omitempty"`
 	Deck   bool     `json:"deck,omitempty"`
+	// Odds are what the attacker's next roll needs, once aimed (15.94).
+	Odds *OddsView `json:"odds,omitempty"`
+}
+
+// OddsView is the attacker's next attack roll against the target
+// (15.94): its DC, the die faces that hit once every roll change counts
+// (R-DICE-06), and the ATK a hit deals, conditions such as "first
+// attack roll" included. Sources are the roll changes ("roll",
+// "attack_roll", next roll ones too) and the ATK ones ("atk"). A card's
+// own combat changes (CombatMod) and helpers' rolls are not counted.
+type OddsView struct {
+	DC      int              `json:"dc"`
+	Hits    []int            `json:"hits"`
+	ATK     int              `json:"atk"`
+	Sources []StatSourceView `json:"sources,omitempty"`
 }
 
 // OptionView is what one option of a choose prompt points at, so a
@@ -271,7 +286,7 @@ func (g *Game) View(v Viewer) GameView {
 	}
 	out.Passed, out.Responding = g.responders()
 	if g.Attack.On {
-		out.Attack = &AttackView{Target: g.Attack.Target, Deck: g.Attack.Deck}
+		out.Attack = &AttackView{Target: g.Attack.Target, Deck: g.Attack.Deck, Odds: g.attackOdds()}
 	}
 	out.Buying = g.Purchase.On
 	if fr := g.FirstRoll; fr != nil {
@@ -503,6 +518,14 @@ func (g *Game) shown(it StackItem) StackItem {
 	if !it.Target.IsPlayer {
 		it.TargetCard = g.publicCard(it.Target.Object)
 	}
+	if it.Kind == StackRoll && it.Controller != NoPlayer && it.Roll > 0 {
+		// A thrown roll: what will change it as it resolves (15.94).
+		parts := g.rollParts(it.Controller, it.Attack)
+		it.Sources = g.sourceViews(parts)
+		if final := g.rollResult(it.Roll, sumParts(parts)); final != it.Roll {
+			it.Final = final
+		}
+	}
 	return it
 }
 
@@ -645,4 +668,38 @@ func (g *Game) sourceViews(parts []Part) []StatSourceView {
 		out = append(out, sv)
 	}
 	return out
+}
+
+// attackOdds are the active player's next attack roll against the
+// attack's target, once aimed at a card in play (15.94).
+func (g *Game) attackOdds() *OddsView {
+	target := g.Attack.Target
+	if target <= 0 || int(target) >= len(g.Objects) || g.Object(target).Zone.Kind != ZoneInPlay {
+		return nil
+	}
+	p := g.Turn.Active
+	dc := g.Evasion(target)
+	parts := g.rollParts(p, true)
+	bonus := sumParts(parts)
+	hits := []int{}
+	for d := 1; d <= 6; d++ {
+		if g.rollResult(d, bonus) >= dc { // the hit check (R-ATK-12)
+			hits = append(hits, d)
+		}
+	}
+	// The ATK if this roll hits: the roll counts as made, so "your first
+	// attack roll" changes apply (Champion Belt, 15.54).
+	next := *g
+	next.Turn.AttackRolls++
+	parts = append(parts, next.Parts(StatPlayerATK, p, 0)...)
+	return &OddsView{DC: dc, Hits: hits, ATK: next.PlayerATK(p), Sources: g.sourceViews(parts)}
+}
+
+// sumParts adds up the parts' amounts.
+func sumParts(parts []Part) int {
+	n := 0
+	for _, pt := range parts {
+		n += pt.Amount
+	}
+	return n
 }

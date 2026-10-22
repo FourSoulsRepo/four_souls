@@ -1,6 +1,7 @@
 // Words for the stack and for why the game waits (7.8). Pure, so it is
 // tested without a browser.
 import type { GameView, StackItem } from './protocol';
+import { oddsLine, rollChanges, type Name } from './stats';
 
 // Stack item kinds, in Go's order (pkg/rules_engine/stack.go).
 export const StackKind = {
@@ -80,16 +81,12 @@ export function stackParts(it: StackItem, view: GameView, n: Names): LinePart[] 
     case StackKind.trigger:
       return [card, { text: ' triggers' }];
     case StackKind.roll: {
+      // A thrown roll names what will change it, and the result (15.94).
+      const changes = rollChanges(it.sources, sourceName(n));
+      const result = changes ? ` (${changes} = ${String(it.final ?? it.roll ?? 0)})` : '';
       const rolls: LinePart = { text: ` rolls${it.roll ? ` ${String(it.roll)}` : ''}` };
-      if (it.attack && targetCard) {
-        // An attack roll names the monster it is against.
-        return [...attack, who, rolls, { text: ' against ' }, target];
-      }
-      // A card's roll names the card; other rolls their label.
-      if (it.roll_for.card) {
-        return [who, { text: `${rolls.text} for ` }, { text: n.card(it.roll_for.card), role: 'card' }];
-      }
-      return [...attack, who, { text: `${rolls.text}${it.label ? ` for ${it.label}` : ''}` }];
+      const parts = rollParts(it, n, rolls, who, target, attack, !!targetCard);
+      return result ? [...parts, { text: result }] : parts;
     }
     case StackKind.damage: {
       if (dealer.length === 0 && self) {
@@ -110,6 +107,23 @@ export function stackParts(it: StackItem, view: GameView, n: Names): LinePart[] 
     default:
       return [card.text ? card : { text: 'Something' }];
   }
+}
+
+// rollParts says who rolls for what: an attack roll names the monster
+// it is against, a card's roll the card, other rolls their label.
+function rollParts(it: StackItem, n: Names, rolls: LinePart, who: LinePart, target: LinePart, attack: LinePart[], against: boolean): LinePart[] {
+  if (it.attack && against) {
+    return [...attack, who, rolls, { text: ' against ' }, target];
+  }
+  if (it.roll_for.card) {
+    return [who, { text: `${rolls.text} for ` }, { text: n.card(it.roll_for.card), role: 'card' }];
+  }
+  return [...attack, who, { text: `${rolls.text}${it.label ? ` for ${it.label}` : ''}` }];
+}
+
+// sourceName names a stat source's card for rollChanges and oddsLine.
+function sourceName(n: Names): Name {
+  return (ref) => (ref ? n.card(ref) : 'a hidden card');
 }
 
 // attackTarget names what an attack aims at: an attacked player by name,
@@ -147,14 +161,29 @@ export function declaration(view: GameView, n: Names): LinePart[] | null {
 // StackRowData is one row of the stack panel: the open declaration, or
 // a stack item. key is stable while the row stays, so the row moves
 // instead of being drawn again (15.51).
-export type StackRowData = { key: string; declared: LinePart[] } | { key: string; item: StackItem };
+export type StackRowData = { key: string; declared: LinePart[]; odds?: string } | { key: string; item: StackItem };
 
 // stackRows are the stack panel's rows, top first: the open
 // declaration (15.91), then the items, newest first (S-01).
 export function stackRows(view: GameView, n: Names): StackRowData[] {
   const declared = declaration(view, n);
   const items = [...(view.stack ?? [])].reverse().map((item) => ({ key: `item-${String(item.id)}`, item }));
-  return declared ? [{ key: 'declared', declared }, ...items] : items;
+  if (!declared) {
+    return items;
+  }
+  const odds = attackOdds(view, n);
+  return [{ key: 'declared', declared, ...(odds ? { odds } : {}) }, ...items];
+}
+
+// attackOdds is the open attack's fight line, once aimed (15.94): what
+// the next roll needs and the ATK of a hit, with what changes them.
+export function attackOdds(view: GameView, n: Names): string | undefined {
+  const odds = view.attack?.odds;
+  if (!odds || view.over) {
+    return undefined;
+  }
+  const attacker = view.players.find((p) => p.id === view.turn.active);
+  return oddsLine(odds, attacker?.printed_atk ?? odds.atk, sourceName(n));
 }
 
 // stackLine says what one stack item is, as plain text.

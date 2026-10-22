@@ -70,6 +70,15 @@
   * A new row fades in; the rows below slide down.
   * A resolved row fades out; then the rows below slide up.
   * The animation speed setting applies; with animations off, rows change at once.
+* **2o. What the attack needs (15.94):** an aimed attack's row has a fight line.
+  * "Hits on 4+ (DC 5 − 1 Meat!) · ATK 1".
+  * Every roll change is taken off the DC: lasting, this turn, next roll.
+  * The ATK is the hit's: Champion Belt's +1 counts on the first roll.
+  * A 2 or 3 that becomes a 1 lists the faces: "Hits on 1, 4, 5, 6".
+  * Every player sees it.
+* **2p. A thrown roll's changes (15.94):** its row names them and the result.
+  * "Attack: Jo rolls 1 against Greedling (+1 Meat! = 2)".
+  * The History says "rolls 1 → 2 (+1 Meat!)".
 
 ## Postconditions
 

@@ -62,6 +62,11 @@ type StackItem struct {
 	// display, while anyone may see them. Only views set them (15.22).
 	SourceCard CardRef `json:"source_card,omitempty"`
 	TargetCard CardRef `json:"target_card,omitempty"`
+
+	// Sources and Final are a thrown roll's changes and the result they
+	// give as it resolves, in a view only (15.94).
+	Sources []StatSourceView `json:"sources,omitempty"`
+	Final   int              `json:"final,omitempty"`
 }
 
 // Events about the stack.
@@ -157,7 +162,9 @@ func (g *Game) resolveTop() {
 		}
 	case StackRoll:
 		// Continuous roll changes apply, then the result is final (R-DICE-06).
+		var changed []StatSourceView
 		if it.Controller != NoPlayer {
+			changed = g.sourceViews(g.rollParts(it.Controller, it.Attack)) // before the next roll's boosts are used
 			bonus := g.bonus(StatRoll, it.Controller, 0)
 			if it.Attack {
 				bonus += g.bonus(StatAttackRoll, it.Controller, 0)
@@ -165,12 +172,9 @@ func (g *Game) resolveTop() {
 			if it.Attack {
 				bonus += g.useNextAttackRoll(it.Controller)
 			}
-			it.Roll = min(max(it.Roll+bonus, 1), 6)
-			if (it.Roll == 2 || it.Roll == 3) && g.bonus(StatRollToOne, NoPlayer, 0) > 0 {
-				it.Roll = 1 // a replacement as the roll resolves (R-DICE-12)
-			}
+			it.Roll = g.rollResult(it.Roll, bonus)
 		}
-		re := Event{Kind: EvRollResolved, Player: it.Controller, Amount: it.Roll}
+		re := Event{Kind: EvRollResolved, Player: it.Controller, Amount: it.Roll, Sources: changed}
 		if it.Attack {
 			re.Text = "attack"
 		}
@@ -447,6 +451,35 @@ func (g *Game) useNextAttackRoll(p PlayerID) int {
 	}
 	g.Boosts = kept
 	return total
+}
+
+// rollResult is a die of n with the continuous changes bonus, as the
+// roll resolves: 1 to 6 (R-DICE-06), and a 2 or 3 becomes a 1 while
+// Eternal D6's boost lasts, a replacement (R-DICE-12). The roll and the
+// odds a client shows (15.94) share it.
+func (g *Game) rollResult(n, bonus int) int {
+	r := min(max(n+bonus, 1), 6)
+	if (r == 2 || r == 3) && g.bonus(StatRollToOne, NoPlayer, 0) > 0 {
+		r = 1
+	}
+	return r
+}
+
+// rollParts lists what changes p's roll as it resolves: an attack roll
+// also counts attack-roll changes and the next attack roll's boosts, as
+// the resolution adds them.
+func (g *Game) rollParts(p PlayerID, attack bool) []Part {
+	parts := g.Parts(StatRoll, p, 0)
+	if !attack {
+		return parts
+	}
+	parts = append(parts, g.Parts(StatAttackRoll, p, 0)...)
+	for _, b := range g.Boosts {
+		if b.nextAttackRollOf(p) {
+			parts = append(parts, Part{Stat: StatNextAttackRoll, Source: b.Source, Amount: b.Amount, Lasts: LastsNextRoll})
+		}
+	}
+	return parts
 }
 
 // nextAttackRollOf: the boost applies to p's next attack roll.

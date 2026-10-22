@@ -119,6 +119,22 @@ describe('entriesFor', () => {
     expect(same.text).toBe('Roll — attack roll (rolled 6)');
   });
 
+  it('names what changed a roll (15.94)', () => {
+    const item = { id: 3, kind: 3, controller: 1, source: 0, roll: 1, attack: true, target: { player: 0 }, ability: { card: '', index: 0 }, roll_for: { card: '', index: 0 } };
+    const meat = { stat: 'attack_roll' as const, source: 5, card: 'meat', amount: 1, lasts: 'in_play' as const };
+    const [changed] = entriesFor(
+      [
+        { kind: 'stack_resolved', player: 1, amount: 1, text: 'attack roll', stack_id: 3, item },
+        { kind: 'roll_resolved', player: 1, amount: 2, text: 'attack', sources: [meat] },
+      ],
+      1,
+      0,
+      n,
+      0,
+    );
+    expect(changed.text).toBe(`Attack: Bo rolls 1 → 2 (+1 ${n.card('meat')})`);
+  });
+
   it("says what a card-less stack item did, in the strip's words (19.52)", () => {
     const none = { card: '', index: 0 };
     const base = { id: 7, controller: 1, source: 0, ability: none, roll_for: none };

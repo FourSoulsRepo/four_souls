@@ -4,6 +4,7 @@
 import { firstPlayerText, tieText } from './dice';
 import type { GameEvent, GameView, StackItem } from './protocol';
 import { findCard, StackKind, stackLine, type Names } from './stack';
+import { rollChanges } from './stats';
 
 export interface Entry {
   key: number;
@@ -203,7 +204,9 @@ export function entriesFor(events: GameEvent[], turn: number, you: number, n: Na
         if (roll && e.amount && e.amount !== roll.die) {
           const { entry, die } = roll;
           const was = entry.item && !entry.card ? ` rolls ${String(die)}` : `(rolled ${String(die)}`;
-          entry.text = entry.text.replace(was, `${was} → ${String(e.amount)}`);
+          // The changes the roll counted, by name (15.94).
+          const changes = rollChanges(e.sources, (ref) => (ref ? n.card(ref) : 'a hidden card'));
+          entry.text = entry.text.replace(was, `${was} → ${String(e.amount)}${changes ? ` (${changes})` : ''}`);
           if (entry.item) {
             entry.item = { ...entry.item, roll: e.amount };
           }

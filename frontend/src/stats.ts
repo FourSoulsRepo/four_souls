@@ -1,7 +1,7 @@
 // Stat sources (V-41, 15.92): why a card's health, dice or attack is not
 // what it prints, and which effects of this turn change it. Built from
 // the view's sources (15.54).
-import type { StatSource } from './protocol';
+import type { OddsView, StatSource } from './protocol';
 
 export type Trend = 'up' | 'down' | undefined;
 
@@ -113,6 +113,40 @@ function effect(s: StatSource): string {
 function suffix(s: StatSource): string {
   const notes = [s.lasts === 'turn' ? 'this turn' : s.lasts === 'next_roll' ? 'next roll' : '', s.when ?? ''].filter((x) => x !== '');
   return notes.length > 0 ? ` (${notes.join(', ')})` : '';
+}
+
+// hitsText says which die faces hit (15.94): "Hits on 4+", or the faces
+// when they do not run up to 6 (a 2 or 3 that becomes a 1).
+export function hitsText(hits: number[]): string {
+  if (hits.length === 0) return "Can't hit";
+  if (hits.length === 6) return 'Always hits';
+  const first = hits[0] ?? 7;
+  const upward = hits.every((d, i) => d === first + i) && hits.at(-1) === 6;
+  return upward ? `Hits on ${String(first)}+` : `Hits on ${hits.join(', ')}`;
+}
+
+const rollStats = new Set<StatSource['stat']>(['roll', 'attack_roll']);
+
+// oddsLine is the open attack's fight line (15.94): "Hits on 4+ (DC 5 −
+// 1 Meat!) · ATK 3 = 1 printed + 1 Champion Belt (first attack roll)".
+// A roll change lowers the face needed, so it is taken off the DC.
+export function oddsLine(odds: OddsView, printedATK: number, name: Name): string {
+  const list = odds.sources ?? [];
+  const rolls = list.filter((s) => rollStats.has(s.stat));
+  const terms = rolls.map((s) => ` ${s.amount > 0 ? '−' : '+'} ${String(Math.abs(s.amount))} ${name(s.card)}${suffix(s)}`).join('');
+  const hit = `${hitsText(odds.hits)} (DC ${String(odds.dc)}${terms})`;
+  const atk = list.filter((s) => s.stat === 'atk');
+  const sum = atk.map((s) => ` ${s.amount < 0 ? '−' : '+'} ${String(Math.abs(s.amount))} ${name(s.card)}${suffix(s)}`).join('');
+  return `${hit} · ATK ${String(odds.atk)}${atk.length > 0 ? ` = ${String(printedATK)} printed${sum}` : ''}`;
+}
+
+// rollChanges names what changes a roll: "+1 Meat!, −2 Round Worm (next
+// roll)"; empty without any.
+export function rollChanges(sources: StatSource[] | undefined, name: Name): string {
+  return (sources ?? [])
+    .filter((s) => rollStats.has(s.stat))
+    .map((s) => `${signed(s.amount)} ${name(s.card)}${suffix(s)}`)
+    .join(', ');
 }
 
 function signed(n: number): string {

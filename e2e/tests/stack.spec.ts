@@ -251,8 +251,10 @@ test('a declared attack shows on top of the stack, then its target (15.91)', asy
   await settle(pages, click, async () => (await throwButton(active).count()) > 0);
   const monster = await active.locator('.board-monsters .card.fight').getAttribute('aria-label');
   for (const page of pages) {
-    await expect(declared(page)).toHaveText(`${who} attacks ${monster ?? ''}`);
+    // The declaration's own line; the fight line under it is 15.94's.
+    await expect(declared(page).locator('.stack-line')).toHaveText(`${who} attacks ${monster ?? ''}`);
     await expect(declared(page).locator('.stack-target')).toHaveText(monster ?? '');
+    await expect(declared(page).locator('.stack-odds')).toHaveText(/^Hits on /);
   }
   await shot(active, 'stack-declared-attack-aimed');
 });
