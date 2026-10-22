@@ -8,6 +8,7 @@ Rules engine versions are in each release's notes.
 
 - A changed health, dice or attack is green when it went up and red when it went down; hover the card to see the sum, such as "ATK 3 = 1 printed + 1 Brimstone + 1 XI. Strength (this turn)".
 - Effects of this turn show as small icons on the character or monster; hover one to see its card and what it does.
+- A bonus to the next attack roll shows a small die on its icon; the icon pops when the roll uses it, and this turn's icons shrink away when the turn ends.
 - The app is now named FourSouls: `FourSouls.app`, `FourSouls.exe`, and `FourSouls` on Linux. Settings carry over.
 - Stack and history strip rows no longer jump: new rows fade in, resolved ones fade out, and the rest slide into place.
 - The stack panel shows an open attack or buy on top, "Bo attacks Pooter" or "Bo buys…", until it ends.

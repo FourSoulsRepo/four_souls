@@ -73,7 +73,12 @@ describe('tempSources', () => {
     const hp: StatSource = { ...strength, stat: 'hp' };
     expect(tempSources([strength, hp])).toEqual([{ key: '9-turn', card: 'xi_strength', nextRoll: false, lines: ['+1 ATK this turn', '+1 max HP this turn'] }]);
   });
-  it('keeps a hidden source apart, with no card', () => {
+  it('drops a next-roll icon once the roll used its boost (15.93)', () => {
+    expect(tempSources([meat, worm]).map((t) => t.key)).toEqual(['12-next_roll']);
+    // The view after the roll no longer sends the used boost.
+    expect(tempSources([meat])).toEqual([]);
+  });
+    it('keeps a hidden source apart, with no card', () => {
     expect(tempSources([{ stat: 'atk', amount: 1, lasts: 'turn' }, { stat: 'hp', amount: 1, lasts: 'turn' }])).toEqual([
       { key: 'x0-turn', nextRoll: false, lines: ['+1 ATK this turn'] },
       { key: 'x1-turn', nextRoll: false, lines: ['+1 max HP this turn'] },

@@ -131,3 +131,10 @@ func TestViewListsMonsterSources(t *testing.T) {
 		t.Errorf("DC %d is not printed %d + sources", s.DC, s.PrintedDC)
 	}
 }
+
+// The e2e save helper writes this stat by number (e2e/tests/saves.ts).
+func TestNextAttackRollStatNumber(t *testing.T) {
+	if StatNextAttackRoll != 18 {
+		t.Errorf("StatNextAttackRoll = %d; update NEXT_ATTACK_ROLL in e2e/tests/saves.ts", StatNextAttackRoll)
+	}
+}

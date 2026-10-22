@@ -1,4 +1,4 @@
-import { motion } from 'motion/react';
+import { AnimatePresence, motion, useIsPresent } from 'motion/react';
 import { useEffect, useRef, useState, type MouseEvent, type PointerEvent } from 'react';
 import { claimed } from '../animations';
 import { iconText, kindOf, textParts, unknownCard, type CardInfo, type Kind } from '../cards';
@@ -321,32 +321,45 @@ function liveOf(stats: Props['stats'], monster: MonsterStats | undefined) {
 
 // SourceIcons are the effects of this turn on a character or monster
 // (15.92, SB-01): a column of small icons cut from each source card's
-// art; lasting sources show only in the zoom's sums.
+// art; lasting sources show only in the zoom's sums. A new icon fades
+// in, a leaving one fades out (15.93); with animations off they come
+// and go at once.
 function SourceIcons({ list, name, onLeave }: { list: TempSource[]; name: Name; onLeave: (e: PointerEvent<HTMLElement>) => void }) {
-  if (list.length === 0) {
-    return null;
+  const scale = useApp((s) => scaleFor(s.settings.animation, 0, 0));
+  const icons = list.map((t) => <SourceIcon key={t.key} source={t} name={name(t.card)} onLeave={onLeave} scale={scale} />);
+  if (scale === 0) {
+    return list.length === 0 ? null : <span className="card-sources">{icons}</span>;
   }
   return (
     <span className="card-sources">
-      {list.map((t) => (
-        <SourceIcon key={t.key} source={t} name={name(t.card)} onLeave={onLeave} />
-      ))}
+      <AnimatePresence initial={false}>{icons}</AnimatePresence>
     </span>
   );
 }
 
 // SourceIcon is one effect: hover zooms its card with what it does
 // (SB-03). A text card shows its initial; a hidden one a question mark.
-// A boost that waits for the next attack roll has a small die (15.93).
-function SourceIcon({ source, name, onLeave }: { source: TempSource; name: string; onLeave: (e: PointerEvent<HTMLElement>) => void }) {
+// A boost that waits for the next attack roll has a small die; used by
+// the roll, it pops and fades; at the end of the turn an icon shrinks
+// away (15.93, SB-12, SB-13). A leaving icon takes no pointer and
+// screen readers skip it.
+function SourceIcon({ source, name, onLeave, scale }: { source: TempSource; name: string; onLeave: (e: PointerEvent<HTMLElement>) => void; scale: number }) {
   const image = useApp((s) => (source.card ? (s.cards.get(source.card)?.image ?? '') : ''));
   const [broken, setBroken] = useState(false);
-  const zoom = useZoom(source.card, source.card !== undefined, false, undefined, source.lines);
+  const present = useIsPresent();
+  const zoom = useZoom(source.card, source.card !== undefined && present, false, undefined, source.lines);
   return (
-    <span
+    // anim: source-icon
+    <motion.span
       className={`card-source${source.nextRoll ? ' next-roll' : ''}`}
       role="img"
       aria-label={`${name}: ${source.lines.join(', ')}`}
+      aria-hidden={present ? undefined : true}
+      style={present ? undefined : { pointerEvents: 'none' }}
+      initial={scale > 0 ? { opacity: 0, scale: 0.4 } : false}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={source.nextRoll ? { opacity: 0, scale: 1.8 } : { opacity: 0, scale: 0.5 }}
+      transition={{ duration: (source.nextRoll ? 0.35 : 0.6) * scale }}
       {...zoom}
       onPointerLeave={(e) => {
         zoom.onPointerLeave(e);
@@ -366,7 +379,7 @@ function SourceIcon({ source, name, onLeave }: { source: TempSource; name: strin
         <span className="card-source-mark">{source.card ? name.charAt(0) : '?'}</span>
       )}
       {source.nextRoll && <span className="card-source-die" aria-hidden="true" />}
-    </span>
+    </motion.span>
   );
 }
 

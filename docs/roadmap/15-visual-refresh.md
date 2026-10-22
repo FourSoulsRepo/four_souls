@@ -2948,7 +2948,7 @@ Images come first, so the new table is built with backs and mats.
    19. Two older tests flaked in that run, then passed: logged as 19.53, 19.54.
    20. Evidence: `.cache/e2e-evidence/15.92-run1/` (not in git).
 
-### [ ] 15.93 Next-roll boosts and the end of turn
+### [x] 15.93 Next-roll boosts and the end of turn
 
 1. Goal: a one-shot boost shows until it is used; boosts end visibly.
 2. Planned by the owner (2026-10-22) after the 15.54 study.
@@ -2967,6 +2967,24 @@ Images come first, so the new table is built with backs and mats.
    3. e2e test: with animations off, icons go at once.
    4. `make screenshots` shows a next-roll icon.
    5. UC-12 updated.
+6. Result (2026-10-22)
+   1. Task 1: the die mark came with 15.92 (`card-source-die`).
+   2. `SourceIcons` wraps the icons in `AnimatePresence` (`source-icon`).
+   3. A new icon grows in from 40 %; a used next-roll icon grows and fades.
+   4. At the end of the turn an icon shrinks to 50 % and fades.
+   5. Times follow `scaleFor`; animations off: no `AnimatePresence`.
+   6. A leaving icon takes no pointer, no zoom; screen readers skip it.
+   7. Task 5 not done as written: badges change with the view, at once.
+   8. Holding the old number through the fade would show a stale stat.
+   9. **Owner** to check this choice in the review.
+   10. No Base Game card gives a next-roll boost; Round Worm is Gold Box.
+   11. e2e: `saveAndContinue` can add one from the first monster (`nextRoll`).
+   12. Its stat number is pinned by `TestNextAttackRollStatNumber`.
+   13. Vitest: a used next-roll boost leaves `tempSources`.
+   14. e2e `stats.spec.ts`: icons go at turn end, animations on and off.
+   15. e2e: a next-roll icon goes once the attack roll uses it.
+   16. `Animations.md` row; UC-12 3i; wiki `Client`; CHANGELOG.
+   17. Screenshots: `.cache/screenshots/15.93/before/` and `after/`.
 
 ### [ ] 15.94 Real odds in a fight
 

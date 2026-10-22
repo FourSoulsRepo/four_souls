@@ -189,6 +189,11 @@
   * Hover an icon: its card zooms, with what it does.
   * Lasting items get no icon; they show only in the sums.
   * A text card's icon shows its initial; a hidden source a "?".
+* **3i. Effects that end (15.93):** an effect's icon leaves when it ends.
+  * A boost for the next attack roll has a small die on its icon.
+  * The roll that uses it makes the icon pop and fade.
+  * At the end of the turn, this turn's icons shrink away.
+  * With animations off, icons go at once.
 
 ## Postconditions
 
