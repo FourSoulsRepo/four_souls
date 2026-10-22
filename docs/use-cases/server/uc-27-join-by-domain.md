@@ -8,7 +8,7 @@
 
 ## Main scenario (happy path)
 
-1. The player types `games.example.com` in **Host address**.
+1. The player types `games.example.com` in **Server address** (**Play**, **Online**).
 2. The app tries `wss://games.example.com/ws` on port 443.
 3. The proxy answers; the connection is encrypted.
 4. Joining goes on as in UC-04.

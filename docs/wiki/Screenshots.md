@@ -21,6 +21,7 @@ The fixture copies the fan-game notice. `internal/legal` has a test that fails w
 | Main menu, Play group open | `screen-menu-play.png` |
 | LAN screen with a typed address | `screen-lan.png` |
 | LAN screen: rejoin a game in progress | `screen-lan-rejoin.png` |
+| Online screen with Recent | `screen-online.png` |
 | Settings | `screen-settings.png` |
 | Host a game, detailed setup | `screen-host.png` |
 | Game list on a server | `screen-games.png` |

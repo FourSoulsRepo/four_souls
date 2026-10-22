@@ -30,7 +30,7 @@ test('two apps reach the same lobby and start the game', async ({ browser }) => 
   await bo.goto(appURL());
   await openOnline(bo);
   await bo.getByLabel('Nickname').fill('Bo');
-  await bo.getByLabel('Host address').fill(address());
+  await bo.getByLabel('Server address').fill(address());
   await bo.getByRole('button', { name: 'Connect' }).click();
   const game = lobbyGame(bo, id);
   await expect(game).toContainText("Ann's game · 1/2 players");
@@ -54,7 +54,7 @@ test('a joined server is remembered by its name, until removed (N-18)', async ({
   await page.goto(appURL());
   await openOnline(page);
   await page.getByLabel('Nickname').fill('Cy');
-  await page.getByLabel('Host address').fill(address());
+  await page.getByLabel('Server address').fill(address());
   await page.getByRole('button', { name: 'Connect' }).click();
   await expect(page.getByRole('heading', { name: 'Games' })).toBeVisible();
   await expect(page.getByText('Test server', { exact: true })).toBeVisible();
@@ -66,7 +66,7 @@ test('a joined server is remembered by its name, until removed (N-18)', async ({
   await shot(page, 'join-recent');
 
   // The name joins the address it stands for.
-  await page.getByLabel('Host address').fill('');
+  await page.getByLabel('Server address').fill('');
   await server.click();
   await expect(page.getByRole('heading', { name: 'Games' })).toBeVisible();
   await page.getByRole('button', { name: 'Back' }).click();
@@ -82,11 +82,11 @@ test('a wrong address says why', async ({ page }) => {
   await page.goto(appURL());
   await openOnline(page);
   await page.getByLabel('Nickname').fill('Di');
-  await page.getByLabel('Host address').fill('not an address');
+  await page.getByLabel('Server address').fill('not an address');
   await page.getByRole('button', { name: 'Connect' }).click();
   await expect(page.getByRole('status')).toHaveText('Type an address like 192.168.1.5, 192.168.1.5:4774 or games.example.com.');
   // Nobody listens on the port next to the test server.
-  await page.getByLabel('Host address').fill(`127.0.0.1:${String(serverPort() - 1)}`);
+  await page.getByLabel('Server address').fill(`127.0.0.1:${String(serverPort() - 1)}`);
   await page.getByRole('button', { name: 'Connect' }).click();
   await expect(page.getByRole('status')).toHaveText('Could not connect to the server.', { timeout: 8000 });
 });
@@ -95,7 +95,7 @@ test('a typed ws:// address joins the server (8.18)', async ({ page }) => {
   await page.goto(appURL());
   await openOnline(page);
   await page.getByLabel('Nickname').fill('Wes');
-  await page.getByLabel('Host address').fill(`ws://${address()}/ws`);
+  await page.getByLabel('Server address').fill(`ws://${address()}/ws`);
   await page.getByRole('button', { name: 'Connect' }).click();
   await expect(page.getByRole('heading', { name: 'Games' })).toBeVisible();
   await expect(page.getByText('Test server', { exact: true })).toBeVisible();
@@ -116,7 +116,7 @@ test('a bare domain tries wss:// first, then ws:// on 4774 (8.18)', async ({ pag
   await page.goto(appURL());
   await openOnline(page);
   await page.getByLabel('Nickname').fill('Dom');
-  await page.getByLabel('Host address').fill('games.test');
+  await page.getByLabel('Server address').fill('games.test');
   await page.getByRole('button', { name: 'Connect' }).click();
   await expect.poll(() => hello, { timeout: 8000 }).toContain('"type":"hello"');
   expect(opened.filter((u) => u.includes('games.test'))).toEqual(['wss://games.test/ws']);
@@ -266,7 +266,7 @@ test('a game password keeps others out (N-14)', async ({ browser }) => {
   await guest.goto(appURL());
   await openOnline(guest);
   await guest.getByLabel('Nickname').fill('Pip');
-  await guest.getByLabel('Host address').fill(address());
+  await guest.getByLabel('Server address').fill(address());
   await guest.getByRole('button', { name: 'Connect' }).click();
   const game = lobbyGame(guest, id);
   await expect(game.getByLabel('Locked')).toBeVisible();
@@ -312,7 +312,7 @@ test('the host picks card sets; the choice is remembered', async ({ browser }) =
   await guest.goto(appURL());
   await openOnline(guest);
   await guest.getByLabel('Nickname').fill('Lu');
-  await guest.getByLabel('Host address').fill(address());
+  await guest.getByLabel('Server address').fill(address());
   await guest.getByRole('button', { name: 'Connect' }).click();
   const game = lobbyGame(guest, id);
   await expect(game).toContainText("Tess's game");
@@ -339,7 +339,7 @@ test('a player creates a game on a dedicated server; another joins (N-17)', asyn
   await ivy.goto(appURL());
   await openOnline(ivy);
   await ivy.getByLabel('Nickname').fill('Ivy');
-  await ivy.getByLabel('Host address').fill(address());
+  await ivy.getByLabel('Server address').fill(address());
   await ivy.getByRole('button', { name: 'Connect' }).click();
   const create = ivy.getByRole('button', { name: 'Create a game' });
   await expect(create).toBeVisible();
@@ -363,7 +363,7 @@ test('a player creates a game on a dedicated server; another joins (N-17)', asyn
   await jon.goto(appURL());
   await openOnline(jon);
   await jon.getByLabel('Nickname').fill('Jon');
-  await jon.getByLabel('Host address').fill(address());
+  await jon.getByLabel('Server address').fill(address());
   await jon.getByRole('button', { name: 'Connect' }).click();
   await lobbyGame(jon, id).getByRole('button', { name: 'Join' }).click();
   await expect(jon.getByRole('list', { name: 'Seats' })).toContainText('Jon (you)');
@@ -414,3 +414,26 @@ test('deck ratios are on by default and locked when the sets are too small (GS-0
   await expect(page.getByText(/deck ratios/)).toBeVisible();
 });
 
+
+// Online is for servers: an address and Recent, no LAN games (15.98).
+// Back and Esc go one level up from each screen.
+test('Online: a server, its games, and one level back each time (15.98)', async ({ page }) => {
+  await realAssets(page);
+  await page.goto(appURL());
+  await openOnline(page);
+  await expect(page.getByRole('heading', { name: 'Online' })).toBeVisible();
+  await expect(page.getByRole('region', { name: 'On your network' })).toHaveCount(0);
+  await page.getByLabel('Nickname').fill('Ola');
+  await page.getByLabel('Server address').fill(address());
+  await page.getByRole('button', { name: 'Connect' }).click();
+  await page.getByRole('button', { name: 'Create a game' }).click();
+  await expect(page.getByRole('heading', { name: 'Create a game' })).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('heading', { name: 'Games' })).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('heading', { name: 'Online' })).toBeVisible();
+  await expect(page.getByRole('list', { name: 'Recent' })).toContainText('Test server');
+  await shot(page, 'online');
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('group', { name: 'Play' })).toBeVisible();
+});

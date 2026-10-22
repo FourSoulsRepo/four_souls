@@ -44,7 +44,7 @@ docker compose ps             # server shows (healthy); caddy starts after it
 docker compose logs -f        # both outputs; Caddy says when it has the certificate
 ```
 
-Check it from any computer: `https://games.example.com/healthz` answers `ok`. Players type `games.example.com` in **Join a game**.
+Check it from any computer: `https://games.example.com/healthz` answers `ok`. Players type `games.example.com` in **Play → Online**.
 
 * The healthcheck asks the server's `/healthz` every 30 seconds; `docker compose ps` shows the state, and Caddy starts only once the server is healthy. Docker does not restart an unhealthy container by itself; `restart: unless-stopped` restarts one that exits.
 * Records and saved games live in the `data` volume; Caddy's certificates in `caddy_data`. They survive updates.

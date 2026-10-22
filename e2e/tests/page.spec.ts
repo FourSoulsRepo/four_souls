@@ -51,7 +51,7 @@ test('menu screens never scroll, even in a small window', async ({ page }) => {
     [settings, 'Nickname'],
     [openHost, 'Players'],
     [openLan, 'Host address'],
-    [openOnline, 'Host address'],
+    [openOnline, 'Server address'],
   ] as const) {
     await open(page);
     await expect(page.getByLabel(sign)).toBeVisible();

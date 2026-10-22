@@ -18,7 +18,7 @@ export function JoinScreen() {
   if (connected) {
     return <GameList />;
   }
-  return path === 'lan' ? <LanConnect /> : <Connect />;
+  return path === 'lan' ? <LanConnect /> : <OnlineConnect />;
 }
 
 // LanConnect: host a game in this app, or join one on this network
@@ -157,7 +157,9 @@ function useLanSearch() {
   }, [findLanGames]);
 }
 
-function Connect() {
+// OnlineConnect: a server's address, typed or picked from Recent
+// (15.98, N-18). Games there are created on the server (N-17).
+function OnlineConnect() {
   const settings = useApp((s) => s.settings);
   const error = useApp((s) => s.error);
   const joinServer = useApp((s) => s.joinServer);
@@ -167,13 +169,9 @@ function Connect() {
   const [nickname, setNickname] = useState(settings.nickname);
   const [address, setAddress] = useState(settings.recent[0]?.address ?? '');
   const [busy, setBusy] = useState(false);
-  const lan = useApp((s) => s.lan);
-  const findLanGames = useApp((s) => s.findLanGames);
-  const rows = lanRows(lan.found, protocolVersion, settings.rejoin);
-
-  useEffect(() => {
-    void findLanGames();
-  }, [findLanGames]);
+  useEscape(() => {
+    show('menu');
+  });
 
   const go = (to: string) => {
     setBusy(true);
@@ -187,7 +185,7 @@ function Connect() {
 
   return (
     <div className="screen">
-      <h1>Join a game</h1>
+      <h1>Online</h1>
       <form
         className="panel"
         onSubmit={(e) => {
@@ -205,10 +203,10 @@ function Connect() {
           />
         </label>
         <label className="field">
-          Host address
+          Server address
           <input
             value={address}
-            placeholder="192.168.1.5"
+            placeholder="games.example.com"
             onChange={(e) => {
               setAddress(e.target.value);
             }}
@@ -253,40 +251,6 @@ function Connect() {
           </>
         )}
       </form>
-      <section className="panel" aria-label="On your network">
-        <div className="row lan-head">
-          <span className="muted">On your network</span>
-          <button
-            type="button"
-            disabled={lan.searching}
-            onClick={() => {
-              void findLanGames();
-            }}
-          >
-            {lan.searching ? 'Searching…' : 'Search again'}
-          </button>
-        </div>
-        {rows.length === 0 && !lan.searching && (
-          <span className="muted selectable">{lan.error || 'No games found. Type the host address above.'}</span>
-        )}
-        <ul className="list">
-          {rows.map((r) => (
-            <li key={r.key}>
-              <span className="selectable">{r.text}</span>
-              <button
-                type="button"
-                disabled={busy || !r.joinable}
-                onClick={() => {
-                  setAddress(r.address);
-                  go(r.address);
-                }}
-              >
-                Join
-              </button>
-            </li>
-          ))}
-        </ul>
-      </section>
       <p className="status" role="status">
         {error}
       </p>

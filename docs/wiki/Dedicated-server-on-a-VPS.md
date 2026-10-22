@@ -42,7 +42,7 @@ Many providers also have a firewall in their web panel; allow the ports there to
 
 ## Play
 
-Friends open the game, choose **Join a game**, and type the server's address: the IP, or the domain (add `:4774` only for a port other than 4774 with a plain setup). A bare domain first tries a secure connection, then the plain port 4774 (ADR 017). One of them clicks **Create a game** under the server's games, sets it up and clicks **Create**; the others join it from the same list. Nobody needs to host in their app.
+Friends open the game, choose **Play → Online**, and type the server's address: the IP, or the domain (add `:4774` only for a port other than 4774 with a plain setup). A bare domain first tries a secure connection, then the plain port 4774 (ADR 017). One of them clicks **Create a game** under the server's games, sets it up and clicks **Create**; the others join it from the same list. Nobody needs to host in their app.
 
 ## Options
 

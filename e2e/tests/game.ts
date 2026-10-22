@@ -113,7 +113,7 @@ export async function startGame(
     await page.goto(url);
     await openOnline(page);
     await page.getByLabel('Nickname').fill(names[i + 1] ?? '');
-    await page.getByLabel('Host address').fill(`127.0.0.1:${String(port)}`);
+    await page.getByLabel('Server address').fill(`127.0.0.1:${String(port)}`);
     await page.getByRole('button', { name: 'Connect' }).click();
     // The click goes to the button, not to a point: a table above that
     // starts moves the row up under the pointer, and a click there hit

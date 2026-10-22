@@ -3153,7 +3153,7 @@ Images come first, so the new table is built with backs and mats.
    16. Found and fixed on the way: 19.58 (a test, not the app).
    17. Screenshots: `.cache/screenshots/15.97/before/` and `after/`.
 
-### [ ] 15.98 Online screen
+### [x] 15.98 Online screen
 
 1. Goal: online play on one screen (M-03, N-17, N-18).
 2. Planned by the owner (2026-10-22).
@@ -3166,6 +3166,16 @@ Images come first, so the new table is built with backs and mats.
    1. e2e test: join a dedicated server, create a game, go back.
    2. e2e test: no LAN games on this screen.
    3. UC-04, UC-19, UC-27 updated.
+5. Result (2026-10-22)
+   1. `OnlineConnect`: nickname, Server address, Connect, Recent.
+   2. No LAN list; the address starts from the newest Recent entry.
+   3. The Games list's Back and Esc: the Online screen; then the menu.
+   4. The host screen still decides by the connection, not by the path.
+   5. So a dedicated server joined from LAN still creates there.
+   6. e2e `lobby.spec.ts`: Online, create, Esc up three levels.
+   7. Online tests type into "Server address"; LAN keeps "Host address".
+   8. UC-04, UC-19, UC-27; wiki `Client`, server guides, `Screenshots`; CHANGELOG.
+   9. Screenshots: `.cache/screenshots/15.98/before/` and `after/`.
 
 ### [ ] 15.99 Rejoin button
 

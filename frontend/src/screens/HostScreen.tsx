@@ -11,8 +11,8 @@ const simple: Options = { picking: 'random', draft_size: 3, ban_rounds: 0, ban_t
 
 // Host: a simple setup, with "Detailed" for the rest (GS-10). It starts
 // from the last hosted setup; the first time every card set is ticked.
-// Connected to a dedicated server, it creates the game there instead
-// of hosting it in this app (N-17).
+// LAN's Host a game hosts in this app; Create a game in a server's
+// Games list creates it on that server (N-17, 15.98).
 export function HostScreen() {
   const settings = useApp((s) => s.settings);
   const saveSettings = useApp((s) => s.saveSettings);

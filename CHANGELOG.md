@@ -6,6 +6,7 @@ Rules engine versions are in each release's notes.
 
 ## Unreleased
 
+- Online: type a server's address or pick it from Recent; it no longer lists LAN games. Back and Esc go one screen up.
 - LAN: Host a game sits on top; games on your network show up by themselves, without "Search again". A game in progress stays listed, and if your app closed during it, Rejoin takes your seat back. The address field remembers the last address you typed.
 - Main menu: Play opens LAN, Online and Learn to play right under it; Records and Learn to play are marked "Soon".
 - The board glows green whenever the game waits for you, on your turn or out of it; an hourglass by a name shows everyone whom the game waits for.
