@@ -42,6 +42,15 @@ function Connect() {
   return (
     <div className="screen">
       <h1>Join a game</h1>
+      <button
+        type="button"
+        className="primary"
+        onClick={() => {
+          show('host');
+        }}
+      >
+        Host a game
+      </button>
       <form
         className="panel"
         onSubmit={(e) => {

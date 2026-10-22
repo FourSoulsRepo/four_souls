@@ -3,6 +3,7 @@ import { expect, test } from './fixtures';
 import { startGame } from './game';
 import { appURL } from './server';
 import { shot } from './shot';
+import { openOnline } from './menu';
 
 const fast = () => `${appURL()}&anim=off`;
 
@@ -36,7 +37,7 @@ test('a player who closed the app comes back to the same seat', async ({ browser
   // Lou starts the app again (same settings) and connects to the server.
   const again = await context.newPage();
   await again.goto(fast());
-  await again.getByRole('button', { name: 'Join a game' }).click();
+  await openOnline(again);
   await again.getByRole('button', { name: 'Connect' }).click();
   await expect(again.locator('.player-bottom')).toHaveAccessibleName('Lou (you)');
   await expect(paused).toHaveCount(0);
@@ -81,5 +82,5 @@ test('the end screen names the winner and saves the record', async ({ browser })
   await expect(end.getByRole('status')).toHaveText(/^Saved to \/fake\/.+\.fsrec$/);
   await shot(eli, 'game-over');
   await end.getByRole('button', { name: 'Back to menu' }).click();
-  await expect(eli.getByRole('button', { name: 'Host a game' })).toBeVisible();
+  await expect(eli.getByRole('button', { name: 'Play', exact: true })).toBeVisible();
 });

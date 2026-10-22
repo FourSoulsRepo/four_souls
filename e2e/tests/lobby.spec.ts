@@ -3,6 +3,7 @@ import { expect, test } from './fixtures';
 import { gameId, lobbyGame, throwFirstRoll } from './game';
 import { appURL, serverPort } from './server';
 import { realAssets, shot } from './shot';
+import { openHost, openLan, openOnline } from './menu';
 
 // address is the project's test server.
 const address = () => `127.0.0.1:${String(serverPort())}`;
@@ -14,7 +15,7 @@ test('two apps reach the same lobby and start the game', async ({ browser }) => 
 
   await realAssets(ann);
   await ann.goto(appURL());
-  await ann.getByRole('button', { name: 'Host a game' }).click();
+  await openHost(ann);
   await ann.getByLabel('Nickname').fill('Ann');
   await ann.getByLabel('Detailed setup').check();
   await shot(ann, 'host');
@@ -26,7 +27,7 @@ test('two apps reach the same lobby and start the game', async ({ browser }) => 
 
   await realAssets(bo);
   await bo.goto(appURL());
-  await bo.getByRole('button', { name: 'Join a game' }).click();
+  await openOnline(bo);
   await bo.getByLabel('Nickname').fill('Bo');
   await bo.getByLabel('Host address').fill(address());
   await bo.getByRole('button', { name: 'Connect' }).click();
@@ -50,14 +51,14 @@ test('two apps reach the same lobby and start the game', async ({ browser }) => 
 
 test('a joined server is remembered by its name, until removed (N-18)', async ({ page }) => {
   await page.goto(appURL());
-  await page.getByRole('button', { name: 'Join a game' }).click();
+  await openOnline(page);
   await page.getByLabel('Nickname').fill('Cy');
   await page.getByLabel('Host address').fill(address());
   await page.getByRole('button', { name: 'Connect' }).click();
   await expect(page.getByRole('heading', { name: 'Games' })).toBeVisible();
   await expect(page.getByText('Test server', { exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Back' }).click();
-  await page.getByRole('button', { name: 'Join a game' }).click();
+  await openOnline(page);
   const recent = page.getByRole('list', { name: 'Recent' });
   const server = recent.getByRole('button', { name: 'Test server', exact: true });
   await expect(server).toHaveAttribute('title', address());
@@ -68,18 +69,18 @@ test('a joined server is remembered by its name, until removed (N-18)', async ({
   await server.click();
   await expect(page.getByRole('heading', { name: 'Games' })).toBeVisible();
   await page.getByRole('button', { name: 'Back' }).click();
-  await page.getByRole('button', { name: 'Join a game' }).click();
+  await openOnline(page);
 
   await page.getByRole('button', { name: 'Remove Test server from Recent' }).click();
   await expect(recent).toBeHidden();
   await page.reload();
-  await page.getByRole('button', { name: 'Join a game' }).click();
+  await openOnline(page);
   await expect(page.getByRole('list', { name: 'Recent' })).toBeHidden();
 });
 
 test('a wrong address says why', async ({ page }) => {
   await page.goto(appURL());
-  await page.getByRole('button', { name: 'Join a game' }).click();
+  await openOnline(page);
   await page.getByLabel('Nickname').fill('Di');
   await page.getByLabel('Host address').fill('not an address');
   await page.getByRole('button', { name: 'Connect' }).click();
@@ -92,7 +93,7 @@ test('a wrong address says why', async ({ page }) => {
 
 test('a typed ws:// address joins the server (8.18)', async ({ page }) => {
   await page.goto(appURL());
-  await page.getByRole('button', { name: 'Join a game' }).click();
+  await openOnline(page);
   await page.getByLabel('Nickname').fill('Wes');
   await page.getByLabel('Host address').fill(`ws://${address()}/ws`);
   await page.getByRole('button', { name: 'Connect' }).click();
@@ -113,7 +114,7 @@ test('a bare domain tries wss:// first, then ws:// on 4774 (8.18)', async ({ pag
     });
   });
   await page.goto(appURL());
-  await page.getByRole('button', { name: 'Join a game' }).click();
+  await openOnline(page);
   await page.getByLabel('Nickname').fill('Dom');
   await page.getByLabel('Host address').fill('games.test');
   await page.getByRole('button', { name: 'Connect' }).click();
@@ -124,7 +125,7 @@ test('a bare domain tries wss:// first, then ws:// on 4774 (8.18)', async ({ pag
 test('a game found on the LAN is joined without typing (N-13)', async ({ browser }) => {
   const host = await (await browser.newContext()).newPage();
   await host.goto(appURL());
-  await host.getByRole('button', { name: 'Host a game' }).click();
+  await openHost(host);
   await host.getByLabel('Nickname').fill('Lex');
   await host.getByRole('button', { name: 'Host', exact: true }).click();
   await expect(host.getByRole('list', { name: 'Seats' })).toContainText('Lex (you)');
@@ -134,7 +135,7 @@ test('a game found on the LAN is joined without typing (N-13)', async ({ browser
   const guest = await (await browser.newContext()).newPage();
   await realAssets(guest);
   await guest.goto(appURL());
-  await guest.getByRole('button', { name: 'Join a game' }).click();
+  await openLan(guest);
   await guest.getByLabel('Nickname').fill('Mio');
   const lan = guest.getByRole('region', { name: 'On your network' });
   const found = lan.getByRole('listitem').filter({ hasText: address() });
@@ -147,7 +148,7 @@ test('a game found on the LAN is joined without typing (N-13)', async ({ browser
 
 test('with no game on the LAN, the address field is the way', async ({ page }) => {
   await page.goto(`${appURL()}&nolan`);
-  await page.getByRole('button', { name: 'Join a game' }).click();
+  await openLan(page);
   const lan = page.getByRole('region', { name: 'On your network' });
   await expect(lan).toContainText('No games found');
   await expect(lan.getByRole('button', { name: 'Search again' })).toBeEnabled();
@@ -156,7 +157,7 @@ test('with no game on the LAN, the address field is the way', async ({ page }) =
 test('a game password keeps others out (N-14)', async ({ browser }) => {
   const host = await (await browser.newContext()).newPage();
   await host.goto(appURL());
-  await host.getByRole('button', { name: 'Host a game' }).click();
+  await openHost(host);
   await host.getByLabel('Nickname').fill('Nox');
   await host.getByLabel('Password (optional)').fill('pw-123');
   await host.getByRole('button', { name: 'Host', exact: true }).click();
@@ -166,7 +167,7 @@ test('a game password keeps others out (N-14)', async ({ browser }) => {
   const guest = await (await browser.newContext()).newPage();
   await realAssets(guest);
   await guest.goto(appURL());
-  await guest.getByRole('button', { name: 'Join a game' }).click();
+  await openOnline(guest);
   await guest.getByLabel('Nickname').fill('Pip');
   await guest.getByLabel('Host address').fill(address());
   await guest.getByRole('button', { name: 'Connect' }).click();
@@ -193,7 +194,7 @@ test('the host picks card sets; the choice is remembered', async ({ browser }) =
 
   await realAssets(host);
   await host.goto(appURL());
-  await host.getByRole('button', { name: 'Host a game' }).click();
+  await openHost(host);
   await host.getByLabel('Nickname').fill('Tess');
   const sets = host.getByRole('group', { name: 'Card sets' });
   // The core sets are on by default; the Base Game can't be turned off.
@@ -212,7 +213,7 @@ test('the host picks card sets; the choice is remembered', async ({ browser }) =
   const id = await gameId(host);
 
   await guest.goto(appURL());
-  await guest.getByRole('button', { name: 'Join a game' }).click();
+  await openOnline(guest);
   await guest.getByLabel('Nickname').fill('Lu');
   await guest.getByLabel('Host address').fill(address());
   await guest.getByRole('button', { name: 'Connect' }).click();
@@ -224,7 +225,7 @@ test('the host picks card sets; the choice is remembered', async ({ browser }) =
   // The next host screen in the same app starts from this setup.
   const again = await ctx.newPage();
   await again.goto(appURL());
-  await again.getByRole('button', { name: 'Host a game' }).click();
+  await openHost(again);
   const next = again.getByRole('group', { name: 'Card sets' });
   await expect(next.getByLabel('Gold Box')).toBeChecked();
   await expect(next.getByLabel('Four Souls+')).not.toBeChecked();
@@ -239,7 +240,7 @@ test('a player creates a game on a dedicated server; another joins (N-17)', asyn
   const ivy = await (await browser.newContext()).newPage();
   await realAssets(ivy);
   await ivy.goto(appURL());
-  await ivy.getByRole('button', { name: 'Join a game' }).click();
+  await openOnline(ivy);
   await ivy.getByLabel('Nickname').fill('Ivy');
   await ivy.getByLabel('Host address').fill(address());
   await ivy.getByRole('button', { name: 'Connect' }).click();
@@ -263,7 +264,7 @@ test('a player creates a game on a dedicated server; another joins (N-17)', asyn
 
   const jon = await (await browser.newContext()).newPage();
   await jon.goto(appURL());
-  await jon.getByRole('button', { name: 'Join a game' }).click();
+  await openOnline(jon);
   await jon.getByLabel('Nickname').fill('Jon');
   await jon.getByLabel('Host address').fill(address());
   await jon.getByRole('button', { name: 'Connect' }).click();
@@ -274,7 +275,7 @@ test('a player creates a game on a dedicated server; another joins (N-17)', asyn
 
 test('an app that hosts offers no "Create a game" in its Games list (N-17)', async ({ page }) => {
   await page.goto(appURL());
-  await page.getByRole('button', { name: 'Host a game' }).click();
+  await openHost(page);
   await page.getByLabel('Nickname').fill('Kim');
   await page.getByRole('button', { name: 'Continue a saved game' }).click();
   await expect(page.getByRole('heading', { name: 'Games' })).toBeVisible();
@@ -284,7 +285,7 @@ test('an app that hosts offers no "Create a game" in its Games list (N-17)', asy
 test('deck ratios are on by default and locked when the sets are too small (GS-07)', async ({ page }) => {
   await realAssets(page);
   await page.goto(`${appURL()}&requiem`);
-  await page.getByRole('button', { name: 'Host a game' }).click();
+  await openHost(page);
   await page.getByLabel('Nickname').fill('Ratia');
   await page.getByLabel('Detailed setup').check();
   const sets = page.getByRole('group', { name: 'Card sets' });

@@ -26,6 +26,9 @@ Images come first, so the new table is built with backs and mats.
 6. Owner (2026-10-22): 15.54 and 15.92 – 15.94 go without a stop.
    1. One commit per sub-step, as always.
    2. Stop only for a question; owner reviews all four at the end.
+7. Owner (2026-10-22): 15.96 – 15.100 go without a stop.
+   1. One commit per sub-step, as always.
+   2. Stop only for a question; owner reviews all five at the end.
 
 ---
 
@@ -3080,7 +3083,7 @@ Images come first, so the new table is built with backs and mats.
 6. Owner notes (2026-10-22)
    1. Owner marks 15.95 solved.
 
-### [ ] 15.96 Play group in the main menu
+### [x] 15.96 Play group in the main menu
 
 1. Goal: the menu starts by where you play (M-03, M-06, M-07).
 2. Planned by the owner (2026-10-22).
@@ -3097,6 +3100,20 @@ Images come first, so the new table is built with backs and mats.
    2. e2e test: Learn to play and Records are disabled with "Soon".
    3. `make screenshots` shows the menu closed and open.
    4. UC-01 updated.
+5. Result (2026-10-22)
+   1. `MainMenu`: Play, Records, Settings, Exit; Play has `aria-expanded`.
+   2. The group is a `motion.div` that grows from 0 (`menu-group`).
+   3. `useOpenHeight`: the menu always keeps its open height.
+   4. So nothing above Play moves, and Exit fits a 1024×768 window.
+   5. `contain: inline-size`: the group never widens the buttons.
+   6. `playOpen` in the store: Back from LAN or Online finds it open.
+   7. Esc closes it; animations off: it opens at once.
+   8. `Soon`: disabled, a "Soon" badge, name "Learn to play (soon)".
+   9. The Join screen got "Host a game" on top until 15.97.
+   10. e2e helpers in `e2e/tests/menu.ts`: `openLan`, `openOnline`, `openHost`.
+   11. e2e `shell.spec.ts`: the group, its slide, Esc, the way back.
+   12. UC-01 10 – 12; wiki `Client`, `Animations`, `Screenshots`; CHANGELOG.
+   13. Screenshots: `.cache/screenshots/15.96/before/` and `after/`.
 
 ### [ ] 15.97 LAN screen
 

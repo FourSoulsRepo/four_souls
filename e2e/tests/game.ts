@@ -3,6 +3,7 @@ import { expect, type Browser, type Locator, type Page } from '@playwright/test'
 import { appURL, serverPort } from './server';
 import { realAssets } from './shot';
 import { enabled, seen, throwButton } from './turn';
+import { openHost, openOnline } from './menu';
 
 // statMonsters change other monsters' stats (14.10). A test that checks
 // a fresh monster bans them, or a lucky deal puts a badge on it.
@@ -93,7 +94,7 @@ export async function startGame(
   }
   const banned = bans.length > 0 ? await hostBans(host, bans, port) : () => [];
   await host.goto(url);
-  await host.getByRole('button', { name: 'Host a game' }).click();
+  await openHost(host);
   await host.getByLabel('Nickname').fill(names[0] ?? '');
   await host.getByLabel('Players').selectOption(String(names.length));
   // Game tests play the Base Game only: they were written for its cards,
@@ -110,7 +111,7 @@ export async function startGame(
 
   for (const [i, page] of guests.entries()) {
     await page.goto(url);
-    await page.getByRole('button', { name: 'Join a game' }).click();
+    await openOnline(page);
     await page.getByLabel('Nickname').fill(names[i + 1] ?? '');
     await page.getByLabel('Host address').fill(`127.0.0.1:${String(port)}`);
     await page.getByRole('button', { name: 'Connect' }).click();

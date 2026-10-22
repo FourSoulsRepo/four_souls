@@ -218,6 +218,10 @@ interface AppState extends Session {
   loadCards: () => Promise<void>;
   setZoom: (zoom: Zoom | null) => void;
   show: (screen: Screen) => void;
+  // playOpen: the main menu's Play group shows (M-06); it stays open
+  // while the player is on its screens.
+  playOpen: boolean;
+  setPlayOpen: (open: boolean) => void;
   loadSettings: () => Promise<void>;
   // saveSettings reports whether Go stored them.
   saveSettings: (s: Settings) => Promise<boolean>;
@@ -682,6 +686,10 @@ export const useApp = create<AppState>()((set, get) => {
     },
     show: (screen) => {
       set({ screen, error: '', zoom: null });
+    },
+    playOpen: false,
+    setPlayOpen: (open) => {
+      set({ playOpen: open });
     },
     loadSettings: async () => {
       try {

@@ -6,6 +6,7 @@ Rules engine versions are in each release's notes.
 
 ## Unreleased
 
+- Main menu: Play opens LAN, Online and Learn to play right under it; Records and Learn to play are marked "Soon".
 - The board glows green whenever the game waits for you, on your turn or out of it; an hourglass by a name shows everyone whom the game waits for.
 - A resolved stack row no longer shows again for a moment while the rows slide.
 - A changed health, dice or attack is green when it went up and red when it went down; hover the card to see the sum, such as "ATK 3 = 1 printed + 1 Brimstone + 1 XI. Strength (this turn)".

@@ -17,6 +17,9 @@
 7. The main menu shows the foursouls.ru banner at the top (15.41).
 8. The main menu and the game setup screens drift on a starry sky (15.42).
 9. The player clicks Exit, the last menu button; the app closes (15.79).
+10. The main menu lists Play, Records, Settings and Exit (15.96).
+11. The player clicks Play; LAN, Online and Learn to play open under it.
+12. The buttons above Play stay put; the ones below slide down.
 
 ## Alternative scenarios and errors
 
@@ -26,6 +29,9 @@
   * The text title also shows until the banner has loaded; the buttons do not move.
 * **8a. No private images:** The menu screens keep their plain color.
 * **8b. Animations off:** The sky stands still.
+* **11a. The player clicks Play again, or presses Esc:** The group closes.
+* **11b. Learn to play and Records:** Disabled, marked "Soon"; nothing happens.
+* **11c. The player comes back from LAN or Online:** The group is still open.
 
 ## Postconditions
 

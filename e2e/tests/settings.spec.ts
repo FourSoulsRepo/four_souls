@@ -38,9 +38,9 @@ test('the first start asks for a nickname, once', async ({ page }) => {
   await shot(page, 'welcome');
   await page.getByLabel('Nickname').fill('Ada');
   await page.getByRole('button', { name: 'Continue' }).click();
-  await expect(page.getByRole('button', { name: 'Host a game' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Play', exact: true })).toBeVisible();
   await page.reload();
-  await expect(page.getByRole('button', { name: 'Host a game' })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Play', exact: true })).toBeVisible();
   await page.getByRole('button', { name: 'Settings' }).click();
   await expect(page.getByLabel('Nickname')).toHaveValue('Ada');
 });
