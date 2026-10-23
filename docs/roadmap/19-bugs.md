@@ -45,11 +45,11 @@ This step never closes; new reports are appended.
 | J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57 | 13 |
 | K  | Build and release files                  | Release    | 19.47, 19.59                                           | 2     |
 
-Totals by system (60 items):
+Totals by system (61 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
-| Engine    | A, B    | 11    |
+| Engine    | A, B    | 12    |
 | Card data | C       | 2     |
 | Client    | D–G     | 20    |
 | Server    | H       | 1     |
