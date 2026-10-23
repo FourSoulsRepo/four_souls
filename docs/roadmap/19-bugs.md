@@ -1970,7 +1970,7 @@ Totals by system (60 items):
    1. Owner marks 19.60 solved.
    2. The open question in 7 is not answered yet.
 
-### [ ] 19.61 Boss Rush!: a boss put in its own slot leaves it covered
+### [x] 19.61 Boss Rush!: a boss put in its own slot leaves it covered
 
 1. Goal: an event goes to discard after it resolves, even when covered.
 2. Report (owner, 2026-10-22)
@@ -2001,3 +2001,5 @@ Totals by system (60 items):
    3. The event goes to the monster discard, as R-CARD-15 says.
    4. Test `TestBossRushOwnSlot` covers the three done-when checks.
    5. Without the fix it fails: slot 1 is `[fatty boss_rush monstro]`.
+7. Owner notes (2026-10-23)
+   1. Owner marks 19.61 solved.
