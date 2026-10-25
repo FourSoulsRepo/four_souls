@@ -2137,5 +2137,15 @@ Totals by system (65 items):
    2. The Revenant side has no ↷ ability; only Anima Sola has one.
    3. The death penalty deactivates it (R-DEATH-14).
    4. Hourglass offers it since 19.64 (R-MECH-54).
-6. Status
-   1. Parked by the owner; no code change yet.
+6. Rule reading
+   1. R-MECH-53: a flipped object keeps its charge state.
+   2. Each face has its own abilities; The Revenant has no ↷ one.
+   3. So `Tap` follows the face up, like the abilities.
+   4. The recharge step still charges it; it does not read `Tap`.
+7. Fix
+   1. `theRevenant` loses `Tap: true`.
+   2. Tests `TestHourglassSkipsTheRevenant`, `TestDeathPenaltySkipsTheRevenant`.
+   3. Without the fix both fail: Hourglass offers it; the penalty deactivates it.
+   4. `TestTapMatchesAbilities`: a treasure's `Tap` matches a ↷ cost.
+   5. Placebo counts: it copies a ↷ ability.
+   6. No other card was wrong.
