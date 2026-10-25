@@ -42,3 +42,4 @@ Sources: S-OFF Priority, The Stack, Dice Rolls; S-RU Приоритет, Сте�
 24. **R-DICE-10** *(Four Souls+)* An ability that lets a player change a roll by an amount ("add or subtract 1", PHD) changes each roll at most once (Q-11).
 25. **R-DICE-11** *(Four Souls+)* **Several dice, one result** (Mutant Spider): the dice are rolled at once; only the chosen die is a roll, as R-DICE-08 says (S-DIS, Reddit).
 26. **R-DICE-12** *(Requiem)* A replacement effect on a roll ("if a player would roll a 2 or 3, it becomes a 1 instead": Eternal D6) applies as the roll resolves, after "would roll" triggers; it can undo their change (S-YUG).
+27. **R-DICE-13** A reroll is a new throw: "would roll" triggers look at it again, even at the same value (19.66). A change to the value the roll already has is no change (Q-26).

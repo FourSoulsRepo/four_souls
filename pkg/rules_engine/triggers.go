@@ -125,7 +125,9 @@ func WhenYouWouldDie() Trigger {
 
 // WhenARollWouldBe triggers when a player's roll would resolve as n
 // (R-DICE-05): "each time a player would roll a 1". c.EventStack is the
-// roll; changing it makes it try again.
+// roll; changing it makes it try again. It is for effects that change
+// the roll: it may trigger more than once per roll, so a reward uses
+// "when you roll" (R-DICE-06), which triggers once.
 func WhenARollWouldBe(n int) Trigger {
 	return Trigger{On: EvRollWouldResolve, Match: func(_ *Game, _ ObjectID, e Event) bool {
 		return e.Amount == n && e.Player != NoPlayer

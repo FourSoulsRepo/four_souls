@@ -33,7 +33,7 @@ This step never closes; new reports are appended.
 
 | ID | Group                                    | System     | Items                                                  | Count |
 |----|------------------------------------------|------------|--------------------------------------------------------|-------|
-| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65 | 11 |
+| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66 | 12 |
 | B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39                               | 4     |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30                                     | 3     |
@@ -46,11 +46,11 @@ This step never closes; new reports are appended.
 | K  | Build and release files                  | Release    | 19.47, 19.59                                           | 2     |
 | L  | Not a bug: the app follows a ruling      | None       | 19.63                                                  | 1     |
 
-Totals by system (65 items):
+Totals by system (66 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
-| Engine    | A, B    | 15    |
+| Engine    | A, B    | 16    |
 | Card data | C       | 2     |
 | Client    | D–G     | 20    |
 | Server    | H       | 1     |
@@ -2151,3 +2151,36 @@ Totals by system (65 items):
    6. No other card was wrong.
 8. Owner notes (2026-10-26)
    1. Owner marks 19.65 solved.
+
+### [x] 19.66 Dad's Lost Coin misses a reroll that is a 1 again
+
+1. Goal: a changed or rerolled roll meets "would roll N" triggers again.
+2. Report (owner, 2026-10-26)
+   1. Play test; record `2026-10-24-135401-g3_Hitokiri-Battosai_jеня_dads_lost_coin.fsrec`.
+   2. jеня rolled a 1; the owner forced a reroll with Dad's Lost Coin.
+   3. The reroll was a 1 again; the coin did not trigger.
+3. Tasks:
+   1. Find the cause in the match record.
+   2. Fix every helper that changes a roll, not only the reroll.
+4. Done when:
+   1. Engine test: the coin triggers on a second 1 from its own reroll.
+   2. Engine test: a roll changed and changed back is checked again.
+   3. Engine test: a roll set to its own value is not checked again.
+5. Cause
+   1. Step 969: attack roll 1 (stack 229); step 971: the coin triggers.
+   2. Step 975: the reroll is a 1; step 977: it resolves, no check.
+   3. `resolveTop` checks a roll only if its value differs from `Checked`.
+   4. `Reroll`, `SetRoll` and `ModifyRoll` leave `Checked` as it was.
+   5. So a roll back on a checked value skips "would roll" triggers.
+6. Rule reading
+   1. The card says "each time": every 1 counts.
+   2. R-DICE-05: a change sends the roll back; a reroll is one.
+   3. The owner: a change to the same value is no change (Q-26, House).
+   4. Rewards are "when you roll" triggers: they fire once (R-DICE-06).
+7. Fix
+   1. `StackItem.setRoll` changes a roll; a new value clears `Checked`.
+   2. `SetRoll` and `ModifyRoll` use it; `Reroll` clears `Checked`.
+   3. Rule R-DICE-13 states it.
+   4. Tests `TestDadsLostCoinTwice`, `TestRerollToTheSameValueIsCheckedAgain`.
+   5. Tests `TestRollChangedBackIsCheckedAgain`, `TestRollSetToItsValueIsNotCheckedAgain`.
+   6. Without the fix the first three fail.

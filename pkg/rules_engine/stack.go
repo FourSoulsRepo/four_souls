@@ -51,7 +51,8 @@ type StackItem struct {
 	// Reward is a roll reward's kind + 1: the result is how much is gained.
 	Reward int `json:"reward,omitempty"`
 	// Checked is the roll value (+1) that "would roll" triggers last saw
-	// (R-DICE-05); the roll only resolves once nothing changes it. On a
+	// (R-DICE-05); the roll only resolves once nothing changes it. A new
+	// value or a reroll clears it (R-DICE-13). On a
 	// "would roll" trigger it is the value (+1) the trigger saw: it
 	// fizzles if the roll no longer has it (R-DICE-07).
 	Checked int `json:"checked,omitempty"`
@@ -321,6 +322,15 @@ func (g *Game) givePriority(p PlayerID) {
 	g.openWindow(p)
 }
 
+// setRoll changes the roll to n, between 1 and 6 (R-DICE-01). A new
+// value makes "would roll" triggers look again (R-DICE-05); the same
+// value is no change (R-DICE-13). Every change to a roll comes here.
+func (it *StackItem) setRoll(n int) {
+	if n = min(max(n, 1), 6); n != it.Roll {
+		it.Roll, it.Checked = n, 0
+	}
+}
+
 // SetRoll changes a dice roll on the stack to n, between 1 and 6
 // (R-DICE-04): "change the result of a dice roll". Source is the card
 // that changes it, 0 for none; the client shows the change coming
@@ -328,7 +338,7 @@ func (g *Game) givePriority(p PlayerID) {
 func (g *Game) SetRoll(stackID, n int, source ObjectID) {
 	for i := range g.Stack {
 		if it := &g.Stack[i]; it.ID == stackID && it.Kind == StackRoll {
-			it.Roll = min(max(n, 1), 6)
+			it.setRoll(n)
 			g.emit(Event{Kind: EvRollChanged, Player: it.Controller, Amount: it.Roll, Source: source, StackID: it.ID})
 		}
 	}
@@ -409,7 +419,7 @@ func (g *Game) StackItemByID(id int) (StackItem, bool) {
 func (g *Game) Reroll(stackID int) {
 	for i := range g.Stack {
 		if it := &g.Stack[i]; it.ID == stackID && it.Kind == StackRoll {
-			it.Roll = 0
+			it.Roll, it.Checked = 0, 0 // a new throw, even of the same value (R-DICE-13)
 			g.enqueue(Action{Kind: ActThrow, Player: it.Controller, Amount: it.ID, Reroll: true})
 		}
 	}

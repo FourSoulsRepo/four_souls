@@ -311,6 +311,22 @@ On 2026-10-09 the owner parked every open decision for later.
    1. R-MECH-54 states it.
 5. Basis: **House**: no ruling found.
 
+### Q-26 A roll changed to the value it has
+
+1. Question: is a roll set to its own value changed?
+   1. Cards: Godhead, I. The Magician, Libra, PHD, Telepathy for Dummies.
+   2. Case: a 1 set to 1 while Dad's Lost Coin was declined (19.66).
+2. Sources:
+   1. R-DICE-05: a change sends the roll back to R-DICE-04.
+   2. No rule says what a change to the same value is.
+3. Options:
+   1. (a) No change: "would roll" triggers do not look again.
+   2. (b) A change: they look again and ask again.
+4. Status: **Resolved** (2026-10-26): (a), the owner's choice.
+   1. R-DICE-13 states it.
+   2. Rewards use "when you roll" and fire once either way (R-DICE-06).
+5. Basis: **House**: no ruling found.
+
 ## Old rulings re-checked (R-07)
 
 | # | Ruling (Ed's Notes, 2018–2019) | Check against current rules and V2 text | Status |
@@ -475,3 +491,4 @@ Every row of "Card rulings from Discord (S-DIS)" is Community too.
 | Q-23 | The Bone, XX Judgement, Wizoob, … | No Eternal on a soul without abilities; Eternal souls not offered | House |
 | Q-24 | Emergency Contact, IBS | Cancel a deck attack once a monster is revealed | House |
 | Q-25 | Hourglass, Curse of Impulse | Only items with a ↷ ability are deactivated | House |
+| Q-26 | Godhead, I. The Magician, Libra, PHD, … | A roll set to its own value is not changed | House |

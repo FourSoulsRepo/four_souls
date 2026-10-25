@@ -300,3 +300,60 @@ func TestRollChangedNamesItsSource(t *testing.T) {
 	ModifyRoll(1, 0).apply(&Ctx{G: g, Controller: p, Source: src, Targets: []Chosen{{StackID: id}}})
 	changed(6)
 }
+
+// checkedAgain reports whether the roll id, last checked at its value,
+// meets "would roll" triggers again as it tries to resolve (R-DICE-13).
+func checkedAgain(t *testing.T, g *Game, id int) bool {
+	t.Helper()
+	g.events = nil
+	g.resolveTop()
+	for _, e := range g.events {
+		if e.Kind == EvRollWouldResolve && e.StackID == id {
+			return true
+		}
+	}
+	return false
+}
+
+// A reroll is a new throw: a 1 again is checked again (19.66).
+func TestRerollToTheSameValueIsCheckedAgain(t *testing.T) {
+	g := toAction(t, 2)
+	id := g.push(StackItem{Kind: StackRoll, Roll: 1, Controller: g.Turn.Active})
+	g.Stack[0].Checked = 2 // "would roll" triggers saw the 1
+	g.ForceRolls(1)
+	g.Reroll(id)
+	g.Waiting = Prompt{} // let the queued throw run
+	g.run()
+	throwPending(t, g)
+	if g.Stack[0].Roll != 1 {
+		t.Fatalf("roll %d; the reroll throws a 1", g.Stack[0].Roll)
+	}
+	if !checkedAgain(t, g, id) {
+		t.Error("a reroll to 1 skipped the \"would roll\" check")
+	}
+}
+
+// A roll changed and changed back was still changed (19.66).
+func TestRollChangedBackIsCheckedAgain(t *testing.T) {
+	g := toAction(t, 2)
+	p := g.Turn.Active
+	id := g.push(StackItem{Kind: StackRoll, Roll: 1, Controller: p})
+	g.Stack[0].Checked = 2
+	ctx := &Ctx{G: g, Controller: p, Targets: []Chosen{{StackID: id}}}
+	ModifyRoll(1, 0).apply(ctx)
+	ModifyRoll(-1, 0).apply(ctx)
+	if !checkedAgain(t, g, id) {
+		t.Error("a 1 changed to 2 and back skipped the \"would roll\" check")
+	}
+}
+
+// A roll set to its own value is not changed (R-DICE-13).
+func TestRollSetToItsValueIsNotCheckedAgain(t *testing.T) {
+	g := toAction(t, 2)
+	id := g.push(StackItem{Kind: StackRoll, Roll: 1, Controller: g.Turn.Active})
+	g.Stack[0].Checked = 2
+	g.SetRoll(id, 1, 0)
+	if checkedAgain(t, g, id) {
+		t.Error("a 1 set to 1 met the \"would roll\" check again")
+	}
+}
