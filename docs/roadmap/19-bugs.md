@@ -2004,7 +2004,7 @@ Totals by system (62 items):
 7. Owner notes (2026-10-23)
    1. Owner marks 19.61 solved.
 
-### [ ] 19.62 Emergency Contact does nothing on an attack on the monster deck
+### [x] 19.62 Emergency Contact does nothing on an attack on the monster deck
 
 1. Goal: Emergency Contact works as the owner's ruling says.
 2. Report (owner, 2026-10-23)
@@ -2048,3 +2048,5 @@ Totals by system (62 items):
    2. Emergency Contact and IBS no longer check `Attack.Deck`.
    3. Tests `TestEmergencyContactDeckAttack`, `TestIBSCancelsDeckAttack`.
    4. Without the fix both fail: the attack goes on.
+10. Owner notes (2026-10-26)
+   1. Owner marks 19.62 solved.
