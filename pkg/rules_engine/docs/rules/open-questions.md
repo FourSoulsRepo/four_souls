@@ -294,6 +294,23 @@ On 2026-10-09 the owner parked every open decision for later.
    1. R-ATK-05 now names "declared".
 5. Basis: **House**: no ruling found.
 
+### Q-25 Deactivating a passive item
+
+1. Question: can "deactivate an item" pick a passive item?
+   1. Cards: Hourglass, Curse of Impulse.
+   2. Case: Hourglass deactivated Dad's Lost Coin (19.64).
+2. Sources:
+   1. R-ABIL-10: a ↷ ability costs deactivating its object.
+   2. R-DEATH-14 deactivates only what has a ↷ ability.
+   3. No rule says a passive item can't be deactivated.
+   4. No ruling found: rulebook, Yuggy, Reddit (2026-10-26).
+3. Options:
+   1. (a) Any charged item; a passive one loses nothing.
+   2. (b) Only items with a ↷ ability.
+4. Status: **Resolved** (2026-10-26): (b), the owner's reading.
+   1. R-MECH-54 states it.
+5. Basis: **House**: no ruling found.
+
 ## Old rulings re-checked (R-07)
 
 | # | Ruling (Ed's Notes, 2018–2019) | Check against current rules and V2 text | Status |
@@ -457,3 +474,4 @@ Every row of "Card rulings from Discord (S-DIS)" is Community too.
 | Q-22 | Black Candle, The Moon, Flush!, Eden, … | Cards go to the bottom in random order | House (questionable) |
 | Q-23 | The Bone, XX Judgement, Wizoob, … | No Eternal on a soul without abilities; Eternal souls not offered | House |
 | Q-24 | Emergency Contact, IBS | Cancel a deck attack once a monster is revealed | House |
+| Q-25 | Hourglass, Curse of Impulse | Only items with a ↷ ability are deactivated | House |

@@ -33,7 +33,7 @@ This step never closes; new reports are appended.
 
 | ID | Group                                    | System     | Items                                                  | Count |
 |----|------------------------------------------|------------|--------------------------------------------------------|-------|
-| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62 | 9 |
+| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64 | 10 |
 | B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39                               | 4     |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30                                     | 3     |
@@ -46,11 +46,11 @@ This step never closes; new reports are appended.
 | K  | Build and release files                  | Release    | 19.47, 19.59                                           | 2     |
 | L  | Not a bug: the app follows a ruling      | None       | 19.63                                                  | 1     |
 
-Totals by system (63 items):
+Totals by system (64 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
-| Engine    | A, B    | 13    |
+| Engine    | A, B    | 14    |
 | Card data | C       | 2     |
 | Client    | D–G     | 20    |
 | Server    | H       | 1     |
@@ -2079,3 +2079,40 @@ Totals by system (63 items):
    2. "Bugs by system" gets group L for reports that are not bugs.
 7. Owner notes (2026-10-26)
    1. Owner marks 19.63 solved: works as ruled.
+
+### [ ] 19.64 Hourglass deactivates a passive item
+
+1. Goal: "deactivate an item" picks only items with a ↷ ability.
+2. Report (owner, 2026-10-26)
+   1. Play test; record `2026-10-24-135401-g3_Hitokiri-Battosai_jеня_dads_lost_coin.fsrec`.
+   2. Hourglass deactivated Dad's Lost Coin, a passive item.
+   3. The owner expects only charged active items to be offered.
+3. Tasks:
+   1. Find the cause in the match record.
+   2. Look for a ruling on deactivating passive items.
+   3. Apply it to every card that deactivates items.
+4. Done when:
+   1. Engine test: Hourglass offers no passive item.
+   2. Engine test: Curse of Impulse leaves passive items charged.
+5. Cause
+   1. Step 1116: Hourglass offers 11 items; the player picks Dad's Lost Coin.
+   2. Every Hourglass prompt lists passive items, Hourglass too.
+   3. `chargedItems` takes every charged item; passive items are always charged.
+   4. Curse of Impulse also deactivates every item, passive ones too.
+   5. The death penalty already skips them: `CardDef.Tap` (R-DEATH-14).
+6. Rule reading
+   1. R-ABIL-10: a ↷ ability costs deactivating its object.
+   2. R-DEATH-14 deactivates only what has a ↷ ability.
+   3. No rule says a passive item can't be deactivated.
+   4. No ruling found: rulebook, Yuggy, Reddit (2026-10-26).
+   5. The owner's reading is House: Q-25 in `open-questions.md`.
+7. Fix
+   1. `chargedItems` offers only charged items with a ↷ ability (`CardDef.Tap`).
+   2. Curse of Impulse deactivates only such items.
+   3. Rule R-MECH-54 states it.
+   4. Tests `TestHourglassSkipsPassiveItems`, `TestCurseOfImpulseSkipsPassiveItems`.
+   5. Without the fix both fail: Hourglass offers itself and the coin.
+8. Found on the way, not fixed
+   1. The Revenant (Anima Sola's back) has `Tap` set but no ↷ ability.
+   2. The death penalty deactivates it; Hourglass now offers it.
+   3. Left for the owner: it may need its own item.
