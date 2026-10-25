@@ -29,6 +29,9 @@ Images come first, so the new table is built with backs and mats.
 7. Owner (2026-10-22): 15.96 – 15.100 go without a stop.
    1. One commit per sub-step, as always.
    2. Stop only for a question; owner reviews all five at the end.
+8. Owner (2026-10-26): step 15 is paused.
+   1. Step 17 comes next, then step 16.
+   2. Step 15 resumes only when the owner says so.
 
 ---
 
