@@ -551,6 +551,14 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
       1. Evidence for bug reports stays in the record.
       2. The record stays append-only; nothing is rewritten.
       3. Replays show what really happened.
+   22. Old states come from a replay, not from a stored state per step.
+      1. The server keeps one base state: the game start or the last restart.
+      2. Rollback to step k: load the base, replay its intents up to k.
+   23. A server restart keeps the rollback history if it checks out (owner, 2026-10-26).
+      1. The restart file also keeps the old base state.
+      2. On load, the new engine replays from the old base to the end.
+      3. Same bytes as the kept state: rollback reaches past the restart.
+      4. Different: the restart becomes a barrier; the history shows it.
 13. N-13. Find LAN games without typing an IP.
    1. A hosting app announces its waiting game on the LAN.
    2. The join screen lists the games it finds.

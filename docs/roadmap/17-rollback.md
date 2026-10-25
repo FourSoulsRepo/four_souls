@@ -23,11 +23,13 @@ Ideas: N-12.
    11. Soft: the author may ask; the others vote, like the kick vote.
    12. Which steps can be targets: never a pass or a throw alone.
    13. Record format: a rollback line; ADR 007 updated (N-12, item 21).
-   14. Server restart (ADR 019): saved states kept or dropped.
+   14. Server restart: history kept if the replay checks out (N-12, item 23).
    15. Godmode: no vote; any history row is a target.
    16. The default mode is Disabled (owner, 2026-10-26).
    17. Godmode: anyone may roll back, the author too (owner, 2026-10-26).
    18. The RNG is read only when the game needs a value (N-12, item 20).
+   19. Old states come from a replay from one base state (N-12, item 22).
+   20. ADR 019 updated: the restart file keeps the old base state.
 3. Done when:
    1. ADR accepted.
 
@@ -35,7 +37,7 @@ Ideas: N-12.
 
 1. Goal: the engine returns to the state before an event.
 2. Tasks:
-   1. Keep the state before each event (engine save, step 4).
+   1. Rebuild the state before a step: base state, then replay (N-12, item 22).
    2. Undo restores it exactly, RNG included.
    3. Fuzz check: undo then redo gives the same state.
    4. Test: roll, roll back, roll again gives the same value.
@@ -46,10 +48,39 @@ Ideas: N-12.
 
 1. Goal: players use rollback in a game.
 2. Tasks:
-   1. Intent "roll back"; refused for the event's author.
+   1. Intent "roll back"; in Soft refused for the event's author.
    2. History entry shows who rolled back what.
    3. The record keeps the rollback (RP-03).
-   4. Button near the history entry, for other players only.
+   4. Button near the history entry; in Soft for other players only.
    5. Use case: roll back a mistake.
+   6. Godmode: any player rolls back to any history row at once.
 3. Done when:
    1. e2e: the author sees no button; another player rolls back.
+   2. e2e: in Godmode the author rolls back their own step.
+
+### [ ] 17.4 Modes and the Soft vote
+
+1. Goal: the host picks the mode; Soft rollbacks need a majority.
+2. Tasks:
+   1. Detailed setup: Disabled, Soft, Godmode; Disabled by default.
+   2. The mode goes into the record header and saved games.
+   3. Soft: the author may ask; others vote like the kick vote.
+   4. A majority of the other connected players decides.
+   5. Soft barriers: dice roll, damage, hidden info seen, turn end.
+   6. Use case for each mode.
+3. Done when:
+   1. Server tests: majority with 2, 3, 4 players; each barrier.
+   2. e2e: a Soft vote passes and one is declined.
+
+### [ ] 17.5 Rollback over a server restart
+
+1. Goal: a kept game keeps its rollback history (N-12, item 23).
+2. Tasks:
+   1. The restart file also keeps the old base state.
+   2. On load, replay from the old base on the new engine.
+   3. Same bytes as the kept state: keep the history.
+   4. Otherwise the restart is a barrier; the history shows a row.
+   5. ADR 019 updated.
+3. Done when:
+   1. Server test: same engine, rollback reaches past the restart.
+   2. Server test: a changed replay makes the restart a barrier.
