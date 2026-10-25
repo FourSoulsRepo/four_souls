@@ -265,10 +265,12 @@ Step numbers stay as IDs; the table lists steps in work order.
 
 1. Owner decides limits: hidden info, dice, who must agree.
 2. Engine undoes the last event from a saved state.
-3. Only other players can roll back; never the author.
+3. Soft: only other players can roll back; never the author.
 4. History and records show the rollback.
 5. Ideas: N-12.
 6. Dice keep their value after a rollback (N-12).
+7. Three modes: Disabled, Soft, Godmode (N-12).
+8. A majority of the other players decides (N-12).
 
 ## 18. Play-test
 

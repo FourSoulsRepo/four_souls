@@ -513,16 +513,44 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    9. Builds on the engine save (step 4) and records (RP-08).
 12. N-12. Rollback of an event.
    1. Undoes a mistake, e.g. a misclick.
-   2. The player who did the event cannot roll it back.
-   3. Only the other players can roll it back.
-   4. Open: whether hidden info (draws) blocks a rollback; dice do not.
-   5. Open: in 3–4 player games, does one other player suffice.
+   2. Soft: the player who did the event cannot roll it back.
+   3. Soft: only the other players can roll it back.
+   4. Hidden info: the rollback mode decides (item 15).
+   5. 3–4 player games: a majority of the other players (item 16).
    6. The rollback is shown in the history and kept in the record.
    7. Decided: after a rollback, the next dice roll gives the same value.
    8. Same value: the RNG is restored, so the player knows the next roll.
    9. That holds whatever is played first, since it is one RNG stream.
    10. New value: a rollback becomes a free re-roll.
-   11. Rejected: a seen dice roll blocks rollback.
+   11. Rejected as the only rule: a seen dice roll blocks rollback.
+   12. Accepted risk: the player knows the next roll after a rollback.
+   13. Only other players can roll back, which limits the abuse.
+   14. The author may ask for a rollback; the others decide (owner, 2026-10-26).
+   15. Three rollback modes (owner, 2026-10-26; raw idea).
+      1. Disabled: no rollback at all.
+      2. Soft: steps go back until a barrier event.
+      3. Soft barriers: a dice roll, damage dealt, hidden info seen.
+      4. Soft barrier too: the turn ends (owner, 2026-10-26).
+      5. Godmode: every step can be rolled back.
+      6. Godmode keeps item 7: the restored RNG repeats the roll.
+      7. A death follows damage; a revealed card is hidden info seen.
+      8. Not a barrier: a shuffle; the restored RNG repeats its order.
+      9. Godmode: no vote; the rollback happens at once (owner, 2026-10-26).
+   16. Majority: more than half of the other connected players (owner, 2026-10-26).
+      1. 2 players: the opponent.
+      2. 3 players: both others.
+      3. 4 players: two of the three others.
+   17. The host picks the mode in Detailed setup (owner, 2026-10-26).
+   18. The default mode is Disabled (owner, 2026-10-26).
+   19. Godmode: anyone may roll back, the author too (owner, 2026-10-26).
+   20. Rejected: the RNG advances on every step (owner, 2026-10-26).
+      1. The step count would pick the next roll.
+      2. Same steps bring back a good roll; one more pass re-rolls a bad one.
+      3. Every engine change that adds a step would shift every roll.
+   21. The record keeps the undone steps and a rollback line (owner, 2026-10-26).
+      1. Evidence for bug reports stays in the record.
+      2. The record stays append-only; nothing is rewritten.
+      3. Replays show what really happened.
 13. N-13. Find LAN games without typing an IP.
    1. A hosting app announces its waiting game on the LAN.
    2. The join screen lists the games it finds.
@@ -532,8 +560,6 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
       2. So a crashed player finds the game in the list again.
    5. A dedicated server never announces.
    6. Players join it by address and pick from its list of games.
-   12. Accepted risk: the player knows the next roll after a rollback.
-   13. Only other players can roll back, which limits the abuse.
 14. N-14. A game can have a password.
    1. Set by whoever creates the game.
    2. The games list shows a lock; joining asks for the password.

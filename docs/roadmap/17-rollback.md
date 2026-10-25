@@ -10,12 +10,24 @@ Ideas: N-12.
 
 1. Goal: clear limits for rollback (N-12).
 2. Tasks:
-   1. **Owner**: may hidden info (draws, peeks) be rolled back?
-   2. Dice may be rolled back; the next roll keeps its value.
-   3. **Owner**: in 3–4 player games, one other player or all?
-   4. How far back: last event only, or more.
+   1. Hidden info: decided by the mode (owner, 2026-10-26).
+   2. Dice may be rolled back in Godmode; the next roll keeps its value.
+   3. 3–4 player games: a majority of the other players (owner, 2026-10-26).
+   4. How far back: decided by the mode.
    5. Decided: the restored RNG repeats the roll (N-12).
    6. Never reseed after a rollback; that would be a free re-roll.
+   7. Modes: Disabled, Soft, Godmode (N-12, item 15).
+   8. Soft: list every barrier event; dice, damage, hidden info so far.
+   9. The host picks the mode in Detailed setup (owner, 2026-10-26).
+   10. Soft barrier too: the turn ends; death and reveals are covered.
+   11. Soft: the author may ask; the others vote, like the kick vote.
+   12. Which steps can be targets: never a pass or a throw alone.
+   13. Record format: a rollback line; ADR 007 updated (N-12, item 21).
+   14. Server restart (ADR 019): saved states kept or dropped.
+   15. Godmode: no vote; any history row is a target.
+   16. The default mode is Disabled (owner, 2026-10-26).
+   17. Godmode: anyone may roll back, the author too (owner, 2026-10-26).
+   18. The RNG is read only when the game needs a value (N-12, item 20).
 3. Done when:
    1. ADR accepted.
 
