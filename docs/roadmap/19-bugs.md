@@ -44,8 +44,9 @@ This step never closes; new reports are appended.
 | I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58 | 11 |
 | J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57 | 13 |
 | K  | Build and release files                  | Release    | 19.47, 19.59                                           | 2     |
+| L  | Not a bug: the app follows a ruling      | None       | 19.63                                                  | 1     |
 
-Totals by system (62 items):
+Totals by system (63 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
@@ -55,6 +56,7 @@ Totals by system (62 items):
 | Server    | H       | 1     |
 | e2e       | I, J    | 24    |
 | Release   | K       | 2     |
+| None      | L       | 1     |
 
 ---
 
@@ -2050,3 +2052,30 @@ Totals by system (62 items):
    4. Without the fix both fail: the attack goes on.
 10. Owner notes (2026-10-26)
    1. Owner marks 19.62 solved.
+
+### [x] 19.63 Soul of Pride counts a buy from the treasure deck
+
+1. Goal: Soul of Pride counts treasure gains as the ruling says.
+2. Report (owner, 2026-10-26)
+   1. Play test; record `2026-10-24-124502-g2_Hitokiri-Battosai_jеня_soul_of_pride.fsrec`.
+   2. A buy from the top of the treasure deck put a counter on it.
+   3. The owner expected buys not to count.
+3. Tasks:
+   1. Find the cause in the match record.
+   2. Check the rule the engine follows.
+4. Done when:
+   1. The cause is found; a fix only if the engine breaks a rule.
+5. Cause
+   1. Not a bug: the engine follows R-CARD-37.
+   2. R-CARD-37 comes from Yuggy's ruling (S-YUG: Damocles; Soul of Pride).
+   3. A buy from the treasure deck top gains a treasure.
+   4. A buy from a shop slot gains an item, not a treasure.
+   5. Record: shop buys (Champion Belt, Plan C) add no counter.
+   6. Five deck-top buys and the Bum-bo gain add one each.
+   7. The 6th counter gives the soul to the active player.
+   8. `TestSoulOfPride` already covers the deck-top buy.
+6. Fix
+   1. None; no code change.
+   2. "Bugs by system" gets group L for reports that are not bugs.
+7. Owner notes (2026-10-26)
+   1. Owner marks 19.63 solved: works as ruled.
