@@ -3248,3 +3248,5 @@ Images come first, so the new table is built with backs and mats.
    14. UC-04 1i; wiki `Client`, `Server`, `Screenshots`; CHANGELOG.
    15. A server older than 15.100 has no `/status`; it shows "Down".
    16. Screenshots: `.cache/screenshots/15.100/before/` and `after/`.
+6. Owner notes (2026-10-26)
+   1. Owner marks 15.100 solved.
