@@ -39,3 +39,26 @@ func TestCheckSeat(t *testing.T) {
 		}
 	}
 }
+
+// ServerStatus reads a server's /status (15.100); no answer is an error,
+// so the Recent list shows the server down.
+func TestServerStatus(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/status" || r.URL.RawQuery != "" {
+			http.NotFound(w, r)
+			return
+		}
+		_ = json.NewEncoder(w).Encode(protocol.ServerStatus{Open: 2}) //nolint:errcheck // test
+	}))
+	defer srv.Close()
+	a := &App{}
+	if got, err := a.ServerStatus([]string{"http://127.0.0.1:1", srv.URL}); err != nil || got.Open != 2 {
+		t.Fatalf("got %+v, %v; want 2 open", got, err)
+	}
+	if _, err := a.ServerStatus([]string{"http://127.0.0.1:1"}); err == nil {
+		t.Error("no server answered, want an error")
+	}
+	if _, err := a.ServerStatus([]string{"file:///etc/passwd"}); !errors.Is(err, ErrServerURL) {
+		t.Errorf("err %v, want ErrServerURL", err)
+	}
+}

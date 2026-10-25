@@ -33,6 +33,8 @@ export function SaveRecord(arg1:string):Promise<string>;
 
 export function SaveSettings(arg1:settings.Settings):Promise<settings.Settings>;
 
+export function ServerStatus(arg1:Array<string>):Promise<protocol.ServerStatus>;
+
 export function Settings():Promise<settings.Settings>;
 
 export function Sounds():Promise<main.Sounds>;

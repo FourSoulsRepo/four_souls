@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { checkSeat, getSettings, saveSettings } from './bridge';
+import { checkSeat, getSettings, saveSettings, serverStatus } from './bridge';
 import { noHostSetup } from './hostSetup';
 import { messageOf, seatOf, useApp } from './store';
 
@@ -7,6 +7,7 @@ vi.mock('./bridge', () => ({
   checkSeat: vi.fn(),
   getSettings: vi.fn(),
   saveSettings: vi.fn(),
+  serverStatus: vi.fn(),
 }));
 vi.mock('./net', () => ({ drop: vi.fn() }));
 
@@ -161,5 +162,53 @@ describe('the saved seat (15.99)', () => {
     useApp.setState({ settings: { ...settings, rejoin: { ...none, via: '' as const } } });
     await useApp.getState().checkRejoin();
     expect(checkSeat).not.toHaveBeenCalled();
+  });
+});
+
+describe('Recent servers (15.100)', () => {
+  const recent = [
+    { address: 'games.example.com', name: 'Up' },
+    { address: '192.168.1.9', name: '' },
+  ];
+  const settings = { nickname: 'Ann', recent, animation: 'normal' as const, fullscreen: false, mat: '', dice: 'tear', no_end_turn_ask: false, rejoin: { address: '', token: '', game: '', via: '' as const }, host: noHostSetup, lan_address: '' };
+
+  beforeEach(() => {
+    useApp.setState({ settings });
+  });
+
+  it('each row gets its answer: open games, or down', async () => {
+    vi.mocked(serverStatus).mockImplementation((bases) =>
+      bases[0]?.startsWith('https://games.example.com') ? Promise.resolve({ open: 2 }) : Promise.reject(new Error('server: no answer')),
+    );
+    await useApp.getState().checkRecent();
+    expect(serverStatus).toHaveBeenCalledWith(['http://192.168.1.9:4774']);
+    expect(useApp.getState().recentStatus).toEqual({ 'games.example.com': { open: 2 }, '192.168.1.9': 'down' });
+  });
+
+  it('rows show at once; a slow answer fills its row alone', async () => {
+    let answer: (s: { open: number }) => void = () => undefined;
+    vi.mocked(serverStatus).mockImplementation((bases) =>
+      bases[0]?.startsWith('https://') ? new Promise((resolve) => (answer = resolve)) : Promise.resolve({ open: 0 }),
+    );
+    useApp.setState({ recentStatus: { '192.168.1.9': 'down' } });
+    const done = useApp.getState().checkRecent();
+    expect(useApp.getState().recentStatus).toEqual({});
+    await vi.waitFor(() => {
+      expect(useApp.getState().recentStatus).toEqual({ '192.168.1.9': { open: 0 } });
+    });
+    answer({ open: 1 });
+    await done;
+    expect(useApp.getState().recentStatus['games.example.com']).toEqual({ open: 1 });
+  });
+
+  it('a late answer of an older check is dropped', async () => {
+    let first: (s: { open: number }) => void = () => undefined;
+    vi.mocked(serverStatus).mockImplementationOnce(() => new Promise((resolve) => (first = resolve)));
+    vi.mocked(serverStatus).mockResolvedValue({ open: 3 });
+    const old = useApp.getState().checkRecent();
+    await useApp.getState().checkRecent();
+    first({ open: 9 });
+    await old;
+    expect(useApp.getState().recentStatus['games.example.com']).toEqual({ open: 3 });
   });
 });

@@ -242,6 +242,35 @@
   line-height: 1.2;
 }
 
+/* Whether a Recent server is up, and its open games (15.100). */
+.server-up {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.server-up::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+  opacity: 0.5;
+}
+
+.server-up.up::before {
+  background: #7fd36b;
+  opacity: 1;
+}
+
+.server-up.down::before {
+  background: #e0675b;
+  opacity: 1;
+}
+
 /* The server's name under the Games heading (N-18). */
 .server-name {
   margin: -8px 0 0;

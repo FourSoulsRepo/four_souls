@@ -6,6 +6,7 @@ Rules engine versions are in each release's notes.
 
 ## Unreleased
 
+- Online: each Recent server shows whether it is up and how many games there have a free seat.
 ## 0.2.1 - 2026-10-22
 
 The first public release.

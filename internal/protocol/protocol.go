@@ -231,6 +231,13 @@ type SeatInfo struct {
 	Started bool   `json:"started,omitempty"`
 }
 
+// ServerStatus answers GET /status (15.100): how many games wait for
+// players, so the Online screen's Recent list shows the server is up.
+// Any lobby client sees as much.
+type ServerStatus struct {
+	Open int `json:"open"`
+}
+
 // Games lists the games on the server, and the saved ones.
 type Games struct {
 	Games []GameInfo `json:"games"`

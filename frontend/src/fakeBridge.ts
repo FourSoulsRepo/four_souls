@@ -311,6 +311,20 @@ w.go = {
         }
         throw new Error('server: no answer');
       },
+      // Like Go's App.ServerStatus: the first base that answers.
+      ServerStatus: async (bases: string[]) => {
+        for (const b of bases) {
+          try {
+            const r = await fetch(`${b}/status`);
+            if (r.ok) {
+              return (await r.json()) as unknown;
+            }
+          } catch {
+            // the next base
+          }
+        }
+        throw new Error('server: no answer');
+      },
       SaveRecord: (link: string) => Promise.resolve(`/fake/${new URL(link).searchParams.get('game') ?? ''}.fsrec`),
       // The LAN holds one hosting app: the test server (?server=PORT).
       // ?nolan finds nothing; a test sets window.fakeLan to list others,

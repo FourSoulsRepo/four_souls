@@ -437,3 +437,38 @@ test('Online: a server, its games, and one level back each time (15.98)', async 
   await page.keyboard.press('Escape');
   await expect(page.getByRole('group', { name: 'Play' })).toBeVisible();
 });
+
+// Recent rows show at once, then whether each server is up (15.100).
+test('Recent shows which servers are up and their open games (15.100)', async ({ page }) => {
+  // Nobody listens on the port next to the test server.
+  const stopped = `127.0.0.1:${String(serverPort() - 1)}`;
+  await page.addInitScript(
+    ([up, down]) => {
+      const key = 'fake-settings';
+      if (!localStorage.getItem(key)) {
+        const recent = [
+          { address: up, name: 'Test server' },
+          { address: down, name: 'Gone server' },
+        ];
+        const rejoin = { address: '', token: '', game: '', via: '' };
+        localStorage.setItem(key, JSON.stringify({ nickname: 'Rex', recent, animation: 'off', fullscreen: false, mat: '', dice: 'tear', rejoin }));
+      }
+    },
+    [address(), stopped],
+  );
+  await realAssets(page);
+  await page.goto(appURL());
+  await openOnline(page);
+  const recent = page.getByRole('list', { name: 'Recent' });
+  const row = (name: string) => recent.getByRole('listitem').filter({ has: page.getByRole('button', { name, exact: true }) });
+  // Other tests share the server, so its count is any number.
+  await expect(row('Test server')).toContainText(/\d+ open games?/);
+  await expect(row('Gone server')).toContainText('Down', { timeout: 8000 });
+  await shot(page, 'online-status');
+
+  // Back from its games asks again; the count follows the server.
+  await row('Test server').getByRole('button', { name: 'Test server', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Games' })).toBeVisible();
+  await page.getByRole('button', { name: 'Back' }).click();
+  await expect(row('Test server')).toContainText(/\d+ open games?/);
+});

@@ -54,6 +54,10 @@ export function SaveSettings(arg1) {
   return window['go']['main']['App']['SaveSettings'](arg1);
 }
 
+export function ServerStatus(arg1) {
+  return window['go']['main']['App']['ServerStatus'](arg1);
+}
+
 export function Settings() {
   return window['go']['main']['App']['Settings']();
 }

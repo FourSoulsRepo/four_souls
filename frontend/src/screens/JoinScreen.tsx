@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useEscape } from '../keys';
-import { canCreate, lanRows, serverLabel } from '../lobby';
+import { canCreate, lanRows, serverLabel, upText } from '../lobby';
 import { protocolVersion } from '../protocol';
 import { setList } from '../sets';
 import { useApp } from '../store';
@@ -158,9 +158,13 @@ function useLanSearch() {
 }
 
 // OnlineConnect: a server's address, typed or picked from Recent
-// (15.98, N-18). Games there are created on the server (N-17).
+// (15.98, N-18). Games there are created on the server (N-17). Each
+// Recent server is asked whether it is up when the screen opens (15.100).
 function OnlineConnect() {
   const settings = useApp((s) => s.settings);
+  const recentStatus = useApp((s) => s.recentStatus);
+  const checkRecent = useApp((s) => s.checkRecent);
+  const recentKey = settings.recent.map((r) => r.address).join('\n');
   const error = useApp((s) => s.error);
   const joinServer = useApp((s) => s.joinServer);
   const saveNickname = useApp((s) => s.saveNickname);
@@ -172,6 +176,9 @@ function OnlineConnect() {
   useEscape(() => {
     show('menu');
   });
+  useEffect(() => {
+    void checkRecent();
+  }, [checkRecent, recentKey]);
 
   const go = (to: string) => {
     setBusy(true);
@@ -218,35 +225,42 @@ function OnlineConnect() {
         {settings.recent.length > 0 && (
           <>
             <span className="muted">Recent</span>
-            {/* A server shows by its name, the address on hover (N-18). */}
+            {/* A server shows by its name, the address on hover (N-18),
+                then whether it is up (15.100). */}
             <ul className="row recent" aria-label="Recent">
-              {settings.recent.map((r) => (
-                <li key={r.address}>
-                  <button
-                    type="button"
-                    title={r.address}
-                    disabled={busy}
-                    onClick={() => {
-                      setAddress(r.address);
-                      go(r.address);
-                    }}
-                  >
-                    {serverLabel(r)}
-                  </button>
-                  <button
-                    type="button"
-                    className="forget"
-                    aria-label={`Remove ${serverLabel(r)} from Recent`}
-                    title="Remove from Recent"
-                    disabled={busy}
-                    onClick={() => {
-                      void forgetServer(r.address);
-                    }}
-                  >
-                    ×
-                  </button>
-                </li>
-              ))}
+              {settings.recent.map((r) => {
+                const up = recentStatus[r.address];
+                return (
+                  <li key={r.address}>
+                    <button
+                      type="button"
+                      title={r.address}
+                      disabled={busy}
+                      onClick={() => {
+                        setAddress(r.address);
+                        go(r.address);
+                      }}
+                    >
+                      {serverLabel(r)}
+                    </button>
+                    <span className={`server-up ${up === undefined ? 'checking' : up === 'down' ? 'down' : 'up'}`}>
+                      {upText(up)}
+                    </span>
+                    <button
+                      type="button"
+                      className="forget"
+                      aria-label={`Remove ${serverLabel(r)} from Recent`}
+                      title="Remove from Recent"
+                      disabled={busy}
+                      onClick={() => {
+                        void forgetServer(r.address);
+                      }}
+                    >
+                      ×
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
           </>
         )}

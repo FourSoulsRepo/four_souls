@@ -3220,7 +3220,7 @@ Images come first, so the new table is built with backs and mats.
 7. Owner notes (2026-10-22)
    1. Owner marks 15.99 solved.
 
-### [ ] 15.100 Recent servers show live status
+### [x] 15.100 Recent servers show live status
 
 1. Goal: the player sees which saved servers are up (M-04).
 2. Planned by the owner (2026-10-22).
@@ -3231,3 +3231,20 @@ Images come first, so the new table is built with backs and mats.
 4. Done when:
    1. e2e test: a running and a stopped server in Recent.
    2. UC-04 updated.
+5. Result (2026-10-26)
+   1. Go `GET /status` (`status.go`): `protocol.ServerStatus`, `open` tables.
+   2. Open: a table with a free seat; a started game is not counted.
+   3. CORS `*` as for `/seat`; both wait for the hub through `askHub`.
+   4. Go `App.ServerStatus` (`servers.go`): the bases as for `CheckSeat`.
+   5. `checkRecent` asks every Recent server at once on the Online screen.
+   6. It runs when the screen opens and when the Recent addresses change.
+   7. `recentStatus`: `{ open }` or `'down'` per address; empty while asked.
+   8. Rows show at once; each fills in as its answer comes.
+   9. `statusRound` drops a late answer of an older check.
+   10. Row: a green or red dot, "2 open games", "Down" or "Checking…".
+   11. Go tests: `TestStatusCountsOpenGames`, `TestServerStatus`.
+   12. Vitest: answers, a slow answer, a stale check; `upText`.
+   13. e2e `lobby.spec.ts`: the test server up, a free port down.
+   14. UC-04 1i; wiki `Client`, `Server`, `Screenshots`; CHANGELOG.
+   15. A server older than 15.100 has no `/status`; it shows "Down".
+   16. Screenshots: `.cache/screenshots/15.100/before/` and `after/`.

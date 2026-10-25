@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canCreate, emptyLobby, lanRows, leftTable, forgotten, lost, onMessage, optionsText, remember, renamed, serverLabel, type Session } from './lobby';
+import { canCreate, emptyLobby, lanRows, leftTable, forgotten, lost, onMessage, optionsText, remember, renamed, serverLabel, upText, type Session } from './lobby';
 import type { Table } from './protocol';
 
 const start: Session = { screen: 'join', lobby: emptyLobby, game: null, error: '' };
@@ -113,6 +113,13 @@ describe('server names (N-18)', () => {
   it('shows the name, else the address', () => {
     expect(serverLabel({ address: 'a', name: 'Basement' })).toBe('Basement');
     expect(serverLabel({ address: 'a', name: '' })).toBe('a');
+  });
+  it('tells whether a server is up and its open games (15.100)', () => {
+    expect(upText(undefined)).toBe('Checking…');
+    expect(upText('down')).toBe('Down');
+    expect(upText({ open: 0 })).toBe('0 open games');
+    expect(upText({ open: 1 })).toBe('1 open game');
+    expect(upText({ open: 3 })).toBe('3 open games');
   });
 });
 

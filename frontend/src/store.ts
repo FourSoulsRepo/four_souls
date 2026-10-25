@@ -18,6 +18,7 @@ import {
   getVersions,
   checkSeat,
   saveSettings,
+  serverStatus,
   startHosting,
   stopHosting,
   type DiceSkin,
@@ -34,7 +35,7 @@ import { loadFonts } from './fonts';
 import { entriesFor, lookedAt, type Entry, type Looked, type Outcome } from './history';
 import type { LinePart } from './stack';
 import type { Box } from './zoom';
-import { emptyLobby, forgotten, leftTable, lost, onMessage, remember, renamed, type Screen, type Session } from './lobby';
+import { emptyLobby, forgotten, leftTable, lost, onMessage, remember, renamed, type Screen, type ServerUp, type Session } from './lobby';
 import { connectFirst, disconnect, drop, send } from './net';
 import { claimEffect, nextBeat } from './animations';
 import { lastRollAfter, type LastRoll } from './dice';
@@ -248,6 +249,12 @@ interface AppState extends Session {
   joinServer: (address: string, opts?: { recent?: boolean; token?: string }) => Promise<void>;
   // forgetServer drops an address from the Recent list (N-18).
   forgetServer: (address: string) => Promise<void>;
+  // recentStatus is the last check of each Recent server, by address
+  // (15.100); an address is missing while it is asked.
+  recentStatus: Partial<Record<string, ServerUp>>;
+  // checkRecent asks every Recent server at once whether it is up; each
+  // answer fills its row as it comes.
+  checkRecent: () => Promise<void>;
   // lan is the last search for games on the local network (N-13).
   lan: { searching: boolean; found: LanServer[]; error: string };
   findLanGames: () => Promise<void>;
@@ -404,6 +411,9 @@ export const useApp = create<AppState>()((set, get) => {
   // remembering is the save that put the joined address in Recent; the
   // server's name waits for it, so neither save undoes the other.
   let remembering: Promise<unknown> = Promise.resolve();
+  // statusRound counts the Recent checks; a late answer of an older one
+  // is dropped.
+  let statusRound = 0;
   // nameServer keeps the name from the server's welcome on its Recent
   // entry (N-18).
   const nameServer = (address: string, name: string) => {
@@ -816,6 +826,25 @@ export const useApp = create<AppState>()((set, get) => {
     forgetServer: async (address) => {
       const s = get().settings;
       await get().saveSettings({ ...s, recent: forgotten(s.recent, address) });
+    },
+    recentStatus: {},
+    checkRecent: async () => {
+      const round = ++statusRound;
+      set({ recentStatus: {} });
+      await Promise.all(
+        get().settings.recent.map(async ({ address }) => {
+          const bases = httpBases(address);
+          let up: ServerUp = 'down';
+          try {
+            up = bases ? await serverStatus(bases) : 'down';
+          } catch {
+            // no address answered: down
+          }
+          if (round === statusRound) {
+            set({ recentStatus: { ...get().recentStatus, [address]: up } });
+          }
+        }),
+      );
     },
     host: async (game) => {
       const info = await startHost();
