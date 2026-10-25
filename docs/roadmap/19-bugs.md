@@ -33,7 +33,7 @@ This step never closes; new reports are appended.
 
 | ID | Group                                    | System     | Items                                                  | Count |
 |----|------------------------------------------|------------|--------------------------------------------------------|-------|
-| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64 | 10 |
+| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65 | 11 |
 | B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39                               | 4     |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30                                     | 3     |
@@ -46,11 +46,11 @@ This step never closes; new reports are appended.
 | K  | Build and release files                  | Release    | 19.47, 19.59                                           | 2     |
 | L  | Not a bug: the app follows a ruling      | None       | 19.63                                                  | 1     |
 
-Totals by system (64 items):
+Totals by system (65 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
-| Engine    | A, B    | 14    |
+| Engine    | A, B    | 15    |
 | Card data | C       | 2     |
 | Client    | D–G     | 20    |
 | Server    | H       | 1     |
@@ -2080,7 +2080,7 @@ Totals by system (64 items):
 7. Owner notes (2026-10-26)
    1. Owner marks 19.63 solved: works as ruled.
 
-### [ ] 19.64 Hourglass deactivates a passive item
+### [x] 19.64 Hourglass deactivates a passive item
 
 1. Goal: "deactivate an item" picks only items with a ↷ ability.
 2. Report (owner, 2026-10-26)
@@ -2116,3 +2116,26 @@ Totals by system (64 items):
    1. The Revenant (Anima Sola's back) has `Tap` set but no ↷ ability.
    2. The death penalty deactivates it; Hourglass now offers it.
    3. Left for the owner: it may need its own item.
+   4. Logged as 19.65.
+9. Owner notes (2026-10-26)
+   1. Owner marks 19.64 solved.
+
+### [ ] 19.65 The Revenant counts as having a ↷ ability
+
+1. Goal: The Revenant side is never deactivated as a ↷ item.
+2. Report (owner, 2026-10-26)
+   1. Found while fixing 19.64; no play test.
+   2. The owner logs it as a bug and keeps it for later.
+3. Tasks:
+   1. Check the flip and charge rules for two-sided items (R-MECH-53).
+   2. Decide the back face's `Tap` flag.
+4. Done when:
+   1. Engine test: Hourglass does not offer The Revenant.
+   2. Engine test: the death penalty leaves The Revenant as it was.
+5. Cause
+   1. `theRevenant` in `cards/r/anima_sola.go` sets `Tap: true`.
+   2. The Revenant side has no ↷ ability; only Anima Sola has one.
+   3. The death penalty deactivates it (R-DEATH-14).
+   4. Hourglass offers it since 19.64 (R-MECH-54).
+6. Status
+   1. Parked by the owner; no code change yet.
