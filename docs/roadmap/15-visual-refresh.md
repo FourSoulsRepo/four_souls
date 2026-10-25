@@ -1922,7 +1922,7 @@ Images come first, so the new table is built with backs and mats.
    2. The strip question: headlines only, with a coin badge (15.89).
    3. Moved to 15.88 and 15.89.
 
-### [ ] 15.58 "Choose one-" cards ask like The Bone
+### [x] 15.58 "Choose one-" cards ask like The Bone
 
 1. Goal: picking a mode looks like picking an ability (V-45).
 2. Tasks:
@@ -1939,6 +1939,27 @@ Images come first, so the new table is built with backs and mats.
    2. e2e test: Dagaz opens the dialog with the card; the picked mode is sent.
    3. `make screenshots` shows the mode dialog.
    4. UC-13 updated.
+4. Owner decisions (2026-10-26)
+   1. One card dialog for The Bone and the mode prompt.
+   2. The mode dialog also has "View board", like other choices.
+   3. Modes with no valid target stay on the list, greyed.
+   4. A greyed mode says "No valid target now".
+5. Result (2026-10-26)
+   1. Engine: the mode prompt's `Choice.Subject` is its card.
+   2. `GameView.modes`: every mode's `text` and the `option` that picks it, or -1.
+   3. Only the chooser gets the subject and the modes; options are unchanged.
+   4. So records replay as before; no protocol bump (ADR 006).
+   5. Client: `CardDialog.tsx` draws The Bone's dialog and the mode dialog.
+   6. `ModeDialog` in `ChoiceDialog.tsx`: the card large, a line per mode.
+   7. It sits on the `choice` layer; Cancel or a click outside sends cancel.
+   8. "View board" hides it, with the same bar as other choices.
+   9. `modeLines` (`actions.ts`) maps modes to options and finds the cancel.
+   10. Hand (Dagaz) and item (Chaos Card) go through one engine path.
+   11. Engine test: `TestModePromptNamesItsCard`; Vitest: `modeLines`.
+   12. e2e: Dagaz's dialog, greyed curse mode, View board, Cancel, outside, pick.
+   13. e2e helpers in `turn.ts` answer the mode dialog's lines.
+   14. UC-13 2h; ADR 006; wiki Client, Effect-blocks, Layers; CHANGELOG.
+   15. Screenshots: `.cache/screenshots/15.58/before/` and `after/`.
 
 ### [x] 15.59 Throw in the engine
 

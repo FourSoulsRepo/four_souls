@@ -4,6 +4,7 @@ import {
   actionsFor,
   aimedOption,
   IntentKind,
+  modeLines,
   orderIntent,
   outcomeLines,
   PromptKind,
@@ -329,5 +330,34 @@ describe('trigger order', () => {
     const o = choice(['unknown: text'])?.options[0];
     expect(o?.card).toBeUndefined();
     expect(o?.line).toBeUndefined();
+  });
+});
+
+describe('modeLines', () => {
+  // Dagaz with no curse in play: the engine offers the second mode only,
+  // then "cancel"; the view lists both modes.
+  const pick = (choice: number) => ({ player: 0, kind: IntentKind.choose, choice });
+  const choice = actionsFor(
+    update({ waiting: { kind: PromptKind.choose, player: 0, purpose: Purpose.mode, options: ['Protect a player.', 'cancel'] } }, [pick(0), pick(1)]),
+    () => false,
+  ).choice;
+  const modes = [
+    { text: 'Destroy a curse.', option: -1 },
+    { text: 'Protect a player.', option: 0 },
+  ];
+
+  it('lists every mode in card order; one with no target has no intent', () => {
+    if (!choice) {
+      throw new Error('no choice');
+    }
+    const { lines } = modeLines(choice, modes);
+    expect(lines).toEqual([{ text: 'Destroy a curse.' }, { text: 'Protect a player.', intent: pick(0) }]);
+  });
+
+  it('finds the cancel option: the one that is no mode', () => {
+    if (!choice) {
+      throw new Error('no choice');
+    }
+    expect(modeLines(choice, modes).cancel).toEqual(pick(1));
   });
 });

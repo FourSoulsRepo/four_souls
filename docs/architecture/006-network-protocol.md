@@ -123,6 +123,9 @@ Use options 1, 3, 5 and 10.
    19. Each has the intent kind, the card's object, and a short `reason`.
    20. Live aiming and hover: `presence`, relayed, never an intent (ADR 016).
    21. Server restart: `restarting` before it stops; `notice` after (ADR 019).
+   22. Mode prompt: `view.subject` is its card; `view.modes` lists every mode (15.58).
+   23. Each mode has its `text` and the prompt `option` that picks it, or -1.
+   24. Only the chooser gets both.
 9. Playing over the internet, until a relay exists
    1. A virtual LAN (Tailscale, ZeroTier, Hamachi, Radmin VPN), or port forwarding.
    2. Or a dedicated server on a rented VPS.

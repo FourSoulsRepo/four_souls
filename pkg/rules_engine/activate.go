@@ -108,7 +108,8 @@ func (g *Game) startActivation(a Activation) {
 		labels = append(labels, ab.Modes[m].Text)
 	}
 	labels = append(labels, "cancel")
-	g.ask(Choice{Purpose: ChooseMode, Player: a.Player, Rule: "R-ABIL-04", Indexes: modes}, labels)
+	// The card is the subject, so the chooser's dialog shows it (15.58).
+	g.ask(Choice{Purpose: ChooseMode, Player: a.Player, Rule: "R-ABIL-04", Indexes: modes, Subject: a.Source}, labels)
 }
 
 // chooseMode records the mode, or cancels before anything is paid.

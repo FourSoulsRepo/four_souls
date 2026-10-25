@@ -299,10 +299,17 @@
   stroke-linejoin: round;
 }
 
-/* Cancel in the plain-paper look of Wait for my turn. */
-.ability-cancel {
-  align-self: flex-end;
+/* Cancel, and View board on a mode prompt, below the lines at the right. */
+.ability-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
   margin-top: 4px;
+}
+
+/* Cancel in the plain-paper look of Wait for my turn. */
+.ability-cancel,
+.ability-view {
   padding: 6px 18px 4px;
   border: 3px solid #1d120a;
   border-radius: 20px 26px 22px 18px / 18px 22px 26px 20px;
@@ -315,7 +322,12 @@
   cursor: pointer;
 }
 
-.ability-cancel:hover {
+.ability-view {
+  rotate: -1deg;
+}
+
+.ability-cancel:hover,
+.ability-view:hover {
   translate: 0 -1px;
   box-shadow: 0 4px 0 #1d120a;
 }

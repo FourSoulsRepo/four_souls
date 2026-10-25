@@ -112,6 +112,12 @@
   * Keep playing, Esc, or a click outside keeps the turn; nothing is sent.
   * A glowing End turn ends the turn at once.
   * Settings can turn the question off (UC-10, 3g).
+* **2h. Choose one- (15.58):** a card with modes asks like 2d, e.g. Dagaz or Chaos Card.
+  * The card shows large; one line per mode, in the card's words.
+  * A mode with no valid target now stays, greyed: "No valid target now".
+  * Cancel or a click outside cancels the play; the card stays.
+  * "View board" hides the dialog, as in 5g.
+  * A picked mode that needs a target then aims, as in 2f.
 
 ## Postconditions
 

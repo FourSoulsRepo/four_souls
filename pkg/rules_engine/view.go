@@ -139,6 +139,10 @@ type GameView struct {
 	// Activating is the card whose mode or targets the chooser picks
 	// now, so a client can aim from it (15.34, T-13); only for them.
 	Activating *ObjectID `json:"activating,omitempty"`
+	// Modes are every "choose one-" option of the ability whose mode the
+	// chooser picks, in card order, so a client greys the ones with no
+	// valid target (15.58); only for the chooser.
+	Modes []ModeView `json:"modes,omitempty"`
 	// Passed lists who passed in a row in the open priority window,
 	// first passer first; Responding lists who may still respond, the
 	// waiting player first (V-11). Both are empty outside a window.
@@ -274,6 +278,7 @@ func (g *Game) View(v Viewer) GameView {
 	if g.Waiting.Kind == PromptChoose && v.sees(g.Waiting.Player) {
 		out.Options = g.optionViews()
 		out.Activating = g.activatingSource()
+		out.Modes = g.modeViews()
 		if g.Choice != nil && g.Choice.Subject != 0 {
 			cv := g.cardView(g.Choice.Subject)
 			out.Subject = &cv
@@ -329,6 +334,27 @@ func (g *Game) activatingSource() *ObjectID {
 	}
 	src := a.Source
 	return &src
+}
+
+// ModeView is one "choose one-" option: its words, and the prompt
+// option that picks it, or -1 when it has no valid target now (15.58).
+type ModeView struct {
+	Text   string `json:"text"`
+	Option int    `json:"option"`
+}
+
+// modeViews lists the modes of the open mode choice, in card order.
+func (g *Game) modeViews() []ModeView {
+	c, a := g.Choice, g.Activating
+	if c == nil || a == nil || c.Purpose != ChooseMode {
+		return nil
+	}
+	modes := g.ability(a.Ability).Modes
+	out := make([]ModeView, len(modes))
+	for i, m := range modes {
+		out[i] = ModeView{Text: m.Text, Option: slices.Index(c.Indexes, i)}
+	}
+	return out
 }
 
 // optionViews maps the open choice's options to what they point at.

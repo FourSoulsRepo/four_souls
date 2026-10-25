@@ -5,7 +5,7 @@ import { ActionBar } from '../components/ActionBar';
 import { ActionMenu } from '../components/ActionMenu';
 import { AimLayer } from '../components/Aim';
 import { Board } from '../components/Board';
-import { ChoiceDialog, DiscardDialog, LookDialog, OrderDialog } from '../components/ChoiceDialog';
+import { ChoiceDialog, DiscardDialog, LookDialog, ModeDialog, OrderDialog } from '../components/ChoiceDialog';
 import { interact, noInteract } from '../components/Interact';
 import { PlayerArea } from '../components/PlayerArea';
 import { PresenceLayer, PresenceSender } from '../components/Presence';
@@ -217,7 +217,9 @@ function Table({ game, you }: { game: Update; you: number }) {
       {me && !view.over && <PresenceSender active={started && view.turn.active === you} hand={hand} />}
       <PresenceLayer you={you} />
       <WhyNote />
-      {offered.choice && !aiming?.choice && (
+      {offered.choice?.purpose === Purpose.mode && view.modes && !aiming?.choice ? (
+        <ModeDialog key={game.step} choice={offered.choice} card={view.subject?.card} modes={view.modes} />
+      ) : offered.choice && !aiming?.choice && (
         <ChoiceDialog
           key={game.step}
           choice={offered.choice}

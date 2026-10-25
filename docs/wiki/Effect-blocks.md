@@ -137,7 +137,7 @@ Effects refer to targets by number: `DealDamage(1, 0)` hits the first target. `T
 
 ## Choose one
 
-"Choose one-" options are `Modes`. The player picks the mode when activating, before targets (R-ABIL-04); only modes with valid targets are offered, plus "cancel".
+"Choose one-" options are `Modes`. The player picks the mode when activating, before targets (R-ABIL-04); only modes with valid targets are offered, plus "cancel". The prompt names its card as the subject, and the chooser's view lists every mode in `GameView.modes` with the option that picks it, or -1, so the client greys a mode with no valid target (15.58).
 
 ```go
 {Kind: Activated, Costs: []Cost{Tap()}, Modes: []Mode{

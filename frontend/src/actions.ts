@@ -1,6 +1,6 @@
 // What the player may do now, from the update's allowed intents (7.7).
 // Pure: the table only offers what the server allows.
-import type { Block, Intent, OptionView, OutcomeView, Prompt, Update } from './protocol';
+import type { Block, Intent, ModeView, OptionView, OutcomeView, Prompt, Update } from './protocol';
 
 // Engine enums, in Go's order (pkg/rules_engine/prompt.go, choice.go).
 export const IntentKind = {
@@ -98,7 +98,7 @@ export interface Choice {
 
 // Purpose.purchase: a "deck" option means the treasure deck, otherwise
 // the monster deck.
-export const Purpose = { attackTarget: 1, monsterSlot: 2, penaltyItem: 3, penaltyLoot: 4, purchase: 5, target: 6, triggerOrder: 7, answer: 9 } as const;
+export const Purpose = { attackTarget: 1, monsterSlot: 2, penaltyItem: 3, penaltyLoot: 4, purchase: 5, target: 6, triggerOrder: 7, mode: 8, answer: 9 } as const;
 
 export interface Actions {
   // buttons are the actions that need no card: pass.
@@ -234,6 +234,19 @@ export function actionsFor(u: Update, isCard: (label: string) => boolean): Actio
     };
   }
   return out;
+}
+
+// modeLines is a mode prompt as card lines, every mode in card order
+// (15.58): a mode with no valid target now has no intent. cancel is the
+// prompt's option that is no mode.
+export function modeLines(choice: Choice, modes: ModeView[]): { lines: { text: string; intent?: Intent }[]; cancel?: Intent } {
+  const pick = (i: number) => choice.options.find((o) => (o.intent.choice ?? 0) === i)?.intent;
+  const lines = modes.map((m) => {
+    const intent = m.option >= 0 ? pick(m.option) : undefined;
+    return { text: m.text, ...(intent ? { intent } : {}) };
+  });
+  const cancel = choice.options.find((o) => !modes.some((m) => m.option === (o.intent.choice ?? 0)))?.intent;
+  return { lines, ...(cancel ? { cancel } : {}) };
 }
 
 // blockedCards maps each blocked card to its reason (15.29). A card

@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import type { Action } from '../actions';
-import { abilityLine } from '../cards';
 import { useApp } from '../store';
-import { Card } from './Card';
+import { CardDialog, type CardLine } from './CardDialog';
 import './Actions.css';
 
 // ActionMenu lists what the selected card can do, next to the card
@@ -70,77 +69,27 @@ function AbilityDialog({ id, list, onClose }: { id: number; list: Action[]; onCl
     s.game?.view.players.flatMap((p) => [p.character, ...(p.in_play ?? [])]).find((c) => c.id === id),
   );
   const name = useApp((s) => (card ? (s.cards.get(card.card)?.name ?? card.card) : ''));
-  const lines = card?.abilities ?? [];
+  // An empty line is not an ability the player uses.
+  const lines = (card?.abilities ?? []).flatMap((text, i): CardLine[] => {
+    if (text === '') {
+      return [];
+    }
+    const use = list.find((a) => (a.intent.choice ?? 0) === i);
+    const pick = () => {
+      if (use) {
+        act(use.intent);
+      }
+    };
+    return [{ text, why: 'Not usable now', ...(use ? { pick } : {}) }];
+  });
   return (
-    <div className="action-backdrop ability-backdrop" onClick={onClose}>
-      <div
-        className="ability-dialog"
-        role="dialog"
-        aria-label={`Use ${name}`}
-        onClick={(e) => {
-          e.stopPropagation();
-        }}
-      >
-        {card && <Card cardRef={card.card} size="zoom" noZoom />}
-        <div className="ability-lines">
-          <h2>{name}</h2>
-          {lines.map((line, i) => {
-            if (line === '') {
-              return null; // not an ability the player uses
-            }
-            const use = list.find((a) => (a.intent.choice ?? 0) === i);
-            return (
-              <button
-                // An ability's index is its place on the card; it never moves.
-                // eslint-disable-next-line @eslint-react/no-array-index-key
-                key={i}
-                type="button"
-                className="ability-line"
-                aria-label={line}
-                disabled={!use}
-                title={use ? undefined : 'Not usable now'}
-                onClick={() => {
-                  if (use) {
-                    act(use.intent);
-                  }
-                }}
-              >
-                <LineText line={line} />
-              </button>
-            );
-          })}
-          <button type="button" className="ability-cancel" onClick={onClose}>
-            Cancel
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// LineText draws an ability line like the card does: the cost icon in a
-// box at the left, the cost in bold, then what it does.
-function LineText({ line }: { line: string }) {
-  const { icon, cost, effect } = abilityLine(line);
-  return (
-    <>
-      {icon && (
-        <span className={`ability-icon ability-${icon}`} aria-hidden="true">
-          {icon === 'tap' ? (
-            // The tap arrow, drawn: card fonts have no ↷.
-            <svg viewBox="0 0 24 24">
-              <path d="M5 16.5A7.5 7.5 0 1 1 17.5 11" />
-              <path d="M13.5 9.5L17.5 14L21.5 9.5" />
-            </svg>
-          ) : (
-            '$'
-          )}
-        </span>
-      )}
-      <span className="ability-words">
-        {cost && <b>{cost}: </b>}
-        {effect}
-      </span>
-    </>
+    <CardDialog
+      cardRef={card?.card}
+      name={name}
+      label={`Use ${name}`}
+      lines={lines}
+      onCancel={onClose}
+      backdrop="action-backdrop ability-backdrop"
+    />
   );
 }
