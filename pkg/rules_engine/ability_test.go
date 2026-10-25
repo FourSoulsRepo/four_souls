@@ -1,6 +1,9 @@
 package rulesengine
 
-import "testing"
+import (
+	"slices"
+	"testing"
+)
 
 // abilitySet: fake cards built only from blocks, shaped like real ones.
 var abilitySet = CardSet{Name: "abilities", Cards: []CardDef{
@@ -53,6 +56,12 @@ var abilitySet = CardSet{Name: "abilities", Cards: []CardDef{
 	}},
 	{Ref: "next_roll_loot", Kind: LootCard, Outside: true, Abilities: []Ability{ // like Round Worm's reward
 		{Kind: LootAbility, Text: "The next attack roll this turn has +1.", Effects: []Effect{NextAttackRoll(1, false)}},
+	}},
+	{Ref: "curse_mode_loot", Kind: LootCard, Outside: true, Abilities: []Ability{ // like Dagaz
+		{Kind: LootAbility, Text: "Choose one- Destroy a curse. Gain 1¢.", Modes: []Mode{
+			{Text: "Destroy a curse.", Targets: []TargetSpec{Choose(TargetCurse)}, Effects: []Effect{DestroyTarget(0)}},
+			{Text: "Gain 1¢.", Effects: []Effect{GainCents(1)}},
+		}},
 	}},
 }}
 
@@ -373,6 +382,39 @@ func TestAimsListTheFirstTargets(t *testing.T) {
 	}
 	if monster != 1 || players != len(g.Players) {
 		t.Errorf("bomb targets %+v; want the monster and every player", aims[0].Targets)
+	}
+}
+
+// TestModePromptNamesItsCard: a mode prompt names its card as the
+// subject and lists every mode, the one with no target greyed (15.58).
+// Only the chooser sees either; the picked mode is the one played.
+func TestModePromptNamesItsCard(t *testing.T) {
+	g := newAbilityGame(t)
+	a := g.Turn.Active
+	card := addToHand(g, a, "curse_mode_loot")
+	if _, err := g.Apply(Intent{Player: a, Kind: IntentPlayLoot, Objects: []ObjectID{card}}); err != nil {
+		t.Fatal(err)
+	}
+	own := g.View(Viewer{Kind: ViewPlayer, Player: a})
+	if own.Subject == nil || own.Subject.ID != card {
+		t.Fatalf("subject %+v; want the played card %d", own.Subject, card)
+	}
+	// No curse in play: the first mode has no option; the second is option 0.
+	want := []ModeView{{Text: "Destroy a curse.", Option: -1}, {Text: "Gain 1¢.", Option: 0}}
+	if !slices.Equal(own.Modes, want) {
+		t.Fatalf("modes %+v; want %+v", own.Modes, want)
+	}
+	other := g.View(Viewer{Kind: ViewPlayer, Player: g.next(a)})
+	if other.Subject != nil || other.Modes != nil {
+		t.Error("others must not see which hand card asks, or its modes")
+	}
+	cents := g.Players[a].Cents
+	if _, err := g.Apply(Intent{Player: a, Kind: IntentChoose, Choice: own.Modes[1].Option}); err != nil {
+		t.Fatal(err)
+	}
+	resolveAll(t, g)
+	if g.Players[a].Cents != cents+1 {
+		t.Errorf("cents %d; the picked mode gains 1¢ from %d", g.Players[a].Cents, cents)
 	}
 }
 

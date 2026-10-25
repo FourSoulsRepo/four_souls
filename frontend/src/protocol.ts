@@ -423,6 +423,9 @@ export interface GameView {
   // activating is the card whose mode or targets the chooser picks now
   // (15.34); only for the chooser.
   activating?: number;
+  // modes are every "choose one-" option of the card whose mode the
+  // chooser picks, in card order (15.58); only for the chooser.
+  modes?: ModeView[];
   // Who passed in a row in the open priority window, and who may still
   // respond, the waiting player first (V-11).
   passed?: number[];
@@ -460,6 +463,13 @@ export interface OddsView {
   hits: number[];
   atk: number;
   sources?: StatSource[];
+}
+
+// ModeView is one "choose one-" option: its words, and the prompt
+// option that picks it, or -1 when it has no valid target now (15.58).
+export interface ModeView {
+  text: string;
+  option: number;
 }
 
 // OptionView is what one option of a choose prompt points at.

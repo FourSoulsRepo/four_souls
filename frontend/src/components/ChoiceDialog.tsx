@@ -1,9 +1,10 @@
 import { useState, type ReactNode } from 'react';
-import { discardIntent, orderIntent, outcomeLines, type Actions } from '../actions';
+import { discardIntent, modeLines, orderIntent, outcomeLines, type Actions } from '../actions';
 import type { Looked } from '../history';
-import type { CardView } from '../protocol';
+import type { CardView, ModeView } from '../protocol';
 import { useApp } from '../store';
 import { Card } from './Card';
+import { CardDialog } from './CardDialog';
 import './Actions.css';
 
 // ChoiceDialog asks the player to pick one option. Card options show as
@@ -72,17 +73,12 @@ function ChoiceFrame({ label, title, className = '', children }: { label: string
   const [board, setBoard] = useState(false);
   if (board) {
     return (
-      <div className="choice-peek" role="group" aria-label="Viewing the board">
-        <span>{title ?? label}</span>
-        <button
-          type="button"
-          onClick={() => {
-            setBoard(false);
-          }}
-        >
-          Back to the choice
-        </button>
-      </div>
+      <Peek
+        title={title ?? label}
+        back={() => {
+          setBoard(false);
+        }}
+      />
     );
   }
   return (
@@ -101,6 +97,75 @@ function ChoiceFrame({ label, title, className = '', children }: { label: string
         </button>
       </div>
     </div>
+  );
+}
+
+// Peek is a hidden choice: its title and a button to bring it back.
+function Peek({ title, back }: { title: ReactNode; back: () => void }) {
+  return (
+    <div className="choice-peek" role="group" aria-label="Viewing the board">
+      <span>{title}</span>
+      <button type="button" onClick={back}>
+        Back to the choice
+      </button>
+    </div>
+  );
+}
+
+// ModeDialog asks a "choose one-" card's mode the way The Bone asks its
+// ability: the card large, one line per mode (15.58, V-45). A mode with
+// no valid target now stays on the list, greyed. Cancel and a click
+// outside send the prompt's cancel; "View board" hides it, like any
+// choice (F-20).
+export function ModeDialog({ choice, card, modes }: { choice: NonNullable<Actions['choice']>; card: string | undefined; modes: ModeView[] }) {
+  const act = useApp((s) => s.act);
+  const [board, setBoard] = useState(false);
+  const name = useApp((s) => (card ? (s.cards.get(card)?.name ?? card) : choice.title));
+  if (board) {
+    return (
+      <Peek
+        title={choice.title}
+        back={() => {
+          setBoard(false);
+        }}
+      />
+    );
+  }
+  const { lines, cancel } = modeLines(choice, modes);
+  return (
+    <CardDialog
+      cardRef={card}
+      name={name}
+      label={choice.title}
+      lines={lines.map(({ text, intent }) => ({
+        text,
+        why: 'No valid target now',
+        ...(intent
+          ? {
+              pick: () => {
+                act(intent);
+              },
+            }
+          : {}),
+      }))}
+      onCancel={() => {
+        if (cancel) {
+          act(cancel);
+        }
+      }}
+      backdrop="choice-backdrop"
+      buttons={
+        <button
+          type="button"
+          className="ability-view"
+          onClick={() => {
+            setBoard(true);
+          }}
+        >
+          View board
+        </button>
+      }
+    />
   );
 }
 

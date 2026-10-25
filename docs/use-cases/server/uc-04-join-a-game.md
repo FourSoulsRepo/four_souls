@@ -45,6 +45,11 @@
 * **1h. Back or Esc (15.98):** one level up each time.
   * The Games list goes back to the Online screen; it goes back to the menu.
   * The Online screen lists no LAN games; those are on the LAN screen.
+* **1i. Recent shows live status (15.100):** the rows show at once.
+  * Then each server is asked once; its row fills in when it answers.
+  * Up: a green dot and "2 open games": tables with a free seat.
+  * No answer: a red dot and "Down"; the button still tries to connect.
+  * The check runs each time the Online screen opens.
 
 ## Postconditions
 

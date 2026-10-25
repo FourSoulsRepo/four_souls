@@ -123,6 +123,12 @@ async function answer(pages: Page[], press: Tap, steps: number[]): Promise<boole
       await press(page, done);
       return true;
     }
+    // A "choose one-" card asks its mode with the card large (15.58).
+    const mode = page.locator('.choice-backdrop .ability-dialog');
+    if (await mode.isVisible()) {
+      await press(page, mode.locator('.ability-line:enabled').first());
+      return true;
+    }
     const choice = page.locator('.choice:not(.look)');
     if (await choice.isVisible()) {
       // Prefer picking on the table, as a player would (7.7), where the
@@ -282,7 +288,7 @@ export async function answerPlay(page: Page, press: Tap): Promise<void> {
         if ((await rows.count()) > 0) {
           return true;
         }
-        const option = page.locator('.choice .choice-option button').first();
+        const option = page.locator('.choice .choice-option button, .ability-dialog .ability-line:enabled').first();
         const aim = (await option.isVisible()) ? option : await uncovered(page.locator('.card.hl-aim, .stack-row.hl-aim'));
         if (aim) {
           await press(page, aim);

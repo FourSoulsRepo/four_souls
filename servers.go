@@ -32,6 +32,15 @@ func (a *App) CheckSeat(bases []string, token string) (protocol.SeatInfo, error)
 	return info, err
 }
 
+// ServerStatus asks a game server how many games wait for players
+// (15.100), for the Online screen's Recent list. bases are as for
+// CheckSeat; an error means no base answered: the server is down.
+func (a *App) ServerStatus(bases []string) (protocol.ServerStatus, error) {
+	var st protocol.ServerStatus
+	err := askServer(a.appContext(), bases, "/status", nil, &st)
+	return st, err
+}
+
 // appContext is the app's context, or a background one before startup.
 func (a *App) appContext() context.Context {
 	if a.ctx == nil {

@@ -6,6 +6,8 @@ Rules engine versions are in each release's notes.
 
 ## Unreleased
 
+- "Choose one-" cards such as Dagaz ask like The Bone: the card large, one line per option; an option with nothing to target is greyed.
+- Online: each Recent server shows whether it is up and how many games there have a free seat.
 ## 0.2.1 - 2026-10-22
 
 The first public release.

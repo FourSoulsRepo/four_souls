@@ -14,8 +14,8 @@ var emergencyContact = engine.CardDef{
 		Text: "Cancel an attack on a monster and put that monster card on the bottom of the monster deck.",
 		Effects: []engine.Effect{engine.EffectFunc(func(c *engine.Ctx) {
 			g := c.G
-			// Only an attack declared on a monster, not on the deck (R-ATK-05).
-			if !g.Attack.Started || g.Attack.Deck || g.Object(g.Attack.Target).Role != engine.RoleMonster {
+			// A deck attack counts once a monster is revealed (R-ATK-05, Q-24).
+			if !g.Attack.Started || g.Object(g.Attack.Target).Role != engine.RoleMonster {
 				return
 			}
 			m := g.Attack.Target

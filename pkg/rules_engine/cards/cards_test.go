@@ -239,3 +239,26 @@ func TestTakes(t *testing.T) {
 		t.Errorf("marked abilities:\n%s\nwant:\n%s", strings.Join(got, "\n"), strings.Join(want, "\n"))
 	}
 }
+
+// TestTapMatchesAbilities checks CardDef.Tap on treasures: it is set
+// exactly when the card has a ↷ ability (R-ABIL-10), or copies one
+// (Placebo). The death penalty and "deactivate an item" read it
+// (R-DEATH-14, R-MECH-54; 19.65).
+func TestTapMatchesAbilities(t *testing.T) {
+	for _, set := range Sets() {
+		for _, c := range set.Cards {
+			if c.Kind != engine.TreasureCard {
+				continue
+			}
+			tap := c.CopiesTapAbilities
+			for _, a := range c.Abilities {
+				if slices.Contains(a.Costs, engine.Tap()) {
+					tap = true
+				}
+			}
+			if c.Tap != tap {
+				t.Errorf("%s/%s: Tap %v, ↷ ability %v", set.Code, c.Ref, c.Tap, tap)
+			}
+		}
+	}
+}

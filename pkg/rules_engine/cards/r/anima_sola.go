@@ -40,7 +40,6 @@ var theRevenant = engine.CardDef{
 	Kind:       engine.TreasureCard,
 	Eternal:    true,
 	Outside:    true,
-	Tap:        true,
 	HP:         2,
 	DC:         3,
 	ATK:        2,

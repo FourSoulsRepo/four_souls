@@ -344,6 +344,18 @@ export namespace protocol {
 	        this.started = source["started"];
 	    }
 	}
+	export class ServerStatus {
+	    open: number;
+	
+	    static createFrom(source: any = {}) {
+	        return new ServerStatus(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.open = source["open"];
+	    }
+	}
 
 }
 

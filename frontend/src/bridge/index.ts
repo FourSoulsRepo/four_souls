@@ -18,6 +18,7 @@ import {
   Notice as wailsNotice,
   SaveRecord as wailsSaveRecord,
   SaveSettings as wailsSaveSettings,
+  ServerStatus as wailsServerStatus,
   Settings as wailsSettings,
   Sounds as wailsSounds,
   Versions as wailsVersions,
@@ -308,6 +309,13 @@ export interface SeatInfo {
 export async function checkSeat(bases: string[], token: string): Promise<SeatInfo> {
   const s = await wailsCheckSeat(bases, token);
   return { live: s.live, game: s.game ?? '', host: s.host ?? '', started: s.started ?? false };
+}
+
+// serverStatus asks the server at bases (httpBases) how many games wait
+// for players (15.100); it rejects when no base answers.
+export async function serverStatus(bases: string[]): Promise<{ open: number }> {
+  const s = await wailsServerStatus(bases);
+  return { open: s.open };
 }
 
 // setFullscreen switches the window (ST-01).

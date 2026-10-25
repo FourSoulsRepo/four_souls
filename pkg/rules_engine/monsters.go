@@ -23,13 +23,22 @@ func (g *Game) enterMonsterSlot(id ObjectID) {
 }
 
 // finishEvent puts an event whose abilities are done into discard; its
-// slot is refilled (R-CARD-15, R-SHOP-06).
+// slot is refilled (R-CARD-15, R-SHOP-06). An event its own ability
+// covered (Boss Rush! puts a boss in its slot) leaves from under that
+// card, which stays (19.61).
 func (g *Game) finishEvent(id ObjectID) {
 	o := g.Object(id)
-	if o.Zone.Kind != ZoneInPlay || o.Zone.Slot != MonsterSlot || o.Role != RoleEvent || g.def(id).Curse {
+	if o.Zone.Slot != MonsterSlot || g.kindOf(id) != EventCard || g.def(id).Curse {
 		return
 	}
-	g.removeFromSlot(id)
+	switch o.Zone.Kind {
+	case ZoneInPlay:
+		g.removeFromSlot(id)
+	case ZoneCovered:
+		g.takeFromSlot(id)
+	default:
+		return
+	}
 	g.discard(id, MonsterDeck)
 	g.RefillSlots()
 }

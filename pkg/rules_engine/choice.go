@@ -124,6 +124,7 @@ func (g *Game) answer(i int) {
 		g.startAttack(c.Objects[i])
 	case ChooseCopyAbility:
 		if i == len(c.Abilities) {
+			g.FreeLoot = 0
 			g.openWindow(c.Player)
 			return
 		}

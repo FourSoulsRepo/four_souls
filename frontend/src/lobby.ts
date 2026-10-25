@@ -109,6 +109,22 @@ export function serverLabel(r: RecentServer): string {
   return r.name || r.address;
 }
 
+// ServerUp is one check of a server (15.100): its open games while it
+// answers, 'down' when no address of it answered.
+export type ServerUp = { open: number } | 'down';
+
+// upText is a Recent row's status: still asking, down, or how many
+// games wait for players.
+export function upText(up: ServerUp | undefined): string {
+  if (up === undefined) {
+    return 'Checking…';
+  }
+  if (up === 'down') {
+    return 'Down';
+  }
+  return up.open === 1 ? '1 open game' : `${String(up.open)} open games`;
+}
+
 // optionsText sums up the match setup for the table.
 export function optionsText(o: Options | undefined): string {
   const parts = [o?.picking === 'draft' ? `Draft of ${String(o.draft_size ?? 3)}` : 'Random characters'];

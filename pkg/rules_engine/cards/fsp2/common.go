@@ -353,7 +353,8 @@ func rerollable(g *engine.Game, p engine.PlayerID) []engine.ObjectID {
 	return out
 }
 
-// deactivateAnItem: "you may deactivate an item".
+// deactivateAnItem: "you may deactivate an item". Only items with a ↷
+// ability are offered; a passive item has nothing to deactivate (Q-25).
 var deactivateAnItem = engine.Ask(func(c *engine.Ctx, a []int) {
 	if ids := chargedItems(c.G); a[0] >= 0 && a[0] < len(ids) {
 		c.G.Object(ids[a[0]]).Charged = false
@@ -372,7 +373,7 @@ var deactivateAnItem = engine.Ask(func(c *engine.Ctx, a []int) {
 func chargedItems(g *engine.Game) []engine.ObjectID {
 	var out []engine.ObjectID
 	for _, id := range itemsOf(g, engine.NoPlayer) {
-		if g.Object(id).Charged {
+		if g.Object(id).Charged && g.Def(id).Tap {
 			out = append(out, id)
 		}
 	}

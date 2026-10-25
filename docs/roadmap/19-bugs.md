@@ -33,8 +33,8 @@ This step never closes; new reports are appended.
 
 | ID | Group                                    | System     | Items                                                  | Count |
 |----|------------------------------------------|------------|--------------------------------------------------------|-------|
-| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46               | 6     |
-| B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39                               | 4     |
+| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66 | 12 |
+| B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67                        | 5     |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30                                     | 3     |
 | E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52, 19.54     | 8     |
@@ -44,17 +44,19 @@ This step never closes; new reports are appended.
 | I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58 | 11 |
 | J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57 | 13 |
 | K  | Build and release files                  | Release    | 19.47, 19.59                                           | 2     |
+| L  | Not a bug: the app follows a ruling      | None       | 19.63                                                  | 1     |
 
-Totals by system (59 items):
+Totals by system (67 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
-| Engine    | A, B    | 10    |
+| Engine    | A, B    | 17    |
 | Card data | C       | 2     |
 | Client    | D–G     | 20    |
 | Server    | H       | 1     |
 | e2e       | I, J    | 24    |
 | Release   | K       | 2     |
+| None      | L       | 1     |
 
 ---
 
@@ -1931,3 +1933,288 @@ Totals by system (59 items):
    1. Every `wails build` passes `-m`: skip `go mod tidy`.
    2. The build action, `make internal`, and the build docs.
    3. Go has no way to hide a tagged import from tidy.
+
+### [x] 19.60 Distant Admiration: an unplayable given card leaves a loot play
+
+1. Goal: the free play of a given loot card never adds a loot play.
+2. Report (owner, 2026-10-22)
+   1. Play test; record `2026-10-22-163245-g2_Hitokiri-Battosai_Gaijin_distant_admiration_one_more_loot.fsrec`.
+   2. The Fettered played two loot cards: the turn's play and the extra one.
+   3. Distant Admiration took Butter Bean! from the other player.
+   4. Butter Bean had no target; it stayed in hand.
+   5. The player then had one more loot play.
+3. Tasks:
+   1. Find the cause in the match record.
+   2. A free play spends no loot play, played or not.
+   3. "If able": a card that cannot be played stays in hand.
+4. Done when:
+   1. Engine test: an unplayable given card leaves the loot plays as they were.
+   2. Engine test: a played given card spends no loot play.
+   3. Engine test: a cancelled free play leaves the plays as they were.
+5. Cause
+   1. Record steps 635 and 651: both loot plays used.
+   2. Step 662: Cain gives Butter Bean!; step 663: `cancelled`.
+   3. `ActPlayLootFree` added an extra loot play, then played the card.
+   4. Butter Bean! had no target: its prompt offered only "cancel".
+   5. The cancel kept the card in hand and the extra play stayed.
+6. Fix
+   1. `Game.FreeLoot` marks the card played for free.
+   2. Its play spends no loot play (`spendLootPlay`).
+   3. A cancel clears the mark.
+   4. "If able" uses the play checks, loot plays aside (`lootPlayable`).
+   5. An unplayable card stays in hand; nothing is asked.
+7. Open question for the owner
+   1. "You must play that loot card": should its prompts drop "cancel"?
+   2. The engine part is small.
+   3. The client needs care: an aim with no cancel must not end on a click.
+   4. Today a cancel leaves the card in hand, at no loot play cost.
+8. Owner notes (2026-10-22)
+   1. Owner marks 19.60 solved.
+   2. The open question in 7 is not answered yet.
+
+### [x] 19.61 Boss Rush!: a boss put in its own slot leaves it covered
+
+1. Goal: an event goes to discard after it resolves, even when covered.
+2. Report (owner, 2026-10-22)
+   1. Play test; record `2026-10-22-190326-g2_Hitokiri-Battosai_jеня_bossrush_bug.fsrec`.
+   2. Boss Rush! came from the top of the monster deck.
+   3. It revealed Rag Mega and The Duke of Flies.
+   4. One boss went into Boss Rush's own slot.
+   5. Boss Rush stayed under that boss instead of going to discard.
+3. Tasks:
+   1. Find the cause in the match record.
+   2. A covered event still goes to discard when its abilities are done.
+   3. The card that covered it stays in the slot.
+4. Done when:
+   1. Engine test: Boss Rush with a boss in its own slot goes to discard.
+   2. Engine test: that boss stays in play; no covered card is left.
+   3. Engine test: when that boss dies, no event comes back into the slot.
+5. Cause
+   1. Step 100: Boss Rush resolves; step 102: both bosses enter play.
+   2. Its own slot counts as "not being attacked", so it can be picked.
+   3. `coverMonsterSlot` marks Boss Rush covered.
+   4. `finishEvent` acts only on an event in play; a covered one is skipped.
+   5. Step 515: Rag Mega dies and Boss Rush is uncovered.
+   6. It is back in the slot as an event with no trigger and no discard.
+   7. The game ended on that step; later it would block the slot.
+6. Fix
+   1. `finishEvent` also takes a covered event out of its slot.
+   2. The card on top stays; nothing is uncovered.
+   3. The event goes to the monster discard, as R-CARD-15 says.
+   4. Test `TestBossRushOwnSlot` covers the three done-when checks.
+   5. Without the fix it fails: slot 1 is `[fatty boss_rush monstro]`.
+7. Owner notes (2026-10-23)
+   1. Owner marks 19.61 solved.
+
+### [x] 19.62 Emergency Contact does nothing on an attack on the monster deck
+
+1. Goal: Emergency Contact works as the owner's ruling says.
+2. Report (owner, 2026-10-23)
+   1. Play test; record `2026-10-23-143924-g1_Hitokiri-Battosai_jеня_emergency_curved_horn.fsrec`.
+   2. Bethany attacked; The Fallen came out.
+   3. She played Emergency Contact; it did nothing.
+   4. The attack went on, and The Fallen killed her.
+3. Tasks:
+   1. Find the cause in the match record.
+   2. Get the owner's ruling on deck attacks.
+   3. Apply it to every card that checks the same thing.
+4. Done when:
+   1. Engine test: Emergency Contact cancels a deck attack on a revealed monster.
+   2. That monster goes to the bottom of the monster deck.
+   3. Engine test: IBS cancels such an attack too.
+5. Cause
+   1. Step 258: Bethany attacks the top of the monster deck.
+   2. Step 259: The Fallen is revealed and becomes the target.
+   3. Step 268: Emergency Contact resolves with no effect.
+   4. Its code skips an attack with `Attack.Deck` set (R-ATK-05).
+   5. Steps 274–278: the roll of 2 misses; she dies.
+   6. The engine works as coded; the rule reading is the question.
+6. Rule reading
+   1. Rulebook, Attacking: an ability that looks for an attack declared on a monster.
+   2. It does not interact with an attack declared on the monster deck.
+   3. That holds even when a monster is revealed.
+   4. Our R-ATK-05 drops "declared": any ability about an attack on a monster.
+   5. Emergency Contact says "Cancel an attack on a monster": no "declared".
+   6. IBS uses the same check: "Cancel your attack on a monster".
+   7. No ruling found for either card: Yuggy, Reddit, Discord, X.
+7. Open question for the owner
+   1. A: keep R-ATK-05; both cards do nothing on a deck attack.
+   2. B: narrow R-ATK-05 to "declared"; both cards cancel the attack.
+   3. Under B, Emergency Contact puts the revealed monster on the deck bottom.
+   4. Either answer is House; it goes to "Rulings to revisit".
+8. Owner ruling (2026-10-26)
+   1. Option B: both cards work once a monster is revealed.
+   2. Logged as Q-24 in `open-questions.md`; basis House.
+9. Fix
+   1. R-ATK-05 now names abilities about an attack *declared* on a monster.
+   2. Emergency Contact and IBS no longer check `Attack.Deck`.
+   3. Tests `TestEmergencyContactDeckAttack`, `TestIBSCancelsDeckAttack`.
+   4. Without the fix both fail: the attack goes on.
+10. Owner notes (2026-10-26)
+   1. Owner marks 19.62 solved.
+
+### [x] 19.63 Soul of Pride counts a buy from the treasure deck
+
+1. Goal: Soul of Pride counts treasure gains as the ruling says.
+2. Report (owner, 2026-10-26)
+   1. Play test; record `2026-10-24-124502-g2_Hitokiri-Battosai_jеня_soul_of_pride.fsrec`.
+   2. A buy from the top of the treasure deck put a counter on it.
+   3. The owner expected buys not to count.
+3. Tasks:
+   1. Find the cause in the match record.
+   2. Check the rule the engine follows.
+4. Done when:
+   1. The cause is found; a fix only if the engine breaks a rule.
+5. Cause
+   1. Not a bug: the engine follows R-CARD-37.
+   2. R-CARD-37 comes from Yuggy's ruling (S-YUG: Damocles; Soul of Pride).
+   3. A buy from the treasure deck top gains a treasure.
+   4. A buy from a shop slot gains an item, not a treasure.
+   5. Record: shop buys (Champion Belt, Plan C) add no counter.
+   6. Five deck-top buys and the Bum-bo gain add one each.
+   7. The 6th counter gives the soul to the active player.
+   8. `TestSoulOfPride` already covers the deck-top buy.
+6. Fix
+   1. None; no code change.
+   2. "Bugs by system" gets group L for reports that are not bugs.
+7. Owner notes (2026-10-26)
+   1. Owner marks 19.63 solved: works as ruled.
+
+### [x] 19.64 Hourglass deactivates a passive item
+
+1. Goal: "deactivate an item" picks only items with a ↷ ability.
+2. Report (owner, 2026-10-26)
+   1. Play test; record `2026-10-24-135401-g3_Hitokiri-Battosai_jеня_dads_lost_coin.fsrec`.
+   2. Hourglass deactivated Dad's Lost Coin, a passive item.
+   3. The owner expects only charged active items to be offered.
+3. Tasks:
+   1. Find the cause in the match record.
+   2. Look for a ruling on deactivating passive items.
+   3. Apply it to every card that deactivates items.
+4. Done when:
+   1. Engine test: Hourglass offers no passive item.
+   2. Engine test: Curse of Impulse leaves passive items charged.
+5. Cause
+   1. Step 1116: Hourglass offers 11 items; the player picks Dad's Lost Coin.
+   2. Every Hourglass prompt lists passive items, Hourglass too.
+   3. `chargedItems` takes every charged item; passive items are always charged.
+   4. Curse of Impulse also deactivates every item, passive ones too.
+   5. The death penalty already skips them: `CardDef.Tap` (R-DEATH-14).
+6. Rule reading
+   1. R-ABIL-10: a ↷ ability costs deactivating its object.
+   2. R-DEATH-14 deactivates only what has a ↷ ability.
+   3. No rule says a passive item can't be deactivated.
+   4. No ruling found: rulebook, Yuggy, Reddit (2026-10-26).
+   5. The owner's reading is House: Q-25 in `open-questions.md`.
+7. Fix
+   1. `chargedItems` offers only charged items with a ↷ ability (`CardDef.Tap`).
+   2. Curse of Impulse deactivates only such items.
+   3. Rule R-MECH-54 states it.
+   4. Tests `TestHourglassSkipsPassiveItems`, `TestCurseOfImpulseSkipsPassiveItems`.
+   5. Without the fix both fail: Hourglass offers itself and the coin.
+8. Found on the way, not fixed
+   1. The Revenant (Anima Sola's back) has `Tap` set but no ↷ ability.
+   2. The death penalty deactivates it; Hourglass now offers it.
+   3. Left for the owner: it may need its own item.
+   4. Logged as 19.65.
+9. Owner notes (2026-10-26)
+   1. Owner marks 19.64 solved.
+
+### [x] 19.65 The Revenant counts as having a ↷ ability
+
+1. Goal: The Revenant side is never deactivated as a ↷ item.
+2. Report (owner, 2026-10-26)
+   1. Found while fixing 19.64; no play test.
+   2. The owner logs it as a bug and keeps it for later.
+3. Tasks:
+   1. Check the flip and charge rules for two-sided items (R-MECH-53).
+   2. Decide the back face's `Tap` flag.
+4. Done when:
+   1. Engine test: Hourglass does not offer The Revenant.
+   2. Engine test: the death penalty leaves The Revenant as it was.
+5. Cause
+   1. `theRevenant` in `cards/r/anima_sola.go` sets `Tap: true`.
+   2. The Revenant side has no ↷ ability; only Anima Sola has one.
+   3. The death penalty deactivates it (R-DEATH-14).
+   4. Hourglass offers it since 19.64 (R-MECH-54).
+6. Rule reading
+   1. R-MECH-53: a flipped object keeps its charge state.
+   2. Each face has its own abilities; The Revenant has no ↷ one.
+   3. So `Tap` follows the face up, like the abilities.
+   4. The recharge step still charges it; it does not read `Tap`.
+7. Fix
+   1. `theRevenant` loses `Tap: true`.
+   2. Tests `TestHourglassSkipsTheRevenant`, `TestDeathPenaltySkipsTheRevenant`.
+   3. Without the fix both fail: Hourglass offers it; the penalty deactivates it.
+   4. `TestTapMatchesAbilities`: a treasure's `Tap` matches a ↷ cost.
+   5. Placebo counts: it copies a ↷ ability.
+   6. No other card was wrong.
+8. Owner notes (2026-10-26)
+   1. Owner marks 19.65 solved.
+
+### [x] 19.66 Dad's Lost Coin misses a reroll that is a 1 again
+
+1. Goal: a changed or rerolled roll meets "would roll N" triggers again.
+2. Report (owner, 2026-10-26)
+   1. Play test; record `2026-10-24-135401-g3_Hitokiri-Battosai_jеня_dads_lost_coin.fsrec`.
+   2. jеня rolled a 1; the owner forced a reroll with Dad's Lost Coin.
+   3. The reroll was a 1 again; the coin did not trigger.
+3. Tasks:
+   1. Find the cause in the match record.
+   2. Fix every helper that changes a roll, not only the reroll.
+4. Done when:
+   1. Engine test: the coin triggers on a second 1 from its own reroll.
+   2. Engine test: a roll changed and changed back is checked again.
+   3. Engine test: a roll set to its own value is not checked again.
+5. Cause
+   1. Step 969: attack roll 1 (stack 229); step 971: the coin triggers.
+   2. Step 975: the reroll is a 1; step 977: it resolves, no check.
+   3. `resolveTop` checks a roll only if its value differs from `Checked`.
+   4. `Reroll`, `SetRoll` and `ModifyRoll` leave `Checked` as it was.
+   5. So a roll back on a checked value skips "would roll" triggers.
+6. Rule reading
+   1. The card says "each time": every 1 counts.
+   2. R-DICE-05: a change sends the roll back; a reroll is one.
+   3. The owner: a change to the same value is no change (Q-26, House).
+   4. Rewards are "when you roll" triggers: they fire once (R-DICE-06).
+7. Fix
+   1. `StackItem.setRoll` changes a roll; a new value clears `Checked`.
+   2. `SetRoll` and `ModifyRoll` use it; `Reroll` clears `Checked`.
+   3. Rule R-DICE-13 states it.
+   4. Tests `TestDadsLostCoinTwice`, `TestRerollToTheSameValueIsCheckedAgain`.
+   5. Tests `TestRollChangedBackIsCheckedAgain`, `TestRollSetToItsValueIsNotCheckedAgain`.
+   6. Without the fix the first three fail.
+
+### [x] 19.67 Curved Horn's +1 ATK shows only after the first attack roll
+
+1. Goal: a "first attack roll" ATK bonus shows while it is still to come.
+2. Report (owner, 2026-10-26)
+   1. Play test; no record named.
+   2. Curved Horn's +1 ATK shows only once the attack roll resolved.
+   3. The owner expects it before the attack is declared.
+   4. It should go away once that roll's damage is dealt, or on a miss.
+3. Tasks:
+   1. Find the cause in the view.
+   2. Apply it to every "first attack roll" ATK card.
+4. Done when:
+   1. Engine test: the view shows the +1 before the attack.
+   2. Engine test: it shows while the first roll's damage is on the stack.
+   3. Engine test: it is gone after that damage, and after a miss.
+5. Cause
+   1. `FirstAttackRollATK` applies only while `AttackRolls == 1` in an attack.
+   2. `AttackRolls` counts resolved attack rolls; it is 0 before the roll.
+   3. So the view showed the +1 only after the first roll resolved.
+   4. It stayed after a miss, and after the damage, until the next roll.
+   5. The rules are right: the +1 counts only for that roll's damage.
+6. Fix
+   1. View only; the engine rules and its version stay.
+   2. `atkGame()` (`view.go`): the game the shown ATK and its sources read.
+   3. With the active player's combat damage on the stack: the game itself.
+   4. Else a shallow copy with the next attack roll made, as the odds do.
+   5. Covers Curved Horn, Champion Belt, Polydactyly (`FirstAttackRollATK`).
+   6. Tests `TestCurvedHornShownForTheFirstRoll`, `TestCurvedHornGoneAfterAMiss`.
+   7. Without the fix both fail.
+   8. `TestChampionBeltSourceDuringFirstRoll` now expects the belt before the attack.
+   9. UC-12 3j; wiki `Rules-engine`.
+7. Owner notes (2026-10-26)
+   1. Owner marks 19.67 solved.

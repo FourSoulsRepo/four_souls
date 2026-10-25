@@ -285,6 +285,57 @@ test('a card placed first aims after its mode; a cancelled aim leaves it in hand
   await expect(dagaz).toHaveCount(0);
 });
 
+// A "choose one-" card asks its mode like The Bone asks its ability
+// (15.58): the card large, a line per mode, the one with no target
+// greyed. Cancel, a click outside, and "View board" work as on any
+// choice; the picked mode then aims.
+test('a "choose one-" card asks its mode with the card large (15.58)', async ({ browser }) => {
+  // Dagaz is banned from the deal: the test gives one and counts it.
+  const pages = await startGame(browser, ['Ida', 'Jon'], { url: fast(), bans: ['dagaz'] });
+  await activePage(pages, click);
+  await saveAndContinue(pages, 'Ida, Jon', 'dagaz');
+  const active = await activePage(pages, click);
+  const dagaz = active.getByRole('group', { name: 'Your hand' }).getByRole('button', { name: 'Dagaz' });
+  const ask = active.getByRole('dialog', { name: 'Choose one' });
+  const open = async () => {
+    await dragToBoard(active, 'Dagaz');
+    await expect(ask).toBeVisible();
+  };
+
+  await open();
+  await expect(ask.getByRole('heading', { name: 'Dagaz' })).toBeVisible();
+  await expect(ask.locator('.card.size-zoom')).toBeVisible();
+  // No curse is in play at the start: that mode stays, greyed.
+  const curse = ask.getByRole('button', { name: 'Destroy a curse.' });
+  await expect(curse).toBeDisabled();
+  await expect(curse).toHaveAttribute('title', 'No valid target now');
+  const protect = ask.getByRole('button', { name: /^Choose a player/ });
+  await expect(protect).toBeEnabled();
+  await shot(active, 'mode-dialog');
+
+  // View board hides it; the bar brings it back.
+  await ask.getByRole('button', { name: 'View board' }).click();
+  await expect(ask).toBeHidden();
+  await active.getByRole('group', { name: 'Viewing the board' }).getByRole('button', { name: 'Back to the choice' }).click();
+  await expect(ask).toBeVisible();
+
+  // Cancel sends the prompt's cancel: Dagaz stays in hand.
+  await ask.getByRole('button', { name: 'Cancel' }).click();
+  await expect(ask).toBeHidden();
+  await expect(dagaz).toHaveClass(/hl-act/);
+  // So does a click outside the dialog.
+  await open();
+  await active.mouse.click(8, 360);
+  await expect(ask).toBeHidden();
+  await expect(dagaz).toHaveClass(/hl-act/);
+
+  // The picked mode is sent: its target prompt aims from the card.
+  await open();
+  await protect.click();
+  await expect(ask).toBeHidden();
+  await expect(active.locator('.hand-card.aiming')).toHaveCount(1);
+});
+
 // Presence (15.36): the other player sees the aim live, from a back
 // lifted out of the aiming player's hand to the red-marked target, and
 // the card the active player hovers. A waiting player shares no hover.

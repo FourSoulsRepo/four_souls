@@ -15,6 +15,7 @@ Pick your group: players, people who run a game server, or developers. Developer
 * [Server as a systemd service](Server-as-a-systemd-service) — the server binary, started by systemd.
 * [Server in Docker](Server-in-Docker) — one Dockerfile builds the latest release.
 * [Server with Docker Compose and Caddy](Server-with-Docker-Compose-and-Caddy) — HTTPS on your domain.
+* [Server from a local build](Server-from-a-local-build) — your own binary in the Docker setup.
 
 ## Developers
 

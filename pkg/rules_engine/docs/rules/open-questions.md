@@ -277,6 +277,56 @@ On 2026-10-09 the owner parked every open decision for later.
    1. The Lost's own soul is a character soul; it is never offered.
 5. Basis: **House**: no ruling found.
 
+### Q-24 "An attack on a monster" after a deck attack
+
+1. Question: does "cancel an attack on a monster" work on a deck attack?
+   1. Cards: Emergency Contact, IBS.
+   2. Case: the deck attack revealed The Fallen (19.62).
+2. Sources:
+   1. S-OFF Attacking: abilities about an attack *declared* on a monster.
+   2. They ignore an attack declared on the deck, even after a reveal.
+   3. Neither card says "declared".
+   4. No ruling found: Yuggy, Reddit, Discord, X (2026-10-26).
+3. Options:
+   1. (a) No: any attack on the deck is not an attack on a monster.
+   2. (b) Yes: once a monster is revealed, the attack is on it.
+4. Status: **Resolved** (2026-10-26): (b).
+   1. R-ATK-05 now names "declared".
+5. Basis: **House**: no ruling found.
+
+### Q-25 Deactivating a passive item
+
+1. Question: can "deactivate an item" pick a passive item?
+   1. Cards: Hourglass, Curse of Impulse.
+   2. Case: Hourglass deactivated Dad's Lost Coin (19.64).
+2. Sources:
+   1. R-ABIL-10: a ↷ ability costs deactivating its object.
+   2. R-DEATH-14 deactivates only what has a ↷ ability.
+   3. No rule says a passive item can't be deactivated.
+   4. No ruling found: rulebook, Yuggy, Reddit (2026-10-26).
+3. Options:
+   1. (a) Any charged item; a passive one loses nothing.
+   2. (b) Only items with a ↷ ability.
+4. Status: **Resolved** (2026-10-26): (b), the owner's reading.
+   1. R-MECH-54 states it.
+5. Basis: **House**: no ruling found.
+
+### Q-26 A roll changed to the value it has
+
+1. Question: is a roll set to its own value changed?
+   1. Cards: Godhead, I. The Magician, Libra, PHD, Telepathy for Dummies.
+   2. Case: a 1 set to 1 while Dad's Lost Coin was declined (19.66).
+2. Sources:
+   1. R-DICE-05: a change sends the roll back to R-DICE-04.
+   2. No rule says what a change to the same value is.
+3. Options:
+   1. (a) No change: "would roll" triggers do not look again.
+   2. (b) A change: they look again and ask again.
+4. Status: **Resolved** (2026-10-26): (a), the owner's choice.
+   1. R-DICE-13 states it.
+   2. Rewards use "when you roll" and fire once either way (R-DICE-06).
+5. Basis: **House**: no ruling found.
+
 ## Old rulings re-checked (R-07)
 
 | # | Ruling (Ed's Notes, 2018–2019) | Check against current rules and V2 text | Status |
@@ -439,3 +489,6 @@ Every row of "Card rulings from Discord (S-DIS)" is Community too.
 | Q-21 | Pity for the Poor | Every purchase costs 0¢ | House |
 | Q-22 | Black Candle, The Moon, Flush!, Eden, … | Cards go to the bottom in random order | House (questionable) |
 | Q-23 | The Bone, XX Judgement, Wizoob, … | No Eternal on a soul without abilities; Eternal souls not offered | House |
+| Q-24 | Emergency Contact, IBS | Cancel a deck attack once a monster is revealed | House |
+| Q-25 | Hourglass, Curse of Impulse | Only items with a ↷ ability are deactivated | House |
+| Q-26 | Godhead, I. The Magician, Libra, PHD, … | A roll set to its own value is not changed | House |

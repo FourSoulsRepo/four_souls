@@ -137,7 +137,7 @@ Effects refer to targets by number: `DealDamage(1, 0)` hits the first target. `T
 
 ## Choose one
 
-"Choose one-" options are `Modes`. The player picks the mode when activating, before targets (R-ABIL-04); only modes with valid targets are offered, plus "cancel".
+"Choose one-" options are `Modes`. The player picks the mode when activating, before targets (R-ABIL-04); only modes with valid targets are offered, plus "cancel". The prompt names its card as the subject, and the chooser's view lists every mode in `GameView.modes` with the option that picks it, or -1, so the client greys a mode with no valid target (15.58).
 
 ```go
 {Kind: Activated, Costs: []Cost{Tap()}, Modes: []Mode{
@@ -218,7 +218,7 @@ tb.EndTurn()                             // run to the next player's action phas
 
 ## Events and the monster deck
 
-An event's abilities are `Triggered` with `WhenThisEntersPlay()`; "you" is the active player (R-CARD-10). The event stays in its slot until they are done, then goes to the monster discard (R-CARD-15). A `Curse` goes to a player the active player picks, and to discard when that player dies. A reward with `Roll: true` gives as many as a roll's result ("Roll- gain X¢"). Helpers: `ExpandShop`, `ExpandMonsters`, `ForceAttacks(n, deck)`, `AddDeckAttack`, `TakeFromDeck`, `PutIntoDeck`, `PlaceFromDeck`, `KillObject`, `HealPlayer`, `HealObject`.
+An event's abilities are `Triggered` with `WhenThisEntersPlay()`; "you" is the active player (R-CARD-10). The event stays in its slot until they are done, then goes to the monster discard (R-CARD-15); if its ability covered it (Boss Rush! puts a boss in its own slot), it leaves from under that card. A `Curse` goes to a player the active player picks, and to discard when that player dies. A reward with `Roll: true` gives as many as a roll's result ("Roll- gain X¢"). Helpers: `ExpandShop`, `ExpandMonsters`, `ForceAttacks(n, deck)`, `AddDeckAttack`, `TakeFromDeck`, `PutIntoDeck`, `PlaceFromDeck`, `KillObject`, `HealPlayer`, `HealObject`.
 
 A monster's death runs in steps: "when this dies" triggers, rewards, "after rewards" triggers, then the soul or discard and the refill (R-DEATH-04 to R-DEATH-09). A step waits under its triggers on the stack. An object remembers who killed it (`Killer()`) and on which attack roll (`KilledOn`).
 

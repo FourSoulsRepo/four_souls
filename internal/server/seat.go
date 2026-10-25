@@ -33,27 +33,37 @@ func (h *Hub) seat(w http.ResponseWriter, req *http.Request) {
 	token := req.URL.Query().Get("token")
 	info := protocol.SeatInfo{}
 	if validToken(token) {
-		reply := make(chan protocol.SeatInfo, 1)
-		timeout := time.NewTimer(seatWait * h.second)
-		defer timeout.Stop()
-		select {
-		case h.in <- hubRequest{run: func(h *Hub) { reply <- h.seatInfo(token) }}:
-			select {
-			case info = <-reply:
-			case <-timeout.C:
-				http.Error(w, "lobby not answering", http.StatusServiceUnavailable)
-				return
-			}
-		case <-h.done:
-			http.Error(w, "server stopping", http.StatusServiceUnavailable)
-			return
-		case <-timeout.C:
-			http.Error(w, "lobby not answering", http.StatusServiceUnavailable)
-			return
-		case <-req.Context().Done():
+		var ok bool
+		if info, ok = askHub(h, w, req, seatWait, func(h *Hub) protocol.SeatInfo { return h.seatInfo(token) }); !ok {
 			return
 		}
 	}
 	w.Header().Set("Content-Type", "application/json")
 	_ = json.NewEncoder(w).Encode(info) //nolint:errcheck,errchkjson // the client may be gone
+}
+
+// askHub runs run on the hub goroutine and returns its answer. It waits
+// at most wait hub seconds; else it answers 503 itself and returns
+// false, as it does when the server stops or the client is gone.
+func askHub[T any](h *Hub, w http.ResponseWriter, req *http.Request, wait int, run func(*Hub) T) (T, bool) {
+	var none T
+	reply := make(chan T, 1)
+	timeout := time.NewTimer(time.Duration(wait) * h.second)
+	defer timeout.Stop()
+	select {
+	case h.in <- hubRequest{run: func(h *Hub) { reply <- run(h) }}:
+		select {
+		case v := <-reply:
+			return v, true
+		case <-timeout.C:
+		}
+	case <-h.done:
+		http.Error(w, "server stopping", http.StatusServiceUnavailable)
+		return none, false
+	case <-timeout.C:
+	case <-req.Context().Done():
+		return none, false
+	}
+	http.Error(w, "lobby not answering", http.StatusServiceUnavailable)
+	return none, false
 }

@@ -1922,7 +1922,7 @@ Images come first, so the new table is built with backs and mats.
    2. The strip question: headlines only, with a coin badge (15.89).
    3. Moved to 15.88 and 15.89.
 
-### [ ] 15.58 "Choose one-" cards ask like The Bone
+### [x] 15.58 "Choose one-" cards ask like The Bone
 
 1. Goal: picking a mode looks like picking an ability (V-45).
 2. Tasks:
@@ -1939,6 +1939,29 @@ Images come first, so the new table is built with backs and mats.
    2. e2e test: Dagaz opens the dialog with the card; the picked mode is sent.
    3. `make screenshots` shows the mode dialog.
    4. UC-13 updated.
+4. Owner decisions (2026-10-26)
+   1. One card dialog for The Bone and the mode prompt.
+   2. The mode dialog also has "View board", like other choices.
+   3. Modes with no valid target stay on the list, greyed.
+   4. A greyed mode says "No valid target now".
+5. Result (2026-10-26)
+   1. Engine: the mode prompt's `Choice.Subject` is its card.
+   2. `GameView.modes`: every mode's `text` and the `option` that picks it, or -1.
+   3. Only the chooser gets the subject and the modes; options are unchanged.
+   4. So records replay as before; no protocol bump (ADR 006).
+   5. Client: `CardDialog.tsx` draws The Bone's dialog and the mode dialog.
+   6. `ModeDialog` in `ChoiceDialog.tsx`: the card large, a line per mode.
+   7. It sits on the `choice` layer; Cancel or a click outside sends cancel.
+   8. "View board" hides it, with the same bar as other choices.
+   9. `modeLines` (`actions.ts`) maps modes to options and finds the cancel.
+   10. Hand (Dagaz) and item (Chaos Card) go through one engine path.
+   11. Engine test: `TestModePromptNamesItsCard`; Vitest: `modeLines`.
+   12. e2e: Dagaz's dialog, greyed curse mode, View board, Cancel, outside, pick.
+   13. e2e helpers in `turn.ts` answer the mode dialog's lines.
+   14. UC-13 2h; ADR 006; wiki Client, Effect-blocks, Layers; CHANGELOG.
+   15. Screenshots: `.cache/screenshots/15.58/before/` and `after/`.
+6. Owner notes (2026-10-26)
+   1. Owner marks 15.58 solved.
 
 ### [x] 15.59 Throw in the engine
 
@@ -3220,7 +3243,7 @@ Images come first, so the new table is built with backs and mats.
 7. Owner notes (2026-10-22)
    1. Owner marks 15.99 solved.
 
-### [ ] 15.100 Recent servers show live status
+### [x] 15.100 Recent servers show live status
 
 1. Goal: the player sees which saved servers are up (M-04).
 2. Planned by the owner (2026-10-22).
@@ -3231,3 +3254,22 @@ Images come first, so the new table is built with backs and mats.
 4. Done when:
    1. e2e test: a running and a stopped server in Recent.
    2. UC-04 updated.
+5. Result (2026-10-26)
+   1. Go `GET /status` (`status.go`): `protocol.ServerStatus`, `open` tables.
+   2. Open: a table with a free seat; a started game is not counted.
+   3. CORS `*` as for `/seat`; both wait for the hub through `askHub`.
+   4. Go `App.ServerStatus` (`servers.go`): the bases as for `CheckSeat`.
+   5. `checkRecent` asks every Recent server at once on the Online screen.
+   6. It runs when the screen opens and when the Recent addresses change.
+   7. `recentStatus`: `{ open }` or `'down'` per address; empty while asked.
+   8. Rows show at once; each fills in as its answer comes.
+   9. `statusRound` drops a late answer of an older check.
+   10. Row: a green or red dot, "2 open games", "Down" or "Checking…".
+   11. Go tests: `TestStatusCountsOpenGames`, `TestServerStatus`.
+   12. Vitest: answers, a slow answer, a stale check; `upText`.
+   13. e2e `lobby.spec.ts`: the test server up, a free port down.
+   14. UC-04 1i; wiki `Client`, `Server`, `Screenshots`; CHANGELOG.
+   15. A server older than 15.100 has no `/status`; it shows "Down".
+   16. Screenshots: `.cache/screenshots/15.100/before/` and `after/`.
+6. Owner notes (2026-10-26)
+   1. Owner marks 15.100 solved.
