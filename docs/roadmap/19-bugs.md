@@ -2120,7 +2120,7 @@ Totals by system (65 items):
 9. Owner notes (2026-10-26)
    1. Owner marks 19.64 solved.
 
-### [ ] 19.65 The Revenant counts as having a ↷ ability
+### [x] 19.65 The Revenant counts as having a ↷ ability
 
 1. Goal: The Revenant side is never deactivated as a ↷ item.
 2. Report (owner, 2026-10-26)
@@ -2149,3 +2149,5 @@ Totals by system (65 items):
    4. `TestTapMatchesAbilities`: a treasure's `Tap` matches a ↷ cost.
    5. Placebo counts: it copies a ↷ ability.
    6. No other card was wrong.
+8. Owner notes (2026-10-26)
+   1. Owner marks 19.65 solved.
