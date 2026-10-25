@@ -91,6 +91,14 @@ HP left is max HP minus marked damage, and max HP comes from bonuses that can go
 
 Distant Admiration plays a given loot card "if able" without a loot play. `ActPlayLootFree` first runs the play checks except the loot play count (`lootPlayable()`, shared with the `IntentPlayLoot` check); a card that fails them, such as Butter Bean! with nothing on the stack, stays in hand. A playable card is marked in `Game.FreeLoot`, and the play spends no loot play for it (`spendLootPlay()`). A cancelled mode, target, or copy prompt clears the mark, so the card stays in hand at no cost (19.60).
 
+## Replay and rollback
+
+`Step` returns a `StepRecord`: the intent, its events, and the checksum of the whole state after it (the RNG included). `Replay(setup, steps)` rebuilds a game from its setup; `ReplayFrom(state, steps, sets...)` rebuilds it from a saved base state (`Save`) instead. Both stop at the first step that is refused or whose checksum differs (`ErrMismatch`).
+
+A rollback to before step k is `ReplayFrom(base, steps[:k], sets...)` (ADR 020, item 7). The base keeps the RNG, so the rebuilt game rolls and shuffles exactly as it did: a roll that is rolled back comes out the same again. Nothing reseeds. `undo_test.go` covers undoing a loot play, an attack and a purchase; the fuzz targets undo and redo at a random step.
+
+`Load` needs the same engine; a base saved by another engine goes through `Resume` first (ADR 019).
+
 ## Testing
 
 * Rules tests name the rule they check (`R-…` IDs from the rules document).

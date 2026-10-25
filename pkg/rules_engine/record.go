@@ -63,16 +63,35 @@ func Replay(s Setup, steps []StepRecord) (*Game, error) {
 	if err != nil {
 		return nil, err
 	}
+	return g, g.replay(steps)
+}
+
+// ReplayFrom rebuilds a game from a saved base state and the steps
+// played since it, like Replay. A rollback to before step k replays the
+// steps before k (ADR 020, item 7). The base keeps the RNG, so the
+// rebuilt game rolls and shuffles as it did then (N-12, item 7). The
+// same card sets as for Load must be given.
+func ReplayFrom(state []byte, steps []StepRecord, sets ...CardSet) (*Game, error) {
+	g, err := Load(state, sets...)
+	if err != nil {
+		return nil, err
+	}
+	return g, g.replay(steps)
+}
+
+// replay applies recorded steps and checks each checksum. It stops at
+// the first step that is refused or ends in a different state.
+func (g *Game) replay(steps []StepRecord) error {
 	for i, st := range steps {
 		got, err := g.Step(st.Intent)
 		if err != nil {
-			return g, fmt.Errorf("replay step %d: %w", i, err)
+			return fmt.Errorf("replay step %d: %w", i, err)
 		}
 		if got.Checksum != st.Checksum {
-			return g, fmt.Errorf("step %d: %w", i, ErrMismatch)
+			return fmt.Errorf("step %d: %w", i, ErrMismatch)
 		}
 	}
-	return g, nil
+	return nil
 }
 
 // Save encodes the whole game state.

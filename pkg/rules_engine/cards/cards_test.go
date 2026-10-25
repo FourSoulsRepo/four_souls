@@ -128,6 +128,45 @@ func playSets(t *testing.T, s engine.Setup, choices []byte) {
 	if _, err := engine.Replay(s, steps); err != nil {
 		t.Fatalf("replay: %v", err)
 	}
+	k := 0
+	if len(choices) > 0 {
+		k = int(choices[len(choices)-1]) * len(steps) / 255
+	}
+	checkUndoRedo(t, g, s, steps, k)
+}
+
+// checkUndoRedo rolls the game back to before step k from the start and
+// plays the undone steps again: the game must end in the same bytes
+// (ADR 020, item 7). The checksums cover the RNG, so the undo is exact.
+func checkUndoRedo(t *testing.T, g *engine.Game, s engine.Setup, steps []engine.StepRecord, k int) {
+	t.Helper()
+	start, _, err := engine.NewGame(s)
+	if err != nil {
+		t.Fatal(err)
+	}
+	base, err := start.Save()
+	if err != nil {
+		t.Fatal(err)
+	}
+	r, err := engine.ReplayFrom(base, steps[:k], s.Sets...)
+	if err != nil {
+		t.Fatalf("undo to before step %d: %v", k, err)
+	}
+	undone, err := r.Save()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if r, err = engine.ReplayFrom(undone, steps[k:], s.Sets...); err != nil {
+		t.Fatalf("redo from step %d: %v", k, err)
+	}
+	a, errA := r.Save()
+	b, errB := g.Save()
+	if errA != nil || errB != nil {
+		t.Fatal(errA, errB)
+	}
+	if !bytes.Equal(a, b) {
+		t.Fatalf("undo to before step %d, then redo, ends in a different state", k)
+	}
 }
 
 // TestStatMonsterBans: with the monsters that change other monsters

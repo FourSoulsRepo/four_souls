@@ -40,7 +40,7 @@ Rules for this step (owner, 2026-10-26):
 3. Done when:
    1. ADR accepted: [020](../architecture/020-rollback.md).
 
-### [ ] 17.2 Engine undo
+### [x] 17.2 Engine undo
 
 1. Goal: the engine returns to the state before an event.
 2. Tasks:
