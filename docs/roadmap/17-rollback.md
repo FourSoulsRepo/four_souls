@@ -4,9 +4,14 @@ Goal: a mistaken event can be undone by the other players.
 
 Ideas: N-12.
 
+Rules for this step (owner, 2026-10-26):
+
+1. Stop after every sub-step for owner review.
+2. UI sub-steps come with screenshots.
+
 ---
 
-### [ ] 17.1 Rollback ADR
+### [x] 17.1 Rollback ADR
 
 1. Goal: clear limits for rollback (N-12).
 2. Tasks:
@@ -31,7 +36,7 @@ Ideas: N-12.
    19. Old states come from a replay from one base state (N-12, item 22).
    20. ADR 019 updated: the restart file keeps the old base state.
 3. Done when:
-   1. ADR accepted.
+   1. ADR accepted: [020](../architecture/020-rollback.md).
 
 ### [ ] 17.2 Engine undo
 
@@ -54,6 +59,8 @@ Ideas: N-12.
    4. Button near the history entry; in Soft for other players only.
    5. Use case: roll back a mistake.
    6. Godmode: any player rolls back to any history row at once.
+   7. ADR 007: the `rollback` line (ADR 020, item 9).
+   8. Protocol version 5 (ADR 020, item 8).
 3. Done when:
    1. e2e: the author sees no button; another player rolls back.
    2. e2e: in Godmode the author rolls back their own step.
