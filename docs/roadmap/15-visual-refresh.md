@@ -1960,6 +1960,8 @@ Images come first, so the new table is built with backs and mats.
    13. e2e helpers in `turn.ts` answer the mode dialog's lines.
    14. UC-13 2h; ADR 006; wiki Client, Effect-blocks, Layers; CHANGELOG.
    15. Screenshots: `.cache/screenshots/15.58/before/` and `after/`.
+6. Owner notes (2026-10-26)
+   1. Owner marks 15.58 solved.
 
 ### [x] 15.59 Throw in the engine
 
