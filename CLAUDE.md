@@ -98,6 +98,12 @@
        4. Inside one element only: a number tagged `/* layer: local */`.
        5. A new window gets a row there, with why it covers what.
        6. Pairs that overlap get a test in `e2e/tests/layers.spec.ts`.
+   21. Each roadmap sub-step runs in a fresh subagent (owner, 2026-10-26).
+       1. One agent per sub-step; one at a time.
+       2. Exception: an ADR sub-step is written in the main conversation.
+       3. The agent reads `CLAUDE.md`, the roadmap rules and the step file.
+       4. So every decision it needs must be in the docs first.
+       5. The main agent checks its result before reporting to the owner.
 6. Licenses
    1. Code is MIT (`LICENSE`).
    2. `NOTICE` lists every third-party item and its license.
