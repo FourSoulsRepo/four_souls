@@ -6,8 +6,10 @@ Ideas: N-12.
 
 Rules for this step (owner, 2026-10-26):
 
-1. Stop after every sub-step for owner review.
-2. UI sub-steps come with screenshots.
+1. Sub-steps run one after another, each in a fresh subagent.
+2. Stop only for a question the owner must answer.
+3. The owner reviews the whole step at its end.
+4. UI sub-steps leave screenshots for that review.
 
 ---
 
