@@ -6,7 +6,7 @@ Sources: S-OFF Attacking; S-RU Атака.
 2. **R-ATK-02** Declaring an attack passes priority before a target is chosen; then the player picks a monster in a slot or the top of the monster deck (or another attackable object, R-MECH-04).
 3. **R-ATK-03** An effect that forces an attack on a target must be obeyed while it applies; if two force different targets, the attacker picks one.
 4. **R-ATK-04** Abilities may react to the declaration itself (before the target) or to a declaration against a target (after it).
-5. **R-ATK-05** Abilities that look for an attack on a monster do not react to an attack on the monster deck, even if a monster is revealed.
+5. **R-ATK-05** Abilities that look for an attack *declared* on a monster do not react to an attack declared on the monster deck, even if a monster is revealed. Abilities about an attack on a monster, with no "declared", do apply once a monster is revealed (Q-24).
 6. **R-ATK-06** "When an attack is declared on this" works both for a card already in a slot and for a card revealed from the monster deck.
 7. **R-ATK-07** Killing a monster outside an attack is not an attack.
 8. **R-ATK-08** Attacking the monster deck: reveal the top card and put it on a monster slot of your choice, covering what is there.

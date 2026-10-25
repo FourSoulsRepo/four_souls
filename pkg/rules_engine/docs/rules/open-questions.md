@@ -277,6 +277,23 @@ On 2026-10-09 the owner parked every open decision for later.
    1. The Lost's own soul is a character soul; it is never offered.
 5. Basis: **House**: no ruling found.
 
+### Q-24 "An attack on a monster" after a deck attack
+
+1. Question: does "cancel an attack on a monster" work on a deck attack?
+   1. Cards: Emergency Contact, IBS.
+   2. Case: the deck attack revealed The Fallen (19.62).
+2. Sources:
+   1. S-OFF Attacking: abilities about an attack *declared* on a monster.
+   2. They ignore an attack declared on the deck, even after a reveal.
+   3. Neither card says "declared".
+   4. No ruling found: Yuggy, Reddit, Discord, X (2026-10-26).
+3. Options:
+   1. (a) No: any attack on the deck is not an attack on a monster.
+   2. (b) Yes: once a monster is revealed, the attack is on it.
+4. Status: **Resolved** (2026-10-26): (b).
+   1. R-ATK-05 now names "declared".
+5. Basis: **House**: no ruling found.
+
 ## Old rulings re-checked (R-07)
 
 | # | Ruling (Ed's Notes, 2018–2019) | Check against current rules and V2 text | Status |
@@ -439,3 +456,4 @@ Every row of "Card rulings from Discord (S-DIS)" is Community too.
 | Q-21 | Pity for the Poor | Every purchase costs 0¢ | House |
 | Q-22 | Black Candle, The Moon, Flush!, Eden, … | Cards go to the bottom in random order | House (questionable) |
 | Q-23 | The Bone, XX Judgement, Wizoob, … | No Eternal on a soul without abilities; Eternal souls not offered | House |
+| Q-24 | Emergency Contact, IBS | Cancel a deck attack once a monster is revealed | House |

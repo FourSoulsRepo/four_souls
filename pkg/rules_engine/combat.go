@@ -23,7 +23,7 @@ type AttackState struct {
 	// Revealed is the monster-deck card waiting for a slot (R-ATK-08).
 	Revealed ObjectID `json:"revealed,omitempty"`
 	// Deck: the attack was declared on the monster deck; it is not an
-	// attack on a monster even when a monster is revealed (R-ATK-05).
+	// attack declared on a monster even when a monster is revealed (R-ATK-05).
 	Deck bool `json:"deck,omitempty"`
 	// Helpers make an attack roll after each attack roll of the active
 	// player, in turn order (R-ATK-21); Queue holds those still to roll

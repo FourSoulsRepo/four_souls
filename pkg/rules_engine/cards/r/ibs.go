@@ -24,7 +24,7 @@ var ibs = engine.CardDef{
 			Modes: []engine.Mode{
 				{Text: "Cancel your attack on a monster.", Targets: []engine.TargetSpec{engine.Choose(engine.TargetYourHandCard)}, Effects: []engine.Effect{engine.EffectFunc(func(c *engine.Ctx) {
 					g := c.G
-					if g.Attack.Started && !g.Attack.Deck && g.Turn.Active == c.Controller && g.Object(g.Attack.Target).Role == engine.RoleMonster {
+					if g.Attack.Started && g.Turn.Active == c.Controller && g.Object(g.Attack.Target).Role == engine.RoleMonster {
 						c.Do(engine.CancelAttack())
 					}
 				})}},
