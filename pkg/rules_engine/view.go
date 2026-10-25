@@ -223,7 +223,7 @@ func (g *Game) View(v Viewer) GameView {
 	}
 	for _, pl := range g.Players {
 		pv := PlayerView{
-			ID: pl.ID, Character: g.playedView(pl.Character), HP: g.PlayerHP(pl.ID), ATK: g.PlayerATK(pl.ID),
+			ID: pl.ID, Character: g.playedView(pl.Character), HP: g.PlayerHP(pl.ID), ATK: g.atkGame().PlayerATK(pl.ID),
 			Cents: pl.Cents, Souls: g.SoulValue(pl.ID), Dead: pl.Dead, HandSize: len(pl.Hand),
 			LootPlays: g.lootPlaysFor(pl.ID),
 		}
@@ -631,11 +631,29 @@ var lastsKeys = [...]string{LastsInPlay: "in_play", LastsTurn: "turn", LastsNext
 
 // playerSources lists what changes a player's stats and rolls now.
 func (g *Game) playerSources(p PlayerID) []StatSourceView {
-	var parts []Part
-	for _, s := range []Stat{StatPlayerHP, StatPlayerATK, StatRoll, StatAttackRoll, StatAttackedDC} {
+	parts := g.Parts(StatPlayerHP, p, 0)
+	parts = append(parts, g.atkGame().Parts(StatPlayerATK, p, 0)...)
+	for _, s := range []Stat{StatRoll, StatAttackRoll, StatAttackedDC} {
 		parts = append(parts, g.Parts(s, p, 0)...)
 	}
 	return g.sourceViews(append(parts, g.nextAttackRollParts(p)...))
+}
+
+// atkGame is the game the shown ATK reads (19.67). While the active
+// player's combat damage is on the stack it is the game itself: the ATK
+// of that roll. Otherwise it is a shallow copy with the next attack roll
+// made, so "first attack roll" ATK shows ahead of that roll and goes
+// once its damage is dealt or it missed.
+func (g *Game) atkGame() *Game {
+	for _, it := range g.Stack {
+		if it.Kind == StackDamage && it.Attack && it.Controller == g.Turn.Active {
+			return g
+		}
+	}
+	next := *g
+	next.Turn.AttackRolls++
+	next.Attack.On = true
+	return &next
 }
 
 // monsterSources lists what changes a monster's stats now: its DC also

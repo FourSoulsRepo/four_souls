@@ -194,6 +194,11 @@
   * The roll that uses it makes the icon pop and fade.
   * At the end of the turn, this turn's icons shrink away.
   * With animations off, icons go at once.
+* **3j. First attack roll ATK (19.67):** it shows while that roll is to come.
+  * Curved Horn, Champion Belt, Polydactyly: "+1 (first attack roll)".
+  * It shows from the turn start, before the attack.
+  * It stays while the first roll's damage is on the stack.
+  * It goes once that damage is dealt, or the roll missed.
 
 ## Postconditions
 

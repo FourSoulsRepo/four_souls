@@ -34,7 +34,7 @@ This step never closes; new reports are appended.
 | ID | Group                                    | System     | Items                                                  | Count |
 |----|------------------------------------------|------------|--------------------------------------------------------|-------|
 | A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66 | 12 |
-| B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39                               | 4     |
+| B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67                        | 5     |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30                                     | 3     |
 | E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52, 19.54     | 8     |
@@ -46,11 +46,11 @@ This step never closes; new reports are appended.
 | K  | Build and release files                  | Release    | 19.47, 19.59                                           | 2     |
 | L  | Not a bug: the app follows a ruling      | None       | 19.63                                                  | 1     |
 
-Totals by system (66 items):
+Totals by system (67 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
-| Engine    | A, B    | 16    |
+| Engine    | A, B    | 17    |
 | Card data | C       | 2     |
 | Client    | D–G     | 20    |
 | Server    | H       | 1     |
@@ -2184,3 +2184,35 @@ Totals by system (66 items):
    4. Tests `TestDadsLostCoinTwice`, `TestRerollToTheSameValueIsCheckedAgain`.
    5. Tests `TestRollChangedBackIsCheckedAgain`, `TestRollSetToItsValueIsNotCheckedAgain`.
    6. Without the fix the first three fail.
+
+### [ ] 19.67 Curved Horn's +1 ATK shows only after the first attack roll
+
+1. Goal: a "first attack roll" ATK bonus shows while it is still to come.
+2. Report (owner, 2026-10-26)
+   1. Play test; no record named.
+   2. Curved Horn's +1 ATK shows only once the attack roll resolved.
+   3. The owner expects it before the attack is declared.
+   4. It should go away once that roll's damage is dealt, or on a miss.
+3. Tasks:
+   1. Find the cause in the view.
+   2. Apply it to every "first attack roll" ATK card.
+4. Done when:
+   1. Engine test: the view shows the +1 before the attack.
+   2. Engine test: it shows while the first roll's damage is on the stack.
+   3. Engine test: it is gone after that damage, and after a miss.
+5. Cause
+   1. `FirstAttackRollATK` applies only while `AttackRolls == 1` in an attack.
+   2. `AttackRolls` counts resolved attack rolls; it is 0 before the roll.
+   3. So the view showed the +1 only after the first roll resolved.
+   4. It stayed after a miss, and after the damage, until the next roll.
+   5. The rules are right: the +1 counts only for that roll's damage.
+6. Fix
+   1. View only; the engine rules and its version stay.
+   2. `atkGame()` (`view.go`): the game the shown ATK and its sources read.
+   3. With the active player's combat damage on the stack: the game itself.
+   4. Else a shallow copy with the next attack roll made, as the odds do.
+   5. Covers Curved Horn, Champion Belt, Polydactyly (`FirstAttackRollATK`).
+   6. Tests `TestCurvedHornShownForTheFirstRoll`, `TestCurvedHornGoneAfterAMiss`.
+   7. Without the fix both fail.
+   8. `TestChampionBeltSourceDuringFirstRoll` now expects the belt before the attack.
+   9. UC-12 3j; wiki `Rules-engine`.

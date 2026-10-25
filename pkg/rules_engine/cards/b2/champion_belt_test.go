@@ -20,8 +20,9 @@ func TestChampionBelt(t *testing.T) {
 	}
 }
 
-// The view names Champion Belt's +1 ATK and its condition once the first
-// attack roll hits, beside Meat!'s +1 to attack rolls (V-41, 15.54).
+// The view names Champion Belt's +1 ATK and its condition ahead of the
+// first attack roll and while it hits, beside Meat!'s +1 to attack rolls
+// (V-41, 15.54, 19.67).
 func TestChampionBeltSourceDuringFirstRoll(t *testing.T) {
 	tb := enginetest.NewSetup(t, engine.SituationSetup{
 		Players:  []engine.SituationPlayer{seat("isaac", "champion_belt", "meat"), seat("cain")},
@@ -34,14 +35,14 @@ func TestChampionBeltSourceDuringFirstRoll(t *testing.T) {
 		}
 		return out
 	}
-	if got, want := cards(), []string{"attack_roll meat in_play "}; !reflect.DeepEqual(got, want) {
+	want := []string{"atk champion_belt in_play first attack roll", "attack_roll meat in_play "}
+	if got := cards(); !reflect.DeepEqual(got, want) {
 		t.Errorf("before the attack: sources = %q, want %q", got, want)
 	}
 	tb.G.ForceRolls(6)
 	attackRoll(tb, "big_spider")
 	tb.Pass(0)
 	tb.Pass(1) // the roll resolves: a hit, its damage on the stack
-	want := []string{"atk champion_belt in_play first attack roll", "attack_roll meat in_play "}
 	if got := cards(); !reflect.DeepEqual(got, want) {
 		t.Errorf("first attack roll hit: sources = %q, want %q", got, want)
 	}
