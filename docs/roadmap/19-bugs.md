@@ -2185,7 +2185,7 @@ Totals by system (67 items):
    5. Tests `TestRollChangedBackIsCheckedAgain`, `TestRollSetToItsValueIsNotCheckedAgain`.
    6. Without the fix the first three fail.
 
-### [ ] 19.67 Curved Horn's +1 ATK shows only after the first attack roll
+### [x] 19.67 Curved Horn's +1 ATK shows only after the first attack roll
 
 1. Goal: a "first attack roll" ATK bonus shows while it is still to come.
 2. Report (owner, 2026-10-26)
@@ -2216,3 +2216,5 @@ Totals by system (67 items):
    7. Without the fix both fail.
    8. `TestChampionBeltSourceDuringFirstRoll` now expects the belt before the attack.
    9. UC-12 3j; wiki `Rules-engine`.
+7. Owner notes (2026-10-26)
+   1. Owner marks 19.67 solved.
