@@ -2,6 +2,8 @@
 
 `make screenshots` captures every screen into `.cache/screenshots/screen-*.png`. Use it to check UI changes during development.
 
+`make screenshots LOCALE=qps` takes them in the test language (ADR 021) into `.cache/screenshots/qps/`; other codes work the same way. The variable is `LOCALE`, not `LANG`, which the shell sets.
+
 The folder is git-ignored: the UI changes often, and images would bloat the repository. Screenshots go into the docs once the UI settles.
 
 Screenshots are taken by the Playwright UI tests in `e2e/` (see [Frontend tests](Frontend-tests)): `make screenshots` runs `make e2e` with `SCREENSHOTS=1`, and each test calls `shot(page, name)` where a screen is worth a picture.

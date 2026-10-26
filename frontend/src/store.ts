@@ -32,6 +32,7 @@ import {
 import { noHostSetup } from './hostSetup';
 import type { CardInfo, Kind } from './cards';
 import { loadFonts } from './fonts';
+import { setLanguage } from './i18n';
 import { entriesFor, lookedAt, moveOf, restartCut, rolledBack, voteEnded, type Entry, type Looked, type Move, type Outcome } from './history';
 import type { LinePart } from './stack';
 import type { Box } from './zoom';
@@ -782,6 +783,7 @@ export const useApp = create<AppState>()((set, get) => {
       rejoin: { address: '', token: '', game: '', via: '' },
       host: noHostSetup,
       lan_address: '',
+      language: '',
     },
     hosting: null,
     lan: { searching: false, found: [], error: '' },
@@ -865,6 +867,7 @@ export const useApp = create<AppState>()((set, get) => {
     loadSettings: async () => {
       try {
         const s = await getSettings();
+        setLanguage(s.language);
         set({ settings: s });
       } catch {
         // Keep the defaults; Go already falls back to them.
@@ -874,6 +877,8 @@ export const useApp = create<AppState>()((set, get) => {
       try {
         const before = get().settings;
         const saved = await saveSettings(s);
+        // The language too: t() reads it when the screens draw again.
+        setLanguage(saved.language);
         set({ settings: saved, error: '' });
         // Settings apply at once, without a restart.
         if (saved.fullscreen !== before.fullscreen) {

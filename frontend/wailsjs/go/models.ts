@@ -428,6 +428,7 @@ export namespace settings {
 	    rejoin: Rejoin;
 	    host: HostSetup;
 	    lan_address: string;
+	    language: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new Settings(source);
@@ -445,6 +446,7 @@ export namespace settings {
 	        this.rejoin = this.convertValues(source["rejoin"], Rejoin);
 	        this.host = this.convertValues(source["host"], HostSetup);
 	        this.lan_address = source["lan_address"];
+	        this.language = source["language"];
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {

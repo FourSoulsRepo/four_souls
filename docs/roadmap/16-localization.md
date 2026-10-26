@@ -27,7 +27,7 @@ Rules of this step (owner, 2026-10-26):
 4. Result: ADR 021.
    1. Own `t()`, no library; `NOTICE` stays as it is.
 
-### [ ] 16.2 Language setting and test language
+### [x] 16.2 Language setting and test language
 
 1. Goal: the player picks the language; developers check with a test one.
 2. Tasks:

@@ -2,6 +2,8 @@ import { useState } from 'react';
 import type { Settings } from '../bridge';
 import { Die } from '../components/Die';
 import { diceChoices } from '../dice';
+import { languages, shownLanguage, t } from '../i18n';
+import { languageName } from '../locale';
 import { matChoices, matLook, matOf } from '../mats';
 import type { Speed } from '../playback';
 import { useApp } from '../store';
@@ -12,8 +14,9 @@ function speedOf(v: string): Speed {
 }
 
 // SettingsScreen: ST-01, ST-03, ST-05, ST-06, the dice look
-// (V-19, 15.64), and the question before ending the turn (V-46). Saved
-// settings apply at once; the dice look goes out in the next hello.
+// (V-19, 15.64), the question before ending the turn (V-46), and the
+// language (ADR 021). Saved settings apply at once; the dice look goes
+// out in the next hello.
 export function SettingsScreen() {
   const settings = useApp((s) => s.settings);
   const error = useApp((s) => s.error);
@@ -33,7 +36,7 @@ export function SettingsScreen() {
 
   return (
     <div className="screen">
-      <h1>Settings</h1>
+      <h1>{t('settings.title')}</h1>
       <form
         className="panel"
         onSubmit={(e) => {
@@ -47,7 +50,7 @@ export function SettingsScreen() {
         }}
       >
         <label className="field">
-          Nickname
+          {t('settings.nickname')}
           <input
             value={form.nickname}
             onChange={(e) => {
@@ -63,7 +66,7 @@ export function SettingsScreen() {
               change({ fullscreen: e.target.checked });
             }}
           />
-          Fullscreen
+          {t('settings.fullscreen')}
         </label>
         <label className="check">
           <input
@@ -73,28 +76,44 @@ export function SettingsScreen() {
               change({ no_end_turn_ask: !e.target.checked });
             }}
           />
-          Ask before ending the turn while plays are left
+          {t('settings.end_turn_ask')}
         </label>
+        {/* Each language in its own name; the list is not translated. */}
         <div className="row">
           <label className="field">
-            Animations
+            {t('settings.language')}
+            <select
+              value={shownLanguage(form.language)}
+              onChange={(e) => {
+                change({ language: e.target.value });
+              }}
+            >
+              {languages.map((l) => (
+                <option key={l} value={l} lang={l}>
+                  {languageName(l)}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="field">
+            {t('settings.animations')}
             <select
               value={form.animation}
               onChange={(e) => {
                 change({ animation: speedOf(e.target.value) });
               }}
             >
-              <option value="normal">Normal</option>
-              <option value="fast">Fast</option>
-              <option value="slow">Slow</option>
-              <option value="off">Off</option>
+              <option value="normal">{t('settings.speed.normal')}</option>
+              <option value="fast">{t('settings.speed.fast')}</option>
+              <option value="slow">{t('settings.speed.slow')}</option>
+              <option value="off">{t('settings.speed.off')}</option>
             </select>
           </label>
         </div>
         {/* The looks sit on one line, above their previews (15.80). */}
         <div className="row">
           <label className="field">
-            Game mat
+            {t('settings.mat')}
             <select
               value={matOf(form.mat, mats)}
               onChange={(e) => {
@@ -110,7 +129,7 @@ export function SettingsScreen() {
           </label>
           {diceGroups.length > 0 && (
             <label className="field">
-              Dice
+              {t('settings.dice')}
               <select
                 value={form.dice}
                 onChange={(e) => {
@@ -130,20 +149,20 @@ export function SettingsScreen() {
             </label>
           )}
         </div>
-        <div className={`mat-preview ${preview.className}`} style={preview.style} aria-label="Game mat preview" />
+        <div className={`mat-preview ${preview.className}`} style={preview.style} aria-label={t('settings.mat_preview')} />
         {diceGroups.length > 0 && (
-          <div className="dice-preview" role="group" aria-label="Dice preview">
+          <div className="dice-preview" role="group" aria-label={t('settings.dice_preview')}>
             {[1, 2, 3, 4, 5, 6].map((v) => (
               <Die key={v} value={v} image={diceImage} />
             ))}
           </div>
         )}
         <button type="submit" className="primary">
-          Save
+          {t('settings.save')}
         </button>
       </form>
       <p className="status" role="status">
-        {error || (saved ? 'Saved.' : '')}
+        {error || (saved ? t('settings.saved') : '')}
       </p>
       <button
         type="button"
@@ -151,7 +170,7 @@ export function SettingsScreen() {
           show('menu');
         }}
       >
-        Back
+        {t('settings.back')}
       </button>
     </div>
   );

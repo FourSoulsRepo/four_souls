@@ -254,3 +254,40 @@ func TestRejoinKeepsItsPath(t *testing.T) {
 		t.Errorf("an unknown path was kept: %q", saved.Rejoin.Via)
 	}
 }
+
+func TestLanguageSurvivesRestart(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "settings.json")
+	if got := Load(path).Language; got != "" {
+		t.Fatalf("default language %q, want \"\" (the OS language)", got)
+	}
+	for _, code := range []string{"ru", "en", "qps", ""} {
+		if _, err := Save(path, Settings{Language: code}); err != nil {
+			t.Fatalf("%q: %v", code, err)
+		}
+		if got := Load(path).Language; got != code {
+			t.Fatalf("language %q after a restart, want %q", got, code)
+		}
+	}
+}
+
+func TestBadLanguage(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "settings.json")
+	if _, err := Save(path, Settings{Language: "ru"}); err != nil {
+		t.Fatal(err)
+	}
+	for _, code := range []string{"RU", "russian", "r", "ru-RU", "../x"} {
+		if _, err := Save(path, Settings{Language: code}); !errors.Is(err, ErrChoice) {
+			t.Fatalf("%q: err %v, want ErrChoice", code, err)
+		}
+	}
+	if got := Load(path).Language; got != "ru" {
+		t.Fatalf("language %q after bad saves, want ru", got)
+	}
+	// A hand-edited file with a bad code follows the OS language.
+	if err := os.WriteFile(path, []byte(`{"language": "Klingon"}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if got := Load(path).Language; got != "" {
+		t.Fatalf("bad file language %q, want \"\"", got)
+	}
+}

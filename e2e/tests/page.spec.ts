@@ -6,6 +6,7 @@ import { startGame } from './game';
 import { backToMenu, openHost, openLan, openOnline } from './menu';
 import { appURL } from './server';
 import { activePage, click } from './turn';
+import { tr } from './locale';
 
 // selection is the text the page has selected now.
 function selection(page: Page): Promise<string> {
@@ -48,7 +49,7 @@ test('menu screens never scroll, even in a small window', async ({ page }) => {
   await expectNoPageScroll(page);
   const settings = (p: Page) => p.getByRole('button', { name: 'Settings' }).click();
   for (const [open, sign] of [
-    [settings, 'Nickname'],
+    [settings, tr('settings.nickname')],
     [openHost, 'Players'],
     [openLan, 'Host address'],
     [openOnline, 'Server address'],

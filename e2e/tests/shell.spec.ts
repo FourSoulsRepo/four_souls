@@ -3,6 +3,7 @@ import type { Locator } from '@playwright/test';
 import { expect, test } from './fixtures';
 import { backToMenu, openHost } from './menu';
 import { realAssets, shot } from './shot';
+import { tr } from './locale';
 
 test('splash shows the fan-game notice, then the menu', async ({ page }) => {
   await realAssets(page);
@@ -62,7 +63,7 @@ test('titles and menu buttons use the game fonts (15.40)', async ({ page }) => {
   const button = page.getByRole('button', { name: 'Play', exact: true });
   await expect.poll(() => family(button)).toMatch(/^Four Souls Title, Four Souls Cyrillic, -apple-system/);
   await page.getByRole('button', { name: 'Settings' }).click();
-  await expect.poll(() => family(page.getByRole('heading', { name: 'Settings' }))).toMatch(/^Four Souls Cyrillic,/);
+  await expect.poll(() => family(page.getByRole('heading', { name: tr('settings.title') }))).toMatch(/^Four Souls Cyrillic,/);
 });
 
 test('the menu shows the banner, or the text title without it (15.41)', async ({ page }) => {
@@ -84,24 +85,24 @@ test('the menu shows the banner, or the text title without it (15.41)', async ({
 test('nickname survives a restart', async ({ page }) => {
   await page.goto('/?fake&nosplash');
   await page.getByRole('button', { name: 'Settings' }).click();
-  await page.getByLabel('Nickname').fill('  Ann  ');
-  await page.getByRole('button', { name: 'Save' }).click();
-  await expect(page.getByRole('status')).toHaveText('Saved.');
-  await expect(page.getByLabel('Nickname')).toHaveValue('Ann');
+  await page.getByLabel(tr('settings.nickname')).fill('  Ann  ');
+  await page.getByRole('button', { name: tr('settings.save') }).click();
+  await expect(page.getByRole('status')).toHaveText(tr('settings.saved'));
+  await expect(page.getByLabel(tr('settings.nickname'))).toHaveValue('Ann');
   await shot(page, 'settings');
 
   await page.reload();
   await page.getByRole('button', { name: 'Settings' }).click();
-  await expect(page.getByLabel('Nickname')).toHaveValue('Ann');
+  await expect(page.getByLabel(tr('settings.nickname'))).toHaveValue('Ann');
 });
 
 test('a bad nickname shows why', async ({ page }) => {
   await page.goto('/?fake&nosplash');
   await page.getByRole('button', { name: 'Settings' }).click();
-  await page.getByLabel('Nickname').fill('x'.repeat(21));
-  await page.getByRole('button', { name: 'Save' }).click();
+  await page.getByLabel(tr('settings.nickname')).fill('x'.repeat(21));
+  await page.getByRole('button', { name: tr('settings.save') }).click();
   await expect(page.getByRole('status')).toHaveText('nickname must be 1–20 characters');
-  await page.getByRole('button', { name: 'Back' }).click();
+  await page.getByRole('button', { name: tr('settings.back') }).click();
   await expect(page.getByRole('button', { name: 'Play', exact: true })).toBeVisible();
 });
 
@@ -121,8 +122,8 @@ test('the menus drift on the night sky, still with animations off (15.42)', asyn
   // Animations off: the sky stands still.
   await backToMenu(page);
   await page.getByRole('button', { name: 'Settings' }).click();
-  await page.getByLabel('Animations').selectOption('off');
-  await page.getByRole('button', { name: 'Save' }).click();
+  await page.getByLabel(tr('settings.animations')).selectOption('off');
+  await page.getByRole('button', { name: tr('settings.save') }).click();
   await expect(layers).toHaveCount(6);
   expect(await layers.last().evaluate((e) => getComputedStyle(e).animationName)).toBe('none');
 });

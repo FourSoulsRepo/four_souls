@@ -18,6 +18,9 @@ The desktop client is React + TypeScript in `frontend/` (ADR 002), with three li
 | `src/screens/` | One component per screen; `App.tsx` picks by `store.screen`. |
 | `src/components/` | `Card`, `CardZoom`, `Board`, `PlayerArea`, `Pile`, `Effects`. |
 | `src/fakeBridge.ts` | Dev only: fake Wails bindings for tests (`?fake`). |
+| `src/i18n.ts` | `t()`, the language files and the chosen language ([Languages](#languages)). |
+| `src/locale.ts` | Pure: lookup, plural forms, the test language, the language list. |
+| `src/locales/` | One JSON file per language; `en.json` is the source. |
 
 ## Data flow
 
@@ -172,3 +175,11 @@ LAN and Online set `store.path` and open the join screen (`openPath`); `JoinScre
 The menu screens drift on the foursouls.ru night sky (15.42, V-35). The tools repo downloads the site's own layers (`scraper background`): a sky tile and five see-through star layers, 600×400 each. `App.Icons` gives their URLs in `sky`, all six or none. `Sky.tsx` draws one fixed layer per tile under every screen but the splash and the game table (`onSky` in `sky.ts`), on the `sky` layer at the bottom of the window ([Layers](Layers)). The logic is the site's: in a 120 s loop the sky moves one tile down and to the left, and the star layers 4, 6, 8, 10 and 12 tiles, so the nearer stars move faster and the loop has no seam. Here each layer is one tile larger than the window and slides by exactly one tile in its own share of the loop (`sky-drift`, [Animations](Animations)); only `transform` moves, so the window is not repainted on every frame. The sky is drawn at twice its size, as on the site. The animation speed setting scales the loop; Off, or a system that asks for reduced motion, stands it still.
 
 The app has one theme, dark (15.80, ST-07). The colors are the `:root` tokens in `style.css`; there is no theme setting and no `data-theme` attribute. An older settings file's `theme` is ignored by Go and dropped on the next save.
+
+## Languages
+
+Texts come from `t(key, values)` in `i18n.ts` (ADR 021). Keys are typed from `src/locales/en.json`, so a typo fails `tsc`; each line there has its `text` and a `note` for translators. Every other file in `src/locales/` named by a language code (`ru.json`) is a language, found by Vite's `import.meta.glob`; it holds texts only. Lookup goes the chosen language, then English, then the key itself. `{name}` placeholders take the values; a plural line has one text per CLDR form, picked by `Intl.PluralRules` from the value `n`.
+
+The `language` setting is kept by Go with the others (`internal/settings`, checked only as a two- or three-letter code). `''` follows the OS: `navigator.language` if it is listed, else English. The list (`languageList` in `locale.ts`) is English, every language file, and `cardLanguages` (Russian: card names only, 16.5), each in its own name from `Intl.DisplayNames`. The store calls `setLanguage` when settings load or save; `App` subscribes to the setting, so every screen draws again in the new language at once.
+
+The test language `qps` is built at run time from English (`pseudo`): `Join` becomes `[!! Ĵôîñ ~~ !!]`. It is listed only in development builds (`import.meta.env.DEV`: Vite dev, `wails dev`, the e2e tests); a release build that reads a saved `qps` follows the OS. `make screenshots LOCALE=qps` starts every fake page in it (`VITE_LOCALE`) and saves into `.cache/screenshots/qps/`; e2e tests find translated text with `tr(key)` from `e2e/tests/locale.ts`, which gives the line in that language. Plain English on a `qps` screenshot is a string not moved to `en.json` yet.

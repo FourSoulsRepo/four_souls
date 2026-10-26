@@ -58,6 +58,8 @@ The fake bridge also reads the real card text from `pkg/card_db/data` (no images
 
 `e2e/tests/turn.ts` plays prompts through the UI like a careful player: it answers choices with the first option (picking on the table when it can), clicks the first glowing target when its own card aims with no dialog (15.34, 19.10), discards the first cards, passes when only responding, and attacks when a card forces it before the turn can end. `settle(pages, press, done)` runs it until `done()` holds; `click` and `tap` choose mouse or touch. It never makes a move on a page whose state changed after `done()` began, so a dialog the test waits for is not answered before `done()` sees it (19.7). A `done()` that waits for the active page must also accept a new turn: a card may end the turn (19.8). When a game stalls, its error lists each page's prompt, buttons and dialog.
 
+Text that comes from `en.json` is found with `tr(key)` from `e2e/tests/locale.ts`, not the English words, so the tests also pass with `LOCALE=qps` ([Client](Client#languages)).
+
 Match dialogs and buttons by exact name where a question could contain the same word (`{ name: 'Discard', exact: true }`).
 
 Network play runs against the real Go server: `e2e/playwright.config.ts` starts `cmd/server` next to Vite, one per browser project (Chromium on port 4799, WebKit on 4797; `e2e/tests/ports.ts`), so the two runs never see each other's games. Tests reach theirs with `serverPort()` and `appURL()` (`e2e/tests/server.ts`). The fake `Host` binding points at it (`?server=PORT`), so one page "hosts" and others join it by address. Use separate browser contexts for separate players: each has its own `localStorage`, like a separate app.

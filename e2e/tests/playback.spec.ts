@@ -3,6 +3,7 @@ import type { Page } from '@playwright/test';
 import { expect, test } from './fixtures';
 import { startGame } from './game';
 import { shot } from './shot';
+import { tr } from './locale';
 
 // listenSounds records the file of every sound played from now on, in
 // window.played (15.50). Each sound still plays.
@@ -30,12 +31,12 @@ function played(page: Page): Promise<string[]> {
 test('the animation speed setting survives a restart', async ({ page }) => {
   await page.goto('/?fake&nosplash');
   await page.getByRole('button', { name: 'Settings' }).click();
-  await page.getByLabel('Animations').selectOption('fast');
-  await page.getByRole('button', { name: 'Save' }).click();
-  await expect(page.getByRole('status')).toHaveText('Saved.');
+  await page.getByLabel(tr('settings.animations')).selectOption('fast');
+  await page.getByRole('button', { name: tr('settings.save') }).click();
+  await expect(page.getByRole('status')).toHaveText(tr('settings.saved'));
   await page.reload();
   await page.getByRole('button', { name: 'Settings' }).click();
-  await expect(page.getByLabel('Animations')).toHaveValue('fast');
+  await expect(page.getByLabel(tr('settings.animations'))).toHaveValue('fast');
 });
 
 test('a fast burst of updates plays in order and ends on the last one', async ({ browser }) => {

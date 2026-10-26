@@ -57,6 +57,8 @@ function loadSettings(): unknown {
     rejoin: { address: '', token: '', game: '', via: '' },
     host: { seats: 0, sets: null, detailed: false, response_timer: 0, no_bonus_souls: false, no_deck_ratios: false, rollback: '' },
     lan_address: '',
+    // make screenshots LOCALE=qps starts every page in that language.
+    language: import.meta.env.VITE_LOCALE ?? '',
   };
   return JSON.parse(localStorage.getItem(settingsKey) ?? JSON.stringify(fresh));
 }
@@ -82,12 +84,16 @@ interface FakeSettings {
     rollback?: string;
   };
   lan_address?: string;
+  language?: string;
 }
 
 function saveSettings(s: FakeSettings): Promise<unknown> {
   const nickname = s.nickname.trim();
   if (s.nickname !== '' && (nickname === '' || Array.from(nickname).length > 20)) {
     return Promise.reject(new Error('nickname must be 1–20 characters'));
+  }
+  if (s.language && !/^[a-z]{2,3}$/.test(s.language)) {
+    return Promise.reject(new Error(`unknown setting value: "${s.language}"`));
   }
   const saved = { ...s, nickname, recent: s.recent.slice(0, 5), lan_address: (s.lan_address ?? '').trim() };
   localStorage.setItem(settingsKey, JSON.stringify(saved));

@@ -46,6 +46,7 @@
   * Without the private images there is no dice field; dice stay plain.
 * **3g. Ask before ending the turn (V-46):** on by default.
   * Off: End turn ends the turn at once, even with plays left (UC-13, 7e).
+* **3h. Language (16.2):** see UC-32.
 
 ## Postconditions
 

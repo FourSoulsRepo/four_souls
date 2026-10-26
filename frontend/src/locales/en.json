@@ -1,0 +1,70 @@
+{
+  "settings.animations": {
+    "text": "Animations",
+    "note": "Settings: label of the animation speed list."
+  },
+  "settings.back": {
+    "text": "Back",
+    "note": "Settings: button back to the main menu, without saving."
+  },
+  "settings.dice": {
+    "text": "Dice",
+    "note": "Settings: label of the list of dice looks."
+  },
+  "settings.dice_preview": {
+    "text": "Dice preview",
+    "note": "Settings: screen-reader name of the six dice faces in the picked look."
+  },
+  "settings.end_turn_ask": {
+    "text": "Ask before ending the turn while plays are left",
+    "note": "Settings: checkbox. On, End turn asks first when the player could still attack, buy or play."
+  },
+  "settings.fullscreen": {
+    "text": "Fullscreen",
+    "note": "Settings: checkbox for a fullscreen window."
+  },
+  "settings.language": {
+    "text": "Language",
+    "note": "Settings: label of the language list. Each language shows in its own name."
+  },
+  "settings.mat": {
+    "text": "Game mat",
+    "note": "Settings: label of the list of mats under the game table."
+  },
+  "settings.mat_preview": {
+    "text": "Game mat preview",
+    "note": "Settings: screen-reader name of the picture of the picked mat."
+  },
+  "settings.nickname": {
+    "text": "Nickname",
+    "note": "Settings: label of the player's name field."
+  },
+  "settings.save": {
+    "text": "Save",
+    "note": "Settings: button that saves every setting on the screen."
+  },
+  "settings.saved": {
+    "text": "Saved.",
+    "note": "Settings: status line after Save worked."
+  },
+  "settings.speed.fast": {
+    "text": "Fast",
+    "note": "Settings: animation speed choice."
+  },
+  "settings.speed.normal": {
+    "text": "Normal",
+    "note": "Settings: animation speed choice; the default."
+  },
+  "settings.speed.off": {
+    "text": "Off",
+    "note": "Settings: animation speed choice: no animations."
+  },
+  "settings.speed.slow": {
+    "text": "Slow",
+    "note": "Settings: animation speed choice."
+  },
+  "settings.title": {
+    "text": "Settings",
+    "note": "Settings: the screen's title."
+  }
+}

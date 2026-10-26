@@ -44,6 +44,10 @@ type Settings struct {
 	// LanAddress is the address last typed on the LAN screen (15.97);
 	// the LAN screen keeps no list.
 	LanAddress string `json:"lan_address"`
+	// Language is the interface language (ADR 021): an ISO 639-1 code,
+	// or "qps" for the test language. "" follows the OS language; the
+	// frontend knows which languages it has, so Go checks the form only.
+	Language string `json:"language"`
 }
 
 // RecentServer is a server joined lately (N-18).
@@ -163,6 +167,15 @@ func ValidMat(name string) bool {
 	return matName.MatchString(name)
 }
 
+// langCode is a language code: two letters, or three for "qps".
+var langCode = regexp.MustCompile(`^[a-z]{2,3}$`)
+
+// ValidLanguage reports whether code can name a language; "" is the
+// OS language.
+func ValidLanguage(code string) bool {
+	return code == "" || langCode.MatchString(code)
+}
+
 // MaxRecent is how many recent servers are kept.
 const MaxRecent = 5
 
@@ -214,6 +227,9 @@ func Load(path string) Settings {
 	if s.Mat == droppedMat || (s.Mat != "" && !ValidMat(s.Mat)) {
 		s.Mat = ""
 	}
+	if !ValidLanguage(s.Language) {
+		s.Language = ""
+	}
 	return s
 }
 
@@ -237,6 +253,9 @@ func Save(path string, s Settings) (Settings, error) {
 	}
 	if s.Mat != "" && !ValidMat(s.Mat) {
 		return Settings{}, fmt.Errorf("%w: %q", ErrChoice, s.Mat)
+	}
+	if !ValidLanguage(s.Language) {
+		return Settings{}, fmt.Errorf("%w: %q", ErrChoice, s.Language)
 	}
 	recent := []RecentServer{}
 	for _, r := range s.Recent {
