@@ -34,7 +34,7 @@ This step never closes; new reports are appended.
 | ID | Group                                    | System     | Items                                                  | Count |
 |----|------------------------------------------|------------|--------------------------------------------------------|-------|
 | A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66 | 12 |
-| B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72          | 7     |
+| B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73   | 8     |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30                                     | 3     |
 | E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52, 19.54, 19.69 | 9  |
@@ -47,11 +47,11 @@ This step never closes; new reports are appended.
 | L  | Not a bug: the app follows a ruling      | None       | 19.63                                                  | 1     |
 | M  | Go test setup: the code was right        | Go tests   | 19.68                                                  | 1     |
 
-Totals by system (72 items):
+Totals by system (73 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
-| Engine    | A, B    | 19    |
+| Engine    | A, B    | 20    |
 | Card data | C       | 2     |
 | Client    | D–G     | 21    |
 | Server    | H       | 1     |
@@ -2410,3 +2410,40 @@ Totals by system (72 items):
    12. Screenshots: `.cache/screenshots/19.72/before/` and `after/`.
    13. Before: the uncovered card shows large over the board, then flies.
    14. After: the skull, then the card is in its slot.
+
+### [ ] 19.73 A dead monster pops into the discard or soul slot; no flight
+
+1. Goal: a dead monster flies from its slot to where it goes.
+2. Report (owner, 2026-10-26)
+   1. A monster dies.
+   2. It does not fly to the monster discard, nor to the player's souls.
+   3. It just appears on the discard pile.
+3. Tasks:
+   1. Engine: a dead card's discard emits `discarded`.
+   2. `ActDiscardObject` emits it: `Player` none, `Prev` the held object.
+   3. Engine: `GainSoul`'s `gained_soul` sets `Prev` to the moved object.
+   4. Client: on `died`, playback keeps where the card died.
+   5. That is its slot zone, `monster-slot-N`, keyed by the held object.
+   6. It lasts across updates: reward rolls may come in between.
+   7. `discarded` with that `prev`: `fly` from that zone to `discard-monster`.
+   8. `gained_soul` with that `prev`: `fly` from that zone to the player.
+   9. Any other `gained_soul` flies from `obj-<prev>` if drawn; else none.
+   10. A bonus soul keeps no flight; it is not a table card.
+   11. The fly starts after the `death-skull` on that card.
+   12. History stays as it is: a `discarded` with no player adds no line.
+4. Done when:
+   1. Go test: a monster with no soul emits `discarded` with `Prev`.
+   2. Go test: a killed soul monster's `gained_soul` has `Prev`.
+   3. Vitest: both make a `fly` from the slot, also in a later update.
+   4. e2e in `playback.spec.ts`: the dead card flies to the discard.
+   5. e2e: a soul monster flies to its player.
+   6. Wiki `Animations` row `fly`; wiki `Rules-engine` event fields.
+   7. UC-12 gets the case; CHANGELOG line.
+   8. Screenshots: `.cache/screenshots/19.73/before/` and `after/`.
+5. Cause
+   1. `monsterDeath` moves the card to a held object outside the table.
+   2. `soulStep` later discards it or makes it a soul.
+   3. `ActDiscardObject` calls `discard`, which emits no event.
+   4. `GainSoul` emits `gained_soul` without `Prev`.
+   5. `playback.ts` has no effect for `gained_soul` at all.
+   6. So the next view just draws the card in its new place.
