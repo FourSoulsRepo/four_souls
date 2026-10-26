@@ -2317,3 +2317,5 @@ Totals by system (70 items):
    3. Today it checks the resolved row `✦A Penny!`, which shows with Bum-Bo! too.
    4. No other e2e test expects a real cent gain from a dealt card.
    5. No code change; no guard test, since no gap remains.
+7. Owner notes (2026-10-26)
+   1. Owner marks 19.70 solved; no history line for Bum-Bo! for now.
