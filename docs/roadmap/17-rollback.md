@@ -11,6 +11,10 @@ Rules for this step (owner, 2026-10-26):
 3. The owner reviews the whole step at its end.
 4. UI sub-steps leave screenshots for that review.
 
+Owner notes (2026-10-26):
+
+1. Owner reviewed step 17 and marks it solved.
+
 ---
 
 ### [x] 17.1 Rollback ADR
