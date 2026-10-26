@@ -1034,6 +1034,7 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
 7. B-07. Setup scripts for developers and translators (owner, 2026-10-26).
    1. One script per OS installs every tool `make` needs.
    2. The wiki says what each `make` target needs, per OS.
+   3. Only macOS and Linux for now; Windows later (owner, 2026-10-27).
 
 ## Legal
 

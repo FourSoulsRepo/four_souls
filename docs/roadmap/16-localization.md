@@ -120,15 +120,14 @@ Rules of this step (owner, 2026-10-26):
 
 1. Goal: one script installs every tool `make` needs (B-07).
 2. Tasks:
-   1. `scripts/setup.sh` for macOS and Linux; `scripts/setup.ps1` for Windows.
+   1. `scripts/setup.sh` for macOS and Linux.
    2. Profiles: `translator` (Node, Playwright, make) and `developer` (all).
    3. `make doctor`: lists each tool, its version, and what is missing.
    4. Versions as in `docs/wiki/Linters.md`; keep one source of truth.
-   5. Windows: how `make` runs there (research; pick the simplest).
+   5. No Windows for now (owner, 2026-10-27).
    6. Wiki: `Developer-setup.md`, per OS, and what each target needs.
 3. Done when:
    1. A clean macOS and a clean Linux run the scripts, then `make doctor` passes.
-   2. Windows steps are tested on a real machine or CI runner.
 
 ### [ ] 16.9 Translator guides
 
