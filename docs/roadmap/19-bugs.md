@@ -2320,7 +2320,7 @@ Totals by system (71 items):
 7. Owner notes (2026-10-26)
    1. Owner marks 19.70 solved; no history line for Bum-Bo! for now.
 
-### [ ] 19.71 XXI. The World: the look dialog does not say whose hand
+### [x] 19.71 XXI. The World: the look dialog does not say whose hand
 
 1. Goal: a look at hands shows whose hand each card is from.
 2. Report (owner, 2026-10-26)
@@ -2363,3 +2363,5 @@ Totals by system (71 items):
    14. Screenshots: `.cache/screenshots/19.71/before/` and `after/`.
    15. A revealed given card (fsp2 "Reveal it") is in the taker's hand.
    16. So its look now reads "Bo's hand", or "Your hand" for the taker.
+7. Owner notes (2026-10-26)
+   1. Owner marks 19.71 solved.
