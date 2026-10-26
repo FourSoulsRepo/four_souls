@@ -9,6 +9,8 @@ export interface HostSetup {
   response_timer: number;
   no_bonus_souls: boolean;
   no_deck_ratios: boolean;
+  // rollback is the rollback mode (ADR 020); '': Disabled.
+  rollback: string;
 }
 
 // noHostSetup is the setup before the first host.
@@ -19,4 +21,5 @@ export const noHostSetup: HostSetup = {
   response_timer: 0,
   no_bonus_souls: false,
   no_deck_ratios: false,
+  rollback: '',
 };

@@ -56,6 +56,21 @@ type restartFile struct {
 	Password string `json:"password,omitempty"`
 	// Meaning is the saving engine's StateMeaning (engine.Resume).
 	Meaning int `json:"meaning,omitempty"`
+	// The rollback history (ADR 020, item 10): the base state, its step
+	// number, and the live steps since. None: no history to keep; the
+	// kept state becomes the base.
+	Base     json.RawMessage `json:"base,omitempty"`
+	BaseStep int             `json:"base_step,omitempty"`
+	Live     []keptStep      `json:"live,omitempty"`
+}
+
+// keptStep is a live step in a restart file. The intent stays raw: one
+// a new engine cannot read ends the history, not the game.
+type keptStep struct {
+	N        int             `json:"n"`
+	Intent   json.RawMessage `json:"intent"`
+	Checksum uint64          `json:"checksum"`
+	Barrier  bool            `json:"barrier,omitempty"`
 }
 
 // voteGrace is how many seconds a game kept over a restart takes no kick
@@ -214,7 +229,7 @@ func (h *Hub) restoreRoom(f *restartFile) {
 	if g != nil && f.Engine != engine.Version {
 		room.notice = protocol.NoticeEngine // the rules may have changed
 	}
-	h.run(room, protocol.GameInfo{ID: f.Game, Host: f.Host, Seats: len(seats), Taken: len(seats), Sets: f.Sets, Started: true})
+	h.run(room, protocol.GameInfo{ID: f.Game, Host: f.Host, Seats: len(seats), Taken: len(seats), Sets: f.Sets, Started: true, Rollback: f.Options.Rollback})
 }
 
 // keep writes the room to a restart file instead of ending its record;
@@ -239,6 +254,10 @@ func (r *Room) keep() {
 			return
 		}
 		f.Kind, f.State, f.Meaning, f.Step, f.Steps = keptGame, state, engine.StateMeaning, r.step, r.steps
+		if err := r.keepHistory(f); err != nil {
+			log.Printf("server: keep %s: %v; its rollback history ends here", f.Game, err)
+			f.Base, f.BaseStep, f.Live = nil, 0, nil
+		}
 	}
 	if err := writeRestart(r.hub.restart, f); err != nil {
 		log.Printf("server: keep %s: %v", f.Game, err)
@@ -264,6 +283,7 @@ func (r *Room) resumeKept() {
 		return
 	}
 	r.step, r.steps = f.Step, f.Steps
+	r.restoreHistory(f)
 	r.grace = time.Now().Add(voteGrace * r.second)
 	if r.recDir != "" && f.Record != "" {
 		if w, err := record.Append(f.Record, f.Steps, time.Now().UTC()); err == nil {

@@ -13,6 +13,8 @@ An input is a seed, a player count and a list of bytes. The game is set up from 
 
 At the end the recorded steps are replayed from the same setup and every checksum must match (A-08).
 
+Then the game is rolled back to before one step (picked from the seed) and the undone steps are played again, both with `ReplayFrom` from the state after setup. The redo must end in the same bytes as the game (ADR 020, item 7). `FuzzSets` does the same.
+
 A game is capped at `maxFuzzSteps` (2000) steps. Every step hashes the whole state, so longer inputs only slow the fuzzer down.
 
 ## Targets

@@ -22,8 +22,8 @@ interface Props {
 // stack's icons, buys and kills, newest on top (S-10, F-04). A badge
 // marks each kind (H-08): a sword, a bolt, a coin or a skull. Hover shows
 // the large card (S-11, H-09). A line marks each new turn. A new tile
-// fades in and the others slide down (15.51). The button on top opens
-// the full History panel.
+// fades in and the others slide down (15.51). A rollback greys the
+// undone tiles (ADR 020). The button on top opens the full History panel.
 export function HistoryStrip({ view, names, open, toggle }: Props) {
   const history = useApp((s) => s.history);
   const items = stripEntries(history);
@@ -70,9 +70,9 @@ function StripItem({ entry, view, names, newTurn }: { entry: Entry; view: GameVi
   });
   return (
     <Row
-      className={`strip-item stack-${plain ? stackIcon(plain) : 'card'}${newTurn ? ' strip-turn' : ''}`}
-      aria-label={line}
-      title={`Turn ${String(entry.turn)}: ${line}`}
+      className={`strip-item stack-${plain ? stackIcon(plain) : 'card'}${newTurn ? ' strip-turn' : ''}${entry.undone ? ' undone' : ''}`}
+      aria-label={entry.undone ? `Undone: ${line}` : line}
+      title={`${entry.undone ? 'Undone: ' : ''}Turn ${String(entry.turn)}: ${line}`}
       onPointerEnter={(e) => {
         if (card && e.pointerType === 'mouse') {
           setZoom(zoom(card, e, false));

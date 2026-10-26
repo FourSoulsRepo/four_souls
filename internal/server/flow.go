@@ -52,7 +52,7 @@ func (r *Room) after(events []engine.Event, applied bool) {
 func (r *Room) autoIntent() (engine.Intent, bool) {
 	g := r.game
 	r.endWaits()
-	if g.Over || r.paused() {
+	if g.Over || r.paused() || r.rbVote != nil {
 		return engine.Intent{}, false
 	}
 	w := g.Prompt()
@@ -127,7 +127,7 @@ func (r *Room) restartTimer() {
 	}
 	r.timerGen++
 	r.deadline = time.Time{}
-	if r.opts.ResponseTimer == 0 || r.game.Over || r.paused() {
+	if r.opts.ResponseTimer == 0 || r.game.Over || r.paused() || r.rbVote != nil {
 		return
 	}
 	d := time.Duration(r.opts.ResponseTimer+animationAllowance) * r.second
@@ -140,7 +140,7 @@ func (r *Room) restartTimer() {
 // or end the turn; a discard takes the first cards; a choice takes the
 // first option.
 func (r *Room) timeUp(gen int) {
-	if gen != r.timerGen || r.game == nil || r.game.Over || r.paused() {
+	if gen != r.timerGen || r.game == nil || r.game.Over || r.paused() || r.rbVote != nil {
 		return
 	}
 	in, ok := r.forcedIntent()

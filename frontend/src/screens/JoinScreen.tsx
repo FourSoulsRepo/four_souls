@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useEscape } from '../keys';
-import { canCreate, lanRows, serverLabel, upText } from '../lobby';
+import { canCreate, lanRows, rollbackText, serverLabel, upText } from '../lobby';
 import { protocolVersion } from '../protocol';
 import { setList } from '../sets';
 import { useApp } from '../store';
@@ -310,6 +310,7 @@ function GameList() {
                 {g.locked && <span aria-label="Locked">🔒 </span>}
                 {g.host}&apos;s game · {g.taken}/{g.seats} players{g.started ? ' · playing' : ''}
                 {g.sets && g.sets.length > 0 && <span className="muted"> · {setList(g.sets)}</span>}
+                {g.rollback && <span className="muted"> · {rollbackText(g.rollback)}</span>}
               </span>
               {g.locked && !g.started && g.taken < g.seats && (
                 <input

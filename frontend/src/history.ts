@@ -2,7 +2,7 @@
 // lines: who did what. Built from the events this viewer got, so it shows
 // only what the viewer may see (hidden cards stay hidden).
 import { firstPlayerText, tieText } from './dice';
-import type { GameEvent, GameView, StackItem } from './protocol';
+import type { GameEvent, GameView, Rollback, RollbackEnd, RollbackStep, StackItem, Update } from './protocol';
 import { findCard, StackKind, stackLine, type Names } from './stack';
 import { rollChanges } from './stats';
 
@@ -26,6 +26,16 @@ export interface Entry {
   from?: string;
   // outcome is what the headline did, for the popout (15.90).
   outcome?: Outcome[];
+  // step is the first step of the update that brought the entry: a
+  // rollback to before it undoes it (ADR 020). A rollback row has its
+  // own number.
+  step?: number;
+  // undone: a rollback undid it; the history greys it.
+  undone?: boolean;
+  // rollback marks the row that tells who rolled back.
+  rollback?: boolean;
+  // restarted marks the row where a server restart cut the history.
+  restarted?: boolean;
 }
 
 // Outcome is one result in the strip's popout (15.90): a card, with a
@@ -402,6 +412,97 @@ function dies(it: StackItem, e: GameEvent): boolean {
 // down when a new one comes, instead of being drawn again (15.51).
 export function stripEntries(history: Entry[]): Entry[] {
   return history.filter((e) => e.headline).reverse();
+}
+
+// rolledBack is the history after a rollback (ADR 020, item 8): every
+// entry from the target step on is undone, and a row tells who rolled
+// back. step is the rollback's own number.
+export function rolledBack(history: Entry[], r: Rollback, step: number, turn: number, you: number, n: Names): Entry[] {
+  const out = history.map((e) => (e.step !== undefined && e.step >= r.to && !e.undone ? { ...e, undone: true } : e));
+  const who = r.seat === you ? 'You roll' : `${n.player(r.seat)} rolls`;
+  const text = `${who} back ${String(r.undid)} ${r.undid === 1 ? 'step' : 'steps'}`;
+  out.push({ key: (history.at(-1)?.key ?? 0) + 1, turn, icon: '↶', text, step, rollback: true });
+  return out;
+}
+
+// rollbackTargets are the keys of the entries that get a rollback
+// button: the first live entry of each step since from (ADR 020, item
+// 6). An undone entry or a rollback row is no target.
+export function rollbackTargets(history: Entry[], from: number): Set<number> {
+  const out = new Set<number>();
+  let last: number | undefined;
+  for (const e of history) {
+    if (e.step !== undefined && e.step !== last && e.step >= from && !e.undone && !e.rollback) {
+      out.add(e.key);
+    }
+    last = e.step;
+  }
+  return out;
+}
+
+// RollbackButton is what a history row offers (ADR 020): roll back at
+// once (Godmode), open a vote with your yes, or, for the step's own
+// author in Soft, ask the others.
+export type RollbackButton = 'roll' | 'vote' | 'ask';
+
+// rollbackButtons maps entry keys to their button. Godmode: every
+// target, for everyone at the table. Soft: the targets the server
+// lists; their author asks, the others open a vote (items 3 and 5).
+// None while a vote is open, once the game is over, or for a spectator.
+export function rollbackButtons(
+  history: Entry[],
+  u: Pick<Update, 'rollback_mode' | 'rollback_from' | 'rollback_steps' | 'rollback_vote'> & { view: { over?: boolean } },
+  you: number,
+): Map<number, RollbackButton> {
+  const out = new Map<number, RollbackButton>();
+  if (!u.rollback_mode || u.view.over || u.rollback_vote || you < 0) {
+    return out;
+  }
+  const authors = new Map((u.rollback_steps ?? []).map((s: RollbackStep) => [s.step, s.seat]));
+  const keys = rollbackTargets(history, u.rollback_from ?? 1);
+  for (const e of history) {
+    if (!keys.has(e.key) || e.step === undefined) {
+      continue;
+    }
+    if (u.rollback_mode === 'god') {
+      out.set(e.key, 'roll');
+      continue;
+    }
+    const author = authors.get(e.step);
+    if (author !== undefined) {
+      out.set(e.key, author === you ? 'ask' : 'vote');
+    }
+  }
+  return out;
+}
+
+// voteEnded adds the row of a Soft vote that ended with no rollback.
+export function voteEnded(history: Entry[], end: RollbackEnd, turn: number, you: number, n: Names): Entry[] {
+  const who = end.seat === you ? 'You' : n.player(end.seat);
+  const text = {
+    declined: 'The rollback was declined',
+    cancelled: `${who} cancelled the rollback vote`,
+    timeout: 'The rollback vote ran out of time',
+    left: 'The rollback vote ended: a player left',
+    failed: 'The rollback failed; the game goes on',
+  }[end.why];
+  return [...history, { key: (history.at(-1)?.key ?? 0) + 1, turn, icon: '↶', text, rollback: true }];
+}
+
+// restartCut adds the row where a server restart cut the rollback
+// history (ADR 020, item 10.6): nothing before it can be rolled back.
+// cut is the step the restart came at; a row for it shows once.
+export function restartCut(history: Entry[], cut: number, turn: number): Entry[] {
+  if (history.some((e) => e.restarted && e.step === cut)) {
+    return history;
+  }
+  const text = 'The server restarted; no rollback before this';
+  return [...history, { key: (history.at(-1)?.key ?? 0) + 1, turn, icon: '⟳', text, step: cut, rollback: true, restarted: true }];
+}
+
+// stepText is the history's text of a step's first row, for the vote.
+export function stepText(history: Entry[], step: number): string {
+  return history.find((e) => e.step === step && !e.rollback)?.text ?? `step ${String(step)}`;
 }
 
 // firstRollLabel is the label of the first-player roll's dice.

@@ -50,6 +50,9 @@ Use options 1 and 5.
    9. Presence messages are never recorded (ADR 016).
    10. The header names the server (`server`); left out on an app's own host (N-18).
    11. A game kept over a server restart adds a `resume` part too (ADR 019).
+   12. A `rollback` line: `n`, target `to`, `seat`, `undid` (ADR 020).
+   13. It takes a step number; the next step goes on after it.
+   14. The header keeps the rollback mode (`rollback`).
 3. Writing
    1. Each line is flushed: a crash leaves a readable record without `end`.
    2. A server that stops writes `end` with finished false (RP-08).
@@ -63,6 +66,8 @@ Use options 1 and 5.
    1. Rebuild the engine setup from the header and the set codes.
    2. Apply the steps' intents; every checksum must match (`engine.Replay`).
    3. Records of engines before 0.3.0 cannot replay (`engine.CanReplay`, ADR 014).
+   4. A record with rollbacks replays its live steps (`Record.Live`).
+   5. Undone steps stay in the file; replay leaves them out.
 
 ## Consequences
 

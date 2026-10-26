@@ -507,7 +507,7 @@ func (h *Hub) start(t *table) {
 		s.client.table = nil
 		s.client.room.Store(room)
 	}
-	h.run(room, protocol.GameInfo{ID: t.id, Host: t.host, Seats: len(t.seats), Taken: len(t.seats), Sets: t.sets, Started: true})
+	h.run(room, protocol.GameInfo{ID: t.id, Host: t.host, Seats: len(t.seats), Taken: len(t.seats), Sets: t.sets, Started: true, Rollback: t.opts.Rollback})
 }
 
 // setUpRoom gives a new room the server's settings.
@@ -603,7 +603,7 @@ func (h *Hub) list() protocol.Games {
 			}
 		}
 		out.Games = append(out.Games, protocol.GameInfo{
-			ID: t.id, Host: t.host, Seats: len(t.seats), Taken: taken, Sets: t.sets, Locked: t.password != "",
+			ID: t.id, Host: t.host, Seats: len(t.seats), Taken: taken, Sets: t.sets, Locked: t.password != "", Rollback: t.opts.Rollback,
 		})
 	}
 	for _, g := range h.games {

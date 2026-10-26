@@ -7,6 +7,8 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/FourSoulsRepo/four_souls/internal/protocol"
 )
 
 func TestSurvivesRestart(t *testing.T) {
@@ -187,17 +189,17 @@ func TestHostSetupRemembered(t *testing.T) {
 		t.Errorf("default host setup = %+v, want unset", got)
 	}
 	in := Load(path)
-	in.Host = HostSetup{Seats: 3, Sets: []string{"b2", "g2", "g2", "Bad Code"}, Detailed: true, ResponseTimer: 90, NoBonusSouls: true, NoDeckRatios: true}
+	in.Host = HostSetup{Seats: 3, Sets: []string{"b2", "g2", "g2", "Bad Code"}, Detailed: true, ResponseTimer: 90, NoBonusSouls: true, NoDeckRatios: true, Rollback: protocol.RollbackSoft}
 	if _, err := Save(path, in); err != nil {
 		t.Fatal(err)
 	}
 	got := Load(path).Host
-	want := HostSetup{Seats: 3, Sets: []string{"b2", "g2"}, Detailed: true, ResponseTimer: 90, NoBonusSouls: true, NoDeckRatios: true}
+	want := HostSetup{Seats: 3, Sets: []string{"b2", "g2"}, Detailed: true, ResponseTimer: 90, NoBonusSouls: true, NoDeckRatios: true, Rollback: protocol.RollbackSoft}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("host setup = %+v, want %+v", got, want)
 	}
-	in.Host = HostSetup{Seats: 9, ResponseTimer: 7}
-	if out, err := Save(path, in); err != nil || out.Host.Seats != 0 || out.Host.ResponseTimer != 0 {
+	in.Host = HostSetup{Seats: 9, ResponseTimer: 7, Rollback: "chaos"}
+	if out, err := Save(path, in); err != nil || out.Host.Seats != 0 || out.Host.ResponseTimer != 0 || out.Host.Rollback != "" {
 		t.Errorf("bad values: %+v, %v; want them dropped", out.Host, err)
 	}
 }

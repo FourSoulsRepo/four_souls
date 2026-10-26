@@ -3,14 +3,15 @@
 // their own server, apart from the shared test servers.
 import { spawn, execFileSync, type ChildProcess } from 'node:child_process';
 import { connect } from 'node:net';
-import { rmSync } from 'node:fs';
+import { readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import type { Page } from '@playwright/test';
+import type { Browser, Page } from '@playwright/test';
 import { expect, test } from './fixtures';
 import { startGame } from './game';
 import { restartPorts } from './ports';
 import { appURL } from './server';
 import { shot } from './shot';
+import { activePage, click, settle, throwButton, turnAction } from './turn';
 
 const root = join(import.meta.dirname, '..', '..');
 
@@ -43,6 +44,27 @@ class RestartServer {
       await new Promise((r) => setTimeout(r, 100));
     }
     throw new Error('the restart server did not start');
+  }
+
+  // dropLive drops the live steps from the kept Godmode games' restart
+  // files, as if the new engine replayed them otherwise (ADR 020, item
+  // 10). Games of earlier tests are kept too; they have no live steps.
+  // The files are edited as text: a state holds integers past 2^53.
+  dropLive(): void {
+    const folder = join(this.dir, 'saves', 'restart');
+    let dropped = 0;
+    for (const name of readdirSync(folder).filter((f) => f.endsWith('.fsrestart'))) {
+      const path = join(folder, name);
+      const text = readFileSync(path, 'utf8');
+      const at = text.lastIndexOf(',"live":[');
+      if (at >= 0) {
+        writeFileSync(path, `${text.slice(0, at)}}`);
+        dropped++;
+      }
+    }
+    if (dropped === 0) {
+      throw new Error('no kept game has live steps');
+    }
   }
 
   // stop sends SIGTERM, as systemd and Docker do, and waits for the exit.
@@ -180,4 +202,43 @@ test('server notices: a newer engine, a lost game', async ({ browser }) => {
   await shot(eve, 'notice-lost');
   await sorry.getByRole('button', { name: 'OK' }).click();
   await expect(eve.getByRole('heading', { name: 'Games', exact: true })).toBeVisible();
+});
+
+// rollbackOverRestart plays a Godmode game to an attack's throw, then
+// restarts the server; edit runs while it is down. It returns the
+// active page with its History open.
+async function rollbackOverRestart(browser: Browser, names: string[], edit?: () => void): Promise<Page> {
+  await server.start();
+  pages = await startGame(browser, names, { port: server.port, url: `${appURL(server.port)}&anim=off`, options: { rollback: 'god' } });
+  const active = await activePage(pages, click);
+  await expect(turnAction(active, 'Attack')).toBeEnabled();
+  await click(active, turnAction(active, 'Attack'));
+  await settle(pages, click, async () => (await throwButton(active).count()) > 0);
+  await server.stop();
+  edit?.();
+  await server.start();
+  for (const page of pages) {
+    await expect(page.getByRole('status', { name: 'Reconnecting' })).toHaveCount(0, { timeout: 15000 });
+  }
+  await active.getByRole('button', { name: 'History', exact: true }).click();
+  return active;
+}
+
+test('Godmode: a rollback reaches past a server restart (17.5)', async ({ browser }) => {
+  const active = await rollbackOverRestart(browser, ['Gus', 'Hex']);
+  const history = active.getByRole('complementary', { name: 'History', exact: true });
+  await expect(history.getByText('The server restarted')).toHaveCount(0);
+  await history.getByRole('button', { name: 'Roll back: You declare an attack' }).click();
+  await expect(throwButton(active)).toHaveCount(0);
+  await expect(turnAction(active, 'Attack')).toBeEnabled();
+});
+
+test('Godmode: a history that does not replay ends at the restart (17.5)', async ({ browser }) => {
+  const active = await rollbackOverRestart(browser, ['Ida', 'Jo'], () => {
+    server.dropLive();
+  });
+  const history = active.getByRole('complementary', { name: 'History', exact: true });
+  await expect(history.getByRole('listitem').filter({ hasText: 'The server restarted; no rollback before this' })).toBeVisible();
+  await expect(history.getByRole('button', { name: 'Roll back: You declare an attack' })).toHaveCount(0);
+  await shot(active, 'rollback-restart-cut');
 });

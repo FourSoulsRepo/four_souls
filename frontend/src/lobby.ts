@@ -1,6 +1,6 @@
 // The lobby state and how server messages change it. Pure, so it is
 // tested without a socket.
-import type { Envelope, GameInfo, Games, Options, ProtocolError, Saved, SaveInfo, Table, Update, Welcome } from './protocol';
+import type { Envelope, GameInfo, Games, Options, ProtocolError, RollbackMode, Saved, SaveInfo, Table, Update, Welcome } from './protocol';
 import { errorText } from './protocol';
 import type { LanServer, RecentServer, Rejoin } from './bridge';
 
@@ -141,7 +141,16 @@ export function optionsText(o: Options | undefined): string {
   if (o && !o.no_deck_ratios) {
     parts.push('deck ratios');
   }
+  if (o?.rollback) {
+    parts.push(rollbackText(o.rollback));
+  }
   return parts.join(' · ');
+}
+
+// rollbackText names a rollback mode for the game list and the table
+// (ADR 020, item 1.4).
+export function rollbackText(mode: RollbackMode): string {
+  return mode === 'god' ? 'Godmode rollback' : 'Soft rollback';
 }
 
 // LanRow is one game found on the local network, as the LAN screen

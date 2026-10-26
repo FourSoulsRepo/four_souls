@@ -21,6 +21,10 @@
 11. No copy of a host-banned card goes into a deck.
 12. The match record header lists the host bans.
 13. Deck ratios: on unless the host turns them off (UC-20).
+14. Rollback: Disabled, Soft or Godmode (ADR 020).
+    1. Disabled by default; a short hint says what each mode allows.
+    2. Soft: UC-31; Godmode: UC-30.
+    3. The host screen remembers the last mode.
 
 ## Alternative scenarios and errors
 

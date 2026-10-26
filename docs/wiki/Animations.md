@@ -55,6 +55,8 @@ Claims are counted in *beats*: a beat is one update, from the start of its effec
 
 CSS `transition`s on hover and focus are not listed: they answer the pointer, not the game, and cannot clash with an effect.
 
+A rollback (ADR 020, item 8.5) has no animation: its update plays no effects, and while its table shows, `viewScale` is 0, so no card pops in, no effect icon fades and no row slides. The table jumps to the restored view; the next update animates as usual.
+
 ## Adding an animation
 
 1. Pick an id; add the `anim: <id>` comment above the animation in the code.

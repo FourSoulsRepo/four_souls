@@ -130,6 +130,8 @@ describe('optionsText', () => {
       'Draft of 4 · 2 ban rounds · 90 s to respond · no bonus souls · deck ratios',
     );
     expect(optionsText({ no_deck_ratios: true })).toBe('Random characters');
+    // The rollback mode (ADR 020).
+    expect(optionsText({ no_deck_ratios: true, rollback: 'god' })).toBe('Random characters · Godmode rollback');
   });
 });
 

@@ -89,6 +89,7 @@ Use options 1, 3, 5 and 10.
    7. Version 2: the order prompt (19.16).
    8. Version 3: the throw prompt and intent (15.60).
    9. Version 4: `skip_all` message and field removed (15.84).
+   10. Version 5: rollback (ADR 020, 17.3) and the Soft vote (17.4).
 6. Cards
    1. Messages carry card refs (`the_d6`, `the_d6@2`), never card text.
    2. A client shows an unknown ref as a blank card with the ref (SP-05).
@@ -126,6 +127,17 @@ Use options 1, 3, 5 and 10.
    22. Mode prompt: `view.subject` is its card; `view.modes` lists every mode (15.58).
    23. Each mode has its `text` and the prompt `option` that picks it, or -1.
    24. Only the chooser gets both.
+   25. Rollback: the client sends `rollback` with a step (ADR 020).
+   26. `update` → `rollback`: who, the target step, how many undone.
+   27. `update` → `rollback_mode` and `rollback_from`: the first target.
+   28. A refused rollback gets error `rollback`.
+   29. `create` options and `games` carry the mode (`rollback`).
+   30. Soft: `update` → `rollback_steps`: each target and its author.
+   31. Soft: the author's `rollback` sets `ask`; else it is refused.
+   32. `rollback_vote` answers yes or no; `rollback_cancel` ends one's own vote.
+   33. `update` → `rollback_vote` while a vote is open; the game waits.
+   34. `update` → `rollback_end` when a vote ends with no rollback, and why.
+   35. `update` → `rollback_cut`: the step where a server restart cut the history.
 9. Playing over the internet, until a relay exists
    1. A virtual LAN (Tailscale, ZeroTier, Hamachi, Radmin VPN), or port forwarding.
    2. Or a dedicated server on a rented VPS.

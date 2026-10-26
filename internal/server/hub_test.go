@@ -125,8 +125,15 @@ func arrive(t *testing.T, h *Hub, name, token string) (*player, protocol.Welcome
 // startTable starts a game of n players and returns them, seated.
 func startTable(t *testing.T, h *Hub, n int) []*player {
 	t.Helper()
+	return startTableWith(t, h, protocol.Create{Seats: n})
+}
+
+// startTableWith starts a game created by m and returns its players.
+func startTableWith(t *testing.T, h *Hub, m protocol.Create) []*player {
+	t.Helper()
+	n := m.Seats
 	host, _ := arrive(t, h, "P0", "")
-	host.say(protocol.TypeCreate, protocol.Create{Seats: n})
+	host.say(protocol.TypeCreate, m)
 	var tb protocol.Table
 	host.next(protocol.TypeTable, &tb)
 	players := []*player{host}

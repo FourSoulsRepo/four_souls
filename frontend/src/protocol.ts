@@ -2,7 +2,7 @@
 // Only what the client uses so far; protocol.test.ts checks these types
 // against Go's golden file. Go sends a nil list as null.
 
-export const protocolVersion = 4;
+export const protocolVersion = 5;
 export const defaultPort = 4774;
 
 export interface Envelope {
@@ -73,6 +73,8 @@ export interface GameInfo {
   started: boolean;
   // locked: joining needs the game password (N-14).
   locked?: boolean;
+  // rollback is the game's rollback mode (ADR 020).
+  rollback?: RollbackMode;
 }
 
 export interface SaveInfo {
@@ -98,7 +100,11 @@ export interface Options {
   no_bonus_souls?: boolean;
   no_deck_ratios?: boolean;
   response_timer?: number; // seconds; 0: off, else at least 60
+  rollback?: RollbackMode; // none: Disabled (ADR 020)
 }
+
+// RollbackMode: soft, the others vote; god, anyone, at once.
+export type RollbackMode = 'soft' | 'god';
 
 export interface Create {
   seats: number;
@@ -565,4 +571,69 @@ export interface Update {
   deadline?: number; // Unix ms; the response timer
   wait_turn?: boolean;
   pause?: Pause;
+  // rollback_mode and rollback_from: the game's rollback mode and the
+  // first step it may target (ADR 020); none: no rollback.
+  rollback_mode?: RollbackMode;
+  rollback_from?: number;
+  // rollback: this update rolled the game back to before step to; the
+  // view is that table, and step is the rollback's own number.
+  rollback?: Rollback;
+  // rollback_steps: in Soft, the steps a rollback may target now, with
+  // their authors (ADR 020, item 3).
+  rollback_steps?: RollbackStep[];
+  // rollback_vote: the open Soft vote; the game waits (item 5).
+  rollback_vote?: RollbackVote;
+  // rollback_end: this update ended a vote with no rollback.
+  rollback_end?: RollbackEnd;
+  // rollback_cut: the step where a server restart cut the history;
+  // nothing up to it can be rolled back (ADR 020, item 10.6).
+  rollback_cut?: number;
+}
+
+export interface RollbackStep {
+  step: number;
+  seat: number;
+}
+
+// RollbackVote: seat opened it to undo author's step and undo steps in
+// all; need of the voters must say yes. deadline: Unix ms; none: no timer.
+export interface RollbackVote {
+  step: number;
+  seat: number;
+  author: number;
+  undo: number;
+  voters: number[];
+  votes: RollbackBallot[] | null;
+  need: number;
+  deadline?: number;
+}
+
+export interface RollbackBallot {
+  seat: number;
+  yes: boolean;
+}
+
+// RollbackEnd: the vote seat opened on step ended with no rollback.
+export interface RollbackEnd {
+  step: number;
+  seat: number;
+  why: 'declined' | 'cancelled' | 'timeout' | 'left' | 'failed';
+}
+
+export interface Rollback {
+  seat: number;
+  to: number;
+  undid: number;
+}
+
+// RollbackTo asks the server to undo a step and every step after it.
+// In Soft the step's author asks instead: ask opens the vote.
+export interface RollbackTo {
+  step: number;
+  ask?: boolean;
+}
+
+// RollbackVoteAnswer is a voter's yes or no on the open Soft vote.
+export interface RollbackVoteAnswer {
+  yes: boolean;
 }

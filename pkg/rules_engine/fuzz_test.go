@@ -1,6 +1,7 @@
 package rulesengine
 
 import (
+	"bytes"
 	"os"
 	"strings"
 	"testing"
@@ -29,8 +30,12 @@ func playFuzz(t *testing.T, seed uint64, players uint8, choices []byte, focus []
 			giveItem(g, PlayerID(p), card)
 		}
 	}
-	if err := g.CheckInvariants(); err != nil {
+	if err = g.CheckInvariants(); err != nil {
 		t.Fatalf("after setup: %v", err)
+	}
+	base, err := g.Save()
+	if err != nil {
+		t.Fatal(err)
 	}
 	var steps []StepRecord
 	choices = choices[:min(len(choices), maxFuzzSteps)]
@@ -61,6 +66,42 @@ func playFuzz(t *testing.T, seed uint64, players uint8, choices []byte, focus []
 		if _, err := Replay(s, steps); err != nil {
 			t.Fatalf("replay: %v (A-08)", err)
 		}
+	}
+	checkUndoRedoFuzz(t, g, base, steps, undoStep(choices, len(steps)))
+}
+
+// undoStep picks the step to roll back to before, 0 to n, from the input.
+func undoStep(choices []byte, n int) int {
+	if len(choices) == 0 {
+		return 0
+	}
+	return int(choices[len(choices)-1]) * n / 255
+}
+
+// checkUndoRedoFuzz rolls the game back to before step k and plays the
+// undone steps again. Each step's checksum covers the whole state, the
+// RNG included, so the undo is exact; the redo must end in the same
+// bytes as the game (ADR 020, item 7).
+func checkUndoRedoFuzz(t *testing.T, g *Game, base []byte, steps []StepRecord, k int) {
+	t.Helper()
+	r, err := ReplayFrom(base, steps[:k], fuzzSets...)
+	if err != nil {
+		t.Fatalf("undo to before step %d: %v", k, err)
+	}
+	undone, err := r.Save()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if r, err = ReplayFrom(undone, steps[k:], fuzzSets...); err != nil {
+		t.Fatalf("redo from step %d: %v", k, err)
+	}
+	a, errA := r.Save()
+	b, errB := g.Save()
+	if errA != nil || errB != nil {
+		t.Fatal(errA, errB)
+	}
+	if !bytes.Equal(a, b) {
+		t.Fatalf("undo to before step %d, then redo, ends in a different state", k)
 	}
 }
 
