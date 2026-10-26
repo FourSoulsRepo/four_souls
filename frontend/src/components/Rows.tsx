@@ -1,20 +1,21 @@
 import { AnimatePresence, motion, useIsPresent, type HTMLMotionProps } from 'motion/react';
 import type { ReactNode } from 'react';
 import { scaleFor } from '../playback';
-import { useApp } from '../store';
+import { useApp, viewScale } from '../store';
 
 // useRowScale is how long row moves take, as a factor of their normal
-// time; 0 when animations are off (ST-05).
+// time; 0 when animations are off (ST-05), or for a rollback's table.
 function useRowScale(): number {
-  return useApp((s) => scaleFor(s.settings.animation, 0, 0));
+  return useApp(viewScale);
 }
 
 // Rows holds the moving rows of the stack panel or the history strip
 // (15.51, V-39). A leaving row stays until it has faded out. With
-// animations off, rows come and go at once.
+// animations off, rows come and go at once. A rollback keeps the list
+// as it is, so its rows only jump: they do not mount again.
 export function Rows({ children }: { children: ReactNode }) {
-  const scale = useRowScale();
-  return scale > 0 ? <AnimatePresence initial={false}>{children}</AnimatePresence> : children;
+  const on = useApp((s) => scaleFor(s.settings.animation, 0, 0) > 0);
+  return on ? <AnimatePresence initial={false}>{children}</AnimatePresence> : children;
 }
 
 // Row is one row in Rows, under a stable key: a new row fades in, the

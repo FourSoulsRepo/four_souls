@@ -71,6 +71,9 @@ func checkOptions(o *protocol.Options, sets []engine.CardSet, players int) error
 		return fmt.Errorf("a ban timer is off or %d to %d seconds", minBanTimer, maxBanTimer)
 	case o.ResponseTimer != 0 && (o.ResponseTimer < minResponseTimer || o.ResponseTimer > maxResponseTimer):
 		return fmt.Errorf("a response timer is off or %d to %d seconds (N-07)", minResponseTimer, maxResponseTimer)
+	case o.Rollback != "" && o.Rollback != protocol.RollbackGod:
+		// Soft, with its barriers and vote, comes in 17.4.
+		return fmt.Errorf("rollback is off or %q (ADR 020)", protocol.RollbackGod)
 	}
 	all := characters(sets)
 	left := len(all) - o.BanRounds*players
@@ -252,6 +255,7 @@ func (r *Room) play(characters []engine.CardRef) {
 		panic(fmt.Sprintf("server: the checked setup failed: %v", err))
 	}
 	r.game, r.match = g, nil
+	r.setBase()
 	r.openRecord(s)
 	r.after(startEvents(events), false) // the start is step 0
 }

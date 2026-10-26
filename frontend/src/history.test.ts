@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import kindList from '../../pkg/rules_engine/testdata/event_kinds.txt?raw';
 import { PromptKind } from './actions';
-import { entriesFor as entries, historyKinds, lookedAt, stepName, stripEntries } from './history';
+import { entriesFor as entries, historyKinds, lookedAt, rollbackTargets, rolledBack, stepName, stripEntries, type Entry } from './history';
 import type { GameEvent, GameView, StackItem } from './protocol';
 import { StackKind, stackLine } from './stack';
 
@@ -496,5 +496,30 @@ describe('stripEntries', () => {
     // The new tile is on top; the old ones keep their keys below it.
     expect(after.slice(1)).toEqual(before);
     expect(after).toHaveLength(before.length + 1);
+  });
+});
+
+describe('rollback (ADR 020)', () => {
+  // Steps 1 to 3 brought two rows, none, and two; the start brought one.
+  const row = (key: number, step: number, text: string): Entry => ({ key, turn: 1, icon: '+', text, step });
+  const history = [row(1, 0, 'start'), row(2, 1, 'Ann loots'), row(3, 1, 'Ann gains 1¢'), row(4, 3, 'Bo attacks'), row(5, 3, 'Bo rolls 4')];
+
+  it('offers each step since the base once, on its first row', () => {
+    expect([...rollbackTargets(history, 1)]).toEqual([2, 4]);
+    // After a restart the base moved: older steps are no target.
+    expect([...rollbackTargets(history, 2)]).toEqual([4]);
+  });
+
+  it('greys the undone rows and tells who rolled back', () => {
+    const after = rolledBack(history, { seat: 1, to: 3, undid: 2 }, 4, 1, 0, n);
+    expect(after.filter((e) => e.undone).map((e) => e.key)).toEqual([4, 5]);
+    expect(after.at(-1)).toEqual({ key: 6, turn: 1, icon: '↶', text: 'Bo rolls back 2 steps', step: 4, rollback: true });
+    // Undone rows and the rollback row are no target; the rest still are.
+    expect([...rollbackTargets(after, 1)]).toEqual([2]);
+    // The viewer's own rollback, of one step, past the first one.
+    const again = rolledBack(after, { seat: 0, to: 1, undid: 1 }, 5, 1, 0, n);
+    expect(again.at(-1)?.text).toBe('You roll back 1 step');
+    expect(again.filter((e) => e.undone).map((e) => e.key)).toEqual([2, 3, 4, 5, 6]);
+    expect(rollbackTargets(again, 1).size).toBe(0);
   });
 });

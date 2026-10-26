@@ -7,7 +7,7 @@ import { scaleFor } from '../playback';
 import { fighters } from '../prompt';
 import type { MonsterStats, StatSource } from '../protocol';
 import { statLines, sumOf, tempSources, trend, type Name, type TempSource, type Trend } from '../stats';
-import { useApp } from '../store';
+import { useApp, viewScale } from '../store';
 import { boxOf } from '../zoom';
 import { Die } from './Die';
 import './Card.css';
@@ -79,7 +79,7 @@ export function Card({
 }: Props) {
   const info = useApp((s) => (cardRef ? s.cards.get(cardRef) : undefined));
   const backImage = useApp((s) => s.backs.get(back) ?? '');
-  const scale = useApp((s) => scaleFor(s.settings.animation, 0, 0));
+  const scale = useApp(viewScale);
   const [brokenImage, setBrokenImage] = useState('');
   const zoomable = size !== 'zoom' && !noZoom;
   const cards = useApp((s) => s.cards);
@@ -325,9 +325,11 @@ function liveOf(stats: Props['stats'], monster: MonsterStats | undefined) {
 // in, a leaving one fades out (15.93); with animations off they come
 // and go at once.
 function SourceIcons({ list, name, onLeave }: { list: TempSource[]; name: Name; onLeave: (e: PointerEvent<HTMLElement>) => void }) {
-  const scale = useApp((s) => scaleFor(s.settings.animation, 0, 0));
+  const scale = useApp(viewScale);
+  // A rollback's table keeps the icons mounted; they only jump.
+  const on = useApp((s) => scaleFor(s.settings.animation, 0, 0) > 0);
   const icons = list.map((t) => <SourceIcon key={t.key} source={t} name={name(t.card)} onLeave={onLeave} scale={scale} />);
-  if (scale === 0) {
+  if (!on) {
     return list.length === 0 ? null : <span className="card-sources">{icons}</span>;
   }
   return (

@@ -79,5 +79,8 @@ The fixture copies the fan-game notice. `internal/legal` has a test that fails w
 | A next-roll boost: an icon with a small die | `screen-stats-next-roll.png` |
 | An aimed attack: what the roll needs | `screen-stats-odds.png` |
 | A thrown roll names its changes | `screen-stats-roll.png` |
+| Godmode: a rollback button on a history row | `screen-rollback-button.png` |
+| The author rolled back: undone rows greyed, the rollback row | `screen-rollback-undone.png` |
+| Another player rolled back | `screen-rollback-other.png` |
 
 When a screen is added, call `shot` in its test and add a row here.

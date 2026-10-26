@@ -100,6 +100,13 @@ type Room struct {
 	emptySince time.Time // when the last player left
 	now        func() time.Time
 	limitTick  time.Duration
+
+	// Rollback (ADR 020, item 7): the base state, its step number, and
+	// the live steps since; only when the game's mode allows rollback.
+	base     []byte
+	baseStep int
+	live     []liveStep
+	rolled   *protocol.Rollback // the rollback the next broadcast tells
 }
 
 // NewRoom prepares a game for seated players; it starts in Run. The
@@ -215,6 +222,8 @@ func (r *Room) handle(req request) {
 		r.save(c, env)
 	case protocol.TypePresence:
 		r.presence(c, env)
+	case protocol.TypeRollback:
+		r.rollback(c, env)
 	default:
 		c.fail(env.ID, protocol.ErrBadMessage, "not during a game: "+env.Type)
 	}
@@ -332,6 +341,9 @@ func (r *Room) update(c *Client, events []engine.Event) {
 		if time.Now().Before(r.grace) {
 			u.Pause.Grace = r.grace.UnixMilli()
 		}
+	}
+	if r.base != nil {
+		u.RollbackMode, u.RollbackFrom, u.Rollback = r.opts.Rollback, r.baseStep+1, r.rolled
 	}
 	c.send(protocol.TypeUpdate, 0, u)
 }

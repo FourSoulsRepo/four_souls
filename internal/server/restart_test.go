@@ -291,8 +291,14 @@ func TestNoKeepingWithoutTheSetting(t *testing.T) {
 // server; it returns the bots and the game's restart file.
 func stoppedGame(t *testing.T, dir string) ([]*bot, string) {
 	t.Helper()
+	return stoppedGameWith(t, dir, nil)
+}
+
+// stoppedGameWith is stoppedGame with the given options.
+func stoppedGameWith(t *testing.T, dir string, opts *protocol.Options) ([]*bot, string) {
+	t.Helper()
 	srv := startKeeping(t, dir)
-	bots := seatTwo(t, "ws://"+srv.Addr()+"/ws", nil)
+	bots := seatTwo(t, "ws://"+srv.Addr()+"/ws", opts)
 	for _, b := range bots {
 		b.send(protocol.TypeReady, protocol.Ready{Ready: true})
 	}

@@ -18,6 +18,7 @@ import {
   type Presence,
   type ProtocolError,
   type Ready,
+  type RollbackTo,
   type Saved,
   type Table,
   type Update,
@@ -31,12 +32,12 @@ const modeled: Record<string, Envelope | Envelope[]> = {
   hello: {
     type: 'hello',
     id: 1,
-    data: { protocol: 4, app: '0.1.0', name: 'Ann', role: 'player', sets: ['b2'], dice: 'tear' } satisfies Hello,
+    data: { protocol: 5, app: '0.1.0', name: 'Ann', role: 'player', sets: ['b2'], dice: 'tear' } satisfies Hello,
   },
   welcome: {
     type: 'welcome',
     id: 1,
-    data: { protocol: 4, app: '0.1.0', engine: '0.1.0', token: 't0k3n', seat: 0, presence: true, name: 'Basement' } satisfies Welcome,
+    data: { protocol: 5, app: '0.1.0', engine: '0.1.0', token: 't0k3n', seat: 0, presence: true, name: 'Basement' } satisfies Welcome,
   },
   error: {
     type: 'error',
@@ -142,6 +143,9 @@ const modeled: Record<string, Envelope | Envelope[]> = {
         { seat: 0, name: 'Ann', connected: true, dice: 'tear' },
         { seat: 1, name: 'Bo', connected: false },
       ],
+      rollback_mode: 'god',
+      rollback_from: 1,
+      rollback: { seat: 1, to: 1, undid: 3 },
     } satisfies Update,
   },
   list: { type: 'list', id: 4, data: {} },
@@ -149,7 +153,7 @@ const modeled: Record<string, Envelope | Envelope[]> = {
     type: 'games',
     id: 4,
     data: {
-      games: [{ id: 'g1', host: 'Ann', seats: 4, taken: 2, sets: ['b2'], started: false }],
+      games: [{ id: 'g1', host: 'Ann', seats: 4, taken: 2, sets: ['b2'], started: false, rollback: 'god' }],
     } satisfies Games,
   },
   create: {
@@ -165,6 +169,7 @@ const modeled: Record<string, Envelope | Envelope[]> = {
         ban_timer: 30,
         host_bans: ['eden'],
         response_timer: 90,
+        rollback: 'god',
       },
     } satisfies Create,
   },
@@ -187,6 +192,7 @@ const modeled: Record<string, Envelope | Envelope[]> = {
   saved: { type: 'saved', data: { save: 'g1' } satisfies Saved },
   load: { type: 'load', id: 14, data: { save: 'g1' } satisfies Load },
   wait_turn: { type: 'wait_turn', id: 15, data: { on: true } },
+  rollback: { type: 'rollback', id: 18, data: { step: 7 } satisfies RollbackTo },
   // A second line of one type is keyed by type and ID.
   'intent#16': { type: 'intent', id: 16, data: { intent: { player: 0, kind: 9 } satisfies Intent } },
   'presence#17': { type: 'presence', id: 17, data: { seat: 0, from: { hand: 2 }, point: { x: 0.25, y: 0.5 } } satisfies Presence },

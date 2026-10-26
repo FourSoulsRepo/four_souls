@@ -29,6 +29,7 @@ func (r *Room) apply(in engine.Intent) ([]engine.Event, error) {
 		return nil, err //nolint:wrapcheck // the engine's RuleError is checked by the caller
 	}
 	r.steps++
+	r.keepLive(st)
 	if r.rec != nil {
 		if err := r.rec.Step(st.Intent, st.Events, st.Checksum); err != nil {
 			log.Printf("server: record %s: %v; recording stops", r.path, err)
@@ -60,7 +61,7 @@ func (r *Room) openRecord(s engine.Setup) {
 	h := record.Header{
 		App: v.App, Engine: v.Engine, Protocol: protocol.Version, Game: r.recInfo.game, Server: r.recInfo.server, Started: now.UTC(),
 		Setup: record.Setup{Seed: s.Seed, Players: s.Players, Sets: r.recInfo.sets, BonusSouls: s.BonusSouls, Characters: chars, Banned: banned, DeckRatios: s.DeckRatios},
-		Seats: seats, Cards: r.recInfo.cards,
+		Seats: seats, Cards: r.recInfo.cards, Rollback: r.opts.Rollback,
 	}
 	w, err := record.Create(r.path, h)
 	if err != nil {

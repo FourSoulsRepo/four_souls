@@ -32,14 +32,14 @@ import {
 import { noHostSetup } from './hostSetup';
 import type { CardInfo, Kind } from './cards';
 import { loadFonts } from './fonts';
-import { entriesFor, lookedAt, type Entry, type Looked, type Outcome } from './history';
+import { entriesFor, lookedAt, rolledBack, type Entry, type Looked, type Outcome } from './history';
 import type { LinePart } from './stack';
 import type { Box } from './zoom';
 import { emptyLobby, forgotten, leftTable, lost, onMessage, remember, renamed, type Screen, type ServerUp, type Session } from './lobby';
 import { connectFirst, disconnect, drop, send } from './net';
 import { claimEffect, nextBeat } from './animations';
 import { lastRollAfter, type LastRoll } from './dice';
-import { createPlayback, effectsFor, slotZone, type Effect } from './playback';
+import { createPlayback, effectsFor, scaleFor, slotZone, type Effect } from './playback';
 import { loadSounds } from './sounds';
 import { endsGame, lostDialogAfter, retryDelay } from './reconnect';
 import {
@@ -177,6 +177,11 @@ interface AppState extends Session {
   takeAimed: () => Aimed | null;
   // waitTurn turns "wait for my turn" on or off (N-16).
   waitTurn: (on: boolean) => void;
+  // rollBack asks to undo a step and every step after it (ADR 020).
+  rollBack: (step: number) => void;
+  // jumped is set while the table shown came from a rollback: it shows
+  // at once, with no animation (item 8.5).
+  jumped: boolean;
   // presence is what the other seats point at now, by seat (15.36).
   presence: Record<number, Presence>;
   // sendPresence shares what this player points at (ADR 016).
@@ -308,6 +313,13 @@ export function messageOf(e: unknown): string {
 export const presenceLife = 5000;
 export const presenceRenew = 2000;
 
+// viewScale is how long the table's own animations take as the view
+// changes (a card's pop-in, its effect icons, the moving rows): 0 when
+// animations are off, or while a rollback's table shows (ADR 020).
+export function viewScale(s: { jumped: boolean; settings: Pick<Settings, 'animation'> }): number {
+  return s.jumped ? 0 : scaleFor(s.settings.animation, 0, 0);
+}
+
 // dropConnection is for tests: it fails the connection as the network
 // would, so reconnecting can be checked.
 export const dropConnection = drop;
@@ -323,23 +335,32 @@ export const useApp = create<AppState>()((set, get) => {
     begin: nextBeat,
     show: (u) => {
       const s = get();
+      // A rollback greys the undone entries and adds its row (ADR 020).
+      const history = u.rollback ? rolledBack(s.history, u.rollback, u.step, u.view.turn.number, seatOf(s), names(u)) : s.history;
       const entries = entriesFor(
         u.events ?? [],
         s.game?.view.turn.number ?? u.view.turn.number,
         seatOf(s),
         names(u),
-        (s.history.at(-1)?.key ?? 0) + 1,
+        (history.at(-1)?.key ?? 0) + 1,
         u.view,
       );
+      // Each entry keeps the first step of its update: a rollback's target.
+      const first = s.game ? s.game.step + 1 : u.step;
       const looked = lookedAt(u.events ?? [], seatOf(s));
+      // A rollback jumps to the restored table: no animation, and what
+      // the undone steps left on screen goes (item 8.5).
+      const jump = u.rollback
+        ? { lastRoll: null, looking: [], aiming: null, aimed: null, selected: null, sent: null, zoom: null }
+        : { lastRoll: lastRollAfter(s.lastRoll, u.events ?? []), ...(looked.length > 0 ? { looking: looked } : {}) };
       set({
         game: u,
         placed: [],
         left: [],
         behind: playback.pending() > 0,
-        history: [...s.history, ...entries],
-        lastRoll: lastRollAfter(s.lastRoll, u.events ?? []),
-        ...(looked.length > 0 ? { looking: looked } : {}),
+        jumped: u.rollback !== undefined,
+        history: [...history, ...entries.map((e) => ({ ...e, step: first }))],
+        ...jump,
       });
     },
     run: (effect, scale) =>
@@ -367,16 +388,19 @@ export const useApp = create<AppState>()((set, get) => {
         const timer = window.setTimeout(done, 3000 * scale + 1000);
         set({ playing: { effect, scale, key, done } });
       }),
+    // A rollback plays no effects (ADR 020, item 8.5).
     effects: (u) =>
-      effectsFor(u.events ?? [], {
-        card: (ref) => get().cards.get(ref),
-        name: names(u).player,
-        character: (p) => u.view.players.find((x) => x.id === p)?.character.id,
-        slot: (id) => slotZone(u.view, id),
-        seen: (ref) => (get().game?.events ?? []).some((e) => e.kind === 'card_revealed' && e.card === ref),
-        roll: (stack) => get().game?.view.stack?.find((it) => it.id === stack)?.roll,
-        you: seatOf(get()),
-      }),
+      u.rollback
+        ? []
+        : effectsFor(u.events ?? [], {
+            card: (ref) => get().cards.get(ref),
+            name: names(u).player,
+            character: (p) => u.view.players.find((x) => x.id === p)?.character.id,
+            slot: (id) => slotZone(u.view, id),
+            seen: (ref) => (get().game?.events ?? []).some((e) => e.kind === 'card_revealed' && e.card === ref),
+            roll: (stack) => get().game?.view.stack?.find((it) => it.id === stack)?.roll,
+            you: seatOf(get()),
+          }),
     speed: () => get().settings.animation,
     shown: () => get().game,
   });
@@ -640,6 +664,11 @@ export const useApp = create<AppState>()((set, get) => {
     waitTurn: (on) => {
       send('wait_turn', { on });
     },
+    rollBack: (step) => {
+      send('rollback', { step });
+      set({ sent: get().game?.step ?? null, error: '' });
+    },
+    jumped: false,
     presence: {},
     sendPresence: (p) => {
       if (get().lobby.welcome?.presence) {

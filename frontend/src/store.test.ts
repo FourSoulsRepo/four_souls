@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { checkSeat, getSettings, saveSettings, serverStatus } from './bridge';
 import { noHostSetup } from './hostSetup';
+import type { Envelope, GameView, Update } from './protocol';
 import { messageOf, seatOf, useApp } from './store';
 
 vi.mock('./bridge', () => ({
@@ -87,14 +88,14 @@ describe('recent servers (N-18)', () => {
   });
 
   it('a welcome names the server in Recent', async () => {
-    useApp.getState().receive({ type: 'welcome', data: { protocol: 4, app: '0.1.0', engine: '0.1.0', token: 't', seat: -1, name: 'Basement' } });
+    useApp.getState().receive({ type: 'welcome', data: { protocol: 5, app: '0.1.0', engine: '0.1.0', token: 't', seat: -1, name: 'Basement' } });
     await vi.waitFor(() => {
       expect(useApp.getState().settings.recent).toEqual([{ address: 'a', name: '' }, { address: 'b', name: 'Basement' }]);
     });
   });
 
   it('a welcome without a change saves nothing', async () => {
-    useApp.getState().receive({ type: 'welcome', data: { protocol: 4, app: '0.1.0', engine: '0.1.0', token: 't', seat: -1 } });
+    useApp.getState().receive({ type: 'welcome', data: { protocol: 5, app: '0.1.0', engine: '0.1.0', token: 't', seat: -1 } });
     await Promise.resolve();
     expect(saveSettings).not.toHaveBeenCalled();
   });
@@ -210,5 +211,53 @@ describe('Recent servers (15.100)', () => {
     first({ open: 9 });
     await old;
     expect(useApp.getState().recentStatus['games.example.com']).toEqual({ open: 3 });
+  });
+});
+
+describe('rollback (ADR 020)', () => {
+  const view = (turn: number): GameView => ({
+    players: [],
+    shop: null,
+    monsters: null,
+    deck_sizes: [1, 1, 1, 0],
+    discards: [null, null, null, null],
+    stack: null,
+    turn: { active: 0, number: turn, step: 4, loot_plays: 0, attacks: 0, purchases: 0 },
+    waiting: { kind: 1, player: 0 },
+  });
+  const update = (u: Partial<Update> & { step: number }): Envelope => ({
+    type: 'update',
+    data: { events: null, view: view(1), allowed: null, seats: [{ seat: 1, name: 'Bo', connected: true }], rollback_mode: 'god', rollback_from: 1, ...u },
+  });
+
+  it('jumps to the restored table, greys the undone rows and adds a row', async () => {
+    const { receive } = useApp.getState();
+    receive(update({ step: 0 }));
+    receive(update({ step: 2, events: [{ kind: 'attack_declared', player: 1 }] }));
+    receive(update({ step: 3, events: [{ kind: 'purchase_declared', player: 1 }], view: view(2) }));
+    await vi.waitFor(() => {
+      expect(useApp.getState().game?.step).toBe(3);
+    });
+    // Each row keeps the first step of its update.
+    expect(useApp.getState().history.map((e) => e.step)).toEqual([1, 3]);
+    expect(useApp.getState().jumped).toBe(false);
+    receive(update({ step: 4, rollback: { seat: 1, to: 3, undid: 1 } }));
+    await vi.waitFor(() => {
+      expect(useApp.getState().game?.step).toBe(4);
+    });
+    const s = useApp.getState();
+    expect(s.jumped).toBe(true);
+    expect(s.history.map((e) => [e.text, e.undone ?? false])).toEqual([
+      ['Bo declares an attack', false],
+      ['Bo declares a purchase', true],
+      ['Bo rolls back 1 step', false],
+    ]);
+    // The next update animates again; its rows start after the rollback.
+    receive(update({ step: 5, events: [{ kind: 'attack_declared', player: 1 }] }));
+    await vi.waitFor(() => {
+      expect(useApp.getState().game?.step).toBe(5);
+    });
+    expect(useApp.getState().jumped).toBe(false);
+    expect(useApp.getState().history.at(-1)?.step).toBe(5);
   });
 });

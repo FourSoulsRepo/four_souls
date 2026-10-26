@@ -18,7 +18,9 @@ import (
 // 2: the order prompt (19.16); an older client cannot answer it.
 // 3: the throw prompt and intent (15.60).
 // 4: no "skip all" message or field (15.84).
-const Version = 4
+// 5: rollback (ADR 020); an older client would show a rolled back
+// table as if the undone steps still stood.
+const Version = 5
 
 // DefaultPort is the server's TCP port unless configured.
 const DefaultPort = 4774
@@ -66,6 +68,9 @@ const (
 	// Server restarts and game ends (N-20). An older client ignores them.
 	TypeRestarting = "restarting" // server → client: back in a moment; reconnect
 	TypeNotice     = "notice"     // server → client: something to tell the player
+
+	// Rollback (ADR 020).
+	TypeRollback = "rollback" // client → server: undo a step and every step after it
 )
 
 // Envelope wraps every message. ID is set by the client on requests;
@@ -142,6 +147,27 @@ type Update struct {
 	WaitTurn bool `json:"wait_turn,omitempty"`
 	// Pause is set while the game waits for a disconnected player (N-08).
 	Pause *Pause `json:"pause,omitempty"`
+	// RollbackMode is the game's rollback mode (ADR 020); "": none.
+	RollbackMode string `json:"rollback_mode,omitempty"`
+	// RollbackFrom is the first step a rollback may target: the first
+	// since the base state (ADR 020, item 7). 0 while none may.
+	RollbackFrom int `json:"rollback_from,omitempty"`
+	// Rollback is set on the update a rollback made: the table is the
+	// one from before step To. Step is the rollback's own number.
+	Rollback *Rollback `json:"rollback,omitempty"`
+}
+
+// Rollback tells who rolled the game back to before step To, and how
+// many live steps that undid (ADR 020, item 8).
+type Rollback struct {
+	Seat  int `json:"seat"`
+	To    int `json:"to"`
+	Undid int `json:"undid"`
+}
+
+// RollbackTo asks to undo step Step and every live step after it.
+type RollbackTo struct {
+	Step int `json:"step"`
 }
 
 // Pause is a game waiting for disconnected players, and the vote.
@@ -219,6 +245,8 @@ type GameInfo struct {
 	Sets    []string `json:"sets"`
 	Started bool     `json:"started"`
 	Locked  bool     `json:"locked,omitempty"` // joining needs the password (N-14)
+	// Rollback is the game's rollback mode (ADR 020, item 1.4).
+	Rollback string `json:"rollback,omitempty"`
 }
 
 // SeatInfo answers GET /seat?token=… (15.99): whether the token still
@@ -323,7 +351,16 @@ type Options struct {
 	// ResponseTimer is seconds to answer a prompt: 0 is off, else at
 	// least 60; an allowance for animations is added (N-07).
 	ResponseTimer int `json:"response_timer,omitempty"`
+	// Rollback is the rollback mode (ADR 020): "" is Disabled, else
+	// RollbackSoft or RollbackGod.
+	Rollback string `json:"rollback,omitempty"`
 }
+
+// Rollback modes (ADR 020, item 1).
+const (
+	RollbackSoft = "soft" // the other players vote; barriers stop it (17.4)
+	RollbackGod  = "god"  // Godmode: anyone, any step since the base, no vote
+)
 
 // Ban is one banned character; Seat is -1 for the host's list.
 type Ban struct {
@@ -408,6 +445,7 @@ const (
 	ErrNotInSave      = "not_in_save"  // the player did not play the saved game
 	ErrBadCard        = "bad_card"
 	ErrPassword       = "password" // missing or wrong game password (N-14)
+	ErrRollback       = "rollback" // the rollback is not allowed now (ADR 020)
 )
 
 // Error reports a problem with a message. Rule is the rules ID when the

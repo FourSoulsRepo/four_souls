@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -215,5 +216,67 @@ func TestServerName(t *testing.T) {
 		if has := bytes.Contains(line, []byte(`"server"`)); has != (name != "") {
 			t.Errorf("header %s: server field %v", line, has)
 		}
+	}
+}
+
+// TestRollbackLines: a rollback line takes a step number; the undone
+// steps stay in the record, and Live leaves them out (ADR 020, item 9).
+func TestRollbackLines(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "g5"+Ext)
+	h := header()
+	h.Rollback = "god"
+	w, err := Create(path, h)
+	if err != nil {
+		t.Fatal(err)
+	}
+	step := func(n uint64) {
+		t.Helper()
+		if serr := w.Step(map[string]uint64{"kind": n}, nil, n); serr != nil {
+			t.Fatal(serr)
+		}
+	}
+	back := func(to, seat, undid int) {
+		t.Helper()
+		if rerr := w.Rollback(to, seat, undid); rerr != nil {
+			t.Fatal(rerr)
+		}
+	}
+	// Steps 1-5; 6 undoes 4 and 5; 7, 8; 9 undoes 3, 7 and 8; 10.
+	for n := range uint64(5) {
+		step(n + 1)
+	}
+	back(4, 1, 2)
+	step(7)
+	step(8)
+	back(3, 0, 3)
+	step(10)
+	if cerr := w.Close(End{Ended: time.Now().UTC()}); cerr != nil {
+		t.Fatal(cerr)
+	}
+	rec, err := ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if rec.Header.Rollback != "god" {
+		t.Errorf("header rollback %q", rec.Header.Rollback)
+	}
+	if len(rec.Steps) != 8 || rec.Steps[5].N != 7 || rec.Steps[7].N != 10 {
+		t.Errorf("steps %+v", rec.Steps)
+	}
+	want := []Rollback{{Kind: "rollback", N: 6, To: 4, Seat: 1, Undid: 2}, {Kind: "rollback", N: 9, To: 3, Seat: 0, Undid: 3}}
+	if len(rec.Rollbacks) != 2 || rec.Rollbacks[0] != want[0] || rec.Rollbacks[1] != want[1] {
+		t.Errorf("rollbacks %+v", rec.Rollbacks)
+	}
+	var live []int
+	for _, s := range rec.Live() {
+		live = append(live, s.N)
+	}
+	if fmt.Sprint(live) != "[1 2 10]" {
+		t.Errorf("live steps %v, want [1 2 10]", live)
+	}
+	// A rollback as the last line undoes too.
+	rec.Rollbacks = append(rec.Rollbacks, Rollback{N: 11, To: 2})
+	if got := rec.Live(); len(got) != 1 || got[0].N != 1 {
+		t.Errorf("after a last rollback: %+v", got)
 	}
 }

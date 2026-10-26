@@ -1,8 +1,8 @@
 // Package record reads and writes match records (ADR 007): a .fsrec
 // file is gzip-compressed JSON lines, a header, one line per applied
-// step and, for a game that ended, an end line. Intents and events are
-// kept as raw JSON, so the package needs no engine and old records stay
-// readable.
+// step or rollback and, for a game that ended, an end line. Intents
+// and events are kept as raw JSON, so the package needs no engine and
+// old records stay readable.
 package record
 
 import (
@@ -12,8 +12,10 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	"os"
 	"path/filepath"
+	"slices"
 	"time"
 )
 
@@ -38,6 +40,8 @@ type Header struct {
 	// Cards holds the text of the cards, so outdated clients can show
 	// them (RP-10).
 	Cards []Card `json:"cards,omitempty"`
+	// Rollback is the game's rollback mode: "", "soft" or "god" (ADR 020).
+	Rollback string `json:"rollback,omitempty"`
 }
 
 // Setup is what is needed to rebuild the game: the engine's setup
@@ -74,6 +78,17 @@ type Step struct {
 	Intent   json.RawMessage `json:"intent"`
 	Events   json.RawMessage `json:"events"`
 	Checksum uint64          `json:"checksum"`
+}
+
+// Rollback undid the live steps from step To on (ADR 020, item 9).
+// Undone steps stay in the record. N is the rollback's own number:
+// step numbers never repeat, so the next step is N+1.
+type Rollback struct {
+	Kind  string `json:"kind"` // "rollback"
+	N     int    `json:"n"`
+	To    int    `json:"to"`    // the first undone step
+	Seat  int    `json:"seat"`  // who rolled back
+	Undid int    `json:"undid"` // how many live steps it undid
 }
 
 // End closes a record.
@@ -126,6 +141,13 @@ func (w *Writer) Step(intent, events any, checksum uint64) error {
 	return w.write(Step{Kind: "step", N: w.steps, Intent: in, Events: ev, Checksum: checksum})
 }
 
+// Rollback appends a rollback to before step to; it takes the next
+// step number.
+func (w *Writer) Rollback(to, seat, undid int) error {
+	w.steps++
+	return w.write(Rollback{Kind: "rollback", N: w.steps, To: to, Seat: seat, Undid: undid})
+}
+
 // Close writes the end line and closes the file.
 func (w *Writer) Close(end End) error {
 	end.Kind = "end"
@@ -167,7 +189,9 @@ func (w *Writer) write(v any) error {
 type Record struct {
 	Header Header
 	Steps  []Step
-	End    *End
+	// Rollbacks are the rollback lines, in order; Live applies them.
+	Rollbacks []Rollback
+	End       *End
 	// Resumes counts how often the game was saved and loaded again.
 	Resumes int
 }
@@ -208,6 +232,12 @@ func Read(r io.Reader) (*Record, error) {
 				return &rec, fmt.Errorf("%w: %w", ErrFormat, err)
 			}
 			rec.Steps = append(rec.Steps, s)
+		case kind.Kind == "rollback":
+			var b Rollback
+			if err := json.Unmarshal(line, &b); err != nil {
+				return &rec, fmt.Errorf("%w: %w", ErrFormat, err)
+			}
+			rec.Rollbacks = append(rec.Rollbacks, b)
 		case kind.Kind == "end":
 			var e End
 			if err := json.Unmarshal(line, &e); err != nil {
@@ -227,6 +257,27 @@ func Read(r io.Reader) (*Record, error) {
 		return nil, ErrFormat
 	}
 	return &rec, nil
+}
+
+// Live is the steps a replay applies: every step, less those a
+// rollback undid (ADR 020, item 9). A rollback never reaches behind a
+// resume, so a replay from the start with these steps rebuilds the game.
+func (r *Record) Live() []Step {
+	var out []Step
+	b := r.Rollbacks
+	undo := func(before int) {
+		for len(b) > 0 && b[0].N < before {
+			to := b[0].To
+			out = slices.DeleteFunc(out, func(s Step) bool { return s.N >= to })
+			b = b[1:]
+		}
+	}
+	for _, s := range r.Steps {
+		undo(s.N)
+		out = append(out, s)
+	}
+	undo(math.MaxInt)
+	return out
 }
 
 // ReadFile reads a record file.

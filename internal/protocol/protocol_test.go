@@ -36,11 +36,11 @@ func TestGolden(t *testing.T) {
 		{TypeWelcome, 1, Welcome{Protocol: Version, App: "0.1.0", Engine: "0.1.0", Token: "t0k3n", Seat: 0, Presence: true, Name: "Basement"}},
 		{TypeIntent, 2, Intent{Intent: engine.Intent{Kind: engine.IntentPass}}},
 		{TypeResync, 3, struct{}{}},
-		{TypeUpdate, 0, Update{Step: 1, Events: []engine.Event{{Kind: engine.EvLooted, Player: 0, Card: "a_dime"}}, View: view, Allowed: g.Allowed(p), Aims: []engine.Aim{{Intent: 0, Targets: []engine.OptionView{{Object: 320, Player: engine.NoPlayer}, {Player: 1, IsPlayer: true}}, Reason: "Pick a monster or a player."}}, Blocked: []engine.Block{{Kind: engine.IntentAttack, Reason: "Not your turn"}, {Kind: engine.IntentPlayLoot, Object: 314, Reason: "Loot is played on your turn"}}, Seats: []Seat{{Seat: 0, Name: "Ann", Connected: true, Dice: "tear"}, {Seat: 1, Name: "Bo"}}}},
+		{TypeUpdate, 0, Update{Step: 1, Events: []engine.Event{{Kind: engine.EvLooted, Player: 0, Card: "a_dime"}}, View: view, Allowed: g.Allowed(p), Aims: []engine.Aim{{Intent: 0, Targets: []engine.OptionView{{Object: 320, Player: engine.NoPlayer}, {Player: 1, IsPlayer: true}}, Reason: "Pick a monster or a player."}}, Blocked: []engine.Block{{Kind: engine.IntentAttack, Reason: "Not your turn"}, {Kind: engine.IntentPlayLoot, Object: 314, Reason: "Loot is played on your turn"}}, Seats: []Seat{{Seat: 0, Name: "Ann", Connected: true, Dice: "tear"}, {Seat: 1, Name: "Bo"}}, RollbackMode: RollbackGod, RollbackFrom: 1, Rollback: &Rollback{Seat: 1, To: 1, Undid: 3}}},
 		{TypeError, 2, Error{Code: ErrRefused, Message: "no loot play available", Rule: "R-CARD-08"}},
 		{TypeList, 4, struct{}{}},
-		{TypeGames, 4, Games{Games: []GameInfo{{ID: "g1", Host: "Ann", Seats: 4, Taken: 2, Sets: []string{"b2"}}}}},
-		{TypeCreate, 5, Create{Seats: 3, Sets: []string{"b2"}, Options: &Options{Picking: PickDraft, DraftSize: 3, BanRounds: 1, BanTimer: 30, HostBans: []engine.CardRef{"eden"}, ResponseTimer: 90}}},
+		{TypeGames, 4, Games{Games: []GameInfo{{ID: "g1", Host: "Ann", Seats: 4, Taken: 2, Sets: []string{"b2"}, Rollback: RollbackGod}}}},
+		{TypeCreate, 5, Create{Seats: 3, Sets: []string{"b2"}, Options: &Options{Picking: PickDraft, DraftSize: 3, BanRounds: 1, BanTimer: 30, HostBans: []engine.CardRef{"eden"}, ResponseTimer: 90, Rollback: RollbackGod}}},
 		{TypeJoin, 6, Join{Game: "g1"}},
 		{TypeReady, 7, Ready{Ready: true}},
 		{TypeLeave, 8, struct{}{}},
@@ -58,6 +58,7 @@ func TestGolden(t *testing.T) {
 		{TypePresence, 0, Presence{Seat: 1, From: &Spot{Object: 314}, At: &Spot{Player: ptr(engine.PlayerID(0))}}},
 		{TypePresence, 0, Presence{Seat: 1, At: &Spot{Deck: ptr(engine.MonsterDeck)}}},
 		{TypePresence, 0, Presence{Seat: 1, At: &Spot{StackID: 3}}},
+		{TypeRollback, 18, RollbackTo{Step: 7}},
 	}
 	var got bytes.Buffer
 	for _, m := range messages {

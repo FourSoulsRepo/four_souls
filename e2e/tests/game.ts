@@ -10,9 +10,11 @@ import { openHost, openOnline } from './menu';
 export const statMonsters = ['delirium', 'stoney'];
 
 // hostBans adds the cards to the host's create message on its way to
-// the server: the host screen has no ban list yet (14.9). The getter it
-// resolves to returns the bans the server's table names, as a check.
-function hostBans(page: Page, bans: string[], port: number): Promise<() => string[]> {
+// the server: the host screen has no ban list yet (14.9). It adds the
+// other options too: the rollback mode has no control yet (17.4). The
+// getter it resolves to returns the bans the server's table names, as
+// a check.
+function hostBans(page: Page, bans: string[], port: number, options: Record<string, unknown> = {}): Promise<() => string[]> {
   let echoed: string[] = [];
   return page
     .routeWebSocket(`ws://127.0.0.1:${String(port)}/ws`, (ws) => {
@@ -20,7 +22,7 @@ function hostBans(page: Page, bans: string[], port: number): Promise<() => strin
       ws.onMessage((msg) => {
         const env = JSON.parse(String(msg)) as { type: string; data?: { options?: Record<string, unknown> } };
         if (env.type === 'create' && env.data) {
-          env.data.options = { ...env.data.options, host_bans: bans };
+          env.data.options = { ...env.data.options, ...options, ...(bans.length > 0 ? { host_bans: bans } : {}) };
         }
         server.send(JSON.stringify(env));
       });
@@ -75,6 +77,8 @@ export async function startGame(
     open = (_: Page) => Promise.resolve(),
     // bans are cards the host leaves out of the game (GS-13).
     bans = [] as string[],
+    // options are more create options, e.g. the rollback mode (ADR 020).
+    options = {} as Record<string, unknown>,
     // roll throws every first-player die (15.43), so the test starts in
     // turn 1; false leaves the roll to the test.
     roll = true,
@@ -92,7 +96,7 @@ export async function startGame(
   if (!host) {
     throw new Error('no players');
   }
-  const banned = bans.length > 0 ? await hostBans(host, bans, port) : () => [];
+  const banned = bans.length > 0 || Object.keys(options).length > 0 ? await hostBans(host, bans, port, options) : () => [];
   await host.goto(url);
   await openHost(host);
   await host.getByLabel('Nickname').fill(names[0] ?? '');

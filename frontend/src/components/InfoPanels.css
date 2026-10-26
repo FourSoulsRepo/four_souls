@@ -211,3 +211,44 @@
 .strip-kill {
   background: #3a2a2a;
 }
+
+/* Rollback (ADR 020): the mode by the title, a button on each step's
+   first row, undone rows greyed and struck out, and the rollback row. */
+.history .history-mode {
+  margin-right: auto;
+  margin-left: 8px;
+  padding: 0 6px;
+  border-radius: 6px;
+  font-size: 11px;
+  color: #8fd3ff;
+  border: 1px solid #8fd3ff66;
+}
+
+.history li.undone {
+  opacity: 0.45;
+  text-decoration: line-through;
+}
+
+.history li.history-rolled {
+  font-style: italic;
+  color: #8fd3ff;
+}
+
+.history .history-rollback {
+  flex: none;
+  margin-left: auto;
+  padding: 0 6px;
+  font-size: 13px;
+  line-height: 1.3;
+}
+
+.history .history-rollback:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+/* A tile a rollback undid (ADR 020). Not by opacity: the row's own
+   fade sets it. */
+.strip-item.undone {
+  filter: grayscale(1) brightness(0.45);
+}

@@ -2,7 +2,7 @@
 // lines: who did what. Built from the events this viewer got, so it shows
 // only what the viewer may see (hidden cards stay hidden).
 import { firstPlayerText, tieText } from './dice';
-import type { GameEvent, GameView, StackItem } from './protocol';
+import type { GameEvent, GameView, Rollback, StackItem } from './protocol';
 import { findCard, StackKind, stackLine, type Names } from './stack';
 import { rollChanges } from './stats';
 
@@ -26,6 +26,14 @@ export interface Entry {
   from?: string;
   // outcome is what the headline did, for the popout (15.90).
   outcome?: Outcome[];
+  // step is the first step of the update that brought the entry: a
+  // rollback to before it undoes it (ADR 020). A rollback row has its
+  // own number.
+  step?: number;
+  // undone: a rollback undid it; the history greys it.
+  undone?: boolean;
+  // rollback marks the row that tells who rolled back.
+  rollback?: boolean;
 }
 
 // Outcome is one result in the strip's popout (15.90): a card, with a
@@ -402,6 +410,32 @@ function dies(it: StackItem, e: GameEvent): boolean {
 // down when a new one comes, instead of being drawn again (15.51).
 export function stripEntries(history: Entry[]): Entry[] {
   return history.filter((e) => e.headline).reverse();
+}
+
+// rolledBack is the history after a rollback (ADR 020, item 8): every
+// entry from the target step on is undone, and a row tells who rolled
+// back. step is the rollback's own number.
+export function rolledBack(history: Entry[], r: Rollback, step: number, turn: number, you: number, n: Names): Entry[] {
+  const out = history.map((e) => (e.step !== undefined && e.step >= r.to && !e.undone ? { ...e, undone: true } : e));
+  const who = r.seat === you ? 'You roll' : `${n.player(r.seat)} rolls`;
+  const text = `${who} back ${String(r.undid)} ${r.undid === 1 ? 'step' : 'steps'}`;
+  out.push({ key: (history.at(-1)?.key ?? 0) + 1, turn, icon: '↶', text, step, rollback: true });
+  return out;
+}
+
+// rollbackTargets are the keys of the entries that get a rollback
+// button: the first live entry of each step since from (ADR 020, item
+// 6). An undone entry or a rollback row is no target.
+export function rollbackTargets(history: Entry[], from: number): Set<number> {
+  const out = new Set<number>();
+  let last: number | undefined;
+  for (const e of history) {
+    if (e.step !== undefined && e.step !== last && e.step >= from && !e.undone && !e.rollback) {
+      out.add(e.key);
+    }
+    last = e.step;
+  }
+  return out;
 }
 
 // firstRollLabel is the label of the first-player roll's dice.

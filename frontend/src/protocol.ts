@@ -2,7 +2,7 @@
 // Only what the client uses so far; protocol.test.ts checks these types
 // against Go's golden file. Go sends a nil list as null.
 
-export const protocolVersion = 4;
+export const protocolVersion = 5;
 export const defaultPort = 4774;
 
 export interface Envelope {
@@ -73,6 +73,8 @@ export interface GameInfo {
   started: boolean;
   // locked: joining needs the game password (N-14).
   locked?: boolean;
+  // rollback is the game's rollback mode (ADR 020).
+  rollback?: RollbackMode;
 }
 
 export interface SaveInfo {
@@ -98,7 +100,11 @@ export interface Options {
   no_bonus_souls?: boolean;
   no_deck_ratios?: boolean;
   response_timer?: number; // seconds; 0: off, else at least 60
+  rollback?: RollbackMode; // none: Disabled (ADR 020)
 }
+
+// RollbackMode: soft, the others vote (17.4); god, anyone, at once.
+export type RollbackMode = 'soft' | 'god';
 
 export interface Create {
   seats: number;
@@ -565,4 +571,22 @@ export interface Update {
   deadline?: number; // Unix ms; the response timer
   wait_turn?: boolean;
   pause?: Pause;
+  // rollback_mode and rollback_from: the game's rollback mode and the
+  // first step it may target (ADR 020); none: no rollback.
+  rollback_mode?: RollbackMode;
+  rollback_from?: number;
+  // rollback: this update rolled the game back to before step to; the
+  // view is that table, and step is the rollback's own number.
+  rollback?: Rollback;
+}
+
+export interface Rollback {
+  seat: number;
+  to: number;
+  undid: number;
+}
+
+// RollbackTo asks the server to undo a step and every step after it.
+export interface RollbackTo {
+  step: number;
 }

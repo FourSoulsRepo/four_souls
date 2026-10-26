@@ -214,7 +214,7 @@ func (h *Hub) restoreRoom(f *restartFile) {
 	if g != nil && f.Engine != engine.Version {
 		room.notice = protocol.NoticeEngine // the rules may have changed
 	}
-	h.run(room, protocol.GameInfo{ID: f.Game, Host: f.Host, Seats: len(seats), Taken: len(seats), Sets: f.Sets, Started: true})
+	h.run(room, protocol.GameInfo{ID: f.Game, Host: f.Host, Seats: len(seats), Taken: len(seats), Sets: f.Sets, Started: true, Rollback: f.Options.Rollback})
 }
 
 // keep writes the room to a restart file instead of ending its record;
@@ -264,6 +264,7 @@ func (r *Room) resumeKept() {
 		return
 	}
 	r.step, r.steps = f.Step, f.Steps
+	r.setBase() // the restart is the base until 17.5 keeps the old one
 	r.grace = time.Now().Add(voteGrace * r.second)
 	if r.recDir != "" && f.Record != "" {
 		if w, err := record.Append(f.Record, f.Steps, time.Now().UTC()); err == nil {

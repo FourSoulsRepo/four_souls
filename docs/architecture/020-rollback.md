@@ -91,6 +91,7 @@ Use options 1, 4 and 8.
    4. Each checksum must match its step; else the rollback fails, the game goes on.
    5. The steps from k on leave the live list.
    6. Engine: `engine.ReplayFrom(state, steps, sets...)`.
+   7. A loaded save is a new base too.
 8. Steps and history
    1. Step numbers never repeat; new steps go on after the highest.
    2. A target is named by its step number.
@@ -98,6 +99,9 @@ Use options 1, 4 and 8.
    4. The client greys the undone history rows and adds a rollback row.
    5. The table jumps to the restored view; no animation (ADR 012).
    6. Protocol version 5: new messages and a field older clients misread.
+   7. A rollback takes a step number itself.
+   8. So `update` and record step numbers stay the same.
+   9. Every `update` also carries `rollback_mode` and `rollback_from`.
 9. Record
    1. Undone steps stay in the record.
    2. A `rollback` line: the target step, who, and how many steps it undid.

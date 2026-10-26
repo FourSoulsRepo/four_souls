@@ -93,9 +93,19 @@ Rules that keep it so:
 
 Found and fixed: an `activate` intent with an unknown object ID made the engine panic, which stopped the whole server. It is now refused (`TestUnknownObjectsAreRefused`).
 
+## Rollback
+
+`rollback.go` (ADR 020, 17.3). A game whose `Options.Rollback` is set keeps a base state (`Room.base`, the engine's `Save`) and the live steps since it (`Room.live`: step number, intent and checksum; no events). The base is the game's start, a loaded save, or, until 17.5, the state a restart kept (`setBase`). A game without the mode keeps nothing.
+
+A seated player sends `rollback` with a step number. In Godmode (`god`) any player may, the author too, for any live step, until the game is over; not while the game is paused. The room rebuilds the game with `engine.ReplayFrom(base, steps before the target)`; a checksum that differs refuses the rollback and the game goes on. The steps from the target on leave the live list. Refusals are error `rollback`.
+
+The rollback takes the next step number itself (`Room.step` and `Room.steps` both count it), so step numbers never repeat and the server's numbers stay the record's. Every client gets one update with `rollback` (who, the target, how many live steps it undid) and no events; the app jumps to it. "Wait for my turn" is turned off for everyone, since it would pass the restored prompt away. Passes the server makes for a player who can only pass come after, as new steps in their own update. Each update of such a game carries `rollback_mode` and `rollback_from`, the first step a rollback may target.
+
+The record keeps every step; a `rollback` line follows (`record.Writer.Rollback`). `record.Record.Live` drops the undone steps, so a replay from the setup with them rebuilds the game (`TestGodmodeRollback`). The game list (`GameInfo.rollback`), the table's options, saves and restart files carry the mode. Soft (votes and barriers) is 17.4; `checkOptions` refuses it until then.
+
 ## Tests
 
-* `hub_test.go`, `setup_test.go`, `flow_test.go`, `pause_test.go`, `records_test.go`, `saves_test.go`, `presence_test.go`: in-memory connections.
+* `hub_test.go`, `setup_test.go`, `flow_test.go`, `pause_test.go`, `records_test.go`, `saves_test.go`, `presence_test.go`, `rollback_test.go`: in-memory connections.
 * `integration_test.go`: whole games of bots over real WebSockets, a drop and a reconnect, a save and a load; every record must replay in the engine. Under `-race` only the 2-player game runs.
 * `internal/protocol/testdata/golden.jsonl` pins the JSON of every message: rename or remove a field, bump `protocol.Version`; then `go test ./internal/protocol -update`.
 * Timers count `Hub.second`, so tests make a second one millisecond.

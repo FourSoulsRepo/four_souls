@@ -51,21 +51,28 @@ Rules for this step (owner, 2026-10-26):
 3. Done when:
    1. Tests cover undo of a loot play, an attack, a purchase.
 
-### [ ] 17.3 Server and client
+### [x] 17.3 Server and client
 
 1. Goal: players use rollback in a game.
 2. Tasks:
-   1. Intent "roll back"; in Soft refused for the event's author.
+   1. Message `rollback` naming a target step (Godmode).
    2. History entry shows who rolled back what.
    3. The record keeps the rollback (RP-03).
-   4. Button near the history entry; in Soft for other players only.
+   4. Button near the history entry; any player in Godmode.
    5. Use case: roll back a mistake.
    6. Godmode: any player rolls back to any history row at once.
    7. ADR 007: the `rollback` line (ADR 020, item 9).
    8. Protocol version 5 (ADR 020, item 8).
+   9. Scope: Godmode only; Soft moved to 17.4 (main agent, 2026-10-26).
+   10. `Options.Rollback` in the record header, saves and restart files.
+   11. Set by the create options; the setup control is 17.4.
+   12. The game list and the table show the mode (ADR 020, item 1.4).
+   13. The server refuses `soft` until 17.4.
+   14. A load or a restart is the new base until 17.5.
 3. Done when:
-   1. e2e: the author sees no button; another player rolls back.
+   1. e2e: in Godmode another player rolls back.
    2. e2e: in Godmode the author rolls back their own step.
+   3. Use case: [UC-30](../use-cases/app/uc-30-roll-back-a-mistake.md).
 
 ### [ ] 17.4 Modes and the Soft vote
 
@@ -77,9 +84,15 @@ Rules for this step (owner, 2026-10-26):
    4. A majority of the other connected players decides.
    5. Soft barriers: dice roll, damage, hidden info seen, turn end.
    6. Use case for each mode.
+   7. Moved from 17.3: in Soft the author's rollback is refused; they ask.
+   8. Moved from 17.3: in Soft the button shows for the other players only.
+   9. Moved from 17.3: `engine.Barrier` and the server's barrier check.
+   10. Done in 17.3: the mode in the record header, saves and restart files.
+   11. Accept `soft` in `checkOptions` (17.3 refuses it).
 3. Done when:
    1. Server tests: majority with 2, 3, 4 players; each barrier.
    2. e2e: a Soft vote passes and one is declined.
+   3. Moved from 17.3: e2e: the author sees no button; another player rolls back.
 
 ### [ ] 17.5 Rollback over a server restart
 

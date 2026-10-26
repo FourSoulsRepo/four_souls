@@ -44,6 +44,7 @@
   * Polycephalus's -2: "Roll — attack roll (rolled 6 → 4)".
   * The strip's die and line show the result: "Ann rolls 4 against Fly".
   * An unchanged roll shows one number: "(rolled 6)".
+* **2d. A rollback (UC-30):** undone rows turn grey; a row says who rolled back.
 
 ## Postconditions
 
