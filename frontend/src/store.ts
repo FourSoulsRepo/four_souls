@@ -39,7 +39,7 @@ import { emptyLobby, forgotten, leftTable, lost, onMessage, remember, renamed, t
 import { connectFirst, disconnect, drop, send } from './net';
 import { claimEffect, nextBeat } from './animations';
 import { lastRollAfter, type LastRoll } from './dice';
-import { createPlayback, effectsFor, scaleFor, slotZone, type Effect } from './playback';
+import { createPlayback, effectsFor, scaleFor, slotZone, type Death, type Effect } from './playback';
 import { loadSounds } from './sounds';
 import { endsGame, lostDialogAfter, retryDelay } from './reconnect';
 import {
@@ -142,6 +142,9 @@ interface AppState extends Session {
   // left is the sources of stack items whose card flew away; they hide
   // until the next view is shown (19.41).
   left: number[];
+  // lifted is the table cards a dead card's flight took off their slot;
+  // they hide until the next view is shown (19.73).
+  lifted: number[];
   // history is the match so far, as this viewer saw it (7.9).
   history: Entry[];
   // moves name what each update did, for the Undo button (17.7); a
@@ -339,6 +342,9 @@ export const useApp = create<AppState>()((set, get) => {
     player: (p: number) => u.seats?.find((s) => s.seat === p)?.name ?? `Player ${String(p + 1)}`,
     card: (ref: string) => get().cards.get(ref)?.name ?? ref,
   });
+  // diedAt is where each dead card died, by its held object, until it
+  // flies to the discard or a soul (19.73).
+  const diedAt = new Map<number, Death>();
   const playback = createPlayback({
     begin: nextBeat,
     show: (u) => {
@@ -378,6 +384,7 @@ export const useApp = create<AppState>()((set, get) => {
         game: u,
         placed: [],
         left: [],
+        lifted: [],
         behind: playback.pending() > 0,
         jumped: u.rollback !== undefined,
         history: [...history, ...entries.map((e) => ({ ...e, step: first }))],
@@ -392,6 +399,10 @@ export const useApp = create<AppState>()((set, get) => {
         const leaves = effect.kind === 'fly' ? effect.leaves : undefined;
         if (leaves !== undefined) {
           set((s) => ({ left: [...s.left, leaves] }));
+        }
+        const lifts = effect.kind === 'fly' ? effect.lifts : undefined;
+        if (lifts !== undefined) {
+          set((s) => ({ lifted: [...s.lifted, lifts] }));
         }
         // A clashing effect is logged and skipped (19.6).
         if (!claimEffect(effect)) {
@@ -410,19 +421,28 @@ export const useApp = create<AppState>()((set, get) => {
         const timer = window.setTimeout(done, 3000 * scale + 1000);
         set({ playing: { effect, scale, key, done } });
       }),
-    // A rollback plays no effects (ADR 020, item 8.5).
-    effects: (u) =>
-      u.rollback
-        ? []
-        : effectsFor(u.events ?? [], {
-            card: (ref) => get().cards.get(ref),
-            name: names(u).player,
-            character: (p) => u.view.players.find((x) => x.id === p)?.character.id,
-            slot: (id) => slotZone(u.view, id),
-            seen: (ref) => (get().game?.events ?? []).some((e) => e.kind === 'card_revealed' && e.card === ref),
-            roll: (stack) => get().game?.view.stack?.find((it) => it.id === stack)?.roll,
-            you: seatOf(get()),
-          }),
+    // A rollback plays no effects (ADR 020, item 8.5); the dead cards
+    // it undid are forgotten.
+    effects: (u) => {
+      if (u.rollback) {
+        diedAt.clear();
+        return [];
+      }
+      return effectsFor(u.events ?? [], {
+        card: (ref) => get().cards.get(ref),
+        name: names(u).player,
+        character: (p) => u.view.players.find((x) => x.id === p)?.character.id,
+        slot: (id) => slotZone(u.view, id),
+        before: (id) => {
+          const view = get().game?.view;
+          return view ? slotZone(view, id) : undefined;
+        },
+        diedAt,
+        seen: (ref) => (get().game?.events ?? []).some((e) => e.kind === 'card_revealed' && e.card === ref),
+        roll: (stack) => get().game?.view.stack?.find((it) => it.id === stack)?.roll,
+        you: seatOf(get()),
+      });
+    },
     speed: () => get().settings.animation,
     shown: () => get().game,
   });
@@ -493,7 +513,8 @@ export const useApp = create<AppState>()((set, get) => {
     playback.clear();
     get().playing?.done();
     clearPresence();
-    set({ history: [], moves: [], lastRoll: null, looking: [], placed: [], left: [] });
+    diedAt.clear();
+    set({ history: [], moves: [], lastRoll: null, looking: [], placed: [], left: [], lifted: [] });
   };
 
   // open connects to address and says hello; the server answers with
@@ -598,6 +619,7 @@ export const useApp = create<AppState>()((set, get) => {
     playing: null,
     placed: [],
     left: [],
+    lifted: [],
     history: [],
     moves: [],
     lastRoll: null,

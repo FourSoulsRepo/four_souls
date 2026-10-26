@@ -265,7 +265,10 @@ func (g *Game) perform(a Action) {
 			return
 		}
 		if deck, ok := g.kindOf(a.Object).Deck(); ok {
-			g.discard(a.Object, deck)
+			// A dead card: Prev is its held object, so the client flies it
+			// from where it died (19.73).
+			nid := g.discard(a.Object, deck)
+			g.emit(Event{Kind: EvDiscarded, Player: NoPlayer, Object: nid, Card: g.Object(nid).Card, Prev: a.Object})
 		}
 	case ActRefillSlots:
 		g.refillSlots()

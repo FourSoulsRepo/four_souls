@@ -245,7 +245,8 @@ func (g *Game) GiveCurseFromDeck(curse ObjectID, p PlayerID) {
 func (g *Game) CanGainSouls(p PlayerID) bool { return g.bonus(StatNoSouls, p, 0) == 0 }
 
 // GainSoul makes a card outside the game (a dead monster) a soul of p.
-// It reports false if p can't gain souls.
+// It reports false if p can't gain souls. Its gained_soul names the
+// moved object as Prev, so the client flies it from where it died (19.73).
 func (g *Game) GainSoul(id ObjectID, p PlayerID) bool {
 	if !g.CanGainSouls(p) {
 		return false
@@ -253,7 +254,7 @@ func (g *Game) GainSoul(id ObjectID, p PlayerID) bool {
 	nid := g.move(id, Zone{Kind: ZoneInPlay}, p)
 	g.Object(nid).Role = RoleSoul
 	g.Players[p].InPlay = append(g.Players[p].InPlay, nid)
-	g.emit(Event{Kind: EvGainedSoul, Player: p, Object: nid, Card: g.Object(nid).Card})
+	g.emit(Event{Kind: EvGainedSoul, Player: p, Object: nid, Card: g.Object(nid).Card, Prev: id})
 	return true
 }
 

@@ -267,6 +267,69 @@ func TestUncoverNamesTheCoveredObject(t *testing.T) {
 	}
 }
 
+// killEvents attacks the monster named card with rolls that always hit
+// and returns every event until the attack and the stack are done.
+func killEvents(t *testing.T, g *Game, card CardRef) []Event {
+	t.Helper()
+	g.forcedRolls = []int{6, 6, 6, 6, 6, 6, 6, 6}
+	attack(t, g)
+	choose(t, g, string(card))
+	var ev []Event
+	for range 200 {
+		ev = append(ev, throwPending(t, g)...)
+		if g.Prompt().Kind != PromptPriority || (!g.Attack.On && len(g.Stack) == 0) {
+			return ev
+		}
+		ev = append(ev, pass(t, g)...)
+	}
+	t.Fatal("passing never ended")
+	return nil
+}
+
+// heldOf is the held object of the death of the slot object id.
+func heldOf(t *testing.T, ev []Event, id ObjectID) ObjectID {
+	t.Helper()
+	i := slices.IndexFunc(ev, func(e Event) bool { return e.Kind == EvDied && e.Prev == id })
+	if i < 0 {
+		t.Fatalf("no died event for %d: %+v", id, ev)
+	}
+	return ev[i].Object
+}
+
+// TestDeadMonsterDiscardNamesItsHeldObject: a monster with no soul goes
+// to discard with a discarded event whose Prev is its held object, so
+// the client flies it from where it died (19.73).
+func TestDeadMonsterDiscardNamesItsHeldObject(t *testing.T) {
+	g := toAction(t, 2)
+	id := putMonster(g, 0, "gaper")
+	ev := killEvents(t, g, "gaper")
+	held := heldOf(t, ev, id)
+	i := slices.IndexFunc(ev, func(e Event) bool { return e.Kind == EvDiscarded && e.Prev == held })
+	if i < 0 {
+		t.Fatalf("no discarded event with Prev %d: %+v", held, ev)
+	}
+	e := ev[i]
+	if e.Player != NoPlayer || e.Card != "gaper" || g.Object(e.Object).Zone != DiscardZone(MonsterDeck) {
+		t.Errorf("discarded %+v; want no player, the card, its discard object", e)
+	}
+}
+
+// TestKilledSoulNamesItsHeldObject: a killed soul monster's gained_soul
+// has Prev, its held object (19.73).
+func TestKilledSoulNamesItsHeldObject(t *testing.T) {
+	g := toAction(t, 2)
+	id := putMonster(g, 1, "boss")
+	ev := killEvents(t, g, "boss")
+	held := heldOf(t, ev, id)
+	i := slices.IndexFunc(ev, func(e Event) bool { return e.Kind == EvGainedSoul })
+	if i < 0 {
+		t.Fatalf("no gained_soul: %+v", ev)
+	}
+	if ev[i].Prev != held || ev[i].Player != g.Turn.Active {
+		t.Errorf("gained_soul %+v; want Prev %d and the active player", ev[i], held)
+	}
+}
+
 func TestNoAttackWithAStack(t *testing.T) {
 	g := toAction(t, 2)
 	g.push(StackItem{Kind: StackRoll, Roll: 3, Controller: g.Turn.Active})

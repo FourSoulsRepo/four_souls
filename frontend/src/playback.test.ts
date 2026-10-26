@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { CardInfo } from './cards';
-import { createPlayback, effectsFor, scaleFor, slotZone, type Effect } from './playback';
+import { createPlayback, effectsFor, scaleFor, slotZone, type Death, type Effect } from './playback';
 import type { GameEvent, GameView, Update } from './protocol';
 
 const ctx = {
@@ -11,10 +11,15 @@ const ctx = {
   name: (p: number) => ['Ann', 'Bo'].at(p) ?? '?',
   character: (p: number) => (p === 1 ? 31 : undefined),
   slot: (id: number) => (id === 50 ? 'monster-slot-1' : undefined),
+  before: (): string | undefined => undefined,
+  diedAt: new Map<number, Death>(),
   seen: (card: string) => card === 'pin',
   roll: (stack: number) => (stack === 7 ? 2 : undefined),
   you: 0,
 };
+
+// monster knows every card as a monster (19.73).
+const monster = (ref: string): CardInfo => ({ ref, set: 'b2', type: 'Monster Card', name: ref, effects: [], footnotes: [], stats: [], rewards: [], image: '' });
 
 describe('effectsFor', () => {
   it('throws each first-player die, then names a tie or who goes first (15.43)', () => {
@@ -217,6 +222,39 @@ describe('effectsFor', () => {
   it('neither reveals nor places a card a dead monster uncovered (19.72)', () => {
     const e: GameEvent = { kind: 'card_revealed', player: -1, object: 50, prev: 41, card: 'fly' };
     expect(effectsFor([e], ctx)).toEqual([]);
+  });
+
+  it('flies a dead monster from its slot to the discard or its player, also in a later update (19.73)', () => {
+    // Monster 40 dies in slot 0 (held object 90); one with a soul, 41,
+    // dies in slot 2 (held 91) and becomes a soul after a reward roll.
+    const before = (id: number) => new Map([[40, 'monster-slot-0'], [41, 'monster-slot-2']]).get(id);
+    const c = { ...ctx, card: monster, before, diedAt: new Map<number, Death>() };
+    const deaths: GameEvent[] = [
+      { kind: 'died', player: -1, object: 90, prev: 40, card: 'fly' },
+      { kind: 'died', player: -1, object: 91, prev: 41, card: 'boss' },
+      { kind: 'discarded', player: -1, object: 92, prev: 90, card: 'fly' },
+    ];
+    expect(effectsFor(deaths, c)).toEqual([
+      { kind: 'deaths', at: [['obj-40'], ['obj-41']] },
+      { kind: 'fly', from: ['monster-slot-0'], to: ['discard-monster'], card: 'fly', back: 'monster', lifts: 40 },
+    ]);
+    expect(effectsFor([{ kind: 'dice_rolled', player: 1, amount: 4, text: 'reward roll' }], c)).toHaveLength(1);
+    const soul: GameEvent = { kind: 'gained_soul', player: 1, object: 93, prev: 91, card: 'boss' };
+    expect(effectsFor([soul], c)).toEqual([
+      { kind: 'fly', from: ['monster-slot-2'], to: ['player-1'], card: 'boss', back: 'monster', lifts: 41 },
+    ]);
+    // Each is flown once.
+    expect(c.diedAt.size).toBe(0);
+  });
+
+  it('flies another soul from its place; a bonus soul not at all (19.73)', () => {
+    const c = { ...ctx, diedAt: new Map<number, Death>() };
+    const chest: GameEvent = { kind: 'gained_soul', player: 0, object: 60, prev: 55, card: 'holy_chest' };
+    expect(effectsFor([chest], c)).toEqual([
+      { kind: 'fly', from: ['obj-55'], to: ['player-0'], card: 'holy_chest', back: 'monster', lifts: 55 },
+    ]);
+    const bonus: GameEvent = { kind: 'gained_soul', player: 0, object: 61, card: 'soul_of_envy', text: 'bonus soul' };
+    expect(effectsFor([bonus], c)).toEqual([]);
   });
 
   it('only reveals a card that is in no slot', () => {

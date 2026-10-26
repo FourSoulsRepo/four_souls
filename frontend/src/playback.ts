@@ -12,8 +12,9 @@ export type Speed = 'normal' | 'fast' | 'slow' | 'off';
 export type Effect =
   // fly: middle starts the card large in the middle, where the reveal
   // before it held it (15.73). leaves is the source of the stack item
-  // the card leaves; it hides until the next view (19.41).
-  | { kind: 'fly'; from: string[]; to: string[]; card?: string; back: Kind; middle?: boolean; leaves?: number }
+  // the card leaves; it hides until the next view (19.41). lifts is the
+  // table card it flies off; it hides until the next view (19.73).
+  | { kind: 'fly'; from: string[]; to: string[]; card?: string; back: Kind; middle?: boolean; leaves?: number; lifts?: number }
   | { kind: 'popup'; at: string[]; text: string; tone: 'good' | 'bad' }
   // dice: thrown for a fresh roll or a reroll (15.62); a changed roll
   // spins in with its old value, a shot comes from the card that
@@ -50,6 +51,17 @@ export interface Hit {
 
 const noPlayer = -1;
 
+// Death is where a dead card died: its slot zone, and its object there.
+export interface Death {
+  zone: string;
+  object: number;
+}
+
+// flyFrom flies a dead card from where it died, once (19.73).
+function flyFrom(death: Death, to: string[], card: string | undefined, back: Kind): Effect {
+  return { kind: 'fly', from: [death.zone], to, card, back, lifts: death.object };
+}
+
 interface Context {
   card: (ref: string) => CardInfo | undefined;
   name: (player: number) => string;
@@ -57,6 +69,11 @@ interface Context {
   character: (player: number) => number | undefined;
   // slot is the zone of the slot an object is the top card of, if any.
   slot: (object: number) => string | undefined;
+  // before is slot, in the view on screen before this update (19.73).
+  before: (object: number) => string | undefined;
+  // diedAt keeps where each dead card died, by its held object, across
+  // updates: reward rolls may come before its discard or soul (19.73).
+  diedAt: Map<number, Death>;
   // seen tells if the update before revealed the card (19.4).
   seen: (card: string) => boolean;
   // roll is the value of a roll on the stack shown now, if any (15.76).
@@ -150,6 +167,13 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
           break;
         }
         const kind = e.card ? kindOf(ctx.card(e.card)?.type ?? '') : 'loot';
+        // A dead card flies from the slot it died in (19.73).
+        const death = e.prev ? ctx.diedAt.get(e.prev) : undefined;
+        if (death && e.prev) {
+          ctx.diedAt.delete(e.prev);
+          out.push(flyFrom(death, [`discard-${kind}`], e.card, kind));
+          break;
+        }
         const from = [`obj-${String(e.prev ?? e.object ?? 0)}`];
         if (e.player !== noPlayer) {
           from.push(...handZones(e.player));
@@ -212,7 +236,12 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
         break;
       }
       case 'died': {
-        // A monster's card left its place under a new ID (prev).
+        // A monster's card left its place under a new ID (prev). Where it
+        // died is kept for its flight to the discard or a soul (19.73).
+        const zone = e.prev ? ctx.before(e.prev) : undefined;
+        if (zone && e.prev && e.object) {
+          ctx.diedAt.set(e.object, { zone, object: e.prev });
+        }
         const at = e.prev ? [`obj-${String(e.prev)}`] : hitZones(e, ctx);
         const last = out.at(-1);
         if (last?.kind === 'deaths') {
@@ -220,6 +249,18 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
         } else {
           out.push({ kind: 'deaths', at: [at] });
         }
+        break;
+      }
+      case 'gained_soul': {
+        // A dead monster flies from its slot to the player; another card
+        // from its place, if drawn. A bonus soul has no prev (19.73).
+        if (!e.prev) {
+          break;
+        }
+        const kind = kindOf(ctx.card(e.card ?? '')?.type ?? 'Monster Card');
+        const death = ctx.diedAt.get(e.prev) ?? { zone: `obj-${String(e.prev)}`, object: e.prev };
+        ctx.diedAt.delete(e.prev);
+        out.push(flyFrom(death, playerZones(e.player), e.card, kind));
         break;
       }
       case 'prevented':

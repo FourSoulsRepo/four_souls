@@ -2447,3 +2447,26 @@ Totals by system (73 items):
    4. `GainSoul` emits `gained_soul` without `Prev`.
    5. `playback.ts` has no effect for `gained_soul` at all.
    6. So the next view just draws the card in its new place.
+6. Fix
+   1. Engine: `ActDiscardObject` emits `discarded`, no player, `Prev` the held object.
+   2. Its callers are the soul step and a soul that cannot be gained.
+   3. Engine: `GainSoul`'s `gained_soul` sets `Prev` to the moved object.
+   4. No trigger listens to `discarded`; `gained_soul` triggers keep working.
+   5. Client: `died` keeps its slot zone by the held object (`diedAt`).
+   6. The zone comes from the view on screen, before the death.
+   7. `diedAt` lives in the store; a rollback or leaving clears it.
+   8. `discarded` with that `prev`: `fly` from the slot to the discard.
+   9. `gained_soul` with that `prev`: `fly` from the slot to the player.
+   10. Other `gained_soul` with `prev`: from `obj-<prev>`; a bonus soul: none.
+   11. The fly comes after `deaths` in the event order.
+   12. Added: the slot shows empty while the card flies (`lifted`).
+   13. History unchanged: no line for a `discarded` with no player.
+   14. Go tests: `TestDeadMonsterDiscardNamesItsHeldObject`, `TestKilledSoulNamesItsHeldObject`.
+   15. Vitest: `flies a dead monster from its slot to the discard or its player, also in a later update (19.73)`.
+   16. Vitest: `flies another soul from its place; a bonus soul not at all (19.73)`.
+   17. e2e: `a dead monster flies from its slot to the monster discard (19.73)`.
+   18. e2e: `a dead soul monster flies from its slot to its player after a reward roll (19.73)`.
+   19. UC-12 1ab; wiki `Animations` row `fly`, `Client`, `Rules-engine`; CHANGELOG.
+   20. Screenshots: `.cache/screenshots/19.73/before/` and `after/`.
+   21. Before: the skull, then the card is in the discard; no flight.
+   22. After: the skull, then the card flies from its emptied slot.
