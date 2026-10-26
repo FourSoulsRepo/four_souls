@@ -2,7 +2,7 @@
 // lines: who did what. Built from the events this viewer got, so it shows
 // only what the viewer may see (hidden cards stay hidden).
 import { firstPlayerText, tieText } from './dice';
-import type { GameEvent, GameView, Rollback, RollbackEnd, StackItem, Update } from './protocol';
+import type { GameEvent, GameView, Rollback, RollbackEnd, RollbackStep, StackItem, Update } from './protocol';
 import { findCard, StackKind, stackLine, type Names } from './stack';
 import { rollChanges } from './stats';
 
@@ -478,11 +478,15 @@ export function moveOf(events: GameEvent[], entries: Entry[], from: number, to: 
   return { from, to, ...(text ? { text } : {}), ...(barrier ? { barrier } : {}) };
 }
 
-// moveText names the move a target step starts: its update's, or the
-// first named one after it (a play that asks a target is named by the
-// answer's update).
-export function moveText(moves: Move[], step: number): string {
-  return moves.find((m) => m.to >= step && m.text)?.text ?? `step ${String(step)}`;
+// moveText names the move a target starts: its update's, or an
+// answer's up to its last step (a play that asks a target is named by
+// the answer's update). A move with no line of its own never borrows
+// the next one's: a trigger order or a card's question is "Bo's
+// choice" (17.8).
+export function moveText(moves: Move[], target: RollbackStep, you: number, name: (p: number) => string): string {
+  const last = target.last ?? target.step;
+  const text = moves.find((m) => m.to >= target.step && m.from <= last && m.text)?.text;
+  return text ?? (target.seat === you ? 'your choice' : `${name(target.seat)}'s choice`);
 }
 
 // Undo is the History's one Undo button (17.7, ADR 020). step is the
@@ -503,6 +507,7 @@ export function undoButton(
   u: Pick<Update, 'rollback_mode' | 'rollback_from' | 'rollback_steps' | 'rollback_vote' | 'rollback_cut' | 'pause'> & { view: { over?: boolean } },
   you: number,
   moves: Move[],
+  name: (p: number) => string,
 ): Undo | null {
   if (!u.rollback_mode) {
     return null;
@@ -526,7 +531,7 @@ export function undoButton(
     const title = why ?? 'Nothing to undo';
     return { label, ask, why: title, title };
   }
-  return { label, step: target.step, ask, title: `${label}: ${moveText(moves, target.step)}` };
+  return { label, step: target.step, ask, title: `${label}: ${moveText(moves, target, you, name)}` };
 }
 
 // nothingWhy says why no move is left to undo: the barrier just before

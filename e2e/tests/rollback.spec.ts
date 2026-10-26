@@ -337,3 +337,32 @@ test('a played card that asks a target is undone by one Undo (17.7)', async ({ b
   await expect(active.locator('.card.hl-aim')).toHaveCount(0);
   await expect(turnAction(active, 'Attack')).toBeEnabled();
 });
+
+test("Bum Friend's put-back pick has no line of its own: Undo names it a choice (17.8)", async ({ browser }) => {
+  const names = ['Zed', 'Ari'];
+  const pages = await startGame(browser, names, { url: `${appURL()}&anim=off`, options: god });
+  await activePage(pages, click);
+  // The starting item becomes Bum Friend: loot 1, then put a hand card back.
+  await saveAndContinue(pages, names.join(', '), 'a_penny', 'bum_friend');
+  const active = await activePage(pages, click);
+  const other = pages.find((p) => p !== active);
+  if (!other) {
+    throw new Error('no other page');
+  }
+  const name = names[pages.indexOf(active)] ?? '';
+  await click(active, active.getByRole('group', { name: 'Your items' }).getByRole('button', { name: 'Bum Friend' }));
+  await click(active, active.getByRole('menu').getByRole('menuitem').first());
+  for (const page of pages) {
+    await openHistory(page);
+  }
+  await expect(undo(active)).toHaveAttribute('title', 'Undo: You use Bum Friend');
+  // The pick puts a card on the loot deck, which gives no line; the
+  // tooltip never borrows the next move's name.
+  await settle(pages, click, async () => (await undo(active).getAttribute('title')) === 'Undo: your choice');
+  await expect(undo(other)).toHaveAttribute('title', `Undo: ${name}'s choice`);
+  await undo(active).hover();
+  await shot(active, 'rollback-choice');
+  await undo(other).click();
+  // Back before the pick: the item's use is the latest move again.
+  await expect(undo(active)).toHaveAttribute('title', 'Undo: You use Bum Friend');
+});

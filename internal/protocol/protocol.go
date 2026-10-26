@@ -189,9 +189,13 @@ type RollbackTo struct {
 }
 
 // RollbackStep is a step a Soft rollback may target, and its author.
+// Last is the move's last step when the answers its play asks follow
+// it (17.7, 17.8): the app names the move from those updates too. 0:
+// the move is the step alone.
 type RollbackStep struct {
 	Step int `json:"step"`
 	Seat int `json:"seat"`
+	Last int `json:"last,omitempty"`
 }
 
 // RollbackVote is an open Soft vote (ADR 020, item 5): Seat opened it

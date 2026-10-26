@@ -576,16 +576,30 @@ describe('moves (17.7)', () => {
     expect(moveOf([{ kind: 'moved_to_deck', player: 1, private: true }], [], 3, 3, 0, n).barrier).toBeUndefined();
   });
 
-  it("names a target by its update, or the first named one after it: a play's answer", () => {
+  it("names a target by its update, or its play's answer up to its last step", () => {
     const moves: Move[] = [
       { from: 4, to: 4, text: 'Bo attacks' },
       { from: 5, to: 5 },
       { from: 6, to: 7, text: 'Bo plays BOMB' },
     ];
-    expect(moveText(moves, 4)).toBe('Bo attacks');
-    expect(moveText(moves, 5)).toBe('Bo plays BOMB');
-    expect(moveText(moves, 7)).toBe('Bo plays BOMB');
-    expect(moveText(moves, 9)).toBe('step 9');
+    expect(moveText(moves, { step: 4, seat: 1 }, 0, n.player)).toBe('Bo attacks');
+    // The play asked its target; the answer (step 6) names it (17.7).
+    expect(moveText(moves, { step: 5, seat: 1, last: 6 }, 0, n.player)).toBe('Bo plays BOMB');
+    expect(moveText(moves, { step: 7, seat: 1 }, 0, n.player)).toBe('Bo plays BOMB');
+  });
+
+  it("names a move without a line of its own Bo's choice, never the next move (17.8)", () => {
+    // Step 5 put a hand card back on the deck: no line. Step 6 is a
+    // move of its own, after it.
+    const moves: Move[] = [
+      { from: 5, to: 5 },
+      { from: 6, to: 6, text: 'Ann plays BOMB' },
+    ];
+    expect(moveText(moves, { step: 5, seat: 1 }, 0, n.player)).toBe("Bo's choice");
+    expect(moveText(moves, { step: 5, seat: 0 }, 0, n.player)).toBe('your choice');
+    // A play still waiting for its answer has no line yet either.
+    expect(moveText(moves.slice(0, 1), { step: 5, seat: 1, last: 5 }, 0, n.player)).toBe("Bo's choice");
+    expect(moveText(moves, { step: 9, seat: 2 }, 0, n.player)).toBe("Cy's choice");
   });
 });
 
@@ -607,21 +621,29 @@ describe('the Undo button (17.7)', () => {
   };
 
   it('is hidden in Disabled mode', () => {
-    expect(undoButton({ ...soft, rollback_mode: undefined }, 0, moves)).toBeNull();
+    expect(undoButton({ ...soft, rollback_mode: undefined }, 0, moves, n.player)).toBeNull();
   });
 
   it('targets the latest move and names it', () => {
-    expect(undoButton(soft, 0, moves)).toEqual({ label: 'Undo', step: 2, ask: false, title: 'Undo: Bo plays BOMB' });
+    expect(undoButton(soft, 0, moves, n.player)).toEqual({ label: 'Undo', step: 2, ask: false, title: 'Undo: Bo plays BOMB' });
     // Godmode: anyone, the author too, with a plain Undo.
-    expect(undoButton({ ...soft, rollback_mode: 'god' }, 1, moves)).toEqual({ label: 'Undo', step: 2, ask: false, title: 'Undo: Bo plays BOMB' });
+    expect(undoButton({ ...soft, rollback_mode: 'god' }, 1, moves, n.player)).toEqual({ label: 'Undo', step: 2, ask: false, title: 'Undo: Bo plays BOMB' });
   });
 
   it("asks for the Soft target's own author", () => {
-    expect(undoButton(soft, 1, moves)).toEqual({ label: 'Ask to undo', step: 2, ask: true, title: 'Ask to undo: Bo plays BOMB' });
+    expect(undoButton(soft, 1, moves, n.player)).toEqual({ label: 'Ask to undo', step: 2, ask: true, title: 'Ask to undo: Bo plays BOMB' });
+  });
+
+  it("names a target without a line Bo's choice, yours your choice (17.8)", () => {
+    const pick = [...moves, { from: 4, to: 4 }];
+    const u = { ...soft, rollback_steps: [...soft.rollback_steps, { step: 4, seat: 1 }] };
+    expect(undoButton(u, 0, pick, n.player)?.title).toBe("Undo: Bo's choice");
+    expect(undoButton(u, 1, pick, n.player)?.title).toBe('Ask to undo: your choice');
+    expect(undoButton({ ...u, rollback_mode: 'god' }, 1, pick, n.player)?.title).toBe('Undo: your choice');
   });
 
   it('is greyed with the reason', () => {
-    const why = (u: Parameters<typeof undoButton>[0], you = 0) => undoButton(u, you, moves)?.why;
+    const why = (u: Parameters<typeof undoButton>[0], you = 0) => undoButton(u, you, moves, n.player)?.why;
     const vote = { step: 1, seat: 1, author: 0, undo: 3, voters: [1], votes: null, need: 1 };
     expect(why(soft, -1)).toBe('Spectators cannot undo');
     expect(why({ ...soft, view: { over: true } })).toBe('The game is over');
@@ -634,6 +656,6 @@ describe('the Undo button (17.7)', () => {
     // Godmode has no barriers: nothing is left since the base.
     expect(why({ ...soft, rollback_mode: 'god', rollback_from: 2, rollback_steps: [] })).toBe('Nothing to undo yet');
     // A greyed button names no step and says why in its tooltip.
-    expect(undoButton({ ...soft, view: { over: true } }, 1, moves)).toEqual({ label: 'Ask to undo', ask: true, why: 'The game is over', title: 'The game is over' });
+    expect(undoButton({ ...soft, view: { over: true } }, 1, moves, n.player)).toEqual({ label: 'Ask to undo', ask: true, why: 'The game is over', title: 'The game is over' });
   });
 });

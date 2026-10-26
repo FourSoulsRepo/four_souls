@@ -173,6 +173,11 @@ Use options 1, 4, 8, 10 and 12.
     13. The app names the barrier from its events: "Nothing to undo since a die was rolled".
     14. The tooltip names the move: "Undo: Bo plays A Penny!".
     15. History rows have no buttons; the 17.6 play rows are gone.
+    16. A move with no history line reads "Undo: Bo's choice" (17.8).
+        1. Cases: a trigger order, Bum Friend's put-back pick, some answers.
+        2. Yours reads "your choice"; the vote panel names it alike.
+        3. It never borrows the next move's name.
+        4. `rollback_steps` → `last`: a play's last answer; its update may name it.
 
 ## Consequences
 

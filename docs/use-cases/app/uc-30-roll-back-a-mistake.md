@@ -45,6 +45,10 @@
 * **3i. A greyed Undo is clicked:** a note at the pointer says why.
 * **3j. A choice window covers the table:** "View board" first, then Undo.
 * **3k. An attack:** its declaration and its target are two moves.
+* **3l. A move with no history line (17.8):** the tooltip says "Undo: Bo's choice".
+  * E.g. a trigger order, or Bum Friend's pick of the card to put back.
+  * For the viewer's own move: "Undo: your choice".
+  * It never borrows the next move's name.
 
 ## Postconditions
 

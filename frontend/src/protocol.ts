@@ -590,9 +590,12 @@ export interface Update {
   rollback_cut?: number;
 }
 
+// RollbackStep: last is the move's last step when the answers its play
+// asks follow it (17.8); none: the move is the step alone.
 export interface RollbackStep {
   step: number;
   seat: number;
+  last?: number;
 }
 
 // RollbackVote: seat opened it to undo author's step and undo steps in

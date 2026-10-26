@@ -160,7 +160,7 @@ Owner notes (2026-10-26):
    4. e2e: a played card that asks a target is undone by one press.
    5. e2e: the button is greyed after a dice roll in Soft.
 
-### [ ] 17.8 Undo names a move without a line
+### [x] 17.8 Undo names a move without a line
 
 1. Goal: the Undo tooltip never borrows the next move's name (owner, 2026-10-26).
 2. Tasks:

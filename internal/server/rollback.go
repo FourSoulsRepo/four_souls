@@ -187,13 +187,23 @@ func (r *Room) isTarget(s liveStep) bool {
 }
 
 // targets lists the targets now with their authors, for the app's
-// Undo button: the last one is the latest move (17.7).
+// Undo button: the last one is the latest move (17.7). A play's answers
+// follow it; Last is the last of them, so the app can name the move
+// (17.8).
 func (r *Room) targets() []protocol.RollbackStep {
 	var out []protocol.RollbackStep
-	for _, s := range r.live {
-		if r.isTarget(s) {
-			out = append(out, protocol.RollbackStep{Step: s.n, Seat: int(s.rec.Intent.Player)})
+	for i, s := range r.live {
+		if !r.isTarget(s) {
+			continue
 		}
+		t := protocol.RollbackStep{Step: s.n, Seat: int(s.rec.Intent.Player)}
+		for _, a := range r.live[i+1:] {
+			if !a.answer {
+				break
+			}
+			t.Last = a.n
+		}
+		out = append(out, t)
 	}
 	return out
 }

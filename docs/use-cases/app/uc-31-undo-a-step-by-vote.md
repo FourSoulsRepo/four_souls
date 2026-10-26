@@ -51,6 +51,9 @@
 * **4f. While a vote is open:** Undo is greyed, "A rollback vote is open".
 * **3f. A played card that asks a target:** the play and the pick are one move.
   * One press puts the card back in the hand, not at its target prompt.
+* **3g. A move with no history line (17.8):** Undo says "Undo: Bo's choice".
+  * The author's button says "Ask to undo: your choice".
+  * The vote names it the same way.
 
 ## Postconditions
 

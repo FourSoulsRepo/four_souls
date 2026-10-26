@@ -28,14 +28,14 @@ export function TurnBadge({ view, names }: { view: GameView; names: Names }) {
 // card on hover or tap. In a game with rollback one Undo button under
 // the title undoes the latest move (17.7). Undone rows are greyed, and
 // a row tells who rolled back (ADR 020).
-export function HistoryPanel({ hide }: { hide: () => void }) {
+export function HistoryPanel({ hide, name }: { hide: () => void; name: (p: number) => string }) {
   const history = useApp((s) => s.history);
   const moves = useApp((s) => s.moves);
   const setZoom = useApp((s) => s.setZoom);
   const game = useApp((s) => s.game);
   const waiting = useApp((s) => s.behind || (s.game !== null && s.sent === s.game.step));
   const you = useApp(seatOf);
-  const undo = game ? undoButton(game, you, moves) : null;
+  const undo = game ? undoButton(game, you, moves, name) : null;
   const listRef = useRef<HTMLOListElement>(null);
   useEffect(() => {
     const el = listRef.current;

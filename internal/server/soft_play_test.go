@@ -204,6 +204,11 @@ func TestSoftUndoHandToDeck(t *testing.T) {
 	if _, ok := tb.target(k); !ok {
 		t.Fatalf("the put back (step %d) is no target: from %d, %+v", k, tb.last[0].RollbackFrom, tb.last[0].RollbackSteps)
 	}
+	// The pick answers the card, not a play: a move of its own, which
+	// the app names "Ann's choice" (17.8).
+	if s := tb.last[0].RollbackSteps; s[len(s)-1] != (protocol.RollbackStep{Step: k, Seat: 0}) {
+		t.Errorf("the put back is not the latest move alone: %+v", s)
+	}
 	if _, ok := tb.target(k - 1); ok {
 		t.Errorf("the loot before it (step %d) is a target", k-1)
 	}
@@ -303,9 +308,10 @@ func TestUndoPlayWithItsTarget(t *testing.T) {
 			if len(tb.last[0].View.Stack) == 0 || tb.handHas("bomb") {
 				t.Fatalf("Bomb! is not on the stack: %s", eventsJSON(t, tb.last[0].Events))
 			}
+			// The move ends with the answer: the app names it from there (17.8).
 			steps := tb.last[0].RollbackSteps
-			if len(steps) == 0 || steps[len(steps)-1] != (protocol.RollbackStep{Step: k, Seat: 0}) {
-				t.Fatalf("the latest target is not the play (step %d): %+v", k, steps)
+			if len(steps) == 0 || steps[len(steps)-1] != (protocol.RollbackStep{Step: k, Seat: 0, Last: a}) {
+				t.Fatalf("the latest target is not the play (step %d) up to its answer (step %d): %+v", k, a, steps)
 			}
 			if _, ok := tb.target(a); ok {
 				t.Errorf("the answer (step %d) is a target of its own", a)
