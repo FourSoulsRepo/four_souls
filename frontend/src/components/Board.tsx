@@ -120,7 +120,10 @@ function slotKey(slot: SlotView, i: number): string {
 // zone names the slot for effects that place a card on it (19.3).
 function Slot({ slot, zone, ui }: { slot: SlotView; zone: string; ui: Interact }) {
   const covered = slot.covered?.length ?? 0;
-  if (!slot.top) {
+  // A dead card flew off its slot: the slot shows empty until the next
+  // view (19.73).
+  const lifted = useApp((s) => !!slot.top && s.lifted.includes(slot.top.id));
+  if (!slot.top || lifted) {
     return <div className="pile-empty size-table" data-zone={zone} />;
   }
   return (

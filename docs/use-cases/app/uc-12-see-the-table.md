@@ -199,6 +199,18 @@
   * It shows from the turn start, before the attack.
   * It stays while the first roll's damage is on the stack.
   * It goes once that damage is dealt, or the roll missed.
+* **1aa. An uncovered card (19.72):** it shows up in its slot.
+  * A covering monster dies; the card below was there already.
+  * It does not show large or fly from the deck.
+  * It pops in place, like any new table card.
+  * Rooms too: a Red Key room leaves; the room below shows.
+* **1ab. A dead monster's flight (19.73):** it flies from its slot.
+  * The skull pops on it first.
+  * No soul: it flies to the monster discard.
+  * A soul: it flies to the player who gains it.
+  * Reward rolls may come first; it still flies from its slot.
+  * Its slot shows empty while it flies.
+  * A bonus soul does not fly.
 
 ## Postconditions
 

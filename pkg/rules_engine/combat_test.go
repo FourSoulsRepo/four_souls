@@ -1,6 +1,9 @@
 package rulesengine
 
-import "testing"
+import (
+	"slices"
+	"testing"
+)
 
 // putMonster replaces the top of monster slot i with a new monster.
 func putMonster(g *Game, i int, card CardRef) ObjectID {
@@ -224,6 +227,106 @@ func TestAttackTheMonsterDeck(t *testing.T) {
 	}
 	if top == covered {
 		t.Error("an uncovered card enters play as a new object (R-ZONE-01)")
+	}
+}
+
+// TestUncoverNamesTheCoveredObject: killing a covering monster puts the
+// covered card back with a card_revealed whose Prev is the covered
+// object, so the client does not fly it in from the deck (19.72).
+func TestUncoverNamesTheCoveredObject(t *testing.T) {
+	g := toAction(t, 2)
+	putMonster(g, 0, "gaper")
+	g.Decks[MonsterDeck] = append(g.Decks[MonsterDeck], g.newObject("dummy", DeckZone(MonsterDeck), NoPlayer))
+	g.forcedRolls = []int{6}
+	attack(t, g)
+	choose(t, g, "monster deck")
+	if _, err := g.Apply(Intent{Player: g.Turn.Active, Kind: IntentChoose, Choice: 0}); err != nil {
+		t.Fatal(err)
+	}
+	covered := g.Monsters[0].Cards[0]
+	var ev []Event
+	for range 200 {
+		ev = append(ev, throwPending(t, g)...)
+		if g.Prompt().Kind != PromptPriority || (!g.Attack.On && len(g.Stack) == 0) {
+			break
+		}
+		ev = append(ev, pass(t, g)...)
+	}
+	top, _ := g.Monsters[0].TopOf()
+	i := slices.IndexFunc(ev, func(e Event) bool { return e.Kind == EvCardRevealed && e.Object == top })
+	if i < 0 {
+		t.Fatalf("no card_revealed for the uncovered card: %+v", ev)
+	}
+	if ev[i].Prev != covered {
+		t.Errorf("uncover's card_revealed has Prev %d; want the covered object %d", ev[i].Prev, covered)
+	}
+	for _, e := range ev {
+		if e.Kind == EvCardRevealed && e.Object != top && e.Prev != 0 {
+			t.Errorf("a card_revealed that is no uncover has Prev: %+v", e)
+		}
+	}
+}
+
+// killEvents attacks the monster named card with rolls that always hit
+// and returns every event until the attack and the stack are done.
+func killEvents(t *testing.T, g *Game, card CardRef) []Event {
+	t.Helper()
+	g.forcedRolls = []int{6, 6, 6, 6, 6, 6, 6, 6}
+	attack(t, g)
+	choose(t, g, string(card))
+	var ev []Event
+	for range 200 {
+		ev = append(ev, throwPending(t, g)...)
+		if g.Prompt().Kind != PromptPriority || (!g.Attack.On && len(g.Stack) == 0) {
+			return ev
+		}
+		ev = append(ev, pass(t, g)...)
+	}
+	t.Fatal("passing never ended")
+	return nil
+}
+
+// heldOf is the held object of the death of the slot object id.
+func heldOf(t *testing.T, ev []Event, id ObjectID) ObjectID {
+	t.Helper()
+	i := slices.IndexFunc(ev, func(e Event) bool { return e.Kind == EvDied && e.Prev == id })
+	if i < 0 {
+		t.Fatalf("no died event for %d: %+v", id, ev)
+	}
+	return ev[i].Object
+}
+
+// TestDeadMonsterDiscardNamesItsHeldObject: a monster with no soul goes
+// to discard with a discarded event whose Prev is its held object, so
+// the client flies it from where it died (19.73).
+func TestDeadMonsterDiscardNamesItsHeldObject(t *testing.T) {
+	g := toAction(t, 2)
+	id := putMonster(g, 0, "gaper")
+	ev := killEvents(t, g, "gaper")
+	held := heldOf(t, ev, id)
+	i := slices.IndexFunc(ev, func(e Event) bool { return e.Kind == EvDiscarded && e.Prev == held })
+	if i < 0 {
+		t.Fatalf("no discarded event with Prev %d: %+v", held, ev)
+	}
+	e := ev[i]
+	if e.Player != NoPlayer || e.Card != "gaper" || g.Object(e.Object).Zone != DiscardZone(MonsterDeck) {
+		t.Errorf("discarded %+v; want no player, the card, its discard object", e)
+	}
+}
+
+// TestKilledSoulNamesItsHeldObject: a killed soul monster's gained_soul
+// has Prev, its held object (19.73).
+func TestKilledSoulNamesItsHeldObject(t *testing.T) {
+	g := toAction(t, 2)
+	id := putMonster(g, 1, "boss")
+	ev := killEvents(t, g, "boss")
+	held := heldOf(t, ev, id)
+	i := slices.IndexFunc(ev, func(e Event) bool { return e.Kind == EvGainedSoul })
+	if i < 0 {
+		t.Fatalf("no gained_soul: %+v", ev)
+	}
+	if ev[i].Prev != held || ev[i].Player != g.Turn.Active {
+		t.Errorf("gained_soul %+v; want Prev %d and the active player", ev[i], held)
 	}
 }
 

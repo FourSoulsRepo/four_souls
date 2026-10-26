@@ -34,7 +34,7 @@ This step never closes; new reports are appended.
 | ID | Group                                    | System     | Items                                                  | Count |
 |----|------------------------------------------|------------|--------------------------------------------------------|-------|
 | A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66 | 12 |
-| B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71                 | 6     |
+| B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73   | 8     |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30                                     | 3     |
 | E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52, 19.54, 19.69 | 9  |
@@ -47,11 +47,11 @@ This step never closes; new reports are appended.
 | L  | Not a bug: the app follows a ruling      | None       | 19.63                                                  | 1     |
 | M  | Go test setup: the code was right        | Go tests   | 19.68                                                  | 1     |
 
-Totals by system (71 items):
+Totals by system (73 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
-| Engine    | A, B    | 18    |
+| Engine    | A, B    | 20    |
 | Card data | C       | 2     |
 | Client    | D–G     | 21    |
 | Server    | H       | 1     |
@@ -2365,3 +2365,112 @@ Totals by system (71 items):
    16. So its look now reads "Bo's hand", or "Your hand" for the taker.
 7. Owner notes (2026-10-26)
    1. Owner marks 19.71 solved.
+
+### [x] 19.72 A killed monster's covered card flies in from the monster deck
+
+1. Goal: an uncovered card shows up in its slot, not from the deck.
+2. Report (owner, 2026-10-26)
+   1. A monster slot holds 2 cards: the top one covers another.
+   2. The top monster dies.
+   3. The card under it flies from the monster deck to the slot.
+   4. Wrong: that card was in the slot already, only covered.
+3. Tasks:
+   1. Engine: `uncover` marks its `card_revealed` with `Prev`.
+   2. `Prev` is the covered object; the card gets a new ID (R-ZONE-01).
+   3. That fits `Prev`'s meaning: the object moved away under a new ID.
+   4. Client: a `card_revealed` with `prev` gives no `reveal`, no `place`.
+   5. The card was face up before; it needs no large show either.
+   6. It appears in place with `card-pop`, like any new table card.
+   7. Rooms too: a Red Key room leaving uncovers the one below.
+   8. A deck attack, a refill and setup keep their `place` flight.
+4. Done when:
+   1. Go test: killing a covering monster emits `card_revealed` with `Prev`.
+   2. Vitest: a `card_revealed` with `prev` makes no `place`, no `reveal`.
+   3. e2e: the uncovered card does not fly from the deck, in `playback.spec.ts`.
+   4. Wiki `Animations` row `fly`: `place` skips an uncovered card.
+   5. ADR or wiki that lists event fields: `Prev` on `card_revealed`.
+   6. CHANGELOG line.
+5. Cause
+   1. `uncover` (`combat.go`) puts the covered card back via `putInSlot`.
+   2. `putInSlot` emits a plain `card_revealed`, as for a deck card.
+   3. `playback.ts` makes a `place` from `deck-<kind>` for every slot `card_revealed`.
+   4. So the client cannot tell an uncover from a refill.
+6. Fix
+   1. Engine: `putInSlotFrom` is `putInSlot` with a `Prev` on its `card_revealed`.
+   2. `uncover` calls it with the covered object; other callers keep 0.
+   3. So every uncover sets `Prev`: a dead monster, a room, a shop card.
+   4. Client: `card_revealed` with `prev` gives no `reveal`, no `place`.
+   5. The view draws the card; it pops in place (`card-pop`).
+   6. A deck attack, a refill and setup keep their flight.
+   7. Go test: `TestUncoverNamesTheCoveredObject` in `combat_test.go`.
+   8. Vitest: `neither reveals nor places a card a dead monster uncovered (19.72)`.
+   9. e2e: `a killed monster's covered card shows in its slot, not from the deck (19.72)`.
+   10. It is in `playback.spec.ts`; effects played: only `deaths`.
+   11. UC-12 1aa; wiki `Animations` row `fly`, `Client`, `Rules-engine`; CHANGELOG.
+   12. Screenshots: `.cache/screenshots/19.72/before/` and `after/`.
+   13. Before: the uncovered card shows large over the board, then flies.
+   14. After: the skull, then the card is in its slot.
+7. Owner notes (2026-10-26)
+   1. Owner marks 19.72 solved.
+
+### [x] 19.73 A dead monster pops into the discard or soul slot; no flight
+
+1. Goal: a dead monster flies from its slot to where it goes.
+2. Report (owner, 2026-10-26)
+   1. A monster dies.
+   2. It does not fly to the monster discard, nor to the player's souls.
+   3. It just appears on the discard pile.
+3. Tasks:
+   1. Engine: a dead card's discard emits `discarded`.
+   2. `ActDiscardObject` emits it: `Player` none, `Prev` the held object.
+   3. Engine: `GainSoul`'s `gained_soul` sets `Prev` to the moved object.
+   4. Client: on `died`, playback keeps where the card died.
+   5. That is its slot zone, `monster-slot-N`, keyed by the held object.
+   6. It lasts across updates: reward rolls may come in between.
+   7. `discarded` with that `prev`: `fly` from that zone to `discard-monster`.
+   8. `gained_soul` with that `prev`: `fly` from that zone to the player.
+   9. Any other `gained_soul` flies from `obj-<prev>` if drawn; else none.
+   10. A bonus soul keeps no flight; it is not a table card.
+   11. The fly starts after the `death-skull` on that card.
+   12. History stays as it is: a `discarded` with no player adds no line.
+4. Done when:
+   1. Go test: a monster with no soul emits `discarded` with `Prev`.
+   2. Go test: a killed soul monster's `gained_soul` has `Prev`.
+   3. Vitest: both make a `fly` from the slot, also in a later update.
+   4. e2e in `playback.spec.ts`: the dead card flies to the discard.
+   5. e2e: a soul monster flies to its player.
+   6. Wiki `Animations` row `fly`; wiki `Rules-engine` event fields.
+   7. UC-12 gets the case; CHANGELOG line.
+   8. Screenshots: `.cache/screenshots/19.73/before/` and `after/`.
+5. Cause
+   1. `monsterDeath` moves the card to a held object outside the table.
+   2. `soulStep` later discards it or makes it a soul.
+   3. `ActDiscardObject` calls `discard`, which emits no event.
+   4. `GainSoul` emits `gained_soul` without `Prev`.
+   5. `playback.ts` has no effect for `gained_soul` at all.
+   6. So the next view just draws the card in its new place.
+6. Fix
+   1. Engine: `ActDiscardObject` emits `discarded`, no player, `Prev` the held object.
+   2. Its callers are the soul step and a soul that cannot be gained.
+   3. Engine: `GainSoul`'s `gained_soul` sets `Prev` to the moved object.
+   4. No trigger listens to `discarded`; `gained_soul` triggers keep working.
+   5. Client: `died` keeps its slot zone by the held object (`diedAt`).
+   6. The zone comes from the view on screen, before the death.
+   7. `diedAt` lives in the store; a rollback or leaving clears it.
+   8. `discarded` with that `prev`: `fly` from the slot to the discard.
+   9. `gained_soul` with that `prev`: `fly` from the slot to the player.
+   10. Other `gained_soul` with `prev`: from `obj-<prev>`; a bonus soul: none.
+   11. The fly comes after `deaths` in the event order.
+   12. Added: the slot shows empty while the card flies (`lifted`).
+   13. History unchanged: no line for a `discarded` with no player.
+   14. Go tests: `TestDeadMonsterDiscardNamesItsHeldObject`, `TestKilledSoulNamesItsHeldObject`.
+   15. Vitest: `flies a dead monster from its slot to the discard or its player, also in a later update (19.73)`.
+   16. Vitest: `flies another soul from its place; a bonus soul not at all (19.73)`.
+   17. e2e: `a dead monster flies from its slot to the monster discard (19.73)`.
+   18. e2e: `a dead soul monster flies from its slot to its player after a reward roll (19.73)`.
+   19. UC-12 1ab; wiki `Animations` row `fly`, `Client`, `Rules-engine`; CHANGELOG.
+   20. Screenshots: `.cache/screenshots/19.73/before/` and `after/`.
+   21. Before: the skull, then the card is in the discard; no flight.
+   22. After: the skull, then the card flies from its emptied slot.
+7. Owner notes (2026-10-26)
+   1. Owner marks 19.73 solved, with the emptied slot during the flight.

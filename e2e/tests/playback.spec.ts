@@ -730,6 +730,184 @@ test('a refilled slot\'s card grows out of its deck, then flies from the middle 
   expect(flight.w).toBeGreaterThan(200);
 });
 
+test('a killed monster\'s covered card shows in its slot, not from the deck (19.72)', async ({ browser }) => {
+  const [ari] = await startGame(browser, ['Ari', 'Bex']);
+  if (!ari) {
+    throw new Error('no pages');
+  }
+  // Replay a covering monster's death: the card below it is uncovered
+  // (prev: its covered object) and is the slot's new top. Every effect
+  // is recorded.
+  await ari.evaluate(() => {
+    interface Effects {
+      subscribe: (f: (s: { playing: { key: number; effect: { kind: string } } | null }) => void) => void;
+    }
+    const w = window as unknown as { fourSouls: { store: Store & Effects }; effects: string[] };
+    const store = w.fourSouls.store;
+    w.effects = [];
+    let last = 0;
+    store.subscribe((s) => {
+      if (s.playing && s.playing.key !== last) {
+        last = s.playing.key;
+        w.effects.push(s.playing.effect.kind);
+      }
+    });
+    const s = store.getState();
+    const game = structuredClone(s.game);
+    const [first, second] = game?.view.monsters ?? [];
+    const old = first?.top;
+    if (!game || !first || !old || !second?.top) {
+      throw new Error('no game');
+    }
+    first.top = { ...second.top, id: 990 };
+    const events = [
+      { kind: 'died', player: -1, object: 999, card: old.card, prev: old.id },
+      { kind: 'card_revealed', player: -1, object: 990, prev: 989, card: second.top.card },
+    ];
+    s.receive({ type: 'update', data: { ...game, step: game.step + 1, events } });
+  });
+  await expect(ari.getByTestId('skull')).toBeVisible();
+  const card = ari.locator('[data-zone="obj-990"]');
+  await expect(card).toBeVisible({ timeout: 5000 });
+  await ari.waitForTimeout(150); // it pops in place
+  await shot(ari, 'uncover-in-place');
+  await expect(ari.locator('.effects-trail > *')).toHaveCount(0);
+  const effects = await ari.evaluate(() => (window as unknown as { effects: string[] }).effects);
+  expect(effects).toEqual(['deaths']);
+});
+
+// trackFlight records, every frame, the centre of a card flying to a
+// zone in window.flight, and every effect played in window.effects
+// (19.73). It stops when read, or after 10 s.
+async function trackFlight(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    interface Effects {
+      subscribe: (f: (s: { playing: { key: number; effect: { kind: string } } | null }) => void) => void;
+    }
+    const w = window as unknown as {
+      fourSouls: { store: Effects };
+      effects: string[];
+      flight: { x: number; y: number }[];
+      tracking: boolean;
+    };
+    w.effects = [];
+    w.flight = [];
+    w.tracking = true;
+    let last = 0;
+    w.fourSouls.store.subscribe((s) => {
+      if (s.playing && s.playing.key !== last) {
+        last = s.playing.key;
+        w.effects.push(s.playing.effect.kind);
+      }
+    });
+    const end = performance.now() + 10_000;
+    const frame = () => {
+      const el = document.querySelector('[data-testid="effect-fly"] .effect-fly');
+      if (el) {
+        const r = el.getBoundingClientRect();
+        w.flight.push({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
+      }
+      if (w.tracking && performance.now() < end) {
+        requestAnimationFrame(frame);
+      }
+    };
+    requestAnimationFrame(frame);
+  });
+}
+
+function flight(page: Page): Promise<{ effects: string[]; flight: { x: number; y: number }[] }> {
+  return page.evaluate(() => {
+    const w = window as unknown as { effects: string[]; flight: { x: number; y: number }[]; tracking: boolean };
+    w.tracking = false;
+    return { effects: w.effects, flight: w.flight };
+  });
+}
+
+// near tells if two points are within 30 px.
+function near(a: { x: number; y: number } | undefined, b: { x: number; y: number }): boolean {
+  return !!a && Math.abs(a.x - b.x) < 30 && Math.abs(a.y - b.y) < 30;
+}
+
+test('a dead monster flies from its slot to the monster discard (19.73)', async ({ browser }) => {
+  const [ari] = await startGame(browser, ['Ari', 'Bex']);
+  if (!ari) {
+    throw new Error('no pages');
+  }
+  const slot = await centre(ari, '[data-zone="monster-slot-0"]');
+  const discard = await centre(ari, '[data-zone="discard-monster"]');
+  await trackFlight(ari);
+  // Replay a monster's death with no soul: it dies in the first slot
+  // (held object 999) and goes to the monster discard (prev: 999).
+  await ari.evaluate(() => {
+    const s = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store.getState();
+    const game = structuredClone(s.game) as { step: number; view: View & { discards: (Card[] | null)[] } } | null;
+    const first = game?.view.monsters[0];
+    const old = first?.top;
+    if (!game || !first || !old) {
+      throw new Error('no game');
+    }
+    delete first.top;
+    game.view.discards[2] = [...(game.view.discards[2] ?? []), { ...old, id: 998 }];
+    const events = [
+      { kind: 'died', player: -1, object: 999, card: old.card, prev: old.id },
+      { kind: 'discarded', player: -1, object: 998, card: old.card, prev: 999 },
+    ];
+    s.receive({ type: 'update', data: { ...game, step: game.step + 1, events } });
+  });
+  await expect(ari.getByTestId('skull')).toBeVisible();
+  await shot(ari, 'death-skull');
+  await expect(ari.getByTestId('effect-fly')).toBeVisible({ timeout: 5000 });
+  await ari.waitForTimeout(150);
+  await shot(ari, 'death-to-discard');
+  await expect(ari.locator('.effects-trail > *')).toHaveCount(0);
+  await expect(ari.getByTestId('effect-fly')).toHaveCount(0);
+  await shot(ari, 'death-in-discard');
+  // The skull first, then the card flies from its slot to the discard.
+  const f = await flight(ari);
+  expect(f.effects).toEqual(['deaths', 'fly']);
+  expect(near(f.flight[0], slot)).toBe(true);
+  expect(near(f.flight.at(-1), discard)).toBe(true);
+});
+
+test('a dead soul monster flies from its slot to its player after a reward roll (19.73)', async ({ browser }) => {
+  const [ari] = await startGame(browser, ['Ari', 'Bex']);
+  if (!ari) {
+    throw new Error('no pages');
+  }
+  const slot = await centre(ari, '[data-zone="monster-slot-0"]');
+  const seat = await ari.evaluate(() => (window as unknown as { fourSouls: { store: Store } }).fourSouls.store.getState().game?.view.players[0]?.id ?? 0);
+  const player = await centre(ari, `[data-zone="player-${String(seat)}"]`);
+  await trackFlight(ari);
+  // Replay a death (held object 999), a reward roll, then the soul the
+  // player gains from it (prev: 999), each in its own update.
+  await ari.evaluate((p) => {
+    const s = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store.getState();
+    const game = structuredClone(s.game);
+    const first = game?.view.monsters[0];
+    const old = first?.top;
+    if (!game || !first || !old) {
+      throw new Error('no game');
+    }
+    delete first.top;
+    const died = [{ kind: 'died', player: -1, object: 999, card: old.card, prev: old.id }];
+    s.receive({ type: 'update', data: { ...game, step: game.step + 1, events: died } });
+    const roll = [{ kind: 'dice_rolled', player: p, amount: 4, text: 'reward roll' }];
+    s.receive({ type: 'update', data: { ...game, step: game.step + 2, events: roll } });
+    const soul = [{ kind: 'gained_soul', player: p, object: 997, card: old.card, prev: 999 }];
+    s.receive({ type: 'update', data: { ...game, step: game.step + 3, events: soul } });
+  }, seat);
+  await expect(ari.getByTestId('skull')).toBeVisible();
+  await expect(ari.getByTestId('effect-fly')).toBeVisible({ timeout: 5000 });
+  await ari.waitForTimeout(150);
+  await shot(ari, 'death-to-soul');
+  await expect(ari.locator('.effects-trail > *')).toHaveCount(0);
+  await expect(ari.getByTestId('effect-fly')).toHaveCount(0);
+  const f = await flight(ari);
+  expect(f.effects).toEqual(['deaths', 'dice', 'fly']);
+  expect(near(f.flight[0], slot)).toBe(true);
+  expect(near(f.flight.at(-1), player)).toBe(true);
+});
+
 test('a revealed card that stays in its deck shrinks back onto it (15.73)', async ({ browser }) => {
   const [noa] = await startGame(browser, ['Noa', 'Pim']);
   if (!noa) {

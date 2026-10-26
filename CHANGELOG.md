@@ -10,6 +10,8 @@ Rules engine versions are in each release's notes.
 - "Choose one-" cards such as Dagaz ask like The Bone: the card large, one line per option; an option with nothing to target is greyed.
 - Online: each Recent server shows whether it is up and how many games there have a free seat.
 - A look at other players' hands, such as XXI. The World, shows each hand in its own row under its owner's name.
+- When a monster that covered another dies, the card below shows up in its slot instead of flying in from the monster deck.
+- A dead monster flies from its slot to the monster discard, or to the player who gains its soul, after its skull, instead of just appearing there.
 ## 0.2.1 - 2026-10-22
 
 The first public release.
