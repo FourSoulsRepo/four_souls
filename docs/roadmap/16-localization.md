@@ -85,6 +85,29 @@ Rules of this step (owner, 2026-10-26):
    7. Translators shown with the card when known (CD-06).
 3. Done when:
    1. Base Game cards show Russian names with Russian selected.
+4. Owner answers (2026-10-27):
+   1. Mapping: drop our set suffix, then a fixed list of the old site's typos.
+   2. Suffix examples: `fsp2-pills_2_fsp2` → `fsp2-pills_2`, `r-pills_r` → `r-pills`.
+   3. The fixed list, ours → old site:
+
+| Ours | Old site |
+|---|---|
+| `b2-bum_bo` | `b2-bum-bo` |
+| `b2-chest_2` | `b2-chest-2` |
+| `b2-dark_chest_2` | `b2-dark_chest-2` |
+| `b2-gold_chest_2` | `b2-gold_chest-2` |
+| `b2-xl_floor` | `b2-xl_fLoor` |
+| `fsp2-curse_of_impulse` | `fsp2-curse_of_Impulse` |
+| `fsp2-whore_of_babylon` | `fsp2-whore_of_babylony` |
+| `r-curse_of_the_soulless` | `r-curse_of_the_souless` |
+
+   4. Every "Pills!" card is "Пилюля!"; the site's "Пилюли!" is a typo.
+   5. Other names stay as on the site.
+      1. "I Am Error": "Я - ошибка" (`r`) and "Я ошибка!" (`g2`) differ on purpose.
+      2. "The Chest" and "Chest" are both "Сундук".
+      3. "Flash Исаак" is correct.
+   6. `translators.ru` for every imported name, as on foursouls.ru:
+      1. Alchba, Mitboy, d0m1n1c132, Blacknenko, N-Chance.
 
 ### [ ] 16.6 Card images per language
 
