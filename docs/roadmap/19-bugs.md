@@ -2538,7 +2538,7 @@ Totals by system (76 items):
    1. The cause is written here, or the item says it was not found.
    2. A fix, if any, comes with its test.
 
-### [ ] 19.76 End turn glows as a green box, not a breathing glow
+### [x] 19.76 End turn glows as a green box, not a breathing glow
 
 1. Goal: with nothing left to do, End turn breathes a soft green glow (H-20).
 2. Report (owner, 2026-10-26)
@@ -2583,3 +2583,5 @@ Totals by system (76 items):
    7. And a radial-gradient halo that breathes.
    8. It fails on the first fix.
    9. Screenshots: `.cache/screenshots/19.76/again/`.
+10. Owner notes (2026-10-26)
+   1. Owner marks 19.76 solved.
