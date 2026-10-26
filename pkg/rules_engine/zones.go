@@ -152,10 +152,16 @@ func (g *Game) GiveHandCard(from, to PlayerID, id ObjectID) ObjectID {
 	return nid
 }
 
-// LookAt shows cards to p only.
+// LookAt shows cards to p only. A hand card's event names the hand's
+// owner in By, so the look can say whose hand it is (19.71).
 func (g *Game) LookAt(p PlayerID, ids ...ObjectID) {
 	for _, id := range ids {
-		g.emit(Event{Kind: EvLookedAt, Player: p, Object: id, Card: g.Object(id).Card, Private: true})
+		o := g.Object(id)
+		by := 0
+		if o.Zone.Kind == ZoneHand {
+			by = int(o.Controller) + 1
+		}
+		g.emit(Event{Kind: EvLookedAt, Player: p, Object: id, Card: o.Card, Private: true, By: by})
 	}
 }
 

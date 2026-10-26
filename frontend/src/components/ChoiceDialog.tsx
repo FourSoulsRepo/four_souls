@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react';
 import { discardIntent, modeLines, orderIntent, outcomeLines, type Actions } from '../actions';
-import type { Looked } from '../history';
+import { lookGroups, type Looked } from '../history';
 import type { CardView, ModeView } from '../protocol';
 import { useApp } from '../store';
 import { Card } from './Card';
@@ -170,17 +170,32 @@ export function ModeDialog({ choice, card, modes }: { choice: NonNullable<Action
 }
 
 // LookDialog shows the cards an effect let this player look at,
-// Hearthstone-style (V-07), until they close it.
-export function LookDialog({ cards }: { cards: Looked[] }) {
+// Hearthstone-style (V-07), until they close it. Hand cards come in
+// one labelled row per hand, so the player sees whose they are (19.71).
+export function LookDialog({ cards, you, name }: { cards: Looked[]; you: number; name: (seat: number) => string }) {
   const endLook = useApp((s) => s.endLook);
+  const row = (cs: Looked[], key?: string) => (
+    <div key={key} className="choice-options">
+      {cs.map((c) => (
+        <Card key={c.id} cardRef={c.card} size="hand" />
+      ))}
+    </div>
+  );
   return (
     <div className="choice look" role="dialog" aria-label="You look at">
       <h2>You look at</h2>
-      <div className="choice-options">
-        {cards.map((c) => (
-          <Card key={c.id} cardRef={c.card} size="hand" />
-        ))}
-      </div>
+      {lookGroups(cards).map((g) => {
+        if (g.owner === undefined) {
+          return row(g.cards, 'deck');
+        }
+        const label = g.owner === you ? 'Your hand' : `${name(g.owner)}'s hand`;
+        return (
+          <section key={g.owner} className="look-hand" role="group" aria-label={label}>
+            <h3>{label}</h3>
+            {row(g.cards)}
+          </section>
+        );
+      })}
       <button type="button" onClick={endLook}>
         OK
       </button>

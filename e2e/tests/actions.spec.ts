@@ -365,6 +365,54 @@ test('a "look at the top card" effect shows the card until it is closed (V-07)',
   await expect(rue.getByRole('dialog', { name: 'You look at' })).toHaveCount(0);
 });
 
+test('a look at hands groups the cards by whose hand they are (19.71)', async ({ browser }) => {
+  const [pip] = await startGame(browser, ['Pip', 'Rue', 'Sol'], { url: fast() });
+  if (!pip) {
+    throw new Error('no pages');
+  }
+  // XXI. The World, as the server sends it to the looker: each other
+  // hand's cards, with by naming the hand's owner (seat plus 1).
+  const [first, second] = await pip.evaluate(() => {
+    interface S {
+      game: { step: number; events: unknown; seats?: { seat: number; name: string }[] };
+      lobby: { table: { you: number } };
+      receive: (env: unknown) => void;
+    }
+    const s = (window as unknown as { fourSouls: { store: { getState: () => S } } }).fourSouls.store.getState();
+    const you = s.lobby.table.you;
+    const seats = (s.game.seats ?? []).filter((x) => x.seat !== you);
+    const look = (seat: number, object: number, card: string) => ({ kind: 'looked_at', player: you, object, card, private: true, by: seat + 1 });
+    const [a, b] = seats;
+    if (!a || !b) {
+      throw new Error('no seats');
+    }
+    const g = structuredClone(s.game);
+    g.step += 1;
+    g.events = [
+      { kind: 'stack_resolved', player: you, card: 'xxi_the_world' },
+      look(a.seat, 900, 'a_dime'),
+      look(a.seat, 901, 'a_penny'),
+      look(b.seat, 902, 'a_nickel'),
+    ];
+    s.receive({ type: 'update', data: g });
+    return [a.name, b.name];
+  });
+  const look = pip.getByRole('dialog', { name: 'You look at' });
+  await expect(look.getByRole('img', { name: 'A Nickel!' })).toBeVisible();
+  await shot(pip, 'look-at-hands');
+  const hands = look.getByRole('group');
+  await expect(hands).toHaveCount(2);
+  const one = look.getByRole('group', { name: `${String(first)}'s hand` });
+  const two = look.getByRole('group', { name: `${String(second)}'s hand` });
+  await expect(one.getByText(`${String(first)}'s hand`)).toBeVisible();
+  await expect(one.getByRole('img', { name: 'A Dime!!' })).toBeVisible();
+  await expect(one.getByRole('img', { name: 'A Penny!' })).toBeVisible();
+  await expect(two.getByRole('img', { name: 'A Nickel!' })).toBeVisible();
+  await expect(two.getByRole('img')).toHaveCount(1);
+  // The groups keep the events' order.
+  await expect(hands.first()).toHaveAccessibleName(`${String(first)}'s hand`);
+});
+
 test('a "look, you may put it on the bottom" question shows the card (19.11)', async ({ browser }) => {
   const [opal] = await startGame(browser, ['Opal', 'Reed'], { url: fast() });
   if (!opal) {

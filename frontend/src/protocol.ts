@@ -538,7 +538,8 @@ export interface GameEvent {
   // is amount (19.39).
   dice?: number[];
   // by: the player who dealt damage, plus 1; 0 or none for a monster
-  // or nobody (15.77). On a death: the killer (15.88).
+  // or nobody (15.77). On a death: the killer (15.88). On looked_at:
+  // the owner of the hand the card is in; 0 for a deck card (19.71).
   by?: number;
   // item: the stack item that resolved, on stack_resolved (15.22).
   item?: StackItem;

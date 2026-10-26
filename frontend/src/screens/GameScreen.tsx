@@ -233,7 +233,7 @@ function Table({ game, you }: { game: Update; you: number }) {
       )}
       {offered.discard && me && <DiscardDialog key={game.step} discard={offered.discard} hand={me.hand ?? []} />}
       {offered.order && <OrderDialog key={game.step} order={offered.order} cards={view.ordering ?? []} />}
-      {looking.length > 0 && <LookDialog cards={looking} />}
+      {looking.length > 0 && <LookDialog cards={looking} you={you} name={name} />}
       {voting && <RollbackVotePanel game={game} you={you} name={name} />}
       {connected && !view.over && <GameMenu host={you === 0} />}
       {!connected && quiet ? (
