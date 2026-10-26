@@ -34,7 +34,7 @@ This step never closes; new reports are appended.
 | ID | Group                                    | System     | Items                                                  | Count |
 |----|------------------------------------------|------------|--------------------------------------------------------|-------|
 | A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66 | 12 |
-| B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71                 | 6     |
+| B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72          | 7     |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30                                     | 3     |
 | E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52, 19.54, 19.69 | 9  |
@@ -47,11 +47,11 @@ This step never closes; new reports are appended.
 | L  | Not a bug: the app follows a ruling      | None       | 19.63                                                  | 1     |
 | M  | Go test setup: the code was right        | Go tests   | 19.68                                                  | 1     |
 
-Totals by system (71 items):
+Totals by system (72 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
-| Engine    | A, B    | 18    |
+| Engine    | A, B    | 19    |
 | Card data | C       | 2     |
 | Client    | D–G     | 21    |
 | Server    | H       | 1     |
@@ -2365,3 +2365,33 @@ Totals by system (71 items):
    16. So its look now reads "Bo's hand", or "Your hand" for the taker.
 7. Owner notes (2026-10-26)
    1. Owner marks 19.71 solved.
+
+### [ ] 19.72 A killed monster's covered card flies in from the monster deck
+
+1. Goal: an uncovered card shows up in its slot, not from the deck.
+2. Report (owner, 2026-10-26)
+   1. A monster slot holds 2 cards: the top one covers another.
+   2. The top monster dies.
+   3. The card under it flies from the monster deck to the slot.
+   4. Wrong: that card was in the slot already, only covered.
+3. Tasks:
+   1. Engine: `uncover` marks its `card_revealed` with `Prev`.
+   2. `Prev` is the covered object; the card gets a new ID (R-ZONE-01).
+   3. That fits `Prev`'s meaning: the object moved away under a new ID.
+   4. Client: a `card_revealed` with `prev` gives no `reveal`, no `place`.
+   5. The card was face up before; it needs no large show either.
+   6. It appears in place with `card-pop`, like any new table card.
+   7. Rooms too: a Red Key room leaving uncovers the one below.
+   8. A deck attack, a refill and setup keep their `place` flight.
+4. Done when:
+   1. Go test: killing a covering monster emits `card_revealed` with `Prev`.
+   2. Vitest: a `card_revealed` with `prev` makes no `place`, no `reveal`.
+   3. e2e: the uncovered card does not fly from the deck, in `playback.spec.ts`.
+   4. Wiki `Animations` row `fly`: `place` skips an uncovered card.
+   5. ADR or wiki that lists event fields: `Prev` on `card_revealed`.
+   6. CHANGELOG line.
+5. Cause
+   1. `uncover` (`combat.go`) puts the covered card back via `putInSlot`.
+   2. `putInSlot` emits a plain `card_revealed`, as for a deck card.
+   3. `playback.ts` makes a `place` from `deck-<kind>` for every slot `card_revealed`.
+   4. So the client cannot tell an uncover from a refill.
