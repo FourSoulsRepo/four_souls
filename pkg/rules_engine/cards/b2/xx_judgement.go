@@ -1,6 +1,9 @@
 package b2
 
-import engine "github.com/FourSoulsRepo/rules_engine"
+import (
+	engine "github.com/FourSoulsRepo/rules_engine"
+	"github.com/FourSoulsRepo/rules_engine/cards/cardkit"
+)
 
 // XX. Judgement (Wildcard Card)
 //
@@ -40,12 +43,12 @@ func souls(g *engine.Game, p engine.PlayerID) []engine.ObjectID {
 
 // judgementQuestion is answered by the chosen player.
 var judgementQuestion = engine.Question{
-	Text:   "Destroy which of your souls?",
+	Text:   cardkit.AskDestroyWhichOfYourSouls,
 	Player: func(c *engine.Ctx, _ []int) engine.PlayerID { return c.Targets[0].Player },
-	Options: func(c *engine.Ctx, _ []int) []string {
-		var out []string
+	Options: func(c *engine.Ctx, _ []int) []engine.Msg {
+		var out []engine.Msg
 		for _, id := range c.G.DestroyableSouls(c.Targets[0].Player) {
-			out = append(out, string(c.G.Object(id).Card))
+			out = append(out, engine.CardOption(c.G.Object(id).Card))
 		}
 		return out
 	},

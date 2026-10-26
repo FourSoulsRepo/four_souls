@@ -4,7 +4,7 @@ import { t } from '../i18n';
 import { useEscape } from '../keys';
 import type { Options, RollbackMode } from '../protocol';
 import { baseGame, setName, sortSets } from '../sets';
-import { useApp } from '../store';
+import { deckRatiosText, useApp } from '../store';
 import './screens.css';
 
 // rollbackHint says what each rollback mode allows (ADR 020, item 1).
@@ -213,7 +213,7 @@ export function HostScreen() {
             </label>
             {/* Off and locked when the sets are too small; the tooltip
                 names the short groups. */}
-            <label className="check" title={blocked ?? undefined}>
+            <label className="check" title={blocked ? deckRatiosText(blocked) : undefined}>
               <input
                 type="checkbox"
                 checked={blocked === '' && !options.no_deck_ratios}

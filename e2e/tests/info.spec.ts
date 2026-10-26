@@ -270,7 +270,7 @@ test('damage a player takes names its card in the history strip (15.47)', async 
         source: 307,
         source_card: 'boom_fly',
         amount: 1,
-        label: 'damage',
+        label: { key: 'event.damage' },
         target: { player: p, is_player: true },
         ability: none,
         roll_for: none,
@@ -316,14 +316,14 @@ test('a changed roll shows the die and the result in the history (19.1)', async 
     }
     const p = game.view.turn.active;
     const none = { card: '', index: 0 };
-    const item = { id: 900, kind: 3, controller: p, source: 0, roll: 6, label: 'attack roll', attack: true, target: { object: monster.id, player: 0 }, ability: none, roll_for: none, target_card: monster.card };
+    const item = { id: 900, kind: 3, controller: p, source: 0, roll: 6, label: { key: 'event.attack_roll' }, attack: true, target: { object: monster.id, player: 0 }, ability: none, roll_for: none, target_card: monster.card };
     s.receive({
       type: 'update',
       data: {
         ...game,
         step: 900,
         events: [
-          { kind: 'stack_resolved', player: p, amount: 6, text: 'attack roll', stack_id: 900, item },
+          { kind: 'stack_resolved', player: p, amount: 6, label: { key: 'event.attack_roll' }, stack_id: 900, item },
           { kind: 'roll_resolved', player: p, amount: 4, text: 'attack' },
         ],
       },
@@ -444,14 +444,14 @@ test('a buy and a kill each add one tile to the history strip (15.89)', async ({
     }
     const p = game.view.turn.active;
     const none = { card: '', index: 0 };
-    const death = { id: 950, kind: 5, controller: -1, source: 0, text: 'death', target: { player: -1, object: monster.id }, ability: none, roll_for: none };
+    const death = { id: 950, kind: 5, controller: -1, source: 0, label: { key: 'event.death' }, target: { player: -1, object: monster.id }, ability: none, roll_for: none };
     s.receive({
       type: 'update',
       data: {
         ...game,
         step: 900,
         events: [
-          { kind: 'stack_resolved', player: -1, text: 'death', stack_id: 950, item: death },
+          { kind: 'stack_resolved', player: -1, label: { key: 'event.death' }, stack_id: 950, item: death },
           { kind: 'died', player: -1, object: 951, card: monster.card, prev: monster.id, by: p + 1 },
           { kind: 'gained_cents', player: p, amount: 3 },
           { kind: 'purchase_declared', player: p },
@@ -503,16 +503,16 @@ test('a damage line in the full history names who and whom (19.52)', async ({ br
     const p = game.view.turn.active;
     const none = { card: '', index: 0 };
     const base = { controller: p, source: 0, ability: none, roll_for: none };
-    const damage = { ...base, id: 960, kind: 4, amount: 1, label: 'damage', target: { player: 1 - p, is_player: true } };
-    const hit = { ...base, id: 961, kind: 4, amount: 2, label: 'damage', target_card: monster.card, target: { player: -1, object: monster.id } };
+    const damage = { ...base, id: 960, kind: 4, amount: 1, label: { key: 'event.damage' }, target: { player: 1 - p, is_player: true } };
+    const hit = { ...base, id: 961, kind: 4, amount: 2, label: { key: 'event.damage' }, target_card: monster.card, target: { player: -1, object: monster.id } };
     s.receive({
       type: 'update',
       data: {
         ...game,
         step: 900,
         events: [
-          { kind: 'stack_resolved', player: p, text: 'damage', stack_id: 960, item: damage },
-          { kind: 'stack_resolved', player: p, text: 'damage', stack_id: 961, item: hit },
+          { kind: 'stack_resolved', player: p, label: { key: 'event.damage' }, stack_id: 960, item: damage },
+          { kind: 'stack_resolved', player: p, label: { key: 'event.damage' }, stack_id: 961, item: hit },
         ],
       },
     });
@@ -547,13 +547,13 @@ test('a strip tile shows what the play did: target, damage, kill and rewards (15
     const none = { card: '', index: 0 };
     const target = { player: -1, object: monster.id };
     const bomb = { id: 970, kind: 0, controller: p, source: 0, card: 'bomb', target, target_card: monster.card, ability: { card: 'bomb', index: 0 }, roll_for: none };
-    const hit = { id: 971, kind: 4, controller: p, source: 0, source_card: 'bomb', amount: 1, label: 'damage', target, target_card: monster.card, ability: none, roll_for: none };
-    const death = { id: 972, kind: 5, controller: -1, source: 0, label: 'death', target, ability: none, roll_for: none };
+    const hit = { id: 971, kind: 4, controller: p, source: 0, source_card: 'bomb', amount: 1, label: { key: 'event.damage' }, target, target_card: monster.card, ability: none, roll_for: none };
+    const death = { id: 972, kind: 5, controller: -1, source: 0, label: { key: 'event.death' }, target, ability: none, roll_for: none };
     const updates = [
       [{ kind: 'stack_resolved', player: p, card: 'bomb', stack_id: 970, item: bomb }],
-      [{ kind: 'stack_resolved', player: p, text: 'damage', stack_id: 971, item: hit }],
+      [{ kind: 'stack_resolved', player: p, label: { key: 'event.damage' }, stack_id: 971, item: hit }],
       [
-        { kind: 'stack_resolved', player: -1, text: 'death', stack_id: 972, item: death },
+        { kind: 'stack_resolved', player: -1, label: { key: 'event.death' }, stack_id: 972, item: death },
         { kind: 'died', player: -1, object: 973, card: monster.card, prev: monster.id, by: p + 1 },
         { kind: 'rewards_gained', player: p, object: 973, card: monster.card },
         { kind: 'gained_cents', player: p, amount: 3 },

@@ -103,6 +103,9 @@ func answer(conn net.PacketConn, games func() (Answer, bool)) {
 	}
 }
 
+// ErrNoNetwork means no network interface could send the probe.
+var ErrNoNetwork = errors.New("lan: no network to search")
+
 // Find probes the network on UDP port and collects answers for wait.
 func Find(ctx context.Context, port int, wait time.Duration) ([]Found, error) {
 	var lc net.ListenConfig
@@ -122,7 +125,7 @@ func Find(ctx context.Context, port int, wait time.Duration) ([]Found, error) {
 		}
 	}
 	if sent == 0 {
-		return nil, errors.New("lan: no network to search")
+		return nil, ErrNoNetwork
 	}
 	deadline := time.Now().Add(wait)
 	if d, ok := ctx.Deadline(); ok && d.Before(deadline) {

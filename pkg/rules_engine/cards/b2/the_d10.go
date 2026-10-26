@@ -1,9 +1,8 @@
 package b2
 
 import (
-	"strconv"
-
 	engine "github.com/FourSoulsRepo/rules_engine"
+	"github.com/FourSoulsRepo/rules_engine/cards/cardkit"
 )
 
 // The D10 (Passive Treasure Card)
@@ -22,12 +21,12 @@ var theD10 = engine.CardDef{
 				if slots := freeSlots(c.G); a[0] >= 0 && a[0] < len(slots) {
 					c.G.CoverMonsterSlot(slots[a[0]])
 				}
-			}, engine.Question{Text: "Which monster slot?", Options: func(c *engine.Ctx, _ []int) []string {
-				var out []string
+			}, engine.Question{Text: cardkit.AskWhichMonsterSlot, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
+				var out []engine.Msg
 				for _, i := range freeSlots(c.G) {
-					out = append(out, "slot "+strconv.Itoa(i+1))
+					out = append(out, engine.SlotOption(i+1, ""))
 				}
-				return append(out, "none")
+				return append(out, engine.AskNone.Msg())
 			}})},
 		},
 	},

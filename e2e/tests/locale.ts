@@ -24,6 +24,15 @@ export function tr(key: string, values?: Values): string {
   return translate(locales, locale, key, values);
 }
 
+// trIn is the line key in another language: a page switched to it
+// (languages.spec.ts, 16.4).
+export function trIn(lang: string, key: string, values?: Values): string {
+  if (!english.has(key)) {
+    throw new Error(`no line ${key} in en.json`);
+  }
+  return translate(locales, lang, key, values);
+}
+
 // trRe is the line key in the tests' language as a pattern, to find it
 // inside a longer text or with values a test can't know: given values
 // fill their places, a place left out matches any text. A plural line

@@ -1,6 +1,9 @@
 package b2
 
-import engine "github.com/FourSoulsRepo/rules_engine"
+import (
+	engine "github.com/FourSoulsRepo/rules_engine"
+	"github.com/FourSoulsRepo/rules_engine/cards/cardkit"
+)
 
 // Guppy’s Head (Active Treasure Card)
 //
@@ -25,12 +28,12 @@ var guppysHead = engine.CardDef{
 
 // giveQuestion is answered by the chosen player: which card they give.
 var giveQuestion = engine.Question{
-	Text:   "Give which loot card?",
+	Text:   cardkit.AskGiveWhichLootCard,
 	Player: func(c *engine.Ctx, _ []int) engine.PlayerID { return c.Targets[0].Player },
-	Options: func(c *engine.Ctx, _ []int) []string {
-		var out []string
+	Options: func(c *engine.Ctx, _ []int) []engine.Msg {
+		var out []engine.Msg
 		for _, id := range c.G.Players[c.Targets[0].Player].Hand {
-			out = append(out, string(c.G.Object(id).Card))
+			out = append(out, engine.CardOption(c.G.Object(id).Card))
 		}
 		return out
 	},

@@ -38,7 +38,7 @@ func TestIncubusSwaps(t *testing.T) {
 
 func TestIncubusMayNotSwap(t *testing.T) {
 	tb := handTable(t)
-	ev := tb.Activate(0, "incubus", 0, lookHand, "player 2 (cain)", "don't swap")
+	ev := tb.Activate(0, "incubus", 0, lookHand, "player 2 (cain)", "ask.dont_swap")
 	if a := handCards(tb.G, 0); len(a) != 1 || a[0] != "a_nickel" {
 		t.Errorf("hand %v changed", a)
 	}

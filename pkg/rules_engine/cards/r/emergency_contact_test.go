@@ -51,8 +51,8 @@ func TestEmergencyContactDeckAttack(t *testing.T) {
 	}
 	tb.Pass(0)
 	tb.Pass(1)
-	tb.Choose("monster deck")
-	tb.Choose("slot 1: leech")
+	tb.Choose("ask.deck.monster")
+	tb.Choose("ask.slot_card 1 leech")
 	tb.ThrowPending() // the attack roll waits on the stack
 	tb.Pass(0)
 	tb.G.Players[1].ExtraLootPlays = 1

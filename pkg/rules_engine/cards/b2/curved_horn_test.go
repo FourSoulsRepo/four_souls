@@ -37,7 +37,7 @@ func TestCurvedHornShownForTheFirstRoll(t *testing.T) {
 		pv := tb.G.View(engine.Viewer{Kind: engine.ViewSpectator}).Players[0]
 		shown := false
 		for _, s := range pv.Sources {
-			shown = shown || (s.Card == "curved_horn" && s.Stat == "atk" && s.When == "first attack roll")
+			shown = shown || (s.Card == "curved_horn" && s.Stat == "atk" && s.When.String() == "ask.when.first_attack_roll")
 		}
 		if pv.ATK != atk || shown != horn {
 			t.Errorf("%s: ATK %d, horn shown %v; want %d, %v", when, pv.ATK, shown, atk, horn)

@@ -27,13 +27,13 @@ func TestMutantSpider(t *testing.T) {
 				continue
 			}
 			if len(w.Options) == 4 {
-				if w.Text != "Which dice is the result?" {
+				if w.Text.String() != "prompt.which_die" {
 					t.Errorf("the choice says dice, not die (15.83): %q", w.Text)
 				}
 				tb.Choose("6")
 				return
 			}
-			if w.Text == "" && len(w.Options) > 0 {
+			if w.Text.IsZero() && len(w.Options) > 0 {
 				tb.Choose("trite")
 				continue
 			}

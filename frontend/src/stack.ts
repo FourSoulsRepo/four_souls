@@ -1,7 +1,7 @@
 // Words for the stack and for why the game waits (7.8). Pure, so it is
 // tested without a browser.
-import { t } from './i18n';
-import type { GameView, StackItem } from './protocol';
+import { say, t } from './i18n';
+import type { GameView, Seat, StackItem } from './protocol';
 import { oddsLine, rollChanges, type Name } from './stats';
 
 // Stack item kinds, in Go's order (pkg/rules_engine/stack.go).
@@ -39,6 +39,14 @@ export function waitTurn(view: GameView, you: number, on: boolean): 'offer' | 'o
 export interface Names {
   player: (p: number) => string;
   card: (ref: string) => string;
+}
+
+// seatNames names players by their seats' nicknames and cards by card.
+export function seatNames(seats: readonly Seat[] | null | undefined, card: (ref: string) => string): Names {
+  return {
+    player: (p) => seats?.find((s) => s.seat === p)?.name ?? t('table.player_n', { n: p + 1 }),
+    card,
+  };
 }
 
 // findCard is the card ref of an object on the table, if it is there.
@@ -144,9 +152,9 @@ function rollParts(it: StackItem, n: Names, roll: string, who: LinePart, target:
     const card: LinePart = { text: n.card(it.roll_for.card), role: 'card' };
     return partsOf(roll ? t('stack.roll_card_n') : t('stack.roll_card'), { player: who, ...rolled, card });
   }
-  if (it.label) {
-    // The label comes from the server, in English until 16.4.
-    const label: LinePart = { text: it.label };
+  if (it.label?.key) {
+    // The label comes from the server as a key (ADR 021).
+    const label: LinePart = { text: say(it.label, n) };
     return attack(partsOf(roll ? t('stack.roll_label_n') : t('stack.roll_label'), { player: who, ...rolled, label }));
   }
   return attack(partsOf(roll ? t('stack.roll_n') : t('stack.roll'), { player: who, ...rolled }));

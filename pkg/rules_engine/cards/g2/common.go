@@ -1,10 +1,13 @@
 package g2
 
 import (
-	"strconv"
-
 	engine "github.com/FourSoulsRepo/rules_engine"
 	"github.com/FourSoulsRepo/rules_engine/cards/cardkit"
+)
+
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	askPutWhichEvent = engine.NewKey("ask.put_which_event_in_a")
 )
 
 // Pieces many cards share; they live in cardkit for every set.
@@ -41,9 +44,9 @@ func centsEqualToRoll() engine.RollTable {
 }
 
 // pickAnotherPlayer asks the controller for another living player.
-func pickAnotherPlayer(text string) engine.Question {
-	return engine.Question{Text: text, Options: func(c *engine.Ctx, _ []int) []string {
-		var out []string
+func pickAnotherPlayer(text engine.Key) engine.Question {
+	return engine.Question{Text: text, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
+		var out []engine.Msg
 		for _, p := range livingPlayers(c.G, c.Controller) {
 			out = append(out, cardkit.PlayerLabel(c.G, p))
 		}
@@ -90,15 +93,15 @@ var rechargeYourItem = engine.Ask(func(c *engine.Ctx, a []int) {
 	if ids := yourDeactivated(c); a[0] >= 0 && a[0] < len(ids) {
 		c.G.Recharge(ids[a[0]])
 	}
-}, engine.Question{Text: "Recharge which item?", Options: func(c *engine.Ctx, _ []int) []string {
-	var out []string
+}, engine.Question{Text: cardkit.AskRechargeWhichItem, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
+	var out []engine.Msg
 	for _, id := range yourDeactivated(c) {
-		out = append(out, string(c.G.Object(id).Card))
+		out = append(out, engine.CardOption(c.G.Object(id).Card))
 	}
 	if len(out) == 0 {
 		return nil
 	}
-	return append(out, "none")
+	return append(out, engine.AskNone.Msg())
 }})
 
 func yourDeactivated(c *engine.Ctx) []engine.ObjectID {
@@ -129,13 +132,13 @@ func coverASlot(optional bool) engine.Effect {
 		if slots := freeSlots(c.G); a[0] >= 0 && a[0] < len(slots) {
 			c.G.CoverMonsterSlot(slots[a[0]])
 		}
-	}, engine.Question{Text: "Which monster slot?", Options: func(c *engine.Ctx, _ []int) []string {
-		var out []string
+	}, engine.Question{Text: cardkit.AskWhichMonsterSlot, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
+		var out []engine.Msg
 		for _, i := range freeSlots(c.G) {
-			out = append(out, "slot "+strconv.Itoa(i+1))
+			out = append(out, engine.SlotOption(i+1, ""))
 		}
 		if optional {
-			out = append(out, "none")
+			out = append(out, engine.AskNone.Msg())
 		}
 		return out
 	}})
@@ -146,7 +149,7 @@ var lookAtADeck = engine.Ask(func(c *engine.Ctx, a []int) {
 	if a[0] >= 0 {
 		c.G.LookAt(c.Controller, c.G.DeckTop(c.Deck(a[0]), 1)...)
 	}
-}, engine.DeckQuestion("Look at the top card of which deck?"))
+}, engine.DeckQuestion(cardkit.AskLookTop))
 
 // targetsYours: a stack ability or loot that targets an item or a dice
 // roll the chooser controls.
@@ -226,22 +229,22 @@ var ouija = engine.Ask(func(c *engine.Ctx, a []int) {
 		}
 	}
 	c.G.ToBottomRandom(engine.MonsterDeck, rest)
-}, engine.Question{Text: "Put which event in a monster slot?", Options: func(c *engine.Ctx, _ []int) []string {
-	var out []string
+}, engine.Question{Text: askPutWhichEvent, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
+	var out []engine.Msg
 	for _, id := range ouijaEvents(c.G, c.G.DeckTop(engine.MonsterDeck, 4)) {
-		out = append(out, string(c.G.Object(id).Card))
+		out = append(out, engine.CardOption(c.G.Object(id).Card))
 	}
 	if len(out) == 0 {
 		return nil
 	}
-	return append(out, "none")
-}}, engine.Question{Text: "Which monster slot?", Options: func(c *engine.Ctx, a []int) []string {
+	return append(out, engine.AskNone.Msg())
+}}, engine.Question{Text: cardkit.AskWhichMonsterSlot, Options: func(c *engine.Ctx, a []int) []engine.Msg {
 	if a[0] < 0 || a[0] >= len(ouijaEvents(c.G, c.G.DeckTop(engine.MonsterDeck, 4))) {
 		return nil
 	}
-	var out []string
+	var out []engine.Msg
 	for _, i := range freeSlots(c.G) {
-		out = append(out, "slot "+strconv.Itoa(i+1))
+		out = append(out, engine.SlotOption(i+1, ""))
 	}
 	return out
 }})

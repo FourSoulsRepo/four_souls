@@ -29,8 +29,8 @@ func TestIBSCancelsDeckAttack(t *testing.T) {
 	}
 	tb.Pass(0)
 	tb.Pass(1)
-	tb.Choose("monster deck")
-	tb.Choose("slot 1: leech")
+	tb.Choose("ask.deck.monster")
+	tb.Choose("ask.slot_card 1 leech")
 	tb.ThrowPending() // the attack roll waits on the stack
 	tb.Activate(0, "ibs", 0, "Cancel your attack on a monster.", "bomb")
 	if tb.G.Attack.On {

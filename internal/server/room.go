@@ -214,7 +214,7 @@ func (r *Room) handle(req request) {
 	}
 	env, err := protocol.Decode(req.msg)
 	if err != nil {
-		c.fail(0, protocol.ErrBadMessage, err.Error())
+		c.fail(0, protocol.ErrBadMessage, errBadMessage.Msg(engine.Str("error", err.Error())))
 		return
 	}
 	switch env.Type {
@@ -241,7 +241,7 @@ func (r *Room) handle(req request) {
 	case protocol.TypeRollbackCancel:
 		r.rollbackCancel(c, env)
 	default:
-		c.fail(env.ID, protocol.ErrBadMessage, "not during a game: "+env.Type)
+		c.fail(env.ID, protocol.ErrBadMessage, errNotDuringGame.Msg(engine.Str("type", env.Type)))
 	}
 }
 
@@ -249,7 +249,7 @@ func (r *Room) handle(req request) {
 func (r *Room) attach(c *Client, token, dice string) {
 	i := slices.Index(r.tokens, token)
 	if i < 0 || r.seats[i].kicked {
-		c.fail(0, protocol.ErrNotSeated, "no seat for this token")
+		c.fail(0, protocol.ErrNotSeated, errNoSeat.Msg())
 		c.conn.Close()
 		return
 	}
@@ -278,24 +278,24 @@ func (r *Room) attach(c *Client, token, dice string) {
 // intent applies a seated player's intent and updates everyone.
 func (r *Room) intent(c *Client, env protocol.Envelope) {
 	if c.seat < 0 {
-		c.fail(env.ID, protocol.ErrNotSeated, "only a seated player acts")
+		c.fail(env.ID, protocol.ErrNotSeated, errSeatedActs.Msg())
 		return
 	}
 	if r.game == nil {
-		c.fail(env.ID, protocol.ErrBadMessage, "the game has not started: bans and picks first")
+		c.fail(env.ID, protocol.ErrBadMessage, errNotStarted.Msg())
 		return
 	}
 	if r.paused() {
-		c.fail(env.ID, protocol.ErrPaused, "the game waits for a player who left")
+		c.fail(env.ID, protocol.ErrPaused, errPaused.Msg())
 		return
 	}
 	if r.rbVote != nil {
-		c.fail(env.ID, protocol.ErrRollback, "the game waits for the rollback vote (ADR 020, item 5.8)")
+		c.fail(env.ID, protocol.ErrRollback, errRollbackVoteWait.Msg())
 		return
 	}
 	var m protocol.Intent
 	if err := env.Unpack(&m); err != nil {
-		c.fail(env.ID, protocol.ErrBadMessage, err.Error())
+		c.fail(env.ID, protocol.ErrBadMessage, errBadMessage.Msg(engine.Str("error", err.Error())))
 		return
 	}
 	in := m.Intent
@@ -304,10 +304,11 @@ func (r *Room) intent(c *Client, env protocol.Envelope) {
 	var re *engine.RuleError
 	switch {
 	case errors.As(err, &re):
-		c.send(protocol.TypeError, env.ID, protocol.Error{Code: protocol.ErrRefused, Message: re.Reason, Rule: re.Rule})
+		say := re.Msg()
+		c.send(protocol.TypeError, env.ID, protocol.Error{Code: protocol.ErrRefused, Message: re.Reason, Rule: re.Rule, Text: &say})
 		return
 	case err != nil:
-		c.fail(env.ID, protocol.ErrBadMessage, err.Error())
+		c.fail(env.ID, protocol.ErrBadMessage, errBadMessage.Msg(engine.Str("error", err.Error())))
 		return
 	}
 	r.after(events, true)

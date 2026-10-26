@@ -32,7 +32,7 @@ import {
 import { noHostSetup } from './hostSetup';
 import type { CardInfo, Kind } from './cards';
 import { loadFonts } from './fonts';
-import { setLanguage, t } from './i18n';
+import { say, setLanguage, t } from './i18n';
 import { entriesFor, lookedAt, moveOf, restartCut, rolledBack, voteEnded, type Entry, type Looked, type Move, type Outcome } from './history';
 import type { LinePart } from './stack';
 import type { Box } from './zoom';
@@ -45,6 +45,7 @@ import { loadSounds } from './sounds';
 import { endsGame, lostDialogAfter, retryDelay } from './reconnect';
 import {
   httpBases,
+  plainNames,
   protocolVersion,
   recordURL,
   wsURLs,
@@ -52,6 +53,7 @@ import {
   type Envelope,
   type Hello,
   type Intent,
+  type Msg,
   type Notice,
   type OptionView,
   type Presence,
@@ -309,15 +311,44 @@ export function seatOf(s: Pick<Session, 'lobby'>): number {
 }
 
 // messageOf turns a rejected call into a message for the player. Wails
-// rejects with Go's error string.
+// rejects with Go's error string: a message as JSON when Go has words
+// for it (ADR 021), else the error's own words.
 export function messageOf(e: unknown): string {
-  if (typeof e === 'string') {
-    return e;
+  const text = typeof e === 'string' ? e : e instanceof Error ? e.message : undefined;
+  if (text === undefined) {
+    return t('error.unknown');
   }
-  if (e instanceof Error) {
-    return e.message;
+  const m = goMsgs(text)?.[0];
+  return m ? say(m, plainNames) : text;
+}
+
+// deckRatiosText says why the deck ratios can't be used (GS-07): Go's
+// head line, with the short groups' lines joined into it.
+export function deckRatiosText(why: string): string {
+  const msgs = goMsgs(why) ?? [];
+  const head = msgs.at(0);
+  if (!head) {
+    return why;
   }
-  return t('error.unknown');
+  const list = msgs
+    .slice(1)
+    .map((g) => say(g, plainNames))
+    .join(', ');
+  return say({ ...head, args: { ...head.args, groups: list } }, plainNames);
+}
+
+// goMsgs reads messages Go sent as JSON text: one, or a list; else null.
+export function goMsgs(text: string): Msg[] | null {
+  if (!text.startsWith('{"key"') && !text.startsWith('[{"key"')) {
+    return null;
+  }
+  try {
+    const v: unknown = JSON.parse(text);
+    const list = Array.isArray(v) ? v : [v];
+    return list.filter((m): m is Msg => typeof m === 'object' && m !== null && typeof (m as Msg).key === 'string');
+  } catch {
+    return null;
+  }
 }
 
 // presenceLife is how long a presence shows without being renewed, in

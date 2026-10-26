@@ -1,6 +1,14 @@
 package b2
 
-import engine "github.com/FourSoulsRepo/rules_engine"
+import (
+	engine "github.com/FourSoulsRepo/rules_engine"
+	"github.com/FourSoulsRepo/rules_engine/cards/cardkit"
+)
+
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	deadBirdDont = engine.NewKey("card.dead_bird.dont")
+)
 
 // Dead Bird (Passive Treasure Card)
 //
@@ -22,15 +30,15 @@ var deadBird = engine.CardDef{
 				}
 				c.G.LookAt(c.Controller, c.G.Players[from].Hand...)
 				c.G.GiveHandCard(from, c.Controller, c.G.Players[from].Hand[a[0]])
-			}, engine.Question{Text: "Steal which card?", Options: func(c *engine.Ctx, _ []int) []string {
+			}, engine.Question{Text: cardkit.AskStealWhichCard, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
 				if c.EventPlayer == engine.NoPlayer || c.EventPlayer == c.Controller {
 					return nil
 				}
-				var out []string
+				var out []engine.Msg
 				for _, id := range c.G.Players[c.EventPlayer].Hand {
-					out = append(out, string(c.G.Object(id).Card))
+					out = append(out, engine.CardOption(c.G.Object(id).Card))
 				}
-				return append(out, "don't")
+				return append(out, deadBirdDont.Msg())
 			}})},
 		},
 	},

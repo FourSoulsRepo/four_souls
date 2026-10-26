@@ -21,7 +21,7 @@ func TestBlackRune(t *testing.T) {
 		Monsters: []engine.CardRef{"monstro", "fatty"},
 	})
 	tb2.G.ForceRolls(1)
-	tb2.Play(0, "black_rune", "the rest in slot order")
+	tb2.Play(0, "black_rune", "ask.rest_in_slot_order")
 	if d := tb2.G.Object(topID(tb2, 0)).Damage; d != 1 {
 		t.Errorf("1-2: Monstro damage = %d, want 1", d)
 	}

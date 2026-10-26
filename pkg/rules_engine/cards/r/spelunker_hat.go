@@ -5,6 +5,11 @@ import (
 	"github.com/FourSoulsRepo/rules_engine/cards/cardkit"
 )
 
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	spelunkerHatLookAtThe = engine.NewKey("card.spelunker_hat.look_at_the_top_3")
+)
+
 // Spelunker Hat (Passive Treasure Card)
 //
 //	At the start of your turn, you may look at the top 3 cards of a deck and put them back in any order.
@@ -20,8 +25,8 @@ var spelunkerHat = engine.CardDef{
 			if deckChosen(c, a[0]) && a[1] == 0 {
 				c.G.SetDeckTop(c.Deck(a[0]), c.Order)
 			}
-		}, mayDeckQuestion("Look at the top 3 cards of which deck?"), engine.Question{
-			Text: cardkit.PutBackText,
+		}, mayDeckQuestion(spelunkerHatLookAtThe), engine.Question{
+			Text: cardkit.AskPutBack,
 			Order: func(c *engine.Ctx, a []int) []engine.ObjectID {
 				if !deckChosen(c, a[0]) {
 					return nil

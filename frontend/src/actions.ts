@@ -1,7 +1,7 @@
 // What the player may do now, from the update's allowed intents (7.7).
 // Pure: the table only offers what the server allows.
-import { t } from './i18n';
-import type { Block, Intent, ModeView, OptionView, OutcomeView, Prompt, Update } from './protocol';
+import { say, t } from './i18n';
+import type { Block, Intent, ModeView, Msg, MsgNames, OptionView, OutcomeView, Prompt, Update } from './protocol';
 
 // Engine enums, in Go's order (pkg/rules_engine/prompt.go, choice.go).
 export const IntentKind = {
@@ -58,8 +58,8 @@ function purposeTitle(purpose: number): string {
 }
 
 // choiceTitle is the question of a choose prompt.
-export function choiceTitle(w: Prompt): string {
-  return w.text ?? purposeTitle(w.purpose ?? 0);
+export function choiceTitle(w: Prompt, names: MsgNames): string {
+  return w.text?.key ? say(w.text, names) : purposeTitle(w.purpose ?? 0);
 }
 
 export interface Action {
@@ -161,15 +161,15 @@ const leftLabels = (): Map<number, string> =>
     [IntentKind.activate, t('turn.left.abilities')],
   ]);
 
-// actionsFor lists the viewer's actions. isCard tells whether an option
-// label is a card ref.
-export function actionsFor(u: Update, isCard: (label: string) => boolean): Actions {
-  const why = turnWhy(u.blocked ?? []);
+// actionsFor lists the viewer's actions. names names the cards and
+// players in the server's lines (ADR 021).
+export function actionsFor(u: Update, names: MsgNames): Actions {
+  const why = turnWhy(u.blocked ?? [], names);
   const out: Actions = {
     buttons: [],
     turn: Object.keys(why).length > 0 ? { why } : {},
     cards: new Map(),
-    blocked: blockedCards(u.blocked ?? []),
+    blocked: blockedCards(u.blocked ?? [], names),
     choice: null,
     discard: null,
     order: null,
@@ -192,7 +192,7 @@ export function actionsFor(u: Update, isCard: (label: string) => boolean): Actio
   const aims = new Map((u.aims ?? []).map((a) => [a.intent, a]));
   const add = (id: number, action: Action, i: number) => {
     const aim = aims.get(i);
-    const aimed = aim ? { ...action, targets: aim.targets, ...(aim.reason ? { reason: aim.reason } : {}) } : action;
+    const aimed = aim ? { ...action, targets: aim.targets, ...(aim.reason?.key ? { reason: say(aim.reason, names) } : {}) } : action;
     out.cards.set(id, [...(out.cards.get(id) ?? []), aimed]);
   };
   for (const [i, a] of allowed.entries()) {
@@ -218,9 +218,9 @@ export function actionsFor(u: Update, isCard: (label: string) => boolean): Actio
     } else if (a.kind === IntentKind.discard) {
       out.discard = { count: u.view.waiting.count ?? 0, from: a.objects ?? [], intent: a };
     } else if (a.kind === IntentKind.order) {
-      out.order = { title: choiceTitle(u.view.waiting), intent: a };
+      out.order = { title: choiceTitle(u.view.waiting, names), intent: a };
     } else if (a.kind === IntentKind.throw) {
-      out.throw = { label: u.view.waiting.text ?? '', intent: a };
+      out.throw = { label: say(u.view.waiting.text, names), intent: a };
     }
   }
   if (out.turn.endTurn && allowed.every((a) => a.kind === IntentKind.endTurn || a.kind === IntentKind.pass)) {
@@ -232,17 +232,19 @@ export function actionsFor(u: Update, isCard: (label: string) => boolean): Actio
   if (choose.length > 0) {
     const w = u.view.waiting;
     out.choice = {
-      title: choiceTitle(w),
+      title: choiceTitle(w, names),
       purpose: w.purpose ?? 0,
       options: choose.map((intent) => {
         const i = intent.choice ?? 0;
-        const label = w.options?.at(i) ?? t('choice.option_n', { n: i + 1 });
+        const option = w.options?.at(i);
+        const label = option?.key ? say(option, names) : t('choice.option_n', { n: i + 1 });
         const target = u.view.options?.at(i);
-        const trigger = w.purpose === Purpose.triggerOrder ? triggerLabel(label, isCard) : undefined;
+        const card = optionCard(option);
+        const trigger = w.purpose === Purpose.triggerOrder ? triggerLabel(option) : undefined;
         return {
           label,
           intent,
-          ...(isCard(label) ? { card: label } : {}),
+          ...(card ? { card } : {}),
           ...trigger,
           ...(target && (target.object || target.is_player || target.deck || target.stack_id) ? { target } : {}),
           ...(target?.outcome ? { outcome: target.outcome } : {}),
@@ -268,31 +270,40 @@ export function modeLines(choice: Choice, modes: ModeView[]): { lines: { text: s
 
 // blockedCards maps each blocked card to its reason (15.29). A card
 // with two blocked abilities keeps the first one's.
-function blockedCards(blocked: Block[]): Map<number, string> {
+function blockedCards(blocked: Block[], names: MsgNames): Map<number, string> {
   const out = new Map<number, string>();
   for (const b of blocked) {
     if ((b.kind === IntentKind.playLoot || b.kind === IntentKind.activate) && !out.has(b.object)) {
-      out.set(b.object, b.reason);
+      out.set(b.object, say(b.reason, names));
     }
   }
   return out;
 }
 
 // turnWhy is why attack, buy, and end turn can't be used (15.29).
-function turnWhy(blocked: Block[]): NonNullable<TurnActions['why']> {
-  const reason = (kind: number) => blocked.find((b) => b.kind === kind)?.reason;
+function turnWhy(blocked: Block[], names: MsgNames): NonNullable<TurnActions['why']> {
+  const reason = (kind: number) => {
+    const b = blocked.find((x) => x.kind === kind);
+    return b ? say(b.reason, names) : undefined;
+  };
   const attack = reason(IntentKind.attack);
   const buy = reason(IntentKind.purchase);
   const endTurn = reason(IntentKind.endTurn);
   return { ...(attack ? { attack } : {}), ...(buy ? { buy } : {}), ...(endTurn ? { endTurn } : {}) };
 }
 
-// triggerLabel splits a trigger order label, "card_ref: ability text",
+// optionCard is the card an option is, if it is one ("ask.card").
+function optionCard(m?: Msg): string | undefined {
+  const v = m?.key === 'ask.card' ? m.args?.card : undefined;
+  return typeof v === 'object' && 'card' in v ? v.card : undefined;
+}
+
+// triggerLabel splits a trigger order option, an ability ("ask.ability"),
 // into its card and the ability's words (19.19).
-function triggerLabel(label: string, isCard: (label: string) => boolean): { card: string; line: string } | undefined {
-  const at = label.indexOf(': ');
-  const card = label.slice(0, at);
-  return at > 0 && isCard(card) ? { card, line: label.slice(at + 2) } : undefined;
+function triggerLabel(m?: Msg): { card: string; line: string } | undefined {
+  const card = m?.key === 'ask.ability' ? m.args?.card : undefined;
+  const text = m?.args?.text;
+  return typeof card === 'object' && 'card' in card && typeof text === 'string' ? { card: card.card, line: text } : undefined;
 }
 
 // orderIntent puts the cards back in the given order, top first.

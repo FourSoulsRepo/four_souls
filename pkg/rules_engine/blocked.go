@@ -3,7 +3,6 @@ package rulesengine
 import (
 	"errors"
 	"slices"
-	"strings"
 )
 
 // Block says why player p can't do something now, in a few words
@@ -13,11 +12,8 @@ import (
 type Block struct {
 	Kind   IntentKind `json:"kind"`
 	Object ObjectID   `json:"object"`
-	Reason string     `json:"reason"`
+	Reason Msg        `json:"reason"`
 }
-
-// notUsable is the reason of a refusal that has no words for players.
-const notUsable = "Not usable now"
 
 // Blocked lists what p can't do now and why: each loot card in their
 // hand, each card of theirs with an activated ability, each room with
@@ -39,15 +35,15 @@ func (g *Game) Blocked(p PlayerID) []Block {
 	was := g.Waiting
 	g.Waiting = Prompt{Kind: PromptPriority, Player: p}
 	defer func() { g.Waiting = was }()
-	why := func(in Intent) string {
+	why := func(in Intent) Msg {
 		var re *RuleError
 		switch err := g.check(in); {
 		case err == nil:
 			return wait
-		case errors.As(err, &re) && re.Say != "":
+		case errors.As(err, &re) && !re.Say.IsZero():
 			return re.Say
 		default:
-			return notUsable
+			return refuseNotUsable.Msg()
 		}
 	}
 	var out []Block
@@ -56,7 +52,7 @@ func (g *Game) Blocked(p PlayerID) []Block {
 			continue
 		}
 		reason := g.turnSay(p)
-		if reason == "" {
+		if reason.IsZero() {
 			reason = why(Intent{Player: p, Kind: kind})
 		}
 		out = append(out, Block{Kind: kind, Reason: reason})
@@ -77,64 +73,61 @@ func (g *Game) Blocked(p PlayerID) []Block {
 }
 
 // waitSay is why p can't act now although the rules would let them.
-func (g *Game) waitSay(p PlayerID) string {
+func (g *Game) waitSay(p PlayerID) Msg {
 	if g.Waiting.Player == p && g.Waiting.Kind != PromptPriority {
-		return "Answer the prompt first"
+		return refuseAnswerPrompt.Msg()
 	}
-	return "Wait for your priority"
+	return refuseWaitPriority.Msg()
 }
 
 // turnSay is why p can't attack, buy or end the turn now, when the
-// turn itself is the reason; "" when it is not.
-func (g *Game) turnSay(p PlayerID) string {
+// turn itself is the reason; no line when it is not.
+func (g *Game) turnSay(p PlayerID) Msg {
 	switch {
 	case p != g.Turn.Active:
-		return "Not your turn"
+		return refuseNotYourTurn.Msg()
 	case g.Turn.Step != StepAction:
-		return "Only in the action phase"
+		return refuseActionPhase.Msg()
 	case g.Turn.EndDeclared || g.Turn.DeathEnd:
-		return "The turn is ending"
+		return refuseTurnEnding.Msg()
 	case g.Attack.On:
-		return "Finish the attack first"
+		return refuseFinishAttack.Msg()
 	case g.Purchase.On:
-		return "Finish the purchase first"
+		return refuseFinishPurchase.Msg()
 	case len(g.Stack) > 0:
-		return "Wait for the stack to resolve"
+		return refuseWaitStack.Msg()
 	default:
-		return ""
+		return Msg{}
 	}
 }
 
 // noLootSay is why p has no loot play: none is left on their turn;
 // on another's turn they have none.
-func (g *Game) noLootSay(p PlayerID) string {
+func (g *Game) noLootSay(p PlayerID) Msg {
 	if p != g.Turn.Active {
-		return "Loot is played on your turn"
+		return refuseLootYourTurn.Msg()
 	}
-	return "No loot plays left"
+	return refuseNoLootPlays.Msg()
 }
 
 // costSay is why a cost can't be paid, for the player.
-func costSay(c Cost) string {
+func costSay(c Cost) Msg {
 	switch c := c.(type) {
 	case tapCost:
-		return "Used; it recharges on your turn"
+		return refuseCostUsed.Msg()
 	case centsCost:
-		return "Not enough ¢"
+		return refuseCostCents.Msg()
 	case hpCost:
-		return "Not enough HP"
+		return refuseCostHP.Msg()
 	case destroySelfCost:
-		return "Eternal; it can't be destroyed"
+		return refuseCostEternal.Msg()
 	case removeCountersCost:
-		return "Not enough counters"
+		return refuseCostCounters.Msg()
 	case discardChosenCost:
-		return "No loot card to discard"
+		return refuseCostDiscard.Msg()
 	case condCost:
-		if rest, ok := strings.CutPrefix(c.text, "not "); ok {
-			return "Not " + rest // "Not during an attack"
-		}
-		return "Needs " + c.text // "Needs a card under this"
+		return c.say.Msg() // "Not during an attack"
 	default:
-		return notUsable
+		return refuseNotUsable.Msg()
 	}
 }

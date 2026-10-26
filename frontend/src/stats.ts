@@ -1,7 +1,7 @@
 // Stat sources (V-41, 15.92): why a card's health, dice or attack is not
 // what it prints, and which effects of this turn change it. Built from
 // the view's sources (15.54).
-import { t } from './i18n';
+import { say, t } from './i18n';
 import type { OddsView, StatSource } from './protocol';
 
 export type Trend = 'up' | 'down' | undefined;
@@ -80,7 +80,8 @@ export function tempSources(sources: StatSource[] | undefined): TempSource[] {
     if (s.lasts === 'in_play') return;
     const nextRoll = s.lasts === 'next_roll';
     const key = `${s.source !== undefined ? String(s.source) : `x${String(i)}`}-${s.lasts}`;
-    const line = `${nextRoll ? effect(s) : t('stats.this_turn_effect', { effect: effect(s) })}${s.when ? ` (${s.when})` : ''}`;
+    const when = whenText(s);
+    const line = `${nextRoll ? effect(s) : t('stats.this_turn_effect', { effect: effect(s) })}${when ? ` (${when})` : ''}`;
     const known = out.find((t) => t.key === key);
     if (known) {
       known.lines.push(line);
@@ -110,9 +111,14 @@ function effect(s: StatSource): string {
   }
 }
 
+// whenText is when a source applies, from the server (ADR 021), or ''.
+function whenText(s: StatSource): string {
+  return say(s.when, { card: (ref) => ref, player: (p) => String(p + 1) });
+}
+
 // suffix says how long a source lasts and when it applies.
 function suffix(s: StatSource): string {
-  const notes = [s.lasts === 'turn' ? t('stats.this_turn') : s.lasts === 'next_roll' ? t('stats.next_roll') : '', s.when ?? ''].filter((x) => x !== '');
+  const notes = [s.lasts === 'turn' ? t('stats.this_turn') : s.lasts === 'next_roll' ? t('stats.next_roll') : '', whenText(s)].filter((x) => x !== '');
   return notes.length > 0 ? ` (${notes.join(', ')})` : '';
 }
 

@@ -3,7 +3,6 @@ package server
 import (
 	"context"
 	"crypto/subtle"
-	"fmt"
 	"slices"
 	"strconv"
 	"sync"
@@ -80,8 +79,10 @@ func (c *Client) send(typ string, id int, data any) {
 	}
 }
 
-func (c *Client) fail(id int, code, message string) {
-	c.send(protocol.TypeError, id, protocol.Error{Code: code, Message: message})
+// fail sends an error: m is what the player reads (ADR 021); the
+// message keeps it in a plain form for logs and tests.
+func (c *Client) fail(id int, code string, m engine.Msg) {
+	c.send(protocol.TypeError, id, protocol.Error{Code: code, Message: m.String(), Text: &m})
 }
 
 // table is a game in the lobby, before it starts.
@@ -244,11 +245,11 @@ func (h *Hub) handle(req hubRequest) {
 	}
 	env, err := protocol.Decode(req.msg)
 	if err != nil {
-		c.fail(0, protocol.ErrBadMessage, err.Error())
+		c.fail(0, protocol.ErrBadMessage, errBadMessage.Msg(engine.Str("error", err.Error())))
 		return
 	}
 	if !c.hello && env.Type != protocol.TypeHello {
-		c.fail(env.ID, protocol.ErrNoHello, "the first message must be hello")
+		c.fail(env.ID, protocol.ErrNoHello, errNoHello.Msg())
 		return
 	}
 	switch env.Type {
@@ -268,7 +269,7 @@ func (h *Hub) handle(req hubRequest) {
 	case protocol.TypeLoad:
 		h.load(c, env)
 	default:
-		c.fail(env.ID, protocol.ErrBadMessage, "not in a game: "+env.Type)
+		c.fail(env.ID, protocol.ErrBadMessage, errNotInGame.Msg(engine.Str("type", env.Type)))
 	}
 }
 
@@ -277,17 +278,17 @@ func (h *Hub) handle(req hubRequest) {
 func (h *Hub) hello(c *Client, env protocol.Envelope) {
 	var m protocol.Hello
 	if err := env.Unpack(&m); err != nil {
-		c.fail(env.ID, protocol.ErrBadMessage, err.Error())
+		c.fail(env.ID, protocol.ErrBadMessage, errBadMessage.Msg(engine.Str("error", err.Error())))
 		return
 	}
 	if code := protocol.CheckVersion(m.Protocol); code != "" {
-		c.fail(env.ID, code, fmt.Sprintf("protocol %d, server speaks %d", m.Protocol, protocol.Version))
+		c.fail(env.ID, code, errProtocol.Msg(engine.N("app", m.Protocol), engine.N("server", protocol.Version)))
 		c.conn.Close()
 		return
 	}
 	name, ok := protocol.CleanName(m.Name)
 	if !ok {
-		c.fail(env.ID, protocol.ErrBadName, fmt.Sprintf("a nickname has 1 to %d characters", protocol.MaxName))
+		c.fail(env.ID, protocol.ErrBadName, errBadName.Msg(engine.N("n", protocol.MaxName)))
 		return
 	}
 	c.hello, c.name, c.sets, c.dice = true, name, m.Sets, protocol.CleanDice(m.Dice)
@@ -347,30 +348,30 @@ func (h *Hub) mayCreate(c *Client) bool { return !h.hostOnly || c.local }
 func (h *Hub) create(c *Client, env protocol.Envelope) {
 	var m protocol.Create
 	if err := env.Unpack(&m); err != nil {
-		c.fail(env.ID, protocol.ErrBadMessage, err.Error())
+		c.fail(env.ID, protocol.ErrBadMessage, errBadMessage.Msg(engine.Str("error", err.Error())))
 		return
 	}
 	if !h.mayCreate(c) {
-		c.fail(env.ID, protocol.ErrNotHost, "only the host opens games here")
+		c.fail(env.ID, protocol.ErrNotHost, errNotHost.Msg())
 		return
 	}
 	if c.table != nil {
-		c.fail(env.ID, protocol.ErrAtTable, "leave your table first")
+		c.fail(env.ID, protocol.ErrAtTable, errAtTable.Msg())
 		return
 	}
 	if m.Seats < 2 || m.Seats > 4 {
-		c.fail(env.ID, protocol.ErrBadSetup, "a game has 2 to 4 seats (GS-09)")
+		c.fail(env.ID, protocol.ErrBadSetup, errSeats.Msg())
 		return
 	}
 	m.Sets = withBaseGame(m.Sets)
 	for _, code := range m.Sets {
 		if _, ok := cards.Find(code); !ok {
-			c.fail(env.ID, protocol.ErrBadSetup, "this server has no card set "+code)
+			c.fail(env.ID, protocol.ErrBadSetup, errNoSet.Msg(engine.Str("set", code)))
 			return
 		}
 	}
 	if missing := lacks(c.sets, m.Sets); missing != "" {
-		c.fail(env.ID, protocol.ErrMissingSets, "you do not have the card set "+missing)
+		c.fail(env.ID, protocol.ErrMissingSets, errMissingSets.Msg(engine.Str("sets", missing)))
 		return
 	}
 	var opts protocol.Options // the simple setup (GS-10)
@@ -378,11 +379,11 @@ func (h *Hub) create(c *Client, env protocol.Envelope) {
 		opts = *m.Options
 	}
 	if err := checkOptions(&opts, setsOf(m.Sets), m.Seats); err != nil {
-		c.fail(env.ID, protocol.ErrBadSetup, err.Error())
+		c.fail(env.ID, protocol.ErrBadSetup, errBadMessage.Msg(engine.Str("error", err.Error())))
 		return
 	}
 	if len(m.Password) > protocol.MaxPassword {
-		c.fail(env.ID, protocol.ErrBadSetup, "a password has at most "+strconv.Itoa(protocol.MaxPassword)+" characters")
+		c.fail(env.ID, protocol.ErrBadSetup, errPasswordLong.Msg(engine.N("n", protocol.MaxPassword)))
 		return
 	}
 	h.seq++
@@ -398,19 +399,19 @@ func (h *Hub) create(c *Client, env protocol.Envelope) {
 func (h *Hub) join(c *Client, env protocol.Envelope) {
 	var m protocol.Join
 	if err := env.Unpack(&m); err != nil {
-		c.fail(env.ID, protocol.ErrBadMessage, err.Error())
+		c.fail(env.ID, protocol.ErrBadMessage, errBadMessage.Msg(engine.Str("error", err.Error())))
 		return
 	}
 	if c.table != nil {
-		c.fail(env.ID, protocol.ErrAtTable, "leave your table first")
+		c.fail(env.ID, protocol.ErrAtTable, errAtTable.Msg())
 		return
 	}
 	i := slices.IndexFunc(h.tables, func(t *table) bool { return t.id == m.Game })
 	if i < 0 {
 		if slices.ContainsFunc(h.games, func(g started) bool { return g.info.ID == m.Game }) {
-			c.fail(env.ID, protocol.ErrStarted, "that game has started")
+			c.fail(env.ID, protocol.ErrStarted, errStarted.Msg())
 		} else {
-			c.fail(env.ID, protocol.ErrNoGame, "no game "+m.Game)
+			c.fail(env.ID, protocol.ErrNoGame, errNoGame.Msg(engine.Str("game", m.Game)))
 		}
 		return
 	}
@@ -420,20 +421,20 @@ func (h *Hub) join(c *Client, env protocol.Envelope) {
 		return
 	}
 	if missing := lacks(c.sets, t.sets); missing != "" {
-		c.fail(env.ID, protocol.ErrMissingSets, "you do not have the card set "+missing+" (CD-03)")
+		c.fail(env.ID, protocol.ErrMissingSets, errMissingSets.Msg(engine.Str("sets", missing)))
 		return
 	}
 	if t.password != "" && subtle.ConstantTimeCompare([]byte(m.Password), []byte(t.password)) != 1 {
-		reason := "wrong password"
+		reason := errPasswordWrong
 		if m.Password == "" {
-			reason = "this game needs a password"
+			reason = errPasswordNeeded
 		}
-		c.fail(env.ID, protocol.ErrPassword, reason)
+		c.fail(env.ID, protocol.ErrPassword, reason.Msg())
 		return
 	}
 	free := slices.IndexFunc(t.seats, func(s tableSeat) bool { return s.token == "" })
 	if free < 0 {
-		c.fail(env.ID, protocol.ErrRoomFull, "every seat is taken")
+		c.fail(env.ID, protocol.ErrRoomFull, errRoomFull.Msg())
 		return
 	}
 	h.sit(c, t, free)
@@ -456,12 +457,12 @@ func (h *Hub) sit(c *Client, t *table, i int) {
 func (h *Hub) ready(c *Client, env protocol.Envelope) {
 	var m protocol.Ready
 	if err := env.Unpack(&m); err != nil {
-		c.fail(env.ID, protocol.ErrBadMessage, err.Error())
+		c.fail(env.ID, protocol.ErrBadMessage, errBadMessage.Msg(engine.Str("error", err.Error())))
 		return
 	}
 	t := c.table
 	if t == nil {
-		c.fail(env.ID, protocol.ErrNotSeated, "sit at a table first")
+		c.fail(env.ID, protocol.ErrNotSeated, errSitFirst.Msg())
 		return
 	}
 	for i := range t.seats {
@@ -495,7 +496,7 @@ func (h *Hub) start(t *table) {
 	room, err := NewRoom(setup, t.opts, seats)
 	if err != nil {
 		for _, s := range t.seats {
-			s.client.fail(0, protocol.ErrBadSetup, err.Error())
+			s.client.fail(0, protocol.ErrBadSetup, errBadMessage.Msg(engine.Str("error", err.Error())))
 		}
 		return
 	}

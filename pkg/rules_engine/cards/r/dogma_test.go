@@ -13,7 +13,7 @@ func TestDogma(t *testing.T) {
 	})
 	hurt(tb, 0, 1)
 	tb.G.ForceRolls(6)
-	tb.Do(engine.Intent{Player: 0, Kind: engine.IntentAttack}, "dogma", "slot 1")
+	tb.Do(engine.Intent{Player: 0, Kind: engine.IntentAttack}, "dogma", "ask.slot 1")
 	if !inDiscard(tb.G, engine.MonsterDeck, "fly") {
 		t.Error("the other monsters go to discard when Dogma is attacked")
 	}

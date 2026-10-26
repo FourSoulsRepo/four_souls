@@ -10,7 +10,7 @@ func TestTheD10(t *testing.T) {
 	tb := itemTable(t, items("the_d10", "mystery_sack"))
 	fly, _ := tb.G.Monsters[0].TopOf()
 	tb.G.ForceRolls(3)
-	tb.Activate(0, "mystery_sack", 0, "slot 1")
+	tb.Activate(0, "mystery_sack", 0, "ask.slot 1")
 	if top, _ := tb.G.Monsters[0].TopOf(); top == fly || tb.G.Object(fly).Zone.Kind != engine.ZoneCovered {
 		t.Error("the fly was not covered")
 	}
@@ -23,7 +23,7 @@ func TestTheD10Event(t *testing.T) {
 	tb.G.PutOnDeck(engine.MonsterDeck, "gold_chest")
 	cents := tb.G.Players[0].Cents
 	tb.G.ForceRolls(3, 5)
-	tb.Activate(0, "mystery_sack", 0, "slot 1")
+	tb.Activate(0, "mystery_sack", 0, "ask.slot 1")
 	if got := tb.G.Players[0].Cents - cents; got != 4+7 {
 		t.Errorf("gained %d¢, want 11 (sack 4, chest 7)", got)
 	}

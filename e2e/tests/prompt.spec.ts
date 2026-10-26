@@ -18,7 +18,7 @@ test.setTimeout(120_000);
 // is the prompt; mine says whether it asks this page's player or the
 // other one. The asked player gets the intents that answer it.
 interface Ask {
-  waiting: { kind: number; purpose?: number; count?: number; text?: string };
+  waiting: { kind: number; purpose?: number; count?: number; text?: { key: string } };
   answer: 'none' | 'pass' | 'choose' | 'discard' | 'order' | 'throw';
   mine: boolean;
   stack?: boolean;
@@ -58,7 +58,7 @@ async function ask(page: Page, a: Ask, step: number): Promise<{ monster: number;
       const hand = v.players[you]?.hand ?? [];
       const monster = v.monsters.find((m) => m.top)?.top ?? { id: 0, card: '' };
       const character = v.players[you]?.character.id ?? 0;
-      v.waiting = { ...a.waiting, player: asker, options: [monster.card] };
+      v.waiting = { ...a.waiting, player: asker, options: [{ key: 'ask.card', args: { card: { card: monster.card } } }] };
       v.stack = a.stack
         ? [{ id: 99, kind: 0, controller: 1 - asker, source: hand[0]?.id ?? 0, card: hand[0]?.card, target: { player: asker }, ability: { card: '', index: 0 }, roll_for: { card: '', index: 0 } }]
         : null;
@@ -140,10 +140,10 @@ test('the banner says what to do, or whom the game waits for (15.28)', async ({ 
     { name: 'order', a: { waiting: { kind: 5, purpose: 12, count: 2 }, answer: 'order' }, title: tr('choice.title.bottom') },
     {
       name: 'throw',
-      a: { waiting: { kind: 6, text: 'attack roll' }, answer: 'throw' },
+      a: { waiting: { kind: 6, text: { key: 'event.attack_roll' } }, answer: 'throw' },
       title: tr('banner.throw'),
-      hint: tr('banner.throw_for', { label: 'attack roll' }),
-      other: tr('banner.throw_for_other', { label: 'attack roll' }),
+      hint: tr('banner.throw_for', { label: tr('event.attack_roll') }),
+      other: tr('banner.throw_for_other', { label: tr('event.attack_roll') }),
     },
   ];
   let step = 100;
@@ -285,8 +285,8 @@ test('a word answer is a plain button, not a card (19.42)', async ({ browser }) 
   if (!lyra) {
     throw new Error('no pages');
   }
-  // P.H.D.'s question as the server sends it. "no" is the ref of No!,
-  // so the decline word is "No", which is no card.
+  // P.H.D.'s question as the server sends it: word options, no card
+  // (before 16.4 the word "no" was also the ref of No!).
   await lyra.evaluate(() => {
     interface S {
       game: { step: number; view: { waiting: unknown }; allowed: unknown[] };
@@ -296,12 +296,12 @@ test('a word answer is a plain button, not a card (19.42)', async ({ browser }) 
     const s = (window as unknown as { fourSouls: { store: { getState: () => S } } }).fourSouls.store.getState();
     const game = structuredClone(s.game);
     const you = s.lobby.table.you;
-    game.view.waiting = { kind: 4, player: you, purpose: 9, text: 'Change your roll?', options: ['+1', '-1', 'No'] };
+    game.view.waiting = { kind: 4, player: you, purpose: 9, text: { key: 'card.phd.change_your_roll' }, options: [{ key: 'ask.plus_one' }, { key: 'ask.minus_one' }, { key: 'ask.no' }] };
     game.allowed = [0, 1, 2].map((choice) => ({ player: you, kind: 4, choice }));
     s.receive({ type: 'update', data: { ...game, step: game.step + 1, events: [] } });
   });
   const options = lyra.locator('.choice-options');
-  await expect(options.getByRole('button', { name: 'No', exact: true })).toBeVisible();
+  await expect(options.getByRole('button', { name: tr('ask.no'), exact: true })).toBeVisible();
   await expect(options.locator('.card')).toHaveCount(0);
   await shot(lyra, 'choice-word-answers');
 });

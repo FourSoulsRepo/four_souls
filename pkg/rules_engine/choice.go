@@ -53,8 +53,8 @@ type Choice struct {
 	Abilities []AbilityRef `json:"abilities,omitempty"`
 	// Ask is the effect waiting for this answer (ChooseAnswer).
 	Ask *Asking `json:"ask,omitempty"`
-	// Question is the text of the question, for display.
-	Question string `json:"question,omitempty"`
+	// Question is the question, for display.
+	Question Msg `json:"question,omitzero"`
 	// Subject is the card the question is about; only the chooser sees
 	// it (19.11).
 	Subject ObjectID `json:"subject,omitempty"`
@@ -65,7 +65,7 @@ type Choice struct {
 }
 
 // ask opens a choose prompt.
-func (g *Game) ask(c Choice, labels []string) {
+func (g *Game) ask(c Choice, labels []Msg) {
 	g.Choice = &c
 	g.Waiting = Prompt{Kind: PromptChoose, Player: c.Player, Options: labels, Purpose: c.Purpose, Text: c.Question}
 }
@@ -151,11 +151,11 @@ func (g *Game) answer(i int) {
 	}
 }
 
-// labels lists the cards of objects, for prompt options.
-func (g *Game) labels(ids []ObjectID) []string {
-	out := make([]string, len(ids))
+// Labels lists the cards of objects as prompt options.
+func (g *Game) Labels(ids []ObjectID) []Msg {
+	out := make([]Msg, len(ids))
 	for i, id := range ids {
-		out[i] = string(g.Object(id).Card)
+		out[i] = CardOption(g.Object(id).Card)
 	}
 	return out
 }

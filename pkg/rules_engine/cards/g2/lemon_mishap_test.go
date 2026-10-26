@@ -13,7 +13,7 @@ func TestLemonMishap(t *testing.T) {
 	})
 	tb.Activate(0, "lemon_mishap", 0)
 	tb.G.ForceRolls(1, 3, 3, 3) // a 1 misses: each monster takes 1; 3s hit (no trigger)
-	tb.Do(engine.Intent{Player: 0, Kind: engine.IntentAttack}, "fatty", "the rest in slot order")
+	tb.Do(engine.Intent{Player: 0, Kind: engine.IntentAttack}, "fatty", "ask.rest_in_slot_order")
 	monstro, _ := tb.G.Monsters[0].TopOf()
 	if d := tb.G.Object(monstro).Damage; d != 1 {
 		t.Errorf("Monstro damage = %d, want 1 from the roll of 1", d)
@@ -34,7 +34,7 @@ func TestLemonMishapThroughPlacebo(t *testing.T) {
 	})
 	tb.Activate(0, "placebo", 0)
 	tb.G.ForceRolls(1, 3, 3, 3)
-	tb.Do(engine.Intent{Player: 0, Kind: engine.IntentAttack}, "fatty", "the rest in slot order")
+	tb.Do(engine.Intent{Player: 0, Kind: engine.IntentAttack}, "fatty", "ask.rest_in_slot_order")
 	monstro, _ := tb.G.Monsters[0].TopOf()
 	if d := tb.G.Object(monstro).Damage; d != 1 {
 		t.Errorf("Monstro damage = %d, want 1", d)

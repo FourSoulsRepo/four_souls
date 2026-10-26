@@ -1,6 +1,9 @@
 package b2
 
-import engine "github.com/FourSoulsRepo/rules_engine"
+import (
+	engine "github.com/FourSoulsRepo/rules_engine"
+	"github.com/FourSoulsRepo/rules_engine/cards/cardkit"
+)
 
 // Curse Of Loss (Curse Card)
 //
@@ -20,10 +23,10 @@ var curseOfLoss = engine.CardDef{
 				if a[0] >= 0 {
 					c.G.DestroyObject(c.Controller, c.G.DestroyableSouls(c.Controller)[a[0]])
 				}
-			}, engine.Question{Text: "Destroy which soul?", Options: func(c *engine.Ctx, _ []int) []string {
-				var out []string
+			}, engine.Question{Text: cardkit.AskDestroyWhichSoul, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
+				var out []engine.Msg
 				for _, id := range c.G.DestroyableSouls(c.Controller) {
-					out = append(out, string(c.G.Object(id).Card))
+					out = append(out, engine.CardOption(c.G.Object(id).Card))
 				}
 				return out
 			}})},

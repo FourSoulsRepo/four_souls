@@ -89,7 +89,7 @@ test('a bomb aimed at a monster by two clicks damages it', async ({ browser }) =
   }
   await active.mouse.click(at.x + at.width / 2, at.y + at.height / 2);
   const why = active.locator('.aim-why');
-  await expect(why).toHaveText('Pick a monster or a player.');
+  await expect(why).toHaveText(tr('refuse.pick.monster_or_player'));
   await shot(active, 'aim-wrong');
   const note = await why.locator('div').boundingBox();
   if (!note) {

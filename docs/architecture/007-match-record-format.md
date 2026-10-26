@@ -53,6 +53,7 @@ Use options 1 and 5.
    12. A `rollback` line: `n`, target `to`, `seat`, `undid` (ADR 020).
    13. It takes a step number; the next step goes on after it.
    14. The header keeps the rollback mode (`rollback`).
+   15. Events hold messages, a key and values, never words (ADR 021).
 3. Writing
    1. Each line is flushed: a crash leaves a readable record without `end`.
    2. A server that stops writes `end` with finished false (RP-08).
@@ -68,6 +69,7 @@ Use options 1 and 5.
    3. Records of engines before 0.3.0 cannot replay (`engine.CanReplay`, ADR 014).
    4. A record with rollbacks replays its live steps (`Record.Live`).
    5. Undone steps stay in the file; replay leaves them out.
+   6. Records of engines before 0.4.0 cannot replay: messages changed the state (16.4).
 
 ## Consequences
 

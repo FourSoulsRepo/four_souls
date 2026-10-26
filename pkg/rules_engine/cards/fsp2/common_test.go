@@ -100,7 +100,7 @@ func settleAny(tb *enginetest.Table) {
 	for range 100 {
 		w := tb.G.Prompt()
 		if w.Kind == engine.PromptChoose {
-			tb.Choose(w.Options[0])
+			tb.Choose(tb.Options()[0])
 			continue
 		}
 		if len(tb.G.Stack) == 0 && w.Kind == engine.PromptPriority {

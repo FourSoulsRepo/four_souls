@@ -1,7 +1,7 @@
 // Dice looks (V-19). A dice texture is a 3×3 grid of faces, as in
 // Tabletop Simulator: the top row is unused, then 2 4 5 and 1 3 6.
-import { t } from './i18n';
-import type { FirstRoll, GameEvent, Seat } from './protocol';
+import { say, t } from './i18n';
+import type { FirstRoll, GameEvent, Msg, Seat } from './protocol';
 
 const faces = new Map([
   [2, { col: 0, row: 1 }],
@@ -84,7 +84,13 @@ export function cubeFaces(value: number): CubeFaces {
 export interface LastRoll {
   player: number;
   value: number;
-  label: string;
+  label?: Msg; // what it was for, from the server (ADR 021)
+}
+
+// Names names a message's cards and players.
+interface Names {
+  player: (p: number) => string;
+  card: (ref: string) => string;
 }
 
 // lastRollAfter follows one update's events: a throw starts a new last
@@ -96,7 +102,7 @@ export function lastRollAfter(prev: LastRoll | null, events: GameEvent[]): LastR
     const same = last !== null && last.player === e.player;
     switch (e.kind) {
       case 'dice_rolled':
-        last = e.text === 'reroll' && last && same ? { ...last, value } : { player: e.player, value, label: e.text ?? '' };
+        last = e.text === 'reroll' && last && same ? { ...last, value } : { player: e.player, value, ...(e.label ? { label: e.label } : {}) };
         break;
       case 'roll_changed':
       case 'roll_resolved':
@@ -111,10 +117,11 @@ export function lastRollAfter(prev: LastRoll | null, events: GameEvent[]): LastR
 
 // lastRollText names the roller and what the roll was for:
 // "Ann rolled 4 — attack roll".
-export function lastRollText(r: LastRoll, player: (p: number) => string): string {
-  return r.label
-    ? t('dice.last_roll_for', { player: player(r.player), n: r.value, label: r.label })
-    : t('dice.last_roll', { player: player(r.player), n: r.value });
+export function lastRollText(r: LastRoll, names: Names): string {
+  const label = say(r.label, names);
+  return label
+    ? t('dice.last_roll_for', { player: names.player(r.player), n: r.value, label })
+    : t('dice.last_roll', { player: names.player(r.player), n: r.value });
 }
 
 // Gaps between dice of one throw, as parts of a throw: small and uneven,

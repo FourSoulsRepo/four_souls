@@ -5,7 +5,7 @@ import { gameId, lobbyGame, startGame, throwFirstRoll } from './game';
 import { appURL, serverPort } from './server';
 import { realAssets, shot } from './shot';
 import { openHost, openLan, openOnline } from './menu';
-import { locale, tr, trRe } from './locale';
+import { locale, tr, trRe, whole } from './locale';
 
 // address is the project's test server.
 const address = () => `127.0.0.1:${String(serverPort())}`;
@@ -275,10 +275,10 @@ test('a game password keeps others out (N-14)', async ({ browser }) => {
   const status = guest.getByRole('status');
 
   await join.click();
-  await expect(status).toHaveText('this game needs a password');
+  await expect(status).toHaveText(tr('error.password_needed'));
   await game.getByLabel(tr('lobby.games.password_label', { host: 'Nox' })).fill('guess');
   await join.click();
-  await expect(status).toHaveText('wrong password');
+  await expect(status).toHaveText(tr('error.password_wrong'));
   await shot(guest, 'join-password');
   await game.getByLabel(tr('lobby.games.password_label', { host: 'Nox' })).fill('pw-123');
   await join.click();
@@ -398,7 +398,7 @@ test('deck ratios are on by default and locked when the sets are too small (GS-0
   await sets.getByLabel(tr('set.requiem')).uncheck();
   await expect(ratios).toBeDisabled();
   await expect(ratios).not.toBeChecked();
-  await expect(label).toHaveAttribute('title', /^Too few cards/);
+  await expect(label).toHaveAttribute('title', whole(trRe('refuse.deck_ratios')));
   await shot(page, 'host-deck-ratios-locked');
 
   // Requiem without Four Souls+ is enough for 3 players, not for 2.

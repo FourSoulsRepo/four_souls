@@ -114,6 +114,8 @@ Use options 5, 7, 11, 12 and 14.
    4. Card questions: `card.<card id>.<name>`, e.g. `card.cheese_grater.put_back`.
    5. Questions shared by many cards stay in `ask`, e.g. `ask.which_deck`.
    6. The file is sorted by key, so one screen's lines sit together.
+   7. Server and app errors use the area `error`.
+   8. A key may hold digits: card ids do, `card.chest_2.…`.
 6. Values
    1. Placeholders: `{name}`; the same names in every language.
    2. Values are numbers, plain strings, or refs.
@@ -139,6 +141,17 @@ Use options 5, 7, 11, 12 and 14.
    5. Its `-update` flag rewrites the file; CI fails when it is stale.
    6. The dedicated server console stays in English.
    7. The protocol version goes up with this change.
+   8. The registry function is `engine.NewKey`; `engine.Msg` is the message.
+   9. `Key` is no string type: a bare string never compiles as a key.
+   10. The writing test is `TestServerKeys` in the app module (`keys_test.go`).
+   11. It links every package that declares keys: engine, cards, server, app.
+   12. A Go test also fails on a declared key with no line in `en.json`.
+   13. A refusal with no words for players reads `refuse.not_usable`.
+   14. A server error carries its message as `text`.
+   15. A Go error the app shows is a message as JSON; `messageOf` reads it.
+   16. An ability's own words stay card data: a `{text}` value until card texts.
+   17. Event `text` stays a code for the client and card triggers, never shown.
+   18. Tests name an option by its plain form: a ref, a number, or key and values.
 10. Checks
     1. Every key used in code is in `en.json`.
     2. Every key in `en.json` is used: frontend literals or `server-keys.json`.

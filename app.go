@@ -6,8 +6,6 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
-	"strconv"
-	"strings"
 
 	"github.com/FourSoulsRepo/four_souls/internal/assets"
 	"github.com/FourSoulsRepo/four_souls/internal/instance"
@@ -68,7 +66,8 @@ func (a *App) Settings() settings.Settings {
 
 // SaveSettings stores the settings and returns what was stored.
 func (a *App) SaveSettings(s settings.Settings) (settings.Settings, error) {
-	return settings.Save(a.settings, s) //nolint:wrapcheck // shown to the player as is
+	saved, err := settings.Save(a.settings, s)
+	return saved, playerError(err)
 }
 
 // CardSets returns the codes of the card sets this app has; the client
@@ -83,7 +82,8 @@ func (a *App) CardSets() []string {
 
 // DeckRatios says why a game with these sets and players can't use the
 // deck ratios, or "" when it can (GS-07). The host screen shows it as
-// the reason the box is off.
+// the reason the box is off. The reason is a JSON list of messages
+// (ADR 021): the head, {n} players, then one line per short group.
 func (a *App) DeckRatios(sets []string, players int) string {
 	s := engine.Setup{Players: players}
 	for _, code := range sets {
@@ -93,14 +93,14 @@ func (a *App) DeckRatios(sets []string, players int) string {
 	}
 	short, err := engine.RatioShortfall(s)
 	if err != nil {
-		return err.Error()
+		return msgJSON([]engine.Msg{errDeckRatios.Msg(engine.Str("error", err.Error()))})
 	}
 	if len(short) == 0 {
 		return ""
 	}
-	parts := make([]string, len(short))
-	for i, sh := range short {
-		parts[i] = sh.String()
+	out := []engine.Msg{engine.RefuseDeckRatios.Msg(engine.N("n", players))}
+	for _, sh := range short {
+		out = append(out, sh.Msg())
 	}
-	return "Too few cards in these sets for " + strconv.Itoa(players) + " players: " + strings.Join(parts, ", ") + "."
+	return msgJSON(out)
 }

@@ -34,10 +34,14 @@ var ErrMismatch = errors.New("replay: state differs from the record")
 
 // CanReplay says whether a record made by engine version v replays on
 // this engine. Records made before the throw (ADR 014) do not: their
-// steps have no throw intents.
+// steps have no throw intents. Nor do records made before messages
+// (16.4): their states, so their checksums, held English text.
 func CanReplay(v string) error {
 	if older(v, throwVersion) {
 		return fmt.Errorf("replay: the record was made by rules engine %s; engines from %s on need a throw for every roll, so it cannot replay", v, throwVersion)
+	}
+	if older(v, msgVersion) {
+		return fmt.Errorf("replay: the record was made by rules engine %s; engines from %s on keep messages instead of text, so its checksums differ and it cannot replay", v, msgVersion)
 	}
 	return nil
 }

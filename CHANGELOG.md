@@ -14,6 +14,9 @@ Rules engine versions are in each release's notes.
 - A dead monster flies from its slot to the monster discard, or to the player who gains its soul, after its skull, instead of just appearing there.
 - A declared end of turn shows on top of the stack, "Ann ends the turn", like an attack or a buy, so the others see why they may respond.
 - With nothing left to do, End turn breathes a soft green glow instead of showing a green frame.
+- What the server says (reasons, card questions and options, roll labels, errors) shows in each player's own language; two players at one table may use two languages. A player option names the player instead of "player 2 (isaac)".
+- Network protocol 6: older apps can't join newer games, and the other way round.
+- Rules engine 0.4.0: match records and saved games of older versions can't be replayed or loaded.
 ## 0.2.1 - 2026-10-22
 
 The first public release.

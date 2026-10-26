@@ -58,7 +58,7 @@ Rules of this step (owner, 2026-10-26):
    1. The app looks the same in English.
    2. Screenshots in `qps` show no plain English text.
 
-### [ ] 16.4 Server messages
+### [x] 16.4 Server messages
 
 1. Goal: each client shows messages in its own language (LO-04).
 2. Tasks:
@@ -71,6 +71,9 @@ Rules of this step (owner, 2026-10-26):
    7. A Go test lists every message key; the unused-key check reads it.
 3. Done when:
    1. Two clients, English and `qps`, play one game.
+4. Result: `engine.Msg` and `engine.NewKey`; protocol 6, engine 0.4.0.
+   1. `languages.spec.ts` plays with one page in each language.
+   2. Ability words stay card data until card texts are translated.
 
 ### [ ] 16.5 Russian card names
 

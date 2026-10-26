@@ -76,7 +76,7 @@ func TestRulingEdenGlassCannon(t *testing.T) {
 // R-07 #6: Steamy Sale lowers shop items, not the top of the deck.
 func TestRulingSteamySaleOnlyShop(t *testing.T) {
 	tb := enginetest.NewSetup(t, engine.SituationSetup{Players: []engine.SituationPlayer{{Character: "isaac", Items: items("steamy_sale"), Cents: 5}, seat("cain")}}, Set)
-	tb.Do(engine.Intent{Player: 0, Kind: engine.IntentPurchase}, "treasure deck")
+	tb.Do(engine.Intent{Player: 0, Kind: engine.IntentPurchase}, "ask.deck.treasure")
 	if c := tb.G.Players[0].Cents; c != 5 {
 		t.Errorf("cents = %d: the deck top cost less than 10¢", c)
 	}
@@ -136,10 +136,10 @@ func TestRulingRollAboveSix(t *testing.T) {
 	tb := rollTable(t, 6, seat("judas", "spoon_bender", "book_of_belial"), seat("cain"))
 	tb.Pass(1)
 	tb.Start(0, "spoon_bender", 0)
-	tb.Choose("roll of 6")
+	tb.Choose("ask.roll_of 6")
 	tb.Pass(0)
 	tb.Pass(1) // the +1 resolves: still 6
-	tb.Activate(0, "book_of_belial", 0, "Subtract 1 from a roll.", "roll of 6")
+	tb.Activate(0, "book_of_belial", 0, "Subtract 1 from a roll.", "ask.roll_of 6")
 	if r, ok := firstRoll(tb.G); ok && r != 5 {
 		t.Errorf("roll = %d, want 5", r)
 	}

@@ -36,8 +36,9 @@ func TestGolden(t *testing.T) {
 		{TypeWelcome, 1, Welcome{Protocol: Version, App: "0.1.0", Engine: "0.1.0", Token: "t0k3n", Seat: 0, Presence: true, Name: "Basement"}},
 		{TypeIntent, 2, Intent{Intent: engine.Intent{Kind: engine.IntentPass}}},
 		{TypeResync, 3, struct{}{}},
-		{TypeUpdate, 0, Update{Step: 1, Events: []engine.Event{{Kind: engine.EvLooted, Player: 0, Card: "a_dime"}}, View: view, Allowed: g.Allowed(p), Aims: []engine.Aim{{Intent: 0, Targets: []engine.OptionView{{Object: 320, Player: engine.NoPlayer}, {Player: 1, IsPlayer: true}}, Reason: "Pick a monster or a player."}}, Blocked: []engine.Block{{Kind: engine.IntentAttack, Reason: "Not your turn"}, {Kind: engine.IntentPlayLoot, Object: 314, Reason: "Loot is played on your turn"}}, Seats: []Seat{{Seat: 0, Name: "Ann", Connected: true, Dice: "tear"}, {Seat: 1, Name: "Bo"}}, RollbackMode: RollbackGod, RollbackFrom: 1, Rollback: &Rollback{Seat: 1, To: 1, Undid: 3}, RollbackSteps: []RollbackStep{{Step: 2, Seat: 0, Last: 3}}, RollbackVote: &RollbackVote{Step: 2, Seat: 1, Author: 0, Undo: 1, Voters: []int{1}, Votes: []RollbackBallot{{Seat: 1, Yes: true}}, Need: 1, Deadline: 1760000000000}, RollbackEnd: &RollbackEnd{Step: 2, Seat: 1, Why: VoteDeclined}, RollbackCut: 9}},
-		{TypeError, 2, Error{Code: ErrRefused, Message: "no loot play available", Rule: "R-CARD-08"}},
+		{TypeUpdate, 0, Update{Step: 1, Events: []engine.Event{{Kind: engine.EvLooted, Player: 0, Card: "a_dime"}, {Kind: engine.EvStackResolved, Player: 1, Card: "the_d6", Label: msg(t, "event.copy_of", engine.CardArg("card", "a_dime"))}}, View: view, Allowed: g.Allowed(p), Aims: []engine.Aim{{Intent: 0, Targets: []engine.OptionView{{Object: 320, Player: engine.NoPlayer}, {Player: 1, IsPlayer: true}}, Reason: msg(t, "refuse.pick.monster_or_player")}}, Blocked: []engine.Block{{Kind: engine.IntentAttack, Reason: msg(t, "refuse.not_your_turn")}, {Kind: engine.IntentPlayLoot, Object: 314, Reason: msg(t, "refuse.loot_your_turn")}}, Seats: []Seat{{Seat: 0, Name: "Ann", Connected: true, Dice: "tear"}, {Seat: 1, Name: "Bo"}}, RollbackMode: RollbackGod, RollbackFrom: 1, Rollback: &Rollback{Seat: 1, To: 1, Undid: 3}, RollbackSteps: []RollbackStep{{Step: 2, Seat: 0, Last: 3}}, RollbackVote: &RollbackVote{Step: 2, Seat: 1, Author: 0, Undo: 1, Voters: []int{1}, Votes: []RollbackBallot{{Seat: 1, Yes: true}}, Need: 1, Deadline: 1760000000000}, RollbackEnd: &RollbackEnd{Step: 2, Seat: 1, Why: VoteDeclined}, RollbackCut: 9}},
+		{TypeError, 2, Error{Code: ErrRefused, Message: "no loot play available", Rule: "R-CARD-08", Text: ptr(msg(t, "refuse.no_loot_plays"))}},
+		{TypeError, 3, Error{Code: ErrBadName, Message: "error.bad_name 20", Text: ptr(msg(t, "error.bad_name", engine.N("n", 20)))}},
 		{TypeList, 4, struct{}{}},
 		{TypeGames, 4, Games{Games: []GameInfo{{ID: "g1", Host: "Ann", Seats: 4, Taken: 2, Sets: []string{"b2"}, Rollback: RollbackGod}}}},
 		{TypeCreate, 5, Create{Seats: 3, Sets: []string{"b2"}, Options: &Options{Picking: PickDraft, DraftSize: 3, BanRounds: 1, BanTimer: 30, HostBans: []engine.CardRef{"eden"}, ResponseTimer: 90, Rollback: RollbackGod}}},
@@ -154,4 +155,10 @@ func TestCleanDice(t *testing.T) {
 			t.Errorf("CleanDice(%q) = %q, want %q", id, got, want)
 		}
 	}
+}
+
+// msg is a message for the golden file; the key's words are in en.json.
+func msg(t *testing.T, key string, args ...engine.Arg) engine.Msg {
+	t.Helper()
+	return engine.NewKey(key).Msg(args...)
 }

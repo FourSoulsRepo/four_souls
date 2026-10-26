@@ -1,6 +1,14 @@
 package r
 
-import engine "github.com/FourSoulsRepo/rules_engine"
+import (
+	engine "github.com/FourSoulsRepo/rules_engine"
+	"github.com/FourSoulsRepo/rules_engine/cards/cardkit"
+)
+
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	iAmErrorRPutWhichMonster = engine.NewKey("card.i_am_error_r.put_which_monster_into_discard")
+)
 
 // I Am Error (Room Card)
 //
@@ -31,7 +39,7 @@ var replaceAMonster = engine.Ask(func(c *engine.Ctx, a []int) {
 		c.G.DiscardMonster(ms[a[0]])
 		c.G.RefillSlots()
 	}
-}, engine.Question{Text: "Put which monster into discard?", Options: func(c *engine.Ctx, _ []int) []string {
+}, engine.Question{Text: iAmErrorRPutWhichMonster, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
 	return labelsOf(c.G, monstersInPlay(c.G))
 }})
 
@@ -40,6 +48,6 @@ var rerollYourItem = engine.Ask(func(c *engine.Ctx, a []int) {
 	if ids := itemsOf(c.G, c.Controller); a[0] >= 0 && a[0] < len(ids) {
 		c.G.RerollItem(ids[a[0]])
 	}
-}, engine.Question{Text: "Reroll which item?", Options: func(c *engine.Ctx, _ []int) []string {
+}, engine.Question{Text: cardkit.AskRerollWhichItem, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
 	return labelsOf(c.G, itemsOf(c.G, c.Controller))
 }})

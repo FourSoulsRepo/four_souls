@@ -1,9 +1,8 @@
 package r
 
 import (
-	"strconv"
-
 	engine "github.com/FourSoulsRepo/rules_engine"
+	"github.com/FourSoulsRepo/rules_engine/cards/cardkit"
 )
 
 // Key (Wildcard Card)
@@ -31,18 +30,18 @@ var deckTopToSlot = engine.Ask(func(c *engine.Ctx, a []int) {
 	if slots := freeSlots(c.G); a[0] >= 0 && a[0] < len(slots) {
 		c.G.CoverMonsterSlot(slots[a[0]]) // an event resolves at once
 	}
-}, slotQuestion("Put it in which monster slot?"))
+}, slotQuestion(cardkit.AskPutItInWhichMonster))
 
 // slotQuestion asks for a monster slot not being attacked.
-func slotQuestion(text string) engine.Question {
-	return engine.Question{Text: text, Options: func(c *engine.Ctx, _ []int) []string {
-		var out []string
+func slotQuestion(text engine.Key) engine.Question {
+	return engine.Question{Text: text, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
+		var out []engine.Msg
 		for _, i := range freeSlots(c.G) {
-			label := "slot " + strconv.Itoa(i+1)
+			var card engine.CardRef
 			if top, ok := c.G.Monsters[i].TopOf(); ok {
-				label += ": " + string(c.G.Object(top).Card)
+				card = c.G.Object(top).Card
 			}
-			out = append(out, label)
+			out = append(out, engine.SlotOption(i+1, card))
 		}
 		return out
 	}}

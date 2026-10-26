@@ -11,7 +11,7 @@ import (
 func TestBossRush(t *testing.T) {
 	tb := fight(t, "fatty", "fly")
 	tb.G.PutOnDeck(engine.MonsterDeck, "widow", "dip", "monstro", "spider") // spider on top
-	tb.RevealFromDeck("boss_rush", "slot 2", "slot 2")
+	tb.RevealFromDeck("boss_rush", "ask.slot 2", "ask.slot 2")
 	if top(tb, 1) != "widow" {
 		t.Errorf("slot 2 = %s, want the second boss on top", top(tb, 1))
 	}
@@ -25,7 +25,7 @@ func TestBossRush(t *testing.T) {
 func TestBossRushOwnSlot(t *testing.T) {
 	tb := fight(t, "fatty", "fly")
 	tb.G.PutOnDeck(engine.MonsterDeck, "widow", "dip", "monstro", "spider") // spider on top
-	tb.RevealFromDeck("boss_rush", "slot 1", "slot 2")
+	tb.RevealFromDeck("boss_rush", "ask.slot 1", "ask.slot 2")
 	if top(tb, 0) != "monstro" || top(tb, 1) != "widow" {
 		t.Fatalf("slots = %s, %s; want monstro, widow", top(tb, 0), top(tb, 1))
 	}

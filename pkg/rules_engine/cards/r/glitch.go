@@ -2,6 +2,11 @@ package r
 
 import engine "github.com/FourSoulsRepo/rules_engine"
 
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	glitchGainTheAbilities = engine.NewKey("card.glitch.gain_the_abilities_of_which")
+)
+
 // Glitch (Eternal Treasure Card)
 //
 //	As your turn starts, choose a shop item. This gains the abilities of that item till end of turn.
@@ -36,7 +41,7 @@ func gainShopAbilities(till int) engine.Effect {
 		if items := c.G.ShopItems(); a[0] >= 0 && a[0] < len(items) {
 			c.G.GainAbilities(c.Source, c.G.CardOf(items[a[0]]), till)
 		}
-	}, engine.Question{Text: "Gain the abilities of which shop item?", Options: func(c *engine.Ctx, _ []int) []string {
+	}, engine.Question{Text: glitchGainTheAbilities, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
 		return labelsOf(c.G, c.G.ShopItems())
 	}})
 }

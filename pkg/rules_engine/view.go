@@ -71,7 +71,7 @@ type StatSourceView struct {
 	Card   CardRef  `json:"card,omitempty"`
 	Amount int      `json:"amount,omitempty"`
 	Lasts  string   `json:"lasts,omitempty"`
-	When   string   `json:"when,omitempty"`
+	When   Msg      `json:"when,omitzero"`
 }
 
 // PlayerView is what a viewer sees of one player.
@@ -705,7 +705,10 @@ func (g *Game) sourceViews(parts []Part) []StatSourceView {
 		if pt.Amount == 0 {
 			continue
 		}
-		sv := StatSourceView{Stat: statKeys[pt.Stat], Amount: pt.Amount, Lasts: lastsKeys[pt.Lasts], When: pt.When}
+		sv := StatSourceView{Stat: statKeys[pt.Stat], Amount: pt.Amount, Lasts: lastsKeys[pt.Lasts]}
+		if pt.When != (Key{}) {
+			sv.When = pt.When.Msg()
+		}
 		if card := g.publicCard(pt.Source); card != "" {
 			sv.Source, sv.Card = pt.Source, card
 		}

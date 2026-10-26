@@ -2,6 +2,11 @@ package b2
 
 import engine "github.com/FourSoulsRepo/rules_engine"
 
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	momsShovelStealWhichSoul = engine.NewKey("card.moms_shovel.steal_which_soul")
+)
+
 // Mom’s Shovel (One-Use Treasure Card)
 //
 //	This enters play deactivated.
@@ -23,10 +28,10 @@ var momsShovel = engine.CardDef{
 				if a[0] >= 0 {
 					c.G.GainControl(c.Controller, othersSouls(c)[a[0]])
 				}
-			}, engine.Question{Text: "Steal which soul?", Options: func(c *engine.Ctx, _ []int) []string {
-				var out []string
+			}, engine.Question{Text: momsShovelStealWhichSoul, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
+				var out []engine.Msg
 				for _, id := range othersSouls(c) {
-					out = append(out, string(c.G.Object(id).Card))
+					out = append(out, engine.CardOption(c.G.Object(id).Card))
 				}
 				return out
 			}}))},

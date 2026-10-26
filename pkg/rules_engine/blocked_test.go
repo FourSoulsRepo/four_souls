@@ -10,7 +10,7 @@ import (
 func reasonOf(bs []Block, kind IntentKind, id ObjectID) string {
 	for _, b := range bs {
 		if b.Kind == kind && b.Object == id {
-			return b.Reason
+			return b.Reason.String()
 		}
 	}
 	return ""
@@ -30,14 +30,14 @@ func TestBlockedReasons(t *testing.T) {
 	// The other player: not their turn, no loot play, and no priority.
 	bs := g.Blocked(b)
 	for _, k := range []IntentKind{IntentAttack, IntentPurchase, IntentEndTurn} {
-		if got := reasonOf(bs, k, 0); got != "Not your turn" {
+		if got := reasonOf(bs, k, 0); got != "refuse.not_your_turn" {
 			t.Errorf("b's intent %d: reason %q", k, got)
 		}
 	}
-	if got := reasonOf(bs, IntentPlayLoot, g.Players[b].Hand[0]); got != "Loot is played on your turn" {
+	if got := reasonOf(bs, IntentPlayLoot, g.Players[b].Hand[0]); got != "refuse.loot_your_turn" {
 		t.Errorf("b's loot: reason %q", got)
 	}
-	if got := reasonOf(bs, IntentActivate, theirs); got != "Wait for your priority" {
+	if got := reasonOf(bs, IntentActivate, theirs); got != "refuse.wait_priority" {
 		t.Errorf("b's item: reason %q", got)
 	}
 	// Used up: the loot play, the attacks, the item's ↷.
@@ -49,9 +49,9 @@ func TestBlockedReasons(t *testing.T) {
 		t.Errorf("Blocked changed the prompt: %+v, was %+v", g.Waiting, waiting)
 	}
 	want := map[string]string{
-		"loot":   "No loot plays left",
-		"attack": "No attacks left",
-		"item":   "Used; it recharges on your turn",
+		"loot":   "refuse.no_loot_plays",
+		"attack": "refuse.no_attacks",
+		"item":   "refuse.cost.used",
 	}
 	got := map[string]string{
 		"loot":   reasonOf(bs, IntentPlayLoot, loot),
@@ -65,7 +65,7 @@ func TestBlockedReasons(t *testing.T) {
 	}
 	// With a roll on the stack, the turn actions wait for it.
 	g.push(StackItem{Kind: StackRoll, Roll: 3, Controller: a})
-	if got := reasonOf(g.Blocked(a), IntentPurchase, 0); got != "Wait for the stack to resolve" {
+	if got := reasonOf(g.Blocked(a), IntentPurchase, 0); got != "refuse.wait_stack" {
 		t.Errorf("purchase with a stack: reason %q", got)
 	}
 }
@@ -77,7 +77,7 @@ func checkBlocked(t *testing.T, g *Game, p PlayerID) {
 	allowed := g.Allowed(p)
 	bs := g.Blocked(p)
 	for _, b := range bs {
-		if b.Reason == "" {
+		if b.Reason.IsZero() {
 			t.Fatalf("player %d: block %+v has no reason", p, b)
 		}
 		if slices.ContainsFunc(allowed, func(in Intent) bool {

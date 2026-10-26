@@ -2,6 +2,11 @@ package r
 
 import engine "github.com/FourSoulsRepo/rules_engine"
 
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	gelloDealTheDamage = engine.NewKey("card.gello.deal_the_damage_to_which")
+)
+
 // Gello (Eternal Treasure Card)
 //
 //	{Tap Effect}Choose a monster being attacked. Heal that monster to full {HP}, then deal damage equal to the number of {HP} healed in this way to another monster. If it's not your turn, cancel the attack and the active player may make an additional attack this turn.
@@ -31,7 +36,7 @@ var gello = engine.CardDef{
 				c.Do(engine.CancelAttack())
 				c.G.Turn.Attacks++
 			}
-		}, engine.Question{Text: "Deal the damage to which monster?", Options: func(c *engine.Ctx, _ []int) []string {
+		}, engine.Question{Text: gelloDealTheDamage, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
 			if c.G.Object(c.Targets[0].Object).Damage == 0 {
 				return nil
 			}

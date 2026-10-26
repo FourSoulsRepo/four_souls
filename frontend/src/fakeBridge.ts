@@ -232,7 +232,7 @@ w.go = {
         Promise.resolve(
           sets.includes('r') && (sets.includes('fsp2') || players >= 3)
             ? ''
-            : `Too few cards in these sets for ${String(players)} players.`,
+            : JSON.stringify([{ key: 'refuse.deck_ratios', args: { n: players } }, { key: 'refuse.ratio.butter_beans', args: { have: 3, need: 5 } }]),
         ),
       Cards: () => Promise.resolve([...cards, ...realCards()]),
       // The dice textures at their real paths; like the mat, the e2e

@@ -693,7 +693,8 @@ test('soul cards hide behind the crystals; hovering one zooms its card (15.56)',
         ? p
         : { ...p, souls: p.souls + 1, in_play: [...(p.in_play ?? []), { id: 9103, card: 'pin', role: 5, charged: false, souls: 1 }] },
     );
-    game.view.waiting = { kind: 4, player: you, purpose: 6, options: ['mom', 'pin'] };
+    const card = (ref: string) => ({ key: 'ask.card', args: { card: { card: ref } } });
+    game.view.waiting = { kind: 4, player: you, purpose: 6, options: [card('mom'), card('pin')] };
     game.view.options = [
       { object: 9101, player: -1 },
       { object: 9103, player: -1 },

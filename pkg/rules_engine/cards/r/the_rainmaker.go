@@ -5,6 +5,11 @@ import (
 	"github.com/FourSoulsRepo/rules_engine/cards/cardkit"
 )
 
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	theRainmakerWhichCurse = engine.NewKey("card.the_rainmaker.which_curse")
+)
+
 // The Rainmaker (Boss Card)
 //
 //	Each time a player rolls a ❶, they loot 1.
@@ -35,9 +40,9 @@ var theRainmaker = engine.CardDef{
 					c.G.PlaceFromDeck(curses[a[0]], slots[a[1]])
 				}
 				c.G.ShuffleDeck(engine.MonsterDeck)
-			}, engine.Question{Text: "Which curse?", Options: func(c *engine.Ctx, _ []int) []string {
+			}, engine.Question{Text: theRainmakerWhichCurse, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
 				return labelsOf(c.G, cursesInDeck(c.G))
-			}}, slotQuestionAfterPick("Put it in which monster slot?"))},
+			}}, slotQuestionAfterPick(cardkit.AskPutItInWhichMonster))},
 		},
 	},
 }

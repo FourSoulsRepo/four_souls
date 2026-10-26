@@ -457,19 +457,23 @@ test('a "look, you may put it on the bottom" question shows the card (19.11)', a
     const s = (window as unknown as { fourSouls: { store: { getState: () => S } } }).fourSouls.store.getState();
     const game = structuredClone(s.game);
     const you = s.lobby.table.you;
-    const options = ['keep a_dime on top', 'put a_dime on the bottom'];
+    const dime = { card: { card: 'a_dime' } };
+    const options = [
+      { key: 'ask.keep_on_top', args: dime },
+      { key: 'ask.put_on_bottom', args: dime },
+    ];
     game.view.subject = { id: 901, card: 'a_dime', charged: false };
-    game.view.waiting = { kind: 4, player: you, purpose: 9, text: 'Put the top card on the bottom?', options };
+    game.view.waiting = { kind: 4, player: you, purpose: 9, text: { key: 'ask.put_bottom' }, options };
     game.view.options = options.map(() => ({ player: -1 }));
     game.allowed = options.map((_, i) => ({ player: you, kind: 4, choice: i }));
     s.receive({ type: 'update', data: { ...game, step: game.step + 1, events: [] } });
   });
-  const dialog = opal.getByRole('dialog', { name: 'Put the top card on the bottom?' });
+  const dialog = opal.getByRole('dialog', { name: tr('ask.put_bottom') });
   await expect(dialog).toBeVisible();
   await shot(opal, 'look-may-bottom');
   await expect(dialog.getByRole('img', { name: 'A Dime!!' })).toBeVisible();
   // The buttons name the card by its title, not its ref.
-  await expect(dialog.getByRole('button', { name: 'keep A Dime!! on top' })).toBeVisible();
+  await expect(dialog.getByRole('button', { name: tr('ask.keep_on_top', { card: 'A Dime!!' }) })).toBeVisible();
 });
 
 test('"put them back in any order" shows each card in its place (19.16)', async ({ browser }) => {
@@ -479,8 +483,8 @@ test('"put them back in any order" shows each card in its place (19.16)', async 
   }
   // Sleight of Hand's order prompt, as the server sends it to the
   // chooser. act is caught, so the test reads the intent it would send.
-  const title = 'Put the cards back in any order';
-  await olaf.evaluate((text) => {
+  const title = tr('ask.put_back');
+  await olaf.evaluate(() => {
     interface S {
       game: { step: number; view: Record<string, unknown>; allowed: unknown[] };
       lobby: { table: { you: number } };
@@ -492,7 +496,7 @@ test('"put them back in any order" shows each card in its place (19.16)', async 
     const you = s.lobby.table.you;
     const refs = ['a_dime', 'a_penny', 'bomb'];
     game.view.ordering = refs.map((card, i) => ({ id: 901 + i, card, charged: false }));
-    game.view.waiting = { kind: 5, player: you, purpose: 17, count: 3, text };
+    game.view.waiting = { kind: 5, player: you, purpose: 17, count: 3, text: { key: 'ask.put_back' } };
     game.allowed = [{ player: you, kind: 8, objects: [901, 902, 903] }];
     store.setState({
       act: (intent: unknown) => {
@@ -500,7 +504,7 @@ test('"put them back in any order" shows each card in its place (19.16)', async 
       },
     });
     s.receive({ type: 'update', data: { ...game, step: game.step + 1, events: [] } });
-  }, title);
+  });
   const dialog = olaf.getByRole('dialog', { name: title });
   await expect(dialog).toBeVisible();
   const place = (n: number) => dialog.getByRole('group', { name: tr('order.place', { n }) });
@@ -536,8 +540,8 @@ test('two "instead" effects: each card says what it gives first (19.17)', async 
   }
   // Bum-Bo! and Counterfeit Penny replace a gain of 10¢; the order
   // prompt as the server sends it to the chooser. act is caught.
-  const title = 'Gaining 10¢: which card applies first?';
-  await ugo.evaluate((text) => {
+  const title = tr('prompt.replacement_cents', { n: 10 });
+  await ugo.evaluate(() => {
     interface S {
       game: { step: number; view: Record<string, unknown>; allowed: unknown[] };
       lobby: { table: { you: number } };
@@ -547,7 +551,8 @@ test('two "instead" effects: each card says what it gives first (19.17)', async 
     const s = store.getState();
     const game = structuredClone(s.game);
     const you = s.lobby.table.you;
-    game.view.waiting = { kind: 4, player: you, purpose: 0, options: ['counterfeit_penny', 'bum_bo'], text };
+    const card = (ref: string) => ({ key: 'ask.card', args: { card: { card: ref } } });
+    game.view.waiting = { kind: 4, player: you, purpose: 0, options: [card('counterfeit_penny'), card('bum_bo')], text: { key: 'prompt.replacement_cents', args: { n: 10 } } };
     game.view.options = [
       { object: 901, player: -1, outcome: { actions: [{ kind: 14, player: you, amount: 11, card: 'bum_bo' }] } },
       {
@@ -566,7 +571,7 @@ test('two "instead" effects: each card says what it gives first (19.17)', async 
       },
     });
     s.receive({ type: 'update', data: { ...game, step: game.step + 1, events: [] } });
-  }, title);
+  });
   const dialog = ugo.getByRole('dialog', { name: title });
   await expect(dialog).toBeVisible();
   const option = (card: string) => dialog.locator('.choice-option').filter({ has: ugo.getByRole('button', { name: card, exact: true }) });
@@ -602,8 +607,11 @@ test('trigger order: the title says the first one resolves last (19.19)', async 
       player: you,
       purpose: 7,
       options: [
-        'cains_eye: At the start of your turn, look at the top card of the loot deck. You may put it on the bottom.',
-        'golden_horseshoe: At the start of your turn, look at the top card of the treasure deck. You may put it on the bottom.',
+        { key: 'ask.ability', args: { card: { card: 'cains_eye' }, text: 'At the start of your turn, look at the top card of the loot deck. You may put it on the bottom.' } },
+        {
+          key: 'ask.ability',
+          args: { card: { card: 'golden_horseshoe' }, text: 'At the start of your turn, look at the top card of the treasure deck. You may put it on the bottom.' },
+        },
       ],
     };
     game.view.options = [{ player: -1 }, { player: -1 }];

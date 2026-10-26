@@ -156,21 +156,21 @@ func (r *Room) startBanTurn() {
 func (r *Room) ban(c *Client, env protocol.Envelope) {
 	m := r.match
 	if m == nil || m.phase != protocol.PhaseBan {
-		c.fail(env.ID, protocol.ErrBadMessage, "no ban phase now")
+		c.fail(env.ID, protocol.ErrBadMessage, errNoBanPhase.Msg())
 		return
 	}
 	if c.seat != m.order[m.turn] {
-		c.fail(env.ID, protocol.ErrNotYourTurn, "it is another player's ban")
+		c.fail(env.ID, protocol.ErrNotYourTurn, errNotYourBan.Msg())
 		return
 	}
 	var b protocol.BanCard
 	if err := env.Unpack(&b); err != nil {
-		c.fail(env.ID, protocol.ErrBadMessage, err.Error())
+		c.fail(env.ID, protocol.ErrBadMessage, errBadMessage.Msg(engine.Str("error", err.Error())))
 		return
 	}
 	i := slices.Index(m.pool, b.Card)
 	if i < 0 {
-		c.fail(env.ID, protocol.ErrBadCard, string(b.Card)+" is not in the pool")
+		c.fail(env.ID, protocol.ErrBadCard, errNotInPool.Msg(engine.CardArg("card", b.Card)))
 		return
 	}
 	m.pool = slices.Delete(m.pool, i, i+1)
@@ -225,16 +225,16 @@ func (r *Room) deal() {
 func (r *Room) pick(c *Client, env protocol.Envelope) {
 	m := r.match
 	if m == nil || m.phase != protocol.PhasePick || c.seat < 0 {
-		c.fail(env.ID, protocol.ErrBadMessage, "no pick phase now")
+		c.fail(env.ID, protocol.ErrBadMessage, errNoPickPhase.Msg())
 		return
 	}
 	var p protocol.PickCard
 	if err := env.Unpack(&p); err != nil {
-		c.fail(env.ID, protocol.ErrBadMessage, err.Error())
+		c.fail(env.ID, protocol.ErrBadMessage, errBadMessage.Msg(engine.Str("error", err.Error())))
 		return
 	}
 	if !slices.Contains(m.offers[c.seat], p.Card) {
-		c.fail(env.ID, protocol.ErrBadCard, string(p.Card)+" is not one of your offers")
+		c.fail(env.ID, protocol.ErrBadCard, errNotOffered.Msg(engine.CardArg("card", p.Card)))
 		return
 	}
 	m.picks[c.seat] = p.Card

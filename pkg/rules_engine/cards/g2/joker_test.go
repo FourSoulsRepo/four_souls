@@ -22,7 +22,7 @@ func TestJoker(t *testing.T) {
 		{Character: "isaac", Hand: []engine.CardRef{"joker"}},
 		{Character: "cain", Hand: []engine.CardRef{"bomb"}},
 	}})
-	tb2.Play(0, "joker", foe, "none")
+	tb2.Play(0, "joker", foe, "ask.none")
 	if len(tb2.G.Players[1].Hand) != 1 {
 		t.Error("stealing is optional")
 	}

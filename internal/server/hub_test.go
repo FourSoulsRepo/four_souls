@@ -518,8 +518,8 @@ func TestGamePassword(t *testing.T) {
 		t.Fatalf("games %+v, want one locked game", games.Games)
 	}
 	for _, c := range []struct{ password, reason string }{
-		{"", "this game needs a password"},
-		{"guess", "wrong password"},
+		{"", "error.password_needed"},
+		{"guess", "error.password_wrong"},
 	} {
 		bo.say(protocol.TypeJoin, protocol.Join{Game: tb.Game, Password: c.password})
 		var er protocol.Error

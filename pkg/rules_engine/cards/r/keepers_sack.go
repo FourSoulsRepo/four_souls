@@ -40,7 +40,7 @@ var keepersSack = engine.CardDef{
 					return
 				}
 				c.G.DiscardFromHand(c.Controller, hand[a[0]])
-			}, engine.HandQuestion("Discard which loot card?"))},
+			}, engine.HandQuestion(cardkit.AskDiscardWhich))},
 		},
 	},
 }

@@ -1,7 +1,5 @@
 package rulesengine
 
-import "strconv"
-
 // Events, curses and other monster-deck mechanics (step 5.6).
 
 // enterMonsterSlot runs what happens when a card enters a monster slot:
@@ -48,7 +46,7 @@ func (g *Game) askCurseTarget(curse ObjectID) {
 	if g.Object(curse).Zone.Kind != ZoneInPlay {
 		return
 	}
-	var labels []string
+	var labels []Msg
 	var players []int
 	all := make([]PlayerID, 0, len(g.Players))
 	for _, pl := range g.Players {
@@ -56,7 +54,7 @@ func (g *Game) askCurseTarget(curse ObjectID) {
 	}
 	for _, id := range g.choosablePlayers(all) { // R-ABIL-35
 		players = append(players, int(id))
-		labels = append(labels, "player "+strconv.Itoa(int(id)+1)+" ("+string(g.Object(g.Players[id].Character).Card)+")")
+		labels = append(labels, PlayerOption(id))
 	}
 	g.ask(Choice{Purpose: ChooseCursed, Player: g.Turn.Active, Rule: "R-ABIL-20", Objects: []ObjectID{curse}, Slots: players}, labels)
 }
@@ -269,13 +267,13 @@ func (g *Game) askPassCurse(p PlayerID, curse ObjectID) {
 		return
 	}
 	others := g.choosablePlayers(g.turnOrderFrom(p)[1:])
-	labels := make([]string, len(others))
+	labels := make([]Msg, len(others))
 	slots := make([]int, len(others))
 	for i, q := range others {
-		labels[i] = "player " + strconv.Itoa(int(q)+1) + " (" + string(g.Object(g.Players[q].Character).Card) + ")"
+		labels[i] = PlayerOption(q)
 		slots[i] = int(q)
 	}
-	g.ask(Choice{Purpose: ChoosePassCurse, Player: p, Rule: "R-ABIL-20", Objects: []ObjectID{curse}, Slots: slots, Question: "Give the curse to which player?"}, labels)
+	g.ask(Choice{Purpose: ChoosePassCurse, Player: p, Rule: "R-ABIL-20", Objects: []ObjectID{curse}, Slots: slots, Question: promptPassCurse.Msg()}, labels)
 }
 
 // passCurse moves a curse from its holder to p.

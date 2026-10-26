@@ -1,6 +1,16 @@
 package b2
 
-import engine "github.com/FourSoulsRepo/rules_engine"
+import (
+	engine "github.com/FourSoulsRepo/rules_engine"
+	"github.com/FourSoulsRepo/rules_engine/cards/cardkit"
+)
+
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	devilDealSearch  = engine.NewKey("card.devil_deal.search")
+	devilDealLoot    = engine.NewKey("card.devil_deal.loot")
+	devilDealDiscard = engine.NewKey("card.devil_deal.discard")
+)
 
 // Devil Deal (Good Event Card)
 //
@@ -21,8 +31,8 @@ var devilDeal = engine.CardDef{
 				case 2:
 					c.Do(engine.DealDamage(2, engine.You), searchGuppy)
 				}
-			}, engine.Question{Text: "Choose one", Options: func(*engine.Ctx, []int) []string {
-				return []string{"put this into discard", "loot 2, take 1 damage", "take 2 damage, search for a guppy item"}
+			}, engine.Question{Text: cardkit.AskChooseOne, Options: func(*engine.Ctx, []int) []engine.Msg {
+				return engine.Options(devilDealDiscard, devilDealLoot, devilDealSearch)
 			}})},
 		},
 	},

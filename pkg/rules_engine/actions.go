@@ -136,10 +136,10 @@ func (g *Game) processQueue() {
 	switch {
 	case len(refs) > 1:
 		// Each option is the card, with what that order gives (19.17).
-		opts := make([]string, len(refs))
+		opts := make([]Msg, len(refs))
 		previews := make([]ReplacementPreview, len(refs))
 		for i, r := range refs {
-			opts[i] = string(g.CardOf(r.Object))
+			opts[i] = CardOption(g.CardOf(r.Object))
 			previews[i] = g.previewReplacement(r, refs)
 		}
 		g.ask(Choice{
@@ -199,11 +199,11 @@ func (g *Game) previewReplacement(ref ReplacementRef, all []ReplacementRef) Repl
 }
 
 // replacementQuestion asks for the order of replacements of a.
-func replacementQuestion(a Action) string {
+func replacementQuestion(a Action) Msg {
 	if a.Kind == ActGainCents {
-		return fmt.Sprintf("Gaining %d¢: which card applies first?", a.Amount)
+		return promptReplacementCents.Msg(N("n", a.Amount))
 	}
-	return "Which card applies first?"
+	return promptReplacement.Msg()
 }
 
 // applyReplacement rewrites the first queued action with one replacement.
@@ -284,14 +284,14 @@ func (g *Game) perform(a Action) {
 			if s := g.shadowOf(a.Player); s != NoPlayer {
 				chooser = s
 			}
-			g.ask(Choice{Purpose: ChoosePenaltyItem, Player: chooser, Owner: a.Player, To: g.penaltyItemTo(a.Player), Rule: "R-DEATH-14", Objects: items}, g.labels(items))
+			g.ask(Choice{Purpose: ChoosePenaltyItem, Player: chooser, Owner: a.Player, To: g.penaltyItemTo(a.Player), Rule: "R-DEATH-14", Objects: items}, g.Labels(items))
 		}
 	case ActPenaltyLoot:
 		if g.protectedFromLoss(a.Player) {
 			return // Rib of Greed: nothing is lost, so a Shadow gains nothing
 		}
 		if hand := g.Players[a.Player].Hand; len(hand) > 0 {
-			g.ask(Choice{Purpose: ChoosePenaltyLoot, Player: a.Player, Owner: a.Player, To: g.shadowOf(a.Player), Rule: "R-DEATH-14", Objects: append([]ObjectID(nil), hand...)}, g.labels(hand))
+			g.ask(Choice{Purpose: ChoosePenaltyLoot, Player: a.Player, Owner: a.Player, To: g.shadowOf(a.Player), Rule: "R-DEATH-14", Objects: append([]ObjectID(nil), hand...)}, g.Labels(hand))
 		}
 	case ActDeactivateTaps:
 		pl := g.Players[a.Player]
@@ -321,11 +321,11 @@ func (g *Game) perform(a Action) {
 		}
 	case ActChooseDie:
 		md := g.ManyDice[0]
-		labels := make([]string, len(md.Values))
+		labels := make([]Msg, len(md.Values))
 		for i, v := range md.Values {
-			labels[i] = strconv.Itoa(v)
+			labels[i] = NumberOption(v)
 		}
-		g.ask(Choice{Purpose: ChooseDie, Player: a.Player, Rule: "R-DICE-11", Slots: md.Values, Indexes: []int{md.StackID}, Question: "Which dice is the result?"}, labels)
+		g.ask(Choice{Purpose: ChooseDie, Player: a.Player, Rule: "R-DICE-11", Slots: md.Values, Indexes: []int{md.StackID}, Question: promptWhichDie.Msg()}, labels)
 	case ActPushLingering:
 		// A replacement that rolls first (Poker Chip): its card's lingering
 		// ability goes on the stack with the replaced amount. A copy
@@ -333,7 +333,7 @@ func (g *Game) perform(a Action) {
 		ref := AbilityRef{Card: g.CardOf(a.Object), Index: int(a.From), Lingering: true}
 		g.push(StackItem{
 			Kind: StackTrigger, Controller: g.abilityController(a.Object), Source: a.Object, Card: ref.Card,
-			Ability: ref, Label: g.abilityText(ref), EventPlayer: a.Player, EventAmount: a.Amount,
+			Ability: ref, EventPlayer: a.Player, EventAmount: a.Amount,
 		})
 	case ActThrow:
 		g.askThrow(a)
@@ -343,7 +343,7 @@ func (g *Game) perform(a Action) {
 		before := len(g.PendingTriggers)
 		g.emit(Event{Kind: EvRewardsGained, Player: a.Player, Object: a.Object, Card: g.Object(a.Object).Card, Prev: a.Object})
 		if len(g.PendingTriggers) > before {
-			g.push(StackItem{Kind: StackDeathStep, Controller: NoPlayer, Label: "soul", Target: Target{Object: a.Object}, Amount: stepSoul})
+			g.push(StackItem{Kind: StackDeathStep, Controller: NoPlayer, Label: eventSoul.Msg(), Target: Target{Object: a.Object}, Amount: stepSoul})
 		} else {
 			g.soulStep(a.Object)
 		}

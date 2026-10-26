@@ -12,7 +12,7 @@ import './Actions.css';
 // cards, Hearthstone-style (V-07); options on the table can be clicked
 // there too. subject is the card the choice is about, e.g. the monster
 // a deck attack drew (19.9) or the deck top a player looks at (19.11);
-// it shows beside the options, and option labels name it by its title.
+// it shows beside the options; option labels name it as a card (ADR 021).
 // An option with an outcome says what picking it gives (19.17); a
 // trigger option says its ability's words (19.19).
 //
@@ -22,8 +22,6 @@ import './Actions.css';
 export function ChoiceDialog({ choice, subject }: { choice: NonNullable<Actions['choice']>; subject?: string | undefined }) {
   const act = useApp((s) => s.act);
   const cardName = (ref: string) => useApp.getState().cards.get(ref)?.name ?? ref;
-  const subjectName = subject ? useApp.getState().cards.get(subject)?.name : undefined;
-  const label = (l: string) => (subject && subjectName ? l.replaceAll(subject, subjectName) : l);
   return (
     <ChoiceFrame label={choice.title}>
       {subject && (
@@ -50,7 +48,7 @@ export function ChoiceDialog({ choice, subject }: { choice: NonNullable<Actions[
                 act(o.intent);
               }}
             >
-              {o.card ? (useApp.getState().cards.get(o.card)?.name ?? o.label) : label(o.label)}
+              {o.card ? cardName(o.card) : o.label}
             </button>
             {o.line && <p className="choice-line">{o.line}</p>}
             {o.outcome && (

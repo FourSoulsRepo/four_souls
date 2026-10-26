@@ -1,7 +1,5 @@
 package rulesengine
 
-import "strconv"
-
 // Activation is an ability (or loot card) being put on the stack while its
 // targets are chosen (R-ABIL-04).
 type Activation struct {
@@ -31,16 +29,16 @@ func (g *Game) activatable(p PlayerID, src ObjectID, i int) error {
 	o := g.Object(src)
 	if o.Zone.Kind == ZoneInPlay && o.Role == RoleRoom {
 		if p != g.Turn.Active {
-			return deny("R-CARD-36", "Only on your turn", "only the active player uses a room's abilities")
+			return deny("R-CARD-36", refuseOnlyYourTurn.Msg(), "only the active player uses a room's abilities")
 		}
 		if contains(g.Turn.LateRooms, src) {
-			return deny("R-TURN-18", "Usable from next turn", "a room that entered in the end phase can't be used this turn")
+			return deny("R-TURN-18", refuseNextTurn.Msg(), "a room that entered in the end phase can't be used this turn")
 		}
 	} else if o.Zone.Kind != ZoneInPlay || o.Controller != p || (o.Role != RoleItem && o.Role != RoleCharacter && !g.soulKeepsAbilities(src)) {
 		return refuse("R-ABIL-09", "only the controller uses an item's or character's abilities")
 	}
 	if g.bonus(StatOneAbility, p, 0) > 0 && g.Players[p].Activations > 0 {
-		return deny("R-ABIL-12", "Only one ability each turn", "only one ability each turn")
+		return deny("R-ABIL-12", refuseOneAbility.Msg(), "only one ability each turn")
 	}
 	refs := g.AbilitiesOf(src)
 	if i < 0 || i >= len(refs) || g.ability(refs[i]).Kind != Activated {
@@ -60,12 +58,12 @@ func (g *Game) activatable(p PlayerID, src ObjectID, i int) error {
 func (g *Game) targetsAvailable(a Ability, p PlayerID, src ObjectID) error {
 	if len(a.Modes) > 0 {
 		if len(g.availableModes(a, p, src)) == 0 {
-			return deny("R-ABIL-06", "No valid target now", "no option has a valid target")
+			return deny("R-ABIL-06", refuseNoTarget.Msg(), "no option has a valid target")
 		}
 		return nil
 	}
 	if !g.hasTargets(a.Targets, p, src) {
-		return deny("R-ABIL-06", "No valid target now", "no valid target")
+		return deny("R-ABIL-06", refuseNoTarget.Msg(), "no valid target")
 	}
 	return nil
 }
@@ -103,11 +101,11 @@ func (g *Game) startActivation(a Activation) {
 		return
 	}
 	modes := g.availableModes(ab, a.Player, a.Source)
-	labels := make([]string, 0, len(modes)+1)
+	labels := make([]Msg, 0, len(modes)+1)
 	for _, m := range modes {
-		labels = append(labels, ab.Modes[m].Text)
+		labels = append(labels, AskWords.Msg(Str("text", ab.Modes[m].Text)))
 	}
-	labels = append(labels, "cancel")
+	labels = append(labels, AskCancel.Msg())
 	// The card is the subject, so the chooser's dialog shows it (15.58).
 	g.ask(Choice{Purpose: ChooseMode, Player: a.Player, Rule: "R-ABIL-04", Indexes: modes, Subject: a.Source}, labels)
 }
@@ -136,7 +134,7 @@ func (g *Game) nextTarget() {
 	specs := g.targetSpecs(a.Ability, a.Mode)
 	if len(a.Chosen) < len(specs) {
 		opts, labels := g.targetOptions(specs[len(a.Chosen)], a.Player, a.Source)
-		labels = append(labels, "cancel")
+		labels = append(labels, AskCancel.Msg())
 		g.ask(Choice{Purpose: ChooseTarget, Player: a.Player, Rule: "R-ABIL-04", Targets: opts}, labels)
 		return
 	}
@@ -179,7 +177,7 @@ func (g *Game) finishActivation() {
 			pl.CopyNextLoot = false
 			g.push(StackItem{
 				Kind: StackAbility, Controller: a.Player, Source: nid, Card: card, Ability: a.Ability,
-				Mode: a.Mode, Targets: a.Chosen, Label: "copy of " + string(card),
+				Mode: a.Mode, Targets: a.Chosen, Label: eventCopyOf.Msg(CardArg("card", card)),
 			})
 		}
 		return
@@ -195,14 +193,14 @@ func (g *Game) finishActivation() {
 	g.emit(Event{Kind: EvActivated, Player: a.Player, Object: a.Source, Card: a.Ability.Card, Text: ab.Text})
 	g.push(StackItem{
 		Kind: StackAbility, Controller: a.Player, Source: a.Source, Card: a.Ability.Card,
-		Ability: a.Ability, Mode: a.Mode, Targets: a.Chosen, Label: ab.Text,
+		Ability: a.Ability, Mode: a.Mode, Targets: a.Chosen, Label: words(ab.Text),
 	})
 }
 
 // targetOptions lists what may be chosen for a spec, with labels.
-func (g *Game) targetOptions(t TargetSpec, p PlayerID, src ObjectID) ([]Chosen, []string) {
+func (g *Game) targetOptions(t TargetSpec, p PlayerID, src ObjectID) ([]Chosen, []Msg) {
 	var opts []Chosen
-	var labels []string
+	var labels []Msg
 	others := t.Kind == TargetOtherPlayer
 	addPlayers := func() {
 		var eligible []PlayerID
@@ -213,14 +211,14 @@ func (g *Game) targetOptions(t TargetSpec, p PlayerID, src ObjectID) ([]Chosen, 
 		}
 		for _, id := range g.choosablePlayers(eligible) {
 			opts = append(opts, Chosen{Kind: TargetPlayer, Player: id})
-			labels = append(labels, "player "+strconv.Itoa(int(id)+1)+" ("+string(g.Object(g.Players[id].Character).Card)+")")
+			labels = append(labels, PlayerOption(id))
 		}
 	}
 	addMonsters := func() {
 		for _, s := range g.Monsters {
 			if top, ok := s.TopOf(); ok && g.Object(top).Role == RoleMonster {
 				opts = append(opts, Chosen{Kind: TargetMonster, Player: NoPlayer, Object: top})
-				labels = append(labels, string(g.Object(top).Card))
+				labels = append(labels, CardOption(g.Object(top).Card))
 			}
 		}
 	}
@@ -237,55 +235,47 @@ func (g *Game) targetOptions(t TargetSpec, p PlayerID, src ObjectID) ([]Chosen, 
 			for _, id := range pl.InPlay {
 				if g.Object(id).Role == RoleItem {
 					opts = append(opts, Chosen{Kind: TargetItem, Player: pl.ID, Object: id})
-					labels = append(labels, string(g.Object(id).Card))
+					labels = append(labels, CardOption(g.Object(id).Card))
 				}
 			}
 		}
 		// Shop items are items in play too (R-CARD-01, R-ZONE-02).
 		for _, id := range g.ShopItems() {
 			opts = append(opts, Chosen{Kind: TargetItem, Player: NoPlayer, Object: id})
-			labels = append(labels, string(g.Object(id).Card))
+			labels = append(labels, CardOption(g.Object(id).Card))
 		}
 	case TargetDiceRoll:
 		for _, it := range g.Stack {
 			if it.Kind == StackRoll {
 				opts = append(opts, Chosen{Kind: TargetDiceRoll, Player: it.Controller, StackID: it.ID})
-				labels = append(labels, "roll of "+strconv.Itoa(it.Roll))
+				labels = append(labels, askRollOf.Msg(N("n", it.Roll)))
 			}
 		}
 	case TargetStackAbility:
 		for _, it := range g.Stack {
 			if g.cancellable(it) {
 				opts = append(opts, Chosen{Kind: TargetStackAbility, Player: it.Controller, StackID: it.ID})
-				label := string(it.Card)
-				if it.Label != "" {
-					label += ": " + it.Label
-				}
-				labels = append(labels, label)
+				labels = append(labels, g.stackOption(it))
 			}
 		}
 	case TargetStackTrigger:
 		for _, it := range g.Stack {
 			if it.Kind == StackTrigger {
 				opts = append(opts, Chosen{Kind: TargetStackTrigger, Player: it.Controller, StackID: it.ID})
-				label := string(it.Card)
-				if it.Label != "" {
-					label += ": " + it.Label
-				}
-				labels = append(labels, label)
+				labels = append(labels, g.stackOption(it))
 			}
 		}
 	case TargetYourHandCard:
 		for _, id := range g.Players[p].Hand {
 			opts = append(opts, Chosen{Kind: TargetYourHandCard, Player: p, Object: id})
-			labels = append(labels, string(g.Object(id).Card))
+			labels = append(labels, CardOption(g.Object(id).Card))
 		}
 	case TargetItemOrSoul:
 		for _, pl := range g.Players {
 			for _, id := range pl.InPlay {
 				if r := g.Object(id).Role; r == RoleItem || r == RoleSoul {
 					opts = append(opts, Chosen{Kind: TargetItemOrSoul, Player: pl.ID, Object: id})
-					labels = append(labels, string(g.Object(id).Card))
+					labels = append(labels, CardOption(g.Object(id).Card))
 				}
 			}
 		}
@@ -301,7 +291,7 @@ func (g *Game) targetOptions(t TargetSpec, p PlayerID, src ObjectID) ([]Chosen, 
 			for _, id := range pl.InPlay {
 				if g.Object(id).Role == role {
 					opts = append(opts, Chosen{Kind: t.Kind, Player: pl.ID, Object: id})
-					labels = append(labels, string(g.Object(id).Card))
+					labels = append(labels, CardOption(g.Object(id).Card))
 				}
 			}
 		}

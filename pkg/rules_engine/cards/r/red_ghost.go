@@ -5,6 +5,11 @@ import (
 	"github.com/FourSoulsRepo/rules_engine/cards/cardkit"
 )
 
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	redGhostWhichPlayerTakes = engine.NewKey("card.red_ghost.which_player_takes_1_damage")
+)
+
 // Red Ghost (Basic Monster Card)
 //
 //	Each time this takes damage, the active player chooses another player. That player takes 1 damage.
@@ -25,7 +30,7 @@ var redGhost = engine.CardDef{
 			if ps := othersOfActive(c.G); a[0] >= 0 && a[0] < len(ps) {
 				c.G.DealDamageTo(engine.Target{Player: ps[a[0]], IsPlayer: true}, 1, engine.NoPlayer, c.Source)
 			}
-		}, engine.Question{Text: "Which player takes 1 damage?", Options: func(c *engine.Ctx, _ []int) []string {
+		}, engine.Question{Text: redGhostWhichPlayerTakes, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
 			return playerLabels(c.G, othersOfActive(c.G))
 		}})},
 	}},

@@ -2,6 +2,11 @@ package b2
 
 import engine "github.com/FourSoulsRepo/rules_engine"
 
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	goatHeadDiscardAnotherLoot = engine.NewKey("card.goat_head.discard_another_loot_card")
+)
+
 // Goat Head (Passive Treasure Card)
 //
 //	At the end of your turn, you may discard any number of loot cards, then loot equal to the number of cards discarded in this way.
@@ -23,19 +28,19 @@ var goatHead = engine.CardDef{
 func goatQuestions() []engine.Question {
 	var qs []engine.Question
 	for range 20 {
-		qs = append(qs, engine.Question{Text: "Discard another loot card?", Options: func(c *engine.Ctx, a []int) []string {
+		qs = append(qs, engine.Question{Text: goatHeadDiscardAnotherLoot, Options: func(c *engine.Ctx, a []int) []engine.Msg {
 			left := goatLeft(c, a)
 			if len(a) > 0 && (a[len(a)-1] < 0 || a[len(a)-1] == len(goatLeft(c, a[:len(a)-1]))) {
 				return nil // done
 			}
-			var out []string
+			var out []engine.Msg
 			for _, id := range left {
-				out = append(out, string(c.G.Object(id).Card))
+				out = append(out, engine.CardOption(c.G.Object(id).Card))
 			}
 			if out == nil {
 				return nil
 			}
-			return append(out, "done")
+			return append(out, engine.AskDone.Msg())
 		}})
 	}
 	return qs

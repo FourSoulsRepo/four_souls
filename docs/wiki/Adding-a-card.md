@@ -102,13 +102,32 @@ Effects: []engine.Effect{engine.EffectFunc(func(c *engine.Ctx) {
 
 Things decided while the card resolves ("choose a deck", "a card from your hand") are questions: see "Questions on resolution" on [Effect blocks](Effect-blocks). Targets and "choose one-" are chosen when the card is played, never on resolution (R-ABIL-04).
 
+A question and its options are never English in Go: each is a key, and its words live in `frontend/src/locales/en.json` (ADR 021). Declare a card's own keys at the top of its file and add each one to `en.json`, in its sorted place, with the words and a note that says where it shows and what each value is:
+
+```go
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	cheeseGraterPutBack = engine.NewKey("card.cheese_grater.put_back")
+	cheeseGraterDiscard = engine.NewKey("card.cheese_grater.discard")
+)
+```
+
+```json
+"card.cheese_grater.put_back": {
+  "text": "put it back",
+  "note": "Option of Cheese Grater's question: put the revealed card back on its deck."
+},
+```
+
+Questions many cards ask are shared: `cardkit.AskDiscardWhich`, `cardkit.May(key, …)` with yes and no, `engine.DeckQuestion(key)`, card and player options (`c.G.Labels`, `cardkit.PlayerLabels`). Then run `go test . -run TestServerKeys -update` from the repo root: it lists every key in `frontend/src/locales/server-keys.json`, and fails while a key has no line in `en.json`.
+
 A card that takes from a player no target names sets `Takes` on that ability: it steals, or makes a player discard, lose ¢, or destroy an item or soul, and picks that player only as it resolves (XV. The Devil, Joker, "each player discards their hand"). `TakesOthers` means any player but its controller; `TakesEventPlayer` means the player of the triggering event, e.g. Dead Bird's "a player rolls a 3". The server then stops "Wait for my turn" for those players while the card is on the stack, so they can still answer it (15.85). Add the card to `TestTakes` in `pkg/rules_engine/cards/cards_test.go`. A card whose targets name every victim (Jawbone) and damage need no `Takes`: the server sees them already.
 
 Rules follow our rules text in `pkg/rules_engine/docs/rules/`; each rule has an ID such as `R-DEATH-14`. When the card text and a rule seem to disagree, add the case to `open-questions.md` instead of guessing.
 
 ## 3. Test it
 
-Every card gets its own test file next to it, `<card>_test.go`. The `enginetest` package builds a table, plays, and answers prompts by their labels:
+Every card gets its own test file next to it, `<card>_test.go`. The `enginetest` package builds a table, plays, and answers prompts by their labels: a card's ref (`"fly"`), a player (`"player 2 (cain)"`), a number, or an option's key and values (`"ask.yes"`, `"card.cheese_grater.put_back"`, `"ask.keep_on_top bomb"`):
 
 ```go
 package b2
@@ -183,3 +202,4 @@ If the set also has display data (names, text, images), add `pkg/card_db/data/my
 * The status report is regenerated.
 * `make lint` passes (see [Linters](Linters)).
 * A card that takes from a player no target names sets `Takes`.
+* Its questions and options are keys with lines in `en.json`; `server-keys.json` is rewritten.

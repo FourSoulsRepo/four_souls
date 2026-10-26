@@ -3,7 +3,7 @@
 // Playback only changes what is drawn; the game state is the server's.
 import { kindOf, type CardInfo, type Kind } from './cards';
 import { firstPlayerText, tieText } from './dice';
-import { t } from './i18n';
+import { say, t } from './i18n';
 import type { GameEvent, GameView, Update } from './protocol';
 
 export type Speed = 'normal' | 'fast' | 'slow' | 'off';
@@ -190,7 +190,7 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
         out.push({
           kind: 'dice',
           value: amount,
-          label: e.text ?? '',
+          label: e.text === 'reroll' ? t('dice.reroll') : say(e.label, { card: (ref) => ctx.card(ref)?.name ?? ref, player: ctx.name }),
           player: e.player,
           thrown: true,
           ...(e.dice && e.dice.length > 1 ? { dice: e.dice } : {}),

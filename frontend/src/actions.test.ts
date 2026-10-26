@@ -11,7 +11,7 @@ import {
   Purpose,
   sameTarget,
 } from './actions';
-import type { Update } from './protocol';
+import type { Msg, Update } from './protocol';
 
 function update(partial: Partial<Update['view']>, allowed: Update['allowed']): Update {
   return {
@@ -33,7 +33,13 @@ function update(partial: Partial<Update['view']>, allowed: Update['allowed']): U
   };
 }
 
-const isCard = (label: string) => !label.includes(' ');
+// names shows card refs and seats as they are.
+const names = { card: (ref: string) => ref, player: (p: number) => `P${String(p)}` };
+
+// m is a server message; card and player are option messages.
+const m = (key: string, args?: Msg['args']): Msg => (args ? { key, args } : { key });
+const card = (ref: string) => m('ask.card', { card: { card: ref } });
+const player = (p: number) => m('ask.player', { player: { player: p } });
 
 describe('actionsFor', () => {
   it('turns allowed intents into buttons and card actions', () => {
@@ -47,7 +53,7 @@ describe('actionsFor', () => {
         { player: 0, kind: IntentKind.activate, objects: [4] },
         { player: 0, kind: IntentKind.activate, objects: [4], choice: 1 },
       ]),
-      isCard,
+      names,
     );
     expect(a.buttons).toEqual([]);
     expect(a.turn.endTurn?.kind).toBe(IntentKind.endTurn);
@@ -80,7 +86,7 @@ describe('actionsFor', () => {
         { player: 0, kind: IntentKind.activate, objects: [4] },
         { player: 0, kind: IntentKind.activate, objects: [4], choice: 2 },
       ]),
-      isCard,
+      names,
     );
     expect(a.cards.get(4)?.map((x) => x.line)).toEqual(['↷: Put a counter on this.', 'Remove 2: Deal 1.']);
   });
@@ -91,7 +97,7 @@ describe('actionsFor', () => {
         { player: 0, kind: IntentKind.pass },
         { player: 0, kind: IntentKind.endTurn },
       ]),
-      isCard,
+      names,
     );
     expect(a.buttons.map((b) => b.label)).toEqual(['Pass']);
     expect(a.turn.idle).toBe(true);
@@ -108,7 +114,7 @@ describe('actionsFor', () => {
         { player: 0, kind: IntentKind.attack },
         { player: 0, kind: IntentKind.endTurn },
       ]),
-      isCard,
+      names,
     );
     expect(all.turn.left).toEqual(['Attack', 'Buy', 'Play loot', 'Use abilities']);
     const loot = actionsFor(
@@ -116,15 +122,15 @@ describe('actionsFor', () => {
         { player: 0, kind: IntentKind.playLoot, objects: [7] },
         { player: 0, kind: IntentKind.endTurn },
       ]),
-      isCard,
+      names,
     );
     expect(loot.turn.left).toEqual(['Play loot']);
-    const notMine = actionsFor(update({}, [{ player: 0, kind: IntentKind.playLoot, objects: [7] }]), isCard);
+    const notMine = actionsFor(update({}, [{ player: 0, kind: IntentKind.playLoot, objects: [7] }]), names);
     expect(notMine.turn.left).toBeUndefined();
   });
 
   it('offers nothing when it is not the viewer’s move', () => {
-    const a = actionsFor(update({}, null), isCard);
+    const a = actionsFor(update({}, null), names);
     expect(a.buttons).toEqual([]);
     expect(a.turn).toEqual({});
     expect(a.cards.size).toBe(0);
@@ -134,7 +140,7 @@ describe('actionsFor', () => {
     const a = actionsFor(
       update(
         {
-          waiting: { kind: PromptKind.choose, player: 0, purpose: 1, options: ['gaper', 'monster deck'] },
+          waiting: { kind: PromptKind.choose, player: 0, purpose: 1, options: [card('gaper'), m('ask.deck.monster')] },
           options: [
             { object: 42, player: -1 },
             { player: -1, deck: true },
@@ -145,7 +151,7 @@ describe('actionsFor', () => {
           { player: 0, kind: IntentKind.choose, choice: 1 },
         ],
       ),
-      isCard,
+      names,
     );
     expect(a.choice).toEqual({
       title: 'Choose what to attack',
@@ -168,12 +174,12 @@ describe('actionsFor', () => {
 
   it('uses the question as the title of an answer', () => {
     const a = actionsFor(
-      update({ waiting: { kind: PromptKind.choose, player: 0, purpose: 9, options: ['yes', 'No'], text: 'Pay 3¢?' } }, [
+      update({ waiting: { kind: PromptKind.choose, player: 0, purpose: 9, options: [m('ask.yes'), m('ask.no')], text: m('card.the_mirror.pay_hp_down_to_1') } }, [
         { player: 0, kind: IntentKind.choose },
       ]),
-      isCard,
+      names,
     );
-    expect(a.choice?.title).toBe('Pay 3¢?');
+    expect(a.choice?.title).toBe('Pay HP down to 1?');
   });
 
   it('asks for a discard of a set count', () => {
@@ -181,22 +187,21 @@ describe('actionsFor', () => {
       update({ waiting: { kind: PromptKind.discard, player: 0, count: 2 } }, [
         { player: 0, kind: IntentKind.discard, objects: [5, 6, 7] },
       ]),
-      isCard,
+      names,
     );
     expect(a.discard).toMatchObject({ count: 2, from: [5, 6, 7] });
   });
 
   it('asks for an order with the question as its title (19.16)', () => {
-    const text = 'Put the cards back in any order';
     const intent = { player: 0, kind: IntentKind.order, objects: [5, 6, 7] };
-    const a = actionsFor(update({ waiting: { kind: PromptKind.order, player: 0, count: 3, text } }, [intent]), isCard);
-    expect(a.order).toEqual({ title: text, intent });
+    const a = actionsFor(update({ waiting: { kind: PromptKind.order, player: 0, count: 3, text: m('ask.put_back') } }, [intent]), names);
+    expect(a.order).toEqual({ title: 'Put the cards back in any order', intent });
     expect(orderIntent(intent, [7, 5, 6]).objects).toEqual([7, 5, 6]);
   });
 
   it('offers the throw of a roll, named by the prompt (15.61)', () => {
     const intent = { player: 0, kind: IntentKind.throw };
-    const a = actionsFor(update({ waiting: { kind: PromptKind.throw, player: 0, text: 'attack roll' } }, [intent]), isCard);
+    const a = actionsFor(update({ waiting: { kind: PromptKind.throw, player: 0, text: m('event.attack_roll') } }, [intent]), names);
     expect(a.throw).toEqual({ label: 'attack roll', intent });
     expect(a.buttons).toEqual([]);
   });
@@ -212,24 +217,24 @@ describe('aims', () => {
       { player: 0, kind: IntentKind.playLoot, objects: [7] },
       { player: 0, kind: IntentKind.playLoot, objects: [8] },
     ]);
-    const a = actionsFor({ ...u, aims: [{ intent: 1, targets: [monster, ann] }] }, isCard);
+    const a = actionsFor({ ...u, aims: [{ intent: 1, targets: [monster, ann] }] }, names);
     expect(a.cards.get(7)?.[0]?.targets).toEqual([monster, ann]);
     expect(a.cards.get(8)?.[0]?.targets).toBeUndefined();
   });
 
   it('keeps the reason an aim gives for wrong clicks', () => {
     const u = update({}, [{ player: 0, kind: IntentKind.playLoot, objects: [7] }]);
-    const a = actionsFor({ ...u, aims: [{ intent: 0, targets: [monster], reason: 'Pick a monster.' }] }, isCard);
+    const a = actionsFor({ ...u, aims: [{ intent: 0, targets: [monster], reason: m('refuse.pick.monster') }] }, names);
     expect(a.cards.get(7)?.[0]?.reason).toBe('Pick a monster.');
   });
 
   it('picks the dropped-on target from the target prompt', () => {
-    const u = update({ waiting: { kind: PromptKind.choose, player: 0, purpose: Purpose.target, options: ['gaper', 'player 1', 'cancel'] }, options: [monster, ann, { player: -1 }] }, [
+    const u = update({ waiting: { kind: PromptKind.choose, player: 0, purpose: Purpose.target, options: [card('gaper'), player(0), m('ask.cancel')] }, options: [monster, ann, { player: -1 }] }, [
       { player: 0, kind: IntentKind.choose, choice: 0 },
       { player: 0, kind: IntentKind.choose, choice: 1 },
       { player: 0, kind: IntentKind.choose, choice: 2 },
     ]);
-    const { choice } = actionsFor(u, isCard);
+    const { choice } = actionsFor(u, names);
     expect(aimedOption(choice, ann)?.choice).toBe(1);
     expect(aimedOption(choice, { object: 41, player: -1 })).toBeUndefined();
     expect(aimedOption({ title: '', purpose: Purpose.attackTarget, options: choice?.options ?? [] }, ann)).toBeUndefined();
@@ -251,14 +256,14 @@ describe('blocked', () => {
       {
         ...u,
         blocked: [
-          { kind: IntentKind.attack, object: 0, reason: 'No attacks left' },
-          { kind: IntentKind.endTurn, object: 0, reason: 'You must attack first' },
-          { kind: IntentKind.playLoot, object: 7, reason: 'No loot plays left' },
-          { kind: IntentKind.activate, object: 9, reason: 'Used; it recharges on your turn' },
-          { kind: IntentKind.activate, object: 9, reason: 'Not enough ¢' },
+          { kind: IntentKind.attack, object: 0, reason: m('refuse.no_attacks') },
+          { kind: IntentKind.endTurn, object: 0, reason: m('refuse.must_attack') },
+          { kind: IntentKind.playLoot, object: 7, reason: m('refuse.no_loot_plays') },
+          { kind: IntentKind.activate, object: 9, reason: m('refuse.cost.used') },
+          { kind: IntentKind.activate, object: 9, reason: m('refuse.cost.cents') },
         ],
       },
-      isCard,
+      names,
     );
     expect(a.turn.why).toEqual({ attack: 'No attacks left', endTurn: 'You must attack first' });
     expect(a.blocked.get(7)).toBe('No loot plays left');
@@ -267,7 +272,7 @@ describe('blocked', () => {
   });
 
   it('is empty when the server sends no reasons', () => {
-    const a = actionsFor(update({}, []), isCard);
+    const a = actionsFor(update({}, []), names);
     expect(a.blocked.size).toBe(0);
     expect(a.turn.why).toBeUndefined();
   });
@@ -298,36 +303,37 @@ describe('outcomeLines', () => {
 
   it('passes the outcome on to the choice option', () => {
     const outcome = { actions: [{ kind: ActionKind.gainCents, player: 0, amount: 4 }] };
-    const u = update({ waiting: { kind: PromptKind.choose, player: 0, options: ['counterfeit_penny'] }, options: [{ object: 7, player: -1, outcome }] }, [
+    const u = update({ waiting: { kind: PromptKind.choose, player: 0, options: [card('counterfeit_penny')] }, options: [{ object: 7, player: -1, outcome }] }, [
       { player: 0, kind: IntentKind.choose, choice: 0 },
     ]);
-    expect(actionsFor(u, () => true).choice?.options[0]?.outcome).toEqual(outcome);
+    expect(actionsFor(u, { card: name, player: String }).choice?.options[0]?.outcome).toEqual(outcome);
   });
 });
 
 // 19.19: a trigger option is its card with the ability's words.
 describe('trigger order', () => {
-  const choice = (options: string[]) =>
+  const choice = (options: Msg[]) =>
     actionsFor(
       update({ waiting: { kind: PromptKind.choose, player: 0, purpose: Purpose.triggerOrder, options } }, [
         { player: 0, kind: IntentKind.choose, choice: 0 },
       ]),
-      (l) => l === 'cains_eye',
+      names,
     ).choice;
 
   it('says the first one resolves last', () => {
-    expect(choice(['cains_eye'])?.title).toMatch(/resolves last/);
+    expect(choice([card('cains_eye')])?.title).toMatch(/resolves last/);
   });
 
-  it('splits the label into the card and its ability text', () => {
-    expect(choice(['cains_eye: At the start of your turn, look.'])?.options[0]).toMatchObject({
+  it('splits the option into the card and its ability text', () => {
+    const ability = m('ask.ability', { card: { card: 'cains_eye' }, text: 'At the start of your turn, look.' });
+    expect(choice([ability])?.options[0]).toMatchObject({
       card: 'cains_eye',
       line: 'At the start of your turn, look.',
     });
   });
 
-  it('keeps a label that names no card as text', () => {
-    const o = choice(['unknown: text'])?.options[0];
+  it('keeps an option that names no card as text', () => {
+    const o = choice([m('ask.words', { text: 'unknown: text' })])?.options[0];
     expect(o?.card).toBeUndefined();
     expect(o?.line).toBeUndefined();
   });
@@ -338,8 +344,8 @@ describe('modeLines', () => {
   // then "cancel"; the view lists both modes.
   const pick = (choice: number) => ({ player: 0, kind: IntentKind.choose, choice });
   const choice = actionsFor(
-    update({ waiting: { kind: PromptKind.choose, player: 0, purpose: Purpose.mode, options: ['Protect a player.', 'cancel'] } }, [pick(0), pick(1)]),
-    () => false,
+    update({ waiting: { kind: PromptKind.choose, player: 0, purpose: Purpose.mode, options: [m('ask.words', { text: 'Protect a player.' }), m('ask.cancel')] } }, [pick(0), pick(1)]),
+    names,
   ).choice;
   const modes = [
     { text: 'Destroy a curse.', option: -1 },

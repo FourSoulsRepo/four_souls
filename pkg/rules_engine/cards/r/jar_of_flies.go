@@ -1,9 +1,10 @@
 package r
 
-import (
-	"strconv"
+import engine "github.com/FourSoulsRepo/rules_engine"
 
-	engine "github.com/FourSoulsRepo/rules_engine"
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	jarOfFliesRemoveHowMany = engine.NewKey("card.jar_of_flies.remove_how_many_counters_in")
 )
 
 // Jar Of Flies (Active Treasure Card)
@@ -36,14 +37,14 @@ var jarOfFlies = engine.CardDef{
 					return
 				}
 				c.Do(engine.Loot(1))
-			}, engine.Question{Text: "Remove how many counters in all?", Options: func(c *engine.Ctx, _ []int) []string {
+			}, engine.Question{Text: jarOfFliesRemoveHowMany, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
 				n := c.G.Object(c.Source).CountersOf("")
 				if n == 0 {
 					return nil
 				}
-				out := make([]string, n+1)
+				out := make([]engine.Msg, n+1)
 				for i := range out {
-					out[i] = strconv.Itoa(i + 1)
+					out[i] = engine.NumberOption(i + 1)
 				}
 				return out
 			}})},

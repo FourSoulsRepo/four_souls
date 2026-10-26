@@ -238,7 +238,7 @@ func (s Situation) build(sets []CardSet) (*Game, error) {
 	for _, st := range s.Setup.Stack {
 		owner := PlayerID(st.Owner)
 		g.StackSeq++
-		g.Stack = append(g.Stack, StackItem{ID: g.StackSeq, Kind: StackRoll, Controller: owner, Roll: st.DiceRoll, Label: "roll"})
+		g.Stack = append(g.Stack, StackItem{ID: g.StackSeq, Kind: StackRoll, Controller: owner, Roll: st.DiceRoll, Label: eventRoll.Msg()})
 		holder = owner
 	}
 	g.events = nil
@@ -312,16 +312,11 @@ func (g *Game) settle(choices []string) ([]Event, error) {
 			return out, nil
 		case w.Kind == PromptChoose:
 			if len(choices) == 0 {
-				return out, fmt.Errorf("situation: a choice is needed, options %v", w.Options)
+				return out, fmt.Errorf("situation: a choice is needed, options %v", g.PlainOptions())
 			}
-			i := -1 // the first option with the label
-			for j, o := range w.Options {
-				if o == choices[0] && i < 0 {
-					i = j
-				}
-			}
+			i := g.OptionIndex(choices[0])
 			if i < 0 {
-				return out, fmt.Errorf("situation: %q is not an option of %v", choices[0], w.Options)
+				return out, fmt.Errorf("situation: %q is not an option of %v", choices[0], g.PlainOptions())
 			}
 			choices = choices[1:]
 			in = Intent{Player: w.Player, Kind: IntentChoose, Choice: i}

@@ -42,7 +42,7 @@ describe('en.json', () => {
     const keys = Object.keys(en);
     expect(keys).toEqual([...keys].sort());
     for (const [key, entry] of Object.entries(en)) {
-      expect(key).toMatch(/^[a-z_]+\.[a-z_.]+$/);
+      expect(key).toMatch(/^[a-z0-9_]+\.[a-z0-9_.]+$/);
       expect(entry.note, key).not.toBe('');
       expect(entry.text, key).not.toBe('');
     }

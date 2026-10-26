@@ -86,7 +86,7 @@ Step 8.12 checked every message the server sends for hidden cards. Hidden means:
 Rules that keep it so:
 
 * A random pick over hidden cards (Boomerang, Ring of Flies) leaves its option labels empty; `EvRandomPick` sends the label to everyone.
-* Questions (`Prompt.Text`) are fixed card text, so they are public.
+* Questions (`Prompt.Text`) are fixed keys of card text, so they are public; a value that names a card is that question's own card.
 * The collection check compares whole set codes, never the dealt decks (CD-03).
 * Card text for outdated clients (CD-09) is not built yet; when it is, it must answer only for cards the client may see.
 * The fuzz check `checkNoLeaks` fails when any view names an object that sits in a deck, or a stack item from a deck.

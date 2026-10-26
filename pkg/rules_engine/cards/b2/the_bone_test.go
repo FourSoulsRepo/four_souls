@@ -41,7 +41,7 @@ func TestTheBoneAddsToARoll(t *testing.T) {
 	tb := rollTable(t, 3, seat("the_forgotten", "the_bone"), seat("cain"))
 	tb.G.Object(tb.Find(0, "the_bone")).Counters = []engine.Counter{{Count: 1}}
 	tb.Pass(1)
-	ev := tb.Activate(0, "the_bone", 1, "roll of 3")
+	ev := tb.Activate(0, "the_bone", 1, "ask.roll_of 3")
 	if got := resolvedRoll(t, ev); got != 4 {
 		t.Errorf("roll resolved as %d, want 4", got)
 	}

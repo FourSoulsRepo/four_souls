@@ -20,6 +20,24 @@ export interface Entry {
 // Values fill a line's {name} placeholders; n also picks the plural form.
 export type Values = Record<string, string | number>;
 
+// MsgValue is one value of a server message (ADR 021, 6): a number, a
+// plain string, a card ({card: ref}) or a player ({player: seat}).
+export type MsgValue = number | string | { card: string } | { player: number };
+
+// Msg is a line the server sends: a key of en.json and its values.
+export interface Msg {
+  key?: string;
+  args?: Record<string, MsgValue>;
+}
+
+// msgValues turns a message's values into plain ones: a card by its
+// name, a player by theirs.
+export function msgValues(m: Msg, names: { card: (ref: string) => string; player: (p: number) => string }): Values {
+  return Object.fromEntries(
+    Object.entries(m.args ?? {}).map(([name, v]) => [name, typeof v !== 'object' ? v : 'card' in v ? names.card(v.card) : names.player(v.player)]),
+  );
+}
+
 // testLanguage is built from English at run time; development only.
 export const testLanguage = 'qps';
 

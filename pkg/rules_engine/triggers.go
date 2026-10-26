@@ -227,9 +227,9 @@ func (g *Game) placeNextTrigger() {
 	if chooser == NoPlayer {
 		chooser = g.Turn.Active
 	}
-	labels := make([]string, len(group))
+	labels := make([]Msg, len(group))
 	for i, gi := range group {
-		labels[i] = g.abilityText(g.PendingTriggers[gi].Ability)
+		labels[i] = g.abilityOption(g.PendingTriggers[gi].Ability)
 	}
 	g.ask(Choice{Purpose: ChooseTriggerOrder, Player: chooser, Rule: "R-ABIL-15", Indexes: group}, labels)
 }
@@ -261,7 +261,7 @@ func (g *Game) pushTrigger(i int) {
 	g.PendingTriggers = append(g.PendingTriggers[:i:i], g.PendingTriggers[i+1:]...)
 	it := StackItem{
 		Kind: StackTrigger, Controller: t.Controller, Source: t.Source, Card: t.Ability.Card,
-		Ability: t.Ability, Label: g.abilityText(t.Ability),
+		Ability:     t.Ability,
 		EventPlayer: t.EventPlayer, EventAmount: t.EventAmount, EventStack: t.EventStack, EventObject: t.EventObject, EventSource: t.EventSource, EventBy: t.EventBy,
 	}
 	if t.On == EvRollWouldResolve {
@@ -292,11 +292,30 @@ func (g *Game) ability(ref AbilityRef) Ability {
 	return d.Abilities[ref.Index]
 }
 
-func (g *Game) abilityText(ref AbilityRef) string {
+// abilityOption names an ability as an option: its card and words.
+func (g *Game) abilityOption(ref AbilityRef) Msg {
 	if t := g.ability(ref).Text; t != "" {
-		return string(ref.Card) + ": " + t
+		return AskAbility.Msg(CardArg("card", ref.Card), Str("text", t))
 	}
-	return string(ref.Card)
+	return CardOption(ref.Card)
+}
+
+// stackOption names a stack item as an option: a loot card by its card,
+// an ability by its card and words.
+func (g *Game) stackOption(it StackItem) Msg {
+	if it.Kind == StackLoot || it.Ability.Card == "" {
+		return CardOption(it.Card)
+	}
+	return g.abilityOption(it.Ability)
+}
+
+// words is a stack item's label of an ability's own words (card data,
+// not a key: they come from the card's text, ADR 021).
+func words(text string) Msg {
+	if text == "" {
+		return Msg{}
+	}
+	return eventWords.Msg(Str("text", text))
 }
 
 // abilityController controls an object's triggered abilities: its

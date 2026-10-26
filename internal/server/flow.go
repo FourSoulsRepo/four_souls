@@ -73,11 +73,11 @@ func (r *Room) autoIntent() (engine.Intent, bool) {
 func (r *Room) waitTurn(c *Client, env protocol.Envelope) {
 	var m protocol.WaitTurn
 	if err := env.Unpack(&m); err != nil {
-		c.fail(env.ID, protocol.ErrBadMessage, err.Error())
+		c.fail(env.ID, protocol.ErrBadMessage, errBadMessage.Msg(engine.Str("error", err.Error())))
 		return
 	}
 	if c.seat < 0 || r.game == nil {
-		c.fail(env.ID, protocol.ErrNotSeated, "only a seated player in a game")
+		c.fail(env.ID, protocol.ErrNotSeated, errNotSeated.Msg())
 		return
 	}
 	r.seats[c.seat].wait = m.On
@@ -189,15 +189,15 @@ func (r *Room) resume() {
 func (r *Room) vote(c *Client, env protocol.Envelope) {
 	var m protocol.Vote
 	if err := env.Unpack(&m); err != nil {
-		c.fail(env.ID, protocol.ErrBadMessage, err.Error())
+		c.fail(env.ID, protocol.ErrBadMessage, errBadMessage.Msg(engine.Str("error", err.Error())))
 		return
 	}
 	if c.seat < 0 || !r.paused() {
-		c.fail(env.ID, protocol.ErrBadMessage, "nothing to vote on")
+		c.fail(env.ID, protocol.ErrBadMessage, errNoVote.Msg())
 		return
 	}
 	if m.Kick && time.Now().Before(r.grace) {
-		c.fail(env.ID, protocol.ErrBadMessage, "the server restarted; players are still coming back (N-20)")
+		c.fail(env.ID, protocol.ErrBadMessage, errRestartWait.Msg())
 		return
 	}
 	r.votes = slices.DeleteFunc(r.votes, func(v protocol.Vote) bool { return v.Seat == c.seat })

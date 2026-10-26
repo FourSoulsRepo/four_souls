@@ -295,7 +295,7 @@ func (g *Game) recharge(p PlayerID) {
 			}
 		}
 		if len(items) > 1 {
-			g.ask(Choice{Purpose: ChooseRecharge, Player: p, Rule: "R-TURN-02", Objects: items}, g.labels(items))
+			g.ask(Choice{Purpose: ChooseRecharge, Player: p, Rule: "R-TURN-02", Objects: items}, g.Labels(items))
 			return
 		}
 		for _, id := range items {
@@ -494,18 +494,18 @@ func (g *Game) askRoomStep(p PlayerID) {
 		return
 	}
 	var rooms []ObjectID
-	var labels []string
+	var labels []Msg
 	for _, s := range g.Rooms {
 		if top, ok := s.TopOf(); ok && g.Object(top).Zone.Kind == ZoneInPlay {
 			if stay := g.def(top).NoDiscard; stay != nil && stay(g, top) {
 				continue
 			}
 			rooms = append(rooms, top)
-			labels = append(labels, string(g.Object(top).Card))
+			labels = append(labels, CardOption(g.Object(top).Card))
 		}
 	}
 	if len(rooms) == 0 {
 		return
 	}
-	g.ask(Choice{Purpose: ChooseRoom, Player: p, Rule: "R-TURN-12", Objects: rooms, Question: "Put a room into discard?"}, append(labels, "keep"))
+	g.ask(Choice{Purpose: ChooseRoom, Player: p, Rule: "R-TURN-12", Objects: rooms, Question: promptDiscardRoom.Msg()}, append(labels, AskKeep.Msg()))
 }

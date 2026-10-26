@@ -54,10 +54,10 @@ describe('entriesFor', () => {
   it('keeps every first-player die, a tie and who goes first (15.43)', () => {
     const entries = entriesFor(
       [
-        { kind: 'dice_rolled', player: 0, amount: 2, text: 'first player roll' },
-        { kind: 'dice_rolled', player: 1, amount: 2, text: 'first player roll' },
+        { kind: 'dice_rolled', player: 0, amount: 2, text: 'first', label: { key: 'event.first_player_roll' } },
+        { kind: 'dice_rolled', player: 1, amount: 2, text: 'first', label: { key: 'event.first_player_roll' } },
         { kind: 'first_roll_tied', player: -1, amount: 2, text: '0,1' },
-        { kind: 'dice_rolled', player: 1, amount: 1, text: 'first player roll' },
+        { kind: 'dice_rolled', player: 1, amount: 1, text: 'first', label: { key: 'event.first_player_roll' } },
         { kind: 'first_player', player: 1, amount: 1 },
       ],
       0,
@@ -76,7 +76,7 @@ describe('entriesFor', () => {
       { key: 0, turn: 1, icon: '①', text: 'Cy goes first — CAIN', card: 'cain' },
     ]);
     // Other rolls are in their stack item's entry.
-    expect(entriesFor([{ kind: 'dice_rolled', player: 0, amount: 4, text: 'attack roll' }], 1, 0, n, 0)).toEqual([]);
+    expect(entriesFor([{ kind: 'dice_rolled', player: 0, amount: 4, label: { key: 'event.attack_roll' } }], 1, 0, n, 0)).toEqual([]);
   });
 
   it('makes one entry per resolved stack item and marks turns', () => {
@@ -85,7 +85,7 @@ describe('entriesFor', () => {
         { kind: 'turn_started', player: 1, amount: 4 },
         { kind: 'passed_priority', player: 0 },
         { kind: 'stack_resolved', player: 1, object: 7, card: 'a_dime' },
-        { kind: 'stack_resolved', player: 1, object: 8, amount: 5, text: 'attack roll' },
+        { kind: 'stack_resolved', player: 1, object: 8, amount: 5, label: { key: 'event.attack_roll' } },
       ],
       3,
       0,
@@ -110,7 +110,7 @@ describe('entriesFor', () => {
     const item = { id: 3, kind: 3, controller: 1, source: 0, roll: 6, attack: true, target: { player: 0 }, ability: { card: '', index: 0 }, roll_for: { card: '', index: 0 } };
     const [changed] = entriesFor(
       [
-        { kind: 'stack_resolved', player: 1, amount: 6, text: 'attack roll', stack_id: 3, item },
+        { kind: 'stack_resolved', player: 1, amount: 6, label: { key: 'event.attack_roll' }, stack_id: 3, item },
         { kind: 'roll_resolved', player: 1, amount: 4, text: 'attack' },
       ],
       1,
@@ -123,7 +123,7 @@ describe('entriesFor', () => {
     expect(item.roll).toBe(6);
     const [same] = entriesFor(
       [
-        { kind: 'stack_resolved', player: 1, amount: 6, text: 'attack roll' },
+        { kind: 'stack_resolved', player: 1, amount: 6, label: { key: 'event.attack_roll' } },
         { kind: 'roll_resolved', player: 1, amount: 6, text: 'attack' },
       ],
       1,
@@ -139,7 +139,7 @@ describe('entriesFor', () => {
     const meat = { stat: 'attack_roll' as const, source: 5, card: 'meat', amount: 1, lasts: 'in_play' as const };
     const [changed] = entriesFor(
       [
-        { kind: 'stack_resolved', player: 1, amount: 1, text: 'attack roll', stack_id: 3, item },
+        { kind: 'stack_resolved', player: 1, amount: 1, label: { key: 'event.attack_roll' }, stack_id: 3, item },
         { kind: 'roll_resolved', player: 1, amount: 2, text: 'attack', sources: [meat] },
       ],
       1,
@@ -155,16 +155,16 @@ describe('entriesFor', () => {
     const base = { id: 7, controller: 1, source: 0, ability: none, roll_for: none };
     const gaper = { player: -1, object: 9 };
     const items: StackItem[] = [
-      { ...base, kind: StackKind.damage, amount: 2, label: 'damage', target: gaper },
-      { ...base, kind: StackKind.damage, controller: -1, amount: 1, label: 'damage', source_card: 'gaper', target: { player: 1, is_player: true } },
-      { ...base, kind: StackKind.death, controller: -1, label: 'death', target: gaper },
-      { ...base, kind: StackKind.penalty, controller: -1, label: 'death penalty', target: { player: 1, is_player: true } },
-      { ...base, kind: StackKind.deathStep, controller: -1, label: 'soul', target: gaper },
-      { ...base, kind: StackKind.roll, roll: 5, attack: true, label: 'attack roll', target: gaper },
-      { ...base, kind: StackKind.roll, roll: 3, label: 'roll', target: { player: -1 } },
+      { ...base, kind: StackKind.damage, amount: 2, label: { key: 'event.damage' }, target: gaper },
+      { ...base, kind: StackKind.damage, controller: -1, amount: 1, label: { key: 'event.damage' }, source_card: 'gaper', target: { player: 1, is_player: true } },
+      { ...base, kind: StackKind.death, controller: -1, label: { key: 'event.death' }, target: gaper },
+      { ...base, kind: StackKind.penalty, controller: -1, label: { key: 'event.death_penalty' }, target: { player: 1, is_player: true } },
+      { ...base, kind: StackKind.deathStep, controller: -1, label: { key: 'event.soul' }, target: gaper },
+      { ...base, kind: StackKind.roll, roll: 5, attack: true, label: { key: 'event.attack_roll' }, target: gaper },
+      { ...base, kind: StackKind.roll, roll: 3, label: { key: 'event.roll' }, target: { player: -1 } },
     ];
     for (const item of items) {
-      const [entry] = entriesFor([{ kind: 'stack_resolved', player: item.controller, amount: item.roll, text: item.label, stack_id: 7, item }], 1, 0, n, 0);
+      const [entry] = entriesFor([{ kind: 'stack_resolved', player: item.controller, amount: item.roll, ...(item.label ? { label: item.label } : {}), stack_id: 7, item }], 1, 0, n, 0);
       expect(entry.text).toBe(stackLine(item, view, n));
       expect(entry.text).not.toMatch(/^Roll/);
     }
@@ -257,7 +257,7 @@ describe('historyKinds', () => {
   const kinds = kindList.split('\n').filter(Boolean);
   // sample: an event of a told kind that gives a line; others need only
   // their kind and a player.
-  const sample = new Map<string, Partial<GameEvent>>([['dice_rolled', { text: 'first player roll', amount: 3 }]]);
+  const sample = new Map<string, Partial<GameEvent>>([['dice_rolled', { text: 'first', label: { key: 'event.first_player_roll' }, amount: 3 }]]);
 
   it('tells or skips every engine event kind, with a reason (15.88)', () => {
     expect(Object.keys(historyKinds).sort()).toEqual(kinds);

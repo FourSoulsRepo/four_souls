@@ -1,6 +1,14 @@
 package r
 
-import engine "github.com/FourSoulsRepo/rules_engine"
+import (
+	engine "github.com/FourSoulsRepo/rules_engine"
+	"github.com/FourSoulsRepo/rules_engine/cards/cardkit"
+)
+
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	hagalazPutThemBack = engine.NewKey("card.hagalaz.put_them_back_in_any")
+)
 
 // Hagalaz (Pill/Rune Card)
 //
@@ -17,10 +25,10 @@ var hagalaz = engine.CardDef{
 				if ds := monsterOrRoomDecks(c.G); a[0] >= 0 && a[0] < len(ds) {
 					c.G.SetDeckTop(ds[a[0]], c.Order)
 				}
-			}, engine.Question{Text: "Look at which deck?", Options: func(c *engine.Ctx, _ []int) []string {
+			}, engine.Question{Text: cardkit.AskLookAtWhichDeck, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
 				return deckLabels(monsterOrRoomDecks(c.G))
 			}}, engine.Question{
-				Text: "Put them back in any order, top first.",
+				Text: hagalazPutThemBack,
 				Order: func(c *engine.Ctx, a []int) []engine.ObjectID {
 					if ds := monsterOrRoomDecks(c.G); a[0] >= 0 && a[0] < len(ds) {
 						return c.G.DeckTop(ds[a[0]], 5)

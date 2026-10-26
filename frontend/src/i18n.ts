@@ -2,7 +2,7 @@
 // a language code is a language; adding a language is adding a file.
 // The store sets the language from the settings (setLanguage).
 import en from './locales/en.json';
-import { languageList, localeOf, pseudoLocale, resolveLanguage, testLanguage, textOf, translate, type Locale, type Text, type Values } from './locale';
+import { languageList, localeOf, msgValues, pseudoLocale, resolveLanguage, testLanguage, textOf, translate, type Locale, type Msg, type Text, type Values } from './locale';
 
 // Key is a line of en.json, so a typo fails tsc.
 export type Key = keyof typeof en;
@@ -49,6 +49,18 @@ export function setLanguage(saved: string): void {
 // language is the language t() uses now.
 export function language(): string {
   return current;
+}
+
+// say gives a line the server sent (ADR 021, 9): its key in the chosen
+// language, with its cards and players named by names. No line is ''.
+export function say(m: Msg | undefined, names: { card: (ref: string) => string; player: (p: number) => string }): string {
+  if (!m?.key) {
+    return '';
+  }
+  if (import.meta.env.DEV && !english.has(m.key)) {
+    console.warn(`no English line for ${m.key}`);
+  }
+  return translate(locales, current, m.key, msgValues(m, names));
 }
 
 // t gives a line in the chosen language, then English, then the key.

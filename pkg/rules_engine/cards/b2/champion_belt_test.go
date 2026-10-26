@@ -31,11 +31,11 @@ func TestChampionBeltSourceDuringFirstRoll(t *testing.T) {
 	cards := func() []string {
 		var out []string
 		for _, s := range tb.G.View(engine.Viewer{Kind: engine.ViewSpectator}).Players[0].Sources {
-			out = append(out, s.Stat+" "+string(s.Card)+" "+s.Lasts+" "+s.When)
+			out = append(out, s.Stat+" "+string(s.Card)+" "+s.Lasts+" "+s.When.String())
 		}
 		return out
 	}
-	want := []string{"atk champion_belt in_play first attack roll", "attack_roll meat in_play "}
+	want := []string{"atk champion_belt in_play ask.when.first_attack_roll", "attack_roll meat in_play "}
 	if got := cards(); !reflect.DeepEqual(got, want) {
 		t.Errorf("before the attack: sources = %q, want %q", got, want)
 	}
@@ -65,7 +65,7 @@ func TestChampionBeltInTheOdds(t *testing.T) {
 	}
 	found := false
 	for _, s := range odds.Sources {
-		found = found || (s.Card == "champion_belt" && s.Stat == "atk" && s.When == "first attack roll")
+		found = found || (s.Card == "champion_belt" && s.Stat == "atk" && s.When.String() == "ask.when.first_attack_roll")
 	}
 	if !found {
 		t.Errorf("sources %+v, want Champion Belt's +1 ATK for the first attack roll", odds.Sources)

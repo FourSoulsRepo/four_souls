@@ -1,6 +1,9 @@
 package b2
 
-import engine "github.com/FourSoulsRepo/rules_engine"
+import (
+	engine "github.com/FourSoulsRepo/rules_engine"
+	"github.com/FourSoulsRepo/rules_engine/cards/cardkit"
+)
 
 // Bum Friend (Active Treasure Card)
 //
@@ -19,7 +22,7 @@ var bumFriend = engine.CardDef{
 				if a[0] >= 0 {
 					c.G.HandToDeckTop(c.Controller, c.HandCard(a[0]))
 				}
-			}, engine.HandQuestion("Put which card on top of the loot deck?"))},
+			}, engine.HandQuestion(cardkit.AskPutWhichCardOnTop))},
 		},
 	},
 }

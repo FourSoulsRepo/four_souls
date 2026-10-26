@@ -148,7 +148,7 @@ func TestCancelBeforePaying(t *testing.T) {
 	putMonster(g, 0, "gaper")
 	g.Players[a].Cents = 7
 	activate(t, g, a, razor, 0)
-	choose(t, g, "cancel")
+	choose(t, g, "ask.cancel")
 	if g.Players[a].Cents != 7 || len(g.Stack) != 0 {
 		t.Errorf("cancel: cents %d, stack %d; nothing is paid or put on the stack", g.Players[a].Cents, len(g.Stack))
 	}
@@ -266,7 +266,7 @@ func TestRerollADiceRoll(t *testing.T) {
 		return true
 	})
 	activate(t, g, g.Prompt().Player, d6, 0)
-	choose(t, g, "roll of 6")
+	choose(t, g, "ask.roll_of 6")
 	resolveAll(t, g)
 	if g.Players[a].Cents != 8 {
 		t.Errorf("cents %d; the reroll changed the same roll to 3 (R-MECH-47), want 5+3", g.Players[a].Cents)

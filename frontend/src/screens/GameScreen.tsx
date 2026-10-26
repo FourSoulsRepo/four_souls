@@ -23,7 +23,7 @@ import { matLook } from '../mats';
 import type { Update } from '../protocol';
 import { seatOf, useApp } from '../store';
 import { activity, askedSeat, myMove, picking, promptBanner, stackPrompt } from '../prompt';
-import { waitTurn, type Names } from '../stack';
+import { seatNames, waitTurn, type Names } from '../stack';
 import { seatPositions } from '../table';
 import '../components/Table.css';
 import './screens.css';
@@ -77,7 +77,13 @@ function Table({ game, you }: { game: Update; you: number }) {
   // Soft rollback vote holds the game (ADR 020, item 5.8).
   const voting = !!game.rollback_vote && !view.over;
   const canAct = !behind && sent !== game.step && !voting;
-  const actions = useMemo(() => actionsFor(game, (label) => cards.has(label)), [game, cards]);
+  const names: Names = seatNames(game.seats, (ref) => cards.get(ref)?.name ?? ref);
+  const name = names.player;
+  // The server's lines are drawn in the chosen language (ADR 021): a
+  // new language draws them again.
+  const lang = useApp((s) => s.settings.language);
+  // eslint-disable-next-line react-hooks/exhaustive-deps, @eslint-react/exhaustive-deps
+  const actions = useMemo(() => actionsFor(game, seatNames(game.seats, (ref) => cards.get(ref)?.name ?? ref)), [game, cards, lang]);
   const setAiming = useApp((s) => s.setAiming);
   const ui = canAct ? interact(actions, act, select, aiming, setAiming) : noInteract;
   // A new state ends an aim: its targets may be gone (15.25). Before
@@ -107,8 +113,6 @@ function Table({ game, you }: { game: Update; you: number }) {
     }
   }, [aimed, canAct, game.step, actions, act, takeAimed]);
   const offered = canAct ? actions : noActions;
-  const name = (player: number) => game.seats?.find((s) => s.seat === player)?.name ?? t('table.player_n', { n: player + 1 });
-  const names: Names = { player: name, card: (ref) => cards.get(ref)?.name ?? ref };
   const me = view.players.at(you);
   // The hand's cards in order: a hand card is shared as its slot (A-16).
   const hand = useMemo(() => (me?.hand ?? []).map((c) => c.id), [me]);

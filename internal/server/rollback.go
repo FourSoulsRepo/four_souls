@@ -229,50 +229,50 @@ func (r *Room) voters(author int) []int {
 func (r *Room) rollback(c *Client, env protocol.Envelope) {
 	var m protocol.RollbackTo
 	if err := env.Unpack(&m); err != nil {
-		c.fail(env.ID, protocol.ErrBadMessage, err.Error())
+		c.fail(env.ID, protocol.ErrBadMessage, errBadMessage.Msg(engine.Str("error", err.Error())))
 		return
 	}
 	switch {
 	case c.seat < 0:
-		c.fail(env.ID, protocol.ErrNotSeated, "only a seated player rolls back")
+		c.fail(env.ID, protocol.ErrNotSeated, errRollbackSeated.Msg())
 		return
 	case r.game == nil:
-		c.fail(env.ID, protocol.ErrBadMessage, "the game has not started: bans and picks first")
+		c.fail(env.ID, protocol.ErrBadMessage, errNotStarted.Msg())
 		return
 	case r.base == nil || r.opts.Rollback == "":
-		c.fail(env.ID, protocol.ErrRollback, "this game has no rollback (ADR 020)")
+		c.fail(env.ID, protocol.ErrRollback, errRollbackNone.Msg())
 		return
 	case r.game.Over:
-		c.fail(env.ID, protocol.ErrRollback, "the game is over")
+		c.fail(env.ID, protocol.ErrRollback, errRollbackOver.Msg())
 		return
 	case r.paused():
-		c.fail(env.ID, protocol.ErrPaused, "the game waits for a player who left")
+		c.fail(env.ID, protocol.ErrPaused, errPaused.Msg())
 		return
 	case r.rbVote != nil:
-		c.fail(env.ID, protocol.ErrRollback, "a rollback vote is open")
+		c.fail(env.ID, protocol.ErrRollback, errRollbackVoteOpen.Msg())
 		return
 	}
 	i := slices.IndexFunc(r.live, func(s liveStep) bool { return s.n == m.Step })
 	if i < 0 {
-		c.fail(env.ID, protocol.ErrRollback, fmt.Sprintf("step %d cannot be rolled back: it is undone, or from before the base", m.Step))
+		c.fail(env.ID, protocol.ErrRollback, errRollbackStep.Msg(engine.N("n", m.Step)))
 		return
 	}
 	if r.opts.Rollback == protocol.RollbackGod {
 		if err := r.rollBackTo(c.seat, i); err != nil {
-			c.fail(env.ID, protocol.ErrRollback, err.Error())
+			c.fail(env.ID, protocol.ErrRollback, errBadMessage.Msg(engine.Str("error", err.Error())))
 		}
 		return
 	}
 	author := int(r.live[i].rec.Intent.Player)
 	switch {
 	case !r.isTarget(r.live[i]):
-		c.fail(env.ID, protocol.ErrRollback, fmt.Sprintf("step %d cannot be rolled back in Soft: a barrier came after it, or it is a pass or a throw", m.Step))
+		c.fail(env.ID, protocol.ErrRollback, errRollbackSoftStep.Msg(engine.N("n", m.Step)))
 		return
 	case c.seat == author && !m.Ask:
-		c.fail(env.ID, protocol.ErrRollback, "in Soft the author never rolls back alone; ask the others (ADR 020, item 5.1)")
+		c.fail(env.ID, protocol.ErrRollback, errRollbackAskOthers.Msg())
 		return
 	case len(r.voters(author)) == 0:
-		c.fail(env.ID, protocol.ErrRollback, "no other player is connected to vote (item 5.7)")
+		c.fail(env.ID, protocol.ErrRollback, errRollbackNoVoters.Msg())
 		return
 	}
 	v := &softVote{step: m.Step, seat: c.seat, author: author, undo: len(r.live) - i}
@@ -295,15 +295,15 @@ func (r *Room) rollback(c *Client, env protocol.Envelope) {
 func (r *Room) rollbackVote(c *Client, env protocol.Envelope) {
 	var m protocol.RollbackVoteAnswer
 	if err := env.Unpack(&m); err != nil {
-		c.fail(env.ID, protocol.ErrBadMessage, err.Error())
+		c.fail(env.ID, protocol.ErrBadMessage, errBadMessage.Msg(engine.Str("error", err.Error())))
 		return
 	}
 	switch {
 	case r.rbVote == nil:
-		c.fail(env.ID, protocol.ErrRollback, "no rollback vote is open")
+		c.fail(env.ID, protocol.ErrRollback, errRollbackNoVote.Msg())
 		return
 	case c.seat < 0 || !slices.Contains(r.voters(r.rbVote.author), c.seat):
-		c.fail(env.ID, protocol.ErrRollback, "only the other connected players vote; never the author (item 5.4)")
+		c.fail(env.ID, protocol.ErrRollback, errRollbackAuthorVotes.Msg())
 		return
 	}
 	v := r.rbVote
@@ -315,7 +315,7 @@ func (r *Room) rollbackVote(c *Client, env protocol.Envelope) {
 // rollbackCancel ends the vote at its opener's request (item 5.13).
 func (r *Room) rollbackCancel(c *Client, env protocol.Envelope) {
 	if r.rbVote == nil || c.seat < 0 || c.seat != r.rbVote.seat {
-		c.fail(env.ID, protocol.ErrRollback, "only whoever opened the rollback vote cancels it")
+		c.fail(env.ID, protocol.ErrRollback, errRollbackNotOpener.Msg())
 		return
 	}
 	r.endVote(protocol.VoteCancelled)

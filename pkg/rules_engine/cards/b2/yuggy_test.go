@@ -198,7 +198,7 @@ func TestYuggyCurvedHornAfterReroll(t *testing.T) {
 	}, Set)
 	tb.G.ForceRolls(1, 6, 6)
 	attackRoll(tb, "big_spider")
-	ev := tb.Activate(0, "the_d6", 0, "roll of 1")
+	ev := tb.Activate(0, "the_d6", 0, "ask.roll_of 1")
 	if d := firstDamageTo(tb.G, ev, "big_spider"); d != 2 {
 		t.Errorf("first hit dealt %d, want 2: the rerolled first roll keeps Curved Horn's +1", d)
 	}
@@ -217,7 +217,7 @@ func ownRoll(t *testing.T, n int, seats ...engine.SituationPlayer) *enginetest.T
 // ("when you would roll a 1").
 func TestYuggySacredHeartAfterChangeToOne(t *testing.T) {
 	tb := ownRoll(t, 2, seat("isaac", "sacred_heart", "book_of_belial"), seat("cain"))
-	ev := tb.Activate(0, "book_of_belial", 0, "Subtract 1 from a roll.", "roll of 2", "yes")
+	ev := tb.Activate(0, "book_of_belial", 0, "Subtract 1 from a roll.", "ask.roll_of 2", "ask.yes")
 	if got := resolvedRoll(t, ev); got != 6 {
 		t.Errorf("roll resolved as %d, want 6", got)
 	}
@@ -229,7 +229,7 @@ func TestYuggySacredHeartAfterChangeToOne(t *testing.T) {
 func TestYuggySacredHeartAndDadsLostCoin(t *testing.T) {
 	tb := ownRoll(t, 1, seat("isaac", "sacred_heart"), seat("cain", "dads_lost_coin"))
 	tb.G.ForceRolls(4)
-	ev := tb.Settle("yes", "yes")
+	ev := tb.Settle("ask.yes", "ask.yes")
 	if got := resolvedRoll(t, ev); got != 4 {
 		t.Errorf("roll resolved as %d, want 4: the reroll comes first and Sacred Heart fizzles", got)
 	}
@@ -240,7 +240,7 @@ func TestYuggySacredHeartAndDadsLostCoin(t *testing.T) {
 func TestYuggyGodheadThenSacredHeart(t *testing.T) {
 	tb := ownRoll(t, 6, seat("isaac", "sacred_heart"), seat("cain", "godhead"))
 	tb.Pass(0)
-	ev := tb.Activate(1, "godhead", 0, "roll of 6", "1", "yes")
+	ev := tb.Activate(1, "godhead", 0, "ask.roll_of 6", "1", "ask.yes")
 	if got := resolvedRoll(t, ev); got != 6 {
 		t.Errorf("roll resolved as %d, want 6", got)
 	}

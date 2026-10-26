@@ -22,5 +22,5 @@ func (a *App) FindGames() ([]lan.Found, error) {
 	if found == nil {
 		found = []lan.Found{} // an empty list, not null, for the frontend
 	}
-	return found, err //nolint:wrapcheck // shown to the player as is
+	return found, playerError(err)
 }

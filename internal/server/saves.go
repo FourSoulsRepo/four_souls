@@ -53,18 +53,18 @@ type savedSeat struct {
 func (r *Room) save(c *Client, env protocol.Envelope) {
 	switch {
 	case c.seat != 0:
-		c.fail(env.ID, protocol.ErrNotHost, "only the host saves the game")
+		c.fail(env.ID, protocol.ErrNotHost, errHostSaves.Msg())
 		return
 	case r.game == nil || r.game.Over:
-		c.fail(env.ID, protocol.ErrBadMessage, "no running game to save")
+		c.fail(env.ID, protocol.ErrBadMessage, errNoRunningGame.Msg())
 		return
 	case r.saves == "":
-		c.fail(env.ID, protocol.ErrBadMessage, "this server does not keep saves")
+		c.fail(env.ID, protocol.ErrBadMessage, errNoSaves.Msg())
 		return
 	}
 	state, err := r.game.Save()
 	if err != nil {
-		c.fail(env.ID, protocol.ErrBadMessage, err.Error())
+		c.fail(env.ID, protocol.ErrBadMessage, errBadMessage.Msg(engine.Str("error", err.Error())))
 		return
 	}
 	v := version.Get()
@@ -78,15 +78,15 @@ func (r *Room) save(c *Client, env protocol.Envelope) {
 	}
 	data, err := json.Marshal(f)
 	if err != nil {
-		c.fail(env.ID, protocol.ErrBadMessage, err.Error())
+		c.fail(env.ID, protocol.ErrBadMessage, errBadMessage.Msg(engine.Str("error", err.Error())))
 		return
 	}
 	if err := os.MkdirAll(r.saves, 0o750); err != nil {
-		c.fail(env.ID, protocol.ErrBadMessage, err.Error())
+		c.fail(env.ID, protocol.ErrBadMessage, errBadMessage.Msg(engine.Str("error", err.Error())))
 		return
 	}
 	if err := os.WriteFile(savePath(r.saves, f.Game), data, 0o600); err != nil {
-		c.fail(env.ID, protocol.ErrBadMessage, err.Error())
+		c.fail(env.ID, protocol.ErrBadMessage, errBadMessage.Msg(engine.Str("error", err.Error())))
 		return
 	}
 	r.closeRecord(false)
@@ -150,11 +150,11 @@ func listSaves(dir string) []protocol.SaveInfo {
 func (h *Hub) load(c *Client, env protocol.Envelope) {
 	var m protocol.Load
 	if err := env.Unpack(&m); err != nil {
-		c.fail(env.ID, protocol.ErrBadMessage, err.Error())
+		c.fail(env.ID, protocol.ErrBadMessage, errBadMessage.Msg(engine.Str("error", err.Error())))
 		return
 	}
 	if c.table != nil {
-		c.fail(env.ID, protocol.ErrAtTable, "leave your table first")
+		c.fail(env.ID, protocol.ErrAtTable, errAtTable.Msg())
 		return
 	}
 	if slices.ContainsFunc(h.tables, func(t *table) bool { return t.loaded != nil && t.loaded.Game == m.Save }) {
@@ -162,20 +162,20 @@ func (h *Hub) load(c *Client, env protocol.Envelope) {
 		return
 	}
 	if !h.mayCreate(c) {
-		c.fail(env.ID, protocol.ErrNotHost, "only the host continues saved games here")
+		c.fail(env.ID, protocol.ErrNotHost, errHostLoads.Msg())
 		return
 	}
 	f, err := readSave(h.saves, m.Save)
 	if err != nil {
-		c.fail(env.ID, protocol.ErrNoSave, err.Error())
+		c.fail(env.ID, protocol.ErrNoSave, errBadMessage.Msg(engine.Str("error", err.Error())))
 		return
 	}
 	if f.Engine != engine.Version {
-		c.fail(env.ID, protocol.ErrSaveVersion, fmt.Sprintf("saved with rules engine %s; this server runs %s (N-11)", f.Engine, engine.Version))
+		c.fail(env.ID, protocol.ErrSaveVersion, errSaveVersion.Msg(engine.Str("saved", f.Engine), engine.Str("engine", engine.Version)))
 		return
 	}
 	if missing := lacks(c.sets, f.Sets); missing != "" {
-		c.fail(env.ID, protocol.ErrMissingSets, "you do not have the card set "+missing)
+		c.fail(env.ID, protocol.ErrMissingSets, errMissingSets.Msg(engine.Str("sets", missing)))
 		return
 	}
 	t := &table{id: f.Game, host: f.Seats[0].Name, sets: f.Sets, opts: f.Options, loaded: f, seats: make([]tableSeat, len(f.Seats))}
@@ -184,7 +184,7 @@ func (h *Hub) load(c *Client, env protocol.Envelope) {
 	}
 	i := t.claim(c)
 	if i < 0 {
-		c.fail(env.ID, protocol.ErrNotInSave, "you did not play this game")
+		c.fail(env.ID, protocol.ErrNotInSave, errNotInSave.Msg())
 		return
 	}
 	h.tables = append(h.tables, t)
@@ -196,12 +196,12 @@ func (h *Hub) joinLoaded(c *Client, env protocol.Envelope, id string) {
 	i := slices.IndexFunc(h.tables, func(t *table) bool { return t.loaded != nil && t.loaded.Game == id })
 	t := h.tables[i]
 	if missing := lacks(c.sets, t.sets); missing != "" {
-		c.fail(env.ID, protocol.ErrMissingSets, "you do not have the card set "+missing+" (CD-03)")
+		c.fail(env.ID, protocol.ErrMissingSets, errMissingSets.Msg(engine.Str("sets", missing)))
 		return
 	}
 	seat := t.claim(c)
 	if seat < 0 {
-		c.fail(env.ID, protocol.ErrNotInSave, "no seat of this saved game is yours")
+		c.fail(env.ID, protocol.ErrNotInSave, errNoSeatInSave.Msg())
 		return
 	}
 	h.seatLoaded(c, t, seat)

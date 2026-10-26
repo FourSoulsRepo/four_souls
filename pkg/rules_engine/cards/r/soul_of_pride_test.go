@@ -11,12 +11,12 @@ func TestSoulOfPride(t *testing.T) {
 	tb.G.AddCountersTo(tb.G.BonusSouls[0], 4)
 	tb.G.Players[0].Cents = 20
 	tb.G.Turn.Purchases = 2
-	tb.Do(engine.Intent{Player: 0, Kind: engine.IntentPurchase}, "treasure deck") // 5 counters
+	tb.Do(engine.Intent{Player: 0, Kind: engine.IntentPurchase}, "ask.deck.treasure") // 5 counters
 	settleAny(tb)
 	if n := bonusCounters(tb); n != 5 {
 		t.Fatalf("counters = %d, want 5", n)
 	}
-	tb.Do(engine.Intent{Player: 0, Kind: engine.IntentPurchase}, "treasure deck")
+	tb.Do(engine.Intent{Player: 0, Kind: engine.IntentPurchase}, "ask.deck.treasure")
 	settleAny(tb)
 	if s := tb.G.SoulValue(0); s != 1 {
 		t.Errorf("Isaac's soul value = %d, want 1: the active player gains it", s)

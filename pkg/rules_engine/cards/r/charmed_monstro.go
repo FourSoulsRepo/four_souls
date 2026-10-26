@@ -2,6 +2,11 @@ package r
 
 import engine "github.com/FourSoulsRepo/rules_engine"
 
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	charmedMonstroWhoGainsCharmed = engine.NewKey("card.charmed_monstro.who_gains_charmed_monstro_s")
+)
+
 // Charmed Monstro (Boss Card)
 //
 //	If the active player would gain this soul, they instead choose another player. That player gains this soul.
@@ -22,7 +27,7 @@ var charmedMonstro = engine.CardDef{
 			if ps := othersOfActive(c.G); a[0] >= 0 && a[0] < len(ps) && c.G.Object(c.Source).Zone.Kind == engine.ZoneOutside {
 				c.G.GainSoul(c.Source, ps[a[0]])
 			}
-		}, engine.Question{Text: "Who gains Charmed Monstro's soul?", Options: func(c *engine.Ctx, _ []int) []string {
+		}, engine.Question{Text: charmedMonstroWhoGainsCharmed, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
 			return playerLabels(c.G, othersOfActive(c.G))
 		}})},
 	}},

@@ -91,6 +91,8 @@ Use options 1, 3, 5 and 10.
    9. Version 4: `skip_all` message and field removed (15.84).
    10. Version 5: rollback (ADR 020, 17.3) and the Soft vote (17.4).
    11. Version 5 also: `rollback_steps` → `last`, a play's last answer (17.8).
+   12. Version 6: texts are messages, a key and values (ADR 021, 16.4).
+   13. Prompt questions and options, stack labels, reasons, `error` → `text`.
 6. Cards
    1. Messages carry card refs (`the_d6`, `the_d6@2`), never card text.
    2. A client shows an unknown ref as a blank card with the ref (SP-05).

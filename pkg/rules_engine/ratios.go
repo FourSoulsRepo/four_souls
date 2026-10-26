@@ -45,44 +45,43 @@ const (
 
 // ratios are the official counts per group: 100 cards in each deck
 // (S-OFF Deck Ratios).
-var ratios = [ratioGroupCount]struct {
-	name  string
-	count int
-}{
-	GroupPassiveItems:         {"Passive items", 44},
-	GroupActiveItems:          {"Active items", 40},
-	GroupPaidItems:            {"Paid items", 10},
-	GroupOneUseItems:          {"One-use items", 5},
-	GroupSoulItems:            {"Soul items", 1},
-	GroupPennies:              {"Pennies", 2},
-	GroupTwoCents:             {"2¢ loot", 6},
-	GroupThreeCents:           {"3¢ loot", 11},
-	GroupFourCents:            {"4¢ loot", 12},
-	GroupNickels:              {"Nickels", 6},
-	GroupButterBeans:          {"Butter Beans", 5},
-	GroupBombs:                {"Bombs", 6},
-	GroupBatteries:            {"Batteries", 6},
-	GroupDiceShardsSoulHearts: {"Dice Shards and Soul Hearts", 5},
-	GroupPillsRunes:           {"Pills and Runes", 6},
-	GroupWildcards:            {"Tarot and wildcards", 23},
-	GroupTrinkets:             {"Trinkets", 11},
-	GroupLostSouls:            {"Lost Souls", 1},
-	GroupBasicMonsters:        {"Basic monsters", 30},
-	GroupCursedMonsters:       {"Cursed monsters", 9},
-	GroupHolyCharmedMonsters:  {"Holy and Charmed monsters", 9},
-	GroupBosses:               {"Bosses", 30},
-	GroupEpicBosses:           {"Epic bosses", 1},
-	GroupGoodEvents:           {"Good events", 8},
-	GroupBadEvents:            {"Bad events", 8},
-	GroupCurses:               {"Curses", 5},
+var ratios = [ratioGroupCount]int{
+	GroupPassiveItems:         44,
+	GroupActiveItems:          40,
+	GroupPaidItems:            10,
+	GroupOneUseItems:          5,
+	GroupSoulItems:            1,
+	GroupPennies:              2,
+	GroupTwoCents:             6,
+	GroupThreeCents:           11,
+	GroupFourCents:            12,
+	GroupNickels:              6,
+	GroupButterBeans:          5,
+	GroupBombs:                6,
+	GroupBatteries:            6,
+	GroupDiceShardsSoulHearts: 5,
+	GroupPillsRunes:           6,
+	GroupWildcards:            23,
+	GroupTrinkets:             11,
+	GroupLostSouls:            1,
+	GroupBasicMonsters:        30,
+	GroupCursedMonsters:       9,
+	GroupHolyCharmedMonsters:  9,
+	GroupBosses:               30,
+	GroupEpicBosses:           1,
+	GroupGoodEvents:           8,
+	GroupBadEvents:            8,
+	GroupCurses:               5,
 }
 
-// Name is the group's name for players, e.g. "Butter Beans".
+// Name is the group's code, e.g. "butter_beans"; players read it from
+// its key (ratioKeys, ADR 021).
 func (r RatioGroup) Name() string {
-	if r == NoRatioGroup || r >= ratioGroupCount {
-		return "no group"
+	if r >= ratioGroupCount {
+		r = NoRatioGroup
 	}
-	return ratios[r].name
+	k := ratioKeys[r].String()
+	return k[strings.LastIndexByte(k, '.')+1:]
 }
 
 // Count is how many cards of the group a deck holds with deck ratios.
@@ -90,7 +89,7 @@ func (r RatioGroup) Count() int {
 	if r >= ratioGroupCount {
 		return 0
 	}
-	return ratios[r].count
+	return ratios[r]
 }
 
 // RatioShort is a group with too few cards for the deck ratios.
@@ -102,6 +101,15 @@ type RatioShort struct {
 
 func (s RatioShort) String() string {
 	return fmt.Sprintf("%s %d of %d", s.Group.Name(), s.Have, s.Need)
+}
+
+// Msg is the shortfall for the player: "Butter Beans 3 of 5".
+func (s RatioShort) Msg() Msg {
+	g := s.Group
+	if g >= ratioGroupCount {
+		g = NoRatioGroup
+	}
+	return ratioKeys[g].Msg(N("have", s.Have), N("need", s.Need))
 }
 
 // RatioShortfall lists the groups that have too few cards for the deck

@@ -58,8 +58,9 @@ type Static struct {
 	// each counter on this".
 	Value func(g *Game, self ObjectID) int
 	// When names the condition under which it applies, for a client to
-	// show beside the change: "first attack roll" (V-41).
-	When string
+	// show beside the change: "first attack roll" (V-41). Its words are
+	// in en.json.
+	When Key
 }
 
 // Lasting says how long a stat change lasts (V-41).
@@ -79,7 +80,7 @@ type Part struct {
 	Source ObjectID
 	Amount int
 	Lasts  Lasting
-	When   string
+	When   Key
 }
 
 // Parts lists the sources that change stat for the subject now, in the

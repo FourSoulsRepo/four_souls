@@ -74,7 +74,7 @@ test('a fast burst of updates plays in order and ends on the last one', async ({
           ...game,
           step: n,
           events: [
-            { kind: 'dice_rolled', player: you, amount: (n % 6) + 1, text: 'roll' },
+            { kind: 'dice_rolled', player: you, amount: (n % 6) + 1, label: { key: 'event.roll' } },
             { kind: 'looted', player: you, object: 1000 + n },
           ],
         },
@@ -116,7 +116,7 @@ test('a thrown die falls, bounces and lands on the engine\'s value (15.62)', asy
       throw new Error('no game');
     }
     const you = s.lobby.table?.you ?? 0;
-    s.receive({ type: 'update', data: { ...game, step: game.step + 1, events: [{ kind: 'dice_rolled', player: you, amount: 4, text: 'attack roll' }] } });
+    s.receive({ type: 'update', data: { ...game, step: game.step + 1, events: [{ kind: 'dice_rolled', player: you, amount: 4, label: { key: 'event.attack_roll' } }] } });
   });
   const thrown = mira.getByTestId('thrown-die');
   await expect(thrown).toBeAttached();
@@ -147,7 +147,7 @@ test('a thrown die falls, bounces and lands on the engine\'s value (15.62)', asy
   await seek(0.75);
   const landed = await thrown.boundingBox();
   expect(landed && Math.abs(landed.y + landed.height / 2 - middle)).toBeLessThan(80);
-  await expect(mira.getByTestId('effect-dice')).toContainText('attack roll');
+  await expect(mira.getByTestId('effect-dice')).toContainText(tr('event.attack_roll'));
   await expect(thrown.locator('.die')).toHaveAttribute('aria-label', tr('dice.rolled', { n: 4 }));
   await shot(mira, 'dice-landed');
   // It clattered on the table as it landed (15.69). The clatter keeps
@@ -222,7 +222,7 @@ test('a roll of several dice throws every die, each with its clatter (19.39)', a
     expect(a && b && b.left - a.right).toBeGreaterThan(0);
     expect(a && b && Math.abs(a.top - b.top)).toBeLessThan(1);
   }
-  await expect(effect).toContainText('reroll');
+  await expect(effect).toContainText(tr('dice.reroll'));
   await effect.evaluate((el) => {
     for (const a of el.getAnimations({ subtree: true })) {
       a.play();
@@ -440,7 +440,7 @@ test('a deck attack places the monster in its slot before the attack roll', asyn
     const events = [
       { kind: 'card_revealed', player: -1, object: top.id, card: top.card },
       { kind: 'attack_target', player: you, object: top.id, card: top.card },
-      { kind: 'dice_rolled', player: you, amount: 4, text: 'attack roll' },
+      { kind: 'dice_rolled', player: you, amount: 4, label: { key: 'event.attack_roll' } },
     ];
     s.receive({ type: 'update', data: { ...game, step: game.step + 1, events } });
     return { old: old.id, top: top.id };
@@ -498,7 +498,7 @@ test('a deck attack shows the revealed monster large once (19.4)', async ({ brow
     const events = [
       { kind: 'card_revealed', player: -1, object: 990, card },
       { kind: 'attack_target', player: you, object: 990, card },
-      { kind: 'dice_rolled', player: you, amount: 4, text: 'attack roll' },
+      { kind: 'dice_rolled', player: you, amount: 4, label: { key: 'event.attack_roll' } },
     ];
     s.receive({ type: 'update', data: { ...placed, step: placed.step + 2, events } });
   });
@@ -543,7 +543,7 @@ test('a deck attack monster does not pop in after it lands (19.6)', async ({ bro
     const events = [
       { kind: 'card_revealed', player: -1, object: 990, card: second.top.card },
       { kind: 'attack_target', player: you, object: 990, card: second.top.card },
-      { kind: 'dice_rolled', player: you, amount: 4, text: 'attack roll' },
+      { kind: 'dice_rolled', player: you, amount: 4, label: { key: 'event.attack_roll' } },
     ];
     s.receive({ type: 'update', data: { ...game, step: game.step + 1, events } });
   });
@@ -892,7 +892,7 @@ test('a dead soul monster flies from its slot to its player after a reward roll 
     delete first.top;
     const died = [{ kind: 'died', player: -1, object: 999, card: old.card, prev: old.id }];
     s.receive({ type: 'update', data: { ...game, step: game.step + 1, events: died } });
-    const roll = [{ kind: 'dice_rolled', player: p, amount: 4, text: 'reward roll' }];
+    const roll = [{ kind: 'dice_rolled', player: p, amount: 4, label: { key: 'event.reward_roll' } }];
     s.receive({ type: 'update', data: { ...game, step: game.step + 2, events: roll } });
     const soul = [{ kind: 'gained_soul', player: p, object: 997, card: old.card, prev: 999 }];
     s.receive({ type: 'update', data: { ...game, step: game.step + 3, events: soul } });

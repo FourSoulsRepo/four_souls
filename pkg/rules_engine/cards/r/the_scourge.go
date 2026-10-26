@@ -2,6 +2,13 @@ package r
 
 import engine "github.com/FourSoulsRepo/rules_engine"
 
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	theScourgeWhiff = engine.NewKey("card.the_scourge.whiff")
+	theScourgeWhip  = engine.NewKey("card.the_scourge.whip")
+	theScourgeVote  = engine.NewKey("card.the_scourge.vote")
+)
+
 // The Scourge (Boss Card)
 //
 //	When this would take damage, each living player votes either whip or whiff-
@@ -23,7 +30,7 @@ var theScourge = engine.CardDef{
 		Trigger: engine.Trigger{On: engine.EvDamagePending, Match: func(_ *engine.Game, self engine.ObjectID, e engine.Event) bool {
 			return e.Object == self
 		}},
-		Effects: []engine.Effect{vote([]string{"whip", "whiff"}, func(c *engine.Ctx, votes []int) {
+		Effects: []engine.Effect{vote(theScourgeVote, []engine.Key{theScourgeWhip, theScourgeWhiff}, func(c *engine.Ctx, votes []int) {
 			if votes[0] > votes[1] {
 				c.G.CancelStackItem(c.EventStack)
 				for _, p := range othersOfActive(c.G) {

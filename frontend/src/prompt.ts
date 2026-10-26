@@ -1,7 +1,7 @@
 // The prompt banner (15.28, V-20): what the game waits for, in a few
 // words. Pure, so every prompt is tested without a browser.
 import { choiceTitle, PromptKind, Purpose, type Actions } from './actions';
-import { t } from './i18n';
+import { say, t } from './i18n';
 import type { GameView } from './protocol';
 import { attackTarget, findCard, partsOf, StackKind, stackLine, type LinePart, type Names } from './stack';
 import type { Aiming } from './store';
@@ -71,7 +71,7 @@ function asked(view: GameView, n: Names): { kind: BannerKind; title: string; hin
       return { kind: 'act', title: t('banner.act'), hint: t('banner.act_hint'), other: t('banner.act_other') };
     }
     case PromptKind.choose: {
-      const title = choiceTitle(w);
+      const title = choiceTitle(w, n);
       return { kind: 'choose', title, other: title };
     }
     case PromptKind.discard: {
@@ -80,13 +80,14 @@ function asked(view: GameView, n: Names): { kind: BannerKind; title: string; hin
       return { kind: 'discard', title, other: title };
     }
     case PromptKind.order: {
-      const title = choiceTitle(w);
+      const title = choiceTitle(w, n);
       return { kind: 'order', title, other: title };
     }
     case PromptKind.throw: {
       const title = t('banner.throw');
-      return w.text
-        ? { kind: 'throw', title, hint: t('banner.throw_for', { label: w.text }), other: t('banner.throw_for_other', { label: w.text }) }
+      const label = say(w.text, n);
+      return label
+        ? { kind: 'throw', title, hint: t('banner.throw_for', { label }), other: t('banner.throw_for_other', { label }) }
         : { kind: 'throw', title, other: title };
     }
     default:

@@ -1,6 +1,9 @@
 package r
 
-import engine "github.com/FourSoulsRepo/rules_engine"
+import (
+	engine "github.com/FourSoulsRepo/rules_engine"
+	"github.com/FourSoulsRepo/rules_engine/cards/cardkit"
+)
 
 // Conjoined Twin (Room Card)
 //
@@ -22,9 +25,9 @@ var conjoinedTwin = engine.CardDef{
 				c.G.KillPlayer(ps[a[0]], killer)
 			}
 		}, engine.Question{
-			Text:   "Kill which player?",
+			Text:   cardkit.AskKillPlayer,
 			Player: func(c *engine.Ctx, _ []int) engine.PlayerID { return c.G.Object(c.EventObject).Killer() },
-			Options: func(c *engine.Ctx, _ []int) []string {
+			Options: func(c *engine.Ctx, _ []int) []engine.Msg {
 				return playerLabels(c.G, othersOf(c.G, c.G.Object(c.EventObject).Killer()))
 			},
 		})},

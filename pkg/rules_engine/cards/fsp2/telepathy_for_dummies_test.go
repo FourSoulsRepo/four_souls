@@ -17,7 +17,7 @@ func TestTelepathyForDummies(t *testing.T) {
 		t.Errorf("view dice = %v, want the stored [6]", d)
 	}
 	tb.G.ForceRolls(1, 6)
-	tb.Do(attackIntent(tb), "trite", "yes") // the 1 becomes the stored 6
+	tb.Do(attackIntent(tb), "trite", "ask.yes") // the 1 becomes the stored 6
 	if top(tb, 0) == "trite" {
 		t.Error("the attack roll should become a 6 and kill the trite")
 	}

@@ -288,7 +288,7 @@ func (g *Game) askStartingItem(p PlayerID, n int) {
 	for i := len(deck) - 1; i >= len(deck)-n; i-- {
 		top = append(top, deck[i])
 	}
-	g.ask(Choice{Purpose: ChooseStartingItem, Player: p, Rule: "R-SETUP-09", Objects: top}, g.labels(top))
+	g.ask(Choice{Purpose: ChooseStartingItem, Player: p, Rule: "R-SETUP-09", Objects: top}, g.Labels(top))
 }
 
 // chooseStartingItem puts the chosen card into play as an eternal item;
@@ -331,7 +331,7 @@ type FirstRoll struct {
 func (g *Game) askFirstThrow() {
 	fr := g.FirstRoll
 	g.Throw = &Throw{First: true}
-	g.Waiting = Prompt{Kind: PromptThrow, Player: fr.Players[len(fr.Rolls)], Text: "first player roll"}
+	g.Waiting = Prompt{Kind: PromptThrow, Player: fr.Players[len(fr.Rolls)], Text: eventFirstPlayerRoll.Msg()}
 }
 
 // throwFirst draws one die of the first-player roll. After the last die
@@ -340,7 +340,7 @@ func (g *Game) throwFirst(p PlayerID) {
 	fr := g.FirstRoll
 	r := g.RNG.D6()
 	fr.Rolls = append(fr.Rolls, r)
-	g.emit(Event{Kind: EvDiceRolled, Player: p, Amount: r, Text: "first player roll"})
+	g.emit(Event{Kind: EvDiceRolled, Player: p, Amount: r, Text: "first", Label: eventFirstPlayerRoll.Msg()})
 	if len(fr.Rolls) < len(fr.Players) {
 		return
 	}

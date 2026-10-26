@@ -1,6 +1,14 @@
 package b2
 
-import engine "github.com/FourSoulsRepo/rules_engine"
+import (
+	engine "github.com/FourSoulsRepo/rules_engine"
+	"github.com/FourSoulsRepo/rules_engine/cards/cardkit"
+)
+
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	ringOfFliesStealFromWhich = engine.NewKey("card.ring_of_flies.steal_from_which_player")
+)
 
 // Ring Of Flies (Basic Monster Card)
 //
@@ -24,8 +32,8 @@ var ringOfFlies = engine.CardDef{
 	},
 }
 
-var ringPlayer = engine.Question{Text: "Steal from which player?", Options: func(c *engine.Ctx, _ []int) []string {
-	var out []string
+var ringPlayer = engine.Question{Text: ringOfFliesStealFromWhich, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
+	var out []engine.Msg
 	for _, p := range otherPlayers(c) {
 		if len(c.G.Players[p].Hand) > 0 {
 			out = append(out, playerLabel(c.G, p))
@@ -45,11 +53,11 @@ func withHands(c *engine.Ctx) []engine.PlayerID {
 	return out
 }
 
-var ringCard = engine.Question{Random: true, Text: "Which card?", Options: func(c *engine.Ctx, a []int) []string {
+var ringCard = engine.Question{Random: true, Text: cardkit.AskWhichCard, Options: func(c *engine.Ctx, a []int) []engine.Msg {
 	if a[0] < 0 {
 		return nil
 	}
-	return make([]string, len(c.G.Players[withHands(c)[a[0]]].Hand))
+	return make([]engine.Msg, len(c.G.Players[withHands(c)[a[0]]].Hand))
 }}
 
 func ringSteal(c *engine.Ctx, a []int) {

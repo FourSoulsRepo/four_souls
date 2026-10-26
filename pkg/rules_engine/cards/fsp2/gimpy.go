@@ -1,6 +1,16 @@
 package fsp2
 
-import engine "github.com/FourSoulsRepo/rules_engine"
+import (
+	engine "github.com/FourSoulsRepo/rules_engine"
+	"github.com/FourSoulsRepo/rules_engine/cards/cardkit"
+)
+
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	gimpyATK   = engine.NewKey("card.gimpy.atk")
+	gimpyLoot  = engine.NewKey("card.gimpy.loot")
+	gimpyCents = engine.NewKey("card.gimpy.cents")
+)
 
 // Gimpy (Eternal Treasure Card)
 //
@@ -25,8 +35,8 @@ var gimpy = engine.CardDef{
 			case 2:
 				c.G.Boosts = append(c.G.Boosts, engine.Boost{Source: c.Source, Stat: engine.StatPlayerATK, Player: c.Controller, Amount: 2})
 			}
-		}, engine.Question{Text: "Choose one", Options: func(*engine.Ctx, []int) []string {
-			return []string{"gain 2¢", "loot 1, then discard a loot card", "+2 ATK till end of turn"}
+		}, engine.Question{Text: cardkit.AskChooseOne, Options: func(*engine.Ctx, []int) []engine.Msg {
+			return engine.Options(gimpyCents, gimpyLoot, gimpyATK)
 		}})},
 	}},
 }

@@ -2,7 +2,7 @@
 // lines: who did what. Built from the events this viewer got, so it shows
 // only what the viewer may see (hidden cards stay hidden).
 import { firstPlayerText, tieText } from './dice';
-import { t } from './i18n';
+import { say, t } from './i18n';
 import type { GameEvent, GameView, Rollback, RollbackEnd, RollbackStep, StackItem, Update } from './protocol';
 import { findCard, StackKind, stackLine, type Names } from './stack';
 import { rollChanges } from './stats';
@@ -186,7 +186,8 @@ export function entriesFor(events: GameEvent[], turn: number, you: number, n: Na
         // A card's item names the card and its ability's words; any
         // other item (a roll, damage, a death) says what it did in the
         // strip's words (19.52). The words come from the server.
-        const label = e.text && !e.text.startsWith(e.card ?? '\u0000') ? ` — ${e.text}` : '';
+        const words = say(e.label, n);
+        const label = words ? ` — ${words}` : '';
         const it = e.item;
         // line says it, with rolled in the die's place, if given.
         const line = (rolled?: string) => {
@@ -413,7 +414,7 @@ export function entriesFor(events: GameEvent[], turn: number, you: number, n: Na
         break;
       case 'cancelled':
         // Without a card, the text names it; it comes from the server.
-        add('✗', t('history.cancelled', { card: card || (e.text ?? t('history.an_ability')) }), e.card);
+        add('✗', t('history.cancelled', { card: card || say(e.label, n) || t('history.an_ability') }), e.card);
         break;
       case 'fizzled':
         add('✗', t('history.fizzled', { card: card || t('history.an_ability') }), e.card);
@@ -455,7 +456,7 @@ export function entriesFor(events: GameEvent[], turn: number, you: number, n: Na
         break;
       // The first-player roll keeps every die, ties too (15.43).
       case 'dice_rolled':
-        if (e.text === firstRollLabel) {
+        if (e.text === firstRollCode) {
           const rolled = e.amount ?? 0;
           add('⚄', mine(e.player) ? t('history.first_roll.you', { n: rolled }) : t('history.first_roll.other', { player, n: rolled }));
         }
@@ -659,8 +660,8 @@ export function restartCut(history: Entry[], cut: number, turn: number): Entry[]
   return [...history, { key: (history.at(-1)?.key ?? 0) + 1, turn, icon: '⟳', text, step: cut, rollback: true, restarted: true }];
 }
 
-// firstRollLabel is the label of the first-player roll's dice.
-export const firstRollLabel = 'first player roll';
+// firstRollCode marks the first-player roll's dice (dice_rolled text).
+export const firstRollCode = 'first';
 
 // Looked is one card this viewer looks at; id is its object. owner is
 // the seat whose hand it is in; none for a deck card (19.71).

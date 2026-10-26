@@ -87,6 +87,362 @@
     "text": "Four Souls",
     "note": "The game's name: the splash screen and the main menu title (when the banner image is missing), and the banner's alt text. Use the name the print in your language uses."
   },
+  "ask.a_player_at_random": {
+    "text": "A player at random",
+    "note": "Card question while a card resolves."
+  },
+  "ask.ability": {
+    "text": "{card}: {text}",
+    "note": "An option that is an ability. card: its card; text: its words from the card (not translated yet)."
+  },
+  "ask.cancel": {
+    "text": "cancel",
+    "note": "Option that cancels playing or using a card before anything is paid."
+  },
+  "ask.cancel_which_loot_card": {
+    "text": "Cancel which loot card?",
+    "note": "Card question while a card resolves."
+  },
+  "ask.card": {
+    "text": "{card}",
+    "note": "An option that is a card. card: the card's name."
+  },
+  "ask.change_roll_by": {
+    "text": "Change the roll by?",
+    "note": "Card question: how much to add to a dice roll; options are numbers."
+  },
+  "ask.change_the_counters_of_which": {
+    "text": "Change the counters of which card?",
+    "note": "Card question while a card resolves."
+  },
+  "ask.choose_a_player": {
+    "text": "Choose a player.",
+    "note": "Card question while a card resolves."
+  },
+  "ask.choose_another_player": {
+    "text": "Choose another player.",
+    "note": "Card question while a card resolves; several cards ask it."
+  },
+  "ask.choose_one": {
+    "text": "Choose one",
+    "note": "Card question while a card resolves; several cards ask it."
+  },
+  "ask.counter.add": {
+    "text": "add a counter",
+    "note": "Option of the question that changes a card's counters: add a plain counter."
+  },
+  "ask.counter.add_named": {
+    "text": "add a {name} counter",
+    "note": "Option of the question that changes a card's counters. name: the counter's kind as the card names it, e.g. gold (not translated yet)."
+  },
+  "ask.counter.remove": {
+    "text": "remove a counter",
+    "note": "Option of the question that changes a card's counters: remove a plain counter."
+  },
+  "ask.counter.remove_named": {
+    "text": "remove a {name} counter",
+    "note": "Option of the question that changes a card's counters. name: the counter's kind as the card names it, e.g. gold (not translated yet)."
+  },
+  "ask.damage_monster": {
+    "text": "Deal damage to which monster?",
+    "note": "Card question."
+  },
+  "ask.damage_player": {
+    "text": "Deal damage to which player?",
+    "note": "Card question."
+  },
+  "ask.damage_to": {
+    "text": "Deal damage to?",
+    "note": "Card question: a monster or a player."
+  },
+  "ask.deactivate_which_item": {
+    "text": "Deactivate which item?",
+    "note": "Card question while a card resolves."
+  },
+  "ask.deal_1_damage_to": {
+    "text": "Deal 1 damage to?",
+    "note": "Card question while a card resolves; several cards ask it."
+  },
+  "ask.deal_damage_to": {
+    "text": "Deal damage to?",
+    "note": "Card question while a card resolves."
+  },
+  "ask.deck.loot": {
+    "text": "loot deck",
+    "note": "Option that is the loot deck."
+  },
+  "ask.deck.monster": {
+    "text": "monster deck",
+    "note": "Option that is the monster deck."
+  },
+  "ask.deck.room": {
+    "text": "room deck",
+    "note": "Option that is the room deck."
+  },
+  "ask.deck.treasure": {
+    "text": "treasure deck",
+    "note": "Option that is the treasure deck."
+  },
+  "ask.destroy_which_of_your_souls": {
+    "text": "Destroy which of your souls?",
+    "note": "Card question while a card resolves; several cards ask it."
+  },
+  "ask.destroy_which_soul": {
+    "text": "Destroy which soul?",
+    "note": "Card question while a card resolves; several cards ask it."
+  },
+  "ask.discard.loot": {
+    "text": "loot discard",
+    "note": "Option that is the loot discard pile."
+  },
+  "ask.discard.monster": {
+    "text": "monster discard",
+    "note": "Option that is the monster discard pile."
+  },
+  "ask.discard.room": {
+    "text": "room discard",
+    "note": "Option that is the room discard pile."
+  },
+  "ask.discard.treasure": {
+    "text": "treasure discard",
+    "note": "Option that is the treasure discard pile."
+  },
+  "ask.discard_which": {
+    "text": "Discard which loot card?",
+    "note": "Card question: pick a loot card from the hand to discard."
+  },
+  "ask.done": {
+    "text": "done",
+    "note": "Option that stops picking more."
+  },
+  "ask.dont_swap": {
+    "text": "don't swap",
+    "note": "Option of a question that swaps cards: swap none."
+  },
+  "ask.gain_guppy": {
+    "text": "Gain which Guppy item?",
+    "note": "Card question: search the treasure deck for a Guppy item."
+  },
+  "ask.give_card_to": {
+    "text": "Give {card} to which player?",
+    "note": "Card question for each revealed curse. card: the curse."
+  },
+  "ask.give_this": {
+    "text": "Give this to which player?",
+    "note": "Card question: the card is given away."
+  },
+  "ask.give_which_item": {
+    "text": "Give which item?",
+    "note": "Card question while a card resolves."
+  },
+  "ask.give_which_loot_card": {
+    "text": "Give which loot card?",
+    "note": "Card question while a card resolves; several cards ask it."
+  },
+  "ask.keep": {
+    "text": "keep",
+    "note": "Option of prompt.discard_room: keep every room."
+  },
+  "ask.keep_on_top": {
+    "text": "keep {card} on top",
+    "note": "Option: leave the deck's top card where it is. card: that card."
+  },
+  "ask.kill_monster": {
+    "text": "Kill which monster?",
+    "note": "Card question."
+  },
+  "ask.kill_player": {
+    "text": "Kill which player?",
+    "note": "Card question."
+  },
+  "ask.look_at_the_top_cards": {
+    "text": "Look at the top cards of which deck?",
+    "note": "Card question while a card resolves."
+  },
+  "ask.look_at_which_deck": {
+    "text": "Look at which deck?",
+    "note": "Card question while a card resolves; several cards ask it."
+  },
+  "ask.look_at_whose_hand": {
+    "text": "Look at whose hand?",
+    "note": "Card question while a card resolves; several cards ask it."
+  },
+  "ask.look_top": {
+    "text": "Look at the top card of which deck?",
+    "note": "Card question; options are decks."
+  },
+  "ask.minus_one": {
+    "text": "-1",
+    "note": "Option: take 1 from a number or a roll."
+  },
+  "ask.no": {
+    "text": "No",
+    "note": "Option of a yes-or-no question."
+  },
+  "ask.none": {
+    "text": "none",
+    "note": "Option that picks nothing."
+  },
+  "ask.number": {
+    "text": "{n}",
+    "note": "An option that is a number, e.g. a die face. n: the number."
+  },
+  "ask.number.cents": {
+    "text": "gain {n}¢",
+    "note": "Option of Magic Marker: the number in a card's \"gain N¢\". n: the number."
+  },
+  "ask.number.damage": {
+    "text": "deal {n} damage",
+    "note": "Option of Magic Marker: the number in a card's \"deal N damage\". n: the number."
+  },
+  "ask.number.loot": {
+    "text": "loot {n}",
+    "note": "Option of Magic Marker: the number in a card's \"loot N\". n: the number."
+  },
+  "ask.number.roll": {
+    "text": "roll {n}",
+    "note": "Option of Magic Marker: a roll result in a card's dice table. n: the result."
+  },
+  "ask.one_on_top": {
+    "text": "Which card stays on top? The rest go to the bottom.",
+    "note": "Card question after looking at a deck's top cards."
+  },
+  "ask.player": {
+    "text": "{player}",
+    "note": "An option that is a player. player: the player's name."
+  },
+  "ask.plus_one": {
+    "text": "+1",
+    "note": "Option: add 1 to a number or a roll."
+  },
+  "ask.put_back": {
+    "text": "Put the cards back in any order",
+    "note": "Card question: put the looked-at top cards back in any order."
+  },
+  "ask.put_bottom": {
+    "text": "Put the top card on the bottom?",
+    "note": "Card question: after looking at a deck's top card."
+  },
+  "ask.put_card_in_slot": {
+    "text": "Put {card} in which monster slot?",
+    "note": "Card question for each revealed boss. card: the boss."
+  },
+  "ask.put_into_discard": {
+    "text": "put {card} into discard",
+    "note": "Option: put the deck's top card into discard. card: that card."
+  },
+  "ask.put_it_in_which_monster": {
+    "text": "Put it in which monster slot?",
+    "note": "Card question while a card resolves; several cards ask it."
+  },
+  "ask.put_it_into_discard": {
+    "text": "Put it into discard?",
+    "note": "Card question after looking at a deck's top card."
+  },
+  "ask.put_on_bottom": {
+    "text": "put {card} on the bottom",
+    "note": "Option: put the deck's top card on the bottom. card: that card."
+  },
+  "ask.put_which_card_on_top": {
+    "text": "Put which card on top of the loot deck?",
+    "note": "Card question while a card resolves; several cards ask it."
+  },
+  "ask.put_which_event_in_a": {
+    "text": "Put which event in a monster slot?",
+    "note": "Card question while a card resolves."
+  },
+  "ask.put_which_into_discard": {
+    "text": "Put which into discard?",
+    "note": "Card question while a card resolves; several cards ask it."
+  },
+  "ask.put_which_shop_item_into": {
+    "text": "Put which shop item into discard?",
+    "note": "Card question while a card resolves."
+  },
+  "ask.recharge_item": {
+    "text": "Recharge which item?",
+    "note": "Card question."
+  },
+  "ask.recharge_which_item": {
+    "text": "Recharge which item?",
+    "note": "Card question while a card resolves; several cards ask it."
+  },
+  "ask.reroll_which_item": {
+    "text": "Reroll which item?",
+    "note": "Card question while a card resolves; several cards ask it."
+  },
+  "ask.reroll_which_of_their_items": {
+    "text": "Reroll which of their items?",
+    "note": "Card question while a card resolves."
+  },
+  "ask.rest_in_slot_order": {
+    "text": "the rest in slot order",
+    "note": "Option of prompt.damage_order: keep the other monsters in their slot order."
+  },
+  "ask.roll_of": {
+    "text": "roll of {n}",
+    "note": "An option that is a dice roll on the stack. n: the roll."
+  },
+  "ask.slot": {
+    "text": "slot {n}",
+    "note": "An option that is an empty monster slot. n: the slot's number from the left."
+  },
+  "ask.slot_card": {
+    "text": "slot {n}: {card}",
+    "note": "An option that is a monster slot. n: the slot's number from the left; card: the card on top of it."
+  },
+  "ask.steal_which_card": {
+    "text": "Steal which card?",
+    "note": "Card question while a card resolves; several cards ask it."
+  },
+  "ask.steal_which_item": {
+    "text": "Steal which item?",
+    "note": "Card question while a card resolves; several cards ask it."
+  },
+  "ask.steal_which_shop_item": {
+    "text": "Steal which shop item?",
+    "note": "Card question while a card resolves."
+  },
+  "ask.take_which_card_from_the": {
+    "text": "Take which card from the loot discard?",
+    "note": "Card question while a card resolves."
+  },
+  "ask.when.first_attack_roll": {
+    "text": "first attack roll",
+    "note": "When a stat change counts, beside it in the stat details: only for the first attack roll each turn."
+  },
+  "ask.which_card": {
+    "text": "Which card?",
+    "note": "Card question while a card resolves; several cards ask it."
+  },
+  "ask.which_change": {
+    "text": "Which change?",
+    "note": "Card question while a card resolves."
+  },
+  "ask.which_monster_slot": {
+    "text": "Which monster slot?",
+    "note": "Card question while a card resolves; several cards ask it."
+  },
+  "ask.which_number": {
+    "text": "Which number?",
+    "note": "Card question while a card resolves; several cards ask it."
+  },
+  "ask.who_discards": {
+    "text": "Which player discards?",
+    "note": "Card question; that player then picks the loot cards."
+  },
+  "ask.who_gains_the_soul": {
+    "text": "Who gains the soul?",
+    "note": "Card question while a card resolves."
+  },
+  "ask.words": {
+    "text": "{text}",
+    "note": "An option that is words printed on a card, e.g. a \"choose one\" line. text: the words (not translated yet)."
+  },
+  "ask.yes": {
+    "text": "yes",
+    "note": "Option of a yes-or-no question."
+  },
   "badge.atk": {
     "text": {
       "one": "{n} attack",
@@ -261,6 +617,422 @@
   "board.shop": {
     "text": "Shop",
     "note": "Board: screen-reader name of the shop slots."
+  },
+  "card.angelic_intervention.cancel_the_attack": {
+    "text": "Cancel the attack?",
+    "note": "Card question while Angelic Intervention resolves."
+  },
+  "card.auction_gavel.bid": {
+    "text": "bid {n}¢",
+    "note": "Option of Auction Gavel's bidding. n: the bid in cents."
+  },
+  "card.auction_gavel.bid_for_the_shop_item": {
+    "text": "Bid for the shop item?",
+    "note": "Card question while Auction Gavel resolves."
+  },
+  "card.auction_gavel.pass": {
+    "text": "pass",
+    "note": "Option of Auction Gavel's bidding: bid no more."
+  },
+  "card.belly_button.recharge_your_character": {
+    "text": "Recharge your character?",
+    "note": "Card question while Belly Button resolves."
+  },
+  "card.betrayal.a_loot_card_at_random": {
+    "text": "A loot card at random",
+    "note": "Card question while Betrayal! resolves."
+  },
+  "card.betrayal.card_n": {
+    "text": "card {n}",
+    "note": "A hidden hand card Betrayal picks at random, by its place in the hand. n: from 1."
+  },
+  "card.betrayal.steal_which": {
+    "text": "Steal which?",
+    "note": "Card question while Betrayal! resolves."
+  },
+  "card.charmed_monstro.who_gains_charmed_monstro_s": {
+    "text": "Who gains Charmed Monstro's soul?",
+    "note": "Card question while Charmed Monstro resolves."
+  },
+  "card.cheese_grater.discard": {
+    "text": "discard it",
+    "note": "Option of Cheese Grater's question: put the revealed card into discard."
+  },
+  "card.cheese_grater.put_back": {
+    "text": "put it back",
+    "note": "Option of Cheese Grater's question: put the revealed card back on its deck."
+  },
+  "card.cheese_grater.put_it_back_or_into": {
+    "text": "Put it back or into discard?",
+    "note": "Card question while Cheese Grater resolves."
+  },
+  "card.cheese_grater.reveal_the_top_card_of": {
+    "text": "Reveal the top card of which deck?",
+    "note": "Card question while Cheese Grater resolves."
+  },
+  "card.classic_roller.which_player_chooses_the_result": {
+    "text": "Which player chooses the result?",
+    "note": "Card question while Classic Roller resolves."
+  },
+  "card.dads_lost_coin.force_a_reroll": {
+    "text": "Force a reroll?",
+    "note": "Card question while Dad’s Lost Coin resolves."
+  },
+  "card.dads_note.put_which_monster_card_from": {
+    "text": "Put which monster card from the discard in a slot?",
+    "note": "Card question while Dad’s Note resolves."
+  },
+  "card.dead_bird.dont": {
+    "text": "don't",
+    "note": "Option of Dead Bird's question: steal no card."
+  },
+  "card.devil_deal.discard": {
+    "text": "put this into discard",
+    "note": "Option of Devil Deal (choose one): put the card into discard."
+  },
+  "card.devil_deal.loot": {
+    "text": "loot 2, take 1 damage",
+    "note": "Option of Devil Deal (choose one)."
+  },
+  "card.devil_deal.search": {
+    "text": "take 2 damage, search for a guppy item",
+    "note": "Option of Devil Deal (choose one)."
+  },
+  "card.dogma.put_the_harbingers_in_which": {
+    "text": "Put The Harbingers in which monster slot?",
+    "note": "Card question while Dogma resolves."
+  },
+  "card.fetal_haunt.give_it_to_which_player": {
+    "text": "Give it to which player?",
+    "note": "Card question while Fetal Haunt resolves."
+  },
+  "card.finger.for_which_of_their_items": {
+    "text": "For which of their items?",
+    "note": "Card question while Finger! resolves."
+  },
+  "card.finger.swap_which_of_your_items": {
+    "text": "Swap which of your items?",
+    "note": "Card question while Finger! resolves."
+  },
+  "card.friendly_ball.needs_card": {
+    "text": "Needs a card under this",
+    "note": "Why Friendly Ball's second ability can't be used: no card is under it."
+  },
+  "card.friendly_ball.needs_none": {
+    "text": "Needs no cards under this",
+    "note": "Why Friendly Ball's first ability can't be used: a card is under it already."
+  },
+  "card.friendly_sack.put_the_rest_in_which": {
+    "text": "Put the rest in which player's hand?",
+    "note": "Card question while Friendly Sack resolves."
+  },
+  "card.friendly_sack.put_which_card_in_your": {
+    "text": "Put which card in your hand?",
+    "note": "Card question while Friendly Sack resolves."
+  },
+  "card.gello.deal_the_damage_to_which": {
+    "text": "Deal the damage to which monster?",
+    "note": "Card question while Gello resolves."
+  },
+  "card.gimpy.atk": {
+    "text": "+2 ATK till end of turn",
+    "note": "Option of Gimpy (choose one)."
+  },
+  "card.gimpy.cents": {
+    "text": "gain 2¢",
+    "note": "Option of Gimpy (choose one)."
+  },
+  "card.gimpy.loot": {
+    "text": "loot 1, then discard a loot card",
+    "note": "Option of Gimpy (choose one)."
+  },
+  "card.glitch.gain_the_abilities_of_which": {
+    "text": "Gain the abilities of which shop item?",
+    "note": "Card question while Glitch resolves."
+  },
+  "card.gnawed_leaf.cancel_that_loot_card": {
+    "text": "Cancel that loot card?",
+    "note": "Card question while Gnawed Leaf resolves."
+  },
+  "card.goat_head.discard_another_loot_card": {
+    "text": "Discard another loot card?",
+    "note": "Card question while Goat Head resolves."
+  },
+  "card.godhead.change_it_to": {
+    "text": "Change it to?",
+    "note": "Card question while Godhead resolves."
+  },
+  "card.golden_trinket.put_a_gold_counter_on": {
+    "text": "Put a gold counter on which item?",
+    "note": "Card question while Golden Trinket resolves."
+  },
+  "card.greed_event.which_player_loses_all_their": {
+    "text": "Which player loses all their ¢?",
+    "note": "Card question while Greed! resolves."
+  },
+  "card.greedling.who_loses_7": {
+    "text": "Who loses 7¢?",
+    "note": "Card question while Greedling resolves."
+  },
+  "card.hagalaz.put_them_back_in_any": {
+    "text": "Put them back in any order, top first.",
+    "note": "Card question while Hagalaz resolves."
+  },
+  "card.hand_me_downs.loot_1_if_you_do": {
+    "text": "Loot 1? If you do, you give them a loot card.",
+    "note": "Card question while Hand Me Downs resolves."
+  },
+  "card.holy_greedling.gain_3": {
+    "text": "Gain 3¢?",
+    "note": "Card question while Holy Greedling resolves."
+  },
+  "card.i_am_error_r.put_which_monster_into_discard": {
+    "text": "Put which monster into discard?",
+    "note": "Card question while I Am Error resolves."
+  },
+  "card.i_the_magician.change_the_roll_to": {
+    "text": "Change the roll to?",
+    "note": "Card question while I. The Magician resolves."
+  },
+  "card.incubus.give_which_of_your_cards": {
+    "text": "Give which of your cards?",
+    "note": "Card question while Incubus resolves."
+  },
+  "card.incubus.their_hand_swap_for_which": {
+    "text": "Their hand. Swap for which card?",
+    "note": "Card question while Incubus resolves."
+  },
+  "card.isaac_fsp2.this_deals_1_damage_to": {
+    "text": "This deals 1 damage to which player?",
+    "note": "Card question while Isaac! resolves."
+  },
+  "card.isaacs_blessing.reroll_it": {
+    "text": "Reroll it?",
+    "note": "Card question while Isaac’s Blessing resolves."
+  },
+  "card.jar_of_flies.remove_how_many_counters_in": {
+    "text": "Remove how many counters in all?",
+    "note": "Card question while Jar Of Flies resolves."
+  },
+  "card.keepers_bargain.gain_1_they_gain_1": {
+    "text": "Gain 1¢? They gain 1¢ more.",
+    "note": "Card question while Keeper’s Bargain resolves."
+  },
+  "card.lemegeton.destroy_which_non_eternal_item": {
+    "text": "Destroy which non-eternal item?",
+    "note": "Card question while Lemegeton resolves."
+  },
+  "card.lodestone.which_monster_gains_1_dc": {
+    "text": "Which monster gains -1 DC?",
+    "note": "Card question while Lodestone resolves."
+  },
+  "card.lust_for_blood.which_player_must_be_attacked": {
+    "text": "Which player must be attacked?",
+    "note": "Card question while Lust For Blood! resolves."
+  },
+  "card.magic_marker.change_a_number_of_which": {
+    "text": "Change a number of which card?",
+    "note": "Card question while Magic Marker resolves."
+  },
+  "card.magic_marker.change_it_by": {
+    "text": "Change it by?",
+    "note": "Card question while Magic Marker resolves."
+  },
+  "card.moms_box.loot_1_then_discard_a": {
+    "text": "Loot 1, then discard a loot card?",
+    "note": "Card question while Mom’s Box resolves."
+  },
+  "card.moms_heart.who_wins": {
+    "text": "Who wins?",
+    "note": "Card question while Mom’s Heart! resolves."
+  },
+  "card.moms_razor.deal_1_damage_to_them": {
+    "text": "Deal 1 damage to them?",
+    "note": "Card question while Mom’s Razor resolves."
+  },
+  "card.moms_shovel.steal_which_soul": {
+    "text": "Steal which soul?",
+    "note": "Card question while Mom’s Shovel resolves."
+  },
+  "card.monstros_tooth.destroy_which_of_your_items": {
+    "text": "Destroy which of your items?",
+    "note": "Card question while Monstro’s Tooth resolves."
+  },
+  "card.monstros_tooth.which_player": {
+    "text": "Which player?",
+    "note": "Card question while Monstro’s Tooth resolves."
+  },
+  "card.phd.change_your_roll": {
+    "text": "Change your roll?",
+    "note": "Card question while P.H.D. resolves."
+  },
+  "card.pills_r.put_next": {
+    "text": "Put which card on the loot deck next? The last one ends on top.",
+    "note": "Question of Pills (Requiem): put hand cards on the loot deck one at a time."
+  },
+  "card.planetarium.gain_1_treasure": {
+    "text": "Gain +1 treasure?",
+    "note": "Card question while Planetarium resolves."
+  },
+  "card.red_candle.choose_a_number": {
+    "text": "Choose a number",
+    "note": "Card question while Red Candle resolves."
+  },
+  "card.red_ghost.which_player_takes_1_damage": {
+    "text": "Which player takes 1 damage?",
+    "note": "Card question while Red Ghost resolves."
+  },
+  "card.red_key.not_in_attack": {
+    "text": "Not during an attack",
+    "note": "Why Red Key can't be used now: not during an attack."
+  },
+  "card.red_key.put_it_in_which_slot": {
+    "text": "Put it in which slot?",
+    "note": "Card question while Red Key resolves."
+  },
+  "card.red_key.put_which_card_in_a": {
+    "text": "Put which card in a slot?",
+    "note": "Card question while Red Key resolves."
+  },
+  "card.remote_detonator.vote_for_an_item_to": {
+    "text": "Vote for an item to destroy.",
+    "note": "Card question while Remote Detonator resolves."
+  },
+  "card.restock.discard": {
+    "text": "discard {card}",
+    "note": "Option of Restock's question for each shop item. card: the shop item."
+  },
+  "card.restock.discard_this_shop_item": {
+    "text": "Discard this shop item?",
+    "note": "Card question while Restock resolves."
+  },
+  "card.restock.keep": {
+    "text": "keep {card}",
+    "note": "Option of Restock's question for each shop item. card: the shop item."
+  },
+  "card.restock_machine.monsters": {
+    "text": "each monster not being attacked",
+    "note": "Option of Restock Machine: what to put into discard."
+  },
+  "card.restock_machine.shop": {
+    "text": "each shop item",
+    "note": "Option of Restock Machine: what to put into discard."
+  },
+  "card.ring_of_flies.steal_from_which_player": {
+    "text": "Steal from which player?",
+    "note": "Card question while Ring Of Flies resolves."
+  },
+  "card.sack_head.put_it_on_the_bottom": {
+    "text": "Put it on the bottom?",
+    "note": "Card question while Sack Head resolves."
+  },
+  "card.sack_of_pennies.recharge_sack_of_pennies": {
+    "text": "Recharge Sack of Pennies?",
+    "note": "Card question while Sack Of Pennies resolves."
+  },
+  "card.sacred_heart.change_the_1_to_a": {
+    "text": "Change the 1 to a 6?",
+    "note": "Card question while Sacred Heart resolves."
+  },
+  "card.shadow_of_war.destroy_which_item": {
+    "text": "Destroy which item?",
+    "note": "Card question while Shadow Of War resolves."
+  },
+  "card.sisters_vis.who_must_attack_sisters_vis": {
+    "text": "Who must attack Sisters Vis too?",
+    "note": "Card question while Sisters Vis resolves."
+  },
+  "card.sleight_of_hand.look_at_the_top_5": {
+    "text": "Look at the top 5 cards of which deck?",
+    "note": "Card question while Sleight Of Hand resolves."
+  },
+  "card.smart_fly.recharge_smart_fly": {
+    "text": "Recharge Smart Fly?",
+    "note": "Card question while Smart Fly resolves."
+  },
+  "card.soulbond.which_player_dies": {
+    "text": "Which player dies?",
+    "note": "Card question while Soulbond resolves."
+  },
+  "card.spelunker_hat.look_at_the_top_3": {
+    "text": "Look at the top 3 cards of which deck?",
+    "note": "Card question while Spelunker Hat resolves."
+  },
+  "card.spider_mod.replace_which_monster": {
+    "text": "Replace which monster?",
+    "note": "Card question while Spider Mod resolves."
+  },
+  "card.telepathy_for_dummies.change_your_roll_to_the": {
+    "text": "Change your roll to the stored result?",
+    "note": "Card question while Telepathy For Dummies resolves."
+  },
+  "card.the_clicker.which_character": {
+    "text": "Which character?",
+    "note": "Card question while The Clicker resolves."
+  },
+  "card.the_curse.put_the_top_card_of": {
+    "text": "Put the top card of which deck into discard?",
+    "note": "Card question while The Curse resolves."
+  },
+  "card.the_lamb.give_which_soul": {
+    "text": "Give which soul?",
+    "note": "Card question while The Lamb resolves."
+  },
+  "card.the_lamb.nobody": {
+    "text": "nobody",
+    "note": "Option of The Lamb's question: no player gives a soul."
+  },
+  "card.the_lamb.who_gives_you_a_soul": {
+    "text": "Who gives you a soul?",
+    "note": "Card question while The Lamb resolves."
+  },
+  "card.the_lost.recharge_which_character": {
+    "text": "Recharge which character?",
+    "note": "Card question while The Lost resolves."
+  },
+  "card.the_mirror.pay_hp_down_to_1": {
+    "text": "Pay HP down to 1?",
+    "note": "Card question while The Mirror resolves."
+  },
+  "card.the_missing_page.force_a_reroll_of_the": {
+    "text": "Force a reroll of the 5?",
+    "note": "Card question while The Missing Page resolves."
+  },
+  "card.the_rainmaker.which_curse": {
+    "text": "Which curse?",
+    "note": "Card question while The Rainmaker resolves."
+  },
+  "card.the_scourge.vote": {
+    "text": "Vote: whip or whiff?",
+    "note": "Question of The Scourge: each player votes."
+  },
+  "card.the_scourge.whiff": {
+    "text": "whiff",
+    "note": "Option of The Scourge's vote."
+  },
+  "card.the_scourge.whip": {
+    "text": "whip",
+    "note": "Option of The Scourge's vote."
+  },
+  "card.the_shovel.which_monster_card": {
+    "text": "Which monster card?",
+    "note": "Card question while The Shovel resolves."
+  },
+  "card.tnt_barrel.choose_a_player_or_monster": {
+    "text": "Choose a player or monster.",
+    "note": "Card question while Tnt Barrel resolves."
+  },
+  "card.we_need_to_go_deeper.put_another_monster_card_on": {
+    "text": "Put another monster card on top of the deck?",
+    "note": "Card question while We Need To Go Deeper! resolves."
+  },
+  "card.wizoob.who_destroys_a_soul": {
+    "text": "Who destroys a soul?",
+    "note": "Card question while Wizoob resolves."
+  },
+  "card.xii_the_hanged_man.put_this_card_on_the": {
+    "text": "Put this card on the bottom of its deck?",
+    "note": "Card question while XII. The Hanged Man resolves."
   },
   "choice.back": {
     "text": "Back to the choice",
@@ -460,6 +1232,10 @@
     "text": "{player} rolled {n} — {label}",
     "note": "Stack panel: tooltip of the last roll's small die. label: what the roll was for, from the server."
   },
+  "dice.reroll": {
+    "text": "reroll",
+    "note": "Label under a thrown die when a card rerolls a roll."
+  },
   "dice.rolled": {
     "text": "Rolled {n}",
     "note": "Screen-reader name of a die. n: its number."
@@ -511,9 +1287,21 @@
     "text": "{player} wins!",
     "note": "Effect: banner across the table when someone wins. player: the winner."
   },
+  "error.at_table": {
+    "text": "Leave your table first.",
+    "note": "Error from the server, shown in the lobby or on the table. The player sits at a table already."
+  },
   "error.bad_address": {
     "text": "Type an address like 192.168.1.5, 192.168.1.5:4774 or games.example.com.",
     "note": "Status line on the LAN or Online screen when the address can't be read. Keep the example addresses."
+  },
+  "error.bad_name": {
+    "text": "A nickname has 1 to {n} characters.",
+    "note": "Error from the server, shown in the lobby or on the table. The nickname is empty or too long. n: the most characters."
+  },
+  "error.bad_seats": {
+    "text": "A game has 2 to 4 seats.",
+    "note": "Error from the server, shown in the lobby or on the table. A new game asked for another number of seats."
   },
   "error.card_data": {
     "text": "Card data: {error}",
@@ -523,21 +1311,277 @@
     "text": "This app is older than the server. Update the app to play here.",
     "note": "Status line when the server speaks a newer protocol."
   },
+  "error.deck_ratios": {
+    "text": "{error}",
+    "note": "Host screen: why the deck ratios can't be checked; error: the rules engine's words, in English."
+  },
+  "error.host_loads": {
+    "text": "Only the host continues saved games here.",
+    "note": "Error from the server, shown in the lobby or on the table. A friend tried to continue a saved game on a game hosted in an app."
+  },
+  "error.host_saves": {
+    "text": "Only the host saves the game.",
+    "note": "Error from the server, shown in the lobby or on the table. Save from a player who is not the host."
+  },
+  "error.hosting": {
+    "text": "a game is hosted already",
+    "note": "Error shown to the player. Hosting again while this app hosts a game."
+  },
+  "error.lan_no_network": {
+    "text": "no network to search",
+    "note": "Error shown to the player. LAN screen: no network to look for games on."
+  },
   "error.missing_sets": {
     "text": "You are missing a card set: {sets}",
     "note": "Status line when joining a game that uses card sets this app lacks. sets: the set codes from the server."
+  },
+  "error.nickname_length": {
+    "text": "nickname must be 1–{n} characters",
+    "note": "Error shown to the player. Settings or first start: the nickname is empty or too long. n: the most characters."
+  },
+  "error.no_ban_phase": {
+    "text": "No ban phase now.",
+    "note": "Error from the server, shown in the lobby or on the table. A ban outside the ban phase."
   },
   "error.no_connection": {
     "text": "Could not connect to the server.",
     "note": "Status line when no server answered at the typed address."
   },
+  "error.no_game": {
+    "text": "No game {game}.",
+    "note": "Error from the server, shown in the lobby or on the table. Joining a game that is gone. game: its ID."
+  },
+  "error.no_hello": {
+    "text": "The first message must be hello.",
+    "note": "Error from the server, shown in the lobby or on the table. An app sent something before saying hello (a bug)."
+  },
+  "error.no_pick_phase": {
+    "text": "No pick phase now.",
+    "note": "Error from the server, shown in the lobby or on the table. A character pick outside the pick phase."
+  },
+  "error.no_running_game": {
+    "text": "No running game to save.",
+    "note": "Error from the server, shown in the lobby or on the table. Save with no game running."
+  },
+  "error.no_saves": {
+    "text": "This server does not keep saves.",
+    "note": "Error from the server, shown in the lobby or on the table. Save on a server set up without saves."
+  },
+  "error.no_seat_in_save": {
+    "text": "No seat of this saved game is yours.",
+    "note": "Error from the server, shown in the lobby or on the table. Joining a continued game the player was not in."
+  },
+  "error.no_seat_token": {
+    "text": "No seat for this token.",
+    "note": "Error from the server, shown in the lobby or on the table. Rejoining with a seat that no longer exists."
+  },
+  "error.no_set": {
+    "text": "This server has no card set {set}.",
+    "note": "Error from the server, shown in the lobby or on the table. A new game asked for a set the server lacks. set: its code, e.g. g2."
+  },
+  "error.no_vote": {
+    "text": "There is nothing to vote on.",
+    "note": "Error from the server, shown in the lobby or on the table. A vote came while no vote is open."
+  },
+  "error.not_during_game": {
+    "text": "Not during a game: {type}",
+    "note": "Error from the server, shown in the lobby or on the table. A lobby message during a game (a bug). type: the message type."
+  },
+  "error.not_host": {
+    "text": "Only the host opens games here.",
+    "note": "Error from the server, shown in the lobby or on the table. A friend tried to open a game on a game hosted in an app."
+  },
+  "error.not_in_game": {
+    "text": "Not in a game: {type}",
+    "note": "Error from the server, shown in the lobby or on the table. A game message from a player in no game (a bug). type: the message type."
+  },
+  "error.not_in_pool": {
+    "text": "{card} is not in the pool.",
+    "note": "Error from the server, shown in the lobby or on the table. A ban of a character not offered. card: the character."
+  },
+  "error.not_in_save": {
+    "text": "You did not play this game.",
+    "note": "Error from the server, shown in the lobby or on the table. Continuing a saved game the player was not in."
+  },
+  "error.not_offered": {
+    "text": "{card} is not one of your offers.",
+    "note": "Error from the server, shown in the lobby or on the table. A pick of a character not offered. card: the character."
+  },
+  "error.not_seated": {
+    "text": "Only a seated player can do that in a game.",
+    "note": "Error from the server, shown in the lobby or on the table. A message only seated players may send."
+  },
+  "error.not_started": {
+    "text": "The game has not started: bans and picks first.",
+    "note": "Error from the server, shown in the lobby or on the table. A move before the characters are picked."
+  },
+  "error.not_your_ban": {
+    "text": "It is another player's ban.",
+    "note": "Error from the server, shown in the lobby or on the table. A ban out of turn."
+  },
+  "error.password_long": {
+    "text": "A password has at most {n} characters.",
+    "note": "Error from the server, shown in the lobby or on the table. The new game's password is too long. n: the most characters."
+  },
+  "error.password_needed": {
+    "text": "this game needs a password",
+    "note": "Error from the server, shown in the lobby or on the table. Joining a locked game with no password."
+  },
+  "error.password_wrong": {
+    "text": "wrong password",
+    "note": "Error from the server, shown in the lobby or on the table. Joining a locked game with a wrong password."
+  },
+  "error.paused": {
+    "text": "The game waits for a player who left.",
+    "note": "Error from the server, shown in the lobby or on the table. A move while the game is paused."
+  },
+  "error.protocol": {
+    "text": "This app speaks protocol {app}; the server speaks {server}.",
+    "note": "Error from the server, shown in the lobby or on the table. Versions differ; the app shows its own line for it. app, server: protocol numbers."
+  },
+  "error.refused": {
+    "text": "{reason} ({rule})",
+    "note": "Error after a move the rules refused, shown in a message box. reason: why (a refuse.* line); rule: the rule's ID, e.g. R-CARD-08."
+  },
+  "error.restart_wait": {
+    "text": "The server restarted; players are still coming back.",
+    "note": "Error from the server, shown in the lobby or on the table. A kick vote came too early after a server restart."
+  },
+  "error.rollback.ask_others": {
+    "text": "In Soft rollback you never roll back alone; ask the others.",
+    "note": "Error from the server, shown in the lobby or on the table. A rollback in Soft mode that did not ask the others."
+  },
+  "error.rollback.author_votes": {
+    "text": "Only the other connected players vote; never the author.",
+    "note": "Error from the server, shown in the lobby or on the table. The rollback's author tried to vote on it."
+  },
+  "error.rollback.no_vote": {
+    "text": "No rollback vote is open.",
+    "note": "Error from the server, shown in the lobby or on the table. A rollback vote answer with no vote open."
+  },
+  "error.rollback.no_voters": {
+    "text": "No other player is connected to vote.",
+    "note": "Error from the server, shown in the lobby or on the table. A Soft rollback with nobody to vote."
+  },
+  "error.rollback.none": {
+    "text": "This game has no rollback.",
+    "note": "Error from the server, shown in the lobby or on the table. A rollback in a game opened without rollback."
+  },
+  "error.rollback.not_opener": {
+    "text": "Only whoever opened the rollback vote cancels it.",
+    "note": "Error from the server, shown in the lobby or on the table. Cancelling another player's rollback vote."
+  },
+  "error.rollback.over": {
+    "text": "The game is over.",
+    "note": "Error from the server, shown in the lobby or on the table. A rollback after the game ended."
+  },
+  "error.rollback.seated": {
+    "text": "Only a seated player rolls back.",
+    "note": "Error from the server, shown in the lobby or on the table. A rollback from someone with no seat."
+  },
+  "error.rollback.soft_step": {
+    "text": "Step {n} cannot be rolled back in Soft: a barrier came after it, or it is a pass or a throw.",
+    "note": "Error from the server, shown in the lobby or on the table. A Soft rollback to a step it may not undo. n: the step."
+  },
+  "error.rollback.step": {
+    "text": "Step {n} cannot be rolled back: it is undone, or from before the base.",
+    "note": "Error from the server, shown in the lobby or on the table. A rollback to a step that is gone. n: the step."
+  },
+  "error.rollback.vote_open": {
+    "text": "A rollback vote is open.",
+    "note": "Error from the server, shown in the lobby or on the table. A second rollback while a vote is open."
+  },
+  "error.rollback.vote_wait": {
+    "text": "The game waits for the rollback vote.",
+    "note": "Error from the server, shown in the lobby or on the table. A move while players vote on a rollback."
+  },
+  "error.room_full": {
+    "text": "Every seat is taken.",
+    "note": "Error from the server, shown in the lobby or on the table. Joining a full game."
+  },
+  "error.save_version": {
+    "text": "Saved with rules engine {saved}; this server runs {engine}.",
+    "note": "Error from the server, shown in the lobby or on the table. A saved game from another rules engine. saved, engine: version numbers."
+  },
+  "error.seated_acts": {
+    "text": "Only a seated player acts.",
+    "note": "Error from the server, shown in the lobby or on the table. A move from someone with no seat."
+  },
+  "error.server": {
+    "text": "The server says: {error}",
+    "note": "Error from the server, shown in the lobby or on the table. A problem without words of its own; error is the server's own words, in English."
+  },
   "error.server_outdated": {
     "text": "The server is older than this app. Ask the host to update.",
     "note": "Status line when the server speaks an older protocol."
   },
+  "error.setting_value": {
+    "text": "unknown setting value",
+    "note": "Error shown to the player. Settings: a value that is not one of the choices (a bug)."
+  },
+  "error.sit_first": {
+    "text": "Sit at a table first.",
+    "note": "Error from the server, shown in the lobby or on the table. A table message from a player at no table."
+  },
+  "error.started": {
+    "text": "That game has started.",
+    "note": "Error from the server, shown in the lobby or on the table. Joining a game that already started."
+  },
   "error.unknown": {
     "text": "something went wrong",
     "note": "Status line for a failure that came with no message."
+  },
+  "event.attack_roll": {
+    "text": "attack roll",
+    "note": "What a stack item is: on the stack, in the history and on the throw banner."
+  },
+  "event.combat_damage": {
+    "text": "combat damage",
+    "note": "What a stack item is: on the stack, in the history and on the throw banner."
+  },
+  "event.copy_of": {
+    "text": "copy of {card}",
+    "note": "What a stack item is: on the stack, in the history and on the throw banner. card: the copied loot card."
+  },
+  "event.damage": {
+    "text": "damage",
+    "note": "What a stack item is: on the stack, in the history and on the throw banner."
+  },
+  "event.death": {
+    "text": "death",
+    "note": "What a stack item is: on the stack, in the history and on the throw banner."
+  },
+  "event.death_penalty": {
+    "text": "death penalty",
+    "note": "What a stack item is: on the stack, in the history and on the throw banner."
+  },
+  "event.first_player_roll": {
+    "text": "first player roll",
+    "note": "What a stack item is: on the stack, in the history and on the throw banner. The roll before turn 1 for who goes first."
+  },
+  "event.reward_roll": {
+    "text": "reward roll",
+    "note": "What a stack item is: on the stack, in the history and on the throw banner. A roll that gives a monster's reward."
+  },
+  "event.rewards": {
+    "text": "rewards",
+    "note": "What a stack item is: on the stack, in the history and on the throw banner. The rewards of a dead monster."
+  },
+  "event.roll": {
+    "text": "roll",
+    "note": "What a stack item is: on the stack, in the history and on the throw banner."
+  },
+  "event.roll_result": {
+    "text": "roll result",
+    "note": "What a stack item is: on the stack, in the history and on the throw banner. The effect of a card's roll, once rolled."
+  },
+  "event.soul": {
+    "text": "soul",
+    "note": "What a stack item is: on the stack, in the history and on the throw banner. The soul step after a monster dies."
+  },
+  "event.words": {
+    "text": "{text}",
+    "note": "What a stack item is: on the stack, in the history and on the throw banner. text: an ability's words from the card (not translated yet)."
   },
   "first_roll.again": {
     "text": "Tie: roll again, lowest goes first",
@@ -1738,6 +2782,362 @@
   "pause.wait": {
     "text": "Wait",
     "note": "Pause dialog: button; vote to wait for the players who left."
+  },
+  "prompt.copy_ability": {
+    "text": "Copy which ↷ ability?",
+    "note": "Question of a loot card that copies an item's ↷ (tap) ability."
+  },
+  "prompt.damage_order": {
+    "text": "Which monster takes the damage first?",
+    "note": "Question when a card damages several monsters; the player orders them."
+  },
+  "prompt.discard_room": {
+    "text": "Put a room into discard?",
+    "note": "Question at the end of a turn in which a monster died: the player may discard a room."
+  },
+  "prompt.pass_curse": {
+    "text": "Give the curse to which player?",
+    "note": "Question when a card passes a curse on to another player."
+  },
+  "prompt.redirect": {
+    "text": "Which monster do they attack?",
+    "note": "Question to the player whose card picks the monster another player attacks."
+  },
+  "prompt.replacement": {
+    "text": "Which card applies first?",
+    "note": "Question when several cards change one thing; the player picks the order."
+  },
+  "prompt.replacement_cents": {
+    "text": "Gaining {n}¢: which card applies first?",
+    "note": "Question when several cards change a gain of cents. n: the cents gained."
+  },
+  "prompt.which_die": {
+    "text": "Which dice is the result?",
+    "note": "Question when a card rolls several dice and the player picks one."
+  },
+  "refuse.action_phase": {
+    "text": "Only in the action phase",
+    "note": "Why Attack, Buy or End turn can't be used: the turn is in another phase."
+  },
+  "refuse.answer_prompt": {
+    "text": "Answer the prompt first",
+    "note": "Why a card can't be used: the player has a question to answer first."
+  },
+  "refuse.attack_cost": {
+    "text": "Attacking costs {n}¢",
+    "note": "Why Attack can't be used: a card makes attacks cost cents. n: the cents it costs."
+  },
+  "refuse.cost.cents": {
+    "text": "Not enough ¢",
+    "note": "Why an ability can't be used: its cost is more cents than the player has."
+  },
+  "refuse.cost.counters": {
+    "text": "Not enough counters",
+    "note": "Why an ability can't be used: it removes more counters than the card has."
+  },
+  "refuse.cost.discard": {
+    "text": "No loot card to discard",
+    "note": "Why an ability can't be used: it costs a loot card and the hand is empty."
+  },
+  "refuse.cost.eternal": {
+    "text": "Eternal; it can't be destroyed",
+    "note": "Why an ability that destroys its own card can't be used: the card is eternal."
+  },
+  "refuse.cost.hp": {
+    "text": "Not enough HP",
+    "note": "Why an ability can't be used: its cost is more HP than the player has."
+  },
+  "refuse.cost.used": {
+    "text": "Used; it recharges on your turn",
+    "note": "Why a ↷ item can't be used: it is used (turned) already."
+  },
+  "refuse.deck_ratios": {
+    "text": "Too few cards in these sets for {n} players: {groups}.",
+    "note": "Host screen: why the deck ratios box is off. n: players; groups: each short group (refuse.ratio.*), joined by commas."
+  },
+  "refuse.finish_attack": {
+    "text": "Finish the attack first",
+    "note": "Why Attack, Buy or End turn can't be used during an attack."
+  },
+  "refuse.finish_purchase": {
+    "text": "Finish the purchase first",
+    "note": "Why Attack, Buy or End turn can't be used during a purchase."
+  },
+  "refuse.items_forbidden": {
+    "text": "A card forbids items this turn",
+    "note": "Why an item can't be used: the active player's card forbids it. Sent by the server."
+  },
+  "refuse.loot_forbidden": {
+    "text": "A card forbids loot this turn",
+    "note": "Why a loot card can't be played: the active player's card forbids it."
+  },
+  "refuse.loot_your_turn": {
+    "text": "Loot is played on your turn",
+    "note": "Why a loot card can't be played on another player's turn."
+  },
+  "refuse.must_attack": {
+    "text": "You must attack first",
+    "note": "Why End turn can't be used: a card makes the player attack first. Sent by the server."
+  },
+  "refuse.next_turn": {
+    "text": "Usable from next turn",
+    "note": "Why a room that came in at the end of the turn can't be used yet."
+  },
+  "refuse.no_attacks": {
+    "text": "No attacks left",
+    "note": "Why Attack can't be used. Sent by the server."
+  },
+  "refuse.no_loot_plays": {
+    "text": "No loot plays left",
+    "note": "Why a loot card can't be played: the turn's loot plays are used."
+  },
+  "refuse.no_purchases": {
+    "text": "No purchases left",
+    "note": "Why Buy can't be used. Sent by the server."
+  },
+  "refuse.no_target": {
+    "text": "No valid target now",
+    "note": "Why a card can't be used: nothing it could target is on the table."
+  },
+  "refuse.not_usable": {
+    "text": "Not usable now",
+    "note": "Why a card can't be used, when the rules give no words for players. Also a refused move's message."
+  },
+  "refuse.not_your_turn": {
+    "text": "Not your turn",
+    "note": "Why Attack, Buy or End turn can't be used."
+  },
+  "refuse.nothing_to_copy": {
+    "text": "No item with a ↷ ability to copy",
+    "note": "Why a loot card that copies a ↷ ability can't be played. ↷ is the tap symbol."
+  },
+  "refuse.one_ability": {
+    "text": "Only one ability each turn",
+    "note": "Why an ability can't be used: a card allows one each turn."
+  },
+  "refuse.one_loot": {
+    "text": "Only one loot card each turn",
+    "note": "Why a loot card can't be played: a card allows one each turn."
+  },
+  "refuse.only_your_turn": {
+    "text": "Only on your turn",
+    "note": "Why a room's ability can't be used: only the active player uses rooms."
+  },
+  "refuse.pick.curse": {
+    "text": "Pick a curse.",
+    "note": "Hint after a click on a wrong target while a card aims: what it may target."
+  },
+  "refuse.pick.curse.only": {
+    "text": "Pick a curse. Only the glowing ones fit.",
+    "note": "Hint after a click on a wrong target while a card aims: what it may target; a rule of the card narrows it to the glowing ones."
+  },
+  "refuse.pick.dice_roll": {
+    "text": "Pick a dice roll on the stack.",
+    "note": "Hint after a click on a wrong target while a card aims: what it may target."
+  },
+  "refuse.pick.dice_roll.only": {
+    "text": "Pick a dice roll on the stack. Only the glowing ones fit.",
+    "note": "Hint after a click on a wrong target while a card aims: what it may target; a rule of the card narrows it to the glowing ones."
+  },
+  "refuse.pick.glowing": {
+    "text": "Pick a glowing target.",
+    "note": "Hint after a click on a wrong target while a card aims: what it may target."
+  },
+  "refuse.pick.glowing.only": {
+    "text": "Pick a glowing target. Only the glowing ones fit.",
+    "note": "Hint after a click on a wrong target while a card aims: what it may target; a rule of the card narrows it to the glowing ones."
+  },
+  "refuse.pick.item": {
+    "text": "Pick an item.",
+    "note": "Hint after a click on a wrong target while a card aims: what it may target."
+  },
+  "refuse.pick.item.only": {
+    "text": "Pick an item. Only the glowing ones fit.",
+    "note": "Hint after a click on a wrong target while a card aims: what it may target; a rule of the card narrows it to the glowing ones."
+  },
+  "refuse.pick.item_or_soul": {
+    "text": "Pick an item or a soul.",
+    "note": "Hint after a click on a wrong target while a card aims: what it may target."
+  },
+  "refuse.pick.item_or_soul.only": {
+    "text": "Pick an item or a soul. Only the glowing ones fit.",
+    "note": "Hint after a click on a wrong target while a card aims: what it may target; a rule of the card narrows it to the glowing ones."
+  },
+  "refuse.pick.monster": {
+    "text": "Pick a monster.",
+    "note": "Hint after a click on a wrong target while a card aims: what it may target."
+  },
+  "refuse.pick.monster.only": {
+    "text": "Pick a monster. Only the glowing ones fit.",
+    "note": "Hint after a click on a wrong target while a card aims: what it may target; a rule of the card narrows it to the glowing ones."
+  },
+  "refuse.pick.monster_or_player": {
+    "text": "Pick a monster or a player.",
+    "note": "Hint after a click on a wrong target while a card aims: what it may target."
+  },
+  "refuse.pick.monster_or_player.only": {
+    "text": "Pick a monster or a player. Only the glowing ones fit.",
+    "note": "Hint after a click on a wrong target while a card aims: what it may target; a rule of the card narrows it to the glowing ones."
+  },
+  "refuse.pick.other_player": {
+    "text": "Pick another player.",
+    "note": "Hint after a click on a wrong target while a card aims: what it may target."
+  },
+  "refuse.pick.other_player.only": {
+    "text": "Pick another player. Only the glowing ones fit.",
+    "note": "Hint after a click on a wrong target while a card aims: what it may target; a rule of the card narrows it to the glowing ones."
+  },
+  "refuse.pick.player": {
+    "text": "Pick a player.",
+    "note": "Hint after a click on a wrong target while a card aims: what it may target."
+  },
+  "refuse.pick.player.only": {
+    "text": "Pick a player. Only the glowing ones fit.",
+    "note": "Hint after a click on a wrong target while a card aims: what it may target; a rule of the card narrows it to the glowing ones."
+  },
+  "refuse.pick.stack_ability": {
+    "text": "Pick an ability on the stack.",
+    "note": "Hint after a click on a wrong target while a card aims: what it may target."
+  },
+  "refuse.pick.stack_ability.only": {
+    "text": "Pick an ability on the stack. Only the glowing ones fit.",
+    "note": "Hint after a click on a wrong target while a card aims: what it may target; a rule of the card narrows it to the glowing ones."
+  },
+  "refuse.pick.your_hand_card": {
+    "text": "Pick a loot card in your hand.",
+    "note": "Hint after a click on a wrong target while a card aims: what it may target."
+  },
+  "refuse.pick.your_hand_card.only": {
+    "text": "Pick a loot card in your hand. Only the glowing ones fit.",
+    "note": "Hint after a click on a wrong target while a card aims: what it may target; a rule of the card narrows it to the glowing ones."
+  },
+  "refuse.pick.your_item": {
+    "text": "Pick one of your items.",
+    "note": "Hint after a click on a wrong target while a card aims: what it may target."
+  },
+  "refuse.pick.your_item.only": {
+    "text": "Pick one of your items. Only the glowing ones fit.",
+    "note": "Hint after a click on a wrong target while a card aims: what it may target; a rule of the card narrows it to the glowing ones."
+  },
+  "refuse.ratio.active_items": {
+    "text": "Active items {have} of {need}",
+    "note": "One deck ratio group with too few cards, in refuse.deck_ratios. have: its cards in the chosen sets; need: the cards the ratios take."
+  },
+  "refuse.ratio.bad_events": {
+    "text": "Bad events {have} of {need}",
+    "note": "One deck ratio group with too few cards, in refuse.deck_ratios. have: its cards in the chosen sets; need: the cards the ratios take."
+  },
+  "refuse.ratio.basic_monsters": {
+    "text": "Basic monsters {have} of {need}",
+    "note": "One deck ratio group with too few cards, in refuse.deck_ratios. have: its cards in the chosen sets; need: the cards the ratios take."
+  },
+  "refuse.ratio.batteries": {
+    "text": "Batteries {have} of {need}",
+    "note": "One deck ratio group with too few cards, in refuse.deck_ratios. have: its cards in the chosen sets; need: the cards the ratios take."
+  },
+  "refuse.ratio.bombs": {
+    "text": "Bombs {have} of {need}",
+    "note": "One deck ratio group with too few cards, in refuse.deck_ratios. have: its cards in the chosen sets; need: the cards the ratios take."
+  },
+  "refuse.ratio.bosses": {
+    "text": "Bosses {have} of {need}",
+    "note": "One deck ratio group with too few cards, in refuse.deck_ratios. have: its cards in the chosen sets; need: the cards the ratios take."
+  },
+  "refuse.ratio.butter_beans": {
+    "text": "Butter Beans {have} of {need}",
+    "note": "One deck ratio group with too few cards, in refuse.deck_ratios. have: its cards in the chosen sets; need: the cards the ratios take."
+  },
+  "refuse.ratio.cursed_monsters": {
+    "text": "Cursed monsters {have} of {need}",
+    "note": "One deck ratio group with too few cards, in refuse.deck_ratios. have: its cards in the chosen sets; need: the cards the ratios take."
+  },
+  "refuse.ratio.curses": {
+    "text": "Curses {have} of {need}",
+    "note": "One deck ratio group with too few cards, in refuse.deck_ratios. have: its cards in the chosen sets; need: the cards the ratios take."
+  },
+  "refuse.ratio.dice_shards_soul_hearts": {
+    "text": "Dice Shards and Soul Hearts {have} of {need}",
+    "note": "One deck ratio group with too few cards, in refuse.deck_ratios. have: its cards in the chosen sets; need: the cards the ratios take."
+  },
+  "refuse.ratio.epic_bosses": {
+    "text": "Epic bosses {have} of {need}",
+    "note": "One deck ratio group with too few cards, in refuse.deck_ratios. have: its cards in the chosen sets; need: the cards the ratios take."
+  },
+  "refuse.ratio.four_cents": {
+    "text": "4¢ loot {have} of {need}",
+    "note": "One deck ratio group with too few cards, in refuse.deck_ratios. have: its cards in the chosen sets; need: the cards the ratios take."
+  },
+  "refuse.ratio.good_events": {
+    "text": "Good events {have} of {need}",
+    "note": "One deck ratio group with too few cards, in refuse.deck_ratios. have: its cards in the chosen sets; need: the cards the ratios take."
+  },
+  "refuse.ratio.holy_charmed_monsters": {
+    "text": "Holy and Charmed monsters {have} of {need}",
+    "note": "One deck ratio group with too few cards, in refuse.deck_ratios. have: its cards in the chosen sets; need: the cards the ratios take."
+  },
+  "refuse.ratio.lost_souls": {
+    "text": "Lost Souls {have} of {need}",
+    "note": "One deck ratio group with too few cards, in refuse.deck_ratios. have: its cards in the chosen sets; need: the cards the ratios take."
+  },
+  "refuse.ratio.nickels": {
+    "text": "Nickels {have} of {need}",
+    "note": "One deck ratio group with too few cards, in refuse.deck_ratios. have: its cards in the chosen sets; need: the cards the ratios take."
+  },
+  "refuse.ratio.no_group": {
+    "text": "no group {have} of {need}",
+    "note": "A card outside every deck ratio group, in refuse.deck_ratios (should not show). have, need: card counts."
+  },
+  "refuse.ratio.one_use_items": {
+    "text": "One-use items {have} of {need}",
+    "note": "One deck ratio group with too few cards, in refuse.deck_ratios. have: its cards in the chosen sets; need: the cards the ratios take."
+  },
+  "refuse.ratio.paid_items": {
+    "text": "Paid items {have} of {need}",
+    "note": "One deck ratio group with too few cards, in refuse.deck_ratios. have: its cards in the chosen sets; need: the cards the ratios take."
+  },
+  "refuse.ratio.passive_items": {
+    "text": "Passive items {have} of {need}",
+    "note": "One deck ratio group with too few cards, in refuse.deck_ratios. have: its cards in the chosen sets; need: the cards the ratios take."
+  },
+  "refuse.ratio.pennies": {
+    "text": "Pennies {have} of {need}",
+    "note": "One deck ratio group with too few cards, in refuse.deck_ratios. have: its cards in the chosen sets; need: the cards the ratios take."
+  },
+  "refuse.ratio.pills_runes": {
+    "text": "Pills and Runes {have} of {need}",
+    "note": "One deck ratio group with too few cards, in refuse.deck_ratios. have: its cards in the chosen sets; need: the cards the ratios take."
+  },
+  "refuse.ratio.soul_items": {
+    "text": "Soul items {have} of {need}",
+    "note": "One deck ratio group with too few cards, in refuse.deck_ratios. have: its cards in the chosen sets; need: the cards the ratios take."
+  },
+  "refuse.ratio.three_cents": {
+    "text": "3¢ loot {have} of {need}",
+    "note": "One deck ratio group with too few cards, in refuse.deck_ratios. have: its cards in the chosen sets; need: the cards the ratios take."
+  },
+  "refuse.ratio.trinkets": {
+    "text": "Trinkets {have} of {need}",
+    "note": "One deck ratio group with too few cards, in refuse.deck_ratios. have: its cards in the chosen sets; need: the cards the ratios take."
+  },
+  "refuse.ratio.two_cents": {
+    "text": "2¢ loot {have} of {need}",
+    "note": "One deck ratio group with too few cards, in refuse.deck_ratios. have: its cards in the chosen sets; need: the cards the ratios take."
+  },
+  "refuse.ratio.wildcards": {
+    "text": "Tarot and wildcards {have} of {need}",
+    "note": "One deck ratio group with too few cards, in refuse.deck_ratios. have: its cards in the chosen sets; need: the cards the ratios take."
+  },
+  "refuse.turn_ending": {
+    "text": "The turn is ending",
+    "note": "Why Attack, Buy or End turn can't be used: the end of the turn was declared."
+  },
+  "refuse.wait_priority": {
+    "text": "Wait for your priority",
+    "note": "Why a card can't be used: another player acts now; the player may act after."
+  },
+  "refuse.wait_stack": {
+    "text": "Wait for the stack to resolve",
+    "note": "Why Attack, Buy or End turn can't be used: something waits on the stack."
   },
   "rollback.ask.other": {
     "text": "{player} asks to undo a move",

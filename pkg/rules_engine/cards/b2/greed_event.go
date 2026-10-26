@@ -2,6 +2,11 @@ package b2
 
 import engine "github.com/FourSoulsRepo/rules_engine"
 
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	greedEventWhichPlayerLoses = engine.NewKey("card.greed_event.which_player_loses_all_their")
+)
+
 // Greed! (Bad Event Card)
 //
 //	Choose the player with the most ¢ or tied for the most. That player loses all their ¢.
@@ -20,8 +25,8 @@ var greedEvent = engine.CardDef{
 					p := richest(c.G)[a[0]]
 					c.Do(engine.EffectFunc(func(c *engine.Ctx) { c.G.Players[p].Cents = 0 }))
 				}
-			}, engine.Question{Text: "Which player loses all their ¢?", Options: func(c *engine.Ctx, _ []int) []string {
-				var out []string
+			}, engine.Question{Text: greedEventWhichPlayerLoses, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
+				var out []engine.Msg
 				for _, p := range richest(c.G) {
 					out = append(out, playerLabel(c.G, p))
 				}

@@ -14,7 +14,7 @@ func TestRestockMachine(t *testing.T) {
 		Rooms:    []engine.CardRef{"restock_machine"},
 	})
 	tb.G.Players[0].Cents = 2
-	useRoom(tb, 0, 0, "each monster not being attacked")
+	useRoom(tb, 0, 0, "card.restock_machine.monsters")
 	if !inDiscard(tb.G, engine.MonsterDeck, "fly") || inDiscard(tb.G, engine.TreasureDeck, "jawbone") {
 		t.Error("the monsters go to discard, the shop stays")
 	}

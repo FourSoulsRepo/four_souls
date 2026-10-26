@@ -13,7 +13,7 @@ func TestDadsNote(t *testing.T) {
 		tb.G.PutOnDeck(engine.MonsterDeck, c)
 		tb.G.MillTop(engine.MonsterDeck)
 	}
-	tb.Play(0, "dads_note", "pooter", "slot 1: fly", "big_spider", "slot 1: fly", "done")
+	tb.Play(0, "dads_note", "pooter", "ask.slot_card 1 fly", "big_spider", "ask.slot_card 1 fly", "ask.done")
 	if got := top(tb, 0); got != "big_spider" {
 		t.Errorf("slot 1 = %s, want big_spider on top", got)
 	}

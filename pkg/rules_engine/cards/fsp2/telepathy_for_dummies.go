@@ -5,6 +5,11 @@ import (
 	"github.com/FourSoulsRepo/rules_engine/cards/cardkit"
 )
 
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	telepathyForDummiesChangeYourRoll = engine.NewKey("card.telepathy_for_dummies.change_your_roll_to_the")
+)
+
 // Telepathy For Dummies (Passive Treasure Card)
 //
 //	At the start of your turn, roll-
@@ -39,7 +44,7 @@ var telepathyForDummies = engine.CardDef{
 				if ok && a[0] == 0 && n > 0 {
 					c.G.SetRoll(it.ID, n, c.Source)
 				}
-			}, engine.Question{Text: "Change your roll to the stored result?", Options: func(*engine.Ctx, []int) []string { return []string{"yes", "No"} }})},
+			}, engine.Question{Text: telepathyForDummiesChangeYourRoll, Options: func(*engine.Ctx, []int) []engine.Msg { return engine.Options(engine.AskYes, engine.AskNo) }})},
 		},
 	},
 }

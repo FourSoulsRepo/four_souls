@@ -2,6 +2,14 @@ package b2
 
 import engine "github.com/FourSoulsRepo/rules_engine"
 
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	cheeseGraterDiscard      = engine.NewKey("card.cheese_grater.discard")
+	cheeseGraterPutBack      = engine.NewKey("card.cheese_grater.put_back")
+	cheeseGraterPutItBack    = engine.NewKey("card.cheese_grater.put_it_back_or_into")
+	cheeseGraterRevealTheTop = engine.NewKey("card.cheese_grater.reveal_the_top_card_of")
+)
+
 // Cheese Grater (Passive Treasure Card)
 //
 //	Each time a player rolls a ❻, reveal the top card of any deck. Put it back or put it into discard.
@@ -23,11 +31,11 @@ var cheeseGrater = engine.CardDef{
 				if a[1] == 1 {
 					c.G.MillTop(d)
 				}
-			}, engine.DeckQuestion("Reveal the top card of which deck?"), engine.Question{Text: "Put it back or into discard?", Options: func(c *engine.Ctx, a []int) []string {
+			}, engine.DeckQuestion(cheeseGraterRevealTheTop), engine.Question{Text: cheeseGraterPutItBack, Options: func(c *engine.Ctx, a []int) []engine.Msg {
 				if a[0] < 0 || len(c.G.DeckTop(c.Deck(a[0]), 1)) == 0 {
 					return nil
 				}
-				return []string{"put it back", "discard it"}
+				return engine.Options(cheeseGraterPutBack, cheeseGraterDiscard)
 			}})},
 		},
 	},

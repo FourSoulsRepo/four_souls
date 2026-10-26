@@ -2,6 +2,11 @@ package b2
 
 import engine "github.com/FourSoulsRepo/rules_engine"
 
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	spiderModReplaceWhichMonster = engine.NewKey("card.spider_mod.replace_which_monster")
+)
+
 // Spider Mod (Passive Treasure Card)
 //
 //	Each time a player rolls a ❺, you may put a monster not being attacked into discard and replace it with the top card of the monster deck.
@@ -19,15 +24,15 @@ var spiderMod = engine.CardDef{
 					c.G.DiscardMonster(ids[a[0]])
 					c.G.RefillSlots()
 				}
-			}, engine.Question{Text: "Replace which monster?", Options: func(c *engine.Ctx, _ []int) []string {
-				var out []string
+			}, engine.Question{Text: spiderModReplaceWhichMonster, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
+				var out []engine.Msg
 				for _, id := range notAttacked(c.G) {
-					out = append(out, string(c.G.Object(id).Card))
+					out = append(out, engine.CardOption(c.G.Object(id).Card))
 				}
 				if out == nil {
 					return nil
 				}
-				return append(out, "none")
+				return append(out, engine.AskNone.Msg())
 			}})},
 		},
 	},

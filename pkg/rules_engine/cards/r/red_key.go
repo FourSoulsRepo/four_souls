@@ -1,9 +1,15 @@
 package r
 
 import (
-	"strconv"
-
 	engine "github.com/FourSoulsRepo/rules_engine"
+	"github.com/FourSoulsRepo/rules_engine/cards/cardkit"
+)
+
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	redKeyNotInAttack  = engine.NewKey("card.red_key.not_in_attack")
+	redKeyPutItIn      = engine.NewKey("card.red_key.put_it_in_which_slot")
+	redKeyPutWhichCard = engine.NewKey("card.red_key.put_which_card_in_a")
 )
 
 // Red Key (Active Treasure Card)
@@ -17,7 +23,7 @@ var redKey = engine.CardDef{
 	Abilities: []engine.Ability{{
 		Kind: engine.Activated,
 		Text: "↷: Look at the top 3 cards of the room or monster deck. You may put one of those in a slot and the rest back. This can't be activated during an attack.",
-		Costs: []engine.Cost{engine.Tap(), engine.If("not during an attack", func(g *engine.Game, _ engine.PlayerID, _ engine.ObjectID) bool {
+		Costs: []engine.Cost{engine.Tap(), engine.If(redKeyNotInAttack, func(g *engine.Game, _ engine.PlayerID, _ engine.ObjectID) bool {
 			return !g.Attack.On
 		})},
 		Effects: []engine.Effect{engine.Ask(func(c *engine.Ctx, a []int) {
@@ -39,26 +45,26 @@ var redKey = engine.CardDef{
 			} else {
 				c.G.PlaceFromDeck(top[a[1]], slots[a[2]])
 			}
-		}, engine.Question{Text: "Look at which deck?", Options: func(c *engine.Ctx, _ []int) []string {
+		}, engine.Question{Text: cardkit.AskLookAtWhichDeck, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
 			return deckLabels(monsterOrRoomDecks(c.G))
 		}}, engine.Question{
-			Text: "Put which card in a slot?",
-			Options: func(c *engine.Ctx, a []int) []string {
+			Text: redKeyPutWhichCard,
+			Options: func(c *engine.Ctx, a []int) []engine.Msg {
 				if ds := monsterOrRoomDecks(c.G); a[0] >= 0 && a[0] < len(ds) {
-					return append(labelsOf(c.G, c.G.DeckTop(ds[a[0]], 3)), "none")
+					return append(labelsOf(c.G, c.G.DeckTop(ds[a[0]], 3)), engine.AskNone.Msg())
 				}
 				return nil
 			},
 		}, engine.Question{
-			Text: "Put it in which slot?",
-			Options: func(c *engine.Ctx, a []int) []string {
+			Text: redKeyPutItIn,
+			Options: func(c *engine.Ctx, a []int) []engine.Msg {
 				ds := monsterOrRoomDecks(c.G)
 				if a[0] < 0 || a[0] >= len(ds) || a[1] < 0 || a[1] >= len(c.G.DeckTop(ds[a[0]], 3)) {
 					return nil
 				}
-				var out []string
+				var out []engine.Msg
 				for _, i := range keySlots(c.G, ds[a[0]]) {
-					out = append(out, "slot "+strconv.Itoa(i+1))
+					out = append(out, engine.SlotOption(i+1, ""))
 				}
 				return out
 			},

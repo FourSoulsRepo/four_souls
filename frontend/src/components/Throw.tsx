@@ -1,7 +1,7 @@
 import type { Actions } from '../actions';
 import { PromptKind } from '../actions';
 import { diceImage } from '../dice';
-import { t } from '../i18n';
+import { say, t } from '../i18n';
 import { useKey } from '../keys';
 import type { Prompt } from '../protocol';
 import type { Names } from '../stack';
@@ -42,7 +42,7 @@ export function Throw({ waiting, you, names, action, disabled }: Props) {
     return null;
   }
   const mine = waiting.player === you;
-  const label = waiting.text ?? '';
+  const label = say(waiting.text, names);
   if (lit) {
     return (
       <div className="throw" role="region" aria-label={t('throw.label')}>

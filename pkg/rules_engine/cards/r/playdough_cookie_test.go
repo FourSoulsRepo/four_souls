@@ -8,12 +8,12 @@ import (
 
 func TestPlaydoughCookie(t *testing.T) {
 	tb := setup(t, engine.SituationSetup{Players: []engine.SituationPlayer{seat("cain"), seat("isaac", "playdough_cookie", "spoon_bender")}})
-	tb.EndTurn("none")
+	tb.EndTurn("ask.none")
 	if tb.G.Players[1].Cents != 1 {
 		t.Error("no item chosen: gain 1¢")
 	}
 	tb.EndTurn()
-	tb.EndTurn("spoon_bender", "add a counter")
+	tb.EndTurn("spoon_bender", "ask.counter.add")
 	if tb.G.Object(tb.Find(1, "spoon_bender")).CountersOf("") != 1 {
 		t.Error("a counter on the Spoon Bender")
 	}

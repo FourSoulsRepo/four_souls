@@ -1,6 +1,15 @@
 package b2
 
-import engine "github.com/FourSoulsRepo/rules_engine"
+import (
+	engine "github.com/FourSoulsRepo/rules_engine"
+	"github.com/FourSoulsRepo/rules_engine/cards/cardkit"
+)
+
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	fingerForWhichOf  = engine.NewKey("card.finger.for_which_of_their_items")
+	fingerSwapWhichOf = engine.NewKey("card.finger.swap_which_of_your_items")
+)
 
 // Finger! (Passive Treasure Card)
 //
@@ -30,27 +39,27 @@ func nonEternalItems(g *engine.Game, p engine.PlayerID) []engine.ObjectID {
 	return out
 }
 
-var fingerMine = engine.Question{Text: "Swap which of your items?", Options: func(c *engine.Ctx, _ []int) []string {
+var fingerMine = engine.Question{Text: fingerSwapWhichOf, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
 	if c.EventPlayer == engine.NoPlayer || c.EventPlayer == c.Controller || len(nonEternalItems(c.G, c.EventPlayer)) == 0 {
 		return nil
 	}
-	var out []string
+	var out []engine.Msg
 	for _, id := range nonEternalItems(c.G, c.Controller) {
-		out = append(out, string(c.G.Object(id).Card))
+		out = append(out, engine.CardOption(c.G.Object(id).Card))
 	}
 	if out == nil {
 		return nil
 	}
-	return append(out, "don't swap")
+	return append(out, cardkit.AskDontSwap.Msg())
 }}
 
-var fingerTheirs = engine.Question{Text: "For which of their items?", Options: func(c *engine.Ctx, a []int) []string {
+var fingerTheirs = engine.Question{Text: fingerForWhichOf, Options: func(c *engine.Ctx, a []int) []engine.Msg {
 	if a[0] < 0 || a[0] >= len(nonEternalItems(c.G, c.Controller)) {
 		return nil
 	}
-	var out []string
+	var out []engine.Msg
 	for _, id := range nonEternalItems(c.G, c.EventPlayer) {
-		out = append(out, string(c.G.Object(id).Card))
+		out = append(out, engine.CardOption(c.G.Object(id).Card))
 	}
 	return out
 }}

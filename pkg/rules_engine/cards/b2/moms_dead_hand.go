@@ -1,6 +1,9 @@
 package b2
 
-import engine "github.com/FourSoulsRepo/rules_engine"
+import (
+	engine "github.com/FourSoulsRepo/rules_engine"
+	"github.com/FourSoulsRepo/rules_engine/cards/cardkit"
+)
 
 // Mom’s Dead Hand (Basic Monster Card)
 //
@@ -23,15 +26,15 @@ var momsDeadHand = engine.CardDef{
 				if ids := othersItems(c); a[0] >= 0 && a[0] < len(ids) {
 					c.G.GainControl(c.Controller, ids[a[0]])
 				}
-			}, engine.Question{Text: "Steal which item?", Options: func(c *engine.Ctx, _ []int) []string {
-				var out []string
+			}, engine.Question{Text: cardkit.AskStealWhichItem, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
+				var out []engine.Msg
 				for _, id := range othersItems(c) {
-					out = append(out, string(c.G.Object(id).Card))
+					out = append(out, engine.CardOption(c.G.Object(id).Card))
 				}
 				if out == nil {
 					return nil
 				}
-				return append(out, "none")
+				return append(out, engine.AskNone.Msg())
 			}})},
 		},
 	},

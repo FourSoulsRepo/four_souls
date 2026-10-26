@@ -2,6 +2,11 @@ package r
 
 import engine "github.com/FourSoulsRepo/rules_engine"
 
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	tntBarrelChooseAPlayer = engine.NewKey("card.tnt_barrel.choose_a_player_or_monster")
+)
+
 // Tnt Barrel (Good Event Card)
 //
 //	Choose a player or monster, then roll-
@@ -23,7 +28,7 @@ var tntBarrel = engine.CardDef{
 			them := *c
 			them.Targets = []engine.Chosen{ts[a[0]]}
 			them.Do(engine.Roll(tntTable))
-		}, tntTable, engine.Question{Text: "Choose a player or monster.", Options: func(c *engine.Ctx, _ []int) []string {
+		}, tntTable, engine.Question{Text: tntBarrelChooseAPlayer, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
 			return chosenLabels(c.G, monstersAndPlayers(c.G))
 		}})},
 	}},

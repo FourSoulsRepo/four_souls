@@ -2,6 +2,11 @@ package b2
 
 import engine "github.com/FourSoulsRepo/rules_engine"
 
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	weNeedToGoDeeperPutAnotherMonster = engine.NewKey("card.we_need_to_go_deeper.put_another_monster_card_on")
+)
+
 // We Need To Go Deeper! (Good Event Card)
 //
 //	Put any number of non-event monster cards in discard on top of the monster deck.
@@ -25,18 +30,18 @@ var weNeedToGoDeeper = engine.CardDef{
 func deeperQuestions() []engine.Question {
 	var qs []engine.Question
 	for range 12 {
-		qs = append(qs, engine.Question{Text: "Put another monster card on top of the deck?", Options: func(c *engine.Ctx, a []int) []string {
+		qs = append(qs, engine.Question{Text: weNeedToGoDeeperPutAnotherMonster, Options: func(c *engine.Ctx, a []int) []engine.Msg {
 			if len(a) > 0 && (a[len(a)-1] < 0 || a[len(a)-1] == len(deeperLeft(c, a[:len(a)-1]))) {
 				return nil // done
 			}
-			var out []string
+			var out []engine.Msg
 			for _, id := range deeperLeft(c, a) {
-				out = append(out, string(c.G.Object(id).Card))
+				out = append(out, engine.CardOption(c.G.Object(id).Card))
 			}
 			if out == nil {
 				return nil
 			}
-			return append(out, "done")
+			return append(out, engine.AskDone.Msg())
 		}})
 	}
 	return qs

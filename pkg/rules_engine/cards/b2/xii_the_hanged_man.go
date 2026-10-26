@@ -1,6 +1,14 @@
 package b2
 
-import engine "github.com/FourSoulsRepo/rules_engine"
+import (
+	engine "github.com/FourSoulsRepo/rules_engine"
+	"github.com/FourSoulsRepo/rules_engine/cards/cardkit"
+)
+
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	xiiTheHangedManPutThisCard = engine.NewKey("card.xii_the_hanged_man.put_this_card_on_the")
+)
 
 // XII. The Hanged Man (Wildcard Card)
 //
@@ -23,14 +31,14 @@ func hangedManQuestions() []engine.Question {
 	var qs []engine.Question
 	for k := range 4 { // at most 4 decks
 		qs = append(qs, engine.Question{
-			Text: "Put this card on the bottom of its deck?",
-			Options: func(c *engine.Ctx, _ []int) []string {
+			Text: xiiTheHangedManPutThisCard,
+			Options: func(c *engine.Ctx, _ []int) []engine.Msg {
 				decks := c.G.DecksInPlay()
 				if k >= len(decks) || len(c.G.Decks[decks[k]]) == 0 {
 					return nil
 				}
 				top := c.G.Object(c.G.DeckTop(decks[k], 1)[0]).Card
-				return []string{"keep " + string(top) + " on top", "put " + string(top) + " on the bottom"}
+				return cardkit.KeepOrBottom(top)
 			},
 		})
 	}

@@ -5,6 +5,11 @@ import (
 	"github.com/FourSoulsRepo/rules_engine/cards/cardkit"
 )
 
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	soulbondWhichPlayerDies = engine.NewKey("card.soulbond.which_player_dies")
+)
+
 // Soulbond (Eternal Treasure Card)
 //
 //	Each time you die, choose another player. That player dies.
@@ -35,7 +40,7 @@ var soulbond = engine.CardDef{
 				them.Targets = []engine.Chosen{{Kind: engine.TargetPlayer, Player: ps[a[0]]}}
 				them.Do(engine.Kill(0))
 			}
-		}, engine.Question{Text: "Which player dies?", Options: func(c *engine.Ctx, _ []int) []string {
+		}, engine.Question{Text: soulbondWhichPlayerDies, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
 			return playerLabels(c.G, cardkit.LivingPlayers(c.G, c.Controller))
 		}})},
 	}},

@@ -1,6 +1,15 @@
 package r
 
-import engine "github.com/FourSoulsRepo/rules_engine"
+import (
+	engine "github.com/FourSoulsRepo/rules_engine"
+	"github.com/FourSoulsRepo/rules_engine/cards/cardkit"
+)
+
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	restockMachineMonsters = engine.NewKey("card.restock_machine.monsters")
+	restockMachineShop     = engine.NewKey("card.restock_machine.shop")
+)
 
 // Restock Machine (Room Card)
 //
@@ -20,8 +29,8 @@ var restockMachine = engine.CardDef{
 			} else {
 				c.Do(eachMonsterToDiscard(true))
 			}
-		}, engine.Question{Text: "Put which into discard?", Options: func(*engine.Ctx, []int) []string {
-			return []string{"each shop item", "each monster not being attacked"}
+		}, engine.Question{Text: cardkit.AskPutWhichIntoDiscard, Options: func(*engine.Ctx, []int) []engine.Msg {
+			return engine.Options(restockMachineShop, restockMachineMonsters)
 		}})},
 	}},
 }

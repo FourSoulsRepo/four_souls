@@ -1,9 +1,12 @@
 // Network messages (ADR 006), mirroring internal/protocol/protocol.go.
 // Only what the client uses so far; protocol.test.ts checks these types
 // against Go's golden file. Go sends a nil list as null.
-import { t } from './i18n';
+import { say, t } from './i18n';
+import type { Msg } from './locale';
 
-export const protocolVersion = 5;
+export type { Msg } from './locale';
+
+export const protocolVersion = 6;
 export const defaultPort = 4774;
 
 export interface Envelope {
@@ -63,6 +66,8 @@ export interface ProtocolError {
   code: string;
   message: string;
   rule?: string;
+  // text is what the player reads (ADR 021); message is for developers.
+  text?: Msg;
 }
 
 export interface GameInfo {
@@ -223,21 +228,31 @@ export function recordURL(ws: string, game: string, token: string): string | nul
   return `${ws.replace(/^ws/, 'http').replace(/\/ws$/, '/record')}?${q.toString()}`;
 }
 
-// errorText is what the player reads for a server error.
-export function errorText(e: ProtocolError): string {
+// errorText is what the player reads for a server error: its text in
+// the player's language, else its message (ADR 021). names names the
+// cards and players a text may hold.
+export function errorText(e: ProtocolError, names: MsgNames = plainNames): string {
   switch (e.code) {
     case 'client_outdated':
       return t('error.client_outdated');
     case 'server_outdated':
       return t('error.server_outdated');
-    case 'missing_sets':
-      return t('error.missing_sets', { sets: e.message });
-    case 'refused':
-      return e.rule ? `${e.message} (${e.rule})` : e.message;
-    default:
-      return e.message;
   }
+  const text = e.text ? say(e.text, names) : e.message;
+  return e.code === 'refused' && e.rule ? t('error.refused', { reason: text, rule: e.rule }) : text;
 }
+
+// MsgNames names the cards and players of a message (ADR 021, 6).
+export interface MsgNames {
+  player: (p: number) => string;
+  card: (ref: string) => string;
+}
+
+// plainNames shows refs as they are, where no names are at hand.
+export const plainNames: MsgNames = {
+  player: (p) => t('table.player_n', { n: p + 1 }),
+  card: (ref) => ref,
+};
 
 // Engine types (pkg/rules_engine), as updates carry them. Enums are
 // numbers in Go's order; see the constants below.
@@ -290,7 +305,7 @@ export interface StatSource {
   card?: string;
   amount: number;
   lasts: "in_play" | "turn" | "next_roll";
-  when?: string; // a condition, e.g. "first attack roll"
+  when?: Msg; // a condition, e.g. "first attack roll"
 }
 
 export interface SlotView {
@@ -368,7 +383,7 @@ export interface StackItem {
   card?: string;
   roll?: number;
   amount?: number;
-  label?: string;
+  label?: Msg; // what it is, e.g. "attack roll" (ADR 021)
   target: Target;
   attack?: boolean;
   ability: AbilityRef;
@@ -398,9 +413,9 @@ export interface Prompt {
   kind: number;
   player: number;
   count?: number;
-  options?: string[];
+  options?: Msg[];
   purpose?: number;
-  text?: string;
+  text?: Msg; // the question, or the roll a throw is for
 }
 
 export interface GameView {
@@ -475,7 +490,7 @@ export interface OddsView {
 // ModeView is one "choose one-" option: its words, and the prompt
 // option that picks it, or -1 when it has no valid target now (15.58).
 export interface ModeView {
-  text: string;
+  text: string; // the card's own words (card data, not translated yet)
   option: number;
 }
 
@@ -504,7 +519,7 @@ export interface OutcomeView {
 export interface Aim {
   intent: number;
   targets: OptionView[];
-  reason?: string; // what it may target, for a wrong click (15.33)
+  reason?: Msg; // what it may target, for a wrong click (15.33)
 }
 
 // Block says why the intent of that kind, on object if a card, can't be
@@ -512,7 +527,7 @@ export interface Aim {
 export interface Block {
   kind: number;
   object: number;
-  reason: string;
+  reason: Msg;
 }
 
 export interface Intent {
@@ -528,7 +543,8 @@ export interface GameEvent {
   object?: number;
   card?: string;
   amount?: number;
-  text?: string;
+  text?: string; // a code ("combat", "starting item"), never shown as it is
+  label?: Msg; // a stack item's label; a random pick's option (ADR 021)
   private?: boolean;
   // seen_by: who else sees a private card (the giver of a hand card).
   seen_by?: number[];

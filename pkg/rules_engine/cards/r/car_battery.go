@@ -1,6 +1,9 @@
 package r
 
-import engine "github.com/FourSoulsRepo/rules_engine"
+import (
+	engine "github.com/FourSoulsRepo/rules_engine"
+	"github.com/FourSoulsRepo/rules_engine/cards/cardkit"
+)
 
 // Car Battery (Paid Treasure Card)
 //
@@ -42,7 +45,7 @@ func rechargeUpTo(n int) engine.Effect {
 	}
 	qs := make([]engine.Question, n)
 	for i := range qs {
-		qs[i] = engine.Question{Text: "Recharge which item?", Options: func(c *engine.Ctx, a []int) []string {
+		qs[i] = engine.Question{Text: cardkit.AskRechargeWhichItem, Options: func(c *engine.Ctx, a []int) []engine.Msg {
 			if i > 0 && a[i-1] < 0 {
 				return nil
 			}
@@ -56,7 +59,7 @@ func rechargeUpTo(n int) engine.Effect {
 			if len(left) == 0 {
 				return nil
 			}
-			return append(labelsOf(c.G, left), "done")
+			return append(labelsOf(c.G, left), engine.AskDone.Msg())
 		}}
 	}
 	return engine.Ask(func(c *engine.Ctx, a []int) {

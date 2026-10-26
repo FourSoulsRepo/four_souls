@@ -324,7 +324,7 @@ function LastRollDie({ names }: { names: Names }) {
   if (!last) {
     return null;
   }
-  const text = lastRollText(last, names.player);
+  const text = lastRollText(last, names);
   return (
     <span className="last-roll" role="group" aria-label={t('stack.last_roll')} tabIndex={0}>
       <Die value={last.value} image={image} />

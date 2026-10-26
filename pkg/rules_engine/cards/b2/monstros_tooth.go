@@ -2,6 +2,12 @@ package b2
 
 import engine "github.com/FourSoulsRepo/rules_engine"
 
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	monstrosToothDestroyWhichOf = engine.NewKey("card.monstros_tooth.destroy_which_of_your_items")
+	monstrosToothWhichPlayer    = engine.NewKey("card.monstros_tooth.which_player")
+)
+
 // Monstro’s Tooth (Passive Treasure Card)
 //
 //	At the start of your turn, choose a player at random. That player destroys an item they control.
@@ -20,8 +26,8 @@ var monstrosTooth = engine.CardDef{
 	},
 }
 
-var toothPlayer = engine.Question{Random: true, Text: "Which player?", Options: func(c *engine.Ctx, _ []int) []string {
-	var out []string
+var toothPlayer = engine.Question{Random: true, Text: monstrosToothWhichPlayer, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
+	var out []engine.Msg
 	for _, pl := range c.G.Players {
 		out = append(out, playerLabel(c.G, pl.ID))
 	}
@@ -29,12 +35,12 @@ var toothPlayer = engine.Question{Random: true, Text: "Which player?", Options: 
 }}
 
 var toothItem = engine.Question{
-	Text:   "Destroy which of your items?",
+	Text:   monstrosToothDestroyWhichOf,
 	Player: func(_ *engine.Ctx, a []int) engine.PlayerID { return engine.PlayerID(a[0]) },
-	Options: func(c *engine.Ctx, a []int) []string {
-		var out []string
+	Options: func(c *engine.Ctx, a []int) []engine.Msg {
+		var out []engine.Msg
 		for _, id := range itemsOf(c.G, engine.PlayerID(a[0])) {
-			out = append(out, string(c.G.Object(id).Card))
+			out = append(out, engine.CardOption(c.G.Object(id).Card))
 		}
 		return out
 	},
