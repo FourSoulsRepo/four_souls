@@ -34,7 +34,7 @@ This step never closes; new reports are appended.
 | ID | Group                                    | System     | Items                                                  | Count |
 |----|------------------------------------------|------------|--------------------------------------------------------|-------|
 | A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66 | 12 |
-| B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67                        | 5     |
+| B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71                 | 6     |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30                                     | 3     |
 | E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52, 19.54, 19.69 | 9  |
@@ -47,11 +47,11 @@ This step never closes; new reports are appended.
 | L  | Not a bug: the app follows a ruling      | None       | 19.63                                                  | 1     |
 | M  | Go test setup: the code was right        | Go tests   | 19.68                                                  | 1     |
 
-Totals by system (70 items):
+Totals by system (71 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
-| Engine    | A, B    | 17    |
+| Engine    | A, B    | 18    |
 | Card data | C       | 2     |
 | Client    | D–G     | 21    |
 | Server    | H       | 1     |
@@ -2319,3 +2319,30 @@ Totals by system (70 items):
    5. No code change; no guard test, since no gap remains.
 7. Owner notes (2026-10-26)
    1. Owner marks 19.70 solved; no history line for Bum-Bo! for now.
+
+### [ ] 19.71 XXI. The World: the look dialog does not say whose hand
+
+1. Goal: a look at hands shows whose hand each card is from.
+2. Report (owner, 2026-10-26)
+   1. XXI. The World: "Look at each player's hand, then loot 2."
+   2. The "You look at" dialog shows every card in one row.
+   3. The player cannot tell which cards are whose.
+3. Tasks:
+   1. Engine: a `looked_at` event of a hand card names the hand's owner.
+   2. It uses `By`: the owner's seat plus 1; 0 for a deck card.
+   3. Client: `Looked` carries that owner.
+   4. The dialog groups hand cards by owner, in event order.
+   5. Each group has a label with the owner's name: "Bo's hand".
+   6. A look at deck cards stays as it is, one row, no label.
+   7. Other hand looks get the labels too: Mom's Eye, X-Ray Vision, Incubus.
+   8. The history line stays as it is.
+4. Done when:
+   1. Go test: The World's events name each hand's owner.
+   2. Vitest: `lookedAt` keeps the owner.
+   3. e2e: the dialog shows two labelled groups, in `actions.spec.ts`.
+   4. UC-18 gets the case; CHANGELOG line.
+   5. Screenshots: `.cache/screenshots/19.71/before/` and `after/`.
+5. Cause
+   1. `Game.LookAt` emits only the player, the object and the card.
+   2. The looker's client gets no other hand's object IDs.
+   3. So it cannot tell where a card came from.
