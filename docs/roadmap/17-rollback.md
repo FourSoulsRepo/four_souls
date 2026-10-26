@@ -14,6 +14,7 @@ Rules for this step (owner, 2026-10-26):
 Owner notes (2026-10-26):
 
 1. Owner reviewed step 17 and marks it solved.
+2. Owner reviewed 17.6 – 17.8 and marks them solved.
 
 ---
 

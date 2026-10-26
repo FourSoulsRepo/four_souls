@@ -2279,6 +2279,8 @@ Totals by system (70 items):
    3. One press undoes the play, also after it resolved: a pass is no target.
    4. A play's answers to a mode or target are no target of their own.
    5. So 6.8 – 6.10 no longer apply: one press drops the play.
+8. Owner notes (2026-10-26)
+   1. Owner marks 19.69 solved, with step 17.
 
 ### [ ] 19.70 A resolved A Penny! shows no "gains 1¢" row for 5 seconds
 
