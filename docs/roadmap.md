@@ -272,6 +272,7 @@ Step numbers stay as IDs; the table lists steps in work order.
 7. Three modes: Disabled, Soft, Godmode (N-12).
 8. A majority of the other players decides (N-12).
 9. Soft: a played card can be undone until a deck card shows (17.6).
+10. One Undo button undoes one move at a time (17.7).
 
 ## 18. Play-test
 

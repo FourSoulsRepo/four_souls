@@ -5,15 +5,16 @@ import {
   entriesFor as entries,
   historyKinds,
   lookedAt,
+  moveOf,
+  moveText,
   restartCut,
-  rollbackButtons,
-  rollbackTargets,
   rolledBack,
   stepName,
-  stepText,
   stripEntries,
+  undoButton,
   voteEnded,
   type Entry,
+  type Move,
 } from './history';
 import type { GameEvent, GameView, StackItem } from './protocol';
 import { StackKind, stackLine } from './stack';
@@ -517,30 +518,98 @@ describe('rollback (ADR 020)', () => {
   const row = (key: number, step: number, text: string): Entry => ({ key, turn: 1, icon: '+', text, step });
   const history = [row(1, 0, 'start'), row(2, 1, 'Ann loots'), row(3, 1, 'Ann gains 1¢'), row(4, 3, 'Bo attacks'), row(5, 3, 'Bo rolls 4')];
 
-  it('offers each step since the base once, on its first row', () => {
-    expect([...rollbackTargets(history, 1)]).toEqual([2, 4]);
-    // After a restart the base moved: older steps are no target.
-    expect([...rollbackTargets(history, 2)]).toEqual([4]);
-  });
-
   it('greys the undone rows and tells who rolled back', () => {
     const after = rolledBack(history, { seat: 1, to: 3, undid: 2 }, 4, 1, 0, n);
     expect(after.filter((e) => e.undone).map((e) => e.key)).toEqual([4, 5]);
     expect(after.at(-1)).toEqual({ key: 6, turn: 1, icon: '↶', text: 'Bo rolls back 2 steps', step: 4, rollback: true });
-    // Undone rows and the rollback row are no target; the rest still are.
-    expect([...rollbackTargets(after, 1)]).toEqual([2]);
     // The viewer's own rollback, of one step, past the first one.
     const again = rolledBack(after, { seat: 0, to: 1, undid: 1 }, 5, 1, 0, n);
     expect(again.at(-1)?.text).toBe('You roll back 1 step');
     expect(again.filter((e) => e.undone).map((e) => e.key)).toEqual([2, 3, 4, 5, 6]);
-    expect(rollbackTargets(again, 1).size).toBe(0);
+  });
+
+  it('adds a row when a vote ends with no rollback', () => {
+    const after = voteEnded(history, { step: 1, seat: 1, why: 'declined' }, 1, 0, n);
+    expect(after.at(-1)).toEqual({ key: 6, turn: 1, icon: '↶', text: 'The rollback was declined', rollback: true });
+    expect(voteEnded(history, { step: 1, seat: 1, why: 'cancelled' }, 1, 0, n).at(-1)?.text).toBe('Bo cancelled the rollback vote');
+    expect(voteEnded(history, { step: 1, seat: 0, why: 'cancelled' }, 1, 0, n).at(-1)?.text).toBe('You cancelled the rollback vote');
+    expect(voteEnded(history, { step: 1, seat: 0, why: 'timeout' }, 1, 0, n).at(-1)?.text).toBe('The rollback vote ran out of time');
+  });
+
+  it('adds one row where a server restart cut the history (ADR 020, item 10.6)', () => {
+    const after = restartCut(history, 3, 1);
+    expect(after.at(-1)).toEqual({ key: 6, turn: 1, icon: '⟳', text: 'The server restarted; no rollback before this', step: 3, rollback: true, restarted: true });
+    // Every update after the restart says so; the row shows once.
+    expect(restartCut(after, 3, 1)).toBe(after);
+    // A later restart cuts again.
+    expect(restartCut(after, 7, 1)).toHaveLength(after.length + 1);
   });
 });
 
-describe('Soft rollback buttons (ADR 020, items 3 and 5)', () => {
-  const row = (key: number, step: number, text: string): Entry => ({ key, turn: 1, icon: '+', text, step });
-  const history = [row(1, 0, 'start'), row(2, 1, 'Ann attacks'), row(3, 2, 'Bo plays a card'), row(4, 3, 'Bo passes')];
-  // The server lists steps 1 and 2: step 3 is a lone pass.
+describe('moves (17.7)', () => {
+  const loot = (player: number, card: string): GameEvent => ({ kind: 'loot_played', player, object: 40, card });
+
+  it('names a play by the card, though the history has no line for it (15.88)', () => {
+    const events = [loot(1, 'a_penny')];
+    expect(entriesFor(events, 1, 0, n, 0)).toEqual([]);
+    expect(moveOf(events, [], 5, 5, 0, n)).toEqual({ from: 5, to: 5, text: 'Bo plays A_PENNY' });
+    expect(moveOf([loot(0, 'bomb')], [], 5, 5, 0, n).text).toBe('You play BOMB');
+    const use = { kind: 'activated', player: 1, object: 41, card: 'sack_of_pennies' };
+    expect(moveOf([use], [], 5, 5, 0, n).text).toBe('Bo uses SACK_OF_PENNIES');
+  });
+
+  it('names an ended turn, else the first line that is no turn line', () => {
+    expect(moveOf([{ kind: 'turn_ended', player: 1 }], [], 2, 2, 0, n).text).toBe('Bo ends the turn');
+    const lines: Entry[] = [
+      { key: 1, turn: 2, icon: '▶', text: 'Turn 2: Bo' },
+      { key: 2, turn: 2, icon: '⚔', text: 'Bo declares an attack' },
+    ];
+    expect(moveOf([], lines, 3, 3, 0, n).text).toBe('Bo declares an attack');
+    expect(moveOf([], [], 3, 3, 0, n)).toEqual({ from: 3, to: 3 });
+  });
+
+  it('names the barrier it holds', () => {
+    expect(moveOf([{ kind: 'dice_rolled', player: 1, amount: 4 }], [], 3, 4, 0, n).barrier).toBe('a die was rolled');
+    expect(moveOf([{ kind: 'turn_ended', player: 1 }, { kind: 'dice_rolled', player: 1 }], [], 3, 3, 0, n).barrier).toBe('the turn ended');
+    expect(moveOf([{ kind: 'gained_cents', player: 1, private: true }], [], 3, 3, 0, n).barrier).toBe('a hidden card was seen');
+    // A hand card put on the loot deck is no barrier (ADR 020, item 4.22).
+    expect(moveOf([{ kind: 'moved_to_deck', player: 1, private: true }], [], 3, 3, 0, n).barrier).toBeUndefined();
+  });
+
+  it("names a target by its update, or its play's answer up to its last step", () => {
+    const moves: Move[] = [
+      { from: 4, to: 4, text: 'Bo attacks' },
+      { from: 5, to: 5 },
+      { from: 6, to: 7, text: 'Bo plays BOMB' },
+    ];
+    expect(moveText(moves, { step: 4, seat: 1 }, 0, n.player)).toBe('Bo attacks');
+    // The play asked its target; the answer (step 6) names it (17.7).
+    expect(moveText(moves, { step: 5, seat: 1, last: 6 }, 0, n.player)).toBe('Bo plays BOMB');
+    expect(moveText(moves, { step: 7, seat: 1 }, 0, n.player)).toBe('Bo plays BOMB');
+  });
+
+  it("names a move without a line of its own Bo's choice, never the next move (17.8)", () => {
+    // Step 5 put a hand card back on the deck: no line. Step 6 is a
+    // move of its own, after it.
+    const moves: Move[] = [
+      { from: 5, to: 5 },
+      { from: 6, to: 6, text: 'Ann plays BOMB' },
+    ];
+    expect(moveText(moves, { step: 5, seat: 1 }, 0, n.player)).toBe("Bo's choice");
+    expect(moveText(moves, { step: 5, seat: 0 }, 0, n.player)).toBe('your choice');
+    // A play still waiting for its answer has no line yet either.
+    expect(moveText(moves.slice(0, 1), { step: 5, seat: 1, last: 5 }, 0, n.player)).toBe("Bo's choice");
+    expect(moveText(moves, { step: 9, seat: 2 }, 0, n.player)).toBe("Cy's choice");
+  });
+});
+
+describe('the Undo button (17.7)', () => {
+  const moves: Move[] = [
+    { from: 1, to: 1, text: 'Ann attacks', barrier: 'a die was rolled' },
+    { from: 2, to: 2, text: 'Bo plays BOMB' },
+    { from: 3, to: 3, text: 'Ann passes' },
+  ];
+  // The server lists steps 1 and 2; step 3 is a lone pass.
   const soft = {
     rollback_mode: 'soft' as const,
     rollback_from: 1,
@@ -551,56 +620,42 @@ describe('Soft rollback buttons (ADR 020, items 3 and 5)', () => {
     view: {},
   };
 
-  it('gives the author an ask, the others a vote, and nothing else', () => {
-    expect([...rollbackButtons(history, soft, 0)]).toEqual([
-      [2, 'ask'],
-      [3, 'vote'],
-    ]);
-    expect([...rollbackButtons(history, soft, 1)]).toEqual([
-      [2, 'vote'],
-      [3, 'ask'],
-    ]);
-    // A spectator has no buttons.
-    expect(rollbackButtons(history, soft, -1).size).toBe(0);
+  it('is hidden in Disabled mode', () => {
+    expect(undoButton({ ...soft, rollback_mode: undefined }, 0, moves, n.player)).toBeNull();
   });
 
-  it('offers nothing while a vote is open or once the game is over', () => {
+  it('targets the latest move and names it', () => {
+    expect(undoButton(soft, 0, moves, n.player)).toEqual({ label: 'Undo', step: 2, ask: false, title: 'Undo: Bo plays BOMB' });
+    // Godmode: anyone, the author too, with a plain Undo.
+    expect(undoButton({ ...soft, rollback_mode: 'god' }, 1, moves, n.player)).toEqual({ label: 'Undo', step: 2, ask: false, title: 'Undo: Bo plays BOMB' });
+  });
+
+  it("asks for the Soft target's own author", () => {
+    expect(undoButton(soft, 1, moves, n.player)).toEqual({ label: 'Ask to undo', step: 2, ask: true, title: 'Ask to undo: Bo plays BOMB' });
+  });
+
+  it("names a target without a line Bo's choice, yours your choice (17.8)", () => {
+    const pick = [...moves, { from: 4, to: 4 }];
+    const u = { ...soft, rollback_steps: [...soft.rollback_steps, { step: 4, seat: 1 }] };
+    expect(undoButton(u, 0, pick, n.player)?.title).toBe("Undo: Bo's choice");
+    expect(undoButton(u, 1, pick, n.player)?.title).toBe('Ask to undo: your choice');
+    expect(undoButton({ ...u, rollback_mode: 'god' }, 1, pick, n.player)?.title).toBe('Undo: your choice');
+  });
+
+  it('is greyed with the reason', () => {
+    const why = (u: Parameters<typeof undoButton>[0], you = 0) => undoButton(u, you, moves, n.player)?.why;
     const vote = { step: 1, seat: 1, author: 0, undo: 3, voters: [1], votes: null, need: 1 };
-    expect(rollbackButtons(history, { ...soft, rollback_vote: vote }, 1).size).toBe(0);
-    expect(rollbackButtons(history, { ...soft, view: { over: true } }, 1).size).toBe(0);
-    expect(rollbackButtons(history, { ...soft, rollback_mode: undefined }, 1).size).toBe(0);
-  });
-
-  it('keeps the barrier: steps before rollback_from have no button', () => {
-    expect([...rollbackButtons(history, { ...soft, rollback_from: 2, rollback_steps: [{ step: 2, seat: 1 }] }, 0)]).toEqual([[3, 'vote']]);
-  });
-
-  it('gives every target a plain button in Godmode', () => {
-    expect([...rollbackButtons(history, { rollback_mode: 'god', rollback_from: 1, view: {} }, 0).values()]).toEqual(['roll', 'roll', 'roll']);
-  });
-
-  it('adds a row when a vote ends with no rollback', () => {
-    const after = voteEnded(history, { step: 1, seat: 1, why: 'declined' }, 1, 0, n);
-    expect(after.at(-1)).toEqual({ key: 5, turn: 1, icon: '↶', text: 'The rollback was declined', rollback: true });
-    expect(voteEnded(history, { step: 1, seat: 1, why: 'cancelled' }, 1, 0, n).at(-1)?.text).toBe('Bo cancelled the rollback vote');
-    expect(voteEnded(history, { step: 1, seat: 0, why: 'cancelled' }, 1, 0, n).at(-1)?.text).toBe('You cancelled the rollback vote');
-    expect(voteEnded(history, { step: 1, seat: 0, why: 'timeout' }, 1, 0, n).at(-1)?.text).toBe('The rollback vote ran out of time');
-    // The row is no rollback target.
-    expect(rollbackTargets(after, 1).has(5)).toBe(false);
-  });
-
-  it('adds one row where a server restart cut the history (ADR 020, item 10.6)', () => {
-    const after = restartCut(history, 3, 1);
-    expect(after.at(-1)).toEqual({ key: 5, turn: 1, icon: '⟳', text: 'The server restarted; no rollback before this', step: 3, rollback: true, restarted: true });
-    // Every update after the restart says so; the row shows once.
-    expect(restartCut(after, 3, 1)).toBe(after);
-    // A later restart cuts again.
-    expect(restartCut(after, 7, 1)).toHaveLength(after.length + 1);
-    expect(rollbackTargets(after, 1).has(5)).toBe(false);
-  });
-
-  it('names the step a vote is about by its first row', () => {
-    expect(stepText(history, 2)).toBe('Bo plays a card');
-    expect(stepText(history, 9)).toBe('step 9');
+    expect(why(soft, -1)).toBe('Spectators cannot undo');
+    expect(why({ ...soft, view: { over: true } })).toBe('The game is over');
+    expect(why({ ...soft, rollback_vote: vote })).toBe('A rollback vote is open');
+    expect(why({ ...soft, pause: { away: [1], votes: null } })).toBe('The game is paused');
+    // Nothing after the barrier: the barrier's step is named.
+    expect(why({ ...soft, rollback_from: 2, rollback_steps: [] })).toBe('Nothing to undo since a die was rolled');
+    expect(why({ ...soft, rollback_from: 3, rollback_steps: [] })).toBe('Nothing to undo yet');
+    expect(why({ ...soft, rollback_from: 2, rollback_steps: [], rollback_cut: 1 })).toBe('Nothing to undo since the server restarted');
+    // Godmode has no barriers: nothing is left since the base.
+    expect(why({ ...soft, rollback_mode: 'god', rollback_from: 2, rollback_steps: [] })).toBe('Nothing to undo yet');
+    // A greyed button names no step and says why in its tooltip.
+    expect(undoButton({ ...soft, view: { over: true } }, 1, moves, n.player)).toEqual({ label: 'Ask to undo', ask: true, why: 'The game is over', title: 'The game is over' });
   });
 });

@@ -253,6 +253,12 @@ describe('rollback (ADR 020)', () => {
       ['Bo declares a purchase', true],
       ['Bo rolls back 1 step', false],
     ]);
+    // The undone move is forgotten; the rollback's own has no name (17.7).
+    expect(s.moves).toEqual([
+      { from: 0, to: 0 },
+      { from: 1, to: 2, text: 'Bo declares an attack' },
+      { from: 4, to: 4 },
+    ]);
     // The next update animates again; its rows start after the rollback.
     receive(update({ step: 5, events: [{ kind: 'attack_declared', player: 1 }] }));
     await vi.waitFor(() => {

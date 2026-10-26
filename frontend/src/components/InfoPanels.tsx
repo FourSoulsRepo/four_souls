@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { rollbackButtons, stepName, type Entry, type RollbackButton } from '../history';
+import { stepName, undoButton, type Entry, type Undo } from '../history';
 import type { GameView } from '../protocol';
 import type { Names } from '../stack';
 import { seatOf, useApp } from '../store';
@@ -25,18 +25,17 @@ export function TurnBadge({ view, names }: { view: GameView; names: Names }) {
 
 // HistoryPanel lists the match so far, newest at the bottom (V-03). The
 // history strip opens it (15.22); hide closes it. Card names zoom their
-// card on hover or tap. In Godmode each step's first row has a rollback
-// button; in Soft the rows after the last barrier, an "ask" button for
-// the step's own author. Undone rows are greyed, and a row tells who
-// rolled back (ADR 020).
-export function HistoryPanel({ hide }: { hide: () => void }) {
+// card on hover or tap. In a game with rollback one Undo button under
+// the title undoes the latest move (17.7). Undone rows are greyed, and
+// a row tells who rolled back (ADR 020).
+export function HistoryPanel({ hide, name }: { hide: () => void; name: (p: number) => string }) {
   const history = useApp((s) => s.history);
+  const moves = useApp((s) => s.moves);
   const setZoom = useApp((s) => s.setZoom);
-  const rollBack = useApp((s) => s.rollBack);
   const game = useApp((s) => s.game);
   const waiting = useApp((s) => s.behind || (s.game !== null && s.sent === s.game.step));
   const you = useApp(seatOf);
-  const buttons = game ? rollbackButtons(history, game, you) : new Map<number, RollbackButton>();
+  const undo = game ? undoButton(game, you, moves, name) : null;
   const listRef = useRef<HTMLOListElement>(null);
   useEffect(() => {
     const el = listRef.current;
@@ -49,7 +48,7 @@ export function HistoryPanel({ hide }: { hide: () => void }) {
       <header>
         <h2>History</h2>
         {game?.rollback_mode === 'god' && (
-          <span className="history-mode" title="Any player may roll back any step, at once">
+          <span className="history-mode" title="Any player may undo, at once, one move per press">
             Godmode
           </span>
         )}
@@ -62,6 +61,7 @@ export function HistoryPanel({ hide }: { hide: () => void }) {
           Hide
         </button>
       </header>
+      {undo && <UndoButton undo={undo} disabled={waiting} />}
       <ol ref={listRef} className="selectable">
         {history.map((e) => (
           <li
@@ -88,17 +88,6 @@ export function HistoryPanel({ hide }: { hide: () => void }) {
               {e.icon}
             </span>
             <span>{e.text}</span>
-            {buttons.has(e.key) && e.step !== undefined && (
-              <RollbackRowButton
-                kind={buttons.get(e.key) ?? 'roll'}
-                text={e.text}
-                disabled={waiting}
-                press={() => {
-                  setZoom(null);
-                  rollBack(e.step ?? 0, buttons.get(e.key) === 'ask');
-                }}
-              />
-            )}
           </li>
         ))}
       </ol>
@@ -106,30 +95,37 @@ export function HistoryPanel({ hide }: { hide: () => void }) {
   );
 }
 
-// RollbackRowButton is a history row's rollback button: ↶ rolls back
-// or opens a vote; the author's own step in Soft gets "Ask" instead.
-function RollbackRowButton({ kind, text, disabled, press }: { kind: RollbackButton; text: string; disabled: boolean; press: () => void }) {
-  const ask = kind === 'ask';
+// UndoButton is the History's one Undo button (17.7, ADR 020): it
+// undoes the latest move, at once in Godmode, by a vote in Soft; the
+// Soft author asks instead. Its tooltip names the move. Greyed, it
+// still takes a click, to say why (15.29).
+function UndoButton({ undo, disabled }: { undo: Undo; disabled: boolean }) {
+  const rollBack = useApp((s) => s.rollBack);
+  const showWhy = useApp((s) => s.showWhy);
+  const setZoom = useApp((s) => s.setZoom);
+  const { why, step } = undo;
   return (
-    <button
-      type="button"
-      className={`history-rollback${ask ? ' ask' : ''}`}
-      aria-label={`${ask ? 'Ask to undo' : 'Roll back'}: ${text}`}
-      title={
-        ask
-          ? 'Ask the others to undo this and everything after it'
-          : kind === 'vote'
-            ? 'Undo this and everything after it, if the others agree'
-            : 'Undo this and everything after it'
-      }
-      disabled={disabled}
-      onClick={(ev) => {
-        ev.stopPropagation();
-        press();
-      }}
-    >
-      {ask ? 'Ask ↶' : '↶'}
-    </button>
+    <div className="history-undo">
+      <button
+        type="button"
+        title={undo.title}
+        aria-disabled={why ? true : undefined}
+        disabled={disabled && !why}
+        onClick={(ev) => {
+          if (why) {
+            showWhy(why, ev.clientX, ev.clientY);
+            return;
+          }
+          if (step !== undefined) {
+            setZoom(null);
+            rollBack(step, undo.ask);
+          }
+        }}
+      >
+        <span aria-hidden="true">↶ </span>
+        {undo.label}
+      </button>
+    </div>
   );
 }
 

@@ -158,8 +158,9 @@ type Update struct {
 	// Rollback is set on the update a rollback made: the table is the
 	// one from before step To. Step is the rollback's own number.
 	Rollback *Rollback `json:"rollback,omitempty"`
-	// RollbackSteps are the steps a Soft rollback may target now, with
-	// their authors (ADR 020, item 3; 17.4).
+	// RollbackSteps are the steps a rollback may target now, with their
+	// authors (ADR 020, item 3; 17.4); in Godmode too since 17.7. The
+	// last is the latest move, which the app's Undo button undoes.
 	RollbackSteps []RollbackStep `json:"rollback_steps,omitempty"`
 	// RollbackVote is the open Soft vote; the game waits (item 5.8).
 	RollbackVote *RollbackVote `json:"rollback_vote,omitempty"`
@@ -188,9 +189,13 @@ type RollbackTo struct {
 }
 
 // RollbackStep is a step a Soft rollback may target, and its author.
+// Last is the move's last step when the answers its play asks follow
+// it (17.7, 17.8): the app names the move from those updates too. 0:
+// the move is the step alone.
 type RollbackStep struct {
 	Step int `json:"step"`
 	Seat int `json:"seat"`
+	Last int `json:"last,omitempty"`
 }
 
 // RollbackVote is an open Soft vote (ADR 020, item 5): Seat opened it

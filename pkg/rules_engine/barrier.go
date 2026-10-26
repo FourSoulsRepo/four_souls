@@ -4,9 +4,22 @@ package rulesengine
 // it cannot be undone, nor any step before it (ADR 020, item 4). Dice,
 // damage and death, hidden information seen, the end of a turn, and
 // the game end are barriers. An event only one player sees (Private)
-// is always one.
+// is one too, but for a hand card put on the loot deck.
 func Barrier(e Event) bool {
-	return e.Private || barrierKinds[e.Kind]
+	if e.Private && !privateNoBarrier[e.Kind] {
+		return true
+	}
+	return barrierKinds[e.Kind]
+}
+
+// privateNoBarrier are the private kinds that are no barrier. Only
+// moved_to_deck: a player puts a card from their own hand on the loot
+// deck (HandToDeckTop). No deck card shows and nobody else sees a hand
+// card, so a played card before it stays undoable (ADR 020, item 4.22;
+// N-12, item 24). Every other private event draws a deck card or shows
+// a hand card to another player.
+var privateNoBarrier = map[EventKind]bool{
+	EvMovedToDeck: true,
 }
 
 // barrierKinds sorts every event kind: true is a barrier. A new kind
@@ -71,7 +84,7 @@ var barrierKinds = map[EventKind]bool{
 	EvLootPlayed:       false, // the player shows their own card
 	EvLooted:           false, // private when drawn; else from the discard
 	EvLostCents:        false,
-	EvMovedToDeck:      false, // private when hidden
+	EvMovedToDeck:      false, // private from a hand; no barrier either
 	EvPaid:             false,
 	EvPassed:           false,
 	EvPenaltyPaid:      false,

@@ -567,6 +567,15 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
       5. A turn end, a death, and a seen hand card still block it (owner, 2026-10-26).
       6. Mostly true already: playing or activating is no barrier.
       7. Change: a card put privately on the loot deck no longer blocks.
+   25. One Undo button instead of a button per history row (owner, 2026-10-26).
+      1. It sits under the History title.
+      2. One press undoes one move: back to before the latest target.
+      3. Press again to go further back; Godmode has no jump to any row.
+      4. Greyed at a barrier, during a vote, at game end; the tooltip says why.
+      5. Hidden in Disabled mode.
+      6. The tooltip names the move it undoes.
+      7. Soft: the author's press asks; another player's opens the vote.
+      8. The history stays clean: no play rows (17.6 rows removed).
 13. N-13. Find LAN games without typing an IP.
    1. A hosting app announces its waiting game on the LAN.
    2. The join screen lists the games it finds.

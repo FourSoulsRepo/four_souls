@@ -203,6 +203,7 @@ function Table({ game, you }: { game: Update; you: number }) {
             hide={() => {
               setHistoryOpen(false);
             }}
+            name={name}
           />
         )}
       </Board>

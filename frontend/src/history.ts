@@ -425,55 +425,124 @@ export function rolledBack(history: Entry[], r: Rollback, step: number, turn: nu
   return out;
 }
 
-// rollbackTargets are the keys of the entries that get a rollback
-// button: the first live entry of each step since from (ADR 020, item
-// 6). An undone entry or a rollback row is no target.
-export function rollbackTargets(history: Entry[], from: number): Set<number> {
-  const out = new Set<number>();
-  let last: number | undefined;
-  for (const e of history) {
-    if (e.step !== undefined && e.step !== last && e.step >= from && !e.undone && !e.rollback) {
-      out.add(e.key);
-    }
-    last = e.step;
-  }
-  return out;
+// Move is what one update did, for the Undo button (17.7): from and to
+// are its first and last step. text names it; barrier, if set, is the
+// first barrier it holds, in words for "Nothing to undo since …".
+export interface Move {
+  from: number;
+  to: number;
+  text?: string;
+  barrier?: string;
 }
 
-// RollbackButton is what a history row offers (ADR 020): roll back at
-// once (Godmode), open a vote with your yes, or, for the step's own
-// author in Soft, ask the others.
-export type RollbackButton = 'roll' | 'vote' | 'ask';
+// barrierWords name the Soft barriers a player can tell apart (ADR 020,
+// item 4). The server decides what is one; this only names it.
+const barrierWords: Record<string, string> = {
+  dice_rolled: 'a die was rolled',
+  roll_changed: 'a die was rolled',
+  random_pick: 'a card was picked at random',
+  damaged: 'damage was dealt',
+  died: 'a card died',
+  object_died: 'a card died',
+  turn_ended: 'the turn ended',
+  turn_ended_early: 'the turn ended',
+  turn_skipped: 'a turn was skipped',
+  looted: 'a card was drawn',
+  gained_treasure: 'a card was drawn',
+  card_revealed: 'a card was revealed',
+  looked_at: 'a hidden card was seen',
+};
 
-// rollbackButtons maps entry keys to their button. Godmode: every
-// target, for everyone at the table. Soft: the targets the server
-// lists; their author asks, the others open a vote (items 3 and 5).
-// None while a vote is open, once the game is over, or for a spectator.
-export function rollbackButtons(
-  history: Entry[],
-  u: Pick<Update, 'rollback_mode' | 'rollback_from' | 'rollback_steps' | 'rollback_vote'> & { view: { over?: boolean } },
+// barrierOf names a barrier event; any other private one shows a hidden
+// card, but for a hand card put on the loot deck (item 4.22).
+function barrierOf(e: GameEvent): string | undefined {
+  if (Object.hasOwn(barrierWords, e.kind)) {
+    return barrierWords[e.kind];
+  }
+  return e.private && e.kind !== 'moved_to_deck' ? 'a hidden card was seen' : undefined;
+}
+
+// moveOf names what one update did. A played card or a used ability is
+// named by its play, which has no history line (15.88): "Bo plays A
+// Penny!". An ended turn says so; anything else is its first line.
+export function moveOf(events: GameEvent[], entries: Entry[], from: number, to: number, you: number, n: Names): Move {
+  const does = (p: number, verb: string) => (p === you ? `You ${verb}` : `${n.player(p)} ${verb}s`);
+  const play = events.find((e) => e.kind === 'loot_played' || e.kind === 'activated');
+  const ended = events.find((e) => e.kind === 'turn_ended' || e.kind === 'turn_ended_early');
+  const text = play
+    ? `${does(play.player, play.kind === 'loot_played' ? 'play' : 'use')} ${play.card ? n.card(play.card) : 'an ability'}`
+    : ended
+      ? `${does(ended.player, 'end')} the turn`
+      : entries.find((e) => !e.rollback && e.icon !== '▶')?.text;
+  const barrier = events.map(barrierOf).find((w) => w !== undefined);
+  return { from, to, ...(text ? { text } : {}), ...(barrier ? { barrier } : {}) };
+}
+
+// moveText names the move a target starts: its update's, or an
+// answer's up to its last step (a play that asks a target is named by
+// the answer's update). A move with no line of its own never borrows
+// the next one's: a trigger order or a card's question is "Bo's
+// choice" (17.8).
+export function moveText(moves: Move[], target: RollbackStep, you: number, name: (p: number) => string): string {
+  const last = target.last ?? target.step;
+  const text = moves.find((m) => m.to >= target.step && m.from <= last && m.text)?.text;
+  return text ?? (target.seat === you ? 'your choice' : `${name(target.seat)}'s choice`);
+}
+
+// Undo is the History's one Undo button (17.7, ADR 020). step is the
+// latest target the server lists; ask: the Soft author asks the others.
+// why, if set, is why it is greyed; title names the move, or says why.
+export interface Undo {
+  label: 'Undo' | 'Ask to undo';
+  step?: number;
+  ask: boolean;
+  why?: string;
+  title: string;
+}
+
+// undoButton is the Undo button for this viewer, or null in Disabled
+// mode. One press undoes the latest move; Godmode at once, Soft by a
+// vote of the others, or the author's ask (items 5 and 6).
+export function undoButton(
+  u: Pick<Update, 'rollback_mode' | 'rollback_from' | 'rollback_steps' | 'rollback_vote' | 'rollback_cut' | 'pause'> & { view: { over?: boolean } },
   you: number,
-): Map<number, RollbackButton> {
-  const out = new Map<number, RollbackButton>();
-  if (!u.rollback_mode || u.view.over || u.rollback_vote || you < 0) {
-    return out;
+  moves: Move[],
+  name: (p: number) => string,
+): Undo | null {
+  if (!u.rollback_mode) {
+    return null;
   }
-  const authors = new Map((u.rollback_steps ?? []).map((s: RollbackStep) => [s.step, s.seat]));
-  const keys = rollbackTargets(history, u.rollback_from ?? 1);
-  for (const e of history) {
-    if (!keys.has(e.key) || e.step === undefined) {
-      continue;
-    }
-    if (u.rollback_mode === 'god') {
-      out.set(e.key, 'roll');
-      continue;
-    }
-    const author = authors.get(e.step);
-    if (author !== undefined) {
-      out.set(e.key, author === you ? 'ask' : 'vote');
-    }
+  const target = u.rollback_steps?.at(-1);
+  const ask = u.rollback_mode === 'soft' && target?.seat === you;
+  const label = ask ? 'Ask to undo' : 'Undo';
+  const why =
+    you < 0
+      ? 'Spectators cannot undo'
+      : u.view.over
+        ? 'The game is over'
+        : u.rollback_vote
+          ? 'A rollback vote is open'
+          : u.pause
+            ? 'The game is paused'
+            : !target
+              ? nothingWhy(u, moves)
+              : undefined;
+  if (why !== undefined || !target) {
+    const title = why ?? 'Nothing to undo';
+    return { label, ask, why: title, title };
   }
-  return out;
+  return { label, step: target.step, ask, title: `${label}: ${moveText(moves, target, you, name)}` };
+}
+
+// nothingWhy says why no move is left to undo: the barrier just before
+// rollback_from, if the history names it.
+function nothingWhy(u: Pick<Update, 'rollback_mode' | 'rollback_from' | 'rollback_cut'>, moves: Move[]): string {
+  const at = (u.rollback_from ?? 1) - 1;
+  if (u.rollback_cut && at <= u.rollback_cut) {
+    return 'Nothing to undo since the server restarted';
+  }
+  const barrier = u.rollback_mode === 'soft' ? moves.find((m) => m.from <= at && at <= m.to)?.barrier : undefined;
+  return barrier ? `Nothing to undo since ${barrier}` : 'Nothing to undo yet';
 }
 
 // voteEnded adds the row of a Soft vote that ended with no rollback.
@@ -498,11 +567,6 @@ export function restartCut(history: Entry[], cut: number, turn: number): Entry[]
   }
   const text = 'The server restarted; no rollback before this';
   return [...history, { key: (history.at(-1)?.key ?? 0) + 1, turn, icon: '⟳', text, step: cut, rollback: true, restarted: true }];
-}
-
-// stepText is the history's text of a step's first row, for the vote.
-export function stepText(history: Entry[], step: number): string {
-  return history.find((e) => e.step === step && !e.rollback)?.text ?? `step ${String(step)}`;
 }
 
 // firstRollLabel is the label of the first-player roll's dice.

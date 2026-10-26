@@ -45,6 +45,9 @@
   * The strip's die and line show the result: "Ann rolls 4 against Fly".
   * An unchanged roll shows one number: "(rolled 6)".
 * **2d. A rollback (UC-30):** undone rows turn grey; a row says who rolled back.
+* **2e. A play (17.7):** a played loot card or a used item has no line of its own.
+  * Its result is the resolved line, in the History and the strip.
+  * In a game with rollback, the Undo button names the play (UC-30).
 
 ## Postconditions
 

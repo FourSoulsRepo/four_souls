@@ -228,8 +228,15 @@ test('Godmode: a rollback reaches past a server restart (17.5)', async ({ browse
   const active = await rollbackOverRestart(browser, ['Gus', 'Hex']);
   const history = active.getByRole('complementary', { name: 'History', exact: true });
   await expect(history.getByText('The server restarted')).toHaveCount(0);
-  await history.getByRole('button', { name: 'Roll back: You declare an attack' }).click();
+  // Two presses: the target pick, then the declaration (17.7).
+  const undo = history.getByRole('button', { name: 'Undo', exact: true });
+  await expect(undo).toHaveAttribute('title', /^Undo: You attack /);
+  await undo.click();
   await expect(throwButton(active)).toHaveCount(0);
+  await expect(undo).toHaveAttribute('title', 'Undo: You declare an attack');
+  // The target prompt is back over the table; View board uncovers it.
+  await active.getByRole('button', { name: 'View board' }).click();
+  await undo.click();
   await expect(turnAction(active, 'Attack')).toBeEnabled();
 });
 
@@ -239,6 +246,8 @@ test('Godmode: a history that does not replay ends at the restart (17.5)', async
   });
   const history = active.getByRole('complementary', { name: 'History', exact: true });
   await expect(history.getByRole('listitem').filter({ hasText: 'The server restarted; no rollback before this' })).toBeVisible();
-  await expect(history.getByRole('button', { name: 'Roll back: You declare an attack' })).toHaveCount(0);
+  const undo = history.getByRole('button', { name: 'Undo', exact: true });
+  await expect(undo).toHaveAttribute('aria-disabled', 'true');
+  await expect(undo).toHaveAttribute('title', 'Nothing to undo since the server restarted');
   await shot(active, 'rollback-restart-cut');
 });

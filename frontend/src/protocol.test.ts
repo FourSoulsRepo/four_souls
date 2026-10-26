@@ -147,7 +147,7 @@ const modeled: Record<string, Envelope | Envelope[]> = {
       rollback_mode: 'god',
       rollback_from: 1,
       rollback: { seat: 1, to: 1, undid: 3 },
-      rollback_steps: [{ step: 2, seat: 0 }],
+      rollback_steps: [{ step: 2, seat: 0, last: 3 }],
       rollback_vote: { step: 2, seat: 1, author: 0, undo: 1, voters: [1], votes: [{ seat: 1, yes: true }], need: 1, deadline: 1760000000000 },
       rollback_end: { step: 2, seat: 1, why: 'declined' },
       rollback_cut: 9,

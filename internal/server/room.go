@@ -364,8 +364,11 @@ func (r *Room) update(c *Client, events []engine.Event) {
 	}
 	if r.base != nil {
 		u.RollbackMode, u.RollbackFrom, u.Rollback, u.RollbackCut = r.opts.Rollback, r.rollbackFrom(), r.rolled, r.cut
+		if !r.game.Over {
+			u.RollbackSteps = r.targets()
+		}
 		if r.opts.Rollback == protocol.RollbackSoft && !r.game.Over {
-			u.RollbackSteps, u.RollbackVote, u.RollbackEnd = r.softSteps(), r.voteView(), r.voteEnd
+			u.RollbackVote, u.RollbackEnd = r.voteView(), r.voteEnd
 		}
 	}
 	c.send(protocol.TypeUpdate, 0, u)
