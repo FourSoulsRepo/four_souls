@@ -178,6 +178,8 @@ export namespace main {
 	    set: string;
 	    type: string;
 	    name: string;
+	    names: Record<string, string>;
+	    translators: Record<string, Array<string>>;
 	    effects: string[];
 	    footnotes: carddb.Footnote[];
 	    stats: carddb.Stat[];
@@ -194,6 +196,8 @@ export namespace main {
 	        this.set = source["set"];
 	        this.type = source["type"];
 	        this.name = source["name"];
+	        this.names = source["names"];
+	        this.translators = source["translators"];
 	        this.effects = source["effects"];
 	        this.footnotes = this.convertValues(source["footnotes"], carddb.Footnote);
 	        this.stats = this.convertValues(source["stats"], carddb.Stat);

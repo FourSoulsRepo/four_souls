@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { abilityLine, iconText, kindOf, textParts, unknownCard } from './cards';
+import { abilityLine, iconText, inLanguage, kindOf, textParts, translatorsOf, unknownCard } from './cards';
 
 describe('kindOf', () => {
   it('sorts every Base Game type into its deck family', () => {
@@ -60,5 +60,22 @@ describe('abilityLine', () => {
     expect(abilityLine('↷: Put a counter on this.')).toEqual({ icon: 'tap', effect: 'Put a counter on this.' });
     expect(abilityLine('Pay 5¢: Deal 1 damage.')).toEqual({ icon: 'paid', cost: 'Pay 5¢', effect: 'Deal 1 damage.' });
     expect(abilityLine('Gain 1¢.')).toEqual({ effect: 'Gain 1¢.' });
+  });
+});
+
+describe('inLanguage', () => {
+  const isaac = { ...unknownCard('isaac'), name: 'Isaac', names: { en: 'Isaac', ru: 'Исаак' }, translators: { ru: ['Alchba', 'Mitboy'] } };
+
+  it('names a card in the chosen language, English if missing (LO-06)', () => {
+    expect(inLanguage(isaac, 'ru').name).toBe('Исаак');
+    expect(inLanguage(inLanguage(isaac, 'ru'), 'en').name).toBe('Isaac');
+    expect(inLanguage(isaac, 'qps').name).toBe('Isaac');
+    expect(inLanguage(unknownCard('x'), 'ru').name).toBe('x');
+  });
+
+  it('credits translators only for a translated name (CD-06)', () => {
+    expect(translatorsOf(isaac, 'ru')).toEqual(['Alchba', 'Mitboy']);
+    expect(translatorsOf(isaac, 'en')).toEqual([]);
+    expect(translatorsOf({ ...isaac, names: { en: 'Isaac' } }, 'ru')).toEqual([]);
   });
 });

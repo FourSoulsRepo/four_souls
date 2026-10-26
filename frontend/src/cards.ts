@@ -5,7 +5,9 @@ export interface CardInfo {
   ref: string;
   set: string;
   type: string; // e.g. "Eternal Treasure Card"
-  name: string;
+  name: string; // in the chosen language; the store sets it (inLanguage)
+  names?: Record<string, string>; // by language, English too (LO-02)
+  translators?: Record<string, string[]>; // credited by language (CD-06)
   effects: string[];
   footnotes: { title: string; text: string }[];
   stats: { name: string; value: string }[];
@@ -69,6 +71,23 @@ export function iconText(icon: string): string {
     default:
       return icon.replace(/ Effect$/, '');
   }
+}
+
+// inLanguage gives the card named in lang, English if it has no name
+// there (LO-06).
+export function inLanguage(card: CardInfo, lang: string): CardInfo {
+  const names = new Map(Object.entries(card.names ?? {}));
+  const name = names.get(lang) ?? names.get('en') ?? card.name;
+  return name === card.name ? card : { ...card, name };
+}
+
+// translatorsOf credits who translated the card into lang (CD-06): none
+// for English or a card with no name in lang.
+export function translatorsOf(card: CardInfo, lang: string): string[] {
+  if (lang === 'en' || !Object.keys(card.names ?? {}).includes(lang)) {
+    return [];
+  }
+  return new Map(Object.entries(card.translators ?? {})).get(lang) ?? [];
 }
 
 // unknownCard stands in for a ref the app has no data for.

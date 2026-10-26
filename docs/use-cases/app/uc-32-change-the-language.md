@@ -16,6 +16,9 @@
 5. The screens switch to that language at once.
    1. No restart is needed.
 6. After a restart, the app starts in the saved language.
+7. Cards show their names in that language (16.5).
+   1. Text cards, zoom, history, stack, prompts and choices.
+   2. The zoom credits the card's translators under it.
 
 ## Alternative scenarios and errors
 
@@ -23,12 +26,14 @@
   * The app takes the OS language, if it is listed.
   * Else English.
 * **3a. Russian (16.2):** it has no interface file yet.
-  * The texts stay English; card names follow in 16.5.
+  * The texts stay English; card names are Russian (16.5).
 * **5a. A line missing in the language:** the English line shows.
 * **6a. A saved language this build lacks:** as on the first start.
 * **2b. Test language `qps`:** listed in development builds only.
   * Accented, longer English in `[!! … !!]` (ADR 021).
   * Plain English on screen then means a missed string.
+* **7a. A card with no name in the language:** its English name shows.
+  * No translators are credited then.
 
 ## Postconditions
 

@@ -1,7 +1,7 @@
 // Card component (7.4) in the dev-only card gallery.
 import { expect, test } from './fixtures';
 import { realAssets, shot } from './shot';
-import { tr } from './locale';
+import { tr, trIn } from './locale';
 
 const gallery = '/?fake&nosplash&screen=cards';
 
@@ -56,4 +56,25 @@ test('a long press zooms a card on touch; a tap closes it', async ({ page }) => 
   await d6.dispatchEvent('pointerup', { pointerType: 'touch' });
   await page.waitForTimeout(600);
   await expect(zoom).toBeHidden();
+});
+
+// Russian names come from card_db (16.5, LO-02); the interface stays
+// English. Big Spider has no image, so its text card shows the name;
+// the zoom credits the translators (CD-06).
+test('with Russian picked, cards show their Russian names', async ({ page }) => {
+  await page.goto('/?fake&nosplash');
+  await page.getByRole('button', { name: tr('menu.settings') }).click();
+  await page.getByRole('combobox').filter({ has: page.getByRole('option', { name: 'English' }) }).selectOption('ru');
+  await page.locator('form button[type=submit]').click();
+  await page.goto(gallery);
+  const table = page.getByLabel('Table size');
+  const spider = table.getByRole('img', { name: 'Большой Паук' });
+  await expect(spider).toContainText('Большой Паук');
+  await expect(table.getByRole('img', { name: 'Исаак' })).toBeVisible();
+  await spider.hover();
+  const zoom = page.getByTestId('card-zoom');
+  await expect(zoom).toContainText(trIn('ru', 'zoom.translators', { names: 'Alchba, Mitboy, d0m1n1c132, Blacknenko, N-Chance' }));
+  await shot(page, 'card-zoom-ru');
+  // A card with no Russian name keeps its English one.
+  await expect(table.getByRole('img', { name: 'Soul of Greed' })).toBeVisible();
 });

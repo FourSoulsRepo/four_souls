@@ -3832,5 +3832,9 @@
   "zoom.stats": {
     "text": "Stats",
     "note": "Zoomed card: screen-reader name of the stat sums under it."
+  },
+  "zoom.translators": {
+    "text": "Translation: {names}",
+    "note": "Under a zoomed card, when its name is translated. names: the translators, joined by commas."
   }
 }

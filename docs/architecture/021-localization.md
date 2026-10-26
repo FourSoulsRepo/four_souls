@@ -184,6 +184,9 @@ Use options 5, 7, 11, 12 and 14.
     4. Card data paths stay language-free: `b2/the_d6.webp`.
     5. The loader adds `<lang>/`, then falls back to `en/`.
     6. Fonts, backs, dice and mats stay outside language folders.
+    7. Go sends each card's names and translators in every language.
+    8. The client shows the chosen language's name; English if missing.
+    9. The zoom credits that language's translators (CD-06).
 14. Screenshots for translators
     1. `make screenshots LOCALE=xx`: one PNG per screen, in that language.
     2. The translator checks the lines on them by eye.

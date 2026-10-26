@@ -1,8 +1,9 @@
 import { useLayoutEffect, useRef, useState } from 'react';
-import { t } from '../i18n';
+import { language, t } from '../i18n';
 import { useApp } from '../store';
 import { keyword, placeZoom, type Place } from '../zoom';
 import type { Outcome } from '../history';
+import { translatorsOf } from '../cards';
 import { Card, CardText } from './Card';
 import { starPolygon } from './lunge';
 import { skullPath } from './marks';
@@ -16,11 +17,15 @@ import './Card.css';
 // card's keywords stand beside it (H-13). A card the player can't use
 // now says why under it (15.29, F-17, C-06). A history headline's zoom
 // shows what it did beside the card, after an arrow (15.90). A changed
-// stat's sum goes under the card (15.92).
+// stat's sum goes under the card (15.92). A translated card credits its
+// translators under it (CD-06, 16.5).
 export function CardZoom() {
   const zoom = useApp((s) => s.zoom);
   const setZoom = useApp((s) => s.setZoom);
-  const footnotes = useApp((s) => (zoom ? s.cards.get(zoom.ref)?.footnotes : undefined));
+  const info = useApp((s) => (zoom ? s.cards.get(zoom.ref) : undefined));
+  const footnotes = info?.footnotes;
+  // Who translated the card's name into the shown language (CD-06).
+  const translators = info ? translatorsOf(info, language()) : [];
   const bodyRef = useRef<HTMLDivElement>(null);
   const [place, setPlace] = useState<Place | null>(null);
   // The zoom is measured before it paints, then placed by its size.
@@ -68,6 +73,7 @@ export function CardZoom() {
               ))}
             </ul>
           )}
+          {translators.length > 0 && <p className="card-zoom-credit">{t('zoom.translators', { names: translators.join(', ') })}</p>}
           {zoom.caption && (
             <figcaption className="card-zoom-caption">
               {zoom.caption.ability && <p className="card-zoom-ability">{zoom.caption.ability}</p>}

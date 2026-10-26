@@ -22,6 +22,10 @@ func TestCards(t *testing.T) {
 	if !ok || isaac.Name != "Isaac" || isaac.Type != "Character Card" || len(isaac.Stats) != 2 {
 		t.Fatalf("isaac: %+v", isaac)
 	}
+	// Russian names come from the old foursouls.ru site (16.5).
+	if isaac.Names["en"] != "Isaac" || isaac.Names["ru"] != "Исаак" || len(isaac.Translators["ru"]) == 0 {
+		t.Fatalf("isaac names %v, translators %v", isaac.Names, isaac.Translators)
+	}
 	// The private images submodule may be missing; then no card has an
 	// image URL and every card shows as a blank card.
 	if _, err := os.Stat("pkg/card_db/images/b2/isaac.webp"); (err == nil) != (isaac.Image == "/cardimg/b2/isaac.webp") {

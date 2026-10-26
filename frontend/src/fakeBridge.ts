@@ -176,17 +176,29 @@ interface DataCard {
   id: string;
   version?: number;
   type: string;
-  text: { en?: { name: string; effects?: string[]; footnotes?: { title: string; text: string }[] } };
+  text: Partial<Record<string, { name: string; effects?: string[]; footnotes?: { title: string; text: string }[] }>>;
+  translators?: Record<string, string[]>;
   stats?: { name: string; value: string }[];
   rewards?: { count: string; kind: string }[];
   images?: string[]; // one per copy; the first stands for the card
 }
 
+const b2Data = JSON.parse(b2) as { set: { code: string }; cards: DataCard[] };
+
+// translated gives a card's names in every language and its translators,
+// as Go's App.Cards does (16.5); the cards above take them from b2 too.
+function translated(ref: string, name: string): { names: Record<string, string>; translators: Record<string, string[]> } {
+  const c = b2Data.cards.find((d) => d.id === ref && !d.version);
+  const names = Object.fromEntries(Object.entries(c?.text ?? {}).flatMap(([lang, text]) => (text?.name ? [[lang, text.name]] : [])));
+  return { names: { en: name, ...names }, translators: c?.translators ?? {} };
+}
+
 function realCards(): unknown[] {
-  const data = JSON.parse(b2) as { set: { code: string }; cards: DataCard[] };
+  const data = b2Data;
   return data.cards
     .filter((c) => !cards.some((s) => s.ref === c.id))
     .map((c) => ({
+      ...translated(c.id, c.text.en?.name ?? c.id),
       ref: c.version && c.version > 1 ? `${c.id}@${String(c.version)}` : c.id,
       set: data.set.code,
       type: c.type,
@@ -234,7 +246,7 @@ w.go = {
             ? ''
             : JSON.stringify([{ key: 'refuse.deck_ratios', args: { n: players } }, { key: 'refuse.ratio.butter_beans', args: { have: 3, need: 5 } }]),
         ),
-      Cards: () => Promise.resolve([...cards, ...realCards()]),
+      Cards: () => Promise.resolve([...cards.map((c) => ({ ...c, ...translated(c.ref, c.name) })), ...realCards()]),
       // The dice textures at their real paths; like the mat, the e2e
       // tests serve them only for screenshots, else they fail: plain dice.
       // ?nodice has no textures, as Go without the private images.

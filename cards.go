@@ -16,14 +16,18 @@ const cardImagePrefix = "/cardimg/"
 
 // CardInfo is what the frontend shows of one card (7.4).
 type CardInfo struct {
-	Ref       string            `json:"ref"` // as in the engine's views, e.g. "the_d6"
-	Set       string            `json:"set"`
-	Type      string            `json:"type"` // e.g. "Eternal Treasure Card"
-	Name      string            `json:"name"`
-	Effects   []string          `json:"effects"`
-	Footnotes []carddb.Footnote `json:"footnotes"`
-	Stats     []carddb.Stat     `json:"stats"`
-	Rewards   []carddb.Reward   `json:"rewards"`
+	Ref  string `json:"ref"` // as in the engine's views, e.g. "the_d6"
+	Set  string `json:"set"`
+	Type string `json:"type"` // e.g. "Eternal Treasure Card"
+	Name string `json:"name"` // English; the client shows Names in its language
+	// Names holds the name in every language the card data has, English
+	// too (LO-02); Translators the names credited per language (CD-06).
+	Names       map[string]string   `json:"names"`
+	Translators map[string][]string `json:"translators"`
+	Effects     []string            `json:"effects"`
+	Footnotes   []carddb.Footnote   `json:"footnotes"`
+	Stats       []carddb.Stat       `json:"stats"`
+	Rewards     []carddb.Reward     `json:"rewards"`
 	// Image is the image URL; "" when the file is missing, and the card
 	// shows as a blank card with text (A-11).
 	Image string `json:"image"`
@@ -53,6 +57,15 @@ func (l *cardList) load(fsys fs.FS) ([]CardInfo, error) {
 				Footnotes: append([]carddb.Footnote{}, en.Footnotes...),
 				Stats:     append([]carddb.Stat{}, c.Stats...),
 				Rewards:   append([]carddb.Reward{}, c.Rewards...),
+				Names:     map[string]string{}, Translators: map[string][]string{},
+			}
+			for lang, t := range c.Text {
+				if t.Name != "" {
+					info.Names[string(lang)] = t.Name
+				}
+			}
+			for lang, names := range c.Translators {
+				info.Translators[string(lang)] = append([]string{}, names...)
 			}
 			if carddb.HasImage(fsys, c) {
 				info.Image = cardImagePrefix + c.Images[0]

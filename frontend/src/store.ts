@@ -30,9 +30,9 @@ import {
   type Settings,
 } from './bridge';
 import { noHostSetup } from './hostSetup';
-import type { CardInfo, Kind } from './cards';
+import { inLanguage, type CardInfo, type Kind } from './cards';
 import { loadFonts } from './fonts';
-import { say, setLanguage, t } from './i18n';
+import { language, say, setLanguage, t } from './i18n';
 import { entriesFor, lookedAt, moveOf, restartCut, rolledBack, voteEnded, type Entry, type Looked, type Move, type Outcome } from './history';
 import type { LinePart } from './stack';
 import type { Box } from './zoom';
@@ -366,6 +366,11 @@ export function viewScale(s: { jumped: boolean; settings: Pick<Settings, 'animat
 // dropConnection is for tests: it fails the connection as the network
 // would, so reconnecting can be checked.
 export const dropConnection = drop;
+
+// cardsInLanguage names the cards in the language t() uses now.
+function cardsInLanguage(cards: Map<string, CardInfo>): Map<string, CardInfo> {
+  return new Map([...cards].map(([ref, c]) => [ref, inLanguage(c, language())]));
+}
 
 export const useApp = create<AppState>()((set, get) => {
   let effectKey = 0;
@@ -840,7 +845,7 @@ export const useApp = create<AppState>()((set, get) => {
         loadFonts(fonts);
         loadSounds(sounds);
         set({
-          cards: new Map(list.map((c) => [c.ref, c])),
+          cards: new Map(list.map((c) => [c.ref, inLanguage(c, language())])),
           dice,
           mats,
           backs: new Map(backs.filter((b) => b.image !== '').map((b) => [b.kind, b.image])),
@@ -899,7 +904,7 @@ export const useApp = create<AppState>()((set, get) => {
       try {
         const s = await getSettings();
         setLanguage(s.language);
-        set({ settings: s });
+        set({ settings: s, cards: cardsInLanguage(get().cards) });
       } catch {
         // Keep the defaults; Go already falls back to them.
       }
@@ -910,7 +915,7 @@ export const useApp = create<AppState>()((set, get) => {
         const saved = await saveSettings(s);
         // The language too: t() reads it when the screens draw again.
         setLanguage(saved.language);
-        set({ settings: saved, error: '' });
+        set({ settings: saved, error: '', cards: cardsInLanguage(get().cards) });
         // Settings apply at once, without a restart.
         if (saved.fullscreen !== before.fullscreen) {
           setFullscreen(saved.fullscreen);

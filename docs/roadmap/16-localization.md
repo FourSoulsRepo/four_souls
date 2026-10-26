@@ -75,7 +75,7 @@ Rules of this step (owner, 2026-10-26):
    1. `languages.spec.ts` plays with one page in each language.
    2. Ability words stay card data until card texts are translated.
 
-### [ ] 16.5 Russian card names
+### [x] 16.5 Russian card names
 
 1. Goal: cards show Russian names (LO-02, LO-08).
 2. Tasks:
@@ -111,6 +111,10 @@ Rules of this step (owner, 2026-10-26):
       3. "Flash Исаак" is correct.
    6. `translators.ru` for every imported name, as on foursouls.ru:
       1. Alchba, Mitboy, d0m1n1c132, Blacknenko, N-Chance.
+5. Result: `scraper ru-names` in the tools repo; all 660 cards matched.
+   1. `scraper build` keeps `text.ru` and `translators.ru` on a re-scrape.
+   2. `App.Cards` sends `names` and `translators`; the store picks the language.
+   3. The zoom credits the translators under the card.
 
 ### [ ] 16.6 Card images per language
 
