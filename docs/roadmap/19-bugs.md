@@ -37,7 +37,7 @@ This step never closes; new reports are appended.
 | B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67                        | 5     |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30                                     | 3     |
-| E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52, 19.54     | 8     |
+| E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52, 19.54, 19.69 | 9  |
 | F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50                      | 5     |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
@@ -47,13 +47,13 @@ This step never closes; new reports are appended.
 | L  | Not a bug: the app follows a ruling      | None       | 19.63                                                  | 1     |
 | M  | Go test setup: the code was right        | Go tests   | 19.68                                                  | 1     |
 
-Totals by system (68 items):
+Totals by system (69 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
 | Engine    | A, B    | 17    |
 | Card data | C       | 2     |
-| Client    | D–G     | 20    |
+| Client    | D–G     | 21    |
 | Server    | H       | 1     |
 | e2e       | I, J    | 24    |
 | Release   | K       | 2     |
@@ -2236,3 +2236,19 @@ Totals by system (68 items):
 4. Done when:
    1. The cause is named here.
    2. The test runs 200 times in a row without that failure.
+
+### [ ] 19.69 Godmode ↶ on a played card's row leaves the card on the stack
+
+1. Goal: ↶ on a played card's row undoes the play itself.
+2. Report (Claude, 2026-10-26)
+   1. Found by the 17.6 agent while testing A Penny! in a Soft game.
+   2. A loot play or an activation has no history row (15.88).
+   3. The card's row comes with its resolution, an update that starts with a pass.
+   4. In Godmode ↶ on that row goes back to before the pass.
+   5. So the card stays on the stack; the play is not undone.
+   6. In Soft no button shows for a played card at all.
+3. Tasks:
+   1. Fixed by 17.6: the play gets its own history row with the button.
+   2. Check that no other target step lacks a row of its own.
+4. Done when:
+   1. e2e: Godmode ↶ on the play row undoes the play.

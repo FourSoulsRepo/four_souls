@@ -125,6 +125,10 @@ Owner notes (2026-10-26):
    6. Already true: `loot_played` and `activated` are no barriers.
    7. Change: a private `moved_to_deck` is no barrier; no deck card shows.
    8. ADR 020 item 4: append the rule in plain words; UC-31 likewise.
+   9. A play gets its own history row, "Tom plays A Penny!" (owner, 2026-10-26).
+   10. That row carries the ↶ button, also while the card is on the stack.
+   11. It changes the 15.88 history rule; update its docs.
+   12. Fixes 19.69: Godmode ↶ on the result row left the card on the stack.
 3. Done when:
    1. Server tests: a played loot card and an activated item are undone.
    2. Server tests: each blocking event after the play stops it.
