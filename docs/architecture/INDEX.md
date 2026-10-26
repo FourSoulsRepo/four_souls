@@ -22,3 +22,4 @@
 | [018](018-server-deployment.md) | Server deployment from releases | Accepted |
 | [019](019-seamless-server-restart.md) | Seamless server restart | Accepted |
 | [020](020-rollback.md) | Rollback | Accepted |
+| [021](021-localization.md) | Localization | Accepted |
