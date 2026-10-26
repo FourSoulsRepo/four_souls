@@ -111,6 +111,8 @@ Rules of this step (owner, 2026-10-26):
    4. `todo.json` for agents and the glossary check (ADR 021, item 16).
    5. Screenshots: `make screenshots LOCALE=xx`, one per screen (ADR 021, item 14).
    6. The translator checks them by eye; no per-key pages for now.
+   7. `todo.json` is split by area; `AREA=lobby` limits it to one (owner, 2026-10-27).
+   8. Glossary terms go into each `todo.json` entry; no word check (owner, 2026-10-27).
 3. Done when:
    1. `make i18n LOCALE=xx` lists every gap of a half-translated test file.
    2. `make screenshots LOCALE=xx` shows that file's lines on the screens.

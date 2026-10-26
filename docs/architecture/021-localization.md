@@ -179,7 +179,11 @@ Use options 5, 7, 11, 12 and 14.
     5. The screenshots of English give an agent the same context.
     6. Glossary: `frontend/src/locales/glossary/<lang>.json`.
     7. It fixes game terms per language: loot, soul, treasure, cents.
-    8. The check warns when a line uses another word for a glossary term.
+    8. Each entry lists the glossary terms its English line uses.
+    9. No check of the words; case endings make it unreliable (owner, 2026-10-27).
+    10. `todo.json` is grouped by area: the key's first word.
+    11. `make i18n LOCALE=xx AREA=lobby` writes one area only.
+    12. An agent translates one area per pass, then runs the check again.
 
 ## Consequences
 
