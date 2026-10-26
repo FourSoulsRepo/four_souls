@@ -42,12 +42,12 @@ This step never closes; new reports are appended.
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
 | I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58 | 11 |
-| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57 | 13 |
+| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.70 | 14 |
 | K  | Build and release files                  | Release    | 19.47, 19.59                                           | 2     |
 | L  | Not a bug: the app follows a ruling      | None       | 19.63                                                  | 1     |
 | M  | Go test setup: the code was right        | Go tests   | 19.68                                                  | 1     |
 
-Totals by system (69 items):
+Totals by system (70 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
@@ -55,7 +55,7 @@ Totals by system (69 items):
 | Card data | C       | 2     |
 | Client    | D–G     | 21    |
 | Server    | H       | 1     |
-| e2e       | I, J    | 24    |
+| e2e       | I, J    | 25    |
 | Release   | K       | 2     |
 | None      | L       | 1     |
 | Go tests  | M       | 1     |
@@ -2273,3 +2273,20 @@ Totals by system (69 items):
    13. Left as they are; a later item may give them rows.
    14. UC-15 2e, UC-30 3g, UC-31 3e; 15.88 item 7; wiki `Client`; CHANGELOG.
    15. Screenshots: `.cache/screenshots/19.69/before/` and `after/`.
+
+### [ ] 19.70 A resolved A Penny! shows no "gains 1¢" row for 5 seconds
+
+1. Goal: a resolved card's result row always reaches every client.
+2. Report (Claude, 2026-10-26)
+   1. Seen once by the 17.6 agent in a dev e2e run, Soft mode.
+   2. Tom's page showed "A Penny!" resolved, but no "Uma gains 1¢" row.
+   3. It showed "Waiting for Uma, You" with an empty stack for 5 seconds.
+   4. Not seen again in later runs or in either gate run.
+   5. Evidence: `.cache/e2e-evidence/19.70/e2e-dev2/` (not tracked).
+   6. It holds the match records (`cache-e2e`) and `test-results`.
+3. Tasks:
+   1. Read the saved match record and test results.
+   2. Find whether the row was never sent, or sent and not drawn.
+   3. Group J is provisional; move the item once the cause is found.
+4. Done when:
+   1. The cause is named here, with a test if it is a real bug.

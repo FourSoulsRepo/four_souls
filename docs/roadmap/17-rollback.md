@@ -134,3 +134,28 @@ Owner notes (2026-10-26):
    2. Server tests: each blocking event after the play stops it.
    3. Engine test: a private `moved_to_deck` is no barrier.
    4. e2e: a played loot card is undone by a Soft vote.
+
+### [ ] 17.7 One Undo button
+
+1. Goal: one Undo button replaces the buttons on history rows (N-12, item 25).
+2. Tasks:
+   1. Undo sits under the History title; hidden in Disabled mode.
+   2. One press: back to before the latest target in `rollback_steps`.
+   3. A play and the answers it asks first are one move.
+   4. Soft: the author sees "Ask to undo"; others "Undo", which opens the vote.
+   5. Godmode: anyone, at once; many presses go far back.
+   6. Greyed with the reason: barrier, open vote, game over, spectator.
+   7. The tooltip names the move it undoes.
+   8. Remove the ↶ buttons on rows and the step-to-row mapping (17.3, 17.6).
+   9. Remove the 17.6 play rows; the history stays clean (owner, 2026-10-26).
+   10. Keep the 17.6 engine rule (`moved_to_deck`) and its server tests.
+   11. 15.88 item 7 and UC-15 2e: the play rows are gone again.
+   12. ADR 020: append the change; item 6.2 "any step" is now press by press.
+   13. UC-30, UC-31 updated; screenshots redone.
+   14. 19.69: its row fix is replaced by the button; note it there.
+3. Done when:
+   1. Vitest: the button's target, label, grey reasons, hidden when Disabled.
+   2. e2e: Godmode presses twice and goes back two moves.
+   3. e2e: a Soft press opens the vote; the author's press asks.
+   4. e2e: a played card that asks a target is undone by one press.
+   5. e2e: the button is greyed after a dice roll in Soft.
