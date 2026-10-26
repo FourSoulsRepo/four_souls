@@ -1003,25 +1003,40 @@
     0 0 14px rgb(255 210 122 / 70%);
 }
 
-.end-turn.idle {
-  border-color: #123d0b;
-  animation: end-turn-glow 1.4s ease-in-out infinite alternate;
+/* Idle (19.76): a soft green halo behind the button breathes; only its
+   opacity moves. Like Throw's, it is a gradient in its own box, not a
+   blurred shadow: macOS WebKit clipped the shadow of the tilted button
+   to a hard-edged box. The slot around the button draws it, as the
+   tilted button paints its children over its own face. */
+.end-turn-slot {
+  position: relative;
+  display: block;
+  width: 100%;
+}
+
+.end-turn-slot.idle::before {
+  position: absolute;
+  inset: -40px -36px;
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    rgb(110 255 70 / 95%) 55%,
+    rgb(60 210 45 / 50%) 72%,
+    rgb(25 150 35 / 0%)
+  );
+  content: '';
+  pointer-events: none;
+  animation: end-turn-glow 1.6s ease-in-out infinite alternate;
 }
 
 /* anim: end-turn-glow */
 @keyframes end-turn-glow {
   from {
-    box-shadow:
-      0 4px 0 #123d0b,
-      0 0 0 2px rgb(120 230 90 / 50%),
-      0 0 8px 2px rgb(90 230 60 / 50%);
+    opacity: 0.3;
   }
 
   to {
-    box-shadow:
-      0 4px 0 #123d0b,
-      0 0 0 3px rgb(120 230 90 / 80%),
-      0 0 22px 6px rgb(90 230 60 / 85%);
+    opacity: 1;
   }
 }
 
@@ -1032,16 +1047,12 @@
   box-shadow:
     0 1px 0 var(--ink),
     0 3px 6px rgb(0 0 0 / 50%);
-  animation: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .end-turn.idle {
+  .end-turn-slot.idle::before {
     animation: none;
-    box-shadow:
-      0 4px 0 #123d0b,
-      0 0 0 3px rgb(120 230 90 / 80%),
-      0 0 18px 5px rgb(90 230 60 / 80%);
+    opacity: 0.8;
   }
 }
 

@@ -324,6 +324,33 @@ test('with the question off in the settings, End turn ends at once (V-46)', asyn
   await expectNextTurn(pages, click, turn);
 });
 
+test('idle End turn glows softly and breathes, no ring (H-20, 19.76)', async ({ browser }) => {
+  const pages = await startGame(browser, ['Mo', 'Ned'], { url: appURL() });
+  const active = await activePage(pages, click);
+  const button = endTurnButton(active);
+  // A turn starts with its attack left; the class stands in for the
+  // state where nothing is left, as only the look is checked here.
+  await button.evaluate((b) => {
+    b.classList.add('idle');
+    b.parentElement?.classList.add('idle');
+  });
+  const look = await button.evaluate((b) => {
+    const halo = b.parentElement ? getComputedStyle(b.parentElement, '::before') : undefined;
+    return {
+      shadow: getComputedStyle(b).boxShadow,
+      halo: halo?.backgroundImage,
+      breath: halo?.animationName,
+    };
+  });
+  // No glow in the button's own shadow: macOS WebKit clipped it to a
+  // box. The halo is a gradient behind the button that breathes.
+  expect(look.shadow).not.toMatch(/rgba?\((\d+), (2\d\d), /);
+  expect(look.halo).toMatch(/^radial-gradient/);
+  expect(look.breath).toBe('end-turn-glow');
+  await active.mouse.move(600, 300);
+  await shot(active, 'end-turn-idle');
+});
+
 // feed plays the current view again as the next update, with events;
 // player 'you' is the page's seat, 'other' the next one.
 async function feed(page: Page, events: Record<string, unknown>[]) {

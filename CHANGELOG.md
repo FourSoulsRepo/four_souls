@@ -13,6 +13,7 @@ Rules engine versions are in each release's notes.
 - When a monster that covered another dies, the card below shows up in its slot instead of flying in from the monster deck.
 - A dead monster flies from its slot to the monster discard, or to the player who gains its soul, after its skull, instead of just appearing there.
 - A declared end of turn shows on top of the stack, "Ann ends the turn", like an attack or a buy, so the others see why they may respond.
+- With nothing left to do, End turn breathes a soft green glow instead of showing a green frame.
 ## 0.2.1 - 2026-10-22
 
 The first public release.
