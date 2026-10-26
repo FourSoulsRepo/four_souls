@@ -222,6 +222,16 @@ describe('declaration', () => {
     expect(line({ ...view, turn: { ...view.turn, active: 1 }, buying: true })).toBe('Bo buys…');
   });
 
+  it('says a declared end of turn until the end phase; not a death end (19.74)', () => {
+    const ending = { ...view, turn: { ...view.turn, end_declared: true } };
+    expect(line(ending)).toBe('Ann ends the turn');
+    expect(declaration(ending, names)?.[0]).toEqual({ text: 'Ann', role: 'player', player: 0 });
+    expect(line({ ...view, turn: { ...view.turn, active: 1, end_declared: true } })).toBe('Bo ends the turn');
+    expect(declaration({ ...ending, turn: { ...ending.turn, step: 5 } }, names)).toBeNull();
+    expect(declaration({ ...view, turn: { ...view.turn, death_end: true } }, names)).toBeNull();
+    expect(stackRows(ending, names).map((r) => r.key)).toEqual(['declared']);
+  });
+
   it('is nothing without one, after the game, and before turn 1', () => {
     expect(declaration(view, names)).toBeNull();
     expect(declaration({ ...view, buying: true, over: true }, names)).toBeNull();

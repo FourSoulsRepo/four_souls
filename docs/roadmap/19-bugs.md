@@ -2475,7 +2475,7 @@ Totals by system (74 items):
 7. Owner notes (2026-10-26)
    1. Owner marks 19.73 solved, with the emptied slot during the flight.
 
-### [ ] 19.74 A declared end of turn has no row on the stack
+### [x] 19.74 A declared end of turn has no row on the stack
 
 1. Goal: the stack panel shows a declared end of turn, like an attack or a buy.
 2. Report (owner, 2026-10-26)
@@ -2499,3 +2499,18 @@ Totals by system (74 items):
 5. Cause
    1. `declaration` checks only `view.attack` and `view.buying`.
    2. `turn.end_declared` is used only by "Wait for my turn".
+6. Fix
+   1. Client: `declaration` returns `<player> ends the turn` after an attack or a buy.
+   2. Shown while `turn.end_declared` and `turn.step` is the action step.
+   3. So a card's early end shows too; the end phase drops it.
+   4. A death end sets no `end_declared`; it has no row.
+   5. Same `stack-declared` row; no fight line; no engine change.
+   6. The row shows only while someone may respond.
+   7. The server passes for a player who cannot (N-05); then no update shows it.
+   8. Vitest: `says a declared end of turn until the end phase; not a death end (19.74)`.
+   9. e2e: `a declared end of turn shows on top of the stack (19.74)` in `stack.spec.ts`.
+   10. It ends turns until the other player may respond, up to six.
+   11. UC-14 2q; wiki `Client`; CHANGELOG.
+   12. Screenshots: `.cache/screenshots/19.74/before/` and `after/`.
+   13. Before: the stack says "Nothing on the stack" while the viewer may respond.
+   14. After: the row "Fay ends the turn" on top, the name in Fay's color.

@@ -79,6 +79,13 @@
 * **2p. A thrown roll's changes (15.94):** its row names them and the result.
   * "Attack: Jo rolls 1 against Greedling (+1 Meat! = 2)".
   * The History says "rolls 1 → 2 (+1 Meat!)".
+* **2q. A declared end of turn (19.74):** a row on top of the stack says it.
+  * "Bo ends the turn"; the name in Bo's color.
+  * The same row as an attack or a buy: no icon, a dashed edge.
+  * A card that ends the turn early shows it too.
+  * Every player sees it while they may respond.
+  * It goes when the end phase starts.
+  * A death end has no row; nobody declared it.
 
 ## Postconditions
 
