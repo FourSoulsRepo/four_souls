@@ -56,7 +56,7 @@ const told = 'line';
 // (15.88): told gives a line; any other text is why it gives none. A kind
 // missing here fails history.test.ts, so no play goes untold.
 export const historyKinds: Record<string, string> = {
-  activated: 'Its stack item resolves as a line, or is cancelled.',
+  activated: told,
   attack_declared: told,
   attack_ended: 'The rolls, the damage and the kill tell how it ended.',
   attack_roll_repeated: 'A trigger cause; the trigger resolves as a line.',
@@ -94,7 +94,7 @@ export const historyKinds: Record<string, string> = {
   healed: 'Healing at the end of a turn is for everyone; HP shows on the card.',
   looked_at: told,
   loot_done: 'Each looted card has its line.',
-  loot_played: 'The loot card resolves as a line, or is cancelled.',
+  loot_played: told,
   looted: told,
   lost_cents: told,
   moved_to_deck: 'Cards put back into a deck are mostly hidden.',
@@ -256,6 +256,15 @@ export function entriesFor(events: GameEvent[], turn: number, you: number, n: Na
         break;
       case 'attack_declared':
         add('⚔', `${does(e.player, 'declare')} an attack`);
+        break;
+      // A play has its own row, with its own step, so a rollback can
+      // undo it while the card is on the stack and after (17.6). Its
+      // result is the resolved line; the strip shows only that one.
+      case 'loot_played':
+        add('✦', `${does(e.player, 'play')} ${card}`, e.card);
+        break;
+      case 'activated':
+        add('✦', `${does(e.player, 'use')} ${card || 'an ability'}`, e.card);
         break;
       case 'attack_target':
         // Not a headline: the attack roll's tile names the monster (15.89).

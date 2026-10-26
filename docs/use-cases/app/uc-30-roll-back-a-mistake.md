@@ -36,6 +36,9 @@
 * **3f. The replay after a restart differs:** the history ends there.
   * A row says "The server restarted; no rollback before this".
   * Steps before it have no button; the server refuses them.
+* **3g. A played card (17.6, 19.69):** ↶ on its "plays" or "uses" row undoes the play.
+  * The card goes back to the hand, or the item is ready again.
+  * ↶ on the result's row undoes only the result: the card is back on the stack.
 
 ## Postconditions
 

@@ -69,6 +69,14 @@ Use options 1, 4 and 8.
    13. Hidden info: also `gained_treasure`, a deck top coming into view.
    14. Hidden info: also `character_dealt`; the turn: also `turn_skipped`.
    15. The game: also `game_started`.
+   16. 17.6: a played card may be undone (N-12, item 24).
+   17. Played card: a loot card played, or an item's ability activated.
+   18. Undoable while no new card came from the treasure, monster or loot deck.
+   19. And no die was rolled or changed, and no damage was dealt.
+   20. A turn end, a death, and a seen hand card still block it.
+   21. A purchase keeps its barriers.
+   22. So a private `moved_to_deck` is no barrier: a hand card goes on the loot deck.
+   23. Every other private event draws a deck card or shows a hand card.
 5. Soft vote
    1. Only the other players can roll back; never the target's author.
    2. The author may ask; the ask opens a vote.

@@ -2829,6 +2829,10 @@ Images come first, so the new table is built with backs and mats.
    15. Screenshots: `.cache/screenshots/15.88/before/` and `after/`.
 6. Owner notes (2026-10-21)
    1. Owner marks 15.88 solved.
+7. Changed later (17.6, 2026-10-26)
+   1. `loot_played` and `activated` now give a line: "Bo plays Bomb!".
+   2. So a rollback has a row for the play (owner); fixes 19.69.
+   3. The play line is no headline; the strip still shows the result only.
 
 ### [x] 15.89 Headlines in the strip
 

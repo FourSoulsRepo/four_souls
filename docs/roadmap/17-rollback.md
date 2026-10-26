@@ -113,7 +113,7 @@ Owner notes (2026-10-26):
    3. Server test: an old restart file loads with no history.
    4. e2e: Godmode rolls back past a restart; a cut shows its row.
 
-### [ ] 17.6 Soft: roll back a played card
+### [x] 17.6 Soft: roll back a played card
 
 1. Goal: in Soft, a played card can be undone until a deck card shows (N-12, item 24).
 2. Tasks:

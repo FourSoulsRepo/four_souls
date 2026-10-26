@@ -46,7 +46,8 @@ func TestBarrierKinds(t *testing.T) {
 }
 
 // TestBarrierPrivate: an event only one player sees is a barrier,
-// whatever its kind (item 4.4).
+// whatever its kind (item 4.4), but for a hand card put on the loot
+// deck: no deck card shows (item 4.22).
 func TestBarrierPrivate(t *testing.T) {
 	for _, c := range []struct {
 		e    Event
@@ -54,13 +55,46 @@ func TestBarrierPrivate(t *testing.T) {
 	}{
 		{Event{Kind: EvLooted, Private: true}, true},
 		{Event{Kind: EvLooted, Text: "from the discard"}, false},
-		{Event{Kind: EvMovedToDeck, Private: true}, true},
+		{Event{Kind: EvMovedToDeck, Private: true}, false},
+		{Event{Kind: EvMovedToDeck}, false},
+		{Event{Kind: EvGaveCard, Private: true}, true},
+		{Event{Kind: EvLookedAt, Private: true}, true},
 		{Event{Kind: EvLootPlayed}, false},
 		{Event{Kind: EvDiceRolled}, true},
 		{Event{Kind: EvAttackDeclared}, false},
 	} {
 		if got := Barrier(c.e); got != c.want {
 			t.Errorf("Barrier(%s, private %v) = %v", c.e.Kind, c.e.Private, got)
+		}
+	}
+}
+
+// TestBarrierHandToDeck: the private emits as the engine makes them. A
+// hand card put on the loot deck is no barrier: no deck card shows and
+// nobody else sees it (ADR 020, item 4.22; N-12, item 24). A loot draw
+// and a hand card given to another player still are.
+func TestBarrierHandToDeck(t *testing.T) {
+	g := toAction(t, 2)
+	for _, c := range []struct {
+		name string
+		do   func()
+		kind EventKind
+		want bool
+	}{
+		{"hand to deck", func() { g.HandToDeckTop(0, g.Players[0].Hand[0]) }, EvMovedToDeck, false},
+		{"loot", func() { g.loot(0, 1) }, EvLooted, true},
+		{"give", func() { g.GiveHandCard(0, 1, g.Players[0].Hand[0]) }, EvGaveCard, true},
+		{"look", func() { g.LookAt(0, g.Players[1].Hand[0]) }, EvLookedAt, true},
+	} {
+		g.events = nil
+		c.do()
+		ev := g.takeEvents()
+		i := slices.IndexFunc(ev, func(e Event) bool { return e.Kind == c.kind })
+		if i < 0 || !ev[i].Private {
+			t.Fatalf("%s: events %+v, want a private %s", c.name, ev, c.kind)
+		}
+		if got := slices.ContainsFunc(ev, Barrier); got != c.want {
+			t.Errorf("%s: barrier %v, want %v: %+v", c.name, got, c.want, ev)
 		}
 	}
 }

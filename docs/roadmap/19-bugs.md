@@ -2237,7 +2237,7 @@ Totals by system (69 items):
    1. The cause is named here.
    2. The test runs 200 times in a row without that failure.
 
-### [ ] 19.69 Godmode ↶ on a played card's row leaves the card on the stack
+### [x] 19.69 Godmode ↶ on a played card's row leaves the card on the stack
 
 1. Goal: ↶ on a played card's row undoes the play itself.
 2. Report (Claude, 2026-10-26)
@@ -2252,3 +2252,24 @@ Totals by system (69 items):
    2. Check that no other target step lacks a row of its own.
 4. Done when:
    1. e2e: Godmode ↶ on the play row undoes the play.
+5. Cause
+   1. `historyKinds` skipped `loot_played` and `activated` (15.88).
+   2. A row's ↶ targets the first step of the update that brought it.
+   3. The play's own update had no row, so no row carried its step.
+   4. The result's row came with the pass that resolved it.
+6. Fix
+   1. Client only: `loot_played` and `activated` give a line (17.6).
+   2. "Bo plays A Penny!", "Bo uses The D6"; no headline, the strip is unchanged.
+   3. Its row carries the play's step; ↶ there undoes the play.
+   4. Vitest: `a play has its own row (17.6)` in `history.test.ts`.
+   5. e2e: `in Godmode ↶ on a played card undoes the play` in `rollback.spec.ts`.
+   6. The result's row keeps its Godmode ↶: it undoes only the resolution.
+   7. Task 3.2: other target steps still have no row of their own.
+   8. A play or activation that asks a mode or target: the intent itself.
+   9. Its row comes with the last answer; ↶ there goes back to that prompt.
+   10. The prompt offers "cancel", so the play can still be dropped.
+   11. Also: some answers to a card's question, an order, an end-turn declaration.
+   12. Such as Bum Friend's put-back pick (`moved_to_deck`, ADR 020 item 4.22).
+   13. Left as they are; a later item may give them rows.
+   14. UC-15 2e, UC-30 3g, UC-31 3e; 15.88 item 7; wiki `Client`; CHANGELOG.
+   15. Screenshots: `.cache/screenshots/19.69/before/` and `after/`.

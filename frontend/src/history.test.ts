@@ -604,3 +604,59 @@ describe('Soft rollback buttons (ADR 020, items 3 and 5)', () => {
     expect(stepText(history, 9)).toBe('step 9');
   });
 });
+
+describe('a play has its own row (17.6)', () => {
+  const penny: StackItem = {
+    id: 3,
+    kind: StackKind.loot,
+    controller: 1,
+    source: 40,
+    card: 'a_penny',
+    target: { player: 1, is_player: true },
+    ability: { card: 'a_penny', index: 0 },
+    roll_for: { card: '', index: 0 },
+    text: 'Gain 1¢.',
+  };
+  // Step 5: Bo plays A Penny!; step 6 is Ann's pass; step 7 resolves it.
+  const play = entriesFor([{ kind: 'loot_played', player: 1, object: 40, card: 'a_penny' }], 1, 0, n, 1).map((e) => ({ ...e, step: 5 }));
+  const resolved = entriesFor(
+    [
+      { kind: 'stack_resolved', player: 1, card: 'a_penny', stack_id: 3, item: penny },
+      { kind: 'gained_cents', player: 1, amount: 1 },
+    ],
+    1,
+    0,
+    n,
+    1 + play.length,
+  ).map((e) => ({ ...e, step: 7 }));
+  const history = [...play, ...resolved];
+
+  it('names who plays a loot card or uses an item; the strip keeps the result only', () => {
+    expect(play).toEqual([{ key: 1, turn: 1, icon: '✦', text: 'Bo plays A_PENNY', card: 'a_penny', step: 5 }]);
+    expect(entriesFor([{ kind: 'loot_played', player: 0, card: 'a_penny' }], 1, 0, n, 0)[0]?.text).toBe('You play A_PENNY');
+    const [use] = entriesFor([{ kind: 'activated', player: 1, object: 41, card: 'sack_of_pennies', text: '↷: Gain 1¢.' }], 1, 0, n, 0);
+    expect(use).toMatchObject({ icon: '✦', text: 'Bo uses SACK_OF_PENNIES', card: 'sack_of_pennies' });
+    expect(use.headline).toBeUndefined();
+    expect(stripEntries(history).map((e) => e.text)).toEqual(['A_PENNY']);
+    // The play has no outcome: the result's gains go to the resolved line.
+    expect(play[0]?.outcome).toBeUndefined();
+  });
+
+  it('gives the play row the button, in Soft while the card is on the stack and after', () => {
+    const soft = { rollback_mode: 'soft' as const, rollback_from: 1, rollback_steps: [{ step: 5, seat: 1 }], view: {} };
+    // On the stack: only the play row is there.
+    expect([...rollbackButtons(play, soft, 0)]).toEqual([[1, 'vote']]);
+    expect([...rollbackButtons(play, soft, 1)]).toEqual([[1, 'ask']]);
+    // Resolved: the result came with a pass, no target; it has no button.
+    expect([...rollbackButtons(history, soft, 0)]).toEqual([[1, 'vote']]);
+  });
+
+  it('gives the play row its own step in Godmode (19.69)', () => {
+    const god = { rollback_mode: 'god' as const, rollback_from: 1, view: {} };
+    const buttons = rollbackButtons(history, god, 0);
+    expect(buttons.get(1)).toBe('roll');
+    expect(history.find((e) => e.key === 1)?.step).toBe(5);
+    // The result row undoes only the resolution: the card goes back on the stack.
+    expect(buttons.get(2)).toBe('roll');
+  });
+});

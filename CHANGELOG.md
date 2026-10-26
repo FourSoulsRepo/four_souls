@@ -6,6 +6,7 @@ Rules engine versions are in each release's notes.
 
 ## Unreleased
 
+- The History names each played loot card and used item, "Bo plays A Penny!"; in a game with rollback, its ↶ undoes the play.
 - "Choose one-" cards such as Dagaz ask like The Bone: the card large, one line per option; an option with nothing to target is greyed.
 - Online: each Recent server shows whether it is up and how many games there have a free seat.
 ## 0.2.1 - 2026-10-22

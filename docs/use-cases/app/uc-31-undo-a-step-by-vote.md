@@ -39,6 +39,14 @@
 * **5a. The majority is out of reach:** the vote is declined at once.
 * **5b. A declined step:** it may be asked again.
 * **6a. A barrier came after the step:** no button; the server refuses it.
+* **3e. A played loot card or a used item (17.6):** its own row offers the button.
+  * "Bo plays A Penny!"; also while the card is on the stack.
+  * Its result's row has none: the result came with a pass.
+  * It stays undoable until a new card comes from a deck.
+  * Or a die is rolled or changed, or damage is dealt.
+  * A turn end, a death, and a seen hand card block it too.
+  * A card put from a hand on the loot deck does not (ADR 020, item 4.22).
+  * A purchase keeps its barriers.
 
 ## Postconditions
 

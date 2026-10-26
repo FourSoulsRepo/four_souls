@@ -45,6 +45,9 @@
   * The strip's die and line show the result: "Ann rolls 4 against Fly".
   * An unchanged roll shows one number: "(rolled 6)".
 * **2d. A rollback (UC-30):** undone rows turn grey; a row says who rolled back.
+* **2e. A play (17.6):** a played loot card or a used item adds its own line.
+  * "Bo plays Bomb!", "You use The D6".
+  * Its result follows as the resolved line; the strip shows only the result.
 
 ## Postconditions
 

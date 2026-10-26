@@ -260,7 +260,8 @@ func TestSoftBarrierInGame(t *testing.T) {
 // TestSoftBarrierKinds: each event kind the engine calls a barrier
 // moves the first Soft target past its step; every other kind leaves
 // it (ADR 020, item 4). A lone pass or throw is never a target, and a
-// private event is a barrier.
+// private event is a barrier, but for a hand card put on the loot deck
+// (item 4.22).
 func TestSoftBarrierKinds(t *testing.T) {
 	data, err := os.ReadFile(filepath.Join("..", "..", "pkg", "rules_engine", "testdata", "event_kinds.txt"))
 	if err != nil {
@@ -292,6 +293,9 @@ func TestSoftBarrierKinds(t *testing.T) {
 	}
 	if r := room(engine.Event{Kind: engine.EvLooted, Private: true}); r.rollbackFrom() != 3 {
 		t.Error("a private event is no barrier")
+	}
+	if r := room(engine.Event{Kind: engine.EvMovedToDeck, Private: true}); r.rollbackFrom() != 1 {
+		t.Error("a hand card put on the loot deck is a barrier")
 	}
 	for _, k := range []engine.IntentKind{engine.IntentPass, engine.IntentThrow} {
 		r := room()
