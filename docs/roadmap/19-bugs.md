@@ -38,7 +38,7 @@ This step never closes; new reports are appended.
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74                              | 4     |
 | E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52, 19.54, 19.69 | 9  |
-| F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50                      | 5     |
+| F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76               | 6     |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
 | I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70 | 12 |
@@ -47,13 +47,13 @@ This step never closes; new reports are appended.
 | L  | Not a bug: the app follows a ruling      | None       | 19.63                                                  | 1     |
 | M  | Go test setup: the code was right        | Go tests   | 19.68                                                  | 1     |
 
-Totals by system (75 items):
+Totals by system (76 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
 | Engine    | A, B    | 20    |
 | Card data | C       | 2     |
-| Client    | D–G     | 22    |
+| Client    | D–G     | 23    |
 | Server    | H       | 1     |
 | e2e       | I, J    | 26    |
 | Release   | K       | 2     |
@@ -2537,3 +2537,32 @@ Totals by system (75 items):
 4. Done when:
    1. The cause is written here, or the item says it was not found.
    2. A fix, if any, comes with its test.
+
+### [ ] 19.76 End turn glows as a green box, not a breathing glow
+
+1. Goal: with nothing left to do, End turn breathes a soft green glow (H-20).
+2. Report (owner, 2026-10-26)
+   1. Nothing left to do: the End turn button shows a green box.
+   2. Expected: a breathing green glow, like the playable hand cards.
+3. Tasks:
+   1. Find why the glow draws as a box.
+   2. Client: draw the glow as a soft halo that breathes.
+   3. Keep the `end-turn-glow` tag and its row in `Animations.md`.
+4. Done when:
+   1. The idle button shows a soft glow in a screenshot.
+   2. An e2e test checks the idle glow.
+   3. Screenshots: `.cache/screenshots/19.76/before/` and `after/`.
+5. Cause
+   1. `.end-turn.idle` drew a hard ring: a shadow with only a spread.
+   2. It sat on a dark green border; the ring grew and shrank.
+   3. On the lumpy button it read as a green frame, not a glow.
+6. Fix
+   1. Client: the idle look follows the hand-card glow (`hand-glow`).
+   2. The button keeps its ink outline and drop shadow.
+   3. A tight soft green halo on the button itself.
+   4. A wide aura in `::before` behind it; only its opacity breathes.
+   5. Pressed: the aura hides; reduced motion: it stays still.
+   6. e2e: `idle End turn glows softly and breathes, no ring (H-20, 19.76)`.
+   7. It fails on the old style: the ring shadow is found.
+   8. Wiki `Animations`, `Client`, `Screenshots`; CHANGELOG.
+   9. Screenshots: `.cache/screenshots/19.76/before/` and `after/`.

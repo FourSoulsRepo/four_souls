@@ -88,5 +88,6 @@ The fixture copies the fan-game notice. `internal/legal` has a test that fails w
 | Soft: the author asked; their status | `screen-rollback-ask-status.png` |
 | Soft: the author's button reads "Ask to undo" | `screen-rollback-ask.png` |
 | Soft: Undo greyed after a roll; the note says why | `screen-rollback-undo-greyed.png` |
+| End turn glows green: nothing left to do | `screen-end-turn-idle.png` |
 
 When a screen is added, call `shot` in its test and add a row here.

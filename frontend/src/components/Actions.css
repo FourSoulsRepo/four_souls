@@ -1003,25 +1003,39 @@
     0 0 14px rgb(255 210 122 / 70%);
 }
 
+/* Idle (19.76): like a playable hand card's glow, not a ring. The
+   button keeps its ink outline and shadow and gets a tight soft halo;
+   behind it a wide aura breathes; only its opacity moves. */
 .end-turn.idle {
-  border-color: #123d0b;
-  animation: end-turn-glow 1.4s ease-in-out infinite alternate;
+  position: relative;
+  isolation: isolate;
+  box-shadow:
+    0 4px 0 var(--ink),
+    0 0 6px 1px rgb(110 255 70 / 80%),
+    0 0 14px 3px rgb(60 210 45 / 50%);
+}
+
+.end-turn.idle::before {
+  position: absolute;
+  inset: -3px;
+  z-index: -1; /* layer: local */
+  border-radius: inherit;
+  box-shadow:
+    0 0 24px 8px rgb(50 200 45 / 55%),
+    0 0 48px 16px rgb(25 150 35 / 30%);
+  content: '';
+  pointer-events: none;
+  animation: end-turn-glow 1.6s ease-in-out infinite alternate;
 }
 
 /* anim: end-turn-glow */
 @keyframes end-turn-glow {
   from {
-    box-shadow:
-      0 4px 0 #123d0b,
-      0 0 0 2px rgb(120 230 90 / 50%),
-      0 0 8px 2px rgb(90 230 60 / 50%);
+    opacity: 0.3;
   }
 
   to {
-    box-shadow:
-      0 4px 0 #123d0b,
-      0 0 0 3px rgb(120 230 90 / 80%),
-      0 0 22px 6px rgb(90 230 60 / 85%);
+    opacity: 1;
   }
 }
 
@@ -1032,16 +1046,18 @@
   box-shadow:
     0 1px 0 var(--ink),
     0 3px 6px rgb(0 0 0 / 50%);
+}
+
+.end-turn.own:enabled:not([aria-disabled='true']):active::before,
+.end-turn.down::before {
   animation: none;
+  opacity: 0;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .end-turn.idle {
+  .end-turn.idle::before {
     animation: none;
-    box-shadow:
-      0 4px 0 #123d0b,
-      0 0 0 3px rgb(120 230 90 / 80%),
-      0 0 18px 5px rgb(90 230 60 / 80%);
+    opacity: 0.8;
   }
 }
 
