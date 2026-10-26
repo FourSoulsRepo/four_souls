@@ -36,7 +36,7 @@ This step never closes; new reports are appended.
 | A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66 | 12 |
 | B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73   | 8     |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
-| D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30                                     | 3     |
+| D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74                              | 4     |
 | E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52, 19.54, 19.69 | 9  |
 | F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50                      | 5     |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
@@ -47,13 +47,13 @@ This step never closes; new reports are appended.
 | L  | Not a bug: the app follows a ruling      | None       | 19.63                                                  | 1     |
 | M  | Go test setup: the code was right        | Go tests   | 19.68                                                  | 1     |
 
-Totals by system (73 items):
+Totals by system (74 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
 | Engine    | A, B    | 20    |
 | Card data | C       | 2     |
-| Client    | D–G     | 21    |
+| Client    | D–G     | 22    |
 | Server    | H       | 1     |
 | e2e       | I, J    | 25    |
 | Release   | K       | 2     |
@@ -2474,3 +2474,28 @@ Totals by system (73 items):
    22. After: the skull, then the card flies from its emptied slot.
 7. Owner notes (2026-10-26)
    1. Owner marks 19.73 solved, with the emptied slot during the flight.
+
+### [ ] 19.74 A declared end of turn has no row on the stack
+
+1. Goal: the stack panel shows a declared end of turn, like an attack or a buy.
+2. Report (owner, 2026-10-26)
+   1. An open attack or buy has a row on top of the stack (15.91).
+   2. A declared end of turn has none.
+   3. The others cannot see why priority came to them.
+3. Tasks:
+   1. Client: `declaration` in `stack.ts` returns an end row.
+   2. Text: `<player> ends the turn`; the name in their color.
+   3. Shown while `turn.end_declared` and `turn.step` is the action step.
+   4. Gone once the end phase starts (R-TURN-10).
+   5. A turn ended early by a card shows it too (`EndDeclared`).
+   6. A death end (`death_end`) gets no row; it is not declared.
+   7. No fight line; same `stack-declared` row and look.
+   8. No engine change: the view sends `end_declared` already.
+4. Done when:
+   1. Vitest: the row while declared; none in the end phase; none for a death end.
+   2. e2e in `stack.spec.ts`: every player sees the row after End turn.
+   3. UC-14 gets the case; wiki `Client`; CHANGELOG line.
+   4. Screenshots: `.cache/screenshots/19.74/before/` and `after/`.
+5. Cause
+   1. `declaration` checks only `view.attack` and `view.buying`.
+   2. `turn.end_declared` is used only by "Wait for my turn".
