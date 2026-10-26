@@ -35,7 +35,7 @@ Use options 1 and 4; stats and rewards stay strings (option 5 lost).
 
 1. Files
    1. `pkg/card_db/data/<set code>.json`; the file name must match the code.
-   2. Images under `pkg/card_db/images/<set code>/`.
+   2. Images under `pkg/card_db/images/<lang>/<set code>/` (ADR 021).
    3. `images/` is a git submodule: the private `FourSoulsRepo/card_db` repo.
 2. Set file
    1. `set`: `code` (e.g. `b2`) and `name` (e.g. `Base Game V2`).
@@ -50,7 +50,7 @@ Use options 1 and 4; stats and rewards stay strings (option 5 lost).
    6. Icons in text: `{Icon Name}`, e.g. `{Tap Effect}`.
    7. `stats`, `rewards`: printed name and value strings.
    8. `artists`: role and name; `translators.<lang>`: names.
-   9. `images`: paths inside `images/`, e.g. `b2/the_d6.webp` (ADR 010).
+   9. `images`: paths inside `images/<lang>/`, e.g. `b2/the_d6.webp` (ADR 010).
    10. `related`: card refs, e.g. a character's starting item.
    11. `rebalanced`: true for cards changed by the Rebalance pack.
    12. `three_plus`: true for cards with the 3+ player only symbol.
@@ -66,6 +66,7 @@ Use options 1 and 4; stats and rewards stay strings (option 5 lost).
    5. Reads sets oldest first (ADR 010).
    6. Rejects a translation without a name.
    7. Rejects translators of a language with no text.
+   8. `FindImage` adds `<lang>/` to the path, then falls back to `en/`.
 6. Build modes
    1. `-tags embed`: `carddb.Embedded()` packs `data/`.
    4. `-tags "embed cardimages"`: also packs `images/` (needs the submodule).
@@ -93,7 +94,7 @@ Use options 1 and 4; stats and rewards stay strings (option 5 lost).
 1. Game rules for each card live in the engine (step 4), keyed by ref.
 2. The data is produced by the separate `FourSoulsRepo/tools` repo.
    1. Its `scraper build` writes `data/<set>.json` here.
-   2. Its `scraper images` writes `images/<set>/` here.
+   2. Its `scraper images` writes `images/en/<set>/` here.
    3. It mirrors these types in `scraper/carddata`; keep both in sync.
    4. Its `scraper ru-names` writes Russian names (16.5).
    5. `scraper build` keeps other languages' text and translators.

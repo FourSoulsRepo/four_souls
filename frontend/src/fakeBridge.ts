@@ -105,12 +105,15 @@ function saveSettings(s: FakeSettings): Promise<unknown> {
 // The real card text follows them, with images at their real paths; the
 // e2e tests serve those only for screenshots, else they fail to load and
 // the cards show their text, as in a public clone.
-const isaacImage =
+// Isaac also has a Russian test image, so tests see the image follow the
+// language (16.6); no real card has one yet.
+const artImage = (text: string): string =>
   'data:image/svg+xml,' +
   encodeURIComponent(
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 63 88"><rect width="63" height="88" fill="#7a5c2e"/>' +
-      '<text x="31" y="46" font-size="9" text-anchor="middle" fill="#fff">Isaac art</text></svg>',
+      `<text x="31" y="46" font-size="9" text-anchor="middle" fill="#fff">${text}</text></svg>`,
   );
+const isaacImage = artImage('Isaac art');
 const none = { footnotes: [], stats: [], rewards: [], effects: [] };
 const cards = [
   {
@@ -125,6 +128,7 @@ const cards = [
       { name: 'ATK', value: '1' },
     ],
     image: isaacImage,
+    images: { en: isaacImage, ru: artImage('Isaac ru') },
   },
   {
     ...none,
@@ -135,7 +139,7 @@ const cards = [
     effects: ['{Tap Effect}Choose a dice roll. Its controller rerolls it.', 'At the end of your turn, recharge this.'],
     footnotes: [{ title: '-Eternal-', text: "This can't be destroyed or put into discard." }],
     // A path with no file, so its image always fails, screenshots too.
-    image: '/cardimg/b2/missing_the_d6.webp',
+    image: '/cardimg/en/b2/missing_the_d6.webp',
   },
   {
     ...none,
@@ -207,7 +211,9 @@ function realCards(): unknown[] {
       footnotes: c.text.en?.footnotes ?? [],
       stats: c.stats ?? [],
       rewards: c.rewards ?? [],
-      image: c.images?.[0] ? `/cardimg/${c.images[0]}` : '',
+      // English only: the fake bridge cannot see which other images exist.
+      image: c.images?.[0] ? `/cardimg/en/${c.images[0]}` : '',
+      images: c.images?.[0] ? { en: `/cardimg/en/${c.images[0]}` } : {},
     }));
 }
 

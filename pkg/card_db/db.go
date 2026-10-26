@@ -263,22 +263,67 @@ func (db *DB) Has(refs []Ref) []Ref {
 	return missing
 }
 
-// HasImage reports whether the card's image file exists in fsys.
+// HasImage reports whether the card's English image file exists in fsys.
 // Clients show a blank card with text when it does not (A-11, SP-05).
 func HasImage(fsys fs.FS, c Card) bool {
-	p := ImagePath(c)
+	return isFile(fsys, ImagePath(c, English))
+}
+
+// FindImage returns the card's first image in lang as a path inside
+// images/, e.g. "ru/b2/the_d6.webp". It falls back to English (LO-06)
+// and returns "" when neither file exists (ADR 021).
+func FindImage(fsys fs.FS, c Card, lang Lang) string {
+	for _, l := range []Lang{lang, English} {
+		if p := ImagePath(c, l); isFile(fsys, p) {
+			return strings.TrimPrefix(p, ImagesDir+"/")
+		}
+	}
+	return ""
+}
+
+// ImagePath returns where a card's first image in lang lives inside the
+// file system, images/<lang>/<set>/<file>, or "" when the card has none.
+// Card data names images without the language (ADR 021).
+func ImagePath(c Card, lang Lang) string {
+	if len(c.Images) == 0 || !isLang(string(lang)) {
+		return ""
+	}
+	return path.Join(ImagesDir, string(lang), c.Images[0])
+}
+
+// ImageLangs lists the languages that have an image folder, sorted.
+// Other folders, such as images/assets, are not languages.
+func ImageLangs(fsys fs.FS) []Lang {
+	entries, err := fs.ReadDir(fsys, ImagesDir)
+	if err != nil {
+		return nil
+	}
+	var langs []Lang
+	for _, e := range entries {
+		if e.IsDir() && isLang(e.Name()) {
+			langs = append(langs, Lang(e.Name()))
+		}
+	}
+	return langs
+}
+
+// isLang reports whether s looks like a language code: 2–3 small letters.
+func isLang(s string) bool {
+	if len(s) < 2 || len(s) > 3 {
+		return false
+	}
+	for _, r := range s {
+		if r < 'a' || r > 'z' {
+			return false
+		}
+	}
+	return true
+}
+
+func isFile(fsys fs.FS, p string) bool {
 	if p == "" {
 		return false
 	}
 	info, err := fs.Stat(fsys, p)
 	return err == nil && !info.IsDir()
-}
-
-// ImagePath returns where a card's first image lives inside the file
-// system, or "" when the card has none.
-func ImagePath(c Card) string {
-	if len(c.Images) == 0 {
-		return ""
-	}
-	return path.Join(ImagesDir, c.Images[0])
 }

@@ -12,7 +12,10 @@ export interface CardInfo {
   footnotes: { title: string; text: string }[];
   stats: { name: string; value: string }[];
   rewards: { count: string; kind: string }[];
-  image: string; // URL; '' when missing: the card shows as text (A-11)
+  image: string; // URL in the chosen language; the store sets it (inLanguage)
+  // images holds the URL per language with an image folder; '' or none
+  // when missing: the card shows as text (A-11, 16.6).
+  images?: Record<string, string>;
 }
 
 // Kind is the deck family a card belongs to; it sets the blank card's
@@ -73,12 +76,14 @@ export function iconText(icon: string): string {
   }
 }
 
-// inLanguage gives the card named in lang, English if it has no name
-// there (LO-06).
+// inLanguage gives the card named and pictured in lang, English if it
+// has no name or image there (LO-06, 16.6).
 export function inLanguage(card: CardInfo, lang: string): CardInfo {
   const names = new Map(Object.entries(card.names ?? {}));
   const name = names.get(lang) ?? names.get('en') ?? card.name;
-  return name === card.name ? card : { ...card, name };
+  const images = new Map(Object.entries(card.images ?? {}));
+  const image = images.get(lang) ?? images.get('en') ?? card.image;
+  return name === card.name && image === card.image ? card : { ...card, name, image };
 }
 
 // translatorsOf credits who translated the card into lang (CD-06): none

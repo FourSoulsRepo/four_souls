@@ -116,7 +116,7 @@ Rules of this step (owner, 2026-10-26):
    2. `App.Cards` sends `names` and `translators`; the store picks the language.
    3. The zoom credits the translators under the card.
 
-### [ ] 16.6 Card images per language
+### [x] 16.6 Card images per language
 
 1. Goal: each language has its own card images (LO-07).
 2. Tasks:
@@ -130,6 +130,10 @@ Rules of this step (owner, 2026-10-26):
 3. Done when:
    1. Every card shows its English image, as before.
    2. A test image under `ru/` shows with Russian selected.
+4. Result: images in `images/en/<set>/`; `carddb.FindImage` adds the language.
+   1. `App.Cards` sends `images` per language folder; `inLanguage` picks one.
+   2. Tests: `TestFindImage`, `TestCardsImagesPerLanguage`, `cards.spec.ts` (fake Isaac).
+   3. Tools: `scraper images` writes `images/en/<set>/`.
 
 ### [ ] 16.7 Translation tooling
 

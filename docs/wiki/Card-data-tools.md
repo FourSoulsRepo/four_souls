@@ -8,7 +8,7 @@ What the tools do, in short:
 2. Read copies per card from the official Tabletop Simulator table.
 3. `scraper copies` finds the numbered page of every copy on foursouls.com, so each copy gets its own image.
 4. `scraper build -game <this repo>` merges all of it with `pkg/card_db/overrides/<set>.json` and writes `pkg/card_db/data/<set>.json` (format: ADR 004 and ADR 010).
-5. `scraper images -game <this repo>` writes 600 px WebP images to `pkg/card_db/images/<set>/`, one per copy when copies differ.
+5. `scraper images -game <this repo>` writes 600 px WebP images to `pkg/card_db/images/en/<set>/`, one per copy when copies differ.
 6. `scraper fonts -game <this repo>` writes the game's fonts to `pkg/card_db/images/assets/fonts/`.
 7. `scraper ru-names -migrations <dir> -game <this repo>` writes Russian card names and their translators (16.5); see below.
 
@@ -39,7 +39,7 @@ For every card it writes `text.ru.name` and `translators.ru` (Alchba, Mitboy, d0
 
 ## The images submodule
 
-`pkg/card_db/images` is a git submodule pointing to the **private** repository `FourSoulsRepo/card_db`. It holds only images (one folder per set) and a README.
+`pkg/card_db/images` is a git submodule pointing to the **private** repository `FourSoulsRepo/card_db`. It holds only images and a README: card images in one folder per language and in it one per set (`en/b2/`), and the game's own assets (fonts, backs, dice, mats) in `assets/`, outside the language folders. A translated card image goes to `<lang>/<set>/` under the English file name; the game shows it with that language chosen, else the English one (16.6).
 
 * With access: `git clone --recurse-submodules …` or `git submodule update --init`.
 * Without access (public clones, forks): the folder stays empty, everything still builds, and cards show as text.

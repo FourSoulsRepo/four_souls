@@ -51,15 +51,16 @@ describe('settings', () => {
     expect(useApp.getState().settings.nickname).toBe('Ann');
   });
 
-  it('names the cards in the saved language at once (16.5)', async () => {
-    const isaac = { ref: 'isaac', set: 'b2', type: 'Character Card', name: 'Isaac', names: { en: 'Isaac', ru: 'Исаак' }, effects: [], footnotes: [], stats: [], rewards: [], image: '' };
+  it('names and pictures the cards in the saved language at once (16.5, 16.6)', async () => {
+    const images = { en: '/cardimg/en/b2/isaac.webp', ru: '/cardimg/ru/b2/isaac.webp' };
+    const isaac = { ref: 'isaac', set: 'b2', type: 'Character Card', name: 'Isaac', names: { en: 'Isaac', ru: 'Исаак' }, effects: [], footnotes: [], stats: [], rewards: [], image: images.en, images };
     useApp.setState({ cards: new Map([['isaac', isaac]]) });
     const ru = { nickname: 'Ann', recent: [], animation: 'normal' as const, fullscreen: false, mat: '', dice: 'tear', no_end_turn_ask: false, rejoin: { address: '', token: '', game: '', via: '' as const }, host: noHostSetup, lan_address: '', language: 'ru' };
     vi.mocked(saveSettings).mockImplementation((s) => Promise.resolve(s));
     expect(await useApp.getState().saveSettings(ru)).toBe(true);
-    expect(useApp.getState().cards.get('isaac')?.name).toBe('Исаак');
+    expect(useApp.getState().cards.get('isaac')).toMatchObject({ name: 'Исаак', image: images.ru });
     expect(await useApp.getState().saveSettings({ ...ru, language: 'en' })).toBe(true);
-    expect(useApp.getState().cards.get('isaac')?.name).toBe('Isaac');
+    expect(useApp.getState().cards.get('isaac')).toMatchObject({ name: 'Isaac', image: images.en });
   });
 
   it('shows the Go error and keeps the old settings', async () => {

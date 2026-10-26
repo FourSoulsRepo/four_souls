@@ -78,3 +78,18 @@ test('with Russian picked, cards show their Russian names', async ({ page }) => 
   // A card with no Russian name keeps its English one.
   await expect(table.getByRole('img', { name: 'Soul of Greed' })).toBeVisible();
 });
+
+// Card images per language (16.6): the fake Isaac has a Russian test
+// image; with Russian picked it shows that one, with English the other.
+test('with Russian picked, a card shows its Russian image', async ({ page }) => {
+  const isaacArt = (lang: string) => page.getByLabel('Hand size').getByRole('img', { name: lang === 'ru' ? 'Исаак' : 'Isaac' }).locator('img');
+  await page.goto(gallery);
+  await expect(isaacArt('en')).toHaveAttribute('src', /Isaac%20art/);
+  await page.goto('/?fake&nosplash');
+  await page.getByRole('button', { name: tr('menu.settings') }).click();
+  await page.getByRole('combobox').filter({ has: page.getByRole('option', { name: 'English' }) }).selectOption('ru');
+  await page.locator('form button[type=submit]').click();
+  await page.goto(gallery);
+  await expect(isaacArt('ru')).toHaveAttribute('src', /Isaac%20ru/);
+  await expect(isaacArt('ru')).toBeVisible();
+});

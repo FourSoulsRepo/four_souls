@@ -58,7 +58,7 @@ func TestLoad(t *testing.T) {
 	if !ok || d6.Set != "b2" || d6.Name(English) != "The D6" || d6.Name("ru") != "The D6" {
 		t.Errorf("the_d6 = %+v, %v", d6, ok)
 	}
-	if got := ImagePath(d6); got != "images/b2/the_d6.webp" {
+	if got := ImagePath(d6, English); got != "images/en/b2/the_d6.webp" {
 		t.Errorf("image path = %q", got)
 	}
 	if isaac, _ := db.Get(Ref{ID: "isaac", Version: 1}); isaac.Name("ru") != "Исаак" || isaac.Name(English) != "Isaac" {
@@ -120,9 +120,10 @@ func TestLoadDuplicateAcrossSets(t *testing.T) {
 
 func TestHasImage(t *testing.T) {
 	fsys := fstest.MapFS{
-		"data/b2.json":           {Data: []byte(sampleSet)},
-		"images/b2/the_d6.webp":  {Data: []byte("webp")},
-		"images/b2/isaac.webp/x": {Data: []byte("dir, not a file")},
+		"data/b2.json":              {Data: []byte(sampleSet)},
+		"images/en/b2/the_d6.webp":  {Data: []byte("webp")},
+		"images/en/b2/isaac.webp/x": {Data: []byte("dir, not a file")},
+		"images/ru/b2/isaac.webp":   {Data: []byte("webp")},
 	}
 	db, err := Load(fsys)
 	if err != nil {
@@ -135,6 +136,44 @@ func TestHasImage(t *testing.T) {
 	isaac, _ := db.Get(Ref{ID: "isaac", Version: 1})
 	if HasImage(fsys, isaac) {
 		t.Error("isaac has no image field, so no image")
+	}
+}
+
+// FindImage adds the language, then falls back to English (16.6).
+func TestFindImage(t *testing.T) {
+	card := Card{Images: []string{"b2/the_d6.webp"}}
+	both := fstest.MapFS{
+		"images/en/b2/the_d6.webp": {Data: []byte("en")},
+		"images/ru/b2/the_d6.webp": {Data: []byte("ru")},
+		"images/assets/die.webp":   {Data: []byte("die")},
+	}
+	enOnly := fstest.MapFS{"images/en/b2/the_d6.webp": {Data: []byte("en")}}
+	cases := []struct {
+		name string
+		fsys fstest.MapFS
+		card Card
+		lang Lang
+		want string
+	}{
+		{"russian image", both, card, "ru", "ru/b2/the_d6.webp"},
+		{"english image", both, card, English, "en/b2/the_d6.webp"},
+		{"no russian image", enOnly, card, "ru", "en/b2/the_d6.webp"},
+		{"no folder for the language", both, card, "de", "en/b2/the_d6.webp"},
+		{"no image at all", fstest.MapFS{}, card, "ru", ""},
+		{"no image field", both, Card{}, "ru", ""},
+		{"not a language", both, card, "../en", "en/b2/the_d6.webp"},
+		{"old layout without a language", fstest.MapFS{"images/b2/the_d6.webp": {}}, card, English, ""},
+	}
+	for _, tc := range cases {
+		if got := FindImage(tc.fsys, tc.card, tc.lang); got != tc.want {
+			t.Errorf("%s: %q, want %q", tc.name, got, tc.want)
+		}
+	}
+	if got := ImageLangs(both); len(got) != 2 || got[0] != English || got[1] != "ru" {
+		t.Errorf("ImageLangs = %v, want [en ru]", got)
+	}
+	if got := ImageLangs(fstest.MapFS{}); len(got) != 0 {
+		t.Errorf("ImageLangs without images = %v", got)
 	}
 }
 

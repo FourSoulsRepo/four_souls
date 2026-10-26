@@ -77,7 +77,7 @@ INTERNAL_VERSION := internal-$(shell git rev-parse --short HEAD)
 PLATFORM ?=
 
 internal: ## Build the app for play tests, card images included
-	@test -d pkg/card_db/images/b2 || (echo "the card images submodule is missing" && exit 1)
+	@test -d pkg/card_db/images/en/b2 || (echo "the card images submodule is missing" && exit 1)
 	@go generate ./pkg/card_db/images
 	@wails build -m $(if $(PLATFORM),-platform $(PLATFORM)) -tags "$(TAGS) embed cardimages" -ldflags "-X github.com/FourSoulsRepo/four_souls/internal/version.App=$(INTERNAL_VERSION)"
 	@# wails build regenerates the bindings as executable files; keep them 644.

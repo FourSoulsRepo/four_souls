@@ -73,6 +73,15 @@ describe('inLanguage', () => {
     expect(inLanguage(unknownCard('x'), 'ru').name).toBe('x');
   });
 
+  it('pictures a card in the chosen language, English if missing (16.6)', () => {
+    const pictured = { ...isaac, image: '/cardimg/en/b2/isaac.webp', images: { en: '/cardimg/en/b2/isaac.webp', ru: '/cardimg/ru/b2/isaac.webp' } };
+    expect(inLanguage(pictured, 'ru').image).toBe('/cardimg/ru/b2/isaac.webp');
+    expect(inLanguage(inLanguage(pictured, 'ru'), 'en').image).toBe('/cardimg/en/b2/isaac.webp');
+    expect(inLanguage(pictured, 'de').image).toBe('/cardimg/en/b2/isaac.webp');
+    expect(inLanguage({ ...pictured, images: { en: pictured.image } }, 'ru').image).toBe('/cardimg/en/b2/isaac.webp');
+    expect(inLanguage({ ...pictured, image: '', images: {} }, 'ru').image).toBe('');
+  });
+
   it('credits translators only for a translated name (CD-06)', () => {
     expect(translatorsOf(isaac, 'ru')).toEqual(['Alchba', 'Mitboy']);
     expect(translatorsOf(isaac, 'en')).toEqual([]);

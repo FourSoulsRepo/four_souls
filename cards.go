@@ -28,9 +28,12 @@ type CardInfo struct {
 	Footnotes   []carddb.Footnote   `json:"footnotes"`
 	Stats       []carddb.Stat       `json:"stats"`
 	Rewards     []carddb.Reward     `json:"rewards"`
-	// Image is the image URL; "" when the file is missing, and the card
-	// shows as a blank card with text (A-11).
+	// Image is the English image URL; "" when the file is missing, and
+	// the card shows as a blank card with text (A-11).
 	Image string `json:"image"`
+	// Images holds the image URL per language that has an image folder,
+	// English when the card has no image of its own there (16.6).
+	Images map[string]string `json:"images"`
 }
 
 // cardList loads the card data once.
@@ -47,6 +50,7 @@ func (l *cardList) load(fsys fs.FS) ([]CardInfo, error) {
 			l.err = fmt.Errorf("card data: %w", err)
 			return
 		}
+		langs := carddb.ImageLangs(fsys)
 		for _, ref := range db.Refs() {
 			c, _ := db.Get(ref)
 			en := c.Text[carddb.English]
@@ -57,7 +61,7 @@ func (l *cardList) load(fsys fs.FS) ([]CardInfo, error) {
 				Footnotes: append([]carddb.Footnote{}, en.Footnotes...),
 				Stats:     append([]carddb.Stat{}, c.Stats...),
 				Rewards:   append([]carddb.Reward{}, c.Rewards...),
-				Names:     map[string]string{}, Translators: map[string][]string{},
+				Names:     map[string]string{}, Translators: map[string][]string{}, Images: map[string]string{},
 			}
 			for lang, t := range c.Text {
 				if t.Name != "" {
@@ -67,9 +71,12 @@ func (l *cardList) load(fsys fs.FS) ([]CardInfo, error) {
 			for lang, names := range c.Translators {
 				info.Translators[string(lang)] = append([]string{}, names...)
 			}
-			if carddb.HasImage(fsys, c) {
-				info.Image = cardImagePrefix + c.Images[0]
+			for _, lang := range langs {
+				if p := carddb.FindImage(fsys, c, lang); p != "" {
+					info.Images[string(lang)] = cardImagePrefix + p
+				}
 			}
+			info.Image = info.Images[string(carddb.English)]
 			l.cards = append(l.cards, info)
 		}
 	})

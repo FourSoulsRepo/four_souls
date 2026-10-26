@@ -185,6 +185,7 @@ export namespace main {
 	    stats: carddb.Stat[];
 	    rewards: carddb.Reward[];
 	    image: string;
+	    images: Record<string, string>;
 	
 	    static createFrom(source: any = {}) {
 	        return new CardInfo(source);
@@ -203,6 +204,7 @@ export namespace main {
 	        this.stats = this.convertValues(source["stats"], carddb.Stat);
 	        this.rewards = this.convertValues(source["rewards"], carddb.Reward);
 	        this.image = source["image"];
+	        this.images = source["images"];
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {

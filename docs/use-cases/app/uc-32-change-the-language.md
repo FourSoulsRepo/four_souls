@@ -19,6 +19,8 @@
 7. Cards show their names in that language (16.5).
    1. Text cards, zoom, history, stack, prompts and choices.
    2. The zoom credits the card's translators under it.
+8. Cards show their images in that language (16.6).
+   1. Only where the private images have that language's file.
 
 ## Alternative scenarios and errors
 
@@ -34,6 +36,8 @@
   * Plain English on screen then means a missed string.
 * **7a. A card with no name in the language:** its English name shows.
   * No translators are credited then.
+* **8a. A card with no image in the language:** its English image shows.
+  * Without the private images: the text card, as before.
 
 ## Postconditions
 
