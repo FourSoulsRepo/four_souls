@@ -40,6 +40,11 @@
   * On the owner's turn the treasure deck's top card lies face up.
   * Only the owner sees it; others see the card back.
   * A click on the deck still buys from it.
+* **4c. A look at hands (19.71):** e.g. XXI. The World, Mom's Eye, X-Ray Vision.
+  * The dialog shows one row per hand, in the order the cards came.
+  * Each row has its owner's name above it: "Bo's hand".
+  * A look at deck cards keeps one row with no name.
+  * The history line stays "You look at <card>".
 
 ## Postconditions
 

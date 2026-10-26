@@ -382,6 +382,23 @@
   font-size: 24px;
 }
 
+/* One row per looked-at hand, under its owner's name (19.71). */
+.look-hand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.look-hand h3 {
+  margin: 0;
+  font-family: var(--font-game);
+  font-size: 18px;
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  color: rgb(255 255 255 / 85%);
+}
+
 .choice-options {
   display: flex;
   flex-wrap: wrap;

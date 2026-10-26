@@ -75,7 +75,9 @@ type Event struct {
 	// Amount (R-DICE-11, 19.39).
 	Dice []int `json:"dice,omitempty"`
 	// By is the player who dealt damage, plus 1 (0: a monster or nobody).
-	// On a death it is the killer, for the history (15.88).
+	// On a death it is the killer, for the history (15.88). On a look
+	// it is the owner of the hand the card is in; 0 for a deck card
+	// (19.71).
 	By int `json:"by,omitempty"`
 	// Item is the stack item that resolved, with its used ability's
 	// words, for the history strip (15.22, S-10).

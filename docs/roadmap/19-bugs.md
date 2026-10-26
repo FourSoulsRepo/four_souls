@@ -2346,3 +2346,20 @@ Totals by system (71 items):
    1. `Game.LookAt` emits only the player, the object and the card.
    2. The looker's client gets no other hand's object IDs.
    3. So it cannot tell where a card came from.
+6. Fix
+   1. Engine: `LookAt` sets `By` on a hand card's `looked_at` event.
+   2. `By` is the hand's owner plus 1; a deck card keeps 0.
+   3. So Mom's Eye, X-Ray Vision, Incubus, Dead Bird and Joker get it too.
+   4. Client: `lookedAt` keeps it as `Looked.owner`.
+   5. `lookGroups` in `history.ts` splits the cards by owner, in event order.
+   6. `LookDialog` shows one row per hand under "Bo's hand"; "Your hand" for the looker's own.
+   7. Deck cards stay one row with no label; the history line is unchanged.
+   8. Others still see only `by` on the event; the card stays hidden.
+   9. Go test: `TestXXITheWorldNamesEachHand` in `xxi_the_world_test.go`.
+   10. Vitest: `keeps whose hand a card is from; a deck card has no owner (19.71)`.
+   11. Vitest: `groups hand cards by owner in event order; deck cards in one group (19.71)`.
+   12. e2e: `a look at hands groups the cards by whose hand they are (19.71)` in `actions.spec.ts`.
+   13. UC-18 4c; wiki `Client`; CHANGELOG.
+   14. Screenshots: `.cache/screenshots/19.71/before/` and `after/`.
+   15. A revealed given card (fsp2 "Reveal it") is in the taker's hand.
+   16. So its look now reads "Bo's hand", or "Your hand" for the taker.

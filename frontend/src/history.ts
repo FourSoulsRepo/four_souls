@@ -572,10 +572,12 @@ export function restartCut(history: Entry[], cut: number, turn: number): Entry[]
 // firstRollLabel is the label of the first-player roll's dice.
 export const firstRollLabel = 'first player roll';
 
-// Looked is one card this viewer looks at; id is its object.
+// Looked is one card this viewer looks at; id is its object. owner is
+// the seat whose hand it is in; none for a deck card (19.71).
 export interface Looked {
   id: number;
   card: string;
+  owner?: number;
 }
 
 // lookedAt is the cards this viewer looks at in one update's events,
@@ -588,8 +590,23 @@ export function lookedAt(events: GameEvent[], you: number): Looked[] {
     const id = e.object ?? 0;
     if (seen.has(id)) return [];
     seen.add(id);
-    return [{ id, card: e.card }];
+    return [{ id, card: e.card, ...(e.by ? { owner: e.by - 1 } : {}) }];
   });
+}
+
+// lookGroups splits looked-at cards by the hand they are in, in the
+// order they came; deck cards make one group with no owner (19.71).
+export function lookGroups(cards: Looked[]): { owner?: number; cards: Looked[] }[] {
+  const groups: { owner?: number; cards: Looked[] }[] = [];
+  for (const c of cards) {
+    const g = groups.find((x) => x.owner === c.owner);
+    if (g) {
+      g.cards.push(c);
+    } else {
+      groups.push({ ...(c.owner === undefined ? {} : { owner: c.owner }), cards: [c] });
+    }
+  }
+  return groups;
 }
 
 // Turn step names, in Go's order (pkg/rules_engine/turn.go).

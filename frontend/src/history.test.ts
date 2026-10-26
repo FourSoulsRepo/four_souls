@@ -4,6 +4,7 @@ import { PromptKind } from './actions';
 import {
   entriesFor as entries,
   historyKinds,
+  lookGroups,
   lookedAt,
   moveOf,
   moveText,
@@ -219,6 +220,35 @@ describe('lookedAt', () => {
     expect(lookedAt(events, 0)).toEqual([
       { id: 361, card: 'library_card' },
       { id: 430, card: 'a_dime' },
+    ]);
+  });
+
+  it('keeps whose hand a card is from; a deck card has no owner (19.71)', () => {
+    const events = [
+      { kind: 'looked_at', player: 0, object: 7, card: 'a_dime', private: true, by: 2 },
+      { kind: 'looked_at', player: 0, object: 8, card: 'a_penny', private: true, by: 3 },
+      { kind: 'looked_at', player: 0, object: 9, card: 'a_nickel', private: true },
+    ];
+    const looked = lookedAt(events, 0);
+    expect(looked).toEqual([
+      { id: 7, card: 'a_dime', owner: 1 },
+      { id: 8, card: 'a_penny', owner: 2 },
+      { id: 9, card: 'a_nickel' },
+    ]);
+    expect(looked[2]).not.toHaveProperty('owner');
+  });
+
+  it('groups hand cards by owner in event order; deck cards in one group (19.71)', () => {
+    const groups = lookGroups([
+      { id: 1, card: 'a', owner: 2 },
+      { id: 2, card: 'b', owner: 1 },
+      { id: 3, card: 'c', owner: 2 },
+      { id: 4, card: 'd' },
+    ]);
+    expect(groups.map((g) => [g.owner, g.cards.map((c) => c.id)])).toEqual([
+      [2, [1, 3]],
+      [1, [2]],
+      [undefined, [4]],
     ]);
   });
 });
