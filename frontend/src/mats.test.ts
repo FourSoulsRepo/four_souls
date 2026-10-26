@@ -12,7 +12,7 @@ describe('matChoices', () => {
   it('puts an image in place of its color mat and adds new ones', () => {
     const got = matChoices([room, basement]);
     expect(got.map((m) => m.id)).toEqual(['basement', 'cathedral', 'dark_room']);
-    expect(got[0]).toBe(basement);
+    expect(got[0]).toEqual(basement);
   });
 });
 

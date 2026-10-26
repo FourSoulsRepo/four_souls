@@ -5,6 +5,7 @@ import { expectFits, startGame, statMonsters } from './game';
 import { serverPort } from './server';
 import { shot } from './shot';
 import { seen } from './turn';
+import { anyOf, tr, trRe, whole } from './locale';
 
 // settled waits until the page has played every update and no new one
 // came for a moment: while the start of the game plays, its effects
@@ -61,9 +62,9 @@ async function expectDecksClear(page: Page): Promise<void> {
 async function expectOwnArea(page: Page): Promise<void> {
   const own = page.locator('.player-bottom');
   const character = own.locator('.own-character > .card');
-  await expect(character.getByLabel(/^\d+ health$/)).toBeVisible();
-  await expect(character.getByLabel(/^\d+ attack$/)).toBeVisible();
-  await expect(own.getByLabel(/^\d+ cents$/)).toBeVisible();
+  await expect(character.getByLabel(whole(trRe('badge.hp')))).toBeVisible();
+  await expect(character.getByLabel(whole(trRe('badge.atk')))).toBeVisible();
+  await expect(own.getByLabel(whole(trRe('table.cents')))).toBeVisible();
   const board = await boardBox(page);
   const card = await character.boundingBox();
   if (!board || !card) {
@@ -71,7 +72,7 @@ async function expectOwnArea(page: Page): Promise<void> {
   }
   expect(Math.abs(card.x + card.width / 2 - (board.x + board.width / 2))).toBeLessThan(2);
   const height = page.viewportSize()?.height ?? 0;
-  const hand = await own.getByRole('group', { name: 'Your hand' }).locator('.hand-card').all();
+  const hand = await own.getByRole('group', { name: tr('table.your_hand') }).locator('.hand-card').all();
   expect(hand.length).toBeGreaterThan(0);
   for (const c of hand) {
     const box = await c.boundingBox();
@@ -88,14 +89,14 @@ async function expectOpponents(page: Page): Promise<void> {
   const others = await page.locator('.player.opponent').all();
   expect(others.length).toBeGreaterThan(0);
   for (const other of others) {
-    await expect(other.getByLabel(/^\d+ cents$/)).toBeVisible();
+    await expect(other.getByLabel(whole(trRe('table.cents')))).toBeVisible();
     const character = other.locator('.opp-character > .card');
-    await expect(character.getByLabel(/^\d+ health$/)).toBeVisible();
-    await expect(character.getByLabel(/^\d+ attack$/)).toBeVisible();
-    const hand = other.getByRole('group', { name: /^Hand: \d+ cards$/ });
+    await expect(character.getByLabel(whole(trRe('badge.hp')))).toBeVisible();
+    await expect(character.getByLabel(whole(trRe('badge.atk')))).toBeVisible();
+    const hand = other.getByRole('group', { name: whole(trRe('table.hand')) });
     const count = Number((await hand.locator('.pile-count').textContent()) ?? '');
     expect(count).toBeGreaterThan(0);
-    await expect(hand.getByRole('img', { name: 'Face-down loot card' })).toHaveCount(Math.min(count, 8));
+    await expect(hand.getByRole('img', { name: tr('deck.face_down.loot') })).toHaveCount(Math.min(count, 8));
   }
   const top = page.locator('.player-top');
   if ((await top.count()) === 0) {
@@ -154,7 +155,7 @@ async function startPair(browser: Browser, names: [string, string], change: (vie
 
 // boardBox is where the board is on screen.
 async function boardBox(page: Page) {
-  return page.getByRole('region', { name: 'Board' }).boundingBox();
+  return page.getByRole('region', { name: tr('board.label') }).boundingBox();
 }
 
 // slotBoxes are the slots of a row, left to right. A slot, not its card:
@@ -173,12 +174,12 @@ test('two players face each other; the table fits 1280x720', async ({ browser })
     [eve, 'Eve', 'Fay'],
     [fay, 'Fay', 'Eve'],
   ] as const) {
-    await expect(page.locator('.player-bottom')).toHaveAccessibleName(`${me} (you)`);
+    await expect(page.locator('.player-bottom')).toHaveAccessibleName(tr('table.own_name', { player: me }));
     await expect(page.locator('.player-top')).toHaveAccessibleName(other);
-    await expect(page.getByRole('group', { name: 'Your hand' }).getByRole('img')).not.toHaveCount(0);
-    await expect(page.getByRole('group', { name: /^Loot deck: \d+ cards$/ })).toBeVisible();
-    await expect(page.getByRole('group', { name: 'Shop' }).getByRole('img')).not.toHaveCount(0);
-    await expect(page.getByRole('group', { name: 'Monsters' }).getByRole('img')).not.toHaveCount(0);
+    await expect(page.getByRole('group', { name: tr('table.your_hand') }).getByRole('img')).not.toHaveCount(0);
+    await expect(page.getByRole('group', { name: whole(trRe('deck.loot')) })).toBeVisible();
+    await expect(page.getByRole('group', { name: tr('board.shop') }).getByRole('img')).not.toHaveCount(0);
+    await expect(page.getByRole('group', { name: tr('board.monsters') }).getByRole('img')).not.toHaveCount(0);
     await settled(page);
     await expectFits(page);
     await expectDecksClear(page);
@@ -204,13 +205,13 @@ test('coins show the coin image, or a drawn coin without it (15.38)', async ({ b
     throw new Error('no pages');
   }
   // Own coins and the opponent's (15.18) use the same icon.
-  for (const coins of await coy.getByLabel(/^\d+ cents$/).all()) {
+  for (const coins of await coy.getByLabel(whole(trRe('table.cents'))).all()) {
     const image = coins.locator('img.coin');
     await expect(image).toHaveAttribute('src', '/cardimg/assets/icons/coin.webp');
     await expect(image).toBeVisible();
     await expect(coins).not.toContainText('¢');
   }
-  for (const coins of await dot.getByLabel(/^\d+ cents$/).all()) {
+  for (const coins of await dot.getByLabel(whole(trRe('table.cents'))).all()) {
     await expect(coins.locator('.coin')).toHaveText('¢');
   }
 });
@@ -230,7 +231,7 @@ test('the Attack icon shows the sword image, or a drawn sword without it (15.24)
   if (!sid || !uli) {
     throw new Error('no pages');
   }
-  const attack = (page: Page) => page.getByRole('toolbar', { name: 'Turn actions' }).getByRole('button', { name: 'Attack' });
+  const attack = (page: Page) => page.getByRole('toolbar', { name: tr('turn.actions') }).getByRole('button', { name: tr('turn.attack') });
   const image = attack(sid).locator('img');
   await expect(image).toHaveAttribute('src', '/cardimg/assets/icons/sword.webp');
   await expect(image).toBeVisible();
@@ -247,7 +248,7 @@ test('four players sit left, top and right in turn order', async ({ browser }) =
   if (!hal) {
     throw new Error('no pages');
   }
-  await expect(hal.locator('.player-bottom')).toHaveAccessibleName('Hal (you)');
+  await expect(hal.locator('.player-bottom')).toHaveAccessibleName(tr('table.own_name', { player: 'Hal' }));
   await expect(hal.locator('.player-left')).toHaveAccessibleName('Ivy');
   await expect(hal.locator('.player-top')).toHaveAccessibleName('Jo');
   await expect(hal.locator('.player-right')).toHaveAccessibleName('Gus');
@@ -285,9 +286,9 @@ test('the board keeps its size when shop slots empty (V-23)', async ({ browser }
     view.monsters = [];
     view.bonus_souls = [];
   });
-  await expect(ola.getByRole('group', { name: 'Shop' }).locator('.pile-empty')).toHaveCount(4);
-  await expect(ola.getByRole('group', { name: 'Monsters' }).getByRole('img')).toHaveCount(0);
-  await expect(ned.getByRole('group', { name: 'Shop' }).locator('.pile-empty')).toHaveCount(0);
+  await expect(ola.getByRole('group', { name: tr('board.shop') }).locator('.pile-empty')).toHaveCount(4);
+  await expect(ola.getByRole('group', { name: tr('board.monsters') }).getByRole('img')).toHaveCount(0);
+  await expect(ned.getByRole('group', { name: tr('board.shop') }).locator('.pile-empty')).toHaveCount(0);
   expect(await boardBox(ola)).toEqual(await boardBox(ned));
   await expectDecksClear(ola);
   await shot(ola, 'table-empty-slots');
@@ -305,14 +306,14 @@ for (const [n, names] of [
       view.monsters = slots(monsterRefs, n, 900000);
       view.shop = slots(treasureRefs, n, 900100);
     });
-    for (const row of ['Monsters', 'Shop']) {
+    for (const row of [tr('board.monsters'), tr('board.shop')]) {
       await expect(many.getByRole('group', { name: row }).locator('.card')).toHaveCount(n);
     }
     const board = await boardBox(plain);
     expect(await boardBox(many)).toEqual(board);
-    const full = (await slotBoxes(plain, 'Shop'))[0]?.width ?? 0;
+    const full = (await slotBoxes(plain, tr('board.shop')))[0]?.width ?? 0;
     expect(full).toBeGreaterThan(0);
-    for (const row of ['Monsters', 'Shop']) {
+    for (const row of [tr('board.monsters'), tr('board.shop')]) {
       const area = await many.getByRole('group', { name: row }).boundingBox();
       const boxes = await slotBoxes(many, row);
       for (const [i, r] of boxes.entries()) {
@@ -344,7 +345,7 @@ test('counters and changed monster stats show on the card, not in its zoom (15.2
   if (!page) {
     throw new Error('no pages');
   }
-  const monster = page.getByRole('group', { name: 'Monsters' }).locator('.card').first();
+  const monster = page.getByRole('group', { name: tr('board.monsters') }).locator('.card').first();
   // The server sends each monster's stats; an untouched one shows the print only.
   await expect(monster).toBeVisible();
   await expect(monster.locator('.card-badge')).toHaveCount(0);
@@ -378,14 +379,14 @@ test('counters and changed monster stats show on the card, not in its zoom (15.2
   });
 
   // The new health replaces the damage mark; dice and attack are as printed (C-03).
-  await expect(monster.getByLabel(`${String(hp)} health`)).toBeVisible();
-  await expect(monster.getByLabel('1 damage')).toHaveCount(0);
-  await expect(monster.getByLabel(/ (dice|attack)$/)).toHaveCount(0);
-  await expect(monster.getByLabel('2 counters')).toBeVisible();
-  const second = page.getByRole('group', { name: 'Monsters' }).locator('.card').nth(1);
-  await expect(second.getByLabel(/^\d dice$/)).toBeVisible();
-  await expect(second.getByLabel(/^\d+ attack$/)).toBeVisible();
-  await expect(second.getByLabel(/ health$/)).toHaveCount(0);
+  await expect(monster.getByLabel(tr('badge.hp', { n: hp }))).toBeVisible();
+  await expect(monster.getByLabel(tr('badge.damage', { n: 1 }))).toHaveCount(0);
+  await expect(monster.getByLabel(whole(anyOf(trRe('badge.dc'), trRe('badge.atk'))))).toHaveCount(0);
+  await expect(monster.getByLabel(tr('badge.counters', { n: 2 }))).toBeVisible();
+  const second = page.getByRole('group', { name: tr('board.monsters') }).locator('.card').nth(1);
+  await expect(second.getByLabel(whole(trRe('badge.dc')))).toBeVisible();
+  await expect(second.getByLabel(whole(trRe('badge.atk')))).toBeVisible();
+  await expect(second.getByLabel(whole(trRe('badge.hp')))).toHaveCount(0);
   await shot(page, 'monster-stats');
 
   // The zoom shows no badges, so none of its words hide (owner, 15.23).
@@ -401,7 +402,7 @@ test('a bonus soul shows its counters (19.29)', async ({ browser }) => {
   if (!page) {
     throw new Error('no pages');
   }
-  const soul = page.getByRole('group', { name: 'Bonus souls' }).locator('.card').first();
+  const soul = page.getByRole('group', { name: tr('host.bonus_souls') }).locator('.card').first();
   await expect(soul).toBeVisible();
   await expect(soul.locator('.card-badge')).toHaveCount(0);
 
@@ -425,7 +426,7 @@ test('a bonus soul shows its counters (19.29)', async ({ browser }) => {
     store.setState({ game: { ...game, view: { ...game.view, bonus_souls } } });
   });
   await shot(page, 'bonus-soul-counters');
-  await expect(soul.getByLabel('2 counters')).toBeVisible();
+  await expect(soul.getByLabel(tr('badge.counters', { n: 2 }))).toBeVisible();
 });
 
 test('a card that keeps a die number shows it as a die, not in its zoom (15.67)', async ({ browser }) => {
@@ -462,13 +463,13 @@ test('a card that keeps a die number shows it as a die, not in its zoom (15.67)'
     const players = game.view.players.map((p) => (p.id === you ? { ...p, in_play: [...(p.in_play ?? []), ...kept] } : p));
     store.setState({ game: { ...game, view: { ...game.view, players } } });
   });
-  const items = page.getByRole('group', { name: 'Your items' });
+  const items = page.getByRole('group', { name: tr('table.your_items') });
   const ball = items.locator('[data-zone="obj-9201"]');
   const two = items.locator('[data-zone="obj-9202"]');
-  await expect(ball.getByLabel('Kept dice 4')).toBeVisible();
-  await expect(two.getByLabel('Kept dice 2')).toBeVisible();
-  await expect(two.getByLabel('Kept dice 5')).toBeVisible();
-  await expect(ball.getByLabel('counters')).toHaveCount(0);
+  await expect(ball.getByLabel(tr('badge.kept_die', { n: 4 }))).toBeVisible();
+  await expect(two.getByLabel(tr('badge.kept_die', { n: 2 }))).toBeVisible();
+  await expect(two.getByLabel(tr('badge.kept_die', { n: 5 }))).toBeVisible();
+  await expect(ball.getByLabel(trRe('badge.counters'))).toHaveCount(0);
   await expect(ball).toHaveCSS('opacity', '1'); // it has popped in
   await shot(page, 'kept-dice');
 
@@ -534,8 +535,8 @@ test('a card with many abilities opens a dialog that uses the picked line (15.24
     });
   });
 
-  await page.getByRole('group', { name: 'Your items' }).getByRole('button', { name: 'The Bone' }).click();
-  const dialog = page.getByRole('dialog', { name: 'Use The Bone' });
+  await page.getByRole('group', { name: tr('table.your_items') }).getByRole('button', { name: 'The Bone' }).click();
+  const dialog = page.getByRole('dialog', { name: tr('actions.use_card', { card: 'The Bone' }) });
   await expect(dialog).toBeVisible();
   await expect(dialog.locator('.card.size-zoom')).toBeVisible();
   const last = dialog.getByRole('button', { name: /Remove 5 counters/ });
@@ -557,7 +558,7 @@ test('souls show as crystals left of the character; a gained soul fills one more
   const other = page.locator('.player-top');
   // A slot per soul the game needs; none filled at the start (V-30).
   for (const area of [own, other]) {
-    await expect(area.getByRole('group', { name: 'Souls: 0 of 4' })).toBeVisible();
+    await expect(area.getByRole('group', { name: tr('table.souls', { souls: 0, n: 4 }) })).toBeVisible();
     await expect(area.locator('.soul-slot')).toHaveCount(4);
     await expect(area.locator('.soul-slot.filled')).toHaveCount(0);
   }
@@ -586,7 +587,7 @@ test('souls show as crystals left of the character; a gained soul fills one more
   await expect(other.locator('.soul-slot.filled')).toHaveCount(2);
   // A gained soul fills one more slot; the row keeps its four.
   await setSouls(souls(2, 2));
-  await expect(own.getByRole('group', { name: 'Souls: 2 of 4' })).toBeVisible();
+  await expect(own.getByRole('group', { name: tr('table.souls', { souls: 2, n: 4 }) })).toBeVisible();
   await expect(own.locator('.soul-slot.filled')).toHaveCount(2);
   await expect(own.locator('.soul-slot')).toHaveCount(4);
 
@@ -644,7 +645,7 @@ test('soul cards hide behind the crystals; hovering one zooms its card (15.56)',
   await shot(page, 'soul-crystals');
 
   // No soul card in the items row (V-43).
-  const items = own.getByRole('group', { name: 'Your items' });
+  const items = own.getByRole('group', { name: tr('table.your_items') });
   await expect(items.getByRole('img', { name: 'Mom!' })).toHaveCount(0);
   await expect(items.getByRole('img', { name: 'Soul Of Greed' })).toHaveCount(0);
 
@@ -711,11 +712,11 @@ test('soul cards hide behind the crystals; hovering one zooms its card (15.56)',
   const pin = page.locator('.player-top .soul-slot.filled');
   await expect(pin).toHaveAttribute('data-zone', 'obj-9103');
   await expect(pin).toHaveClass(/hl-pick/);
-  await expect(page.getByRole('dialog', { name: 'Choose a target' })).toBeVisible();
+  await expect(page.getByRole('dialog', { name: tr('choice.title.target') })).toBeVisible();
   await shot(page, 'soul-pick');
   // The choice covers the table; the player views the board to pick
   // there (15.29, F-20).
-  await page.getByRole('button', { name: 'View board' }).click();
+  await page.getByRole('button', { name: tr('choice.view_board') }).click();
   await pin.click();
   const sent = await page.evaluate(() => (window as unknown as { sentChoice: unknown }).sentChoice);
   expect(sent).toMatchObject({ kind: 4, choice: 1 });
@@ -831,18 +832,18 @@ test('a revealed hand shows face up; a hidden one stays backs (19.5)', async ({ 
   });
   for (const name of ['Wynn', 'Tam']) {
     const area = una.getByRole('region', { name, exact: true });
-    const hand = area.getByRole('group', { name: 'Revealed hand: 3 cards' });
+    const hand = area.getByRole('group', { name: tr('table.revealed_hand', { n: 3 }) });
     await expect(hand.locator('.card')).toHaveCount(3);
-    await expect(hand.getByRole('img', { name: 'Face-down loot card' })).toHaveCount(0);
+    await expect(hand.getByRole('img', { name: tr('deck.face_down.loot') })).toHaveCount(0);
     await expect(hand).toHaveAttribute('data-zone', /^hand-\d$/);
   }
   // The hidden hand on the left keeps its backs and count.
   const vera = una.getByRole('region', { name: 'Vera', exact: true });
-  await expect(vera.getByRole('group', { name: /^Hand: \d+ cards$/ })).toBeVisible();
-  await expect(vera.getByRole('group', { name: /^Revealed hand/ })).toHaveCount(0);
+  await expect(vera.getByRole('group', { name: whole(trRe('table.hand')) })).toBeVisible();
+  await expect(vera.getByRole('group', { name: whole(trRe('table.revealed_hand')) })).toHaveCount(0);
   // A revealed card zooms on hover, like any table card.
   const zoom = una.getByTestId('card-zoom');
-  await una.getByRole('region', { name: 'Wynn', exact: true }).getByRole('group', { name: /^Revealed hand/ }).locator('.card').last().hover();
+  await una.getByRole('region', { name: 'Wynn', exact: true }).getByRole('group', { name: whole(trRe('table.revealed_hand')) }).locator('.card').last().hover();
   await expect(zoom).toBeVisible();
   await shot(una, 'revealed-hand-zoom');
   await una.mouse.move(0, 0);
@@ -856,7 +857,7 @@ test("There's Options shows its owner the top treasure card (19.30)", async ({ b
     throw new Error('no pages');
   }
   const deck = page.locator('[data-zone="deck-treasure"]');
-  const back = deck.getByLabel('Face-down treasure card');
+  const back = deck.getByLabel(tr('deck.face_down.treasure'));
   await expect(back).toBeVisible();
 
   // The viewer owns There's Options on their turn: the server sends them

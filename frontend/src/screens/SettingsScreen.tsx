@@ -137,7 +137,7 @@ export function SettingsScreen() {
                 }}
               >
                 {diceGroups.map((g) => (
-                  <optgroup key={g.set} label={g.set}>
+                  <optgroup key={g.set} label={diceSet(g.set)}>
                     {g.looks.map((d) => (
                       <option key={d.id} value={d.id}>
                         {d.name}
@@ -174,4 +174,13 @@ export function SettingsScreen() {
       </button>
     </div>
   );
+}
+
+// diceSet names a group of dice looks; Go sends Holy or Unholy. The
+// looks keep their item names, as cards do.
+function diceSet(set: string): string {
+  if (set === 'Holy') {
+    return t('settings.dice_set.holy');
+  }
+  return set === 'Unholy' ? t('settings.dice_set.unholy') : set;
 }

@@ -4,12 +4,12 @@ import { startGame } from './game';
 import { appURL } from './server';
 import { realAssets, shot } from './shot';
 import { pseudo } from '../../frontend/src/locale';
-import { locale, tr } from './locale';
+import { locale, tr, trRe } from './locale';
 
 // One dark theme (15.80, ST-07): nothing to pick, nothing on the page.
 test('there is no theme to pick', async ({ page }) => {
   await page.goto('/?fake&nosplash');
-  await page.getByRole('button', { name: 'Settings' }).click();
+  await page.getByRole('button', { name: tr('menu.settings') }).click();
   await expect(page.getByRole('combobox', { name: tr('settings.mat') })).toBeVisible();
   await expect(page.getByLabel('Theme')).toHaveCount(0);
   await expect(page.locator('html')).not.toHaveAttribute('data-theme');
@@ -19,7 +19,7 @@ test('there is no theme to pick', async ({ page }) => {
 // and the dice side by side.
 test('animations sit above the game mat and the dice', async ({ page }) => {
   await page.goto('/?fake&nosplash');
-  await page.getByRole('button', { name: 'Settings' }).click();
+  await page.getByRole('button', { name: tr('menu.settings') }).click();
   const box = async (name: string) => {
     const b = await page.getByRole('combobox', { name }).boundingBox();
     if (!b) {
@@ -36,33 +36,33 @@ test('animations sit above the game mat and the dice', async ({ page }) => {
 test('the first start asks for a nickname, once', async ({ page }) => {
   await realAssets(page);
   await page.goto('/?fake&nosplash&firstrun');
-  await expect(page.getByRole('heading', { name: 'Welcome!' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: tr('welcome.title') })).toBeVisible();
   await shot(page, 'welcome');
-  await page.getByLabel('Nickname').fill('Ada');
-  await page.getByRole('button', { name: 'Continue' }).click();
-  await expect(page.getByRole('button', { name: 'Play', exact: true })).toBeVisible();
+  await page.getByLabel(tr('lobby.nickname')).fill('Ada');
+  await page.getByRole('button', { name: tr('lobby.games.continue') }).click();
+  await expect(page.getByRole('button', { name: tr('menu.play'), exact: true })).toBeVisible();
   await page.reload();
-  await expect(page.getByRole('button', { name: 'Play', exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'Settings' }).click();
+  await expect(page.getByRole('button', { name: tr('menu.play'), exact: true })).toBeVisible();
+  await page.getByRole('button', { name: tr('menu.settings') }).click();
   await expect(page.getByLabel(tr('settings.nickname'))).toHaveValue('Ada');
 });
 
 test('the question before ending the turn can be turned off (V-46)', async ({ page }) => {
   await page.goto('/?fake&nosplash');
-  await page.getByRole('button', { name: 'Settings' }).click();
+  await page.getByRole('button', { name: tr('menu.settings') }).click();
   const ask = page.getByLabel(tr('settings.end_turn_ask'));
   await expect(ask).toBeChecked();
   await ask.uncheck();
   await page.getByRole('button', { name: tr('settings.save') }).click();
   await expect(page.getByRole('status')).toHaveText(tr('settings.saved'));
   await page.reload();
-  await page.getByRole('button', { name: 'Settings' }).click();
+  await page.getByRole('button', { name: tr('menu.settings') }).click();
   await expect(ask).not.toBeChecked();
 });
 
 test('fullscreen and mat apply at once and survive a restart', async ({ page }) => {
   await page.goto('/?fake&nosplash');
-  await page.getByRole('button', { name: 'Settings' }).click();
+  await page.getByRole('button', { name: tr('menu.settings') }).click();
   await page.getByLabel(tr('settings.fullscreen')).check();
   await page.getByRole('combobox', { name: tr('settings.mat') }).selectOption('basement');
   await expect(page.getByLabel(tr('settings.mat_preview'))).toHaveClass(/mat-basement/);
@@ -71,7 +71,7 @@ test('fullscreen and mat apply at once and survive a restart', async ({ page }) 
   expect(await page.evaluate(() => (window as unknown as { fakeFullscreen: boolean }).fakeFullscreen)).toBe(true);
 
   await page.reload();
-  await page.getByRole('button', { name: 'Settings' }).click();
+  await page.getByRole('button', { name: tr('menu.settings') }).click();
   await expect(page.getByLabel(tr('settings.fullscreen'))).toBeChecked();
   await expect(page.getByRole('combobox', { name: tr('settings.mat') })).toHaveValue('basement');
   await page.getByLabel(tr('settings.fullscreen')).uncheck();
@@ -87,7 +87,7 @@ test('a mat image lies under the table', async ({ browser }) => {
   if (!mat) {
     throw new Error('no pages');
   }
-  const table = mat.getByRole('main', { name: /^Turn / });
+  const table = mat.getByRole('main', { name: new RegExp(`^${trRe('game.turn').source}`) });
   await expect(table).toHaveClass(/mat-basement mat-image/);
   expect(await table.evaluate((el) => getComputedStyle(el).backgroundImage)).toContain('/cardimg/assets/mats/basement.webp');
   await shot(mat, 'table-mat');
@@ -96,9 +96,9 @@ test('a mat image lies under the table', async ({ browser }) => {
 test('the mat menu lists the mat images', async ({ page }) => {
   await realAssets(page);
   await page.goto('/?fake&nosplash');
-  await page.getByRole('button', { name: 'Settings' }).click();
+  await page.getByRole('button', { name: tr('menu.settings') }).click();
   const mats = page.getByRole('combobox', { name: tr('settings.mat') });
-  await expect(mats.getByRole('option')).toHaveText(['Basement', 'Cathedral']);
+  await expect(mats.getByRole('option')).toHaveText([tr('mat.basement'), tr('mat.cathedral')]);
   await mats.selectOption('basement');
   await expect(page.getByLabel(tr('settings.mat_preview'))).toHaveClass(/mat-image/);
   await shot(page, 'settings-mat');
@@ -106,7 +106,7 @@ test('the mat menu lists the mat images', async ({ page }) => {
 
 test('the first mat image is the default', async ({ page }) => {
   await page.goto(appURL());
-  await page.getByRole('button', { name: 'Settings' }).click();
+  await page.getByRole('button', { name: tr('menu.settings') }).click();
   await expect(page.getByRole('combobox', { name: tr('settings.mat') })).toHaveValue('basement');
   await expect(page.getByLabel(tr('settings.mat_preview'))).toHaveClass(/mat-basement mat-image/);
   // The image fails to load here; the basement colors stay under it.
@@ -123,7 +123,7 @@ test('without mat images the table shows colors', async ({ browser }) => {
   ]) {
     const page = await (await browser.newContext()).newPage();
     await page.goto(`${appURL()}${query ?? ''}`);
-    await page.getByRole('button', { name: 'Settings' }).click();
+    await page.getByRole('button', { name: tr('menu.settings') }).click();
     await expect(page.getByLabel(tr('settings.mat_preview'))).toHaveClass(new RegExp(`${colors ?? ''}$`));
     await expect(page.getByLabel(tr('settings.mat_preview'))).not.toHaveClass(/mat-image/);
   }
@@ -140,10 +140,10 @@ test('the dice menu picks the look of your dice', async ({ page }) => {
   }
   await realAssets(page);
   await page.goto('/?fake&nosplash');
-  await page.getByRole('button', { name: 'Settings' }).click();
+  await page.getByRole('button', { name: tr('menu.settings') }).click();
   const dice = page.getByRole('combobox', { name: tr('settings.dice') });
   await expect(dice).toHaveValue('tear');
-  expect(await dice.locator('optgroup').evaluateAll((gs) => gs.map((g) => g.getAttribute('label')))).toEqual(['Holy', 'Unholy']);
+  expect(await dice.locator('optgroup').evaluateAll((gs) => gs.map((g) => g.getAttribute('label')))).toEqual([tr('settings.dice_set.holy'), tr('settings.dice_set.unholy')]);
   await expect(dice.getByRole('option')).toHaveCount(10);
   const faces = page.getByRole('group', { name: tr('settings.dice_preview') }).locator('.die img');
   await expect(faces).toHaveCount(6);
@@ -155,13 +155,13 @@ test('the dice menu picks the look of your dice', async ({ page }) => {
   await page.getByRole('button', { name: tr('settings.save') }).click();
   await expect(page.getByRole('status')).toHaveText(tr('settings.saved'));
   await page.reload();
-  await page.getByRole('button', { name: 'Settings' }).click();
+  await page.getByRole('button', { name: tr('menu.settings') }).click();
   await expect(page.getByRole('combobox', { name: tr('settings.dice') })).toHaveValue('poop');
 });
 
 test('without dice images there is no dice menu', async ({ page }) => {
   await page.goto('/?fake&nosplash&nodice');
-  await page.getByRole('button', { name: 'Settings' }).click();
+  await page.getByRole('button', { name: tr('menu.settings') }).click();
   await expect(page.getByRole('combobox', { name: tr('settings.mat') })).toBeVisible();
   await expect(page.getByRole('combobox', { name: tr('settings.dice') })).toHaveCount(0);
   await expect(page.getByRole('group', { name: tr('settings.dice_preview') })).toHaveCount(0);
@@ -172,7 +172,7 @@ test('without dice images there is no dice menu', async ({ page }) => {
 // interface file yet, so it shows English. It applies on Save.
 test('the language applies at once and survives a restart', async ({ page }) => {
   await page.goto('/?fake&nosplash');
-  await page.getByRole('button', { name: 'Settings' }).click();
+  await page.getByRole('button', { name: tr('menu.settings') }).click();
   // Found by its choices, as its label changes with the language.
   const lang = page.getByRole('combobox').filter({ has: page.getByRole('option', { name: 'English' }) });
   const save = page.locator('form button[type=submit]');
@@ -186,6 +186,7 @@ test('the language applies at once and survives a restart', async ({ page }) => 
 
   await lang.selectOption('ru');
   await save.click();
+  // Russian has no interface file yet: English shows.
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Settings');
   await page.reload();
   await page.getByRole('button', { name: 'Settings' }).click();
@@ -201,7 +202,7 @@ test('the language follows the OS until one is picked', async ({ browser }) => {
   ]) {
     const page = await (await browser.newContext({ locale: os })).newPage();
     await page.goto('/?fake&nosplash');
-    await page.getByRole('button', { name: 'Settings' }).click();
-    await expect(page.getByRole('combobox', { name: 'Language' })).toHaveValue(want ?? '');
+    await page.getByRole('button', { name: tr('menu.settings') }).click();
+    await expect(page.getByRole('combobox', { name: tr('settings.language') })).toHaveValue(want ?? '');
   }
 });

@@ -1,4 +1,5 @@
 import { moveText } from '../history';
+import { t } from '../i18n';
 import type { Update } from '../protocol';
 import { useApp } from '../store';
 import { Timer } from './ActionBar';
@@ -17,27 +18,30 @@ export function RollbackVotePanel({ game, you, name }: { game: Update; you: numb
   if (!v) {
     return null;
   }
-  const who = (p: number) => (p === you ? 'You' : name(p));
+  const who = (p: number) => (p === you ? t('rollback.you') : name(p));
   const votes = v.votes ?? [];
   const mine = votes.find((b) => b.seat === you);
   const yes = votes.filter((b) => b.yes && v.voters.includes(b.seat)).length;
   const voter = v.voters.includes(you);
   const title =
     v.seat === v.author
-      ? `${who(v.author)} ${v.author === you ? 'ask' : 'asks'} to undo a move`
-      : `${who(v.seat)} ${v.seat === you ? 'want' : 'wants'} to undo ${v.author === you ? 'your' : `${name(v.author)}'s`} move`;
-  const steps = `${String(v.undo)} ${v.undo === 1 ? 'step' : 'steps'}`;
+      ? v.author === you
+        ? t('rollback.ask.you')
+        : t('rollback.ask.other', { player: name(v.author) })
+      : v.seat === you
+        ? t('rollback.want.you', { author: name(v.author) })
+        : v.author === you
+          ? t('rollback.want.yours', { player: name(v.seat) })
+          : t('rollback.want.other', { player: name(v.seat), author: name(v.author) });
   // The move is named as on the Undo button; the open vote's target is
   // still listed (17.8).
   const target = game.rollback_steps?.find((t) => t.step === v.step) ?? { step: v.step, seat: v.author };
   return (
-    <section className="overlay-box rollback-vote" role="dialog" aria-label="Rollback vote">
+    <section className="overlay-box rollback-vote" role="dialog" aria-label={t('rollback.label')}>
       <h2>{title}</h2>
-      <p>
-        “{moveText(moves, target, you, name)}”: undoes {steps}.
-      </p>
+      <p>{t('rollback.undoes', { move: moveText(moves, target, you, name), n: v.undo })}</p>
       <p className="muted">
-        {String(yes)} of {String(v.need)} yes needed
+        {t('rollback.needed', { yes, n: v.need })}
         {v.deadline ? <Timer deadline={v.deadline} /> : null}
       </p>
       <ul className="overlay-votes">
@@ -45,7 +49,7 @@ export function RollbackVotePanel({ game, you, name }: { game: Update; you: numb
           const b = votes.find((x) => x.seat === p);
           return (
             <li key={p}>
-              {who(p)}: {b ? (b.yes ? 'yes' : 'no') : '…'}
+              {who(p)}: {b ? (b.yes ? t('rollback.voted_yes') : t('rollback.voted_no')) : '…'}
             </li>
           );
         })}
@@ -61,7 +65,7 @@ export function RollbackVotePanel({ game, you, name }: { game: Update; you: numb
                   vote(true);
                 }}
               >
-                Yes, undo
+                {t('rollback.yes')}
               </button>
               <button
                 type="button"
@@ -70,7 +74,7 @@ export function RollbackVotePanel({ game, you, name }: { game: Update; you: numb
                   vote(false);
                 }}
               >
-                No
+                {t('rollback.no')}
               </button>
             </>
           )}
@@ -82,7 +86,7 @@ export function RollbackVotePanel({ game, you, name }: { game: Update; you: numb
                 cancel();
               }}
             >
-              Cancel vote
+              {t('rollback.cancel')}
             </button>
           )}
         </div>

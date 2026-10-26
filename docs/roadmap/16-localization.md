@@ -43,7 +43,7 @@ Rules of this step (owner, 2026-10-26):
    1. The setting is saved and survives a restart.
    2. The settings screen shows in the test language.
 
-### [ ] 16.3 App texts
+### [x] 16.3 App texts
 
 1. Goal: every UI string comes from `en.json`.
 2. Tasks:

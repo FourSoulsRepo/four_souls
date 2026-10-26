@@ -23,6 +23,7 @@ import {
   turnNumber,
   type Tap,
 } from './turn';
+import { tr, trRe } from './locale';
 
 const fast = () => `${appURL()}&anim=off`;
 
@@ -61,7 +62,7 @@ test('a full turn with the mouse: drag a loot card, attack, end the turn', async
   if (await loot.isVisible()) {
     await shot(active, 'actions');
     const from = await loot.boundingBox();
-    const to = await active.getByRole('region', { name: 'Board' }).boundingBox();
+    const to = await active.getByRole('region', { name: tr('board.label') }).boundingBox();
     if (!from || !to) {
       throw new Error('no boxes');
     }
@@ -106,7 +107,7 @@ test('a refused action shows the reason', async ({ browser }) => {
     const store = (window as unknown as { fourSouls: { store: { getState: () => S } } }).fourSouls.store;
     store.getState().act({ player: 0, kind: 1 });
   });
-  await expect(other.getByRole('region', { name: 'Actions' }).getByRole('status')).toContainText(/\(R-[A-Z]+-\d+\)/);
+  await expect(other.getByRole('region', { name: tr('actions.label') }).getByRole('status')).toContainText(/\(R-[A-Z]+-\d+\)/);
 });
 
 // allowedKinds reads the intent kinds the engine allows this page now,
@@ -151,8 +152,8 @@ test('buy and attack icons are lit only when the engine allows them; B buys', as
   await active.keyboard.press('b');
   await settle(pages, click, async () => active.locator('.choice').isVisible());
   const choosing = active
-    .getByRole('toolbar', { name: 'Turn actions' })
-    .getByRole('button', { name: 'Choosing what to buy' });
+    .getByRole('toolbar', { name: tr('turn.actions') })
+    .getByRole('button', { name: tr('turn.choosing_buy') });
   await expect(choosing).toHaveAttribute('aria-pressed', 'true');
   await shot(active, 'turn-actions-buy');
   await settle(pages, click, backToMe(active, turn));
@@ -294,7 +295,7 @@ test('End turn asks first while plays are left (V-46)', async ({ browser }) => {
   await expect(question).toBeVisible();
   await expect(question.getByRole('listitem').first()).toBeVisible();
   await shot(active, 'end-turn-question');
-  await question.getByRole('button', { name: 'Keep playing' }).click();
+  await question.getByRole('button', { name: tr('turn.keep_playing') }).click();
   await expect(question).toBeHidden();
 
   // E asks too; Esc keeps playing.
@@ -306,7 +307,7 @@ test('End turn asks first while plays are left (V-46)', async ({ browser }) => {
   expect(await turnNumber(active)).toBe(turn);
 
   await button.click();
-  await question.getByRole('button', { name: 'End turn' }).click();
+  await question.getByRole('button', { name: tr('turn.end') }).click();
   expect(await lastAct(active)).toBe(1);
   await expectNextTurn(pages, click, turn);
 });
@@ -381,15 +382,15 @@ test('a "look at the top card" effect shows the card until it is closed (V-07)',
     { kind: 'looked_at', player: 'you', object: 900, card: 'a_dime', private: true },
   ]);
   await feed(rue, [{ kind: 'looked_at', player: 'other', private: true }]);
-  const look = pip.getByRole('dialog', { name: 'You look at' });
+  const look = pip.getByRole('dialog', { name: tr('look.title') });
   await expect(look.getByRole('img', { name: 'A Dime!!' })).toBeVisible();
   await shot(pip, 'look-at');
   // It stays through the next update; only OK closes it.
   await feed(pip, []);
   await expect(look).toBeVisible();
-  await look.getByRole('button', { name: 'OK' }).click();
+  await look.getByRole('button', { name: tr('look.ok') }).click();
   await expect(look).toHaveCount(0);
-  await expect(rue.getByRole('dialog', { name: 'You look at' })).toHaveCount(0);
+  await expect(rue.getByRole('dialog', { name: tr('look.title') })).toHaveCount(0);
 });
 
 test('a look at hands groups the cards by whose hand they are (19.71)', async ({ browser }) => {
@@ -424,20 +425,20 @@ test('a look at hands groups the cards by whose hand they are (19.71)', async ({
     s.receive({ type: 'update', data: g });
     return [a.name, b.name];
   });
-  const look = pip.getByRole('dialog', { name: 'You look at' });
+  const look = pip.getByRole('dialog', { name: tr('look.title') });
   await expect(look.getByRole('img', { name: 'A Nickel!' })).toBeVisible();
   await shot(pip, 'look-at-hands');
   const hands = look.getByRole('group');
   await expect(hands).toHaveCount(2);
-  const one = look.getByRole('group', { name: `${String(first)}'s hand` });
-  const two = look.getByRole('group', { name: `${String(second)}'s hand` });
-  await expect(one.getByText(`${String(first)}'s hand`)).toBeVisible();
+  const one = look.getByRole('group', { name: tr('look.hand_of', { player: String(first) }) });
+  const two = look.getByRole('group', { name: tr('look.hand_of', { player: String(second) }) });
+  await expect(one.getByText(tr('look.hand_of', { player: String(first) }))).toBeVisible();
   await expect(one.getByRole('img', { name: 'A Dime!!' })).toBeVisible();
   await expect(one.getByRole('img', { name: 'A Penny!' })).toBeVisible();
   await expect(two.getByRole('img', { name: 'A Nickel!' })).toBeVisible();
   await expect(two.getByRole('img')).toHaveCount(1);
   // The groups keep the events' order.
-  await expect(hands.first()).toHaveAccessibleName(`${String(first)}'s hand`);
+  await expect(hands.first()).toHaveAccessibleName(tr('look.hand_of', { player: String(first) }));
 });
 
 test('a "look, you may put it on the bottom" question shows the card (19.11)', async ({ browser }) => {
@@ -502,10 +503,10 @@ test('"put them back in any order" shows each card in its place (19.16)', async 
   }, title);
   const dialog = olaf.getByRole('dialog', { name: title });
   await expect(dialog).toBeVisible();
-  const place = (n: number) => dialog.getByRole('group', { name: `Place ${String(n)}` });
-  const left = dialog.getByRole('group', { name: 'Not placed' });
-  const putBack = dialog.getByRole('button', { name: 'Put back' });
-  await expect(place(1)).toContainText('1 · top');
+  const place = (n: number) => dialog.getByRole('group', { name: tr('order.place', { n }) });
+  const left = dialog.getByRole('group', { name: tr('order.not_placed') });
+  const putBack = dialog.getByRole('button', { name: tr('order.put_back') });
+  await expect(place(1)).toContainText(tr('order.top'));
   await expect(putBack).toBeDisabled();
   // Bomb on top, then A Dime!!; A Penny! is still to place.
   await left.getByRole('button', { name: 'Bomb!' }).click();
@@ -569,9 +570,9 @@ test('two "instead" effects: each card says what it gives first (19.17)', async 
   const dialog = ugo.getByRole('dialog', { name: title });
   await expect(dialog).toBeVisible();
   const option = (card: string) => dialog.locator('.choice-option').filter({ has: ugo.getByRole('button', { name: card, exact: true }) });
-  await expect(option('Counterfeit Penny').getByRole('list', { name: 'Result' })).toHaveText('→ Bum-Bo! levels up by 11');
-  await expect(option('Bum-Bo!').getByRole('list', { name: 'Result' })).toHaveText(
-    '→ Bum-Bo! levels up by 10→ Counterfeit Penny does nothing',
+  await expect(option('Counterfeit Penny').getByRole('list', { name: tr('choice.result') })).toHaveText(`→ ${tr('choice.outcome.level_up', { card: 'Bum-Bo!', n: 11 })}`);
+  await expect(option('Bum-Bo!').getByRole('list', { name: tr('choice.result') })).toHaveText(
+    `→ ${tr('choice.outcome.level_up', { card: 'Bum-Bo!', n: 10 })}→ ${tr('choice.outcome.unused', { card: 'Counterfeit Penny' })}`,
   );
   await shot(ugo, 'instead-order');
   await option('Counterfeit Penny').locator('button').click();
@@ -617,7 +618,7 @@ test('trigger order: the title says the first one resolves last (19.19)', async 
     });
     s.receive({ type: 'update', data: { ...game, step: game.step + 1, events: [] } });
   });
-  const dialog = quill.getByRole('dialog', { name: /resolves last/ });
+  const dialog = quill.getByRole('dialog', { name: trRe('choice.title.trigger_order') });
   await shot(quill, 'trigger-order');
   await expect(dialog).toBeVisible();
   const option = (card: string) => dialog.locator('.choice-option').filter({ has: quill.getByRole('button', { name: card, exact: true }) });
@@ -676,19 +677,21 @@ test('an attack waits for the roller to throw; the die shows the engine\'s value
   await settle(pages, click, async () => (await throwButton(active).count()) > 0);
 
   // The roller sees the glowing button and the stack says it waits for them.
-  const stack = (page: Page) => page.getByRole('complementary', { name: 'Stack' });
+  const stack = (page: Page) => page.getByRole('complementary', { name: tr('stack.title') });
   await expect(throwButton(active)).toBeEnabled();
-  await expect(stack(active).getByLabel('Waiting for')).toHaveText('Throw the dice');
-  await expect(active.locator('.prompt-banner.mine .prompt-title')).toHaveText(/^Throw the dice/);
+  await expect(stack(active).getByLabel(tr('stack.waiting_label'))).toHaveText(tr('banner.throw'));
+  await expect(active.locator('.prompt-banner.mine .prompt-title')).toHaveText(trRe('banner.throw'));
   await shot(active, 'throw-button');
   // The others see who throws, and the die shaking in their hand.
   const roller = await nameOf(active);
-  const shaking = other.getByRole('region', { name: 'Throw' });
-  await expect(shaking.locator('.throw-shake .die')).toHaveAttribute('aria-label', `${String(roller)}'s dice`);
-  await expect(shaking).toContainText(`${String(roller)} is throwing…`);
+  const shaking = other.getByRole('region', { name: tr('throw.label') });
+  await expect(shaking.locator('.throw-shake .die')).toHaveAttribute('aria-label', tr('throw.dice_of', { player: String(roller) }));
+  await expect(shaking).toContainText(tr('throw.throwing', { player: String(roller) }));
   await expect(throwButton(other)).toHaveCount(0);
-  await expect(stack(other).getByLabel('Waiting for')).toHaveText(new RegExp(`^${String(roller)}: Throw the dice`));
-  await expect(other.locator('.prompt-title')).toHaveText(`Waiting for ${String(roller)}`);
+  await expect(stack(other).getByLabel(tr('stack.waiting_label'))).toHaveText(
+    new RegExp(`^${String(roller)}: (${trRe('banner.throw').source}|${trRe('banner.throw_for_other').source})`),
+  );
+  await expect(other.locator('.prompt-title')).toHaveText(tr('banner.waiting_for', { player: String(roller) }));
   await shot(other, 'throw-others');
 
   // Space throws. The die that lands shows the engine's value, the same
@@ -700,22 +703,24 @@ test('an attack waits for the roller to throw; the die shows the engine\'s value
   const effect = active.getByTestId('effect-dice').locator('.die');
   await expect(effect).toBeVisible();
   const label = await effect.getAttribute('aria-label');
-  await expect(active.getByRole('region', { name: 'Throw' })).toHaveCount(0);
-  await expect(other.getByRole('region', { name: 'Throw' })).toHaveCount(0, { timeout: 10_000 });
+  await expect(active.getByRole('region', { name: tr('throw.label') })).toHaveCount(0);
+  await expect(other.getByRole('region', { name: tr('throw.label') })).toHaveCount(0, { timeout: 10_000 });
   for (const page of pages) {
-    await expect.poll(async () => (await rolls(page)).map((v) => `Rolled ${String(v)}`)).toEqual([label]);
+    await expect.poll(async () => (await rolls(page)).map((v) => tr('dice.rolled', { n: v }))).toEqual([label]);
   }
 
   // Once the attack is over, the last roll stays as a small die by the
   // stack with its final value (15.63); hover names the roller.
   await settle(pages, click, backToMe(active, await turnNumber(active)));
   for (const page of pages) {
-    const last = stack(page).getByRole('group', { name: 'Last roll' });
+    const last = stack(page).getByRole('group', { name: tr('stack.last_roll') });
     const final = await page.evaluate(() => (window as unknown as { finals: number[] }).finals.at(-1));
-    await expect(last.locator('.die')).toHaveAttribute('aria-label', `Rolled ${String(final)}`);
+    await expect(last.locator('.die')).toHaveAttribute('aria-label', tr('dice.rolled', { n: String(final) }));
     await last.hover();
     await expect(last.getByRole('tooltip')).toBeVisible();
-    await expect(last.getByRole('tooltip')).toHaveText(new RegExp(`^(Thea|Ruan) rolled ${String(final)}( — .+)?$`));
+    await expect(last.getByRole('tooltip')).toHaveText(
+      new RegExp(`^(${trRe('dice.last_roll', { n: String(final) }).source}|${trRe('dice.last_roll_for', { n: String(final) }).source})$`),
+    );
   }
   await shot(active, 'last-roll');
 });
@@ -774,7 +779,7 @@ test("every screen draws a roll with the roller's dice look (15.6)", async ({ br
   await expect(turnAction(active, 'Attack')).toBeEnabled();
   await click(active, turnAction(active, 'Attack'));
   await settle(pages, click, async () => (await throwButton(active).count()) > 0);
-  const shaking = other.getByRole('region', { name: 'Throw' }).locator('.throw-shake .die');
+  const shaking = other.getByRole('region', { name: tr('throw.label') }).locator('.throw-shake .die');
   await expect(shaking).toBeVisible();
   expect(await image(shaking)).toBe(images.tear);
   await shot(other, 'dice-roller-look');
@@ -786,7 +791,7 @@ test("every screen draws a roll with the roller's dice look (15.6)", async ({ br
   expect(await image(landed)).toBe(images.tear);
   await settle(pages, click, backToMe(active, await turnNumber(active)));
   for (const page of pages) {
-    const last = page.getByRole('complementary', { name: 'Stack' }).getByRole('group', { name: 'Last roll' }).locator('.die');
+    const last = page.getByRole('complementary', { name: tr('stack.title') }).getByRole('group', { name: tr('stack.last_roll') }).locator('.die');
     expect(await image(last)).toBe(images.tear);
   }
 });

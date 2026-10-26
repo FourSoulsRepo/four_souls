@@ -12,6 +12,7 @@ import { restartPorts } from './ports';
 import { appURL } from './server';
 import { shot } from './shot';
 import { activePage, click, settle, throwButton, turnAction } from './turn';
+import { lineRe, tr } from './locale';
 
 const root = join(import.meta.dirname, '..', '..');
 
@@ -133,20 +134,20 @@ test('a server restart mid-game: the game goes on, no dialog', async ({ browser 
   const before = await step(amy);
 
   await server.stop();
-  const badge = amy.getByRole('status', { name: 'Reconnecting' });
-  await expect(badge).toContainText('The server is restarting');
+  const badge = amy.getByRole('status', { name: tr('lost.reconnecting_label') });
+  await expect(badge).toContainText(tr('lost.restarting'));
   await shot(amy, 'reconnecting');
 
   await server.start();
   for (const page of [amy, ben]) {
-    await expect(page.getByRole('status', { name: 'Reconnecting' })).toHaveCount(0, { timeout: 15000 });
-    await expect(page.getByRole('dialog', { name: 'Paused' })).toHaveCount(0);
+    await expect(page.getByRole('status', { name: tr('lost.reconnecting_label') })).toHaveCount(0, { timeout: 15000 });
+    await expect(page.getByRole('dialog', { name: tr('pause.label') })).toHaveCount(0);
   }
-  await expect(amy.locator('.player-bottom')).toHaveAccessibleName('Amy (you)');
-  await expect(ben.locator('.player-bottom')).toHaveAccessibleName('Ben (you)');
+  await expect(amy.locator('.player-bottom')).toHaveAccessibleName(tr('table.own_name', { player: 'Amy' }));
+  await expect(ben.locator('.player-bottom')).toHaveAccessibleName(tr('table.own_name', { player: 'Ben' }));
   expect(await step(amy)).toBe(before);
-  await expect(amy.getByRole('dialog', { name: 'Connection lost' })).toHaveCount(0);
-  await expect(ben.getByRole('dialog', { name: 'Connection lost' })).toHaveCount(0);
+  await expect(amy.getByRole('dialog', { name: tr('lost.title') })).toHaveCount(0);
+  await expect(ben.getByRole('dialog', { name: tr('lost.title') })).toHaveCount(0);
 });
 
 test('a server that stays down: the badge becomes the dialog; Reconnect takes the seat back', async ({ browser }) => {
@@ -162,15 +163,15 @@ test('a server that stays down: the badge becomes the dialog; Reconnect takes th
     });
   }
   await server.stop();
-  const lost = cy.getByRole('dialog', { name: 'Connection lost' });
+  const lost = cy.getByRole('dialog', { name: tr('lost.title') });
   await expect(lost).toBeVisible();
   await shot(cy, 'connection-lost');
 
   await server.start();
-  await lost.getByRole('button', { name: 'Reconnect' }).click();
+  await lost.getByRole('button', { name: tr('lost.reconnect') }).click();
   await expect(lost).toHaveCount(0);
-  await expect(cy.locator('.player-bottom')).toHaveAccessibleName('Cy (you)');
-  await expect(dot.locator('.player-bottom')).toHaveAccessibleName('Dot (you)', { timeout: 15000 });
+  await expect(cy.locator('.player-bottom')).toHaveAccessibleName(tr('table.own_name', { player: 'Cy' }));
+  await expect(dot.locator('.player-bottom')).toHaveAccessibleName(tr('table.own_name', { player: 'Dot' }), { timeout: 15000 });
 });
 
 test('server notices: a newer engine, a lost game', async ({ browser }) => {
@@ -189,19 +190,19 @@ test('server notices: a newer engine, a lost game', async ({ browser }) => {
     }, kind);
 
   await receive('engine_updated');
-  const engine = eve.getByRole('dialog', { name: 'The server was updated' });
-  await expect(engine).toContainText('behave differently');
+  const engine = eve.getByRole('dialog', { name: tr('notice.engine_updated.title') });
+  await expect(engine).toContainText(tr('notice.engine_updated.text'));
   await shot(eve, 'notice-engine');
-  await engine.getByRole('button', { name: 'OK' }).click();
+  await engine.getByRole('button', { name: tr('look.ok') }).click();
   await expect(engine).toHaveCount(0);
   await expect(eve.locator('.player-bottom')).toBeVisible();
 
   await receive('game_lost');
-  const sorry = eve.getByRole('dialog', { name: 'Sorry, the game ended' });
-  await expect(sorry).toContainText('start a new one');
+  const sorry = eve.getByRole('dialog', { name: tr('notice.game_lost.title') });
+  await expect(sorry).toContainText(tr('notice.game_lost.text'));
   await shot(eve, 'notice-lost');
-  await sorry.getByRole('button', { name: 'OK' }).click();
-  await expect(eve.getByRole('heading', { name: 'Games', exact: true })).toBeVisible();
+  await sorry.getByRole('button', { name: tr('look.ok') }).click();
+  await expect(eve.getByRole('heading', { name: tr('lobby.games.title'), exact: true })).toBeVisible();
 });
 
 // rollbackOverRestart plays a Godmode game to an attack's throw, then
@@ -218,24 +219,24 @@ async function rollbackOverRestart(browser: Browser, names: string[], edit?: () 
   edit?.();
   await server.start();
   for (const page of pages) {
-    await expect(page.getByRole('status', { name: 'Reconnecting' })).toHaveCount(0, { timeout: 15000 });
+    await expect(page.getByRole('status', { name: tr('lost.reconnecting_label') })).toHaveCount(0, { timeout: 15000 });
   }
-  await active.getByRole('button', { name: 'History', exact: true }).click();
+  await active.getByRole('button', { name: tr('history.title'), exact: true }).click();
   return active;
 }
 
 test('Godmode: a rollback reaches past a server restart (17.5)', async ({ browser }) => {
   const active = await rollbackOverRestart(browser, ['Gus', 'Hex']);
-  const history = active.getByRole('complementary', { name: 'History', exact: true });
-  await expect(history.getByText('The server restarted')).toHaveCount(0);
+  const history = active.getByRole('complementary', { name: tr('history.title'), exact: true });
+  await expect(history.getByText(tr('history.restarted'))).toHaveCount(0);
   // Two presses: the target pick, then the declaration (17.7).
-  const undo = history.getByRole('button', { name: 'Undo', exact: true });
-  await expect(undo).toHaveAttribute('title', /^Undo: You attack /);
+  const undo = history.getByRole('button', { name: tr('history.undo.undo'), exact: true });
+  await expect(undo).toHaveAttribute('title', new RegExp(`^${lineRe(tr('history.undo.title', { move: tr('history.attack.you') })).source}$`));
   await undo.click();
   await expect(throwButton(active)).toHaveCount(0);
-  await expect(undo).toHaveAttribute('title', 'Undo: You declare an attack');
+  await expect(undo).toHaveAttribute('title', tr('history.undo.title', { move: tr('history.attack_declared.you') }));
   // The target prompt is back over the table; View board uncovers it.
-  await active.getByRole('button', { name: 'View board' }).click();
+  await active.getByRole('button', { name: tr('choice.view_board') }).click();
   await undo.click();
   await expect(turnAction(active, 'Attack')).toBeEnabled();
 });
@@ -244,10 +245,10 @@ test('Godmode: a history that does not replay ends at the restart (17.5)', async
   const active = await rollbackOverRestart(browser, ['Ida', 'Jo'], () => {
     server.dropLive();
   });
-  const history = active.getByRole('complementary', { name: 'History', exact: true });
-  await expect(history.getByRole('listitem').filter({ hasText: 'The server restarted; no rollback before this' })).toBeVisible();
-  const undo = history.getByRole('button', { name: 'Undo', exact: true });
+  const history = active.getByRole('complementary', { name: tr('history.title'), exact: true });
+  await expect(history.getByRole('listitem').filter({ hasText: tr('history.restarted') })).toBeVisible();
+  const undo = history.getByRole('button', { name: tr('history.undo.undo'), exact: true });
   await expect(undo).toHaveAttribute('aria-disabled', 'true');
-  await expect(undo).toHaveAttribute('title', 'Nothing to undo since the server restarted');
+  await expect(undo).toHaveAttribute('title', tr('history.undo.restarted'));
   await shot(active, 'rollback-restart-cut');
 });

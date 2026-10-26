@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
+import { t } from '../i18n';
 import type { Banner } from '../prompt';
-import { secondsLeft } from '../stack';
+import { partsOf, secondsLeft } from '../stack';
 import { useApp } from '../store';
 import { playerColor } from '../table';
 import './Actions.css';
@@ -10,7 +11,7 @@ interface Props {
   banner: Banner | null;
   // paused: the game waits for a player who left, or for a rollback
   // vote; it names which.
-  paused: '' | 'Paused' | 'Rollback vote';
+  paused: '' | 'paused' | 'vote';
   name: (player: number) => string;
   // deadline is when the response timer answers, Unix ms; 0: no timer.
   deadline: number;
@@ -26,7 +27,7 @@ export function ActionBar({ banner, paused, name, deadline, wait }: Props) {
   // A lost connection says so in its badge or dialog, not here (N-20).
   const error = useApp((s) => (s.connected ? s.error : ''));
   return (
-    <div className="action-bar" role="region" aria-label="Actions">
+    <div className="action-bar" role="region" aria-label={t('actions.label')}>
       {(paused || banner) && (
         <PromptBanner banner={paused ? null : banner} paused={paused} name={name} deadline={paused ? 0 : deadline} />
       )}
@@ -35,12 +36,12 @@ export function ActionBar({ banner, paused, name, deadline, wait }: Props) {
           <button
             type="button"
             className="secondary"
-            title="Pass until the turn before yours ends, or someone targets you"
+            title={t('actions.wait_tip')}
             onClick={() => {
               waitTurn(wait === 'offer');
             }}
           >
-            {wait === 'offer' ? 'Wait for my turn' : 'Cancel wait'}
+            {wait === 'offer' ? t('actions.wait') : t('actions.cancel_wait')}
           </button>
         </div>
       )}
@@ -62,7 +63,7 @@ function PromptBanner({
   deadline,
 }: {
   banner: Banner | null;
-  paused: string;
+  paused: '' | 'paused' | 'vote';
   name: (player: number) => string;
   deadline: number;
 }) {
@@ -70,24 +71,41 @@ function PromptBanner({
   return (
     <section
       className={`prompt-banner${mine ? ' mine' : ''}`}
-      aria-label="Prompt"
+      aria-label={t('banner.label')}
       aria-live="polite"
       data-kind={banner?.kind}
     >
       <div className="prompt-title">
         {!banner ? (
-          paused || 'Paused'
+          paused === 'vote' ? t('banner.vote') : t('banner.paused')
         ) : mine ? (
           banner.title
         ) : (
-          <>
-            Waiting for <b style={{ color: playerColor(banner.player) }}>{name(banner.player)}</b>
-          </>
+          <Waiting player={banner.player} name={name(banner.player)} />
         )}
         {deadline > 0 && <Timer deadline={deadline} />}
       </div>
       {banner?.hint && <div className="prompt-hint">{banner.hint}</div>}
     </section>
+  );
+}
+
+// Waiting is "Waiting for Ann", the name in the player's color.
+function Waiting({ player, name }: { player: number; name: string }) {
+  return (
+    <>
+      {partsOf(t('banner.waiting_for'), { player: { text: name, role: 'player', player } }).map((p, i) =>
+        p.role ? (
+          // A line's parts never change order, so the index is a stable key.
+          // eslint-disable-next-line @eslint-react/no-array-index-key
+          <b key={i} style={{ color: playerColor(player) }}>
+            {p.text}
+          </b>
+        ) : (
+          p.text
+        ),
+      )}
+    </>
   );
 }
 
@@ -103,9 +121,9 @@ export function Timer({ deadline }: { deadline: number }) {
     };
   }, []);
   return (
-    <span className="action-timer" aria-label="Time left">
+    <span className="action-timer" aria-label={t('actions.time_left')}>
       {' '}
-      · {secondsLeft(deadline, now)} s
+      · {t('actions.seconds', { n: secondsLeft(deadline, now) })}
     </span>
   );
 }

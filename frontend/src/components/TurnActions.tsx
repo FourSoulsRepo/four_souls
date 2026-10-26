@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { IntentKind, PromptKind, Purpose, type TurnActions as Allowed } from '../actions';
+import { t } from '../i18n';
 import { useKey } from '../keys';
 import type { Intent, Prompt } from '../protocol';
 import { useApp } from '../store';
@@ -48,33 +49,33 @@ export function TurnActions({ allowed, disabled, step, waiting, you, left }: Pro
   const tools: Tool[] = [
     {
       kind: IntentKind.purchase,
-      label: 'Buy',
+      label: t('turn.buy'),
       key: 'b',
       icon: <BagIcon />,
       intent: allowed.buy,
       why: allowed.why?.buy,
       choosing: picking === Purpose.purchase,
-      choosingLabel: 'Choosing what to buy',
+      choosingLabel: t('turn.choosing_buy'),
       left: left?.buy,
     },
     {
       kind: IntentKind.attack,
-      label: 'Attack',
+      label: t('turn.attack'),
       key: 'a',
       icon: <SwordIcon />,
       intent: allowed.attack,
       why: allowed.why?.attack,
       choosing: picking === Purpose.attackTarget,
-      choosingLabel: 'Choosing what to attack',
+      choosingLabel: t('turn.choosing_attack'),
       left: left?.attack,
     },
   ];
-  const press = (t: Tool) => {
-    if (!t.intent || disabled) {
+  const press = (tool: Tool) => {
+    if (!tool.intent || disabled) {
       return;
     }
-    setPressed({ kind: t.kind, step });
-    act(t.intent);
+    setPressed({ kind: tool.kind, step });
+    act(tool.intent);
   };
 
   // Keys: B buys, A attacks; the tooltip names them.
@@ -87,32 +88,32 @@ export function TurnActions({ allowed, disabled, step, waiting, you, left }: Pro
   });
 
   return (
-    <div className="turn-actions" role="toolbar" aria-label="Turn actions">
-      {tools.map((t) => {
-        const lit = t.intent !== undefined && !disabled;
-        const down = t.choosing || (pressed?.kind === t.kind && pressed.step === step);
+    <div className="turn-actions" role="toolbar" aria-label={t('turn.actions')}>
+      {tools.map((tool) => {
+        const lit = tool.intent !== undefined && !disabled;
+        const down = tool.choosing || (pressed?.kind === tool.kind && pressed.step === step);
         // A dim icon with a reason still takes a click, to say it.
-        const why = !lit && !disabled && !t.choosing ? t.why : undefined;
+        const why = !lit && !disabled && !tool.choosing ? tool.why : undefined;
         return (
           <button
-            key={t.kind}
+            key={tool.kind}
             type="button"
             className={`turn-action${lit ? ' lit' : ''}${down ? ' down' : ''}`}
-            aria-label={t.choosing ? t.choosingLabel : t.label}
+            aria-label={tool.choosing ? tool.choosingLabel : tool.label}
             aria-pressed={down}
             aria-disabled={why ? true : undefined}
-            title={`${t.choosing ? t.choosingLabel : t.label} (${t.key.toUpperCase()})${why ? ` · ${why}` : ''}`}
+            title={`${tool.choosing ? tool.choosingLabel : tool.label} (${tool.key.toUpperCase()})${why ? ` · ${why}` : ''}`}
             disabled={!lit && !why}
             onClick={(e) => {
               if (why) {
                 showWhy(why, e.clientX, e.clientY);
                 return;
               }
-              press(t);
+              press(tool);
             }}
           >
-            {t.icon}
-            {t.left !== undefined && <Left n={t.left} />}
+            {tool.icon}
+            {tool.left !== undefined && <Left n={tool.left} />}
           </button>
         );
       })}
@@ -125,7 +126,7 @@ function Left({ n }: { n: number }) {
   const text = n > 99 ? '99+' : String(n);
   const size = text.length > 2 ? ' long' : text.length > 1 ? ' wide' : '';
   return (
-    <span className={`turn-action-left${size}${n === 0 ? ' none' : ''}`} aria-label={`${String(n)} left`}>
+    <span className={`turn-action-left${size}${n === 0 ? ' none' : ''}`} aria-label={t('turn.left_count', { n })}>
       {text}
     </span>
   );
@@ -176,7 +177,7 @@ export function EndTurn({ intent, idle, left, own, disabled, step, why: reason }
     end();
   };
   useKey('e', press);
-  const label = own ? 'End turn' : 'Their turn';
+  const label = own ? t('turn.end') : t('turn.theirs');
   const state = !own ? 'theirs' : lit && idle ? 'own idle' : 'own';
   const why = own && !lit && !disabled ? reason : undefined;
   return (
@@ -186,7 +187,7 @@ export function EndTurn({ intent, idle, left, own, disabled, step, why: reason }
         <button
           type="button"
           className={`end-turn ${state}${pressed === step ? ' down' : ''}`}
-          title={own ? `End turn (E)${why ? ` · ${why}` : ''}` : 'Their turn'}
+          title={own ? `${t('turn.end_tip')}${why ? ` · ${why}` : ''}` : t('turn.theirs')}
           aria-disabled={why ? true : undefined}
           disabled={!lit && !why}
           onClick={(e) => {
@@ -224,7 +225,7 @@ function EndTurnQuestion({ left, end, cancel }: { left: string[]; end: () => voi
       className="overlay end-turn-question"
       role="dialog"
       aria-modal="true"
-      aria-label="End turn?"
+      aria-label={t('turn.ask_title')}
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           cancel();
@@ -241,10 +242,10 @@ function EndTurnQuestion({ left, end, cancel }: { left: string[]; end: () => voi
       }}
     >
       <div className="overlay-box">
-        <h2>End turn?</h2>
+        <h2>{t('turn.ask_title')}</h2>
         {left.length > 0 ? (
           <>
-            <p className="muted">You can still:</p>
+            <p className="muted">{t('turn.ask_left')}</p>
             <ul className="end-turn-left">
               {left.map((l) => (
                 <li key={l}>{l}</li>
@@ -252,14 +253,14 @@ function EndTurnQuestion({ left, end, cancel }: { left: string[]; end: () => voi
             </ul>
           </>
         ) : (
-          <p className="muted">You can still play.</p>
+          <p className="muted">{t('turn.ask_play')}</p>
         )}
         <div className="overlay-buttons">
           <button type="button" className="primary" autoFocus onClick={end}>
-            End turn
+            {t('turn.end')}
           </button>
           <button type="button" onClick={cancel}>
-            Keep playing
+            {t('turn.keep_playing')}
           </button>
         </div>
       </div>

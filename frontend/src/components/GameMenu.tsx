@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { t } from '../i18n';
 import { useApp } from '../store';
 import './Overlays.css';
 
@@ -17,15 +18,15 @@ export function GameMenu({ host }: { host: boolean }) {
           setOpen(true);
         }}
       >
-        Menu
+        {t('game_menu.button')}
       </button>
     );
   }
   return (
-    <div className="overlay" role="dialog" aria-label="Game menu">
+    <div className="overlay" role="dialog" aria-label={t('game_menu.label')}>
       <div className="overlay-box">
-        <h2>Menu</h2>
-        {host && <p className="muted">Saving stops the game for everyone; continue it later from Host a game.</p>}
+        <h2>{t('game_menu.title')}</h2>
+        {host && <p className="muted">{t('game_menu.save_hint')}</p>}
         <div className="overlay-buttons">
           {host && (
             <button
@@ -36,7 +37,7 @@ export function GameMenu({ host }: { host: boolean }) {
                 saveGame();
               }}
             >
-              Save and leave
+              {t('game_menu.save')}
             </button>
           )}
           <button
@@ -45,7 +46,7 @@ export function GameMenu({ host }: { host: boolean }) {
               void quit();
             }}
           >
-            Leave game
+            {t('game_menu.leave')}
           </button>
           <button
             type="button"
@@ -53,7 +54,7 @@ export function GameMenu({ host }: { host: boolean }) {
               setOpen(false);
             }}
           >
-            Cancel
+            {t('game_menu.cancel')}
           </button>
         </div>
       </div>

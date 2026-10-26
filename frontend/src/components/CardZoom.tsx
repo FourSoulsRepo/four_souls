@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef, useState } from 'react';
+import { t } from '../i18n';
 import { useApp } from '../store';
 import { keyword, placeZoom, type Place } from '../zoom';
 import type { Outcome } from '../history';
@@ -61,7 +62,7 @@ export function CardZoom() {
             </p>
           )}
           {zoom.stats && zoom.stats.length > 0 && (
-            <ul className="card-zoom-stats" aria-label="Stats">
+            <ul className="card-zoom-stats" aria-label={t('zoom.stats')}>
               {zoom.stats.map((line) => (
                 <li key={line}>{line}</li>
               ))}
@@ -89,7 +90,7 @@ export function CardZoom() {
         </figure>
         {zoom.outcome && zoom.outcome.length > 0 && <Outcomes list={zoom.outcome} />}
         {footnotes && footnotes.length > 0 && (
-          <aside className="card-zoom-tips" role="note" aria-label="Keywords">
+          <aside className="card-zoom-tips" role="note" aria-label={t('zoom.keywords')}>
             {footnotes.map((f) => (
               <p key={f.title} className="card-zoom-tip">
                 <b>{keyword(f.title)}</b>
@@ -108,7 +109,7 @@ export function CardZoom() {
 // plain coin with the amount.
 function Outcomes({ list }: { list: Outcome[] }) {
   return (
-    <div className="card-zoom-outcome" role="list" aria-label="What it did">
+    <div className="card-zoom-outcome" role="list" aria-label={t('zoom.outcome')}>
       <svg className="card-zoom-arrow" viewBox="0 0 24 24" aria-hidden="true">
         <path d="M3 10h12V5l7 7-7 7v-5H3Z" />
       </svg>
@@ -150,7 +151,7 @@ function Outcomes({ list }: { list: Outcome[] }) {
 
 // resultLabel names one result: "Gaper: 2 damage", "Gaper dies", "+3¢".
 function resultLabel(o: Outcome): string {
-  if (o.mark === 'damage') return `${o.text}: ${String(o.amount ?? 0)} damage`;
-  if (o.mark === 'death') return `${o.text} dies`;
+  if (o.mark === 'damage') return t('zoom.result_damage', { target: o.text, n: o.amount ?? 0 });
+  if (o.mark === 'death') return t('zoom.result_death', { target: o.text });
   return o.text;
 }

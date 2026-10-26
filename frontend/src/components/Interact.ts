@@ -2,6 +2,7 @@
 // clickable when the player may act on them or pick them.
 import { aimed } from "../aim";
 import {
+  IntentKind,
   Purpose,
   type Action,
   type Actions,
@@ -119,6 +120,6 @@ export function interact(
       );
       return o ? pick(o) : {};
     },
-    play: (id) => actions.cards.get(id)?.find((a) => a.label === "Play"),
+    play: (id) => actions.cards.get(id)?.find((a) => a.intent.kind === IntentKind.playLoot),
   };
 }

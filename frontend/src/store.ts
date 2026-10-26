@@ -32,7 +32,7 @@ import {
 import { noHostSetup } from './hostSetup';
 import type { CardInfo, Kind } from './cards';
 import { loadFonts } from './fonts';
-import { setLanguage } from './i18n';
+import { setLanguage, t } from './i18n';
 import { entriesFor, lookedAt, moveOf, restartCut, rolledBack, voteEnded, type Entry, type Looked, type Move, type Outcome } from './history';
 import type { LinePart } from './stack';
 import type { Box } from './zoom';
@@ -317,7 +317,7 @@ export function messageOf(e: unknown): string {
   if (e instanceof Error) {
     return e.message;
   }
-  return 'something went wrong';
+  return t('error.unknown');
 }
 
 // presenceLife is how long a presence shows without being renewed, in
@@ -340,7 +340,7 @@ export const useApp = create<AppState>()((set, get) => {
   let effectKey = 0;
   // names reads players from an update and cards from the card data.
   const names = (u: Update) => ({
-    player: (p: number) => u.seats?.find((s) => s.seat === p)?.name ?? `Player ${String(p + 1)}`,
+    player: (p: number) => u.seats?.find((s) => s.seat === p)?.name ?? t('table.player_n', { n: p + 1 }),
     card: (ref: string) => get().cards.get(ref)?.name ?? ref,
   });
   // diedAt is where each dead card died, by its held object, until it
@@ -580,7 +580,7 @@ export const useApp = create<AppState>()((set, get) => {
     const token = reconnect ?? (rejoin.address === address && rejoin.token ? rejoin.token : undefined);
     const urls = wsURLs(address);
     if (!urls) {
-      set({ error: 'Type an address like 192.168.1.5, 192.168.1.5:4774 or games.example.com.' });
+      set({ error: t('error.bad_address') });
       return false;
     }
     try {
@@ -816,7 +816,7 @@ export const useApp = create<AppState>()((set, get) => {
           icons,
         });
       } catch (e) {
-        set({ error: `Card data: ${messageOf(e)}` });
+        set({ error: t('error.card_data', { error: messageOf(e) }) });
       }
     },
     setZoom: (zoom) => {

@@ -1,5 +1,6 @@
 // Dice looks (V-19). A dice texture is a 3×3 grid of faces, as in
 // Tabletop Simulator: the top row is unused, then 2 4 5 and 1 3 6.
+import { t } from './i18n';
 import type { FirstRoll, GameEvent, Seat } from './protocol';
 
 const faces = new Map([
@@ -111,7 +112,9 @@ export function lastRollAfter(prev: LastRoll | null, events: GameEvent[]): LastR
 // lastRollText names the roller and what the roll was for:
 // "Ann rolled 4 — attack roll".
 export function lastRollText(r: LastRoll, player: (p: number) => string): string {
-  return `${player(r.player)} rolled ${String(r.value)}${r.label ? ` — ${r.label}` : ''}`;
+  return r.label
+    ? t('dice.last_roll_for', { player: player(r.player), n: r.value, label: r.label })
+    : t('dice.last_roll', { player: player(r.player), n: r.value });
 }
 
 // Gaps between dice of one throw, as parts of a throw: small and uneven,
@@ -150,19 +153,19 @@ export function firstRollRows(fr: FirstRoll): FirstRollRow[] {
 // rolled 1", "You go first — Cain". character names the card that
 // says so (first_player with text "character").
 export function firstPlayerText(e: GameEvent, you: number, player: (p: number) => string, card: (ref: string) => string): string {
-  const who = e.player === you ? 'You go first' : `${player(e.player)} goes first`;
+  const who = e.player === you ? t('first_roll.you_first') : t('first_roll.first', { player: player(e.player) });
   if (e.text === 'character') {
-    return e.card ? `${who} — ${card(e.card)}` : who;
+    return e.card ? t('first_roll.by_card', { line: who, card: card(e.card) }) : who;
   }
-  return e.amount ? `${who} — rolled ${String(e.amount)}` : who;
+  return e.amount ? t('first_roll.by_roll', { line: who, n: e.amount }) : who;
 }
 
 // tieText says who ties the first-player roll: "Tie at 2: Ann and Bo
 // roll again". The event's text lists the tied seats ("0,2").
 export function tieText(e: GameEvent, you: number, player: (p: number) => string): string {
   const seats = (e.text ?? '').split(',').filter(Boolean).map(Number);
-  const names = seats.map((p) => (p === you ? 'You' : player(p)));
+  const names = seats.map((p) => (p === you ? t('first_roll.you') : player(p)));
   const last = names.pop() ?? '';
-  const who = names.length > 0 ? `${names.join(', ')} and ${last}` : last;
-  return `Tie at ${String(e.amount ?? 0)}: ${who} roll again`;
+  const who = names.length > 0 ? t('first_roll.and', { players: names.join(', '), last }) : last;
+  return t('first_roll.tie', { n: e.amount ?? 0, players: who });
 }

@@ -3,6 +3,7 @@
 import type { Envelope, GameInfo, Games, Options, ProtocolError, RollbackMode, Saved, SaveInfo, Table, Update, Welcome } from './protocol';
 import { errorText } from './protocol';
 import type { LanServer, RecentServer, Rejoin } from './bridge';
+import { t } from './i18n';
 
 // 'cards' is a dev-only card gallery for tests (?screen=cards).
 export type Screen = 'splash' | 'welcome' | 'menu' | 'settings' | 'host' | 'join' | 'table' | 'game' | 'cards';
@@ -66,7 +67,7 @@ export function leftTable(s: Session): Session {
 // just before the close says more than "lost". During a game the table
 // stays, so the player can reconnect to the same seat (N-08).
 export function lost(s: Session): Session {
-  const error = s.error || 'Lost the connection to the server.';
+  const error = s.error || t('lobby.lost');
   if (s.screen === 'game') {
     return { ...s, error };
   }
@@ -117,29 +118,29 @@ export type ServerUp = { open: number } | 'down';
 // games wait for players.
 export function upText(up: ServerUp | undefined): string {
   if (up === undefined) {
-    return 'Checking…';
+    return t('lobby.online.checking');
   }
   if (up === 'down') {
-    return 'Down';
+    return t('lobby.online.down');
   }
-  return up.open === 1 ? '1 open game' : `${String(up.open)} open games`;
+  return t('lobby.online.open_games', { n: up.open });
 }
 
 // optionsText sums up the match setup for the table.
 export function optionsText(o: Options | undefined): string {
-  const parts = [o?.picking === 'draft' ? `Draft of ${String(o.draft_size ?? 3)}` : 'Random characters'];
+  const parts = [o?.picking === 'draft' ? t('lobby.options.draft', { n: o.draft_size ?? 3 }) : t('lobby.options.random')];
   if (o?.ban_rounds) {
-    parts.push(`${String(o.ban_rounds)} ban round${o.ban_rounds > 1 ? 's' : ''}`);
+    parts.push(t('lobby.options.ban_rounds', { n: o.ban_rounds }));
   }
   if (o?.response_timer) {
-    parts.push(`${String(o.response_timer)} s to respond`);
+    parts.push(t('lobby.options.timer', { n: o.response_timer }));
   }
   if (o?.no_bonus_souls) {
-    parts.push('no bonus souls');
+    parts.push(t('lobby.options.no_bonus_souls'));
   }
   // The server turns the deck ratios off when the sets are too small.
   if (o && !o.no_deck_ratios) {
-    parts.push('deck ratios');
+    parts.push(t('lobby.options.deck_ratios'));
   }
   if (o?.rollback) {
     parts.push(rollbackText(o.rollback));
@@ -150,7 +151,7 @@ export function optionsText(o: Options | undefined): string {
 // rollbackText names a rollback mode for the game list and the table
 // (ADR 020, item 1.4).
 export function rollbackText(mode: RollbackMode): string {
-  return mode === 'god' ? 'Godmode rollback' : 'Soft rollback';
+  return mode === 'god' ? t('lobby.options.rollback_god') : t('lobby.options.rollback_soft');
 }
 
 // LanRow is one game found on the local network, as the LAN screen
@@ -172,14 +173,14 @@ export function lanRows(found: LanServer[], protocol: number, rejoin: Rejoin): L
   return found.flatMap((f) =>
     f.games.map((g, i) => {
       const same = f.protocol === protocol;
-      const version = same ? '' : ` · needs app ${f.app}`;
+      const version = same ? '' : ` · ${t('lobby.lan.needs_app', { app: f.app })}`;
       const mine = rejoin.token !== '' && g.id !== '' && g.id === rejoin.game;
       const open = !g.started && g.taken < g.seats;
-      const state = g.started ? ' · In progress' : '';
+      const state = g.started ? ` · ${t('lobby.lan.in_progress')}` : '';
       return {
         key: `${f.address}#${String(i)}`,
         address: f.address,
-        text: `${g.locked ? '🔒 ' : ''}${g.host}'s game · ${String(g.taken)}/${String(g.seats)} players${state} · ${f.address}${version}`,
+        text: `${g.locked ? '🔒 ' : ''}${t('lobby.game_row', { host: g.host, taken: g.taken, n: g.seats })}${state} · ${f.address}${version}`,
         joinable: same && (open || mine),
         rejoin: same && mine,
       };

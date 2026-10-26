@@ -39,5 +39,6 @@ Presets: typescript-eslint strict and stylistic type-checked, `@eslint-react` st
 * `eval`, `new Function`, string timers and `javascript:` URLs are errors.
 * `dangerouslySetInnerHTML` is an error.
 * Only `src/bridge/` may import the generated Wails bindings.
+* No UI text in JSX: letters in JSX text, text attributes, or strings shown as children are errors; the text goes to `en.json` and `t()` (ADR 021, [Client](Client#languages)). The dev-only card gallery is exempt.
 
 Warnings fail the run (`--max-warnings 0`).

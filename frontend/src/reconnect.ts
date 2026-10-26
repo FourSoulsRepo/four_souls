@@ -1,5 +1,6 @@
 // Reconnecting by itself after a lost game connection (N-20, 8.24).
 // Pure, so it is tested without a socket.
+import { t } from './i18n';
 import type { Notice } from './protocol';
 
 // retryDelay is the wait in ms before reconnect attempt n (from 0): at
@@ -25,21 +26,21 @@ export function noticeText(n: Notice): { title: string; text: string } {
   switch (n.kind) {
     case 'engine_updated':
       return {
-        title: 'The server was updated',
-        text: 'The game goes on with a newer rules engine. Some cards may behave differently now.',
+        title: t('notice.engine_updated.title'),
+        text: t('notice.engine_updated.text'),
       };
     case 'game_lost':
       return {
-        title: 'Sorry, the game ended',
-        text: 'The server was updated and this game cannot go on. Please start a new one.',
+        title: t('notice.game_lost.title'),
+        text: t('notice.game_lost.text'),
       };
     case 'game_idle':
       return {
-        title: 'The game ended',
-        text: n.reason === 'long' ? 'It ran for 24 hours, the longest a game may run.' : 'Nobody played it for too long.',
+        title: t('notice.game_idle.title'),
+        text: n.reason === 'long' ? t('notice.game_idle.long') : t('notice.game_idle.idle'),
       };
     default:
-      return { title: 'Notice', text: n.kind };
+      return { title: t('notice.title'), text: n.kind };
   }
 }
 

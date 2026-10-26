@@ -7,6 +7,7 @@ import { saveAndContinue } from './saves';
 import { appURL } from './server';
 import { shot } from './shot';
 import { activePage, click, endTurn, expectNextTurn, settle, throwButton, turnAction, turnNumber } from './turn';
+import { lineRe, tr, trRe } from './locale';
 
 const fast = () => `${appURL()}&anim=off`;
 
@@ -15,14 +16,14 @@ test.setTimeout(120_000);
 // strengthOnSelf plays XI. Strength on the active player's own character
 // and resolves it.
 async function strengthOnSelf(pages: Page[], active: Page) {
-  await click(active, active.getByRole('group', { name: 'Your hand' }).getByRole('button', { name: 'XI. Strength' }).first());
+  await click(active, active.getByRole('group', { name: tr('table.your_hand') }).getByRole('button', { name: 'XI. Strength' }).first());
   await click(active, active.locator('.own-character .card.hl-aim'));
-  await expect(active.getByRole('complementary', { name: 'Stack' })).toContainText('plays XI. Strength');
+  await expect(active.getByRole('complementary', { name: tr('stack.title') })).toContainText(trRe('stack.loot', { card: 'XI. Strength' }));
   await settle(pages, click, stackDone(active));
 }
 
 // stackDone: the stack is empty for the active player.
-const stackDone = (page: Page) => async () => (await page.getByRole('complementary', { name: 'Stack' }).locator('.stack-row').count()) === 0;
+const stackDone = (page: Page) => async () => (await page.getByRole('complementary', { name: tr('stack.title') }).locator('.stack-row').count()) === 0;
 
 test('a lasting item changes the badge; XI. Strength adds an icon (15.92)', async ({ browser }) => {
   const pages = await startGame(browser, ['Ada', 'Ben'], { url: fast() });
@@ -47,15 +48,15 @@ test('a lasting item changes the badge; XI. Strength adds an icon (15.92)', asyn
   await active.mouse.move(0, 0);
   // One icon, on the character for both players, and the sum names it.
   await expect.soft(own.locator('.card-source')).toHaveCount(1);
-  await expect.soft(own.locator('.card-source')).toHaveAttribute('aria-label', 'XI. Strength: +1 ATK this turn');
+  await expect.soft(own.locator('.card-source')).toHaveAttribute('aria-label', `XI. Strength: ${tr('stats.this_turn_effect', { effect: tr('stats.effect.atk', { amount: '+1' }) })}`);
   await expect.soft(other.locator('.opp-character .card .card-source')).toHaveCount(1);
   await shot(active, 'stats-temporary');
   await own.hover();
-  await expect.soft(active.getByTestId('card-zoom').locator('.card-zoom-stats')).toContainText('+ 1 Brimstone + 1 XI. Strength (this turn)');
+  await expect.soft(active.getByTestId('card-zoom').locator('.card-zoom-stats')).toContainText(`+ 1 Brimstone + 1 XI. Strength (${tr('stats.this_turn')})`);
   await shot(active, 'stats-sum');
   // Hovering the icon zooms XI. Strength, saying how long it lasts.
   await own.locator('.card-source').first().hover();
-  await expect.soft(active.getByTestId('card-zoom')).toContainText('+1 ATK this turn');
+  await expect.soft(active.getByTestId('card-zoom')).toContainText(tr('stats.this_turn_effect', { effect: tr('stats.effect.atk', { amount: '+1' }) }));
   await shot(active, 'stats-icon');
 });
 
@@ -102,11 +103,11 @@ test('a next-roll icon shows till the attack roll uses it (15.93)', async ({ bro
   const active = await activePage(pages, click);
   const icon = active.locator('.own-character .card .card-source.next-roll');
   await expect(icon).toHaveCount(1);
-  await expect(icon).toHaveAttribute('aria-label', /: \+1 to the next attack roll$/);
+  await expect(icon).toHaveAttribute('aria-label', new RegExp(`: ${lineRe(tr('stats.effect.next_attack_roll', { amount: '+1' })).source}$`));
   await active.mouse.move(0, 0);
   await shot(active, 'stats-next-roll');
   await icon.hover();
-  await expect(active.getByTestId('card-zoom')).toContainText('+1 to the next attack roll');
+  await expect(active.getByTestId('card-zoom')).toContainText(tr('stats.effect.next_attack_roll', { amount: '+1' }));
   await active.mouse.move(0, 0);
   // Attack; the roll uses the boost, and the icon goes.
   await click(active, turnAction(active, 'Attack'));
@@ -128,11 +129,15 @@ test('the open attack says what the roll needs; Meat! makes it one lower (15.94)
   await click(active, turnAction(active, 'Attack'));
   await settle(pages, click, async () => (await throwButton(active).count()) > 0);
   for (const page of [active, other]) {
-    const line = page.getByRole('complementary', { name: 'Stack' }).locator('.stack-odds');
+    const line = page.getByRole('complementary', { name: tr('stack.title') }).locator('.stack-odds');
     await expect(line).toContainText('− 1 Meat!');
     const text = (await line.textContent()) ?? '';
-    const m = /^Hits on (\d)\+ \(DC (\d) − 1 Meat!\)/.exec(text);
-    const always = /^Always hits \(DC [12] − 1 Meat!\)/.test(text);
+    // "Hits on 3+ (DC 4 − 1 Meat!)", in the tests' language.
+    // The tokens stand for patterns, put in after escaping.
+    const odds = lineRe(tr('stats.odds_hit', { hits: 'QHITSQ', dc: 'QDCQ', terms: ' − 1 Meat!' })).source;
+    const from = lineRe(tr('stats.hits_from', { n: 'QNQ' })).source.replace('QNQ', '(\\d)');
+    const m = new RegExp(`^${odds.replace('QHITSQ', from).replace('QDCQ', '(\\d)')}`).exec(text);
+    const always = new RegExp(`^${odds.replace('QHITSQ', lineRe(tr('stats.always_hits')).source).replace('QDCQ', '[12]')}`).test(text);
     expect(m !== null || always, text).toBe(true);
     if (m) {
       expect(Number(m[1])).toBe(Number(m[2]) - 1);
@@ -141,6 +146,8 @@ test('the open attack says what the roll needs; Meat! makes it one lower (15.94)
   await shot(active, 'stats-odds');
   // The thrown roll names Meat! and its result.
   await click(active, throwButton(active));
-  await expect(active.getByRole('complementary', { name: 'Stack' })).toContainText(/rolls \d against .+ \(\+1 Meat! = \d\)/);
+  await expect(active.getByRole('complementary', { name: tr('stack.title') })).toContainText(
+    new RegExp(`${trRe('stack.roll_against_n').source}.*? ${lineRe(tr('stack.roll_result', { changes: '+1 Meat!', n: 'QNQ' })).source.replace('QNQ', '\\d')}`),
+  );
   await shot(active, 'stats-roll');
 });

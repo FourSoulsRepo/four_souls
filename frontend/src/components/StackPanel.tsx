@@ -1,9 +1,10 @@
 import { useIsPresent } from 'motion/react';
 import { useState, type PointerEvent } from 'react';
 import { diceImage, firstRollRows, lastRollText } from '../dice';
+import { t } from '../i18n';
 import { useKey } from '../keys';
 import type { FirstRoll, GameView, Intent, StackItem } from '../protocol';
-import { playedCard, stackCard, stackIcon, stackParts, stackRows, stackWait, type LinePart, type Names } from '../stack';
+import { partsOf, playedCard, stackCard, stackIcon, stackParts, stackRows, stackWait, type LinePart, type Names } from '../stack';
 import { useApp, type Zoom } from '../store';
 import { playerColor } from '../table';
 import { boxOf } from '../zoom';
@@ -46,24 +47,24 @@ export function StackPanel({ view, you, names, pass, disabled, prompt, answer }:
   };
   useKey(' ', press);
   return (
-    <aside className={`stack${empty ? ' stack-empty' : ''}`} aria-label="Stack" data-zone="stack">
+    <aside className={`stack${empty ? ' stack-empty' : ''}`} aria-label={t('stack.title')} data-zone="stack">
       <header>
-        <h2>Stack</h2>
+        <h2>{t('stack.title')}</h2>
         <LastRollDie names={names} />
         <button
           type="button"
           className={`stack-pass${lit && answer ? ' answer' : ''}`}
-          title="Pass (Space)"
+          title={t('stack.pass_tip')}
           disabled={!lit}
           onClick={press}
         >
-          Pass
+          {t('stack.pass')}
         </button>
       </header>
       {view.first_roll ? (
         <FirstRollList roll={view.first_roll} names={names} />
       ) : empty ? (
-        <p className="stack-nothing">Nothing on the stack</p>
+        <p className="stack-nothing">{t('stack.empty')}</p>
       ) : (
         <ol>
           <Rows>
@@ -74,18 +75,18 @@ export function StackPanel({ view, you, names, pass, disabled, prompt, answer }:
         </ol>
       )}
       {prompt && (
-        <p className="stack-wait" aria-label="Waiting for">
+        <p className="stack-wait" aria-label={t('stack.waiting_label')}>
           {prompt}
         </p>
       )}
       {wait.responding.length > 0 && (
-        <p className="stack-wait" aria-label="Waiting for">
-          Waiting for {wait.responding.join(', ')}
+        <p className="stack-wait" aria-label={t('stack.waiting_label')}>
+          {t('stack.waiting', { players: wait.responding.join(', ') })}
         </p>
       )}
       {wait.passed.length > 0 && (
-        <p className="stack-wait stack-passed" aria-label="Passed">
-          Passed: {wait.passed.join(', ')}
+        <p className="stack-wait stack-passed" aria-label={t('stack.passed_label')}>
+          {t('stack.passed', { players: wait.passed.join(', ') })}
         </p>
       )}
     </aside>
@@ -97,8 +98,8 @@ export function StackPanel({ view, you, names, pass, disabled, prompt, answer }:
 // dice look, and "…" for the next to throw. After a tie, it says so.
 function FirstRollList({ roll, names }: { roll: FirstRoll; names: Names }) {
   return (
-    <div className="first-roll" role="group" aria-label="First player roll">
-      <p className="first-roll-title">{roll.round > 1 ? 'Tie: roll again, lowest goes first' : 'Lowest roll goes first'}</p>
+    <div className="first-roll" role="group" aria-label={t('first_roll.label')}>
+      <p className="first-roll-title">{roll.round > 1 ? t('first_roll.again') : t('first_roll.lowest')}</p>
       <ol>
         {firstRollRows(roll).map((r) => (
           <FirstRollRow key={r.player} player={r.player} value={r.value} next={r.next} names={names} />
@@ -112,11 +113,11 @@ function FirstRollRow({ player, value, next, names }: { player: number; value: n
   const image = useApp((s) => diceImage(s.dice, s.game?.seats, player));
   const who = names.player(player);
   return (
-    <li className={`first-roll-row${next ? ' next' : ''}`} aria-label={value === undefined ? `${who}: not rolled yet` : `${who}: ${String(value)}`}>
+    <li className={`first-roll-row${next ? ' next' : ''}`} aria-label={value === undefined ? t('first_roll.not_rolled', { player: who }) : `${who}: ${String(value)}`}>
       <b className="stack-player" style={{ color: playerColor(player) }}>
         {who}
       </b>
-      {value === undefined ? <span className="first-roll-wait">{next ? 'throwing…' : '…'}</span> : <Die value={value} image={image} />}
+      {value === undefined ? <span className="first-roll-wait">{next ? t('first_roll.throwing') : '…'}</span> : <Die value={value} image={image} />}
     </li>
   );
 }
@@ -137,16 +138,17 @@ export function PlayedCard({ view, you, names }: { view: GameView; you: number; 
   return (
     <figure
       className="played"
-      aria-label={`${who} plays ${names.card(it.card)}`}
+      aria-label={t('stack.played_label', { player: who, card: names.card(it.card) })}
       data-zone={`played-${String(it.source)}`}
       style={leaving ? { visibility: 'hidden' } : undefined}
     >
       <Card cardRef={it.card} size="hand" />
       <figcaption>
-        <b className="stack-player" style={{ color: playerColor(it.controller) }}>
-          {who}
-        </b>{' '}
-        plays
+        {partsOf(t('stack.played'), { player: { text: who, role: 'player', player: it.controller } }).map((p, i) => (
+          // A line's parts never change order, so the index is a stable key.
+          // eslint-disable-next-line @eslint-react/no-array-index-key
+          <Part key={i} part={p} />
+        ))}
       </figcaption>
     </figure>
   );
@@ -324,7 +326,7 @@ function LastRollDie({ names }: { names: Names }) {
   }
   const text = lastRollText(last, names.player);
   return (
-    <span className="last-roll" role="group" aria-label="Last roll" tabIndex={0}>
+    <span className="last-roll" role="group" aria-label={t('stack.last_roll')} tabIndex={0}>
       <Die value={last.value} image={image} />
       <span className="last-roll-tip" role="tooltip">
         {text}

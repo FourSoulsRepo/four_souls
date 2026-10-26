@@ -1,3 +1,4 @@
+import { t } from '../i18n';
 import { optionsText } from '../lobby';
 import { defaultPort } from '../protocol';
 import { useApp } from '../store';
@@ -19,11 +20,11 @@ export function TableScreen() {
 
   return (
     <div className="screen">
-      <h1>{table.loaded ? 'Saved game' : 'Table'}</h1>
+      <h1>{table.loaded ? t('lobby.seats.saved_title') : t('lobby.seats.title')}</h1>
       {hosting && (
         <div className="panel">
-          <span className="muted">Friends join at</span>
-          <ul className="list selectable" aria-label="Addresses">
+          <span className="muted">{t('lobby.seats.join_at')}</span>
+          <ul className="list selectable" aria-label={t('lobby.seats.addresses')}>
             {hosting.addresses.map((a) => (
               <li key={a}>{a + port}</li>
             ))}
@@ -31,26 +32,26 @@ export function TableScreen() {
         </div>
       )}
       <div className="panel">
-        <ul className="list" aria-label="Seats">
+        <ul className="list" aria-label={t('lobby.seats.seats')}>
           {seats.map((s) => (
             <li key={s.seat}>
               <span>
-                {s.name || <span className="muted">Waiting for a player…</span>}
-                {s.seat === table.you && <span className="muted"> (you)</span>}
+                {s.name || <span className="muted">{t('lobby.seats.waiting')}</span>}
+                {s.seat === table.you && <span className="muted"> {t('lobby.seats.you')}</span>}
                 {s.name && !s.connected && (
-                  <span className="muted">{table.loaded ? ' · not back yet' : ' · away'}</span>
+                  <span className="muted"> · {table.loaded ? t('lobby.seats.not_back') : t('lobby.seats.away')}</span>
                 )}
-                {table.loaded && s.connected && s.seat !== table.you && <span className="muted"> · back</span>}
+                {table.loaded && s.connected && s.seat !== table.you && <span className="muted"> · {t('lobby.seats.back')}</span>}
               </span>
-              <span>{s.ready ? 'Ready' : ''}</span>
+              <span>{s.ready ? t('lobby.seats.is_ready') : ''}</span>
             </li>
           ))}
         </ul>
         <span className="muted">{optionsText(table.options)}</span>
         <span className="muted">
           {table.loaded
-            ? 'The saved game goes on when everyone is back and ready.'
-            : 'The game starts when every seat is taken and everyone is ready.'}
+            ? t('lobby.seats.saved_hint')
+            : t('lobby.seats.hint')}
         </span>
       </div>
       <p className="status" role="status">
@@ -64,7 +65,7 @@ export function TableScreen() {
             setReady(!ready);
           }}
         >
-          {ready ? 'Not ready' : 'Ready'}
+          {ready ? t('lobby.seats.not_ready') : t('lobby.seats.ready')}
         </button>
         <button
           type="button"
@@ -72,7 +73,7 @@ export function TableScreen() {
             void leaveTable();
           }}
         >
-          Leave
+          {t('lobby.seats.leave')}
         </button>
       </div>
     </div>

@@ -7,6 +7,7 @@ import { startGame } from './game';
 import { appURL } from './server';
 import { shot } from './shot';
 import { activePage, click, turnAction } from './turn';
+import { tr } from './locale';
 
 const fast = () => `${appURL()}&anim=off`;
 
@@ -86,23 +87,23 @@ test('"View board" hides a choice and brings it back (15.29)', async ({ browser 
     s.receive({ type: 'update', data: { ...game, step: game.step + 1, events: [] } });
     return m.id;
   });
-  const dialog = corin.getByRole('dialog', { name: 'Choose what to attack' });
+  const dialog = corin.getByRole('dialog', { name: tr('choice.title.attack') });
   await expect(dialog).toBeVisible();
   // The board under it is dimmed and takes no clicks.
   await expect(corin.locator('.choice-backdrop')).toBeVisible();
   await expect(card(corin, monster).click({ trial: true, timeout: 500 })).rejects.toThrow();
   await shot(corin, 'choice-big');
 
-  await dialog.getByRole('button', { name: 'View board' }).click();
+  await dialog.getByRole('button', { name: tr('choice.view_board') }).click();
   await expect(dialog).toHaveCount(0);
-  const peek = corin.getByRole('group', { name: 'Viewing the board' });
-  await expect(peek).toContainText('Choose what to attack');
+  const peek = corin.getByRole('group', { name: tr('choice.viewing') });
+  await expect(peek).toContainText(tr('choice.title.attack'));
   // The target glows on the table and answers there.
   await expect(card(corin, monster)).toHaveClass(/hl-pick/);
   await card(corin, monster).click({ trial: true });
   await shot(corin, 'choice-view-board');
 
-  await peek.getByRole('button', { name: 'Back to the choice' }).click();
+  await peek.getByRole('button', { name: tr('choice.back') }).click();
   await expect(dialog).toBeVisible();
   await expect(peek).toHaveCount(0);
 });

@@ -3,6 +3,7 @@ import { actionsFor, aimedOption, IntentKind, Purpose, type Actions } from '../a
 import { onScreen, promptAim } from '../aim';
 import { ActionBar } from '../components/ActionBar';
 import { ActionMenu } from '../components/ActionMenu';
+import { t } from '../i18n';
 import { AimLayer } from '../components/Aim';
 import { Board } from '../components/Board';
 import { ChoiceDialog, DiscardDialog, LookDialog, ModeDialog, OrderDialog } from '../components/ChoiceDialog';
@@ -37,15 +38,15 @@ export function GameScreen() {
   if (!game) {
     return (
       <div className="screen">
-        <h1>Setting up the match…</h1>
-        <p className="muted">Bans and picks get their own screen in step 7.14.</p>
+        <h1>{t('game.setting_up')}</h1>
+        <p className="muted">{t('game.setting_up_hint')}</p>
         <button
           type="button"
           onClick={() => {
             void quit();
           }}
         >
-          Leave
+          {t('game.leave')}
         </button>
       </div>
     );
@@ -106,7 +107,7 @@ function Table({ game, you }: { game: Update; you: number }) {
     }
   }, [aimed, canAct, game.step, actions, act, takeAimed]);
   const offered = canAct ? actions : noActions;
-  const name = (player: number) => game.seats?.find((s) => s.seat === player)?.name ?? `Player ${String(player + 1)}`;
+  const name = (player: number) => game.seats?.find((s) => s.seat === player)?.name ?? t('table.player_n', { n: player + 1 });
   const names: Names = { player: name, card: (ref) => cards.get(ref)?.name ?? ref };
   const me = view.players.at(you);
   // The hand's cards in order: a hand card is shared as its slot (A-16).
@@ -119,7 +120,7 @@ function Table({ game, you }: { game: Update; you: number }) {
   // The board glows while the game waits for the player, and every seat
   // marks whom it waits for (15.95, V-52).
   const glow = canAct && !game.pause && myMove(banner, picks);
-  const paused = game.pause ? 'Paused' : voting ? 'Rollback vote' : '';
+  const paused = game.pause ? 'paused' : voting ? 'vote' : '';
   const asked = askedSeat(view);
   // What the active player does, on their seat for everyone else (15.30).
   const doing = activity(view, names);
@@ -127,7 +128,7 @@ function Table({ game, you }: { game: Update; you: number }) {
   // turn: no active seat, no turn buttons (15.43).
   const started = !view.first_roll;
   return (
-    <main className={`game ${look.className}${dim ? ' picking' : ''}`} style={look.style} aria-label={`Turn ${String(view.turn.number)}`}>
+    <main className={`game ${look.className}${dim ? ' picking' : ''}`} style={look.style} aria-label={t('game.turn', { n: view.turn.number })}>
       {seatPositions(view.players.length, you).map(({ position, player }) => {
         const p = view.players.at(player);
         return (

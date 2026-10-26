@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, type MouseEvent, type PointerEvent } from 
 import { claimed } from '../animations';
 import { iconText, kindOf, textParts, unknownCard, type CardInfo, type Kind } from '../cards';
 import { diceImage } from '../dice';
+import { t } from '../i18n';
 import { scaleFor } from '../playback';
 import { fighters } from '../prompt';
 import type { MonsterStats, StatSource } from '../protocol';
@@ -83,7 +84,7 @@ export function Card({
   const [brokenImage, setBrokenImage] = useState('');
   const zoomable = size !== 'zoom' && !noZoom;
   const cards = useApp((s) => s.cards);
-  const name: Name = (ref) => (ref ? (cards.get(ref)?.name ?? ref) : 'a hidden card');
+  const name: Name = (ref) => (ref ? (cards.get(ref)?.name ?? ref) : t('stats.hidden_card'));
   const sources = stats?.sources ?? monster?.sources;
   const lines = sources ? statLines(sources, printedOf(stats, monster), liveOf(stats, monster), name) : [];
   const zoomHandlers = useZoom(cardRef, zoomable, rise, why, lines);
@@ -111,7 +112,7 @@ export function Card({
       <div
         className={`card size-${size} kind-${back}${highlight ? ` hl-${highlight}` : ''}`}
         role={onClick ? 'button' : 'img'}
-        aria-label={`Face-down ${back} card`}
+        aria-label={faceDown(back)}
         onClick={onClick}
       >
         {backImage !== '' && backImage !== brokenImage ? (
@@ -124,7 +125,7 @@ export function Card({
             }}
           />
         ) : (
-          <div className="card-back-face">{back}</div>
+          <div className="card-back-face">{backWord(back)}</div>
         )}
       </div>
     );
@@ -163,14 +164,14 @@ export function Card({
       ) : (
         <BlankFace card={card} full={size === 'zoom'} />
       )}
-      {badges && counters > 0 && <Badge kind="counters" value={counters} label="counters" />}
+      {badges && counters > 0 && <Badge kind="counters" value={counters} label={t('badge.counters', { n: counters })} />}
       {badges && dice && dice.length > 0 && <DieBadges values={dice} owner={owner} />}
       {/* Damage shows as the lower, red health; the mark is for the rest. */}
-      {badges && damage > 0 && !monster && !stats && <Badge kind="damage" value={damage} label="damage" />}
+      {badges && damage > 0 && !monster && !stats && <Badge kind="damage" value={damage} label={t('badge.damage', { n: damage })} />}
       {badges && stats && (
         <>
-          <Badge kind="hp" value={stats.hp} label="health" title="Health" hurt={damage > 0} trend={trend(sumOf(stats.sources, 'hp'), 0)} />
-          <Badge kind="atk" value={stats.atk} label="attack" title="Attack" trend={stats.printed_atk === undefined ? undefined : trend(stats.atk, stats.printed_atk)} />
+          <Badge kind="hp" value={stats.hp} label={t('badge.hp', { n: stats.hp })} title={t('badge.hp_title')} hurt={damage > 0} trend={trend(sumOf(stats.sources, 'hp'), 0)} />
+          <Badge kind="atk" value={stats.atk} label={t('badge.atk', { n: stats.atk })} title={t('badge.atk_title')} trend={stats.printed_atk === undefined ? undefined : trend(stats.atk, stats.printed_atk)} />
         </>
       )}
       {badges && monster && <MonsterBadges stats={monster} hurt={damage > 0} />}
@@ -277,17 +278,16 @@ export function useZoom(cardRef: string | undefined, zoomable: boolean, rise = f
 // while it differs from the print (C-03): the card shows the rest.
 // Health also shows, in red, while the monster is hurt (T-25).
 function MonsterBadges({ stats, hurt }: { stats: MonsterStats; hurt: boolean }) {
-  const printed = (n: number) => `printed ${String(n)}`;
   return (
     <>
       {(stats.hp !== stats.printed_hp || hurt) && (
-        <Badge kind="hp" value={stats.hp} label="health" title={`Health (${printed(stats.printed_hp)})`} hurt={hurt} trend={trend(sumOf(stats.sources, 'hp'), 0)} />
+        <Badge kind="hp" value={stats.hp} label={t('badge.hp', { n: stats.hp })} title={t('badge.hp_printed', { n: stats.printed_hp })} hurt={hurt} trend={trend(sumOf(stats.sources, 'hp'), 0)} />
       )}
       {stats.dc !== stats.printed_dc && (
-        <Badge kind="dc" value={stats.dc} label="dice" title={`Dice to hit (${printed(stats.printed_dc)})`} trend={trend(stats.dc, stats.printed_dc)} />
+        <Badge kind="dc" value={stats.dc} label={t('badge.dc', { n: stats.dc })} title={t('badge.dc_printed', { n: stats.printed_dc })} trend={trend(stats.dc, stats.printed_dc)} />
       )}
       {stats.atk !== stats.printed_atk && (
-        <Badge kind="atk" value={stats.atk} label="attack" title={`Attack (${printed(stats.printed_atk)})`} trend={trend(stats.atk, stats.printed_atk)} />
+        <Badge kind="atk" value={stats.atk} label={t('badge.atk', { n: stats.atk })} title={t('badge.atk_printed', { n: stats.printed_atk })} trend={trend(stats.atk, stats.printed_atk)} />
       )}
     </>
   );
@@ -300,8 +300,8 @@ function DieBadges({ values, owner }: { values: number[]; owner: number }) {
   return (
     <span className="card-dice">
       {values.map((v) => (
-        <span key={v} className="card-die" title={`Kept dice: ${String(v)}`}>
-          <Die value={v} image={image} label={`Kept dice ${String(v)}`} />
+        <span key={v} className="card-die" title={t('badge.kept_die_title', { n: v })}>
+          <Die value={v} image={image} label={t('badge.kept_die', { n: v })} />
         </span>
       ))}
     </span>
@@ -397,6 +397,7 @@ const shapes = new Map<BadgeKind, string>([
 interface BadgeProps {
   kind: BadgeKind;
   value: number;
+  // label is the screen-reader name: the number and what it counts.
   label: string;
   title?: string;
   hurt?: boolean;
@@ -410,7 +411,7 @@ interface BadgeProps {
 // it red (15.92).
 function Badge({ kind, value, label, title, hurt = false, trend: dir }: BadgeProps) {
   return (
-    <span className={`card-badge card-${kind}${hurt ? ' hurt' : ''}${dir ? ` ${dir}` : ''}`} title={title} aria-label={`${String(value)} ${label}`}>
+    <span className={`card-badge card-${kind}${hurt ? ' hurt' : ''}${dir ? ` ${dir}` : ''}`} title={title} aria-label={label}>
       <svg className="card-badge-shape" viewBox="0 0 100 100" aria-hidden="true">
         <path d={shapes.get(kind) ?? blob} />
         <path className="card-badge-shine" d="M30 26C36 18 46 16 52 18C44 22 38 28 34 36C31 34 29 30 30 26Z" />
@@ -418,6 +419,38 @@ function Badge({ kind, value, label, title, hurt = false, trend: dir }: BadgePro
       <span className="card-badge-value">{value}</span>
     </span>
   );
+}
+
+// backWord names a deck on a card back drawn without its image.
+function backWord(kind: Kind): string {
+  switch (kind) {
+    case 'character':
+      return t('deck.back.character');
+    case 'treasure':
+      return t('deck.back.treasure');
+    case 'monster':
+      return t('deck.back.monster');
+    case 'soul':
+      return t('deck.back.soul');
+    default:
+      return t('deck.back.loot');
+  }
+}
+
+// faceDown is a card back's screen-reader name.
+function faceDown(kind: Kind): string {
+  switch (kind) {
+    case 'character':
+      return t('deck.face_down.character');
+    case 'treasure':
+      return t('deck.face_down.treasure');
+    case 'monster':
+      return t('deck.face_down.monster');
+    case 'soul':
+      return t('deck.face_down.soul');
+    default:
+      return t('deck.face_down.loot');
+  }
 }
 
 // BlankFace shows a card's text; full adds the effects. The zoom shows

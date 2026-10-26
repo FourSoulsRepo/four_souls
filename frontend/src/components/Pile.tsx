@@ -1,13 +1,33 @@
 import type { CSSProperties } from 'react';
 import type { Kind } from '../cards';
+import { t } from '../i18n';
 import type { CardView } from '../protocol';
 import { Card, type CardSize } from './Card';
 import type { Handle } from './Interact';
 import './Table.css';
 
-// title is a deck name for labels: "loot" -> "Loot".
-function title(kind: Kind): string {
-  return kind.charAt(0).toUpperCase() + kind.slice(1);
+// deckLabel names a deck and its count: "Loot deck: 3 cards".
+function deckLabel(kind: Kind, n: number): string {
+  switch (kind) {
+    case 'monster':
+      return t('deck.monster', { n });
+    case 'treasure':
+      return t('deck.treasure', { n });
+    default:
+      return t('deck.loot', { n });
+  }
+}
+
+// discardLabel names a discard pile and its count.
+function discardLabel(kind: Kind, n: number): string {
+  switch (kind) {
+    case 'monster':
+      return t('deck.monster_discard', { n });
+    case 'treasure':
+      return t('deck.treasure_discard', { n });
+    default:
+      return t('deck.loot_discard', { n });
+  }
 }
 
 // Deck is a face-down pile with its card count. A drawn card that waits
@@ -31,7 +51,7 @@ export function Deck({
   top?: CardView | undefined;
   peek?: CardView | undefined;
 }) {
-  const label = `${title(kind)} deck: ${String(count)} cards`;
+  const label = deckLabel(kind, count);
   return (
     <div className="pile" role="group" aria-label={label} title={label} data-zone={`deck-${kind}`}>
       {top ? (
@@ -51,10 +71,10 @@ export function Deck({
 // Discard shows the top card of a discard pile, face up.
 export function Discard({ kind, cards, size }: { kind: Kind; cards: CardView[] | null; size: CardSize }) {
   const top = cards?.at(-1);
-  const label = `${title(kind)} discard: ${String(cards?.length ?? 0)} cards`;
+  const label = discardLabel(kind, cards?.length ?? 0);
   return (
     <div className="pile" role="group" aria-label={label} title={label} data-zone={`discard-${kind}`}>
-      {top ? <Card cardRef={top.card} size={size} objectId={top.id} /> : <div className={`pile-empty size-${size}`}>Discard</div>}
+      {top ? <Card cardRef={top.card} size={size} objectId={top.id} /> : <div className={`pile-empty size-${size}`}>{t('deck.discard')}</div>}
     </div>
   );
 }
@@ -67,7 +87,7 @@ const fannedBacks = 8;
 // zone is the player's hand, so drawn cards fly to it; an empty hand
 // keeps the zone with only the count.
 export function HiddenHand({ playerId, count, size }: { playerId: number; count: number; size: CardSize }) {
-  const label = `Hand: ${String(count)} cards`;
+  const label = t('table.hand', { n: count });
   const shown = Math.min(count, fannedBacks);
   return (
     <div className="hidden-hand" role="group" aria-label={label} title={label} data-zone={`hand-${String(playerId)}`}>
@@ -85,7 +105,7 @@ export function HiddenHand({ playerId, count, size }: { playerId: number; count:
 // under Guppy's Eye (19.5): every card, fanned like the backs, each
 // zoomable. Its zone is the player's hand, like a hidden one.
 export function RevealedHand({ playerId, cards, size }: { playerId: number; cards: CardView[]; size: CardSize }) {
-  const label = `Revealed hand: ${String(cards.length)} cards`;
+  const label = t('table.revealed_hand', { n: cards.length });
   return (
     <div className="hidden-hand revealed-hand" role="group" aria-label={label} title={label} data-zone={`hand-${String(playerId)}`}>
       {cards.map((c, i) => (

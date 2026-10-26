@@ -1,6 +1,7 @@
 // Card component (7.4) in the dev-only card gallery.
 import { expect, test } from './fixtures';
 import { realAssets, shot } from './shot';
+import { tr } from './locale';
 
 const gallery = '/?fake&nosplash&screen=cards';
 
@@ -16,7 +17,7 @@ test('cards show their image, or a readable blank card', async ({ page }) => {
   const spider = hand.getByRole('img', { name: 'Big Spider' });
   await expect(spider).toContainText('HP 3');
   await expect(spider).toContainText('1x Loot');
-  await expect(hand.getByRole('img', { name: 'Face-down treasure card' })).toBeVisible();
+  await expect(hand.getByRole('img', { name: tr('deck.face_down.treasure') })).toBeVisible();
   await shot(page, 'cards');
 });
 
@@ -25,11 +26,11 @@ test('a face-down card shows its deck back, or a plain back without it', async (
   const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="63" height="88"><rect width="63" height="88" fill="#a70"/></svg>';
   await page.route('**/cardimg/assets/backs/treasure.webp', (route) => route.fulfill({ body: svg, contentType: 'image/svg+xml' }));
   await page.goto(gallery);
-  const back = page.getByLabel('Hand size').getByRole('img', { name: 'Face-down treasure card' });
+  const back = page.getByLabel('Hand size').getByRole('img', { name: tr('deck.face_down.treasure') });
   await expect(back.locator('img')).toHaveAttribute('src', '/cardimg/assets/backs/treasure.webp');
   await expect(back.locator('img')).toBeVisible();
-  await expect(back).not.toContainText('treasure');
-  await expect(page.getByLabel('Hand size').getByRole('img', { name: 'Face-down loot card' })).toHaveText('loot');
+  await expect(back).not.toContainText(tr('deck.back.treasure'));
+  await expect(page.getByLabel('Hand size').getByRole('img', { name: tr('deck.face_down.loot') })).toHaveText(tr('deck.back.loot'));
 });
 
 test('hovering a card zooms it with its full text', async ({ page }) => {

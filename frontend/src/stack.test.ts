@@ -118,8 +118,7 @@ describe('stackParts', () => {
     ]);
     expect(stackParts(item({ kind: StackKind.damage, amount: 1, target: { player: 1, is_player: true } }), view, names)).toEqual([
       { text: 'Ann', role: 'player', player: 0 },
-      { text: ' deals ' },
-      { text: '1 damage to ' },
+      { text: ' deals 1 damage to ' },
       { text: 'Bo', role: 'target', player: 1 },
     ]);
   });

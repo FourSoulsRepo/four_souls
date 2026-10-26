@@ -4,6 +4,7 @@ import { expect, type Page } from '@playwright/test';
 import { readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { serverPort } from './server';
+import { tr, trRe } from './locale';
 
 // gameID is the id of the page's table, which names its save file.
 export async function gameID(page: Page): Promise<string> {
@@ -63,24 +64,24 @@ export async function saveAndContinue(pages: Page[], names: string, card = 'bomb
     throw new Error('no pages');
   }
   const game = await gameID(host);
-  await host.getByRole('button', { name: 'Menu' }).click();
-  await host.getByRole('button', { name: 'Save and leave' }).click();
+  await host.getByRole('button', { name: tr('game_menu.button') }).click();
+  await host.getByRole('button', { name: tr('game_menu.save') }).click();
   for (const page of pages) {
-    await expect(page.getByText('The game was saved.')).toBeVisible();
+    await expect(page.getByText(tr('lobby.games.saved'))).toBeVisible();
   }
   giveCard(game, card, item, nextRoll);
   // Back from the Games list is the LAN screen, with its Host button.
-  await host.getByRole('button', { name: 'Back' }).click();
-  await host.getByRole('button', { name: 'Host a game' }).click();
-  await host.getByRole('button', { name: 'Continue a saved game' }).click();
-  await host.getByRole('listitem').filter({ hasText: names }).getByRole('button', { name: 'Continue' }).click();
+  await host.getByRole('button', { name: tr('lobby.back') }).click();
+  await host.getByRole('button', { name: tr('host.title_host') }).click();
+  await host.getByRole('button', { name: tr('host.continue_saved') }).click();
+  await host.getByRole('listitem').filter({ hasText: names }).getByRole('button', { name: tr('lobby.games.continue') }).click();
   for (const page of guests) {
-    await page.getByRole('listitem').filter({ hasText: names }).getByRole('button', { name: 'Continue' }).click();
+    await page.getByRole('listitem').filter({ hasText: names }).getByRole('button', { name: tr('lobby.games.continue') }).click();
   }
   for (const page of pages) {
-    await page.getByRole('button', { name: 'Ready', exact: true }).click();
+    await page.getByRole('button', { name: tr('lobby.seats.ready'), exact: true }).click();
   }
   for (const page of pages) {
-    await expect(page.getByRole('main', { name: /^Turn / })).toBeVisible();
+    await expect(page.getByRole('main', { name: new RegExp(`^${trRe('game.turn').source}`) })).toBeVisible();
   }
 }

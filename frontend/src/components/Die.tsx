@@ -1,5 +1,6 @@
 import { useState, type Ref } from 'react';
 import { cubeFaces, faceOf, faceStyle } from '../dice';
+import { t } from '../i18n';
 import './Die.css';
 
 // Die draws one d6 value with the player's dice look (V-19). Without a
@@ -9,7 +10,7 @@ import './Die.css';
 // A bevel of light and shade makes it look solid (15.69).
 export function Die({ value, image, label, hidden }: { value: number; image: string; label?: string; hidden?: boolean }) {
   const [broken, setBroken] = useState('');
-  const named = label ?? `Rolled ${String(value)}`;
+  const named = label ?? t('dice.rolled', { n: value });
   const textured = faceOf(value) !== null && image !== '' && broken !== image;
   return (
     <div className={textured ? 'die' : 'die die-plain'} aria-label={named} data-testid={textured ? 'die-image' : undefined}>
@@ -45,7 +46,7 @@ export function DieCube({ value, image, label, ref }: { value: number; image: st
   const [broken, setBroken] = useState('');
   const look = broken === image ? '' : image;
   return (
-    <div ref={ref} className="die die-cube" role="img" aria-label={label ?? `Rolled ${String(value)}`}>
+    <div ref={ref} className="die die-cube" role="img" aria-label={label ?? t('dice.rolled', { n: value })}>
       {Object.entries(cubeFaces(value)).map(([side, n]) => {
         const textured = faceOf(n) !== null && look !== '';
         return (

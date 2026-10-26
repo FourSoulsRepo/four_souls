@@ -1,6 +1,7 @@
 import type { Actions } from '../actions';
 import { PromptKind } from '../actions';
 import { diceImage } from '../dice';
+import { t } from '../i18n';
 import { useKey } from '../keys';
 import type { Prompt } from '../protocol';
 import type { Names } from '../stack';
@@ -44,23 +45,23 @@ export function Throw({ waiting, you, names, action, disabled }: Props) {
   const label = waiting.text ?? '';
   if (lit) {
     return (
-      <div className="throw" role="region" aria-label="Throw">
-        <button type="button" className="throw-button" title="Throw (Space)" onClick={press}>
-          <Die value={handFace} image={image} label="Your dice" hidden />
-          <span className="throw-word">Throw</span>
+      <div className="throw" role="region" aria-label={t('throw.label')}>
+        <button type="button" className="throw-button" title={t('throw.tip')} onClick={press}>
+          <Die value={handFace} image={image} label={t('throw.your_dice')} hidden />
+          <span className="throw-word">{t('throw.button')}</span>
         </button>
         {label && <div className="throw-label">{label}</div>}
       </div>
     );
   }
-  const who = mine ? 'You are' : `${names.player(waiting.player)} is`;
+  const player = names.player(waiting.player);
   return (
-    <div className="throw" role="region" aria-label="Throw">
+    <div className="throw" role="region" aria-label={t('throw.label')}>
       <div className="throw-shake">
-        <Die value={handFace} image={image} label={mine ? 'Your dice' : `${names.player(waiting.player)}'s dice`} hidden />
+        <Die value={handFace} image={image} label={mine ? t('throw.your_dice') : t('throw.dice_of', { player })} hidden />
       </div>
       <div className="throw-label" style={{ color: playerColor(waiting.player) }}>
-        {who} throwing…
+        {mine ? t('throw.you_throwing') : t('throw.throwing', { player })}
       </div>
     </div>
   );

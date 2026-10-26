@@ -1,5 +1,6 @@
 // The one WebSocket to the game server (ADR 006). Thin on purpose: the
 // lobby logic lives in lobby.ts and the store.
+import { t } from './i18n';
 import type { Envelope } from './protocol';
 
 let socket: WebSocket | null = null;
@@ -25,7 +26,7 @@ export function connect(
       if (!open && socket === ws) {
         socket = null;
         ws.close();
-        reject(new Error('Could not connect to the server.'));
+        reject(new Error(t('error.no_connection')));
       }
     }, connectTimeout);
     ws.onopen = () => {
@@ -45,7 +46,7 @@ export function connect(
       if (open) {
         onClose();
       } else {
-        reject(new Error('Could not connect to the server.'));
+        reject(new Error(t('error.no_connection')));
       }
     };
   });
@@ -59,7 +60,7 @@ export async function connectFirst(
   onMessage: (env: Envelope) => void,
   onClose: () => void,
 ): Promise<string> {
-  let last: unknown = new Error('Could not connect to the server.');
+  let last: unknown = new Error(t('error.no_connection'));
   for (const url of urls) {
     try {
       await connect(url, onMessage, onClose);

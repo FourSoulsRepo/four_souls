@@ -3,6 +3,7 @@
 // cards, pass when only responding, attack when the turn cannot end
 // otherwise. Used to get through a turn in tests.
 import { expect, type Locator, type Page } from '@playwright/test';
+import { tr, trRe } from './locale';
 
 export interface Seen {
   step: number;
@@ -92,9 +93,9 @@ async function answer(pages: Page[], press: Tap, steps: number[]): Promise<boole
       return true;
     }
     // exact: a question may mention "discard" too.
-    const discard = page.getByRole('dialog', { name: 'Discard', exact: true });
+    const discard = page.getByRole('dialog', { name: tr('discard.label'), exact: true });
     if (await discard.isVisible()) {
-      const done = discard.getByRole('button', { name: /^Discard/ });
+      const done = discard.getByRole('button', { name: new RegExp(`^${trRe('discard.button').source}`) });
       for (let i = 0; i < 12 && !(await enabled(done)); i++) {
         const next = discard.locator('.card.hl-act').first();
         if ((await next.count()) === 0) {
@@ -110,13 +111,13 @@ async function answer(pages: Page[], press: Tap, steps: number[]): Promise<boole
     // A "look at" dialog only shows cards; OK closes it.
     const look = page.locator('.choice.look');
     if (await look.isVisible()) {
-      await press(page, look.getByRole('button', { name: 'OK' }));
+      await press(page, look.getByRole('button', { name: tr('look.ok') }));
       return true;
     }
     // An order dialog (19.16): place the cards as they come, then confirm.
     const order = page.locator('.choice.order');
     if (await order.isVisible()) {
-      const done = order.getByRole('button', { name: 'Put back' });
+      const done = order.getByRole('button', { name: tr('order.put_back') });
       for (let i = 0; i < 12 && !(await enabled(done)); i++) {
         await press(page, order.locator('.card.hl-pick').first());
       }
@@ -173,7 +174,7 @@ export async function settle(pages: Page[], press: Tap, done: () => Promise<bool
     pages.map(async (p) => ({
       ...(await seen(p)),
       status: await p.locator('.prompt-banner').textContent({ timeout: 1000 }).catch(() => null),
-      buttons: await p.getByRole('region', { name: 'Actions' }).getByRole('button').allTextContents(),
+      buttons: await p.getByRole('region', { name: tr('actions.label') }).getByRole('button').allTextContents(),
       dialog: await p.locator('.choice').textContent({ timeout: 1000 }).catch(() => null),
       error: await p.locator('.action-error').textContent({ timeout: 1000 }).catch(() => null),
       detail: await p.evaluate(() => {
@@ -191,28 +192,30 @@ export async function settle(pages: Page[], press: Tap, done: () => Promise<bool
 
 // turnAction is an icon button by own name (15.19): "Buy" or "Attack".
 export function turnAction(page: Page, name: 'Buy' | 'Attack') {
-  return page.getByRole('toolbar', { name: 'Turn actions' }).getByRole('button', { name, exact: true });
+  const label = name === 'Buy' ? tr('turn.buy') : tr('turn.attack');
+  return page.getByRole('toolbar', { name: tr('turn.actions') }).getByRole('button', { name: label, exact: true });
 }
 
 // throwButton is the roller's Throw button where the die lands (15.61).
 export function throwButton(page: Page) {
-  return page.getByRole('region', { name: 'Throw' }).getByRole('button', { name: /Throw/ });
+  return page.getByRole('region', { name: tr('throw.label') }).getByRole('button', { name: trRe('throw.button') });
 }
 
 // passButton is Pass in the stack panel (15.21).
 export function passButton(page: Page) {
-  return page.getByRole('complementary', { name: 'Stack' }).getByRole('button', { name: 'Pass', exact: true });
+  return page.getByRole('complementary', { name: tr('stack.title') }).getByRole('button', { name: tr('stack.pass'), exact: true });
 }
 
 // endTurnButton is the big button at the board's right edge (15.20):
 // "End turn" on own turn, "Their turn" otherwise.
 export function endTurnButton(page: Page, name: 'End turn' | 'Their turn' = 'End turn') {
-  return page.getByRole('region', { name: 'Board' }).getByRole('button', { name, exact: true });
+  const label = name === 'End turn' ? tr('turn.end') : tr('turn.theirs');
+  return page.getByRole('region', { name: tr('board.label') }).getByRole('button', { name: label, exact: true });
 }
 
 // endTurnQuestion asks before the turn ends while plays are left (V-46).
 export function endTurnQuestion(page: Page) {
-  return page.getByRole('dialog', { name: 'End turn?' });
+  return page.getByRole('dialog', { name: tr('turn.ask_title') });
 }
 
 // endTurn presses End turn and confirms when it asks: it asks unless it
@@ -222,7 +225,7 @@ export async function endTurn(page: Page, press: Tap = click) {
   const asks = !(await button.evaluate((b) => b.classList.contains('idle')));
   await press(page, button);
   if (asks) {
-    await press(page, endTurnQuestion(page).getByRole('button', { name: 'End turn' }));
+    await press(page, endTurnQuestion(page).getByRole('button', { name: tr('turn.end') }));
   }
 }
 
@@ -274,14 +277,14 @@ export async function playLoot(page: Page, card: Locator, press: Tap): Promise<v
   const menu = page.getByRole('menu');
   const target = page.locator('.card.hl-aim, .stack-row.hl-aim').first();
   await expect(menu.or(target)).toBeVisible();
-  await press(page, (await menu.isVisible()) ? menu.getByRole('menuitem', { name: 'Play' }) : target);
+  await press(page, (await menu.isVisible()) ? menu.getByRole('menuitem', { name: tr('menu.play') }) : target);
 }
 
 // answerPlay answers what a played loot card asks before it goes on the
 // stack: its mode in a dialog, or its target, aimed at on the table
 // (19.18): Dagaz protects a player, Lil Battery charges an item.
 export async function answerPlay(page: Page, press: Tap): Promise<void> {
-  const rows = page.getByRole('complementary', { name: 'Stack' }).locator('.stack-row');
+  const rows = page.getByRole('complementary', { name: tr('stack.title') }).locator('.stack-row');
   await expect
     .poll(
       async () => {

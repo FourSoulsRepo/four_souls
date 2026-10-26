@@ -5,6 +5,7 @@ import { startGame } from './game';
 import { appURL, serverPort } from './server';
 import { realAssets, shot } from './shot';
 import { openOnline } from './menu';
+import { locale, tr, trRe } from './locale';
 
 const fast = () => `${appURL()}&anim=off`;
 
@@ -17,10 +18,10 @@ test('a dropped player reconnects by itself to the same seat', async ({ browser 
     (window as unknown as { fourSouls: { drop: () => void } }).fourSouls.drop();
   });
   // The app reconnects at once (N-20): no dialog, the pause ends.
-  await expect(ben.locator('.player-bottom')).toHaveAccessibleName('Ben (you)');
-  await expect(ben.getByRole('status', { name: 'Reconnecting' })).toHaveCount(0);
-  await expect(ben.getByRole('dialog', { name: 'Connection lost' })).toHaveCount(0);
-  await expect(amy.getByRole('dialog', { name: 'Paused' })).toHaveCount(0);
+  await expect(ben.locator('.player-bottom')).toHaveAccessibleName(tr('table.own_name', { player: 'Ben' }));
+  await expect(ben.getByRole('status', { name: tr('lost.reconnecting_label') })).toHaveCount(0);
+  await expect(ben.getByRole('dialog', { name: tr('lost.title') })).toHaveCount(0);
+  await expect(amy.getByRole('dialog', { name: tr('pause.label') })).toHaveCount(0);
 });
 
 test('a player who closed the app comes back to the same seat', async ({ browser }) => {
@@ -31,16 +32,16 @@ test('a player who closed the app comes back to the same seat', async ({ browser
   // Lou closes the app; Kit chooses to wait.
   const context = lou.context();
   await lou.close();
-  const paused = kit.getByRole('dialog', { name: 'Paused' });
-  await expect(paused).toContainText('Waiting for Lou');
-  await paused.getByRole('button', { name: 'Wait' }).click();
+  const paused = kit.getByRole('dialog', { name: tr('pause.label') });
+  await expect(paused).toContainText(tr('pause.title', { players: 'Lou' }));
+  await paused.getByRole('button', { name: tr('pause.wait') }).click();
 
   // Lou starts the app again (same settings) and connects to the server.
   const again = await context.newPage();
   await again.goto(fast());
   await openOnline(again);
-  await again.getByRole('button', { name: 'Connect' }).click();
-  await expect(again.locator('.player-bottom')).toHaveAccessibleName('Lou (you)');
+  await again.getByRole('button', { name: tr('lobby.connect') }).click();
+  await expect(again.locator('.player-bottom')).toHaveAccessibleName(tr('table.own_name', { player: 'Lou' }));
   await expect(paused).toHaveCount(0);
 });
 
@@ -50,10 +51,10 @@ test('players vote to go on without one who left', async ({ browser }) => {
     throw new Error('no pages');
   }
   await dee.close();
-  const paused = cal.getByRole('dialog', { name: 'Paused' });
-  await expect(paused).toContainText('Waiting for Dee');
+  const paused = cal.getByRole('dialog', { name: tr('pause.label') });
+  await expect(paused).toContainText(tr('pause.title', { players: 'Dee' }));
   await shot(cal, 'paused');
-  await paused.getByRole('button', { name: 'Go on without them' }).click();
+  await paused.getByRole('button', { name: tr('pause.kick') }).click();
   await expect(paused).toHaveCount(0);
 });
 
@@ -77,13 +78,13 @@ test('the end screen names the winner and saves the record', async ({ browser })
     g.view.winners = [s.lobby.table.you];
     s.receive({ type: 'update', data: g });
   });
-  const end = eli.getByRole('dialog', { name: 'Game over' });
-  await expect(end).toContainText('You win!');
-  await end.getByRole('button', { name: 'Save record' }).click();
-  await expect(end.getByRole('status')).toHaveText(/^Saved to \/fake\/.+\.fsrec$/);
+  const end = eli.getByRole('dialog', { name: tr('over.title') });
+  await expect(end).toContainText(tr('over.you_win'));
+  await end.getByRole('button', { name: tr('over.save') }).click();
+  await expect(end.getByRole('status')).toHaveText(new RegExp(`^${trRe('over.saved').source.replace('.*?', '/fake/.+\\.fsrec')}$`));
   await shot(eli, 'game-over');
-  await end.getByRole('button', { name: 'Back to menu' }).click();
-  await expect(eli.getByRole('button', { name: 'Play', exact: true })).toBeVisible();
+  await end.getByRole('button', { name: tr('over.menu') }).click();
+  await expect(eli.getByRole('button', { name: tr('menu.play'), exact: true })).toBeVisible();
 });
 
 // savedSeat is the seat token page's app keeps in its settings.
@@ -116,25 +117,25 @@ test('a restarted app offers Rejoin in the menu, until the seat is left (15.99)'
   }
   // Bo joined by Online, Ann hosted on LAN.
   const bo2 = await restart(bo);
-  const offer = bo2.getByRole('button', { name: "Rejoin: Ann's game · Online" });
+  const offer = bo2.getByRole('button', { name: tr('menu.rejoin', { game: `${tr('menu.rejoin_host', { host: 'Ann' })} · ${tr('menu.online')}` }) });
   await expect(offer).toBeVisible();
   // The menu itself did not wait for the answer, nor move for it.
-  await expect(bo2.getByRole('button', { name: 'Play', exact: true })).toBeVisible();
+  await expect(bo2.getByRole('button', { name: tr('menu.play'), exact: true })).toBeVisible();
   await shot(bo2, 'menu-rejoin');
   await offer.click();
-  await expect(bo2.locator('.player-bottom')).toHaveAccessibleName('Bo (you)');
+  await expect(bo2.locator('.player-bottom')).toHaveAccessibleName(tr('table.own_name', { player: 'Bo' }));
 
   const ann2 = await restart(ann);
-  await ann2.getByRole('button', { name: "Rejoin: Ann's game · LAN" }).click();
-  await expect(ann2.locator('.player-bottom')).toHaveAccessibleName('Ann (you)');
+  await ann2.getByRole('button', { name: tr('menu.rejoin', { game: `${tr('menu.rejoin_host', { host: 'Ann' })} · ${tr('menu.lan')}` }) }).click();
+  await expect(ann2.locator('.player-bottom')).toHaveAccessibleName(tr('table.own_name', { player: 'Ann' }));
   // Ann leaves on purpose: no Rejoin, also after a restart.
-  await ann2.getByRole('button', { name: 'Menu' }).click();
-  await ann2.getByRole('button', { name: 'Leave game' }).click();
-  await expect(ann2.getByRole('button', { name: 'Play', exact: true })).toBeVisible();
+  await ann2.getByRole('button', { name: tr('game_menu.button') }).click();
+  await ann2.getByRole('button', { name: tr('game_menu.leave') }).click();
+  await expect(ann2.getByRole('button', { name: tr('menu.play'), exact: true })).toBeVisible();
   await expect.poll(() => savedSeat(ann2)).toBe('');
   const ann3 = await restart(ann2);
   await ann3.waitForLoadState('networkidle');
-  await expect(ann3.getByRole('button', { name: /^Rejoin/ })).toHaveCount(0);
+  await expect(ann3.getByRole('button', { name: new RegExp(`^${trRe('menu.rejoin').source}`) })).toHaveCount(0);
 
   // The game ends for Bo: the seat is forgotten.
   await bo2.evaluate(() => {
@@ -150,21 +151,21 @@ test('a restarted app offers Rejoin in the menu, until the seat is left (15.99)'
     g.view.winners = [0];
     s.receive({ type: 'update', data: g });
   });
-  await expect(bo2.getByRole('dialog', { name: 'Game over' })).toBeVisible();
+  await expect(bo2.getByRole('dialog', { name: tr('over.title') })).toBeVisible();
   await expect.poll(() => savedSeat(bo2)).toBe('');
 });
 
 // A seat whose game is gone is forgotten when the menu asks (15.99).
 test('a dead saved seat shows no Rejoin and is forgotten (15.99)', async ({ page }) => {
-  await page.addInitScript((port) => {
+  await page.addInitScript(([port, language]) => {
     const key = 'fake-settings';
     if (!localStorage.getItem(key)) {
       const rejoin = { address: `127.0.0.1:${String(port)}`, token: 'ab'.repeat(16), game: 'gone', via: 'online' };
-      localStorage.setItem(key, JSON.stringify({ nickname: 'Pam', recent: [], animation: 'off', fullscreen: false, mat: '', dice: 'tear', rejoin }));
+      localStorage.setItem(key, JSON.stringify({ nickname: 'Pam', recent: [], animation: 'off', fullscreen: false, mat: '', dice: 'tear', rejoin, language }));
     }
-  }, serverPort());
+  }, [serverPort(), locale] as const);
   await page.goto(fast());
-  await expect(page.getByRole('button', { name: 'Play', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: tr('menu.play'), exact: true })).toBeVisible();
   await expect.poll(() => savedSeat(page)).toBe('');
-  await expect(page.getByRole('button', { name: /^Rejoin/ })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: new RegExp(`^${trRe('menu.rejoin').source}`) })).toHaveCount(0);
 });

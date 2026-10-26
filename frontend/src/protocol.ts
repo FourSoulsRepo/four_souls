@@ -1,6 +1,7 @@
 // Network messages (ADR 006), mirroring internal/protocol/protocol.go.
 // Only what the client uses so far; protocol.test.ts checks these types
 // against Go's golden file. Go sends a nil list as null.
+import { t } from './i18n';
 
 export const protocolVersion = 5;
 export const defaultPort = 4774;
@@ -226,11 +227,11 @@ export function recordURL(ws: string, game: string, token: string): string | nul
 export function errorText(e: ProtocolError): string {
   switch (e.code) {
     case 'client_outdated':
-      return 'This app is older than the server. Update the app to play here.';
+      return t('error.client_outdated');
     case 'server_outdated':
-      return 'The server is older than this app. Ask the host to update.';
+      return t('error.server_outdated');
     case 'missing_sets':
-      return `You are missing a card set: ${e.message}`;
+      return t('error.missing_sets', { sets: e.message });
     case 'refused':
       return e.rule ? `${e.message} (${e.rule})` : e.message;
     default:

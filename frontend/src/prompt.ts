@@ -1,8 +1,9 @@
 // The prompt banner (15.28, V-20): what the game waits for, in a few
 // words. Pure, so every prompt is tested without a browser.
 import { choiceTitle, PromptKind, Purpose, type Actions } from './actions';
+import { t } from './i18n';
 import type { GameView } from './protocol';
-import { attackTarget, findCard, StackKind, stackLine, type LinePart, type Names } from './stack';
+import { attackTarget, findCard, partsOf, StackKind, stackLine, type LinePart, type Names } from './stack';
 import type { Aiming } from './store';
 
 // BannerKind is the prompt a banner is about. "aim" is the player's own
@@ -37,8 +38,8 @@ export function promptBanner(
       kind: 'aim',
       mine: true,
       player: you,
-      title: 'Choose a target',
-      hint: `${card ? `For ${n.card(card)}. ` : ''}Esc cancels`,
+      title: t('banner.aim'),
+      hint: card ? t('banner.aim_for', { card: n.card(card) }) : t('banner.aim_cancel'),
     };
   }
   const w = view.waiting;
@@ -50,7 +51,7 @@ export function promptBanner(
     const hint = ask.kind === 'turn' ? turnHint(actions) : ask.hint;
     return { kind: ask.kind, mine: true, player: w.player, title: ask.title, ...(hint ? { hint } : {}) };
   }
-  return { kind: ask.kind, mine: false, player: w.player, title: `Waiting for ${n.player(w.player)}`, hint: ask.other };
+  return { kind: ask.kind, mine: false, player: w.player, title: t('banner.waiting_for', { player: n.player(w.player) }), hint: ask.other };
 }
 
 // asked is the prompt in words: title and hint for the asked player,
@@ -61,13 +62,13 @@ function asked(view: GameView, n: Names): { kind: BannerKind; title: string; hin
     case PromptKind.priority: {
       const top = (view.stack ?? []).at(-1);
       if (top) {
-        const title = 'Respond, or pass';
-        return { kind: 'respond', title, hint: `On the stack: ${stackLine(top, view, n)}`, other: title };
+        const title = t('banner.respond');
+        return { kind: 'respond', title, hint: t('banner.on_stack', { line: stackLine(top, view, n) }), other: title };
       }
       if (turn.active === w.player) {
-        return { kind: 'turn', title: 'Your turn', other: 'Playing their turn' };
+        return { kind: 'turn', title: t('banner.your_turn'), other: t('banner.their_turn') };
       }
-      return { kind: 'act', title: 'You may act', hint: 'Use an item or a loot card, or pass', other: 'May act, or pass' };
+      return { kind: 'act', title: t('banner.act'), hint: t('banner.act_hint'), other: t('banner.act_other') };
     }
     case PromptKind.choose: {
       const title = choiceTitle(w);
@@ -75,7 +76,7 @@ function asked(view: GameView, n: Names): { kind: BannerKind; title: string; hin
     }
     case PromptKind.discard: {
       const count = w.count ?? 0;
-      const title = `Discard ${String(count)} loot card${count === 1 ? '' : 's'}`;
+      const title = t('discard.title', { n: count });
       return { kind: 'discard', title, other: title };
     }
     case PromptKind.order: {
@@ -83,9 +84,9 @@ function asked(view: GameView, n: Names): { kind: BannerKind; title: string; hin
       return { kind: 'order', title, other: title };
     }
     case PromptKind.throw: {
-      const title = 'Throw the dice';
+      const title = t('banner.throw');
       return w.text
-        ? { kind: 'throw', title, hint: `For the ${w.text}`, other: `${title} for the ${w.text}` }
+        ? { kind: 'throw', title, hint: t('banner.throw_for', { label: w.text }), other: t('banner.throw_for_other', { label: w.text }) }
         : { kind: 'throw', title, other: title };
     }
     default:
@@ -98,20 +99,20 @@ function asked(view: GameView, n: Names): { kind: BannerKind; title: string; hin
 function turnHint(actions: Actions): string {
   const { turn, cards } = actions;
   if (turn.idle) {
-    return 'Nothing left to do: end the turn';
+    return t('banner.idle');
   }
   const can = [
-    cards.size > 0 ? 'play a card' : '',
-    turn.attack ? 'attack' : '',
-    turn.buy ? 'buy' : '',
-    turn.endTurn ? 'end the turn' : '',
+    cards.size > 0 ? t('banner.can.play') : '',
+    turn.attack ? t('banner.can.attack') : '',
+    turn.buy ? t('banner.can.buy') : '',
+    turn.endTurn ? t('banner.can.end_turn') : '',
   ].filter(Boolean);
   if (can.length === 0) {
-    return 'Pass to go on';
+    return t('banner.pass');
   }
   const last = can.pop() ?? '';
-  const words = can.length > 0 ? `${can.join(', ')}, or ${last}` : last;
-  return words.charAt(0).toUpperCase() + words.slice(1);
+  const words = can.length > 0 ? t('banner.can.or', { list: can.join(', '), last }) : last;
+  return words.charAt(0).toLocaleUpperCase() + words.slice(1);
 }
 
 // picking: the player picks a target on the table now, so the cards
@@ -155,34 +156,34 @@ export function activity(view: GameView, n: Names): LinePart[] | null {
   }
   const { active } = view.turn;
   const who: LinePart = { text: n.player(active), role: 'player', player: active };
-  const card = (ref: string | undefined): LinePart => ({ text: ref ? n.card(ref) : 'a card', role: 'card' });
+  const card = (ref: string | undefined): LinePart => ({ text: ref ? n.card(ref) : t('stack.a_card'), role: 'card' });
   const w = view.waiting;
   const top = (view.stack ?? []).at(-1);
   if (top?.controller === active && top.kind === StackKind.loot) {
-    return [who, { text: ' plays ' }, card(top.card)];
+    return partsOf(t('activity.plays'), { player: who, card: card(top.card) });
   }
   if (top?.controller === active && top.kind === StackKind.ability) {
-    return [who, { text: ' uses ' }, card(top.card ?? top.source_card ?? findCard(view, top.source))];
+    return partsOf(t('activity.uses'), { player: who, card: card(top.card ?? top.source_card ?? findCard(view, top.source)) });
   }
   const penalty =
     (top?.kind === StackKind.penalty && top.target.player === active) ||
     (w.player === active && w.kind === PromptKind.choose && (w.purpose === Purpose.penaltyItem || w.purpose === Purpose.penaltyLoot));
   if (penalty) {
-    return [who, { text: ' pays the death penalty' }];
+    return partsOf(t('activity.penalty'), { player: who });
   }
   const { attack } = view;
   if (attack) {
     const target = attack.target ?? 0;
     if (target === 0) {
-      return attack.deck ? [who, { text: ' attacks the monster deck' }] : [who, { text: ' declares an attack' }];
+      return partsOf(attack.deck ? t('activity.attack_deck') : t('activity.attack'), { player: who });
     }
-    return [who, { text: ' attacks ' }, attackTarget(view, target, n)];
+    return partsOf(t('activity.attack_target'), { player: who, target: attackTarget(view, target, n) });
   }
   if (view.buying) {
-    return [who, { text: ' is buying' }];
+    return partsOf(t('activity.buying'), { player: who });
   }
   if (w.player === active && w.kind !== PromptKind.none) {
-    return [who, { text: ' is thinking' }];
+    return partsOf(t('activity.thinking'), { player: who });
   }
   return null;
 }

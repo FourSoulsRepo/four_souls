@@ -8,6 +8,7 @@ import { startGame } from './game';
 import { appURL } from './server';
 import { shot } from './shot';
 import { activePage, click, settle, throwButton, turnAction } from './turn';
+import { lineRe, tr, trRe } from './locale';
 
 const fast = () => `${appURL()}&anim=off`;
 
@@ -82,8 +83,8 @@ async function ask(page: Page, a: Ask, step: number): Promise<{ monster: number;
   );
 }
 
-const banner = (page: Page) => page.getByRole('region', { name: 'Prompt' });
-const stackLine = (page: Page) => page.getByRole('complementary', { name: 'Stack' }).getByLabel('Waiting for');
+const banner = (page: Page) => page.getByRole('region', { name: tr('banner.label') });
+const stackLine = (page: Page) => page.getByRole('complementary', { name: tr('stack.title') }).getByLabel(tr('stack.waiting_label'));
 const card = (page: Page, id: number) => page.locator(`.card[data-zone="obj-${String(id)}"]`);
 
 // dimmed: the card is dimmed for a pick (15.28); a spent card's own
@@ -115,23 +116,35 @@ test('the banner says what to do, or whom the game waits for (15.28)', async ({ 
 
   // The turn: the active player is told it is theirs and what they may do.
   await expect(banner(active)).toHaveClass(/mine/);
-  await expect(banner(active).locator('.prompt-title')).toHaveText('Your turn');
-  await expect(banner(active).locator('.prompt-hint')).toHaveText(/end the turn/);
+  await expect(banner(active).locator('.prompt-title')).toHaveText(tr('banner.your_turn'));
+  await expect(banner(active).locator('.prompt-hint')).toHaveText(new RegExp(`${trRe('banner.can.end_turn').source}|${trRe('banner.idle').source}`));
   await expect(banner(other)).not.toHaveClass(/mine/);
-  await expect(banner(other).locator('.prompt-title')).toHaveText(`Waiting for ${me}`);
-  await expect(banner(other).locator('.prompt-hint')).toHaveText('Playing their turn');
+  await expect(banner(other).locator('.prompt-title')).toHaveText(tr('banner.waiting_for', { player: me }));
+  await expect(banner(other).locator('.prompt-hint')).toHaveText(tr('banner.their_turn'));
   await shot(active, 'prompt-your-turn');
   await shot(other, 'prompt-waiting');
 
   // Every other prompt, to the player it asks and to the other one.
   // title is what the asked player reads; their stack panel says the
-  // same, and the other's names the asked player first.
-  const prompts: { name: string; a: Omit<Ask, 'mine'>; title: string; hint?: string }[] = [
-    { name: 'respond', a: { waiting: { kind: 1 }, answer: 'pass', stack: true }, title: 'Respond, or pass', hint: 'On the stack: ' },
-    { name: 'choose', a: { waiting: { kind: 4, purpose: 6 }, answer: 'choose' }, title: 'Choose a target' },
-    { name: 'discard', a: { waiting: { kind: 2, count: 1 }, answer: 'discard' }, title: 'Discard 1 loot card' },
-    { name: 'order', a: { waiting: { kind: 5, purpose: 12, count: 2 }, answer: 'order' }, title: 'Choose the card for the very bottom' },
-    { name: 'throw', a: { waiting: { kind: 6, text: 'attack roll' }, answer: 'throw' }, title: 'Throw the dice', hint: 'For the attack roll' },
+  // same, and the other's names the asked player first. other is what
+  // the others read, when it says more.
+  const prompts: { name: string; a: Omit<Ask, 'mine'>; title: string; hint?: string; other?: string }[] = [
+    {
+      name: 'respond',
+      a: { waiting: { kind: 1 }, answer: 'pass', stack: true },
+      title: tr('banner.respond'),
+      hint: tr('banner.on_stack').split('{line}')[0] ?? '',
+    },
+    { name: 'choose', a: { waiting: { kind: 4, purpose: 6 }, answer: 'choose' }, title: tr('choice.title.target') },
+    { name: 'discard', a: { waiting: { kind: 2, count: 1 }, answer: 'discard' }, title: tr('discard.title', { n: 1 }) },
+    { name: 'order', a: { waiting: { kind: 5, purpose: 12, count: 2 }, answer: 'order' }, title: tr('choice.title.bottom') },
+    {
+      name: 'throw',
+      a: { waiting: { kind: 6, text: 'attack roll' }, answer: 'throw' },
+      title: tr('banner.throw'),
+      hint: tr('banner.throw_for', { label: 'attack roll' }),
+      other: tr('banner.throw_for_other', { label: 'attack roll' }),
+    },
   ];
   let step = 100;
   for (const p of prompts) {
@@ -143,11 +156,11 @@ test('the banner says what to do, or whom the game waits for (15.28)', async ({ 
     if (p.hint) {
       await expect(banner(active).locator('.prompt-hint'), p.name).toContainText(p.hint);
     }
-    await expect(banner(other).locator('.prompt-title'), p.name).toHaveText(`Waiting for ${me}`);
-    await expect(banner(other).locator('.prompt-hint'), p.name).toContainText(p.title);
+    await expect(banner(other).locator('.prompt-title'), p.name).toHaveText(tr('banner.waiting_for', { player: me }));
+    await expect(banner(other).locator('.prompt-hint'), p.name).toContainText(p.other ?? p.title);
     if (p.name !== 'respond') {
       await expect(stackLine(active).first(), p.name).toHaveText(p.title);
-      await expect(stackLine(other).first(), p.name).toHaveText(new RegExp(`^${me}: ${p.title}`));
+      await expect(stackLine(other).first(), p.name).toHaveText(new RegExp(`^${me}: ${lineRe(p.other ?? p.title).source}`));
     }
     await shot(active, `prompt-${p.name}`);
   }
@@ -187,8 +200,8 @@ test('answers glow and the rest dims while the player picks (15.28)', async ({ b
     },
     { monster, character },
   );
-  await expect(banner(active).locator('.prompt-title')).toHaveText('Choose a target');
-  await expect(banner(active).locator('.prompt-hint')).toHaveText(/Esc cancels$/);
+  await expect(banner(active).locator('.prompt-title')).toHaveText(tr('banner.aim'));
+  await expect(banner(active).locator('.prompt-hint')).toHaveText(new RegExp(`${trRe('banner.aim_for').source}|${trRe('banner.aim_cancel').source}`));
   await expect(card(active, monster)).toHaveClass(/hl-aim/);
   await expect(active.locator('main.game')).toHaveClass(/picking/);
   await shot(active, 'prompt-aim');
@@ -254,15 +267,15 @@ test('the others see what the active player does (15.30)', async ({ browser }) =
   const name = await nameOf(active);
   const doing = other.locator('.player.active .player-activity');
   // Holding priority on their turn: thinking. The own seat says nothing.
-  await expect(doing).toHaveText(`${name} is thinking`);
+  await expect(doing).toHaveText(tr('activity.thinking', { player: name }));
   await expect(active.locator('.player-activity')).toHaveCount(0);
   await shot(other, 'activity-thinking');
 
   // Attacking: the line names the monster, as the stack's roll does.
   await click(active, turnAction(active, 'Attack'));
   await settle(pages, click, async () => (await throwButton(active).count()) > 0);
-  const monster = await other.getByRole('complementary', { name: 'Stack' }).locator('.stack-row .stack-target').first().textContent();
-  await expect(doing).toHaveText(`${name} attacks ${monster ?? ''}`);
+  const monster = await other.getByRole('complementary', { name: tr('stack.title') }).locator('.stack-row .stack-target').first().textContent();
+  await expect(doing).toHaveText(tr('activity.attack_target', { player: name, target: monster ?? '' }));
   await expect(doing.locator('.stack-target')).toHaveText(monster ?? '');
   await shot(other, 'activity-attacks');
 });

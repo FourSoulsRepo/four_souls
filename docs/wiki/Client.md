@@ -183,3 +183,16 @@ Texts come from `t(key, values)` in `i18n.ts` (ADR 021). Keys are typed from `sr
 The `language` setting is kept by Go with the others (`internal/settings`, checked only as a two- or three-letter code). `''` follows the OS: `navigator.language` if it is listed, else English. The list (`languageList` in `locale.ts`) is English, every language file, and `cardLanguages` (Russian: card names only, 16.5), each in its own name from `Intl.DisplayNames`. The store calls `setLanguage` when settings load or save; `App` subscribes to the setting, so every screen draws again in the new language at once.
 
 The test language `qps` is built at run time from English (`pseudo`): `Join` becomes `[!! Ĵôîñ ~~ !!]`. It is listed only in development builds (`import.meta.env.DEV`: Vite dev, `wails dev`, the e2e tests); a release build that reads a saved `qps` follows the OS. `make screenshots LOCALE=qps` starts every fake page in it (`VITE_LOCALE`) and saves into `.cache/screenshots/qps/`; e2e tests find translated text with `tr(key)` from `e2e/tests/locale.ts`, which gives the line in that language. Plain English on a `qps` screenshot is a string not moved to `en.json` yet.
+
+Every text the client writes comes from `en.json` (16.3): screens, menus, table, dialogs, tooltips, screen-reader names, and the history, stack and stat lines built in `history.ts`, `stack.ts` and `stats.ts`. Text the server sends still arrives in English until 16.4: refusal reasons, prompt questions, choice options, roll labels, an ability's words. So do card names (card_db, 16.5), player names, dice look names, mat names Go takes from image files, and the dev-only card gallery.
+
+A line that names players or cards in their colors is split at its placeholders by `partsOf` in `stack.ts`: `t('stack.loot')` gives `{player} plays {card}`, and each `{name}` becomes its colored part. A line with "You" has two keys, `.you` and `.other` (`history.loot.you`, `history.loot.other`), so a language can bend the verb.
+
+To add a UI string:
+
+1. Add a key to `src/locales/en.json`, in its sorted place: the area first (`lobby.`, `table.`, `history.`, …), then lower-case words joined by `_`.
+2. Give it a `note`: where it shows and what each `{value}` is. A line with a count uses plural forms with the value `n`: `{ "one": "{n} card", "other": "{n} cards" }`.
+3. Show it with `t('area.key', { values })`. The key is a string literal; to pick among keys, pick among `t()` calls (`switch`, `?:`), never build a key.
+4. Find it in e2e tests with `tr(key, values)`, or `trRe(key, values)` for a pattern ([Frontend tests](Frontend-tests)).
+
+`make lint` fails on letters in JSX text, in the text attributes (`title`, `aria-label`, `placeholder`, `alt`, `label`), and in strings or templates shown as JSX children (`no-restricted-syntax` in `eslint.config.js`). `i18n.test.ts` fails on a key used in code but missing from `en.json`, on a key no code uses (or `locales/server-keys.json` lists, 16.4), and on a `t()` call whose key is not a literal.

@@ -48,3 +48,43 @@ describe('en.json', () => {
     }
   });
 });
+
+// Every key in en.json is used, and every key used is there (ADR 021,
+// 10). Frontend code passes keys to t() as string literals (8.4); the
+// server's keys are listed in locales/server-keys.json (16.4).
+describe('en.json keys', () => {
+  const sources = import.meta.glob<string>(['./**/*.{ts,tsx}', '!./**/*.test.ts', '!./i18n.ts'], {
+    query: '?raw',
+    import: 'default',
+    eager: true,
+  });
+  const serverFiles = import.meta.glob<unknown>('./locales/server-keys.json', { import: 'default', eager: true });
+  const server = Object.values(serverFiles).flatMap((f) => (Array.isArray(f) ? f.map(String) : Object.keys(f ?? {})));
+  const used = new Set<string>();
+  const computed: string[] = [];
+  for (const [file, text] of Object.entries(sources)) {
+    for (const m of text.matchAll(/\bt\(\s*([^)\s,]*)/g)) {
+      // "t()" with nothing in it is a comment that names t.
+      if (m[1] === '') continue;
+      const literal = /^'([^']+)'$/.exec(m[1]);
+      if (literal?.[1]) {
+        used.add(literal[1]);
+      } else {
+        computed.push(`${file}: t(${m[1]}`);
+      }
+    }
+  }
+
+  it('passes every key as a string literal', () => {
+    expect(computed).toEqual([]);
+  });
+
+  it('has every key the code uses', () => {
+    expect([...used].filter((k) => !Object.hasOwn(en, k))).toEqual([]);
+  });
+
+  it('uses every key it has', () => {
+    const all = new Set([...used, ...server]);
+    expect(Object.keys(en).filter((k) => !all.has(k))).toEqual([]);
+  });
+});

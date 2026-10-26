@@ -4,6 +4,7 @@ import { startGame } from './game';
 import { appURL } from './server';
 import { shot } from './shot';
 import { activePage, canEndTurn, click, gameOver, playLoot, settle, turnNumber } from './turn';
+import { lineRe, tr, trRe, whole } from './locale';
 
 const fast = () => `${appURL()}&anim=off`;
 
@@ -13,22 +14,24 @@ test('the history shows only what the viewer may see', async ({ browser }) => {
   const names = ['Wes', 'Xan'];
   const pages = await startGame(browser, names, { url: fast() });
   const active = await activePage(pages, click);
-  const history = (p: typeof active) => p.getByRole('complementary', { name: 'History', exact: true });
+  const history = (p: typeof active) => p.getByRole('complementary', { name: tr('history.title'), exact: true });
   // The full history opens from the strip (15.22).
   for (const page of pages) {
-    await page.getByRole('button', { name: 'History', exact: true }).click();
+    await page.getByRole('button', { name: tr('history.title'), exact: true }).click();
   }
   for (const [i, page] of pages.entries()) {
     const other = names.at(1 - i) ?? '';
     const text = (await history(page).textContent()) ?? '';
-    // Others' loots never name the card.
-    expect(text).not.toMatch(new RegExp(`${other} loots (?!a card)`));
+    // Others' loots never name the card: past the lines of hidden
+    // loots, none names one.
+    const hidden = tr('history.loot_hidden.other', { player: other });
+    expect(text.replaceAll(hidden, '')).not.toMatch(trRe('history.loot.other', { player: other }));
   }
   // The active player looted: their own history names the card.
-  await expect(history(active)).toContainText(/You loot \S/);
+  await expect(history(active)).toContainText(trRe('history.loot.you'));
   const other = pages.find((p) => p !== active);
   const activeName = names[pages.indexOf(active)] ?? '';
-  await expect(history(other ?? active)).toContainText(`${activeName} loots a card`);
+  await expect(history(other ?? active)).toContainText(tr('history.loot_hidden.other', { player: activeName }));
   await shot(active, 'history');
 });
 
@@ -38,13 +41,14 @@ test('the turn badge, what is left, and hiding the history', async ({ browser })
   const active = await activePage(pages, click);
   const activeName = names[pages.indexOf(active)] ?? '';
   for (const page of pages) {
-    await expect(page.getByRole('status', { name: 'Turn' })).toHaveText(new RegExp(`^Turn \\d+ · ${activeName} · \\w`));
+    await expect(page.getByRole('status', { name: tr('turn_badge.label') })).toHaveText(whole(trRe('turn_badge.turn', { player: activeName })));
   }
   // Own: loot plays by the name, buys and attacks as badges on their icons (15.24).
-  await expect(active.getByLabel('Loot plays left')).toHaveText(/^Loot \d+$/);
-  const tools = active.getByRole('toolbar', { name: 'Turn actions' });
-  await expect(tools.getByRole('button', { name: 'Buy', exact: true }).getByLabel(/^\d+ left$/)).toBeVisible();
-  await expect(tools.getByRole('button', { name: 'Attack', exact: true }).getByLabel(/^\d+ left$/)).toBeVisible();
+  await expect(active.getByLabel(tr('table.loot_left_label'))).toHaveText(whole(trRe('table.loot_left')));
+  const left = whole(trRe('turn.left_count'));
+  const tools = active.getByRole('toolbar', { name: tr('turn.actions') });
+  await expect(tools.getByRole('button', { name: tr('turn.buy'), exact: true }).getByLabel(left)).toBeVisible();
+  await expect(tools.getByRole('button', { name: tr('turn.attack'), exact: true }).getByLabel(left)).toBeVisible();
   await shot(active, 'turn-left');
   // A big count reads "99+" and stays clear of the character card.
   await active.evaluate(() => {
@@ -60,7 +64,7 @@ test('the turn badge, what is left, and hiding the history', async ({ browser })
     const players = game.view.players.map((p, i) => (i === game.view.turn.active ? { ...p, purchases: 100 } : p));
     store.setState({ game: { ...game, view: { ...game.view, players } } });
   });
-  const big = tools.getByLabel('100 left');
+  const big = tools.getByLabel(tr('turn.left_count', { n: 100 }));
   await expect(big).toHaveText('99+');
   const badge = await big.boundingBox();
   const card = await active.locator('.own-character .card').boundingBox();
@@ -70,17 +74,19 @@ test('the turn badge, what is left, and hiding the history', async ({ browser })
   if (!other) {
     throw new Error('no other page');
   }
-  await expect(other.getByLabel('Left this turn')).toHaveText(/Loot \d+ · Attacks \d+ · Shop \d+/);
-  await expect(other.getByLabel(/^\d+ left$/)).toHaveCount(0);
+  await expect(other.getByLabel(tr('table.allowance'))).toHaveText(
+    new RegExp(`${trRe('table.loot_left').source} · ${trRe('table.attacks_left').source} · ${trRe('table.shop_left').source}`),
+  );
+  await expect(other.getByLabel(left)).toHaveCount(0);
 
   // The full history is closed; the strip opens it, Hide closes it.
-  const panel = active.getByRole('complementary', { name: 'History', exact: true });
-  const toggle = active.getByRole('button', { name: 'History', exact: true });
+  const panel = active.getByRole('complementary', { name: tr('history.title'), exact: true });
+  const toggle = active.getByRole('button', { name: tr('history.title'), exact: true });
   await expect(panel).toHaveCount(0);
   await toggle.click();
   await expect(panel).toBeVisible();
   await expect(toggle).toHaveAttribute('aria-pressed', 'true');
-  await panel.getByRole('button', { name: 'Hide' }).click();
+  await panel.getByRole('button', { name: tr('history.hide') }).click();
   await expect(panel).toHaveCount(0);
   await toggle.click();
   await toggle.click();
@@ -98,13 +104,13 @@ test('a resolved loot card goes to the history strip (15.22)', async ({ browser 
   // Targets, passes and anything the card asks, until the stack is empty.
   // The card may end the turn (The Fool, a death): then the next one
   // counts too (19.8).
-  const stackRows = active.getByRole('complementary', { name: 'Stack' }).locator('.stack-row');
+  const stackRows = active.getByRole('complementary', { name: tr('stack.title') }).locator('.stack-row');
   const moved = async () => (await canEndTurn(active)) || (await turnNumber(active)) !== turn || (await gameOver(active));
   await settle(pages, click, async () => (await stackRows.count()) === 0 && (await moved()));
   for (const page of pages) {
-    const strip = page.getByRole('complementary', { name: 'History strip' });
+    const strip = page.getByRole('complementary', { name: tr('history.strip') });
     // The loot is a played spell: a bolt badge (H-08).
-    const played = strip.getByLabel(`plays ${name}`).first();
+    const played = strip.getByLabel(trRe('stack.loot', { card: name })).first();
     await expect(played).toBeVisible();
     await expect(played.locator('.strip-spell')).toBeAttached();
   }
@@ -198,15 +204,15 @@ test('the history strip: icons, badges, and a hover with card and owner (15.22)'
     store.setState({ history });
   });
 
-  const strip = active.getByRole('complementary', { name: 'History strip' });
+  const strip = active.getByRole('complementary', { name: tr('history.strip') });
   const icons = strip.locator('.strip-item');
   await expect(icons).toHaveCount(6);
   // Newest on top; a sword for the attack, a bolt for the loot (H-08).
-  await expect(icons.nth(0)).toHaveAttribute('aria-label', /^Attack: (Cid|Dee) deals 2 damage to (Cid|Dee)$/);
+  await expect(icons.nth(0)).toHaveAttribute('aria-label', whole(lineRe(tr('stack.attack', { line: tr('stack.damage', { n: 2 }) }))));
   await expect(icons.nth(0).locator('.strip-attack')).toBeAttached();
-  await expect(icons.nth(1).locator('.die')).toHaveAttribute('aria-label', 'Rolled 4');
+  await expect(icons.nth(1).locator('.die')).toHaveAttribute('aria-label', tr('dice.rolled', { n: 4 }));
   await expect(icons.nth(1).locator('.strip-attack')).toBeAttached();
-  await expect(icons.nth(2)).toHaveAttribute('aria-label', /^(Cid|Dee) plays Bomb!?$/);
+  await expect(icons.nth(2)).toHaveAttribute('aria-label', whole(trRe('stack.loot', { card: 'Bomb!' })));
   await expect(icons.nth(2).locator('.strip-spell')).toBeAttached();
 
   // Hover the loot icon: its card large, the used ability, the owner (S-11, H-09).
@@ -220,7 +226,7 @@ test('the history strip: icons, badges, and a hover with card and owner (15.22)'
   // Hover the attack roll: the monster it was against, and the line.
   await icons.nth(1).hover();
   await expect(zoom.locator('.card.size-zoom')).toHaveAttribute('aria-label', /^Fly/);
-  await expect(zoom.locator('.card-zoom-line')).toHaveText(/^Attack: (Cid|Dee) rolls 4 against Fly$/);
+  await expect(zoom.locator('.card-zoom-line')).toHaveText(whole(lineRe(tr('stack.attack', { line: tr('stack.roll_against_n', { roll: 4, target: 'Fly' }) }))));
   await shot(active, 'history-strip-attack');
 
   // Blank Rune: the play says only "Roll."; its result says what happened.
@@ -274,17 +280,18 @@ test('damage a player takes names its card in the history strip (15.47)', async 
     store.setState({ history });
   });
 
-  const strip = active.getByRole('complementary', { name: 'History strip' });
+  const strip = active.getByRole('complementary', { name: tr('history.strip') });
   const icons = strip.locator('.strip-item');
   await expect(icons).toHaveCount(2);
-  await expect(icons.nth(0)).toHaveAttribute('aria-label', /^Boom Fly deals 1 damage to (Bob|Wes)$/);
-  await expect(icons.nth(1)).toHaveAttribute('aria-label', /^Boom Fly deals 1 damage to (Bob|Wes)$/);
+  const taken = whole(trRe('stack.damage_by_card', { card: 'Boom Fly', n: 1 }));
+  await expect(icons.nth(0)).toHaveAttribute('aria-label', taken);
+  await expect(icons.nth(1)).toHaveAttribute('aria-label', taken);
 
   // Hover: the fly large, and the line under it.
   await icons.nth(0).hover();
   const zoom = active.getByTestId('card-zoom');
   await expect(zoom.locator('.card.size-zoom')).toHaveAttribute('aria-label', /^Boom Fly/);
-  await expect(zoom.locator('.card-zoom-line')).toHaveText(/^Boom Fly deals 1 damage to (Bob|Wes)$/);
+  await expect(zoom.locator('.card-zoom-line')).toHaveText(taken);
   await shot(active, 'history-strip-taken-damage');
 });
 
@@ -323,20 +330,22 @@ test('a changed roll shows the die and the result in the history (19.1)', async 
     });
   });
 
-  const strip = active.getByRole('complementary', { name: 'History strip' });
+  const strip = active.getByRole('complementary', { name: tr('history.strip') });
   const icon = strip.locator('.strip-item.stack-roll').first();
-  await expect(icon).toHaveAttribute('aria-label', /rolls \d against /);
+  await expect(icon).toHaveAttribute('aria-label', trRe('stack.roll_against_n'));
   await icon.hover();
   await shot(active, 'history-roll-changed-strip');
   await active.mouse.move(1000, 420);
-  await active.getByRole('button', { name: 'History', exact: true }).click();
-  const history = active.getByRole('complementary', { name: 'History', exact: true });
-  await expect(history).toContainText(/Attack: \S+ rolls 6/);
+  await active.getByRole('button', { name: tr('history.title'), exact: true }).click();
+  const history = active.getByRole('complementary', { name: tr('history.title'), exact: true });
+  // The die was 6, whatever the result shows after it.
+  const six = lineRe(tr('stack.attack', { line: tr('stack.roll_against_n', { roll: 'ROLL' }) })).source.replace('ROLL', '6.*?');
+  await expect(history).toContainText(new RegExp(six));
   await shot(active, 'history-roll-changed');
 
-  await expect(icon).toHaveAttribute('aria-label', /rolls 4 against /);
-  await expect(icon.locator('.die')).toHaveAttribute('aria-label', 'Rolled 4');
-  await expect(history).toContainText(/Attack: \S+ rolls 6 → 4 against /);
+  await expect(icon).toHaveAttribute('aria-label', trRe('stack.roll_against_n', { roll: 4 }));
+  await expect(icon.locator('.die')).toHaveAttribute('aria-label', tr('dice.rolled', { n: 4 }));
+  await expect(history).toContainText(lineRe(tr('stack.attack', { line: tr('stack.roll_against_n', { roll: '6 → 4' }) })));
 });
 
 test('the history names every play: a buy, an attack and a kill (15.88)', async ({ browser }) => {
@@ -351,13 +360,15 @@ test('the history names every play: a buy, an attack and a kill (15.88)', async 
   await active.keyboard.press('b');
   await settle(pages, click, async () => (await canEndTurn(active)) || (await turnNumber(active)) !== turn || (await gameOver(active)));
   for (const page of pages) {
-    await page.getByRole('button', { name: 'History', exact: true }).click();
+    await page.getByRole('button', { name: tr('history.title'), exact: true }).click();
   }
-  const history = (p: typeof active) => p.getByRole('complementary', { name: 'History', exact: true });
-  await expect(history(active)).toContainText('You declare a purchase');
-  await expect(history(active)).toContainText(/You (buy \S|can't buy: the price is \d+¢)/);
-  await expect(history(other)).toContainText(`${activeName} declares a purchase`);
-  await expect(history(other)).toContainText(new RegExp(`${activeName} (buys \\S|can't buy)`));
+  const history = (p: typeof active) => p.getByRole('complementary', { name: tr('history.title'), exact: true });
+  await expect(history(active)).toContainText(tr('history.purchase_declared.you'));
+  await expect(history(active)).toContainText(new RegExp(`${trRe('history.buy.you').source}|${trRe('history.cant_buy.you').source}`));
+  await expect(history(other)).toContainText(tr('history.purchase_declared.other', { player: activeName }));
+  await expect(history(other)).toContainText(
+    new RegExp(`${trRe('history.buy.other', { player: activeName }).source}|${trRe('history.cant_buy.other', { player: activeName }).source}`),
+  );
 
   // A kill needs lucky dice; its events come as the engine sends them.
   await active.evaluate(() => {
@@ -389,11 +400,11 @@ test('the history names every play: a buy, an attack and a kill (15.88)', async 
       },
     });
   });
-  await expect(history(active)).toContainText('You declare an attack');
-  const kill = history(active).getByText(/^You kill \S/);
+  await expect(history(active)).toContainText(tr('history.attack_declared.you'));
+  const kill = history(active).getByText(whole(trRe('history.kill.you')));
   await expect(kill).toBeVisible();
-  await expect(history(active)).toContainText(/You attack \S/);
-  await expect(history(active)).toContainText('You gain 3¢');
+  await expect(history(active)).toContainText(trRe('history.attack.you'));
+  await expect(history(active)).toContainText(tr('history.cents.you', { n: 3 }));
   await shot(active, 'history-every-play');
   await shot(other, 'history-every-play-other');
   // The line zooms the dead monster.
@@ -405,7 +416,7 @@ test('the history names every play: a buy, an attack and a kill (15.88)', async 
 test('a buy and a kill each add one tile to the history strip (15.89)', async ({ browser }) => {
   const pages = await startGame(browser, ['Nia', 'Oto'], { url: fast() });
   const active = await activePage(pages, click);
-  const strip = active.getByRole('complementary', { name: 'History strip' });
+  const strip = active.getByRole('complementary', { name: tr('history.strip') });
   const tiles = strip.locator('.strip-item');
   const before = await tiles.count();
   // A kill resolves a death stack item first, then the monster dies; a
@@ -453,10 +464,10 @@ test('a buy and a kill each add one tile to the history strip (15.89)', async ({
   await expect(tiles).toHaveCount(before + 2);
   const buy = tiles.nth(0);
   const kill = tiles.nth(1);
-  await expect(buy).toHaveAttribute('aria-label', /^You buy \S/);
+  await expect(buy).toHaveAttribute('aria-label', whole(trRe('history.buy.you')));
   await expect(buy.locator('.strip-buy')).toBeAttached();
   await expect(buy.locator('.card')).toBeAttached();
-  await expect(kill).toHaveAttribute('aria-label', /^You kill \S/);
+  await expect(kill).toHaveAttribute('aria-label', whole(trRe('history.kill.you')));
   await expect(kill.locator('.strip-kill')).toBeAttached();
   await expect(kill.locator('.card')).toBeAttached();
   await shot(active, 'history-strip-buy-kill');
@@ -464,7 +475,7 @@ test('a buy and a kill each add one tile to the history strip (15.89)', async ({
   await kill.hover();
   const zoom = active.getByTestId('card-zoom');
   await expect(zoom.locator('.card.size-zoom')).toBeVisible();
-  await expect(zoom.locator('.card-zoom-line')).toHaveText(/^You kill \S/);
+  await expect(zoom.locator('.card-zoom-line')).toHaveText(whole(trRe('history.kill.you')));
   await shot(active, 'history-strip-kill-hover');
 });
 
@@ -506,11 +517,11 @@ test('a damage line in the full history names who and whom (19.52)', async ({ br
       },
     });
   });
-  await active.getByRole('button', { name: 'History', exact: true }).click();
-  const history = active.getByRole('complementary', { name: 'History', exact: true });
-  await expect(history).toContainText(`${activeName} deals 1 damage to ${otherName}`);
-  await expect(history).toContainText(new RegExp(`${activeName} deals 2 damage to \\S`));
-  await expect(history).not.toContainText('Roll — damage');
+  await active.getByRole('button', { name: tr('history.title'), exact: true }).click();
+  const history = active.getByRole('complementary', { name: tr('history.title'), exact: true });
+  await expect(history).toContainText(tr('stack.damage', { player: activeName, n: 1, target: otherName }));
+  await expect(history).toContainText(trRe('stack.damage', { player: activeName, n: 2 }));
+  await expect(history).not.toContainText(`${tr('history.roll')} — damage`);
   await shot(active, 'history-damage-lines');
 });
 
@@ -552,29 +563,29 @@ test('a strip tile shows what the play did: target, damage, kill and rewards (15
       store.getState().receive({ type: 'update', data: { ...game, step: 900 + i, events } });
     }
   });
-  const strip = active.getByRole('complementary', { name: 'History strip' });
+  const strip = active.getByRole('complementary', { name: tr('history.strip') });
   const kill = strip.locator('.strip-item').nth(0);
   const damage = strip.locator('.strip-item').nth(1);
   const play = strip.locator('.strip-item').nth(2);
-  await expect(kill).toHaveAttribute('aria-label', /^You kill \S/);
+  await expect(kill).toHaveAttribute('aria-label', whole(trRe('history.kill.you')));
   const zoom = active.getByTestId('card-zoom');
-  const results = zoom.getByRole('list', { name: 'What it did' }).getByRole('listitem');
+  const results = zoom.getByRole('list', { name: tr('zoom.outcome') }).getByRole('listitem');
 
   // The kill: the killer large, then the monster with its skull and the cents.
   await kill.hover();
   await expect(results).toHaveCount(2);
-  await expect(results.nth(0)).toHaveAttribute('aria-label', /dies$/);
+  await expect(results.nth(0)).toHaveAttribute('aria-label', whole(trRe('zoom.result_death')));
   await expect(results.nth(0).locator('.result-skull')).toBeAttached();
   await expect(results.nth(0).locator('.card')).toBeAttached();
   await expect(results.nth(1)).toHaveAttribute('aria-label', '+3¢');
-  await expect(zoom.locator('.card-zoom-line')).toHaveText(/^You kill \S/);
+  await expect(zoom.locator('.card-zoom-line')).toHaveText(whole(trRe('history.kill.you')));
   await shot(active, 'history-popout-kill');
 
   // The damage: Bomb! large, the monster with a starburst and the number.
   await damage.hover();
   await expect(zoom.locator('.card.size-zoom')).toHaveAttribute('aria-label', /^Bomb/);
   await expect(results).toHaveCount(1);
-  await expect(results.nth(0)).toHaveAttribute('aria-label', /: 1 damage$/);
+  await expect(results.nth(0)).toHaveAttribute('aria-label', whole(trRe('zoom.result_damage', { n: 1 })));
   await expect(results.nth(0).locator('.result-burst')).toHaveText('−1');
   await shot(active, 'history-popout-damage');
 

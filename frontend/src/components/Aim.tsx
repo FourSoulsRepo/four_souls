@@ -1,6 +1,7 @@
 import { useEffect, useState, type CSSProperties } from 'react';
 import { aimedOption } from '../actions';
 import { aimClick, arrow, blocks, cancelOption, targetAt, zonesAt, type Point } from '../aim';
+import { t } from '../i18n';
 import { useKey } from '../keys';
 import { scaleFor } from '../playback';
 import type { Intent, OptionView } from '../protocol';
@@ -46,7 +47,7 @@ function Aim({ aiming }: { aiming: Aiming }) {
       if (what.kind === 'pick') {
         pick(aiming, what.target);
       } else if (what.kind === 'wrong') {
-        showWhy(aiming.reason ?? 'Not a valid target.', e.clientX, e.clientY);
+        showWhy(aiming.reason ?? t('actions.bad_target'), e.clientX, e.clientY);
       } else if (what.kind === 'cancel') {
         cancel(aiming, act, setAiming);
       }

@@ -4,6 +4,7 @@ import { appURL, serverPort } from './server';
 import { realAssets } from './shot';
 import { enabled, seen, throwButton } from './turn';
 import { openHost, openOnline } from './menu';
+import { tr, trRe } from './locale';
 
 // statMonsters change other monsters' stats (14.10). A test that checks
 // a fresh monster bans them, or a lucky deal puts a badge on it.
@@ -99,39 +100,39 @@ export async function startGame(
   const banned = bans.length > 0 || Object.keys(options).length > 0 ? await hostBans(host, bans, port, options) : () => [];
   await host.goto(url);
   await openHost(host);
-  await host.getByLabel('Nickname').fill(names[0] ?? '');
-  await host.getByLabel('Players').selectOption(String(names.length));
+  await host.getByLabel(tr('lobby.nickname')).fill(names[0] ?? '');
+  await host.getByLabel(tr('host.players')).selectOption(String(names.length));
   // Game tests play the Base Game only: they were written for its cards,
   // and a forced attack (Krampus) could keep a turn from ending.
-  const sets = host.getByRole('group', { name: 'Card sets' });
-  for (const set of ['Gold Box', 'Four Souls+']) {
+  const sets = host.getByRole('group', { name: tr('host.sets') });
+  for (const set of [tr('set.gold_box'), tr('set.four_souls_plus')]) {
     await sets.getByLabel(set).uncheck();
   }
   await setup(host);
-  await host.getByRole('button', { name: 'Host', exact: true }).click();
-  await expect(host.getByRole('list', { name: 'Seats' })).toBeVisible();
+  await host.getByRole('button', { name: tr('host.host'), exact: true }).click();
+  await expect(host.getByRole('list', { name: tr('lobby.seats.seats') })).toBeVisible();
   expect(banned()).toEqual(bans);
   const id = await gameId(host);
 
   for (const [i, page] of guests.entries()) {
     await page.goto(url);
     await openOnline(page);
-    await page.getByLabel('Nickname').fill(names[i + 1] ?? '');
-    await page.getByLabel('Server address').fill(`127.0.0.1:${String(port)}`);
-    await page.getByRole('button', { name: 'Connect' }).click();
+    await page.getByLabel(tr('lobby.nickname')).fill(names[i + 1] ?? '');
+    await page.getByLabel(tr('lobby.online.address')).fill(`127.0.0.1:${String(port)}`);
+    await page.getByRole('button', { name: tr('lobby.connect') }).click();
     // The click goes to the button, not to a point: a table above that
     // starts moves the row up under the pointer, and a click there hit
     // a started game's disabled Join (19.14).
-    const join = lobbyGame(page, id).getByRole('button', { name: 'Join' });
+    const join = lobbyGame(page, id).getByRole('button', { name: tr('lobby.join') });
     await expect(join).toBeEnabled();
     await join.dispatchEvent('click');
-    await expect(page.getByRole('list', { name: 'Seats' })).toBeVisible();
+    await expect(page.getByRole('list', { name: tr('lobby.seats.seats') })).toBeVisible();
   }
   for (const page of pages) {
-    await page.getByRole('button', { name: 'Ready', exact: true }).click();
+    await page.getByRole('button', { name: tr('lobby.seats.ready'), exact: true }).click();
   }
   for (const page of pages) {
-    await expect(page.getByRole('main', { name: /^Turn / })).toBeVisible();
+    await expect(page.getByRole('main', { name: new RegExp(`^${trRe('game.turn').source}`) })).toBeVisible();
   }
   if (roll) {
     await throwFirstRoll(pages);

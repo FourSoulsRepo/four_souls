@@ -1,4 +1,1819 @@
 {
+  "actions.bad_target": {
+    "text": "Not a valid target.",
+    "note": "Note at the pointer while aiming a card, after a click on something it can't target."
+  },
+  "actions.cancel": {
+    "text": "Cancel",
+    "note": "Last item of a card's action menu, and the button under a card's ability list: close it."
+  },
+  "actions.cancel_wait": {
+    "text": "Cancel wait",
+    "note": "Game table, bottom bar: the same button while it waits; stops waiting."
+  },
+  "actions.label": {
+    "text": "Actions",
+    "note": "Game table: screen-reader name of the bar at the bottom with the prompt banner and Wait for my turn."
+  },
+  "actions.not_usable": {
+    "text": "Not usable now",
+    "note": "Tooltip on a greyed ability line in a card's ability list."
+  },
+  "actions.play": {
+    "text": "Play",
+    "note": "A loot card's action menu: play the card."
+  },
+  "actions.seconds": {
+    "text": "{n} s",
+    "note": "Game table: the response timer after the prompt, or a rollback vote's timer. n: seconds left."
+  },
+  "actions.time_left": {
+    "text": "Time left",
+    "note": "Game table: screen-reader name of the response timer after the prompt."
+  },
+  "actions.use": {
+    "text": "Use",
+    "note": "A card's action menu: use its one ability."
+  },
+  "actions.use_card": {
+    "text": "Use {card}",
+    "note": "Screen-reader name of the dialog with a card's ability list. card: the card's name."
+  },
+  "actions.use_n": {
+    "text": "Use ability {n}",
+    "note": "A card's action menu: use one of its abilities. n: its place on the card, from 1."
+  },
+  "actions.wait": {
+    "text": "Wait for my turn",
+    "note": "Game table, bottom bar: button; the app passes for the player until their turn comes."
+  },
+  "actions.wait_tip": {
+    "text": "Pass until the turn before yours ends, or someone targets you",
+    "note": "Game table: tooltip of Wait for my turn."
+  },
+  "activity.attack": {
+    "text": "{player} declares an attack",
+    "note": "Under the active player's name: they declared an attack with no target yet."
+  },
+  "activity.attack_deck": {
+    "text": "{player} attacks the monster deck",
+    "note": "Under the active player's name."
+  },
+  "activity.attack_target": {
+    "text": "{player} attacks {target}",
+    "note": "Under the active player's name. target: the monster or player attacked."
+  },
+  "activity.buying": {
+    "text": "{player} is buying",
+    "note": "Under the active player's name: they declared a purchase."
+  },
+  "activity.penalty": {
+    "text": "{player} pays the death penalty",
+    "note": "Under the active player's name: they died and pay the penalty."
+  },
+  "activity.plays": {
+    "text": "{player} plays {card}",
+    "note": "Under the active player's name, for the others: what they do now."
+  },
+  "activity.thinking": {
+    "text": "{player} is thinking",
+    "note": "Under the active player's name: the game waits for them."
+  },
+  "activity.uses": {
+    "text": "{player} uses {card}",
+    "note": "Under the active player's name: they use a card's ability."
+  },
+  "app.title": {
+    "text": "Four Souls",
+    "note": "The game's name: the splash screen and the main menu title (when the banner image is missing), and the banner's alt text. Use the name the print in your language uses."
+  },
+  "badge.atk": {
+    "text": {
+      "one": "{n} attack",
+      "other": "{n} attack"
+    },
+    "note": "Screen-reader name of the attack badge on a character or monster. n: its attack now."
+  },
+  "badge.atk_printed": {
+    "text": "Attack (printed {n})",
+    "note": "Tooltip of a monster's changed attack badge. n: the attack printed on the card."
+  },
+  "badge.atk_title": {
+    "text": "Attack",
+    "note": "Tooltip of the attack badge on a character."
+  },
+  "badge.counters": {
+    "text": {
+      "one": "{n} counter",
+      "other": "{n} counters"
+    },
+    "note": "Screen-reader name of the counter badge on a card. n: counters on it."
+  },
+  "badge.damage": {
+    "text": {
+      "one": "{n} damage",
+      "other": "{n} damage"
+    },
+    "note": "Screen-reader name of the damage badge on a card. n: damage on it."
+  },
+  "badge.dc": {
+    "text": {
+      "one": "{n} dice",
+      "other": "{n} dice"
+    },
+    "note": "Screen-reader name of a monster's dice badge: the roll it needs to be hit. n: that number."
+  },
+  "badge.dc_printed": {
+    "text": "Dice to hit (printed {n})",
+    "note": "Tooltip of a monster's changed dice badge. n: the number printed on the card."
+  },
+  "badge.hp": {
+    "text": {
+      "one": "{n} health",
+      "other": "{n} health"
+    },
+    "note": "Screen-reader name of the heart badge on a character or monster. n: its health now."
+  },
+  "badge.hp_printed": {
+    "text": "Health (printed {n})",
+    "note": "Tooltip of a monster's changed heart badge. n: the health printed on the card."
+  },
+  "badge.hp_title": {
+    "text": "Health",
+    "note": "Tooltip of the heart badge on a character."
+  },
+  "badge.kept_die": {
+    "text": "Kept dice {n}",
+    "note": "Screen-reader name of a die a card keeps on its art. n: the number."
+  },
+  "badge.kept_die_title": {
+    "text": "Kept dice: {n}",
+    "note": "Tooltip of a die a card keeps on its art. n: the number."
+  },
+  "banner.act": {
+    "text": "You may act",
+    "note": "Prompt banner: the player may use something on another player's turn."
+  },
+  "banner.act_hint": {
+    "text": "Use an item or a loot card, or pass",
+    "note": "Prompt banner, small line under You may act."
+  },
+  "banner.act_other": {
+    "text": "May act, or pass",
+    "note": "Prompt banner, small line under Waiting for Ann: Ann may act now."
+  },
+  "banner.aim": {
+    "text": "Choose a target",
+    "note": "Prompt banner while the player aims a card at a target."
+  },
+  "banner.aim_cancel": {
+    "text": "Esc cancels",
+    "note": "Prompt banner, small line under Choose a target, when the card is unknown."
+  },
+  "banner.aim_for": {
+    "text": "For {card}. Esc cancels",
+    "note": "Prompt banner, small line under Choose a target. card: the card being aimed."
+  },
+  "banner.can.attack": {
+    "text": "attack",
+    "note": "Prompt banner, a part of the list under Your turn, lower case."
+  },
+  "banner.can.buy": {
+    "text": "buy",
+    "note": "Prompt banner, a part of the list under Your turn, lower case."
+  },
+  "banner.can.end_turn": {
+    "text": "end the turn",
+    "note": "Prompt banner, a part of the list under Your turn, lower case."
+  },
+  "banner.can.or": {
+    "text": "{list}, or {last}",
+    "note": "Prompt banner: joins the list under Your turn. list: the parts but the last, comma-separated; last: the last part. The first letter is made upper case."
+  },
+  "banner.can.play": {
+    "text": "play a card",
+    "note": "Prompt banner, a part of the list under Your turn, lower case: 'Play a card, attack, or end the turn'."
+  },
+  "banner.idle": {
+    "text": "Nothing left to do: end the turn",
+    "note": "Prompt banner, small line under Your turn, when only ending the turn is left."
+  },
+  "banner.label": {
+    "text": "Prompt",
+    "note": "Game table: screen-reader name of the banner that says what the game waits for."
+  },
+  "banner.on_stack": {
+    "text": "On the stack: {line}",
+    "note": "Prompt banner, small line under Respond, or pass. line: the top stack item, as the stack shows it."
+  },
+  "banner.pass": {
+    "text": "Pass to go on",
+    "note": "Prompt banner, small line under Your turn, when only passing is left."
+  },
+  "banner.paused": {
+    "text": "Paused",
+    "note": "Game table, prompt banner: the game waits for a player who left."
+  },
+  "banner.respond": {
+    "text": "Respond, or pass",
+    "note": "Prompt banner: something is on the stack and the player may answer it."
+  },
+  "banner.their_turn": {
+    "text": "Playing their turn",
+    "note": "Prompt banner, small line under Waiting for Ann: Ann is playing her turn."
+  },
+  "banner.throw": {
+    "text": "Throw the dice",
+    "note": "Prompt banner: the player throws a die now."
+  },
+  "banner.throw_for": {
+    "text": "For the {label}",
+    "note": "Prompt banner, small line under Throw the dice. label: what the roll is for, from the server, e.g. attack roll."
+  },
+  "banner.throw_for_other": {
+    "text": "Throw the dice for the {label}",
+    "note": "Prompt banner, small line under Waiting for Ann. label: what the roll is for, from the server."
+  },
+  "banner.vote": {
+    "text": "Rollback vote",
+    "note": "Game table, prompt banner: the game waits for a rollback vote."
+  },
+  "banner.waiting_for": {
+    "text": "Waiting for {player}",
+    "note": "Game table, prompt banner: the game waits for another player. player: their name, in their color."
+  },
+  "banner.your_turn": {
+    "text": "Your turn",
+    "note": "Prompt banner on the player's own turn."
+  },
+  "board.bonus_souls": {
+    "text": "Bonus souls",
+    "note": "Board: screen-reader name of the bonus soul cards."
+  },
+  "board.label": {
+    "text": "Board",
+    "note": "Game table: screen-reader name of the board in the middle."
+  },
+  "board.monsters": {
+    "text": "Monsters",
+    "note": "Board: screen-reader name of the monster slots."
+  },
+  "board.shop": {
+    "text": "Shop",
+    "note": "Board: screen-reader name of the shop slots."
+  },
+  "choice.back": {
+    "text": "Back to the choice",
+    "note": "The bar of a hidden choice: button that shows the choice again."
+  },
+  "choice.no_target": {
+    "text": "No valid target now",
+    "note": "Tooltip on a greyed mode line of a 'choose one' card."
+  },
+  "choice.option_n": {
+    "text": "Option {n}",
+    "note": "Choice dialog: an option the server sent with no label. n: its place, from 1."
+  },
+  "choice.outcome.again": {
+    "text": "Then you pick the next card",
+    "note": "Choice dialog, under an option (which card applies first): the player picks again after it."
+  },
+  "choice.outcome.cents": {
+    "text": "You gain {n}¢",
+    "note": "Choice dialog, under an option: what picking it gives. n: cents."
+  },
+  "choice.outcome.level_up": {
+    "text": "{card} levels up by {n}",
+    "note": "Choice dialog, under an option: the card (e.g. Bum-Bo!) gets n counters."
+  },
+  "choice.outcome.nothing": {
+    "text": "Nothing happens",
+    "note": "Choice dialog, under an option that gives nothing."
+  },
+  "choice.outcome.roll_cents": {
+    "text": "{card} rolls for {n}¢",
+    "note": "Choice dialog, under an option: the card (e.g. Poker Chip) rolls to double or lose the n cents."
+  },
+  "choice.outcome.unused": {
+    "text": "{card} does nothing",
+    "note": "Choice dialog, under an option: this order leaves the card without effect."
+  },
+  "choice.result": {
+    "text": "Result",
+    "note": "Choice dialog: screen-reader name of the lines under an option that say what picking it gives."
+  },
+  "choice.title.answer": {
+    "text": "Answer",
+    "note": "Choice dialog title: a card asks a question."
+  },
+  "choice.title.attack": {
+    "text": "Choose what to attack",
+    "note": "Choice dialog title after Attack."
+  },
+  "choice.title.bottom": {
+    "text": "Choose the card for the very bottom",
+    "note": "Choice dialog title: a card goes to the bottom of a deck."
+  },
+  "choice.title.choose": {
+    "text": "Choose",
+    "note": "Choice dialog title for a choice of an unknown kind."
+  },
+  "choice.title.curse": {
+    "text": "Choose who gains the curse",
+    "note": "Choice dialog title: the player gives a curse."
+  },
+  "choice.title.mode": {
+    "text": "Choose one",
+    "note": "Choice dialog title: a 'choose one' card's modes."
+  },
+  "choice.title.monster_slot": {
+    "text": "Choose a slot for the monster",
+    "note": "Choice dialog title: where a new monster goes."
+  },
+  "choice.title.penalty_item": {
+    "text": "Choose an item to lose",
+    "note": "Choice dialog title: the death penalty takes an item."
+  },
+  "choice.title.penalty_loot": {
+    "text": "Choose a loot card to lose",
+    "note": "Choice dialog title: the death penalty takes a loot card."
+  },
+  "choice.title.purchase": {
+    "text": "Choose what to buy",
+    "note": "Choice dialog title after Buy."
+  },
+  "choice.title.replacement": {
+    "text": "Choose which card applies first",
+    "note": "Choice dialog title: several cards change the same event; the player orders them."
+  },
+  "choice.title.starting_item": {
+    "text": "Choose your starting item",
+    "note": "Choice dialog title at the game's start."
+  },
+  "choice.title.target": {
+    "text": "Choose a target",
+    "note": "Choice dialog title: a card's target."
+  },
+  "choice.title.trigger_order": {
+    "text": "Choose which goes on the stack first; it resolves last",
+    "note": "Choice dialog title: the player orders several triggers."
+  },
+  "choice.view_board": {
+    "text": "View board",
+    "note": "Choice dialog: button that hides it to look at the table."
+  },
+  "choice.viewing": {
+    "text": "Viewing the board",
+    "note": "Screen-reader name of the bar that stands for a hidden choice."
+  },
+  "deck.back.character": {
+    "text": "character",
+    "note": "A character card's back drawn without the card images: the deck's name on it."
+  },
+  "deck.back.loot": {
+    "text": "loot",
+    "note": "A loot card's back drawn without the card images: the deck's name on it."
+  },
+  "deck.back.monster": {
+    "text": "monster",
+    "note": "A monster card's back drawn without the card images: the deck's name on it."
+  },
+  "deck.back.soul": {
+    "text": "soul",
+    "note": "A bonus soul card's back drawn without the card images: the deck's name on it."
+  },
+  "deck.back.treasure": {
+    "text": "treasure",
+    "note": "A treasure card's back drawn without the card images: the deck's name on it."
+  },
+  "deck.discard": {
+    "text": "Discard",
+    "note": "Board: written in an empty discard pile."
+  },
+  "deck.face_down.character": {
+    "text": "Face-down character card",
+    "note": "Screen-reader name of a face-down character card."
+  },
+  "deck.face_down.loot": {
+    "text": "Face-down loot card",
+    "note": "Screen-reader name of a face-down loot card."
+  },
+  "deck.face_down.monster": {
+    "text": "Face-down monster card",
+    "note": "Screen-reader name of a face-down monster card."
+  },
+  "deck.face_down.soul": {
+    "text": "Face-down soul card",
+    "note": "Screen-reader name of a face-down bonus soul card."
+  },
+  "deck.face_down.treasure": {
+    "text": "Face-down treasure card",
+    "note": "Screen-reader name of a face-down treasure card."
+  },
+  "deck.loot": {
+    "text": {
+      "one": "Loot deck: {n} card",
+      "other": "Loot deck: {n} cards"
+    },
+    "note": "Board: tooltip of the loot deck. n: cards in it."
+  },
+  "deck.loot_discard": {
+    "text": {
+      "one": "Loot discard: {n} card",
+      "other": "Loot discard: {n} cards"
+    },
+    "note": "Board: tooltip of the loot discard pile. n: cards in it."
+  },
+  "deck.monster": {
+    "text": {
+      "one": "Monster deck: {n} card",
+      "other": "Monster deck: {n} cards"
+    },
+    "note": "Board: tooltip of the monster deck. n: cards in it."
+  },
+  "deck.monster_discard": {
+    "text": {
+      "one": "Monster discard: {n} card",
+      "other": "Monster discard: {n} cards"
+    },
+    "note": "Board: tooltip of the monster discard pile. n: cards in it."
+  },
+  "deck.treasure": {
+    "text": {
+      "one": "Treasure deck: {n} card",
+      "other": "Treasure deck: {n} cards"
+    },
+    "note": "Board: tooltip of the treasure deck. n: cards in it."
+  },
+  "deck.treasure_discard": {
+    "text": {
+      "one": "Treasure discard: {n} card",
+      "other": "Treasure discard: {n} cards"
+    },
+    "note": "Board: tooltip of the treasure discard pile. n: cards in it."
+  },
+  "dice.last_roll": {
+    "text": "{player} rolled {n}",
+    "note": "Stack panel: tooltip of the last roll's small die. player: who rolled; n: the result."
+  },
+  "dice.last_roll_for": {
+    "text": "{player} rolled {n} — {label}",
+    "note": "Stack panel: tooltip of the last roll's small die. label: what the roll was for, from the server."
+  },
+  "dice.rolled": {
+    "text": "Rolled {n}",
+    "note": "Screen-reader name of a die. n: its number."
+  },
+  "discard.button": {
+    "text": "Discard ({chosen}/{n})",
+    "note": "Discard dialog: button. chosen: cards picked; n: cards to discard."
+  },
+  "discard.label": {
+    "text": "Discard",
+    "note": "Discard dialog: screen-reader name."
+  },
+  "discard.title": {
+    "text": {
+      "one": "Discard {n} loot card",
+      "other": "Discard {n} loot cards"
+    },
+    "note": "Discard dialog title, and the prompt banner while a player discards. n: cards to discard."
+  },
+  "effect.healed": {
+    "text": "+{n} HP",
+    "note": "Effect: floating text over a healed card. n: health healed."
+  },
+  "effect.plays": {
+    "text": "{player} plays",
+    "note": "Effect: over another player's loot card as it rises to the stack. player: who plays it."
+  },
+  "effect.prevented": {
+    "text": "Prevented",
+    "note": "Effect: floating text over a card whose damage was prevented."
+  },
+  "effect.roll": {
+    "text": "{player}'s roll: {n}",
+    "note": "Effect: line under a changed roll's die. player: who rolled; n: the result."
+  },
+  "effect.roll_changed": {
+    "text": "{player}'s roll: {old} → {n}",
+    "note": "Effect: line under a changed roll's die. player: who rolled; old: the die before; n: after."
+  },
+  "effect.stolen": {
+    "text": "+{n}¢ stolen",
+    "note": "Effect: floating text by the thief's coins. n: cents stolen."
+  },
+  "effect.turn": {
+    "text": "{player}'s turn",
+    "note": "Effect: banner across the table when a turn starts. player: whose turn."
+  },
+  "effect.wins": {
+    "text": "{player} wins!",
+    "note": "Effect: banner across the table when someone wins. player: the winner."
+  },
+  "error.bad_address": {
+    "text": "Type an address like 192.168.1.5, 192.168.1.5:4774 or games.example.com.",
+    "note": "Status line on the LAN or Online screen when the address can't be read. Keep the example addresses."
+  },
+  "error.card_data": {
+    "text": "Card data: {error}",
+    "note": "Status line when the app could not load its card data. error: the message from the app, in English."
+  },
+  "error.client_outdated": {
+    "text": "This app is older than the server. Update the app to play here.",
+    "note": "Status line when the server speaks a newer protocol."
+  },
+  "error.missing_sets": {
+    "text": "You are missing a card set: {sets}",
+    "note": "Status line when joining a game that uses card sets this app lacks. sets: the set codes from the server."
+  },
+  "error.no_connection": {
+    "text": "Could not connect to the server.",
+    "note": "Status line when no server answered at the typed address."
+  },
+  "error.server_outdated": {
+    "text": "The server is older than this app. Ask the host to update.",
+    "note": "Status line when the server speaks an older protocol."
+  },
+  "error.unknown": {
+    "text": "something went wrong",
+    "note": "Status line for a failure that came with no message."
+  },
+  "first_roll.again": {
+    "text": "Tie: roll again, lowest goes first",
+    "note": "Stack panel before turn 1: title after a tie."
+  },
+  "first_roll.and": {
+    "text": "{players} and {last}",
+    "note": "History line and banner of a first-player tie: the tied players. players: all but the last, comma-separated; last: the last one."
+  },
+  "first_roll.by_card": {
+    "text": "{line} — {card}",
+    "note": "History line and banner: who goes first because a character says so. line: 'Bo goes first'; card: the character."
+  },
+  "first_roll.by_roll": {
+    "text": "{line} — rolled {n}",
+    "note": "History line and banner: who goes first by the roll. line: 'Bo goes first'; n: the die."
+  },
+  "first_roll.first": {
+    "text": "{player} goes first",
+    "note": "History line and banner after the first-player roll. player: who goes first."
+  },
+  "first_roll.label": {
+    "text": "First player roll",
+    "note": "Stack panel before turn 1: screen-reader name of the list of first-player dice."
+  },
+  "first_roll.lowest": {
+    "text": "Lowest roll goes first",
+    "note": "Stack panel before turn 1: title over the first-player dice."
+  },
+  "first_roll.not_rolled": {
+    "text": "{player}: not rolled yet",
+    "note": "Stack panel before turn 1: screen-reader name of a player's row with no die yet."
+  },
+  "first_roll.throwing": {
+    "text": "throwing…",
+    "note": "Stack panel before turn 1: beside the player who throws now."
+  },
+  "first_roll.tie": {
+    "text": "Tie at {n}: {players} roll again",
+    "note": "History line and banner: a first-player tie. n: the die they tied on; players: 'Ann and Bo'."
+  },
+  "first_roll.you": {
+    "text": "You",
+    "note": "History line and banner of a first-player tie: the viewer among the tied players."
+  },
+  "first_roll.you_first": {
+    "text": "You go first",
+    "note": "History line and banner after the first-player roll: the viewer goes first."
+  },
+  "game.leave": {
+    "text": "Leave",
+    "note": "Game screen, under 'Setting up the match…': button that leaves the game."
+  },
+  "game.setting_up": {
+    "text": "Setting up the match…",
+    "note": "Game screen title before the table's first state arrives."
+  },
+  "game.setting_up_hint": {
+    "text": "Bans and picks get their own screen in step 7.14.",
+    "note": "Game screen, under 'Setting up the match…': a placeholder for a screen still to come."
+  },
+  "game.turn": {
+    "text": "Turn {n}",
+    "note": "Game table: screen-reader name of the whole table. n: the turn number."
+  },
+  "game_menu.button": {
+    "text": "Menu",
+    "note": "Game table: the corner button that opens the game menu."
+  },
+  "game_menu.cancel": {
+    "text": "Cancel",
+    "note": "Game menu dialog: closes it."
+  },
+  "game_menu.label": {
+    "text": "Game menu",
+    "note": "Game menu dialog: screen-reader name."
+  },
+  "game_menu.leave": {
+    "text": "Leave game",
+    "note": "Game menu dialog: leaves the game."
+  },
+  "game_menu.save": {
+    "text": "Save and leave",
+    "note": "Game menu dialog, for the host: saves the game and leaves."
+  },
+  "game_menu.save_hint": {
+    "text": "Saving stops the game for everyone; continue it later from Host a game.",
+    "note": "Game menu dialog, for the host: line over the buttons."
+  },
+  "game_menu.title": {
+    "text": "Menu",
+    "note": "Game menu dialog: title."
+  },
+  "history.a_card": {
+    "text": "A card",
+    "note": "History: a card the viewer can't see, at the start of a line."
+  },
+  "history.a_loot_card": {
+    "text": "a loot card",
+    "note": "Zoomed history card: a looted card the viewer can't see."
+  },
+  "history.an_ability": {
+    "text": "An ability",
+    "note": "History, at the start of a line: an ability with no card to name."
+  },
+  "history.an_ability_lower": {
+    "text": "an ability",
+    "note": "Undo button's tooltip and rollback vote: a used ability with no card to name, e.g. 'Bo uses an ability'."
+  },
+  "history.attack.other": {
+    "text": "{player} attacks {card}",
+    "note": "History: a player's attack target. card: the monster, or 'a card'."
+  },
+  "history.attack.you": {
+    "text": "You attack {card}",
+    "note": "History: the viewer's attack target. card: the monster, or 'a card'."
+  },
+  "history.attack_declared.other": {
+    "text": "{player} declares an attack",
+    "note": "History: a player declared an attack."
+  },
+  "history.attack_declared.you": {
+    "text": "You declare an attack",
+    "note": "History: the viewer pressed Attack."
+  },
+  "history.barrier.damage": {
+    "text": "damage was dealt",
+    "note": "After 'Nothing to undo since'."
+  },
+  "history.barrier.die": {
+    "text": "a die was rolled",
+    "note": "After 'Nothing to undo since': why a Soft rollback can't go back further."
+  },
+  "history.barrier.died": {
+    "text": "a card died",
+    "note": "After 'Nothing to undo since'."
+  },
+  "history.barrier.drawn": {
+    "text": "a card was drawn",
+    "note": "After 'Nothing to undo since'."
+  },
+  "history.barrier.random": {
+    "text": "a card was picked at random",
+    "note": "After 'Nothing to undo since'."
+  },
+  "history.barrier.revealed": {
+    "text": "a card was revealed",
+    "note": "After 'Nothing to undo since'."
+  },
+  "history.barrier.seen": {
+    "text": "a hidden card was seen",
+    "note": "After 'Nothing to undo since'."
+  },
+  "history.barrier.turn_ended": {
+    "text": "the turn ended",
+    "note": "After 'Nothing to undo since'."
+  },
+  "history.barrier.turn_skipped": {
+    "text": "a turn was skipped",
+    "note": "After 'Nothing to undo since'."
+  },
+  "history.bonus_soul.other": {
+    "text": "{player} gains the bonus soul {card}",
+    "note": "History: a player gained a bonus soul card."
+  },
+  "history.bonus_soul.you": {
+    "text": "You gain the bonus soul {card}",
+    "note": "History: the viewer gained a bonus soul card."
+  },
+  "history.buy.other": {
+    "text": "{player} buys {card}",
+    "note": "History: a player bought a shop item."
+  },
+  "history.buy.you": {
+    "text": "You buy {card}",
+    "note": "History: the viewer bought a shop item."
+  },
+  "history.buy_deck.other": {
+    "text": "{player} buys {card} from the treasure deck",
+    "note": "History: a player bought the treasure deck's top card."
+  },
+  "history.buy_deck.you": {
+    "text": "You buy {card} from the treasure deck",
+    "note": "History: the viewer bought the treasure deck's top card."
+  },
+  "history.cancelled": {
+    "text": "{card} is cancelled",
+    "note": "History: a play was cancelled. card: the card, or 'An ability'."
+  },
+  "history.cant_buy.other": {
+    "text": "{player} can't buy: the price is {n}¢",
+    "note": "History: a player's purchase failed. n: the price in cents."
+  },
+  "history.cant_buy.you": {
+    "text": "You can't buy: the price is {n}¢",
+    "note": "History: the viewer's purchase failed. n: the price in cents."
+  },
+  "history.cents.other": {
+    "text": "{player} gains {n}¢",
+    "note": "History: a player gained cents. n: the cents."
+  },
+  "history.cents.you": {
+    "text": "You gain {n}¢",
+    "note": "History: the viewer gained cents. n: the cents."
+  },
+  "history.choice.other": {
+    "text": "{player}'s choice",
+    "note": "Undo button's tooltip and rollback vote: the move to undo is a player's answer to a question."
+  },
+  "history.choice.you": {
+    "text": "your choice",
+    "note": "Undo button's tooltip and rollback vote, lower case: the move to undo is the viewer's answer to a question."
+  },
+  "history.cursed.other": {
+    "text": "{player} gains the curse {card}",
+    "note": "History: a curse came to a player."
+  },
+  "history.cursed.you": {
+    "text": "You gain the curse {card}",
+    "note": "History: a curse came to the viewer."
+  },
+  "history.death_prevented.other": {
+    "text": "{player}'s death is prevented",
+    "note": "History: a player's death was prevented."
+  },
+  "history.death_prevented.you": {
+    "text": "Your death is prevented",
+    "note": "History: the viewer's death was prevented."
+  },
+  "history.destroy.other": {
+    "text": "{player} destroys {card}",
+    "note": "History: a player destroyed an item."
+  },
+  "history.destroy.you": {
+    "text": "You destroy {card}",
+    "note": "History: the viewer destroyed an item."
+  },
+  "history.destroyed": {
+    "text": "{card} is destroyed",
+    "note": "History: a card was destroyed."
+  },
+  "history.die.other": {
+    "text": "{player} dies",
+    "note": "History: a player died."
+  },
+  "history.die.you": {
+    "text": "You die",
+    "note": "History: the viewer died."
+  },
+  "history.dies": {
+    "text": "{card} dies",
+    "note": "History: a monster died with no killer."
+  },
+  "history.discard.other": {
+    "text": "{player} discards {card}",
+    "note": "History: a player discarded a card."
+  },
+  "history.discard.you": {
+    "text": "You discard {card}",
+    "note": "History: the viewer discarded a card."
+  },
+  "history.ended_early.other": {
+    "text": "{player}'s turn ends early",
+    "note": "History: a card ended a player's turn."
+  },
+  "history.ended_early.you": {
+    "text": "Your turn ends early",
+    "note": "History: a card ended the viewer's turn."
+  },
+  "history.expanded.monster": {
+    "text": {
+      "one": "The table gets {n} more monster slot",
+      "other": "The table gets {n} more monster slots"
+    },
+    "note": "History: new monster slots. n: how many."
+  },
+  "history.expanded.other": {
+    "text": {
+      "one": "The table gets {n} more {kind} slot",
+      "other": "The table gets {n} more {kind} slots"
+    },
+    "note": "History: new slots of a kind this app does not know. kind: the kind's code from the server."
+  },
+  "history.expanded.shop": {
+    "text": {
+      "one": "The table gets {n} more shop slot",
+      "other": "The table gets {n} more shop slots"
+    },
+    "note": "History: new shop slots. n: how many."
+  },
+  "history.extra_turn.other": {
+    "text": "{player} takes an extra turn",
+    "note": "History: a player gets another turn."
+  },
+  "history.extra_turn.you": {
+    "text": "You take an extra turn",
+    "note": "History: the viewer gets another turn."
+  },
+  "history.first_roll.other": {
+    "text": "{player} rolls {n} for the first player",
+    "note": "History, before turn 1: a player's first-player die. n: the die."
+  },
+  "history.first_roll.you": {
+    "text": "You roll {n} for the first player",
+    "note": "History, before turn 1: the viewer's first-player die. n: the die."
+  },
+  "history.fizzled": {
+    "text": "{card} fizzles: its target is gone",
+    "note": "History: a play lost its target. card: the card, or 'An ability'."
+  },
+  "history.flipped": {
+    "text": "{card} flips",
+    "note": "History: a card turned to its other side. card: the card, or 'A card'."
+  },
+  "history.gain.other": {
+    "text": "{player} gains {card}",
+    "note": "History: an item or treasure came to a player."
+  },
+  "history.gain.you": {
+    "text": "You gain {card}",
+    "note": "History: an item or treasure came to the viewer."
+  },
+  "history.give.other": {
+    "text": "{player} gives {n}¢ to {target}",
+    "note": "History: a player gave another player cents. n: the cents."
+  },
+  "history.give.you": {
+    "text": "You give {n}¢ to {target}",
+    "note": "History: the viewer gave cents to a player. n: the cents."
+  },
+  "history.give.yours": {
+    "text": "{player} gives {n}¢ to you",
+    "note": "History: a player gave the viewer cents. n: the cents."
+  },
+  "history.got_card.you": {
+    "text": "You get {card} from {from}",
+    "note": "History: a hand card moved to the viewer. from: the giver."
+  },
+  "history.got_card.yours": {
+    "text": "{player} gets your {card}",
+    "note": "History: the viewer's hand card moved to a player."
+  },
+  "history.got_hidden.other": {
+    "text": "{player} gets a card from {from}",
+    "note": "History: a hand card moved between two other players."
+  },
+  "history.got_hidden.you": {
+    "text": "You get a card from {from}",
+    "note": "History: a hidden hand card moved to the viewer. from: the giver."
+  },
+  "history.got_hidden.yours": {
+    "text": "{player} gets a card from you",
+    "note": "History: a hidden card from the viewer's hand moved to a player."
+  },
+  "history.hide": {
+    "text": "Hide",
+    "note": "History panel: button that closes it."
+  },
+  "history.hide_tip": {
+    "text": "Hide the history",
+    "note": "Tooltip of the same button while the history shows."
+  },
+  "history.kill.other": {
+    "text": "{player} kills {target}",
+    "note": "History: a player killed a player or monster."
+  },
+  "history.kill.you": {
+    "text": "You kill {target}",
+    "note": "History: the viewer killed a player or monster."
+  },
+  "history.kill.yours": {
+    "text": "{player} kills you",
+    "note": "History: a player killed the viewer."
+  },
+  "history.look.you": {
+    "text": "You look at {card}",
+    "note": "History: an effect let the viewer look at a card."
+  },
+  "history.look_hidden.other": {
+    "text": "{player} looks at a card",
+    "note": "History: a player looked at a hidden card."
+  },
+  "history.look_hidden.you": {
+    "text": "You look at a card",
+    "note": "History: the viewer looked at a card."
+  },
+  "history.loot.other": {
+    "text": "{player} loots {card}",
+    "note": "History: a player drew a loot card the viewer may see."
+  },
+  "history.loot.you": {
+    "text": "You loot {card}",
+    "note": "History: the viewer drew a loot card."
+  },
+  "history.loot_hidden.other": {
+    "text": "{player} loots a card",
+    "note": "History: a player drew a loot card."
+  },
+  "history.loot_hidden.you": {
+    "text": "You loot a card",
+    "note": "History: the viewer drew a hidden loot card."
+  },
+  "history.lose_cents.other": {
+    "text": "{player} loses {n}¢",
+    "note": "History: a player lost cents. n: the cents."
+  },
+  "history.lose_cents.you": {
+    "text": "You lose {n}¢",
+    "note": "History: the viewer lost cents. n: the cents."
+  },
+  "history.mode_god": {
+    "text": "Godmode",
+    "note": "History panel, by the title: the game's rollback mode."
+  },
+  "history.mode_god_tip": {
+    "text": "Any player may undo, at once, one move per press",
+    "note": "Tooltip of Godmode by the history title."
+  },
+  "history.mode_soft": {
+    "text": "Soft rollback",
+    "note": "History panel, by the title: the game's rollback mode."
+  },
+  "history.mode_soft_tip": {
+    "text": "The other players vote on a rollback; dice, damage, hidden cards and a turn's end stop it",
+    "note": "Tooltip of Soft rollback by the history title."
+  },
+  "history.move.end_turn.other": {
+    "text": "{player} ends the turn",
+    "note": "Undo button's tooltip and rollback vote: the move to undo."
+  },
+  "history.move.end_turn.you": {
+    "text": "You end the turn",
+    "note": "Undo button's tooltip and rollback vote: the move to undo."
+  },
+  "history.move.play.other": {
+    "text": "{player} plays {card}",
+    "note": "Undo button's tooltip and rollback vote: the move to undo."
+  },
+  "history.move.play.you": {
+    "text": "You play {card}",
+    "note": "Undo button's tooltip and rollback vote: the move to undo. card: the loot card, or 'an ability'."
+  },
+  "history.move.use.other": {
+    "text": "{player} uses {card}",
+    "note": "Undo button's tooltip and rollback vote: the move to undo."
+  },
+  "history.move.use.you": {
+    "text": "You use {card}",
+    "note": "Undo button's tooltip and rollback vote: the move to undo. card: the card, or 'an ability'."
+  },
+  "history.penalty.other": {
+    "text": "{player} pays the death penalty",
+    "note": "History: a player paid the death penalty."
+  },
+  "history.penalty.you": {
+    "text": "You pay the death penalty",
+    "note": "History: the viewer paid the death penalty."
+  },
+  "history.prevented": {
+    "text": "Damage is prevented",
+    "note": "History: damage was prevented."
+  },
+  "history.prevented_to.other": {
+    "text": "Damage to {player} is prevented",
+    "note": "History: damage to a player was prevented."
+  },
+  "history.prevented_to.you": {
+    "text": "Damage to you is prevented",
+    "note": "History: damage to the viewer was prevented."
+  },
+  "history.purchase_declared.other": {
+    "text": "{player} declares a purchase",
+    "note": "History: a player declared a purchase."
+  },
+  "history.purchase_declared.you": {
+    "text": "You declare a purchase",
+    "note": "History: the viewer pressed Buy."
+  },
+  "history.restarted": {
+    "text": "The server restarted; no rollback before this",
+    "note": "History: a row where a server restart cut what can be undone."
+  },
+  "history.rewards.other": {
+    "text": "{player} gains the rewards of {card}",
+    "note": "History: a player gains a killed monster's rewards."
+  },
+  "history.rewards.you": {
+    "text": "You gain the rewards of {card}",
+    "note": "History: the viewer killed a monster and gains its rewards."
+  },
+  "history.roll": {
+    "text": "Roll",
+    "note": "History: a resolved roll with no card to name."
+  },
+  "history.rolled": {
+    "text": "(rolled {roll})",
+    "note": "History, after a resolved card: its roll. roll: the die, or '3 → 5 (+2 Meat!)' when cards changed it."
+  },
+  "history.rolled_back.other": {
+    "text": {
+      "one": "{player} rolls back {n} step",
+      "other": "{player} rolls back {n} steps"
+    },
+    "note": "History: a player undid moves. n: steps undone."
+  },
+  "history.rolled_back.you": {
+    "text": {
+      "one": "You roll back {n} step",
+      "other": "You roll back {n} steps"
+    },
+    "note": "History: the viewer undid moves. n: steps undone."
+  },
+  "history.row": {
+    "text": "Turn {n}: {line}",
+    "note": "Tooltip of a history row or strip tile. n: the turn; line: the row's words."
+  },
+  "history.show_tip": {
+    "text": "Show the history",
+    "note": "Tooltip of the history strip's top button."
+  },
+  "history.skipped.other": {
+    "text": "{player}'s turn is skipped",
+    "note": "History: a player's turn was skipped."
+  },
+  "history.skipped.you": {
+    "text": "Your turn is skipped",
+    "note": "History: the viewer's turn was skipped."
+  },
+  "history.soul.other": {
+    "text": "{player} gains the soul of {card}",
+    "note": "History: a player gained a soul from a card."
+  },
+  "history.soul.you": {
+    "text": "You gain the soul of {card}",
+    "note": "History: the viewer gained a soul from a card."
+  },
+  "history.starts_with.other": {
+    "text": "{player} starts with {card}",
+    "note": "History, at the game's start: a player's starting item."
+  },
+  "history.starts_with.you": {
+    "text": "You start with {card}",
+    "note": "History, at the game's start: the viewer's starting item."
+  },
+  "history.steal.other": {
+    "text": "{player} steals {n}¢ from {target}",
+    "note": "History: a player took another player's cents. n: the cents."
+  },
+  "history.steal.you": {
+    "text": "You steal {n}¢ from {target}",
+    "note": "History: the viewer took cents from a player. n: the cents."
+  },
+  "history.steal.yours": {
+    "text": "{player} steals {n}¢ from you",
+    "note": "History: a player took the viewer's cents. n: the cents."
+  },
+  "history.steal_item.other": {
+    "text": "{player} steals {card}",
+    "note": "History: a player took another player's item."
+  },
+  "history.steal_item.you": {
+    "text": "You steal {card}",
+    "note": "History: the viewer took another player's item."
+  },
+  "history.strip": {
+    "text": "History strip",
+    "note": "Screen-reader name of the thin column of recent plays at the board's left edge."
+  },
+  "history.title": {
+    "text": "History",
+    "note": "The match history panel's title, and the name of the button on the history strip that opens it."
+  },
+  "history.turn": {
+    "text": "Turn {n}: {player}",
+    "note": "History: the line a turn starts with. n: the turn; player: whose turn, or You."
+  },
+  "history.undo.ask": {
+    "text": "Ask to undo",
+    "note": "History panel: the same button in a Soft game for the move's own player; the others vote."
+  },
+  "history.undo.ask_title": {
+    "text": "Ask to undo: {move}",
+    "note": "Tooltip of Ask to undo. move: 'You play A Penny!'."
+  },
+  "history.undo.nothing": {
+    "text": "Nothing to undo",
+    "note": "Why Undo is greyed."
+  },
+  "history.undo.over": {
+    "text": "The game is over",
+    "note": "Why Undo is greyed."
+  },
+  "history.undo.paused": {
+    "text": "The game is paused",
+    "note": "Why Undo is greyed."
+  },
+  "history.undo.restarted": {
+    "text": "Nothing to undo since the server restarted",
+    "note": "Why Undo is greyed."
+  },
+  "history.undo.since": {
+    "text": "Nothing to undo since {barrier}",
+    "note": "Why Undo is greyed in a Soft game. barrier: 'a die was rolled'."
+  },
+  "history.undo.spectator": {
+    "text": "Spectators cannot undo",
+    "note": "Why Undo is greyed: the viewer watches."
+  },
+  "history.undo.title": {
+    "text": "Undo: {move}",
+    "note": "Tooltip of Undo. move: 'Bo plays A Penny!'."
+  },
+  "history.undo.undo": {
+    "text": "Undo",
+    "note": "History panel: button that undoes the latest move."
+  },
+  "history.undo.voting": {
+    "text": "A rollback vote is open",
+    "note": "Why Undo is greyed."
+  },
+  "history.undo.yet": {
+    "text": "Nothing to undo yet",
+    "note": "Why Undo is greyed."
+  },
+  "history.undone": {
+    "text": "Undone: {line}",
+    "note": "Tooltip of a history row a rollback undid. line: 'Turn 3: Bo loots A Penny!'."
+  },
+  "history.vote.cancelled.other": {
+    "text": "{player} cancelled the rollback vote",
+    "note": "History: a player cancelled the vote they opened."
+  },
+  "history.vote.cancelled.you": {
+    "text": "You cancelled the rollback vote",
+    "note": "History: the viewer cancelled the vote they opened."
+  },
+  "history.vote.declined": {
+    "text": "The rollback was declined",
+    "note": "History: a Soft rollback vote ended with no."
+  },
+  "history.vote.failed": {
+    "text": "The rollback failed; the game goes on",
+    "note": "History: the server could not roll back."
+  },
+  "history.vote.left": {
+    "text": "The rollback vote ended: a player left",
+    "note": "History: a Soft rollback vote ended because a player left."
+  },
+  "history.vote.timeout": {
+    "text": "The rollback vote ran out of time",
+    "note": "History: a Soft rollback vote timed out."
+  },
+  "history.won.other": {
+    "text": "{player} wins the game",
+    "note": "History: a player won."
+  },
+  "history.won.you": {
+    "text": "You win the game",
+    "note": "History: the viewer won."
+  },
+  "history.you": {
+    "text": "You",
+    "note": "History, a turn's first line: 'Turn 3: You'."
+  },
+  "host.bonus_souls": {
+    "text": "Bonus souls",
+    "note": "Host screen: check box; the game uses bonus soul cards."
+  },
+  "host.continue_saved": {
+    "text": "Continue a saved game",
+    "note": "Host screen: button that hosts a game saved before."
+  },
+  "host.create": {
+    "text": "Create",
+    "note": "Host screen: button that creates the game on the server."
+  },
+  "host.deck_ratios": {
+    "text": "Deck ratios",
+    "note": "Host screen: check box; decks are built by the official card ratios. Its tooltip, when off, comes from the app in English."
+  },
+  "host.detailed": {
+    "text": "Detailed setup",
+    "note": "Host screen: check box that shows the options below it."
+  },
+  "host.host": {
+    "text": "Host",
+    "note": "Host screen: button that starts hosting the game in this app."
+  },
+  "host.on_server": {
+    "text": "On the server {address}",
+    "note": "Host screen, under 'Create a game'. address: the server's address."
+  },
+  "host.password": {
+    "text": "Password (optional)",
+    "note": "Host screen: label of the game's password field."
+  },
+  "host.players": {
+    "text": "Players",
+    "note": "Host screen: label of the player count list (2 to 4)."
+  },
+  "host.rollback": {
+    "text": "Rollback",
+    "note": "Host screen: label of the rollback mode list (undoing moves)."
+  },
+  "host.rollback_god": {
+    "text": "Godmode",
+    "note": "Host screen: rollback mode choice; anyone undoes at once."
+  },
+  "host.rollback_hint.god": {
+    "text": "Any player undoes moves at once, one per press, even dice. For a table that trusts each other.",
+    "note": "Host screen: line under the rollback list with Godmode chosen."
+  },
+  "host.rollback_hint.off": {
+    "text": "No rollback: every step stands.",
+    "note": "Host screen: line under the rollback list with Disabled chosen."
+  },
+  "host.rollback_hint.soft": {
+    "text": "The other players vote to undo a move. Dice, damage, hidden cards and the end of a turn cannot be undone.",
+    "note": "Host screen: line under the rollback list with Soft chosen."
+  },
+  "host.rollback_off": {
+    "text": "Disabled",
+    "note": "Host screen: rollback mode choice; nothing can be undone."
+  },
+  "host.rollback_soft": {
+    "text": "Soft",
+    "note": "Host screen: rollback mode choice; the others vote on each undo."
+  },
+  "host.seconds": {
+    "text": "{n} s",
+    "note": "Host screen: a Response timer choice. n: seconds."
+  },
+  "host.sets": {
+    "text": "Card sets",
+    "note": "Host screen: heading over the card set check boxes."
+  },
+  "host.timer": {
+    "text": "Response timer",
+    "note": "Host screen: label of the list of times a player has to respond."
+  },
+  "host.timer_off": {
+    "text": "Off",
+    "note": "Host screen: the Response timer choice with no timer."
+  },
+  "host.title_create": {
+    "text": "Create a game",
+    "note": "Host screen title when creating a game on a server; also the button under a server's game list."
+  },
+  "host.title_host": {
+    "text": "Host a game",
+    "note": "Host screen title when this app hosts; also the button on the LAN screen that opens it."
+  },
+  "lobby.back": {
+    "text": "Back",
+    "note": "Button at the bottom of the Host, LAN, Online and game list screens: one screen back."
+  },
+  "lobby.connect": {
+    "text": "Connect",
+    "note": "LAN and Online screens: button that connects to the typed address."
+  },
+  "lobby.game_row": {
+    "text": {
+      "one": "{host}'s game · {taken}/{n} player",
+      "other": "{host}'s game · {taken}/{n} players"
+    },
+    "note": "A game in the LAN list and in a server's game list. host: the host's name; taken: seats taken; n: seats in all."
+  },
+  "lobby.games.continue": {
+    "text": "Continue",
+    "note": "Game list: button on a saved game's row that opens it again."
+  },
+  "lobby.games.locked": {
+    "text": "Locked",
+    "note": "Game list: screen-reader name of the lock before a game that needs a password."
+  },
+  "lobby.games.none": {
+    "text": "No games yet. Ask the host to open one.",
+    "note": "Game list: empty, and only the host opens games there."
+  },
+  "lobby.games.none_create": {
+    "text": "No games yet. Create one.",
+    "note": "Game list: empty, and this player may create a game there."
+  },
+  "lobby.games.password": {
+    "text": "Password",
+    "note": "Game list: grey hint in the password field of a locked game."
+  },
+  "lobby.games.password_label": {
+    "text": "Password for {host}'s game",
+    "note": "Game list: screen-reader name of a locked game's password field. host: the host's name."
+  },
+  "lobby.games.playing": {
+    "text": "playing",
+    "note": "Game list, lower case after a dot on a game's row: the game has started."
+  },
+  "lobby.games.saved": {
+    "text": "The game was saved. Continue it from this list later.",
+    "note": "Game list: line shown after the host saved and left a game."
+  },
+  "lobby.games.saves": {
+    "text": "Saved games",
+    "note": "Game list: heading over the games saved on this server."
+  },
+  "lobby.games.title": {
+    "text": "Games",
+    "note": "A server's game list: the screen's title."
+  },
+  "lobby.join": {
+    "text": "Join",
+    "note": "Button on a game's row in the LAN list or a server's game list: take a seat at that game."
+  },
+  "lobby.lan.address": {
+    "text": "Host address",
+    "note": "LAN screen: label of the field for a host's IP address."
+  },
+  "lobby.lan.in_progress": {
+    "text": "In progress",
+    "note": "LAN screen, a found game's row, after a dot: the game has started."
+  },
+  "lobby.lan.needs_app": {
+    "text": "needs app {app}",
+    "note": "LAN screen, a found game's row, after a dot: the game runs another protocol. app: the app version it needs."
+  },
+  "lobby.lan.none": {
+    "text": "No games found yet. Still looking…",
+    "note": "LAN screen: the list of found games is empty; the search goes on."
+  },
+  "lobby.lan.on_network": {
+    "text": "On your network",
+    "note": "LAN screen: heading over the list of games found on the local network."
+  },
+  "lobby.lost": {
+    "text": "Lost the connection to the server.",
+    "note": "Status line on the LAN or Online screen, or the Connection lost dialog, when the server connection dropped."
+  },
+  "lobby.nickname": {
+    "text": "Nickname",
+    "note": "Label of the player's name field on the first start and on the Host, LAN and Online screens."
+  },
+  "lobby.online.address": {
+    "text": "Server address",
+    "note": "Online screen: label of the field for a server's address."
+  },
+  "lobby.online.address_example": {
+    "text": "games.example.com",
+    "note": "Online screen: grey example in the empty address field. Keep it a domain name."
+  },
+  "lobby.online.checking": {
+    "text": "Checking…",
+    "note": "Online screen: status beside a Recent server while the app asks whether it is up."
+  },
+  "lobby.online.down": {
+    "text": "Down",
+    "note": "Online screen: status beside a Recent server that did not answer."
+  },
+  "lobby.online.forget": {
+    "text": "Remove from Recent",
+    "note": "Online screen: tooltip of the × button beside a Recent server."
+  },
+  "lobby.online.forget_label": {
+    "text": "Remove {server} from Recent",
+    "note": "Online screen: screen-reader name of the × button. server: the server's name or address."
+  },
+  "lobby.online.open_games": {
+    "text": {
+      "one": "{n} open game",
+      "other": "{n} open games"
+    },
+    "note": "Online screen: status beside a Recent server that is up. n: games there waiting for players."
+  },
+  "lobby.online.recent": {
+    "text": "Recent",
+    "note": "Online screen: heading over the servers joined before."
+  },
+  "lobby.options.ban_rounds": {
+    "text": {
+      "one": "{n} ban round",
+      "other": "{n} ban rounds"
+    },
+    "note": "Table screen, setup summary. n: rounds of character bans."
+  },
+  "lobby.options.deck_ratios": {
+    "text": "deck ratios",
+    "note": "Table screen, setup summary, lower case after a dot: decks are built by the official card ratios."
+  },
+  "lobby.options.draft": {
+    "text": "Draft of {n}",
+    "note": "Table screen, setup summary: characters are drafted. n: characters each player picks from."
+  },
+  "lobby.options.no_bonus_souls": {
+    "text": "no bonus souls",
+    "note": "Table screen, setup summary, lower case after a dot: the game plays without bonus souls."
+  },
+  "lobby.options.random": {
+    "text": "Random characters",
+    "note": "Table screen, setup summary: each player gets a random character."
+  },
+  "lobby.options.rollback_god": {
+    "text": "Godmode rollback",
+    "note": "Game list and table screen: the game's rollback mode; any player undoes moves at once."
+  },
+  "lobby.options.rollback_soft": {
+    "text": "Soft rollback",
+    "note": "Game list and table screen: the game's rollback mode; the others vote on each undo."
+  },
+  "lobby.options.timer": {
+    "text": "{n} s to respond",
+    "note": "Table screen, setup summary: the response timer. n: seconds a player has to answer."
+  },
+  "lobby.rejoin": {
+    "text": "Rejoin",
+    "note": "LAN screen: button on a started game where this app held a seat; takes the seat back."
+  },
+  "lobby.seats.addresses": {
+    "text": "Addresses",
+    "note": "Table screen: screen-reader name of the host's address list."
+  },
+  "lobby.seats.away": {
+    "text": "away",
+    "note": "Table screen, lower case after a dot: the player lost the connection."
+  },
+  "lobby.seats.back": {
+    "text": "back",
+    "note": "Table screen of a saved game, lower case after a dot: the player came back."
+  },
+  "lobby.seats.hint": {
+    "text": "The game starts when every seat is taken and everyone is ready.",
+    "note": "Table screen: line under the seats of a new game."
+  },
+  "lobby.seats.is_ready": {
+    "text": "Ready",
+    "note": "Table screen: at the right of a seat whose player is ready."
+  },
+  "lobby.seats.join_at": {
+    "text": "Friends join at",
+    "note": "Table screen, for the host: heading over this computer's addresses."
+  },
+  "lobby.seats.leave": {
+    "text": "Leave",
+    "note": "Table screen: button that leaves the seat."
+  },
+  "lobby.seats.not_back": {
+    "text": "not back yet",
+    "note": "Table screen of a saved game, lower case after a dot: the player has not come back."
+  },
+  "lobby.seats.not_ready": {
+    "text": "Not ready",
+    "note": "Table screen: the same button once pressed; takes the ready back."
+  },
+  "lobby.seats.ready": {
+    "text": "Ready",
+    "note": "Table screen: button; the player is ready to start."
+  },
+  "lobby.seats.saved_hint": {
+    "text": "The saved game goes on when everyone is back and ready.",
+    "note": "Table screen: line under the seats of a saved game."
+  },
+  "lobby.seats.saved_title": {
+    "text": "Saved game",
+    "note": "Table screen title: the seats before a saved game goes on."
+  },
+  "lobby.seats.seats": {
+    "text": "Seats",
+    "note": "Table screen: screen-reader name of the seat list."
+  },
+  "lobby.seats.title": {
+    "text": "Table",
+    "note": "Table screen title: the seats before a new game starts."
+  },
+  "lobby.seats.waiting": {
+    "text": "Waiting for a player…",
+    "note": "Table screen: an empty seat."
+  },
+  "lobby.seats.you": {
+    "text": "(you)",
+    "note": "Table screen: after the viewer's own name on their seat."
+  },
+  "look.hand_of": {
+    "text": "{player}'s hand",
+    "note": "Look dialog: heading over cards from another player's hand."
+  },
+  "look.ok": {
+    "text": "OK",
+    "note": "Look dialog: button that closes it."
+  },
+  "look.title": {
+    "text": "You look at",
+    "note": "Dialog title over the cards an effect lets the player look at."
+  },
+  "look.your_hand": {
+    "text": "Your hand",
+    "note": "Look dialog: heading over cards from the viewer's own hand."
+  },
+  "lost.leave": {
+    "text": "Leave",
+    "note": "Connection lost dialog: button that leaves the game."
+  },
+  "lost.reconnect": {
+    "text": "Reconnect",
+    "note": "Connection lost dialog: button that tries again."
+  },
+  "lost.reconnecting": {
+    "text": "Reconnecting…",
+    "note": "Game table: small badge while the app reconnects by itself."
+  },
+  "lost.reconnecting_label": {
+    "text": "Reconnecting",
+    "note": "Game table: screen-reader name of the small badge while the app reconnects."
+  },
+  "lost.restarting": {
+    "text": "The server is restarting. Reconnecting…",
+    "note": "Game table: small badge while the server restarts."
+  },
+  "lost.text": {
+    "text": "Your seat waits for you. The others may vote to go on without you.",
+    "note": "Connection lost dialog: text."
+  },
+  "lost.title": {
+    "text": "Connection lost",
+    "note": "Dialog title when the game connection dropped for a while."
+  },
+  "mat.basement": {
+    "text": "Basement",
+    "note": "Settings: the Basement game mat in the Game mat list (an image, or brown colors without it). Named after the Isaac floor."
+  },
+  "mat.cathedral": {
+    "text": "Cathedral",
+    "note": "Settings: the Cathedral game mat in the Game mat list (an image, or pale blue colors without it). Named after the Isaac floor."
+  },
+  "menu.exit": {
+    "text": "Exit",
+    "note": "Main menu: button that closes the app."
+  },
+  "menu.lan": {
+    "text": "LAN",
+    "note": "Main menu button (play on the local network) and the LAN screen's title; also after a dot in the Rejoin button."
+  },
+  "menu.learn": {
+    "text": "Learn to play",
+    "note": "Main menu: a greyed button for the tutorial, still to come."
+  },
+  "menu.online": {
+    "text": "Online",
+    "note": "Main menu button (play on an internet server) and the Online screen's title; also after a dot in the Rejoin button."
+  },
+  "menu.play": {
+    "text": "Play",
+    "note": "Main menu: button that opens the LAN / Online / Learn to play group under it."
+  },
+  "menu.records": {
+    "text": "Records",
+    "note": "Main menu: a greyed button for watching saved match records, still to come."
+  },
+  "menu.rejoin": {
+    "text": "Rejoin: {game}",
+    "note": "Main menu, corner button: go back to the game this app left. game: 'Ann's game · LAN' or 'your game'."
+  },
+  "menu.rejoin_host": {
+    "text": "{host}'s game",
+    "note": "Main menu, inside the Rejoin button: the game to go back to. host: the host's name."
+  },
+  "menu.rejoin_yours": {
+    "text": "your game",
+    "note": "Main menu, inside the Rejoin button, lower case: the game to go back to when its host is unknown."
+  },
+  "menu.settings": {
+    "text": "Settings",
+    "note": "Main menu: button that opens the settings screen."
+  },
+  "menu.soon": {
+    "text": "Soon",
+    "note": "Main menu: small tag on a greyed button for a feature still to come."
+  },
+  "menu.soon_label": {
+    "text": "{name} (soon)",
+    "note": "Main menu: screen-reader name of a greyed button. name: the button's text, e.g. Records."
+  },
+  "menu.versions": {
+    "text": "app {app} · rules engine {engine}",
+    "note": "Main menu, bottom corner: version numbers. app: the app's version; engine: the rules engine's."
+  },
+  "notice.engine_updated.text": {
+    "text": "The game goes on with a newer rules engine. Some cards may behave differently now.",
+    "note": "Server notice dialog text under 'The server was updated'."
+  },
+  "notice.engine_updated.title": {
+    "text": "The server was updated",
+    "note": "Server notice dialog title: the server restarted with a new rules engine; the game goes on."
+  },
+  "notice.game_idle.idle": {
+    "text": "Nobody played it for too long.",
+    "note": "Server notice dialog text: the game sat idle."
+  },
+  "notice.game_idle.long": {
+    "text": "It ran for 24 hours, the longest a game may run.",
+    "note": "Server notice dialog text: the game hit the time limit."
+  },
+  "notice.game_idle.title": {
+    "text": "The game ended",
+    "note": "Server notice dialog title: the server closed a game that ran too long or sat idle."
+  },
+  "notice.game_lost.text": {
+    "text": "The server was updated and this game cannot go on. Please start a new one.",
+    "note": "Server notice dialog text under 'Sorry, the game ended'."
+  },
+  "notice.game_lost.title": {
+    "text": "Sorry, the game ended",
+    "note": "Server notice dialog title: an update ended the game."
+  },
+  "notice.ok": {
+    "text": "OK",
+    "note": "Server notice dialog: button that closes it."
+  },
+  "notice.title": {
+    "text": "Notice",
+    "note": "Server notice dialog title for a notice this app does not know; its code shows under it."
+  },
+  "order.hint": {
+    "text": "Click the cards top first. Click a placed card to take it back.",
+    "note": "Dialog that puts cards back on a deck in an order: the hint."
+  },
+  "order.not_placed": {
+    "text": "Not placed",
+    "note": "Order dialog: screen-reader name of the cards not placed yet."
+  },
+  "order.place": {
+    "text": "Place {n}",
+    "note": "Order dialog: screen-reader name of a place on the deck. n: from the top, from 1."
+  },
+  "order.put_back": {
+    "text": "Put back",
+    "note": "Order dialog: button that puts the cards back in the chosen order."
+  },
+  "order.top": {
+    "text": "1 · top",
+    "note": "Order dialog: under the first place, the deck's top."
+  },
+  "over.hint": {
+    "text": "Keep the match record to watch it again later.",
+    "note": "Game over dialog: line under the title."
+  },
+  "over.menu": {
+    "text": "Back to menu",
+    "note": "Game over dialog: button back to the main menu."
+  },
+  "over.save": {
+    "text": "Save record",
+    "note": "Game over dialog: button that saves the match record to a file."
+  },
+  "over.saved": {
+    "text": "Saved to {path}",
+    "note": "Game over dialog: status after saving the record. path: the file."
+  },
+  "over.title": {
+    "text": "Game over",
+    "note": "Game over dialog: title with no winner, and its screen-reader name."
+  },
+  "over.win": {
+    "text": "{players} and {last} win!",
+    "note": "Game over dialog title with several winners. players: all but the last, comma-separated; last: the last winner."
+  },
+  "over.wins": {
+    "text": "{player} wins!",
+    "note": "Game over dialog title. player: the winner."
+  },
+  "over.you_win": {
+    "text": "You win!",
+    "note": "Game over dialog title: the viewer won."
+  },
+  "pause.kick": {
+    "text": "Go on without them",
+    "note": "Pause dialog: button; vote to go on without them."
+  },
+  "pause.label": {
+    "text": "Paused",
+    "note": "Pause dialog: screen-reader name."
+  },
+  "pause.left": {
+    "text": "They left the game. Wait for them to come back, or go on without them.",
+    "note": "Pause dialog when players left."
+  },
+  "pause.restarted": {
+    "text": "The server restarted. The others are coming back.",
+    "note": "Pause dialog after a server restart."
+  },
+  "pause.title": {
+    "text": "Waiting for {players}",
+    "note": "Pause dialog title. players: who left, comma-separated."
+  },
+  "pause.vote_kick": {
+    "text": "go on without them",
+    "note": "Pause dialog, a player's vote, lower case after 'Ann:'."
+  },
+  "pause.vote_wait": {
+    "text": "wait",
+    "note": "Pause dialog, a player's vote, lower case after 'Ann:'."
+  },
+  "pause.wait": {
+    "text": "Wait",
+    "note": "Pause dialog: button; vote to wait for the players who left."
+  },
+  "rollback.ask.other": {
+    "text": "{player} asks to undo a move",
+    "note": "Rollback vote panel title: a player asked to undo their own move."
+  },
+  "rollback.ask.you": {
+    "text": "You ask to undo a move",
+    "note": "Rollback vote panel title: the viewer asked to undo their own move."
+  },
+  "rollback.cancel": {
+    "text": "Cancel vote",
+    "note": "Rollback vote panel, for whoever opened it: button that cancels the vote."
+  },
+  "rollback.label": {
+    "text": "Rollback vote",
+    "note": "Rollback vote panel: screen-reader name."
+  },
+  "rollback.needed": {
+    "text": "{yes} of {n} yes needed",
+    "note": "Rollback vote panel: the count. yes: yes votes so far; n: yes votes needed."
+  },
+  "rollback.no": {
+    "text": "No",
+    "note": "Rollback vote panel: button; vote no."
+  },
+  "rollback.undoes": {
+    "text": {
+      "one": "“{move}”: undoes {n} step.",
+      "other": "“{move}”: undoes {n} steps."
+    },
+    "note": "Rollback vote panel: what the vote undoes. move: the move, e.g. 'Bo plays A Penny!'; n: steps undone."
+  },
+  "rollback.voted_no": {
+    "text": "no",
+    "note": "Rollback vote panel, a player's vote, lower case after 'Ann:'."
+  },
+  "rollback.voted_yes": {
+    "text": "yes",
+    "note": "Rollback vote panel, a player's vote, lower case after 'Ann:'."
+  },
+  "rollback.want.other": {
+    "text": "{player} wants to undo {author}'s move",
+    "note": "Rollback vote panel title. player: who opened the vote; author: whose move."
+  },
+  "rollback.want.you": {
+    "text": "You want to undo {author}'s move",
+    "note": "Rollback vote panel title: the viewer opened a vote on another player's move. author: whose move."
+  },
+  "rollback.want.yours": {
+    "text": "{player} wants to undo your move",
+    "note": "Rollback vote panel title: a player opened a vote on the viewer's move."
+  },
+  "rollback.yes": {
+    "text": "Yes, undo",
+    "note": "Rollback vote panel: button; vote yes."
+  },
+  "rollback.you": {
+    "text": "You",
+    "note": "Rollback vote panel: the viewer in the list of votes."
+  },
+  "set.base_game": {
+    "text": "Base Game",
+    "note": "Card set name: host screen check boxes and the game list. Use the name the print in your language uses."
+  },
+  "set.four_souls_plus": {
+    "text": "Four Souls+",
+    "note": "Card set name: host screen check boxes and the game list. Use the name the print in your language uses."
+  },
+  "set.gold_box": {
+    "text": "Gold Box",
+    "note": "Card set name: host screen check boxes and the game list. Use the name the print in your language uses."
+  },
+  "set.requiem": {
+    "text": "Requiem",
+    "note": "Card set name: host screen check boxes and the game list. Use the name the print in your language uses."
+  },
   "settings.animations": {
     "text": "Animations",
     "note": "Settings: label of the animation speed list."
@@ -14,6 +1829,14 @@
   "settings.dice_preview": {
     "text": "Dice preview",
     "note": "Settings: screen-reader name of the six dice faces in the picked look."
+  },
+  "settings.dice_set.holy": {
+    "text": "Holy",
+    "note": "Settings: heading of a group in the Dice list (the dice of the Holy set: Tear, The Bible, …)."
+  },
+  "settings.dice_set.unholy": {
+    "text": "Unholy",
+    "note": "Settings: heading of a group in the Dice list (the dice of the Unholy set: Brimstone, Poop, …)."
   },
   "settings.end_turn_ask": {
     "text": "Ask before ending the turn while plays are left",
@@ -66,5 +1889,548 @@
   "settings.title": {
     "text": "Settings",
     "note": "Settings: the screen's title."
+  },
+  "stack.a_card": {
+    "text": "a card",
+    "note": "Stack line, history line or a player's activity: a card whose name the viewer can't see."
+  },
+  "stack.a_monster": {
+    "text": "a monster",
+    "note": "Stack panel or a player's activity: an attacked monster whose name is unknown."
+  },
+  "stack.ability": {
+    "text": "{card} ({player})",
+    "note": "Stack line: a card's ability. card: the card; player: whose it is."
+  },
+  "stack.attack": {
+    "text": "Attack: {line}",
+    "note": "Stack line of an attack's roll or damage. line: the rest of the line, e.g. 'Ann rolls 4 against Gaper'."
+  },
+  "stack.damage": {
+    "text": {
+      "one": "{player} deals {n} damage to {target}",
+      "other": "{player} deals {n} damage to {target}"
+    },
+    "note": "Stack line: damage a player deals. n: the damage; target: what it hits."
+  },
+  "stack.damage_by_card": {
+    "text": {
+      "one": "{card} deals {n} damage to {target}",
+      "other": "{card} deals {n} damage to {target}"
+    },
+    "note": "Stack line: damage a card (a monster, an item) deals. n: the damage; target: what it hits."
+  },
+  "stack.damage_to": {
+    "text": {
+      "one": "{n} damage to {target}",
+      "other": "{n} damage to {target}"
+    },
+    "note": "Stack line: damage from an unknown source. n: the damage; target: what it hits."
+  },
+  "stack.declared.attack": {
+    "text": "{player} attacks…",
+    "note": "Stack panel, top row: the active player declared an attack and picks its target."
+  },
+  "stack.declared.attack_deck": {
+    "text": "{player} attacks the monster deck",
+    "note": "Stack panel, top row: the active player attacks the top of the monster deck."
+  },
+  "stack.declared.attack_target": {
+    "text": "{player} attacks {target}",
+    "note": "Stack panel, top row: an open attack. target: the monster or player attacked."
+  },
+  "stack.declared.buy": {
+    "text": "{player} buys…",
+    "note": "Stack panel, top row: the active player declared a purchase."
+  },
+  "stack.declared.end_turn": {
+    "text": "{player} ends the turn",
+    "note": "Stack panel, top row: the active player declared the end of the turn."
+  },
+  "stack.dies": {
+    "text": "{target} dies",
+    "note": "Stack line: a death waiting to resolve. target: the player or monster."
+  },
+  "stack.empty": {
+    "text": "Nothing on the stack",
+    "note": "Stack panel: the stack is empty."
+  },
+  "stack.killed": {
+    "text": "{card} is killed",
+    "note": "Stack line: a card being killed."
+  },
+  "stack.last_roll": {
+    "text": "Last roll",
+    "note": "Stack panel: screen-reader name of the small die by the title."
+  },
+  "stack.loot": {
+    "text": "{player} plays {card}",
+    "note": "Stack line: a loot card being played. player: in their color; card: the card."
+  },
+  "stack.pass": {
+    "text": "Pass",
+    "note": "Stack panel: button that passes priority."
+  },
+  "stack.pass_tip": {
+    "text": "Pass (Space)",
+    "note": "Stack panel: tooltip of Pass. Space is the keyboard key."
+  },
+  "stack.passed": {
+    "text": "Passed: {players}",
+    "note": "Stack panel, under the items. players: who passed, comma-separated."
+  },
+  "stack.passed_label": {
+    "text": "Passed",
+    "note": "Stack panel: screen-reader name of the line of players who passed."
+  },
+  "stack.penalty": {
+    "text": "{player} pays the death penalty",
+    "note": "Stack line: a dead player's penalty waiting to resolve."
+  },
+  "stack.played": {
+    "text": "{player} plays",
+    "note": "Under the stack: caption of another player's loot card shown large. player: their name, in their color."
+  },
+  "stack.played_label": {
+    "text": "{player} plays {card}",
+    "note": "Under the stack: screen-reader name of that large card. player: the player; card: the card's name."
+  },
+  "stack.roll": {
+    "text": "{player} rolls",
+    "note": "Stack line: a roll before its throw."
+  },
+  "stack.roll_against": {
+    "text": "{player} rolls against {target}",
+    "note": "Stack line: an attack roll before its throw. target: the monster or player attacked."
+  },
+  "stack.roll_against_n": {
+    "text": "{player} rolls {roll} against {target}",
+    "note": "Stack line: a thrown attack roll. roll: the die; target: the monster or player attacked."
+  },
+  "stack.roll_card": {
+    "text": "{player} rolls for {card}",
+    "note": "Stack line: a card's roll before its throw. card: the card that rolls."
+  },
+  "stack.roll_card_n": {
+    "text": "{player} rolls {roll} for {card}",
+    "note": "Stack line: a card's thrown roll. roll: the die; card: the card that rolls."
+  },
+  "stack.roll_label": {
+    "text": "{player} rolls for {label}",
+    "note": "Stack line: a roll before its throw. label: what it is for, from the server."
+  },
+  "stack.roll_label_n": {
+    "text": "{player} rolls {roll} for {label}",
+    "note": "Stack line: a thrown roll. roll: the die; label: what it is for, from the server."
+  },
+  "stack.roll_n": {
+    "text": "{player} rolls {roll}",
+    "note": "Stack line: a thrown roll. roll: the die, or in the history '3 → 5 (+2 Meat!)'."
+  },
+  "stack.roll_result": {
+    "text": "({changes} = {n})",
+    "note": "Stack line, after a thrown roll: what changes it and the result. changes: '+1 Meat!, −2 Round Worm'; n: the result."
+  },
+  "stack.something": {
+    "text": "Something",
+    "note": "Stack line of an item of an unknown kind."
+  },
+  "stack.takes_damage": {
+    "text": {
+      "one": "{target} takes {n} damage",
+      "other": "{target} takes {n} damage"
+    },
+    "note": "Stack line: a player takes damage from their own effect. n: the damage."
+  },
+  "stack.title": {
+    "text": "Stack",
+    "note": "Game table: title of the stack panel on the board (the cards and rolls waiting to resolve)."
+  },
+  "stack.trigger": {
+    "text": "{card} triggers",
+    "note": "Stack line: a card's triggered ability."
+  },
+  "stack.waiting": {
+    "text": "Waiting for {players}",
+    "note": "Stack panel, under the items. players: who may still respond, comma-separated; the viewer is You."
+  },
+  "stack.waiting_label": {
+    "text": "Waiting for",
+    "note": "Stack panel: screen-reader name of the line that says whom the stack waits for."
+  },
+  "stack.you": {
+    "text": "You",
+    "note": "Stack panel: the viewer in the Waiting for and Passed lines."
+  },
+  "stats.always_hits": {
+    "text": "Always hits",
+    "note": "Stack panel, an open attack's fight line: every die face hits."
+  },
+  "stats.attack_rolls": {
+    "text": "Attack rolls: {list}",
+    "note": "Zoomed card, under it: changes to its attack rolls. list: the changes with their cards."
+  },
+  "stats.attacked": {
+    "text": "Monsters you attack: {list}",
+    "note": "Zoomed card, under it: changes to the dice of monsters its player attacks. list: '+1 DC Meat!'."
+  },
+  "stats.cant_hit": {
+    "text": "Can't hit",
+    "note": "Stack panel, an open attack's fight line: no die face hits."
+  },
+  "stats.dc": {
+    "text": "DC",
+    "note": "The dice a monster needs to be hit, in the stat sums: '+1 DC Meat!'. Use the print's short form."
+  },
+  "stats.effect.atk": {
+    "text": "{amount} ATK",
+    "note": "Tooltip of an effect icon on a card. amount: '+1' or '−1'."
+  },
+  "stats.effect.attack_roll": {
+    "text": "{amount} to attack rolls",
+    "note": "Tooltip of an effect icon on a character. amount: '+1' or '−1'."
+  },
+  "stats.effect.attacked_dc": {
+    "text": "{amount} DC of monsters you attack",
+    "note": "Tooltip of an effect icon on a character. amount: '+1' or '−1'."
+  },
+  "stats.effect.dc": {
+    "text": "{amount} DC",
+    "note": "Tooltip of an effect icon on a monster. amount: '+1' or '−1'."
+  },
+  "stats.effect.hp": {
+    "text": "{amount} max HP",
+    "note": "Tooltip of an effect icon on a card. amount: '+1' or '−1'."
+  },
+  "stats.effect.next_attack_roll": {
+    "text": "{amount} to the next attack roll",
+    "note": "Tooltip of an effect icon with a small die on a character. amount: '+1' or '−1'."
+  },
+  "stats.effect.roll": {
+    "text": "{amount} to rolls",
+    "note": "Tooltip of an effect icon on a character. amount: '+1' or '−1'."
+  },
+  "stats.hidden_card": {
+    "text": "a hidden card",
+    "note": "A stat source or roll change whose card the viewer can't see."
+  },
+  "stats.hits_from": {
+    "text": "Hits on {n}+",
+    "note": "Stack panel, an open attack's fight line. n: the lowest die face that hits."
+  },
+  "stats.hits_on": {
+    "text": "Hits on {faces}",
+    "note": "Stack panel, an open attack's fight line. faces: the die faces that hit, '2, 3'."
+  },
+  "stats.next_roll": {
+    "text": "next roll",
+    "note": "In brackets after a stat change: it waits for the next roll."
+  },
+  "stats.odds_atk": {
+    "text": "ATK {n}",
+    "note": "Stack panel, an open attack's fight line, after a dot: the attacker's attack."
+  },
+  "stats.odds_atk_sum": {
+    "text": "ATK {n} = {base} printed{terms}",
+    "note": "Stack panel, an open attack's fight line, after a dot. n: attack now; base: printed; terms: ' + 1 Champion Belt'."
+  },
+  "stats.odds_hit": {
+    "text": "{hits} (DC {dc}{terms})",
+    "note": "Stack panel, an open attack's fight line. hits: 'Hits on 4+'; dc: the monster's dice; terms: ' − 1 Meat!'."
+  },
+  "stats.rolls": {
+    "text": "Rolls: {list}",
+    "note": "Zoomed card, under it: changes to all its player's rolls. list: '+1 Meat!, −2 Round Worm (next roll)'."
+  },
+  "stats.sum_atk": {
+    "text": "ATK {n} = {base} printed {terms}",
+    "note": "Zoomed card, under it: why its attack changed. n: attack now; base: printed; terms: the changes with their cards."
+  },
+  "stats.sum_dc": {
+    "text": "DC {n} = {base} printed {terms}",
+    "note": "Zoomed monster, under it: why its dice changed. n: dice now; base: printed; terms: the changes with their cards."
+  },
+  "stats.sum_dc_clamped": {
+    "text": "DC {n} = {base} printed {terms} (dice stay 1–6)",
+    "note": "As stats.sum_dc, when the sum went past what a die shows and stays at 1 or 6."
+  },
+  "stats.sum_hp": {
+    "text": "Max HP {n} = {base} printed {terms}",
+    "note": "Zoomed card, under it: why its health changed. n: max health now; base: printed; terms: '+ 1 Cancer + 1 Polyphemus (this turn)'."
+  },
+  "stats.this_turn": {
+    "text": "this turn",
+    "note": "In brackets after a stat change: it lasts until the turn ends."
+  },
+  "stats.this_turn_effect": {
+    "text": "{effect} this turn",
+    "note": "Tooltip of an effect icon on a card. effect: '+1 ATK'."
+  },
+  "table.allowance": {
+    "text": "Left this turn",
+    "note": "Game table: screen-reader name of the Loot · Attacks · Shop counts."
+  },
+  "table.asked": {
+    "text": "The game waits for this player",
+    "note": "Game table: screen-reader name of the hourglass by a player's name."
+  },
+  "table.attacks_left": {
+    "text": "Attacks {n}",
+    "note": "Game table, by another active player's name: attacks left this turn."
+  },
+  "table.cents": {
+    "text": {
+      "one": "{n} cent",
+      "other": "{n} cents"
+    },
+    "note": "Game table: screen-reader name of a player's coin count. n: their cents."
+  },
+  "table.choose": {
+    "text": "Choose {player}",
+    "note": "Game table: button by a player's name when the player is an option to pick. player: the name."
+  },
+  "table.coins": {
+    "text": "Coins",
+    "note": "Game table: tooltip of a player's coin count."
+  },
+  "table.curses_of": {
+    "text": "{player}: curses",
+    "note": "Game table: screen-reader name of another player's curses."
+  },
+  "table.dead": {
+    "text": "dead",
+    "note": "Game table: tag by a dead player's name, lower case."
+  },
+  "table.hand": {
+    "text": {
+      "one": "Hand: {n} card",
+      "other": "Hand: {n} cards"
+    },
+    "note": "Game table: tooltip of another player's hand of backs. n: cards in it."
+  },
+  "table.items_of": {
+    "text": "{player}: items",
+    "note": "Game table: screen-reader name of another player's items."
+  },
+  "table.loot_left": {
+    "text": "Loot {n}",
+    "note": "Game table, by the active player's name: loot cards they may still play this turn. n: that count."
+  },
+  "table.loot_left_label": {
+    "text": "Loot plays left",
+    "note": "Game table: screen-reader name of the viewer's loot plays left on their turn."
+  },
+  "table.own_name": {
+    "text": "{player} (you)",
+    "note": "Game table: the viewer's own name over their area. player: the name."
+  },
+  "table.player_n": {
+    "text": "Player {n}",
+    "note": "Game table: a seat's name when the server sent none. n: the seat number from 1."
+  },
+  "table.revealed_hand": {
+    "text": {
+      "one": "Revealed hand: {n} card",
+      "other": "Revealed hand: {n} cards"
+    },
+    "note": "Game table: tooltip of another player's hand shown face up by a card. n: cards in it."
+  },
+  "table.shop_left": {
+    "text": "Shop {n}",
+    "note": "Game table, by another active player's name: purchases left this turn."
+  },
+  "table.soul": {
+    "text": "Soul: {card}",
+    "note": "Game table: screen-reader name of a filled soul crystal. card: the soul's card."
+  },
+  "table.souls": {
+    "text": {
+      "one": "Souls: {souls} of {n}",
+      "other": "Souls: {souls} of {n}"
+    },
+    "note": "Game table: tooltip of a player's soul crystals. souls: souls gained; n: souls needed to win."
+  },
+  "table.your_curses": {
+    "text": "Your curses",
+    "note": "Game table: screen-reader name of the viewer's curses."
+  },
+  "table.your_hand": {
+    "text": "Your hand",
+    "note": "Game table: screen-reader name of the viewer's hand."
+  },
+  "table.your_items": {
+    "text": "Your items",
+    "note": "Game table: screen-reader name of the viewer's items."
+  },
+  "throw.button": {
+    "text": "Throw",
+    "note": "Game table: the big glowing button that throws the player's die."
+  },
+  "throw.dice_of": {
+    "text": "{player}'s dice",
+    "note": "Game table: screen-reader name of another player's die waiting for its throw."
+  },
+  "throw.label": {
+    "text": "Throw",
+    "note": "Game table: screen-reader name of the area where a die waits for its throw."
+  },
+  "throw.throwing": {
+    "text": "{player} is throwing…",
+    "note": "Game table, under the shaking die. player: who throws now."
+  },
+  "throw.tip": {
+    "text": "Throw (Space)",
+    "note": "Game table: tooltip of Throw. Space is the keyboard key."
+  },
+  "throw.you_throwing": {
+    "text": "You are throwing…",
+    "note": "Game table, under the shaking die: the viewer throws now."
+  },
+  "throw.your_dice": {
+    "text": "Your dice",
+    "note": "Game table: screen-reader name of the die waiting in the player's hand."
+  },
+  "turn.actions": {
+    "text": "Turn actions",
+    "note": "Game table: screen-reader name of the Buy and Attack buttons."
+  },
+  "turn.ask_left": {
+    "text": "You can still:",
+    "note": "End turn? dialog: line over the list of what is left (Attack, Buy, …)."
+  },
+  "turn.ask_play": {
+    "text": "You can still play.",
+    "note": "End turn? dialog: line when the list of what is left is empty."
+  },
+  "turn.ask_title": {
+    "text": "End turn?",
+    "note": "Dialog title when the player ends the turn while plays are left."
+  },
+  "turn.attack": {
+    "text": "Attack",
+    "note": "Game table: the sword icon button by the player's name; declares an attack."
+  },
+  "turn.buy": {
+    "text": "Buy",
+    "note": "Game table: the bag icon button by the player's name; declares a purchase."
+  },
+  "turn.choosing_attack": {
+    "text": "Choosing what to attack",
+    "note": "Game table: the Attack button's name while the player picks what to attack."
+  },
+  "turn.choosing_buy": {
+    "text": "Choosing what to buy",
+    "note": "Game table: the Buy button's name while the player picks what to buy."
+  },
+  "turn.end": {
+    "text": "End turn",
+    "note": "Game table: the big button at the board's right edge on the player's own turn; also the button in the End turn? dialog."
+  },
+  "turn.end_tip": {
+    "text": "End turn (E)",
+    "note": "Game table: tooltip of End turn. E is the keyboard key; keep it."
+  },
+  "turn.keep_playing": {
+    "text": "Keep playing",
+    "note": "End turn? dialog: button that closes it without ending the turn."
+  },
+  "turn.left.abilities": {
+    "text": "Use abilities",
+    "note": "End turn? dialog: a play still left this turn (card abilities)."
+  },
+  "turn.left.attack": {
+    "text": "Attack",
+    "note": "End turn? dialog: a play still left this turn."
+  },
+  "turn.left.buy": {
+    "text": "Buy",
+    "note": "End turn? dialog: a play still left this turn."
+  },
+  "turn.left.loot": {
+    "text": "Play loot",
+    "note": "End turn? dialog: a play still left this turn (a loot card)."
+  },
+  "turn.left_count": {
+    "text": "{n} left",
+    "note": "Game table: screen-reader name of the count badge on Buy or Attack. n: buys or attacks left this turn."
+  },
+  "turn.theirs": {
+    "text": "Their turn",
+    "note": "Game table: the same big button, grey, on another player's turn."
+  },
+  "turn_badge.first_roll": {
+    "text": "Before turn 1 · First player roll",
+    "note": "Game table: the turn badge while the players roll for who goes first."
+  },
+  "turn_badge.label": {
+    "text": "Turn",
+    "note": "Game table: screen-reader name of the turn badge on the board."
+  },
+  "turn_badge.step.action": {
+    "text": "Action",
+    "note": "Turn badge: the action step, where the player plays."
+  },
+  "turn_badge.step.cleanup": {
+    "text": "Cleanup",
+    "note": "Turn badge: the last step of a turn."
+  },
+  "turn_badge.step.end": {
+    "text": "End of turn",
+    "note": "Turn badge: the turn's end step."
+  },
+  "turn_badge.step.hand_size": {
+    "text": "Hand size",
+    "note": "Turn badge: the step where the player discards down to the hand limit."
+  },
+  "turn_badge.step.loot": {
+    "text": "Loot",
+    "note": "Turn badge: the step where the player draws a loot card."
+  },
+  "turn_badge.step.recharge": {
+    "text": "Recharge",
+    "note": "Turn badge: the step where the player's cards recharge."
+  },
+  "turn_badge.step.start": {
+    "text": "Start of turn",
+    "note": "Turn badge: the turn's start step."
+  },
+  "turn_badge.turn": {
+    "text": "Turn {n} · {player} · {step}",
+    "note": "Game table: the turn badge on the board. n: the turn number; player: whose turn; step: the step, e.g. Action."
+  },
+  "welcome.continue": {
+    "text": "Continue",
+    "note": "First start: button that saves the nickname and opens the main menu."
+  },
+  "welcome.hint": {
+    "text": "Choose the name other players will see.",
+    "note": "First start: line under Welcome!"
+  },
+  "welcome.title": {
+    "text": "Welcome!",
+    "note": "First start: the screen's title, above the nickname field."
+  },
+  "zoom.keywords": {
+    "text": "Keywords",
+    "note": "Zoomed card: screen-reader name of the keyword notes beside it."
+  },
+  "zoom.outcome": {
+    "text": "What it did",
+    "note": "Zoomed history card: screen-reader name of the results beside it."
+  },
+  "zoom.result_damage": {
+    "text": {
+      "one": "{target}: {n} damage",
+      "other": "{target}: {n} damage"
+    },
+    "note": "Zoomed history card: screen-reader name of a damage result. target: what was hit; n: the damage."
+  },
+  "zoom.result_death": {
+    "text": "{target} dies",
+    "note": "Zoomed history card: screen-reader name of a death result. target: what died."
+  },
+  "zoom.stats": {
+    "text": "Stats",
+    "note": "Zoomed card: screen-reader name of the stat sums under it."
   }
 }

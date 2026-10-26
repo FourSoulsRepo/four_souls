@@ -10,8 +10,8 @@ test('splash shows the fan-game notice, then the menu', async ({ page }) => {
   await page.goto('/?fake');
   await expect(page.getByText('Four Souls is an unofficial')).toBeVisible();
   await shot(page, 'splash');
-  await expect(page.getByRole('button', { name: 'Play', exact: true })).toBeVisible({ timeout: 10_000 });
-  await expect(page.getByText('app demo · rules engine demo')).toBeVisible();
+  await expect(page.getByRole('button', { name: tr('menu.play'), exact: true })).toBeVisible({ timeout: 10_000 });
+  await expect(page.getByText(tr('menu.versions', { app: 'demo', engine: 'demo' }))).toBeVisible();
   await shot(page, 'menu');
 });
 
@@ -19,12 +19,12 @@ test('splash shows the fan-game notice, then the menu', async ({ page }) => {
 // after the menu showed moved them, and a quick click hit the wrong
 // button (19.49). Without the images the banner fails to load.
 test('the menu buttons never move after they show (19.49)', async ({ page }) => {
-  await page.addInitScript(() => {
+  await page.addInitScript((settings) => {
     const w = window as unknown as { ys: number[] };
     w.ys = [];
     const t0 = performance.now();
     const frame = () => {
-      const b = [...document.querySelectorAll('nav button')].find((x) => x.textContent === 'Settings');
+      const b = [...document.querySelectorAll('nav button')].find((x) => x.textContent === settings);
       if (b) {
         const y = b.getBoundingClientRect().y;
         if (w.ys.at(-1) !== y) {
@@ -36,19 +36,19 @@ test('the menu buttons never move after they show (19.49)', async ({ page }) => 
       }
     };
     requestAnimationFrame(frame);
-  });
+  }, tr('menu.settings'));
   await page.goto('/?fake&nosplash');
-  await expect(page.getByRole('button', { name: 'Settings' })).toBeVisible();
+  await expect(page.getByRole('button', { name: tr('menu.settings') })).toBeVisible();
   await page.waitForTimeout(2000);
   expect(await page.evaluate(() => (window as unknown as { ys: number[] }).ys)).toHaveLength(1);
 });
 
 test('Exit is the last menu button and closes the app (15.79)', async ({ page }) => {
   await page.goto('/?fake&nosplash');
-  await expect(page.getByRole('navigation').getByRole('button')).toHaveText(['Play', 'RecordsSoon', 'Settings', 'Exit']);
+  await expect(page.getByRole('navigation').getByRole('button')).toHaveText([tr('menu.play'), tr('menu.records') + tr('menu.soon'), tr('menu.settings'), tr('menu.exit')]);
   const quit = () => page.evaluate(() => (window as unknown as { fakeQuit: boolean }).fakeQuit);
   expect(await quit()).toBe(false);
-  await page.getByRole('button', { name: 'Exit' }).click();
+  await page.getByRole('button', { name: tr('menu.exit') }).click();
   expect(await quit()).toBe(true);
 });
 
@@ -58,16 +58,16 @@ test('titles and menu buttons use the game fonts (15.40)', async ({ page }) => {
   const family = (el: Locator) => el.evaluate((e) => getComputedStyle(e).fontFamily.replace(/"/g, ''));
   // Without the font files the faces fail to load, and the system font
   // at the end of each stack shows instead.
-  const title = page.getByRole('heading', { name: 'Four Souls' });
+  const title = page.getByRole('heading', { name: tr('app.title') });
   await expect.poll(() => family(title)).toMatch(/^Four Souls Cyrillic, -apple-system/);
-  const button = page.getByRole('button', { name: 'Play', exact: true });
+  const button = page.getByRole('button', { name: tr('menu.play'), exact: true });
   await expect.poll(() => family(button)).toMatch(/^Four Souls Title, Four Souls Cyrillic, -apple-system/);
-  await page.getByRole('button', { name: 'Settings' }).click();
+  await page.getByRole('button', { name: tr('menu.settings') }).click();
   await expect.poll(() => family(page.getByRole('heading', { name: tr('settings.title') }))).toMatch(/^Four Souls Cyrillic,/);
 });
 
 test('the menu shows the banner, or the text title without it (15.41)', async ({ page }) => {
-  const banner = page.getByRole('heading', { name: 'Four Souls' }).locator('img');
+  const banner = page.getByRole('heading', { name: tr('app.title') }).locator('img');
   // Served, the banner image is the title.
   const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="9"><rect width="16" height="9" fill="#a33"/></svg>';
   await page.route('**/cardimg/assets/banner.webp', (route) => route.fulfill({ body: svg, contentType: 'image/svg+xml' }));
@@ -78,13 +78,13 @@ test('the menu shows the banner, or the text title without it (15.41)', async ({
   await page.unroute('**/cardimg/assets/banner.webp');
   await page.route('**/cardimg/assets/banner.webp', (route) => route.abort());
   await page.reload();
-  await expect(page.getByRole('heading', { name: 'Four Souls' })).toHaveText('Four Souls');
+  await expect(page.getByRole('heading', { name: tr('app.title') })).toHaveText(tr('app.title'));
   await expect(banner).toHaveCount(0);
 });
 
 test('nickname survives a restart', async ({ page }) => {
   await page.goto('/?fake&nosplash');
-  await page.getByRole('button', { name: 'Settings' }).click();
+  await page.getByRole('button', { name: tr('menu.settings') }).click();
   await page.getByLabel(tr('settings.nickname')).fill('  Ann  ');
   await page.getByRole('button', { name: tr('settings.save') }).click();
   await expect(page.getByRole('status')).toHaveText(tr('settings.saved'));
@@ -92,18 +92,18 @@ test('nickname survives a restart', async ({ page }) => {
   await shot(page, 'settings');
 
   await page.reload();
-  await page.getByRole('button', { name: 'Settings' }).click();
+  await page.getByRole('button', { name: tr('menu.settings') }).click();
   await expect(page.getByLabel(tr('settings.nickname'))).toHaveValue('Ann');
 });
 
 test('a bad nickname shows why', async ({ page }) => {
   await page.goto('/?fake&nosplash');
-  await page.getByRole('button', { name: 'Settings' }).click();
+  await page.getByRole('button', { name: tr('menu.settings') }).click();
   await page.getByLabel(tr('settings.nickname')).fill('x'.repeat(21));
   await page.getByRole('button', { name: tr('settings.save') }).click();
   await expect(page.getByRole('status')).toHaveText('nickname must be 1–20 characters');
   await page.getByRole('button', { name: tr('settings.back') }).click();
-  await expect(page.getByRole('button', { name: 'Play', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: tr('menu.play'), exact: true })).toBeVisible();
 });
 
 test('the menus drift on the night sky, still with animations off (15.42)', async ({ page }) => {
@@ -117,11 +117,11 @@ test('the menus drift on the night sky, still with animations off (15.42)', asyn
   await expect.poll(transform).not.toBe(start);
   // The menu draws over it, and clicks reach its buttons.
   await openHost(page);
-  await expect(page.getByRole('heading', { name: 'Host a game' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: tr('host.title_host') })).toBeVisible();
   await expect(layers).toHaveCount(6);
   // Animations off: the sky stands still.
   await backToMenu(page);
-  await page.getByRole('button', { name: 'Settings' }).click();
+  await page.getByRole('button', { name: tr('menu.settings') }).click();
   await page.getByLabel(tr('settings.animations')).selectOption('off');
   await page.getByRole('button', { name: tr('settings.save') }).click();
   await expect(layers).toHaveCount(6);
@@ -133,9 +133,9 @@ test('the menus drift on the night sky, still with animations off (15.42)', asyn
 test('Play opens LAN, Online and Learn to play in place (15.96)', async ({ page }) => {
   await realAssets(page);
   await page.goto('/?fake&nosplash');
-  const play = page.getByRole('button', { name: 'Play', exact: true });
-  const settings = page.getByRole('button', { name: 'Settings' });
-  const group = page.getByRole('group', { name: 'Play' });
+  const play = page.getByRole('button', { name: tr('menu.play'), exact: true });
+  const settings = page.getByRole('button', { name: tr('menu.settings') });
+  const group = page.getByRole('group', { name: tr('menu.play') });
   await expect(play).toHaveAttribute('aria-expanded', 'false');
   await expect(group).toHaveCount(0);
   const top = (l: typeof play) => l.evaluate((e) => e.getBoundingClientRect().top);
@@ -148,11 +148,11 @@ test('Play opens LAN, Online and Learn to play in place (15.96)', async ({ page 
   await play.click();
   await page.mouse.move(1, 1);
   await expect(play).toHaveAttribute('aria-expanded', 'true');
-  await expect(group.getByRole('button')).toHaveText(['LAN', 'Online', 'Learn to playSoon']);
-  await expect(group.getByRole('button', { name: 'Learn to play (soon)' })).toBeDisabled();
-  await expect(page.getByRole('button', { name: 'Records (soon)' })).toBeDisabled();
+  await expect(group.getByRole('button')).toHaveText([tr('menu.lan'), tr('menu.online'), tr('menu.learn') + tr('menu.soon')]);
+  await expect(group.getByRole('button', { name: tr('menu.soon_label', { name: tr('menu.learn') }) })).toBeDisabled();
+  await expect(page.getByRole('button', { name: tr('menu.soon_label', { name: tr('menu.records') }) })).toBeDisabled();
   // Settings slides down by the group: three buttons and their gaps.
-  const row = await group.getByRole('button', { name: 'LAN' }).evaluate((e) => (e as HTMLElement).offsetHeight + 12);
+  const row = await group.getByRole('button', { name: tr('menu.lan') }).evaluate((e) => (e as HTMLElement).offsetHeight + 12);
   await expect.poll(() => top(settings)).toBeCloseTo(settingsTop + 3 * row, 0);
   await expect.poll(() => top(play)).toBe(playTop);
   await shot(page, 'menu-play');
@@ -173,8 +173,8 @@ test('Play opens LAN, Online and Learn to play in place (15.96)', async ({ page 
 // Back from a Play screen finds the group still open.
 test('the Play group stays open on the way back (15.96)', async ({ page }) => {
   await page.goto('/?fake&nosplash&anim=off');
-  await page.getByRole('button', { name: 'Play', exact: true }).click();
-  await page.getByRole('button', { name: 'Online', exact: true }).click();
-  await page.getByRole('button', { name: 'Back' }).click();
-  await expect(page.getByRole('group', { name: 'Play' })).toBeVisible();
+  await page.getByRole('button', { name: tr('menu.play'), exact: true }).click();
+  await page.getByRole('button', { name: tr('menu.online'), exact: true }).click();
+  await page.getByRole('button', { name: tr('lobby.back') }).click();
+  await expect(page.getByRole('group', { name: tr('menu.play') })).toBeVisible();
 });

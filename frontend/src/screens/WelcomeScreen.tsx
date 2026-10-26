@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { t } from '../i18n';
 import { useApp } from '../store';
 import './screens.css';
 
@@ -10,8 +11,8 @@ export function WelcomeScreen() {
   const [nickname, setNickname] = useState('');
   return (
     <div className="screen">
-      <h1>Welcome!</h1>
-      <p className="muted">Choose the name other players will see.</p>
+      <h1>{t('welcome.title')}</h1>
+      <p className="muted">{t('welcome.hint')}</p>
       <form
         className="row"
         onSubmit={(e) => {
@@ -24,7 +25,7 @@ export function WelcomeScreen() {
         }}
       >
         <label className="field">
-          Nickname
+          {t('lobby.nickname')}
           <input
             value={nickname}
             onChange={(e) => {
@@ -33,7 +34,7 @@ export function WelcomeScreen() {
           />
         </label>
         <button type="submit" className="primary">
-          Continue
+          {t('welcome.continue')}
         </button>
       </form>
       <p className="status" role="status">

@@ -2,6 +2,7 @@
 // lines: who did what. Built from the events this viewer got, so it shows
 // only what the viewer may see (hidden cards stay hidden).
 import { firstPlayerText, tieText } from './dice';
+import { t } from './i18n';
 import type { GameEvent, GameView, Rollback, RollbackEnd, RollbackStep, StackItem, Update } from './protocol';
 import { findCard, StackKind, stackLine, type Names } from './stack';
 import { rollChanges } from './stats';
@@ -132,18 +133,14 @@ export const historyKinds: Record<string, string> = {
 // from it, as on the strip (19.52).
 export function entriesFor(events: GameEvent[], turn: number, you: number, n: Names, key: number, view: GameView): Entry[] {
   const out: Entry[] = [];
-  let t = turn;
-  const who = (p: number) => (p === you ? 'You' : n.player(p));
-  // does: "You loot", "Bo loots".
-  const does = (p: number, verb: string) => (p === you ? `You ${verb}` : `${n.player(p)} ${verb}s`);
-  // whom: "you", "Bo"; whose: "Your", "Bo's".
-  const whom = (p: number) => (p === you ? 'you' : n.player(p));
-  const whose = (p: number) => (p === you ? 'Your' : `${n.player(p)}'s`);
+  let turnNo = turn;
+  // mine: the event is the viewer's own; its line says "You".
+  const mine = (p: number) => p === you;
   // current is this update's last headline: the lines after it are
   // what it did, for the popout (15.90).
   let current: Entry | undefined;
   const add = (icon: string, text: string, card?: string, item?: StackItem, headline?: boolean) => {
-    const entry: Entry = { key: key + out.length, turn: t, icon, text, ...(card ? { card } : {}), ...(item ? { item } : {}), ...(headline ? { headline } : {}) };
+    const entry: Entry = { key: key + out.length, turn: turnNo, icon, text, ...(card ? { card } : {}), ...(item ? { item } : {}), ...(headline ? { headline } : {}) };
     out.push(entry);
     if (headline) current = entry;
     return entry;
@@ -173,28 +170,36 @@ export function entriesFor(events: GameEvent[], turn: number, you: number, n: Na
     named.add(o);
     return true;
   };
-  // roll is the last resolved roll's entry and its die, for its result.
-  let roll: { entry: Entry; die: number } | undefined;
+  // roll is the last resolved roll's entry, its die, and its line with
+  // another number in the die's place, for its result.
+  let roll: { entry: Entry; die: number; line: (rolled?: string) => string } | undefined;
   for (const e of events) {
     const card = e.card ? n.card(e.card) : '';
+    const player = n.player(e.player);
     switch (e.kind) {
       case 'turn_started':
-        t = e.amount ?? t;
+        turnNo = e.amount ?? turnNo;
         current = undefined;
-        add('▶', `Turn ${String(t)}: ${who(e.player)}`);
+        add('▶', t('history.turn', { n: turnNo, player: mine(e.player) ? t('history.you') : player }));
         break;
       case 'stack_resolved': {
         // A card's item names the card and its ability's words; any
         // other item (a roll, damage, a death) says what it did in the
-        // strip's words (19.52).
-        const rolled = e.amount ? ` (rolled ${String(e.amount)})` : '';
+        // strip's words (19.52). The words come from the server.
         const label = e.text && !e.text.startsWith(e.card ?? '\u0000') ? ` — ${e.text}` : '';
-        const text = !card && e.item ? stackLine(e.item, view, n) : `${card || 'Roll'}${label}${rolled}`;
-        const entry = add('✦', text, e.card, e.item, true);
-        roll = e.amount ? { entry, die: e.amount } : undefined;
+        const it = e.item;
+        // line says it, with rolled in the die's place, if given.
+        const line = (rolled?: string) => {
+          if (!card && it) {
+            return stackLine(it, view, n, rolled);
+          }
+          const shown = rolled ?? (e.amount ? String(e.amount) : '');
+          return `${card || t('history.roll')}${label}${shown ? ` ${t('history.rolled', { roll: shown })}` : ''}`;
+        };
+        const entry = add('✦', line(), e.card, e.item, true);
+        roll = e.amount ? { entry, die: e.amount, line } : undefined;
         // The popout: a card's item points at its target; damage at the
         // card it hit, with the number (15.90).
-        const it = e.item;
         const aim = it ? targetOf(it) : undefined;
         if (it && card && aim) {
           entry.from = e.card;
@@ -213,10 +218,9 @@ export function entriesFor(events: GameEvent[], turn: number, you: number, n: Na
         // differ from the die; show both, and the result on the strip.
         if (roll && e.amount && e.amount !== roll.die) {
           const { entry, die } = roll;
-          const was = entry.item && !entry.card ? ` rolls ${String(die)}` : `(rolled ${String(die)}`;
           // The changes the roll counted, by name (15.94).
-          const changes = rollChanges(e.sources, (ref) => (ref ? n.card(ref) : 'a hidden card'));
-          entry.text = entry.text.replace(was, `${was} → ${String(e.amount)}${changes ? ` (${changes})` : ''}`);
+          const changes = rollChanges(e.sources, (ref) => (ref ? n.card(ref) : t('stats.hidden_card')));
+          entry.text = roll.line(`${String(die)} → ${String(e.amount)}${changes ? ` (${changes})` : ''}`);
           if (entry.item) {
             entry.item = { ...entry.item, roll: e.amount };
           }
@@ -225,49 +229,67 @@ export function entriesFor(events: GameEvent[], turn: number, you: number, n: Na
         break;
       case 'looted':
         // A private loot comes without its card to everyone but its player.
-        add('+', card ? `${does(e.player, 'loot')} ${card}` : `${does(e.player, 'loot')} a card`, e.card);
-        gave(e.card ? { text: card, card: e.card } : { text: 'a loot card' });
+        if (card) {
+          add('+', mine(e.player) ? t('history.loot.you', { card }) : t('history.loot.other', { player, card }), e.card);
+        } else {
+          add('+', mine(e.player) ? t('history.loot_hidden.you') : t('history.loot_hidden.other', { player }), e.card);
+        }
+        gave(e.card ? { text: card, card: e.card } : { text: t('history.a_loot_card') });
         break;
       case 'gave_card': {
         // A hand card changed hands (V-14): text is the giver. Only the
         // two hands get the card; the others see that one moved.
-        const from = Number(e.text);
-        if (e.player === you) {
-          add('⇄', card ? `You get ${card} from ${who(from)}` : `You get a card from ${who(from)}`, e.card);
-        } else if (from === you) {
-          add('⇄', card ? `${n.player(e.player)} gets your ${card}` : `${n.player(e.player)} gets a card from you`, e.card);
+        const from = n.player(Number(e.text));
+        if (mine(e.player)) {
+          add('⇄', card ? t('history.got_card.you', { card, from }) : t('history.got_hidden.you', { from }), e.card);
+        } else if (mine(Number(e.text))) {
+          add('⇄', card ? t('history.got_card.yours', { player, card }) : t('history.got_hidden.yours', { player }), e.card);
         } else {
-          add('⇄', `${n.player(e.player)} gets a card from ${n.player(from)}`);
+          add('⇄', t('history.got_hidden.other', { player, from }));
         }
         break;
       }
       case 'looked_at':
         // Only the looker gets the card (V-07).
-        add('◉', card ? `You look at ${card}` : `${does(e.player, 'look')} at a card`, e.card);
+        if (card) {
+          add('◉', t('history.look.you', { card }), e.card);
+        } else {
+          add('◉', mine(e.player) ? t('history.look_hidden.you') : t('history.look_hidden.other', { player }), e.card);
+        }
         break;
       case 'rewards_gained':
-        add('★', `${does(e.player, 'gain')} the rewards of ${card}`, e.card);
+        add('★', mine(e.player) ? t('history.rewards.you', { card }) : t('history.rewards.other', { player, card }), e.card);
         break;
       case 'cursed':
-        add('✝', `${does(e.player, 'gain')} the curse ${card}`, e.card);
+        add('✝', mine(e.player) ? t('history.cursed.you', { card }) : t('history.cursed.other', { player, card }), e.card);
         break;
       case 'game_won':
-        add('♛', `${does(e.player, 'win')} the game`);
+        add('♛', mine(e.player) ? t('history.won.you') : t('history.won.other', { player }));
         break;
       case 'attack_declared':
-        add('⚔', `${does(e.player, 'declare')} an attack`);
+        add('⚔', mine(e.player) ? t('history.attack_declared.you') : t('history.attack_declared.other', { player }));
         break;
-      case 'attack_target':
+      case 'attack_target': {
         // Not a headline: the attack roll's tile names the monster (15.89).
-        add('⚔', `${does(e.player, 'attack')} ${card || 'a card'}`, e.card);
+        const target = card || t('stack.a_card');
+        add('⚔', mine(e.player) ? t('history.attack.you', { card: target }) : t('history.attack.other', { player, card: target }), e.card);
         break;
+      }
       case 'purchase_declared':
-        add('¢', `${does(e.player, 'declare')} a purchase`);
+        add('¢', mine(e.player) ? t('history.purchase_declared.you') : t('history.purchase_declared.other', { player }));
         break;
       case 'purchased':
         first(e.object);
         {
-          const entry = add('¢', `${does(e.player, 'buy')} ${card}${e.text === 'treasure deck' ? ' from the treasure deck' : ''}`, e.card, undefined, true);
+          const deck = e.text === 'treasure deck';
+          const text = mine(e.player)
+            ? deck
+              ? t('history.buy_deck.you', { card })
+              : t('history.buy.you', { card })
+            : deck
+              ? t('history.buy_deck.other', { player, card })
+              : t('history.buy.other', { player, card });
+          const entry = add('¢', text, e.card, undefined, true);
           entry.badge = 'buy';
           const buyer = character(e.player);
           if (buyer && e.card) {
@@ -276,18 +298,20 @@ export function entriesFor(events: GameEvent[], turn: number, you: number, n: Na
           }
         }
         break;
-      case 'purchase_failed':
-        add('✗', `${who(e.player)} can't buy: the price is ${String(e.amount ?? 0)}¢`);
+      case 'purchase_failed': {
+        const price = e.amount ?? 0;
+        add('✗', mine(e.player) ? t('history.cant_buy.you', { n: price }) : t('history.cant_buy.other', { player, n: price }));
         break;
+      }
       case 'gained_treasure':
       case 'gained_item':
         if (bought.has(e.object) || !first(e.object)) break;
         if (e.text === 'starting item') {
-          add('+', `${who(e.player)} ${e.player === you ? 'start' : 'starts'} with ${card}`, e.card);
+          add('+', mine(e.player) ? t('history.starts_with.you', { card }) : t('history.starts_with.other', { player, card }), e.card);
         } else if (e.text === 'stolen') {
-          add('⇄', `${does(e.player, 'steal')} ${card}`, e.card);
+          add('⇄', mine(e.player) ? t('history.steal_item.you', { card }) : t('history.steal_item.other', { player, card }), e.card);
         } else {
-          add('+', `${does(e.player, 'gain')} ${card}`, e.card);
+          add('+', mine(e.player) ? t('history.gain.you', { card }) : t('history.gain.other', { player, card }), e.card);
         }
         if (e.card) gave({ text: card, card: e.card });
         break;
@@ -295,13 +319,18 @@ export function entriesFor(events: GameEvent[], turn: number, you: number, n: Na
       case 'object_died': {
         first(e.object);
         const by = (e.by ?? 0) - 1;
+        const killer = n.player(by);
         let text: string;
         if (e.player >= 0) {
-          text = by >= 0 && by !== e.player ? `${does(by, 'kill')} ${whom(e.player)}` : `${who(e.player)} ${e.player === you ? 'die' : 'dies'}`;
+          if (by >= 0 && by !== e.player) {
+            text = mine(by) ? t('history.kill.you', { target: player }) : mine(e.player) ? t('history.kill.yours', { player: killer }) : t('history.kill.other', { player: killer, target: player });
+          } else {
+            text = mine(e.player) ? t('history.die.you') : t('history.die.other', { player });
+          }
         } else if (e.kind === 'object_died') {
-          text = by >= 0 ? `${does(by, 'destroy')} ${card}` : `${card} is destroyed`;
+          text = by >= 0 ? (mine(by) ? t('history.destroy.you', { card }) : t('history.destroy.other', { player: killer, card })) : t('history.destroyed', { card });
         } else {
-          text = by >= 0 ? `${does(by, 'kill')} ${card}` : `${card} dies`;
+          text = by >= 0 ? (mine(by) ? t('history.kill.you', { target: card }) : t('history.kill.other', { player: killer, target: card })) : t('history.dies', { card });
         }
         // Every death resolves a death stack item first: its entry
         // becomes the kill, with the dead card, so the strip and the
@@ -318,76 +347,117 @@ export function entriesFor(events: GameEvent[], turn: number, you: number, n: Na
         death.badge = 'kill';
         // The popout: the killer, then the dead card with its skull; the
         // rewards follow (15.90). Without a killer the dead card is large.
-        const killer = by >= 0 ? character(by) : undefined;
-        if (killer && e.card) {
-          death.from = killer;
-          death.outcome = [{ text: e.player >= 0 ? n.player(e.player) : card, card: e.card, mark: 'death' }];
+        const killerCard = by >= 0 ? character(by) : undefined;
+        if (killerCard && e.card) {
+          death.from = killerCard;
+          death.outcome = [{ text: e.player >= 0 ? player : card, card: e.card, mark: 'death' }];
         }
         break;
       }
       case 'destroyed':
         if (e.prev !== undefined && named.has(e.prev)) break;
-        if (first(e.object)) add('✗', `${card} is destroyed`, e.card);
+        if (first(e.object)) add('✗', t('history.destroyed', { card }), e.card);
         break;
-      case 'gained_soul':
-        add('♥', `${does(e.player, 'gain')} ${e.text === 'bonus soul' ? 'the bonus soul' : 'the soul of'} ${card}`, e.card);
+      case 'gained_soul': {
+        const bonus = e.text === 'bonus soul';
+        const text = mine(e.player)
+          ? bonus
+            ? t('history.bonus_soul.you', { card })
+            : t('history.soul.you', { card })
+          : bonus
+            ? t('history.bonus_soul.other', { player, card })
+            : t('history.soul.other', { player, card });
+        add('♥', text, e.card);
         if (e.card) gave({ text: card, card: e.card });
         break;
-      case 'gained_cents':
-        add('¢', `${does(e.player, 'gain')} ${String(e.amount ?? 0)}¢`);
-        gave({ text: `+${String(e.amount ?? 0)}¢`, mark: 'cents', amount: e.amount ?? 0 });
+      }
+      case 'gained_cents': {
+        const cents = e.amount ?? 0;
+        add('¢', mine(e.player) ? t('history.cents.you', { n: cents }) : t('history.cents.other', { player, n: cents }));
+        gave({ text: `+${String(cents)}¢`, mark: 'cents', amount: cents });
         break;
-      case 'lost_cents':
-        add('¢', `${who(e.player)} ${e.player === you ? 'lose' : 'loses'} ${String(e.amount ?? 0)}¢`);
-        gave({ text: `−${String(e.amount ?? 0)}¢`, mark: 'cents', amount: -(e.amount ?? 0) });
+      }
+      case 'lost_cents': {
+        const cents = e.amount ?? 0;
+        add('¢', mine(e.player) ? t('history.lose_cents.you', { n: cents }) : t('history.lose_cents.other', { player, n: cents }));
+        gave({ text: `−${String(cents)}¢`, mark: 'cents', amount: -cents });
         break;
-      case 'stole':
-        add('⇄', `${does(e.player, 'steal')} ${String(e.amount ?? 0)}¢ from ${whom(Number(e.text))}`);
-        gave({ text: `+${String(e.amount ?? 0)}¢`, mark: 'cents', amount: e.amount ?? 0 });
+      }
+      case 'stole': {
+        const cents = e.amount ?? 0;
+        const victim = Number(e.text);
+        const text = mine(e.player)
+          ? t('history.steal.you', { n: cents, target: n.player(victim) })
+          : mine(victim)
+            ? t('history.steal.yours', { player, n: cents })
+            : t('history.steal.other', { player, n: cents, target: n.player(victim) });
+        add('⇄', text);
+        gave({ text: `+${String(cents)}¢`, mark: 'cents', amount: cents });
         break;
-      case 'gave_cents':
-        add('⇄', `${does(e.player, 'give')} ${String(e.amount ?? 0)}¢ to ${whom((e.by ?? 0) - 1)}`);
+      }
+      case 'gave_cents': {
+        const cents = e.amount ?? 0;
+        const to = (e.by ?? 0) - 1;
+        const text = mine(e.player)
+          ? t('history.give.you', { n: cents, target: n.player(to) })
+          : mine(to)
+            ? t('history.give.yours', { player, n: cents })
+            : t('history.give.other', { player, n: cents, target: n.player(to) });
+        add('⇄', text);
         break;
+      }
       case 'discarded':
         // A discard from a hand or a dead player's curses; a stack card's
         // discard is its resolved line (15.74).
-        if (e.player >= 0 && !e.text) add('↓', `${does(e.player, 'discard')} ${card}`, e.card);
+        if (e.player >= 0 && !e.text) add('↓', mine(e.player) ? t('history.discard.you', { card }) : t('history.discard.other', { player, card }), e.card);
         break;
       case 'cancelled':
-        add('✗', `${card || (e.text ?? 'An ability')} is cancelled`, e.card);
+        // Without a card, the text names it; it comes from the server.
+        add('✗', t('history.cancelled', { card: card || (e.text ?? t('history.an_ability')) }), e.card);
         break;
       case 'fizzled':
-        add('✗', `${card || 'An ability'} fizzles: its target is gone`, e.card);
+        add('✗', t('history.fizzled', { card: card || t('history.an_ability') }), e.card);
         break;
       case 'prevented':
         if (!e.text) {
-          add('⊘', e.player >= 0 ? `Damage to ${whom(e.player)} is prevented` : 'Damage is prevented');
+          add('⊘', e.player < 0 ? t('history.prevented') : mine(e.player) ? t('history.prevented_to.you') : t('history.prevented_to.other', { player }));
         } else if (e.text === 'death' && e.player >= 0) {
-          add('⊘', `${whose(e.player)} death is prevented`);
+          add('⊘', mine(e.player) ? t('history.death_prevented.you') : t('history.death_prevented.other', { player }));
         }
         break;
       case 'penalty_paid':
-        add('☠', `${who(e.player)} ${e.player === you ? 'pay' : 'pays'} the death penalty`);
+        add('☠', mine(e.player) ? t('history.penalty.you') : t('history.penalty.other', { player }));
         break;
       case 'turn_skipped':
-        add('▶', `${whose(e.player)} turn is skipped`);
+        add('▶', mine(e.player) ? t('history.skipped.you') : t('history.skipped.other', { player }));
         break;
       case 'extra_turn':
-        add('▶', `${who(e.player)} ${e.player === you ? 'take' : 'takes'} an extra turn`);
+        add('▶', mine(e.player) ? t('history.extra_turn.you') : t('history.extra_turn.other', { player }));
         break;
       case 'turn_ended_early':
-        add('▶', `${whose(e.player)} turn ends early`);
+        add('▶', mine(e.player) ? t('history.ended_early.you') : t('history.ended_early.other', { player }));
         break;
-      case 'expanded':
-        add('+', `The table gets ${String(e.amount ?? 1)} more ${e.text ?? ''} ${e.amount === 1 ? 'slot' : 'slots'}`);
+      case 'expanded': {
+        // text is the kind of slot; the engine sends "shop" or "monster".
+        const slots = e.amount ?? 1;
+        add(
+          '+',
+          e.text === 'shop'
+            ? t('history.expanded.shop', { n: slots })
+            : e.text === 'monster'
+              ? t('history.expanded.monster', { n: slots })
+              : t('history.expanded.other', { n: slots, kind: e.text ?? '' }),
+        );
         break;
+      }
       case 'flipped':
-        add('⇅', `${card || 'A card'} flips`, e.card);
+        add('⇅', t('history.flipped', { card: card || t('history.a_card') }), e.card);
         break;
       // The first-player roll keeps every die, ties too (15.43).
       case 'dice_rolled':
         if (e.text === firstRollLabel) {
-          add('⚄', `${does(e.player, 'roll')} ${String(e.amount ?? 0)} for the first player`);
+          const rolled = e.amount ?? 0;
+          add('⚄', mine(e.player) ? t('history.first_roll.you', { n: rolled }) : t('history.first_roll.other', { player, n: rolled }));
         }
         break;
       case 'first_roll_tied':
@@ -419,8 +489,7 @@ export function stripEntries(history: Entry[]): Entry[] {
 // back. step is the rollback's own number.
 export function rolledBack(history: Entry[], r: Rollback, step: number, turn: number, you: number, n: Names): Entry[] {
   const out = history.map((e) => (e.step !== undefined && e.step >= r.to && !e.undone ? { ...e, undone: true } : e));
-  const who = r.seat === you ? 'You roll' : `${n.player(r.seat)} rolls`;
-  const text = `${who} back ${String(r.undid)} ${r.undid === 1 ? 'step' : 'steps'}`;
+  const text = r.seat === you ? t('history.rolled_back.you', { n: r.undid }) : t('history.rolled_back.other', { player: n.player(r.seat), n: r.undid });
   out.push({ key: (history.at(-1)?.key ?? 0) + 1, turn, icon: '↶', text, step, rollback: true });
   return out;
 }
@@ -437,45 +506,66 @@ export interface Move {
 
 // barrierWords name the Soft barriers a player can tell apart (ADR 020,
 // item 4). The server decides what is one; this only names it.
-const barrierWords: Record<string, string> = {
-  dice_rolled: 'a die was rolled',
-  roll_changed: 'a die was rolled',
-  random_pick: 'a card was picked at random',
-  damaged: 'damage was dealt',
-  died: 'a card died',
-  object_died: 'a card died',
-  turn_ended: 'the turn ended',
-  turn_ended_early: 'the turn ended',
-  turn_skipped: 'a turn was skipped',
-  looted: 'a card was drawn',
-  gained_treasure: 'a card was drawn',
-  card_revealed: 'a card was revealed',
-  looked_at: 'a hidden card was seen',
-};
+function barrierWords(kind: string): string | undefined {
+  switch (kind) {
+    case 'dice_rolled':
+    case 'roll_changed':
+      return t('history.barrier.die');
+    case 'random_pick':
+      return t('history.barrier.random');
+    case 'damaged':
+      return t('history.barrier.damage');
+    case 'died':
+    case 'object_died':
+      return t('history.barrier.died');
+    case 'turn_ended':
+    case 'turn_ended_early':
+      return t('history.barrier.turn_ended');
+    case 'turn_skipped':
+      return t('history.barrier.turn_skipped');
+    case 'looted':
+    case 'gained_treasure':
+      return t('history.barrier.drawn');
+    case 'card_revealed':
+      return t('history.barrier.revealed');
+    case 'looked_at':
+      return t('history.barrier.seen');
+    default:
+      return undefined;
+  }
+}
 
 // barrierOf names a barrier event; any other private one shows a hidden
 // card, but for a hand card put on the loot deck (item 4.22).
 function barrierOf(e: GameEvent): string | undefined {
-  if (Object.hasOwn(barrierWords, e.kind)) {
-    return barrierWords[e.kind];
-  }
-  return e.private && e.kind !== 'moved_to_deck' ? 'a hidden card was seen' : undefined;
+  return barrierWords(e.kind) ?? (e.private && e.kind !== 'moved_to_deck' ? t('history.barrier.seen') : undefined);
 }
 
 // moveOf names what one update did. A played card or a used ability is
 // named by its play, which has no history line (15.88): "Bo plays A
 // Penny!". An ended turn says so; anything else is its first line.
 export function moveOf(events: GameEvent[], entries: Entry[], from: number, to: number, you: number, n: Names): Move {
-  const does = (p: number, verb: string) => (p === you ? `You ${verb}` : `${n.player(p)} ${verb}s`);
   const play = events.find((e) => e.kind === 'loot_played' || e.kind === 'activated');
   const ended = events.find((e) => e.kind === 'turn_ended' || e.kind === 'turn_ended_early');
   const text = play
-    ? `${does(play.player, play.kind === 'loot_played' ? 'play' : 'use')} ${play.card ? n.card(play.card) : 'an ability'}`
+    ? playText(play, you, n)
     : ended
-      ? `${does(ended.player, 'end')} the turn`
+      ? ended.player === you
+        ? t('history.move.end_turn.you')
+        : t('history.move.end_turn.other', { player: n.player(ended.player) })
       : entries.find((e) => !e.rollback && e.icon !== '▶')?.text;
   const barrier = events.map(barrierOf).find((w) => w !== undefined);
   return { from, to, ...(text ? { text } : {}), ...(barrier ? { barrier } : {}) };
+}
+
+// playText names a played card or a used ability: "Bo plays A Penny!".
+function playText(e: GameEvent, you: number, n: Names): string {
+  const card = e.card ? n.card(e.card) : t('history.an_ability_lower');
+  const player = n.player(e.player);
+  if (e.kind === 'loot_played') {
+    return e.player === you ? t('history.move.play.you', { card }) : t('history.move.play.other', { player, card });
+  }
+  return e.player === you ? t('history.move.use.you', { card }) : t('history.move.use.other', { player, card });
 }
 
 // moveText names the move a target starts: its update's, or an
@@ -486,14 +576,14 @@ export function moveOf(events: GameEvent[], entries: Entry[], from: number, to: 
 export function moveText(moves: Move[], target: RollbackStep, you: number, name: (p: number) => string): string {
   const last = target.last ?? target.step;
   const text = moves.find((m) => m.to >= target.step && m.from <= last && m.text)?.text;
-  return text ?? (target.seat === you ? 'your choice' : `${name(target.seat)}'s choice`);
+  return text ?? (target.seat === you ? t('history.choice.you') : t('history.choice.other', { player: name(target.seat) }));
 }
 
 // Undo is the History's one Undo button (17.7, ADR 020). step is the
 // latest target the server lists; ask: the Soft author asks the others.
 // why, if set, is why it is greyed; title names the move, or says why.
 export interface Undo {
-  label: 'Undo' | 'Ask to undo';
+  label: string;
   step?: number;
   ask: boolean;
   why?: string;
@@ -514,24 +604,25 @@ export function undoButton(
   }
   const target = u.rollback_steps?.at(-1);
   const ask = u.rollback_mode === 'soft' && target?.seat === you;
-  const label = ask ? 'Ask to undo' : 'Undo';
+  const label = ask ? t('history.undo.ask') : t('history.undo.undo');
   const why =
     you < 0
-      ? 'Spectators cannot undo'
+      ? t('history.undo.spectator')
       : u.view.over
-        ? 'The game is over'
+        ? t('history.undo.over')
         : u.rollback_vote
-          ? 'A rollback vote is open'
+          ? t('history.undo.voting')
           : u.pause
-            ? 'The game is paused'
+            ? t('history.undo.paused')
             : !target
               ? nothingWhy(u, moves)
               : undefined;
   if (why !== undefined || !target) {
-    const title = why ?? 'Nothing to undo';
+    const title = why ?? t('history.undo.nothing');
     return { label, ask, why: title, title };
   }
-  return { label, step: target.step, ask, title: `${label}: ${moveText(moves, target, you, name)}` };
+  const move = moveText(moves, target, you, name);
+  return { label, step: target.step, ask, title: ask ? t('history.undo.ask_title', { move }) : t('history.undo.title', { move }) };
 }
 
 // nothingWhy says why no move is left to undo: the barrier just before
@@ -539,22 +630,21 @@ export function undoButton(
 function nothingWhy(u: Pick<Update, 'rollback_mode' | 'rollback_from' | 'rollback_cut'>, moves: Move[]): string {
   const at = (u.rollback_from ?? 1) - 1;
   if (u.rollback_cut && at <= u.rollback_cut) {
-    return 'Nothing to undo since the server restarted';
+    return t('history.undo.restarted');
   }
   const barrier = u.rollback_mode === 'soft' ? moves.find((m) => m.from <= at && at <= m.to)?.barrier : undefined;
-  return barrier ? `Nothing to undo since ${barrier}` : 'Nothing to undo yet';
+  return barrier ? t('history.undo.since', { barrier }) : t('history.undo.yet');
 }
 
 // voteEnded adds the row of a Soft vote that ended with no rollback.
 export function voteEnded(history: Entry[], end: RollbackEnd, turn: number, you: number, n: Names): Entry[] {
-  const who = end.seat === you ? 'You' : n.player(end.seat);
   const text = {
-    declined: 'The rollback was declined',
-    cancelled: `${who} cancelled the rollback vote`,
-    timeout: 'The rollback vote ran out of time',
-    left: 'The rollback vote ended: a player left',
-    failed: 'The rollback failed; the game goes on',
-  }[end.why];
+    declined: () => t('history.vote.declined'),
+    cancelled: () => (end.seat === you ? t('history.vote.cancelled.you') : t('history.vote.cancelled.other', { player: n.player(end.seat) })),
+    timeout: () => t('history.vote.timeout'),
+    left: () => t('history.vote.left'),
+    failed: () => t('history.vote.failed'),
+  }[end.why]();
   return [...history, { key: (history.at(-1)?.key ?? 0) + 1, turn, icon: '↶', text, rollback: true }];
 }
 
@@ -565,7 +655,7 @@ export function restartCut(history: Entry[], cut: number, turn: number): Entry[]
   if (history.some((e) => e.restarted && e.step === cut)) {
     return history;
   }
-  const text = 'The server restarted; no rollback before this';
+  const text = t('history.restarted');
   return [...history, { key: (history.at(-1)?.key ?? 0) + 1, turn, icon: '⟳', text, step: cut, rollback: true, restarted: true }];
 }
 
@@ -609,9 +699,25 @@ export function lookGroups(cards: Looked[]): { owner?: number; cards: Looked[] }
   return groups;
 }
 
-// Turn step names, in Go's order (pkg/rules_engine/turn.go).
-const steps = ['Recharge', 'Start of turn', 'Loot', 'Loot', 'Action', 'End of turn', 'Hand size', 'Cleanup'];
-
+// stepName names a turn step, in Go's order (pkg/rules_engine/turn.go).
 export function stepName(step: number): string {
-  return steps.at(step) ?? '';
+  switch (step) {
+    case 0:
+      return t('turn_badge.step.recharge');
+    case 1:
+      return t('turn_badge.step.start');
+    case 2:
+    case 3:
+      return t('turn_badge.step.loot');
+    case 4:
+      return t('turn_badge.step.action');
+    case 5:
+      return t('turn_badge.step.end');
+    case 6:
+      return t('turn_badge.step.hand_size');
+    case 7:
+      return t('turn_badge.step.cleanup');
+    default:
+      return '';
+  }
 }
