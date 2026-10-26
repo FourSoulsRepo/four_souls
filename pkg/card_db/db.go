@@ -161,6 +161,7 @@ func validate(c Card) error {
 	if c.Text[English].Name == "" {
 		errs = append(errs, errors.New("an English name is required"))
 	}
+	errs = append(errs, validateLangs(c)...)
 	if err := validateCopies(c.Copies, c.Images); err != nil {
 		errs = append(errs, err)
 	}
@@ -170,6 +171,28 @@ func validate(c Card) error {
 		}
 	}
 	return errors.Join(errs...)
+}
+
+// validateLangs checks the translations (LO-02, CD-06): every language
+// has a name, and translators belong to a language with text.
+func validateLangs(c Card) []error {
+	var errs []error
+	for lang, t := range c.Text {
+		if t.Name == "" {
+			errs = append(errs, fmt.Errorf("text %q has no name", lang))
+		}
+	}
+	for lang, names := range c.Translators {
+		if _, ok := c.Text[lang]; !ok {
+			errs = append(errs, fmt.Errorf("translators for %q, which has no text", lang))
+		}
+		for _, n := range names {
+			if strings.TrimSpace(n) == "" {
+				errs = append(errs, fmt.Errorf("a blank translator for %q", lang))
+			}
+		}
+	}
+	return errs
 }
 
 // validateReprint accepts only an id, copies and images: the text lives

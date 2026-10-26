@@ -39,7 +39,8 @@ const sampleSet = `{
      "images": ["b2/the_d6.webp"], "related": ["isaac"]},
     {"id": "isaac", "type": "Character Card", "copies": 1,
      "stats": [{"name": "HP", "value": "2"}],
-     "text": {"en": {"name": "Isaac"}}},
+     "text": {"en": {"name": "Isaac"}, "ru": {"name": "Исаак"}},
+     "translators": {"ru": ["Someone"]}},
     {"id": "the_d6", "version": 2, "type": "Eternal Treasure Card", "copies": 1,
      "text": {"en": {"name": "The D6"}}}
   ]
@@ -59,6 +60,9 @@ func TestLoad(t *testing.T) {
 	}
 	if got := ImagePath(d6); got != "images/b2/the_d6.webp" {
 		t.Errorf("image path = %q", got)
+	}
+	if isaac, _ := db.Get(Ref{ID: "isaac", Version: 1}); isaac.Name("ru") != "Исаак" || isaac.Name(English) != "Isaac" {
+		t.Errorf("isaac names: %q, %q", isaac.Name("ru"), isaac.Name(English))
 	}
 	if _, ok := db.Get(Ref{ID: "the_d6", Version: 2}); !ok {
 		t.Error("the_d6@2 missing")
@@ -88,6 +92,12 @@ func TestLoadRejectsBadData(t *testing.T) {
 		"bad related": `{"set":{"code":"b2","name":"B","order":1},"cards":[
 			{"id":"x","type":"T","copies":1,"text":{"en":{"name":"X"}},"related":["Not A Ref"]}]}`,
 		"wrong file name": `{"set":{"code":"g2","name":"B","order":1},"cards":[]}`,
+		"translation without a name": `{"set":{"code":"b2","name":"B","order":1},"cards":[
+			{"id":"x","type":"T","copies":1,"text":{"en":{"name":"X"},"ru":{"name":""}}}]}`,
+		"translators without text": `{"set":{"code":"b2","name":"B","order":1},"cards":[
+			{"id":"x","type":"T","copies":1,"text":{"en":{"name":"X"}},"translators":{"ru":["A"]}}]}`,
+		"blank translator": `{"set":{"code":"b2","name":"B","order":1},"cards":[
+			{"id":"x","type":"T","copies":1,"text":{"en":{"name":"X"},"ru":{"name":"Икс"}},"translators":{"ru":[" "]}}]}`,
 	}
 	for name, data := range cases {
 		if _, err := Load(fstest.MapFS{"data/b2.json": {Data: []byte(data)}}); err == nil {

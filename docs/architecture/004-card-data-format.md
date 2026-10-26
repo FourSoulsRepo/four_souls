@@ -64,6 +64,8 @@ Use options 1 and 4; stats and rewards stay strings (option 5 lost).
    3. Rejects image paths that leave `images/`.
    4. Reports every problem at once.
    5. Reads sets oldest first (ADR 010).
+   6. Rejects a translation without a name.
+   7. Rejects translators of a language with no text.
 6. Build modes
    1. `-tags embed`: `carddb.Embedded()` packs `data/`.
    4. `-tags "embed cardimages"`: also packs `images/` (needs the submodule).
@@ -93,3 +95,5 @@ Use options 1 and 4; stats and rewards stay strings (option 5 lost).
    1. Its `scraper build` writes `data/<set>.json` here.
    2. Its `scraper images` writes `images/<set>/` here.
    3. It mirrors these types in `scraper/carddata`; keep both in sync.
+   4. Its `scraper ru-names` writes Russian names (16.5).
+   5. `scraper build` keeps other languages' text and translators.

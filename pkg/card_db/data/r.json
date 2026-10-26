@@ -17,6 +17,9 @@
             "Gain 1¢.",
             "Rewards are doubled till end of turn."
           ]
+        },
+        "ru": {
+          "name": "Счастливый пенни!"
         }
       },
       "rewards": [
@@ -39,6 +42,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/a_lucky_penny.webp"
       ]
@@ -73,6 +85,9 @@
           "notes": [
             "\"And he said, what has thou done? The voice of thy brother's blood crieth unto me from the ground.\"\nGenesis 4:10"
           ]
+        },
+        "ru": {
+          "name": "Авель"
         }
       },
       "artists": [
@@ -85,6 +100,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/abel.webp"
       ],
@@ -107,6 +131,9 @@
               "text": "This can't be destroyed or put into discard."
             }
           ]
+        },
+        "ru": {
+          "name": "Бездна"
         }
       },
       "artists": [
@@ -119,6 +146,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/abyss.webp"
       ],
@@ -136,6 +172,9 @@
           "effects": [
             "Gain x¢, where x is the number of monster slots plus the number of loot cards in your hand."
           ]
+        },
+        "ru": {
+          "name": "Туз бубен"
         }
       },
       "artists": [
@@ -152,6 +191,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/ace_of_diamonds.webp"
       ]
@@ -169,6 +217,9 @@
             "When the 4th counter is put on this, loot 4.",
             "When the 6th counter is put on this, gain +2 treasure."
           ]
+        },
+        "ru": {
+          "name": "Алебастровая шкатулка"
         }
       },
       "rewards": [
@@ -199,6 +250,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/alabaster_box.webp"
       ]
@@ -213,6 +273,9 @@
           "effects": [
             "Choose a player. Each item they control gains eternal till end of turn."
           ]
+        },
+        "ru": {
+          "name": "Альгиз"
         }
       },
       "artists": [
@@ -229,6 +292,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/algiz.webp"
       ]
@@ -246,6 +318,9 @@
           "notes": [
             "\"Why standest thou afar off, o lord? Why hidest thou thyself in times of trouble?\"\nPsalm 10:1"
           ]
+        },
+        "ru": {
+          "name": "День всех святых"
         }
       },
       "artists": [
@@ -262,6 +337,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/all_hallows_eve.webp"
       ]
@@ -279,6 +363,9 @@
           "notes": [
             "\"Angel of God, my guardian dear\"\nThe Angel of God Prayer"
           ]
+        },
+        "ru": {
+          "name": "Ангельское вмешательство"
         }
       },
       "artists": [
@@ -295,6 +382,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/angelic_intervention.webp"
       ]
@@ -318,6 +414,9 @@
               "text": "This can't be destroyed or put into discard."
             }
           ]
+        },
+        "ru": {
+          "name": "Анима Сола/Мститель"
         }
       },
       "stats": [
@@ -358,6 +457,15 @@
           "name": "Private"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/anima_sola.webp"
       ],
@@ -375,6 +483,9 @@
           "effects": [
             "{Tap Effect}Choose a shop item. Other players may bid ¢ for it, starting at 1 or more ¢. In turn order, other players may top the high bid. Bidding ends when the high bid stands. The high bidder pays you the number of ¢ they bid and steals the chosen item."
           ]
+        },
+        "ru": {
+          "name": "Аукционный молоток"
         }
       },
       "rewards": [
@@ -397,6 +508,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/auction_gavel.webp"
       ],
@@ -414,6 +534,9 @@
             "3-4: The player to your left takes 1 damage.",
             "5-6: The player to your right takes 1 damage."
           ]
+        },
+        "ru": {
+          "name": "Сливка"
         }
       },
       "stats": [
@@ -454,6 +577,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/baby_plum.webp"
       ],
@@ -470,6 +602,9 @@
             "You may attack players who control more souls than you. They have 3+{DC} for the attack.",
             "Each time you kill a player, loot 1."
           ]
+        },
+        "ru": {
+          "name": "Предатель"
         }
       },
       "rewards": [
@@ -492,6 +627,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/backstabber.webp"
       ]
@@ -513,6 +657,9 @@
               "text": "This loot becomes an item under your control when it resolves."
             }
           ]
+        },
+        "ru": {
+          "name": "Пакет с обедом"
         }
       },
       "artists": [
@@ -529,6 +676,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/bag_lunch.webp"
       ]
@@ -550,6 +706,9 @@
               "text": "This can't be destroyed or put into discard."
             }
           ]
+        },
+        "ru": {
+          "name": "Созидательный мешок"
         }
       },
       "rewards": [
@@ -568,6 +727,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/bag_of_crafting.webp"
       ],
@@ -588,6 +756,9 @@
           "notes": [
             "\"Come, let us return to the lord. For he has torn us, but he will heal us; he has wounded us, but he will bandage us.\"\nHosea 6:1"
           ]
+        },
+        "ru": {
+          "name": "Шар из пластырей"
         }
       },
       "artists": [
@@ -600,6 +771,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/ball_of_bandages.webp"
       ]
@@ -615,6 +795,9 @@
             "At the end of your turn, put a counter on this.",
             "{Paid Effect}Remove 2 counters from this:\nRecharge each item a player controls."
           ]
+        },
+        "ru": {
+          "name": "Запас батареек"
         }
       },
       "artists": [
@@ -631,6 +814,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/battery_pack.webp"
       ]
@@ -646,6 +838,9 @@
             "The active player may attack other players. Attacked players have 3+{DC}.",
             "When a player dies, if that player was attacked this turn, that player gives the active player the item they would destroy for the death penalty."
           ]
+        },
+        "ru": {
+          "name": "Королевская битва!!!"
         }
       },
       "rewards": [
@@ -664,6 +859,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/battle_royale.webp"
       ]
@@ -679,6 +883,9 @@
             "The active player may attack other players. Attacked players have 4+{DC}.",
             "When a player dies, if that player was attacked this turn, that player gives the active player the item they would destroy for the death penalty."
           ]
+        },
+        "ru": {
+          "name": "Королевская битва!!!!"
         }
       },
       "rewards": [
@@ -701,6 +908,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/battle_royale_2.webp"
       ]
@@ -716,6 +932,9 @@
             "The active player may attack other players. Attacked players have 5+{DC}.",
             "When a player dies, if that player was attacked this turn, that player gives the active player the item they would destroy for the death penalty."
           ]
+        },
+        "ru": {
+          "name": "Королевская битва!!!!!"
         }
       },
       "rewards": [
@@ -738,6 +957,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/battle_royale_3.webp"
       ]
@@ -754,6 +982,9 @@
             "5: Loot 2.",
             "6: Gain +1 treasure. Put this into discard."
           ]
+        },
+        "ru": {
+          "name": "Попрошайка"
         }
       },
       "rewards": [
@@ -784,6 +1015,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/beggar.webp"
       ]
@@ -798,6 +1038,9 @@
           "effects": [
             "Destroy an item. If that item was controlled by a player, they steal an item from the shop."
           ]
+        },
+        "ru": {
+          "name": "Беркано"
         }
       },
       "artists": [
@@ -814,6 +1057,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/berkano.webp"
       ]
@@ -835,6 +1087,9 @@
               "text": "This can't be destroyed or put into discard."
             }
           ]
+        },
+        "ru": {
+          "name": "Берсерк"
         }
       },
       "artists": [
@@ -847,6 +1102,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/berserk.webp"
       ],
@@ -867,6 +1131,9 @@
           "notes": [
             "This can be done on any player's turn in response to any action."
           ]
+        },
+        "ru": {
+          "name": "Вифания"
         }
       },
       "stats": [
@@ -893,6 +1160,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/bethany.webp"
       ],
@@ -913,6 +1189,9 @@
             "5: Steal a non-eternal item they control.",
             "6: Steal a soul they control."
           ]
+        },
+        "ru": {
+          "name": "Предательство!"
         }
       },
       "artists": [
@@ -929,6 +1208,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/betrayal.webp"
       ]
@@ -946,6 +1234,9 @@
           "notes": [
             "(This change is indefinite.)"
           ]
+        },
+        "ru": {
+          "name": "Право первородства"
         }
       },
       "artists": [
@@ -962,6 +1253,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/birthright.webp"
       ]
@@ -979,6 +1279,9 @@
           "notes": [
             "\"Gird thy sword upon they thigh, O most mighty, with thy glory and thy majesty.\"\nPsalm 45:3"
           ]
+        },
+        "ru": {
+          "name": "Черные чемпионы"
         }
       },
       "artists": [
@@ -995,6 +1298,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/black_champions.webp"
       ]
@@ -1009,6 +1321,9 @@
           "effects": [
             "Choose a player. Prevent the next 1 damage they would take this turn. Till end of turn, when that player dies, deal 2 damage to each player other than that player and you."
           ]
+        },
+        "ru": {
+          "name": "Черное сердце"
         }
       },
       "artists": [
@@ -1025,6 +1340,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/black_heart.webp",
         "r/black_heart-2.webp"
@@ -1043,6 +1367,9 @@
           "notes": [
             "\"For the drunkard and the glutton shall come to poverty: And the drowsiness shall clothe a man with rags.\"\nProverbs 23:21"
           ]
+        },
+        "ru": {
+          "name": "Благословение Чревоугодия"
         }
       },
       "rewards": [
@@ -1065,6 +1392,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/blessing_of_gluttony.webp"
       ]
@@ -1082,6 +1418,9 @@
           "notes": [
             "\"Wealth gotten by vanity shall be diminished: But he that gathereth by labour shall increase.\"\nProverbs 13:11"
           ]
+        },
+        "ru": {
+          "name": "Благословение Алчности"
         }
       },
       "rewards": [
@@ -1104,6 +1443,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/blessing_of_greed.webp"
       ]
@@ -1121,6 +1469,9 @@
           "notes": [
             "\"Buy the truth, and sell it not; also wisdom, and instruction, and understanding.\"\nProverbs 23:23"
           ]
+        },
+        "ru": {
+          "name": "Благословение Стима"
         }
       },
       "artists": [
@@ -1137,6 +1488,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/blessing_of_steam.webp"
       ]
@@ -1151,6 +1511,9 @@
           "effects": [
             "Each time a player declares an attack, before choosing what to attack, they may look at the top 3 cards of the monster deck and put them back in any order."
           ]
+        },
+        "ru": {
+          "name": "Благословение внутреннего глаза"
         }
       },
       "artists": [
@@ -1167,6 +1530,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/blessing_of_the_inner_eye.webp"
       ]
@@ -1184,6 +1556,9 @@
           "notes": [
             "\"Knowing that from the Lord you will receive the inheritance as your reward. You are serving the Lord Christ.\"\nColossians 3:24"
           ]
+        },
+        "ru": {
+          "name": "Благословение мешка"
         }
       },
       "artists": [
@@ -1200,6 +1575,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/blessing_of_the_sack.webp"
       ]
@@ -1214,6 +1598,9 @@
           "effects": [
             "The active player must attack the monster deck once each turn if able."
           ]
+        },
+        "ru": {
+          "name": "Слепая ярость"
         }
       },
       "artists": [
@@ -1230,6 +1617,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/blind_rage.webp"
       ]
@@ -1247,6 +1643,9 @@
           "notes": [
             "\"In whom we have redemption through his blood, the forgiveness of sins, according to the riches of His Grace;\" Ephesians 1:7"
           ]
+        },
+        "ru": {
+          "name": "Автомат по сдаче крови"
         }
       },
       "rewards": [
@@ -1269,6 +1668,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/blood_donation.webp"
       ]
@@ -1284,6 +1692,9 @@
             "The active player must attack each turn if able.",
             "The first time the active player declares an attack each turn, they must attack an additional time this turn."
           ]
+        },
+        "ru": {
+          "name": "Жажда крови"
         }
       },
       "artists": [
@@ -1300,6 +1711,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/blood_lust.webp"
       ]
@@ -1317,6 +1737,9 @@
           "notes": [
             "\"And said unto them, what will ye give me, and I will deliver him unto you? And they covenanted with him for thirty pieces of silver.\"\nMatthew 26:15"
           ]
+        },
+        "ru": {
+          "name": "Кровавые деньги"
         }
       },
       "rewards": [
@@ -1339,6 +1762,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/blood_money.webp"
       ]
@@ -1356,6 +1788,9 @@
             "{LV8 Effect}At the start of your turn, deal 1 damage to a monster or player.",
             "{LV10 Effect}At the start of your turn roll-\n1-3: You die."
           ]
+        },
+        "ru": {
+          "name": "Кровавый щеночек"
         }
       },
       "artists": [
@@ -1372,6 +1807,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/blood_puppy.webp"
       ]
@@ -1387,6 +1831,9 @@
             "When you gain or purchase this, reveal the top 10 cards of the loot deck. Put each card with \"Bomb\" in its name in your hand and the rest on the bottom of the loot deck.",
             "At the start of your turn, put a card with \"Bomb\" in its name from the loot discard into your hand."
           ]
+        },
+        "ru": {
+          "name": "Бобби-бомба"
         }
       },
       "rewards": [
@@ -1409,6 +1856,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/bobby_bomb.webp"
       ]
@@ -1434,6 +1890,9 @@
             "{Paid Effect}Discard a loot card: Roll. if the discarded card had \"bomb\" in its name, roll 3x instead-\n1-4: Deal 1 damage to a monster or player.",
             "5-6: Take 1 damage."
           ]
+        },
+        "ru": {
+          "name": "Бомбовый попрошайка"
         }
       },
       "artists": [
@@ -1450,6 +1909,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/bomb_bum.webp"
       ]
@@ -1464,6 +1932,9 @@
           "effects": [
             "{Tap Effect}Put a non-event monster card in discard in a monster slot not being attacked."
           ]
+        },
+        "ru": {
+          "name": "Книга мертвых"
         }
       },
       "artists": [
@@ -1476,6 +1947,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/book_of_the_dead.webp"
       ]
@@ -1498,6 +1978,9 @@
               "text": "This can't be destroyed or put into discard."
             }
           ]
+        },
+        "ru": {
+          "name": "Книга добродетелей"
         }
       },
       "rewards": [
@@ -1516,6 +1999,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/book_of_virtues.webp"
       ],
@@ -1539,6 +2031,9 @@
               "text": "This loot becomes an item under your control when it resolves."
             }
           ]
+        },
+        "ru": {
+          "name": "Сломанный пульт"
         }
       },
       "artists": [
@@ -1555,6 +2050,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/broken_remote.webp"
       ]
@@ -1572,6 +2076,9 @@
           "notes": [
             "\"They shall revive as the corn\"\nHosea 14:7"
           ]
+        },
+        "ru": {
+          "name": "Брауни"
         }
       },
       "stats": [
@@ -1608,6 +2115,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/brownie.webp"
       ]
@@ -1625,6 +2141,9 @@
           "notes": [
             "\"Bum-Bo want coin!\"\nBum-Bo"
           ]
+        },
+        "ru": {
+          "name": "Бам-Бо на свободе!"
         }
       },
       "artists": [
@@ -1641,6 +2160,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/bum_bo_is_loose.webp"
       ]
@@ -1668,6 +2196,9 @@
           "notes": [
             "\"For the churning of milk bringeth forth butter, and the wringing of the nose bringeth forth blood; so the forcing of wrath bringeth forth strife.\"\nProverbs 30:33"
           ]
+        },
+        "ru": {
+          "name": "Масленые пальцы"
         }
       },
       "artists": [
@@ -1684,6 +2215,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/butter_fingers.webp"
       ]
@@ -1704,6 +2244,9 @@
               "text": "This loot becomes an item under your control when it resolves."
             }
           ]
+        },
+        "ru": {
+          "name": "Мозоль"
         }
       },
       "artists": [
@@ -1720,6 +2263,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/callus.webp"
       ]
@@ -1736,6 +2288,9 @@
             "{Tap Effect}Recharge up to 3 other items in play.",
             "{Paid Effect}Pay 7¢: Recharge this."
           ]
+        },
+        "ru": {
+          "name": "Аккумулятор"
         }
       },
       "artists": [
@@ -1752,6 +2307,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/car_battery.webp"
       ]
@@ -1774,6 +2338,9 @@
               "text": "This can't be destroyed or put into discard."
             }
           ]
+        },
+        "ru": {
+          "name": "Церемониальный нож"
         }
       },
       "rewards": [
@@ -1792,6 +2359,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/ceremonial_blade.webp"
       ],
@@ -1809,6 +2385,9 @@
           "effects": [
             "Each time a monster dies, the active player rolls-\n4-6: They must make an additional attack this turn."
           ]
+        },
+        "ru": {
+          "name": "Комната испытаний"
         }
       },
       "artists": [
@@ -1825,6 +2404,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/challenge_room.webp"
       ]
@@ -1840,6 +2428,9 @@
             "When this dies, after gaining rewards, choose another player. They gain 5¢.",
             "Each time the attacking player rolls an attack roll of 6, they deal 1 damage to a player."
           ]
+        },
+        "ru": {
+          "name": "Очарованный костяшка"
         }
       },
       "stats": [
@@ -1876,6 +2467,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/charmed_bony.webp"
       ]
@@ -1890,6 +2490,9 @@
           "effects": [
             "When this dies, after gaining rewards, choose another player. They loot 1."
           ]
+        },
+        "ru": {
+          "name": "Очарованный сгусток"
         }
       },
       "stats": [
@@ -1926,6 +2529,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/charmed_clotty.webp"
       ]
@@ -1940,6 +2552,9 @@
           "effects": [
             "When this dies, after gaining rewards, choose another player. They recharge an item they control."
           ]
+        },
+        "ru": {
+          "name": "Очарованная капля"
         }
       },
       "stats": [
@@ -1976,6 +2591,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/charmed_dip.webp"
       ]
@@ -1990,6 +2614,9 @@
           "effects": [
             "When this dies, after gaining rewards, choose another player. They gain +1 treasure."
           ]
+        },
+        "ru": {
+          "name": "Очарованная жирная летучая мышь"
         }
       },
       "stats": [
@@ -2026,6 +2653,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/charmed_fat_bat.webp"
       ]
@@ -2041,6 +2677,9 @@
             "When this dies, after gaining rewards, choose another player. They loot 2.",
             "Each time this deals damage to a player, they discard a loot card."
           ]
+        },
+        "ru": {
+          "name": "Очарованный толстяк"
         }
       },
       "stats": [
@@ -2077,6 +2716,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/charmed_fatty.webp"
       ]
@@ -2092,6 +2740,9 @@
             "When this dies, after gaining rewards, choose another player. They loot 3.",
             "Each time the attacking player misses an attack roll, this heals 1{HP}."
           ]
+        },
+        "ru": {
+          "name": "Очарованный глобин"
         }
       },
       "stats": [
@@ -2128,6 +2779,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/charmed_globin.webp"
       ]
@@ -2142,6 +2802,9 @@
           "effects": [
             "When this dies, after gaining rewards, choose another player. They gain 10¢."
           ]
+        },
+        "ru": {
+          "name": "Очарованный жмотик"
         }
       },
       "stats": [
@@ -2178,6 +2841,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/charmed_greedling.webp"
       ]
@@ -2193,6 +2865,9 @@
             "When this dies, after gaining rewards, choose another player. They roll and gain ¢ equal to the result.",
             "Each time this deals combat damage to a player, they lose 2¢."
           ]
+        },
+        "ru": {
+          "name": "Очарованный хранитель"
         }
       },
       "stats": [
@@ -2229,6 +2904,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/charmed_keeper.webp"
       ]
@@ -2243,6 +2927,9 @@
           "effects": [
             "If the active player would gain this soul, they instead choose another player. That player gains this soul."
           ]
+        },
+        "ru": {
+          "name": "Очарованный монстро"
         }
       },
       "stats": [
@@ -2283,6 +2970,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/charmed_monstro.webp"
       ]
@@ -2298,6 +2994,9 @@
             "At the start of your turn, put a counter on this. Then if this has 3+ counters, remove all counters from this and deal 1 damage to a player or monster.",
             "While this has 2 counters on it, you have +1{ATK}."
           ]
+        },
+        "ru": {
+          "name": "Шоколадное молоко"
         }
       },
       "artists": [
@@ -2314,6 +3013,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/chocolate_milk.webp"
       ]
@@ -2335,6 +3043,9 @@
               "text": "This can't be destroyed or put into discard."
             }
           ]
+        },
+        "ru": {
+          "name": "Классический кубик"
         }
       },
       "artists": [
@@ -2351,6 +3062,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/classic_roller.webp"
       ],
@@ -2369,6 +3089,9 @@
           "effects": [
             "When this dies, each player gives their hand to the player to their left."
           ]
+        },
+        "ru": {
+          "name": "Засор"
         }
       },
       "stats": [
@@ -2405,6 +3128,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/clog.webp"
       ]
@@ -2422,6 +3154,9 @@
           "notes": [
             "\"Let brotherly love continue.\"\nHebrews 13:1"
           ]
+        },
+        "ru": {
+          "name": "Сросшийся близнец"
         }
       },
       "artists": [
@@ -2438,6 +3173,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/conjoined_twin.webp"
       ],
@@ -2453,6 +3197,9 @@
           "effects": [
             "At the start of your turn, loot x, where x is the number of souls the player with the most souls controls minus the number of souls you control."
           ]
+        },
+        "ru": {
+          "name": "Утешительный приз"
         }
       },
       "rewards": [
@@ -2471,6 +3218,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/consolation_prize.webp"
       ]
@@ -2485,6 +3241,9 @@
           "effects": [
             "When this dies, deal 2 damage to a non-active player chosen at random."
           ]
+        },
+        "ru": {
+          "name": "Кукурузинка"
         }
       },
       "stats": [
@@ -2521,6 +3280,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/corny.webp"
       ],
@@ -2542,6 +3310,9 @@
               "text": "When this enters play, give this to a player. When they die, they put this into discard."
             }
           ]
+        },
+        "ru": {
+          "name": "Проклятие эмпатии"
         }
       },
       "artists": [
@@ -2558,6 +3329,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/curse_of_empathy.webp"
       ]
@@ -2578,6 +3358,9 @@
               "text": "When this enters play, give this to a player. When they die, they put this into discard."
             }
           ]
+        },
+        "ru": {
+          "name": "Проклятие пустоты"
         }
       },
       "artists": [
@@ -2590,6 +3373,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/curse_of_the_hollow.webp"
       ]
@@ -2610,6 +3402,9 @@
               "text": "When this enters play, give this to a player. When they die, they put this into discard."
             }
           ]
+        },
+        "ru": {
+          "name": "Проклятие жертвы"
         }
       },
       "artists": [
@@ -2622,6 +3417,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/curse_of_the_hunted.webp"
       ]
@@ -2643,6 +3447,9 @@
               "text": "When this enters play, give this to a player. When they die, they put this into discard."
             }
           ]
+        },
+        "ru": {
+          "name": "Проклятие бездушия"
         }
       },
       "artists": [
@@ -2659,6 +3466,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/curse_of_the_soulless.webp"
       ]
@@ -2673,6 +3489,9 @@
           "effects": [
             "Each time this takes damage, it deals 1 damage to each non-active player."
           ]
+        },
+        "ru": {
+          "name": "Проклятый двойник"
         }
       },
       "stats": [
@@ -2709,6 +3528,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/cursed_dople.webp"
       ],
@@ -2724,6 +3552,9 @@
           "effects": [
             "If a player would roll a dice, they instead roll 2 dice. The player to their left chooses one of the rolls as the result."
           ]
+        },
+        "ru": {
+          "name": "Проклятый маленький преследователь"
         }
       },
       "stats": [
@@ -2760,6 +3591,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/cursed_lil_haunt.webp"
       ],
@@ -2775,6 +3615,9 @@
           "effects": [
             "Each time a monster dies, this deals 3 damage to a player chosen at random."
           ]
+        },
+        "ru": {
+          "name": "Проклятый бомбанытик"
         }
       },
       "stats": [
@@ -2811,6 +3654,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/cursed_mulliboom.webp"
       ]
@@ -2825,6 +3677,9 @@
           "effects": [
             "Each time a monster dies, expand monster slots by 1."
           ]
+        },
+        "ru": {
+          "name": "Проклятый плакса"
         }
       },
       "stats": [
@@ -2861,6 +3716,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/cursed_mulligan.webp"
       ]
@@ -2876,6 +3740,9 @@
             "At the start of your turn, take 1 damage and put a counter on this. Then, if this has 6+ counters, it becomes a soul and loses all abilities.",
             "At the end of your turn, give this to another player."
           ]
+        },
+        "ru": {
+          "name": "Проклятая душа"
         }
       },
       "rewards": [
@@ -2898,6 +3765,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/cursed_soul.webp"
       ]
@@ -2912,6 +3788,9 @@
           "effects": [
             "Choose up to 3 non-event monster cards in discard. Put them in one or more monster slots not being attacked."
           ]
+        },
+        "ru": {
+          "name": "Папина записка"
         }
       },
       "artists": [
@@ -2928,6 +3807,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/dads_note.webp"
       ]
@@ -2943,6 +3831,9 @@
             "If you would gain any number of treasures, instead gain that many +1.",
             "When you die, before paying penalties, destroy this."
           ]
+        },
+        "ru": {
+          "name": "Дамокл"
         }
       },
       "rewards": [
@@ -2961,6 +3852,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/damocles.webp"
       ]
@@ -2983,6 +3883,9 @@
               "text": "This can't be destroyed or put into discard."
             }
           ]
+        },
+        "ru": {
+          "name": "Мертвый груз"
         }
       },
       "artists": [
@@ -2999,6 +3902,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/dead_weight.webp"
       ],
@@ -3016,6 +3928,9 @@
           "effects": [
             "{Paid Effect}Pay 1{HP}: Roll-\n1-2: Loot 2.\n3-4: Loot 1.\n5-6: Take 1 damage."
           ]
+        },
+        "ru": {
+          "name": "Дьявольский попрошайка"
         }
       },
       "artists": [
@@ -3032,6 +3947,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/devil_beggar.webp"
       ]
@@ -3047,6 +3971,9 @@
             "When this enters play, the active player rerolls each item they control.",
             "At the end of the turn, put this into discard."
           ]
+        },
+        "ru": {
+          "name": "Комната игральной кости!"
         }
       },
       "artists": [
@@ -3059,6 +3986,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/dice_room_1.webp"
       ]
@@ -3074,6 +4010,9 @@
             "When this enters play, each player discards their hands and loots 3.",
             "At the end of the turn, put this into discard."
           ]
+        },
+        "ru": {
+          "name": "Комната игральной кости!!"
         }
       },
       "artists": [
@@ -3086,6 +4025,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/dice_room_2.webp"
       ]
@@ -3101,6 +4049,9 @@
             "When this enters play, put each shop item into discard.",
             "At the end of the turn, put this into discard."
           ]
+        },
+        "ru": {
+          "name": "Комната игральной кости!!!"
         }
       },
       "artists": [
@@ -3113,6 +4064,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/dice_room_3.webp"
       ]
@@ -3128,6 +4088,9 @@
             "When this enters play, each player rerolls each of their items.",
             "At the end of the turn, put this into discard."
           ]
+        },
+        "ru": {
+          "name": "Комната игральной кости!!!!"
         }
       },
       "artists": [
@@ -3140,6 +4103,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/dice_room_4.webp"
       ]
@@ -3155,6 +4127,9 @@
             "When this enters play, put each monster into discard.",
             "At the end of the turn, put this into discard."
           ]
+        },
+        "ru": {
+          "name": "Комната игральной кости!!!!!"
         }
       },
       "artists": [
@@ -3167,6 +4142,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/dice_room_5.webp"
       ]
@@ -3182,6 +4166,9 @@
             "When this enters play, reroll each item in play, each player discards their hand and loots 3. Put each monster into discard.",
             "At the end of the turn, put this into discard."
           ]
+        },
+        "ru": {
+          "name": "Комната игральной кости!!!!!!"
         }
       },
       "artists": [
@@ -3194,6 +4181,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/dice_room_6.webp"
       ]
@@ -3219,6 +4215,9 @@
             "When an attack is declared on this, put each other monster into discard.",
             "When this dies, put a card named The Harbingers from outside the game into a monster slot not being attacked."
           ]
+        },
+        "ru": {
+          "name": "Догма"
         }
       },
       "stats": [
@@ -3251,6 +4250,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/dogma.webp"
       ]
@@ -3268,6 +4276,9 @@
           "notes": [
             "\"He that hath pity upon the poor lendeth unto the lord; and that which he hath given will he pay him again.\"\nProverbs 19:17"
           ]
+        },
+        "ru": {
+          "name": "Двойное сокровище!"
         }
       },
       "rewards": [
@@ -3290,6 +4301,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/double_treasure.webp"
       ]
@@ -3307,6 +4327,9 @@
           "notes": [
             "\"Therefore if any man be in Christ, he is a new creature: old things are passed away; behold, all things have become new.\"\n2 Corinthians 5:17"
           ]
+        },
+        "ru": {
+          "name": "Туалетный cтолик"
         }
       },
       "artists": [
@@ -3323,6 +4346,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/dressing_table.webp"
       ]
@@ -3346,6 +4378,9 @@
           "effects": [
             "At the start of the turn, the active player may reroll an item they control."
           ]
+        },
+        "ru": {
+          "name": "Благословение Эдема"
         }
       },
       "artists": [
@@ -3362,6 +4397,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/edens_blessing.webp"
       ]
@@ -3376,6 +4420,9 @@
           "effects": [
             "Cancel an attack on a monster and put that monster card on the bottom of the monster deck."
           ]
+        },
+        "ru": {
+          "name": "Экстренный номер"
         }
       },
       "artists": [
@@ -3392,6 +4439,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/emergency_contact.webp"
       ]
@@ -3409,6 +4465,9 @@
           "notes": [
             "\"The rich and poor meet together: the lord is the maker of them all.\"\nProverbs 22:2"
           ]
+        },
+        "ru": {
+          "name": "Равенство"
         }
       },
       "artists": [
@@ -3425,6 +4484,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/equality.webp"
       ]
@@ -3439,6 +4507,9 @@
           "effects": [
             "{Paid Effect}Discard a loot card: Roll-\n3: Gain 4¢.\n4-5: Gain 7¢.\n6: Gain +1 treasure and loot 1."
           ]
+        },
+        "ru": {
+          "name": "Вечный сундук"
         }
       },
       "rewards": [
@@ -3473,6 +4544,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/eternal_chest.webp"
       ]
@@ -3488,6 +4568,9 @@
             "{Tap Effect}Put a counter on this.",
             "{Paid Effect}Remove 2 counters from this:\nTill end of turn, if a player would roll a 2 or 3, it becomes a 1 instead."
           ]
+        },
+        "ru": {
+          "name": "Вечный D6"
         }
       },
       "artists": [
@@ -3500,6 +4583,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/eternal_d6.webp"
       ]
@@ -3514,6 +4606,9 @@
           "effects": [
             "{Paid Effect}Destroy this: roll-\n1: You die.\n2: Loot 3.\n3: Gain 9¢.\n4: Gain +1 treasure.\n5: Gain +2 treasure.\n6: This becomes a soul. Gain it."
           ]
+        },
+        "ru": {
+          "name": "Экспериментальное лечение"
         }
       },
       "rewards": [
@@ -3552,6 +4647,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/experimental_treatment.webp"
       ]
@@ -3566,6 +4670,9 @@
           "effects": [
             "{Curse Effect}At the end of your turn, give another player a loot card.\nWhen you die, before paying penalties, give this to another player."
           ]
+        },
+        "ru": {
+          "name": "Зародыш-преследователь"
         }
       },
       "artists": [
@@ -3582,6 +4689,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/fetal_haunt.webp"
       ]
@@ -3597,6 +4713,9 @@
             "Combat damage you deal is doubled on attack rolls of 6.",
             "Combat damage you take is doubled on attack rolls of 1."
           ]
+        },
+        "ru": {
+          "name": "Огненный разум"
         }
       },
       "artists": [
@@ -3613,6 +4732,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/fire_mind.webp"
       ]
@@ -3630,6 +4758,9 @@
           "notes": [
             "This can be done on any player's turn in response to any action."
           ]
+        },
+        "ru": {
+          "name": "Flash Исаак"
         }
       },
       "stats": [
@@ -3656,6 +4787,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/flash_isaac.webp"
       ],
@@ -3680,6 +4820,9 @@
               "text": "This can't be destroyed or put into discard."
             }
           ]
+        },
+        "ru": {
+          "name": "Переворот"
         }
       },
       "rewards": [
@@ -3698,6 +4841,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/flip.webp"
       ],
@@ -3718,6 +4870,9 @@
           "notes": [
             "\"Iron sharpens iron, and one man sharpens another.\"\nProverbs 27:17"
           ]
+        },
+        "ru": {
+          "name": "Шипастый пол"
         }
       },
       "artists": [
@@ -3734,6 +4889,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/floor_spikes.webp"
       ]
@@ -3748,6 +4912,9 @@
           "effects": [
             "{Paid Effect}Pay 3¢: roll-\n3: Loot 1.\n4: Loot 2.\n5: Loot 3.\n6: Loot 6. Put this into discard."
           ]
+        },
+        "ru": {
+          "name": "Автомат предсказаний"
         }
       },
       "rewards": [
@@ -3782,6 +4949,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/fortune_teller.webp"
       ]
@@ -3808,6 +4984,9 @@
             "{Tap Effect}Put a monster not being attacked under this if there are no cards under this.",
             "{Tap Effect}Put a monster from under this in a monster slot not being attacked. The active player must make an additional attack on it this turn."
           ]
+        },
+        "ru": {
+          "name": "Дружелюбный шар"
         }
       },
       "artists": [
@@ -3824,6 +5003,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/friendly_ball.webp"
       ]
@@ -3841,6 +5029,9 @@
           "notes": [
             "\"Thanks be unto god for his unspeakable gift.\"\n2 Corinthians 9:15"
           ]
+        },
+        "ru": {
+          "name": "Дружелюбный мешок"
         }
       },
       "rewards": [
@@ -3863,6 +5054,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/friendly_sack.webp"
       ]
@@ -3883,6 +5083,9 @@
               "text": "This can't be destroyed or put into discard."
             }
           ]
+        },
+        "ru": {
+          "name": "Гелло"
         }
       },
       "artists": [
@@ -3895,6 +5098,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/gello.webp"
       ],
@@ -3919,6 +5131,9 @@
               "text": "This can't be destroyed or put into discard."
             }
           ]
+        },
+        "ru": {
+          "name": "Глюк"
         }
       },
       "artists": [
@@ -3931,6 +5146,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/glitch.webp"
       ],
@@ -3949,6 +5173,9 @@
             "Prevent all damage you would take while it's not your turn.",
             "The first time each turn another player plays a loot card that targets you or something you control, you may cancel it."
           ]
+        },
+        "ru": {
+          "name": "Обглоданный лист"
         }
       },
       "artists": [
@@ -3965,6 +5192,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/gnawed_leaf.webp"
       ],
@@ -3987,6 +5223,9 @@
               "text": "This loot becomes an item under your control when it resolves."
             }
           ]
+        },
+        "ru": {
+          "name": "Золотой брелок"
         }
       },
       "artists": [
@@ -4003,6 +5242,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/golden_trinket.webp"
       ]
@@ -4017,6 +5265,9 @@
           "effects": [
             "Choose a player. They take 2 damage. Put this in the monster deck 4 cards from the top."
           ]
+        },
+        "ru": {
+          "name": "Золотая тролль-бомба!"
         }
       },
       "artists": [
@@ -4033,6 +5284,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/golden_troll_bomb.webp"
       ],
@@ -4048,6 +5308,9 @@
           "effects": [
             "At the end of the turn, if the active player didn't purchase a shop item, they discard their hand."
           ]
+        },
+        "ru": {
+          "name": "Удушающая Алчность"
         }
       },
       "artists": [
@@ -4064,6 +5327,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/greed_looms.webp"
       ]
@@ -4079,6 +5351,9 @@
             "This room can be attacked.",
             "When an attack is declared on this, each non-active player rolls:\n4-6: They must make an attack roll against this after each attack roll the active player makes this attack."
           ]
+        },
+        "ru": {
+          "name": "Гусь"
         }
       },
       "stats": [
@@ -4115,6 +5390,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/gus.webp"
       ]
@@ -4129,6 +5413,9 @@
           "effects": [
             "When this dies expand monster slots by 1. The active player must make an additional attack."
           ]
+        },
+        "ru": {
+          "name": "Выпотрошенный толстяк"
         }
       },
       "stats": [
@@ -4165,6 +5452,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/gutted_fatty.webp"
       ]
@@ -4179,6 +5475,9 @@
           "effects": [
             "Look at the top 5 cards of the monster or room deck and put them back in any order, then put a room or monster not being attacked into discard."
           ]
+        },
+        "ru": {
+          "name": "Хагалаз"
         }
       },
       "artists": [
@@ -4195,6 +5494,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/hagalaz.webp"
       ]
@@ -4210,6 +5518,9 @@
             "Each time a player rolls a ❷, put a counter on this.",
             "{Paid Effect}Remove 3 counters from this:\nPut the top card of the loot discard into your hand."
           ]
+        },
+        "ru": {
+          "name": "Священная земля"
         }
       },
       "rewards": [
@@ -4228,6 +5539,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/hallowed_ground.webp"
       ]
@@ -4245,6 +5565,9 @@
           "notes": [
             "\"And there were gnats on man and beast. All the dust of the earth became gnats\"\nExodus 8:17"
           ]
+        },
+        "ru": {
+          "name": "Нимб из мух"
         }
       },
       "artists": [
@@ -4261,6 +5584,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/halo_of_flies.webp"
       ]
@@ -4278,6 +5610,9 @@
           "notes": [
             "\"If one of you says to them, 'go in peace; keep warm and well fed,' but does nothing about their physical needs, what good is it?\"\nJames 2:16"
           ]
+        },
+        "ru": {
+          "name": "Обноски"
         }
       },
       "rewards": [
@@ -4300,6 +5635,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/hand_me_downs.webp"
       ]
@@ -4314,6 +5658,9 @@
           "effects": [
             "Monster have -x{DC} on your turn, where x is the number of souls the player with the most souls controls minus the number of souls you control."
           ]
+        },
+        "ru": {
+          "name": "Опознавательный знак"
         }
       },
       "artists": [
@@ -4330,6 +5677,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/handicapped_placard.webp"
       ]
@@ -4347,6 +5703,9 @@
           "notes": [
             "\"Arise then, O invincible prince, bring help against the attacks of the lost spirits to the people of God, and bring them the victory.\"\nThe Prayer to Saint Michael"
           ]
+        },
+        "ru": {
+          "name": "Преследование!"
         }
       },
       "artists": [
@@ -4363,6 +5722,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/haunted.webp"
       ]
@@ -4377,6 +5745,9 @@
           "effects": [
             "Players who control the most items or tied for the most may only recharge one item during their recharge step."
           ]
+        },
+        "ru": {
+          "name": "Тяжелая ноша"
         }
       },
       "artists": [
@@ -4393,6 +5764,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/heavy_is_the_head.webp"
       ]
@@ -4415,6 +5795,9 @@
               "text": "This can't be destroyed or put into discard."
             }
           ]
+        },
+        "ru": {
+          "name": "Кровохарканье"
         }
       },
       "artists": [
@@ -4427,6 +5810,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/hemoptysis.webp"
       ],
@@ -4444,6 +5836,9 @@
           "effects": [
             "Each time a player rolls a ❸, each monster gains -1{DC} till end of turn."
           ]
+        },
+        "ru": {
+          "name": "Святой мозг"
         }
       },
       "stats": [
@@ -4480,6 +5875,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/holy_brain.webp"
       ]
@@ -4494,6 +5898,9 @@
           "effects": [
             "Each time a monster dies, the active player may gain 3¢."
           ]
+        },
+        "ru": {
+          "name": "Святой жмотик"
         }
       },
       "stats": [
@@ -4530,6 +5937,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/holy_greedling.webp"
       ]
@@ -4544,6 +5960,9 @@
           "effects": [
             "Each time a monster dies, the active player may attack an additional time this turn."
           ]
+        },
+        "ru": {
+          "name": "Святой портал"
         }
       },
       "stats": [
@@ -4580,6 +5999,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/holy_portal.webp"
       ]
@@ -4594,6 +6022,9 @@
           "effects": [
             "At the end of each turn, the active player loots 1."
           ]
+        },
+        "ru": {
+          "name": "Святой пси-хорф"
         }
       },
       "stats": [
@@ -4630,6 +6061,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/holy_psy_horf.webp"
       ]
@@ -4644,6 +6084,9 @@
           "effects": [
             "When this would deal combat damage to the active player, prevent it, then this deals 1 damage to a player chosen at random."
           ]
+        },
+        "ru": {
+          "name": "Роговик"
         }
       },
       "stats": [
@@ -4680,6 +6123,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/hornfel.webp"
       ]
@@ -4702,6 +6154,9 @@
               "text": "This can't be destroyed or put into discard."
             }
           ]
+        },
+        "ru": {
+          "name": "Гиперкоагуляция"
         }
       },
       "rewards": [
@@ -4720,6 +6175,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/hypercoagulation.webp"
       ],
@@ -4737,6 +6201,9 @@
           "effects": [
             "At the start of your turn roll-\n1-2: Put a monster into discard and replace it with the top card of the monster deck\n3-4: Reroll an item you control.\n5: Discard your hand and loot 3.\n6: Do all of the above."
           ]
+        },
+        "ru": {
+          "name": "Я - ошибка"
         }
       },
       "rewards": [
@@ -4755,6 +6222,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/i_am_error.webp"
       ]
@@ -4776,6 +6252,9 @@
               "text": "This can't be destroyed or put into discard."
             }
           ]
+        },
+        "ru": {
+          "name": "СРК"
         }
       },
       "rewards": [
@@ -4794,6 +6273,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/ibs.webp"
       ],
@@ -4811,6 +6299,9 @@
           "effects": [
             "Each time a player would roll a ❶ or ❻, they may reroll it."
           ]
+        },
+        "ru": {
+          "name": "Благословение Исаака"
         }
       },
       "artists": [
@@ -4827,6 +6318,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/isaacs_blessing.webp"
       ]
@@ -4844,6 +6344,9 @@
           "notes": [
             "This can be done on any player's turn in response to any action."
           ]
+        },
+        "ru": {
+          "name": "Иаков и Исав"
         }
       },
       "stats": [
@@ -4870,6 +6373,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/jacob_and_esau.webp"
       ],
@@ -4889,6 +6401,9 @@
             "Each time a monster dies, put a counter on this.",
             "{Tap Effect}Remove 1 or more counters from this:\nLoot 1. If 3+ counters were removed, deal 1 damage to a monster instead."
           ]
+        },
+        "ru": {
+          "name": "Банка с мухами"
         }
       },
       "rewards": [
@@ -4911,6 +6426,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/jar_of_flies.webp"
       ]
@@ -4926,6 +6450,9 @@
             "Each time you die, before paying penalties, put 2 counters on this.",
             "When this is destroyed, gain x¢ and loot x, where x is equal to the number of counters on this."
           ]
+        },
+        "ru": {
+          "name": "Тень Иуды"
         }
       },
       "rewards": [
@@ -4944,6 +6471,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/judas_shadow.webp"
       ]
@@ -4965,6 +6501,9 @@
               "text": "This can't be destroyed or put into discard."
             }
           ]
+        },
+        "ru": {
+          "name": "Сделка Хранителя"
         }
       },
       "rewards": [
@@ -4983,6 +6522,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/keepers_bargain.webp"
       ],
@@ -5001,6 +6549,9 @@
             "When this enters play, expand shop slots by 2.",
             "Each time another player purchases a shop item, gain 2¢ and loot 1."
           ]
+        },
+        "ru": {
+          "name": "Коробок Хранителя"
         }
       },
       "rewards": [
@@ -5027,6 +6578,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/keepers_box.webp"
       ]
@@ -5042,6 +6602,9 @@
             "When you gain or purchase this, gain 9¢.",
             "{Tap Effect}Put a counter on this. Gain ¢ equal to the number of counters on this, then give this card to another player."
           ]
+        },
+        "ru": {
+          "name": "Пенни Хранителя"
         }
       },
       "rewards": [
@@ -5060,6 +6623,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/keepers_penny.webp"
       ]
@@ -5082,6 +6654,9 @@
               "text": "This can't be destroyed or put into discard."
             }
           ]
+        },
+        "ru": {
+          "name": "Мошна Хранителя"
         }
       },
       "rewards": [
@@ -5104,6 +6679,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/keepers_sack.webp"
       ]
@@ -5118,6 +6702,9 @@
           "effects": [
             "Choose one- The active player may attack an additional time this turn. Put the top card of the monster deck in a monster slot not being attacked."
           ]
+        },
+        "ru": {
+          "name": "Ключ"
         }
       },
       "artists": [
@@ -5134,6 +6721,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/key.webp"
       ]
@@ -5148,6 +6744,9 @@
           "effects": [
             "{Paid Effect}Discard a loot card: Roll. If the discarded card had \"key\" in its name, roll 3x instead-\n5-6: Gain +1 treasure."
           ]
+        },
+        "ru": {
+          "name": "Ключник"
         }
       },
       "rewards": [
@@ -5170,6 +6769,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/key_master.webp"
       ]
@@ -5187,6 +6795,9 @@
           "notes": [
             "\"And if thy right eye offend thee, pluck it out, and cast it from thee: For it is profitable for thee that one of they members should perish, and not that thy whole body should be cast into hell.\"\nMatthew 5:29"
           ]
+        },
+        "ru": {
+          "name": "Лазерный глаз!"
         }
       },
       "artists": [
@@ -5203,6 +6814,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/laser_eye.webp"
       ]
@@ -5223,6 +6843,9 @@
               "text": "This can't be destroyed or put into discard."
             }
           ]
+        },
+        "ru": {
+          "name": "Лемегетон"
         }
       },
       "artists": [
@@ -5235,6 +6858,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/lemegeton.webp"
       ],
@@ -5264,6 +6896,9 @@
             "3-4: Loot 2, then put a loot card from your hand on top of the loot deck.",
             "5-6: Recharge each item you control."
           ]
+        },
+        "ru": {
+          "name": "Сундучок"
         }
       },
       "rewards": [
@@ -5290,6 +6925,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/lil_chest.webp"
       ]
@@ -5304,6 +6948,9 @@
           "effects": [
             "Each time a player rolls a ❸, choose a monster. It gains -1{DC}, till end of turn."
           ]
+        },
+        "ru": {
+          "name": "Магнетит"
         }
       },
       "artists": [
@@ -5320,6 +6967,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/lodestone.webp"
       ]
@@ -5340,6 +6996,9 @@
               "text": "This loot becomes an item under your control when it resolves."
             }
           ]
+        },
+        "ru": {
+          "name": "Счастливый палец"
         }
       },
       "rewards": [
@@ -5362,6 +7021,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/lucky_toe.webp"
       ]
@@ -5379,6 +7047,9 @@
           "notes": [
             "\"For I was hungry and you gave me something to eat...\"\n-Matthew 25:35"
           ]
+        },
+        "ru": {
+          "name": "Полдник"
         }
       },
       "artists": [
@@ -5395,6 +7066,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/lunch.webp"
       ]
@@ -5410,6 +7090,9 @@
             "Choose a player. You must make an additional attack against them. They have 4+{DC} for the attack.",
             "When that player dies this turn, they give the active player the item they would destroy for the death penalty."
           ]
+        },
+        "ru": {
+          "name": "Жажда крови!"
         }
       },
       "rewards": [
@@ -5432,6 +7115,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/lust_for_blood.webp"
       ]
@@ -5449,6 +7141,9 @@
           "notes": [
             "\"Or do you not know that your body is a temple of the holy spirit within you, whom you have from God? You are not your own, for you were bought with a price. So glorify God in your body.\"\n1 Corinthians 6:19-20"
           ]
+        },
+        "ru": {
+          "name": "Благословение Мэгги"
         }
       },
       "artists": [
@@ -5465,6 +7160,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/maggys_blessing.webp"
       ]
@@ -5479,6 +7183,9 @@
           "effects": [
             "Change a number in the effect text of a card in play or loot being played by 1 till end of turn. The number can't go below 1 or above 6."
           ]
+        },
+        "ru": {
+          "name": "Волшебный маркер"
         }
       },
       "artists": [
@@ -5495,6 +7202,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/magic_marker.webp"
       ]
@@ -5510,6 +7226,9 @@
             "{Tap Effect}Gain +1 treasure, put a counter on this, then give this to another player.",
             "At the start of your turn, roll-\nIf the roll is less than the number of counters on this, destroy it and all other items you control."
           ]
+        },
+        "ru": {
+          "name": "Волшебная кожа"
         }
       },
       "rewards": [
@@ -5528,6 +7247,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/magic_skin.webp"
       ]
@@ -5542,6 +7270,9 @@
           "notes": [
             "“For you formed my inward parts; you knitted me together in my mother’s womb.”\nPsalm 139:13"
           ]
+        },
+        "ru": {
+          "name": "Мама Гэрби"
         }
       },
       "stats": [
@@ -5582,6 +7313,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/mama_gurdy.webp"
       ]
@@ -5596,6 +7336,9 @@
           "effects": [
             "{Tap Effect}Destroy this. If you do, deal 3 damage to each monster and player."
           ]
+        },
+        "ru": {
+          "name": "Мама Мега"
         }
       },
       "artists": [
@@ -5612,6 +7355,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/mama_mega.webp"
       ]
@@ -5626,6 +7378,9 @@
           "effects": [
             "{Tap Effect}Choose a non-eternal card in play. Put a counter on it of a type already on it or remove a counter from it."
           ]
+        },
+        "ru": {
+          "name": "Шарики"
         }
       },
       "artists": [
@@ -5642,6 +7397,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/marbles.webp"
       ]
@@ -5656,6 +7420,9 @@
           "effects": [
             "Deal 2 damage to a monster or player."
           ]
+        },
+        "ru": {
+          "name": "Мега-Бомба!"
         }
       },
       "artists": [
@@ -5672,6 +7439,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/mega_bomb.webp"
       ]
@@ -5693,6 +7469,9 @@
               "text": "Indomitable monsters can't be covered. If they would be put in a monster slot, expand monster slots by 1 and put them in that new slot."
             }
           ]
+        },
+        "ru": {
+          "name": "Мега Cатана!"
         }
       },
       "stats": [
@@ -5733,6 +7512,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/mega_satan.webp"
       ],
@@ -5749,6 +7537,9 @@
             "{Tap Effect}Look at the top 3 cards of the treasure deck. Put them back in any order, then put a shop item into discard.",
             "Shop items you purchase cost 4¢ less."
           ]
+        },
+        "ru": {
+          "name": "Членская карта"
         }
       },
       "artists": [
@@ -5765,6 +7556,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/member_card.webp"
       ]
@@ -5779,6 +7579,9 @@
           "effects": [
             "Players who control the fewest souls or tied for fewest have +1{ATK} and may attack an additional time on their turn."
           ]
+        },
+        "ru": {
+          "name": "Сила для смиренных"
         }
       },
       "artists": [
@@ -5795,6 +7598,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/might_for_the_meek.webp"
       ]
@@ -5810,6 +7622,9 @@
             "When you gain or purchase this, reveal the top 10 cards of the loot deck. Put each card named Pills! in your hand and the rest on the bottom of the deck.",
             "At the start of your turn, put a card named Pills! from the loot discard into your hand."
           ]
+        },
+        "ru": {
+          "name": "Мамин пузырек"
         }
       },
       "artists": [
@@ -5826,6 +7641,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/moms_bottle_of_pills.webp"
       ]
@@ -5841,6 +7665,9 @@
             "Each time this takes damage, it gains +1{DC} till end of turn.",
             "When this dies, expand monster slots by 2."
           ]
+        },
+        "ru": {
+          "name": "Матерь!"
         }
       },
       "stats": [
@@ -5881,6 +7708,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/mother.webp"
       ]
@@ -5895,6 +7731,9 @@
           "effects": [
             "The player who controls the most items or tied for the most dies. Put this in the monster deck 6 cards from the top."
           ]
+        },
+        "ru": {
+          "name": "Мамина тень!"
         }
       },
       "artists": [
@@ -5907,6 +7746,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/mothers_shadow.webp"
       ]
@@ -5921,6 +7769,9 @@
           "effects": [
             "Each time this deals combat damage to the attacking player, it deals 1 damage to each other player."
           ]
+        },
+        "ru": {
+          "name": "Гриб"
         }
       },
       "stats": [
@@ -5957,6 +7808,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/mushroom.webp"
       ]
@@ -5971,6 +7831,9 @@
           "effects": [
             "This takes no combat damage on every other attack roll made against it."
           ]
+        },
+        "ru": {
+          "name": "Нуль"
         }
       },
       "stats": [
@@ -6003,6 +7866,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/null.webp"
       ]
@@ -6017,6 +7889,9 @@
           "effects": [
             "Each player rolls-\n1-2: They skip their next turn."
           ]
+        },
+        "ru": {
+          "name": "Слив!"
         }
       },
       "artists": [
@@ -6033,6 +7908,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/overflow.webp"
       ]
@@ -6050,6 +7934,9 @@
           "notes": [
             "\"A woman shall not be clothed with man's apparel, neither shall a man use woman's apparel: For he that doeth these things is abominable before God.\"\nDeuteronomy 22:5"
           ]
+        },
+        "ru": {
+          "name": "Эффектный мальчик"
         }
       },
       "rewards": [
@@ -6072,6 +7959,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/pageant_boy.webp"
       ]
@@ -6086,6 +7982,9 @@
           "effects": [
             "When this dies, look at the top 5 cards of the loot deck and put them back in any order."
           ]
+        },
+        "ru": {
+          "name": "Смотрящий толстяк"
         }
       },
       "stats": [
@@ -6122,6 +8021,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/peeping_fatty.webp"
       ]
@@ -6138,6 +8046,9 @@
             "3-4: You gain +1{HP} till end of turn!",
             "5-6: You take 1 damage!"
           ]
+        },
+        "ru": {
+          "name": "Пилюля!"
         }
       },
       "artists": [
@@ -6154,6 +8065,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/pills_2.webp"
       ]
@@ -6170,6 +8090,9 @@
             "3-4: Loot 3. Then put 1 card from your hand on top of the loot deck.",
             "5-6: Loot 3."
           ]
+        },
+        "ru": {
+          "name": "Пилюля!"
         }
       },
       "rewards": [
@@ -6192,6 +8115,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/pills.webp"
       ]
@@ -6209,6 +8141,9 @@
           "notes": [
             "\"Whoever digs a pit will fall into it; if someone rolls a stone, it will roll back onto them.\"\nProverbs 26:27"
           ]
+        },
+        "ru": {
+          "name": "Яма-ловушка!"
         }
       },
       "artists": [
@@ -6225,6 +8160,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/pitfall.webp"
       ]
@@ -6239,6 +8183,9 @@
           "effects": [
             "Players who control the fewest souls or tied for fewest may purchase a shop item for 0¢ on their turn."
           ]
+        },
+        "ru": {
+          "name": "Жалость для бедных"
         }
       },
       "artists": [
@@ -6255,6 +8202,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/pity_for_the_poor.webp"
       ]
@@ -6272,6 +8228,9 @@
           "notes": [
             "\"He determines the number of the stars; he gives to all of them their names.\"\nPsalm 147:4"
           ]
+        },
+        "ru": {
+          "name": "Планетарий"
         }
       },
       "rewards": [
@@ -6290,6 +8249,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/planetarium.webp"
       ]
@@ -6304,6 +8272,9 @@
           "effects": [
             "At the start of your turn, you may choose a non-eternal item. Put a counter on that item or remove one from it. Otherwise, gain 1¢."
           ]
+        },
+        "ru": {
+          "name": "Пластилиновое печенье"
         }
       },
       "rewards": [
@@ -6326,6 +8297,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/playdough_cookie.webp"
       ]
@@ -6341,6 +8321,9 @@
             "You have +2{HP}.",
             "This item can be attacked."
           ]
+        },
+        "ru": {
+          "name": "Терпила"
         }
       },
       "stats": [
@@ -6377,6 +8360,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/punching_bag.webp"
       ]
@@ -6392,6 +8384,9 @@
             "This enters play deactivated.",
             "{Tap Effect}Destroy this. If you do, destroy all souls. Each player discards their hand and loots 3."
           ]
+        },
+        "ru": {
+          "name": "Клавиша R"
         }
       },
       "artists": [
@@ -6408,6 +8403,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/r_key.webp"
       ]
@@ -6423,6 +8427,9 @@
             "When an attack is declared on this, each non-active player discards a loot card.",
             "When this dies, the active player kills up to 3 other players."
           ]
+        },
+        "ru": {
+          "name": "Мегатряпичник"
         }
       },
       "stats": [
@@ -6463,6 +8470,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/rag_mega.webp"
       ]
@@ -6480,6 +8496,9 @@
           "notes": [
             "\"Beloved, I wish above all things that thou mayest prosper and be in health, even as thy soul prospereth.\"\n3 John 1:2"
           ]
+        },
+        "ru": {
+          "name": "Красные чемпионы"
         }
       },
       "artists": [
@@ -6496,6 +8515,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/red_champions.webp"
       ]
@@ -6510,6 +8538,9 @@
           "effects": [
             "Each time this takes damage, the active player chooses another player. That player takes 1 damage."
           ]
+        },
+        "ru": {
+          "name": "Красный призрак"
         }
       },
       "stats": [
@@ -6546,6 +8577,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/red_ghost.webp"
       ],
@@ -6564,6 +8604,9 @@
           "notes": [
             "\"And I will give unto thee the keys of the kingdom of heaven.\" Matthew 16:19"
           ]
+        },
+        "ru": {
+          "name": "Красный ключ"
         }
       },
       "artists": [
@@ -6580,6 +8623,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/red_key.webp"
       ]
@@ -6594,6 +8646,9 @@
           "effects": [
             "At the end of the turn, if the active player has 1 or fewer loot cards in their hand, they take 1 damage."
           ]
+        },
+        "ru": {
+          "name": "Красные тиски"
         }
       },
       "artists": [
@@ -6610,6 +8665,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/red_vise.webp"
       ]
@@ -6624,6 +8688,9 @@
           "effects": [
             "{Paid Effect}Pay 2¢:\nPut each shop item or each monster not being attacked into discard."
           ]
+        },
+        "ru": {
+          "name": "Автомат пополнения"
         }
       },
       "artists": [
@@ -6640,6 +8707,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/restock_machine.webp"
       ]
@@ -6660,6 +8736,9 @@
               "text": "This loot becomes an item under your control when it resolves."
             }
           ]
+        },
+        "ru": {
+          "name": "Ребро алчности"
         }
       },
       "artists": [
@@ -6676,6 +8755,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/rib_of_greed.webp"
       ]
@@ -6691,6 +8779,9 @@
             "When you gain or purchase this, put counters on it equal to the number of loot cards in your hand.",
             "At the end of your turn, if you have fewer loot cards in your hand than there are counters on this, loot 2."
           ]
+        },
+        "ru": {
+          "name": "Каменное дно"
         }
       },
       "rewards": [
@@ -6713,6 +8804,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/rock_bottom.webp"
       ]
@@ -6728,6 +8828,9 @@
             "Each time a player rolls a ❶, put a counter on this.",
             "{Paid Effect}Remove 3 counters from this:\nDeal 1 damage to a monster or player."
           ]
+        },
+        "ru": {
+          "name": "Жертвенный кинжал"
         }
       },
       "artists": [
@@ -6740,6 +8843,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/sacrificial_dagger.webp"
       ]
@@ -6757,6 +8869,9 @@
           "notes": [
             "\"Seek the lord and his strength. Seek his face continually.\"\n1 chronicles 16:11"
           ]
+        },
+        "ru": {
+          "name": "Благословение Самсона"
         }
       },
       "artists": [
@@ -6773,6 +8888,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/samsons_blessing.webp"
       ]
@@ -6788,6 +8912,9 @@
             "Players can't activate more than one ability each turn.",
             "Players can't play more than one loot card each turn."
           ]
+        },
+        "ru": {
+          "name": "Тень Голода"
         }
       },
       "artists": [
@@ -6804,6 +8931,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/shadow_of_famine.webp"
       ]
@@ -6821,6 +8957,9 @@
           "notes": [
             "\"And ye shall hear of wars and rumours of wars: See that ye be not troubled: For all these things must come to pass, but the end is not yet.\" Matthew 24:6"
           ]
+        },
+        "ru": {
+          "name": "Тень Войны"
         }
       },
       "artists": [
@@ -6837,6 +8976,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/shadow_of_war.webp"
       ]
@@ -6851,6 +8999,9 @@
           "effects": [
             "{Paid Effect}Pay 3¢: roll-\n3: Gain 1¢.\n4: Loot 1.\n5: Gain 5¢.\n6: Gain +1 treasure. Put this into discard."
           ]
+        },
+        "ru": {
+          "name": "Наперсточник"
         }
       },
       "rewards": [
@@ -6885,6 +9036,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/shell_game.webp"
       ]
@@ -6905,6 +9065,9 @@
               "text": "This can't be destroyed or put into discard."
             }
           ]
+        },
+        "ru": {
+          "name": "Братское соперничество"
         }
       },
       "artists": [
@@ -6917,6 +9080,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/sibling_rivalry.webp"
       ],
@@ -6935,6 +9107,9 @@
           "effects": [
             "When an attack is declared on this, the active player chooses another player. That player must make an attack roll against this after each attack roll the active player makes this attack. If this dies this turn, that player gains +1 treasure."
           ]
+        },
+        "ru": {
+          "name": "Сестры Вис"
         }
       },
       "stats": [
@@ -6975,6 +9150,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/sisters_vis.webp"
       ]
@@ -6989,6 +9173,9 @@
           "effects": [
             "{Paid Effect}Pay 3¢: roll-\n2: Gain 1¢\n3: Gain 2¢\n4: Gain 5¢\n5: Gain 7¢\n6: Gain 15¢. Put this into discard."
           ]
+        },
+        "ru": {
+          "name": "Игровой автомат"
         }
       },
       "artists": [
@@ -7005,6 +9192,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/slot_machine.webp"
       ]
@@ -7022,6 +9218,9 @@
             "1. Play 5 loot cards.\n2. Kill 3 monsters.\n3. Give at least 6¢ to another player at one time.\n4. Purchase 3 items.\n5. Roll a 6 three times.",
             "When 4 goals are completed, each player gains +2 treasure."
           ]
+        },
+        "ru": {
+          "name": "Социальные цели!"
         }
       },
       "rewards": [
@@ -7044,6 +9243,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/social_goals.webp"
       ]
@@ -7067,6 +9275,9 @@
           "effects": [
             "The first time a player controls their 3rd soul, the active player chooses a player who controls the fewest souls or tied for fewest. That player gains this soul."
           ]
+        },
+        "ru": {
+          "name": "Душа Зависти"
         }
       },
       "rewards": [
@@ -7089,6 +9300,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/soul_of_envy.webp"
       ]
@@ -7104,6 +9324,9 @@
             "Each time a player kills a monster, put a counter on this.",
             "When the 6th counter is put on this, the active player gains this soul."
           ]
+        },
+        "ru": {
+          "name": "Душа Похоти"
         }
       },
       "rewards": [
@@ -7126,6 +9349,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/soul_of_lust.webp"
       ]
@@ -7141,6 +9373,9 @@
             "Each time a player gains a treasure, put a counter on this.",
             "When the 6th counter is put on this, the active player gains this soul."
           ]
+        },
+        "ru": {
+          "name": "Душа Гордыни"
         }
       },
       "rewards": [
@@ -7163,6 +9398,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/soul_of_pride.webp"
       ]
@@ -7177,6 +9421,9 @@
           "effects": [
             "The first time a player controls 4 items, the active player chooses a player who controls the fewest items or tied for fewest. That player gains this soul."
           ]
+        },
+        "ru": {
+          "name": "Душа Лени"
         }
       },
       "rewards": [
@@ -7199,6 +9446,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/soul_of_sloth.webp"
       ]
@@ -7214,6 +9470,9 @@
             "Each time a player dies, put a counter on this.",
             "When the 6th counter is put on this, the active player gains this soul."
           ]
+        },
+        "ru": {
+          "name": "Душа Гнева"
         }
       },
       "rewards": [
@@ -7236,6 +9495,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/soul_of_wrath.webp"
       ]
@@ -7257,6 +9525,9 @@
               "text": "This can't be destroyed or put into discard."
             }
           ]
+        },
+        "ru": {
+          "name": "Связь душ"
         }
       },
       "artists": [
@@ -7269,6 +9540,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/soulbond.webp"
       ],
@@ -7287,6 +9567,9 @@
           "effects": [
             "At the start of your turn, you may look at the top 3 cards of a deck and put them back in any order."
           ]
+        },
+        "ru": {
+          "name": "Каска спелеолога"
         }
       },
       "artists": [
@@ -7303,6 +9586,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/spelunker_hat.webp"
       ]
@@ -7320,6 +9612,9 @@
           "notes": [
             "\"They hatch cockatrice' eggs, and weave the spider's web: He that eateth of their eggs dieth, and that which is crushed, breaketh out into a viper.\"\nIsaiah 59:5"
           ]
+        },
+        "ru": {
+          "name": "Паутины"
         }
       },
       "artists": [
@@ -7336,6 +9631,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/spider_webs.webp"
       ]
@@ -7357,6 +9661,9 @@
               "text": "This can't be destroyed or put into discard."
             }
           ]
+        },
+        "ru": {
+          "name": "Кубик-счетчик"
         }
       },
       "artists": [
@@ -7369,6 +9676,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/spindown_dice.webp"
       ],
@@ -7387,6 +9703,9 @@
           "effects": [
             "Each time a player deals damage to a monster, they deal 1 damage to the player to their left."
           ]
+        },
+        "ru": {
+          "name": "Урон по области"
         }
       },
       "artists": [
@@ -7403,6 +9722,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/splash_damage.webp"
       ],
@@ -7421,6 +9749,9 @@
           "notes": [
             "\"Then said Jesus unto him, put up again thy sword into his place: For all they that take the sword shall perish with the sword.\"\nMatthew 26:52"
           ]
+        },
+        "ru": {
+          "name": "Военные трофеи"
         }
       },
       "artists": [
@@ -7437,6 +9768,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/spoils_of_war.webp"
       ]
@@ -7454,6 +9794,9 @@
           "notes": [
             "\"His lightnings enlightened the world: The Earth saw, and trembled.\"\nPsalm 97:4"
           ]
+        },
+        "ru": {
+          "name": "Статический разряд"
         }
       },
       "artists": [
@@ -7470,6 +9813,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/static_shock.webp"
       ]
@@ -7484,6 +9836,9 @@
           "effects": [
             "Roll-\n1-3: Give this to the player to your left.\n4-6: Gain 5¢."
           ]
+        },
+        "ru": {
+          "name": "Липкий пятак"
         }
       },
       "rewards": [
@@ -7506,6 +9861,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/sticky_nickel.webp"
       ]
@@ -7527,6 +9891,9 @@
               "text": "This can't be destroyed or put into discard."
             }
           ]
+        },
+        "ru": {
+          "name": "Свищ"
         }
       },
       "artists": [
@@ -7539,6 +9906,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/sumptorium.webp"
       ],
@@ -7556,6 +9932,9 @@
           "effects": [
             "When any player controls a soul, players who control the most souls or tied for the most must pay each other player 2¢ to attack."
           ]
+        },
+        "ru": {
+          "name": "Плата за силу"
         }
       },
       "artists": [
@@ -7572,6 +9951,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/tax_for_the_mighty.webp"
       ]
@@ -7587,6 +9975,9 @@
             "{Tap Effect}Play an additional loot card this turn.",
             "When you control 1 or 2 souls, you have +1{ATK}. If you control 3+ souls, you have +2{ATK} instead."
           ]
+        },
+        "ru": {
+          "name": "Гибельный"
         }
       },
       "stats": [
@@ -7613,6 +10004,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/the_baleful.webp"
       ],
@@ -7634,6 +10034,9 @@
           "notes": [
             "This can be done on any player's turn in response to any action."
           ]
+        },
+        "ru": {
+          "name": "Мрачный"
         }
       },
       "stats": [
@@ -7660,6 +10063,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/the_benighted.webp"
       ],
@@ -7680,6 +10092,9 @@
           "notes": [
             "This can be done on any player's turn in response to any action."
           ]
+        },
+        "ru": {
+          "name": "Сломанный"
         }
       },
       "stats": [
@@ -7706,6 +10121,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/the_broken.webp"
       ],
@@ -7724,6 +10148,9 @@
           "effects": [
             "{Tap Effect}Choose one- Play an additional loot card this turn. Put a shop item into discard."
           ]
+        },
+        "ru": {
+          "name": "Непостоянный"
         }
       },
       "stats": [
@@ -7750,6 +10177,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/the_capricious.webp"
       ],
@@ -7767,6 +10203,9 @@
           "effects": [
             "{Tap Effect}Destroy this. If you do, choose a character card from outside the game. Replace your character with it and your starting item with the chosen card's starting item."
           ]
+        },
+        "ru": {
+          "name": "Пульт"
         }
       },
       "artists": [
@@ -7783,6 +10222,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/the_clicker.webp"
       ]
@@ -7800,6 +10248,9 @@
           "notes": [
             "This can be done on any player's turn in response to any action."
           ]
+        },
+        "ru": {
+          "name": "Свернувшаяся"
         }
       },
       "stats": [
@@ -7826,6 +10277,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/the_curdled.webp"
       ],
@@ -7846,6 +10306,9 @@
           "notes": [
             "This can be done on any player's turn in response to any action."
           ]
+        },
+        "ru": {
+          "name": "Бесстрашная"
         }
       },
       "stats": [
@@ -7872,6 +10335,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/the_dauntless.webp"
       ],
@@ -7892,6 +10364,9 @@
           "notes": [
             "This can be done on any player's turn in response to any action."
           ]
+        },
+        "ru": {
+          "name": "Обманщик"
         }
       },
       "stats": [
@@ -7918,6 +10393,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/the_deceiver.webp"
       ],
@@ -7938,6 +10422,9 @@
           "notes": [
             "This can be done on any player's turn in response to any action."
           ]
+        },
+        "ru": {
+          "name": "Дезертир"
         }
       },
       "stats": [
@@ -7964,6 +10451,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/the_deserter.webp"
       ],
@@ -7984,6 +10480,9 @@
           "notes": [
             "This can be done on any player's turn in response to any action."
           ]
+        },
+        "ru": {
+          "name": "Пустой"
         }
       },
       "stats": [
@@ -8010,6 +10509,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/the_empty.webp"
       ],
@@ -8031,6 +10539,9 @@
           "notes": [
             "This can be done on any player's turn in response to any action."
           ]
+        },
+        "ru": {
+          "name": "Энигма/амгинЭ"
         }
       },
       "stats": [
@@ -8061,6 +10572,15 @@
           "name": "Private"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/the_enigma.webp"
       ],
@@ -8081,6 +10601,9 @@
           "notes": [
             "This can be done on any player's turn in response to any action."
           ]
+        },
+        "ru": {
+          "name": "Скованный"
         }
       },
       "stats": [
@@ -8107,6 +10630,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/the_fettered.webp"
       ],
@@ -8131,6 +10663,9 @@
               "text": "Indomitable monsters can't be covered. If they would be put in a monster slot, expand monster slots by 1 and put them in that new slot."
             }
           ]
+        },
+        "ru": {
+          "name": "Всадники/Зверь!"
         }
       },
       "stats": [
@@ -8161,6 +10696,15 @@
           "name": "Private"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/the_harbingers.webp"
       ]
@@ -8178,6 +10722,9 @@
           "notes": [
             "This can be done on any player's turn in response to any action."
           ]
+        },
+        "ru": {
+          "name": "Блудница"
         }
       },
       "stats": [
@@ -8204,6 +10751,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/the_harlot.webp"
       ],
@@ -8224,6 +10780,9 @@
           "notes": [
             "This can be done on any player's turn in response to any action."
           ]
+        },
+        "ru": {
+          "name": "Барахольщик"
         }
       },
       "stats": [
@@ -8250,6 +10809,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/the_hoarder.webp"
       ],
@@ -8267,6 +10835,9 @@
           "effects": [
             "{Paid Effect}Pay 4¢:\nChoose a player or monster. Prevent the next 1 damage they would take this turn."
           ]
+        },
+        "ru": {
+          "name": "Банка"
         }
       },
       "artists": [
@@ -8283,6 +10854,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/the_jar.webp"
       ]
@@ -8297,6 +10877,9 @@
           "effects": [
             "At the start of the turn, the active player may pay {HP} until they have 1{HP}. If they do, each time a monster dies this turn, they gain +1 treasure."
           ]
+        },
+        "ru": {
+          "name": "Зеркало"
         }
       },
       "rewards": [
@@ -8319,6 +10902,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/the_mirror.webp"
       ]
@@ -8336,6 +10928,9 @@
           "notes": [
             "This can be done on any player's turn in response to any action."
           ]
+        },
+        "ru": {
+          "name": "Скупой"
         }
       },
       "stats": [
@@ -8362,6 +10957,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/the_miser.webp"
       ],
@@ -8380,6 +10984,9 @@
             "Each time a player rolls a ❶, they loot 1.",
             "When this dies, search the monster deck for a curse card and put it in a monster slot not being attacked, then shuffle the monster deck."
           ]
+        },
+        "ru": {
+          "name": "Призыватель дождя"
         }
       },
       "stats": [
@@ -8420,6 +11027,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/the_rainmaker.webp"
       ]
@@ -8437,6 +11053,9 @@
           "notes": [
             "This can be done on any player's turn in response to any action."
           ]
+        },
+        "ru": {
+          "name": "Дикарь"
         }
       },
       "stats": [
@@ -8463,6 +11082,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/the_savage.webp"
       ],
@@ -8481,6 +11109,9 @@
             "When this would take damage, each living player votes either whip or whiff-\nIf whip wins, prevent the damage this would take and each non-active player takes 1 damage.",
             "If whiff wins or there is a tie, the active player loots 1."
           ]
+        },
+        "ru": {
+          "name": "Плеть"
         }
       },
       "stats": [
@@ -8521,6 +11152,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/the_scourge.webp"
       ],
@@ -8536,6 +11176,9 @@
           "effects": [
             "The active player may attack other players. Attacked players have 4+{DC}."
           ]
+        },
+        "ru": {
+          "name": "Сирена"
         }
       },
       "stats": [
@@ -8576,6 +11219,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/the_siren.webp"
       ]
@@ -8593,6 +11245,9 @@
           "notes": [
             "This can be done on any players turn in response to any action."
           ]
+        },
+        "ru": {
+          "name": "Грязный"
         }
       },
       "stats": [
@@ -8619,6 +11274,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/the_soiled.webp"
       ],
@@ -8639,6 +11303,9 @@
           "notes": [
             "This can be done on any player's turn in response to any action."
           ]
+        },
+        "ru": {
+          "name": "Фанатик"
         }
       },
       "stats": [
@@ -8665,6 +11332,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/the_zealot.webp"
       ],
@@ -8705,6 +11381,9 @@
               "text": "This loot becomes an item under your control when it resolves."
             }
           ]
+        },
+        "ru": {
+          "name": "Клещ"
         }
       },
       "artists": [
@@ -8721,6 +11400,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/tick.webp"
       ]
@@ -8736,6 +11424,9 @@
             "Choose a player or monster, then roll-\n1-4: You and that player or monster each takes 2 damage.",
             "5-6: That player or monster take 4 damage."
           ]
+        },
+        "ru": {
+          "name": "Бочка с динамитом"
         }
       },
       "artists": [
@@ -8752,6 +11443,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/tnt_barrel.webp"
       ]
@@ -8769,6 +11469,9 @@
             "Each time you purchase from the shop or treasure deck, gain 1¢.",
             "At the end of your turn, gain 1¢."
           ]
+        },
+        "ru": {
+          "name": "Пенни на нитке"
         }
       },
       "rewards": [
@@ -8791,6 +11494,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/trick_penny.webp"
       ]
@@ -8814,6 +11526,9 @@
             "This only takes combat damage on attack rolls of 2.",
             "When the attacking player makes their second attack roll this turn, after combat damage, cancel the attack."
           ]
+        },
+        "ru": {
+          "name": "Говняшки"
         }
       },
       "stats": [
@@ -8850,6 +11565,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/turdlings.webp"
       ]
@@ -8876,6 +11600,9 @@
           "effects": [
             "Choose another player. Loot x, where x is the number of loot cards in that player's hand."
           ]
+        },
+        "ru": {
+          "name": "Двойка пик"
         }
       },
       "rewards": [
@@ -8898,6 +11625,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/two_of_spades.webp"
       ]
@@ -8913,6 +11649,9 @@
             "Each time a monster or player dies, put a counter on this.",
             "At the end of your turn, if this has 12+ counters, it becomes a soul and loses all abilities."
           ]
+        },
+        "ru": {
+          "name": "Ультрамясной пацан!"
         }
       },
       "rewards": [
@@ -8935,6 +11674,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/ultra_flesh_kid.webp"
       ]
@@ -8950,6 +11698,9 @@
             "After each attack roll the active player makes against this, each other player in turn order makes an attack roll against this.",
             "The player who kills this gains its rewards."
           ]
+        },
+        "ru": {
+          "name": "Ультра Алчность!"
         }
       },
       "stats": [
@@ -8986,6 +11737,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/ultra_greed.webp"
       ]
@@ -9001,6 +11761,9 @@
             "{Tap Effect}Choose a shop item. This becomes a copy of that item till the start of your next turn. Recharge this.",
             "At the start of your turn you may put a shop item into discard."
           ]
+        },
+        "ru": {
+          "name": "Неопределенный"
         }
       },
       "artists": [
@@ -9017,6 +11780,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/undefined.webp"
       ]
@@ -9031,6 +11803,9 @@
           "effects": [
             "Each time a player declares an attack, the active player rolls-\n1-2: This deals 1 damage to that player."
           ]
+        },
+        "ru": {
+          "name": "Хлестальщик"
         }
       },
       "stats": [
@@ -9063,6 +11838,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/whipper.webp"
       ]
@@ -9080,6 +11864,9 @@
           "notes": [
             "\"Purge me with hyssop, and I shall be clean: Wash me, and I shall be whiter than snow.\"\nPsalm 51:7"
           ]
+        },
+        "ru": {
+          "name": "Белые чемпионы"
         }
       },
       "artists": [
@@ -9096,6 +11883,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/white_champions.webp"
       ]
@@ -9116,6 +11912,9 @@
               "text": "This loot becomes an item under your control when it resolves."
             }
           ]
+        },
+        "ru": {
+          "name": "Кость желаний"
         }
       },
       "rewards": [
@@ -9138,6 +11937,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/wishbone.webp"
       ]
@@ -9153,6 +11961,9 @@
             "{Tap Effect}Look at a player's hand and the top card of a deck. You may put the top card of a deck into discard.",
             "At the end of your turn, recharge this."
           ]
+        },
+        "ru": {
+          "name": "Рентгеновское зрение"
         }
       },
       "artists": [
@@ -9169,6 +11980,15 @@
           "name": "KrystalFlamingo"
         }
       ],
+      "translators": {
+        "ru": [
+          "Alchba",
+          "Mitboy",
+          "d0m1n1c132",
+          "Blacknenko",
+          "N-Chance"
+        ]
+      },
       "images": [
         "r/x_ray_vision.webp"
       ]
