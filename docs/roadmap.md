@@ -271,6 +271,7 @@ Step numbers stay as IDs; the table lists steps in work order.
 6. Dice keep their value after a rollback (N-12).
 7. Three modes: Disabled, Soft, Godmode (N-12).
 8. A majority of the other players decides (N-12).
+9. Soft: a played card can be undone until a deck card shows (17.6).
 
 ## 18. Play-test
 

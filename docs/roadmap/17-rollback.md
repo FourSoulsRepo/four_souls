@@ -112,3 +112,18 @@ Owner notes (2026-10-26):
    2. Server test: a changed replay makes the restart a barrier.
    3. Server test: an old restart file loads with no history.
    4. e2e: Godmode rolls back past a restart; a cut shows its row.
+
+### [ ] 17.6 Soft: roll back a played card
+
+1. Goal: in Soft, a played card can be undone until a deck card shows (N-12, item 24).
+2. Tasks:
+   1. Played card: a loot card played, or an item's ability activated.
+   2. Not a purchase; a purchase keeps today's barriers.
+   3. Undoable while no new card came from the treasure, monster or loot deck.
+   4. And no dice was rolled or changed, and no damage was dealt.
+   5. List which of today's barriers this relaxes for such a target.
+   6. **Owner**: do a turn end, a death without damage, or a seen hand card still block it?
+   7. ADR 020 item 4 updated; UC-31 updated.
+3. Done when:
+   1. Engine or server tests: each blocking event; each relaxed one.
+   2. e2e: a played loot card is undone by a Soft vote.
