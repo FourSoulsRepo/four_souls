@@ -181,22 +181,25 @@ export function EndTurn({ intent, idle, left, own, disabled, step, why: reason }
   const why = own && !lit && !disabled ? reason : undefined;
   return (
     <>
-      <button
-        type="button"
-        className={`end-turn ${state}${pressed === step ? ' down' : ''}`}
-        title={own ? `End turn (E)${why ? ` · ${why}` : ''}` : 'Their turn'}
-        aria-disabled={why ? true : undefined}
-        disabled={!lit && !why}
-        onClick={(e) => {
-          if (why) {
-            showWhy(why, e.clientX, e.clientY);
-            return;
-          }
-          press();
-        }}
-      >
-        {label}
-      </button>
+      {/* The slot draws the idle glow behind the button (19.76). */}
+      <span className={`end-turn-slot ${state}`}>
+        <button
+          type="button"
+          className={`end-turn ${state}${pressed === step ? ' down' : ''}`}
+          title={own ? `End turn (E)${why ? ` · ${why}` : ''}` : 'Their turn'}
+          aria-disabled={why ? true : undefined}
+          disabled={!lit && !why}
+          onClick={(e) => {
+            if (why) {
+              showWhy(why, e.clientX, e.clientY);
+              return;
+            }
+            press();
+          }}
+        >
+          {label}
+        </button>
+      </span>
       {open &&
         createPortal(
           <EndTurnQuestion

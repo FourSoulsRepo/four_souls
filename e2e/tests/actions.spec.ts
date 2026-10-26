@@ -330,14 +330,23 @@ test('idle End turn glows softly and breathes, no ring (H-20, 19.76)', async ({ 
   const button = endTurnButton(active);
   // A turn starts with its attack left; the class stands in for the
   // state where nothing is left, as only the look is checked here.
-  await button.evaluate((b) => b.classList.add('idle'));
-  const look = await button.evaluate((b) => ({
-    shadow: getComputedStyle(b).boxShadow,
-    aura: getComputedStyle(b, '::before').animationName,
-  }));
-  // A ring is a shadow with no offset and no blur, only a spread.
-  expect(look.shadow).not.toMatch(/0px 0px 0px [1-9]/);
-  expect(look.aura).toBe('end-turn-glow');
+  await button.evaluate((b) => {
+    b.classList.add('idle');
+    b.parentElement?.classList.add('idle');
+  });
+  const look = await button.evaluate((b) => {
+    const halo = b.parentElement ? getComputedStyle(b.parentElement, '::before') : undefined;
+    return {
+      shadow: getComputedStyle(b).boxShadow,
+      halo: halo?.backgroundImage,
+      breath: halo?.animationName,
+    };
+  });
+  // No glow in the button's own shadow: macOS WebKit clipped it to a
+  // box. The halo is a gradient behind the button that breathes.
+  expect(look.shadow).not.toMatch(/rgba?\((\d+), (2\d\d), /);
+  expect(look.halo).toMatch(/^radial-gradient/);
+  expect(look.breath).toBe('end-turn-glow');
   await active.mouse.move(600, 300);
   await shot(active, 'end-turn-idle');
 });

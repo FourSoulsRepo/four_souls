@@ -1003,26 +1003,27 @@
     0 0 14px rgb(255 210 122 / 70%);
 }
 
-/* Idle (19.76): like a playable hand card's glow, not a ring. The
-   button keeps its ink outline and shadow and gets a tight soft halo;
-   behind it a wide aura breathes; only its opacity moves. */
-.end-turn.idle {
+/* Idle (19.76): a soft green halo behind the button breathes; only its
+   opacity moves. Like Throw's, it is a gradient in its own box, not a
+   blurred shadow: macOS WebKit clipped the shadow of the tilted button
+   to a hard-edged box. The slot around the button draws it, as the
+   tilted button paints its children over its own face. */
+.end-turn-slot {
   position: relative;
-  isolation: isolate;
-  box-shadow:
-    0 4px 0 var(--ink),
-    0 0 6px 1px rgb(110 255 70 / 80%),
-    0 0 14px 3px rgb(60 210 45 / 50%);
+  display: block;
+  width: 100%;
 }
 
-.end-turn.idle::before {
+.end-turn-slot.idle::before {
   position: absolute;
-  inset: -3px;
-  z-index: -1; /* layer: local */
-  border-radius: inherit;
-  box-shadow:
-    0 0 24px 8px rgb(50 200 45 / 55%),
-    0 0 48px 16px rgb(25 150 35 / 30%);
+  inset: -40px -36px;
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side,
+    rgb(110 255 70 / 95%) 55%,
+    rgb(60 210 45 / 50%) 72%,
+    rgb(25 150 35 / 0%)
+  );
   content: '';
   pointer-events: none;
   animation: end-turn-glow 1.6s ease-in-out infinite alternate;
@@ -1048,14 +1049,8 @@
     0 3px 6px rgb(0 0 0 / 50%);
 }
 
-.end-turn.own:enabled:not([aria-disabled='true']):active::before,
-.end-turn.down::before {
-  animation: none;
-  opacity: 0;
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .end-turn.idle::before {
+  .end-turn-slot.idle::before {
     animation: none;
     opacity: 0.8;
   }

@@ -2556,7 +2556,7 @@ Totals by system (76 items):
    1. `.end-turn.idle` drew a hard ring: a shadow with only a spread.
    2. It sat on a dark green border; the ring grew and shrank.
    3. On the lumpy button it read as a green frame, not a glow.
-6. Fix
+6. First fix (replaced in 8)
    1. Client: the idle look follows the hand-card glow (`hand-glow`).
    2. The button keeps its ink outline and drop shadow.
    3. A tight soft green halo on the button itself.
@@ -2566,3 +2566,20 @@ Totals by system (76 items):
    7. It fails on the old style: the ring shadow is found.
    8. Wiki `Animations`, `Client`, `Screenshots`; CHANGELOG.
    9. Screenshots: `.cache/screenshots/19.76/before/` and `after/`.
+7. Owner notes (2026-10-26)
+   1. In the app the glow is still a green box.
+   2. Its edges stop hard, left and right.
+8. Cause, second look
+   1. Any blurred shadow of the tilted button stops in a box in the app.
+   2. The app runs macOS WebKit; Playwright's WebKit draws it right.
+   3. So the glow cannot be a shadow of the button or its children.
+9. Fix
+   1. The button sits in a slot, `.end-turn-slot` in `TurnActions.tsx`.
+   2. The idle slot draws the halo in `::before`, behind the button.
+   3. A radial gradient in its own box, like Throw's glow; no shadow.
+   4. It cannot sit in the button: the tilted button paints it on top.
+   5. Only its opacity breathes (`end-turn-glow`).
+   6. The e2e test now checks: no green in the button's shadow.
+   7. And a radial-gradient halo that breathes.
+   8. It fails on the first fix.
+   9. Screenshots: `.cache/screenshots/19.76/again/`.
