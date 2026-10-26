@@ -2273,6 +2273,12 @@ Totals by system (70 items):
    13. Left as they are; a later item may give them rows.
    14. UC-15 2e, UC-30 3g, UC-31 3e; 15.88 item 7; wiki `Client`; CHANGELOG.
    15. Screenshots: `.cache/screenshots/19.69/before/` and `after/`.
+7. Changed later (17.7, 2026-10-26)
+   1. The row fix is replaced by the one Undo button.
+   2. The play rows are gone; Undo names the play in its tooltip.
+   3. One press undoes the play, also after it resolved: a pass is no target.
+   4. A play's answers to a mode or target are no target of their own.
+   5. So 6.8 – 6.10 no longer apply: one press drops the play.
 
 ### [ ] 19.70 A resolved A Penny! shows no "gains 1¢" row for 5 seconds
 

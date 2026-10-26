@@ -32,7 +32,7 @@ import {
 import { noHostSetup } from './hostSetup';
 import type { CardInfo, Kind } from './cards';
 import { loadFonts } from './fonts';
-import { entriesFor, lookedAt, restartCut, rolledBack, voteEnded, type Entry, type Looked, type Outcome } from './history';
+import { entriesFor, lookedAt, moveOf, restartCut, rolledBack, voteEnded, type Entry, type Looked, type Move, type Outcome } from './history';
 import type { LinePart } from './stack';
 import type { Box } from './zoom';
 import { emptyLobby, forgotten, leftTable, lost, onMessage, remember, renamed, type Screen, type ServerUp, type Session } from './lobby';
@@ -144,6 +144,9 @@ interface AppState extends Session {
   left: number[];
   // history is the match so far, as this viewer saw it (7.9).
   history: Entry[];
+  // moves name what each update did, for the Undo button (17.7); a
+  // game without a rollback mode keeps none.
+  moves: Move[];
   // lastRoll is the last roll shown, for the small die by the stack (15.63).
   lastRoll: LastRoll | null;
   // looking is the cards an effect lets this player look at, shown
@@ -359,6 +362,12 @@ export const useApp = create<AppState>()((set, get) => {
       );
       // Each entry keeps the first step of its update: a rollback's target.
       const first = s.game ? s.game.step + 1 : u.step;
+      // The moves, for the Undo button: a rollback forgets those it
+      // undid (17.7).
+      const r = u.rollback;
+      const moves = u.rollback_mode
+        ? [...s.moves.filter((m) => !r || m.from < r.to), moveOf(u.events ?? [], entries, first, u.step, seatOf(s), names(u))]
+        : [];
       const looked = lookedAt(u.events ?? [], seatOf(s));
       // A rollback jumps to the restored table: no animation, and what
       // the undone steps left on screen goes (item 8.5).
@@ -372,6 +381,7 @@ export const useApp = create<AppState>()((set, get) => {
         behind: playback.pending() > 0,
         jumped: u.rollback !== undefined,
         history: [...history, ...entries.map((e) => ({ ...e, step: first }))],
+        moves,
         ...jump,
       });
     },
@@ -483,7 +493,7 @@ export const useApp = create<AppState>()((set, get) => {
     playback.clear();
     get().playing?.done();
     clearPresence();
-    set({ history: [], lastRoll: null, looking: [], placed: [], left: [] });
+    set({ history: [], moves: [], lastRoll: null, looking: [], placed: [], left: [] });
   };
 
   // open connects to address and says hello; the server answers with
@@ -589,6 +599,7 @@ export const useApp = create<AppState>()((set, get) => {
     placed: [],
     left: [],
     history: [],
+    moves: [],
     lastRoll: null,
     looking: [],
     endLook: () => {

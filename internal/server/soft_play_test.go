@@ -18,6 +18,12 @@ import (
 // table's ids are the game's, so tb.Find names the cards to play.
 func softTable(t *testing.T, setup engine.SituationSetup) (*driver, *enginetest.Table) {
 	t.Helper()
+	return modeTable(t, protocol.RollbackSoft, setup)
+}
+
+// modeTable is softTable with another rollback mode.
+func modeTable(t *testing.T, mode string, setup engine.SituationSetup) (*driver, *enginetest.Table) {
+	t.Helper()
 	built := enginetest.NewSetup(t, setup, b2.Set)
 	state, err := built.G.Save()
 	if err != nil {
@@ -26,7 +32,7 @@ func softTable(t *testing.T, setup engine.SituationSetup) (*driver, *enginetest.
 	dir := t.TempDir()
 	f := saveFile{
 		Format: saveFormat, Engine: engine.Version, Game: "g1", Sets: []string{"b2"},
-		Options: protocol.Options{Rollback: protocol.RollbackSoft},
+		Options: protocol.Options{Rollback: mode},
 		Seats:   []savedSeat{{Name: "Ann", Token: newToken()}, {Name: "Bob", Token: newToken()}}, State: state,
 	}
 	data, err := json.Marshal(f)
@@ -47,7 +53,7 @@ func softTable(t *testing.T, setup engine.SituationSetup) (*driver, *enginetest.
 	bob.say(protocol.TypeReady, protocol.Ready{Ready: true})
 	tb := &driver{t: t, players: []*player{ann, bob}, last: make([]protocol.Update, 2)}
 	tb.updates(-1) // the loaded game
-	if u := tb.last[0]; u.RollbackMode != protocol.RollbackSoft {
+	if u := tb.last[0]; u.RollbackMode != mode {
 		t.Fatalf("mode %q", u.RollbackMode)
 	}
 	return tb, built
@@ -273,6 +279,47 @@ func TestSoftPlayedCardBarriers(t *testing.T) {
 			tb.players[1].say(protocol.TypeRollback, protocol.RollbackTo{Step: k})
 			if code := tb.players[1].failure(); code != protocol.ErrRollback {
 				t.Errorf("a rollback past %s: %s", c.kind, code)
+			}
+		})
+	}
+}
+
+// TestUndoPlayWithItsTarget: a loot card that asks its target first is
+// one move with the answer (17.7). The play is the target; the answer
+// is none, so one rollback puts the card back in the hand, in Soft and
+// in Godmode, where the targets are listed too.
+func TestUndoPlayWithItsTarget(t *testing.T) {
+	for _, mode := range []string{protocol.RollbackSoft, protocol.RollbackGod} {
+		t.Run(mode, func(t *testing.T) {
+			tb, built := modeTable(t, mode, engine.SituationSetup{Players: []engine.SituationPlayer{
+				{Character: "isaac", Hand: []engine.CardRef{"bomb"}}, {Character: "cain"},
+			}})
+			before := viewJSON(t, tb.last[0])
+			k := tb.do(engine.Intent{Player: 0, Kind: engine.IntentPlayLoot, Objects: []engine.ObjectID{built.Find(0, "bomb")}})
+			if w := tb.last[0].View.Waiting; w.Kind != engine.PromptChoose || w.Player != 0 {
+				t.Fatalf("Bomb! asks no target first: %+v", w)
+			}
+			a := tb.do(engine.Intent{Player: 0, Kind: engine.IntentChoose, Choice: 0})
+			if len(tb.last[0].View.Stack) == 0 || tb.handHas("bomb") {
+				t.Fatalf("Bomb! is not on the stack: %s", eventsJSON(t, tb.last[0].Events))
+			}
+			steps := tb.last[0].RollbackSteps
+			if len(steps) == 0 || steps[len(steps)-1] != (protocol.RollbackStep{Step: k, Seat: 0}) {
+				t.Fatalf("the latest target is not the play (step %d): %+v", k, steps)
+			}
+			if _, ok := tb.target(a); ok {
+				t.Errorf("the answer (step %d) is a target of its own", a)
+			}
+			if mode == protocol.RollbackSoft {
+				tb.players[1].say(protocol.TypeRollback, protocol.RollbackTo{Step: a})
+				if code := tb.players[1].failure(); code != protocol.ErrRollback {
+					t.Errorf("a Soft rollback of the answer alone: %s", code)
+				}
+			}
+			tb.players[1].say(protocol.TypeRollback, protocol.RollbackTo{Step: k})
+			tb.rolledBack(k, 1)
+			if viewJSON(t, tb.last[0]) != before {
+				t.Error("the restored table differs from the one before the play")
 			}
 		})
 	}

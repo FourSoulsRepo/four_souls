@@ -2833,6 +2833,7 @@ Images come first, so the new table is built with backs and mats.
    1. `loot_played` and `activated` now give a line: "Bo plays Bomb!".
    2. So a rollback has a row for the play (owner); fixes 19.69.
    3. The play line is no headline; the strip still shows the result only.
+   4. 17.7 removed the play lines again; the Undo button names the play.
 
 ### [x] 15.89 Headlines in the strip
 

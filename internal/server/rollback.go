@@ -26,6 +26,32 @@ type liveStep struct {
 	rec engine.StepRecord
 	// barrier: the step had a barrier event; Soft stops here (item 4).
 	barrier bool
+	// asks: the game waits for the step's author to answer what their
+	// play asks first; answer: the step is such an answer. A play and
+	// its answers are one move, undone by one press (17.7).
+	asks, answer bool
+}
+
+// asksFirst: the game waits for p to answer a question its play asks
+// before the card goes on the stack: a mode, a target, or the ability
+// a loot card copies. Only a loot play or an activation starts one.
+func asksFirst(g *engine.Game, p engine.PlayerID) bool {
+	w := g.Prompt()
+	return w.Kind == engine.PromptChoose && w.Player == p && (g.Activating != nil || w.Purpose == engine.ChooseCopyAbility)
+}
+
+// nextLive is the live step st makes after the live steps so far; g is
+// the game after it.
+func nextLive(live []liveStep, n int, st engine.StepRecord, g *engine.Game, barrier bool) liveStep {
+	s := liveStep{
+		n: n, rec: engine.StepRecord{Intent: st.Intent, Checksum: st.Checksum},
+		barrier: barrier || slices.ContainsFunc(st.Events, engine.Barrier),
+	}
+	if len(live) > 0 {
+		s.answer = live[len(live)-1].asks
+	}
+	s.asks = g != nil && asksFirst(g, st.Intent.Player)
+	return s
 }
 
 // setBase makes the game as it is now the base: the start, a loaded
@@ -49,10 +75,7 @@ func (r *Room) setBase() {
 // record's stay the same.
 func (r *Room) keepLive(st engine.StepRecord) {
 	if r.base != nil {
-		r.live = append(r.live, liveStep{
-			n: r.steps, rec: engine.StepRecord{Intent: st.Intent, Checksum: st.Checksum},
-			barrier: slices.ContainsFunc(st.Events, engine.Barrier),
-		})
+		r.live = append(r.live, nextLive(r.live, r.steps, st, r.game, false))
 	}
 }
 
@@ -100,7 +123,7 @@ func (r *Room) restoreHistory(f *restartFile) {
 // checksums are not compared: a new engine may sum otherwise, and the
 // final bytes decide. The live steps take this engine's checksums, so
 // a later rollback checks against them. A step stays a barrier if it
-// was one, or is one now.
+// was one, or is one now. Which steps answer a play is found again.
 func (r *Room) replayKept(f *restartFile) ([]liveStep, error) {
 	g, err := engine.Resume(f.Base, f.Meaning, r.setup.Sets...)
 	if err != nil {
@@ -116,10 +139,7 @@ func (r *Room) replayKept(f *restartFile) ([]liveStep, error) {
 		if serr != nil {
 			return nil, fmt.Errorf("live step %d: %w", k.N, serr)
 		}
-		live[i] = liveStep{
-			n: k.N, rec: engine.StepRecord{Intent: in, Checksum: st.Checksum},
-			barrier: k.Barrier || slices.ContainsFunc(st.Events, engine.Barrier),
-		}
+		live[i] = nextLive(live[:i], k.N, st, g, k.Barrier)
 	}
 	state, err := g.Save()
 	if err != nil {
@@ -157,19 +177,21 @@ func (r *Room) rollbackFrom() int {
 	return r.baseStep + 1
 }
 
-// softTarget: a Soft rollback may target the live step, with its
-// barrier rule and never a lone pass or throw (item 3.2).
-func (r *Room) softTarget(s liveStep) bool {
+// isTarget: a rollback may target the live step: from rollbackFrom on
+// (in Soft, after the last barrier), never a lone pass or throw (item
+// 3.2), and never an answer to what a play asks first: the play is the
+// move (17.7). Soft refuses any other step; Godmode takes any.
+func (r *Room) isTarget(s liveStep) bool {
 	k := s.rec.Intent.Kind
-	return s.n >= r.rollbackFrom() && k != engine.IntentPass && k != engine.IntentThrow
+	return s.n >= r.rollbackFrom() && k != engine.IntentPass && k != engine.IntentThrow && !s.answer
 }
 
-// softSteps lists the Soft targets now with their authors, for the
-// clients' buttons.
-func (r *Room) softSteps() []protocol.RollbackStep {
+// targets lists the targets now with their authors, for the app's
+// Undo button: the last one is the latest move (17.7).
+func (r *Room) targets() []protocol.RollbackStep {
 	var out []protocol.RollbackStep
 	for _, s := range r.live {
-		if r.softTarget(s) {
+		if r.isTarget(s) {
 			out = append(out, protocol.RollbackStep{Step: s.n, Seat: int(s.rec.Intent.Player)})
 		}
 	}
@@ -191,6 +213,9 @@ func (r *Room) voters(author int) []int {
 // request (ADR 020, item 6). Godmode: any seated player, any live step,
 // no vote; only the game end stops it. Soft: a target after the last
 // barrier, and a vote of the others (items 3 and 5).
+//
+// The app sends the latest target (17.7); Godmode still takes any live
+// step, as a step by step press would reach it too.
 func (r *Room) rollback(c *Client, env protocol.Envelope) {
 	var m protocol.RollbackTo
 	if err := env.Unpack(&m); err != nil {
@@ -230,7 +255,7 @@ func (r *Room) rollback(c *Client, env protocol.Envelope) {
 	}
 	author := int(r.live[i].rec.Intent.Player)
 	switch {
-	case !r.softTarget(r.live[i]):
+	case !r.isTarget(r.live[i]):
 		c.fail(env.ID, protocol.ErrRollback, fmt.Sprintf("step %d cannot be rolled back in Soft: a barrier came after it, or it is a pass or a throw", m.Step))
 		return
 	case c.seat == author && !m.Ask:

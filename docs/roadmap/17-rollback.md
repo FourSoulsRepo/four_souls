@@ -135,7 +135,7 @@ Owner notes (2026-10-26):
    3. Engine test: a private `moved_to_deck` is no barrier.
    4. e2e: a played loot card is undone by a Soft vote.
 
-### [ ] 17.7 One Undo button
+### [x] 17.7 One Undo button
 
 1. Goal: one Undo button replaces the buttons on history rows (N-12, item 25).
 2. Tasks:

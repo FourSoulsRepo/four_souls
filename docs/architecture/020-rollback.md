@@ -36,10 +36,19 @@
    1. Lost. Godmode would lose its whole history on an update.
 8. **A restart keeps the history if a replay checks out**
    1. Won. Same build or a small update keeps it; else it is a barrier.
+9. **A rollback button on each history row (17.3 – 17.6)**
+   1. Lost in 17.7. A step without a row had no button (19.69).
+   2. Rows for plays cluttered the history; the owner wants one button.
+10. **One Undo button for the latest move**
+    1. Won in 17.7 (N-12, item 25). Press by press, with one tooltip.
+11. **The app merges a play with its answers**
+    1. Lost. The app knows no intents and no prompts of past steps.
+12. **The server merges a play with its answers**
+    1. Won. It keeps the intents and sees the prompt after each step.
 
 ## Decision
 
-Use options 1, 4 and 8.
+Use options 1, 4, 8, 10 and 12.
 
 1. Modes
    1. `Options.Rollback`: `""` (Disabled), `soft`, `god`.
@@ -99,7 +108,7 @@ Use options 1, 4 and 8.
    19. A passed vote's `rollback` line names the opener.
 6. Godmode
    1. Any player rolls back, the author too; no vote.
-   2. A target is any step since the base (item 7).
+   2. A target is any step since the base (item 7), reached press by press (item 12).
    3. Barriers do not apply; only the game end does.
    4. Dice: the restored RNG repeats the roll (N-12, item 7).
 7. Base state and replay
@@ -148,6 +157,22 @@ Use options 1, 4 and 8.
    18. A restarted app has no old rows; the row is its first.
    19. An open Soft vote is not kept; it ends with the restart.
 11. Never reseed after a rollback; that would be a free re-roll.
+12. One Undo button (17.7, N-12, item 25)
+    1. The History has one Undo button under its title; none in Disabled.
+    2. One press undoes the latest target: the last of `rollback_steps`.
+    3. Press again to go further back; there is no jump to an older row.
+    4. Every update lists the targets, in Godmode too.
+    5. A play and the answers it asks first are one move.
+    6. Answers: a mode, a target, or the ability a loot card copies.
+    7. Such an answer is no target; the play's step is.
+    8. The server marks them: it sees the prompt after each live step.
+    9. An attack's target is a move of its own: a priority window comes first.
+    10. Soft refuses an answer as a target; Godmode still takes any live step.
+    11. Soft: the author's button asks; another player's opens the vote.
+    12. Greyed, with the reason: a barrier, a vote, a pause, the game end, a spectator.
+    13. The app names the barrier from its events: "Nothing to undo since a die was rolled".
+    14. The tooltip names the move: "Undo: Bo plays A Penny!".
+    15. History rows have no buttons; the 17.6 play rows are gone.
 
 ## Consequences
 

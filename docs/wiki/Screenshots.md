@@ -79,12 +79,14 @@ The fixture copies the fan-game notice. `internal/legal` has a test that fails w
 | A next-roll boost: an icon with a small die | `screen-stats-next-roll.png` |
 | An aimed attack: what the roll needs | `screen-stats-odds.png` |
 | A thrown roll names its changes | `screen-stats-roll.png` |
-| Godmode: a rollback button on a history row | `screen-rollback-button.png` |
+| Godmode: the Undo button under the History title | `screen-rollback-undo.png` |
 | The author rolled back: undone rows greyed, the rollback row | `screen-rollback-undone.png` |
 | Another player rolled back | `screen-rollback-other.png` |
 | Host a game: the rollback mode with its hint | `screen-host-rollback.png` |
 | Soft: a voter sees the rollback vote | `screen-rollback-vote.png` |
 | Soft: the player who opened the vote | `screen-rollback-vote-opener.png` |
 | Soft: the author asked; their status | `screen-rollback-ask-status.png` |
+| Soft: the author's button reads "Ask to undo" | `screen-rollback-ask.png` |
+| Soft: Undo greyed after a roll; the note says why | `screen-rollback-undo-greyed.png` |
 
 When a screen is added, call `shot` in its test and add a row here.

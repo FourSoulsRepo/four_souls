@@ -9,8 +9,8 @@ import './screens.css';
 // rollbackHints say what each rollback mode allows (ADR 020, item 1).
 const rollbackHints: Record<'' | RollbackMode, string> = {
   '': 'No rollback: every step stands.',
-  soft: 'The other players vote to undo a step. Dice, damage, hidden cards and the end of a turn cannot be undone.',
-  god: 'Any player undoes any step at once, even dice. For a table that trusts each other.',
+  soft: 'The other players vote to undo a move. Dice, damage, hidden cards and the end of a turn cannot be undone.',
+  god: 'Any player undoes moves at once, one per press, even dice. For a table that trusts each other.',
 };
 
 // The detailed setup's starting values: the same as the simple setup.

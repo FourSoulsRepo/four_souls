@@ -284,8 +284,8 @@ func TestSoftBarrierKinds(t *testing.T) {
 			want = 3
 			barriers++
 		}
-		if from != want || len(r.softSteps()) != 3-want {
-			t.Errorf("%s: from %d, targets %+v", k, from, r.softSteps())
+		if from != want || len(r.targets()) != 3-want {
+			t.Errorf("%s: from %d, targets %+v", k, from, r.targets())
 		}
 	}
 	if barriers == 0 {
@@ -300,7 +300,7 @@ func TestSoftBarrierKinds(t *testing.T) {
 	for _, k := range []engine.IntentKind{engine.IntentPass, engine.IntentThrow} {
 		r := room()
 		r.live[1].rec.Intent.Kind = k
-		if got := r.softSteps(); len(got) != 1 || got[0] != (protocol.RollbackStep{Step: 1, Seat: 1}) {
+		if got := r.targets(); len(got) != 1 || got[0] != (protocol.RollbackStep{Step: 1, Seat: 1}) {
 			t.Errorf("intent %d: targets %+v", k, got)
 		}
 	}
