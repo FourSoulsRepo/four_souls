@@ -214,6 +214,11 @@ describe('effectsFor', () => {
     ]);
   });
 
+  it('neither reveals nor places a card a dead monster uncovered (19.72)', () => {
+    const e: GameEvent = { kind: 'card_revealed', player: -1, object: 50, prev: 41, card: 'fly' };
+    expect(effectsFor([e], ctx)).toEqual([]);
+  });
+
   it('only reveals a card that is in no slot', () => {
     const e: GameEvent = { kind: 'card_revealed', player: 0, object: 51, card: 'fly' };
     expect(effectsFor([e], ctx)).toEqual([{ kind: 'reveal', card: 'fly', deck: ['deck-loot'] }]);

@@ -730,6 +730,52 @@ test('a refilled slot\'s card grows out of its deck, then flies from the middle 
   expect(flight.w).toBeGreaterThan(200);
 });
 
+test('a killed monster\'s covered card shows in its slot, not from the deck (19.72)', async ({ browser }) => {
+  const [ari] = await startGame(browser, ['Ari', 'Bex']);
+  if (!ari) {
+    throw new Error('no pages');
+  }
+  // Replay a covering monster's death: the card below it is uncovered
+  // (prev: its covered object) and is the slot's new top. Every effect
+  // is recorded.
+  await ari.evaluate(() => {
+    interface Effects {
+      subscribe: (f: (s: { playing: { key: number; effect: { kind: string } } | null }) => void) => void;
+    }
+    const w = window as unknown as { fourSouls: { store: Store & Effects }; effects: string[] };
+    const store = w.fourSouls.store;
+    w.effects = [];
+    let last = 0;
+    store.subscribe((s) => {
+      if (s.playing && s.playing.key !== last) {
+        last = s.playing.key;
+        w.effects.push(s.playing.effect.kind);
+      }
+    });
+    const s = store.getState();
+    const game = structuredClone(s.game);
+    const [first, second] = game?.view.monsters ?? [];
+    const old = first?.top;
+    if (!game || !first || !old || !second?.top) {
+      throw new Error('no game');
+    }
+    first.top = { ...second.top, id: 990 };
+    const events = [
+      { kind: 'died', player: -1, object: 999, card: old.card, prev: old.id },
+      { kind: 'card_revealed', player: -1, object: 990, prev: 989, card: second.top.card },
+    ];
+    s.receive({ type: 'update', data: { ...game, step: game.step + 1, events } });
+  });
+  await expect(ari.getByTestId('skull')).toBeVisible();
+  const card = ari.locator('[data-zone="obj-990"]');
+  await expect(card).toBeVisible({ timeout: 5000 });
+  await ari.waitForTimeout(150); // it pops in place
+  await shot(ari, 'uncover-in-place');
+  await expect(ari.locator('.effects-trail > *')).toHaveCount(0);
+  const effects = await ari.evaluate(() => (window as unknown as { effects: string[] }).effects);
+  expect(effects).toEqual(['deaths']);
+});
+
 test('a revealed card that stays in its deck shrinks back onto it (15.73)', async ({ browser }) => {
   const [noa] = await startGame(browser, ['Noa', 'Pim']);
   if (!noa) {

@@ -236,7 +236,9 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
         break;
       }
       case 'card_revealed': {
-        if (!e.card) {
+        // An uncovered card (prev: its covered object) was in its slot
+        // already, face up: no show, no flight; it pops in place (19.72).
+        if (!e.card || e.prev) {
           break;
         }
         // A deck attack reveals its card, then puts it in a slot in the

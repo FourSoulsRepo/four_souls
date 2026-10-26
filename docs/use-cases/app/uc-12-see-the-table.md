@@ -199,6 +199,11 @@
   * It shows from the turn start, before the attack.
   * It stays while the first roll's damage is on the stack.
   * It goes once that damage is dealt, or the roll missed.
+* **1aa. An uncovered card (19.72):** it shows up in its slot.
+  * A covering monster dies; the card below was there already.
+  * It does not show large or fly from the deck.
+  * It pops in place, like any new table card.
+  * Rooms too: a Red Key room leaves; the room below shows.
 
 ## Postconditions
 

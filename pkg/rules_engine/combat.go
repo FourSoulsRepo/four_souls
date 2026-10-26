@@ -847,12 +847,13 @@ func (g *Game) takeFromSlot(id ObjectID) Zone {
 	return z
 }
 
-// uncover puts the covered card on top of the slot at z into play.
+// uncover puts the covered card on top of the slot at z into play; its
+// card_revealed names the covered object as Prev (19.72).
 func (g *Game) uncover(z Zone) {
 	slot := g.slotAt(z)
 	if below, ok := slot.TopOf(); ok && g.Object(below).Zone.Kind == ZoneCovered {
 		slot.Cards = slot.Cards[:len(slot.Cards)-1]
-		g.putInSlot(below, z.Slot, z.Index)
+		g.putInSlotFrom(below, z.Slot, z.Index, below)
 	}
 }
 

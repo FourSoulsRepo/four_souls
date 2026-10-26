@@ -1,6 +1,9 @@
 package rulesengine
 
-import "testing"
+import (
+	"slices"
+	"testing"
+)
 
 // putMonster replaces the top of monster slot i with a new monster.
 func putMonster(g *Game, i int, card CardRef) ObjectID {
@@ -224,6 +227,43 @@ func TestAttackTheMonsterDeck(t *testing.T) {
 	}
 	if top == covered {
 		t.Error("an uncovered card enters play as a new object (R-ZONE-01)")
+	}
+}
+
+// TestUncoverNamesTheCoveredObject: killing a covering monster puts the
+// covered card back with a card_revealed whose Prev is the covered
+// object, so the client does not fly it in from the deck (19.72).
+func TestUncoverNamesTheCoveredObject(t *testing.T) {
+	g := toAction(t, 2)
+	putMonster(g, 0, "gaper")
+	g.Decks[MonsterDeck] = append(g.Decks[MonsterDeck], g.newObject("dummy", DeckZone(MonsterDeck), NoPlayer))
+	g.forcedRolls = []int{6}
+	attack(t, g)
+	choose(t, g, "monster deck")
+	if _, err := g.Apply(Intent{Player: g.Turn.Active, Kind: IntentChoose, Choice: 0}); err != nil {
+		t.Fatal(err)
+	}
+	covered := g.Monsters[0].Cards[0]
+	var ev []Event
+	for range 200 {
+		ev = append(ev, throwPending(t, g)...)
+		if g.Prompt().Kind != PromptPriority || (!g.Attack.On && len(g.Stack) == 0) {
+			break
+		}
+		ev = append(ev, pass(t, g)...)
+	}
+	top, _ := g.Monsters[0].TopOf()
+	i := slices.IndexFunc(ev, func(e Event) bool { return e.Kind == EvCardRevealed && e.Object == top })
+	if i < 0 {
+		t.Fatalf("no card_revealed for the uncovered card: %+v", ev)
+	}
+	if ev[i].Prev != covered {
+		t.Errorf("uncover's card_revealed has Prev %d; want the covered object %d", ev[i].Prev, covered)
+	}
+	for _, e := range ev {
+		if e.Kind == EvCardRevealed && e.Object != top && e.Prev != 0 {
+			t.Errorf("a card_revealed that is no uncover has Prev: %+v", e)
+		}
 	}
 }
 

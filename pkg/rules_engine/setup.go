@@ -179,6 +179,13 @@ func (g *Game) fillSlots() error {
 
 // putInSlot puts a card on top of a slot, in play (R-ZONE-02).
 func (g *Game) putInSlot(id ObjectID, kind SlotKind, i int) ObjectID {
+	return g.putInSlotFrom(id, kind, i, 0)
+}
+
+// putInSlotFrom is putInSlot whose card_revealed names prev: the covered
+// object that left under a new ID. The client then shows no flight from
+// the deck for a card that was in the slot already (19.72).
+func (g *Game) putInSlotFrom(id ObjectID, kind SlotKind, i int, prev ObjectID) ObjectID {
 	nid := g.move(id, Zone{Kind: ZoneInPlay, Slot: kind, Index: i}, NoPlayer)
 	o := g.Object(nid)
 	o.Charged = true
@@ -199,7 +206,7 @@ func (g *Game) putInSlot(id ObjectID, kind SlotKind, i int) ObjectID {
 		}
 		g.Rooms[i].Cards = append(g.Rooms[i].Cards, nid)
 	}
-	g.emit(Event{Kind: EvCardRevealed, Player: NoPlayer, Object: nid, Card: o.Card})
+	g.emit(Event{Kind: EvCardRevealed, Player: NoPlayer, Object: nid, Card: o.Card, Prev: prev})
 	// A card entering a slot enters play; an event does so in
 	// enterMonsterSlot. Setup cards (turn 0) trigger nothing (19.25).
 	if g.Turn.Number > 0 && o.Role != RoleEvent {

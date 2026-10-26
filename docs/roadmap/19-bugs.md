@@ -2395,3 +2395,18 @@ Totals by system (72 items):
    2. `putInSlot` emits a plain `card_revealed`, as for a deck card.
    3. `playback.ts` makes a `place` from `deck-<kind>` for every slot `card_revealed`.
    4. So the client cannot tell an uncover from a refill.
+6. Fix
+   1. Engine: `putInSlotFrom` is `putInSlot` with a `Prev` on its `card_revealed`.
+   2. `uncover` calls it with the covered object; other callers keep 0.
+   3. So every uncover sets `Prev`: a dead monster, a room, a shop card.
+   4. Client: `card_revealed` with `prev` gives no `reveal`, no `place`.
+   5. The view draws the card; it pops in place (`card-pop`).
+   6. A deck attack, a refill and setup keep their flight.
+   7. Go test: `TestUncoverNamesTheCoveredObject` in `combat_test.go`.
+   8. Vitest: `neither reveals nor places a card a dead monster uncovered (19.72)`.
+   9. e2e: `a killed monster's covered card shows in its slot, not from the deck (19.72)`.
+   10. It is in `playback.spec.ts`; effects played: only `deaths`.
+   11. UC-12 1aa; wiki `Animations` row `fly`, `Client`, `Rules-engine`; CHANGELOG.
+   12. Screenshots: `.cache/screenshots/19.72/before/` and `after/`.
+   13. Before: the uncovered card shows large over the board, then flies.
+   14. After: the skull, then the card is in its slot.
