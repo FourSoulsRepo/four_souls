@@ -239,10 +239,11 @@ func checkRollbackRecord(t *testing.T, dir string, rollbacks int) {
 	}
 }
 
-// TestRestartIsRollbackBase: a Godmode game kept over a restart keeps
-// its mode; the restart is its new base, so nothing before it can be
-// rolled back (ADR 020, item 7.1; 17.5 keeps the old base).
-func TestRestartIsRollbackBase(t *testing.T) {
+// TestRestartOldFileIsRollbackBase: a Godmode game from a restart file
+// written before 17.5, without the history, keeps its mode; the restart
+// is its new base, so nothing before it can be rolled back, and every
+// update says where the history was cut (ADR 020, item 10).
+func TestRestartOldFileIsRollbackBase(t *testing.T) {
 	dir := t.TempDir()
 	bots, path := stoppedGameWith(t, dir, &protocol.Options{Rollback: protocol.RollbackGod})
 	data, err := os.ReadFile(path) //nolint:gosec // test
@@ -253,13 +254,27 @@ func TestRestartIsRollbackBase(t *testing.T) {
 	if err := json.Unmarshal(data, &f); err != nil {
 		t.Fatal(err)
 	}
-	if f.Options.Rollback != protocol.RollbackGod || f.Step == 0 {
-		t.Fatalf("restart file: mode %q, step %d", f.Options.Rollback, f.Step)
+	if f.Options.Rollback != protocol.RollbackGod || f.Step == 0 || len(f.Base) == 0 {
+		t.Fatalf("restart file: mode %q, step %d, base %d bytes", f.Options.Rollback, f.Step, len(f.Base))
 	}
+	editRestart(t, path, func(data []byte) []byte {
+		var m map[string]json.RawMessage
+		if err := json.Unmarshal(data, &m); err != nil {
+			t.Fatal(err)
+		}
+		delete(m, "base")
+		delete(m, "base_step")
+		delete(m, "live")
+		out, err := json.Marshal(m)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return out
+	})
 	reconnect(startKeeping(t, dir), bots...)
 	for _, b := range bots {
-		if u := b.untilBack(); u.RollbackMode != protocol.RollbackGod || u.RollbackFrom != f.Step+1 {
-			t.Errorf("%s: mode %q from %d, want from %d", b.name, u.RollbackMode, u.RollbackFrom, f.Step+1)
+		if u := b.untilBack(); u.RollbackMode != protocol.RollbackGod || u.RollbackFrom != f.Step+1 || u.RollbackCut != f.Step {
+			t.Errorf("%s: mode %q from %d cut %d, want from %d cut %d", b.name, u.RollbackMode, u.RollbackFrom, u.RollbackCut, f.Step+1, f.Step)
 		}
 	}
 	bots[1].send(protocol.TypeRollback, protocol.RollbackTo{Step: f.Step})

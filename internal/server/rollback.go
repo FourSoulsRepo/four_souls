@@ -1,6 +1,8 @@
 package server
 
 import (
+	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
@@ -14,8 +16,8 @@ import (
 // A game with a rollback mode keeps one base state and the live steps
 // since it; a rollback rebuilds an old state by replay (ADR 020, items
 // 7 and 8). Godmode rolls back at once; Soft stops at barriers and asks
-// the other players (items 3 to 5). Keeping the base over a server
-// restart comes in 17.5.
+// the other players (items 3 to 5). A server restart keeps the base
+// and the live steps if they replay to the kept state (item 10).
 
 // liveStep is one applied step since the base. Its events are not kept:
 // a replay needs only the intent and the checksum.
@@ -52,6 +54,81 @@ func (r *Room) keepLive(st engine.StepRecord) {
 			barrier: slices.ContainsFunc(st.Events, engine.Barrier),
 		})
 	}
+}
+
+// keepHistory puts the base and the live steps into a restart file
+// (item 10.1). A game without a base keeps none: Disabled has nothing.
+func (r *Room) keepHistory(f *restartFile) error {
+	if r.base == nil {
+		return nil
+	}
+	f.Base, f.BaseStep, f.Live = r.base, r.baseStep, make([]keptStep, len(r.live))
+	for i, s := range r.live {
+		in, err := json.Marshal(s.rec.Intent)
+		if err != nil {
+			return fmt.Errorf("live step %d: %w", s.n, err)
+		}
+		f.Live[i] = keptStep{N: s.n, Intent: in, Checksum: s.rec.Checksum, Barrier: s.barrier}
+	}
+	return nil
+}
+
+// restoreHistory takes back the rollback history of a game kept over a
+// restart (items 10.2 to 10.6). If it does not check out, the kept
+// state is the new base: the restart is a barrier, and every update
+// says where it cut the history (rollback_cut).
+func (r *Room) restoreHistory(f *restartFile) {
+	r.setBase()
+	if r.base == nil {
+		return // no rollback mode
+	}
+	if len(f.Base) == 0 {
+		r.cut = r.step // a file without the history (before 17.5)
+		return
+	}
+	live, err := r.replayKept(f)
+	if err != nil {
+		log.Printf("server: rollback history of %s ends at the restart: %v", f.Game, err)
+		r.cut = r.step
+		return
+	}
+	r.base, r.baseStep, r.live = f.Base, f.BaseStep, live
+}
+
+// replayKept resumes the kept base on this engine and applies the kept
+// live steps; the result must save to the kept state's bytes. The old
+// checksums are not compared: a new engine may sum otherwise, and the
+// final bytes decide. The live steps take this engine's checksums, so
+// a later rollback checks against them. A step stays a barrier if it
+// was one, or is one now.
+func (r *Room) replayKept(f *restartFile) ([]liveStep, error) {
+	g, err := engine.Resume(f.Base, f.Meaning, r.setup.Sets...)
+	if err != nil {
+		return nil, fmt.Errorf("the base: %w", err)
+	}
+	live := make([]liveStep, len(f.Live))
+	for i, k := range f.Live {
+		var in engine.Intent
+		if jerr := json.Unmarshal(k.Intent, &in); jerr != nil {
+			return nil, fmt.Errorf("live step %d: %w", k.N, jerr)
+		}
+		st, serr := g.Step(in)
+		if serr != nil {
+			return nil, fmt.Errorf("live step %d: %w", k.N, serr)
+		}
+		live[i] = liveStep{
+			n: k.N, rec: engine.StepRecord{Intent: in, Checksum: st.Checksum},
+			barrier: k.Barrier || slices.ContainsFunc(st.Events, engine.Barrier),
+		}
+	}
+	state, err := g.Save()
+	if err != nil {
+		return nil, err
+	}
+	if !bytes.Equal(state, f.State) {
+		return nil, errors.New("the live steps replay to another state")
+	}
+	return live, nil
 }
 
 // softVote is an open Soft vote (ADR 020, item 5). The game waits

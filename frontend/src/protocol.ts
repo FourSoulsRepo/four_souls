@@ -585,6 +585,9 @@ export interface Update {
   rollback_vote?: RollbackVote;
   // rollback_end: this update ended a vote with no rollback.
   rollback_end?: RollbackEnd;
+  // rollback_cut: the step where a server restart cut the history;
+  // nothing up to it can be rolled back (ADR 020, item 10.6).
+  rollback_cut?: number;
 }
 
 export interface RollbackStep {

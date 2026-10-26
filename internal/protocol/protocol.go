@@ -165,6 +165,9 @@ type Update struct {
 	RollbackVote *RollbackVote `json:"rollback_vote,omitempty"`
 	// RollbackEnd is set on the update a vote ended with no rollback.
 	RollbackEnd *RollbackEnd `json:"rollback_end,omitempty"`
+	// RollbackCut is the step where a server restart cut the history:
+	// nothing up to it can be rolled back (ADR 020, item 10.6; 17.5).
+	RollbackCut int `json:"rollback_cut,omitempty"`
 }
 
 // Rollback tells who rolled the game back to before step To, and how

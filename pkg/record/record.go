@@ -261,7 +261,9 @@ func Read(r io.Reader) (*Record, error) {
 
 // Live is the steps a replay applies: every step, less those a
 // rollback undid (ADR 020, item 9). A rollback never reaches behind a
-// resume, so a replay from the start with these steps rebuilds the game.
+// loaded save; behind a restart only when the history replayed there
+// (item 10). So a replay from the start with these steps rebuilds the
+// game.
 func (r *Record) Live() []Step {
 	var out []Step
 	b := r.Rollbacks

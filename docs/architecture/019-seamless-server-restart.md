@@ -45,6 +45,9 @@ Use option 1.
    3. Seats keep name, token, kicked, dice.
    4. A table keeps its password; the file is deleted on load.
    5. A game keeps the engine state and `engine.StateMeaning`.
+   6. A rollback game also keeps its base state and live steps (ADR 020).
+   7. Each live step: number, intent, checksum, Soft barrier flag.
+   8. All `omitempty`: a file without them loads with no history.
 4. On start
    1. Tables and rooms come back before the hub takes requests.
    2. Game numbers go on after the highest kept one.
@@ -53,6 +56,9 @@ Use option 1.
    5. Bans and picks start over once every player is back.
    6. They use the same seed, so a draft offers the same cards.
    7. A loaded restart file is deleted.
+   8. A rollback game's history must replay (ADR 020, item 10).
+   9. Resume the base, apply the live steps, compare to the kept state.
+   10. Same bytes: the history goes on; else the restart cuts it.
 5. A game the new server cannot go on with
    1. It ends; its record gets `end` with finished false.
    2. Its file is renamed to `.fsrestart.lost` for the operator.

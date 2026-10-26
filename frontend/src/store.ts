@@ -32,7 +32,7 @@ import {
 import { noHostSetup } from './hostSetup';
 import type { CardInfo, Kind } from './cards';
 import { loadFonts } from './fonts';
-import { entriesFor, lookedAt, rolledBack, voteEnded, type Entry, type Looked, type Outcome } from './history';
+import { entriesFor, lookedAt, restartCut, rolledBack, voteEnded, type Entry, type Looked, type Outcome } from './history';
 import type { LinePart } from './stack';
 import type { Box } from './zoom';
 import { emptyLobby, forgotten, leftTable, lost, onMessage, remember, renamed, type Screen, type ServerUp, type Session } from './lobby';
@@ -342,11 +342,13 @@ export const useApp = create<AppState>()((set, get) => {
       const s = get();
       // A rollback greys the undone entries and adds its row (ADR 020).
       // A vote that ended with no rollback gets a row too (item 5).
+      // A server restart that cut the history gets a row (item 10.6).
+      const kept = u.rollback_cut ? restartCut(s.history, u.rollback_cut, u.view.turn.number) : s.history;
       const history = u.rollback
-        ? rolledBack(s.history, u.rollback, u.step, u.view.turn.number, seatOf(s), names(u))
+        ? rolledBack(kept, u.rollback, u.step, u.view.turn.number, seatOf(s), names(u))
         : u.rollback_end
-          ? voteEnded(s.history, u.rollback_end, u.view.turn.number, seatOf(s), names(u))
-          : s.history;
+          ? voteEnded(kept, u.rollback_end, u.view.turn.number, seatOf(s), names(u))
+          : kept;
       const entries = entriesFor(
         u.events ?? [],
         s.game?.view.turn.number ?? u.view.turn.number,

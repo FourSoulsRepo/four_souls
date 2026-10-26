@@ -117,6 +117,8 @@ Use options 1, 4 and 8.
    2. A `rollback` line: the target step, who, and how many steps it undid.
    3. Replay: on a `rollback` line, rebuild from the start or last `resume`.
    4. ADR 007 gains the line in 17.3.
+   5. 17.5: a rollback may reach behind a restart's `resume` (item 10).
+   6. `Record.Live` still replays from the start.
 10. Server restart (ADR 019)
    1. The restart file also keeps the base state and the live steps.
    2. On load, the new engine resumes the base (`engine.Resume`).
@@ -126,6 +128,17 @@ Use options 1, 4 and 8.
    6. The history then shows a "server restarted" row as a barrier.
    7. An app's own host keeps no games, so this is the dedicated server only.
    8. ADR 019 gains this in 17.5.
+   9. 17.5: the old per-step checksums are not compared on load.
+   10. A new engine may sum otherwise; the final bytes decide.
+   11. Kept live steps take the new engine's checksums.
+   12. A kept step stays a Soft barrier if it was one, or is one now.
+   13. A step the new engine cannot read or refuses also ends the history.
+   14. A restart file without the history (before 17.5) ends it too.
+   15. A cut history: every `update` carries `rollback_cut`, the restart's step.
+   16. The app adds one "server restarted" row for each cut (refines 10.6).
+   17. The app keeps its history over a reconnect, so the row sits at the cut.
+   18. A restarted app has no old rows; the row is its first.
+   19. An open Soft vote is not kept; it ends with the restart.
 11. Never reseed after a rollback; that would be a free re-roll.
 
 ## Consequences

@@ -94,7 +94,7 @@ Rules for this step (owner, 2026-10-26):
    2. e2e: a Soft vote passes and one is declined.
    3. Moved from 17.3: e2e: the author sees no button; another player rolls back.
 
-### [ ] 17.5 Rollback over a server restart
+### [x] 17.5 Rollback over a server restart
 
 1. Goal: a kept game keeps its rollback history (N-12, item 23).
 2. Tasks:
@@ -106,3 +106,5 @@ Rules for this step (owner, 2026-10-26):
 3. Done when:
    1. Server test: same engine, rollback reaches past the restart.
    2. Server test: a changed replay makes the restart a barrier.
+   3. Server test: an old restart file loads with no history.
+   4. e2e: Godmode rolls back past a restart; a cut shows its row.

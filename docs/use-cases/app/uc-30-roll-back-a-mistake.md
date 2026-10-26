@@ -27,11 +27,15 @@
 
 * **2a. Disabled (the default):** no buttons; the server refuses a rollback.
 * **3a. An undone row:** it has no button; the server refuses it.
-* **3b. A step from before a load or a server restart:** no button; refused.
+* **3b. A step from before a load:** no button; refused.
 * **3c. The game is over:** no buttons.
 * **3d. The game is paused for a missing player:** the rollback is refused.
 * **4a. The replay differs from the game:** the rollback is refused; play goes on.
 * **6a. Soft mode, with a vote and barriers:** UC-31.
+* **3e. A dedicated server restarts:** the history stays if it replays to the kept game.
+* **3f. The replay after a restart differs:** the history ends there.
+  * A row says "The server restarted; no rollback before this".
+  * Steps before it have no button; the server refuses them.
 
 ## Postconditions
 

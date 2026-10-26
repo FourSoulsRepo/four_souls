@@ -5,6 +5,7 @@ import {
   entriesFor as entries,
   historyKinds,
   lookedAt,
+  restartCut,
   rollbackButtons,
   rollbackTargets,
   rolledBack,
@@ -585,6 +586,16 @@ describe('Soft rollback buttons (ADR 020, items 3 and 5)', () => {
     expect(voteEnded(history, { step: 1, seat: 0, why: 'cancelled' }, 1, 0, n).at(-1)?.text).toBe('You cancelled the rollback vote');
     expect(voteEnded(history, { step: 1, seat: 0, why: 'timeout' }, 1, 0, n).at(-1)?.text).toBe('The rollback vote ran out of time');
     // The row is no rollback target.
+    expect(rollbackTargets(after, 1).has(5)).toBe(false);
+  });
+
+  it('adds one row where a server restart cut the history (ADR 020, item 10.6)', () => {
+    const after = restartCut(history, 3, 1);
+    expect(after.at(-1)).toEqual({ key: 5, turn: 1, icon: '⟳', text: 'The server restarted; no rollback before this', step: 3, rollback: true, restarted: true });
+    // Every update after the restart says so; the row shows once.
+    expect(restartCut(after, 3, 1)).toBe(after);
+    // A later restart cuts again.
+    expect(restartCut(after, 7, 1)).toHaveLength(after.length + 1);
     expect(rollbackTargets(after, 1).has(5)).toBe(false);
   });
 

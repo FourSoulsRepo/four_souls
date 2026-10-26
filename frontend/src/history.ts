@@ -34,6 +34,8 @@ export interface Entry {
   undone?: boolean;
   // rollback marks the row that tells who rolled back.
   rollback?: boolean;
+  // restarted marks the row where a server restart cut the history.
+  restarted?: boolean;
 }
 
 // Outcome is one result in the strip's popout (15.90): a card, with a
@@ -485,6 +487,17 @@ export function voteEnded(history: Entry[], end: RollbackEnd, turn: number, you:
     failed: 'The rollback failed; the game goes on',
   }[end.why];
   return [...history, { key: (history.at(-1)?.key ?? 0) + 1, turn, icon: '↶', text, rollback: true }];
+}
+
+// restartCut adds the row where a server restart cut the rollback
+// history (ADR 020, item 10.6): nothing before it can be rolled back.
+// cut is the step the restart came at; a row for it shows once.
+export function restartCut(history: Entry[], cut: number, turn: number): Entry[] {
+  if (history.some((e) => e.restarted && e.step === cut)) {
+    return history;
+  }
+  const text = 'The server restarted; no rollback before this';
+  return [...history, { key: (history.at(-1)?.key ?? 0) + 1, turn, icon: '⟳', text, step: cut, rollback: true, restarted: true }];
 }
 
 // stepText is the history's text of a step's first row, for the vote.

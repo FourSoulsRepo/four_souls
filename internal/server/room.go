@@ -108,6 +108,8 @@ type Room struct {
 	baseStep int
 	live     []liveStep
 	rolled   *protocol.Rollback // the rollback the next broadcast tells
+	// cut is the step where a server restart cut the history (item 10.6).
+	cut int
 	// The open Soft vote (item 5), its timer's number, and the end of
 	// a vote the next broadcast tells.
 	rbVote  *softVote
@@ -361,7 +363,7 @@ func (r *Room) update(c *Client, events []engine.Event) {
 		}
 	}
 	if r.base != nil {
-		u.RollbackMode, u.RollbackFrom, u.Rollback = r.opts.Rollback, r.rollbackFrom(), r.rolled
+		u.RollbackMode, u.RollbackFrom, u.Rollback, u.RollbackCut = r.opts.Rollback, r.rollbackFrom(), r.rolled, r.cut
 		if r.opts.Rollback == protocol.RollbackSoft && !r.game.Over {
 			u.RollbackSteps, u.RollbackVote, u.RollbackEnd = r.softSteps(), r.voteView(), r.voteEnd
 		}
