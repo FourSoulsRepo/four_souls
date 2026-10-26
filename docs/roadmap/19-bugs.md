@@ -45,8 +45,9 @@ This step never closes; new reports are appended.
 | J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57 | 13 |
 | K  | Build and release files                  | Release    | 19.47, 19.59                                           | 2     |
 | L  | Not a bug: the app follows a ruling      | None       | 19.63                                                  | 1     |
+| M  | Go test setup: the code was right        | Go tests   | 19.68                                                  | 1     |
 
-Totals by system (67 items):
+Totals by system (68 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
@@ -57,6 +58,7 @@ Totals by system (67 items):
 | e2e       | I, J    | 24    |
 | Release   | K       | 2     |
 | None      | L       | 1     |
+| Go tests  | M       | 1     |
 
 ---
 
@@ -2218,3 +2220,19 @@ Totals by system (67 items):
    9. UC-12 3j; wiki `Rules-engine`.
 7. Owner notes (2026-10-26)
    1. Owner marks 19.67 solved.
+
+### [ ] 19.68 LAN test fails once: UDP address already in use
+
+1. Goal: `TestLANFindsGamesUntilTheyEnd` never fails on a busy port.
+2. Report (Claude, 2026-10-26)
+   1. Seen in the 17.3 gate, `make test`; no record, it is a Go test.
+   2. The test failed once: UDP "address already in use".
+   3. A rerun passed; 17.3 does not touch LAN code.
+3. Tasks:
+   1. Find which port clashes and why.
+   2. Suspect: `freePort` checks a TCP port; discovery reuses it for UDP.
+   3. Check other tests that bind UDP in parallel.
+   4. Group M is provisional; move the item if the cause is elsewhere.
+4. Done when:
+   1. The cause is named here.
+   2. The test runs 200 times in a row without that failure.
