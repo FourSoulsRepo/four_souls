@@ -76,6 +76,8 @@ Use options 5, 7, 11, 12 and 14.
    1. It is the source; every key must be in it.
    2. Each key holds `text` and `note`.
    3. `note`: where the line shows and what the values are.
+   4. A line whose meaning changes gets a new key.
+   5. Its old translations then show as stray keys, the new key as missing.
 3. Other languages
    1. Each key holds the text only.
    2. A missing key falls back to English.
@@ -143,6 +145,12 @@ Use options 5, 7, 11, 12 and 14.
     3. No other language has a key that `en.json` lacks.
     4. Placeholders match English in every language.
     5. `make i18n LOCALE=xx` also fails on untranslated keys and missing plural forms.
+    6. Required plural forms: those `Intl.PluralRules` picks for 0–1000.
+    7. So Russian needs `one`, `few`, `many`; `other` is for fractions only.
+    8. Placeholders are compared per key, not per plural form.
+    9. No form may use a name English lacks; all forms together use every one.
+    10. One plural form may leave out `{n}`: "одна карта".
+    11. The checks live in `locale.ts`; `make i18n` runs them through Vitest.
 11. Language setting
     1. Stored in the app settings file.
     2. Default: the OS language from `navigator.language`, if supported.
@@ -184,6 +192,10 @@ Use options 5, 7, 11, 12 and 14.
     10. `todo.json` is grouped by area: the key's first word.
     11. `make i18n LOCALE=xx AREA=lobby` writes one area only.
     12. An agent translates one area per pass, then runs the check again.
+    13. The agent writes only `.cache/translations/xx/done.json`.
+    14. `make i18n LOCALE=xx` merges it into `xx.json`, sorted by key.
+    15. A file in `locales/` is a choice in Settings, so no test file sits there.
+    16. Unit tests check test tables; a trial language stays on a scratch branch.
 
 ## Consequences
 

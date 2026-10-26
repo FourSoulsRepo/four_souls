@@ -113,6 +113,12 @@ Rules of this step (owner, 2026-10-26):
    6. The translator checks them by eye; no per-key pages for now.
    7. `todo.json` is split by area; `AREA=lobby` limits it to one (owner, 2026-10-27).
    8. Glossary terms go into each `todo.json` entry; no word check (owner, 2026-10-27).
+   9. Checks live in `locale.ts` and run through Vitest; no new dependency.
+   10. An agent writes `done.json`; `make i18n` merges it into `xx.json`, sorted.
+   11. Required plural forms: only those whole numbers 0–1000 pick.
+   12. Placeholders are checked per key; one plural form may leave out `{n}`.
+   13. An English line whose meaning changes gets a new key (ADR 021, item 2).
+   14. Trials: unit tests use test tables; a real file stays on a scratch branch.
 3. Done when:
    1. `make i18n LOCALE=xx` lists every gap of a half-translated test file.
    2. `make screenshots LOCALE=xx` shows that file's lines on the screens.
