@@ -42,12 +42,12 @@ This step never closes; new reports are appended.
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
 | I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70 | 12 |
-| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75 | 14 |
+| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77 | 15 |
 | K  | Build and release files                  | Release    | 19.47, 19.59                                           | 2     |
 | L  | Not a bug: the app follows a ruling      | None       | 19.63                                                  | 1     |
 | M  | Go test setup: the code was right        | Go tests   | 19.68                                                  | 1     |
 
-Totals by system (76 items):
+Totals by system (77 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
@@ -55,7 +55,7 @@ Totals by system (76 items):
 | Card data | C       | 2     |
 | Client    | D–G     | 23    |
 | Server    | H       | 1     |
-| e2e       | I, J    | 26    |
+| e2e       | I, J    | 27    |
 | Release   | K       | 2     |
 | None      | L       | 1     |
 | Go tests  | M       | 1     |
@@ -1795,6 +1795,10 @@ Totals by system (76 items):
    5. 15.92 does not touch the first roll or the layout.
    6. Evidence: `.cache/e2e-evidence/15.92-run1/`.
    7. Seen again in `make e2e` during 15.94, on webkit: `.cache/e2e-evidence/15.94-run1/`.
+   8. Seen in `make screenshots` during 16.5, chromium, another test.
+      1. "the board keeps its size when shop slots empty (V-23)".
+      2. The first roll was a 6–6 tie; the reroll was still throwing.
+      3. Evidence: `.cache/e2e-evidence/16.5-run1/`.
 3. Tasks:
    1. Find why the first roll took too long in the full run.
    2. Fix the client or the test, whichever is wrong.
@@ -2585,3 +2589,23 @@ Totals by system (76 items):
    9. Screenshots: `.cache/screenshots/19.76/again/`.
 10. Owner notes (2026-10-26)
    1. Owner marks 19.76 solved.
+
+### [ ] 19.77 e2e: the 19.73 death fly test misses the fly in a screenshot run
+
+1. Goal: the dead monster fly test passes in `make screenshots` too.
+2. Report (agent, 2026-10-27)
+   1. Second `make screenshots` gate run for 16.5, chromium.
+   2. `playback.spec.ts:860`: `effect-fly` never became visible in 5 s.
+   3. The skull showed; then `shot(ari, 'death-skull')` saved a PNG.
+   4. The monster was Holy Mom's Eye; it died and reached the discard.
+   5. `make e2e` passed just before, both browsers.
+   6. 16.5 changes card names only; nothing in playback.
+   7. Evidence: `.cache/e2e-evidence/16.5-run2/` (not in git).
+3. Cause
+   1. Not found yet.
+   2. Guess: as 19.43, the short fly ends while the screenshot is taken.
+   3. The test then polls with `toBeVisible`; `trackFlight` already records it.
+4. Tasks:
+   1. Find the cause in the evidence; fix the test or the app.
+5. Done when:
+   1. Cause written here; three `make screenshots` runs in a row pass.
