@@ -564,7 +564,9 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
       2. Not a purchase; it keeps the barriers it has.
       3. Allowed while no new card came from the treasure, monster or loot deck.
       4. And no dice was rolled or changed, and no damage was dealt.
-      5. Open: do a turn end, a death without damage, or a seen hand card still block it.
+      5. A turn end, a death, and a seen hand card still block it (owner, 2026-10-26).
+      6. Mostly true already: playing or activating is no barrier.
+      7. Change: a card put privately on the loot deck no longer blocks.
 13. N-13. Find LAN games without typing an IP.
    1. A hosting app announces its waiting game on the LAN.
    2. The join screen lists the games it finds.

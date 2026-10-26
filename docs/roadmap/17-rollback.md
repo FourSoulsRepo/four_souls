@@ -121,9 +121,12 @@ Owner notes (2026-10-26):
    2. Not a purchase; a purchase keeps today's barriers.
    3. Undoable while no new card came from the treasure, monster or loot deck.
    4. And no dice was rolled or changed, and no damage was dealt.
-   5. List which of today's barriers this relaxes for such a target.
-   6. **Owner**: do a turn end, a death without damage, or a seen hand card still block it?
-   7. ADR 020 item 4 updated; UC-31 updated.
+   5. Still blocking: a turn end, a death, a seen hand card (owner, 2026-10-26).
+   6. Already true: `loot_played` and `activated` are no barriers.
+   7. Change: a private `moved_to_deck` is no barrier; no deck card shows.
+   8. ADR 020 item 4: append the rule in plain words; UC-31 likewise.
 3. Done when:
-   1. Engine or server tests: each blocking event; each relaxed one.
-   2. e2e: a played loot card is undone by a Soft vote.
+   1. Server tests: a played loot card and an activated item are undone.
+   2. Server tests: each blocking event after the play stops it.
+   3. Engine test: a private `moved_to_deck` is no barrier.
+   4. e2e: a played loot card is undone by a Soft vote.
