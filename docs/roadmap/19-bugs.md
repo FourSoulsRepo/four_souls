@@ -42,12 +42,12 @@ This step never closes; new reports are appended.
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
 | I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70 | 12 |
-| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57 | 13 |
+| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75 | 14 |
 | K  | Build and release files                  | Release    | 19.47, 19.59                                           | 2     |
 | L  | Not a bug: the app follows a ruling      | None       | 19.63                                                  | 1     |
 | M  | Go test setup: the code was right        | Go tests   | 19.68                                                  | 1     |
 
-Totals by system (74 items):
+Totals by system (75 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
@@ -55,7 +55,7 @@ Totals by system (74 items):
 | Card data | C       | 2     |
 | Client    | D–G     | 22    |
 | Server    | H       | 1     |
-| e2e       | I, J    | 25    |
+| e2e       | I, J    | 26    |
 | Release   | K       | 2     |
 | None      | L       | 1     |
 | Go tests  | M       | 1     |
@@ -2514,3 +2514,26 @@ Totals by system (74 items):
    12. Screenshots: `.cache/screenshots/19.74/before/` and `after/`.
    13. Before: the stack says "Nothing on the stack" while the viewer may respond.
    14. After: the row "Fay ends the turn" on top, the name in Fay's color.
+7. Owner notes (2026-10-26)
+   1. Owner marks 19.74 solved.
+
+### [ ] 19.75 e2e: the 15.74 loot rise test timed out once
+
+1. Goal: find why the test ran out of time, or show it was load.
+2. Report (agent, 2026-10-26, during 19.74's gate)
+   1. Full `make e2e`: 1 failed, 6 skipped, 349 passed.
+   2. Test: `playback.spec.ts:1015`, Chromium.
+   3. "another player's loot card rises from their hand and shrinks into the stack (15.74)".
+   4. 30 s test timeout, hit at `waitForTimeout(1250)` on line 1030.
+   5. The steps before it had used up the 30 s.
+   6. Alone, it passed 6 of 6 (`--repeat-each 3`, both browsers).
+   7. The next full `make e2e` passed: 350 passed, 6 skipped.
+   8. Evidence: `.cache/e2e-fails/20261026-19.74-gate/` (not in git).
+3. Tasks:
+   1. Find which step before line 1030 took the time.
+   2. Use the saved log, test results and match records.
+   3. A real slow step is a bug; fix that.
+   4. Else group J: under load, cause not found.
+4. Done when:
+   1. The cause is written here, or the item says it was not found.
+   2. A fix, if any, comes with its test.
