@@ -159,3 +159,19 @@ Owner notes (2026-10-26):
    3. e2e: a Soft press opens the vote; the author's press asks.
    4. e2e: a played card that asks a target is undone by one press.
    5. e2e: the button is greyed after a dice roll in Soft.
+
+### [ ] 17.8 Undo names a move without a line
+
+1. Goal: the Undo tooltip never borrows the next move's name (owner, 2026-10-26).
+2. Tasks:
+   1. A target with no history line of its own reads "Undo: Bo's choice".
+   2. Yours reads "Undo: your choice"; "Ask to undo" alike.
+   3. Cases: trigger order, Bum Friend's put-back pick, some answers.
+   4. The server tells such a target apart; `rollback_steps` may carry it.
+   5. The vote panel names the move the same way.
+   6. Drop the "first named move after" lookup in `moveText`.
+   7. UC-30, UC-31 and wiki `Client.md` updated.
+3. Done when:
+   1. Vitest: a target without a line gets the fallback; others keep their name.
+   2. Server test: such a target is marked in `rollback_steps`.
+   3. e2e: Bum Friend's put-back pick reads "Bo's choice", if cheap to reach.
