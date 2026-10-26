@@ -42,12 +42,12 @@ This step never closes; new reports are appended.
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
 | I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70 | 12 |
-| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77 | 15 |
+| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.78 | 16 |
 | K  | Build and release files                  | Release    | 19.47, 19.59                                           | 2     |
 | L  | Not a bug: the app follows a ruling      | None       | 19.63                                                  | 1     |
 | M  | Go test setup: the code was right        | Go tests   | 19.68                                                  | 1     |
 
-Totals by system (77 items):
+Totals by system (78 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
@@ -55,7 +55,7 @@ Totals by system (77 items):
 | Card data | C       | 2     |
 | Client    | D–G     | 23    |
 | Server    | H       | 1     |
-| e2e       | I, J    | 27    |
+| e2e       | I, J    | 28    |
 | Release   | K       | 2     |
 | None      | L       | 1     |
 | Go tests  | M       | 1     |
@@ -2609,3 +2609,24 @@ Totals by system (77 items):
    1. Find the cause in the evidence; fix the test or the app.
 5. Done when:
    1. Cause written here; three `make screenshots` runs in a row pass.
+
+### [ ] 19.78 e2e: the Meat! roll test sees no thrown roll, webkit, full run
+
+1. Goal: the 15.94 stats test passes every run.
+2. Report (agent, 2026-10-27)
+   1. Found by `make e2e` during 16.6.
+   2. `stats.spec.ts:149`: "the open attack says what the roll needs; Meat! …".
+   3. Webkit; after the Throw click the stack still said "Throw the dice".
+   4. No "(+1 Meat! = N)" line came in 5 s.
+   5. Chromium passed it in the same run.
+   6. 16.6 changes card image paths only; nothing in rolls or the stack.
+   7. Evidence: `.cache/e2e-evidence/16.6-run1/` (not in git).
+   8. Passed 3 of 3 alone, one run at a time, webkit.
+   9. `--repeat-each` fails it: the saved games pile up on one server.
+3. Cause
+   1. Not found yet.
+   2. Guess: as 19.57, a click that does not register under load.
+4. Tasks:
+   1. Find the cause in the evidence; fix the test or the app.
+5. Done when:
+   1. Cause written here; the test passes ten full runs in a row.
