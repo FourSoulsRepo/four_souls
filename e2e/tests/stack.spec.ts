@@ -14,6 +14,7 @@ import {
   gameOver,
   passButton,
   playLoot,
+  seen,
   settle,
   throwButton,
   turnAction,
@@ -274,6 +275,53 @@ test('a declared buy shows on top of the stack until it ends (15.91)', async ({ 
   for (const page of pages) {
     await expect(declared(page)).toHaveCount(0);
   }
+});
+
+// endOpen: the page's view has the turn's end declared, still in the
+// action step (R-TURN-08), so the others may respond.
+async function endOpen(page: Page): Promise<boolean> {
+  return page.evaluate(() => {
+    interface S {
+      game: { view: { turn: { step: number; end_declared?: boolean } } } | null;
+    }
+    const turn = (window as unknown as { fourSouls: { store: { getState: () => S } } }).fourSouls.store.getState().game?.view.turn;
+    return (turn?.end_declared ?? false) && turn?.step === 4;
+  });
+}
+
+test('a declared end of turn shows on top of the stack (19.74)', async ({ browser }) => {
+  const names = ['Eli', 'Fay'];
+  const pages = await startGame(browser, names, { url: fast() });
+  // The server passes for a player who cannot respond (N-05); then the
+  // end window closes at once. A later turn's deal may let them respond.
+  for (let tries = 0; tries < 6; tries++) {
+    const active = await activePage(pages, click);
+    const other = pages.find((p) => p !== active);
+    if (!other) {
+      throw new Error('no other page');
+    }
+    const who = names[pages.indexOf(active)] ?? '';
+    const before = (await seen(other)).step;
+    await endTurn(active, click);
+    await expect.poll(async () => (await seen(other)).step).toBeGreaterThan(before);
+    if (!(await endOpen(other))) {
+      continue;
+    }
+    await expect(passButton(other)).toBeEnabled();
+    await other.mouse.move(1200, 420);
+    await shot(other, 'stack-declared-end');
+    for (const page of pages) {
+      await expect(declared(page)).toHaveText(`${who} ends the turn`);
+      await expect(declared(page).locator('.stack-player')).toHaveText(who);
+    }
+    // The row goes once the end phase starts (R-TURN-10).
+    await passButton(other).click();
+    for (const page of pages) {
+      await expect(declared(page)).toHaveCount(0);
+    }
+    return;
+  }
+  test.skip(true, 'nobody could respond to an end of turn in six turns');
 });
 
 // Frame is one animation frame after the top stack item resolved.

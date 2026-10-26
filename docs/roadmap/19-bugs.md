@@ -36,26 +36,26 @@ This step never closes; new reports are appended.
 | A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66 | 12 |
 | B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73   | 8     |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
-| D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30                                     | 3     |
+| D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74                              | 4     |
 | E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52, 19.54, 19.69 | 9  |
 | F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50                      | 5     |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
 | I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70 | 12 |
-| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57 | 13 |
+| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75 | 14 |
 | K  | Build and release files                  | Release    | 19.47, 19.59                                           | 2     |
 | L  | Not a bug: the app follows a ruling      | None       | 19.63                                                  | 1     |
 | M  | Go test setup: the code was right        | Go tests   | 19.68                                                  | 1     |
 
-Totals by system (73 items):
+Totals by system (75 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
 | Engine    | A, B    | 20    |
 | Card data | C       | 2     |
-| Client    | D–G     | 21    |
+| Client    | D–G     | 22    |
 | Server    | H       | 1     |
-| e2e       | I, J    | 25    |
+| e2e       | I, J    | 26    |
 | Release   | K       | 2     |
 | None      | L       | 1     |
 | Go tests  | M       | 1     |
@@ -2474,3 +2474,66 @@ Totals by system (73 items):
    22. After: the skull, then the card flies from its emptied slot.
 7. Owner notes (2026-10-26)
    1. Owner marks 19.73 solved, with the emptied slot during the flight.
+
+### [x] 19.74 A declared end of turn has no row on the stack
+
+1. Goal: the stack panel shows a declared end of turn, like an attack or a buy.
+2. Report (owner, 2026-10-26)
+   1. An open attack or buy has a row on top of the stack (15.91).
+   2. A declared end of turn has none.
+   3. The others cannot see why priority came to them.
+3. Tasks:
+   1. Client: `declaration` in `stack.ts` returns an end row.
+   2. Text: `<player> ends the turn`; the name in their color.
+   3. Shown while `turn.end_declared` and `turn.step` is the action step.
+   4. Gone once the end phase starts (R-TURN-10).
+   5. A turn ended early by a card shows it too (`EndDeclared`).
+   6. A death end (`death_end`) gets no row; it is not declared.
+   7. No fight line; same `stack-declared` row and look.
+   8. No engine change: the view sends `end_declared` already.
+4. Done when:
+   1. Vitest: the row while declared; none in the end phase; none for a death end.
+   2. e2e in `stack.spec.ts`: every player sees the row after End turn.
+   3. UC-14 gets the case; wiki `Client`; CHANGELOG line.
+   4. Screenshots: `.cache/screenshots/19.74/before/` and `after/`.
+5. Cause
+   1. `declaration` checks only `view.attack` and `view.buying`.
+   2. `turn.end_declared` is used only by "Wait for my turn".
+6. Fix
+   1. Client: `declaration` returns `<player> ends the turn` after an attack or a buy.
+   2. Shown while `turn.end_declared` and `turn.step` is the action step.
+   3. So a card's early end shows too; the end phase drops it.
+   4. A death end sets no `end_declared`; it has no row.
+   5. Same `stack-declared` row; no fight line; no engine change.
+   6. The row shows only while someone may respond.
+   7. The server passes for a player who cannot (N-05); then no update shows it.
+   8. Vitest: `says a declared end of turn until the end phase; not a death end (19.74)`.
+   9. e2e: `a declared end of turn shows on top of the stack (19.74)` in `stack.spec.ts`.
+   10. It ends turns until the other player may respond, up to six.
+   11. UC-14 2q; wiki `Client`; CHANGELOG.
+   12. Screenshots: `.cache/screenshots/19.74/before/` and `after/`.
+   13. Before: the stack says "Nothing on the stack" while the viewer may respond.
+   14. After: the row "Fay ends the turn" on top, the name in Fay's color.
+7. Owner notes (2026-10-26)
+   1. Owner marks 19.74 solved.
+
+### [ ] 19.75 e2e: the 15.74 loot rise test timed out once
+
+1. Goal: find why the test ran out of time, or show it was load.
+2. Report (agent, 2026-10-26, during 19.74's gate)
+   1. Full `make e2e`: 1 failed, 6 skipped, 349 passed.
+   2. Test: `playback.spec.ts:1015`, Chromium.
+   3. "another player's loot card rises from their hand and shrinks into the stack (15.74)".
+   4. 30 s test timeout, hit at `waitForTimeout(1250)` on line 1030.
+   5. The steps before it had used up the 30 s.
+   6. Alone, it passed 6 of 6 (`--repeat-each 3`, both browsers).
+   7. The next full `make e2e` passed: 350 passed, 6 skipped.
+   8. Evidence: `.cache/e2e-fails/20261026-19.74-gate/` (not in git).
+3. Tasks:
+   1. Find which step before line 1030 took the time.
+   2. Use the saved log, test results and match records.
+   3. A real slow step is a bug; fix that.
+   4. Else group J: under load, cause not found.
+4. Done when:
+   1. The cause is written here, or the item says it was not found.
+   2. A fix, if any, comes with its test.

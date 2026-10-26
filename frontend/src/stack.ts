@@ -15,7 +15,9 @@ export const StackKind = {
   deathStep: 7,
 } as const;
 
-// endStep is the end of turn step, in Go's order (pkg/rules_engine/turn.go).
+// actionStep and endStep are turn steps, in Go's order
+// (pkg/rules_engine/turn.go).
+const actionStep = 4;
 const endStep = 5;
 
 // waitTurn is "Wait for my turn" (N-16): on, offered on another player's
@@ -141,6 +143,8 @@ export function attackTarget(view: GameView, target: number, n: Names): LinePart
 // (15.91, V-51): an attack, by its target once aimed, or a buy. Neither
 // is a stack item (R-ATK-02, R-SHOP-02); the stack panel shows it in a
 // row of its own, on top. It goes when the attack or the buy ends.
+// A declared end of turn too, also one a card declared, until the end
+// phase starts (19.74, R-TURN-08, R-TURN-10); a death end is none.
 export function declaration(view: GameView, n: Names): LinePart[] | null {
   if (view.over || view.first_roll) {
     return null;
@@ -155,7 +159,11 @@ export function declaration(view: GameView, n: Names): LinePart[] | null {
     }
     return [who, { text: ' attacks ' }, attackTarget(view, target, n)];
   }
-  return view.buying ? [who, { text: ' buys…' }] : null;
+  if (view.buying) {
+    return [who, { text: ' buys…' }];
+  }
+  const { end_declared: ending, step } = view.turn;
+  return ending && step === actionStep ? [who, { text: ' ends the turn' }] : null;
 }
 
 // StackRowData is one row of the stack panel: the open declaration, or

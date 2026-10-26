@@ -29,7 +29,8 @@ interface Props {
 // StackPanel is the stack inside the board (15.21, F-03): newest on
 // top, one icon and one short line per item (S-01 – S-04), whom it
 // waits for (V-11), and the Pass button; Space presses it (S-08). An
-// open attack or buy is a row on top (15.91). Rows fade in and out and
+// open attack or buy is a row on top (15.91), as is a declared end of
+// turn (19.74). Rows fade in and out and
 // slide (15.51). An empty stack says so (S-09). Pass glows when it
 // answers the prompt.
 export function StackPanel({ view, you, names, pass, disabled, prompt, answer }: Props) {
@@ -210,8 +211,9 @@ function StackRow({ it, view, names }: { it: StackItem; view: GameView; names: N
   );
 }
 
-// DeclaredRow is an open attack or buy (15.91, V-51). It is no stack
-// item (R-ATK-02, R-SHOP-02), so it has no icon frame and a dashed edge.
+// DeclaredRow is an open attack or buy (15.91, V-51), or a declared end
+// of turn (19.74). It is no stack item (R-ATK-02, R-SHOP-02), so it has
+// no icon frame and a dashed edge.
 // An aimed attack adds its fight line: what the roll needs (15.94).
 function DeclaredRow({ parts, odds }: { parts: LinePart[]; odds?: string | undefined }) {
   const line = parts.map((p) => p.text).join('');
