@@ -41,8 +41,8 @@ This step never closes; new reports are appended.
 | F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50                      | 5     |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
-| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58 | 11 |
-| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.70 | 14 |
+| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70 | 12 |
+| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57 | 13 |
 | K  | Build and release files                  | Release    | 19.47, 19.59                                           | 2     |
 | L  | Not a bug: the app follows a ruling      | None       | 19.63                                                  | 1     |
 | M  | Go test setup: the code was right        | Go tests   | 19.68                                                  | 1     |
@@ -2282,7 +2282,7 @@ Totals by system (70 items):
 8. Owner notes (2026-10-26)
    1. Owner marks 19.69 solved, with step 17.
 
-### [ ] 19.70 A resolved A Penny! shows no "gains 1¢" row for 5 seconds
+### [x] 19.70 A resolved A Penny! shows no "gains 1¢" row for 5 seconds
 
 1. Goal: a resolved card's result row always reaches every client.
 2. Report (Claude, 2026-10-26)
@@ -2298,3 +2298,22 @@ Totals by system (70 items):
    3. Group J is provisional; move the item once the cause is found.
 4. Done when:
    1. The cause is named here, with a test if it is a real bug.
+5. Cause
+   1. Record `g2_Tom_Uma`; its last gzip part is cut off, so plain `gunzip` stops early.
+   2. Every part read: steps 10 – 12 are the Penny game after the load.
+   3. Uma plays Eden; her starting item is Bum-Bo! (step 5).
+   4. Bum-Bo!: "If you would gain any amount of ¢, this levels up by that much instead."
+   5. Step 12: A Penny! resolves; events `replaced` and `counters` on Bum-Bo!, no `gained_cents`.
+   6. So Uma gained no 1¢; no "Uma gains 1¢" row could come.
+   7. Tom's page agrees: Uma has 3¢, Bum-Bo! shows a counter of 1.
+   8. Its history shows "A Penny!" resolved; the stack is empty.
+   9. "Waiting for Uma, You" is Uma's own action time, not a stuck pass.
+   10. The engine and client were right; the probe assumed a gain.
+   11. A dealt card that replaces the gain breaks that check (CLAUDE.md 5.16).
+   12. Record `g1_Vic_Wes` shows the plain case: `gained_cents` 1.
+6. Result
+   1. Not an app bug: group I, moved from J.
+   2. The probe is gone: 17.7 rewrote the test.
+   3. Today it checks the resolved row `✦A Penny!`, which shows with Bum-Bo! too.
+   4. No other e2e test expects a real cent gain from a dealt card.
+   5. No code change; no guard test, since no gap remains.
