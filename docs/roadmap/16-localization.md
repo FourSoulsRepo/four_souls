@@ -11,6 +11,7 @@ Rules of this step (owner, 2026-10-26):
 4. Translating must be easy for anyone (LO-05).
 5. Design: ADR 021.
 6. Every sub-step after 16.2 is checked with the test language.
+7. Per-key screenshots are paused; one screenshot per screen (owner, 2026-10-27).
 
 ---
 
@@ -107,15 +108,12 @@ Rules of this step (owner, 2026-10-26):
    1. `make i18n LOCALE=xx`: missing keys, wrong placeholders, missing plural forms.
    2. It fails while anything is untranslated.
    3. `make i18n` without `LOCALE`: unused keys, stray keys; part of `make lint`.
-   4. `make translation-shots LOCALE=xx`: HTML page in `.cache/translations/xx/`.
-   5. Each row: key, note, English, translation, screenshot with the line outlined.
-   6. Keys no scene reaches show as "no screenshot yet".
-   7. `make translation-shot LOCALE=xx KEY=k`: only that key.
-   8. Scenes for server messages: fake bridge or fixed engine states.
-   9. `todo.json` for agents and the glossary check (ADR 021, item 16).
+   4. `todo.json` for agents and the glossary check (ADR 021, item 16).
+   5. Screenshots: `make screenshots LOCALE=xx`, one per screen (ADR 021, item 14).
+   6. The translator checks them by eye; no per-key pages for now.
 3. Done when:
-   1. `make translation-shots LOCALE=qps` covers most keys.
-   2. `make translation-shot` works for one settings key and one refusal.
+   1. `make i18n LOCALE=xx` lists every gap of a half-translated test file.
+   2. `make screenshots LOCALE=xx` shows that file's lines on the screens.
    3. An agent fills a `qps`-like test file from `todo.json` alone.
 
 ### [ ] 16.8 Setup scripts

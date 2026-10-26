@@ -768,6 +768,9 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    4. A screenshot shows a line in place: one key or all of them.
    5. Wiki: one guide for the interface, one for cards.
    6. The same tools help an agent translate to a new language.
+   7. Item 4 per key is paused: too costly for now (owner, 2026-10-27).
+      1. Step 16 keeps one screenshot per screen.
+      2. Per-key pages may come back later.
 6. LO-06. English is always the fallback (owner, 2026-10-26).
    1. Interface lines, messages, card names, card images.
 7. LO-07. Card images per language (owner, 2026-10-26).

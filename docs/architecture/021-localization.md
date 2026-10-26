@@ -164,9 +164,9 @@ Use options 5, 7, 11, 12 and 14.
     5. The loader adds `<lang>/`, then falls back to `en/`.
     6. Fonts, backs, dice and mats stay outside language folders.
 14. Screenshots for translators
-    1. In screenshot mode `t()` records which keys each scene renders.
-    2. The tool outlines the element that shows the line.
-    3. One page per language: key, note, English, translation, screenshot.
+    1. `make screenshots LOCALE=xx`: one PNG per screen, in that language.
+    2. The translator checks the lines on them by eye.
+    3. Per-key screenshots are paused (owner, 2026-10-27); idea LO-05.
 15. Writing lines
     1. Names stay in their dictionary form in every language.
     2. E.g. "{player} → {monster}: attack", not "{player} attacked {monster}".
@@ -198,7 +198,7 @@ Use options 5, 7, 11, 12 and 14.
 2. Card scripts lose their inline English questions; text lives in `en.json`.
 3. Sentences in names' dictionary form may read stiffly.
 4. Moving images changes the private repo and ADRs 004 and 010.
-5. Text matching to outline a line can pick the wrong element for duplicates.
+5. A translator finds a line on a screen by eye; no key points to it.
 
 ### Neutral
 
