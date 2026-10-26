@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { checkSeat, getSettings, saveSettings, serverStatus } from './bridge';
+import { send } from './net';
 import { noHostSetup } from './hostSetup';
 import type { Envelope, GameView, Update } from './protocol';
 import { messageOf, seatOf, useApp } from './store';
@@ -10,7 +11,7 @@ vi.mock('./bridge', () => ({
   saveSettings: vi.fn(),
   serverStatus: vi.fn(),
 }));
-vi.mock('./net', () => ({ drop: vi.fn() }));
+vi.mock('./net', () => ({ drop: vi.fn(), send: vi.fn() }));
 
 const initial = useApp.getState();
 
@@ -259,5 +260,35 @@ describe('rollback (ADR 020)', () => {
     });
     expect(useApp.getState().jumped).toBe(false);
     expect(useApp.getState().history.at(-1)?.step).toBe(5);
+  });
+
+  it('a Soft vote keeps the step; its end adds a row and the game goes on', async () => {
+    const { receive } = useApp.getState();
+    const soft = (u: Partial<Update> & { step: number }) => update({ rollback_mode: 'soft', rollback_steps: [{ step: 1, seat: 1 }], ...u });
+    useApp.setState({ lobby: { ...useApp.getState().lobby, table: { game: 'g', you: 0, seats: [], sets: [] } } });
+    receive(soft({ step: 0 }));
+    receive(soft({ step: 1, events: [{ kind: 'attack_declared', player: 1 }] }));
+    await vi.waitFor(() => {
+      expect(useApp.getState().game?.step).toBe(1);
+    });
+    // Opening the vote sends the rollback but leaves sent: the step stays.
+    useApp.getState().rollBack(1);
+    expect(send).toHaveBeenCalledWith('rollback', { step: 1 });
+    expect(useApp.getState().sent).toBeNull();
+    useApp.getState().rollBack(1, true);
+    expect(send).toHaveBeenCalledWith('rollback', { step: 1, ask: true });
+    const vote = { step: 1, seat: 0, author: 1, undo: 1, voters: [0], votes: [{ seat: 0, yes: true }], need: 1 };
+    receive(soft({ step: 1, rollback_vote: vote }));
+    await vi.waitFor(() => {
+      expect(useApp.getState().game?.rollback_vote).toEqual(vote);
+    });
+    receive(soft({ step: 1, rollback_end: { step: 1, seat: 0, why: 'cancelled' } }));
+    await vi.waitFor(() => {
+      expect(useApp.getState().game?.rollback_vote).toBeUndefined();
+    });
+    const s = useApp.getState();
+    expect(s.history.map((e) => e.text)).toEqual(['Bo declares an attack', 'You cancelled the rollback vote']);
+    expect(s.history[0]?.undone).toBeUndefined();
+    expect(s.jumped).toBe(false);
   });
 });

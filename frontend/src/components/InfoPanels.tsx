@@ -1,8 +1,8 @@
 import { useEffect, useRef } from 'react';
-import { rollbackTargets, stepName, type Entry } from '../history';
+import { rollbackButtons, stepName, type Entry, type RollbackButton } from '../history';
 import type { GameView } from '../protocol';
 import type { Names } from '../stack';
-import { useApp } from '../store';
+import { seatOf, useApp } from '../store';
 import { boxOf } from '../zoom';
 import './InfoPanels.css';
 
@@ -26,16 +26,17 @@ export function TurnBadge({ view, names }: { view: GameView; names: Names }) {
 // HistoryPanel lists the match so far, newest at the bottom (V-03). The
 // history strip opens it (15.22); hide closes it. Card names zoom their
 // card on hover or tap. In Godmode each step's first row has a rollback
-// button; undone rows are greyed, and a row tells who rolled back
-// (ADR 020).
+// button; in Soft the rows after the last barrier, an "ask" button for
+// the step's own author. Undone rows are greyed, and a row tells who
+// rolled back (ADR 020).
 export function HistoryPanel({ hide }: { hide: () => void }) {
   const history = useApp((s) => s.history);
   const setZoom = useApp((s) => s.setZoom);
   const rollBack = useApp((s) => s.rollBack);
   const game = useApp((s) => s.game);
   const waiting = useApp((s) => s.behind || (s.game !== null && s.sent === s.game.step));
-  const god = game?.rollback_mode === 'god' && !game.view.over;
-  const targets = god ? rollbackTargets(history, game.rollback_from ?? 1) : new Set<number>();
+  const you = useApp(seatOf);
+  const buttons = game ? rollbackButtons(history, game, you) : new Map<number, RollbackButton>();
   const listRef = useRef<HTMLOListElement>(null);
   useEffect(() => {
     const el = listRef.current;
@@ -50,6 +51,11 @@ export function HistoryPanel({ hide }: { hide: () => void }) {
         {game?.rollback_mode === 'god' && (
           <span className="history-mode" title="Any player may roll back any step, at once">
             Godmode
+          </span>
+        )}
+        {game?.rollback_mode === 'soft' && (
+          <span className="history-mode" title="The other players vote on a rollback; dice, damage, hidden cards and a turn's end stop it">
+            Soft rollback
           </span>
         )}
         <button type="button" onClick={hide}>
@@ -82,26 +88,48 @@ export function HistoryPanel({ hide }: { hide: () => void }) {
               {e.icon}
             </span>
             <span>{e.text}</span>
-            {targets.has(e.key) && e.step !== undefined && (
-              <button
-                type="button"
-                className="history-rollback"
-                aria-label={`Roll back: ${e.text}`}
-                title="Undo this and everything after it"
+            {buttons.has(e.key) && e.step !== undefined && (
+              <RollbackRowButton
+                kind={buttons.get(e.key) ?? 'roll'}
+                text={e.text}
                 disabled={waiting}
-                onClick={(ev) => {
-                  ev.stopPropagation();
+                press={() => {
                   setZoom(null);
-                  rollBack(e.step ?? 0);
+                  rollBack(e.step ?? 0, buttons.get(e.key) === 'ask');
                 }}
-              >
-                ↶
-              </button>
+              />
             )}
           </li>
         ))}
       </ol>
     </aside>
+  );
+}
+
+// RollbackRowButton is a history row's rollback button: ↶ rolls back
+// or opens a vote; the author's own step in Soft gets "Ask" instead.
+function RollbackRowButton({ kind, text, disabled, press }: { kind: RollbackButton; text: string; disabled: boolean; press: () => void }) {
+  const ask = kind === 'ask';
+  return (
+    <button
+      type="button"
+      className={`history-rollback${ask ? ' ask' : ''}`}
+      aria-label={`${ask ? 'Ask to undo' : 'Roll back'}: ${text}`}
+      title={
+        ask
+          ? 'Ask the others to undo this and everything after it'
+          : kind === 'vote'
+            ? 'Undo this and everything after it, if the others agree'
+            : 'Undo this and everything after it'
+      }
+      disabled={disabled}
+      onClick={(ev) => {
+        ev.stopPropagation();
+        press();
+      }}
+    >
+      {ask ? 'Ask ↶' : '↶'}
+    </button>
   );
 }
 

@@ -8,7 +8,9 @@ import './Actions.css';
 interface Props {
   // banner is what the game waits for (15.28); none once it is over.
   banner: Banner | null;
-  paused: boolean;
+  // paused: the game waits for a player who left, or for a rollback
+  // vote; it names which.
+  paused: '' | 'Paused' | 'Rollback vote';
   name: (player: number) => string;
   // deadline is when the response timer answers, Unix ms; 0: no timer.
   deadline: number;
@@ -26,7 +28,7 @@ export function ActionBar({ banner, paused, name, deadline, wait }: Props) {
   return (
     <div className="action-bar" role="region" aria-label="Actions">
       {(paused || banner) && (
-        <PromptBanner banner={paused ? null : banner} name={name} deadline={paused ? 0 : deadline} />
+        <PromptBanner banner={paused ? null : banner} paused={paused} name={name} deadline={paused ? 0 : deadline} />
       )}
       {wait !== 'none' && (
         <div className="action-buttons">
@@ -53,7 +55,17 @@ export function ActionBar({ banner, paused, name, deadline, wait }: Props) {
 // in a few words, when it waits for this player; whom it waits for and
 // what for, in their color, when it waits for someone else. No banner
 // means the game is paused.
-function PromptBanner({ banner, name, deadline }: { banner: Banner | null; name: (player: number) => string; deadline: number }) {
+function PromptBanner({
+  banner,
+  paused,
+  name,
+  deadline,
+}: {
+  banner: Banner | null;
+  paused: string;
+  name: (player: number) => string;
+  deadline: number;
+}) {
   const mine = banner?.mine ?? false;
   return (
     <section
@@ -64,7 +76,7 @@ function PromptBanner({ banner, name, deadline }: { banner: Banner | null; name:
     >
       <div className="prompt-title">
         {!banner ? (
-          'Paused'
+          paused || 'Paused'
         ) : mine ? (
           banner.title
         ) : (
@@ -79,8 +91,8 @@ function PromptBanner({ banner, name, deadline }: { banner: Banner | null; name:
   );
 }
 
-// Timer counts down the response timer (N-07).
-function Timer({ deadline }: { deadline: number }) {
+// Timer counts down the response timer (N-07), or a Soft vote's.
+export function Timer({ deadline }: { deadline: number }) {
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     const t = window.setInterval(() => {

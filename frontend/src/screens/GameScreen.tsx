@@ -13,6 +13,7 @@ import { HistoryPanel, TurnBadge } from '../components/InfoPanels';
 import { GameMenu } from '../components/GameMenu';
 import { HistoryStrip } from '../components/HistoryStrip';
 import { EndOverlay, LostOverlay, PauseOverlay, ReconnectBadge } from '../components/Overlays';
+import { RollbackVotePanel } from '../components/RollbackVote';
 import { PlayedCard, StackPanel } from '../components/StackPanel';
 import { Throw } from '../components/Throw';
 import { WhyNote } from '../components/Why';
@@ -71,8 +72,10 @@ function Table({ game, you }: { game: Update; you: number }) {
   // The full history opens from the strip; the stack has its room (15.22).
   const [historyOpen, setHistoryOpen] = useState(false);
   // The player acts only on the latest state, and once per step. While
-  // waiting, buttons stay but are disabled, so they do not blink.
-  const canAct = !behind && sent !== game.step;
+  // waiting, buttons stay but are disabled, so they do not blink. A
+  // Soft rollback vote holds the game (ADR 020, item 5.8).
+  const voting = !!game.rollback_vote && !view.over;
+  const canAct = !behind && sent !== game.step && !voting;
   const actions = useMemo(() => actionsFor(game, (label) => cards.has(label)), [game, cards]);
   const setAiming = useApp((s) => s.setAiming);
   const ui = canAct ? interact(actions, act, select, aiming, setAiming) : noInteract;
@@ -116,6 +119,7 @@ function Table({ game, you }: { game: Update; you: number }) {
   // The board glows while the game waits for the player, and every seat
   // marks whom it waits for (15.95, V-52).
   const glow = canAct && !game.pause && myMove(banner, picks);
+  const paused = game.pause ? 'Paused' : voting ? 'Rollback vote' : '';
   const asked = askedSeat(view);
   // What the active player does, on their seat for everyone else (15.30).
   const doing = activity(view, names);
@@ -202,12 +206,12 @@ function Table({ game, you }: { game: Update; you: number }) {
           />
         )}
       </Board>
-      {!view.over && !game.pause && (
+      {!view.over && !paused && (
         <Throw waiting={view.waiting} you={you} names={names} action={actions.throw} disabled={!canAct} />
       )}
       <ActionBar
         banner={banner}
-        paused={!!game.pause}
+        paused={paused}
         name={name}
         deadline={game.deadline ?? 0}
         wait={waitTurn(view, you, game.wait_turn ?? false)}
@@ -229,6 +233,7 @@ function Table({ game, you }: { game: Update; you: number }) {
       {offered.discard && me && <DiscardDialog key={game.step} discard={offered.discard} hand={me.hand ?? []} />}
       {offered.order && <OrderDialog key={game.step} order={offered.order} cards={view.ordering ?? []} />}
       {looking.length > 0 && <LookDialog cards={looking} />}
+      {voting && <RollbackVotePanel game={game} you={you} name={name} />}
       {connected && !view.over && <GameMenu host={you === 0} />}
       {!connected && quiet ? (
         <ReconnectBadge />

@@ -1,10 +1,17 @@
 import { useEffect, useState } from 'react';
 import { deckRatiosBlocked, getCardSets } from '../bridge';
 import { useEscape } from '../keys';
-import type { Options } from '../protocol';
+import type { Options, RollbackMode } from '../protocol';
 import { baseGame, setName, sortSets } from '../sets';
 import { useApp } from '../store';
 import './screens.css';
+
+// rollbackHints say what each rollback mode allows (ADR 020, item 1).
+const rollbackHints: Record<'' | RollbackMode, string> = {
+  '': 'No rollback: every step stands.',
+  soft: 'The other players vote to undo a step. Dice, damage, hidden cards and the end of a turn cannot be undone.',
+  god: 'Any player undoes any step at once, even dice. For a table that trusts each other.',
+};
 
 // The detailed setup's starting values: the same as the simple setup.
 const simple: Options = { picking: 'random', draft_size: 3, ban_rounds: 0, ban_timer: 0, response_timer: 0 };
@@ -33,6 +40,7 @@ export function HostScreen() {
     response_timer: last.response_timer,
     no_bonus_souls: last.no_bonus_souls,
     no_deck_ratios: last.no_deck_ratios,
+    rollback: last.rollback === 'soft' || last.rollback === 'god' ? last.rollback : undefined,
   });
   const [password, setPassword] = useState('');
   const [busy, setBusy] = useState(false);
@@ -95,6 +103,7 @@ export function HostScreen() {
                   response_timer: options.response_timer ?? 0,
                   no_bonus_souls: options.no_bonus_souls ?? false,
                   no_deck_ratios: options.no_deck_ratios ?? false,
+                  rollback: options.rollback ?? '',
                 },
               });
               const game = { seats, sets: chosen, options: detailed ? options : undefined, password: password || undefined };
@@ -216,6 +225,26 @@ export function HostScreen() {
               />
               Deck ratios
             </label>
+            {/* Disabled by default (ADR 020, item 1.2). */}
+            <div className="row">
+              <label className="field">
+                Rollback
+                <select
+                  value={options.rollback ?? ''}
+                  aria-describedby="rollback-hint"
+                  onChange={(e) => {
+                    option({ rollback: (e.target.value || undefined) as RollbackMode | undefined });
+                  }}
+                >
+                  <option value="">Disabled</option>
+                  <option value="soft">Soft</option>
+                  <option value="god">Godmode</option>
+                </select>
+              </label>
+            </div>
+            <p id="rollback-hint" className="muted hint">
+              {rollbackHints[options.rollback ?? '']}
+            </p>
           </>
         )}
         <button type="submit" className="primary" disabled={busy}>

@@ -32,3 +32,4 @@
 | UC-28 | Play on after a server update | `internal/server`, `rules_engine`, `frontend` | Implemented | [server/uc-28-play-on-after-a-server-update.md](server/uc-28-play-on-after-a-server-update.md) |
 | UC-29 | A game ends by an idle limit | `internal/server`, `frontend` | Implemented | [server/uc-29-idle-game-limits.md](server/uc-29-idle-game-limits.md) |
 | UC-30 | Roll back a mistake (Godmode) | `internal/server`, `pkg/record`, `frontend` | Implemented | [app/uc-30-roll-back-a-mistake.md](app/uc-30-roll-back-a-mistake.md) |
+| UC-31 | Undo a step by vote (Soft) | `internal/server`, `rules_engine`, `frontend` | Implemented | [app/uc-31-undo-a-step-by-vote.md](app/uc-31-undo-a-step-by-vote.md) |

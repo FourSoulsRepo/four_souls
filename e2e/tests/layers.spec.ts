@@ -106,6 +106,32 @@ test('the Menu button stays above a choice and opens over it (15.29)', async ({ 
   await expect(tamsin.getByRole('dialog', { name: 'Game menu' })).toBeVisible();
 });
 
+test('the rollback vote covers the table; the game menu opens over it (17.4)', async ({ browser }) => {
+  const [uma] = await startGame(browser, ['Uma', 'Vik'], { url: fast() });
+  if (!uma) {
+    throw new Error('no pages');
+  }
+  // A Soft vote as the server sends it: Vik asks to undo a step.
+  await uma.evaluate(() => {
+    interface S {
+      game: { step: number };
+      lobby: { table: { you: number } };
+      receive: (env: unknown) => void;
+    }
+    const s = (window as unknown as { fourSouls: { store: { getState: () => S } } }).fourSouls.store.getState();
+    const you = s.lobby.table.you;
+    const vote = { step: s.game.step, seat: 1 - you, author: 1 - you, undo: 1, voters: [you], votes: [], need: 1 };
+    s.receive({ type: 'update', data: { ...structuredClone(s.game), events: [], rollback_mode: 'soft', rollback_vote: vote } });
+  });
+  const panel = uma.getByRole('dialog', { name: 'Rollback vote' });
+  await expect(panel).toBeVisible();
+  expect(await onTop(panel, uma.getByRole('main'))).toBe(true);
+  await uma.getByRole('button', { name: 'Menu' }).click();
+  const menu = uma.getByRole('dialog', { name: 'Game menu' });
+  await expect(menu).toBeVisible();
+  expect(await onTop(menu, panel)).toBe(true);
+});
+
 // noPresence drops the server's presence frames on the way to the page:
 // the other seat's real pointer would replace the injected one (19.48).
 function noPresence(page: Page): Promise<void> {

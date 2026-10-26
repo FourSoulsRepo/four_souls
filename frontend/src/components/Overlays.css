@@ -61,6 +61,24 @@
   color: var(--muted);
 }
 
+/* The Soft rollback vote (ADR 020, item 5): no backdrop, so the table
+   and the history stay in view; the game waits anyway. Top middle,
+   under the Menu button's row. */
+.rollback-vote {
+  position: fixed;
+  top: 52px;
+  left: 50%;
+  z-index: var(--z-vote);
+  transform: translateX(-50%);
+  width: min(420px, calc(100vw - 32px));
+  max-width: none;
+  padding: 14px 20px;
+}
+
+.rollback-vote h2 {
+  font-size: 20px;
+}
+
 /* Reconnecting by itself (N-20): a small note over the table, which
    stays visible; no backdrop, no pointer. */
 .reconnect-badge {

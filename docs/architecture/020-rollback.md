@@ -63,6 +63,12 @@ Use options 1, 4 and 8.
    7. Not a barrier: a shuffle; the restored RNG repeats its order.
    8. The engine owns the list: `engine.Barrier(Event) bool`.
    9. 17.4 checks the list against every event kind; a test pins it.
+   10. The check (17.4) adds kinds that fit 4.2 to 4.6.
+   11. Dice: also the roll's follow-ups and the first-player roll.
+   12. Death: also `died` and `object_died`, for a death without damage.
+   13. Hidden info: also `gained_treasure`, a deck top coming into view.
+   14. Hidden info: also `character_dealt`; the turn: also `turn_skipped`.
+   15. The game: also `game_started`.
 5. Soft vote
    1. Only the other players can roll back; never the target's author.
    2. The author may ask; the ask opens a vote.
@@ -79,6 +85,10 @@ Use options 1, 4 and 8.
    13. Whoever opened the vote may cancel it.
    14. A declined target may be asked again; players may change their mind.
    15. Built like the kick vote (N-08).
+   16. One vote at a time; a voter may change their answer.
+   17. A player who leaves pauses the game; the pause ends the vote.
+   18. A vote that ends with no rollback leaves a history row.
+   19. A passed vote's `rollback` line names the opener.
 6. Godmode
    1. Any player rolls back, the author too; no vote.
    2. A target is any step since the base (item 7).

@@ -78,6 +78,8 @@ type HostSetup struct {
 	ResponseTimer int      `json:"response_timer"` // seconds, one of ResponseTimers
 	NoBonusSouls  bool     `json:"no_bonus_souls"`
 	NoDeckRatios  bool     `json:"no_deck_ratios"`
+	// Rollback is the rollback mode (ADR 020); "": Disabled.
+	Rollback string `json:"rollback"`
 }
 
 // ResponseTimers are the host screen's response timer choices; 0 is off.
@@ -93,6 +95,9 @@ func (h HostSetup) clean() HostSetup {
 	}
 	if !slices.Contains(ResponseTimers, h.ResponseTimer) {
 		h.ResponseTimer = 0
+	}
+	if h.Rollback != protocol.RollbackSoft && h.Rollback != protocol.RollbackGod {
+		h.Rollback = ""
 	}
 	if h.Sets != nil {
 		sets := []string{}

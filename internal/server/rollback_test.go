@@ -167,7 +167,7 @@ func TestGodmodeRollback(t *testing.T) {
 }
 
 // TestRollbackRefused: no rollback in a game without the mode, nor
-// for a seat that does not play (ADR 020, item 2).
+// for a seat that does not play (ADR 020, item 2); no unknown mode.
 func TestRollbackRefused(t *testing.T) {
 	h := startHub(t)
 	players := startTable(t, h, 2)
@@ -180,10 +180,10 @@ func TestRollbackRefused(t *testing.T) {
 	if code := players[1].failure(); code != protocol.ErrRollback {
 		t.Errorf("Disabled: %s", code)
 	}
-	host, _ := arrive(t, h, "Soft", "")
-	host.say(protocol.TypeCreate, protocol.Create{Seats: 2, Options: &protocol.Options{Rollback: protocol.RollbackSoft}})
+	host, _ := arrive(t, h, "Chaos", "")
+	host.say(protocol.TypeCreate, protocol.Create{Seats: 2, Options: &protocol.Options{Rollback: "chaos"}})
 	if code := host.failure(); code != protocol.ErrBadSetup {
-		t.Errorf("Soft before 17.4: %s", code)
+		t.Errorf("an unknown mode: %s", code)
 	}
 }
 

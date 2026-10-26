@@ -1,7 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import kindList from '../../pkg/rules_engine/testdata/event_kinds.txt?raw';
 import { PromptKind } from './actions';
-import { entriesFor as entries, historyKinds, lookedAt, rollbackTargets, rolledBack, stepName, stripEntries, type Entry } from './history';
+import {
+  entriesFor as entries,
+  historyKinds,
+  lookedAt,
+  rollbackButtons,
+  rollbackTargets,
+  rolledBack,
+  stepName,
+  stepText,
+  stripEntries,
+  voteEnded,
+  type Entry,
+} from './history';
 import type { GameEvent, GameView, StackItem } from './protocol';
 import { StackKind, stackLine } from './stack';
 
@@ -521,5 +533,63 @@ describe('rollback (ADR 020)', () => {
     expect(again.at(-1)?.text).toBe('You roll back 1 step');
     expect(again.filter((e) => e.undone).map((e) => e.key)).toEqual([2, 3, 4, 5, 6]);
     expect(rollbackTargets(again, 1).size).toBe(0);
+  });
+});
+
+describe('Soft rollback buttons (ADR 020, items 3 and 5)', () => {
+  const row = (key: number, step: number, text: string): Entry => ({ key, turn: 1, icon: '+', text, step });
+  const history = [row(1, 0, 'start'), row(2, 1, 'Ann attacks'), row(3, 2, 'Bo plays a card'), row(4, 3, 'Bo passes')];
+  // The server lists steps 1 and 2: step 3 is a lone pass.
+  const soft = {
+    rollback_mode: 'soft' as const,
+    rollback_from: 1,
+    rollback_steps: [
+      { step: 1, seat: 0 },
+      { step: 2, seat: 1 },
+    ],
+    view: {},
+  };
+
+  it('gives the author an ask, the others a vote, and nothing else', () => {
+    expect([...rollbackButtons(history, soft, 0)]).toEqual([
+      [2, 'ask'],
+      [3, 'vote'],
+    ]);
+    expect([...rollbackButtons(history, soft, 1)]).toEqual([
+      [2, 'vote'],
+      [3, 'ask'],
+    ]);
+    // A spectator has no buttons.
+    expect(rollbackButtons(history, soft, -1).size).toBe(0);
+  });
+
+  it('offers nothing while a vote is open or once the game is over', () => {
+    const vote = { step: 1, seat: 1, author: 0, undo: 3, voters: [1], votes: null, need: 1 };
+    expect(rollbackButtons(history, { ...soft, rollback_vote: vote }, 1).size).toBe(0);
+    expect(rollbackButtons(history, { ...soft, view: { over: true } }, 1).size).toBe(0);
+    expect(rollbackButtons(history, { ...soft, rollback_mode: undefined }, 1).size).toBe(0);
+  });
+
+  it('keeps the barrier: steps before rollback_from have no button', () => {
+    expect([...rollbackButtons(history, { ...soft, rollback_from: 2, rollback_steps: [{ step: 2, seat: 1 }] }, 0)]).toEqual([[3, 'vote']]);
+  });
+
+  it('gives every target a plain button in Godmode', () => {
+    expect([...rollbackButtons(history, { rollback_mode: 'god', rollback_from: 1, view: {} }, 0).values()]).toEqual(['roll', 'roll', 'roll']);
+  });
+
+  it('adds a row when a vote ends with no rollback', () => {
+    const after = voteEnded(history, { step: 1, seat: 1, why: 'declined' }, 1, 0, n);
+    expect(after.at(-1)).toEqual({ key: 5, turn: 1, icon: '↶', text: 'The rollback was declined', rollback: true });
+    expect(voteEnded(history, { step: 1, seat: 1, why: 'cancelled' }, 1, 0, n).at(-1)?.text).toBe('Bo cancelled the rollback vote');
+    expect(voteEnded(history, { step: 1, seat: 0, why: 'cancelled' }, 1, 0, n).at(-1)?.text).toBe('You cancelled the rollback vote');
+    expect(voteEnded(history, { step: 1, seat: 0, why: 'timeout' }, 1, 0, n).at(-1)?.text).toBe('The rollback vote ran out of time');
+    // The row is no rollback target.
+    expect(rollbackTargets(after, 1).has(5)).toBe(false);
+  });
+
+  it('names the step a vote is about by its first row', () => {
+    expect(stepText(history, 2)).toBe('Bo plays a card');
+    expect(stepText(history, 9)).toBe('step 9');
   });
 });

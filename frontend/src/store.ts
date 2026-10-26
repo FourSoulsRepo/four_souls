@@ -32,7 +32,7 @@ import {
 import { noHostSetup } from './hostSetup';
 import type { CardInfo, Kind } from './cards';
 import { loadFonts } from './fonts';
-import { entriesFor, lookedAt, rolledBack, type Entry, type Looked, type Outcome } from './history';
+import { entriesFor, lookedAt, rolledBack, voteEnded, type Entry, type Looked, type Outcome } from './history';
 import type { LinePart } from './stack';
 import type { Box } from './zoom';
 import { emptyLobby, forgotten, leftTable, lost, onMessage, remember, renamed, type Screen, type ServerUp, type Session } from './lobby';
@@ -177,8 +177,13 @@ interface AppState extends Session {
   takeAimed: () => Aimed | null;
   // waitTurn turns "wait for my turn" on or off (N-16).
   waitTurn: (on: boolean) => void;
-  // rollBack asks to undo a step and every step after it (ADR 020).
-  rollBack: (step: number) => void;
+  // rollBack asks to undo a step and every step after it (ADR 020). In
+  // Soft it opens a vote; ask is the step's author asking the others.
+  rollBack: (step: number, ask?: boolean) => void;
+  // rollbackVote answers the open Soft vote (ADR 020, item 5).
+  rollbackVote: (yes: boolean) => void;
+  // rollbackCancel ends the vote this player opened (item 5.13).
+  rollbackCancel: () => void;
   // jumped is set while the table shown came from a rollback: it shows
   // at once, with no animation (item 8.5).
   jumped: boolean;
@@ -336,7 +341,12 @@ export const useApp = create<AppState>()((set, get) => {
     show: (u) => {
       const s = get();
       // A rollback greys the undone entries and adds its row (ADR 020).
-      const history = u.rollback ? rolledBack(s.history, u.rollback, u.step, u.view.turn.number, seatOf(s), names(u)) : s.history;
+      // A vote that ended with no rollback gets a row too (item 5).
+      const history = u.rollback
+        ? rolledBack(s.history, u.rollback, u.step, u.view.turn.number, seatOf(s), names(u))
+        : u.rollback_end
+          ? voteEnded(s.history, u.rollback_end, u.view.turn.number, seatOf(s), names(u))
+          : s.history;
       const entries = entriesFor(
         u.events ?? [],
         s.game?.view.turn.number ?? u.view.turn.number,
@@ -664,9 +674,18 @@ export const useApp = create<AppState>()((set, get) => {
     waitTurn: (on) => {
       send('wait_turn', { on });
     },
-    rollBack: (step) => {
-      send('rollback', { step });
-      set({ sent: get().game?.step ?? null, error: '' });
+    rollBack: (step, ask) => {
+      send('rollback', ask ? { step, ask } : { step });
+      // Godmode's rollback is a new step; a Soft vote keeps the step,
+      // so it would never clear sent.
+      const g = get().game;
+      set({ sent: g?.rollback_mode === 'god' ? g.step : get().sent, error: '' });
+    },
+    rollbackVote: (yes) => {
+      send('rollback_vote', { yes });
+    },
+    rollbackCancel: () => {
+      send('rollback_cancel', {});
     },
     jumped: false,
     presence: {},

@@ -31,7 +31,7 @@
 * **3c. The game is over:** no buttons.
 * **3d. The game is paused for a missing player:** the rollback is refused.
 * **4a. The replay differs from the game:** the rollback is refused; play goes on.
-* **6a. Soft mode, with a vote and barriers:** planned in 17.4.
+* **6a. Soft mode, with a vote and barriers:** UC-31.
 
 ## Postconditions
 

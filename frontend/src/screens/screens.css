@@ -197,6 +197,12 @@
   color: var(--muted);
 }
 
+/* A short note under a field, e.g. what a rollback mode allows. */
+.hint {
+  margin: -6px 0 0;
+  font-size: 13px;
+}
+
 .mat-preview {
   height: 48px;
   border: 2.5px solid var(--ink);

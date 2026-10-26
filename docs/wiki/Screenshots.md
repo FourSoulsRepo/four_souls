@@ -82,5 +82,9 @@ The fixture copies the fan-game notice. `internal/legal` has a test that fails w
 | Godmode: a rollback button on a history row | `screen-rollback-button.png` |
 | The author rolled back: undone rows greyed, the rollback row | `screen-rollback-undone.png` |
 | Another player rolled back | `screen-rollback-other.png` |
+| Host a game: the rollback mode with its hint | `screen-host-rollback.png` |
+| Soft: a voter sees the rollback vote | `screen-rollback-vote.png` |
+| Soft: the player who opened the vote | `screen-rollback-vote-opener.png` |
+| Soft: the author asked; their status | `screen-rollback-ask-status.png` |
 
 When a screen is added, call `shot` in its test and add a row here.

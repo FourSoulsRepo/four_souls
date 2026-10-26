@@ -103,7 +103,7 @@ export interface Options {
   rollback?: RollbackMode; // none: Disabled (ADR 020)
 }
 
-// RollbackMode: soft, the others vote (17.4); god, anyone, at once.
+// RollbackMode: soft, the others vote; god, anyone, at once.
 export type RollbackMode = 'soft' | 'god';
 
 export interface Create {
@@ -578,6 +578,43 @@ export interface Update {
   // rollback: this update rolled the game back to before step to; the
   // view is that table, and step is the rollback's own number.
   rollback?: Rollback;
+  // rollback_steps: in Soft, the steps a rollback may target now, with
+  // their authors (ADR 020, item 3).
+  rollback_steps?: RollbackStep[];
+  // rollback_vote: the open Soft vote; the game waits (item 5).
+  rollback_vote?: RollbackVote;
+  // rollback_end: this update ended a vote with no rollback.
+  rollback_end?: RollbackEnd;
+}
+
+export interface RollbackStep {
+  step: number;
+  seat: number;
+}
+
+// RollbackVote: seat opened it to undo author's step and undo steps in
+// all; need of the voters must say yes. deadline: Unix ms; none: no timer.
+export interface RollbackVote {
+  step: number;
+  seat: number;
+  author: number;
+  undo: number;
+  voters: number[];
+  votes: RollbackBallot[] | null;
+  need: number;
+  deadline?: number;
+}
+
+export interface RollbackBallot {
+  seat: number;
+  yes: boolean;
+}
+
+// RollbackEnd: the vote seat opened on step ended with no rollback.
+export interface RollbackEnd {
+  step: number;
+  seat: number;
+  why: 'declined' | 'cancelled' | 'timeout' | 'left' | 'failed';
 }
 
 export interface Rollback {
@@ -587,6 +624,13 @@ export interface Rollback {
 }
 
 // RollbackTo asks the server to undo a step and every step after it.
+// In Soft the step's author asks instead: ask opens the vote.
 export interface RollbackTo {
   step: number;
+  ask?: boolean;
+}
+
+// RollbackVoteAnswer is a voter's yes or no on the open Soft vote.
+export interface RollbackVoteAnswer {
+  yes: boolean;
 }

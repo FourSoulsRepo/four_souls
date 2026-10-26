@@ -71,6 +71,9 @@ const (
 
 	// Rollback (ADR 020).
 	TypeRollback = "rollback" // client → server: undo a step and every step after it
+	// The Soft vote (ADR 020, item 5; 17.4).
+	TypeRollbackVote   = "rollback_vote"   // client → server: yes or no on the open vote
+	TypeRollbackCancel = "rollback_cancel" // client → server: the opener ends the vote
 )
 
 // Envelope wraps every message. ID is set by the client on requests;
@@ -155,6 +158,13 @@ type Update struct {
 	// Rollback is set on the update a rollback made: the table is the
 	// one from before step To. Step is the rollback's own number.
 	Rollback *Rollback `json:"rollback,omitempty"`
+	// RollbackSteps are the steps a Soft rollback may target now, with
+	// their authors (ADR 020, item 3; 17.4).
+	RollbackSteps []RollbackStep `json:"rollback_steps,omitempty"`
+	// RollbackVote is the open Soft vote; the game waits (item 5.8).
+	RollbackVote *RollbackVote `json:"rollback_vote,omitempty"`
+	// RollbackEnd is set on the update a vote ended with no rollback.
+	RollbackEnd *RollbackEnd `json:"rollback_end,omitempty"`
 }
 
 // Rollback tells who rolled the game back to before step To, and how
@@ -165,10 +175,63 @@ type Rollback struct {
 	Undid int `json:"undid"`
 }
 
-// RollbackTo asks to undo step Step and every live step after it.
+// RollbackTo asks to undo step Step and every live step after it. In
+// Soft another player's request opens a vote with their yes; the
+// target's author sets Ask, which opens it with no vote yet (ADR 020,
+// items 5.1 to 5.3).
 type RollbackTo struct {
-	Step int `json:"step"`
+	Step int  `json:"step"`
+	Ask  bool `json:"ask,omitempty"`
 }
+
+// RollbackStep is a step a Soft rollback may target, and its author.
+type RollbackStep struct {
+	Step int `json:"step"`
+	Seat int `json:"seat"`
+}
+
+// RollbackVote is an open Soft vote (ADR 020, item 5): Seat opened it
+// to undo step Step of Author's, and Undo steps with it. Voters are
+// the connected seats other than the author; Need of them must say
+// yes. Deadline is when it runs out, Unix ms; 0: no timer.
+type RollbackVote struct {
+	Step     int              `json:"step"`
+	Seat     int              `json:"seat"`
+	Author   int              `json:"author"`
+	Undo     int              `json:"undo"`
+	Voters   []int            `json:"voters"`
+	Votes    []RollbackBallot `json:"votes"`
+	Need     int              `json:"need"`
+	Deadline int64            `json:"deadline,omitempty"`
+}
+
+// RollbackBallot is one voter's answer; a voter may change it.
+type RollbackBallot struct {
+	Seat int  `json:"seat"`
+	Yes  bool `json:"yes"`
+}
+
+// RollbackVoteAnswer is a voter's yes or no on the open vote.
+type RollbackVoteAnswer struct {
+	Yes bool `json:"yes"`
+}
+
+// RollbackEnd tells that the vote Seat opened on step Step ended with
+// no rollback, and why.
+type RollbackEnd struct {
+	Step int    `json:"step"`
+	Seat int    `json:"seat"`
+	Why  string `json:"why"`
+}
+
+// Why a Soft vote ended with no rollback.
+const (
+	VoteDeclined  = "declined"  // the majority is out of reach
+	VoteCancelled = "cancelled" // its opener cancelled it
+	VoteTimeout   = "timeout"   // the response timer ran out (item 5.11)
+	VoteLeft      = "left"      // a player left; the game pauses
+	VoteFailed    = "failed"    // the replay differed; the game goes on (item 7.4)
+)
 
 // Pause is a game waiting for disconnected players, and the vote.
 type Pause struct {
@@ -358,7 +421,7 @@ type Options struct {
 
 // Rollback modes (ADR 020, item 1).
 const (
-	RollbackSoft = "soft" // the other players vote; barriers stop it (17.4)
+	RollbackSoft = "soft" // the other players vote; barriers stop it
 	RollbackGod  = "god"  // Godmode: anyone, any step since the base, no vote
 )
 

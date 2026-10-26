@@ -74,7 +74,7 @@ Rules for this step (owner, 2026-10-26):
    2. e2e: in Godmode the author rolls back their own step.
    3. Use case: [UC-30](../use-cases/app/uc-30-roll-back-a-mistake.md).
 
-### [ ] 17.4 Modes and the Soft vote
+### [x] 17.4 Modes and the Soft vote
 
 1. Goal: the host picks the mode; Soft rollbacks need a majority.
 2. Tasks:

@@ -55,7 +55,7 @@ function loadSettings(): unknown {
     dice: 'tear',
     no_end_turn_ask: params.has('noendask'),
     rejoin: { address: '', token: '', game: '', via: '' },
-    host: { seats: 0, sets: null, detailed: false, response_timer: 0, no_bonus_souls: false, no_deck_ratios: false },
+    host: { seats: 0, sets: null, detailed: false, response_timer: 0, no_bonus_souls: false, no_deck_ratios: false, rollback: '' },
     lan_address: '',
   };
   return JSON.parse(localStorage.getItem(settingsKey) ?? JSON.stringify(fresh));
@@ -79,6 +79,7 @@ interface FakeSettings {
     response_timer: number;
     no_bonus_souls: boolean;
     no_deck_ratios: boolean;
+    rollback?: string;
   };
   lan_address?: string;
 }

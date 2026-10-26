@@ -40,6 +40,7 @@ type request struct {
 	dice    string // the returning client's dice look (V-19)
 	timeout int    // a ban turn's timer ran out (its turn number)
 	respond int    // the response timer ran out (its number)
+	voteUp  int    // a Soft vote's time ran out (its number)
 }
 
 // Room runs one game. Only its goroutine (Run) touches the game. It
@@ -107,6 +108,11 @@ type Room struct {
 	baseStep int
 	live     []liveStep
 	rolled   *protocol.Rollback // the rollback the next broadcast tells
+	// The open Soft vote (item 5), its timer's number, and the end of
+	// a vote the next broadcast tells.
+	rbVote  *softVote
+	voteGen int
+	voteEnd *protocol.RollbackEnd
 }
 
 // NewRoom prepares a game for seated players; it starts in Run. The
@@ -157,6 +163,7 @@ func (r *Room) Run(ctx context.Context) {
 		if r.timer != nil {
 			r.timer.Stop()
 		}
+		r.closeVote()
 		for _, c := range r.clients {
 			c.conn.Close()
 		}
@@ -199,6 +206,9 @@ func (r *Room) handle(req request) {
 	case req.respond > 0:
 		r.timeUp(req.respond)
 		return
+	case req.voteUp > 0:
+		r.voteTimeUp(req.voteUp)
+		return
 	}
 	env, err := protocol.Decode(req.msg)
 	if err != nil {
@@ -224,6 +234,10 @@ func (r *Room) handle(req request) {
 		r.presence(c, env)
 	case protocol.TypeRollback:
 		r.rollback(c, env)
+	case protocol.TypeRollbackVote:
+		r.rollbackVote(c, env)
+	case protocol.TypeRollbackCancel:
+		r.rollbackCancel(c, env)
 	default:
 		c.fail(env.ID, protocol.ErrBadMessage, "not during a game: "+env.Type)
 	}
@@ -271,6 +285,10 @@ func (r *Room) intent(c *Client, env protocol.Envelope) {
 	}
 	if r.paused() {
 		c.fail(env.ID, protocol.ErrPaused, "the game waits for a player who left")
+		return
+	}
+	if r.rbVote != nil {
+		c.fail(env.ID, protocol.ErrRollback, "the game waits for the rollback vote (ADR 020, item 5.8)")
 		return
 	}
 	var m protocol.Intent
@@ -343,7 +361,10 @@ func (r *Room) update(c *Client, events []engine.Event) {
 		}
 	}
 	if r.base != nil {
-		u.RollbackMode, u.RollbackFrom, u.Rollback = r.opts.Rollback, r.baseStep+1, r.rolled
+		u.RollbackMode, u.RollbackFrom, u.Rollback = r.opts.Rollback, r.rollbackFrom(), r.rolled
+		if r.opts.Rollback == protocol.RollbackSoft && !r.game.Over {
+			u.RollbackSteps, u.RollbackVote, u.RollbackEnd = r.softSteps(), r.voteView(), r.voteEnd
+		}
 	}
 	c.send(protocol.TypeUpdate, 0, u)
 }
@@ -356,6 +377,12 @@ func (r *Room) drop(c *Client) {
 		r.seats[c.seat].client = nil
 		r.seats[c.seat].wait = false
 		r.relayPresence(c, protocol.Presence{Seat: c.seat}) // its arrow goes
+		if r.rbVote != nil && r.paused() {
+			// The pause ends the vote; it may be asked again (ADR 020).
+			r.endVote(protocol.VoteLeft)
+			c.seat = -1
+			return
+		}
 		if r.paused() {
 			r.restartTimer() // stops it while paused
 		}
