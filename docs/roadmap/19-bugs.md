@@ -2366,7 +2366,7 @@ Totals by system (73 items):
 7. Owner notes (2026-10-26)
    1. Owner marks 19.71 solved.
 
-### [ ] 19.72 A killed monster's covered card flies in from the monster deck
+### [x] 19.72 A killed monster's covered card flies in from the monster deck
 
 1. Goal: an uncovered card shows up in its slot, not from the deck.
 2. Report (owner, 2026-10-26)
@@ -2410,8 +2410,10 @@ Totals by system (73 items):
    12. Screenshots: `.cache/screenshots/19.72/before/` and `after/`.
    13. Before: the uncovered card shows large over the board, then flies.
    14. After: the skull, then the card is in its slot.
+7. Owner notes (2026-10-26)
+   1. Owner marks 19.72 solved.
 
-### [ ] 19.73 A dead monster pops into the discard or soul slot; no flight
+### [x] 19.73 A dead monster pops into the discard or soul slot; no flight
 
 1. Goal: a dead monster flies from its slot to where it goes.
 2. Report (owner, 2026-10-26)
@@ -2470,3 +2472,5 @@ Totals by system (73 items):
    20. Screenshots: `.cache/screenshots/19.73/before/` and `after/`.
    21. Before: the skull, then the card is in the discard; no flight.
    22. After: the skull, then the card flies from its emptied slot.
+7. Owner notes (2026-10-26)
+   1. Owner marks 19.73 solved, with the emptied slot during the flight.
