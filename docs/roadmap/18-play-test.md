@@ -157,3 +157,28 @@ Ideas: B-04, B-05.
 3. Done when:
    1. `loudness check` passes on every sound.
    2. **Owner** hears it once per player death, never on a prevented one.
+
+### [ ] 18.9 Treasure gain sound
+
+1. Goal: each gained treasure flies in with a sound (AU-07).
+2. Tasks:
+   1. Source: owner's `power up1.wav`; source unknown.
+      1. So it lives only in the private images, as `treasure-gain.mp3`.
+      2. Mono MP3, levelled with `loudness level` (ADR 022).
+      3. Amend the submodule commit; bump the pointer.
+   2. `App.Sounds()` gains `treasureGain`; `''` without the file.
+   3. Each gained treasure flies to its player, one at a time.
+      1. Shop slot buy: `purchased` flies from the slot.
+      2. The engine's `purchased` gains `prev`: the slot's object.
+      3. The slot shows empty while it flies, as a dead monster's.
+      4. Deck top buy, monster reward, card effects: `gained_treasure`.
+      5. They fly from the treasure deck.
+      6. Each fly plays the sound as it leaves.
+   4. Silent, no fly: a loot trinket, a starting item, a stolen item.
+   5. With animations off, nothing plays, as other sounds.
+   6. `NOTICE`, UC-12, wiki `Client.md`, `Animations.md` name it.
+   7. Tests: Vitest for playback and sounds; e2e for the played file.
+   8. Gates: `make lint`, `make frontend e2e`.
+3. Done when:
+   1. `loudness check` passes on every sound.
+   2. **Owner** hears one sound per gained treasure, and sees it fly.

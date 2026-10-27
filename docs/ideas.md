@@ -835,6 +835,11 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    1. A sound when a player dies.
    2. Only a death no card or effect can undo any more.
    3. Planned in 18.8.
+7. AU-07. Treasure gain sound (owner, 2026-10-27).
+   1. A gained treasure makes a sound; a loot trinket does not.
+   2. Bought from the shop or the deck top, or a monster's reward.
+   3. One per item; each item flies to the table on its own.
+   4. Planned in 18.9.
 
 ## Menu
 

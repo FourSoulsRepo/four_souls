@@ -224,6 +224,14 @@
   * A monster's death is silent.
   * No private images (public clone): no sound.
   * With animations off, no sound plays.
+* **1ae. Treasure gain sound (18.9):** a gained treasure flies in with a sound.
+  * Bought from a shop slot: it flies from that slot to the player.
+  * Bought from the deck top: it flies from the treasure deck.
+  * A monster's reward or a card's effect: from the treasure deck.
+  * Each item flies on its own, with its own sound.
+  * A loot trinket, a starting item and a stolen item are silent.
+  * No private images (public clone): no sound.
+  * With animations off, no sound plays.
 
 ## Postconditions
 

@@ -324,6 +324,7 @@ w.go = {
           diceRoll: '/cardimg/assets/sounds/dice-roll.mp3',
           lootDraw: '/cardimg/assets/sounds/loot-draw.mp3',
           playerDied: '/cardimg/assets/sounds/player-died.mp3',
+          treasureGain: '/cardimg/assets/sounds/treasure-gain.mp3',
         }),
       // The mat images, at their real paths; the e2e tests serve them only
       // for screenshots, else they fail to load as in a public clone.

@@ -1328,3 +1328,40 @@ test('a player death makes its sound once, a monster death none (18.8)', async (
   await expect(ola.locator('.effects')).toHaveCount(0);
   expect(await played(ola)).toEqual(['/cardimg/assets/sounds/player-died.mp3']);
 });
+
+test('each gained treasure flies in with its sound; a trinket and a starting item do not (18.9)', async ({ browser }) => {
+  const [ola] = await startGame(browser, ['Ola', 'Pim']);
+  if (!ola) {
+    throw new Error('no pages');
+  }
+  await listenSounds(ola);
+  // Replay the view with a shop buy, a treasure from the deck, and the
+  // silent gains: a starting item and a trinket.
+  await ola.evaluate(() => {
+    interface Store {
+      getState: () => {
+        game: { step: number; view: { shop: { top?: { id: number; card: string } }[] | null } } | null;
+        lobby: { table: { you: number } | null };
+        receive: (env: unknown) => void;
+      };
+    }
+    const s = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store.getState();
+    const game = structuredClone(s.game);
+    const [bought, other] = (game?.view.shop ?? []).map((slot) => slot.top?.card);
+    if (!game || !bought || !other) {
+      throw new Error('no game');
+    }
+    const you = s.lobby.table?.you ?? 0;
+    const events = [
+      { kind: 'purchased', player: you, object: 1001, card: bought },
+      { kind: 'gained_treasure', player: you, object: 1002, card: other },
+      { kind: 'gained_treasure', player: you, object: 1003, card: other, text: 'starting item' },
+      { kind: 'gained_item', player: you, object: 1004, card: other },
+    ];
+    s.receive({ type: 'update', data: { ...game, step: game.step + 1, events } });
+  });
+  await expect(ola.getByTestId('effect-fly')).toBeAttached();
+  await expect(ola.locator('.effects')).toHaveCount(0);
+  // One sound per treasure: the shop buy and the deck's.
+  expect(await played(ola)).toEqual(Array(2).fill('/cardimg/assets/sounds/treasure-gain.mp3'));
+});

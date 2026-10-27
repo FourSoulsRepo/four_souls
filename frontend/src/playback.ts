@@ -75,6 +75,8 @@ interface Context {
   slot: (object: number) => string | undefined;
   // before is slot, in the view on screen before this update (19.73).
   before: (object: number) => string | undefined;
+  // shopBefore is the shop slot a card tops in that view, if any (18.9).
+  shopBefore: (card: string) => Death | undefined;
   // diedAt keeps where each dead card died, by its held object, across
   // updates: reward rolls may come before its discard or soul (19.73).
   diedAt: Map<number, Death>;
@@ -126,6 +128,13 @@ function damageFrom(e: GameEvent, ctx: Context): string[] {
     out.push(...playerZones(p));
   }
   return out;
+}
+
+// shopSlot is the shop slot whose top card is card, and its object.
+export function shopSlot(view: GameView, card: string): Death | undefined {
+  const i = (view.shop ?? []).findIndex((s) => s.top?.card === card);
+  const top = view.shop?.at(i)?.top;
+  return i >= 0 && top ? { zone: `shop-slot-${String(i)}`, object: top.id } : undefined;
 }
 
 // slotZone is the zone of the monster or shop slot whose top card is
@@ -277,6 +286,22 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
         const death = ctx.diedAt.get(e.prev) ?? { zone: `obj-${String(e.prev)}`, object: e.prev };
         ctx.diedAt.delete(e.prev);
         out.push(flyFrom(death, playerZones(e.player), e.card, kind));
+        break;
+      }
+      case 'gained_treasure':
+        // A treasure drawn from its deck flies to the player with its
+        // sound, one per item; a starting or a stolen item does not (18.9).
+        if (e.text !== 'starting item' && e.text !== 'stolen') {
+          out.push({ kind: 'fly', from: ['deck-treasure'], to: playerZones(e.player), card: e.card, back: 'treasure', sound: 'treasureGain' });
+        }
+        break;
+      case 'purchased': {
+        // A shop item flies from the slot it topped on screen, which
+        // shows empty meanwhile. The deck top flew as gained_treasure.
+        const slot = e.text === 'treasure deck' || !e.card ? undefined : ctx.shopBefore(e.card);
+        if (slot) {
+          out.push({ kind: 'fly', from: [slot.zone], to: playerZones(e.player), card: e.card, back: 'treasure', lifts: slot.object, sound: 'treasureGain' });
+        }
         break;
       }
       case 'prevented':
