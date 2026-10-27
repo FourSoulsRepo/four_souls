@@ -38,26 +38,26 @@ This step never closes; new reports are appended.
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74                              | 4     |
 | E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52, 19.54, 19.69 | 9  |
-| F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76               | 6     |
+| F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88        | 7     |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
 | I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.81, 19.82, 19.85, 19.87 | 17 |
-| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77 | 15 |
+| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89 | 16 |
 | K  | Build and release files                  | Release    | 19.47, 19.59, 19.83                                    | 3     |
 | L  | Not a bug: the app follows a ruling      | None       | 19.63                                                  | 1     |
 | M  | Go test setup: the code was right        | Go tests   | 19.68                                                  | 1     |
 | N  | A missing control: no way to do it       | Server     | 19.84                                                  | 1     |
 | O  | Reconnect: old connection state kept     | Client     | 19.78, 19.86                                           | 2     |
 
-Totals by system (87 items):
+Totals by system (89 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
 | Engine    | A, B    | 20    |
 | Card data | C       | 2     |
-| Client    | D–G, O  | 25    |
+| Client    | D–G, O  | 26    |
 | Server    | H, N    | 2     |
-| e2e       | I, J    | 33    |
+| e2e       | I, J    | 34    |
 | Release   | K       | 3     |
 | None      | L       | 1     |
 | Go tests  | M       | 1     |
@@ -2914,3 +2914,39 @@ Totals by system (87 items):
    7. No app change; no docs or screenshots.
 7. Owner notes (2026-10-27)
    1. Owner marks 19.87 solved.
+
+### [x] 19.88 The join row's password field is too small
+
+1. Goal: a guest can see and type into a locked game's password field.
+2. Report (owner, 2026-10-27)
+   1. The password field is too small on the client.
+   2. Screenshot `screen-join-password`: about 20 px wide, next to Join.
+3. Cause
+   1. `.game-password` had `flex: 1`, `min-width: 0`.
+   2. The row text did not shrink; the field took what was left.
+   3. A long set list left it almost nothing.
+4. Tasks:
+   1. Client: the field keeps a fixed width; the row text wraps instead.
+5. Done when:
+   1. e2e: the field is at least 120 px wide with a long set list.
+   2. Screenshots: `.cache/screenshots/19.88/before/` and `after/`.
+6. Fix
+   1. Client: `.game-password` is `flex: none`, 140 px wide.
+   2. The row text wraps beside it; Join stays at the end.
+   3. e2e: `a game password keeps others out (N-14)` checks the width.
+   4. It fails on the old style: the field was 24 px.
+   5. No use case or wiki change: the behavior is the same.
+   6. Screenshots: `.cache/screenshots/19.88/before/` and `after/`.
+
+### [ ] 19.89 e2e: the 15.77 damage fly test timed out once, webkit, full run
+
+1. Goal: `playback.spec.ts` "damage from a card no longer on screen flies from the player who dealt it (15.77)" passes every run.
+2. Report (agent, 2026-10-27)
+   1. Found by the full e2e gate during 19.88, webkit.
+   2. Timeout of 30 s in `centre`, called at line 1224.
+   3. Passes alone: 3 of 3 runs, webkit.
+   4. Evidence: `.cache/e2e-evidence/19.88-gate-playback-webkit/` (not in git).
+3. Cause
+   1. Not found yet.
+4. Tasks:
+   1. Find what `centre` waits for at line 1224 under load.

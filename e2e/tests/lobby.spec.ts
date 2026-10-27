@@ -276,6 +276,9 @@ test('a game password keeps others out (N-14)', async ({ browser }) => {
 
   await join.click();
   await expect(status).toHaveText(tr('error.password_needed'));
+  // The field keeps room to type next to a long set list (19.88).
+  const field = await game.getByLabel(tr('lobby.games.password_label', { host: 'Nox' })).boundingBox();
+  expect(field?.width).toBeGreaterThanOrEqual(120);
   await game.getByLabel(tr('lobby.games.password_label', { host: 'Nox' })).fill('guess');
   await join.click();
   await expect(status).toHaveText(tr('error.password_wrong'));
