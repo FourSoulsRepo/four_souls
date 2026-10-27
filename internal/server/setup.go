@@ -37,12 +37,13 @@ type matchSetup struct {
 	rng    *rand.Rand
 }
 
-// characters lists every character of the sets, in a fixed order.
+// characters lists every character of the sets, in a fixed order. A
+// two-sided card's back is a character too, but it is never dealt (ADR 023).
 func characters(sets []engine.CardSet) []engine.CardRef {
 	var out []engine.CardRef
 	for _, s := range sets {
 		for _, d := range s.Cards {
-			if d.Kind == engine.CharacterCard {
+			if d.Kind == engine.CharacterCard && !d.Outside {
 				out = append(out, d.Ref)
 			}
 		}

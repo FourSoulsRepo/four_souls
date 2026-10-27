@@ -278,3 +278,18 @@ func TestDeckRatiosOption(t *testing.T) {
 		t.Error("the record header lacks deck_ratios")
 	}
 }
+
+// ADR 023: a back face is never dealt, so the pool holds only fronts.
+func TestBackFacesAreNotDealt(t *testing.T) {
+	pool := characters(cards.Sets())
+	if !slices.Contains(pool, "the_enigma") {
+		t.Fatal("The Enigma is not in the pool")
+	}
+	for _, set := range cards.Sets() {
+		for _, d := range set.Cards {
+			if d.Back != "" && slices.Contains(pool, d.Back) {
+				t.Errorf("%s: back %s is in the pool", d.Ref, d.Back)
+			}
+		}
+	}
+}

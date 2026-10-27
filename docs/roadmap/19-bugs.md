@@ -33,7 +33,7 @@ This step never closes; new reports are appended.
 
 | ID | Group                                    | System     | Items                                                  | Count |
 |----|------------------------------------------|------------|--------------------------------------------------------|-------|
-| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66 | 12 |
+| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92 | 13 |
 | B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90 | 9 |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74                              | 4     |
@@ -3008,3 +3008,29 @@ Totals by system (91 items):
 5. Done when:
    1. CI's Go lint job passes.
    2. A clean checkout runs `make i18n` after `npm ci`.
+
+### [ ] 19.92 A two-sided card's back is dealt as a character
+
+1. Goal: every character starts front up, with its starting item.
+2. Report (owner, 2026-10-28)
+   1. A game started with The Enigma on its back side.
+   2. The player had no starting item.
+3. Cause
+   1. `internal/server` `characters()` lists every `CharacterCard`.
+   2. A back face is a `CharacterCard` too: `amgine_eht`, `the_revenant`.
+   3. A random or drafted pick can give the back; no item comes with it.
+   4. The engine's `NewGame` takes such a pick without a check.
+4. Tasks:
+   1. Server: the pool skips back faces.
+   2. Engine: `NewGame` rejects a back face in `Setup.Characters`.
+5. Done when:
+   1. Go: the server pool has no back face and keeps the front.
+   2. Go: `NewGame` with a back face in `Setup.Characters` fails.
+   3. Docs: ADR 023 already says a back is never dealt; no change.
+6. Fix
+   1. Server: `characters()` skips `Outside` cards, as the engine's `inDecks` does.
+   2. Engine: `NewGame` rejects an `Outside` card in `Setup.Characters`.
+   3. Go: `TestBackFacesAreNotDealt` (`internal/server`).
+   4. Go: `TestBackFaceIsNotDealt` (`pkg/rules_engine/cards`).
+   5. Both new tests fail on the old code.
+   6. No screen change: no screenshots.

@@ -29,6 +29,14 @@ func TestSetsStartGames(t *testing.T) {
 	}
 }
 
+// ADR 023: a back face is never dealt, even when it is picked by name.
+func TestBackFaceIsNotDealt(t *testing.T) {
+	_, _, err := engine.NewGame(engine.Setup{Seed: 1, Players: 2, Sets: Sets(), Characters: []engine.CardRef{"amgine_eht", "cain"}})
+	if err == nil {
+		t.Fatal("The Enigma's back was dealt as a character")
+	}
+}
+
 func TestStartingItemsExist(t *testing.T) {
 	for _, set := range Sets() {
 		refs := map[engine.CardRef]engine.CardDef{}

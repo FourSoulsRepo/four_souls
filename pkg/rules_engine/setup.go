@@ -109,8 +109,9 @@ func NewGame(s Setup) (*Game, []Event, error) {
 			return nil, nil, fmt.Errorf("setup: %d characters for %d players", len(s.Characters), s.Players)
 		}
 		for _, c := range s.Characters {
-			if d, ok := idx.find(c); !ok || d.Kind != CharacterCard {
-				return nil, nil, fmt.Errorf("setup: %q is not a character", c)
+			// A back face is a character card too, but it is never dealt (ADR 023).
+			if d, ok := idx.find(c); !ok || d.Kind != CharacterCard || d.Outside {
+				return nil, nil, fmt.Errorf("setup: %q is not a character that is dealt", c)
 			}
 			if slices.Contains(s.Banned, c) {
 				return nil, nil, fmt.Errorf("setup: %q is banned", c)
