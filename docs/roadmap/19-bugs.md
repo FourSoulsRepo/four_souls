@@ -41,8 +41,8 @@ This step never closes; new reports are appended.
 | F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76               | 6     |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
-| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.82, 19.85, 19.87 | 16 |
-| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.81 | 16 |
+| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.81, 19.82, 19.85, 19.87 | 17 |
+| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77 | 15 |
 | K  | Build and release files                  | Release    | 19.47, 19.59, 19.83                                    | 3     |
 | L  | Not a bug: the app follows a ruling      | None       | 19.63                                                  | 1     |
 | M  | Go test setup: the code was right        | Go tests   | 19.68                                                  | 1     |
@@ -2702,6 +2702,24 @@ Totals by system (87 items):
    1. Find the cause in the evidence; fix the test or the app.
 5. Done when:
    1. Cause written here; the test passes ten full runs in a row.
+6. Cause (2026-10-27)
+   1. Chromium starts no selection from the pixel between two text lines.
+   2. That is between two rows, or two wrapped lines of one row.
+   3. WebKit selects there; so a Chromium-only miss.
+   4. The test's drag started 4 px below the list's top edge.
+   5. Where that lands depends on the scroll and on line wraps.
+   6. `qps` wraps more lines, so it hit a line edge more often.
+   7. The drag also started before the loot line came.
+   8. A late line scrolls the list under the mouse.
+7. Fix
+   1. Test only; the app is right.
+   2. The drag waits for the loot line, the newest row.
+   3. It starts in the middle of that row's first line.
+   4. Not app CSS: margins instead of padding moved the dead pixel, not removed it.
+   5. A whole-pixel line height did not remove it either.
+   6. 20 runs in `qps` and 10 in English, both browsers, pass.
+   7. `make e2e` and `make screenshots LOCALE=qps` pass.
+   8. Evidence: `.cache/e2e-evidence/19.81-*` (not in git).
 
 ### [x] 19.82 e2e: the dice menu test fails in a screenshot run without card images
 
