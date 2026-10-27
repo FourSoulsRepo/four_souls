@@ -285,6 +285,7 @@ Step numbers stay as IDs; the table lists steps in work order.
 4. Moved from step 8 (8.4–8.6): more cards make a better test.
 5. Ideas: B-04, B-05.
 6. Review the multi-instance solution (UC-16).
+7. Every sound at one loudness (AU-04, ADR 022).
 
 ## 19. Bugs
 

@@ -51,3 +51,63 @@ Ideas: B-04, B-05.
    7. Write an ADR for the result; update UC-16 if behavior changes.
 3. Done when:
    1. ADR accepted; UC-16 matches the code.
+
+### [ ] 18.5 Sound loudness tool
+
+1. Goal: a tool measures every sound's loudness (AU-04, ADR 022).
+2. Tasks:
+   1. Work in the separate repo `FourSoulsRepo/tools` (`../FourSoulsRepo/tools`).
+   2. Never add this tool or its dependency to the game repo (owner).
+   3. New command: `go run ./loudness`, next to `scraper`.
+   4. MP3 decoding: `github.com/hajimehoshi/go-mp3`.
+      1. Add it to that repo's `NOTICE` (Apache-2.0).
+   5. Measure M200 as ADR 022 says.
+      1. K-weighting filter coefficients for the file's sample rate.
+      2. Use the BS.1770 formulas, as libebur128 does.
+      3. Mix to mono first; the sounds are mono anyway.
+      4. Pad with silence, so a short sound fills the window.
+      5. Also report the sample peak in dBFS.
+   6. `loudness check -game ../four_souls`
+      1. Reads every `*.mp3` in `pkg/card_db/images/assets/sounds/`.
+      2. Prints one row per file: M200, peak, gain needed.
+      3. Exit code 1 when any file is off -20 ±1.5 LU or peaks above -1 dBFS.
+      4. A file list after the flags checks only those files.
+   7. `loudness level -game ../four_souls <file>…`
+      1. Needs `ffmpeg`; add it to that repo's README requirements.
+      2. Gain to -20 LUFS M200, then a limiter at -1 dBFS.
+      3. Re-measure and adjust, up to 3 passes; the limiter lowers loudness.
+      4. Writes mono, 44.1 kHz, 64 kbps MP3 in place.
+      5. Prints before and after values.
+   8. Tests in the tools repo.
+      1. A 997 Hz sine at full scale reads -3.01 LUFS.
+      2. A 400 ms window matches ffmpeg `ebur128` momentary within 0.1 LU.
+      3. A sound shorter than the window still reads right.
+   9. Document both commands in that repo's README.
+   10. Commit in the tools repo after its own `go vet` and tests pass.
+3. Done when:
+   1. `check` prints the four values of ADR 022 (200 ms column) within 0.2 LU.
+   2. `check` exits 1 on today's sounds.
+
+### [ ] 18.6 Level the sounds
+
+1. Goal: every sound plays at one loudness (AU-04, ADR 022).
+2. Tasks:
+   1. Needs 18.5.
+   2. Run `loudness level` on the four files in `images/assets/sounds/`.
+   3. Commit them in the private submodule repo `FourSoulsRepo/card_db`.
+   4. Bump the submodule pointer in the game repo.
+   5. `frontend/src/sounds.ts`: `volume` from 0.6 to 1.0.
+      1. Levelled files are 3–10 dB quieter than before.
+      2. One volume for every sound; no per-sound gain.
+   6. New `CLAUDE.md` rule, appended under Workflow:
+      1. Every sound sits at -20 LUFS M200 (ADR 022).
+      2. A new or changed sound passes `loudness check` before its commit.
+      3. Fix one with `loudness level` in the tools repo.
+   7. Wiki: a "Sound loudness" section in `docs/wiki/Card-data-tools.md`.
+      1. What M200 is, the target, both commands.
+   8. Wiki: the sound paragraph in `docs/wiki/Client.md` names ADR 022.
+   9. ADR 022: status Proposed → Accepted; fix any drift.
+   10. Gates: `make lint`, `make frontend e2e`.
+3. Done when:
+   1. `loudness check` passes on every sound.
+   2. **Owner** plays a game and hears no sound jump out.

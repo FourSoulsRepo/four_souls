@@ -821,6 +821,12 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    2. Hearthstone's Jaina fireball for bombs and other effects.
    3. No background music in the files.
    4. Small files.
+4. AU-04. Every sound at one loudness (owner, 2026-10-27).
+   1. Styles cannot match, so at least loudness must.
+   2. No sound feels louder or quieter than the rest.
+   3. A tool checks every sound, the existing ones and every new one.
+   4. The tool lives in `FourSoulsRepo/tools`, not here.
+   5. Planned in 18.5 and 18.6; decision in ADR 022.
 
 ## Menu
 
