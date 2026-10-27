@@ -49,6 +49,9 @@
    20. `wails build` and `wails dev` always take `-m` (19.59).
        1. It skips `go mod tidy`.
        2. Tidy fails without the private images submodule.
+   21. `make i18n`: translation checks; `make lint` runs it.
+       1. `LOCALE=xx`: that language in full; `AREA=` one area.
+       2. Details: `docs/wiki/Client.md` (Translation checks).
 5. Workflow
    1. Work follows `docs/roadmap/`, one sub-step at a time.
    2. Commit after every finished sub-step.

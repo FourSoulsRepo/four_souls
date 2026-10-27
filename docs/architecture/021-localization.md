@@ -212,6 +212,10 @@ Use options 5, 7, 11, 12 and 14.
     14. `make i18n LOCALE=xx` merges it into `xx.json`, sorted by key.
     15. A file in `locales/` is a choice in Settings, so no test file sits there.
     16. Unit tests check test tables; a trial language stays on a scratch branch.
+    17. `glossary/en.json`: each English term with a note.
+    18. `glossary/<lang>.json`: each term's word in that language.
+    19. The glossary folder and `server-keys.json` are no languages.
+    20. The runner is `translations.test.ts`; `make lint` runs `make i18n`.
 
 ## Consequences
 

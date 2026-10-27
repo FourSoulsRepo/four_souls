@@ -2,7 +2,7 @@
 // a language code is a language; adding a language is adding a file.
 // The store sets the language from the settings (setLanguage).
 import en from './locales/en.json';
-import { languageList, localeOf, msgValues, pseudoLocale, resolveLanguage, testLanguage, textOf, translate, type Locale, type Msg, type Text, type Values } from './locale';
+import { languageList, languageOfFile, localeOf, msgValues, pseudoLocale, resolveLanguage, testLanguage, textOf, translate, type Locale, type Msg, type Text, type Values } from './locale';
 
 // Key is a line of en.json, so a typo fails tsc.
 export type Key = keyof typeof en;
@@ -12,9 +12,10 @@ const files = import.meta.glob<Record<string, Text>>('./locales/*.json', { eager
 
 const locales = new Map<string, Locale>([['en', english]]);
 for (const [path, table] of Object.entries(files)) {
-  // Other files may sit there (server keys, 16.4); a language is a code.
-  const lang = /\/([a-z]{2,3})\.json$/.exec(path)?.[1];
-  if (lang && lang !== 'en' && lang !== testLanguage) {
+  // Other files sit there too: server keys (16.4); the glossary is a
+  // folder, which the pattern skips (16.7). A language is a code.
+  const lang = languageOfFile(path.split('/').pop() ?? '');
+  if (lang) {
     locales.set(lang, localeOf(table));
   }
 }

@@ -19,8 +19,9 @@ The desktop client is React + TypeScript in `frontend/` (ADR 002), with three li
 | `src/components/` | `Card`, `CardZoom`, `Board`, `PlayerArea`, `Pile`, `Effects`. |
 | `src/fakeBridge.ts` | Dev only: fake Wails bindings for tests (`?fake`). |
 | `src/i18n.ts` | `t()`, the language files and the chosen language ([Languages](#languages)). |
-| `src/locale.ts` | Pure: lookup, plural forms, the test language, the language list. |
-| `src/locales/` | One JSON file per language; `en.json` is the source. |
+| `src/locale.ts` | Pure: lookup, plural forms, the test language, the language list, the translation checks. |
+| `src/locales/` | One JSON file per language; `en.json` is the source; `glossary/` holds the game terms. |
+| `src/translations.test.ts` | `make i18n`: the checks on the real files ([Translation checks](#translation-checks)). |
 
 ## Data flow
 
@@ -198,3 +199,14 @@ To add a UI string:
 4. Find it in e2e tests with `tr(key, values)`, or `trRe(key, values)` for a pattern ([Frontend tests](Frontend-tests)).
 
 `make lint` fails on letters in JSX text, in the text attributes (`title`, `aria-label`, `placeholder`, `alt`, `label`), and in strings or templates shown as JSX children (`no-restricted-syntax` in `eslint.config.js`). `i18n.test.ts` fails on a key used in code but missing from `en.json`, on a key no code uses (or `locales/server-keys.json` lists, 16.4), and on a `t()` call whose key is not a literal.
+
+## Translation checks
+
+`make i18n` checks the translations (16.7, ADR 021 items 10 and 16). The checks are pure functions in `locale.ts` (`checkLanguage`, `todoOf`, `mergeDone`), tested on test tables in `locale.test.ts`; `translations.test.ts` runs them on the real files under Vitest, reading and writing them through `node:fs` (declared in `src/node-fs.d.ts`, since the frontend has no `@types/node`).
+
+* Without `LOCALE` (and in `make lint` and `make frontend`): every language file has no stray key, no wrong shape (one text where English has plural forms, a plural form the language does not have, a copied `{text, note}`) and the same `{placeholders}` as English; `i18n.test.ts` adds unused and missing keys of `en.json`.
+* `make i18n LOCALE=xx`: also every key missing and every plural form the language needs, those `Intl.PluralRules` picks for whole numbers 0–1000 (`requiredForms`: Russian `one`, `few`, `many`). Placeholders are compared per key, all forms together, so one form may leave out `{n}`. It prints one line per gap and fails while any is left.
+* It writes `.cache/translations/xx/todo.json` for agents: a `how` list, each form's example numbers, the glossary notes, and the gaps grouped by area, each with key, English, note, placeholders, forms, the glossary terms its English uses with this language's word, and the wrong text (`now`). `AREA=lobby` keeps one area, in the list too.
+* An agent writes only `.cache/translations/xx/done.json` (key → text); the next `make i18n LOCALE=xx` merges it into `xx.json`, sorted by key, deletes it, and leaves out keys `en.json` lacks. A key set to `null` there is deleted: `todo.json` lists stray keys under `stray` for that.
+
+The glossary lives in `src/locales/glossary/`: `en.json` lists each game term with a note, `<lang>.json` gives its word. Terms are matched in English as whole words, plural or not; they are context only, with no check of the translated words. `i18n.ts` loads `locales/*.json` only, so the glossary folder is no language, and `languageOfFile` skips `server-keys.json`. `LOCALE=en` and `LOCALE=qps` fail: English is the source and `qps` has no file.

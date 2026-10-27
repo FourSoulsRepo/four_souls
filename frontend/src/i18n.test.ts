@@ -28,8 +28,14 @@ describe('t', () => {
 });
 
 describe('languages', () => {
+  // A language file adds its own choice, so a new one needs no change
+  // here; the glossary folder and server-keys.json add none (16.7).
   it('lists English and Russian, and qps in development', () => {
-    expect(languages).toEqual(['en', 'ru', 'qps']);
+    expect(languages[0]).toBe('en');
+    expect(languages).toContain('ru');
+    expect(languages.at(-1)).toBe('qps');
+    expect(languages).not.toContain('glossary');
+    expect(languages).not.toContain('server-keys');
   });
 
   it('a language this build lacks follows the OS, else English', () => {

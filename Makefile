@@ -25,15 +25,18 @@ E2E_WORKERS ?= 5
 # go into .cache/screenshots/<LOCALE>/. Not LANG: the shell sets that.
 LOCALE ?=
 
+# make i18n LOCALE=xx AREA=lobby: one area of the key names (ADR 021, 16).
+AREA ?=
+
 .DEFAULT_GOAL := help
-.PHONY: help test vet build wasm lint frontend e2e e2e-games screenshots internal server-archives fuzz fuzz-engine fuzz-focused fuzz-sets fuzz-new sims
+.PHONY: help test vet build wasm lint i18n frontend e2e e2e-games screenshots internal server-archives fuzz fuzz-engine fuzz-focused fuzz-sets fuzz-new sims
 
 help: ## Show this help
 	@echo "Usage: make <target> [VAR=value]"
 	@echo
 	@awk 'BEGIN {FS = ":.*## "} /^[a-z0-9-]+:.*## / {printf "  %-14s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 	@echo
-	@echo "Variables: TAGS, GOLANGCI, PLATFORM, VERSION, FUZZTIME=$(FUZZTIME), MINIMIZE=$(MINIMIZE), FOCUS=$(FOCUS), SIMS=$(SIMS), SETS=$(SETS), E2E_WORKERS=$(E2E_WORKERS), LOCALE=$(LOCALE)"
+	@echo "Variables: TAGS, GOLANGCI, PLATFORM, VERSION, FUZZTIME=$(FUZZTIME), MINIMIZE=$(MINIMIZE), FOCUS=$(FOCUS), SIMS=$(SIMS), SETS=$(SETS), E2E_WORKERS=$(E2E_WORKERS), LOCALE=$(LOCALE), AREA=$(AREA)"
 
 test: ## Run tests in every Go module, plus embed mode
 	@for m in $(MODULES); do (cd $$m && go test -tags "$(TAGS)" ./... && go test -tags "$(TAGS) embed" ./...) || exit 1; done
@@ -50,8 +53,17 @@ wasm: ## Build the engine and the website for js/wasm
 	@GOOS=js GOARCH=wasm go build -o /dev/null ./cmd/website
 
 # Strict linters with security rules (PR-03); one config for every module.
-lint: ## Run golangci-lint in every Go module, plus embed mode
+lint: ## Run golangci-lint in every Go module, plus embed mode, and make i18n
 	@for m in $(MODULES); do (cd $$m && $(GOLANGCI) run --config $(ROOT)/.golangci.yml --build-tags "$(TAGS)" ./... && $(GOLANGCI) run --config $(ROOT)/.golangci.yml --build-tags "$(TAGS) embed" ./...) || exit 1; done
+	@$(MAKE) --no-print-directory i18n LOCALE= AREA=
+
+# Translation checks (ADR 021, 10 and 16), run by Vitest. Without LOCALE:
+# unused and stray keys, placeholders in every language file. LOCALE=xx:
+# merge .cache/translations/xx/done.json, write todo.json there, and fail
+# on every line still to do; AREA=lobby limits it to one area.
+# The default reporter prints the list even when nothing is left.
+i18n: ## Check translations; LOCALE=xx: that language in full (AREA=lobby)
+	@cd frontend && I18N_LOCALE=$(LOCALE) I18N_AREA=$(AREA) npx vitest run --reporter=default src/translations.test.ts $(if $(LOCALE),,src/i18n.test.ts)
 
 # Frontend checks for every commit (ADR 008).
 frontend: ## Typecheck, lint and unit-test the frontend

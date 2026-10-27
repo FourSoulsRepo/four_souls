@@ -91,6 +91,14 @@ export default defineConfig(
     },
   },
   {
+    // make i18n reads and writes translation files (16.7): fixed folders,
+    // and LOCALE is checked as a language code before any path is made.
+    files: ['src/translations.test.ts'],
+    rules: {
+      'security/detect-non-literal-fs-filename': 'off',
+    },
+  },
+  {
     files: ['src/bridge/**'],
     rules: {
       'no-restricted-imports': 'off',
