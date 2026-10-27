@@ -201,7 +201,41 @@ Ideas: B-04, B-05.
    1. 126 of 126 in the eight changed specs, chromium and webkit.
 5. Owner notes (2026-10-27)
    1. Owner marks 18.10 solved.
+
+### [ ] 18.11 Attack and buy pick on the table
+
+1. Goal: attack, buy and slot picks happen on the table, no dialog (V-53).
+2. Tasks:
+   1. Three choices skip the choice dialog:
+      1. What to attack (`Purpose.attackTarget`, R-ATK-02).
+      2. What to buy (`Purpose.purchase`, R-SHOP-02).
+      3. A deck attack's slot (`Purpose.monsterSlot`, R-ATK-08).
+   2. Their options glow on the table, the rest dims, as today.
+      1. Monsters, shop items, attackable items and characters.
+      2. The monster deck or the treasure deck for a deck option.
+      3. A deck attack: the drawn card stays face up on the deck (19.9).
+   3. A click on a glowing option picks it; no arrow, no confirm.
+   4. No cancel: the attack or purchase is declared already.
+   5. An option not on the table keeps the dialog (e.g. an empty slot).
+   6. The banner says what the game waits for.
+      1. Title: the choice's question, e.g. "Choose what to attack".
+      2. Hint: a new line, "Click a glowing card".
+      3. Other players see "Waiting for Ann" and the question, as today.
+   7. Out of scope (owner, 2026-10-27):
+      1. A click on a monster before Attack does nothing, as today.
+      2. The rules choose the target after the priority window.
+   8. Docs: UC-13 (5, 5a), UC-21, wiki `Client.md`; V-53 marked done.
+   9. Tests:
+      1. Vitest: which choices skip the dialog; the banner hint.
+      2. e2e: helpers pick glowing table options without a dialog.
+      3. e2e: specs that used these dialogs pick on the table.
+   10. Gates: `make lint`, `make frontend e2e`.
+3. Done when:
+   1. Attack, buy and slot picks show no dialog.
+   2. **Owner** checks the screenshots of the three picks.
 4. Result (2026-10-27)
    1. `make lint`, `make frontend`: pass.
    2. `make e2e`: 376 passed, 6 skipped, chromium and webkit.
    3. Screenshots: `attack-pick-table`, `turn-actions-buy`, `deck-attack-pick-slot`.
+   4. `fd65095` held only these result lines: a test command stashed the work.
+   5. The next commit brings the code; an internal build of `fd65095` has none of it.

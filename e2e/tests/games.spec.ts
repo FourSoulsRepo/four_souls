@@ -12,7 +12,7 @@ import type { CDPSession, Locator, Page } from '@playwright/test';
 import { expect, test } from './fixtures';
 import { startGame } from './game';
 import { serverPort } from './server';
-import { enabled, endTurnButton, endTurnQuestion, passButton, reachable, seen, throwButton, turnAction, type Seen } from './turn';
+import { enabled, endTurnButton, endTurnQuestion, passButton, reachable, seen, tablePicks, throwButton, turnAction, type Seen } from './turn';
 import { tr, trRe } from './locale';
 
 const maxTurns = Number(process.env.GAME_TURNS ?? 300);
@@ -177,6 +177,11 @@ async function move(page: Page, s: Seen, rnd: Rnd): Promise<string | null> {
     }
     await pick.click();
     return 'choice';
+  }
+  const pick = one(rnd, await reachable(tablePicks(page)));
+  if (pick) {
+    await pick.click();
+    return 'pick';
   }
   const aim = one(rnd, await reachable(page.locator('.card.hl-aim, .stack-row.hl-aim')));
   if (aim) {

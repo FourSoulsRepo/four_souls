@@ -235,8 +235,9 @@ test('Godmode: a rollback reaches past a server restart (17.5)', async ({ browse
   await undo.click();
   await expect(throwButton(active)).toHaveCount(0);
   await expect(undo).toHaveAttribute('title', tr('history.undo.title', { move: tr('history.attack_declared.you') }));
-  // The target prompt is back over the table; View board uncovers it.
-  await active.getByRole('button', { name: tr('choice.view_board') }).click();
+  // The target prompt is back, picked on the table (18.11).
+  await expect(active.locator('.prompt-title')).toHaveText(tr('choice.title.attack'));
+  await shot(active, 'attack-pick-table');
   await undo.click();
   await expect(turnAction(active, 'Attack')).toBeEnabled();
 });

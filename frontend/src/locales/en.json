@@ -570,6 +570,10 @@
     "text": "Paused",
     "note": "Game table, prompt banner: the game waits for a player who left."
   },
+  "banner.pick_table": {
+    "text": "Click a glowing card",
+    "note": "Prompt banner, small line under Choose what to attack, Choose what to buy, or Choose a slot for the monster: the player picks on the table."
+  },
   "banner.respond": {
     "text": "Respond, or pass",
     "note": "Prompt banner: something is on the stack and the player may answer it."

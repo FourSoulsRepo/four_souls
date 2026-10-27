@@ -563,7 +563,7 @@ test('a deck attack keeps the drawn monster in view while its slot is picked (19
   }
   // Replay the draw of a deck attack: the top card is revealed and the
   // attacker is asked for a slot to put it in.
-  const name = await odo.evaluate(() => {
+  const { name, slots } = await odo.evaluate(() => {
     const store = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store;
     const s = store.getState();
     const game = structuredClone(s.game);
@@ -579,17 +579,22 @@ test('a deck attack keeps the drawn monster in view while its slot is picked (19
     game.allowed = slots.map((_, i) => ({ player: you, kind: 4, choice: i }));
     const events = [{ kind: 'card_revealed', player: you, object: 989, card }];
     s.receive({ type: 'update', data: { ...game, step: game.step + 1, events } });
-    return s.cards.get(card)?.name ?? card;
+    return { name: s.cards.get(card)?.name ?? card, slots: slots.length };
   });
   // After the large reveal, the card stays face up on the monster deck
-  // and in the dialog until the slot is picked.
-  const dialog = odo.getByRole('dialog', { name: tr('choice.title.monster_slot') });
-  await expect(dialog).toBeVisible({ timeout: 8000 });
+  // until the slot is picked. The slot is picked on the table, with no
+  // dialog (18.11): the slots glow and the banner says what to do.
+  const title = odo.locator('.prompt-title');
+  await expect(title).toHaveText(tr('choice.title.monster_slot'), { timeout: 8000 });
   await expect(odo.getByTestId('effect-reveal')).toHaveCount(0);
   await odo.waitForTimeout(400); // the deck card pops in
   await shot(odo, 'deck-attack-pick-slot');
-  await expect(odo.locator('[data-zone="deck-monster"] [data-zone="obj-989"]')).toBeVisible();
-  await expect(dialog.getByLabel(name, { exact: true })).toBeVisible();
+  const drawn = odo.locator('[data-zone="deck-monster"] [data-zone="obj-989"]');
+  await expect(drawn).toBeVisible();
+  await expect(drawn).toHaveAccessibleName(name);
+  await expect(odo.locator('.choice')).toHaveCount(0);
+  await expect(odo.locator('.prompt-hint')).toHaveText(tr('banner.pick_table'));
+  await expect(odo.locator('.board-monsters .card.hl-pick')).toHaveCount(slots);
   // Once it flies into its slot, the deck no longer shows it.
   await odo.evaluate(() => {
     const s = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store.getState();
@@ -609,7 +614,7 @@ test('a deck attack keeps the drawn monster in view while its slot is picked (19
   await expect(odo.getByTestId('effect-place')).toBeVisible({ timeout: 5000 });
   await expect(odo.locator('[data-zone="obj-989"]')).toHaveCount(0);
   await expect(odo.locator('[data-zone="obj-990"]')).toBeVisible();
-  await expect(dialog).toHaveCount(0);
+  await expect(title).not.toHaveText(tr('choice.title.monster_slot'));
 });
 
 // trackCards records, every frame, the box of the large revealed card

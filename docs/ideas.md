@@ -290,6 +290,19 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    5. No yellow "waiting" glow: green and yellow look alike to many.
    6. Instead the asked player's seat is marked, for everyone.
    7. Not holding priority: the board stays plain.
+53. V-53. Attack and buy pick on the table, no dialog (owner, 2026-10-27).
+   1. Today Attack and Buy open a question dialog over the board.
+   2. Instead the monsters and shop items that can be taken glow.
+   3. A click on one attacks or buys it.
+   4. The monster deck and the shop deck are targets too.
+   5. The Attack and Buy buttons stay; they start the same table pick.
+   6. No aim arrow for a buy or an attack declaration.
+   7. A deck attack: pick the slot for the drawn monster on the table.
+   8. The banner says what the game waits for.
+   9. E.g. "Choose a monster to attack", "Choose an item to buy".
+   10. Open: click conflicts with card zoom; misclick protection.
+   11. Built in 18.11: table pick after Attack or Buy, no dialog.
+   12. A click on a monster before Attack stays out (R-ATK-02).
 
 ## Rules
 

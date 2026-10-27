@@ -137,6 +137,14 @@ async function answer(pages: Page[], press: Tap, steps: number[]): Promise<boole
       await press(page, (await uncovered(page.locator('.board .card.hl-pick, .player-pick'))) ?? choice.locator('.choice-option button').first());
       return true;
     }
+    // What to attack, what to buy, and a deck attack's slot are picked
+    // on the table, with no dialog (18.11). The board first: a monster,
+    // as the dialog's first option was, before a player.
+    const pick = (await uncovered(page.locator('.board .card.hl-pick'))) ?? (await uncovered(tablePicks(page)));
+    if (pick) {
+      await press(page, pick);
+      return true;
+    }
     // A target prompt of the player's own card aims from it, with no
     // dialog (15.34): its targets glow on the table (19.10).
     const aim = await uncovered(page.locator('.card.hl-aim, .stack-row.hl-aim'));
@@ -188,6 +196,12 @@ export async function settle(pages: Page[], press: Tap, done: () => Promise<bool
     })),
   );
   throw new Error(`the game never settled: ${JSON.stringify(states)}`);
+}
+
+// tablePicks are the options of a choice picked on the table, with no
+// dialog (18.11): what to attack, what to buy, a deck attack's slot.
+export function tablePicks(page: Page): Locator {
+  return page.locator('.card.hl-pick, .player-pick');
 }
 
 // attackRollWaits: the page's player must throw their attack roll. The

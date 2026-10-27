@@ -45,6 +45,9 @@
   * Every other player's board stays plain.
 * **4a. Hourglass (15.95):** every screen shows an hourglass by Ann's name.
   * It is in her seat color; it moves to whoever is asked next.
+* **3k. Pick on the table (18.11):** e.g. "Choose what to attack".
+  * The hint says "Click a glowing card".
+  * Also "Choose what to buy", "Choose a slot for the monster".
 
 ## Postconditions
 
