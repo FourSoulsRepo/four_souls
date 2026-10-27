@@ -2733,7 +2733,7 @@ Totals by system (84 items):
    1. `git rm --cached cardgen`; `/cardgen` in `.gitignore`.
    2. The 5 MB stays in history; `main` is not rewritten.
 
-### [ ] 19.84 The host cannot end a game on a dedicated server
+### [x] 19.84 The host cannot end a game on a dedicated server
 
 1. Goal: the host ends a running game for everyone, on any server.
 2. Report (owner, 2026-10-27)
@@ -2775,3 +2775,5 @@ Totals by system (84 items):
    13. It sits in `save.spec.ts`.
    14. Docs: UC-35; ADR 006 items 36, 37; wiki `Client`, `Server`; CHANGELOG.
    15. Screenshots: `.cache/screenshots/19.84/before/` and `after/`.
+7. Owner notes (2026-10-27)
+   1. Owner marks 19.84 solved.
