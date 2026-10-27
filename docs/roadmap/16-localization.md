@@ -14,6 +14,12 @@ Rules of this step (owner, 2026-10-26):
 7. Per-key screenshots are paused; one screenshot per screen (owner, 2026-10-27).
 8. Translation files stay JSON; YAML was weighed and lost (owner, 2026-10-27).
 
+Owner notes (2026-10-27):
+
+1. Owner reviewed step 16 and marks it solved.
+2. A language with own images only is not listed in Settings; kept as is.
+3. The images and tools repos are pushed.
+
 ---
 
 ### [x] 16.1 Translation ADR
