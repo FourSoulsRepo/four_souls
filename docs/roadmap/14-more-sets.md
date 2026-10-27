@@ -366,3 +366,5 @@ Alt art (CD-11) comes after all sets.
 4. Progress:
    1. **Owner:** done on `step-18-play-test`, ahead of step 14 (2026-10-27).
    2. **Owner:** the tools fetch the back images now (2026-10-27).
+5. Owner notes (2026-10-27)
+   1. Owner marks 14.15 solved.
