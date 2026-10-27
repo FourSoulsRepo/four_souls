@@ -42,7 +42,7 @@ import { connectFirst, disconnect, drop, send } from './net';
 import { claimEffect, nextBeat } from './animations';
 import { lastRollAfter, type LastRoll } from './dice';
 import { createPlayback, effectsFor, scaleFor, shopSlot, slotZone, type Death, type Effect } from './playback';
-import { loadSounds } from './sounds';
+import { loadSounds, setSoundVolume } from './sounds';
 import { endsGame, lostDialogAfter, retryDelay } from './reconnect';
 import {
   httpBases,
@@ -836,6 +836,7 @@ export const useApp = create<AppState>()((set, get) => {
       host: noHostSetup,
       lan_address: '',
       language: '',
+      volume: 100,
     },
     hosting: null,
     lan: { searching: false, found: [], error: '' },
@@ -924,6 +925,7 @@ export const useApp = create<AppState>()((set, get) => {
       try {
         const s = await getSettings();
         setLanguage(s.language);
+        setSoundVolume(s.volume);
         set({ settings: s, cards: cardsInLanguage(get().cards) });
       } catch {
         // Keep the defaults; Go already falls back to them.
@@ -935,6 +937,7 @@ export const useApp = create<AppState>()((set, get) => {
         const saved = await saveSettings(s);
         // The language too: t() reads it when the screens draw again.
         setLanguage(saved.language);
+        setSoundVolume(saved.volume);
         set({ settings: saved, error: '', cards: cardsInLanguage(get().cards) });
         // Settings apply at once, without a restart.
         if (saved.fullscreen !== before.fullscreen) {

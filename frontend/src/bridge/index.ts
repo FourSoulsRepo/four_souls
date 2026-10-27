@@ -60,6 +60,8 @@ export interface Settings {
   lan_address: string;
   // language is the interface language (ADR 021); '' follows the OS.
   language: string;
+  // volume is the sound volume in percent, 0 to 100 (ST-09); 0 is mute.
+  volume: number;
 }
 
 // RecentServer is a server joined lately; name is the one it gave in
@@ -91,6 +93,7 @@ function fromGo(s: {
   host?: HostSetup;
   lan_address?: string;
   language?: string;
+  volume?: number;
 }): Settings {
   return {
     nickname: s.nickname,
@@ -104,6 +107,7 @@ function fromGo(s: {
     host: s.host ? { ...noHostSetup, ...s.host } : noHostSetup,
     lan_address: s.lan_address ?? '',
     language: s.language ?? '',
+    volume: s.volume ?? 100,
   };
 }
 

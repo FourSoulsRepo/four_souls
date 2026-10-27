@@ -445,6 +445,7 @@ export namespace settings {
 	    host: HostSetup;
 	    lan_address: string;
 	    language: string;
+	    volume: number;
 	
 	    static createFrom(source: any = {}) {
 	        return new Settings(source);
@@ -463,6 +464,7 @@ export namespace settings {
 	        this.host = this.convertValues(source["host"], HostSetup);
 	        this.lan_address = source["lan_address"];
 	        this.language = source["language"];
+	        this.volume = source["volume"];
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {

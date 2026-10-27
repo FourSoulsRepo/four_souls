@@ -47,6 +47,9 @@
 * **3g. Ask before ending the turn (V-46):** on by default.
   * Off: End turn ends the turn at once, even with plays left (UC-13, 7e).
 * **3h. Language (16.2):** see UC-32.
+* **3i. Sound volume (ST-09):** a slider from 0% to 100%, 100% by default.
+  * Saved with the other settings; every sound plays at that level at once.
+  * 0% mutes every sound (UC-12).
 
 ## Postconditions
 

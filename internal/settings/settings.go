@@ -48,6 +48,9 @@ type Settings struct {
 	// or "qps" for the test language. "" follows the OS language; the
 	// frontend knows which languages it has, so Go checks the form only.
 	Language string `json:"language"`
+	// Volume is the sound volume in percent, 0–100 (ADR 022 levels the
+	// sounds; this is the player's own level). 0 is mute.
+	Volume int `json:"volume"`
 }
 
 // RecentServer is a server joined lately (N-18).
@@ -185,6 +188,9 @@ const maxAddress = 255
 // ErrChoice means a setting is not one of its choices.
 var ErrChoice = errors.New("unknown setting value")
 
+// MaxVolume is the loudest sound volume in percent.
+const MaxVolume = 100
+
 // ErrNickname means the nickname is empty after trimming, too long, or
 // has control characters.
 var ErrNickname = fmt.Errorf("nickname must be 1–%d characters", protocol.MaxName)
@@ -204,7 +210,7 @@ func (s *Settings) choices() []struct {
 // Recent is never nil, so the frontend always gets a list; an unknown
 // choice reads as its default.
 func Load(path string) Settings {
-	def := Settings{Recent: []RecentServer{}, Animation: Speeds[0], Dice: Dice[0]}
+	def := Settings{Recent: []RecentServer{}, Animation: Speeds[0], Dice: Dice[0], Volume: MaxVolume}
 	data, err := os.ReadFile(path) //nolint:gosec // the app names the file
 	if err != nil {
 		return def
@@ -229,6 +235,9 @@ func Load(path string) Settings {
 	}
 	if !ValidLanguage(s.Language) {
 		s.Language = ""
+	}
+	if s.Volume < 0 || s.Volume > MaxVolume {
+		s.Volume = MaxVolume
 	}
 	return s
 }
@@ -256,6 +265,9 @@ func Save(path string, s Settings) (Settings, error) {
 	}
 	if !ValidLanguage(s.Language) {
 		return Settings{}, fmt.Errorf("%w: %q", ErrChoice, s.Language)
+	}
+	if s.Volume < 0 || s.Volume > MaxVolume {
+		return Settings{}, fmt.Errorf("%w: volume %d", ErrChoice, s.Volume)
 	}
 	recent := []RecentServer{}
 	for _, r := range s.Recent {

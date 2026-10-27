@@ -3350,6 +3350,10 @@
     "text": "Settings",
     "note": "Settings: the screen's title."
   },
+  "settings.volume": {
+    "text": "Sound volume",
+    "note": "Settings: label of the sound volume slider, from 0% (mute) to 100%."
+  },
   "stack.a_card": {
     "text": "a card",
     "note": "Stack line, history line or a player's activity: a card whose name the viewer can't see."
