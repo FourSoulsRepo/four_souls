@@ -190,6 +190,32 @@ export async function settle(pages: Page[], press: Tap, done: () => Promise<bool
   throw new Error(`the game never settled: ${JSON.stringify(states)}`);
 }
 
+// attackRollWaits: the page's player must throw their attack roll. The
+// roll on top of the stack is the attack's, the attack has its target,
+// and the Throw button shows. Another roll does not count: Bob's Brain
+// rolls when the attack is declared, before the target (19.85).
+export async function attackRollWaits(page: Page): Promise<boolean> {
+  const waits = await page.evaluate(() => {
+    interface S {
+      game: { view: { waiting: { kind: number; player: number }; stack?: { kind: number; attack?: boolean }[]; attack?: { target?: number } } } | null;
+      lobby: { table: { you: number } | null };
+    }
+    const s = (window as unknown as { fourSouls: { store: { getState: () => S } } }).fourSouls.store.getState();
+    const view = s.game?.view;
+    const top = view?.stack?.at(-1);
+    // 6 is PromptKind.throw (actions.ts); 3 is StackKind.roll (stack.ts).
+    return view !== undefined && view.waiting.kind === 6 && view.waiting.player === s.lobby.table?.you && top?.kind === 3 && top.attack === true && (view.attack?.target ?? 0) !== 0;
+  });
+  return waits && (await throwButton(page).count()) > 0;
+}
+
+// untilAttackRoll answers prompts after an Attack click until the
+// attacker's attack roll waits for its throw (18.10). Prompts on the way
+// get answered: the target, and any card the attack sets off.
+export async function untilAttackRoll(pages: Page[], press: Tap, attacker: Page): Promise<void> {
+  await settle(pages, press, () => attackRollWaits(attacker));
+}
+
 // turnAction is an icon button by own name (15.19): "Buy" or "Attack".
 export function turnAction(page: Page, name: 'Buy' | 'Attack') {
   const label = name === 'Buy' ? tr('turn.buy') : tr('turn.attack');

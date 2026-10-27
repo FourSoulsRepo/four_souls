@@ -8,7 +8,7 @@ import { startGame } from './game';
 import { saveAndContinue } from './saves';
 import { appURL } from './server';
 import { shot } from './shot';
-import { activePage, click, settle, throwButton, turnAction } from './turn';
+import { activePage, click, turnAction, untilAttackRoll } from './turn';
 import { lineRe, tr, trRe } from './locale';
 
 const fast = () => `${appURL()}&anim=off`;
@@ -283,12 +283,11 @@ async function attackActivity(browser: Browser, names: [string, string], item?: 
 
   // Attacking: the line names the monster, as the stack's roll does.
   // A roll that triggers on the attack (Bob's Brain) waits for its
-  // throw first, before the target is chosen: so wait for the target,
-  // not for any Throw (19.85).
+  // throw first, before the target is chosen: so wait for the attack
+  // roll, not for any Throw (19.85).
   await click(active, turnAction(active, 'Attack'));
-  const target = other.getByRole('complementary', { name: tr('stack.title') }).locator('.stack-row .stack-target');
-  await settle(pages, click, async () => (await throwButton(active).count()) > 0 && (await target.count()) > 0);
-  const monster = await target.first().textContent();
+  await untilAttackRoll(pages, click, active);
+  const monster = await other.getByRole('complementary', { name: tr('stack.title') }).locator('.stack-row .stack-target').first().textContent();
   await expect(doing).toHaveText(tr('activity.attack_target', { player: name, target: monster ?? '' }));
   await expect(doing.locator('.stack-target')).toHaveText(monster ?? '');
   await snap(other, 'activity-attacks');

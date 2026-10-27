@@ -746,6 +746,12 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    4. Vitest: every view field in `protocol.ts` is read in `frontend/src`.
    5. A field left unread on purpose is listed with its reason.
    6. The golden file covers sample messages only, not empty fields.
+8. TS-08. e2e waits name the state they need (owner, 2026-10-27).
+   1. 19.10, 19.18, 19.21, 19.58, 19.85: a card asked one more input.
+   2. The tests waited for a sign, such as "a Throw button shows".
+   3. A named wait in `turn.ts` checks the exact state in the store.
+   4. `settle` answers whatever comes on the way; no ban is needed.
+   5. Later: run key tests with each card known to interrupt them.
 
 ## Localization
 

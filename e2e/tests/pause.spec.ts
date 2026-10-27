@@ -6,7 +6,7 @@ import { appURL, serverPort } from './server';
 import { realAssets, shot } from './shot';
 import { openOnline } from './menu';
 import { locale, tr, trRe } from './locale';
-import { activePage, click, settle, throwButton, turnAction } from './turn';
+import { activePage, click, throwButton, turnAction, untilAttackRoll } from './turn';
 
 const fast = () => `${appURL()}&anim=off`;
 
@@ -29,7 +29,7 @@ test('an intent lost with a dropped connection can be sent again (19.86)', async
   const pages = await startGame(browser, ['Gwen', 'Hugo'], { url: fast() });
   const active = await activePage(pages, click);
   await click(active, turnAction(active, 'Attack'));
-  await settle(pages, click, async () => (await throwButton(active).count()) > 0);
+  await untilAttackRoll(pages, click, active);
   // The throw never reaches the server: the connection drops with it,
   // as when the server closes a client that reads too slowly.
   await active.evaluate(() => {

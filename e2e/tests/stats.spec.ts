@@ -6,7 +6,7 @@ import { startGame } from './game';
 import { saveAndContinue } from './saves';
 import { appURL } from './server';
 import { shot } from './shot';
-import { activePage, click, endTurn, expectNextTurn, settle, throwButton, turnAction, turnNumber } from './turn';
+import { activePage, click, endTurn, expectNextTurn, settle, throwButton, turnAction, turnNumber, untilAttackRoll } from './turn';
 import { cardName, lineRe, tr, trRe } from './locale';
 
 const fast = () => `${appURL()}&anim=off`;
@@ -114,7 +114,7 @@ test('a next-roll icon shows till the attack roll uses it (15.93)', async ({ bro
   await active.mouse.move(0, 0);
   // Attack; the roll uses the boost, and the icon goes.
   await click(active, turnAction(active, 'Attack'));
-  await settle(pages, click, async () => (await throwButton(active).count()) > 0);
+  await untilAttackRoll(pages, click, active);
   await settle(pages, click, async () => (await icon.count()) === 0);
   await expect(icon).toHaveCount(0);
 });
@@ -130,7 +130,7 @@ test('the open attack says what the roll needs; Meat! makes it one lower (15.94)
     throw new Error('no other page');
   }
   await click(active, turnAction(active, 'Attack'));
-  await settle(pages, click, async () => (await throwButton(active).count()) > 0);
+  await untilAttackRoll(pages, click, active);
   for (const page of [active, other]) {
     const line = page.getByRole('complementary', { name: tr('stack.title') }).locator('.stack-odds');
     await expect(line).toContainText(`− 1 ${cardName('meat')}`);

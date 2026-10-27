@@ -182,3 +182,20 @@ Ideas: B-04, B-05.
 3. Done when:
    1. `loudness check` passes on every sound.
    2. **Owner** hears one sound per gained treasure, and sees it fly.
+
+### [ ] 18.10 e2e waits name the state they need
+
+1. Goal: a card that asks one more input does not break a test (TS-08).
+2. Tasks:
+   1. `turn.ts`: `untilAttackRoll(pages, press, attacker)`.
+      1. It runs `settle` until the attack roll waits for its throw.
+      2. `attackRollWaits` reads the store: top roll is the attack's.
+      3. The attack has its target; the Throw button shows.
+   2. Every "Attack, then wait for any Throw" uses it: ten places.
+   3. Wiki `Frontend-tests.md` names it; CLAUDE.md 5.16.10.
+   4. Gates: `make lint`; the changed specs in both browsers.
+3. Done when:
+   1. The changed specs pass; no test waits for any Throw after Attack.
+   2. The 19.85 Bob's Brain test passes through the new wait.
+4. Result (2026-10-27)
+   1. 126 of 126 in the eight changed specs, chromium and webkit.

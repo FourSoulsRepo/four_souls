@@ -16,9 +16,9 @@ import {
   playLoot,
   seen,
   settle,
-  throwButton,
   turnAction,
   turnNumber,
+  untilAttackRoll,
 } from './turn';
 import { anyOf as any, cardName, lineRe, tr, trRe, whole } from './locale';
 
@@ -259,7 +259,7 @@ test('a declared attack shows on top of the stack, then its target (15.91)', asy
     await expect(declared(page)).toHaveText(tr('stack.declared.attack', { player: who }));
   }
   await shot(pages.find((p) => p !== active) ?? active, 'stack-declared-attack');
-  await settle(pages, click, async () => (await throwButton(active).count()) > 0);
+  await untilAttackRoll(pages, click, active);
   const monster = await active.locator('.board-monsters .card.fight').getAttribute('aria-label');
   for (const page of pages) {
     // The declaration's own line; the fight line under it is 15.94's.

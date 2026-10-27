@@ -6,7 +6,7 @@ import { startGame } from './game';
 import { appURL } from './server';
 import { shot } from './shot';
 import { saveAndContinue } from './saves';
-import { activePage, answerPlay, canEndTurn, click, playLoot, settle, throwButton, turnAction } from './turn';
+import { activePage, answerPlay, canEndTurn, click, playLoot, settle, throwButton, turnAction, untilAttackRoll } from './turn';
 import { cardName, lineRe, tr, trRe } from './locale';
 
 test.setTimeout(120_000);
@@ -32,7 +32,7 @@ async function attackToThrow(pages: Page[], active: Page) {
 
 // toThrow plays on until the attacker's Throw button waits.
 async function toThrow(pages: Page[], active: Page) {
-  await settle(pages, click, async () => (await throwButton(active).count()) > 0);
+  await untilAttackRoll(pages, click, active);
 }
 
 // undo is the History's one Undo button (17.7): "Undo", or "Ask to

@@ -21,6 +21,7 @@ import {
   throwButton,
   turnAction,
   turnNumber,
+  untilAttackRoll,
   type Tap,
 } from './turn';
 import { cardName, tr, trRe } from './locale';
@@ -682,7 +683,7 @@ test('an attack waits for the roller to throw; the die shows the engine\'s value
   await expect(turnAction(active, 'Attack')).toBeEnabled();
   await click(active, turnAction(active, 'Attack'));
   // Settle stops before the throw: the attack's target is picked first.
-  await settle(pages, click, async () => (await throwButton(active).count()) > 0);
+  await untilAttackRoll(pages, click, active);
 
   // The roller sees the glowing button and the stack says it waits for them.
   const stack = (page: Page) => page.getByRole('complementary', { name: tr('stack.title') });
@@ -786,7 +787,7 @@ test("every screen draws a roll with the roller's dice look (15.6)", async ({ br
 
   await expect(turnAction(active, 'Attack')).toBeEnabled();
   await click(active, turnAction(active, 'Attack'));
-  await settle(pages, click, async () => (await throwButton(active).count()) > 0);
+  await untilAttackRoll(pages, click, active);
   const shaking = other.getByRole('region', { name: tr('throw.label') }).locator('.throw-shake .die');
   await expect(shaking).toBeVisible();
   expect(await image(shaking)).toBe(images.tear);

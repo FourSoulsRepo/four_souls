@@ -11,7 +11,7 @@ import { startGame } from './game';
 import { restartPorts } from './ports';
 import { appURL } from './server';
 import { shot } from './shot';
-import { activePage, click, settle, throwButton, turnAction } from './turn';
+import { activePage, click, throwButton, turnAction, untilAttackRoll } from './turn';
 import { lineRe, tr } from './locale';
 
 const root = join(import.meta.dirname, '..', '..');
@@ -214,7 +214,7 @@ async function rollbackOverRestart(browser: Browser, names: string[], edit?: () 
   const active = await activePage(pages, click);
   await expect(turnAction(active, 'Attack')).toBeEnabled();
   await click(active, turnAction(active, 'Attack'));
-  await settle(pages, click, async () => (await throwButton(active).count()) > 0);
+  await untilAttackRoll(pages, click, active);
   await server.stop();
   edit?.();
   await server.start();

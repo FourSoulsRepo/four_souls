@@ -83,6 +83,8 @@
        7. Write the reason in a comment next to the bans.
        8. Never ban a card only because the test failed on it.
        9. Such a failure may be an engine or client bug; fix that instead.
+       10. Wait for the exact state, not a sign of it (18.10).
+       11. Named waits live in `e2e/tests/turn.ts`, e.g. `untilAttackRoll`.
    17. Bug reports go to `docs/roadmap/19-bugs.md`, one item each.
        1. Log the item before any code change.
        2. Fix it under the roadmap rules and that file's rules.
