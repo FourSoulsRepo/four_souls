@@ -60,8 +60,8 @@ async function bannerShot(page: Page, text: RegExp, name: string, stop: Promise<
 test("every player's first-player roll shows before the first turn", async ({ browser }) => {
   const names = ['Ann', 'Bo', 'Cy'];
   // Cain makes his player go first without a roll; this test needs the
-  // roll. Eden's starting-item dialog comes right after the roll and
-  // covers the History button this test opens.
+  // roll. Eden's starting-item dialog comes before the roll and covers
+  // the History button this test opens.
   const pages = await startGame(browser, names, { roll: false, bans: ['cain', 'eden'] });
   const seats = new Map<number, Page>();
   for (const page of pages) {

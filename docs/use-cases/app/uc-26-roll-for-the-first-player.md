@@ -31,7 +31,9 @@
 * **1a. Someone plays Cain:** no roll; the banner says "Bo goes first — Cain".
 * **3a. A seat was kicked:** the server throws for it at once (UC-06).
 * **3b. The player is idle:** the response timer throws for them.
-* **6a. Someone plays Eden:** her choice comes after the roll.
+* **6a. Someone plays Eden:** her choice comes before the roll, at setup.
+  1. The roll waits until every start-of-game choice is made (R-SETUP-09).
+  2. The panel shows the roll only after her choice.
 * **Reconnect during the roll:** the panel shows the dice of this round (UC-07).
 
 ## Postconditions

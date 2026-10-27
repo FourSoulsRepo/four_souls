@@ -33,7 +33,7 @@ This step never closes; new reports are appended.
 
 | ID | Group                                    | System     | Items                                                  | Count |
 |----|------------------------------------------|------------|--------------------------------------------------------|-------|
-| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92 | 13 |
+| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94 | 14 |
 | B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90 | 9 |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74                              | 4     |
@@ -41,21 +41,22 @@ This step never closes; new reports are appended.
 | F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88        | 7     |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
-| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.81, 19.82, 19.85, 19.87 | 17 |
+| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87 | 18 |
 | J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89 | 16 |
 | K  | Build and release files                  | Release    | 19.47, 19.59, 19.83, 19.91                             | 4     |
 | L  | Not a bug: the app follows a ruling      | None       | 19.63                                                  | 1     |
 | M  | Go test setup: the code was right        | Go tests   | 19.68                                                  | 1     |
 | N  | A missing control: no way to do it       | Server     | 19.84                                                  | 1     |
 | O  | Reconnect: old connection state kept     | Client     | 19.78, 19.86                                           | 2     |
+| P  | A missing setting: no way to change it   | Client     | 19.93                                                  | 1     |
 
-Totals by system (91 items):
+Totals by system (94 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
-| Engine    | A, B    | 21    |
+| Engine    | A, B    | 23    |
 | Card data | C       | 2     |
-| Client    | D–G, O  | 26    |
+| Client    | D–G, O, P | 27  |
 | Server    | H, N    | 2     |
 | e2e       | I, J    | 34    |
 | Release   | K       | 4     |
@@ -3061,3 +3062,31 @@ Totals by system (91 items):
    5. Screenshots: not taken for this change.
 7. Owner notes (2026-10-28)
    1. Owner asked for the volume setting and marks 19.93 solved.
+
+### [ ] 19.94 Eden's starting choice comes after the first-player roll
+
+1. Goal: setup finishes before the first-player roll (R-SETUP-09, R-SETUP-11).
+2. Report (owner, 2026-10-28)
+   1. The owner read the order as: setup all characters, Eden's item, then the first player.
+   2. The game rolled for the first player first, then opened Eden's choice.
+3. Cause
+   1. `run()` in `pkg/rules_engine/turn.go` checks `FirstRoll` before the queue.
+   2. `NewGame` queues Eden's choice, so it waits for the roll.
+   3. Came with 15.43 (Result, item 6); no rule or owner decision asked for it.
+4. Tasks:
+   1. Engine: the queue runs before the first roll.
+   2. Docs: UC-26 alternative 6a and the 15.43 result note.
+   3. e2e: the `first-roll.spec.ts` comment on Eden.
+5. Done when:
+   1. Go: Eden's choice is asked before the first throw.
+   2. `make lint test` pass; `make frontend e2e` passes.
+6. Fix
+   1. `run()` runs the queue (Eden) before the first roll.
+   2. `TestEden` expects Eden's choice first, then the throw.
+   3. e2e roll helper picks Eden's option before throwing.
+   4. UC-26 6a, the Rules-engine wiki and the first-roll spec comment follow.
+   5. No screen change: no screenshots.
+7. Result (2026-10-28)
+   1. `go test ./...` and `make lint` pass.
+   2. `make frontend e2e`: 380 passed, exit 0.
+8. Owner notes: none yet.
