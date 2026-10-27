@@ -729,6 +729,10 @@ func (e preventDeathEffect) apply(c *Ctx) {
 // ("another item").
 func NotThis(_ *Game, self ObjectID, c Chosen) bool { return c.Object != self }
 
+// ActiveItem is a target filter: an item with a ↷ ability. A passive or
+// paid item has none, so "recharge an item" skips it (19.95).
+func ActiveItem(g *Game, _ ObjectID, c Chosen) bool { return g.def(c.Object).Tap }
+
 // CapNextDamage reduces the next instance of damage the target takes
 // this turn to at most n: "is reduced to 1".
 func CapNextDamage(n, t int) Effect { return capEffect{n, t} }

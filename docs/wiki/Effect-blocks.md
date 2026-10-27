@@ -89,7 +89,7 @@ Targets are always asked, with a "cancel" option before anything is paid. A targ
 | `Choose(TargetYourItem)` | an item you control |
 | `Choose(TargetStackTrigger)` | a triggered ability on the stack (Dead Weight) |
 | `Choose(TargetItemOrSoul)` | an item or soul a player controls |
-| `ChooseWhere(kind, filter)` | e.g. the player with the most souls; `NotThis` is "another item" |
+| `ChooseWhere(kind, filter)` | e.g. the player with the most souls; `NotThis` is "another item"; `ActiveItem` is an item with a ↷ ability (Lil Battery) |
 
 Effects refer to targets by number: `DealDamage(1, 0)` hits the first target. `This` is the ability's own object (a monster shielding itself). `You` means the controller, for text without a target: `DealDamage(1, You)` is "Take 1 damage." A roll ability keeps its targets for the result: "Choose a player, then roll- deal damage equal to the result".
 

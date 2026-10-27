@@ -13,7 +13,7 @@ var lilBattery = engine.CardDef{
 		{
 			Kind:    engine.LootAbility,
 			Text:    "Recharge an item.",
-			Targets: []engine.TargetSpec{engine.Choose(engine.TargetItem)},
+			Targets: []engine.TargetSpec{engine.ChooseWhere(engine.TargetItem, engine.ActiveItem)},
 			Effects: []engine.Effect{engine.RechargeTarget(0)},
 		},
 	},

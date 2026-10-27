@@ -33,7 +33,7 @@ This step never closes; new reports are appended.
 
 | ID | Group                                    | System     | Items                                                  | Count |
 |----|------------------------------------------|------------|--------------------------------------------------------|-------|
-| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94 | 14 |
+| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95 | 15 |
 | B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90 | 9 |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74                              | 4     |
@@ -3091,3 +3091,29 @@ Totals by system (94 items):
    2. `make frontend e2e`: 380 passed, exit 0.
 8. Owner notes (2026-10-28)
    1. Owner marks 19.94 solved.
+
+### [ ] 19.95 Lil Battery recharges a passive or paid item
+
+1. Goal: "Recharge an item" picks only items with a ↷ ability.
+2. Report (owner, 2026-10-28)
+   1. Lil Battery offered a passive item as its target, and a paid item.
+   2. The owner expects only active items, as with 19.64.
+3. Tasks:
+   1. Find the cause in the code.
+   2. Apply the rule to every card that recharges an item.
+4. Done when:
+   1. Engine test: Lil Battery offers no passive or paid item.
+   2. Engine test: Battery Bum and The Battery offer no passive item.
+5. Cause
+   1. `lil_battery.go`, `battery_bum.go` and `the_battery.go` use `TargetItem` with no filter.
+   2. Every item in play is offered, passive and paid ones too.
+   3. 19.64 added the `CardDef.Tap` filter for deactivating; recharge has none.
+6. Fix
+   1. `engine.ActiveItem`: a target filter for items with a ↷ ability.
+   2. Lil Battery and Battery Bum use it; The Battery uses it with "another".
+   3. Tests `TestLilBatteryOffersOnlyActiveItems`, `TestBatteryBumOffersOnlyActiveItems`.
+   4. `TestTheBattery` also checks that a passive item is not offered.
+   5. Wiki: `Effect-blocks.md` lists `ActiveItem`.
+   6. No screen change: no screenshots.
+7. Result (2026-10-28)
+   1. `make lint` and `make test` pass (exit 0).

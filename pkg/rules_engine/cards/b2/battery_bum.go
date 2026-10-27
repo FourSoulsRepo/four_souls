@@ -15,7 +15,7 @@ var batteryBum = engine.CardDef{
 			Kind:    engine.Activated,
 			Text:    "Pay 4¢: Recharge an item.",
 			Costs:   []engine.Cost{engine.PayCents(4)},
-			Targets: []engine.TargetSpec{engine.Choose(engine.TargetItem)},
+			Targets: []engine.TargetSpec{engine.ChooseWhere(engine.TargetItem, engine.ActiveItem)},
 			Effects: []engine.Effect{engine.RechargeTarget(0)},
 		},
 	},
