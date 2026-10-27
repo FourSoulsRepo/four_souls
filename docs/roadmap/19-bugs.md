@@ -2953,7 +2953,7 @@ Totals by system (90 items):
 4. Tasks:
    1. Find what `centre` waits for at line 1224 under load.
 
-### [ ] 19.90 Others never learn the Cain's Eye choice
+### [x] 19.90 Others never learn the Cain's Eye choice
 
 1. Goal: every player sees if the top card was kept or put on the bottom.
 2. Report (owner, 2026-10-27)
@@ -2990,3 +2990,5 @@ Totals by system (90 items):
    9. Docs: UC-18 2c, ADR 020, wiki Client and Rules-engine.
    10. Screenshot: `.cache/screenshots/19.90/after/` only.
    11. Before: no line at all; the old client had no case to draw.
+8. Owner notes (2026-10-27)
+   1. Owner marks 19.90 solved.
