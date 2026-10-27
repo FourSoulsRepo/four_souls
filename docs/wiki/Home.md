@@ -43,3 +43,4 @@ Pick your group: players, people who run a game server, translators, or develope
 * [Situation payload](Situation-payload) — sandbox situations and rules tests.
 * [Fuzzing](Fuzzing) — random games that check the engine state.
 * [Server](Server) — how the lobby, game rooms and transport fit together.
+* [Banned cards](Banned-cards) — cards no game deals, and how to lift a ban.

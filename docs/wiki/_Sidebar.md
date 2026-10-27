@@ -39,3 +39,4 @@
 * [Situation payload](Situation-payload)
 * [Fuzzing](Fuzzing)
 * [Server](Server)
+* [Banned cards](Banned-cards)
