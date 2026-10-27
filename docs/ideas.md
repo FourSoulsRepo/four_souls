@@ -778,6 +778,10 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
 8. LO-08. Russian card names from the old site's migrations.
    1. The importer lives in `FourSoulsRepo/tools`.
    2. Card texts come later.
+9. LO-09. Work-in-progress translations are welcome (owner, 2026-10-27).
+   1. A card-only language is a choice in Settings.
+   2. A half-done interface file ships; English fills the rest.
+   3. Translators may keep card images in their own repo.
 
 ## Settings
 

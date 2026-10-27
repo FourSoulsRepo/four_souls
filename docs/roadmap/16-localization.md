@@ -12,6 +12,7 @@ Rules of this step (owner, 2026-10-26):
 5. Design: ADR 021.
 6. Every sub-step after 16.2 is checked with the test language.
 7. Per-key screenshots are paused; one screenshot per screen (owner, 2026-10-27).
+8. Translation files stay JSON; YAML was weighed and lost (owner, 2026-10-27).
 
 ---
 
@@ -193,7 +194,7 @@ Rules of this step (owner, 2026-10-26):
 
 1. Goal: anyone can add a language from the wiki (LO-05).
 2. Tasks:
-   1. `Translate-the-interface.md`: setup, copy `en.json`, translate, check, screenshots.
+   1. `Translate-the-interface.md`: setup, start from `{}`, translate, check, screenshots.
    2. `Translate-cards.md`: `text.<lang>`, translators (CD-06), images under `images/<lang>/`.
    3. How to send the result: a pull request.
    4. Both pages link `Developer-setup.md` for the tools.
@@ -210,3 +211,46 @@ Rules of this step (owner, 2026-10-26):
    5. Screenshots on two cores: `E2E_WORKERS=2`; the guide says so.
    6. Card images: sent to the maintainers through the pull request.
    7. The group is in `Home.md`, `_Sidebar.md`, `CLAUDE.md` 3.14.
+5. Owner answers after review (2026-10-27):
+   1. A card-only language is listed in Settings: WIP translations are welcome.
+   2. Card images: the guide explains how to make an own images repo.
+   3. A half-done interface file ships; English fills the rest.
+   4. A new language starts as `{}`, not a copy of `en.json`.
+   5. Files stay JSON, not YAML.
+      1. Placeholders like `{n} cards` would need quotes in YAML.
+      2. Every reader (checks, merge, e2e, Go) would need a YAML library.
+
+### [ ] 16.10 Card-only languages in Settings
+
+1. Goal: a language with card names only is a choice in Settings (owner).
+2. Tasks:
+   1. The list comes from card data, not the fixed `cardLanguages = ['ru']`.
+   2. A language is listed if it has an interface file or card names.
+   3. Go sends the card languages; the client merges them with locale files.
+   4. Update ADR 021 item 11.4 in place if the wording drifts.
+   5. Translator guides: drop the empty `{}` workaround for card-only languages.
+3. Done when:
+   1. A card-only test language shows in Settings without a locale file.
+
+### [ ] 16.11 Clear JSON errors for translators
+
+1. Goal: a syntax mistake in a language file says where and what to fix.
+2. Tasks:
+   1. `make i18n` names the file, line, and column of a JSON error.
+   2. Plain hints for common mistakes: a trailing comma, a missing quote.
+   3. Card data JSON errors in the loader give the line too.
+   4. Guides: replace the `node` one-liner with the new message.
+3. Done when:
+   1. A trailing comma in `xx.json` and in a set file gives the line and a hint.
+
+### [ ] 16.12 Own card images repo for translators
+
+1. Goal: a translator adds card images without access to the private repo (owner).
+2. Tasks:
+   1. Research how a build or `wails dev` can read images from another folder.
+   2. E.g. `$FOUR_SOULS_CARDS` or `cards/` next to the binary (ADR 004, item 6).
+   3. If the app can't do it yet, add the simplest way, with tests.
+   4. `Translate-cards.md`: make a repo with `images/<lang>/<set>/`, point the app at it.
+   5. Say how to share it with the maintainers.
+3. Done when:
+   1. A walkthrough on a clean checkout shows a translator's own image.
