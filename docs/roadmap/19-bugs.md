@@ -2680,7 +2680,7 @@ Totals by system (87 items):
 5. Done when:
    1. The two variants pass together in `make e2e`.
 
-### [ ] 19.81 e2e: a drag across the history selects nothing in `qps`
+### [x] 19.81 e2e: a drag across the history selects nothing in `qps`
 
 1. Goal: the copyable-history test passes every run.
 2. Report (agent, 2026-10-27)
