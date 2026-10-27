@@ -149,7 +149,7 @@ Ideas: B-04, B-05.
       1. The engine sends it only when the death resolves (R-DEATH-17).
       2. A death still on the stack can be prevented; it is silent.
       3. A monster's death is silent.
-      4. One sound per skull effect, even if two players die at once.
+      4. Each death resolves on its own, so each plays its own sound.
       5. With animations off, nothing plays, as other sounds.
    4. `NOTICE`, UC-12, wiki `Client.md` name the sound.
    5. Tests: Vitest for playback and sounds; e2e for the played file.
