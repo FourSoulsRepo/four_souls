@@ -41,14 +41,14 @@ This step never closes; new reports are appended.
 | F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76               | 6     |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
-| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.82 | 14 |
-| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.78, 19.81 | 17 |
+| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.82, 19.85 | 15 |
+| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.78, 19.81, 19.86 | 18 |
 | K  | Build and release files                  | Release    | 19.47, 19.59, 19.83                                    | 3     |
 | L  | Not a bug: the app follows a ruling      | None       | 19.63                                                  | 1     |
 | M  | Go test setup: the code was right        | Go tests   | 19.68                                                  | 1     |
 | N  | A missing control: no way to do it       | Server     | 19.84                                                  | 1     |
 
-Totals by system (84 items):
+Totals by system (86 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
@@ -56,7 +56,7 @@ Totals by system (84 items):
 | Card data | C       | 2     |
 | Client    | D–G     | 23    |
 | Server    | H, N    | 2     |
-| e2e       | I, J    | 32    |
+| e2e       | I, J    | 34    |
 | Release   | K       | 3     |
 | None      | L       | 1     |
 | Go tests  | M       | 1     |
@@ -2777,3 +2777,38 @@ Totals by system (84 items):
    15. Screenshots: `.cache/screenshots/19.84/before/` and `after/`.
 7. Owner notes (2026-10-27)
    1. Owner marks 19.84 solved.
+
+### [ ] 19.85 e2e: the activity test fails when the attacker has Bob's Brain
+
+1. Goal: `prompt.spec.ts` "the others see what the active player does" passes on every deal.
+2. Report (agent, 2026-10-27)
+   1. Found by `make e2e` during 18.9, in chromium.
+   2. The active player was Eden with Bob's Brain.
+   3. It timed out at line 277, waiting for the stack's `.stack-target`.
+   4. It passed 12 of 12 on rerun with other deals.
+   5. Evidence: `.cache/e2e-evidence/18.9-bobs-brain/` (not in git).
+3. Cause
+   1. Bob's Brain triggers when an attack is declared.
+   2. Its roll waits for a throw before the attack roll does.
+   3. `settle` stops at the first Throw: Bob's Brain's roll.
+   4. That stack row has no target; the test wants the monster's.
+   5. Test logic: the app was right (group I).
+4. Tasks:
+   1. Wait for the attack roll's row, not any Throw; or ban Bob's Brain, with the reason.
+5. Done when:
+   1. The test passes with Bob's Brain in the attacker's items.
+
+### [ ] 19.86 e2e: a Throw click in the Meat! odds test did not land, webkit
+
+1. Goal: `stats.spec.ts` "the open attack says what the roll needs" passes under load.
+2. Report (agent, 2026-10-27)
+   1. Found by `make e2e` during 18.9, in webkit, full run.
+   2. Line 152: after the Throw click, the stack still said "Throw the dice".
+   3. It passed 8 of 8 alone, one worker at a time.
+   4. Evidence: `.cache/e2e-evidence/18.9-stats/` (not in git).
+3. Cause
+   1. Not found yet: the click may come before the button takes input.
+4. Tasks:
+   1. Read the evidence; find why the throw did not start.
+5. Done when:
+   1. The cause is known; the test waits for the right thing.
