@@ -3119,3 +3119,23 @@ Totals by system (94 items):
    1. `make lint` and `make test` pass (exit 0).
 8. Owner notes (2026-10-28)
    1. Owner marks 19.95 solved.
+
+### [x] 19.96 Magic Marker does not work properly
+
+1. Goal: Magic Marker is left out of every game until it works.
+2. Report (owner, 2026-10-28)
+   1. Magic Marker is not working properly for now.
+   2. Ban it from every game, not only from games where the host bans it.
+3. Tasks:
+   1. Leave `magic_marker` out of every deck, in every game.
+   2. Keep the card's code and tests, so it can come back.
+4. Done when:
+   1. Engine test: no game has a `magic_marker` object (any seed).
+5. Fix
+   1. `alwaysBanned` in `pkg/rules_engine/ratios.go`: a list of cards no deck gets.
+   2. `inDecks` checks it with the host bans (GS-13).
+   3. Both deck paths (ratios and fixed decks) use `inDecks`.
+   4. Test `TestMagicMarkerIsLeftOut` in `pkg/rules_engine/cards/r/magic_marker_test.go`.
+   5. No screen change: no screenshots.
+6. Result (2026-10-28)
+   1. `make lint` and `make test` pass (exit 0).

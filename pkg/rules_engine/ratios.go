@@ -159,12 +159,16 @@ func shortfall(pools [ratioGroupCount][]CardRef) []RatioShort {
 	return out
 }
 
+// alwaysBanned are cards left out of every game (19.96): they do not work
+// properly yet.
+var alwaysBanned = []CardRef{"magic_marker"}
+
 // inDecks reports whether a card may go into a deck of this game.
 func inDecks(d CardDef, s Setup) bool {
 	if d.Outside || (d.ThreePlus && s.Players < 3) { // R-CARD-32
 		return false
 	}
-	if slices.Contains(s.Banned, d.Ref) { // GS-13
+	if slices.Contains(s.Banned, d.Ref) || slices.Contains(alwaysBanned, d.Ref) { // GS-13
 		return false
 	}
 	return d.Kind != RoomCard || s.Rooms // R-SETUP-16
