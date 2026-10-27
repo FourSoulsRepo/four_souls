@@ -2937,6 +2937,8 @@ Totals by system (89 items):
    4. It fails on the old style: the field was 24 px.
    5. No use case or wiki change: the behavior is the same.
    6. Screenshots: `.cache/screenshots/19.88/before/` and `after/`.
+7. Owner notes (2026-10-27)
+   1. Owner marks 19.88 solved.
 
 ### [ ] 19.89 e2e: the 15.77 damage fly test timed out once, webkit, full run
 
