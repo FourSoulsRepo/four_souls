@@ -7,7 +7,7 @@ import { appURL } from './server';
 import { shot } from './shot';
 import { saveAndContinue } from './saves';
 import { activePage, answerPlay, canEndTurn, click, playLoot, settle, throwButton, turnAction } from './turn';
-import { lineRe, tr, trRe } from './locale';
+import { cardName, lineRe, tr, trRe } from './locale';
 
 test.setTimeout(120_000);
 
@@ -300,17 +300,17 @@ async function expectPlayUndone(pages: Page[], hand: Locator, copies: number) {
 test('in Soft a played loot card is undone by one Undo, on the stack and after (17.6, 17.7)', async ({ browser }) => {
   const names = ['Tom', 'Uma'];
   const pages = await startGame(browser, names, { url: `${appURL()}&anim=off`, options: { rollback: 'soft' } });
-  const { active, other, hand, copies, name, otherName } = await giveAndPlay(pages, names, 'a_penny', 'A Penny!');
+  const { active, other, hand, copies, name, otherName } = await giveAndPlay(pages, names, 'a_penny', cardName('a_penny'));
   // The play has no history row (the history stays clean); Undo names it.
-  await expect(undo(other)).toHaveAttribute('title', tr('history.undo.title', { move: tr('history.move.play.other', { player: name, card: 'A Penny!' }) }));
-  await expect(undo(active)).toHaveAttribute('title', tr('history.undo.ask_title', { move: tr('history.move.play.you', { card: 'A Penny!' }) }));
-  await expect(row(other, trRe('stack.loot', { card: 'A Penny!' }))).toHaveCount(0);
+  await expect(undo(other)).toHaveAttribute('title', tr('history.undo.title', { move: tr('history.move.play.other', { player: name, card: cardName('a_penny') }) }));
+  await expect(undo(active)).toHaveAttribute('title', tr('history.undo.ask_title', { move: tr('history.move.play.you', { card: cardName('a_penny') }) }));
+  await expect(row(other, trRe('stack.loot', { card: cardName('a_penny') }))).toHaveCount(0);
   await shot(other, 'rollback-play-stack');
   await resolve(pages, active);
-  const resolved = row(other, /^✦A Penny!/);
+  const resolved = row(other, new RegExp(`^✦${lineRe(cardName('a_penny')).source}`));
   await expect(resolved).toBeVisible();
   // The result came with a pass, no target: Undo still names the play.
-  await expect(undo(other)).toHaveAttribute('title', tr('history.undo.title', { move: tr('history.move.play.other', { player: name, card: 'A Penny!' }) }));
+  await expect(undo(other)).toHaveAttribute('title', tr('history.undo.title', { move: tr('history.move.play.other', { player: name, card: cardName('a_penny') }) }));
   // Two players: the opponent's yes is the majority.
   await undo(other).click();
   await expectPlayUndone(pages, hand, copies);
@@ -325,9 +325,9 @@ test('in Soft a played loot card is undone by one Undo, on the stack and after (
 test('in Godmode one Undo after a resolved card undoes the play, not only its result (19.69)', async ({ browser }) => {
   const names = ['Vic', 'Wes'];
   const pages = await startGame(browser, names, { url: `${appURL()}&anim=off`, options: god });
-  const { active, hand, copies } = await giveAndPlay(pages, names, 'a_penny', 'A Penny!');
+  const { active, hand, copies } = await giveAndPlay(pages, names, 'a_penny', cardName('a_penny'));
   await resolve(pages, active);
-  await expect(undo(active)).toHaveAttribute('title', tr('history.undo.title', { move: tr('history.move.play.you', { card: 'A Penny!' }) }));
+  await expect(undo(active)).toHaveAttribute('title', tr('history.undo.title', { move: tr('history.move.play.you', { card: cardName('a_penny') }) }));
   await undo(active).click();
   // The card is back in the hand, not on the stack.
   await expectPlayUndone(pages, hand, copies);
@@ -337,8 +337,8 @@ test('a played card that asks a target is undone by one Undo (17.7)', async ({ b
   const names = ['Xan', 'Yul'];
   const pages = await startGame(browser, names, { url: `${appURL()}&anim=off`, options: { rollback: 'soft' } });
   // Bomb! asks its target first; the play and the pick are one move.
-  const { active, other, hand, copies, name } = await giveAndPlay(pages, names, 'bomb', 'Bomb!');
-  await expect(undo(other)).toHaveAttribute('title', tr('history.undo.title', { move: tr('history.move.play.other', { player: name, card: 'Bomb!' }) }));
+  const { active, other, hand, copies, name } = await giveAndPlay(pages, names, 'bomb', cardName('bomb'));
+  await expect(undo(other)).toHaveAttribute('title', tr('history.undo.title', { move: tr('history.move.play.other', { player: name, card: cardName('bomb') }) }));
   await undo(other).click();
   // Back before the play, not at its target prompt.
   await expectPlayUndone(pages, hand, copies);
@@ -358,12 +358,12 @@ test("Bum Friend's put-back pick has no line of its own: Undo names it a choice 
     throw new Error('no other page');
   }
   const name = names[pages.indexOf(active)] ?? '';
-  await click(active, active.getByRole('group', { name: tr('table.your_items') }).getByRole('button', { name: 'Bum Friend' }));
+  await click(active, active.getByRole('group', { name: tr('table.your_items') }).getByRole('button', { name: cardName('bum_friend') }));
   await click(active, active.getByRole('menu').getByRole('menuitem').first());
   for (const page of pages) {
     await openHistory(page);
   }
-  await expect(undo(active)).toHaveAttribute('title', tr('history.undo.title', { move: tr('history.move.use.you', { card: 'Bum Friend' }) }));
+  await expect(undo(active)).toHaveAttribute('title', tr('history.undo.title', { move: tr('history.move.use.you', { card: cardName('bum_friend') }) }));
   // The pick puts a card on the loot deck, which gives no line; the
   // tooltip never borrows the next move's name.
   await settle(pages, click, async () => (await undo(active).getAttribute('title')) === tr('history.undo.title', { move: tr('history.choice.you') }));
@@ -372,5 +372,5 @@ test("Bum Friend's put-back pick has no line of its own: Undo names it a choice 
   await shot(active, 'rollback-choice');
   await undo(other).click();
   // Back before the pick: the item's use is the latest move again.
-  await expect(undo(active)).toHaveAttribute('title', tr('history.undo.title', { move: tr('history.move.use.you', { card: 'Bum Friend' }) }));
+  await expect(undo(active)).toHaveAttribute('title', tr('history.undo.title', { move: tr('history.move.use.you', { card: cardName('bum_friend') }) }));
 });

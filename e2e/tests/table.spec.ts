@@ -5,7 +5,7 @@ import { expectFits, startGame, statMonsters } from './game';
 import { serverPort } from './server';
 import { shot } from './shot';
 import { seen } from './turn';
-import { anyOf, tr, trRe, whole } from './locale';
+import { anyOf, cardName, tr, trRe, whole } from './locale';
 
 // settled waits until the page has played every update and no new one
 // came for a moment: while the start of the game plays, its effects
@@ -535,8 +535,8 @@ test('a card with many abilities opens a dialog that uses the picked line (15.24
     });
   });
 
-  await page.getByRole('group', { name: tr('table.your_items') }).getByRole('button', { name: 'The Bone' }).click();
-  const dialog = page.getByRole('dialog', { name: tr('actions.use_card', { card: 'The Bone' }) });
+  await page.getByRole('group', { name: tr('table.your_items') }).getByRole('button', { name: cardName('the_bone') }).click();
+  const dialog = page.getByRole('dialog', { name: tr('actions.use_card', { card: cardName('the_bone') }) });
   await expect(dialog).toBeVisible();
   await expect(dialog.locator('.card.size-zoom')).toBeVisible();
   const last = dialog.getByRole('button', { name: /Remove 5 counters/ });
@@ -646,8 +646,8 @@ test('soul cards hide behind the crystals; hovering one zooms its card (15.56)',
 
   // No soul card in the items row (V-43).
   const items = own.getByRole('group', { name: tr('table.your_items') });
-  await expect(items.getByRole('img', { name: 'Mom!' })).toHaveCount(0);
-  await expect(items.getByRole('img', { name: 'Soul Of Greed' })).toHaveCount(0);
+  await expect(items.getByRole('img', { name: cardName('mom') })).toHaveCount(0);
+  await expect(items.getByRole('img', { name: cardName('soul_of_greed') })).toHaveCount(0);
 
   // Mom fills two crystals, Soul of Greed the third.
   const crystals = own.locator('.soul-slot.filled');
@@ -661,10 +661,10 @@ test('soul cards hide behind the crystals; hovering one zooms its card (15.56)',
   // the hover enters the crystal.
   await page.mouse.move(0, 0);
   await crystals.nth(1).hover();
-  await expect(zoom).toHaveAttribute('aria-label', 'Mom!');
+  await expect(zoom).toHaveAttribute('aria-label', cardName('mom'));
   await shot(page, 'soul-zoom');
   await crystals.nth(2).hover();
-  await expect(zoom).toHaveAttribute('aria-label', 'Soul Of Greed');
+  await expect(zoom).toHaveAttribute('aria-label', cardName('soul_of_greed'));
   // An empty crystal zooms nothing.
   await own.locator('.soul-slot:not(.filled)').first().hover();
   await expect(zoom).toBeHidden();

@@ -41,13 +41,13 @@ This step never closes; new reports are appended.
 | F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76               | 6     |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
-| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70 | 12 |
-| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.78 | 16 |
+| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79 | 13 |
+| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.78, 19.81 | 17 |
 | K  | Build and release files                  | Release    | 19.47, 19.59                                           | 2     |
 | L  | Not a bug: the app follows a ruling      | None       | 19.63                                                  | 1     |
 | M  | Go test setup: the code was right        | Go tests   | 19.68                                                  | 1     |
 
-Totals by system (78 items):
+Totals by system (81 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
@@ -55,7 +55,7 @@ Totals by system (78 items):
 | Card data | C       | 2     |
 | Client    | D–G     | 23    |
 | Server    | H       | 1     |
-| e2e       | I, J    | 28    |
+| e2e       | I, J    | 31    |
 | Release   | K       | 2     |
 | None      | L       | 1     |
 | Go tests  | M       | 1     |
@@ -1799,6 +1799,15 @@ Totals by system (78 items):
       1. "the board keeps its size when shop slots empty (V-23)".
       2. The first roll was a 6–6 tie; the reroll was still throwing.
       3. Evidence: `.cache/e2e-evidence/16.5-run1/`.
+   9. Seen in `make e2e` during 16.7, webkit, the 2-player table test.
+      1. "two players face each other; the table fits 1280x720".
+      2. The 30 s timeout ran out in `settled`, after the first roll.
+      3. 16.7 changes e2e text lookups only; this test is unchanged.
+      4. Evidence: `.cache/e2e-evidence/16.7-run1/`.
+   10. Seen in `make screenshots LOCALE=qps` during 16.7, chromium.
+       1. "curses sit at the far left …" (15.55), 4 players.
+       2. The 30 s timeout ran out in `throwFirstRoll`.
+       3. Evidence: `.cache/e2e-evidence/16.7-shots-qps/`.
 3. Tasks:
    1. Find why the first roll took too long in the full run.
    2. Fix the client or the test, whichever is wrong.
@@ -2626,6 +2635,61 @@ Totals by system (78 items):
 3. Cause
    1. Not found yet.
    2. Guess: as 19.57, a click that does not register under load.
+4. Tasks:
+   1. Find the cause in the evidence; fix the test or the app.
+5. Done when:
+   1. Cause written here; the test passes ten full runs in a row.
+
+### [x] 19.79 e2e: playLoot presses the main menu's Play line
+
+1. Goal: e2e helpers find each text by the key the app shows.
+2. Report (agent, 2026-10-27)
+   1. Found in 16.7 by `make screenshots LOCALE=pl` with a trial file.
+   2. Nine tests timed out waiting for the action menu's Play item.
+   3. English and `qps` hid it: both keys read "Play" there.
+3. Cause
+   1. `playLoot` in `e2e/tests/turn.ts` used `tr('menu.play')`.
+   2. The card's action menu shows `actions.play` (`actions.ts`).
+   3. The app was right; group I.
+4. Tasks:
+   1. `playLoot` uses `tr('actions.play')`.
+5. Done when:
+   1. The nine tests pass under `LOCALE=pl`; `make e2e` still passes.
+
+### [x] 19.80 e2e: the two 15.93 icon tests find each other's saved game
+
+1. Goal: each saved-game test continues only its own save.
+2. Report (agent, 2026-10-27)
+   1. Found by `make e2e` during 16.7, webkit, both variants at once.
+   2. `stats.spec.ts:77`: "effect icons go at the end of the turn, animations on/off".
+   3. `saveAndContinue` failed: two "Eli, Fox" rows had a Continue button.
+   4. Evidence: `.cache/e2e-evidence/16.7-run2/` (not in git).
+3. Cause
+   1. Both variants play as Eli and Fox on the same server.
+   2. Run at once, both saves list under "Eli, Fox"; the app was right.
+4. Tasks:
+   1. Each variant plays under its own names.
+5. Done when:
+   1. The two variants pass together in `make e2e`.
+
+### [ ] 19.81 e2e: a drag across the history selects nothing in `qps`
+
+1. Goal: the copyable-history test passes every run.
+2. Report (agent, 2026-10-27)
+   1. Found by `make screenshots LOCALE=qps` during 16.7, chromium.
+   2. `page.spec.ts:83`: "a drag across the table selects nothing; the history and address do".
+   3. After the drag across the open history, the selection was empty.
+   4. 16.7 changes e2e text lookups only; this test is unchanged.
+   5. Evidence: `.cache/e2e-evidence/16.7-shots-qps/` (not in git).
+   6. Failed again on the rerun: `.cache/e2e-evidence/16.7-shots2-qps/`.
+   7. Also at 7c47721, before 16.7: 2 of 8 with `--repeat-each 8`, `qps`.
+   8. English passed 3 of 3; so a real failure, not load.
+3. Cause
+   1. Not found yet.
+   2. The open history's list box is only 59 px tall at 1024×768.
+   3. In `qps` one line wraps over most of it.
+   4. A failing drag started in a line's padding; the middle hit the same line.
+   5. Guess: the drag stays in one line, or the list scrolls under it.
 4. Tasks:
    1. Find the cause in the evidence; fix the test or the app.
 5. Done when:

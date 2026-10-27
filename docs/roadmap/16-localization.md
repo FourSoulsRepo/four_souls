@@ -135,7 +135,7 @@ Rules of this step (owner, 2026-10-26):
    2. Tests: `TestFindImage`, `TestCardsImagesPerLanguage`, `cards.spec.ts` (fake Isaac).
    3. Tools: `scraper images` writes `images/en/<set>/`.
 
-### [ ] 16.7 Translation tooling
+### [x] 16.7 Translation tooling
 
 1. Goal: a translator checks a translation without reading code (LO-05).
 2. Tasks:
@@ -157,6 +157,14 @@ Rules of this step (owner, 2026-10-26):
    1. `make i18n LOCALE=xx` lists every gap of a half-translated test file.
    2. `make screenshots LOCALE=xx` shows that file's lines on the screens.
    3. An agent fills a `qps`-like test file from `todo.json` alone.
+4. Result: `make i18n`; checks in `locale.ts`, runner `translations.test.ts`.
+   1. Glossary: `locales/glossary/en.json`, term → note; other files term → word.
+   2. `done.json`: key → text; `null` deletes a stray key.
+   3. `make lint` runs `make i18n`; the help lists it and `AREA`.
+   4. e2e: `cardName(ref)`; `make screenshots LOCALE=ru` passes.
+   5. e2e reads `locales/<LOCALE>.json` when there is one.
+   6. Trial on a scratch `pl.json`: half file gaps, screenshots, agent fill.
+   7. Use case UC-33; 19.79 found by the trial.
 
 ### [ ] 16.8 Setup scripts
 

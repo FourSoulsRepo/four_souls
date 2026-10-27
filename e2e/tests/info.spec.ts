@@ -4,7 +4,7 @@ import { startGame } from './game';
 import { appURL } from './server';
 import { shot } from './shot';
 import { activePage, canEndTurn, click, gameOver, playLoot, settle, turnNumber } from './turn';
-import { lineRe, tr, trRe, whole } from './locale';
+import { cardName, lineRe, tr, trRe, whole } from './locale';
 
 const fast = () => `${appURL()}&anim=off`;
 
@@ -212,21 +212,21 @@ test('the history strip: icons, badges, and a hover with card and owner (15.22)'
   await expect(icons.nth(0).locator('.strip-attack')).toBeAttached();
   await expect(icons.nth(1).locator('.die')).toHaveAttribute('aria-label', tr('dice.rolled', { n: 4 }));
   await expect(icons.nth(1).locator('.strip-attack')).toBeAttached();
-  await expect(icons.nth(2)).toHaveAttribute('aria-label', whole(trRe('stack.loot', { card: 'Bomb!' })));
+  await expect(icons.nth(2)).toHaveAttribute('aria-label', whole(trRe('stack.loot', { card: cardName('bomb') })));
   await expect(icons.nth(2).locator('.strip-spell')).toBeAttached();
 
   // Hover the loot icon: its card large, the used ability, the owner (S-11, H-09).
   await icons.nth(2).hover();
   const zoom = active.getByTestId('card-zoom');
-  await expect(zoom.locator('.card.size-zoom')).toHaveAttribute('aria-label', /^Bomb/);
+  await expect(zoom.locator('.card.size-zoom')).toHaveAttribute('aria-label', new RegExp(`^${lineRe(cardName('bomb')).source}`));
   await expect(zoom.locator('.card-zoom-ability')).toHaveText('Deal 1 damage to a monster or player.');
   await expect(zoom.locator('.card-zoom-owner')).toHaveText(/^(Cid|Dee)$/);
   await shot(active, 'history-strip-hover');
 
   // Hover the attack roll: the monster it was against, and the line.
   await icons.nth(1).hover();
-  await expect(zoom.locator('.card.size-zoom')).toHaveAttribute('aria-label', /^Fly/);
-  await expect(zoom.locator('.card-zoom-line')).toHaveText(whole(lineRe(tr('stack.attack', { line: tr('stack.roll_against_n', { roll: 4, target: 'Fly' }) }))));
+  await expect(zoom.locator('.card.size-zoom')).toHaveAttribute('aria-label', new RegExp(`^${lineRe(cardName('fly')).source}`));
+  await expect(zoom.locator('.card-zoom-line')).toHaveText(whole(lineRe(tr('stack.attack', { line: tr('stack.roll_against_n', { roll: 4, target: cardName('fly') }) }))));
   await shot(active, 'history-strip-attack');
 
   // Blank Rune: the play says only "Roll."; its result says what happened.
@@ -283,14 +283,14 @@ test('damage a player takes names its card in the history strip (15.47)', async 
   const strip = active.getByRole('complementary', { name: tr('history.strip') });
   const icons = strip.locator('.strip-item');
   await expect(icons).toHaveCount(2);
-  const taken = whole(trRe('stack.damage_by_card', { card: 'Boom Fly', n: 1 }));
+  const taken = whole(trRe('stack.damage_by_card', { card: cardName('boom_fly'), n: 1 }));
   await expect(icons.nth(0)).toHaveAttribute('aria-label', taken);
   await expect(icons.nth(1)).toHaveAttribute('aria-label', taken);
 
   // Hover: the fly large, and the line under it.
   await icons.nth(0).hover();
   const zoom = active.getByTestId('card-zoom');
-  await expect(zoom.locator('.card.size-zoom')).toHaveAttribute('aria-label', /^Boom Fly/);
+  await expect(zoom.locator('.card.size-zoom')).toHaveAttribute('aria-label', new RegExp(`^${lineRe(cardName('boom_fly')).source}`));
   await expect(zoom.locator('.card-zoom-line')).toHaveText(taken);
   await shot(active, 'history-strip-taken-damage');
 });
@@ -583,7 +583,7 @@ test('a strip tile shows what the play did: target, damage, kill and rewards (15
 
   // The damage: Bomb! large, the monster with a starburst and the number.
   await damage.hover();
-  await expect(zoom.locator('.card.size-zoom')).toHaveAttribute('aria-label', /^Bomb/);
+  await expect(zoom.locator('.card.size-zoom')).toHaveAttribute('aria-label', new RegExp(`^${lineRe(cardName('bomb')).source}`));
   await expect(results).toHaveCount(1);
   await expect(results.nth(0)).toHaveAttribute('aria-label', whole(trRe('zoom.result_damage', { n: 1 })));
   await expect(results.nth(0).locator('.result-burst')).toHaveText('−1');

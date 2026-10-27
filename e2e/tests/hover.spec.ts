@@ -8,7 +8,7 @@ import { startGame } from './game';
 import { appURL } from './server';
 import { shot } from './shot';
 import { activePage, click } from './turn';
-import { tr } from './locale';
+import { cardName, tr } from './locale';
 
 const fast = () => `${appURL()}&anim=off`;
 const gallery = '/?fake&nosplash&screen=cards';
@@ -97,14 +97,14 @@ test('the zoom shows keyword tips beside the card (15.27)', async ({ page }) => 
   await page.goto(gallery);
   const zoom = page.getByTestId('card-zoom');
   const row = page.getByLabel('Table size');
-  await row.getByRole('img', { name: 'The D6' }).hover();
+  await row.getByRole('img', { name: cardName('the_d6') }).hover();
   const tips = zoom.getByRole('note', { name: tr('zoom.keywords') });
   await expect(tips).toContainText('Eternal');
   await expect(tips).toContainText("This can't be destroyed or put into discard.");
   await shot(page, 'zoom-tips');
   // A card without keywords has no tips.
-  await row.getByRole('img', { name: 'Isaac' }).hover();
-  await expect(zoom.locator('.card.size-zoom')).toHaveAttribute('aria-label', 'Isaac');
+  await row.getByRole('img', { name: cardName('isaac') }).hover();
+  await expect(zoom.locator('.card.size-zoom')).toHaveAttribute('aria-label', cardName('isaac'));
   await expect(tips).toHaveCount(0);
 });
 
@@ -174,7 +174,7 @@ test('every card of a 12-card hand can be pointed at (19.15)', async ({ browser 
 // load swaps it for a drawn face, and no leave event came (19.50).
 test('a zoom closes when the pointer leaves a card whose face was redrawn (19.50)', async ({ page }) => {
   await page.goto(gallery);
-  const card = page.getByLabel('Table size').getByRole('img', { name: 'Big Spider' });
+  const card = page.getByLabel('Table size').getByRole('img', { name: cardName('big_spider') });
   await card.hover();
   const zoom = page.getByTestId('card-zoom');
   await expect(zoom).toBeVisible();

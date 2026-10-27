@@ -23,7 +23,7 @@ import {
   turnNumber,
   type Tap,
 } from './turn';
-import { tr, trRe } from './locale';
+import { cardName, tr, trRe } from './locale';
 
 const fast = () => `${appURL()}&anim=off`;
 
@@ -383,7 +383,7 @@ test('a "look at the top card" effect shows the card until it is closed (V-07)',
   ]);
   await feed(rue, [{ kind: 'looked_at', player: 'other', private: true }]);
   const look = pip.getByRole('dialog', { name: tr('look.title') });
-  await expect(look.getByRole('img', { name: 'A Dime!!' })).toBeVisible();
+  await expect(look.getByRole('img', { name: cardName('a_dime') })).toBeVisible();
   await shot(pip, 'look-at');
   // It stays through the next update; only OK closes it.
   await feed(pip, []);
@@ -426,16 +426,16 @@ test('a look at hands groups the cards by whose hand they are (19.71)', async ({
     return [a.name, b.name];
   });
   const look = pip.getByRole('dialog', { name: tr('look.title') });
-  await expect(look.getByRole('img', { name: 'A Nickel!' })).toBeVisible();
+  await expect(look.getByRole('img', { name: cardName('a_nickel') })).toBeVisible();
   await shot(pip, 'look-at-hands');
   const hands = look.getByRole('group');
   await expect(hands).toHaveCount(2);
   const one = look.getByRole('group', { name: tr('look.hand_of', { player: String(first) }) });
   const two = look.getByRole('group', { name: tr('look.hand_of', { player: String(second) }) });
   await expect(one.getByText(tr('look.hand_of', { player: String(first) }))).toBeVisible();
-  await expect(one.getByRole('img', { name: 'A Dime!!' })).toBeVisible();
-  await expect(one.getByRole('img', { name: 'A Penny!' })).toBeVisible();
-  await expect(two.getByRole('img', { name: 'A Nickel!' })).toBeVisible();
+  await expect(one.getByRole('img', { name: cardName('a_dime') })).toBeVisible();
+  await expect(one.getByRole('img', { name: cardName('a_penny') })).toBeVisible();
+  await expect(two.getByRole('img', { name: cardName('a_nickel') })).toBeVisible();
   await expect(two.getByRole('img')).toHaveCount(1);
   // The groups keep the events' order.
   await expect(hands.first()).toHaveAccessibleName(tr('look.hand_of', { player: String(first) }));
@@ -471,9 +471,9 @@ test('a "look, you may put it on the bottom" question shows the card (19.11)', a
   const dialog = opal.getByRole('dialog', { name: tr('ask.put_bottom') });
   await expect(dialog).toBeVisible();
   await shot(opal, 'look-may-bottom');
-  await expect(dialog.getByRole('img', { name: 'A Dime!!' })).toBeVisible();
+  await expect(dialog.getByRole('img', { name: cardName('a_dime') })).toBeVisible();
   // The buttons name the card by its title, not its ref.
-  await expect(dialog.getByRole('button', { name: tr('ask.keep_on_top', { card: 'A Dime!!' }) })).toBeVisible();
+  await expect(dialog.getByRole('button', { name: tr('ask.keep_on_top', { card: cardName('a_dime') }) })).toBeVisible();
 });
 
 test('"put them back in any order" shows each card in its place (19.16)', async ({ browser }) => {
@@ -513,20 +513,20 @@ test('"put them back in any order" shows each card in its place (19.16)', async 
   await expect(place(1)).toContainText(tr('order.top'));
   await expect(putBack).toBeDisabled();
   // Bomb on top, then A Dime!!; A Penny! is still to place.
-  await left.getByRole('button', { name: 'Bomb!' }).click();
-  await left.getByRole('button', { name: 'A Dime!!' }).click();
-  await expect(place(1).getByRole('button', { name: 'Bomb!' })).toBeVisible();
-  await expect(place(2).getByRole('button', { name: 'A Dime!!' })).toBeVisible();
+  await left.getByRole('button', { name: cardName('bomb') }).click();
+  await left.getByRole('button', { name: cardName('a_dime') }).click();
+  await expect(place(1).getByRole('button', { name: cardName('bomb') })).toBeVisible();
+  await expect(place(2).getByRole('button', { name: cardName('a_dime') })).toBeVisible();
   await shot(olaf, 'order-two-placed');
   // A click on a placed card takes it back; the later ones move up.
-  await place(1).getByRole('button', { name: 'Bomb!' }).click();
-  await expect(place(1).getByRole('button', { name: 'A Dime!!' })).toBeVisible();
-  await expect(left.getByRole('button', { name: 'Bomb!' })).toBeVisible();
-  await left.getByRole('button', { name: 'Bomb!' }).click();
-  await left.getByRole('button', { name: 'A Penny!' }).click();
+  await place(1).getByRole('button', { name: cardName('bomb') }).click();
+  await expect(place(1).getByRole('button', { name: cardName('a_dime') })).toBeVisible();
+  await expect(left.getByRole('button', { name: cardName('bomb') })).toBeVisible();
+  await left.getByRole('button', { name: cardName('bomb') }).click();
+  await left.getByRole('button', { name: cardName('a_penny') }).click();
   await expect(left).toHaveCount(0);
-  await expect(place(2).getByRole('button', { name: 'Bomb!' })).toBeVisible();
-  await expect(place(3).getByRole('button', { name: 'A Penny!' })).toBeVisible();
+  await expect(place(2).getByRole('button', { name: cardName('bomb') })).toBeVisible();
+  await expect(place(3).getByRole('button', { name: cardName('a_penny') })).toBeVisible();
   await shot(olaf, 'order-all-placed');
   await putBack.click();
   const sent = await olaf.evaluate(() => (window as unknown as { sentOrder: unknown }).sentOrder);
@@ -575,12 +575,12 @@ test('two "instead" effects: each card says what it gives first (19.17)', async 
   const dialog = ugo.getByRole('dialog', { name: title });
   await expect(dialog).toBeVisible();
   const option = (card: string) => dialog.locator('.choice-option').filter({ has: ugo.getByRole('button', { name: card, exact: true }) });
-  await expect(option('Counterfeit Penny').getByRole('list', { name: tr('choice.result') })).toHaveText(`→ ${tr('choice.outcome.level_up', { card: 'Bum-Bo!', n: 11 })}`);
-  await expect(option('Bum-Bo!').getByRole('list', { name: tr('choice.result') })).toHaveText(
-    `→ ${tr('choice.outcome.level_up', { card: 'Bum-Bo!', n: 10 })}→ ${tr('choice.outcome.unused', { card: 'Counterfeit Penny' })}`,
+  await expect(option(cardName('counterfeit_penny')).getByRole('list', { name: tr('choice.result') })).toHaveText(`→ ${tr('choice.outcome.level_up', { card: cardName('bum_bo'), n: 11 })}`);
+  await expect(option(cardName('bum_bo')).getByRole('list', { name: tr('choice.result') })).toHaveText(
+    `→ ${tr('choice.outcome.level_up', { card: cardName('bum_bo'), n: 10 })}→ ${tr('choice.outcome.unused', { card: cardName('counterfeit_penny') })}`,
   );
   await shot(ugo, 'instead-order');
-  await option('Counterfeit Penny').locator('button').click();
+  await option(cardName('counterfeit_penny')).locator('button').click();
   const sent = await ugo.evaluate(() => (window as unknown as { sentChoice: unknown }).sentChoice);
   expect(sent).toMatchObject({ kind: 4, choice: 0 });
 });
@@ -630,10 +630,10 @@ test('trigger order: the title says the first one resolves last (19.19)', async 
   await shot(quill, 'trigger-order');
   await expect(dialog).toBeVisible();
   const option = (card: string) => dialog.locator('.choice-option').filter({ has: quill.getByRole('button', { name: card, exact: true }) });
-  await expect(option('Cain’s Eye')).toContainText('look at the top card of the loot deck');
-  await expect(option('Golden Horseshoe')).toContainText('look at the top card of the treasure deck');
+  await expect(option(cardName('cains_eye'))).toContainText('look at the top card of the loot deck');
+  await expect(option(cardName('golden_horseshoe'))).toContainText('look at the top card of the treasure deck');
   await expect(dialog).not.toContainText('cains_eye');
-  await option('Golden Horseshoe').locator('button').click();
+  await option(cardName('golden_horseshoe')).locator('button').click();
   const sent = await quill.evaluate(() => (window as unknown as { sentChoice: unknown }).sentChoice);
   expect(sent).toMatchObject({ kind: 4, choice: 1 });
 });

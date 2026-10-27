@@ -4,7 +4,7 @@ import { startGame } from './game';
 import { appURL } from './server';
 import { realAssets, shot } from './shot';
 import { pseudo } from '../../frontend/src/locale';
-import { locale, tr, trRe } from './locale';
+import { languageNames, locale, tr, trRe } from './locale';
 
 // One dark theme (15.80, ST-07): nothing to pick, nothing on the page.
 test('there is no theme to pick', async ({ page }) => {
@@ -176,7 +176,8 @@ test('the language applies at once and survives a restart', async ({ page }) => 
   // Found by its choices, as its label changes with the language.
   const lang = page.getByRole('combobox').filter({ has: page.getByRole('option', { name: 'English' }) });
   const save = page.locator('form button[type=submit]');
-  await expect(lang.getByRole('option')).toHaveText(['English', 'Русский', 'qps (test)']);
+  // A language file adds its choice (ADR 021, 11): ['English', 'Русский', 'qps (test)'] now.
+  await expect(lang.getByRole('option')).toHaveText(languageNames);
 
   await lang.selectOption('qps');
   await save.click();

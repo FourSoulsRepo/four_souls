@@ -277,7 +277,7 @@ export async function playLoot(page: Page, card: Locator, press: Tap): Promise<v
   const menu = page.getByRole('menu');
   const target = page.locator('.card.hl-aim, .stack-row.hl-aim').first();
   await expect(menu.or(target)).toBeVisible();
-  await press(page, (await menu.isVisible()) ? menu.getByRole('menuitem', { name: tr('menu.play') }) : target);
+  await press(page, (await menu.isVisible()) ? menu.getByRole('menuitem', { name: tr('actions.play') }) : target);
 }
 
 // answerPlay answers what a played loot card asks before it goes on the

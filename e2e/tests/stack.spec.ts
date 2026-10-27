@@ -20,7 +20,7 @@ import {
   turnAction,
   turnNumber,
 } from './turn';
-import { anyOf as any, tr, trRe, whole } from './locale';
+import { anyOf as any, cardName, lineRe, tr, trRe, whole } from './locale';
 
 // choosing matches a choice's title: the app's, or the server's question
 // (in English until 16.4).
@@ -70,9 +70,9 @@ test('a played Dagaz goes on the stack once its player is picked (19.18)', async
   await activePage(pages, click);
   await saveAndContinue(pages, 'Kit, Lev', 'dagaz');
   const active = await activePage(pages, click);
-  await playLoot(active, active.getByRole('group', { name: tr('table.your_hand') }).getByRole('button', { name: 'Dagaz' }).first(), click);
+  await playLoot(active, active.getByRole('group', { name: tr('table.your_hand') }).getByRole('button', { name: cardName('dagaz') }).first(), click);
   await answerPlay(active, click);
-  await expect(active.getByRole('complementary', { name: tr('stack.title') })).toContainText(trRe('stack.loot', { card: 'Dagaz' }));
+  await expect(active.getByRole('complementary', { name: tr('stack.title') })).toContainText(trRe('stack.loot', { card: cardName('dagaz') }));
 });
 
 test('a player may wait for their turn; the end of the turn before asks them (N-16)', async ({ browser }) => {
@@ -229,13 +229,13 @@ test('the stack panel: icons, colored names, and a hover with card and owner (15
   await expect(rows.nth(0)).toHaveAttribute('aria-label', whole(trRe('stack.damage', { n: 1 })));
   await expect(rows.nth(0).locator('.stack-target')).toBeVisible();
   await expect(rows.nth(1).locator('.die')).toHaveAttribute('aria-label', tr('dice.rolled', { n: 5 }));
-  await expect(rows.nth(2)).toHaveAttribute('aria-label', whole(trRe('stack.loot', { card: 'Bomb!' })));
+  await expect(rows.nth(2)).toHaveAttribute('aria-label', whole(trRe('stack.loot', { card: cardName('bomb') })));
 
   // Hover the loot row: its card large, the used ability, the owner (S-06, S-07).
   const owner = (await rows.nth(2).locator('.stack-player').textContent()) ?? '';
   await rows.nth(2).hover();
   const zoom = active.getByTestId('card-zoom');
-  await expect(zoom.locator('.card.size-zoom')).toHaveAttribute('aria-label', /^Bomb/);
+  await expect(zoom.locator('.card.size-zoom')).toHaveAttribute('aria-label', new RegExp(`^${lineRe(cardName('bomb')).source}`));
   await expect(zoom.locator('.card-zoom-ability')).toHaveText('Deal 1 damage to a monster or player.');
   await expect(zoom.locator('.card-zoom-owner')).toHaveText(owner);
   await shot(active, 'stack-panel-hover');

@@ -10,7 +10,7 @@ import { appURL } from './server';
 import { saveAndContinue } from './saves';
 import { shot } from './shot';
 import { activePage, click, settle } from './turn';
-import { tr, trRe } from './locale';
+import { cardName, tr, trRe } from './locale';
 
 const fast = () => `${appURL()}&anim=off`;
 
@@ -48,7 +48,7 @@ test('a bomb aimed at a monster by two clicks damages it', async ({ browser }) =
     });
   });
 
-  const bomb = active.getByRole('group', { name: tr('table.your_hand') }).getByRole('button', { name: 'Bomb!' }).first();
+  const bomb = active.getByRole('group', { name: tr('table.your_hand') }).getByRole('button', { name: cardName('bomb') }).first();
   const monster = active.getByRole('group', { name: tr('board.monsters') }).locator('.card').first();
   const lifted = active.locator('.hand-card.aiming');
   // Click the card's visible top: a locator click would scroll the hand,
@@ -209,7 +209,7 @@ test('a loot card with no target dragged onto the board plays', async ({ browser
   const active = await activePage(pages, click);
   const hand = active.getByRole('group', { name: tr('table.your_hand') });
   // Any role: once played, other pennies are no longer buttons.
-  const penny = hand.getByLabel('A Penny!', { exact: true });
+  const penny = hand.getByLabel(cardName('a_penny'), { exact: true });
   const before = await penny.count();
 
   // Played loot is kept as it shows: the stack may resolve at once.
@@ -225,7 +225,7 @@ test('a loot card with no target dragged onto the board plays', async ({ browser
     });
   });
 
-  await dragToBoard(active, 'A Penny!');
+  await dragToBoard(active, cardName('a_penny'));
   await expect.poll(() => active.evaluate(() => (window as unknown as { played: string[] }).played)).toContain('a_penny');
   await expect(penny).toHaveCount(before - 1);
   // No arrow, no dialog: the card went straight to the stack.
@@ -241,13 +241,13 @@ test('a card placed first aims after its mode; a cancelled aim leaves it in hand
   await saveAndContinue(pages, 'Fay, Gus', 'dagaz');
   const active = await activePage(pages, click);
   const hand = active.getByRole('group', { name: tr('table.your_hand') });
-  const dagaz = hand.getByRole('button', { name: 'Dagaz' });
+  const dagaz = hand.getByRole('button', { name: cardName('dagaz') });
   const lifted = active.locator('.hand-card.aiming');
   const opponent = active.locator('.player.opponent .opp-character .card');
   const mode = 'Choose a player. Prevent the next 1 damage they would take this turn.';
   // place drags Dagaz onto the board and picks the mode that aims.
   const place = async () => {
-    await dragToBoard(active, 'Dagaz');
+    await dragToBoard(active, cardName('dagaz'));
     const ask = active.getByRole('dialog', { name: tr('choice.title.mode') });
     await expect(ask).toBeVisible();
     await shot(active, 'aim-mode');
@@ -296,15 +296,15 @@ test('a "choose one-" card asks its mode with the card large (15.58)', async ({ 
   await activePage(pages, click);
   await saveAndContinue(pages, 'Ida, Jon', 'dagaz');
   const active = await activePage(pages, click);
-  const dagaz = active.getByRole('group', { name: tr('table.your_hand') }).getByRole('button', { name: 'Dagaz' });
+  const dagaz = active.getByRole('group', { name: tr('table.your_hand') }).getByRole('button', { name: cardName('dagaz') });
   const ask = active.getByRole('dialog', { name: tr('choice.title.mode') });
   const open = async () => {
-    await dragToBoard(active, 'Dagaz');
+    await dragToBoard(active, cardName('dagaz'));
     await expect(ask).toBeVisible();
   };
 
   await open();
-  await expect(ask.getByRole('heading', { name: 'Dagaz' })).toBeVisible();
+  await expect(ask.getByRole('heading', { name: cardName('dagaz') })).toBeVisible();
   await expect(ask.locator('.card.size-zoom')).toBeVisible();
   // No curse is in play at the start: that mode stays, greyed.
   const curse = ask.getByRole('button', { name: 'Destroy a curse.' });
@@ -349,7 +349,7 @@ test('the other player sees the arrow and the red mark', async ({ browser }) => 
   if (!other) {
     throw new Error('no waiting player');
   }
-  const bomb = active.getByRole('group', { name: tr('table.your_hand') }).getByRole('button', { name: 'Bomb!' }).first();
+  const bomb = active.getByRole('group', { name: tr('table.your_hand') }).getByRole('button', { name: cardName('bomb') }).first();
   const monster = active.getByRole('group', { name: tr('board.monsters') }).locator('.card').first();
   const item = active.getByRole('group', { name: tr('board.shop') }).locator('.card').first();
   const arrow = other.locator('.aim-arrow.others');

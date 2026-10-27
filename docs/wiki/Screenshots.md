@@ -4,6 +4,8 @@
 
 `make screenshots LOCALE=qps` takes them in the test language (ADR 021) into `.cache/screenshots/qps/`; other codes work the same way. The variable is `LOCALE`, not `LANG`, which the shell sets.
 
+`make screenshots LOCALE=xx` with a file `frontend/src/locales/xx.json` shows that file's lines on every screen, English where a line is missing; a translator checks them by eye ([Client](Client#translation-checks)). The tests read the same file, so they still find each text. Card names follow card_db's `text.xx.name`: `LOCALE=ru` has no interface file, so it shows English screens with Russian card names.
+
 The folder is git-ignored: the UI changes often, and images would bloat the repository. Screenshots go into the docs once the UI settles.
 
 Screenshots are taken by the Playwright UI tests in `e2e/` (see [Frontend tests](Frontend-tests)): `make screenshots` runs `make e2e` with `SCREENSHOTS=1`, and each test calls `shot(page, name)` where a screen is worth a picture.
