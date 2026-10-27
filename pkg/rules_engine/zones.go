@@ -181,6 +181,18 @@ func (g *Game) DeckToBottom(d DeckKind, id ObjectID) {
 	g.Decks[d] = append([]ObjectID{id}, remove(g.Decks[d], id)...)
 }
 
+// KeepOrBottom is p's answer after looking at the top card id of deck
+// d: it stays on top, or goes to the bottom. Everyone learns which;
+// only p sees the card (19.90).
+func (g *Game) KeepOrBottom(p PlayerID, d DeckKind, id ObjectID, bottom bool) {
+	where := " deck top"
+	if bottom {
+		g.DeckToBottom(d, id)
+		where = " deck bottom"
+	}
+	g.emit(Event{Kind: EvTopChoice, Player: p, Object: id, Card: g.Object(id).Card, Text: d.String() + where, Private: true})
+}
+
 // ToBottomRandom puts cards on the bottom of a deck in random order; no
 // player orders them (Q-22). A card in a deck stays the same object; a
 // card in a slot leaves it.

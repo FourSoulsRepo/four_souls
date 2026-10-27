@@ -49,6 +49,10 @@ const (
 	// EvFirstRollTied: the lowest first-player roll, Amount, tied; Text
 	// lists the tied players, who roll again, as "0,2" (15.43).
 	EvFirstRollTied EventKind = "first_roll_tied"
+	// EvTopChoice: Player looked at a deck's top card and kept it there
+	// or put it on the bottom. Text is "<deck> deck top" or "<deck> deck
+	// bottom"; Private, so only Player sees Card (19.90).
+	EvTopChoice EventKind = "top_choice"
 )
 
 // Event is one thing that happened, in order. Hidden cards (e.g. a looted

@@ -85,7 +85,8 @@ Use options 1, 4, 8, 10 and 12.
    20. A turn end, a death, and a seen hand card still block it.
    21. A purchase keeps its barriers.
    22. So a private `moved_to_deck` is no barrier: a hand card goes on the loot deck.
-   23. Every other private event draws a deck card or shows a hand card.
+   23. Every other private event but 24 draws a deck card or shows a hand card.
+   24. A private `top_choice` is no barrier: its `looked_at` already is (19.90).
 5. Soft vote
    1. Only the other players can roll back; never the target's author.
    2. The author may ask; the ask opens a vote.

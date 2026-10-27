@@ -34,7 +34,7 @@ This step never closes; new reports are appended.
 | ID | Group                                    | System     | Items                                                  | Count |
 |----|------------------------------------------|------------|--------------------------------------------------------|-------|
 | A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66 | 12 |
-| B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73   | 8     |
+| B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90 | 9 |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74                              | 4     |
 | E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52, 19.54, 19.69 | 9  |
@@ -49,11 +49,11 @@ This step never closes; new reports are appended.
 | N  | A missing control: no way to do it       | Server     | 19.84                                                  | 1     |
 | O  | Reconnect: old connection state kept     | Client     | 19.78, 19.86                                           | 2     |
 
-Totals by system (89 items):
+Totals by system (90 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
-| Engine    | A, B    | 20    |
+| Engine    | A, B    | 21    |
 | Card data | C       | 2     |
 | Client    | D–G, O  | 26    |
 | Server    | H, N    | 2     |
@@ -2952,3 +2952,41 @@ Totals by system (89 items):
    1. Not found yet.
 4. Tasks:
    1. Find what `centre` waits for at line 1224 under load.
+
+### [ ] 19.90 Others never learn the Cain's Eye choice
+
+1. Goal: every player sees if the top card was kept or put on the bottom.
+2. Report (owner, 2026-10-27)
+   1. A player with Cain's Eye looks at the top loot card.
+   2. They keep it on top or put it on the bottom.
+   3. The other players cannot tell which.
+3. Cause
+   1. `cardkit.LookMayBottom` moves the card with `DeckToBottom`.
+   2. `DeckToBottom` emits no event; keeping emits none either.
+   3. Others only get the hidden `looked_at` line.
+   4. Same effect: Golden Horseshoe (treasure), Purple Heart (monster).
+4. Ruling basis
+   1. At a real table the move is seen; the card face is not.
+   2. So the choice is public; the card stays hidden from others.
+5. Tasks:
+   1. Engine: one event after the choice, private, with the card.
+   2. Its text says the deck and top or bottom.
+   3. No barrier: the looked_at before it already is one.
+   4. Client: a history line for the chooser and for others.
+   5. Others' line names no card.
+6. Done when:
+   1. Go: both answers emit the event; others get no card.
+   2. Vitest: the history lines for the chooser and for others.
+   3. e2e: another player's history shows the choice.
+7. Fix
+   1. Engine: `Game.KeepOrBottom` emits `top_choice` after the answer.
+   2. Text: "loot deck top" or "loot deck bottom"; private, with the card.
+   3. `cardkit.LookMayBottom` calls it: Cain's Eye, Golden Horseshoe, Purple Heart.
+   4. No barrier: in `privateNoBarrier`; ADR 020 item 4.24.
+   5. Client: the chooser reads "You put <card> on the bottom".
+   6. Others read "Ann puts the top loot card on the bottom".
+   7. Go: `TestCainsEyeTellsEveryoneTheChoice`, both answers.
+   8. Vitest and e2e: `info.spec.ts` (19.90).
+   9. Docs: UC-18 2c, ADR 020, wiki Client and Rules-engine.
+   10. Screenshot: `.cache/screenshots/19.90/after/` only.
+   11. Before: no line at all; the old client had no case to draw.

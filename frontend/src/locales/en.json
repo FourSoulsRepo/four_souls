@@ -2178,6 +2178,38 @@
     "text": "History",
     "note": "The match history panel's title, and the name of the button on the history strip that opens it."
   },
+  "history.top_bottom.loot": {
+    "text": "{player} puts the top loot card on the bottom",
+    "note": "History: a player looked at the loot deck's top card and put it on the bottom. The card stays hidden."
+  },
+  "history.top_bottom.monster": {
+    "text": "{player} puts the top monster card on the bottom",
+    "note": "History: a player looked at the monster deck's top card and put it on the bottom. The card stays hidden."
+  },
+  "history.top_bottom.treasure": {
+    "text": "{player} puts the top treasure card on the bottom",
+    "note": "History: a player looked at the treasure deck's top card and put it on the bottom. The card stays hidden."
+  },
+  "history.top_bottom.you": {
+    "text": "You put {card} on the bottom",
+    "note": "History: the viewer looked at a deck's top card and put it on the bottom of that deck."
+  },
+  "history.top_kept.loot": {
+    "text": "{player} keeps the top loot card on top",
+    "note": "History: a player looked at the loot deck's top card and left it there. The card stays hidden."
+  },
+  "history.top_kept.monster": {
+    "text": "{player} keeps the top monster card on top",
+    "note": "History: a player looked at the monster deck's top card and left it there. The card stays hidden."
+  },
+  "history.top_kept.treasure": {
+    "text": "{player} keeps the top treasure card on top",
+    "note": "History: a player looked at the treasure deck's top card and left it there. The card stays hidden."
+  },
+  "history.top_kept.you": {
+    "text": "You keep {card} on top",
+    "note": "History: the viewer looked at a deck's top card and left it there."
+  },
   "history.turn": {
     "text": "Turn {n}: {player}",
     "note": "History: the line a turn starts with. n: the turn; player: whose turn, or You."

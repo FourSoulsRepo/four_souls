@@ -45,6 +45,11 @@
   * Each row has its owner's name above it: "Bo's hand".
   * A look at deck cards keeps one row with no name.
   * The history line stays "You look at <card>".
+* **2c. Everyone learns the choice (19.90):** after 2a, a history line for all.
+  * The chooser: "You put <card> on the bottom" or "You keep <card> on top".
+  * Others: "Ann puts the top loot card on the bottom".
+  * Or: "Ann keeps the top loot card on top".
+  * Others' line names the deck, never the card.
 
 ## Postconditions
 

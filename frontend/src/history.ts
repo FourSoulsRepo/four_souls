@@ -121,11 +121,31 @@ export const historyKinds: Record<string, string> = {
   stack_resolved: told,
   start_of_turn: 'A trigger window, not a play.',
   stole: told,
+  top_choice: told,
   turn_ended: 'The next turn line follows.',
   turn_ended_early: told,
   turn_skipped: told,
   turn_started: told,
 };
+
+// topChoiceText is another player's top_choice line: it names the deck
+// and where its top card went, never the card (19.90).
+function topChoiceText(text: string, player: string): string {
+  switch (text) {
+    case 'treasure deck top':
+      return t('history.top_kept.treasure', { player });
+    case 'treasure deck bottom':
+      return t('history.top_bottom.treasure', { player });
+    case 'monster deck top':
+      return t('history.top_kept.monster', { player });
+    case 'monster deck bottom':
+      return t('history.top_bottom.monster', { player });
+    case 'loot deck bottom':
+      return t('history.top_bottom.loot', { player });
+    default:
+      return t('history.top_kept.loot', { player });
+  }
+}
 
 // entriesFor turns one update's events into history entries; key is the
 // first entry's key.
@@ -258,6 +278,16 @@ export function entriesFor(events: GameEvent[], turn: number, you: number, n: Na
           add('◉', mine(e.player) ? t('history.look_hidden.you') : t('history.look_hidden.other', { player }), e.card);
         }
         break;
+      case 'top_choice': {
+        // A looked-at top card stays or goes to the bottom: everyone
+        // learns which, only the chooser the card (19.90).
+        if (card) {
+          add('◉', e.text?.endsWith(' bottom') ? t('history.top_bottom.you', { card }) : t('history.top_kept.you', { card }), e.card);
+        } else {
+          add('◉', topChoiceText(e.text ?? '', player));
+        }
+        break;
+      }
       case 'rewards_gained':
         add('★', mine(e.player) ? t('history.rewards.you', { card }) : t('history.rewards.other', { player, card }), e.card);
         break;
