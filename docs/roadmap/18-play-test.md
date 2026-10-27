@@ -52,7 +52,7 @@ Ideas: B-04, B-05.
 3. Done when:
    1. ADR accepted; UC-16 matches the code.
 
-### [ ] 18.5 Sound loudness tool
+### [x] 18.5 Sound loudness tool
 
 1. Goal: a tool measures every sound's loudness (AU-04, ADR 022).
 2. Tasks:
