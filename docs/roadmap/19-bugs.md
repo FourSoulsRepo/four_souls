@@ -41,13 +41,13 @@ This step never closes; new reports are appended.
 | F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76               | 6     |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
-| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79 | 13 |
+| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.82 | 14 |
 | J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.78, 19.81 | 17 |
 | K  | Build and release files                  | Release    | 19.47, 19.59                                           | 2     |
 | L  | Not a bug: the app follows a ruling      | None       | 19.63                                                  | 1     |
 | M  | Go test setup: the code was right        | Go tests   | 19.68                                                  | 1     |
 
-Totals by system (81 items):
+Totals by system (82 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
@@ -55,7 +55,7 @@ Totals by system (81 items):
 | Card data | C       | 2     |
 | Client    | D–G     | 23    |
 | Server    | H       | 1     |
-| e2e       | I, J    | 31    |
+| e2e       | I, J    | 32    |
 | Release   | K       | 2     |
 | None      | L       | 1     |
 | Go tests  | M       | 1     |
@@ -2694,3 +2694,22 @@ Totals by system (81 items):
    1. Find the cause in the evidence; fix the test or the app.
 5. Done when:
    1. Cause written here; the test passes ten full runs in a row.
+
+### [ ] 19.82 e2e: the dice menu test fails in a screenshot run without card images
+
+1. Goal: `make screenshots` passes in a public clone.
+2. Report (agent, 2026-10-27)
+   1. Found by `make screenshots` in a clean Ubuntu 24.04 container during 16.8.
+   2. The clone had no private images submodule; its folder was empty.
+   3. `settings.spec.ts:135`: "the dice menu picks the look of your dice".
+   4. The dice preview showed 0 faces; the test wants 6.
+   5. Failed again alone, with one worker; `make e2e` passes it.
+   6. Evidence: `.cache/e2e-evidence/16.8-ubuntu-shots/` (not in git).
+3. Cause
+   1. With `SCREENSHOTS=1` the test skips its one-pixel dice route.
+   2. `realAssets` then routes to `pkg/card_db/images`, which exists but is empty.
+   3. Every die texture is missing, so no face image is drawn.
+4. Tasks:
+   1. Keep the pixel route when the dice images are missing.
+5. Done when:
+   1. `make screenshots` passes this test without the images submodule.

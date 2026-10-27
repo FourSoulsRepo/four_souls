@@ -166,7 +166,7 @@ Rules of this step (owner, 2026-10-26):
    6. Trial on a scratch `pl.json`: half file gaps, screenshots, agent fill.
    7. Use case UC-33; 19.79 found by the trial.
 
-### [ ] 16.8 Setup scripts
+### [x] 16.8 Setup scripts
 
 1. Goal: one script installs every tool `make` needs (B-07).
 2. Tasks:
@@ -178,6 +178,16 @@ Rules of this step (owner, 2026-10-26):
    6. Wiki: `Developer-setup.md`, per OS, and what each target needs.
 3. Done when:
    1. A clean macOS and a clean Linux run the scripts, then `make doctor` passes.
+4. Result: `scripts/setup.sh`; `make doctor` runs its `--check`.
+   1. Versions: `scripts/versions.env`; Go from `go.mod`, Playwright from `e2e/package.json`.
+   2. CI reads `versions.env` too; Linters.md points to it.
+   3. Linux: Go and Node from their archives into `~/.local`, no sudo.
+   4. golangci-lint goes into `.cache/bin`; `make lint` uses it when there.
+   5. `make lint` runs shellcheck when it is installed.
+   6. Fedora: Playwright's WebKit does not run there; skipped.
+   7. Tested in clean Ubuntu 24.04 and Fedora 44 containers, both profiles.
+   8. macOS: only `--check` on the owner's Mac; nothing installed there.
+   9. The Ubuntu screenshot run found 19.82 (dice test without images).
 
 ### [ ] 16.9 Translator guides
 

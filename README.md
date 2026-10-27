@@ -37,6 +37,9 @@ The binary lands in `build/bin/`.
 
 ## Develop
 
+Tools: `scripts/setup.sh` (macOS, Linux), then `make doctor`;
+see [Developer setup](docs/wiki/Developer-setup.md).
+
 ```sh
 make build vet test lint wasm
 cd frontend && npm run typecheck && npm run lint

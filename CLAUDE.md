@@ -26,6 +26,7 @@
    14. Wiki groups: players, server admins, developers.
    15. A new wiki page goes into one group in `Home.md` and `_Sidebar.md`.
    16. `deploy/`: server setups: systemd, Docker, compose with Caddy (ADR 018).
+   17. `scripts/`: `setup.sh` installs the tools; `versions.env` holds their versions.
 4. Commands
    1. `wails dev -m`: run with hot reload.
    2. `wails build -m`: release binary to `build/bin/`.
@@ -52,6 +53,10 @@
    21. `make i18n`: translation checks; `make lint` runs it.
        1. `LOCALE=xx`: that language in full; `AREA=` one area.
        2. Details: `docs/wiki/Client.md` (Translation checks).
+   22. `scripts/setup.sh --profile developer`: installs every tool (macOS, Linux).
+       1. `make doctor`: checks them; `PROFILE=translator` for the smaller set.
+       2. Tool versions: only in `scripts/versions.env`, `go.mod`, `e2e/package.json`.
+       3. Details: `docs/wiki/Developer-setup.md`.
 5. Workflow
    1. Work follows `docs/roadmap/`, one sub-step at a time.
    2. Commit after every finished sub-step.

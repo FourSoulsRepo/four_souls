@@ -16,6 +16,7 @@
 **Developers**
 
 * [Repo layout](Repo-layout)
+* [Developer setup](Developer-setup)
 * [Build modes](Build-modes)
 * [Linters](Linters)
 * [Screenshots](Screenshots)

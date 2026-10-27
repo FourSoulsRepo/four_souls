@@ -12,9 +12,7 @@ on:
 permissions:
   contents: read
 
-env:
-  NODE_VERSION: "24"
-  WAILS_VERSION: "v2.16.0"
+# Tool versions come from scripts/versions.env (16.8).
 
 jobs:
   notes:
@@ -82,6 +80,9 @@ jobs:
     runs-on: ${{ matrix.target.os }}
     steps:
       - uses: actions/checkout@v5
+      - name: Tool versions
+        shell: bash
+        run: grep '^[A-Z_]*=' scripts/versions.env | tr -d '\r' >> "$GITHUB_ENV"
       - name: Card images
         id: images
         if: matrix.edition.images
