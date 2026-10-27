@@ -3,6 +3,7 @@
 // Keep the notice in sync with internal/legal/notice.go.
 
 import b2 from '../../pkg/card_db/data/b2.json?raw';
+import requiem from '../../pkg/card_db/data/r.json?raw';
 import { protocolVersion } from './protocol';
 
 interface Part {
@@ -185,9 +186,20 @@ interface DataCard {
   stats?: { name: string; value: string }[];
   rewards?: { count: string; kind: string }[];
   images?: string[]; // one per copy; the first stands for the card
+  reprint?: boolean;
+  // back is a two-sided card's other face (ADR 023).
+  back?: Pick<DataCard, 'id' | 'text' | 'stats' | 'rewards' | 'images'>;
 }
 
-const b2Data = JSON.parse(b2) as { set: { code: string }; cards: DataCard[] };
+interface DataSet {
+  set: { code: string };
+  cards: DataCard[];
+}
+
+const b2Data = JSON.parse(b2) as DataSet;
+// Requiem has the two-sided cards (14.15); its cards are only dealt
+// with ?requiem.
+const requiemData = JSON.parse(requiem) as DataSet;
 
 // translated gives a card's names in every language and its translators,
 // as Go's App.Cards does (16.5); the cards above take them from b2 too.
@@ -198,23 +210,35 @@ function translated(ref: string, name: string): { names: Record<string, string>;
 }
 
 function realCards(): unknown[] {
-  const data = b2Data;
-  return data.cards
-    .filter((c) => !cards.some((s) => s.ref === c.id))
-    .map((c) => ({
-      ...translated(c.id, c.text.en?.name ?? c.id),
-      ref: c.version && c.version > 1 ? `${c.id}@${String(c.version)}` : c.id,
-      set: data.set.code,
-      type: c.type,
-      name: c.text.en?.name ?? c.id,
-      effects: c.text.en?.effects ?? [],
-      footnotes: c.text.en?.footnotes ?? [],
-      stats: c.stats ?? [],
-      rewards: c.rewards ?? [],
-      // English only: the fake bridge cannot see which other images exist.
-      image: c.images?.[0] ? `/cardimg/en/${c.images[0]}` : '',
-      images: c.images?.[0] ? { en: `/cardimg/en/${c.images[0]}` } : {},
-    }));
+  return [b2Data, requiemData].flatMap((data) =>
+    data.cards
+      .filter((c) => !c.reprint && !cards.some((s) => s.ref === c.id))
+      .flatMap((c) => {
+        const front = { ...realCard(data.set.code, c), ...(c.back ? { back: c.back.id } : {}) };
+        // A back face is a card of its own, as in Go's App.Cards.
+        return c.back ? [front, { ...realCard(data.set.code, { ...c, ...c.back, version: 0 }), front: c.id }] : [front];
+      }),
+  );
+}
+
+// realCard is one card of the card data as Go's App.Cards gives it.
+function realCard(set: string, c: DataCard): Record<string, unknown> {
+  const names = Object.fromEntries(Object.entries(c.text).flatMap(([lang, text]) => (text?.name ? [[lang, text.name]] : [])));
+  return {
+    names: { en: c.text.en?.name ?? c.id, ...names },
+    translators: c.translators ?? {},
+    ref: c.version && c.version > 1 ? `${c.id}@${String(c.version)}` : c.id,
+    set,
+    type: c.type,
+    name: c.text.en?.name ?? c.id,
+    effects: c.text.en?.effects ?? [],
+    footnotes: c.text.en?.footnotes ?? [],
+    stats: c.stats ?? [],
+    rewards: c.rewards ?? [],
+    // English only: the fake bridge cannot see which other images exist.
+    image: c.images?.[0] ? `/cardimg/en/${c.images[0]}` : '',
+    images: c.images?.[0] ? { en: `/cardimg/en/${c.images[0]}` } : {},
+  };
 }
 
 // ?cardlang=xx names Isaac in the card-only language xx, which has no

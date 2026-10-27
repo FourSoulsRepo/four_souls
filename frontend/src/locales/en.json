@@ -1917,8 +1917,8 @@
     "note": "History: a play lost its target. card: the card, or 'An ability'."
   },
   "history.flipped": {
-    "text": "{card} flips",
-    "note": "History: a card turned to its other side. card: the card, or 'A card'."
+    "text": "{card} turns face up",
+    "note": "History: a two-sided card turned to its other side. card: the side now up, or 'A card'."
   },
   "history.gain.other": {
     "text": "{player} gains {card}",
@@ -3841,6 +3841,10 @@
   "zoom.keywords": {
     "text": "Keywords",
     "note": "Zoomed card: screen-reader name of the keyword notes beside it."
+  },
+  "zoom.other_side": {
+    "text": "Other side",
+    "note": "Under the small second card beside a zoomed two-sided card: its other face."
   },
   "zoom.outcome": {
     "text": "What it did",

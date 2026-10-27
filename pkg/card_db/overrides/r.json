@@ -75,7 +75,45 @@
     "rewards": []
   },
   "the_harbingers": {
-    "rewards": []
+    "rewards": [],
+    "back": {
+      "id": "the_beast",
+      "text": {
+        "en": {
+          "name": "The Beast!",
+          "effects": [
+            "When this is flipped to this side or attacked, each player rolls-\nEach player who rolls the lowest or tied for the lowest dies."
+          ]
+        }
+      },
+      "stats": [
+        {
+          "name": "HP",
+          "value": "6"
+        },
+        {
+          "name": "DC",
+          "value": "4"
+        },
+        {
+          "name": "ATK",
+          "value": "2"
+        }
+      ],
+      "rewards": [
+        {
+          "count": "2x",
+          "kind": "Soul"
+        },
+        {
+          "count": "6x",
+          "kind": "Loot"
+        }
+      ],
+      "images": [
+        "r/the_beast.webp"
+      ]
+    }
   },
   "abyss": {
     "text": {
@@ -92,6 +130,81 @@
           }
         ]
       }
+    }
+  },
+  "anima_sola": {
+    "stats": [],
+    "rewards": [],
+    "back": {
+      "id": "the_revenant",
+      "text": {
+        "en": {
+          "name": "The Revenant",
+          "effects": [
+            "This item can be attacked.",
+            "When this reaches 0{HP}, the player attacking this gains its reward, then you flip it. That player may attack an additional time this turn."
+          ],
+          "footnotes": [
+            {
+              "title": "-Eternal-",
+              "text": "This can't be destroyed or put into discard."
+            }
+          ]
+        }
+      },
+      "stats": [
+        {
+          "name": "HP",
+          "value": "2"
+        },
+        {
+          "name": "DC",
+          "value": "3"
+        },
+        {
+          "name": "ATK",
+          "value": "2"
+        }
+      ],
+      "rewards": [
+        {
+          "count": "2x",
+          "kind": "Loot"
+        }
+      ],
+      "images": [
+        "r/the_revenant.webp"
+      ]
+    }
+  },
+  "the_enigma": {
+    "back": {
+      "id": "amgine_eht",
+      "text": {
+        "en": {
+          "name": "amginE ehT",
+          "effects": [
+            "{Tap Effect}Play an additional loot card this turn.",
+            "Do not start the game with this side face up."
+          ],
+          "notes": [
+            "This can be done on any player's turn in response to any action."
+          ]
+        }
+      },
+      "stats": [
+        {
+          "name": "HP",
+          "value": "1"
+        },
+        {
+          "name": "ATK",
+          "value": "2"
+        }
+      ],
+      "images": [
+        "r/amgine_eht.webp"
+      ]
     }
   }
 }

@@ -17,6 +17,28 @@
   box-shadow: 0 2px 6px rgb(0 0 0 / 40%);
 }
 
+/* A card turning to its other side (ADR 023): the old face turns
+   edge-on (flip-out), then the new face turns back from it (flip-in).
+   Card.tsx sets the duration of each half. */
+.card.flip-out {
+  animation: card-flip ease-in forwards;
+}
+
+.card.flip-in {
+  animation: card-flip ease-out reverse;
+}
+
+/* anim: card-flip */
+@keyframes card-flip {
+  from {
+    transform: perspective(600px) rotateY(0deg);
+  }
+
+  to {
+    transform: perspective(600px) rotateY(90deg);
+  }
+}
+
 .card.size-hand {
   width: 100px;
 }
@@ -182,6 +204,23 @@
 
 .card-zoom-body.tips-left {
   flex-direction: row-reverse;
+}
+
+/* A two-sided card's other face, small, beside the zoom (ADR 023). */
+.card-zoom-side {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin: 0;
+}
+
+.card-zoom-side figcaption {
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--fg);
+  background: rgb(10 16 24 / 80%);
 }
 
 .card-zoom-tips {

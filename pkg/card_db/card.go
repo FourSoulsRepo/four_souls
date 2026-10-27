@@ -51,10 +51,41 @@ type Card struct {
 	// ThreePlus marks the 3+ player only symbol: the card is left out of
 	// 1- and 2-player games (R-CARD-32).
 	ThreePlus bool `json:"three_plus,omitempty"`
+	// Back is the other face of a two-sided card, or nil (ADR 023).
+	Back *Face `json:"back,omitempty"`
 
+	// Front is the front's ref on a back face; the loader fills it, and
+	// lists the back as a card of its own (ADR 023).
+	Front string `json:"-"`
 	// Prints are the card's copies per set, filled by the loader: its own
 	// set first, then reprints, oldest first (ADR 010).
 	Prints []Print `json:"-"`
+}
+
+// Face is the back of a two-sided card (ADR 023). Its type, copies,
+// artists and translators are the front's.
+type Face struct {
+	ID      string        `json:"id"` // its own ref, e.g. "the_revenant"
+	Text    map[Lang]Text `json:"text,omitempty"`
+	Stats   []Stat        `json:"stats,omitempty"`
+	Rewards []Reward      `json:"rewards,omitempty"`
+	Images  []string      `json:"images,omitempty"` // one, every copy shows it
+}
+
+// BackCard is the back face as a card of its own, or false when c has
+// one side.
+func (c Card) BackCard() (Card, bool) {
+	if c.Back == nil {
+		return Card{}, false
+	}
+	b := Card{
+		ID: c.Back.ID, Set: c.Set, Type: c.Type, Copies: c.Copies,
+		Text: c.Back.Text, Stats: c.Back.Stats, Rewards: c.Back.Rewards,
+		Artists: c.Artists, Translators: c.Translators, Images: c.Back.Images,
+		Front: c.Ref().String(),
+	}
+	b.Prints = []Print{{Set: c.Set, Copies: c.Copies, Images: b.Images}}
+	return b, true
 }
 
 // Print is one set's copies of a card.

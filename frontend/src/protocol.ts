@@ -279,6 +279,8 @@ export interface CardView {
   souls?: number;
   // dice: the die numbers the card keeps, e.g. a stored roll (15.67).
   dice?: number[];
+  // flipped: the back face is up; card is then the back's ref (ADR 023).
+  flipped?: boolean;
 }
 
 // counted is how many counters a card carries, of any kind.

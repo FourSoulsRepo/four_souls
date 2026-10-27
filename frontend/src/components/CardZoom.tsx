@@ -18,12 +18,14 @@ import './Card.css';
 // now says why under it (15.29, F-17, C-06). A history headline's zoom
 // shows what it did beside the card, after an arrow (15.90). A changed
 // stat's sum goes under the card (15.92). A translated card credits its
-// translators under it (CD-06, 16.5).
+// translators under it (CD-06, 16.5). A two-sided card shows its other
+// side beside it, smaller (ADR 023).
 export function CardZoom() {
   const zoom = useApp((s) => s.zoom);
   const setZoom = useApp((s) => s.setZoom);
   const info = useApp((s) => (zoom ? s.cards.get(zoom.ref) : undefined));
   const footnotes = info?.footnotes;
+  const otherSide = info?.back ?? info?.front;
   // Who translated the card's name into the shown language (CD-06).
   const translators = info ? translatorsOf(info, language()) : [];
   const bodyRef = useRef<HTMLDivElement>(null);
@@ -94,6 +96,12 @@ export function CardZoom() {
             </figcaption>
           )}
         </figure>
+        {otherSide && (
+          <figure className="card-zoom-side">
+            <Card cardRef={otherSide} size="hand" noZoom />
+            <figcaption>{t('zoom.other_side')}</figcaption>
+          </figure>
+        )}
         {zoom.outcome && zoom.outcome.length > 0 && <Outcomes list={zoom.outcome} />}
         {footnotes && footnotes.length > 0 && (
           <aside className="card-zoom-tips" role="note" aria-label={t('zoom.keywords')}>

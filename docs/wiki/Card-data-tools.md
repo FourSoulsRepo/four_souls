@@ -15,7 +15,7 @@ What the tools do, in short:
 Sets are built oldest first (Base Game, Gold Box, Four Souls+, …), because `build` looks at the older sets' files: a card with the same name, type, stats and text becomes a reprint entry that adds copies and images to the older card, and a different card whose ID is taken gets the set code as a suffix (`isaac_fsp2`). See ADR 010.
 
 In the official TTS table, Gold Box is the bag named "Kickstarter" (`scraper tts -origin g2 -bag Kickstarter`).
-Requiem is the bag "Requiem" (`scraper tts -origin r -bag Requiem`). A two-sided card is named "Front/Back" on the site and only by its front in TTS (`The Enigma`); the tools match both. When the site lists one card twice (Requiem's `r-eden` and `r-eden_2`), the build makes one card with both images.
+Requiem is the bag "Requiem" (`scraper tts -origin r -bag Requiem`). A two-sided card is named "Front/Back" on the site and only by its front in TTS (`The Enigma`); the tools match both. `build` splits it into the card and its `back` (ADR 023): the name at the `/`, a "Back name: " effect prefix, and "a/b" stats; the rest stays on the front, and an override's `back` key corrects it (Anima Sola, The Enigma, The Harbingers). `images` writes the back image, the card page's "Alternate Card Back", to `<set>/<back id>.webp`. When the site lists one card twice (Requiem's `r-eden` and `r-eden_2`), the build makes one card with both images.
 
 After regenerating data, validate it here:
 
@@ -33,7 +33,7 @@ Russian names come from the old foursouls.ru site's database migrations (goose `
 cd ../tools && go run ./scraper ru-names -migrations ../four_souls/.cache/migrations -game ../four_souls
 ```
 
-For every card it writes `text.ru.name` and `translators.ru` (Alchba, Mitboy, d0m1n1c132, Blacknenko, N-Chance, the foursouls.ru translators). The site's `text_id` is `<set>-<card id>` with this repo's set suffix dropped (`fsp2-pills_2_fsp2` is `fsp2-pills_2`), then a fixed list of the site's misspelled ids (owner, 16.5). A two-sided card gets "Front/Back" like its English name, and every *Pills!* is *Пилюля!*. Reprint entries show the older card's name and are skipped. The command prints per set how many cards got a name and every card it could not match; rerunning it gives the same files.
+For every card it writes `text.ru.name` and `translators.ru` (Alchba, Mitboy, d0m1n1c132, Blacknenko, N-Chance, the foursouls.ru translators). The site's `text_id` is `<set>-<card id>` with this repo's set suffix dropped (`fsp2-pills_2_fsp2` is `fsp2-pills_2`), then a fixed list of the site's misspelled ids (owner, 16.5). A two-sided card gets the front's name and the back's name (`back.text.ru.name`) apart, and every *Pills!* is *Пилюля!*. Reprint entries show the older card's name and are skipped. The command prints per set how many cards got a name and every card it could not match; rerunning it gives the same files.
 
 `scraper build` keeps every language but English from the current data file, by card ID and version, so a new scrape keeps the Russian names. A translator's own fixes can go straight into `text.ru` the same way ([Translate cards](Translate-cards)).
 

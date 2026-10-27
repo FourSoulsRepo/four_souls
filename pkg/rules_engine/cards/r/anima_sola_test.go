@@ -17,6 +17,10 @@ func TestAnimaSola(t *testing.T) {
 	if tb2.G.CardOf(sola) != "the_revenant" {
 		t.Fatal("it flips to The Revenant")
 	}
+	in := tb2.G.View(engine.Viewer{Kind: engine.ViewSpectator}).Players[0].InPlay
+	if i := slices.IndexFunc(in, func(cv engine.CardView) bool { return cv.ID == sola }); i < 0 || in[i].Card != "the_revenant" || !in[i].Flipped {
+		t.Errorf("in play %+v: the face up is The Revenant (ADR 023)", in)
+	}
 	tb2.G.Object(sola).Charged = true
 	if rule := tb2.Refused(0, "anima_sola", 0); rule != "R-ABIL-08" {
 		t.Errorf("The Revenant has no ↷: refused by %s", rule)

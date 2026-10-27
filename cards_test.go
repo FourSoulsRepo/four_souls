@@ -37,6 +37,30 @@ func TestCards(t *testing.T) {
 	}
 }
 
+// A two-sided card's faces are two cards, each with its own name, linked
+// both ways (ADR 023).
+func TestCardsTwoSided(t *testing.T) {
+	a := &App{cardFiles: os.DirFS("pkg/card_db")}
+	cards, err := a.Cards()
+	if err != nil {
+		t.Fatal(err)
+	}
+	byRef := map[string]CardInfo{}
+	for _, c := range cards {
+		byRef[c.Ref] = c
+	}
+	front, back := byRef["anima_sola"], byRef["the_revenant"]
+	if front.Name != "Anima Sola" || front.Back != "the_revenant" || front.Front != "" {
+		t.Errorf("front: %+v", front)
+	}
+	if back.Name != "The Revenant" || back.Front != "anima_sola" || back.Names["ru"] != "Мститель" || len(back.Stats) != 3 {
+		t.Errorf("back: %+v", back)
+	}
+	if _, err := os.Stat("pkg/card_db/images/en/r/the_revenant.webp"); (err == nil) != (back.Image == "/cardimg/en/r/the_revenant.webp") {
+		t.Errorf("back image %q does not match the file (%v)", back.Image, err)
+	}
+}
+
 func TestCardImages(t *testing.T) {
 	files := fstest.MapFS{
 		"images/en/b2/isaac.webp":         {Data: []byte("RIFF")},
