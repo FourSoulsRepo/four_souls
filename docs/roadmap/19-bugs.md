@@ -3009,7 +3009,7 @@ Totals by system (91 items):
    1. CI's Go lint job passes.
    2. A clean checkout runs `make i18n` after `npm ci`.
 
-### [ ] 19.92 A two-sided card's back is dealt as a character
+### [x] 19.92 A two-sided card's back is dealt as a character
 
 1. Goal: every character starts front up, with its starting item.
 2. Report (owner, 2026-10-28)
@@ -3034,3 +3034,5 @@ Totals by system (91 items):
    4. Go: `TestBackFaceIsNotDealt` (`pkg/rules_engine/cards`).
    5. Both new tests fail on the old code.
    6. No screen change: no screenshots.
+7. Owner notes (2026-10-28)
+   1. Owner marks 19.92 solved.
