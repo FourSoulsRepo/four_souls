@@ -27,6 +27,8 @@ A stage passes when:
 
 The first stage that fails ends the run. The summary names the highest load that passed.
 
+With `-stop-on-first`, the first game to end in a stage ends the other games of that stage. Those games are counted as stopped, not failed. The stage then measures how the server handles the start of the load, not a full game each.
+
 ## Flags
 
 | Flag | Default | What it does |
@@ -39,6 +41,7 @@ The first stage that fails ends the run. The summary names the highest load that
 | `-game-timeout` | 30m | a game that has not ended by then fails |
 | `-max-response` | 1s | a stage fails when a response takes longer |
 | `-seed` | clock | seed for the bots' moves |
+| `-stop-on-first` | off | when one game of a stage ends, end the others at once instead of waiting for them |
 
 ## What it measures
 

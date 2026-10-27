@@ -37,6 +37,7 @@ type config struct {
 	gameTimeout time.Duration
 	maxResponse time.Duration
 	seed        uint64
+	stopOnFirst bool
 }
 
 func main() {
@@ -86,6 +87,7 @@ func parse(args []string) (config, error) {
 	fs.DurationVar(&cfg.gameTimeout, "game-timeout", 30*time.Minute, "a game that has not ended by then fails")
 	fs.DurationVar(&cfg.maxResponse, "max-response", time.Second, "a stage fails when a response takes longer")
 	fs.Uint64Var(&cfg.seed, "seed", 0, "seed for the bots' moves; 0 uses the clock")
+	fs.BoolVar(&cfg.stopOnFirst, "stop-on-first", false, "when one game of a stage ends, end the others at once instead of waiting for them")
 	if err := fs.Parse(args); err != nil {
 		return cfg, fmt.Errorf("flags: %w", err)
 	}

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"sync"
@@ -18,16 +19,20 @@ type stage struct {
 	col      *collector
 	elapsed  time.Duration
 	finished int
+	cut      int // games stopped early, when -stop-on-first ended the stage
 }
 
 // runStage plays games at once and returns when every game has ended or
-// failed. While it runs, it prints the progress of each game.
+// failed. With -stop-on-first, the first game to end stops the others. While
+// it runs, it prints the progress of each game.
 func runStage(ctx context.Context, cfg config, games int, p *printer) stage {
 	col := newCollector()
 	runs := make([]*gameRun, games)
 	for i := range runs {
 		runs[i] = newGameRun(i + 1)
 	}
+	stageCtx, stopStage := context.WithCancel(ctx)
+	defer stopStage()
 	results := make([]gameResult, games)
 	stopped := make(chan struct{})
 	shown := make(chan struct{})
@@ -41,7 +46,10 @@ func runStage(ctx context.Context, cfg config, games int, p *printer) stage {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			results[i] = playGame(ctx, cfg, g, col)
+			results[i] = playGame(stageCtx, cfg, g, col)
+			if cfg.stopOnFirst && results[i].finished {
+				stopStage()
+			}
 		}()
 	}
 	wg.Wait()
@@ -52,6 +60,13 @@ func runStage(ctx context.Context, cfg config, games int, p *printer) stage {
 	for _, r := range results {
 		if r.finished {
 			st.finished++
+		}
+	}
+	// Games that only stopped because the stage ended are not failures.
+	for i, r := range results {
+		if !r.finished && st.finished > 0 && cfg.stopOnFirst && errors.Is(r.err, context.Canceled) {
+			results[i].cut = true
+			st.cut++
 		}
 	}
 	return st
@@ -77,18 +92,20 @@ const maxProgressParts = 8
 // progressLine has one part per game, or counts when there are many games.
 func progressLine(runs []*gameRun) string {
 	if len(runs) > maxProgressParts {
-		var running, done, failed int
+		var running, done, failed, stopped int
 		for _, g := range runs {
 			switch g.state.Load() {
 			case stateFinished:
 				done++
 			case stateFailed:
 				failed++
+			case stateStopped:
+				stopped++
 			default:
 				running++
 			}
 		}
-		return fmt.Sprintf("%d running, %d done, %d failed", running, done, failed)
+		return fmt.Sprintf("%d running, %d done, %d failed, %d stopped", running, done, failed, stopped)
 	}
 	parts := make([]string, len(runs))
 	for i, g := range runs {

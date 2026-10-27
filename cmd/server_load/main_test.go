@@ -115,3 +115,44 @@ func freePort(t *testing.T) int {
 	}
 	return n
 }
+
+// TestCutGamesAreNotFailures: a game the stage stopped passes the stage.
+func TestCutGamesAreNotFailures(t *testing.T) {
+	st := stage{
+		games:    2,
+		results:  []gameResult{{finished: true}, {cut: true}},
+		col:      newCollector(),
+		finished: 1,
+		cut:      1,
+	}
+	if problems := st.problems(config{maxResponse: time.Second}); len(problems) != 0 {
+		t.Fatalf("problems %v, want none", problems)
+	}
+}
+
+// TestStopOnFirstAgainstServer runs a stage with -stop-on-first on a local
+// server; the stage passes whether or not the other game got cut.
+func TestStopOnFirstAgainstServer(t *testing.T) {
+	if testing.Short() {
+		t.Skip("plays whole games")
+	}
+	dir := t.TempDir()
+	cfg := server.DefaultConfig()
+	cfg.Addr, cfg.Port, cfg.Records, cfg.Saves, cfg.Seed = "127.0.0.1", freePort(t), filepath.Join(dir, "records"), filepath.Join(dir, "saves"), 9
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	srv, err := server.Start(ctx, cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer func() { _ = srv.Shutdown(context.Background()) }() //nolint:errcheck // test
+
+	var out bytes.Buffer
+	args := []string{"-url", "ws://" + srv.Addr(), "-players", "2", "-start", "2", "-max-games", "2", "-max-response", "10s", "-seed", "7", "-stop-on-first"}
+	if err := run(ctx, args, &out); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(out.String(), "result      PASS") {
+		t.Fatalf("stage did not pass:\n%s", out.String())
+	}
+}

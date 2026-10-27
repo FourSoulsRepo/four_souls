@@ -67,10 +67,10 @@ func size(n int) string {
 // a game failed or a response was slower than -max-response.
 func (st stage) problems(cfg config) []string {
 	var out []string
-	if failed := st.games - st.finished; failed > 0 {
+	if failed := st.games - st.finished - st.cut; failed > 0 {
 		var first error
 		for _, r := range st.results {
-			if !r.finished {
+			if !r.finished && !r.cut {
 				first = r.err
 				break
 			}
@@ -98,7 +98,10 @@ func (st stage) report(p *printer, cfg config) {
 			line(p, "name", "%q", w.Name)
 		}
 	}
-	line(p, "games", "%d finished, %d failed, in %s", st.finished, st.games-st.finished, st.elapsed.Round(time.Second))
+	line(p, "games", "%d finished, %d failed, in %s", st.finished, st.games-st.finished-st.cut, st.elapsed.Round(time.Second))
+	if st.cut > 0 {
+		line(p, "stopped", "%d games cut short when the first game ended", st.cut)
+	}
 	var steps []int
 	var lengths []time.Duration
 	for _, r := range st.results {

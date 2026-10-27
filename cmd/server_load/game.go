@@ -18,6 +18,7 @@ const (
 	stateRunning int32 = iota
 	stateFinished
 	stateFailed
+	stateStopped // cut short by the stage, not a failure
 )
 
 // gameRun is one game the tool plays: its number in the stage, its progress
@@ -41,6 +42,7 @@ type gameRun struct {
 // gameResult is what a finished or failed game left behind.
 type gameResult struct {
 	finished bool
+	cut      bool // stopped early: -stop-on-first ended its stage
 	err      error
 	steps    int
 	winners  []int
@@ -57,6 +59,9 @@ func (g *gameRun) fail(err error) {
 	if g.err == nil {
 		g.err = err
 		g.state.Store(stateFailed)
+		if errors.Is(err, context.Canceled) {
+			g.state.Store(stateStopped)
+		}
 	}
 	g.mu.Unlock()
 	g.cancel()
@@ -91,6 +96,8 @@ func (g *gameRun) status() string {
 		return fmt.Sprintf("#%d done", g.number)
 	case stateFailed:
 		return fmt.Sprintf("#%d FAILED", g.number)
+	case stateStopped:
+		return fmt.Sprintf("#%d stopped", g.number)
 	default:
 		return fmt.Sprintf("#%d turn %d step %d", g.number, g.turn.Load(), g.step.Load())
 	}
@@ -127,6 +134,9 @@ func playGame(parent context.Context, cfg config, g *gameRun, col *collector) ga
 	bots, err := openTable(ctx, cfg, g, col)
 	defer closeAll(bots)
 	if err != nil {
+		if ctx.Err() != nil {
+			err = g.stopReason(ctx)
+		}
 		g.fail(err)
 		return g.result()
 	}
@@ -153,21 +163,24 @@ func playGame(parent context.Context, cfg config, g *gameRun, col *collector) ga
 	return res
 }
 
-// openTable dials one bot per seat, opens a table with the first one and
-// has the others join it. Every seat is ready at the end, so the game starts
+// openTable dials the host, opens a table with it, then dials each other
+// seat and has it join at once. A bot that waits without reading gets the
+// lobby's list updates piled up, and the server drops it; so a bot joins
+// right after its welcome. Every seat is ready at the end, so the game starts
 // by itself (6.5). The bots it returns are open even when it fails.
 func openTable(ctx context.Context, cfg config, g *gameRun, col *collector) ([]*bot, error) {
 	var bots []*bot
-	for seat := range cfg.players {
+	open := func(seat int) (*bot, error) {
 		b, err := dial(ctx, cfg, g, seat, col)
 		if b != nil {
 			bots = append(bots, b)
 		}
-		if err != nil {
-			return bots, err
-		}
+		return b, err
 	}
-	host := bots[0]
+	host, err := open(0)
+	if err != nil {
+		return bots, err
+	}
 	if err := host.send(protocol.TypeCreate, protocol.Create{Seats: cfg.players, Sets: cfg.sets}); err != nil {
 		return bots, err
 	}
@@ -175,7 +188,11 @@ func openTable(ctx context.Context, cfg config, g *gameRun, col *collector) ([]*
 	if err := host.expect(protocol.TypeTable, &tb); err != nil {
 		return bots, err
 	}
-	for _, b := range bots[1:] {
+	for seat := 1; seat < cfg.players; seat++ {
+		b, err := open(seat)
+		if err != nil {
+			return bots, err
+		}
 		if err := b.send(protocol.TypeJoin, protocol.Join{Game: tb.Game}); err != nil {
 			return bots, err
 		}
