@@ -43,11 +43,11 @@ This step never closes; new reports are appended.
 | H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
 | I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.82 | 14 |
 | J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.78, 19.81 | 17 |
-| K  | Build and release files                  | Release    | 19.47, 19.59                                           | 2     |
+| K  | Build and release files                  | Release    | 19.47, 19.59, 19.83                                    | 3     |
 | L  | Not a bug: the app follows a ruling      | None       | 19.63                                                  | 1     |
 | M  | Go test setup: the code was right        | Go tests   | 19.68                                                  | 1     |
 
-Totals by system (82 items):
+Totals by system (83 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
@@ -56,7 +56,7 @@ Totals by system (82 items):
 | Client    | D–G     | 23    |
 | Server    | H       | 1     |
 | e2e       | I, J    | 32    |
-| Release   | K       | 2     |
+| Release   | K       | 3     |
 | None      | L       | 1     |
 | Go tests  | M       | 1     |
 
@@ -2713,3 +2713,21 @@ Totals by system (82 items):
    1. Keep the pixel route when the dice images are missing.
 5. Done when:
    1. `make screenshots` passes this test without the images submodule.
+
+### [x] 19.83 The `cardgen` binary is tracked in git
+
+1. Goal: no build output in the repo.
+2. Report (owner, 2026-10-27)
+   1. "Why we store cardgen binary in repository?"
+   2. `cardgen` in the repo root: a 5 MB macOS arm64 executable.
+3. Cause
+   1. `go build ./cmd/cardgen` in the root writes `./cardgen`.
+   2. `.gitignore` ignored `/four_souls`, not `/cardgen`.
+   3. It came in with be58723 (16.4) by a broad `git add`.
+4. Tasks:
+   1. Untrack `cardgen`; ignore `/cardgen`.
+5. Done when:
+   1. `git ls-files cardgen` prints nothing.
+6. Fix
+   1. `git rm --cached cardgen`; `/cardgen` in `.gitignore`.
+   2. The 5 MB stays in history; `main` is not rewritten.
