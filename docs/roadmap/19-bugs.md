@@ -3036,3 +3036,28 @@ Totals by system (91 items):
    6. No screen change: no screenshots.
 7. Owner notes (2026-10-28)
    1. Owner marks 19.92 solved.
+
+### [x] 19.93 Players cannot change the sound volume
+
+1. Goal: each player sets the sound volume in Settings (ST-09).
+2. Report (owner, 2026-10-28)
+   1. Sounds play at one fixed level; a player cannot turn them down or off.
+3. Cause
+   1. `frontend/src/sounds.ts` plays every sound at volume 1.
+   2. Settings had no volume field.
+4. Tasks:
+   1. Go: `Volume` (0–100, default 100) in `internal/settings`.
+   2. Frontend: a Sound volume slider on the Settings screen.
+   3. Frontend: `setSoundVolume` scales every sound; the store applies it.
+5. Done when:
+   1. Go: `TestVolume` passes; a file without a volume loads at 100.
+   2. Vitest: `sounds.test.ts` plays at the player's volume; 0 is mute.
+   3. e2e: `playback.spec.ts`, `pause.spec.ts` and the settings specs pass in webkit.
+6. Fix
+   1. `Volume` in `settings.go`, checked on load and save.
+   2. `setSoundVolume(percent)` in `sounds.ts`, called from `store.ts`.
+   3. A slider in `SettingsScreen.tsx`; its readout is a `span`, not `output`.
+   4. UC-10 alternative 3i; wiki `Client.md` sound paragraph.
+   5. Screenshots: not taken for this change.
+7. Owner notes (2026-10-28)
+   1. Owner asked for the volume setting and marks 19.93 solved.

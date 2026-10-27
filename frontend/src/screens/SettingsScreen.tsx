@@ -13,7 +13,7 @@ function speedOf(v: string): Speed {
   return v === 'fast' || v === 'slow' || v === 'off' ? v : 'normal';
 }
 
-// SettingsScreen: ST-01, ST-03, ST-05, ST-06, the dice look
+// SettingsScreen: ST-01, ST-03, ST-05, ST-06, ST-09, the dice look
 // (V-19, 15.64), the question before ending the turn (V-46), and the
 // language (ADR 021). Saved settings apply at once; the dice look goes
 // out in the next hello.
@@ -112,6 +112,20 @@ export function SettingsScreen() {
             </select>
           </label>
         </div>
+        <label className="field">
+          {t('settings.volume')}
+          <input
+            type="range"
+            min={0}
+            max={100}
+            step={5}
+            value={form.volume}
+            onChange={(e) => {
+              change({ volume: Number(e.target.value) });
+            }}
+          />
+          <span>{form.volume}%</span>
+        </label>
         {/* The looks sit on one line, above their previews (15.80). */}
         <div className="row">
           <label className="field">

@@ -28,7 +28,7 @@ func TestSurvivesRestart(t *testing.T) {
 
 func TestDefaults(t *testing.T) {
 	dir := t.TempDir()
-	want := Settings{Recent: []RecentServer{}, Animation: "normal", Dice: "tear"}
+	want := Settings{Recent: []RecentServer{}, Animation: "normal", Dice: "tear", Volume: MaxVolume}
 	if got := Load(filepath.Join(dir, "none.json")); !reflect.DeepEqual(got, want) {
 		t.Fatalf("missing file: %+v", got)
 	}
@@ -81,6 +81,35 @@ func TestOldRecentLoads(t *testing.T) {
 	}
 }
 
+// TestVolume: the volume is 0–100; a file without one is at full volume.
+func TestVolume(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "settings.json")
+	got, err := Save(path, Settings{Volume: 40})
+	if err != nil || got.Volume != 40 {
+		t.Fatalf("40: %+v, %v", got, err)
+	}
+	if got, err := Save(path, Settings{Volume: 0}); err != nil || got.Volume != 0 {
+		t.Fatalf("mute: %+v, %v", got, err)
+	}
+	for _, bad := range []int{-5, MaxVolume + 1} {
+		if _, err := Save(path, Settings{Volume: bad}); !errors.Is(err, ErrChoice) {
+			t.Fatalf("%d: err %v, want ErrChoice", bad, err)
+		}
+	}
+	if err := os.WriteFile(path, []byte(`{"volume":250}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if got := Load(path).Volume; got != MaxVolume {
+		t.Fatalf("volume 250 reads as %d, want %d", got, MaxVolume)
+	}
+	if err := os.WriteFile(path, []byte(`{"nickname":"Ann"}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if got := Load(path).Volume; got != MaxVolume {
+		t.Fatalf("old file volume %d, want %d", got, MaxVolume)
+	}
+}
+
 func TestAnimationSpeed(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "settings.json")
 	got, err := Save(path, Settings{Animation: "fast"})
@@ -103,8 +132,8 @@ func TestAnimationSpeed(t *testing.T) {
 
 func TestWindowAndMat(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "settings.json")
-	want := Settings{Recent: []RecentServer{}, Animation: "normal", Fullscreen: true, Mat: "cathedral", Dice: "tear"}
-	got, err := Save(path, Settings{Fullscreen: true, Mat: "cathedral"})
+	want := Settings{Recent: []RecentServer{}, Animation: "normal", Fullscreen: true, Mat: "cathedral", Dice: "tear", Volume: MaxVolume}
+	got, err := Save(path, Settings{Fullscreen: true, Mat: "cathedral", Volume: MaxVolume})
 	if err != nil || !reflect.DeepEqual(got, want) {
 		t.Fatalf("saved %+v, %v; want %+v", got, err, want)
 	}
@@ -126,7 +155,7 @@ func TestOldThemeIgnored(t *testing.T) {
 		t.Fatal(err)
 	}
 	got := Load(path)
-	want := Settings{Nickname: "Ann", Recent: []RecentServer{}, Animation: "normal", Mat: "cathedral", Dice: "tear"}
+	want := Settings{Nickname: "Ann", Recent: []RecentServer{}, Animation: "normal", Mat: "cathedral", Dice: "tear", Volume: MaxVolume}
 	if !reflect.DeepEqual(got, want) {
 		t.Fatalf("loaded %+v, want %+v", got, want)
 	}

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { loadSounds, playSound } from './sounds';
+import { loadSounds, playSound, setSoundVolume } from './sounds';
 
 const hit = '/cardimg/assets/sounds/attack-hit.mp3';
 const cast = '/cardimg/assets/sounds/effect-cast.mp3';
@@ -58,6 +58,21 @@ describe('playSound', () => {
     playSound('playerDied');
     playSound('treasureGain');
     expect(volumes).toEqual([1, 1, 1, 1, 1, 1, 1]);
+  });
+
+  // The player's volume (ST-09) scales every sound alike; mute plays nothing audible.
+  it('plays every sound at the player volume', () => {
+    loadSounds({ attackHit: hit, effectCast: cast, effectImpact: impact, diceRoll: dice, lootDraw: deal, playerDied: death, treasureGain: gain });
+    const volumes: number[] = [];
+    fakeAudio(undefined, volumes);
+    setSoundVolume(40);
+    playSound('attackHit');
+    playSound('diceRoll');
+    setSoundVolume(0);
+    playSound('treasureGain');
+    setSoundVolume(100);
+    playSound('lootDraw');
+    expect(volumes).toEqual([0.4, 0.4, 0, 1]);
   });
 
   it('is silent without the private files', () => {

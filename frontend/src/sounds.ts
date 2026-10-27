@@ -7,12 +7,13 @@
 // (18.9). The files live only in the private images; without them the
 // game is silent.
 // Every file is levelled to one loudness (ADR 022), so every sound plays
-// at full volume.
+// at the same level. The player's volume (ST-09) scales them all alike.
 import type { Sounds } from './bridge';
 
 export type Sound = 'attackHit' | 'effectCast' | 'effectImpact' | 'diceRoll' | 'lootDraw' | 'playerDied' | 'treasureGain';
 
-const volume = 1;
+// level is the player's volume, 0 to 1 (ST-09).
+let level = 1;
 
 let urls = new Map<Sound, string>();
 
@@ -29,6 +30,11 @@ export function loadSounds(s: Sounds): void {
   ]);
 }
 
+// setSoundVolume sets the player's volume, in percent; 0 is mute.
+export function setSoundVolume(percent: number): void {
+  level = percent / 100;
+}
+
 // playSound plays a sound once; sounds may overlap. A sound without a
 // file, or one that fails to load or is blocked, stays silent.
 export function playSound(sound: Sound): void {
@@ -37,6 +43,6 @@ export function playSound(sound: Sound): void {
     return;
   }
   const a = new Audio(url);
-  a.volume = volume;
+  a.volume = level;
   a.play().catch(() => undefined);
 }

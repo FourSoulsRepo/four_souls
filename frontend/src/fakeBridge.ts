@@ -60,6 +60,7 @@ function loadSettings(): unknown {
     lan_address: '',
     // make screenshots LOCALE=qps starts every page in that language.
     language: import.meta.env.VITE_LOCALE ?? '',
+    volume: 100,
   };
   return JSON.parse(localStorage.getItem(settingsKey) ?? JSON.stringify(fresh));
 }
@@ -86,6 +87,7 @@ interface FakeSettings {
   };
   lan_address?: string;
   language?: string;
+  volume?: number;
 }
 
 function saveSettings(s: FakeSettings): Promise<unknown> {
@@ -95,6 +97,9 @@ function saveSettings(s: FakeSettings): Promise<unknown> {
   }
   if (s.language && !/^[a-z]{2,3}$/.test(s.language)) {
     return Promise.reject(new Error(`unknown setting value: "${s.language}"`));
+  }
+  if (s.volume !== undefined && (!Number.isInteger(s.volume) || s.volume < 0 || s.volume > 100)) {
+    return Promise.reject(new Error(`unknown setting value: ${String(s.volume)}`));
   }
   const saved = { ...s, nickname, recent: s.recent.slice(0, 5), lan_address: (s.lan_address ?? '').trim() };
   localStorage.setItem(settingsKey, JSON.stringify(saved));
