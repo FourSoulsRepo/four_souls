@@ -136,7 +136,7 @@ Ideas: B-04, B-05.
    1. `loudness check` passes on every sound.
    2. **Owner** hears one deal per looted card.
 
-### [ ] 18.8 Player death sound
+### [x] 18.8 Player death sound
 
 1. Goal: a player's death makes a sound (AU-06).
 2. Tasks:
