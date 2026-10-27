@@ -16,6 +16,7 @@ Pick your group: players, people who run a game server, translators, or develope
 * [Server in Docker](Server-in-Docker) — one Dockerfile builds the latest release.
 * [Server with Docker Compose and Caddy](Server-with-Docker-Compose-and-Caddy) — HTTPS on your domain.
 * [Server from a local build](Server-from-a-local-build) — your own binary in the Docker setup.
+* [Load test](Load-test) — play whole games against your server and see how much it takes.
 
 ## Translators
 

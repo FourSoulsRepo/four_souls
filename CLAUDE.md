@@ -27,6 +27,7 @@
    15. A new wiki page goes into one group in `Home.md` and `_Sidebar.md`.
    16. `deploy/`: server setups: systemd, Docker, compose with Caddy (ADR 018).
    17. `scripts/`: `setup.sh` installs the tools; `versions.env` holds their versions.
+   18. `cmd/server_load`: load test against a running server (wiki Load-test).
 4. Commands
    1. `wails dev -m`: run with hot reload.
    2. `wails build -m`: release binary to `build/bin/`.
