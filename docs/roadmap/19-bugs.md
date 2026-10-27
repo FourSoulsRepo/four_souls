@@ -43,13 +43,13 @@ This step never closes; new reports are appended.
 | H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
 | I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.81, 19.82, 19.85, 19.87 | 17 |
 | J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89 | 16 |
-| K  | Build and release files                  | Release    | 19.47, 19.59, 19.83                                    | 3     |
+| K  | Build and release files                  | Release    | 19.47, 19.59, 19.83, 19.91                             | 4     |
 | L  | Not a bug: the app follows a ruling      | None       | 19.63                                                  | 1     |
 | M  | Go test setup: the code was right        | Go tests   | 19.68                                                  | 1     |
 | N  | A missing control: no way to do it       | Server     | 19.84                                                  | 1     |
 | O  | Reconnect: old connection state kept     | Client     | 19.78, 19.86                                           | 2     |
 
-Totals by system (90 items):
+Totals by system (91 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
@@ -58,7 +58,7 @@ Totals by system (90 items):
 | Client    | D–G, O  | 26    |
 | Server    | H, N    | 2     |
 | e2e       | I, J    | 34    |
-| Release   | K       | 3     |
+| Release   | K       | 4     |
 | None      | L       | 1     |
 | Go tests  | M       | 1     |
 
@@ -2992,3 +2992,19 @@ Totals by system (90 items):
    11. Before: no line at all; the old client had no case to draw.
 8. Owner notes (2026-10-27)
    1. Owner marks 19.90 solved.
+
+### [ ] 19.91 CI: the Go lint job fails in `make i18n`
+
+1. Goal: the Go lint job passes on CI, so the release tag builds.
+2. Report (owner, 2026-10-27)
+   1. CI run of `make lint TAGS=webkit2_41` failed.
+   2. Every golangci-lint run printed "0 issues".
+   3. `make i18n` failed: `npx vitest` could not load `frontend/vite.config.ts`.
+3. Cause
+   1. The Go lint job never runs `npm ci` in `frontend/`.
+   2. `npx` then fetched the latest vitest, which cannot find `vite`.
+4. Tasks:
+   1. Go lint job: set up Node at `NODE_VERSION` and run `npm ci` in `frontend/`.
+5. Done when:
+   1. CI's Go lint job passes.
+   2. A clean checkout runs `make i18n` after `npm ci`.
