@@ -111,3 +111,6 @@ Ideas: B-04, B-05.
 3. Done when:
    1. `loudness check` passes on every sound.
    2. **Owner** plays a game and hears no sound jump out.
+4. Owner notes (2026-10-27)
+   1. Owner marks 18.5 and 18.6 solved.
+   2. The images and tools repos are pushed.
