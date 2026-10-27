@@ -35,3 +35,4 @@
 | UC-31 | Undo a step by vote (Soft) | `internal/server`, `rules_engine`, `frontend` | Implemented | [app/uc-31-undo-a-step-by-vote.md](app/uc-31-undo-a-step-by-vote.md) |
 | UC-32 | Change the language | `frontend`, `internal/settings` | Implemented | [app/uc-32-change-the-language.md](app/uc-32-change-the-language.md) |
 | UC-33 | Check a translation | `frontend`, `Makefile` | Implemented | [translate/uc-33-check-a-translation.md](translate/uc-33-check-a-translation.md) |
+| UC-34 | Show own card images | `internal/assets`, `pkg/card_db` | Implemented | [translate/uc-34-show-own-card-images.md](translate/uc-34-show-own-card-images.md) |

@@ -76,6 +76,12 @@ Use options 1 and 4; stats and rewards stay strings (option 5 lost).
    2. Otherwise `assets.CardsFS()` reads `$FOUR_SOULS_CARDS`.
    3. Then `cards/` next to the binary, then `pkg/card_db/` (dev).
    6. A `cardimages` build first runs `go generate ./pkg/card_db/images`.
+   7. `$FOUR_SOULS_IMAGES`: extra card images over any mode (16.12).
+      1. A folder laid out as `images/`: `<lang>/<set>/<file>`.
+      2. Only language folders are read; data and `assets/` are not.
+      3. Its file wins; `FindImage` then falls back to `en/` as before.
+      4. `carddb.WithImages` layers it; `os.Root` keeps reads inside it.
+      5. A path leaving the folder is refused, symbolic links too.
 
 ## Consequences
 

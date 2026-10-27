@@ -119,9 +119,73 @@ Public copies of the code have no card images, so cards show as text cards with 
 
 ## Card images
 
-A card's image in your language goes to `pkg/card_db/images/<code>/<set>/`, under the English file name: `de/b2/the_d6.webp` next to `en/b2/the_d6.webp` (ADR 021, item 13). The game shows it with your language chosen, else the English image. Card data paths stay without the language (`b2/the_d6.webp`); add nothing to the JSON for an image.
+The game's card images live in a **private** repository (`FourSoulsRepo/card_db`), because the art is licensed; outside contributors cannot see it or open a pull request there. Keep the images for your language in **your own** repository instead, public or private as you choose, and point the game at it. The game then shows them with your language chosen.
 
-The images live in a **private** repository (`FourSoulsRepo/card_db`), because the art is licensed. Outside contributors cannot see it or open a pull request there. Send translated images to the maintainers instead: attach them to your pull request or to an issue, named like the English files, and the maintainers add them.
+### 1. Make the repository
+
+```sh
+mkdir -p ~/four-souls-images-de/de/b2
+cd ~/four-souls-images-de
+git init
+```
+
+The layout is the same as the private repository: the language code, the set code, then the card's file name. Nothing else is needed; no JSON changes, card data names images without the language.
+
+```text
+four-souls-images-de/
+  de/
+    b2/
+      the_d6.webp
+      isaac.webp
+    g2/
+      ...
+```
+
+The file name comes from the card's `images` entry in `pkg/card_db/data/<set>.json`: `"images": ["b2/the_d6.webp"]` means `de/b2/the_d6.webp`. A card whose copies have different art lists one file per copy (`b2/a_penny.webp`, `b2/a_penny-2.webp`, …); the game shows the first one, so that is the one to make. A card with no `images` entry has no image in any language.
+
+Make the images like the English ones: WebP, 600 pixels wide (a card is 600 × 818). For example with `cwebp` from the `webp` package: `cwebp -resize 600 0 my-scan.png -o de/b2/the_d6.webp`.
+
+Card art belongs to its owners (see `NOTICE`); publish only images you have the right to share.
+
+### 2. Point the game at it
+
+The setting `FOUR_SOULS_IMAGES` names the folder; use the full path. The game reads it at start, so restart it after adding images.
+
+| How you run the game | macOS and Linux |
+|---|---|
+| from the code (`wails dev`) | `FOUR_SOULS_IMAGES="$HOME/four-souls-images-de" wails dev -m` |
+| a release build, Linux | `FOUR_SOULS_IMAGES="$HOME/four-souls-images-de" ./FourSouls` |
+| a release build, macOS | `FOUR_SOULS_IMAGES="$HOME/four-souls-images-de" /Applications/FourSouls.app/Contents/MacOS/FourSouls` |
+
+On macOS, change `/Applications` if the app is elsewhere. A double click in Finder does not pass the setting; start the game from Terminal as above.
+
+The game reads only the language folders there (two or three small letters, as `de`) and never leaves the folder. A path that does not exist is skipped, with a line in the log.
+
+### 3. Check it
+
+Pick your language in Settings. It is listed there once one card has a name in it ([See it in the game](#see-it-in-the-game)); images alone do not add it. Each card shows, in this order:
+
+1. your image, from `de/<set>/` in your folder;
+2. the game's own image in your language, if it has one;
+3. the English image; in a public copy of the code, which has no images, a text card.
+
+So a card that still looks English (or a text card) has no image of yours yet. This lists the cards of one set that still lack one:
+
+```sh
+node -e '
+const [set, dir] = process.argv.slice(1);
+const fs = require("fs");
+for (const c of require(`./pkg/card_db/data/${set}.json`).cards) {
+  const file = (c.images || [])[0];
+  if (file && !c.reprint && !fs.existsSync(`${dir}/${file}`)) console.log(c.id, file);
+}' b2 "$HOME/four-souls-images-de/de"
+```
+
+Run it from the game's code folder; change `b2` for another set.
+
+### 4. Share it
+
+Push your repository to any git host. Put its link in your pull request for the card names, or in an issue. The maintainers decide whether to import the images.
 
 ## Send it
 

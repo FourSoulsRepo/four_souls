@@ -259,7 +259,7 @@ Rules of this step (owner, 2026-10-26):
    7. `overrides/*.json`: no code in this repo reads them; nothing to do.
    8. Tests: `jsonError.test.ts`, `TestJSONError*`; ADR 004 item 5.9, UC-33 5a.
 
-### [ ] 16.12 Own card images repo for translators
+### [x] 16.12 Own card images repo for translators
 
 1. Goal: a translator adds card images without access to the private repo (owner).
 2. Tasks:
@@ -270,3 +270,14 @@ Rules of this step (owner, 2026-10-26):
    5. Say how to share it with the maintainers.
 3. Done when:
    1. A walkthrough on a clean checkout shows a translator's own image.
+4. Result: `$FOUR_SOULS_IMAGES` names an own images folder, any build mode.
+   1. Research: `$FOUR_SOULS_CARDS` swaps data and images together.
+   2. It is skipped in embedded builds; so a new variable was needed.
+   3. Layout as the private repo: `<lang>/<set>/<file>`.
+   4. Order: own image, built-in image in that language, then English.
+   5. `carddb.WithImages` layers it; only language folders are read.
+   6. `os.Root` keeps reads inside the folder, symbolic links too.
+   7. Tests: `TestWithImages*`, `TestCardsFSOwnImages`, `TestCardsOwnImages`.
+   8. Images alone do not list a language in Settings; names do (16.10).
+   9. Walkthrough: clean Ubuntu 24.04, public clone, `wails dev` under Xvfb.
+   10. The own `de` image showed in the gallery; ADR 004 6.7, ADR 021 13.10, UC-34.

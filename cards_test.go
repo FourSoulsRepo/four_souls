@@ -5,8 +5,11 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"path/filepath"
 	"testing"
 	"testing/fstest"
+
+	"github.com/FourSoulsRepo/four_souls/internal/assets"
 )
 
 func TestCards(t *testing.T) {
@@ -119,5 +122,42 @@ func TestCardsNamesCardOnlyLanguage(t *testing.T) {
 		if !maps.Equal(c.Names, want[c.Ref]) {
 			t.Errorf("%s: names %v, want %v", c.Ref, c.Names, want[c.Ref])
 		}
+	}
+}
+
+// A translator's own image folder (16.12) reaches the client through the
+// real card files: App.Cards names it and /cardimg/ serves it, with or
+// without the private images.
+func TestCardsOwnImages(t *testing.T) {
+	own := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(own, "de", "b2"), 0o750); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(own, "de", "b2", "isaac.webp"), []byte("RIFF own"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv(assets.EnvCardsDir, "pkg/card_db")
+	t.Setenv(assets.EnvImagesDir, own)
+	a := &App{cardFiles: assets.CardsFS()}
+	cards, err := a.Cards()
+	if err != nil {
+		t.Fatal(err)
+	}
+	byRef := map[string]CardInfo{}
+	for _, c := range cards {
+		byRef[c.Ref] = c
+	}
+	if got := byRef["isaac"].Images["de"]; got != "/cardimg/de/b2/isaac.webp" {
+		t.Errorf("isaac in de: %q", got)
+	}
+	// Cain has no own image: the English one, or none without the private images.
+	if got, en := byRef["cain"].Images["de"], byRef["cain"].Image; got != en {
+		t.Errorf("cain in de: %q, want the English %q", got, en)
+	}
+	rec := httptest.NewRecorder()
+	cardImages(a.cardFiles)(http.NotFoundHandler()).ServeHTTP(rec,
+		httptest.NewRequestWithContext(t.Context(), http.MethodGet, "http://wails.localhost/cardimg/de/b2/isaac.webp", nil))
+	if rec.Code != http.StatusOK || rec.Body.String() != "RIFF own" || rec.Header().Get("Content-Type") != "image/webp" {
+		t.Errorf("GET own image: %d %q %q", rec.Code, rec.Body.String(), rec.Header().Get("Content-Type"))
 	}
 }
