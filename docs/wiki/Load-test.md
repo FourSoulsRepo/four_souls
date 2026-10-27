@@ -50,7 +50,7 @@ The first stage that fails ends the run. The summary names the highest load that
 * **notices**: a notice that ends a game (lost or idle) fails it.
 * **agreement**: every seat must see the same last step and winners, or the game fails.
 
-Progress is printed every 2 seconds: one part per game, its turn and step, then `done` or `FAILED`.
+Progress is printed every 2 seconds. With up to 8 games it shows one part per game: its turn and step, then `done` or `FAILED`. With more, it shows counts of running, done and failed games.
 
 ## Things to know
 
