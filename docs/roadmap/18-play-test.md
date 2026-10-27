@@ -201,3 +201,7 @@ Ideas: B-04, B-05.
    1. 126 of 126 in the eight changed specs, chromium and webkit.
 5. Owner notes (2026-10-27)
    1. Owner marks 18.10 solved.
+4. Result (2026-10-27)
+   1. `make lint`, `make frontend`: pass.
+   2. `make e2e`: 376 passed, 6 skipped, chromium and webkit.
+   3. Screenshots: `attack-pick-table`, `turn-actions-buy`, `deck-attack-pick-slot`.
