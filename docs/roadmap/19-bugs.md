@@ -2876,7 +2876,7 @@ Totals by system (87 items):
 7. Owner notes (2026-10-27)
    1. Owner marks 19.86 solved.
 
-### [ ] 19.87 e2e: the 19.84 end-game test finds two Games headings, webkit
+### [x] 19.87 e2e: the 19.84 end-game test finds two Games headings, webkit
 
 1. Goal: `save.spec.ts` "the host ends the game; everyone is back on the game list" passes every run.
 2. Report (agent, 2026-10-27)
@@ -2900,3 +2900,5 @@ Totals by system (87 items):
    5. Old line: the same strict mode error, both browsers.
    6. Fixed line: passes in both browsers.
    7. No app change; no docs or screenshots.
+7. Owner notes (2026-10-27)
+   1. Owner marks 19.87 solved.
