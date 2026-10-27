@@ -183,7 +183,7 @@ Ideas: B-04, B-05.
    1. `loudness check` passes on every sound.
    2. **Owner** hears one sound per gained treasure, and sees it fly.
 
-### [ ] 18.10 e2e waits name the state they need
+### [x] 18.10 e2e waits name the state they need
 
 1. Goal: a card that asks one more input does not break a test (TS-08).
 2. Tasks:
@@ -199,3 +199,5 @@ Ideas: B-04, B-05.
    2. The 19.85 Bob's Brain test passes through the new wait.
 4. Result (2026-10-27)
    1. 126 of 126 in the eight changed specs, chromium and webkit.
+5. Owner notes (2026-10-27)
+   1. Owner marks 18.10 solved.
