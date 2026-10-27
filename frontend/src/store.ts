@@ -291,6 +291,8 @@ interface AppState extends Session {
   hostSaved: () => Promise<void>;
   // saveGame saves the running game; only the host may (N-11).
   saveGame: () => void;
+  // endGame ends the running game for everyone; only the host may (19.84).
+  endGame: () => void;
   // joinGame sits down at a game; a locked one needs its password.
   joinGame: (game: string, password?: string) => void;
   loadSave: (save: string) => void;
@@ -508,6 +510,8 @@ export const useApp = create<AppState>()((set, get) => {
       void get().saveSettings({ ...s, rejoin: noSeat });
     }
   };
+  // ending: this app ended its game; its own notice is not shown (19.84).
+  let ending = false;
   // seated: the player sits at a table or plays a game.
   const seated = () => get().screen === 'game' || get().lobby.table !== null;
 
@@ -697,7 +701,9 @@ export const useApp = create<AppState>()((set, get) => {
       }
       if (env.type === 'notice') {
         const n = env.data as Notice;
-        set({ notice: n });
+        const mine = ending && n.kind === 'game_ended';
+        ending = false;
+        set({ notice: mine ? null : n });
         if (endsGame(n)) {
           forgetSeat();
           endRetry();
@@ -994,6 +1000,10 @@ export const useApp = create<AppState>()((set, get) => {
     },
     saveGame: () => {
       send('save');
+    },
+    endGame: () => {
+      ending = true;
+      send('end');
     },
     joinGame: (game, password) => {
       send('join', password ? { game, password } : { game });

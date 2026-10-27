@@ -29,6 +29,7 @@ WebSocket (ws.go) ──Conn──▶ Client ──▶ Hub (lobby goroutine)
 7. At the end the record is closed and its players may download it.
 8. A dedicated server that stops keeps every table and game in `<saves>/restart/`; the next start brings them back (`restart.go`, ADR 019). A game from another engine must load and save back to the same bytes (`engine.Resume`); else it ends and its players hear why when they return.
 9. Idle limits end a game nobody is connected to, or one past its longest time (`limits.go`, 8.25). Each room checks once a minute on the hub's clock; tests pass a fake one.
+10. The host may end the game at any moment before it is over (`end`, 19.84). `Room.end` refuses any other seat with `not_host`, then stops the room like an idle limit (`endWith`): connected players get the `game_ended` notice, the others when they come back, and the record ends unfinished. On a dedicated server this is the only way to stop a game at once; leaving only pauses it.
 
 ## Automatic answers
 

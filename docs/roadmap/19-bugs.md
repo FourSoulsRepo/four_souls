@@ -46,15 +46,16 @@ This step never closes; new reports are appended.
 | K  | Build and release files                  | Release    | 19.47, 19.59, 19.83                                    | 3     |
 | L  | Not a bug: the app follows a ruling      | None       | 19.63                                                  | 1     |
 | M  | Go test setup: the code was right        | Go tests   | 19.68                                                  | 1     |
+| N  | A missing control: no way to do it       | Server     | 19.84                                                  | 1     |
 
-Totals by system (83 items):
+Totals by system (84 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
 | Engine    | A, B    | 20    |
 | Card data | C       | 2     |
 | Client    | D–G     | 23    |
-| Server    | H       | 1     |
+| Server    | H, N    | 2     |
 | e2e       | I, J    | 32    |
 | Release   | K       | 3     |
 | None      | L       | 1     |
@@ -2731,3 +2732,46 @@ Totals by system (83 items):
 6. Fix
    1. `git rm --cached cardgen`; `/cardgen` in `.gitignore`.
    2. The 5 MB stays in history; `main` is not rewritten.
+
+### [ ] 19.84 The host cannot end a game on a dedicated server
+
+1. Goal: the host ends a running game for everyone, on any server.
+2. Report (owner, 2026-10-27)
+   1. "When player host game on dedicated server it could not be finished."
+   2. "Allow the host end the game."
+3. Cause
+   1. The game menu offers Save and leave, and Leave game.
+   2. Leave game on the app's own server stops that server.
+   3. On a dedicated server it only drops the connection.
+   4. The seat stays; the game pauses for the others (N-08).
+   5. Only a save or an idle limit ends it (N-11, UC-29).
+   6. A save keeps the game on the server; it does not end it.
+4. Tasks:
+   1. Protocol: `end`, client → server; notice kind `game_ended`.
+   2. Server: only seat 1 ends; the room stops like an idle end.
+   3. Connected players get the notice; the others when they return.
+   4. The record ends unfinished.
+   5. Menu, host only: **End game**, then a confirm step.
+   6. The others see "The host ended the game" and the game list.
+   7. The host sees the game list, no notice.
+5. Done when:
+   1. Go: the host ends it; another seat cannot; an away player hears it.
+   2. e2e: the host ends; both are on the game list.
+   3. UC-35; wiki `Client`, `Server`; CHANGELOG line.
+   4. Screenshots: `.cache/screenshots/19.84/before/` and `after/`.
+6. Fix
+   1. Protocol: `end`, client → server; notice kind `game_ended`.
+   2. Server: `Room.end` in `limits.go`; seat 1 only, else `not_host`.
+   3. A game that is over is refused: `no_running_game`.
+   4. It stops the room through `endWith`, shared with the idle limits.
+   5. Away players are remembered; they hear it on their next hello.
+   6. Client: Menu → **End game** → "End the game?" → **End game** or **Back**.
+   7. `endsGame` counts `game_ended`; everyone lands on the game list.
+   8. The store's `ending` hides the notice from the host who sent it.
+   9. Overlay buttons wrap to a second row; four no longer squeeze.
+   10. Go: `TestHostEndsGame` in `limits_test.go`.
+   11. Vitest: `reconnect.test.ts` notices; `protocol.test.ts` golden lines.
+   12. e2e: `the host ends the game; everyone is back on the game list (19.84)`.
+   13. It sits in `save.spec.ts`.
+   14. Docs: UC-35; ADR 006 items 36, 37; wiki `Client`, `Server`; CHANGELOG.
+   15. Screenshots: `.cache/screenshots/19.84/before/` and `after/`.

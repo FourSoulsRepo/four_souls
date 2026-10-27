@@ -31,11 +31,32 @@ func (r *Room) checkLimits() {
 	}
 }
 
-// endIdle ends the game unfinished. Connected players hear why at once,
-// the others when they come back; everyone goes back to the lobby.
+// endIdle ends the game unfinished by an idle limit.
 func (r *Room) endIdle(reason string) {
 	n := protocol.Notice{Kind: protocol.NoticeIdle, Game: r.recInfo.game, Reason: reason}
 	log.Printf("server: game %s ended by the %s limit", n.Game, reason)
+	r.endWith(n)
+}
+
+// end stops the game unfinished for everyone: only the host (seat 1)
+// ends it, at any moment before it is over (19.84).
+func (r *Room) end(c *Client, env protocol.Envelope) {
+	switch {
+	case c.seat != 0:
+		c.fail(env.ID, protocol.ErrNotHost, errHostEnds.Msg())
+		return
+	case r.over.Load() || r.game != nil && r.game.Over:
+		c.fail(env.ID, protocol.ErrBadMessage, errNoRunningGame.Msg())
+		return
+	}
+	n := protocol.Notice{Kind: protocol.NoticeEnded, Game: r.recInfo.game}
+	log.Printf("server: game %s ended by its host", n.Game)
+	r.endWith(n)
+}
+
+// endWith ends the game unfinished. Connected players hear why at once,
+// the others when they come back; everyone goes back to the lobby.
+func (r *Room) endWith(n protocol.Notice) {
 	var away []string
 	for _, s := range r.seats {
 		if s.client != nil {

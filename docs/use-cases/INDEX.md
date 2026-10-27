@@ -36,3 +36,4 @@
 | UC-32 | Change the language | `frontend`, `internal/settings` | Implemented | [app/uc-32-change-the-language.md](app/uc-32-change-the-language.md) |
 | UC-33 | Check a translation | `frontend`, `Makefile` | Implemented | [translate/uc-33-check-a-translation.md](translate/uc-33-check-a-translation.md) |
 | UC-34 | Show own card images | `internal/assets`, `pkg/card_db` | Implemented | [translate/uc-34-show-own-card-images.md](translate/uc-34-show-own-card-images.md) |
+| UC-35 | The host ends the game | `internal/server`, `frontend` | Implemented | [server/uc-35-host-ends-the-game.md](server/uc-35-host-ends-the-game.md) |

@@ -63,6 +63,8 @@ func TestGolden(t *testing.T) {
 		{TypeRollback, 19, RollbackTo{Step: 7, Ask: true}},
 		{TypeRollbackVote, 20, RollbackVoteAnswer{Yes: true}},
 		{TypeRollbackCancel, 21, struct{}{}},
+		{TypeEnd, 22, struct{}{}},
+		{TypeNotice, 0, Notice{Kind: NoticeEnded, Game: "g1"}},
 	}
 	var got bytes.Buffer
 	for _, m := range messages {

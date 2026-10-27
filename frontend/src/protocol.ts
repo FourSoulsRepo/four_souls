@@ -157,7 +157,7 @@ export interface Saved {
 }
 
 // Notice tells the player something the game screen does not show
-// (N-20): engine_updated, game_lost, game_idle.
+// (N-20): engine_updated, game_lost, game_idle; game_ended (19.84).
 export interface Notice {
   kind: string;
   game?: string;

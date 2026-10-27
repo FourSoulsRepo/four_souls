@@ -1315,6 +1315,10 @@
     "text": "{error}",
     "note": "Host screen: why the deck ratios can't be checked; error: the rules engine's words, in English."
   },
+  "error.host_ends": {
+    "text": "Only the host ends the game.",
+    "note": "Error from the server, shown on the table. End game from a player who is not the host."
+  },
   "error.host_loads": {
     "text": "Only the host continues saved games here.",
     "note": "Error from the server, shown in the lobby or on the table. A friend tried to continue a saved game on a game hosted in an app."
@@ -1647,6 +1651,10 @@
     "text": "Turn {n}",
     "note": "Game table: screen-reader name of the whole table. n: the turn number."
   },
+  "game_menu.back": {
+    "text": "Back",
+    "note": "Game menu, End game step: goes back to the menu."
+  },
   "game_menu.button": {
     "text": "Menu",
     "note": "Game table: the corner button that opens the game menu."
@@ -1654,6 +1662,18 @@
   "game_menu.cancel": {
     "text": "Cancel",
     "note": "Game menu dialog: closes it."
+  },
+  "game_menu.end": {
+    "text": "End game",
+    "note": "Game menu dialog, for the host: ends the game for everyone. Also the confirm button of the next step."
+  },
+  "game_menu.end_hint": {
+    "text": "The game stops for everyone and cannot go on later. Everyone goes back to the game list.",
+    "note": "Game menu, End game step: line over the buttons."
+  },
+  "game_menu.end_title": {
+    "text": "End the game?",
+    "note": "Game menu, End game step: title."
   },
   "game_menu.label": {
     "text": "Game menu",
@@ -2670,6 +2690,10 @@
   "notice.engine_updated.title": {
     "text": "The server was updated",
     "note": "Server notice dialog title: the server restarted with a new rules engine; the game goes on."
+  },
+  "notice.game_ended.text": {
+    "text": "The host ended the game.",
+    "note": "Server notice dialog text under 'The game ended': the host pressed End game."
   },
   "notice.game_idle.idle": {
     "text": "Nobody played it for too long.",
