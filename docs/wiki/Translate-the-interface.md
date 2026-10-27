@@ -67,7 +67,7 @@ Your file holds the key and your text only, no note:
 }
 ```
 
-Keep the keys in the order of `en.json` (sorted by key), so one screen's lines sit together; the check accepts any order. Watch the JSON commas and quotes: every line but the last ends with `,`. A broken file stops the check with a `SyntaxError … (line 3 column 1)`: the mistake is at or just before that line.
+Keep the keys in the order of `en.json` (sorted by key), so one screen's lines sit together; the check accepts any order. Watch the JSON commas and quotes: every line but the last ends with `,`. A broken file stops the check with its line and a hint (step 4).
 
 ### Placeholders
 
@@ -156,6 +156,32 @@ placeholders refuse.attack_cost   has {cents}; English has {n}
 ```
 
 The list comes first. The check runs inside the project's test runner, so after the list it prints a red `FAIL` block with `AssertionError: 932 lines to do in de: see the list above` and a few lines of code: that only says the check failed; the list above it is what matters. A plural line still missing shows its English forms as `{"one":"…","other":"…"}`.
+
+### A file that is not JSON
+
+A comma or a quote in the wrong place breaks the whole file. Then the check lists nothing else: it names the file, the line and the column, shows that line with a `^` under the place, and says what is likely wrong:
+
+```text
+frontend/src/locales/de.json:3:36: JSON error: a comma before }: delete this comma; the last entry has none
+  3 |   "settings.title": "Einstellungen",
+    |                                    ^
+```
+
+Fix it and run the check again. The hints:
+
+| Hint | Fix |
+|---|---|
+| `a comma before }` (or `]`) | the last entry has no `,`; delete the one the `^` points at |
+| `a comma is missing here` | add `,` where the `^` points, at the end of the line above the next entry |
+| `its closing quote " is missing` | a text has no `"` at its end |
+| `a quote is missing, or a quote inside a text lacks its backslash` | close the text, or write a `"` inside a text as `\"` |
+| `a key needs double quotes` / `a text needs double quotes` | put `"…"` around it |
+| `JSON takes double quotes " only` | replace `'` with `"` |
+| `byte order mark (BOM)` | save the file as UTF-8 without BOM (an editor setting) |
+| `the file is empty` | a new file starts as `{}` |
+| `ends too early` | a closing `}`, `]` or `"` is missing at the end |
+
+Without `LOCALE`, the project's test runner also loads the files into the game and prints its own `Failed to parse JSON file` block for the same mistake, with the line and column too.
 
 Work in parts: `AREA=` keeps one area, the key's first word (`lobby`, `settings`, `history`, …):
 

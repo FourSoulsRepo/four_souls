@@ -36,6 +36,11 @@
 * **1c. No `LOCALE`:** every language file is checked.
   * Stray keys, shapes and placeholders; missing lines are fine.
   * Also unused keys in `en.json`; `make lint` runs it.
+* **5a. A file is not JSON:** it names the file, line and column.
+  * It shows that line with a caret and a plain hint.
+  * Hints: a trailing or missing comma, a missing quote, single quotes.
+  * Also a key without quotes, a BOM, an empty file.
+  * No other check runs, and `done.json` is not merged.
 
 ## Postconditions
 

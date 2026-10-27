@@ -39,7 +39,7 @@ func Load(fsys fs.FS) (*DB, error) {
 	}
 	sort.Strings(names)
 	var files []setFile
-	var problems []error
+	var problems, broken []error
 	for _, name := range names {
 		data, err := fs.ReadFile(fsys, name)
 		if err != nil {
@@ -47,11 +47,16 @@ func Load(fsys fs.FS) (*DB, error) {
 		}
 		var f setFile
 		if err := json.Unmarshal(data, &f); err != nil {
-			return nil, fmt.Errorf("carddb: decode %s: %w", name, err)
+			broken = append(broken, jsonError(name, data, err))
+			continue
 		}
 		problems = append(problems, checkSet(name, f)...)
 		f.name = name
 		files = append(files, f)
+	}
+	// A broken file hides its cards, so other checks would mislead.
+	if len(broken) > 0 {
+		return nil, fmt.Errorf("carddb: decode: %w", errors.Join(broken...))
 	}
 	sort.SliceStable(files, func(i, j int) bool { return files[i].Set.Order < files[j].Set.Order })
 	db := &DB{cards: map[Ref]Card{}}

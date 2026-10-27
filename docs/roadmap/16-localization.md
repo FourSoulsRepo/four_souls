@@ -239,7 +239,7 @@ Rules of this step (owner, 2026-10-26):
    5. Tests: `TestCardsNamesCardOnlyLanguage`, Vitest, `settings.spec.ts`.
    6. ADR 021 item 11.6, UC-32 2c, `Client.md`, `Translate-cards.md`.
 
-### [ ] 16.11 Clear JSON errors for translators
+### [x] 16.11 Clear JSON errors for translators
 
 1. Goal: a syntax mistake in a language file says where and what to fix.
 2. Tasks:
@@ -249,6 +249,15 @@ Rules of this step (owner, 2026-10-26):
    4. Guides: replace the `node` one-liner with the new message.
 3. Done when:
    1. A trailing comma in `xx.json` and in a set file gives the line and a hint.
+4. Result: `jsonError.ts` and `pkg/card_db/jsonerr.go`, the same hints.
+   1. Message: `file:line:col: JSON error: hint`, then the line and a caret.
+   2. The place comes from an own scan; `JSON.parse` messages differ per Node.
+   3. Go: `SyntaxError.Offset` and `UnmarshalTypeError` (a value of the wrong kind).
+   4. `make i18n` reads every file first; a broken one skips the checks and the merge.
+   5. The loader names every broken set file at once, then stops.
+   6. The app: Vite's own JSON error is clear already; documented in `Client.md`.
+   7. `overrides/*.json`: no code in this repo reads them; nothing to do.
+   8. Tests: `jsonError.test.ts`, `TestJSONError*`; ADR 004 item 5.9, UC-33 5a.
 
 ### [ ] 16.12 Own card images repo for translators
 

@@ -67,6 +67,8 @@ Use options 1 and 4; stats and rewards stay strings (option 5 lost).
    6. Rejects a translation without a name.
    7. Rejects translators of a language with no text.
    8. `FindImage` adds `<lang>/` to the path, then falls back to `en/`.
+   9. A file that is no JSON: file, line, column, the line and a hint (16.11).
+   10. Then no other check runs; every broken file is named at once.
 6. Build modes
    1. `-tags embed`: `carddb.Embedded()` packs `data/`.
    4. `-tags "embed cardimages"`: also packs `images/` (needs the submodule).

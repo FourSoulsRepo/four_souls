@@ -3,16 +3,27 @@
 // wrong shape or placeholder; make lint runs it. With I18N_LOCALE=xx:
 // merge .cache/translations/xx/done.json into xx.json, write todo.json,
 // and fail on every line still to do. The checks are in locale.ts; their
-// tests, on test tables, in locale.test.ts.
+// tests, on test tables, in locale.test.ts. A file that is no JSON is
+// named with its line and a hint (jsonError.ts, 16.11); the checks wait.
 import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
+import { parseJson } from './jsonError';
 import { areaOf, checkLanguage, gapLines, languageOfFile, mergeDone, testLanguage, todoOf, type Entry, type Glossary } from './locale';
 
+const repo = new URL('../../', import.meta.url);
 const locales = new URL('./locales/', import.meta.url);
 const glossaries = new URL('./locales/glossary/', import.meta.url);
 const cache = new URL('../../.cache/translations/', import.meta.url);
 
-const read = (url: URL): unknown => JSON.parse(readFileSync(url, 'utf8'));
+const broken: string[] = [];
+const read = (url: URL): unknown => {
+  const got = parseJson(decodeURIComponent(url.href.slice(repo.href.length)), readFileSync(url, 'utf8'));
+  if ('error' in got) {
+    broken.push(got.error);
+    return {};
+  }
+  return got.value;
+};
 const write = (url: URL, data: unknown) => {
   writeFileSync(url, `${JSON.stringify(data, null, 2)}\n`);
 };
@@ -27,7 +38,25 @@ const files = readdirSync(locales).flatMap((name) => {
 const lang = import.meta.env.I18N_LOCALE ?? '';
 const area = import.meta.env.I18N_AREA ?? '';
 
-describe.runIf(lang === '')('every language file', () => {
+// Every file this run reads is JSON first; a broken one stops the
+// checks, so a merge never writes over a file it could not read.
+const needed =
+  lang === ''
+    ? [...files.map((l) => new URL(`${l}.json`, locales)), ...readdirSync(glossaries).map((name) => new URL(name, glossaries))]
+    : [new URL(`${lang}.json`, locales), new URL(`${lang}.json`, glossaries), new URL(`${lang}/done.json`, cache)];
+needed.forEach((url) => table(url));
+const readable = broken.length === 0;
+
+describe('every file make i18n reads', () => {
+  it('is JSON', () => {
+    if (!readable) {
+      console.log(broken.join('\n\n'));
+      expect.fail(`${broken.length === 1 ? 'a file is' : `${String(broken.length)} files are`} not JSON: see the line and hint above`);
+    }
+  });
+});
+
+describe.runIf(readable && lang === '')('every language file', () => {
   it.each(files)('%s.json: no stray key, shape or placeholder', (l) => {
     const gaps = checkLanguage(en, l, table(new URL(`${l}.json`, locales)), false);
     expect(gapLines(gaps)).toEqual([]);
@@ -44,7 +73,7 @@ describe.runIf(lang === '')('every language file', () => {
   });
 });
 
-describe.runIf(lang !== '')(`make i18n LOCALE=${lang}`, () => {
+describe.runIf(readable && lang !== '')(`make i18n LOCALE=${lang}`, () => {
   it('has every line translated', () => {
     if (!/^[a-z]{2,3}$/.test(lang) || languageOfFile(`${lang}.json`) === undefined) {
       expect.fail(lang === testLanguage ? 'qps is built from en.json at run time; it has no file' : `${lang}: give a language code other than en, as de or ru`);

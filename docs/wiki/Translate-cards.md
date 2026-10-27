@@ -89,20 +89,23 @@ It loads every card file and fails with every problem at once, each with the fil
 
 | Error | Means |
 |---|---|
-| `decode data/b2.json: …` | the JSON is broken: a comma or a quote |
+| `data/b2.json:1792:27: JSON error: …` | the JSON is broken: a comma or a quote (below) |
 | `text "de" has no name` | a language without `name` |
 | `translators for "de", which has no text` | translators but no `text.de` |
 | `a blank translator for "de"` | an empty name in `translators.de` |
 
 `ok` on every line means the data loads. Developers also get this check from `make test`.
 
-A broken JSON file names no line. Node, which the setup installed, finds it:
+A broken JSON file stops the other checks. The message names the file, the line and the column, shows that line with a `^` under the place, and says what is likely wrong:
 
-```sh
-node -e 'JSON.parse(require("fs").readFileSync(process.argv[1], "utf8"))' pkg/card_db/data/b2.json
+```text
+--- FAIL: TestCardsFSLoads (0.00s)
+    cards_test.go:17: load cards (embedded=false): carddb: decode: data/b2.json:1792:27: JSON error: a comma before }: delete this comma; the last entry has none
+          1792 |           "name": "Сундук",
+               |                           ^
 ```
 
-It prints `SyntaxError: … (line 7144 column 9)`: the mistake is at or just before that line, often a missing or extra comma.
+The hints are the same as for the interface file: [Translate the interface](Translate-the-interface#a-file-that-is-not-json). One more is for a value of the wrong kind, as `copies must be a number, without quotes, not string` for `"copies": "2"`.
 
 ## See it in the game
 
