@@ -2721,6 +2721,11 @@ Totals by system (87 items):
    1. Keep the pixel route when the dice images are missing.
 5. Done when:
    1. `make screenshots` passes this test without the images submodule.
+6. Fix
+   1. The test always routes dice to a one-pixel image.
+   2. `realAssets` now calls `route.fallback()` for a missing file.
+   3. So real dice still win in a screenshot run; missing ones get the pixel.
+   4. Checked with `assets/dices` moved away: old code 0 faces, new code passes.
 
 ### [x] 19.83 The `cardgen` binary is tracked in git
 

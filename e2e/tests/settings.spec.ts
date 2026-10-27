@@ -133,11 +133,10 @@ test('without mat images the table shows colors', async ({ browser }) => {
 // preview shows the picked look's six faces, and the pick is saved; the
 // next hello sends it (15.6).
 test('the dice menu picks the look of your dice', async ({ page }) => {
-  if (!process.env.SCREENSHOTS) {
-    // Any small image does: the test checks which texture is asked for.
-    const pixel = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=', 'base64');
-    await page.route(/\/cardimg\/assets\/dices\//, (route) => route.fulfill({ contentType: 'image/png', body: pixel }));
-  }
+  // Any small image does: the test checks which texture is asked for.
+  // Real dice images, when there, win in a screenshot run (19.82).
+  const pixel = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=', 'base64');
+  await page.route(/\/cardimg\/assets\/dices\//, (route) => route.fulfill({ contentType: 'image/png', body: pixel }));
   await realAssets(page);
   await page.goto('/?fake&nosplash');
   await page.getByRole('button', { name: tr('menu.settings') }).click();
