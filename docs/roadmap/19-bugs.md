@@ -3063,7 +3063,7 @@ Totals by system (94 items):
 7. Owner notes (2026-10-28)
    1. Owner asked for the volume setting and marks 19.93 solved.
 
-### [ ] 19.94 Eden's starting choice comes after the first-player roll
+### [x] 19.94 Eden's starting choice comes after the first-player roll
 
 1. Goal: setup finishes before the first-player roll (R-SETUP-09, R-SETUP-11).
 2. Report (owner, 2026-10-28)
@@ -3089,4 +3089,5 @@ Totals by system (94 items):
 7. Result (2026-10-28)
    1. `go test ./...` and `make lint` pass.
    2. `make frontend e2e`: 380 passed, exit 0.
-8. Owner notes: none yet.
+8. Owner notes (2026-10-28)
+   1. Owner marks 19.94 solved.
