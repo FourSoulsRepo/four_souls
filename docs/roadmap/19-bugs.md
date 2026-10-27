@@ -2808,7 +2808,7 @@ Totals by system (87 items):
 7. Owner notes (2026-10-27)
    1. Owner marks 19.84 solved.
 
-### [x] 19.85 e2e: the activity test fails when the attacker has Bob's Brain
+### [ ] 19.85 e2e: the activity test fails when the attacker has Bob's Brain
 
 1. Goal: `prompt.spec.ts` "the others see what the active player does" passes on every deal.
 2. Report (agent, 2026-10-27)
@@ -2840,6 +2840,18 @@ Totals by system (87 items):
    10. No app change; no docs or screenshots.
 7. Owner notes (2026-10-27)
    1. Owner marks 19.85 solved.
+8. Reopened (owner, 2026-10-27)
+   1. Found by a full `make e2e` run during 14.15, webkit.
+   2. Test: `the attack line waits for a roll the attack triggers: Bob's Brain (19.85)`.
+   3. It failed in `untilAttackRoll`: "the game never settled" (1.5 min).
+   4. Turn 2, active player 0: "Your turn", nothing on the stack.
+   5. The attack never started; no Throw showed.
+   6. History: Bob's Brain triggered, rolled 2; Wyn died.
+   7. It passed 5 of 5 on rerun, webkit, alone.
+   8. The next full run did not fail it.
+   9. Cause not found yet; the 14.15 change does not touch it.
+   10. Evidence: `.cache/e2e-evidence/19.85-reopen-webkit/` (not in git).
+   11. It holds the error context, the match records and the run log.
 
 ### [x] 19.86 e2e: a Throw click in the Meat! odds test did not land, webkit
 
