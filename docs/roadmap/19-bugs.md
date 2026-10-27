@@ -42,12 +42,12 @@ This step never closes; new reports are appended.
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
 | I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.82, 19.85, 19.87 | 16 |
-| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.78, 19.81 | 17 |
+| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.81 | 16 |
 | K  | Build and release files                  | Release    | 19.47, 19.59, 19.83                                    | 3     |
 | L  | Not a bug: the app follows a ruling      | None       | 19.63                                                  | 1     |
 | M  | Go test setup: the code was right        | Go tests   | 19.68                                                  | 1     |
 | N  | A missing control: no way to do it       | Server     | 19.84                                                  | 1     |
-| O  | Reconnect: old connection state kept     | Client     | 19.86                                                  | 1     |
+| O  | Reconnect: old connection state kept     | Client     | 19.78, 19.86                                           | 2     |
 
 Totals by system (87 items):
 
@@ -55,9 +55,9 @@ Totals by system (87 items):
 |-----------|---------|-------|
 | Engine    | A, B    | 20    |
 | Card data | C       | 2     |
-| Client    | D–G, O  | 24    |
+| Client    | D–G, O  | 25    |
 | Server    | H, N    | 2     |
-| e2e       | I, J    | 34    |
+| e2e       | I, J    | 33    |
 | Release   | K       | 3     |
 | None      | L       | 1     |
 | Go tests  | M       | 1     |
@@ -2621,7 +2621,7 @@ Totals by system (87 items):
 5. Done when:
    1. Cause written here; three `make screenshots` runs in a row pass.
 
-### [ ] 19.78 e2e: the Meat! roll test sees no thrown roll, webkit, full run
+### [x] 19.78 e2e: the Meat! roll test sees no thrown roll, webkit, full run
 
 1. Goal: the 15.94 stats test passes every run.
 2. Report (agent, 2026-10-27)
@@ -2635,12 +2635,18 @@ Totals by system (87 items):
    8. Passed 3 of 3 alone, one run at a time, webkit.
    9. `--repeat-each` fails it: the saved games pile up on one server.
 3. Cause
-   1. Not found yet.
-   2. Guess: as 19.57, a click that does not register under load.
+   1. The same as 19.86: a throw lost with a dropped connection.
+   2. The webkit record ends at the attack roll's `stack_added`; no throw.
+   3. The stack is the same: Pass disabled, "Throw the dice".
+   4. Client: state from the old connection is kept (group O).
 4. Tasks:
    1. Find the cause in the evidence; fix the test or the app.
 5. Done when:
    1. Cause written here; the test passes ten full runs in a row.
+6. Fix
+   1. 19.86: a `welcome` clears `sent`.
+7. Owner notes (2026-10-27)
+   1. Owner marks 19.78 solved, with 19.86.
 
 ### [x] 19.79 e2e: playLoot presses the main menu's Play line
 
@@ -2799,7 +2805,7 @@ Totals by system (87 items):
 5. Done when:
    1. The test passes with Bob's Brain in the attacker's items.
 
-### [ ] 19.86 e2e: a Throw click in the Meat! odds test did not land, webkit
+### [x] 19.86 e2e: a Throw click in the Meat! odds test did not land, webkit
 
 1. Goal: `stats.spec.ts` "the open attack says what the roll needs" passes under load.
 2. Report (agent, 2026-10-27)
@@ -2831,6 +2837,8 @@ Totals by system (87 items):
    6. Vitest: `store.test.ts`, a welcome forgets the sent intent.
    7. Docs: UC-07 item 4a.
    8. No screen change; no screenshots.
+7. Owner notes (2026-10-27)
+   1. Owner marks 19.86 solved.
 
 ### [ ] 19.87 e2e: the 19.84 end-game test finds two Games headings, webkit
 
