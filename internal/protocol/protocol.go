@@ -76,6 +76,9 @@ const (
 	// The Soft vote (ADR 020, item 5; 17.4).
 	TypeRollbackVote   = "rollback_vote"   // client → server: yes or no on the open vote
 	TypeRollbackCancel = "rollback_cancel" // client → server: the opener ends the vote
+
+	// The host ends a game for everyone (19.84). An older server refuses it.
+	TypeEnd = "end" // client → server: the game stops unfinished
 )
 
 // Envelope wraps every message. ID is set by the client on requests;
@@ -367,6 +370,8 @@ const (
 	NoticeLost = "game_lost"
 	// NoticeIdle: the game ran into an idle limit and ended.
 	NoticeIdle = "game_idle"
+	// NoticeEnded: the host ended the game (19.84).
+	NoticeEnded = "game_ended"
 )
 
 // Why a game ran into an idle limit (NoticeIdle).

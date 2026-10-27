@@ -11,6 +11,7 @@ frontend/dist/*
 .cache/
 /test-results/
 /four_souls
+/cardgen
 coverage.out
 *.test
 

@@ -285,11 +285,11 @@
   color: #f7de8f;
 }
 
-/* A locked game asks for its password in its row (N-14). */
+/* A locked game asks for its password in its row (N-14). The field
+   keeps its width; the row text wraps instead (19.88). */
 .screen input.game-password {
-  flex: 1;
-  min-width: 0;
-  max-width: 160px;
+  flex: none;
+  width: 140px;
 }
 
 /* The card gallery is a test screen bigger than the window. */

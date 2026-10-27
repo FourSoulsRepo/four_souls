@@ -48,7 +48,7 @@ export function promptBanner(
     return null;
   }
   if (w.player === you) {
-    const hint = ask.kind === 'turn' ? turnHint(actions) : ask.hint;
+    const hint = ask.kind === 'turn' ? turnHint(actions) : tablePick(actions.choice) ? t('banner.pick_table') : ask.hint;
     return { kind: ask.kind, mine: true, player: w.player, title: ask.title, ...(hint ? { hint } : {}) };
   }
   return { kind: ask.kind, mine: false, player: w.player, title: t('banner.waiting_for', { player: n.player(w.player) }), hint: ask.other };
@@ -121,6 +121,14 @@ function turnHint(actions: Actions): string {
 // of its options is on the table.
 export function picking(actions: Actions, aiming: Aiming | null): boolean {
   return aiming !== null || (actions.choice?.options.some((o) => o.target) ?? false);
+}
+
+// tablePick: what to attack, what to buy, and a deck attack's slot are
+// picked on the table, with no dialog (18.11, V-53), when every option
+// is there. An option off the table, e.g. an empty slot, keeps it.
+export function tablePick(choice: Actions['choice']): boolean {
+  const table: number[] = [Purpose.attackTarget, Purpose.purchase, Purpose.monsterSlot];
+  return !!choice && table.includes(choice.purpose) && choice.options.length > 0 && choice.options.every((o) => o.target);
 }
 
 // myMove: the board glows green, as the game waits for the viewer

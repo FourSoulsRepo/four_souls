@@ -13,17 +13,30 @@ function selection(page: Page): Promise<string> {
   return page.evaluate(() => window.getSelection()?.toString() ?? '');
 }
 
-// dragAcross drags the mouse from one corner of the box to the other.
-async function dragAcross(page: Page, box: Locator): Promise<void> {
+// dragAcross drags the mouse from one corner of the box to the other,
+// or from a given point to the far corner.
+async function dragAcross(page: Page, box: Locator, from?: { x: number; y: number }): Promise<void> {
   const r = await box.boundingBox();
   if (!r) {
     throw new Error('no box');
   }
-  await page.mouse.move(r.x + 4, r.y + 4);
+  await page.mouse.move(from?.x ?? r.x + 4, from?.y ?? r.y + 4);
   await page.mouse.down();
   await page.mouse.move(r.x + r.width / 2, r.y + r.height / 2, { steps: 5 });
   await page.mouse.move(r.x + r.width - 4, r.y + r.height - 4, { steps: 5 });
   await page.mouse.up();
+}
+
+// lineMiddle is the middle of a row's first line of text. Chromium
+// starts no selection from the pixel between two lines (19.81).
+async function lineMiddle(row: Locator): Promise<{ x: number; y: number }> {
+  return row.evaluate((el) => {
+    // The row's last span holds its words; the first is the icon.
+    const range = document.createRange();
+    range.selectNodeContents(el.lastElementChild ?? el);
+    const r = range.getClientRects()[0] ?? el.getBoundingClientRect();
+    return { x: r.left + 2, y: r.top + r.height / 2 };
+  });
 }
 
 // expectNoPageScroll fails when the window scrolls as a whole, even after
@@ -77,9 +90,11 @@ test('a drag across the table selects nothing; the history and address do', asyn
   expect(await selection(kim)).toBe('');
   await expectNoPageScroll(kim);
 
-  // Logs stay copyable.
+  // Logs stay copyable. The newest row is the loot; the drag starts in
+  // its text, not on a line edge (19.81).
   await kim.getByRole('button', { name: tr('history.title'), exact: true }).click();
-  await dragAcross(kim, history.getByRole('list'));
+  await expect(history).toContainText(trRe('history.loot.you'));
+  await dragAcross(kim, history.getByRole('list'), await lineMiddle(history.getByRole('listitem').last()));
   expect(await selection(kim)).not.toBe('');
 });
 

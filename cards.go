@@ -34,6 +34,10 @@ type CardInfo struct {
 	// Images holds the image URL per language that has an image folder,
 	// English when the card has no image of its own there (16.6).
 	Images map[string]string `json:"images"`
+	// Back is the ref of a two-sided card's back face; Front, on a back
+	// face, the ref of its front (ADR 023).
+	Back  string `json:"back,omitempty"`
+	Front string `json:"front,omitempty"`
 }
 
 // cardList loads the card data once.
@@ -53,34 +57,49 @@ func (l *cardList) load(fsys fs.FS) ([]CardInfo, error) {
 		langs := carddb.ImageLangs(fsys)
 		for _, ref := range db.Refs() {
 			c, _ := db.Get(ref)
-			en := c.Text[carddb.English]
-			// Lists are never nil, so the frontend never gets null.
-			info := CardInfo{
-				Ref: ref.String(), Set: c.Set, Type: c.Type, Name: en.Name,
-				Effects:   append([]string{}, en.Effects...),
-				Footnotes: append([]carddb.Footnote{}, en.Footnotes...),
-				Stats:     append([]carddb.Stat{}, c.Stats...),
-				Rewards:   append([]carddb.Reward{}, c.Rewards...),
-				Names:     map[string]string{}, Translators: map[string][]string{}, Images: map[string]string{},
+			info := cardInfo(fsys, langs, c)
+			// A back face is a card of its own, so a flipped card's ref
+			// finds it (ADR 023).
+			b, two := c.BackCard()
+			if two {
+				info.Back = b.ID
 			}
-			for lang, t := range c.Text {
-				if t.Name != "" {
-					info.Names[string(lang)] = t.Name
-				}
-			}
-			for lang, names := range c.Translators {
-				info.Translators[string(lang)] = append([]string{}, names...)
-			}
-			for _, lang := range langs {
-				if p := carddb.FindImage(fsys, c, lang); p != "" {
-					info.Images[string(lang)] = cardImagePrefix + p
-				}
-			}
-			info.Image = info.Images[string(carddb.English)]
 			l.cards = append(l.cards, info)
+			if two {
+				l.cards = append(l.cards, cardInfo(fsys, langs, b))
+			}
 		}
 	})
 	return l.cards, l.err
+}
+
+// cardInfo is what the frontend shows of one card or back face.
+func cardInfo(fsys fs.FS, langs []carddb.Lang, c carddb.Card) CardInfo {
+	en := c.Text[carddb.English]
+	// Lists are never nil, so the frontend never gets null.
+	info := CardInfo{
+		Ref: c.Ref().String(), Set: c.Set, Type: c.Type, Name: en.Name, Front: c.Front,
+		Effects:   append([]string{}, en.Effects...),
+		Footnotes: append([]carddb.Footnote{}, en.Footnotes...),
+		Stats:     append([]carddb.Stat{}, c.Stats...),
+		Rewards:   append([]carddb.Reward{}, c.Rewards...),
+		Names:     map[string]string{}, Translators: map[string][]string{}, Images: map[string]string{},
+	}
+	for lang, t := range c.Text {
+		if t.Name != "" {
+			info.Names[string(lang)] = t.Name
+		}
+	}
+	for lang, names := range c.Translators {
+		info.Translators[string(lang)] = append([]string{}, names...)
+	}
+	for _, lang := range langs {
+		if p := carddb.FindImage(fsys, c, lang); p != "" {
+			info.Images[string(lang)] = cardImagePrefix + p
+		}
+	}
+	info.Image = info.Images[string(carddb.English)]
+	return info
 }
 
 // Cards returns every card the app knows, for the card component.

@@ -14,12 +14,15 @@ func TestSoundsFromFiles(t *testing.T) {
 		"images/" + effectCastSound:   {Data: []byte("ID3")},
 		"images/" + effectImpactSound: {Data: []byte("ID3")},
 		"images/" + diceRollSound:     {Data: []byte("ID3")},
+		"images/" + lootDrawSound:     {Data: []byte("ID3")},
+		"images/" + playerDiedSound:   {Data: []byte("ID3")},
+		"images/" + treasureGainSound: {Data: []byte("ID3")},
 	}}
 	got := a.Sounds()
 	if got.AttackHit != "/cardimg/"+attackHitSound || got.EffectCast != "/cardimg/"+effectCastSound || got.EffectImpact != "/cardimg/"+effectImpactSound {
 		t.Fatalf("%+v", got)
 	}
-	if got.DiceRoll != "/cardimg/"+diceRollSound {
+	if got.DiceRoll != "/cardimg/"+diceRollSound || got.LootDraw != "/cardimg/"+lootDrawSound || got.PlayerDied != "/cardimg/"+playerDiedSound || got.TreasureGain != "/cardimg/"+treasureGainSound {
 		t.Fatalf("%+v", got)
 	}
 	// Without the private images the game is silent.
@@ -34,7 +37,7 @@ func TestSoundsFromFiles(t *testing.T) {
 func TestSoundsServed(t *testing.T) {
 	files := os.DirFS("pkg/card_db")
 	sounds := (&App{cardFiles: files}).Sounds()
-	for file, url := range map[string]string{attackHitSound: sounds.AttackHit, effectCastSound: sounds.EffectCast, effectImpactSound: sounds.EffectImpact, diceRollSound: sounds.DiceRoll} {
+	for file, url := range map[string]string{attackHitSound: sounds.AttackHit, effectCastSound: sounds.EffectCast, effectImpactSound: sounds.EffectImpact, diceRollSound: sounds.DiceRoll, lootDrawSound: sounds.LootDraw, playerDiedSound: sounds.PlayerDied, treasureGainSound: sounds.TreasureGain} {
 		_, err := os.Stat("pkg/card_db/images/" + file)
 		if (err == nil) != (url != "") {
 			t.Fatalf("%s: %q does not match the file (%v)", file, url, err)

@@ -104,9 +104,7 @@ func LookMayBottom(d engine.DeckKind) engine.Effect {
 			return
 		}
 		c.G.LookAt(c.Controller, top...)
-		if a[0] == 1 {
-			c.G.DeckToBottom(d, top[0])
-		}
+		c.G.KeepOrBottom(c.Controller, d, top[0], a[0] == 1)
 	}, engine.Question{
 		Text:    AskPutBottom,
 		Subject: func(c *engine.Ctx, _ []int) engine.ObjectID { return c.G.DeckTop(d, 1)[0] },

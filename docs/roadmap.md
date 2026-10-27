@@ -286,6 +286,8 @@ Step numbers stay as IDs; the table lists steps in work order.
 5. Ideas: B-04, B-05.
 6. Review the multi-instance solution (UC-16).
 7. Every sound at one loudness (AU-04, ADR 022).
+8. Player death sound (AU-06).
+9. Treasure gain sound (AU-07).
 
 ## 19. Bugs
 

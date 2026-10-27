@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { CardInfo } from './cards';
-import { createPlayback, effectsFor, scaleFor, slotZone, type Death, type Effect } from './playback';
+import { createPlayback, effectsFor, scaleFor, shopSlot, slotZone, type Death, type Effect } from './playback';
 import type { GameEvent, GameView, Update } from './protocol';
 
 const ctx = {
@@ -12,6 +12,7 @@ const ctx = {
   character: (p: number) => (p === 1 ? 31 : undefined),
   slot: (id: number) => (id === 50 ? 'monster-slot-1' : undefined),
   before: (): string | undefined => undefined,
+  shopBefore: (): Death | undefined => undefined,
   diedAt: new Map<number, Death>(),
   seen: (card: string) => card === 'pin',
   roll: (stack: number) => (stack === 7 ? 2 : undefined),
@@ -37,11 +38,50 @@ describe('effectsFor', () => {
     ]);
   });
 
+  // Each card from the loot deck is dealt with its sound (18.7).
   it('flies looted cards from the loot deck to the hand', () => {
     const e: GameEvent = { kind: 'looted', player: 1, object: 9, card: 'a_dime', private: true };
-    expect(effectsFor([e], ctx)).toEqual([
-      { kind: 'fly', from: ['deck-loot'], to: ['hand-1', 'player-1'], card: 'a_dime', back: 'loot' },
+    expect(effectsFor([e, { ...e, object: 10, card: 'a_penny' }], ctx)).toEqual([
+      { kind: 'fly', from: ['deck-loot'], to: ['hand-1', 'player-1'], card: 'a_dime', back: 'loot', sound: 'lootDraw' },
+      { kind: 'fly', from: ['deck-loot'], to: ['hand-1', 'player-1'], card: 'a_penny', back: 'loot', sound: 'lootDraw' },
     ]);
+  });
+
+  // A card taken from the loot discard makes the same sound (18.7).
+  it('flies a card looted from the discard with its sound', () => {
+    const e: GameEvent = { kind: 'looted', player: 1, object: 9, card: 'a_dime', text: 'from the discard' };
+    expect(effectsFor([e], ctx)).toEqual([
+      { kind: 'fly', from: ['discard-loot'], to: ['hand-1', 'player-1'], card: 'a_dime', back: 'loot', sound: 'lootDraw' },
+    ]);
+  });
+
+  // Each gained treasure flies from its deck with its sound (18.9).
+  it('flies each treasure from the treasure deck to the player', () => {
+    const e: GameEvent = { kind: 'gained_treasure', player: 1, object: 60, card: 'the_d6' };
+    const bought: GameEvent = { kind: 'purchased', player: 1, object: 61, card: 'the_d20', text: 'treasure deck' };
+    expect(effectsFor([e, { ...e, object: 61, card: 'the_d20' }, bought], ctx)).toEqual([
+      { kind: 'fly', from: ['deck-treasure'], to: ['player-1'], card: 'the_d6', back: 'treasure', sound: 'treasureGain' },
+      { kind: 'fly', from: ['deck-treasure'], to: ['player-1'], card: 'the_d20', back: 'treasure', sound: 'treasureGain' },
+    ]);
+  });
+
+  // A shop item flies from its slot, which shows empty meanwhile (18.9).
+  it('flies a bought shop item from its slot to the player', () => {
+    const e: GameEvent = { kind: 'purchased', player: 0, object: 70, card: 'the_d6' };
+    const shopBefore = (ref: string) => (ref === 'the_d6' ? { zone: 'shop-slot-1', object: 44 } : undefined);
+    expect(effectsFor([e], { ...ctx, shopBefore })).toEqual([
+      { kind: 'fly', from: ['shop-slot-1'], to: ['player-0'], card: 'the_d6', back: 'treasure', lifts: 44, sound: 'treasureGain' },
+    ]);
+  });
+
+  // A trinket is loot, not treasure; a starting or stolen item moves no card from a deck (18.9).
+  it('keeps starting, stolen and trinket items silent', () => {
+    const events: GameEvent[] = [
+      { kind: 'gained_treasure', player: 0, object: 80, card: 'the_d6', text: 'starting item' },
+      { kind: 'gained_treasure', player: 0, object: 81, prev: 30, card: 'the_d20', text: 'stolen' },
+      { kind: 'gained_item', player: 0, object: 82, card: 'a_trinket' },
+    ];
+    expect(effectsFor(events, ctx)).toEqual([]);
   });
 
   it('flies a discarded card from where it was to its deck discard', () => {
@@ -165,7 +205,15 @@ describe('effectsFor', () => {
       { kind: 'died', player: -1, object: 90, prev: 40, card: 'fly' },
       { kind: 'died', player: 1, object: 31, card: 'cain' },
     ];
-    expect(effectsFor(events, ctx)).toEqual([{ kind: 'deaths', at: [['obj-40'], ['obj-31']] }]);
+    expect(effectsFor(events, ctx)).toEqual([{ kind: 'deaths', at: [['obj-40'], ['obj-31']], sound: 'playerDied' }]);
+  });
+
+  // A player's died comes only once nothing can undo it (18.8).
+  it('sounds a player death, and a monster death not at all', () => {
+    const monster: GameEvent = { kind: 'died', player: -1, object: 90, prev: 40, card: 'fly' };
+    expect(effectsFor([monster], ctx)).toEqual([{ kind: 'deaths', at: [['obj-40']] }]);
+    const player: GameEvent = { kind: 'died', player: 1, object: 31, card: 'cain' };
+    expect(effectsFor([player], ctx)).toMatchObject([{ kind: 'deaths', sound: 'playerDied' }]);
   });
 
   it('throws a fresh roll; a changed roll only spins in (15.62)', () => {
@@ -284,6 +332,14 @@ describe('slotZone', () => {
     expect(slotZone(view, 8)).toBe('monster-slot-1');
     expect(slotZone(view, 9)).toBe('shop-slot-1');
     expect(slotZone(view, 10)).toBeUndefined();
+  });
+});
+
+describe('shopSlot', () => {
+  it('finds the shop slot a card tops, and its object (18.9)', () => {
+    const view = { shop: [{}, { top: { id: 9, card: 'the_d6' } }] } as unknown as GameView;
+    expect(shopSlot(view, 'the_d6')).toEqual({ zone: 'shop-slot-1', object: 9 });
+    expect(shopSlot(view, 'the_d20')).toBeUndefined();
   });
 });
 

@@ -98,11 +98,52 @@ func TestLoadRejectsBadData(t *testing.T) {
 			{"id":"x","type":"T","copies":1,"text":{"en":{"name":"X"}},"translators":{"ru":["A"]}}]}`,
 		"blank translator": `{"set":{"code":"b2","name":"B","order":1},"cards":[
 			{"id":"x","type":"T","copies":1,"text":{"en":{"name":"X"},"ru":{"name":"Икс"}},"translators":{"ru":[" "]}}]}`,
+		"back without a name": `{"set":{"code":"b2","name":"B","order":1},"cards":[
+			{"id":"x","type":"T","copies":1,"text":{"en":{"name":"X"}},"back":{"id":"y","text":{}}}]}`,
+		"back with the front's id": `{"set":{"code":"b2","name":"B","order":1},"cards":[
+			{"id":"x","type":"T","copies":1,"text":{"en":{"name":"X"}},"back":{"id":"x","text":{"en":{"name":"Y"}}}}]}`,
+		"back with a card's id": `{"set":{"code":"b2","name":"B","order":1},"cards":[
+			{"id":"x","type":"T","copies":1,"text":{"en":{"name":"X"}},"back":{"id":"y","text":{"en":{"name":"Y"}}}},
+			{"id":"y","type":"T","copies":1,"text":{"en":{"name":"Y"}}}]}`,
+		"escaping back image": `{"set":{"code":"b2","name":"B","order":1},"cards":[
+			{"id":"x","type":"T","copies":1,"text":{"en":{"name":"X"}},"back":{"id":"y","text":{"en":{"name":"Y"}},"images":["../y.webp"]}}]}`,
 	}
 	for name, data := range cases {
 		if _, err := Load(fstest.MapFS{"data/b2.json": {Data: []byte(data)}}); err == nil {
 			t.Errorf("%s: want error", name)
 		}
+	}
+}
+
+func TestLoadTwoSided(t *testing.T) {
+	db, err := Load(fstest.MapFS{"data/r.json": {Data: []byte(`{"set":{"code":"r","name":"R","order":1},"cards":[
+		{"id":"anima_sola","type":"Eternal Treasure Card","copies":1,
+		 "text":{"en":{"name":"Anima Sola"},"ru":{"name":"Анима Сола"}},"translators":{"ru":["A"]},
+		 "images":["r/anima_sola.webp"],
+		 "back":{"id":"the_revenant","text":{"en":{"name":"The Revenant"},"ru":{"name":"Мститель"}},
+		  "stats":[{"name":"HP","value":"2"}],"images":["r/the_revenant.webp"]}}]}`)}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got := len(db.Refs()); got != 1 {
+		t.Fatalf("refs = %d; a back is never dealt", got)
+	}
+	front, _ := db.Get(Ref{ID: "anima_sola", Version: 1})
+	if front.Back == nil || front.Back.ID != "the_revenant" || front.Front != "" {
+		t.Errorf("front = %+v", front)
+	}
+	back, ok := db.Get(Ref{ID: "the_revenant", Version: 1})
+	if !ok || back.Front != "anima_sola" || back.Set != "r" || back.Type != "Eternal Treasure Card" {
+		t.Fatalf("back = %+v, %v", back, ok)
+	}
+	if back.Name(English) != "The Revenant" || back.Name("ru") != "Мститель" || len(back.Stats) != 1 {
+		t.Errorf("back text = %+v", back)
+	}
+	if got := ImagePath(back, English); got != "images/en/r/the_revenant.webp" {
+		t.Errorf("back image = %q", got)
+	}
+	if back.Translators["ru"][0] != "A" {
+		t.Errorf("back translators = %v; the front's", back.Translators)
 	}
 }
 
@@ -232,6 +273,7 @@ func TestLoadRejectsBadReprints(t *testing.T) {
 		"with text":    `{"id":"two_cents","reprint":true,"copies":1,"type":"T","text":{"en":{"name":"X"}}}`,
 		"no copies":    `{"id":"two_cents","reprint":true}`,
 		"listed twice": `{"id":"two_cents","reprint":true,"copies":1},{"id":"two_cents","reprint":true,"copies":1}`,
+		"with a back":  `{"id":"two_cents","reprint":true,"copies":1,"back":{"id":"y","text":{"en":{"name":"Y"}}}}`,
 	}
 	for name, g2 := range cases {
 		if _, err := Load(reprintSets(g2)); err == nil {

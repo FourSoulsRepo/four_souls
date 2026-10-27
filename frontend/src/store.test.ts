@@ -84,7 +84,7 @@ describe('settings', () => {
     vi.mocked(getBacks).mockResolvedValue([]);
     vi.mocked(getIcons).mockResolvedValue({ coin: '', sword: '', banner: '', sky: [] });
     vi.mocked(getFonts).mockResolvedValue({ title: '', body: '', cyrillic: '' });
-    vi.mocked(getSounds).mockResolvedValue({ attackHit: '', effectCast: '', effectImpact: '', diceRoll: '' });
+    vi.mocked(getSounds).mockResolvedValue({ attackHit: '', effectCast: '', effectImpact: '', diceRoll: '', lootDraw: '', playerDied: '', treasureGain: '' });
     expect(useApp.getState().languages).not.toContain('xx');
     await useApp.getState().loadCards();
     expect(useApp.getState().languages).toContain('xx');
@@ -167,6 +167,12 @@ describe('server notices (N-20)', () => {
   it('restarting is remembered for the badge', () => {
     useApp.getState().receive({ type: 'restarting' });
     expect(useApp.getState().restarting).toBe(true);
+  });
+
+  it('a welcome forgets the intent sent on the old connection (19.86)', () => {
+    useApp.setState({ screen: 'game', sent: 7 });
+    useApp.getState().receive({ type: 'welcome', data: { protocol: 5, app: '0.1.0', engine: '0.1.0', token: 't', seat: 0 } });
+    expect(useApp.getState().sent).toBeNull();
   });
 });
 

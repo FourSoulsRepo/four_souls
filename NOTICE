@@ -57,6 +57,15 @@ Dice sound (assets/sounds in the private images):
   dice-roll.mp3      PlasticDice_on_WoodBoard_1, from the owner; source
   unknown, so it ships only with the private images. Converted to mono
   MP3.
+Loot draw sound (assets/sounds in the private images):
+  loot-draw.mp3      Card_Deal_1, from the owner; source unknown, so it
+  ships only with the private images. Converted to mono MP3.
+Player death sound (assets/sounds in the private images):
+  player-died.mp3    player_died, from the owner; source unknown, so it
+  ships only with the private images. Converted to mono MP3.
+Treasure gain sound (assets/sounds in the private images):
+  treasure-gain.mp3  power up1, from the owner; source unknown, so it
+  ships only with the private images. Converted to mono MP3.
 
 --------------------------------------------------------------------------
 App icon — build/appicon.svg, build/appicon.png, build/windows/icon.ico

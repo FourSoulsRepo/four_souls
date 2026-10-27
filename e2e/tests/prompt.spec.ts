@@ -2,12 +2,13 @@
 // player it asks, and whom the game waits for to everyone else. The
 // stack panel repeats it; while the player picks a target, the cards
 // that answer glow and the rest dim.
-import type { Locator, Page } from '@playwright/test';
+import type { Browser, Locator, Page } from '@playwright/test';
 import { expect, test } from './fixtures';
 import { startGame } from './game';
+import { saveAndContinue } from './saves';
 import { appURL } from './server';
 import { shot } from './shot';
-import { activePage, click, settle, throwButton, turnAction } from './turn';
+import { activePage, click, turnAction, untilAttackRoll } from './turn';
 import { lineRe, tr, trRe } from './locale';
 
 const fast = () => `${appURL()}&anim=off`;
@@ -257,8 +258,17 @@ test('the board glows for the asked player; every seat marks them (15.95)', asyn
   await expect(active.locator('.board')).not.toHaveClass(/my-move/);
 });
 
-test('the others see what the active player does (15.30)', async ({ browser }) => {
-  const pages = await startGame(browser, ['Tarn', 'Ulla'], { url: fast() });
+// attackActivity: the active player attacks; the others' line names
+// the monster, as the stack's roll does. item, if given, becomes the
+// active player's first item in play, through a saved game; that run
+// takes no screenshots, so the plain run's stay.
+async function attackActivity(browser: Browser, names: [string, string], item?: string) {
+  const snap = item === undefined ? shot : () => Promise.resolve();
+  const pages = await startGame(browser, names, { url: fast() });
+  await activePage(pages, click);
+  if (item !== undefined) {
+    await saveAndContinue(pages, names.join(', '), 'bomb', item);
+  }
   const active = await activePage(pages, click);
   const other = pages.find((p) => p !== active);
   if (!other) {
@@ -269,15 +279,26 @@ test('the others see what the active player does (15.30)', async ({ browser }) =
   // Holding priority on their turn: thinking. The own seat says nothing.
   await expect(doing).toHaveText(tr('activity.thinking', { player: name }));
   await expect(active.locator('.player-activity')).toHaveCount(0);
-  await shot(other, 'activity-thinking');
+  await snap(other, 'activity-thinking');
 
   // Attacking: the line names the monster, as the stack's roll does.
+  // A roll that triggers on the attack (Bob's Brain) waits for its
+  // throw first, before the target is chosen: so wait for the attack
+  // roll, not for any Throw (19.85).
   await click(active, turnAction(active, 'Attack'));
-  await settle(pages, click, async () => (await throwButton(active).count()) > 0);
+  await untilAttackRoll(pages, click, active);
   const monster = await other.getByRole('complementary', { name: tr('stack.title') }).locator('.stack-row .stack-target').first().textContent();
   await expect(doing).toHaveText(tr('activity.attack_target', { player: name, target: monster ?? '' }));
   await expect(doing.locator('.stack-target')).toHaveText(monster ?? '');
-  await shot(other, 'activity-attacks');
+  await snap(other, 'activity-attacks');
+}
+
+test('the others see what the active player does (15.30)', async ({ browser }) => {
+  await attackActivity(browser, ['Tarn', 'Ulla']);
+});
+
+test('the attack line waits for a roll the attack triggers: Bob\'s Brain (19.85)', async ({ browser }) => {
+  await attackActivity(browser, ['Vik', 'Wyn'], 'bobs_brain');
 });
 
 test('a word answer is a plain button, not a card (19.42)', async ({ browser }) => {

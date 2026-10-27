@@ -29,3 +29,5 @@
 {"type":"rollback","id":19,"data":{"step":7,"ask":true}}
 {"type":"rollback_vote","id":20,"data":{"yes":true}}
 {"type":"rollback_cancel","id":21,"data":{}}
+{"type":"end","id":22,"data":{}}
+{"type":"notice","data":{"kind":"game_ended","game":"g1"}}

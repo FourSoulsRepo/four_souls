@@ -290,6 +290,19 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    5. No yellow "waiting" glow: green and yellow look alike to many.
    6. Instead the asked player's seat is marked, for everyone.
    7. Not holding priority: the board stays plain.
+53. V-53. Attack and buy pick on the table, no dialog (owner, 2026-10-27).
+   1. Today Attack and Buy open a question dialog over the board.
+   2. Instead the monsters and shop items that can be taken glow.
+   3. A click on one attacks or buys it.
+   4. The monster deck and the shop deck are targets too.
+   5. The Attack and Buy buttons stay; they start the same table pick.
+   6. No aim arrow for a buy or an attack declaration.
+   7. A deck attack: pick the slot for the drawn monster on the table.
+   8. The banner says what the game waits for.
+   9. E.g. "Choose a monster to attack", "Choose an item to buy".
+   10. Open: click conflicts with card zoom; misclick protection.
+   11. Built in 18.11: table pick after Attack or Buy, no dialog.
+   12. A click on a monster before Attack stays out (R-ATK-02).
 
 ## Rules
 
@@ -746,6 +759,12 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    4. Vitest: every view field in `protocol.ts` is read in `frontend/src`.
    5. A field left unread on purpose is listed with its reason.
    6. The golden file covers sample messages only, not empty fields.
+8. TS-08. e2e waits name the state they need (owner, 2026-10-27).
+   1. 19.10, 19.18, 19.21, 19.58, 19.85: a card asked one more input.
+   2. The tests waited for a sign, such as "a Throw button shows".
+   3. A named wait in `turn.ts` checks the exact state in the store.
+   4. `settle` answers whatever comes on the way; no ban is needed.
+   5. Later: run key tests with each card known to interrupt them.
 
 ## Localization
 
@@ -827,6 +846,19 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    3. A tool checks every sound, the existing ones and every new one.
    4. The tool lives in `FourSoulsRepo/tools`, not here.
    5. Planned in 18.5 and 18.6; decision in ADR 022.
+5. AU-05. Loot draw sound (owner, 2026-10-27).
+   1. A looted card makes a sound, from the deck or the discard.
+   2. One per card: start of turn, monster reward, other effects.
+   3. Planned in 18.7.
+6. AU-06. Player death sound (owner, 2026-10-27).
+   1. A sound when a player dies.
+   2. Only a death no card or effect can undo any more.
+   3. Planned in 18.8.
+7. AU-07. Treasure gain sound (owner, 2026-10-27).
+   1. A gained treasure makes a sound; a loot trinket does not.
+   2. Bought from the shop or the deck top, or a monster's reward.
+   3. One per item; each item flies to the table on its own.
+   4. Planned in 18.9.
 
 ## Menu
 

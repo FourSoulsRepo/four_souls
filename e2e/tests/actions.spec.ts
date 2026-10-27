@@ -17,10 +17,12 @@ import {
   passButton,
   playLoot,
   settle,
+  tablePicks,
   tap,
   throwButton,
   turnAction,
   turnNumber,
+  untilAttackRoll,
   type Tap,
 } from './turn';
 import { cardName, tr, trRe } from './locale';
@@ -148,9 +150,12 @@ test('buy and attack icons are lit only when the engine allows them; B buys', as
   await shot(active, 'turn-actions');
 
   // B declares the purchase; once the others pass, the Buy icon stays
-  // pressed while the player picks what to buy (F-13).
+  // pressed while the player picks what to buy on the table (F-13, 18.11).
   await active.keyboard.press('b');
-  await settle(pages, click, async () => active.locator('.choice').isVisible());
+  await settle(pages, click, async () => tablePicks(active).first().isVisible());
+  await expect(active.locator('.choice')).toHaveCount(0);
+  await expect(active.locator('.prompt-hint')).toHaveText(tr('banner.pick_table'));
+  await expect(active.locator('[data-zone="deck-treasure"] .card')).toHaveClass(/hl-pick/);
   const choosing = active
     .getByRole('toolbar', { name: tr('turn.actions') })
     .getByRole('button', { name: tr('turn.choosing_buy') });
@@ -160,9 +165,9 @@ test('buy and attack icons are lit only when the engine allows them; B buys', as
 });
 
 // 19.7: an update that lands after the done check must not be answered.
-// Updates come late; the slow check sees no dialog, then waits while the
-// last pass opens it.
-test('settle never answers a dialog its done check has not seen (19.7)', async ({ browser }) => {
+// Updates come late; the slow check sees no pick, then waits while the
+// last pass opens it. What to buy is picked on the table (18.11).
+test('settle never answers a pick its done check has not seen (19.7)', async ({ browser }) => {
   let lag = 0;
   const late = (page: Page) =>
     page.routeWebSocket(`ws://127.0.0.1:${String(serverPort())}/ws`, (ws) => {
@@ -185,13 +190,13 @@ test('settle never answers a dialog its done check has not seen (19.7)', async (
   const turn = await turnNumber(active);
   lag = 150;
   await active.keyboard.press('b');
-  // Back to the action phase without a dialog: settle answered it.
+  // Back to the action phase without a pick: settle answered it.
   await settle(pages, click, async () => {
-    const done = (await active.locator('.choice').isVisible()) || (await canEndTurn(active));
+    const done = (await tablePicks(active).first().isVisible()) || (await canEndTurn(active));
     await active.waitForTimeout(300);
     return done;
   });
-  await expect(active.locator('.choice')).toBeVisible();
+  await expect(tablePicks(active).first()).toBeVisible();
   lag = 0;
   await settle(pages, click, backToMe(active, turn));
 });
@@ -682,7 +687,7 @@ test('an attack waits for the roller to throw; the die shows the engine\'s value
   await expect(turnAction(active, 'Attack')).toBeEnabled();
   await click(active, turnAction(active, 'Attack'));
   // Settle stops before the throw: the attack's target is picked first.
-  await settle(pages, click, async () => (await throwButton(active).count()) > 0);
+  await untilAttackRoll(pages, click, active);
 
   // The roller sees the glowing button and the stack says it waits for them.
   const stack = (page: Page) => page.getByRole('complementary', { name: tr('stack.title') });
@@ -786,7 +791,7 @@ test("every screen draws a roll with the roller's dice look (15.6)", async ({ br
 
   await expect(turnAction(active, 'Attack')).toBeEnabled();
   await click(active, turnAction(active, 'Attack'));
-  await settle(pages, click, async () => (await throwButton(active).count()) > 0);
+  await untilAttackRoll(pages, click, active);
   const shaking = other.getByRole('region', { name: tr('throw.label') }).locator('.throw-shake .die');
   await expect(shaking).toBeVisible();
   expect(await image(shaking)).toBe(images.tear);

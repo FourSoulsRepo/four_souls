@@ -27,13 +27,20 @@ if (languageOfFile(`${locale}.json`) && existsSync(own)) {
 interface DataCard {
   id: string;
   version?: number;
+  reprint?: boolean;
   text: Record<string, { name?: string } | undefined>;
+  back?: DataCard; // a two-sided card's other face (ADR 023)
 }
 
-// The fake bridge's cards are the Base Game's (fakeBridge.ts); a later
-// version's ref is id@N, as Go's.
-const b2 = JSON.parse(readFileSync(join(root, 'pkg', 'card_db', 'data', 'b2.json'), 'utf8')) as { cards: DataCard[] };
-const cards = new Map(b2.cards.map((c) => [c.version && c.version > 1 ? `${c.id}@${String(c.version)}` : c.id, c]));
+// The fake bridge's cards are the Base Game's and Requiem's
+// (fakeBridge.ts); a later version's ref is id@N, as Go's, and a back
+// face is a card of its own.
+function dataCards(set: string): DataCard[] {
+  return (JSON.parse(readFileSync(join(root, 'pkg', 'card_db', 'data', `${set}.json`), 'utf8')) as { cards: DataCard[] }).cards;
+}
+const b2 = { cards: dataCards('b2') };
+const all = [...b2.cards, ...dataCards('r')].filter((c) => !c.reprint).flatMap((c) => (c.back ? [c, c.back] : [c]));
+const cards = new Map(all.map((c) => [c.version && c.version > 1 ? `${c.id}@${String(c.version)}` : c.id, c]));
 
 // languageNames are the Settings choices of a development build, as
 // i18n.ts lists them: English, each language file and each language the
@@ -52,7 +59,7 @@ export function cardName(ref: string): string {
   const card = cards.get(ref);
   const name = card?.text[locale]?.name ?? card?.text.en?.name;
   if (name === undefined) {
-    throw new Error(`no card ${ref} in b2.json`);
+    throw new Error(`no card ${ref} in b2.json or r.json`);
   }
   return name;
 }

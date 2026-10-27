@@ -6,6 +6,7 @@ import { appURL, serverPort } from './server';
 import { realAssets, shot } from './shot';
 import { openOnline } from './menu';
 import { locale, tr, trRe } from './locale';
+import { activePage, click, throwButton, turnAction, untilAttackRoll } from './turn';
 
 const fast = () => `${appURL()}&anim=off`;
 
@@ -22,6 +23,32 @@ test('a dropped player reconnects by itself to the same seat', async ({ browser 
   await expect(ben.getByRole('status', { name: tr('lost.reconnecting_label') })).toHaveCount(0);
   await expect(ben.getByRole('dialog', { name: tr('lost.title') })).toHaveCount(0);
   await expect(amy.getByRole('dialog', { name: tr('pause.label') })).toHaveCount(0);
+});
+
+test('an intent lost with a dropped connection can be sent again (19.86)', async ({ browser }) => {
+  const pages = await startGame(browser, ['Gwen', 'Hugo'], { url: fast() });
+  const active = await activePage(pages, click);
+  await click(active, turnAction(active, 'Attack'));
+  await untilAttackRoll(pages, click, active);
+  // The throw never reaches the server: the connection drops with it,
+  // as when the server closes a client that reads too slowly.
+  await active.evaluate(() => {
+    const w = window as unknown as { fourSouls: { drop: () => void } };
+    const send = WebSocket.prototype.send;
+    WebSocket.prototype.send = function (data) {
+      if (String(data).includes('"type":"intent"')) {
+        WebSocket.prototype.send = send;
+        w.fourSouls.drop();
+        return;
+      }
+      send.call(this, data);
+    };
+  });
+  await click(active, throwButton(active));
+  // The app reconnects to the same step; the Throw button is back.
+  await expect(throwButton(active)).toBeVisible();
+  await click(active, throwButton(active));
+  await expect(throwButton(active)).toHaveCount(0);
 });
 
 test('a player who closed the app comes back to the same seat', async ({ browser }) => {

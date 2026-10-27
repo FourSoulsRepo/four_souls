@@ -20,12 +20,16 @@ const NEXT_ATTACK_ROLL = 18;
 // giveCard rewrites a saved game: the active player's first hand card
 // becomes the card, and their first card in play becomes item, if given
 // (15.92). nextRoll gives the active player +1 to their next attack roll
-// this turn from the first monster, as Round Worm does (15.93). The test
-// server keeps saves under .cache/e2e.
-export function giveCard(game: string, card: string, item?: string, nextRoll = false) {
+// this turn from the first monster, as Round Worm does (15.93). sets
+// adds card sets to the game, by code and engine name ({ r: 'Requiem' }),
+// so a card of a set not dealt can be given (14.15). The test server
+// keeps saves under .cache/e2e.
+export function giveCard(game: string, card: string, item?: string, nextRoll = false, sets: Record<string, string> = {}) {
   const file = join(import.meta.dirname, '..', '..', '.cache', 'e2e', String(serverPort()), 'saves', `${game}.fssave`);
   const save = JSON.parse(readFileSync(file, 'utf8')) as {
+    sets: string[];
     state: {
+      sets: string[];
       turn: { active: number };
       players: { hand: number[]; in_play: number[] }[];
       objects: { card: string }[];
@@ -53,12 +57,16 @@ export function giveCard(game: string, card: string, item?: string, nextRoll = f
     const source = state.monsters[0]?.cards.at(-1);
     state.boosts = [...(state.boosts ?? []), { stat: NEXT_ATTACK_ROLL, player: state.turn.active, amount: 1, ...(source === undefined ? {} : { source }) }];
   }
+  for (const [code, name] of Object.entries(sets)) {
+    save.sets.push(code);
+    state.sets.push(name);
+  }
   writeFileSync(file, JSON.stringify(save));
 }
 
 // saveAndContinue: the host saves, the active player gets the card (and
 // the item in play), then everyone comes back to it.
-export async function saveAndContinue(pages: Page[], names: string, card = 'bomb', item?: string, nextRoll = false) {
+export async function saveAndContinue(pages: Page[], names: string, card = 'bomb', item?: string, nextRoll = false, sets: Record<string, string> = {}) {
   const [host, ...guests] = pages;
   if (!host) {
     throw new Error('no pages');
@@ -69,7 +77,7 @@ export async function saveAndContinue(pages: Page[], names: string, card = 'bomb
   for (const page of pages) {
     await expect(page.getByText(tr('lobby.games.saved'))).toBeVisible();
   }
-  giveCard(game, card, item, nextRoll);
+  giveCard(game, card, item, nextRoll, sets);
   // Back from the Games list is the LAN screen, with its Host button.
   await host.getByRole('button', { name: tr('lobby.back') }).click();
   await host.getByRole('button', { name: tr('host.title_host') }).click();

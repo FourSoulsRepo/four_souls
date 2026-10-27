@@ -4,7 +4,7 @@ import { expect, test } from './fixtures';
 import { startGame } from './game';
 import { appURL } from './server';
 import { shot } from './shot';
-import { activePage, answerPlay, click, playLoot, settle, throwButton, turnAction } from './turn';
+import { activePage, answerPlay, click, playLoot, throwButton, turnAction, untilAttackRoll } from './turn';
 import { tr, trRe } from './locale';
 
 const fast = () => `${appURL()}&anim=off`;
@@ -20,7 +20,7 @@ test('a second player sees the fight mark and the attack roll (15.31)', async ({
   }
   await expect(other.locator('.card.fight')).toHaveCount(0);
   await click(active, turnAction(active, 'Attack'));
-  await settle(pages, click, async () => (await throwButton(active).count()) > 0);
+  await untilAttackRoll(pages, click, active);
 
   // Attacker and monster both have the red frame, on every screen.
   for (const page of [active, other]) {

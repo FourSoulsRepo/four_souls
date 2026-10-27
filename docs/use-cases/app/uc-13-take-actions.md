@@ -24,7 +24,7 @@
 
 * **2a. Click or tap:** a card opens its action menu: Play, Use, Cancel.
 * **2b. Abilities:** a character or item with abilities shows "Use" or "Use ability N".
-* **5a. A choice dialog:** every choice also shows as a dialog.
+* **5a. A choice dialog:** every other choice shows as a dialog (5i).
   * Card options show as cards (V-07); text options as buttons.
   * A question shows its text as the title.
 * **5b. Pick a player:** a "Choose <name>" button in that player's area.
@@ -118,6 +118,13 @@
   * Cancel or a click outside cancels the play; the card stays.
   * "View board" hides the dialog, as in 5g.
   * A picked mode that needs a target then aims, as in 2f.
+* **5i. Attack, buy and slot on the table (18.11):** no dialog asks.
+  * What to attack, what to buy, a deck attack's slot.
+  * The options glow on the table; the rest dims.
+  * A deck option: the monster deck or the treasure deck glows.
+  * A deck attack's drawn card stays face up on the monster deck.
+  * One click picks; no arrow, no cancel.
+  * An option not on the table, e.g. an empty slot, keeps the dialog.
 
 ## Postconditions
 

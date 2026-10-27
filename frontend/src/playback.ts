@@ -5,6 +5,7 @@ import { kindOf, type CardInfo, type Kind } from './cards';
 import { firstPlayerText, tieText } from './dice';
 import { say, t } from './i18n';
 import type { GameEvent, GameView, Update } from './protocol';
+import type { Sound } from './sounds';
 
 export type Speed = 'normal' | 'fast' | 'slow' | 'off';
 
@@ -15,7 +16,8 @@ export type Effect =
   // before it held it (15.73). leaves is the source of the stack item
   // the card leaves; it hides until the next view (19.41). lifts is the
   // table card it flies off; it hides until the next view (19.73).
-  | { kind: 'fly'; from: string[]; to: string[]; card?: string; back: Kind; middle?: boolean; leaves?: number; lifts?: number }
+  // sound plays as the card leaves (18.7).
+  | { kind: 'fly'; from: string[]; to: string[]; card?: string; back: Kind; middle?: boolean; leaves?: number; lifts?: number; sound?: Sound }
   | { kind: 'popup'; at: string[]; text: string; tone: 'good' | 'bad' }
   // dice: thrown for a fresh roll or a reroll (15.62); a changed roll
   // spins in with its old value, a shot comes from the card that
@@ -42,7 +44,8 @@ export type Effect =
   // (15.75).
   | { kind: 'steal'; from: string[]; to: string[]; amount: number }
   // deaths: a big skull on each dying card before it leaves (T-26).
-  | { kind: 'deaths'; at: string[][] };
+  // sound plays with the skulls when a player died (18.8).
+  | { kind: 'deaths'; at: string[][]; sound?: Sound };
 
 export interface Hit {
   from: string[];
@@ -72,6 +75,8 @@ interface Context {
   slot: (object: number) => string | undefined;
   // before is slot, in the view on screen before this update (19.73).
   before: (object: number) => string | undefined;
+  // shopBefore is the shop slot a card tops in that view, if any (18.9).
+  shopBefore: (card: string) => Death | undefined;
   // diedAt keeps where each dead card died, by its held object, across
   // updates: reward rolls may come before its discard or soul (19.73).
   diedAt: Map<number, Death>;
@@ -125,6 +130,13 @@ function damageFrom(e: GameEvent, ctx: Context): string[] {
   return out;
 }
 
+// shopSlot is the shop slot whose top card is card, and its object.
+export function shopSlot(view: GameView, card: string): Death | undefined {
+  const i = (view.shop ?? []).findIndex((s) => s.top?.card === card);
+  const top = view.shop?.at(i)?.top;
+  return i >= 0 && top ? { zone: `shop-slot-${String(i)}`, object: top.id } : undefined;
+}
+
 // slotZone is the zone of the monster or shop slot whose top card is
 // object, as the board names it.
 export function slotZone(view: GameView, object: number): string | undefined {
@@ -151,12 +163,15 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
     const amount = e.amount ?? 0;
     switch (e.kind) {
       case 'looted':
+        // Each looted card makes its sound, from the deck or the
+        // discard (18.7).
         out.push({
           kind: 'fly',
           from: [e.text === 'from the discard' ? 'discard-loot' : 'deck-loot'],
           to: handZones(e.player),
           card: e.card,
           back: 'loot',
+          sound: 'lootDraw',
         });
         break;
       case 'discarded': {
@@ -247,11 +262,17 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
           ctx.diedAt.set(e.object, { zone, object: e.prev });
         }
         const at = e.prev ? [`obj-${String(e.prev)}`] : hitZones(e, ctx);
-        const last = out.at(-1);
+        let last = out.at(-1);
         if (last?.kind === 'deaths') {
           last.at.push(at);
         } else {
-          out.push({ kind: 'deaths', at: [at] });
+          last = { kind: 'deaths', at: [at] };
+          out.push(last);
+        }
+        // A player's died comes only once the death resolved, so nothing
+        // can undo it; a monster's death is silent (18.8).
+        if (e.player >= 0) {
+          last.sound = 'playerDied';
         }
         break;
       }
@@ -265,6 +286,22 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
         const death = ctx.diedAt.get(e.prev) ?? { zone: `obj-${String(e.prev)}`, object: e.prev };
         ctx.diedAt.delete(e.prev);
         out.push(flyFrom(death, playerZones(e.player), e.card, kind));
+        break;
+      }
+      case 'gained_treasure':
+        // A treasure drawn from its deck flies to the player with its
+        // sound, one per item; a starting or a stolen item does not (18.9).
+        if (e.text !== 'starting item' && e.text !== 'stolen') {
+          out.push({ kind: 'fly', from: ['deck-treasure'], to: playerZones(e.player), card: e.card, back: 'treasure', sound: 'treasureGain' });
+        }
+        break;
+      case 'purchased': {
+        // A shop item flies from the slot it topped on screen, which
+        // shows empty meanwhile. The deck top flew as gained_treasure.
+        const slot = e.text === 'treasure deck' || !e.card ? undefined : ctx.shopBefore(e.card);
+        if (slot) {
+          out.push({ kind: 'fly', from: [slot.zone], to: playerZones(e.player), card: e.card, back: 'treasure', lifts: slot.object, sound: 'treasureGain' });
+        }
         break;
       }
       case 'prevented':

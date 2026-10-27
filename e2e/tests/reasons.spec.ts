@@ -66,7 +66,8 @@ test('"View board" hides a choice and brings it back (15.29)', async ({ browser 
   if (!corin) {
     throw new Error('no pages');
   }
-  // A choice of a monster on the table, as the server sends it.
+  // A card's target prompt on a monster, as the server sends it. What
+  // to attack is picked on the table, with no dialog (18.11).
   const monster = await corin.evaluate(() => {
     interface Card {
       id: number;
@@ -81,13 +82,13 @@ test('"View board" hides a choice and brings it back (15.29)', async ({ browser 
     const game = structuredClone(s.game);
     const you = s.lobby.table.you;
     const m = game.view.monsters.find((x) => x.top)?.top ?? { id: 0, card: '' };
-    game.view.waiting = { kind: 4, player: you, purpose: 1, options: [{ key: 'ask.card', args: { card: { card: m.card } } }] };
+    game.view.waiting = { kind: 4, player: you, purpose: 6, options: [{ key: 'ask.card', args: { card: { card: m.card } } }] };
     game.view.options = [{ object: m.id, player: 0 }];
     game.allowed = [{ player: you, kind: 4, choice: 0 }];
     s.receive({ type: 'update', data: { ...game, step: game.step + 1, events: [] } });
     return m.id;
   });
-  const dialog = corin.getByRole('dialog', { name: tr('choice.title.attack') });
+  const dialog = corin.getByRole('dialog', { name: tr('choice.title.target') });
   await expect(dialog).toBeVisible();
   // The board under it is dimmed and takes no clicks.
   await expect(corin.locator('.choice-backdrop')).toBeVisible();
@@ -97,7 +98,7 @@ test('"View board" hides a choice and brings it back (15.29)', async ({ browser 
   await dialog.getByRole('button', { name: tr('choice.view_board') }).click();
   await expect(dialog).toHaveCount(0);
   const peek = corin.getByRole('group', { name: tr('choice.viewing') });
-  await expect(peek).toContainText(tr('choice.title.attack'));
+  await expect(peek).toContainText(tr('choice.title.target'));
   // The target glows on the table and answers there.
   await expect(card(corin, monster)).toHaveClass(/hl-pick/);
   await card(corin, monster).click({ trial: true });

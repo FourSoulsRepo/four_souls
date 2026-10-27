@@ -52,7 +52,7 @@ Ideas: B-04, B-05.
 3. Done when:
    1. ADR accepted; UC-16 matches the code.
 
-### [ ] 18.5 Sound loudness tool
+### [x] 18.5 Sound loudness tool
 
 1. Goal: a tool measures every sound's loudness (AU-04, ADR 022).
 2. Tasks:
@@ -88,7 +88,7 @@ Ideas: B-04, B-05.
    1. `check` prints the four values of ADR 022 (200 ms column) within 0.2 LU.
    2. `check` exits 1 on today's sounds.
 
-### [ ] 18.6 Level the sounds
+### [x] 18.6 Level the sounds
 
 1. Goal: every sound plays at one loudness (AU-04, ADR 022).
 2. Tasks:
@@ -111,3 +111,133 @@ Ideas: B-04, B-05.
 3. Done when:
    1. `loudness check` passes on every sound.
    2. **Owner** plays a game and hears no sound jump out.
+4. Owner notes (2026-10-27)
+   1. Owner marks 18.5 and 18.6 solved.
+   2. The images and tools repos are pushed.
+
+### [x] 18.7 Loot draw sound
+
+1. Goal: each looted card makes a sound (AU-05).
+2. Tasks:
+   1. Source: owner's `Card_Deal_1.wav`; source unknown.
+      1. So it lives only in the private images, as `loot-draw.mp3`.
+      2. Mono MP3, levelled with `loudness level` (ADR 022).
+      3. Amend the submodule commit; bump the pointer.
+   2. `App.Sounds()` gains `lootDraw`; `''` without the file.
+   3. Each `looted` plays it as its card flies.
+      1. One sound per card; each card has its own fly.
+      2. Every cause: start of turn, monster reward, card effects.
+      3. A card taken from the loot discard plays it too (owner).
+      4. With animations off, nothing plays, as other sounds.
+   4. `NOTICE`, UC-12, wiki `Client.md` name the sound.
+   5. Tests: Vitest for playback and sounds; e2e for the played file.
+   6. Gates: `make lint`, `make frontend e2e`.
+3. Done when:
+   1. `loudness check` passes on every sound.
+   2. **Owner** hears one deal per looted card.
+
+### [x] 18.8 Player death sound
+
+1. Goal: a player's death makes a sound (AU-06).
+2. Tasks:
+   1. Source: owner's `player_died.wav`; source unknown.
+      1. So it lives only in the private images, as `player-died.mp3`.
+      2. Mono MP3, levelled with `loudness level` (ADR 022).
+      3. Amend the submodule commit; bump the pointer.
+   2. `App.Sounds()` gains `playerDied`; `''` without the file.
+   3. It plays with the skull of a player's `died` event.
+      1. The engine sends it only when the death resolves (R-DEATH-17).
+      2. A death still on the stack can be prevented; it is silent.
+      3. A monster's death is silent.
+      4. Each death resolves on its own, so each plays its own sound.
+      5. With animations off, nothing plays, as other sounds.
+   4. `NOTICE`, UC-12, wiki `Client.md` name the sound.
+   5. Tests: Vitest for playback and sounds; e2e for the played file.
+   6. Gates: `make lint`, `make frontend e2e`.
+3. Done when:
+   1. `loudness check` passes on every sound.
+   2. **Owner** hears it once per player death, never on a prevented one.
+
+### [x] 18.9 Treasure gain sound
+
+1. Goal: each gained treasure flies in with a sound (AU-07).
+2. Tasks:
+   1. Source: owner's `power up1.wav`; source unknown.
+      1. So it lives only in the private images, as `treasure-gain.mp3`.
+      2. Mono MP3, levelled with `loudness level` (ADR 022).
+      3. Amend the submodule commit; bump the pointer.
+   2. `App.Sounds()` gains `treasureGain`; `''` without the file.
+   3. Each gained treasure flies to its player, one at a time.
+      1. Shop slot buy: `purchased` flies from the slot.
+      2. The engine's `purchased` gains `prev`: the slot's object.
+      3. The slot shows empty while it flies, as a dead monster's.
+      4. Deck top buy, monster reward, card effects: `gained_treasure`.
+      5. They fly from the treasure deck.
+      6. Each fly plays the sound as it leaves.
+   4. Silent, no fly: a loot trinket, a starting item, a stolen item.
+   5. With animations off, nothing plays, as other sounds.
+   6. `NOTICE`, UC-12, wiki `Client.md`, `Animations.md` name it.
+   7. Tests: Vitest for playback and sounds; e2e for the played file.
+   8. Gates: `make lint`, `make frontend e2e`.
+3. Done when:
+   1. `loudness check` passes on every sound.
+   2. **Owner** hears one sound per gained treasure, and sees it fly.
+
+### [x] 18.10 e2e waits name the state they need
+
+1. Goal: a card that asks one more input does not break a test (TS-08).
+2. Tasks:
+   1. `turn.ts`: `untilAttackRoll(pages, press, attacker)`.
+      1. It runs `settle` until the attack roll waits for its throw.
+      2. `attackRollWaits` reads the store: top roll is the attack's.
+      3. The attack has its target; the Throw button shows.
+   2. Every "Attack, then wait for any Throw" uses it: ten places.
+   3. Wiki `Frontend-tests.md` names it; CLAUDE.md 5.16.10.
+   4. Gates: `make lint`; the changed specs in both browsers.
+3. Done when:
+   1. The changed specs pass; no test waits for any Throw after Attack.
+   2. The 19.85 Bob's Brain test passes through the new wait.
+4. Result (2026-10-27)
+   1. 126 of 126 in the eight changed specs, chromium and webkit.
+5. Owner notes (2026-10-27)
+   1. Owner marks 18.10 solved.
+
+### [x] 18.11 Attack and buy pick on the table
+
+1. Goal: attack, buy and slot picks happen on the table, no dialog (V-53).
+2. Tasks:
+   1. Three choices skip the choice dialog:
+      1. What to attack (`Purpose.attackTarget`, R-ATK-02).
+      2. What to buy (`Purpose.purchase`, R-SHOP-02).
+      3. A deck attack's slot (`Purpose.monsterSlot`, R-ATK-08).
+   2. Their options glow on the table, the rest dims, as today.
+      1. Monsters, shop items, attackable items and characters.
+      2. The monster deck or the treasure deck for a deck option.
+      3. A deck attack: the drawn card stays face up on the deck (19.9).
+   3. A click on a glowing option picks it; no arrow, no confirm.
+   4. No cancel: the attack or purchase is declared already.
+   5. An option not on the table keeps the dialog (e.g. an empty slot).
+   6. The banner says what the game waits for.
+      1. Title: the choice's question, e.g. "Choose what to attack".
+      2. Hint: a new line, "Click a glowing card".
+      3. Other players see "Waiting for Ann" and the question, as today.
+   7. Out of scope (owner, 2026-10-27):
+      1. A click on a monster before Attack does nothing, as today.
+      2. The rules choose the target after the priority window.
+   8. Docs: UC-13 (5, 5a), UC-21, wiki `Client.md`; V-53 marked done.
+   9. Tests:
+      1. Vitest: which choices skip the dialog; the banner hint.
+      2. e2e: helpers pick glowing table options without a dialog.
+      3. e2e: specs that used these dialogs pick on the table.
+   10. Gates: `make lint`, `make frontend e2e`.
+3. Done when:
+   1. Attack, buy and slot picks show no dialog.
+   2. **Owner** checks the screenshots of the three picks.
+4. Result (2026-10-27)
+   1. `make lint`, `make frontend`: pass.
+   2. `make e2e`: 376 passed, 6 skipped, chromium and webkit.
+   3. Screenshots: `attack-pick-table`, `turn-actions-buy`, `deck-attack-pick-slot`.
+   4. `fd65095` held only these result lines: a test command stashed the work.
+   5. The next commit brings the code; an internal build of `fd65095` has none of it.
+5. Owner notes (2026-10-27)
+   1. Owner marks 18.11 solved.

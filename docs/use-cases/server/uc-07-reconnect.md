@@ -47,6 +47,10 @@
   * **Leave game**, **Leave** in "Connection lost", leaving a table.
   * A crash or a closed window keeps it.
   * A crashed LAN host has nothing to rejoin; it continues from a save (UC-09).
+* **4a. A move was sent as the connection dropped (19.86):** it may never have reached the server.
+  * The new connection's welcome frees the player's buttons.
+  * The full view shows whether the move was played.
+  * A move that was lost can be made again.
 
 ## Postconditions
 

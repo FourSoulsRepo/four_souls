@@ -232,6 +232,8 @@ func (r *Room) handle(req request) {
 		r.vote(c, env)
 	case protocol.TypeSave:
 		r.save(c, env)
+	case protocol.TypeEnd:
+		r.end(c, env)
 	case protocol.TypePresence:
 		r.presence(c, env)
 	case protocol.TypeRollback:

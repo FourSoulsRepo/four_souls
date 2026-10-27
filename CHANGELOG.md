@@ -6,6 +6,9 @@ Rules engine versions are in each release's notes.
 
 ## Unreleased
 
+## 0.3.0 - 2026-10-27
+
+- The host can end a game for everyone from the game Menu: End game, then confirm. It works on a dedicated server too, where leaving only paused the game.
 - In a game with rollback, one Undo button under the History title undoes the latest move, press by press; its tooltip names it, "Undo: Bo plays A Penny!". A played card and the target it asks are one move. Greyed, it says why, such as "Nothing to undo since a die was rolled".
 - "Choose one-" cards such as Dagaz ask like The Bone: the card large, one line per option; an option with nothing to target is greyed.
 - Online: each Recent server shows whether it is up and how many games there have a free seat.

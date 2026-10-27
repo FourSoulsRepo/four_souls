@@ -39,6 +39,11 @@ export function noticeText(n: Notice): { title: string; text: string } {
         title: t('notice.game_idle.title'),
         text: n.reason === 'long' ? t('notice.game_idle.long') : t('notice.game_idle.idle'),
       };
+    case 'game_ended':
+      return {
+        title: t('notice.game_idle.title'),
+        text: t('notice.game_ended.text'),
+      };
     default:
       return { title: t('notice.title'), text: n.kind };
   }
@@ -47,5 +52,5 @@ export function noticeText(n: Notice): { title: string; text: string } {
 // endsGame: after this notice the game is gone; the app shows the
 // server's game list.
 export function endsGame(n: Notice): boolean {
-  return n.kind === 'game_lost' || n.kind === 'game_idle';
+  return n.kind === 'game_lost' || n.kind === 'game_idle' || n.kind === 'game_ended';
 }

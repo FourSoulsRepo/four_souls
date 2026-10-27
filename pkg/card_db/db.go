@@ -26,8 +26,8 @@ type setFile struct {
 // DB holds every loaded card.
 type DB struct {
 	sets  []Set
-	cards map[Ref]Card
-	refs  []Ref
+	cards map[Ref]Card // back faces too (ADR 023)
+	refs  []Ref        // fronts only: a back is never dealt
 }
 
 // Load reads every data/*.json file of fsys and validates it.
@@ -111,6 +111,13 @@ func (db *DB) add(f setFile) []error {
 		c.Prints = []Print{{Set: c.Set, Copies: c.Copies, Images: c.Images}}
 		db.cards[ref] = c
 		db.refs = append(db.refs, ref)
+		if b, ok := c.BackCard(); ok {
+			if old, ok := db.cards[b.Ref()]; ok {
+				errs = append(errs, fmt.Errorf("%s: back %s of %s already defined in set %s", f.name, b.ID, ref, old.Set))
+				continue
+			}
+			db.cards[b.Ref()] = b
+		}
 	}
 	return errs
 }
@@ -175,6 +182,38 @@ func validate(c Card) error {
 			errs = append(errs, fmt.Errorf("related: %w", err))
 		}
 	}
+	if c.Back != nil {
+		if err := validateBack(c); err != nil {
+			errs = append(errs, fmt.Errorf("back: %w", err))
+		}
+	}
+	return errors.Join(errs...)
+}
+
+// validateBack checks a two-sided card's back face (ADR 023): its own
+// id and English name, one image at most, and a name in every language.
+func validateBack(c Card) error {
+	b := c.Back
+	var errs []error
+	if !idPattern.MatchString(b.ID) || b.ID == c.ID {
+		errs = append(errs, fmt.Errorf("bad id %q", b.ID))
+	}
+	if b.Text[English].Name == "" {
+		errs = append(errs, errors.New("an English name is required"))
+	}
+	for lang, t := range b.Text {
+		if t.Name == "" {
+			errs = append(errs, fmt.Errorf("text %q has no name", lang))
+		}
+	}
+	if len(b.Images) > 1 {
+		errs = append(errs, errors.New("one image at most"))
+	}
+	for _, img := range b.Images {
+		if !safePath(img) {
+			errs = append(errs, fmt.Errorf("bad image path %q", img))
+		}
+	}
 	return errors.Join(errs...)
 }
 
@@ -208,7 +247,7 @@ func validateReprint(r Card) error {
 		errs = append(errs, fmt.Errorf("bad id %q", r.ID))
 	}
 	if r.Type != "" || len(r.Text) > 0 || len(r.Stats) > 0 || len(r.Rewards) > 0 ||
-		len(r.Artists) > 0 || len(r.Translators) > 0 || len(r.Related) > 0 || r.Rebalanced || r.ThreePlus {
+		len(r.Artists) > 0 || len(r.Translators) > 0 || len(r.Related) > 0 || r.Rebalanced || r.ThreePlus || r.Back != nil {
 		errs = append(errs, errors.New("a reprint has only id, version, copies and images"))
 	}
 	if err := validateCopies(r.Copies, r.Images); err != nil {
@@ -251,7 +290,8 @@ func (db *DB) Get(ref Ref) (Card, bool) {
 	return c, ok
 }
 
-// Refs returns every card reference, sorted.
+// Refs returns every card reference, sorted. Back faces are left out;
+// Get finds them, and the front's Back names them (ADR 023).
 func (db *DB) Refs() []Ref {
 	return append([]Ref(nil), db.refs...)
 }

@@ -41,7 +41,7 @@ import { emptyLobby, forgotten, leftTable, lost, onMessage, remember, renamed, t
 import { connectFirst, disconnect, drop, send } from './net';
 import { claimEffect, nextBeat } from './animations';
 import { lastRollAfter, type LastRoll } from './dice';
-import { createPlayback, effectsFor, scaleFor, slotZone, type Death, type Effect } from './playback';
+import { createPlayback, effectsFor, scaleFor, shopSlot, slotZone, type Death, type Effect } from './playback';
 import { loadSounds } from './sounds';
 import { endsGame, lostDialogAfter, retryDelay } from './reconnect';
 import {
@@ -291,6 +291,8 @@ interface AppState extends Session {
   hostSaved: () => Promise<void>;
   // saveGame saves the running game; only the host may (N-11).
   saveGame: () => void;
+  // endGame ends the running game for everyone; only the host may (19.84).
+  endGame: () => void;
   // joinGame sits down at a game; a locked one needs its password.
   joinGame: (game: string, password?: string) => void;
   loadSave: (save: string) => void;
@@ -477,6 +479,10 @@ export const useApp = create<AppState>()((set, get) => {
           const view = get().game?.view;
           return view ? slotZone(view, id) : undefined;
         },
+        shopBefore: (ref) => {
+          const view = get().game?.view;
+          return view ? shopSlot(view, ref) : undefined;
+        },
         diedAt,
         seen: (ref) => (get().game?.events ?? []).some((e) => e.kind === 'card_revealed' && e.card === ref),
         roll: (stack) => get().game?.view.stack?.find((it) => it.id === stack)?.roll,
@@ -508,6 +514,8 @@ export const useApp = create<AppState>()((set, get) => {
       void get().saveSettings({ ...s, rejoin: noSeat });
     }
   };
+  // ending: this app ended its game; its own notice is not shown (19.84).
+  let ending = false;
   // seated: the player sits at a table or plays a game.
   const seated = () => get().screen === 'game' || get().lobby.table !== null;
 
@@ -691,13 +699,18 @@ export const useApp = create<AppState>()((set, get) => {
       }
       if (env.type === 'welcome') {
         nameServer(get().address, (env.data as Welcome).name ?? '');
+        // An intent sent on the old connection gets no answer on this
+        // one: the resync shows whether it was played (19.86).
+        set({ sent: null });
       }
       if (env.type === 'restarting') {
         set({ restarting: true });
       }
       if (env.type === 'notice') {
         const n = env.data as Notice;
-        set({ notice: n });
+        const mine = ending && n.kind === 'game_ended';
+        ending = false;
+        set({ notice: mine ? null : n });
         if (endsGame(n)) {
           forgetSeat();
           endRetry();
@@ -994,6 +1007,10 @@ export const useApp = create<AppState>()((set, get) => {
     },
     saveGame: () => {
       send('save');
+    },
+    endGame: () => {
+      ending = true;
+      send('end');
     },
     joinGame: (game, password) => {
       send('join', password ? { game, password } : { game });

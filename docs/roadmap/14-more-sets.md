@@ -349,7 +349,7 @@ Alt art (CD-11) comes after all sets.
    2. e2e test: Punching Bag can be attacked.
    3. UC-13 updated.
 
-### [ ] 14.15 Two-sided cards
+### [x] 14.15 Two-sided cards
 
 1. Goal: a flipped card shows its other face (R-CARD-39).
 2. Tasks:
@@ -357,6 +357,14 @@ Alt art (CD-11) comes after all sets.
    2. Tools: the back image from the card page (`r-the_enigma_back`).
    3. The table shows the face-up side; the zoom shows both.
    4. The history names the flip.
+   5. Each side has its own name; never "Front/Back" (owner, 2026-10-27).
+   6. A card that changes side plays a flip animation (owner, 2026-10-27).
 3. Done when:
    1. e2e test: Anima Sola flips to The Revenant and back.
    2. Use case.
+   3. ADR 023 accepted.
+4. Progress:
+   1. **Owner:** done on `step-18-play-test`, ahead of step 14 (2026-10-27).
+   2. **Owner:** the tools fetch the back images now (2026-10-27).
+5. Owner notes (2026-10-27)
+   1. Owner marks 14.15 solved.

@@ -211,6 +211,27 @@
   * Reward rolls may come first; it still flies from its slot.
   * Its slot shows empty while it flies.
   * A bonus soul does not fly.
+* **1ac. Loot draw sound (18.7):** a looted card makes a deal sound.
+  * One sound per card, as each card flies to the hand.
+  * Any cause: start of turn, a monster's reward, a card's effect.
+  * A card taken from the loot discard sounds too.
+  * No private images (public clone): no sound.
+  * With animations off, no sound plays.
+* **1ad. Player death sound (18.8):** a dead player makes a death sound.
+  * It plays as the skull pops on the character.
+  * Only once the death resolves: nothing can undo it then.
+  * A death prevented on the stack is silent.
+  * A monster's death is silent.
+  * No private images (public clone): no sound.
+  * With animations off, no sound plays.
+* **1ae. Treasure gain sound (18.9):** a gained treasure flies in with a sound.
+  * Bought from a shop slot: it flies from that slot to the player.
+  * Bought from the deck top: it flies from the treasure deck.
+  * A monster's reward or a card's effect: from the treasure deck.
+  * Each item flies on its own, with its own sound.
+  * A loot trinket, a starting item and a stolen item are silent.
+  * No private images (public clone): no sound.
+  * With animations off, no sound plays.
 
 ## Postconditions
 

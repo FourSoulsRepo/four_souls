@@ -15,6 +15,7 @@ import {
   type Intent,
   type Join,
   type Load,
+  type Notice,
   type Presence,
   type ProtocolError,
   type Ready,
@@ -211,6 +212,8 @@ const modeled: Record<string, Envelope | Envelope[]> = {
   'rollback#19': { type: 'rollback', id: 19, data: { step: 7, ask: true } satisfies RollbackTo },
   rollback_vote: { type: 'rollback_vote', id: 20, data: { yes: true } satisfies RollbackVoteAnswer },
   rollback_cancel: { type: 'rollback_cancel', id: 21, data: {} },
+  end: { type: 'end', id: 22, data: {} },
+  notice: { type: 'notice', data: { kind: 'game_ended', game: 'g1' } satisfies Notice },
   // A second line of one type is keyed by type and ID.
   'intent#16': { type: 'intent', id: 16, data: { intent: { player: 0, kind: 9 } satisfies Intent } },
   'presence#17': { type: 'presence', id: 17, data: { seat: 0, from: { hand: 2 }, point: { x: 0.25, y: 0.5 } } satisfies Presence },

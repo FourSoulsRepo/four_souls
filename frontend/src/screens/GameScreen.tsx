@@ -22,7 +22,7 @@ import { EndTurn, TurnActions } from '../components/TurnActions';
 import { matLook } from '../mats';
 import type { Update } from '../protocol';
 import { seatOf, useApp } from '../store';
-import { activity, askedSeat, myMove, picking, promptBanner, stackPrompt } from '../prompt';
+import { activity, askedSeat, myMove, picking, promptBanner, stackPrompt, tablePick } from '../prompt';
 import { seatNames, waitTurn, type Names } from '../stack';
 import { seatPositions } from '../table';
 import '../components/Table.css';
@@ -229,7 +229,7 @@ function Table({ game, you }: { game: Update; you: number }) {
       <WhyNote />
       {offered.choice?.purpose === Purpose.mode && view.modes && !aiming?.choice ? (
         <ModeDialog key={game.step} choice={offered.choice} card={view.subject?.card} modes={view.modes} />
-      ) : offered.choice && !aiming?.choice && (
+      ) : offered.choice && !aiming?.choice && !tablePick(offered.choice) && (
         <ChoiceDialog
           key={game.step}
           choice={offered.choice}

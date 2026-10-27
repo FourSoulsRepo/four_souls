@@ -570,6 +570,10 @@
     "text": "Paused",
     "note": "Game table, prompt banner: the game waits for a player who left."
   },
+  "banner.pick_table": {
+    "text": "Click a glowing card",
+    "note": "Prompt banner, small line under Choose what to attack, Choose what to buy, or Choose a slot for the monster: the player picks on the table."
+  },
   "banner.respond": {
     "text": "Respond, or pass",
     "note": "Prompt banner: something is on the stack and the player may answer it."
@@ -1315,6 +1319,10 @@
     "text": "{error}",
     "note": "Host screen: why the deck ratios can't be checked; error: the rules engine's words, in English."
   },
+  "error.host_ends": {
+    "text": "Only the host ends the game.",
+    "note": "Error from the server, shown on the table. End game from a player who is not the host."
+  },
   "error.host_loads": {
     "text": "Only the host continues saved games here.",
     "note": "Error from the server, shown in the lobby or on the table. A friend tried to continue a saved game on a game hosted in an app."
@@ -1647,6 +1655,10 @@
     "text": "Turn {n}",
     "note": "Game table: screen-reader name of the whole table. n: the turn number."
   },
+  "game_menu.back": {
+    "text": "Back",
+    "note": "Game menu, End game step: goes back to the menu."
+  },
   "game_menu.button": {
     "text": "Menu",
     "note": "Game table: the corner button that opens the game menu."
@@ -1654,6 +1666,18 @@
   "game_menu.cancel": {
     "text": "Cancel",
     "note": "Game menu dialog: closes it."
+  },
+  "game_menu.end": {
+    "text": "End game",
+    "note": "Game menu dialog, for the host: ends the game for everyone. Also the confirm button of the next step."
+  },
+  "game_menu.end_hint": {
+    "text": "The game stops for everyone and cannot go on later. Everyone goes back to the game list.",
+    "note": "Game menu, End game step: line over the buttons."
+  },
+  "game_menu.end_title": {
+    "text": "End the game?",
+    "note": "Game menu, End game step: title."
   },
   "game_menu.label": {
     "text": "Game menu",
@@ -1893,8 +1917,8 @@
     "note": "History: a play lost its target. card: the card, or 'An ability'."
   },
   "history.flipped": {
-    "text": "{card} flips",
-    "note": "History: a card turned to its other side. card: the card, or 'A card'."
+    "text": "{card} turns face up",
+    "note": "History: a two-sided card turned to its other side. card: the side now up, or 'A card'."
   },
   "history.gain.other": {
     "text": "{player} gains {card}",
@@ -2153,6 +2177,38 @@
   "history.title": {
     "text": "History",
     "note": "The match history panel's title, and the name of the button on the history strip that opens it."
+  },
+  "history.top_bottom.loot": {
+    "text": "{player} puts the top loot card on the bottom",
+    "note": "History: a player looked at the loot deck's top card and put it on the bottom. The card stays hidden."
+  },
+  "history.top_bottom.monster": {
+    "text": "{player} puts the top monster card on the bottom",
+    "note": "History: a player looked at the monster deck's top card and put it on the bottom. The card stays hidden."
+  },
+  "history.top_bottom.treasure": {
+    "text": "{player} puts the top treasure card on the bottom",
+    "note": "History: a player looked at the treasure deck's top card and put it on the bottom. The card stays hidden."
+  },
+  "history.top_bottom.you": {
+    "text": "You put {card} on the bottom",
+    "note": "History: the viewer looked at a deck's top card and put it on the bottom of that deck."
+  },
+  "history.top_kept.loot": {
+    "text": "{player} keeps the top loot card on top",
+    "note": "History: a player looked at the loot deck's top card and left it there. The card stays hidden."
+  },
+  "history.top_kept.monster": {
+    "text": "{player} keeps the top monster card on top",
+    "note": "History: a player looked at the monster deck's top card and left it there. The card stays hidden."
+  },
+  "history.top_kept.treasure": {
+    "text": "{player} keeps the top treasure card on top",
+    "note": "History: a player looked at the treasure deck's top card and left it there. The card stays hidden."
+  },
+  "history.top_kept.you": {
+    "text": "You keep {card} on top",
+    "note": "History: the viewer looked at a deck's top card and left it there."
   },
   "history.turn": {
     "text": "Turn {n}: {player}",
@@ -2670,6 +2726,10 @@
   "notice.engine_updated.title": {
     "text": "The server was updated",
     "note": "Server notice dialog title: the server restarted with a new rules engine; the game goes on."
+  },
+  "notice.game_ended.text": {
+    "text": "The host ended the game.",
+    "note": "Server notice dialog text under 'The game ended': the host pressed End game."
   },
   "notice.game_idle.idle": {
     "text": "Nobody played it for too long.",
@@ -3813,6 +3873,10 @@
   "zoom.keywords": {
     "text": "Keywords",
     "note": "Zoomed card: screen-reader name of the keyword notes beside it."
+  },
+  "zoom.other_side": {
+    "text": "Other side",
+    "note": "Under the small second card beside a zoomed two-sided card: its other face."
   },
   "zoom.outcome": {
     "text": "What it did",

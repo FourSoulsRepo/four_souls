@@ -596,3 +596,42 @@ test('a strip tile shows what the play did: target, damage, kill and rewards (15
   await expect(results.nth(0).locator('.card')).toBeAttached();
   await shot(active, 'history-popout-play');
 });
+
+test('everyone sees if a looked-at top card stays or goes to the bottom (19.90)', async ({ browser }) => {
+  const names = ['Lea', 'Mo'];
+  const pages = await startGame(browser, names, { url: fast() });
+  const [lea, mo] = pages;
+  if (!lea || !mo) {
+    throw new Error('no pages');
+  }
+  await activePage(pages, click);
+  // Cain's Eye: Lea put the top loot card on the bottom. Each page gets
+  // the event as the server sends it: only Lea gets the card.
+  const seat = await lea.evaluate(() => (window as unknown as { fourSouls: { store: { getState: () => { lobby: { table: { you: number } } } } } }).fourSouls.store.getState().lobby.table.you);
+  for (const [page, card] of [
+    [lea, 'a_dime'],
+    [mo, ''],
+  ] as const) {
+    await page.evaluate(
+      ({ seat, card }) => {
+        interface Store {
+          getState: () => { game: { step: number } | null; receive: (env: unknown) => void };
+        }
+        const s = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store.getState();
+        const game = structuredClone(s.game);
+        if (!game) {
+          throw new Error('no game');
+        }
+        const event = { kind: 'top_choice', player: seat, private: true, text: 'loot deck bottom', ...(card ? { object: 901, card } : {}) };
+        s.receive({ type: 'update', data: { ...game, step: game.step + 1, events: [event] } });
+      },
+      { seat, card },
+    );
+    await page.getByRole('button', { name: tr('history.title'), exact: true }).click();
+  }
+  const history = (p: typeof lea) => p.getByRole('complementary', { name: tr('history.title'), exact: true });
+  await expect(history(lea)).toContainText(tr('history.top_bottom.you', { card: cardName('a_dime') }));
+  await expect(history(mo)).toContainText(tr('history.top_bottom.loot', { player: names[0] ?? '' }));
+  await expect(history(mo)).not.toContainText(cardName('a_dime'));
+  await shot(mo, 'history-top-choice');
+});

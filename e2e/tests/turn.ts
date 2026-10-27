@@ -137,6 +137,14 @@ async function answer(pages: Page[], press: Tap, steps: number[]): Promise<boole
       await press(page, (await uncovered(page.locator('.board .card.hl-pick, .player-pick'))) ?? choice.locator('.choice-option button').first());
       return true;
     }
+    // What to attack, what to buy, and a deck attack's slot are picked
+    // on the table, with no dialog (18.11). The board first: a monster,
+    // as the dialog's first option was, before a player.
+    const pick = (await uncovered(page.locator('.board .card.hl-pick'))) ?? (await uncovered(tablePicks(page)));
+    if (pick) {
+      await press(page, pick);
+      return true;
+    }
     // A target prompt of the player's own card aims from it, with no
     // dialog (15.34): its targets glow on the table (19.10).
     const aim = await uncovered(page.locator('.card.hl-aim, .stack-row.hl-aim'));
@@ -188,6 +196,38 @@ export async function settle(pages: Page[], press: Tap, done: () => Promise<bool
     })),
   );
   throw new Error(`the game never settled: ${JSON.stringify(states)}`);
+}
+
+// tablePicks are the options of a choice picked on the table, with no
+// dialog (18.11): what to attack, what to buy, a deck attack's slot.
+export function tablePicks(page: Page): Locator {
+  return page.locator('.card.hl-pick, .player-pick');
+}
+
+// attackRollWaits: the page's player must throw their attack roll. The
+// roll on top of the stack is the attack's, the attack has its target,
+// and the Throw button shows. Another roll does not count: Bob's Brain
+// rolls when the attack is declared, before the target (19.85).
+export async function attackRollWaits(page: Page): Promise<boolean> {
+  const waits = await page.evaluate(() => {
+    interface S {
+      game: { view: { waiting: { kind: number; player: number }; stack?: { kind: number; attack?: boolean }[]; attack?: { target?: number } } } | null;
+      lobby: { table: { you: number } | null };
+    }
+    const s = (window as unknown as { fourSouls: { store: { getState: () => S } } }).fourSouls.store.getState();
+    const view = s.game?.view;
+    const top = view?.stack?.at(-1);
+    // 6 is PromptKind.throw (actions.ts); 3 is StackKind.roll (stack.ts).
+    return view !== undefined && view.waiting.kind === 6 && view.waiting.player === s.lobby.table?.you && top?.kind === 3 && top.attack === true && (view.attack?.target ?? 0) !== 0;
+  });
+  return waits && (await throwButton(page).count()) > 0;
+}
+
+// untilAttackRoll answers prompts after an Attack click until the
+// attacker's attack roll waits for its throw (18.10). Prompts on the way
+// get answered: the target, and any card the attack sets off.
+export async function untilAttackRoll(pages: Page[], press: Tap, attacker: Page): Promise<void> {
+  await settle(pages, press, () => attackRollWaits(attacker));
 }
 
 // turnAction is an icon button by own name (15.19): "Buy" or "Attack".

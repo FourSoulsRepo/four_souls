@@ -17,6 +17,7 @@ export async function shot(page: Page, name: string): Promise<void> {
 // realAssets serves cards, backs, mats, dice, fonts and sounds from the
 // private images submodule when SCREENSHOTS is set and the submodule is
 // there, so screenshots show the real images. Tests never depend on it.
+// A missing file falls back to the test's own route, if any (19.82).
 export async function realAssets(page: Page): Promise<void> {
   const dir = join(root, 'pkg', 'card_db', 'images');
   if (!process.env.SCREENSHOTS || !existsSync(dir)) {
@@ -28,6 +29,6 @@ export async function realAssets(page: Page): Promise<void> {
     const inside = !name.startsWith('..') && existsSync(file);
     const types: Record<string, string> = { '.ttf': 'font/ttf', '.mp3': 'audio/mpeg' };
     const contentType = types[extname(name)] ?? 'image/webp';
-    await (inside ? route.fulfill({ path: file, contentType }) : route.continue());
+    await (inside ? route.fulfill({ path: file, contentType }) : route.fallback());
   });
 }

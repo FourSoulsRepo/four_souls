@@ -16,6 +16,9 @@ import './Card.css';
 // How long a touch must rest on a card to zoom it (B-06).
 const LONG_PRESS_MS = 450;
 
+// How long a card takes to turn to its other side (ADR 023).
+const FLIP_MS = 500;
+
 export type CardSize = 'hand' | 'table' | 'small' | 'zoom' | 'choice';
 
 interface Props {
@@ -78,9 +81,10 @@ export function Card({
   why,
   onClick,
 }: Props) {
-  const info = useApp((s) => (cardRef ? s.cards.get(cardRef) : undefined));
-  const backImage = useApp((s) => s.backs.get(back) ?? '');
   const scale = useApp(viewScale);
+  const flip = useFlip(cardRef, objectId, scale);
+  const info = useApp((s) => (flip.face ? s.cards.get(flip.face) : undefined));
+  const backImage = useApp((s) => s.backs.get(back) ?? '');
   const [brokenImage, setBrokenImage] = useState('');
   const zoomable = size !== 'zoom' && !noZoom;
   const cards = useApp((s) => s.cards);
@@ -131,7 +135,7 @@ export function Card({
     );
   }
 
-  const card = info ?? unknownCard(cardRef);
+  const card = info ?? unknownCard(flip.face ?? cardRef);
   const image = card.image !== '' && card.image !== brokenImage;
   // The zoomed card shows no badges: its words stay readable.
   const badges = size !== 'zoom';
@@ -146,7 +150,8 @@ export function Card({
       transition={{ duration: 0.25 * scale }}
       data-zone={objectId === undefined ? undefined : `obj-${String(objectId)}`}
       data-player={player}
-      className={`card size-${size} kind-${kindOf(card.type)}${image ? '' : ' blank'}${counters > 0 ? ' has-counters' : ''}${spent ? ' spent' : ''}${fight ? ' fight' : ''}${highlight ? ` hl-${highlight}` : ''}`}
+      className={`card size-${size} kind-${kindOf(card.type)}${image ? '' : ' blank'}${counters > 0 ? ' has-counters' : ''}${spent ? ' spent' : ''}${fight ? ' fight' : ''}${highlight ? ` hl-${highlight}` : ''}${flip.turn ? ` flip-${flip.turn}` : ''}`}
+      style={flip.turn ? { animationDuration: `${String((FLIP_MS * scale) / 2)}ms` } : undefined}
       role={onClick ? 'button' : 'img'}
       aria-label={card.name}
       onClick={click}
@@ -178,6 +183,46 @@ export function Card({
       {badges && <SourceIcons list={tempSources(sources)} name={name} onLeave={backToCard} />}
     </motion.div>
   );
+}
+
+// Flip is a card turning to its other side: from is the face that turns
+// away; half is set once it is edge-on and the new face shows.
+interface Flip {
+  from: string;
+  half: boolean;
+}
+
+// useFlip turns a table card whose object changed side (ADR 023): the
+// old face turns edge-on, then the new face turns to the front. It
+// returns the face to draw now, and the half that turns, if any. A
+// rollback's table (scale 0) only jumps.
+function useFlip(cardRef: string | undefined, objectId: number | undefined, scale: number): { face: string | undefined; turn?: 'out' | 'in' } {
+  const sides = useApp((s) => (cardRef ? s.cards.get(cardRef) : undefined));
+  const [seen, setSeen] = useState(cardRef);
+  const [flip, setFlip] = useState<Flip | null>(null);
+  if (seen !== cardRef) {
+    setSeen(cardRef);
+    const other = seen !== undefined && (sides?.back === seen || sides?.front === seen);
+    setFlip(other && objectId !== undefined && scale > 0 ? { from: seen, half: false } : null);
+  }
+  useEffect(() => {
+    if (!flip) {
+      return;
+    }
+    const id = window.setTimeout(
+      () => {
+        setFlip(flip.half ? null : { ...flip, half: true });
+      },
+      (FLIP_MS * scale) / 2,
+    );
+    return () => {
+      window.clearTimeout(id);
+    };
+  }, [flip, scale]);
+  if (!flip) {
+    return { face: cardRef };
+  }
+  return flip.half ? { face: cardRef, turn: 'in' } : { face: flip.from, turn: 'out' };
 }
 
 // useZoom zooms a card from the element it is spread on: on mouse

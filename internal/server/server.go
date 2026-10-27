@@ -214,8 +214,14 @@ func cardTexts() []record.Card {
 	var out []record.Card
 	for _, ref := range db.Refs() {
 		c, _ := db.Get(ref)
-		en := c.Text[carddb.English]
-		out = append(out, record.Card{Ref: ref.String(), Name: en.Name, Type: c.Type, Effects: en.Effects})
+		faces := []carddb.Card{c}
+		if b, ok := c.BackCard(); ok {
+			faces = append(faces, b) // a flipped card's ref (ADR 023)
+		}
+		for _, f := range faces {
+			en := f.Text[carddb.English]
+			out = append(out, record.Card{Ref: f.Ref().String(), Name: en.Name, Type: f.Type, Effects: en.Effects})
+		}
 	}
 	return out
 }

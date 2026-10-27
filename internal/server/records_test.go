@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"encoding/json"
+	"maps"
 	"mime"
 	"net/http"
 	"net/http/httptest"
@@ -12,6 +13,8 @@ import (
 	"testing"
 	"time"
 
+	carddb "github.com/FourSoulsRepo/card_db"
+	"github.com/FourSoulsRepo/four_souls/internal/assets"
 	"github.com/FourSoulsRepo/four_souls/internal/protocol"
 	"github.com/FourSoulsRepo/record"
 	engine "github.com/FourSoulsRepo/rules_engine"
@@ -148,5 +151,42 @@ func TestDownloadRecord(t *testing.T) {
 	}
 	if _, params, err := mime.ParseMediaType(disposition); err != nil || params["filename"] != "g1_Иван"+record.Ext {
 		t.Errorf("Content-Disposition %q: %v %v", disposition, params, err)
+	}
+}
+
+// TestBackFacesMatchCardData: every two-sided card has the same back
+// ref in the engine and in card_db, so a flipped card's view and its
+// record text name a card the client has (ADR 023).
+func TestBackFacesMatchCardData(t *testing.T) {
+	t.Setenv(assets.EnvCardsDir, "../../pkg/card_db")
+	db, err := carddb.Load(assets.CardsFS())
+	if err != nil {
+		t.Fatal(err)
+	}
+	engineBacks := map[string]string{}
+	for _, set := range cards.Sets() {
+		for _, d := range set.Cards {
+			if d.Back != "" {
+				engineBacks[string(d.Ref)] = string(d.Back)
+			}
+		}
+	}
+	dataBacks := map[string]string{}
+	for _, ref := range db.Refs() {
+		if c, _ := db.Get(ref); c.Back != nil {
+			dataBacks[ref.String()] = c.Back.ID
+		}
+	}
+	if len(engineBacks) == 0 || !maps.Equal(engineBacks, dataBacks) {
+		t.Errorf("backs: engine %v, card_db %v", engineBacks, dataBacks)
+	}
+	texts := map[string]bool{}
+	for _, c := range cardTexts() {
+		texts[c.Ref] = true
+	}
+	for _, back := range dataBacks {
+		if !texts[back] {
+			t.Errorf("records carry no text for back %s", back)
+		}
 	}
 }

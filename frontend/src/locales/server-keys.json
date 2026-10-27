@@ -196,6 +196,7 @@
   "error.bad_name",
   "error.bad_seats",
   "error.deck_ratios",
+  "error.host_ends",
   "error.host_loads",
   "error.host_saves",
   "error.hosting",

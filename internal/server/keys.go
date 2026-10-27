@@ -10,6 +10,7 @@ var (
 	errAtTable             = engine.NewKey("error.at_table")
 	errBadMessage          = engine.NewKey("error.server")
 	errBadName             = engine.NewKey("error.bad_name")
+	errHostEnds            = engine.NewKey("error.host_ends")
 	errHostLoads           = engine.NewKey("error.host_loads")
 	errHostSaves           = engine.NewKey("error.host_saves")
 	errMissingSets         = engine.NewKey("error.missing_sets")

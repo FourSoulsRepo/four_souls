@@ -34,29 +34,31 @@ This step never closes; new reports are appended.
 | ID | Group                                    | System     | Items                                                  | Count |
 |----|------------------------------------------|------------|--------------------------------------------------------|-------|
 | A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66 | 12 |
-| B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73   | 8     |
+| B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90 | 9 |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74                              | 4     |
 | E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52, 19.54, 19.69 | 9  |
-| F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76               | 6     |
+| F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88        | 7     |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
-| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.82 | 14 |
-| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.78, 19.81 | 17 |
-| K  | Build and release files                  | Release    | 19.47, 19.59                                           | 2     |
+| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.81, 19.82, 19.85, 19.87 | 17 |
+| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89 | 16 |
+| K  | Build and release files                  | Release    | 19.47, 19.59, 19.83                                    | 3     |
 | L  | Not a bug: the app follows a ruling      | None       | 19.63                                                  | 1     |
 | M  | Go test setup: the code was right        | Go tests   | 19.68                                                  | 1     |
+| N  | A missing control: no way to do it       | Server     | 19.84                                                  | 1     |
+| O  | Reconnect: old connection state kept     | Client     | 19.78, 19.86                                           | 2     |
 
-Totals by system (82 items):
+Totals by system (90 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
-| Engine    | A, B    | 20    |
+| Engine    | A, B    | 21    |
 | Card data | C       | 2     |
-| Client    | D–G     | 23    |
-| Server    | H       | 1     |
-| e2e       | I, J    | 32    |
-| Release   | K       | 2     |
+| Client    | D–G, O  | 26    |
+| Server    | H, N    | 2     |
+| e2e       | I, J    | 34    |
+| Release   | K       | 3     |
 | None      | L       | 1     |
 | Go tests  | M       | 1     |
 
@@ -2619,7 +2621,7 @@ Totals by system (82 items):
 5. Done when:
    1. Cause written here; three `make screenshots` runs in a row pass.
 
-### [ ] 19.78 e2e: the Meat! roll test sees no thrown roll, webkit, full run
+### [x] 19.78 e2e: the Meat! roll test sees no thrown roll, webkit, full run
 
 1. Goal: the 15.94 stats test passes every run.
 2. Report (agent, 2026-10-27)
@@ -2633,12 +2635,18 @@ Totals by system (82 items):
    8. Passed 3 of 3 alone, one run at a time, webkit.
    9. `--repeat-each` fails it: the saved games pile up on one server.
 3. Cause
-   1. Not found yet.
-   2. Guess: as 19.57, a click that does not register under load.
+   1. The same as 19.86: a throw lost with a dropped connection.
+   2. The webkit record ends at the attack roll's `stack_added`; no throw.
+   3. The stack is the same: Pass disabled, "Throw the dice".
+   4. Client: state from the old connection is kept (group O).
 4. Tasks:
    1. Find the cause in the evidence; fix the test or the app.
 5. Done when:
    1. Cause written here; the test passes ten full runs in a row.
+6. Fix
+   1. 19.86: a `welcome` clears `sent`.
+7. Owner notes (2026-10-27)
+   1. Owner marks 19.78 solved, with 19.86.
 
 ### [x] 19.79 e2e: playLoot presses the main menu's Play line
 
@@ -2672,7 +2680,7 @@ Totals by system (82 items):
 5. Done when:
    1. The two variants pass together in `make e2e`.
 
-### [ ] 19.81 e2e: a drag across the history selects nothing in `qps`
+### [x] 19.81 e2e: a drag across the history selects nothing in `qps`
 
 1. Goal: the copyable-history test passes every run.
 2. Report (agent, 2026-10-27)
@@ -2694,8 +2702,26 @@ Totals by system (82 items):
    1. Find the cause in the evidence; fix the test or the app.
 5. Done when:
    1. Cause written here; the test passes ten full runs in a row.
+6. Cause (2026-10-27)
+   1. Chromium starts no selection from the pixel between two text lines.
+   2. That is between two rows, or two wrapped lines of one row.
+   3. WebKit selects there; so a Chromium-only miss.
+   4. The test's drag started 4 px below the list's top edge.
+   5. Where that lands depends on the scroll and on line wraps.
+   6. `qps` wraps more lines, so it hit a line edge more often.
+   7. The drag also started before the loot line came.
+   8. A late line scrolls the list under the mouse.
+7. Fix
+   1. Test only; the app is right.
+   2. The drag waits for the loot line, the newest row.
+   3. It starts in the middle of that row's first line.
+   4. Not app CSS: margins instead of padding moved the dead pixel, not removed it.
+   5. A whole-pixel line height did not remove it either.
+   6. 20 runs in `qps` and 10 in English, both browsers, pass.
+   7. `make e2e` and `make screenshots LOCALE=qps` pass.
+   8. Evidence: `.cache/e2e-evidence/19.81-*` (not in git).
 
-### [ ] 19.82 e2e: the dice menu test fails in a screenshot run without card images
+### [x] 19.82 e2e: the dice menu test fails in a screenshot run without card images
 
 1. Goal: `make screenshots` passes in a public clone.
 2. Report (agent, 2026-10-27)
@@ -2713,3 +2739,256 @@ Totals by system (82 items):
    1. Keep the pixel route when the dice images are missing.
 5. Done when:
    1. `make screenshots` passes this test without the images submodule.
+6. Fix
+   1. The test always routes dice to a one-pixel image.
+   2. `realAssets` now calls `route.fallback()` for a missing file.
+   3. So real dice still win in a screenshot run; missing ones get the pixel.
+   4. Checked with `assets/dices` moved away: old code 0 faces, new code passes.
+
+### [x] 19.83 The `cardgen` binary is tracked in git
+
+1. Goal: no build output in the repo.
+2. Report (owner, 2026-10-27)
+   1. "Why we store cardgen binary in repository?"
+   2. `cardgen` in the repo root: a 5 MB macOS arm64 executable.
+3. Cause
+   1. `go build ./cmd/cardgen` in the root writes `./cardgen`.
+   2. `.gitignore` ignored `/four_souls`, not `/cardgen`.
+   3. It came in with be58723 (16.4) by a broad `git add`.
+4. Tasks:
+   1. Untrack `cardgen`; ignore `/cardgen`.
+5. Done when:
+   1. `git ls-files cardgen` prints nothing.
+6. Fix
+   1. `git rm --cached cardgen`; `/cardgen` in `.gitignore`.
+   2. The 5 MB stays in history; `main` is not rewritten.
+
+### [x] 19.84 The host cannot end a game on a dedicated server
+
+1. Goal: the host ends a running game for everyone, on any server.
+2. Report (owner, 2026-10-27)
+   1. "When player host game on dedicated server it could not be finished."
+   2. "Allow the host end the game."
+3. Cause
+   1. The game menu offers Save and leave, and Leave game.
+   2. Leave game on the app's own server stops that server.
+   3. On a dedicated server it only drops the connection.
+   4. The seat stays; the game pauses for the others (N-08).
+   5. Only a save or an idle limit ends it (N-11, UC-29).
+   6. A save keeps the game on the server; it does not end it.
+4. Tasks:
+   1. Protocol: `end`, client → server; notice kind `game_ended`.
+   2. Server: only seat 1 ends; the room stops like an idle end.
+   3. Connected players get the notice; the others when they return.
+   4. The record ends unfinished.
+   5. Menu, host only: **End game**, then a confirm step.
+   6. The others see "The host ended the game" and the game list.
+   7. The host sees the game list, no notice.
+5. Done when:
+   1. Go: the host ends it; another seat cannot; an away player hears it.
+   2. e2e: the host ends; both are on the game list.
+   3. UC-35; wiki `Client`, `Server`; CHANGELOG line.
+   4. Screenshots: `.cache/screenshots/19.84/before/` and `after/`.
+6. Fix
+   1. Protocol: `end`, client → server; notice kind `game_ended`.
+   2. Server: `Room.end` in `limits.go`; seat 1 only, else `not_host`.
+   3. A game that is over is refused: `no_running_game`.
+   4. It stops the room through `endWith`, shared with the idle limits.
+   5. Away players are remembered; they hear it on their next hello.
+   6. Client: Menu → **End game** → "End the game?" → **End game** or **Back**.
+   7. `endsGame` counts `game_ended`; everyone lands on the game list.
+   8. The store's `ending` hides the notice from the host who sent it.
+   9. Overlay buttons wrap to a second row; four no longer squeeze.
+   10. Go: `TestHostEndsGame` in `limits_test.go`.
+   11. Vitest: `reconnect.test.ts` notices; `protocol.test.ts` golden lines.
+   12. e2e: `the host ends the game; everyone is back on the game list (19.84)`.
+   13. It sits in `save.spec.ts`.
+   14. Docs: UC-35; ADR 006 items 36, 37; wiki `Client`, `Server`; CHANGELOG.
+   15. Screenshots: `.cache/screenshots/19.84/before/` and `after/`.
+7. Owner notes (2026-10-27)
+   1. Owner marks 19.84 solved.
+
+### [ ] 19.85 e2e: the activity test fails when the attacker has Bob's Brain
+
+1. Goal: `prompt.spec.ts` "the others see what the active player does" passes on every deal.
+2. Report (agent, 2026-10-27)
+   1. Found by `make e2e` during 18.9, in chromium.
+   2. The active player was Eden with Bob's Brain.
+   3. It timed out at line 277, waiting for the stack's `.stack-target`.
+   4. It passed 12 of 12 on rerun with other deals.
+   5. Evidence: `.cache/e2e-evidence/18.9-bobs-brain/` (not in git).
+3. Cause
+   1. Bob's Brain triggers when an attack is declared.
+   2. Its roll waits for a throw before the attack roll does.
+   3. `settle` stops at the first Throw: Bob's Brain's roll.
+   4. That stack row has no target; the test wants the monster's.
+   5. Test logic: the app was right (group I).
+4. Tasks:
+   1. Wait for the attack roll's row, not any Throw; or ban Bob's Brain, with the reason.
+5. Done when:
+   1. The test passes with Bob's Brain in the attacker's items.
+6. Fix
+   1. The evidence: the attack row was "Tarn attacks…", no target yet.
+   2. Bob's Brain's roll comes before the target is chosen.
+   3. `settle` now waits for a Throw and a `.stack-target` row.
+   4. No ban: the test plays any deal.
+   5. The test body is `attackActivity`, run twice.
+   6. New run: Bob's Brain as the first item, through a saved game.
+   7. It is `the attack line waits for a roll the attack triggers: Bob's Brain (19.85)`.
+   8. It takes no screenshots; the plain run keeps them.
+   9. With the old wait it fails as reported; with the new one, 8 of 8.
+   10. No app change; no docs or screenshots.
+7. Owner notes (2026-10-27)
+   1. Owner marks 19.85 solved.
+8. Reopened (owner, 2026-10-27)
+   1. Found by a full `make e2e` run during 14.15, webkit.
+   2. Test: `the attack line waits for a roll the attack triggers: Bob's Brain (19.85)`.
+   3. It failed in `untilAttackRoll`: "the game never settled" (1.5 min).
+   4. Turn 2, active player 0: "Your turn", nothing on the stack.
+   5. The attack never started; no Throw showed.
+   6. History: Bob's Brain triggered, rolled 2; Wyn died.
+   7. It passed 5 of 5 on rerun, webkit, alone.
+   8. The next full run did not fail it.
+   9. Cause not found yet; the 14.15 change does not touch it.
+   10. Evidence: `.cache/e2e-evidence/19.85-reopen-webkit/` (not in git).
+   11. It holds the error context, the match records and the run log.
+
+### [x] 19.86 e2e: a Throw click in the Meat! odds test did not land, webkit
+
+1. Goal: `stats.spec.ts` "the open attack says what the roll needs" passes under load.
+2. Report (agent, 2026-10-27)
+   1. Found by `make e2e` during 18.9, in webkit, full run.
+   2. Line 152: after the Throw click, the stack still said "Throw the dice".
+   3. It passed 8 of 8 alone, one worker at a time.
+   4. Evidence: `.cache/e2e-evidence/18.9-stats/` (not in git).
+3. Cause
+   1. The record has no throw: the server never got one.
+   2. A refused intent clears `sent`; the button would come back.
+   3. The server closes a client that reads too slowly (`hub.go`).
+   4. An intent sent as the socket closes is lost.
+   5. The app reconnects; the resync has the same step.
+   6. `sent` still equals that step: `canAct` stays false.
+   7. So the Throw button never comes back; Pass stays disabled.
+   8. The probe runs did not catch the drop itself; the e2e test makes it.
+   9. Client: state from the old connection is kept (group O).
+   10. 19.78 is the same test and picture; likely the same cause.
+4. Tasks:
+   1. Read the evidence; find why the throw did not start.
+5. Done when:
+   1. The cause is known; the test waits for the right thing.
+6. Fix
+   1. A `welcome` clears `sent` (`store.ts`).
+   2. The resync then shows whether the intent was played.
+   3. A lost one can be sent again.
+   4. e2e: `an intent lost with a dropped connection can be sent again (19.86)`.
+   5. It sits in `pause.spec.ts`; it failed in both browsers before the fix.
+   6. Vitest: `store.test.ts`, a welcome forgets the sent intent.
+   7. Docs: UC-07 item 4a.
+   8. No screen change; no screenshots.
+7. Owner notes (2026-10-27)
+   1. Owner marks 19.86 solved.
+
+### [x] 19.87 e2e: the 19.84 end-game test finds two Games headings, webkit
+
+1. Goal: `save.spec.ts` "the host ends the game; everyone is back on the game list" passes every run.
+2. Report (agent, 2026-10-27)
+   1. Found by a full e2e run during 19.86, webkit.
+   2. Line 76: `getByRole('heading', { name: 'Games' })` matched two headings.
+   3. "Games" and "Saved games": a strict mode violation.
+   4. Evidence: `.cache/e2e-evidence/19.86-run1-save/` (not in git).
+3. Cause
+   1. The name matches as a substring without `exact: true`.
+   2. "Saved games" shows when another test's save is on the server.
+   3. Test logic: the app was right (group I).
+4. Tasks:
+   1. Match the heading with `exact: true`.
+5. Done when:
+   1. The test passes with a saved game on the server.
+6. Fix
+   1. The Games heading matches with `exact: true`.
+   2. Same lookup fixed in `lobby.spec.ts` (7 places).
+   3. `restart.spec.ts` had it already.
+   4. Checked with a save copied into each test server's folder.
+   5. Old line: the same strict mode error, both browsers.
+   6. Fixed line: passes in both browsers.
+   7. No app change; no docs or screenshots.
+7. Owner notes (2026-10-27)
+   1. Owner marks 19.87 solved.
+
+### [x] 19.88 The join row's password field is too small
+
+1. Goal: a guest can see and type into a locked game's password field.
+2. Report (owner, 2026-10-27)
+   1. The password field is too small on the client.
+   2. Screenshot `screen-join-password`: about 20 px wide, next to Join.
+3. Cause
+   1. `.game-password` had `flex: 1`, `min-width: 0`.
+   2. The row text did not shrink; the field took what was left.
+   3. A long set list left it almost nothing.
+4. Tasks:
+   1. Client: the field keeps a fixed width; the row text wraps instead.
+5. Done when:
+   1. e2e: the field is at least 120 px wide with a long set list.
+   2. Screenshots: `.cache/screenshots/19.88/before/` and `after/`.
+6. Fix
+   1. Client: `.game-password` is `flex: none`, 140 px wide.
+   2. The row text wraps beside it; Join stays at the end.
+   3. e2e: `a game password keeps others out (N-14)` checks the width.
+   4. It fails on the old style: the field was 24 px.
+   5. No use case or wiki change: the behavior is the same.
+   6. Screenshots: `.cache/screenshots/19.88/before/` and `after/`.
+7. Owner notes (2026-10-27)
+   1. Owner marks 19.88 solved.
+
+### [ ] 19.89 e2e: the 15.77 damage fly test timed out once, webkit, full run
+
+1. Goal: `playback.spec.ts` "damage from a card no longer on screen flies from the player who dealt it (15.77)" passes every run.
+2. Report (agent, 2026-10-27)
+   1. Found by the full e2e gate during 19.88, webkit.
+   2. Timeout of 30 s in `centre`, called at line 1224.
+   3. Passes alone: 3 of 3 runs, webkit.
+   4. Evidence: `.cache/e2e-evidence/19.88-gate-playback-webkit/` (not in git).
+3. Cause
+   1. Not found yet.
+4. Tasks:
+   1. Find what `centre` waits for at line 1224 under load.
+
+### [x] 19.90 Others never learn the Cain's Eye choice
+
+1. Goal: every player sees if the top card was kept or put on the bottom.
+2. Report (owner, 2026-10-27)
+   1. A player with Cain's Eye looks at the top loot card.
+   2. They keep it on top or put it on the bottom.
+   3. The other players cannot tell which.
+3. Cause
+   1. `cardkit.LookMayBottom` moves the card with `DeckToBottom`.
+   2. `DeckToBottom` emits no event; keeping emits none either.
+   3. Others only get the hidden `looked_at` line.
+   4. Same effect: Golden Horseshoe (treasure), Purple Heart (monster).
+4. Ruling basis
+   1. At a real table the move is seen; the card face is not.
+   2. So the choice is public; the card stays hidden from others.
+5. Tasks:
+   1. Engine: one event after the choice, private, with the card.
+   2. Its text says the deck and top or bottom.
+   3. No barrier: the looked_at before it already is one.
+   4. Client: a history line for the chooser and for others.
+   5. Others' line names no card.
+6. Done when:
+   1. Go: both answers emit the event; others get no card.
+   2. Vitest: the history lines for the chooser and for others.
+   3. e2e: another player's history shows the choice.
+7. Fix
+   1. Engine: `Game.KeepOrBottom` emits `top_choice` after the answer.
+   2. Text: "loot deck top" or "loot deck bottom"; private, with the card.
+   3. `cardkit.LookMayBottom` calls it: Cain's Eye, Golden Horseshoe, Purple Heart.
+   4. No barrier: in `privateNoBarrier`; ADR 020 item 4.24.
+   5. Client: the chooser reads "You put <card> on the bottom".
+   6. Others read "Ann puts the top loot card on the bottom".
+   7. Go: `TestCainsEyeTellsEveryoneTheChoice`, both answers.
+   8. Vitest and e2e: `info.spec.ts` (19.90).
+   9. Docs: UC-18 2c, ADR 020, wiki Client and Rules-engine.
+   10. Screenshot: `.cache/screenshots/19.90/after/` only.
+   11. Before: no line at all; the old client had no case to draw.
+8. Owner notes (2026-10-27)
+   1. Owner marks 19.90 solved.

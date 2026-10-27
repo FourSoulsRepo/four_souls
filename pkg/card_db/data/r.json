@@ -401,12 +401,10 @@
       "copies": 1,
       "text": {
         "en": {
-          "name": "Anima Sola/The Revenant",
+          "name": "Anima Sola",
           "effects": [
             "{Tap Effect}Flip this item.",
-            "When this is flipped to this side, loot 1.",
-            "The Revenant: This item can be attacked.",
-            "When this reaches 0{HP}, the player attacking this gains its reward, then you flip it. That player may attack an additional time this turn."
+            "When this is flipped to this side, loot 1."
           ],
           "footnotes": [
             {
@@ -416,33 +414,9 @@
           ]
         },
         "ru": {
-          "name": "Анима Сола/Мститель"
+          "name": "Анима Сола"
         }
       },
-      "stats": [
-        {
-          "name": "HP",
-          "value": "2"
-        },
-        {
-          "name": "DC",
-          "value": "3"
-        },
-        {
-          "name": "ATK",
-          "value": "2"
-        }
-      ],
-      "rewards": [
-        {
-          "count": "1x",
-          "kind": "Loot"
-        },
-        {
-          "count": "2x",
-          "kind": "Loot"
-        }
-      ],
       "artists": [
         {
           "role": "Card front artist",
@@ -471,7 +445,51 @@
       ],
       "related": [
         "the_deserter"
-      ]
+      ],
+      "back": {
+        "id": "the_revenant",
+        "text": {
+          "en": {
+            "name": "The Revenant",
+            "effects": [
+              "This item can be attacked.",
+              "When this reaches 0{HP}, the player attacking this gains its reward, then you flip it. That player may attack an additional time this turn."
+            ],
+            "footnotes": [
+              {
+                "title": "-Eternal-",
+                "text": "This can't be destroyed or put into discard."
+              }
+            ]
+          },
+          "ru": {
+            "name": "Мститель"
+          }
+        },
+        "stats": [
+          {
+            "name": "HP",
+            "value": "2"
+          },
+          {
+            "name": "DC",
+            "value": "3"
+          },
+          {
+            "name": "ATK",
+            "value": "2"
+          }
+        ],
+        "rewards": [
+          {
+            "count": "2x",
+            "kind": "Loot"
+          }
+        ],
+        "images": [
+          "r/the_revenant.webp"
+        ]
+      }
     },
     {
       "id": "auction_gavel",
@@ -10531,27 +10549,26 @@
       "copies": 1,
       "text": {
         "en": {
-          "name": "The Enigma/amginE ehT",
+          "name": "The Enigma",
           "effects": [
-            "{Tap Effect}Play an additional loot card this turn.",
-            "amginE ehT: Do not start the game with this side face up."
+            "{Tap Effect}Play an additional loot card this turn."
           ],
           "notes": [
             "This can be done on any player's turn in response to any action."
           ]
         },
         "ru": {
-          "name": "Энигма/амгинЭ"
+          "name": "Энигма"
         }
       },
       "stats": [
         {
           "name": "HP",
-          "value": "2/1"
+          "value": "2"
         },
         {
           "name": "ATK",
-          "value": "1/2"
+          "value": "1"
         }
       ],
       "artists": [
@@ -10586,7 +10603,38 @@
       ],
       "related": [
         "flip"
-      ]
+      ],
+      "back": {
+        "id": "amgine_eht",
+        "text": {
+          "en": {
+            "name": "amginE ehT",
+            "effects": [
+              "{Tap Effect}Play an additional loot card this turn.",
+              "Do not start the game with this side face up."
+            ],
+            "notes": [
+              "This can be done on any player's turn in response to any action."
+            ]
+          },
+          "ru": {
+            "name": "амгинЭ"
+          }
+        },
+        "stats": [
+          {
+            "name": "HP",
+            "value": "1"
+          },
+          {
+            "name": "ATK",
+            "value": "2"
+          }
+        ],
+        "images": [
+          "r/amgine_eht.webp"
+        ]
+      }
     },
     {
       "id": "the_fettered",
@@ -10652,10 +10700,9 @@
       "copies": 1,
       "text": {
         "en": {
-          "name": "The Harbingers/The Beast!",
+          "name": "The Harbingers",
           "effects": [
-            "The Harbingers: The active player must attack this once each turn if able.\nIf this would die, instead put a counter on this, the active player gains +1 treasure, cancels their attack and this heals to full {HP}.\nIf this has 4+ counters, flip it.",
-            "The Beast!: When this is flipped to this side or attacked, each player rolls-\nEach player who rolls the lowest or tied for the lowest dies."
+            "The active player must attack this once each turn if able.\nIf this would die, instead put a counter on this, the active player gains +1 treasure, cancels their attack and this heals to full {HP}.\nIf this has 4+ counters, flip it."
           ],
           "footnotes": [
             {
@@ -10665,21 +10712,21 @@
           ]
         },
         "ru": {
-          "name": "Всадники/Зверь!"
+          "name": "Всадники"
         }
       },
       "stats": [
         {
           "name": "HP",
-          "value": "4/6"
+          "value": "4"
         },
         {
           "name": "DC",
-          "value": "4/4"
+          "value": "4"
         },
         {
           "name": "ATK",
-          "value": "1/2"
+          "value": "1"
         }
       ],
       "artists": [
@@ -10707,7 +10754,48 @@
       },
       "images": [
         "r/the_harbingers.webp"
-      ]
+      ],
+      "back": {
+        "id": "the_beast",
+        "text": {
+          "en": {
+            "name": "The Beast!",
+            "effects": [
+              "When this is flipped to this side or attacked, each player rolls-\nEach player who rolls the lowest or tied for the lowest dies."
+            ]
+          },
+          "ru": {
+            "name": "Зверь!"
+          }
+        },
+        "stats": [
+          {
+            "name": "HP",
+            "value": "6"
+          },
+          {
+            "name": "DC",
+            "value": "4"
+          },
+          {
+            "name": "ATK",
+            "value": "2"
+          }
+        ],
+        "rewards": [
+          {
+            "count": "2x",
+            "kind": "Soul"
+          },
+          {
+            "count": "6x",
+            "kind": "Loot"
+          }
+        ],
+        "images": [
+          "r/the_beast.webp"
+        ]
+      }
     },
     {
       "id": "the_harlot",

@@ -211,6 +211,21 @@ describe('lookedAt', () => {
     expect(mine[1]?.text).toBe('Bo looks at a card');
   });
 
+  it('tells everyone a top card was kept or put on the bottom, the card only to the chooser (19.90)', () => {
+    const events = [
+      { kind: 'top_choice', player: 0, object: 9, card: 'a_dime', private: true, text: 'loot deck bottom' },
+      { kind: 'top_choice', player: 0, object: 9, card: 'a_dime', private: true, text: 'loot deck top' },
+      { kind: 'top_choice', player: 1, private: true, text: 'treasure deck bottom' },
+      { kind: 'top_choice', player: 1, private: true, text: 'monster deck top' },
+    ];
+    expect(entriesFor(events, 1, 0, n, 0).map((e) => e.text)).toEqual([
+      'You put A_DIME on the bottom',
+      'You keep A_DIME on top',
+      'Bo puts the top treasure card on the bottom',
+      'Bo keeps the top monster card on top',
+    ]);
+  });
+
   it('shows a card looked at twice in one update once (19.13)', () => {
     const events = [
       { kind: 'looked_at', player: 0, object: 361, card: 'library_card', private: true },

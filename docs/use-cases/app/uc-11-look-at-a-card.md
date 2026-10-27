@@ -37,6 +37,9 @@
 * **3e. Card in a window (19.26):** the large copy shows over it.
   * Discard, choice, look and order windows alike.
   * The player reads the card before picking it.
+* **3f. Two-sided card (ADR 023):** the other side shows beside it.
+  * Smaller, under the words "Other side".
+  * Each side has its own name, text and stats.
 
 ## Postconditions
 

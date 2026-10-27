@@ -83,6 +83,8 @@
        7. Write the reason in a comment next to the bans.
        8. Never ban a card only because the test failed on it.
        9. Such a failure may be an engine or client bug; fix that instead.
+       10. Wait for the exact state, not a sign of it (18.10).
+       11. Named waits live in `e2e/tests/turn.ts`, e.g. `untilAttackRoll`.
    17. Bug reports go to `docs/roadmap/19-bugs.md`, one item each.
        1. Log the item before any code change.
        2. Fix it under the roadmap rules and that file's rules.
@@ -114,6 +116,12 @@
        5. The main agent checks its result before reporting to the owner.
        6. Only when a session implements more than one roadmap item.
        7. A session with one item does it in the main conversation.
+   22. Every sound at one loudness (ADR 022, owner 2026-10-27).
+       1. Target: -20 LUFS over its loudest 200 ms ("M200"), ±1.5 LU.
+       2. A new or changed sound passes `loudness check` before its commit.
+       3. The tool: `go run ./loudness` in `FourSoulsRepo/tools`.
+       4. Fix one with `loudness level`; never a per-sound volume in code.
+       5. Details: `docs/wiki/Card-data-tools.md` (Sound loudness).
 6. Licenses
    1. Code is MIT (`LICENSE`).
    2. `NOTICE` lists every third-party item and its license.

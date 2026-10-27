@@ -563,7 +563,7 @@ test('a deck attack keeps the drawn monster in view while its slot is picked (19
   }
   // Replay the draw of a deck attack: the top card is revealed and the
   // attacker is asked for a slot to put it in.
-  const name = await odo.evaluate(() => {
+  const { name, slots } = await odo.evaluate(() => {
     const store = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store;
     const s = store.getState();
     const game = structuredClone(s.game);
@@ -579,17 +579,22 @@ test('a deck attack keeps the drawn monster in view while its slot is picked (19
     game.allowed = slots.map((_, i) => ({ player: you, kind: 4, choice: i }));
     const events = [{ kind: 'card_revealed', player: you, object: 989, card }];
     s.receive({ type: 'update', data: { ...game, step: game.step + 1, events } });
-    return s.cards.get(card)?.name ?? card;
+    return { name: s.cards.get(card)?.name ?? card, slots: slots.length };
   });
   // After the large reveal, the card stays face up on the monster deck
-  // and in the dialog until the slot is picked.
-  const dialog = odo.getByRole('dialog', { name: tr('choice.title.monster_slot') });
-  await expect(dialog).toBeVisible({ timeout: 8000 });
+  // until the slot is picked. The slot is picked on the table, with no
+  // dialog (18.11): the slots glow and the banner says what to do.
+  const title = odo.locator('.prompt-title');
+  await expect(title).toHaveText(tr('choice.title.monster_slot'), { timeout: 8000 });
   await expect(odo.getByTestId('effect-reveal')).toHaveCount(0);
   await odo.waitForTimeout(400); // the deck card pops in
   await shot(odo, 'deck-attack-pick-slot');
-  await expect(odo.locator('[data-zone="deck-monster"] [data-zone="obj-989"]')).toBeVisible();
-  await expect(dialog.getByLabel(name, { exact: true })).toBeVisible();
+  const drawn = odo.locator('[data-zone="deck-monster"] [data-zone="obj-989"]');
+  await expect(drawn).toBeVisible();
+  await expect(drawn).toHaveAccessibleName(name);
+  await expect(odo.locator('.choice')).toHaveCount(0);
+  await expect(odo.locator('.prompt-hint')).toHaveText(tr('banner.pick_table'));
+  await expect(odo.locator('.board-monsters .card.hl-pick')).toHaveCount(slots);
   // Once it flies into its slot, the deck no longer shows it.
   await odo.evaluate(() => {
     const s = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store.getState();
@@ -609,7 +614,7 @@ test('a deck attack keeps the drawn monster in view while its slot is picked (19
   await expect(odo.getByTestId('effect-place')).toBeVisible({ timeout: 5000 });
   await expect(odo.locator('[data-zone="obj-989"]')).toHaveCount(0);
   await expect(odo.locator('[data-zone="obj-990"]')).toBeVisible();
-  await expect(dialog).toHaveCount(0);
+  await expect(title).not.toHaveText(tr('choice.title.monster_slot'));
 });
 
 // trackCards records, every frame, the box of the large revealed card
@@ -1259,4 +1264,109 @@ test('damage from a card no longer on screen flies from the player who dealt it 
   }
   expect(Math.abs(first.x - from.x)).toBeLessThan(30);
   expect(Math.abs(first.y - from.y)).toBeLessThan(30);
+});
+
+test('each looted card makes its sound, from the deck or the discard (18.7)', async ({ browser }) => {
+  const [ola] = await startGame(browser, ['Ola', 'Pim']);
+  if (!ola) {
+    throw new Error('no pages');
+  }
+  await listenSounds(ola);
+  // Replay the view with two cards from the loot deck and one from the
+  // loot discard.
+  await ola.evaluate(() => {
+    interface Store {
+      getState: () => {
+        game: { step: number } | null;
+        lobby: { table: { you: number } | null };
+        receive: (env: unknown) => void;
+      };
+    }
+    const s = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store.getState();
+    const game = structuredClone(s.game);
+    if (!game) {
+      throw new Error('no game');
+    }
+    const you = s.lobby.table?.you ?? 0;
+    const events = [
+      { kind: 'looted', player: you, object: 1001 },
+      { kind: 'looted', player: you, object: 1002 },
+      { kind: 'looted', player: you, object: 1003, text: 'from the discard' },
+    ];
+    s.receive({ type: 'update', data: { ...game, step: game.step + 1, events } });
+  });
+  await expect(ola.getByTestId('effect-fly')).toBeAttached();
+  await expect(ola.locator('.effects')).toHaveCount(0);
+  // One deal per card, the one from the discard too.
+  expect(await played(ola)).toEqual(Array(3).fill('/cardimg/assets/sounds/loot-draw.mp3'));
+});
+
+test('a player death makes its sound once, a monster death none (18.8)', async ({ browser }) => {
+  const [ola] = await startGame(browser, ['Ola', 'Pim']);
+  if (!ola) {
+    throw new Error('no pages');
+  }
+  await listenSounds(ola);
+  // Replay the view with a monster's death and the player's death.
+  await ola.evaluate(() => {
+    interface Store {
+      getState: () => {
+        game: { step: number; view: { monsters: { top?: { id: number; card: string; stats?: unknown } }[] } } | null;
+        lobby: { table: { you: number } | null };
+        receive: (env: unknown) => void;
+      };
+    }
+    const s = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store.getState();
+    const game = structuredClone(s.game);
+    const top = game?.view.monsters.find((m) => m.top?.stats)?.top;
+    if (!game || !top) {
+      throw new Error('no game');
+    }
+    const you = s.lobby.table?.you ?? 0;
+    const events = [
+      { kind: 'died', player: -1, object: 999, card: top.card, prev: top.id },
+      { kind: 'died', player: you },
+    ];
+    s.receive({ type: 'update', data: { ...game, step: game.step + 1, events } });
+  });
+  await expect(ola.getByTestId('skull')).toHaveCount(2);
+  await expect(ola.locator('.effects')).toHaveCount(0);
+  expect(await played(ola)).toEqual(['/cardimg/assets/sounds/player-died.mp3']);
+});
+
+test('each gained treasure flies in with its sound; a trinket and a starting item do not (18.9)', async ({ browser }) => {
+  const [ola] = await startGame(browser, ['Ola', 'Pim']);
+  if (!ola) {
+    throw new Error('no pages');
+  }
+  await listenSounds(ola);
+  // Replay the view with a shop buy, a treasure from the deck, and the
+  // silent gains: a starting item and a trinket.
+  await ola.evaluate(() => {
+    interface Store {
+      getState: () => {
+        game: { step: number; view: { shop: { top?: { id: number; card: string } }[] | null } } | null;
+        lobby: { table: { you: number } | null };
+        receive: (env: unknown) => void;
+      };
+    }
+    const s = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store.getState();
+    const game = structuredClone(s.game);
+    const [bought, other] = (game?.view.shop ?? []).map((slot) => slot.top?.card);
+    if (!game || !bought || !other) {
+      throw new Error('no game');
+    }
+    const you = s.lobby.table?.you ?? 0;
+    const events = [
+      { kind: 'purchased', player: you, object: 1001, card: bought },
+      { kind: 'gained_treasure', player: you, object: 1002, card: other },
+      { kind: 'gained_treasure', player: you, object: 1003, card: other, text: 'starting item' },
+      { kind: 'gained_item', player: you, object: 1004, card: other },
+    ];
+    s.receive({ type: 'update', data: { ...game, step: game.step + 1, events } });
+  });
+  await expect(ola.getByTestId('effect-fly')).toBeAttached();
+  await expect(ola.locator('.effects')).toHaveCount(0);
+  // One sound per treasure: the shop buy and the deck's.
+  expect(await played(ola)).toEqual(Array(2).fill('/cardimg/assets/sounds/treasure-gain.mp3'));
 });

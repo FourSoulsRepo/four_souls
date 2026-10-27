@@ -62,6 +62,7 @@ stack_added
 stack_resolved
 start_of_turn
 stole
+top_choice
 turn_ended
 turn_ended_early
 turn_skipped

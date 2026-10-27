@@ -46,6 +46,8 @@ type CardView struct {
 	// Dice are the die numbers the card keeps (CardDef.Dice), e.g. a
 	// stored roll or a chosen number (15.67).
 	Dice []int `json:"dice,omitempty"`
+	// Flipped: the back face is up, and Card is the back's ref (ADR 023).
+	Flipped bool `json:"flipped,omitempty"`
 }
 
 // MonsterStats are a monster's stats now and as printed, so a client can
@@ -451,9 +453,10 @@ func targetView(t Chosen) OptionView {
 func (g *Game) cardView(id ObjectID) CardView {
 	o := g.Object(id)
 	cv := CardView{
-		ID: id, Card: o.Card, Role: o.Role, Charged: o.Charged, Damage: o.Damage,
+		ID: id, Card: g.faceUp(id), Role: o.Role, Charged: o.Charged, Damage: o.Damage,
 		Counters: append([]Counter(nil), o.Counters...),
 	}
+	cv.Flipped = cv.Card != o.Card
 	if d := g.def(id); d.Dice != nil {
 		cv.Dice = d.Dice(g, id)
 	}
@@ -563,6 +566,19 @@ func (g *Game) publicCard(id ObjectID) CardRef {
 	o := g.Object(id)
 	if o.Zone.Kind == ZoneDeck || o.Zone.Kind == ZoneHand {
 		return ""
+	}
+	return g.faceUp(id)
+}
+
+// faceUp is the printed face of an object a player sees: its card's
+// back when flipped (ADR 023), else its own card. Unlike CardOf it
+// ignores copies, which show their own card.
+func (g *Game) faceUp(id ObjectID) CardRef {
+	o := g.Object(id)
+	if o.Flipped {
+		if d, ok := g.cards.find(o.Card); ok && d.Back != "" {
+			return d.Back
+		}
 	}
 	return o.Card
 }

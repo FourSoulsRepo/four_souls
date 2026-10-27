@@ -60,7 +60,7 @@ Only `name` shows in the game yet: card texts stay English on screen for now (st
 Rules:
 
 * Icons in text are written `{Icon Name}`: `{Tap Effect}`, `{Paid Effect}`, `{Curse Effect}`, `{HP}`, `{ATK}`, `{DC}`, `{LV4 Effect}`. Keep them exactly as in English, in English letters; they are drawn as icons.
-* A two-sided card has its name as "Front/Back", like the English one; keep the `/`.
+* A two-sided card has a `back` with its own `text`: translate the back's name there (`back.text.ru.name`), apart from the front's (ADR 023).
 * A later version of a card (`"version": 2`) is its own entry; translate it too.
 * An entry with `"reprint": true` only adds copies to a card of an older set and has no text; translate the card in its own set instead.
 * Cents are written `3¢`.

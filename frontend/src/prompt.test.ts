@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { IntentKind, PromptKind, Purpose, type Actions } from './actions';
+import { IntentKind, PromptKind, Purpose, type Actions, type ChoiceOption } from './actions';
 import type { GameView, Intent, StackItem } from './protocol';
-import { activity, askedSeat, fighters, myMove, picking, promptBanner, stackPrompt } from './prompt';
+import { activity, askedSeat, fighters, myMove, picking, promptBanner, stackPrompt, tablePick } from './prompt';
 import { StackKind } from './stack';
 
 const view: GameView = {
@@ -104,6 +104,34 @@ describe('picking', () => {
     expect(picking(dialog, null)).toBe(false);
     const table = { ...none, choice: { title: 'Choose a target', purpose: 6, options: [{ ...option, target: { object: 9, player: 0 } }] } };
     expect(picking(table, null)).toBe(true);
+  });
+});
+
+describe('tablePick', () => {
+  const option = { label: 'gaper', intent: intent(IntentKind.choose) };
+  const gaper = { ...option, target: { object: 9, player: -1 } };
+  const deck = { ...option, label: 'deck', target: { object: 0, player: -1, deck: true } };
+  const choice = (purpose: number, options: ChoiceOption[] = [gaper, deck]) => ({ title: 'Choose', purpose, options });
+
+  it('picks what to attack, what to buy and a slot on the table (18.11)', () => {
+    expect(tablePick(choice(Purpose.attackTarget))).toBe(true);
+    expect(tablePick(choice(Purpose.purchase))).toBe(true);
+    expect(tablePick(choice(Purpose.monsterSlot, [gaper]))).toBe(true);
+  });
+
+  it('keeps the dialog for other choices and for an option off the table', () => {
+    expect(tablePick(null)).toBe(false);
+    expect(tablePick(choice(Purpose.target))).toBe(false);
+    expect(tablePick(choice(Purpose.penaltyItem))).toBe(false);
+    expect(tablePick(choice(Purpose.monsterSlot, [gaper, option]))).toBe(false);
+    expect(tablePick(choice(Purpose.attackTarget, []))).toBe(false);
+  });
+
+  it('says to click on the table in the banner', () => {
+    const asked = { ...view, waiting: { kind: PromptKind.choose, player: 0, purpose: Purpose.attackTarget } };
+    const actions = { ...none, choice: choice(Purpose.attackTarget) };
+    expect(banner(asked, 0, actions)).toMatchObject({ kind: 'choose', title: 'Choose what to attack', hint: 'Click a glowing card' });
+    expect(banner(asked, 1)).toMatchObject({ title: 'Waiting for Ann', hint: 'Choose what to attack' });
   });
 });
 

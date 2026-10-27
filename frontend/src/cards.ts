@@ -16,6 +16,10 @@ export interface CardInfo {
   // images holds the URL per language with an image folder; '' or none
   // when missing: the card shows as text (A-11, 16.6).
   images?: Record<string, string>;
+  // back is a two-sided card's back face; front, on a back face, its
+  // front (ADR 023). Each face is a card of its own.
+  back?: string;
+  front?: string;
 }
 
 // Kind is the deck family a card belongs to; it sets the blank card's

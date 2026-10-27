@@ -165,3 +165,33 @@ func TestEmptyKeptTableCloses(t *testing.T) {
 	clock.Add(11 * time.Minute)
 	untilNoGames(t, h)
 }
+
+// TestHostEndsGame: only the host ends a game; the players hear why,
+// one who is away when they come back (19.84).
+func TestHostEndsGame(t *testing.T) {
+	h, _ := startLimitHub(t)
+	players, tokens := seatedTwo(t, h)
+	ann, bo := players[0], players[1]
+	bo.say(protocol.TypeEnd, struct{}{})
+	if code := bo.failure(); code != protocol.ErrNotHost {
+		t.Errorf("another seat ends it: %s", code)
+	}
+	bo.c.Leave()
+	ann.say(protocol.TypeEnd, struct{}{})
+	var n protocol.Notice
+	ann.next(protocol.TypeNotice, &n)
+	if n.Kind != protocol.NoticeEnded {
+		t.Errorf("notice %+v, want ended", n)
+	}
+	ann.next(protocol.TypeGames, nil) // back in the lobby
+	untilNoGames(t, h)
+
+	back, w := arrive(t, h, "Bo", tokens[1])
+	if w.Seat != -1 {
+		t.Errorf("seat %d, want the lobby", w.Seat)
+	}
+	back.next(protocol.TypeNotice, &n)
+	if n.Kind != protocol.NoticeEnded {
+		t.Errorf("notice %+v, want ended", n)
+	}
+}
