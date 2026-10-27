@@ -47,3 +47,17 @@ For every card it writes `text.ru.name` and `translators.ru` (Alchba, Mitboy, d0
 * The submodule embeds its own files (a Go package inside it, 8.29). Run `go generate ./pkg/card_db/images` before a `cardimages` build or test; `make internal` and CI do it.
 * CI: `.github/actions/card-images` checks the images out at the pinned submodule commit, using the secret `CARD_DB_DEPLOY_KEY` (a read-only deploy key of `FourSoulsRepo/card_db`). Every app build runs twice, text-only and with images; without the secret (e.g. pull requests from forks) the image builds skip themselves.
 * Its history is a single commit: after regenerating images, commit inside the submodule with `git commit --amend`, force-push it, then commit the new submodule pointer here.
+
+## Sound loudness
+
+Every sound in `images/assets/sounds/` plays at one loudness, so none jumps out or gets lost (ADR 022). The measure is **M200**: BS.1770 (EBU R128) loudness of the loudest 200 ms of the sound, in LUFS. It weights frequencies like the ear does, which peak level does not; a sound shorter than 200 ms is padded with silence. The target is -20 LUFS M200 ±1.5 LU, with peaks at most at -1 dBFS.
+
+The checker lives in the tools repository, so this repo gains no audio code:
+
+```sh
+cd ../tools
+go run ./loudness check -game ../four_souls                 # every sound; exit 1 when any is off
+go run ./loudness level -game ../four_souls new-sound.mp3   # fix it in place (needs ffmpeg)
+```
+
+`level` applies the gain, a limiter at -1.5 dBFS, and writes mono 44.1 kHz 64 kbps MP3. Level a sound once: each run re-encodes it. A new or changed sound passes `check` before it is committed to the images; then amend, force-push, and bump the pointer as above. The game plays every sound at full volume (`sounds.ts`).

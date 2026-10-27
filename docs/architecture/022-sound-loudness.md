@@ -1,6 +1,6 @@
 # 22. Sound loudness
 
-* **Status:** Proposed
+* **Status:** Accepted
 * **Date:** 2026-10-27
 * **Authors:** @HardDie
 

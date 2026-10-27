@@ -7,15 +7,16 @@ const impact = '/cardimg/assets/sounds/effect-impact.mp3';
 const dice = '/cardimg/assets/sounds/dice-roll.mp3';
 
 // fakeAudio records each played URL; play fails with the given error.
-function fakeAudio(fail?: DOMException): string[] {
+function fakeAudio(fail?: DOMException, volumes: number[] = []): string[] {
   const played: string[] = [];
   vi.stubGlobal(
     'Audio',
     class {
-      volume = 1;
+      volume = 0.5;
       constructor(public src: string) {}
       play(): Promise<void> {
         played.push(this.src);
+        volumes.push(this.volume);
         return fail ? Promise.reject(fail) : Promise.resolve();
       }
     },
@@ -36,6 +37,18 @@ describe('playSound', () => {
     playSound('effectImpact');
     playSound('diceRoll');
     expect(played).toEqual([hit, cast, impact, dice]);
+  });
+
+  // The files are levelled to one loudness (ADR 022); none gets its own volume.
+  it('plays every sound at full volume', () => {
+    loadSounds({ attackHit: hit, effectCast: cast, effectImpact: impact, diceRoll: dice });
+    const volumes: number[] = [];
+    fakeAudio(undefined, volumes);
+    playSound('attackHit');
+    playSound('effectCast');
+    playSound('effectImpact');
+    playSound('diceRoll');
+    expect(volumes).toEqual([1, 1, 1, 1]);
   });
 
   it('is silent without the private files', () => {

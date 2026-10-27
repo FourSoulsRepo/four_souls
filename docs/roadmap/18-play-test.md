@@ -88,7 +88,7 @@ Ideas: B-04, B-05.
    1. `check` prints the four values of ADR 022 (200 ms column) within 0.2 LU.
    2. `check` exits 1 on today's sounds.
 
-### [ ] 18.6 Level the sounds
+### [x] 18.6 Level the sounds
 
 1. Goal: every sound plays at one loudness (AU-04, ADR 022).
 2. Tasks:
