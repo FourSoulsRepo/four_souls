@@ -2804,6 +2804,17 @@ Totals by system (87 items):
    1. Wait for the attack roll's row, not any Throw; or ban Bob's Brain, with the reason.
 5. Done when:
    1. The test passes with Bob's Brain in the attacker's items.
+6. Fix
+   1. The evidence: the attack row was "Tarn attacks…", no target yet.
+   2. Bob's Brain's roll comes before the target is chosen.
+   3. `settle` now waits for a Throw and a `.stack-target` row.
+   4. No ban: the test plays any deal.
+   5. The test body is `attackActivity`, run twice.
+   6. New run: Bob's Brain as the first item, through a saved game.
+   7. It is `the attack line waits for a roll the attack triggers: Bob's Brain (19.85)`.
+   8. It takes no screenshots; the plain run keeps them.
+   9. With the old wait it fails as reported; with the new one, 8 of 8.
+   10. No app change; no docs or screenshots.
 
 ### [x] 19.86 e2e: a Throw click in the Meat! odds test did not land, webkit
 
