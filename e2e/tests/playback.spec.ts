@@ -1261,7 +1261,7 @@ test('damage from a card no longer on screen flies from the player who dealt it 
   expect(Math.abs(first.y - from.y)).toBeLessThan(30);
 });
 
-test('each card dealt from the loot deck makes its sound (18.7)', async ({ browser }) => {
+test('each looted card makes its sound, from the deck or the discard (18.7)', async ({ browser }) => {
   const [ola] = await startGame(browser, ['Ola', 'Pim']);
   if (!ola) {
     throw new Error('no pages');
@@ -1292,6 +1292,6 @@ test('each card dealt from the loot deck makes its sound (18.7)', async ({ brows
   });
   await expect(ola.getByTestId('effect-fly')).toBeAttached();
   await expect(ola.locator('.effects')).toHaveCount(0);
-  // One deal per card from the deck; the discard is silent.
-  expect(await played(ola)).toEqual(Array(2).fill('/cardimg/assets/sounds/loot-draw.mp3'));
+  // One deal per card, the one from the discard too.
+  expect(await played(ola)).toEqual(Array(3).fill('/cardimg/assets/sounds/loot-draw.mp3'));
 });

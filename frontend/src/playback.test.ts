@@ -46,10 +46,12 @@ describe('effectsFor', () => {
     ]);
   });
 
-  // Only the loot deck deals; a card taken from the discard is silent.
-  it('flies a card looted from the discard without a sound', () => {
+  // A card taken from the loot discard makes the same sound (18.7).
+  it('flies a card looted from the discard with its sound', () => {
     const e: GameEvent = { kind: 'looted', player: 1, object: 9, card: 'a_dime', text: 'from the discard' };
-    expect(effectsFor([e], ctx)).toEqual([{ kind: 'fly', from: ['discard-loot'], to: ['hand-1', 'player-1'], card: 'a_dime', back: 'loot' }]);
+    expect(effectsFor([e], ctx)).toEqual([
+      { kind: 'fly', from: ['discard-loot'], to: ['hand-1', 'player-1'], card: 'a_dime', back: 'loot', sound: 'lootDraw' },
+    ]);
   });
 
   it('flies a discarded card from where it was to its deck discard', () => {

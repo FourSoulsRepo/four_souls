@@ -152,19 +152,18 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
   for (const e of events) {
     const amount = e.amount ?? 0;
     switch (e.kind) {
-      case 'looted': {
-        // Each card dealt from the loot deck makes its sound (18.7).
-        const discard = e.text === 'from the discard';
+      case 'looted':
+        // Each looted card makes its sound, from the deck or the
+        // discard (18.7).
         out.push({
           kind: 'fly',
-          from: [discard ? 'discard-loot' : 'deck-loot'],
+          from: [e.text === 'from the discard' ? 'discard-loot' : 'deck-loot'],
           to: handZones(e.player),
           card: e.card,
           back: 'loot',
-          ...(discard ? {} : { sound: 'lootDraw' as const }),
+          sound: 'lootDraw',
         });
         break;
-      }
       case 'discarded': {
         // A loot card leaves the stack from its large card under the
         // stack, else its stack row (15.74).

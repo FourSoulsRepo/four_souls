@@ -20,7 +20,7 @@ type Sounds struct {
 	EffectCast   string `json:"effectCast"`   // an effect's shot leaves its source
 	EffectImpact string `json:"effectImpact"` // the shot lands
 	DiceRoll     string `json:"diceRoll"`     // a thrown die lands on the table
-	LootDraw     string `json:"lootDraw"`     // a card leaves the loot deck
+	LootDraw     string `json:"lootDraw"`     // a looted card flies to the hand
 }
 
 // Sounds returns the sound URLs.
