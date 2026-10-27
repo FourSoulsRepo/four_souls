@@ -3092,7 +3092,7 @@ Totals by system (94 items):
 8. Owner notes (2026-10-28)
    1. Owner marks 19.94 solved.
 
-### [ ] 19.95 Lil Battery recharges a passive or paid item
+### [x] 19.95 Lil Battery recharges a passive or paid item
 
 1. Goal: "Recharge an item" picks only items with a ↷ ability.
 2. Report (owner, 2026-10-28)
@@ -3117,3 +3117,5 @@ Totals by system (94 items):
    6. No screen change: no screenshots.
 7. Result (2026-10-28)
    1. `make lint` and `make test` pass (exit 0).
+8. Owner notes (2026-10-28)
+   1. Owner marks 19.95 solved.
