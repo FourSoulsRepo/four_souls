@@ -2892,3 +2892,11 @@ Totals by system (87 items):
    1. Match the heading with `exact: true`.
 5. Done when:
    1. The test passes with a saved game on the server.
+6. Fix
+   1. The Games heading matches with `exact: true`.
+   2. Same lookup fixed in `lobby.spec.ts` (7 places).
+   3. `restart.spec.ts` had it already.
+   4. Checked with a save copied into each test server's folder.
+   5. Old line: the same strict mode error, both browsers.
+   6. Fixed line: passes in both browsers.
+   7. No app change; no docs or screenshots.

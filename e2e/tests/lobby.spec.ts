@@ -57,7 +57,7 @@ test('a joined server is remembered by its name, until removed (N-18)', async ({
   await page.getByLabel(tr('lobby.nickname')).fill('Cy');
   await page.getByLabel(tr('lobby.online.address')).fill(address());
   await page.getByRole('button', { name: tr('lobby.connect') }).click();
-  await expect(page.getByRole('heading', { name: tr('lobby.games.title') })).toBeVisible();
+  await expect(page.getByRole('heading', { name: tr('lobby.games.title'), exact: true })).toBeVisible();
   await expect(page.getByText('Test server', { exact: true })).toBeVisible();
   // Back goes one level up: the Online screen.
   await page.getByRole('button', { name: tr('lobby.back') }).click();
@@ -69,7 +69,7 @@ test('a joined server is remembered by its name, until removed (N-18)', async ({
   // The name joins the address it stands for.
   await page.getByLabel(tr('lobby.online.address')).fill('');
   await server.click();
-  await expect(page.getByRole('heading', { name: tr('lobby.games.title') })).toBeVisible();
+  await expect(page.getByRole('heading', { name: tr('lobby.games.title'), exact: true })).toBeVisible();
   await page.getByRole('button', { name: tr('lobby.back') }).click();
 
   await page.getByRole('button', { name: tr('lobby.online.forget_label', { server: 'Test server' }) }).click();
@@ -98,7 +98,7 @@ test('a typed ws:// address joins the server (8.18)', async ({ page }) => {
   await page.getByLabel(tr('lobby.nickname')).fill('Wes');
   await page.getByLabel(tr('lobby.online.address')).fill(`ws://${address()}/ws`);
   await page.getByRole('button', { name: tr('lobby.connect') }).click();
-  await expect(page.getByRole('heading', { name: tr('lobby.games.title') })).toBeVisible();
+  await expect(page.getByRole('heading', { name: tr('lobby.games.title'), exact: true })).toBeVisible();
   await expect(page.getByText('Test server', { exact: true })).toBeVisible();
 });
 
@@ -226,7 +226,7 @@ test('the LAN screen keeps the typed address, not a Recent list (15.97)', async 
   await page.getByLabel(tr('lobby.nickname')).fill('Tia');
   await page.getByLabel(tr('lobby.lan.address')).fill(address());
   await page.getByRole('button', { name: tr('lobby.connect') }).click();
-  await expect(page.getByRole('heading', { name: tr('lobby.games.title') })).toBeVisible();
+  await expect(page.getByRole('heading', { name: tr('lobby.games.title'), exact: true })).toBeVisible();
   // Back goes one level up: the LAN screen; Esc then the menu.
   await page.getByRole('button', { name: tr('lobby.back') }).click();
   await expect(page.getByRole('heading', { name: tr('menu.lan') })).toBeVisible();
@@ -376,7 +376,7 @@ test('an app that hosts offers no "Create a game" in its Games list (N-17)', asy
   await openHost(page);
   await page.getByLabel(tr('lobby.nickname')).fill('Kim');
   await page.getByRole('button', { name: tr('host.continue_saved') }).click();
-  await expect(page.getByRole('heading', { name: tr('lobby.games.title') })).toBeVisible();
+  await expect(page.getByRole('heading', { name: tr('lobby.games.title'), exact: true })).toBeVisible();
   await expect(page.getByRole('button', { name: tr('host.title_create') })).toHaveCount(0);
 });
 
@@ -430,7 +430,7 @@ test('Online: a server, its games, and one level back each time (15.98)', async 
   await page.getByRole('button', { name: tr('host.title_create') }).click();
   await expect(page.getByRole('heading', { name: tr('host.title_create') })).toBeVisible();
   await page.keyboard.press('Escape');
-  await expect(page.getByRole('heading', { name: tr('lobby.games.title') })).toBeVisible();
+  await expect(page.getByRole('heading', { name: tr('lobby.games.title'), exact: true })).toBeVisible();
   await page.keyboard.press('Escape');
   await expect(page.getByRole('heading', { name: tr('menu.online') })).toBeVisible();
   await expect(page.getByRole('list', { name: tr('lobby.online.recent') })).toContainText('Test server');
@@ -469,7 +469,7 @@ test('Recent shows which servers are up and their open games (15.100)', async ({
 
   // Back from its games asks again; the count follows the server.
   await row('Test server').getByRole('button', { name: 'Test server', exact: true }).click();
-  await expect(page.getByRole('heading', { name: tr('lobby.games.title') })).toBeVisible();
+  await expect(page.getByRole('heading', { name: tr('lobby.games.title'), exact: true })).toBeVisible();
   await page.getByRole('button', { name: tr('lobby.back') }).click();
   await expect(row('Test server')).toContainText(trRe('lobby.online.open_games'));
 });

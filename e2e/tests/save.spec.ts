@@ -73,7 +73,7 @@ test('the host ends the game; everyone is back on the game list (19.84)', async 
   await shot(hob, 'game-ended');
   await ended.getByRole('button', { name: tr('notice.ok') }).click();
   for (const page of [gil, hob]) {
-    await expect(page.getByRole('heading', { name: tr('lobby.games.title') })).toBeVisible();
+    await expect(page.getByRole('heading', { name: tr('lobby.games.title'), exact: true })).toBeVisible();
     await expect(lobbyGame(page, id)).toHaveCount(0);
   }
   await expect(gil.getByRole('dialog', { name: tr('notice.game_idle.title') })).toHaveCount(0);
