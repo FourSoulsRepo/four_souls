@@ -2785,7 +2785,7 @@ Totals by system (87 items):
 7. Owner notes (2026-10-27)
    1. Owner marks 19.84 solved.
 
-### [ ] 19.85 e2e: the activity test fails when the attacker has Bob's Brain
+### [x] 19.85 e2e: the activity test fails when the attacker has Bob's Brain
 
 1. Goal: `prompt.spec.ts` "the others see what the active player does" passes on every deal.
 2. Report (agent, 2026-10-27)
@@ -2815,6 +2815,8 @@ Totals by system (87 items):
    8. It takes no screenshots; the plain run keeps them.
    9. With the old wait it fails as reported; with the new one, 8 of 8.
    10. No app change; no docs or screenshots.
+7. Owner notes (2026-10-27)
+   1. Owner marks 19.85 solved.
 
 ### [x] 19.86 e2e: a Throw click in the Meat! odds test did not land, webkit
 
