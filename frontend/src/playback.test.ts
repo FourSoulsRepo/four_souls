@@ -175,7 +175,18 @@ describe('effectsFor', () => {
       { kind: 'died', player: -1, object: 90, prev: 40, card: 'fly' },
       { kind: 'died', player: 1, object: 31, card: 'cain' },
     ];
-    expect(effectsFor(events, ctx)).toEqual([{ kind: 'deaths', at: [['obj-40'], ['obj-31']] }]);
+    expect(effectsFor(events, ctx)).toEqual([{ kind: 'deaths', at: [['obj-40'], ['obj-31']], sound: 'playerDied' }]);
+  });
+
+  // A player's died comes only once nothing can undo it (18.8).
+  it('sounds a player death once, and a monster death not at all', () => {
+    const monster: GameEvent = { kind: 'died', player: -1, object: 90, prev: 40, card: 'fly' };
+    expect(effectsFor([monster], ctx)).toEqual([{ kind: 'deaths', at: [['obj-40']] }]);
+    const players: GameEvent[] = [
+      { kind: 'died', player: 1, object: 31, card: 'cain' },
+      { kind: 'died', player: 0, object: 30, card: 'isaac' },
+    ];
+    expect(effectsFor(players, ctx)).toMatchObject([{ kind: 'deaths', sound: 'playerDied' }]);
   });
 
   it('throws a fresh roll; a changed roll only spins in (15.62)', () => {

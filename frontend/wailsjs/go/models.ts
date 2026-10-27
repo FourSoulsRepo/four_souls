@@ -315,6 +315,7 @@ export namespace main {
 	    effectImpact: string;
 	    diceRoll: string;
 	    lootDraw: string;
+	    playerDied: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new Sounds(source);
@@ -327,6 +328,7 @@ export namespace main {
 	        this.effectImpact = source["effectImpact"];
 	        this.diceRoll = source["diceRoll"];
 	        this.lootDraw = source["lootDraw"];
+	        this.playerDied = source["playerDied"];
 	    }
 	}
 

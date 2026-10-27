@@ -44,7 +44,8 @@ export type Effect =
   // (15.75).
   | { kind: 'steal'; from: string[]; to: string[]; amount: number }
   // deaths: a big skull on each dying card before it leaves (T-26).
-  | { kind: 'deaths'; at: string[][] };
+  // sound plays with the skulls when a player died (18.8).
+  | { kind: 'deaths'; at: string[][]; sound?: Sound };
 
 export interface Hit {
   from: string[];
@@ -252,11 +253,17 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
           ctx.diedAt.set(e.object, { zone, object: e.prev });
         }
         const at = e.prev ? [`obj-${String(e.prev)}`] : hitZones(e, ctx);
-        const last = out.at(-1);
+        let last = out.at(-1);
         if (last?.kind === 'deaths') {
           last.at.push(at);
         } else {
-          out.push({ kind: 'deaths', at: [at] });
+          last = { kind: 'deaths', at: [at] };
+          out.push(last);
+        }
+        // A player's died comes only once the death resolved, so nothing
+        // can undo it; a monster's death is silent (18.8).
+        if (e.player >= 0) {
+          last.sound = 'playerDied';
         }
         break;
       }

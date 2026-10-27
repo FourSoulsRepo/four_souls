@@ -135,3 +135,25 @@ Ideas: B-04, B-05.
 3. Done when:
    1. `loudness check` passes on every sound.
    2. **Owner** hears one deal per looted card.
+
+### [ ] 18.8 Player death sound
+
+1. Goal: a player's death makes a sound (AU-06).
+2. Tasks:
+   1. Source: owner's `player_died.wav`; source unknown.
+      1. So it lives only in the private images, as `player-died.mp3`.
+      2. Mono MP3, levelled with `loudness level` (ADR 022).
+      3. Amend the submodule commit; bump the pointer.
+   2. `App.Sounds()` gains `playerDied`; `''` without the file.
+   3. It plays with the skull of a player's `died` event.
+      1. The engine sends it only when the death resolves (R-DEATH-17).
+      2. A death still on the stack can be prevented; it is silent.
+      3. A monster's death is silent.
+      4. One sound per skull effect, even if two players die at once.
+      5. With animations off, nothing plays, as other sounds.
+   4. `NOTICE`, UC-12, wiki `Client.md` name the sound.
+   5. Tests: Vitest for playback and sounds; e2e for the played file.
+   6. Gates: `make lint`, `make frontend e2e`.
+3. Done when:
+   1. `loudness check` passes on every sound.
+   2. **Owner** hears it once per player death, never on a prevented one.

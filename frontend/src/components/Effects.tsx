@@ -169,7 +169,7 @@ function Effect({ playing }: { playing: Playing }) {
         <Layered
           playing={playing}
           start={(done) => {
-            skulls(effect.at, scale, done);
+            skulls(effect.at, scale, done, effect.sound);
           }}
         />
       );

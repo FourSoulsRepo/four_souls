@@ -217,6 +217,13 @@
   * A card taken from the loot discard sounds too.
   * No private images (public clone): no sound.
   * With animations off, no sound plays.
+* **1ad. Player death sound (18.8):** a dead player makes a death sound.
+  * It plays as the skull pops on the character.
+  * Only once the death resolves: nothing can undo it then.
+  * A death prevented on the stack is silent.
+  * A monster's death is silent.
+  * No private images (public clone): no sound.
+  * With animations off, no sound plays.
 
 ## Postconditions
 

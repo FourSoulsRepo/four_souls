@@ -831,6 +831,10 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    1. A looted card makes a sound, from the deck or the discard.
    2. One per card: start of turn, monster reward, other effects.
    3. Planned in 18.7.
+6. AU-06. Player death sound (owner, 2026-10-27).
+   1. A sound when a player dies.
+   2. Only a death no card or effect can undo any more.
+   3. Planned in 18.8.
 
 ## Menu
 

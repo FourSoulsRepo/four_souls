@@ -3,9 +3,10 @@
 // at once (T-24). A dying card gets a big skull before it leaves (T-26).
 // Both play in the lunge's layer and end the effect early, so the table
 // changes while the marks fade. Only transform and opacity animate
-// (ADR 002). A shot sounds as a fireball: cast, then impact (15.50).
+// (ADR 002). A shot sounds as a fireball: cast, then impact (15.50). A
+// player's skull sounds as a death (18.8).
 import type { Hit } from '../playback';
-import { playSound } from '../sounds';
+import { playSound, type Sound } from '../sounds';
 import { burst, find, layer } from './lunge';
 
 // The normal length of a shot and of a skull, in ms.
@@ -99,9 +100,9 @@ function skull(): SVGSVGElement {
   return svg;
 }
 
-// skulls pops a skull on each dying card; done is called when the cards
-// should leave, and the skulls fade after.
-export function skulls(at: string[][], scale: number, done: () => void): void {
+// skulls pops a skull on each dying card, with sound if any (18.8);
+// done is called when the cards should leave, and the skulls fade after.
+export function skulls(at: string[][], scale: number, done: () => void, sound?: Sound): void {
   let shown = false;
   for (const zones of at) {
     const el = find(zones);
@@ -133,6 +134,9 @@ export function skulls(at: string[][], scale: number, done: () => void): void {
     };
     anim.onfinish = end;
     anim.oncancel = end;
+  }
+  if (shown && sound) {
+    playSound(sound);
   }
   if (shown) {
     window.setTimeout(done, skullMs * scale * leaveAt);

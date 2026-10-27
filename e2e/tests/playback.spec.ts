@@ -1295,3 +1295,36 @@ test('each looted card makes its sound, from the deck or the discard (18.7)', as
   // One deal per card, the one from the discard too.
   expect(await played(ola)).toEqual(Array(3).fill('/cardimg/assets/sounds/loot-draw.mp3'));
 });
+
+test('a player death makes its sound once, a monster death none (18.8)', async ({ browser }) => {
+  const [ola] = await startGame(browser, ['Ola', 'Pim']);
+  if (!ola) {
+    throw new Error('no pages');
+  }
+  await listenSounds(ola);
+  // Replay the view with a monster's death and the player's death.
+  await ola.evaluate(() => {
+    interface Store {
+      getState: () => {
+        game: { step: number; view: { monsters: { top?: { id: number; card: string; stats?: unknown } }[] } } | null;
+        lobby: { table: { you: number } | null };
+        receive: (env: unknown) => void;
+      };
+    }
+    const s = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store.getState();
+    const game = structuredClone(s.game);
+    const top = game?.view.monsters.find((m) => m.top?.stats)?.top;
+    if (!game || !top) {
+      throw new Error('no game');
+    }
+    const you = s.lobby.table?.you ?? 0;
+    const events = [
+      { kind: 'died', player: -1, object: 999, card: top.card, prev: top.id },
+      { kind: 'died', player: you },
+    ];
+    s.receive({ type: 'update', data: { ...game, step: game.step + 1, events } });
+  });
+  await expect(ola.getByTestId('skull')).toHaveCount(2);
+  await expect(ola.locator('.effects')).toHaveCount(0);
+  expect(await played(ola)).toEqual(['/cardimg/assets/sounds/player-died.mp3']);
+});
