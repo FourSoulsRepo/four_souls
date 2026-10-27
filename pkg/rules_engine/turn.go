@@ -180,13 +180,13 @@ func (g *Game) run() {
 		if g.checkWin() {
 			return
 		}
-		if g.FirstRoll != nil {
-			// The roll comes before start-of-game abilities (Eden).
-			g.askFirstThrow()
+		if len(g.Queue) > 0 {
+			// Start-of-game abilities (Eden) resolve before the roll (R-SETUP-09).
+			g.processQueue()
 			continue
 		}
-		if len(g.Queue) > 0 {
-			g.processQueue()
+		if g.FirstRoll != nil {
+			g.askFirstThrow()
 			continue
 		}
 		if len(g.PendingTriggers) > 0 {

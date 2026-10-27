@@ -86,7 +86,8 @@ func (tb *Table) ThrowPending() []engine.Event {
 }
 
 // ThrowFirstRoll throws every die of the first-player roll of a new
-// game, so the game is in turn 1 (15.43).
+// game, so the game is in turn 1 (15.43). A start-of-game choice
+// (Eden) comes before the roll, so the caller answers it first.
 func ThrowFirstRoll(t testing.TB, g *engine.Game) {
 	t.Helper()
 	for g.FirstRoll != nil {

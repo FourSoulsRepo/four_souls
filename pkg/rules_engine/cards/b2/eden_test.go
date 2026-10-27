@@ -8,10 +8,17 @@ import (
 
 func TestEden(t *testing.T) {
 	testExtraLoot(t, "eden")
-	g := newGame(t, "isaac", "eden")
+	// Eden's choice comes before the first-player roll (R-SETUP-09).
+	g, _, err := engine.NewGame(engine.Setup{Seed: 7, Players: 2, Sets: []engine.CardSet{Set}, Characters: []engine.CardRef{"isaac", "eden"}})
+	if err != nil {
+		t.Fatal(err)
+	}
 	p := g.Prompt()
 	if p.Kind != engine.PromptChoose || p.Player != 1 || len(p.Options) != 3 {
 		t.Fatalf("first prompt %+v, want Eden's player choosing among 3", p)
+	}
+	if g.FirstRoll == nil {
+		t.Fatal("the first-player roll waits for Eden's choice")
 	}
 	top := g.DeckTop(engine.TreasureDeck, 3)
 	bottom := len(g.Decks[engine.TreasureDeck])
@@ -38,7 +45,7 @@ func TestEden(t *testing.T) {
 			t.Errorf("bottom card %d is %s, not one of the other two", i, c)
 		}
 	}
-	if g.Prompt().Kind != engine.PromptPriority {
-		t.Errorf("after the choice the game waits on %+v", g.Prompt())
+	if g.Prompt().Kind != engine.PromptThrow || g.Prompt().Player != 0 {
+		t.Errorf("after the choice the game waits on %+v, want the first roll", g.Prompt())
 	}
 }
