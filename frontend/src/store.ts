@@ -699,6 +699,9 @@ export const useApp = create<AppState>()((set, get) => {
       }
       if (env.type === 'welcome') {
         nameServer(get().address, (env.data as Welcome).name ?? '');
+        // An intent sent on the old connection gets no answer on this
+        // one: the resync shows whether it was played (19.86).
+        set({ sent: null });
       }
       if (env.type === 'restarting') {
         set({ restarting: true });

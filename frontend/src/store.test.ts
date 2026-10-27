@@ -168,6 +168,12 @@ describe('server notices (N-20)', () => {
     useApp.getState().receive({ type: 'restarting' });
     expect(useApp.getState().restarting).toBe(true);
   });
+
+  it('a welcome forgets the intent sent on the old connection (19.86)', () => {
+    useApp.setState({ screen: 'game', sent: 7 });
+    useApp.getState().receive({ type: 'welcome', data: { protocol: 5, app: '0.1.0', engine: '0.1.0', token: 't', seat: 0 } });
+    expect(useApp.getState().sent).toBeNull();
+  });
 });
 
 describe('the saved seat (15.99)', () => {

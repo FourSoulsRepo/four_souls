@@ -41,20 +41,21 @@ This step never closes; new reports are appended.
 | F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76               | 6     |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
-| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.82, 19.85 | 15 |
-| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.78, 19.81, 19.86 | 18 |
+| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.82, 19.85, 19.87 | 16 |
+| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.78, 19.81 | 17 |
 | K  | Build and release files                  | Release    | 19.47, 19.59, 19.83                                    | 3     |
 | L  | Not a bug: the app follows a ruling      | None       | 19.63                                                  | 1     |
 | M  | Go test setup: the code was right        | Go tests   | 19.68                                                  | 1     |
 | N  | A missing control: no way to do it       | Server     | 19.84                                                  | 1     |
+| O  | Reconnect: old connection state kept     | Client     | 19.86                                                  | 1     |
 
-Totals by system (86 items):
+Totals by system (87 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
 | Engine    | A, B    | 20    |
 | Card data | C       | 2     |
-| Client    | D–G     | 23    |
+| Client    | D–G, O  | 24    |
 | Server    | H, N    | 2     |
 | e2e       | I, J    | 34    |
 | Release   | K       | 3     |
@@ -2807,8 +2808,43 @@ Totals by system (86 items):
    3. It passed 8 of 8 alone, one worker at a time.
    4. Evidence: `.cache/e2e-evidence/18.9-stats/` (not in git).
 3. Cause
-   1. Not found yet: the click may come before the button takes input.
+   1. The record has no throw: the server never got one.
+   2. A refused intent clears `sent`; the button would come back.
+   3. The server closes a client that reads too slowly (`hub.go`).
+   4. An intent sent as the socket closes is lost.
+   5. The app reconnects; the resync has the same step.
+   6. `sent` still equals that step: `canAct` stays false.
+   7. So the Throw button never comes back; Pass stays disabled.
+   8. The probe runs did not catch the drop itself; the e2e test makes it.
+   9. Client: state from the old connection is kept (group O).
+   10. 19.78 is the same test and picture; likely the same cause.
 4. Tasks:
    1. Read the evidence; find why the throw did not start.
 5. Done when:
    1. The cause is known; the test waits for the right thing.
+6. Fix
+   1. A `welcome` clears `sent` (`store.ts`).
+   2. The resync then shows whether the intent was played.
+   3. A lost one can be sent again.
+   4. e2e: `an intent lost with a dropped connection can be sent again (19.86)`.
+   5. It sits in `pause.spec.ts`; it failed in both browsers before the fix.
+   6. Vitest: `store.test.ts`, a welcome forgets the sent intent.
+   7. Docs: UC-07 item 4a.
+   8. No screen change; no screenshots.
+
+### [ ] 19.87 e2e: the 19.84 end-game test finds two Games headings, webkit
+
+1. Goal: `save.spec.ts` "the host ends the game; everyone is back on the game list" passes every run.
+2. Report (agent, 2026-10-27)
+   1. Found by a full e2e run during 19.86, webkit.
+   2. Line 76: `getByRole('heading', { name: 'Games' })` matched two headings.
+   3. "Games" and "Saved games": a strict mode violation.
+   4. Evidence: `.cache/e2e-evidence/19.86-run1-save/` (not in git).
+3. Cause
+   1. The name matches as a substring without `exact: true`.
+   2. "Saved games" shows when another test's save is on the server.
+   3. Test logic: the app was right (group I).
+4. Tasks:
+   1. Match the heading with `exact: true`.
+5. Done when:
+   1. The test passes with a saved game on the server.
