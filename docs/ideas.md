@@ -827,6 +827,10 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    3. A tool checks every sound, the existing ones and every new one.
    4. The tool lives in `FourSoulsRepo/tools`, not here.
    5. Planned in 18.5 and 18.6; decision in ADR 022.
+5. AU-05. Loot draw sound (owner, 2026-10-27).
+   1. A card taken from the loot deck makes a sound.
+   2. One per card: start of turn, monster reward, other effects.
+   3. Planned in 18.7.
 
 ## Menu
 

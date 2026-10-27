@@ -2,7 +2,7 @@ import { motion } from 'motion/react';
 import { useEffect, useRef, useState } from 'react';
 import { diceDelays, diceImage } from '../dice';
 import { t } from '../i18n';
-import { playSound } from '../sounds';
+import { playSound, type Sound } from '../sounds';
 import { useApp, type Playing } from '../store';
 import { Card } from './Card';
 import { Die, DieCube } from './Die';
@@ -100,7 +100,15 @@ function Effect({ playing }: { playing: Playing }) {
         return <FlyFromMiddle to={effect.to} card={effect.card} playing={playing} stay={effect.kind === 'place'} />;
       }
       return (
-        <Fly from={effect.from} to={effect.to} card={effect.card} back={effect.back} playing={playing} stay={effect.kind === 'place'} />
+        <Fly
+          from={effect.from}
+          to={effect.to}
+          card={effect.card}
+          back={effect.back}
+          playing={playing}
+          stay={effect.kind === 'place'}
+          sound={effect.kind === 'fly' ? effect.sound : undefined}
+        />
       );
     case 'steal':
       return <Steal from={effect.from} to={effect.to} amount={effect.amount} playing={playing} />;
@@ -200,6 +208,7 @@ function Fly({
   back,
   playing,
   stay = false,
+  sound,
 }: {
   from: string[];
   to: string[];
@@ -208,11 +217,26 @@ function Fly({
   playing: Playing;
   // stay leaves the card where it landed until the next view (19.3).
   stay?: boolean;
+  // sound plays once as the card leaves (18.7).
+  sound?: Sound;
 }) {
   // Read the zones once, when the effect starts. A card leaving the
   // large played card starts at its size (15.74).
   const [path] = useState(() => ({ a: zoneCenter(from), b: zoneCenter(to), grow: playedWidth(from) / cardW }));
   useSkip(!path.a || !path.b, playing.done);
+  const flies = Boolean(path.a && path.b);
+  // A timer, so StrictMode's second mount does not play it twice.
+  useEffect(() => {
+    if (!flies || !sound) {
+      return;
+    }
+    const id = window.setTimeout(() => {
+      playSound(sound);
+    }, 0);
+    return () => {
+      window.clearTimeout(id);
+    };
+  }, [flies, sound]);
   if (!path.a || !path.b) {
     return null;
   }

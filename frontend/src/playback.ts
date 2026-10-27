@@ -5,6 +5,7 @@ import { kindOf, type CardInfo, type Kind } from './cards';
 import { firstPlayerText, tieText } from './dice';
 import { say, t } from './i18n';
 import type { GameEvent, GameView, Update } from './protocol';
+import type { Sound } from './sounds';
 
 export type Speed = 'normal' | 'fast' | 'slow' | 'off';
 
@@ -15,7 +16,8 @@ export type Effect =
   // before it held it (15.73). leaves is the source of the stack item
   // the card leaves; it hides until the next view (19.41). lifts is the
   // table card it flies off; it hides until the next view (19.73).
-  | { kind: 'fly'; from: string[]; to: string[]; card?: string; back: Kind; middle?: boolean; leaves?: number; lifts?: number }
+  // sound plays as the card leaves (18.7).
+  | { kind: 'fly'; from: string[]; to: string[]; card?: string; back: Kind; middle?: boolean; leaves?: number; lifts?: number; sound?: Sound }
   | { kind: 'popup'; at: string[]; text: string; tone: 'good' | 'bad' }
   // dice: thrown for a fresh roll or a reroll (15.62); a changed roll
   // spins in with its old value, a shot comes from the card that
@@ -150,15 +152,19 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
   for (const e of events) {
     const amount = e.amount ?? 0;
     switch (e.kind) {
-      case 'looted':
+      case 'looted': {
+        // Each card dealt from the loot deck makes its sound (18.7).
+        const discard = e.text === 'from the discard';
         out.push({
           kind: 'fly',
-          from: [e.text === 'from the discard' ? 'discard-loot' : 'deck-loot'],
+          from: [discard ? 'discard-loot' : 'deck-loot'],
           to: handZones(e.player),
           card: e.card,
           back: 'loot',
+          ...(discard ? {} : { sound: 'lootDraw' as const }),
         });
         break;
+      }
       case 'discarded': {
         // A loot card leaves the stack from its large card under the
         // stack, else its stack row (15.74).

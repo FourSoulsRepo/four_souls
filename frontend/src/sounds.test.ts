@@ -5,6 +5,7 @@ const hit = '/cardimg/assets/sounds/attack-hit.mp3';
 const cast = '/cardimg/assets/sounds/effect-cast.mp3';
 const impact = '/cardimg/assets/sounds/effect-impact.mp3';
 const dice = '/cardimg/assets/sounds/dice-roll.mp3';
+const deal = '/cardimg/assets/sounds/loot-draw.mp3';
 
 // fakeAudio records each played URL; play fails with the given error.
 function fakeAudio(fail?: DOMException, volumes: number[] = []): string[] {
@@ -30,38 +31,41 @@ afterEach(() => {
 
 describe('playSound', () => {
   it('plays each sound from its file', () => {
-    loadSounds({ attackHit: hit, effectCast: cast, effectImpact: impact, diceRoll: dice });
+    loadSounds({ attackHit: hit, effectCast: cast, effectImpact: impact, diceRoll: dice, lootDraw: deal });
     const played = fakeAudio();
     playSound('attackHit');
     playSound('effectCast');
     playSound('effectImpact');
     playSound('diceRoll');
-    expect(played).toEqual([hit, cast, impact, dice]);
+    playSound('lootDraw');
+    expect(played).toEqual([hit, cast, impact, dice, deal]);
   });
 
   // The files are levelled to one loudness (ADR 022); none gets its own volume.
   it('plays every sound at full volume', () => {
-    loadSounds({ attackHit: hit, effectCast: cast, effectImpact: impact, diceRoll: dice });
+    loadSounds({ attackHit: hit, effectCast: cast, effectImpact: impact, diceRoll: dice, lootDraw: deal });
     const volumes: number[] = [];
     fakeAudio(undefined, volumes);
     playSound('attackHit');
     playSound('effectCast');
     playSound('effectImpact');
     playSound('diceRoll');
-    expect(volumes).toEqual([1, 1, 1, 1]);
+    playSound('lootDraw');
+    expect(volumes).toEqual([1, 1, 1, 1, 1]);
   });
 
   it('is silent without the private files', () => {
-    loadSounds({ attackHit: '', effectCast: '', effectImpact: '', diceRoll: '' });
+    loadSounds({ attackHit: '', effectCast: '', effectImpact: '', diceRoll: '', lootDraw: '' });
     const played = fakeAudio();
     playSound('attackHit');
     playSound('effectImpact');
     playSound('diceRoll');
+    playSound('lootDraw');
     expect(played).toEqual([]);
   });
 
   it('swallows a file that fails to load', async () => {
-    loadSounds({ attackHit: hit, effectCast: cast, effectImpact: impact, diceRoll: dice });
+    loadSounds({ attackHit: hit, effectCast: cast, effectImpact: impact, diceRoll: dice, lootDraw: deal });
     const played = fakeAudio(new DOMException('no file', 'NotSupportedError'));
     playSound('attackHit');
     await Promise.resolve();

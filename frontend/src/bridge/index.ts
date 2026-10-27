@@ -212,13 +212,15 @@ export function getFonts(): Promise<Fonts> {
   return wailsFonts();
 }
 
-// Sounds are the damage sounds (15.50) and the dice sound (15.69); each
-// URL is '' without the private images, and that sound stays silent.
+// Sounds are the damage sounds (15.50), the dice sound (15.69) and the
+// loot draw sound (18.7); each URL is '' without the private images, and
+// that sound stays silent.
 export interface Sounds {
   attackHit: string;
   effectCast: string;
   effectImpact: string;
   diceRoll: string;
+  lootDraw: string;
 }
 
 // getSounds returns the sound URLs.

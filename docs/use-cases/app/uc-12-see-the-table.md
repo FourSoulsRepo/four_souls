@@ -211,6 +211,12 @@
   * Reward rolls may come first; it still flies from its slot.
   * Its slot shows empty while it flies.
   * A bonus soul does not fly.
+* **1ac. Loot draw sound (18.7):** a card leaving the loot deck makes a deal sound.
+  * One sound per card, as each card flies to the hand.
+  * Any cause: start of turn, a monster's reward, a card's effect.
+  * A card taken from the loot discard is silent.
+  * No private images (public clone): no sound.
+  * With animations off, no sound plays.
 
 ## Postconditions
 

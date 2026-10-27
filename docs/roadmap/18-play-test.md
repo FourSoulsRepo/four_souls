@@ -114,3 +114,24 @@ Ideas: B-04, B-05.
 4. Owner notes (2026-10-27)
    1. Owner marks 18.5 and 18.6 solved.
    2. The images and tools repos are pushed.
+
+### [x] 18.7 Loot draw sound
+
+1. Goal: a card dealt from the loot deck makes a sound (AU-05).
+2. Tasks:
+   1. Source: owner's `Card_Deal_1.wav`; source unknown.
+      1. So it lives only in the private images, as `loot-draw.mp3`.
+      2. Mono MP3, levelled with `loudness level` (ADR 022).
+      3. Amend the submodule commit; bump the pointer.
+   2. `App.Sounds()` gains `lootDraw`; `''` without the file.
+   3. Each `looted` from the loot deck plays it as its card flies.
+      1. One sound per card; each card has its own fly.
+      2. Every cause: start of turn, monster reward, card effects.
+      3. A card taken from the loot discard plays none.
+      4. With animations off, nothing plays, as other sounds.
+   4. `NOTICE`, UC-12, wiki `Client.md` name the sound.
+   5. Tests: Vitest for playback and sounds; e2e for the played file.
+   6. Gates: `make lint`, `make frontend e2e`.
+3. Done when:
+   1. `loudness check` passes on every sound.
+   2. **Owner** hears one deal per looted card.

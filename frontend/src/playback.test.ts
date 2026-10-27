@@ -37,11 +37,19 @@ describe('effectsFor', () => {
     ]);
   });
 
+  // Each card from the loot deck is dealt with its sound (18.7).
   it('flies looted cards from the loot deck to the hand', () => {
     const e: GameEvent = { kind: 'looted', player: 1, object: 9, card: 'a_dime', private: true };
-    expect(effectsFor([e], ctx)).toEqual([
-      { kind: 'fly', from: ['deck-loot'], to: ['hand-1', 'player-1'], card: 'a_dime', back: 'loot' },
+    expect(effectsFor([e, { ...e, object: 10, card: 'a_penny' }], ctx)).toEqual([
+      { kind: 'fly', from: ['deck-loot'], to: ['hand-1', 'player-1'], card: 'a_dime', back: 'loot', sound: 'lootDraw' },
+      { kind: 'fly', from: ['deck-loot'], to: ['hand-1', 'player-1'], card: 'a_penny', back: 'loot', sound: 'lootDraw' },
     ]);
+  });
+
+  // Only the loot deck deals; a card taken from the discard is silent.
+  it('flies a card looted from the discard without a sound', () => {
+    const e: GameEvent = { kind: 'looted', player: 1, object: 9, card: 'a_dime', text: 'from the discard' };
+    expect(effectsFor([e], ctx)).toEqual([{ kind: 'fly', from: ['discard-loot'], to: ['hand-1', 'player-1'], card: 'a_dime', back: 'loot' }]);
   });
 
   it('flies a discarded card from where it was to its deck discard', () => {

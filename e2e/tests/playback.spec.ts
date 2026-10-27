@@ -1260,3 +1260,38 @@ test('damage from a card no longer on screen flies from the player who dealt it 
   expect(Math.abs(first.x - from.x)).toBeLessThan(30);
   expect(Math.abs(first.y - from.y)).toBeLessThan(30);
 });
+
+test('each card dealt from the loot deck makes its sound (18.7)', async ({ browser }) => {
+  const [ola] = await startGame(browser, ['Ola', 'Pim']);
+  if (!ola) {
+    throw new Error('no pages');
+  }
+  await listenSounds(ola);
+  // Replay the view with two cards from the loot deck and one from the
+  // loot discard.
+  await ola.evaluate(() => {
+    interface Store {
+      getState: () => {
+        game: { step: number } | null;
+        lobby: { table: { you: number } | null };
+        receive: (env: unknown) => void;
+      };
+    }
+    const s = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store.getState();
+    const game = structuredClone(s.game);
+    if (!game) {
+      throw new Error('no game');
+    }
+    const you = s.lobby.table?.you ?? 0;
+    const events = [
+      { kind: 'looted', player: you, object: 1001 },
+      { kind: 'looted', player: you, object: 1002 },
+      { kind: 'looted', player: you, object: 1003, text: 'from the discard' },
+    ];
+    s.receive({ type: 'update', data: { ...game, step: game.step + 1, events } });
+  });
+  await expect(ola.getByTestId('effect-fly')).toBeAttached();
+  await expect(ola.locator('.effects')).toHaveCount(0);
+  // One deal per card from the deck; the discard is silent.
+  expect(await played(ola)).toEqual(Array(2).fill('/cardimg/assets/sounds/loot-draw.mp3'));
+});
