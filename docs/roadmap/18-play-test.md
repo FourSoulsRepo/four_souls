@@ -202,7 +202,7 @@ Ideas: B-04, B-05.
 5. Owner notes (2026-10-27)
    1. Owner marks 18.10 solved.
 
-### [ ] 18.11 Attack and buy pick on the table
+### [x] 18.11 Attack and buy pick on the table
 
 1. Goal: attack, buy and slot picks happen on the table, no dialog (V-53).
 2. Tasks:
@@ -239,3 +239,5 @@ Ideas: B-04, B-05.
    3. Screenshots: `attack-pick-table`, `turn-actions-buy`, `deck-attack-pick-slot`.
    4. `fd65095` held only these result lines: a test command stashed the work.
    5. The next commit brings the code; an internal build of `fd65095` has none of it.
+5. Owner notes (2026-10-27)
+   1. Owner marks 18.11 solved.
