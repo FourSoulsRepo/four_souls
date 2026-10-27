@@ -158,7 +158,7 @@ Ideas: B-04, B-05.
    1. `loudness check` passes on every sound.
    2. **Owner** hears it once per player death, never on a prevented one.
 
-### [ ] 18.9 Treasure gain sound
+### [x] 18.9 Treasure gain sound
 
 1. Goal: each gained treasure flies in with a sound (AU-07).
 2. Tasks:
