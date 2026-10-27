@@ -13,7 +13,7 @@ func TestOuijaBoard(t *testing.T) {
 	})
 	tb.G.PutOnDeck(engine.MonsterDeck, "fly", "shop_upgrade", "leech", "trite") // trite on top
 	shop := len(tb.G.Shop)
-	tb.Activate(0, "ouija_board", 0, "shop_upgrade", "slot 2")
+	tb.Activate(0, "ouija_board", 0, "shop_upgrade", "ask.slot 2")
 	if n := len(tb.G.Shop); n != shop+2 {
 		t.Errorf("shop slots = %d, want %d: Shop Upgrade should have entered play and resolved", n, shop+2)
 	}

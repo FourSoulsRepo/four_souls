@@ -1,6 +1,15 @@
 package r
 
-import engine "github.com/FourSoulsRepo/rules_engine"
+import (
+	engine "github.com/FourSoulsRepo/rules_engine"
+	"github.com/FourSoulsRepo/rules_engine/cards/cardkit"
+)
+
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	magicMarkerChangeANumber = engine.NewKey("card.magic_marker.change_a_number_of_which")
+	magicMarkerChangeItBy    = engine.NewKey("card.magic_marker.change_it_by")
+)
 
 // Magic Marker (Wildcard Card)
 //
@@ -26,23 +35,23 @@ var magicMarker = engine.CardDef{
 				delta = -1
 			}
 			c.G.MarkNumber(ids[a[0]], ns[a[1]], delta)
-		}, engine.Question{Text: "Change a number of which card?", Options: func(c *engine.Ctx, _ []int) []string {
+		}, engine.Question{Text: magicMarkerChangeANumber, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
 			return labelsOf(c.G, markable(c))
-		}}, engine.Question{Text: "Which number?", Options: func(c *engine.Ctx, a []int) []string {
+		}}, engine.Question{Text: cardkit.AskWhichNumber, Options: func(c *engine.Ctx, a []int) []engine.Msg {
 			ids := markable(c)
 			if a[0] < 0 || a[0] >= len(ids) {
 				return nil
 			}
-			var out []string
+			var out []engine.Msg
 			for _, n := range c.G.NumbersOf(ids[a[0]]) {
 				out = append(out, n.Label())
 			}
 			return out
-		}}, engine.Question{Text: "Change it by?", Options: func(_ *engine.Ctx, a []int) []string {
+		}}, engine.Question{Text: magicMarkerChangeItBy, Options: func(_ *engine.Ctx, a []int) []engine.Msg {
 			if a[1] < 0 {
 				return nil
 			}
-			return []string{"+1", "-1"}
+			return engine.Options(cardkit.AskPlusOne, cardkit.AskMinusOne)
 		}})},
 	}},
 }

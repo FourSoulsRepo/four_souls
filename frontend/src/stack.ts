@@ -1,6 +1,7 @@
 // Words for the stack and for why the game waits (7.8). Pure, so it is
 // tested without a browser.
-import type { GameView, StackItem } from './protocol';
+import { say, t } from './i18n';
+import type { GameView, Seat, StackItem } from './protocol';
 import { oddsLine, rollChanges, type Name } from './stats';
 
 // Stack item kinds, in Go's order (pkg/rules_engine/stack.go).
@@ -40,6 +41,14 @@ export interface Names {
   card: (ref: string) => string;
 }
 
+// seatNames names players by their seats' nicknames and cards by card.
+export function seatNames(seats: readonly Seat[] | null | undefined, card: (ref: string) => string): Names {
+  return {
+    player: (p) => seats?.find((s) => s.seat === p)?.name ?? t('table.player_n', { n: p + 1 }),
+    card,
+  };
+}
+
 // findCard is the card ref of an object on the table, if it is there.
 export function findCard(view: GameView, id: number): string | undefined {
   const all = [
@@ -59,73 +68,101 @@ export interface LinePart {
   player?: number;
 }
 
+// partsOf splits a line from t() at its placeholders (ADR 021): each
+// {name} given in parts becomes that part (or parts), the words around
+// it plain parts. A line keeps its names in their colors in every
+// language.
+export function partsOf(text: string, parts: Record<string, LinePart | LinePart[]>): LinePart[] {
+  const named = new Map(Object.entries(parts));
+  return text.split(/(\{\w+\})/).flatMap((piece): LinePart[] => {
+    const part = piece.startsWith('{') ? named.get(piece.slice(1, -1)) : undefined;
+    if (part) {
+      return Array.isArray(part) ? part : [part];
+    }
+    return piece === '' ? [] : [{ text: piece }];
+  });
+}
+
 // stackParts says what one stack item is, in parts that keep who is who.
-export function stackParts(it: StackItem, view: GameView, n: Names): LinePart[] {
+// rolled, if given, stands for a roll's number: the history shows how a
+// change turned it into the result (history.ts).
+export function stackParts(it: StackItem, view: GameView, n: Names, rolled?: string): LinePart[] {
   const who: LinePart = { text: n.player(it.controller), role: 'player', player: it.controller };
   const card: LinePart = { text: it.card ? n.card(it.card) : '', role: 'card' };
   const targetCard = it.target_card ?? findCard(view, it.target.object ?? 0);
   const target: LinePart = it.target.is_player
     ? { text: n.player(it.target.player), role: 'target', player: it.target.player }
-    : { text: targetCard ? n.card(targetCard) : 'a card', role: 'target' };
-  const attack: LinePart[] = it.attack ? [{ text: 'Attack: ' }] : [];
+    : { text: targetCard ? n.card(targetCard) : t('stack.a_card'), role: 'target' };
+  // An attack's items say so first: "Attack: Ann rolls 4 against Gaper".
+  const attack = (line: LinePart[]) => (it.attack ? partsOf(t('stack.attack'), { line }) : line);
   // dealer is who deals damage: the player, or the monster that hits back.
   // Damage a player controls against themselves is "take damage" (Boom
   // Fly, Secret Room): its card deals it (15.47, ADR 011).
   const sourceCard = it.source_card ?? findCard(view, it.source);
   const self = it.target.is_player && it.target.player === it.controller;
-  const byCard: LinePart[] = sourceCard ? [{ text: n.card(sourceCard), role: 'card' }, { text: ' deals ' }] : [];
-  const dealer: LinePart[] = it.controller >= 0 && !self ? [who, { text: ' deals ' }] : byCard;
+  const amount = it.amount ?? 0;
   switch (it.kind) {
     case StackKind.loot:
-      return [who, { text: ' plays ' }, card];
+      return partsOf(t('stack.loot'), { player: who, card });
     case StackKind.ability:
-      return [card, { text: ' (' }, who, { text: ')' }];
+      return partsOf(t('stack.ability'), { card, player: who });
     case StackKind.trigger:
-      return [card, { text: ' triggers' }];
+      return partsOf(t('stack.trigger'), { card });
     case StackKind.roll: {
       // A thrown roll names what will change it, and the result (15.94).
       const changes = rollChanges(it.sources, sourceName(n));
-      const result = changes ? ` (${changes} = ${String(it.final ?? it.roll ?? 0)})` : '';
-      const rolls: LinePart = { text: ` rolls${it.roll ? ` ${String(it.roll)}` : ''}` };
-      const parts = rollParts(it, n, rolls, who, target, attack, !!targetCard);
+      const result = changes ? ` ${t('stack.roll_result', { changes, n: it.final ?? it.roll ?? 0 })}` : '';
+      const roll = rolled ?? (it.roll ? String(it.roll) : '');
+      const parts = rollParts(it, n, roll, who, target, attack, !!targetCard);
       return result ? [...parts, { text: result }] : parts;
     }
     case StackKind.damage: {
-      if (dealer.length === 0 && self) {
-        // No card to name: the player takes it.
-        return [...attack, target, { text: ` takes ${String(it.amount ?? 0)} damage` }];
+      if (it.controller >= 0 && !self) {
+        return attack(partsOf(t('stack.damage', { n: amount }), { player: who, target }));
       }
-      return [...attack, ...dealer, { text: `${String(it.amount ?? 0)} damage to ` }, target];
+      if (sourceCard) {
+        return attack(partsOf(t('stack.damage_by_card', { n: amount }), { card: { text: n.card(sourceCard), role: 'card' }, target }));
+      }
+      if (self) {
+        // No card to name: the player takes it.
+        return attack(partsOf(t('stack.takes_damage', { n: amount }), { target }));
+      }
+      return attack(partsOf(t('stack.damage_to', { n: amount }), { target }));
     }
     case StackKind.death:
-      return [target, { text: ' dies' }];
+      return partsOf(t('stack.dies'), { target });
     case StackKind.penalty:
-      return [
-        { text: n.player(it.target.player), role: 'target', player: it.target.player },
-        { text: ' pays the death penalty' },
-      ];
+      return partsOf(t('stack.penalty'), { player: { text: n.player(it.target.player), role: 'target', player: it.target.player } });
     case StackKind.deathStep:
-      return [card, { text: ' is killed' }];
+      return partsOf(t('stack.killed'), { card });
     default:
-      return [card.text ? card : { text: 'Something' }];
+      return [card.text ? card : { text: t('stack.something') }];
   }
 }
 
 // rollParts says who rolls for what: an attack roll names the monster
-// it is against, a card's roll the card, other rolls their label.
-function rollParts(it: StackItem, n: Names, rolls: LinePart, who: LinePart, target: LinePart, attack: LinePart[], against: boolean): LinePart[] {
+// it is against, a card's roll the card, other rolls their label. roll
+// is the number, '' before the throw.
+function rollParts(it: StackItem, n: Names, roll: string, who: LinePart, target: LinePart, attack: (line: LinePart[]) => LinePart[], against: boolean): LinePart[] {
+  const rolled: Record<string, LinePart> = { roll: { text: roll } };
   if (it.attack && against) {
-    return [...attack, who, rolls, { text: ' against ' }, target];
+    return attack(partsOf(roll ? t('stack.roll_against_n') : t('stack.roll_against'), { player: who, ...rolled, target }));
   }
   if (it.roll_for.card) {
-    return [who, { text: `${rolls.text} for ` }, { text: n.card(it.roll_for.card), role: 'card' }];
+    const card: LinePart = { text: n.card(it.roll_for.card), role: 'card' };
+    return partsOf(roll ? t('stack.roll_card_n') : t('stack.roll_card'), { player: who, ...rolled, card });
   }
-  return [...attack, who, { text: `${rolls.text}${it.label ? ` for ${it.label}` : ''}` }];
+  if (it.label?.key) {
+    // The label comes from the server as a key (ADR 021).
+    const label: LinePart = { text: say(it.label, n) };
+    return attack(partsOf(roll ? t('stack.roll_label_n') : t('stack.roll_label'), { player: who, ...rolled, label }));
+  }
+  return attack(partsOf(roll ? t('stack.roll_n') : t('stack.roll'), { player: who, ...rolled }));
 }
 
 // sourceName names a stat source's card for rollChanges and oddsLine.
 function sourceName(n: Names): Name {
-  return (ref) => (ref ? n.card(ref) : 'a hidden card');
+  return (ref) => (ref ? n.card(ref) : t('stats.hidden_card'));
 }
 
 // attackTarget names what an attack aims at: an attacked player by name,
@@ -136,7 +173,7 @@ export function attackTarget(view: GameView, target: number, n: Names): LinePart
     return { text: n.player(victim.id), role: 'target', player: victim.id };
   }
   const ref = findCard(view, target);
-  return { text: ref ? n.card(ref) : 'a monster', role: 'target' };
+  return { text: ref ? n.card(ref) : t('stack.a_monster'), role: 'target' };
 }
 
 // declaration says what the active player declared that is still open
@@ -155,15 +192,15 @@ export function declaration(view: GameView, n: Names): LinePart[] | null {
   if (attack) {
     const target = attack.target ?? 0;
     if (target === 0) {
-      return [who, { text: attack.deck ? ' attacks the monster deck' : ' attacks…' }];
+      return partsOf(attack.deck ? t('stack.declared.attack_deck') : t('stack.declared.attack'), { player: who });
     }
-    return [who, { text: ' attacks ' }, attackTarget(view, target, n)];
+    return partsOf(t('stack.declared.attack_target'), { player: who, target: attackTarget(view, target, n) });
   }
   if (view.buying) {
-    return [who, { text: ' buys…' }];
+    return partsOf(t('stack.declared.buy'), { player: who });
   }
   const { end_declared: ending, step } = view.turn;
-  return ending && step === actionStep ? [who, { text: ' ends the turn' }] : null;
+  return ending && step === actionStep ? partsOf(t('stack.declared.end_turn'), { player: who }) : null;
 }
 
 // StackRowData is one row of the stack panel: the open declaration, or
@@ -194,9 +231,10 @@ export function attackOdds(view: GameView, n: Names): string | undefined {
   return oddsLine(odds, attacker?.printed_atk ?? odds.atk, sourceName(n));
 }
 
-// stackLine says what one stack item is, as plain text.
-export function stackLine(it: StackItem, view: GameView, n: Names): string {
-  return stackParts(it, view, n)
+// stackLine says what one stack item is, as plain text; rolled as in
+// stackParts.
+export function stackLine(it: StackItem, view: GameView, n: Names, rolled?: string): string {
+  return stackParts(it, view, n, rolled)
     .map((p) => p.text)
     .join('');
 }
@@ -259,7 +297,7 @@ export interface StackWait {
 
 // stackWait names whom the stack waits for, as the server says.
 export function stackWait(view: GameView, you: number, n: Names): StackWait {
-  const name = (p: number) => (p === you ? 'You' : n.player(p));
+  const name = (p: number) => (p === you ? t('stack.you') : n.player(p));
   return { responding: (view.responding ?? []).map(name), passed: (view.passed ?? []).map(name) };
 }
 

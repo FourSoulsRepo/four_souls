@@ -255,6 +255,16 @@
   box-shadow: 0 0 14px rgb(0 0 0 / 55%);
 }
 
+/* Who translated the card (CD-06): small, like a printed credit. */
+.card-zoom-credit {
+  margin: 0;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--fg);
+  background: rgb(10 16 24 / 80%);
+}
+
 .card-zoom-owner {
   font-size: 15px;
   font-weight: 700;

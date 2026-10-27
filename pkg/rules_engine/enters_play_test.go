@@ -38,7 +38,7 @@ func TestGainedItemEntersPlay(t *testing.T) {
 	if _, err := g.Apply(Intent{Player: 0, Kind: IntentPurchase}); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := g.Settle("treasure deck"); err != nil {
+	if _, err := g.Settle("ask.deck.treasure"); err != nil {
 		t.Fatal(err)
 	}
 	if len(g.Shop) != 2 {

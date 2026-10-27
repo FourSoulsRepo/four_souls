@@ -6,15 +6,17 @@ import { expect, test } from './fixtures';
 import { startGame } from './game';
 import { shot } from './shot';
 import { seen, throwButton } from './turn';
+import { tr, trRe } from './locale';
 
 test.setTimeout(120_000);
 
 function rollList(page: Page) {
-  return page.getByRole('complementary', { name: 'Stack' }).getByRole('group', { name: 'First player roll' });
+  return page.getByRole('complementary', { name: tr('stack.title') }).getByRole('group', { name: tr('first_roll.label') });
 }
 
 function rollRow(page: Page, name: string) {
-  return rollList(page).getByRole('listitem', { name: new RegExp(`^${name}: `) });
+  // A row's name is "Ann: 4", or "Ann: not rolled yet" in the tests' language.
+  return rollList(page).getByRole('listitem', { name: new RegExp(`^(${name}: |${trRe('first_roll.not_rolled', { player: name }).source})`) });
 }
 
 // recordBanners keeps the text of every banner the page plays.
@@ -65,17 +67,17 @@ test("every player's first-player roll shows before the first turn", async ({ br
   for (const page of pages) {
     await recordBanners(page);
     seats.set((await seen(page)).you, page);
-    await expect(page.getByRole('status', { name: 'Turn' })).toHaveText('Before turn 1 · First player roll');
+    await expect(page.getByRole('status', { name: tr('turn_badge.label') })).toHaveText(tr('turn_badge.first_roll'));
     await expect(rollList(page).getByRole('listitem')).toHaveCount(3);
     // Nobody has a turn yet: no End turn, no active seat.
-    await expect(page.getByRole('button', { name: /End turn|Their turn/ })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: new RegExp(`${trRe('turn.end').source}|${trRe('turn.theirs').source}`) })).toHaveCount(0);
   }
   const [ann, bo] = pages;
   if (!ann || !bo) {
     throw new Error('no pages');
   }
   await expect(throwButton(ann)).toBeVisible();
-  await expect(bo.getByRole('region', { name: 'Throw' })).toContainText('Ann is throwing');
+  await expect(bo.getByRole('region', { name: tr('throw.label') })).toContainText(tr('throw.throwing', { player: 'Ann' }));
   await shot(bo, 'first-roll-waiting');
 
   // Ann throws first; every page shows her die, the same on each.
@@ -89,13 +91,14 @@ test("every player's first-player roll shows before the first turn", async ({ br
   await shot(bo, 'first-roll-one-die');
 
   // Shots of the tie and winner banners, taken as they show.
-  const winner = /goes first — rolled [1-6]|go first — rolled [1-6]/;
+  const winner = trRe('first_roll.by_roll');
+  const tie = trRe('first_roll.tie');
   let started = () => undefined as void;
   const stop = new Promise<void>((resolve) => {
     started = resolve;
   });
   const shots = process.env.SCREENSHOTS
-    ? Promise.all([bannerShot(bo, /roll again$/, 'first-roll-tie', stop), bannerShot(bo, winner, 'first-roll-winner', stop)])
+    ? Promise.all([bannerShot(bo, tie, 'first-roll-tie', stop), bannerShot(bo, winner, 'first-roll-winner', stop)])
     : Promise.resolve();
 
   // The others throw, round after round when the lowest ties. Up to a
@@ -113,7 +116,7 @@ test("every player's first-player roll shows before the first turn", async ({ br
     await roller.mouse.move(1, 1);
   }
   for (const page of pages) {
-    await expect(page.getByRole('status', { name: 'Turn' })).toHaveText(/^Turn 1 · /, { timeout: 20_000 });
+    await expect(page.getByRole('status', { name: tr('turn_badge.label') })).toHaveText(new RegExp(`^${trRe('turn_badge.turn', { n: 1 }).source}$`), { timeout: 20_000 });
   }
   started();
   await shots;
@@ -123,29 +126,29 @@ test("every player's first-player roll shows before the first turn", async ({ br
   for (const page of pages) {
     const shown = await banners(page);
     expect(shown.filter((b) => winner.test(b))).toHaveLength(1);
-    ties.push(shown.filter((b) => b.endsWith('roll again')).length);
+    ties.push(shown.filter((b) => tie.test(b)).length);
   }
   expect(new Set(ties).size).toBe(1);
   for (const page of pages) {
-    await expect(page.getByRole('status', { name: 'Turn' })).toHaveText(/^Turn 1 · (Ann|Bo|Cy) · /);
+    await expect(page.getByRole('status', { name: tr('turn_badge.label') })).toHaveText(new RegExp(`^${trRe('turn_badge.turn', { n: 1 }).source.replace('.*?', '(Ann|Bo|Cy)')}$`));
     await expect(rollList(page)).toHaveCount(0);
   }
 
   // The history keeps every die and who goes first.
-  const first = (await bo.getByRole('status', { name: 'Turn' }).textContent())?.split(' · ')[1] ?? '';
+  const first = (await bo.getByRole('status', { name: tr('turn_badge.label') }).textContent())?.split(' · ')[1] ?? '';
   for (const page of pages) {
     const you = names[(await seen(page)).you] ?? '';
-    await page.getByRole('complementary', { name: 'History strip' }).getByRole('button', { name: 'History' }).click();
-    const history = page.getByRole('complementary', { name: 'History', exact: true });
+    await page.getByRole('complementary', { name: tr('history.strip') }).getByRole('button', { name: tr('history.title') }).click();
+    const history = page.getByRole('complementary', { name: tr('history.title'), exact: true });
     for (const name of names) {
-      const roll = name === you ? /You roll [1-6] for the first player$/ : new RegExp(`${name} rolls [1-6] for the first player$`);
+      const roll = name === you ? new RegExp(`${trRe('history.first_roll.you').source}$`) : new RegExp(`${trRe('history.first_roll.other', { player: name }).source}$`);
       await expect(history.getByRole('listitem').filter({ hasText: roll }).first()).toBeVisible();
     }
-    const goes = first === you ? 'You go first — rolled' : `${first} goes first — rolled`;
+    const goes = trRe('first_roll.by_roll', { line: first === you ? tr('first_roll.you_first') : tr('first_roll.first', { player: first }) });
     await expect(history.getByRole('listitem').filter({ hasText: goes })).toHaveCount(1);
     if ((ties[0] ?? 0) > 0) {
       // A tie seen as a banner is in the history too.
-      await expect(history.getByRole('listitem').filter({ hasText: /Tie at [1-6]: .* roll again$/ }).first()).toBeVisible();
+      await expect(history.getByRole('listitem').filter({ hasText: new RegExp(`${trRe('first_roll.tie').source}$`) }).first()).toBeVisible();
     }
   }
   await shot(bo, 'first-roll-history');

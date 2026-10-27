@@ -8,6 +8,8 @@ Activation.Mode
 Activation.Player
 Activation.Source
 Activation.Window
+Arg.Name
+Arg.Value
 Asking.Ability
 Asking.Controller
 Asking.Effect

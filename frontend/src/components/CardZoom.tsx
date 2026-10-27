@@ -1,7 +1,9 @@
 import { useLayoutEffect, useRef, useState } from 'react';
+import { language, t } from '../i18n';
 import { useApp } from '../store';
 import { keyword, placeZoom, type Place } from '../zoom';
 import type { Outcome } from '../history';
+import { translatorsOf } from '../cards';
 import { Card, CardText } from './Card';
 import { starPolygon } from './lunge';
 import { skullPath } from './marks';
@@ -15,11 +17,15 @@ import './Card.css';
 // card's keywords stand beside it (H-13). A card the player can't use
 // now says why under it (15.29, F-17, C-06). A history headline's zoom
 // shows what it did beside the card, after an arrow (15.90). A changed
-// stat's sum goes under the card (15.92).
+// stat's sum goes under the card (15.92). A translated card credits its
+// translators under it (CD-06, 16.5).
 export function CardZoom() {
   const zoom = useApp((s) => s.zoom);
   const setZoom = useApp((s) => s.setZoom);
-  const footnotes = useApp((s) => (zoom ? s.cards.get(zoom.ref)?.footnotes : undefined));
+  const info = useApp((s) => (zoom ? s.cards.get(zoom.ref) : undefined));
+  const footnotes = info?.footnotes;
+  // Who translated the card's name into the shown language (CD-06).
+  const translators = info ? translatorsOf(info, language()) : [];
   const bodyRef = useRef<HTMLDivElement>(null);
   const [place, setPlace] = useState<Place | null>(null);
   // The zoom is measured before it paints, then placed by its size.
@@ -61,12 +67,13 @@ export function CardZoom() {
             </p>
           )}
           {zoom.stats && zoom.stats.length > 0 && (
-            <ul className="card-zoom-stats" aria-label="Stats">
+            <ul className="card-zoom-stats" aria-label={t('zoom.stats')}>
               {zoom.stats.map((line) => (
                 <li key={line}>{line}</li>
               ))}
             </ul>
           )}
+          {translators.length > 0 && <p className="card-zoom-credit">{t('zoom.translators', { names: translators.join(', ') })}</p>}
           {zoom.caption && (
             <figcaption className="card-zoom-caption">
               {zoom.caption.ability && <p className="card-zoom-ability">{zoom.caption.ability}</p>}
@@ -89,7 +96,7 @@ export function CardZoom() {
         </figure>
         {zoom.outcome && zoom.outcome.length > 0 && <Outcomes list={zoom.outcome} />}
         {footnotes && footnotes.length > 0 && (
-          <aside className="card-zoom-tips" role="note" aria-label="Keywords">
+          <aside className="card-zoom-tips" role="note" aria-label={t('zoom.keywords')}>
             {footnotes.map((f) => (
               <p key={f.title} className="card-zoom-tip">
                 <b>{keyword(f.title)}</b>
@@ -108,7 +115,7 @@ export function CardZoom() {
 // plain coin with the amount.
 function Outcomes({ list }: { list: Outcome[] }) {
   return (
-    <div className="card-zoom-outcome" role="list" aria-label="What it did">
+    <div className="card-zoom-outcome" role="list" aria-label={t('zoom.outcome')}>
       <svg className="card-zoom-arrow" viewBox="0 0 24 24" aria-hidden="true">
         <path d="M3 10h12V5l7 7-7 7v-5H3Z" />
       </svg>
@@ -150,7 +157,7 @@ function Outcomes({ list }: { list: Outcome[] }) {
 
 // resultLabel names one result: "Gaper: 2 damage", "Gaper dies", "+3¢".
 function resultLabel(o: Outcome): string {
-  if (o.mark === 'damage') return `${o.text}: ${String(o.amount ?? 0)} damage`;
-  if (o.mark === 'death') return `${o.text} dies`;
+  if (o.mark === 'damage') return t('zoom.result_damage', { target: o.text, n: o.amount ?? 0 });
+  if (o.mark === 'death') return t('zoom.result_death', { target: o.text });
   return o.text;
 }

@@ -1,6 +1,15 @@
 package b2
 
-import engine "github.com/FourSoulsRepo/rules_engine"
+import (
+	engine "github.com/FourSoulsRepo/rules_engine"
+	"github.com/FourSoulsRepo/rules_engine/cards/cardkit"
+)
+
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	incubusGiveWhichOf   = engine.NewKey("card.incubus.give_which_of_your_cards")
+	incubusTheirHandSwap = engine.NewKey("card.incubus.their_hand_swap_for_which")
+)
 
 // Incubus (Eternal Treasure Card)
 //
@@ -34,7 +43,7 @@ var incubus = engine.CardDef{
 							if a[0] >= 0 {
 								c.G.HandToDeckTop(c.Controller, c.HandCard(a[0]))
 							}
-						}, engine.HandQuestion("Put which card on top of the loot deck?")),
+						}, engine.HandQuestion(cardkit.AskPutWhichCardOnTop)),
 					},
 				},
 			},
@@ -45,24 +54,24 @@ var incubus = engine.CardDef{
 // theirCard shows the other player's hand: pick a card to take, or keep
 // your cards. The last option is always "don't swap".
 var theirCard = engine.Question{
-	Text: "Their hand. Swap for which card?",
-	Options: func(c *engine.Ctx, _ []int) []string {
-		var out []string
+	Text: incubusTheirHandSwap,
+	Options: func(c *engine.Ctx, _ []int) []engine.Msg {
+		var out []engine.Msg
 		for _, id := range c.G.Players[c.Targets[0].Player].Hand {
-			out = append(out, string(c.G.Object(id).Card))
+			out = append(out, engine.CardOption(c.G.Object(id).Card))
 		}
-		return append(out, "don't swap")
+		return append(out, cardkit.AskDontSwap.Msg())
 	},
 }
 
 // yourCard asks which of your cards to give; skipped when not swapping.
 var yourCard = engine.Question{
-	Text: "Give which of your cards?",
-	Options: func(c *engine.Ctx, a []int) []string {
+	Text: incubusGiveWhichOf,
+	Options: func(c *engine.Ctx, a []int) []engine.Msg {
 		if a[0] == len(c.G.Players[c.Targets[0].Player].Hand) {
 			return nil // "don't swap"
 		}
-		return engine.HandQuestion("").Options(c, a)
+		return engine.HandQuestion(incubusGiveWhichOf).Options(c, a)
 	},
 }
 

@@ -9,7 +9,7 @@ import (
 func TestAnsuz(t *testing.T) {
 	tb := lootTable(t, "ansuz")
 	tb.G.PutOnDeck(engine.MonsterDeck, "fly", "leech", "trite", "fatty") // fatty on top
-	tb.Play(0, "ansuz", "monster deck", "fly", "leech", "trite", "fatty")
+	tb.Play(0, "ansuz", "ask.deck.monster", "fly", "leech", "trite", "fatty")
 	top := tb.G.DeckTop(engine.MonsterDeck, 4)
 	var got []engine.CardRef
 	for _, id := range top {

@@ -2,6 +2,11 @@ package b2
 
 import engine "github.com/FourSoulsRepo/rules_engine"
 
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	theShovelWhichMonsterCard = engine.NewKey("card.the_shovel.which_monster_card")
+)
+
 // The Shovel (Active Treasure Card)
 //
 //	{Tap Effect}Put a non-event monster card in discard on top of the monster deck.
@@ -19,10 +24,10 @@ var theShovel = engine.CardDef{
 				if a[0] >= 0 {
 					c.G.DiscardToDeckTop(engine.MonsterDeck, nonEventDiscards(c.G)[a[0]])
 				}
-			}, engine.Question{Text: "Which monster card?", Options: func(c *engine.Ctx, _ []int) []string {
-				var out []string
+			}, engine.Question{Text: theShovelWhichMonsterCard, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
+				var out []engine.Msg
 				for _, id := range nonEventDiscards(c.G) {
-					out = append(out, string(c.G.Object(id).Card))
+					out = append(out, engine.CardOption(c.G.Object(id).Card))
 				}
 				return out
 			}})},

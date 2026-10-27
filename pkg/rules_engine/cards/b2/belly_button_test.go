@@ -13,7 +13,7 @@ func TestBellyButton(t *testing.T) {
 		Monsters: []engine.CardRef{"fly"},
 	}, Set)
 	tb.G.ForceRolls(1, 6)
-	tb.Do(engine.Intent{Player: 0, Kind: engine.IntentAttack}, "fly", "yes")
+	tb.Do(engine.Intent{Player: 0, Kind: engine.IntentAttack}, "fly", "ask.yes")
 	if !tb.G.Object(tb.G.Players[0].Character).Charged {
 		t.Error("the character was not recharged")
 	}

@@ -3,6 +3,7 @@
 // Playback only changes what is drawn; the game state is the server's.
 import { kindOf, type CardInfo, type Kind } from './cards';
 import { firstPlayerText, tieText } from './dice';
+import { say, t } from './i18n';
 import type { GameEvent, GameView, Update } from './protocol';
 
 export type Speed = 'normal' | 'fast' | 'slow' | 'off';
@@ -189,7 +190,7 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
         out.push({
           kind: 'dice',
           value: amount,
-          label: e.text ?? '',
+          label: e.text === 'reroll' ? t('dice.reroll') : say(e.label, { card: (ref) => ctx.card(ref)?.name ?? ref, player: ctx.name }),
           player: e.player,
           thrown: true,
           ...(e.dice && e.dice.length > 1 ? { dice: e.dice } : {}),
@@ -198,7 +199,10 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
       case 'roll_changed': {
         // "Ann's roll: 3 → 4", from the card that changed it (15.76).
         const old = rollOf(e.stack_id);
-        const label = `${ctx.name(e.player)}'s roll: ${old === undefined ? '' : `${String(old)} → `}${String(amount)}`;
+        const label =
+          old === undefined
+            ? t('effect.roll', { player: ctx.name(e.player), n: amount })
+            : t('effect.roll_changed', { player: ctx.name(e.player), old, n: amount });
         const source = e.source ? [`obj-${String(e.source)}`, `stack-src-${String(e.source)}`] : undefined;
         if (e.stack_id) {
           rolls.set(e.stack_id, amount);
@@ -217,7 +221,7 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
         out.push({ kind: 'popup', at: playerZones(e.player), text: `+${String(amount)}¢`, tone: 'good' });
         break;
       case 'healed':
-        out.push({ kind: 'popup', at: targetZones(e), text: `+${String(amount)} HP`, tone: 'good' });
+        out.push({ kind: 'popup', at: targetZones(e), text: t('effect.healed', { n: amount }), tone: 'good' });
         break;
       case 'damaged': {
         // Damage shows when it lands. Attack damage: its source lunges
@@ -264,7 +268,7 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
         break;
       }
       case 'prevented':
-        out.push({ kind: 'popup', at: targetZones(e), text: 'Prevented', tone: 'good' });
+        out.push({ kind: 'popup', at: targetZones(e), text: t('effect.prevented'), tone: 'good' });
         break;
       case 'stole': {
         // The text names the player robbed (15.75).
@@ -272,7 +276,7 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
         if (e.text && Number.isInteger(victim) && victim >= 0) {
           out.push({ kind: 'steal', from: playerZones(victim), to: playerZones(e.player), amount });
         } else {
-          out.push({ kind: 'popup', at: playerZones(e.player), text: `+${String(amount)}¢ stolen`, tone: 'good' });
+          out.push({ kind: 'popup', at: playerZones(e.player), text: t('effect.stolen', { n: amount }), tone: 'good' });
         }
         break;
       }
@@ -303,10 +307,10 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
         }
         break;
       case 'turn_started':
-        out.push({ kind: 'banner', text: `${ctx.name(e.player)}'s turn` });
+        out.push({ kind: 'banner', text: t('effect.turn', { player: ctx.name(e.player) }) });
         break;
       case 'game_won':
-        out.push({ kind: 'banner', text: `${ctx.name(e.player)} wins!` });
+        out.push({ kind: 'banner', text: t('effect.wins', { player: ctx.name(e.player) }) });
         break;
       // After the first-player dice: a tie, or who goes first (15.43).
       case 'first_roll_tied':

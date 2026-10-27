@@ -1,6 +1,14 @@
 package b2
 
-import engine "github.com/FourSoulsRepo/rules_engine"
+import (
+	engine "github.com/FourSoulsRepo/rules_engine"
+	"github.com/FourSoulsRepo/rules_engine/cards/cardkit"
+)
+
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	sleightOfHandLookAtThe = engine.NewKey("card.sleight_of_hand.look_at_the_top_5")
+)
 
 // Sleight of Hand (Eternal Treasure Card)
 //
@@ -28,9 +36,9 @@ const sleightCards = 5
 // orderQuestions: which deck, then the order of its top cards.
 func orderQuestions() []engine.Question {
 	return []engine.Question{
-		engine.DeckQuestion("Look at the top 5 cards of which deck?"),
+		engine.DeckQuestion(sleightOfHandLookAtThe),
 		{
-			Text:  putBackText,
+			Text:  cardkit.AskPutBack,
 			Order: func(c *engine.Ctx, a []int) []engine.ObjectID { return c.G.DeckTop(c.Deck(a[0]), sleightCards) },
 		},
 	}

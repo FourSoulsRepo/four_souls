@@ -29,7 +29,7 @@ A situation is a small JSON document: a table position, one action, and optional
 * `setup.monsters`, `setup.shop` — the top card of each slot.
 * `setup.stack` — dice rolls already on the stack, bottom first: `{"dice_roll": 4, "owner": 1}`.
 * `action.kind` — `play`, `activate`, `attack`, `purchase`, `end_turn` or `pass`; `card` and `ability` pick the card.
-* `action.choices` — answers to the prompts that follow, by option label (a target's card name, `"player 2 (hero_b)"`, `"monster deck"`, `"cancel"`).
+* `action.choices` — answers to the prompts that follow, by option label: an option's plain form, with no language (`Game.Plain`, 16.4). A card is its ref (`"bomb"`), a player `"player 2 (hero_b)"`, a number its digits, a card's own words (a "choose one-" option) the words; any other option is its key, then its values (`"ask.deck.monster"`, `"ask.cancel"`, `"ask.yes"`, `"ask.slot_card 1 fly"`).
 * `expect` — optional: `allowed`, the refusal `rule`, and `after` checks per player (`cents`, `hand`, `damage`, `souls`, `dead`).
 
 ## What the runner does

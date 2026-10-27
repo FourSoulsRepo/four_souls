@@ -18,7 +18,7 @@ func TestKeepersBox(t *testing.T) {
 	tb2 := setup(t, engine.SituationSetup{Players: []engine.SituationPlayer{{Character: "isaac", Cents: 10}, seat("cain")}})
 	tb2.G.PutOnDeck(engine.TreasureDeck, "keepers_box")
 	shop := len(tb2.G.Shop)
-	tb2.Do(engine.Intent{Player: 0, Kind: engine.IntentPurchase}, "treasure deck")
+	tb2.Do(engine.Intent{Player: 0, Kind: engine.IntentPurchase}, "ask.deck.treasure")
 	if len(tb2.G.Shop) != shop+2 {
 		t.Error("it entered play: 2 more shop slots")
 	}

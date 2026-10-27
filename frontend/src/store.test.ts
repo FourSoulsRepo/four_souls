@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { checkSeat, getSettings, saveSettings, serverStatus } from './bridge';
+import { checkSeat, getBacks, getCards, getDice, getFonts, getIcons, getMats, getSettings, getSounds, saveSettings, serverStatus } from './bridge';
+import { language, setCardLanguages, setLanguage } from './i18n';
 import { send } from './net';
 import { noHostSetup } from './hostSetup';
 import type { Envelope, GameView, Update } from './protocol';
@@ -7,7 +8,14 @@ import { messageOf, seatOf, useApp } from './store';
 
 vi.mock('./bridge', () => ({
   checkSeat: vi.fn(),
+  getBacks: vi.fn(),
+  getCards: vi.fn(),
+  getDice: vi.fn(),
+  getFonts: vi.fn(),
+  getIcons: vi.fn(),
+  getMats: vi.fn(),
   getSettings: vi.fn(),
+  getSounds: vi.fn(),
   saveSettings: vi.fn(),
   serverStatus: vi.fn(),
 }));
@@ -34,7 +42,7 @@ describe('screens', () => {
 
 describe('settings', () => {
   it('loads what Go has', async () => {
-    vi.mocked(getSettings).mockResolvedValue({ nickname: 'Ann', recent: [], animation: 'normal', fullscreen: false, mat: 'basement', dice: 'tear', no_end_turn_ask: false, rejoin: { address: '', token: '', game: '', via: '' as const }, host: noHostSetup, lan_address: '' });
+    vi.mocked(getSettings).mockResolvedValue({ nickname: 'Ann', recent: [], animation: 'normal', fullscreen: false, mat: 'basement', dice: 'tear', no_end_turn_ask: false, rejoin: { address: '', token: '', game: '', via: '' as const }, host: noHostSetup, lan_address: '', language: '' });
     await useApp.getState().loadSettings();
     expect(useApp.getState().settings.nickname).toBe('Ann');
   });
@@ -46,15 +54,49 @@ describe('settings', () => {
   });
 
   it('keeps what Go stored, not what was typed', async () => {
-    vi.mocked(saveSettings).mockResolvedValue({ nickname: 'Ann', recent: [], animation: 'normal', fullscreen: false, mat: 'basement', dice: 'tear', no_end_turn_ask: false, rejoin: { address: '', token: '', game: '', via: '' as const }, host: noHostSetup, lan_address: '' });
-    expect(await useApp.getState().saveSettings({ nickname: '  Ann  ', recent: [], animation: 'normal', fullscreen: false, mat: 'basement', dice: 'tear', no_end_turn_ask: false, rejoin: { address: '', token: '', game: '', via: '' as const }, host: noHostSetup, lan_address: '' })).toBe(true);
+    vi.mocked(saveSettings).mockResolvedValue({ nickname: 'Ann', recent: [], animation: 'normal', fullscreen: false, mat: 'basement', dice: 'tear', no_end_turn_ask: false, rejoin: { address: '', token: '', game: '', via: '' as const }, host: noHostSetup, lan_address: '', language: '' });
+    expect(await useApp.getState().saveSettings({ nickname: '  Ann  ', recent: [], animation: 'normal', fullscreen: false, mat: 'basement', dice: 'tear', no_end_turn_ask: false, rejoin: { address: '', token: '', game: '', via: '' as const }, host: noHostSetup, lan_address: '', language: '' })).toBe(true);
     expect(useApp.getState().settings.nickname).toBe('Ann');
   });
 
+  it('names and pictures the cards in the saved language at once (16.5, 16.6)', async () => {
+    const images = { en: '/cardimg/en/b2/isaac.webp', ru: '/cardimg/ru/b2/isaac.webp' };
+    const isaac = { ref: 'isaac', set: 'b2', type: 'Character Card', name: 'Isaac', names: { en: 'Isaac', ru: 'Исаак' }, effects: [], footnotes: [], stats: [], rewards: [], image: images.en, images };
+    useApp.setState({ cards: new Map([['isaac', isaac]]) });
+    setCardLanguages(['en', 'ru']);
+    const ru = { nickname: 'Ann', recent: [], animation: 'normal' as const, fullscreen: false, mat: '', dice: 'tear', no_end_turn_ask: false, rejoin: { address: '', token: '', game: '', via: '' as const }, host: noHostSetup, lan_address: '', language: 'ru' };
+    vi.mocked(saveSettings).mockImplementation((s) => Promise.resolve(s));
+    expect(await useApp.getState().saveSettings(ru)).toBe(true);
+    expect(useApp.getState().cards.get('isaac')).toMatchObject({ name: 'Исаак', image: images.ru });
+    expect(await useApp.getState().saveSettings({ ...ru, language: 'en' })).toBe(true);
+    expect(useApp.getState().cards.get('isaac')).toMatchObject({ name: 'Isaac', image: images.en });
+  });
+
+  // A language with card names only (16.10): listed once the cards load,
+  // and a setting saved before that names the cards in it then.
+  it('lists a card-only language and names the cards in it', async () => {
+    setCardLanguages([]);
+    setLanguage('xx');
+    const isaac = { ref: 'isaac', set: 'b2', type: 'Character Card', name: 'Isaac', names: { en: 'Isaac', xx: 'Xisaac' }, effects: [], footnotes: [], stats: [], rewards: [], image: '' };
+    vi.mocked(getCards).mockResolvedValue([isaac]);
+    vi.mocked(getDice).mockResolvedValue([]);
+    vi.mocked(getMats).mockResolvedValue([]);
+    vi.mocked(getBacks).mockResolvedValue([]);
+    vi.mocked(getIcons).mockResolvedValue({ coin: '', sword: '', banner: '', sky: [] });
+    vi.mocked(getFonts).mockResolvedValue({ title: '', body: '', cyrillic: '' });
+    vi.mocked(getSounds).mockResolvedValue({ attackHit: '', effectCast: '', effectImpact: '', diceRoll: '' });
+    expect(useApp.getState().languages).not.toContain('xx');
+    await useApp.getState().loadCards();
+    expect(useApp.getState().languages).toContain('xx');
+    expect(language()).toBe('xx');
+    expect(useApp.getState().cards.get('isaac')?.name).toBe('Xisaac');
+    setLanguage('en');
+  });
+
   it('shows the Go error and keeps the old settings', async () => {
-    useApp.setState({ settings: { nickname: 'Ann', recent: [], animation: 'normal', fullscreen: false, mat: 'basement', dice: 'tear', no_end_turn_ask: false, rejoin: { address: '', token: '', game: '', via: '' as const }, host: noHostSetup, lan_address: '' } });
+    useApp.setState({ settings: { nickname: 'Ann', recent: [], animation: 'normal', fullscreen: false, mat: 'basement', dice: 'tear', no_end_turn_ask: false, rejoin: { address: '', token: '', game: '', via: '' as const }, host: noHostSetup, lan_address: '', language: '' } });
     vi.mocked(saveSettings).mockRejectedValue('nickname must be 1–20 characters');
-    expect(await useApp.getState().saveSettings({ nickname: ' ', recent: [], animation: 'normal', fullscreen: false, mat: 'basement', dice: 'tear', no_end_turn_ask: false, rejoin: { address: '', token: '', game: '', via: '' as const }, host: noHostSetup, lan_address: '' })).toBe(false);
+    expect(await useApp.getState().saveSettings({ nickname: ' ', recent: [], animation: 'normal', fullscreen: false, mat: 'basement', dice: 'tear', no_end_turn_ask: false, rejoin: { address: '', token: '', game: '', via: '' as const }, host: noHostSetup, lan_address: '', language: '' })).toBe(false);
     expect(useApp.getState()).toMatchObject({
       settings: { nickname: 'Ann' },
       error: 'nickname must be 1–20 characters',
@@ -81,7 +123,7 @@ describe('seatOf', () => {
 });
 
 describe('recent servers (N-18)', () => {
-  const settings = { nickname: 'Ann', recent: [{ address: 'a', name: '' }, { address: 'b', name: '' }], animation: 'normal' as const, fullscreen: false, mat: 'basement', dice: 'tear', no_end_turn_ask: false, rejoin: { address: '', token: '', game: '', via: '' as const }, host: noHostSetup, lan_address: '' };
+  const settings = { nickname: 'Ann', recent: [{ address: 'a', name: '' }, { address: 'b', name: '' }], animation: 'normal' as const, fullscreen: false, mat: 'basement', dice: 'tear', no_end_turn_ask: false, rejoin: { address: '', token: '', game: '', via: '' as const }, host: noHostSetup, lan_address: '', language: '' };
 
   beforeEach(() => {
     vi.mocked(saveSettings).mockImplementation((s) => Promise.resolve(s));
@@ -130,7 +172,7 @@ describe('server notices (N-20)', () => {
 
 describe('the saved seat (15.99)', () => {
   const rejoin = { address: '192.168.1.5', token: 't0k3n', game: 'g1', via: 'lan' as const };
-  const settings = { nickname: 'Ann', recent: [], animation: 'normal' as const, fullscreen: false, mat: '', dice: 'tear', no_end_turn_ask: false, rejoin, host: noHostSetup, lan_address: '' };
+  const settings = { nickname: 'Ann', recent: [], animation: 'normal' as const, fullscreen: false, mat: '', dice: 'tear', no_end_turn_ask: false, rejoin, host: noHostSetup, lan_address: '', language: '' };
   const none = { address: '', token: '', game: '', via: '' };
 
   beforeEach(() => {
@@ -172,7 +214,7 @@ describe('Recent servers (15.100)', () => {
     { address: 'games.example.com', name: 'Up' },
     { address: '192.168.1.9', name: '' },
   ];
-  const settings = { nickname: 'Ann', recent, animation: 'normal' as const, fullscreen: false, mat: '', dice: 'tear', no_end_turn_ask: false, rejoin: { address: '', token: '', game: '', via: '' as const }, host: noHostSetup, lan_address: '' };
+  const settings = { nickname: 'Ann', recent, animation: 'normal' as const, fullscreen: false, mat: '', dice: 'tear', no_end_turn_ask: false, rejoin: { address: '', token: '', game: '', via: '' as const }, host: noHostSetup, lan_address: '', language: '' };
 
   beforeEach(() => {
     useApp.setState({ settings });

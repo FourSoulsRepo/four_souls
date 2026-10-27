@@ -1,6 +1,9 @@
 package r
 
-import engine "github.com/FourSoulsRepo/rules_engine"
+import (
+	engine "github.com/FourSoulsRepo/rules_engine"
+	"github.com/FourSoulsRepo/rules_engine/cards/cardkit"
+)
 
 // Book Of Virtues (Eternal Treasure Card)
 //
@@ -38,7 +41,7 @@ var bookOfVirtues = engine.CardDef{
 				them := *c
 				them.Controller = others[a[0]]
 				them.Do(engine.Loot(1))
-			}, engine.Question{Text: "Choose another player.", Options: func(c *engine.Ctx, _ []int) []string {
+			}, engine.Question{Text: cardkit.AskChooseAnotherPlayer, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
 				return playerLabels(c.G, otherPlayers(c))
 			}})},
 		},

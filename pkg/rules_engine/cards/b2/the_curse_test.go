@@ -13,7 +13,7 @@ func TestTheCurse(t *testing.T) {
 		Active:  1,
 	}, Set)
 	lootDeck := len(tb.G.Decks[engine.LootDeck])
-	tb.EndTurn("loot deck") // Eve's turn starts: the trigger asks for a deck
+	tb.EndTurn("ask.deck.loot") // Eve's turn starts: the trigger asks for a deck
 	if got := len(tb.G.Discards[engine.LootDeck]); got != 1 {
 		t.Fatalf("loot discard has %d cards, want 1 (milled)", got)
 	}
@@ -22,7 +22,7 @@ func TestTheCurse(t *testing.T) {
 	}
 
 	milled := tb.G.Object(tb.G.Discards[engine.LootDeck][0]).Card
-	tb.Activate(0, "the_curse", 1, "loot discard")
+	tb.Activate(0, "the_curse", 1, "ask.discard.loot")
 	if len(tb.G.Discards[engine.LootDeck]) != 0 {
 		t.Error("the discard still has the card")
 	}

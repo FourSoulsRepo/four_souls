@@ -2,6 +2,11 @@ package r
 
 import engine "github.com/FourSoulsRepo/rules_engine"
 
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	lemegetonDestroyWhichNon = engine.NewKey("card.lemegeton.destroy_which_non_eternal_item")
+)
+
 // Lemegeton (Eternal Treasure Card)
 //
 //	{Tap Effect}Gain +1 treasure. The next time your turn ends, destroy a non-eternal item you control.
@@ -43,7 +48,7 @@ const lemegetonDue = "due"
 func lemegetonDestroys() engine.Effect {
 	qs := make([]engine.Question, 6)
 	for i := range qs {
-		qs[i] = engine.Question{Text: "Destroy which non-eternal item?", Options: func(c *engine.Ctx, _ []int) []string {
+		qs[i] = engine.Question{Text: lemegetonDestroyWhichNon, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
 			if i >= c.G.Object(c.Source).CountersOf(lemegetonDue) {
 				return nil
 			}

@@ -25,7 +25,7 @@ func TestFruitcakeOtherPlayersRollsBetween(t *testing.T) {
 	// Q-10 (a): each player's own rolls count.
 	tb := table(t, seat("isaac", "fruitcake", "the_butter_bean"), seat("cain", "crooked_penny"))
 	tb.G.ForceRolls(4, 1, 4)
-	tb.Activate(0, "fruitcake", 0, "loot deck") // Isaac 4
+	tb.Activate(0, "fruitcake", 0, "ask.deck.loot") // Isaac 4
 	tb.Start(0, "isaac", 0)
 	tb.Pass(0)
 	tb.Activate(1, "crooked_penny", 0, me) // Cain 1

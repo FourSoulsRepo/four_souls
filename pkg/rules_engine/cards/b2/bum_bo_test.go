@@ -38,7 +38,7 @@ func TestBumBoWithCounterfeitPenny(t *testing.T) {
 			t.Fatal("no order was asked")
 		}
 		w := tb.G.Prompt()
-		i := slices.Index(w.Options, string(tc.first))
+		i := slices.Index(tb.Options(), string(tc.first))
 		if w.Purpose != engine.ChooseReplacement || i < 0 {
 			t.Fatalf("prompt %+v; want both cards as options", w)
 		}

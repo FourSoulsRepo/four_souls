@@ -2,6 +2,11 @@ package r
 
 import engine "github.com/FourSoulsRepo/rules_engine"
 
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	dogmaPutTheHarbingers = engine.NewKey("card.dogma.put_the_harbingers_in_which")
+)
+
 // Dogma (Epic Boss Card)
 //
 //	When an attack is declared on this, put each other monster into discard.
@@ -36,7 +41,7 @@ var dogma = engine.CardDef{
 				if slots := freeSlots(c.G); a[0] >= 0 && a[0] < len(slots) {
 					c.G.PlaceFromOutside("the_harbingers", slots[a[0]])
 				}
-			}, slotQuestion("Put The Harbingers in which monster slot?"))},
+			}, slotQuestion(dogmaPutTheHarbingers))},
 		},
 	},
 }

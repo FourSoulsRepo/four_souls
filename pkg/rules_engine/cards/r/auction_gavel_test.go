@@ -21,7 +21,7 @@ func gavelTable(t *testing.T) *enginetest.Table {
 func TestAuctionGavel(t *testing.T) {
 	tb := gavelTable(t)
 	// Cain bids 1¢, Samson tops it with 3¢, Cain passes: Samson's bid stands.
-	tb.Activate(0, "auction_gavel", 0, "spoon_bender", "bid 1¢", "bid 3¢", "pass")
+	tb.Activate(0, "auction_gavel", 0, "spoon_bender", "card.auction_gavel.bid 1", "card.auction_gavel.bid 3", "card.auction_gavel.pass")
 	if !hasItem(tb.G, 2, "spoon_bender") {
 		t.Fatal("Samson wins the item")
 	}
@@ -32,7 +32,7 @@ func TestAuctionGavel(t *testing.T) {
 
 func TestAuctionGavelNoBids(t *testing.T) {
 	tb := gavelTable(t)
-	tb.Activate(0, "auction_gavel", 0, "spoon_bender", "pass", "pass")
+	tb.Activate(0, "auction_gavel", 0, "spoon_bender", "card.auction_gavel.pass", "card.auction_gavel.pass")
 	if len(tb.G.ShopItems()) != 1 || tb.G.Object(tb.G.ShopItems()[0]).Card != "spoon_bender" {
 		t.Error("nobody bid: the item stays in the shop")
 	}

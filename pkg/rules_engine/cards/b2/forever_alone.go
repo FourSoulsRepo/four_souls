@@ -1,6 +1,9 @@
 package b2
 
-import engine "github.com/FourSoulsRepo/rules_engine"
+import (
+	engine "github.com/FourSoulsRepo/rules_engine"
+	"github.com/FourSoulsRepo/rules_engine/cards/cardkit"
+)
 
 // Forever Alone (Eternal Treasure Card)
 //
@@ -32,7 +35,7 @@ var foreverAlone = engine.CardDef{
 						if a[0] >= 0 {
 							c.G.LookAt(c.Controller, c.G.DeckTop(c.Deck(a[0]), 1)...)
 						}
-					}, engine.DeckQuestion("Look at the top card of which deck?"))},
+					}, engine.DeckQuestion(cardkit.AskLookTop))},
 				},
 				{
 					Text: "Discard a loot card, then loot 1.",
@@ -41,7 +44,7 @@ var foreverAlone = engine.CardDef{
 							if a[0] >= 0 {
 								c.G.DiscardFromHand(c.Controller, c.HandCard(a[0]))
 							}
-						}, engine.HandQuestion("Discard which loot card?")),
+						}, engine.HandQuestion(cardkit.AskDiscardWhich)),
 						engine.Loot(1),
 					},
 				},

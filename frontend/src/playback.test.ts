@@ -24,7 +24,7 @@ const monster = (ref: string): CardInfo => ({ ref, set: 'b2', type: 'Monster Car
 describe('effectsFor', () => {
   it('throws each first-player die, then names a tie or who goes first (15.43)', () => {
     const events: GameEvent[] = [
-      { kind: 'dice_rolled', player: 1, amount: 2, text: 'first player roll' },
+      { kind: 'dice_rolled', player: 1, amount: 2, text: 'first', label: { key: 'event.first_player_roll' } },
       { kind: 'first_roll_tied', player: -1, amount: 2, text: '0,1' },
     ];
     expect(effectsFor(events, ctx)).toEqual([
@@ -53,7 +53,7 @@ describe('effectsFor', () => {
 
   it('rolls dice, pops counters, and names the turn', () => {
     const events: GameEvent[] = [
-      { kind: 'dice_rolled', player: 0, amount: 5, text: 'attack roll' },
+      { kind: 'dice_rolled', player: 0, amount: 5, label: { key: 'event.attack_roll' } },
       { kind: 'gained_cents', player: 0, amount: 3 },
       { kind: 'damage_pending', player: 1, amount: 2 },
       { kind: 'turn_started', player: 1, amount: 2 },
@@ -203,7 +203,7 @@ describe('effectsFor', () => {
     const events: GameEvent[] = [
       { kind: 'card_revealed', player: -1, object: 50, card: 'fly' },
       { kind: 'attack_target', player: 0, object: 50, card: 'fly' },
-      { kind: 'dice_rolled', player: 0, amount: 4, text: 'attack roll' },
+      { kind: 'dice_rolled', player: 0, amount: 4, label: { key: 'event.attack_roll' } },
     ];
     expect(effectsFor(events, ctx)).toEqual([
       { kind: 'reveal', card: 'fly', deck: ['deck-loot'], hold: true },
@@ -238,7 +238,7 @@ describe('effectsFor', () => {
       { kind: 'deaths', at: [['obj-40'], ['obj-41']] },
       { kind: 'fly', from: ['monster-slot-0'], to: ['discard-monster'], card: 'fly', back: 'monster', lifts: 40 },
     ]);
-    expect(effectsFor([{ kind: 'dice_rolled', player: 1, amount: 4, text: 'reward roll' }], c)).toHaveLength(1);
+    expect(effectsFor([{ kind: 'dice_rolled', player: 1, amount: 4, label: { key: 'event.reward_roll' } }], c)).toHaveLength(1);
     const soul: GameEvent = { kind: 'gained_soul', player: 1, object: 93, prev: 91, card: 'boss' };
     expect(effectsFor([soul], c)).toEqual([
       { kind: 'fly', from: ['monster-slot-2'], to: ['player-1'], card: 'boss', back: 'monster', lifts: 41 },

@@ -6,6 +6,7 @@ import { expect, test } from './fixtures';
 import { startGame } from './game';
 import { appURL, serverPort } from './server';
 import { shot } from './shot';
+import { tr } from './locale';
 
 const fast = () => `${appURL()}&anim=off`;
 
@@ -66,7 +67,7 @@ test('a card zoomed from the discard window shows above it (19.26)', async ({ br
     game.allowed = [{ player: you, kind: 2, objects: hand }];
     s.receive({ type: 'update', data: { ...game, step: game.step + 1, events: [] } });
   });
-  const dialog = lyra.getByRole('dialog', { name: 'Discard', exact: true });
+  const dialog = lyra.getByRole('dialog', { name: tr('discard.label'), exact: true });
   const card = dialog.locator('.card').first();
   await expect(card).toBeVisible();
   await card.hover();
@@ -91,7 +92,7 @@ test('the Menu button stays above a choice and opens over it (15.29)', async ({ 
     const s = (window as unknown as { fourSouls: { store: { getState: () => S } } }).fourSouls.store.getState();
     const game = structuredClone(s.game);
     const you = s.lobby.table.you;
-    game.view.waiting = { kind: 4, player: you, purpose: 9, text: 'Keep going?', options: ['yes', 'No'] };
+    game.view.waiting = { kind: 4, player: you, purpose: 9, text: { key: 'card.sack_of_pennies.recharge_sack_of_pennies' }, options: [{ key: 'ask.yes' }, { key: 'ask.no' }] };
     game.allowed = [
       { player: you, kind: 4, choice: 0 },
       { player: you, kind: 4, choice: 1 },
@@ -100,10 +101,10 @@ test('the Menu button stays above a choice and opens over it (15.29)', async ({ 
   });
   const backdrop = tamsin.locator('.choice-backdrop');
   await expect(backdrop).toBeVisible();
-  const menu = tamsin.getByRole('button', { name: 'Menu' });
+  const menu = tamsin.getByRole('button', { name: tr('game_menu.button') });
   expect(await onTop(menu, backdrop)).toBe(true);
   await menu.click();
-  await expect(tamsin.getByRole('dialog', { name: 'Game menu' })).toBeVisible();
+  await expect(tamsin.getByRole('dialog', { name: tr('game_menu.label') })).toBeVisible();
 });
 
 test('the rollback vote covers the table; the game menu opens over it (17.4)', async ({ browser }) => {
@@ -123,11 +124,11 @@ test('the rollback vote covers the table; the game menu opens over it (17.4)', a
     const vote = { step: s.game.step, seat: 1 - you, author: 1 - you, undo: 1, voters: [you], votes: [], need: 1 };
     s.receive({ type: 'update', data: { ...structuredClone(s.game), events: [], rollback_mode: 'soft', rollback_vote: vote } });
   });
-  const panel = uma.getByRole('dialog', { name: 'Rollback vote' });
+  const panel = uma.getByRole('dialog', { name: tr('rollback.label') });
   await expect(panel).toBeVisible();
   expect(await onTop(panel, uma.getByRole('main'))).toBe(true);
-  await uma.getByRole('button', { name: 'Menu' }).click();
-  const menu = uma.getByRole('dialog', { name: 'Game menu' });
+  await uma.getByRole('button', { name: tr('game_menu.button') }).click();
+  const menu = uma.getByRole('dialog', { name: tr('game_menu.label') });
   await expect(menu).toBeVisible();
   expect(await onTop(menu, panel)).toBe(true);
 });
@@ -162,7 +163,7 @@ test("another player's arrow stays under a choice (15.36)", async ({ browser }) 
     const game = structuredClone(s.game);
     const you = s.lobby.table.you;
     const other = 1 - you;
-    game.view.waiting = { kind: 4, player: you, purpose: 9, text: 'Keep going?', options: ['yes', 'No'] };
+    game.view.waiting = { kind: 4, player: you, purpose: 9, text: { key: 'card.sack_of_pennies.recharge_sack_of_pennies' }, options: [{ key: 'ask.yes' }, { key: 'ask.no' }] };
     game.allowed = [
       { player: you, kind: 4, choice: 0 },
       { player: you, kind: 4, choice: 1 },

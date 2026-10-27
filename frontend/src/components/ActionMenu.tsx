@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { Action } from '../actions';
+import { t } from '../i18n';
 import { useApp } from '../store';
 import { CardDialog, type CardLine } from './CardDialog';
 import './Actions.css';
@@ -53,7 +54,7 @@ function Menu({ id, list, onClose }: { id: number; list: Action[]; onClose: () =
           </button>
         ))}
         <button type="button" role="menuitem" onClick={onClose}>
-          Cancel
+          {t('actions.cancel')}
         </button>
       </div>
     </div>
@@ -80,13 +81,13 @@ function AbilityDialog({ id, list, onClose }: { id: number; list: Action[]; onCl
         act(use.intent);
       }
     };
-    return [{ text, why: 'Not usable now', ...(use ? { pick } : {}) }];
+    return [{ text, why: t('actions.not_usable'), ...(use ? { pick } : {}) }];
   });
   return (
     <CardDialog
       cardRef={card?.card}
       name={name}
-      label={`Use ${name}`}
+      label={t('actions.use_card', { card: name })}
       lines={lines}
       onCancel={onClose}
       backdrop="action-backdrop ability-backdrop"

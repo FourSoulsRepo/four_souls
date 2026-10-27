@@ -87,7 +87,7 @@ func (tb *driver) choose(label string) int {
 		tb.t.Fatal("nobody is asked")
 	}
 	w := tb.last[i].View.Waiting
-	c := slices.Index(w.Options, label)
+	c := slices.IndexFunc(w.Options, func(m engine.Msg) bool { return m.String() == label })
 	if w.Kind != engine.PromptChoose || c < 0 {
 		tb.t.Fatalf("prompt %+v: no option %q", w, label)
 	}
@@ -241,8 +241,8 @@ func TestSoftPlayedCardBarriers(t *testing.T) {
 		{"monster deck card", engine.EvCardRevealed, func(tb *driver, _ *enginetest.Table) {
 			tb.do(engine.Intent{Player: 0, Kind: engine.IntentAttack})
 			for range 10 {
-				if w := tb.last[0].View.Waiting; w.Kind == engine.PromptChoose && slices.Contains(w.Options, "monster deck") {
-					tb.choose("monster deck")
+				if w := tb.last[0].View.Waiting; w.Kind == engine.PromptChoose && slices.ContainsFunc(w.Options, func(m engine.Msg) bool { return m.String() == "ask.deck.monster" }) {
+					tb.choose("ask.deck.monster")
 					return
 				}
 				tb.do(engine.Intent{Player: engine.PlayerID(tb.asked()), Kind: engine.IntentPass})

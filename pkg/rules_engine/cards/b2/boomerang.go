@@ -1,6 +1,9 @@
 package b2
 
-import engine "github.com/FourSoulsRepo/rules_engine"
+import (
+	engine "github.com/FourSoulsRepo/rules_engine"
+	"github.com/FourSoulsRepo/rules_engine/cards/cardkit"
+)
 
 // Boomerang (Active Treasure Card)
 //
@@ -21,8 +24,8 @@ var boomerang = engine.CardDef{
 					from := c.Targets[0].Player
 					c.G.GiveHandCard(from, c.Controller, c.G.Players[from].Hand[a[0]])
 				}
-			}, engine.Question{Random: true, Text: "Which card?", Options: func(c *engine.Ctx, _ []int) []string {
-				return make([]string, len(c.G.Players[c.Targets[0].Player].Hand)) // hidden: labels stay empty
+			}, engine.Question{Random: true, Text: cardkit.AskWhichCard, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
+				return make([]engine.Msg, len(c.G.Players[c.Targets[0].Player].Hand)) // hidden: labels stay empty
 			}})},
 		},
 	},

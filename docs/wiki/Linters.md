@@ -18,12 +18,18 @@ Enabled groups:
 
 `depguard` encodes architecture rules: `pkg/` modules never import the app or Wails, and the rules engine never imports `os`, `net`, `time` or `math/rand`.
 
-golangci-lint must be built with a Go version at least as new as your local toolchain. An older binary fails with errors like "export data version 4 is greater than maximum supported version". Install a matching one into the project cache and point make at it:
+golangci-lint must be built with a Go version at least as new as your local toolchain. An older binary fails with errors like "export data version 4 is greater than maximum supported version". `scripts/setup.sh` builds the right one into the project cache, `.cache/bin/golangci-lint`, and `make lint` uses it when it is there ([Developer setup](Developer-setup)); `make doctor` checks its version and its Go. The version is `GOLANGCI_LINT_VERSION` in `scripts/versions.env`, the one source for the script, `make doctor` and CI. By hand:
 
 ```sh
-GOBIN=$PWD/.cache/bin GOWORK=off go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@v2.14.0
-make lint GOLANGCI=$PWD/.cache/bin/golangci-lint
+. scripts/versions.env
+GOBIN=$PWD/.cache/bin GOWORK=off go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$GOLANGCI_LINT_VERSION
 ```
+
+`make lint GOLANGCI=…` picks another binary.
+
+## Shell: shellcheck
+
+`make lint` also runs `shellcheck -x` on `scripts/*.sh` and `release/*.sh` when shellcheck is installed; without it, it says so and skips them. The developer profile of the setup script installs it.
 
 ## Frontend: ESLint
 
@@ -39,5 +45,6 @@ Presets: typescript-eslint strict and stylistic type-checked, `@eslint-react` st
 * `eval`, `new Function`, string timers and `javascript:` URLs are errors.
 * `dangerouslySetInnerHTML` is an error.
 * Only `src/bridge/` may import the generated Wails bindings.
+* No UI text in JSX: letters in JSX text, text attributes, or strings shown as children are errors; the text goes to `en.json` and `t()` (ADR 021, [Client](Client#languages)). The dev-only card gallery is exempt.
 
 Warnings fail the run (`--max-warnings 0`).

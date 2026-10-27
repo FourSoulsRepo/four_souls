@@ -20,7 +20,9 @@ import (
 // 4: no "skip all" message or field (15.84).
 // 5: rollback (ADR 020); an older client would show a rolled back
 // table as if the undone steps still stood.
-const Version = 5
+// 6: texts are messages, a key and its values (ADR 021, 16.4): prompt
+// questions and options, stack labels, reasons, errors.
+const Version = 6
 
 // DefaultPort is the server's TCP port unless configured.
 const DefaultPort = 4774
@@ -520,11 +522,14 @@ const (
 )
 
 // Error reports a problem with a message. Rule is the rules ID when the
-// engine refused an intent.
+// engine refused an intent. Text is what the player reads, in their own
+// language (ADR 021); Message is for logs and developers, in English or
+// as Text's plain form.
 type Error struct {
-	Code    string `json:"code"`
-	Message string `json:"message"`
-	Rule    string `json:"rule,omitempty"`
+	Code    string      `json:"code"`
+	Message string      `json:"message"`
+	Rule    string      `json:"rule,omitempty"`
+	Text    *engine.Msg `json:"text,omitempty"`
 }
 
 // Encode wraps data into an envelope of the given type.

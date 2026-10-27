@@ -2,6 +2,11 @@ package r
 
 import engine "github.com/FourSoulsRepo/rules_engine"
 
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	goldenTrinketPutAGold = engine.NewKey("card.golden_trinket.put_a_gold_counter_on")
+)
+
 // Golden Trinket (Trinket Card)
 //
 //	When this enters play put a gold counter on another non-eternal item you control.
@@ -29,7 +34,7 @@ var goldenTrinket = engine.CardDef{
 			if ids := otherNonEternal(c); a[0] >= 0 && a[0] < len(ids) {
 				c.G.AddNamedCounters(ids[a[0]], gold, 1)
 			}
-		}, engine.Question{Text: "Put a gold counter on which item?", Options: func(c *engine.Ctx, _ []int) []string {
+		}, engine.Question{Text: goldenTrinketPutAGold, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
 			return labelsOf(c.G, otherNonEternal(c))
 		}})},
 	}},

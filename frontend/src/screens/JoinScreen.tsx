@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { t } from '../i18n';
 import { useEscape } from '../keys';
 import { canCreate, lanRows, rollbackText, serverLabel, upText } from '../lobby';
 import { protocolVersion } from '../protocol';
@@ -59,7 +60,7 @@ function LanConnect() {
 
   return (
     <div className="screen">
-      <h1>LAN</h1>
+      <h1>{t('menu.lan')}</h1>
       <button
         type="button"
         className="primary"
@@ -67,11 +68,11 @@ function LanConnect() {
           show('host');
         }}
       >
-        Host a game
+        {t('host.title_host')}
       </button>
-      <section className="panel" aria-label="On your network">
+      <section className="panel" aria-label={t('lobby.lan.on_network')}>
         <label className="field">
-          Nickname
+          {t('lobby.nickname')}
           <input
             value={nickname}
             onChange={(e) => {
@@ -79,9 +80,9 @@ function LanConnect() {
             }}
           />
         </label>
-        <span className="muted">On your network</span>
+        <span className="muted">{t('lobby.lan.on_network')}</span>
         {rows.length === 0 && (
-          <span className="muted selectable">{lan.error || 'No games found yet. Still looking…'}</span>
+          <span className="muted selectable">{lan.error || t('lobby.lan.none')}</span>
         )}
         <ul className="list">
           {rows.map((r) => (
@@ -95,7 +96,7 @@ function LanConnect() {
                   go(r.address, { rejoin: r.rejoin });
                 }}
               >
-                {r.rejoin ? 'Rejoin' : 'Join'}
+                {r.rejoin ? t('lobby.rejoin') : t('lobby.join')}
               </button>
             </li>
           ))}
@@ -108,7 +109,7 @@ function LanConnect() {
           }}
         >
           <label className="field grow">
-            Host address
+            {t('lobby.lan.address')}
             <input
               value={address}
               placeholder="192.168.1.5"
@@ -118,7 +119,7 @@ function LanConnect() {
             />
           </label>
           <button type="submit" disabled={busy}>
-            Connect
+            {t('lobby.connect')}
           </button>
         </form>
       </section>
@@ -131,7 +132,7 @@ function LanConnect() {
           show('menu');
         }}
       >
-        Back
+        {t('lobby.back')}
       </button>
     </div>
   );
@@ -192,7 +193,7 @@ function OnlineConnect() {
 
   return (
     <div className="screen">
-      <h1>Online</h1>
+      <h1>{t('menu.online')}</h1>
       <form
         className="panel"
         onSubmit={(e) => {
@@ -201,7 +202,7 @@ function OnlineConnect() {
         }}
       >
         <label className="field">
-          Nickname
+          {t('lobby.nickname')}
           <input
             value={nickname}
             onChange={(e) => {
@@ -210,24 +211,24 @@ function OnlineConnect() {
           />
         </label>
         <label className="field">
-          Server address
+          {t('lobby.online.address')}
           <input
             value={address}
-            placeholder="games.example.com"
+            placeholder={t('lobby.online.address_example')}
             onChange={(e) => {
               setAddress(e.target.value);
             }}
           />
         </label>
         <button type="submit" className="primary" disabled={busy}>
-          Connect
+          {t('lobby.connect')}
         </button>
         {settings.recent.length > 0 && (
           <>
-            <span className="muted">Recent</span>
+            <span className="muted">{t('lobby.online.recent')}</span>
             {/* A server shows by its name, the address on hover (N-18),
                 then whether it is up (15.100). */}
-            <ul className="row recent" aria-label="Recent">
+            <ul className="row recent" aria-label={t('lobby.online.recent')}>
               {settings.recent.map((r) => {
                 const up = recentStatus[r.address];
                 return (
@@ -249,8 +250,8 @@ function OnlineConnect() {
                     <button
                       type="button"
                       className="forget"
-                      aria-label={`Remove ${serverLabel(r)} from Recent`}
-                      title="Remove from Recent"
+                      aria-label={t('lobby.online.forget_label', { server: serverLabel(r) })}
+                      title={t('lobby.online.forget')}
                       disabled={busy}
                       onClick={() => {
                         void forgetServer(r.address);
@@ -274,7 +275,7 @@ function OnlineConnect() {
           show('menu');
         }}
       >
-        Back
+        {t('lobby.back')}
       </button>
     </div>
   );
@@ -296,19 +297,20 @@ function GameList() {
 
   return (
     <div className="screen">
-      <h1>Games</h1>
+      <h1>{t('lobby.games.title')}</h1>
       {server && <p className="server-name">{server}</p>}
-      {lobby.saved && <p className="muted">The game was saved. Continue it from this list later.</p>}
+      {lobby.saved && <p className="muted">{t('lobby.games.saved')}</p>}
       <div className="panel">
         {lobby.games.length === 0 && (
-          <span className="muted">{create ? 'No games yet. Create one.' : 'No games yet. Ask the host to open one.'}</span>
+          <span className="muted">{create ? t('lobby.games.none_create') : t('lobby.games.none')}</span>
         )}
         <ul className="list">
           {lobby.games.map((g) => (
             <li key={g.id} data-game={g.id}>
               <span>
-                {g.locked && <span aria-label="Locked">🔒 </span>}
-                {g.host}&apos;s game · {g.taken}/{g.seats} players{g.started ? ' · playing' : ''}
+                {g.locked && <span aria-label={t('lobby.games.locked')}>🔒 </span>}
+                {t('lobby.game_row', { host: g.host, taken: g.taken, n: g.seats })}
+                {g.started ? ` · ${t('lobby.games.playing')}` : ''}
                 {g.sets && g.sets.length > 0 && <span className="muted"> · {setList(g.sets)}</span>}
                 {g.rollback && <span className="muted"> · {rollbackText(g.rollback)}</span>}
               </span>
@@ -316,8 +318,8 @@ function GameList() {
                 <input
                   type="password"
                   className="game-password"
-                  aria-label={`Password for ${g.host}'s game`}
-                  placeholder="Password"
+                  aria-label={t('lobby.games.password_label', { host: g.host })}
+                  placeholder={t('lobby.games.password')}
                   autoComplete="off"
                   value={passwords[g.id] ?? ''}
                   onChange={(e) => {
@@ -332,7 +334,7 @@ function GameList() {
                   joinGame(g.id, passwords[g.id]);
                 }}
               >
-                Join
+                {t('lobby.join')}
               </button>
             </li>
           ))}
@@ -345,13 +347,13 @@ function GameList() {
               show('host');
             }}
           >
-            Create a game
+            {t('host.title_create')}
           </button>
         )}
       </div>
       {lobby.saves.length > 0 && (
         <div className="panel">
-          <h2>Saved games</h2>
+          <h2>{t('lobby.games.saves')}</h2>
           <ul className="list">
             {lobby.saves.map((s) => (
               <li key={s.id}>
@@ -364,7 +366,7 @@ function GameList() {
                     loadSave(s.id);
                   }}
                 >
-                  Continue
+                  {t('lobby.games.continue')}
                 </button>
               </li>
             ))}
@@ -380,7 +382,7 @@ function GameList() {
           void quit('join');
         }}
       >
-        Back
+        {t('lobby.back')}
       </button>
     </div>
   );

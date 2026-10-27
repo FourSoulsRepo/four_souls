@@ -2,6 +2,11 @@ package b2
 
 import engine "github.com/FourSoulsRepo/rules_engine"
 
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	greedlingWhoLoses7 = engine.NewKey("card.greedling.who_loses_7")
+)
+
 // Greedling (Basic Monster Card)
 //
 //	When this dies, the active player chooses a player. They lose 7¢.
@@ -24,7 +29,7 @@ var greedling = engine.CardDef{
 					p := livingPlayers(c.G, engine.NoPlayer)[a[0]]
 					c.G.LoseCentsNow(p, 7)
 				}
-			}, pickAPlayer("Who loses 7¢?"))},
+			}, pickAPlayer(greedlingWhoLoses7))},
 		},
 	},
 }

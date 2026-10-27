@@ -10,7 +10,7 @@ func TestDiceShard(t *testing.T) {
 	tb := rollTable(t, 2, engine.SituationPlayer{Character: "isaac", Hand: []engine.CardRef{"dice_shard"}}, seat("cain"))
 	tb.Pass(1)
 	tb.G.ForceRolls(6)
-	if got := resolvedRoll(t, tb.Play(0, "dice_shard", "roll of 2")); got != 6 {
+	if got := resolvedRoll(t, tb.Play(0, "dice_shard", "ask.roll_of 2")); got != 6 {
 		t.Errorf("resolved as %d, want 6", got)
 	}
 }

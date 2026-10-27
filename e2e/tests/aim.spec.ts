@@ -10,6 +10,7 @@ import { appURL } from './server';
 import { saveAndContinue } from './saves';
 import { shot } from './shot';
 import { activePage, click, settle } from './turn';
+import { cardName, tr, trRe } from './locale';
 
 const fast = () => `${appURL()}&anim=off`;
 
@@ -47,8 +48,8 @@ test('a bomb aimed at a monster by two clicks damages it', async ({ browser }) =
     });
   });
 
-  const bomb = active.getByRole('group', { name: 'Your hand' }).getByRole('button', { name: 'Bomb!' }).first();
-  const monster = active.getByRole('group', { name: 'Monsters' }).locator('.card').first();
+  const bomb = active.getByRole('group', { name: tr('table.your_hand') }).getByRole('button', { name: cardName('bomb') }).first();
+  const monster = active.getByRole('group', { name: tr('board.monsters') }).locator('.card').first();
   const lifted = active.locator('.hand-card.aiming');
   // Click the card's visible top: a locator click would scroll the hand,
   // which hangs past the window's edge, into view.
@@ -81,14 +82,14 @@ test('a bomb aimed at a monster by two clicks damages it', async ({ browser }) =
   // empty space cancels.
   await clickBomb();
   await expect(lifted).toHaveCount(1);
-  const item = active.getByRole('group', { name: 'Shop' }).locator('.card').first();
+  const item = active.getByRole('group', { name: tr('board.shop') }).locator('.card').first();
   const at = await item.boundingBox();
   if (!at) {
     throw new Error('no shop item box');
   }
   await active.mouse.click(at.x + at.width / 2, at.y + at.height / 2);
   const why = active.locator('.aim-why');
-  await expect(why).toHaveText('Pick a monster or a player.');
+  await expect(why).toHaveText(tr('refuse.pick.monster_or_player'));
   await shot(active, 'aim-wrong');
   const note = await why.locator('div').boundingBox();
   if (!note) {
@@ -101,7 +102,7 @@ test('a bomb aimed at a monster by two clicks damages it', async ({ browser }) =
   await clickBomb();
   await expect(lifted).toHaveCount(1);
   await expect(monster).toHaveClass(/hl-aim/);
-  await active.getByText('Nothing on the stack').click();
+  await active.getByText(tr('stack.empty')).click();
   await expect(lifted).toHaveCount(0);
   await expect(why).toHaveCount(0);
   await expect(active.getByRole('menu')).toHaveCount(0);
@@ -180,7 +181,7 @@ function stackCards(page: Page): Promise<string[]> {
 // card just put back slides down into the fan. The first move stays
 // on the card, so the card sees it and takes the pointer.
 async function dragToBoard(page: Page, card: string) {
-  const loc = page.getByRole('group', { name: 'Your hand' }).getByRole('button', { name: card }).first();
+  const loc = page.getByRole('group', { name: tr('table.your_hand') }).getByRole('button', { name: card }).first();
   let from = await loc.boundingBox();
   for (let still = false; !still; ) {
     await page.waitForTimeout(100);
@@ -188,7 +189,7 @@ async function dragToBoard(page: Page, card: string) {
     still = !!from && !!now && from.x === now.x && from.y === now.y;
     from = now;
   }
-  const to = await page.getByRole('region', { name: 'Board' }).boundingBox();
+  const to = await page.getByRole('region', { name: tr('board.label') }).boundingBox();
   if (!from || !to) {
     throw new Error('no boxes');
   }
@@ -206,9 +207,9 @@ test('a loot card with no target dragged onto the board plays', async ({ browser
   await activePage(pages, click);
   await saveAndContinue(pages, 'Dot, Eve', 'a_penny');
   const active = await activePage(pages, click);
-  const hand = active.getByRole('group', { name: 'Your hand' });
+  const hand = active.getByRole('group', { name: tr('table.your_hand') });
   // Any role: once played, other pennies are no longer buttons.
-  const penny = hand.getByLabel('A Penny!', { exact: true });
+  const penny = hand.getByLabel(cardName('a_penny'), { exact: true });
   const before = await penny.count();
 
   // Played loot is kept as it shows: the stack may resolve at once.
@@ -224,7 +225,7 @@ test('a loot card with no target dragged onto the board plays', async ({ browser
     });
   });
 
-  await dragToBoard(active, 'A Penny!');
+  await dragToBoard(active, cardName('a_penny'));
   await expect.poll(() => active.evaluate(() => (window as unknown as { played: string[] }).played)).toContain('a_penny');
   await expect(penny).toHaveCount(before - 1);
   // No arrow, no dialog: the card went straight to the stack.
@@ -239,15 +240,15 @@ test('a card placed first aims after its mode; a cancelled aim leaves it in hand
   await activePage(pages, click);
   await saveAndContinue(pages, 'Fay, Gus', 'dagaz');
   const active = await activePage(pages, click);
-  const hand = active.getByRole('group', { name: 'Your hand' });
-  const dagaz = hand.getByRole('button', { name: 'Dagaz' });
+  const hand = active.getByRole('group', { name: tr('table.your_hand') });
+  const dagaz = hand.getByRole('button', { name: cardName('dagaz') });
   const lifted = active.locator('.hand-card.aiming');
   const opponent = active.locator('.player.opponent .opp-character .card');
   const mode = 'Choose a player. Prevent the next 1 damage they would take this turn.';
   // place drags Dagaz onto the board and picks the mode that aims.
   const place = async () => {
-    await dragToBoard(active, 'Dagaz');
-    const ask = active.getByRole('dialog', { name: 'Choose one' });
+    await dragToBoard(active, cardName('dagaz'));
+    const ask = active.getByRole('dialog', { name: tr('choice.title.mode') });
     await expect(ask).toBeVisible();
     await shot(active, 'aim-mode');
     await ask.getByRole('button', { name: mode }).click();
@@ -257,7 +258,7 @@ test('a card placed first aims after its mode; a cancelled aim leaves it in hand
     await expect(active.getByRole('dialog')).toHaveCount(0);
     // Players are aimed at by the character card; areas stay plain.
     await expect(active.locator('.player.hl-pick')).toHaveCount(0);
-    await expect(active.getByRole('button', { name: /^Choose / })).toHaveCount(0);
+    await expect(active.getByRole('button', { name: new RegExp(`^${trRe('table.choose').source}`) })).toHaveCount(0);
   };
 
   await place();
@@ -295,32 +296,32 @@ test('a "choose one-" card asks its mode with the card large (15.58)', async ({ 
   await activePage(pages, click);
   await saveAndContinue(pages, 'Ida, Jon', 'dagaz');
   const active = await activePage(pages, click);
-  const dagaz = active.getByRole('group', { name: 'Your hand' }).getByRole('button', { name: 'Dagaz' });
-  const ask = active.getByRole('dialog', { name: 'Choose one' });
+  const dagaz = active.getByRole('group', { name: tr('table.your_hand') }).getByRole('button', { name: cardName('dagaz') });
+  const ask = active.getByRole('dialog', { name: tr('choice.title.mode') });
   const open = async () => {
-    await dragToBoard(active, 'Dagaz');
+    await dragToBoard(active, cardName('dagaz'));
     await expect(ask).toBeVisible();
   };
 
   await open();
-  await expect(ask.getByRole('heading', { name: 'Dagaz' })).toBeVisible();
+  await expect(ask.getByRole('heading', { name: cardName('dagaz') })).toBeVisible();
   await expect(ask.locator('.card.size-zoom')).toBeVisible();
   // No curse is in play at the start: that mode stays, greyed.
   const curse = ask.getByRole('button', { name: 'Destroy a curse.' });
   await expect(curse).toBeDisabled();
-  await expect(curse).toHaveAttribute('title', 'No valid target now');
+  await expect(curse).toHaveAttribute('title', tr('choice.no_target'));
   const protect = ask.getByRole('button', { name: /^Choose a player/ });
   await expect(protect).toBeEnabled();
   await shot(active, 'mode-dialog');
 
   // View board hides it; the bar brings it back.
-  await ask.getByRole('button', { name: 'View board' }).click();
+  await ask.getByRole('button', { name: tr('choice.view_board') }).click();
   await expect(ask).toBeHidden();
-  await active.getByRole('group', { name: 'Viewing the board' }).getByRole('button', { name: 'Back to the choice' }).click();
+  await active.getByRole('group', { name: tr('choice.viewing') }).getByRole('button', { name: tr('choice.back') }).click();
   await expect(ask).toBeVisible();
 
   // Cancel sends the prompt's cancel: Dagaz stays in hand.
-  await ask.getByRole('button', { name: 'Cancel' }).click();
+  await ask.getByRole('button', { name: tr('actions.cancel') }).click();
   await expect(ask).toBeHidden();
   await expect(dagaz).toHaveClass(/hl-act/);
   // So does a click outside the dialog.
@@ -348,9 +349,9 @@ test('the other player sees the arrow and the red mark', async ({ browser }) => 
   if (!other) {
     throw new Error('no waiting player');
   }
-  const bomb = active.getByRole('group', { name: 'Your hand' }).getByRole('button', { name: 'Bomb!' }).first();
-  const monster = active.getByRole('group', { name: 'Monsters' }).locator('.card').first();
-  const item = active.getByRole('group', { name: 'Shop' }).locator('.card').first();
+  const bomb = active.getByRole('group', { name: tr('table.your_hand') }).getByRole('button', { name: cardName('bomb') }).first();
+  const monster = active.getByRole('group', { name: tr('board.monsters') }).locator('.card').first();
+  const item = active.getByRole('group', { name: tr('board.shop') }).locator('.card').first();
   const arrow = other.locator('.aim-arrow.others');
   const lifted = other.locator('.hidden-back[data-presence~="from"]');
   // The same card on the other screen, by its zone.
@@ -409,7 +410,7 @@ test('the other player sees the arrow and the red mark', async ({ browser }) => 
   await expect(await there(item)).not.toHaveAttribute('data-presence');
 
   // The waiting player's hover reaches nobody.
-  const o = await middle(other.getByRole('group', { name: 'Shop' }).locator('.card').first());
+  const o = await middle(other.getByRole('group', { name: tr('board.shop') }).locator('.card').first());
   await other.mouse.move(o.x, o.y, { steps: 4 });
   await active.waitForTimeout(500);
   const shown = await active.evaluate(() => {

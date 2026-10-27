@@ -30,7 +30,7 @@ func TestFirstPlayerRoll(t *testing.T) {
 				t.Fatalf("seed %d: turn %d during the roll, want 0", seed, g.Turn.Number)
 			}
 			w := g.Prompt()
-			if w.Kind != PromptThrow || w.Text != "first player roll" || w.Player != round[len(rolls)] {
+			if w.Kind != PromptThrow || w.Text.String() != "event.first_player_roll" || w.Player != round[len(rolls)] {
 				t.Fatalf("seed %d: prompt %+v, want player %d to throw", seed, w, round[len(rolls)])
 			}
 			for p := range g.Players {
@@ -42,7 +42,7 @@ func TestFirstPlayerRoll(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if len(ev) == 0 || ev[0].Kind != EvDiceRolled || ev[0].Player != w.Player || ev[0].Text != "first player roll" {
+			if len(ev) == 0 || ev[0].Kind != EvDiceRolled || ev[0].Player != w.Player || ev[0].Label.String() != "event.first_player_roll" {
 				t.Fatalf("seed %d: throw events %+v, want the die first", seed, ev)
 			}
 			rolls = append(rolls, ev[0].Amount)

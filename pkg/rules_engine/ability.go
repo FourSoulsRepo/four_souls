@@ -273,7 +273,7 @@ func (e damageEffect) apply(c *Ctx) {
 		tgt = Target{Player: t.Player, IsPlayer: true}
 	}
 	n := c.G.number(c.Source, NumDamage, e.n)
-	c.G.push(StackItem{Kind: StackDamage, Controller: c.Controller, Source: c.Source, Amount: n, Label: "damage", Target: tgt})
+	c.G.push(StackItem{Kind: StackDamage, Controller: c.Controller, Source: c.Source, Amount: n, Label: eventDamage.Msg(), Target: tgt})
 }
 
 type extraLootEffect struct{ n int }
@@ -310,7 +310,7 @@ func Roll(t RollTable) Effect { return rollEffect{t} }
 
 func (e rollEffect) apply(c *Ctx) {
 	c.G.push(StackItem{
-		Kind: StackRoll, Controller: c.Controller, Source: c.Source, Label: "roll",
+		Kind: StackRoll, Controller: c.Controller, Source: c.Source, Label: eventRoll.Msg(),
 		RollFor: c.ref, Mode: c.mode, Targets: c.Targets,
 		EventPlayer: c.EventPlayer, EventAmount: c.EventAmount, EventStack: c.EventStack, EventObject: c.EventObject, EventSource: c.EventSource, EventBy: c.EventBy,
 	})
@@ -516,7 +516,7 @@ func (e killEffect) apply(c *Ctx) {
 		return // R-DEATH-03
 	}
 	c.G.Object(t.Object).Damage = c.G.def(t.Object).HP + c.G.bonus(StatMonsterHP, NoPlayer, t.Object)
-	c.G.push(StackItem{Kind: StackDeath, Controller: NoPlayer, Label: "death", Target: Target{Object: t.Object}})
+	c.G.push(StackItem{Kind: StackDeath, Controller: NoPlayer, Label: eventDeath.Msg(), Target: Target{Object: t.Object}})
 }
 
 // You is the target index that means the ability's controller, for text
@@ -651,9 +651,9 @@ func EachMonsterTakesDamage(n int) Effect {
 		order := Ordered(monsters(c, nil), a)
 		// The first in the order resolves first: it goes on the stack last.
 		for i := len(order) - 1; i >= 0; i-- {
-			c.G.push(StackItem{Kind: StackDamage, Controller: c.Controller, Source: c.Source, Amount: n, Label: "damage", Target: Target{Object: order[i]}})
+			c.G.push(StackItem{Kind: StackDamage, Controller: c.Controller, Source: c.Source, Amount: n, Label: eventDamage.Msg(), Target: Target{Object: order[i]}})
 		}
-	}, OrderQuestions("Which monster takes the damage first?", "the rest in slot order", 0, 8, active, monsters)...)
+	}, OrderQuestions(promptDamageOrder, askRestInSlotOrder, 0, 8, active, monsters)...)
 }
 
 type addAttacksEffect struct{ n, target int }
@@ -921,24 +921,26 @@ func PreventThisDeath() Effect {
 }
 
 type condCost struct {
-	text string
-	ok   func(g *Game, p PlayerID, self ObjectID) bool
+	say Key
+	ok  func(g *Game, p PlayerID, self ObjectID) bool
 }
 
 // If is a condition the ability needs to be activated, as a cost that
-// pays nothing: "if there are no cards under this" (Friendly Ball).
-func If(text string, ok func(g *Game, p PlayerID, self ObjectID) bool) Cost {
-	return condCost{text, ok}
+// pays nothing: "if there are no cards under this" (Friendly Ball). say
+// is why it can't be used while the condition fails, for the player:
+// "Needs no cards under this".
+func If(say Key, ok func(g *Game, p PlayerID, self ObjectID) bool) Cost {
+	return condCost{say, ok}
 }
 
 func (c condCost) canPay(g *Game, p PlayerID, self ObjectID) bool { return c.ok(g, p, self) }
 func (condCost) pay(*Game, PlayerID, ObjectID)                    {}
-func (c condCost) label() string                                  { return c.text }
+func (c condCost) label() string                                  { return c.say.String() }
 
 // KillPlayer kills p: their HP goes to 0 and their death goes on the
 // stack (R-MECH-23); by is the killer, or NoPlayer.
 func (g *Game) KillPlayer(p, by PlayerID) {
 	g.Players[p].Damage += g.PlayerHP(p)
 	g.Players[p].KilledBy = int(by) + 1
-	g.push(StackItem{Kind: StackDeath, Controller: NoPlayer, Label: "death", Target: Target{Player: p, IsPlayer: true}})
+	g.push(StackItem{Kind: StackDeath, Controller: NoPlayer, Label: eventDeath.Msg(), Target: Target{Player: p, IsPlayer: true}})
 }

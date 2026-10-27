@@ -1,6 +1,9 @@
 package r
 
-import engine "github.com/FourSoulsRepo/rules_engine"
+import (
+	engine "github.com/FourSoulsRepo/rules_engine"
+	"github.com/FourSoulsRepo/rules_engine/cards/cardkit"
+)
 
 // Eden’s Blessing (Room Card)
 //
@@ -17,8 +20,8 @@ var edensBlessingR = engine.CardDef{
 			if ids := itemsOf(c.G, c.Controller); a[0] >= 0 && a[0] < len(ids) {
 				c.G.RerollItem(ids[a[0]])
 			}
-		}, engine.Question{Text: "Reroll which item?", Options: func(c *engine.Ctx, _ []int) []string {
-			return append(labelsOf(c.G, itemsOf(c.G, c.Controller)), "none")
+		}, engine.Question{Text: cardkit.AskRerollWhichItem, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
+			return append(labelsOf(c.G, itemsOf(c.G, c.Controller)), engine.AskNone.Msg())
 		}})},
 	}},
 }

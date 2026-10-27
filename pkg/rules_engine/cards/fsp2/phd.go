@@ -5,6 +5,11 @@ import (
 	"github.com/FourSoulsRepo/rules_engine/cards/cardkit"
 )
 
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	phdChangeYourRoll = engine.NewKey("card.phd.change_your_roll")
+)
+
 // P.H.D. (Passive Treasure Card)
 //
 //	You may add or subtract 1 from any of your non-attack rolls.
@@ -26,6 +31,8 @@ var phd = engine.CardDef{
 				return
 			}
 			c.G.SetRoll(it.ID, min(max(it.Roll+[]int{1, -1}[a[0]], 1), 6), c.Source)
-		}, engine.Question{Text: "Change your roll?", Options: func(*engine.Ctx, []int) []string { return []string{"+1", "-1", "No"} }})},
+		}, engine.Question{Text: phdChangeYourRoll, Options: func(*engine.Ctx, []int) []engine.Msg {
+			return engine.Options(cardkit.AskPlusOne, cardkit.AskMinusOne, engine.AskNo)
+		}})},
 	}},
 }

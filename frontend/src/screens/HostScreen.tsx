@@ -1,17 +1,16 @@
 import { useEffect, useState } from 'react';
 import { deckRatiosBlocked, getCardSets } from '../bridge';
+import { t } from '../i18n';
 import { useEscape } from '../keys';
 import type { Options, RollbackMode } from '../protocol';
 import { baseGame, setName, sortSets } from '../sets';
-import { useApp } from '../store';
+import { deckRatiosText, useApp } from '../store';
 import './screens.css';
 
-// rollbackHints say what each rollback mode allows (ADR 020, item 1).
-const rollbackHints: Record<'' | RollbackMode, string> = {
-  '': 'No rollback: every step stands.',
-  soft: 'The other players vote to undo a move. Dice, damage, hidden cards and the end of a turn cannot be undone.',
-  god: 'Any player undoes moves at once, one per press, even dice. For a table that trusts each other.',
-};
+// rollbackHint says what each rollback mode allows (ADR 020, item 1).
+function rollbackHint(mode: '' | RollbackMode): string {
+  return mode === 'soft' ? t('host.rollback_hint.soft') : mode === 'god' ? t('host.rollback_hint.god') : t('host.rollback_hint.off');
+}
 
 // The detailed setup's starting values: the same as the simple setup.
 const simple: Options = { picking: 'random', draft_size: 3, ban_rounds: 0, ban_timer: 0, response_timer: 0 };
@@ -83,8 +82,8 @@ export function HostScreen() {
 
   return (
     <div className="screen">
-      <h1>{remote ? 'Create a game' : 'Host a game'}</h1>
-      {remote && <p className="muted">On the server {address}</p>}
+      <h1>{remote ? t('host.title_create') : t('host.title_host')}</h1>
+      {remote && <p className="muted">{t('host.on_server', { address })}</p>}
       <form
         className="panel"
         onSubmit={(e) => {
@@ -120,7 +119,7 @@ export function HostScreen() {
         {/* On a server the nickname went with hello already. */}
         {!remote && (
           <label className="field">
-            Nickname
+            {t('lobby.nickname')}
             <input
               value={nickname}
               onChange={(e) => {
@@ -130,7 +129,7 @@ export function HostScreen() {
           </label>
         )}
         <label className="field">
-          Players
+          {t('host.players')}
           <select
             value={seats}
             onChange={(e) => {
@@ -143,7 +142,7 @@ export function HostScreen() {
           </select>
         </label>
         <fieldset className="sets">
-          <legend>Card sets</legend>
+          <legend>{t('host.sets')}</legend>
           {available.map((code) => (
             <label key={code} className="check">
               <input
@@ -159,7 +158,7 @@ export function HostScreen() {
           ))}
         </fieldset>
         <label className="field">
-          Password (optional)
+          {t('host.password')}
           <input
             type="password"
             autoComplete="off"
@@ -178,7 +177,7 @@ export function HostScreen() {
               setDetailed(e.target.checked);
             }}
           />
-          Detailed setup
+          {t('host.detailed')}
         </label>
         {detailed && (
           <>
@@ -187,18 +186,18 @@ export function HostScreen() {
                 with them could not start. */}
             <div className="row">
               <label className="field">
-                Response timer
+                {t('host.timer')}
                 <select
                   value={options.response_timer}
                   onChange={(e) => {
                     option({ response_timer: Number(e.target.value) });
                   }}
                 >
-                  <option value={0}>Off</option>
-                  <option value={60}>60 s</option>
-                  <option value={90}>90 s</option>
-                  <option value={120}>120 s</option>
-                  <option value={180}>180 s</option>
+                  <option value={0}>{t('host.timer_off')}</option>
+                  <option value={60}>{t('host.seconds', { n: 60 })}</option>
+                  <option value={90}>{t('host.seconds', { n: 90 })}</option>
+                  <option value={120}>{t('host.seconds', { n: 120 })}</option>
+                  <option value={180}>{t('host.seconds', { n: 180 })}</option>
                 </select>
               </label>
             </div>
@@ -210,11 +209,11 @@ export function HostScreen() {
                   option({ no_bonus_souls: !e.target.checked });
                 }}
               />
-              Bonus souls
+              {t('host.bonus_souls')}
             </label>
             {/* Off and locked when the sets are too small; the tooltip
                 names the short groups. */}
-            <label className="check" title={blocked ?? undefined}>
+            <label className="check" title={blocked ? deckRatiosText(blocked) : undefined}>
               <input
                 type="checkbox"
                 checked={blocked === '' && !options.no_deck_ratios}
@@ -223,12 +222,12 @@ export function HostScreen() {
                   option({ no_deck_ratios: !e.target.checked });
                 }}
               />
-              Deck ratios
+              {t('host.deck_ratios')}
             </label>
             {/* Disabled by default (ADR 020, item 1.2). */}
             <div className="row">
               <label className="field">
-                Rollback
+                {t('host.rollback')}
                 <select
                   value={options.rollback ?? ''}
                   aria-describedby="rollback-hint"
@@ -236,19 +235,19 @@ export function HostScreen() {
                     option({ rollback: (e.target.value || undefined) as RollbackMode | undefined });
                   }}
                 >
-                  <option value="">Disabled</option>
-                  <option value="soft">Soft</option>
-                  <option value="god">Godmode</option>
+                  <option value="">{t('host.rollback_off')}</option>
+                  <option value="soft">{t('host.rollback_soft')}</option>
+                  <option value="god">{t('host.rollback_god')}</option>
                 </select>
               </label>
             </div>
             <p id="rollback-hint" className="muted hint">
-              {rollbackHints[options.rollback ?? '']}
+              {rollbackHint(options.rollback ?? '')}
             </p>
           </>
         )}
         <button type="submit" className="primary" disabled={busy}>
-          {remote ? 'Create' : 'Host'}
+          {remote ? t('host.create') : t('host.host')}
         </button>
         {/* A server's saved games are in its Games list already. */}
         {!remote && (
@@ -265,7 +264,7 @@ export function HostScreen() {
             })();
           }}
         >
-            Continue a saved game
+            {t('host.continue_saved')}
           </button>
         )}
       </form>
@@ -278,7 +277,7 @@ export function HostScreen() {
           show('join');
         }}
       >
-        Back
+        {t('lobby.back')}
       </button>
     </div>
   );

@@ -2,6 +2,11 @@ package r
 
 import engine "github.com/FourSoulsRepo/rules_engine"
 
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	keepersBargainGain1They = engine.NewKey("card.keepers_bargain.gain_1_they_gain_1")
+)
+
 // Keeper’s Bargain (Eternal Treasure Card)
 //
 //	{Tap Effect}Each other player may choose to gain 1¢. Gain 1¢ + 1¢ for each player who did.
@@ -19,7 +24,7 @@ var keepersBargain = engine.CardDef{
 		Kind:  engine.Activated,
 		Text:  "↷: Each other player may choose to gain 1¢. Gain 1¢ + 1¢ for each player who did.",
 		Costs: []engine.Cost{engine.Tap()},
-		Effects: []engine.Effect{eachOtherMay("Gain 1¢? They gain 1¢ more.", func(c *engine.Ctx, yes []engine.PlayerID) {
+		Effects: []engine.Effect{eachOtherMay(keepersBargainGain1They, func(c *engine.Ctx, yes []engine.PlayerID) {
 			for _, p := range yes {
 				them := *c
 				them.Controller = p

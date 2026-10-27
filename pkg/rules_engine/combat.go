@@ -2,7 +2,6 @@ package rulesengine
 
 import (
 	"slices"
-	"strconv"
 )
 
 // Target is what a stack item aims at.
@@ -246,7 +245,7 @@ func (g *Game) checkMaxHP() {
 			alive := !pl.Dead && was > pl.Damage
 			pl.Damage = max(pl.Damage-(was-m), 0)
 			if alive && g.PlayerHP(p) == 0 {
-				g.push(StackItem{Kind: StackDeath, Controller: NoPlayer, Label: "death", Target: Target{Player: p, IsPlayer: true}})
+				g.push(StackItem{Kind: StackDeath, Controller: NoPlayer, Label: eventDeath.Msg(), Target: Target{Player: p, IsPlayer: true}})
 			}
 		}
 	}
@@ -261,7 +260,7 @@ func (g *Game) checkMaxHP() {
 			alive := was > o.Damage
 			o.Damage = max(o.Damage-(was-m), 0)
 			if alive && g.HP(id) == 0 && !g.Eternal(id) {
-				g.push(StackItem{Kind: StackDeath, Controller: NoPlayer, Label: "death", Target: Target{Object: id}})
+				g.push(StackItem{Kind: StackDeath, Controller: NoPlayer, Label: eventDeath.Msg(), Target: Target{Object: id}})
 			}
 		}
 	}
@@ -326,7 +325,7 @@ func (g *Game) declareAttack(p PlayerID) {
 func (g *Game) askAttackTarget() {
 	if g.Turn.MustAttackDeck > 0 {
 		g.Turn.MustAttackDeck--
-		g.ask(Choice{Purpose: ChooseAttackTarget, Player: g.Turn.Active, Rule: "R-ATK-02", Deck: true}, []string{"monster deck"})
+		g.ask(Choice{Purpose: ChooseAttackTarget, Player: g.Turn.Active, Rule: "R-ATK-02", Deck: true}, []Msg{DeckOption(MonsterDeck)})
 		return
 	}
 	if m := g.Turn.MustAttack; m != 0 && g.Object(m).Zone.Kind == ZoneInPlay {
@@ -334,7 +333,7 @@ func (g *Game) askAttackTarget() {
 		return
 	}
 	targets := g.attackTargets()
-	labels := append(g.targetLabels(targets), "monster deck")
+	labels := append(g.targetLabels(targets), DeckOption(MonsterDeck))
 	g.ask(Choice{Purpose: ChooseAttackTarget, Player: g.Turn.Active, Rule: "R-ATK-02", Objects: targets, Deck: true}, labels)
 }
 
@@ -368,12 +367,12 @@ func (g *Game) attackTargets() []ObjectID {
 	return out
 }
 
-// targetLabels names attack targets: a card, or "player N (character)".
-func (g *Game) targetLabels(ids []ObjectID) []string {
-	out := g.labels(ids)
+// targetLabels names attack targets: a card, or a player.
+func (g *Game) targetLabels(ids []ObjectID) []Msg {
+	out := g.Labels(ids)
 	for i, id := range ids {
 		if p, ok := g.characterOf(id); ok {
-			out[i] = "player " + strconv.Itoa(int(p)+1) + " (" + string(g.Object(id).Card) + ")"
+			out[i] = PlayerOption(p)
 		}
 	}
 	return out
@@ -390,13 +389,14 @@ func (g *Game) attackDeck() {
 	g.Attack.Revealed, g.Attack.Deck = g.move(id, Zone{Kind: ZoneOutside}, NoPlayer), true
 	g.emit(Event{Kind: EvCardRevealed, Player: g.Turn.Active, Object: g.Attack.Revealed, Card: g.Object(g.Attack.Revealed).Card})
 	slots := make([]int, len(g.Monsters))
-	labels := make([]string, len(g.Monsters))
+	labels := make([]Msg, len(g.Monsters))
 	for i, s := range g.Monsters {
 		slots[i] = i
-		labels[i] = "slot " + strconv.Itoa(i+1)
+		var card CardRef
 		if top, ok := s.TopOf(); ok {
-			labels[i] += ": " + string(g.Object(top).Card)
+			card = g.Object(top).Card
 		}
+		labels[i] = SlotOption(i+1, card)
 	}
 	g.ask(Choice{Purpose: ChooseMonsterSlot, Player: g.Turn.Active, Rule: "R-ATK-08", Slots: slots}, labels)
 }
@@ -442,7 +442,7 @@ func (g *Game) attackRoll() { g.attackRollBy(g.Turn.Active) }
 // helpers roll too (R-ATK-21).
 func (g *Game) attackRollBy(p PlayerID) {
 	g.push(StackItem{
-		Kind: StackRoll, Controller: p, Label: "attack roll", Attack: true,
+		Kind: StackRoll, Controller: p, Label: eventAttackRoll.Msg(), Attack: true,
 		Target: Target{Object: g.Attack.Target},
 	})
 }
@@ -478,7 +478,7 @@ func (g *Game) resolveAttackRoll(it StackItem) {
 		}
 		if atk > 0 {
 			g.push(StackItem{
-				Kind: StackDamage, Controller: p, Source: g.Players[p].Character, Amount: atk, Label: "combat damage", Attack: true,
+				Kind: StackDamage, Controller: p, Source: g.Players[p].Character, Amount: atk, Label: eventCombatDamage.Msg(), Attack: true,
 				Target: dt,
 			})
 		}
@@ -498,7 +498,7 @@ func (g *Game) resolveAttackRoll(it StackItem) {
 	if atk > 0 {
 		g.push(StackItem{
 			Kind: StackDamage, Controller: ctrl, Source: target, Amount: atk,
-			Label: "combat damage", Attack: true, Target: Target{Player: p, IsPlayer: true},
+			Label: eventCombatDamage.Msg(), Attack: true, Target: Target{Player: p, IsPlayer: true},
 		})
 	}
 }
@@ -610,7 +610,7 @@ func (g *Game) resolveDamage(it StackItem) {
 		g.emit(e)
 		if g.PlayerHP(p) == 0 {
 			g.Players[p].KilledBy = int(it.Controller) + 1
-			g.push(StackItem{Kind: StackDeath, Controller: NoPlayer, Label: "death", Target: Target{Player: p, IsPlayer: true}})
+			g.push(StackItem{Kind: StackDeath, Controller: NoPlayer, Label: eventDeath.Msg(), Target: Target{Player: p, IsPlayer: true}})
 		}
 		return
 	}
@@ -634,7 +634,7 @@ func (g *Game) resolveDamage(it StackItem) {
 	}
 	g.emit(e)
 	if g.HP(id) == 0 && !g.Eternal(id) { // R-DEATH-03
-		g.push(StackItem{Kind: StackDeath, Controller: NoPlayer, Label: "death", Target: Target{Object: id}})
+		g.push(StackItem{Kind: StackDeath, Controller: NoPlayer, Label: eventDeath.Msg(), Target: Target{Object: id}})
 	}
 }
 
@@ -726,7 +726,7 @@ func (g *Game) monsterDeath(id ObjectID) {
 	}
 	if triggered {
 		// "When this dies" triggers resolve before the rewards (R-DEATH-05).
-		g.push(StackItem{Kind: StackDeathStep, Controller: NoPlayer, Label: "rewards", Target: Target{Object: holding}, Amount: stepRewards})
+		g.push(StackItem{Kind: StackDeathStep, Controller: NoPlayer, Label: eventRewards.Msg(), Target: Target{Object: holding}, Amount: stepRewards})
 		return
 	}
 	g.rewardsStep(holding)
@@ -748,7 +748,7 @@ func (g *Game) rewardsStep(holding ObjectID) {
 	}
 	for _, r := range g.def(holding).Rewards {
 		if r.Roll {
-			g.push(StackItem{Kind: StackRoll, Controller: active, Source: holding, Label: "reward roll", Reward: int(r.Kind) + 1, Amount: times})
+			g.push(StackItem{Kind: StackRoll, Controller: active, Source: holding, Label: eventRewardRoll.Msg(), Reward: int(r.Kind) + 1, Amount: times})
 			continue
 		}
 		g.enqueue(Action{Kind: r.action(), Player: active, Amount: r.Amount * times})
@@ -803,7 +803,7 @@ func (g *Game) playerDeath(p PlayerID) {
 	if n := len(g.PendingTriggers); n > 0 && g.triggeredBy(EvDied, p) {
 		// "When a player dies" triggers resolve first: the penalty waits
 		// under them on the stack (R-DEATH-13).
-		g.push(StackItem{Kind: StackPenalty, Controller: NoPlayer, Label: "death penalty", Target: Target{Player: p, IsPlayer: true}})
+		g.push(StackItem{Kind: StackPenalty, Controller: NoPlayer, Label: eventDeathPenalty.Msg(), Target: Target{Player: p, IsPlayer: true}})
 		return
 	}
 	g.payPenalty(p)
@@ -984,7 +984,7 @@ func (g *Game) askRedirect(q PlayerID, declared ObjectID) {
 			options = append(options, top)
 		}
 	}
-	g.ask(Choice{Purpose: ChooseRedirect, Player: q, Rule: "R-ATK-03", Objects: options, Question: "Which monster do they attack?"}, g.labels(options))
+	g.ask(Choice{Purpose: ChooseRedirect, Player: q, Rule: "R-ATK-03", Objects: options, Question: promptRedirect.Msg()}, g.Labels(options))
 }
 
 // GivePenaltyItem makes p, if p dies this turn, give player to the item

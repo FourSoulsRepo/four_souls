@@ -24,6 +24,7 @@ docs/                  ideas, roadmap, ADRs, use cases, this wiki
 release/               READMEs for the release archives; server.sh packs the servers
 deploy/                server setups: systemd unit, Dockerfile, compose with Caddy
 .github/               CI, release workflow, shared build and card images actions
+scripts/               setup.sh installs the tools; versions.env holds their versions
 ```
 
 ## Go modules
@@ -58,6 +59,7 @@ Rules enforced by the linter (see [Linters](Linters)):
 | `make e2e` | Playwright UI tests |
 | `make internal` | play-test app with card images; `PLATFORM=windows/amd64` |
 | `make screenshots` | `make e2e`, saving UI screenshots into `.cache/screenshots/` |
+| `make doctor` | checks the tools each target needs ([Developer setup](Developer-setup)) |
 | `make fuzz-engine`, `fuzz-focused`, `fuzz-sets` | one fuzz target for `FUZZTIME` (default 10m) |
 | `make fuzz` | `fuzz-engine`, then `fuzz-sets` |
 | `make sims` | `SIMS` (default 3000) whole random games |

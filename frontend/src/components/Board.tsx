@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import type { Kind } from '../cards';
+import { t } from '../i18n';
 import { counted, Deck as DeckKind, type CardView, type GameView, type SlotView } from '../protocol';
 import { useApp } from '../store';
 import { Card } from './Card';
@@ -32,20 +33,20 @@ export function Board({
 }) {
   return (
     <div className="board-cell">
-      <section className={`board${glow ? ' my-move' : ''}`} aria-label="Board" data-drop="play">
+      <section className={`board${glow ? ' my-move' : ''}`} aria-label={t('board.label')} data-drop="play">
         <div className="board-strip">{strip}</div>
         <div className="board-info">{children}</div>
-        <div className="board-slots board-monsters" role="group" aria-label="Monsters">
+        <div className="board-slots board-monsters" role="group" aria-label={t('board.monsters')}>
           {(view.monsters ?? []).map((slot, i) => (
             <Slot key={slotKey(slot, i)} slot={slot} zone={`monster-slot-${String(i)}`} ui={ui} />
           ))}
         </div>
-        <div className="board-slots board-shop" role="group" aria-label="Shop">
+        <div className="board-slots board-shop" role="group" aria-label={t('board.shop')}>
           {(view.shop ?? []).map((slot, i) => (
             <Slot key={slotKey(slot, i)} slot={slot} zone={`shop-slot-${String(i)}`} ui={ui} />
           ))}
         </div>
-        <div className="bonus-souls" role="group" aria-label="Bonus souls">
+        <div className="bonus-souls" role="group" aria-label={t('board.bonus_souls')}>
           {view.bonus_souls?.map((c) => (
             <Card key={c.id} cardRef={c.card} size="small" counters={counted(c)} objectId={c.id} />
           ))}

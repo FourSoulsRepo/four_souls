@@ -11,7 +11,7 @@ func TestCarBattery(t *testing.T) {
 		{Character: "isaac", Items: []engine.CardRef{"car_battery", "the_d6", "sack_of_pennies"}, Deactivated: []engine.CardRef{"the_d6", "sack_of_pennies"}, Cents: 7},
 		{Character: "cain", Items: []engine.CardRef{"jawbone"}, Deactivated: []engine.CardRef{"jawbone"}},
 	}})
-	tb.Activate(0, "car_battery", 0, "the_d6", "jawbone", "done")
+	tb.Activate(0, "car_battery", 0, "the_d6", "jawbone", "ask.done")
 	if !tb.G.Object(tb.Find(0, "the_d6")).Charged || !tb.G.Object(tb.Find(1, "jawbone")).Charged || tb.G.Object(tb.Find(0, "sack_of_pennies")).Charged {
 		t.Error("the D6 and the Jawbone are recharged, not the sack")
 	}

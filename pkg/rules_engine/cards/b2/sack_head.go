@@ -1,6 +1,14 @@
 package b2
 
-import engine "github.com/FourSoulsRepo/rules_engine"
+import (
+	engine "github.com/FourSoulsRepo/rules_engine"
+	"github.com/FourSoulsRepo/rules_engine/cards/cardkit"
+)
+
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	sackHeadPutItOn = engine.NewKey("card.sack_head.put_it_on_the_bottom")
+)
 
 // Sack Head (Active Treasure Card)
 //
@@ -28,18 +36,17 @@ var sackHead = engine.CardDef{
 				if a[1] == 1 {
 					c.G.DeckToBottom(d, top[0])
 				}
-			}, engine.DeckQuestion("Look at the top card of which deck?"), engine.Question{
-				Text: "Put it on the bottom?",
+			}, engine.DeckQuestion(cardkit.AskLookTop), engine.Question{
+				Text: sackHeadPutItOn,
 				Subject: func(c *engine.Ctx, a []int) engine.ObjectID {
 					return c.G.DeckTop(c.Deck(a[0]), 1)[0]
 				},
-				Options: func(c *engine.Ctx, a []int) []string {
+				Options: func(c *engine.Ctx, a []int) []engine.Msg {
 					top := c.G.DeckTop(c.Deck(a[0]), 1)
 					if len(top) == 0 {
 						return nil
 					}
-					card := string(c.G.Object(top[0]).Card)
-					return []string{"keep " + card + " on top", "put " + card + " on the bottom"}
+					return cardkit.KeepOrBottom(c.G.Object(top[0]).Card)
 				},
 			})},
 		},

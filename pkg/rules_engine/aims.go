@@ -7,7 +7,7 @@ package rulesengine
 type Aim struct {
 	Intent  int          `json:"intent"`
 	Targets []OptionView `json:"targets"`
-	Reason  string       `json:"reason,omitempty"`
+	Reason  Msg          `json:"reason,omitzero"`
 }
 
 // Aims lists the first target options of the allowed intents. An intent
@@ -54,31 +54,15 @@ func (g *Game) firstTarget(in Intent) (TargetSpec, bool) {
 	return ab.Targets[0], true
 }
 
-// targetWords say what a target kind may pick.
-var targetWords = map[TargetKind]string{
-	TargetPlayer:          "a player",
-	TargetMonster:         "a monster",
-	TargetMonsterOrPlayer: "a monster or a player",
-	TargetItem:            "an item",
-	TargetDiceRoll:        "a dice roll on the stack",
-	TargetOtherPlayer:     "another player",
-	TargetStackAbility:    "an ability on the stack",
-	TargetCurse:           "a curse",
-	TargetYourItem:        "one of your items",
-	TargetYourHandCard:    "a loot card in your hand",
-	TargetItemOrSoul:      "an item or a soul",
-}
-
 // targetReason is the short reason a click on a wrong target shows:
 // what the target may be. A filter narrows it to the glowing ones.
-func targetReason(t TargetSpec) string {
-	words, ok := targetWords[t.Kind]
+func targetReason(t TargetSpec) Msg {
+	keys, ok := refusePick[t.Kind]
 	if !ok {
-		words = "a glowing target"
+		keys = [2]Key{refusePickGlowing, refusePickGlowingOnly}
 	}
-	out := "Pick " + words + "."
 	if t.Where != nil {
-		out += " Only the glowing ones fit."
+		return keys[1].Msg()
 	}
-	return out
+	return keys[0].Msg()
 }

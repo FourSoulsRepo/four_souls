@@ -1,5 +1,7 @@
 // Package enginetest helps write card tests: build a table, act, answer
-// prompts by label and check the result.
+// prompts by label and check the result. A label is an option's plain
+// form (Game.Plain): a card's ref ("bomb"), "player 2 (cain)", a number,
+// or a key and its values ("ask.yes", "ask.slot_card 1 fly").
 //
 //	tb := enginetest.New(t, b2.Set, enginetest.Seat("isaac", "the_d6"), enginetest.Seat("cain"))
 //	tb.Activate(0, "isaac", 0)
@@ -140,7 +142,7 @@ func (tb *Table) EndTurn(choices ...string) {
 		switch w.Kind {
 		case engine.PromptChoose:
 			if len(choices) == 0 {
-				tb.T.Fatalf("a choice is needed, options %v", w.Options)
+				tb.T.Fatalf("a choice is needed, options %v", tb.Options())
 			}
 			in = engine.Intent{Player: w.Player, Kind: engine.IntentChoose, Choice: tb.option(w, choices[0])}
 			choices = choices[1:]
@@ -170,20 +172,18 @@ func (tb *Table) EndTurn(choices ...string) {
 	tb.T.Fatal("the next turn never came")
 }
 
-func (tb *Table) option(w engine.Prompt, label string) int {
+func (tb *Table) option(_ engine.Prompt, label string) int {
 	tb.T.Helper()
-	for i, o := range w.Options {
-		if o == label {
-			return i
-		}
+	i := tb.G.OptionIndex(label)
+	if i < 0 {
+		tb.T.Fatalf("%q is not an option of %v", label, tb.Options())
 	}
-	tb.T.Fatalf("%q is not an option of %v", label, w.Options)
-	return 0
+	return i
 }
 
 // Options returns the labels of the open choose prompt.
 func (tb *Table) Options() []string {
-	return tb.G.Prompt().Options
+	return tb.G.PlainOptions()
 }
 
 // Attack makes the active player attack the monster with the given card,
@@ -247,9 +247,10 @@ func (tb *Table) Choose(label string) {
 func (tb *Table) RevealFromDeck(card engine.CardRef, choices ...string) []engine.Event {
 	tb.T.Helper()
 	tb.G.PutOnDeck(engine.MonsterDeck, card)
-	slot := "slot 1"
-	if top, ok := tb.G.Monsters[0].TopOf(); ok {
-		slot += ": " + string(tb.G.Object(top).Card)
+	var top engine.CardRef
+	if id, ok := tb.G.Monsters[0].TopOf(); ok {
+		top = tb.G.Object(id).Card
 	}
-	return tb.Do(engine.Intent{Player: tb.G.Turn.Active, Kind: engine.IntentAttack}, append([]string{"monster deck", slot}, choices...)...)
+	slot := tb.G.Plain(engine.SlotOption(1, top))
+	return tb.Do(engine.Intent{Player: tb.G.Turn.Active, Kind: engine.IntentAttack}, append([]string{"ask.deck.monster", slot}, choices...)...)
 }

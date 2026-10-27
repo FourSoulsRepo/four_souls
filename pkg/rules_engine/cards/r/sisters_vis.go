@@ -2,6 +2,11 @@ package r
 
 import engine "github.com/FourSoulsRepo/rules_engine"
 
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	sistersVisWhoMustAttack = engine.NewKey("card.sisters_vis.who_must_attack_sisters_vis")
+)
+
 // Sisters Vis (Boss Card)
 //
 //	When an attack is declared on this, the active player chooses another player. That player must make an attack roll against this after each attack roll the active player makes this attack. If this dies this turn, that player gains +1 treasure.
@@ -26,7 +31,7 @@ var sistersVis = engine.CardDef{
 				}
 				c.G.AddAttackHelpers(others[a[0]])
 				markHelper(c, others[a[0]])
-			}, engine.Question{Text: "Who must attack Sisters Vis too?", Options: func(c *engine.Ctx, _ []int) []string {
+			}, engine.Question{Text: sistersVisWhoMustAttack, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
 				return playerLabels(c.G, othersOfActive(c.G))
 			}})},
 		},

@@ -5,6 +5,7 @@ import { startGame } from './game';
 import { appURL } from './server';
 import { shot } from './shot';
 import { activePage, answerPlay, click, playLoot, settle, throwButton, turnAction } from './turn';
+import { tr, trRe } from './locale';
 
 const fast = () => `${appURL()}&anim=off`;
 
@@ -28,12 +29,12 @@ test('a second player sees the fight mark and the attack roll (15.31)', async ({
   }
   // The target is named on the other's stack.
   const monster = await other.locator('.board-monsters .card.fight').getAttribute('aria-label');
-  await expect(other.getByRole('complementary', { name: 'Stack' }).locator('.stack-target').first()).toHaveText(monster ?? '');
+  await expect(other.getByRole('complementary', { name: tr('stack.title') }).locator('.stack-target').first()).toHaveText(monster ?? '');
   await shot(other, 'fight-mark');
 
   // The roll is seen by the other player too.
   await click(active, throwButton(active));
-  await expect(other.getByRole('group', { name: 'Last roll' })).toBeVisible();
+  await expect(other.getByRole('group', { name: tr('stack.last_roll') })).toBeVisible();
 });
 
 test("another player's loot card shows large, then by the stack (15.31)", async ({ browser }) => {
@@ -57,7 +58,7 @@ test("another player's loot card shows large, then by the stack (15.31)", async 
   await expect(pop.getByRole('img', { name })).toBeVisible();
   await other.waitForTimeout(400); // let it grow for the picture
   await shot(other, 'played-pop');
-  const kept = other.getByRole('figure', { name: new RegExp(`plays ${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`) });
+  const kept = other.getByRole('figure', { name: new RegExp(`${trRe('stack.played_label', { card: name }).source}$`) });
   await expect(kept).toBeVisible();
   await expect(kept.getByRole('img', { name })).toBeVisible();
   await shot(other, 'played-card');

@@ -63,7 +63,7 @@ func TestDeckRatios(t *testing.T) {
 		t.Errorf("every set: %q", why)
 	}
 	why := a.DeckRatios([]string{"b2"}, 2)
-	if !strings.Contains(why, "Butter Beans 3 of 5") {
+	if !strings.Contains(why, `{"key":"refuse.ratio.butter_beans","args":{"have":3,"need":5}}`) {
 		t.Errorf("Base Game: %q", why)
 	}
 }

@@ -3,6 +3,7 @@ import { actionsFor, aimedOption, IntentKind, Purpose, type Actions } from '../a
 import { onScreen, promptAim } from '../aim';
 import { ActionBar } from '../components/ActionBar';
 import { ActionMenu } from '../components/ActionMenu';
+import { t } from '../i18n';
 import { AimLayer } from '../components/Aim';
 import { Board } from '../components/Board';
 import { ChoiceDialog, DiscardDialog, LookDialog, ModeDialog, OrderDialog } from '../components/ChoiceDialog';
@@ -22,7 +23,7 @@ import { matLook } from '../mats';
 import type { Update } from '../protocol';
 import { seatOf, useApp } from '../store';
 import { activity, askedSeat, myMove, picking, promptBanner, stackPrompt } from '../prompt';
-import { waitTurn, type Names } from '../stack';
+import { seatNames, waitTurn, type Names } from '../stack';
 import { seatPositions } from '../table';
 import '../components/Table.css';
 import './screens.css';
@@ -37,15 +38,15 @@ export function GameScreen() {
   if (!game) {
     return (
       <div className="screen">
-        <h1>Setting up the match…</h1>
-        <p className="muted">Bans and picks get their own screen in step 7.14.</p>
+        <h1>{t('game.setting_up')}</h1>
+        <p className="muted">{t('game.setting_up_hint')}</p>
         <button
           type="button"
           onClick={() => {
             void quit();
           }}
         >
-          Leave
+          {t('game.leave')}
         </button>
       </div>
     );
@@ -76,7 +77,13 @@ function Table({ game, you }: { game: Update; you: number }) {
   // Soft rollback vote holds the game (ADR 020, item 5.8).
   const voting = !!game.rollback_vote && !view.over;
   const canAct = !behind && sent !== game.step && !voting;
-  const actions = useMemo(() => actionsFor(game, (label) => cards.has(label)), [game, cards]);
+  const names: Names = seatNames(game.seats, (ref) => cards.get(ref)?.name ?? ref);
+  const name = names.player;
+  // The server's lines are drawn in the chosen language (ADR 021): a
+  // new language draws them again.
+  const lang = useApp((s) => s.settings.language);
+  // eslint-disable-next-line react-hooks/exhaustive-deps, @eslint-react/exhaustive-deps
+  const actions = useMemo(() => actionsFor(game, seatNames(game.seats, (ref) => cards.get(ref)?.name ?? ref)), [game, cards, lang]);
   const setAiming = useApp((s) => s.setAiming);
   const ui = canAct ? interact(actions, act, select, aiming, setAiming) : noInteract;
   // A new state ends an aim: its targets may be gone (15.25). Before
@@ -106,8 +113,6 @@ function Table({ game, you }: { game: Update; you: number }) {
     }
   }, [aimed, canAct, game.step, actions, act, takeAimed]);
   const offered = canAct ? actions : noActions;
-  const name = (player: number) => game.seats?.find((s) => s.seat === player)?.name ?? `Player ${String(player + 1)}`;
-  const names: Names = { player: name, card: (ref) => cards.get(ref)?.name ?? ref };
   const me = view.players.at(you);
   // The hand's cards in order: a hand card is shared as its slot (A-16).
   const hand = useMemo(() => (me?.hand ?? []).map((c) => c.id), [me]);
@@ -119,7 +124,7 @@ function Table({ game, you }: { game: Update; you: number }) {
   // The board glows while the game waits for the player, and every seat
   // marks whom it waits for (15.95, V-52).
   const glow = canAct && !game.pause && myMove(banner, picks);
-  const paused = game.pause ? 'Paused' : voting ? 'Rollback vote' : '';
+  const paused = game.pause ? 'paused' : voting ? 'vote' : '';
   const asked = askedSeat(view);
   // What the active player does, on their seat for everyone else (15.30).
   const doing = activity(view, names);
@@ -127,7 +132,7 @@ function Table({ game, you }: { game: Update; you: number }) {
   // turn: no active seat, no turn buttons (15.43).
   const started = !view.first_roll;
   return (
-    <main className={`game ${look.className}${dim ? ' picking' : ''}`} style={look.style} aria-label={`Turn ${String(view.turn.number)}`}>
+    <main className={`game ${look.className}${dim ? ' picking' : ''}`} style={look.style} aria-label={t('game.turn', { n: view.turn.number })}>
       {seatPositions(view.players.length, you).map(({ position, player }) => {
         const p = view.players.at(player);
         return (

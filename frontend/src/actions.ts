@@ -1,6 +1,7 @@
 // What the player may do now, from the update's allowed intents (7.7).
 // Pure: the table only offers what the server allows.
-import type { Block, Intent, ModeView, OptionView, OutcomeView, Prompt, Update } from './protocol';
+import { say, t } from './i18n';
+import type { Block, Intent, ModeView, Msg, MsgNames, OptionView, OutcomeView, Prompt, Update } from './protocol';
 
 // Engine enums, in Go's order (pkg/rules_engine/prompt.go, choice.go).
 export const IntentKind = {
@@ -21,26 +22,44 @@ export const PromptKind = { none: 0, priority: 1, discard: 2, gameOver: 3, choos
 // The engine actions an outcome shows, in Go's order (actions.go).
 export const ActionKind = { gainCents: 0, addCounters: 14, pushLingering: 20 } as const;
 
-// Choice titles, by purpose, in Go's order.
-const purposeTitles = [
-  'Choose which card applies first',
-  'Choose what to attack',
-  'Choose a slot for the monster',
-  'Choose an item to lose',
-  'Choose a loot card to lose',
-  'Choose what to buy',
-  'Choose a target',
-  'Choose which goes on the stack first; it resolves last',
-  'Choose one',
-  'Answer',
-  'Choose your starting item',
-  'Choose who gains the curse',
-  'Choose the card for the very bottom',
-];
+// purposeTitle is a choice's title by its purpose, in Go's order, for
+// a prompt that comes without a question of its own.
+function purposeTitle(purpose: number): string {
+  switch (purpose) {
+    case 0:
+      return t('choice.title.replacement');
+    case 1:
+      return t('choice.title.attack');
+    case 2:
+      return t('choice.title.monster_slot');
+    case 3:
+      return t('choice.title.penalty_item');
+    case 4:
+      return t('choice.title.penalty_loot');
+    case 5:
+      return t('choice.title.purchase');
+    case 6:
+      return t('choice.title.target');
+    case 7:
+      return t('choice.title.trigger_order');
+    case 8:
+      return t('choice.title.mode');
+    case 9:
+      return t('choice.title.answer');
+    case 10:
+      return t('choice.title.starting_item');
+    case 11:
+      return t('choice.title.curse');
+    case 12:
+      return t('choice.title.bottom');
+    default:
+      return t('choice.title.choose');
+  }
+}
 
 // choiceTitle is the question of a choose prompt.
-export function choiceTitle(w: Prompt): string {
-  return w.text ?? purposeTitles.at(w.purpose ?? 0) ?? 'Choose';
+export function choiceTitle(w: Prompt, names: MsgNames): string {
+  return w.text?.key ? say(w.text, names) : purposeTitle(w.purpose ?? 0);
 }
 
 export interface Action {
@@ -68,24 +87,24 @@ export interface ChoiceOption extends Action {
 // chooser (19.17). name gives a card's title.
 export function outcomeLines(o: OutcomeView, name: (card: string) => string): string[] {
   if (o.again) {
-    return ['Then you pick the next card'];
+    return [t('choice.outcome.again')];
   }
   const lines: string[] = [];
   for (const a of o.actions ?? []) {
     const card = name(a.card ?? '');
     if (a.kind === ActionKind.gainCents) {
-      lines.push(`You gain ${String(a.amount)}¢`);
+      lines.push(t('choice.outcome.cents', { n: a.amount }));
     } else if (a.kind === ActionKind.addCounters) {
-      lines.push(`${card} levels up by ${String(a.amount)}`); // Bum-Bo!
+      lines.push(t('choice.outcome.level_up', { card, n: a.amount })); // Bum-Bo!
     } else if (a.kind === ActionKind.pushLingering) {
-      lines.push(`${card} rolls for ${String(a.amount)}¢`); // Poker Chip
+      lines.push(t('choice.outcome.roll_cents', { card, n: a.amount })); // Poker Chip
     }
   }
   if ((o.actions ?? []).length === 0) {
-    lines.push('Nothing happens');
+    lines.push(t('choice.outcome.nothing'));
   }
   for (const c of o.unused ?? []) {
-    lines.push(`${name(c)} does nothing`);
+    lines.push(t('choice.outcome.unused', { card: name(c) }));
   }
   return lines;
 }
@@ -134,24 +153,23 @@ export interface TurnActions {
 }
 
 // leftLabels name the plays End turn's question lists, in its order.
-const leftLabels = new Map<number, string>([
-  [IntentKind.attack, 'Attack'],
-  [IntentKind.purchase, 'Buy'],
-  [IntentKind.playLoot, 'Play loot'],
-  [IntentKind.activate, 'Use abilities'],
-]);
+const leftLabels = (): Map<number, string> =>
+  new Map([
+    [IntentKind.attack, t('turn.left.attack')],
+    [IntentKind.purchase, t('turn.left.buy')],
+    [IntentKind.playLoot, t('turn.left.loot')],
+    [IntentKind.activate, t('turn.left.abilities')],
+  ]);
 
-const buttonLabels = new Map<number, string>([[IntentKind.pass, 'Pass']]);
-
-// actionsFor lists the viewer's actions. isCard tells whether an option
-// label is a card ref.
-export function actionsFor(u: Update, isCard: (label: string) => boolean): Actions {
-  const why = turnWhy(u.blocked ?? []);
+// actionsFor lists the viewer's actions. names names the cards and
+// players in the server's lines (ADR 021).
+export function actionsFor(u: Update, names: MsgNames): Actions {
+  const why = turnWhy(u.blocked ?? [], names);
   const out: Actions = {
     buttons: [],
     turn: Object.keys(why).length > 0 ? { why } : {},
     cards: new Map(),
-    blocked: blockedCards(u.blocked ?? []),
+    blocked: blockedCards(u.blocked ?? [], names),
     choice: null,
     discard: null,
     order: null,
@@ -174,14 +192,13 @@ export function actionsFor(u: Update, isCard: (label: string) => boolean): Actio
   const aims = new Map((u.aims ?? []).map((a) => [a.intent, a]));
   const add = (id: number, action: Action, i: number) => {
     const aim = aims.get(i);
-    const aimed = aim ? { ...action, targets: aim.targets, ...(aim.reason ? { reason: aim.reason } : {}) } : action;
+    const aimed = aim ? { ...action, targets: aim.targets, ...(aim.reason?.key ? { reason: say(aim.reason, names) } : {}) } : action;
     out.cards.set(id, [...(out.cards.get(id) ?? []), aimed]);
   };
   for (const [i, a] of allowed.entries()) {
     const id = a.objects?.[0] ?? 0;
-    const button = buttonLabels.get(a.kind);
-    if (button) {
-      out.buttons.push({ label: button, intent: a });
+    if (a.kind === IntentKind.pass) {
+      out.buttons.push({ label: t('stack.pass'), intent: a });
     } else if (a.kind === IntentKind.endTurn) {
       out.turn.endTurn = a;
     } else if (a.kind === IntentKind.attack) {
@@ -189,43 +206,45 @@ export function actionsFor(u: Update, isCard: (label: string) => boolean): Actio
     } else if (a.kind === IntentKind.purchase) {
       out.turn.buy = a;
     } else if (a.kind === IntentKind.playLoot) {
-      add(id, { label: 'Play', intent: a }, i);
+      add(id, { label: t('actions.play'), intent: a }, i);
     } else if (a.kind === IntentKind.activate) {
       const n = a.choice ?? 0;
       const line = lines.get(id)?.at(n);
       add(id, {
-        label: (abilities.get(id) ?? 0) > 1 ? `Use ability ${String(n + 1)}` : 'Use',
+        label: (abilities.get(id) ?? 0) > 1 ? t('actions.use_n', { n: n + 1 }) : t('actions.use'),
         intent: a,
         ...(line ? { line } : {}),
       }, i);
     } else if (a.kind === IntentKind.discard) {
       out.discard = { count: u.view.waiting.count ?? 0, from: a.objects ?? [], intent: a };
     } else if (a.kind === IntentKind.order) {
-      out.order = { title: choiceTitle(u.view.waiting), intent: a };
+      out.order = { title: choiceTitle(u.view.waiting, names), intent: a };
     } else if (a.kind === IntentKind.throw) {
-      out.throw = { label: u.view.waiting.text ?? '', intent: a };
+      out.throw = { label: say(u.view.waiting.text, names), intent: a };
     }
   }
   if (out.turn.endTurn && allowed.every((a) => a.kind === IntentKind.endTurn || a.kind === IntentKind.pass)) {
     out.turn.idle = true;
   } else if (out.turn.endTurn) {
-    out.turn.left = [...leftLabels].filter(([kind]) => allowed.some((a) => a.kind === kind)).map(([, label]) => label);
+    out.turn.left = [...leftLabels()].filter(([kind]) => allowed.some((a) => a.kind === kind)).map(([, label]) => label);
   }
   const choose = allowed.filter((a) => a.kind === IntentKind.choose);
   if (choose.length > 0) {
     const w = u.view.waiting;
     out.choice = {
-      title: choiceTitle(w),
+      title: choiceTitle(w, names),
       purpose: w.purpose ?? 0,
       options: choose.map((intent) => {
         const i = intent.choice ?? 0;
-        const label = w.options?.at(i) ?? `Option ${String(i + 1)}`;
+        const option = w.options?.at(i);
+        const label = option?.key ? say(option, names) : t('choice.option_n', { n: i + 1 });
         const target = u.view.options?.at(i);
-        const trigger = w.purpose === Purpose.triggerOrder ? triggerLabel(label, isCard) : undefined;
+        const card = optionCard(option);
+        const trigger = w.purpose === Purpose.triggerOrder ? triggerLabel(option) : undefined;
         return {
           label,
           intent,
-          ...(isCard(label) ? { card: label } : {}),
+          ...(card ? { card } : {}),
           ...trigger,
           ...(target && (target.object || target.is_player || target.deck || target.stack_id) ? { target } : {}),
           ...(target?.outcome ? { outcome: target.outcome } : {}),
@@ -251,31 +270,40 @@ export function modeLines(choice: Choice, modes: ModeView[]): { lines: { text: s
 
 // blockedCards maps each blocked card to its reason (15.29). A card
 // with two blocked abilities keeps the first one's.
-function blockedCards(blocked: Block[]): Map<number, string> {
+function blockedCards(blocked: Block[], names: MsgNames): Map<number, string> {
   const out = new Map<number, string>();
   for (const b of blocked) {
     if ((b.kind === IntentKind.playLoot || b.kind === IntentKind.activate) && !out.has(b.object)) {
-      out.set(b.object, b.reason);
+      out.set(b.object, say(b.reason, names));
     }
   }
   return out;
 }
 
 // turnWhy is why attack, buy, and end turn can't be used (15.29).
-function turnWhy(blocked: Block[]): NonNullable<TurnActions['why']> {
-  const reason = (kind: number) => blocked.find((b) => b.kind === kind)?.reason;
+function turnWhy(blocked: Block[], names: MsgNames): NonNullable<TurnActions['why']> {
+  const reason = (kind: number) => {
+    const b = blocked.find((x) => x.kind === kind);
+    return b ? say(b.reason, names) : undefined;
+  };
   const attack = reason(IntentKind.attack);
   const buy = reason(IntentKind.purchase);
   const endTurn = reason(IntentKind.endTurn);
   return { ...(attack ? { attack } : {}), ...(buy ? { buy } : {}), ...(endTurn ? { endTurn } : {}) };
 }
 
-// triggerLabel splits a trigger order label, "card_ref: ability text",
+// optionCard is the card an option is, if it is one ("ask.card").
+function optionCard(m?: Msg): string | undefined {
+  const v = m?.key === 'ask.card' ? m.args?.card : undefined;
+  return typeof v === 'object' && 'card' in v ? v.card : undefined;
+}
+
+// triggerLabel splits a trigger order option, an ability ("ask.ability"),
 // into its card and the ability's words (19.19).
-function triggerLabel(label: string, isCard: (label: string) => boolean): { card: string; line: string } | undefined {
-  const at = label.indexOf(': ');
-  const card = label.slice(0, at);
-  return at > 0 && isCard(card) ? { card, line: label.slice(at + 2) } : undefined;
+function triggerLabel(m?: Msg): { card: string; line: string } | undefined {
+  const card = m?.key === 'ask.ability' ? m.args?.card : undefined;
+  const text = m?.args?.text;
+  return typeof card === 'object' && 'card' in card && typeof text === 'string' ? { card: card.card, line: text } : undefined;
 }
 
 // orderIntent puts the cards back in the given order, top first.

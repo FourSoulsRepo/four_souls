@@ -1,21 +1,24 @@
 // Card sets: display names and the order the host screen lists them
 // (oldest first, ADR 010).
 
+import { t } from './i18n';
+
 // baseGame is in every game; expansions need it (CD-02).
 export const baseGame = 'b2';
 
+// names are the sets' names in the chosen language.
 const names = new Map([
-  ['b2', 'Base Game'],
-  ['g2', 'Gold Box'],
-  ['fsp2', 'Four Souls+'],
-  ['r', 'Requiem'],
+  ['b2', () => t('set.base_game')],
+  ['g2', () => t('set.gold_box')],
+  ['fsp2', () => t('set.four_souls_plus')],
+  ['r', () => t('set.requiem')],
 ]);
 
 const order = ['b2', 'g2', 'fsp2', 'r'];
 
 // setName names a set code; unknown codes stay as they are.
 export function setName(code: string): string {
-  return names.get(code) ?? code;
+  return names.get(code)?.() ?? code;
 }
 
 // sortSets puts known sets in release order, then the rest by code.

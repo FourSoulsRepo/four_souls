@@ -2,10 +2,26 @@ package r
 
 import (
 	"slices"
-	"strings"
 
 	engine "github.com/FourSoulsRepo/rules_engine"
 	"github.com/FourSoulsRepo/rules_engine/cards/cardkit"
+)
+
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	askCounterRemoveNamed = engine.NewKey("ask.counter.remove_named")
+	askCounterAddNamed    = engine.NewKey("ask.counter.add_named")
+	askCounterRemove      = engine.NewKey("ask.counter.remove")
+	askCounterAdd         = engine.NewKey("ask.counter.add")
+	askAPlayerAt          = engine.NewKey("ask.a_player_at_random")
+	askChangeTheCounters  = engine.NewKey("ask.change_the_counters_of_which")
+	askChooseAPlayer      = engine.NewKey("ask.choose_a_player")
+	askDealDamageTo       = engine.NewKey("ask.deal_damage_to")
+	askPutWhichShop       = engine.NewKey("ask.put_which_shop_item_into")
+	askStealWhichShop     = engine.NewKey("ask.steal_which_shop_item")
+	askTakeWhichCard      = engine.NewKey("ask.take_which_card_from_the")
+	askWhichChange        = engine.NewKey("ask.which_change")
+	askWhoGainsThe        = engine.NewKey("ask.who_gains_the_soul")
 )
 
 // Pieces many cards share; they live in cardkit for every set.
@@ -49,34 +65,24 @@ func stealFromShop(p engine.PlayerID, may bool) engine.Effect {
 			c.G.GainControl(p, items[a[0]])
 		}
 	}, engine.Question{
-		Text:   "Steal which shop item?",
+		Text:   askStealWhichShop,
 		Player: func(*engine.Ctx, []int) engine.PlayerID { return p },
-		Options: func(c *engine.Ctx, _ []int) []string {
+		Options: func(c *engine.Ctx, _ []int) []engine.Msg {
 			out := labelsOf(c.G, c.G.ShopItems())
 			if may && len(out) > 0 {
-				out = append(out, "none")
+				out = append(out, engine.AskNone.Msg())
 			}
 			return out
 		},
 	})
 }
 
-// labelsOf lists the cards of objects.
-func labelsOf(g *engine.Game, ids []engine.ObjectID) []string {
-	out := make([]string, len(ids))
-	for i, id := range ids {
-		out[i] = string(g.Object(id).Card)
-	}
-	return out
-}
+// labelsOf lists the cards of objects as options.
+func labelsOf(g *engine.Game, ids []engine.ObjectID) []engine.Msg { return g.Labels(ids) }
 
 // playerLabels names players as the prompts do.
-func playerLabels(g *engine.Game, ps []engine.PlayerID) []string {
-	out := make([]string, len(ps))
-	for i, p := range ps {
-		out[i] = playerLabel(g, p)
-	}
-	return out
+func playerLabels(g *engine.Game, ps []engine.PlayerID) []engine.Msg {
+	return cardkit.PlayerLabels(g, ps)
 }
 
 // othersInOrder lists the other players in turn order from the
@@ -94,17 +100,17 @@ func othersInOrder(c *engine.Ctx) []engine.PlayerID {
 // eachOtherMay asks each other player, in turn order, a yes-or-no
 // question; do gets the players who said yes ("each other player may
 // choose to loot 1").
-func eachOtherMay(question string, do func(c *engine.Ctx, yes []engine.PlayerID)) engine.Effect {
+func eachOtherMay(question engine.Key, do func(c *engine.Ctx, yes []engine.PlayerID)) engine.Effect {
 	qs := make([]engine.Question, 3) // at most 3 other players
 	for i := range qs {
 		qs[i] = engine.Question{
 			Text:   question,
 			Player: func(c *engine.Ctx, _ []int) engine.PlayerID { return othersInOrder(c)[i] },
-			Options: func(c *engine.Ctx, _ []int) []string {
+			Options: func(c *engine.Ctx, _ []int) []engine.Msg {
 				if i >= len(othersInOrder(c)) {
 					return nil
 				}
-				return []string{"yes", "No"}
+				return engine.Options(engine.AskYes, engine.AskNo)
 			},
 		}
 	}
@@ -125,9 +131,9 @@ func eachGivesYouALoot(ps []engine.PlayerID) engine.Effect {
 	qs := make([]engine.Question, len(ps))
 	for i, p := range ps {
 		qs[i] = engine.Question{
-			Text:    "Give which loot card?",
+			Text:    cardkit.AskGiveWhichLootCard,
 			Player:  func(*engine.Ctx, []int) engine.PlayerID { return p },
-			Options: func(c *engine.Ctx, _ []int) []string { return labelsOf(c.G, c.G.Players[p].Hand) },
+			Options: func(c *engine.Ctx, _ []int) []engine.Msg { return labelsOf(c.G, c.G.Players[p].Hand) },
 		}
 	}
 	return engine.Ask(func(c *engine.Ctx, a []int) {
@@ -151,10 +157,10 @@ func shopItemToDiscard(may bool) engine.Effect {
 		if items := c.G.ShopItems(); a[0] >= 0 && a[0] < len(items) {
 			c.G.DiscardShopItem(items[a[0]])
 		}
-	}, engine.Question{Text: "Put which shop item into discard?", Options: func(c *engine.Ctx, _ []int) []string {
+	}, engine.Question{Text: askPutWhichShop, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
 		out := labelsOf(c.G, c.G.ShopItems())
 		if may && len(out) > 0 {
-			out = append(out, "none")
+			out = append(out, engine.AskNone.Msg())
 		}
 		return out
 	}})
@@ -231,11 +237,18 @@ func changeCounters(items bool, otherwise engine.Effect) engine.Effect {
 		}
 		return out
 	}
-	name := func(n string) string {
+	// A named counter's name is a code ("gold"), not a key.
+	add := func(n string) engine.Msg {
 		if n == "" {
-			return "counter"
+			return askCounterAdd.Msg()
 		}
-		return n + " counter"
+		return askCounterAddNamed.Msg(engine.Str("name", n))
+	}
+	remove := func(n string) engine.Msg {
+		if n == "" {
+			return askCounterRemove.Msg()
+		}
+		return askCounterRemoveNamed.Msg(engine.Str("name", n))
 	}
 	return engine.Ask(func(c *engine.Ctx, a []int) {
 		ids := cards(c.G)
@@ -247,23 +260,23 @@ func changeCounters(items bool, otherwise engine.Effect) engine.Effect {
 		}
 		ch := changes(c.G, ids[a[0]])[a[1]]
 		c.G.AddNamedCounters(ids[a[0]], ch.name, ch.n)
-	}, engine.Question{Text: "Change the counters of which card?", Options: func(c *engine.Ctx, _ []int) []string {
+	}, engine.Question{Text: askChangeTheCounters, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
 		out := labelsOf(c.G, cards(c.G))
 		if items && len(out) > 0 {
-			out = append(out, "none")
+			out = append(out, engine.AskNone.Msg())
 		}
 		return out
-	}}, engine.Question{Text: "Which change?", Options: func(c *engine.Ctx, a []int) []string {
+	}}, engine.Question{Text: askWhichChange, Options: func(c *engine.Ctx, a []int) []engine.Msg {
 		ids := cards(c.G)
 		if a[0] < 0 || a[0] >= len(ids) {
 			return nil
 		}
-		var out []string
+		var out []engine.Msg
 		for _, ch := range changes(c.G, ids[a[0]]) {
 			if ch.n > 0 {
-				out = append(out, "add a "+name(ch.name))
+				out = append(out, add(ch.name))
 			} else {
-				out = append(out, "remove a "+name(ch.name))
+				out = append(out, remove(ch.name))
 			}
 		}
 		return out
@@ -340,13 +353,13 @@ var damageOtherThanEvent = engine.Ask(func(c *engine.Ctx, a []int) {
 	if ts := targetsBut(c); a[0] >= 0 && a[0] < len(ts) {
 		c.G.DealDamageTo(ts[a[0]], 1, c.Controller, c.Source)
 	}
-}, engine.Question{Text: "Deal 1 damage to?", Options: func(c *engine.Ctx, _ []int) []string {
-	var out []string
+}, engine.Question{Text: cardkit.AskDeal1DamageTo, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
+	var out []engine.Msg
 	for _, t := range targetsBut(c) {
 		if t.IsPlayer {
 			out = append(out, playerLabel(c.G, t.Player))
 		} else {
-			out = append(out, string(c.G.Object(t.Object).Card))
+			out = append(out, engine.CardOption(c.G.Object(t.Object).Card))
 		}
 	}
 	return out
@@ -411,17 +424,17 @@ func lootDiscardToHand(match func(engine.CardRef) bool) engine.Effect {
 		if ids := cards(c.G); a[0] >= 0 && a[0] < len(ids) {
 			c.G.DiscardToHand(engine.LootDeck, ids[a[0]], c.Controller)
 		}
-	}, engine.Question{Text: "Take which card from the loot discard?", Options: func(c *engine.Ctx, _ []int) []string {
+	}, engine.Question{Text: askTakeWhichCard, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
 		return labelsOf(c.G, cards(c.G))
 	}})
 }
 
 // mayDeckQuestion asks for a deck, or "none"; check the answer with
 // deckChosen before reading it with c.Deck.
-func mayDeckQuestion(text string) engine.Question {
+func mayDeckQuestion(text engine.Key) engine.Question {
 	q := engine.DeckQuestion(text)
 	opts := q.Options
-	q.Options = func(c *engine.Ctx, a []int) []string { return append(opts(c, a), "none") }
+	q.Options = func(c *engine.Ctx, a []int) []engine.Msg { return append(opts(c, a), engine.AskNone.Msg()) }
 	return q
 }
 
@@ -488,7 +501,7 @@ func randomPlayerTakes(n int, nonActive bool) engine.Effect {
 		if ps := players(c.G); a[0] >= 0 && a[0] < len(ps) {
 			c.G.DealDamageTo(engine.Target{Player: ps[a[0]], IsPlayer: true}, n, engine.NoPlayer, c.Source)
 		}
-	}, engine.Question{Text: "A player at random", Random: true, Options: func(c *engine.Ctx, _ []int) []string {
+	}, engine.Question{Text: askAPlayerAt, Random: true, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
 		return playerLabels(c.G, players(c.G))
 	}})
 }
@@ -516,7 +529,7 @@ func afterRewardsAnotherPlayer(they string, effects ...engine.Effect) engine.Abi
 			them := *c
 			them.Controller = ps[a[0]]
 			them.Do(effects...)
-		}, engine.Question{Text: "Choose another player.", Options: func(c *engine.Ctx, _ []int) []string {
+		}, engine.Question{Text: cardkit.AskChooseAnotherPlayer, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
 			return playerLabels(c.G, othersOfActive(c.G))
 		}})},
 	}
@@ -528,7 +541,7 @@ var rechargeYourItem = engine.Ask(func(c *engine.Ctx, a []int) {
 	if ids := deactivatedItems(c.G, c.Controller); a[0] >= 0 && a[0] < len(ids) {
 		c.G.Recharge(ids[a[0]])
 	}
-}, engine.Question{Text: "Recharge which item?", Options: func(c *engine.Ctx, _ []int) []string {
+}, engine.Question{Text: cardkit.AskRechargeWhichItem, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
 	return labelsOf(c.G, deactivatedItems(c.G, c.Controller))
 }})
 
@@ -585,12 +598,12 @@ func killUpTo(n int) engine.Effect {
 	}
 	qs := make([]engine.Question, n)
 	for i := range qs {
-		qs[i] = engine.Question{Text: "Kill which player?", Options: func(c *engine.Ctx, a []int) []string {
+		qs[i] = engine.Question{Text: cardkit.AskKillPlayer, Options: func(c *engine.Ctx, a []int) []engine.Msg {
 			ps := left(c, a[:i])
 			if len(ps) == 0 {
 				return nil
 			}
-			return append(playerLabels(c.G, ps), "none")
+			return append(playerLabels(c.G, ps), engine.AskNone.Msg())
 		}}
 	}
 	return engine.Ask(func(c *engine.Ctx, a []int) {
@@ -624,10 +637,10 @@ func cursesInDeck(g *engine.Game) []engine.ObjectID {
 
 // slotQuestionAfterPick asks for a free monster slot once the question
 // before it picked something.
-func slotQuestionAfterPick(text string) engine.Question {
+func slotQuestionAfterPick(text engine.Key) engine.Question {
 	q := slotQuestion(text)
 	opts := q.Options
-	q.Options = func(c *engine.Ctx, a []int) []string {
+	q.Options = func(c *engine.Ctx, a []int) []engine.Msg {
 		if a[len(a)-1] < 0 {
 			return nil
 		}
@@ -638,7 +651,7 @@ func slotQuestionAfterPick(text string) engine.Question {
 
 // vote: each living player, in turn order from the active player, votes
 // for one option (R-MECH-49); decide gets the votes per option.
-func vote(options []string, decide func(c *engine.Ctx, votes []int)) engine.Effect {
+func vote(question engine.Key, options []engine.Key, decide func(c *engine.Ctx, votes []int)) engine.Effect {
 	voters := func(c *engine.Ctx) []engine.PlayerID { return cardkit.LivingPlayers(c.G, engine.NoPlayer) }
 	inOrder := func(c *engine.Ctx) []engine.PlayerID {
 		var out []engine.PlayerID
@@ -652,13 +665,13 @@ func vote(options []string, decide func(c *engine.Ctx, votes []int)) engine.Effe
 	qs := make([]engine.Question, 4)
 	for i := range qs {
 		qs[i] = engine.Question{
-			Text:   "Vote: " + strings.Join(options, " or ") + "?",
+			Text:   question,
 			Player: func(c *engine.Ctx, _ []int) engine.PlayerID { return inOrder(c)[i] },
-			Options: func(c *engine.Ctx, _ []int) []string {
+			Options: func(c *engine.Ctx, _ []int) []engine.Msg {
 				if i >= len(inOrder(c)) {
 					return nil
 				}
-				return options
+				return engine.Options(options...)
 			},
 		}
 	}
@@ -697,12 +710,12 @@ func rerollAnyNumber(most int) engine.Effect {
 	}
 	qs := make([]engine.Question, most)
 	for i := range qs {
-		qs[i] = engine.Question{Text: "Reroll which item?", Options: func(c *engine.Ctx, a []int) []string {
+		qs[i] = engine.Question{Text: cardkit.AskRerollWhichItem, Options: func(c *engine.Ctx, a []int) []engine.Msg {
 			ids, done := left(c, a[:i])
 			if done || len(ids) == 0 {
 				return nil
 			}
-			return append(labelsOf(c.G, ids), "done")
+			return append(labelsOf(c.G, ids), engine.AskDone.Msg())
 		}}
 	}
 	return engine.Ask(func(c *engine.Ctx, a []int) {
@@ -727,7 +740,7 @@ func damageAChosenPlayer(n int) engine.Effect {
 		if ps := cardkit.LivingPlayers(c.G, engine.NoPlayer); a[0] >= 0 && a[0] < len(ps) {
 			c.G.DealDamageTo(engine.Target{Player: ps[a[0]], IsPlayer: true}, n, c.Controller, c.Source)
 		}
-	}, cardkit.PickAPlayer("Choose a player."))
+	}, cardkit.PickAPlayer(askChooseAPlayer))
 }
 
 // backIntoDeck puts this event into the monster deck n cards from the
@@ -755,13 +768,13 @@ func monstersAndPlayers(g *engine.Game) []engine.Chosen {
 }
 
 // chosenLabels names chosen targets as the prompts do.
-func chosenLabels(g *engine.Game, cs []engine.Chosen) []string {
-	out := make([]string, len(cs))
+func chosenLabels(g *engine.Game, cs []engine.Chosen) []engine.Msg {
+	out := make([]engine.Msg, len(cs))
 	for i, c := range cs {
 		if c.Kind == engine.TargetPlayer {
 			out[i] = playerLabel(g, c.Player)
 		} else {
-			out[i] = string(g.Object(c.Object).Card)
+			out[i] = engine.CardOption(g.Object(c.Object).Card)
 		}
 	}
 	return out
@@ -771,7 +784,7 @@ func chosenLabels(g *engine.Game, cs []engine.Chosen) []string {
 func discardN(n int) engine.Effect {
 	qs := make([]engine.Question, n)
 	for i := range qs {
-		qs[i] = engine.Question{Text: "Discard which loot card?", Options: func(c *engine.Ctx, a []int) []string {
+		qs[i] = engine.Question{Text: cardkit.AskDiscardWhich, Options: func(c *engine.Ctx, a []int) []engine.Msg {
 			return labelsOf(c.G, handLeft(c, a[:i]))
 		}}
 	}
@@ -886,12 +899,12 @@ func damageUpTo(most, n int) engine.Effect {
 	}
 	qs := make([]engine.Question, most)
 	for i := range qs {
-		qs[i] = engine.Question{Text: "Deal damage to?", Options: func(c *engine.Ctx, a []int) []string {
+		qs[i] = engine.Question{Text: askDealDamageTo, Options: func(c *engine.Ctx, a []int) []engine.Msg {
 			ts, done := left(c, a[:i])
 			if done || len(ts) == 0 {
 				return nil
 			}
-			return append(chosenLabels(c.G, ts), "done")
+			return append(chosenLabels(c.G, ts), engine.AskDone.Msg())
 		}}
 	}
 	return engine.Ask(func(c *engine.Ctx, a []int) {
@@ -951,8 +964,8 @@ func fewestGetsThis(count func(g *engine.Game, p engine.PlayerID) int) engine.Ef
 			c.G.GainBonusSoul(c.Source, ps[a[0]])
 		}
 	}, engine.Question{
-		Text:    "Who gains the soul?",
+		Text:    askWhoGainsThe,
 		Player:  func(c *engine.Ctx, _ []int) engine.PlayerID { return c.G.Turn.Active },
-		Options: func(c *engine.Ctx, _ []int) []string { return playerLabels(c.G, fewest(c.G)) },
+		Options: func(c *engine.Ctx, _ []int) []engine.Msg { return playerLabels(c.G, fewest(c.G)) },
 	})
 }

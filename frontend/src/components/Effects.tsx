@@ -1,6 +1,7 @@
 import { motion } from 'motion/react';
 import { useEffect, useRef, useState } from 'react';
 import { diceDelays, diceImage } from '../dice';
+import { t } from '../i18n';
 import { playSound } from '../sounds';
 import { useApp, type Playing } from '../store';
 import { Card } from './Card';
@@ -310,7 +311,7 @@ function Played({ card, who, from, to, playing }: { card: string; who: string; f
         animate={{ opacity: [1, 1, 0] }}
         transition={{ duration: 1.5 * playing.scale, times: [0, 0.75, 0.85] }}
       >
-        {who} plays
+        {t('effect.plays', { player: who })}
       </motion.div>
       <Card cardRef={card} size="zoom" />
     </motion.div>
@@ -514,7 +515,7 @@ function Steal({ from, to, amount, playing }: { from: string[]; to: string[]; am
         transition={{ duration: total, times: [0, fly, fly + 0.1, 0.85, 1] }}
         onAnimationComplete={playing.done}
       >
-        +{amount}¢ stolen
+        {t('effect.stolen', { n: amount })}
       </motion.div>
     </>
   );

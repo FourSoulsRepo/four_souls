@@ -6,6 +6,7 @@ import { startGame } from './game';
 import { backToMenu, openHost, openLan, openOnline } from './menu';
 import { appURL } from './server';
 import { activePage, click } from './turn';
+import { tr, trRe } from './locale';
 
 // selection is the text the page has selected now.
 function selection(page: Page): Promise<string> {
@@ -46,12 +47,12 @@ test('menu screens never scroll, even in a small window', async ({ page }) => {
   await page.setViewportSize({ width: 560, height: 360 });
   await page.goto(appURL());
   await expectNoPageScroll(page);
-  const settings = (p: Page) => p.getByRole('button', { name: 'Settings' }).click();
+  const settings = (p: Page) => p.getByRole('button', { name: tr('menu.settings') }).click();
   for (const [open, sign] of [
-    [settings, 'Nickname'],
-    [openHost, 'Players'],
-    [openLan, 'Host address'],
-    [openOnline, 'Server address'],
+    [settings, tr('settings.nickname')],
+    [openHost, tr('host.players')],
+    [openLan, tr('lobby.lan.address')],
+    [openOnline, tr('lobby.online.address')],
   ] as const) {
     await open(page);
     await expect(page.getByLabel(sign)).toBeVisible();
@@ -70,14 +71,14 @@ test('a drag across the table selects nothing; the history and address do', asyn
   const pages = await startGame(browser, ['Kim', 'Lou'], { url: `${appURL()}&anim=off` });
   // The turn starts with a loot, so the history has a line.
   const kim = await activePage(pages, click);
-  const history = kim.getByRole('complementary', { name: 'History', exact: true });
+  const history = kim.getByRole('complementary', { name: tr('history.title'), exact: true });
   // The full history sits on the board; it starts hidden (15.22).
-  await dragAcross(kim, kim.getByRole('main', { name: /^Turn / }).locator('.board'));
+  await dragAcross(kim, kim.getByRole('main', { name: new RegExp(`^${trRe('game.turn').source}`) }).locator('.board'));
   expect(await selection(kim)).toBe('');
   await expectNoPageScroll(kim);
 
   // Logs stay copyable.
-  await kim.getByRole('button', { name: 'History', exact: true }).click();
+  await kim.getByRole('button', { name: tr('history.title'), exact: true }).click();
   await dragAcross(kim, history.getByRole('list'));
   expect(await selection(kim)).not.toBe('');
 });
@@ -85,9 +86,9 @@ test('a drag across the table selects nothing; the history and address do', asyn
 test('the host address can be copied', async ({ page }) => {
   await page.goto(appURL());
   await openHost(page);
-  await page.getByLabel('Nickname').fill('Max');
-  await page.getByRole('button', { name: 'Host', exact: true }).click();
-  const address = page.getByRole('list', { name: 'Addresses' }).getByRole('listitem').first();
+  await page.getByLabel(tr('lobby.nickname')).fill('Max');
+  await page.getByRole('button', { name: tr('host.host'), exact: true }).click();
+  const address = page.getByRole('list', { name: tr('lobby.seats.addresses') }).getByRole('listitem').first();
   await address.click({ clickCount: 3 });
   expect(await selection(page)).toContain('127.0.0.1');
 });

@@ -259,7 +259,10 @@ Step numbers stay as IDs; the table lists steps in work order.
 2. Server sends message keys and values, not text.
 3. Card names and text from card_db translations.
 4. Language setting; first extra language: Russian.
-5. Ideas: LO-01 – LO-04.
+5. Ideas: LO-01 – LO-08, B-07.
+6. Interface in English only; Russian gets card names first.
+7. Checks and screenshots for translators; card images per language.
+8. Setup scripts for developers and translators.
 
 ## 17. Rollback
 

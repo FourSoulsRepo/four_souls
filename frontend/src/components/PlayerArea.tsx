@@ -1,4 +1,5 @@
 import { useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { t } from '../i18n';
 import { counted, Role, type CardView, type PlayerView } from '../protocol';
 import { useApp } from '../store';
 import type { LinePart } from '../stack';
@@ -59,7 +60,7 @@ function OpponentArea({ player, name, position, active, asked, winSouls, ui, doi
         <HiddenHand playerId={player.id} count={player.hand_size} size="small" />
       )}
       <div className="opp-left">
-        <Curses player={player} label={`${name}: curses`} size={size} ui={ui} />
+        <Curses player={player} label={t('table.curses_of', { player: name })} size={size} ui={ui} />
         <div className="opp-status">
           <b className="opp-name">
             <PlayerDot player={player.id} />
@@ -67,17 +68,17 @@ function OpponentArea({ player, name, position, active, asked, winSouls, ui, doi
             {asked && <Hourglass player={player.id} />}
           </b>
           <span className="opp-line">
-            <span className="opp-coins" title="Coins" aria-label={`${String(player.cents)} cents`}>
+            <span className="opp-coins" title={t('table.coins')} aria-label={t('table.cents', { n: player.cents })}>
               <Coin />
               {player.cents}
             </span>
-            {player.dead && <span className="player-dead">dead</span>}
+            {player.dead && <span className="player-dead">{t('table.dead')}</span>}
           </span>
           {active && doing && <Activity parts={doing} />}
           {active && <Allowance player={player} />}
           {pick.onClick && (
             <button type="button" className="player-pick" onClick={pick.onClick}>
-              Choose {name}
+              {t('table.choose', { player: name })}
             </button>
           )}
         </div>
@@ -96,7 +97,7 @@ function OpponentArea({ player, name, position, active, asked, winSouls, ui, doi
           {...ui.character(player.id, character.id)}
         />
       </div>
-      <div className="player-cards opp-items" role="group" aria-label={`${name}: items`}>
+      <div className="player-cards opp-items" role="group" aria-label={t('table.items_of', { player: name })}>
         {(player.in_play ?? [])
           .filter((c) => !isSoul(c) && !isCurse(c))
           .map((c) => (
@@ -139,7 +140,7 @@ export function Coin() {
 // and attack, items to its right, and the hand fanned below, partly
 // off screen (F-05, F-06, H-02, H-03, H-15, H-18).
 function OwnArea({ player, name, active, asked, winSouls, ui, tools }: Omit<Props, 'you' | 'position'>) {
-  const label = `${name} (you)`;
+  const label = t('table.own_name', { player: name });
   const pick = ui.player(player.id);
   const hand = player.hand ?? [];
   const { character } = player;
@@ -150,26 +151,26 @@ function OwnArea({ player, name, active, asked, winSouls, ui, tools }: Omit<Prop
       data-zone={`player-${String(player.id)}`}
     >
       <div className="own-left">
-        <Curses player={player} label="Your curses" size="table" ui={ui} />
+        <Curses player={player} label={t('table.your_curses')} size="table" ui={ui} />
         <div className="own-status">
           <b className="own-name">
             <PlayerDot player={player.id} />
             {label}
             {asked && <Hourglass player={player.id} />}
           </b>
-          <span className="own-coins" title="Coins" aria-label={`${String(player.cents)} cents`}>
+          <span className="own-coins" title={t('table.coins')} aria-label={t('table.cents', { n: player.cents })}>
             <Coin />
             {player.cents}
           </span>
-          {player.dead && <span className="player-dead">dead</span>}
+          {player.dead && <span className="player-dead">{t('table.dead')}</span>}
           {active && (
-            <span className="player-allowance" aria-label="Loot plays left">
-              Loot {player.loot_plays}
+            <span className="player-allowance" aria-label={t('table.loot_left_label')}>
+              {t('table.loot_left', { n: player.loot_plays })}
             </span>
           )}
           {pick.onClick && (
             <button type="button" className="player-pick" onClick={pick.onClick}>
-              Choose {label}
+              {t('table.choose', { player: label })}
             </button>
           )}
         </div>
@@ -189,7 +190,7 @@ function OwnArea({ player, name, active, asked, winSouls, ui, tools }: Omit<Prop
           {...ui.character(player.id, character.id)}
         />
       </div>
-      <div className="player-cards own-items" role="group" aria-label="Your items">
+      <div className="player-cards own-items" role="group" aria-label={t('table.your_items')}>
         {(player.in_play ?? [])
           .filter((c) => !isSoul(c) && !isCurse(c))
           .map((c) => (
@@ -199,7 +200,7 @@ function OwnArea({ player, name, active, asked, winSouls, ui, tools }: Omit<Prop
       <div
         className="hand"
         role="group"
-        aria-label="Your hand"
+        aria-label={t('table.your_hand')}
         data-zone={`hand-${String(player.id)}`}
         style={fan(hand.length)}
       >
@@ -218,7 +219,7 @@ function OwnArea({ player, name, active, asked, winSouls, ui, tools }: Omit<Prop
 function Souls({ player, winSouls, ui }: { player: PlayerView; winSouls: number; ui: Interact }) {
   const cards = soulCards(player);
   const slots = soulSlots(Math.max(player.souls, cards.length), winSouls);
-  const label = `Souls: ${String(player.souls)} of ${String(slots.length)}`;
+  const label = t('table.souls', { souls: player.souls, n: slots.length });
   return (
     <div className="souls" role="group" aria-label={label} title={label}>
       {slots.map((filled, i) => {
@@ -247,7 +248,7 @@ function SoulCrystal({ filled, card, own, ui }: { filled: boolean; card?: CardVi
       className={`soul-slot${filled ? ' filled' : ''}${pick.highlight ? ` hl-${pick.highlight}` : ''}`}
       data-zone={soul ? `obj-${String(soul.id)}` : undefined}
       role={pick.onClick ? 'button' : card ? 'img' : undefined}
-      aria-label={card ? `Soul: ${name}` : undefined}
+      aria-label={card ? t('table.soul', { card: name }) : undefined}
       // An empty title hides the row's tooltip: the zoom shows instead.
       title={card ? '' : undefined}
       onClick={pick.onClick}
@@ -290,9 +291,9 @@ function Activity({ parts }: { parts: LinePart[] }) {
 // Allowance is what the active player may still do this turn.
 function Allowance({ player }: { player: PlayerView }) {
   return (
-    <span className="player-allowance" aria-label="Left this turn">
-      <span>Loot {player.loot_plays}</span> · <span>Attacks {player.attacks}</span> ·{' '}
-      <span>Shop {player.purchases}</span>
+    <span className="player-allowance" aria-label={t('table.allowance')}>
+      <span>{t('table.loot_left', { n: player.loot_plays })}</span> · <span>{t('table.attacks_left', { n: player.attacks })}</span> ·{' '}
+      <span>{t('table.shop_left', { n: player.purchases })}</span>
     </span>
   );
 }
@@ -431,7 +432,7 @@ function PlayerDot({ player }: { player: number }) {
 // color-blind players read it too.
 function Hourglass({ player }: { player: number }) {
   return (
-    <svg className="player-asked" viewBox="0 0 12 16" role="img" aria-label="The game waits for this player" style={{ color: playerColor(player) }}>
+    <svg className="player-asked" viewBox="0 0 12 16" role="img" aria-label={t('table.asked')} style={{ color: playerColor(player) }}>
       <path d="M1 1h10M1 15h10M2 1c0 4 3 5 3 7s-3 3-3 7M10 1c0 4-3 5-3 7s3 3 3 7" />
       <path className="player-asked-sand" d="M3.5 4h5L6 7zM3 14.5c0-2 3-3 3-3s3 1 3 3z" />
     </svg>

@@ -35,7 +35,7 @@ func (h *Host) Start() (HostInfo, error) {
 	h.mu.Lock()
 	defer h.mu.Unlock()
 	if h.srv != nil {
-		return h.info(), ErrHosting
+		return h.info(), playerError(ErrHosting)
 	}
 	cfg := server.DefaultConfig()
 	cfg.Records, cfg.Retention = appPath("records"), 0 // kept until the user deletes them (RP-07)

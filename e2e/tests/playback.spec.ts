@@ -3,6 +3,7 @@ import type { Page } from '@playwright/test';
 import { expect, test } from './fixtures';
 import { startGame } from './game';
 import { shot } from './shot';
+import { tr } from './locale';
 
 // listenSounds records the file of every sound played from now on, in
 // window.played (15.50). Each sound still plays.
@@ -29,13 +30,13 @@ function played(page: Page): Promise<string[]> {
 
 test('the animation speed setting survives a restart', async ({ page }) => {
   await page.goto('/?fake&nosplash');
-  await page.getByRole('button', { name: 'Settings' }).click();
-  await page.getByLabel('Animations').selectOption('fast');
-  await page.getByRole('button', { name: 'Save' }).click();
-  await expect(page.getByRole('status')).toHaveText('Saved.');
+  await page.getByRole('button', { name: tr('menu.settings') }).click();
+  await page.getByLabel(tr('settings.animations')).selectOption('fast');
+  await page.getByRole('button', { name: tr('settings.save') }).click();
+  await expect(page.getByRole('status')).toHaveText(tr('settings.saved'));
   await page.reload();
-  await page.getByRole('button', { name: 'Settings' }).click();
-  await expect(page.getByLabel('Animations')).toHaveValue('fast');
+  await page.getByRole('button', { name: tr('menu.settings') }).click();
+  await expect(page.getByLabel(tr('settings.animations'))).toHaveValue('fast');
 });
 
 test('a fast burst of updates plays in order and ends on the last one', async ({ browser }) => {
@@ -73,7 +74,7 @@ test('a fast burst of updates plays in order and ends on the last one', async ({
           ...game,
           step: n,
           events: [
-            { kind: 'dice_rolled', player: you, amount: (n % 6) + 1, text: 'roll' },
+            { kind: 'dice_rolled', player: you, amount: (n % 6) + 1, label: { key: 'event.roll' } },
             { kind: 'looted', player: you, object: 1000 + n },
           ],
         },
@@ -88,7 +89,7 @@ test('a fast burst of updates plays in order and ends on the last one', async ({
   await kai.waitForFunction(() => document.querySelector('[data-testid="effect-fly"]') !== null);
   // The burst plays for 13.6 s on a quiet machine: the last updates play
   // at full speed. 20 s left too little room on a busy one (19.51).
-  await expect(kai.getByRole('main', { name: 'Turn 21' })).toBeVisible({ timeout: 40_000 });
+  await expect(kai.getByRole('main', { name: tr('game.turn', { n: 21 }) })).toBeVisible({ timeout: 40_000 });
   await expect(kai.locator('.effects')).toHaveCount(0);
   await expect(character).toHaveAttribute('data-mark', 'kept');
   await expect(character).toHaveCSS('opacity', '1');
@@ -115,7 +116,7 @@ test('a thrown die falls, bounces and lands on the engine\'s value (15.62)', asy
       throw new Error('no game');
     }
     const you = s.lobby.table?.you ?? 0;
-    s.receive({ type: 'update', data: { ...game, step: game.step + 1, events: [{ kind: 'dice_rolled', player: you, amount: 4, text: 'attack roll' }] } });
+    s.receive({ type: 'update', data: { ...game, step: game.step + 1, events: [{ kind: 'dice_rolled', player: you, amount: 4, label: { key: 'event.attack_roll' } }] } });
   });
   const thrown = mira.getByTestId('thrown-die');
   await expect(thrown).toBeAttached();
@@ -123,7 +124,7 @@ test('a thrown die falls, bounces and lands on the engine\'s value (15.62)', asy
   await expect(thrown.locator('.die-face')).toHaveCount(6);
   // The faces meet edge to edge, with no holes at the corners (19.40).
   await expect(thrown.locator('.die-face').first()).toHaveCSS('border-top-left-radius', '0px');
-  await expect(thrown.getByRole('img')).toHaveAttribute('aria-label', 'Rolled 4');
+  await expect(thrown.getByRole('img')).toHaveAttribute('aria-label', tr('dice.rolled', { n: 4 }));
   // seek holds the throw at a part of its length: the fall, the cube's
   // turn, its shadow and the label.
   const effect = mira.getByTestId('effect-dice');
@@ -140,14 +141,14 @@ test('a thrown die falls, bounces and lands on the engine\'s value (15.62)', asy
   const air = await thrown.boundingBox();
   const middle = (mira.viewportSize()?.height ?? 0) / 2;
   expect(air && air.y + air.height / 2).toBeLessThan(middle - 100);
-  await expect(thrown.locator('.die')).toHaveAttribute('aria-label', 'Rolled 4');
+  await expect(thrown.locator('.die')).toHaveAttribute('aria-label', tr('dice.rolled', { n: 4 }));
   await shot(mira, 'dice-in-air');
   // Landed: it lies still in the middle, with the roll's name below.
   await seek(0.75);
   const landed = await thrown.boundingBox();
   expect(landed && Math.abs(landed.y + landed.height / 2 - middle)).toBeLessThan(80);
-  await expect(mira.getByTestId('effect-dice')).toContainText('attack roll');
-  await expect(thrown.locator('.die')).toHaveAttribute('aria-label', 'Rolled 4');
+  await expect(mira.getByTestId('effect-dice')).toContainText(tr('event.attack_roll'));
+  await expect(thrown.locator('.die')).toHaveAttribute('aria-label', tr('dice.rolled', { n: 4 }));
   await shot(mira, 'dice-landed');
   // It clattered on the table as it landed (15.69). The clatter keeps
   // real time, not the paused throw: wait for it before the throw ends,
@@ -213,7 +214,7 @@ test('a roll of several dice throws every die, each with its clatter (19.39)', a
   await shot(ola, 'dice-many-landed');
   await expect(thrown).toHaveCount(4);
   const labels = await thrown.locator('.die').evaluateAll((els) => els.map((el) => el.getAttribute('aria-label')));
-  expect(labels).toEqual(['Rolled 2', 'Rolled 6', 'Rolled 3', 'Rolled 5']);
+  expect(labels).toEqual([2, 6, 3, 5].map((n) => tr('dice.rolled', { n })));
   // They land in a row in the middle, none on another.
   const boxes = await thrown.evaluateAll((els) => els.map((el) => el.getBoundingClientRect().toJSON() as DOMRect));
   for (let i = 1; i < boxes.length; i++) {
@@ -221,7 +222,7 @@ test('a roll of several dice throws every die, each with its clatter (19.39)', a
     expect(a && b && b.left - a.right).toBeGreaterThan(0);
     expect(a && b && Math.abs(a.top - b.top)).toBeLessThan(1);
   }
-  await expect(effect).toContainText('reroll');
+  await expect(effect).toContainText(tr('dice.reroll'));
   await effect.evaluate((el) => {
     for (const a of el.getAnimations({ subtree: true })) {
       a.play();
@@ -298,7 +299,7 @@ test('an attack lunges at the monster and drops its HP at the hit', async ({ bro
   expect(await played(vee)).toEqual(['/cardimg/assets/sounds/attack-hit.mp3']);
   await vee.waitForTimeout(200); // the burst pops
   await shot(vee, 'attack-hit');
-  await expect(monster.getByLabel(`${String(ids.hp - 1)} health`)).toBeVisible();
+  await expect(monster.getByLabel(tr('badge.hp', { n: ids.hp - 1 }))).toBeVisible();
   await expect(vee.locator('.effects-trail > *')).toHaveCount(0);
   await expect(character).toBeVisible();
 });
@@ -379,7 +380,7 @@ test('damage from a card hits every target at once and reddens their HP', async 
   await mo.waitForTimeout(200); // the bursts pop
   await shot(mo, 'damage-bursts');
   for (const [i, id] of ids.monsters.entries()) {
-    const health = mo.locator(`[data-zone="obj-${String(id)}"]`).getByLabel(`${String((ids.hps[i] ?? 0) - 1)} health`);
+    const health = mo.locator(`[data-zone="obj-${String(id)}"]`).getByLabel(tr('badge.hp', { n: (ids.hps[i] ?? 0) - 1 }));
     await expect(health).toHaveClass(/hurt/);
   }
   await expect(mo.locator(`[data-zone="obj-${String(ids.character)}"] .card-hp`)).toHaveClass(/hurt/);
@@ -439,7 +440,7 @@ test('a deck attack places the monster in its slot before the attack roll', asyn
     const events = [
       { kind: 'card_revealed', player: -1, object: top.id, card: top.card },
       { kind: 'attack_target', player: you, object: top.id, card: top.card },
-      { kind: 'dice_rolled', player: you, amount: 4, text: 'attack roll' },
+      { kind: 'dice_rolled', player: you, amount: 4, label: { key: 'event.attack_roll' } },
     ];
     s.receive({ type: 'update', data: { ...game, step: game.step + 1, events } });
     return { old: old.id, top: top.id };
@@ -497,7 +498,7 @@ test('a deck attack shows the revealed monster large once (19.4)', async ({ brow
     const events = [
       { kind: 'card_revealed', player: -1, object: 990, card },
       { kind: 'attack_target', player: you, object: 990, card },
-      { kind: 'dice_rolled', player: you, amount: 4, text: 'attack roll' },
+      { kind: 'dice_rolled', player: you, amount: 4, label: { key: 'event.attack_roll' } },
     ];
     s.receive({ type: 'update', data: { ...placed, step: placed.step + 2, events } });
   });
@@ -542,7 +543,7 @@ test('a deck attack monster does not pop in after it lands (19.6)', async ({ bro
     const events = [
       { kind: 'card_revealed', player: -1, object: 990, card: second.top.card },
       { kind: 'attack_target', player: you, object: 990, card: second.top.card },
-      { kind: 'dice_rolled', player: you, amount: 4, text: 'attack roll' },
+      { kind: 'dice_rolled', player: you, amount: 4, label: { key: 'event.attack_roll' } },
     ];
     s.receive({ type: 'update', data: { ...game, step: game.step + 1, events } });
   });
@@ -582,7 +583,7 @@ test('a deck attack keeps the drawn monster in view while its slot is picked (19
   });
   // After the large reveal, the card stays face up on the monster deck
   // and in the dialog until the slot is picked.
-  const dialog = odo.getByRole('dialog', { name: 'Choose a slot for the monster' });
+  const dialog = odo.getByRole('dialog', { name: tr('choice.title.monster_slot') });
   await expect(dialog).toBeVisible({ timeout: 8000 });
   await expect(odo.getByTestId('effect-reveal')).toHaveCount(0);
   await odo.waitForTimeout(400); // the deck card pops in
@@ -891,7 +892,7 @@ test('a dead soul monster flies from its slot to its player after a reward roll 
     delete first.top;
     const died = [{ kind: 'died', player: -1, object: 999, card: old.card, prev: old.id }];
     s.receive({ type: 'update', data: { ...game, step: game.step + 1, events: died } });
-    const roll = [{ kind: 'dice_rolled', player: p, amount: 4, text: 'reward roll' }];
+    const roll = [{ kind: 'dice_rolled', player: p, amount: 4, label: { key: 'event.reward_roll' } }];
     s.receive({ type: 'update', data: { ...game, step: game.step + 2, events: roll } });
     const soul = [{ kind: 'gained_soul', player: p, object: 997, card: old.card, prev: 999 }];
     s.receive({ type: 'update', data: { ...game, step: game.step + 3, events: soul } });
@@ -1129,7 +1130,7 @@ test('stolen cents fly as a coin from the victim to the thief (15.75)', async ({
   await expect(yan.locator('.effects .effect-popup').first()).toBeVisible();
   await yan.waitForTimeout(150);
   await shot(yan, 'steal-coin');
-  await expect(yan.getByText('+2¢ stolen')).toBeVisible();
+  await expect(yan.getByText(tr('effect.stolen', { n: 2 }))).toBeVisible();
   await shot(yan, 'steal-landed');
   await expect(yan.locator('.effects .effect-popup')).toHaveCount(0, { timeout: 5000 });
   const { coin } = await tracked(yan);
@@ -1179,7 +1180,7 @@ test('a changed roll turns from its old value, hit by the card that changed it (
   await shot(abe, 'roll-change-start');
   const die = abe.getByTestId('changed-die');
   await expect(die).toHaveAttribute('data-face', /[35]/);
-  await expect(abe.getByText("Abe's roll: 3 → 5")).toBeVisible();
+  await expect(abe.getByText(tr('effect.roll_changed', { player: 'Abe', old: 3, n: 5 }))).toBeVisible();
   await expect(abe.getByTestId('roll-shot')).toBeVisible();
   await shot(abe, 'roll-change-shot');
   await expect(die).toHaveAttribute('data-face', '5');

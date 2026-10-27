@@ -5,7 +5,7 @@
    2. Network play, 2–4 players.
    3. Wails v2: Go backend, React + TypeScript frontend.
 2. Stage
-   1. Steps 1–7 done; engine, server, and the desktop client in `frontend/`.
+   1. Steps 1–8, 16 and 17 done; 15 paused.
    2. Ideas live in `docs/ideas.md`.
    3. Roadmap: `docs/roadmap.md`; detailed steps in `docs/roadmap/`.
    4. Decisions: `docs/architecture/` (see `INDEX.md`).
@@ -23,9 +23,10 @@
    11. Card data tools: separate repo `FourSoulsRepo/tools`.
    12. Never add download or scraping code to this repo.
    13. `e2e/`: Playwright UI tests; also makes screenshots.
-   14. Wiki groups: players, server admins, developers.
+   14. Wiki groups: players, server admins, translators, developers.
    15. A new wiki page goes into one group in `Home.md` and `_Sidebar.md`.
    16. `deploy/`: server setups: systemd, Docker, compose with Caddy (ADR 018).
+   17. `scripts/`: `setup.sh` installs the tools; `versions.env` holds their versions.
 4. Commands
    1. `wails dev -m`: run with hot reload.
    2. `wails build -m`: release binary to `build/bin/`.
@@ -49,6 +50,13 @@
    20. `wails build` and `wails dev` always take `-m` (19.59).
        1. It skips `go mod tidy`.
        2. Tidy fails without the private images submodule.
+   21. `make i18n`: translation checks; `make lint` runs it.
+       1. `LOCALE=xx`: that language in full; `AREA=` one area.
+       2. Details: `docs/wiki/Client.md` (Translation checks).
+   22. `scripts/setup.sh --profile developer`: installs every tool (macOS, Linux).
+       1. `make doctor`: checks them; `PROFILE=translator` for the smaller set.
+       2. Tool versions: only in `scripts/versions.env`, `go.mod`, `e2e/package.json`.
+       3. Details: `docs/wiki/Developer-setup.md`.
 5. Workflow
    1. Work follows `docs/roadmap/`, one sub-step at a time.
    2. Commit after every finished sub-step.

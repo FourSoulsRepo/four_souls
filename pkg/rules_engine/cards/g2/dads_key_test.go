@@ -12,7 +12,7 @@ func TestDadsKey(t *testing.T) {
 		Monsters: []engine.CardRef{"fly", "leech"},
 	})
 	tb.G.PutOnDeck(engine.MonsterDeck, "charger")
-	tb.Activate(0, "dads_key", 0, "bomb", "slot 2")
+	tb.Activate(0, "dads_key", 0, "bomb", "ask.slot 2")
 	if top, _ := tb.G.Monsters[1].TopOf(); tb.G.Object(top).Card != "charger" {
 		t.Errorf("slot 2 shows %s, want the charger", tb.G.Object(top).Card)
 	}

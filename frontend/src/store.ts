@@ -30,8 +30,10 @@ import {
   type Settings,
 } from './bridge';
 import { noHostSetup } from './hostSetup';
-import type { CardInfo, Kind } from './cards';
+import { inLanguage, type CardInfo, type Kind } from './cards';
 import { loadFonts } from './fonts';
+import { language, languages, say, setCardLanguages, setLanguage, t } from './i18n';
+import { cardLanguagesOf } from './locale';
 import { entriesFor, lookedAt, moveOf, restartCut, rolledBack, voteEnded, type Entry, type Looked, type Move, type Outcome } from './history';
 import type { LinePart } from './stack';
 import type { Box } from './zoom';
@@ -44,6 +46,7 @@ import { loadSounds } from './sounds';
 import { endsGame, lostDialogAfter, retryDelay } from './reconnect';
 import {
   httpBases,
+  plainNames,
   protocolVersion,
   recordURL,
   wsURLs,
@@ -51,6 +54,7 @@ import {
   type Envelope,
   type Hello,
   type Intent,
+  type Msg,
   type Notice,
   type OptionView,
   type Presence,
@@ -226,6 +230,8 @@ interface AppState extends Session {
   cardSets: string[];
   // cards is the display data by ref; empty until loaded.
   cards: Map<string, CardInfo>;
+  // languages are the Settings choices; the cards add theirs (16.10).
+  languages: readonly string[];
   // dice are the dice looks (V-19); empty until loaded.
   dice: DiceSkin[];
   // mats are the mat images (V-24); empty until loaded or without images.
@@ -308,15 +314,44 @@ export function seatOf(s: Pick<Session, 'lobby'>): number {
 }
 
 // messageOf turns a rejected call into a message for the player. Wails
-// rejects with Go's error string.
+// rejects with Go's error string: a message as JSON when Go has words
+// for it (ADR 021), else the error's own words.
 export function messageOf(e: unknown): string {
-  if (typeof e === 'string') {
-    return e;
+  const text = typeof e === 'string' ? e : e instanceof Error ? e.message : undefined;
+  if (text === undefined) {
+    return t('error.unknown');
   }
-  if (e instanceof Error) {
-    return e.message;
+  const m = goMsgs(text)?.[0];
+  return m ? say(m, plainNames) : text;
+}
+
+// deckRatiosText says why the deck ratios can't be used (GS-07): Go's
+// head line, with the short groups' lines joined into it.
+export function deckRatiosText(why: string): string {
+  const msgs = goMsgs(why) ?? [];
+  const head = msgs.at(0);
+  if (!head) {
+    return why;
   }
-  return 'something went wrong';
+  const list = msgs
+    .slice(1)
+    .map((g) => say(g, plainNames))
+    .join(', ');
+  return say({ ...head, args: { ...head.args, groups: list } }, plainNames);
+}
+
+// goMsgs reads messages Go sent as JSON text: one, or a list; else null.
+export function goMsgs(text: string): Msg[] | null {
+  if (!text.startsWith('{"key"') && !text.startsWith('[{"key"')) {
+    return null;
+  }
+  try {
+    const v: unknown = JSON.parse(text);
+    const list = Array.isArray(v) ? v : [v];
+    return list.filter((m): m is Msg => typeof m === 'object' && m !== null && typeof (m as Msg).key === 'string');
+  } catch {
+    return null;
+  }
 }
 
 // presenceLife is how long a presence shows without being renewed, in
@@ -335,11 +370,16 @@ export function viewScale(s: { jumped: boolean; settings: Pick<Settings, 'animat
 // would, so reconnecting can be checked.
 export const dropConnection = drop;
 
+// cardsInLanguage names the cards in the language t() uses now.
+function cardsInLanguage(cards: Map<string, CardInfo>): Map<string, CardInfo> {
+  return new Map([...cards].map(([ref, c]) => [ref, inLanguage(c, language())]));
+}
+
 export const useApp = create<AppState>()((set, get) => {
   let effectKey = 0;
   // names reads players from an update and cards from the card data.
   const names = (u: Update) => ({
-    player: (p: number) => u.seats?.find((s) => s.seat === p)?.name ?? `Player ${String(p + 1)}`,
+    player: (p: number) => u.seats?.find((s) => s.seat === p)?.name ?? t('table.player_n', { n: p + 1 }),
     card: (ref: string) => get().cards.get(ref)?.name ?? ref,
   });
   // diedAt is where each dead card died, by its held object, until it
@@ -579,7 +619,7 @@ export const useApp = create<AppState>()((set, get) => {
     const token = reconnect ?? (rejoin.address === address && rejoin.token ? rejoin.token : undefined);
     const urls = wsURLs(address);
     if (!urls) {
-      set({ error: 'Type an address like 192.168.1.5, 192.168.1.5:4774 or games.example.com.' });
+      set({ error: t('error.bad_address') });
       return false;
     }
     try {
@@ -782,12 +822,14 @@ export const useApp = create<AppState>()((set, get) => {
       rejoin: { address: '', token: '', game: '', via: '' },
       host: noHostSetup,
       lan_address: '',
+      language: '',
     },
     hosting: null,
     lan: { searching: false, found: [], error: '' },
     connected: false,
     cardSets: [],
     cards: new Map(),
+    languages: languages(),
     dice: [],
     mats: [],
     backs: new Map(),
@@ -806,15 +848,18 @@ export const useApp = create<AppState>()((set, get) => {
         ]);
         loadFonts(fonts);
         loadSounds(sounds);
+        // A saved card-only language shows once its cards are known.
+        const langs = setCardLanguages(cardLanguagesOf(list));
         set({
-          cards: new Map(list.map((c) => [c.ref, c])),
+          languages: langs,
+          cards: new Map(list.map((c) => [c.ref, inLanguage(c, language())])),
           dice,
           mats,
           backs: new Map(backs.filter((b) => b.image !== '').map((b) => [b.kind, b.image])),
           icons,
         });
       } catch (e) {
-        set({ error: `Card data: ${messageOf(e)}` });
+        set({ error: t('error.card_data', { error: messageOf(e) }) });
       }
     },
     setZoom: (zoom) => {
@@ -865,7 +910,8 @@ export const useApp = create<AppState>()((set, get) => {
     loadSettings: async () => {
       try {
         const s = await getSettings();
-        set({ settings: s });
+        setLanguage(s.language);
+        set({ settings: s, cards: cardsInLanguage(get().cards) });
       } catch {
         // Keep the defaults; Go already falls back to them.
       }
@@ -874,7 +920,9 @@ export const useApp = create<AppState>()((set, get) => {
       try {
         const before = get().settings;
         const saved = await saveSettings(s);
-        set({ settings: saved, error: '' });
+        // The language too: t() reads it when the screens draw again.
+        setLanguage(saved.language);
+        set({ settings: saved, error: '', cards: cardsInLanguage(get().cards) });
         // Settings apply at once, without a restart.
         if (saved.fullscreen !== before.fullscreen) {
           setFullscreen(saved.fullscreen);

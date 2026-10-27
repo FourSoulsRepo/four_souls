@@ -1,9 +1,6 @@
 package rulesengine
 
-import (
-	"slices"
-	"strconv"
-)
+import "slices"
 
 // NumberKind is a kind of number Magic Marker can change (R-ABIL-39).
 type NumberKind int
@@ -22,19 +19,21 @@ type Number struct {
 	Value int        `json:"value"`
 }
 
-// Label names the number as the card says it.
-func (n Number) Label() string {
-	v := strconv.Itoa(n.Value)
-	switch n.Kind {
-	case NumLoot:
-		return "loot " + v
-	case NumCents:
-		return "gain " + v + "¢"
-	case NumDamage:
-		return "deal " + v + " damage"
-	default:
-		return "roll " + v
+// numberKeys name a number as the card says it: "loot 2".
+var numberKeys = [...]Key{
+	NumLoot:   NewKey("ask.number.loot"),
+	NumCents:  NewKey("ask.number.cents"),
+	NumDamage: NewKey("ask.number.damage"),
+	NumRoll:   NewKey("ask.number.roll"),
+}
+
+// Label names the number as the card says it, as an option.
+func (n Number) Label() Msg {
+	k := numberKeys[NumRoll]
+	if n.Kind >= 0 && int(n.Kind) < len(numberKeys) {
+		k = numberKeys[n.Kind]
 	}
+	return k.Msg(N("n", n.Value))
 }
 
 // Marker changes a number of an object's effect text till end of turn

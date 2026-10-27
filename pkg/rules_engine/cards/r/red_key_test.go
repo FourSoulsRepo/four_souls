@@ -13,7 +13,7 @@ func TestRedKey(t *testing.T) {
 		Rooms:    []engine.CardRef{"blessing_of_greed"},
 	})
 	tb.G.PutOnDeck(engine.RoomDeck, "spider_webs")
-	tb.Activate(0, "red_key", 0, "room deck", "spider_webs", "slot 1")
+	tb.Activate(0, "red_key", 0, "ask.deck.room", "spider_webs", "ask.slot 1")
 	if tb.G.Object(room(tb)).Card != "spider_webs" {
 		t.Fatal("the spider webs cover the room")
 	}

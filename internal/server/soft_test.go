@@ -331,7 +331,7 @@ func TestSoftLeaveEndsVote(t *testing.T) {
 	tb.players[author].say(protocol.TypeRollback, protocol.RollbackTo{Step: u.RollbackSteps[i].Step, Ask: true})
 	var er protocol.Error
 	tb.players[author].next(protocol.TypeError, &er)
-	if er.Code != protocol.ErrRollback || !strings.Contains(er.Message, "no other player") {
+	if er.Code != protocol.ErrRollback || er.Message != "error.rollback.no_voters" {
 		t.Errorf("a vote with no voter: %+v", er)
 	}
 }

@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'motion/react';
 import { useEffect, useLayoutEffect, useRef, useState, type RefObject } from 'react';
 import { getVersions, quitApp, type Versions } from '../bridge';
+import { t } from '../i18n';
 import { useEscape } from '../keys';
 import { scaleFor } from '../playback';
 import { useApp } from '../store';
@@ -48,7 +49,7 @@ export function MainMenu() {
             setOpen(!open);
           }}
         >
-          Play
+          {t('menu.play')}
         </button>
         <AnimatePresence initial={false}>
           {open && (
@@ -57,7 +58,7 @@ export function MainMenu() {
               key="play"
               className="menu-group"
               role="group"
-              aria-label="Play"
+              aria-label={t('menu.play')}
               initial={scale > 0 ? { height: 0, opacity: 0 } : false}
               animate={{ height: 'auto', opacity: 1 }}
               exit={{ height: 0, opacity: 0 }}
@@ -70,7 +71,7 @@ export function MainMenu() {
                   openPath('lan');
                 }}
               >
-                LAN
+                {t('menu.lan')}
               </button>
               <button
                 type="button"
@@ -78,24 +79,24 @@ export function MainMenu() {
                   openPath('online');
                 }}
               >
-                Online
+                {t('menu.online')}
               </button>
-              <Soon name="Learn to play" />
+              <Soon name={t('menu.learn')} />
               </div>
             </motion.div>
           )}
         </AnimatePresence>
-        <Soon name="Records" />
+        <Soon name={t('menu.records')} />
         <button
           type="button"
           onClick={() => {
             show('settings');
           }}
         >
-          Settings
+          {t('menu.settings')}
         </button>
         <button type="button" onClick={quitApp}>
-          Exit
+          {t('menu.exit')}
         </button>
       </nav>
       {rejoinable && (
@@ -108,13 +109,13 @@ export function MainMenu() {
               void rejoin();
             }}
           >
-            Rejoin: {rejoinLabel(rejoinable)}
+            {t('menu.rejoin', { game: rejoinLabel(rejoinable) })}
           </button>
         </div>
       )}
       {versions && (
         <div className="menu-versions">
-          app {versions.app} · rules engine {versions.engine}
+          {t('menu.versions', { app: versions.app, engine: versions.engine })}
         </div>
       )}
     </div>
@@ -123,8 +124,8 @@ export function MainMenu() {
 
 // rejoinLabel names the game to rejoin and how it was joined (M-05).
 function rejoinLabel(r: { host: string; via: '' | 'lan' | 'online' }): string {
-  const game = r.host ? `${r.host}'s game` : 'your game';
-  return r.via ? `${game} · ${r.via === 'lan' ? 'LAN' : 'Online'}` : game;
+  const game = r.host ? t('menu.rejoin_host', { host: r.host }) : t('menu.rejoin_yours');
+  return r.via ? `${game} · ${r.via === 'lan' ? t('menu.lan') : t('menu.online')}` : game;
 }
 
 // playGroup is how many buttons the Play group holds.
@@ -133,9 +134,9 @@ const playGroup = 3;
 // Soon is a menu button for a feature still to come (M-07).
 function Soon({ name }: { name: string }) {
   return (
-    <button type="button" disabled aria-label={`${name} (soon)`}>
+    <button type="button" disabled aria-label={t('menu.soon_label', { name })}>
       {name}
-      <span className="soon">Soon</span>
+      <span className="soon">{t('menu.soon')}</span>
     </button>
   );
 }
@@ -203,11 +204,11 @@ function Title() {
     };
   }, [image]);
   if (image === '' || image !== loaded) {
-    return <h1>Four Souls</h1>;
+    return <h1>{t('app.title')}</h1>;
   }
   return (
     <h1 className="menu-banner">
-      <img src={image} alt="Four Souls" draggable={false} />
+      <img src={image} alt={t('app.title')} draggable={false} />
     </h1>
   );
 }

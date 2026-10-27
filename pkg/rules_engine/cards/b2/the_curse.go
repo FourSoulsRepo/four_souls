@@ -2,6 +2,11 @@ package b2
 
 import engine "github.com/FourSoulsRepo/rules_engine"
 
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	theCursePutTheTop = engine.NewKey("card.the_curse.put_the_top_card_of")
+)
+
 // The Curse (Eternal Treasure Card)
 //
 //	At the start of your turn, put the top card of a deck into discard.
@@ -23,7 +28,7 @@ var theCurse = engine.CardDef{
 				if a[0] >= 0 {
 					c.G.MillTop(c.Deck(a[0]))
 				}
-			}, engine.DeckQuestion("Put the top card of which deck into discard?"))},
+			}, engine.DeckQuestion(theCursePutTheTop))},
 		},
 		{
 			Kind:    engine.Activated,
@@ -36,11 +41,11 @@ var theCurse = engine.CardDef{
 
 // discardQuestion offers every discard pile that has cards.
 var discardQuestion = engine.Question{
-	Text: "Put the top card of which discard on top of its deck?",
-	Options: func(c *engine.Ctx, _ []int) []string {
-		var out []string
+	Text: theCursePutTheTop,
+	Options: func(c *engine.Ctx, _ []int) []engine.Msg {
+		var out []engine.Msg
 		for _, d := range piles(c) {
-			out = append(out, d.String()+" discard")
+			out = append(out, engine.DiscardOption(d))
 		}
 		return out
 	},

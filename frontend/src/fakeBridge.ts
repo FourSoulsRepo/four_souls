@@ -57,6 +57,8 @@ function loadSettings(): unknown {
     rejoin: { address: '', token: '', game: '', via: '' },
     host: { seats: 0, sets: null, detailed: false, response_timer: 0, no_bonus_souls: false, no_deck_ratios: false, rollback: '' },
     lan_address: '',
+    // make screenshots LOCALE=qps starts every page in that language.
+    language: import.meta.env.VITE_LOCALE ?? '',
   };
   return JSON.parse(localStorage.getItem(settingsKey) ?? JSON.stringify(fresh));
 }
@@ -82,12 +84,16 @@ interface FakeSettings {
     rollback?: string;
   };
   lan_address?: string;
+  language?: string;
 }
 
 function saveSettings(s: FakeSettings): Promise<unknown> {
   const nickname = s.nickname.trim();
   if (s.nickname !== '' && (nickname === '' || Array.from(nickname).length > 20)) {
     return Promise.reject(new Error('nickname must be 1–20 characters'));
+  }
+  if (s.language && !/^[a-z]{2,3}$/.test(s.language)) {
+    return Promise.reject(new Error(`unknown setting value: "${s.language}"`));
   }
   const saved = { ...s, nickname, recent: s.recent.slice(0, 5), lan_address: (s.lan_address ?? '').trim() };
   localStorage.setItem(settingsKey, JSON.stringify(saved));
@@ -99,12 +105,15 @@ function saveSettings(s: FakeSettings): Promise<unknown> {
 // The real card text follows them, with images at their real paths; the
 // e2e tests serve those only for screenshots, else they fail to load and
 // the cards show their text, as in a public clone.
-const isaacImage =
+// Isaac also has a Russian test image, so tests see the image follow the
+// language (16.6); no real card has one yet.
+const artImage = (text: string): string =>
   'data:image/svg+xml,' +
   encodeURIComponent(
     '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 63 88"><rect width="63" height="88" fill="#7a5c2e"/>' +
-      '<text x="31" y="46" font-size="9" text-anchor="middle" fill="#fff">Isaac art</text></svg>',
+      `<text x="31" y="46" font-size="9" text-anchor="middle" fill="#fff">${text}</text></svg>`,
   );
+const isaacImage = artImage('Isaac art');
 const none = { footnotes: [], stats: [], rewards: [], effects: [] };
 const cards = [
   {
@@ -119,6 +128,7 @@ const cards = [
       { name: 'ATK', value: '1' },
     ],
     image: isaacImage,
+    images: { en: isaacImage, ru: artImage('Isaac ru') },
   },
   {
     ...none,
@@ -129,7 +139,7 @@ const cards = [
     effects: ['{Tap Effect}Choose a dice roll. Its controller rerolls it.', 'At the end of your turn, recharge this.'],
     footnotes: [{ title: '-Eternal-', text: "This can't be destroyed or put into discard." }],
     // A path with no file, so its image always fails, screenshots too.
-    image: '/cardimg/b2/missing_the_d6.webp',
+    image: '/cardimg/en/b2/missing_the_d6.webp',
   },
   {
     ...none,
@@ -170,17 +180,29 @@ interface DataCard {
   id: string;
   version?: number;
   type: string;
-  text: { en?: { name: string; effects?: string[]; footnotes?: { title: string; text: string }[] } };
+  text: Partial<Record<string, { name: string; effects?: string[]; footnotes?: { title: string; text: string }[] }>>;
+  translators?: Record<string, string[]>;
   stats?: { name: string; value: string }[];
   rewards?: { count: string; kind: string }[];
   images?: string[]; // one per copy; the first stands for the card
 }
 
+const b2Data = JSON.parse(b2) as { set: { code: string }; cards: DataCard[] };
+
+// translated gives a card's names in every language and its translators,
+// as Go's App.Cards does (16.5); the cards above take them from b2 too.
+function translated(ref: string, name: string): { names: Record<string, string>; translators: Record<string, string[]> } {
+  const c = b2Data.cards.find((d) => d.id === ref && !d.version);
+  const names = Object.fromEntries(Object.entries(c?.text ?? {}).flatMap(([lang, text]) => (text?.name ? [[lang, text.name]] : [])));
+  return { names: { en: name, ...names }, translators: c?.translators ?? {} };
+}
+
 function realCards(): unknown[] {
-  const data = JSON.parse(b2) as { set: { code: string }; cards: DataCard[] };
+  const data = b2Data;
   return data.cards
     .filter((c) => !cards.some((s) => s.ref === c.id))
     .map((c) => ({
+      ...translated(c.id, c.text.en?.name ?? c.id),
       ref: c.version && c.version > 1 ? `${c.id}@${String(c.version)}` : c.id,
       set: data.set.code,
       type: c.type,
@@ -189,8 +211,24 @@ function realCards(): unknown[] {
       footnotes: c.text.en?.footnotes ?? [],
       stats: c.stats ?? [],
       rewards: c.rewards ?? [],
-      image: c.images?.[0] ? `/cardimg/${c.images[0]}` : '',
+      // English only: the fake bridge cannot see which other images exist.
+      image: c.images?.[0] ? `/cardimg/en/${c.images[0]}` : '',
+      images: c.images?.[0] ? { en: `/cardimg/en/${c.images[0]}` } : {},
     }));
+}
+
+// ?cardlang=xx names Isaac in the card-only language xx, which has no
+// interface file, as card data with text.xx would (16.10). The real card
+// files never get test names.
+function withTestLanguage(list: unknown[]): unknown[] {
+  const lang = params.get('cardlang');
+  if (!lang) {
+    return list;
+  }
+  return list.map((c) => {
+    const card = c as { ref: string; names: Record<string, string> };
+    return card.ref === 'isaac' ? { ...card, names: { ...card.names, [lang]: `Isaac (${lang})` } } : card;
+  });
 }
 
 // Hosting points at a real dedicated server the e2e tests start
@@ -226,9 +264,9 @@ w.go = {
         Promise.resolve(
           sets.includes('r') && (sets.includes('fsp2') || players >= 3)
             ? ''
-            : `Too few cards in these sets for ${String(players)} players.`,
+            : JSON.stringify([{ key: 'refuse.deck_ratios', args: { n: players } }, { key: 'refuse.ratio.butter_beans', args: { have: 3, need: 5 } }]),
         ),
-      Cards: () => Promise.resolve([...cards, ...realCards()]),
+      Cards: () => Promise.resolve(withTestLanguage([...cards.map((c) => ({ ...c, ...translated(c.ref, c.name) })), ...realCards()])),
       // The dice textures at their real paths; like the mat, the e2e
       // tests serve them only for screenshots, else they fail: plain dice.
       // ?nodice has no textures, as Go without the private images.

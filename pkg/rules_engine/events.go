@@ -59,7 +59,12 @@ type Event struct {
 	Object ObjectID  `json:"object,omitempty"`
 	Card   CardRef   `json:"card,omitempty"`
 	Amount int       `json:"amount,omitempty"`
-	Text   string    `json:"text,omitempty"`
+	// Text is a code for the client and for card triggers, never shown
+	// as it is: "combat", "attack", "starting item" (ADR 021).
+	Text string `json:"text,omitempty"`
+	// Label is what a stack item is, on its events and on a roll's
+	// dice_rolled; the picked option of a random_pick (ADR 021).
+	Label Msg `json:"label,omitzero"`
 	// Private means only Player sees Card (e.g. a looted card), and
 	// whoever SeenBy names (the giver of a hand card, V-14).
 	Private bool       `json:"private,omitempty"`

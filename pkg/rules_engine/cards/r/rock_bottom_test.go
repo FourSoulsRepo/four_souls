@@ -11,7 +11,7 @@ func TestRockBottom(t *testing.T) {
 		{Character: "isaac", Cents: 10, Hand: []engine.CardRef{"bomb", "bomb"}}, seat("cain"),
 	}})
 	tb.G.PutOnDeck(engine.TreasureDeck, "rock_bottom")
-	tb.Do(engine.Intent{Player: 0, Kind: engine.IntentPurchase}, "treasure deck")
+	tb.Do(engine.Intent{Player: 0, Kind: engine.IntentPurchase}, "ask.deck.treasure")
 	if got := tb.G.Object(tb.Find(0, "rock_bottom")).CountersOf(""); got != 2 {
 		t.Fatalf("counters = %d, want his 2 cards", got)
 	}

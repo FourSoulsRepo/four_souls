@@ -58,6 +58,8 @@ export interface Settings {
   host: HostSetup;
   // lan_address is the address last typed on the LAN screen (15.97).
   lan_address: string;
+  // language is the interface language (ADR 021); '' follows the OS.
+  language: string;
 }
 
 // RecentServer is a server joined lately; name is the one it gave in
@@ -88,6 +90,7 @@ function fromGo(s: {
   rejoin: Omit<Rejoin, 'via'> & { via?: string };
   host?: HostSetup;
   lan_address?: string;
+  language?: string;
 }): Settings {
   return {
     nickname: s.nickname,
@@ -100,6 +103,7 @@ function fromGo(s: {
     rejoin: { address: s.rejoin.address, token: s.rejoin.token, game: s.rejoin.game, via: via(s.rejoin.via) },
     host: s.host ? { ...noHostSetup, ...s.host } : noHostSetup,
     lan_address: s.lan_address ?? '',
+    language: s.language ?? '',
   };
 }
 

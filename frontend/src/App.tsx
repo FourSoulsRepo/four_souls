@@ -18,6 +18,8 @@ import { useApp, type Screen as ScreenName } from './store';
 export function App() {
   const screen = useApp((s) => s.screen);
   const show = useApp((s) => s.show);
+  // A new language draws every screen again (ADR 021): t() reads it then.
+  useApp((s) => s.settings.language);
   const loadingRef = useRef<Promise<void> | null>(null);
   // After the splash: the menu, or the nickname first on the first start
   // (ST-06). The settings may still be loading.

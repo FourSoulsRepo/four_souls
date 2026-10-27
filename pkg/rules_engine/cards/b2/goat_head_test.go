@@ -4,7 +4,7 @@ import "testing"
 
 func TestGoatHead(t *testing.T) {
 	tb := itemTable(t, items("goat_head"), "a_dime", "bomb", "a_nickel")
-	tb.EndTurn("a_dime", "bomb", "done")
+	tb.EndTurn("a_dime", "bomb", "ask.done")
 	if h := len(tb.G.Players[0].Hand); h != 3 {
 		t.Errorf("hand %d, want 3", h)
 	}

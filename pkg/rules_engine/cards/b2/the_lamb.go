@@ -2,6 +2,13 @@ package b2
 
 import engine "github.com/FourSoulsRepo/rules_engine"
 
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	theLambNobody        = engine.NewKey("card.the_lamb.nobody")
+	theLambGiveWhichSoul = engine.NewKey("card.the_lamb.give_which_soul")
+	theLambWhoGivesYou   = engine.NewKey("card.the_lamb.who_gives_you_a_soul")
+)
+
 // The Lamb (Epic Boss Card)
 //
 //	When this dies, the active player may choose another player. They give you a soul they control.
@@ -25,24 +32,24 @@ var theLamb = engine.CardDef{
 	},
 }
 
-var lambPlayer = engine.Question{Text: "Who gives you a soul?", Options: func(c *engine.Ctx, _ []int) []string {
-	var out []string
+var lambPlayer = engine.Question{Text: theLambWhoGivesYou, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
+	var out []engine.Msg
 	for _, p := range otherPlayers(c) {
 		out = append(out, playerLabel(c.G, p))
 	}
-	return append(out, "nobody")
+	return append(out, theLambNobody.Msg())
 }}
 
 var lambSoul = engine.Question{
-	Text:   "Give which soul?",
+	Text:   theLambGiveWhichSoul,
 	Player: func(c *engine.Ctx, a []int) engine.PlayerID { return otherPlayers(c)[a[0]] },
-	Options: func(c *engine.Ctx, a []int) []string {
+	Options: func(c *engine.Ctx, a []int) []engine.Msg {
 		if a[0] < 0 || a[0] >= len(otherPlayers(c)) {
 			return nil
 		}
-		var out []string
+		var out []engine.Msg
 		for _, id := range souls(c.G, otherPlayers(c)[a[0]]) {
-			out = append(out, string(c.G.Object(id).Card))
+			out = append(out, engine.CardOption(c.G.Object(id).Card))
 		}
 		return out
 	},

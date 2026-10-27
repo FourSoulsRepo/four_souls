@@ -33,24 +33,34 @@ const modeled: Record<string, Envelope | Envelope[]> = {
   hello: {
     type: 'hello',
     id: 1,
-    data: { protocol: 5, app: '0.1.0', name: 'Ann', role: 'player', sets: ['b2'], dice: 'tear' } satisfies Hello,
+    data: { protocol: 6, app: '0.1.0', name: 'Ann', role: 'player', sets: ['b2'], dice: 'tear' } satisfies Hello,
   },
   welcome: {
     type: 'welcome',
     id: 1,
-    data: { protocol: 5, app: '0.1.0', engine: '0.1.0', token: 't0k3n', seat: 0, presence: true, name: 'Basement' } satisfies Welcome,
+    data: { protocol: 6, app: '0.1.0', engine: '0.1.0', token: 't0k3n', seat: 0, presence: true, name: 'Basement' } satisfies Welcome,
   },
-  error: {
-    type: 'error',
-    id: 2,
-    data: { code: 'refused', message: 'no loot play available', rule: 'R-CARD-08' } satisfies ProtocolError,
-  },
+  error: [
+    {
+      type: 'error',
+      id: 2,
+      data: { code: 'refused', message: 'no loot play available', rule: 'R-CARD-08', text: { key: 'refuse.no_loot_plays' } } satisfies ProtocolError,
+    },
+    {
+      type: 'error',
+      id: 3,
+      data: { code: 'bad_name', message: 'error.bad_name 20', text: { key: 'error.bad_name', args: { n: 20 } } } satisfies ProtocolError,
+    },
+  ],
   intent: { type: 'intent', id: 2, data: { intent: { player: 0, kind: 0 } satisfies Intent } },
   update: {
     type: 'update',
     data: {
       step: 1,
-      events: [{ kind: 'looted', player: 0, card: 'a_dime' }],
+      events: [
+        { kind: 'looted', player: 0, card: 'a_dime' },
+        { kind: 'stack_resolved', player: 1, card: 'the_d6', label: { key: 'event.copy_of', args: { card: { card: 'a_dime' } } } },
+      ],
       view: {
         players: [
           {
@@ -133,12 +143,12 @@ const modeled: Record<string, Envelope | Envelope[]> = {
             { object: 320, player: -1 },
             { player: 1, is_player: true },
           ],
-          reason: 'Pick a monster or a player.',
+          reason: { key: 'refuse.pick.monster_or_player' },
         },
       ],
       blocked: [
-        { kind: 5, object: 0, reason: 'Not your turn' },
-        { kind: 3, object: 314, reason: 'Loot is played on your turn' },
+        { kind: 5, object: 0, reason: { key: 'refuse.not_your_turn' } },
+        { kind: 3, object: 314, reason: { key: 'refuse.loot_your_turn' } },
       ],
       seats: [
         { seat: 0, name: 'Ann', connected: true, dice: 'tear' },

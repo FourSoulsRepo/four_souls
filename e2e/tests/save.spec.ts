@@ -3,6 +3,7 @@ import { expect, test } from './fixtures';
 import { startGame } from './game';
 import { appURL } from './server';
 import { shot } from './shot';
+import { tr } from './locale';
 
 test.setTimeout(60_000);
 
@@ -14,32 +15,32 @@ test('the host saves the game; everyone comes back and plays on', async ({ brows
   const turn = await gil.getByRole('main').getAttribute('aria-label');
 
   // Only the host is offered saving.
-  await hob.getByRole('button', { name: 'Menu' }).click();
-  await expect(hob.getByRole('dialog', { name: 'Game menu' }).getByRole('button', { name: 'Save and leave' })).toHaveCount(0);
-  await hob.getByRole('button', { name: 'Cancel' }).click();
+  await hob.getByRole('button', { name: tr('game_menu.button') }).click();
+  await expect(hob.getByRole('dialog', { name: tr('game_menu.label') }).getByRole('button', { name: tr('game_menu.save') })).toHaveCount(0);
+  await hob.getByRole('button', { name: tr('actions.cancel') }).click();
 
-  await gil.getByRole('button', { name: 'Menu' }).click();
-  await gil.getByRole('button', { name: 'Save and leave' }).click();
+  await gil.getByRole('button', { name: tr('game_menu.button') }).click();
+  await gil.getByRole('button', { name: tr('game_menu.save') }).click();
   for (const page of [gil, hob]) {
-    await expect(page.getByText('The game was saved.')).toBeVisible();
+    await expect(page.getByText(tr('lobby.games.saved'))).toBeVisible();
   }
 
   // The host continues it later, from the host screen.
   // Back from the Games list is the LAN screen, with its Host button.
-  await gil.getByRole('button', { name: 'Back' }).click();
-  await gil.getByRole('button', { name: 'Host a game' }).click();
-  await gil.getByRole('button', { name: 'Continue a saved game' }).click();
+  await gil.getByRole('button', { name: tr('lobby.back') }).click();
+  await gil.getByRole('button', { name: tr('host.title_host') }).click();
+  await gil.getByRole('button', { name: tr('host.continue_saved') }).click();
   const save = gil.getByRole('listitem').filter({ hasText: 'Gil, Hob' });
-  await save.getByRole('button', { name: 'Continue' }).click();
-  await expect(gil.getByRole('heading', { name: 'Saved game' })).toBeVisible();
-  const seats = gil.getByRole('list', { name: 'Seats' });
-  await expect(seats).toContainText('Hob · not back yet');
+  await save.getByRole('button', { name: tr('lobby.games.continue') }).click();
+  await expect(gil.getByRole('heading', { name: tr('lobby.seats.saved_title') })).toBeVisible();
+  const seats = gil.getByRole('list', { name: tr('lobby.seats.seats') });
+  await expect(seats).toContainText(`Hob · ${tr('lobby.seats.not_back')}`);
   await shot(gil, 'saved-game');
 
-  await hob.getByRole('listitem').filter({ hasText: 'Gil, Hob' }).getByRole('button', { name: 'Continue' }).click();
-  await expect(seats).toContainText('Hob · back');
+  await hob.getByRole('listitem').filter({ hasText: 'Gil, Hob' }).getByRole('button', { name: tr('lobby.games.continue') }).click();
+  await expect(seats).toContainText(`Hob · ${tr('lobby.seats.back')}`);
   for (const page of [gil, hob]) {
-    await page.getByRole('button', { name: 'Ready', exact: true }).click();
+    await page.getByRole('button', { name: tr('lobby.seats.ready'), exact: true }).click();
   }
   for (const page of [gil, hob]) {
     await expect(page.getByRole('main', { name: turn ?? '' })).toBeVisible();

@@ -1,5 +1,6 @@
 import type { PointerEvent } from 'react';
 import { stripEntries, type Entry } from '../history';
+import { t } from '../i18n';
 import type { GameView } from '../protocol';
 import { stackBadge, stackCard, stackIcon, stackLine, type Names } from '../stack';
 import { useApp, type Zoom } from '../store';
@@ -28,13 +29,13 @@ export function HistoryStrip({ view, names, open, toggle }: Props) {
   const history = useApp((s) => s.history);
   const items = stripEntries(history);
   return (
-    <aside className="history-strip" aria-label="History strip">
+    <aside className="history-strip" aria-label={t('history.strip')}>
       <button
         type="button"
         className="history-toggle"
-        aria-label="History"
+        aria-label={t('history.title')}
         aria-pressed={open}
-        title={open ? 'Hide the history' : 'Show the history'}
+        title={open ? t('history.hide_tip') : t('history.show_tip')}
         onClick={toggle}
       >
         <ScrollIcon />
@@ -71,8 +72,8 @@ function StripItem({ entry, view, names, newTurn }: { entry: Entry; view: GameVi
   return (
     <Row
       className={`strip-item stack-${plain ? stackIcon(plain) : 'card'}${newTurn ? ' strip-turn' : ''}${entry.undone ? ' undone' : ''}`}
-      aria-label={entry.undone ? `Undone: ${line}` : line}
-      title={`${entry.undone ? 'Undone: ' : ''}Turn ${String(entry.turn)}: ${line}`}
+      aria-label={entry.undone ? t('history.undone', { line }) : line}
+      title={entry.undone ? t('history.undone', { line: t('history.row', { n: entry.turn, line }) }) : t('history.row', { n: entry.turn, line })}
       onPointerEnter={(e) => {
         if (card && e.pointerType === 'mouse') {
           setZoom(zoom(card, e, false));

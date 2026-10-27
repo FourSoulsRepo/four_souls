@@ -62,7 +62,7 @@ func TestDistantAdmirationCancelled(t *testing.T) {
 		Players:   []engine.SituationPlayer{{Character: "isaac", Items: items("distant_admiration")}, {Character: "cain", Hand: items("bomb")}},
 		LootPlays: &plays,
 	})
-	tb.Activate(0, "distant_admiration", 0, foe, "bomb", "cancel")
+	tb.Activate(0, "distant_admiration", 0, foe, "bomb", "ask.cancel")
 	if tb.G.FreeLoot != 0 || tb.G.Turn.LootPlays != 1 || tb.G.Players[0].ExtraLootPlays != 0 {
 		t.Fatalf("free %d, loot plays %d + %d extra: the cancel leaves the plays as they were", tb.G.FreeLoot, tb.G.Turn.LootPlays, tb.G.Players[0].ExtraLootPlays)
 	}

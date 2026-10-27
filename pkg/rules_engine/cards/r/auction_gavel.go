@@ -1,9 +1,12 @@
 package r
 
-import (
-	"strconv"
+import engine "github.com/FourSoulsRepo/rules_engine"
 
-	engine "github.com/FourSoulsRepo/rules_engine"
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	auctionGavelBid       = engine.NewKey("card.auction_gavel.bid")
+	auctionGavelPass      = engine.NewKey("card.auction_gavel.pass")
+	auctionGavelBidForThe = engine.NewKey("card.auction_gavel.bid_for_the_shop_item")
 )
 
 // Auction Gavel (Active Treasure Card)
@@ -59,19 +62,19 @@ func auction() engine.Effect {
 	qs := make([]engine.Question, maxBids)
 	for i := range qs {
 		qs[i] = engine.Question{
-			Text: "Bid for the shop item?",
+			Text: auctionGavelBidForThe,
 			Player: func(c *engine.Ctx, a []int) engine.PlayerID {
 				next, _, _ := auctionState(c, a)
 				return next
 			},
-			Options: func(c *engine.Ctx, a []int) []string {
+			Options: func(c *engine.Ctx, a []int) []engine.Msg {
 				next, _, bid := auctionState(c, a)
 				if next == engine.NoPlayer {
 					return nil
 				}
-				out := []string{"pass"}
+				out := []engine.Msg{auctionGavelPass.Msg()}
 				for n := bid + 1; n <= c.G.Players[next].Cents; n++ {
-					out = append(out, "bid "+strconv.Itoa(n)+"¢")
+					out = append(out, auctionGavelBid.Msg(engine.N("n", n)))
 				}
 				return out
 			},

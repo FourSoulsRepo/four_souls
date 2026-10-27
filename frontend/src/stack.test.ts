@@ -88,7 +88,7 @@ describe('stackLine', () => {
   it('names whom an attack is against and who hits back (15.22)', () => {
     const roll = item({ kind: StackKind.roll, roll: 3, attack: true, target: { player: -1, object: 9 } });
     expect(stackLine(roll, view, names)).toBe('Attack: Ann rolls 3 against GAPER');
-    const rune = item({ kind: StackKind.roll, roll: 1, label: 'roll', roll_for: { card: 'blank_rune', index: 0 } });
+    const rune = item({ kind: StackKind.roll, roll: 1, label: { key: 'event.roll' }, roll_for: { card: 'blank_rune', index: 0 } });
     expect(stackLine(rune, view, names)).toBe('Ann rolls 1 for BLANK_RUNE');
     // A monster that died since: the item still names its card.
     const gone = item({ kind: StackKind.damage, amount: 1, attack: true, target: { player: -1, object: 77 }, target_card: 'fly' });
@@ -118,8 +118,7 @@ describe('stackParts', () => {
     ]);
     expect(stackParts(item({ kind: StackKind.damage, amount: 1, target: { player: 1, is_player: true } }), view, names)).toEqual([
       { text: 'Ann', role: 'player', player: 0 },
-      { text: ' deals ' },
-      { text: '1 damage to ' },
+      { text: ' deals 1 damage to ' },
       { text: 'Bo', role: 'target', player: 1 },
     ]);
   });

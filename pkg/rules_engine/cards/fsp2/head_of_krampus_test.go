@@ -5,7 +5,7 @@ import "testing"
 func TestHeadOfKrampus(t *testing.T) {
 	tb := armed(t, items("head_of_krampus"), "gurdy", "monstro")
 	tb.G.ForceRolls(5)
-	tb.Activate(0, "head_of_krampus", 0, "the rest in slot order")
+	tb.Activate(0, "head_of_krampus", 0, "ask.rest_in_slot_order")
 	if d := tb.G.Object(topID(tb, 0)).Damage; d != 1 {
 		t.Errorf("4-6: Gurdy damage = %d, want 1", d)
 	}

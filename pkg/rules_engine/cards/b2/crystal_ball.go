@@ -1,6 +1,9 @@
 package b2
 
-import engine "github.com/FourSoulsRepo/rules_engine"
+import (
+	engine "github.com/FourSoulsRepo/rules_engine"
+	"github.com/FourSoulsRepo/rules_engine/cards/cardkit"
+)
 
 // Crystal Ball (Active Treasure Card)
 //
@@ -23,7 +26,7 @@ var crystalBall = engine.CardDef{
 			Costs: []engine.Cost{engine.Tap()},
 			Effects: []engine.Effect{engine.Ask(func(c *engine.Ctx, a []int) {
 				c.G.Object(c.Source).Chosen = a[0] + 1
-			}, engine.Question{Text: "Which number?", Options: func(*engine.Ctx, []int) []string { return []string{"1", "2", "3", "4", "5", "6"} }})},
+			}, engine.Question{Text: cardkit.AskWhichNumber, Options: cardkit.DieFaces})},
 		},
 		{
 			Kind: engine.Triggered,

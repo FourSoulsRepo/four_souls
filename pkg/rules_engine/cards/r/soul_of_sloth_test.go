@@ -13,12 +13,12 @@ func TestSoulOfSloth(t *testing.T) {
 	})
 	tb.G.Turn.Purchases = 2
 	// Isaac: 3 items and Book of Sin make 4; Cain has the fewest.
-	tb.Do(engine.Intent{Player: 0, Kind: engine.IntentPurchase}, "treasure deck", foe)
+	tb.Do(engine.Intent{Player: 0, Kind: engine.IntentPurchase}, "ask.deck.treasure", foe)
 	settleAny(tb)
 	if s := tb.G.SoulValue(1); s != 1 {
 		t.Errorf("Cain's soul value = %d, want 1", s)
 	}
-	tb.Do(engine.Intent{Player: 0, Kind: engine.IntentPurchase}, "treasure deck")
+	tb.Do(engine.Intent{Player: 0, Kind: engine.IntentPurchase}, "ask.deck.treasure")
 	settleAny(tb)
 	if s := tb.G.SoulValue(1); s != 1 {
 		t.Errorf("it happens only once: Cain's soul value = %d", s)

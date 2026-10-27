@@ -28,7 +28,7 @@ var charmedKeeper = engine.CardDef{
 					them.Controller = ps[a[0]]
 					them.Do(engine.Roll(centsEqualToRoll()))
 				}
-			}, centsEqualToRoll(), engine.Question{Text: "Choose another player.", Options: func(c *engine.Ctx, _ []int) []string {
+			}, centsEqualToRoll(), engine.Question{Text: cardkit.AskChooseAnotherPlayer, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
 				return playerLabels(c.G, othersOfActive(c.G))
 			}})},
 		},

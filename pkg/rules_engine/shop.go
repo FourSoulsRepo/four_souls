@@ -37,7 +37,7 @@ func (g *Game) askPurchase() {
 			items = append(items, top)
 		}
 	}
-	labels := append(g.labels(items), "treasure deck")
+	labels := append(g.Labels(items), DeckOption(TreasureDeck))
 	g.ask(Choice{Purpose: ChoosePurchase, Player: g.Turn.Active, Rule: "R-SHOP-02", Objects: items, Deck: true}, labels)
 }
 

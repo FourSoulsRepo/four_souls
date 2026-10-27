@@ -56,7 +56,7 @@ Use options 1 and 4; images become a list.
    3. One path per copy: each copy has its own art.
    4. Other counts are a load error.
    5. Copy files: `<id>.webp`, `<id>-2.webp`, `<id>-3.webp`, …
-   6. File names come from the site slug, inside the set folder.
+   6. File names come from the site slug, inside the set folder (`en/b2/`).
    7. One card listed twice by the site is one card with both images.
    8. Example: Requiem's `r-eden` and `r-eden_2`.
 3. Reprints

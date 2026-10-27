@@ -15,7 +15,7 @@ func TestSleightOfHand(t *testing.T) {
 	}
 	reversed := slices.Clone(names)
 	slices.Reverse(reversed)
-	tb.Activate(0, "sleight_of_hand", 0, append([]string{"monster deck"}, reversed...)...)
+	tb.Activate(0, "sleight_of_hand", 0, append([]string{"ask.deck.monster"}, reversed...)...)
 	var got []string
 	for _, id := range tb.G.DeckTop(engine.MonsterDeck, 5) {
 		got = append(got, string(tb.G.Object(id).Card))
@@ -34,9 +34,9 @@ func TestSleightOfHandAsksOneOrder(t *testing.T) {
 	for tb.G.Prompt().Kind == engine.PromptPriority {
 		tb.Pass(int(tb.G.Prompt().Player))
 	}
-	tb.Choose("monster deck")
+	tb.Choose("ask.deck.monster")
 	w := tb.G.Prompt()
-	if w.Kind != engine.PromptOrder || w.Count != 5 || w.Text != "Put the cards back in any order" {
+	if w.Kind != engine.PromptOrder || w.Count != 5 || w.Text.String() != "ask.put_back" {
 		t.Fatalf("prompt = %+v, want an order of 5", w)
 	}
 	var shown []engine.ObjectID

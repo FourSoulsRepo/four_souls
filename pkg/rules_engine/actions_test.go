@@ -149,12 +149,12 @@ func TestPlayerOrdersSeveralReplacements(t *testing.T) {
 		if pr.Kind != PromptChoose || pr.Purpose != ChooseReplacement || pr.Player != 0 || len(pr.Options) != 2 {
 			t.Fatalf("prompt %+v; the affected player orders the replacements (R-ABIL-33)", pr)
 		}
-		if pr.Text != "Gaining 3¢: which card applies first?" {
+		if pr.Text.String() != "prompt.replacement_cents 3" {
 			t.Errorf("question %q; it names the gain (19.17)", pr.Text)
 		}
 		choice := 0
 		for i, o := range pr.Options {
-			if o == tc.first {
+			if g.Plain(o) == tc.first {
 				choice = i
 			}
 		}

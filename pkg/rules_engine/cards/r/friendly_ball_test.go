@@ -23,7 +23,7 @@ func TestFriendlyBall(t *testing.T) {
 	if rule := tb.Refused(0, "friendly_ball", 0); rule != "R-ABIL-07" {
 		t.Errorf("a card under it: the first ability is refused by %s", rule)
 	}
-	tb.Activate(0, "friendly_ball", 1, "slot 2")
+	tb.Activate(0, "friendly_ball", 1, "ask.slot 2")
 	if top(tb, 1) != "leech" {
 		t.Fatalf("slot 2 = %s, want the leech back", top(tb, 1))
 	}

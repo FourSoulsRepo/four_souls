@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { stepName, undoButton, type Entry, type Undo } from '../history';
+import { t } from '../i18n';
 import type { GameView } from '../protocol';
 import type { Names } from '../stack';
 import { seatOf, useApp } from '../store';
@@ -11,14 +12,10 @@ import './InfoPanels.css';
 export function TurnBadge({ view, names }: { view: GameView; names: Names }) {
   const { turn } = view;
   return (
-    <div className="turn-badge" role="status" aria-label="Turn">
-      {view.first_roll ? (
-        <>Before turn 1 · First player roll</>
-      ) : (
-        <>
-          Turn {turn.number} · {names.player(turn.active)} · {stepName(turn.step)}
-        </>
-      )}
+    <div className="turn-badge" role="status" aria-label={t('turn_badge.label')}>
+      {view.first_roll
+        ? t('turn_badge.first_roll')
+        : t('turn_badge.turn', { n: turn.number, player: names.player(turn.active), step: stepName(turn.step) })}
     </div>
   );
 }
@@ -44,21 +41,21 @@ export function HistoryPanel({ hide, name }: { hide: () => void; name: (p: numbe
     }
   }, [history.length]);
   return (
-    <aside className="history" aria-label="History">
+    <aside className="history" aria-label={t('history.title')}>
       <header>
-        <h2>History</h2>
+        <h2>{t('history.title')}</h2>
         {game?.rollback_mode === 'god' && (
-          <span className="history-mode" title="Any player may undo, at once, one move per press">
-            Godmode
+          <span className="history-mode" title={t('history.mode_god_tip')}>
+            {t('history.mode_god')}
           </span>
         )}
         {game?.rollback_mode === 'soft' && (
-          <span className="history-mode" title="The other players vote on a rollback; dice, damage, hidden cards and a turn's end stop it">
-            Soft rollback
+          <span className="history-mode" title={t('history.mode_soft_tip')}>
+            {t('history.mode_soft')}
           </span>
         )}
         <button type="button" onClick={hide}>
-          Hide
+          {t('history.hide')}
         </button>
       </header>
       {undo && <UndoButton undo={undo} disabled={waiting} />}
@@ -67,7 +64,7 @@ export function HistoryPanel({ hide, name }: { hide: () => void; name: (p: numbe
           <li
             key={e.key}
             className={rowClass(e)}
-            title={`${e.undone ? 'Undone: ' : ''}${e.turn > 0 ? `Turn ${String(e.turn)}: ${e.text}` : e.text}`}
+            title={rowTitle(e)}
             onPointerEnter={(ev) => {
               if (e.card && ev.pointerType === 'mouse') {
                 setZoom({ ref: e.card, touch: false, at: boxOf(ev.currentTarget) });
@@ -127,6 +124,12 @@ function UndoButton({ undo, disabled }: { undo: Undo; disabled: boolean }) {
       </button>
     </div>
   );
+}
+
+// rowTitle is a row's tooltip: its turn and words; an undone row says so.
+function rowTitle(e: Entry): string {
+  const line = e.turn > 0 ? t('history.row', { n: e.turn, line: e.text }) : e.text;
+  return e.undone ? t('history.undone', { line }) : line;
 }
 
 // rowClass marks turn lines, undone rows and rollback rows.

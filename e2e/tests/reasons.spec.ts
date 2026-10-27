@@ -7,6 +7,7 @@ import { startGame } from './game';
 import { appURL } from './server';
 import { shot } from './shot';
 import { activePage, click, turnAction } from './turn';
+import { tr } from './locale';
 
 const fast = () => `${appURL()}&anim=off`;
 
@@ -16,17 +17,17 @@ const card = (page: Page, id: number) => page.locator(`.card[data-zone="obj-${St
 const note = (page: Page) => page.locator('.aim-why');
 
 // blocked is the first hand card the server says this player can't
-// play now, with its reason.
+// play now, with its reason's key (ADR 021).
 async function blocked(page: Page): Promise<{ id: number; reason: string }> {
   return page.evaluate(() => {
     interface S {
-      game: { step: number; view: { players: { hand?: { id: number }[] }[] }; blocked?: { kind: number; object: number; reason: string }[] };
+      game: { step: number; view: { players: { hand?: { id: number }[] }[] }; blocked?: { kind: number; object: number; reason: { key: string } }[] };
       lobby: { table: { you: number } };
     }
     const s = (window as unknown as { fourSouls: { store: { getState: () => S } } }).fourSouls.store.getState();
     const hand = (s.game.view.players[s.lobby.table.you]?.hand ?? []).map((c) => c.id);
     const b = (s.game.blocked ?? []).find((x) => x.kind === 3 && hand.includes(x.object));
-    return { id: b?.object ?? -1, reason: b?.reason ?? '' };
+    return { id: b?.object ?? -1, reason: b?.reason.key ?? '' };
   });
 }
 
@@ -40,16 +41,16 @@ test("an unusable card's zoom and a click on it say why (15.29)", async ({ brows
 
   // Not their turn: the other player's loot waits for it.
   const b = await blocked(other);
-  expect(b.reason).toBe('Loot is played on your turn');
+  expect(b.reason).toBe('refuse.loot_your_turn');
   const loot = card(other, b.id);
   await loot.hover();
   const why = other.getByTestId('card-zoom').locator('.card-zoom-why');
-  await expect(why).toHaveText(b.reason);
+  await expect(why).toHaveText(tr(b.reason));
   await shot(other, 'zoom-why');
 
   // A click on it says the same where it was clicked, then fades.
   await loot.click();
-  await expect(note(other)).toHaveText(b.reason);
+  await expect(note(other)).toHaveText(tr(b.reason));
   await shot(other, 'why-click');
   await expect(note(other)).toHaveCount(0, { timeout: 5000 });
 
@@ -57,7 +58,7 @@ test("an unusable card's zoom and a click on it say why (15.29)", async ({ brows
   const attack = turnAction(other, 'Attack');
   await expect(attack).toBeDisabled();
   await attack.click({ force: true });
-  await expect(note(other)).toHaveText('Not your turn');
+  await expect(note(other)).toHaveText(tr('refuse.not_your_turn'));
 });
 
 test('"View board" hides a choice and brings it back (15.29)', async ({ browser }) => {
@@ -80,29 +81,29 @@ test('"View board" hides a choice and brings it back (15.29)', async ({ browser 
     const game = structuredClone(s.game);
     const you = s.lobby.table.you;
     const m = game.view.monsters.find((x) => x.top)?.top ?? { id: 0, card: '' };
-    game.view.waiting = { kind: 4, player: you, purpose: 1, options: [m.card] };
+    game.view.waiting = { kind: 4, player: you, purpose: 1, options: [{ key: 'ask.card', args: { card: { card: m.card } } }] };
     game.view.options = [{ object: m.id, player: 0 }];
     game.allowed = [{ player: you, kind: 4, choice: 0 }];
     s.receive({ type: 'update', data: { ...game, step: game.step + 1, events: [] } });
     return m.id;
   });
-  const dialog = corin.getByRole('dialog', { name: 'Choose what to attack' });
+  const dialog = corin.getByRole('dialog', { name: tr('choice.title.attack') });
   await expect(dialog).toBeVisible();
   // The board under it is dimmed and takes no clicks.
   await expect(corin.locator('.choice-backdrop')).toBeVisible();
   await expect(card(corin, monster).click({ trial: true, timeout: 500 })).rejects.toThrow();
   await shot(corin, 'choice-big');
 
-  await dialog.getByRole('button', { name: 'View board' }).click();
+  await dialog.getByRole('button', { name: tr('choice.view_board') }).click();
   await expect(dialog).toHaveCount(0);
-  const peek = corin.getByRole('group', { name: 'Viewing the board' });
-  await expect(peek).toContainText('Choose what to attack');
+  const peek = corin.getByRole('group', { name: tr('choice.viewing') });
+  await expect(peek).toContainText(tr('choice.title.attack'));
   // The target glows on the table and answers there.
   await expect(card(corin, monster)).toHaveClass(/hl-pick/);
   await card(corin, monster).click({ trial: true });
   await shot(corin, 'choice-view-board');
 
-  await peek.getByRole('button', { name: 'Back to the choice' }).click();
+  await peek.getByRole('button', { name: tr('choice.back') }).click();
   await expect(dialog).toBeVisible();
   await expect(peek).toHaveCount(0);
 });

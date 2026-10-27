@@ -1,6 +1,9 @@
 package b2
 
-import engine "github.com/FourSoulsRepo/rules_engine"
+import (
+	engine "github.com/FourSoulsRepo/rules_engine"
+	"github.com/FourSoulsRepo/rules_engine/cards/cardkit"
+)
 
 // Bum-Bo! (Passive Treasure Card)
 //
@@ -21,7 +24,7 @@ var bumBo = engine.CardDef{
 			return []engine.Action{{Kind: engine.ActAddCounters, Player: a.Player, Object: self, Amount: a.Amount}}
 		},
 	}},
-	Statics: []engine.Static{{Stat: engine.StatAttackRoll, Amount: 2, When: "first attack roll", Applies: func(g *engine.Game, self engine.ObjectID, p engine.PlayerID, _ engine.ObjectID) bool {
+	Statics: []engine.Static{{Stat: engine.StatAttackRoll, Amount: 2, When: cardkit.WhenFirstAttackRoll, Applies: func(g *engine.Game, self engine.ObjectID, p engine.PlayerID, _ engine.ObjectID) bool {
 		return bumBoLevel(g, self, p, 1) && g.Turn.AttackRolls == 0
 	}}, {Stat: engine.StatPlayerATK, Amount: 1, Applies: func(g *engine.Game, self engine.ObjectID, p engine.PlayerID, _ engine.ObjectID) bool {
 		return bumBoLevel(g, self, p, 10)

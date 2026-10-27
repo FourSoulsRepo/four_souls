@@ -66,11 +66,11 @@ describe('promptBanner', () => {
   it('covers choices, discards, orders and throws', () => {
     const at = (waiting: GameView['waiting']) => ({ ...view, waiting });
     expect(banner(at({ kind: PromptKind.choose, player: 0, purpose: 6 }), 0)).toMatchObject({ kind: 'choose', title: 'Choose a target' });
-    expect(banner(at({ kind: PromptKind.choose, player: 0, text: 'Pay 1¢?' }), 1)).toMatchObject({ title: 'Waiting for Ann', hint: 'Pay 1¢?' });
+    expect(banner(at({ kind: PromptKind.choose, player: 0, text: { key: 'card.the_mirror.pay_hp_down_to_1' } }), 1)).toMatchObject({ title: 'Waiting for Ann', hint: 'Pay HP down to 1?' });
     expect(banner(at({ kind: PromptKind.discard, player: 0, count: 1 }), 0)).toMatchObject({ kind: 'discard', title: 'Discard 1 loot card' });
     expect(banner(at({ kind: PromptKind.discard, player: 0, count: 2 }), 1)?.hint).toBe('Discard 2 loot cards');
     expect(banner(at({ kind: PromptKind.order, player: 0, purpose: 12 }), 0)).toMatchObject({ kind: 'order', title: 'Choose the card for the very bottom' });
-    const throwing = at({ kind: PromptKind.throw, player: 0, text: 'attack roll' });
+    const throwing = at({ kind: PromptKind.throw, player: 0, text: { key: 'event.attack_roll' } });
     expect(banner(throwing, 0)).toMatchObject({ kind: 'throw', title: 'Throw the dice', hint: 'For the attack roll' });
     expect(banner(throwing, 1)?.hint).toBe('Throw the dice for the attack roll');
   });
@@ -136,7 +136,7 @@ describe('activity', () => {
   const top = (it: Partial<StackItem>): GameView => ({ ...view, waiting: { kind: PromptKind.priority, player: 1 }, stack: [{ ...loot, ...it }] });
 
   it('says nothing before turn 1, while the first player is rolled for (15.43)', () => {
-    const rolling = { ...view, waiting: { kind: PromptKind.throw, player: 0, text: 'first player roll' }, first_roll: { round: 1, players: [0, 1] } };
+    const rolling = { ...view, waiting: { kind: PromptKind.throw, player: 0, text: { key: 'event.first_player_roll' } }, first_roll: { round: 1, players: [0, 1] } };
     expect(said(rolling)).toBeNull();
   });
 

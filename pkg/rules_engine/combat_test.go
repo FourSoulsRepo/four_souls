@@ -34,7 +34,7 @@ func choose(t *testing.T, g *Game, label string) {
 		t.Fatalf("prompt %+v, want a choice containing %q", p, label)
 	}
 	for i, o := range p.Options {
-		if o == label {
+		if g.Plain(o) == label {
 			if _, err := g.Apply(Intent{Player: p.Player, Kind: IntentChoose, Choice: i}); err != nil {
 				t.Fatal(err)
 			}
@@ -95,7 +95,7 @@ func TestAttackRollWaitsForTheThrow(t *testing.T) {
 	putMonster(g, 0, "gaper")
 	attack(t, g)
 	choose(t, g, "gaper")
-	if w := g.Prompt(); w.Kind != PromptThrow || w.Player != a || w.Text != "attack roll" {
+	if w := g.Prompt(); w.Kind != PromptThrow || w.Player != a || w.Text.String() != "event.attack_roll" {
 		t.Fatalf("prompt %+v; the attacker throws the attack roll (15.59)", w)
 	}
 	if top := g.Stack[len(g.Stack)-1]; top.Kind != StackRoll || top.Roll != 0 {
@@ -209,7 +209,7 @@ func TestAttackTheMonsterDeck(t *testing.T) {
 	g.Decks[MonsterDeck] = append(g.Decks[MonsterDeck], g.newObject("dummy", DeckZone(MonsterDeck), NoPlayer))
 	g.forcedRolls = []int{6}
 	attack(t, g)
-	choose(t, g, "monster deck")
+	choose(t, g, "ask.deck.monster")
 	if p := g.Prompt(); p.Purpose != ChooseMonsterSlot {
 		t.Fatalf("prompt %+v; the attacker picks the slot to cover (R-ATK-08)", p)
 	}
@@ -239,7 +239,7 @@ func TestUncoverNamesTheCoveredObject(t *testing.T) {
 	g.Decks[MonsterDeck] = append(g.Decks[MonsterDeck], g.newObject("dummy", DeckZone(MonsterDeck), NoPlayer))
 	g.forcedRolls = []int{6}
 	attack(t, g)
-	choose(t, g, "monster deck")
+	choose(t, g, "ask.deck.monster")
 	if _, err := g.Apply(Intent{Player: g.Turn.Active, Kind: IntentChoose, Choice: 0}); err != nil {
 		t.Fatal(err)
 	}

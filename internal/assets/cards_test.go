@@ -1,8 +1,10 @@
 package assets
 
 import (
+	"io/fs"
 	"os"
 	"path/filepath"
+	"slices"
 	"testing"
 
 	carddb "github.com/FourSoulsRepo/card_db"
@@ -57,5 +59,51 @@ func TestCardsFSEnvOverride(t *testing.T) {
 	}
 	if len(db.Refs()) != 1 {
 		t.Errorf("refs = %v", db.Refs())
+	}
+}
+
+// FOUR_SOULS_IMAGES lays a translator's own images over the card files
+// in every build mode (16.12). Reads never leave that folder.
+func TestCardsFSOwnImages(t *testing.T) {
+	if !Embedded {
+		t.Setenv(EnvCardsDir, filepath.Join("..", "..", "pkg", "card_db"))
+	}
+	outside := filepath.Join(t.TempDir(), "secret.webp")
+	own := t.TempDir()
+	write := func(name, data string) {
+		t.Helper()
+		p := filepath.Join(own, filepath.FromSlash(name))
+		if err := os.MkdirAll(filepath.Dir(p), 0o750); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(p, []byte(data), 0o600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	write("de/b2/the_d6.webp", "own de")
+	if err := os.WriteFile(outside, []byte("secret"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(outside, filepath.Join(own, "de", "b2", "isaac.webp")); err != nil {
+		t.Skip("no symbolic links here:", err)
+	}
+	t.Setenv(EnvImagesDir, own)
+	fsys := CardsFS()
+	if data, err := fs.ReadFile(fsys, "images/de/b2/the_d6.webp"); err != nil || string(data) != "own de" {
+		t.Errorf("own image: %q, %v", data, err)
+	}
+	if data, err := fs.ReadFile(fsys, "images/de/b2/isaac.webp"); err == nil {
+		t.Errorf("a link out of the folder was followed: %q", data)
+	}
+	if _, err := carddb.Load(fsys); err != nil {
+		t.Errorf("card data with own images: %v", err)
+	}
+	if !slices.Contains(carddb.ImageLangs(fsys), "de") {
+		t.Errorf("ImageLangs = %v, want de in it", carddb.ImageLangs(fsys))
+	}
+	// A folder that is not there changes nothing.
+	t.Setenv(EnvImagesDir, filepath.Join(own, "missing"))
+	if _, err := fs.ReadFile(CardsFS(), "images/de/b2/the_d6.webp"); err == nil {
+		t.Error("an image from a missing folder")
 	}
 }

@@ -178,11 +178,14 @@ export namespace main {
 	    set: string;
 	    type: string;
 	    name: string;
+	    names: Record<string, string>;
+	    translators: Record<string, Array<string>>;
 	    effects: string[];
 	    footnotes: carddb.Footnote[];
 	    stats: carddb.Stat[];
 	    rewards: carddb.Reward[];
 	    image: string;
+	    images: Record<string, string>;
 	
 	    static createFrom(source: any = {}) {
 	        return new CardInfo(source);
@@ -194,11 +197,14 @@ export namespace main {
 	        this.set = source["set"];
 	        this.type = source["type"];
 	        this.name = source["name"];
+	        this.names = source["names"];
+	        this.translators = source["translators"];
 	        this.effects = source["effects"];
 	        this.footnotes = this.convertValues(source["footnotes"], carddb.Footnote);
 	        this.stats = this.convertValues(source["stats"], carddb.Stat);
 	        this.rewards = this.convertValues(source["rewards"], carddb.Reward);
 	        this.image = source["image"];
+	        this.images = source["images"];
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {
@@ -428,6 +434,7 @@ export namespace settings {
 	    rejoin: Rejoin;
 	    host: HostSetup;
 	    lan_address: string;
+	    language: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new Settings(source);
@@ -445,6 +452,7 @@ export namespace settings {
 	        this.rejoin = this.convertValues(source["rejoin"], Rejoin);
 	        this.host = this.convertValues(source["host"], HostSetup);
 	        this.lan_address = source["lan_address"];
+	        this.language = source["language"];
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {

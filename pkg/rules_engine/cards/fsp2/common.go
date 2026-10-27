@@ -2,10 +2,20 @@ package fsp2
 
 import (
 	"slices"
-	"strconv"
 
 	engine "github.com/FourSoulsRepo/rules_engine"
 	"github.com/FourSoulsRepo/rules_engine/cards/cardkit"
+)
+
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	askCancelWhichLoot     = engine.NewKey("ask.cancel_which_loot_card")
+	askDeactivateWhichItem = engine.NewKey("ask.deactivate_which_item")
+	askGiveCardTo          = engine.NewKey("ask.give_card_to")
+	askGiveWhichItem       = engine.NewKey("ask.give_which_item")
+	askLookAtThe           = engine.NewKey("ask.look_at_the_top_cards")
+	askPutCardInSlot       = engine.NewKey("ask.put_card_in_slot")
+	askRerollWhichOf       = engine.NewKey("ask.reroll_which_of_their_items")
 )
 
 // Pieces many cards share; they live in cardkit for every set.
@@ -53,8 +63,8 @@ func reorderADeck(n int) engine.Effect {
 			return
 		}
 		c.G.SetDeckTop(c.Deck(a[0]), c.Order)
-	}, engine.DeckQuestion("Look at the top cards of which deck?"), engine.Question{
-		Text: cardkit.PutBackText,
+	}, engine.DeckQuestion(askLookAtThe), engine.Question{
+		Text: cardkit.AskPutBack,
 		Order: func(c *engine.Ctx, a []int) []engine.ObjectID {
 			if a[0] < 0 {
 				return nil
@@ -84,10 +94,10 @@ func rerollAnItem(yours bool) engine.Effect {
 		if ids := items(c); a[0] >= 0 && a[0] < len(ids) {
 			c.G.RerollItem(ids[a[0]])
 		}
-	}, engine.Question{Text: "Reroll which item?", Options: func(c *engine.Ctx, _ []int) []string {
-		var out []string
+	}, engine.Question{Text: cardkit.AskRerollWhichItem, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
+		var out []engine.Msg
 		for _, id := range items(c) {
-			out = append(out, string(c.G.Object(id).Card))
+			out = append(out, engine.CardOption(c.G.Object(id).Card))
 		}
 		return out
 	}})
@@ -118,11 +128,11 @@ var cancelALoot = engine.Ask(func(c *engine.Ctx, a []int) {
 	if ids := lootsOnStack(c); a[0] >= 0 && a[0] < len(ids) {
 		c.G.CancelStackItem(ids[a[0]])
 	}
-}, engine.Question{Text: "Cancel which loot card?", Options: func(c *engine.Ctx, _ []int) []string {
-	var out []string
+}, engine.Question{Text: askCancelWhichLoot, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
+	var out []engine.Msg
 	for _, id := range lootsOnStack(c) {
 		it, _ := c.G.StackItemByID(id)
-		out = append(out, string(it.Card))
+		out = append(out, engine.CardOption(it.Card))
 	}
 	return out
 }})
@@ -198,13 +208,13 @@ var damageAnotherThan = engine.Ask(func(c *engine.Ctx, a []int) {
 	if ts := otherTargets(c); a[0] >= 0 && a[0] < len(ts) {
 		c.G.DealDamageTo(ts[a[0]], 1, c.Controller, c.Source)
 	}
-}, engine.Question{Text: "Deal 1 damage to?", Options: func(c *engine.Ctx, _ []int) []string {
-	var out []string
+}, engine.Question{Text: cardkit.AskDeal1DamageTo, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
+	var out []engine.Msg
 	for _, t := range otherTargets(c) {
 		if t.IsPlayer {
 			out = append(out, playerLabel(c.G, t.Player))
 		} else {
-			out = append(out, string(c.G.Object(t.Object).Card))
+			out = append(out, engine.CardOption(c.G.Object(t.Object).Card))
 		}
 	}
 	return out
@@ -235,10 +245,10 @@ var eachPlayerDestroysASoul = engine.EffectFunc(func(c *engine.Ctx) {
 			if ids := c.G.DestroyableSouls(c.Controller); a[0] >= 0 && a[0] < len(ids) {
 				c.G.DestroyObject(c.Controller, ids[a[0]])
 			}
-		}, engine.Question{Text: "Destroy which soul?", Options: func(c *engine.Ctx, _ []int) []string {
-			var out []string
+		}, engine.Question{Text: cardkit.AskDestroyWhichSoul, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
+			var out []engine.Msg
 			for _, id := range c.G.DestroyableSouls(c.Controller) {
-				out = append(out, string(c.G.Object(id).Card))
+				out = append(out, engine.CardOption(c.G.Object(id).Card))
 			}
 			return out
 		}}))
@@ -260,12 +270,12 @@ var giveLootThenPlay = engine.Ask(func(c *engine.Ctx, a []int) {
 	}
 	c.G.PlayLootFree(c.Controller, id)
 }, engine.Question{
-	Text:   "Give which loot card?",
+	Text:   cardkit.AskGiveWhichLootCard,
 	Player: func(c *engine.Ctx, _ []int) engine.PlayerID { return c.Targets[0].Player },
-	Options: func(c *engine.Ctx, _ []int) []string {
-		var out []string
+	Options: func(c *engine.Ctx, _ []int) []engine.Msg {
+		var out []engine.Msg
 		for _, id := range c.G.Players[c.Targets[0].Player].Hand {
-			out = append(out, string(c.G.Object(id).Card))
+			out = append(out, engine.CardOption(c.G.Object(id).Card))
 		}
 		return out
 	},
@@ -280,12 +290,12 @@ var divorce = engine.EffectFunc(func(c *engine.Ctx) {
 	qs := make([]engine.Question, 0, cards+1)
 	for range cards {
 		qs = append(qs, engine.Question{
-			Text:   "Give which loot card?",
+			Text:   cardkit.AskGiveWhichLootCard,
 			Player: func(c *engine.Ctx, _ []int) engine.PlayerID { return c.Targets[0].Player },
-			Options: func(c *engine.Ctx, _ []int) []string {
-				var out []string
+			Options: func(c *engine.Ctx, _ []int) []engine.Msg {
+				var out []engine.Msg
 				for _, id := range c.G.Players[c.Targets[0].Player].Hand {
-					out = append(out, string(c.G.Object(id).Card))
+					out = append(out, engine.CardOption(c.G.Object(id).Card))
 				}
 				return out
 			},
@@ -311,12 +321,12 @@ var divorce = engine.EffectFunc(func(c *engine.Ctx) {
 			c.G.GainControl(c.Controller, ids[a[0]])
 		}
 	}, engine.Question{
-		Text:   "Give which item?",
+		Text:   askGiveWhichItem,
 		Player: func(c *engine.Ctx, _ []int) engine.PlayerID { return c.Targets[0].Player },
-		Options: func(c *engine.Ctx, _ []int) []string {
-			var out []string
+		Options: func(c *engine.Ctx, _ []int) []engine.Msg {
+			var out []engine.Msg
 			for _, id := range itemsOf(c.G, c.Targets[0].Player) {
-				out = append(out, string(c.G.Object(id).Card))
+				out = append(out, engine.CardOption(c.G.Object(id).Card))
 			}
 			return out
 		},
@@ -329,15 +339,15 @@ var rerollRollersItem = engine.Ask(func(c *engine.Ctx, a []int) {
 	if ids := rerollable(c.G, c.EventPlayer); a[0] >= 0 && a[0] < len(ids) {
 		c.G.RerollItem(ids[a[0]])
 	}
-}, engine.Question{Text: "Reroll which of their items?", Options: func(c *engine.Ctx, _ []int) []string {
-	var out []string
+}, engine.Question{Text: askRerollWhichOf, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
+	var out []engine.Msg
 	for _, id := range rerollable(c.G, c.EventPlayer) {
-		out = append(out, string(c.G.Object(id).Card))
+		out = append(out, engine.CardOption(c.G.Object(id).Card))
 	}
 	if len(out) == 0 {
 		return nil
 	}
-	return append(out, "none")
+	return append(out, engine.AskNone.Msg())
 }})
 
 func rerollable(g *engine.Game, p engine.PlayerID) []engine.ObjectID {
@@ -359,15 +369,15 @@ var deactivateAnItem = engine.Ask(func(c *engine.Ctx, a []int) {
 	if ids := chargedItems(c.G); a[0] >= 0 && a[0] < len(ids) {
 		c.G.Object(ids[a[0]]).Charged = false
 	}
-}, engine.Question{Text: "Deactivate which item?", Options: func(c *engine.Ctx, _ []int) []string {
-	var out []string
+}, engine.Question{Text: askDeactivateWhichItem, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
+	var out []engine.Msg
 	for _, id := range chargedItems(c.G) {
-		out = append(out, string(c.G.Object(id).Card))
+		out = append(out, engine.CardOption(c.G.Object(id).Card))
 	}
 	if len(out) == 0 {
 		return nil
 	}
-	return append(out, "none")
+	return append(out, engine.AskNone.Msg())
 }})
 
 func chargedItems(g *engine.Game) []engine.ObjectID {
@@ -413,6 +423,11 @@ func clearStoredRoll(g *engine.Game, self engine.ObjectID) {
 	g.Boosts = kept
 }
 
+// cardArgs are a question's values: the card it is about.
+func cardArgs(card engine.CardRef) func(*engine.Ctx, []int) []engine.Arg {
+	return func(*engine.Ctx, []int) []engine.Arg { return []engine.Arg{engine.CardArg("card", card)} }
+}
+
 // revealGiveCurses: reveal the top 6 monster cards; each curse goes to a
 // player of the controller's choice; the rest go to the bottom.
 var revealGiveCurses = engine.EffectFunc(func(c *engine.Ctx) {
@@ -430,9 +445,9 @@ var revealGiveCurses = engine.EffectFunc(func(c *engine.Ctx) {
 	}
 	qs := make([]engine.Question, 0, len(curses))
 	for _, id := range curses {
-		card := string(c.G.Object(id).Card)
-		qs = append(qs, engine.Question{Text: "Give " + card + " to which player?", Subject: func(*engine.Ctx, []int) engine.ObjectID { return id }, Options: func(c *engine.Ctx, _ []int) []string {
-			var out []string
+		card := c.G.Object(id).Card
+		qs = append(qs, engine.Question{Text: askGiveCardTo, Args: cardArgs(card), Subject: func(*engine.Ctx, []int) engine.ObjectID { return id }, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
+			var out []engine.Msg
 			for _, p := range livingPlayers(c.G, engine.NoPlayer) {
 				out = append(out, playerLabel(c.G, p))
 			}
@@ -535,11 +550,11 @@ var revealTwoBosses = engine.EffectFunc(func(c *engine.Ctx) {
 	}
 	qs := make([]engine.Question, 0, len(bosses))
 	for _, id := range bosses {
-		card := string(c.G.Object(id).Card)
-		qs = append(qs, engine.Question{Text: "Put " + card + " in which monster slot?", Subject: func(*engine.Ctx, []int) engine.ObjectID { return id }, Options: func(c *engine.Ctx, _ []int) []string {
-			var out []string
+		card := c.G.Object(id).Card
+		qs = append(qs, engine.Question{Text: askPutCardInSlot, Args: cardArgs(card), Subject: func(*engine.Ctx, []int) engine.ObjectID { return id }, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
+			var out []engine.Msg
 			for _, i := range freeSlots(c.G) {
-				out = append(out, "slot "+strconv.Itoa(i+1))
+				out = append(out, engine.SlotOption(i+1, ""))
 			}
 			return out
 		}})

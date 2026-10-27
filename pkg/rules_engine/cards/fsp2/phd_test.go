@@ -8,7 +8,7 @@ import (
 func TestPHD(t *testing.T) {
 	tb := table(t, seat("isaac", "phd", "mystery_sack"), seat("cain"))
 	tb.G.ForceRolls(2)
-	tb.Activate(0, "mystery_sack", 0, "+1") // a 2 becomes a 3, once (R-DICE-10)
+	tb.Activate(0, "mystery_sack", 0, "ask.plus_one") // a 2 becomes a 3, once (R-DICE-10)
 	if c := tb.G.Players[0].Cents; c != 4 {
 		t.Errorf("cents = %d: the sack's 3 gives 4¢", c)
 	}
@@ -24,7 +24,7 @@ func TestPHDAnswersAreNotCards(t *testing.T) {
 		t.Fatal("no question: the roll should ask")
 	}
 	got := tb.Options()
-	if want := []string{"+1", "-1", "No"}; !slices.Equal(got, want) {
+	if want := []string{"ask.plus_one", "ask.minus_one", "ask.no"}; !slices.Equal(got, want) {
 		t.Fatalf("options = %v, want %v", got, want)
 	}
 	for _, s := range sets {

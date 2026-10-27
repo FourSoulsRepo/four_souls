@@ -1,6 +1,14 @@
 package b2
 
-import engine "github.com/FourSoulsRepo/rules_engine"
+import (
+	engine "github.com/FourSoulsRepo/rules_engine"
+	"github.com/FourSoulsRepo/rules_engine/cards/cardkit"
+)
+
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	wizoobWhoDestroysA = engine.NewKey("card.wizoob.who_destroys_a_soul")
+)
 
 // Wizoob (Basic Monster Card)
 //
@@ -19,21 +27,21 @@ var wizoob = engine.CardDef{
 			Text:    "When this dies, the active player chooses a player. That player destroys a soul they control.",
 			Takes:   engine.TakesOthers,
 			Trigger: engine.WhenThisDies(),
-			Effects: []engine.Effect{engine.Ask(wizoobDestroy, pickAPlayer("Who destroys a soul?"), wizoobSoul)},
+			Effects: []engine.Effect{engine.Ask(wizoobDestroy, pickAPlayer(wizoobWhoDestroysA), wizoobSoul)},
 		},
 	},
 }
 
 var wizoobSoul = engine.Question{
-	Text:   "Destroy which of your souls?",
+	Text:   cardkit.AskDestroyWhichOfYourSouls,
 	Player: func(c *engine.Ctx, a []int) engine.PlayerID { return livingPlayers(c.G, engine.NoPlayer)[a[0]] },
-	Options: func(c *engine.Ctx, a []int) []string {
+	Options: func(c *engine.Ctx, a []int) []engine.Msg {
 		if a[0] < 0 {
 			return nil
 		}
-		var out []string
+		var out []engine.Msg
 		for _, id := range c.G.DestroyableSouls(livingPlayers(c.G, engine.NoPlayer)[a[0]]) {
-			out = append(out, string(c.G.Object(id).Card))
+			out = append(out, engine.CardOption(c.G.Object(id).Card))
 		}
 		return out
 	},

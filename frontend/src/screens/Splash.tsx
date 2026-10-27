@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { getNotice, openExternal, type NoticeLine, type NoticePart } from '../bridge';
+import { t } from '../i18n';
 import './Splash.css';
 
 // How long the fan-game notice stays on screen (L-01). Tests on the
@@ -35,7 +36,7 @@ export function Splash({ onDone }: Props) {
 
   return (
     <div className="splash">
-      <h1>Four Souls</h1>
+      <h1>{t('app.title')}</h1>
       <div className="splash-notice">
         {notice.map((line) => (
           <p key={lineKey(line)}>

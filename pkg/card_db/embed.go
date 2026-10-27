@@ -20,7 +20,7 @@ func Embedded() (fs.FS, bool) {
 }
 
 // union serves images/... from the images FS and everything else from data.
-// The images FS has no images/ prefix: images/b2/x.webp is b2/x.webp there.
+// The images FS has no images/ prefix: images/en/b2/x.webp is en/b2/x.webp there.
 type union struct {
 	data   fs.FS
 	images fs.FS // nil when images are not embedded

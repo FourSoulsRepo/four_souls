@@ -1,6 +1,9 @@
 package b2
 
-import engine "github.com/FourSoulsRepo/rules_engine"
+import (
+	engine "github.com/FourSoulsRepo/rules_engine"
+	"github.com/FourSoulsRepo/rules_engine/cards/cardkit"
+)
 
 // Mom’s Eye (Basic Monster Card)
 //
@@ -22,7 +25,7 @@ var momsEye = engine.CardDef{
 				if ps := livingPlayers(c.G, engine.NoPlayer); a[0] >= 0 && a[0] < len(ps) {
 					c.G.LookAt(c.Controller, c.G.Players[ps[a[0]]].Hand...)
 				}
-			}, pickAPlayer("Look at whose hand?"))},
+			}, pickAPlayer(cardkit.AskLookAtWhoseHand))},
 		},
 	},
 }

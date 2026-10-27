@@ -1,6 +1,9 @@
 package r
 
-import engine "github.com/FourSoulsRepo/rules_engine"
+import (
+	engine "github.com/FourSoulsRepo/rules_engine"
+	"github.com/FourSoulsRepo/rules_engine/cards/cardkit"
+)
 
 // Double Treasure! (Good Event Card)
 //
@@ -22,7 +25,7 @@ var doubleTreasure = engine.CardDef{
 			them := *c
 			them.Controller = ps[a[0]]
 			them.Do(engine.GainTreasure(1))
-		}, engine.Question{Text: "Choose another player.", Options: func(c *engine.Ctx, _ []int) []string {
+		}, engine.Question{Text: cardkit.AskChooseAnotherPlayer, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
 			return playerLabels(c.G, othersOfActive(c.G))
 		}})},
 	}},

@@ -2,6 +2,11 @@ package g2
 
 import engine "github.com/FourSoulsRepo/rules_engine"
 
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	theLostRechargeWhichCharacter = engine.NewKey("card.the_lost.recharge_which_character")
+)
+
 // The Lost (Character Card)
 //
 //	{Tap Effect}Play an additional loot card this turn.
@@ -25,12 +30,12 @@ var theLost = engine.CardDef{
 				if ps := livingPlayers(c.G, engine.NoPlayer); a[0] >= 0 && a[0] < len(ps) {
 					c.G.Recharge(c.G.Players[ps[a[0]]].Character)
 				}
-			}, engine.Question{Text: "Recharge which character?", Options: func(c *engine.Ctx, _ []int) []string {
-				var out []string
+			}, engine.Question{Text: theLostRechargeWhichCharacter, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
+				var out []engine.Msg
 				for _, p := range livingPlayers(c.G, engine.NoPlayer) {
-					out = append(out, string(c.G.Object(c.G.Players[p].Character).Card))
+					out = append(out, engine.CardOption(c.G.Object(c.G.Players[p].Character).Card))
 				}
-				return append(out, "none")
+				return append(out, engine.AskNone.Msg())
 			}})},
 		},
 	},

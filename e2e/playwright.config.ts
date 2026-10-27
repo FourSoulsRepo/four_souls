@@ -1,7 +1,8 @@
 // End-to-end UI tests (ADR 008). Vite serves the frontend with fake
 // Wails bindings (?fake), so no Wails window is needed; network play
 // runs against the real Go server.
-// SCREENSHOTS=1 also saves each screen into .cache/screenshots/.
+// SCREENSHOTS=1 also saves each screen into .cache/screenshots/;
+// LOCALE=qps runs the pages in that language (16.2).
 import { defineConfig } from '@playwright/test';
 import { serverPorts } from './tests/ports';
 
@@ -30,8 +31,9 @@ export default defineConfig({
     {
       command: `npx vite --host 127.0.0.1 --port ${port} --strictPort`,
       cwd: '../frontend',
-      // No file watching: see frontend/vite.config.ts.
-      env: { FOUR_SOULS_E2E: '1' },
+      // No file watching: see frontend/vite.config.ts. LOCALE: the
+      // language fresh fake settings start in (tests/locale.ts).
+      env: { FOUR_SOULS_E2E: '1', VITE_LOCALE: process.env.LOCALE ?? '' },
       url: `http://127.0.0.1:${port}`,
       reuseExistingServer: false,
     },

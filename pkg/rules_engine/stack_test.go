@@ -42,7 +42,7 @@ func resolved(ev []Event) []string {
 	var out []string
 	for _, e := range ev {
 		if e.Kind == EvStackResolved {
-			out = append(out, e.Text)
+			out = append(out, e.Label.String())
 		}
 	}
 	return out
@@ -52,8 +52,8 @@ func TestStackIsLastInFirstOut(t *testing.T) {
 	g := toAction(t, 3)
 	a := g.Turn.Active
 	b := g.next(a)
-	g.push(StackItem{Kind: StackRoll, Roll: 3, Controller: a, Label: "first"})
-	g.push(StackItem{Kind: StackRoll, Roll: 3, Controller: b, Label: "second"})
+	g.push(StackItem{Kind: StackRoll, Roll: 3, Controller: a, Label: eventRoll.Msg()})
+	g.push(StackItem{Kind: StackRoll, Roll: 3, Controller: b, Label: eventAttackRoll.Msg()})
 
 	// Priority starts with the controller of the newest item (R-PRIO-03).
 	if p := g.Prompt(); p.Player != b {
@@ -63,8 +63,8 @@ func TestStackIsLastInFirstOut(t *testing.T) {
 	for range 3 {
 		order = append(order, resolved(pass(t, g))...)
 	}
-	if len(order) != 1 || order[0] != "second" {
-		t.Fatalf("after one round of passes resolved %v, want [second] (R-STACK-02)", order)
+	if len(order) != 1 || order[0] != "event.attack_roll" {
+		t.Fatalf("after one round of passes resolved %v, want the newest first (R-STACK-02)", order)
 	}
 	// After a resolution priority starts with the active player (R-STACK-04).
 	if p := g.Prompt(); p.Player != a {
@@ -73,8 +73,8 @@ func TestStackIsLastInFirstOut(t *testing.T) {
 	for range 3 {
 		order = append(order, resolved(pass(t, g))...)
 	}
-	if len(order) != 2 || order[1] != "first" {
-		t.Fatalf("resolved %v, want [second first]", order)
+	if len(order) != 2 || order[1] != "event.roll" {
+		t.Fatalf("resolved %v, want the attack roll, then the roll", order)
 	}
 	// Empty stack in the action phase: back to the active player (R-TURN-09).
 	if !g.inOpenActionPhase() || g.Prompt().Player != a {
@@ -84,7 +84,7 @@ func TestStackIsLastInFirstOut(t *testing.T) {
 
 func TestEveryonePassesBeforeResolution(t *testing.T) {
 	g := toAction(t, 4)
-	g.push(StackItem{Kind: StackRoll, Roll: 3, Controller: g.Turn.Active, Label: "x"})
+	g.push(StackItem{Kind: StackRoll, Roll: 3, Controller: g.Turn.Active, Label: eventRoll.Msg()})
 	for i := range 3 {
 		if r := resolved(pass(t, g)); len(r) != 0 {
 			t.Fatalf("resolved after %d of 4 passes (R-STACK-03)", i+1)
@@ -191,7 +191,7 @@ func TestOnlyTheActivePlayerHasALootPlay(t *testing.T) {
 
 func TestRollGoesOnTheStack(t *testing.T) {
 	g := toAction(t, 2)
-	g.roll(g.Turn.Active, "test")
+	g.roll(g.Turn.Active, eventRoll.Msg())
 	g.run()
 	throwPending(t, g)
 	if len(g.Stack) != 1 || g.Stack[0].Kind != StackRoll || g.Stack[0].Roll < 1 || g.Stack[0].Roll > 6 {
@@ -204,9 +204,9 @@ func TestNoValueBeforeTheThrow(t *testing.T) {
 	a := g.Turn.Active
 	b := g.next(a)
 	g.ForceRolls(4)
-	g.roll(a, "test")
+	g.roll(a, eventRoll.Msg())
 	g.run()
-	if w := g.Prompt(); w.Kind != PromptThrow || w.Player != a || w.Text != "test" {
+	if w := g.Prompt(); w.Kind != PromptThrow || w.Player != a || w.Text.String() != "event.roll" {
 		t.Fatalf("prompt %+v; the roller throws before anyone acts (15.59)", w)
 	}
 	if g.Stack[0].Roll != 0 || len(g.forcedRolls) != 1 {
@@ -227,7 +227,7 @@ func TestNoValueBeforeTheThrow(t *testing.T) {
 	if g.Stack[0].Roll != 4 {
 		t.Errorf("roll %d; the forced roll decides the value", g.Stack[0].Roll)
 	}
-	if !hasEvent(ev, EvDiceRolled, 4, "test") {
+	if !hasEvent(ev, EvDiceRolled, 4, "") {
 		t.Errorf("events %+v; the throw rolls a 4", ev)
 	}
 	if w := g.Prompt(); w.Kind != PromptPriority || w.Player != a {
@@ -244,7 +244,7 @@ func TestRerollAsksTheRoller(t *testing.T) {
 	pass(t, g) // a passes; b rerolls a's roll
 	g.ForceRolls(5)
 	activate(t, g, b, d6, 0)
-	choose(t, g, "roll of 3")
+	choose(t, g, "ask.roll_of 3")
 	for g.Prompt().Kind == PromptPriority { // no throwing helpers here
 		if _, err := g.Apply(Intent{Player: g.Prompt().Player, Kind: IntentPass}); err != nil {
 			t.Fatal(err)
@@ -261,7 +261,7 @@ func TestRerollAsksTheRoller(t *testing.T) {
 
 func TestRollGoneBeforeItsThrow(t *testing.T) {
 	g := toAction(t, 2)
-	id := g.roll(g.Turn.Active, "test")
+	id := g.roll(g.Turn.Active, eventRoll.Msg())
 	g.CancelStackItem(id)
 	g.run()
 	if w := g.Prompt(); w.Kind != PromptPriority {

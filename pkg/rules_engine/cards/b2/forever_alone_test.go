@@ -25,7 +25,7 @@ func TestForeverAloneSteals(t *testing.T) {
 func TestForeverAloneLooksAtADeck(t *testing.T) {
 	tb := table(t, seat("blue_baby", "forever_alone"), seat("cain"))
 	top := tb.G.Object(tb.G.DeckTop(engine.TreasureDeck, 1)[0]).Card
-	ev := tb.Activate(0, "forever_alone", 0, lookTop, "treasure deck")
+	ev := tb.Activate(0, "forever_alone", 0, lookTop, "ask.deck.treasure")
 	saw := false
 	for _, e := range ev {
 		if e.Kind == engine.EvLookedAt && e.Player == 0 && e.Card == top && e.Private {

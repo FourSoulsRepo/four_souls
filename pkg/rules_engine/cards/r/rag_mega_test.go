@@ -15,7 +15,7 @@ func TestRagMega(t *testing.T) {
 	})
 	hurt(tb, 0, 1)
 	tb.G.ForceRolls(6)
-	tb.Do(engine.Intent{Player: 0, Kind: engine.IntentAttack}, "rag_mega", "bomb", "player 3 (samson)", "none")
+	tb.Do(engine.Intent{Player: 0, Kind: engine.IntentAttack}, "rag_mega", "bomb", "player 3 (samson)", "ask.none")
 	if handHas(tb.G, 1, "bomb") {
 		t.Error("Cain discards when the attack is declared")
 	}

@@ -13,6 +13,7 @@ import { expect, test } from './fixtures';
 import { startGame } from './game';
 import { serverPort } from './server';
 import { enabled, endTurnButton, endTurnQuestion, passButton, reachable, seen, throwButton, turnAction, type Seen } from './turn';
+import { tr, trRe } from './locale';
 
 const maxTurns = Number(process.env.GAME_TURNS ?? 300);
 // stallMs: no step for this long fails the game.
@@ -89,7 +90,7 @@ function watch(page: Page, who: string, problems: string[]): void {
 // everySet checks every card set on the host form: startGame leaves
 // only the Base Game.
 async function everySet(host: Page): Promise<void> {
-  const sets = host.getByRole('group', { name: 'Card sets' }).getByRole('checkbox');
+  const sets = host.getByRole('group', { name: tr('host.sets') }).getByRole('checkbox');
   for (const set of await sets.all()) {
     if (await set.isEnabled()) {
       await set.check();
@@ -109,9 +110,9 @@ async function move(page: Page, s: Seen, rnd: Rnd): Promise<string | null> {
     await roll.click();
     return 'throw';
   }
-  const discard = page.getByRole('dialog', { name: 'Discard', exact: true });
+  const discard = page.getByRole('dialog', { name: tr('discard.label'), exact: true });
   if (await discard.isVisible()) {
-    const done = discard.getByRole('button', { name: /^Discard/ });
+    const done = discard.getByRole('button', { name: new RegExp(`^${trRe('discard.button').source}`) });
     for (let i = 0; i < 12 && !(await enabled(done)); i++) {
       const card = one(rnd, await discard.locator('.card.hl-act').all());
       if (!card) {
@@ -127,12 +128,12 @@ async function move(page: Page, s: Seen, rnd: Rnd): Promise<string | null> {
   }
   const look = page.locator('.choice.look');
   if (await look.isVisible()) {
-    await look.getByRole('button', { name: 'OK' }).click();
+    await look.getByRole('button', { name: tr('look.ok') }).click();
     return 'look';
   }
   const order = page.locator('.choice.order');
   if (await order.isVisible()) {
-    const done = order.getByRole('button', { name: 'Put back' });
+    const done = order.getByRole('button', { name: tr('order.put_back') });
     for (let i = 0; i < 12 && !(await enabled(done)); i++) {
       const card = one(rnd, await order.locator('.card.hl-pick').all());
       if (!card) {
@@ -149,7 +150,7 @@ async function move(page: Page, s: Seen, rnd: Rnd): Promise<string | null> {
   const menu = page.getByRole('menu');
   if (await menu.isVisible()) {
     const item = one(rnd, await menu.getByRole('menuitem').filter({ hasNotText: 'Cancel' }).all());
-    await (item ?? menu.getByRole('menuitem', { name: 'Cancel' })).click();
+    await (item ?? menu.getByRole('menuitem', { name: tr('actions.cancel') })).click();
     return 'menu';
   }
   // End turn asks while plays are left (V-46): mostly yes, sometimes no.
@@ -443,7 +444,7 @@ test.describe('whole random games', () => {
       try {
         const r = await play(pages, names, problems, mulberry32(seed));
         for (const page of pages) {
-          await expect(page.getByRole('dialog', { name: 'Game over' })).toBeVisible();
+          await expect(page.getByRole('dialog', { name: tr('over.title') })).toBeVisible();
         }
         const line = `${String(players)} players, seed ${String(seed)}: ${r.seconds.toFixed(0)} s, ${String(r.turns)} turns, ${String(r.steps)} steps, ${String(r.moves)} moves`;
         console.log(line);

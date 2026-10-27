@@ -2,6 +2,11 @@ package r
 
 import engine "github.com/FourSoulsRepo/rules_engine"
 
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	lustForBloodWhichPlayerMust = engine.NewKey("card.lust_for_blood.which_player_must_be_attacked")
+)
+
 // Lust For Blood! (Good Event Card)
 //
 //	Choose a player. You must make an additional attack against them. They have 4+{DC} for the attack.
@@ -26,7 +31,7 @@ var lustForBlood = engine.CardDef{
 				c.G.ForceAttacks(1, false)
 				c.G.Turn.MustAttack = c.G.Players[p].Character
 				c.G.GivePenaltyItem(p, c.G.Turn.Active)
-			}, engine.Question{Text: "Which player must be attacked?", Options: func(c *engine.Ctx, _ []int) []string {
+			}, engine.Question{Text: lustForBloodWhichPlayerMust, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
 				return playerLabels(c.G, othersInOrder(c))
 			}})},
 		},

@@ -8,7 +8,7 @@ import (
 
 func TestDamocles(t *testing.T) {
 	tb := setup(t, engine.SituationSetup{Players: []engine.SituationPlayer{{Character: "isaac", Items: []engine.CardRef{"damocles"}, Cents: 10}, seat("cain")}})
-	tb.Do(engine.Intent{Player: 0, Kind: engine.IntentPurchase}, "treasure deck")
+	tb.Do(engine.Intent{Player: 0, Kind: engine.IntentPurchase}, "ask.deck.treasure")
 	if got := len(tb.G.Players[0].InPlay); got != 3 {
 		t.Errorf("items = %d, want Damocles + 2 treasures", got)
 	}

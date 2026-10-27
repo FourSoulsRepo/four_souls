@@ -94,5 +94,20 @@ func (g *Game) CheckInvariants() error {
 	if !g.Over && g.Waiting.Kind == PromptNone {
 		return fmt.Errorf("the game waits for nothing")
 	}
+	return g.checkKeys()
+}
+
+// checkKeys: every line the state shows a player has a declared key
+// (ADR 021): a key written as a bare string in a card is not one.
+func (g *Game) checkKeys() error {
+	msgs := append([]Msg{g.Waiting.Text}, g.Waiting.Options...)
+	for _, it := range g.Stack {
+		msgs = append(msgs, it.Label)
+	}
+	for _, m := range msgs {
+		if !m.IsZero() && !Declared(m.Key) {
+			return fmt.Errorf("message key %q is not declared with NewKey", m.Key)
+		}
+	}
 	return nil
 }

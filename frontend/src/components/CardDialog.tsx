@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { abilityLine } from '../cards';
+import { t } from '../i18n';
 import { Card } from './Card';
 import './Actions.css';
 
@@ -64,7 +65,7 @@ export function CardDialog({
           <div className="ability-buttons">
             {buttons}
             <button type="button" className="ability-cancel" onClick={onCancel}>
-              Cancel
+              {t('actions.cancel')}
             </button>
           </div>
         </div>

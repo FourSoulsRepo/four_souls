@@ -4,8 +4,11 @@ package rulesengine
 // controller while it resolves. Options gets the answers so far and
 // returns the option labels; no options skips the question (answer -1).
 type Question struct {
-	Text    string
-	Options func(c *Ctx, answers []int) []string
+	// Text is the question's key; its words are in en.json (ADR 021).
+	Text Key
+	// Args, if set, are the question's values.
+	Args    func(c *Ctx, answers []int) []Arg
+	Options func(c *Ctx, answers []int) []Msg
 	// Player, if set, is who answers; by default the controller.
 	Player func(c *Ctx, answers []int) PlayerID
 	// Random: nobody answers; the game picks an option at random
@@ -131,7 +134,7 @@ func (g *Game) continueAsk(a *Asking) {
 		}
 		if q.Random {
 			i := g.RNG.Intn(len(opts))
-			g.emit(Event{Kind: EvRandomPick, Player: a.Controller, Amount: i, Text: opts[i]})
+			g.emit(Event{Kind: EvRandomPick, Player: a.Controller, Amount: i, Label: opts[i]})
 			a.Answers = append(a.Answers, i)
 			continue
 		}
@@ -139,7 +142,7 @@ func (g *Game) continueAsk(a *Asking) {
 		if q.Player != nil {
 			who = q.Player(c, a.Answers)
 		}
-		ch := Choice{Purpose: ChooseAnswer, Player: who, Rule: "R-ABIL-05", Ask: a, Question: q.Text}
+		ch := Choice{Purpose: ChooseAnswer, Player: who, Rule: "R-ABIL-05", Ask: a, Question: q.msg(c, a.Answers)}
 		if q.Subject != nil {
 			ch.Subject = q.Subject(c, a.Answers)
 		}
@@ -171,8 +174,9 @@ func (g *Game) askOrder(a *Asking, q Question, c *Ctx) bool {
 	if q.Player != nil {
 		who = q.Player(c, a.Answers)
 	}
-	g.Choice = &Choice{Purpose: ChooseOrder, Player: who, Rule: "R-ABIL-05", Ask: a, Question: q.Text, Objects: cards}
-	g.Waiting = Prompt{Kind: PromptOrder, Player: who, Count: len(cards), Purpose: ChooseOrder, Text: q.Text}
+	text := q.msg(c, a.Answers)
+	g.Choice = &Choice{Purpose: ChooseOrder, Player: who, Rule: "R-ABIL-05", Ask: a, Question: text, Objects: cards}
+	g.Waiting = Prompt{Kind: PromptOrder, Player: who, Count: len(cards), Purpose: ChooseOrder, Text: text}
 	return true
 }
 
@@ -190,13 +194,21 @@ func (g *Game) answerAsk(c Choice, i int) {
 	g.continueAsk(c.Ask)
 }
 
+// msg is the question with its values.
+func (q Question) msg(c *Ctx, answers []int) Msg {
+	if q.Args == nil {
+		return q.Text.Msg()
+	}
+	return q.Text.Msg(q.Args(c, answers)...)
+}
+
 // DeckQuestion asks for a deck ("a deck"); the options are the decks in
 // play. Read the answer with c.Deck.
-func DeckQuestion(text string) Question {
-	return Question{Text: text, Options: func(c *Ctx, _ []int) []string {
-		var out []string
+func DeckQuestion(text Key) Question {
+	return Question{Text: text, Options: func(c *Ctx, _ []int) []Msg {
+		var out []Msg
 		for _, d := range c.G.DecksInPlay() {
-			out = append(out, d.String()+" deck")
+			out = append(out, DeckOption(d))
 		}
 		return out
 	}}
@@ -207,9 +219,9 @@ func (c *Ctx) Deck(answer int) DeckKind { return c.G.DecksInPlay()[answer] }
 
 // HandQuestion asks the controller for a card in their hand. Read the
 // answer with c.HandCard.
-func HandQuestion(text string) Question {
-	return Question{Text: text, Options: func(c *Ctx, _ []int) []string {
-		return c.G.labels(c.G.Players[c.Controller].Hand)
+func HandQuestion(text Key) Question {
+	return Question{Text: text, Options: func(c *Ctx, _ []int) []Msg {
+		return c.G.Labels(c.G.Players[c.Controller].Hand)
 	}}
 }
 
@@ -222,7 +234,7 @@ func (c *Ctx) HandCard(answer int) ObjectID { return c.G.Players[c.Controller].H
 // it is the quick answer. A question with fewer than 2 objects left is
 // skipped. items must return the same objects for every question; skip
 // is how many answers come before these questions.
-func OrderQuestions(text, rest string, skip, maxN int, who func(c *Ctx) PlayerID, items func(c *Ctx, a []int) []ObjectID) []Question {
+func OrderQuestions(text, rest Key, skip, maxN int, who func(c *Ctx) PlayerID, items func(c *Ctx, a []int) []ObjectID) []Question {
 	qs := make([]Question, 0, maxN)
 	for range maxN {
 		qs = append(qs, Question{
@@ -233,14 +245,14 @@ func OrderQuestions(text, rest string, skip, maxN int, who func(c *Ctx) PlayerID
 				}
 				return who(c)
 			},
-			Options: func(c *Ctx, a []int) []string {
+			Options: func(c *Ctx, a []int) []Msg {
 				all := items(c, a[:skip])
 				left, done := orderLeft(all, a[skip:])
 				if done || len(left) < 2 {
 					return nil
 				}
-				labels := c.G.labels(left)
-				return append(labels, rest)
+				labels := c.G.Labels(left)
+				return append(labels, rest.Msg())
 			},
 		})
 	}

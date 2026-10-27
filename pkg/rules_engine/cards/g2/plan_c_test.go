@@ -31,7 +31,7 @@ func TestPlanC(t *testing.T) {
 		}
 		switch w := tb.G.Prompt(); w.Kind {
 		case engine.PromptChoose:
-			tb.Choose(w.Options[0])
+			tb.Choose(tb.Options()[0])
 		case engine.PromptPriority:
 			tb.Pass(int(w.Player))
 		default:

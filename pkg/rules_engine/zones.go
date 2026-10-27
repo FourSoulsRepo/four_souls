@@ -310,7 +310,7 @@ func (g *Game) DealDamageTo(t Target, n int, controller PlayerID, source ObjectI
 	if n <= 0 {
 		return
 	}
-	g.push(StackItem{Kind: StackDamage, Controller: controller, Source: source, Amount: n, Label: "damage", Target: t})
+	g.push(StackItem{Kind: StackDamage, Controller: controller, Source: source, Amount: n, Label: eventDamage.Msg(), Target: t})
 }
 
 // PayHP makes p pay n HP (R-MECH-44): it is lost, not damage. It
@@ -322,7 +322,7 @@ func (g *Game) PayHP(p PlayerID, n int) bool {
 	g.Players[p].Damage += n
 	g.emit(Event{Kind: EvPaid, Player: p, Amount: n, Text: "HP"})
 	if g.PlayerHP(p) == 0 {
-		g.push(StackItem{Kind: StackDeath, Controller: NoPlayer, Label: "death", Target: Target{Player: p, IsPlayer: true}})
+		g.push(StackItem{Kind: StackDeath, Controller: NoPlayer, Label: eventDeath.Msg(), Target: Target{Player: p, IsPlayer: true}})
 	}
 	return true
 }
@@ -429,7 +429,7 @@ func (g *Game) KillObject(id ObjectID) {
 		return
 	}
 	g.Object(id).Damage = g.def(id).HP + g.bonus(StatMonsterHP, NoPlayer, id)
-	g.push(StackItem{Kind: StackDeath, Controller: NoPlayer, Label: "death", Target: Target{Object: id}})
+	g.push(StackItem{Kind: StackDeath, Controller: NoPlayer, Label: eventDeath.Msg(), Target: Target{Object: id}})
 }
 
 // LoseCentsNow queues "p loses n¢" (R-MECH-42).

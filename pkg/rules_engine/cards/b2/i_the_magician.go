@@ -1,6 +1,14 @@
 package b2
 
-import engine "github.com/FourSoulsRepo/rules_engine"
+import (
+	engine "github.com/FourSoulsRepo/rules_engine"
+	"github.com/FourSoulsRepo/rules_engine/cards/cardkit"
+)
+
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	iTheMagicianChangeTheRoll = engine.NewKey("card.i_the_magician.change_the_roll_to")
+)
 
 // I. The Magician (Wildcard Card)
 //
@@ -17,8 +25,8 @@ var iTheMagician = engine.CardDef{
 			Effects: []engine.Effect{engine.Ask(func(c *engine.Ctx, a []int) {
 				c.G.SetRoll(c.Targets[0].StackID, a[0]+1, c.Source)
 			}, engine.Question{
-				Text:    "Change the roll to?",
-				Options: func(*engine.Ctx, []int) []string { return []string{"1", "2", "3", "4", "5", "6"} },
+				Text:    iTheMagicianChangeTheRoll,
+				Options: cardkit.DieFaces,
 			})},
 		},
 	},

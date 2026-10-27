@@ -53,7 +53,7 @@ func TestBuyFromTheDeck(t *testing.T) {
 	items := len(g.Players[a].InPlay)
 	deck := len(g.Decks[TreasureDeck])
 	declarePurchase(t, g)
-	choose(t, g, "treasure deck")
+	choose(t, g, "ask.deck.treasure")
 	if len(g.Players[a].InPlay) != items+1 || len(g.Decks[TreasureDeck]) != deck-1 || g.Players[a].Cents != 0 {
 		t.Errorf("items %d->%d, deck %d->%d, cents %d", items, len(g.Players[a].InPlay), deck, len(g.Decks[TreasureDeck]), g.Players[a].Cents)
 	}

@@ -1,6 +1,14 @@
 package r
 
-import engine "github.com/FourSoulsRepo/rules_engine"
+import (
+	engine "github.com/FourSoulsRepo/rules_engine"
+	"github.com/FourSoulsRepo/rules_engine/cards/cardkit"
+)
+
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	pillsRPutNext = engine.NewKey("card.pills_r.put_next")
+)
 
 // Pills! (Pill/Rune Card)
 //
@@ -27,11 +35,11 @@ var pillsR = engine.CardDef{
 func handToLootTop(n int) engine.Effect {
 	qs := make([]engine.Question, n)
 	for i := range qs {
-		text := "Put which card on top of the loot deck?"
+		text := cardkit.AskPutWhichCardOnTop
 		if n > 1 {
-			text = "Put which card on the loot deck next? The last one ends on top."
+			text = pillsRPutNext
 		}
-		qs[i] = engine.Question{Text: text, Options: func(c *engine.Ctx, a []int) []string {
+		qs[i] = engine.Question{Text: text, Options: func(c *engine.Ctx, a []int) []engine.Msg {
 			return labelsOf(c.G, handLeft(c, a))
 		}}
 	}

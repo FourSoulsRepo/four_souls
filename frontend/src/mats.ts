@@ -3,16 +3,24 @@
 // id: without the image it shows those colors.
 import type { CSSProperties } from 'react';
 import type { MatInfo } from './bridge';
+import { t } from './i18n';
 
+// colorMats are named in the chosen language by matChoices, and so is
+// an image mat with a color mat's id; other image mats keep the names
+// Go gives them from their files.
 export const colorMats: readonly MatInfo[] = [
-  { id: 'basement', name: 'Basement', image: '' },
-  { id: 'cathedral', name: 'Cathedral', image: '' },
+  { id: 'basement', name: '', image: '' },
+  { id: 'cathedral', name: '', image: '' },
 ];
+
+function colorName(id: string): string {
+  return id === 'cathedral' ? t('mat.cathedral') : t('mat.basement');
+}
 
 // matChoices lists the color mats, then the image mats; an image mat
 // takes the place of the color mat with its id.
 export function matChoices(images: readonly MatInfo[]): MatInfo[] {
-  const out = colorMats.map((c) => images.find((m) => m.id === c.id) ?? c);
+  const out = colorMats.map((c) => ({ ...(images.find((m) => m.id === c.id) ?? c), name: colorName(c.id) }));
   return [...out, ...images.filter((m) => !colorMats.some((c) => c.id === m.id))];
 }
 

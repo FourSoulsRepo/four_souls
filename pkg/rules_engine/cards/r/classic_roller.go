@@ -5,6 +5,11 @@ import (
 	"github.com/FourSoulsRepo/rules_engine/cards/cardkit"
 )
 
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	classicRollerWhichPlayerChooses = engine.NewKey("card.classic_roller.which_player_chooses_the_result")
+)
+
 // Classic Roller (Eternal Treasure Card)
 //
 //	{Tap Effect}Choose a dice roll. Its controller rerolls it, but rolls 2 dice instead. They choose another player. That player chooses one of the rolls as the result.
@@ -31,9 +36,9 @@ var classicRoller = engine.CardDef{
 					c.G.RerollWithDice(c.Targets[0].StackID, 2, others[a[0]])
 				}
 			}, engine.Question{
-				Text:   "Which player chooses the result?",
+				Text:   classicRollerWhichPlayerChooses,
 				Player: func(c *engine.Ctx, _ []int) engine.PlayerID { return c.Targets[0].Player },
-				Options: func(c *engine.Ctx, _ []int) []string {
+				Options: func(c *engine.Ctx, _ []int) []engine.Msg {
 					return playerLabels(c.G, othersOf(c.G, c.Targets[0].Player))
 				},
 			})},

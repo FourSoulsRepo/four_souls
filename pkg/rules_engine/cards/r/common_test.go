@@ -89,7 +89,7 @@ func settleAny(tb *enginetest.Table) {
 		w := tb.G.Prompt()
 		switch {
 		case w.Kind == engine.PromptChoose:
-			tb.Choose(w.Options[0])
+			tb.Choose(tb.Options()[0])
 			continue
 		case w.Kind == engine.PromptDiscard:
 			if _, err := tb.G.Apply(engine.Intent{Player: w.Player, Kind: engine.IntentDiscard, Objects: tb.G.Players[w.Player].Hand[:w.Count]}); err != nil {

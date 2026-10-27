@@ -2,6 +2,11 @@ package b2
 
 import engine "github.com/FourSoulsRepo/rules_engine"
 
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	remoteDetonatorVoteForAn = engine.NewKey("card.remote_detonator.vote_for_an_item_to")
+)
+
 // Remote Detonator (Active Treasure Card)
 //
 //	{Tap Effect}Each player votes on an item in play. Destroy the item with the most votes. If there is a tie, nothing happens.
@@ -31,17 +36,17 @@ func voteQuestions() []engine.Question {
 	var qs []engine.Question
 	for k := range 4 {
 		qs = append(qs, engine.Question{
-			Text: "Vote for an item to destroy.",
+			Text: remoteDetonatorVoteForAn,
 			Player: func(c *engine.Ctx, _ []int) engine.PlayerID {
 				return engine.PlayerID((int(c.Controller) + k) % len(c.G.Players))
 			},
-			Options: func(c *engine.Ctx, _ []int) []string {
+			Options: func(c *engine.Ctx, _ []int) []engine.Msg {
 				if k >= len(c.G.Players) {
 					return nil
 				}
-				var out []string
+				var out []engine.Msg
 				for _, id := range itemsInPlay(c.G) {
-					out = append(out, string(c.G.Object(id).Card))
+					out = append(out, engine.CardOption(c.G.Object(id).Card))
 				}
 				return out
 			},

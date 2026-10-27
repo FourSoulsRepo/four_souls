@@ -7,6 +7,11 @@ import (
 	"github.com/FourSoulsRepo/rules_engine/cards/cardkit"
 )
 
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	gnawedLeafCancelThatLoot = engine.NewKey("card.gnawed_leaf.cancel_that_loot_card")
+)
+
 // Gnawed Leaf (Passive Treasure Card)
 //
 //	Prevent all damage you would take while it's not your turn.
@@ -41,7 +46,7 @@ var gnawedLeaf = engine.CardDef{
 		}},
 		Effects: []engine.Effect{engine.EffectFunc(func(c *engine.Ctx) {
 			cardkit.MarkUsed(c.G, c.Source)
-		}), cardkit.May("Cancel that loot card?", engine.EffectFunc(func(c *engine.Ctx) {
+		}), cardkit.May(gnawedLeafCancelThatLoot, engine.EffectFunc(func(c *engine.Ctx) {
 			for _, it := range c.G.Stack {
 				if it.Kind == engine.StackLoot && it.Source == c.EventObject {
 					c.G.CancelStackItem(it.ID)

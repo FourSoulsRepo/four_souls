@@ -5,6 +5,11 @@ import (
 	"github.com/FourSoulsRepo/rules_engine/cards/cardkit"
 )
 
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	redCandleChooseANumber = engine.NewKey("card.red_candle.choose_a_number")
+)
+
 // Red Candle (Active Treasure Card)
 //
 //	{Tap Effect}Before a dice is rolled, choose a number. Till the end of turn, each time that number is rolled, deal 1 damage to a monster or player.
@@ -24,7 +29,7 @@ var redCandle = engine.CardDef{
 			}
 			cardkit.MarkUsedOn(c.G, c.Source, a[0]+1) // the chosen number
 			c.Do(engine.Linger(0))
-		}, engine.Question{Text: "Choose a number", Options: func(*engine.Ctx, []int) []string { return []string{"1", "2", "3", "4", "5", "6"} }})},
+		}, engine.Question{Text: redCandleChooseANumber, Options: cardkit.DieFaces})},
 	}},
 	Lingering: []engine.Ability{{
 		Kind: engine.Triggered,

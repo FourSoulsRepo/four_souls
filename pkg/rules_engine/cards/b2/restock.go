@@ -2,6 +2,13 @@ package b2
 
 import engine "github.com/FourSoulsRepo/rules_engine"
 
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	restockDiscardItem     = engine.NewKey("card.restock.discard")
+	restockKeepItem        = engine.NewKey("card.restock.keep")
+	restockDiscardThisShop = engine.NewKey("card.restock.discard_this_shop_item")
+)
+
 // Restock (Passive Treasure Card)
 //
 //	At the start of your turn, you may put any number of shop items into discard.
@@ -23,13 +30,13 @@ var restock = engine.CardDef{
 func restockQuestions() []engine.Question {
 	var qs []engine.Question
 	for k := range 6 {
-		qs = append(qs, engine.Question{Text: "Discard this shop item?", Options: func(c *engine.Ctx, _ []int) []string {
+		qs = append(qs, engine.Question{Text: restockDiscardThisShop, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
 			items := c.G.ShopItems()
 			if k >= len(items) {
 				return nil
 			}
-			card := string(c.G.Object(items[k]).Card)
-			return []string{"keep " + card, "discard " + card}
+			card := engine.CardArg("card", c.G.Object(items[k]).Card)
+			return []engine.Msg{restockKeepItem.Msg(card), restockDiscardItem.Msg(card)}
 		}})
 	}
 	return qs

@@ -253,6 +253,9 @@ func cardStub(pkg string, c carddb.Card, startingItem bool) (stub, error) {
 	b.WriteString("//\n")
 	fmt.Fprintf(&b, "// %s implement the text above, then delete this line.\n", StubMarker)
 	b.WriteString("// Until then `go run ./cmd/cardgen` rewrites this file from card_db.\n")
+	// A question's words are no Go text: a key, and a line in en.json (ADR 021).
+	fmt.Fprintf(&b, "// A question or option it asks is a key, engine.NewKey(\"card.%s.<name>\"),\n", ref)
+	b.WriteString("// with its words and a note in frontend/src/locales/en.json (ADR 021).\n")
 	for _, t := range todo {
 		fmt.Fprintf(&b, "// Not generated: %s.\n", t)
 	}

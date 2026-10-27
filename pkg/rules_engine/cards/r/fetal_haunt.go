@@ -5,6 +5,11 @@ import (
 	"github.com/FourSoulsRepo/rules_engine/cards/cardkit"
 )
 
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	fetalHauntGiveItTo = engine.NewKey("card.fetal_haunt.give_it_to_which_player")
+)
+
 // Fetal Haunt (Passive Treasure Card)
 //
 //	{Curse Effect}At the end of your turn, give another player a loot card.
@@ -24,7 +29,7 @@ var fetalHaunt = engine.CardDef{
 					return
 				}
 				c.G.GiveHandCard(c.Controller, others[a[1]], hand[a[0]])
-			}, engine.HandQuestion("Give which loot card?"), engine.Question{Text: "Give it to which player?", Options: func(c *engine.Ctx, a []int) []string {
+			}, engine.HandQuestion(cardkit.AskGiveWhichLootCard), engine.Question{Text: fetalHauntGiveItTo, Options: func(c *engine.Ctx, a []int) []engine.Msg {
 				if a[0] < 0 {
 					return nil
 				}

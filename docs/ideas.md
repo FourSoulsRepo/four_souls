@@ -761,6 +761,27 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    3. Cards: name and text, from card_db translations (A-11).
    4. The server sends message keys and values, not ready text.
    5. So each client shows the text in its own language (N-03).
+5. LO-05. Translating is easy for anyone (owner, 2026-10-26).
+   1. One interface file per language.
+   2. Each line has a note: where it shows.
+   3. A check lists untranslated lines; another lists unused keys.
+   4. A screenshot shows a line in place: one key or all of them.
+   5. Wiki: one guide for the interface, one for cards.
+   6. The same tools help an agent translate to a new language.
+   7. Item 4 per key is paused: too costly for now (owner, 2026-10-27).
+      1. Step 16 keeps one screenshot per screen.
+      2. Per-key pages may come back later.
+6. LO-06. English is always the fallback (owner, 2026-10-26).
+   1. Interface lines, messages, card names, card images.
+7. LO-07. Card images per language (owner, 2026-10-26).
+   1. One folder per language: `images/en/b2/`, `images/ru/b2/`.
+8. LO-08. Russian card names from the old site's migrations.
+   1. The importer lives in `FourSoulsRepo/tools`.
+   2. Card texts come later.
+9. LO-09. Work-in-progress translations are welcome (owner, 2026-10-27).
+   1. A card-only language is a choice in Settings.
+   2. A half-done interface file ships; English fills the rest.
+   3. Translators may keep card images in their own repo.
 
 ## Settings
 
@@ -1014,6 +1035,10 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    2. Keep the UI touch-friendly from the start.
    3. Every hover action also works by tap or long press.
    4. Drag and drop works with touch (pointer events).
+7. B-07. Setup scripts for developers and translators (owner, 2026-10-26).
+   1. One script per OS installs every tool `make` needs.
+   2. The wiki says what each `make` target needs, per OS.
+   3. Only macOS and Linux for now; Windows later (owner, 2026-10-27).
 
 ## Legal
 
@@ -1117,3 +1142,4 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    2. Server admins: how to run a dedicated server.
    3. Developers: layout, builds, engine, tests.
    4. `_Sidebar.md` and `Home.md` show the three groups.
+   5. A fourth group: Translators (owner, 2026-10-26).

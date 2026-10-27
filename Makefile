@@ -5,8 +5,12 @@ MODULES := . ./pkg/rules_engine ./pkg/card_db ./pkg/record
 TAGS ?=
 
 # golangci-lint binary; must be built with a Go version >= the local toolchain.
-GOLANGCI ?= golangci-lint
+# scripts/setup.sh puts the right one into .cache/bin; else the one on PATH.
 ROOT := $(CURDIR)
+GOLANGCI ?= $(if $(wildcard $(ROOT)/.cache/bin/golangci-lint),$(ROOT)/.cache/bin/golangci-lint,golangci-lint)
+
+# make doctor PROFILE=translator: only what translators need (16.8).
+PROFILE ?= developer
 
 # Fuzzing (docs/wiki/Fuzzing.md): how long to fuzz, how long to shrink a
 # failing input, which cards fuzz-focused keeps in play (comma-separated;
@@ -21,15 +25,26 @@ SETS ?=
 # How many Playwright workers e2e and screenshots run at once (19.38).
 E2E_WORKERS ?= 5
 
+# Language of the screenshot scenes (ADR 021), e.g. LOCALE=qps; shots
+# go into .cache/screenshots/<LOCALE>/. Not LANG: the shell sets that.
+LOCALE ?=
+
+# make i18n LOCALE=xx AREA=lobby: one area of the key names (ADR 021, 16).
+AREA ?=
+
 .DEFAULT_GOAL := help
-.PHONY: help test vet build wasm lint frontend e2e e2e-games screenshots internal server-archives fuzz fuzz-engine fuzz-focused fuzz-sets fuzz-new sims
+.PHONY: help doctor test vet build wasm lint i18n frontend e2e e2e-games screenshots internal server-archives fuzz fuzz-engine fuzz-focused fuzz-sets fuzz-new sims
 
 help: ## Show this help
 	@echo "Usage: make <target> [VAR=value]"
 	@echo
 	@awk 'BEGIN {FS = ":.*## "} /^[a-z0-9-]+:.*## / {printf "  %-14s %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 	@echo
-	@echo "Variables: TAGS, GOLANGCI, PLATFORM, VERSION, FUZZTIME=$(FUZZTIME), MINIMIZE=$(MINIMIZE), FOCUS=$(FOCUS), SIMS=$(SIMS), SETS=$(SETS), E2E_WORKERS=$(E2E_WORKERS)"
+	@echo "Variables: TAGS, GOLANGCI, PLATFORM, VERSION, FUZZTIME=$(FUZZTIME), MINIMIZE=$(MINIMIZE), FOCUS=$(FOCUS), SIMS=$(SIMS), SETS=$(SETS), E2E_WORKERS=$(E2E_WORKERS), LOCALE=$(LOCALE), AREA=$(AREA), PROFILE=$(PROFILE)"
+
+# Tools and versions: scripts/versions.env, go.mod, e2e/package.json.
+doctor: ## Check the tools make needs, with versions (PROFILE=translator)
+	@GOLANGCI=$(GOLANGCI) scripts/setup.sh --check --profile $(PROFILE)
 
 test: ## Run tests in every Go module, plus embed mode
 	@for m in $(MODULES); do (cd $$m && go test -tags "$(TAGS)" ./... && go test -tags "$(TAGS) embed" ./...) || exit 1; done
@@ -46,8 +61,19 @@ wasm: ## Build the engine and the website for js/wasm
 	@GOOS=js GOARCH=wasm go build -o /dev/null ./cmd/website
 
 # Strict linters with security rules (PR-03); one config for every module.
-lint: ## Run golangci-lint in every Go module, plus embed mode
+# shellcheck is optional: without it the shell scripts are skipped.
+lint: ## Run golangci-lint in every Go module, plus embed mode, make i18n, shellcheck
 	@for m in $(MODULES); do (cd $$m && $(GOLANGCI) run --config $(ROOT)/.golangci.yml --build-tags "$(TAGS)" ./... && $(GOLANGCI) run --config $(ROOT)/.golangci.yml --build-tags "$(TAGS) embed" ./...) || exit 1; done
+	@$(MAKE) --no-print-directory i18n LOCALE= AREA=
+	@if command -v shellcheck > /dev/null; then shellcheck -x scripts/*.sh release/*.sh; else echo "shellcheck not found: shell scripts not checked (make doctor)"; fi
+
+# Translation checks (ADR 021, 10 and 16), run by Vitest. Without LOCALE:
+# unused and stray keys, placeholders in every language file. LOCALE=xx:
+# merge .cache/translations/xx/done.json, write todo.json there, and fail
+# on every line still to do; AREA=lobby limits it to one area.
+# The default reporter prints the list even when nothing is left.
+i18n: ## Check translations; LOCALE=xx: that language in full (AREA=lobby)
+	@cd frontend && I18N_LOCALE=$(LOCALE) I18N_AREA=$(AREA) npx vitest run --reporter=default src/translations.test.ts $(if $(LOCALE),,src/i18n.test.ts)
 
 # Frontend checks for every commit (ADR 008).
 frontend: ## Typecheck, lint and unit-test the frontend
@@ -63,8 +89,8 @@ e2e: ## Run end-to-end UI tests (Playwright)
 e2e-games: ## Play whole random games with every set through the UI (slow)
 	@$(E2E) FULL_GAMES=1 npx playwright test games --project chromium --workers 1
 
-screenshots: ## Run e2e and save UI screenshots into .cache/screenshots
-	@$(E2E) SCREENSHOTS=1 npx playwright test --project chromium --workers $(E2E_WORKERS)
+screenshots: ## Run e2e and save UI screenshots into .cache/screenshots (LOCALE=qps)
+	@$(E2E) LOCALE=$(LOCALE) SCREENSHOTS=1 npx playwright test --project chromium --workers $(E2E_WORKERS)
 
 # Internal play-test build (7.12): card images embedded, the version
 # names the commit. Needs the private images submodule. PLATFORM picks
@@ -73,7 +99,7 @@ INTERNAL_VERSION := internal-$(shell git rev-parse --short HEAD)
 PLATFORM ?=
 
 internal: ## Build the app for play tests, card images included
-	@test -d pkg/card_db/images/b2 || (echo "the card images submodule is missing" && exit 1)
+	@test -d pkg/card_db/images/en/b2 || (echo "the card images submodule is missing" && exit 1)
 	@go generate ./pkg/card_db/images
 	@wails build -m $(if $(PLATFORM),-platform $(PLATFORM)) -tags "$(TAGS) embed cardimages" -ldflags "-X github.com/FourSoulsRepo/four_souls/internal/version.App=$(INTERNAL_VERSION)"
 	@# wails build regenerates the bindings as executable files; keep them 644.

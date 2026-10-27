@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { t } from '../i18n';
 import type { Update } from '../protocol';
 import { noticeText } from '../reconnect';
 import { useApp } from '../store';
@@ -12,11 +13,11 @@ export function LostOverlay() {
   const quit = useApp((s) => s.quit);
   const [busy, setBusy] = useState(false);
   return (
-    <div className="overlay" role="dialog" aria-label="Connection lost">
+    <div className="overlay" role="dialog" aria-label={t('lost.title')}>
       <div className="overlay-box">
-        <h2>Connection lost</h2>
+        <h2>{t('lost.title')}</h2>
         <p className="muted">{error}</p>
-        <p>Your seat waits for you. The others may vote to go on without you.</p>
+        <p>{t('lost.text')}</p>
         <div className="overlay-buttons">
           <button
             type="button"
@@ -29,7 +30,7 @@ export function LostOverlay() {
               });
             }}
           >
-            Reconnect
+            {t('lost.reconnect')}
           </button>
           <button
             type="button"
@@ -37,7 +38,7 @@ export function LostOverlay() {
               void quit();
             }}
           >
-            Leave
+            {t('lost.leave')}
           </button>
         </div>
       </div>
@@ -51,8 +52,8 @@ export function LostOverlay() {
 export function ReconnectBadge() {
   const restarting = useApp((s) => s.restarting);
   return (
-    <div className="reconnect-badge" role="status" aria-label="Reconnecting">
-      {restarting ? 'The server is restarting. Reconnecting…' : 'Reconnecting…'}
+    <div className="reconnect-badge" role="status" aria-label={t('lost.reconnecting_label')}>
+      {restarting ? t('lost.restarting') : t('lost.reconnecting')}
     </div>
   );
 }
@@ -72,7 +73,7 @@ export function NoticeOverlay() {
         <p>{text}</p>
         <div className="overlay-buttons">
           <button type="button" className="primary" onClick={endNotice}>
-            OK
+            {t('notice.ok')}
           </button>
         </div>
       </div>
@@ -111,18 +112,14 @@ export function PauseOverlay({ game, you, name }: { game: Update; you: number; n
   const mine = votes.find((v) => v.seat === you);
   const grace = (pause.grace ?? 0) > now;
   return (
-    <div className="overlay" role="dialog" aria-label="Paused">
+    <div className="overlay" role="dialog" aria-label={t('pause.label')}>
       <div className="overlay-box">
-        <h2>Waiting for {pause.away.map(name).join(', ')}</h2>
-        <p className="muted">
-          {grace
-            ? 'The server restarted. The others are coming back.'
-            : 'They left the game. Wait for them to come back, or go on without them.'}
-        </p>
+        <h2>{t('pause.title', { players: pause.away.map(name).join(', ') })}</h2>
+        <p className="muted">{grace ? t('pause.restarted') : t('pause.left')}</p>
         <ul className="overlay-votes">
           {votes.map((v) => (
             <li key={v.seat}>
-              {name(v.seat)}: {v.kick ? 'go on without them' : 'wait'}
+              {name(v.seat)}: {v.kick ? t('pause.vote_kick') : t('pause.vote_wait')}
             </li>
           ))}
         </ul>
@@ -134,7 +131,7 @@ export function PauseOverlay({ game, you, name }: { game: Update; you: number; n
               vote(false);
             }}
           >
-            Wait
+            {t('pause.wait')}
           </button>
           <button
             type="button"
@@ -144,7 +141,7 @@ export function PauseOverlay({ game, you, name }: { game: Update; you: number; n
               vote(true);
             }}
           >
-            Go on without them
+            {t('pause.kick')}
           </button>
         </div>
       </div>
@@ -160,15 +157,17 @@ export function EndOverlay({ game, you, name }: { game: Update; you: number; nam
   const [saved, setSaved] = useState('');
   const winners = game.view.winners ?? [];
   const title = winners.includes(you)
-    ? 'You win!'
-    : winners.length > 0
-      ? `${winners.map(name).join(' and ')} win${winners.length === 1 ? 's' : ''}!`
-      : 'Game over';
+    ? t('over.you_win')
+    : winners.length === 1
+      ? t('over.wins', { player: name(winners[0] ?? 0) })
+      : winners.length > 1
+        ? t('over.win', { players: winners.slice(0, -1).map(name).join(', '), last: name(winners.at(-1) ?? 0) })
+        : t('over.title');
   return (
-    <div className="overlay" role="dialog" aria-label="Game over">
+    <div className="overlay" role="dialog" aria-label={t('over.title')}>
       <div className="overlay-box">
         <h2>{title}</h2>
-        <p className="muted">Keep the match record to watch it again later.</p>
+        <p className="muted">{t('over.hint')}</p>
         <div className="overlay-buttons">
           <button
             type="button"
@@ -177,7 +176,7 @@ export function EndOverlay({ game, you, name }: { game: Update; you: number; nam
               void saveRecord().then(setSaved);
             }}
           >
-            Save record
+            {t('over.save')}
           </button>
           <button
             type="button"
@@ -185,11 +184,11 @@ export function EndOverlay({ game, you, name }: { game: Update; you: number; nam
               void quit();
             }}
           >
-            Back to menu
+            {t('over.menu')}
           </button>
         </div>
         <p className="overlay-status" role="status">
-          {saved ? `Saved to ${saved}` : error}
+          {saved ? t('over.saved', { path: saved }) : error}
         </p>
       </div>
     </div>

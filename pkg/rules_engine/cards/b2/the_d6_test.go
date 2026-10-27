@@ -32,7 +32,7 @@ func TestTheD6(t *testing.T) {
 	tb := rollTable(t, 2, seat("isaac", "the_d6"), seat("cain"))
 	tb.Pass(1)
 	tb.G.ForceRolls(5)
-	ev := tb.Activate(0, "the_d6", 0, "roll of 2")
+	ev := tb.Activate(0, "the_d6", 0, "ask.roll_of 2")
 	if got := resolvedRoll(t, ev); got != 5 {
 		t.Errorf("rerolled roll resolved as %d, want 5", got)
 	}

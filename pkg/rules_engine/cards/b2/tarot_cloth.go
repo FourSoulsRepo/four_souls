@@ -1,6 +1,9 @@
 package b2
 
-import engine "github.com/FourSoulsRepo/rules_engine"
+import (
+	engine "github.com/FourSoulsRepo/rules_engine"
+	"github.com/FourSoulsRepo/rules_engine/cards/cardkit"
+)
 
 // Tarot Cloth (Passive Treasure Card)
 //
@@ -20,15 +23,15 @@ var tarotCloth = engine.CardDef{
 					c.G.GiveHandCard(c.EventPlayer, c.Controller, c.G.Players[c.EventPlayer].Hand[a[0]])
 				}
 			}, engine.Question{
-				Text:   "Give which loot card?",
+				Text:   cardkit.AskGiveWhichLootCard,
 				Player: func(c *engine.Ctx, _ []int) engine.PlayerID { return c.EventPlayer },
-				Options: func(c *engine.Ctx, _ []int) []string {
+				Options: func(c *engine.Ctx, _ []int) []engine.Msg {
 					if c.EventPlayer == engine.NoPlayer || c.EventPlayer == c.Controller {
 						return nil
 					}
-					var out []string
+					var out []engine.Msg
 					for _, id := range c.G.Players[c.EventPlayer].Hand {
-						out = append(out, string(c.G.Object(id).Card))
+						out = append(out, engine.CardOption(c.G.Object(id).Card))
 					}
 					return out
 				},

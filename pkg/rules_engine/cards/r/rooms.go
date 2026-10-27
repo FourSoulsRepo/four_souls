@@ -1,6 +1,9 @@
 package r
 
-import engine "github.com/FourSoulsRepo/rules_engine"
+import (
+	engine "github.com/FourSoulsRepo/rules_engine"
+	"github.com/FourSoulsRepo/rules_engine/cards/cardkit"
+)
 
 // Helpers of the room cards. "You" on a room is the active player, who
 // controls its abilities (R-CARD-36).
@@ -167,10 +170,10 @@ func monsterOrRoomDecks(g *engine.Game) []engine.DeckKind {
 }
 
 // deckLabels names decks as the prompts do.
-func deckLabels(ds []engine.DeckKind) []string {
-	out := make([]string, len(ds))
+func deckLabels(ds []engine.DeckKind) []engine.Msg {
+	out := make([]engine.Msg, len(ds))
 	for i, d := range ds {
-		out[i] = d.String() + " deck"
+		out[i] = engine.DeckOption(d)
 	}
 	return out
 }
@@ -208,10 +211,10 @@ func roomOrMonsterToDiscard(may bool) engine.Effect {
 		}
 		c.G.DiscardMonster(ids[a[0]])
 		c.G.RefillSlots()
-	}, engine.Question{Text: "Put which into discard?", Options: func(c *engine.Ctx, _ []int) []string {
+	}, engine.Question{Text: cardkit.AskPutWhichIntoDiscard, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
 		out := labelsOf(c.G, roomsAndMonstersToDiscard(c.G))
 		if may {
-			out = append(out, "none")
+			out = append(out, engine.AskNone.Msg())
 		}
 		return out
 	}})

@@ -10,8 +10,8 @@ func TestXIITheHangedMan(t *testing.T) {
 	tb := lootTable(t, "xii_the_hanged_man")
 	treasure := tb.G.DeckTop(engine.TreasureDeck, 1)[0]
 	loot := tb.G.DeckTop(engine.LootDeck, 1)[0]
-	label := "put " + string(tb.G.Object(treasure).Card) + " on the bottom"
-	keep := func(id engine.ObjectID) string { return "keep " + string(tb.G.Object(id).Card) + " on top" }
+	label := "ask.put_on_bottom " + string(tb.G.Object(treasure).Card)
+	keep := func(id engine.ObjectID) string { return "ask.keep_on_top " + string(tb.G.Object(id).Card) }
 	monster := tb.G.DeckTop(engine.MonsterDeck, 1)[0]
 	tb.Play(0, "xii_the_hanged_man", label, keep(loot), keep(monster))
 	if tb.G.Decks[engine.TreasureDeck][0] != treasure {

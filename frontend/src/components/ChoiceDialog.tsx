@@ -1,6 +1,7 @@
 import { useState, type ReactNode } from 'react';
 import { discardIntent, modeLines, orderIntent, outcomeLines, type Actions } from '../actions';
 import { lookGroups, type Looked } from '../history';
+import { t } from '../i18n';
 import type { CardView, ModeView } from '../protocol';
 import { useApp } from '../store';
 import { Card } from './Card';
@@ -11,7 +12,7 @@ import './Actions.css';
 // cards, Hearthstone-style (V-07); options on the table can be clicked
 // there too. subject is the card the choice is about, e.g. the monster
 // a deck attack drew (19.9) or the deck top a player looks at (19.11);
-// it shows beside the options, and option labels name it by its title.
+// it shows beside the options; option labels name it as a card (ADR 021).
 // An option with an outcome says what picking it gives (19.17); a
 // trigger option says its ability's words (19.19).
 //
@@ -21,8 +22,6 @@ import './Actions.css';
 export function ChoiceDialog({ choice, subject }: { choice: NonNullable<Actions['choice']>; subject?: string | undefined }) {
   const act = useApp((s) => s.act);
   const cardName = (ref: string) => useApp.getState().cards.get(ref)?.name ?? ref;
-  const subjectName = subject ? useApp.getState().cards.get(subject)?.name : undefined;
-  const label = (l: string) => (subject && subjectName ? l.replaceAll(subject, subjectName) : l);
   return (
     <ChoiceFrame label={choice.title}>
       {subject && (
@@ -49,11 +48,11 @@ export function ChoiceDialog({ choice, subject }: { choice: NonNullable<Actions[
                 act(o.intent);
               }}
             >
-              {o.card ? (useApp.getState().cards.get(o.card)?.name ?? o.label) : label(o.label)}
+              {o.card ? cardName(o.card) : o.label}
             </button>
             {o.line && <p className="choice-line">{o.line}</p>}
             {o.outcome && (
-              <ul className="choice-outcome" aria-label="Result">
+              <ul className="choice-outcome" aria-label={t('choice.result')}>
                 {outcomeLines(o.outcome, cardName).map((l) => (
                   <li key={l}>→ {l}</li>
                 ))}
@@ -93,7 +92,7 @@ function ChoiceFrame({ label, title, className = '', children }: { label: string
             setBoard(true);
           }}
         >
-          View board
+          {t('choice.view_board')}
         </button>
       </div>
     </div>
@@ -103,10 +102,10 @@ function ChoiceFrame({ label, title, className = '', children }: { label: string
 // Peek is a hidden choice: its title and a button to bring it back.
 function Peek({ title, back }: { title: ReactNode; back: () => void }) {
   return (
-    <div className="choice-peek" role="group" aria-label="Viewing the board">
+    <div className="choice-peek" role="group" aria-label={t('choice.viewing')}>
       <span>{title}</span>
       <button type="button" onClick={back}>
-        Back to the choice
+        {t('choice.back')}
       </button>
     </div>
   );
@@ -139,7 +138,7 @@ export function ModeDialog({ choice, card, modes }: { choice: NonNullable<Action
       label={choice.title}
       lines={lines.map(({ text, intent }) => ({
         text,
-        why: 'No valid target now',
+        why: t('choice.no_target'),
         ...(intent
           ? {
               pick: () => {
@@ -162,7 +161,7 @@ export function ModeDialog({ choice, card, modes }: { choice: NonNullable<Action
             setBoard(true);
           }}
         >
-          View board
+          {t('choice.view_board')}
         </button>
       }
     />
@@ -182,13 +181,13 @@ export function LookDialog({ cards, you, name }: { cards: Looked[]; you: number;
     </div>
   );
   return (
-    <div className="choice look" role="dialog" aria-label="You look at">
-      <h2>You look at</h2>
+    <div className="choice look" role="dialog" aria-label={t('look.title')}>
+      <h2>{t('look.title')}</h2>
       {lookGroups(cards).map((g) => {
         if (g.owner === undefined) {
           return row(g.cards, 'deck');
         }
-        const label = g.owner === you ? 'Your hand' : `${name(g.owner)}'s hand`;
+        const label = g.owner === you ? t('look.your_hand') : t('look.hand_of', { player: name(g.owner) });
         return (
           <section key={g.owner} className="look-hand" role="group" aria-label={label}>
             <h3>{label}</h3>
@@ -197,7 +196,7 @@ export function LookDialog({ cards, you, name }: { cards: Looked[]; you: number;
         );
       })}
       <button type="button" onClick={endLook}>
-        OK
+        {t('look.ok')}
       </button>
     </div>
   );
@@ -215,10 +214,10 @@ export function OrderDialog({ order, cards }: { order: NonNullable<Actions['orde
   const places = cards.map((_, i) => ({ n: i + 1, card: cards.find((x) => x.id === placed.at(i)) }));
   return (
     <ChoiceFrame label={order.title} className="order">
-      <p className="order-hint">Click the cards top first. Click a placed card to take it back.</p>
+      <p className="order-hint">{t('order.hint')}</p>
       <div className="order-deck">
         {places.map(({ n, card: c }) => (
-          <div key={n} className="order-place" role="group" aria-label={`Place ${String(n)}`}>
+          <div key={n} className="order-place" role="group" aria-label={t('order.place', { n })}>
             {c ? (
               <Card
                 cardRef={c.card}
@@ -230,12 +229,12 @@ export function OrderDialog({ order, cards }: { order: NonNullable<Actions['orde
             ) : (
               <div className="order-empty" />
             )}
-            <span>{n === 1 ? '1 · top' : String(n)}</span>
+            <span>{n === 1 ? t('order.top') : String(n)}</span>
           </div>
         ))}
       </div>
       {left.length > 0 && (
-        <div className="choice-options" role="group" aria-label="Not placed">
+        <div className="choice-options" role="group" aria-label={t('order.not_placed')}>
           {left.map((c) => (
             <Card
               key={c.id}
@@ -256,7 +255,7 @@ export function OrderDialog({ order, cards }: { order: NonNullable<Actions['orde
           act(orderIntent(order.intent, placed));
         }}
       >
-        Put back
+        {t('order.put_back')}
       </button>
     </ChoiceFrame>
   );
@@ -277,7 +276,7 @@ export function DiscardDialog({
     setChosen(chosen.includes(id) ? chosen.filter((x) => x !== id) : [...chosen, id]);
   };
   return (
-    <ChoiceFrame label="Discard" title={`Discard ${String(discard.count)} loot card${discard.count === 1 ? '' : 's'}`}>
+    <ChoiceFrame label={t('discard.label')} title={t('discard.title', { n: discard.count })}>
       <div className="choice-options">
         {cards.map((c) => (
           <Card
@@ -298,7 +297,7 @@ export function DiscardDialog({
           act(discardIntent(discard.intent, chosen));
         }}
       >
-        Discard ({chosen.length}/{discard.count})
+        {t('discard.button', { chosen: chosen.length, n: discard.count })}
       </button>
     </ChoiceFrame>
   );

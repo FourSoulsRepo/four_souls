@@ -1,6 +1,14 @@
 package r
 
-import engine "github.com/FourSoulsRepo/rules_engine"
+import (
+	engine "github.com/FourSoulsRepo/rules_engine"
+	"github.com/FourSoulsRepo/rules_engine/cards/cardkit"
+)
+
+// The card's own lines; their words are in en.json (ADR 021).
+var (
+	dadsNotePutWhichMonster = engine.NewKey("card.dads_note.put_which_monster_card_from")
+)
 
 // Dad’s Note (Wildcard Card)
 //
@@ -24,7 +32,7 @@ var dadsNote = engine.CardDef{
 func discardMonsterToSlot(n int, upTo bool) engine.Effect {
 	var qs []engine.Question
 	for i := range n {
-		qs = append(qs, engine.Question{Text: "Put which monster card from the discard in a slot?", Options: func(c *engine.Ctx, a []int) []string {
+		qs = append(qs, engine.Question{Text: dadsNotePutWhichMonster, Options: func(c *engine.Ctx, a []int) []engine.Msg {
 			if i > 0 && (a[2*i-2] < 0 || a[2*i-1] < 0) {
 				return nil // done
 			}
@@ -35,7 +43,7 @@ func discardMonsterToSlot(n int, upTo bool) engine.Effect {
 			if !upTo {
 				return labelsOf(c.G, left)
 			}
-			return append(labelsOf(c.G, left), "done")
+			return append(labelsOf(c.G, left), engine.AskDone.Msg())
 		}}, slotQuestionAfter(2*i))
 	}
 	return engine.Ask(func(c *engine.Ctx, a []int) {
@@ -54,9 +62,9 @@ func discardMonsterToSlot(n int, upTo bool) engine.Effect {
 // slotQuestionAfter asks for a slot once the card question before it
 // (answer k) picked a card.
 func slotQuestionAfter(k int) engine.Question {
-	q := slotQuestion("Put it in which monster slot?")
+	q := slotQuestion(cardkit.AskPutItInWhichMonster)
 	opts := q.Options
-	q.Options = func(c *engine.Ctx, a []int) []string {
+	q.Options = func(c *engine.Ctx, a []int) []engine.Msg {
 		if a[k] < 0 || a[k] >= len(discardMonstersLeft(c, a[:k])) {
 			return nil
 		}

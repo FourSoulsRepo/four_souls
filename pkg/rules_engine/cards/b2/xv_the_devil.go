@@ -1,6 +1,9 @@
 package b2
 
-import engine "github.com/FourSoulsRepo/rules_engine"
+import (
+	engine "github.com/FourSoulsRepo/rules_engine"
+	"github.com/FourSoulsRepo/rules_engine/cards/cardkit"
+)
 
 // XV. The Devil (Wildcard Card)
 //
@@ -37,11 +40,11 @@ func stealable(c *engine.Ctx) []engine.ObjectID {
 }
 
 var devilQuestion = engine.Question{
-	Text: "Steal which item?",
-	Options: func(c *engine.Ctx, _ []int) []string {
-		var out []string
+	Text: cardkit.AskStealWhichItem,
+	Options: func(c *engine.Ctx, _ []int) []engine.Msg {
+		var out []engine.Msg
 		for _, id := range stealable(c) {
-			out = append(out, string(c.G.Object(id).Card))
+			out = append(out, engine.CardOption(c.G.Object(id).Card))
 		}
 		return out
 	},

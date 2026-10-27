@@ -17,7 +17,7 @@ func TestKeyAttackAgain(t *testing.T) {
 func TestKeyDeckTopToSlot(t *testing.T) {
 	tb := lootTable(t, "key")
 	tb.G.PutOnDeck(engine.MonsterDeck, "pooter")
-	tb.Play(0, "key", "Put the top card of the monster deck in a monster slot not being attacked.", "slot 2: leech")
+	tb.Play(0, "key", "Put the top card of the monster deck in a monster slot not being attacked.", "ask.slot_card 2 leech")
 	if got := top(tb, 1); got != "pooter" {
 		t.Errorf("slot 2 = %s, want pooter covering the leech", got)
 	}

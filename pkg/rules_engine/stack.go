@@ -26,7 +26,7 @@ type StackItem struct {
 	Card       CardRef   `json:"card,omitempty"` // for display
 	Roll       int       `json:"roll,omitempty"` // current result of a roll
 	Amount     int       `json:"amount,omitempty"`
-	Label      string    `json:"label,omitempty"`
+	Label      Msg       `json:"label,omitzero"`
 	Target     Target    `json:"target"`
 	// Attack marks attack rolls and combat damage; they leave the stack
 	// when the attack ends (R-ATK-15).
@@ -101,7 +101,7 @@ func (g *Game) push(it StackItem) int {
 		g.enqueue(Action{Kind: ActThrow, Player: it.Controller, Amount: it.ID})
 	}
 	g.Stack = append(g.Stack, it)
-	g.emit(Event{Kind: EvStackAdded, Player: it.Controller, Object: it.Source, Card: it.Card, Amount: it.Roll, Text: it.Label})
+	g.emit(Event{Kind: EvStackAdded, Player: it.Controller, Object: it.Source, Card: it.Card, Amount: it.Roll, Label: it.Label})
 	// "Would take damage" and "would die" triggers look at these.
 	switch it.Kind { //nolint:exhaustive // only damage and death have "would" triggers
 	case StackDamage:
@@ -140,7 +140,7 @@ func (g *Game) resolveTop() {
 	g.Stack = g.Stack[:n-1]
 	shown := g.shown(it)
 	g.emit(Event{
-		Kind: EvStackResolved, Player: it.Controller, Object: it.Source, Card: it.Card, Amount: it.Roll, Text: it.Label,
+		Kind: EvStackResolved, Player: it.Controller, Object: it.Source, Card: it.Card, Amount: it.Roll, Label: it.Label,
 		StackID: it.ID, Item: &shown,
 	})
 	// Priority after a resolution starts with the active player
@@ -204,7 +204,7 @@ func (g *Game) resolveTop() {
 			// The roll ability's result trigger goes on the stack (R-ABIL-24).
 			g.push(StackItem{
 				Kind: StackTrigger, Controller: it.Controller, Source: it.Source, Card: it.RollFor.Card,
-				Ability: it.RollFor, Mode: it.Mode, Targets: it.Targets, RollResult: it.Roll, Label: "roll result",
+				Ability: it.RollFor, Mode: it.Mode, Targets: it.Targets, RollResult: it.Roll, Label: eventRollResult.Msg(),
 				EventPlayer: it.EventPlayer, EventAmount: it.EventAmount, EventStack: it.EventStack, EventObject: it.EventObject, EventSource: it.EventSource, EventBy: it.EventBy,
 			})
 		}
@@ -231,7 +231,7 @@ func (g *Game) resolveTop() {
 }
 
 // roll puts a roll of p on the stack; p throws its die first (R-DICE-02).
-func (g *Game) roll(p PlayerID, label string) int {
+func (g *Game) roll(p PlayerID, label Msg) int {
 	return g.push(StackItem{Kind: StackRoll, Controller: p, Label: label})
 }
 
@@ -281,7 +281,7 @@ func (g *Game) throwDie(t Throw) {
 	}
 	it := &g.Stack[i]
 	it.Roll = g.d6()
-	text := it.Label
+	var text string
 	if t.Reroll {
 		text = "reroll"
 	}
@@ -296,7 +296,7 @@ func (g *Game) throwDie(t Throw) {
 		dice = slices.Clone(md.Values)
 		g.enqueue(Action{Kind: ActChooseDie, Player: md.Chooser, Amount: t.StackID})
 	}
-	g.emit(Event{Kind: EvDiceRolled, Player: p, Amount: r, Text: text, StackID: t.StackID, Dice: dice})
+	g.emit(Event{Kind: EvDiceRolled, Player: p, Amount: r, Text: text, Label: it.Label, StackID: t.StackID, Dice: dice})
 }
 
 // playLoot moves a loot card from hand to the stack (R-MECH-45).
@@ -368,7 +368,7 @@ func (g *Game) CancelStackItem(id int) {
 			continue
 		}
 		g.Stack = append(g.Stack[:i:i], g.Stack[i+1:]...)
-		g.emit(Event{Kind: EvCancelled, Player: it.Controller, Object: it.Source, Card: it.Card, Text: it.Label})
+		g.emit(Event{Kind: EvCancelled, Player: it.Controller, Object: it.Source, Card: it.Card, Label: it.Label})
 		if o := g.Object(it.Source); o.Role == RoleEvent && !g.waitingRoll(it.Source) {
 			g.enqueue(Action{Kind: ActFinishEvent, Player: NoPlayer, Object: it.Source}) // R-CARD-15
 		}

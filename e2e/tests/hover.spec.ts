@@ -8,6 +8,7 @@ import { startGame } from './game';
 import { appURL } from './server';
 import { shot } from './shot';
 import { activePage, click } from './turn';
+import { cardName, tr } from './locale';
 
 const fast = () => `${appURL()}&anim=off`;
 const gallery = '/?fake&nosplash&screen=cards';
@@ -43,7 +44,7 @@ test('playable hand cards glow green; a hovered one rises large (15.27)', async 
   if (!other) {
     throw new Error('no other page');
   }
-  const hand = (p: Page) => p.getByRole('group', { name: 'Your hand' }).locator('.card');
+  const hand = (p: Page) => p.getByRole('group', { name: tr('table.your_hand') }).locator('.card');
   const playable = active.locator('.hand .card.hl-act');
 
   await shot(active, 'hand-glow');
@@ -79,7 +80,7 @@ test('playable hand cards glow green; a hovered one rises large (15.27)', async 
   expect(z.x + z.width).toBeGreaterThan(c.x + c.width / 2);
 
   // A monster zooms right beside itself, not over it.
-  const monster = active.getByRole('group', { name: 'Monsters' }).locator('.card').first();
+  const monster = active.getByRole('group', { name: tr('board.monsters') }).locator('.card').first();
   await monster.hover();
   await expect(zoom).toBeVisible();
   await shot(active, 'monster-hover');
@@ -96,14 +97,14 @@ test('the zoom shows keyword tips beside the card (15.27)', async ({ page }) => 
   await page.goto(gallery);
   const zoom = page.getByTestId('card-zoom');
   const row = page.getByLabel('Table size');
-  await row.getByRole('img', { name: 'The D6' }).hover();
-  const tips = zoom.getByRole('note', { name: 'Keywords' });
+  await row.getByRole('img', { name: cardName('the_d6') }).hover();
+  const tips = zoom.getByRole('note', { name: tr('zoom.keywords') });
   await expect(tips).toContainText('Eternal');
   await expect(tips).toContainText("This can't be destroyed or put into discard.");
   await shot(page, 'zoom-tips');
   // A card without keywords has no tips.
-  await row.getByRole('img', { name: 'Isaac' }).hover();
-  await expect(zoom.locator('.card.size-zoom')).toHaveAttribute('aria-label', 'Isaac');
+  await row.getByRole('img', { name: cardName('isaac') }).hover();
+  await expect(zoom.locator('.card.size-zoom')).toHaveAttribute('aria-label', cardName('isaac'));
   await expect(tips).toHaveCount(0);
 });
 
@@ -129,7 +130,7 @@ function reach(page: Page): Promise<number[]> {
 test('every card of a 12-card hand can be pointed at (19.15)', async ({ browser }) => {
   const pages = await startGame(browser, ['Ful', 'Lan'], { url: fast() });
   const page = await activePage(pages, click);
-  await expect(page.getByRole('group', { name: 'Your hand' }).locator('.card').first()).toBeVisible();
+  await expect(page.getByRole('group', { name: tr('table.your_hand') }).locator('.card').first()).toBeVisible();
   // Copies of the own hand stand in for a hand of 12; only the screen
   // changes, nobody acts on it.
   await page.evaluate(() => {
@@ -156,7 +157,7 @@ test('every card of a 12-card hand can be pointed at (19.15)', async ({ browser 
     });
     store.setState({ game: { ...game, view: { ...game.view, players } } });
   });
-  const cards = page.getByRole('group', { name: 'Your hand' }).locator('.hand-card');
+  const cards = page.getByRole('group', { name: tr('table.your_hand') }).locator('.hand-card');
   await expect(cards).toHaveCount(12);
   await page.mouse.move(0, 0);
   await shot(page, 'hand-12');
@@ -173,7 +174,7 @@ test('every card of a 12-card hand can be pointed at (19.15)', async ({ browser 
 // load swaps it for a drawn face, and no leave event came (19.50).
 test('a zoom closes when the pointer leaves a card whose face was redrawn (19.50)', async ({ page }) => {
   await page.goto(gallery);
-  const card = page.getByLabel('Table size').getByRole('img', { name: 'Big Spider' });
+  const card = page.getByLabel('Table size').getByRole('img', { name: cardName('big_spider') });
   await card.hover();
   const zoom = page.getByTestId('card-zoom');
   await expect(zoom).toBeVisible();

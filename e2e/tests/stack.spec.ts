@@ -20,6 +20,16 @@ import {
   turnAction,
   turnNumber,
 } from './turn';
+import { anyOf as any, cardName, lineRe, tr, trRe, whole } from './locale';
+
+// choosing matches a choice's title: the app's, or the server's question
+// (in English until 16.4).
+const choosing = any(
+  /Choose/,
+  ...['replacement', 'attack', 'monster_slot', 'penalty_item', 'penalty_loot', 'purchase', 'target', 'trigger_order', 'mode', 'answer', 'starting_item', 'curse', 'bottom', 'choose'].map((k) =>
+    trRe(`choice.title.${k}`),
+  ),
+);
 
 const fast = () => `${appURL()}&anim=off`;
 
@@ -40,11 +50,11 @@ test('a played loot card shows on the stack; nobody is offered skip all', async 
   await answerPlay(active, click);
 
   for (const page of [active, other]) {
-    await expect(page.getByRole('complementary', { name: 'Stack' })).toContainText(`plays ${name ?? ''}`);
+    await expect(page.getByRole('complementary', { name: tr('stack.title') })).toContainText(trRe('stack.loot', { card: name ?? '' }));
   }
   // Both always see why the game waits.
-  await expect(active.locator('.prompt-title')).toHaveText(/Respond, or pass|Choose|Waiting for (Sam|Tia)/);
-  await expect(other.locator('.prompt-title')).toHaveText(/Waiting for (Sam|Tia)/);
+  await expect(active.locator('.prompt-title')).toHaveText(any(trRe('banner.respond'), choosing, trRe('banner.waiting_for')));
+  await expect(other.locator('.prompt-title')).toHaveText(trRe('banner.waiting_for'));
   await shot(other, 'stack');
 
   // "Skip all" is gone (15.84); "Wait for my turn" stays.
@@ -60,9 +70,9 @@ test('a played Dagaz goes on the stack once its player is picked (19.18)', async
   await activePage(pages, click);
   await saveAndContinue(pages, 'Kit, Lev', 'dagaz');
   const active = await activePage(pages, click);
-  await playLoot(active, active.getByRole('group', { name: 'Your hand' }).getByRole('button', { name: 'Dagaz' }).first(), click);
+  await playLoot(active, active.getByRole('group', { name: tr('table.your_hand') }).getByRole('button', { name: cardName('dagaz') }).first(), click);
   await answerPlay(active, click);
-  await expect(active.getByRole('complementary', { name: 'Stack' })).toContainText('plays Dagaz');
+  await expect(active.getByRole('complementary', { name: tr('stack.title') })).toContainText(trRe('stack.loot', { card: cardName('dagaz') }));
 });
 
 test('a player may wait for their turn; the end of the turn before asks them (N-16)', async ({ browser }) => {
@@ -73,20 +83,20 @@ test('a player may wait for their turn; the end of the turn before asks them (N-
     throw new Error('no other page');
   }
   await shot(other, 'wait-turn-offer');
-  const bar = other.getByRole('region', { name: 'Actions' });
-  await bar.getByRole('button', { name: 'Wait for my turn' }).click();
-  await expect(bar.getByRole('button', { name: 'Cancel wait' })).toBeVisible();
+  const bar = other.getByRole('region', { name: tr('actions.label') });
+  await bar.getByRole('button', { name: tr('actions.wait') }).click();
+  await expect(bar.getByRole('button', { name: tr('actions.cancel_wait') })).toBeVisible();
   await shot(other, 'wait-turn-on');
-  await bar.getByRole('button', { name: 'Cancel wait' }).click();
-  await expect(bar.getByRole('button', { name: 'Wait for my turn' })).toBeVisible();
-  await bar.getByRole('button', { name: 'Wait for my turn' }).click();
-  await expect(bar.getByRole('button', { name: 'Cancel wait' })).toBeVisible();
+  await bar.getByRole('button', { name: tr('actions.cancel_wait') }).click();
+  await expect(bar.getByRole('button', { name: tr('actions.wait') })).toBeVisible();
+  await bar.getByRole('button', { name: tr('actions.wait') }).click();
+  await expect(bar.getByRole('button', { name: tr('actions.cancel_wait') })).toBeVisible();
 
   // The turn before ends: waiting is over, and nothing more is offered.
   await endTurn(active);
-  await expect(bar.getByRole('button', { name: /Cancel wait|Wait for my turn/ })).toHaveCount(0);
+  await expect(bar.getByRole('button', { name: any(trRe('actions.cancel_wait'), trRe('actions.wait')) })).toHaveCount(0);
   if (await passButton(other).isEnabled()) {
-    await expect(other.locator('.prompt-title')).toHaveText(/You may act|Respond, or pass/);
+    await expect(other.locator('.prompt-title')).toHaveText(any(trRe('banner.act'), trRe('banner.respond')));
     await shot(other, 'wait-turn-last-chance');
   }
 });
@@ -95,13 +105,13 @@ test('the response timer counts down for the waiting player', async ({ browser }
   const pages = await startGame(browser, ['Uma', 'Vic'], {
     url: fast(),
     setup: async (host) => {
-      await host.getByLabel('Detailed setup').check();
-      await host.getByLabel('Response timer').selectOption('60');
+      await host.getByLabel(tr('host.detailed')).check();
+      await host.getByLabel(tr('host.timer')).selectOption('60');
     },
   });
   const active = await activePage(pages, click);
-  const timer = active.getByLabel('Time left');
-  await expect(timer).toHaveText(/· \d+ s/);
+  const timer = active.getByLabel(tr('actions.time_left'));
+  await expect(timer).toHaveText(new RegExp(`· ${trRe('actions.seconds').source}`));
   const first = Number((await timer.textContent())?.match(/\d+/)?.[0]);
   expect(first).toBeGreaterThan(0);
   await expect.poll(async () => Number((await timer.textContent())?.match(/\d+/)?.[0])).toBeLessThan(first);
@@ -110,11 +120,11 @@ test('the response timer counts down for the waiting player', async ({ browser }
 // waitLine is a stack panel line with "You" turned into the page's own
 // name, so every page's line can be compared.
 async function waitLine(page: Page, me: string, label: string): Promise<string> {
-  const line = page.getByRole('complementary', { name: 'Stack' }).getByLabel(label, { exact: true });
+  const line = page.getByRole('complementary', { name: tr('stack.title') }).getByLabel(label === 'Passed' ? tr('stack.passed_label') : tr('stack.waiting_label'), { exact: true });
   if ((await line.count()) === 0) {
     return '';
   }
-  return (await line.first().innerText()).replace(/\bYou\b/g, me);
+  return (await line.first().innerText()).replaceAll(tr('stack.you'), me);
 }
 
 // expectSameLines: every page names the same waiting and passed players.
@@ -133,9 +143,9 @@ test('every player sees whom the stack waits for (V-11)', async ({ browser }) =>
   const loot = active.locator('.hand .card.hl-act').first();
   test.skip(!(await loot.isVisible()), 'no playable loot card in this deal');
   await playLoot(active, loot, click);
-  const stack = active.getByRole('complementary', { name: 'Stack' });
+  const stack = active.getByRole('complementary', { name: tr('stack.title') });
   await answerPlay(active, click);
-  await expect(stack).toContainText(/Waiting for|: /);
+  await expect(stack).toContainText(any(trRe('stack.waiting'), /: /));
   const want = (await waitLine(active, me, 'Waiting for')) + (await waitLine(active, me, 'Passed'));
   expect(want).not.toBe('');
   await expectSameLines(pages, names, want);
@@ -205,9 +215,9 @@ async function fakeStack(page: Page, ids: number[]): Promise<void> {
 test('the stack panel: icons, colored names, and a hover with card and owner (15.21)', async ({ browser }) => {
   const pages = await startGame(browser, ['Ike', 'Jud'], { url: fast() });
   const active = await activePage(pages, click);
-  const stack = active.getByRole('complementary', { name: 'Stack' });
+  const stack = active.getByRole('complementary', { name: tr('stack.title') });
   // An empty stack says so, and Pass stays in the panel (S-08, S-09).
-  await expect(stack).toContainText('Nothing on the stack');
+  await expect(stack).toContainText(tr('stack.empty'));
   await expect(passButton(active)).toBeVisible();
 
   // Three items: a loot card, a roll, and damage.
@@ -216,16 +226,16 @@ test('the stack panel: icons, colored names, and a hover with card and owner (15
   const rows = stack.locator('.stack-row');
   await expect(rows).toHaveCount(3);
   // Newest on top; the target in red, the player in their color (S-01, S-03).
-  await expect(rows.nth(0)).toHaveAttribute('aria-label', /^(Ike|Jud) deals 1 damage to (Ike|Jud)$/);
+  await expect(rows.nth(0)).toHaveAttribute('aria-label', whole(trRe('stack.damage', { n: 1 })));
   await expect(rows.nth(0).locator('.stack-target')).toBeVisible();
-  await expect(rows.nth(1).locator('.die')).toHaveAttribute('aria-label', 'Rolled 5');
-  await expect(rows.nth(2)).toHaveAttribute('aria-label', /^(Ike|Jud) plays Bomb!?$/);
+  await expect(rows.nth(1).locator('.die')).toHaveAttribute('aria-label', tr('dice.rolled', { n: 5 }));
+  await expect(rows.nth(2)).toHaveAttribute('aria-label', whole(trRe('stack.loot', { card: cardName('bomb') })));
 
   // Hover the loot row: its card large, the used ability, the owner (S-06, S-07).
   const owner = (await rows.nth(2).locator('.stack-player').textContent()) ?? '';
   await rows.nth(2).hover();
   const zoom = active.getByTestId('card-zoom');
-  await expect(zoom.locator('.card.size-zoom')).toHaveAttribute('aria-label', /^Bomb/);
+  await expect(zoom.locator('.card.size-zoom')).toHaveAttribute('aria-label', new RegExp(`^${lineRe(cardName('bomb')).source}`));
   await expect(zoom.locator('.card-zoom-ability')).toHaveText('Deal 1 damage to a monster or player.');
   await expect(zoom.locator('.card-zoom-owner')).toHaveText(owner);
   await shot(active, 'stack-panel-hover');
@@ -236,7 +246,7 @@ test('the stack panel: icons, colored names, and a hover with card and owner (15
 
 // An open attack or buy is no stack item (R-ATK-02, R-SHOP-02); the
 // stack panel shows it on top for every player while it lasts (15.91).
-const declared = (page: Page) => page.getByRole('complementary', { name: 'Stack' }).locator('.stack-declared');
+const declared = (page: Page) => page.getByRole('complementary', { name: tr('stack.title') }).locator('.stack-declared');
 
 test('a declared attack shows on top of the stack, then its target (15.91)', async ({ browser }) => {
   const names = ['Ada', 'Bex'];
@@ -246,16 +256,16 @@ test('a declared attack shows on top of the stack, then its target (15.91)', asy
   await click(active, turnAction(active, 'Attack'));
   // Until the target is picked, the attack has none.
   for (const page of pages) {
-    await expect(declared(page)).toHaveText(`${who} attacks…`);
+    await expect(declared(page)).toHaveText(tr('stack.declared.attack', { player: who }));
   }
   await shot(pages.find((p) => p !== active) ?? active, 'stack-declared-attack');
   await settle(pages, click, async () => (await throwButton(active).count()) > 0);
   const monster = await active.locator('.board-monsters .card.fight').getAttribute('aria-label');
   for (const page of pages) {
     // The declaration's own line; the fight line under it is 15.94's.
-    await expect(declared(page).locator('.stack-line')).toHaveText(`${who} attacks ${monster ?? ''}`);
+    await expect(declared(page).locator('.stack-line')).toHaveText(tr('stack.declared.attack_target', { player: who, target: monster ?? '' }));
     await expect(declared(page).locator('.stack-target')).toHaveText(monster ?? '');
-    await expect(declared(page).locator('.stack-odds')).toHaveText(/^Hits on /);
+    await expect(declared(page).locator('.stack-odds')).toHaveText(any(...['stats.hits_from', 'stats.hits_on', 'stats.cant_hit', 'stats.always_hits'].map((k) => trRe(k))));
   }
   await shot(active, 'stack-declared-attack-aimed');
 });
@@ -268,7 +278,7 @@ test('a declared buy shows on top of the stack until it ends (15.91)', async ({ 
   const turn = await turnNumber(active);
   await active.keyboard.press('b');
   for (const page of pages) {
-    await expect(declared(page)).toHaveText(`${who} buys…`);
+    await expect(declared(page)).toHaveText(tr('stack.declared.buy', { player: who }));
   }
   await shot(pages.find((p) => p !== active) ?? active, 'stack-declared-buy');
   await settle(pages, click, async () => (await canEndTurn(active)) || (await turnNumber(active)) !== turn || (await gameOver(active)));
@@ -311,7 +321,7 @@ test('a declared end of turn shows on top of the stack (19.74)', async ({ browse
     await other.mouse.move(1200, 420);
     await shot(other, 'stack-declared-end');
     for (const page of pages) {
-      await expect(declared(page)).toHaveText(`${who} ends the turn`);
+      await expect(declared(page)).toHaveText(tr('stack.declared.end_turn', { player: who }));
       await expect(declared(page).locator('.stack-player')).toHaveText(who);
     }
     // The row goes once the end phase starts (R-TURN-10).
@@ -380,7 +390,7 @@ test('a resolved stack row fades out, then the next slides up (15.51)', async ({
   const active = await activePage(pages, click);
   await quiet(active);
   await fakeStack(active, [1, 2, 3]);
-  const rows = active.getByRole('complementary', { name: 'Stack' }).locator('.stack-row');
+  const rows = active.getByRole('complementary', { name: tr('stack.title') }).locator('.stack-row');
   await expect(rows).toHaveCount(3);
   // The new rows have faded in.
   await expect.poll(() => rows.evaluateAll((els) => els.every((el) => getComputedStyle(el).opacity === '1'))).toBe(true);
@@ -409,7 +419,7 @@ test('with animations off, stack rows change at once (15.51)', async ({ browser 
   const pages = await startGame(browser, ['Mia', 'Ned'], { url: fast() });
   const active = await activePage(pages, click);
   await fakeStack(active, [1, 2, 3]);
-  await expect(active.getByRole('complementary', { name: 'Stack' }).locator('.stack-row')).toHaveCount(3);
+  await expect(active.getByRole('complementary', { name: tr('stack.title') }).locator('.stack-row')).toHaveCount(3);
 
   const { top, frames } = await resolveTop(active);
   // From the first frame: the row is gone and the next one is in its place.

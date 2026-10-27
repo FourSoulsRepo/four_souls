@@ -100,7 +100,7 @@ func TestViewsHideWhatTheyMust(t *testing.T) {
 func TestChoiceOptionsAreHiddenFromOthers(t *testing.T) {
 	g := toAction(t, 2)
 	a := g.Turn.Active
-	g.ask(Choice{Purpose: ChoosePenaltyLoot, Player: a, Rule: "R-DEATH-14", Objects: g.Players[a].Hand}, g.labels(g.Players[a].Hand))
+	g.ask(Choice{Purpose: ChoosePenaltyLoot, Player: a, Rule: "R-DEATH-14", Objects: g.Players[a].Hand}, g.Labels(g.Players[a].Hand))
 	if len(g.View(Viewer{Kind: ViewPlayer, Player: a}).Waiting.Options) == 0 {
 		t.Error("the asked player sees the options")
 	}
@@ -156,7 +156,7 @@ func TestViewShowsTheDrawnMonsterUntilPlaced(t *testing.T) {
 		t.Fatalf("revealed %+v before the deck attack", *v.Revealed)
 	}
 	attack(t, g)
-	choose(t, g, "monster deck")
+	choose(t, g, "ask.deck.monster")
 	for _, v := range []Viewer{{Kind: ViewPlayer, Player: a}, {Kind: ViewPlayer, Player: g.next(a)}, {Kind: ViewSpectator}} {
 		if r := g.View(v).Revealed; r == nil || r.Card != "dummy" {
 			t.Errorf("viewer %+v: revealed %+v, want the dummy (19.9)", v, r)
@@ -228,7 +228,7 @@ func TestViewNamesWhoPassedAndWhoMayRespond(t *testing.T) {
 	a := g.Turn.Active
 	b := g.next(a)
 	c, d := g.next(b), g.next(g.next(b))
-	g.push(StackItem{Kind: StackRoll, Roll: 3, Controller: b, Label: "x"})
+	g.push(StackItem{Kind: StackRoll, Roll: 3, Controller: b, Label: eventRoll.Msg()})
 	pass(t, g)
 	pass(t, g)
 	// Every viewer sees the same lists (V-11).
