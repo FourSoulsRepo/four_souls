@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { checkSeat, getSettings, saveSettings, serverStatus } from './bridge';
+import { checkSeat, getBacks, getCards, getDice, getFonts, getIcons, getMats, getSettings, getSounds, saveSettings, serverStatus } from './bridge';
+import { language, setCardLanguages, setLanguage } from './i18n';
 import { send } from './net';
 import { noHostSetup } from './hostSetup';
 import type { Envelope, GameView, Update } from './protocol';
@@ -7,7 +8,14 @@ import { messageOf, seatOf, useApp } from './store';
 
 vi.mock('./bridge', () => ({
   checkSeat: vi.fn(),
+  getBacks: vi.fn(),
+  getCards: vi.fn(),
+  getDice: vi.fn(),
+  getFonts: vi.fn(),
+  getIcons: vi.fn(),
+  getMats: vi.fn(),
   getSettings: vi.fn(),
+  getSounds: vi.fn(),
   saveSettings: vi.fn(),
   serverStatus: vi.fn(),
 }));
@@ -55,12 +63,34 @@ describe('settings', () => {
     const images = { en: '/cardimg/en/b2/isaac.webp', ru: '/cardimg/ru/b2/isaac.webp' };
     const isaac = { ref: 'isaac', set: 'b2', type: 'Character Card', name: 'Isaac', names: { en: 'Isaac', ru: 'Исаак' }, effects: [], footnotes: [], stats: [], rewards: [], image: images.en, images };
     useApp.setState({ cards: new Map([['isaac', isaac]]) });
+    setCardLanguages(['en', 'ru']);
     const ru = { nickname: 'Ann', recent: [], animation: 'normal' as const, fullscreen: false, mat: '', dice: 'tear', no_end_turn_ask: false, rejoin: { address: '', token: '', game: '', via: '' as const }, host: noHostSetup, lan_address: '', language: 'ru' };
     vi.mocked(saveSettings).mockImplementation((s) => Promise.resolve(s));
     expect(await useApp.getState().saveSettings(ru)).toBe(true);
     expect(useApp.getState().cards.get('isaac')).toMatchObject({ name: 'Исаак', image: images.ru });
     expect(await useApp.getState().saveSettings({ ...ru, language: 'en' })).toBe(true);
     expect(useApp.getState().cards.get('isaac')).toMatchObject({ name: 'Isaac', image: images.en });
+  });
+
+  // A language with card names only (16.10): listed once the cards load,
+  // and a setting saved before that names the cards in it then.
+  it('lists a card-only language and names the cards in it', async () => {
+    setCardLanguages([]);
+    setLanguage('xx');
+    const isaac = { ref: 'isaac', set: 'b2', type: 'Character Card', name: 'Isaac', names: { en: 'Isaac', xx: 'Xisaac' }, effects: [], footnotes: [], stats: [], rewards: [], image: '' };
+    vi.mocked(getCards).mockResolvedValue([isaac]);
+    vi.mocked(getDice).mockResolvedValue([]);
+    vi.mocked(getMats).mockResolvedValue([]);
+    vi.mocked(getBacks).mockResolvedValue([]);
+    vi.mocked(getIcons).mockResolvedValue({ coin: '', sword: '', banner: '', sky: [] });
+    vi.mocked(getFonts).mockResolvedValue({ title: '', body: '', cyrillic: '' });
+    vi.mocked(getSounds).mockResolvedValue({ attackHit: '', effectCast: '', effectImpact: '', diceRoll: '' });
+    expect(useApp.getState().languages).not.toContain('xx');
+    await useApp.getState().loadCards();
+    expect(useApp.getState().languages).toContain('xx');
+    expect(language()).toBe('xx');
+    expect(useApp.getState().cards.get('isaac')?.name).toBe('Xisaac');
+    setLanguage('en');
   });
 
   it('shows the Go error and keeps the old settings', async () => {

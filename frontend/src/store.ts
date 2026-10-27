@@ -32,7 +32,8 @@ import {
 import { noHostSetup } from './hostSetup';
 import { inLanguage, type CardInfo, type Kind } from './cards';
 import { loadFonts } from './fonts';
-import { language, say, setLanguage, t } from './i18n';
+import { language, languages, say, setCardLanguages, setLanguage, t } from './i18n';
+import { cardLanguagesOf } from './locale';
 import { entriesFor, lookedAt, moveOf, restartCut, rolledBack, voteEnded, type Entry, type Looked, type Move, type Outcome } from './history';
 import type { LinePart } from './stack';
 import type { Box } from './zoom';
@@ -229,6 +230,8 @@ interface AppState extends Session {
   cardSets: string[];
   // cards is the display data by ref; empty until loaded.
   cards: Map<string, CardInfo>;
+  // languages are the Settings choices; the cards add theirs (16.10).
+  languages: readonly string[];
   // dice are the dice looks (V-19); empty until loaded.
   dice: DiceSkin[];
   // mats are the mat images (V-24); empty until loaded or without images.
@@ -826,6 +829,7 @@ export const useApp = create<AppState>()((set, get) => {
     connected: false,
     cardSets: [],
     cards: new Map(),
+    languages: languages(),
     dice: [],
     mats: [],
     backs: new Map(),
@@ -844,7 +848,10 @@ export const useApp = create<AppState>()((set, get) => {
         ]);
         loadFonts(fonts);
         loadSounds(sounds);
+        // A saved card-only language shows once its cards are known.
+        const langs = setCardLanguages(cardLanguagesOf(list));
         set({
+          languages: langs,
           cards: new Map(list.map((c) => [c.ref, inLanguage(c, language())])),
           dice,
           mats,

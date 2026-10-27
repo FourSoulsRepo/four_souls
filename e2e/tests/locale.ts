@@ -4,7 +4,7 @@
 // a card's name (16.5).
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { languageList, languageName, languageOfFile, localeOf, pseudoLocale, requiredForms, textOf, translate, type Entry, type Locale, type Text, type Values } from '../../frontend/src/locale';
+import { cardLanguagesOf, languageList, languageName, languageOfFile, localeOf, pseudoLocale, requiredForms, textOf, translate, type Entry, type Locale, type Text, type Values } from '../../frontend/src/locale';
 
 const root = join(import.meta.dirname, '..', '..');
 const dir = join(root, 'frontend', 'src', 'locales');
@@ -24,10 +24,6 @@ if (languageOfFile(`${locale}.json`) && existsSync(own)) {
   locales.set(locale, localeOf(JSON.parse(readFileSync(own, 'utf8')) as Record<string, Text>));
 }
 
-// languageNames are the Settings choices of a development build, as
-// i18n.ts lists them: English, each language file and card language, qps.
-export const languageNames = languageList(readdirSync(dir).flatMap((name) => languageOfFile(name) ?? []), true).map(languageName);
-
 interface DataCard {
   id: string;
   version?: number;
@@ -38,6 +34,16 @@ interface DataCard {
 // version's ref is id@N, as Go's.
 const b2 = JSON.parse(readFileSync(join(root, 'pkg', 'card_db', 'data', 'b2.json'), 'utf8')) as { cards: DataCard[] };
 const cards = new Map(b2.cards.map((c) => [c.version && c.version > 1 ? `${c.id}@${String(c.version)}` : c.id, c]));
+
+// languageNames are the Settings choices of a development build, as
+// i18n.ts lists them: English, each language file and each language the
+// fake bridge's cards have names in (16.10), qps. extra adds card
+// languages a test injects (?cardlang).
+export function languageNames(...extra: string[]): string[] {
+  const names = b2.cards.map((c) => ({ names: Object.fromEntries(Object.entries(c.text).flatMap(([l, t]) => (t?.name ? [[l, t.name]] : []))) }));
+  const files = readdirSync(dir).flatMap((name) => languageOfFile(name) ?? []);
+  return languageList(files, [...cardLanguagesOf(names), ...extra], true).map(languageName);
+}
 
 // cardName is the card ref's name in the tests' language: card_db's
 // text.<LOCALE>.name, else English, as the store's inLanguage picks it.

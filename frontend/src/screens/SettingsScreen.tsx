@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { Settings } from '../bridge';
 import { Die } from '../components/Die';
 import { diceChoices } from '../dice';
-import { languages, shownLanguage, t } from '../i18n';
+import { shownLanguage, t } from '../i18n';
 import { languageName } from '../locale';
 import { matChoices, matLook, matOf } from '../mats';
 import type { Speed } from '../playback';
@@ -23,6 +23,8 @@ export function SettingsScreen() {
   const save = useApp((s) => s.saveSettings);
   const show = useApp((s) => s.show);
   const mats = useApp((s) => s.mats);
+  // Card languages join the list when the cards load (16.10).
+  const languages = useApp((s) => s.languages);
   const dice = useApp((s) => s.dice);
   const diceGroups = diceChoices(dice);
   const [form, setForm] = useState<Settings>(settings);

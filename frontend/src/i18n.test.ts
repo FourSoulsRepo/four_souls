@@ -1,8 +1,9 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import en from './locales/en.json';
-import { language, languages, setLanguage, shownLanguage, t } from './i18n';
+import { language, languages, setCardLanguages, setLanguage, shownLanguage, t } from './i18n';
 
 afterEach(() => {
+  setCardLanguages([]);
   setLanguage('en');
 });
 
@@ -21,6 +22,7 @@ describe('t', () => {
   });
 
   it('falls back to English for Russian, which has no file yet', () => {
+    setCardLanguages(['en', 'ru']);
     setLanguage('ru');
     expect(language()).toBe('ru');
     expect(t('settings.save')).toBe('Save');
@@ -30,15 +32,28 @@ describe('t', () => {
 describe('languages', () => {
   // A language file adds its own choice, so a new one needs no change
   // here; the glossary folder and server-keys.json add none (16.7).
-  it('lists English and Russian, and qps in development', () => {
-    expect(languages[0]).toBe('en');
-    expect(languages).toContain('ru');
-    expect(languages.at(-1)).toBe('qps');
-    expect(languages).not.toContain('glossary');
-    expect(languages).not.toContain('server-keys');
+  it('lists English, the files, and qps in development', () => {
+    setCardLanguages([]);
+    expect(languages()[0]).toBe('en');
+    expect(languages()).not.toContain('xx');
+    expect(languages().at(-1)).toBe('qps');
+    expect(languages()).not.toContain('glossary');
+    expect(languages()).not.toContain('server-keys');
+  });
+
+  // A card-only language joins when the cards load (16.10); a setting
+  // saved before that shows it then.
+  it('adds the card languages; a saved one shows once they load', () => {
+    setCardLanguages([]);
+    setLanguage('xx');
+    expect(language()).not.toBe('xx');
+    expect(setCardLanguages(['en', 'ru', 'xx'])).toEqual(expect.arrayContaining(['en', 'ru', 'xx', 'qps']));
+    expect(language()).toBe('xx');
+    expect(t('settings.save')).toBe('Save');
   });
 
   it('a language this build lacks follows the OS, else English', () => {
+    setCardLanguages(['ru']);
     expect(['en', 'ru']).toContain(shownLanguage('xx'));
   });
 });

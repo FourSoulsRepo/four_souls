@@ -99,3 +99,25 @@ func TestCardsImagesPerLanguage(t *testing.T) {
 		}
 	}
 }
+
+// A language with card names only is sent in names, so the client lists
+// it in Settings without an interface file (16.10).
+func TestCardsNamesCardOnlyLanguage(t *testing.T) {
+	set := `{"set":{"code":"b2","name":"B","order":1},"cards":[
+		{"id":"isaac","type":"Character Card","copies":1,"text":{"en":{"name":"Isaac"},"xx":{"name":"Xisaac"}}},
+		{"id":"cain","type":"Character Card","copies":1,"text":{"en":{"name":"Cain"}}}]}`
+	a := &App{cardFiles: fstest.MapFS{"data/b2.json": {Data: []byte(set)}}}
+	cards, err := a.Cards()
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := map[string]map[string]string{
+		"isaac": {"en": "Isaac", "xx": "Xisaac"},
+		"cain":  {"en": "Cain"},
+	}
+	for _, c := range cards {
+		if !maps.Equal(c.Names, want[c.Ref]) {
+			t.Errorf("%s: names %v, want %v", c.Ref, c.Names, want[c.Ref])
+		}
+	}
+}

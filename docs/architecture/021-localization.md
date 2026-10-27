@@ -170,6 +170,7 @@ Use options 5, 7, 11, 12 and 14.
     3. Else English.
     4. A language is listed if it has an interface file or card names.
     5. Each is listed by its own name, via `Intl.DisplayNames`.
+    6. Card languages come from the card names Go sends (16.10).
 12. Test language `qps`
     1. Built at run time from `en.json`; no file.
     2. `Join` becomes `[!! Ĵôîñ ~~ !!]`: accented, about 30% longer.

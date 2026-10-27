@@ -177,7 +177,7 @@ test('the language applies at once and survives a restart', async ({ page }) => 
   const lang = page.getByRole('combobox').filter({ has: page.getByRole('option', { name: 'English' }) });
   const save = page.locator('form button[type=submit]');
   // A language file adds its choice (ADR 021, 11): ['English', 'Русский', 'qps (test)'] now.
-  await expect(lang.getByRole('option')).toHaveText(languageNames);
+  await expect(lang.getByRole('option')).toHaveText(languageNames());
 
   await lang.selectOption('qps');
   await save.click();
@@ -193,6 +193,28 @@ test('the language applies at once and survives a restart', async ({ page }) => 
   await page.getByRole('button', { name: 'Settings' }).click();
   await expect(page.getByRole('combobox', { name: 'Language' })).toHaveValue('ru');
   await expect(page.getByRole('heading', { level: 1 })).toHaveText('Settings');
+});
+
+// A language with card names only (16.10): listed without a locale
+// file, so a work-in-progress card translation can be played. The
+// interface stays English; its cards show their names in it. The fake
+// bridge names Isaac in the test code xx (?cardlang); no other card.
+test('a card-only language is listed and names the cards', async ({ page }) => {
+  await page.goto('/?fake&nosplash&cardlang=xx');
+  await page.getByRole('button', { name: tr('menu.settings') }).click();
+  const lang = page.getByRole('combobox').filter({ has: page.getByRole('option', { name: 'English' }) });
+  await expect(lang.getByRole('option')).toHaveCount(languageNames('xx').length);
+  await expect(lang.locator('option[value="xx"]')).toHaveCount(1);
+  await lang.selectOption('xx');
+  await page.locator('form button[type=submit]').click();
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('Settings');
+  await page.goto('/?fake&nosplash&screen=cards&cardlang=xx');
+  const table = page.getByLabel('Table size');
+  await expect(table.getByRole('img', { name: 'Isaac (xx)' })).toBeVisible();
+  await expect(table.getByRole('img', { name: 'Soul of Greed' })).toBeVisible();
+  // Without the card names the language is gone; English shows.
+  await page.goto('/?fake&nosplash&screen=cards');
+  await expect(table.getByRole('img', { name: 'Isaac', exact: true })).toBeVisible();
 });
 
 test('the language follows the OS until one is picked', async ({ browser }) => {

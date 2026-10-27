@@ -24,11 +24,14 @@ if (import.meta.env.DEV) {
   locales.set(testLanguage, pseudoLocale(english));
 }
 
-// languages are the choices in Settings, English first.
-export const languages = languageList(
-  [...locales.keys()].filter((l) => l !== testLanguage),
-  import.meta.env.DEV,
-);
+const fileLanguages = [...locales.keys()].filter((l) => l !== testLanguage);
+let list = languageList(fileLanguages, [], import.meta.env.DEV);
+
+// languages are the choices in Settings, English first: the language
+// files, then the card languages once the cards load (16.10).
+export function languages(): readonly string[] {
+  return list;
+}
 
 function osLanguage(): string {
   return typeof navigator === 'undefined' ? 'en' : navigator.language;
@@ -37,14 +40,25 @@ function osLanguage(): string {
 // shownLanguage is the language a saved setting shows: '' or one this
 // build lacks follows the OS, else English.
 export function shownLanguage(saved: string): string {
-  return resolveLanguage(saved, languages, osLanguage());
+  return resolveLanguage(saved, list, osLanguage());
 }
 
-let current = shownLanguage('');
+let saved = '';
+let current = shownLanguage(saved);
 
 // setLanguage switches every later t() to the saved setting's language.
-export function setLanguage(saved: string): void {
+export function setLanguage(setting: string): void {
+  saved = setting;
   current = shownLanguage(saved);
+}
+
+// setCardLanguages adds the languages the cards have names in; the
+// saved setting may name one, so it is resolved again. It gives the new
+// list for Settings.
+export function setCardLanguages(langs: readonly string[]): readonly string[] {
+  list = languageList(fileLanguages, langs, import.meta.env.DEV);
+  current = shownLanguage(saved);
+  return list;
 }
 
 // language is the language t() uses now.

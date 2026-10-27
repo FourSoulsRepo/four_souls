@@ -220,7 +220,7 @@ Rules of this step (owner, 2026-10-26):
       1. Placeholders like `{n} cards` would need quotes in YAML.
       2. Every reader (checks, merge, e2e, Go) would need a YAML library.
 
-### [ ] 16.10 Card-only languages in Settings
+### [x] 16.10 Card-only languages in Settings
 
 1. Goal: a language with card names only is a choice in Settings (owner).
 2. Tasks:
@@ -231,6 +231,13 @@ Rules of this step (owner, 2026-10-26):
    5. Translator guides: drop the empty `{}` workaround for card-only languages.
 3. Done when:
    1. A card-only test language shows in Settings without a locale file.
+4. Result: card languages from the `names` of `App.Cards`; no new binding.
+   1. `cardLanguagesOf` in `locale.ts`; `cardLanguages` is gone.
+   2. `loadCards` calls `setCardLanguages`; the store keeps `languages`.
+   3. A saved card-only language shows once the cards load.
+   4. Fake bridge `?cardlang=xx` names Isaac in `xx`; card files untouched.
+   5. Tests: `TestCardsNamesCardOnlyLanguage`, Vitest, `settings.spec.ts`.
+   6. ADR 021 item 11.6, UC-32 2c, `Client.md`, `Translate-cards.md`.
 
 ### [ ] 16.11 Clear JSON errors for translators
 

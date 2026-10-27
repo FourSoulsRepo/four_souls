@@ -38,6 +38,10 @@
   * No translators are credited then.
 * **8a. A card with no image in the language:** its English image shows.
   * Without the private images: the text card, as before.
+* **2c. A language with card names only (16.10):** it is listed too.
+  * No interface file is needed; the texts stay English.
+  * Cards show their names in it; others stay English.
+  * It joins the list once the card data has loaded.
 
 ## Postconditions
 

@@ -41,10 +41,6 @@ export function msgValues(m: Msg, names: { card: (ref: string) => string; player
 // testLanguage is built from English at run time; development only.
 export const testLanguage = 'qps';
 
-// cardLanguages have card names in card_db but no interface file yet;
-// they are listed so a player can pick them (16.2, owner: Russian).
-export const cardLanguages = ['ru'];
-
 // textOf drops the notes of en.json.
 export function textOf(entries: Record<string, Entry>): Locale {
   return new Map(Object.entries(entries).map(([k, e]) => [k, e.text]));
@@ -114,10 +110,17 @@ export function pseudoLocale(en: Locale): Locale {
   );
 }
 
+// cardLanguagesOf lists the languages the cards have names in, from the
+// names Go sends (App.Cards, 16.10): a language with no interface file
+// is still a choice, with English screens and its card names.
+export function cardLanguagesOf(cards: readonly { names?: Record<string, string> }[]): string[] {
+  return [...new Set(cards.flatMap((c) => Object.keys(c.names ?? {})))].sort();
+}
+
 // languageList is what the settings offer: English first, then each
 // language with an interface file or card names, then the test language
 // in development (ADR 021, 11).
-export function languageList(files: readonly string[], dev: boolean): string[] {
+export function languageList(files: readonly string[], cardLanguages: readonly string[], dev: boolean): string[] {
   const others = [...new Set([...files, ...cardLanguages])].filter((l) => l !== 'en' && l !== testLanguage).sort();
   return ['en', ...others, ...(dev ? [testLanguage] : [])];
 }

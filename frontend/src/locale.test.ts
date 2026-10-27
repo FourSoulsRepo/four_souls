@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  cardLanguagesOf,
   checkLanguage,
   formExamples,
   gapLines,
@@ -99,8 +100,16 @@ describe('pseudo', () => {
 
 describe('languages', () => {
   it('lists English first, files and card languages, and qps in development', () => {
-    expect(languageList(['en'], false)).toEqual(['en', 'ru']);
-    expect(languageList(['en', 'de', 'ru'], true)).toEqual(['en', 'de', 'ru', 'qps']);
+    expect(languageList(['en'], [], false)).toEqual(['en']);
+    expect(languageList(['en'], ['en', 'ru'], false)).toEqual(['en', 'ru']);
+    expect(languageList(['en', 'de', 'ru'], ['ru', 'xx'], true)).toEqual(['en', 'de', 'ru', 'xx', 'qps']);
+  });
+
+  // Card-only languages come from the names Go sends (16.10).
+  it('finds the card languages in the card names', () => {
+    const cards: { names?: Record<string, string> }[] = [{ names: { en: 'Isaac', ru: 'Исаак' } }, { names: { en: 'Cain', xx: 'Xcain' } }, {}];
+    expect(cardLanguagesOf(cards)).toEqual(['en', 'ru', 'xx']);
+    expect(cardLanguagesOf([])).toEqual([]);
   });
 
   it('resolves the saved language, then the OS one, then English', () => {

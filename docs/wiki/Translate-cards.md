@@ -109,7 +109,7 @@ It prints `SyntaxError: … (line 7144 column 9)`: the mistake is at or just bef
 The game shows card names in the language chosen in Settings, English for a card that has none.
 
 * `make screenshots LOCALE=de` takes every screen with your card names, into `.cache/screenshots/de/` ([Translate the interface](Translate-the-interface#5-look-at-the-screens)). The screenshot scenes use Base Game cards only (`b2.json`); `screen-cards.png`, the card gallery, shows a dozen of them as text cards.
-* Settings lists a language that has an interface file. If yours has none yet, add an empty one, `frontend/src/locales/<code>.json` with `{}`, so it can be chosen; its menus stay English.
+* Settings lists every language that has card names, even with no interface file: as soon as one card has `text.<code>.name`, your language is a choice. Its menus stay English until someone [translates the interface](Translate-the-interface).
 * In the real app (developers: `wails dev -m`), pick your language in Settings; the zoom shows the name and credits the translators.
 
 Public copies of the code have no card images, so cards show as text cards with their names: that is the view to check.

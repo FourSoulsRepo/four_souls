@@ -217,6 +217,20 @@ function realCards(): unknown[] {
     }));
 }
 
+// ?cardlang=xx names Isaac in the card-only language xx, which has no
+// interface file, as card data with text.xx would (16.10). The real card
+// files never get test names.
+function withTestLanguage(list: unknown[]): unknown[] {
+  const lang = params.get('cardlang');
+  if (!lang) {
+    return list;
+  }
+  return list.map((c) => {
+    const card = c as { ref: string; names: Record<string, string> };
+    return card.ref === 'isaac' ? { ...card, names: { ...card.names, [lang]: `Isaac (${lang})` } } : card;
+  });
+}
+
 // Hosting points at a real dedicated server the e2e tests start
 // (?server=PORT), so two pages reach the same lobby.
 const params = new URLSearchParams(window.location.search);
@@ -252,7 +266,7 @@ w.go = {
             ? ''
             : JSON.stringify([{ key: 'refuse.deck_ratios', args: { n: players } }, { key: 'refuse.ratio.butter_beans', args: { have: 3, need: 5 } }]),
         ),
-      Cards: () => Promise.resolve([...cards.map((c) => ({ ...c, ...translated(c.ref, c.name) })), ...realCards()]),
+      Cards: () => Promise.resolve(withTestLanguage([...cards.map((c) => ({ ...c, ...translated(c.ref, c.name) })), ...realCards()])),
       // The dice textures at their real paths; like the mat, the e2e
       // tests serve them only for screenshots, else they fail: plain dice.
       // ?nodice has no textures, as Go without the private images.
