@@ -2,6 +2,8 @@
 
 One script installs every tool `make` needs, on macOS and Linux (16.8). `make doctor` then checks them. Windows is not covered yet.
 
+Translators need only `--profile translator`; their guides are [Translate the interface](Translate-the-interface) and [Translate cards](Translate-cards).
+
 ## Run it
 
 From the repository root:

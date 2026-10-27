@@ -13,6 +13,12 @@
 * [Server with Docker Compose and Caddy](Server-with-Docker-Compose-and-Caddy)
 * [Server from a local build](Server-from-a-local-build)
 
+**Translators**
+
+* [Translate the interface](Translate-the-interface)
+* [Translate cards](Translate-cards)
+* [Translating with an AI agent](Translating-with-an-AI-agent)
+
 **Developers**
 
 * [Repo layout](Repo-layout)

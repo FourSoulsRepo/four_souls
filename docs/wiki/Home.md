@@ -2,7 +2,7 @@
 
 Notes for the Four Souls fan game: a desktop network card game for 2–4 players, built with Wails (Go + React/TypeScript).
 
-Pick your group: players, people who run a game server, or developers. Developer pages describe the current code. Decisions live in `docs/architecture/` (ADRs); user-visible behavior in `docs/use-cases/`; the plan in `docs/roadmap.md`.
+Pick your group: players, people who run a game server, translators, or developers. Developer pages describe the current code. Decisions live in `docs/architecture/` (ADRs); user-visible behavior in `docs/use-cases/`; the plan in `docs/roadmap.md`.
 
 ## Players
 
@@ -16,6 +16,12 @@ Pick your group: players, people who run a game server, or developers. Developer
 * [Server in Docker](Server-in-Docker) — one Dockerfile builds the latest release.
 * [Server with Docker Compose and Caddy](Server-with-Docker-Compose-and-Caddy) — HTTPS on your domain.
 * [Server from a local build](Server-from-a-local-build) — your own binary in the Docker setup.
+
+## Translators
+
+* [Translate the interface](Translate-the-interface) — one JSON file per language, its check, and screenshots in your language.
+* [Translate cards](Translate-cards) — card names and texts in the card data, translator credits, card images.
+* [Translating with an AI agent](Translating-with-an-AI-agent) — the todo/done loop and a ready prompt.
 
 ## Developers
 

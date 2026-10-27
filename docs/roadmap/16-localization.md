@@ -189,7 +189,7 @@ Rules of this step (owner, 2026-10-26):
    8. macOS: only `--check` on the owner's Mac; nothing installed there.
    9. The Ubuntu screenshot run found 19.82 (dice test without images).
 
-### [ ] 16.9 Translator guides
+### [x] 16.9 Translator guides
 
 1. Goal: anyone can add a language from the wiki (LO-05).
 2. Tasks:
@@ -202,3 +202,11 @@ Rules of this step (owner, 2026-10-26):
    7. The new group goes into `Home.md`, `_Sidebar.md`, and `CLAUDE.md` (3.14).
 3. Done when:
    1. A walkthrough of each guide on a clean checkout works.
+4. Result: three wiki pages in the new group Translators.
+   1. `Translate-the-interface`, `Translate-cards`, `Translating-with-an-AI-agent`.
+   2. A new language starts as `{}`; a copy of `en.json` fails the check.
+   3. Card-only languages: Settings lists a language with an interface file.
+   4. Walkthrough: clean Ubuntu 24.04 container, public clone, `de` trial.
+   5. Screenshots on two cores: `E2E_WORKERS=2`; the guide says so.
+   6. Card images: sent to the maintainers through the pull request.
+   7. The group is in `Home.md`, `_Sidebar.md`, `CLAUDE.md` 3.14.

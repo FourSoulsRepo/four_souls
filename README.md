@@ -45,7 +45,8 @@ make build vet test lint wasm
 cd frontend && npm run typecheck && npm run lint
 ```
 
-Wiki for players, server admins and developers: [docs/wiki/Home.md](docs/wiki/Home.md).
+Wiki for players, server admins, translators and developers: [docs/wiki/Home.md](docs/wiki/Home.md).
+To translate the game: [Translate the interface](docs/wiki/Translate-the-interface.md).
 Plan: [docs/roadmap.md](docs/roadmap.md).
 
 ## License

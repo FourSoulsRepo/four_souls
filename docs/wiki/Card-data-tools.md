@@ -35,7 +35,7 @@ cd ../tools && go run ./scraper ru-names -migrations ../four_souls/.cache/migrat
 
 For every card it writes `text.ru.name` and `translators.ru` (Alchba, Mitboy, d0m1n1c132, Blacknenko, N-Chance, the foursouls.ru translators). The site's `text_id` is `<set>-<card id>` with this repo's set suffix dropped (`fsp2-pills_2_fsp2` is `fsp2-pills_2`), then a fixed list of the site's misspelled ids (owner, 16.5). A two-sided card gets "Front/Back" like its English name, and every *Pills!* is *Пилюля!*. Reprint entries show the older card's name and are skipped. The command prints per set how many cards got a name and every card it could not match; rerunning it gives the same files.
 
-`scraper build` keeps every language but English from the current data file, by card ID and version, so a new scrape keeps the Russian names. A translator's own fixes can go straight into `text.ru` the same way.
+`scraper build` keeps every language but English from the current data file, by card ID and version, so a new scrape keeps the Russian names. A translator's own fixes can go straight into `text.ru` the same way ([Translate cards](Translate-cards)).
 
 ## The images submodule
 
