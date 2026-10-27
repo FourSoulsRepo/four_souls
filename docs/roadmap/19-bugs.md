@@ -2703,7 +2703,7 @@ Totals by system (87 items):
 5. Done when:
    1. Cause written here; the test passes ten full runs in a row.
 
-### [ ] 19.82 e2e: the dice menu test fails in a screenshot run without card images
+### [x] 19.82 e2e: the dice menu test fails in a screenshot run without card images
 
 1. Goal: `make screenshots` passes in a public clone.
 2. Report (agent, 2026-10-27)
