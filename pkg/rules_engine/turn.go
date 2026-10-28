@@ -180,7 +180,10 @@ func (g *Game) run() {
 		if g.checkWin() {
 			return
 		}
-		if len(g.Queue) > 0 {
+		// A roll's throw waits for the triggers already waiting: they go on
+		// the stack before the die is thrown (19.105).
+		throwAfterTriggers := len(g.Queue) > 0 && g.Queue[0].Kind == ActThrow && len(g.PendingTriggers) > 0
+		if len(g.Queue) > 0 && !throwAfterTriggers {
 			// Start-of-game abilities (Eden) resolve before the roll (R-SETUP-09).
 			g.processQueue()
 			continue

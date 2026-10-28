@@ -33,7 +33,7 @@ This step never closes; new reports are appended.
 
 | ID | Group                                    | System     | Items                                                  | Count |
 |----|------------------------------------------|------------|--------------------------------------------------------|-------|
-| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95, 19.97, 19.104 | 17 |
+| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95, 19.97, 19.104, 19.105 | 18 |
 | B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90 | 9 |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74                              | 4     |
@@ -3364,3 +3364,26 @@ Totals by system (98 items):
    6. No screen change; no screenshots.
 7. Owner notes (2026-10-28)
    1. Owner marks 19.104 fixed.
+
+### [x] 19.105 A deck attack's dice are thrown before its "attack declared" ability is on the stack
+
+1. Goal: an ability that triggers when an attack is declared goes on the stack before the attack roll is thrown.
+2. Report (owner, 2026-10-28)
+   1. Attacking Pride from the top of the monster deck.
+   2. The dice were rolled first; Pride's ability was put on the stack after.
+3. Cause (2026-10-28)
+   1. `startAttack` emits the attack-target event, then pushes the attack roll.
+   2. `push` queues the roll's throw at once; the queue runs before pending triggers are placed.
+   3. The throw prompt blocks the run loop, so the trigger waits for the die.
+4. Tasks:
+   1. Test: Pride from the deck; the throw is not waiting while its trigger is pending; fails before the fix.
+   2. Fix: `run` places waiting triggers before a queued throw.
+5. Done when:
+   1. The test passes; `make lint` and `make test` pass.
+6. Result (2026-10-28)
+   1. `run` places pending triggers before a throw at the head of the queue.
+   2. Engine 0.4.2; `orderVersion` makes 0.4.1 and older records unable to replay.
+   3. New test: `TestPrideDeckAttackTriggersBeforeTheRoll` (cards/b2). It failed before the change; it passes after.
+   4. `make lint` exit 0; `make test` exit 0.
+   5. No screen change; no screenshots.
+   6. Process: the fix was written before this item was logged. The item is logged now.
