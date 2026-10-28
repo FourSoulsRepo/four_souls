@@ -1334,6 +1334,48 @@ test('a player death makes its sound once, a monster death none (18.8)', async (
   expect(await played(ola)).toEqual(['/cardimg/assets/sounds/player-died.mp3']);
 });
 
+test('every gained soul sounds: a dead one, a bonus soul from the board, the Lost Soul (18.13, 18.14)', async ({ browser }) => {
+  const [ari] = await startGame(browser, ['Ari', 'Bex']);
+  if (!ari) {
+    throw new Error('no pages');
+  }
+  await listenSounds(ari);
+  // Show a bonus soul card on the board first, then replay a monster's
+  // death, the soul it gives its player (prev: 999), the bonus soul
+  // leaving the board, and the Lost Soul becoming a soul.
+  await ari.evaluate(() => {
+    const s = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store.getState();
+    const game = structuredClone(s.game);
+    if (!game || !game.view.monsters[0]?.top) {
+      throw new Error('no game');
+    }
+    const shown = structuredClone(game);
+    shown.view.bonus_souls = [{ id: 996, card: 'bonus_soul' }];
+    s.receive({ type: 'update', data: { ...shown, step: game.step + 1, events: [] } });
+    const first = game.view.monsters[0];
+    const old = first?.top;
+    if (!first || !old) {
+      throw new Error('no game');
+    }
+    delete first.top;
+    const you = s.lobby.table?.you ?? 0;
+    const events = [
+      { kind: 'died', player: -1, object: 999, card: old.card, prev: old.id },
+      { kind: 'gained_soul', player: you, object: 997, card: old.card, prev: 999 },
+      { kind: 'gained_soul', player: you, object: 995, card: 'bonus_soul', text: 'bonus soul' },
+      { kind: 'gained_soul', player: you, object: 994, card: 'lost_soul' },
+    ];
+    s.receive({ type: 'update', data: { ...game, step: game.step + 2, events } });
+  });
+  await expect(ari.getByTestId('effect-fly')).toBeAttached();
+  await expect(ari.locator('.effects')).toHaveCount(0);
+  expect(await played(ari)).toEqual([
+    '/cardimg/assets/sounds/soul-gain.mp3',
+    '/cardimg/assets/sounds/soul-gain.mp3',
+    '/cardimg/assets/sounds/soul-gain.mp3',
+  ]);
+});
+
 test('each gained treasure flies in with its sound; a trinket and a starting item do not (18.9)', async ({ browser }) => {
   const [ola] = await startGame(browser, ['Ola', 'Pim']);
   if (!ola) {

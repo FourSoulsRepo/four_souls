@@ -426,6 +426,9 @@ type Options struct {
 	// (R-SETUP-17, GS-07). The server sets it when the chosen sets have
 	// too few cards for the ratios.
 	NoDeckRatios bool `json:"no_deck_ratios,omitempty"`
+	// RandomSeats seats the players in a random order when the game
+	// starts; false: in the order they joined.
+	RandomSeats bool `json:"random_seats,omitempty"`
 	// ResponseTimer is seconds to answer a prompt: 0 is off, else at
 	// least 60; an allowance for animations is added (N-07).
 	ResponseTimer int `json:"response_timer,omitempty"`

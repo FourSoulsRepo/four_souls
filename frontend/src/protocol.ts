@@ -105,6 +105,7 @@ export interface Options {
   host_bans?: string[];
   no_bonus_souls?: boolean;
   no_deck_ratios?: boolean;
+  random_seats?: boolean; // seat the players in a random order at the start
   response_timer?: number; // seconds; 0: off, else at least 60
   rollback?: RollbackMode; // none: Disabled (ADR 020)
 }
@@ -263,13 +264,20 @@ export const Deck = { treasure: 0, loot: 1, monster: 2, room: 3 } as const;
 // Card roles (CardView.role).
 export const Role = { none: 0, character: 1, item: 2, monster: 3, event: 4, soul: 5, curse: 6 } as const;
 
+// CounterView is one kind of counter on a card: '' or no name is the
+// general kind, and a named kind (gold) has its own colour (18.15).
+export interface CounterView {
+  name?: string;
+  count: number;
+}
+
 export interface CardView {
   id: number;
   card: string;
   role?: number;
   charged: boolean;
   damage?: number;
-  counters?: { name?: string; count: number }[];
+  counters?: CounterView[];
   stats?: MonsterStats; // only on monsters
   // abilities: each ability's words by the activate intent's choice;
   // only on a played card with two or more to pick from (C-05).
@@ -281,12 +289,11 @@ export interface CardView {
   dice?: number[];
   // flipped: the back face is up; card is then the back's ref (ADR 023).
   flipped?: boolean;
+  // copy: the card whose abilities this card uses by copying them, e.g.
+  // Placebo's or Glitch's; older servers send none (19.106).
+  copy?: string;
 }
 
-// counted is how many counters a card carries, of any kind.
-export function counted(c: CardView): number {
-  return (c.counters ?? []).reduce((n, x) => n + x.count, 0);
-}
 
 // MonsterStats are a monster's stats now and as printed (C-03).
 export interface MonsterStats {

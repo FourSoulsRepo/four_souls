@@ -45,7 +45,9 @@ export type Effect =
   | { kind: 'steal'; from: string[]; to: string[]; amount: number }
   // deaths: a big skull on each dying card before it leaves (T-26).
   // sound plays with the skulls when a player died (18.8).
-  | { kind: 'deaths'; at: string[][]; sound?: Sound };
+  | { kind: 'deaths'; at: string[][]; sound?: Sound }
+  // sound: a sound with no flight, held for a beat (18.14).
+  | { kind: 'sound'; sound: Sound };
 
 export interface Hit {
   from: string[];
@@ -62,7 +64,7 @@ export interface Death {
 }
 
 // flyFrom flies a dead card from where it died, once (19.73).
-function flyFrom(death: Death, to: string[], card: string | undefined, back: Kind): Effect {
+function flyFrom(death: Death, to: string[], card: string | undefined, back: Kind): Extract<Effect, { kind: 'fly' }> {
   return { kind: 'fly', from: [death.zone], to, card, back, lifts: death.object };
 }
 
@@ -77,6 +79,8 @@ interface Context {
   before: (object: number) => string | undefined;
   // shopBefore is the shop slot a card tops in that view, if any (18.9).
   shopBefore: (card: string) => Death | undefined;
+  // bonusBefore is the bonus soul card on the board in that view, if any (18.13).
+  bonusBefore: (card: string) => Death | undefined;
   // diedAt keeps where each dead card died, by its held object, across
   // updates: reward rolls may come before its discard or soul (19.73).
   diedAt: Map<number, Death>;
@@ -135,6 +139,12 @@ export function shopSlot(view: GameView, card: string): Death | undefined {
   const i = (view.shop ?? []).findIndex((s) => s.top?.card === card);
   const top = view.shop?.at(i)?.top;
   return i >= 0 && top ? { zone: `shop-slot-${String(i)}`, object: top.id } : undefined;
+}
+
+// bonusSlot is the bonus soul card on the board for card, and its object.
+export function bonusSlot(view: GameView, card: string): Death | undefined {
+  const b = (view.bonus_souls ?? []).find((c) => c.card === card);
+  return b ? { zone: `obj-${String(b.id)}`, object: b.id } : undefined;
 }
 
 // slotZone is the zone of the monster or shop slot whose top card is
@@ -278,14 +288,27 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
       }
       case 'gained_soul': {
         // A dead monster flies from its slot to the player; another card
-        // from its place, if drawn. A bonus soul has no prev (19.73).
-        if (!e.prev) {
+        // from its place, if drawn. Each makes the soul sound (19.73).
+        if (e.prev) {
+          const kind = kindOf(ctx.card(e.card ?? '')?.type ?? 'Monster Card');
+          const death = ctx.diedAt.get(e.prev) ?? { zone: `obj-${String(e.prev)}`, object: e.prev };
+          ctx.diedAt.delete(e.prev);
+          out.push({ ...flyFrom(death, playerZones(e.player), e.card, kind), sound: 'soulGain' });
           break;
         }
-        const kind = kindOf(ctx.card(e.card ?? '')?.type ?? 'Monster Card');
-        const death = ctx.diedAt.get(e.prev) ?? { zone: `obj-${String(e.prev)}`, object: e.prev };
-        ctx.diedAt.delete(e.prev);
-        out.push(flyFrom(death, playerZones(e.player), e.card, kind));
+        // A bonus soul flies from its card on the board, if it was drawn
+        // there, with the soul sound (18.13).
+        if (e.text === 'bonus soul') {
+          const death = ctx.bonusBefore(e.card ?? '');
+          if (death) {
+            out.push({ ...flyFrom(death, playerZones(e.player), e.card, kindOf('Bonus Soul Card')), sound: 'soulGain' });
+          }
+          break;
+        }
+        // The Lost Soul becomes a soul in play: no flight, its own sound (18.14).
+        if (ctx.card(e.card ?? '')?.type === 'Lost Soul Card') {
+          out.push({ kind: 'sound', sound: 'soulGain' });
+        }
         break;
       }
       case 'gained_treasure':

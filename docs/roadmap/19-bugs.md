@@ -33,16 +33,16 @@ This step never closes; new reports are appended.
 
 | ID | Group                                    | System     | Items                                                  | Count |
 |----|------------------------------------------|------------|--------------------------------------------------------|-------|
-| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95, 19.97 | 16 |
-| B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90 | 9 |
+| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95, 19.97, 19.104, 19.105 | 18 |
+| B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90, 19.106 | 10 |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74                              | 4     |
 | E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52, 19.54, 19.69 | 9  |
-| F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88        | 7     |
+| F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88, 19.99, 19.102 | 9     |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
-| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87 | 18 |
-| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89 | 16 |
+| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100 | 20 |
+| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107 | 19 |
 | K  | Build and release files                  | Release    | 19.47, 19.59, 19.83, 19.91                             | 4     |
 | L  | Not a bug: the app follows a ruling      | None       | 19.63                                                  | 1     |
 | M  | Go test setup: the code was right        | Go tests   | 19.68                                                  | 1     |
@@ -50,15 +50,15 @@ This step never closes; new reports are appended.
 | O  | Reconnect: old connection state kept     | Client     | 19.78, 19.86                                           | 2     |
 | P  | A missing setting: no way to change it   | Client     | 19.93                                                  | 1     |
 
-Totals by system (94 items):
+Totals by system (98 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
 | Engine    | A, B    | 23    |
 | Card data | C       | 2     |
-| Client    | D–G, O, P | 27  |
+| Client    | D–G, O, P | 29  |
 | Server    | H, N    | 2     |
-| e2e       | I, J    | 34    |
+| e2e       | I, J    | 36    |
 | Release   | K       | 4     |
 | None      | L       | 1     |
 | Go tests  | M       | 1     |
@@ -3161,3 +3161,277 @@ Totals by system (94 items):
 5. Done when:
    1. A game with Forever Alone out ends its turn.
    2. A test plays the activation loop and checks that End turn is offered.
+
+### [x] 19.98 The languages e2e test expects the first-roll prompt after Eden's choice
+
+1. Goal: `languages.spec.ts` (16.4) passes for every random deal.
+2. Report (`make e2e` on `step-18-play-test`, 2026-10-28)
+   1. `tests/languages.spec.ts:102`, chromium: the throw-prompt check failed.
+   2. Expected "Throw the dice for the first player roll".
+   3. Received "Choose your starting item" (Eden's choice).
+   4. The same test passed alone, twice.
+3. Cause (2026-10-28)
+   1. The deal is random; Eden may be dealt.
+   2. Eden's starting choice comes before the first-roll prompt (19.94).
+   3. The banner check ran while Eden's choice was still open.
+   4. The test's own comment (line 81) knows a deal may ask first.
+4. Tasks:
+   1. Wait for the exact state the deal gives, not the roll prompt alone (CLAUDE.md 16.10).
+   2. Do not ban Eden only because the test failed on it (CLAUDE.md 16.8).
+   3. Name the state in a comment next to the wait.
+5. Done when:
+   1. The test passes on a deal with Eden and on one without.
+   2. `make e2e` passes twice in a row.
+6. Result (2026-10-28)
+   1. New `untilRollBanner` in `languages.spec.ts`: it picks Eden's first option, then waits for the roll banner on every page.
+   2. No ban added; the test keeps the deal as dealt.
+   3. 60 repeated runs of the test passed; Eden's choice came up in 9 of the first 60 deals.
+   4. `make lint` passes.
+   5. `make e2e`: run 1 failed in one webkit test of `pause.spec.ts` (logged as 19.103); runs 2 and 3 passed (384 passed, 6 skipped each).
+   6. Evidence of run 1 copied to the scratchpad before the next run.
+7. Owner notes (2026-10-28)
+   1. Owner asks to mark 19.98 fixed.
+
+### [x] 19.103 A webkit pause test fails once: an intent lost with a dropped connection (19.86)
+
+1. Goal: `pause.spec.ts` (19.86) passes in every full run of `make e2e`.
+2. Report (`make e2e` on `step-18-play-test`, 2026-10-28, run 1 of 3)
+   1. `tests/pause.spec.ts:28`, webkit: "an intent lost with a dropped connection can be sent again".
+   2. Failed at line 51: the throw button still showed after the click.
+   3. Runs 2 and 3 passed; the test passed alone in chromium.
+3. Cause: not found yet.
+   1. Evidence: `e2e-run1` copy in the session scratchpad.
+4. Tasks:
+   1. Find what the click did in the failed run, and when the state changed.
+   2. Fix the wait to the exact state (CLAUDE.md 16.10); no ban.
+5. Done when:
+   1. The test passes in repeated full runs of `make e2e`.
+6. Result (2026-10-28)
+   1. Closed as can't reproduce; the cause stays unknown.
+   2. Run 1's evidence: the Throw button still shown; no error text; the attack roll still waiting.
+   3. Not reproduced: about 700 traced repeats, webkit and chromium, under load; all passed.
+   4. Full `make e2e` (2026-10-28): the pause test passed; one unrelated webkit lobby test failed.
+   5. Read in the server: a returning seat is attached before the intent that follows its welcome.
+   6. The old wait was a sign: the button shows before the server's resync arrives (16.10).
+   7. Uncommitted test change: `markGame` and `untilResynced` in `turn.ts`; the test waits for the resync.
+   8. Uncommitted trace: `trace` and `traceLog` in `turn.ts`; prints only on failure.
+   9. One run of 30 hit the new wait's timeout before the trace existed; its state was not captured.
+7. Owner notes (2026-10-28)
+   1. Owner marks 19.103 can't reproduce and closes it.
+
+### [x] 19.99 The history strip zoom shows another card than the bomb (15.90)
+
+1. Goal: `info.spec.ts` (15.90) passes; hovering a strip tile zooms its own card.
+2. Report (`make e2e` on `step-18-play-test`, 2026-10-28)
+   1. `tests/info.spec.ts:528`, chromium: a strip tile shows what the play did.
+   2. After hovering the damage, the zoom's `aria-label` was "Cain"; expected the bomb.
+   3. Failed in one full run; passed alone, twice, in both browsers.
+3. Cause (2026-10-28)
+   1. The zoom showed the kill's card: the killer's character.
+   2. The kill tile's card image was redrawn under the pointer.
+   3. The browser sent no out event for the removed image.
+   4. The next over named the card as where it came from.
+   5. React ignored that over; it drops an enter from a React node.
+   6. The damage tile's enter never ran; the kill's zoom stayed.
+   7. Deal-dependent: the killer's card differs each deal.
+4. Tasks:
+   1. Find which element the zoom reads, and when it changes.
+   2. Fix the wait or the client; do not ban cards unless the cause is the deal (CLAUDE.md 16.8).
+   3. Check whether the failure needs a particular deal; log the seed if it does (CLAUDE.md 19.3).
+5. Done when:
+   1. The test passes in repeated full runs of `make e2e`.
+6. Result (2026-10-28)
+   1. The strip tile zooms on pointer-over, not pointer-enter.
+   2. A pointer-over from inside the same tile does not zoom again.
+   3. New test: "a strip tile zooms its own card when the one before it is redrawn (19.99)".
+   4. The new test failed on the old handler; it passes now.
+   5. The 15.90 test: 2 of 40 failed before the fix; 40 of 40 pass after.
+   6. `make lint` and `make frontend` pass; `make e2e` passes twice (382 passed, 6 skipped).
+   7. No screen change; no screenshots.
+7. Owner notes (2026-10-28)
+   1. Owner marks 19.99 solved.
+
+### [x] 19.100 A played Dagaz waits for a play menu or aim target that does not show (19.18)
+
+1. Goal: `stack.spec.ts` (19.18) passes in every browser, every run.
+2. Report (`make e2e` on `step-18-play-test`, 2026-10-28, third run)
+   1. `tests/stack.spec.ts:68`, webkit: a played Dagaz goes on the stack.
+   2. `answerPlay` (`turn.ts:319`) waited for the play menu or an aim target.
+   3. Neither showed within 5 s: "element(s) not found".
+   4. Failed once; not seen in the two earlier runs.
+   5. The wait was in `playLoot` (`turn.ts`), not `answerPlay`.
+3. Cause: a new state closed the card's menu before it was used.
+   1. Clicking Dagaz in hand opens its menu (`ActionMenu`).
+   2. Any new game step runs `setAiming(null)` (`GameScreen.tsx`).
+   3. `setAiming` also clears `selected` (`store.ts`): the menu closes.
+   4. The test waited 5 s for a menu that the app had closed.
+   5. Nothing reopened it: the test pressed the card once.
+   6. The app was right: a new state ends a selection (15.25).
+   7. Reproduced: a `setAiming(null)` right after the click fails the test.
+   8. Same message as the report: `getByRole('menu').or(…)` not visible.
+   9. Evidence: `.cache/e2e-evidence-19.100/`.
+4. Tasks:
+   1. Find what Dagaz's play shows in webkit, and when.
+   2. Fix the wait to the exact state (CLAUDE.md 16.10); no ban.
+5. Done when:
+   1. The test passes in repeated full runs of `make e2e`.
+6. Result (2026-10-28)
+   1. `playLoot` presses the card again until its menu or target shows.
+   2. No ban; no app change; no screenshots.
+   3. A close injected after the click fails before the fix, passes after.
+   4. `make lint` passes (exit 0).
+   5. `make e2e` passes (380 passed, 6 skipped).
+   6. The chance failure did not come back in three WebKit runs.
+7. Owner notes (2026-10-28)
+   1. Owner marks 19.100 solved.
+
+### [x] 19.101 A bomb aimed by two clicks shows no "pick a monster" note (9.2)
+
+1. Goal: `aim.spec.ts` (9.2) passes in every browser, every run.
+2. Report (`make e2e` on `step-18-play-test`, 2026-10-28, WebKit diagnostic run)
+   1. `tests/aim.spec.ts:33`, webkit: a bomb aimed at a monster by two clicks.
+   2. The click on a shop item, no target, did not show `.aim-why`.
+   3. Expected "Pick a monster or a player."; "element(s) not found" in 5 s.
+   4. Failed once in three full WebKit runs.
+3. Cause: not found yet.
+   1. The test checks the note right after that click.
+   2. Possible: a new state ended the aim before the click, as in 19.100.
+   3. Possible: the note showed and closed before the check.
+   4. Not reproduced (2026-10-28): aim spec 6 of 6 passed alone; full webkit suite 3 of 3 passed.
+   5. Temporary logging of store steps and aim state around the shop click showed no change; reverted.
+4. Tasks:
+   1. Find what the click did in the failed run, and when the state changed.
+   2. Fix the wait to the exact state (CLAUDE.md 16.10); no ban.
+5. Done when:
+   1. The test passes in repeated full runs of `make e2e`.
+6. Result (2026-10-28)
+   1. Closed as can't reproduce; no fix, no test change.
+   2. The cause stays unknown; the Cause notes above list what was ruled out.
+   3. Reopen with the failing run's evidence if it comes back.
+7. Owner notes (2026-10-28)
+   1. Owner marks 19.101 can't reproduce.
+
+### [x] 19.102 A stack row's zoom keeps the last card when its card is redrawn (19.99)
+
+1. Goal: a stack row zooms its own card, as the history strip does (19.99).
+2. Report (found by code review, 2026-10-28, same cause as 19.99)
+   1. `StackPanel.tsx` rows use `onPointerEnter` for the zoom.
+   2. A row's card image redrawn under the pointer sends no out event.
+   3. React then drops the next row's enter, so the zoom keeps the old card.
+3. Cause (2026-10-28)
+   1. Same mechanism as 19.99, in `StackPanel.tsx`.
+   2. Not yet seen in a failing run; found by reading the code.
+4. Tasks:
+   1. Use `onPointerOver` with the same check as the strip (19.99).
+   2. Add a test that fails before the change and passes after.
+5. Done when:
+   1. The test passes in repeated full runs of `make e2e`.
+6. Result (2026-10-28)
+   1. `StackPanel` rows zoom on pointer-over, ignoring an over from the same row.
+   2. New test: "a stack row zooms its own card when the row before it is redrawn (19.102)".
+   3. The new test failed before the change ("Bomb!" for "Big Spider"); it passes after.
+   4. `make lint` and `make frontend` pass.
+   5. `make e2e` passes twice in a row (384 passed, 6 skipped each).
+   6. No screen change; no screenshots.
+7. Owner notes (2026-10-28)
+   1. Owner marks 19.102 solved.
+
+### [x] 19.104 A monster's refill runs before its reward roll resolves; the next monster's ability fires on it
+
+1. Goal: a dead monster's slot refills only after its rewards, roll rewards included, are given (R-DEATH-06 to R-DEATH-09).
+2. Report (owner, 2026-10-28, replay `2026-10-28-170334-g1_Hitokiri-Battosai_jеня_attack_order.fsrec`)
+   1. Holy Greedling died; its reward is a roll of a die, which gave 6¢.
+   2. The roll came up 6; Holy Dinga entered the slot on the same roll.
+   3. Holy Dinga's "Each time a player rolls a 6, they heal 1 HP" fired on the Greedling's reward roll.
+   4. The rules put the refill (step 6) after the rewards (step 3).
+3. Cause (2026-10-28, match record steps 42 to 47)
+   1. `rewardsStep` pushes a roll reward on the stack, then enqueues `ActRewardsDone` and `ActRefillSlots`.
+   2. The queue drains before the roll is thrown and resolved.
+   3. Step 43: the dice are rolled, the Greedling is discarded and Dinga enters the slot.
+   4. Step 45: the roll resolves; Dinga's trigger goes on the stack after the refill.
+4. Tasks:
+   1. Test: a monster with a roll reward refills after the roll resolves; fails before the fix.
+   2. Fix: the rewards-done and refill steps wait on the stack for the roll.
+5. Done when:
+   1. The test passes; `make lint` and `make test` pass.
+   2. The replay's order (refill after the reward roll) holds.
+6. Result (2026-10-28)
+   1. `rewardsStep` puts a "rewards given" step under the roll; the refill waits for it.
+   2. Engine 0.4.1; `refillVersion` makes 0.4.0 records unable to replay.
+   3. New test: "Holy Greedling refill waits for the reward roll (19.104)". It failed before the change (Dinga healed); it passes after.
+   4. `make lint` exit 0; `make test` exit 0.
+   5. The replay file is a 0.4.0 record, so it can't replay now. The test covers its order.
+   6. No screen change; no screenshots.
+7. Owner notes (2026-10-28)
+   1. Owner marks 19.104 fixed.
+
+### [x] 19.105 A deck attack's dice are thrown before its "attack declared" ability is on the stack
+
+1. Goal: an ability that triggers when an attack is declared goes on the stack before the attack roll is thrown.
+2. Report (owner, 2026-10-28)
+   1. Attacking Pride from the top of the monster deck.
+   2. The dice were rolled first; Pride's ability was put on the stack after.
+3. Cause (2026-10-28)
+   1. `startAttack` emits the attack-target event, then pushes the attack roll.
+   2. `push` queues the roll's throw at once; the queue runs before pending triggers are placed.
+   3. The throw prompt blocks the run loop, so the trigger waits for the die.
+4. Tasks:
+   1. Test: Pride from the deck; the throw is not waiting while its trigger is pending; fails before the fix.
+   2. Fix: `run` places waiting triggers before a queued throw.
+5. Done when:
+   1. The test passes; `make lint` and `make test` pass.
+6. Result (2026-10-28)
+   1. `run` places pending triggers before a throw at the head of the queue.
+   2. Engine 0.4.2; `orderVersion` makes 0.4.1 and older records unable to replay.
+   3. New test: `TestPrideDeckAttackTriggersBeforeTheRoll` (cards/b2). It failed before the change; it passes after.
+   4. `make lint` exit 0; `make test` exit 0.
+   5. No screen change; no screenshots.
+   6. Process: the fix was written before this item was logged. The item is logged now.
+7. Owner notes (2026-10-28)
+   1. Owner marks 19.105 solved.
+
+### [x] 19.106 A copying item shows no mark: Glitch, Placebo, Diplopia look like their own card
+
+1. Goal: a card that uses another card's abilities shows a visible copy mark, with the copied card's name in its tooltip.
+2. Report (owner, 2026-10-28)
+   1. Play test; record `2026-10-28-170334-g1_Hitokiri-Battosai_jеня_attack_order.fsrec`.
+   2. The player with Glitch could not tell which item Glitch was copying right now.
+   3. Owner asks to check similar cards too, Placebo for one.
+3. Cause (2026-10-28)
+   1. The engine keeps the copy in `Object.Gained` (Glitch), `Object.CopyOf` (Diplopia, Modeling Clay, Undefined, Birthright) and on the stack (Placebo).
+   2. `CardView` has no field for it, so the client draws the card as its own.
+   3. Placebo's copy shows only as a stack item, not on the card.
+4. Tasks:
+   1. Test: a view of Glitch with a gained item, Placebo with a copy on the stack, and Diplopia; the view carries the copied card; fails before the fix.
+   2. Fix: `CardView` carries the copied card; the card face draws a copy badge.
+5. Done when:
+   1. The tests pass; `make lint` and `make test` pass.
+   2. `make frontend e2e` passes.
+   3. Before and after screenshots in `.cache/screenshots/19.106/`.
+6. Result (2026-10-28)
+   1. `CardView.copy`: the card a stack ability of the object uses (Placebo), else `CopyOf`, else `Gained` (Glitch).
+   2. Client: `CopyBadge` in `Card.tsx`, a blue blob with two sheets, no number; tooltip "Copy of {card}".
+   3. Drawn on own and opponent characters and items in play; not on shop, monster slots or bonus souls.
+   4. New test: `TestViewShowsWhatACopyUses` (rules engine view). It sets the state directly with a generic item; it does not play Glitch or Placebo. Before the change it does not compile, since `Copy` is new.
+   5. New e2e: `e2e/tests/copy.spec.ts`; `saveAndContinue` takes a `gained` card.
+   6. No rule change, so no engine version bump.
+   7. Gates: `make lint` exit 0; `make test` exit 0; `make frontend` exit 0; `make e2e` exit 0 on the second run, 388 passed.
+   8. The first `make e2e` run had one WebKit failure, "the other player sees the arrow and the red mark" (aim.spec.ts:343). It passed alone on rerun. Evidence kept in the scratchpad: `e2e-evidence/`. Not logged as a bug yet.
+   9. Screenshots: `.cache/screenshots/19.106/after/` and `before/`. The before run uses another random deal, so the rest of the table differs.
+   10. Docs: `docs/use-cases/app/uc-12-see-the-table.md` item 1ah; `docs/wiki/Client.md` badge note.
+7. Owner notes (2026-10-29)
+   1. Owner marks 19.106 fixed.
+
+### [ ] 19.107 e2e: the aim arrow test fails once, webkit, full run
+
+1. Goal: `aim.spec.ts` "the other player sees the arrow and the red mark" passes every run.
+2. Report (agent, 2026-10-29)
+   1. Found by the first full `make e2e` run after 19.106, webkit.
+   2. `expect(arrow).toHaveCount(1)` at `aim.spec.ts:377` failed.
+   3. The second full run of the same tree passed (388 of 388).
+   4. Passes alone: 1 of 1 rerun, webkit.
+   5. Evidence: `.cache/e2e-evidence/19.107-aim-webkit/` (not in git).
+3. Cause
+   1. Not found yet.
+4. Tasks:
+   1. Find why the arrow is not there at line 377 under load; the test moves the mouse with `steps: 8`.

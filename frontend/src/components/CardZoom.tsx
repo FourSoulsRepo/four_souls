@@ -4,6 +4,7 @@ import { useApp } from '../store';
 import { keyword, placeZoom, type Place } from '../zoom';
 import type { Outcome } from '../history';
 import { translatorsOf } from '../cards';
+import { counterColor } from '../counters';
 import { Card, CardText } from './Card';
 import { starPolygon } from './lunge';
 import { skullPath } from './marks';
@@ -72,6 +73,16 @@ export function CardZoom() {
             <ul className="card-zoom-stats" aria-label={t('zoom.stats')}>
               {zoom.stats.map((line) => (
                 <li key={line}>{line}</li>
+              ))}
+            </ul>
+          )}
+          {zoom.counters && (
+            <ul className="card-zoom-counters" aria-label={t('zoom.counters')}>
+              {zoom.counters.map((c) => (
+                <li key={c.name ?? ''}>
+                  <span className="card-zoom-dot" style={{ background: counterColor(c.name) }} aria-hidden="true" />
+                  {c.name ? t('badge.counters_named', { n: c.count, name: c.name }) : t('badge.counters', { n: c.count })}
+                </li>
               ))}
             </ul>
           )}

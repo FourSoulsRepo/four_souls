@@ -43,6 +43,9 @@ func CanReplay(v string) error {
 	if older(v, msgVersion) {
 		return fmt.Errorf("replay: the record was made by rules engine %s; engines from %s on keep messages instead of text, so its checksums differ and it cannot replay", v, msgVersion)
 	}
+	if older(v, orderVersion) {
+		return fmt.Errorf("replay: the record was made by rules engine %s; engines from %s on order some steps differently, so its checksums differ and it cannot replay", v, orderVersion)
+	}
 	return nil
 }
 

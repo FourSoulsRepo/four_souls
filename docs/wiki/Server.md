@@ -22,7 +22,7 @@ WebSocket (ws.go) ──Conn──▶ Client ──▶ Hub (lobby goroutine)
 
 1. Hello: protocol version, nickname, card sets, dice look; the server keeps or makes a token. The seat keeps the look (`CleanDice`: a bad ID is the default), even while its player is away, and every table and update lists it (V-19).
 2. Lobby: create (seats, sets, options) or join; ready. A full, ready table becomes a Room.
-3. Setup: host bans out; ban rounds in snake order with an optional timer; random or draft picks. Deck ratios are on unless the host turns them off; `checkOptions` turns them off when the sets are too small (GS-07).
+3. Setup: host bans out; ban rounds in snake order with an optional timer; random or draft picks. Deck ratios are on unless the host turns them off; `checkOptions` turns them off when the sets are too small (GS-07). Random seats shuffle the seats once, when the game starts, with the game's seed (UC-37).
 4. Play starts with the first-player roll; the first update carries only `first_player` and `game_started` of the setup events, for Cain (`startEvents`, 15.43). Each intent is applied for the client's own seat; then `after` runs automatic passes, restarts the response timer, sends every client its update and records the steps.
 5. Disconnects pause the game; a vote can kick; a token brings a player back. A finished game never takes a token back: the hello goes to the lobby, so the player can start a new game (19.32).
 6. The host may save: the game stops and can be loaded again from the lobby.

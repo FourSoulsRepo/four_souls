@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import type { Kind } from '../cards';
 import { t } from '../i18n';
-import { counted, Deck as DeckKind, type CardView, type GameView, type SlotView } from '../protocol';
+import { Deck as DeckKind, type CardView, type GameView, type SlotView } from '../protocol';
 import { useApp } from '../store';
 import { Card } from './Card';
 import type { Interact } from './Interact';
@@ -48,7 +48,7 @@ export function Board({
         </div>
         <div className="bonus-souls" role="group" aria-label={t('board.bonus_souls')}>
           {view.bonus_souls?.map((c) => (
-            <Card key={c.id} cardRef={c.card} size="small" counters={counted(c)} objectId={c.id} />
+            <Card key={c.id} cardRef={c.card} size="small" counters={c.counters} objectId={c.id} />
           ))}
         </div>
         <div className="board-decks">
@@ -133,7 +133,7 @@ function Slot({ slot, zone, ui }: { slot: SlotView; zone: string; ui: Interact }
         cardRef={slot.top.card}
         size="table"
         damage={slot.top.damage}
-        counters={counted(slot.top)}
+        counters={slot.top.counters}
         monster={slot.top.stats}
         objectId={slot.top.id}
         {...ui.object(slot.top.id)}

@@ -6,6 +6,11 @@ Rules engine versions are in each release's notes.
 
 ## Unreleased
 
+- The host can seat the players in a random order: Detailed setup, Random seats. The seats are shuffled when the game starts; without it, seats follow the order players joined.
+- A dead monster's slot refills after its reward roll, as the rules say. A monster that enters on that roll, such as Holy Dinga, no longer reacts to it.
+- An attack on a monster from the deck: its "when an attack is declared" ability goes on the stack before the dice are thrown.
+- Rules engine 0.4.2: match records of 0.4.1 and older can't be replayed.
+
 ## 0.3.0 - 2026-10-27
 
 - The host can end a game for everyone from the game Menu: End game, then confirm. It works on a dedicated server too, where leaving only paused the game.

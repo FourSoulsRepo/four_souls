@@ -734,8 +734,9 @@ func (g *Game) monsterDeath(id ObjectID) {
 
 // The monster death steps that can wait under triggers on the stack.
 const (
-	stepRewards = 1 // R-DEATH-06
-	stepSoul    = 2 // R-DEATH-08, R-DEATH-09
+	stepRewards      = 1 // R-DEATH-06
+	stepSoul         = 2 // R-DEATH-08, R-DEATH-09
+	stepRewardsGiven = 3 // R-DEATH-07: every reward, roll rewards included, is given
 )
 
 // rewardsStep gives the active player the rewards (R-DEATH-06); then
@@ -745,6 +746,15 @@ func (g *Game) rewardsStep(holding ObjectID) {
 	times := 1
 	if g.Object(holding).DoubleRewards || g.bonus(StatDoubleRewards, NoPlayer, 0) > 0 {
 		times = 2 // e.g. Dinga; doubled once however many apply (R-ABIL-36)
+	}
+	// A roll reward waits for its throw on the stack. The steps after the
+	// rewards wait under it, so no refill runs before the roll (19.104).
+	rolls := false
+	for _, r := range g.def(holding).Rewards {
+		rolls = rolls || r.Roll
+	}
+	if rolls {
+		g.push(StackItem{Kind: StackDeathStep, Controller: NoPlayer, Label: eventRewards.Msg(), Target: Target{Object: holding}, Amount: stepRewardsGiven})
 	}
 	for _, r := range g.def(holding).Rewards {
 		if r.Roll {
@@ -761,7 +771,21 @@ func (g *Game) rewardsStep(holding ObjectID) {
 			}
 		}
 	}
-	g.enqueue(Action{Kind: ActRewardsDone, Player: active, Object: holding})
+	if !rolls {
+		g.enqueue(Action{Kind: ActRewardsDone, Player: active, Object: holding})
+	}
+}
+
+// rewardsGiven runs once the rewards are all given: "after rewards"
+// triggers trigger (R-DEATH-07); then the soul or discard step.
+func (g *Game) rewardsGiven(p PlayerID, holding ObjectID) {
+	before := len(g.PendingTriggers)
+	g.emit(Event{Kind: EvRewardsGained, Player: p, Object: holding, Card: g.Object(holding).Card, Prev: holding})
+	if len(g.PendingTriggers) > before {
+		g.push(StackItem{Kind: StackDeathStep, Controller: NoPlayer, Label: eventSoul.Msg(), Target: Target{Object: holding}, Amount: stepSoul})
+	} else {
+		g.soulStep(holding)
+	}
 }
 
 // receiver gets a dead card's rewards and soul: the active player

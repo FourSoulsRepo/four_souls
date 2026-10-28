@@ -74,8 +74,12 @@ function StripItem({ entry, view, names, newTurn }: { entry: Entry; view: GameVi
       className={`strip-item stack-${plain ? stackIcon(plain) : 'card'}${newTurn ? ' strip-turn' : ''}${entry.undone ? ' undone' : ''}`}
       aria-label={entry.undone ? t('history.undone', { line }) : line}
       title={entry.undone ? t('history.undone', { line: t('history.row', { n: entry.turn, line }) }) : t('history.row', { n: entry.turn, line })}
-      onPointerEnter={(e) => {
-        if (card && e.pointerType === 'mouse') {
+      // pointer-over, not pointer-enter: a tile's image that is redrawn under
+      // the pointer sends no out event, and React then drops the next enter
+      // (19.99). The pointer came from outside this tile, so it zooms it.
+      onPointerOver={(e) => {
+        const inside = e.relatedTarget instanceof Node && e.currentTarget.contains(e.relatedTarget);
+        if (card && e.pointerType === 'mouse' && !inside) {
           setZoom(zoom(card, e, false));
         }
       }}

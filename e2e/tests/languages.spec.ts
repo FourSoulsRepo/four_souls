@@ -6,6 +6,7 @@ import { startGame } from './game';
 import { locale, trIn } from './locale';
 import { appURL } from './server';
 import { shot } from './shot';
+import { enabled } from './turn';
 
 const fast = () => `${appURL()}&anim=off`;
 
@@ -99,6 +100,33 @@ async function answerUntil(pages: Page[], done: (seen: Seen[]) => boolean): Prom
   throw new Error(`the game never got there: ${JSON.stringify(await Promise.all(pages.map(look)))}`);
 }
 
+// untilRollBanner answers Eden's starting-item choice when the deal gives
+// her one: it comes before the first-player roll (R-SETUP-09, 19.94). It
+// returns once every page shows the wanted banner text, so a deal with
+// Eden and one without both end on the roll's prompt.
+async function untilRollBanner(pages: Page[], want: (page: Page, s: Seen) => string): Promise<void> {
+  for (let i = 0; i < 300; i++) {
+    const seen = await Promise.all(pages.map(look));
+    const shown = await Promise.all(pages.map((page) => page.locator('.prompt-banner .prompt-hint').textContent({ timeout: 300 }).catch(() => null)));
+    const done = pages.every((page, j) => {
+      const s = seen[j];
+      return s !== undefined && shown[j] === want(page, s);
+    });
+    if (done) {
+      return;
+    }
+    // The page that rolls may sit on Eden's choice; pick its first option.
+    const j = seen.findIndex((s) => s.waiting.player === s.you && s.turn < 1);
+    const eden = pages[j]?.locator('.choice:not(.look) .choice-option button').first();
+    if (eden && (await enabled(eden))) {
+      await eden.click();
+    } else {
+      await pages[0]?.waitForTimeout(100);
+    }
+  }
+  throw new Error(`the roll banner never showed: ${JSON.stringify(await Promise.all(pages.map(look)))}`);
+}
+
 test('two players see the server in their own languages (16.4)', async ({ browser }) => {
   // Cain goes first with no first-player roll, whose prompt this test
   // reads (15.43).
@@ -122,6 +150,8 @@ test('two players see the server in their own languages (16.4)', async ({ browse
   // A prompt: the first-player roll names its roll, a server line, in
   // each page's language, for the roller and for the one who waits.
   const label = (page: Page) => trIn(langOf(page), 'event.first_player_roll');
+  // The wait ends on the roll's banner; Eden's choice, if dealt, is made first.
+  await untilRollBanner(pages, (page, s) => trIn(langOf(page), s.waiting.player === s.you ? 'banner.throw_for' : 'banner.throw_for_other', { label: label(page) }));
   for (const page of pages) {
     const s = await look(page);
     const hint = page.locator('.prompt-banner .prompt-hint');

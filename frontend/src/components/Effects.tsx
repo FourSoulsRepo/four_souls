@@ -173,6 +173,17 @@ function Effect({ playing }: { playing: Playing }) {
           }}
         />
       );
+    case 'sound':
+      // Nothing moves: the sound plays and a short beat holds the rest (18.14).
+      return (
+        <Layered
+          playing={playing}
+          start={(done) => {
+            playSound(effect.sound);
+            window.setTimeout(done, duration(0.6));
+          }}
+        />
+      );
   }
 }
 

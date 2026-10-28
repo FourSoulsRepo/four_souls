@@ -13,6 +13,7 @@ const ctx = {
   slot: (id: number) => (id === 50 ? 'monster-slot-1' : undefined),
   before: (): string | undefined => undefined,
   shopBefore: (): Death | undefined => undefined,
+  bonusBefore: (): Death | undefined => undefined,
   diedAt: new Map<number, Death>(),
   seen: (card: string) => card === 'pin',
   roll: (stack: number) => (stack === 7 ? 2 : undefined),
@@ -289,20 +290,41 @@ describe('effectsFor', () => {
     expect(effectsFor([{ kind: 'dice_rolled', player: 1, amount: 4, label: { key: 'event.reward_roll' } }], c)).toHaveLength(1);
     const soul: GameEvent = { kind: 'gained_soul', player: 1, object: 93, prev: 91, card: 'boss' };
     expect(effectsFor([soul], c)).toEqual([
-      { kind: 'fly', from: ['monster-slot-2'], to: ['player-1'], card: 'boss', back: 'monster', lifts: 41 },
+      { kind: 'fly', from: ['monster-slot-2'], to: ['player-1'], card: 'boss', back: 'monster', lifts: 41, sound: 'soulGain' },
     ]);
     // Each is flown once.
     expect(c.diedAt.size).toBe(0);
   });
 
-  it('flies another soul from its place; a bonus soul not at all (19.73)', () => {
+  // Each gained soul flies with its sound (19.73).
+  it('flies another soul from its place with the soul sound (19.73)', () => {
     const c = { ...ctx, diedAt: new Map<number, Death>() };
     const chest: GameEvent = { kind: 'gained_soul', player: 0, object: 60, prev: 55, card: 'holy_chest' };
     expect(effectsFor([chest], c)).toEqual([
-      { kind: 'fly', from: ['obj-55'], to: ['player-0'], card: 'holy_chest', back: 'monster', lifts: 55 },
+      { kind: 'fly', from: ['obj-55'], to: ['player-0'], card: 'holy_chest', back: 'monster', lifts: 55, sound: 'soulGain' },
     ]);
+  });
+
+  // A bonus soul flies from its card on the board, with its own sound (18.13).
+  it('flies a bonus soul from its board card with its own sound (18.13)', () => {
+    const bonusOnBoard = (ref: string) => (ref === 'soul_of_envy' ? { zone: 'obj-62', object: 62 } : undefined);
     const bonus: GameEvent = { kind: 'gained_soul', player: 0, object: 61, card: 'soul_of_envy', text: 'bonus soul' };
-    expect(effectsFor([bonus], c)).toEqual([]);
+    expect(effectsFor([bonus], { ...ctx, bonusBefore: bonusOnBoard })).toEqual([
+      { kind: 'fly', from: ['obj-62'], to: ['player-0'], card: 'soul_of_envy', back: 'soul', lifts: 62, sound: 'soulGain' },
+    ]);
+    // Not on the board before: no flight, no sound.
+    expect(effectsFor([bonus], ctx)).toEqual([]);
+  });
+
+  // The Lost Soul becomes a soul in play: its sound, held for a beat (18.14).
+  it('plays the Lost Soul sound when it becomes a soul, with no flight (18.14)', () => {
+    const lostSoul = (ref: string): CardInfo | undefined =>
+      ref === 'lost_soul' ? { ref, set: 'b2', type: 'Lost Soul Card', name: 'Lost Soul', effects: [], footnotes: [], stats: [], rewards: [], image: '' } : ctx.card(ref);
+    const e: GameEvent = { kind: 'gained_soul', player: 0, object: 70, card: 'lost_soul' };
+    expect(effectsFor([e], { ...ctx, card: lostSoul })).toEqual([{ kind: 'sound', sound: 'soulGain' }]);
+    // Another soul in play, with no prev, stays silent.
+    const other: GameEvent = { kind: 'gained_soul', player: 0, object: 71, card: 'boss' };
+    expect(effectsFor([other], ctx)).toEqual([]);
   });
 
   it('only reveals a card that is in no slot', () => {

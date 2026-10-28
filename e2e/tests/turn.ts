@@ -230,6 +230,36 @@ export async function untilAttackRoll(pages: Page[], press: Tap, attacker: Page)
   await settle(pages, press, () => attackRollWaits(attacker));
 }
 
+// markGame keeps the page's game state now, for untilResynced.
+export function markGame(page: Page): Promise<void> {
+  return page.evaluate(() => {
+    interface S {
+      game: unknown;
+    }
+    const s = (window as unknown as { fourSouls: { store: { getState: () => S } } }).fourSouls.store.getState();
+    (window as unknown as { gameMark: unknown }).gameMark = s.game;
+  });
+}
+
+// untilResynced waits until the page has reconnected and shows the
+// server's answer to the reconnect: a new game state, with nothing
+// behind. Until then the page may still show the state from before the
+// drop, and an intent sent on it is not answered (19.103).
+export async function untilResynced(page: Page): Promise<void> {
+  await page.waitForFunction(() => {
+    interface S {
+      game: unknown;
+      connected: boolean;
+      reconnecting: boolean;
+      behind: boolean;
+      sent: number | null;
+    }
+    const w = window as unknown as { fourSouls: { store: { getState: () => S } }; gameMark: unknown };
+    const s = w.fourSouls.store.getState();
+    return s.connected && !s.reconnecting && !s.behind && s.sent === null && s.game !== w.gameMark;
+  });
+}
+
 // turnAction is an icon button by own name (15.19): "Buy" or "Attack".
 export function turnAction(page: Page, name: 'Buy' | 'Attack') {
   const label = name === 'Buy' ? tr('turn.buy') : tr('turn.attack');
@@ -312,11 +342,24 @@ export async function expectNextTurn(pages: Page[], press: Tap, after: number): 
 // playLoot plays a hand card the way a player would: its menu's Play,
 // or, for a card that needs a target, the first glowing target (15.25):
 // any card, a character for its player (15.33), or a stack item.
+// A new state ends the card's selection, so its menu can close before
+// it is used: the card is pressed again until the menu or target shows
+// (19.100).
 export async function playLoot(page: Page, card: Locator, press: Tap): Promise<void> {
-  await press(page, card);
   const menu = page.getByRole('menu');
   const target = page.locator('.card.hl-aim, .stack-row.hl-aim').first();
-  await expect(menu.or(target)).toBeVisible();
+  await expect
+    .poll(
+      async () => {
+        if ((await menu.isVisible()) || (await target.isVisible())) {
+          return true;
+        }
+        await press(page, card);
+        return false;
+      },
+      { timeout: 10_000 },
+    )
+    .toBe(true);
   await press(page, (await menu.isVisible()) ? menu.getByRole('menuitem', { name: tr('actions.play') }) : target);
 }
 

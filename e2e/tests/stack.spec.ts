@@ -244,6 +244,46 @@ test('the stack panel: icons, colored names, and a hover with card and owner (15
   await shot(active, 'stack-panel');
 });
 
+// A stack row zooms its own card even when the row before it lost its
+// card image: the image was redrawn under the pointer, and no out event
+// came for it (19.102).
+test('a stack row zooms its own card when the row before it is redrawn (19.102)', async ({ browser }) => {
+  const pages = await startGame(browser, ['Ike', 'Jud'], { url: fast() });
+  const active = await activePage(pages, click);
+  await fakeStack(active, [1, 2, 3]);
+  // The damage row names a card too, so its zoom shows that card.
+  await active.evaluate(() => {
+    interface S {
+      game: { view: { stack: { id: number; card?: string }[] } } | null;
+      setState: (s: unknown) => void;
+    }
+    const store = (window as unknown as { fourSouls: { store: { getState: () => S; setState: (s: unknown) => void } } }).fourSouls.store;
+    const game = store.getState().game;
+    if (!game) {
+      throw new Error('no game');
+    }
+    const stack = game.view.stack.map((it) => (it.id === 3 ? { ...it, card: 'big_spider' } : it));
+    store.setState({ game: { ...game, view: { ...game.view, stack } } });
+  });
+  const stack = active.getByRole('complementary', { name: tr('stack.title') });
+  const rows = stack.locator('.stack-row');
+  await expect(rows).toHaveCount(3);
+  const zoom = active.getByTestId('card-zoom');
+  // The pointer rests on the loot row; its card is the one before the damage row.
+  await rows.nth(2).hover();
+  await expect(zoom.locator('.card.size-zoom')).toHaveAttribute('aria-label', new RegExp(`^${lineRe(cardName('bomb')).source}`));
+  // The next row's over names the loot row's card as where it came from,
+  // with no out event for it.
+  const from = await rows.nth(2).locator('.card').elementHandle();
+  if (!from) {
+    throw new Error('no card in the loot row');
+  }
+  await rows.nth(0).evaluate((el, prev) => {
+    el.dispatchEvent(new PointerEvent('pointerover', { bubbles: true, composed: true, pointerType: 'mouse', relatedTarget: prev }));
+  }, from);
+  await expect(zoom.locator('.card.size-zoom')).toHaveAttribute('aria-label', cardName('big_spider'));
+});
+
 // An open attack or buy is no stack item (R-ATK-02, R-SHOP-02); the
 // stack panel shows it on top for every player while it lasts (15.91).
 const declared = (page: Page) => page.getByRole('complementary', { name: tr('stack.title') }).locator('.stack-declared');

@@ -327,6 +327,33 @@ On 2026-10-09 the owner parked every open decision for later.
    2. Rewards use "when you roll" and fire once either way (R-DICE-06).
 5. Basis: **House**: no ruling found.
 
+### Q-27 Golden Trinket and a gained gain-¢ replacement
+
+1. Question: does Golden Trinket take Bum-Bo!'s "gain ¢ levels up" as one of its abilities?
+   1. Cards: Golden Trinket, Bum-Bo!.
+   2. Case: Bum-Bo! has a gold counter; the trinket is in play; the player gains ¢.
+2. Sources:
+   1. Golden Trinket: "This has the abilities of other items with gold counters on them."
+   2. Bum-Bo!'s gain-¢ text is a replacement, not an ↷ ability.
+3. Options:
+   1. (a) Only triggers, ↷ abilities and statics are gained; the engine does this now.
+   2. (b) Replacements are gained too; the levels go on the trinket.
+4. Status: **Owner** (2026-10-29): the owner has not decided. Test: `TestGainCentsReplacementGained`, skipped.
+5. Basis: **House**: no ruling found.
+
+### Q-28 Two gained ↷ abilities on one item
+
+1. Question: may an item use two ↷ abilities gained in one turn?
+   1. Cards: Golden Trinket with gold on Bum Friend and on Tech X.
+2. Sources:
+   1. R-MECH: a ↷ cost taps the item it is on.
+   2. Golden Trinket gains the abilities; the tap belongs to the trinket.
+3. Options:
+   1. (a) One ↷ per turn for the item; the engine does this now.
+   2. (b) Each gained ability has its own tap.
+4. Status: **Owner** (2026-10-29): the owner has not decided. Test: `TestGoldOnBumFriendAndTechX`.
+5. Basis: **House**: no ruling found.
+
 ## Old rulings re-checked (R-07)
 
 | # | Ruling (Ed's Notes, 2018–2019) | Check against current rules and V2 text | Status |
@@ -492,3 +519,5 @@ Every row of "Card rulings from Discord (S-DIS)" is Community too.
 | Q-24 | Emergency Contact, IBS | Cancel a deck attack once a monster is revealed | House |
 | Q-25 | Hourglass, Curse of Impulse | Only items with a ↷ ability are deactivated | House |
 | Q-26 | Godhead, I. The Magician, Libra, PHD, … | A roll set to its own value is not changed | House |
+| Q-27 | Golden Trinket, Bum-Bo! | Gained gain-¢ replacement | House (owner open) |
+| Q-28 | Golden Trinket, Bum Friend, Tech X | Two gained ↷ on one item in a turn | House (owner open) |

@@ -2,6 +2,7 @@ package server
 
 import (
 	"encoding/json"
+	"math/rand/v2"
 	"net/http"
 	"time"
 
@@ -10,6 +11,13 @@ import (
 
 // seatWait is how many hub seconds /seat waits for the lobby.
 const seatWait = 2
+
+// shuffleSeats puts a game's seats in a random order (Random seats),
+// drawn from the game's seed.
+func shuffleSeats(seats []roomSeat, seed uint64) {
+	rng := rand.New(rand.NewPCG(seed, seed^0x5ea7)) //nolint:gosec // seating, not security
+	rng.Shuffle(len(seats), func(i, j int) { seats[i], seats[j] = seats[j], seats[i] })
+}
 
 // seatInfo tells whether token holds a seat here: at a table, or in a
 // game that has not finished. Run on the hub goroutine.

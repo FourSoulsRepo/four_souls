@@ -41,7 +41,7 @@ import { emptyLobby, forgotten, leftTable, lost, onMessage, remember, renamed, t
 import { connectFirst, disconnect, drop, send } from './net';
 import { claimEffect, nextBeat } from './animations';
 import { lastRollAfter, type LastRoll } from './dice';
-import { createPlayback, effectsFor, scaleFor, shopSlot, slotZone, type Death, type Effect } from './playback';
+import { bonusSlot, createPlayback, effectsFor, scaleFor, shopSlot, slotZone, type Death, type Effect } from './playback';
 import { loadSounds, setSoundVolume } from './sounds';
 import { endsGame, lostDialogAfter, retryDelay } from './reconnect';
 import {
@@ -63,6 +63,7 @@ import {
 } from './protocol';
 
 export type { Screen } from './lobby';
+import type { CounterView } from './protocol';
 
 // Zoom is the card shown large: on hover, or after a long press on touch
 // (B-06). side is where it shows, away from the pointer.
@@ -83,6 +84,8 @@ export interface Zoom {
   // stats: why the card's stats are not its print, or what an effect of
   // this turn does, below the card (15.92, V-41).
   stats?: string[];
+  // counters: the card's counters by kind, named below it, bottom right (18.15).
+  counters?: CounterView[];
 }
 
 export interface ZoomCaption {
@@ -482,6 +485,10 @@ export const useApp = create<AppState>()((set, get) => {
         shopBefore: (ref) => {
           const view = get().game?.view;
           return view ? shopSlot(view, ref) : undefined;
+        },
+        bonusBefore: (ref) => {
+          const view = get().game?.view;
+          return view ? bonusSlot(view, ref) : undefined;
         },
         diedAt,
         seen: (ref) => (get().game?.events ?? []).some((e) => e.kind === 'card_revealed' && e.card === ref),

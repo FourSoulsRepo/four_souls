@@ -232,6 +232,21 @@
   * A loot trinket, a starting item and a stolen item are silent.
   * No private images (public clone): no sound.
   * With animations off, no sound plays.
+* **1af. Soul gain sound:** a gained soul flies to its player with a sound.
+  * A dead monster's soul flies from its slot; another soul from its place.
+  * A bonus soul flies too (see 1ag).
+  * No private images (public clone): no sound.
+  * With animations off, no sound plays.
+* **1ag. Bonus soul and Lost Soul (18.13, 18.14):** they make the same soul sound as any soul.
+  * A bonus soul flies from its card on the board to its player.
+  * The Lost Soul becomes a soul in play: it makes the sound and holds a beat; nothing flies.
+  * A bonus soul with no card on the board is silent.
+* **1ah. Copy mark (19.106):** an item that uses another card's abilities shows a mark.
+  * A small blue blob with two sheets, top left; no number.
+  * Its tooltip reads "Copy of The D6".
+  * Glitch's gained item, a copy (Diplopia), and Placebo's ability on the stack show it.
+  * Placebo's mark shows only while its copied ability is on the stack.
+  * Both players see it.
 
 ## Postconditions
 

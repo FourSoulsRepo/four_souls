@@ -321,11 +321,12 @@ export namespace main {
 	    lootDraw: string;
 	    playerDied: string;
 	    treasureGain: string;
-	
+	    soulGain: string;
+
 	    static createFrom(source: any = {}) {
 	        return new Sounds(source);
 	    }
-	
+
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.attackHit = source["attackHit"];
@@ -335,6 +336,7 @@ export namespace main {
 	        this.lootDraw = source["lootDraw"];
 	        this.playerDied = source["playerDied"];
 	        this.treasureGain = source["treasureGain"];
+	        this.soulGain = source["soulGain"];
 	    }
 	}
 
@@ -384,6 +386,7 @@ export namespace settings {
 	    response_timer: number;
 	    no_bonus_souls: boolean;
 	    no_deck_ratios: boolean;
+	    random_seats: boolean;
 	    rollback: string;
 	
 	    static createFrom(source: any = {}) {
@@ -398,6 +401,7 @@ export namespace settings {
 	        this.response_timer = source["response_timer"];
 	        this.no_bonus_souls = source["no_bonus_souls"];
 	        this.no_deck_ratios = source["no_deck_ratios"];
+	        this.random_seats = source["random_seats"];
 	        this.rollback = source["rollback"];
 	    }
 	}
