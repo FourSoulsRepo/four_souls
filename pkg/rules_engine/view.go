@@ -48,6 +48,9 @@ type CardView struct {
 	Dice []int `json:"dice,omitempty"`
 	// Flipped: the back face is up, and Card is the back's ref (ADR 023).
 	Flipped bool `json:"flipped,omitempty"`
+	// Copy is the card whose abilities this card uses by copying them:
+	// see copyOf. Empty when it uses its own (19.106).
+	Copy CardRef `json:"copy,omitempty"`
 }
 
 // MonsterStats are a monster's stats now and as printed, so a client can
@@ -457,6 +460,7 @@ func (g *Game) cardView(id ObjectID) CardView {
 		Counters: append([]Counter(nil), o.Counters...),
 	}
 	cv.Flipped = cv.Card != o.Card
+	cv.Copy = g.copyOf(id)
 	if d := g.def(id); d.Dice != nil {
 		cv.Dice = d.Dice(g, id)
 	}
@@ -581,6 +585,24 @@ func (g *Game) faceUp(id ObjectID) CardRef {
 		}
 	}
 	return o.Card
+}
+
+// copyOf is the card whose abilities an object uses by copying them: an
+// ability on the stack from it that is not its own (Placebo), else the
+// card it copies (CopyOf), else the card it gained abilities from
+// (Gained, Glitch). Empty when it uses its own abilities (19.106).
+func (g *Game) copyOf(id ObjectID) CardRef {
+	own := g.Object(id).Card
+	for _, s := range g.Stack {
+		if s.Kind == StackAbility && s.Source == id && s.Ability.Card != own {
+			return s.Ability.Card
+		}
+	}
+	o := g.Object(id)
+	if o.CopyOf != "" {
+		return o.CopyOf
+	}
+	return o.Gained
 }
 
 // usedText is the words of the ability a stack item uses: the chosen

@@ -34,7 +34,7 @@ This step never closes; new reports are appended.
 | ID | Group                                    | System     | Items                                                  | Count |
 |----|------------------------------------------|------------|--------------------------------------------------------|-------|
 | A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95, 19.97, 19.104, 19.105 | 18 |
-| B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90 | 9 |
+| B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90, 19.106 | 10 |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74                              | 4     |
 | E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52, 19.54, 19.69 | 9  |
@@ -3389,3 +3389,35 @@ Totals by system (98 items):
    6. Process: the fix was written before this item was logged. The item is logged now.
 7. Owner notes (2026-10-28)
    1. Owner marks 19.105 solved.
+
+### [x] 19.106 A copying item shows no mark: Glitch, Placebo, Diplopia look like their own card
+
+1. Goal: a card that uses another card's abilities shows a visible copy mark, with the copied card's name in its tooltip.
+2. Report (owner, 2026-10-28)
+   1. Play test; record `2026-10-28-170334-g1_Hitokiri-Battosai_jеня_attack_order.fsrec`.
+   2. The player with Glitch could not tell which item Glitch was copying right now.
+   3. Owner asks to check similar cards too, Placebo for one.
+3. Cause (2026-10-28)
+   1. The engine keeps the copy in `Object.Gained` (Glitch), `Object.CopyOf` (Diplopia, Modeling Clay, Undefined, Birthright) and on the stack (Placebo).
+   2. `CardView` has no field for it, so the client draws the card as its own.
+   3. Placebo's copy shows only as a stack item, not on the card.
+4. Tasks:
+   1. Test: a view of Glitch with a gained item, Placebo with a copy on the stack, and Diplopia; the view carries the copied card; fails before the fix.
+   2. Fix: `CardView` carries the copied card; the card face draws a copy badge.
+5. Done when:
+   1. The tests pass; `make lint` and `make test` pass.
+   2. `make frontend e2e` passes.
+   3. Before and after screenshots in `.cache/screenshots/19.106/`.
+6. Result (2026-10-28)
+   1. `CardView.copy`: the card a stack ability of the object uses (Placebo), else `CopyOf`, else `Gained` (Glitch).
+   2. Client: `CopyBadge` in `Card.tsx`, a blue blob with two sheets, no number; tooltip "Copy of {card}".
+   3. Drawn on own and opponent characters and items in play; not on shop, monster slots or bonus souls.
+   4. New test: `TestViewShowsWhatACopyUses` (rules engine view). It sets the state directly with a generic item; it does not play Glitch or Placebo. Before the change it does not compile, since `Copy` is new.
+   5. New e2e: `e2e/tests/copy.spec.ts`; `saveAndContinue` takes a `gained` card.
+   6. No rule change, so no engine version bump.
+   7. Gates: `make lint` exit 0; `make test` exit 0; `make frontend` exit 0; `make e2e` exit 0 on the second run, 388 passed.
+   8. The first `make e2e` run had one WebKit failure, "the other player sees the arrow and the red mark" (aim.spec.ts:343). It passed alone on rerun. Evidence kept in the scratchpad: `e2e-evidence/`. Not logged as a bug yet.
+   9. Screenshots: `.cache/screenshots/19.106/after/` and `before/`. The before run uses another random deal, so the rest of the table differs.
+   10. Docs: `docs/use-cases/app/uc-12-see-the-table.md` item 1ah; `docs/wiki/Client.md` badge note.
+7. Owner notes (2026-10-29)
+   1. Owner marks 19.106 fixed.

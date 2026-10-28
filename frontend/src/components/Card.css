@@ -687,6 +687,26 @@
   font-size: 15cqi;
 }
 
+/* A copy (19.106): a blue blob with two sheets, on the top left, where
+   counters sit lower and damage on the right. */
+.card-copy {
+  --fill: #2f6fd0;
+  top: 4cqi;
+  left: 4cqi;
+  width: 24cqi;
+  rotate: -5deg;
+}
+
+.card-copy-glyph {
+  position: relative;
+  width: 52%;
+  height: 52%;
+  fill: none;
+  stroke: var(--digit);
+  stroke-width: 2.2;
+  stroke-linejoin: round;
+}
+
 /* Effects of this turn (15.92, SB-01): a column of small icons on the
    card's right edge, each cut from its source card's art. Hover zooms
    the source, so the icons take the pointer, unlike the badges. */

@@ -458,6 +458,10 @@
     "text": "Attack",
     "note": "Tooltip of the attack badge on a character."
   },
+  "badge.copy": {
+    "text": "Copy of {card}",
+    "note": "Tooltip and screen-reader name of the copy mark on a card that uses another card's abilities. card: the copied card's name."
+  },
   "badge.counters": {
     "text": {
       "one": "{n} counter",

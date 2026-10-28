@@ -91,6 +91,7 @@ function OpponentArea({ player, name, position, active, asked, winSouls, ui, doi
           damage={character.damage}
           spent={spent(character)}
           counters={counted(character)}
+          copy={character.copy}
           stats={statsOf(player)}
           objectId={character.id}
           player={player.id}
@@ -184,6 +185,7 @@ function OwnArea({ player, name, active, asked, winSouls, ui, tools }: Omit<Prop
           damage={character.damage}
           spent={spent(character)}
           counters={counted(character)}
+          copy={character.copy}
           stats={statsOf(player)}
           objectId={character.id}
           player={player.id}
@@ -314,6 +316,7 @@ function PlayCard({ card, owner, size, ui }: { card: CardView; owner: number; si
       damage={card.damage}
       spent={spent(card)}
       counters={counted(card)}
+      copy={card.copy}
       dice={card.dice}
       owner={owner}
       monster={card.stats}

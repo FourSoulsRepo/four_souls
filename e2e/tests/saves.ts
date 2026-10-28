@@ -17,14 +17,18 @@ export async function gameID(page: Page): Promise<string> {
 // NEXT_ATTACK_ROLL is the engine's StatNextAttackRoll (statics.go).
 const NEXT_ATTACK_ROLL = 18;
 
+// GAINED_END_OF_TURN is the engine's GainEndOfTurn (state.go).
+const GAINED_END_OF_TURN = 1;
+
 // giveCard rewrites a saved game: the active player's first hand card
 // becomes the card, and their first card in play becomes item, if given
 // (15.92). nextRoll gives the active player +1 to their next attack roll
 // this turn from the first monster, as Round Worm does (15.93). sets
 // adds card sets to the game, by code and engine name ({ r: 'Requiem' }),
-// so a card of a set not dealt can be given (14.15). The test server
-// keeps saves under .cache/e2e.
-export function giveCard(game: string, card: string, item?: string, nextRoll = false, sets: Record<string, string> = {}) {
+// so a card of a set not dealt can be given (14.15). gained, with an
+// item, is a card whose abilities the item has till end of turn (Glitch,
+// 19.106). The test server keeps saves under .cache/e2e.
+export function giveCard(game: string, card: string, item?: string, nextRoll = false, sets: Record<string, string> = {}, gained?: string) {
   const file = join(import.meta.dirname, '..', '..', '.cache', 'e2e', String(serverPort()), 'saves', `${game}.fssave`);
   const save = JSON.parse(readFileSync(file, 'utf8')) as {
     sets: string[];
@@ -32,7 +36,7 @@ export function giveCard(game: string, card: string, item?: string, nextRoll = f
       sets: string[];
       turn: { active: number };
       players: { hand: number[]; in_play: number[] }[];
-      objects: { card: string }[];
+      objects: { card: string; gained?: string; gained_till?: number }[];
       monsters: { cards: number[] }[];
       boosts?: { stat: number; player: number; amount: number; source?: number }[];
     };
@@ -52,6 +56,10 @@ export function giveCard(game: string, card: string, item?: string, nextRoll = f
       throw new Error('the active player has no card in play');
     }
     held.card = item;
+    if (gained !== undefined) {
+      held.gained = gained;
+      held.gained_till = GAINED_END_OF_TURN;
+    }
   }
   if (nextRoll) {
     const source = state.monsters[0]?.cards.at(-1);
@@ -66,7 +74,7 @@ export function giveCard(game: string, card: string, item?: string, nextRoll = f
 
 // saveAndContinue: the host saves, the active player gets the card (and
 // the item in play), then everyone comes back to it.
-export async function saveAndContinue(pages: Page[], names: string, card = 'bomb', item?: string, nextRoll = false, sets: Record<string, string> = {}) {
+export async function saveAndContinue(pages: Page[], names: string, card = 'bomb', item?: string, nextRoll = false, sets: Record<string, string> = {}, gained?: string) {
   const [host, ...guests] = pages;
   if (!host) {
     throw new Error('no pages');
@@ -77,7 +85,7 @@ export async function saveAndContinue(pages: Page[], names: string, card = 'bomb
   for (const page of pages) {
     await expect(page.getByText(tr('lobby.games.saved'))).toBeVisible();
   }
-  giveCard(game, card, item, nextRoll, sets);
+  giveCard(game, card, item, nextRoll, sets, gained);
   // Back from the Games list is the LAN screen, with its Host button.
   await host.getByRole('button', { name: tr('lobby.back') }).click();
   await host.getByRole('button', { name: tr('host.title_host') }).click();

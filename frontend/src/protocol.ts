@@ -282,6 +282,9 @@ export interface CardView {
   dice?: number[];
   // flipped: the back face is up; card is then the back's ref (ADR 023).
   flipped?: boolean;
+  // copy: the card whose abilities this card uses by copying them, e.g.
+  // Placebo's or Glitch's; older servers send none (19.106).
+  copy?: string;
 }
 
 // counted is how many counters a card carries, of any kind.

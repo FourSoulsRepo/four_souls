@@ -426,3 +426,33 @@ func TestViewShowsADeclaredPurchase(t *testing.T) {
 		t.Error("another player does not see the declared purchase (15.30)")
 	}
 }
+
+// TestViewShowsWhatACopyUses: an object that uses another card's
+// abilities names that card: Glitch's gained one, a copy (CopyOf), and
+// Placebo's ability on the stack. Its own item names none (19.106).
+func TestViewShowsWhatACopyUses(t *testing.T) {
+	g := newAbilityGame(t)
+	a := g.Turn.Active
+	gained := giveItem(g, a, "coin_bag")
+	g.Object(gained).Gained = "dagaz_like"
+	copied := giveItem(g, a, "coin_bag")
+	g.Object(copied).CopyOf = "dagaz_like"
+	borrowed := giveItem(g, a, "coin_bag")
+	g.push(StackItem{Kind: StackAbility, Controller: a, Source: borrowed, Ability: AbilityRef{Card: "dagaz_like", Index: 0}})
+	own := giveItem(g, a, "coin_bag")
+	want := map[ObjectID]CardRef{gained: "dagaz_like", copied: "dagaz_like", borrowed: "dagaz_like", own: ""}
+	seen := 0
+	for _, c := range g.View(Viewer{Kind: ViewSpectator}).Players[a].InPlay {
+		w, ok := want[c.ID]
+		if !ok {
+			continue
+		}
+		seen++
+		if c.Copy != w {
+			t.Errorf("object %d: copy %q, want %q", c.ID, c.Copy, w)
+		}
+	}
+	if seen != len(want) {
+		t.Fatalf("the view shows %d of the %d items", seen, len(want))
+	}
+}

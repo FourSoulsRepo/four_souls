@@ -39,6 +39,9 @@ interface Props {
   player?: number;
   // counters is how many counters the card carries (7.9).
   counters?: number;
+  // copy is the card whose abilities this card uses by copying them; its
+  // name is in the copy mark's tooltip (19.106).
+  copy?: string;
   // dice are the die numbers the card keeps, drawn in owner's dice look
   // (15.67).
   dice?: number[];
@@ -69,6 +72,7 @@ export function Card({
   damage = 0,
   spent = false,
   counters = 0,
+  copy,
   dice,
   owner = -1,
   objectId,
@@ -170,6 +174,7 @@ export function Card({
         <BlankFace card={card} full={size === 'zoom'} />
       )}
       {badges && counters > 0 && <Badge kind="counters" value={counters} label={t('badge.counters', { n: counters })} />}
+      {badges && copy && <CopyBadge name={name(copy)} />}
       {badges && dice && dice.length > 0 && <DieBadges values={dice} owner={owner} />}
       {/* Damage shows as the lower, red health; the mark is for the rest. */}
       {badges && damage > 0 && !monster && !stats && <Badge kind="damage" value={damage} label={t('badge.damage', { n: damage })} />}
@@ -462,6 +467,23 @@ function Badge({ kind, value, label, title, hurt = false, trend: dir }: BadgePro
         <path className="card-badge-shine" d="M30 26C36 18 46 16 52 18C44 22 38 28 34 36C31 34 29 30 30 26Z" />
       </svg>
       <span className="card-badge-value">{value}</span>
+    </span>
+  );
+}
+
+// CopyBadge marks a card that uses another card's abilities (19.106): a
+// blob with two sheets and no number. Its name is in the tooltip.
+function CopyBadge({ name }: { name: string }) {
+  const label = t('badge.copy', { card: name });
+  return (
+    <span className="card-badge card-copy" title={label} aria-label={label}>
+      <svg className="card-badge-shape" viewBox="0 0 100 100" aria-hidden="true">
+        <path d={blob} />
+      </svg>
+      <svg className="card-copy-glyph" viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="3" y="3" width="12" height="12" rx="2" />
+        <rect x="9" y="9" width="12" height="12" rx="2" />
+      </svg>
     </span>
   );
 }
