@@ -42,7 +42,7 @@ This step never closes; new reports are appended.
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
 | I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100 | 20 |
-| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103 | 18 |
+| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107 | 19 |
 | K  | Build and release files                  | Release    | 19.47, 19.59, 19.83, 19.91                             | 4     |
 | L  | Not a bug: the app follows a ruling      | None       | 19.63                                                  | 1     |
 | M  | Go test setup: the code was right        | Go tests   | 19.68                                                  | 1     |
@@ -3421,3 +3421,17 @@ Totals by system (98 items):
    10. Docs: `docs/use-cases/app/uc-12-see-the-table.md` item 1ah; `docs/wiki/Client.md` badge note.
 7. Owner notes (2026-10-29)
    1. Owner marks 19.106 fixed.
+
+### [ ] 19.107 e2e: the aim arrow test fails once, webkit, full run
+
+1. Goal: `aim.spec.ts` "the other player sees the arrow and the red mark" passes every run.
+2. Report (agent, 2026-10-29)
+   1. Found by the first full `make e2e` run after 19.106, webkit.
+   2. `expect(arrow).toHaveCount(1)` at `aim.spec.ts:377` failed.
+   3. The second full run of the same tree passed (388 of 388).
+   4. Passes alone: 1 of 1 rerun, webkit.
+   5. Evidence: `.cache/e2e-evidence/19.107-aim-webkit/` (not in git).
+3. Cause
+   1. Not found yet.
+4. Tasks:
+   1. Find why the arrow is not there at line 377 under load; the test moves the mouse with `steps: 8`.
