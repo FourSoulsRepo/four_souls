@@ -4,13 +4,15 @@
 // as it lands (15.69), each die of several on its own (19.39). Each
 // looted card is dealt with a card sound (18.7). A player's death sounds
 // with its skull (18.8). Each gained treasure sounds as it flies in
-// (18.9). The files live only in the private images; without them the
-// game is silent.
+// (18.9). Every soul gained sounds with one sound: as it flies to its
+// player, a bonus soul too (18.13), and as the Lost Soul turns to one
+// (18.14). The files
+// live only in the private images; without them the game is silent.
 // Every file is levelled to one loudness (ADR 022), so every sound plays
 // at the same level. The player's volume (ST-09) scales them all alike.
 import type { Sounds } from './bridge';
 
-export type Sound = 'attackHit' | 'effectCast' | 'effectImpact' | 'diceRoll' | 'lootDraw' | 'playerDied' | 'treasureGain';
+export type Sound = 'attackHit' | 'effectCast' | 'effectImpact' | 'diceRoll' | 'lootDraw' | 'playerDied' | 'treasureGain' | 'soulGain';
 
 // level is the player's volume, 0 to 1 (ST-09).
 let level = 1;
@@ -27,6 +29,7 @@ export function loadSounds(s: Sounds): void {
     ['lootDraw', s.lootDraw],
     ['playerDied', s.playerDied],
     ['treasureGain', s.treasureGain],
+    ['soulGain', s.soulGain],
   ]);
 }
 

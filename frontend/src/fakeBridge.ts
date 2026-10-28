@@ -181,6 +181,15 @@ const cards = [
     effects: ['If you have 25¢ or more, gain this soul.'],
     image: '',
   },
+  {
+    ...none,
+    ref: 'lost_soul',
+    set: 'b2',
+    type: 'Lost Soul Card',
+    name: 'Lost Soul',
+    effects: ['When this enters play, it becomes a soul.'],
+    image: '',
+  },
 ];
 
 interface DataCard {
@@ -355,6 +364,7 @@ w.go = {
           lootDraw: '/cardimg/assets/sounds/loot-draw.mp3',
           playerDied: '/cardimg/assets/sounds/player-died.mp3',
           treasureGain: '/cardimg/assets/sounds/treasure-gain.mp3',
+          soulGain: '/cardimg/assets/sounds/soul-gain.mp3',
         }),
       // The mat images, at their real paths; the e2e tests serve them only
       // for screenshots, else they fail to load as in a public clone.

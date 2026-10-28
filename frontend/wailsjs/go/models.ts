@@ -321,11 +321,12 @@ export namespace main {
 	    lootDraw: string;
 	    playerDied: string;
 	    treasureGain: string;
-	
+	    soulGain: string;
+
 	    static createFrom(source: any = {}) {
 	        return new Sounds(source);
 	    }
-	
+
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.attackHit = source["attackHit"];
@@ -335,6 +336,7 @@ export namespace main {
 	        this.lootDraw = source["lootDraw"];
 	        this.playerDied = source["playerDied"];
 	        this.treasureGain = source["treasureGain"];
+	        this.soulGain = source["soulGain"];
 	    }
 	}
 

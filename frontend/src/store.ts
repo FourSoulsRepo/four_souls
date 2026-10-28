@@ -41,7 +41,7 @@ import { emptyLobby, forgotten, leftTable, lost, onMessage, remember, renamed, t
 import { connectFirst, disconnect, drop, send } from './net';
 import { claimEffect, nextBeat } from './animations';
 import { lastRollAfter, type LastRoll } from './dice';
-import { createPlayback, effectsFor, scaleFor, shopSlot, slotZone, type Death, type Effect } from './playback';
+import { bonusSlot, createPlayback, effectsFor, scaleFor, shopSlot, slotZone, type Death, type Effect } from './playback';
 import { loadSounds, setSoundVolume } from './sounds';
 import { endsGame, lostDialogAfter, retryDelay } from './reconnect';
 import {
@@ -482,6 +482,10 @@ export const useApp = create<AppState>()((set, get) => {
         shopBefore: (ref) => {
           const view = get().game?.view;
           return view ? shopSlot(view, ref) : undefined;
+        },
+        bonusBefore: (ref) => {
+          const view = get().game?.view;
+          return view ? bonusSlot(view, ref) : undefined;
         },
         diedAt,
         seen: (ref) => (get().game?.events ?? []).some((e) => e.kind === 'card_revealed' && e.card === ref),

@@ -269,3 +269,41 @@ Ideas: B-04, B-05.
    11. Done-when 1 is covered by the Go shuffle test; no manual game was played.
 5. Owner notes (2026-10-28)
    1. Owner asks to mark 18.12 solved.
+
+### [x] 18.13 Bonus soul flies
+
+1. Goal: a bonus soul flies from its card on the board to its player.
+2. Tasks:
+   1. Sound: the same `soulGain` sound as any soul (owner, 2026-10-28).
+   2. A `gained_soul` with text `bonus soul` flies from its card on the board.
+      1. The card is `obj-<id>` in the view before the update; no engine change.
+      2. Reverses the 19.73 rule that a bonus soul does not fly.
+      3. A bonus soul not on the board before: no flight, silent.
+   3. With animations off, nothing plays, as other sounds.
+   4. UC-12 (1ag), wiki `Client.md`, `Animations.md` name it.
+   5. Tests: Vitest for playback; e2e for the played file.
+   6. Gates: `make lint`, `make frontend e2e`.
+3. Done when:
+   1. **Owner** sees a bonus soul fly to its player, and hears the soul sound.
+
+### [x] 18.14 Lost Soul sound
+
+1. Goal: the Lost Soul makes the soul sound as it becomes a soul in play.
+2. Tasks:
+   1. Sound: the same `soulGain` sound as any soul (owner, 2026-10-28).
+   2. A `gained_soul` with no `prev` for a `Lost Soul Card` plays it.
+      1. Nothing flies: the Lost Soul is already on the player's side.
+      2. A `sound` effect plays it and holds a beat.
+      3. Other souls with no `prev` stay silent.
+   3. With animations off, nothing plays, as other sounds.
+   4. UC-12 (1ag), wiki `Client.md`, `Animations.md` name it.
+   5. Tests: Vitest for playback; e2e for the played file.
+   6. Gates: `make lint`, `make frontend e2e`.
+3. Done when:
+   1. **Owner** hears the sound when the Lost Soul becomes a soul.
+4. Result (2026-10-28)
+   1. Implemented; `make lint`, `make frontend`, `go test ./...`: pass.
+   2. `make e2e`: 384 passed; two webkit tests failed once (19.16, aim) and passed on rerun.
+   3. `go build -tags embed .`: builds.
+5. Owner notes (2026-10-28)
+   1. Owner asks to mark 18.13 and 18.14 solved.

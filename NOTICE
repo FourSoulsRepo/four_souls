@@ -66,6 +66,8 @@ Player death sound (assets/sounds in the private images):
 Treasure gain sound (assets/sounds in the private images):
   treasure-gain.mp3  power up1, from the owner; source unknown, so it
   ships only with the private images. Converted to mono MP3.
+  soul-gain.mp3      soul_gain, from the owner; source unknown, so it
+  ships only with the private images. Converted to mono MP3.
 
 --------------------------------------------------------------------------
 App icon — build/appicon.svg, build/appicon.png, build/windows/icon.ico

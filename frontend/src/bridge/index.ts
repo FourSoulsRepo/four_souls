@@ -217,9 +217,9 @@ export function getFonts(): Promise<Fonts> {
 }
 
 // Sounds are the damage sounds (15.50), the dice sound (15.69), the loot
-// draw sound (18.7), the player death sound (18.8) and the treasure gain
-// sound (18.9); each URL is '' without the private images, and that
-// sound stays silent.
+// draw sound (18.7), the player death sound (18.8), the treasure gain
+// sound (18.9) and the soul gain sound; each URL is '' without the
+// private images, and that sound stays silent.
 export interface Sounds {
   attackHit: string;
   effectCast: string;
@@ -228,6 +228,7 @@ export interface Sounds {
   lootDraw: string;
   playerDied: string;
   treasureGain: string;
+  soulGain: string;
 }
 
 // getSounds returns the sound URLs.
