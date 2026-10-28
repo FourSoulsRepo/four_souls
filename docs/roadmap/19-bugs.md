@@ -3273,7 +3273,7 @@ Totals by system (98 items):
 7. Owner notes (2026-10-28)
    1. Owner marks 19.100 solved.
 
-### [ ] 19.101 A bomb aimed by two clicks shows no "pick a monster" note (9.2)
+### [x] 19.101 A bomb aimed by two clicks shows no "pick a monster" note (9.2)
 
 1. Goal: `aim.spec.ts` (9.2) passes in every browser, every run.
 2. Report (`make e2e` on `step-18-play-test`, 2026-10-28, WebKit diagnostic run)
@@ -3285,11 +3285,19 @@ Totals by system (98 items):
    1. The test checks the note right after that click.
    2. Possible: a new state ended the aim before the click, as in 19.100.
    3. Possible: the note showed and closed before the check.
+   4. Not reproduced (2026-10-28): aim spec 6 of 6 passed alone; full webkit suite 3 of 3 passed.
+   5. Temporary logging of store steps and aim state around the shop click showed no change; reverted.
 4. Tasks:
    1. Find what the click did in the failed run, and when the state changed.
    2. Fix the wait to the exact state (CLAUDE.md 16.10); no ban.
 5. Done when:
    1. The test passes in repeated full runs of `make e2e`.
+6. Result (2026-10-28)
+   1. Closed as can't reproduce; no fix, no test change.
+   2. The cause stays unknown; the Cause notes above list what was ruled out.
+   3. Reopen with the failing run's evidence if it comes back.
+7. Owner notes (2026-10-28)
+   1. Owner marks 19.101 can't reproduce.
 
 ### [x] 19.102 A stack row's zoom keeps the last card when its card is redrawn (19.99)
 
