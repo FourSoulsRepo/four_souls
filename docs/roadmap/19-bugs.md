@@ -3362,3 +3362,5 @@ Totals by system (98 items):
    4. `make lint` exit 0; `make test` exit 0.
    5. The replay file is a 0.4.0 record, so it can't replay now. The test covers its order.
    6. No screen change; no screenshots.
+7. Owner notes (2026-10-28)
+   1. Owner marks 19.104 fixed.
