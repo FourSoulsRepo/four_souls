@@ -41,7 +41,7 @@ This step never closes; new reports are appended.
 | F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88        | 7     |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
-| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87 | 18 |
+| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.100 | 19 |
 | J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89 | 16 |
 | K  | Build and release files                  | Release    | 19.47, 19.59, 19.83, 19.91                             | 4     |
 | L  | Not a bug: the app follows a ruling      | None       | 19.63                                                  | 1     |
@@ -3161,3 +3161,35 @@ Totals by system (94 items):
 5. Done when:
    1. A game with Forever Alone out ends its turn.
    2. A test plays the activation loop and checks that End turn is offered.
+
+### [x] 19.100 A played Dagaz waits for a play menu or aim target that does not show (19.18)
+
+1. Goal: `stack.spec.ts` (19.18) passes in every browser, every run.
+2. Report (`make e2e` on `step-18-play-test`, 2026-10-28, third run)
+   1. `tests/stack.spec.ts:68`, webkit: a played Dagaz goes on the stack.
+   2. `answerPlay` (`turn.ts:319`) waited for the play menu or an aim target.
+   3. Neither showed within 5 s: "element(s) not found".
+   4. Failed once; not seen in the two earlier runs.
+   5. The wait was in `playLoot` (`turn.ts`), not `answerPlay`.
+3. Cause: a new state closed the card's menu before it was used.
+   1. Clicking Dagaz in hand opens its menu (`ActionMenu`).
+   2. Any new game step runs `setAiming(null)` (`GameScreen.tsx`).
+   3. `setAiming` also clears `selected` (`store.ts`): the menu closes.
+   4. The test waited 5 s for a menu that the app had closed.
+   5. Nothing reopened it: the test pressed the card once.
+   6. The app was right: a new state ends a selection (15.25).
+   7. Reproduced: a `setAiming(null)` right after the click fails the test.
+   8. Same message as the report: `getByRole('menu').or(…)` not visible.
+   9. Evidence: `.cache/e2e-evidence-19.100/`.
+4. Tasks:
+   1. Find what Dagaz's play shows in webkit, and when.
+   2. Fix the wait to the exact state (CLAUDE.md 16.10); no ban.
+5. Done when:
+   1. The test passes in repeated full runs of `make e2e`.
+6. Result (2026-10-28)
+   1. `playLoot` presses the card again until its menu or target shows.
+   2. No ban; no app change; no screenshots.
+   3. A close injected after the click fails before the fix, passes after.
+   4. `make lint` passes (exit 0).
+   5. `make e2e` passes (380 passed, 6 skipped).
+   6. The chance failure did not come back in three WebKit runs.
