@@ -3,6 +3,7 @@
 ```
 main.go, app.go        Wails desktop app and its bindings
 cmd/server/            dedicated server (no UI)
+cmd/server_load/       load test: plays whole games against a running server
 cmd/website/           rules website, js/wasm only
 cmd/cardgen/           writes engine card stubs from card_db data
 internal/assets/       app files, embedded or read from disk

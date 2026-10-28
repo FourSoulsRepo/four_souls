@@ -33,7 +33,7 @@ This step never closes; new reports are appended.
 
 | ID | Group                                    | System     | Items                                                  | Count |
 |----|------------------------------------------|------------|--------------------------------------------------------|-------|
-| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95 | 15 |
+| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95, 19.97 | 16 |
 | B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90 | 9 |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74                              | 4     |
@@ -3141,3 +3141,23 @@ Totals by system (94 items):
    1. `make lint` and `make test` pass (exit 0).
 7. Owner notes (2026-10-28)
    1. Owner marks 19.96 solved.
+
+### [ ] 19.97 Forever Alone's activation repeats, and the turn never ends
+
+1. Goal: a turn always ends; an activation cannot loop without limit.
+2. Report (found by `cmd/server_load`, 2026-10-28)
+   1. Random games on a local dedicated server, 2 to 4 players, `b2`.
+   2. Two games stopped at turn 26 and turn 52 and went on for 20 minutes or more.
+   3. The steps kept growing; the turn number did not.
+3. Cause (from the match records, replayed)
+   1. The active player activates Forever Alone, then picks an option.
+   2. Each pick opens a priority window; the window passes; the card can be activated again.
+   3. Only Pass and the activation are offered; End turn is never offered.
+   4. The match record of that game (a server run on 2026-10-27, game g11) shows the cycle in its last 40 intents.
+4. Tasks:
+   1. Read Forever Alone's card code and its activations.
+   2. Find why an option reopens the activation window.
+   3. Decide the rule with the owner: does one activation end the card's use for the turn?
+5. Done when:
+   1. A game with Forever Alone out ends its turn.
+   2. A test plays the activation loop and checks that End turn is offered.

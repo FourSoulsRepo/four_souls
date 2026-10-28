@@ -12,6 +12,7 @@
 * [Server in Docker](Server-in-Docker)
 * [Server with Docker Compose and Caddy](Server-with-Docker-Compose-and-Caddy)
 * [Server from a local build](Server-from-a-local-build)
+* [Load test](Load-test)
 
 **Translators**
 
