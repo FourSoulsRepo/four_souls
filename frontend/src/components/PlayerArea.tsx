@@ -1,6 +1,6 @@
 import { useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { t } from '../i18n';
-import { counted, Role, type CardView, type PlayerView } from '../protocol';
+import { Role, type CardView, type PlayerView } from '../protocol';
 import { useApp } from '../store';
 import type { LinePart } from '../stack';
 import { isCurse, isSoul, playerColor, soulCards, soulSlots, type Position } from '../table';
@@ -90,7 +90,7 @@ function OpponentArea({ player, name, position, active, asked, winSouls, ui, doi
           size={size}
           damage={character.damage}
           spent={spent(character)}
-          counters={counted(character)}
+          counters={character.counters}
           copy={character.copy}
           stats={statsOf(player)}
           objectId={character.id}
@@ -184,7 +184,7 @@ function OwnArea({ player, name, active, asked, winSouls, ui, tools }: Omit<Prop
           size="table"
           damage={character.damage}
           spent={spent(character)}
-          counters={counted(character)}
+          counters={character.counters}
           copy={character.copy}
           stats={statsOf(player)}
           objectId={character.id}
@@ -315,7 +315,7 @@ function PlayCard({ card, owner, size, ui }: { card: CardView; owner: number; si
       size={size}
       damage={card.damage}
       spent={spent(card)}
-      counters={counted(card)}
+      counters={card.counters}
       copy={card.copy}
       dice={card.dice}
       owner={owner}

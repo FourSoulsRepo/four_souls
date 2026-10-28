@@ -469,6 +469,13 @@
     },
     "note": "Screen-reader name of the counter badge on a card. n: counters on it."
   },
+  "badge.counters_named": {
+    "text": {
+      "one": "{n} {name} counter",
+      "other": "{n} {name} counters"
+    },
+    "note": "Screen-reader name of a counter badge of one kind on a card. n: counters of that kind. name: the kind as the card names it, e.g. gold (not translated yet)."
+  },
   "badge.damage": {
     "text": {
       "one": "{n} damage",
@@ -3885,6 +3892,10 @@
   "welcome.title": {
     "text": "Welcome!",
     "note": "First start: the screen's title, above the nickname field."
+  },
+  "zoom.counters": {
+    "text": "Counters",
+    "note": "Zoomed card: screen-reader name of the counter list under it, one line a kind."
   },
   "zoom.keywords": {
     "text": "Keywords",

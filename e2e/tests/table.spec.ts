@@ -397,6 +397,47 @@ test('counters and changed monster stats show on the card, not in its zoom (15.2
   await shot(page, 'monster-stats-zoom');
 });
 
+test('a gold counter is its own badge, in gold (18.15)', async ({ browser }) => {
+  const [page] = await startGame(browser, ['Flo', 'Hux'], { bans: [...statMonsters, ...plainBoard] });
+  if (!page) {
+    throw new Error('no pages');
+  }
+  const monster = page.getByRole('group', { name: tr('board.monsters') }).locator('.card').first();
+  await expect(monster).toBeVisible();
+
+  // Two kinds on one card: general (green) and gold. Only the screen changes.
+  await page.evaluate(() => {
+    interface S {
+      game: { view: { monsters: { top?: { counters?: { name?: string; count: number }[] } }[] } } | null;
+    }
+    const { store } = (window as unknown as { fourSouls: { store: { getState: () => S; setState: (s: Partial<S>) => void } } })
+      .fourSouls;
+    const game = store.getState().game;
+    const top = game?.view.monsters[0]?.top;
+    if (!game || !top) {
+      throw new Error('no monster');
+    }
+    const marked = { ...top, counters: [{ count: 2 }, { name: 'gold', count: 1 }] };
+    const monsters = game.view.monsters.map((s, i) => (i === 0 ? { ...s, top: marked } : s));
+    store.setState({ game: { ...game, view: { ...game.view, monsters } } });
+  });
+
+  const general = monster.getByLabel(tr('badge.counters', { n: 2 }));
+  const gold = monster.getByLabel(tr('badge.counters_named', { n: 1, name: 'gold' }));
+  await expect(general).toBeVisible();
+  await expect(gold).toBeVisible();
+  expect(await general.evaluate((el) => el.style.getPropertyValue('--fill'))).toBe('#5cb83a');
+  expect(await gold.evaluate((el) => el.style.getPropertyValue('--fill'))).toBe('#e0b43a');
+  await shot(page, 'counter-kinds');
+
+  // The zoom names each kind under the card, bottom right (owner, 18.15).
+  await monster.hover();
+  const list = page.getByTestId('card-zoom').locator('.card-zoom-counters');
+  await expect(list).toContainText(tr('badge.counters', { n: 2 }));
+  await expect(list).toContainText(tr('badge.counters_named', { n: 1, name: 'gold' }));
+  await shot(page, 'counter-kinds-zoom');
+});
+
 test('a bonus soul shows its counters (19.29)', async ({ browser }) => {
   const [page] = await startGame(browser, ['Rua', 'Vik'], { bans: plainBoard });
   if (!page) {

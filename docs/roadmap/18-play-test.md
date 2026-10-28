@@ -307,3 +307,52 @@ Ideas: B-04, B-05.
    3. `go build -tags embed .`: builds.
 5. Owner notes (2026-10-28)
    1. Owner asks to mark 18.13 and 18.14 solved.
+
+### [x] 18.15 Counter kinds on the table
+
+1. Goal: a player can tell each counter apart, and each card counts only its own kind.
+2. Tasks:
+   1. Colours (owner, 2026-10-29): done.
+      1. General counter: green.
+      2. Golden counter: gold.
+      3. A new counter kind: the owner picks its colour.
+   2. One badge per kind, not one total: done.
+      1. The badge shows the kind's colour and count.
+      2. The zoomed card names each kind, bottom right: done (owner, 2026-10-29).
+   3. Each card counts only its own kind.
+      1. Bum-Bo! levels up from general counters only.
+      2. Tech X's "Remove 3 counters" pays from general counters only.
+   4. Eve's line is a test case (owner, 2026-10-29): done, `TestEveGoldenTrinketLine`.
+      1. Eve has Tech X and Bum-Bo!.
+      2. Golden Trinket puts a gold counter on Tech X.
+      3. Eve dies and loses Golden Trinket.
+      4. Eve gets Golden Trinket back in hand.
+      5. Golden Trinket puts a gold counter on Bum-Bo!.
+      6. Expected: Tech X and Bum-Bo! each show one gold counter; Bum-Bo! is level 0.
+   5. Owner answers (2026-10-29):
+      1. Tech X's "Remove 3 counters" does not use gold counters.
+      2. A gold counter on Bum-Bo! does nothing to Bum-Bo!.
+      3. A gold counter on Bum-Bo! or Tech X does count for Golden Trinket: it gains that card's abilities.
+   6. Engine tests: `cards/r/golden_trinket_counters_test.go`, `cards/r/golden_trinket_bum_test.go`.
+      1. Counters do not mix (Tech X, Bum-Bo!).
+      2. Two gold counters work at once: Golden Trinket gains both cards' abilities.
+      3. Bum-Bo! adds no ability; one activation uses one ability the player picks.
+      4. Gold on Bum Friend and Tech X: both ↷ abilities are the trinket's, and they share its one tap.
+      5. Bum-Bo!'s statics reach Golden Trinket and read the trinket's own level.
+      6. Gaining ¢ levels Bum-Bo! itself, even with gold on it; the trinket does not level.
+   7. Open question, wait for the owner:
+      1. Q-27: does Golden Trinket take Bum-Bo!'s gain-¢ replacement? The engine says no; `TestGainCentsReplacementGained` is skipped.
+      2. Q-28: may an item use two gained ↷ abilities in one turn? The engine says no.
+      3. Both are in `pkg/rules_engine/docs/rules/open-questions.md`.
+   8. Client: one badge per kind, coloured; the zoom lists the kinds (`counters.ts`, `Card.tsx`, `CardZoom.tsx`, `Card.css`).
+      1. Tests: `counters.test.ts`; e2e "a gold counter is its own badge, in gold (18.15)".
+      2. Wiki `Client.md` names the colours.
+   9. Gates: `make lint`, `make frontend e2e`, `go test ./...` in `pkg/rules_engine`.
+3. Done when:
+   1. **Owner** plays Eve's line and reads each counter's colour and count.
+4. Result (2026-10-29)
+   1. Implemented; `make lint`, `make frontend`, `go test ./...`: pass.
+   2. `make e2e`: 390 passed, 6 skipped.
+   3. Q-27 and Q-28 stay open in `open-questions.md`.
+5. Owner notes (2026-10-29)
+   1. Owner asks to mark 18.15 solved.

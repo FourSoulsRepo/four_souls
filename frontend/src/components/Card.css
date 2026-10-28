@@ -312,6 +312,32 @@
 /* Why the player can't use the card now (15.29, F-17), in the red of a
    wrong aim's reason. */
 /* Why a stat is not its print (15.92, V-41): one sum per line. */
+/* The counters of the zoomed card, named by kind, bottom right (18.15). */
+.card-zoom-counters {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  width: fit-content;
+  margin: 0 0 0 auto;
+  padding: 8px 10px;
+  list-style: none;
+  font-size: 14px;
+  line-height: 1.3;
+  color: #fff;
+  background: rgb(10 16 24 / 90%);
+  border-radius: 6px;
+}
+
+.card-zoom-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  margin-right: 6px;
+  border-radius: 50%;
+  vertical-align: middle;
+}
+
 .card-zoom-stats {
   display: flex;
   flex-direction: column;
@@ -613,18 +639,18 @@
   -webkit-text-stroke: 0;
 }
 
-/* Counters (C-01): a green blob on the card's art, clear of the stats. */
+/* Counters (C-01): a blob on the card's art, clear of the stats. Each
+   kind is one blob in its colour (18.15), stacked down by --i. */
 .card-counters {
-  top: 30cqi;
+  top: calc(30cqi + var(--i, 0) * 16cqi);
   left: 4cqi;
-  --fill: #5cb83a;
   rotate: -4deg;
 }
 
 /* A text card has no art: the counter takes the top corner, and the
    name keeps clear of it, so no words hide under it. */
 .card.blank .card-counters {
-  top: 3cqi;
+  top: calc(3cqi + var(--i, 0) * 16cqi);
   right: 3cqi;
   left: auto;
 }

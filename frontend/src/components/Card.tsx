@@ -1,12 +1,13 @@
 import { AnimatePresence, motion, useIsPresent } from 'motion/react';
-import { useEffect, useRef, useState, type MouseEvent, type PointerEvent } from 'react';
+import { useEffect, useRef, useState, type CSSProperties, type MouseEvent, type PointerEvent } from 'react';
 import { claimed } from '../animations';
 import { iconText, kindOf, textParts, unknownCard, type CardInfo, type Kind } from '../cards';
 import { diceImage } from '../dice';
 import { t } from '../i18n';
 import { scaleFor } from '../playback';
 import { fighters } from '../prompt';
-import type { MonsterStats, StatSource } from '../protocol';
+import { counterColor } from '../counters';
+import type { CounterView, MonsterStats, StatSource } from '../protocol';
 import { statLines, sumOf, tempSources, trend, type Name, type TempSource, type Trend } from '../stats';
 import { useApp, viewScale } from '../store';
 import { boxOf } from '../zoom';
@@ -18,6 +19,9 @@ const LONG_PRESS_MS = 450;
 
 // How long a card takes to turn to its other side (ADR 023).
 const FLIP_MS = 500;
+
+// NO_COUNTERS is a card with none; a shared value, so it is not new each render.
+const NO_COUNTERS: CounterView[] = [];
 
 export type CardSize = 'hand' | 'table' | 'small' | 'zoom' | 'choice';
 
@@ -37,8 +41,9 @@ interface Props {
   // player marks a character card as its player: aiming at the player
   // picks the character (15.33).
   player?: number;
-  // counters is how many counters the card carries (7.9).
-  counters?: number;
+  // counters are the card's counters by kind; each kind is one badge
+  // in its colour (7.9, 18.15).
+  counters?: CounterView[];
   // copy is the card whose abilities this card uses by copying them; its
   // name is in the copy mark's tooltip (19.106).
   copy?: string;
@@ -71,7 +76,7 @@ export function Card({
   back = 'loot',
   damage = 0,
   spent = false,
-  counters = 0,
+  counters = NO_COUNTERS,
   copy,
   dice,
   owner = -1,
@@ -95,7 +100,7 @@ export function Card({
   const name: Name = (ref) => (ref ? (cards.get(ref)?.name ?? ref) : t('stats.hidden_card'));
   const sources = stats?.sources ?? monster?.sources;
   const lines = sources ? statLines(sources, printedOf(stats, monster), liveOf(stats, monster), name) : [];
-  const zoomHandlers = useZoom(cardRef, zoomable, rise, why, lines);
+  const zoomHandlers = useZoom(cardRef, zoomable, rise, why, lines, counters.filter((c) => c.count > 0));
   const cardElRef = useRef<HTMLDivElement>(null);
   // Leaving an icon for the card zooms the card again.
   const backToCard = (e: PointerEvent<HTMLElement>) => {
@@ -144,6 +149,8 @@ export function Card({
   // The zoomed card shows no badges: its words stay readable.
   const badges = size !== 'zoom';
 
+  const shown = counters.filter((c) => c.count > 0);
+  const counted = shown.reduce((n, c) => n + c.count, 0);
   const pop = objectId !== undefined && scale > 0 && !claimed(card.ref, 'arrive');
   return (
     // anim: card-pop
@@ -154,7 +161,7 @@ export function Card({
       transition={{ duration: 0.25 * scale }}
       data-zone={objectId === undefined ? undefined : `obj-${String(objectId)}`}
       data-player={player}
-      className={`card size-${size} kind-${kindOf(card.type)}${image ? '' : ' blank'}${counters > 0 ? ' has-counters' : ''}${spent ? ' spent' : ''}${fight ? ' fight' : ''}${highlight ? ` hl-${highlight}` : ''}${flip.turn ? ` flip-${flip.turn}` : ''}`}
+      className={`card size-${size} kind-${kindOf(card.type)}${image ? '' : ' blank'}${counted > 0 ? ' has-counters' : ''}${spent ? ' spent' : ''}${fight ? ' fight' : ''}${highlight ? ` hl-${highlight}` : ''}${flip.turn ? ` flip-${flip.turn}` : ''}`}
       style={flip.turn ? { animationDuration: `${String((FLIP_MS * scale) / 2)}ms` } : undefined}
       role={onClick ? 'button' : 'img'}
       aria-label={card.name}
@@ -173,7 +180,16 @@ export function Card({
       ) : (
         <BlankFace card={card} full={size === 'zoom'} />
       )}
-      {badges && counters > 0 && <Badge kind="counters" value={counters} label={t('badge.counters', { n: counters })} />}
+      {badges &&
+        shown.map((c, i) => (
+          <Badge
+            key={c.name ?? ''}
+            kind="counters"
+            value={c.count}
+            label={c.name ? t('badge.counters_named', { n: c.count, name: c.name }) : t('badge.counters', { n: c.count })}
+            style={{ '--fill': counterColor(c.name), '--i': i } as CSSProperties}
+          />
+        ))}
       {badges && copy && <CopyBadge name={name(copy)} />}
       {badges && dice && dice.length > 0 && <DieBadges values={dice} owner={owner} />}
       {/* Damage shows as the lower, red health; the mark is for the rest. */}
@@ -234,7 +250,7 @@ function useFlip(cardRef: string | undefined, objectId: number | undefined, scal
 // hover, beside it or rising from it, or after a long touch (B-06). A
 // card and a soul crystal share it (V-43). Nothing zooms without a
 // card ref or when zoomable is false.
-export function useZoom(cardRef: string | undefined, zoomable: boolean, rise = false, why?: string, stats: string[] = []) {
+export function useZoom(cardRef: string | undefined, zoomable: boolean, rise = false, why?: string, stats: string[] = [], counters: CounterView[] = []) {
   const setZoom = useApp((s) => s.setZoom);
   const pressRef = useRef(0);
   const downRef = useRef<{ x: number; y: number } | null>(null);
@@ -289,7 +305,15 @@ export function useZoom(cardRef: string | undefined, zoomable: boolean, rise = f
       if (on && e.pointerType === 'mouse') {
         zoomedRef.current = true;
         watch(e.currentTarget);
-        setZoom({ ref: cardRef, touch: false, at: boxOf(e.currentTarget), rise, ...(why ? { why } : {}), ...(stats.length > 0 ? { stats } : {}) });
+        setZoom({
+          ref: cardRef,
+          touch: false,
+          at: boxOf(e.currentTarget),
+          rise,
+          ...(why ? { why } : {}),
+          ...(stats.length > 0 ? { stats } : {}),
+          ...(counters.length > 0 ? { counters } : {}),
+        });
       }
     },
     onPointerLeave: (e: PointerEvent<HTMLElement>) => {
@@ -305,7 +329,7 @@ export function useZoom(cardRef: string | undefined, zoomable: boolean, rise = f
         const at = boxOf(e.currentTarget);
         downRef.current = { x: e.clientX, y: e.clientY };
         pressRef.current = window.setTimeout(() => {
-          setZoom({ ref: cardRef, touch: true, at, ...(why ? { why } : {}), ...(stats.length > 0 ? { stats } : {}) });
+          setZoom({ ref: cardRef, touch: true, at, ...(why ? { why } : {}), ...(stats.length > 0 ? { stats } : {}), ...(counters.length > 0 ? { counters } : {}) });
         }, LONG_PRESS_MS);
       }
     },
@@ -447,6 +471,8 @@ const shapes = new Map<BadgeKind, string>([
 interface BadgeProps {
   kind: BadgeKind;
   value: number;
+  // style sets the badge's colour and its place among the counters.
+  style?: CSSProperties;
   // label is the screen-reader name: the number and what it counts.
   label: string;
   title?: string;
@@ -459,9 +485,9 @@ interface BadgeProps {
 // the number in the game's hand-drawn letters. A hurt health number is
 // red while below full (T-25); a stat above its print is green, below
 // it red (15.92).
-function Badge({ kind, value, label, title, hurt = false, trend: dir }: BadgeProps) {
+function Badge({ kind, value, label, title, style, hurt = false, trend: dir }: BadgeProps) {
   return (
-    <span className={`card-badge card-${kind}${hurt ? ' hurt' : ''}${dir ? ` ${dir}` : ''}`} title={title} aria-label={label}>
+    <span className={`card-badge card-${kind}${hurt ? ' hurt' : ''}${dir ? ` ${dir}` : ''}`} title={title} aria-label={label} style={style}>
       <svg className="card-badge-shape" viewBox="0 0 100 100" aria-hidden="true">
         <path d={shapes.get(kind) ?? blob} />
         <path className="card-badge-shine" d="M30 26C36 18 46 16 52 18C44 22 38 28 34 36C31 34 29 30 30 26Z" />
