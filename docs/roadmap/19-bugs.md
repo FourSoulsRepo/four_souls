@@ -3306,3 +3306,10 @@ Totals by system (98 items):
    2. Add a test that fails before the change and passes after.
 5. Done when:
    1. The test passes in repeated full runs of `make e2e`.
+6. Result (2026-10-28)
+   1. `StackPanel` rows zoom on pointer-over, ignoring an over from the same row.
+   2. New test: "a stack row zooms its own card when the row before it is redrawn (19.102)".
+   3. The new test failed before the change ("Bomb!" for "Big Spider"); it passes after.
+   4. `make lint` and `make frontend` pass.
+   5. `make e2e` passes twice in a row (384 passed, 6 skipped each).
+   6. No screen change; no screenshots.

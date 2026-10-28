@@ -185,8 +185,12 @@ function StackRow({ it, view, names }: { it: StackItem; view: GameView; names: N
       // A dragged card may aim at this item (15.25).
       data-stack={it.id}
       aria-label={parts.map((p) => p.text).join('')}
-      onPointerEnter={(e) => {
-        if (e.pointerType === 'mouse') {
+      // pointer-over, not pointer-enter: a row's image that is redrawn under
+      // the pointer sends no out event, and React then drops the next enter
+      // (19.102). The pointer came from outside this row, so it zooms it.
+      onPointerOver={(e) => {
+        const inside = e.relatedTarget instanceof Node && e.currentTarget.contains(e.relatedTarget);
+        if (e.pointerType === 'mouse' && !inside) {
           show(e, false);
         }
       }}
