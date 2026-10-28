@@ -3192,7 +3192,7 @@ Totals by system (98 items):
 7. Owner notes (2026-10-28)
    1. Owner asks to mark 19.98 fixed.
 
-### [ ] 19.103 A webkit pause test fails once: an intent lost with a dropped connection (19.86)
+### [x] 19.103 A webkit pause test fails once: an intent lost with a dropped connection (19.86)
 
 1. Goal: `pause.spec.ts` (19.86) passes in every full run of `make e2e`.
 2. Report (`make e2e` on `step-18-play-test`, 2026-10-28, run 1 of 3)
@@ -3206,6 +3206,18 @@ Totals by system (98 items):
    2. Fix the wait to the exact state (CLAUDE.md 16.10); no ban.
 5. Done when:
    1. The test passes in repeated full runs of `make e2e`.
+6. Result (2026-10-28)
+   1. Closed as can't reproduce; the cause stays unknown.
+   2. Run 1's evidence: the Throw button still shown; no error text; the attack roll still waiting.
+   3. Not reproduced: about 700 traced repeats, webkit and chromium, under load; all passed.
+   4. Full `make e2e` (2026-10-28): the pause test passed; one unrelated webkit lobby test failed.
+   5. Read in the server: a returning seat is attached before the intent that follows its welcome.
+   6. The old wait was a sign: the button shows before the server's resync arrives (16.10).
+   7. Uncommitted test change: `markGame` and `untilResynced` in `turn.ts`; the test waits for the resync.
+   8. Uncommitted trace: `trace` and `traceLog` in `turn.ts`; prints only on failure.
+   9. One run of 30 hit the new wait's timeout before the trace existed; its state was not captured.
+7. Owner notes (2026-10-28)
+   1. Owner marks 19.103 can't reproduce and closes it.
 
 ### [x] 19.99 The history strip zoom shows another card than the bomb (15.90)
 
