@@ -38,7 +38,7 @@ This step never closes; new reports are appended.
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74                              | 4     |
 | E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52, 19.54, 19.69 | 9  |
-| F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88, 19.99 | 8     |
+| F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88, 19.99, 19.102 | 9     |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
 | I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.100 | 19 |
@@ -50,13 +50,13 @@ This step never closes; new reports are appended.
 | O  | Reconnect: old connection state kept     | Client     | 19.78, 19.86                                           | 2     |
 | P  | A missing setting: no way to change it   | Client     | 19.93                                                  | 1     |
 
-Totals by system (95 items):
+Totals by system (96 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
 | Engine    | A, B    | 23    |
 | Card data | C       | 2     |
-| Client    | D–G, O, P | 28  |
+| Client    | D–G, O, P | 29  |
 | Server    | H, N    | 2     |
 | e2e       | I, J    | 34    |
 | Release   | K       | 4     |
@@ -3162,7 +3162,7 @@ Totals by system (95 items):
    1. A game with Forever Alone out ends its turn.
    2. A test plays the activation loop and checks that End turn is offered.
 
-### [ ] 19.99 The history strip zoom shows another card than the bomb (15.90)
+### [x] 19.99 The history strip zoom shows another card than the bomb (15.90)
 
 1. Goal: `info.spec.ts` (15.90) passes; hovering a strip tile zooms its own card.
 2. Report (`make e2e` on `step-18-play-test`, 2026-10-28)
@@ -3191,6 +3191,8 @@ Totals by system (95 items):
    5. The 15.90 test: 2 of 40 failed before the fix; 40 of 40 pass after.
    6. `make lint` and `make frontend` pass; `make e2e` passes twice (382 passed, 6 skipped).
    7. No screen change; no screenshots.
+7. Owner notes (2026-10-28)
+   1. Owner marks 19.99 solved.
 
 ### [x] 19.100 A played Dagaz waits for a play menu or aim target that does not show (19.18)
 
@@ -3241,5 +3243,21 @@ Totals by system (95 items):
 4. Tasks:
    1. Find what the click did in the failed run, and when the state changed.
    2. Fix the wait to the exact state (CLAUDE.md 16.10); no ban.
+5. Done when:
+   1. The test passes in repeated full runs of `make e2e`.
+
+### [ ] 19.102 A stack row's zoom keeps the last card when its card is redrawn (19.99)
+
+1. Goal: a stack row zooms its own card, as the history strip does (19.99).
+2. Report (found by code review, 2026-10-28, same cause as 19.99)
+   1. `StackPanel.tsx` rows use `onPointerEnter` for the zoom.
+   2. A row's card image redrawn under the pointer sends no out event.
+   3. React then drops the next row's enter, so the zoom keeps the old card.
+3. Cause (2026-10-28)
+   1. Same mechanism as 19.99, in `StackPanel.tsx`.
+   2. Not yet seen in a failing run; found by reading the code.
+4. Tasks:
+   1. Use `onPointerOver` with the same check as the strip (19.99).
+   2. Add a test that fails before the change and passes after.
 5. Done when:
    1. The test passes in repeated full runs of `make e2e`.
