@@ -3291,7 +3291,7 @@ Totals by system (98 items):
 5. Done when:
    1. The test passes in repeated full runs of `make e2e`.
 
-### [ ] 19.102 A stack row's zoom keeps the last card when its card is redrawn (19.99)
+### [x] 19.102 A stack row's zoom keeps the last card when its card is redrawn (19.99)
 
 1. Goal: a stack row zooms its own card, as the history strip does (19.99).
 2. Report (found by code review, 2026-10-28, same cause as 19.99)
@@ -3313,3 +3313,5 @@ Totals by system (98 items):
    4. `make lint` and `make frontend` pass.
    5. `make e2e` passes twice in a row (384 passed, 6 skipped each).
    6. No screen change; no screenshots.
+7. Owner notes (2026-10-28)
+   1. Owner marks 19.102 solved.
