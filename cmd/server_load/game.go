@@ -42,7 +42,7 @@ type gameRun struct {
 // gameResult is what a finished or failed game left behind.
 type gameResult struct {
 	finished bool
-	cut      bool // stopped early: -stop-on-first ended its stage
+	cut      bool // stopped early: -stop-at ended its stage
 	err      error
 	steps    int
 	winners  []int

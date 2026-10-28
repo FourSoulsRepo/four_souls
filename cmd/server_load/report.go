@@ -100,7 +100,7 @@ func (st stage) report(p *printer, cfg config) {
 	}
 	line(p, "games", "%d finished, %d failed, in %s", st.finished, st.games-st.finished-st.cut, st.elapsed.Round(time.Second))
 	if st.cut > 0 {
-		line(p, "stopped", "%d games cut short when the first game ended", st.cut)
+		line(p, "stopped", "%d games cut short when the stop share was reached", st.cut)
 	}
 	var steps []int
 	var lengths []time.Duration

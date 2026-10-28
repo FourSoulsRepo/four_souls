@@ -130,9 +130,9 @@ func TestCutGamesAreNotFailures(t *testing.T) {
 	}
 }
 
-// TestStopOnFirstAgainstServer runs a stage with -stop-on-first on a local
-// server; the stage passes whether or not the other game got cut.
-func TestStopOnFirstAgainstServer(t *testing.T) {
+// TestStopAtAgainstServer runs a stage with -stop-at on a local server; the
+// stage passes whether or not the other game got cut.
+func TestStopAtAgainstServer(t *testing.T) {
 	if testing.Short() {
 		t.Skip("plays whole games")
 	}
@@ -148,11 +148,27 @@ func TestStopOnFirstAgainstServer(t *testing.T) {
 	defer func() { _ = srv.Shutdown(context.Background()) }() //nolint:errcheck // test
 
 	var out bytes.Buffer
-	args := []string{"-url", "ws://" + srv.Addr(), "-players", "2", "-start", "2", "-max-games", "2", "-max-response", "10s", "-seed", "7", "-stop-on-first"}
+	args := []string{"-url", "ws://" + srv.Addr(), "-players", "2", "-start", "2", "-max-games", "2", "-max-response", "10s", "-seed", "7", "-stop-at", "30"}
 	if err := run(ctx, args, &out); err != nil {
 		t.Fatal(err)
 	}
 	if !strings.Contains(out.String(), "result      PASS") {
 		t.Fatalf("stage did not pass:\n%s", out.String())
+	}
+}
+
+// TestStopAfter: stop-at percent of the games, rounded up, at least one.
+func TestStopAfter(t *testing.T) {
+	cases := []struct{ games, stopAt, want int }{
+		{games: 2, stopAt: 30, want: 1},
+		{games: 16, stopAt: 30, want: 5},
+		{games: 64, stopAt: 30, want: 20},
+		{games: 64, stopAt: 0, want: 0},
+		{games: 4, stopAt: 100, want: 4},
+	}
+	for _, c := range cases {
+		if got := stopAfter(c.games, c.stopAt); got != c.want {
+			t.Errorf("stopAfter(%d, %d) = %d, want %d", c.games, c.stopAt, got, c.want)
+		}
 	}
 }

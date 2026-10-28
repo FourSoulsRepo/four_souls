@@ -37,7 +37,7 @@ type config struct {
 	gameTimeout time.Duration
 	maxResponse time.Duration
 	seed        uint64
-	stopOnFirst bool
+	stopAt      int // percent of a stage's games that stops the rest; 0 waits for all
 }
 
 func main() {
@@ -87,7 +87,7 @@ func parse(args []string) (config, error) {
 	fs.DurationVar(&cfg.gameTimeout, "game-timeout", 30*time.Minute, "a game that has not ended by then fails")
 	fs.DurationVar(&cfg.maxResponse, "max-response", time.Second, "a stage fails when a response takes longer")
 	fs.Uint64Var(&cfg.seed, "seed", 0, "seed for the bots' moves; 0 uses the clock")
-	fs.BoolVar(&cfg.stopOnFirst, "stop-on-first", false, "when one game of a stage ends, end the others at once instead of waiting for them")
+	fs.IntVar(&cfg.stopAt, "stop-at", 0, "when this percent of a stage's games has ended, end the others at once; 0 waits for all")
 	if err := fs.Parse(args); err != nil {
 		return cfg, fmt.Errorf("flags: %w", err)
 	}
@@ -115,6 +115,8 @@ func (cfg *config) check() error {
 		return errors.New("-start must be at least 1, and -max-games at least -start")
 	case len(cfg.sets) == 0:
 		return errors.New("-sets: at least one card set")
+	case cfg.stopAt < 0 || cfg.stopAt > 100:
+		return errors.New("-stop-at: 0 to 100 percent")
 	case cfg.gameTimeout <= 0 || cfg.maxResponse <= 0:
 		return errors.New("-game-timeout and -max-response must be positive")
 	}
