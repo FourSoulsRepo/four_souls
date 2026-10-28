@@ -41,8 +41,8 @@ This step never closes; new reports are appended.
 | F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88, 19.99, 19.102 | 9     |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
-| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.100 | 19 |
-| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101 | 17 |
+| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100 | 20 |
+| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103 | 18 |
 | K  | Build and release files                  | Release    | 19.47, 19.59, 19.83, 19.91                             | 4     |
 | L  | Not a bug: the app follows a ruling      | None       | 19.63                                                  | 1     |
 | M  | Go test setup: the code was right        | Go tests   | 19.68                                                  | 1     |
@@ -50,7 +50,7 @@ This step never closes; new reports are appended.
 | O  | Reconnect: old connection state kept     | Client     | 19.78, 19.86                                           | 2     |
 | P  | A missing setting: no way to change it   | Client     | 19.93                                                  | 1     |
 
-Totals by system (96 items):
+Totals by system (98 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
@@ -58,7 +58,7 @@ Totals by system (96 items):
 | Card data | C       | 2     |
 | Client    | D–G, O, P | 29  |
 | Server    | H, N    | 2     |
-| e2e       | I, J    | 34    |
+| e2e       | I, J    | 36    |
 | Release   | K       | 4     |
 | None      | L       | 1     |
 | Go tests  | M       | 1     |
@@ -3161,6 +3161,51 @@ Totals by system (96 items):
 5. Done when:
    1. A game with Forever Alone out ends its turn.
    2. A test plays the activation loop and checks that End turn is offered.
+
+### [x] 19.98 The languages e2e test expects the first-roll prompt after Eden's choice
+
+1. Goal: `languages.spec.ts` (16.4) passes for every random deal.
+2. Report (`make e2e` on `step-18-play-test`, 2026-10-28)
+   1. `tests/languages.spec.ts:102`, chromium: the throw-prompt check failed.
+   2. Expected "Throw the dice for the first player roll".
+   3. Received "Choose your starting item" (Eden's choice).
+   4. The same test passed alone, twice.
+3. Cause (2026-10-28)
+   1. The deal is random; Eden may be dealt.
+   2. Eden's starting choice comes before the first-roll prompt (19.94).
+   3. The banner check ran while Eden's choice was still open.
+   4. The test's own comment (line 81) knows a deal may ask first.
+4. Tasks:
+   1. Wait for the exact state the deal gives, not the roll prompt alone (CLAUDE.md 16.10).
+   2. Do not ban Eden only because the test failed on it (CLAUDE.md 16.8).
+   3. Name the state in a comment next to the wait.
+5. Done when:
+   1. The test passes on a deal with Eden and on one without.
+   2. `make e2e` passes twice in a row.
+6. Result (2026-10-28)
+   1. New `untilRollBanner` in `languages.spec.ts`: it picks Eden's first option, then waits for the roll banner on every page.
+   2. No ban added; the test keeps the deal as dealt.
+   3. 60 repeated runs of the test passed; Eden's choice came up in 9 of the first 60 deals.
+   4. `make lint` passes.
+   5. `make e2e`: run 1 failed in one webkit test of `pause.spec.ts` (logged as 19.103); runs 2 and 3 passed (384 passed, 6 skipped each).
+   6. Evidence of run 1 copied to the scratchpad before the next run.
+7. Owner notes (2026-10-28)
+   1. Owner asks to mark 19.98 fixed.
+
+### [ ] 19.103 A webkit pause test fails once: an intent lost with a dropped connection (19.86)
+
+1. Goal: `pause.spec.ts` (19.86) passes in every full run of `make e2e`.
+2. Report (`make e2e` on `step-18-play-test`, 2026-10-28, run 1 of 3)
+   1. `tests/pause.spec.ts:28`, webkit: "an intent lost with a dropped connection can be sent again".
+   2. Failed at line 51: the throw button still showed after the click.
+   3. Runs 2 and 3 passed; the test passed alone in chromium.
+3. Cause: not found yet.
+   1. Evidence: `e2e-run1` copy in the session scratchpad.
+4. Tasks:
+   1. Find what the click did in the failed run, and when the state changed.
+   2. Fix the wait to the exact state (CLAUDE.md 16.10); no ban.
+5. Done when:
+   1. The test passes in repeated full runs of `make e2e`.
 
 ### [x] 19.99 The history strip zoom shows another card than the bomb (15.90)
 
