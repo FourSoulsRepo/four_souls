@@ -2,7 +2,7 @@ package rulesengine
 
 // Version is the rules engine version.
 // Bump it with every change to rules behavior; see docs/roadmap/08-first-release.md.
-const Version = "0.4.0"
+const Version = "0.4.1"
 
 // StateMeaning numbers what the saved state's fields mean (N-20). Raise
 // it when a field keeps its JSON name and type but means something new:
@@ -20,3 +20,8 @@ const throwVersion = "0.3.0"
 // (key and values) instead of English text (16.4, ADR 021). Older
 // records' checksums differ: they cannot replay.
 const msgVersion = "0.4.0"
+
+// refillVersion is the first engine version where a dead monster's slot
+// refills after its roll rewards (19.104). Older records' checksums
+// differ: they cannot replay.
+const refillVersion = "0.4.1"

@@ -217,9 +217,12 @@ func (g *Game) resolveTop() {
 	case StackPenalty:
 		g.payPenalty(it.Target.Player)
 	case StackDeathStep:
-		if it.Amount == stepRewards {
+		switch it.Amount {
+		case stepRewards:
 			g.rewardsStep(it.Target.Object)
-		} else {
+		case stepRewardsGiven:
+			g.rewardsGiven(g.receiver(it.Target.Object), it.Target.Object)
+		default:
 			g.soulStep(it.Target.Object)
 		}
 	}

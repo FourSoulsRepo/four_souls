@@ -340,13 +340,7 @@ func (g *Game) perform(a Action) {
 	case ActPassCurse:
 		g.askPassCurse(a.Player, a.Object)
 	case ActRewardsDone:
-		before := len(g.PendingTriggers)
-		g.emit(Event{Kind: EvRewardsGained, Player: a.Player, Object: a.Object, Card: g.Object(a.Object).Card, Prev: a.Object})
-		if len(g.PendingTriggers) > before {
-			g.push(StackItem{Kind: StackDeathStep, Controller: NoPlayer, Label: eventSoul.Msg(), Target: Target{Object: a.Object}, Amount: stepSoul})
-		} else {
-			g.soulStep(a.Object)
-		}
+		g.rewardsGiven(a.Player, a.Object)
 	case ActFinishEvent:
 		g.finishEvent(a.Object)
 	case ActPenaltyDone:

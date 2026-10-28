@@ -33,7 +33,7 @@ This step never closes; new reports are appended.
 
 | ID | Group                                    | System     | Items                                                  | Count |
 |----|------------------------------------------|------------|--------------------------------------------------------|-------|
-| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95, 19.97 | 16 |
+| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95, 19.97, 19.104 | 17 |
 | B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90 | 9 |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74                              | 4     |
@@ -3335,3 +3335,30 @@ Totals by system (98 items):
    6. No screen change; no screenshots.
 7. Owner notes (2026-10-28)
    1. Owner marks 19.102 solved.
+
+### [x] 19.104 A monster's refill runs before its reward roll resolves; the next monster's ability fires on it
+
+1. Goal: a dead monster's slot refills only after its rewards, roll rewards included, are given (R-DEATH-06 to R-DEATH-09).
+2. Report (owner, 2026-10-28, replay `2026-10-28-170334-g1_Hitokiri-Battosai_jеня_attack_order.fsrec`)
+   1. Holy Greedling died; its reward is a roll of a die, which gave 6¢.
+   2. The roll came up 6; Holy Dinga entered the slot on the same roll.
+   3. Holy Dinga's "Each time a player rolls a 6, they heal 1 HP" fired on the Greedling's reward roll.
+   4. The rules put the refill (step 6) after the rewards (step 3).
+3. Cause (2026-10-28, match record steps 42 to 47)
+   1. `rewardsStep` pushes a roll reward on the stack, then enqueues `ActRewardsDone` and `ActRefillSlots`.
+   2. The queue drains before the roll is thrown and resolved.
+   3. Step 43: the dice are rolled, the Greedling is discarded and Dinga enters the slot.
+   4. Step 45: the roll resolves; Dinga's trigger goes on the stack after the refill.
+4. Tasks:
+   1. Test: a monster with a roll reward refills after the roll resolves; fails before the fix.
+   2. Fix: the rewards-done and refill steps wait on the stack for the roll.
+5. Done when:
+   1. The test passes; `make lint` and `make test` pass.
+   2. The replay's order (refill after the reward roll) holds.
+6. Result (2026-10-28)
+   1. `rewardsStep` puts a "rewards given" step under the roll; the refill waits for it.
+   2. Engine 0.4.1; `refillVersion` makes 0.4.0 records unable to replay.
+   3. New test: "Holy Greedling refill waits for the reward roll (19.104)". It failed before the change (Dinga healed); it passes after.
+   4. `make lint` exit 0; `make test` exit 0.
+   5. The replay file is a 0.4.0 record, so it can't replay now. The test covers its order.
+   6. No screen change; no screenshots.
