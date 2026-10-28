@@ -38,3 +38,4 @@
 | UC-34 | Show own card images | `internal/assets`, `pkg/card_db` | Implemented | [translate/uc-34-show-own-card-images.md](translate/uc-34-show-own-card-images.md) |
 | UC-35 | The host ends the game | `internal/server`, `frontend` | Implemented | [server/uc-35-host-ends-the-game.md](server/uc-35-host-ends-the-game.md) |
 | UC-36 | See a card flip | `rules_engine`, `cards.go`, `frontend` | Implemented | [app/uc-36-see-a-card-flip.md](app/uc-36-see-a-card-flip.md) |
+| UC-37 | Seat the players in a random order | `internal/server`, `frontend` | Implemented | [server/uc-37-random-seats.md](server/uc-37-random-seats.md) |

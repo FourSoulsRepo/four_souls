@@ -105,6 +105,7 @@ export interface Options {
   host_bans?: string[];
   no_bonus_souls?: boolean;
   no_deck_ratios?: boolean;
+  random_seats?: boolean; // seat the players in a random order at the start
   response_timer?: number; // seconds; 0: off, else at least 60
   rollback?: RollbackMode; // none: Disabled (ADR 020)
 }

@@ -218,12 +218,12 @@ func TestHostSetupRemembered(t *testing.T) {
 		t.Errorf("default host setup = %+v, want unset", got)
 	}
 	in := Load(path)
-	in.Host = HostSetup{Seats: 3, Sets: []string{"b2", "g2", "g2", "Bad Code"}, Detailed: true, ResponseTimer: 90, NoBonusSouls: true, NoDeckRatios: true, Rollback: protocol.RollbackSoft}
+	in.Host = HostSetup{Seats: 3, Sets: []string{"b2", "g2", "g2", "Bad Code"}, Detailed: true, ResponseTimer: 90, NoBonusSouls: true, NoDeckRatios: true, RandomSeats: true, Rollback: protocol.RollbackSoft}
 	if _, err := Save(path, in); err != nil {
 		t.Fatal(err)
 	}
 	got := Load(path).Host
-	want := HostSetup{Seats: 3, Sets: []string{"b2", "g2"}, Detailed: true, ResponseTimer: 90, NoBonusSouls: true, NoDeckRatios: true, Rollback: protocol.RollbackSoft}
+	want := HostSetup{Seats: 3, Sets: []string{"b2", "g2"}, Detailed: true, ResponseTimer: 90, NoBonusSouls: true, NoDeckRatios: true, RandomSeats: true, Rollback: protocol.RollbackSoft}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("host setup = %+v, want %+v", got, want)
 	}

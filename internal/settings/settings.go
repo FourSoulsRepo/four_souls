@@ -85,6 +85,8 @@ type HostSetup struct {
 	ResponseTimer int      `json:"response_timer"` // seconds, one of ResponseTimers
 	NoBonusSouls  bool     `json:"no_bonus_souls"`
 	NoDeckRatios  bool     `json:"no_deck_ratios"`
+	// RandomSeats seats the players in a random order at the start.
+	RandomSeats bool `json:"random_seats"`
 	// Rollback is the rollback mode (ADR 020); "": Disabled.
 	Rollback string `json:"rollback"`
 }

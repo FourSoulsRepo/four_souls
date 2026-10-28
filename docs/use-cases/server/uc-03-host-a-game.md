@@ -26,6 +26,7 @@
 * **1a. In the app:** Main menu, **Play**, **LAN**, **Host a game** (15.97).
   * Nickname and players (2–4); "Detailed setup" shows the rest (GS-10).
   * Detailed: response timer, bonus souls.
+  * Detailed: random seats, the players sit in a random order (UC-37).
   * Draft and bans wait for the tournament tools (roadmap, Future).
   * Host bans need the card list; they come with the card component.
   * Detailed also has deck ratios, on by default (UC-20).

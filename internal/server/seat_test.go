@@ -68,3 +68,34 @@ func TestSeatTellsALiveSeat(t *testing.T) {
 		t.Errorf("after the end: %+v, want not live", got)
 	}
 }
+
+// Random seats (UC-37): a shuffle keeps every player, the same seed
+// gives the same order, and over many seeds each player gets seat 0.
+func TestShuffleSeats(t *testing.T) {
+	names := []string{"A", "B", "C", "D"}
+	first := map[string]bool{}
+	for seed := uint64(1); seed <= 200; seed++ {
+		seats := make([]roomSeat, len(names))
+		for i, n := range names {
+			seats[i] = roomSeat{name: n}
+		}
+		again := make([]roomSeat, len(seats))
+		copy(again, seats)
+		shuffleSeats(seats, seed)
+		shuffleSeats(again, seed)
+		seen := map[string]bool{}
+		for i, s := range seats {
+			if again[i].name != s.name {
+				t.Fatalf("seed %d: orders differ: %v and %v", seed, seats, again)
+			}
+			seen[s.name] = true
+		}
+		if len(seen) != len(names) {
+			t.Fatalf("seed %d: order %v lost a player", seed, seats)
+		}
+		first[seats[0].name] = true
+	}
+	if len(first) != len(names) {
+		t.Errorf("seat 0 went to %v; want every player", first)
+	}
+}

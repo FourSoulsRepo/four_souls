@@ -241,3 +241,31 @@ Ideas: B-04, B-05.
    5. The next commit brings the code; an internal build of `fd65095` has none of it.
 5. Owner notes (2026-10-27)
    1. Owner marks 18.11 solved.
+
+### [x] 18.12 Random seats
+
+1. Goal: the host can seat the players in a random order (UC-37).
+2. Tasks:
+   1. Host screen: "Random seats" in Detailed setup, remembered.
+   2. The server shuffles the seats at the start, from the game seed.
+   3. The table's setup summary says "random seats".
+   4. UC-37, UC-03, `CHANGELOG.md`, wiki `Server.md` name it.
+   5. Tests: Go shuffle test; Vitest for the summary text.
+   6. Gates: `make lint`, `make frontend e2e`.
+3. Done when:
+   1. A play-test game with Random seats starts in a random order.
+   2. **Owner** approves the option's place in Detailed setup.
+4. Result (2026-10-28)
+   1. Implemented; committed with the 18.12 change on `step-18-play-test`.
+   2. `make lint`, `make frontend`, `go test ./internal/...`: pass.
+   3. `make e2e`, run 1: 379 passed, 6 skipped; `info.spec.ts:528` (15.90, zoom shows "Cain") failed; alone it passed twice.
+   4. `make e2e`, run 2: 379 passed, 6 skipped; `languages.spec.ts:102` (16.4) failed: Eden's starting item came before the first-roll prompt; alone it passed.
+   5. `make e2e`, run 3: 378 passed, 6 skipped; `languages.spec.ts:102` (19.98) failed in chromium; `stack.spec.ts:68` (19.100) failed in webkit.
+   6. Not solved: the gate is red on all three full runs; the failures are flaky tests, not in the seat code (19.98, 19.99, 19.100).
+   7. Fixed in 19.98, 19.99, 19.100 (other commits on this branch).
+   8. `make e2e`, run 4 (2026-10-28): 384 passed, 6 skipped, exit 0.
+   9. `make lint`, `make frontend`, `go test ./internal/...`: pass.
+   10. `wails build -m -tags embed` (no card images): builds.
+   11. Done-when 1 is covered by the Go shuffle test; no manual game was played.
+5. Owner notes (2026-10-28)
+   1. Owner asks to mark 18.12 solved.

@@ -384,6 +384,7 @@ export namespace settings {
 	    response_timer: number;
 	    no_bonus_souls: boolean;
 	    no_deck_ratios: boolean;
+	    random_seats: boolean;
 	    rollback: string;
 	
 	    static createFrom(source: any = {}) {
@@ -398,6 +399,7 @@ export namespace settings {
 	        this.response_timer = source["response_timer"];
 	        this.no_bonus_souls = source["no_bonus_souls"];
 	        this.no_deck_ratios = source["no_deck_ratios"];
+	        this.random_seats = source["random_seats"];
 	        this.rollback = source["rollback"];
 	    }
 	}

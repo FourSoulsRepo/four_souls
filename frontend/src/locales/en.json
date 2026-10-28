@@ -2338,6 +2338,10 @@
     "text": "Players",
     "note": "Host screen: label of the player count list (2 to 4)."
   },
+  "host.random_seats": {
+    "text": "Random seats",
+    "note": "Host screen: check box; the players sit in a random order when the game starts, not in the order they joined."
+  },
   "host.rollback": {
     "text": "Rollback",
     "note": "Host screen: label of the rollback mode list (undoing moves)."
@@ -2534,6 +2538,10 @@
   "lobby.options.random": {
     "text": "Random characters",
     "note": "Table screen, setup summary: each player gets a random character."
+  },
+  "lobby.options.random_seats": {
+    "text": "random seats",
+    "note": "Table screen, setup summary, lower case after a dot: the players sit in a random order when the game starts."
   },
   "lobby.options.rollback_god": {
     "text": "Godmode rollback",

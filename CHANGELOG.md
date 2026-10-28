@@ -6,6 +6,8 @@ Rules engine versions are in each release's notes.
 
 ## Unreleased
 
+- The host can seat the players in a random order: Detailed setup, Random seats. The seats are shuffled when the game starts; without it, seats follow the order players joined.
+
 ## 0.3.0 - 2026-10-27
 
 - The host can end a game for everyone from the game Menu: End game, then confirm. It works on a dedicated server too, where leaving only paused the game.

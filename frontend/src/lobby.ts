@@ -138,6 +138,9 @@ export function optionsText(o: Options | undefined): string {
   if (o?.no_bonus_souls) {
     parts.push(t('lobby.options.no_bonus_souls'));
   }
+  if (o?.random_seats) {
+    parts.push(t('lobby.options.random_seats'));
+  }
   // The server turns the deck ratios off when the sets are too small.
   if (o && !o.no_deck_ratios) {
     parts.push(t('lobby.options.deck_ratios'));

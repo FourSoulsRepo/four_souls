@@ -39,6 +39,7 @@ export function HostScreen() {
     response_timer: last.response_timer,
     no_bonus_souls: last.no_bonus_souls,
     no_deck_ratios: last.no_deck_ratios,
+    random_seats: last.random_seats,
     rollback: last.rollback === 'soft' || last.rollback === 'god' ? last.rollback : undefined,
   });
   const [password, setPassword] = useState('');
@@ -102,6 +103,7 @@ export function HostScreen() {
                   response_timer: options.response_timer ?? 0,
                   no_bonus_souls: options.no_bonus_souls ?? false,
                   no_deck_ratios: options.no_deck_ratios ?? false,
+                  random_seats: options.random_seats ?? false,
                   rollback: options.rollback ?? '',
                 },
               });
@@ -210,6 +212,17 @@ export function HostScreen() {
                 }}
               />
               {t('host.bonus_souls')}
+            </label>
+            {/* Off: the players sit in the order they joined. */}
+            <label className="check">
+              <input
+                type="checkbox"
+                checked={!!options.random_seats}
+                onChange={(e) => {
+                  option({ random_seats: e.target.checked });
+                }}
+              />
+              {t('host.random_seats')}
             </label>
             {/* Off and locked when the sets are too small; the tooltip
                 names the short groups. */}
