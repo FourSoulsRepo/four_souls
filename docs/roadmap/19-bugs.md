@@ -38,7 +38,7 @@ This step never closes; new reports are appended.
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74                              | 4     |
 | E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52, 19.54, 19.69 | 9  |
-| F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88        | 7     |
+| F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88, 19.99 | 8     |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
 | I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.100 | 19 |
@@ -50,13 +50,13 @@ This step never closes; new reports are appended.
 | O  | Reconnect: old connection state kept     | Client     | 19.78, 19.86                                           | 2     |
 | P  | A missing setting: no way to change it   | Client     | 19.93                                                  | 1     |
 
-Totals by system (94 items):
+Totals by system (95 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
 | Engine    | A, B    | 23    |
 | Card data | C       | 2     |
-| Client    | D–G, O, P | 27  |
+| Client    | D–G, O, P | 28  |
 | Server    | H, N    | 2     |
 | e2e       | I, J    | 34    |
 | Release   | K       | 4     |
@@ -3161,6 +3161,36 @@ Totals by system (94 items):
 5. Done when:
    1. A game with Forever Alone out ends its turn.
    2. A test plays the activation loop and checks that End turn is offered.
+
+### [ ] 19.99 The history strip zoom shows another card than the bomb (15.90)
+
+1. Goal: `info.spec.ts` (15.90) passes; hovering a strip tile zooms its own card.
+2. Report (`make e2e` on `step-18-play-test`, 2026-10-28)
+   1. `tests/info.spec.ts:528`, chromium: a strip tile shows what the play did.
+   2. After hovering the damage, the zoom's `aria-label` was "Cain"; expected the bomb.
+   3. Failed in one full run; passed alone, twice, in both browsers.
+3. Cause (2026-10-28)
+   1. The zoom showed the kill's card: the killer's character.
+   2. The kill tile's card image was redrawn under the pointer.
+   3. The browser sent no out event for the removed image.
+   4. The next over named the card as where it came from.
+   5. React ignored that over; it drops an enter from a React node.
+   6. The damage tile's enter never ran; the kill's zoom stayed.
+   7. Deal-dependent: the killer's card differs each deal.
+4. Tasks:
+   1. Find which element the zoom reads, and when it changes.
+   2. Fix the wait or the client; do not ban cards unless the cause is the deal (CLAUDE.md 16.8).
+   3. Check whether the failure needs a particular deal; log the seed if it does (CLAUDE.md 19.3).
+5. Done when:
+   1. The test passes in repeated full runs of `make e2e`.
+6. Result (2026-10-28)
+   1. The strip tile zooms on pointer-over, not pointer-enter.
+   2. A pointer-over from inside the same tile does not zoom again.
+   3. New test: "a strip tile zooms its own card when the one before it is redrawn (19.99)".
+   4. The new test failed on the old handler; it passes now.
+   5. The 15.90 test: 2 of 40 failed before the fix; 40 of 40 pass after.
+   6. `make lint` and `make frontend` pass; `make e2e` passes twice (382 passed, 6 skipped).
+   7. No screen change; no screenshots.
 
 ### [x] 19.100 A played Dagaz waits for a play menu or aim target that does not show (19.18)
 

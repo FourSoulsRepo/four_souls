@@ -1,4 +1,5 @@
 // Info panels (7.9): history, turn badge, what is left this turn.
+import type { Page } from '@playwright/test';
 import { expect, test } from './fixtures';
 import { startGame } from './game';
 import { appURL } from './server';
@@ -525,11 +526,9 @@ test('a damage line in the full history names who and whom (19.52)', async ({ br
   await shot(active, 'history-damage-lines');
 });
 
-test('a strip tile shows what the play did: target, damage, kill and rewards (15.90)', async ({ browser }) => {
-  const pages = await startGame(browser, ['Ray', 'Sue'], { url: fast() });
-  const active = await activePage(pages, click);
-  // Bomb! at a monster, its damage, then the death and the rewards, as
-  // the engine sends them: each resolution in its own update.
+// playBombKill plays Bomb! at a monster, its damage, then the death and
+// the rewards, as the engine sends them: each resolution in its own update.
+async function playBombKill(active: Page): Promise<void> {
   await active.evaluate(() => {
     interface Store {
       getState: () => {
@@ -563,6 +562,12 @@ test('a strip tile shows what the play did: target, damage, kill and rewards (15
       store.getState().receive({ type: 'update', data: { ...game, step: 900 + i, events } });
     }
   });
+}
+
+test('a strip tile shows what the play did: target, damage, kill and rewards (15.90)', async ({ browser }) => {
+  const pages = await startGame(browser, ['Ray', 'Sue'], { url: fast() });
+  const active = await activePage(pages, click);
+  await playBombKill(active);
   const strip = active.getByRole('complementary', { name: tr('history.strip') });
   const kill = strip.locator('.strip-item').nth(0);
   const damage = strip.locator('.strip-item').nth(1);
@@ -595,6 +600,31 @@ test('a strip tile shows what the play did: target, damage, kill and rewards (15
   await expect(results).toHaveCount(1);
   await expect(results.nth(0).locator('.card')).toBeAttached();
   await shot(active, 'history-popout-play');
+});
+
+// A strip tile zooms its own card even when the tile under the pointer
+// lost its image meanwhile: the image failed and was redrawn, and no
+// out event came for it (19.99).
+test('a strip tile zooms its own card when the one before it is redrawn (19.99)', async ({ browser }) => {
+  const pages = await startGame(browser, ['Ray', 'Sue'], { url: fast() });
+  const active = await activePage(pages, click);
+  await playBombKill(active);
+  const strip = active.getByRole('complementary', { name: tr('history.strip') });
+  const kill = strip.locator('.strip-item').nth(0);
+  const damage = strip.locator('.strip-item').nth(1);
+  const zoom = active.getByTestId('card-zoom');
+  await kill.hover();
+  await expect(zoom.locator('.card-zoom-line')).toHaveText(whole(trRe('history.kill.you')));
+  // The kill's card is redrawn under the pointer: no out event comes for
+  // it, and the pointer's next over names that card as where it came from.
+  const from = await kill.locator('.card').elementHandle();
+  if (!from) {
+    throw new Error('no card in the kill tile');
+  }
+  await damage.evaluate((el, prev) => {
+    el.dispatchEvent(new PointerEvent('pointerover', { bubbles: true, composed: true, pointerType: 'mouse', relatedTarget: prev }));
+  }, from);
+  await expect(zoom.locator('.card.size-zoom')).toHaveAttribute('aria-label', new RegExp(`^${lineRe(cardName('bomb')).source}`));
 });
 
 test('everyone sees if a looked-at top card stays or goes to the bottom (19.90)', async ({ browser }) => {
