@@ -6,6 +6,11 @@ Rules engine versions are in each release's notes.
 
 ## Unreleased
 
+## 0.3.2 - 2026-10-29
+
+- Security: the app is built with Go 1.27.3, which fixes security problems found in Go 1.27.2.
+- The app's libraries are updated to their latest versions.
+
 ## 0.3.1 - 2026-10-29
 
 - The host can seat the players in a random order: Detailed setup, Random seats. The seats are shuffled when the game starts; without it, seats follow the order players joined.
