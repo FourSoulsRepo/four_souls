@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { actionsFor, aimedOption, IntentKind, Purpose, type Actions } from '../actions';
 import { onScreen, promptAim } from '../aim';
 import { ActionBar } from '../components/ActionBar';
@@ -20,7 +20,7 @@ import { Throw } from '../components/Throw';
 import { WhyNote } from '../components/Why';
 import { EndTurn, TurnActions } from '../components/TurnActions';
 import { matLook } from '../mats';
-import type { Update } from '../protocol';
+import type { Block, Update } from '../protocol';
 import { seatOf, useApp } from '../store';
 import { activity, askedSeat, myMove, picking, promptBanner, stackPrompt, tablePick } from '../prompt';
 import { seatNames, waitTurn, type Names } from '../stack';
@@ -82,10 +82,37 @@ function Table({ game, you }: { game: Update; you: number }) {
   // The server's lines are drawn in the chosen language (ADR 021): a
   // new language draws them again.
   const lang = useApp((s) => s.settings.language);
-  // eslint-disable-next-line react-hooks/exhaustive-deps, @eslint-react/exhaustive-deps
-  const actions = useMemo(() => actionsFor(game, seatNames(game.seats, (ref) => cards.get(ref)?.name ?? ref)), [game, cards, lang]);
+  const explained = useApp((s) => s.explained);
+  const explain = useApp((s) => s.explain);
+  const actions = useMemo(
+    () => actionsFor(game, seatNames(game.seats, (ref) => cards.get(ref)?.name ?? ref), explained),
+    // eslint-disable-next-line react-hooks/exhaustive-deps, @eslint-react/exhaustive-deps
+    [game, cards, lang, explained],
+  );
   const setAiming = useApp((s) => s.setAiming);
-  const ui = canAct ? interact(actions, act, select, aiming, setAiming) : noInteract;
+  const showWhy = useApp((s) => s.showWhy);
+  // The reasons for a card asked about show at the card, as a click on
+  // an unusable card does (15.29). Each answer shows once.
+  const shownRef = useRef<Block[] | null>(null);
+  useEffect(() => {
+    if (explained === shownRef.current || explained.length === 0) {
+      return;
+    }
+    shownRef.current = explained;
+    const id = explained[0]?.object ?? 0;
+    const text = actions.blocked.get(id);
+    const el = document.querySelector(`.card[data-zone="obj-${String(id)}"]`);
+    if (text && el) {
+      const box = el.getBoundingClientRect();
+      showWhy(text, box.left + box.width / 2, box.top);
+    }
+  }, [explained, actions, showWhy]);
+  // The viewer's own cards: a click on one asks why it can't be used.
+  const mine = useMemo(() => {
+    const p = game.view.players.find((pl) => pl.id === you);
+    return new Set([p?.character.id, ...(p?.in_play ?? []).map((c) => c.id), ...(p?.hand ?? []).map((c) => c.id)]);
+  }, [game, you]);
+  const ui = canAct ? interact(actions, act, select, aiming, setAiming, explain, (id) => mine.has(id)) : noInteract;
   // A new state ends an aim: its targets may be gone (15.25). Before
   // paint, so a placed card's aim below replaces it without a blink.
   useLayoutEffect(() => {

@@ -228,6 +228,8 @@ func (r *Room) handle(req request) {
 		r.pick(c, env)
 	case protocol.TypeWaitTurn:
 		r.waitTurn(c, env)
+	case protocol.TypeExplain:
+		r.explain(c, env)
 	case protocol.TypeVote:
 		r.vote(c, env)
 	case protocol.TypeSave:
@@ -347,7 +349,7 @@ func (r *Room) update(c *Client, events []engine.Event) {
 	if c.seat >= 0 {
 		v = engine.Viewer{Kind: engine.ViewPlayer, Player: engine.PlayerID(c.seat)}
 		allowed = r.game.Allowed(engine.PlayerID(c.seat))
-		blocked = r.game.Blocked(engine.PlayerID(c.seat))
+		blocked = r.game.BlockedTurn(engine.PlayerID(c.seat))
 	}
 	u := protocol.Update{
 		Step: r.step, Events: engine.FilterEvents(events, v), View: r.game.View(v), Allowed: allowed, Seats: r.seatViews(),
@@ -368,7 +370,7 @@ func (r *Room) update(c *Client, events []engine.Event) {
 	if r.base != nil {
 		u.RollbackMode, u.RollbackFrom, u.Rollback, u.RollbackCut = r.opts.Rollback, r.rollbackFrom(), r.rolled, r.cut
 		if !r.game.Over {
-			u.RollbackSteps = r.targets()
+			u.RollbackLast = r.lastTarget()
 		}
 		if r.opts.Rollback == protocol.RollbackSoft && !r.game.Over {
 			u.RollbackVote, u.RollbackEnd = r.voteView(), r.voteEnd

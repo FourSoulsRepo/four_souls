@@ -163,13 +163,13 @@ const leftLabels = (): Map<number, string> =>
 
 // actionsFor lists the viewer's actions. names names the cards and
 // players in the server's lines (ADR 021).
-export function actionsFor(u: Update, names: MsgNames): Actions {
+export function actionsFor(u: Update, names: MsgNames, explained: Block[] = []): Actions {
   const why = turnWhy(u.blocked ?? [], names);
   const out: Actions = {
     buttons: [],
     turn: Object.keys(why).length > 0 ? { why } : {},
     cards: new Map(),
-    blocked: blockedCards(u.blocked ?? [], names),
+    blocked: blockedCards(explained, names),
     choice: null,
     discard: null,
     order: null,

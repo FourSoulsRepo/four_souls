@@ -265,6 +265,11 @@ type Game struct {
 	// Purchase is a declared purchase (R-SHOP).
 	Purchase PurchaseState `json:"purchase"`
 
+	// Chain is the hash of the steps applied so far, and Applied counts them;
+	// each step's checksum builds on Chain (RP-12).
+	Chain   uint64 `json:"chain,omitempty"`
+	Applied int    `json:"applied,omitempty"`
+
 	// Choice is the open question of a choose prompt.
 	Choice *Choice `json:"choice,omitempty"`
 	// Throw is the roll waiting for its die to be thrown (PromptThrow).

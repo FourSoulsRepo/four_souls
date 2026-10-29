@@ -173,9 +173,14 @@ test('two players see the server in their own languages (16.4)', async ({ browse
   if (!active || !waiter || !w) {
     throw new Error('no active page');
   }
-  const blocked = w.blocked.find((b) => b.kind === 3 && w.hand.includes(b.object));
-  expect(blocked?.reason.key).toBe('refuse.loot_your_turn');
-  await waiter.locator(`.card[data-zone="obj-${String(blocked?.object ?? 0)}"]`).hover();
+  // A click asks why; the answer shows at the card, in that page's
+  // language, and the zoom says it after (15.29).
+  const id = w.hand[0] ?? 0;
+  const loot = waiter.locator(`.card[data-zone="obj-${String(id)}"]`);
+  await loot.click();
+  await expect(waiter.locator('.aim-why')).toHaveText(trIn(langOf(waiter), 'refuse.loot_your_turn'));
+  await waiter.mouse.move(1, 1);
+  await loot.hover();
   await expect(waiter.getByTestId('card-zoom').locator('.card-zoom-why')).toHaveText(trIn(langOf(waiter), 'refuse.loot_your_turn'));
   await shot(waiter, `languages-${langOf(waiter)}-why`);
   await waiter.mouse.move(1, 1);

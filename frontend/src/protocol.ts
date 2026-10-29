@@ -432,7 +432,9 @@ export interface GameView {
   shop: SlotView[] | null;
   monsters: SlotView[] | null;
   deck_sizes: number[];
-  discards: (CardView[] | null)[];
+  // discards: the top card of each discard pile; discard_sizes: the sizes.
+  discards: (CardView | null)[];
+  discard_sizes: number[];
   bonus_souls?: CardView[];
   // revealed is the card a deck attack drew, until its slot is picked (19.9).
   revealed?: CardView;
@@ -533,6 +535,12 @@ export interface Aim {
 
 // Block says why the intent of that kind, on object if a card, can't be
 // sent now (15.29).
+// Explained answers an explain: the reasons a card can't be used now.
+export interface Explained {
+  object: number;
+  blocked: Block[];
+}
+
 export interface Block {
   kind: number;
   object: number;
@@ -605,9 +613,9 @@ export interface Update {
   // rollback: this update rolled the game back to before step to; the
   // view is that table, and step is the rollback's own number.
   rollback?: Rollback;
-  // rollback_steps: in Soft, the steps a rollback may target now, with
-  // their authors (ADR 020, item 3).
-  rollback_steps?: RollbackStep[];
+  // rollback_last: the latest step a rollback may target now, with its
+  // author (ADR 020, item 3). Nothing to undo: none.
+  rollback_last?: RollbackStep;
   // rollback_vote: the open Soft vote; the game waits (item 5).
   rollback_vote?: RollbackVote;
   // rollback_end: this update ended a vote with no rollback.
@@ -629,6 +637,8 @@ export interface RollbackStep {
 // all; need of the voters must say yes. deadline: Unix ms; none: no timer.
 export interface RollbackVote {
   step: number;
+  // last: the target's last step, as in RollbackStep (17.8).
+  last?: number;
   seat: number;
   author: number;
   undo: number;

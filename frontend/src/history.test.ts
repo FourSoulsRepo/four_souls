@@ -42,6 +42,7 @@ const view: GameView = {
   monsters: [{ top: { id: 9, card: 'gaper', charged: true } }],
   deck_sizes: [1, 1, 1, 0],
   discards: [null, null, null, null],
+  discard_sizes: [0, 0, 0, 0],
   stack: null,
   turn: { active: 1, number: 1, step: 4, loot_plays: 0, attacks: 0, purchases: 0 },
   waiting: { kind: PromptKind.priority, player: 1 },
@@ -654,14 +655,11 @@ describe('the Undo button (17.7)', () => {
     { from: 2, to: 2, text: 'Bo plays BOMB' },
     { from: 3, to: 3, text: 'Ann passes' },
   ];
-  // The server lists steps 1 and 2; step 3 is a lone pass.
+  // The server names step 2, the latest target; step 3 is a lone pass.
   const soft = {
     rollback_mode: 'soft' as const,
     rollback_from: 1,
-    rollback_steps: [
-      { step: 1, seat: 0 },
-      { step: 2, seat: 1 },
-    ],
+    rollback_last: { step: 2, seat: 1 },
     view: {},
   };
 
@@ -681,7 +679,7 @@ describe('the Undo button (17.7)', () => {
 
   it("names a target without a line Bo's choice, yours your choice (17.8)", () => {
     const pick = [...moves, { from: 4, to: 4 }];
-    const u = { ...soft, rollback_steps: [...soft.rollback_steps, { step: 4, seat: 1 }] };
+    const u = { ...soft, rollback_last: { step: 4, seat: 1 } };
     expect(undoButton(u, 0, pick, n.player)?.title).toBe("Undo: Bo's choice");
     expect(undoButton(u, 1, pick, n.player)?.title).toBe('Ask to undo: your choice');
     expect(undoButton({ ...u, rollback_mode: 'god' }, 1, pick, n.player)?.title).toBe('Undo: your choice');
@@ -695,11 +693,11 @@ describe('the Undo button (17.7)', () => {
     expect(why({ ...soft, rollback_vote: vote })).toBe('A rollback vote is open');
     expect(why({ ...soft, pause: { away: [1], votes: null } })).toBe('The game is paused');
     // Nothing after the barrier: the barrier's step is named.
-    expect(why({ ...soft, rollback_from: 2, rollback_steps: [] })).toBe('Nothing to undo since a die was rolled');
-    expect(why({ ...soft, rollback_from: 3, rollback_steps: [] })).toBe('Nothing to undo yet');
-    expect(why({ ...soft, rollback_from: 2, rollback_steps: [], rollback_cut: 1 })).toBe('Nothing to undo since the server restarted');
+    expect(why({ ...soft, rollback_from: 2, rollback_last: undefined })).toBe('Nothing to undo since a die was rolled');
+    expect(why({ ...soft, rollback_from: 3, rollback_last: undefined })).toBe('Nothing to undo yet');
+    expect(why({ ...soft, rollback_from: 2, rollback_last: undefined, rollback_cut: 1 })).toBe('Nothing to undo since the server restarted');
     // Godmode has no barriers: nothing is left since the base.
-    expect(why({ ...soft, rollback_mode: 'god', rollback_from: 2, rollback_steps: [] })).toBe('Nothing to undo yet');
+    expect(why({ ...soft, rollback_mode: 'god', rollback_from: 2, rollback_last: undefined })).toBe('Nothing to undo yet');
     // A greyed button names no step and says why in its tooltip.
     expect(undoButton({ ...soft, view: { over: true } }, 1, moves, n.player)).toEqual({ label: 'Ask to undo', ask: true, why: 'The game is over', title: 'The game is over' });
   });

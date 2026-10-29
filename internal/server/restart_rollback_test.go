@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"reflect"
 	"slices"
 	"strconv"
 	"sync"
@@ -139,7 +140,7 @@ func TestRestartKeepsSoftHistory(t *testing.T) {
 	dir := t.TempDir()
 	tb, stop := startKept(t, dir, protocol.Options{Rollback: protocol.RollbackSoft})
 	target := tb.toTarget()
-	from, targets := tb.last[0].RollbackFrom, tb.last[0].RollbackSteps
+	from, last := tb.last[0].RollbackFrom, tb.last[0].RollbackLast
 	i := slices.IndexFunc(tb.seen, func(u protocol.Update) bool { return u.Step == target.Step-1 })
 	if i < 0 {
 		t.Fatalf("no update ends at step %d", target.Step-1)
@@ -149,8 +150,8 @@ func TestRestartKeepsSoftHistory(t *testing.T) {
 
 	back, _ := comeBack(t, dir, tokens)
 	u := back.last[0]
-	if u.RollbackFrom != from || !slices.Equal(u.RollbackSteps, targets) || u.RollbackCut != 0 {
-		t.Fatalf("after the restart: from %d, targets %v, cut %d; want %d, %v, none", u.RollbackFrom, u.RollbackSteps, u.RollbackCut, from, targets)
+	if u.RollbackFrom != from || !reflect.DeepEqual(u.RollbackLast, last) || u.RollbackCut != 0 {
+		t.Fatalf("after the restart: from %d, last %v, cut %d; want %d, %v, none", u.RollbackFrom, u.RollbackLast, u.RollbackCut, from, last)
 	}
 	opener := 1 - target.Seat
 	back.players[opener].say(protocol.TypeRollback, protocol.RollbackTo{Step: target.Step})

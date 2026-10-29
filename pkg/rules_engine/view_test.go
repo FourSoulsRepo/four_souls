@@ -30,8 +30,8 @@ func viewIDs(v GameView) map[ObjectID]bool {
 		}
 	}
 	for _, d := range v.Discards {
-		for _, c := range d {
-			add(c)
+		if d != nil {
+			add(*d)
 		}
 	}
 	return ids

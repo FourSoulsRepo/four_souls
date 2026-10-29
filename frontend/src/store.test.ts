@@ -270,6 +270,7 @@ describe('rollback (ADR 020)', () => {
     monsters: null,
     deck_sizes: [1, 1, 1, 0],
     discards: [null, null, null, null],
+    discard_sizes: [0, 0, 0, 0],
     stack: null,
     turn: { active: 0, number: turn, step: 4, loot_plays: 0, attacks: 0, purchases: 0 },
     waiting: { kind: 1, player: 0 },
@@ -318,7 +319,7 @@ describe('rollback (ADR 020)', () => {
 
   it('a Soft vote keeps the step; its end adds a row and the game goes on', async () => {
     const { receive } = useApp.getState();
-    const soft = (u: Partial<Update> & { step: number }) => update({ rollback_mode: 'soft', rollback_steps: [{ step: 1, seat: 1 }], ...u });
+    const soft = (u: Partial<Update> & { step: number }) => update({ rollback_mode: 'soft', rollback_last: { step: 1, seat: 1 }, ...u });
     useApp.setState({ lobby: { ...useApp.getState().lobby, table: { game: 'g', you: 0, seats: [], sets: [] } } });
     receive(soft({ step: 0 }));
     receive(soft({ step: 1, events: [{ kind: 'attack_declared', player: 1 }] }));

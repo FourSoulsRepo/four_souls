@@ -35,7 +35,7 @@ export function RollbackVotePanel({ game, you, name }: { game: Update; you: numb
           : t('rollback.want.other', { player: name(v.seat), author: name(v.author) });
   // The move is named as on the Undo button; the open vote's target is
   // still listed (17.8).
-  const target = game.rollback_steps?.find((t) => t.step === v.step) ?? { step: v.step, seat: v.author };
+  const target = { step: v.step, seat: v.author, last: v.last };
   return (
     <section className="overlay-box rollback-vote" role="dialog" aria-label={t('rollback.label')}>
       <h2>{title}</h2>

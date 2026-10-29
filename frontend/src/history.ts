@@ -625,7 +625,7 @@ export interface Undo {
 // mode. One press undoes the latest move; Godmode at once, Soft by a
 // vote of the others, or the author's ask (items 5 and 6).
 export function undoButton(
-  u: Pick<Update, 'rollback_mode' | 'rollback_from' | 'rollback_steps' | 'rollback_vote' | 'rollback_cut' | 'pause'> & { view: { over?: boolean } },
+  u: Pick<Update, 'rollback_mode' | 'rollback_from' | 'rollback_last' | 'rollback_vote' | 'rollback_cut' | 'pause'> & { view: { over?: boolean } },
   you: number,
   moves: Move[],
   name: (p: number) => string,
@@ -633,7 +633,7 @@ export function undoButton(
   if (!u.rollback_mode) {
     return null;
   }
-  const target = u.rollback_steps?.at(-1);
+  const target = u.rollback_last;
   const ask = u.rollback_mode === 'soft' && target?.seat === you;
   const label = ask ? t('history.undo.ask') : t('history.undo.undo');
   const why =

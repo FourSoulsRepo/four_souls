@@ -92,7 +92,7 @@ Use options 2, 4 and 6.
    1. `View(game, viewer)` builds what a player, viewer or judge sees.
    2. Hidden: other hands, deck order, RNG state.
    3. Events carry a visibility rule and pass the same filter.
-   4. Every applied step has a state checksum (FNV-64 of the state).
+   4. Every applied step has a checksum: a hash chain, with the whole state every 100 steps (ADR 025).
 9. Situations and tests
    1. A situation payload builds a `Game` directly (LR-04).
    2. Its action is applied; the answer is allowed or not, with reasons.

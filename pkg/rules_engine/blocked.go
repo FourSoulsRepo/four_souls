@@ -20,6 +20,24 @@ type Block struct {
 // one, and the turn actions. Anything Allowed is left out. A card that
 // would be usable with priority says to wait for it.
 func (g *Game) Blocked(p PlayerID) []Block {
+	return g.blockedWhere(p, func(ObjectID) bool { return true }, true)
+}
+
+// BlockedTurn is Blocked for the turn actions only: the reasons every
+// update carries. The card reasons are asked for when a card is clicked
+// (BlockedCard).
+func (g *Game) BlockedTurn(p PlayerID) []Block {
+	return g.blockedWhere(p, func(ObjectID) bool { return false }, true)
+}
+
+// BlockedCard is Blocked for the card id only.
+func (g *Game) BlockedCard(p PlayerID, id ObjectID) []Block {
+	return g.blockedWhere(p, func(x ObjectID) bool { return x == id }, false)
+}
+
+// blockedWhere is Blocked for the turn actions when turns is set, and
+// for the cards keep accepts.
+func (g *Game) blockedWhere(p PlayerID, keep func(ObjectID) bool, turns bool) []Block {
 	if g.Over || p < 0 || int(p) >= len(g.Players) {
 		return nil
 	}
@@ -48,7 +66,7 @@ func (g *Game) Blocked(p PlayerID) []Block {
 	}
 	var out []Block
 	for _, kind := range []IntentKind{IntentAttack, IntentPurchase, IntentEndTurn} {
-		if ok(kind, 0) {
+		if !turns || ok(kind, 0) {
 			continue
 		}
 		reason := g.turnSay(p)
@@ -58,13 +76,13 @@ func (g *Game) Blocked(p PlayerID) []Block {
 		out = append(out, Block{Kind: kind, Reason: reason})
 	}
 	for _, id := range g.Players[p].Hand {
-		if !ok(IntentPlayLoot, id) {
+		if keep(id) && !ok(IntentPlayLoot, id) {
 			out = append(out, Block{Kind: IntentPlayLoot, Object: id, Reason: why(Intent{Player: p, Kind: IntentPlayLoot, Objects: []ObjectID{id}})})
 		}
 	}
 	for _, id := range append(g.controlled(p), g.roomsInPlay()...) {
 		first := slices.IndexFunc(g.AbilitiesOf(id), func(r AbilityRef) bool { return g.ability(r).Kind == Activated })
-		if first < 0 || ok(IntentActivate, id) {
+		if first < 0 || !keep(id) || ok(IntentActivate, id) {
 			continue
 		}
 		out = append(out, Block{Kind: IntentActivate, Object: id, Reason: why(Intent{Player: p, Kind: IntentActivate, Objects: []ObjectID{id}, Choice: first})})

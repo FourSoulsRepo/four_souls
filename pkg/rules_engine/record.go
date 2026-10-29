@@ -2,9 +2,12 @@ package rulesengine
 
 import (
 	"bytes"
+	"encoding/binary"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"hash"
+	"hash/fnv"
 	"slices"
 )
 
@@ -16,17 +19,63 @@ type StepRecord struct {
 	Checksum uint64  `json:"checksum"`
 }
 
-// Step applies an intent like Apply and also returns the record.
+// anchorEvery is how many steps pass between full-state checks: the
+// checksum of every such step also covers the whole state (RP-12).
+const anchorEvery = 100
+
+// Step applies an intent like Apply and also returns the record. Its
+// checksum extends the history chain; on an anchor step it also covers
+// the whole state, so a state that differs without showing in the
+// history is caught there.
 func (g *Game) Step(in Intent) (StepRecord, error) {
 	ev, err := g.Apply(in)
 	if err != nil {
 		return StepRecord{}, err
 	}
-	sum, err := g.Checksum()
+	chain, err := g.chainWith(in, ev)
 	if err != nil {
 		return StepRecord{}, err
 	}
+	g.Chain = chain
+	g.Applied++
+	sum := chain
+	if g.Applied%anchorEvery == 0 {
+		full, err := g.Checksum()
+		if err != nil {
+			return StepRecord{}, err
+		}
+		sum = mixSums(chain, full)
+	}
 	return StepRecord{Intent: in, Events: ev, Checksum: sum}, nil
+}
+
+// chainWith hashes the chain so far with one step: its intent, what
+// happened and the random state after it. The events and the RNG show
+// what the state did, so the chain catches any change to them.
+func (g *Game) chainWith(in Intent, ev []Event) (uint64, error) {
+	h := fnv.New64a()
+	writeSum(h, g.Chain)
+	for _, v := range []any{in, ev, g.RNG} {
+		if err := json.NewEncoder(h).Encode(v); err != nil {
+			return 0, fmt.Errorf("checksum: %w", err)
+		}
+	}
+	return h.Sum64(), nil
+}
+
+// mixSums folds the whole-state sum into a chain value.
+func mixSums(chain, full uint64) uint64 {
+	h := fnv.New64a()
+	writeSum(h, chain)
+	writeSum(h, full)
+	return h.Sum64()
+}
+
+// writeSum writes one sum as eight bytes.
+func writeSum(h hash.Hash64, v uint64) {
+	var b [8]byte
+	binary.LittleEndian.PutUint64(b[:], v)
+	h.Write(b[:]) //nolint:gosec // a hash never fails to write
 }
 
 // ErrMismatch means a replayed step ended in a different state.
@@ -42,6 +91,9 @@ func CanReplay(v string) error {
 	}
 	if older(v, msgVersion) {
 		return fmt.Errorf("replay: the record was made by rules engine %s; engines from %s on keep messages instead of text, so its checksums differ and it cannot replay", v, msgVersion)
+	}
+	if older(v, chainVersion) {
+		return fmt.Errorf("replay: the record was made by rules engine %s; engines from %s on check a hash chain over the steps, so its checksums differ and it cannot replay", v, chainVersion)
 	}
 	if older(v, orderVersion) {
 		return fmt.Errorf("replay: the record was made by rules engine %s; engines from %s on order some steps differently, so its checksums differ and it cannot replay", v, orderVersion)

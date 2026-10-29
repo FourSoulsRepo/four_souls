@@ -56,6 +56,7 @@ export function Board({
             kind="monster"
             count={view.deck_sizes[DeckKind.monster] ?? 0}
             discard={view.discards[DeckKind.monster] ?? null}
+            discardCount={view.discard_sizes[DeckKind.monster] ?? 0}
             ui={ui}
             top={view.revealed}
           />
@@ -63,6 +64,7 @@ export function Board({
             kind="treasure"
             count={view.deck_sizes[DeckKind.treasure] ?? 0}
             discard={view.discards[DeckKind.treasure] ?? null}
+            discardCount={view.discard_sizes[DeckKind.treasure] ?? 0}
             ui={ui}
             peek={view.players.find((p) => p.treasure_top)?.treasure_top}
           />
@@ -70,6 +72,7 @@ export function Board({
             kind="loot"
             count={view.deck_sizes[DeckKind.loot] ?? 0}
             discard={view.discards[DeckKind.loot] ?? null}
+            discardCount={view.discard_sizes[DeckKind.loot] ?? 0}
             ui={ui}
           />
         </div>
@@ -87,13 +90,15 @@ function DeckPair({
   kind,
   count,
   discard,
+  discardCount,
   ui,
   top,
   peek,
 }: {
   kind: Kind;
   count: number;
-  discard: CardView[] | null;
+  discard: CardView | null;
+  discardCount: number;
   ui: Interact;
   top?: CardView | undefined;
   peek?: CardView | undefined;
@@ -107,7 +112,7 @@ function DeckPair({
   return (
     <div className="deck-pair">
       <Deck kind={kind} count={count} size="small" handle={ui.deck(kind)} top={leaving ? undefined : top} peek={peek} />
-      <Discard kind={kind} cards={discard} size="small" />
+      <Discard kind={kind} top={discard} count={discardCount} size="small" />
     </div>
   );
 }

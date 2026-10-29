@@ -176,7 +176,8 @@ test('two players face each other; the table fits 1280x720', async ({ browser })
   ] as const) {
     await expect(page.locator('.player-bottom')).toHaveAccessibleName(tr('table.own_name', { player: me }));
     await expect(page.locator('.player-top')).toHaveAccessibleName(other);
-    await expect(page.getByRole('group', { name: tr('table.your_hand') }).getByRole('img')).not.toHaveCount(0);
+    // A card a click can ask about is a button, not an image; count the cards.
+    await expect(page.getByRole('group', { name: tr('table.your_hand') }).locator('.card')).not.toHaveCount(0);
     await expect(page.getByRole('group', { name: whole(trRe('deck.loot')) })).toBeVisible();
     await expect(page.getByRole('group', { name: tr('board.shop') }).getByRole('img')).not.toHaveCount(0);
     await expect(page.getByRole('group', { name: tr('board.monsters') }).getByRole('img')).not.toHaveCount(0);

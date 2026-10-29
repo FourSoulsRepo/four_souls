@@ -63,7 +63,7 @@ import {
 } from './protocol';
 
 export type { Screen } from './lobby';
-import type { CounterView } from './protocol';
+import type { Block, CounterView, Explained } from './protocol';
 
 // Zoom is the card shown large: on hover, or after a long press on touch
 // (B-06). side is where it shows, away from the pointer.
@@ -173,6 +173,11 @@ interface AppState extends Session {
   sent: number | null;
   // selected is the card whose action menu is open.
   selected: number | null;
+  // explained holds why the card last asked about can't be used; a new
+  // update clears it.
+  explained: Block[];
+  // explain asks the server why a card can't be used now (15.29).
+  explain: (object: number) => void;
   act: (intent: Intent) => void;
   // aiming is the card the player aims with; its targets glow (15.25).
   aiming: Aiming | null;
@@ -523,6 +528,10 @@ export const useApp = create<AppState>()((set, get) => {
   };
   // ending: this app ended its game; its own notice is not shown (19.84).
   let ending = false;
+  // serverStep is the newest step an update came at; explainedStep the
+  // step the explained reasons were answered at (15.29).
+  let serverStep = -1;
+  let explainedStep = -1;
   // seated: the player sits at a table or plays a game.
   const seated = () => get().screen === 'game' || get().lobby.table !== null;
 
@@ -685,13 +694,25 @@ export const useApp = create<AppState>()((set, get) => {
     behind: false,
     sent: null,
     selected: null,
+    explained: [],
+    explain: (object) => {
+      send('explain', { object });
+    },
     receive: (env) => {
       if (env.type === 'table' || env.type === 'saved') {
         stopPlayback();
       }
       set((s) => onMessage(s, env));
+      if (env.type === 'explained') {
+        set({ explained: (env.data as Explained).blocked });
+        explainedStep = serverStep;
+      }
       if (env.type === 'update') {
-        set({ behind: true });
+        const step = (env.data as Update).step;
+        serverStep = step;
+        // Reasons hold until the step moves: other updates at the same
+        // step change nothing they say.
+        set(step === explainedStep ? { behind: true } : { behind: true, explained: [] });
         playback.push(env.data as Update);
         if ((env.data as Update).view.over) {
           forgetSeat();

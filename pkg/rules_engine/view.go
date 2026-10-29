@@ -115,17 +115,21 @@ type SlotView struct {
 
 // GameView is everything one viewer may see.
 type GameView struct {
-	Players    []PlayerView          `json:"players"`
-	Shop       []SlotView            `json:"shop"`
-	Monsters   []SlotView            `json:"monsters"`
-	DeckSizes  [deckCount]int        `json:"deck_sizes"`
-	Discards   [deckCount][]CardView `json:"discards"`
-	BonusSouls []CardView            `json:"bonus_souls,omitempty"`
-	Stack      []StackItem           `json:"stack"`
-	Turn       Turn                  `json:"turn"`
-	Waiting    Prompt                `json:"waiting"`
-	Over       bool                  `json:"over,omitempty"`
-	Winners    []PlayerID            `json:"winners,omitempty"`
+	Players   []PlayerView   `json:"players"`
+	Shop      []SlotView     `json:"shop"`
+	Monsters  []SlotView     `json:"monsters"`
+	DeckSizes [deckCount]int `json:"deck_sizes"`
+	// Discards are the top card of each discard pile, nil when it is
+	// empty; DiscardSizes are the piles' sizes. The rest of a pile is
+	// not sent: no view shows it.
+	Discards     [deckCount]*CardView `json:"discards"`
+	DiscardSizes [deckCount]int       `json:"discard_sizes"`
+	BonusSouls   []CardView           `json:"bonus_souls,omitempty"`
+	Stack        []StackItem          `json:"stack"`
+	Turn         Turn                 `json:"turn"`
+	Waiting      Prompt               `json:"waiting"`
+	Over         bool                 `json:"over,omitempty"`
+	Winners      []PlayerID           `json:"winners,omitempty"`
 	// WinSouls is the soul value that wins the game (R-WIN-01), so a
 	// client can show how far each player still has to go (V-30).
 	WinSouls int `json:"win_souls"`
@@ -264,8 +268,10 @@ func (g *Game) View(v Viewer) GameView {
 	out.Monsters = g.slotViews(g.Monsters)
 	for d := range deckCount {
 		out.DeckSizes[d] = len(g.Decks[d])
-		for _, id := range g.Discards[d] {
-			out.Discards[d] = append(out.Discards[d], g.cardView(id))
+		out.DiscardSizes[d] = len(g.Discards[d])
+		if n := len(g.Discards[d]); n > 0 {
+			top := g.cardView(g.Discards[d][n-1]) // the last card is on top
+			out.Discards[d] = &top
 		}
 	}
 	for _, id := range g.BonusSouls {

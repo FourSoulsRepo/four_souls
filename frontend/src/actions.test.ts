@@ -25,6 +25,7 @@ function update(partial: Partial<Update['view']>, allowed: Update['allowed']): U
       monsters: null,
       deck_sizes: [0, 0, 0, 0],
       discards: [null, null, null, null],
+      discard_sizes: [0, 0, 0, 0],
       stack: null,
       turn: { active: 0, number: 1, step: 4, loot_plays: 0, attacks: 0, purchases: 0 },
       waiting: { kind: PromptKind.priority, player: 0 },
@@ -252,18 +253,21 @@ describe('aims', () => {
 describe('blocked', () => {
   it('maps blocked cards and turn actions to their reasons', () => {
     const u = update({}, [{ player: 0, kind: IntentKind.pass }]);
+    // Updates carry the turn actions; a card's reasons come when asked.
     const a = actionsFor(
       {
         ...u,
         blocked: [
           { kind: IntentKind.attack, object: 0, reason: m('refuse.no_attacks') },
           { kind: IntentKind.endTurn, object: 0, reason: m('refuse.must_attack') },
-          { kind: IntentKind.playLoot, object: 7, reason: m('refuse.no_loot_plays') },
-          { kind: IntentKind.activate, object: 9, reason: m('refuse.cost.used') },
-          { kind: IntentKind.activate, object: 9, reason: m('refuse.cost.cents') },
         ],
       },
       names,
+      [
+        { kind: IntentKind.playLoot, object: 7, reason: m('refuse.no_loot_plays') },
+        { kind: IntentKind.activate, object: 9, reason: m('refuse.cost.used') },
+        { kind: IntentKind.activate, object: 9, reason: m('refuse.cost.cents') },
+      ],
     );
     expect(a.turn.why).toEqual({ attack: 'No attacks left', endTurn: 'You must attack first' });
     expect(a.blocked.get(7)).toBe('No loot plays left');

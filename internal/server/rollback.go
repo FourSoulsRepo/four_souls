@@ -155,6 +155,7 @@ func (r *Room) replayKept(f *restartFile) ([]liveStep, error) {
 // while it is open.
 type softVote struct {
 	step     int // the target
+	last     int // the target's last answer, 0: none (17.8)
 	seat     int // who opened it
 	author   int // the target's author; never a voter
 	undo     int // live steps it would undo
@@ -186,26 +187,36 @@ func (r *Room) isTarget(s liveStep) bool {
 	return s.n >= r.rollbackFrom() && k != engine.IntentPass && k != engine.IntentThrow && !s.answer
 }
 
-// targets lists the targets now with their authors, for the app's
-// Undo button: the last one is the latest move (17.7). A play's answers
-// follow it; Last is the last of them, so the app can name the move
-// (17.8).
-func (r *Room) targets() []protocol.RollbackStep {
-	var out []protocol.RollbackStep
-	for i, s := range r.live {
-		if !r.isTarget(s) {
-			continue
+// lastTarget is the latest step a rollback may target now, with its
+// author, for the app's Undo button: the latest move (17.7). Nil: none.
+func (r *Room) lastTarget() *protocol.RollbackStep {
+	for i := len(r.live) - 1; i >= 0; i-- {
+		if r.isTarget(r.live[i]) {
+			t := r.targetAt(i)
+			return &t
 		}
-		t := protocol.RollbackStep{Step: s.n, Seat: int(s.rec.Intent.Player)}
-		for _, a := range r.live[i+1:] {
-			if !a.answer {
-				break
-			}
-			t.Last = a.n
-		}
-		out = append(out, t)
 	}
-	return out
+	return nil
+}
+
+// targetAt is the target at live step i. A play's answers follow it;
+// Last is the last of them, so the app can name the move (17.8).
+func (r *Room) targetAt(i int) protocol.RollbackStep {
+	t := protocol.RollbackStep{Step: r.live[i].n, Seat: int(r.live[i].rec.Intent.Player)}
+	t.Last = r.answerEnd(i)
+	return t
+}
+
+// answerEnd is the step of the last answer after live step i, or 0.
+func (r *Room) answerEnd(i int) int {
+	last := 0
+	for _, a := range r.live[i+1:] {
+		if !a.answer {
+			break
+		}
+		last = a.n
+	}
+	return last
 }
 
 // voters are the connected seats other than the author (item 5.4).
@@ -275,7 +286,7 @@ func (r *Room) rollback(c *Client, env protocol.Envelope) {
 		c.fail(env.ID, protocol.ErrRollback, errRollbackNoVoters.Msg())
 		return
 	}
-	v := &softVote{step: m.Step, seat: c.seat, author: author, undo: len(r.live) - i}
+	v := &softVote{step: m.Step, last: r.answerEnd(i), seat: c.seat, author: author, undo: len(r.live) - i}
 	if c.seat != author {
 		v.votes = []protocol.RollbackBallot{{Seat: c.seat, Yes: true}} // item 5.3
 	}
@@ -400,7 +411,7 @@ func (r *Room) voteView() *protocol.RollbackVote {
 	}
 	voters := r.voters(v.author)
 	out := &protocol.RollbackVote{
-		Step: v.step, Seat: v.seat, Author: v.author, Undo: v.undo,
+		Step: v.step, Last: v.last, Seat: v.seat, Author: v.author, Undo: v.undo,
 		Voters: voters, Votes: slices.Clone(v.votes), Need: need(len(voters)),
 	}
 	if !v.deadline.IsZero() {

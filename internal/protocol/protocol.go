@@ -54,7 +54,9 @@ const (
 	TypePick  = "pick"  // client → server: pick one of your offered characters
 
 	// Turn flow (6.7).
-	TypeWaitTurn = "wait_turn" // client → server: pass until the turn before mine ends (N-16)
+	TypeWaitTurn  = "wait_turn" // client → server: pass until the turn before mine ends (N-16)
+	TypeExplain   = "explain"   // client → server: why a card can't be used now (15.29)
+	TypeExplained = "explained" // server → client: the reasons for the card asked about
 
 	// Disconnects (6.8).
 	TypeVote = "vote" // client → server: wait for the missing player, or kick them
@@ -163,10 +165,10 @@ type Update struct {
 	// Rollback is set on the update a rollback made: the table is the
 	// one from before step To. Step is the rollback's own number.
 	Rollback *Rollback `json:"rollback,omitempty"`
-	// RollbackSteps are the steps a rollback may target now, with their
-	// authors (ADR 020, item 3; 17.4); in Godmode too since 17.7. The
-	// last is the latest move, which the app's Undo button undoes.
-	RollbackSteps []RollbackStep `json:"rollback_steps,omitempty"`
+	// RollbackLast is the latest step a rollback may target now, with its
+	// author (ADR 020, item 3; 17.4); in Godmode too since 17.7. The app's
+	// Undo button undoes it. Nil: no step may be undone.
+	RollbackLast *RollbackStep `json:"rollback_last,omitempty"`
 	// RollbackVote is the open Soft vote; the game waits (item 5.8).
 	RollbackVote *RollbackVote `json:"rollback_vote,omitempty"`
 	// RollbackEnd is set on the update a vote ended with no rollback.
@@ -208,7 +210,9 @@ type RollbackStep struct {
 // the connected seats other than the author; Need of them must say
 // yes. Deadline is when it runs out, Unix ms; 0: no timer.
 type RollbackVote struct {
-	Step     int              `json:"step"`
+	Step int `json:"step"`
+	// Last is the target's last step, as in RollbackStep (17.8).
+	Last     int              `json:"last,omitempty"`
 	Seat     int              `json:"seat"`
 	Author   int              `json:"author"`
 	Undo     int              `json:"undo"`
@@ -260,6 +264,18 @@ type Pause struct {
 type Vote struct {
 	Seat int  `json:"seat"`
 	Kick bool `json:"kick"`
+}
+
+// Explain asks why the card Object can't be used now.
+type Explain struct {
+	Object int `json:"object"`
+}
+
+// Explained answers Explain: Blocked holds the card's reasons, empty when
+// the card is usable or not in play for the player.
+type Explained struct {
+	Object  int            `json:"object"`
+	Blocked []engine.Block `json:"blocked"`
 }
 
 // WaitTurn turns "wait for my turn" on or off (N-16).
@@ -540,17 +556,21 @@ type Error struct {
 	Text    *engine.Msg `json:"text,omitempty"`
 }
 
-// Encode wraps data into an envelope of the given type.
+// Encode wraps data into an envelope of the given type. The data is
+// encoded once; marshalling the Envelope would scan it again.
 func Encode(typ string, id int, data any) ([]byte, error) {
 	raw, err := json.Marshal(data)
 	if err != nil {
 		return nil, fmt.Errorf("protocol: encode %s: %w", typ, err)
 	}
-	out, err := json.Marshal(Envelope{Type: typ, ID: id, Data: raw})
+	head, err := json.Marshal(Envelope{Type: typ, ID: id})
 	if err != nil {
 		return nil, fmt.Errorf("protocol: encode %s: %w", typ, err)
 	}
-	return out, nil
+	// head is {"type":…,"id":…}: put "data" in before its closing brace.
+	out := append(head[:len(head)-1], `,"data":`...)
+	out = append(out, raw...)
+	return append(out, '}'), nil
 }
 
 // Decode reads an envelope.

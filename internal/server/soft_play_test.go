@@ -136,11 +136,11 @@ func (tb *driver) until(kind engine.EventKind) {
 
 // target reports whether step is a Soft target now, and its author.
 func (tb *driver) target(step int) (int, bool) {
-	i := slices.IndexFunc(tb.last[0].RollbackSteps, func(s protocol.RollbackStep) bool { return s.Step == step })
-	if i < 0 {
+	s := tb.last[0].RollbackLast
+	if s == nil || s.Step != step {
 		return -1, false
 	}
-	return tb.last[0].RollbackSteps[i].Seat, true
+	return s.Seat, true
 }
 
 // handHas: Ann's hand holds the card.
@@ -177,7 +177,7 @@ func TestSoftUndoPlayedCard(t *testing.T) {
 				t.Fatalf("cents %d after the play, want 1", got)
 			}
 			if author, ok := tb.target(k); !ok || author != 0 {
-				t.Fatalf("the play (step %d) is no target of Ann's: from %d, %+v", k, tb.last[0].RollbackFrom, tb.last[0].RollbackSteps)
+				t.Fatalf("the play (step %d) is no target of Ann's: from %d, %+v", k, tb.last[0].RollbackFrom, tb.last[0].RollbackLast)
 			}
 			tb.players[1].say(protocol.TypeRollback, protocol.RollbackTo{Step: k})
 			tb.rolledBack(k, 1) // two players: Bob's yes is the majority
@@ -202,11 +202,11 @@ func TestSoftUndoHandToDeck(t *testing.T) {
 		t.Fatalf("A Penny! is not put back: %s", eventsJSON(t, tb.last[0].Events))
 	}
 	if _, ok := tb.target(k); !ok {
-		t.Fatalf("the put back (step %d) is no target: from %d, %+v", k, tb.last[0].RollbackFrom, tb.last[0].RollbackSteps)
+		t.Fatalf("the put back (step %d) is no target: from %d, %+v", k, tb.last[0].RollbackFrom, tb.last[0].RollbackLast)
 	}
 	// The pick answers the card, not a play: a move of its own, which
 	// the app names "Ann's choice" (17.8).
-	if s := tb.last[0].RollbackSteps; s[len(s)-1] != (protocol.RollbackStep{Step: k, Seat: 0}) {
+	if s := tb.last[0].RollbackLast; s == nil || *s != (protocol.RollbackStep{Step: k, Seat: 0}) {
 		t.Errorf("the put back is not the latest move alone: %+v", s)
 	}
 	if _, ok := tb.target(k - 1); ok {
@@ -271,7 +271,7 @@ func TestSoftPlayedCardBarriers(t *testing.T) {
 			k := tb.do(engine.Intent{Player: 0, Kind: engine.IntentPlayLoot, Objects: []engine.ObjectID{built.Find(0, "a_penny")}})
 			tb.resolve()
 			if _, ok := tb.target(k); !ok {
-				t.Fatalf("the played card (step %d) is no target: %+v", k, tb.last[0].RollbackSteps)
+				t.Fatalf("the played card (step %d) is no target: %+v", k, tb.last[0].RollbackLast)
 			}
 			c.then(tb, built)
 			tb.until(c.kind)
@@ -309,9 +309,9 @@ func TestUndoPlayWithItsTarget(t *testing.T) {
 				t.Fatalf("Bomb! is not on the stack: %s", eventsJSON(t, tb.last[0].Events))
 			}
 			// The move ends with the answer: the app names it from there (17.8).
-			steps := tb.last[0].RollbackSteps
-			if len(steps) == 0 || steps[len(steps)-1] != (protocol.RollbackStep{Step: k, Seat: 0, Last: a}) {
-				t.Fatalf("the latest target is not the play (step %d) up to its answer (step %d): %+v", k, a, steps)
+			last := tb.last[0].RollbackLast
+			if last == nil || *last != (protocol.RollbackStep{Step: k, Seat: 0, Last: a}) {
+				t.Fatalf("the latest target is not the play (step %d) up to its answer (step %d): %+v", k, a, last)
 			}
 			if _, ok := tb.target(a); ok {
 				t.Errorf("the answer (step %d) is a target of its own", a)

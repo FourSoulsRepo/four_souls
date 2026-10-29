@@ -16,19 +16,28 @@ test.setTimeout(120_000);
 const card = (page: Page, id: number) => page.locator(`.card[data-zone="obj-${String(id)}"]`);
 const note = (page: Page) => page.locator('.aim-why');
 
-// blocked is the first hand card the server says this player can't
-// play now, with its reason's key (ADR 021).
-async function blocked(page: Page): Promise<{ id: number; reason: string }> {
+// hand lists the ids of the player's hand cards, from the store.
+async function hand(page: Page): Promise<number[]> {
   return page.evaluate(() => {
     interface S {
-      game: { step: number; view: { players: { hand?: { id: number }[] }[] }; blocked?: { kind: number; object: number; reason: { key: string } }[] };
+      game: { view: { players: { hand?: { id: number }[] }[] } };
       lobby: { table: { you: number } };
     }
     const s = (window as unknown as { fourSouls: { store: { getState: () => S } } }).fourSouls.store.getState();
-    const hand = (s.game.view.players[s.lobby.table.you]?.hand ?? []).map((c) => c.id);
-    const b = (s.game.blocked ?? []).find((x) => x.kind === 3 && hand.includes(x.object));
-    return { id: b?.object ?? -1, reason: b?.reason.key ?? '' };
+    return (s.game.view.players[s.lobby.table.you]?.hand ?? []).map((c) => c.id);
   });
+}
+
+// explained is the reason key the server gave for card id, after a click
+// asked why (15.29); '' until the answer comes.
+async function explained(page: Page, id: number): Promise<string> {
+  return page.evaluate((object) => {
+    interface S {
+      explained: { object: number; reason: { key: string } }[];
+    }
+    const s = (window as unknown as { fourSouls: { store: { getState: () => S } } }).fourSouls.store.getState();
+    return s.explained.find((b) => b.object === object)?.reason.key ?? '';
+  }, id);
 }
 
 test("an unusable card's zoom and a click on it say why (15.29)", async ({ browser }) => {
@@ -39,20 +48,26 @@ test("an unusable card's zoom and a click on it say why (15.29)", async ({ brows
     throw new Error('no other page');
   }
 
-  // Not their turn: the other player's loot waits for it.
-  const b = await blocked(other);
-  expect(b.reason).toBe('refuse.loot_your_turn');
-  const loot = card(other, b.id);
-  await loot.hover();
-  const why = other.getByTestId('card-zoom').locator('.card-zoom-why');
-  await expect(why).toHaveText(tr(b.reason));
-  await shot(other, 'zoom-why');
-
-  // A click on it says the same where it was clicked, then fades.
+  // Not their turn: the other player's loot waits for it. Its reason
+  // comes when asked: a click on the card asks, the zoom says it after.
+  const [id] = await hand(other);
+  if (id === undefined) {
+    throw new Error('no hand card');
+  }
+  const loot = card(other, id);
   await loot.click();
-  await expect(note(other)).toHaveText(tr(b.reason));
+  await expect.poll(() => explained(other, id)).toBe('refuse.loot_your_turn');
+  // The answer shows at the card, where it was clicked, then fades.
+  await expect(note(other)).toHaveText(tr('refuse.loot_your_turn'));
   await shot(other, 'why-click');
   await expect(note(other)).toHaveCount(0, { timeout: 5000 });
+
+  // Its zoom says it from now on, for as long as the answer holds.
+  await other.mouse.move(1, 1);
+  await loot.hover();
+  const why = other.getByTestId('card-zoom').locator('.card-zoom-why');
+  await expect(why).toHaveText(tr('refuse.loot_your_turn'));
+  await shot(other, 'zoom-why');
 
   // A dim turn icon says why too, and stays dim.
   const attack = turnAction(other, 'Attack');

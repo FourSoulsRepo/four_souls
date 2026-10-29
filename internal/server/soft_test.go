@@ -28,8 +28,8 @@ func startSoft(t *testing.T, h *Hub, n int, opts protocol.Options) *driver {
 func (tb *driver) toTarget() protocol.RollbackStep {
 	tb.t.Helper()
 	for range 200 {
-		if s := tb.last[0].RollbackSteps; len(s) > 0 {
-			return s[len(s)-1]
+		if s := tb.last[0].RollbackLast; s != nil {
+			return *s
 		}
 		tb.act()
 	}
@@ -142,8 +142,8 @@ func TestSoftDeclinedAndAskedAgain(t *testing.T) {
 	tb.openVote(target.Step, others[0], 1)
 	tb.players[others[1]].say(protocol.TypeRollbackVote, protocol.RollbackVoteAnswer{Yes: false})
 	tb.ended(target.Step, protocol.VoteDeclined)
-	if !slices.ContainsFunc(tb.last[0].RollbackSteps, func(s protocol.RollbackStep) bool { return s == target }) {
-		t.Fatalf("the declined target is gone: %+v", tb.last[0].RollbackSteps)
+	if s := tb.last[0].RollbackLast; s == nil || s.Step < target.Step {
+		t.Fatalf("the declined target is gone: %+v", s)
 	}
 	// The author asks: a vote with no yes yet.
 	tb.players[author].say(protocol.TypeRollback, protocol.RollbackTo{Step: target.Step, Ask: true})
@@ -247,8 +247,8 @@ func TestSoftBarrierInGame(t *testing.T) {
 		tb.act()
 	}
 	u := tb.last[0]
-	if u.RollbackFrom <= target.Step || slices.ContainsFunc(u.RollbackSteps, func(s protocol.RollbackStep) bool { return s.Step <= target.Step }) {
-		t.Fatalf("from %d, steps %+v: the target %d stays", u.RollbackFrom, u.RollbackSteps, target.Step)
+	if u.RollbackFrom <= target.Step || u.RollbackLast != nil && u.RollbackLast.Step <= target.Step {
+		t.Fatalf("from %d, last %+v: the target %d stays", u.RollbackFrom, u.RollbackLast, target.Step)
 	}
 	other := tb.players[1-target.Seat]
 	other.say(protocol.TypeRollback, protocol.RollbackTo{Step: target.Step})
@@ -284,8 +284,8 @@ func TestSoftBarrierKinds(t *testing.T) {
 			want = 3
 			barriers++
 		}
-		if from != want || len(r.targets()) != 3-want {
-			t.Errorf("%s: from %d, targets %+v", k, from, r.targets())
+		if from != want || len(allTargets(r)) != 3-want {
+			t.Errorf("%s: from %d, targets %+v", k, from, allTargets(r))
 		}
 	}
 	if barriers == 0 {
@@ -300,7 +300,7 @@ func TestSoftBarrierKinds(t *testing.T) {
 	for _, k := range []engine.IntentKind{engine.IntentPass, engine.IntentThrow} {
 		r := room()
 		r.live[1].rec.Intent.Kind = k
-		if got := r.targets(); len(got) != 1 || got[0] != (protocol.RollbackStep{Step: 1, Seat: 1}) {
+		if got := allTargets(r); len(got) != 1 || got[0] != (protocol.RollbackStep{Step: 1, Seat: 1}) {
 			t.Errorf("intent %d: targets %+v", k, got)
 		}
 	}
@@ -324,14 +324,26 @@ func TestSoftLeaveEndsVote(t *testing.T) {
 	// Kicked, the other leaves no voter: the author cannot even ask.
 	tb.players[author].say(protocol.TypeVote, protocol.Vote{Kick: true})
 	u = tb.players[author].untilUpdate(func(u protocol.Update) bool { return u.Pause == nil })
-	i := slices.IndexFunc(u.RollbackSteps, func(s protocol.RollbackStep) bool { return s.Seat == author })
-	if i < 0 {
+	if u.RollbackLast == nil || u.RollbackLast.Seat != author {
 		t.Skip("the kicked seat's forced steps left no target") // a barrier came
 	}
-	tb.players[author].say(protocol.TypeRollback, protocol.RollbackTo{Step: u.RollbackSteps[i].Step, Ask: true})
+	tb.players[author].say(protocol.TypeRollback, protocol.RollbackTo{Step: u.RollbackLast.Step, Ask: true})
 	var er protocol.Error
 	tb.players[author].next(protocol.TypeError, &er)
 	if er.Code != protocol.ErrRollback || er.Message != "error.rollback.no_voters" {
 		t.Errorf("a vote with no voter: %+v", er)
 	}
+}
+
+// allTargets lists every Soft target of the room now, oldest first. The
+// protocol sends only the latest (rollback_last); tests that check the
+// older ones read them here.
+func allTargets(r *Room) []protocol.RollbackStep {
+	var out []protocol.RollbackStep
+	for i := range r.live {
+		if r.isTarget(r.live[i]) {
+			out = append(out, r.targetAt(i))
+		}
+	}
+	return out
 }

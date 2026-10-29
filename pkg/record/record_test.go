@@ -66,9 +66,15 @@ func TestUnfinished(t *testing.T) {
 		}
 	}
 	// No Close: the file ends after the last flushed step.
+	if ferr := w.Flush(); ferr != nil {
+		t.Fatal(ferr)
+	}
 	data, err := os.ReadFile(path) //nolint:gosec // test file
 	if err != nil {
 		t.Fatal(err)
+	}
+	if serr := w.Stop(); serr != nil {
+		t.Fatal(serr)
 	}
 	rec, err := Read(bytes.NewReader(data))
 	if err != nil {

@@ -356,3 +356,34 @@ Ideas: B-04, B-05.
    3. Q-27 and Q-28 stay open in `open-questions.md`.
 5. Owner notes (2026-10-29)
    1. Owner asks to mark 18.15 solved.
+
+### [ ] 18.16 Server speed under load
+
+1. Goal: the server handles more games at once, with no slow responses.
+2. Tasks:
+   1. Profile the server under the load tool (`docs/wiki/Profiling.md`).
+   2. Cut the per-step costs the profile shows, keeping the wire format and the record format.
+      1. Protocol: encode each message once.
+      2. Record: each line is written and flushed by its own goroutine per game; each step is still flushed.
+      3. Rollback: one `rollback_last` per update, not the list of targets.
+      4. Discard piles: the top card and the size; the full pile is not sent.
+      5. Blocked reasons: the turn actions in each update; a card's reasons only when its owner clicks it (`explain`, `explained`).
+      6. Checksum: a hash chain over the steps, with the whole state every 100 steps (ADR 025, engine 0.5.0).
+   3. Records made before engine 0.5.0 cannot replay (`CanReplay`).
+   4. Find the cause of closed connections at 128 games.
+      1. The server closes a client whose 64-message send queue is full, without a log line.
+      2. Log each such close, then rerun.
+   5. Docs: ADR 025, ADR 005, UC-22, `docs/wiki/Client.md`, `docs/wiki/Rules-engine.md`, `docs/wiki/Server.md`.
+   6. Gates: `make lint`, `make frontend e2e`, `go test` for the changed modules.
+3. Done when:
+   1. 64 games at once pass, and the slowest response stays under 1 s.
+   2. 128 games at once pass, with no connection closed by the server.
+   3. **Owner** reads the before and after profiles.
+4. Result (2026-10-29)
+   1. Local, same seed, 64 games: median response 17.7 → 6.1 ms; p95 60 → 22 ms; max 349 → 132 ms.
+   2. Over the LAN from another computer, 64 games: median 15 ms; max 41 ms (traced build).
+   3. 128 games over the LAN: 40 of 128 games closed by `1006`; not yet explained.
+   4. Gates: `make lint`, `make frontend`, `make e2e` (390 passed, 6 skipped), `go test` for the changed modules: pass.
+   5. One full `make e2e` run failed `rollback.spec.ts` 17.4 in both browsers (Undo, not Ask to undo); it passed alone and in the next full run. Not yet logged as a bug.
+   6. `TestStopAtAgainstServer` failed once (closed connection); it passed 5 of 5 reruns.
+   7. Open: 128 games; the profile after the change.

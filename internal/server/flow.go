@@ -85,6 +85,22 @@ func (r *Room) waitTurn(c *Client, env protocol.Envelope) {
 	r.after(nil, false)
 }
 
+// explain answers a click on a card: why it can't be used now. The
+// reasons come only when asked; every update carries the turn actions.
+func (r *Room) explain(c *Client, env protocol.Envelope) {
+	var m protocol.Explain
+	if err := env.Unpack(&m); err != nil {
+		c.fail(env.ID, protocol.ErrBadMessage, errBadMessage.Msg(engine.Str("error", err.Error())))
+		return
+	}
+	if c.seat < 0 || r.game == nil {
+		c.fail(env.ID, protocol.ErrNotSeated, errNotSeated.Msg())
+		return
+	}
+	id := engine.ObjectID(m.Object)
+	c.send(protocol.TypeExplained, env.ID, protocol.Explained{Object: m.Object, Blocked: r.game.BlockedCard(engine.PlayerID(c.seat), id)})
+}
+
 // endWaits stops "wait for my turn" once the turn before the player's
 // own ends: the end window is their last chance to act (N-16). It also
 // stops when another player targets them or their cards (15.84).

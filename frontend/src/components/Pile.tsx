@@ -68,10 +68,9 @@ export function Deck({
   );
 }
 
-// Discard shows the top card of a discard pile, face up.
-export function Discard({ kind, cards, size }: { kind: Kind; cards: CardView[] | null; size: CardSize }) {
-  const top = cards?.at(-1);
-  const label = discardLabel(kind, cards?.length ?? 0);
+// Discard shows the top card of a discard pile, face up, and the pile's size.
+export function Discard({ kind, top, count, size }: { kind: Kind; top: CardView | null; count: number; size: CardSize }) {
+  const label = discardLabel(kind, count);
   return (
     <div className="pile" role="group" aria-label={label} title={label} data-zone={`discard-${kind}`}>
       {top ? <Card cardRef={top.card} size={size} objectId={top.id} /> : <div className={`pile-empty size-${size}`}>{t('deck.discard')}</div>}

@@ -13,6 +13,7 @@ const view: GameView = {
   monsters: [{ top: { id: 9, card: 'gaper', charged: true } }],
   deck_sizes: [1, 1, 1, 0],
   discards: [null, null, null, null],
+  discard_sizes: [0, 0, 0, 0],
   stack: null,
   turn: { active: 0, number: 3, step: 4, loot_plays: 0, attacks: 0, purchases: 0 },
   waiting: { kind: PromptKind.priority, player: 0 },

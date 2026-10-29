@@ -53,6 +53,8 @@ export function interact(
   select: (id: number) => void,
   aiming: Aiming | null = null,
   aim: (a: Aiming) => void = () => undefined,
+  explain: (id: number) => void = () => undefined,
+  mine: (id: number) => boolean = () => false,
 ): Interact {
   const targets = aiming?.targets ?? null;
   const pick = (o: ChoiceOption): Handle => ({
@@ -77,8 +79,19 @@ export function interact(
     }
     const list = actions.cards.get(id);
     if (!list) {
+      // No action: a click on one of the player's own cards asks why
+      // (the reasons come only then). Other cards keep no click.
       const why = actions.blocked.get(id);
-      return why ? { why } : {};
+      if (why) {
+        return { why };
+      }
+      return mine(id)
+        ? {
+            onClick: () => {
+              explain(id);
+            },
+          }
+        : {};
     }
     const only = list.length === 1 ? list[0] : undefined;
     if (only?.targets && only.targets.length > 0) {

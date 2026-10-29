@@ -16,6 +16,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"sync"
 	"time"
 )
 
@@ -99,14 +100,27 @@ type End struct {
 	Winners  []int     `json:"winners,omitempty"`
 }
 
-// Writer appends to a record file. Each step is flushed, so a record of
-// a game that never ended is still readable (RP-08).
+// Writer appends to a record file. Each line is queued and written by
+// one goroutine, which flushes after every line, so a record of a game
+// that never ended is still readable (RP-08). The writer does not wait
+// for the flush: Flush does, and Close and Stop wait for the queue to
+// drain.
 type Writer struct {
 	f     *os.File
 	gz    *gzip.Writer
 	enc   *json.Encoder
 	steps int
+
+	jobs chan any // Step, Rollback, End or a flushMark, in order
+	done chan struct{}
+
+	mu  sync.Mutex
+	err error // the first write error; later lines are dropped
 }
+
+// flushMark asks the writer to close the channel once everything queued
+// before it is flushed.
+type flushMark chan struct{}
 
 // Create starts a record file with its header.
 func Create(path string, h Header) (*Writer, error) {
@@ -124,11 +138,45 @@ func Create(path string, h Header) (*Writer, error) {
 		_ = f.Close() //nolint:errcheck // the write error matters
 		return nil, err
 	}
+	w.start()
 	return w, nil
 }
 
-// Step appends one applied step.
+// queueSize is how many lines may wait for the writer goroutine; a full
+// queue makes Step wait for it.
+const queueSize = 256
+
+// start runs the writer goroutine. Header and resume lines are written
+// before it starts, so only it touches the file after this.
+func (w *Writer) start() {
+	w.jobs = make(chan any, queueSize)
+	w.done = make(chan struct{})
+	go w.run()
+}
+
+// run writes the queued lines in order until the queue is closed.
+func (w *Writer) run() {
+	defer close(w.done)
+	for job := range w.jobs {
+		if mark, ok := job.(flushMark); ok {
+			close(mark)
+			continue
+		}
+		if w.failure() != nil {
+			continue // the file is broken; nothing more is written
+		}
+		if err := w.write(job); err != nil {
+			w.fail(err)
+		}
+	}
+}
+
+// Step queues one applied step. It returns an error the writer hit on
+// an earlier line.
 func (w *Writer) Step(intent, events any, checksum uint64) error {
+	if err := w.failure(); err != nil {
+		return err
+	}
 	in, err := json.Marshal(intent)
 	if err != nil {
 		return fmt.Errorf("record: %w", err)
@@ -138,20 +186,50 @@ func (w *Writer) Step(intent, events any, checksum uint64) error {
 		return fmt.Errorf("record: %w", err)
 	}
 	w.steps++
-	return w.write(Step{Kind: "step", N: w.steps, Intent: in, Events: ev, Checksum: checksum})
+	w.jobs <- Step{Kind: "step", N: w.steps, Intent: in, Events: ev, Checksum: checksum}
+	return nil
 }
 
-// Rollback appends a rollback to before step to; it takes the next
-// step number.
+// Rollback queues a rollback to before step to; it takes the next step
+// number.
 func (w *Writer) Rollback(to, seat, undid int) error {
+	if err := w.failure(); err != nil {
+		return err
+	}
 	w.steps++
-	return w.write(Rollback{Kind: "rollback", N: w.steps, To: to, Seat: seat, Undid: undid})
+	w.jobs <- Rollback{Kind: "rollback", N: w.steps, To: to, Seat: seat, Undid: undid}
+	return nil
 }
 
-// Close writes the end line and closes the file.
+// Flush waits until every queued line is written and flushed.
+func (w *Writer) Flush() error {
+	mark := make(flushMark)
+	w.jobs <- mark
+	<-mark
+	return w.failure()
+}
+
+// Close queues the end line, waits for the queue to drain, and closes
+// the file.
 func (w *Writer) Close(end End) error {
 	end.Kind = "end"
-	err := w.write(end)
+	w.jobs <- end
+	return w.finish()
+}
+
+// Stop waits for the queue to drain and closes the file without an end
+// line: the game goes on after a server restart, and Append continues
+// the record (N-20).
+func (w *Writer) Stop() error {
+	return w.finish()
+}
+
+// finish closes the queue, waits for the writer goroutine, then closes
+// the file.
+func (w *Writer) finish() error {
+	close(w.jobs)
+	<-w.done
+	err := w.failure()
 	if cerr := w.gz.Close(); err == nil && cerr != nil {
 		err = fmt.Errorf("record: %w", cerr)
 	}
@@ -161,19 +239,23 @@ func (w *Writer) Close(end End) error {
 	return err
 }
 
-// Stop closes the file without an end line: the game goes on after a
-// server restart, and Append continues the record (N-20).
-func (w *Writer) Stop() error {
-	err := w.gz.Close()
-	if err != nil {
-		err = fmt.Errorf("record: %w", err)
-	}
-	if cerr := w.f.Close(); err == nil && cerr != nil {
-		err = fmt.Errorf("record: %w", cerr)
-	}
-	return err
+// failure is the first error the writer hit, if any.
+func (w *Writer) failure() error {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	return w.err
 }
 
+// fail keeps the first write error.
+func (w *Writer) fail(err error) {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	if w.err == nil {
+		w.err = err
+	}
+}
+
+// write encodes one line and flushes it, so it is in the file (RP-08).
 func (w *Writer) write(v any) error {
 	if err := w.enc.Encode(v); err != nil {
 		return fmt.Errorf("record: %w", err)
@@ -343,5 +425,6 @@ func Append(path string, steps int, at time.Time) (*Writer, error) {
 		_ = f.Close() //nolint:errcheck // the write error matters
 		return nil, err
 	}
+	w.start()
 	return w, nil
 }

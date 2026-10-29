@@ -95,3 +95,27 @@ func checkBlocked(t *testing.T, g *Game, p PlayerID) {
 		}
 	}
 }
+
+// BlockedTurn lists only the turn actions, and BlockedCard only the card
+// asked about: the same reasons Blocked gives, split for the wire.
+func TestBlockedSplit(t *testing.T) {
+	g := newAbilityGame(t)
+	b := g.next(g.Turn.Active)
+	theirs := giveItem(g, b, "coin_bag")
+	for _, bl := range g.BlockedTurn(b) {
+		if bl.Object != 0 {
+			t.Errorf("turn list has card %d", bl.Object)
+		}
+	}
+	if got := reasonOf(g.BlockedCard(b, theirs), IntentActivate, theirs); got == "" {
+		t.Errorf("the card asked about has no reason")
+	}
+	for _, bl := range g.BlockedCard(b, theirs) {
+		if bl.Object != theirs {
+			t.Errorf("card list has %d, want only %d", bl.Object, theirs)
+		}
+	}
+	if got := reasonOf(g.BlockedCard(b, theirs), IntentAttack, 0); got != "" {
+		t.Errorf("a turn action in the card list: %q", got)
+	}
+}
