@@ -3,17 +3,19 @@
 # Put this file, Dockerfile, Caddyfile and .env.example in one folder:
 #
 #   cp .env.example .env      # then set DOMAIN in .env
-#   docker compose up -d --build
+#   ./build.sh                # builds four-souls-server:latest and :<version>
+#   docker compose up -d
 #
 # Players type only the domain; the app connects with wss:// (ADR 017).
-# Update to the newest release: docker compose up -d --build
+# Update to the newest release: ./build.sh && docker compose up -d
 # (wiki page "Server with Docker Compose and Caddy").
 name: four-souls
 
 services:
   server:
     build: .
-    image: four-souls-server
+    # Tagged latest by build.sh, which also tags the app version.
+    image: four-souls-server:latest
     restart: unless-stopped
     # Empty values count as unset: the server's defaults stay.
     environment:
