@@ -69,6 +69,20 @@ func TestParse(t *testing.T) {
 
 // TestParseEnv: every flag has a FOUR_SOULS_ variable; ENV overrides the
 // file and flags override ENV (N-19).
+// The tracing flags read like the others, and ENV sets them too (ADR 024).
+func TestParseTracing(t *testing.T) {
+	if _, tr, err := parseAll(nil); err != nil || tr.Dir != "" || tr.Addr != "" {
+		t.Fatalf("defaults %+v, %v", tr, err)
+	}
+	if _, tr, err := parseAll([]string{"-trace_dir", "traces", "-pprof_addr", "127.0.0.1:6060"}); err != nil || tr.Dir != "traces" || tr.Addr != "127.0.0.1:6060" {
+		t.Fatalf("flags %+v, %v", tr, err)
+	}
+	t.Setenv("FOUR_SOULS_TRACE_DIR", "env-traces")
+	if _, tr, err := parseAll(nil); err != nil || tr.Dir != "env-traces" {
+		t.Fatalf("env %+v, %v", tr, err)
+	}
+}
+
 func TestParseEnv(t *testing.T) {
 	dir := t.TempDir()
 	file := filepath.Join(dir, "server.json")

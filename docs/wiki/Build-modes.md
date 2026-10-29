@@ -27,6 +27,10 @@ wails build -m -tags embed
 
 `-m` skips `go mod tidy`. Tidy reads files of every build tag, so without the private images submodule it fails on the import in `pkg/card_db/embed_images.go` (19.59). `wails dev -m` likewise.
 
+## Tracing
+
+The tag `trace` compiles in runtime traces and profiles. Without it they are not in the binary at all. See [Profiling](Profiling).
+
 ## Versions
 
 * App version: `internal/version.App`, `dev` by default, stamped at link time:

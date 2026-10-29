@@ -25,6 +25,7 @@
 * [Repo layout](Repo-layout)
 * [Developer setup](Developer-setup)
 * [Build modes](Build-modes)
+* [Profiling](Profiling)
 * [Linters](Linters)
 * [Screenshots](Screenshots)
 * [Client](Client)

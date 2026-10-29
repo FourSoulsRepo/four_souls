@@ -25,3 +25,4 @@
 | [021](021-localization.md) | Localization | Accepted |
 | [022](022-sound-loudness.md) | Sound loudness | Accepted |
 | [023](023-two-sided-cards.md) | Two-sided cards | Accepted |
+| [024](024-profiling-build-tag.md) | Profiling behind a build tag | Accepted |

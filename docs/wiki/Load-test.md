@@ -60,3 +60,4 @@ Progress is printed every 2 seconds. With up to 8 games it shows one part per ga
 * A bot ends its turn after 500 steps of it, as a player would. A game that still does not end fails, and the error names its turn and step.
 * A failed game stays on the server until the server's limits end it.
 * The bots play random legal moves, so one game can take far longer than a real game of the same length.
+* To see where the server spends its time under this load, record a profile: [Profiling](Profiling).

@@ -29,6 +29,7 @@ Pick your group: players, people who run a game server, translators, or develope
 * [Repo layout](Repo-layout) — where everything lives and why.
 * [Developer setup](Developer-setup) — one script installs the tools; `make doctor` checks them.
 * [Build modes](Build-modes) — embedded vs. external files, versions, platforms.
+* [Profiling](Profiling) — runtime traces and profiles behind the `trace` build tag.
 * [Linters](Linters) — strict Go and frontend linting, and how to run it.
 * [Screenshots](Screenshots) — capture the UI without a real window.
 * [Client](Client) — how the React client is put together: store, lobby, playback, table.
