@@ -10,6 +10,10 @@ go run ./cmd/server_load -url ws://game.example.com:4774
 
 Run it against a server you run yourself. The games it opens are real games on that server; they end on their own, or with the server's idle and length limits.
 
+While it runs, the games appear on the server's Games list, as they would for any player:
+
+![The Games list of a server](images/screen-games.png)
+
 ## Stages
 
 Each game seats 4 bots (`-players`) at one table and plays it to the end with random legal moves.
@@ -60,3 +64,4 @@ Progress is printed every 2 seconds. With up to 8 games it shows one part per ga
 * A bot ends its turn after 500 steps of it, as a player would. A game that still does not end fails, and the error names its turn and step.
 * A failed game stays on the server until the server's limits end it.
 * The bots play random legal moves, so one game can take far longer than a real game of the same length.
+* To see where the server spends its time under this load, record a profile: [Profiling](Profiling).

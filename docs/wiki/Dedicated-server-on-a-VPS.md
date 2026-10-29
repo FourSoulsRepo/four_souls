@@ -44,6 +44,14 @@ Many providers also have a firewall in their web panel; allow the ports there to
 
 Friends open the game, choose **Play → Online**, and type the server's address: the IP, or the domain (add `:4774` only for a port other than 4774 with a plain setup). A bare domain first tries a secure connection, then the plain port 4774 (ADR 017). One of them clicks **Create a game** under the server's games, sets it up and clicks **Create**; the others join it from the same list. Nobody needs to host in their app.
 
+The Online screen marks each Recent server: a green dot and its open games when it answers, red when it is down.
+
+![The Online screen with two Recent servers, one up and one down](images/screen-online-status.png)
+
+Once connected, the Games list shows the server's games and open tables:
+
+![The Games list of a server](images/screen-games.png)
+
 ## Options
 
 Every option is a flag, an ENV variable, or a value in a JSON config file. ENV overrides the file; flags override both. An empty ENV variable counts as unset.

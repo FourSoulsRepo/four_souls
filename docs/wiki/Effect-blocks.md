@@ -52,6 +52,10 @@ Cards are Go values built from small blocks (ADR 005). This page lists every blo
 
 ## Ability kinds
 
+A card with several abilities opens a dialog, where the player picks one:
+
+![Ability dialog: a card with several abilities](images/screen-ability-dialog.png)
+
 | Kind | When it happens | Example |
 |---|---|---|
 | `Activated` | The controller uses it with priority, paying costs | ↷: Gain 3¢. |

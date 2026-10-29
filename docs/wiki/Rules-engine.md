@@ -93,6 +93,10 @@ Distant Admiration plays a given loot card "if able" without a loot play. `ActPl
 
 ## Replay and rollback
 
+With rollback on, the History panel has an Undo button, and undone steps stay greyed:
+
+![Undone rows greyed, with the rollback row](images/screen-rollback-undone.png)
+
 `Step` returns a `StepRecord`: the intent, its events, and the checksum of the whole state after it (the RNG included). `Replay(setup, steps)` rebuilds a game from its setup; `ReplayFrom(state, steps, sets...)` rebuilds it from a saved base state (`Save`) instead. Both stop at the first step that is refused or whose checksum differs (`ErrMismatch`).
 
 A rollback to before step k is `ReplayFrom(base, steps[:k], sets...)` (ADR 020, item 7). The base keeps the RNG, so the rebuilt game rolls and shuffles exactly as it did: a roll that is rolled back comes out the same again. Nothing reseeds. `undo_test.go` covers undoing a loot play, an attack and a purchase; the fuzz targets undo and redo at a random step.
@@ -109,6 +113,10 @@ A rollback to before step k is `ReplayFrom(base, steps[:k], sets...)` (ADR 020, 
 * Determinism: replaying the same setup and intents must give the same checksum after every step.
 
 ## Choice options in views
+
+A choice shows its options as big cards over the dimmed board:
+
+![A choice: big cards over the dimmed board](images/screen-choice-big.png)
 
 `GameView.Options` tells the chooser what each option of a choose prompt points at (`OptionView`: an object, a player, a deck, or a stack item), one per `Waiting.Options`. Clients use it to let the player pick on the table. It is built from `g.Choice` at view time, so it is not saved state and does not change checksums.
 

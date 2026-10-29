@@ -16,6 +16,7 @@ The four files live in the repository under `deploy/docker/`; put them into one 
 mkdir -p ~/four-souls && cd ~/four-souls
 base=https://raw.githubusercontent.com/FourSoulsRepo/four_souls/main/deploy/docker
 curl -fsSLO "$base/Dockerfile"
+curl -fsSLO "$base/build.sh"
 curl -fsSLO "$base/docker-compose.yml"
 curl -fsSLO "$base/Caddyfile"
 curl -fsSL -o .env "$base/.env.example"
@@ -39,12 +40,16 @@ Another `FOUR_SOULS_*` setting from the Options table goes into `.env` and into 
 ## 3. Start
 
 ```sh
-docker compose up -d --build
+chmod +x build.sh
+./build.sh                    # builds four-souls-server:latest and four-souls-server:0.3.2
+docker compose up -d
 docker compose ps             # server shows (healthy); caddy starts after it
 docker compose logs -f        # both outputs; Caddy says when it has the certificate
 ```
 
 Check it from any computer: `https://games.example.com/healthz` answers `ok`. Players type `games.example.com` in **Play → Online**.
+
+![The Online screen, with a server that answers](images/screen-online-status.png)
 
 * The healthcheck asks the server's `/healthz` every 30 seconds; `docker compose ps` shows the state, and Caddy starts only once the server is healthy. Docker does not restart an unhealthy container by itself; `restart: unless-stopped` restarts one that exits.
 * Records and saved games live in the `data` volume; Caddy's certificates in `caddy_data`. They survive updates.
@@ -54,7 +59,8 @@ Check it from any computer: `https://games.example.com/healthz` answers `ok`. Pl
 
 ```sh
 cd ~/four-souls
-docker compose up -d --build   # builds the newest release, if any, and replaces the server
+./build.sh                     # builds the newest release as latest and as its version
+docker compose up -d           # replaces the server with the new image
 docker compose logs --no-log-prefix server | grep '^app'   # the new version
 docker image prune -f          # removes the old image
 ```

@@ -5,6 +5,7 @@
 // Then it closes the contexts the test opened (startGame's players),
 // so no game page outlives its test (19.38).
 import { test as base, expect, type Page } from '@playwright/test';
+import { realAssets } from './shot';
 
 export { expect };
 
@@ -19,7 +20,14 @@ async function clashesOf(page: Page): Promise<unknown[]> {
   }
 }
 
-export const test = base.extend<{ clashCheck: undefined }>({
+export const test = base.extend<{ clashCheck: undefined; page: Page }>({
+  // Every test's page serves the real images when SCREENSHOTS is set, so
+  // a screen shot without its own realAssets call still has the sky,
+  // the banner and the card images (shot.ts).
+  page: async ({ page }, use) => {
+    await realAssets(page);
+    await use(page);
+  },
   clashCheck: [
     async ({ browser, context }, use) => {
       await use(undefined);

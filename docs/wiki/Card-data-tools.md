@@ -27,6 +27,10 @@ Manual fixes go into `pkg/card_db/overrides/<set>.json`, which the tools read bu
 
 ## Russian card names
 
+A card shows its name in the language chosen in Settings, and its translators are credited:
+
+![Zoomed Russian card with its translators](images/screen-card-zoom-ru.png)
+
 Russian names come from the old foursouls.ru site's database migrations (goose `*.sql` files; a local copy sits in this repo's git-ignored `.cache/migrations/`). The tools read them; this repo gets only the result in `pkg/card_db/data/*.json`:
 
 ```sh

@@ -34,6 +34,10 @@ sudo -u four-souls four_souls_server
 
 It prints the fan-game notice, its versions and the address it listens on, then waits for players. Stop it with Ctrl+C; it closes every connection cleanly and closes the records of running games as unfinished.
 
+To see it from the app, type its address on the Online screen (**Play → Online**):
+
+![The Online screen, with a server that answers](images/screen-online-status.png)
+
 ## 3. Run it as a service
 
 Download the unit file from the repository (`deploy/systemd/four-souls.service`):

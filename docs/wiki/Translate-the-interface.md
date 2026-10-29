@@ -197,6 +197,10 @@ The check also writes `.cache/translations/de/todo.json`: every line to do, grou
 
 ## 5. Look at the screens
 
+The Settings screen lists the languages; each screen follows the chosen one:
+
+![Settings with the language list](images/screen-settings.png)
+
 ```sh
 make screenshots LOCALE=de
 ```

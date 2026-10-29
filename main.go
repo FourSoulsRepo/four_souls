@@ -14,12 +14,23 @@ import (
 
 	"github.com/FourSoulsRepo/four_souls/internal/instance"
 	"github.com/FourSoulsRepo/four_souls/internal/settings"
+	"github.com/FourSoulsRepo/four_souls/internal/tracing"
 )
 
 //go:embed all:frontend/dist
 var frontend embed.FS
 
 func main() {
+	// Traces are written when the app closes (ADR 024).
+	stopTrace, err := tracing.Start(context.Background(), tracing.FromEnv())
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer func() {
+		if serr := stopTrace(); serr != nil {
+			log.Print(serr)
+		}
+	}()
 	// Each running copy holds a slot with its own settings, so several
 	// players can share one computer.
 	title, settingsFile := "Four Souls", appPath("settings.json")

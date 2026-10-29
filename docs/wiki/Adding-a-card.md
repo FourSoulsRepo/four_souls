@@ -36,6 +36,10 @@ While the `TODO(card):` line is there the generator rewrites the file. Delete it
 
 ## 2. Write the card
 
+A zoomed card shows its full text:
+
+![Zoomed card](images/screen-card-zoom.png)
+
 Add what the text does. Most cards are a few blocks.
 
 A loot card: its loot ability happens when it resolves; targets are chosen when it is played.

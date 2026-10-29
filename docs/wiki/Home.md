@@ -2,6 +2,8 @@
 
 Notes for the Four Souls fan game: a desktop network card game for 2–4 players, built with Wails (Go + React/TypeScript).
 
+![A four-player game on the table](images/screen-table-4p.png)
+
 Pick your group: players, people who run a game server, translators, or developers. Developer pages describe the current code. Decisions live in `docs/architecture/` (ADRs); user-visible behavior in `docs/use-cases/`; the plan in `docs/roadmap.md`.
 
 ## Players
@@ -29,6 +31,7 @@ Pick your group: players, people who run a game server, translators, or develope
 * [Repo layout](Repo-layout) — where everything lives and why.
 * [Developer setup](Developer-setup) — one script installs the tools; `make doctor` checks them.
 * [Build modes](Build-modes) — embedded vs. external files, versions, platforms.
+* [Profiling](Profiling) — runtime traces and profiles behind the `trace` build tag.
 * [Linters](Linters) — strict Go and frontend linting, and how to run it.
 * [Screenshots](Screenshots) — capture the UI without a real window.
 * [Client](Client) — how the React client is put together: store, lobby, playback, table.

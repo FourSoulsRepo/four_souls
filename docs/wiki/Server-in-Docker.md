@@ -6,15 +6,18 @@ You need Docker with BuildKit (any Docker from version 23 on). Install it with y
 
 ## 1. Build
 
-Put the Dockerfile from the repository (`deploy/docker/Dockerfile`) into an empty folder and build it:
+Put the Dockerfile and `build.sh` from the repository (`deploy/docker/`) into an empty folder and build:
 
 ```sh
 mkdir -p ~/four-souls && cd ~/four-souls
-curl -fsSLO https://raw.githubusercontent.com/FourSoulsRepo/four_souls/main/deploy/docker/Dockerfile
-docker build -t four-souls-server .
+base=https://raw.githubusercontent.com/FourSoulsRepo/four_souls/main/deploy/docker
+curl -fsSLO "$base/Dockerfile"
+curl -fsSLO "$base/build.sh"
+chmod +x build.sh
+./build.sh
 ```
 
-The build downloads `four-souls-server-linux-<cpu>.tar.gz` of the latest release for the machine's CPU (`amd64` or `arm64`).
+`build.sh` finds the newest release, e.g. 0.3.2, and builds one image with two tags: `four-souls-server:0.3.2` (the app version) and `four-souls-server:latest`. The version is also in the `org.opencontainers.image.version` label. The build downloads `four-souls-server-linux-<cpu>.tar.gz` of that release for the machine's CPU (`amd64` or `arm64`).
 
 ## 2. Run
 
@@ -22,7 +25,7 @@ The build downloads `four-souls-server-linux-<cpu>.tar.gz` of the latest release
 docker run -d --name four-souls --restart unless-stopped \
   -p 4774:4774 -v four-souls-data:/data \
   -e FOUR_SOULS_NAME=Basement \
-  four-souls-server
+  four-souls-server:0.3.2
 docker ps                         # STATUS shows (healthy) after a few seconds
 docker logs -f four-souls         # its output
 ```
@@ -33,32 +36,36 @@ docker logs -f four-souls         # its output
 * The healthcheck asks `/healthz` every 30 seconds; `docker ps` and `docker inspect` show the result. Docker does not restart an unhealthy container by itself; `--restart unless-stopped` restarts it when it exits.
 * `docker stop four-souls` keeps every game in the volume; the next container goes on with them (N-20).
 
+Players check it the same way: **Play → Online**, then the server's address.
+
+![The Online screen, with a server that answers](images/screen-online-status.png)
+
 ## Updating
 
-Run the same build again. The Dockerfile always asks GitHub for the latest server: Docker checks the download link on every build and downloads again only when a new release is out (otherwise the build finishes at once from its cache). Then replace the container; the volume keeps the data:
+Run `./build.sh` again. It builds the newest release; the download happens again only when that release is new (otherwise the build finishes at once from its cache). Then replace the container with the new version tag; the volume keeps the data:
 
 ```sh
 cd ~/four-souls
-docker build -t four-souls-server .
+./build.sh
 docker stop four-souls && docker rm four-souls
 docker run -d --name four-souls --restart unless-stopped \
   -p 4774:4774 -v four-souls-data:/data \
   -e FOUR_SOULS_NAME=Basement \
-  four-souls-server
-docker logs four-souls | grep '^app'   # the new version
-docker image prune -f                  # removes the old image
+  four-souls-server:0.3.2             # the tag build.sh printed
+docker logs four-souls | grep '^app'   # app 0.3.2, rules engine ...
+docker image prune -f                  # removes the old images
 ```
 
 Replacing the container keeps the running games, as long as the new one gets the same volume; players see a short "Reconnecting…" and play on (see Updating on [Dedicated server on a VPS](Dedicated-server-on-a-VPS)).
 
-To also pick up a newer Alpine base after a new Dockerfile, download the Dockerfile again first (step 1); it pins the Alpine version.
+To also pick up a newer Alpine base after a new Dockerfile, download the Dockerfile and `build.sh` again first (step 1); the Dockerfile pins the Alpine version.
 
 ## A fixed release
 
-To stay on one release instead of the latest, give its version:
+To stay on one release instead of the newest, give its version to `build.sh`:
 
 ```sh
-docker build --build-arg VERSION=1.2.3 -t four-souls-server:1.2.3 .
+./build.sh 0.3.1
 ```
 
-Then run `four-souls-server:1.2.3`. This works for releases that have server archives (from the first release after 0.1.1 on).
+Then run `four-souls-server:0.3.1`. This works for releases that have server archives (from the first release after 0.1.1 on).

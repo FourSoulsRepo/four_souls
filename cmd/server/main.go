@@ -11,6 +11,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -23,6 +24,7 @@ import (
 
 	"github.com/FourSoulsRepo/four_souls/internal/legal"
 	"github.com/FourSoulsRepo/four_souls/internal/server"
+	"github.com/FourSoulsRepo/four_souls/internal/tracing"
 	"github.com/FourSoulsRepo/four_souls/internal/version"
 )
 
@@ -36,14 +38,20 @@ func main() {
 
 // run starts the server with the given arguments and stops it when ctx
 // ends.
-func run(ctx context.Context, args []string, out io.Writer) error {
-	cfg, err := parse(args)
+func run(ctx context.Context, args []string, out io.Writer) (err error) {
+	cfg, trace, err := parseAll(args)
 	if err != nil {
 		return err
 	}
 	if err = printBanner(out); err != nil {
 		return err
 	}
+	stopTrace, err := tracing.Start(ctx, trace)
+	if err != nil {
+		return err
+	}
+	// The trace and profiles are written when the server has stopped.
+	defer func() { err = errors.Join(err, stopTrace()) }()
 	cfg.KeepGames = true // an update or restart does not end the games (N-20)
 	// Shutdown stops the server, not the signal: the players hear of the
 	// restart before their games stop.
@@ -68,9 +76,15 @@ func run(ctx context.Context, args []string, out io.Writer) error {
 // envPrefix starts the ENV variable of every flag (N-19).
 const envPrefix = "FOUR_SOULS_"
 
-// parse reads the config file, if any, then lets ENV and flags override
-// it.
+// parse reads the arguments into the server's config; see parseAll.
 func parse(args []string) (server.Config, error) {
+	cfg, _, err := parseAll(args)
+	return cfg, err
+}
+
+// parseAll reads the config file, if any, then lets ENV and flags override
+// it. It also reads the tracing options (ADR 024).
+func parseAll(args []string) (server.Config, tracing.Options, error) {
 	fs := flag.NewFlagSet("server", flag.ContinueOnError)
 	def := server.DefaultConfig()
 	config := fs.String("config", "", "JSON config file; ENV and flags override it")
@@ -83,6 +97,7 @@ func parse(args []string) (server.Config, error) {
 	name := fs.String("name", def.Name, "server name players see instead of the address")
 	emptyMinutes := fs.Int("empty_minutes", def.EmptyMinutes, "end a game nobody is connected to for this many minutes; 0 never")
 	gameHours := fs.Int("game_hours", def.GameHours, "end a game this many hours after it started; 0 never")
+	trace := tracing.Flags(fs)
 	// ENV is set like a flag before the flags, so a flag wins. An empty
 	// value counts as unset, as compose passes one for a blank setting.
 	var envErr error
@@ -95,16 +110,16 @@ func parse(args []string) (server.Config, error) {
 		}
 	})
 	if envErr != nil {
-		return def, envErr
+		return def, tracing.Options{}, envErr
 	}
 	if err := fs.Parse(args); err != nil {
-		return def, fmt.Errorf("flags: %w", err)
+		return def, tracing.Options{}, fmt.Errorf("flags: %w", err)
 	}
 	cfg := def
 	if *config != "" {
 		var err error
 		if cfg, err = server.LoadConfig(*config); err != nil {
-			return cfg, err
+			return cfg, tracing.Options{}, err
 		}
 	}
 	fs.Visit(func(f *flag.Flag) {
@@ -129,7 +144,7 @@ func parse(args []string) (server.Config, error) {
 			cfg.GameHours = *gameHours
 		}
 	})
-	return cfg, cfg.Check()
+	return cfg, *trace, cfg.Check()
 }
 
 // printBanner writes the fan-game notice and the versions (L-02).

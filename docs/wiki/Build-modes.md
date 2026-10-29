@@ -2,6 +2,10 @@
 
 ## Embedded vs. external files
 
+The card gallery (dev only) shows every card the build knows, with its image:
+
+![Card gallery without images: text cards](images/screen-cards.png)
+
 App files (sounds and similar) are reached through `internal/assets.FS()`.
 
 | Build | Where files come from |
@@ -26,6 +30,10 @@ wails build -m -tags embed
 ```
 
 `-m` skips `go mod tidy`. Tidy reads files of every build tag, so without the private images submodule it fails on the import in `pkg/card_db/embed_images.go` (19.59). `wails dev -m` likewise.
+
+## Tracing
+
+The tag `trace` compiles in runtime traces and profiles. Without it they are not in the binary at all. See [Profiling](Profiling).
 
 ## Versions
 

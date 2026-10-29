@@ -14,6 +14,14 @@ A layer only counts on the window's own stacking: these elements sit in `.game` 
 
 ## Inventory
 
+A target prompt dims the board, and only the answers glow:
+
+![Picking a target: answers glow, the rest dims](images/screen-prompt-pick.png)
+
+A choice shows its options over the dimmed board:
+
+![A choice over the dimmed board](images/screen-choice-big.png)
+
 | ID | What | Above everything below because | Code |
 |----|------|--------------------------------|------|
 | `aim-why` | The note why a click did nothing: an aim at no target, or a card or turn icon not usable now (15.29). | It answers the pointer, right under it; it covers its own arrow. | `components/Table.css` |
