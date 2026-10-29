@@ -22,6 +22,12 @@ Claims are counted in *beats*: a beat is one update, from the start of its effec
 
 ## Inventory
 
+Two animations as the player sees them: damage flies from each source to its target, and a dying monster shows a skull.
+
+![Damage shots on their way to the targets](images/screen-damage-shots.png)
+
+![A skull on a dying monster](images/screen-death-skull.png)
+
 | ID | What it does | Why: what the player learns | Direction | Started by | Claims | Code |
 |----|--------------|-----------------------------|-----------|------------|--------|------|
 | `card-pop` | A table card scales and fades in when it first appears. | A card is new on the table. | In place: grows from 60 % where the card sits. | The view draws a `Card` with a new `objectId`. | Nothing; stays still when the card is claimed `arrive` this beat (19.6). | `components/Card.tsx` |

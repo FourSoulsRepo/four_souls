@@ -8,6 +8,10 @@ The game is built for a LAN: one player hosts, the others join by address (ADR 0
 
 The game uses one TCP port, **4774** by default.
 
+Friends type the host's address on the Online screen (**Play → Online**):
+
+![The Online screen](images/screen-online.png)
+
 ## Option 1: a virtual LAN
 
 A virtual LAN gives every player's computer an extra private address (for example `100.101.102.103`). The host gives that address to the friends; they join it like a LAN address. Traffic between the players is encrypted by the tool.
@@ -72,3 +76,7 @@ It does not work when the internet provider puts the host behind its own NAT ("C
 ## Privacy
 
 The game has no accounts and does not encrypt its own traffic yet (ADR 006). With a virtual LAN the tool encrypts everything between players. With port forwarding or a server, anyone who knows the address can join a game that is open. Share the address only with your friends.
+
+The host can set a password on **Host a game**. Friends then type it on the game's row before they join.
+
+![Host a game, with an optional password](images/screen-host.png)

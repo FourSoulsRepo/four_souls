@@ -2,6 +2,8 @@
 
 Notes for the Four Souls fan game: a desktop network card game for 2–4 players, built with Wails (Go + React/TypeScript).
 
+![A four-player game on the table](images/screen-table-4p.png)
+
 Pick your group: players, people who run a game server, translators, or developers. Developer pages describe the current code. Decisions live in `docs/architecture/` (ADRs); user-visible behavior in `docs/use-cases/`; the plan in `docs/roadmap.md`.
 
 ## Players

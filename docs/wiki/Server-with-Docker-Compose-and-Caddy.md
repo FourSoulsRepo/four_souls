@@ -49,6 +49,8 @@ docker compose logs -f        # both outputs; Caddy says when it has the certifi
 
 Check it from any computer: `https://games.example.com/healthz` answers `ok`. Players type `games.example.com` in **Play → Online**.
 
+![The Online screen, with a server that answers](images/screen-online-status.png)
+
 * The healthcheck asks the server's `/healthz` every 30 seconds; `docker compose ps` shows the state, and Caddy starts only once the server is healthy. Docker does not restart an unhealthy container by itself; `restart: unless-stopped` restarts one that exits.
 * Records and saved games live in the `data` volume; Caddy's certificates in `caddy_data`. They survive updates.
 * To let players also join without HTTPS, uncomment `ports` of `server` in `docker-compose.yml` and open port 4774.

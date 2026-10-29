@@ -20,6 +20,10 @@ WebSocket (ws.go) ──Conn──▶ Client ──▶ Hub (lobby goroutine)
 
 ## A game's life
 
+Players see the lobby as the Games list. Each row is one table or game:
+
+![The Games list on a server](images/screen-games.png)
+
 1. Hello: protocol version, nickname, card sets, dice look; the server keeps or makes a token. The seat keeps the look (`CleanDice`: a bad ID is the default), even while its player is away, and every table and update lists it (V-19).
 2. Lobby: create (seats, sets, options) or join; ready. A full, ready table becomes a Room.
 3. Setup: host bans out; ban rounds in snake order with an optional timer; random or draft picks. Deck ratios are on unless the host turns them off; `checkOptions` turns them off when the sets are too small (GS-07). Random seats shuffle the seats once, when the game starts, with the game's seed (UC-37).

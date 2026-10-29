@@ -52,6 +52,10 @@ docker build -f Dockerfile.local -t four-souls-server:local .
 
 ## 4a. Run it with plain Docker
 
+Players connect as they do to any server: **Play → Online**, then the server's address.
+
+![The Online screen, with a server that answers](images/screen-online-status.png)
+
 Replace the container as in Updating on [Server in Docker](Server-in-Docker), with the `:local` image. The same volume keeps records and running games.
 
 ```sh

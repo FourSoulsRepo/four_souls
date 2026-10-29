@@ -10,6 +10,10 @@ go run ./cmd/server_load -url ws://game.example.com:4774
 
 Run it against a server you run yourself. The games it opens are real games on that server; they end on their own, or with the server's idle and length limits.
 
+While it runs, the games appear on the server's Games list, as they would for any player:
+
+![The Games list of a server](images/screen-games.png)
+
 ## Stages
 
 Each game seats 4 bots (`-players`) at one table and plays it to the end with random legal moves.

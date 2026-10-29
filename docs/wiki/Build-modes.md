@@ -2,6 +2,10 @@
 
 ## Embedded vs. external files
 
+The card gallery (dev only) shows every card the build knows, with its image:
+
+![Card gallery without images: text cards](images/screen-cards.png)
+
 App files (sounds and similar) are reached through `internal/assets.FS()`.
 
 | Build | Where files come from |

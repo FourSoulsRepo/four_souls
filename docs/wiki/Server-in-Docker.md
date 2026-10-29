@@ -36,6 +36,10 @@ docker logs -f four-souls         # its output
 * The healthcheck asks `/healthz` every 30 seconds; `docker ps` and `docker inspect` show the result. Docker does not restart an unhealthy container by itself; `--restart unless-stopped` restarts it when it exits.
 * `docker stop four-souls` keeps every game in the volume; the next container goes on with them (N-20).
 
+Players check it the same way: **Play → Online**, then the server's address.
+
+![The Online screen, with a server that answers](images/screen-online-status.png)
+
 ## Updating
 
 Run `./build.sh` again. It builds the newest release; the download happens again only when that release is new (otherwise the build finishes at once from its cache). Then replace the container with the new version tag; the volume keeps the data:

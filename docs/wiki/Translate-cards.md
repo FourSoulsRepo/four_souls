@@ -109,6 +109,10 @@ The hints are the same as for the interface file: [Translate the interface](Tran
 
 ## See it in the game
 
+A zoomed card shows its name in the chosen language, with the translators credited:
+
+![Zoomed Russian card with its translators](images/screen-card-zoom-ru.png)
+
 The game shows card names in the language chosen in Settings, English for a card that has none.
 
 * `make screenshots LOCALE=de` takes every screen with your card names, into `.cache/screenshots/de/` ([Translate the interface](Translate-the-interface#5-look-at-the-screens)). The screenshot scenes use Base Game cards only (`b2.json`); `screen-cards.png`, the card gallery, shows a dozen of them as text cards.

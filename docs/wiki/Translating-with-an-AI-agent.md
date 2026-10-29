@@ -54,6 +54,10 @@ and make i18n LOCALE=de again. Finally report what you were unsure about.
 
 ## After the agent
 
+Check the result in the game: Settings lists the new language, and every screen follows it.
+
+![Settings with the language list](images/screen-settings.png)
+
 1. Read the file yourself: `frontend/src/locales/xx.json`. An agent can be wrong in tone, game terms, or which word fits a button.
 2. Run `make i18n LOCALE=xx` and `make screenshots LOCALE=xx` yourself and look at the screens.
 3. Send it as a pull request ([Translate the interface](Translate-the-interface#7-send-it)) and say that an agent wrote the draft and you checked it.

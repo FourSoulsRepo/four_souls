@@ -22,9 +22,11 @@ test('cards show their image, or a readable blank card', async ({ page }) => {
 });
 
 test('a face-down card shows its deck back, or a plain back without it', async ({ page }) => {
-  // Only the treasure back is there; the loot back fails to load.
+  // Only the treasure back is there; the loot back fails to load. The
+  // loot route goes after the fixture's real assets, so it wins (shot.ts).
   const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="63" height="88"><rect width="63" height="88" fill="#a70"/></svg>';
   await page.route('**/cardimg/assets/backs/treasure.webp', (route) => route.fulfill({ body: svg, contentType: 'image/svg+xml' }));
+  await page.route('**/cardimg/assets/backs/loot.webp', (route) => route.abort());
   await page.goto(gallery);
   const back = page.getByLabel('Hand size').getByRole('img', { name: tr('deck.face_down.treasure') });
   await expect(back.locator('img')).toHaveAttribute('src', '/cardimg/assets/backs/treasure.webp');
