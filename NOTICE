@@ -86,7 +86,7 @@ Go (linked into the app):
 
   github.com/wailsapp/wails/v2              MIT
   github.com/wailsapp/go-webview2           MIT
-  github.com/wailsapp/mimetype              MIT
+  github.com/gabriel-vasile/mimetype        MIT
   github.com/labstack/echo/v4,
   github.com/labstack/gommon                MIT
   github.com/leaanthony/go-ansi-parser,

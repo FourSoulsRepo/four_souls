@@ -58,6 +58,9 @@
        1. `make doctor`: checks them; `PROFILE=translator` for the smaller set.
        2. Tool versions: only in `scripts/versions.env`, `go.mod`, `e2e/package.json`.
        3. Details: `docs/wiki/Developer-setup.md`.
+   23. `make update-deps`: Go modules and npm packages to their latest versions.
+       1. Then set `WAILS_VERSION` to the `wails/v2` in `go.mod`.
+       2. `typescript` stays on 6.0.x: `typescript-eslint` accepts below 6.1 only.
 5. Workflow
    1. Work follows `docs/roadmap/`, one sub-step at a time.
    2. Commit after every finished sub-step.
