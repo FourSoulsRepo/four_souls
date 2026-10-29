@@ -33,7 +33,7 @@ LOCALE ?=
 AREA ?=
 
 .DEFAULT_GOAL := help
-.PHONY: help doctor test vet build wasm lint i18n frontend e2e e2e-games screenshots internal server-archives fuzz fuzz-engine fuzz-focused fuzz-sets fuzz-new sims
+.PHONY: help doctor update-deps test vet build wasm lint i18n frontend e2e e2e-games screenshots internal server-archives fuzz fuzz-engine fuzz-focused fuzz-sets fuzz-new sims
 
 help: ## Show this help
 	@echo "Usage: make <target> [VAR=value]"
@@ -45,6 +45,17 @@ help: ## Show this help
 # Tools and versions: scripts/versions.env, go.mod, e2e/package.json.
 doctor: ## Check the tools make needs, with versions (PROFILE=translator)
 	@GOLANGCI=$(GOLANGCI) scripts/setup.sh --check --profile $(PROFILE)
+
+# Latest Go modules and npm packages. go get -t covers every module the
+# packages and their tests import; go.mod's graph-only modules are not
+# in the build and are left to Wails. npm: ncu raises package.json, then
+# npm install. typescript stays on 6.0.x: typescript-eslint accepts only
+# typescript below 6.1. Afterwards keep WAILS_VERSION equal to go.mod's wails/v2.
+update-deps: ## Update Go modules and npm packages to their latest versions
+	@for m in $(MODULES); do (cd $$m && go get -t -u ./... && go mod tidy) || exit 1; done
+	@cd frontend && npx --yes npm-check-updates -u --reject typescript && npm install --no-audit --no-fund
+	@cd e2e && npx --yes npm-check-updates -u && npm install --no-audit --no-fund
+	@echo "Check: WAILS_VERSION in scripts/versions.env must equal wails/v2 in go.mod."
 
 test: ## Run tests in every Go module, plus embed mode
 	@for m in $(MODULES); do (cd $$m && go test -tags "$(TAGS)" ./... && go test -tags "$(TAGS) embed" ./...) || exit 1; done

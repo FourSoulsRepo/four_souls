@@ -12,25 +12,25 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "motion": "13.4.4",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0",
-    "zustand": "5.0.15"
+    "motion": "14.7.1",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1",
+    "zustand": "5.0.16"
   },
   "devDependencies": {
-    "@eslint-react/eslint-plugin": "5.24.9",
+    "@eslint-react/eslint-plugin": "5.28.8",
     "@eslint/js": "10.0.1",
-    "@types/react": "^19.1.0",
-    "@types/react-dom": "^19.1.0",
-    "@vitejs/plugin-react": "^5.0.0",
-    "eslint": "10.12.0",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "eslint": "10.13.0",
     "eslint-plugin-no-unsanitized": "4.1.5",
     "eslint-plugin-react-hooks": "7.1.1",
     "eslint-plugin-security": "4.2.0",
     "globals": "17.13.0",
-    "typescript": "^5.6.3",
-    "typescript-eslint": "8.71.1",
-    "vite": "^7.0.0",
-    "vitest": "5.0.1"
+    "typescript": "^6.0.3",
+    "typescript-eslint": "8.72.1",
+    "vite": "^8.3.5",
+    "vitest": "5.0.5"
   }
 }
