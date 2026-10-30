@@ -230,6 +230,18 @@ func (v Viewer) sees(p PlayerID) bool {
 // clients (A-07): hidden hands, deck contents and order, and the RNG
 // never leave the engine.
 func (g *Game) View(v Viewer) GameView {
+	return g.ViewFor(g.ViewBase(), v)
+}
+
+// ViewBase is the part of the view that every viewer sees alike. A room
+// builds it once per step and adds each viewer's part with ViewFor, so
+// the shared part is not built once per seat (18.17).
+type ViewBase struct {
+	view GameView
+}
+
+// ViewBase builds the part of the view that does not depend on the viewer.
+func (g *Game) ViewBase() ViewBase {
 	out := GameView{Turn: g.Turn, Over: g.Over, Winners: g.Winners, WinSouls: g.WinSouls, Stack: append([]StackItem(nil), g.Stack...)}
 	for i := range out.Stack {
 		out.Stack[i] = g.shown(out.Stack[i])
@@ -251,17 +263,6 @@ func (g *Game) View(v Viewer) GameView {
 			cv.Souls = g.soulsOf(id)
 			pv.InPlay = append(pv.InPlay, cv)
 		}
-		if v.sees(pl.ID) || g.bonus(StatRevealHand, pl.ID, 0) > 0 {
-			for _, id := range pl.Hand {
-				pv.Hand = append(pv.Hand, g.cardView(id))
-			}
-		}
-		if v.sees(pl.ID) {
-			if top := g.DeckTop(TreasureDeck, 1); len(top) > 0 && g.peeksTreasure(pl.ID) {
-				cv := g.cardView(top[0])
-				pv.TreasureTop = &cv
-			}
-		}
 		out.Players = append(out.Players, pv)
 	}
 	out.Shop = g.slotViews(g.Shop)
@@ -282,6 +283,36 @@ func (g *Game) View(v Viewer) GameView {
 		out.Revealed = &cv
 	}
 	out.Waiting = g.Waiting
+	out.Passed, out.Responding = g.responders()
+	if g.Attack.On {
+		out.Attack = &AttackView{Target: g.Attack.Target, Deck: g.Attack.Deck, Odds: g.attackOdds()}
+	}
+	out.Buying = g.Purchase.On
+	if fr := g.FirstRoll; fr != nil {
+		out.FirstRoll = &FirstRoll{Round: fr.Round, Players: slices.Clone(fr.Players), Rolls: slices.Clone(fr.Rolls)}
+	}
+	return ViewBase{view: out}
+}
+
+// ViewFor adds what v sees to the shared part b, which ViewBase built in
+// the same step. The hands, the treasure peek and the prompt's choices
+// depend on the viewer.
+func (g *Game) ViewFor(b ViewBase, v Viewer) GameView {
+	out := b.view
+	out.Players = slices.Clone(b.view.Players)
+	for i, pl := range g.Players {
+		if v.sees(pl.ID) || g.bonus(StatRevealHand, pl.ID, 0) > 0 {
+			for _, id := range pl.Hand {
+				out.Players[i].Hand = append(out.Players[i].Hand, g.cardView(id))
+			}
+		}
+		if v.sees(pl.ID) {
+			if top := g.DeckTop(TreasureDeck, 1); len(top) > 0 && g.peeksTreasure(pl.ID) {
+				cv := g.cardView(top[0])
+				out.Players[i].TreasureTop = &cv
+			}
+		}
+	}
 	if g.Waiting.Kind == PromptChoose && !v.sees(g.Waiting.Player) {
 		// Options may name hidden cards (e.g. which loot card to discard).
 		out.Waiting.Options = nil
@@ -299,14 +330,6 @@ func (g *Game) View(v Viewer) GameView {
 		for _, id := range g.Choice.Objects {
 			out.Ordering = append(out.Ordering, g.cardView(id))
 		}
-	}
-	out.Passed, out.Responding = g.responders()
-	if g.Attack.On {
-		out.Attack = &AttackView{Target: g.Attack.Target, Deck: g.Attack.Deck, Odds: g.attackOdds()}
-	}
-	out.Buying = g.Purchase.On
-	if fr := g.FirstRoll; fr != nil {
-		out.FirstRoll = &FirstRoll{Round: fr.Round, Players: slices.Clone(fr.Players), Rolls: slices.Clone(fr.Rolls)}
 	}
 	return out
 }

@@ -221,7 +221,7 @@ func (r *Room) handle(req request) {
 	case protocol.TypeIntent:
 		r.intent(c, env)
 	case protocol.TypeResync:
-		r.update(c, nil)
+		r.update(c, nil, r.viewBase())
 	case protocol.TypeBan:
 		r.ban(c, env)
 	case protocol.TypePick:
@@ -321,8 +321,16 @@ func (r *Room) intent(c *Client, env protocol.Envelope) {
 // broadcast sends every client its update; during the setup phase,
 // the setup.
 func (r *Room) broadcast(events []engine.Event) {
+	if r.game == nil {
+		for _, c := range r.clients {
+			r.update(c, events, engine.ViewBase{})
+		}
+		return
+	}
+	// The shared part of the view is built once for every client (18.17).
+	base := r.game.ViewBase()
 	for _, c := range r.clients {
-		r.update(c, events)
+		r.update(c, events, base)
 	}
 }
 
@@ -336,7 +344,15 @@ func (r *Room) seatViews() []protocol.Seat {
 }
 
 // update sends one client its view, events and allowed intents.
-func (r *Room) update(c *Client, events []engine.Event) {
+// viewBase is the shared view of the game now, or nothing before it starts.
+func (r *Room) viewBase() engine.ViewBase {
+	if r.game == nil {
+		return engine.ViewBase{}
+	}
+	return r.game.ViewBase()
+}
+
+func (r *Room) update(c *Client, events []engine.Event, base engine.ViewBase) {
 	if r.game == nil {
 		if r.match != nil {
 			r.sendSetup(c)
@@ -352,7 +368,7 @@ func (r *Room) update(c *Client, events []engine.Event) {
 		blocked = r.game.BlockedTurn(engine.PlayerID(c.seat))
 	}
 	u := protocol.Update{
-		Step: r.step, Events: engine.FilterEvents(events, v), View: r.game.View(v), Allowed: allowed, Seats: r.seatViews(),
+		Step: r.step, Events: engine.FilterEvents(events, v), View: r.game.ViewFor(base, v), Allowed: allowed, Seats: r.seatViews(),
 		Aims: r.game.Aims(allowed), Blocked: blocked,
 	}
 	if !r.deadline.IsZero() {
