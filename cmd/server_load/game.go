@@ -172,9 +172,7 @@ func openTable(ctx context.Context, cfg config, g *gameRun, col *collector) ([]*
 	var bots []*bot
 	open := func(seat int) (*bot, error) {
 		b, err := dial(ctx, cfg, g, seat, col)
-		if b != nil {
-			bots = append(bots, b)
-		}
+		bots = append(bots, b)
 		return b, err
 	}
 	host, err := open(0)
@@ -211,7 +209,7 @@ func openTable(ctx context.Context, cfg config, g *gameRun, col *collector) ([]*
 // closeAll closes every bot's socket.
 func closeAll(bots []*bot) {
 	for _, b := range bots {
-		_ = b.conn.Close() //nolint:errcheck // closing only ends the reads; the game is decided
+		b.close()
 	}
 }
 

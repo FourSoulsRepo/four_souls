@@ -120,6 +120,8 @@ func (st stage) report(p *printer, cfg config) {
 	line(p, "handshake", "%d connections: %s", hs.n, hs.text(ms))
 	line(p, "updates", "%d received, %s, %s per second; largest %s",
 		c.updates, size(c.bytes), size(int(float64(c.bytes)/st.elapsed.Seconds())), size(c.largest))
+	reconnects, failed := c.redials()
+	line(p, "reconnects", "%d, %d attempts failed", reconnects, failed)
 	line(p, "errors", "%s", counts(c.errors))
 	line(p, "notices", "%s", counts(c.notices))
 	if problems := st.problems(cfg); len(problems) > 0 {
@@ -152,7 +154,7 @@ func summary(p *printer, cfg config, stages []stage) {
 		return
 	}
 	p.printf("\n== summary ==\n")
-	p.printf("%-7s %-10s %-22s %-22s %s\n", "games", "finished", "response median/max", "ping median/max", "result")
+	p.printf("%-7s %-10s %-22s %-22s %-11s %s\n", "games", "finished", "response median/max", "ping median/max", "reconnects", "result")
 	best := 0
 	for _, st := range stages {
 		result := "FAIL"
@@ -160,8 +162,9 @@ func summary(p *printer, cfg config, stages []stage) {
 			result = "PASS"
 			best = st.games
 		}
-		p.printf("%-7d %-10s %-22s %-22s %s\n", st.games, fmt.Sprintf("%d/%d", st.finished, st.games),
-			pair(st.col.responses()), pair(st.col.pings()), result)
+		reconnects, _ := st.col.redials()
+		p.printf("%-7d %-10s %-22s %-22s %-11d %s\n", st.games, fmt.Sprintf("%d/%d", st.finished, st.games),
+			pair(st.col.responses()), pair(st.col.pings()), reconnects, result)
 	}
 	if best == 0 {
 		p.printf("\nthe server did not pass even %d games at once\n", stages[0].games)

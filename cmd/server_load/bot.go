@@ -2,9 +2,11 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math/rand/v2"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/gorilla/websocket"
@@ -21,17 +23,27 @@ const (
 	maxRefusals = 20               // refused in a row before a bot gives up
 	maxSeats    = 4                // seats per game; each bot gets its own seed
 	turnLimit   = 500              // steps in one turn before a bot ends it
+	maxBackoff  = 10 * time.Second // the longest wait between reconnect attempts
 )
+
+// errClosed is returned when the game has closed a bot's socket for good.
+var errClosed = errors.New("the game closed the connection")
 
 // bot is one seat of a game: a WebSocket client that plays random legal
 // moves (ADR 006).
 type bot struct {
-	name string
-	conn *websocket.Conn
-	rng  *rand.Rand
-	g    *gameRun
-	col  *collector
-	seq  int // message IDs
+	name  string
+	cfg   config
+	seat  int
+	token string // the seat's token; a reconnect says hello with it (N-08)
+	rng   *rand.Rand
+	g     *gameRun
+	col   *collector
+	seq   int // message IDs
+
+	mu     sync.Mutex // guards conn and closed: the game closes the socket from another goroutine
+	conn   *websocket.Conn
+	closed bool
 
 	lastStep    int       // the newest step this seat has seen
 	refusals    int       // refused in a row
@@ -42,49 +54,95 @@ type bot struct {
 	turnStep    int       // the step that turn began at
 }
 
-// dial opens a connection for one seat and says hello. The server answers
-// welcome; its handshake time is recorded.
+// dial opens a connection for one seat and says hello; the welcome gives the
+// seat its token. The bot is returned even when it fails, so the caller can
+// close its socket.
 func dial(ctx context.Context, cfg config, g *gameRun, seat int, col *collector) (*bot, error) {
-	start := time.Now()
-	conn, resp, err := websocket.DefaultDialer.DialContext(ctx, cfg.url, nil)
-	if resp != nil && resp.Body != nil {
-		_ = resp.Body.Close() //nolint:errcheck // the handshake answer is not needed
-	}
-	if err != nil {
-		return nil, fmt.Errorf("connect to %s: %w", cfg.url, err)
-	}
 	seed := cfg.seed + uint64(g.number*maxSeats+seat) //nolint:gosec // seat numbers are small
 	b := &bot{
 		name: fmt.Sprintf("bot%d", seat+1),
-		conn: conn,
+		cfg:  cfg,
+		seat: seat,
 		rng:  rand.New(rand.NewPCG(seed, 3)), //nolint:gosec // the bots' moves, not security
 		g:    g,
 		col:  col,
 	}
+	w, err := b.connect(ctx, "")
+	if err != nil {
+		return b, err
+	}
+	b.token = w.Token
+	return b, nil
+}
+
+// connect opens a socket and says hello with token; an empty token asks for
+// a new seat. The socket replaces the bot's old one. The welcome's handshake
+// time is recorded.
+func (b *bot) connect(ctx context.Context, token string) (protocol.Welcome, error) {
+	var w protocol.Welcome
+	start := time.Now()
+	conn, resp, err := websocket.DefaultDialer.DialContext(ctx, b.cfg.url, nil)
+	if resp != nil && resp.Body != nil {
+		_ = resp.Body.Close() //nolint:errcheck // the handshake answer is not needed
+	}
+	if err != nil {
+		return w, fmt.Errorf("connect to %s: %w", b.cfg.url, err)
+	}
+	if err := b.swap(conn); err != nil {
+		return w, err
+	}
 	// The server's pong carries our ping's send time, so the RTT needs no state.
 	conn.SetPongHandler(func(payload string) error {
 		if sent, err := strconv.ParseInt(payload, 10, 64); err == nil {
-			col.addPing(time.Since(time.Unix(0, sent)))
+			b.col.addPing(time.Since(time.Unix(0, sent)))
 		}
 		return nil
 	})
+	go b.pings(ctx, conn)
 	hello := protocol.Hello{
 		Protocol: protocol.Version,
 		App:      version.Get().App,
 		Name:     b.name,
 		Role:     protocol.RolePlayer,
-		Sets:     cfg.sets,
+		Sets:     b.cfg.sets,
+		Token:    token,
 	}
 	if err := b.send(protocol.TypeHello, hello); err != nil {
-		return b, err
+		return w, err
 	}
-	var w protocol.Welcome
 	if err := b.expect(protocol.TypeWelcome, &w); err != nil {
-		return b, err
+		return w, err
 	}
-	col.addHandshake(time.Since(start))
-	col.setServer(w)
-	return b, nil
+	b.col.addHandshake(time.Since(start))
+	b.col.setServer(w)
+	return w, nil
+}
+
+// swap makes conn the bot's socket and closes the one it replaces. A closed
+// bot takes no socket: the game is over.
+func (b *bot) swap(conn *websocket.Conn) error {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	if b.closed {
+		_ = conn.Close() //nolint:errcheck // the game is over; nothing to do with it
+		return errClosed
+	}
+	if b.conn != nil {
+		_ = b.conn.Close() //nolint:errcheck // the old socket is done with
+	}
+	b.conn = conn
+	return nil
+}
+
+// close closes the bot's socket and any socket it gets later. It is safe to
+// call from another goroutine.
+func (b *bot) close() {
+	b.mu.Lock()
+	defer b.mu.Unlock()
+	b.closed = true
+	if b.conn != nil {
+		_ = b.conn.Close() //nolint:errcheck // closing only ends the reads; the game is decided
+	}
 }
 
 // send writes one message to the server.
@@ -140,16 +198,19 @@ func (b *bot) await(typ string, v any) error {
 }
 
 // play follows the game until it is over: it answers each update that
-// lists something to do and records what it sees.
+// lists something to do and records what it sees. A lost connection is
+// taken back with the seat's token.
 func (b *bot) play(ctx context.Context) error {
-	go b.pings(ctx)
 	for {
 		_, msg, err := b.conn.ReadMessage()
 		if err != nil {
 			if ctx.Err() != nil {
 				return b.g.stopReason(ctx)
 			}
-			return fmt.Errorf("%s lost the connection: %w", b.name, err)
+			if rerr := b.reconnect(ctx); rerr != nil {
+				return rerr
+			}
+			continue
 		}
 		env, err := protocol.Decode(msg)
 		if err != nil {
@@ -163,9 +224,45 @@ func (b *bot) play(ctx context.Context) error {
 	}
 }
 
-// pings sends a WebSocket ping every pingEvery until ctx ends. The pong
-// handler measures each round trip.
-func (b *bot) pings(ctx context.Context) {
+// reconnect takes the seat back on a new socket, as the app does after a
+// lost game connection (8.24): at once, then with a longer wait each time,
+// until the server seats it again or the game ends. A failed try is counted
+// as a failed attempt; a seat taken back is a reconnect.
+func (b *bot) reconnect(ctx context.Context) error {
+	b.pending = false // an intent sent on the lost socket gets no answer
+	for attempt := 0; ; attempt++ {
+		select {
+		case <-ctx.Done():
+			return b.g.stopReason(ctx)
+		case <-time.After(retryDelay(attempt)):
+		}
+		w, err := b.connect(ctx, b.token)
+		if err == nil {
+			if w.Seat != b.seat {
+				return fmt.Errorf("%s came back as seat %d, not %d: the game is gone", b.name, w.Seat, b.seat)
+			}
+			b.col.addReconnect()
+			return nil
+		}
+		if ctx.Err() != nil {
+			return b.g.stopReason(ctx)
+		}
+		b.col.addFailedDial()
+	}
+}
+
+// retryDelay is the wait before reconnect attempt n, from 0: at once, then 1,
+// 2, 4 and 8 seconds, then every 10, as the app waits (8.24).
+func retryDelay(n int) time.Duration {
+	if n <= 0 {
+		return 0
+	}
+	return min(time.Second<<min(n-1, 4), maxBackoff)
+}
+
+// pings sends a WebSocket ping every pingEvery over conn until ctx ends or
+// the socket is closed. The pong handler measures each round trip.
+func (b *bot) pings(ctx context.Context, conn *websocket.Conn) {
 	tick := time.NewTicker(pingEvery)
 	defer tick.Stop()
 	for {
@@ -174,7 +271,7 @@ func (b *bot) pings(ctx context.Context) {
 			return
 		case <-tick.C:
 			payload := strconv.FormatInt(time.Now().UnixNano(), 10)
-			if err := b.conn.WriteControl(websocket.PingMessage, []byte(payload), time.Now().Add(writeWait)); err != nil {
+			if err := conn.WriteControl(websocket.PingMessage, []byte(payload), time.Now().Add(writeWait)); err != nil {
 				return
 			}
 		}

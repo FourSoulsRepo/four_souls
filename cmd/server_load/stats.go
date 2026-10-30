@@ -12,16 +12,18 @@ import (
 // collector gathers what the bots of one stage see. Its methods are safe
 // for concurrent use.
 type collector struct {
-	mu        sync.Mutex
-	handshake []time.Duration // connect and hello until welcome
-	response  []time.Duration // an intent until the next update its seat gets
-	ping      []time.Duration // WebSocket ping until its pong
-	updates   int
-	bytes     int
-	largest   int
-	errors    map[string]int // error replies and broken orders, by code
-	notices   map[string]int // notices, by kind
-	server    *protocol.Welcome
+	mu          sync.Mutex
+	handshake   []time.Duration // connect and hello until welcome
+	response    []time.Duration // an intent until the next update its seat gets
+	ping        []time.Duration // WebSocket ping until its pong
+	updates     int
+	bytes       int
+	largest     int
+	reconnects  int            // seats taken back on a new socket
+	failedDials int            // tries to take a seat back that failed
+	errors      map[string]int // error replies and broken orders, by code
+	notices     map[string]int // notices, by kind
+	server      *protocol.Welcome
 }
 
 func newCollector() *collector {
@@ -53,6 +55,20 @@ func (c *collector) addUpdate(size int) {
 	c.updates++
 	c.bytes += size
 	c.largest = max(c.largest, size)
+}
+
+// addReconnect counts a seat taken back on a new socket.
+func (c *collector) addReconnect() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.reconnects++
+}
+
+// addFailedDial counts a try to take a seat back that failed.
+func (c *collector) addFailedDial() {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.failedDials++
 }
 
 func (c *collector) addError(code string) {
@@ -112,4 +128,11 @@ func (c *collector) pings() spread[time.Duration] {
 	c.mu.Lock()
 	defer c.mu.Unlock()
 	return spreadOf(c.ping)
+}
+
+// redials are the reconnects of a stage and its failed attempts.
+func (c *collector) redials() (reconnects, failed int) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return c.reconnects, c.failedDials
 }

@@ -5,7 +5,9 @@
 //	server_load -url ws://127.0.0.1:4774 -max-games 8 -max-response 500ms
 //
 // Each game seats -players bots at one table and plays it to the end with
-// random legal moves, as the headless tests do. The games run in stages: -start
+// random legal moves, as the headless tests do. A bot whose connection drops
+// takes its seat back with its token, as the app does, and the report counts
+// those reconnects. The games run in stages: -start
 // games at once, then twice as many, up to -max-games. A stage passes when
 // every game ends and no response is slower than -max-response. The first
 // stage that fails ends the run. The tool only reads from the server; the

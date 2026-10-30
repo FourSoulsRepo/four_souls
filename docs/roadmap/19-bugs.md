@@ -43,6 +43,7 @@ This step never closes; new reports are appended.
 | H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
 | I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100 | 20 |
 | J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107 | 19 |
+| Q  | Load tool: a lost connection ends a game | Go tools   | 19.108                                                 | 1     |
 | K  | Build and release files                  | Release    | 19.47, 19.59, 19.83, 19.91                             | 4     |
 | L  | Not a bug: the app follows a ruling      | None       | 19.63                                                  | 1     |
 | M  | Go test setup: the code was right        | Go tests   | 19.68                                                  | 1     |
@@ -62,6 +63,7 @@ Totals by system (98 items):
 | Release   | K       | 4     |
 | None      | L       | 1     |
 | Go tests  | M       | 1     |
+| Go tools  | Q       | 1     |
 
 ---
 
@@ -3435,3 +3437,30 @@ Totals by system (98 items):
    1. Not found yet.
 4. Tasks:
    1. Find why the arrow is not there at line 377 under load; the test moves the mouse with `steps: 8`.
+
+### [ ] 19.108 Load tool: a lost connection ends a game
+
+1. Goal: `cmd/server_load` reconnects a bot whose connection drops, as the app does, and shows how many times it reconnected.
+2. Report (owner, 2026-10-29)
+   1. The load tool fails a stage after it loses a connection.
+   2. It should reconnect like the app does, and count the reconnects in the result.
+3. Cause
+   1. `bot.play` returns on the first read error; a game with a dropped bot fails (`cmd/server_load/bot.go`).
+   2. The app reconnects by itself with the seat's token and backoff (N-08, 8.24).
+4. Tasks:
+   1. A dropped bot reconnects with its token and the app's backoff (`retryDelay`).
+   2. A failed reconnect that runs to the game timeout still fails the game.
+   3. The stage report and the summary show the reconnect count.
+   4. A reconnect does not fail a stage; the verdict stays on games and response time.
+   5. Test: a bot drops and comes back; the count is 1 and the game finishes.
+   6. Wiki `Load-test.md` lists the new figure.
+5. Result (2026-10-29)
+   1. `bot.reconnect`: a dropped socket is retried with the seat's token, with the app's waits (`retryDelay`).
+   2. A welcome without the bot's seat fails its game; a try that runs to the game timeout fails it too.
+   3. Stage report: `reconnects N, M attempts failed`; the summary has a `reconnects` column.
+   4. A reconnect does not change the stage verdict.
+   5. Test: `TestReconnectAfterDrop` cuts the second bot's connection once, through a proxy; `TestRetryDelay`.
+   6. Gates: `golangci-lint` clean with `embed` and `cardimages`; `go test -race ./cmd/server_load` passes.
+   7. Docs: `docs/wiki/Load-test.md`.
+6. Owner notes
+   1. Waiting for the owner's review.

@@ -53,6 +53,7 @@ With `-stop-at 30`, the stage stops its other games once 30% of its games have e
 * **ping**: a WebSocket ping and its pong, once a second per bot.
 * **handshake**: connect, hello and welcome.
 * **updates**: how many updates the bots received, their size and the rate per second.
+* **reconnects**: a bot whose connection drops takes its seat back with its token, as the app does. It waits 0, 1, 2, 4 and 8 seconds, then 10 between tries. The report counts the seats taken back and the tries that failed. A reconnect does not fail a stage; a seat that cannot come back fails its game.
 * **errors**: error replies from the server by code; `refused` is an intent the engine did not accept.
 * **notices**: a notice that ends a game (lost or idle) fails it.
 * **agreement**: every seat must see the same last step and winners, or the game fails.
@@ -63,5 +64,6 @@ Progress is printed every 2 seconds. With up to 8 games it shows one part per ga
 
 * A bot ends its turn after 500 steps of it, as a player would. A game that still does not end fails, and the error names its turn and step.
 * A failed game stays on the server until the server's limits end it.
+* A dropped bot leaves its game paused until it is back. Many reconnects under load mean the server cut connections that fell behind, which is a figure to watch next to the response times.
 * The bots play random legal moves, so one game can take far longer than a real game of the same length.
 * To see where the server spends its time under this load, record a profile: [Profiling](Profiling).
