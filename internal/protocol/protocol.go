@@ -556,9 +556,19 @@ type Error struct {
 	Text    *engine.Msg `json:"text,omitempty"`
 }
 
+// updateSize is the first buffer of an update: most updates fit in it.
+const updateSize = 4 << 10
+
 // Encode wraps data into an envelope of the given type. The data is
 // encoded once; marshalling the Envelope would scan it again.
 func Encode(typ string, id int, data any) ([]byte, error) {
+	if u, ok := data.(Update); ok {
+		// The hand-written path (18.17): the envelope and the update in one
+		// buffer.
+		out := appendEnvelope(make([]byte, 0, updateSize), typ, id)
+		out = appendUpdate(out, u)
+		return append(out, '}'), nil
+	}
 	raw, err := json.Marshal(data)
 	if err != nil {
 		return nil, fmt.Errorf("protocol: encode %s: %w", typ, err)

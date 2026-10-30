@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"unicode/utf8"
 )
 
 // Key names a line the player reads (ADR 021, item 9). The engine
@@ -120,28 +121,99 @@ func PlayerArg(name string, p PlayerID) Arg { return Arg{Name: name, Value: Play
 // in this order, so the saved state has no Go map (ADR 005).
 type Args []Arg
 
-// MarshalJSON writes the values as one object.
+// MarshalJSON writes the values as one object. The four kinds of value
+// the engine makes are written in place, the same bytes json.Marshal
+// gives (18.17); any other value takes json.Marshal.
 func (a Args) MarshalJSON() ([]byte, error) {
-	var b bytes.Buffer
-	b.WriteByte('{')
+	b := make([]byte, 0, 32*len(a)+2)
+	b = append(b, '{')
 	for i, arg := range a {
 		if i > 0 {
-			b.WriteByte(',')
+			b = append(b, ',')
 		}
-		name, err := json.Marshal(arg.Name)
-		if err != nil {
+		b = appendJSONString(b, arg.Name)
+		b = append(b, ':')
+		var err error
+		if b, err = appendValue(b, arg.Value); err != nil {
 			return nil, fmt.Errorf("msg: %w", err)
 		}
-		value, err := json.Marshal(arg.Value)
-		if err != nil {
-			return nil, fmt.Errorf("msg: %w", err)
-		}
-		b.Write(name)
-		b.WriteByte(':')
-		b.Write(value)
 	}
-	b.WriteByte('}')
-	return b.Bytes(), nil
+	return append(b, '}'), nil
+}
+
+// appendValue writes one argument value as JSON.
+func appendValue(b []byte, v any) ([]byte, error) {
+	switch v := v.(type) {
+	case int:
+		return strconv.AppendInt(b, int64(v), 10), nil
+	case string:
+		return appendJSONString(b, v), nil
+	case CardValue:
+		b = append(b, `{"card":`...)
+		b = appendJSONString(b, string(v.Card))
+		return append(b, '}'), nil
+	case PlayerValue:
+		b = append(b, `{"player":`...)
+		b = strconv.AppendInt(b, int64(v.Player), 10)
+		return append(b, '}'), nil
+	}
+	out, err := json.Marshal(v)
+	return append(b, out...), err
+}
+
+// hexDigits are the digits of a \u escape.
+const hexDigits = "0123456789abcdef"
+
+// appendJSONString writes s as a JSON string, escaped as encoding/json
+// escapes it: <, > and & too, invalid UTF-8 as U+FFFD.
+func appendJSONString(b []byte, s string) []byte {
+	b = append(b, '"')
+	start := 0
+	for i := 0; i < len(s); {
+		c := s[i]
+		if c < utf8.RuneSelf {
+			if c >= 0x20 && c != '"' && c != '\\' && c != '<' && c != '>' && c != '&' {
+				i++
+				continue
+			}
+			b = append(b, s[start:i]...)
+			switch c {
+			case '\\', '"':
+				b = append(b, '\\', c)
+			case '\n':
+				b = append(b, '\\', 'n')
+			case '\r':
+				b = append(b, '\\', 'r')
+			case '\t':
+				b = append(b, '\\', 't')
+			case '\b':
+				b = append(b, '\\', 'b')
+			case '\f':
+				b = append(b, '\\', 'f')
+			default:
+				b = append(b, '\\', 'u', '0', '0', hexDigits[c>>4], hexDigits[c&0xF])
+			}
+			i++
+			start = i
+			continue
+		}
+		r, size := utf8.DecodeRuneInString(s[i:])
+		switch {
+		case r == utf8.RuneError && size == 1:
+			b = append(b, s[start:i]...)
+			b = append(b, `�`...)
+		case r == ' ' || r == ' ':
+			b = append(b, s[start:i]...)
+			b = append(b, '\\', 'u', '2', '0', '2', hexDigits[r&0xF])
+		default:
+			i += size
+			continue
+		}
+		i += size
+		start = i
+	}
+	b = append(b, s[start:]...)
+	return append(b, '"')
 }
 
 // UnmarshalJSON reads the values back in their order.
