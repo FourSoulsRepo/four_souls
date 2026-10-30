@@ -101,10 +101,10 @@ type End struct {
 }
 
 // Writer appends to a record file. Each line is queued and written by
-// one goroutine, which flushes after every line, so a record of a game
-// that never ended is still readable (RP-08). The writer does not wait
-// for the flush: Flush does, and Close and Stop wait for the queue to
-// drain.
+// one goroutine. The goroutine flushes the file once a second while lines
+// wait, so a record of a game that never ended is readable up to that
+// second (RP-08, 18.17). Flush waits for a flush; Close and Stop wait for
+// the queue to drain and close the file, which writes every line.
 type Writer struct {
 	f     *os.File
 	gz    *gzip.Writer
@@ -138,6 +138,10 @@ func Create(path string, h Header) (*Writer, error) {
 		_ = f.Close() //nolint:errcheck // the write error matters
 		return nil, err
 	}
+	if err := w.flush(); err != nil {
+		_ = f.Close() //nolint:errcheck // the write error matters
+		return nil, err
+	}
 	w.start()
 	return w, nil
 }
@@ -145,6 +149,10 @@ func Create(path string, h Header) (*Writer, error) {
 // queueSize is how many lines may wait for the writer goroutine; a full
 // queue makes Step wait for it.
 const queueSize = 256
+
+// flushEvery is how often waiting lines are flushed to the file. A crash
+// loses at most this much; a graceful stop loses nothing (18.17).
+const flushEvery = time.Second
 
 // start runs the writer goroutine. Header and resume lines are written
 // before it starts, so only it touches the file after this.
@@ -154,20 +162,46 @@ func (w *Writer) start() {
 	go w.run()
 }
 
-// run writes the queued lines in order until the queue is closed.
+// run writes the queued lines in order until the queue is closed. It
+// flushes the file every flushEvery while lines wait.
 func (w *Writer) run() {
 	defer close(w.done)
-	for job := range w.jobs {
-		if mark, ok := job.(flushMark); ok {
-			close(mark)
-			continue
+	tick := time.NewTicker(flushEvery)
+	defer tick.Stop()
+	dirty := false
+	for {
+		select {
+		case job, ok := <-w.jobs:
+			if !ok {
+				return
+			}
+			if mark, isMark := job.(flushMark); isMark {
+				w.flushWaiting(&dirty)
+				close(mark)
+				continue
+			}
+			if w.failure() != nil {
+				continue // the file is broken; nothing more is written
+			}
+			if err := w.write(job); err != nil {
+				w.fail(err)
+			}
+			dirty = true
+		case <-tick.C:
+			w.flushWaiting(&dirty)
 		}
-		if w.failure() != nil {
-			continue // the file is broken; nothing more is written
-		}
-		if err := w.write(job); err != nil {
-			w.fail(err)
-		}
+	}
+}
+
+// flushWaiting flushes the file when lines were written since the last
+// flush.
+func (w *Writer) flushWaiting(dirty *bool) {
+	if !*dirty || w.failure() != nil {
+		return
+	}
+	*dirty = false
+	if err := w.flush(); err != nil {
+		w.fail(err)
 	}
 }
 
@@ -255,11 +289,16 @@ func (w *Writer) fail(err error) {
 	}
 }
 
-// write encodes one line and flushes it, so it is in the file (RP-08).
+// write encodes one line; flush puts it in the file.
 func (w *Writer) write(v any) error {
 	if err := w.enc.Encode(v); err != nil {
 		return fmt.Errorf("record: %w", err)
 	}
+	return nil
+}
+
+// flush writes the lines the compressor holds to the file.
+func (w *Writer) flush() error {
 	if err := w.gz.Flush(); err != nil {
 		return fmt.Errorf("record: %w", err)
 	}
@@ -422,6 +461,10 @@ func Append(path string, steps int, at time.Time) (*Writer, error) {
 	w := &Writer{f: f, gz: gzip.NewWriter(f), steps: steps}
 	w.enc = json.NewEncoder(w.gz)
 	if err := w.write(Resume{Kind: "resume", Resumed: at}); err != nil {
+		_ = f.Close() //nolint:errcheck // the write error matters
+		return nil, err
+	}
+	if err := w.flush(); err != nil {
 		_ = f.Close() //nolint:errcheck // the write error matters
 		return nil, err
 	}

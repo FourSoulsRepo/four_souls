@@ -55,7 +55,8 @@ Use options 1 and 5.
    14. The header keeps the rollback mode (`rollback`).
    15. Events hold messages, a key and values, never words (ADR 021).
 3. Writing
-   1. Each line is flushed: a crash leaves a readable record without `end`.
+   1. Lines are flushed once a second, and at every stop (18.17).
+      1. A crash leaves a readable record without `end`, up to a second short.
    2. A server that stops writes `end` with finished false (RP-08).
    3. A game kept over a restart gets no `end`; it goes on (ADR 019).
 4. Server
