@@ -179,7 +179,11 @@ func openTable(ctx context.Context, cfg config, g *gameRun, col *collector) ([]*
 	if err != nil {
 		return bots, err
 	}
-	if err := host.send(protocol.TypeCreate, protocol.Create{Seats: cfg.players, Sets: cfg.sets}); err != nil {
+	create := protocol.Create{Seats: cfg.players, Sets: cfg.sets}
+	if len(cfg.bans) > 0 {
+		create.Options = &protocol.Options{HostBans: cfg.bans}
+	}
+	if err := host.send(protocol.TypeCreate, create); err != nil {
 		return bots, err
 	}
 	var tb protocol.Table

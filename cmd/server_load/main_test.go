@@ -6,6 +6,7 @@ import (
 	"io"
 	"net"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"testing"
@@ -261,5 +262,17 @@ func TestStopAfter(t *testing.T) {
 		if got := stopAfter(c.games, c.stopAt); got != c.want {
 			t.Errorf("stopAfter(%d, %d) = %d, want %d", c.games, c.stopAt, got, c.want)
 		}
+	}
+}
+
+// TestNextStage: the stages double and the last one is -max-games.
+func TestNextStage(t *testing.T) {
+	var got []int
+	for games := 2; games <= 200; games = nextStage(games, 200) {
+		got = append(got, games)
+	}
+	want := []int{2, 4, 8, 16, 32, 64, 128, 200}
+	if !slices.Equal(got, want) {
+		t.Errorf("stages %v, want %v", got, want)
 	}
 }

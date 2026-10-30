@@ -27,7 +27,18 @@ import (
 	"strings"
 	"syscall"
 	"time"
+
+	engine "github.com/FourSoulsRepo/rules_engine"
 )
+
+// nextStage is the games at once in the stage after games: double it, but
+// stop at max, so the last stage is max itself (18.17).
+func nextStage(games, maxGames int) int {
+	if games >= maxGames {
+		return maxGames + 1
+	}
+	return min(2*games, maxGames)
+}
 
 // config is what the flags say.
 type config struct {
@@ -40,6 +51,7 @@ type config struct {
 	maxResponse time.Duration
 	seed        uint64
 	stopAt      int // percent of a stage's games that stops the rest; 0 waits for all
+	bans        []engine.CardRef
 }
 
 func main() {
@@ -61,7 +73,7 @@ func run(ctx context.Context, args []string, out io.Writer) error {
 	p.printf("load test of %s: %d players per game, games at once from %d, doubling up to %d\n",
 		cfg.url, cfg.players, cfg.start, cfg.maxGames)
 	var stages []stage
-	for games := cfg.start; games <= cfg.maxGames; games *= 2 {
+	for games := cfg.start; games <= cfg.maxGames; games = nextStage(games, cfg.maxGames) {
 		st := runStage(ctx, cfg, games, p)
 		if ctx.Err() != nil {
 			p.printf("\ninterrupted\n")
@@ -89,11 +101,15 @@ func parse(args []string) (config, error) {
 	fs.DurationVar(&cfg.gameTimeout, "game-timeout", 30*time.Minute, "a game that has not ended by then fails")
 	fs.DurationVar(&cfg.maxResponse, "max-response", time.Second, "a stage fails when a response takes longer")
 	fs.Uint64Var(&cfg.seed, "seed", 0, "seed for the bots' moves; 0 uses the clock")
+	bans := fs.String("ban", "blue_baby,smelter,portable_slot_machine", "cards the host bans, comma-separated; Blue Baby starts with Forever Alone (19.97), and the Smelter and Portable Slot Machine loop (19.109)")
 	fs.IntVar(&cfg.stopAt, "stop-at", 0, "when this percent of a stage's games has ended, end the others at once; 0 waits for all")
 	if err := fs.Parse(args); err != nil {
 		return cfg, fmt.Errorf("flags: %w", err)
 	}
 	cfg.sets = strings.FieldsFunc(*sets, func(r rune) bool { return r == ',' })
+	for _, c := range strings.FieldsFunc(*bans, func(r rune) bool { return r == ',' }) {
+		cfg.bans = append(cfg.bans, engine.CardRef(c))
+	}
 	return cfg, cfg.check()
 }
 
