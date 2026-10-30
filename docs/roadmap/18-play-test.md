@@ -387,3 +387,136 @@ Ideas: B-04, B-05.
    5. One full `make e2e` run failed `rollback.spec.ts` 17.4 in both browsers (Undo, not Ask to undo); it passed alone and in the next full run. Not yet logged as a bug.
    6. `TestStopAtAgainstServer` failed once (closed connection); it passed 5 of 5 reruns.
    7. Open: 128 games; the profile after the change.
+
+### [ ] 18.17 One-CPU public server
+
+1. Goal: a public server on one CPU runs 100 to 200 games at once.
+2. Tasks:
+   1. Run the tagged server with `GOMAXPROCS=1` and `-trace_dir`.
+   2. Load it with `cmd/server_load`: 64, 128, then 200 games.
+   3. Record `cpu.pprof`, `allocs.pprof`, `block.pprof` and `trace.out` at each load.
+   4. Find the top hot spots by flat and cumulative CPU time.
+   5. Cut the top costs; keep the wire format and the record format.
+   6. Find each closed connection's cause (18.16.4).
+   7. Check memory: `stats.csv` stays flat while games end.
+   8. Write the findings: what was tried, what helped, what did not.
+   9. Docs: `docs/wiki/Profiling.md`, `docs/wiki/Load-test.md`, `docs/wiki/Server.md`.
+   10. Gates: `make lint`, `go test` for the changed modules.
+3. Done when:
+   1. 200 games at once pass on `GOMAXPROCS=1`; the slowest response is under 1 s.
+   2. No connection is closed by the server at 200 games.
+   3. **Owner** reads the before and after profiles.
+
+4. Result (2026-10-30, in progress)
+   1. Profile, `GOMAXPROCS=1`, 2 games (run 1): 38% in `madvise`, 25% in JSON encode.
+   2. Allocations: about 390 GB in 380 s; 87% under `protocol.Encode`.
+   3. `GOGC=400`: no gain; 1.30 ms per step against 1.40 ms.
+   4. `encoding/json/v2` `MarshalerTo` on `Args`: slower (15.4 µs against 9.4 µs) and other bytes; reverted.
+   5. Typed fast path for `Args` numbers: same bytes, no gain; reverted.
+   6. fastjson: intent decode 387 ns to 91 ns; the update encode is not in its reach.
+   7. easyjson (generated, `omitempty` only): update encode 36.7 µs to 27.9 µs; `omitzero` fails to generate.
+   8. Stopped by 19.109: a game loops forever under the load tool.
+   9. Benchmark: `internal/protocol/bench_test.go` `BenchmarkEncodeUpdate`, baseline 9.4 µs, 48 allocs.
+5. Result (2026-10-30, round 2)
+   1. 200 games at once pass on `GOMAXPROCS=1`: median 84 ms, max 214 ms; `-ban` default in place.
+   2. The 128 failures were the send queue: 18 of 128 games cut off at 64 queued messages.
+   3. Send queue 64 to 256 (`internal/server/ws.go`): 128 and 200 pass, no cut-off.
+   4. Writes are batched: queued messages go in one write; pongs take the same lock.
+   5. Each close logs its cause: full queue, failed write, unexpected read end.
+   6. Load tool: the last stage is `-max-games` itself; `-ban` bans the loop cards.
+   7. Measured, no gain kept:
+      1. `GOGC=400`: 1.30 ms per step against 1.40 ms.
+      2. `encoding/json/v2` `MarshalerTo` for `Args`: 15.4 µs against 9.4 µs; other bytes; reverted.
+      3. Typed `Args` (ints, strings, `CardValue`, `PlayerValue`): same bytes, no CPU gain; kept, tested.
+      4. Batched writes: 97 µs to 91.5 µs per step, about 6%.
+      5. fastjson: intent decode 387 ns to 91 ns; intents are a small share.
+      6. easyjson (generated, `omitempty` only): update encode 36.7 µs to 27.9 µs; `omitzero` does not generate.
+   8. On loopback 82% of CPU is in write syscalls; the load client shares the Mac, and tracing adds cost.
+   9. Open:
+      1. 19.97 and 19.109: endless loops; the load tool bans their cards.
+      2. Ping max 6 s at 200 games; not yet explained.
+      3. About 290 MB heap after 200 finished games; rooms stay until the empty limit.
+6. Plan (2026-10-30, owner answers)
+   1. LAN baseline, step 0: the server here, the load from a second laptop.
+      1. Server: `192.168.1.137:4810`, `GOMAXPROCS=1`, tagged build.
+      2. Load: `-max-games 200 -seed 11`; the default `-ban` applies.
+      3. Result: the stage table, the slowest response, and the profile.
+   2. Record batching: one flush per second and on every shutdown.
+      1. Graceful shutdown writes every queued line before the files close.
+      2. A game end still writes its end line at once.
+      3. Wiki `Profiling.md` and ADR for the records name the rule: a crash loses up to a second.
+      4. Benchmark: CPU per step against step 0 on the same seed.
+   3. Encoder, one piece at a time, each with a benchmark and a row here.
+      1. Benchmark: a real game's updates, not a synthetic one.
+      2. Pieces, in order: `Args` (done, typed), events, view, seats, allowed intents.
+      3. Wire bytes stay the same; a golden test per piece.
+   4. Not now (owner): coalescing queued updates; reconsider later.
+   5. Engine keeps the loop cards (19.97, 19.109); the load tool bans them.
+7. Log of steps (2026-10-30)
+   1. Step 0, LAN baseline (committed state: send queue 256, batched writes, typed `Args`).
+      1. Server: this laptop, `GOMAXPROCS=1`, tagged, 192.168.1.137:4810; load: second laptop, seed 11, bans default.
+      2. 200 games pass: response median 81.8 ms, p95 117 ms, max 835 ms; no game failed; no notices.
+      3. Ping median 81 ms, p95 130 ms, max 8.6 s (not explained).
+      4. Handshake: median 313 ms, p95 1.37 s, max 1.41 s (800 connections).
+      5. Profile, `cpu.pprof` over 648 s, 347 s of CPU: 62% writes (syscalls); 18% engine `View` (`eachPart`, `facesOf`); 7% JSON.
+   2. Step 1, record batching: flush once a second and at every stop.
+      1. Code: `pkg/record/record.go`; tests `pkg/record/flush_test.go` (stop writes every line, flush is readable, tick flushes).
+      2. ADR 007 item 3.1 updated in place (flush cadence; the format stays).
+      3. Local A/B, same seed 11, 64 games, two runs each: step 0 97 and 102 µs per step; step 1 88 and 93 µs per step (about 9% less).
+      4. Record size, 126 files: 69 MB at step 0, 30 MB at step 1 (fewer flush blocks).
+      5. Every record closes cleanly after SIGTERM (`gzip -t` passes on all 126 files).
+      6. Gates: `make lint` exit 0; `go test` for `pkg/record` and `internal/server` (record subset) pass.
+      7. Not yet: LAN run for step 1.
+   3. Step 2, encoder: baseline and first piece.
+      1. Baseline, real updates (`BenchmarkEncodeRealUpdate`, `internal/server/bench_test.go`): 10.1 µs per update, 16 allocs.
+      2. Bytes per update: about 3.2 KB; the view is 88%, events 4%, allowed under 1%.
+      3. Profile: reflection in `encoding/json/v2` struct encoding is most of the encode time.
+      4. Piece 1, card view: `internal/protocol/encode_card.go`; test `encode_card_test.go`.
+         1. Hand-written: 168 ns against 334 ns per card (`BenchmarkAppendCard`, `BenchmarkMarshalCard`).
+         2. Equal bytes to `encoding/json` on every optional field and on escaped strings.
+         3. Not wired yet: it gains only when its parents (player, slot, view) are written by hand too.
+      5. Next: the player view, then the slots, the stack, the turn, the prompt; each with a row here.
+   3. Step 1 LAN run (2026-10-30, second laptop, 200 games, seed 11, bans default).
+      1. 200 games pass. Response median 75.2 ms (step 0: 81.8), p95 113 ms (117), max 491 ms (835).
+      2. Ping median 77 ms (81); ping max 10.4 s (8.6 s): still not explained.
+      3. Handshake median 309 ms (313); max 1.53 s (1.41 s).
+      4. Not a clean A/B on the network: one 128-game stage hit 935 ms; the loopback A/B above is the CPU figure.
+   4. Step 2 encoder, pieces and benchmark (`BenchmarkEncodeRealUpdate`, 3 s, same updates).
+      1. Baseline: 10.1 µs, 9.5 KB allocated, 16 allocs.
+      2. Piece 1, card view: 168 ns against 334 ns (`BenchmarkAppendCard`).
+      3. Piece 2, player and slot: equal bytes; `encode_view.go`, `encode_view_test.go`.
+      4. Piece 3, update envelope and view wired into `Encode`: 7.9 µs, 18.5 KB, 66 allocs (buffer not sized yet).
+      5. Piece 4, preallocated 4 KiB buffer: 6.8 µs, 7.9 KB, 55 allocs.
+      6. Piece 5, turn, deck and discard arrays, prompt: 5.4 µs, 6.8 KB, 41 allocs.
+      7. Tests: `TestEncodeUpdateMatchesJSON` (real game updates), `TestEncodeFullUpdateMatchesJSON` (every optional field).
+      8. Still by `encoding/json`: events, allowed, seats, stack, the optional view parts, rollback fields.
+   5. Step 2, pieces after the card: `Turn`, arrays, prompt, events, intents, seats, empty stack, envelope in one buffer.
+      1. Real updates: 10.1 µs → 4.5 µs per update; 16 → 29 allocs; 9.5 KB → 7.1 KB allocated.
+      2. Gates: `make lint` exit 0; `internal/protocol`, `internal/server` tests pass; real-update equality test passes.
+      3. Loopback A/B, 64 games, seed 11, two runs each: step 1 89.8 and 87.1 µs per step; step 2 83.3 and 93.7 µs per step (no clear change; noise about ±5 µs).
+      4. Profile: `protocol.Encode` 1.41 s → 0.60 s of server CPU; syscalls 84% of CPU in both runs.
+      5. Engine `View` is 5% to 7%; next candidate, rules engine, owner's call.
+      6. Still by `encoding/json`: non-empty stacks, rollbacks, pauses, aims, blocked, the rare view parts.
+   6. Next candidates, owner decides:
+      1. Write window: hold each client's frames up to 1 ms, one write for a burst of steps (no data dropped; a little latency).
+      2. The engine's view: build the shared part once per step instead of once per seat.
+   7. Step 3a, write window: rejected (owner asked, 2026-10-30).
+      1. A 1 ms timer per write: write syscalls 68 → 45 µs per step; `kevent` time 2 s → 8 s; total CPU no better; adds up to 1 ms.
+      2. `runtime.Gosched` before the batch: write syscalls 15–23 µs per step; reads rise to 55 s; total CPU no better.
+      3. Both reverted; the code is the step 2 writer (batch of the queued messages).
+   8. Step 3b, shared view (owner asked, 2026-10-30).
+      1. `ViewBase` (once per step) and `ViewFor` (per viewer) in `pkg/rules_engine/view.go`; `View` = both.
+      2. Room: `broadcast` builds the base once; each client's update adds its viewer part.
+      3. Viewer-dependent parts: hands, treasure peek, the prompt's choices, ordering.
+      4. Tests: `pkg/rules_engine`, `internal/protocol`, `internal/server` pass; `make lint` exit 0.
+      5. Loopback A/B, 64 games, seed 11, two runs each: step 2 80.7 and 82.5 µs per step; step 3b 55.9 and 60.5 µs per step (about −29%).
+      6. Engine `View` cum: 4.0–4.5 s → 0.9–1.2 s of CPU.
+      7. 64-game response median: 21 ms → 15 ms (both runs).
+      8. No send-queue cut-off; two broken-pipe lines at game end (client closed), as before.
+      9. Not yet: LAN run for step 3b.
+   9. Step 3b LAN run (2026-10-30, second laptop, 200 games, seed 11, bans default).
+      1. 200 games pass; no failure, no reconnect, no notice.
+      2. Response median 45.7 ms (step 0: 81.8; step 1: 75.2); p95 71 ms (117; 113); max 318 ms (835; 491).
+      3. Ping median 46 ms (81; 77); ping max 7.0 s (8.6 s; 10.4 s): still not explained.
+      4. Handshake median 118 ms (313; 309); p95 1.22 s (1.37 s; 1.43 s).
+      5. Stage 64: response median 14.6 ms; stage 128: 27.7 ms.

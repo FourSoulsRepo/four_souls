@@ -3464,3 +3464,26 @@ Totals by system (98 items):
    7. Docs: `docs/wiki/Load-test.md`.
 6. Owner notes
    1. Waiting for the owner's review.
+
+### [ ] 19.109 Engine: a card loop never ends the turn
+
+1. Goal: a game always reaches a turn end when the players keep acting.
+2. Report (agent, 2026-10-30)
+   1. Found by the load test, `-seed 1`, 4 games at once, game 5 of the run.
+   2. Player 2 repeats Activate of object 329, then Choose option 3.
+   3. Each Choose gets a `cancelled` event for object 329; the loop goes on.
+   4. After 85,000 steps the turn is still 30; EndTurn never comes up.
+   5. Evidence: the record is gzip JSON lines, flushed per step; its tail is the loop.
+   6. Second loop, `-seed 11`, 8 games at once (2026-10-30): no Forever Alone in it.
+      1. Cards: Smelter ("Discard a loot card: Gain 3¢"), Portable Slot Machine, Sack of Pennies, Shiny Rock.
+      2. Player 1 activates them in turn; priority passes around; End turn is never offered.
+      3. Record: 244,000 steps on turn 28; the tail of the record is the loop.
+      4. Same symptom as 19.97; one more card class, not the same card.
+3. Cause
+   1. Not found yet: the card of object 329 and the prompt it reopens.
+   2. Load tool: banned Blue Baby (Forever Alone), Smelter and Portable Slot Machine (`-ban`, default).
+   3. Forever Alone is only a starting item: its ban is Blue Baby's ban.
+4. Tasks:
+   1. Find object 329 and why its prompt returns after a cancel.
+   2. A cancel must not reopen the same prompt with no change.
+   3. Test: the same choices in a rules test end the turn.
