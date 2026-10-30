@@ -9,7 +9,7 @@ WebSocket (ws.go) ──Conn──▶ Client ──▶ Hub (lobby goroutine)
                                   └──▶ Room (one goroutine per game)
 ```
 
-* **Conn** is all a transport implements: `Send` and `Close`. The WebSocket adapter adds a send queue and a writer goroutine per client; a client that falls behind is disconnected and resyncs on reconnect. Another transport (WebRTC, a relay) only adds a Conn.
+* **Conn** is all a transport implements: `Send` and `Close`. The WebSocket adapter adds a send queue of 256 messages and a writer goroutine per client; the writer sends the queued messages in batches. A client that falls behind is disconnected and resyncs on reconnect; the log names the cause. Another transport (WebRTC, a relay) only adds a Conn.
 * **Hub** owns the lobby: hello, the game list, tables, ready checks, saved games. Only its goroutine touches that state; everything reaches it as a request on a channel.
 * **Room** owns one game: the ban and pick phase, then the engine game. Only its goroutine touches the engine.
 * **Client.Receive** sends a message to the hub until the client's game starts, then straight to its room.

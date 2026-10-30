@@ -11,6 +11,7 @@ import (
 
 	"github.com/FourSoulsRepo/four_souls/internal/protocol"
 	"github.com/FourSoulsRepo/record"
+	engine "github.com/FourSoulsRepo/rules_engine"
 )
 
 // startKeeping starts a server that keeps its games over a restart, on
@@ -65,7 +66,13 @@ func TestRestartKeepsGame(t *testing.T) {
 	}
 	dir := t.TempDir()
 	srv := startKeeping(t, dir)
-	bots := seatTwo(t, "ws://"+srv.Addr()+"/ws", nil)
+	// A random deal can hang the play-out: these cards loop and never
+	// end the turn (19.97, 19.109). The test checks the restart, not the
+	// deal, so it bans the fewest cards that make the loops: Blue Baby
+	// starts with Forever Alone, and the Smelter and Portable Slot
+	// Machine are the other loop.
+	bans := &protocol.Options{HostBans: []engine.CardRef{"blue_baby", "smelter", "portable_slot_machine"}}
+	bots := seatTwo(t, "ws://"+srv.Addr()+"/ws", bans)
 	for _, b := range bots {
 		b.send(protocol.TypeReady, protocol.Ready{Ready: true})
 	}
