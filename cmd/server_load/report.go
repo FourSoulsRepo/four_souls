@@ -38,8 +38,8 @@ func (s spread[T]) text(format func(T) string) string {
 	if s.n == 0 {
 		return "none"
 	}
-	return fmt.Sprintf("min %s, median %s, p95 %s, max %s",
-		format(s.min), format(s.median), format(s.p95), format(s.max))
+	return fmt.Sprintf("min %s, median %s, p95 %s, p99 %s, max %s",
+		format(s.min), format(s.median), format(s.p95), format(s.p99), format(s.max))
 }
 
 // ms is a duration rounded for the report.
@@ -47,12 +47,12 @@ func ms(d time.Duration) string {
 	return d.Round(10 * time.Microsecond).String()
 }
 
-// pair is "median / max" of a latency spread.
+// pair is "median / p99 / max" of a latency spread.
 func pair(s spread[time.Duration]) string {
 	if s.n == 0 {
 		return "-"
 	}
-	return ms(s.median) + " / " + ms(s.max)
+	return ms(s.median) + " / " + ms(s.p99) + " / " + ms(s.max)
 }
 
 // size is a byte count for the report.
@@ -154,7 +154,7 @@ func summary(p *printer, cfg config, stages []stage) {
 		return
 	}
 	p.printf("\n== summary ==\n")
-	p.printf("%-7s %-10s %-22s %-22s %-11s %s\n", "games", "finished", "response median/max", "ping median/max", "reconnects", "result")
+	p.printf("%-7s %-10s %-30s %-30s %-11s %s\n", "games", "finished", "response med/p99/max", "ping med/p99/max", "reconnects", "result")
 	best := 0
 	for _, st := range stages {
 		result := "FAIL"
@@ -163,7 +163,7 @@ func summary(p *printer, cfg config, stages []stage) {
 			best = st.games
 		}
 		reconnects, _ := st.col.redials()
-		p.printf("%-7d %-10s %-22s %-22s %-11d %s\n", st.games, fmt.Sprintf("%d/%d", st.finished, st.games),
+		p.printf("%-7d %-10s %-30s %-30s %-11d %s\n", st.games, fmt.Sprintf("%d/%d", st.finished, st.games),
 			pair(st.col.responses()), pair(st.col.pings()), reconnects, result)
 	}
 	if best == 0 {

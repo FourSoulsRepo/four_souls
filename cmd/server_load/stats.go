@@ -94,12 +94,12 @@ func (c *collector) setServer(w protocol.Welcome) {
 
 // spread holds the figures of a list of samples.
 type spread[T cmp.Ordered] struct {
-	n                     int
-	min, median, p95, max T
+	n                          int
+	min, median, p95, p99, max T
 }
 
 // spreadOf sorts a copy of xs and picks the smallest, the median (the upper
-// middle one for an even count), the 95th percentile and the largest.
+// middle one for an even count), the 95th and 99th percentiles and the largest.
 func spreadOf[T cmp.Ordered](xs []T) spread[T] {
 	if len(xs) == 0 {
 		return spread[T]{}
@@ -108,11 +108,13 @@ func spreadOf[T cmp.Ordered](xs []T) spread[T] {
 	slices.Sort(s)
 	n := len(s)
 	rank := (n*95 + 99) / 100 // nearest rank: at least one
+	rank99 := (n*99 + 99) / 100
 	return spread[T]{
 		n:      n,
 		min:    s[0],
 		median: s[n/2],
 		p95:    s[rank-1],
+		p99:    s[rank99-1],
 		max:    s[n-1],
 	}
 }

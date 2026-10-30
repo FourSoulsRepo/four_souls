@@ -8,6 +8,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"log"
 	"slices"
 	"strings"
 	"sync/atomic"
@@ -186,10 +187,25 @@ func (r *Room) Run(ctx context.Context) {
 			r.keep()
 			return
 		case req := <-r.in:
+			start := time.Now()
 			r.handle(req)
+			r.logStall("a request", start)
 		case <-tick.C:
+			start := time.Now()
 			r.checkLimits()
+			r.logStall("the limit check", start)
 		}
+	}
+}
+
+// stallLimit is how long one request may hold the room before the server
+// logs it, so a slow game step shows in the log (18.17).
+const stallLimit = 100 * time.Millisecond
+
+// logStall logs what held the room since start, when it took too long.
+func (r *Room) logStall(what string, start time.Time) {
+	if d := time.Since(start); d > stallLimit {
+		log.Printf("server: game %s: %s took %v", r.recInfo.game, what, d.Round(time.Millisecond))
 	}
 }
 

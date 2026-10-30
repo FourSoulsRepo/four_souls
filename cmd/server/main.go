@@ -18,6 +18,7 @@ import (
 	"log"
 	"os"
 	"os/signal"
+	"runtime"
 	"strings"
 	"syscall"
 	"time"
@@ -150,8 +151,8 @@ func parseAll(args []string) (server.Config, tracing.Options, error) {
 // printBanner writes the fan-game notice and the versions (L-02).
 func printBanner(w io.Writer) error {
 	v := version.Get()
-	_, err := fmt.Fprintf(w, "%s\nFour Souls dedicated server\napp %s, rules engine %s\n",
-		legal.PlainText(), v.App, v.Engine)
+	_, err := fmt.Fprintf(w, "%s\nFour Souls dedicated server\napp %s, rules engine %s\ncpus %d, GOMAXPROCS %d\n",
+		legal.PlainText(), v.App, v.Engine, runtime.NumCPU(), runtime.GOMAXPROCS(0))
 	if err != nil {
 		return fmt.Errorf("print banner: %w", err)
 	}

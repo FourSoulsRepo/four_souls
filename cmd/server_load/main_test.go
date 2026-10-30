@@ -17,7 +17,7 @@ import (
 
 func TestSpreadOf(t *testing.T) {
 	got := spreadOf([]time.Duration{5, 1, 9, 3, 7})
-	want := spread[time.Duration]{n: 5, min: 1, median: 5, p95: 9, max: 9}
+	want := spread[time.Duration]{n: 5, min: 1, median: 5, p95: 9, p99: 9, max: 9}
 	if got != want {
 		t.Fatalf("spreadOf = %+v, want %+v", got, want)
 	}
@@ -27,6 +27,9 @@ func TestSpreadOf(t *testing.T) {
 	hundred := make([]int, 100)
 	for i := range hundred {
 		hundred[i] = i + 1
+	}
+	if p := spreadOf(hundred).p99; p != 99 {
+		t.Fatalf("p99 of 1..100 = %d, want 99", p)
 	}
 	if p := spreadOf(hundred).p95; p != 95 {
 		t.Fatalf("p95 of 1..100 = %d, want 95", p)
