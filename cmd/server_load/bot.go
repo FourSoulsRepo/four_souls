@@ -141,7 +141,10 @@ func (b *bot) close() {
 	defer b.mu.Unlock()
 	b.closed = true
 	if b.conn != nil {
-		_ = b.conn.Close() //nolint:errcheck // closing only ends the reads; the game is decided
+		// A normal close frame, as the app sends at the end: the server then
+		// does not log it as a lost connection (18.17).
+		_ = b.conn.WriteControl(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""), time.Now().Add(writeWait)) //nolint:errcheck // the game is over
+		_ = b.conn.Close()                                                                                                                         //nolint:errcheck // closing only ends the reads; the game is decided
 	}
 }
 
