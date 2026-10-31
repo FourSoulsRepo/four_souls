@@ -6,6 +6,13 @@ Rules engine versions are in each release's notes.
 
 ## Unreleased
 
+## 0.3.3 - 2026-10-31
+
+- Dedicated server: one CPU serves more games at once, each step costs less work.
+- Dedicated server: a slow connection is cut off less often; the queue of each player holds 256 messages, up from 64.
+- Dedicated server: the match records are written once a second instead of at every step; they are about half the size.
+- Dedicated server: the log shows the CPUs it runs on, and any request that holds a game for more than 100 ms.
+
 ## 0.3.2 - 2026-10-29
 
 - Security: the app is built with Go 1.27.3, which fixes security problems found in Go 1.27.2.
