@@ -12,8 +12,9 @@ import (
 // a quick one is not (18.17).
 func TestLogStall(t *testing.T) {
 	var buf bytes.Buffer
+	prev := log.Writer()
 	log.SetOutput(&buf)
-	defer log.SetOutput(nil)
+	defer log.SetOutput(prev) // other goroutines of the package log too
 	r := &Room{}
 	r.recInfo.game = "g7"
 	r.logStall("a request", time.Now())
