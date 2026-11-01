@@ -128,6 +128,10 @@
        3. The tool: `go run ./loudness` in `FourSoulsRepo/tools`.
        4. Fix one with `loudness level`; never a per-sound volume in code.
        5. Details: `docs/wiki/Card-data-tools.md` (Sound loudness).
+   23. Releases come only from `main` (owner, 2026-11-01).
+       1. Merge the step branch into `main` first, with `--no-ff`.
+       2. Only then tag `vX.Y.Z` on `main` and push the tag.
+       3. Never tag a step branch or any other branch.
 6. Licenses
    1. Code is MIT (`LICENSE`).
    2. `NOTICE` lists every third-party item and its license.
