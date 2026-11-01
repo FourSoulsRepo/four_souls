@@ -426,7 +426,7 @@ Requiem searched 2026-10-19 (14.2): 96 of his posts and tweets name a Requiem ca
 | 30 | 1-Up, Eden | An eternal 1-Up can't be destroyed, so it does nothing | Four Souls+; test |
 | 31 | Krampus, a forced deck attack | The active player picks which forced attack to make (R-ATK-03) | Four Souls+; test |
 | 32 | Cursed Eye, Bomb | A bomb in response to the attack roll ends combat before Cursed Eye triggers | Four Souls+; test |
-| 33 | Headless Horseman | It prevents its death and heals; the attack goes on | Four Souls+; test |
+| 33 | Headless Horseman | Prevent death is not healing: it stays at 0 HP, then its heal of 2 gives 2 HP (owner, 2026-11-01); the attack goes on | Four Souls+; test |
 | 34 | Hourglass and circled numbers | A circled number triggers on any roll that resolves as it | Four Souls+ (R-DICE-06) |
 | 35 | Abaddon | Printed +3 ATK; the site text lacks the number (fixed by an override) | Four Souls+ |
 | 36 | Experimental Treatment, Pandora's Box | An item that becomes a soul keeps its abilities | Requiem (R-CARD-38) |

@@ -14,8 +14,9 @@ func TestHeadlessHorseman(t *testing.T) {
 	if top(tb, 0) != "headless_horseman" {
 		t.Fatal("the first death this turn is prevented")
 	}
-	if hp, dc, atk := tb.G.HP(id), tb.G.Evasion(id), tb.G.MonsterATK(id); hp != 3 || dc != 4 || atk != 1 {
-		t.Errorf("HP %d DC %d ATK %d, want 3 (1 + 2), 4, 1", hp, dc, atk)
+	// Prevention is not healing: 0 HP, then the heal of 2.
+	if hp, dc, atk := tb.G.HP(id), tb.G.Evasion(id), tb.G.MonsterATK(id); hp != 2 || dc != 4 || atk != 1 {
+		t.Errorf("HP %d DC %d ATK %d, want 2 (0 + 2), 4, 1", hp, dc, atk)
 	}
 	tb.G.DealDamageTo(engine.Target{Object: id}, 3, 0, 0)
 	settleAny(tb)

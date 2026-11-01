@@ -3487,3 +3487,38 @@ Totals by system (98 items):
    1. Find object 329 and why its prompt returns after a cancel.
    2. A cancel must not reopen the same prompt with no change.
    3. Test: the same choices in a rules test end the turn.
+
+### [ ] 19.110 Headless Horseman: prevent death lands it on 1 HP, so its heal ends at 3
+
+1. Goal: the Horseman's death prevention does not heal; its 2 HP heal starts from 0 HP and ends at 2.
+2. Report (owner, 2026-11-01)
+   1. Play test; record `2026-11-01-085138-g1_Hitokiri-Battosai_KING_horseman_heal.fsrec`.
+   2. The Horseman took 3 damage to 0 HP; its death was prevented and it healed 2.
+   3. The game showed 3 HP; the owner expects 2 HP.
+   4. Owner: "Prevent death is not healing." The rule of fouronlinesouls.net is the same.
+3. Cause
+   1. Step 683 to 688: The Baleful hits it for 2; it has 1 HP left.
+   2. Step 695: a 2-damage hit takes it to 0 HP; the death is pending.
+   3. Step 697: `PreventThisDeath` sets its damage to HP minus 1, so it has 1 HP.
+   4. The card's heal of 2 then adds on top: 1 + 2 = 3.
+   5. The engine's unit test asserted 3 as well; it was written to match.
+4. Tasks:
+   1. `PreventThisDeath` keeps the object's damage; it does not floor it at 1 HP.
+   2. The card's `healThis(2)` is the only heal: 0 + 2 = 2.
+   3. Test: 3 damage to the Horseman leaves 2 HP, DC 4, ATK 1.
+   4. Open question 33 records the ruling.
+   5. Players' prevention (`PreventYourDeath`) is not changed here.
+5. Done when:
+   1. `TestHeadlessHorseman` asserts 2 HP after the prevention and heal.
+   2. The unit tests and lint pass.
+6. Result (2026-11-01)
+   1. `PreventThisDeath` no longer floors the damage at 1 HP: the Horseman stays at 0 HP.
+   2. Its `healThis(2)` gives 2 HP; the popup shows +2 and the HP is 2.
+   3. `TestHeadlessHorseman` asserts 2 HP, DC 4, ATK 1.
+   4. Engine 0.5.1 (`rulesengine.Version`); `horsemanVersion` in `version.go`.
+   5. Records from 0.5.0 and older no longer replay (`CanReplay`); the owner's record is one of them.
+   6. Open question 33 records the ruling.
+   7. Gates: `make build vet test lint` exit 0.
+   8. Not changed: `PreventYourDeath` for players (Broken Ankh, Guppy's Collar); they still heal to 1 HP.
+7. Owner notes
+   1. Waiting for the owner's review.

@@ -908,15 +908,14 @@ func PushLingering(self ObjectID, i int, p PlayerID, n int) Action {
 }
 
 // PreventThisDeath prevents the death of this monster: "prevent death"
-// (Headless Horseman). It is left at 1 HP (R-MECH-07).
+// (Headless Horseman). Prevention is not healing: the monster keeps its
+// damage, so it stays at 0 HP until the card's own heal (owner, 2026-11-01).
 func PreventThisDeath() Effect {
 	return EffectFunc(func(c *Ctx) {
 		g := c.G
 		for _, it := range g.Stack {
 			if it.Kind == StackDeath && !it.Target.IsPlayer && it.Target.Object == c.Source {
 				g.CancelStackItem(it.ID)
-				o := g.Object(c.Source)
-				o.Damage = min(o.Damage, max(g.def(c.Source).HP+g.bonus(StatMonsterHP, NoPlayer, c.Source)-1, 0))
 				g.emit(Event{Kind: EvPrevented, Player: NoPlayer, Object: c.Source, Text: "death"})
 				return
 			}
