@@ -303,6 +303,11 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    10. Open: click conflicts with card zoom; misclick protection.
    11. Built in 18.11: table pick after Attack or Buy, no dialog.
    12. A click on a monster before Attack stays out (R-ATK-02).
+54. V-54. Game feel like Hearthstone, measured not guessed (owner, 2026-11-06).
+   1. Decompile a Hearthstone-based client to learn its animations.
+   2. Keep only numbers and rules; copy no code or assets.
+   3. Reverse-engineering tools and output live in `FourSoulsRepo/tools`.
+   4. Findings: ADR 027; tasks: step 20.
 
 ## Rules
 

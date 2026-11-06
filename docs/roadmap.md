@@ -23,6 +23,7 @@ Each step ends in something that runs and is tested.
 | 16 | Localization | Menus, messages, and cards in several languages | 8 |
 | 14 | More sets | Gold Box, Four Souls+, Requiem, promos | 8 |
 | 12 | Rules website | Engine in WebAssembly on GitHub Pages, in English and Russian | 8, 16 |
+| 20 | Game feel | Hearthstone-like timing, impacts and pacing (ADR 027) | 8 |
 | 18 | Play-test | New-user check, play-test, docs check | 14 |
 | 9 | Spectators | Viewers watch live | 8 |
 | 10 | Replays | Records screen and replay player | 8 |
@@ -39,6 +40,7 @@ After the MVP the order is 15, 17, 16, 14, 12, 18, 9, 10, 11, 13.
 Step 12 moved before 18 (owner, 2026-11-06); it takes LR-08 and LR-09 from step 11.
 Step 15 is paused (owner, 2026-10-26); work goes on with 17, then 16.
 Step numbers stay as IDs; the table lists steps in work order.
+Step 20 added (owner, 2026-11-06); it starts now, on the step 12 branch.
 
 ---
 
@@ -299,6 +301,16 @@ Step numbers stay as IDs; the table lists steps in work order.
 1. Every bug report from play gets an item in `roadmap/19-bugs.md`.
 2. Each fix follows the roadmap rules: tests, docs, screenshots, review.
 3. Open the whole time; never closed as a step.
+
+## 20. Game feel
+
+1. Study a Hearthstone-based client; numbers only (ADR 027).
+2. Fast strike, hits by size, damage that stays.
+3. Hand and table hover, drag tilt, loot draw with a look.
+4. Turn start order, others' plays paced, End turn states.
+5. Counting counters, catch-up by importance, others' hands live.
+6. One sound per moment; response timer only near its end.
+7. Ideas: V-54, V-13, V-22.
 
 ## Future
 
