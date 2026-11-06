@@ -15,9 +15,10 @@
    1. Unity with Mono: its C# code decompiles to readable source.
    2. Its timings and rules are plain constants in that code.
 5. We study it only for numbers and ideas.
-   1. No code, images, sounds or names are copied.
+   1. No code, images or names are copied.
    2. The decompiled source stays in `FourSoulsRepo/tools/.cache/`.
    3. Tool: `reverse/decompile.sh` in the tools repo (ILSpy).
+   4. Sounds are the exception (owner, 2026-11-06); see option 4.
 6. Times below are in seconds at normal speed.
    1. Our animation speed setting scales them, as today.
    2. "easeOutExpo" etc. are the standard easing curves.
@@ -31,10 +32,15 @@
    1. Lost. Guesses; 0.12 s and 0.3 s look alike in a video.
 3. **Port its code or assets**
    1. Lost. Not ours to ship; the repo is public and MIT.
+4. **Take its sounds into the private images**
+   1. Won for sounds only (owner, 2026-11-06).
+   2. They are Hearthstone's, (c) Blizzard, like the three of 15.50.
+   3. They ship like the card images: private submodule, never public.
+   4. Extracted by a tools-repo script from its Unity bundles (20.17).
 
 ## Decision
 
-Use option 1.
+Use option 1, and option 4 for sounds.
 The findings below are the target feel for step 20.
 Each sub-step of step 20 takes the part it needs.
 
@@ -204,6 +210,7 @@ Each sub-step of step 20 takes the part it needs.
 3. New sounds must pass the loudness check (ADR 022).
    1. Ducking is a mixer change, not a per-sound volume.
 4. A timeline in DOM may not hit 0.12 s exactly at low frame rates.
+5. Public builds get none of the new sounds; they stay silent.
 
 ### Neutral
 

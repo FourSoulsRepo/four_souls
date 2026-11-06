@@ -7,9 +7,10 @@ Source: ADR 027 (numbers measured in a Hearthstone-based client).
 
 Rules for this step (owner, 2026-11-06):
 
-1. Never copy code, images, sounds or names from the reference.
+1. Never copy code, images or names from the reference.
    1. Only timings, curves and rules from ADR 027.
    2. The decompiled source stays in `FourSoulsRepo/tools/.cache/`.
+   3. Sounds are the exception: see rule 8.
 2. Sub-steps run one after another, each in a fresh subagent.
 3. UI sub-steps leave before and after screenshots.
    1. In `.cache/screenshots/20.N/before/` and `after/`.
@@ -18,11 +19,21 @@ Rules for this step (owner, 2026-11-06):
 5. Animation speed "off" turns every new motion off.
 6. Times in ADR 027 are a start; tune by eye, note the change there.
 7. Work goes on the `step-12-rules-website` branch (owner).
+8. Sounds come from the reference client (owner, 2026-11-06).
+   1. They are Hearthstone's, (c) Blizzard, like the three of 15.50.
+   2. They live only in the private images: `assets/sounds/`.
+   3. Never in this repo or in a public build.
+   4. Our own file names; `NOTICE` lists each source clip name.
+   5. Each passes `loudness check` before its commit (ADR 022).
+   6. Without the private images the game stays silent, as today.
+   7. The extraction tool lives in `FourSoulsRepo/tools` only.
+9. Order: 20.17 runs right after 20.1, before 20.2.
 
 Owner notes (2026-11-06):
 
 1. The ADR names the reference client openly; it is a fan game.
 2. Step 20 is next in the work order.
+3. Sounds the step needs come from Fanstone's files (20.17).
 
 ---
 
@@ -61,6 +72,7 @@ Owner notes (2026-11-06):
    3. Cards near the target shake away from it: 0.1, 0.5, 1.
    4. A player's death or a lethal hit: a short table shake.
    5. No shake when speed is "off" or reduced motion is on.
+   6. Sound by size: `attack-hit`, `attack-hit-2`, `attack-hit-3` (20.17).
 3. Done when:
    1. Vitest covers the size picker.
    2. e2e: a 1-damage and a 4-damage hit, with screenshots.
@@ -98,6 +110,11 @@ Owner notes (2026-11-06):
    2. Spring back to flat in about 0.2 s when still.
    3. Transform only; no layout change (ADR 002).
    4. Off when speed is "off" or reduced motion is on.
+   5. Drag sounds from 20.17 (ADR 027 "Drag").
+      1. `drag-bed` loops, fades in to 15 % over 0.5 s.
+      2. `drag-air` loops; volume follows speed, up to 50 %.
+      3. Both fade out in 0.2 s on drop.
+      4. Those levels are mixer gains, like ducking (20.14).
 3. Done when:
    1. Vitest covers the tilt function with fixed inputs.
    2. Screenshot of a card mid-drag.
@@ -108,6 +125,7 @@ Owner notes (2026-11-06):
 2. Tasks:
    1. Own draw: deck → lift → show spot → hand, 1.5 s total.
    2. Turns face up on the way; sound out, sound in.
+      1. Out: `loot-draw`, as today; in: `loot-land` (20.17).
    3. Playable 0.3 s after it lands.
    4. Draws 4 and on: each 11 % faster, floor 0.556.
    5. Others' draws: back only, short, no show spot.
@@ -126,6 +144,7 @@ Owner notes (2026-11-06):
    4. Then start-of-turn effects.
    5. Visual only: no input lock, no change to priority (owner).
    6. Buttons stay live; a click during the banner works as always.
+   7. The banner plays `turn-start` (20.17); own turn only.
 3. Done when:
    1. e2e: a pass during the banner is accepted.
    2. Screenshots of each phase.
@@ -152,7 +171,7 @@ Owner notes (2026-11-06):
    3. A short cue 1.5 s later, once per turn.
    4. Skip the cue if a play became possible.
    5. The cue sound passes `loudness check` (ADR 022).
-   6. **Owner:** a free (CC0) sound or our own; not the reference's.
+   6. The cue is `end-turn-cue` from 20.17 (owner, 2026-11-06).
 3. Done when:
    1. Vitest: state picker from allowed actions.
    2. e2e: the cue fires once per turn at most.
@@ -214,6 +233,7 @@ Owner notes (2026-11-06):
 2. Tasks:
    1. The timer bar shows only in its last 20 s.
    2. Each second ticks; the last tick sounds different.
+      1. `timer-tick` and `timer-last` (20.17).
    3. No server change (owner).
       1. The timer restarts after every intent (6.7).
       2. It already adds 5 s for animations (`animationAllowance`).
@@ -229,3 +249,34 @@ Owner notes (2026-11-06):
    3. ADR 027 becomes Accepted for what was built.
 3. Done when:
    1. Owner approval.
+
+### [ ] 20.17 Sounds from the reference client
+
+1. Goal: every sound step 20 needs is in the private images.
+2. Tasks:
+   1. Tools repo: `reverse/sounds.sh` extracts Fanstone's audio.
+      1. Input: `Data/OSX/*.unity3d` bundles (UnityFS, `AudioClip`).
+      2. UnityPy in a venv under `.cache/`; output WAV plus clip names.
+      3. Output stays in `FourSoulsRepo/tools/.cache/`.
+   2. The owner picks one clip per sound from a short list.
+      1. Up to 5 candidates each, in `.cache/sounds/20.17/<name>/`.
+      2. Like 15.50's attack candidates.
+   3. Sounds, with our names:
+      1. `attack-hit-2`, `attack-hit-3`: medium and big hits (20.3).
+      2. `loot-land`: a drawn card lands in hand (20.7).
+      3. `drag-bed`, `drag-air`: loops while dragging (20.6).
+      4. `turn-start`: your turn banner (20.8).
+      5. `end-turn-cue`: nothing left to do (20.10).
+      6. `timer-tick`, `timer-last`: response timer (20.15).
+   4. `loudness level`, then `loudness check` on each (ADR 022).
+      1. Loops are levelled like any sound.
+   5. Commit into the images submodule; amend, force-push, bump pointer.
+   6. `App.Sounds()`, the bridge and `fakeBridge.ts` get each new name.
+      1. Nothing plays them yet; each later sub-step wires its own.
+   7. `NOTICE`: each file with its source clip name.
+   8. Wiki: `Client.md` sound list and `Build-modes.md`.
+3. Done when:
+   1. Go test: `App.Sounds()` gives a URL for each new name with images.
+   2. Without the images every new URL is empty.
+   3. `loudness check` passes on every sound.
+   4. `wails build -m -tags embed` and `make e2e` pass without images.
