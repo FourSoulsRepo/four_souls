@@ -107,14 +107,15 @@ Size on 2026-11-06, sets b2, g2, fsp2 and r: 8,874,685 bytes raw, 2,156,660 byte
 
 The site lives at <https://foursoulsrepo.github.io/four_souls/> (GitHub Pages, ADR 026). The Go constant `website.URL` (`internal/website/url.go`) holds that address for the app's check links (11.3); its test fails if the path stops matching Vite's `base`.
 
-A version tag deploys it: the job `site` in `.github/workflows/release.yml` runs `make site` (so the size budget and the smoke test gate it), uploads `frontend/dist-site/` with `actions/upload-pages-artifact` and publishes it with `actions/deploy-pages`. Only that job gets `pages: write` and `id-token: write`; the concurrency group `pages` keeps two deploys from overlapping. It needs only the release notes job; the draft release does not wait for it, and a failed deploy does not stop the release. Trial tags (`v1.2.3-test`) skip it, since the site is public at once. It never checks out the private image submodule.
+Every push to `main` deploys it, for now (owner, 2026-11-06); a release tag may take over later. The workflow `.github/workflows/site.yml` runs `make site VERSION=main-<commit>` (so the size budget and the smoke test gate it), uploads `frontend/dist-site/` with `actions/upload-pages-artifact` and publishes it with `actions/deploy-pages`. Only its job gets `pages: write` and `id-token: write`; the concurrency group `pages` keeps two deploys from overlapping. It is separate from the release workflow, and it can also be started by hand (Actions → Rules website → Run workflow, on `main`). It never checks out the private image submodule.
 
 ### Owner steps
 
 1. Once: repo Settings → Pages → Build and deployment → Source: **GitHub Actions**.
-2. Once: Settings → Environments → `github-pages` → Deployment branches and tags: add the tag rule `v*`. By default that environment takes only the default branch, and a tag deploy fails with "not allowed to deploy to github-pages".
-3. After the next release tag: open the URL, click an example, Check, and open a copied link in a new tab.
-4. A failed deploy: Actions → the Release run → job "Rules website" → Re-run jobs → Re-run failed jobs (or that job alone). The app release is not touched.
+2. After a push to `main`: open the URL, click an example, Check, and open a copied link in a new tab. The footer shows `main-<commit>`.
+3. A failed deploy: Actions → the "Rules website" run → Re-run jobs.
+
+The `github-pages` environment takes the default branch out of the box, so `main` needs no extra rule.
 
 ### Compression on Pages
 

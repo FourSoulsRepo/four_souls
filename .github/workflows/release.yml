@@ -150,51 +150,6 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
-  # The rules website on GitHub Pages (ADR 026, 12.3). Nothing waits for
-  # it, so a failed deploy never holds up the draft release; rerun this
-  # job alone. Trial tags (v1.2.3-test) skip it: the site is public at
-  # once, unlike a draft. make site gates the deploy on the size budget
-  # and the smoke test. No card images: the site never has them.
-  site:
-    name: Rules website
-    needs: notes
-    if: ${{ !contains(github.ref_name, '-') }}
-    runs-on: ubuntu-24.04
-    permissions:
-      contents: read
-      pages: write
-      id-token: write
-    environment:
-      name: github-pages
-      url: ${{ steps.deploy.outputs.page_url }}
-    concurrency:
-      group: pages
-      cancel-in-progress: false
-    steps:
-      - uses: actions/checkout@v5
-      - name: Tool versions
-        shell: bash
-        run: grep '^[A-Z_]*=' scripts/versions.env | tr -d '\r' >> "$GITHUB_ENV"
-      - uses: actions/setup-go@v6
-        with:
-          go-version-file: go.work
-          cache-dependency-path: "**/go.sum"
-      - uses: actions/setup-node@v5
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
-      - name: Install frontend dependencies
-        working-directory: frontend
-        run: npm ci
-      - name: Build the site
-        run: make site VERSION="${{ needs.notes.outputs.version }}"
-      - uses: actions/upload-pages-artifact@v4
-        with:
-          path: frontend/dist-site
-      - id: deploy
-        uses: actions/deploy-pages@v4
-
   release:
     name: Draft release
     needs: [notes, build, server]

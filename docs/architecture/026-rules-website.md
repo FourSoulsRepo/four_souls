@@ -14,7 +14,7 @@
    2. The app gets the Russian interface too, if that keeps the code simpler.
    3. Card texts stay English; card names follow the language.
    4. The site carries every finished set.
-   5. It deploys on a release tag.
+   5. It deploys on every push to `main`, for now (owner, 2026-11-06).
    6. The repo is public; GitHub Pages is free for it.
 3. What exists:
    1. `cmd/website` builds for `js/wasm`; it exports only the version.
@@ -141,10 +141,10 @@ Use options 1, 3, 5, 7, 9 and 12.
     10. The site ships Go's `wasm_exec.js` next to it; `NOTICE` names it.
 11. Hosting
     1. GitHub Pages, deployed by GitHub Actions (`actions/deploy-pages`).
-    2. A job in `release.yml` on a `v*` tag; tags exist only on `main`.
+    2. Workflow `site.yml` on every push to `main`, or run by hand.
     3. URL: `https://foursoulsrepo.github.io/four_souls/`.
     4. Vite `base` matches that path.
-    5. Trial tags (`v1.2.3-test`) skip the deploy; the site is public at once.
+    5. No other branch or tag deploys; a release tag may take over later.
     6. `website.URL` in `internal/website` holds the URL for the app (11.3).
 12. Legal
     1. The site shows the fan-game notice, like the app.
@@ -175,4 +175,4 @@ Use options 1, 3, 5, 7, 9 and 12.
 ### Neutral
 
 1. The app's in-app rules viewer (11.1) can reuse the renderer later.
-2. Deploying on every push to `main` is a one-line change later.
+2. Deploying on a release tag instead is a small change later.

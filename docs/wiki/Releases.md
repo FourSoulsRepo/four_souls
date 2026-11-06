@@ -65,7 +65,7 @@ A release needs the private card images. The workflow checks them out with `.git
 
 ## Rules website
 
-A version tag also deploys the rules website to GitHub Pages (job `site`, 12.3): <https://foursoulsrepo.github.io/four_souls/>. The deploy is public at once, while the app release stays a draft; trial tags skip it. The draft release does not wait for it, and a failed deploy does not stop the release. Setup, checks and reruns: [Website wasm](Website-wasm#deploy).
+The rules website is not part of a release for now: every push to `main` deploys it to GitHub Pages (`.github/workflows/site.yml`, 12.3): <https://foursoulsrepo.github.io/four_souls/>. Setup, checks and reruns: [Website wasm](Website-wasm#deploy).
 
 ## Server setups
 

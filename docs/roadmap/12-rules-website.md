@@ -18,8 +18,8 @@ Rules of this step (owner, 2026-11-06):
 3. An agent drafts the Russian rules; the owner checks them.
    1. Compare the draft with the Russian rules on foursouls.ru.
 4. The site carries every finished set.
-5. The site deploys on a release tag.
-   1. Every push to `main` may come later.
+5. The site deploys on every push to `main`, for now (owner, 2026-11-06).
+   1. It is easy to check; a release tag may take over later.
 
 ---
 
@@ -75,20 +75,20 @@ Rules of this step (owner, 2026-11-06):
 
 1. Goal: the site is online.
 2. Tasks:
-   1. Workflow builds and deploys on release.
+   1. Workflow builds and deploys on every push to `main`.
    2. App config gets the site base URL (11.3).
    3. Releases come only from `main` (CLAUDE.md 5.23).
 3. Done when:
    1. The public URL loads and answers payloads.
-4. Result: job `site` in `release.yml`; deploy code only, not yet live.
-   1. Runs on a `v*` tag after the notes job; trial tags skip it.
+4. Result: workflow `site.yml`; deploy code only, not yet live.
+   1. Runs on every push to `main`, or by hand (owner, 2026-11-06).
    2. `make site`, then `upload-pages-artifact` and `deploy-pages`.
    3. Pages permissions only in that job; concurrency group `pages`.
-   4. The draft release does not wait for it; a failure leaves it alone.
+   4. Separate from the release; the footer shows `main-<commit>`.
    5. No image submodule: plain checkout, `embed` only.
    6. `website.URL` in `internal/website/url.go`; a test checks Vite's base.
    7. Wiki: `Website-wasm` (Deploy, owner steps), `Releases`.
-   8. Waits for the owner: enable Pages; check the URL after the next release tag.
+   8. Waits for the owner: enable Pages; check the URL after a push to `main`.
 
 ### [ ] 12.4 Step-by-step stack
 
