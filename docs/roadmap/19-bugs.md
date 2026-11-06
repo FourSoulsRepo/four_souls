@@ -41,7 +41,7 @@ This step never closes; new reports are appended.
 | F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88, 19.99, 19.102 | 9     |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
-| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100 | 20 |
+| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112 | 21 |
 | J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107 | 19 |
 | Q  | Load tool: a lost connection ends a game | Go tools   | 19.108                                                 | 1     |
 | K  | Build and release files                  | Release    | 19.47, 19.59, 19.83, 19.91                             | 4     |
@@ -51,7 +51,7 @@ This step never closes; new reports are appended.
 | O  | Reconnect: old connection state kept     | Client     | 19.78, 19.86                                           | 2     |
 | P  | A missing setting: no way to change it   | Client     | 19.93                                                  | 1     |
 
-Totals by system (99 items):
+Totals by system (100 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
@@ -59,7 +59,7 @@ Totals by system (99 items):
 | Card data | C       | 2     |
 | Client    | D–G, O, P | 30  |
 | Server    | H, N    | 2     |
-| e2e       | I, J    | 36    |
+| e2e       | I, J    | 37    |
 | Release   | K       | 4     |
 | None      | L       | 1     |
 | Go tests  | M       | 1     |
@@ -3558,3 +3558,26 @@ Totals by system (99 items):
    11. The first e2e run failed once on a deal; logged as 19.112.
 7. Owner notes (2026-11-06)
    1. Owner marks 19.111 fixed.
+
+### [ ] 19.112 e2e: The Bone's dialog test finds two The Bones
+
+1. Goal: the test clicks the Bone it added, whatever the deal.
+2. Report (agent, 2026-11-06)
+   1. Full `make e2e` for 19.111; chromium only.
+   2. `table.spec.ts:526`, "a card with many abilities opens a dialog".
+   3. Strict mode: two buttons named The Bone in "Your items".
+   4. Evidence: scratchpad `e2e-evidence-19.111/`.
+3. Cause
+   1. The deal gave the viewer The Forgotten; its starting item is The Bone (obj 313).
+   2. The test adds its own Bone (obj 9001) and clicks by name.
+   3. The app was right; the test's locator is too loose.
+4. Tasks:
+   1. Click the added Bone by its object: `[data-zone="obj-9001"]`.
+   2. No ban: the click, not the card, is wrong.
+5. Result (2026-11-06)
+   1. The test clicks `[data-zone="obj-9001"]`, the Bone it added.
+   2. A dealt Bone (The Forgotten) no longer matches the click.
+   3. No ban; no app change.
+   4. Gates: `make lint`, `make frontend`, `make e2e` exit 0 (394 passed).
+6. Owner notes
+   1. Waiting for the owner's review.

@@ -577,7 +577,8 @@ test('a card with many abilities opens a dialog that uses the picked line (15.24
     });
   });
 
-  await page.getByRole('group', { name: tr('table.your_items') }).getByRole('button', { name: cardName('the_bone') }).click();
+  // By its object: The Forgotten starts with a Bone of its own (19.112).
+  await page.getByRole('group', { name: tr('table.your_items') }).locator('[data-zone="obj-9001"]').click();
   const dialog = page.getByRole('dialog', { name: tr('actions.use_card', { card: cardName('the_bone') }) });
   await expect(dialog).toBeVisible();
   await expect(dialog.locator('.card.size-zoom')).toBeVisible();
