@@ -28,6 +28,16 @@ Rules for this step (owner, 2026-11-06):
    6. Without the private images the game stays silent, as today.
    7. The extraction tool lives in `FourSoulsRepo/tools` only.
 9. Order: 20.17 runs right after 20.1, before 20.2.
+10. Unclear how the reference does something: check its code (owner).
+    1. Decompiled C#: `FourSoulsRepo/tools/.cache/reverse/fanstone/src/`.
+    2. Asset data (prefabs, `SoundDef`): UnityPy, as traced in 20.17.
+    3. Read it for numbers and rules; never copy code from it.
+    4. Note what was checked in ADR 027.
+11. Images repo changes (owner, 2026-11-06).
+    1. In `pkg/card_db/images`, on a local branch `step-20-sounds`.
+    2. A normal commit: no amend, no push.
+    3. Game repo commits never include the submodule pointer.
+    4. The owner merges, pushes and bumps the pointer by hand.
 
 Owner notes (2026-11-06):
 
@@ -279,7 +289,7 @@ Owner notes (2026-11-06):
       3. `App.Sounds()` gives a list of URLs per sound.
    5. `loudness level`, then `loudness check` on each file (ADR 022).
       1. Loops are levelled like any sound.
-   6. Commit into the images submodule; amend, force-push, bump pointer.
+   6. Commit into the images submodule as rule 11 says.
    7. `App.Sounds()`, the bridge and `fakeBridge.ts` get each new name.
       1. Nothing plays them yet; each later sub-step wires its own.
    8. `NOTICE`: each file with its source clip name.
