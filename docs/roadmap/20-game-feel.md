@@ -73,6 +73,8 @@ Owner notes (2026-11-06):
    4. A player's death or a lethal hit: a short table shake.
    5. No shake when speed is "off" or reduced motion is on.
    6. Sound by size: `attack-hit`, `attack-hit-2`, `attack-hit-3` (20.17).
+      1. Size 1 keeps today's `attack-hit` (15.50).
+      2. No crowd cheer; the reference's is a tavern crowd.
 3. Done when:
    1. Vitest covers the size picker.
    2. e2e: a 1-damage and a 4-damage hit, with screenshots.
@@ -129,6 +131,7 @@ Owner notes (2026-11-06):
    3. Playable 0.3 s after it lands.
    4. Draws 4 and on: each 11 % faster, floor 0.556.
    5. Others' draws: back only, short, no show spot.
+      1. One sound: `loot-draw-other` (20.17).
    6. Replace `fly` for own draws; claim as `arrive`.
 3. Done when:
    1. Vitest: speed factor per draw index.
@@ -158,6 +161,8 @@ Owner notes (2026-11-06):
    3. The effect starts 1 s after the big card shows.
    4. The big card stays 3 s, or until the next one comes.
    5. Check with `played` (15.74); one animation, one claim.
+   6. The big card plays `card-play-other` (20.17) as it shows.
+      1. Never for your own plays, like the big card.
 3. Done when:
    1. e2e: own play shows no big card; another player's does.
    2. Clash fixture green.
@@ -172,6 +177,7 @@ Owner notes (2026-11-06):
    4. Skip the cue if a play became possible.
    5. The cue sound passes `loudness check` (ADR 022).
    6. The cue is `end-turn-cue` from 20.17 (owner, 2026-11-06).
+      1. It is a spoken English line, "Job's done!".
 3. Done when:
    1. Vitest: state picker from allowed actions.
    2. e2e: the cue fires once per turn at most.
@@ -252,31 +258,55 @@ Owner notes (2026-11-06):
 
 ### [ ] 20.17 Sounds from the reference client
 
-1. Goal: every sound step 20 needs is in the private images.
+1. Goal: each moment plays the clip the reference plays for it.
 2. Tasks:
    1. Tools repo: `reverse/sounds.sh` extracts Fanstone's audio.
       1. Input: `Data/OSX/*.unity3d` bundles (UnityFS, `AudioClip`).
-      2. UnityPy in a venv under `.cache/`; output WAV plus clip names.
+      2. UnityPy in a venv under `.cache/`; output WAV.
       3. Output stays in `FourSoulsRepo/tools/.cache/`.
-   2. The owner picks one clip per sound from a short list.
-      1. Up to 5 candidates each, in `.cache/sounds/20.17/<name>/`.
-      2. Like 15.50's attack candidates.
-   3. Sounds, with our names:
-      1. `attack-hit-2`, `attack-hit-3`: medium and big hits (20.3).
-      2. `loot-land`: a drawn card lands in hand (20.7).
-      3. `drag-bed`, `drag-air`: loops while dragging (20.6).
-      4. `turn-start`: your turn banner (20.8).
-      5. `end-turn-cue`: nothing left to do (20.10).
-      6. `timer-tick`, `timer-last`: response timer (20.15).
-   4. `loudness level`, then `loudness check` on each (ADR 022).
+      4. Bundles lack the Unity version: set `6000.3.11f1`.
+      5. It reads it from `Fanstone.app/Contents/Info.plist`.
+   2. Each clip is found by its GUID, not by a guess.
+      1. `asset_manifest.unity3d` maps a GUID to its bundle.
+      2. Its `base_assets_catalog`: `m_assets` and `m_bundleNames`.
+   3. The clips, traced in the decompiled code (table below).
+      1. Code names a sound prefab, or a `SoundDef` field.
+      2. The prefab's `SoundDef.m_AudioClip` and `m_RandomClips` name the clips.
+      3. A traced clip needs no owner pick.
+   4. Variants: a sound may have several files.
+      1. Files `<name>-1.mp3`, `<name>-2.mp3`, …
+      2. `playSound` picks one at random, equal weight, like the reference.
+      3. `App.Sounds()` gives a list of URLs per sound.
+   5. `loudness level`, then `loudness check` on each file (ADR 022).
       1. Loops are levelled like any sound.
-   5. Commit into the images submodule; amend, force-push, bump pointer.
-   6. `App.Sounds()`, the bridge and `fakeBridge.ts` get each new name.
+   6. Commit into the images submodule; amend, force-push, bump pointer.
+   7. `App.Sounds()`, the bridge and `fakeBridge.ts` get each new name.
       1. Nothing plays them yet; each later sub-step wires its own.
-   7. `NOTICE`: each file with its source clip name.
-   8. Wiki: `Client.md` sound list and `Build-modes.md`.
+   8. `NOTICE`: each file with its source clip name.
+   9. Wiki: `Client.md` sound list and `Build-modes.md`.
 3. Done when:
-   1. Go test: `App.Sounds()` gives a URL for each new name with images.
-   2. Without the images every new URL is empty.
-   3. `loudness check` passes on every sound.
-   4. `wails build -m -tags embed` and `make e2e` pass without images.
+   1. Go test: `App.Sounds()` gives every file of every new name with images.
+   2. Without the images every new list is empty.
+   3. Vitest: `playSound` picks among variants.
+   4. `loudness check` passes on every sound.
+   5. `wails build -m -tags embed` and `make e2e` pass without images.
+
+Clips (traced 2026-11-06 in Fanstone 37.0.254477):
+
+| Our name | Clip(s) | Clip GUID(s) | Traced from | Used in |
+|----------|---------|--------------|-------------|---------|
+| `attack-hit-2` | `FX_Minion_AttackImpactMid.wav` | `d1b25cb27c4f1e74496a7fc861b4d642` | `AttackSpellController.m_ImpactDefHandles`, power 6–7 | 20.3 |
+| `attack-hit-3` | `FX_Minion_AttackImpactLarge.wav` | `7de34d0f8af3ba741a5d0c05c250c419` | same, power 8+ | 20.3 |
+| `loot-land` ×3 | `add_card_to_hand_1..3.wav` | `399c3b1e667bad040bb99af727fc4a9b`, `50eb80b80f5f83040a12cba144491f4e`, `39f15b2dc9439e546a09a4f325295a69` | `Card.DrawFriendlyCardWithTiming` | 20.7 |
+| `loot-draw-other` ×3 | `draw_card_and_add_to_hand_opp_1..3.wav` | `6286e3185a1b9ae43b9c05d179289141`, `84876a2336256f545a52908d553697a1`, `8584838dc81c4fd4583095345b0aeff6` | `Card.DrawUnknownOpponentCard` | 20.7 |
+| `drag-bed` | `card_motion_loop_magical.wav` | `3fcf3ef84ba2e55449878be534ac6095` | `DragCardSoundEffects` | 20.6 |
+| `drag-air` | `card_motion_loop_air.wav` | `454f4be0fa7176143ad1299b3143ee99` | `DragCardSoundEffects` | 20.6 |
+| `turn-start` | `ALERT_YourTurn_0v2.wav` | `ed4d6c88b0ba7d4488c71fe607d87e0e` | `TurnStartManager` | 20.8 |
+| `card-play-other` ×3 | `play_card_from_hand_1..3.wav` | `60b55d955f0bbe34eaeee0004eff70ad`, `2beb57fd1a017a44099e48c6f005053c`, `c74ba91347b52f94180dd0061a259f2c` | `HistoryCard` big card, `CastSpellCardFromHandSepll` | 20.9 |
+| `end-turn-cue` | `VO_JobsDone.wav` (enUS) | `9cf1adfef5afae941bbf780a83efdf6d` | `EndTurnButton.PlayEndTurnSound` | 20.10 |
+| `timer-tick` | `Countdown_Tick.wav` | `d4cbcbff6b2c84843839a2787776a2b8` | `TurnTimer.m_TickSound` | 20.15 |
+| `timer-last` | `Countdown_Tick_Final.wav` | `e99b87e5dc68bcc4dbe04e8e05190b6a` | `TurnTimer.m_FinalTickSound` | 20.15 |
+
+Kept as they are: `attack-hit` (size 1) and `loot-draw` (draw out).
+The reference's own: `FX_Minion_AttackImpact.wav` and `draw_card_1..3.wav`.
+Swapping them is the owner's call; not part of this step.

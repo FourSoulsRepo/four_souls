@@ -191,6 +191,21 @@ Each sub-step of step 20 takes the part it needs.
 1. At least 4 s between emotes.
 2. Many in 5 s: the gap grows to 15 s, then 45 s.
 
+### Sounds
+
+1. Code names a sound prefab; its `SoundDef` names the clips.
+   1. Several clips: one picked at random, equal weight.
+   2. No random pitch or volume on the sounds we take.
+2. Attack impact by attacker power, four prefabs.
+   1. 0–5: `FX_Minion_AttackImpact`; 6–7: `…Mid`; 8+: `…Large`.
+   2. From power 3 a tavern crowd cheers too; we skip it.
+3. Draw: one sound leaves the deck, one lands in hand.
+   1. An opponent's draw has one sound of its own.
+4. Another player's big card plays a card-play sound.
+5. "Your turn" alert; "Job's done!" when nothing is left.
+6. Timer: a tick each second, a final tick at zero.
+7. Clip per moment: step 20 file, sub-step 20.17.
+
 ## Consequences
 
 ### Positive
