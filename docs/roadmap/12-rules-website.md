@@ -1,8 +1,24 @@
 # Step 12. Rules website
 
-Goal: check rules in the browser; no server.
+Goal: check rules in the browser, in English and Russian; no server.
 
-Ideas: A-03, LR-10.
+Ideas: A-03, LR-08, LR-09, LR-10.
+
+Order: 12.7, 12.1, 12.2, 12.3, 12.5, 12.4, 12.6, 12.8, 12.9.
+
+Moved before step 18 (owner, 2026-11-06).
+12.5 and 12.6 came from step 11 (11.8, 11.7).
+
+Rules of this step (owner, 2026-11-06):
+1. The site gets a Russian interface.
+   1. Step 16 rule 1 (English-only interface) covers the app only.
+2. Card texts stay English on the Russian site, for now.
+   1. Card names are Russian (16.5).
+3. An agent drafts the Russian rules; the owner checks them.
+   1. Compare the draft with the Russian rules on foursouls.ru.
+4. The site carries every finished set.
+5. The site deploys on a release tag.
+   1. Every push to `main` may come later.
 
 ---
 
@@ -13,6 +29,8 @@ Ideas: A-03, LR-10.
    1. Function: payload in, answer with reasons out.
    2. Function: engine version.
    3. Measure and report the `.wasm` size.
+   4. Wrap `engine.RunSituation`; every finished card set.
+   5. Reasons and events go out as message keys and values (16.4).
 3. Done when:
    1. A JS test evaluates a sample payload.
 
@@ -23,9 +41,12 @@ Ideas: A-03, LR-10.
    1. Paste payload or open a link.
    2. Show the answer, reasons, rule links.
    3. Rules text with anchors by rule ID.
-   4. FAQ from 11.7, with the same rule links.
+   4. FAQ: added in 12.6.
+   5. Copy a link to the shown situation; format from 12.7.
+   6. Cards show as text from card_db; the site never has images.
+   7. Use case: check a situation on the website.
 3. Done when:
-   1. A link copied from the app opens the same situation.
+   1. A link copied from the site opens the same situation.
 
 ### [ ] 12.3 GitHub Pages
 
@@ -33,6 +54,7 @@ Ideas: A-03, LR-10.
 2. Tasks:
    1. Workflow builds and deploys on release.
    2. App config gets the site base URL (11.3).
+   3. Releases come only from `main` (CLAUDE.md 5.23).
 3. Done when:
    1. The public URL loads and answers payloads.
 
@@ -44,7 +66,89 @@ Ideas: A-03, LR-10.
    2. Each step shows what happened and why, with rule links.
    3. User may add a response between steps.
    4. Step back to the previous state.
-   5. Needs stacked events in payloads (11.8).
+   5. Needs stacked events in payloads (12.5).
 3. Done when:
    1. A three-event stack resolves step by step and back.
    2. Use case: solve a stack step by step.
+
+### [ ] 12.5 Any event on the stack
+
+1. Goal: payloads start with a ready stack (LR-09).
+2. Tasks:
+   1. `setup.stack` takes loot cards, abilities, attack rolls, triggers.
+   2. Each event: owner, targets, choices made.
+   3. Bottom first, ready to resolve.
+   4. The site (12.2) takes these payloads; the sandbox (11.2) later too.
+   5. Update the wiki page `Situation-payload`.
+   6. Moved from 11.8.
+3. Done when:
+   1. A payload with three stacked events resolves as expected.
+   2. Old dice-only payloads still load.
+
+### [ ] 12.6 FAQ from frequent questions
+
+1. Goal: answer what players ask most (LR-08).
+2. Tasks:
+   1. Group similar questions from the step 3 sources by topic.
+   2. Rank them by how often they are asked.
+   3. Write each answer in our own words: how it works and why.
+   4. Link every answer to its rule IDs (R-…).
+   5. Add a situation payload where the case can be tried.
+   6. Show the FAQ on the site, searchable; the rules viewer (11.1) reuses it.
+   7. Include the owner's picks from `open-questions.md` (e.g. Q-09).
+   8. Read the BoardGameGeek rules forum too (R-02):
+      https://boardgamegeek.com/boardgame/255664/the-binding-of-isaac-four-souls/forums/66
+   9. Its answered questions also become engine tests (R-03).
+   10. Moved from 11.7.
+3. Done when:
+   1. The top questions have entries; every link opens its rule.
+   2. Payload examples pass as tests.
+
+### [ ] 12.7 Website ADR
+
+1. Goal: decide how the site is built, before any code.
+2. Tasks:
+   1. Site code: a second Vite entry in `frontend/`, or its own small app.
+   2. Reuse `t()` and the locale loader (ADR 021) either way.
+   3. Rules Markdown: rendered at build time or in the browser.
+   4. Link format: payload in the URL fragment; compression; size limit.
+   5. Card sets in the `.wasm`; a size budget.
+   6. Where Russian rules live; how their IDs stay in sync.
+   7. Hosting: GitHub Pages; when it deploys.
+   8. Any new library goes into `NOTICE`.
+   9. Written in the main conversation (CLAUDE.md 5.21).
+   10. Russian engine messages: shared with the app, or site-only.
+3. Done when:
+   1. ADR accepted by the **Owner**.
+
+### [ ] 12.8 Russian rules text
+
+1. Goal: our rules text in Russian, with the same rule IDs.
+2. Tasks:
+   1. Translate every file in `pkg/rules_engine/docs/rules/`.
+   2. Folder and file layout from 12.7.
+   3. Card names as in the Russian card data (16.5).
+   4. A Go test: every Russian rule ID exists in English, none twice.
+   5. A missing Russian rule falls back to English (LO-06).
+   6. `make i18n` reports missing and outdated Russian rules.
+   7. Wiki: how to translate the rules, in the translators group.
+   8. Compare terms with the foursouls.ru rules; write our own words.
+   9. Any download of foursouls.ru lives in `FourSoulsRepo/tools`.
+3. Done when:
+   1. Every English rule ID has a Russian text.
+   2. **Owner** checks the Russian text.
+
+### [ ] 12.9 Russian on the website
+
+1. Goal: the site works in English and Russian.
+2. Tasks:
+   1. Language switch; default from the browser; English fallback.
+   2. Site texts through `t()`, with English and Russian files.
+   3. Russian texts for every engine message key the site shows.
+   4. FAQ answers (12.6) in Russian.
+   5. Rule links open the rule in the chosen language.
+   6. The link keeps the language.
+   7. `make screenshots` covers the site in both languages.
+   8. Use case: read the rules in Russian.
+3. Done when:
+   1. One payload answers in both languages, with working rule links.

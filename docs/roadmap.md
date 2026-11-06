@@ -22,11 +22,11 @@ Each step ends in something that runs and is tested.
 | 17 | Rollback | Other players can undo a mistaken event | 8 |
 | 16 | Localization | Menus, messages, and cards in several languages | 8 |
 | 14 | More sets | Gold Box, Four Souls+, Requiem, promos | 8 |
+| 12 | Rules website | Engine in WebAssembly on GitHub Pages, in English and Russian | 8, 16 |
 | 18 | Play-test | New-user check, play-test, docs check | 14 |
 | 9 | Spectators | Viewers watch live | 8 |
 | 10 | Replays | Records screen and replay player | 8 |
-| 11 | Learning | Rules viewer, sandbox, tutorial, bot | 8 |
-| 12 | Rules website | Engine in WebAssembly on GitHub Pages | 11 |
+| 11 | Learning | Rules viewer, sandbox, tutorial, bot | 8, 12 |
 | 13 | Web client | Browser client served by the game server | 9 |
 | 19 | Bugs | Every bug report, logged and fixed under the roadmap rules | — |
 | — | Future | Not scheduled yet | — |
@@ -35,7 +35,8 @@ Step 3 reuses the browser scraping tool from step 2.
 Steps 5, 6 and 7 can run in parallel.
 Step 7 ends with an internal build on a partial card set.
 Step 8 needs all Base Game cards from step 5.
-After the MVP the order is 15, 17, 16, 14, 18, 9, 10, 11, 12, 13.
+After the MVP the order is 15, 17, 16, 14, 12, 18, 9, 10, 11, 13.
+Step 12 moved before 18 (owner, 2026-11-06); it takes LR-08 and LR-09 from step 11.
 Step 15 is paused (owner, 2026-10-26); work goes on with 17, then 16.
 Step numbers stay as IDs; the table lists steps in work order.
 
@@ -164,11 +165,11 @@ Step numbers stay as IDs; the table lists steps in work order.
 2. Sandbox on the game table; export payload and link.
 3. Tutorial lessons.
 4. Simple random bot; seeded and free practice games.
-5. FAQ from frequent rules questions, linked to rule IDs.
-6. Ideas: LR-01 – LR-06, LR-08.
-7. Any event on the stack in payloads (LR-09).
+5. FAQ from frequent rules questions: moved to 12.6.
+6. Ideas: LR-01 – LR-06.
+7. Any event on the stack in payloads: moved to 12.5.
 8. Sandbox tools modelled on the fouronlinesouls.net cheat menu.
-9. BoardGameGeek rules forum: a source for the FAQ and tests (R-02, 11.7).
+9. BoardGameGeek rules forum: a source for the FAQ and tests (R-02, 12.6).
 
 ## 12. Rules website
 
@@ -176,8 +177,11 @@ Step numbers stay as IDs; the table lists steps in work order.
 2. Simple sandbox: payload or link in, answer with reason out.
 3. Rules text with links by rule ID.
 4. Hosted on GitHub Pages.
-5. Ideas: A-03.
+5. Ideas: A-03, LR-08, LR-09, LR-10.
 6. Step-by-step stack resolution (LR-10).
+7. FAQ from frequent questions: moved from 11.
+8. Any event on the stack: moved from 11.
+9. Russian rules text and a language switch on the site.
 
 ## 13. Web client
 

@@ -2,7 +2,8 @@
 
 Goal: players learn the rules inside the app.
 
-Ideas: LR-01 – LR-06, LR-08, LR-09.
+Ideas: LR-01 – LR-06.
+LR-08 and LR-09 moved to step 12 (11.7, 11.8).
 
 ---
 
@@ -69,33 +70,14 @@ Ideas: LR-01 – LR-06, LR-08, LR-09.
    1. A new player finishes all lessons.
    2. Use case: complete a lesson.
 
-### [ ] 11.7 FAQ from frequent questions
+### [~] 11.7 FAQ from frequent questions
 
 1. Goal: answer what players ask most (LR-08).
-2. Tasks:
-   1. Group similar questions from the step 3 sources by topic.
-   2. Rank them by how often they are asked.
-   3. Write each answer in our own words: how it works and why.
-   4. Link every answer to its rule IDs (R-…).
-   5. Add a situation payload where the case can be tried.
-   6. Show the FAQ in the rules viewer (11.1), searchable.
-   7. Include the owner's picks from `open-questions.md` (e.g. Q-09).
-   8. Read the BoardGameGeek rules forum too (R-02):
-      https://boardgamegeek.com/boardgame/255664/the-binding-of-isaac-four-souls/forums/66
-   9. Its answered questions also become engine tests (R-03).
-3. Done when:
-   1. The top questions have entries; every link opens its rule.
-   2. Payload examples pass as tests.
+2. Moved to 12.6: the rules website needs it first (owner, 2026-11-06).
+3. The rules viewer (11.1) shows the FAQ from 12.6.
 
-### [ ] 11.8 Any event on the stack
+### [~] 11.8 Any event on the stack
 
 1. Goal: payloads start with a ready stack (LR-09).
-2. Tasks:
-   1. `setup.stack` takes loot cards, abilities, attack rolls, triggers.
-   2. Each event: owner, targets, choices made.
-   3. Bottom first, ready to resolve.
-   4. Sandbox (11.2) can place these events.
-   5. Update the wiki page `Situation-payload`.
-3. Done when:
-   1. A payload with three stacked events resolves as expected.
-   2. Old dice-only payloads still load.
+2. Moved to 12.5: step-by-step stack (12.4) needs it (owner, 2026-11-06).
+3. The sandbox (11.2) places these events.
