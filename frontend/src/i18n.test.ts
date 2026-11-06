@@ -72,7 +72,8 @@ describe('en.json', () => {
 
 // Every key in en.json is used, and every key used is there (ADR 021,
 // 10). Frontend code passes keys to t() as string literals (8.4); the
-// server's keys are listed in locales/server-keys.json (16.4).
+// server's keys are listed in locales/server-keys.json (16.4). The code
+// is the app's and the rules website's, src/site (ADR 026, 9).
 describe('en.json keys', () => {
   const sources = import.meta.glob<string>(['./**/*.{ts,tsx}', '!./**/*.test.ts', '!./i18n.ts'], {
     query: '?raw',
@@ -95,6 +96,12 @@ describe('en.json keys', () => {
       }
     }
   }
+
+  it('reads the app and the rules website', () => {
+    const files = Object.keys(sources);
+    expect(files).toContain('./App.tsx');
+    expect(files).toContain('./site/Site.tsx');
+  });
 
   it('passes every key as a string literal', () => {
     expect(computed).toEqual([]);

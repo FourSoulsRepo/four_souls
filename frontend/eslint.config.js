@@ -41,7 +41,7 @@ const hardText = [
 export default defineConfig(
   {
     // Generated Wails bindings and build output are not linted.
-    ignores: ['dist/', 'wailsjs/'],
+    ignores: ['dist/', 'dist-site/', 'wailsjs/'],
   },
   {
     files: ['src/**/*.{ts,tsx}'],
@@ -77,6 +77,24 @@ export default defineConfig(
             {
               group: ['**/wailsjs/**'],
               message: 'Import Wails only through src/bridge.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
+    // The rules website has no Wails (ADR 026, 1): it never imports the
+    // bridge, nor the store, which talks to it.
+    files: ['src/site/**'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['**/wailsjs/**', '**/bridge', '**/bridge/**', '**/store', '**/fakeBridge'],
+              message: 'The rules website runs without Wails: no bridge, no store (ADR 026).',
             },
           ],
         },

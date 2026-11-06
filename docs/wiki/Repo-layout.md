@@ -23,6 +23,7 @@ pkg/record/            Go module: match record format
 frontend/              React + TypeScript (Vite)
 e2e/                   Playwright UI tests and screenshots
 frontend/src/bridge/   the only code that talks to Wails
+frontend/src/site/     the rules website's page: a second Vite entry (site.html)
 docs/                  ideas, roadmap, ADRs, use cases, this wiki
 release/               READMEs for the release archives; server.sh packs the servers
 deploy/                server setups: systemd unit, Dockerfile, compose with Caddy
@@ -49,6 +50,8 @@ Rules enforced by the linter (see [Linters](Linters)):
 
 `frontend/src/bridge/index.ts` wraps the generated Wails bindings (`frontend/wailsjs/`). Screens import from the bridge only; ESLint rejects any other import of `wailsjs`. A move to Wails v3, or a browser build for the web client, replaces the bridge and nothing else.
 
+The rules website (`frontend/site.html`, `frontend/src/site/`) shares `t()`, the locale files and the plain helpers with the app, but has no Wails: ESLint rejects any import of the bridge or the store from `src/site/` ([Website wasm](Website-wasm)).
+
 ## Make targets
 
 | Target | What it does |
@@ -58,9 +61,9 @@ Rules enforced by the linter (see [Linters](Linters)):
 | `make test` | `go test` in every module, plus embed mode |
 | `make lint` | golangci-lint in every module, plus embed mode |
 | `make wasm` | builds the engine and the website for `js/wasm` |
-| `make site` | the website's `site.wasm.gz` into `.cache/site/`: size budget, Node smoke test ([Website wasm](Website-wasm)) |
+| `make site` | the rules website: `site.wasm.gz` into `.cache/site/` (size budget, Node smoke test), then the page into `frontend/dist-site/` ([Website wasm](Website-wasm)) |
 | `make frontend` | typecheck, lint and Vitest for the frontend |
-| `make e2e` | Playwright UI tests |
+| `make e2e` | `make site`, then Playwright UI tests (the app and the rules website) |
 | `make internal` | play-test app with card images; `PLATFORM=windows/amd64` |
 | `make screenshots` | `make e2e`, saving UI screenshots into `.cache/screenshots/` |
 | `make doctor` | checks the tools each target needs ([Developer setup](Developer-setup)) |

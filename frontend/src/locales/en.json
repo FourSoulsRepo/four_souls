@@ -3373,6 +3373,136 @@
     "text": "Sound volume",
     "note": "Settings: label of the sound volume slider, from 0% (mute) to 100%."
   },
+  "site.check.allowed": {
+    "text": "Allowed",
+    "note": "Rules website, check page: heading of the answer when the rules allow the move."
+  },
+  "site.check.bad_link": {
+    "text": "This link is broken or cut short; its situation cannot be read.",
+    "note": "Rules website, check page: the situation link could not be unpacked."
+  },
+  "site.check.copied_link": {
+    "text": "Link copied.",
+    "note": "Rules website, check page: after Copy link worked."
+  },
+  "site.check.copied_payload": {
+    "text": "Payload copied.",
+    "note": "Rules website, check page: after Copy payload worked."
+  },
+  "site.check.copy_failed": {
+    "text": "The browser did not allow copying; select the text and copy it yourself.",
+    "note": "Rules website, check page: Copy link or Copy payload failed."
+  },
+  "site.check.copy_link": {
+    "text": "Copy link",
+    "note": "Rules website, check page: button that copies a link which opens this situation."
+  },
+  "site.check.copy_payload": {
+    "text": "Copy payload",
+    "note": "Rules website, check page: button that copies the situation text itself."
+  },
+  "site.check.error": {
+    "text": "The engine could not read this situation",
+    "note": "Rules website, check page: heading when the payload is not valid; the technical reason (English) follows."
+  },
+  "site.check.events": {
+    "text": {
+      "one": "{n} event",
+      "other": "{n} events"
+    },
+    "note": "Rules website, check page: opens the list of what happened after an allowed move. n: how many."
+  },
+  "site.check.examples": {
+    "text": "Examples:",
+    "note": "Rules website, check page: before buttons that load a sample situation; each button is its English title."
+  },
+  "site.check.intro": {
+    "text": "Paste a situation payload or open a situation link; the rules engine answers whether the move is allowed, and by which rule.",
+    "note": "Rules website, check page: the line under the header that says what the page does."
+  },
+  "site.check.link": {
+    "text": "Link to this situation",
+    "note": "Rules website, check page: name of the field that shows the copied link (for screen readers)."
+  },
+  "site.check.long_link": {
+    "text": {
+      "one": "This link is {n} character long; some chats cut long links, so copy the payload to be safe.",
+      "other": "This link is {n} characters long; some chats cut long links, so copy the payload to be safe."
+    },
+    "note": "Rules website, check page: warning under a link above 2000 characters. n: its length."
+  },
+  "site.check.matches": {
+    "text": "As expected: the answer matches the payload’s \"expect\".",
+    "note": "Rules website, check page: the payload says what it expects, and the engine agrees."
+  },
+  "site.check.mismatch": {
+    "text": "Not as expected:",
+    "note": "Rules website, check page: the engine disagrees with the payload’s \"expect\"; a list of differences (in English) follows."
+  },
+  "site.check.payload": {
+    "text": "Situation payload (JSON)",
+    "note": "Rules website, check page: label of the text box that holds the situation."
+  },
+  "site.check.refused": {
+    "text": "Refused",
+    "note": "Rules website, check page: heading of the answer when the rules refuse the move; the reason follows."
+  },
+  "site.check.rule": {
+    "text": "Rule:",
+    "note": "Rules website, check page: before the rule ID (a link, e.g. R-CARD-08) that decided the answer."
+  },
+  "site.check.run": {
+    "text": "Check",
+    "note": "Rules website, check page: button that asks the engine about the situation in the text box."
+  },
+  "site.check.waiting": {
+    "text": "The answer shows once the rules engine has loaded.",
+    "note": "Rules website, check page: a situation waits for the engine to finish loading."
+  },
+  "site.footer.version": {
+    "text": "Rules engine {engine} · app {app}",
+    "note": "Rules website footer: the versions. engine: e.g. 0.5.1; app: the release, e.g. 0.4.0, or dev."
+  },
+  "site.load.failed": {
+    "text": "The rules engine did not load: {error}",
+    "note": "Rules website: the engine failed to download or start. error: the technical reason, in English."
+  },
+  "site.load.loading": {
+    "text": "Loading the rules engine…",
+    "note": "Rules website: shown with a progress bar while the engine (about 2 MB) downloads."
+  },
+  "site.load.no_decompression": {
+    "text": "This browser cannot unpack the rules engine. Please update it or use another browser.",
+    "note": "Rules website: the browser is too old (no DecompressionStream), so no situation can be checked."
+  },
+  "site.nav.check": {
+    "text": "Check a situation",
+    "note": "Rules website header: link to the page that checks a situation payload."
+  },
+  "site.nav.rules": {
+    "text": "Rules",
+    "note": "Rules website header: link to the rules text."
+  },
+  "site.rules.intro": {
+    "text": "Our own wording of the Four Souls rules. Each rule has an ID; the engine names it when it refuses a move.",
+    "note": "Rules website, rules page: the line under the heading."
+  },
+  "site.rules.title": {
+    "text": "Rules",
+    "note": "Rules website, rules page: its heading."
+  },
+  "site.rules.topics": {
+    "text": "Topics",
+    "note": "Rules website, rules page: name of the topic list (for screen readers)."
+  },
+  "site.rules.unknown": {
+    "text": "There is no rule {rule}.",
+    "note": "Rules website, rules page: a link named a rule ID the rules do not have. rule: that ID."
+  },
+  "site.title": {
+    "text": "Four Souls rules",
+    "note": "Rules website: its name in the header and the browser tab."
+  },
   "stack.a_card": {
     "text": "a card",
     "note": "Stack line, history line or a player's activity: a card whose name the viewer can't see."

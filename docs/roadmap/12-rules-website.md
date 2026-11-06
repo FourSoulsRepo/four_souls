@@ -45,7 +45,7 @@ Rules of this step (owner, 2026-11-06):
    8. Node smoke test `cmd/website/smoke.mjs` runs in `make site` and CI.
    9. Wiki: `Website-wasm`.
 
-### [ ] 12.2 Site UI
+### [x] 12.2 Site UI
 
 1. Goal: a simple page (A-03).
 2. Tasks:
@@ -58,6 +58,18 @@ Rules of this step (owner, 2026-11-06):
    7. Use case: check a situation on the website.
 3. Done when:
    1. A link copied from the site opens the same situation.
+4. Result: `frontend/site.html` and `frontend/src/site/`.
+   1. `make site` builds the page into `frontend/dist-site/`, base `/four_souls/`.
+   2. It ships `site.wasm.gz` and Go's `wasm_exec.js`; `NOTICE` names it.
+   3. Unpacks only a gzip stream: `vite preview` sends `Content-Encoding`.
+   4. Routes `#/<lang>/check/<data>`, `#/<lang>/rules/<ID>`.
+   5. Check view: payload, examples, answer, rule link, expect, events.
+   6. Copy link, Copy payload; a warning above 2000 characters.
+   7. Rules view: own Markdown reader, one anchor per rule ID.
+   8. Texts in area `site` of `en.json`; lint bans bridge and store imports.
+   9. Vitest: links, routes, renderer; e2e `site.spec.ts` on `vite preview`.
+   10. `make e2e` and `make screenshots` run `make site` first.
+   11. Use case UC-38; wiki `Website-wasm` covers the page.
 
 ### [ ] 12.3 GitHub Pages
 

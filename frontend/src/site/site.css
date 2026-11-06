@@ -1,0 +1,394 @@
+/* The rules website (ADR 026): system fonts only (they cover
+   Cyrillic), light and dark from the browser's setting. No layers. */
+:root {
+  --bg: #fbfaf7;
+  --fg: #1f1d1a;
+  --muted: #5f5a52;
+  --line: #ddd8cf;
+  --panel: #ffffff;
+  --accent: #9b2c2c;
+  --link: #1d4f91;
+  --ok-bg: #e7f4ea;
+  --ok-fg: #1b5e2b;
+  --no-bg: #fbe9e7;
+  --no-fg: #8a1f11;
+  --warn-bg: #fff4d6;
+  --warn-fg: #6b4e00;
+  --hit: #fff1b8;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #17161a;
+    --fg: #e9e6e1;
+    --muted: #a8a299;
+    --line: #3a373f;
+    --panel: #211f25;
+    --accent: #e0736b;
+    --link: #8cb8ff;
+    --ok-bg: #173323;
+    --ok-fg: #9be0b0;
+    --no-bg: #3a1c1a;
+    --no-fg: #ffb4a8;
+    --warn-bg: #3a3017;
+    --warn-fg: #f2d78b;
+    --hit: #4a3f12;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+a {
+  color: var(--link);
+}
+
+code,
+textarea,
+.link input {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, 'Liberation Mono', monospace;
+}
+
+.site {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.site-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px 24px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+  background: var(--panel);
+}
+
+.site-name {
+  color: var(--accent);
+  font-size: 1.25rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.site-header nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 16px;
+}
+
+.site-header nav a {
+  text-decoration: none;
+  padding: 2px 0;
+  border-bottom: 2px solid transparent;
+}
+
+.site-header nav a[aria-current='page'] {
+  color: var(--fg);
+  border-bottom-color: var(--accent);
+}
+
+main {
+  flex: 1;
+  width: 100%;
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+h1 {
+  font-size: 1.6rem;
+  margin: 8px 0;
+}
+
+h2 {
+  font-size: 1.3rem;
+  margin: 24px 0 8px;
+}
+
+.intro {
+  color: var(--muted);
+  margin-top: 0;
+}
+
+.note {
+  padding: 8px 12px;
+  border-radius: 6px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+}
+
+.note.warn {
+  background: var(--warn-bg);
+  color: var(--warn-fg);
+  border-color: transparent;
+}
+
+.loading {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin-bottom: 12px;
+  color: var(--muted);
+}
+
+.loading progress {
+  flex: 1;
+  min-width: 120px;
+}
+
+/* Check view. */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-weight: 600;
+}
+
+textarea {
+  width: 100%;
+  min-height: 12em;
+  padding: 8px;
+  font-size: 0.85rem;
+  font-weight: 400;
+  line-height: 1.4;
+  color: var(--fg);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  resize: vertical;
+}
+
+.buttons,
+.examples {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.examples span {
+  color: var(--muted);
+}
+
+button {
+  font: inherit;
+  padding: 6px 14px;
+  color: var(--fg);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+button:hover:not(:disabled) {
+  border-color: var(--muted);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+button.primary {
+  color: #fff;
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+button.example {
+  font-size: 0.9rem;
+  text-align: left;
+}
+
+.link input {
+  width: 100%;
+  padding: 6px 8px;
+  font-size: 0.85rem;
+  color: var(--fg);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+
+.answer {
+  margin-top: 16px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  overflow-wrap: anywhere;
+}
+
+.answer h2 {
+  margin: 0 0 4px;
+}
+
+.answer.ok h2 {
+  color: var(--ok-fg);
+}
+
+.answer.no h2,
+.answer.error h2 {
+  color: var(--no-fg);
+}
+
+.answer .situation {
+  margin: 0 0 4px;
+  color: var(--muted);
+}
+
+.answer .reason {
+  font-size: 1.1rem;
+  margin: 4px 0;
+}
+
+.rule-line {
+  margin: 4px 0;
+}
+
+.expect {
+  margin: 12px 0 4px;
+  padding: 8px 12px;
+  border-radius: 6px;
+}
+
+.expect p {
+  margin: 0;
+}
+
+.expect.ok {
+  background: var(--ok-bg);
+  color: var(--ok-fg);
+}
+
+.expect.no {
+  background: var(--no-bg);
+  color: var(--no-fg);
+}
+
+.events {
+  margin-top: 12px;
+}
+
+.events summary {
+  cursor: pointer;
+  color: var(--muted);
+}
+
+.events li {
+  font-size: 0.9rem;
+}
+
+/* Rules view. */
+.topics ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.topics a {
+  display: inline-block;
+  padding: 2px 10px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--panel);
+  text-decoration: none;
+}
+
+.topic h2 {
+  padding-top: 8px;
+  border-top: 1px solid var(--line);
+}
+
+.topic h3 {
+  font-size: 1.05rem;
+  margin: 20px 0 6px;
+}
+
+.topic h4 {
+  font-size: 1rem;
+  margin: 16px 0 4px;
+}
+
+.topic ol,
+.topic ul {
+  padding-left: 2.2em;
+}
+
+.topic li {
+  margin: 4px 0;
+}
+
+.rule {
+  scroll-margin-top: 96px;
+  border-radius: 4px;
+}
+
+.rule-target {
+  background: var(--hit);
+  outline: 6px solid var(--hit);
+}
+
+.rule-id {
+  font-weight: 700;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.rule-ref {
+  white-space: nowrap;
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 4px 8px;
+  border: 1px solid var(--line);
+  text-align: left;
+}
+
+.site-footer {
+  padding: 16px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.site-footer p {
+  margin: 2px 0;
+}
+
+.site-footer .version {
+  margin-top: 8px;
+}

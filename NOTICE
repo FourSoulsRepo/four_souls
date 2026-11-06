@@ -108,6 +108,9 @@ Go (linked into the app):
   github.com/google/uuid                    BSD-3-Clause
   golang.org/x/crypto, net, sys, text       BSD-3-Clause
   github.com/tkrajina/go-reflector          Apache-2.0
+  Go runtime and standard library, and
+  Go's wasm_exec.js (the rules website,
+  shipped next to its .wasm, ADR 026)       BSD-3-Clause
 
 npm (bundled into the frontend):
 

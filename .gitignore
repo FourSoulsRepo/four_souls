@@ -6,6 +6,7 @@ e2e/test-results
 e2e/playwright-report
 frontend/dist/*
 !frontend/dist/gitkeep
+frontend/dist-site/
 
 # Tool caches and local output
 .cache/

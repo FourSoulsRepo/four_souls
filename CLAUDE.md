@@ -66,6 +66,7 @@
    25. `make site`: the website's `site.wasm.gz` into `.cache/site/`.
        1. Fails above 3 MB gzip; then a Node smoke test.
        2. Details: `docs/wiki/Website-wasm.md` (ADR 026).
+       3. Then the page: `frontend/dist-site/`; `make e2e` runs it first.
 5. Workflow
    1. Work follows `docs/roadmap/`, one sub-step at a time.
    2. Commit after every finished sub-step.

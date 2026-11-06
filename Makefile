@@ -71,20 +71,26 @@ wasm: ## Build the engine and the website for js/wasm
 	@cd pkg/rules_engine && GOOS=js GOARCH=wasm go build ./...
 	@GOOS=js GOARCH=wasm go build -o /dev/null ./cmd/website
 
-# The rules website's .wasm (ADR 026, 12.1): card data embedded, no
-# images; only the gzipped file is kept, in .cache/site (git-ignored;
+# The rules website (ADR 026, 12.1, 12.2). Its .wasm: card data embedded,
+# no images; only the gzipped file is kept, in .cache/site (git-ignored;
 # Vite empties its own dist-site). The page unpacks it. Fails above
-# SITE_BUDGET bytes of gzip, then runs the Node smoke test on it.
+# SITE_BUDGET bytes of gzip, then runs the Node smoke test on it. Then
+# Go's wasm_exec.js joins it there, and Vite builds the page into
+# frontend/dist-site with .cache/site as its public folder; the page
+# becomes index.html, as GitHub Pages wants.
 SITE_DIR := .cache/site
 SITE_BUDGET := 3000000
 
-site: ## Build the rules website's site.wasm.gz into .cache/site, check its size, smoke-test it
+site: ## Build the rules website into frontend/dist-site: site.wasm.gz (size check, smoke test) and the page
 	@mkdir -p $(SITE_DIR)
 	@GOOS=js GOARCH=wasm go build -tags embed -trimpath -ldflags "-s -w -X github.com/FourSoulsRepo/four_souls/internal/version.App=$(VERSION)" -o $(SITE_DIR)/site.wasm ./cmd/website
 	@raw=$$(wc -c < $(SITE_DIR)/site.wasm | tr -d ' ') && gzip -9 -n -f $(SITE_DIR)/site.wasm && gz=$$(wc -c < $(SITE_DIR)/site.wasm.gz | tr -d ' ') && \
 		echo "site.wasm: $$raw bytes raw, $$gz bytes gzip (budget $(SITE_BUDGET))" && \
 		if [ $$gz -gt $(SITE_BUDGET) ]; then echo "site.wasm.gz is above the $(SITE_BUDGET)-byte budget (ADR 026)"; exit 1; fi
 	@node cmd/website/smoke.mjs "$$(go env GOROOT)/lib/wasm/wasm_exec.js" $(SITE_DIR)/site.wasm.gz
+	@cp "$$(go env GOROOT)/lib/wasm/wasm_exec.js" $(SITE_DIR)/wasm_exec.js
+	@cd frontend && npx vite build --mode site --logLevel warn && mv dist-site/site.html dist-site/index.html
+	@echo "site: frontend/dist-site/index.html"
 
 # Strict linters with security rules (PR-03); one config for every module.
 # shellcheck is optional: without it the shell scripts are skipped.
@@ -109,13 +115,14 @@ frontend: ## Typecheck, lint and unit-test the frontend
 # Fake Wails bindings via ?fake; no Go process needed.
 E2E := cd e2e && npm install --no-audit --no-fund && npx playwright install chromium webkit &&
 
-e2e: ## Run end-to-end UI tests (Playwright)
+# make site first: site.spec.ts tests the built rules website (12.2).
+e2e: site ## Run end-to-end UI tests (Playwright), the rules website too
 	@$(E2E) npx playwright test --workers $(E2E_WORKERS)
 
 e2e-games: ## Play whole random games with every set through the UI (slow)
 	@$(E2E) FULL_GAMES=1 npx playwright test games --project chromium --workers 1
 
-screenshots: ## Run e2e and save UI screenshots into .cache/screenshots (LOCALE=qps)
+screenshots: site ## Run e2e and save UI screenshots into .cache/screenshots (LOCALE=qps)
 	@$(E2E) LOCALE=$(LOCALE) SCREENSHOTS=1 npx playwright test --project chromium --workers $(E2E_WORKERS)
 
 # Internal play-test build (7.12): card images embedded, the version

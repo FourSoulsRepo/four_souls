@@ -136,6 +136,9 @@ Use options 1, 3, 5, 7, 9 and 12.
     5. The page shows progress while the `.wasm` loads.
     6. Output: `.cache/site/site.wasm.gz`; Vite empties its own `dist-site/`.
     7. 2026-11-06, four sets: 8.9 MB raw, 2.2 MB gzip (12.1).
+    8. The page unpacks only a stream still in gzip (12.2).
+    9. A host may send it with `Content-Encoding: gzip`; the browser unpacks it then.
+    10. The site ships Go's `wasm_exec.js` next to it; `NOTICE` names it.
 11. Hosting
     1. GitHub Pages, deployed by GitHub Actions (`actions/deploy-pages`).
     2. A job in `release.yml` on a `v*` tag; tags exist only on `main`.
@@ -151,7 +154,7 @@ Use options 1, 3, 5, 7, 9 and 12.
 ### Positive
 
 1. One engine answers in the app, in tests and on the site.
-2. No new dependency; `NOTICE` stays as it is.
+2. No new dependency; `NOTICE` only adds Go's `wasm_exec.js`.
 3. Links work without a server and keep the payload private.
 4. Rule IDs link the same way in answers, rules and FAQ.
 5. Translators use one file and one tool for app and site.

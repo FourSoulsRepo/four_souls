@@ -4,9 +4,11 @@
 // SCREENSHOTS=1 also saves each screen into .cache/screenshots/;
 // LOCALE=qps runs the pages in that language (16.2).
 import { defineConfig } from '@playwright/test';
-import { serverPorts } from './tests/ports';
+import { existsSync } from 'node:fs';
+import { sitePort, serverPorts } from './tests/ports';
 
 const port = 5199;
+const siteBuilt = existsSync(new URL('../frontend/dist-site/index.html', import.meta.url));
 
 export default defineConfig({
   testDir: 'tests',
@@ -37,6 +39,18 @@ export default defineConfig({
       url: `http://127.0.0.1:${port}`,
       reuseExistingServer: false,
     },
+    // The built rules website (12.2): make e2e runs make site first.
+    // Without a build, site.spec.ts skips and says so.
+    ...(siteBuilt
+      ? [
+          {
+            command: `npx vite preview --mode site --host 127.0.0.1 --port ${String(sitePort)} --strictPort`,
+            cwd: '../frontend',
+            url: `http://127.0.0.1:${String(sitePort)}/four_souls/`,
+            reuseExistingServer: false,
+          },
+        ]
+      : []),
     ...Object.values(serverPorts).map((p) => ({
       // A fresh folder per run: saved games from earlier runs would show.
       // The name shows instead of the address (N-18).
