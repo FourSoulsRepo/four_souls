@@ -100,6 +100,10 @@ Each sub-step of step 20 takes the part it needs.
 5. It becomes playable 0.3 s after landing.
 6. Draws queue: one card in flight at a time per player.
 7. Opponent draws: back only, 0.2 s + 0.6 s waits, no show spot.
+8. The path's easeInSineOutExpo runs as easeOutExpo (checked in 20.1).
+   1. Its switch compares the time with the start value.
+   2. A path eases from 0, so the sine-in half never plays.
+   3. Our `sineInExpoOut` in `feel.ts` is therefore expo-out.
 
 ### Drag
 

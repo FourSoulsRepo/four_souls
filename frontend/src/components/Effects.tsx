@@ -1,6 +1,7 @@
 import { motion } from 'motion/react';
 import { useEffect, useRef, useState } from 'react';
 import { diceDelays, diceImage } from '../dice';
+import { bezier, feel } from '../feel';
 import { t } from '../i18n';
 import { playSound, type Sound } from '../sounds';
 import { useApp, type Playing } from '../store';
@@ -136,7 +137,10 @@ function Effect({ playing }: { playing: Playing }) {
           className="effect-center effect-banner"
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: [0, 1, 1, 0], scale: [0.9, 1, 1, 1] }}
-          transition={{ duration: duration(effect.long ? 2.2 : 1.1), times: effect.long ? [0, 0.1, 0.9, 1] : [0, 0.2, 0.8, 1] }}
+          transition={{
+            duration: duration(effect.long ? feel.banner.long : feel.banner.time),
+            times: [...(effect.long ? feel.banner.longTimes : feel.banner.times)],
+          }}
           onAnimationComplete={done}
         >
           {effect.text}
@@ -264,7 +268,7 @@ function Fly({
       className="effect-fly"
       initial={{ x: path.a.x - cardW / 2, y: path.a.y - cardH / 2, scale: path.grow || 0.9 }}
       animate={{ ...end, scale: 1 }}
-      transition={{ duration: 0.45 * playing.scale, ease: 'easeInOut' }}
+      transition={{ duration: feel.fly.time * playing.scale, ease: bezier(feel.fly.curve) }}
       onAnimationComplete={land}
     >
       <Card cardRef={card} back={back} size="table" />
@@ -374,7 +378,7 @@ function FlyFromMiddle({ to, card, playing, stay }: { to: string[]; card: string
       className="effect-fly"
       initial={{ x: path.a.x - zoomW / 2, y: path.a.y - zoomH / 2, scale: 1 }}
       animate={{ x: b.x - zoomW / 2, y: b.y - zoomH / 2, scale: cardW / zoomW }}
-      transition={{ duration: 0.55 * playing.scale, ease: 'easeInOut' }}
+      transition={{ duration: feel.fly.fromMiddle * playing.scale, ease: bezier(feel.fly.curve) }}
       onAnimationComplete={land}
     >
       <Card cardRef={card} size="zoom" />

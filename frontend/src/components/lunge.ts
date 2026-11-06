@@ -4,13 +4,9 @@
 // by the table and outlives the effect: playback goes on at the hit,
 // and the target's HP drops at once (C-03). Only transform and opacity
 // animate (ADR 002). The hit lands with an attack hit sound (15.50).
+import { feel } from '../feel';
 import { playSound } from '../sounds';
 
-// The normal length of the lunge and of the starburst, in ms.
-const lungeMs = 700;
-const burstMs = 900;
-// The hit lands at this part of the lunge.
-const hitAt = 0.5;
 // How many points the burst's star has.
 const starPoints = 14;
 
@@ -95,11 +91,11 @@ export function burst(at: DOMRect, amount: number, scale: number): void {
   const a = b.animate(
     [
       { transform: 'scale(0.3)', opacity: 0 },
-      { transform: 'scale(1.15)', opacity: 1, offset: 0.2 },
-      { transform: 'scale(1)', opacity: 1, offset: 0.75 },
+      { transform: 'scale(1.15)', opacity: 1, offset: feel.burst.pop },
+      { transform: 'scale(1)', opacity: 1, offset: feel.burst.fade },
       { transform: 'scale(1)', opacity: 0 },
     ],
-    { duration: burstMs * scale },
+    { duration: feel.burst.time * 1000 * scale },
   );
   a.onfinish = () => {
     b.remove();
@@ -130,13 +126,14 @@ export function lunge(from: string[], to: string[], amount: number, scale: numbe
   const c = copy(src, a);
   layer().append(c);
   src.style.visibility = 'hidden';
-  const ms = lungeMs * scale;
+  const { time, windup, hit: hitAt, pull, strike, back } = feel.lunge;
+  const ms = time * 1000 * scale;
   // anim: lunge
   const anim = c.animate(
     [
-      { transform: 'translate(0, 0) scale(1)', easing: 'ease-out' },
-      { transform: `translate(${String(-dx * 0.08)}px, ${String(-dy * 0.08)}px) scale(1.1)`, offset: 0.3, easing: 'ease-in' },
-      { transform: `translate(${String(dx * k)}px, ${String(dy * k)}px) scale(1.05)`, offset: hitAt, easing: 'ease-in-out' },
+      { transform: 'translate(0, 0) scale(1)', easing: pull },
+      { transform: `translate(${String(-dx * 0.08)}px, ${String(-dy * 0.08)}px) scale(1.1)`, offset: windup, easing: strike },
+      { transform: `translate(${String(dx * k)}px, ${String(dy * k)}px) scale(1.05)`, offset: hitAt, easing: back },
       { transform: 'translate(0, 0) scale(1)' },
     ],
     { duration: ms },

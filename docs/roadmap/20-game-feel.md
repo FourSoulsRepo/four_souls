@@ -47,7 +47,7 @@ Owner notes (2026-11-06):
 
 ---
 
-### [ ] 20.1 Feel constants in one place
+### [x] 20.1 Feel constants in one place
 
 1. Goal: every timing and easing from ADR 027 has one home.
 2. Tasks:
