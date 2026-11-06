@@ -198,6 +198,7 @@ Each sub-step of step 20 takes the part it needs.
 1. Four Souls is not Hearthstone.
    1. 2–4 players; anyone may hold priority, not only the active one.
    2. A "locked" turn start only delays our view; never the server.
+   3. Our turn banner is visual only; it never blocks input (owner).
 2. Shakes and elastic motion can tire some players.
    1. Animation speed "off" and reduced motion must turn them off.
 3. New sounds must pass the loudness check (ADR 022).

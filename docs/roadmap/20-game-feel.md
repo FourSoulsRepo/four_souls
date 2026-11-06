@@ -124,10 +124,10 @@ Owner notes (2026-11-06):
    2. During it: items recharge and turn upright.
    3. Then the turn's loot draw (20.7).
    4. Then start-of-turn effects.
-   5. Our actions wait until the sequence ends; the server does not.
-   6. **Owner:** keep priority answers open during the banner?
+   5. Visual only: no input lock, no change to priority (owner).
+   6. Buttons stay live; a click during the banner works as always.
 3. Done when:
-   1. e2e: End turn is disabled until the draw lands.
+   1. e2e: a pass during the banner is accepted.
    2. Screenshots of each phase.
 
 ### [ ] 20.9 Others' plays, paced
@@ -214,11 +214,11 @@ Owner notes (2026-11-06):
 2. Tasks:
    1. The timer bar shows only in its last 20 s.
    2. Each second ticks; the last tick sounds different.
-   3. Time spent on our animations is not charged to the player.
-   4. **Owner:** server credits animation time, or the client asks?
+   3. No server change (owner).
+      1. The timer restarts after every intent (6.7).
+      2. It already adds 5 s for animations (`animationAllowance`).
 3. Done when:
    1. e2e: no timer at 25 s left; shown at 15 s.
-   2. Server test for the time credit, if chosen.
 
 ### [ ] 20.16 Step review
 
