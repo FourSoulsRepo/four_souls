@@ -44,8 +44,9 @@ interface Props {
   // counters are the card's counters by kind; each kind is one badge
   // in its colour (7.9, 18.15).
   counters?: CounterView[];
-  // copy is the card whose abilities this card uses by copying them; its
-  // name is in the copy mark's tooltip (19.106).
+  // copy is the card whose abilities this card uses by copying them: the
+  // copy mark shows its art and zooms it; the card's zoom names it
+  // (19.106, 19.111).
   copy?: string;
   // dice are the die numbers the card keeps, drawn in owner's dice look
   // (15.67).
@@ -99,7 +100,9 @@ export function Card({
   const cards = useApp((s) => s.cards);
   const name: Name = (ref) => (ref ? (cards.get(ref)?.name ?? ref) : t('stats.hidden_card'));
   const sources = stats?.sources ?? monster?.sources;
-  const lines = sources ? statLines(sources, printedOf(stats, monster), liveOf(stats, monster), name) : [];
+  const sums = sources ? statLines(sources, printedOf(stats, monster), liveOf(stats, monster), name) : [];
+  // The zoom names the copied card first (19.111).
+  const lines = copy ? [t('badge.copy', { card: name(copy) }), ...sums] : sums;
   const zoomHandlers = useZoom(cardRef, zoomable, rise, why, lines, counters.filter((c) => c.count > 0));
   const cardElRef = useRef<HTMLDivElement>(null);
   // Leaving an icon for the card zooms the card again.
@@ -161,7 +164,7 @@ export function Card({
       transition={{ duration: 0.25 * scale }}
       data-zone={objectId === undefined ? undefined : `obj-${String(objectId)}`}
       data-player={player}
-      className={`card size-${size} kind-${kindOf(card.type)}${image ? '' : ' blank'}${counted > 0 ? ' has-counters' : ''}${spent ? ' spent' : ''}${fight ? ' fight' : ''}${highlight ? ` hl-${highlight}` : ''}${flip.turn ? ` flip-${flip.turn}` : ''}`}
+      className={`card size-${size} kind-${kindOf(card.type)}${image ? '' : ' blank'}${counted > 0 ? ' has-counters' : ''}${badges && copy ? ' has-copy' : ''}${spent ? ' spent' : ''}${fight ? ' fight' : ''}${highlight ? ` hl-${highlight}` : ''}${flip.turn ? ` flip-${flip.turn}` : ''}`}
       style={flip.turn ? { animationDuration: `${String((FLIP_MS * scale) / 2)}ms` } : undefined}
       role={onClick ? 'button' : 'img'}
       aria-label={card.name}
@@ -190,7 +193,7 @@ export function Card({
             style={{ '--fill': counterColor(c.name), '--i': i } as CSSProperties}
           />
         ))}
-      {badges && copy && <CopyBadge name={name(copy)} />}
+      {badges && copy && <CopyBadge cardRef={copy} name={name(copy)} onLeave={backToCard} />}
       {badges && dice && dice.length > 0 && <DieBadges values={dice} owner={owner} />}
       {/* Damage shows as the lower, red health; the mark is for the rest. */}
       {badges && damage > 0 && !monster && !stats && <Badge kind="damage" value={damage} label={t('badge.damage', { n: damage })} />}
@@ -497,15 +500,48 @@ function Badge({ kind, value, label, title, style, hurt = false, trend: dir }: B
   );
 }
 
-// CopyBadge marks a card that uses another card's abilities (19.106): a
-// blob with two sheets and no number. Its name is in the tooltip.
-function CopyBadge({ name }: { name: string }) {
+// CopyBadge marks a card that uses another card's abilities (19.106):
+// an icon cut from the copied card's art, as a turn effect's (15.92),
+// with a blue two-sheet mark in its corner. A text card shows the
+// copied card's initial. Hover or a long press zooms the copied card,
+// so the player sees which card it is (19.111).
+function CopyBadge({ cardRef, name, onLeave }: { cardRef: string; name: string; onLeave: (e: PointerEvent<HTMLElement>) => void }) {
+  const image = useApp((s) => s.cards.get(cardRef)?.image ?? '');
+  const [broken, setBroken] = useState('');
+  const zoom = useZoom(cardRef, true);
   const label = t('badge.copy', { card: name });
   return (
-    <span className="card-badge card-copy" title={label} aria-label={label}>
-      <svg className="card-badge-shape" viewBox="0 0 100 100" aria-hidden="true">
-        <path d={blob} />
-      </svg>
+    <span
+      className="card-copy"
+      role="img"
+      aria-label={label}
+      {...zoom}
+      onPointerDown={(e) => {
+        zoom.onPointerDown(e);
+        // A long press zooms the copied card, not the card under it.
+        if (e.pointerType !== 'mouse') {
+          e.stopPropagation();
+        }
+      }}
+      onPointerLeave={(e) => {
+        zoom.onPointerLeave(e);
+        onLeave(e);
+      }}
+    >
+      <span className="card-copy-art">
+        {image !== '' && image !== broken ? (
+          <img
+            src={image}
+            alt=""
+            draggable={false}
+            onError={() => {
+              setBroken(image);
+            }}
+          />
+        ) : (
+          <span className="card-source-mark">{name.charAt(0)}</span>
+        )}
+      </span>
       <svg className="card-copy-glyph" viewBox="0 0 24 24" aria-hidden="true">
         <rect x="3" y="3" width="12" height="12" rx="2" />
         <rect x="9" y="9" width="12" height="12" rx="2" />

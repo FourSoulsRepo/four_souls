@@ -242,11 +242,13 @@
   * The Lost Soul becomes a soul in play: it makes the sound and holds a beat; nothing flies.
   * A bonus soul with no card on the board is silent.
 * **1ah. Copy mark (19.106):** an item that uses another card's abilities shows a mark.
-  * A small blue blob with two sheets, top left; no number.
-  * Its tooltip reads "Copy of The D6".
+  * A small icon, top left, cut from the copied card's art; blue frame, two-sheet mark.
+  * A text card shows the copied card's initial.
   * Glitch's gained item, a copy (Diplopia), and Placebo's ability on the stack show it.
   * Placebo's mark shows only while its copied ability is on the stack.
   * Both players see it.
+  * Hover or long press on the mark zooms the copied card (19.111).
+  * The item's own zoom reads "Copy of The D6" first.
 
 ## Postconditions
 

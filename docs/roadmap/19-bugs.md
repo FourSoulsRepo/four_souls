@@ -36,7 +36,7 @@ This step never closes; new reports are appended.
 | A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95, 19.97, 19.104, 19.105 | 18 |
 | B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90, 19.106 | 10 |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
-| D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74                              | 4     |
+| D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74, 19.111                      | 5     |
 | E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52, 19.54, 19.69 | 9  |
 | F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88, 19.99, 19.102 | 9     |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
@@ -51,13 +51,13 @@ This step never closes; new reports are appended.
 | O  | Reconnect: old connection state kept     | Client     | 19.78, 19.86                                           | 2     |
 | P  | A missing setting: no way to change it   | Client     | 19.93                                                  | 1     |
 
-Totals by system (98 items):
+Totals by system (99 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
 | Engine    | A, B    | 23    |
 | Card data | C       | 2     |
-| Client    | D–G, O, P | 29  |
+| Client    | D–G, O, P | 30  |
 | Server    | H, N    | 2     |
 | e2e       | I, J    | 36    |
 | Release   | K       | 4     |
@@ -3522,3 +3522,39 @@ Totals by system (98 items):
    8. Not changed: `PreventYourDeath` for players (Broken Ankh, Guppy's Collar); they still heal to 1 HP.
 7. Owner notes
    1. Waiting for the owner's review.
+
+### [x] 19.111 Glitch's copy mark does not say which card it copies
+
+1. Goal: a player sees which card Glitch (or any copying card) copies right now.
+2. Report (owner, 2026-11-06)
+   1. Glitch shows the copy mark from 19.106.
+   2. The player cannot tell which card it copies.
+3. Cause
+   1. The copied card's name is only in the mark's `title` (`CopyBadge`, `Card.tsx`).
+   2. `.card-badge` has `pointer-events: none`, so the tooltip never shows.
+   3. The zoomed card shows no badges, and its zoom does not name the copy.
+   4. The view sends the copy (`CardView.copy`); only the client loses it.
+4. Tasks:
+   1. The mark shows the copied card's art, as a turn-effect icon does (15.92).
+   2. A text card shows the copied card's initial, as those icons do.
+   3. Hover or long press on the mark zooms the copied card.
+   4. The copying card's zoom lists "Copy of {card}".
+   5. e2e: the mark takes the pointer, zooms the copied card; the zoom names it.
+   6. Docs: UC-12 item 1ah, wiki `Client.md`.
+5. Done when:
+   1. `make lint`, `make frontend e2e` pass.
+   2. Before and after screenshots in `.cache/screenshots/19.111/`.
+6. Result (2026-11-06)
+   1. `CopyBadge` (`Card.tsx`): an icon cut from the copied card's art, blue frame, two-sheet mark.
+   2. A text card shows the copied card's initial.
+   3. The mark takes the pointer: hover or a long press zooms the copied card.
+   4. The copying card's zoom lists "Copy of {card}" first.
+   5. The native tooltip is gone; it would cover the zoom.
+   6. e2e: `copy.spec.ts` hovers the mark and the item; fails before the fix.
+   7. No rule or view change; no engine version bump.
+   8. Screenshots: `.cache/screenshots/19.111/before/` and `after/`.
+   9. Docs: UC-12 item 1ah; wiki `Client.md`.
+   10. Gates: `make lint`, `make frontend`, `make e2e` exit 0 (394 passed).
+   11. The first e2e run failed once on a deal; logged as 19.112.
+7. Owner notes (2026-11-06)
+   1. Owner marks 19.111 fixed.

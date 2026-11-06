@@ -460,7 +460,7 @@
   },
   "badge.copy": {
     "text": "Copy of {card}",
-    "note": "Tooltip and screen-reader name of the copy mark on a card that uses another card's abilities. card: the copied card's name."
+    "note": "Screen-reader name of the copy mark on a card that uses another card's abilities, and the first line under that card's zoom. card: the copied card's name."
   },
   "badge.counters": {
     "text": {
