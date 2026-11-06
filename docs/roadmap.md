@@ -182,6 +182,7 @@ Step numbers stay as IDs; the table lists steps in work order.
 7. FAQ from frequent questions: moved from 11.
 8. Any event on the stack: moved from 11.
 9. Russian rules text and a language switch on the site.
+10. Russian app interface, shared with the site (owner, 2026-11-06).
 
 ## 13. Web client
 

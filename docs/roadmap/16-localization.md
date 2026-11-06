@@ -20,6 +20,8 @@ Owner notes (2026-10-27):
 2. A language with own images only is not listed in Settings; kept as is.
 3. The images and tools repos are pushed.
 
+Owner note (2026-11-06): rule 1 ends; the Russian interface comes in 12.11.
+
 ---
 
 ### [x] 16.1 Translation ADR

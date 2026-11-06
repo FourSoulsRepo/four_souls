@@ -4,14 +4,15 @@ Goal: check rules in the browser, in English and Russian; no server.
 
 Ideas: A-03, LR-08, LR-09, LR-10.
 
-Order: 12.7, 12.1, 12.2, 12.3, 12.5, 12.4, 12.6, 12.8, 12.9.
+Order: 12.7, 12.1, 12.2, 12.3, 12.5, 12.4, 12.6, 12.10, 12.8, 12.11, 12.9.
 
 Moved before step 18 (owner, 2026-11-06).
 12.5 and 12.6 came from step 11 (11.8, 11.7).
 
 Rules of this step (owner, 2026-11-06):
-1. The site gets a Russian interface.
-   1. Step 16 rule 1 (English-only interface) covers the app only.
+1. The site gets a Russian interface; the app gets it too (12.11).
+   1. Code quality beats step 16 rule 1 (English-only interface).
+   2. App and site share one set of locale files (ADR 026).
 2. Card texts stay English on the Russian site, for now.
    1. Card names are Russian (16.5).
 3. An agent drafts the Russian rules; the owner checks them.
@@ -104,7 +105,7 @@ Rules of this step (owner, 2026-11-06):
    1. The top questions have entries; every link opens its rule.
    2. Payload examples pass as tests.
 
-### [ ] 12.7 Website ADR
+### [x] 12.7 Website ADR
 
 1. Goal: decide how the site is built, before any code.
 2. Tasks:
@@ -120,6 +121,9 @@ Rules of this step (owner, 2026-11-06):
    10. Russian engine messages: shared with the app, or site-only.
 3. Done when:
    1. ADR accepted by the **Owner**.
+4. Result: ADR 026, accepted 2026-11-06.
+   1. One set of locale files for app and site; the app gets Russian (12.11).
+   2. The `.wasm` ships gzipped; the page unpacks it.
 
 ### [ ] 12.8 Russian rules text
 
@@ -143,8 +147,8 @@ Rules of this step (owner, 2026-11-06):
 1. Goal: the site works in English and Russian.
 2. Tasks:
    1. Language switch; default from the browser; English fallback.
-   2. Site texts through `t()`, with English and Russian files.
-   3. Russian texts for every engine message key the site shows.
+   2. Site texts through `t()`, in the shared locale files (area `site`).
+   3. Russian site keys; engine messages are done in 12.11.
    4. FAQ answers (12.6) in Russian.
    5. Rule links open the rule in the chosen language.
    6. The link keeps the language.
@@ -152,3 +156,28 @@ Rules of this step (owner, 2026-11-06):
    8. Use case: read the rules in Russian.
 3. Done when:
    1. One payload answers in both languages, with working rule links.
+
+### [ ] 12.10 Russian glossary
+
+1. Goal: one Russian word per game term, before any translation.
+2. Tasks:
+   1. `frontend/src/locales/glossary/ru.json` for every term in `glossary/en.json`.
+   2. Terms as in the Russian card data (16.5) and foursouls.ru (S-RU).
+   3. Where they disagree, list both; the **Owner** picks.
+3. Done when:
+   1. Every English glossary term has a Russian word.
+
+### [ ] 12.11 Russian app interface
+
+1. Goal: the app in Russian, from the same `ru.json` as the site.
+2. Tasks:
+   1. Fill `frontend/src/locales/ru.json` with `make i18n LOCALE=ru`, one area per pass.
+   2. Every key: app texts, history, engine messages (ADR 021).
+   3. Words from the glossary (12.10).
+   4. `make screenshots LOCALE=ru`: every screen, no cut text.
+   5. ADR 021: drop "interface ships in English only".
+   6. Update the use case "change the language".
+3. Done when:
+   1. `make i18n LOCALE=ru` reports no missing key.
+   2. A full game plays in Russian.
+   3. **Owner** checks the screenshots.
