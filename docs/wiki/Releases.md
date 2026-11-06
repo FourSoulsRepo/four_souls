@@ -63,6 +63,10 @@ A release needs the private card images. The workflow checks them out with `.git
 
 `release/server.sh <version> <dir>` builds and packs every server archive on one macOS runner (it needs `lipo` for the universal binary); CI (job `server`), the release workflow and `make server-archives` use it. CI also checks that the Linux servers are statically linked.
 
+## Rules website
+
+A version tag also deploys the rules website to GitHub Pages (job `site`, 12.3): <https://foursoulsrepo.github.io/four_souls/>. The deploy is public at once, while the app release stays a draft; trial tags skip it. The draft release does not wait for it, and a failed deploy does not stop the release. Setup, checks and reruns: [Website wasm](Website-wasm#deploy).
+
 ## Server setups
 
 `deploy/` holds the operator setups (ADR 018): the systemd unit, the Dockerfile, and compose with Caddy. The Dockerfile downloads the server of the latest release, so a release needs no change there. A release must be published as a full release, not a pre-release, or `releases/latest` skips it.

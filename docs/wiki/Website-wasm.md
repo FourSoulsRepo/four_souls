@@ -102,3 +102,26 @@ The `.wasm` goes to `.cache/site/` because `.cache/` is git-ignored and Vite emp
 `make wasm` still only checks that the website builds; without `-tags embed` its `cards()` answers an error.
 
 Size on 2026-11-06, sets b2, g2, fsp2 and r: 8,874,685 bytes raw, 2,156,660 bytes gzip.
+
+## Deploy
+
+The site lives at <https://foursoulsrepo.github.io/four_souls/> (GitHub Pages, ADR 026). The Go constant `website.URL` (`internal/website/url.go`) holds that address for the app's check links (11.3); its test fails if the path stops matching Vite's `base`.
+
+A version tag deploys it: the job `site` in `.github/workflows/release.yml` runs `make site` (so the size budget and the smoke test gate it), uploads `frontend/dist-site/` with `actions/upload-pages-artifact` and publishes it with `actions/deploy-pages`. Only that job gets `pages: write` and `id-token: write`; the concurrency group `pages` keeps two deploys from overlapping. It needs only the release notes job; the draft release does not wait for it, and a failed deploy does not stop the release. Trial tags (`v1.2.3-test`) skip it, since the site is public at once. It never checks out the private image submodule.
+
+### Owner steps
+
+1. Once: repo Settings → Pages → Build and deployment → Source: **GitHub Actions**.
+2. Once: Settings → Environments → `github-pages` → Deployment branches and tags: add the tag rule `v*`. By default that environment takes only the default branch, and a tag deploy fails with "not allowed to deploy to github-pages".
+3. After the next release tag: open the URL, click an example, Check, and open a copied link in a new tab.
+4. A failed deploy: Actions → the Release run → job "Rules website" → Re-run jobs → Re-run failed jobs (or that job alone). The app release is not touched.
+
+### Compression on Pages
+
+Whether GitHub Pages compresses `.wasm` or sends `.gz` with `Content-Encoding` is not documented. The page works either way (see [Loading the engine](#loading-the-engine)). After the first deploy, check:
+
+```sh
+curl -sI -H 'Accept-Encoding: gzip, br' https://foursoulsrepo.github.io/four_souls/site.wasm.gz
+```
+
+`Content-Type: application/gzip` with no `Content-Encoding` is the expected case: the page unpacks it and the progress bar has a total. `Content-Encoding: gzip` also works, without a total. Write what it answers here.

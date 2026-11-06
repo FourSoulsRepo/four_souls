@@ -45,7 +45,7 @@ Pick your group: players, people who run a game server, translators, or develope
 * [Effect blocks](Effect-blocks) — the blocks cards are built from.
 * [Adding a card](Adding-a-card) — write and test a card, or a whole fan set.
 * [Situation payload](Situation-payload) — sandbox situations and rules tests.
-* [Website wasm](Website-wasm) — the rules website: the engine in the browser, the page, its routes and links, build, size.
+* [Website wasm](Website-wasm) — the rules website: the engine in the browser, the page, its routes and links, build, size, deploy.
 * [Fuzzing](Fuzzing) — random games that check the engine state.
 * [Server](Server) — how the lobby, game rooms and transport fit together.
 * [Banned cards](Banned-cards) — cards no game deals, and how to lift a ban.

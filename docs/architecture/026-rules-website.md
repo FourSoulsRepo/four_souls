@@ -144,6 +144,8 @@ Use options 1, 3, 5, 7, 9 and 12.
     2. A job in `release.yml` on a `v*` tag; tags exist only on `main`.
     3. URL: `https://foursoulsrepo.github.io/four_souls/`.
     4. Vite `base` matches that path.
+    5. Trial tags (`v1.2.3-test`) skip the deploy; the site is public at once.
+    6. `website.URL` in `internal/website` holds the URL for the app (11.3).
 12. Legal
     1. The site shows the fan-game notice, like the app.
     2. System fonts only; they cover Cyrillic.

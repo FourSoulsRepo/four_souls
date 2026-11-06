@@ -80,6 +80,15 @@ Rules of this step (owner, 2026-11-06):
    3. Releases come only from `main` (CLAUDE.md 5.23).
 3. Done when:
    1. The public URL loads and answers payloads.
+4. Result: job `site` in `release.yml`; deploy code only, not yet live.
+   1. Runs on a `v*` tag after the notes job; trial tags skip it.
+   2. `make site`, then `upload-pages-artifact` and `deploy-pages`.
+   3. Pages permissions only in that job; concurrency group `pages`.
+   4. The draft release does not wait for it; a failure leaves it alone.
+   5. No image submodule: plain checkout, `embed` only.
+   6. `website.URL` in `internal/website/url.go`; a test checks Vite's base.
+   7. Wiki: `Website-wasm` (Deploy, owner steps), `Releases`.
+   8. Waits for the owner: enable Pages; check the URL after the next release tag.
 
 ### [ ] 12.4 Step-by-step stack
 
