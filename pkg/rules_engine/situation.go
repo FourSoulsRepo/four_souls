@@ -25,7 +25,7 @@ type SituationSetup struct {
 	Active   int               `json:"active"`
 	Monsters []CardRef         `json:"monsters,omitempty"` // one per slot
 	Shop     []CardRef         `json:"shop,omitempty"`     // one per slot
-	Stack    []SituationStack  `json:"stack,omitempty"`    // bottom first
+	Stack    []SituationStack  `json:"stack,omitempty"`    // bottom first (12.5)
 	// LootPlays overrides the active player's loot plays left.
 	LootPlays *int `json:"loot_plays,omitempty"`
 	// BonusSouls are the active bonus souls (R-SETUP-06).
@@ -45,12 +45,6 @@ type SituationPlayer struct {
 	Dead      bool      `json:"dead,omitempty"`
 	// Deactivated lists items (or "character") that start deactivated.
 	Deactivated []CardRef `json:"deactivated,omitempty"`
-}
-
-// SituationStack is one item already on the stack.
-type SituationStack struct {
-	DiceRoll int `json:"dice_roll"`
-	Owner    int `json:"owner"`
 }
 
 // SituationAction is the one thing a player tries. Kind is "play",
@@ -238,12 +232,9 @@ func (s Situation) build(sets []CardSet) (*Game, error) {
 	if s.Setup.LootPlays != nil {
 		g.Turn.LootPlays = *s.Setup.LootPlays
 	}
-	holder := active
-	for _, st := range s.Setup.Stack {
-		owner := PlayerID(st.Owner)
-		g.StackSeq++
-		g.Stack = append(g.Stack, StackItem{ID: g.StackSeq, Kind: StackRoll, Controller: owner, Roll: st.DiceRoll, Label: eventRoll.Msg()})
-		holder = owner
+	holder, stackErr := g.stackUp(s.Setup.Stack, active)
+	if stackErr != nil {
+		return nil, stackErr
 	}
 	g.events = nil
 	g.openWindow(holder)

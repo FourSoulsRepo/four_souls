@@ -259,6 +259,12 @@ func (g *Game) nextTriggerGroup() []int {
 func (g *Game) pushTrigger(i int) {
 	t := g.PendingTriggers[i]
 	g.PendingTriggers = append(g.PendingTriggers[:i:i], g.PendingTriggers[i+1:]...)
+	g.push(triggerItem(t))
+}
+
+// triggerItem is the stack item of a triggered ability; situations
+// build their stacked triggers with it too (12.5).
+func triggerItem(t PendingTrigger) StackItem {
 	it := StackItem{
 		Kind: StackTrigger, Controller: t.Controller, Source: t.Source, Card: t.Ability.Card,
 		Ability:     t.Ability,
@@ -267,7 +273,7 @@ func (g *Game) pushTrigger(i int) {
 	if t.On == EvRollWouldResolve {
 		it.Checked = t.EventAmount + 1 // R-DICE-07
 	}
-	g.push(it)
+	return it
 }
 
 // rollStillIs reports whether the roll with stack ID id is on the stack

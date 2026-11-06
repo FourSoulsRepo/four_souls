@@ -1,0 +1,18 @@
+{
+  "title": "A dice roll, a loot card and an ability on the stack: the top resolves first",
+  "sets": ["test", "abilities"],
+  "setup": {
+    "players": [
+      {"character": "hero_a"},
+      {"character": "hero_b", "items": ["coin_bag"], "deactivated": ["coin_bag"]}
+    ],
+    "active": 0,
+    "stack": [
+      {"dice_roll": 4, "owner": 1},
+      {"kind": "play", "card": "bomb_loot", "owner": 0, "choices": ["player 2 (hero_b)"]},
+      {"kind": "activate", "card": "coin_bag", "owner": 1}
+    ]
+  },
+  "action": {"player": 1, "kind": "pass"},
+  "expect": {"allowed": true, "after": [{"player": 0, "hand": 0, "cents": 0}, {"player": 1, "cents": 3, "damage": 1}]}
+}

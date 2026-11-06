@@ -103,7 +103,7 @@ Rules of this step (owner, 2026-11-06):
    1. A three-event stack resolves step by step and back.
    2. Use case: solve a stack step by step.
 
-### [ ] 12.5 Any event on the stack
+### [x] 12.5 Any event on the stack
 
 1. Goal: payloads start with a ready stack (LR-09).
 2. Tasks:
@@ -116,6 +116,17 @@ Rules of this step (owner, 2026-11-06):
 3. Done when:
    1. A payload with three stacked events resolves as expected.
    2. Old dice-only payloads still load.
+4. Result: `setup.stack` items get a `kind`; no kind is the old dice roll.
+   1. Kinds `play`, `activate`, `trigger`, `attack_roll`; code in `situation_stack.go`.
+   2. `choices`: mode and targets, by the labels of `action.choices`.
+   3. Built with the engine's own stack items: `activationItem`, `triggerItem`, `attackRollItem`.
+   4. Cost rule: an item is as just put on the stack; nothing is paid again.
+   5. The setup shows what costs left: no loot in hand, tapped items in `deactivated`.
+   6. Nothing triggers as the items go on the stack.
+   7. An attack roll declares the attack on its monster and uses the attack.
+   8. Unknown fields, kinds, cards, owners and targets are errors.
+   9. Tests: each kind, errors, `three-stacked-events.json`; site example with b2.
+   10. Wiki: `Situation-payload` (Stacked items).
 
 ### [ ] 12.6 FAQ from frequent questions
 

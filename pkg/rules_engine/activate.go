@@ -171,7 +171,7 @@ func (g *Game) finishActivation() {
 		card := g.Object(nid).Card
 		g.Players[a.Player].LootPlayed++
 		g.emit(Event{Kind: EvLootPlayed, Player: a.Player, Object: nid, Card: card})
-		g.push(StackItem{Kind: StackLoot, Controller: a.Player, Source: nid, Card: card, Ability: a.Ability, Mode: a.Mode, Targets: a.Chosen})
+		g.push(g.activationItem(a, nid))
 		if pl := &g.Players[a.Player]; pl.CopyNextLoot && !g.def(nid).Trinket {
 			// A copy of the loot goes on the stack above it (Blank Card).
 			pl.CopyNextLoot = false
@@ -191,10 +191,20 @@ func (g *Game) finishActivation() {
 	}
 	g.Players[a.Player].Activations++
 	g.emit(Event{Kind: EvActivated, Player: a.Player, Object: a.Source, Card: a.Ability.Card, Text: ab.Text})
-	g.push(StackItem{
-		Kind: StackAbility, Controller: a.Player, Source: a.Source, Card: a.Ability.Card,
-		Ability: a.Ability, Mode: a.Mode, Targets: a.Chosen, Label: words(ab.Text),
-	})
+	g.push(g.activationItem(a, a.Source))
+}
+
+// activationItem is what a finished activation puts on the stack: the
+// loot card src, already moved to the stack, or the ability of src.
+// Situations build their stacked items with it too (12.5).
+func (g *Game) activationItem(a Activation, src ObjectID) StackItem {
+	if a.Loot {
+		return StackItem{Kind: StackLoot, Controller: a.Player, Source: src, Card: g.Object(src).Card, Ability: a.Ability, Mode: a.Mode, Targets: a.Chosen}
+	}
+	return StackItem{
+		Kind: StackAbility, Controller: a.Player, Source: src, Card: a.Ability.Card,
+		Ability: a.Ability, Mode: a.Mode, Targets: a.Chosen, Label: words(g.ability(a.Ability).Text),
+	}
 }
 
 // targetOptions lists what may be chosen for a spec, with labels.

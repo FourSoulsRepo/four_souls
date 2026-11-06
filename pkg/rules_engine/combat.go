@@ -441,10 +441,16 @@ func (g *Game) attackRoll() { g.attackRollBy(g.Turn.Active) }
 // attackRollBy pushes an attack roll of p against the attack's target;
 // helpers roll too (R-ATK-21).
 func (g *Game) attackRollBy(p PlayerID) {
-	g.push(StackItem{
+	g.push(g.attackRollItem(p))
+}
+
+// attackRollItem is an attack roll of p against the attack's target, not
+// thrown yet; situations stack it with a result (12.5).
+func (g *Game) attackRollItem(p PlayerID) StackItem {
+	return StackItem{
 		Kind: StackRoll, Controller: p, Label: eventAttackRoll.Msg(), Attack: true,
 		Target: Target{Object: g.Attack.Target},
-	})
+	}
 }
 
 // resolveAttackRoll: hit or miss (R-ATK-12, R-ATK-13).

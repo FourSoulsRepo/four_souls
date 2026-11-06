@@ -43,6 +43,34 @@ func TestCheckPayloads(t *testing.T) {
 	}
 }
 
+// The stacked example resolves top first: Lucky Foot makes the roll of
+// 2 a 4 before the roll resolves, and Bomb! resolves in between (12.5).
+func TestCheckStackedExample(t *testing.T) {
+	data, err := os.ReadFile("testdata/stacked-bomb-and-lucky-foot.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var ans engine.Answer
+	if err := json.Unmarshal([]byte(Check(string(data))), &ans); err != nil {
+		t.Fatal(err)
+	}
+	var order []string
+	roll := 0
+	for _, e := range ans.Events {
+		switch e.Kind { //nolint:exhaustive // only these two matter here
+		case engine.EvStackResolved:
+			if e.Card != "" {
+				order = append(order, string(e.Card))
+			}
+		case engine.EvRollResolved:
+			roll = e.Amount
+		}
+	}
+	if strings.Join(order, " ") != "lucky_foot bomb" || roll != 4 {
+		t.Errorf("resolved %q, roll %d; want lucky_foot, bomb, then a roll of 4", order, roll)
+	}
+}
+
 func TestCheckError(t *testing.T) {
 	for _, bad := range []string{"not json", `{"sets":["test"],"setup":{"players":[{"character":"isaac"}]},"action":{"kind":"pass"}}`} {
 		var out struct {
