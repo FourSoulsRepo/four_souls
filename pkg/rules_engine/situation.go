@@ -83,10 +83,13 @@ type ExpectedPlayer struct {
 
 // Answer is the engine's answer to a situation.
 type Answer struct {
-	Allowed bool    `json:"allowed"`
-	Rule    string  `json:"rule,omitempty"`
-	Reason  string  `json:"reason,omitempty"`
-	Events  []Event `json:"events,omitempty"`
+	Allowed bool   `json:"allowed"`
+	Rule    string `json:"rule,omitempty"`
+	Reason  string `json:"reason,omitempty"` // English, for developers
+	// Say is the refusal for the player: a message key with values
+	// (ADR 021), so each client shows it in its language (ADR 026).
+	Say    Msg     `json:"say,omitzero"`
+	Events []Event `json:"events,omitempty"`
 	// Matches is set when the situation has an expectation.
 	Matches  *bool    `json:"matches,omitempty"`
 	Mismatch []string `json:"mismatch,omitempty"`
@@ -112,7 +115,7 @@ func RunSituation(data []byte, sets ...CardSet) (Answer, error) {
 	var re *RuleError
 	switch {
 	case errors.As(err, &re):
-		ans.Rule, ans.Reason = re.Rule, re.Reason
+		ans.Rule, ans.Reason, ans.Say = re.Rule, re.Reason, re.Msg()
 	case err != nil:
 		return Answer{}, err
 	default:
@@ -136,10 +139,11 @@ func (s Situation) build(sets []CardSet) (*Game, error) {
 	for i, set := range sets {
 		names[i] = set.Name
 	}
+	// A situation names a set by its code ("b2") or its name.
 	for _, want := range s.Sets {
 		found := false
-		for _, n := range names {
-			found = found || n == want
+		for _, set := range sets {
+			found = found || set.Name == want || (set.Code != "" && set.Code == want)
 		}
 		if !found {
 			return nil, fmt.Errorf("situation needs card set %q", want)

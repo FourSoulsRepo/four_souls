@@ -63,6 +63,9 @@
        2. `typescript` stays on 6.0.x: `typescript-eslint` accepts below 6.1 only.
    24. Profiling: `go build -tags trace`; flags `-trace_dir`, `-pprof_addr`.
        1. Details: `docs/wiki/Profiling.md` (ADR 024).
+   25. `make site`: the website's `site.wasm.gz` into `.cache/site/`.
+       1. Fails above 3 MB gzip; then a Node smoke test.
+       2. Details: `docs/wiki/Website-wasm.md` (ADR 026).
 5. Workflow
    1. Work follows `docs/roadmap/`, one sub-step at a time.
    2. Commit after every finished sub-step.

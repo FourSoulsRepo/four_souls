@@ -92,7 +92,7 @@ Use options 1, 3, 5, 7, 9 and 12.
    2. The app and the website both call it.
    3. The website passes no image folder, so cards show as text.
 4. Card sets
-   1. `cmd/website` lists its set codes by hand.
+   1. `internal/website` lists its set codes by hand; `cmd/website` exports them.
    2. A test in `cmd/cardgen` fails if a listed set has a stub card.
    3. A set joins the list when step 14 finishes it.
 5. Rules text
@@ -134,6 +134,8 @@ Use options 1, 3, 5, 7, 9 and 12.
     3. Budget: 3 MB for `site.wasm.gz`.
     4. `make site` prints the size; CI fails above the budget.
     5. The page shows progress while the `.wasm` loads.
+    6. Output: `.cache/site/site.wasm.gz`; Vite empties its own `dist-site/`.
+    7. 2026-11-06, four sets: 8.9 MB raw, 2.2 MB gzip (12.1).
 11. Hosting
     1. GitHub Pages, deployed by GitHub Actions (`actions/deploy-pages`).
     2. A job in `release.yml` on a `v*` tag; tags exist only on `main`.

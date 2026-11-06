@@ -7,6 +7,7 @@ cmd/server_load/       load test: plays whole games against a running server
 cmd/website/           rules website, js/wasm only
 cmd/cardgen/           writes engine card stubs from card_db data
 internal/assets/       app files, embedded or read from disk
+internal/cardinfo/     card display info from card_db, for app and website
 internal/instance/     one slot per running app copy
 internal/lan/          finds hosted games on the LAN (ADR 009)
 internal/legal/        fan-game notice used by app and server
@@ -14,6 +15,7 @@ internal/protocol/     network messages (never split out)
 internal/server/       game rooms and the WebSocket transport (ADR 006)
 internal/settings/     the player's app settings file
 internal/version/      app version stamped at link time
+internal/website/      what the website's .wasm answers, testable in plain Go
 pkg/rules_engine/      Go module: the rules engine (package rulesengine)
 pkg/rules_engine/cards/  card sets: one package per set, one file per card
 pkg/card_db/           Go module: card display data; images/ is a private submodule
@@ -56,6 +58,7 @@ Rules enforced by the linter (see [Linters](Linters)):
 | `make test` | `go test` in every module, plus embed mode |
 | `make lint` | golangci-lint in every module, plus embed mode |
 | `make wasm` | builds the engine and the website for `js/wasm` |
+| `make site` | the website's `site.wasm.gz` into `.cache/site/`: size budget, Node smoke test ([Website wasm](Website-wasm)) |
 | `make frontend` | typecheck, lint and Vitest for the frontend |
 | `make e2e` | Playwright UI tests |
 | `make internal` | play-test app with card images; `PLATFORM=windows/amd64` |

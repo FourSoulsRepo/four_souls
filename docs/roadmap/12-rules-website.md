@@ -23,7 +23,7 @@ Rules of this step (owner, 2026-11-06):
 
 ---
 
-### [ ] 12.1 Engine in WebAssembly
+### [x] 12.1 Engine in WebAssembly
 
 1. Goal: `cmd/website` exposes the engine to JS.
 2. Tasks:
@@ -34,6 +34,16 @@ Rules of this step (owner, 2026-11-06):
    5. Reasons and events go out as message keys and values (16.4).
 3. Done when:
    1. A JS test evaluates a sample payload.
+4. Result: `cmd/website` exports `fourSouls.*`; logic in `internal/website`.
+   1. `version`, `sets`, `cards`, `check`, `notice`; errors as `{"error"}`.
+   2. `engine.Answer` gains `say`: the refusal's key with values.
+   3. A situation names a set by code (`b2`) or name.
+   4. `internal/cardinfo` builds `CardInfo` for app and site.
+   5. Sets b2, g2, fsp2, r; a `cmd/cardgen` test rejects stubs.
+   6. `make site`: `.cache/site/site.wasm.gz`, budget 3,000,000 bytes.
+   7. Size: 8,874,685 bytes raw, 2,156,660 bytes gzip.
+   8. Node smoke test `cmd/website/smoke.mjs` runs in `make site` and CI.
+   9. Wiki: `Website-wasm`.
 
 ### [ ] 12.2 Site UI
 

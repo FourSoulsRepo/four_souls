@@ -1,0 +1,13 @@
+{
+  "title": "Does the active player gain 1 cent from A Penny?",
+  "sets": ["b2"],
+  "setup": {
+    "players": [
+      {"character": "isaac", "hand": ["a_penny"]},
+      {"character": "maggy"}
+    ],
+    "active": 0
+  },
+  "action": {"player": 0, "kind": "play", "card": "a_penny"},
+  "expect": {"allowed": true, "after": [{"player": 0, "cents": 1, "hand": 0}]}
+}

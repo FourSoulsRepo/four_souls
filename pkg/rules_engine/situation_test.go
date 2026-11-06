@@ -1,7 +1,9 @@
 package rulesengine
 
 import (
+	"bytes"
 	"embed"
+	"encoding/json"
 	"io/fs"
 	"testing"
 )
@@ -45,6 +47,54 @@ func TestSituationWithoutExpectationJustAnswers(t *testing.T) {
 	}
 	if ans.Allowed || ans.Rule == "" || ans.Reason == "" || ans.Matches != nil {
 		t.Errorf("answer %+v; want a refusal with reason and no match result", ans)
+	}
+}
+
+// A refusal carries the player's words as a message key with values,
+// so the website shows it in its language (ADR 026); an allowed answer
+// has none.
+func TestSituationAnswerSay(t *testing.T) {
+	data, err := fs.ReadFile(situationFiles, "testdata/situations/loot-needs-a-loot-play.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	ans, err := RunSituation(data, testSet, abilitySet)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if ans.Allowed || ans.Say.IsZero() || ans.Reason == "" {
+		t.Fatalf("answer %+v; want a refusal with Say and Reason", ans)
+	}
+	out, err := json.Marshal(ans)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !bytes.Contains(out, []byte(`"say":{"key":"`)) || !bytes.Contains(out, []byte(`"reason":`)) {
+		t.Errorf("JSON %s; want say and reason", out)
+	}
+
+	data, err = fs.ReadFile(situationFiles, "testdata/situations/razor-pays-and-damages.json")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if ans, err = RunSituation(data, testSet, abilitySet); err != nil || !ans.Allowed || !ans.Say.IsZero() {
+		t.Fatalf("answer %+v, %v; want allowed without Say", ans, err)
+	}
+	if out, err = json.Marshal(ans); err != nil || bytes.Contains(out, []byte(`"say"`)) {
+		t.Errorf("JSON %s, %v; want no say", out, err)
+	}
+}
+
+// A situation names a set by its card_db code or by its name.
+func TestSituationSetByCode(t *testing.T) {
+	coded := testSet
+	coded.Code = "t1"
+	for _, want := range []string{"t1", "test"} {
+		data := []byte(`{"sets":["` + want + `"],"setup":{"players":[{"character":"hero_a"},{"character":"hero_b"}],"active":0},
+			"action":{"player":0,"kind":"end_turn"}}`)
+		if _, err := RunSituation(data, coded); err != nil {
+			t.Errorf("%s: %v", want, err)
+		}
 	}
 }
 

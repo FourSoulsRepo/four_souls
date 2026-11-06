@@ -45,6 +45,67 @@ export namespace carddb {
 
 }
 
+export namespace cardinfo {
+	
+	export class CardInfo {
+	    ref: string;
+	    set: string;
+	    type: string;
+	    name: string;
+	    names: Record<string, string>;
+	    translators: Record<string, Array<string>>;
+	    effects: string[];
+	    footnotes: carddb.Footnote[];
+	    stats: carddb.Stat[];
+	    rewards: carddb.Reward[];
+	    image: string;
+	    images: Record<string, string>;
+	    back?: string;
+	    front?: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new CardInfo(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.ref = source["ref"];
+	        this.set = source["set"];
+	        this.type = source["type"];
+	        this.name = source["name"];
+	        this.names = source["names"];
+	        this.translators = source["translators"];
+	        this.effects = source["effects"];
+	        this.footnotes = this.convertValues(source["footnotes"], carddb.Footnote);
+	        this.stats = this.convertValues(source["stats"], carddb.Stat);
+	        this.rewards = this.convertValues(source["rewards"], carddb.Reward);
+	        this.image = source["image"];
+	        this.images = source["images"];
+	        this.back = source["back"];
+	        this.front = source["front"];
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+
+}
+
 export namespace lan {
 	
 	export class Game {
@@ -173,62 +234,6 @@ export namespace main {
 	        this.image = source["image"];
 	    }
 	}
-	export class CardInfo {
-	    ref: string;
-	    set: string;
-	    type: string;
-	    name: string;
-	    names: Record<string, string>;
-	    translators: Record<string, Array<string>>;
-	    effects: string[];
-	    footnotes: carddb.Footnote[];
-	    stats: carddb.Stat[];
-	    rewards: carddb.Reward[];
-	    image: string;
-	    images: Record<string, string>;
-	    back?: string;
-	    front?: string;
-	
-	    static createFrom(source: any = {}) {
-	        return new CardInfo(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.ref = source["ref"];
-	        this.set = source["set"];
-	        this.type = source["type"];
-	        this.name = source["name"];
-	        this.names = source["names"];
-	        this.translators = source["translators"];
-	        this.effects = source["effects"];
-	        this.footnotes = this.convertValues(source["footnotes"], carddb.Footnote);
-	        this.stats = this.convertValues(source["stats"], carddb.Stat);
-	        this.rewards = this.convertValues(source["rewards"], carddb.Reward);
-	        this.image = source["image"];
-	        this.images = source["images"];
-	        this.back = source["back"];
-	        this.front = source["front"];
-	    }
-	
-		convertValues(a: any, classs: any, asMap: boolean = false): any {
-		    if (!a) {
-		        return a;
-		    }
-		    if (a.slice && a.map) {
-		        return (a as any[]).map(elem => this.convertValues(elem, classs));
-		    } else if ("object" === typeof a) {
-		        if (asMap) {
-		            for (const key of Object.keys(a)) {
-		                a[key] = new classs(a[key]);
-		            }
-		            return a;
-		        }
-		        return new classs(a);
-		    }
-		    return a;
-		}
-	}
 	export class DiceSkin {
 	    id: string;
 	    name: string;
@@ -322,11 +327,11 @@ export namespace main {
 	    playerDied: string;
 	    treasureGain: string;
 	    soulGain: string;
-
+	
 	    static createFrom(source: any = {}) {
 	        return new Sounds(source);
 	    }
-
+	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.attackHit = source["attackHit"];

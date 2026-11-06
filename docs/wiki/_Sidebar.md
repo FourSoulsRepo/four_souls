@@ -39,6 +39,7 @@
 * [Effect blocks](Effect-blocks)
 * [Adding a card](Adding-a-card)
 * [Situation payload](Situation-payload)
+* [Website wasm](Website-wasm)
 * [Fuzzing](Fuzzing)
 * [Server](Server)
 * [Banned cards](Banned-cards)

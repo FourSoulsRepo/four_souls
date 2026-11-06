@@ -22,7 +22,7 @@ A situation is a small JSON document: a table position, one action, and optional
 ## Fields
 
 * `title` — the question in plain words.
-* `sets` — card sets the situation needs (e.g. `b2` once the Base Game is implemented).
+* `sets` — card sets the situation needs, by code (`b2`) or name (`Base Game V2`).
 * `seed` — optional; fixes shuffles and dice.
 * `setup.players[]` — `character`, `items`, `hand`, `cents`, `souls`, `damage`, `dead`, and `deactivated` (cards, or `"character"`, that start deactivated).
 * `setup.active` — the active player; the turn is in the open action phase with one loot play, attack and purchase left (`loot_plays` overrides the loot plays).
@@ -35,7 +35,7 @@ A situation is a small JSON document: a table position, one action, and optional
 ## What the runner does
 
 1. Builds the table; decks hold every card of the sets, shuffled with `seed`.
-2. Tries the action. A refusal answers `allowed: false` with a reason and a rule ID.
+2. Tries the action. A refusal answers `allowed: false` with a rule ID, an English `reason` for developers, and `say`: the player's words as a message key with values (ADR 021), which each client shows in its language.
 3. If allowed, answers the choices and lets every player pass until the stack is empty.
 4. With `expect`, compares and lists any mismatch.
 

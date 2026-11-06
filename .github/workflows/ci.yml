@@ -91,11 +91,19 @@ jobs:
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v5
+      - name: Tool versions
+        shell: bash
+        run: grep '^[A-Z_]*=' scripts/versions.env | tr -d '\r' >> "$GITHUB_ENV"
       - uses: actions/setup-go@v6
         with:
           go-version-file: go.work
           cache-dependency-path: "**/go.sum"
       - run: make wasm
+      # The rules website's .wasm: size budget and Node smoke test (12.1).
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - run: make site
 
   frontend:
     name: Frontend

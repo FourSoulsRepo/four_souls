@@ -33,7 +33,7 @@ LOCALE ?=
 AREA ?=
 
 .DEFAULT_GOAL := help
-.PHONY: help doctor update-deps test vet build wasm lint i18n frontend e2e e2e-games screenshots internal server-archives fuzz fuzz-engine fuzz-focused fuzz-sets fuzz-new sims
+.PHONY: help doctor update-deps test vet build wasm site lint i18n frontend e2e e2e-games screenshots internal server-archives fuzz fuzz-engine fuzz-focused fuzz-sets fuzz-new sims
 
 help: ## Show this help
 	@echo "Usage: make <target> [VAR=value]"
@@ -70,6 +70,21 @@ build: ## Build every Go module
 wasm: ## Build the engine and the website for js/wasm
 	@cd pkg/rules_engine && GOOS=js GOARCH=wasm go build ./...
 	@GOOS=js GOARCH=wasm go build -o /dev/null ./cmd/website
+
+# The rules website's .wasm (ADR 026, 12.1): card data embedded, no
+# images; only the gzipped file is kept, in .cache/site (git-ignored;
+# Vite empties its own dist-site). The page unpacks it. Fails above
+# SITE_BUDGET bytes of gzip, then runs the Node smoke test on it.
+SITE_DIR := .cache/site
+SITE_BUDGET := 3000000
+
+site: ## Build the rules website's site.wasm.gz into .cache/site, check its size, smoke-test it
+	@mkdir -p $(SITE_DIR)
+	@GOOS=js GOARCH=wasm go build -tags embed -trimpath -ldflags "-s -w -X github.com/FourSoulsRepo/four_souls/internal/version.App=$(VERSION)" -o $(SITE_DIR)/site.wasm ./cmd/website
+	@raw=$$(wc -c < $(SITE_DIR)/site.wasm | tr -d ' ') && gzip -9 -n -f $(SITE_DIR)/site.wasm && gz=$$(wc -c < $(SITE_DIR)/site.wasm.gz | tr -d ' ') && \
+		echo "site.wasm: $$raw bytes raw, $$gz bytes gzip (budget $(SITE_BUDGET))" && \
+		if [ $$gz -gt $(SITE_BUDGET) ]; then echo "site.wasm.gz is above the $(SITE_BUDGET)-byte budget (ADR 026)"; exit 1; fi
+	@node cmd/website/smoke.mjs "$$(go env GOROOT)/lib/wasm/wasm_exec.js" $(SITE_DIR)/site.wasm.gz
 
 # Strict linters with security rules (PR-03); one config for every module.
 # shellcheck is optional: without it the shell scripts are skipped.

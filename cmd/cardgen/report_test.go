@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	carddb "github.com/FourSoulsRepo/card_db"
+	"github.com/FourSoulsRepo/four_souls/internal/website"
 	engine "github.com/FourSoulsRepo/rules_engine"
 	"github.com/FourSoulsRepo/rules_engine/cards"
 )
@@ -166,6 +167,35 @@ func TestRewardsMatchCardDB(t *testing.T) {
 			if want := rewardSums(c); !maps.Equal(got, want) {
 				t.Errorf("%s: card_db rewards %v, engine %v", d.Ref, want, got)
 			}
+		}
+	}
+}
+
+// TestWebsiteSetsAreFinished: the rules website carries finished sets
+// only (ADR 026); a listed set must have no stub card left.
+func TestWebsiteSetsAreFinished(t *testing.T) {
+	db, err := carddb.Load(os.DirFS("../../pkg/card_db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, code := range website.Sets {
+		n := 0
+		for _, ref := range db.Refs() {
+			c, _ := db.Get(ref)
+			if c.Set != code {
+				continue
+			}
+			n++
+			st, err := cardStatus(filepath.Join("../../pkg/rules_engine/cards", code), ref)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if st == NotStarted {
+				t.Errorf("website set %s: %s is a stub", code, ref)
+			}
+		}
+		if n == 0 {
+			t.Errorf("website set %s has no cards in card_db", code)
 		}
 	}
 }
