@@ -125,4 +125,6 @@ Whether GitHub Pages compresses `.wasm` or sends `.gz` with `Content-Encoding` i
 curl -sI -H 'Accept-Encoding: gzip, br' https://foursoulsrepo.github.io/four_souls/site.wasm.gz
 ```
 
-`Content-Type: application/gzip` with no `Content-Encoding` is the expected case: the page unpacks it and the progress bar has a total. `Content-Encoding: gzip` also works, without a total. Write what it answers here.
+`Content-Type: application/gzip` with no `Content-Encoding` is the expected case: the page unpacks it and the progress bar has a total. `Content-Encoding: gzip` also works, without a total.
+
+Checked 2026-11-06: Pages answers `Content-Type: application/gzip`, `Content-Length: 2166822`, no `Content-Encoding`. So the page unpacks it, and a visitor downloads about 2.2 MB. Pages does gzip the text files itself (`wasm_exec.js`, the assets).

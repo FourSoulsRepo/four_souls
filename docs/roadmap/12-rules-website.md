@@ -71,7 +71,7 @@ Rules of this step (owner, 2026-11-06):
    10. `make e2e` and `make screenshots` run `make site` first.
    11. Use case UC-38; wiki `Website-wasm` covers the page.
 
-### [ ] 12.3 GitHub Pages
+### [x] 12.3 GitHub Pages
 
 1. Goal: the site is online.
 2. Tasks:
@@ -89,6 +89,8 @@ Rules of this step (owner, 2026-11-06):
    6. `website.URL` in `internal/website/url.go`; a test checks Vite's base.
    7. Wiki: `Website-wasm` (Deploy, owner steps), `Releases`.
    8. Waits for the owner: enable Pages; check the URL after a push to `main`.
+   9. Live; the owner checked it (2026-11-06).
+   10. Pages sends `site.wasm.gz` as `application/gzip`, no `Content-Encoding`.
 
 ### [ ] 12.4 Step-by-step stack
 
