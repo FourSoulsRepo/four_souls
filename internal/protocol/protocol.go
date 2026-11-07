@@ -6,6 +6,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"time"
 	"unicode"
 	"unicode/utf8"
 
@@ -296,7 +297,7 @@ type Seat struct {
 }
 
 // Presence is what a player points at now (N-15): the card they aim
-// from, and the card or spot the arrow or pointer is over. The engine
+// from or hold, and the card or spot the arrow or pointer is over. The engine
 // never sees it and records never keep it. Each one replaces the
 // sender's last; an empty one means nothing. The server fills in Seat,
 // keeps only spots every player can see, and drops the rest.
@@ -305,6 +306,7 @@ type Presence struct {
 	From  *Spot  `json:"from,omitempty"`  // what aims; nil: not aiming
 	At    *Spot  `json:"at,omitempty"`    // what the arrow or pointer is over
 	Point *Point `json:"point,omitempty"` // the pointer, while over no spot
+	Held  *Spot  `json:"held,omitempty"`  // a card dragged to be played (20.13)
 }
 
 // Spot is one thing on the table a player points at; exactly one field
@@ -324,9 +326,14 @@ type Point struct {
 	Y float64 `json:"y"`
 }
 
-// MaxPresence is how many presence messages a player may send each
-// second; the server drops the rest.
-const MaxPresence = 20
+// PresenceGap is the least time between two presence messages of one
+// player, and PresenceAimGap while they aim (20.13, ADR 027 "Other
+// players live"). The server holds one that comes sooner until its gap
+// ends; a newer one replaces it, so the last one always goes.
+const (
+	PresenceGap    = 350 * time.Millisecond
+	PresenceAimGap = 250 * time.Millisecond
+)
 
 // GameInfo is one game in the lobby list.
 type GameInfo struct {

@@ -39,6 +39,7 @@ Use options 1 and 4.
    2. `from`: what aims; `at`: what the arrow or pointer is over.
    3. `point`: the pointer on the board frame, 0 to 1 each way.
    4. Each one replaces the sender's last; an empty one means nothing.
+   5. `held`: the card the sender drags to play it (20.13).
 2. Spot
    1. Exactly one of: `object`, `hand`, `player`, `deck`, `stack_id`.
    2. `object` only for a card every player can see.
@@ -50,7 +51,7 @@ Use options 1 and 4.
    4. Spots are checked against the spectator view of this step.
    5. A spot that fails the check becomes no spot.
    6. A point is moved inside the board frame.
-   7. At most `MaxPresence` (20) a second per seat; the rest are dropped.
+   7. At most one per 0.35 s per seat; 0.25 s with `from` (item 9).
    8. It is never answered, not even with an error.
    9. A dropped connection sends the others an empty presence of its seat.
 4. Engine, records and saves never see it.
@@ -66,10 +67,19 @@ Use options 1 and 4.
    1. An aim is always sent: `from`, and `at` or `point`.
    2. A hover is sent only on the sender's own turn (owner, 2026-10-20).
    3. A waiting player's hover is not sent: the table stays quiet.
-   4. At most one every 70 ms, under the server's limit.
+   4. At most one every 0.35 s, 0.25 s while aiming (20.13, ADR 027).
    5. A still presence is sent again every 2 s.
    6. A receiver drops a presence not renewed in 5 s.
    7. Others' arrows sit under the windows (layer `presence`).
+   8. A dragged hand card is sent as `held`, its slot, on any turn (20.13).
+   9. Others' hover glows in the sender's color; red is for aims (20.13).
+   10. A hovered or held back lifts out of the fan; a held one sways.
+   11. The arrow head follows each sample smoothly, never jumps.
+9. Server pacing (20.13, ADR 027 "Other players live")
+   1. Gaps: `protocol.PresenceGap` and `PresenceAimGap`.
+   2. One that comes within its gap waits until the gap ends.
+   3. A newer one replaces the waiting one; the last always goes.
+   4. It replaces the 20-a-second limit of 15.35, which dropped the rest.
 
 ```json
 {"type": "presence", "id": 17, "data": {"seat": 0, "from": {"hand": 2}, "point": {"x": 0.25, "y": 0.5}}}

@@ -217,7 +217,7 @@ Owner notes (2026-11-06):
    1. Vitest: a queue of 20 keeps every key effect.
    2. e2e with a slowed client still shows a death.
 
-### [ ] 20.13 Others' hands live
+### [x] 20.13 Others' hands live
 
 1. Goal: you see what another player is about to do.
 2. Tasks:

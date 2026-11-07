@@ -47,9 +47,9 @@ The server answers for a player only in these cases, never choosing among real o
 
 ## Presence
 
-`presence.go` (15.35, N-15, ADR 016). A seated player sends `presence` while aiming or hovering: `from` (what aims), `at` (what the arrow or pointer is over), `point` (the pointer on the board frame, 0 to 1). The room fills in `seat` and sends it to every other client of the game, spectators too once step 9 seats them; the sender gets nothing back. Each one replaces the sender's last, so a lost or late one does no harm. When a player's connection drops, the others get an empty presence of that seat, so its arrow goes.
+`presence.go` (15.35, N-15, ADR 016). A seated player sends `presence` while aiming, hovering or dragging a card: `from` (what aims), `at` (what the arrow or pointer is over), `point` (the pointer on the board frame, 0 to 1), `held` (the card dragged to be played, 20.13). The room fills in `seat` and sends it to every other client of the game, spectators too once step 9 seats them; the sender gets nothing back. Each one replaces the sender's last, so a lost or late one does no harm. When a player's connection drops, the others get an empty presence of that seat, so its arrow goes.
 
-The engine never sees it and no record or save keeps it. It is never answered: a message that does not decode, comes before the game starts, or comes too fast is dropped. `pace` allows `protocol.MaxPresence` a second per seat, with a burst of as many.
+The engine never sees it and no record or save keeps it. It is never answered: a message that does not decode or comes before the game starts is dropped. Each seat's presence goes at most once per `protocol.PresenceGap` (0.35 s), or `PresenceAimGap` (0.25 s) when it has `from` (20.13, ADR 027 "Other players live"). One that comes sooner waits in the seat's `sampler` until the gap ends, and a newer one replaces it, so the last state always arrives (`TestPresenceSamples`).
 
 An operator may turn it off (`Config.Presence`, `-presence=false`): the room then drops every presence and relays none, and `welcome.presence` is unset so clients send none. It is on by default, and always for the app's own host.
 

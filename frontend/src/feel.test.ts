@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { bezier, countTimes, curves, elastic, elasticOut, fanPose, feel, hitSize } from './feel';
+import { bezier, countTimes, curves, elastic, elasticOut, fanPose, feel, followStep, hitSize } from './feel';
 
 describe('curves', () => {
   it('parses every curve string', () => {
@@ -172,5 +172,35 @@ describe('counters (20.11)', () => {
   it('flips each step in 0.1 s', () => {
     expect(feel.count.flip).toBe(0.1);
     expect(() => bezier(feel.count.flipCurve)).not.toThrow();
+  });
+});
+
+describe('other players live (20.13)', () => {
+  it('samples every 0.35 s, 0.25 s while aiming (ADR 027 "Other players live")', () => {
+    expect(feel.others.sample).toBe(0.35);
+    expect(feel.others.aimSample).toBe(0.25);
+    expect(feel.others.hover).toBe(0.15);
+    for (const css of [feel.others.hoverCurve, feel.others.holdCurve, feel.others.swayCurve]) {
+      expect(() => bezier(css)).not.toThrow();
+    }
+  });
+
+  it('closes a tenth of the way per 60 fps frame', () => {
+    expect(followStep(1 / 60)).toBeCloseTo(0.1);
+    expect(followStep(0)).toBe(0);
+  });
+
+  it('follows alike at any frame rate', () => {
+    // Two 120 fps frames close as much as one 60 fps frame.
+    const half = followStep(1 / 120);
+    expect(1 - (1 - half) * (1 - half)).toBeCloseTo(followStep(1 / 60));
+  });
+
+  it('gets about four fifths of the way within one aim sample', () => {
+    let left = 1;
+    for (let t = 0; t < feel.others.aimSample; t += 1 / 60) {
+      left *= 1 - followStep(1 / 60);
+    }
+    expect(left).toBeLessThan(0.25);
   });
 });

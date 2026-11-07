@@ -1,22 +1,25 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { zonesAt, type Point } from '../aim';
-import { boardBox, empty, fromFrame, onFrame, presenceFor, same, spotElement, type Pointing } from '../presence';
+import { followStep } from '../feel';
+import { playerColor } from '../table';
+import { scaleFor } from '../playback';
+import { boardBox, empty, fromFrame, marksOf, onFrame, presenceFor, same, sendGap, spotElement, type Pointing } from '../presence';
 import type { Presence } from '../protocol';
 import { presenceRenew, useApp } from '../store';
 import { AimArrow } from './Aim';
-
-// sendGap is the least time between two presence messages, in ms: under
-// the server's 20 a second, so it never drops one (ADR 016).
-const sendGap = 70;
+import { still } from './lunge';
 
 // PresenceSender shares what this player points at (15.36, N-15): the
 // aim and its arrow's head while aiming; on the player's own turn, the
-// hovered card too. A waiting player shares only aims (owner,
-// 2026-10-20). It sends on a change, at most every sendGap, and renews
-// a still presence so the others keep it.
+// hovered card too; a dragged hand card, as its slot (20.13). A waiting
+// player shares only aims and drags (owner, 2026-10-20). It sends on a
+// change, at most every sendGap (0.35 s, 0.25 s while aiming; ADR 027
+// "Other players live"), and renews a still presence so the others
+// keep it.
 export function PresenceSender({ active, hand }: { active: boolean; hand: number[] }) {
   const sendPresence = useApp((s) => s.sendPresence);
   const source = useApp((s) => s.aiming?.source);
+  const held = useApp((s) => s.held ?? undefined);
   const pointingRef = useRef<Pointing & { hand: number[] }>({ active, hand });
   const pointerRef = useRef<Point | null>(null);
   const lastRef = useRef<Omit<Presence, 'seat'>>({});
@@ -34,7 +37,7 @@ export function PresenceSender({ active, hand }: { active: boolean; hand: number
     if (renew ? empty(p) : same(p, lastRef.current)) {
       return;
     }
-    const wait = sentAtRef.current + sendGap - performance.now();
+    const wait = sentAtRef.current + sendGap(p) - performance.now();
     if (wait > 0) {
       laterRef.current ??= window.setTimeout(() => {
         laterRef.current = undefined;
@@ -47,9 +50,9 @@ export function PresenceSender({ active, hand }: { active: boolean; hand: number
     sentAtRef.current = performance.now();
   });
   useEffect(() => {
-    pointingRef.current = { source, active, hand };
+    pointingRef.current = { source, held, active, hand };
     flushRef.current(false);
-  }, [source, active, hand]);
+  }, [source, held, active, hand]);
   useEffect(() => {
     const move = (e: PointerEvent) => {
       if (e.pointerType === 'mouse') {
@@ -95,24 +98,77 @@ function middle(el: Element): Point {
   return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
 }
 
+// near: two points within half a pixel.
+function near(a: Point, b: Point): boolean {
+  return Math.abs(a.x - b.x) < 0.5 && Math.abs(a.y - b.y) < 0.5;
+}
+
 // PresenceLayer shows what the others point at (15.36): their arrow
 // while it moves (T-08), a hand card they aim with as a back lifted
-// from its slot (T-09, T-22), and the card their arrow or pointer is
-// over marked red (T-10, T-21). Marks are data-presence attributes on
-// the table's own elements; a spot that is gone shows nothing.
+// from its slot (T-09, T-22), and the card their arrow is over marked
+// red (T-10, T-21). Since 20.13 (ADR 027 "Other players live"): a card
+// they hover glows in their color, and a hand slot lifts; a card they
+// drag floats out of their hand and sways; their arrow's head follows
+// each new sample smoothly (followStep), never jumping. Marks are
+// data-presence attributes on the table's own elements, with the
+// player's color as --presence-color; a spot that is gone shows
+// nothing. Speed "off" and reduced motion: the head jumps, nothing
+// floats or sways.
 export function PresenceLayer({ you }: { you: number }) {
   const presence = useApp((s) => s.presence);
   const game = useApp((s) => s.game);
+  const calm = useApp((s) => scaleFor(s.settings.animation, 0, 0) === 0) || still();
   const [arrows, setArrows] = useState<OtherArrow[]>([]);
   // markedRef holds the elements marked now; the next pass clears them.
   const markedRef = useRef<Element[]>([]);
+  // targetsRef are the arrows as the last samples place them; shownRef
+  // each seat's head as drawn now, on its way to the target.
+  const targetsRef = useRef<OtherArrow[]>([]);
+  const shownRef = useRef(new Map<number, Point>());
+  const frameRef = useRef(0);
+  const calmRef = useRef(calm);
+  useLayoutEffect(() => {
+    calmRef.current = calm;
+  }, [calm]);
+  // follow draws the arrows, each head a step closer to its target, and
+  // asks for the next frame until every head is there.
+  const followRef = useRef((dt: number): boolean => {
+    const k = calmRef.current ? 1 : followStep(dt);
+    const shown = new Map<number, Point>();
+    let moving = false;
+    const out = targetsRef.current.map((a) => {
+      const was = shownRef.current.get(a.seat);
+      let to = a.to;
+      if (was && k < 1) {
+        to = { x: was.x + (a.to.x - was.x) * k, y: was.y + (a.to.y - was.y) * k };
+        if (near(to, a.to)) {
+          to = a.to;
+        } else {
+          moving = true;
+        }
+      }
+      shown.set(a.seat, to);
+      return { ...a, to };
+    });
+    shownRef.current = shown;
+    setArrows(out);
+    return moving;
+  });
+  useEffect(
+    () => () => {
+      cancelAnimationFrame(frameRef.current);
+    },
+    [],
+  );
   // Marks and arrows change together, in one pass on the next frame,
   // so a mark never shows beside an older arrow.
   useLayoutEffect(() => {
     const frame = requestAnimationFrame(() => {
-      const marks = new Map<Element, Set<string>>();
-      const mark = (el: Element, what: string) => {
-        marks.set(el, (marks.get(el) ?? new Set()).add(what));
+      const marks = new Map<Element, { what: Set<string>; seat: number }>();
+      const mark = (el: Element, what: string, seat: number) => {
+        const m = marks.get(el) ?? { what: new Set<string>(), seat };
+        m.what.add(what);
+        marks.set(el, m);
       };
       const box = boardBox();
       const out: OtherArrow[] = [];
@@ -126,19 +182,35 @@ export function PresenceLayer({ you }: { you: number }) {
         if (from && to) {
           out.push({ seat: p.seat, from: middle(from), to, on: !!at });
         }
-        if (from && p.from?.hand) {
-          mark(from, 'from');
-        }
-        if (at) {
-          mark(at, 'at');
+        for (const [spot, what] of marksOf(p)) {
+          const el = spotElement(spot, p.seat);
+          if (el) {
+            mark(el, what, p.seat);
+          }
         }
       }
       unmark(markedRef.current);
-      for (const [el, what] of marks) {
-        el.setAttribute('data-presence', [...what].join(' '));
+      for (const [el, m] of marks) {
+        el.setAttribute('data-presence', [...m.what].join(' '));
+        if (el instanceof HTMLElement) {
+          el.style.setProperty('--presence-color', playerColor(m.seat) ?? '');
+        }
       }
       markedRef.current = [...marks.keys()];
-      setArrows(out);
+      targetsRef.current = out;
+      cancelAnimationFrame(frameRef.current);
+      let last = performance.now();
+      const tick = (now: number) => {
+        const dt = Math.min((now - last) / 1000, 0.1);
+        last = now;
+        if (followRef.current(dt)) {
+          frameRef.current = requestAnimationFrame(tick);
+        }
+      };
+      // A new arrow starts where its sample puts it; a known one moves.
+      if (followRef.current(0)) {
+        frameRef.current = requestAnimationFrame(tick);
+      }
     });
     return () => {
       cancelAnimationFrame(frame);
@@ -156,5 +228,8 @@ export function PresenceLayer({ you }: { you: number }) {
 function unmark(els: Element[]) {
   for (const el of els) {
     el.removeAttribute('data-presence');
+    if (el instanceof HTMLElement) {
+      el.style.removeProperty('--presence-color');
+    }
   }
 }

@@ -961,6 +961,72 @@
   translate: 0 28px;
 }
 
+/* What another player hovers on their turn (20.13, ADR 027 "Other
+   players live"): a glow in their color, set as --presence-color by
+   Presence.tsx. Red stays for what an arrow is over. */
+.card[data-presence~='hover'],
+.pile[data-presence~='hover'] .card,
+.stack-row[data-presence~='hover'] {
+  outline: 2px solid var(--presence-color);
+  outline-offset: 2px;
+  box-shadow: 0 0 14px 4px var(--presence-color);
+}
+
+/* A back another player hovers, drags or aims with comes over their
+   own character and items, which it would slide under. */
+.hidden-back[data-presence] {
+  z-index: 1; /* layer: local */
+}
+
+/* A hand card they hover lifts a little toward the table; its back
+   stays a back. Times from feel.others, set on .hidden-hand. */
+.hidden-back[data-presence~='hover'] {
+  translate: 0 calc(-1 * var(--others-hover-lift));
+  transition: transform 150ms ease-out, translate var(--others-hover) var(--others-hover-curve);
+}
+
+.player-top .hidden-back[data-presence~='hover'] {
+  translate: 0 var(--others-hover-lift);
+}
+
+/* A hand card they drag floats out of the hand and grows, then sways
+   slowly until it is played or put back. It sways about the fan's own
+   pivot, so it swings like a held card. */
+.hidden-back[data-presence~='held'] {
+  translate: 0 calc(-1 * var(--others-hold-lift));
+  scale: var(--others-hold-grow);
+  transition:
+    transform 150ms ease-out,
+    translate var(--others-hold) var(--others-hold-curve),
+    scale var(--others-hold) var(--others-hold-curve);
+  animation: others-sway var(--others-sway-period) var(--others-sway-curve) var(--others-hold) infinite;
+}
+
+.player-top .hidden-back[data-presence~='held'] {
+  translate: 0 var(--others-hold-lift);
+}
+
+/* anim: others-hold */
+@keyframes others-sway {
+  0%,
+  100% {
+    rotate: 0deg;
+  }
+
+  25% {
+    rotate: var(--others-sway);
+  }
+
+  75% {
+    rotate: calc(-1 * var(--others-sway));
+  }
+}
+
+.hidden-hand.still .hidden-back {
+  transition: none;
+  animation: none;
+}
+
 .aim-arrow.still *,
 .aim-arrow.still *::before,
 .aim-arrow.still *::after {
@@ -969,6 +1035,11 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .hidden-hand .hidden-back {
+    transition: none;
+    animation: none;
+  }
+
   .aim-arrow *,
   .own .hand-card.usable > .drag-tilt::after {
     animation: none;

@@ -222,6 +222,7 @@ const modeled: Record<string, Envelope | Envelope[]> = {
     { type: 'presence', data: { seat: 1, from: { object: 314 }, at: { player: 0 } } satisfies Presence },
     { type: 'presence', data: { seat: 1, at: { deck: 2 } } satisfies Presence },
     { type: 'presence', data: { seat: 1, at: { stack_id: 3 } } satisfies Presence },
+    { type: 'presence', data: { seat: 1, held: { hand: 4 } } satisfies Presence },
   ],
 };
 

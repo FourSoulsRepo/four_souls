@@ -293,6 +293,32 @@ export const feel = {
     dropNormal: 9,
     short: 0.4,
   },
+  // others: what the other players do, live (20.13, ADR 027 "Other
+  // players live", Presence.tsx). A player shares what they point at at
+  // most every sample seconds, aimSample while aiming; the server keeps
+  // the same gaps. Between samples another player's arrow head follows
+  // its new place, closing follow of the way each 60 fps frame
+  // (followStep). A hand card they hover lifts hoverLift px toward the
+  // table over hover. A card they drag floats holdLift px out of their
+  // hand and grows to holdGrow over hold; then it sways sway degrees to
+  // each side, swayTime seconds per side, until it is played or put
+  // back. These are live answers to a pointer, not effects: the speed
+  // setting turns them off, but does not scale them.
+  others: {
+    sample: 0.35,
+    aimSample: 0.25,
+    follow: 0.1,
+    hover: 0.15,
+    hoverLift: 14,
+    hoverCurve: curves.expoOut,
+    hold: 1,
+    holdLift: 56,
+    holdGrow: 1.15,
+    holdCurve: curves.expoOut,
+    sway: 3,
+    swayTime: 10,
+    swayCurve: curves.easeInOut,
+  },
   // banner: the text in the middle (Effects.tsx). times are its
   // opacity keyframes: in, held, out. A long one (start of game) stays
   // twice as long, with fades as long.
@@ -361,4 +387,15 @@ export function countTimes(n: number): number[] {
   const steps = Math.max(0, Math.round(Math.abs(n)));
   const gap = steps > 0 ? Math.min(step, fit / steps) : 0;
   return Array.from({ length: steps }, (_, i) => i * gap);
+}
+
+// followStep is how far another player's arrow head moves toward its
+// new place in a frame of dt seconds, as a part of the way (20.13): the
+// reference closes feel.others.follow of it each frame at 60 fps; any
+// frame rate closes it alike.
+export function followStep(dt: number): number {
+  if (dt <= 0) {
+    return 0;
+  }
+  return 1 - Math.pow(1 - feel.others.follow, dt * 60);
 }

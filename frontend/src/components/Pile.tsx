@@ -1,9 +1,13 @@
 import type { CSSProperties } from 'react';
 import type { Kind } from '../cards';
+import { feel } from '../feel';
 import { t } from '../i18n';
+import { scaleFor } from '../playback';
 import type { CardView } from '../protocol';
+import { useApp } from '../store';
 import { Card, type CardSize } from './Card';
 import type { Handle } from './Interact';
+import { still } from './lunge';
 import './Table.css';
 
 // deckLabel names a deck and its count: "Loot deck: 3 cards".
@@ -81,15 +85,43 @@ export function Discard({ kind, top, count, size }: { kind: Kind; top: CardView 
 // Most backs a hidden hand fans out; the count tells the rest.
 const fannedBacks = 8;
 
+// othersFeel is feel.others as the CSS variables a hidden hand's backs
+// lift, float and sway by (20.13, Table.css).
+const othersFeel = (() => {
+  const o = feel.others;
+  return {
+    '--others-hover': `${String(o.hover)}s`,
+    '--others-hover-lift': `${String(o.hoverLift)}px`,
+    '--others-hover-curve': o.hoverCurve,
+    '--others-hold': `${String(o.hold)}s`,
+    '--others-hold-lift': `${String(o.holdLift)}px`,
+    '--others-hold-grow': String(o.holdGrow),
+    '--others-hold-curve': o.holdCurve,
+    '--others-sway': `${String(o.sway)}deg`,
+    '--others-sway-period': `${String(o.swayTime * 2)}s`,
+    '--others-sway-curve': o.swayCurve,
+  } as CSSProperties;
+})();
+
 // HiddenHand is an opponent's hand: fanned loot backs with the card
 // count (V-26, F-08, H-17). The backs never tell the cards apart. Its
 // zone is the player's hand, so drawn cards fly to it; an empty hand
-// keeps the zone with only the count.
+// keeps the zone with only the count. A back the player hovers or
+// drags moves as Presence.tsx marks it (20.13); speed "off" and
+// reduced motion (still) set it in place at once.
 export function HiddenHand({ playerId, count, size }: { playerId: number; count: number; size: CardSize }) {
   const label = t('table.hand', { n: count });
   const shown = Math.min(count, fannedBacks);
+  const calm = useApp((s) => scaleFor(s.settings.animation, 0, 0) === 0) || still();
   return (
-    <div className="hidden-hand" role="group" aria-label={label} title={label} data-zone={`hand-${String(playerId)}`}>
+    <div
+      className={`hidden-hand${calm ? ' still' : ''}`}
+      style={othersFeel}
+      role="group"
+      aria-label={label}
+      title={label}
+      data-zone={`hand-${String(playerId)}`}
+    >
       {Array.from({ length: shown }, (_, i) => (
         <div key={i} className="hidden-back" style={{ '--spread': String(i - (shown - 1) / 2) } as CSSProperties}>
           <Card size={size} back="loot" />

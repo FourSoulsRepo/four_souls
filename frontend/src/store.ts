@@ -42,6 +42,7 @@ import { connectFirst, disconnect, drop, send } from './net';
 import { claimEffect, nextBeat } from './animations';
 import { lastRollAfter, type LastRoll } from './dice';
 import { bonusSlot, chargedIn, createPlayback, effectsFor, hpOf, playedEnds, scaleFor, shopSlot, slotZone, type Death, type Effect } from './playback';
+import { empty } from './presence';
 import { loadSounds, setSoundVolume } from './sounds';
 import { endsGame, lostDialogAfter, retryDelay } from './reconnect';
 import {
@@ -200,6 +201,10 @@ interface AppState extends Session {
   // aiming is the card the player aims with; its targets glow (15.25).
   aiming: Aiming | null;
   setAiming: (aiming: Aiming | null) => void;
+  // held is the hand card the player drags now; the others see it held
+  // (20.13).
+  held: number | null;
+  setHeld: (held: number | null) => void;
   // cost is the price of the purchase option the pointer is on; the own
   // cents counter previews it (20.11). A new view forgets it.
   cost: number | null;
@@ -786,7 +791,7 @@ export const useApp = create<AppState>()((set, get) => {
       }
       if (env.type === 'presence') {
         const p = env.data as Presence;
-        if (!p.from && !p.at && !p.point) {
+        if (empty(p)) {
           forget(p.seat);
           return;
         }
@@ -807,6 +812,10 @@ export const useApp = create<AppState>()((set, get) => {
     aiming: null,
     setAiming: (aiming) => {
       set({ aiming, selected: null });
+    },
+    held: null,
+    setHeld: (held) => {
+      set({ held });
     },
     cost: null,
     setCost: (cost) => {

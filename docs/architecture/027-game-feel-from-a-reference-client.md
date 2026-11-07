@@ -423,6 +423,37 @@ Each sub-step of step 20 takes the part it needs.
 5. A card they hold floats to their play spot in 1 s.
    1. It stands upright and drifts slowly, 10 s per sway.
 6. Their aim arrow lingers 0.25 s after they let go.
+7. Checked in 20.13 (`RemoteActionHandler`, `ZoneHand`, `TargetReticleManager`).
+   1. Sends wait 0.35 s; 0.25 s while the arrow's target changes.
+   2. A change in the gap is sent when it ends: the state then, not a queue.
+   3. An opponent's hovered hand card moves 0.3 units toward the viewer.
+   4. That move takes 0.15 s, expo-out; no scale, no turn.
+   5. A hovered board card gets an "opponent mouse over" look.
+   6. That look's color is in the card's prefab, not in code.
+   7. A held card moves to the opponent's play spot in 1 s.
+   8. No ease set: iTween's default, expo-out.
+   9. Then it drifts on a path, 10 s each way, linear, ping-pong.
+   10. A hidden card stands upright over 5 s, ease-in-out sine.
+   11. The arrow head closes 0.1 of the way to the sample each frame.
+8. Built in 20.13.
+   1. Times in `feel.others`; the server keeps the same gaps.
+   2. Server: a sample that comes too soon waits for its gap.
+   3. A newer one replaces it, so the last state always arrives.
+   4. The reference's sender does the same; ours checks it on the server too.
+   5. Client: at most every 0.35 s, 0.25 s while aiming at all.
+   6. The head follows by `followStep`: 0.1 per 60 fps frame, any frame rate.
+   7. Hovered hand card: its back lifts 14 px toward the table, 0.15 s, expo-out.
+   8. 14 px is ours, by eye: the top seat's backs hang off the window.
+   9. Hovered table card: a glow in the player's own color.
+   10. Red stays for what an aim arrow is over.
+   11. Hover is still shared on the own turn only (ADR 016).
+   12. A dragged hand card: new presence field `held`, its hand slot.
+   13. It is shared on any turn, like an aim: a play in the making.
+   14. Its back floats 56 px out and grows to 1.15× in 1 s, expo-out.
+   15. Ours: it stays by the hand; we have no play spot on the board.
+   16. Then it sways ±3° about the fan's pivot, 10 s per side.
+   17. Lifted backs come over their own character (`layer: local`).
+   18. Speed "off" and reduced motion: no tween, no sway; the head jumps.
 
 ### Emotes
 

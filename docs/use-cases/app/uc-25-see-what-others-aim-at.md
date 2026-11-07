@@ -18,13 +18,16 @@
 
 ## Alternative scenarios and errors
 
-* **1a. The active player hovers a card:** that card gets a red frame here.
+* **1a. The active player hovers a card:** it glows here in their color (20.13).
 * **1b. A waiting player hovers a card:** nothing is shown to the others.
 * **3a. The pointer is over no card:** the head points at that spot of the board.
 * **4a. The aimed card is gone from this screen:** no frame shows.
 * **5a. A message is lost:** the arrow goes after 5 s without news.
 * **5b. The other player drops out:** the server clears their arrow.
 * **Server with presence off:** nothing is sent or shown.
+* **1c. The active player hovers a hand card:** its back lifts a little here.
+* **1d. Another player drags a hand card:** its back floats out and sways.
+  * It goes back into the fan when played or put back.
 
 ## Postconditions
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { backSlot, empty, fromFrame, onFrame, presenceFor, same, spotAt, spotOf } from './presence';
+import { backSlot, empty, fromFrame, marksOf, onFrame, presenceFor, same, sendGap, spotAt, spotOf } from './presence';
 
 const hand = [70, 71, 72];
 
@@ -45,6 +45,33 @@ describe('presenceFor', () => {
     expect(presenceFor({ active: true }, [], hand, point)).toEqual({});
     expect(presenceFor({ active: false }, ['obj-40'], hand, point)).toEqual({});
   });
+
+  it('shares a dragged card alone, as its slot, on any turn (20.13)', () => {
+    expect(presenceFor({ held: 71, active: false }, ['obj-40'], hand, point)).toEqual({ held: { hand: 2 } });
+    expect(presenceFor({ held: 72, active: true }, [], hand, point)).toEqual({ held: { hand: 3 } });
+  });
+});
+
+describe('sendGap (20.13)', () => {
+  it('waits 0.35 s, or 0.25 s while aiming (ADR 027 "Other players live")', () => {
+    expect(sendGap({ at: { object: 40 } })).toBe(350);
+    expect(sendGap({ held: { hand: 1 } })).toBe(350);
+    expect(sendGap({ from: { hand: 1 }, point: { x: 0, y: 0 } })).toBe(250);
+  });
+});
+
+describe('marksOf (20.13)', () => {
+  it('marks the target of an aim red, a plain hover in the player color', () => {
+    expect(marksOf({ from: { object: 5 }, at: { object: 40 } })).toEqual([[{ object: 40 }, 'at']]);
+    expect(marksOf({ at: { object: 40 } })).toEqual([[{ object: 40 }, 'hover']]);
+    expect(marksOf({ at: { hand: 2 } })).toEqual([[{ hand: 2 }, 'hover']]);
+  });
+
+  it('lifts the hand slot aimed with or held', () => {
+    expect(marksOf({ from: { hand: 1 }, point: { x: 0, y: 0 } })).toEqual([[{ hand: 1 }, 'from']]);
+    expect(marksOf({ held: { hand: 3 } })).toEqual([[{ hand: 3 }, 'held']]);
+    expect(marksOf({})).toEqual([]);
+  });
 });
 
 describe('same and empty', () => {
@@ -54,11 +81,13 @@ describe('same and empty', () => {
     expect(same(a, { from: { object: 1 }, point: { x: 0.6, y: 0.5 } })).toBe(false);
     expect(same(a, { from: { object: 1 }, at: { player: 0 } })).toBe(false);
     expect(same({}, {})).toBe(true);
+    expect(same({ held: { hand: 1 } }, { held: { hand: 2 } })).toBe(false);
   });
 
   it('knows a presence that points at nothing', () => {
     expect(empty({})).toBe(true);
     expect(empty({ at: { deck: 0 } })).toBe(false);
+    expect(empty({ held: { hand: 1 } })).toBe(false);
   });
 });
 

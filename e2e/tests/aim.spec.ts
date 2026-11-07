@@ -464,10 +464,13 @@ test('the other player sees the arrow and the red mark', async ({ browser }) => 
   await expect(arrow).toHaveCount(0);
   await expect(lifted).toHaveCount(0);
 
-  // On the own turn, a hovered card is marked for the other.
+  // On the own turn, a hovered card glows for the other, in the
+  // hovering player's color, not the red of an aim (20.13).
   const i = await middle(item);
   await active.mouse.move(i.x, i.y, { steps: 4 });
-  await expect(await there(item)).toHaveAttribute('data-presence', 'at');
+  await expect(await there(item)).toHaveAttribute('data-presence', 'hover');
+  const color = await (await there(item)).evaluate((el) => (el as HTMLElement).style.getPropertyValue('--presence-color'));
+  expect(color).toMatch(/^#[0-9a-f]{6}$/);
   await shot(other, 'presence-hover');
   await active.mouse.move(space.x, space.y, { steps: 4 });
   await expect(await there(item)).not.toHaveAttribute('data-presence');
@@ -482,4 +485,61 @@ test('the other player sees the arrow and the red mark', async ({ browser }) => 
   });
   expect(shown).toBe(0);
   await expect(active.locator('[data-presence]')).toHaveCount(0);
+});
+
+// Others' hands live (20.13, ADR 027 "Other players live"): the hand
+// card the active player hovers lifts a little on the other page, still
+// a back; a card they drag floats out of the hand and sways until it is
+// played or put back. Animations on, as players see it.
+test('the other player sees a hovered hand card lift and a dragged one float', async ({ browser }) => {
+  const pages = await startGame(browser, ['Lia', 'Max'], { url: appURL() });
+  await activePage(pages, click);
+  await saveAndContinue(pages, 'Lia, Max', 'a_penny');
+  const active = await activePage(pages, click);
+  const other = pages.find((p) => p !== active);
+  if (!other) {
+    throw new Error('no waiting player');
+  }
+  const penny = active.getByRole('group', { name: tr('table.your_hand') }).getByRole('button', { name: cardName('a_penny') }).first();
+  await expect(penny).toBeVisible();
+  const backs = other.locator('.hidden-back');
+  // A hovered or held back is still a back: no card object in it.
+  const hovered = other.locator('.hidden-back[data-presence~="hover"]');
+  const held = other.locator('.hidden-back[data-presence~="held"]');
+  // How far a back sits off its place in the fan, in px, either way.
+  const lift = (l: Locator) => l.evaluate((el) => Math.abs(Number.parseFloat(getComputedStyle(el).translate.split(' ')[1] ?? '0')));
+  await expect(backs.first()).toBeVisible();
+  await expect(other.locator('.hidden-back[data-presence]')).toHaveCount(0);
+
+  // Hovered: one back lifts a little toward the table; it stays a back.
+  const from = await penny.boundingBox();
+  if (!from) {
+    throw new Error('no box');
+  }
+  const x = from.x + 40;
+  const y = from.y + 40;
+  await active.mouse.move(x, y, { steps: 4 });
+  await expect(hovered).toHaveCount(1);
+  await expect.poll(() => lift(hovered)).toBe(14);
+  await expect(hovered.locator('[data-zone^="obj-"]')).toHaveCount(0);
+  await shot(other, 'presence-hand-hover');
+
+  // Dragged: the back floats further out, grows, and sways.
+  await active.mouse.down();
+  await active.mouse.move(x, y - 12, { steps: 2 });
+  await active.mouse.move(x + 40, y - 200, { steps: 6 });
+  await expect(held).toHaveCount(1);
+  await expect(hovered).toHaveCount(0);
+  await expect.poll(() => lift(held)).toBe(56);
+  expect(await held.evaluate((el) => getComputedStyle(el).animationName)).toBe('others-sway');
+  // It sways: its turn changes while the card is held.
+  const turn = () => held.evaluate((el) => getComputedStyle(el).rotate);
+  const first = await turn();
+  await expect.poll(turn, { timeout: 5000 }).not.toBe(first);
+  await shot(other, 'presence-held');
+
+  // Put back on the hand: it goes back into the fan.
+  await active.mouse.move(x, y, { steps: 4 });
+  await active.mouse.up();
+  await expect(held).toHaveCount(0);
 });

@@ -389,6 +389,7 @@ const dragThreshold = 8;
 function HandCard({ card, ui, pose }: { card: CardView; ui: Interact; pose: FanPose }) {
   const act = useApp((s) => s.act);
   const setZoom = useApp((s) => s.setZoom);
+  const setHeld = useApp((s) => s.setHeld);
   const aiming = useApp((s) => s.aiming?.source === card.id);
   const speed = useApp((s) => s.settings.animation);
   const [offset, setOffset] = useState<{ x: number; y: number } | null>(null);
@@ -418,16 +419,23 @@ function HandCard({ card, ui, pose }: { card: CardView; ui: Interact; pose: FanP
   const usable = !landing && handle.highlight === 'act';
   const reset = () => {
     startRef.current = null;
+    if (heldRef.current) {
+      setHeld(null);
+    }
     heldRef.current?.end();
     heldRef.current = null;
     setOffset(null);
   };
-  // A card that leaves the hand mid-drag drops its loops.
+  // A card that leaves the hand mid-drag drops its loops; the others
+  // no longer see it held.
   useEffect(
     () => () => {
+      if (heldRef.current) {
+        setHeld(null);
+      }
       heldRef.current?.end();
     },
-    [],
+    [setHeld],
   );
   return (
     <div
@@ -460,6 +468,7 @@ function HandCard({ card, ui, pose }: { card: CardView; ui: Interact; pose: FanP
           e.currentTarget.setPointerCapture(e.pointerId);
           draggedRef.current = true;
           setZoom(null);
+          setHeld(card.id);
           heldRef.current = holdCard(e.clientX, e.clientY, scaleFor(speed, 0, 0) === 0 || still(), (p, r) => {
             pitch.set(p);
             roll.set(r);
