@@ -41,8 +41,8 @@ This step never closes; new reports are appended.
 | F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88, 19.99, 19.102 | 9     |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
-| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112 | 21 |
-| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107 | 19 |
+| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116 | 25 |
+| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107, 19.117, 19.120, 19.121 | 22 |
 | Q  | Load tool: a lost connection ends a game | Go tools   | 19.108                                                 | 1     |
 | K  | Build and release files                  | Release    | 19.47, 19.59, 19.83, 19.91                             | 4     |
 | L  | Not a bug: the app follows a ruling      | None       | 19.63                                                  | 1     |
@@ -59,7 +59,7 @@ Totals by system (100 items):
 | Card data | C       | 2     |
 | Client    | D–G, O, P | 30  |
 | Server    | H, N    | 2     |
-| e2e       | I, J    | 37    |
+| e2e       | I, J    | 44    |
 | Release   | K       | 4     |
 | None      | L       | 1     |
 | Go tests  | M       | 1     |
@@ -3581,3 +3581,187 @@ Totals by system (100 items):
    4. Gates: `make lint`, `make frontend`, `make e2e` exit 0 (394 passed).
 6. Owner notes
    1. Waiting for the owner's review.
+
+### [x] 19.113 e2e: Godmode Undo names Pride's discard, not the target pick
+
+1. Goal: `rollback.spec.ts` "in Godmode each Undo undoes one move" passes whatever the deal.
+2. Report (agent, 2026-11-07)
+   1. Seen three times in step 20 gates: chromium once, webkit twice.
+   2. `rollback.spec.ts:89`: the Undo title was "Gia discards V. The Hierophant".
+   3. The test expects the attack's target pick.
+   4. Each time the attack's target was Pride.
+   5. Evidence: `.cache/e2e-evidence/20.1-gate2/`, `.cache/20.4-evidence/e2e-run1/` (not in git).
+   6. Evidence: scratchpad `e2e-evidence-1/` of the 20.6 session.
+3. Cause
+   1. Records `g94_Gia_Hal` (both ports), `g97_Gia_Hal` (4797).
+   2. The target pick puts the attack roll on the stack, then Pride's trigger above it.
+   3. The attacker throws at once, under the trigger (R-DICE-02: rolled, then on the stack).
+   4. `attackRollWaits` (`turn.ts`) wants the attack roll on top of the stack.
+   5. So `settle` threw the die; the trigger made a player discard 2.
+   6. The wait held only at the next attack roll; the latest move was the discard.
+   7. The app was right; the named wait was too strict.
+4. Tasks:
+   1. `attackRollWaits`: the attacker's throw is for the attack roll; the roll need not be on top.
+   2. No ban: Pride's trigger waits above the roll and changes nothing the test checks.
+5. Done when:
+   1. The rollback specs pass repeated runs in both browsers.
+6. Result (2026-11-07)
+   1. `attackRollWaits`: a throw prompt for the attack roll (`event.attack_roll`).
+   2. The attack roll is on the stack, not thrown; the attack has its target.
+   3. The roll need not be on top.
+   4. New test: "an attack on Pride waits for its throw under Pride's trigger" (`rollback.spec.ts`).
+   5. It puts Pride in the first slot by a saved game (`saveAndContinue`, `monster`).
+   6. Before the fix it failed in both browsers: the die was thrown, the stack empty.
+   7. After: 3 of 3 runs passed in both browsers.
+   8. Every spec that calls `untilAttackRoll`: 5 runs, 120 of 120 each, both browsers.
+   9. No ban; no app change. Wiki `Frontend-tests.md`.
+   10. Gates: `make lint`, `make frontend`, `make e2e` exit 0.
+
+### [x] 19.114 e2e: Soft vote test finds Undo greyed after Pride
+
+1. Goal: `rollback.spec.ts` "in Soft the author asks; another player opens a vote" passes whatever the deal.
+2. Report (agent, 2026-11-07)
+   1. 20.5 gate, webkit, `rollback.spec.ts:155`.
+   2. Undo was greyed: "Nothing to undo since damage was dealt".
+   3. Evidence: `.cache/screenshots/20.5/evidence-gate1/` (not in git).
+3. Cause
+   1. Record `g99_Mia_Ned_Oda` (4797), steps 14 to 30.
+   2. Step 14: target Pride; Pride's trigger above the attack roll.
+   3. Step 15: `settle` threw the die under the trigger; the roll missed.
+   4. Step 27: Pride's combat damage was dealt; a barrier for Soft.
+   5. Step 30: the next attack roll; the wait held only there.
+   6. Same cause as 19.113.
+4. Tasks:
+   1. The fix of 19.113.
+5. Result (2026-11-07)
+   1. Fixed by 19.113: the wait holds at the first attack roll, before any damage.
+
+### [x] 19.115 e2e: Soft declined-ask test finds Undo greyed after Pride
+
+1. Goal: `rollback.spec.ts` "in Soft a declined ask leaves the move" passes whatever the deal.
+2. Report (agent, 2026-11-07)
+   1. 20.6 gate, chromium, `rollback.spec.ts:199`.
+   2. Undo was greyed: "Nothing to undo since damage was dealt".
+   3. Evidence: scratchpad `evidence-gate4/` of the 20.6 session.
+3. Cause
+   1. Record `g101_Pia_Quin` (4799): the target was Pride.
+   2. Same cause as 19.113 and 19.114.
+4. Tasks:
+   1. The fix of 19.113.
+5. Result (2026-11-07)
+   1. Fixed by 19.113: the wait holds at the first attack roll, before any damage.
+
+### [x] 19.116 e2e: Bob's Brain attack line never reaches the attack roll
+
+1. Goal: `prompt.spec.ts` "the attack line waits for a roll the attack triggers: Bob's Brain" passes whatever the deal.
+2. Report (agent, 2026-11-07)
+   1. `prompt.spec.ts:300`, chromium; `untilAttackRoll` never settled.
+   2. 20.6 gate: Pride died; the attack ended.
+   3. 20.6 screenshots run: the attacker died; turn 2 began.
+   4. Evidence: scratchpad `evidence-gate2/`, `evidence-shots/` of the 20.6 session.
+3. Cause
+   1. Gate run: the brain rolled 1 and hit Pride for 1.
+   2. Pride was the target; the throw came under its trigger, as in 19.113.
+   3. `settle` threw it; the roll hit; Pride died; the attack ended.
+   4. Screenshots run: Cursed Horf was in a slot.
+   5. Its curse: "Each time a player rolls a 2, they take 2 damage."
+   6. The brain rolled 2; Vik (Cain, 2 HP) died; the turn ended.
+   7. No attack roll ever came; the app was right.
+   8. Cursed Mom's Hand ends the turn on the active player's 6: the same end.
+   9. With Pride's trigger on top the line names Pride's ability, not the attack.
+4. Tasks:
+   1. The wait fix of 19.113.
+   2. Ban Cursed Horf and Cursed Mom's Hand in the brain run, with the reason.
+   3. Ban Pride in `attackActivity`, with the reason.
+5. Result (2026-11-07)
+   1. The wait of 19.113 holds under Pride's trigger.
+   2. `attackActivity` bans Pride; the brain run also Cursed Horf and Cursed Mom's Hand.
+   3. Each ban has its reason in a comment.
+   4. `prompt.spec.ts` in the 5 runs of 19.113: both tests passed each time, both browsers.
+   5. Open: the line says "uses Pride" for Pride's trigger, which the active player controls.
+   6. Gates: with 19.113.
+
+### [ ] 19.117 e2e: the History panel does not open after a click, webkit
+
+1. Goal: `rollback.spec.ts` "a played card that asks a target is undone by one Undo" passes every run.
+2. Report (agent, 2026-11-07)
+   1. 20.5 gate, webkit; `openHistory`, `rollback.spec.ts:22`.
+   2. The History button was clicked; the panel never showed.
+   3. Passed on rerun.
+   4. Evidence: `.cache/screenshots/20.5/evidence-gate2/` (not in git).
+3. Cause
+   1. Not found yet.
+   2. Only `hide` and the strip's toggle close the panel; the test clicks once.
+   3. The game kept no record of the continued game (saved, then continued).
+   4. The snapshot shows the playing page after the click: no aim, no dialog.
+   5. Possible: an aim still set on that page; its capture click swallows any click.
+   6. Not confirmed: no code path found that leaves an aim set there.
+4. Tasks:
+   1. Find what lost the click or closed the panel.
+5. Tries (2026-11-07), none failed:
+   1. 5 runs of every `untilAttackRoll` spec, rollback included: both browsers, 5 workers.
+   2. 8 runs of `rollback.spec.ts` and `table.spec.ts`: both browsers, 5 workers.
+   3. The full `make e2e` gates of 19.113 to 19.119.
+   4. Left open: reopen with the next failure's evidence.
+
+### [ ] 19.118 The main menu moves after it shows, with the real images
+
+1. Goal: the menu buttons stay put once they show, with or without the private images.
+2. Report (agent, 2026-11-07)
+   1. `shell.spec.ts:21` (19.49) fails in every `make screenshots` run.
+   2. Settings moved from y 367 to 461, then to 457.
+   3. It fails on an untouched tree too; `make e2e` passes.
+   4. Evidence: `.cache/e2e-evidence/20.1-before/`, `.cache/evidence-20.3-before/` (not in git).
+3. Cause
+   1. 19.49 shows the text title until the banner loads, then swaps once.
+   2. With the images the banner loads; the taller title moves the centred menu 94 px.
+   3. Then the game font loads; the buttons grow and the menu moves 3.5 px.
+   4. A quick click can still hit the wrong button, as in 19.49.
+   5. `make e2e` has neither images nor fonts, so it never sees it.
+4. Tasks:
+   1. The menu shows once the title and the fonts are final.
+   2. The test counts a move only while the button is visible.
+### [ ] 19.119 e2e: a copied site link shows no answer, webkit
+
+1. Goal: `site.spec.ts` "a copied link opens the same situation, on a phone too" passes every run.
+2. Report (agent, 2026-11-07)
+   1. 20.1 gate, webkit, `site.spec.ts:36` in `expectRefusal`.
+   2. No "Refused" heading within 5 s; the text box was empty.
+   3. Passed on rerun.
+   4. Evidence: `.cache/e2e-evidence/20.1-gate2/` (not in git).
+3. Cause
+   1. Not found yet.
+
+### [ ] 19.120 e2e: a deck attack playback test times out in screenshots
+
+1. Goal: `playback.spec.ts` "a deck attack shows the revealed monster large once (19.4)" passes every run.
+2. Report (agent, 2026-11-07)
+   1. 20.6 `make screenshots`, chromium.
+   2. The test hit its 30 s limit at `playback.spec.ts:749`, waiting for the dice.
+   3. Evidence: scratchpad `evidence-shots/` of the 20.6 session.
+3. Cause
+   1. Not found yet.
+   2. The test has the default 30 s; others with `startGame` took about 10 s in that run.
+   3. The snapshot: the board still had its old slot; "Dark One" large in the middle.
+   4. So the playback was still on the first reveal, or stuck there.
+   5. The run kept no record of what the page played; the cause stays open.
+4. Tries (2026-11-07), none failed:
+   1. 5 runs of `playback.spec.ts` with `SCREENSHOTS=1`, chromium, 5 workers: 29 of 29 each.
+   2. Full `make screenshots` runs after 19.118 (see its result).
+   3. Left open: reopen with the next failure's evidence.
+
+### [ ] 19.121 e2e: a guest never reaches the Nickname field in `startGame`
+
+1. Goal: `table.spec.ts:283` "the board keeps its size when shop slots empty" passes every run.
+2. Report (agent, 2026-11-07)
+   1. Seen once, chromium, during step 20.
+   2. No evidence kept; every saved log shows the test passing.
+3. Cause
+   1. Not found yet.
+   2. `startGame` opens Online through the menu, then fills the Nickname.
+   3. A menu that moved under the click (19.49, 19.118) could miss Online.
+   4. Not confirmed: e2e has no images, and 19.49 kept that menu still.
+4. Tries (2026-11-07), none failed:
+   1. 8 runs of `rollback.spec.ts` and `table.spec.ts`: both browsers, 5 workers.
+   2. The full `make e2e` gates of 19.113 to 19.119.
+   3. Left open: reopen with the next failure's evidence.

@@ -205,20 +205,32 @@ export function tablePicks(page: Page): Locator {
 }
 
 // attackRollWaits: the page's player must throw their attack roll. The
-// roll on top of the stack is the attack's, the attack has its target,
-// and the Throw button shows. Another roll does not count: Bob's Brain
-// rolls when the attack is declared, before the target (19.85).
+// throw is for the attack roll, the roll is on the stack not yet thrown,
+// the attack has its target, and the Throw button shows. Another roll
+// does not count: Bob's Brain rolls when the attack is declared, before
+// the target (19.85). The roll need not be on top: a die is thrown as
+// it goes on the stack (R-DICE-02), so a trigger of the target (Pride)
+// may already wait above it (19.113).
 export async function attackRollWaits(page: Page): Promise<boolean> {
   const waits = await page.evaluate(() => {
     interface S {
-      game: { view: { waiting: { kind: number; player: number }; stack?: { kind: number; attack?: boolean }[]; attack?: { target?: number } } } | null;
+      game: {
+        view: { waiting: { kind: number; player: number; text?: { key?: string } }; stack?: { kind: number; attack?: boolean; roll?: number }[]; attack?: { target?: number } };
+      } | null;
       lobby: { table: { you: number } | null };
     }
     const s = (window as unknown as { fourSouls: { store: { getState: () => S } } }).fourSouls.store.getState();
     const view = s.game?.view;
-    const top = view?.stack?.at(-1);
     // 6 is PromptKind.throw (actions.ts); 3 is StackKind.roll (stack.ts).
-    return view !== undefined && view.waiting.kind === 6 && view.waiting.player === s.lobby.table?.you && top?.kind === 3 && top.attack === true && (view.attack?.target ?? 0) !== 0;
+    const roll = view?.stack?.some((it) => it.kind === 3 && it.attack === true && !it.roll) ?? false;
+    return (
+      view !== undefined &&
+      view.waiting.kind === 6 &&
+      view.waiting.player === s.lobby.table?.you &&
+      view.waiting.text?.key === 'event.attack_roll' &&
+      roll &&
+      (view.attack?.target ?? 0) !== 0
+    );
   });
   return waits && (await throwButton(page).count()) > 0;
 }

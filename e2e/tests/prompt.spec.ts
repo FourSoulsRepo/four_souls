@@ -264,7 +264,16 @@ test('the board glows for the asked player; every seat marks them (15.95)', asyn
 // takes no screenshots, so the plain run's stay.
 async function attackActivity(browser: Browser, names: [string, string], item?: string) {
   const snap = item === undefined ? shot : () => Promise.resolve();
-  const pages = await startGame(browser, names, { url: fast() });
+  // Pride: its trigger goes above the attack roll, so the active
+  // player's line names Pride's ability, not the attack it checks.
+  const bans = ['pride'];
+  if (item === 'bobs_brain') {
+    // The brain's own roll can end the turn before any attack roll
+    // (19.116): Cursed Horf deals 2 on a 2, which kills a 2 HP
+    // attacker; Cursed Mom's Hand ends the turn on a 6.
+    bans.push('cursed_horf', 'cursed_moms_hand');
+  }
+  const pages = await startGame(browser, names, { url: fast(), bans });
   await activePage(pages, click);
   if (item !== undefined) {
     await saveAndContinue(pages, names.join(', '), 'bomb', item);

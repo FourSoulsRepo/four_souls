@@ -108,6 +108,26 @@ test('in Godmode each Undo undoes one move, by the author or another player (17.
   await attackToThrow(pages, active);
 });
 
+test("an attack on Pride waits for its throw under Pride's trigger; Undo names the target pick (19.113)", async ({ browser }) => {
+  const names = ['Ivy', 'Jon'];
+  const pages = await startGame(browser, names, { url: `${appURL()}&anim=off`, options: god });
+  await activePage(pages, click);
+  // The first slot's monster becomes Pride; settle attacks the first slot.
+  await saveAndContinue(pages, names.join(', '), 'bomb', undefined, false, {}, undefined, 'pride');
+  const active = await activePage(pages, click);
+  await attackToThrow(pages, active);
+  // The die waits under Pride's trigger (R-DICE-02): nothing resolved yet.
+  const top = await active.evaluate(() => {
+    interface S {
+      game: { view: { stack?: { card?: string }[] } } | null;
+    }
+    return (window as unknown as { fourSouls: { store: { getState: () => S } } }).fourSouls.store.getState().game?.view.stack?.at(-1)?.card;
+  });
+  expect(top).toBe('pride');
+  await openHistory(active);
+  await expect(undo(active)).toHaveAttribute('title', new RegExp(`^${lineRe(tr('history.undo.title', { move: tr('history.attack.you') })).source}$`));
+});
+
 test('a game without a rollback mode has no Undo button (ADR 020)', async ({ browser }) => {
   const pages = await startGame(browser, ['Kai', 'Lux'], { url: `${appURL()}&anim=off` });
   const active = await activePage(pages, click);
