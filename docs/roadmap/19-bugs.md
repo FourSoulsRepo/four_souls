@@ -41,7 +41,7 @@ This step never closes; new reports are appended.
 | F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88, 19.99, 19.102, 19.118, 19.119 | 11    |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
-| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116 | 25 |
+| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123 | 26 |
 | J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107, 19.117, 19.120, 19.121, 19.122 | 23 |
 | Q  | Load tool: a lost connection ends a game | Go tools   | 19.108                                                 | 1     |
 | K  | Build and release files                  | Release    | 19.47, 19.59, 19.83, 19.91                             | 4     |
@@ -59,7 +59,7 @@ Totals by system (100 items):
 | Card data | C       | 2     |
 | Client    | D–G, O, P | 32  |
 | Server    | H, N    | 2     |
-| e2e       | I, J    | 45    |
+| e2e       | I, J    | 46    |
 | Release   | K       | 4     |
 | None      | L       | 1     |
 | Go tests  | M       | 1     |
@@ -3702,7 +3702,8 @@ Totals by system (100 items):
    1. 5 runs of every `untilAttackRoll` spec, rollback included: both browsers, 5 workers.
    2. 8 runs of `rollback.spec.ts` and `table.spec.ts`: both browsers, 5 workers.
    3. The full `make e2e` gates of 19.113 to 19.119.
-   4. Left open: reopen with the next failure's evidence.
+   4. 3 full chromium runs with traces: 205 of 205 each.
+   5. Left open: reopen with the next failure's evidence.
 
 ### [x] 19.118 The main menu moves after it shows, with the real images
 
@@ -3790,6 +3791,11 @@ Totals by system (100 items):
    5. So the time went before it, in `startGame` or the first effect.
    6. Both tests use the default 30 s; the other game specs set 120 s.
    7. Evidence: `.cache/e2e-evidence/19.120-playback167/` (not in git).
+6. More tries (2026-11-07), none failed:
+   1. 3 full chromium runs with `--trace retain-on-failure`, 5 workers: 205 of 205 each.
+   2. The last `make e2e` gate of 19.119 and the gate of this note passed.
+   3. Next failure: keep its trace; it shows which step of `startGame` took the time.
+   4. Left open: no fix without the cause; a longer limit would only hide it.
 
 ### [ ] 19.121 e2e: a guest never reaches the Nickname field in `startGame`
 
@@ -3805,7 +3811,8 @@ Totals by system (100 items):
 4. Tries (2026-11-07), none failed:
    1. 8 runs of `rollback.spec.ts` and `table.spec.ts`: both browsers, 5 workers.
    2. The full `make e2e` gates of 19.113 to 19.119.
-   3. Left open: reopen with the next failure's evidence.
+   3. 3 full chromium runs with traces: 205 of 205 each.
+   4. Left open: reopen with the next failure's evidence.
 
 ### [ ] 19.122 e2e: a hand card's neighbour moves 0.4 px on hover, chromium
 
@@ -3824,3 +3831,23 @@ Totals by system (100 items):
 5. Tries (2026-11-07)
    1. `hover.spec.ts`, chromium, 20 repeats, 5 workers: 120 of 120.
    2. Left for step 20, whose test it is; reopen with the next failure.
+
+### [x] 19.123 e2e: the hidden top card test finds the card in the viewer's own loot
+
+1. Goal: `info.spec.ts` "everyone sees if a looked-at top card stays or goes to the bottom" passes whatever the deal.
+2. Report (agent, 2026-11-07)
+   1. Found by the `make e2e` gate of the 19.117 to 19.121 notes, chromium.
+   2. `info.spec.ts:665`: Mo's history contained "A Dime!!".
+   3. Evidence: `.cache/e2e-evidence/19.123-info/` (not in git).
+3. Cause
+   1. Mo went first; the turn's loot gave Mo A Dime!!: "You loot A Dime!!".
+   2. The test checks the whole history for the name of Lea's hidden card.
+   3. The top card's row was right: "Lea puts the top loot card on the bottom".
+   4. The app was right; the check is too wide.
+4. Tasks:
+   1. Check only the top card's row for the card name; no ban.
+5. Result (2026-11-07)
+   1. The test finds the top card's row and checks only it.
+   2. No ban; no app change.
+   3. The test, 5 repeats, both browsers: 10 of 10.
+   4. Gates: `make lint`, `make frontend`, `make e2e` exit 0.

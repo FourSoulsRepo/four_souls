@@ -661,7 +661,9 @@ test('everyone sees if a looked-at top card stays or goes to the bottom (19.90)'
   }
   const history = (p: typeof lea) => p.getByRole('complementary', { name: tr('history.title'), exact: true });
   await expect(history(lea)).toContainText(tr('history.top_bottom.you', { card: cardName('a_dime') }));
-  await expect(history(mo)).toContainText(tr('history.top_bottom.loot', { player: names[0] ?? '' }));
-  await expect(history(mo)).not.toContainText(cardName('a_dime'));
+  const row = history(mo).getByRole('listitem').filter({ hasText: tr('history.top_bottom.loot', { player: names[0] ?? '' }) });
+  await expect(row).toHaveCount(1);
+  // Only this row: the deal may give Mo the same card as their own loot (19.123).
+  await expect(row).not.toContainText(cardName('a_dime'));
   await shot(mo, 'history-top-choice');
 });
