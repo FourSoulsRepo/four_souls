@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { bezier, curves, elastic, elasticOut, feel, hitSize } from './feel';
+import { bezier, curves, elastic, elasticOut, fanPose, feel, hitSize } from './feel';
 
 describe('curves', () => {
   it('parses every curve string', () => {
@@ -81,5 +81,66 @@ describe('hit sizes (20.3)', () => {
     expect(feel.hit.burst[0]).toBe(1);
     expect(feel.hit.burst).toEqual([...feel.hit.burst].sort((a, b) => a - b));
     expect(() => bezier(feel.hit.shakeCurve)).not.toThrow();
+  });
+});
+
+describe('hand fan (20.5)', () => {
+  const fan = (n: number) => Array.from({ length: n }, (_, i) => fanPose(i, n));
+
+  it('lays 1–3 cards straight', () => {
+    for (const n of [1, 2, 3]) {
+      expect(fan(n)).toEqual(Array.from({ length: n }, () => ({ angle: 0, drop: 0 })));
+    }
+  });
+
+  it('spans 40° plus 2° per card from 4 cards, spread evenly', () => {
+    for (const [n, span] of [
+      [4, 48],
+      [5, 50],
+      [7, 54],
+      [10, 60],
+      [12, 64],
+    ] as const) {
+      const poses = fan(n);
+      const angles = poses.map((p) => p.angle);
+      expect((angles.at(-1) ?? 0) - (angles[0] ?? 0), `n=${String(n)}`).toBeCloseTo(span);
+      const step = span / (n - 1);
+      angles.forEach((a, i) => {
+        expect(a, `n=${String(n)} i=${String(i)}`).toBeCloseTo(step * (i - (n - 1) / 2));
+      });
+    }
+  });
+
+  it('drops the ends on a parabola, (i + 0.5 − n/2)² / (6n)', () => {
+    const unit = feel.hand.drop;
+    const drops = (n: number, want: number[]) => {
+      fan(n).forEach((p, i) => {
+        expect(p.drop / unit, `n=${String(n)} i=${String(i)}`).toBeCloseTo(want.at(i) ?? NaN);
+      });
+    };
+    drops(4, [2.25 / 24, 0.25 / 24, 0.25 / 24, 2.25 / 24]);
+    drops(5, [4 / 30, 1 / 30, 0, 1 / 30, 4 / 30]);
+    expect((fan(10)[0]?.drop ?? 0) / unit).toBeCloseTo(20.25 / 60);
+    expect((fan(12).at(-1)?.drop ?? 0) / unit).toBeCloseTo(30.25 / 72);
+  });
+
+  it('is symmetric about the middle', () => {
+    for (const n of [4, 5, 8, 11]) {
+      const poses = fan(n);
+      poses.forEach((p, i) => {
+        const q = poses.at(n - 1 - i);
+        expect(q?.angle).toBeCloseTo(-p.angle);
+        expect(q?.drop).toBeCloseTo(p.drop);
+      });
+    }
+  });
+});
+
+describe('zoom (20.5)', () => {
+  it('waits 0.4 s for a table card and grows in 0.15 s (ADR 027 principle 2)', () => {
+    expect(feel.zoom.delay).toBe(0.4);
+    expect(feel.zoom.grow).toBe(0.15);
+    expect(() => bezier(feel.zoom.growCurve)).not.toThrow();
+    expect(feel.zoom.grace).toBeGreaterThan(0);
   });
 });

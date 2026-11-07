@@ -74,6 +74,8 @@ export interface Zoom {
   at: Box;
   // rise: a hand card's zoom rises from it instead (H-13).
   rise?: boolean;
+  // grow: it grows out of the card, after a table card's wait (20.5).
+  grow?: boolean;
   // why says why the player can't use the card now (15.29, F-17).
   why?: string;
   // caption goes below the card: who owns it, and the used ability's

@@ -1,4 +1,5 @@
 import { useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { fanPose, type FanPose } from '../feel';
 import { t } from '../i18n';
 import { Role, type CardView, type PlayerView } from '../protocol';
 import { useApp } from '../store';
@@ -207,7 +208,7 @@ function OwnArea({ player, name, active, asked, winSouls, ui, tools }: Omit<Prop
         style={fan(hand.length)}
       >
         {hand.map((c, i) => (
-          <HandCard key={c.id} card={c} ui={ui} spread={i - (hand.length - 1) / 2} />
+          <HandCard key={c.id} card={c} ui={ui} pose={fanPose(i, hand.length)} />
         ))}
       </div>
     </section>
@@ -326,23 +327,13 @@ function PlayCard({ card, owner, size, ui }: { card: CardView; owner: number; si
   );
 }
 
-// fan spreads a hand of n cards: a smaller angle and more overlap the
-// more cards there are, so a big hand still fits (H-03). The ends drop
-// at most fanDrop pixels, so their tops stay in reach (19.15).
+// fan spaces a hand of n cards: more overlap the more cards there are,
+// so a big hand still fits (H-03). Each card's turn and drop is its
+// own (fanPose, 20.5).
 function fan(n: number): CSSProperties {
-  const step = Math.min(7, 40 / Math.max(n, 1));
   const overlap = n <= 3 ? 20 : Math.min(64, 20 + (n - 3) * 7);
-  const half = Math.max((n - 1) / 2, 1);
-  const drop = Math.min(4, fanDrop / (half * half));
-  return {
-    '--fan-step': `${String(step)}deg`,
-    '--fan-overlap': `${String(overlap)}px`,
-    '--fan-drop': `${String(drop)}px`,
-  } as CSSProperties;
+  return { '--fan-overlap': `${String(overlap)}px` } as CSSProperties;
 }
-
-// fanDrop is how far the end cards of a big hand drop, in pixels.
-const fanDrop = 24;
 
 // onPlayArea: the point is over the board, where loot cards are played.
 function onPlayArea(x: number, y: number): boolean {
@@ -352,14 +343,14 @@ function onPlayArea(x: number, y: number): boolean {
 // How far a pointer moves before a press becomes a drag, in pixels.
 const dragThreshold = 8;
 
-// HandCard is a card in the viewer's hand, spread from the hand's middle
-// by its place in the fan. A playable one can be dragged
+// HandCard is a card in the viewer's hand, turned and dropped by its
+// place in the fan (pose). A playable one can be dragged
 // onto the board to play it; clicking it opens its actions instead. The
 // drag is plain pointer events with pointer capture, so mouse and touch
 // share it and the release is never missed (ADR 008).
 // A card that needs a target is not dragged: a click starts aiming and
 // the card stays lifted in the fan meanwhile (15.25).
-function HandCard({ card, ui, spread }: { card: CardView; ui: Interact; spread: number }) {
+function HandCard({ card, ui, pose }: { card: CardView; ui: Interact; pose: FanPose }) {
   const act = useApp((s) => s.act);
   const setZoom = useApp((s) => s.setZoom);
   const aiming = useApp((s) => s.aiming?.source === card.id);
@@ -380,7 +371,7 @@ function HandCard({ card, ui, spread }: { card: CardView; ui: Interact; spread: 
       style={
         offset
           ? { transform: `translate(${String(offset.x)}px, ${String(offset.y)}px) scale(1.08)` }
-          : ({ '--spread': String(spread) } as CSSProperties)
+          : ({ '--fan-angle': `${String(pose.angle)}deg`, '--fan-drop': `${String(pose.drop)}px` } as CSSProperties)
       }
       onPointerDown={(e) => {
         if (play && e.button === 0) {

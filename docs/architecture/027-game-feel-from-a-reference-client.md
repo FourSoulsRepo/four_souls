@@ -87,6 +87,29 @@ Each sub-step of step 20 takes the part it needs.
    3. Keyword tips appear on the side toward the screen middle.
 6. Re-layout: scale and turn 0.25 s, move 0.5 s, easeOutExpo.
 7. Opponent hand re-layout: move 1.5 s, slower and calmer.
+8. Checked in 20.5 (`ZoneHand`, `InputManager`, `BigCard`).
+   1. Fan from 4 cards: `IsHandScrunched` is `cardCount > 3`.
+   2. Own hand: 40° + 2° per card; an opponent's: 40° flat.
+   3. Each card turns about its own centre; x is evenly spaced.
+   4. The drop adds `sin(angle) × spacing / 2` on the right side only.
+   5. A hovered hand card is set in place at once; others keep their tween.
+   6. A board card's big card waits `m_MouseOverDelay`, 0.4 s.
+   7. A hand card's shows at once, with no delay.
+   8. The big card scales in over `m_ScaleSec`, 0.15 s.
+   9. A new hovered card restarts the reference's 0.4 s timer.
+9. Built in 20.5.
+   1. Own hand only; other players' hidden hands keep their fan.
+   2. Fan: `fanPose` in `feel.ts`; each card turns about its centre.
+   3. Drop unit: 128 px, tuned by eye; no right-side extra.
+   4. Hand hover: the zoom rises from the card at once, as before.
+   5. The hovered card keeps its place; no neighbour moves.
+   6. Table hover: zoom after 0.4 s, grows from the card in 0.15 s.
+   7. Its curve is expo-out, as iTween's default.
+   8. Ours: while a zoom shows, the next card's shows at once.
+   9. Also within 0.3 s after one closed (`feel.zoom.grace`).
+   10. The step file asks for that; the reference waits again.
+   11. Speed "off" and reduced motion: no growth; the delay stays.
+   12. Touch keeps its long press; history names zoom at once.
 
 ### Draw
 

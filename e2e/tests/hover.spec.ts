@@ -66,9 +66,26 @@ test('playable hand cards glow green; a hovered one rises large (15.27)', async 
   // A hovered hand card rises: its zoom stands on the window's bottom
   // edge, over the card.
   const card = hand(active).first();
+  // Its neighbours stay where they are (20.5): the same edges, give or
+  // take the browser's float noise.
+  const others = active.locator('.own .hand-card');
+  const edges = () =>
+    others.evaluateAll((els) =>
+      els.flatMap((el) => {
+        const r = el.getBoundingClientRect();
+        return [r.left, r.top, r.right, r.bottom];
+      }),
+    );
+  const before = await edges();
   await hoverTop(active, card);
   const zoom = active.getByTestId('card-zoom').locator('.card.size-zoom');
-  await expect(zoom).toBeVisible();
+  // A hand card answers at once, with no wait (20.5, ADR 027).
+  await expect(zoom).toBeVisible({ timeout: 250 });
+  const after = await edges();
+  expect(after).toHaveLength(before.length);
+  after.forEach((v, i) => {
+    expect(v).toBeCloseTo(before.at(i) ?? NaN, 1);
+  });
   await shot(active, 'hand-hover');
   const c = await box(card);
   const z = await box(zoom);
@@ -91,6 +108,42 @@ test('playable hand cards glow green; a hovered one rises large (15.27)', async 
   expect(gap).toBeLessThan(40);
   expect(mz.y).toBeLessThan(m.y + m.height);
   expect(mz.y + mz.height).toBeGreaterThan(m.y);
+});
+
+// A table card's zoom waits for the pointer to rest (20.5, ADR 027
+// principle 2): none at 0.2 s, there at 0.6 s. While it shows, the
+// next card's comes at once.
+test('a table card zooms after a pause; the next one at once (20.5)', async ({ page }) => {
+  await page.goto(gallery);
+  const row = page.getByLabel('Table size');
+  const zoom = page.getByTestId('card-zoom').locator('.card.size-zoom');
+  const isaac = await box(row.getByRole('img', { name: cardName('isaac') }));
+  const start = Date.now();
+  await page.mouse.move(isaac.x + isaac.width / 2, isaac.y + isaac.height / 2);
+  await page.waitForTimeout(Math.max(0, 200 - (Date.now() - start)));
+  expect(await zoom.count()).toBe(0);
+  // It grows out of the card (0.15 s): caught while it runs.
+  await page.waitForFunction(() => (document.querySelector('.card-zoom-body')?.getAnimations().length ?? 0) > 0, undefined, { polling: 'raf' });
+  await page.waitForTimeout(Math.max(0, 600 - (Date.now() - start)));
+  expect(await zoom.isVisible()).toBe(true);
+  await shot(page, 'zoom-after-pause');
+  const d6 = await box(row.getByRole('img', { name: cardName('the_d6') }));
+  await page.mouse.move(d6.x + d6.width / 2, d6.y + d6.height / 2);
+  await expect(zoom).toHaveAttribute('aria-label', cardName('the_d6'), { timeout: 250 });
+  // Away from every card, it closes.
+  await page.mouse.move(2, 2);
+  await expect(zoom).toHaveCount(0);
+});
+
+// With animations off the zoom still waits, but shows at full size at
+// once: no growth (20.5).
+test('with animations off a table zoom does not grow (20.5)', async ({ page }) => {
+  await page.goto(`${gallery}&anim=off`);
+  const card = page.getByLabel('Table size').getByRole('img', { name: cardName('isaac') });
+  await card.hover();
+  const body = page.getByTestId('card-zoom').locator('.card-zoom-body');
+  await expect(body).toBeVisible();
+  expect(await body.evaluate((el) => el.getAnimations().length)).toBe(0);
 });
 
 test('the zoom shows keyword tips beside the card (15.27)', async ({ page }) => {

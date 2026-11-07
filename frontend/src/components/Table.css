@@ -699,11 +699,12 @@
   overflow: visible;
 }
 
-/* The fan: each card turns by its place from the middle and drops a
-   little toward the ends. --spread is set per card, the rest on .hand. */
+/* The fan (20.5, ADR 027 "Hand"): from 4 cards each card turns about
+   its middle by its place and drops a little toward the ends; 1–3
+   lie straight. --fan-angle and --fan-drop are set per card
+   (fanPose), the overlap on .hand. */
 .own .hand-card {
-  transform: translateY(calc(var(--spread) * var(--spread) * var(--fan-drop))) rotate(calc(var(--spread) * var(--fan-step)));
-  transform-origin: 50% 160%;
+  transform: translateY(var(--fan-drop)) rotate(var(--fan-angle));
 }
 
 .own .hand-card + .hand-card {

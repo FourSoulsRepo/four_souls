@@ -101,7 +101,7 @@ Owner notes (2026-11-06):
    1. e2e: the next effect starts while the number still shows.
    2. Animation clash fixture stays green.
 
-### [ ] 20.5 Instant hand hover, patient table hover
+### [x] 20.5 Instant hand hover, patient table hover
 
 1. Goal: the pointer gets the answer it expects (principle 2).
 2. Tasks:

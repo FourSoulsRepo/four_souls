@@ -166,7 +166,7 @@ const held = new Map<HTMLElement, () => void>();
 
 // still is true when the player asks for less motion: the hit lands
 // in place, with no strike.
-function still(): boolean {
+export function still(): boolean {
   return typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 

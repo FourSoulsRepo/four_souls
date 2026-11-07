@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, type CSSProperties, type MouseEvent, type 
 import { claimed } from '../animations';
 import { iconText, kindOf, textParts, unknownCard, type CardInfo, type Kind } from '../cards';
 import { diceImage } from '../dice';
+import { feel } from '../feel';
 import { t } from '../i18n';
 import { scaleFor } from '../playback';
 import { fighters } from '../prompt';
@@ -249,13 +250,22 @@ function useFlip(cardRef: string | undefined, objectId: number | undefined, scal
   return flip.half ? { face: cardRef, turn: 'in' } : { face: flip.from, turn: 'out' };
 }
 
+// warmUntil is when a table card's zoom stops showing at once after
+// the last one closed (feel.zoom.grace, 20.5), in ms since the page
+// loaded.
+let warmUntil = 0;
+
 // useZoom zooms a card from the element it is spread on: on mouse
 // hover, beside it or rising from it, or after a long touch (B-06). A
 // card and a soul crystal share it (V-43). Nothing zooms without a
-// card ref or when zoomable is false.
+// card ref or when zoomable is false. A hand card's (rise) zooms at
+// once; any other waits feel.zoom.delay and grows, unless a zoom shows
+// or just closed: then it shows at once (20.5, ADR 027 principle 2).
 export function useZoom(cardRef: string | undefined, zoomable: boolean, rise = false, why?: string, stats: string[] = [], counters: CounterView[] = []) {
   const setZoom = useApp((s) => s.setZoom);
   const pressRef = useRef(0);
+  // waitRef is the pending timer of a table card's zoom.
+  const waitRef = useRef(0);
   const downRef = useRef<{ x: number; y: number } | null>(null);
   const on = zoomable && cardRef !== undefined;
 
@@ -273,6 +283,7 @@ export function useZoom(cardRef: string | undefined, zoomable: boolean, rise = f
   useEffect(
     () => () => {
       unwatch();
+      window.clearTimeout(waitRef.current);
       const { zoom, setZoom: clear } = useApp.getState();
       if (zoomedRef.current && zoom && zoom.ref === cardRef && !zoom.touch) {
         clear(null);
@@ -287,6 +298,7 @@ export function useZoom(cardRef: string | undefined, zoomable: boolean, rise = f
         return;
       }
       unwatch();
+      window.clearTimeout(waitRef.current);
       zoomedRef.current = false;
       const { zoom, setZoom: clear } = useApp.getState();
       if (zoom && zoom.ref === cardRef && !zoom.touch) {
@@ -307,23 +319,41 @@ export function useZoom(cardRef: string | undefined, zoomable: boolean, rise = f
     onPointerEnter: (e: PointerEvent<HTMLElement>) => {
       if (on && e.pointerType === 'mouse') {
         zoomedRef.current = true;
-        watch(e.currentTarget);
-        setZoom({
-          ref: cardRef,
-          touch: false,
-          at: boxOf(e.currentTarget),
-          rise,
-          ...(why ? { why } : {}),
-          ...(stats.length > 0 ? { stats } : {}),
-          ...(counters.length > 0 ? { counters } : {}),
-        });
+        const el = e.currentTarget;
+        watch(el);
+        window.clearTimeout(waitRef.current);
+        const show = (grow: boolean) => {
+          setZoom({
+            ref: cardRef,
+            touch: false,
+            at: boxOf(el),
+            rise,
+            ...(grow ? { grow } : {}),
+            ...(why ? { why } : {}),
+            ...(stats.length > 0 ? { stats } : {}),
+            ...(counters.length > 0 ? { counters } : {}),
+          });
+        };
+        const open = useApp.getState().zoom;
+        if (rise || (open && !open.touch) || performance.now() < warmUntil) {
+          show(false);
+          return;
+        }
+        waitRef.current = window.setTimeout(() => {
+          show(true);
+        }, feel.zoom.delay * 1000);
       }
     },
     onPointerLeave: (e: PointerEvent<HTMLElement>) => {
       cancelPress();
       if (on && e.pointerType === 'mouse') {
         unwatch();
+        window.clearTimeout(waitRef.current);
         zoomedRef.current = false;
+        const open = useApp.getState().zoom;
+        if (open && !open.touch && !open.rise) {
+          warmUntil = performance.now() + feel.zoom.grace * 1000;
+        }
         setZoom(null);
       }
     },

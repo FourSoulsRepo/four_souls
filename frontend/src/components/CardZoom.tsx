@@ -1,12 +1,13 @@
 import { useLayoutEffect, useRef, useState } from 'react';
 import { language, t } from '../i18n';
-import { useApp } from '../store';
+import { useApp, type Zoom } from '../store';
+import { feel } from '../feel';
 import { keyword, placeZoom, type Place } from '../zoom';
 import type { Outcome } from '../history';
 import { translatorsOf } from '../cards';
 import { counterColor } from '../counters';
 import { Card, CardText } from './Card';
-import { starPolygon } from './lunge';
+import { starPolygon, still } from './lunge';
 import { skullPath } from './marks';
 import { Part } from './StackPanel';
 import './Card.css';
@@ -41,6 +42,29 @@ export function CardZoom() {
     const size = { width: el.offsetWidth, height: el.offsetHeight };
     setPlace(placeZoom(zoom.at, size, { width: window.innerWidth, height: window.innerHeight }, zoom.rise ?? false));
   }, [zoom]);
+  // A table card's zoom grows out of the card once it is placed (20.5).
+  const grownRef = useRef<Zoom | null>(null);
+  useLayoutEffect(() => {
+    const el = bodyRef.current;
+    if (!zoom?.grow || !place || !el || grownRef.current === zoom) {
+      return;
+    }
+    grownRef.current = zoom;
+    if (useApp.getState().settings.animation === 'off' || still()) {
+      return;
+    }
+    const { at } = zoom;
+    const from = Math.min(1, (at.right - at.left) / Math.max(el.offsetWidth, 1));
+    const origin = `${String((at.left + at.right) / 2 - place.x)}px ${String((at.top + at.bottom) / 2 - place.y)}px`;
+    // anim: zoom-grow
+    el.animate(
+      [
+        { transform: `translate(${String(place.x)}px, ${String(place.y)}px) scale(${String(from)})`, transformOrigin: origin },
+        { transform: `translate(${String(place.x)}px, ${String(place.y)}px) scale(1)`, transformOrigin: origin },
+      ],
+      { duration: feel.zoom.grow * 1000, easing: feel.zoom.growCurve },
+    );
+  }, [zoom, place]);
   if (!zoom) {
     return null;
   }

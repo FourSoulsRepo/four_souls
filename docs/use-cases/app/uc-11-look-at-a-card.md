@@ -40,6 +40,17 @@
 * **3f. Two-sided card (ADR 023):** the other side shows beside it.
   * Smaller, under the words "Other side".
   * Each side has its own name, text and stats.
+* **2b. Table card (20.5):** the large copy waits 0.4 s.
+  * A pointer passing over the table opens nothing.
+  * It then grows from the card in 0.15 s.
+  * With animations off or reduced motion it shows at full size.
+* **2c. Next card (20.5):** the large copy stays open.
+  * Moving to another card shows its copy at once.
+  * Also within 0.3 s after the last one closed.
+* **3g. Hand card at once (20.5):** no wait and no growth.
+  * The hand card keeps its place; its neighbours do not move.
+* **3h. Fan (20.5):** 1–3 hand cards lie straight.
+  * From 4 cards they fan out: 40° plus 2° per card.
 
 ## Postconditions
 

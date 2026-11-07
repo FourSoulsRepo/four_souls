@@ -139,6 +139,27 @@ export const feel = {
     time: 0.4,
     steps: 8,
   },
+  // hand: the own hand's fan (20.5, ADR 027 "Hand", fanPose). A hand
+  // of fewer than from cards lies straight. From then on the fan spans
+  // angle plus perCard per card, in degrees, spread evenly, and the
+  // cards drop on the reference's parabola; drop is its unit in px.
+  hand: {
+    from: 4,
+    angle: 40,
+    perCard: 2,
+    drop: 128,
+  },
+  // zoom: a hovered card shown large (20.5, ADR 027 principle 2). A
+  // hand card's shows at once, with no tween. A table card's waits
+  // delay, then grows over grow from the card's size. While one shows,
+  // or within grace after one closed, the next shows at once: the
+  // pointer moves from card to card and the zoom stays open.
+  zoom: {
+    delay: 0.4,
+    grow: 0.15,
+    growCurve: curves.expoOut,
+    grace: 0.3,
+  },
   // banner: the text in the middle (Effects.tsx). times are its
   // opacity keyframes: in, held, out. A long one (start of game) stays
   // twice as long, with fades as long.
@@ -162,4 +183,27 @@ export function hitSize(amount: number): HitSize {
     return 2;
   }
   return 1;
+}
+
+export interface FanPose {
+  // angle is the card's turn in degrees, clockwise.
+  angle: number;
+  // drop is how far it sits below the fan's middle, in px.
+  drop: number;
+}
+
+// fanPose is where card i of an own hand of n cards sits in the fan
+// (20.5, ADR 027 "Hand"): fewer than feel.hand.from lie straight; a
+// bigger hand turns by its place from the middle and drops on the
+// parabola (i + 0.5 − n/2)² / (6n).
+export function fanPose(i: number, n: number): FanPose {
+  const { from, angle, perCard, drop } = feel.hand;
+  if (n < from) {
+    return { angle: 0, drop: 0 };
+  }
+  const spread = i + 0.5 - n / 2;
+  return {
+    angle: ((angle + perCard * n) / (n - 1)) * spread,
+    drop: ((spread * spread) / (6 * n)) * drop,
+  };
 }
