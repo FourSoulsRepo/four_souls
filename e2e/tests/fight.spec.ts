@@ -2,10 +2,11 @@
 // and another player's loot card.
 import { expect, test } from './fixtures';
 import { startGame } from './game';
+import { saveAndContinue } from './saves';
 import { appURL } from './server';
 import { shot } from './shot';
-import { activePage, answerPlay, click, playLoot, throwButton, turnAction, untilAttackRoll } from './turn';
-import { tr, trRe } from './locale';
+import { activePage, click, playLoot, throwButton, turnAction, untilAttackRoll } from './turn';
+import { cardName, tr, trRe } from './locale';
 
 const fast = () => `${appURL()}&anim=off`;
 
@@ -37,31 +38,53 @@ test('a second player sees the fight mark and the attack roll (15.31)', async ({
   await expect(other.getByRole('group', { name: tr('stack.last_roll') })).toBeVisible();
 });
 
+// The card is A Penny!, by a saved game: a deal may hold no playable loot
+// card. It asks nothing and waits on the stack for its player, whose
+// character was charged as the turn started (19.126). The play goes
+// through the real server, which the 20.9 tests in playback.spec.ts
+// fake (19.128).
 test("another player's loot card shows large, then by the stack (15.31)", async ({ browser }) => {
-  // Animations on: the pop is an effect.
-  const pages = await startGame(browser, ['Xan', 'Yol']);
+  // A repeat (--repeat-each) gets its own names: the saved games list
+  // keeps the earlier repeats' games.
+  const r = test.info().repeatEachIndex;
+  const names = ['Xan', 'Yol'].map((n) => (r > 0 ? `${n}${String(r)}` : n));
+  // Animations on: the big card is an effect.
+  const pages = await startGame(browser, names);
+  await activePage(pages, click);
+  await saveAndContinue(pages, names.join(', '), 'a_penny');
   const active = await activePage(pages, click);
   const other = pages.find((p) => p !== active);
   if (!other) {
     throw new Error('no other page');
   }
-  const loot = active.locator('.hand .card.hl-act').first();
-  test.skip(!(await loot.isVisible()), 'no playable loot card in this deal');
-  const name = (await loot.getAttribute('aria-label')) ?? '';
-  await playLoot(active, loot, click);
+  const player = names[pages.indexOf(active)] ?? '';
+  const name = cardName('a_penny');
+  // The player's own play is never shown back to them large (20.9): the
+  // page notes any big card from now on.
+  await active.evaluate(() => {
+    const w = window as unknown as { bigSeen: boolean };
+    w.bigSeen = false;
+    new MutationObserver(() => {
+      if (document.querySelector('[data-testid="played-pop"], .played')) {
+        w.bigSeen = true;
+      }
+    }).observe(document.body, { childList: true, subtree: true });
+  });
+  await playLoot(active, active.getByRole('group', { name: tr('table.your_hand') }).getByRole('button', { name }).first(), click);
 
-  // The other sees it pop large in the middle, then it stays by the stack.
-  // A card may ask its mode or target first; the pop may come and go
-  // while that answer waits for the stack row, so both run at once (19.58).
+  // The other sees it large in the middle, named as the player's play.
   const pop = other.getByTestId('played-pop');
-  await Promise.all([answerPlay(active, click), expect(pop).toBeVisible({ timeout: 10_000 })]);
+  await expect(pop).toBeVisible({ timeout: 10_000 });
   await expect(pop.getByRole('img', { name })).toBeVisible();
+  await expect(pop).toContainText(tr('effect.plays', { player }));
   await other.waitForTimeout(400); // let it grow for the picture
   await shot(other, 'played-pop');
-  const kept = other.getByRole('figure', { name: new RegExp(`${trRe('stack.played_label', { card: name }).source}$`) });
+  // Then it shrinks into the stack, and stays large by it while it waits.
+  const kept = other.getByRole('figure', { name: tr('stack.played_label', { player, card: name }) });
+  await expect(pop).toHaveCount(0, { timeout: 8000 });
   await expect(kept).toBeVisible();
   await expect(kept.getByRole('img', { name })).toBeVisible();
+  await expect(other.getByRole('complementary', { name: tr('stack.title') })).toContainText(trRe('stack.loot', { card: name }));
   await shot(other, 'played-card');
-  // The player's own play is not shown back to them.
-  await expect(active.locator('.played')).toHaveCount(0);
+  expect(await active.evaluate(() => (window as unknown as { bigSeen: boolean }).bigSeen)).toBe(false);
 });

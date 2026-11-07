@@ -41,7 +41,7 @@ This step never closes; new reports are appended.
 | F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88, 19.99, 19.102, 19.118, 19.119 | 11    |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
-| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122, 19.125, 19.126, 19.127, 19.120 | 31 |
+| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122, 19.125, 19.126, 19.127, 19.120, 19.128 | 32 |
 | J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107, 19.117, 19.121 | 21 |
 | Q  | Load tool: a lost connection ends a game | Go tools   | 19.108                                                 | 1     |
 | K  | Build and release files                  | Release    | 19.47, 19.59, 19.83, 19.91                             | 4     |
@@ -52,7 +52,7 @@ This step never closes; new reports are appended.
 | P  | A missing setting: no way to change it   | Client     | 19.93                                                  | 1     |
 | R  | Vitest setup: a test sees stale files    | Vitest     | 19.124                                                 | 1     |
 
-Totals by system (124 items):
+Totals by system (125 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
@@ -60,7 +60,7 @@ Totals by system (124 items):
 | Card data | C       | 2     |
 | Client    | D–G, O, P | 32  |
 | Server    | H, N    | 2     |
-| e2e       | I, J    | 52    |
+| e2e       | I, J    | 53    |
 | Release   | K       | 4     |
 | None      | L       | 1     |
 | Go tests  | M       | 1     |
@@ -4000,3 +4000,34 @@ Totals by system (124 items):
 4. Tasks:
    1. Not fixed here: left for its own item.
    2. Make the brain's roll not end the attack, without a blanket ban (CLAUDE.md 5.16).
+
+### [x] 19.128 e2e: the played-card test in `fight.spec.ts` assumes the deal and checks nothing of 20.9
+
+1. Goal: `fight.spec.ts` "another player's loot card shows large, then by the stack (15.31)" tests something real, whatever the deal.
+2. Report (owner, 2026-11-07)
+   1. Found in review of 20.12; no failed run.
+   2. It skips when the deal has no playable loot card.
+   3. Its last check looks for `.played` on the player's own page.
+   4. Since 20.9 the big card is `BigPlayed` (`played-pop`), shown for others' plays only.
+   5. `.played` is the card by the stack, also others' only: the check finds nothing by design.
+3. Cause
+   1. The test took the deal's first playable loot card (CLAUDE.md 5.16).
+   2. 20.9 moved the big card; the own-page check was not moved with it.
+4. Tasks:
+   1. [x] Decide: rework, or remove if playback.spec's 20.9 tests cover it.
+   2. [x] Set the card up by a saved game; no skip, no ban.
+   3. [x] Check the own page never shows a big card, the whole time.
+5. Decision: rework, not remove
+   1. playback.spec's 15.74 and 20.9 tests fake the update (`putLoot`).
+   2. This is the only test of a real play through the server to another page.
+6. Fix (2026-11-08)
+   1. The active player gets A Penny! by a saved game; no skip, no ban.
+   2. It asks nothing and waits on the stack for its player (19.126).
+   3. The other page: the big card with "<player> plays", then it leaves.
+   4. Then the card by the stack and its stack row.
+   5. The own page notes any big card or `.played` from before the play.
+   6. A repeat gets its own names, as in 19.126.
+7. Checks (2026-11-08)
+   1. The test, 10 repeats, both browsers: 20 of 20.
+   2. With the own-play filter in `playback.ts` removed, it fails; restored.
+   3. Gates: `make lint`, `make frontend`, `make e2e` exit 0.
