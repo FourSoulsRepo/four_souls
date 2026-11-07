@@ -16,7 +16,7 @@ export function MainMenu() {
   const open = useApp((s) => s.playOpen);
   const setOpen = useApp((s) => s.setPlayOpen);
   const scale = useApp((s) => scaleFor(s.settings.animation, 0, 0));
-  const [nav, height] = useOpenHeight();
+
   const rejoinable = useApp((s) => s.rejoinable);
   const rejoin = useApp((s) => s.rejoin);
   const checkRejoin = useApp((s) => s.checkRejoin);
@@ -38,9 +38,17 @@ export function MainMenu() {
     void checkRejoin();
   }, [checkRejoin, seat]);
 
+  // The menu shows once its title and fonts are final: it is centred,
+  // and a title or button that changed size after it showed moved the
+  // buttons under the pointer (19.49, 19.118).
+  const banner = useBanner();
+  const fonts = useFontsLoaded();
+  const ready = banner !== null && fonts;
+  const [nav, height] = useOpenHeight(ready);
+
   return (
-    <div className="menu">
-      <Title />
+    <div className={ready ? 'menu' : 'menu unready'}>
+      <Title banner={banner ?? ''} />
       <nav className="menu-buttons" ref={nav} style={{ height }}>
         <button
           type="button"
@@ -144,8 +152,10 @@ function Soon({ name }: { name: string }) {
 // useOpenHeight is the menu's height with the Play group open, kept
 // while it is closed too: the menu is centred, so a menu that grew
 // moved Play and the title up, and the room keeps Exit on screen. The
-// group's buttons are as tall as the others.
-function useOpenHeight(): [RefObject<HTMLElement | null>, number | undefined] {
+// group's buttons are as tall as the others. It measures again when the
+// menu becomes ready, before it shows: the observer's answer to the
+// game font came a frame after it (19.118).
+function useOpenHeight(ready: boolean): [RefObject<HTMLElement | null>, number | undefined] {
   const ref = useRef<HTMLElement>(null);
   const [height, setHeight] = useState<number | undefined>(undefined);
   useLayoutEffect(() => {
@@ -170,7 +180,7 @@ function useOpenHeight(): [RefObject<HTMLElement | null>, number | undefined] {
     return () => {
       watch.disconnect();
     };
-  }, []);
+  }, [ready]);
   return [ref, height];
 }
 
@@ -183,32 +193,78 @@ function boxHeight(el: HTMLElement): number {
   return parseFloat(cs.height) + extra;
 }
 
-// Title is the foursouls.ru banner (15.41), or the text title without the
-// private images or when the banner fails to load. The text shows until
-// the banner has loaded: the menu is centred, and a title that changed
-// size after it showed moved the buttons under the pointer (19.49).
-function Title() {
+// bannerWait is how long the menu waits for the banner before it shows
+// the text title instead, in milliseconds.
+const bannerWait = 3000;
+
+// useBanner is the banner image once it has loaded, '' for the text
+// title (no private images, a failed load, or one slower than
+// bannerWait), and null while that is not known yet.
+function useBanner(): string | null {
   const image = useApp((s) => s.icons.banner);
-  const [loaded, setLoaded] = useState('');
+  const [banner, setBanner] = useState<{ image: string; shown: string } | null>(null);
   useEffect(() => {
     if (image === '') {
       return;
     }
+    let done = false;
+    const decide = (shown: string) => {
+      if (!done) {
+        done = true;
+        setBanner({ image, shown });
+      }
+    };
     const img = new Image();
     img.onload = () => {
-      setLoaded(image);
+      decide(image);
     };
+    img.onerror = () => {
+      decide('');
+    };
+    const timer = setTimeout(() => {
+      decide('');
+    }, bannerWait);
     img.src = image;
     return () => {
+      done = true;
+      clearTimeout(timer);
       img.onload = null;
+      img.onerror = null;
     };
   }, [image]);
-  if (image === '' || image !== loaded) {
+  if (image === '') {
+    return '';
+  }
+  return banner?.image === image ? banner.shown : null;
+}
+
+// useFontsLoaded: the fonts the page uses have loaded or failed. The
+// game font changes the buttons' size when it comes.
+function useFontsLoaded(): boolean {
+  const [loaded, setLoaded] = useState(false);
+  useEffect(() => {
+    let live = true;
+    void document.fonts.ready.then(() => {
+      if (live) {
+        setLoaded(true);
+      }
+    });
+    return () => {
+      live = false;
+    };
+  }, []);
+  return loaded;
+}
+
+// Title is the foursouls.ru banner (15.41), or the text title without the
+// private images or when the banner fails to load (useBanner).
+function Title({ banner }: { banner: string }) {
+  if (banner === '') {
     return <h1>{t('app.title')}</h1>;
   }
   return (
     <h1 className="menu-banner">
-      <img src={image} alt={t('app.title')} draggable={false} />
+      <img src={banner} alt={t('app.title')} draggable={false} />
     </h1>
   );
 }

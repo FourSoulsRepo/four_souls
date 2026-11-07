@@ -38,7 +38,7 @@ This step never closes; new reports are appended.
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74, 19.111                      | 5     |
 | E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52, 19.54, 19.69 | 9  |
-| F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88, 19.99, 19.102 | 9     |
+| F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88, 19.99, 19.102, 19.118 | 10    |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
 | I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116 | 25 |
@@ -57,7 +57,7 @@ Totals by system (100 items):
 |-----------|---------|-------|
 | Engine    | A, B    | 23    |
 | Card data | C       | 2     |
-| Client    | D–G, O, P | 30  |
+| Client    | D–G, O, P | 31  |
 | Server    | H, N    | 2     |
 | e2e       | I, J    | 44    |
 | Release   | K       | 4     |
@@ -3704,7 +3704,7 @@ Totals by system (100 items):
    3. The full `make e2e` gates of 19.113 to 19.119.
    4. Left open: reopen with the next failure's evidence.
 
-### [ ] 19.118 The main menu moves after it shows, with the real images
+### [x] 19.118 The main menu moves after it shows, with the real images
 
 1. Goal: the menu buttons stay put once they show, with or without the private images.
 2. Report (agent, 2026-11-07)
@@ -3721,6 +3721,21 @@ Totals by system (100 items):
 4. Tasks:
    1. The menu shows once the title and the fonts are final.
    2. The test counts a move only while the button is visible.
+5. Result (2026-11-07)
+   1. `useBanner`: the banner once loaded; the text title on error or after 3 s.
+   2. `useFontsLoaded`: `document.fonts.ready`.
+   3. Until both, the menu is `visibility: hidden`; it takes no clicks.
+   4. `useOpenHeight` measures again when the menu becomes ready.
+   5. Its observer saw the game font a frame late: a 3.5 px move.
+   6. The test counts positions only while Settings is visible.
+   7. With images (`SCREENSHOTS=1`): shell spec 10 repeats, 100 of 100, chromium.
+   8. The menu test, webkit, with images: 10 of 10.
+   9. Without images: shell and settings specs, 3 repeats, 144 of 144.
+   10. Before: it failed in every screenshots run; with only the banner fix it still failed (3.5 px).
+   11. Docs: UC-01 7a; wiki `Client.md`.
+   12. Full `make screenshots`: exit 0, 205 passed; the menu test failed in every run before.
+   13. Gates: `make lint`, `make frontend`, `make e2e` exit 0.
+
 ### [ ] 19.119 e2e: a copied site link shows no answer, webkit
 
 1. Goal: `site.spec.ts` "a copied link opens the same situation, on a phone too" passes every run.

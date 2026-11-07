@@ -7,6 +7,11 @@
   height: 100%;
 }
 
+/* Until its title and fonts are final the menu takes no clicks (19.118). */
+.menu.unready {
+  visibility: hidden;
+}
+
 .menu h1 {
   font-family: var(--font-title);
   font-size: 56px;
