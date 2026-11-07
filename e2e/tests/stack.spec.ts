@@ -19,6 +19,7 @@ import {
   turnAction,
   turnNumber,
   untilAttackRoll,
+  untilStackWaits,
 } from './turn';
 import { anyOf as any, cardName, lineRe, tr, trRe, whole } from './locale';
 
@@ -118,9 +119,14 @@ test('the response timer counts down for the waiting player', async ({ browser }
 });
 
 // waitLine is a stack panel line with "You" turned into the page's own
-// name, so every page's line can be compared.
+// name, so every page's line can be compared. A question's prompt line
+// has the same label but is not one of them: its asked player sees it
+// alone, the others after the player's name (19.126).
 async function waitLine(page: Page, me: string, label: string): Promise<string> {
-  const line = page.getByRole('complementary', { name: tr('stack.title') }).getByLabel(label === 'Passed' ? tr('stack.passed_label') : tr('stack.waiting_label'), { exact: true });
+  const line = page
+    .getByRole('complementary', { name: tr('stack.title') })
+    .getByLabel(label === 'Passed' ? tr('stack.passed_label') : tr('stack.waiting_label'), { exact: true })
+    .filter({ hasText: label === 'Passed' ? trRe('stack.passed') : trRe('stack.waiting') });
   if ((await line.count()) === 0) {
     return '';
   }
@@ -135,17 +141,24 @@ async function expectSameLines(pages: Page[], names: string[], want: string): Pr
   }
 }
 
+// A Penny! asks nothing, and the active player's character was charged
+// as the turn started (19.125): so the stack waits for a response,
+// whatever the deal. A dealt card could ask a question as it resolves
+// instead, and the test then compared a prompt line (19.126).
 test('every player sees whom the stack waits for (V-11)', async ({ browser }) => {
-  const names = ['Abe', 'Bea', 'Cal', 'Dot'];
+  // A repeat (--repeat-each) gets its own names: the saved games list
+  // keeps the earlier repeats' games.
+  const r = test.info().repeatEachIndex;
+  const names = ['Abe', 'Bea', 'Cal', 'Dot'].map((n) => (r > 0 ? `${n}${String(r)}` : n));
   const pages = await startGame(browser, names, { url: fast() });
+  await activePage(pages, click);
+  await saveAndContinue(pages, names.join(', '), 'a_penny');
   const active = await activePage(pages, click);
   const me = names[pages.indexOf(active)] ?? '';
-  const loot = active.locator('.hand .card.hl-act').first();
-  test.skip(!(await loot.isVisible()), 'no playable loot card in this deal');
-  await playLoot(active, loot, click);
+  await playLoot(active, active.getByRole('group', { name: tr('table.your_hand') }).getByRole('button', { name: cardName('a_penny') }).first(), click);
   const stack = active.getByRole('complementary', { name: tr('stack.title') });
-  await answerPlay(active, click);
-  await expect(stack).toContainText(any(trRe('stack.waiting'), /: /));
+  await expect(stack).toContainText(trRe('stack.loot', { card: cardName('a_penny') }));
+  await untilStackWaits(pages);
   const want = (await waitLine(active, me, 'Waiting for')) + (await waitLine(active, me, 'Passed'));
   expect(want).not.toBe('');
   await expectSameLines(pages, names, want);
@@ -153,7 +166,7 @@ test('every player sees whom the stack waits for (V-11)', async ({ browser }) =>
 
   // A pass moves the player to "Passed" on every table.
   const pass = passButton(active);
-  test.skip(!(await pass.isEnabled()), 'the loot card asked something first');
+  await expect(pass).toBeEnabled();
   await pass.click();
   // Unless everyone else was skipped and the item resolved.
   await expect

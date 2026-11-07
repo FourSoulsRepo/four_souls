@@ -41,7 +41,7 @@ This step never closes; new reports are appended.
 | F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88, 19.99, 19.102, 19.118, 19.119 | 11    |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
-| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122, 19.125 | 28 |
+| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122, 19.125, 19.126, 19.127 | 30 |
 | J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107, 19.117, 19.120, 19.121 | 22 |
 | Q  | Load tool: a lost connection ends a game | Go tools   | 19.108                                                 | 1     |
 | K  | Build and release files                  | Release    | 19.47, 19.59, 19.83, 19.91                             | 4     |
@@ -52,7 +52,7 @@ This step never closes; new reports are appended.
 | P  | A missing setting: no way to change it   | Client     | 19.93                                                  | 1     |
 | R  | Vitest setup: a test sees stale files    | Vitest     | 19.124                                                 | 1     |
 
-Totals by system (122 items):
+Totals by system (124 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
@@ -60,7 +60,7 @@ Totals by system (122 items):
 | Card data | C       | 2     |
 | Client    | D–G, O, P | 32  |
 | Server    | H, N    | 2     |
-| e2e       | I, J    | 50    |
+| e2e       | I, J    | 52    |
 | Release   | K       | 4     |
 | None      | L       | 1     |
 | Go tests  | M       | 1     |
@@ -3935,7 +3935,7 @@ Totals by system (122 items):
    2. Only Eve and Eden dealt (temp bans), 15 repeats each browser: 30 of 30.
    3. The Go test fails when the recharge leaves the character spent.
 
-### [ ] 19.126 e2e: the stack wait test compares an own prompt with others' lines
+### [x] 19.126 e2e: the stack wait test compares an own prompt with others' lines
 
 1. Goal: `stack.spec.ts` "every player sees whom the stack waits for (V-11)" passes whatever the deal.
 2. Report (agent, 2026-11-07)
@@ -3951,5 +3951,35 @@ Totals by system (122 items):
    5. So it holds only while nobody is asked a question.
    6. The app looks right; the test assumes the deal.
 4. Tasks:
-   1. Not fixed in 20.12: left for its own sub-step.
-   2. Compare lines only while the stack waits for responses, or name the asked player.
+   1. [x] Not fixed in 20.12: left for its own sub-step.
+   2. [x] Compare lines only while the stack waits for responses.
+5. Fix (2026-11-07)
+   1. The test gives the active player A Penny! by a saved game; no ban.
+   2. A Penny! asks nothing; the character, charged at turn start, may still act.
+   3. So the stack waits for a response, whatever the deal (19.125).
+   4. New named wait `untilStackWaits` (`turn.ts`): every page, priority, a stack item.
+   5. `waitLine` takes only the waiting and passed lines, not a prompt line.
+   6. A repeat gets its own names: saved games of earlier repeats stay listed.
+6. Checks (2026-11-07)
+   1. The test, 15 repeats, both browsers, 6 workers: 30 of 30.
+   2. 150 random deals of the old flow (probe): the stack waited every time.
+   3. An engine probe of the failed deal: Cain could still act after the play.
+   4. So why that stack resolved at once stays unknown; no record kept it.
+   5. The first `make e2e` gate failed once in `prompt.spec.ts:309`; logged as 19.127.
+
+### [ ] 19.127 e2e: Bob's Brain's roll kills the attacked monster; the attack roll never comes
+
+1. Goal: `prompt.spec.ts` "the attack line waits for a roll the attack triggers: Bob's Brain (19.85)" passes whatever the deal.
+2. Report (agent, 2026-11-07)
+   1. Found by the first `make e2e` gate of 19.126, webkit.
+   2. `untilAttackRoll` never settled (1.3 min); turn 2 was in its action step.
+   3. Evidence: `.cache/e2e-evidence/19.127-prompt309/` (not in git).
+3. Cause (from the page's history)
+   1. Wyn attacked Cursed Psy Horf; Bob's Brain rolled 1: 1 damage to a monster.
+   2. That killed the 1 HP Horf before any attack roll.
+   3. Its death set off Stoney and Troll Bombs; Wyn died; the turn ended.
+   4. The test waits for Wyn's attack roll, which never comes.
+   5. The app looks right; the test assumes the brain's roll leaves the attack.
+4. Tasks:
+   1. Not fixed here: left for its own item.
+   2. Make the brain's roll not end the attack, without a blanket ban (CLAUDE.md 5.16).

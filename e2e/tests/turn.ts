@@ -242,6 +242,30 @@ export async function untilAttackRoll(pages: Page[], press: Tap, attacker: Page)
   await settle(pages, press, () => attackRollWaits(attacker));
 }
 
+// stackWaits: the page shows the latest state, where the stack holds an
+// item and waits for a response to it (V-11). A resolving card's
+// question does not count: it shows as a prompt line instead (19.126).
+export async function stackWaits(page: Page): Promise<boolean> {
+  const ready = (await seen(page)).ready;
+  return (
+    ready &&
+    (await page.evaluate(() => {
+      interface S {
+        game: { view: { waiting: { kind: number }; stack?: unknown[] | null } } | null;
+      }
+      const view = (window as unknown as { fourSouls: { store: { getState: () => S } } }).fourSouls.store.getState().game?.view;
+      // 1 is PromptKind.priority (actions.ts).
+      return view?.waiting.kind === 1 && (view.stack?.length ?? 0) > 0;
+    }))
+  );
+}
+
+// untilStackWaits waits until every page shows the stack waiting for a
+// response (19.126).
+export async function untilStackWaits(pages: Page[]): Promise<void> {
+  await expect.poll(async () => (await Promise.all(pages.map(stackWaits))).every(Boolean)).toBe(true);
+}
+
 // markGame keeps the page's game state now, for untilResynced.
 export function markGame(page: Page): Promise<void> {
   return page.evaluate(() => {
