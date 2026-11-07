@@ -391,6 +391,28 @@ Each sub-step of step 20 takes the part it needs.
    12. Hovering an option shows "−N" on the own coins; red when short.
    13. The engine's `priceOf` gives both the preview and the payment.
 
+### Catch-up
+
+1. Checked in 20.12 (`SpellController`, `AttackSpellController`, `GameState`).
+   1. The client counts the frame time it lost while behind.
+   2. Some animations have a worth in seconds; past it they are skipped.
+   3. A minion fight is worth 0.8 s; a trigger 0.2 s.
+   4. A fight with a hero is worth 0: it always plays.
+   5. The rest has no worth: it always plays, at full time.
+   6. A skip spends its worth from the lost time.
+   7. The threshold comes from the server; a flag can limit it to low-end devices.
+2. Built in 20.12.
+   1. Ours counts the updates still waiting, not lost time.
+   2. Each effect has a weight: minor, normal, key (`weightOf`).
+   3. Key: a player's death, a soul, the game's end, the own turn start.
+   4. Minor: popups, a stolen coin, another's draw, a flight with no sound.
+   5. A reveal that holds its card weighs as much as the move after it.
+   6. From 3 waiting: minor effects are dropped (`feel.catchUp`).
+   7. From 5 waiting, or 7 effects in one update: the rest at 0.4 of their time.
+   8. From 9 waiting: only key effects play, at 0.4.
+   9. Before, from 9 waiting every effect was skipped; 3–8 all at 0.4.
+   10. Speed "off" still plays nothing, key effects too.
+
 ### Other players live
 
 1. Their pointer is sent at most every 0.35 s.

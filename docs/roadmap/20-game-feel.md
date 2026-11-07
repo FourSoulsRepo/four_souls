@@ -204,7 +204,7 @@ Owner notes (2026-11-06):
    1. Vitest: step times for N = 1, 5, 20.
    2. e2e: a +3¢ shows 1, 2, 3.
 
-### [ ] 20.12 Catch-up by importance
+### [x] 20.12 Catch-up by importance
 
 1. Goal: a lagging client skips small things, never big ones.
 2. Tasks:

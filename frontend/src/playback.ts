@@ -3,7 +3,7 @@
 // Playback only changes what is drawn; the game state is the server's.
 import { kindOf, type CardInfo, type Kind } from './cards';
 import { firstPlayerText, tieText } from './dice';
-import { drawPace } from './feel';
+import { drawPace, feel } from './feel';
 import { say, t } from './i18n';
 import { Role, type GameEvent, type GameView, type Update } from './protocol';
 import type { Sound } from './sounds';
@@ -30,7 +30,8 @@ export type Effect =
   // a roll of several dice, thrown together (19.39).
   | { kind: 'dice'; value: number; label: string; player: number; thrown?: boolean; old?: number; source?: string[]; dice?: number[] }
   // banner: long stays twice as long, for the start of the game (15.43).
-  | { kind: 'banner'; text: string; long?: boolean }
+  // won: the game's end; it always plays (20.12).
+  | { kind: 'banner'; text: string; long?: boolean; won?: boolean }
   // turn: a new turn's banner (20.8). own: the viewer's turn; it plays
   // the turn-start sound. charges: the objects its recharge readies,
   // lit as the banner shows, before the view is drawn.
@@ -443,7 +444,7 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
         break;
       }
       case 'game_won':
-        out.push({ kind: 'banner', text: t('effect.wins', { player: ctx.name(e.player) }) });
+        out.push({ kind: 'banner', text: t('effect.wins', { player: ctx.name(e.player) }), won: true });
         break;
       // After the first-player dice: a tie, or who goes first (15.43).
       case 'first_roll_tied':
@@ -530,16 +531,76 @@ function speedScale(speed: Speed): number {
 
 // scaleFor is how long effects take, as a factor of their normal time;
 // 0 skips them. A long queue or a big burst plays faster, so the table
-// catches up with the game.
+// catches up with the game (feel.catchUp). Which effects still play is
+// catchUp's call.
 export function scaleFor(speed: Speed, pending: number, effects: number): number {
   const base = speedScale(speed);
-  if (base === 0 || pending > 8) {
-    return 0;
-  }
-  if (pending > 2 || effects > 6) {
-    return base * 0.4;
+  const { shorten, burst, short } = feel.catchUp;
+  if (pending >= shorten || effects >= burst) {
+    return base * short;
   }
   return base;
+}
+
+// Weight is how much an effect matters to a lagging client (20.12,
+// ADR 027 principle 7): minor ones go first, key ones always play.
+export type Weight = 'minor' | 'normal' | 'key';
+
+const ranks: Record<Weight, number> = { minor: 0, normal: 1, key: 2 };
+
+// weightOf is an effect's own weight. Key: a player's death, a soul,
+// the game's end, the viewer's turn start. Minor: popups, a stolen
+// coin, another player's draw, a flight with no sound (to a discard).
+export function weightOf(e: Effect): Weight {
+  switch (e.kind) {
+    case 'deaths':
+      return e.sound === 'playerDied' ? 'key' : 'normal';
+    case 'fly':
+      if (e.sound === 'soulGain') {
+        return 'key';
+      }
+      return e.sound || e.middle ? 'normal' : 'minor';
+    case 'sound':
+      return e.sound === 'soulGain' ? 'key' : 'minor';
+    case 'banner':
+      return e.won ? 'key' : 'normal';
+    case 'turn':
+      return e.own ? 'key' : 'normal';
+    case 'draw':
+      return e.own ? 'normal' : 'minor';
+    case 'popup':
+    case 'steal':
+      return 'minor';
+    default:
+      return 'normal';
+  }
+}
+
+// Planned is an effect that plays, at its time factor.
+export interface Planned {
+  effect: Effect;
+  scale: number;
+}
+
+// catchUp is what plays of one update's effects, with pending updates
+// still waiting (20.12, feel.catchUp): a long queue drops minor effects
+// first, then shortens the rest, then keeps only key ones, short. Key
+// effects always play unless the speed is "off". A reveal that holds
+// its card for the move after it weighs as much as that move.
+export function catchUp(effects: Effect[], speed: Speed, pending: number): Planned[] {
+  const scale = scaleFor(speed, pending, effects.length);
+  if (scale === 0) {
+    return [];
+  }
+  const { dropMinor, dropNormal } = feel.catchUp;
+  const least = pending >= dropNormal ? ranks.key : pending >= dropMinor ? ranks.normal : ranks.minor;
+  return effects
+    .filter((e, i) => {
+      const next = effects.at(i + 1);
+      const held = e.kind === 'reveal' && e.hold && next ? ranks[weightOf(next)] : 0;
+      return Math.max(ranks[weightOf(e)], held) >= least;
+    })
+    .map((effect) => ({ effect, scale }));
 }
 
 interface Deps {
@@ -600,12 +661,8 @@ export function createPlayback(deps: Deps): Playback {
   }
 
   async function playEffects(u: Update): Promise<void> {
-    const effects = deps.effects(u);
-    const scale = scaleFor(deps.speed(), queue.length, effects.length);
-    if (scale > 0) {
-      for (const e of effects) {
-        await deps.run(e, scale);
-      }
+    for (const { effect, scale } of catchUp(deps.effects(u), deps.speed(), queue.length)) {
+      await deps.run(effect, scale);
     }
   }
 

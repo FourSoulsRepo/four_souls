@@ -81,7 +81,7 @@ Curses sit apart from the items (`Curses` in `PlayerArea.tsx`, 15.55, V-42): the
 
 Face-down cards show their deck's back (V-26). `App.Backs` gives the loot, treasure and monster back URLs from `assets/backs/<kind>.webp`, or no URL when the file is missing; the store keeps them in `store.backs`. `Card` draws the back image, and falls back to the plain dark back with the deck name when there is none or it fails to load. An opponent's hand is `Pile.HiddenHand`: one loot back per card, fanned, at most eight, with the card count, in the `hand-<id>` zone, so drawn cards fly to it. A back never carries a card ref, so it cannot reveal the card. When the view sends an opponent's hand (a `StatRevealHand` static such as Guppy's Eye), `PlayerArea` draws `Pile.RevealedHand` instead: every card face up, in the same fan and zone, each zoomable on hover (19.5).
 
-Effect durations scale with the animation setting (ST-05) and speed up when updates pile up; past 8 waiting updates they are skipped, so the table always catches up. Each effect has a time limit, so a closed screen never blocks playback.
+Effect durations scale with the animation setting (ST-05). When updates pile up, playback catches up by weight (`catchUp` in `playback.ts`, 20.12): each effect is minor, normal or key (`weightOf`). From 3 waiting updates minor effects (popups, a stolen coin, another player's draw, a flight to a discard) are dropped; from 5, or with 7 effects in one update, the rest play at 0.4 of their time; from 9 only key effects play: a player's death, a soul, the game's end, the viewer's own turn start. The thresholds live in `feel.catchUp`. Each effect has a time limit, so a closed screen never blocks playback.
 
 ## Cards
 

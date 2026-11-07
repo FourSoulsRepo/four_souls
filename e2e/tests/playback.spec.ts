@@ -1766,6 +1766,53 @@ test('a player death makes its sound once, a monster death none (18.8)', async (
   expect(await shakes(ola)).toEqual(['table-shake']);
 });
 
+test('a lagging client skips small effects, never a player death (20.12)', async ({ browser }) => {
+  const [ola] = await startGame(browser, ['Ola', 'Pim']);
+  if (!ola) {
+    throw new Error('no pages');
+  }
+  await listenSounds(ola);
+  // A burst of 12 updates, as a client far behind gets them: the second
+  // brings cents and the viewer's death, with 10 more still waiting;
+  // each later one brings cents. Every effect played is recorded.
+  await ola.evaluate(() => {
+    interface Effects {
+      subscribe: (f: (s: { playing: { key: number; effect: { kind: string } } | null }) => void) => void;
+    }
+    const w = window as unknown as { fourSouls: { store: Store & Effects }; effects: string[] };
+    const store = w.fourSouls.store;
+    w.effects = [];
+    let last = 0;
+    store.subscribe((s) => {
+      if (s.playing && s.playing.key !== last) {
+        last = s.playing.key;
+        w.effects.push(s.playing.effect.kind);
+      }
+    });
+    const s = store.getState();
+    const game = structuredClone(s.game);
+    if (!game) {
+      throw new Error('no game');
+    }
+    const you = s.lobby.table?.you ?? 0;
+    const cents = { kind: 'gained_cents', player: you, amount: 1 };
+    for (let n = 1; n <= 12; n++) {
+      const events = n === 1 ? [] : n === 2 ? [cents, { kind: 'died', player: you }] : [cents];
+      s.receive({ type: 'update', data: { ...game, step: game.step + n, events } });
+    }
+  });
+  await expect(ola.getByTestId('skull')).toBeVisible();
+  await ola.waitForTimeout(150); // the skull pops
+  await shot(ola, 'catch-up-death');
+  await expect(ola.locator('.effects')).toHaveCount(0, { timeout: 10_000 });
+  // The death played first: the cents before it were dropped, and so
+  // were those of the updates after it while 3 or more still waited.
+  // The last three updates play their cents (feel.catchUp.dropMinor).
+  const effects = await ola.evaluate(() => (window as unknown as { effects: string[] }).effects);
+  expect(effects).toEqual(['deaths', 'popup', 'popup', 'popup']);
+  expect(await played(ola)).toEqual(['/cardimg/assets/sounds/player-died.mp3']);
+});
+
 test('every gained soul sounds: a dead one, a bonus soul from the board, the Lost Soul (18.13, 18.14)', async ({ browser }) => {
   const [ari] = await startGame(browser, ['Ari', 'Bex']);
   if (!ari) {

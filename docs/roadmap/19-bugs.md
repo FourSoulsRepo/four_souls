@@ -3798,6 +3798,13 @@ Totals by system (122 items):
    2. The last `make e2e` gate of 19.119 and the gate of this note passed.
    3. Next failure: keep its trace; it shows which step of `startGame` took the time.
    4. Left open: no fix without the cause; a longer limit would only hide it.
+7. A third case (2026-11-07)
+   1. The `make e2e` gate of 20.12, chromium, plain mode.
+   2. `playback.spec.ts:168` (19.39) hit 30 s at its sounds poll; no clatter played.
+   3. The same test passed in webkit in that run, in 10 s.
+   4. 20.12 does not touch a lone update: no queue, so every effect plays.
+   5. No trace: plain `make e2e` keeps none.
+   6. Evidence: `.cache/e2e-evidence/19.120-playback168-20.12/` (not in git).
 
 ### [ ] 19.121 e2e: a guest never reaches the Nickname field in `startGame`
 
@@ -3927,3 +3934,22 @@ Totals by system (122 items):
    1. The e2e test, 25 repeats, both browsers, 5 workers: 50 of 50.
    2. Only Eve and Eden dealt (temp bans), 15 repeats each browser: 30 of 30.
    3. The Go test fails when the recharge leaves the character spent.
+
+### [ ] 19.126 e2e: the stack wait test compares an own prompt with others' lines
+
+1. Goal: `stack.spec.ts` "every player sees whom the stack waits for (V-11)" passes whatever the deal.
+2. Report (agent, 2026-11-07)
+   1. Found by the `make e2e` gate of 20.12, chromium.
+   2. `stack.spec.ts:134`: a page read "Abe: Put this card on the bottom of its deck?".
+   3. It expected the active page's line: "Put this card on the bottom of its deck?".
+   4. Evidence: `.cache/e2e-evidence/19.126-stack138/` (not in git).
+3. Cause
+   1. The played loot card resolved at once; the stack was empty.
+   2. Its effect asked Abe to keep or bottom a deck's top card.
+   3. `StackPanel` shows the own prompt as is; others see it after the name.
+   4. The test takes the active page's line as the line every page shows.
+   5. So it holds only while nobody is asked a question.
+   6. The app looks right; the test assumes the deal.
+4. Tasks:
+   1. Not fixed in 20.12: left for its own sub-step.
+   2. Compare lines only while the stack waits for responses, or name the asked player.

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { CardInfo } from './cards';
-import { chargedIn, createPlayback, effectsFor, hpOf, playedEnds, scaleFor, shopSlot, slotZone, type Death, type Effect } from './playback';
+import { catchUp, chargedIn, createPlayback, effectsFor, hpOf, playedEnds, scaleFor, shopSlot, slotZone, weightOf, type Death, type Effect } from './playback';
 import type { GameEvent, GameView, Update } from './protocol';
 
 const ctx = {
@@ -485,10 +485,81 @@ describe('scaleFor', () => {
     expect(scaleFor('off', 0, 1)).toBe(0);
   });
 
-  it('speeds up bursts and skips a long queue', () => {
-    expect(scaleFor('normal', 3, 1)).toBe(0.4);
+  it('shortens bursts and a long queue, never to nothing (20.12)', () => {
+    expect(scaleFor('normal', 4, 1)).toBe(1);
+    expect(scaleFor('normal', 5, 1)).toBe(0.4);
     expect(scaleFor('normal', 0, 7)).toBe(0.4);
-    expect(scaleFor('normal', 9, 1)).toBe(0);
+    expect(scaleFor('normal', 20, 1)).toBe(0.4);
+    expect(scaleFor('off', 20, 1)).toBe(0);
+  });
+});
+
+describe('catchUp (20.12)', () => {
+  const at = ['x'];
+  // One effect of each weight, and every key effect.
+  const minor: Effect[] = [
+    { kind: 'popup', at, text: '+1¢', tone: 'good' },
+    { kind: 'steal', from: at, to: at, amount: 1 },
+    { kind: 'draw', from: at, to: at, own: false, pace: 1 },
+    { kind: 'fly', from: at, to: at, back: 'loot' },
+  ];
+  const normal: Effect[] = [
+    { kind: 'lunge', from: at, to: at, amount: 1 },
+    { kind: 'deaths', at: [at] },
+    { kind: 'turn', text: 'Pim', own: false },
+    { kind: 'dice', value: 3, label: '', player: 0 },
+  ];
+  const key: Effect[] = [
+    { kind: 'deaths', at: [at], sound: 'playerDied' },
+    { kind: 'fly', from: at, to: at, back: 'monster', sound: 'soulGain' },
+    { kind: 'sound', sound: 'soulGain' },
+    { kind: 'banner', text: 'Ola wins', won: true },
+    { kind: 'turn', text: 'Ola', own: true },
+  ];
+  const kinds = (p: { effect: Effect }[]) => p.map((x) => x.effect);
+
+  it('weighs effects: key, normal, minor', () => {
+    expect(minor.map(weightOf)).toEqual(minor.map(() => 'minor'));
+    expect(normal.map(weightOf)).toEqual(normal.map(() => 'normal'));
+    expect(key.map(weightOf)).toEqual(key.map(() => 'key'));
+  });
+
+  it('plays everything while the queue is short', () => {
+    const all = [...minor, ...normal.slice(0, 2)];
+    expect(catchUp(all, 'normal', 2)).toEqual(all.map((effect) => ({ effect, scale: 1 })));
+  });
+
+  it('drops minor effects first, then shortens, then keeps only key ones', () => {
+    const popup: Effect = { kind: 'popup', at, text: '+1¢', tone: 'good' };
+    const lunge: Effect = { kind: 'lunge', from: at, to: at, amount: 1 };
+    const death: Effect = { kind: 'deaths', at: [at], sound: 'playerDied' };
+    const all = [popup, lunge, death];
+    expect(catchUp(all, 'normal', 3)).toEqual([
+      { effect: lunge, scale: 1 },
+      { effect: death, scale: 1 },
+    ]);
+    expect(catchUp(all, 'normal', 5)).toEqual([
+      { effect: lunge, scale: 0.4 },
+      { effect: death, scale: 0.4 },
+    ]);
+    expect(catchUp(all, 'normal', 9)).toEqual([{ effect: death, scale: 0.4 }]);
+  });
+
+  it('keeps every key effect with a queue of 20', () => {
+    const all = [...minor, ...key, ...normal, ...key];
+    const kept = catchUp(all, 'normal', 20);
+    expect(kinds(kept)).toEqual([...key, ...key]);
+    expect(kept.every((p) => p.scale === 0.4)).toBe(true);
+  });
+
+  it('plays nothing with speed "off"', () => {
+    expect(catchUp(key, 'off', 0)).toEqual([]);
+  });
+
+  it('keeps a reveal that holds its card for a key move', () => {
+    const reveal: Effect = { kind: 'reveal', card: 'c', deck: at, hold: true };
+    const fly: Effect = { kind: 'fly', from: at, to: at, card: 'c', back: 'monster', middle: true, sound: 'soulGain' };
+    expect(kinds(catchUp([reveal, fly], 'normal', 20))).toEqual([reveal, fly]);
   });
 });
 
@@ -570,6 +641,25 @@ describe('createPlayback', () => {
     // A long queue skips effects until it catches up.
     expect(played.length).toBeLessThan(29);
     expect(played.at(-1)).toEqual({ kind: 'dice', value: 30, label: '', player: 0, thrown: true });
+  });
+
+  it('plays every key effect of a queue of 20 updates (20.12)', async () => {
+    const { playback, shown, played } = setup();
+    playback.push({ ...update(0), events: [] });
+    for (let n = 1; n <= 20; n++) {
+      playback.push({
+        ...update(n),
+        events: [
+          { kind: 'gained_cents', player: 0, amount: 1 },
+          { kind: 'dice_rolled', player: 0, amount: n },
+          ...(n % 5 === 0 ? [{ kind: 'died' as const, player: 0 }] : []),
+        ],
+      });
+    }
+    await playback.idle();
+    expect(shown.length).toBe(21);
+    expect(played.filter((e) => e.kind === 'deaths')).toHaveLength(4);
+    expect(played.filter((e) => e.kind === 'popup').length).toBeLessThan(5);
   });
 
   it('clear drops what is still queued', async () => {

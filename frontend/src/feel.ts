@@ -280,6 +280,19 @@ export const feel = {
     turn: 90,
     flipCurve: curves.expoOut,
   },
+  // catchUp: a lagging client catches up by weight (20.12, ADR 027
+  // principle 7, catchUp in playback.ts). Thresholds count the updates
+  // still waiting. From dropMinor on, minor effects are dropped; from
+  // shorten on, or with burst or more effects in one update, the rest
+  // play at short of their time; from dropNormal on, only key effects
+  // play, still at short.
+  catchUp: {
+    dropMinor: 3,
+    shorten: 5,
+    burst: 7,
+    dropNormal: 9,
+    short: 0.4,
+  },
   // banner: the text in the middle (Effects.tsx). times are its
   // opacity keyframes: in, held, out. A long one (start of game) stays
   // twice as long, with fades as long.
