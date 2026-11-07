@@ -1,6 +1,6 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Sounds } from './bridge';
-import { loadSounds, loopBounds, playLoop, playSound, setSoundVolume } from './sounds';
+import { duckGain, loadSounds, loopBounds, mayStart, playLoop, playSound, setSoundVolume } from './sounds';
 
 const hit = '/cardimg/assets/sounds/attack-hit.mp3';
 const cast = '/cardimg/assets/sounds/effect-cast.mp3';
@@ -48,17 +48,27 @@ const all: Sounds = {
   lootLand: lands,
 };
 
+// FakeAudio is a played file; onended ends it.
+interface FakeAudio {
+  src: string;
+  volume: number;
+  onended: (() => void) | null;
+}
+
 // fakeAudio records each played URL; play fails with the given error.
-function fakeAudio(fail?: DOMException, volumes: number[] = []): string[] {
+// elements gets each played file.
+function fakeAudio(fail?: DOMException, volumes: number[] = [], elements: FakeAudio[] = []): string[] {
   const played: string[] = [];
   vi.stubGlobal(
     'Audio',
     class {
       volume = 0.5;
+      onended: (() => void) | null = null;
       constructor(public src: string) {}
       play(): Promise<void> {
         played.push(this.src);
         volumes.push(this.volume);
+        elements.push(this);
         return fail ? Promise.reject(fail) : Promise.resolve();
       }
     },
@@ -66,8 +76,19 @@ function fakeAudio(fail?: DOMException, volumes: number[] = []): string[] {
   return played;
 }
 
+// clock is the mixer's time in ms; each test starts well after the last
+// one, so no start is within the playback limit (20.14) of an earlier.
+let clock = 0;
+
+beforeEach(() => {
+  clock += 60_000;
+  vi.spyOn(performance, 'now').mockImplementation(() => clock);
+});
+
 afterEach(() => {
+  vi.useRealTimers();
   vi.unstubAllGlobals();
+  vi.restoreAllMocks();
 });
 
 describe('playSound', () => {
@@ -134,6 +155,7 @@ describe('playSound', () => {
     for (const r of [0, 0.32, 0.34, 0.65, 0.67, 0.999]) {
       random.mockReturnValueOnce(r);
       playSound('lootLand');
+      clock += 100;
     }
     expect(played).toEqual([lands[0], lands[0], lands[1], lands[1], lands[2], lands[2]]);
     random.mockRestore();
@@ -145,6 +167,7 @@ describe('playSound', () => {
     const played = fakeAudio();
     const random = vi.spyOn(Math, 'random').mockReturnValue(0.999);
     playSound('attackHit');
+    clock += 100;
     playSound('attackHit');
     expect(played).toEqual([hit, hit]);
     random.mockRestore();
@@ -156,6 +179,119 @@ describe('playSound', () => {
     playSound('attackHit');
     await Promise.resolve();
     expect(played).toEqual([hit]);
+  });
+});
+
+// One sound per moment (20.14, ADR 027 principle 8).
+describe('the playback limit', () => {
+  it('lets a sound start again only 80 ms after its last start', () => {
+    expect(mayStart(undefined, 5)).toBe(true);
+    expect(mayStart(5, 5)).toBe(false);
+    expect(mayStart(5, 5.079)).toBe(false);
+    expect(mayStart(5, 5.08)).toBe(true);
+  });
+
+  it('drops a second start within 80 ms; other sounds still play', () => {
+    loadSounds(all);
+    const played = fakeAudio();
+    playSound('diceRoll');
+    clock += 50;
+    playSound('diceRoll');
+    playSound('attackHit');
+    clock += 30;
+    playSound('diceRoll');
+    expect(played).toEqual([dice, hit, dice]);
+  });
+});
+
+describe('ducking', () => {
+  it('takes the rest to 20 % over 0.7 s and back over 0.7 s, linear', () => {
+    const cue = { start: 10, end: 12 };
+    const at = (t: number) => duckGain(t, [cue]);
+    expect(duckGain(10.35, [])).toBe(1);
+    expect(at(9)).toBe(1);
+    expect(at(10)).toBe(1);
+    expect(at(10.35)).toBeCloseTo(0.6);
+    expect(at(10.7)).toBeCloseTo(0.2);
+    expect(at(11.5)).toBeCloseTo(0.2);
+    expect(at(12)).toBeCloseTo(0.2);
+    expect(at(12.35)).toBeCloseTo(0.6);
+    expect(at(12.7)).toBeCloseTo(1);
+    expect(at(20)).toBe(1);
+  });
+
+  it('comes back from where it got to when a cue ends early', () => {
+    const at = (t: number) => duckGain(t, [{ start: 0, end: 0.35 }]);
+    expect(at(0.35)).toBeCloseTo(0.6);
+    expect(at(0.7)).toBeCloseTo(0.8);
+    expect(at(1.05)).toBeCloseTo(1);
+  });
+
+  it('follows the lowest of several cues', () => {
+    const cues = [
+      { start: 0, end: 0.7 },
+      { start: 1.05 },
+    ];
+    expect(duckGain(1.05, cues)).toBeCloseTo(0.6);
+    expect(duckGain(1.4, cues)).toBeCloseTo(0.6);
+    expect(duckGain(1.75, cues)).toBeCloseTo(0.2);
+    expect(duckGain(30, cues)).toBeCloseTo(0.2);
+  });
+
+  // Ducking is the mixer's gain on the rest (ADR 022): the cue keeps the
+  // player's volume; every other sound plays at it times the duck.
+  it('ducks the other sounds while End turn speaks, not the cue', () => {
+    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval', 'setTimeout', 'clearTimeout'] });
+    loadSounds({ ...all, endTurnCue: ['/cardimg/assets/sounds/end-turn-cue.mp3'] });
+    const volumes: number[] = [];
+    const elements: FakeAudio[] = [];
+    fakeAudio(undefined, volumes, elements);
+    setSoundVolume(50);
+    playSound('attackHit');
+    playSound('endTurnCue');
+    const hitting = elements.at(0);
+    const speaking = elements.at(1);
+    if (!hitting || !speaking) {
+      throw new Error('no sounds');
+    }
+    expect(volumes).toEqual([0.5, 0.5]);
+    const step = (ms: number) => {
+      clock += ms;
+      vi.advanceTimersByTime(20);
+    };
+    step(350);
+    expect(hitting.volume).toBeCloseTo(0.3);
+    step(350);
+    expect(hitting.volume).toBeCloseTo(0.1);
+    // A sound that starts during the duck starts ducked.
+    playSound('diceRoll');
+    expect(volumes.at(-1)).toBeCloseTo(0.1);
+    expect(speaking.volume).toBe(0.5);
+    speaking.onended?.();
+    step(350);
+    expect(elements.at(-1)?.volume).toBeCloseTo(0.3);
+    step(350);
+    expect(elements.at(-1)?.volume).toBeCloseTo(0.5);
+    // The duck is over: the mixer stops its ticks.
+    expect(vi.getTimerCount()).toBe(0);
+    // Back at full level, new sounds play at the player's volume again.
+    playSound('soulGain');
+    expect(volumes.at(-1)).toBe(0.5);
+    setSoundVolume(100);
+    vi.useRealTimers();
+  });
+
+  it('ducks nothing when the cue cannot play', async () => {
+    loadSounds({ ...all, endTurnCue: ['/cardimg/assets/sounds/end-turn-cue.mp3'] });
+    const volumes: number[] = [];
+    fakeAudio(new DOMException('blocked', 'NotAllowedError'), volumes);
+    setSoundVolume(100);
+    playSound('endTurnCue');
+    await Promise.resolve();
+    await Promise.resolve();
+    clock += 1000;
+    playSound('attackHit');
+    expect(volumes).toEqual([1, 1]);
   });
 });
 
@@ -278,13 +414,16 @@ describe('playLoop', () => {
     await vi.waitFor(() => {
       expect(ctx.sources).toHaveLength(1);
     });
+    // The master gain, the rest's gain a key cue ducks (20.14), the loop's.
     const master = ctx.gains.at(0);
-    const gain = ctx.gains.at(1);
+    const rest = ctx.gains.at(1);
+    const gain = ctx.gains.at(2);
     const source = ctx.sources.at(0);
-    if (!master || !gain || !source) {
+    if (!master || !rest || !gain || !source) {
       throw new Error('no nodes');
     }
     expect(master.gain.value).toBe(0.4);
+    expect(rest.gain.value).toBe(1);
     expect(source.loop).toBe(true);
     expect([source.loopStart, source.loopEnd]).toEqual([0.1, 0.9]);
     expect(source.started).toEqual([0, 0.1]);

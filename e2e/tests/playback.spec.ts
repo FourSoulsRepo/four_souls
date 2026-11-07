@@ -1766,6 +1766,37 @@ test('a player death makes its sound once, a monster death none (18.8)', async (
   expect(await shakes(ola)).toEqual(['table-shake']);
 });
 
+test('players who die in one update make one death sound (20.14)', async ({ browser }) => {
+  const [ola] = await startGame(browser, ['Ola', 'Pim']);
+  if (!ola) {
+    throw new Error('no pages');
+  }
+  await listenSounds(ola);
+  await listenShakes(ola);
+  // Replay the view with both players' deaths, a cents popup between
+  // them, so each has its own skull effect.
+  await ola.evaluate(() => {
+    const s = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store.getState();
+    const game = structuredClone(s.game);
+    if (!game) {
+      throw new Error('no game');
+    }
+    const events = [
+      { kind: 'died', player: 0 },
+      { kind: 'gained_cents', player: 0, amount: 1 },
+      { kind: 'died', player: 1 },
+    ];
+    s.receive({ type: 'update', data: { ...game, step: game.step + 1, events } });
+  });
+  await expect.poll(() => shakes(ola)).toEqual(['table-shake', 'table-shake']);
+  await expect(ola.getByTestId('skull').last()).toBeVisible();
+  await shot(ola, 'deaths-one-sound');
+  await expect(ola.locator('.effects')).toHaveCount(0);
+  // One sound for both; each skull still shakes the table.
+  expect(await played(ola)).toEqual(['/cardimg/assets/sounds/player-died.mp3']);
+  expect(await shakes(ola)).toEqual(['table-shake', 'table-shake']);
+});
+
 test('a lagging client skips small effects, never a player death (20.12)', async ({ browser }) => {
   const [ola] = await startGame(browser, ['Ola', 'Pim']);
   if (!ola) {

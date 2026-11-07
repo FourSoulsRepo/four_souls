@@ -63,6 +63,9 @@ Use option 1.
 5. Files stay mono MP3 in `images/assets/sounds/` (15.50).
 6. `sounds.ts` plays every sound at one volume.
 7. A new or changed sound passes `loudness check` before it is committed.
+8. Ducking (20.14, ADR 027) is no per-sound volume.
+   1. While a key cue plays, the mixer lowers every other sound alike.
+   2. No sound gets a level of its own.
 
 ## Consequences
 

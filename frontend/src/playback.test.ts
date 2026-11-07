@@ -262,7 +262,7 @@ describe('effectsFor', () => {
       { kind: 'died', player: -1, object: 90, prev: 40, card: 'fly' },
       { kind: 'died', player: 1, object: 31, card: 'cain' },
     ];
-    expect(effectsFor(events, ctx)).toEqual([{ kind: 'deaths', at: [['obj-40'], ['obj-31']], sound: 'playerDied' }]);
+    expect(effectsFor(events, ctx)).toEqual([{ kind: 'deaths', at: [['obj-40'], ['obj-31']], player: true, sound: 'playerDied' }]);
   });
 
   // A player's died comes only once nothing can undo it (18.8).
@@ -270,7 +270,26 @@ describe('effectsFor', () => {
     const monster: GameEvent = { kind: 'died', player: -1, object: 90, prev: 40, card: 'fly' };
     expect(effectsFor([monster], ctx)).toEqual([{ kind: 'deaths', at: [['obj-40']] }]);
     const player: GameEvent = { kind: 'died', player: 1, object: 31, card: 'cain' };
-    expect(effectsFor([player], ctx)).toMatchObject([{ kind: 'deaths', sound: 'playerDied' }]);
+    expect(effectsFor([player], ctx)).toMatchObject([{ kind: 'deaths', player: true, sound: 'playerDied' }]);
+  });
+
+  // One sound per moment (20.14): players who die in one update make one
+  // death sound, though other effects come between their skulls; each
+  // death still weighs as key and shakes the table.
+  it('queues one death sound for three deaths in an update', () => {
+    const events: GameEvent[] = [
+      { kind: 'died', player: 0 },
+      { kind: 'gained_cents', player: 0, amount: 1 },
+      { kind: 'died', player: 1 },
+      { kind: 'gained_cents', player: 1, amount: 1 },
+      { kind: 'died', player: 2 },
+    ];
+    const deaths = effectsFor(events, ctx).filter((e) => e.kind === 'deaths');
+    expect(deaths).toHaveLength(3);
+    expect(deaths.filter((e) => e.sound)).toEqual([expect.objectContaining({ sound: 'playerDied' })]);
+    expect(deaths.at(0)?.sound).toBe('playerDied');
+    expect(deaths.map((e) => e.player)).toEqual([true, true, true]);
+    expect(deaths.map(weightOf)).toEqual(['key', 'key', 'key']);
   });
 
   it('throws a fresh roll; a changed roll only spins in (15.62)', () => {
@@ -510,7 +529,8 @@ describe('catchUp (20.12)', () => {
     { kind: 'dice', value: 3, label: '', player: 0 },
   ];
   const key: Effect[] = [
-    { kind: 'deaths', at: [at], sound: 'playerDied' },
+    { kind: 'deaths', at: [at], player: true, sound: 'playerDied' },
+    { kind: 'deaths', at: [at], player: true },
     { kind: 'fly', from: at, to: at, back: 'monster', sound: 'soulGain' },
     { kind: 'sound', sound: 'soulGain' },
     { kind: 'banner', text: 'Ola wins', won: true },
@@ -532,7 +552,7 @@ describe('catchUp (20.12)', () => {
   it('drops minor effects first, then shortens, then keeps only key ones', () => {
     const popup: Effect = { kind: 'popup', at, text: '+1¢', tone: 'good' };
     const lunge: Effect = { kind: 'lunge', from: at, to: at, amount: 1 };
-    const death: Effect = { kind: 'deaths', at: [at], sound: 'playerDied' };
+    const death: Effect = { kind: 'deaths', at: [at], player: true, sound: 'playerDied' };
     const all = [popup, lunge, death];
     expect(catchUp(all, 'normal', 3)).toEqual([
       { effect: lunge, scale: 1 },

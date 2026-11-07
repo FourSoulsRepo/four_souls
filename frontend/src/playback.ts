@@ -56,8 +56,10 @@ export type Effect =
   // (15.75).
   | { kind: 'steal'; from: string[]; to: string[]; amount: number }
   // deaths: a big skull on each dying card before it leaves (T-26).
-  // sound plays with the skulls when a player died (18.8).
-  | { kind: 'deaths'; at: string[][]; sound?: Sound }
+  // player: a player died among them; the table shakes (20.3). sound
+  // plays with the skulls when a player died (18.8), only on the
+  // update's first such effect (20.14).
+  | { kind: 'deaths'; at: string[][]; player?: boolean; sound?: Sound }
   // sound: a sound with no flight, held for a beat (18.14).
   | { kind: 'sound'; sound: Sound };
 
@@ -343,6 +345,7 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
         // A player's died comes only once the death resolved, so nothing
         // can undo it; a monster's death is silent (18.8).
         if (e.player >= 0) {
+          last.player = true;
           last.sound = 'playerDied';
         }
         break;
@@ -457,7 +460,24 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
   }
   holdReveals(out);
   marksFirst(out);
+  oneDeathSound(out);
   return out;
+}
+
+// oneDeathSound keeps the death sound on the first deaths of an update
+// only (20.14, ADR 027 principle 8): players who die together make one
+// sound, even when other effects come between their skulls.
+function oneDeathSound(effects: Effect[]): void {
+  let heard = false;
+  for (const e of effects) {
+    if (e.kind !== 'deaths' || !e.sound) {
+      continue;
+    }
+    if (heard) {
+      delete e.sound;
+    }
+    heard = true;
+  }
 }
 
 // playedEnds tells if an effect sends the big played card of card away
@@ -554,7 +574,7 @@ const ranks: Record<Weight, number> = { minor: 0, normal: 1, key: 2 };
 export function weightOf(e: Effect): Weight {
   switch (e.kind) {
     case 'deaths':
-      return e.sound === 'playerDied' ? 'key' : 'normal';
+      return e.player ? 'key' : 'normal';
     case 'fly':
       if (e.sound === 'soulGain') {
         return 'key';

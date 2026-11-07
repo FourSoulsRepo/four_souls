@@ -319,6 +319,23 @@ export const feel = {
     swayTime: 10,
     swayCurve: curves.easeInOut,
   },
+  // mix: the sound mixer (20.14, ADR 027 principle 8, sounds.ts). One
+  // sound never starts twice within gap seconds; a start that comes
+  // sooner is dropped. While a key cue plays, every other sound goes
+  // down to duck of its level over duckIn, linear; once the cue ends,
+  // it comes back over duckOut, linear. A cue counts as ended cueMax
+  // seconds after it starts at most, so a lost end never keeps the
+  // rest quiet. The mixer moves its gain every tick seconds. These are
+  // sound, not motion: the animation speed neither scales nor stops
+  // them.
+  mix: {
+    gap: 0.08,
+    duck: 0.2,
+    duckIn: 0.7,
+    duckOut: 0.7,
+    cueMax: 5,
+    tick: 0.02,
+  },
   // banner: the text in the middle (Effects.tsx). times are its
   // opacity keyframes: in, held, out. A long one (start of game) stays
   // twice as long, with fades as long.

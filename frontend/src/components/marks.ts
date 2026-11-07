@@ -103,7 +103,8 @@ function skull(): SVGSVGElement {
 
 // skulls pops a skull on each dying card, with sound if any (18.8);
 // done is called when the cards should leave, and the skulls fade after.
-export function skulls(at: string[][], scale: number, done: () => void, sound?: Sound): void {
+// A player's death shakes the table (20.3), with or without its sound.
+export function skulls(at: string[][], scale: number, done: () => void, sound?: Sound, player = false): void {
   let shown = false;
   for (const zones of at) {
     const el = find(zones);
@@ -136,9 +137,12 @@ export function skulls(at: string[][], scale: number, done: () => void, sound?: 
     anim.onfinish = end;
     anim.oncancel = end;
   }
-  // Only a player's death has a sound; it shakes the table too (20.3).
+  // Only a player's death has a sound, the update's first one alone
+  // (20.14); each shakes the table (20.3).
   if (shown && sound) {
     playSound(sound);
+  }
+  if (shown && player) {
     shakeTable(scale);
   }
   if (shown) {

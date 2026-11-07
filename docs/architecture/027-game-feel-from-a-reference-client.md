@@ -476,6 +476,33 @@ Each sub-step of step 20 takes the part it needs.
 7. Clip per moment: step 20 file, sub-step 20.17.
 8. A clip sits in its bundle under its GUID (checked in 20.17).
    1. The catalog in `asset_manifest.unity3d` names the bundle.
+9. Checked in 20.14 (`SoundManager`, `SoundConfig` prefab data).
+   1. Ducking: a sound's category may duck other categories while it plays.
+   2. Each ducked category: a level, a time in, a time out, an ease.
+   3. In: from the level now; out once the trigger stops, from where it got to.
+   4. Several triggers on one category: the lowest level wins.
+   5. All the eases are linear.
+   6. 20 %, 0.7 s, 0.7 s: the class defaults and a big card's intro.
+   7. That intro ducks music and ambience, not the effects.
+   8. "Job's done!" is a voice line: it ducks only ambience, to 50 %.
+   9. The "your turn" alert is an effect: it ducks nothing.
+   10. Playback limit: a clip group may hold N sounds in their first 10 %.
+   11. A new start over the limit is dropped, or stops a lower one.
+   12. Some sounds also limit their own copies for a set time.
+10. Built in 20.14.
+    1. Limit: one sound never starts twice within 80 ms (`feel.mix.gap`).
+    2. A start within it is dropped, as the reference's.
+    3. Dice at speed "fast" land 64 ms apart: some clatters drop.
+    4. Deaths of one update: one death sound, on the first skull.
+    5. Each player's skull still shakes the table.
+    6. Key cue: only `end-turn-cue`, our one voice line.
+    7. It ducks every other sound: to 20 %, 0.7 s in, 0.7 s out, linear.
+    8. Ours ducks the effects too; the reference's voice does not.
+    9. The step file asks for it; the owner may tune it at 20.16.
+    10. One-shots stay HTML audio; their volume is level × duck.
+    11. Loops reach the master through a `rest` gain node, ducked alike.
+    12. A cue counts as ended 5 s after its start at most.
+    13. Sound, not motion: the speed setting does not change it.
 
 ## Consequences
 

@@ -15,7 +15,11 @@
 // game is silent.
 // Every file is levelled to one loudness (ADR 022), so every sound plays
 // at the same level. The player's volume (ST-09) scales them all alike.
+// One sound per moment (20.14): one sound never starts twice within
+// feel.mix.gap, and a key cue ducks every other sound while it plays.
+// Ducking is the mixer's gain on the rest, never a sound's own level.
 import type { Sounds } from './bridge';
+import { feel } from './feel';
 
 export type Sound = keyof Sounds;
 
@@ -35,43 +39,168 @@ export function setSoundVolume(percent: number): void {
   if (master) {
     master.gain.value = level;
   }
+  mix();
+}
+
+// keyCues duck every other sound while they play (20.14, ADR 027
+// principle 8): the voice line, as the reference's voice ducks.
+const keyCues: ReadonlySet<Sound> = new Set<Sound>(['endTurnCue']);
+
+// clock is the mixer's time, in seconds.
+function clock(): number {
+  return performance.now() / 1000;
+}
+
+// started is when each sound last started, by clock.
+const started = new Map<Sound, number>();
+
+// slack is a µs, so a time exactly at a limit never misses it by rounding.
+const slack = 1e-6;
+
+// mayStart tells if a sound that last started at last may start again
+// at now (20.14): not within feel.mix.gap.
+export function mayStart(last: number | undefined, now: number): boolean {
+  return last === undefined || now - last >= feel.mix.gap - slack;
+}
+
+// Cue is a key cue that plays from start until end, by clock; end is
+// unset while it plays.
+export interface Cue {
+  start: number;
+  end?: number;
+}
+
+// duckGain is the mixer's gain on every sound but the key cues at now
+// (20.14): each cue takes it down to feel.mix.duck over duckIn, linear,
+// and once it ends back up over duckOut, from wherever it got to, as
+// the reference does. Several cues: the lowest gain wins.
+export function duckGain(now: number, cues: readonly Cue[]): number {
+  const { duck, duckIn, duckOut } = feel.mix;
+  let gain = 1;
+  for (const c of cues) {
+    if (now < c.start) {
+      continue;
+    }
+    const down = (t: number) => 1 - (1 - duck) * Math.min(1, (t - c.start) / duckIn);
+    let g = down(now);
+    if (c.end !== undefined && now > c.end) {
+      const from = down(c.end);
+      g = from + (1 - from) * Math.min(1, (now - c.end) / duckOut);
+    }
+    gain = Math.min(gain, g);
+  }
+  return gain;
+}
+
+// cues are the key cues playing or still coming back; ducked are the
+// other sounds playing now.
+const cues: Cue[] = [];
+const ducked = new Set<HTMLAudioElement>();
+let ticker: ReturnType<typeof setInterval> | undefined;
+
+// mix sets the gain on the rest from the cues, and forgets the cues
+// whose duck is over.
+function mix(): void {
+  const now = clock();
+  const over = cues.filter((c) => c.end !== undefined && now - c.end >= feel.mix.duckOut - slack);
+  for (const c of over) {
+    cues.splice(cues.indexOf(c), 1);
+  }
+  const gain = duckGain(now, cues);
+  for (const a of ducked) {
+    a.volume = level * gain;
+  }
+  if (mixer && rest) {
+    rest.gain.setValueAtTime(gain, mixer.currentTime);
+  }
+  if (cues.length === 0 && ticker !== undefined) {
+    clearInterval(ticker);
+    ticker = undefined;
+  }
 }
 
 // playSound plays a sound once, one of its files at random; sounds may
-// overlap. A sound without a file, or one that fails to load or is
-// blocked, stays silent.
+// overlap, but one sound never starts twice within feel.mix.gap. A
+// sound without a file, or one that fails to load or is blocked, stays
+// silent.
 export function playSound(sound: Sound): void {
   const files = urls.get(sound) ?? [];
   if (files.length === 0 || typeof Audio === 'undefined') {
     return;
   }
+  const now = clock();
+  if (!mayStart(started.get(sound), now)) {
+    return;
+  }
+  started.set(sound, now);
   const a = new Audio(files[Math.floor(Math.random() * files.length)]);
+  if (keyCues.has(sound)) {
+    cue(a, now);
+    return;
+  }
+  a.volume = level * duckGain(now, cues);
+  ducked.add(a);
+  const done = () => {
+    ducked.delete(a);
+  };
+  a.onended = done;
+  a.onerror = done;
+  a.play().catch(done);
+}
+
+// cue plays a key cue at full level and ducks the rest until it ends.
+// A cue that cannot play ducks nothing.
+function cue(a: HTMLAudioElement, now: number): void {
   a.volume = level;
-  a.play().catch(() => undefined);
+  const c: Cue = { start: now };
+  cues.push(c);
+  const end = () => {
+    clearTimeout(longest);
+    c.end ??= Math.min(clock(), c.start + feel.mix.cueMax);
+  };
+  const longest = setTimeout(end, feel.mix.cueMax * 1000);
+  a.onended = end;
+  a.onerror = end;
+  a.play().catch(() => {
+    clearTimeout(longest);
+    const i = cues.indexOf(c);
+    if (i >= 0) {
+      cues.splice(i, 1);
+    }
+    mix();
+  });
+  ticker ??= setInterval(mix, feel.mix.tick * 1000);
+  mix();
 }
 
 // Loops (20.6): a sound that repeats until it is stopped, as a held
 // card's drag-bed and drag-air. They play through Web Audio, so the
 // loop has no gap, and a gain node per loop sets its level: a mixer
 // gain, never a per-file volume (ADR 022). A master gain is the
-// player's volume. The context is made at the first loop, inside a
-// drag, so the browser counts it as the player's own.
+// player's volume; the loops reach it through the rest's gain, which a
+// key cue ducks (20.14). The context is made at the first loop, inside
+// a drag, so the browser counts it as the player's own.
 let mixer: AudioContext | undefined;
 let master: GainNode | undefined;
+let rest: GainNode | undefined;
 const decoded = new Map<string, Promise<AudioBuffer | null>>();
 
-// out is the master gain, made at the first call; undefined where the
-// browser has no Web Audio.
-function out(): { ctx: AudioContext; master: GainNode } | undefined {
+// out is the mixer, made at the first call: the rest's gain, which
+// leads to the master gain; undefined where the browser has no Web
+// Audio.
+function out(): { ctx: AudioContext; rest: GainNode } | undefined {
   if (typeof AudioContext === 'undefined') {
     return undefined;
   }
-  if (!mixer || !master) {
+  if (!mixer || !master || !rest) {
     try {
       mixer = new AudioContext();
       master = mixer.createGain();
       master.gain.value = level;
       master.connect(mixer.destination);
+      rest = mixer.createGain();
+      rest.gain.value = duckGain(clock(), cues);
+      rest.connect(master);
     } catch {
       return undefined;
     }
@@ -79,7 +208,7 @@ function out(): { ctx: AudioContext; master: GainNode } | undefined {
   if (mixer.state === 'suspended') {
     mixer.resume().catch(() => undefined);
   }
-  return { ctx: mixer, master };
+  return { ctx: mixer, rest };
 }
 
 // decode loads and decodes a file once; a file that fails is null.
@@ -145,15 +274,15 @@ const silent: Loop = { set: () => undefined, stop: () => undefined };
 // Audio stays silent.
 export function playLoop(sound: Sound): Loop {
   const files = urls.get(sound) ?? [];
-  const mix = files.length > 0 ? out() : undefined;
+  const mixed = files.length > 0 ? out() : undefined;
   const url = files[Math.floor(Math.random() * files.length)];
-  if (!mix || !url) {
+  if (!mixed || !url) {
     return silent;
   }
-  const { ctx } = mix;
+  const { ctx } = mixed;
   const gain = ctx.createGain();
   gain.gain.value = 0;
-  gain.connect(mix.master);
+  gain.connect(mixed.rest);
   let source: AudioBufferSourceNode | undefined;
   let stopped = false;
   void decode(ctx, url).then((buffer) => {

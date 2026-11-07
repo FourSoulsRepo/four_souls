@@ -231,7 +231,7 @@ Owner notes (2026-11-06):
    1. Server test: sample rate limit holds.
    2. e2e with two pages: the lift shows on the other page.
 
-### [ ] 20.14 One sound per moment
+### [x] 20.14 One sound per moment
 
 1. Goal: sound stays clear when many things happen at once.
 2. Tasks:
