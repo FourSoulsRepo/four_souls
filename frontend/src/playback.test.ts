@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { CardInfo } from './cards';
-import { createPlayback, effectsFor, scaleFor, shopSlot, slotZone, type Death, type Effect } from './playback';
+import { createPlayback, effectsFor, hpOf, scaleFor, shopSlot, slotZone, type Death, type Effect } from './playback';
 import type { GameEvent, GameView, Update } from './protocol';
 
 const ctx = {
@@ -17,6 +17,7 @@ const ctx = {
   diedAt: new Map<number, Death>(),
   seen: (card: string) => card === 'pin',
   roll: (stack: number) => (stack === 7 ? 2 : undefined),
+  hpAfter: (e: GameEvent): number | undefined => (e.object === 42 ? 0 : undefined),
   you: 0,
 };
 
@@ -342,6 +343,41 @@ describe('effectsFor', () => {
     expect(effectsFor([reveal, discard('cain')], ctx)[0]).toEqual({ kind: 'reveal', card: 'fly', deck: ['deck-loot'] });
     const later: GameEvent[] = [reveal, { kind: 'gained_cents', player: 0, amount: 1 }, discard('fly')];
     expect(effectsFor(later, ctx)[0]).toEqual({ kind: 'reveal', card: 'fly', deck: ['deck-loot'] });
+  });
+});
+
+describe('lethal hits (20.3)', () => {
+  it('marks a hit that leaves no HP, or whose target dies in the update', () => {
+    const events: GameEvent[] = [
+      { kind: 'damaged', player: -1, object: 42, amount: 4, source: 30, text: 'combat' },
+      { kind: 'damaged', player: -1, object: 40, amount: 1, source: 30, text: 'combat' },
+      { kind: 'damaged', player: -1, object: 43, amount: 2, source: 7 },
+      { kind: 'damaged', player: 1, amount: 2, source: 7 },
+      { kind: 'died', player: -1, object: 99, prev: 43 },
+      { kind: 'died', player: 1 },
+    ];
+    expect(effectsFor(events, ctx).slice(0, 3)).toEqual([
+      { kind: 'lunge', from: ['obj-30'], to: ['obj-42'], amount: 4, lethal: true },
+      { kind: 'lunge', from: ['obj-30'], to: ['obj-40'], amount: 1 },
+      {
+        kind: 'hits',
+        hits: [
+          { from: ['obj-7', 'played-7', 'stack-src-7'], to: ['obj-43'], amount: 2, lethal: true },
+          { from: ['obj-7', 'played-7', 'stack-src-7'], to: ['obj-31', 'player-1'], amount: 2, lethal: true },
+        ],
+      },
+    ]);
+  });
+
+  it('reads the HP of a player, by id or character, and of a monster', () => {
+    const view = {
+      players: [{ id: 1, hp: 0, character: { id: 31 } }],
+      monsters: [{ top: { id: 40, stats: { hp: 2 } } }, {}],
+    } as unknown as GameView;
+    expect(hpOf(view, { kind: 'damaged', player: 1 })).toBe(0);
+    expect(hpOf(view, { kind: 'damaged', player: 1, object: 31 })).toBe(0);
+    expect(hpOf(view, { kind: 'damaged', player: -1, object: 40 })).toBe(2);
+    expect(hpOf(view, { kind: 'damaged', player: -1, object: 41 })).toBeUndefined();
   });
 });
 

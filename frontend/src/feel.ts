@@ -112,6 +112,29 @@ export const feel = {
     fromMiddle: 0.55,
     curve: curves.easeInOut,
   },
+  // hit: a hit's size by its damage (20.3, ADR 027 principle 4).
+  // Each list is by size, 1 to 3 (hitSize). burst is the starburst's
+  // scale; push is how far the cards near the hit move away from it,
+  // as a part of reach (px), as the reference's shakes 0.1, 0.5 and 1;
+  // near is how close a card must be, its centre to the hit's, in the
+  // hit card's larger side. The cards push out, swing back past home
+  // a little and stop, over shake seconds.
+  hit: {
+    burst: [1, 1.25, 1.5],
+    push: [0.1, 0.5, 1],
+    reach: 12,
+    near: 2.5,
+    shake: 0.35,
+    shakeCurve: curves.easeOut,
+  },
+  // table: the whole table jitters on a lethal hit or a player's death
+  // (20.3): random offsets up to reach px that fade to 0 over time, in
+  // steps jolts.
+  table: {
+    reach: 6,
+    time: 0.4,
+    steps: 8,
+  },
   // banner: the text in the middle (Effects.tsx). times are its
   // opacity keyframes: in, held, out. A long one (start of game) stays
   // twice as long, with fades as long.
@@ -122,3 +145,17 @@ export const feel = {
     longTimes: [0, 0.1, 0.9, 1],
   },
 } as const;
+
+export type HitSize = 1 | 2 | 3;
+
+// hitSize is a hit's size by its damage (20.3): 1 is small, 2–3 mid,
+// 4 and more large.
+export function hitSize(amount: number): HitSize {
+  if (amount >= 4) {
+    return 3;
+  }
+  if (amount >= 2) {
+    return 2;
+  }
+  return 1;
+}

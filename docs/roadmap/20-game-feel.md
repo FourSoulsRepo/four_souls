@@ -73,7 +73,7 @@ Owner notes (2026-11-06):
    1. e2e checks the hit comes after the strike starts, not before.
    2. Screenshots of windup, contact and settle.
 
-### [ ] 20.3 Hits by size
+### [x] 20.3 Hits by size
 
 1. Goal: a bigger hit looks bigger (ADR 027 principle 4).
 2. Tasks:

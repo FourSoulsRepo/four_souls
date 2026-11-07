@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { bezier, curves, elastic, elasticOut, feel } from './feel';
+import { bezier, curves, elastic, elasticOut, feel, hitSize } from './feel';
 
 describe('curves', () => {
   it('parses every curve string', () => {
@@ -61,5 +61,18 @@ describe('feel', () => {
     expect(settleCurve).toBe(curves.expoOut);
     expect(windup).toBeGreaterThan(strike);
     expect(settle).toBeGreaterThan(windup);
+  });
+});
+
+describe('hit sizes (20.3)', () => {
+  it('picks the size by damage: 1, 2–3, 4 and more', () => {
+    expect([0, 1, 2, 3, 4, 5, 12].map(hitSize)).toEqual([1, 1, 2, 2, 3, 3, 3]);
+  });
+
+  it('grows with the size, with the shake strengths of the reference', () => {
+    expect(feel.hit.push).toEqual([0.1, 0.5, 1]);
+    expect(feel.hit.burst[0]).toBe(1);
+    expect(feel.hit.burst).toEqual([...feel.hit.burst].sort((a, b) => a - b));
+    expect(() => bezier(feel.hit.shakeCurve)).not.toThrow();
   });
 });

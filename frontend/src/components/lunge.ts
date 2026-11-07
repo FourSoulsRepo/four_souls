@@ -5,9 +5,12 @@
 // clipped by the table and outlive the effect: playback goes on at the
 // hit, and the target's HP shows on its card once its copy is home
 // (C-03). Only transform and opacity animate (ADR 002). The hit lands
-// with an attack hit sound (15.50).
-import { feel } from '../feel';
-import { playSound } from '../sounds';
+// with an attack hit sound (15.50). A bigger hit looks and sounds
+// bigger (20.3): its burst grows and glows, the cards near it shake,
+// and a lethal one shakes the table.
+import { feel, hitSize, type HitSize } from '../feel';
+import { playSound, type Sound } from '../sounds';
+import { shakeNear, shakeTable } from './shake';
 
 // How many points the burst's star has.
 const starPoints = 14;
@@ -78,11 +81,24 @@ function copy(src: HTMLElement, r: DOMRect, testid: string): HTMLElement {
   return c;
 }
 
-// burst pops a starburst "−N" on a card (H-14, T-24).
-export function burst(at: DOMRect, amount: number, scale: number): void {
+// hitSounds are the attack hit sounds by hit size (20.3, 20.17).
+const hitSounds: Record<HitSize, Sound> = { 1: 'attackHit', 2: 'attackHit2', 3: 'attackHit3' };
+
+// hitSound is the sound of an attack that deals amount.
+export function hitSound(amount: number): Sound {
+  return hitSounds[hitSize(amount)];
+}
+
+// burst pops a starburst "−N" on a card (H-14, T-24), sized by the
+// damage, and shakes the cards near it (20.3). A lethal hit shakes the
+// table too.
+export function burst(at: DOMRect, amount: number, scale: number, lethal = false): void {
+  const size = hitSize(amount);
   const b = document.createElement('div');
-  b.className = 'effect-burst';
+  b.className = `effect-burst size-${String(size)}`;
   b.dataset.testid = 'burst';
+  b.dataset.size = String(size);
+  b.style.scale = String(feel.hit.burst[size - 1] ?? 1);
   b.style.left = `${String(at.left + at.width / 2)}px`;
   b.style.top = `${String(at.top + at.height / 2)}px`;
   const n = document.createElement('span');
@@ -102,6 +118,10 @@ export function burst(at: DOMRect, amount: number, scale: number): void {
   a.onfinish = () => {
     b.remove();
   };
+  shakeNear(at, size, scale);
+  if (lethal) {
+    shakeTable(scale);
+  }
 }
 
 // held maps a card to the lunge whose copy of it still settles home,
@@ -120,8 +140,8 @@ function still(): boolean {
 // target's copy meet half way, linear. Contact: the sound, the burst
 // and hit, from the strike's own end, not from a timer. Settle: both
 // ease back home. A target that is no card (a player's panel) stays;
-// the attacker then goes all the way into it.
-export function lunge(from: string[], to: string[], amount: number, scale: number, hit: () => void): void {
+// the attacker then goes all the way into it. lethal: the hit kills.
+export function lunge(from: string[], to: string[], amount: number, scale: number, hit: () => void, lethal = false): void {
   const dst = find(to);
   if (!dst) {
     hit();
@@ -134,8 +154,8 @@ export function lunge(from: string[], to: string[], amount: number, scale: numbe
   }
   const b = dst.getBoundingClientRect();
   if (!src || src === dst || still()) {
-    playSound('attackHit');
-    burst(b, amount, scale);
+    playSound(hitSound(amount));
+    burst(b, amount, scale, lethal);
     hit();
     return;
   }
@@ -226,8 +246,8 @@ export function lunge(from: string[], to: string[], amount: number, scale: numbe
       return;
     }
     touched = true;
-    playSound('attackHit');
-    burst(b, amount, scale);
+    playSound(hitSound(amount));
+    burst(b, amount, scale, lethal);
     const back = (el: HTMLElement, from: string) =>
       // anim: lunge
       el.animate([{ transform: from }, { transform: home }], { duration: ms(settle), easing: settleCurve, id: 'settle' });

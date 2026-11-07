@@ -7,7 +7,8 @@
 // (18.9). Every soul gained sounds with one sound: as it flies to its
 // player, a bonus soul too (18.13), and as the Lost Soul turns to one
 // (18.14). The reference client's sounds of step 20 (20.17) are here too;
-// each later sub-step of step 20 plays its own. A sound may have several
+// each later sub-step of step 20 plays its own: a bigger attack hit
+// sounds bigger since 20.3. A sound may have several
 // files: each play picks one at random, all alike, as the reference
 // does. The files live only in the private images; without them the
 // game is silent.

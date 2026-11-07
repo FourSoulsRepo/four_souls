@@ -36,7 +36,8 @@ export type Effect =
   // shown, so later effects play over it (19.3).
   | { kind: 'place'; from: string[]; to: string[]; card: string; back: Kind; middle?: boolean }
   // lunge: the attacker's card hits the target and returns (15.3, V-12).
-  | { kind: 'lunge'; from: string[]; to: string[]; amount: number }
+  // lethal: the hit kills; the table shakes (20.3).
+  | { kind: 'lunge'; from: string[]; to: string[]; amount: number; lethal?: boolean }
   // hits: other damage flies from its source and bursts on every
   // damaged card at once (15.37, T-15, T-24).
   | { kind: 'hits'; hits: Hit[] }
@@ -53,6 +54,8 @@ export interface Hit {
   from: string[];
   to: string[];
   amount: number;
+  // lethal: the hit kills; the table shakes (20.3).
+  lethal?: boolean;
 }
 
 const noPlayer = -1;
@@ -88,6 +91,8 @@ interface Context {
   seen: (card: string) => boolean;
   // roll is the value of a roll on the stack shown now, if any (15.76).
   roll: (stack: number) => number | undefined;
+  // hpAfter is a damaged target's HP in this update's view, if shown (20.3).
+  hpAfter: (e: GameEvent) => number | undefined;
   // you is the viewer's seat; -1 for none.
   you: number;
 }
@@ -132,6 +137,29 @@ function damageFrom(e: GameEvent, ctx: Context): string[] {
     out.push(...playerZones(p));
   }
   return out;
+}
+
+// kills tells if a damage event kills its target (20.3): the target
+// has no HP left in the update's view, or dies in the same update.
+function kills(e: GameEvent, events: GameEvent[], ctx: Context): boolean {
+  if (ctx.hpAfter(e) === 0) {
+    return true;
+  }
+  return events.some(
+    (d) =>
+      d.kind === 'died' &&
+      ((e.object !== undefined && d.prev === e.object) || (e.player >= 0 && !d.prev && d.player === e.player && (!e.object || e.object === ctx.character(e.player)))),
+  );
+}
+
+// hpOf is a damaged target's HP in a view: a player's, by the player or
+// their character, else a monster's on top of its slot (20.3).
+export function hpOf(view: GameView, e: GameEvent): number | undefined {
+  const p = view.players.find((x) => (e.object ? x.character.id === e.object : x.id === e.player));
+  if (p) {
+    return p.hp;
+  }
+  return (view.monsters ?? []).find((s) => e.object !== undefined && s.top?.id === e.object)?.top?.stats?.hp;
 }
 
 // shopSlot is the shop slot whose top card is card, and its object.
@@ -251,11 +279,13 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
       case 'damaged': {
         // Damage shows when it lands. Attack damage: its source lunges
         // at the target. Other damage flies from its source (damageFrom).
+        // A lethal hit shakes the table (20.3).
+        const lethal = kills(e, events, ctx) ? { lethal: true } : {};
         if (e.text === 'combat' && e.source) {
-          out.push({ kind: 'lunge', from: [`obj-${String(e.source)}`], to: hitZones(e, ctx), amount });
+          out.push({ kind: 'lunge', from: [`obj-${String(e.source)}`], to: hitZones(e, ctx), amount, ...lethal });
           break;
         }
-        const hit = { from: damageFrom(e, ctx), to: hitZones(e, ctx), amount };
+        const hit = { from: damageFrom(e, ctx), to: hitZones(e, ctx), amount, ...lethal };
         const last = out.at(-1);
         if (last?.kind === 'hits') {
           last.hits.push(hit);

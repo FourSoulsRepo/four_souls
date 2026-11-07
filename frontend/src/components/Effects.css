@@ -124,6 +124,16 @@
   filter: drop-shadow(0 3px 6px rgb(0 0 0 / 60%));
 }
 
+/* A bigger hit glows (20.3): mid gold, large wide and hot. Its scale
+   comes from feel.ts. */
+.effect-burst.size-2 svg {
+  filter: drop-shadow(0 3px 6px rgb(0 0 0 / 60%)) drop-shadow(0 0 10px rgb(255 200 60 / 85%));
+}
+
+.effect-burst.size-3 svg {
+  filter: drop-shadow(0 3px 6px rgb(0 0 0 / 60%)) drop-shadow(0 0 14px rgb(255 160 40 / 95%)) drop-shadow(0 0 30px rgb(255 90 30 / 80%));
+}
+
 .effect-burst span {
   position: relative;
   font-family: var(--font-game);

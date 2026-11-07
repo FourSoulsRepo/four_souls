@@ -155,7 +155,7 @@ function Effect({ playing }: { playing: Playing }) {
         <Layered
           playing={playing}
           start={(done) => {
-            lunge(effect.from, effect.to, effect.amount, scale, done);
+            lunge(effect.from, effect.to, effect.amount, scale, done, effect.lethal);
           }}
         />
       );

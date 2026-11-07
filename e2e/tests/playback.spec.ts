@@ -234,9 +234,10 @@ test('a roll of several dice throws every die, each with its clatter (19.39)', a
 });
 
 // attack replays the view with one hit of the own character on the
-// first monster, whose HP is one lower after it.
-async function attack(page: Page): Promise<{ character: number; monster: number; hp: number }> {
-  return page.evaluate(() => {
+// first monster, whose HP is amount lower after it (at least 0), or
+// left when given.
+async function attack(page: Page, amount = 1, left?: number): Promise<{ character: number; monster: number; hp: number }> {
+  return page.evaluate(([amount, left]) => {
     interface Card {
       id: number;
       stats?: { hp: number };
@@ -258,17 +259,51 @@ async function attack(page: Page): Promise<{ character: number; monster: number;
       throw new Error('no game');
     }
     const hp = monster.stats.hp;
-    monster.stats.hp = hp - 1;
+    monster.stats.hp = left ?? Math.max(hp - amount, 0);
     s.receive({
       type: 'update',
       data: {
         ...game,
         step: game.step + 1,
-        events: [{ kind: 'damaged', player: -1, object: monster.id, amount: 1, source: character.id, text: 'combat' }],
+        events: [{ kind: 'damaged', player: -1, object: monster.id, amount, source: character.id, text: 'combat' }],
       },
     });
     return { character: character.id, monster: monster.id, hp };
+  }, [amount, left] as const);
+}
+
+// listenShakes records the id of every shake started from now on, in
+// window.shakes (20.3). Call it once per page; forget empties the list.
+async function listenShakes(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const w = window as unknown as { shakes: string[] };
+    w.shakes = [];
+    const animate = Element.prototype.animate;
+    Element.prototype.animate = function (this: Element, ...args: Parameters<Element['animate']>) {
+      const a = animate.apply(this, args);
+      if (a.id.endsWith('shake')) {
+        w.shakes.push(a.id);
+      }
+      return a;
+    };
   });
+}
+
+function shakes(page: Page): Promise<string[]> {
+  return page.evaluate(() => (window as unknown as { shakes: string[] }).shakes);
+}
+
+// holdShakes pauses the cards' and the table's shakes at a part of
+// their time, for a screenshot.
+async function holdShakes(page: Page, part: number): Promise<void> {
+  await page.evaluate((part) => {
+    for (const a of document.getAnimations()) {
+      if (a.id.endsWith('shake')) {
+        a.pause();
+        a.currentTime = part * Number(a.effect?.getTiming().duration ?? 0);
+      }
+    }
+  }, part);
 }
 
 // holdTrail pauses every animation of the effect layer as it starts,
@@ -378,13 +413,78 @@ test('with reduced motion an attack hits in place (20.2)', async ({ browser }) =
   }
   await vee.emulateMedia({ reducedMotion: 'reduce' });
   await listenSounds(vee);
-  const ids = await attack(vee);
-  await expect(vee.getByTestId('burst')).toHaveText('−1');
-  expect(await played(vee)).toEqual(['/cardimg/assets/sounds/attack-hit.mp3']);
+  await listenShakes(vee);
+  const ids = await attack(vee, 4);
+  await expect(vee.getByTestId('burst')).toHaveText('−4');
+  expect(await played(vee)).toEqual(['/cardimg/assets/sounds/attack-hit-3.mp3']);
+  // A large, lethal hit, but nothing shakes (20.3).
+  expect(await shakes(vee)).toEqual([]);
   await expect(vee.getByTestId('lunge')).toHaveCount(0);
   await expect(vee.getByTestId('lunge-target')).toHaveCount(0);
   const monster = vee.locator(`[data-zone="obj-${String(ids.monster)}"]`);
-  await expect(monster.getByLabel(tr('badge.hp', { n: ids.hp - 1 }))).toBeVisible();
+  await expect(monster.getByLabel(tr('badge.hp', { n: Math.max(ids.hp - 4, 0) }))).toBeVisible();
+});
+
+// forget empties the lists of played sounds and started shakes.
+async function forget(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const w = window as unknown as { played: string[]; shakes: string[] };
+    w.played = [];
+    w.shakes = [];
+  });
+}
+
+// hitAndShoot plays an attack of amount, holds the trail, and shoots
+// the contact with the shakes a fifth through, at their widest.
+async function hitAndShoot(page: Page, amount: number, name: string, left?: number): Promise<{ hp: number; size: string; width: number }> {
+  await forget(page);
+  await holdTrail(page);
+  const ids = await attack(page, amount, left);
+  await expect(page.getByTestId('lunge')).toBeVisible();
+  await seek(page, 'strike', 'finish');
+  await expect(page.getByTestId('burst')).toHaveText(`−${String(amount)}`);
+  await seek(page, 'settle', 0);
+  await seek(page, 'burst', feel.burst.pop);
+  await holdShakes(page, 0.2);
+  await shot(page, name);
+  const burst = page.getByTestId('burst');
+  const size = (await burst.getAttribute('data-size')) ?? '';
+  const width = (await burst.boundingBox())?.width ?? 0;
+  await page.evaluate(() => {
+    (window as unknown as { releaseTrail: () => void }).releaseTrail();
+    for (const a of document.getAnimations()) {
+      if (a.id.endsWith('shake')) {
+        a.play();
+      }
+    }
+  });
+  await expect(page.locator('.effects-trail > *')).toHaveCount(0);
+  return { hp: ids.hp, size, width };
+}
+
+test('a bigger hit looks and sounds bigger (20.3)', async ({ browser }) => {
+  const [vee] = await startGame(browser, ['Vee', 'Wyn']);
+  if (!vee) {
+    throw new Error('no pages');
+  }
+  await listenSounds(vee);
+  await listenShakes(vee);
+  // 1 damage: the small burst and sound; the near cards push a little.
+  const small = await hitAndShoot(vee, 1, 'hit-size-1');
+  expect(small.size).toBe('1');
+  expect(await played(vee)).toEqual(['/cardimg/assets/sounds/attack-hit.mp3']);
+  const near = await shakes(vee);
+  expect(near.filter((id) => id === 'hit-shake').length).toBeGreaterThan(0);
+  // The table shakes only when the hit kills.
+  expect(near.includes('table-shake')).toBe(small.hp <= 1);
+  // 4 damage: the large burst and sound; this one kills.
+  const large = await hitAndShoot(vee, 4, 'hit-size-3', 0);
+  expect(large.size).toBe('3');
+  expect(large.width).toBeGreaterThan(small.width * 1.3);
+  expect(await played(vee)).toEqual(['/cardimg/assets/sounds/attack-hit-3.mp3']);
+  const big = await shakes(vee);
+  expect(big).toContain('hit-shake');
+  expect(big).toContain('table-shake');
 });
 
 // The view parts the replays below change.
@@ -1390,6 +1490,7 @@ test('a player death makes its sound once, a monster death none (18.8)', async (
     throw new Error('no pages');
   }
   await listenSounds(ola);
+  await listenShakes(ola);
   // Replay the view with a monster's death and the player's death.
   await ola.evaluate(() => {
     interface Store {
@@ -1415,6 +1516,8 @@ test('a player death makes its sound once, a monster death none (18.8)', async (
   await expect(ola.getByTestId('skull')).toHaveCount(2);
   await expect(ola.locator('.effects')).toHaveCount(0);
   expect(await played(ola)).toEqual(['/cardimg/assets/sounds/player-died.mp3']);
+  // The player's death shakes the table, once (20.3).
+  expect(await shakes(ola)).toEqual(['table-shake']);
 });
 
 test('every gained soul sounds: a dead one, a bonus soul from the board, the Lost Soul (18.13, 18.14)', async ({ browser }) => {

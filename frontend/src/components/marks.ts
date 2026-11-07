@@ -4,10 +4,11 @@
 // Both play in the lunge's layer and end the effect early, so the table
 // changes while the marks fade. Only transform and opacity animate
 // (ADR 002). A shot sounds as a fireball: cast, then impact (15.50). A
-// player's skull sounds as a death (18.8).
+// player's skull sounds as a death (18.8) and shakes the table (20.3).
 import type { Hit } from '../playback';
 import { playSound, type Sound } from '../sounds';
 import { burst, find, layer } from './lunge';
+import { shakeTable } from './shake';
 
 // The normal length of a shot and of a skull, in ms.
 const shotMs = 450;
@@ -34,7 +35,7 @@ function place(el: HTMLElement, x: number, y: number): void {
 // hits flies a shot from each source to its target, then bursts on
 // every target at once and calls done.
 export function hits(list: Hit[], scale: number, done: () => void): void {
-  const landed: { at: DOMRect; amount: number }[] = [];
+  const landed: { at: DOMRect; amount: number; lethal: boolean }[] = [];
   let flying = false;
   for (const h of list) {
     const dst = find(h.to);
@@ -42,7 +43,7 @@ export function hits(list: Hit[], scale: number, done: () => void): void {
       continue;
     }
     const at = dst.getBoundingClientRect();
-    landed.push({ at, amount: h.amount });
+    landed.push({ at, amount: h.amount, lethal: h.lethal ?? false });
     const src = find(h.from);
     if (!src) {
       continue;
@@ -80,7 +81,7 @@ export function hits(list: Hit[], scale: number, done: () => void): void {
       playSound('effectImpact');
     }
     for (const l of landed) {
-      burst(l.at, l.amount, scale);
+      burst(l.at, l.amount, scale, l.lethal);
     }
     done();
   };
@@ -135,8 +136,10 @@ export function skulls(at: string[][], scale: number, done: () => void, sound?: 
     anim.onfinish = end;
     anim.oncancel = end;
   }
+  // Only a player's death has a sound; it shakes the table too (20.3).
   if (shown && sound) {
     playSound(sound);
+    shakeTable(scale);
   }
   if (shown) {
     window.setTimeout(done, skullMs * scale * leaveAt);

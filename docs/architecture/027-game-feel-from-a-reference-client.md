@@ -143,6 +143,25 @@ Each sub-step of step 20 takes the part it needs.
    4. Our burst carries "−N", so it pops on the target's home.
    5. The target's new HP shows once its copy is home.
    6. Reduced motion: no strike; the hit lands in place.
+9. Shakes, checked in 20.3 (`MinionShake`, `CameraShakeMgr`).
+   1. Strengths 0.1, 0.5 and 1 scale the push away from the impact.
+   2. The push itself is an animator clip; its size is not in code.
+   3. A shake may have a radius; cards past it stay still.
+   4. A screen shake jitters at random, fading linearly to 0.
+   5. Its usual size: 0.1–0.15 units, over 0.4–0.9 s.
+   6. Players can turn screen shake off in the reference's options.
+   7. Its impact effect is picked by attacker power, not damage.
+10. Hits by size, built in 20.3.
+    1. Picked by damage: size 1 for 1, 2 for 2–3, 3 for 4 and more.
+    2. Damage is what Four Souls shows; attacks are mostly 1.
+    3. Burst scale 1, 1.25, 1.5; sizes 2 and 3 add a gold glow.
+    4. Nearby cards: pushed 12 px × 0.1, 0.5 or 1, then settle; 0.35 s.
+    5. Nearby: centre within 2.5 target sizes of the target's centre.
+    6. Lethal hit or player death: the table jitters 6 px, 0.4 s.
+    7. Lethal: the target's HP is 0 in the update, or it died in it.
+    8. Sound by size: `attack-hit`, `attack-hit-2`, `attack-hit-3`.
+    9. Other damage keeps its fireball sound; size sets burst and shake.
+    10. Speed "off" and reduced motion: no shake.
 
 ### Damage and death
 
