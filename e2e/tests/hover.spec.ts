@@ -76,6 +76,10 @@ test('playable hand cards glow green; a hovered one rises large (15.27)', async 
         return [r.left, r.top, r.right, r.bottom];
       }),
     );
+  // The fan settles first (19.122): the turn's loot card can come just
+  // before, and the other cards then turn to their new pose for
+  // 150 ms. Only the cards' own transitions count, not their glow.
+  await expect.poll(() => others.evaluateAll((els) => els.filter((el) => el.getAnimations().length > 0).length)).toBe(0);
   const before = await edges();
   await hoverTop(active, card);
   const zoom = active.getByTestId('card-zoom').locator('.card.size-zoom');

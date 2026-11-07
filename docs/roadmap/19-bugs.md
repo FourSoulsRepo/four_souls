@@ -41,8 +41,8 @@ This step never closes; new reports are appended.
 | F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88, 19.99, 19.102, 19.118, 19.119 | 11    |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
-| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123 | 26 |
-| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107, 19.117, 19.120, 19.121, 19.122 | 23 |
+| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122 | 27 |
+| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107, 19.117, 19.120, 19.121 | 22 |
 | Q  | Load tool: a lost connection ends a game | Go tools   | 19.108                                                 | 1     |
 | K  | Build and release files                  | Release    | 19.47, 19.59, 19.83, 19.91                             | 4     |
 | L  | Not a bug: the app follows a ruling      | None       | 19.63                                                  | 1     |
@@ -3814,7 +3814,7 @@ Totals by system (100 items):
    3. 3 full chromium runs with traces: 205 of 205 each.
    4. Left open: reopen with the next failure's evidence.
 
-### [ ] 19.122 e2e: a hand card's neighbour moves 0.4 px on hover, chromium
+### [x] 19.122 e2e: a hand card's neighbour moves 0.4 px on hover, chromium
 
 1. Goal: `hover.spec.ts` "playable hand cards glow green; a hovered one rises large" passes every run.
 2. Report (agent, 2026-11-07)
@@ -3824,13 +3824,27 @@ Totals by system (100 items):
    4. The same test passed in the two gates before it.
    5. Evidence: `.cache/e2e-evidence/19.122-hover/` (not in git).
 3. Cause
-   1. Not found yet.
+   1. Found later: see 6.
    2. The test is step 20.5's; the hover only raises the card's `z-index`.
 4. Tasks:
-   1. Find what moved the edge: the card, the fan, or the float noise.
+   1. [x] Find what moved the edge: the card, the fan, or the float noise.
+   2. [x] Wait for the fan to settle before the first measure.
 5. Tries (2026-11-07)
    1. `hover.spec.ts`, chromium, 20 repeats, 5 workers: 120 of 120.
    2. Left for step 20, whose test it is; reopen with the next failure.
+6. Cause found (2026-11-07)
+   1. The edge is the first card's left; settled, it is always 456.42.
+   2. The failed run's "after" was 456.42: the hover moved nothing.
+   3. Its "before" was 456.80: taken while the fan still turned.
+   4. The turn's loot card makes the hand four; the fan forms then.
+   5. The other three cards turn into it over 150 ms (`.hand-card` transition).
+   6. A probe: in 3 of 30 runs they still turned when `activePage` returned.
+   7. The glow checks between usually outlast the 150 ms; that time, not.
+   8. So the test measured too early; the app was right.
+7. Fix
+   1. The test waits until no hand card has a running animation.
+   2. Then it takes "before"; the 0.05 px check stays.
+   3. Checked: 40 repeats, both browsers, 8 workers: 80 of 80.
 
 ### [x] 19.123 e2e: the hidden top card test finds the card in the viewer's own loot
 
