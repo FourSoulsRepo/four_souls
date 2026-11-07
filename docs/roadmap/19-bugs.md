@@ -50,20 +50,22 @@ This step never closes; new reports are appended.
 | N  | A missing control: no way to do it       | Server     | 19.84                                                  | 1     |
 | O  | Reconnect: old connection state kept     | Client     | 19.78, 19.86                                           | 2     |
 | P  | A missing setting: no way to change it   | Client     | 19.93                                                  | 1     |
+| R  | Vitest setup: a test sees stale files    | Vitest     | 19.124                                                 | 1     |
 
-Totals by system (100 items):
+Totals by system (121 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
-| Engine    | A, B    | 23    |
+| Engine    | A, B    | 28    |
 | Card data | C       | 2     |
 | Client    | D–G, O, P | 32  |
 | Server    | H, N    | 2     |
-| e2e       | I, J    | 46    |
+| e2e       | I, J    | 49    |
 | Release   | K       | 4     |
 | None      | L       | 1     |
 | Go tests  | M       | 1     |
 | Go tools  | Q       | 1     |
+| Vitest    | R       | 1     |
 
 ---
 
@@ -3865,3 +3867,31 @@ Totals by system (100 items):
    2. No ban; no app change.
    3. The test, 5 repeats, both browsers: 10 of 10.
    4. Gates: `make lint`, `make frontend`, `make e2e` exit 0.
+
+### [x] 19.124 Vitest: the animation inventory test misses a new file
+
+1. Goal: a new file with an untracked `anim:` tag always fails `animations.test.ts`.
+2. Report (owner, 2026-11-07)
+   1. Seen with 20.8: `components/turn.ts` added an `anim:` tag.
+   2. `make frontend` passed until `node_modules/.vitest-cache` was deleted.
+3. Cause
+   1. Vitest 5 turns `fsModuleCache` on by default.
+   2. It keeps each transformed module on disk, keyed by its own text.
+   3. A file with `import.meta.glob(` is never cached: it depends on others.
+   4. The check looks for that exact text.
+   5. Our test calls `import.meta.glob<string>(`: the type breaks the match.
+   6. So the test's old glob result (its file list) came from the cache.
+4. Tasks:
+   1. Reproduce with a temp file, two runs.
+   2. Make the test see every new file.
+   3. Check with the same temp file; remove it.
+5. Fix (2026-11-07)
+   1. `vite.config.ts` sets `test.fsModuleCache: false`.
+   2. It covers every `import.meta.glob<T>(` file, tests or not.
+   3. The cache saved about 0.2 s of a 1.1 s run.
+   4. Note in wiki `Frontend-tests` (Unit tests).
+6. Checks (2026-11-07)
+   1. Before: a temp file with `anim: zz-temp-untracked`.
+   2. A warm cache passed it; after deleting the cache, it failed.
+   3. After: `make frontend` twice with the temp file; both failed on it.
+   4. Temp file removed; no cache folder is written now.

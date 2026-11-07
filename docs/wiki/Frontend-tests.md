@@ -28,6 +28,8 @@ The frontend follows the same KISS rules as the backend:
 
 A test sits next to its file: `store.ts` and `store.test.ts`. They run in Node, without a DOM. `translations.test.ts` is the one that touches files: `make i18n` runs it on the real language files ([Client](Client#translation-checks)); the checks it calls are tested on test tables in `locale.test.ts`, so no trial language sits in `locales/`.
 
+The inventory tests (`animations.test.ts`, `layers.test.ts`, `i18n.test.ts`) list the source files with `import.meta.glob`. Vitest's on-disk module cache (`fsModuleCache`, on by default since Vitest 5) would keep an old file list, so a new file went unchecked; `vite.config.ts` turns that cache off (19.124).
+
 ## UI tests
 
 Vite serves the frontend with fake Wails bindings (`?fake`, `frontend/src/fakeBridge.ts`). The fake keeps settings in `localStorage`, so a page reload acts like an app restart.
