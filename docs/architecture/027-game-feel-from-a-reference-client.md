@@ -140,6 +140,29 @@ Each sub-step of step 20 takes the part it needs.
    2. An "air" whoosh: volume rises with speed, up to 50 %.
    3. Both fade out in 0.2 s on drop.
 3. While held, the cost shows on the mana crystals.
+4. Checked in 20.6 (`DragRotator`, `InputManager`, `DragCardSoundEffects`).
+   1. The gain is degrees per world unit moved in one frame.
+   2. Pitch from forward motion, roll from sideways.
+   3. The edge the card moves toward leans away.
+   4. Rest 2 s times a 0.1 fudge: a smooth-damp of 0.2 s.
+   5. Collection and pack drags use gains 3 and 4.5; a held game card 25.
+   6. Bed: smooth-damp up to 0.15 over 0.5 s.
+   7. Air target: ln(0.5 × units moved per frame + 0.92).
+   8. Air eases by smooth-damp 0.04 s, at most 1 per second.
+   9. Air plays clamped to 0 – 0.5; when still the log is below 0.
+   10. Drop: both smooth-damp to 0 over 0.2 s, then stop.
+5. Built in 20.6.
+   1. Tilt per frame: `tiltStep` in `drag.ts`; numbers in `feel.drag`.
+   2. One table unit is 60 px: ours, tuned by eye.
+   3. Speed counts per 60 fps frame; any frame rate plays alike.
+   4. The card's inner box turns, perspective 600 px.
+   5. Its green aura turns with it.
+   6. Speed "off" and reduced motion: the card stays flat.
+   7. Loops: Web Audio, a gain node each, then a master volume gain.
+   8. The bed fades in linearly over 0.5 s; both fade out linearly in 0.2 s.
+   9. The loops still play with speed "off": sound, not motion.
+   10. WebKit keeps the MP3 encoder delay: 13 ms before, 14–28 ms after.
+   11. `loopBounds` skips it; Chromium trims it itself.
 
 ### Attack
 

@@ -125,6 +125,12 @@
   * A deck attack's drawn card stays face up on the monster deck.
   * One click picks; no arrow, no cancel.
   * An option not on the table, e.g. an empty slot, keeps the dialog.
+* **2i. Drag tilt (20.6):** a dragged card tilts by its motion, as if held.
+  * The edge it moves toward leans away; faster moves lean more.
+  * Held still, it lies flat again in about 0.2 s.
+  * Animation speed Off or reduced motion: it stays flat.
+  * A soft loop plays while it is held; a whoosh grows with its speed.
+  * Both fade out on the drop; silent without the private sounds.
 
 ## Postconditions
 

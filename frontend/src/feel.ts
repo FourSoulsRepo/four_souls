@@ -160,6 +160,31 @@ export const feel = {
     growCurve: curves.expoOut,
     grace: 0.3,
   },
+  // drag: a held hand card (20.6, ADR 027 "Drag", drag.ts). Each move
+  // tilts it gain degrees per unit moved, up to pitch and roll; unit is
+  // the reference's table unit in px, ours, tuned by eye. It springs
+  // back to flat over rest, a smooth-damp. perspective is the depth of
+  // its 3D turn, in px. Two loops follow it, as mixer gains: the bed
+  // fades in to bed over bedIn; the air's level is the log of the speed
+  // per 60 fps frame, airScale × units + airBase, eased over airEase at
+  // most airRate a second, and plays at 0 to air. Both fade out over
+  // out on drop.
+  drag: {
+    gain: 25,
+    unit: 60,
+    pitch: 40,
+    roll: 45,
+    rest: 0.2,
+    perspective: 600,
+    bed: 0.15,
+    bedIn: 0.5,
+    air: 0.5,
+    airScale: 0.5,
+    airBase: 0.92,
+    airEase: 0.04,
+    airRate: 1,
+    out: 0.2,
+  },
   // banner: the text in the middle (Effects.tsx). times are its
   // opacity keyframes: in, held, out. A long one (start of game) stays
   // twice as long, with fades as long.

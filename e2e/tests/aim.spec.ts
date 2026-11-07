@@ -233,6 +233,69 @@ test('a loot card with no target dragged onto the board plays', async ({ browser
   await expect(active.getByRole('dialog')).toHaveCount(0);
 });
 
+// tiltOf is the held card's turn now, in degrees: its inner box's
+// rotateX (pitch) and rotateY (roll); 0 where it has none.
+async function tiltOf(page: Page): Promise<{ pitch: number; roll: number }> {
+  const style = await page.locator('.hand-card.dragging .drag-tilt').evaluate((el) => (el as HTMLElement).style.transform);
+  const deg = (axis: string) => Number(new RegExp(`rotate${axis}\\((-?[\\d.e-]+)deg\\)`).exec(style)?.[1] ?? 0);
+  return { pitch: deg('X'), roll: deg('Y') };
+}
+
+test('a dragged card tilts by its motion and lies flat when still (20.6)', async ({ browser }) => {
+  // Animations on: speed "off" keeps the card flat.
+  const pages = await startGame(browser, ['Til', 'Ura'], { url: appURL() });
+  await activePage(pages, click);
+  await saveAndContinue(pages, 'Til, Ura', 'a_penny');
+  const active = await activePage(pages, click);
+  // The loops' files do not load here: they stay silent, with no
+  // complaint from the audio context.
+  const audio: string[] = [];
+  active.on('console', (m) => {
+    if (/audio/i.test(m.text())) {
+      audio.push(m.text());
+    }
+  });
+  const penny = active.getByRole('group', { name: tr('table.your_hand') }).getByRole('button', { name: cardName('a_penny') }).first();
+  await expect(penny).toBeVisible();
+  const from = await penny.boundingBox();
+  if (!from) {
+    throw new Error('no box');
+  }
+  const x = from.x + 40;
+  const y = from.y + 40;
+  await active.mouse.move(x, y);
+  await active.mouse.down();
+  // Up and to the right, fast: the top edge and the right edge lean away.
+  await active.mouse.move(x + 10, y - 12, { steps: 2 });
+  await active.mouse.move(x + 160, y - 200, { steps: 6 });
+  await expect.poll(async () => (await tiltOf(active)).pitch).toBeGreaterThan(5);
+  const tilt = await tiltOf(active);
+  expect(tilt.roll).toBeGreaterThan(5);
+  expect(tilt.pitch).toBeLessThanOrEqual(40);
+  expect(tilt.roll).toBeLessThanOrEqual(45);
+  await shot(active, 'drag-tilt');
+  // Held still, it springs back to flat.
+  await expect.poll(async () => Math.abs((await tiltOf(active)).roll)).toBeLessThan(1);
+  // Dropped back on the hand, it is not played.
+  await active.mouse.move(x, y, { steps: 4 });
+  await active.mouse.up();
+  await expect(active.locator('.hand-card.dragging')).toHaveCount(0);
+  await expect(penny).toBeVisible();
+  // Reduced motion: no tilt at all.
+  await active.emulateMedia({ reducedMotion: 'reduce' });
+  await active.mouse.move(x, y);
+  await active.mouse.down();
+  await active.mouse.move(x + 10, y - 12, { steps: 2 });
+  await active.mouse.move(x + 160, y - 200, { steps: 6 });
+  await active.waitForTimeout(100);
+  expect(await tiltOf(active)).toEqual({ pitch: 0, roll: 0 });
+  // Dropped back on the hand: nothing is played.
+  await active.mouse.move(x, y, { steps: 4 });
+  await active.mouse.up();
+  await expect(active.locator('.hand-card.dragging')).toHaveCount(0);
+  expect(audio).toEqual([]);
+});
+
 test('a card placed first aims after its mode; a cancelled aim leaves it in hand', async ({ browser }) => {
   // Dagaz is banned from the deal: the test gives one and counts it; a
   // dealt Dagaz made two in the hand (19.20).

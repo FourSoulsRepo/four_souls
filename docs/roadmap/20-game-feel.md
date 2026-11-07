@@ -114,7 +114,7 @@ Owner notes (2026-11-06):
    1. Vitest: fan angle and drop per card count.
    2. e2e: zoom absent at 0.2 s, present at 0.6 s.
 
-### [ ] 20.6 Drag tilt
+### [x] 20.6 Drag tilt
 
 1. Goal: a dragged card feels held in a hand.
 2. Tasks:

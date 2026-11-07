@@ -737,13 +737,15 @@
   pointer-events: none;
 }
 
-.own .hand-card.usable {
+/* The aura sits on the card's inner box (.drag-tilt), so it tilts with
+   a dragged card (20.6). */
+.own .hand-card.usable > .drag-tilt {
   position: relative;
   isolation: isolate;
 }
 
-.own .hand-card.usable::before,
-.own .hand-card.usable::after {
+.own .hand-card.usable > .drag-tilt::before,
+.own .hand-card.usable > .drag-tilt::after {
   position: absolute;
   inset: -1px;
   z-index: -1; /* layer: local */
@@ -753,7 +755,7 @@
 }
 
 /* The steady part: a crisp light edge and a tight bright halo. */
-.own .hand-card.usable::before {
+.own .hand-card.usable > .drag-tilt::before {
   box-shadow:
     0 0 1px 1px rgb(220 255 190 / 75%),
     0 0 5px 1px rgb(110 255 70 / 80%),
@@ -761,7 +763,7 @@
 }
 
 /* The breathing part: the wide, soft falloff. */
-.own .hand-card.usable::after {
+.own .hand-card.usable > .drag-tilt::after {
   box-shadow:
     0 0 22px 6px rgb(50 200 45 / 40%),
     0 0 44px 14px rgb(25 150 35 / 22%);
@@ -947,7 +949,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .aim-arrow *,
-  .own .hand-card.usable::after {
+  .own .hand-card.usable > .drag-tilt::after {
     animation: none;
   }
 }

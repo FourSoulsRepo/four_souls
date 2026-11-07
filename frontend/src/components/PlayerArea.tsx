@@ -1,12 +1,16 @@
-import { useRef, useState, type CSSProperties, type ReactNode } from 'react';
-import { fanPose, type FanPose } from '../feel';
+import { motion, useMotionValue } from 'motion/react';
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { fanPose, feel, type FanPose } from '../feel';
 import { t } from '../i18n';
+import { scaleFor } from '../playback';
 import { Role, type CardView, type PlayerView } from '../protocol';
 import { useApp } from '../store';
 import type { LinePart } from '../stack';
 import { isCurse, isSoul, playerColor, soulCards, soulSlots, type Position } from '../table';
 import { Card, useZoom, type CardSize } from './Card';
+import { holdCard, type Held } from './dragFeel';
 import type { Interact } from './Interact';
+import { still } from './lunge';
 import { HiddenHand, RevealedHand } from './Pile';
 import { Part } from './StackPanel';
 import './Table.css';
@@ -350,27 +354,46 @@ const dragThreshold = 8;
 // share it and the release is never missed (ADR 008).
 // A card that needs a target is not dragged: a click starts aiming and
 // the card stays lifted in the fan meanwhile (15.25).
+// A dragged card tilts by its motion and two loops follow it (20.6,
+// holdCard); its inner box turns, so the drag's own move stays apart.
 function HandCard({ card, ui, pose }: { card: CardView; ui: Interact; pose: FanPose }) {
   const act = useApp((s) => s.act);
   const setZoom = useApp((s) => s.setZoom);
   const aiming = useApp((s) => s.aiming?.source === card.id);
+  const speed = useApp((s) => s.settings.animation);
   const [offset, setOffset] = useState<{ x: number; y: number } | null>(null);
   const startRef = useRef<{ x: number; y: number; pointer: number } | null>(null);
   // draggedRef swallows the click that ends a drag.
   const draggedRef = useRef(false);
+  // heldRef is the held card's tilt and loops while it is dragged.
+  const heldRef = useRef<Held | null>(null);
+  const pitch = useMotionValue(0);
+  const roll = useMotionValue(0);
   const action = ui.play(card.id);
   const play = action && !action.targets?.length ? action.intent : undefined;
   const handle = ui.object(card.id);
   const reset = () => {
     startRef.current = null;
+    heldRef.current?.end();
+    heldRef.current = null;
     setOffset(null);
   };
+  // A card that leaves the hand mid-drag drops its loops.
+  useEffect(
+    () => () => {
+      heldRef.current?.end();
+    },
+    [],
+  );
   return (
     <div
       className={`hand-card${play ? ' playable' : ''}${handle.highlight === 'act' ? ' usable' : ''}${offset ? ' dragging' : ''}${aiming ? ' aiming' : ''}`}
       style={
         offset
-          ? { transform: `translate(${String(offset.x)}px, ${String(offset.y)}px) scale(1.08)` }
+          ? {
+              transform: `translate(${String(offset.x)}px, ${String(offset.y)}px) scale(1.08)`,
+              perspective: `${String(feel.drag.perspective)}px`,
+            }
           : ({ '--fan-angle': `${String(pose.angle)}deg`, '--fan-drop': `${String(pose.drop)}px` } as CSSProperties)
       }
       onPointerDown={(e) => {
@@ -393,7 +416,12 @@ function HandCard({ card, ui, pose }: { card: CardView; ui: Interact; pose: FanP
           e.currentTarget.setPointerCapture(e.pointerId);
           draggedRef.current = true;
           setZoom(null);
+          heldRef.current = holdCard(e.clientX, e.clientY, scaleFor(speed, 0, 0) === 0 || still(), (p, r) => {
+            pitch.set(p);
+            roll.set(r);
+          });
         }
+        heldRef.current?.move(e.clientX, e.clientY);
         setOffset({ x, y });
       }}
       onPointerUp={(e) => {
@@ -410,7 +438,10 @@ function HandCard({ card, ui, pose }: { card: CardView; ui: Interact; pose: FanP
         }
       }}
     >
-      <Card cardRef={card.card} size="hand" objectId={card.id} rise {...handle} />
+      {/* anim: drag-tilt */}
+      <motion.div className="drag-tilt" style={{ rotateX: pitch, rotateY: roll }}>
+        <Card cardRef={card.card} size="hand" objectId={card.id} rise {...handle} />
+      </motion.div>
     </div>
   );
 }
