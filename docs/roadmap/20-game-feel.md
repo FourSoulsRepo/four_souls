@@ -177,7 +177,7 @@ Owner notes (2026-11-06):
    1. e2e: own play shows no big card; another player's does.
    2. Clash fixture green.
 
-### [ ] 20.10 End turn states
+### [x] 20.10 End turn states
 
 1. Goal: End turn tells the player what is left.
 2. Tasks:

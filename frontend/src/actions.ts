@@ -152,6 +152,22 @@ export interface TurnActions {
   left?: string[];
 }
 
+// EndTurnLook is the End turn button's look (20.10, ADR 027): waiting
+// on another player's turn; turn on the viewer's own, while plays are
+// left or ending is not allowed yet; done once nothing is left but
+// passing and ending the turn.
+export type EndTurnLook = 'waiting' | 'turn' | 'done';
+
+// endTurnLook picks the look from the turn actions the update allows.
+// own: it is the viewer's turn; canAct: the viewer may act now (not
+// behind, nothing sent).
+export function endTurnLook(turn: TurnActions, own: boolean, canAct: boolean): EndTurnLook {
+  if (!own) {
+    return 'waiting';
+  }
+  return canAct && turn.endTurn !== undefined && turn.idle === true ? 'done' : 'turn';
+}
+
 // leftLabels name the plays End turn's question lists, in its order.
 const leftLabels = (): Map<number, string> =>
   new Map([

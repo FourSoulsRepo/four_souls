@@ -343,6 +343,26 @@ Each sub-step of step 20 takes the part it needs.
 2. Nothing left: the button glows and changes color.
 3. A short cue plays 1.5 s later, once per turn.
 4. The cue is skipped if a play becomes possible meanwhile.
+5. Checked in 20.10 (`EndTurnButton`).
+   1. "No more plays": every option but End turn is unplayable.
+   2. The cue is tried once per turn: a flag set as the state first comes.
+   3. The flag resets when the own turn starts.
+   4. After 1.5 s the cue plays only if the state still holds.
+   5. A skipped cue is not tried again that turn.
+   6. Green highlight intensity: 1.1, and 1.4 on hover; 0.15 s, linear.
+   7. With plays left, a hover shows a white highlight instead.
+   8. Ending the turn sets the button to waiting at once.
+   9. Press and release clicks exist; not taken (no clip traced in 20.17).
+6. Built in 20.10.
+   1. Looks: `endTurnLook` in `actions.ts`: `waiting`, `turn`, `done`.
+   2. `done`: the update allows only End turn and Pass, and the viewer may act.
+   3. The button turns green; its halo is larger and never below 55 %.
+   4. The halo still breathes over 1.6 s each way, as in 19.76.
+   5. Hover brightens the halo to 130 % in 0.15 s, linear: ours, by eye.
+   6. The cue: `endTurnCue.ts`, `feel.endTurn.cue`, 1.5 s, once per turn.
+   7. The 1.5 s is a wait, not a motion: the speed setting does not scale it.
+   8. The cue plays with speed "off" too, as the drag loops.
+   9. Speed "off" and reduced motion: the halo stands still; no hover tween.
 
 ### Counters
 

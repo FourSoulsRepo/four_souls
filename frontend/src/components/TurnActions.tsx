@@ -1,9 +1,12 @@
-import { useState, type ReactNode } from 'react';
+import { useEffect, useState, type CSSProperties, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
-import { IntentKind, PromptKind, Purpose, type TurnActions as Allowed } from '../actions';
+import { endTurnLook, IntentKind, PromptKind, Purpose, type EndTurnLook, type TurnActions as Allowed } from '../actions';
+import { createEndTurnCue } from '../endTurnCue';
+import { feel } from '../feel';
 import { t } from '../i18n';
 import { useKey } from '../keys';
 import type { Intent, Prompt } from '../protocol';
+import { playSound } from '../sounds';
 import { useApp } from '../store';
 import './Actions.css';
 import './Overlays.css';
@@ -133,35 +136,60 @@ function Left({ n }: { n: number }) {
 }
 
 interface EndProps {
-  // intent ends the turn, when the engine allows it now.
-  intent?: Intent;
-  // idle: nothing is left to do but end the turn (H-20).
-  idle: boolean;
-  // left names what the player may still do; the question lists it (V-46).
-  left?: string[] | undefined;
+  // allowed: the turn actions the update allows; End turn's intent,
+  // idle, and what is left (V-46).
+  allowed: Allowed;
   // own: it is the viewer's turn.
   own: boolean;
   disabled: boolean;
   step: number;
-  // why says why the player can't end the turn now (15.29).
-  why?: string | undefined;
+  // turn is the turn's number; the cue plays once per turn (20.10).
+  turn: number;
+}
+
+// lookClass is each look's classes (20.10): grey "Their turn", yellow,
+// and green with its halo once nothing is left.
+function lookClass(look: EndTurnLook): string {
+  switch (look) {
+    case 'waiting':
+      return 'theirs';
+    case 'turn':
+      return 'own';
+    case 'done':
+      return 'own idle';
+  }
 }
 
 // EndTurn is the one big End turn button at the board's right edge
-// (15.20, H-04): yellow on own turn, grey "Their turn" otherwise
-// (H-19), glowing green once nothing is left to do (H-20). E presses
-// it (F-15). On own turn, a click on it while it is dim says why
-// (15.29, F-18). While plays are left it asks first, unless the
+// (15.20, H-04). Its three looks (20.10, endTurnLook): grey "Their
+// turn" otherwise (H-19), yellow on own turn, green with a breathing
+// halo once nothing is left to do (H-20). Then, 1.5 s later, the cue
+// plays once per turn, unless a play became possible (endTurnCue.ts).
+// E presses it (F-15). On own turn, a click on it while it is dim says
+// why (15.29, F-18). While plays are left it asks first, unless the
 // settings say not to (V-46).
-export function EndTurn({ intent, idle, left, own, disabled, step, why: reason }: EndProps) {
+export function EndTurn({ allowed, own, disabled, step, turn }: EndProps) {
+  const { endTurn: intent, idle = false, left, why: whyNot } = allowed;
+  const reason = whyNot?.endTurn;
   const act = useApp((s) => s.act);
   const showWhy = useApp((s) => s.showWhy);
   const ask = useApp((s) => !s.settings.no_end_turn_ask) && !idle;
+  const off = useApp((s) => s.settings.animation === 'off');
   const [pressed, setPressed] = useState(-1);
   // asking is the step the question was asked at; a new update drops it.
   const [asking, setAsking] = useState(-1);
   const lit = own && intent !== undefined && !disabled;
   const open = lit && asking === step;
+  const look = endTurnLook(allowed, own, !disabled);
+  const [cue] = useState(() => createEndTurnCue(() => {
+    playSound('endTurnCue');
+  }));
+  useEffect(() => {
+    cue.update(turn, look === 'done');
+  }, [cue, turn, look]);
+  useEffect(() => () => {
+    cue.stop();
+  }, [cue]);
   const end = () => {
     if (lit) {
       setAsking(-1);
@@ -178,15 +206,24 @@ export function EndTurn({ intent, idle, left, own, disabled, step, why: reason }
   };
   useKey('e', press);
   const label = own ? t('turn.end') : t('turn.theirs');
-  const state = !own ? 'theirs' : lit && idle ? 'own idle' : 'own';
+  const state = lookClass(look);
   const why = own && !lit && !disabled ? reason : undefined;
+  const { breath, low, hover, hoverTime, hoverCurve } = feel.endTurn;
+  const glow = {
+    '--end-turn-breath': `${String(breath)}s`,
+    '--end-turn-low': String(low),
+    '--end-turn-hover': String(hover),
+    '--end-turn-hover-time': `${String(hoverTime)}s`,
+    '--end-turn-hover-curve': hoverCurve,
+  } as CSSProperties;
   return (
     <>
       {/* The slot draws the idle glow behind the button (19.76). */}
-      <span className={`end-turn-slot ${state}`}>
+      <span className={`end-turn-slot ${state}${off ? ' still' : ''}`} style={glow}>
         <button
           type="button"
           className={`end-turn ${state}${pressed === step ? ' down' : ''}`}
+          data-look={look}
           title={own ? `${t('turn.end_tip')}${why ? ` · ${why}` : ''}` : t('turn.theirs')}
           aria-disabled={why ? true : undefined}
           disabled={!lit && !why}

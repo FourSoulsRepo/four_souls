@@ -131,6 +131,10 @@
   * Animation speed Off or reduced motion: it stays flat.
   * A soft loop plays while it is held; a whoosh grows with its speed.
   * Both fade out on the drop; silent without the private sounds.
+* **7f. Nothing left, said aloud (20.10):** End turn turns green and glows stronger.
+  * 1.5 s later a voice says "Job's done!", once per turn.
+  * No voice if a play became possible meanwhile.
+  * Silent without the private sounds.
 
 ## Postconditions
 

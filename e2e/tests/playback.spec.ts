@@ -5,7 +5,7 @@ import { feel } from '../../frontend/src/feel';
 import { startGame } from './game';
 import { shot } from './shot';
 import { tr } from './locale';
-import { activePage, click, endTurn, seen, settle } from './turn';
+import { activePage, click, endTurn, endTurnButton, seen, settle } from './turn';
 
 // listenSounds records the file of every sound played from now on, in
 // window.played (15.50). Each sound still plays.
@@ -1912,4 +1912,112 @@ test('a turn starts with its banner; a pass during it is accepted (20.8)', async
   const turnStart = '/cardimg/assets/sounds/turn-start.mp3';
   expect((await played(next)).filter((f) => f === turnStart)).toEqual([turnStart]);
   expect((await played(active)).filter((f) => f === turnStart)).toEqual([]);
+});
+
+// cueTimes records when End turn's cue plays from now on, in ms of the
+// page's clock (20.10). Each sound still plays.
+async function cueTimes(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const w = window as unknown as { cues: number[] };
+    w.cues = [];
+    const play = HTMLMediaElement.prototype.play;
+    HTMLMediaElement.prototype.play = function (this: HTMLMediaElement) {
+      if (new URL(this.src).pathname.endsWith('/end-turn-cue.mp3')) {
+        w.cues.push(performance.now());
+      }
+      return play.call(this);
+    };
+  });
+}
+
+function cues(page: Page): Promise<number[]> {
+  return page.evaluate(() => (window as unknown as { cues: number[] }).cues);
+}
+
+// feedTurn plays the viewer's game again as the next update and says
+// when, in ms of the page's clock (20.10). done allows only passing and
+// ending the turn; else the turn's own intents, saved on the first
+// call, with an attack added, so a play is left whatever the deal.
+// later adds to the turn's number, as a later own turn.
+async function feedTurn(page: Page, done: boolean, later = 0): Promise<number> {
+  return page.evaluate(
+    ({ done, later }) => {
+      interface Intent {
+        player: number;
+        kind: number;
+      }
+      const w = window as unknown as {
+        fourSouls: { store: Store };
+        fed?: { allowed: Intent[]; turn: number };
+      };
+      const s = w.fourSouls.store.getState();
+      const game = structuredClone(s.game) as unknown as { step: number; allowed: Intent[]; view: { turn: { number: number } } } | null;
+      const you = s.lobby.table?.you ?? 0;
+      if (!game) {
+        throw new Error('no game');
+      }
+      w.fed ??= { allowed: game.allowed, turn: game.view.turn.number };
+      const own = w.fed.allowed.some((a) => a.kind === 5) ? w.fed.allowed : [...w.fed.allowed, { player: you, kind: 5 }];
+      const allowed = done ? w.fed.allowed.filter((a) => a.kind === 0 || a.kind === 1) : own;
+      const view = { ...game.view, turn: { ...game.view.turn, number: w.fed.turn + later } };
+      s.receive({ type: 'update', data: { ...game, step: game.step + 1, events: [], allowed, view } });
+      return performance.now();
+    },
+    { done, later },
+  );
+}
+
+test('End turn turns green once nothing is left, and cues once per turn (20.10)', async ({ browser }) => {
+  const pages = await startGame(browser, ['Ari', 'Bo']);
+  const active = await activePage(pages, click);
+  const button = endTurnButton(active);
+  await expect(button).toBeEnabled();
+  await cueTimes(active);
+  await active.mouse.move(600, 300);
+
+  // A play is left: yellow, no cue.
+  await feedTurn(active, false);
+  await expect(button).toHaveAttribute('data-look', 'turn');
+  await shot(active, 'end-turn-plays');
+  // Nothing left: green, and the cue about 1.5 s later.
+  const first = await feedTurn(active, true);
+  await expect(button).toHaveAttribute('data-look', 'done');
+  await expect(button).toHaveClass(/idle/);
+  await shot(active, 'end-turn-done');
+  await button.hover();
+  await active.waitForTimeout(feel.endTurn.hoverTime * 1000 + 100);
+  await shot(active, 'end-turn-done-hover');
+  await active.mouse.move(600, 300);
+  await expect.poll(() => cues(active), { timeout: 5000 }).toHaveLength(1);
+  const [cue = 0] = await cues(active);
+  expect(cue - first).toBeGreaterThan(feel.endTurn.cue * 1000 - 100);
+
+  // The same turn: a play comes and goes; no second cue.
+  await feedTurn(active, false);
+  await expect(button).toHaveAttribute('data-look', 'turn');
+  await feedTurn(active, true);
+  await expect(button).toHaveAttribute('data-look', 'done');
+  // A later own turn has its own cue. A second cue of the first turn
+  // would have come before it.
+  const next = await feedTurn(active, true, 1);
+  await expect.poll(() => cues(active), { timeout: 5000 }).toHaveLength(2);
+  const [, second = 0] = await cues(active);
+  expect(second - next).toBeGreaterThan(feel.endTurn.cue * 1000 - 100);
+});
+
+test('End turn skips its cue if a play became possible meanwhile (20.10)', async ({ browser }) => {
+  const pages = await startGame(browser, ['Cy', 'Di']);
+  const active = await activePage(pages, click);
+  await expect(endTurnButton(active)).toBeEnabled();
+  await cueTimes(active);
+  await feedTurn(active, true);
+  await expect(endTurnButton(active)).toHaveAttribute('data-look', 'done');
+  // A play comes back before the cue: that turn stays silent.
+  await feedTurn(active, false);
+  await expect(endTurnButton(active)).toHaveAttribute('data-look', 'turn');
+  // The next own turn cues; the skipped one would have come first.
+  const next = await feedTurn(active, true, 1);
+  await expect.poll(() => cues(active), { timeout: 5000 }).toHaveLength(1);
+  const [cue = 0] = await cues(active);
+  expect(cue - next).toBeGreaterThan(feel.endTurn.cue * 1000 - 100);
 });

@@ -253,6 +253,21 @@ export const feel = {
     riseCurve: curves.expoOut,
     leaveCurve: curves.easeInOut,
   },
+  // endTurn: the End turn button (20.10, ADR 027 "End Turn button",
+  // TurnActions.tsx). Once nothing is left (endTurnLook "done"), the
+  // cue plays cue seconds later, once per turn, if nothing became
+  // possible meanwhile. Its green halo breathes from low to full
+  // opacity and back, each way over breath; on hover it brightens to
+  // hover over hoverTime, and back. The cue is a wait, not a motion:
+  // the animation speed does not scale it.
+  endTurn: {
+    cue: 1.5,
+    breath: 1.6,
+    low: 0.55,
+    hover: 1.3,
+    hoverTime: 0.15,
+    hoverCurve: curves.linear,
+  },
   // banner: the text in the middle (Effects.tsx). times are its
   // opacity keyframes: in, held, out. A long one (start of game) stays
   // twice as long, with fades as long.

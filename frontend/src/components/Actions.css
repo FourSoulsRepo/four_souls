@@ -1003,11 +1003,21 @@
     0 0 14px rgb(255 210 122 / 70%);
 }
 
-/* Idle (19.76): a soft green halo behind the button breathes; only its
+/* Nothing left (20.10, H-20): the button itself turns green. */
+.end-turn.own.idle {
+  background:
+    radial-gradient(ellipse at 30% 22%, rgb(255 255 255 / 55%), transparent 45%),
+    radial-gradient(circle at 80% 85%, rgb(0 70 10 / 25%), transparent 40%),
+    linear-gradient(#b8f58a, #4fbf3a);
+}
+
+/* Idle (19.76): a green halo behind the button breathes; only its
    opacity moves. Like Throw's, it is a gradient in its own box, not a
    blurred shadow: macOS WebKit clipped the shadow of the tilted button
    to a hard-edged box. The slot around the button draws it, as the
-   tilted button paints its children over its own face. */
+   tilted button paints its children over its own face. Stronger since
+   20.10: larger, never below --end-turn-low, and brighter on hover.
+   Times come from feel.endTurn, set on the slot. */
 .end-turn-slot {
   position: relative;
   display: block;
@@ -1016,28 +1026,40 @@
 
 .end-turn-slot.idle::before {
   position: absolute;
-  inset: -40px -36px;
+  inset: -52px -46px;
   border-radius: 50%;
   background: radial-gradient(
     closest-side,
-    rgb(110 255 70 / 95%) 55%,
-    rgb(60 210 45 / 50%) 72%,
+    rgb(120 255 80 / 100%) 50%,
+    rgb(60 220 45 / 60%) 70%,
     rgb(25 150 35 / 0%)
   );
   content: '';
   pointer-events: none;
-  animation: end-turn-glow 1.6s ease-in-out infinite alternate;
+  animation: end-turn-glow var(--end-turn-breath, 1.6s) ease-in-out infinite alternate;
+  transition: filter var(--end-turn-hover-time, 0.15s) var(--end-turn-hover-curve, linear);
+}
+
+.end-turn-slot.idle:hover::before {
+  filter: brightness(var(--end-turn-hover, 1.3));
 }
 
 /* anim: end-turn-glow */
 @keyframes end-turn-glow {
   from {
-    opacity: 0.3;
+    opacity: var(--end-turn-low, 0.55);
   }
 
   to {
     opacity: 1;
   }
+}
+
+/* Speed "off" (20.10): the halo stands still and brightens at once. */
+.end-turn-slot.still.idle::before {
+  animation: none;
+  opacity: 0.8;
+  transition: none;
 }
 
 /* Pressed: the sticker sinks onto its shadow. */
@@ -1053,6 +1075,7 @@
   .end-turn-slot.idle::before {
     animation: none;
     opacity: 0.8;
+    transition: none;
   }
 }
 

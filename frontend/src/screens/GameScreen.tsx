@@ -208,13 +208,11 @@ function Table({ game, you }: { game: Update; you: number }) {
         end={
           me && !view.over && started ? (
             <EndTurn
-              intent={actions.turn.endTurn}
-              idle={actions.turn.idle ?? false}
-              left={actions.turn.left}
+              allowed={actions.turn}
               own={view.turn.active === you}
               disabled={!canAct}
               step={game.step}
-              why={actions.turn.why?.endTurn}
+              turn={view.turn.number}
             />
           ) : undefined
         }
