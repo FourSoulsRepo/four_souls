@@ -1,5 +1,6 @@
 import { motion, useMotionValue } from 'motion/react';
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { arrivedBy } from '../animations';
 import { fanPose, feel, type FanPose } from '../feel';
 import { t } from '../i18n';
 import { scaleFor } from '../playback';
@@ -369,9 +370,23 @@ function HandCard({ card, ui, pose }: { card: CardView; ui: Interact; pose: FanP
   const heldRef = useRef<Held | null>(null);
   const pitch = useMotionValue(0);
   const roll = useMotionValue(0);
-  const action = ui.play(card.id);
+  // A card just drawn is playable only a moment after it lands (20.7).
+  const [landing, setLanding] = useState(() => arrivedBy(card.card) === 'loot-draw');
+  useEffect(() => {
+    if (!landing) {
+      return;
+    }
+    const id = window.setTimeout(() => {
+      setLanding(false);
+    }, feel.draw.ready * 1000);
+    return () => {
+      window.clearTimeout(id);
+    };
+  }, [landing]);
+  const action = landing ? undefined : ui.play(card.id);
   const play = action && !action.targets?.length ? action.intent : undefined;
   const handle = ui.object(card.id);
+  const usable = !landing && handle.highlight === 'act';
   const reset = () => {
     startRef.current = null;
     heldRef.current?.end();
@@ -387,7 +402,7 @@ function HandCard({ card, ui, pose }: { card: CardView; ui: Interact; pose: FanP
   );
   return (
     <div
-      className={`hand-card${play ? ' playable' : ''}${handle.highlight === 'act' ? ' usable' : ''}${offset ? ' dragging' : ''}${aiming ? ' aiming' : ''}`}
+      className={`hand-card${play ? ' playable' : ''}${usable ? ' usable' : ''}${landing ? ' landing' : ''}${offset ? ' dragging' : ''}${aiming ? ' aiming' : ''}`}
       style={
         offset
           ? {

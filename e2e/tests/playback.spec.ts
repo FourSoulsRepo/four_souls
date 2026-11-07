@@ -85,9 +85,9 @@ test('a fast burst of updates plays in order and ends on the last one', async ({
   await expect(kai.getByTestId('effect-dice')).toBeVisible();
   await kai.waitForTimeout(300); // let the dice settle for the picture
   await shot(kai, 'effect-dice');
-  // A fly plays between throws only briefly in a fast burst: look for it
-  // on every frame (15.62).
-  await kai.waitForFunction(() => document.querySelector('[data-testid="effect-fly"]') !== null);
+  // A draw plays between throws only briefly in a fast burst: look for
+  // it on every frame (15.62, 20.7).
+  await kai.waitForFunction(() => document.querySelector('[data-testid="effect-draw"]') !== null);
   // The burst plays for 13.6 s on a quiet machine: the last updates play
   // at full speed. 20 s left too little room on a busy one (19.51).
   await expect(kai.getByRole('main', { name: tr('game.turn', { n: 21 }) })).toBeVisible({ timeout: 40_000 });
@@ -1538,10 +1538,142 @@ test('each looted card makes its sound, from the deck or the discard (18.7)', as
     ];
     s.receive({ type: 'update', data: { ...game, step: game.step + 1, events } });
   });
-  await expect(ola.getByTestId('effect-fly')).toBeAttached();
-  await expect(ola.locator('.effects')).toHaveCount(0);
-  // One deal per card, the one from the discard too.
-  expect(await played(ola)).toEqual(Array(3).fill('/cardimg/assets/sounds/loot-draw.mp3'));
+  await expect(ola.getByTestId('effect-draw')).toBeAttached();
+  await expect(ola.locator('.effects')).toHaveCount(0, { timeout: 10_000 });
+  // One deal per card, the one from the discard too; each lands with a
+  // sound of its own, one of three (20.7).
+  const deal = ['/cardimg/assets/sounds/loot-draw.mp3', '/cardimg/assets/sounds/loot-land.mp3'];
+  expect((await played(ola)).map((p) => p.replace(/-\d\.mp3$/, '.mp3'))).toEqual([...deal, ...deal, ...deal]);
+});
+
+// trackDraws records, every frame, how many drawn cards show at once,
+// each draw's largest width and whether it is the viewer's, and if a
+// hand card ever waited to land (20.7). It stops when read, or after 15 s.
+async function trackDraws(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const w = window as unknown as { draws: { most: number; widths: number[]; own: string[]; landing: boolean }; trackingDraws: boolean };
+    w.draws = { most: 0, widths: [], own: [], landing: false };
+    w.trackingDraws = true;
+    let last: Element | undefined;
+    const end = performance.now() + 15_000;
+    const frame = () => {
+      const all = document.querySelectorAll('[data-testid="drawn-card"]');
+      w.draws.most = Math.max(w.draws.most, all.length);
+      const el = all[0];
+      if (el && el !== last) {
+        w.draws.widths.push(0);
+        w.draws.own.push(el.getAttribute('data-own') ?? '');
+      }
+      last = el;
+      if (el) {
+        const i = w.draws.widths.length - 1;
+        w.draws.widths[i] = Math.max(w.draws.widths[i] ?? 0, el.getBoundingClientRect().width);
+      }
+      if (document.querySelector('.hand-card.landing')) {
+        w.draws.landing = true;
+      }
+      if (w.trackingDraws && performance.now() < end) {
+        requestAnimationFrame(frame);
+      }
+    };
+    requestAnimationFrame(frame);
+  });
+}
+
+function draws(page: Page): Promise<{ most: number; widths: number[]; own: string[]; landing: boolean }> {
+  return page.evaluate(() => {
+    const w = window as unknown as { draws: { most: number; widths: number[]; own: string[]; landing: boolean }; trackingDraws: boolean };
+    w.trackingDraws = false;
+    return w.draws;
+  });
+}
+
+// loot replays the view with cards looted by player, each also put in
+// the viewer's hand when they are the viewer's own (20.7).
+async function loot(page: Page, other: boolean, cards: string[]): Promise<void> {
+  await page.evaluate(
+    ({ other, cards }) => {
+      interface Hand {
+        id: number;
+        card: string;
+        charged: boolean;
+      }
+      interface Store {
+        getState: () => {
+          game: { step: number; view: { players: { id: number; hand_size: number; hand?: Hand[] }[] } } | null;
+          lobby: { table: { you: number } | null };
+          receive: (env: unknown) => void;
+        };
+      }
+      const s = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store.getState();
+      const game = structuredClone(s.game);
+      const you = s.lobby.table?.you ?? 0;
+      const who = game?.view.players.find((p) => (other ? p.id !== you : p.id === you));
+      if (!game || !who) {
+        throw new Error('no game');
+      }
+      who.hand_size += cards.length;
+      const events = cards.map((card, i) => {
+        const id = 1001 + i;
+        if (!other) {
+          who.hand = [...(who.hand ?? []), { id, card, charged: true }];
+        }
+        return { kind: 'looted', player: who.id, object: id, ...(other ? {} : { card }), private: true };
+      });
+      s.receive({ type: 'update', data: { ...game, step: game.step + 1, events } });
+    },
+    { other, cards },
+  );
+}
+
+test('an own 3-card draw shows each card at the show spot, one at a time (20.7)', async ({ browser }) => {
+  const [ola] = await startGame(browser, ['Ola', 'Pim']);
+  if (!ola) {
+    throw new Error('no pages');
+  }
+  await listenSounds(ola);
+  await trackDraws(ola);
+  await loot(ola, false, ['a_penny', 'a_dime', 'a_nickel']);
+  await expect(ola.getByTestId('drawn-card')).toBeAttached();
+  // Near the end of its first leg the card is face up at the show spot.
+  await ola.waitForTimeout(800);
+  await shot(ola, 'loot-draw-show');
+  await expect(ola.locator('.effects')).toHaveCount(0, { timeout: 10_000 });
+  await expect(ola.locator('.hand-card.landing')).toHaveCount(0);
+  await shot(ola, 'loot-draw-hand');
+  const d = await draws(ola);
+  // Three draws, each its own card in the air, each shown large.
+  expect(d.most).toBe(1);
+  expect(d.own).toEqual(['true', 'true', 'true']);
+  for (const width of d.widths) {
+    expect(width).toBeGreaterThan(150);
+  }
+  // Their hand cards waited a moment before they took the pointer.
+  expect(d.landing).toBe(true);
+  const deal = ['/cardimg/assets/sounds/loot-draw.mp3', '/cardimg/assets/sounds/loot-land.mp3'];
+  expect((await played(ola)).map((p) => p.replace(/-\d\.mp3$/, '.mp3'))).toEqual([...deal, ...deal, ...deal]);
+});
+
+test('another player\'s draw flies back up to their hand, with no show spot (20.7)', async ({ browser }) => {
+  const [ola] = await startGame(browser, ['Ola', 'Pim']);
+  if (!ola) {
+    throw new Error('no pages');
+  }
+  await listenSounds(ola);
+  await trackDraws(ola);
+  await loot(ola, true, ['', '']);
+  await expect(ola.getByTestId('drawn-card')).toBeAttached();
+  await ola.waitForTimeout(300);
+  await shot(ola, 'loot-draw-other');
+  await expect(ola.locator('.effects')).toHaveCount(0, { timeout: 10_000 });
+  const d = await draws(ola);
+  expect(d.most).toBe(1);
+  expect(d.own).toEqual(['false', 'false']);
+  // A table card's size all the way: never shown large.
+  for (const width of d.widths) {
+    expect(width).toBeLessThan(120);
+  }
+  expect((await played(ola)).map((p) => p.replace(/-\d\.mp3$/, '.mp3'))).toEqual(Array(2).fill('/cardimg/assets/sounds/loot-draw-other.mp3'));
 });
 
 test('a player death makes its sound once, a monster death none (18.8)', async ({ browser }) => {

@@ -131,7 +131,7 @@ Owner notes (2026-11-06):
    1. Vitest covers the tilt function with fixed inputs.
    2. Screenshot of a card mid-drag.
 
-### [ ] 20.7 Loot draw with a look
+### [x] 20.7 Loot draw with a look
 
 1. Goal: the drawer sees each new loot card before it joins the hand.
 2. Tasks:

@@ -127,6 +127,33 @@ Each sub-step of step 20 takes the part it needs.
    1. Its switch compares the time with the start value.
    2. A path eases from 0, so the sine-in half never plays.
    3. Our `sineInExpoOut` in `feel.ts` is therefore expo-out.
+9. Checked in 20.7 (`Card`, `ZoneHand`, `GameState`, `PowerProcessor`).
+   1. The path's middle point is just above the deck.
+   2. Turn and scale have no ease set: iTween's default, expo-out.
+   3. At the show spot the card waits for its tweens, then joins the hand.
+   4. That move is the hand's "slow" re-layout: 0.5 s, expo-in.
+   5. `add_card_to_hand` plays as that move starts; then 0.3 s to playable.
+   6. Pace: the draw counter, from 0; under 3 is 1, then −0.111 each.
+   7. Counter 6 and on: 0.556.
+   8. Own and opponent draws count apart.
+   9. Both reset when a new action's task list starts.
+   10. Opponent: 1.75 s path, quart-in-out; the game goes on after 0.8 s.
+10. Built in 20.7.
+   1. Own: show spot 1 s, expo-out; hand 0.5 s, expo-in: 1.5 s in all.
+   2. The step asks for 1.5 s; the reference takes 2 s, so the first leg is 1 s.
+   3. Turn and growth: after 0.1 s, over 0.9 s and 0.5 s, expo-out.
+   4. The path rises toward a point 80 px above the deck: ours, by eye.
+   5. Show spot: 50 % across, 45 % down the window, 200 px wide.
+   6. `loot-land` plays on arrival in the hand, not as the move starts.
+   7. Its hand card takes no pointer for 0.3 s once the view shows it.
+   8. Pace counts each player's draws in one update (`drawPace`).
+   9. Another player's: 0.8 s, quart-in-out, back only, at the deck's size.
+   10. 0.8 s is the reference's wait before the game goes on.
+   11. A spectator sees every draw as another player's.
+   12. Reduced motion: an own card shows at the show spot and fades.
+   13. Reduced motion, another player's: only its sound.
+   14. Speed "off": no draw, as every effect.
+   15. `sineInExpoOut` stays expo-out; no sine-in phase is used.
 
 ### Drag
 

@@ -3,6 +3,7 @@
 // Playback only changes what is drawn; the game state is the server's.
 import { kindOf, type CardInfo, type Kind } from './cards';
 import { firstPlayerText, tieText } from './dice';
+import { drawPace } from './feel';
 import { say, t } from './i18n';
 import type { GameEvent, GameView, Update } from './protocol';
 import type { Sound } from './sounds';
@@ -19,6 +20,10 @@ export type Effect =
   // sound plays as the card leaves (18.7).
   | { kind: 'fly'; from: string[]; to: string[]; card?: string; back: Kind; middle?: boolean; leaves?: number; lifts?: number; sound?: Sound }
   | { kind: 'popup'; at: string[]; text: string; tone: 'good' | 'bad' }
+  // draw: a looted card (20.7). own: the viewer's, shown at the show
+  // spot on its way to the hand; else back only, deck to hand. pace is
+  // its time factor, by its place among the player's draws (drawPace).
+  | { kind: 'draw'; from: string[]; to: string[]; card?: string; own: boolean; pace: number }
   // dice: thrown for a fresh roll or a reroll (15.62); a changed roll
   // spins in with its old value, a shot comes from the card that
   // changes it, and it turns to the new one (15.76). dice: every die of
@@ -197,21 +202,28 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
   // rolls: values the update's own events gave rolls on the stack.
   const rolls = new Map<number, number>();
   const rollOf = (stack: number | undefined) => (stack ? (rolls.get(stack) ?? ctx.roll(stack)) : undefined);
+  // draws counts each player's looted cards so far, for their pace.
+  const draws = new Map<number, number>();
   for (const e of events) {
     const amount = e.amount ?? 0;
     switch (e.kind) {
-      case 'looted':
-        // Each looted card makes its sound, from the deck or the
-        // discard (18.7).
+      case 'looted': {
+        // Each looted card is drawn, from the deck or the discard, with
+        // its sound (18.7, 20.7). The viewer sees their own card on its
+        // way; another player's shows its back only.
+        const n = draws.get(e.player) ?? 0;
+        draws.set(e.player, n + 1);
+        const own = ctx.you >= 0 && e.player === ctx.you;
         out.push({
-          kind: 'fly',
+          kind: 'draw',
           from: [e.text === 'from the discard' ? 'discard-loot' : 'deck-loot'],
           to: handZones(e.player),
-          card: e.card,
-          back: 'loot',
-          sound: 'lootDraw',
+          ...(own && e.card ? { card: e.card } : {}),
+          own,
+          pace: drawPace(n),
         });
         break;
+      }
       case 'discarded': {
         // A loot card leaves the stack from its large card under the
         // stack, else its stack row (15.74).

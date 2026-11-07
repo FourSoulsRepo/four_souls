@@ -40,21 +40,35 @@ describe('effectsFor', () => {
     ]);
   });
 
-  // Each card from the loot deck is dealt with its sound (18.7).
-  it('flies looted cards from the loot deck to the hand', () => {
-    const e: GameEvent = { kind: 'looted', player: 1, object: 9, card: 'a_dime', private: true };
-    expect(effectsFor([e, { ...e, object: 10, card: 'a_penny' }], ctx)).toEqual([
-      { kind: 'fly', from: ['deck-loot'], to: ['hand-1', 'player-1'], card: 'a_dime', back: 'loot', sound: 'lootDraw' },
-      { kind: 'fly', from: ['deck-loot'], to: ['hand-1', 'player-1'], card: 'a_penny', back: 'loot', sound: 'lootDraw' },
+  // Each card from the loot deck is drawn (18.7, 20.7): another
+  // player's back only, the viewer's own with its face.
+  it('draws looted cards from the loot deck to the hand', () => {
+    const e: GameEvent = { kind: 'looted', player: 1, object: 9, private: true };
+    expect(effectsFor([e, { ...e, object: 10 }], ctx)).toEqual([
+      { kind: 'draw', from: ['deck-loot'], to: ['hand-1', 'player-1'], own: false, pace: 1 },
+      { kind: 'draw', from: ['deck-loot'], to: ['hand-1', 'player-1'], own: false, pace: 1 },
     ]);
+    const mine: GameEvent = { kind: 'looted', player: 0, object: 9, card: 'a_dime', private: true };
+    expect(effectsFor([mine], ctx)).toEqual([{ kind: 'draw', from: ['deck-loot'], to: ['hand-0', 'player-0'], card: 'a_dime', own: true, pace: 1 }]);
   });
 
-  // A card taken from the loot discard makes the same sound (18.7).
-  it('flies a card looted from the discard with its sound', () => {
+  // A card taken from the loot discard is drawn the same way (18.7).
+  it('draws a card looted from the discard', () => {
     const e: GameEvent = { kind: 'looted', player: 1, object: 9, card: 'a_dime', text: 'from the discard' };
-    expect(effectsFor([e], ctx)).toEqual([
-      { kind: 'fly', from: ['discard-loot'], to: ['hand-1', 'player-1'], card: 'a_dime', back: 'loot', sound: 'lootDraw' },
-    ]);
+    expect(effectsFor([e], ctx)).toEqual([{ kind: 'draw', from: ['discard-loot'], to: ['hand-1', 'player-1'], own: false, pace: 1 }]);
+  });
+
+  // Draws 4 and on of one player in one update go faster (20.7).
+  it('speeds up each player\'s draws from the fourth on', () => {
+    const e = (player: number): GameEvent => ({ kind: 'looted', player, object: 9 });
+    const paces = effectsFor([e(0), e(0), e(1), e(0), e(0), e(1)], ctx).map((x) => (x.kind === 'draw' ? Number(x.pace.toFixed(3)) : 0));
+    expect(paces).toEqual([1, 1, 1, 1, 0.889, 1]);
+  });
+
+  // A spectator has no own draws (20.7).
+  it('shows every draw as another player\'s to a spectator', () => {
+    const e: GameEvent = { kind: 'looted', player: 0, object: 9 };
+    expect(effectsFor([e], { ...ctx, you: -1 })).toMatchObject([{ kind: 'draw', own: false }]);
   });
 
   // Each gained treasure flies from its deck with its sound (18.9).

@@ -792,6 +792,11 @@
   touch-action: none;
 }
 
+/* A card just drawn takes no pointer until it has landed (20.7). */
+.hand-card.landing {
+  pointer-events: none;
+}
+
 .hand-card.dragging {
   position: relative;
   z-index: var(--z-drag);

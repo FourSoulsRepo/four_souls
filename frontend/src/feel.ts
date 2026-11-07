@@ -18,6 +18,11 @@ export const curves = {
   // switch to expo-out compares the time with the start value, which
   // is 0 on a path, so it runs as expo-out from the first frame.
   sineInExpoOut: 'cubic-bezier(0.16, 1, 0.3, 1)',
+  // expo-in (2^(10t − 10)): still at first, then a rush at the end. A
+  // drawn card leaves its show spot for the hand with it (20.7).
+  expoIn: 'cubic-bezier(0.7, 0, 0.84, 0)',
+  // quart-in-out: another player's drawn card, deck to hand (20.7).
+  quartInOut: 'cubic-bezier(0.76, 0, 0.24, 1)',
 } as const;
 
 export type Curve = keyof typeof curves;
@@ -185,6 +190,38 @@ export const feel = {
     airRate: 1,
     out: 0.2,
   },
+  // draw: a loot card drawn (20.7, ADR 027 "Draw", draw.ts). An own
+  // draw rises from the deck toward a point lift px above it, flies to
+  // the show spot over show (spotX and spotY of the window, spot px
+  // wide), then into the hand over hand: 1.5 s in all. On the way it
+  // turns face up over turn, after turnAt, and grows to the show size
+  // over grow, after growAt. Its hand card is playable ready seconds
+  // after it lands. Another player's draw flies deck to hand over
+  // other, back only. From the fastFrom-th draw of a player in one
+  // update on (counted from 0), each is faster by faster, down to
+  // fastest of its time (drawPace).
+  draw: {
+    show: 1,
+    hand: 0.5,
+    turnAt: 0.1,
+    turn: 0.9,
+    growAt: 0.1,
+    grow: 0.5,
+    lift: 80,
+    spotX: 0.5,
+    spotY: 0.45,
+    spot: 200,
+    ready: 0.3,
+    other: 0.8,
+    fastFrom: 3,
+    faster: 0.111,
+    fastest: 0.556,
+    showCurve: curves.sineInExpoOut,
+    handCurve: curves.expoIn,
+    turnCurve: curves.expoOut,
+    growCurve: curves.expoOut,
+    otherCurve: curves.quartInOut,
+  },
   // banner: the text in the middle (Effects.tsx). times are its
   // opacity keyframes: in, held, out. A long one (start of game) stays
   // twice as long, with fades as long.
@@ -231,4 +268,15 @@ export function fanPose(i: number, n: number): FanPose {
     angle: ((angle + perCard * n) / (n - 1)) * spread,
     drop: ((spread * spread) / (6 * n)) * drop,
   };
+}
+
+// drawPace is the time factor of a player's i-th draw in one update,
+// counted from 0 (20.7, ADR 027 principle 6): the first three at full
+// time, then each 11 % faster, down to 0.556.
+export function drawPace(i: number): number {
+  const { fastFrom, faster, fastest } = feel.draw;
+  if (i < fastFrom) {
+    return 1;
+  }
+  return Math.max(fastest, 1 - faster * (i + 1 - fastFrom));
 }

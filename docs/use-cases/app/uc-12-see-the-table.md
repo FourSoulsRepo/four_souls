@@ -259,6 +259,16 @@
   * More hits on one card stack: middle, above, below.
   * Reduced motion: no bounce; it shows at full size and fades.
   * Animations off: no number, like every effect.
+* **1aj. Loot draw with a look (20.7):** the drawer sees each new loot card.
+  * It rises from the loot deck and turns face up on its way.
+  * It shows large a moment, a little above the middle.
+  * Then it goes into the hand: 1.5 s in all.
+  * A deal sound as it leaves, a second one as it lands.
+  * Its hand card takes clicks 0.3 s after it lands.
+  * Several cards: one at a time; from the fourth on, each is faster.
+  * Another player's draw: its back flies to their hand, short, one sound.
+  * Reduced motion: the card shows large in place and fades.
+  * Animations off: no draw, like every effect.
 
 ## Postconditions
 

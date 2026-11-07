@@ -1,6 +1,7 @@
 import { motion } from 'motion/react';
 import { useEffect, useRef, useState } from 'react';
 import { diceDelays, diceImage } from '../dice';
+import { drawTime, otherPose, ownPose, type DrawPath, type DrawPose } from '../draw';
 import { bezier, feel } from '../feel';
 import { t } from '../i18n';
 import { playSound, type Sound } from '../sounds';
@@ -10,7 +11,7 @@ import { Die, DieCube } from './Die';
 import { playerColor } from '../table';
 import { Coin } from './PlayerArea';
 import './Effects.css';
-import { lunge } from './lunge';
+import { lunge, still } from './lunge';
 import { hits, skulls } from './marks';
 
 // The size of a table card, for flying cards.
@@ -111,6 +112,8 @@ function Effect({ playing }: { playing: Playing }) {
           sound={effect.kind === 'fly' ? effect.sound : undefined}
         />
       );
+    case 'draw':
+      return <Draw from={effect.from} to={effect.to} card={effect.card} own={effect.own} pace={effect.pace} playing={playing} />;
     case 'steal':
       return <Steal from={effect.from} to={effect.to} amount={effect.amount} playing={playing} />;
     case 'popup':
@@ -273,6 +276,128 @@ function Fly({
     >
       <Card cardRef={card} back={back} size="table" />
     </motion.div>
+  );
+}
+
+// How many poses a drawn card's keyframes take per second.
+const drawFrames = 60;
+
+// drawFrame is a pose as the drawn card's keyframes: the outer box
+// moves and scales a large card; the inner one turns it.
+function drawFrame(p: DrawPose, offset: number, opacity = 1): { move: Keyframe; turn: Keyframe } {
+  const at = `translate(${(p.x - zoomW / 2).toFixed(1)}px, ${(p.y - zoomH / 2).toFixed(1)}px) scale(${p.scale.toFixed(4)})`;
+  return { move: { offset, opacity, transform: at }, turn: { offset, transform: `perspective(1000px) rotateY(${p.turn.toFixed(1)}deg)` } };
+}
+
+// drawKeys is a draw's keyframes over its time. Calm (reduced
+// motion): an own card shows at the show spot, face up, and fades.
+function drawKeys(own: boolean, path: DrawPath, calm: boolean): { move: Keyframe; turn: Keyframe }[] {
+  if (calm) {
+    const at = ownPose(feel.draw.show, path);
+    return [0, 0.1, 0.85, 1].map((o, i) => drawFrame(at, o, i === 1 || i === 2 ? 1 : 0));
+  }
+  const time = drawTime(own);
+  const pose = own ? ownPose : otherPose;
+  const n = Math.ceil(time * drawFrames);
+  return Array.from({ length: n + 1 }, (_, i) => drawFrame(pose((time * i) / n, path), i / n));
+}
+
+// Draw plays a looted card (20.7, ADR 027 "Draw"). The viewer's own
+// card rises from the deck, turns face up on its way to the show spot,
+// holds there a moment, then goes into the hand: they see each card
+// before it joins the hand. Another player's flies deck to hand, back
+// only. Each draw is its own effect, so one card is in the air at a
+// time. Sounds: loot-draw as an own card leaves, loot-land as it lands;
+// loot-draw-other for another player's. Reduced motion: an own card
+// shows at the show spot and fades; another player's only sounds.
+function Draw({
+  from,
+  to,
+  card,
+  own,
+  pace,
+  playing,
+}: {
+  from: string[];
+  to: string[];
+  card: string | undefined;
+  own: boolean;
+  pace: number;
+  playing: Playing;
+}) {
+  const moveRef = useRef<HTMLDivElement>(null);
+  const turnRef = useRef<HTMLDivElement>(null);
+  const [calm] = useState(still);
+  const [path] = useState((): DrawPath | null => {
+    const deck = zoneRect(from);
+    const hand = zoneCenter(to);
+    if (!deck || !hand) {
+      return null;
+    }
+    const d = feel.draw;
+    const deckScale = deck.width / zoomW;
+    return {
+      deck: { x: deck.left + deck.width / 2, y: deck.top + deck.height / 2 },
+      deckScale,
+      ...(own ? { show: { x: window.innerWidth * d.spotX, y: window.innerHeight * d.spotY } } : {}),
+      showScale: d.spot / zoomW,
+      hand,
+      handScale: own ? handW / zoomW : deckScale,
+    };
+  });
+  const [keys] = useState(() => (path ? drawKeys(own, path, calm) : []));
+  useSkip(!path, playing.done);
+  const { done, scale } = playing;
+  useEffect(() => {
+    if (!path) {
+      return;
+    }
+    const ms = drawTime(own) * pace * scale * 1000;
+    // A timer, so StrictMode's second mount does not sound twice.
+    const out = window.setTimeout(() => {
+      playSound(own ? 'lootDraw' : 'lootDrawOther');
+    }, 0);
+    const land = window.setTimeout(() => {
+      if (own) {
+        playSound('lootLand');
+      }
+      done();
+    }, ms);
+    const timing = { duration: ms, fill: 'forwards' } as const;
+    // anim: loot-draw
+    const parts = [moveRef.current?.animate(keys.map((k) => k.move), timing), turnRef.current?.animate(keys.map((k) => k.turn), timing)];
+    return () => {
+      window.clearTimeout(out);
+      window.clearTimeout(land);
+      for (const p of parts) {
+        p?.cancel();
+      }
+    };
+  }, [path, keys, own, pace, scale, done]);
+  // A calm draw of another player's card only sounds.
+  if (!path || (calm && !own)) {
+    return null;
+  }
+  const start = keys.at(0);
+  return (
+    <div
+      ref={moveRef}
+      className="effect-draw"
+      style={{ transform: String(start?.move.transform ?? ''), opacity: Number(start?.move.opacity ?? 1) }}
+      data-testid="drawn-card"
+      data-own={own}
+    >
+      <div ref={turnRef} className="effect-draw-turn" style={{ transform: String(start?.turn.transform ?? '') }}>
+        {own && (
+          <div className="effect-draw-face">
+            <Card cardRef={card} back="loot" size="zoom" />
+          </div>
+        )}
+        <div className="effect-draw-face effect-draw-back">
+          <Card back="loot" size="zoom" />
+        </div>
+      </div>
+    </div>
   );
 }
 

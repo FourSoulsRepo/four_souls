@@ -14,6 +14,31 @@
   left: 0;
 }
 
+/* A drawn loot card (20.7): a large card the outer box moves and
+   scales; the inner one turns it face up, its back behind its face. */
+.effect-draw {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: 50% 50%;
+}
+
+.effect-draw-turn {
+  position: relative;
+  transform-style: preserve-3d;
+}
+
+.effect-draw-face {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.effect-draw-back {
+  position: absolute;
+  inset: 0;
+  transform: rotateY(180deg);
+}
+
 .effect-center {
   position: absolute;
   inset: 0;

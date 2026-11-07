@@ -71,6 +71,10 @@ export function claimEffect(e: Effect): boolean {
     case 'fly':
     case 'place':
       return e.card === undefined || claim(e.card, 'arrive', e.kind);
+    case 'draw':
+      // An own draw brings its card to the hand (20.7); another
+      // player's card is never seen.
+      return !e.own || e.card === undefined || claim(e.card, 'arrive', 'loot-draw');
     case 'reveal':
       return claim(e.card, 'show', 'reveal');
     case 'played':
@@ -84,6 +88,12 @@ export function claimEffect(e: Effect): boolean {
 // the view's pop-in then stays still.
 export function claimed(card: string, job: Job): boolean {
   return claims.get(`${job}:${card}`)?.beat === beat;
+}
+
+// arrivedBy is the animation that brought the card in this beat, if any.
+export function arrivedBy(card: string): string | undefined {
+  const c = claims.get(`arrive:${card}`);
+  return c?.beat === beat ? c.by : undefined;
 }
 
 // resetClaims forgets every claim and clash, for tests.

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import doc from '../../docs/wiki/Animations.md?raw';
-import { claim, claimEffect, claimed, clashes, nextBeat, resetClaims } from './animations';
+import { arrivedBy, claim, claimEffect, claimed, clashes, nextBeat, resetClaims } from './animations';
 
 describe('claims', () => {
   beforeEach(() => {
@@ -43,6 +43,15 @@ describe('claims', () => {
     nextBeat();
     expect(claimEffect({ kind: 'reveal', card: 'pin', deck: ['deck-monster'] })).toBe(true);
     expect(clashes).toEqual([{ card: 'pin', job: 'show', first: 'reveal', second: 'reveal' }]);
+  });
+
+  it('claims an own draw\'s card, and only that (20.7)', () => {
+    expect(claimEffect({ kind: 'draw', from: ['deck-loot'], to: ['hand-0'], card: 'a_penny', own: true, pace: 1 })).toBe(true);
+    expect(arrivedBy('a_penny')).toBe('loot-draw');
+    expect(claimEffect({ kind: 'draw', from: ['deck-loot'], to: ['hand-1'], own: false, pace: 1 })).toBe(true);
+    nextBeat();
+    expect(arrivedBy('a_penny')).toBeUndefined();
+    expect(clashes).toEqual([]);
   });
 
   it('claims nothing for effects that bring no card', () => {
