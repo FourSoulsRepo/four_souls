@@ -41,7 +41,7 @@ This step never closes; new reports are appended.
 | F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88, 19.99, 19.102, 19.118, 19.119 | 11    |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
-| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122 | 27 |
+| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122, 19.125 | 28 |
 | J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107, 19.117, 19.120, 19.121 | 22 |
 | Q  | Load tool: a lost connection ends a game | Go tools   | 19.108                                                 | 1     |
 | K  | Build and release files                  | Release    | 19.47, 19.59, 19.83, 19.91                             | 4     |
@@ -52,7 +52,7 @@ This step never closes; new reports are appended.
 | P  | A missing setting: no way to change it   | Client     | 19.93                                                  | 1     |
 | R  | Vitest setup: a test sees stale files    | Vitest     | 19.124                                                 | 1     |
 
-Totals by system (121 items):
+Totals by system (122 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
@@ -60,7 +60,7 @@ Totals by system (121 items):
 | Card data | C       | 2     |
 | Client    | D–G, O, P | 32  |
 | Server    | H, N    | 2     |
-| e2e       | I, J    | 49    |
+| e2e       | I, J    | 50    |
 | Release   | K       | 4     |
 | None      | L       | 1     |
 | Go tests  | M       | 1     |
@@ -3895,3 +3895,35 @@ Totals by system (121 items):
    2. A warm cache passed it; after deleting the cache, it failed.
    3. After: `make frontend` twice with the temp file; both failed on it.
    4. Temp file removed; no cache folder is written now.
+
+### [x] 19.125 e2e: the turn banner pass test assumes the deal
+
+1. Goal: `playback.spec.ts` "a turn starts with its banner; a pass during it is accepted (20.8)" passes whatever the deal.
+2. Report (owner, 2026-11-07)
+   1. Found in review of 20.8 (093bb2f); no failed run yet.
+   2. The pass needs the new active player to hold priority at turn start.
+   3. Said to need something usable; the deal does not promise it.
+3. Cause
+   1. Found: the assumption holds for every deal; see 5.
+4. Tasks:
+   1. [x] Check the engine: who holds priority as the turn starts.
+   2. [x] Make the test deal-independent (CLAUDE.md 5.16).
+   3. [x] Check with `--repeat-each`, both browsers.
+5. Findings (2026-11-07)
+   1. Loot from hand is not playable then: loot plays reset in the action step.
+   2. The recharge step charges the new active player's character.
+   3. Every dealt character has a tap with no target ("play an additional loot card").
+   4. So `CanAct` is true; the server does not pass for them (N-05).
+   5. Eve's The Curse, or Eden's start item, waits on the stack under that priority.
+   6. Pass is live then too; the pass is accepted.
+   7. A probe: 3000 seeds, 2–4 players, Base Game: always that priority.
+6. Fix
+   1. No ban and no saved game: the deal cannot break it.
+   2. New Go test `TestTurnStartPriority` (`cards/turn_start_test.go`).
+   3. It checks every dealt character of every set, turns 2 and 3.
+   4. A change that breaks the rule now fails a fast Go test.
+   5. The e2e test's comment names the reason and the Go test.
+7. Checks (2026-11-07)
+   1. The e2e test, 25 repeats, both browsers, 5 workers: 50 of 50.
+   2. Only Eve and Eden dealt (temp bans), 15 repeats each browser: 30 of 30.
+   3. The Go test fails when the recharge leaves the character spent.

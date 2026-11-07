@@ -1815,7 +1815,11 @@ test('a turn starts with its banner; a pass during it is accepted (20.8)', async
   await shot(next, 'turn-banner-hold');
   // The banner is visual only: a pass during it works as always. The
   // click is made in the page, on the first frame Pass is live while
-  // the banner still shows.
+  // the banner still shows. Pass is live there whatever the deal: the
+  // new active player's character was just recharged, and its tap needs
+  // no target, so the server never passes for them (TestTurnStartPriority,
+  // 19.125). A start-of-turn trigger (Eve's The Curse) waits on the stack
+  // under that priority; the pass is accepted the same.
   const passed = await next.waitForFunction(
     ({ stack, pass }) => {
       interface S {
