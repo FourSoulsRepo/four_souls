@@ -74,18 +74,20 @@ export function Site() {
         </nav>
       </header>
       <main>
-        {route.view === 'check' && engine.state === 'loading' && (
-          <div className="loading" role="status">
-            <span>{t('site.load.loading')}</span>
-            <progress value={engine.total > 0 ? engine.loaded : undefined} max={engine.total > 0 ? engine.total : undefined} />
-          </div>
-        )}
         {engine.state === 'failed' && (
           <p className="note warn" role="alert">
             {engine.error.reason === 'no_decompression' ? t('site.load.no_decompression') : t('site.load.failed', { error: engine.error.message })}
           </p>
         )}
         {route.view === 'check' ? <CheckView lang={route.lang} data={route.data} loaded={loaded} /> : <RulesView lang={route.lang} rule={route.rule} />}
+        {/* Under the check view: above it, its end moved the examples
+            under the pointer, and a click missed (19.119). */}
+        {route.view === 'check' && engine.state === 'loading' && (
+          <div className="loading" role="status">
+            <span>{t('site.load.loading')}</span>
+            <progress value={engine.total > 0 ? engine.loaded : undefined} max={engine.total > 0 ? engine.total : undefined} />
+          </div>
+        )}
       </main>
       <footer className="site-footer">
         {loaded && (

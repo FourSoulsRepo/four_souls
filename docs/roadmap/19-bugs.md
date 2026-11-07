@@ -38,11 +38,11 @@ This step never closes; new reports are appended.
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74, 19.111                      | 5     |
 | E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52, 19.54, 19.69 | 9  |
-| F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88, 19.99, 19.102, 19.118 | 10    |
+| F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88, 19.99, 19.102, 19.118, 19.119 | 11    |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
 | I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116 | 25 |
-| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107, 19.117, 19.120, 19.121 | 22 |
+| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107, 19.117, 19.120, 19.121, 19.122 | 23 |
 | Q  | Load tool: a lost connection ends a game | Go tools   | 19.108                                                 | 1     |
 | K  | Build and release files                  | Release    | 19.47, 19.59, 19.83, 19.91                             | 4     |
 | L  | Not a bug: the app follows a ruling      | None       | 19.63                                                  | 1     |
@@ -57,9 +57,9 @@ Totals by system (100 items):
 |-----------|---------|-------|
 | Engine    | A, B    | 23    |
 | Card data | C       | 2     |
-| Client    | D–G, O, P | 31  |
+| Client    | D–G, O, P | 32  |
 | Server    | H, N    | 2     |
-| e2e       | I, J    | 44    |
+| e2e       | I, J    | 45    |
 | Release   | K       | 4     |
 | None      | L       | 1     |
 | Go tests  | M       | 1     |
@@ -3736,7 +3736,7 @@ Totals by system (100 items):
    12. Full `make screenshots`: exit 0, 205 passed; the menu test failed in every run before.
    13. Gates: `make lint`, `make frontend`, `make e2e` exit 0.
 
-### [ ] 19.119 e2e: a copied site link shows no answer, webkit
+### [x] 19.119 e2e: a copied site link shows no answer, webkit
 
 1. Goal: `site.spec.ts` "a copied link opens the same situation, on a phone too" passes every run.
 2. Report (agent, 2026-11-07)
@@ -3745,7 +3745,25 @@ Totals by system (100 items):
    3. Passed on rerun.
    4. Evidence: `.cache/e2e-evidence/20.1-gate2/` (not in git).
 3. Cause
-   1. Not found yet.
+   1. The failure is at `site.spec.ts:64`, the first page, after an example click.
+   2. The text box stayed empty: the click reached no example.
+   3. The engine's loading line sat above the check view.
+   4. When the engine was ready, the line went; the examples moved up 36 px.
+   5. A click in that moment hit the wrong spot; under load the wasm comes late.
+   6. A client bug of the 19.49 kind: a player's click can miss too.
+4. Tasks:
+   1. The loading line goes under the check view.
+   2. Test: the examples never move while the engine loads.
+5. Result (2026-11-07)
+   1. `Site.tsx`: the loading line is under the check view.
+   2. New test: "the examples never move when the engine is ready (19.119)".
+   3. It holds the wasm back 1 s and records an example's position.
+   4. Before the fix it failed in both browsers (509 to 473 px); after, it passes.
+   5. `site.spec.ts`, 5 repeats, both browsers: 30 of 30.
+   6. Docs: UC-38 2.3; wiki `Website-wasm.md`.
+   7. Gates: `make lint`, `make frontend`, `make e2e` exit 0 on the third run.
+   8. The first `make e2e` failed once in `hover.spec.ts`; logged as 19.122.
+   9. The second failed once in `playback.spec.ts:167`; added to 19.120.
 
 ### [ ] 19.120 e2e: a deck attack playback test times out in screenshots
 
@@ -3764,6 +3782,14 @@ Totals by system (100 items):
    1. 5 runs of `playback.spec.ts` with `SCREENSHOTS=1`, chromium, 5 workers: 29 of 29 each.
    2. Full `make screenshots` runs after 19.118 (see its result).
    3. Left open: reopen with the next failure's evidence.
+5. A second case (2026-11-07)
+   1. The second `make e2e` gate of 19.119, chromium, plain mode.
+   2. `playback.spec.ts:167` (19.39) hit 30 s at its sounds poll, line 196.
+   3. It took about 10 s in the three gates before.
+   4. The dice showed; the poll has 5 s, so it began after 25 s.
+   5. So the time went before it, in `startGame` or the first effect.
+   6. Both tests use the default 30 s; the other game specs set 120 s.
+   7. Evidence: `.cache/e2e-evidence/19.120-playback167/` (not in git).
 
 ### [ ] 19.121 e2e: a guest never reaches the Nickname field in `startGame`
 
@@ -3780,3 +3806,21 @@ Totals by system (100 items):
    1. 8 runs of `rollback.spec.ts` and `table.spec.ts`: both browsers, 5 workers.
    2. The full `make e2e` gates of 19.113 to 19.119.
    3. Left open: reopen with the next failure's evidence.
+
+### [ ] 19.122 e2e: a hand card's neighbour moves 0.4 px on hover, chromium
+
+1. Goal: `hover.spec.ts` "playable hand cards glow green; a hovered one rises large" passes every run.
+2. Report (agent, 2026-11-07)
+   1. Found by the `make e2e` gate of 19.119, chromium.
+   2. `hover.spec.ts:87`: one hand edge was 456.42, not 456.80.
+   3. The check allows 0.05 px (`toBeCloseTo(…, 1)`).
+   4. The same test passed in the two gates before it.
+   5. Evidence: `.cache/e2e-evidence/19.122-hover/` (not in git).
+3. Cause
+   1. Not found yet.
+   2. The test is step 20.5's; the hover only raises the card's `z-index`.
+4. Tasks:
+   1. Find what moved the edge: the card, the fan, or the float noise.
+5. Tries (2026-11-07)
+   1. `hover.spec.ts`, chromium, 20 repeats, 5 workers: 120 of 120.
+   2. Left for step 20, whose test it is; reopen with the next failure.
