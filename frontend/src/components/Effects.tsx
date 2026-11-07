@@ -4,8 +4,9 @@ import { diceDelays, diceImage } from '../dice';
 import { drawTime, otherPose, ownPose, type DrawPath, type DrawPose } from '../draw';
 import { bezier, feel } from '../feel';
 import { t } from '../i18n';
+import type { Effect } from '../playback';
 import { playSound, type Sound } from '../sounds';
-import { useApp, type Playing } from '../store';
+import { useApp, type Big, type Playing } from '../store';
 import { Card } from './Card';
 import { Die, DieCube } from './Die';
 import { playerColor } from '../table';
@@ -66,6 +67,7 @@ function middle(): Point {
 export function Effects() {
   const playing = useApp((s) => s.playing);
   const placed = useApp((s) => s.placed);
+  const big = useApp((s) => s.big);
   return (
     <>
       {placed.length > 0 && (
@@ -80,6 +82,11 @@ export function Effects() {
               <Card cardRef={p.card} size="table" />
             </div>
           ))}
+        </div>
+      )}
+      {big && (
+        <div className="effects">
+          <BigPlayed key={big.key} big={big} />
         </div>
       )}
       {playing && (
@@ -162,7 +169,16 @@ function Effect({ playing }: { playing: Playing }) {
     case 'reveal':
       return <Reveal card={effect.card} deck={effect.deck} hold={effect.hold ?? false} playing={playing} />;
     case 'played':
-      return <Played card={effect.card} who={effect.who} from={effect.from} to={effect.to} playing={playing} />;
+      // Playback goes on feel.played.wait after it shows; it stays (20.9).
+      return (
+        <Layered
+          playing={playing}
+          start={(done) => {
+            showPlayed(effect, playing.key, scale);
+            window.setTimeout(done, feel.played.wait * 1000 * scale);
+          }}
+        />
+      );
     case 'lunge':
       return (
         <Layered
@@ -454,36 +470,62 @@ function cardOffset(zones: string[], width: (r: DOMRect) => number): { x: number
   return { x: r.left + r.width / 2 - m.x, y: r.top + r.height / 2 - m.y, scale: Math.min(1, width(r) / zoomW) };
 }
 
-// Played shows another player's loot card (15.31, 15.74): it rises from
-// their hand to the middle, stays a moment with "Ann plays", then
-// shrinks into the stack panel, to the size of a hand card.
-function Played({ card, who, from, to, playing }: { card: string; who: string; from: string[]; to: string[]; playing: Playing }) {
-  const [path] = useState(() => ({
-    a: cardOffset(from, () => cardW),
-    b: cardOffset(to, () => handW),
-  }));
-  const a = path.a ?? { x: 0, y: 0, scale: 0.6 };
-  const b = path.b ?? { x: 0, y: 0, scale: 0.5 };
+// showPlayed shows another player's card large (20.9): it plays
+// card-play-other as it shows, and stays after its effect ends.
+function showPlayed(effect: Extract<Effect, { kind: 'played' }>, key: number, scale: number): void {
+  useApp.setState({ big: { key, card: effect.card, who: effect.who, from: effect.from, to: effect.to, scale } });
+  playSound('cardPlayOther');
+}
+
+// BigPlayed is another player's loot card shown large (15.31, 15.74,
+// 20.9, ADR 027 "Others' plays"): it rises from their hand to the
+// middle with "Ann plays", stays while the game goes on, then shrinks
+// into the stack panel, to the size of a hand card. With less motion it
+// only fades in and out in the middle.
+function BigPlayed({ big }: { big: Big }) {
+  const { key, card, who, from, to, scale } = big;
+  const { rise, stay, leave, riseCurve, leaveCurve } = feel.played;
+  const [calm] = useState(still);
+  const [a] = useState(() => (calm ? null : cardOffset(from, () => cardW)));
+  // b is where it leaves to, found as it leaves: the stack panel is
+  // drawn by then. undefined while it stays; null fades it in place.
+  const [b, setB] = useState<{ x: number; y: number; scale: number } | null | undefined>(undefined);
+  useEffect(() => {
+    const t = window.setTimeout(() => {
+      setB(calm ? null : cardOffset(to, () => handW));
+    }, stay * 1000 * scale);
+    return () => {
+      window.clearTimeout(t);
+    };
+  }, [calm, to, stay, scale]);
+  const gone = () => {
+    if (b !== undefined) {
+      useApp.setState((s) => (s.big?.key === key ? { big: null } : {}));
+    }
+  };
+  const start = a ?? { x: 0, y: 0, scale: calm ? 1 : 0.6 };
+  const end = b ?? { x: 0, y: 0, scale: 1 };
+  const leaving = b !== undefined;
   return (
     // anim: played
     <motion.div
       className="effect-center"
-      initial={{ x: a.x, y: a.y, scale: a.scale, opacity: 0 }}
-      animate={{
-        x: [a.x, 0, 0, b.x],
-        y: [a.y, 0, 0, b.y],
-        scale: [a.scale, 1, 1, b.scale],
-        opacity: [0, 1, 1, path.b ? 1 : 0],
-      }}
-      transition={{ duration: 1.5 * playing.scale, times: [0, 0.25, 0.75, 1], ease: 'easeInOut' }}
-      onAnimationComplete={playing.done}
+      initial={{ x: start.x, y: start.y, scale: start.scale, opacity: 0 }}
+      animate={leaving ? { x: end.x, y: end.y, scale: end.scale, opacity: b ? 1 : 0 } : { x: 0, y: 0, scale: 1, opacity: 1 }}
+      transition={
+        leaving
+          ? { duration: leave * scale, ease: bezier(leaveCurve) }
+          : { duration: rise * scale, ease: bezier(riseCurve), opacity: { duration: (calm ? leave : rise / 4) * scale } }
+      }
+      onAnimationComplete={gone}
       data-testid="played-pop"
     >
       {/* anim: played */}
       <motion.div
         className="effect-label"
-        animate={{ opacity: [1, 1, 0] }}
-        transition={{ duration: 1.5 * playing.scale, times: [0, 0.75, 0.85] }}
+        initial={{ opacity: 1 }}
+        animate={{ opacity: leaving ? 0 : 1 }}
+        transition={{ duration: (leave / 2) * scale }}
       >
         {t('effect.plays', { player: who })}
       </motion.div>

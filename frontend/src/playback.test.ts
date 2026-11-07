@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { CardInfo } from './cards';
-import { chargedIn, createPlayback, effectsFor, hpOf, scaleFor, shopSlot, slotZone, type Death, type Effect } from './playback';
+import { chargedIn, createPlayback, effectsFor, hpOf, playedEnds, scaleFor, shopSlot, slotZone, type Death, type Effect } from './playback';
 import type { GameEvent, GameView, Update } from './protocol';
 
 const ctx = {
@@ -149,6 +149,28 @@ describe('effectsFor', () => {
     expect(effectsFor(events, ctx)).toEqual([
       { kind: 'played', card: 'bomb', who: 'Bo', from: ['hand-1', 'player-1'], to: ['stack'] },
     ]);
+  });
+
+  it('shows every play large to a viewer without a seat (20.9)', () => {
+    const events: GameEvent[] = [
+      { kind: 'loot_played', player: 1, object: 70, card: 'bomb' },
+      { kind: 'loot_played', player: 0, object: 71, card: 'a_penny' },
+    ];
+    expect(effectsFor(events, { ...ctx, you: -1 }).map((e) => e.kind === 'played' && e.card)).toEqual(['bomb', 'a_penny']);
+  });
+
+  it('sends the big played card away for the middle or its own move (20.9)', () => {
+    const fly: Effect = { kind: 'fly', from: ['stack'], to: ['discard-loot'], back: 'loot' };
+    expect(playedEnds({ kind: 'played', card: 'bomb', who: 'Bo', from: [], to: [] }, 'a_penny')).toBe(true);
+    expect(playedEnds({ kind: 'reveal', card: 'x', deck: [] }, 'bomb')).toBe(true);
+    expect(playedEnds({ kind: 'dice', value: 3, label: '', player: 0, thrown: true }, 'bomb')).toBe(true);
+    expect(playedEnds({ kind: 'turn', text: '', own: false }, 'bomb')).toBe(true);
+    expect(playedEnds({ kind: 'draw', from: [], to: [], own: true, pace: 1 }, 'bomb')).toBe(true);
+    expect(playedEnds({ kind: 'draw', from: [], to: [], own: false, pace: 1 }, 'bomb')).toBe(false);
+    expect(playedEnds({ ...fly, card: 'bomb' }, 'bomb')).toBe(true);
+    expect(playedEnds({ ...fly, card: 'a_penny' }, 'bomb')).toBe(false);
+    expect(playedEnds({ kind: 'popup', at: [], text: '+1¢', tone: 'good' }, 'bomb')).toBe(false);
+    expect(playedEnds({ kind: 'hits', hits: [] }, 'bomb')).toBe(false);
   });
 
   it('moves stolen cents from the victim to the thief (15.75)', () => {

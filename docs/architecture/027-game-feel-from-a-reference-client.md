@@ -265,6 +265,30 @@ Each sub-step of step 20 takes the part it needs.
 3. The big card stays 3 s (minion) or 4 s (spell).
 4. A transformed card halves that time.
 5. A spectator sees the chosen option highlighted for 1.75 s.
+6. Checked in 20.9 (`HistoryManager`, `HistoryCard`).
+   1. A spell's big card moves from the hand card's place to the middle.
+   2. That path takes 1 s; it grows from 60 % to full over it.
+   3. No ease set: iTween's default, expo-out.
+   4. `play_card_from_hand` plays as the move starts.
+   5. The game goes on 1 s after the move starts.
+   6. Display time counts from the move's start: 3 s minion, 4 s spell.
+   7. At its end the big card is removed at once; no exit motion.
+   8. A newer big card removes the old one at once.
+7. Built in 20.9.
+   1. Times in `feel.played`: rise 1 s, expo-out; wait 1 s; stay 3 s.
+   2. Stay is 3 s, as the step file asks; the reference's spells take 4 s.
+   3. It grows from the hand card's size, not from 60 %.
+   4. Ours: at 3 s it shrinks into the stack panel in 0.4 s, as 15.74 did.
+   5. The label "Ann plays" fades as the leave starts.
+   6. The card outlives its effect: it is the store's `big`, not `playing`.
+   7. A newer big card sends it away at once, as the reference.
+   8. Ours: so does a later middle effect or a move of the card itself.
+   9. Those are reveal, dice, banner, turn banner and an own draw.
+   10. `card-play-other` plays as it shows; never for an own play.
+   11. A viewer without a seat (you −1) sees every play.
+   12. Spectators and replays are steps 9 and 10; they get it from that rule.
+   13. Reduced motion: it fades in and out in the middle.
+   14. Speed "off": no big card, as every effect.
 
 ### History
 

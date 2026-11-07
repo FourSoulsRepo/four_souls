@@ -39,7 +39,8 @@ export type Effect =
   // there when the next effect moves it, else shrinks back (15.73).
   | { kind: 'reveal'; card: string; deck: string[]; hold?: boolean }
   // played: another player's loot card rises from their hand, shows
-  // large for a moment and goes on the stack (15.31, H-10, 15.74).
+  // large and goes on the stack (15.31, H-10, 15.74). It outlives its
+  // effect: playback goes on 1 s after it shows (20.9, playedEnds).
   | { kind: 'played'; card: string; who: string; from: string[]; to: string[] }
   // place: a card flies into a slot and stays there until the view is
   // shown, so later effects play over it (19.3).
@@ -420,7 +421,9 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
         break;
       }
       case 'loot_played':
-        // The player's own play needs no reminder (15.31).
+        // The player's own play needs no reminder (15.31, 20.9). A
+        // viewer without a seat (you −1: a spectator, a replay) sees
+        // every play.
         if (e.card && e.player !== ctx.you) {
           out.push({ kind: 'played', card: e.card, who: ctx.name(e.player), from: handZones(e.player), to: ['stack'] });
         }
@@ -454,6 +457,27 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
   holdReveals(out);
   marksFirst(out);
   return out;
+}
+
+// playedEnds tells if an effect sends the big played card of card away
+// at once (20.9): another big card, anything else in the middle of the
+// window, or a move of that card itself, as it leaves the stack.
+export function playedEnds(e: Effect, card: string): boolean {
+  switch (e.kind) {
+    case 'played':
+    case 'reveal':
+    case 'dice':
+    case 'banner':
+    case 'turn':
+      return true;
+    case 'draw':
+      return e.own;
+    case 'fly':
+    case 'place':
+      return e.card === card;
+    default:
+      return false;
+  }
 }
 
 // marksFirst lets a loot card that leaves the stack wait for the damage

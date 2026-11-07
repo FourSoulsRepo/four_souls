@@ -238,6 +238,21 @@ export const feel = {
     wait: 1,
     curve: curves.expoOut,
   },
+  // played: another player's card shown large (20.9, ADR 027 "Others'
+  // plays", BigPlayed in Effects.tsx). It rises from their hand to the
+  // middle over rise, growing from the hand card's size; playback goes
+  // on wait seconds after it shows, while it stays. Its leave into the
+  // stack starts stay seconds after it shows and takes leave; its label
+  // fades over leave just before. A newer big card, or a later effect
+  // in the middle (playedEnds), sends it away at once.
+  played: {
+    rise: 1,
+    wait: 1,
+    stay: 3,
+    leave: 0.4,
+    riseCurve: curves.expoOut,
+    leaveCurve: curves.easeInOut,
+  },
   // banner: the text in the middle (Effects.tsx). times are its
   // opacity keyframes: in, held, out. A long one (start of game) stays
   // twice as long, with fades as long.

@@ -8,7 +8,8 @@
 // player, a bonus soul too (18.13), and as the Lost Soul turns to one
 // (18.14). The reference client's sounds of step 20 (20.17) are here too;
 // each later sub-step of step 20 plays its own: a bigger attack hit
-// sounds bigger since 20.3; a held card's two loops since 20.6. A sound
+// sounds bigger since 20.3; a held card's two loops since 20.6; another
+// player's big played card since 20.9. A sound
 // may have several files: each play picks one at random, all alike, as
 // the reference does. The files live only in the private images; without them the
 // game is silent.

@@ -1237,10 +1237,11 @@ function tracked(page: Page): Promise<Record<string, { x: number; y: number; w: 
 
 // putLoot shows a loot card of the viewer's hand on the stack as
 // object 700, played by the viewer (mine) or the other player. With
-// played, the update says it was just played.
-async function putLoot(page: Page, mine: boolean, played: boolean): Promise<void> {
+// played, the update says it was just played. With cents, a second
+// update follows at once.
+async function putLoot(page: Page, mine: boolean, played: boolean, cents = false): Promise<void> {
   await page.evaluate(
-    ({ mine, played }) => {
+    ({ mine, played, cents }) => {
       const s = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store.getState();
       const game = structuredClone(s.game) as unknown as {
         step: number;
@@ -1257,8 +1258,12 @@ async function putLoot(page: Page, mine: boolean, played: boolean): Promise<void
       game.view.stack = [{ id: 50, kind: 0, controller, source: 700, card, target: { player: -1 }, ability: none, roll_for: none }];
       const events = played ? [{ kind: 'loot_played', player: controller, object: 700, card }] : [];
       s.receive({ type: 'update', data: { ...game, step: game.step + 1, events } });
+      // cents: the next update comes at once; the controller gains 1¢ (20.9).
+      if (cents) {
+        s.receive({ type: 'update', data: { ...game, step: game.step + 2, events: [{ kind: 'gained_cents', player: controller, amount: 1 }] } });
+      }
     },
-    { mine, played },
+    { mine, played, cents },
   );
 }
 
@@ -1281,6 +1286,8 @@ test("another player's loot card rises from their hand and shrinks into the stac
   await shot(ula, 'played-to-stack');
   await expect(ula.locator('[data-zone="played-700"]')).toBeVisible({ timeout: 5000 });
   await shot(ula, 'played-under-stack');
+  // It stays large a while after the view is drawn, then leaves (20.9).
+  await expect(ula.getByTestId('played-pop')).toHaveCount(0, { timeout: 8000 });
   const { pop } = await tracked(ula);
   const first = pop?.[0];
   const last = pop?.at(-1);
@@ -1294,6 +1301,52 @@ test("another player's loot card rises from their hand and shrinks into the stac
   expect(Math.abs(last.y - stack.y)).toBeLessThan(40);
   expect(last.w).toBeLessThan(140);
 });
+
+for (const mine of [false, true]) {
+  const whose = mine ? 'the viewer\'s own play shows no big card' : "another player's play shows big while the game goes on";
+  test(`${whose} (20.9)`, async ({ browser }) => {
+    const [cid] = await startGame(browser, ['Cid', 'Dot']);
+    if (!cid) {
+      throw new Error('no pages');
+    }
+    // Times, in ms of the page's clock, at which the big card and the
+    // next update's popup first show, and if the big card shows then.
+    await cid.evaluate(() => {
+      const w = window as unknown as { seen: { pop?: number; popup?: number; popWithPopup?: boolean } };
+      w.seen = {};
+      const look = () => {
+        const pop = document.querySelector('[data-testid="played-pop"]');
+        if (pop && w.seen.pop === undefined) {
+          w.seen.pop = performance.now();
+        }
+        if (document.querySelector('[data-testid="effect-popup"]') && w.seen.popup === undefined) {
+          w.seen.popup = performance.now();
+          w.seen.popWithPopup = pop !== null;
+        }
+      };
+      new MutationObserver(look).observe(document.body, { childList: true, subtree: true });
+    });
+    // The play, and at once the next update: its controller gains 1¢.
+    await putLoot(cid, mine, true, true);
+    await expect(cid.getByTestId('effect-popup')).toBeVisible({ timeout: 5000 });
+    if (!mine) {
+      await shot(cid, 'played-stays');
+    }
+    await expect(cid.locator('[data-zone="stack-src-700"]')).toBeVisible();
+    const seen = await cid.evaluate(() => (window as unknown as { seen: { pop?: number; popup?: number; popWithPopup?: boolean } }).seen);
+    if (mine) {
+      expect(seen.pop).toBeUndefined();
+      return;
+    }
+    // The popup waits about the big card's wait, and plays under it.
+    if (seen.pop === undefined || seen.popup === undefined) {
+      throw new Error('no big card or popup');
+    }
+    expect(seen.popup - seen.pop).toBeGreaterThan(feel.played.wait * 1000 - 100);
+    expect(seen.popWithPopup).toBe(true);
+    await expect(cid.getByTestId('played-pop')).toHaveCount(0, { timeout: 8000 });
+  });
+}
 
 for (const mine of [false, true]) {
   const from = mine ? 'its stack row' : 'the large card under the stack';

@@ -41,7 +41,7 @@ import { emptyLobby, forgotten, leftTable, lost, onMessage, remember, renamed, t
 import { connectFirst, disconnect, drop, send } from './net';
 import { claimEffect, nextBeat } from './animations';
 import { lastRollAfter, type LastRoll } from './dice';
-import { bonusSlot, chargedIn, createPlayback, effectsFor, hpOf, scaleFor, shopSlot, slotZone, type Death, type Effect } from './playback';
+import { bonusSlot, chargedIn, createPlayback, effectsFor, hpOf, playedEnds, scaleFor, shopSlot, slotZone, type Death, type Effect } from './playback';
 import { loadSounds, setSoundVolume } from './sounds';
 import { endsGame, lostDialogAfter, retryDelay } from './reconnect';
 import {
@@ -135,6 +135,17 @@ export interface Playing {
   done: () => void;
 }
 
+// Big is another player's card shown large (20.9): a played effect's
+// card, kept after its effect ends, until it leaves or is sent away.
+export interface Big {
+  key: number;
+  card: string;
+  who: string;
+  from: string[];
+  to: string[];
+  scale: number;
+}
+
 // Placed is a card a place effect left on its slot, at a screen point,
 // until the next view is shown (19.3).
 export interface Placed {
@@ -148,6 +159,8 @@ interface AppState extends Session {
   // playing is the event effect on screen, if any.
   playing: Playing | null;
   placed: Placed[];
+  // big is another player's card shown large, if any (20.9).
+  big: Big | null;
   // left is the sources of stack items whose card flew away; they hide
   // until the next view is shown (19.41).
   left: number[];
@@ -433,7 +446,7 @@ export const useApp = create<AppState>()((set, get) => {
       // A rollback jumps to the restored table: no animation, and what
       // the undone steps left on screen goes (item 8.5).
       const jump = u.rollback
-        ? { lastRoll: null, looking: [], aiming: null, aimed: null, selected: null, sent: null, zoom: null }
+        ? { lastRoll: null, looking: [], aiming: null, aimed: null, selected: null, sent: null, zoom: null, big: null }
         : { lastRoll: lastRollAfter(s.lastRoll, u.events ?? []), ...(looked.length > 0 ? { looking: looked } : {}) };
       set({
         game: u,
@@ -464,6 +477,11 @@ export const useApp = create<AppState>()((set, get) => {
         const charges = effect.kind === 'turn' ? effect.charges : undefined;
         if (charges) {
           set((s) => ({ charged: [...s.charged, ...charges] }));
+        }
+        // A big played card goes when the middle is needed (20.9).
+        const big = get().big;
+        if (big && playedEnds(effect, big.card)) {
+          set({ big: null });
         }
         // A clashing effect is logged and skipped (19.6).
         if (!claimEffect(effect)) {
@@ -591,7 +609,7 @@ export const useApp = create<AppState>()((set, get) => {
     get().playing?.done();
     clearPresence();
     diedAt.clear();
-    set({ history: [], moves: [], lastRoll: null, looking: [], placed: [], left: [], lifted: [], charged: [] });
+    set({ history: [], moves: [], lastRoll: null, looking: [], placed: [], big: null, left: [], lifted: [], charged: [] });
   };
 
   // open connects to address and says hello; the server answers with
@@ -695,6 +713,7 @@ export const useApp = create<AppState>()((set, get) => {
   return {
     playing: null,
     placed: [],
+    big: null,
     left: [],
     lifted: [],
     charged: [],

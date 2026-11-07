@@ -162,7 +162,7 @@ Owner notes (2026-11-06):
    1. e2e: a pass during the banner is accepted.
    2. Screenshots of each phase.
 
-### [ ] 20.9 Others' plays, paced
+### [x] 20.9 Others' plays, paced
 
 1. Goal: everyone reads another player's card before it acts.
 2. Tasks:
