@@ -269,6 +269,14 @@
   * Another player's draw: its back flies to their hand, short, one sound.
   * Reduced motion: the card shows large in place and fades.
   * Animations off: no draw, like every effect.
+* **1ak. Turn start (20.8):** a new turn is one clear, ordered moment.
+  * "Ann's turn" grows in, gives a small punch, and fades at 1.5 s.
+  * As it shows, the player's used character and items light up again.
+  * After 1 s the turn's loot draw and the rest go on under it.
+  * Own turn only: the "your turn" alert sound.
+  * Visual only: buttons stay live; a Pass during it works.
+  * Reduced motion: it only fades in and out.
+  * Animations off: no banner, like every effect.
 
 ## Postconditions
 

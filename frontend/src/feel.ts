@@ -222,6 +222,22 @@ export const feel = {
     growCurve: curves.expoOut,
     otherCurve: curves.quartInOut,
   },
+  // turn: a new turn's banner (20.8, ADR 027 "Turn start", turn.ts). It
+  // fades in over grow while it grows from from to full size, then
+  // punches down to punch over punchTime. Its fade starts hide seconds
+  // after it shows and takes out, shrinking back to from. Playback goes
+  // on after wait: the turn's draw starts while it still shows. The
+  // recharge readies the player's cards as it shows.
+  turn: {
+    grow: 0.25,
+    from: 0.1,
+    punch: 0.98,
+    punchTime: 0.15,
+    hide: 1.5,
+    out: 0.25,
+    wait: 1,
+    curve: curves.expoOut,
+  },
   // banner: the text in the middle (Effects.tsx). times are its
   // opacity keyframes: in, held, out. A long one (start of game) stays
   // twice as long, with fades as long.

@@ -41,7 +41,7 @@ import { emptyLobby, forgotten, leftTable, lost, onMessage, remember, renamed, t
 import { connectFirst, disconnect, drop, send } from './net';
 import { claimEffect, nextBeat } from './animations';
 import { lastRollAfter, type LastRoll } from './dice';
-import { bonusSlot, createPlayback, effectsFor, hpOf, scaleFor, shopSlot, slotZone, type Death, type Effect } from './playback';
+import { bonusSlot, chargedIn, createPlayback, effectsFor, hpOf, scaleFor, shopSlot, slotZone, type Death, type Effect } from './playback';
 import { loadSounds, setSoundVolume } from './sounds';
 import { endsGame, lostDialogAfter, retryDelay } from './reconnect';
 import {
@@ -154,6 +154,9 @@ interface AppState extends Session {
   // lifted is the table cards a dead card's flight took off their slot;
   // they hide until the next view is shown (19.73).
   lifted: number[];
+  // charged is the cards a turn's recharge readied while its banner
+  // shows; they show charged until the next view is shown (20.8).
+  charged: number[];
   // history is the match so far, as this viewer saw it (7.9).
   history: Entry[];
   // moves name what each update did, for the Undo button (17.7); a
@@ -437,6 +440,7 @@ export const useApp = create<AppState>()((set, get) => {
         placed: [],
         left: [],
         lifted: [],
+        charged: [],
         behind: playback.pending() > 0,
         jumped: u.rollback !== undefined,
         history: [...history, ...entries.map((e) => ({ ...e, step: first }))],
@@ -455,6 +459,11 @@ export const useApp = create<AppState>()((set, get) => {
         const lifts = effect.kind === 'fly' ? effect.lifts : undefined;
         if (lifts !== undefined) {
           set((s) => ({ lifted: [...s.lifted, lifts] }));
+        }
+        // A turn's recharge readies its cards as the banner shows (20.8).
+        const charges = effect.kind === 'turn' ? effect.charges : undefined;
+        if (charges) {
+          set((s) => ({ charged: [...s.charged, ...charges] }));
         }
         // A clashing effect is logged and skipped (19.6).
         if (!claimEffect(effect)) {
@@ -501,6 +510,7 @@ export const useApp = create<AppState>()((set, get) => {
         seen: (ref) => (get().game?.events ?? []).some((e) => e.kind === 'card_revealed' && e.card === ref),
         roll: (stack) => get().game?.view.stack?.find((it) => it.id === stack)?.roll,
         hpAfter: (e) => hpOf(u.view, e),
+        charged: (p) => chargedIn(u.view, p),
         you: seatOf(get()),
       });
     },
@@ -581,7 +591,7 @@ export const useApp = create<AppState>()((set, get) => {
     get().playing?.done();
     clearPresence();
     diedAt.clear();
-    set({ history: [], moves: [], lastRoll: null, looking: [], placed: [], left: [], lifted: [] });
+    set({ history: [], moves: [], lastRoll: null, looking: [], placed: [], left: [], lifted: [], charged: [] });
   };
 
   // open connects to address and says hello; the server answers with
@@ -687,6 +697,7 @@ export const useApp = create<AppState>()((set, get) => {
     placed: [],
     left: [],
     lifted: [],
+    charged: [],
     history: [],
     moves: [],
     lastRoll: null,

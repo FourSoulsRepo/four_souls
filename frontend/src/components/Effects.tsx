@@ -13,6 +13,7 @@ import { Coin } from './PlayerArea';
 import './Effects.css';
 import { lunge, still } from './lunge';
 import { hits, skulls } from './marks';
+import { turnBanner } from './turn';
 
 // The size of a table card, for flying cards.
 const cardW = 80;
@@ -148,6 +149,15 @@ function Effect({ playing }: { playing: Playing }) {
         >
           {effect.text}
         </motion.div>
+      );
+    case 'turn':
+      return (
+        <Layered
+          playing={playing}
+          start={(done) => {
+            turnBanner(effect.text, effect.own, scale, done);
+          }}
+        />
       );
     case 'reveal':
       return <Reveal card={effect.card} deck={effect.deck} hold={effect.hold ?? false} playing={playing} />;

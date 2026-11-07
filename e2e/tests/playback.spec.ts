@@ -5,6 +5,7 @@ import { feel } from '../../frontend/src/feel';
 import { startGame } from './game';
 import { shot } from './shot';
 import { tr } from './locale';
+import { activePage, click, endTurn, seen, settle } from './turn';
 
 // listenSounds records the file of every sound played from now on, in
 // window.played (15.50). Each sound still plays.
@@ -1789,4 +1790,69 @@ test('each gained treasure flies in with its sound; a trinket and a starting ite
   await expect(ola.locator('.effects')).toHaveCount(0);
   // One sound per treasure: the shop buy and the deck's.
   expect(await played(ola)).toEqual(Array(2).fill('/cardimg/assets/sounds/treasure-gain.mp3'));
+});
+
+test('a turn starts with its banner; a pass during it is accepted (20.8)', async ({ browser }) => {
+  const pages = await startGame(browser, ['Ola', 'Pim']);
+  const active = await activePage(pages, click);
+  const next = pages.find((p) => p !== active);
+  if (!next) {
+    throw new Error('no pages');
+  }
+  await listenSounds(next);
+  await listenSounds(active);
+  const before = await seen(next);
+  await endTurn(active);
+  // The end of the turn waits for answers; then both see the banner.
+  const banner = next.getByTestId('turn-banner');
+  const other = active.getByTestId('turn-banner');
+  await settle(pages, click, async () => (await banner.count()) > 0 || (await other.count()) > 0);
+  await expect(banner).toBeAttached();
+  await expect(other).toBeAttached();
+  await next.waitForTimeout(100);
+  await shot(next, 'turn-banner-grow');
+  await next.waitForTimeout(500);
+  await shot(next, 'turn-banner-hold');
+  // The banner is visual only: a pass during it works as always. The
+  // click is made in the page, on the first frame Pass is live while
+  // the banner still shows.
+  const passed = await next.waitForFunction(
+    ({ stack, pass }) => {
+      interface S {
+        game: { step: number; view: { turn: { number: number; active: number } } } | null;
+        lobby: { table: { you: number } | null };
+      }
+      const b = document.querySelector('[data-testid="turn-banner"]');
+      const button = [...document.querySelectorAll(`aside[aria-label="${stack}"] button`)].find((x) => x.textContent === pass);
+      if (!b || !(button instanceof HTMLButtonElement) || button.disabled) {
+        return null;
+      }
+      const s = (window as unknown as { fourSouls: { store: { getState: () => S } } }).fourSouls.store.getState();
+      const at = { step: s.game?.step ?? -1, turn: s.game?.view.turn.number ?? 0, active: s.game?.view.turn.active ?? -1, you: s.lobby.table?.you ?? -2 };
+      button.click();
+      return at;
+    },
+    { stack: tr('stack.title'), pass: tr('stack.pass') },
+    { timeout: 5000 },
+  );
+  const at = await passed.jsonValue();
+  if (!at) {
+    throw new Error('no pass during the banner');
+  }
+  expect(at.turn).toBeGreaterThan(before.turn);
+  expect(at.active).toBe(at.you);
+  // The server took the pass: the game moved on, with no error.
+  await expect.poll(async () => (await seen(next)).step, { timeout: 5000 }).toBeGreaterThan(at.step);
+  await expect(next.locator('.action-error')).toHaveText('');
+  await shot(next, 'turn-banner-pass');
+  // Once the others pass too, the turn's loot draw follows.
+  await settle(pages, click, async () => (await next.getByTestId('effect-draw').count()) > 0);
+  await next.waitForTimeout(600);
+  await shot(next, 'turn-banner-draw');
+  await expect(banner).toHaveCount(0, { timeout: 5000 });
+  await shot(next, 'turn-banner-after');
+  // Only the new active player hears the turn start (20.17).
+  const turnStart = '/cardimg/assets/sounds/turn-start.mp3';
+  expect((await played(next)).filter((f) => f === turnStart)).toEqual([turnStart]);
+  expect((await played(active)).filter((f) => f === turnStart)).toEqual([]);
 });

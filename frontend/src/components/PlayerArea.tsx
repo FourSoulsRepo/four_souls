@@ -33,9 +33,12 @@ interface Props {
   doing?: LinePart[] | null;
 }
 
-// spent: a character or item that is used up until it recharges.
-function spent(c: CardView): boolean {
-  return (c.role === Role.character || c.role === Role.item) && !c.charged;
+// useSpent tells if a character or item is used up until it recharges.
+// A card the turn's recharge readies lights up as the turn's banner
+// shows, before the view is drawn (20.8).
+function useSpent(): (c: CardView) => boolean {
+  const charged = useApp((s) => s.charged);
+  return (c) => (c.role === Role.character || c.role === Role.item) && !c.charged && !charged.includes(c.id);
 }
 
 // PlayerArea is one player's place at the table: name and counters,
@@ -53,6 +56,7 @@ export function PlayerArea({ you, position, tools, ...rest }: Props) {
 function OpponentArea({ player, name, position, active, asked, winSouls, ui, doing }: Omit<Props, 'you' | 'tools'>) {
   const size: CardSize = position === 'left' || position === 'right' ? 'small' : 'table';
   const pick = ui.player(player.id);
+  const spent = useSpent();
   const { character } = player;
   return (
     <section
@@ -150,6 +154,7 @@ function OwnArea({ player, name, active, asked, winSouls, ui, tools }: Omit<Prop
   const label = t('table.own_name', { player: name });
   const pick = ui.player(player.id);
   const hand = player.hand ?? [];
+  const spent = useSpent();
   const { character } = player;
   return (
     <section
@@ -315,6 +320,7 @@ function statsOf(player: PlayerView) {
 // PlayCard is a character or item in play; owner's dice look draws the
 // numbers it keeps (15.67).
 function PlayCard({ card, owner, size, ui }: { card: CardView; owner: number; size: CardSize; ui: Interact }) {
+  const spent = useSpent();
   return (
     <Card
       cardRef={card.card}

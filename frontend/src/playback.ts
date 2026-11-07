@@ -5,7 +5,7 @@ import { kindOf, type CardInfo, type Kind } from './cards';
 import { firstPlayerText, tieText } from './dice';
 import { drawPace } from './feel';
 import { say, t } from './i18n';
-import type { GameEvent, GameView, Update } from './protocol';
+import { Role, type GameEvent, type GameView, type Update } from './protocol';
 import type { Sound } from './sounds';
 
 export type Speed = 'normal' | 'fast' | 'slow' | 'off';
@@ -31,6 +31,10 @@ export type Effect =
   | { kind: 'dice'; value: number; label: string; player: number; thrown?: boolean; old?: number; source?: string[]; dice?: number[] }
   // banner: long stays twice as long, for the start of the game (15.43).
   | { kind: 'banner'; text: string; long?: boolean }
+  // turn: a new turn's banner (20.8). own: the viewer's turn; it plays
+  // the turn-start sound. charges: the objects its recharge readies,
+  // lit as the banner shows, before the view is drawn.
+  | { kind: 'turn'; text: string; own: boolean; charges?: number[] }
   // reveal: the card grows out of its deck to the middle; it holds
   // there when the next effect moves it, else shrinks back (15.73).
   | { kind: 'reveal'; card: string; deck: string[]; hold?: boolean }
@@ -98,6 +102,9 @@ interface Context {
   roll: (stack: number) => number | undefined;
   // hpAfter is a damaged target's HP in this update's view, if shown (20.3).
   hpAfter: (e: GameEvent) => number | undefined;
+  // charged is a player's character and items charged in this update's
+  // view (20.8).
+  charged: (player: number) => number[];
   // you is the viewer's seat; -1 for none.
   you: number;
 }
@@ -165,6 +172,16 @@ export function hpOf(view: GameView, e: GameEvent): number | undefined {
     return p.hp;
   }
   return (view.monsters ?? []).find((s) => e.object !== undefined && s.top?.id === e.object)?.top?.stats?.hp;
+}
+
+// chargedIn is a player's character and items charged in a view: what
+// their turn's recharge readies (20.8).
+export function chargedIn(view: GameView, player: number): number[] {
+  const p = view.players.find((x) => x.id === player);
+  if (!p) {
+    return [];
+  }
+  return [p.character, ...(p.in_play ?? [])].filter((c) => (c.role === Role.character || c.role === Role.item) && c.charged).map((c) => c.id);
 }
 
 // shopSlot is the shop slot whose top card is card, and its object.
@@ -408,9 +425,20 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
           out.push({ kind: 'played', card: e.card, who: ctx.name(e.player), from: handZones(e.player), to: ['stack'] });
         }
         break;
-      case 'turn_started':
-        out.push({ kind: 'banner', text: t('effect.turn', { player: ctx.name(e.player) }) });
+      case 'turn_started': {
+        // The turn's banner; its recharge readies the player's cards as
+        // it shows (20.8, ADR 027 "Turn start"). The draw and the rest
+        // follow in the events' order.
+        const recharges = events.some((r) => r.kind === 'recharged' && r.player === e.player && !r.object);
+        const charges = recharges ? ctx.charged(e.player) : [];
+        out.push({
+          kind: 'turn',
+          text: t('effect.turn', { player: ctx.name(e.player) }),
+          own: ctx.you >= 0 && e.player === ctx.you,
+          ...(charges.length > 0 ? { charges } : {}),
+        });
         break;
+      }
       case 'game_won':
         out.push({ kind: 'banner', text: t('effect.wins', { player: ctx.name(e.player) }) });
         break;

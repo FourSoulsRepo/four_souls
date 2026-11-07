@@ -91,6 +91,20 @@
   text-shadow: 0 3px 12px rgb(0 0 0 / 70%);
 }
 
+/* A new turn's banner (20.8): in the effect layer, in the middle of
+   the window; it grows and shrinks about its own middle. */
+.effect-turn {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.effect-turn-text {
+  opacity: 0;
+}
+
 .effect-popup {
   position: absolute;
   translate: -50% -50%;

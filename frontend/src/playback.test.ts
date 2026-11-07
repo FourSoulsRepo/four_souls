@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { CardInfo } from './cards';
-import { createPlayback, effectsFor, hpOf, scaleFor, shopSlot, slotZone, type Death, type Effect } from './playback';
+import { chargedIn, createPlayback, effectsFor, hpOf, scaleFor, shopSlot, slotZone, type Death, type Effect } from './playback';
 import type { GameEvent, GameView, Update } from './protocol';
 
 const ctx = {
@@ -18,6 +18,7 @@ const ctx = {
   seen: (card: string) => card === 'pin',
   roll: (stack: number) => (stack === 7 ? 2 : undefined),
   hpAfter: (e: GameEvent): number | undefined => (e.object === 42 ? 0 : undefined),
+  charged: (p: number) => (p === 1 ? [31, 32] : []),
   you: 0,
 };
 
@@ -118,8 +119,26 @@ describe('effectsFor', () => {
     expect(effectsFor(events, ctx)).toEqual([
       { kind: 'dice', value: 5, label: 'attack roll', player: 0, thrown: true },
       { kind: 'popup', at: ['player-0'], text: '+3¢', tone: 'good' },
-      { kind: 'banner', text: "Bo's turn" },
+      { kind: 'turn', text: "Bo's turn", own: false },
     ]);
+  });
+
+  it("starts a turn with its banner; the recharge readies the player's cards as it shows (20.8)", () => {
+    const events: GameEvent[] = [
+      { kind: 'turn_ended', player: 0 },
+      { kind: 'turn_started', player: 1, amount: 2 },
+      { kind: 'recharged', player: 1 },
+      { kind: 'start_of_turn', player: 1 },
+      { kind: 'looted', player: 1, object: 80 },
+    ];
+    expect(effectsFor(events, ctx)).toEqual([
+      { kind: 'turn', text: "Bo's turn", own: false, charges: [31, 32] },
+      { kind: 'draw', from: ['deck-loot'], to: ['hand-1', 'player-1'], own: false, pace: 1 },
+    ]);
+    // The viewer's own turn: its banner plays the turn-start sound.
+    expect(effectsFor([{ kind: 'turn_started', player: 0, amount: 3 }], ctx)).toEqual([{ kind: 'turn', text: "Ann's turn", own: true }]);
+    // A spectator's banner is never their own.
+    expect(effectsFor([{ kind: 'turn_started', player: 0, amount: 3 }], { ...ctx, you: -1 })).toEqual([{ kind: 'turn', text: "Ann's turn", own: false }]);
   });
 
   it("shows another player's played loot card large, not the viewer's own (15.31)", () => {
@@ -412,6 +431,28 @@ describe('shopSlot', () => {
     const view = { shop: [{}, { top: { id: 9, card: 'the_d6' } }] } as unknown as GameView;
     expect(shopSlot(view, 'the_d6')).toEqual({ zone: 'shop-slot-1', object: 9 });
     expect(shopSlot(view, 'the_d20')).toBeUndefined();
+  });
+});
+
+describe('chargedIn (20.8)', () => {
+  it("lists a player's charged character and items, not monsters or souls", () => {
+    const view = {
+      players: [
+        { id: 0, character: { id: 1, role: 1, charged: false }, in_play: [{ id: 2, role: 2, charged: true }] },
+        {
+          id: 1,
+          character: { id: 11, role: 1, charged: true },
+          in_play: [
+            { id: 12, role: 2, charged: true },
+            { id: 13, role: 2, charged: false },
+            { id: 14, role: 5, charged: true },
+          ],
+        },
+      ],
+    } as unknown as GameView;
+    expect(chargedIn(view, 1)).toEqual([11, 12]);
+    expect(chargedIn(view, 0)).toEqual([2]);
+    expect(chargedIn(view, 3)).toEqual([]);
   });
 });
 

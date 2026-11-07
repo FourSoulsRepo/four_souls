@@ -147,7 +147,7 @@ Owner notes (2026-11-06):
    1. Vitest: speed factor per draw index.
    2. e2e: a 3-card draw plays one card at a time.
 
-### [ ] 20.8 Turn start sequence
+### [x] 20.8 Turn start sequence
 
 1. Goal: a new turn is one clear, ordered moment.
 2. Tasks:

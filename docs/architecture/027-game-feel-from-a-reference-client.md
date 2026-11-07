@@ -285,6 +285,33 @@ Each sub-step of step 20 takes the part it needs.
 4. Wait 1 s for the banner, then the turn's draw.
 5. Then start-of-turn effects.
 6. Only then: input unlocks, End Turn becomes active.
+7. Checked in 20.8 (`TurnStartIndicator`, `TurnStartManager`).
+   1. The banner grows from 10 % to full in 0.25 s while it fades in.
+   2. Then the punch: down to 98 % in 0.15 s.
+   3. Its 1.5 s counts from its start, not from the punch.
+   4. Then it shrinks to almost nothing and fades in 0.25 s: 1.75 s in all.
+   5. No ease set: iTween's default, expo-out.
+   6. The sound plays as the banner shows; own turn only.
+   7. Mana and readied cards change as the banner shows, not later.
+   8. The draw waits 1 s from the banner's start.
+   9. Then 0.35 s more if effects follow the draw.
+   10. An opponent's turn shows no banner in the reference.
+8. Built in 20.8.
+   1. Banner: `feel.turn`; 10 % → full in 0.25 s, punch to 98 % in 0.15 s.
+   2. It starts to fade at 1.5 s and is gone at 1.75 s, as the reference.
+   3. The step file's "stays 1.5 s" read as the reference's 1.5 s from start.
+   4. Playback goes on after 1 s; the banner stays above the next effects.
+   5. It lives in the effect layer (`.effects-trail`); no new layer.
+   6. The recharge lights the player's spent cards as the banner shows.
+   7. Ours dim a spent card instead of turning it; it lights, not turns.
+   8. Lit cards: charged in the update's view, kept until the view shows.
+   9. Every player's turn has a banner; only the own plays `turn-start`.
+   10. Order: our rules put start-of-turn triggers before the loot step.
+   11. The table follows the events: banner, start-of-turn, then the draw.
+   12. No input lock: the next view shows at 1 s; its buttons are live.
+   13. Reduced motion: it only fades in and out.
+   14. Speed "off": no banner, as every effect.
+   15. No 0.35 s wait after the draw; playback paces each effect itself.
 
 ### End Turn button
 
