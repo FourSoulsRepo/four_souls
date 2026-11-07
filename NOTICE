@@ -68,6 +68,23 @@ Treasure gain sound (assets/sounds in the private images):
   ships only with the private images. Converted to mono MP3.
   soul-gain.mp3      soul_gain, from the owner; source unknown, so it
   ships only with the private images. Converted to mono MP3.
+Game feel sounds (assets/sounds in the private images, step 20), from
+Hearthstone, taken from Fanstone, a Hearthstone-based fan client, by
+reverse/sounds.sh of FourSoulsRepo/tools (20.17):
+  attack-hit-2.mp3         FX_Minion_AttackImpactMid
+  attack-hit-3.mp3         FX_Minion_AttackImpactLarge
+  loot-land-1..3.mp3       add_card_to_hand_1..3
+  loot-draw-other-1..3.mp3 draw_card_and_add_to_hand_opp_1..3
+  drag-bed.mp3             card_motion_loop_magical
+  drag-air.mp3             card_motion_loop_air
+  turn-start.mp3           ALERT_YourTurn_0v2
+  card-play-other-1..3.mp3 play_card_from_hand_1..3
+  end-turn-cue.mp3         VO_JobsDone (English)
+  timer-tick.mp3           Countdown_Tick
+  timer-last.mp3           Countdown_Tick_Final
+  Hearthstone is (c) Blizzard Entertainment, Inc. They belong to their
+  owners, are not in this repository, and ship the same way as the card
+  images. Converted to mono MP3.
 
 --------------------------------------------------------------------------
 App icon — build/appicon.svg, build/appicon.png, build/windows/icon.ico

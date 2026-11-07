@@ -84,7 +84,27 @@ describe('settings', () => {
     vi.mocked(getBacks).mockResolvedValue([]);
     vi.mocked(getIcons).mockResolvedValue({ coin: '', sword: '', banner: '', sky: [] });
     vi.mocked(getFonts).mockResolvedValue({ title: '', body: '', cyrillic: '' });
-    vi.mocked(getSounds).mockResolvedValue({ attackHit: '', effectCast: '', effectImpact: '', diceRoll: '', lootDraw: '', playerDied: '', treasureGain: '', soulGain: '' });
+    vi.mocked(getSounds).mockResolvedValue({
+      attackHit: [],
+      effectCast: [],
+      effectImpact: [],
+      diceRoll: [],
+      lootDraw: [],
+      playerDied: [],
+      treasureGain: [],
+      soulGain: [],
+      attackHit2: [],
+      attackHit3: [],
+      lootLand: [],
+      lootDrawOther: [],
+      dragBed: [],
+      dragAir: [],
+      turnStart: [],
+      cardPlayOther: [],
+      endTurnCue: [],
+      timerTick: [],
+      timerLast: [],
+    });
     expect(useApp.getState().languages).not.toContain('xx');
     await useApp.getState().loadCards();
     expect(useApp.getState().languages).toContain('xx');

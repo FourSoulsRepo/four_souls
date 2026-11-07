@@ -65,3 +65,5 @@ go run ./loudness level -game ../four_souls new-sound.mp3   # fix it in place (n
 ```
 
 `level` applies the gain, a limiter at -1.5 dBFS, and writes mono 44.1 kHz 64 kbps MP3. Level a sound once: each run re-encodes it. A new or changed sound passes `check` before it is committed to the images; then amend, force-push, and bump the pointer as above. The game plays every sound at full volume (`sounds.ts`).
+
+The step 20 sounds (20.17) come from Fanstone, a Hearthstone-based fan client: `reverse/sounds.sh` in the tools repository extracts each clip by its GUID into its `.cache/`, as WAV and MP3. Copy the MP3 files into `images/assets/sounds/`, then `level` and `check` them as above. The tools README has the details.

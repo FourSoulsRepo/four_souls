@@ -266,7 +266,7 @@ Owner notes (2026-11-06):
 3. Done when:
    1. Owner approval.
 
-### [ ] 20.17 Sounds from the reference client
+### [x] 20.17 Sounds from the reference client
 
 1. Goal: each moment plays the clip the reference plays for it.
 2. Tasks:

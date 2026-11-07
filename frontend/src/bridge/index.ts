@@ -216,19 +216,32 @@ export function getFonts(): Promise<Fonts> {
   return wailsFonts();
 }
 
-// Sounds are the damage sounds (15.50), the dice sound (15.69), the loot
-// draw sound (18.7), the player death sound (18.8), the treasure gain
-// sound (18.9) and the soul gain sound; each URL is '' without the
-// private images, and that sound stays silent.
+// Sounds are the sound URLs, a list per sound: the damage sounds (15.50),
+// the dice sound (15.69), the loot draw sound (18.7), the player death
+// sound (18.8), the treasure gain sound (18.9), the soul gain sound, and
+// the reference client's sounds of step 20 (20.17). A sound with several
+// files plays one at random. Each list is empty without the private
+// images, and that sound stays silent.
 export interface Sounds {
-  attackHit: string;
-  effectCast: string;
-  effectImpact: string;
-  diceRoll: string;
-  lootDraw: string;
-  playerDied: string;
-  treasureGain: string;
-  soulGain: string;
+  attackHit: string[];
+  effectCast: string[];
+  effectImpact: string[];
+  diceRoll: string[];
+  lootDraw: string[];
+  playerDied: string[];
+  treasureGain: string[];
+  soulGain: string[];
+  attackHit2: string[];
+  attackHit3: string[];
+  lootLand: string[];
+  lootDrawOther: string[];
+  dragBed: string[];
+  dragAir: string[];
+  turnStart: string[];
+  cardPlayOther: string[];
+  endTurnCue: string[];
+  timerTick: string[];
+  timerLast: string[];
 }
 
 // getSounds returns the sound URLs.

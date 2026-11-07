@@ -319,14 +319,25 @@ export namespace main {
 	    }
 	}
 	export class Sounds {
-	    attackHit: string;
-	    effectCast: string;
-	    effectImpact: string;
-	    diceRoll: string;
-	    lootDraw: string;
-	    playerDied: string;
-	    treasureGain: string;
-	    soulGain: string;
+	    attackHit: string[];
+	    effectCast: string[];
+	    effectImpact: string[];
+	    diceRoll: string[];
+	    lootDraw: string[];
+	    playerDied: string[];
+	    treasureGain: string[];
+	    soulGain: string[];
+	    attackHit2: string[];
+	    attackHit3: string[];
+	    lootLand: string[];
+	    lootDrawOther: string[];
+	    dragBed: string[];
+	    dragAir: string[];
+	    turnStart: string[];
+	    cardPlayOther: string[];
+	    endTurnCue: string[];
+	    timerTick: string[];
+	    timerLast: string[];
 	
 	    static createFrom(source: any = {}) {
 	        return new Sounds(source);
@@ -342,6 +353,17 @@ export namespace main {
 	        this.playerDied = source["playerDied"];
 	        this.treasureGain = source["treasureGain"];
 	        this.soulGain = source["soulGain"];
+	        this.attackHit2 = source["attackHit2"];
+	        this.attackHit3 = source["attackHit3"];
+	        this.lootLand = source["lootLand"];
+	        this.lootDrawOther = source["lootDrawOther"];
+	        this.dragBed = source["dragBed"];
+	        this.dragAir = source["dragAir"];
+	        this.turnStart = source["turnStart"];
+	        this.cardPlayOther = source["cardPlayOther"];
+	        this.endTurnCue = source["endTurnCue"];
+	        this.timerTick = source["timerTick"];
+	        this.timerLast = source["timerLast"];
 	    }
 	}
 

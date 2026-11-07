@@ -355,17 +355,31 @@ w.go = {
         }),
       // The sounds at their real paths; like the fonts, they load
       // only in screenshots, else they fail to load and stay silent.
-      Sounds: () =>
-        Promise.resolve({
-          attackHit: '/cardimg/assets/sounds/attack-hit.mp3',
-          effectCast: '/cardimg/assets/sounds/effect-cast.mp3',
-          effectImpact: '/cardimg/assets/sounds/effect-impact.mp3',
-          diceRoll: '/cardimg/assets/sounds/dice-roll.mp3',
-          lootDraw: '/cardimg/assets/sounds/loot-draw.mp3',
-          playerDied: '/cardimg/assets/sounds/player-died.mp3',
-          treasureGain: '/cardimg/assets/sounds/treasure-gain.mp3',
-          soulGain: '/cardimg/assets/sounds/soul-gain.mp3',
-        }),
+      Sounds: () => {
+        const one = (name: string): string[] => [`/cardimg/assets/sounds/${name}.mp3`];
+        const three = (name: string): string[] => ['1', '2', '3'].map((i) => `/cardimg/assets/sounds/${name}-${i}.mp3`);
+        return Promise.resolve({
+          attackHit: one('attack-hit'),
+          effectCast: one('effect-cast'),
+          effectImpact: one('effect-impact'),
+          diceRoll: one('dice-roll'),
+          lootDraw: one('loot-draw'),
+          playerDied: one('player-died'),
+          treasureGain: one('treasure-gain'),
+          soulGain: one('soul-gain'),
+          attackHit2: one('attack-hit-2'),
+          attackHit3: one('attack-hit-3'),
+          lootLand: three('loot-land'),
+          lootDrawOther: three('loot-draw-other'),
+          dragBed: one('drag-bed'),
+          dragAir: one('drag-air'),
+          turnStart: one('turn-start'),
+          cardPlayOther: three('card-play-other'),
+          endTurnCue: one('end-turn-cue'),
+          timerTick: one('timer-tick'),
+          timerLast: one('timer-last'),
+        });
+      },
       // The mat images, at their real paths; the e2e tests serve them only
       // for screenshots, else they fail to load as in a public clone.
       // ?nomats lists none, as Go does without the private images.

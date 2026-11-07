@@ -209,6 +209,8 @@ Each sub-step of step 20 takes the part it needs.
 5. "Your turn" alert; "Job's done!" when nothing is left.
 6. Timer: a tick each second, a final tick at zero.
 7. Clip per moment: step 20 file, sub-step 20.17.
+8. A clip sits in its bundle under its GUID (checked in 20.17).
+   1. The catalog in `asset_manifest.unity3d` names the bundle.
 
 ## Consequences
 
