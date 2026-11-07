@@ -135,9 +135,30 @@ export async function startGame(
     await expect(page.getByRole('main', { name: new RegExp(`^${trRe('game.turn').source}`) })).toBeVisible();
   }
   if (roll) {
+    // The roll is setup here; first-roll.spec.ts checks how it plays,
+    // with roll: false. Animated, each throw waits for the dice before
+    // it, and a tie throws again: 6 s, 12 s after a tie, 17 to 25 s with
+    // ties under a full run, which used up a 30 s test (19.120). So it
+    // plays with animations off; each page's speed comes back after.
+    const speeds = await Promise.all(pages.map((page) => setSpeed(page, 'off')));
     await throwFirstRoll(pages);
+    await Promise.all(pages.map((page, i) => setSpeed(page, speeds[i] ?? 'normal')));
   }
   return pages;
+}
+
+// setSpeed sets the page's animation speed for this session only, not
+// in its saved settings, and returns the speed before.
+async function setSpeed(page: Page, speed: string): Promise<string> {
+  return page.evaluate((speed) => {
+    interface S {
+      settings: { animation: string };
+    }
+    const store = (window as unknown as { fourSouls: { store: { getState: () => S; setState: (s: Partial<S>) => void } } }).fourSouls.store;
+    const { settings } = store.getState();
+    store.setState({ settings: { ...settings, animation: speed } });
+    return settings.animation;
+  }, speed);
 }
 
 // idle: the page plays no effect and shows the latest update.

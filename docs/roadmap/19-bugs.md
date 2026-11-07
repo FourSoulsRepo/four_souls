@@ -41,8 +41,8 @@ This step never closes; new reports are appended.
 | F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88, 19.99, 19.102, 19.118, 19.119 | 11    |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
-| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122, 19.125, 19.126, 19.127 | 30 |
-| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107, 19.117, 19.120, 19.121 | 22 |
+| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122, 19.125, 19.126, 19.127, 19.120 | 31 |
+| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107, 19.117, 19.121 | 21 |
 | Q  | Load tool: a lost connection ends a game | Go tools   | 19.108                                                 | 1     |
 | K  | Build and release files                  | Release    | 19.47, 19.59, 19.83, 19.91                             | 4     |
 | L  | Not a bug: the app follows a ruling      | None       | 19.63                                                  | 1     |
@@ -3768,7 +3768,7 @@ Totals by system (124 items):
    8. The first `make e2e` failed once in `hover.spec.ts`; logged as 19.122.
    9. The second failed once in `playback.spec.ts:167`; added to 19.120.
 
-### [ ] 19.120 e2e: a deck attack playback test times out in screenshots
+### [x] 19.120 e2e: a deck attack playback test times out in screenshots
 
 1. Goal: `playback.spec.ts` "a deck attack shows the revealed monster large once (19.4)" passes every run.
 2. Report (agent, 2026-11-07)
@@ -3805,6 +3805,23 @@ Totals by system (124 items):
    4. 20.12 does not touch a lone update: no queue, so every effect plays.
    5. No trace: plain `make e2e` keeps none.
    6. Evidence: `.cache/e2e-evidence/19.120-playback168-20.12/` (not in git).
+8. Cause found (2026-11-08)
+   1. Two full runs, both browsers, 5 workers, with time marks in `startGame`.
+   2. With animations on, the first-player roll alone took about 6 s.
+   3. A tie throws again: 12 s; in the second run 17.5 s for two players.
+   4. Four players with ties: 24.5 s; one `startGame` took 34.9 s.
+   5. Each throw waits until the page has played the dice before it.
+   6. The idle wait after the roll was under 0.3 s; the rest about 4 s.
+   7. So a 30 s test lost its time in setup, before its first check.
+   8. Evidence: `.cache/e2e-evidence/19.120-timing1/`, `timing2/` (not in git).
+9. Fix
+   1. `startGame` throws the first roll with animations off.
+   2. It sets each page's speed in its store only, then gives it back.
+   3. `first-roll.spec.ts` still checks the animated roll (`roll: false`).
+   4. No test limit changed: the setup no longer waits on the dice.
+10. Checks (2026-11-08)
+   1. `playback.spec.ts` and `first-roll.spec.ts`, both browsers: 80 of 80.
+   2. Gates: `make lint`, `make frontend`, `make e2e` exit 0.
 
 ### [ ] 19.121 e2e: a guest never reaches the Nickname field in `startGame`
 
