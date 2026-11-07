@@ -368,6 +368,28 @@ Each sub-step of step 20 takes the part it needs.
 
 1. Crystals are added, readied and spent one at a time.
 2. 0.2 s between each crystal; the number flips in 0.1 s.
+3. Checked in 20.11 (`ManaCrystalMgr`, `ManaCounter`).
+   1. Spawn, ready and spend each wait 0.2 s per crystal queued.
+   2. A spend's first crystal goes at once; spawn and ready wait 0.2 s first.
+   3. No speed-up for many crystals; ours is the step file's.
+   4. The 0.1 s is a text fade as the phone's gem flips; not per step.
+   5. `ManaCounter` sets its number in one go; it has no count of its own.
+   6. A held card marks its cost's crystals "proposed" (`ProposeManaCrystalUsage`).
+   7. Cancelled, they turn back to ready.
+4. Built in 20.11.
+   1. `Count` and `useCount` in `Count.tsx`; times in `feel.count`.
+   2. Cents of every player, soul crystals, health badges.
+   3. N steps, 0.2 s apart, the first at once, as a spend.
+   4. More than 5: the gap is 1 s / N, so the count fits 1 s (`countTimes`).
+   5. Each step flips the number in, 90° about its middle, 0.1 s, expo-out: ours.
+   6. A crystal flips as it fills or empties.
+   7. A change mid-count goes on from the number on screen.
+   8. Speed "off" and a rollback's table: the number jumps.
+   9. Reduced motion: it still counts, with no flip.
+   10. A lunge target's card hides while its copy settles; its count runs meanwhile.
+   11. Buy preview: the purchase prompt sends each option's `price`.
+   12. Hovering an option shows "−N" on the own coins; red when short.
+   13. The engine's `priceOf` gives both the preview and the payment.
 
 ### Other players live
 

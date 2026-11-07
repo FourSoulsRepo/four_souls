@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { bezier, curves, elastic, elasticOut, fanPose, feel, hitSize } from './feel';
+import { bezier, countTimes, curves, elastic, elasticOut, fanPose, feel, hitSize } from './feel';
 
 describe('curves', () => {
   it('parses every curve string', () => {
@@ -142,5 +142,35 @@ describe('zoom (20.5)', () => {
     expect(feel.zoom.grow).toBe(0.15);
     expect(() => bezier(feel.zoom.growCurve)).not.toThrow();
     expect(feel.zoom.grace).toBeGreaterThan(0);
+  });
+});
+
+describe('counters (20.11)', () => {
+  it('counts 1 step at once', () => {
+    expect(countTimes(1)).toEqual([0]);
+    expect(countTimes(-1)).toEqual([0]);
+    expect(countTimes(0)).toEqual([]);
+  });
+
+  it('counts 5 steps 0.2 s apart', () => {
+    const times = countTimes(5);
+    expect(times).toHaveLength(5);
+    [0, 0.2, 0.4, 0.6, 0.8].forEach((t, i) => {
+      expect(times.at(i)).toBeCloseTo(t);
+    });
+  });
+
+  it('speeds 20 steps up to fit 1 s', () => {
+    const times = countTimes(20);
+    expect(times).toHaveLength(20);
+    times.forEach((t, i) => {
+      expect(t).toBeCloseTo(i * 0.05);
+    });
+    expect(times.at(-1)).toBeLessThan(feel.count.fit);
+  });
+
+  it('flips each step in 0.1 s', () => {
+    expect(feel.count.flip).toBe(0.1);
+    expect(() => bezier(feel.count.flipCurve)).not.toThrow();
   });
 });

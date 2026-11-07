@@ -17,6 +17,9 @@ export interface Handle {
   onClick?: () => void;
   // why says why the player can't use the card now (15.29).
   why?: string;
+  // cost is what picking it costs: a purchase option's price, which the
+  // cents counter previews while the pointer is on it (20.11).
+  cost?: number;
 }
 
 export interface Interact {
@@ -57,11 +60,13 @@ export function interact(
   mine: (id: number) => boolean = () => false,
 ): Interact {
   const targets = aiming?.targets ?? null;
+  const buying = actions.choice?.purpose === Purpose.purchase;
   const pick = (o: ChoiceOption): Handle => ({
     highlight: "pick",
     onClick: () => {
       act(o.intent);
     },
+    ...(buying && o.target?.price !== undefined ? { cost: o.target.price } : {}),
   });
   const options = actions.choice?.options ?? [];
   const object = (id: number): Handle => {

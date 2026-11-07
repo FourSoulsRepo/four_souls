@@ -12,6 +12,7 @@ import type { CounterView, MonsterStats, StatSource } from '../protocol';
 import { statLines, sumOf, tempSources, trend, type Name, type TempSource, type Trend } from '../stats';
 import { useApp, viewScale } from '../store';
 import { boxOf } from '../zoom';
+import { Count } from './Count';
 import { Die } from './Die';
 import './Card.css';
 
@@ -67,6 +68,9 @@ interface Props {
   // why says why the player can't use the card now: its zoom says it,
   // and so does a click on it (15.29, F-17, F-18).
   why?: string;
+  // cost is a purchase option's price: the own cents counter previews
+  // it while the pointer is on the card (20.11).
+  cost?: number;
   onClick?: () => void;
 }
 
@@ -90,6 +94,7 @@ export function Card({
   noZoom = false,
   rise = false,
   why,
+  cost,
   onClick,
 }: Props) {
   const scale = useApp(viewScale);
@@ -105,6 +110,7 @@ export function Card({
   // The zoom names the copied card first (19.111).
   const lines = copy ? [t('badge.copy', { card: name(copy) }), ...sums] : sums;
   const zoomHandlers = useZoom(cardRef, zoomable, rise, why, lines, counters.filter((c) => c.count > 0));
+  const preview = useCostPreview(cost);
   const cardElRef = useRef<HTMLDivElement>(null);
   // Leaving an icon for the card zooms the card again.
   const backToCard = (e: PointerEvent<HTMLElement>) => {
@@ -131,6 +137,7 @@ export function Card({
         role={onClick ? 'button' : 'img'}
         aria-label={faceDown(back)}
         onClick={onClick}
+        {...preview}
       >
         {backImage !== '' && backImage !== brokenImage ? (
           <img
@@ -171,6 +178,14 @@ export function Card({
       aria-label={card.name}
       onClick={click}
       {...zoomHandlers}
+      onPointerEnter={(e) => {
+        preview.onPointerEnter?.();
+        zoomHandlers.onPointerEnter(e);
+      }}
+      onPointerLeave={(e) => {
+        preview.onPointerLeave?.();
+        zoomHandlers.onPointerLeave(e);
+      }}
     >
       {image ? (
         <img
@@ -381,6 +396,24 @@ export function useZoom(cardRef: string | undefined, zoomable: boolean, rise = f
   };
 }
 
+// useCostPreview sets the store's cost while the pointer is on a card
+// with a price, for the own cents counter (20.11). No price, no
+// handlers.
+function useCostPreview(cost: number | undefined): { onPointerEnter?: () => void; onPointerLeave?: () => void } {
+  const setCost = useApp((s) => s.setCost);
+  if (cost === undefined) {
+    return {};
+  }
+  return {
+    onPointerEnter: () => {
+      setCost(cost);
+    },
+    onPointerLeave: () => {
+      setCost(null);
+    },
+  };
+}
+
 // MonsterBadges shows a monster's health, dice and attack, each only
 // while it differs from the print (C-03): the card shows the rest.
 // Health also shows, in red, while the monster is hurt (T-25).
@@ -525,7 +558,7 @@ function Badge({ kind, value, label, title, style, hurt = false, trend: dir }: B
         <path d={shapes.get(kind) ?? blob} />
         <path className="card-badge-shine" d="M30 26C36 18 46 16 52 18C44 22 38 28 34 36C31 34 29 30 30 26Z" />
       </svg>
-      <span className="card-badge-value">{value}</span>
+      {kind === 'hp' ? <Count value={value} className="card-badge-value" /> : <span className="card-badge-value">{value}</span>}
     </span>
   );
 }

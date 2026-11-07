@@ -135,6 +135,10 @@
   * 1.5 s later a voice says "Job's done!", once per turn.
   * No voice if a play became possible meanwhile.
   * Silent without the private sounds.
+* **5j. Price on the coins (20.11):** while choosing what to buy, hover an option.
+  * The own coins show "−N" beside the number: its price.
+  * Red when the cents are short; the number dims meanwhile.
+  * It goes when the pointer leaves the option.
 
 ## Postconditions
 

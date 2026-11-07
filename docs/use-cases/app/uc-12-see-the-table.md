@@ -277,6 +277,12 @@
   * Visual only: buttons stay live; a Pass during it works.
   * Reduced motion: it only fades in and out.
   * Animations off: no banner, like every effect.
+* **1al. Counters that count (20.11):** cents, souls and health change a step at a time.
+  * A +3¢ shows 1, 2, 3 more, 0.2 s apart.
+  * More than 5 steps go faster; the count takes at most 1 s.
+  * Each step flips the number in; a soul crystal flips as it fills.
+  * Reduced motion: it still counts, with no flip.
+  * Animations off: the number jumps.
 
 ## Postconditions
 

@@ -556,6 +556,22 @@
   color: #ffd27a;
 }
 
+/* A buy's price previewed on the own coins while the pointer is on
+   it (20.11): the number dims and "−N" stands beside it; red when the
+   cents are short. */
+.own-coins.cost-preview .count {
+  opacity: 0.6;
+}
+
+.cents-cost {
+  font-size: 0.7em;
+  color: #ffb36b;
+}
+
+.own-coins.short .cents-cost {
+  color: #ff5a4f;
+}
+
 .coin {
   display: inline-flex;
   align-items: center;

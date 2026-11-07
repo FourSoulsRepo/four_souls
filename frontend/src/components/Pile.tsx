@@ -57,9 +57,9 @@ export function Deck({
       {top ? (
         <Card cardRef={top.card} size={size} objectId={top.id} highlight="pick" />
       ) : peek ? (
-        <Card cardRef={peek.card} size={size} highlight={handle.highlight} onClick={handle.onClick} />
+        <Card cardRef={peek.card} size={size} highlight={handle.highlight} cost={handle.cost} onClick={handle.onClick} />
       ) : count > 0 ? (
-        <Card size={size} back={kind} highlight={handle.highlight} onClick={handle.onClick} />
+        <Card size={size} back={kind} highlight={handle.highlight} cost={handle.cost} onClick={handle.onClick} />
       ) : (
         <div className={`pile-empty size-${size}`} />
       )}

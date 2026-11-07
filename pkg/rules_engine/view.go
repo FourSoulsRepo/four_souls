@@ -201,6 +201,9 @@ type OptionView struct {
 	// Outcome is what the option leads to, when the engine can tell
 	// (replacement order, 19.17).
 	Outcome *OutcomeView `json:"outcome,omitempty"`
+	// Price is what buying the option costs, in a purchase prompt; the
+	// cents counter previews it while the option is hovered (20.11).
+	Price *int `json:"price,omitempty"`
 }
 
 // OutcomeView is what an order of replacements gives (19.17).
@@ -414,10 +417,18 @@ func (g *Game) optionViews() []OptionView {
 				if p, ok := g.characterOf(id); ok && c.Purpose == ChooseAttackTarget {
 					o.Player, o.IsPlayer = p, true // attacking a player (R-ATK-20)
 				}
+				if c.Purpose == ChoosePurchase {
+					o.Price = new(g.priceOf(id, false))
+				}
 			})
 		}
 		if c.Deck {
-			set(len(c.Objects), func(o *OptionView) { o.Deck = true })
+			set(len(c.Objects), func(o *OptionView) {
+				o.Deck = true
+				if c.Purpose == ChoosePurchase {
+					o.Price = new(g.priceOf(0, true))
+				}
+			})
 		}
 	case ChooseTarget:
 		for i, t := range c.Targets {

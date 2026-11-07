@@ -192,7 +192,7 @@ Owner notes (2026-11-06):
    1. Vitest: state picker from allowed actions.
    2. e2e: the cue fires once per turn at most.
 
-### [ ] 20.11 Counters that count
+### [x] 20.11 Counters that count
 
 1. Goal: cents, souls and HP change one step at a time.
 2. Tasks:

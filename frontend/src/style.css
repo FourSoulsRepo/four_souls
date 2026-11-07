@@ -155,3 +155,10 @@ button {
   outline: 3px solid #f7de8f;
   outline-offset: 2px;
 }
+
+/* A counter's number (Count.tsx, 20.11): each step flips it in about
+   its horizontal axis, so it needs a box of its own. */
+.count {
+  display: inline-block;
+  transform-origin: 50% 50%;
+}

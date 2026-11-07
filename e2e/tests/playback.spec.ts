@@ -5,7 +5,7 @@ import { feel } from '../../frontend/src/feel';
 import { startGame } from './game';
 import { shot } from './shot';
 import { tr } from './locale';
-import { activePage, click, endTurn, endTurnButton, seen, settle } from './turn';
+import { activePage, click, endTurn, endTurnButton, seen, settle, tablePicks, turnAction } from './turn';
 
 // listenSounds records the file of every sound played from now on, in
 // window.played (15.50). Each sound still plays.
@@ -2020,4 +2020,93 @@ test('End turn skips its cue if a play became possible meanwhile (20.10)', async
   await expect.poll(() => cues(active), { timeout: 5000 }).toHaveLength(1);
   const [cue = 0] = await cues(active);
   expect(cue - next).toBeGreaterThan(feel.endTurn.cue * 1000 - 100);
+});
+
+// feedCents plays the viewer's game again as the next update, with
+// their cents changed by n (20.11), and says what they were.
+async function feedCents(page: Page, n: number): Promise<number> {
+  return page.evaluate((n) => {
+    const w = window as unknown as { fourSouls: { store: Store } };
+    const s = w.fourSouls.store.getState();
+    const game = structuredClone(s.game) as unknown as { step: number; view: { players: { id: number; cents: number }[] } } | null;
+    const you = s.lobby.table?.you ?? 0;
+    const me = game?.view.players.find((p) => p.id === you);
+    if (!game || !me) {
+      throw new Error('no game');
+    }
+    const was = me.cents;
+    me.cents += n;
+    s.receive({ type: 'update', data: { ...game, step: game.step + 1, events: [] } });
+    return was;
+  }, n);
+}
+
+// countSteps records each number the own coin counter shows from now
+// on, with when, in window.counts (20.11); it stops the one before.
+async function countSteps(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const w = window as unknown as { counts: { n: number; at: number }[]; counter?: MutationObserver };
+    w.counts = [];
+    w.counter?.disconnect();
+    const el = document.querySelector('.own-coins .count');
+    if (!el) {
+      throw new Error('no coin counter');
+    }
+    w.counter = new MutationObserver(() => {
+      w.counts.push({ n: Number(el.getAttribute('data-count')), at: performance.now() });
+    });
+    w.counter.observe(el, { attributes: true, attributeFilter: ['data-count'] });
+  });
+}
+
+function counts(page: Page): Promise<{ n: number; at: number }[]> {
+  return page.evaluate(() => (window as unknown as { counts: { n: number; at: number }[] }).counts);
+}
+
+test('a +3¢ counts 1, 2, 3, a step at a time (20.11)', async ({ browser }) => {
+  const pages = await startGame(browser, ['Ari', 'Bo']);
+  const active = await activePage(pages, click);
+  await expect(endTurnButton(active)).toBeEnabled();
+  const coins = active.locator('.own-coins .count');
+  // Whatever the deal gave, the counter is done counting first.
+  const cents = await active.evaluate(() => {
+    const s = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store.getState();
+    const game = s.game as unknown as { view: { players: { id: number; cents: number }[] } } | null;
+    return game?.view.players.find((p) => p.id === (s.lobby.table?.you ?? 0))?.cents ?? -1;
+  });
+  await expect(coins).toHaveAttribute('data-count', String(cents));
+  await countSteps(active);
+  const was = await feedCents(active, 3);
+  expect(was).toBe(cents);
+  await expect(coins).toHaveAttribute('data-count', String(cents + 3));
+  const steps = await counts(active);
+  expect(steps.map((s) => s.n)).toEqual([cents + 1, cents + 2, cents + 3]);
+  // 0.2 s apart, give or take a frame.
+  const [a, b, c] = steps.map((s) => s.at);
+  expect((b ?? 0) - (a ?? 0)).toBeGreaterThan(feel.count.step * 1000 - 50);
+  expect((c ?? 0) - (b ?? 0)).toBeGreaterThan(feel.count.step * 1000 - 50);
+  await shot(active, 'cents-counted');
+
+  // Down by 2: two steps, the other way.
+  await countSteps(active);
+  await feedCents(active, -2);
+  await expect(coins).toHaveAttribute('data-count', String(cents + 1));
+  expect((await counts(active)).map((s) => s.n)).toEqual([cents + 2, cents + 1]);
+});
+
+test('a buy previews its cost on the cents counter while hovered (20.11)', async ({ browser }) => {
+  const pages = await startGame(browser, ['Cy', 'Di']);
+  const active = await activePage(pages, click);
+  await expect(turnAction(active, 'Buy')).toBeEnabled();
+  await active.keyboard.press('b');
+  await settle(pages, click, async () => tablePicks(active).first().isVisible());
+  const coins = active.locator('.own-coins');
+  await expect(coins.locator('.cents-cost')).toHaveCount(0);
+  // The treasure deck's top costs the base price whatever the deal.
+  await active.locator('[data-zone="deck-treasure"] .card').hover();
+  await expect(coins.locator('.cents-cost')).toHaveText('−10');
+  await expect(coins.getByRole('status', { name: 'Costs 10 cents' })).toBeVisible();
+  await shot(active, 'cents-cost-preview');
+  await active.mouse.move(5, 5);
+  await expect(coins.locator('.cents-cost')).toHaveCount(0);
 });

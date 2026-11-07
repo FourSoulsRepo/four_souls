@@ -268,6 +268,18 @@ export const feel = {
     hoverTime: 0.15,
     hoverCurve: curves.linear,
   },
+  // count: a counter that counts (20.11, ADR 027 "Counters", Count.tsx):
+  // cents, souls and health. A change of N plays as N steps, step
+  // seconds apart, the first at once; more than fit / step steps speed
+  // up to fit fit seconds in all (countTimes). Each step flips the
+  // number in over flip with flipCurve, by turn degrees.
+  count: {
+    step: 0.2,
+    fit: 1,
+    flip: 0.1,
+    turn: 90,
+    flipCurve: curves.expoOut,
+  },
   // banner: the text in the middle (Effects.tsx). times are its
   // opacity keyframes: in, held, out. A long one (start of game) stays
   // twice as long, with fades as long.
@@ -325,4 +337,15 @@ export function drawPace(i: number): number {
     return 1;
   }
   return Math.max(fastest, 1 - faster * (i + 1 - fastFrom));
+}
+
+// countTimes is when each step of a counter's change of n starts, in
+// seconds from the change (20.11, ADR 027 "Counters"): the first at
+// once, then feel.count.step apart; from more than five steps on they
+// come faster, so all of them fit in feel.count.fit.
+export function countTimes(n: number): number[] {
+  const { step, fit } = feel.count;
+  const steps = Math.max(0, Math.round(Math.abs(n)));
+  const gap = steps > 0 ? Math.min(step, fit / steps) : 0;
+  return Array.from({ length: steps }, (_, i) => i * gap);
 }

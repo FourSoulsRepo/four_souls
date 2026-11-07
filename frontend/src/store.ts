@@ -200,6 +200,10 @@ interface AppState extends Session {
   // aiming is the card the player aims with; its targets glow (15.25).
   aiming: Aiming | null;
   setAiming: (aiming: Aiming | null) => void;
+  // cost is the price of the purchase option the pointer is on; the own
+  // cents counter previews it (20.11). A new view forgets it.
+  cost: number | null;
+  setCost: (cost: number | null) => void;
   // why is the reason shown by the last refused click, if any.
   why: Why | null;
   showWhy: (text: string, x: number, y: number) => void;
@@ -454,6 +458,7 @@ export const useApp = create<AppState>()((set, get) => {
         left: [],
         lifted: [],
         charged: [],
+        cost: null,
         behind: playback.pending() > 0,
         jumped: u.rollback !== undefined,
         history: [...history, ...entries.map((e) => ({ ...e, step: first }))],
@@ -609,7 +614,7 @@ export const useApp = create<AppState>()((set, get) => {
     get().playing?.done();
     clearPresence();
     diedAt.clear();
-    set({ history: [], moves: [], lastRoll: null, looking: [], placed: [], big: null, left: [], lifted: [], charged: [] });
+    set({ history: [], moves: [], lastRoll: null, looking: [], placed: [], big: null, left: [], lifted: [], charged: [], cost: null });
   };
 
   // open connects to address and says hello; the server answers with
@@ -802,6 +807,12 @@ export const useApp = create<AppState>()((set, get) => {
     aiming: null,
     setAiming: (aiming) => {
       set({ aiming, selected: null });
+    },
+    cost: null,
+    setCost: (cost) => {
+      if (get().cost !== cost) {
+        set({ cost });
+      }
     },
     why: null,
     showWhy: (text, x, y) => {

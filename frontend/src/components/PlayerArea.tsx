@@ -9,6 +9,7 @@ import { useApp } from '../store';
 import type { LinePart } from '../stack';
 import { isCurse, isSoul, playerColor, soulCards, soulSlots, type Position } from '../table';
 import { Card, useZoom, type CardSize } from './Card';
+import { Count, useCount, useFlip } from './Count';
 import { holdCard, type Held } from './dragFeel';
 import type { Interact } from './Interact';
 import { still } from './lunge';
@@ -80,7 +81,7 @@ function OpponentArea({ player, name, position, active, asked, winSouls, ui, doi
           <span className="opp-line">
             <span className="opp-coins" title={t('table.coins')} aria-label={t('table.cents', { n: player.cents })}>
               <Coin />
-              {player.cents}
+              <Count value={player.cents} />
             </span>
             {player.dead && <span className="player-dead">{t('table.dead')}</span>}
           </span>
@@ -145,6 +146,26 @@ export function Coin() {
   );
 }
 
+// OwnCents is the viewer's big coin counter. It counts each change
+// one cent at a time (20.11). While the pointer is on something to buy,
+// it previews the price: "−N" beside the number, red when the cents
+// are short.
+function OwnCents({ cents }: { cents: number }) {
+  const cost = useApp((s) => s.cost);
+  const preview = cost === null ? '' : cost > cents ? ' cost-preview short' : ' cost-preview';
+  return (
+    <span className={`own-coins${preview}`} title={t('table.coins')} aria-label={t('table.cents', { n: cents })}>
+      <Coin />
+      <Count value={cents} />
+      {cost !== null && (
+        <span className="cents-cost" role="status" aria-label={t('table.cents_cost', { n: cost })}>
+          −{cost}
+        </span>
+      )}
+    </span>
+  );
+}
+
 // OwnArea is the viewer's place at the bottom edge (15.17): name, big
 // coins and the turn actions at the left, any curses at the far left
 // (15.55), the souls and the character centered with its live health
@@ -170,10 +191,7 @@ function OwnArea({ player, name, active, asked, winSouls, ui, tools }: Omit<Prop
             {label}
             {asked && <Hourglass player={player.id} />}
           </b>
-          <span className="own-coins" title={t('table.coins')} aria-label={t('table.cents', { n: player.cents })}>
-            <Coin />
-            {player.cents}
-          </span>
+          <OwnCents cents={player.cents} />
           {player.dead && <span className="player-dead">{t('table.dead')}</span>}
           {active && (
             <span className="player-allowance" aria-label={t('table.loot_left_label')}>
@@ -231,12 +249,14 @@ function OwnArea({ player, name, active, asked, winSouls, ui, tools }: Omit<Prop
 // card, which is not on the table (V-43).
 function Souls({ player, winSouls, ui }: { player: PlayerView; winSouls: number; ui: Interact }) {
   const cards = soulCards(player);
-  const slots = soulSlots(Math.max(player.souls, cards.length), winSouls);
+  // The crystals fill and empty one at a time (20.11).
+  const souls = useCount(Math.max(player.souls, cards.length));
+  const slots = soulSlots(souls, winSouls);
   const label = t('table.souls', { souls: player.souls, n: slots.length });
   return (
     <div className="souls" role="group" aria-label={label} title={label}>
       {slots.map((filled, i) => {
-        const card = cards.at(i);
+        const card = filled ? cards.at(i) : undefined;
         return (
           // A slot is only its place in the row, so the index is its key.
           // eslint-disable-next-line @eslint-react/no-array-index-key
@@ -256,8 +276,11 @@ function SoulCrystal({ filled, card, own, ui }: { filled: boolean; card?: CardVi
   const pick = soul ? ui.object(soul.id) : {};
   const zoom = useZoom(card?.card, card !== undefined);
   const name = useApp((s) => (card ? (s.cards.get(card.card)?.name ?? card.card) : ''));
+  const ref = useRef<HTMLSpanElement>(null);
+  useFlip(ref, filled ? 1 : 0);
   return (
     <span
+      ref={ref}
       className={`soul-slot${filled ? ' filled' : ''}${pick.highlight ? ` hl-${pick.highlight}` : ''}`}
       data-zone={soul ? `obj-${String(soul.id)}` : undefined}
       role={pick.onClick ? 'button' : card ? 'img' : undefined}

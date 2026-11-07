@@ -3798,6 +3798,13 @@
     },
     "note": "Game table: screen-reader name of a player's coin count. n: their cents."
   },
+  "table.cents_cost": {
+    "text": {
+      "one": "Costs {n} cent",
+      "other": "Costs {n} cents"
+    },
+    "note": "Game table: shown by your coins while the pointer is on something to buy; the coins show −n. n: its price in cents."
+  },
   "table.choose": {
     "text": "Choose {player}",
     "note": "Game table: button by a player's name when the player is an option to pick. player: the name."

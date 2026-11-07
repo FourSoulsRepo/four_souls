@@ -515,6 +515,8 @@ export interface OptionView {
   // outcome is what the option leads to, when the engine can tell
   // (replacement order, 19.17).
   outcome?: OutcomeView;
+  // price is what buying the option costs, in a purchase prompt (20.11).
+  price?: number;
 }
 
 // OutcomeView is what an order of replacements gives (19.17): what then
