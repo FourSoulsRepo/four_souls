@@ -28,8 +28,17 @@ const GAINED_END_OF_TURN = 1;
 // so a card of a set not dealt can be given (14.15). gained, with an
 // item, is a card whose abilities the item has till end of turn (Glitch,
 // 19.106). monster, if given, becomes the top card of the first monster
-// slot (19.113). The test server keeps saves under .cache/e2e.
-export function giveCard(game: string, card: string, item?: string, nextRoll = false, sets: Record<string, string> = {}, gained?: string, monster?: string) {
+// slot (19.113); a list gives each slot its card, in slot order (19.127).
+// The test server keeps saves under .cache/e2e.
+export function giveCard(
+  game: string,
+  card: string,
+  item?: string,
+  nextRoll = false,
+  sets: Record<string, string> = {},
+  gained?: string,
+  monster?: string | string[],
+) {
   const file = join(import.meta.dirname, '..', '..', '.cache', 'e2e', String(serverPort()), 'saves', `${game}.fssave`);
   const save = JSON.parse(readFileSync(file, 'utf8')) as {
     sets: string[];
@@ -66,13 +75,17 @@ export function giveCard(game: string, card: string, item?: string, nextRoll = f
     const source = state.monsters[0]?.cards.at(-1);
     state.boosts = [...(state.boosts ?? []), { stat: NEXT_ATTACK_ROLL, player: state.turn.active, amount: 1, ...(source === undefined ? {} : { source }) }];
   }
-  if (monster !== undefined) {
-    const top = state.monsters[0]?.cards.at(-1);
+  // A list covers every slot; one name only the first.
+  const monsters = monster === undefined ? [] : Array.isArray(monster) ? monster : [monster];
+  const slots = Array.isArray(monster) ? state.monsters.length : monsters.length;
+  for (let i = 0; i < slots; i++) {
+    const top = state.monsters[i]?.cards.at(-1);
     const slot = top === undefined ? undefined : state.objects[top];
-    if (!slot) {
-      throw new Error('the first monster slot is empty');
+    const ref = monsters[i];
+    if (!slot || ref === undefined) {
+      throw new Error(`monster slot ${String(i + 1)}: empty, or no monster given for it`);
     }
-    slot.card = monster;
+    slot.card = ref;
   }
   for (const [code, name] of Object.entries(sets)) {
     save.sets.push(code);
@@ -82,7 +95,8 @@ export function giveCard(game: string, card: string, item?: string, nextRoll = f
 }
 
 // saveAndContinue: the host saves, the active player gets the card (and
-// the item in play, the first slot's monster), then everyone comes back to it.
+// the item in play, the monster slots' top cards), then everyone comes
+// back to it.
 export async function saveAndContinue(
   pages: Page[],
   names: string,
@@ -91,7 +105,7 @@ export async function saveAndContinue(
   nextRoll = false,
   sets: Record<string, string> = {},
   gained?: string,
-  monster?: string,
+  monster?: string | string[],
 ) {
   const [host, ...guests] = pages;
   if (!host) {

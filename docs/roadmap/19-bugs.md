@@ -45,14 +45,14 @@ This step never closes; new reports are appended.
 | J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107, 19.117, 19.121 | 21 |
 | Q  | Load tool: a lost connection ends a game | Go tools   | 19.108                                                 | 1     |
 | K  | Build and release files                  | Release    | 19.47, 19.59, 19.83, 19.91                             | 4     |
-| L  | Not a bug: the app follows a ruling      | None       | 19.63                                                  | 1     |
+| L  | Not a bug: the app follows a ruling      | None       | 19.63, 19.129                                          | 2     |
 | M  | Go test setup: the code was right        | Go tests   | 19.68                                                  | 1     |
 | N  | A missing control: no way to do it       | Server     | 19.84                                                  | 1     |
 | O  | Reconnect: old connection state kept     | Client     | 19.78, 19.86                                           | 2     |
 | P  | A missing setting: no way to change it   | Client     | 19.93                                                  | 1     |
 | R  | Vitest setup: a test sees stale files    | Vitest     | 19.124                                                 | 1     |
 
-Totals by system (125 items):
+Totals by system (126 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
@@ -62,7 +62,7 @@ Totals by system (125 items):
 | Server    | H, N    | 2     |
 | e2e       | I, J    | 53    |
 | Release   | K       | 4     |
-| None      | L       | 1     |
+| None      | L       | 2     |
 | Go tests  | M       | 1     |
 | Go tools  | Q       | 1     |
 | Vitest    | R       | 1     |
@@ -3983,8 +3983,9 @@ Totals by system (125 items):
    3. An engine probe of the failed deal: Cain could still act after the play.
    4. So why that stack resolved at once stays unknown; no record kept it.
    5. The first `make e2e` gate failed once in `prompt.spec.ts:309`; logged as 19.127.
+   6. Why the stack resolved at once: found in 19.129; the test's own pass.
 
-### [ ] 19.127 e2e: Bob's Brain's roll kills the attacked monster; the attack roll never comes
+### [x] 19.127 e2e: Bob's Brain's roll kills the attacked monster; the attack roll never comes
 
 1. Goal: `prompt.spec.ts` "the attack line waits for a roll the attack triggers: Bob's Brain (19.85)" passes whatever the deal.
 2. Report (agent, 2026-11-07)
@@ -3999,7 +4000,17 @@ Totals by system (125 items):
    5. The app looks right; the test assumes the brain's roll leaves the attack.
 4. Tasks:
    1. Not fixed here: left for its own item.
-   2. Make the brain's roll not end the attack, without a blanket ban (CLAUDE.md 5.16).
+   2. [x] Make the brain's roll not end the attack, without a blanket ban (CLAUDE.md 5.16).
+5. Fix (2026-11-08)
+   1. The brain run sets every monster slot by its saved game.
+   2. Fatty, Pale Fatty, Conjoined Fatty, Monstro: 4 HP, no card text.
+   3. The brain's 1 damage kills none; none has a trigger of its own.
+   4. So the run needs no bans: Cursed Horf, Cursed Mom's Hand and Pride dropped.
+   5. The plain run keeps its Pride ban (19.116).
+   6. `giveCard` takes a list of monsters: one per slot, in slot order.
+   7. A repeat gets its own names, as in 19.126.
+6. Checks (2026-11-08)
+   1. The test, 15 repeats, both browsers, 6 workers: 30 of 30.
 
 ### [x] 19.128 e2e: the played-card test in `fight.spec.ts` assumes the deal and checks nothing of 20.9
 
@@ -4031,3 +4042,28 @@ Totals by system (125 items):
    1. The test, 10 repeats, both browsers: 20 of 20.
    2. With the own-play filter in `playback.ts` removed, it fails; restored.
    3. Gates: `make lint`, `make frontend`, `make e2e` exit 0.
+
+### [x] 19.129 A played XII. The Hanged Man seemed to leave the stack with no responses
+
+1. Goal: know whether the engine skipped a priority round in the 19.126 deal.
+2. Report (agent, 2026-11-08)
+   1. Seen in the 19.126 failure, chromium, 4 players.
+   2. Abe played XII. The Hanged Man; the stack emptied at once.
+   3. Then the card asked Abe about the loot deck's top card.
+   4. A probe said Cain could still act; so the stack should have waited.
+   5. The match record was cut off after its header (64 KiB).
+   6. Evidence: `.cache/e2e-evidence/19.126-stack138/` (not in git).
+3. Cause: not a bug; the app follows the rules
+   1. The deal rebuilt from the header: seed, characters Cain, Eden, Lazarus, Judas.
+   2. It matched the failed page: hands, No!, the Cambion Conception question.
+   3. The Hanged Man's question is an `Ask` effect: asked as it resolves.
+   4. After the play the engine waited for Abe: Cain and Sleight Of Hand were charged.
+   5. The test then pressed Pass itself (`stack.spec.ts` line 157).
+   6. The failure was at line 162, after that pass, not at the first lines check.
+   7. Bea, Cal and Dot had only a pass.
+   8. Their characters start deactivated (R-SETUP-08); loot plays are the active player's.
+   9. Bea's No! cancels only an item's ability, not a loot card.
+   10. So the server passed for them (N-05, `autoIntent`); the card resolved (R-PRIO-05).
+4. Result
+   1. No code change; no Go test needed.
+   2. The 19.126 test no longer depends on this: it plays A Penny!.
