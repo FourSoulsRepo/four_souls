@@ -46,12 +46,19 @@ describe('elastic-out', () => {
 
 describe('feel', () => {
   it('keeps each part of a motion inside its time', () => {
-    const parts = [feel.lunge.pull, feel.burst.pop, feel.burst.fade, ...feel.banner.times, ...feel.banner.longTimes];
+    const parts = [feel.lunge.pull, ...feel.banner.times, ...feel.banner.longTimes];
     for (const p of parts) {
       expect(p).toBeGreaterThanOrEqual(0);
       expect(p).toBeLessThanOrEqual(1);
     }
-    expect(feel.burst.pop).toBeLessThan(feel.burst.fade);
+  });
+
+  it('grows the damage number, holds it and fades it (ADR 027 "Damage and death")', () => {
+    const { grow, hold, fade } = feel.burst;
+    expect(grow).toBe(1);
+    expect(hold).toBe(2);
+    expect(fade).toBe(1);
+    expect(grow).toBeLessThanOrEqual(hold);
   });
 
   it('strikes fast and settles slow (ADR 027 "Attack")', () => {

@@ -252,6 +252,13 @@
   * Both players see it.
   * Hover or long press on the mark zooms the copied card (19.111).
   * The item's own zoom reads "Copy of The D6" first.
+* **1ai. Damage number that stays (20.4):** the "−N" stays while the game goes on.
+  * It grows from nothing with a bounce, in 1 s.
+  * It fades from 2 s on; 3 s on screen in all.
+  * The next effect starts at once; it never waits for the number.
+  * More hits on one card stack: middle, above, below.
+  * Reduced motion: no bounce; it shows at full size and fades.
+  * Animations off: no number, like every effect.
 
 ## Postconditions
 

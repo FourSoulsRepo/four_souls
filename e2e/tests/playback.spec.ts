@@ -235,9 +235,10 @@ test('a roll of several dice throws every die, each with its clatter (19.39)', a
 
 // attack replays the view with one hit of the own character on the
 // first monster, whose HP is amount lower after it (at least 0), or
-// left when given.
-async function attack(page: Page, amount = 1, left?: number): Promise<{ character: number; monster: number; hp: number }> {
-  return page.evaluate(([amount, left]) => {
+// left when given. cents: the player then gains that many, in the same
+// update (20.4).
+async function attack(page: Page, amount = 1, left?: number, cents = 0): Promise<{ character: number; monster: number; hp: number }> {
+  return page.evaluate(([amount, left, cents]) => {
     interface Card {
       id: number;
       stats?: { hp: number };
@@ -265,11 +266,14 @@ async function attack(page: Page, amount = 1, left?: number): Promise<{ characte
       data: {
         ...game,
         step: game.step + 1,
-        events: [{ kind: 'damaged', player: -1, object: monster.id, amount, source: character.id, text: 'combat' }],
+        events: [
+          { kind: 'damaged', player: -1, object: monster.id, amount, source: character.id, text: 'combat' },
+          ...(cents > 0 ? [{ kind: 'gained_cents', player: you, amount: cents }] : []),
+        ],
       },
     });
     return { character: character.id, monster: monster.id, hp };
-  }, [amount, left] as const);
+  }, [amount, left, cents] as const);
 }
 
 // listenShakes records the id of every shake started from now on, in
@@ -349,6 +353,12 @@ async function seek(page: Page, id: string, part: number | 'finish'): Promise<vo
   );
 }
 
+// burstPart is a time of the burst, in seconds, as a part of its own
+// (20.4): it grows, holds and fades in hold + fade.
+function burstPart(seconds: number): number {
+  return seconds / (feel.burst.hold + feel.burst.fade);
+}
+
 // moved is how far an element's animation has moved it from home.
 function moved(page: Page, testid: string): Promise<number> {
   return page.getByTestId(testid).evaluate((el) => {
@@ -390,12 +400,13 @@ test('an attack strikes fast, hits on contact and settles back (20.2)', async ({
   await expect(vee.getByTestId('burst')).toHaveText('−1');
   expect(await played(vee)).toEqual(['/cardimg/assets/sounds/attack-hit.mp3']);
   await seek(vee, 'settle', 0);
-  await seek(vee, 'burst', 0);
+  await seek(vee, 'burst', burstPart(0.05));
   await shot(vee, 'attack-contact');
-  // Settle: both ease back home, fast at first, as the burst pops.
-  const at = feel.burst.pop * feel.burst.time;
+  // Settle: both ease back home, fast at first, as the burst grows past
+  // its full size (20.4).
+  const at = 0.15 * feel.burst.grow;
   await seek(vee, 'settle', at / feel.lunge.settle);
-  await seek(vee, 'burst', feel.burst.pop);
+  await seek(vee, 'burst', burstPart(at));
   await shot(vee, 'attack-settle');
   await vee.evaluate(() => {
     (window as unknown as { releaseTrail: () => void }).releaseTrail();
@@ -444,7 +455,7 @@ async function hitAndShoot(page: Page, amount: number, name: string, left?: numb
   await seek(page, 'strike', 'finish');
   await expect(page.getByTestId('burst')).toHaveText(`−${String(amount)}`);
   await seek(page, 'settle', 0);
-  await seek(page, 'burst', feel.burst.pop);
+  await seek(page, 'burst', burstPart(feel.burst.grow));
   await holdShakes(page, 0.2);
   await shot(page, name);
   const burst = page.getByTestId('burst');
@@ -571,6 +582,55 @@ test('damage from a card hits every target at once and reddens their HP', async 
   await expect(mo.locator(`[data-zone="obj-${String(ids.character)}"] .card-damage`)).toHaveCount(0);
   await expect(mo.locator('.effects-trail > *')).toHaveCount(0);
   await shot(mo, 'damage-red-hp');
+});
+
+test('the damage number stays while the next effect plays, and stacks on its card (20.4)', async ({ browser }) => {
+  const [vee] = await startGame(browser, ['Vee', 'Wyn']);
+  if (!vee) {
+    throw new Error('no pages');
+  }
+  await holdTrail(vee);
+  // An attack, then a gain of cents in the same update.
+  const ids = await attack(vee, 1, undefined, 3);
+  await expect(vee.getByTestId('lunge')).toBeVisible();
+  await seek(vee, 'strike', 'finish');
+  const number = vee.getByTestId('burst');
+  await expect(number).toHaveText('−1');
+  // The number is held where it starts, yet playback goes on: the next
+  // effect plays while it shows. It stays 3 s in all.
+  await expect(vee.getByTestId('effect-popup')).toBeVisible();
+  await expect(number).toHaveCount(1);
+  const { grow, hold, fade } = feel.burst;
+  expect(await number.evaluate((el) => el.getAnimations()[0]?.effect?.getTiming().duration)).toBe((hold + fade) * 1000);
+  await seek(vee, 'burst', burstPart(grow));
+  await shot(vee, 'damage-number-stays');
+  // Two more hits on the same card, while its first number shows: the
+  // numbers stack, none on another.
+  await expect(vee.locator('.effects')).toHaveCount(0);
+  await vee.evaluate((monster) => {
+    const store = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store;
+    const s = store.getState();
+    const game = structuredClone(s.game);
+    if (!game) {
+      throw new Error('no game');
+    }
+    const events = [1, 2].map(() => ({ kind: 'damaged', player: -1, object: monster, amount: 1 }));
+    s.receive({ type: 'update', data: { ...game, step: game.step + 1, events } });
+  }, ids.monster);
+  await expect(number).toHaveCount(3);
+  await seek(vee, 'burst', burstPart(grow));
+  const boxes = await number.evaluateAll((els) => els.map((el) => el.getBoundingClientRect().toJSON() as DOMRect));
+  for (const [i, a] of boxes.entries()) {
+    for (const b of boxes.slice(i + 1)) {
+      const apart = a.bottom <= b.top + 0.5 || b.bottom <= a.top + 0.5 || a.right <= b.left + 0.5 || b.right <= a.left + 0.5;
+      expect(apart).toBe(true);
+    }
+  }
+  await shot(vee, 'damage-number-stack');
+  await vee.evaluate(() => {
+    (window as unknown as { releaseTrail: () => void }).releaseTrail();
+  });
+  await expect(vee.locator('.effects-trail > *')).toHaveCount(0);
 });
 
 test('a dying monster gets a skull before it leaves', async ({ browser }) => {

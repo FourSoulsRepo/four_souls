@@ -98,12 +98,16 @@ export const feel = {
     strikeCurve: curves.linear,
     settleCurve: curves.expoOut,
   },
-  // burst: the starburst "−N" (lunge.ts). It pops past full size by
-  // pop, holds until fade, then fades.
+  // burst: the starburst "−N", the damage number (lunge.ts, 20.4, ADR
+  // 027 "Damage and death"). It grows from 0 over grow, elastic-out
+  // (elasticOut); its fade starts hold seconds after it shows and takes
+  // fade, as the reference's: 3 s on screen in all. Playback never
+  // waits for it. Bursts on one card stack, stack burst heights apart.
   burst: {
-    time: 0.9,
-    pop: 0.2,
-    fade: 0.75,
+    grow: 1,
+    hold: 2,
+    fade: 1,
+    stack: 1,
   },
   // fly: a card from one zone to another (Effects.tsx); fromMiddle
   // from a held reveal, shrinking to a table card.

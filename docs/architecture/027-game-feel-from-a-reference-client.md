@@ -169,6 +169,21 @@ Each sub-step of step 20 takes the part it needs.
 2. It holds 2 s, then fades out over 1 s.
 3. Deaths in one step play together.
 4. A dying card's death effect waits 0.3 s for keyword deaths.
+5. Checked in 20.4 (`DamageSplatSpell`, `Card.OnMetaData`).
+   1. The 2 s hold counts from the splat's start, not after its growth.
+   2. So it shows 3 s in all: grow 1 s, full until 2 s, fade 1 s.
+   3. It reports done one frame after it starts; the game goes on.
+   4. A card has one splat: a new hit restarts it with the new number.
+6. Built in 20.4.
+   1. The burst "−N" grows 0 → 1 in 1 s, elastic-out (`elasticOut`).
+   2. Its fade starts at 2 s and ends at 3 s (`feel.burst`).
+   3. Playback goes on at once: the hit's effect ends as it starts.
+   4. Bursts on one card stack: middle, above, below, two above, …
+   5. One burst height apart, so none covers another.
+   6. Stacking is ours: we keep each number, not only the last.
+   7. It stays on the target's home, as 20.2 put it.
+   8. Reduced motion: no growth; full size at once, then the fade.
+   9. Speed "off": no burst, as every effect.
 
 ### Others' plays
 

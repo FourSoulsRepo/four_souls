@@ -89,7 +89,7 @@ Owner notes (2026-11-06):
    1. Vitest covers the size picker.
    2. e2e: a 1-damage and a 4-damage hit, with screenshots.
 
-### [ ] 20.4 Damage number that stays
+### [x] 20.4 Damage number that stays
 
 1. Goal: damage reads clearly and never slows the game.
 2. Tasks:

@@ -8,7 +8,7 @@
 // with an attack hit sound (15.50). A bigger hit looks and sounds
 // bigger (20.3): its burst grows and glows, the cards near it shake,
 // and a lethal one shakes the table.
-import { feel, hitSize, type HitSize } from '../feel';
+import { elasticOut, feel, hitSize, type HitSize } from '../feel';
 import { playSound, type Sound } from '../sounds';
 import { shakeNear, shakeTable } from './shake';
 
@@ -89,35 +89,70 @@ export function hitSound(amount: number): Sound {
   return hitSounds[hitSize(amount)];
 }
 
+// burstSide is the burst's side in px at size 1 (.effect-burst).
+const burstSide = 76;
+
+// stackSpot is a new burst's spot among the live ones on its card
+// (20.4): 0 in the middle, then −1 above, 1 below, −2, 2, … The first
+// free spot is taken, so a spot frees up when its burst is gone.
+export function stackSpot(taken: number[]): number {
+  for (let i = 0; ; i++) {
+    const spot = i % 2 === 1 ? -(i + 1) / 2 : i / 2;
+    if (!taken.includes(spot)) {
+      return spot;
+    }
+  }
+}
+
+// live are the bursts on screen: the centre of the card each sits on,
+// and its spot in that card's stack.
+const live = new Set<{ x: number; y: number; spot: number }>();
+
+// burstFrames are the burst's keyframes (ADR 027 "Damage and death"):
+// it grows from 0 with an elastic overshoot, holds, and fades. With
+// less motion it shows at full size at once and only fades.
+function burstFrames(calm: boolean): Keyframe[] {
+  const { grow, hold, fade } = feel.burst;
+  const total = hold + fade;
+  const frames: Keyframe[] = calm
+    ? [{ transform: 'scale(1)', opacity: 1, offset: 0 }]
+    : elasticOut.map((s) => ({ transform: `scale(${String(s.value)})`, opacity: 1, offset: (s.offset * grow) / total, easing: s.easing }));
+  frames.push({ transform: 'scale(1)', opacity: 1, offset: hold / total }, { transform: 'scale(1)', opacity: 0, offset: 1 });
+  return frames;
+}
+
 // burst pops a starburst "−N" on a card (H-14, T-24), sized by the
 // damage, and shakes the cards near it (20.3). A lethal hit shakes the
-// table too.
+// table too. It stays 3 s (20.4), but the caller goes on at once:
+// playback never waits for it. Bursts on one card stack, not overlap.
 export function burst(at: DOMRect, amount: number, scale: number, lethal = false): void {
   const size = hitSize(amount);
+  const grows = feel.hit.burst[size - 1] ?? 1;
+  const x = at.left + at.width / 2;
+  const y = at.top + at.height / 2;
+  const taken = [...live].filter((l) => Math.abs(l.x - x) < at.width / 2 && Math.abs(l.y - y) < at.height / 2).map((l) => l.spot);
+  const spot = { x, y, spot: stackSpot(taken) };
+  live.add(spot);
   const b = document.createElement('div');
   b.className = `effect-burst size-${String(size)}`;
   b.dataset.testid = 'burst';
   b.dataset.size = String(size);
-  b.style.scale = String(feel.hit.burst[size - 1] ?? 1);
-  b.style.left = `${String(at.left + at.width / 2)}px`;
-  b.style.top = `${String(at.top + at.height / 2)}px`;
+  b.style.scale = String(grows);
+  b.style.left = `${String(x)}px`;
+  b.style.top = `${String(y + spot.spot * burstSide * grows * feel.burst.stack)}px`;
   const n = document.createElement('span');
   n.textContent = `−${String(amount)}`;
   b.append(star(), n);
   layer().append(b);
+  const { hold, fade } = feel.burst;
   // anim: burst
-  const a = b.animate(
-    [
-      { transform: 'scale(0.3)', opacity: 0 },
-      { transform: 'scale(1.15)', opacity: 1, offset: feel.burst.pop },
-      { transform: 'scale(1)', opacity: 1, offset: feel.burst.fade },
-      { transform: 'scale(1)', opacity: 0 },
-    ],
-    { duration: feel.burst.time * 1000 * scale, id: 'burst' },
-  );
-  a.onfinish = () => {
+  const a = b.animate(burstFrames(still()), { duration: (hold + fade) * 1000 * scale, id: 'burst' });
+  const end = () => {
+    live.delete(spot);
     b.remove();
   };
+  a.onfinish = end;
+  a.oncancel = end;
   shakeNear(at, size, scale);
   if (lethal) {
     shakeTable(scale);
