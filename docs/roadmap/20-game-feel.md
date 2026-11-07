@@ -60,7 +60,7 @@ Owner notes (2026-11-06):
    1. A Vitest test checks every curve string parses.
    2. `make frontend e2e` passes; screenshots unchanged.
 
-### [ ] 20.2 Fast strike
+### [x] 20.2 Fast strike
 
 1. Goal: an attack hits like ADR 027 "Attack".
 2. Tasks:

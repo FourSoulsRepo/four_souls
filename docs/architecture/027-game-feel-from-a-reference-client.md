@@ -131,6 +131,18 @@ Each sub-step of step 20 takes the part it needs.
 4. Return: the normal zone re-layout, 1 s, easeOutExpo.
 5. A hero turns to face the target in 0.3 s; back in 0.3 s.
 6. A declared but not yet resolved attack moves half way.
+7. Impact point, checked in 20.2 (`AttackSpellController`).
+   1. The target moves to it; the attacker stops at its own edge.
+   2. A proposed attack's point is half way to the target.
+   3. The impact effect plays at the target's place at contact.
+   4. Contact is the attacker's move ending, not a timer.
+8. Built in 20.2.
+   1. Windup 0.25 s, ease-out: lift to 1.1×, draw back 6 %.
+   2. Strike 0.12 s, linear; a card target meets it half way.
+   3. Settle 0.5 s, expo-out: the low end of principle 3.
+   4. Our burst carries "−N", so it pops on the target's home.
+   5. The target's new HP shows once its copy is home.
+   6. Reduced motion: no strike; the hit lands in place.
 
 ### Damage and death
 

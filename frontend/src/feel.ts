@@ -82,15 +82,21 @@ export const elasticOut = elasticStops(30);
 // feel holds the times of each motion. Today's are kept as they were
 // (20.1); later step 20 sub-steps tune them to ADR 027.
 export const feel = {
-  // lunge: the attack (lunge.ts). The copy pulls back and lifts by
-  // windup, hits the target at hit, and is home at the end.
+  // lunge: the attack (lunge.ts, ADR 027 "Attack"), in three phases,
+  // each in seconds. The attacker lifts and grows (windup); attacker
+  // and target meet half way (strike); the hit lands on contact; both
+  // settle back home (settle). lift is the attacker's size at the top
+  // of the windup; pull is how far it draws back first, as a part of
+  // the way to the target.
   lunge: {
-    time: 0.7,
-    windup: 0.3,
-    hit: 0.5,
-    pull: curves.easeOut,
-    strike: curves.easeIn,
-    back: curves.easeInOut,
+    windup: 0.25,
+    strike: 0.12,
+    settle: 0.5,
+    lift: 1.1,
+    pull: 0.06,
+    windupCurve: curves.easeOut,
+    strikeCurve: curves.linear,
+    settleCurve: curves.expoOut,
   },
   // burst: the starburst "−N" (lunge.ts). It pops past full size by
   // pop, holds until fade, then fades.

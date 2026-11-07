@@ -1,9 +1,11 @@
-// The attack lunge (15.3, V-12, T-23). A copy of the attacker's card
-// jumps into the target and returns; a starburst "-N" pops on the hit
-// (H-14). The copy lives in a layer of its own, so it is never clipped
-// by the table and outlives the effect: playback goes on at the hit,
-// and the target's HP drops at once (C-03). Only transform and opacity
-// animate (ADR 002). The hit lands with an attack hit sound (15.50).
+// The attack lunge (15.3, V-12, T-23; fast strike 20.2, ADR 027). A
+// copy of the attacker's card lifts, then it and a copy of the target
+// meet half way and settle back; a starburst "-N" pops on the hit
+// (H-14). The copies live in a layer of their own, so they are never
+// clipped by the table and outlive the effect: playback goes on at the
+// hit, and the target's HP shows on its card once its copy is home
+// (C-03). Only transform and opacity animate (ADR 002). The hit lands
+// with an attack hit sound (15.50).
 import { feel } from '../feel';
 import { playSound } from '../sounds';
 
@@ -56,15 +58,15 @@ function star(): SVGSVGElement {
 }
 
 // copy is a still copy of the card: no zones, names, or test ids, so
-// nothing finds it in place of the card.
-function copy(src: HTMLElement, r: DOMRect): HTMLElement {
+// nothing finds it in place of the card. testid names the copy.
+function copy(src: HTMLElement, r: DOMRect, testid: string): HTMLElement {
   const c = src.cloneNode(true) as HTMLElement;
   for (const el of [c, ...c.querySelectorAll<HTMLElement>('*')]) {
     el.removeAttribute('data-zone');
     el.removeAttribute('data-testid');
   }
   c.classList.add('effect-lunge');
-  c.dataset.testid = 'lunge';
+  c.dataset.testid = testid;
   Object.assign(c.style, {
     left: `${String(r.left)}px`,
     top: `${String(r.top)}px`,
@@ -95,58 +97,150 @@ export function burst(at: DOMRect, amount: number, scale: number): void {
       { transform: 'scale(1)', opacity: 1, offset: feel.burst.fade },
       { transform: 'scale(1)', opacity: 0 },
     ],
-    { duration: feel.burst.time * 1000 * scale },
+    { duration: feel.burst.time * 1000 * scale, id: 'burst' },
   );
   a.onfinish = () => {
     b.remove();
   };
 }
 
-// lunge plays the attack and calls hit when it lands.
+// held maps a card to the lunge whose copy of it still settles home,
+// and ends that lunge at once. A next lunge on the card (the monster
+// hits back) ends it first: one copy of a card at a time.
+const held = new Map<HTMLElement, () => void>();
+
+// still is true when the player asks for less motion: the hit lands
+// in place, with no strike.
+function still(): boolean {
+  return typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+// lunge plays the attack (ADR 027 "Attack") and calls hit on contact.
+// Windup: the attacker's copy lifts and grows. Strike: it and the
+// target's copy meet half way, linear. Contact: the sound, the burst
+// and hit, from the strike's own end, not from a timer. Settle: both
+// ease back home. A target that is no card (a player's panel) stays;
+// the attacker then goes all the way into it.
 export function lunge(from: string[], to: string[], amount: number, scale: number, hit: () => void): void {
   const dst = find(to);
   if (!dst) {
     hit();
     return;
   }
-  const b = dst.getBoundingClientRect();
+  held.get(dst)?.();
   const src = find(from);
-  if (!src) {
+  if (src) {
+    held.get(src)?.();
+  }
+  const b = dst.getBoundingClientRect();
+  if (!src || src === dst || still()) {
     playSound('attackHit');
     burst(b, amount, scale);
     hit();
     return;
   }
   const a = src.getBoundingClientRect();
-  // The card goes into the target, stopping short of its centre.
   const dx = b.left + b.width / 2 - (a.left + a.width / 2);
   const dy = b.top + b.height / 2 - (a.top + a.height / 2);
   const len = Math.hypot(dx, dy);
-  const k = len > 0 ? Math.max(0, len - Math.min(b.width, b.height) * 0.35) / len : 0;
-  const c = copy(src, a);
+  // They stop with their centres a little apart, so the cards overlap
+  // at the hit, not cover each other. A card target meets the
+  // attacker half way.
+  const way = len > 0 ? Math.max(0, len - Math.min(b.width, b.height) * 0.35) / len : 0;
+  const meets = dst.classList.contains('card');
+  const share = meets ? 0.5 : 1;
+  const ax = dx * way * share;
+  const ay = dy * way * share;
+  const tx = -dx * way * (1 - share);
+  const ty = -dy * way * (1 - share);
+  const { windup, strike, settle, lift, pull, windupCurve, strikeCurve, settleCurve } = feel.lunge;
+  const ms = (s: number) => s * 1000 * scale;
+  const go = windup + strike;
+  const at = (x: number, y: number, k: number) => `translate(${String(x)}px, ${String(y)}px) scale(${String(k)})`;
+  const home = at(0, 0, 1);
+  const top = at(-dx * pull, -dy * pull, lift);
+  const ahit = at(ax, ay, (1 + lift) / 2);
+  const thit = at(tx, ty, 1);
+  const target = meets ? copy(dst, b, 'lunge-target') : null;
+  const c = copy(src, a, 'lunge');
+  if (target) {
+    layer().append(target);
+    dst.style.visibility = 'hidden';
+  }
   layer().append(c);
   src.style.visibility = 'hidden';
-  const { time, windup, hit: hitAt, pull, strike, back } = feel.lunge;
-  const ms = time * 1000 * scale;
   // anim: lunge
-  const anim = c.animate(
+  const swing = c.animate(
     [
-      { transform: 'translate(0, 0) scale(1)', easing: pull },
-      { transform: `translate(${String(-dx * 0.08)}px, ${String(-dy * 0.08)}px) scale(1.1)`, offset: windup, easing: strike },
-      { transform: `translate(${String(dx * k)}px, ${String(dy * k)}px) scale(1.05)`, offset: hitAt, easing: back },
-      { transform: 'translate(0, 0) scale(1)' },
+      { transform: home, easing: windupCurve },
+      { transform: top, offset: windup / go, easing: strikeCurve },
+      { transform: ahit },
     ],
-    { duration: ms },
+    { duration: ms(go), id: 'strike', fill: 'forwards' },
   );
+  const strikes = [swing];
+  if (target) {
+    strikes.push(
+      // anim: lunge
+      target.animate(
+        [
+          { transform: home },
+          { transform: home, offset: windup / go, easing: strikeCurve },
+          { transform: thit },
+        ],
+        { duration: ms(go), id: 'strike', fill: 'forwards' },
+      ),
+    );
+  }
+  const settles: Animation[] = [];
+  let touched = false;
   const end = () => {
+    // Ended before the hit (never expected): the hit still lands, so
+    // playback never stalls.
+    if (!touched) {
+      touched = true;
+      hit();
+    }
+    for (const x of [...strikes, ...settles]) {
+      x.onfinish = null;
+      x.oncancel = null;
+    }
     c.remove();
+    target?.remove();
     src.style.visibility = '';
+    if (target) {
+      dst.style.visibility = '';
+    }
+    for (const el of [src, dst]) {
+      if (held.get(el) === end) {
+        held.delete(el);
+      }
+    }
   };
-  anim.onfinish = end;
-  anim.oncancel = end;
-  window.setTimeout(() => {
+  held.set(src, end);
+  if (target) {
+    held.set(dst, end);
+  }
+  const contact = () => {
+    if (touched) {
+      return;
+    }
+    touched = true;
     playSound('attackHit');
     burst(b, amount, scale);
+    const back = (el: HTMLElement, from: string) =>
+      // anim: lunge
+      el.animate([{ transform: from }, { transform: home }], { duration: ms(settle), easing: settleCurve, id: 'settle' });
+    const retreat = back(c, ahit);
+    settles.push(retreat);
+    if (target) {
+      settles.push(back(target, thit));
+    }
+    // Both settle in the same time: the attacker's end ends both.
+    retreat.onfinish = end;
+    retreat.oncancel = end;
     hit();
-  }, ms * hitAt);
+  };
+  swing.onfinish = contact;
+  swing.oncancel = contact;
 }

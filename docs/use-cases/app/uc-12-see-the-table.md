@@ -80,9 +80,12 @@
 * **1h. Attack hit (15.3):** the attacker's card lunges into the target.
   * It winds up, hits, and goes back to its place.
   * A yellow starburst "−N" pops on the card that was hit.
-  * The target's health drops at the hit, while the card goes back.
+  * The target's new health shows once it is back in place.
   * A monster's hit on a player lunges the monster at the character.
   * Damage shows no popup when it goes on the stack.
+  * A target card meets the attacker half way (20.2).
+  * The hit, its sound and burst land at that contact.
+  * Reduced motion: no strike; the burst pops on the target.
 * **1i. Other damage (15.37):** a glowing shot flies from its source.
   * The source: its card on the table, else its stack row.
   * Every damaged card bursts "−N" at once.

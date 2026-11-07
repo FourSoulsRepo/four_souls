@@ -1,6 +1,7 @@
 // Event playback and animations (7.6).
 import type { Page } from '@playwright/test';
 import { expect, test } from './fixtures';
+import { feel } from '../../frontend/src/feel';
 import { startGame } from './game';
 import { shot } from './shot';
 import { tr } from './locale';
@@ -232,15 +233,10 @@ test('a roll of several dice throws every die, each with its clatter (19.39)', a
   expect(await played(ola)).toHaveLength(4);
 });
 
-test('an attack lunges at the monster and drops its HP at the hit', async ({ browser }) => {
-  const [vee] = await startGame(browser, ['Vee', 'Wyn']);
-  if (!vee) {
-    throw new Error('no pages');
-  }
-  await listenSounds(vee);
-  // Replay the view with one hit of the own character on the first
-  // monster, whose HP is one lower after it.
-  const ids = await vee.evaluate(() => {
+// attack replays the view with one hit of the own character on the
+// first monster, whose HP is one lower after it.
+async function attack(page: Page): Promise<{ character: number; monster: number; hp: number }> {
+  return page.evaluate(() => {
     interface Card {
       id: number;
       stats?: { hp: number };
@@ -273,35 +269,122 @@ test('an attack lunges at the monster and drops its HP at the hit', async ({ bro
     });
     return { character: character.id, monster: monster.id, hp };
   });
-  const character = vee.locator(`[data-zone="obj-${String(ids.character)}"]`);
-  const monster = vee.locator(`[data-zone="obj-${String(ids.monster)}"]`);
-  // The card's copy flies; the card itself waits hidden at home.
-  await expect(vee.getByTestId('lunge')).toBeVisible();
-  await expect(character).toBeHidden();
-  if (process.env.SCREENSHOTS) {
-    // Hold the copy on its way into the monster for the picture.
-    const lunge = vee.getByTestId('lunge');
-    await lunge.evaluate((el) => {
-      for (const a of el.getAnimations()) {
-        a.pause();
-        a.currentTime = 0.42 * Number(a.effect?.getTiming().duration ?? 0);
+}
+
+// holdTrail pauses every animation of the effect layer as it starts,
+// so a test steps through them; releaseTrail plays them all again.
+async function holdTrail(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const seen = new WeakSet<Animation>();
+    const mo = new MutationObserver(() => {
+      for (const a of document.querySelector('.effects-trail')?.getAnimations({ subtree: true }) ?? []) {
+        if (!seen.has(a)) {
+          seen.add(a);
+          a.pause();
+        }
       }
     });
-    await shot(vee, 'attack-lunge');
-    await lunge.evaluate((el) => {
-      for (const a of el.getAnimations()) {
+    mo.observe(document.body, { childList: true, subtree: true });
+    (window as unknown as { releaseTrail: () => void }).releaseTrail = () => {
+      mo.disconnect();
+      for (const a of document.querySelector('.effects-trail')?.getAnimations({ subtree: true }) ?? []) {
         a.play();
       }
-    });
+    };
+  });
+}
+
+// seek sets the trail's animations with this id to a part of their
+// time; "finish" ends them.
+async function seek(page: Page, id: string, part: number | 'finish'): Promise<void> {
+  await page.evaluate(
+    ({ id, part }) => {
+      for (const a of document.querySelector('.effects-trail')?.getAnimations({ subtree: true }) ?? []) {
+        if (a.id !== id) {
+          continue;
+        }
+        if (part === 'finish') {
+          a.finish();
+        } else {
+          a.currentTime = part * Number(a.effect?.getTiming().duration ?? 0);
+        }
+      }
+    },
+    { id, part },
+  );
+}
+
+// moved is how far an element's animation has moved it from home.
+function moved(page: Page, testid: string): Promise<number> {
+  return page.getByTestId(testid).evaluate((el) => {
+    const m = new DOMMatrix(getComputedStyle(el).transform);
+    return Math.hypot(m.e, m.f);
+  });
+}
+
+test('an attack strikes fast, hits on contact and settles back (20.2)', async ({ browser }) => {
+  const [vee] = await startGame(browser, ['Vee', 'Wyn']);
+  if (!vee) {
+    throw new Error('no pages');
   }
+  await listenSounds(vee);
+  await holdTrail(vee);
+  const ids = await attack(vee);
+  const character = vee.locator(`[data-zone="obj-${String(ids.character)}"]`);
+  const monster = vee.locator(`[data-zone="obj-${String(ids.monster)}"]`);
+  // Copies of both cards move; the cards themselves wait hidden at home.
+  await expect(vee.getByTestId('lunge')).toBeVisible();
+  await expect(vee.getByTestId('lunge-target')).toBeVisible();
+  await expect(character).toBeHidden();
+  await expect(monster).toBeHidden();
+  const { windup, strike } = feel.lunge;
+  const go = windup + strike;
+  // Windup: the attacker lifts; the target has not moved; no hit yet.
+  await seek(vee, 'strike', windup / go);
+  expect(await moved(vee, 'lunge-target')).toBe(0);
+  await expect(vee.getByTestId('burst')).toHaveCount(0);
+  await shot(vee, 'attack-windup');
+  // Half way through the strike both move toward each other, and still
+  // no hit: it comes after the strike starts, not before.
+  await seek(vee, 'strike', (windup + strike / 2) / go);
+  expect(await moved(vee, 'lunge-target')).toBeGreaterThan(0);
+  await expect(vee.getByTestId('burst')).toHaveCount(0);
+  expect(await played(vee)).toEqual([]);
+  // Contact: the strike's end lands the hit with its sound.
+  await seek(vee, 'strike', 'finish');
   await expect(vee.getByTestId('burst')).toHaveText('−1');
-  // The hit lands with the attack hit sound.
   expect(await played(vee)).toEqual(['/cardimg/assets/sounds/attack-hit.mp3']);
-  await vee.waitForTimeout(200); // the burst pops
-  await shot(vee, 'attack-hit');
+  await seek(vee, 'settle', 0);
+  await seek(vee, 'burst', 0);
+  await shot(vee, 'attack-contact');
+  // Settle: both ease back home, fast at first, as the burst pops.
+  const at = feel.burst.pop * feel.burst.time;
+  await seek(vee, 'settle', at / feel.lunge.settle);
+  await seek(vee, 'burst', feel.burst.pop);
+  await shot(vee, 'attack-settle');
+  await vee.evaluate(() => {
+    (window as unknown as { releaseTrail: () => void }).releaseTrail();
+  });
   await expect(monster.getByLabel(tr('badge.hp', { n: ids.hp - 1 }))).toBeVisible();
   await expect(vee.locator('.effects-trail > *')).toHaveCount(0);
   await expect(character).toBeVisible();
+  await expect(monster).toBeVisible();
+});
+
+test('with reduced motion an attack hits in place (20.2)', async ({ browser }) => {
+  const [vee] = await startGame(browser, ['Vee', 'Wyn']);
+  if (!vee) {
+    throw new Error('no pages');
+  }
+  await vee.emulateMedia({ reducedMotion: 'reduce' });
+  await listenSounds(vee);
+  const ids = await attack(vee);
+  await expect(vee.getByTestId('burst')).toHaveText('−1');
+  expect(await played(vee)).toEqual(['/cardimg/assets/sounds/attack-hit.mp3']);
+  await expect(vee.getByTestId('lunge')).toHaveCount(0);
+  await expect(vee.getByTestId('lunge-target')).toHaveCount(0);
+  const monster = vee.locator(`[data-zone="obj-${String(ids.monster)}"]`);
+  await expect(monster.getByLabel(tr('badge.hp', { n: ids.hp - 1 }))).toBeVisible();
 });
 
 // The view parts the replays below change.

@@ -11,8 +11,8 @@ describe('curves', () => {
   });
 
   it('parses every easing in the times', () => {
-    const { pull, strike, back } = feel.lunge;
-    for (const css of [pull, strike, back, feel.fly.curve, ...elasticOut.map((s) => s.easing)]) {
+    const { windupCurve, strikeCurve, settleCurve } = feel.lunge;
+    for (const css of [windupCurve, strikeCurve, settleCurve, feel.fly.curve, ...elasticOut.map((s) => s.easing)]) {
       expect(() => bezier(css)).not.toThrow();
     }
   });
@@ -46,12 +46,20 @@ describe('elastic-out', () => {
 
 describe('feel', () => {
   it('keeps each part of a motion inside its time', () => {
-    const parts = [feel.lunge.windup, feel.lunge.hit, feel.burst.pop, feel.burst.fade, ...feel.banner.times, ...feel.banner.longTimes];
+    const parts = [feel.lunge.pull, feel.burst.pop, feel.burst.fade, ...feel.banner.times, ...feel.banner.longTimes];
     for (const p of parts) {
       expect(p).toBeGreaterThanOrEqual(0);
       expect(p).toBeLessThanOrEqual(1);
     }
-    expect(feel.lunge.windup).toBeLessThan(feel.lunge.hit);
     expect(feel.burst.pop).toBeLessThan(feel.burst.fade);
+  });
+
+  it('strikes fast and settles slow (ADR 027 "Attack")', () => {
+    const { windup, strike, settle, strikeCurve, settleCurve } = feel.lunge;
+    expect(strike).toBe(0.12);
+    expect(strikeCurve).toBe(curves.linear);
+    expect(settleCurve).toBe(curves.expoOut);
+    expect(windup).toBeGreaterThan(strike);
+    expect(settle).toBeGreaterThan(windup);
   });
 });
