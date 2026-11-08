@@ -42,6 +42,7 @@ Rules for this step (owner, 2026-11-06):
 13. Order: 20.19 runs before the step review too (owner, 2026-11-08).
 14. Order: 20.20 runs before the step review too (owner, 2026-11-08).
 15. Order: 20.21 runs before the step review too (owner, 2026-11-08).
+16. Order: 20.22 runs after 20.18 and before the step review (owner, 2026-11-08).
 
 Owner notes (2026-11-06):
 
@@ -456,3 +457,31 @@ Swapping it is the owner's call; not part of this step.
    2. The owner's picks are built, with before and after screenshots.
    3. UC-15 matches the new strip.
    4. e2e: the strip's new behaviour, set up so it never depends on the deal.
+
+### [ ] 20.22 A start-of-game screen, like the reference's starting hand
+
+1. Goal: the game opens with a clear screen for choices made before turn 1.
+   1. Owner, 2026-11-08: the reference shows "Starting hand" before the first turn.
+   2. Ours first: Eden picks her eternal item at setup (UC-26 6a).
+   3. Today that is a plain choice dialog, then the first-player roll.
+   4. Later the same screen serves the draft pick (14.11); not built here.
+2. Tasks:
+   1. Read the reference's starting hand screen (rule 10).
+      1. Code: `MulliganManager.cs`, `MulliganButton.cs`, `MulliganTimer.cs`.
+      2. How it opens: the deal into the middle, sizes, times, curves.
+      3. The title, the button, the timer, picks and their marks.
+      4. What the other player sees meanwhile.
+      5. How it closes: where the kept cards go, the move into the game.
+      6. Sounds and music changes; asset data via UnityPy, as in 20.17.
+   2. Write the findings into ADR 027, a new "Start of game" section.
+   3. Compare with our setup: Eden's pick, the waiting players, the roll after it.
+      1. List each difference with a recommendation.
+      2. Note what the draft pick (14.11) can reuse.
+   4. The owner picks what to build; then it is built here.
+   5. Reuse the 20.18 choice view where it fits.
+   6. A sound it needs comes as rule 8 says.
+3. Done when:
+   1. ADR 027 has the findings and the differences.
+   2. The owner's picks are built, with before and after screenshots.
+   3. UC-26 matches the new screen.
+   4. e2e: Eden's pick on the new screen, set up so it never depends on the deal.
