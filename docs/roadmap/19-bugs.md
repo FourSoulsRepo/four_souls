@@ -52,12 +52,13 @@ This step never closes; new reports are appended.
 | P  | A missing setting: no way to change it   | Client     | 19.93                                                  | 1     |
 | R  | Vitest setup: a test sees stale files    | Vitest     | 19.124                                                 | 1     |
 | S  | Sound: media players never released      | Client     | 19.135                                                 | 1     |
+| T  | Events and view: data sent too early     | Engine     | 19.142                                                 | 1     |
 
-Totals by system (138 items):
+Totals by system (139 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
-| Engine    | A, B    | 28    |
+| Engine    | A, B, T | 29    |
 | Card data | C       | 2     |
 | Client    | D–G, O, P, S | 39 |
 | Server    | H, N    | 2     |
@@ -4413,3 +4414,19 @@ Totals by system (138 items):
    2. `claimDeal` passes it to `claim`; known, different objects never clash.
    3. A deal without an object: as before.
    4. ADR 012 2.10 added; Animations.md `show` row.
+
+### [ ] 19.142 The first-player roll shows while Eden picks her item
+
+1. Goal: the roll list shows only after every start-of-game choice (UC-26 6a.2).
+2. Report (20.22 research subagent, 2026-11-09)
+   1. Seen in a 20.22 "before" screenshot, 2 players, Isaac and Eden.
+   2. Ann's panel: "First player roll", "Ann throwing…", while Bo picks.
+   3. Screenshot: `.cache/screenshots/20.22/before/02-eden-pick-waiting.png`.
+3. Cause (the code)
+   1. `NewGame` queues Eden's `ActChooseStartingItem`.
+   2. Then `chooseFirstPlayer` sets `g.FirstRoll` at once.
+   3. The view sends `first_roll` during her choice.
+   4. The panel draws it; the first unrolled seat reads "throwing…".
+   5. The throw prompt itself waits; only the view is early.
+4. Tasks:
+   1. [ ] Fix waits for the owner's 20.22 picks (ADR 027 "Start of game" 16.6).
