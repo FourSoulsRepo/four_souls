@@ -23,6 +23,8 @@ export const curves = {
   expoIn: 'cubic-bezier(0.7, 0, 0.84, 0)',
   // quart-in-out: another player's drawn card, deck to hand (20.7).
   quartInOut: 'cubic-bezier(0.76, 0, 0.24, 1)',
+  // cubic-in-out: the board dims under a hovered history strip (20.21).
+  cubicInOut: 'cubic-bezier(0.65, 0, 0.35, 1)',
 } as const;
 
 export type Curve = keyof typeof curves;
@@ -417,6 +419,27 @@ export const feel = {
     intoCurve: curves.expoOut,
     gap: 0.5,
     gapCurve: curves.expoOut,
+  },
+  // history: the history strip at the board's left edge (20.21, ADR 027
+  // "History", HistoryStrip.tsx). A new tile slides in from left of the
+  // strip, from from of its own width away, over slide with slideCurve;
+  // the tiles below move down in the same time. The animation speed
+  // scales it; "off" places tiles at once. While the pointer is on the
+  // strip nothing moves, and new tiles wait till it leaves. Then the
+  // rest of the board dims to dim (black's opacity) over dimIn with
+  // dimInCurve and clears over dimOut: they answer the pointer, so the
+  // speed setting turns them off but does not scale them. The strip's
+  // foot fades over fade tile sides when more tiles are below.
+  history: {
+    slide: 1,
+    from: 1.3,
+    slideCurve: curves.expoOut,
+    dim: 0.3,
+    dimIn: 0.5,
+    dimInCurve: curves.cubicInOut,
+    dimOut: 0.1,
+    dimOutCurve: curves.linear,
+    fade: 1.2,
   },
   // banner: the text in the middle (Effects.tsx). times are its
   // opacity keyframes: in, held, out. A long one (start of game) stays

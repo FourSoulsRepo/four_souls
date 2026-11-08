@@ -78,6 +78,8 @@
    icon's side. */
 .history-strip {
   --s: calc(var(--u) * 0.4);
+  position: relative;
+  z-index: var(--z-strip);
   display: flex;
   flex: 1;
   flex-direction: column;
@@ -87,6 +89,32 @@
   padding: 3px 0;
   border-radius: 8px;
   background: rgb(10 16 24 / 80%);
+}
+
+/* The board under a hovered strip (20.21, ADR 027 "History" 11.11): a
+   light dim that comes in slowly and clears fast; feel.history sets the
+   times. It covers the board's cards, never the strip or the zoom. */
+.strip-dim {
+  position: absolute;
+  inset: 0;
+  z-index: var(--z-strip-dim);
+  border-radius: 12px;
+  background: rgb(0 0 0 / var(--dim));
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--dim-out) var(--dim-out-curve);
+}
+
+.strip-dim.on {
+  opacity: 1;
+  transition: opacity var(--dim-in) var(--dim-in-curve);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .strip-dim,
+  .strip-dim.on {
+    transition: none;
+  }
 }
 
 .history-toggle {
@@ -114,18 +142,32 @@
   fill: currentcolor;
 }
 
-.history-strip ol {
+/* The strip's tiles: one hit area (20.21), scrolled with no bar. Its
+   foot fades when more tiles are below (strip-more). The list inside
+   moves as one when new tiles come in. */
+.strip-tiles {
   display: flex;
   flex: 1;
   flex-direction: column;
+  align-self: stretch;
+  min-height: 0;
+  overflow: hidden auto;
+  scrollbar-width: none;
+}
+
+.strip-tiles.strip-more {
+  mask-image: linear-gradient(to bottom, #000 calc(100% - var(--s) * var(--fade)), transparent);
+}
+
+.strip-list {
+  display: flex;
+  flex: none;
+  flex-direction: column;
   align-items: center;
   gap: 3px;
-  min-height: 0;
   margin: 0;
   padding: 0;
-  overflow: hidden auto;
   list-style: none;
-  scrollbar-width: none;
 }
 
 .strip-item {
@@ -135,8 +177,22 @@
   border-radius: 6px;
 }
 
-.strip-item:hover {
-  outline: 2px solid rgb(255 255 255 / 45%);
+/* The owner's thin frame (20.21): inside the tile, so the strip's edge
+   never cuts it. */
+.strip-item.owned::after {
+  position: absolute;
+  inset: 0 0 1px;
+  z-index: 1; /* layer: local */
+  border: 2px solid var(--owner);
+  border-radius: 6px;
+  content: "";
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+.strip-item.hovered {
+  outline: 2px solid rgb(255 255 255 / 70%);
+  outline-offset: -1px;
 }
 
 /* The first item of a turn: a line below it. */
@@ -145,6 +201,41 @@
   padding-bottom: 4px;
   border-bottom: 1px solid rgb(255 210 122 / 45%);
   border-radius: 6px 6px 0 0;
+}
+
+/* Rolls and damage are half height (20.21, ADR 027 "History" 11.3). */
+.history-strip .strip-half .stack-icon {
+  height: calc(var(--s) * 0.5);
+}
+
+.history-strip .strip-half .stack-icon .die,
+.history-strip .strip-half .stack-die {
+  width: calc(var(--s) * 0.44);
+  height: calc(var(--s) * 0.44);
+  border-width: 1px;
+  border-radius: 3px;
+  font-size: calc(var(--s) * 0.3);
+}
+
+.history-strip .strip-half .die-plain {
+  font-size: calc(var(--s) * 0.3);
+}
+
+.history-strip .strip-half .stack-mark,
+.history-strip .strip-half .stack-mark svg {
+  width: calc(var(--s) * 0.48);
+  height: calc(var(--s) * 0.48);
+}
+
+.history-strip .strip-half .stack-mark b {
+  padding-top: 2px;
+  font-size: calc(var(--s) * 0.24);
+}
+
+.history-strip .strip-half .strip-badge {
+  bottom: -1px;
+  width: calc(var(--s) * 0.34);
+  height: calc(var(--s) * 0.34);
 }
 
 .history-strip .stack-icon {
@@ -177,8 +268,9 @@
 /* The badge (H-08): a sword for an attack, a bolt for a loot play. */
 .strip-badge {
   position: absolute;
-  right: -3px;
+  right: -1px;
   bottom: -2px;
+  z-index: 2; /* layer: local */
   display: grid;
   place-items: center;
   width: calc(var(--s) * 0.48);

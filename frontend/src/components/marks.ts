@@ -20,6 +20,12 @@ const leaveAt = 0.6;
 export const skullPath =
   'M12 2.5a8 8 0 0 0-8 8c0 2.8 1.4 4.6 3 5.6V19a1.5 1.5 0 0 0 1.5 1.5h7A1.5 1.5 0 0 0 17 19v-2.9c1.6-1 3-2.8 3-5.6a8 8 0 0 0-8-8Zm-3.2 7.2a1.9 1.9 0 1 1 0 3.8 1.9 1.9 0 0 1 0-3.8Zm6.4 0a1.9 1.9 0 1 1 0 3.8 1.9 1.9 0 0 1 0-3.8ZM12 14l1.3 2.2h-2.6Z';
 
+// swordPath is a sword from top right to bottom left (24 × 24), the
+// history strip's attack badge; swordsPath crosses it with its mirror,
+// an attack's sign in a history popout (20.21).
+export const swordPath = 'M20.5 2.5 21 7l-9.6 9.6 1.4 1.4-1.4 1.4-2.1-2.1-3.2 3.2a1.5 1.5 0 0 1-2.1-2.1l3.2-3.2-2.1-2.1 1.4-1.4 1.4 1.4L17.5 3Z';
+export const swordsPath = `${swordPath}M3.5 2.5 3 7l9.6 9.6-1.4 1.4 1.4 1.4 2.1-2.1 3.2 3.2a1.5 1.5 0 0 0 2.1-2.1l-3.2-3.2 2.1-2.1-1.4-1.4-1.4 1.4L6.5 3Z`;
+
 const svgNS = 'http://www.w3.org/2000/svg';
 
 function centre(r: DOMRect): { x: number; y: number } {

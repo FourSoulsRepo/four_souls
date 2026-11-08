@@ -178,3 +178,51 @@ test("another player's arrow stays under a choice (15.36)", async ({ browser }) 
   await expect(head).toBeAttached();
   expect(await onTop(backdrop, head)).toBe(true);
 });
+
+test('the board dims under a hovered history strip; the strip and the zoom stay above (20.21)', async ({ browser }) => {
+  const [page] = await startGame(browser, ['Tess', 'Ugo'], { url: fast() });
+  if (!page) {
+    throw new Error('no pages');
+  }
+  // A headline as the store keeps it: a buy of Bomb!.
+  await page.evaluate(() => {
+    interface S {
+      history: { key: number }[];
+    }
+    const { store } = (window as unknown as { fourSouls: { store: { getState: () => S; setState: (s: Partial<S>) => void } } }).fourSouls;
+    const { history } = store.getState();
+    const key = (history.at(-1)?.key ?? 0) + 1;
+    store.setState({ history: [...history, { key, turn: 1, icon: '¢', text: 'a buy', card: 'bomb', headline: true, badge: 'buy', owner: 0 } as { key: number }] });
+  });
+  const strip = page.getByRole('complementary', { name: tr('history.strip') });
+  const tile = strip.locator('.strip-item').first();
+  await expect(tile).toBeVisible();
+  const dim = page.getByTestId('strip-dim');
+  // The decks at the board's right edge: the zoom opens far from them.
+  const decks = page.locator('.board-decks .deck-pair').last();
+  await tile.hover();
+  await expect(dim).toHaveClass(/on/);
+  // drawn is what is drawn at the middle of l. The dim and the zoom let
+  // the pointer through: the probe turns hit testing on for the dim and
+  // the zoom's card, and off for the zoom's frame, which covers the window.
+  const drawn = async (l: Locator) => {
+    const b = await box(l);
+    return page.evaluate(
+      (p) => {
+        const probe = document.createElement('style');
+        probe.textContent = '.strip-dim, .card-zoom .card { pointer-events: auto !important; } .card-zoom, .card-zoom-body { pointer-events: none !important; }';
+        document.head.append(probe);
+        const top = document.elementFromPoint(p.x, p.y);
+        probe.remove();
+        return top?.closest('.strip-dim') ? 'dim' : top?.closest('.strip-item') ? 'tile' : top?.closest('.card-zoom') ? 'zoom' : (top?.className ?? '');
+      },
+      { x: b.x + b.width / 2, y: b.y + b.height / 2 },
+    );
+  };
+  expect(await drawn(decks)).toBe('dim');
+  expect(await drawn(tile)).toBe('tile');
+  const zoom = page.getByTestId('card-zoom').locator('.card.size-zoom');
+  await expect(zoom).toBeVisible();
+  expect(await drawn(zoom)).toBe('zoom');
+  await shot(page, 'layers-strip-dim');
+});

@@ -40,6 +40,8 @@ A choice shows its options over the dimmed board:
 | `choice` | Choice, discard, order and mode windows with their backdrop (the mode window since 15.58); the bar back to a hidden one (15.29). | A prompt the game waits on; it dims and covers the whole table, the hand and the action bar (H-11). "View board" hides it. | `components/Actions.css` |
 | `presence` | Another player's aiming arrow (15.36). | It points at the table and the hands; windows, the zoom, and the own arrow cover it, so a prompt stays readable. | `components/Table.css` |
 | `hand` | A hovered, aiming or tapped hand card, and one flying home (20.20). | It comes to the front of the fan, but never over a prompt's buttons. | `components/Table.css` |
+| `strip` | The history strip at the board's left edge (20.21). | It stays bright over the board's dim while the pointer is on it. Every window and the hand cover it. | `components/InfoPanels.css` |
+| `strip-dim` | The board's light dim while the pointer is on the history strip (20.21, ADR 027 "History"). | It covers the board's cards and their local layers, so the hovered tile's popout stands out. It never catches the pointer. | `components/InfoPanels.css` |
 | `action-bar` | The status, timer and skip buttons, bottom right. | Over the table, under every window. | `components/Actions.css` |
 | `sky` | The drifting night sky behind the menu screens (15.42). | Nothing: it is under everything, even the screen's own plain blocks. It is not drawn on the game table. | `components/Sky.css` |
 

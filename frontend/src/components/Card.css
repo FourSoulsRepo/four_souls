@@ -394,11 +394,16 @@
   transform: scaleX(-1);
 }
 
+/* Targets (20.21): one row up to four, then two rows; --cols and --k
+   come from outcomeGrid. A card is hand size at most. */
 .card-zoom-results {
   display: grid;
-  grid-template-columns: repeat(2, auto);
-  gap: 10px;
-  max-width: 220px;
+  grid-template-columns: repeat(var(--cols, 1), auto);
+  gap: calc(10px * var(--k, 1));
+}
+
+.card-zoom-result .card.size-hand {
+  width: calc(100px * var(--k, 1));
 }
 
 .card-zoom-result {

@@ -34,7 +34,7 @@ import { inLanguage, type CardInfo, type Kind } from './cards';
 import { loadFonts } from './fonts';
 import { language, languages, say, setCardLanguages, setLanguage, t } from './i18n';
 import { cardLanguagesOf } from './locale';
-import { entriesFor, lookedAt, moveOf, restartCut, rolledBack, voteEnded, type Entry, type Looked, type Move, type Outcome } from './history';
+import { entriesFor, linkMarks, lookedAt, moveOf, restartCut, rolledBack, voteEnded, type Entry, type Looked, type Move, type Outcome } from './history';
 import type { LinePart } from './stack';
 import type { Box } from './zoom';
 import { emptyLobby, forgotten, leftTable, lost, onMessage, remember, renamed, type Screen, type ServerUp, type Session } from './lobby';
@@ -84,6 +84,9 @@ export interface Zoom {
   caption?: ZoomCaption;
   // outcome: what a history headline did, beside the card (15.90).
   outcome?: Outcome[];
+  // swords: the outcome is an attack's, so swords stand before it, not
+  // an arrow (20.21).
+  swords?: boolean;
   // stats: why the card's stats are not its print, or what an effect of
   // this turn does, below the card (15.92, V-41).
   stats?: string[];
@@ -484,7 +487,7 @@ export const useApp = create<AppState>()((set, get) => {
         cost: null,
         behind: playback.pending() > 0,
         jumped: u.rollback !== undefined,
-        history: [...history, ...entries.map((e) => ({ ...e, step: first }))],
+        history: linkMarks(history, entries.map((e) => ({ ...e, step: first }))),
         moves,
         ...jump,
       });
