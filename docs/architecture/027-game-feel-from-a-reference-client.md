@@ -1060,6 +1060,202 @@ Each sub-step of step 20 takes the part it needs.
     32. Times: `feel.play`; none is scaled by the animation speed.
     33. Keys (12.16): dropped by the owner; no key picks up or plays a card.
 
+### Start of game
+
+1. Checked in 20.22 (`MulliganManager`, `MulliganButton`, `MulliganTimer`).
+   1. Also `MulliganReplaceLabel`, `ZoneHand`, `Board`, `GameEntity`.
+   2. Also `InputManager` (clicks, hover, touch during the screen).
+   3. Ten `SoundDef`s via UnityPy; words from `Strings/enUS/GAMEPLAY.txt`.
+   4. The screen is "Starting Hand": each player keeps or replaces cards.
+   5. One class, two modes: replace (many marks) and choose-one (one pick).
+   6. Choose-one is the hero pick of another mode; its lobby was not traced.
+2. Before the deal.
+   1. The board lights drop at once: a dark blue ambient, the key light off.
+   2. A hero intro plays first: both heroes, "VS", announcer lines.
+   3. Each hero then drops into its place, `FX_MulliganCoin01_HeroCoinDrop`.
+   4. A camera shake of 0.6 s as they land.
+   5. Start-hand music begins with the intro.
+   6. The deal starts 1 s after the screen loads, once the intro ends.
+3. The deal into the middle.
+   1. A fixed box across the middle of the board holds the cards.
+   2. Its width is split evenly: one slot per card.
+   3. Each card flies from the deck: up 3.6 units, then to its slot.
+   4. 1.5 s, sine-in-expo-out; it grows to 1.1× a hand card.
+   5. It turns face up over 1.5 s, after 0.094 s.
+   6. Gaps: 0.19 s after the first card, then 0.09 s.
+   7. `FX_GameStart09_CardsOntoTable` 0.04 s after each card leaves.
+   8. The same motion, times and sound as "Choosing cards" 4.
+4. Who goes first, on the same screen.
+   1. 1.1 s after the deal a coin flips at a fixed spot.
+   2. Its sound: `FX_MulliganCoin03_CoinFlip`, volume 0.7.
+   3. A text by the coin: "You go first" or "You get an extra card".
+   4. It shows after 1.8 s, fades in 0.25 s, rises for 2 s.
+   5. Then it fades out in 1 s.
+   6. 2 s after the flip the second player gets one more card.
+   7. That card plays `FX_GameStart20_CardDealSingle`.
+   8. The first player's deal left one slot free.
+   9. 1.75 s later their cards close up: 0.93 s, ease-in-out cubic.
+   10. The picks open 0.6 s after that.
+   11. So the first player is known before anyone picks.
+5. The title.
+   1. A banner at a fixed spot above the cards.
+   2. Headline "Starting Hand", caption "Keep or Replace Cards".
+   3. It comes when the picks open, not during the deal.
+   4. Nothing to pick: "Starting Hand" alone.
+   5. Then it grows from 0 in 0.5 s, holds 4 s, shrinks in 0.5 s.
+6. Marks, in replace mode.
+   1. A click on a card toggles its mark; nothing is sent yet.
+   2. A marked card gets a big X over it.
+   3. A label "REPLACED" sits under it.
+   4. Mark: `HeroDropItem1`; unmark: `GM_ChatWarning`.
+   5. Both vary pitch 0.9 – 1.1.
+   6. Hover: keyword notes beside the card; no zoom.
+   7. Touch: only a short tap marks; its limit is prefab data.
+7. Picks, in choose-one mode.
+   1. A click picks that card and clears the others.
+   2. The same two sounds as marks.
+   3. Confirm stays disabled until a card is picked.
+   4. Some picks ask twice: Confirm reads "Waiting", with Cancel beside it.
+8. The button.
+   1. One "Confirm", centred under the cards, at the hand's height.
+   2. It comes in with its own birth animation (prefab).
+   3. Replace mode: always enabled; no marks keeps every card.
+   4. Pressed: disabled, then its death animation.
+   5. A game option may drop it; a click then sends at once.
+9. The timer.
+   1. Text ":SS", rounded seconds, beside Confirm.
+   2. Only while the player can still pick.
+   3. The server sets its end; at 0 the screen confirms as it stands.
+   4. No rope and no ticks in this code.
+10. Confirm, in replace mode.
+    1. `FX_GameStart28_CardDismissWoosh2_v2`; the X marks and banner go.
+    2. Labels turn and shrink to 0 in 0.5 s, expo-in, 0.05 s apart.
+    3. Each marked card flies to the deck, dipping down and aside first.
+    4. 1.5 s, ease-out cubic, 0.5 s apart.
+    5. New cards come back the same path reversed.
+    6. 1.5 s, ease-in cubic, 0.5 s apart.
+    7. `FX_GameStart30_CardReplaceSingle` 0.5 s after each starts.
+    8. 1 s later both decks shuffle: `FX_MulliganCoin09_DeckShuffle`.
+11. Confirm, in choose-one mode.
+    1. `BG_SelectHero`; the cards do not fly to a deck.
+12. Waiting for the other player.
+    1. The own cards stay in the middle.
+    2. A banner: "Opponent Still Choosing...".
+    3. It grows from 0.01 to 1.4× in 0.4 s.
+    4. It sits low, by the own hero, its glow moved for that place.
+    5. The board stays dark until both are done.
+    6. The other's starting cards lie face down in their hand.
+    7. Their marks are never shown; only their hand's cards move.
+13. Closing.
+    1. Labels, buttons, banner and coin text go at once.
+    2. The kept cards go from the middle into the hand by its layout.
+    3. 0.5 s move, 0.25 s turn and scale, expo-out, all together.
+    4. The second player's extra coin card is summoned into the hand.
+    5. The lights rise over 3 s, ease-in-out quad.
+    6. Game music takes over from the start-hand music.
+    7. 1.5 s later the first turn starts.
+14. Sounds, from their `SoundDef`s; one clip each.
+    1. Deal: `FX_GameStart09_CardsOntoTable` (ours: `choice-deal`).
+    2. Mark or pick: `HeroDropItem1`, pitch 0.9 – 1.1 (ours: `choice-pick`).
+    3. Unmark: `GM_ChatWarning`, pitch 0.9 – 1.1.
+    4. Confirm, replace: `FX_GameStart28_CardDismissWoosh2_v2`.
+    5. Confirm, choose one: `BG_SelectHero`.
+    6. A replacement lands: `FX_GameStart30_CardReplaceSingle`.
+    7. Deck shuffle: `FX_MulliganCoin09_DeckShuffle`.
+    8. Coin: `FX_MulliganCoin03_CoinFlip`, volume 0.7.
+    9. Extra card: `FX_GameStart20_CardDealSingle`.
+    10. Music: a start-hand playlist, a softer one once picks open.
+15. Ours, at 20.22.
+    1. The table opens complete: characters, items, hands, cents, slots.
+    2. No deal motion and no sound at the game's start.
+    3. The badge says "Before turn 1 · First player roll" from the start.
+    4. Eden (UC-26 6a) gets the 20.18 choice dialog: 3 treasure cards.
+    5. Title "Choose your starting item"; the board dims; "View board".
+    6. The cards grow in, 0.2 s: no deal, as the choice sends no `look`.
+    7. Hover opens the zoom; a click picks at once, with `choicePick`.
+    8. No Confirm; a response timer, if set, shows its fuse (20.15).
+    9. After the pick the dialog goes; the item is in play, no flight.
+    10. The other two go to the treasure deck's bottom, unseen.
+    11. Others see "Waiting for Bo · Choose your starting item"; no cards.
+    12. The roll list shows from the start.
+    13. Others see "Ann throwing…" there while Bo still picks.
+    14. UC-26 6a.2 says the roll shows only after her choice.
+    15. Several Edens pick one after another, in seat order (engine queue).
+    16. Then the roll: a Throw button mid-board, one seat at a time.
+    17. Dice by each name; a banner names who goes first; turn 1 starts.
+    18. The draft (14.11): server done in 6.6; all pick at the same time.
+    19. Each sees only their offers; others see who has picked, not what.
+16. Differences and recommendations.
+    1. A screen of its own.
+       1. Ours: the usual choice dialog. Ref: a "Starting Hand" screen.
+       2. Recommend: build a start-of-game mode of the 20.18 choice view.
+       3. A banner above the cards: headline and caption ("Choosing cards" 5.4).
+       4. Words for the owner, e.g. "Starting item" / "Eden keeps one".
+    2. The deal.
+       1. Ours: grow in 0.2 s. Ref: dealt from the deck, a sound each.
+       2. Recommend: build; Eden's cards are the treasure deck's top 3.
+       3. The engine sends `waiting.look` (treasure, 3) for her choice.
+       4. The 20.18 deal, sounds and others' backs then play as they are.
+    3. Pick, then Confirm.
+       1. Ours: a click picks at once. Ref (choose one): select, then Confirm.
+       2. Recommend: build, for start-of-game picks only.
+       3. An eternal item lasts the whole game; a misclick costs much.
+       4. The picked card lifts and keeps its bright glow.
+       5. Other choices keep one click (20.18).
+    4. Pick sounds.
+       1. Ours: `choicePick`. Ref: pick, unpick and confirm sounds.
+       2. Recommend with 3: `GM_ChatWarning` on unpick (rule 8).
+       3. And `BG_SelectHero` on Confirm.
+    5. Others' view.
+       1. Ours: a line "Waiting for Bo". Ref: a banner over the board.
+       2. Recommend: build a banner, low on the board: "Bo is choosing".
+       3. No dialog for them: the table stays usable.
+       4. The small backs on the treasure deck come with 2 (20.18 13.20).
+    6. The roll list during the pick.
+       1. Ours: "Ann throwing…" while Bo picks; UC-26 6a.2 says otherwise.
+       2. Recommend: build a fix; no roll list until the choices are made.
+       3. Log it in `19-bugs.md` first, as the workflow says.
+    7. After the pick.
+       1. Ours: the item just appears. Ref: kept cards slide to the hand.
+       2. Recommend: build; the picked card flies to her items.
+       3. 0.5 s, expo-out, from its place in the row; all see it.
+       4. The other two fly back to the deck (20.18 12.10).
+    8. The dim.
+       1. Ours: the choice dim, gone at once. Ref: dark board, lit in 3 s.
+       2. Recommend: keep ours, as 20.18 left it.
+    9. Who goes first.
+       1. Ours: the roll after the picks. Ref: the coin before the picks.
+       2. Recommend: keep the order; R-SETUP-09 puts Eden first.
+       3. Later: the roll on the same screen, so the start reads as one.
+    10. Timer.
+        1. Ours: the 20.15 fuse. Ref: ":SS" beside Confirm.
+        2. Recommend: keep ours; one timer look in the game.
+    11. Hover.
+        1. Ours: the zoom after 0.4 s. Ref: keyword notes only.
+        2. Recommend: keep ours (20.18).
+    12. Several Edens.
+        1. Ours: in seat order. Ref: everyone at once.
+        2. Recommend: keep; the banner of 5 names who picks now.
+    13. The deal of the whole table.
+        1. Ours: the table opens complete. Ref: an intro, then a deal.
+        2. Recommend: later; a dealing step of its own.
+    14. Music.
+        1. Ours: none. Ref: start-hand and game playlists.
+        2. Recommend: keep; the game has no music.
+17. What the draft pick (14.11) can reuse.
+    1. The start-of-game screen of 16.1: banner, row, Confirm.
+    2. Pick, then Confirm (16.3), with its sounds (16.4).
+    3. The waiting banner (16.5), as "Ann has picked" per seat.
+    4. The 20.18 row: up to 5 offers fit one row, 85 % at 5.
+    5. Not the deal: offers come from no deck; they grow in (20.18 12.2).
+    6. The flight of 16.7: the picked character to its seat.
+    7. Text cards when there are no images, as every choice card.
+18. Where the 20.18 choice view fits.
+    1. Row sizes, growth, deal, hover, glow, pick sound: as they are.
+    2. Its deal needs only `waiting.look` from the server.
+    3. Others' backs and the flight back to the deck: as they are.
+    4. New for this screen: banner, Confirm, picked state, flight to items.
+
 ## Consequences
 
 ### Positive
