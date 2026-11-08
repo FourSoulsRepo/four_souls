@@ -316,6 +316,149 @@ Each sub-step of step 20 takes the part it needs.
    1. Its targets in a row beside it, scaled to fit.
    2. Each target shows its damage or death.
    3. A soft sound plays on hover.
+3. Checked in 20.21 (`HistoryManager`, `HistoryCard`, `HistoryItem`).
+   1. Also `PowerProcessor`, `InputManager`, `CardTileListDisplay`.
+   2. Prefab data via UnityPy: the tiles, the strip, its `SoundDef`.
+   3. Item 2.1 holds for up to 4 targets; 8 below covers more.
+4. What makes a tile.
+   1. A played card or hero power: one tile; its target goes inside it.
+   2. An attack: one tile; the defender goes inside it.
+   3. A trigger the server marks for the history; a secret.
+   4. Fatigue and burned cards: a tile each.
+   5. Damage and deaths make no tile of their own.
+   6. They mark the cards inside the tile that caused them.
+   7. A tile comes once its whole block has played.
+   8. No turn marks, no full log, no button.
+5. Size and count.
+   1. Play tiles are full height; attack and trigger tiles half.
+   2. Tiles stack down from the top, gaps of a quarter tile.
+   3. The strip holds about 6 full or 11 half tiles.
+   4. When one no longer fits, the oldest goes at once.
+   5. No scrolling: older plays are gone.
+6. A new tile.
+   1. It starts far left, off the board, level with the top slot.
+   2. It slides into the top slot in 1 s (iTween's default, expo-out).
+   3. The others move down a slot in the same 1 s.
+   4. No fade and no sound.
+   5. While the pointer is on the strip, no tile moves.
+   6. New tiles wait off the board till the pointer leaves.
+7. What a tile shows.
+   1. The card's art, cropped; a frame around it.
+   2. The frame is tinted by owner: blue for own, red for the opponent's.
+   3. Attack tiles carry a sword; trigger tiles a trigger icon.
+   4. No damage, death or count marks on the tile itself.
+8. Hover.
+   1. Instant: no delay, no grow.
+   2. The strip is one hit area; the nearest tile edge picks the tile.
+   3. So the gaps between tiles never close the card.
+   4. The source card shows large right of the strip, by the tile.
+   5. A chosen mode's card has its owner card left of it.
+   6. Then a separator: swords for an attack, else an arrow.
+   7. Targets right of it: 4 in one row, 8 in two, then three rows.
+   8. They shrink to fit two card widths: at most 1, 0.5 or 0.3.
+   9. Each shows its damage splat, a skull if it died, or a flame.
+   10. The source card shows its own damage or death the same way.
+   11. A mark shows at once, stays 1.5 s, then fades out in 0.5 s.
+   12. Keyword tips stand beside the large card.
+   13. The rest of the screen dims and greys; the tiles stay bright.
+   14. In 0.5 s, ease-in-out cubic; out in 0.1 s.
+   15. Each newly hovered tile plays `history_event_mouseover`.
+   16. Clip `history_event_mouseover.wav`, volume 0.6; never ducked.
+   17. While on the strip, all other sound ducks to 20 %.
+   18. In 0.3 s, out in 1 s, linear.
+   19. No hover while the own aim arrow is out.
+9. Click and touch.
+   1. A click on a tile does nothing.
+   2. Touch: a finger held on the strip shows the tile under it.
+   3. Sliding along switches tiles; lifting the finger hides it.
+10. Ours, at 20.21.
+    1. A tile per resolved stack item, buy and kill (UC-15 8).
+    2. So a Bomb! kill is three tiles: the play, the damage, the kill.
+    3. An attack is a tile per roll and per damage, then the kill.
+    4. A tile comes after its update's effects, as the reference's.
+    5. One size: the stack's icon (card art, die, blood drop, skull).
+    6. Badges: sword (attack), bolt (loot), coin (buy), skull (kill).
+    7. A damage tile shows its number; no owner tint on any tile.
+    8. A line under the first tile of each turn.
+    9. About 7 fit in the test window; the rest scroll.
+    10. No scroll bar and no sign that more is below.
+    11. Nothing drops off; the History button opens the full log.
+    12. A new tile fades in in 0.2 s; the others slide in 0.25 s.
+    13. That is `row-move`, shared with the stack panel.
+    14. Tiles move under a resting pointer too.
+    15. Hover: instant; the card large beside the tile.
+    16. A caption under it: the ability or line, then the owner in color.
+    17. What it did: an arrow, then cards in two columns, hand size.
+    18. Damage: a starburst with the number; death: dimmed, a skull.
+    19. Marks stay while hovered.
+    20. A play's popout shows its target plain, without later marks.
+    21. An attack roll's popout: the monster large; no attacker.
+    22. Each tile is its own hit area; the 3 px gaps close the card.
+    23. No sound, no dimming, no ducking.
+    24. Touch: a tap shows the card till the next tap.
+11. Differences and recommendations.
+    1. What makes a tile.
+       1. Ours: one per stack item. Ref: one per play or attack.
+       2. Recommend: keep ours; in Four Souls each item can be answered.
+    2. A play's result.
+       1. Ours: Bomb! points at a plain Peep. Ref: Peep with its splat, skull.
+       2. Recommend: a play's popout adds the marks its own items left.
+       3. Damage it dealt and a death it caused, on its target.
+    3. Tile size.
+       1. Ours: one size. Ref: plays full, attacks and triggers half.
+       2. Recommend: rolls and damage half height; the rest full.
+       3. More fit; plays, kills and buys stand out.
+    4. Owner tint.
+       1. Ours: none. Ref: blue frame for own, red for others'.
+       2. Recommend: a thin frame in the owner's player color.
+    5. Full strip.
+       1. Ours: scrolls, with no sign. Ref: the oldest drops off.
+       2. Recommend: keep the scroll; fade the bottom edge when more is below.
+    6. A new tile.
+       1. Ours: fades in 0.2 s. Ref: slides in from the left, 1 s, expo-out.
+       2. Recommend: slide in from the board's left edge, expo-out.
+       3. The rest move down in the same time; 1 s, tuned by eye.
+       4. Speed scales it; "off" places it at once.
+    7. Still while hovered.
+       1. Ours: tiles move under the pointer. Ref: none move.
+       2. Recommend: hold the strip still while the pointer is on it.
+       3. New tiles come in when it leaves.
+    8. Hit area.
+       1. Ours: per tile; gaps close the card. Ref: the nearest tile.
+       2. Recommend: the strip as one hit area, nearest tile wins.
+    9. Hover sound.
+       1. Ours: none. Ref: `history_event_mouseover.wav`.
+       2. Recommend: that clip on each newly hovered tile (rule 8).
+    10. Ducking on hover.
+        1. Ours: none. Ref: all else to 20 % while on the strip.
+        2. Recommend: skip; a turn or timer cue must stay heard.
+    11. Dimming on hover.
+        1. Ours: none. Ref: the screen dims and greys, 0.5 s in.
+        2. Recommend: try a light dim of the board, 0.1 s out.
+        3. Skip it if it flashes when sliding along the strip.
+    12. Separator.
+        1. Ours: always an arrow. Ref: swords for an attack.
+        2. Recommend: swords for an attack's roll, damage and kill.
+    13. Attack roll popout.
+        1. Ours: the monster large. Ref: the attacker large, then the defender.
+        2. Recommend: the attacker's character large, swords, the monster.
+        3. The die and its number stay in the caption.
+    14. Target layout.
+        1. Ours: two columns, at most 220 px wide.
+        2. Ref: one row up to 4, then rows, shrunk to fit.
+        3. Recommend: one row up to 4, then two rows; hand size at most.
+    15. Mark fade.
+        1. Ours: marks stay. Ref: gone after 2 s.
+        2. Recommend: keep ours; a player reads at their own pace.
+    16. Turn line, badges, History button.
+        1. Ours: all three. Ref: none.
+        2. Recommend: keep ours; Four Souls turns hold many plays.
+    17. Touch.
+        1. Ours: tap, till the next tap. Ref: hold and slide.
+        2. Recommend: keep ours.
+    18. Hover while aiming.
+        1. Ours: allowed. Ref: off while the arrow is out.
+        2. Recommend: keep ours; a look back can help the aim.
 
 ### Turn start
 
