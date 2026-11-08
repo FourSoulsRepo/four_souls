@@ -43,7 +43,7 @@ This step never closes; new reports are appended.
 | H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
 | I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122, 19.125, 19.126, 19.127, 19.120, 19.128 | 32 |
 | J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107, 19.117, 19.121 | 21 |
-| Q  | Load tool: a lost connection ends a game | Go tools   | 19.108                                                 | 1     |
+| Q  | Load tool: a lost connection ends a game | Go tools   | 19.108, 19.131                                         | 2     |
 | K  | Build and release files                  | Release    | 19.47, 19.59, 19.83, 19.91                             | 4     |
 | L  | Not a bug: the app follows a ruling      | None       | 19.63, 19.129                                          | 2     |
 | M  | Go test setup: the code was right        | Go tests   | 19.68                                                  | 1     |
@@ -52,7 +52,7 @@ This step never closes; new reports are appended.
 | P  | A missing setting: no way to change it   | Client     | 19.93                                                  | 1     |
 | R  | Vitest setup: a test sees stale files    | Vitest     | 19.124                                                 | 1     |
 
-Totals by system (127 items):
+Totals by system (128 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
@@ -64,7 +64,7 @@ Totals by system (127 items):
 | Release   | K       | 4     |
 | None      | L       | 2     |
 | Go tests  | M       | 1     |
-| Go tools  | Q       | 1     |
+| Go tools  | Q       | 2     |
 | Vitest    | R       | 1     |
 
 ---
@@ -4092,4 +4092,28 @@ Totals by system (127 items):
    4. Also covers 2a's question about one card (Cain's Eye): no repeat look.
    5. UC-18 2d.
    6. e2e `choice.spec.ts`: The Moon by a saved game; fails without the fix.
+
+### [x] 19.131 Load test: `TestStopAtAgainstServer` fails one game in about 30 runs
+
+1. Goal: the load tool's own test passes every run.
+2. Report (agent, 2026-11-08)
+   1. Seen in the 20.18 gate, `make test`: `cmd/server_load`.
+   2. "1 of 2 games failed, first: websocket: close sent"; no reconnects, no errors.
+   3. Not new: 1 of 40 runs fails at 730ddc0, before 20.18's engine change.
+   4. With the change: 1 of 20, then 0 of 8.
+   5. Evidence: `.cache/e2e-evidence/load-close-sent/gate-b.log` (not in git).
+3. Cause
+   1. `-stop-at 30`: the first finished game stops the stage; the other is cut.
+   2. The stop closes that game's sockets (`closeAll` on its context).
+   3. A bot writing just then fails with gorilla's `ErrCloseSent`.
+   4. Its error came before the stop's `context.Canceled`: a failure, not a cut.
+   5. A race in the load tool; the server was right.
+4. Tasks:
+   1. [x] Find which side closes the socket, and why.
+   2. [x] Fix it; repeat the stage test under load.
+5. Fix (2026-11-08)
+   1. A bot's error after its game's context ended counts as the stop.
+   2. `stopReason` names it: a cut, or the game's timeout; as `openTable` did.
+   3. 0 of 30 runs fail, with the engine tests running beside it.
+   4. No new test: the race needs a write at the moment of the stop.
 

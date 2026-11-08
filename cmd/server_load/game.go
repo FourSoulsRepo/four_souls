@@ -151,6 +151,12 @@ func playGame(parent context.Context, cfg config, g *gameRun, col *collector) ga
 		go func() {
 			defer wg.Done()
 			if err := b.play(ctx); err != nil {
+				// A stop closes the sockets: a bot may then fail on its
+				// own write ("close sent") before it sees the stop. The
+				// stop is the reason (19.131).
+				if ctx.Err() != nil {
+					err = g.stopReason(ctx)
+				}
 				g.fail(err)
 			}
 		}()
