@@ -675,6 +675,154 @@ Each sub-step of step 20 takes the part it needs.
         2. Recommend: keep our places; take only the motion above.
         3. Cards at the choice size, not table size, if they fit one row.
 
+### Playing from the hand
+
+1. Checked in 20.20 (`InputManager`, `ZoneHand`, `TargetReticleManager`).
+   1. Also `Card`, `PlayErrors`, `GameplayErrorManager`.
+   2. Clip names from three `SoundDef`s, via UnityPy.
+   3. Tilt and drag loops: see "Drag"; others' view: "Other players live".
+2. Picking a card up.
+   1. A press and a move of 20 px either way picks the card up.
+   2. A click (press and release on the card) picks it up too.
+   3. No menu: the card itself is the action.
+   4. Picked up, it follows the pointer, button down or not.
+   5. It tweens to a held size, 0.7, in 0.2 s (iTween's default, expo-out).
+   6. Grab sound: `FX_MinionSummon01_DrawFromHand_01`.
+   7. Clip `FX_MinionSummon01_DrawFromHand_01.wav`; no random pitch.
+   8. Any own hand card can be picked up on the own turn.
+   9. Not during a choice or another card's aim.
+3. Where it plays.
+   1. The board is one hit box; above the hand is "over the board".
+   2. Over it the card's own glow switches to an "over play area" state.
+   3. No zone lights up; the card's glow is the only sign.
+   4. Its look is prefab data, not traced.
+   5. The next release over the board plays it: drag-drop or click-click.
+   6. A release over the hand puts it back.
+4. Putting it back.
+   1. Right click or Esc cancels; so does a release over the hand.
+   2. The card goes home with the hand's re-layout: 0.5 s, expo-out.
+   3. Loops fade out (see "Drag"); no sound of its own.
+5. A card that needs a target.
+   1. It is picked up like any card.
+   2. On entering the board it stops there; the aim starts at once.
+   3. The arrow starts at the player's hero, not at the card.
+   4. The pointer hides; the arrow's head carries the effect's text.
+   5. Drag loops stop as the aim starts.
+   6. Back below the board: the aim ends, the card is held again.
+   7. A release on a valid target plays it: drag-to-target.
+   8. A release on nothing keeps the aim; a click then picks.
+   9. A wrong target: an error line and sounds; the aim goes on.
+   10. Right click, Esc, or a click on the source cancels the aim.
+   11. Cancel sound: `CancelAttack`, clip `cancel_attack.wav`.
+   12. Its pitch varies 0.8 – 1.0.
+6. A card with modes ("Choose One").
+   1. Dropped on the board, its mode cards show (see "Choosing cards").
+   2. A click on the card again, right click, or Esc cancels.
+   3. A mode that needs a target aims from the hero, as above.
+7. A card that cannot be played now.
+   1. It is picked up all the same.
+   2. As it enters the board it drops back to the hand.
+   3. An error line shows in the middle for 0.1 s per letter.
+   4. With `UI_no_can_do` (clip `UI_no_can_do.wav`, volume 0.7).
+   5. The hero says a short error line ("Not enough mana").
+   6. Not the own turn: nothing is picked up, no message.
+8. What a play does.
+   1. The game is told at once; the card's move is predicted locally.
+   2. Minion: summoned at the slot under the pointer.
+   3. Spell: its effects start where it was dropped; prefab data.
+   4. The hand closes the gap with its re-layout: 0.5 s, expo-out.
+9. Touch.
+   1. A tap does not pick a card up.
+   2. A drag must rise 80 px above its start.
+   3. Back below those 80 px, the card returns to the hand.
+   4. A tap on a board card that aims: "drag to play".
+10. Keys: only Esc, to cancel; no key plays a card.
+11. Ours, at 20.20.
+    1. Plain loot and trinkets: drag onto the board plays (UC-13 2).
+    2. A click opens a menu: Play, Cancel (UC-13 2a).
+    3. The menu holds only Play: no hand card has an ability.
+    4. The engine lists abilities only for cards in play and rooms.
+    5. A drag starts after 8 px; the card is at hand size × 1.08 at once.
+    6. Over the board: no change on the card; the board halo stays.
+    7. Dropped off the board: back home in 150 ms, ease-out.
+    8. Dropped on it: the card vanishes; a stack row fades in.
+    9. Until the server answers it snaps back to the fan meanwhile.
+    10. The hand closes the gap at once; no re-layout tween.
+    11. A target card: a click lifts it 40 px in the fan; no drag.
+    12. The arrow runs from that card; the second click picks (2e).
+    13. A click on the source does nothing (owner, 15.33).
+    14. A mode card: dragged or Play; a dialog asks the mode (2f, 2h).
+    15. Unplayable: not draggable; a click shows why (UC-22).
+    16. Sounds: the drag loops only; no grab, cancel or refusal sound.
+    17. Touch: tap opens the menu; drag in any direction; tap-tap aims.
+    18. Long press zooms (20.5).
+    19. Keys: Esc cancels an aim; a hand card takes no focus.
+    20. So no key plays a hand card.
+12. Differences and recommendations.
+    1. A click on a playable card.
+       1. Ours: a menu, Play and Cancel. Ref: picks the card up.
+       2. Recommend: a click picks up; it follows the pointer.
+       3. A click on the board plays; on the hand, puts it back.
+    2. The hand card menu.
+       1. Ours: it only ever holds Play. Ref: none.
+       2. Recommend: no menu for hand cards; table cards keep theirs.
+    3. Held size.
+       1. Ours: × 1.08 at once. Ref: tweens to its held size in 0.2 s.
+       2. Recommend: grow to × 1.08 in 0.2 s, expo-out.
+    4. Over the board.
+       1. Ours: no sign. Ref: the card's glow changes.
+       2. Recommend: a brighter, gold glow on the card over the board.
+       3. Back to green when it leaves; no zone glow.
+    5. Going back.
+       1. Ours: 150 ms, ease-out. Ref: hand re-layout, 0.5 s, expo-out.
+       2. Recommend: 0.5 s, expo-out, from where it was let go.
+    6. Grab sound.
+       1. Ours: none. Ref: `FX_MinionSummon01_DrawFromHand_01`.
+       2. Recommend: that clip on pick-up (rule 8).
+    7. Target cards: drag.
+       1. Ours: click only. Ref: drag; the aim starts at the board's edge.
+       2. Recommend: allow the drag; the card stops at the board's edge.
+       3. The arrow takes over there; back down resumes the drag.
+       4. Release on a target plays; elsewhere the aim stays.
+       5. Click-click stays as today.
+    8. Arrow start.
+       1. Ours: from the card. Ref: from the hero.
+       2. Recommend: keep ours; in Four Souls the card is the source.
+       3. With 7: from where the card stopped.
+    9. Click on the aiming card.
+       1. Ours: nothing. Ref: cancels.
+       2. Recommend: keep ours (owner, 15.33).
+    10. Cancel sound.
+        1. Ours: none. Ref: `cancel_attack.wav`, pitch 0.8 – 1.0.
+        2. Recommend: that clip on a cancelled aim (rule 8).
+        3. No random pitch, as 20.17.
+    11. A card that cannot be played.
+        1. Ours: no drag; a click says why.
+        2. Ref: picked up; bounces back with an error line.
+        3. Recommend: keep ours; add `UI_no_can_do` to the "why" note.
+        4. No voice: we have no hero lines.
+    12. After the drop.
+        1. Ours: snaps back to the fan till the server answers; then gone.
+        2. Ref: shown as played at once.
+        3. Recommend: hold it at the drop point till the answer.
+        4. Then it shrinks into its stack row, 0.4 s, expo-out.
+        5. Refused: it goes home as in 5.
+    13. Hand gap.
+        1. Ours: closes at once. Ref: 0.5 s, expo-out.
+        2. Recommend: the fan closes in 0.5 s, expo-out (FLIP).
+    14. Mode cards.
+        1. Ours: a dialog. Ref: mode cards on the table.
+        2. Recommend: no change here; see "Choosing cards" 12.
+    15. Touch.
+        1. Ours: tap opens the menu. Ref: no tap; drag up 80 px.
+        2. Recommend: a tap lifts the card, as an aim lifts it.
+        3. A tap on the board plays; on the hand, puts it back.
+        4. Drag stays; it starts after 8 px in any direction.
+    16. Keys.
+        1. Ours and ref: no key plays a hand card.
+        2. Recommend: hand cards take focus; Enter lifts, Enter plays.
+        3. Esc puts it back; a lower priority than the rest.
+
 ## Consequences
 
 ### Positive
