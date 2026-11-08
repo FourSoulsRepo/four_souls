@@ -40,6 +40,7 @@ Rules for this step (owner, 2026-11-06):
     4. The owner merges, pushes and bumps the pointer by hand.
 12. Order: 20.18 runs before the step review, 20.16 (owner, 2026-11-08).
 13. Order: 20.19 runs before the step review too (owner, 2026-11-08).
+14. Order: 20.20 runs before the step review too (owner, 2026-11-08).
 
 Owner notes (2026-11-06):
 
@@ -357,7 +358,7 @@ Swapping it is the owner's call; not part of this step.
    2. The owner's picks are built, with before and after screenshots.
    3. e2e: the pick flow, set up so it never depends on the deal.
 
-### [ ] 20.19 Only the attacker flies
+### [x] 20.19 Only the attacker flies
 
 1. Goal: the attacker flies into the target; the target stays and takes the hit.
    1. Owner, 2026-11-08, from a recorded Hearthstone match.
@@ -383,3 +384,32 @@ Swapping it is the owner's call; not part of this step.
    1. e2e: the target card does not move during the strike.
    2. e2e: the hit still lands at contact, after the strike starts.
    3. Before and after screenshots of windup, contact and settle.
+
+### [ ] 20.20 Playing a card from the hand, compared with the reference
+
+1. Goal: playing a hand card feels like the reference, without a menu.
+   1. Owner, 2026-11-08: today a click opens a menu with a "Play" button.
+   2. Ours: a drag onto the board plays a loot card (UC-13 2).
+   3. Ours: a click opens Play, Use, Cancel (UC-13 2a).
+   4. Ours: a card that needs a target aims by two clicks (UC-13 2e, 2f).
+2. Tasks:
+   1. Read the reference's play flow (rule 10).
+      1. Click on a hand card: does it pick the card up to follow the pointer?
+      2. Where a drop or a second click plays it; the play zone and its glow.
+      3. How a play is cancelled: drop on the hand, right click, Esc.
+      4. A card that needs a target: where the arrow starts, when.
+      5. What the card does on a play: its move, times, curves, sounds.
+      6. A card that cannot be played now: what a click or drag shows.
+   2. Write the findings into ADR 027, a new "Playing from the hand" section.
+   3. Compare with our flow, every kind of hand card.
+      1. Plain loot, loot with a target, loot with a mode, trinkets.
+      2. Hand cards with abilities: today the menu's "Use".
+      3. Touch and keyboard: what replaces a drag there.
+      4. List each difference with a recommendation.
+   4. The owner picks what to build; then it is built here.
+   5. A sound it needs comes as rule 8 says.
+3. Done when:
+   1. ADR 027 has the findings and the differences.
+   2. The owner's picks are built, with before and after screenshots.
+   3. UC-13 matches the new flow.
+   4. e2e: each kind of play, set up so it never depends on the deal.
