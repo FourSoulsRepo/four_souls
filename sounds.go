@@ -5,25 +5,6 @@ import "strconv"
 // soundsDir holds every sound inside the card images folder.
 const soundsDir = "assets/sounds/"
 
-// The damage sounds (15.50), all from Hearthstone: the Fireball
-// spell's cast and impact for damage from effects; an attack's hit
-// is the reference client's (20.3). They belong to Blizzard, so they live only in the private
-// images. So do the dice sound (15.69), the loot draw sound (18.7), the
-// player death sound (18.8), the treasure gain sound (18.9) and the soul
-// gain sound, for every soul (18.13, 18.14): their source is unknown.
-// The rest are Hearthstone's too, taken from the reference client of
-// step 20 (20.17); each later sub-step of step 20 plays its own.
-const (
-	attackHitSound    = soundsDir + "attack-hit-1.mp3"
-	effectCastSound   = soundsDir + "effect-cast.mp3"
-	effectImpactSound = soundsDir + "effect-impact.mp3"
-	diceRollSound     = soundsDir + "dice-roll.mp3"
-	lootDrawSound     = soundsDir + "loot-draw.mp3"
-	playerDiedSound   = soundsDir + "player-died.mp3"
-	treasureGainSound = soundsDir + "treasure-gain.mp3"
-	soulGainSound     = soundsDir + "soul-gain.mp3"
-)
-
 // Sounds are the sound URLs, a list per sound. A sound with several
 // files plays one of them at random (20.17). A file that is missing is
 // left out; a sound with none stays silent.
@@ -50,15 +31,21 @@ type Sounds struct {
 }
 
 // soundFiles are the files of each sound, under the card images folder.
+// All live only in the private images. The Fireball's cast and impact
+// (15.50) are Hearthstone's, (c) Blizzard. The dice (15.69), loot draw
+// (18.7), player death (18.8), treasure gain (18.9) and soul gain
+// (18.13, 18.14) sounds come from the owner; their source is unknown.
+// The rest are Hearthstone's too, from the reference client of step 20
+// (20.17); the attack hits by size among them (20.3).
 var soundFiles = Sounds{
-	AttackHit:     []string{attackHitSound},
-	EffectCast:    []string{effectCastSound},
-	EffectImpact:  []string{effectImpactSound},
-	DiceRoll:      []string{diceRollSound},
-	LootDraw:      []string{lootDrawSound},
-	PlayerDied:    []string{playerDiedSound},
-	TreasureGain:  []string{treasureGainSound},
-	SoulGain:      []string{soulGainSound},
+	AttackHit:     soundVariants("attack-hit-1", 1),
+	EffectCast:    soundVariants("effect-cast", 1),
+	EffectImpact:  soundVariants("effect-impact", 1),
+	DiceRoll:      soundVariants("dice-roll", 1),
+	LootDraw:      soundVariants("loot-draw", 1),
+	PlayerDied:    soundVariants("player-died", 1),
+	TreasureGain:  soundVariants("treasure-gain", 1),
+	SoulGain:      soundVariants("soul-gain", 1),
 	AttackHit2:    soundVariants("attack-hit-2", 1),
 	AttackHit3:    soundVariants("attack-hit-3", 1),
 	LootLand:      soundVariants("loot-land", 3),

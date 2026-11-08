@@ -76,7 +76,7 @@ func TestSoundsFromFiles(t *testing.T) {
 // it, nothing is.
 func TestSoundsServed(t *testing.T) {
 	files := os.DirFS("pkg/card_db")
-	_, err := os.Stat("pkg/card_db/images/" + attackHitSound)
+	_, err := os.Stat("pkg/card_db/images/" + soundFiles.AttackHit[0])
 	withImages := err == nil
 	got := soundLists(t, (&App{cardFiles: files}).Sounds())
 	for name, list := range soundLists(t, soundFiles) {
