@@ -88,17 +88,20 @@ export const elasticOut = elasticStops(30);
 // (20.1); later step 20 sub-steps tune them to ADR 027.
 export const feel = {
   // lunge: the attack (lunge.ts, ADR 027 "Attack"), in three phases,
-  // each in seconds. The attacker lifts and grows (windup); attacker
-  // and target meet half way (strike); the hit lands on contact; both
-  // settle back home (settle). lift is the attacker's size at the top
-  // of the windup; pull is how far it draws back first, as a part of
-  // the way to the target.
+  // each in seconds. The attacker lifts and grows (windup); it flies
+  // into the target, which stays home (strike, 20.19); the hit lands on
+  // contact; it settles back home (settle). lift is the attacker's size
+  // at the top of the windup; pull is how far it draws back first, as a
+  // part of the way to the target; short is how far its centre stops
+  // short of a card target's, in its own length along the way (the
+  // reference's 0.5 − (−0.25)): cards of one size overlap by a quarter.
   lunge: {
     windup: 0.25,
     strike: 0.12,
     settle: 0.5,
     lift: 1.1,
     pull: 0.06,
+    short: 0.75,
     windupCurve: curves.easeOut,
     strikeCurve: curves.linear,
     settleCurve: curves.expoOut,

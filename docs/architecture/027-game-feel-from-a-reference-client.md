@@ -196,9 +196,9 @@ Each sub-step of step 20 takes the part it needs.
 ### Attack
 
 1. Windup: the attacker lifts (its own short animation, ≤ 1 s).
-2. Strike: attacker and target meet in 0.12 s, linear.
-   1. The meeting point is between them, not at the target.
-   2. The target also moves toward it.
+2. Strike: the attacker flies into the target in 0.12 s, linear.
+   1. The impact point is the target's own place (checked in 20.19).
+   2. The target stays; only the attacker moves.
 3. On contact:
    1. Damage applies at that exact moment.
    2. The impact effect plays; bigger for more power.
@@ -207,16 +207,16 @@ Each sub-step of step 20 takes the part it needs.
 5. A hero turns to face the target in 0.3 s; back in 0.3 s.
 6. A declared but not yet resolved attack moves half way.
 7. Impact point, checked in 20.2 (`AttackSpellController`).
-   1. The target moves to it; the attacker stops at its own edge.
+   1. The target "moves" to its own place; the attacker stops short (20.19).
    2. A proposed attack's point is half way to the target.
    3. The impact effect plays at the target's place at contact.
    4. Contact is the attacker's move ending, not a timer.
 8. Built in 20.2.
    1. Windup 0.25 s, ease-out: lift to 1.1×, draw back 6 %.
-   2. Strike 0.12 s, linear; a card target meets it half way.
+   2. Strike 0.12 s, linear; only the attacker moves (20.19).
    3. Settle 0.5 s, expo-out: the low end of principle 3.
    4. Our burst carries "−N", so it pops on the target's home.
-   5. The target's new HP shows once its copy is home.
+   5. The target's new HP shows on the hit; it never left (20.19).
    6. Reduced motion: no strike; the hit lands in place.
 9. Shakes, checked in 20.3 (`MinionShake`, `CameraShakeMgr`).
    1. Strengths 0.1, 0.5 and 1 scale the push away from the impact.
@@ -237,6 +237,23 @@ Each sub-step of step 20 takes the part it needs.
     8. Sound by size: `attack-hit`, `attack-hit-2`, `attack-hit-3`.
     9. Other damage keeps its fireball sound; size sets burst and shake.
     10. Speed "off" and reduced motion: no shake.
+11. Impact point, checked in 20.19 (code and prefab data).
+    1. Impact point: source + staging × (target − source).
+    2. Staging is 1 in both prefabs: `AttackSpellController` and its Battlegrounds minion one.
+    3. A proposed attack halves it: the only half-way case.
+    4. The target tweens to the impact point: its own place, so it stays.
+    5. Source offset −0.25 in both prefabs.
+    6. The attacker's centre stops 0.5 − (−0.25) = 0.75 of its length short.
+    7. Its length is along the way, from its own bounds.
+    8. Cards of one size then overlap by a quarter of that length.
+    9. Strike tween 0.12 s, linear, hero and minion alike.
+    10. A hero's move back: 0.88 s, expo-out.
+12. Only the attacker flies, built in 20.19.
+    1. The target card stays home and seen; no copy of it moves.
+    2. The attacker's centre stops 0.75 of its length short (`feel.lunge.short`).
+    3. A player's panel as target: unchanged, 0.35 of its short side.
+    4. Windup, contact, burst, sound, shakes and the number: unchanged.
+    5. Cards near it still shake (20.3); the target itself never did.
 
 ### Damage and death
 
@@ -388,7 +405,7 @@ Each sub-step of step 20 takes the part it needs.
    7. A change mid-count goes on from the number on screen.
    8. Speed "off" and a rollback's table: the number jumps.
    9. Reduced motion: it still counts, with no flip.
-   10. A lunge target's card hides while its copy settles; its count runs meanwhile.
+   10. A lunge target's card stays seen at home (20.19); its count runs on the hit.
    11. Buy preview: the purchase prompt sends each option's `price`.
    12. Hovering an option shows "−N" on the own coins; red when short.
    13. The engine's `priceOf` gives both the preview and the payment.

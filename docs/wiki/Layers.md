@@ -26,7 +26,7 @@ A choice shows its options over the dimmed board:
 |----|------|--------------------------------|------|
 | `aim-why` | The note why a click did nothing: an aim at no target, or a card or turn icon not usable now (15.29). | It answers the pointer, right under it; it covers its own arrow. | `components/Table.css` |
 | `aim` | The aiming arrow. | It is the pointer while aiming; the target under it may be any window's card. | `components/Table.css` |
-| `trail` | The attack lunge (attacker and target copies) and its starburst. | It plays over the effects of the same hit. | `components/Effects.css` |
+| `trail` | The attack lunge (the attacker's copy) and its starburst. | It plays over the effects of the same hit. | `components/Effects.css` |
 | `effects` | Event effects: flying cards, reveal, dice, banner, popups. | A game event must be seen, even over a zoom or an overlay. It never catches the pointer. | `components/Effects.css` |
 | `zoom` | The large copy of a hovered or held card. | The player reads a card from any window: discard, choice, look, order, a dialog (19.26). A mouse zoom lets the pointer through. | `components/Card.css` |
 | `overlay` | Connection lost, paused, game over, the game menu, the End turn question (V-46), the reconnecting badge and server notices (N-20). | Modal: the table and its windows wait under it. | `components/Overlays.css` |

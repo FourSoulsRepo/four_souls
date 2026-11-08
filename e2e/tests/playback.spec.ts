@@ -1,5 +1,5 @@
 // Event playback and animations (7.6).
-import type { Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 import { expect, test } from './fixtures';
 import { feel } from '../../frontend/src/feel';
 import { startGame } from './game';
@@ -368,7 +368,16 @@ function moved(page: Page, testid: string): Promise<number> {
   });
 }
 
-test('an attack strikes fast, hits on contact and settles back (20.2)', async ({ browser }) => {
+// box is where an element is on screen.
+async function box(page: Page, el: Locator): Promise<{ x: number; y: number; width: number; height: number }> {
+  const b = await el.boundingBox();
+  if (!b) {
+    throw new Error('no box');
+  }
+  return b;
+}
+
+test('an attack strikes fast, hits on contact and settles back (20.2, 20.19)', async ({ browser }) => {
   const [vee] = await startGame(browser, ['Vee', 'Wyn']);
   if (!vee) {
     throw new Error('no pages');
@@ -378,28 +387,36 @@ test('an attack strikes fast, hits on contact and settles back (20.2)', async ({
   const ids = await attack(vee);
   const character = vee.locator(`[data-zone="obj-${String(ids.character)}"]`);
   const monster = vee.locator(`[data-zone="obj-${String(ids.monster)}"]`);
-  // Copies of both cards move; the cards themselves wait hidden at home.
+  // A copy of the attacker moves; the attacker waits hidden at home.
+  // The target stays, seen, in its place (20.19).
   await expect(vee.getByTestId('lunge')).toBeVisible();
-  await expect(vee.getByTestId('lunge-target')).toBeVisible();
   await expect(character).toBeHidden();
-  await expect(monster).toBeHidden();
+  await expect(monster).toBeVisible();
+  const home = await box(vee, monster);
   const { windup, strike } = feel.lunge;
   const go = windup + strike;
-  // Windup: the attacker lifts; the target has not moved; no hit yet.
+  // Windup: the attacker lifts; no hit yet.
   await seek(vee, 'strike', windup / go);
-  expect(await moved(vee, 'lunge-target')).toBe(0);
+  expect(await moved(vee, 'lunge')).toBeGreaterThan(0);
   await expect(vee.getByTestId('burst')).toHaveCount(0);
   await shot(vee, 'attack-windup');
-  // Half way through the strike both move toward each other, and still
-  // no hit: it comes after the strike starts, not before.
+  // Half way through the strike the attacker flies, the target does not
+  // move, and still no hit: it comes after the strike starts, not before.
   await seek(vee, 'strike', (windup + strike / 2) / go);
-  expect(await moved(vee, 'lunge-target')).toBeGreaterThan(0);
+  expect(await box(vee, monster)).toEqual(home);
   await expect(vee.getByTestId('burst')).toHaveCount(0);
   expect(await played(vee)).toEqual([]);
-  // Contact: the strike's end lands the hit with its sound.
+  // Contact: the strike's end lands the hit with its sound. The target
+  // is still home; the attacker overlaps it, short of its centre.
   await seek(vee, 'strike', 'finish');
   await expect(vee.getByTestId('burst')).toHaveText('−1');
   expect(await played(vee)).toEqual(['/cardimg/assets/sounds/attack-hit-1.mp3']);
+  expect(await box(vee, monster)).toEqual(home);
+  const hit = await box(vee, vee.getByTestId('lunge'));
+  const overlaps = hit.x < home.x + home.width && home.x < hit.x + hit.width && hit.y < home.y + home.height && home.y < hit.y + hit.height;
+  expect(overlaps).toBe(true);
+  const centre = (r: typeof home) => ({ x: r.x + r.width / 2, y: r.y + r.height / 2 });
+  expect(Math.hypot(centre(hit).x - centre(home).x, centre(hit).y - centre(home).y)).toBeGreaterThan(0.25 * Math.min(home.width, home.height));
   await seek(vee, 'settle', 0);
   await seek(vee, 'burst', burstPart(0.05));
   await shot(vee, 'attack-contact');
@@ -432,7 +449,6 @@ test('with reduced motion an attack hits in place (20.2)', async ({ browser }) =
   // A large, lethal hit, but nothing shakes (20.3).
   expect(await shakes(vee)).toEqual([]);
   await expect(vee.getByTestId('lunge')).toHaveCount(0);
-  await expect(vee.getByTestId('lunge-target')).toHaveCount(0);
   const monster = vee.locator(`[data-zone="obj-${String(ids.monster)}"]`);
   await expect(monster.getByLabel(tr('badge.hp', { n: Math.max(ids.hp - 4, 0) }))).toBeVisible();
 });

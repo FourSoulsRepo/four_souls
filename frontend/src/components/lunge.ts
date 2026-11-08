@@ -1,10 +1,9 @@
 // The attack lunge (15.3, V-12, T-23; fast strike 20.2, ADR 027). A
-// copy of the attacker's card lifts, then it and a copy of the target
-// meet half way and settle back; a starburst "-N" pops on the hit
-// (H-14). The copies live in a layer of their own, so they are never
-// clipped by the table and outlive the effect: playback goes on at the
-// hit, and the target's HP shows on its card once its copy is home
-// (C-03). Only transform and opacity animate (ADR 002). The hit lands
+// copy of the attacker's card lifts, flies into the target and settles
+// back; the target stays home and takes the hit (20.19). A starburst
+// "-N" pops on the hit (H-14). The copy lives in a layer of its own, so
+// it is never clipped by the table and outlives the effect: playback
+// goes on at the hit (C-03). Only transform and opacity animate (ADR 002). The hit lands
 // with an attack hit sound (15.50). A bigger hit looks and sounds
 // bigger (20.3): its burst grows and glows, the cards near it shake,
 // and a lethal one shakes the table.
@@ -160,8 +159,8 @@ export function burst(at: DOMRect, amount: number, scale: number, lethal = false
 }
 
 // held maps a card to the lunge whose copy of it still settles home,
-// and ends that lunge at once. A next lunge on the card (the monster
-// hits back) ends it first: one copy of a card at a time.
+// and ends that lunge at once. A next lunge from or at the card (the
+// monster hits back) ends it first: one copy of a card at a time.
 const held = new Map<HTMLElement, () => void>();
 
 // still is true when the player asks for less motion: the hit lands
@@ -170,12 +169,29 @@ export function still(): boolean {
   return typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 }
 
+// stopShort is how far short of a card target's centre the attacker's
+// centre stops (20.19, ADR 027 "Attack"): feel.lunge.short of the
+// attacker's own length along the way, as the reference's. w and h are
+// the attacker's size; dx and dy the way from its centre to the
+// target's. Two cards of one size then overlap by a quarter.
+export function stopShort(w: number, h: number, dx: number, dy: number): number {
+  const len = Math.hypot(dx, dy);
+  if (len === 0) {
+    return 0;
+  }
+  const ux = Math.abs(dx) / len;
+  const uy = Math.abs(dy) / len;
+  const half = Math.min(ux > 0 ? w / 2 / ux : Infinity, uy > 0 ? h / 2 / uy : Infinity);
+  return 2 * half * feel.lunge.short;
+}
+
 // lunge plays the attack (ADR 027 "Attack") and calls hit on contact.
-// Windup: the attacker's copy lifts and grows. Strike: it and the
-// target's copy meet half way, linear. Contact: the sound, the burst
-// and hit, from the strike's own end, not from a timer. Settle: both
-// ease back home. A target that is no card (a player's panel) stays;
-// the attacker then goes all the way into it. lethal: the hit kills.
+// Windup: the attacker's copy lifts and grows. Strike: it flies into
+// the target, linear; the target stays home (20.19). Contact: the
+// sound, the burst and hit, from the strike's own end, not from a
+// timer. Settle: it eases back home. A target that is no card (a
+// player's panel): the attacker goes into it, short of its centre.
+// lethal: the hit kills.
 export function lunge(from: string[], to: string[], amount: number, scale: number, hit: () => void, lethal = false): void {
   const dst = find(to);
   if (!dst) {
@@ -198,16 +214,13 @@ export function lunge(from: string[], to: string[], amount: number, scale: numbe
   const dx = b.left + b.width / 2 - (a.left + a.width / 2);
   const dy = b.top + b.height / 2 - (a.top + a.height / 2);
   const len = Math.hypot(dx, dy);
-  // They stop with their centres a little apart, so the cards overlap
-  // at the hit, not cover each other. A card target meets the
-  // attacker half way.
-  const way = len > 0 ? Math.max(0, len - Math.min(b.width, b.height) * 0.35) / len : 0;
-  const meets = dst.classList.contains('card');
-  const share = meets ? 0.5 : 1;
-  const ax = dx * way * share;
-  const ay = dy * way * share;
-  const tx = -dx * way * (1 - share);
-  const ty = -dy * way * (1 - share);
+  // Only the attacker moves (20.19). It stops short of a card target's
+  // centre, so the cards overlap at the hit, not cover each other; a
+  // player's panel it enters a little further.
+  const short = dst.classList.contains('card') ? stopShort(a.width, a.height, dx, dy) : Math.min(b.width, b.height) * 0.35;
+  const way = len > 0 ? Math.max(0, len - short) / len : 0;
+  const ax = dx * way;
+  const ay = dy * way;
   const { windup, strike, settle, lift, pull, windupCurve, strikeCurve, settleCurve } = feel.lunge;
   const ms = (s: number) => s * 1000 * scale;
   const go = windup + strike;
@@ -215,13 +228,7 @@ export function lunge(from: string[], to: string[], amount: number, scale: numbe
   const home = at(0, 0, 1);
   const top = at(-dx * pull, -dy * pull, lift);
   const ahit = at(ax, ay, (1 + lift) / 2);
-  const thit = at(tx, ty, 1);
-  const target = meets ? copy(dst, b, 'lunge-target') : null;
   const c = copy(src, a, 'lunge');
-  if (target) {
-    layer().append(target);
-    dst.style.visibility = 'hidden';
-  }
   layer().append(c);
   src.style.visibility = 'hidden';
   // anim: lunge
@@ -233,21 +240,7 @@ export function lunge(from: string[], to: string[], amount: number, scale: numbe
     ],
     { duration: ms(go), id: 'strike', fill: 'forwards' },
   );
-  const strikes = [swing];
-  if (target) {
-    strikes.push(
-      // anim: lunge
-      target.animate(
-        [
-          { transform: home },
-          { transform: home, offset: windup / go, easing: strikeCurve },
-          { transform: thit },
-        ],
-        { duration: ms(go), id: 'strike', fill: 'forwards' },
-      ),
-    );
-  }
-  const settles: Animation[] = [];
+  let retreat: Animation | null = null;
   let touched = false;
   const end = () => {
     // Ended before the hit (never expected): the hit still lands, so
@@ -256,26 +249,19 @@ export function lunge(from: string[], to: string[], amount: number, scale: numbe
       touched = true;
       hit();
     }
-    for (const x of [...strikes, ...settles]) {
-      x.onfinish = null;
-      x.oncancel = null;
+    for (const x of [swing, retreat]) {
+      if (x) {
+        x.onfinish = null;
+        x.oncancel = null;
+      }
     }
     c.remove();
-    target?.remove();
     src.style.visibility = '';
-    if (target) {
-      dst.style.visibility = '';
-    }
-    for (const el of [src, dst]) {
-      if (held.get(el) === end) {
-        held.delete(el);
-      }
+    if (held.get(src) === end) {
+      held.delete(src);
     }
   };
   held.set(src, end);
-  if (target) {
-    held.set(dst, end);
-  }
   const contact = () => {
     if (touched) {
       return;
@@ -283,15 +269,8 @@ export function lunge(from: string[], to: string[], amount: number, scale: numbe
     touched = true;
     playSound(hitSound(amount));
     burst(b, amount, scale, lethal);
-    const back = (el: HTMLElement, from: string) =>
-      // anim: lunge
-      el.animate([{ transform: from }, { transform: home }], { duration: ms(settle), easing: settleCurve, id: 'settle' });
-    const retreat = back(c, ahit);
-    settles.push(retreat);
-    if (target) {
-      settles.push(back(target, thit));
-    }
-    // Both settle in the same time: the attacker's end ends both.
+    // anim: lunge
+    retreat = c.animate([{ transform: ahit }, { transform: home }], { duration: ms(settle), easing: settleCurve, id: 'settle' });
     retreat.onfinish = end;
     retreat.oncancel = end;
     hit();

@@ -46,7 +46,7 @@ describe('elastic-out', () => {
 
 describe('feel', () => {
   it('keeps each part of a motion inside its time', () => {
-    const parts = [feel.lunge.pull, ...feel.banner.times, ...feel.banner.longTimes];
+    const parts = [feel.lunge.pull, feel.lunge.short, ...feel.banner.times, ...feel.banner.longTimes];
     for (const p of parts) {
       expect(p).toBeGreaterThanOrEqual(0);
       expect(p).toBeLessThanOrEqual(1);
