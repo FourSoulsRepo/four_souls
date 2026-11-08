@@ -4144,7 +4144,7 @@ Totals by system (130 items):
    3. Cause not found; left for a later look, with the owner.
 
 
-### [ ] 19.133 e2e: the curses test takes Curse of the Tower for a curse
+### [x] 19.133 e2e: the curses test takes Curse of the Tower for a curse
 
 1. Goal: the 15.55 curses test passes whatever the deal.
 2. Report (agent, 2026-11-08)
@@ -4156,4 +4156,7 @@ Totals by system (130 items):
    2. The test looks for any items-row card whose name starts with "Curse".
    3. The app was right; the test depends on the deal.
 4. Tasks:
-   1. [ ] Look for the curses the test gave, by name, not by the word.
+   1. [x] Look for the curses the test gave, by name, not by the word.
+5. Fix (2026-11-08)
+   1. The test looks for the curses it gave by their objects (9201–9211).
+   2. An item named "Curse ..." in the items row no longer fails it.

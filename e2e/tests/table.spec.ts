@@ -818,8 +818,9 @@ test('curses sit at the far left of the player, apart from the items (15.55)', a
     const curses = area.locator('.curses');
     const cards = curses.locator('.card');
     await expect(cards).toHaveCount(position === 'bottom' ? 2 : 1);
-    // No curse in the items row.
-    await expect(area.locator('[role="group"][aria-label$="items"] .card[aria-label^="Curse"]')).toHaveCount(0);
+    // None of the given curses in the items row: by their objects, as
+    // an item may be named "Curse of the Tower" (19.133).
+    await expect(area.locator('[role="group"][aria-label$="items"] .card:is([data-zone^="obj-920"], [data-zone="obj-9211"])')).toHaveCount(0);
     // The curses stand left of the character, and of the soul crystals
     // too, at the far left of the area.
     const character = await area.locator('.player-cards:has(.souls)').boundingBox();
