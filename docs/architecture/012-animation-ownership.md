@@ -80,6 +80,7 @@ Use option 1.
    4. The same animation may claim again: two copies of a card.
    5. A `show` clashes in the same or the next beat.
    6. Two places are two jobs: to the discard, then drawn back (19.134).
+   7. Two known objects are two cards: two copies played in a row (19.136).
 3. A clash is logged, kept in `clashes`, and the second one skipped.
 4. Every animation site has an `anim: <id>` tag.
    1. `docs/wiki/Animations.md` has one row per id.

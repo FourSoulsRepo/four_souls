@@ -37,11 +37,11 @@ This step never closes; new reports are appended.
 | B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90, 19.106 | 10 |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74, 19.111                      | 5     |
-| E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52, 19.54, 19.69, 19.130, 19.134 | 11 |
+| E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52, 19.54, 19.69, 19.130, 19.134, 19.136 | 12 |
 | F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88, 19.99, 19.102, 19.118, 19.119 | 11    |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
-| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122, 19.125, 19.126, 19.127, 19.120, 19.128, 19.132, 19.133 | 34 |
+| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122, 19.125, 19.126, 19.127, 19.120, 19.128, 19.132, 19.133, 19.137 | 35 |
 | J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107, 19.117, 19.121 | 21 |
 | Q  | Load tool: a lost connection ends a game | Go tools   | 19.108, 19.131                                         | 2     |
 | K  | Build and release files                  | Release    | 19.47, 19.59, 19.83, 19.91                             | 4     |
@@ -53,15 +53,15 @@ This step never closes; new reports are appended.
 | R  | Vitest setup: a test sees stale files    | Vitest     | 19.124                                                 | 1     |
 | S  | Sound: media players never released      | Client     | 19.135                                                 | 1     |
 
-Totals by system (132 items):
+Totals by system (134 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
 | Engine    | A, B    | 28    |
 | Card data | C       | 2     |
-| Client    | D–G, O, P, S | 35 |
+| Client    | D–G, O, P, S | 36 |
 | Server    | H, N    | 2     |
-| e2e       | I, J    | 55    |
+| e2e       | I, J    | 56    |
 | Release   | K       | 4     |
 | None      | L       | 2     |
 | Go tests  | M       | 1     |
@@ -4229,3 +4229,59 @@ Totals by system (132 items):
    6. It failed on another bug: "animation clash: played shows ... after played".
    7. The 4-player run logged it too; not this item's cause.
    8. Evidence: `.cache/e2e-evidence/games-83175-after/`, `games-83175-3p-rerun/`.
+
+### [x] 19.136 Animation clash: two copies of a loot card played in a row
+
+1. Goal: another player may play two copies of one loot card in a row.
+2. Report (main session, 2026-11-08)
+   1. Seen in `make e2e-games` after 19.135, seed 83175.
+   2. 3 players: Ann's and Cid's pages logged a clash.
+   3. "animation clash: played shows two_cents after played".
+   4. 4 players: "played shows four_cents after played", three pages.
+   5. Evidence: `.cache/e2e-evidence/games-83175-3p-rerun/` (not in git).
+   6. And `.cache/e2e-evidence/games-83175-after/` (4 players).
+3. Cause
+   1. 3 players: Bob plays 2 Cents! at step 205 (object 512).
+   2. The stack resolves; the others pass.
+   3. Step 212: Bob plays his second 2 Cents! (object 514).
+   4. Server auto passes fold steps into one update (`after`, N-05).
+   5. So the two plays came in two updates in a row.
+   6. 4 players: Bob's 4 Cents! at steps 645 and 658, objects 572, 575.
+   7. A `show` clashes in the same or the next beat (19.4).
+   8. The claim keys on the card's name: two copies look like one card.
+   9. A legal play; the playback was right. The clash rule was wrong.
+4. Tasks:
+   1. [x] A `played` effect carries its object.
+   2. [x] Two `show` claims of known, different objects: no clash.
+   3. [x] Unknown object, or the same one: a clash as before (19.4).
+   4. [x] Vitest: two copies in two updates in a row, no clash.
+   5. [x] ADR 012 and Animations.md: the `show` rule.
+5. Fix (2026-11-08)
+   1. `played` takes the object of its `loot_played` event.
+   2. `claim` takes `{ to, object }`; a claim keeps both.
+   3. Known, different objects: no clash, for any job.
+   4. A `reveal` and a choice deal carry no object: as before.
+   5. The newer big card still sends the older one away (20.9).
+   6. ADR 012 2.7 added; Animations.md `show` row.
+
+### [ ] 19.137 e2e: whole random games hit the 1 h test timeout
+
+1. Goal: `make e2e-games` finishes a long 3 or 4 player game in time.
+2. Report (main session, 2026-11-08)
+   1. `make e2e-games`, seed 83175, after 19.135.
+   2. 3 players: test timeout at 1 h, about 140 turns, 9354 steps.
+   3. 4 players: test timeout at 1 h, about 115 turns, 9659 steps.
+   4. Neither game was stuck: it moved until the timeout.
+   5. Evidence: `.cache/e2e-evidence/games-83175-after/` (not in git).
+3. Cause
+   1. The test plays at the page's speed, "normal".
+   2. A page acts only when its playback is idle (`seen`, `ready`).
+   3. So every page's animation time adds to the game's time.
+   4. Step 20 made animations longer: draws, banners, big cards.
+   5. 2026-10-15 logs: about 0.16 s a step; 3 players, 11 s a turn.
+   6. Now: 0.25–0.37 s a step; 3 players, 19–36 s a turn.
+   7. A step grows slower late in a game: more effects per step.
+   8. The 1 h limit dates from the faster playback.
+4. Tasks:
+   1. [ ] Choose: a faster speed, or a longer timeout.
+   2. [ ] Rerun `make e2e-games`.

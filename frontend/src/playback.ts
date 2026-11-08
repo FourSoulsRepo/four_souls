@@ -43,7 +43,8 @@ export type Effect =
   // played: another player's loot card rises from their hand, shows
   // large and goes on the stack (15.31, H-10, 15.74). It outlives its
   // effect: playback goes on 1 s after it shows (20.9, playedEnds).
-  | { kind: 'played'; card: string; who: string; from: string[]; to: string[] }
+  // object: the played card's object, so two copies are two cards (19.136).
+  | { kind: 'played'; card: string; who: string; from: string[]; to: string[]; object?: number }
   // place: a card flies into a slot and stays there until the view is
   // shown, so later effects play over it (19.3).
   | { kind: 'place'; from: string[]; to: string[]; card: string; back: Kind; middle?: boolean }
@@ -432,7 +433,14 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
         // viewer without a seat (you −1: a spectator, a replay) sees
         // every play.
         if (e.card && e.player !== ctx.you) {
-          out.push({ kind: 'played', card: e.card, who: ctx.name(e.player), from: handZones(e.player), to: ['stack'] });
+          out.push({
+            kind: 'played',
+            card: e.card,
+            who: ctx.name(e.player),
+            from: handZones(e.player),
+            to: ['stack'],
+            ...(e.object === undefined ? {} : { object: e.object }),
+          });
         }
         break;
       case 'turn_started': {

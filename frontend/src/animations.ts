@@ -22,11 +22,17 @@ export interface Clash {
   second: string;
 }
 
-interface Claim {
+// Where tells claims of one card apart, when known. to: where an
+// arrival brings the card (19.134). object: which copy of the card is
+// shown (19.136).
+export interface Where {
+  to?: string | undefined;
+  object?: number | undefined;
+}
+
+interface Claim extends Where {
   by: string;
   beat: number;
-  // to: where an arrival brings the card, when known (19.134).
-  to?: string;
 }
 
 let beat = 0;
@@ -54,15 +60,20 @@ export function nextBeat(): void {
 // to it within reach. One animation may bring a card again: two copies
 // of a card, or a card looted and discarded in one update. Arrivals at
 // two known, different places are two jobs: a card flies to the loot
-// discard and is drawn back from it in one update (19.134).
-export function claim(card: string, job: Job, by: string, to?: string): boolean {
+// discard and is drawn back from it in one update (19.134). Two known,
+// different objects are two cards: two copies of a loot card played in
+// two updates in a row (19.136).
+export function claim(card: string, job: Job, by: string, where: Where = {}): boolean {
   const key = `${job}:${card}`;
   const old = claims.get(key);
-  claims.set(key, { by, beat, ...(to === undefined ? {} : { to }) });
+  claims.set(key, { by, beat, ...where });
   if (!old || beat - old.beat > reach(job) || (job === 'arrive' && old.by === by)) {
     return true;
   }
-  if (job === 'arrive' && to !== undefined && old.to !== undefined && to !== old.to) {
+  if (job === 'arrive' && apart(where.to, old.to)) {
+    return true;
+  }
+  if (apart(where.object, old.object)) {
     return true;
   }
   const clash = { card, job, first: old.by, second: by };
@@ -71,21 +82,26 @@ export function claim(card: string, job: Job, by: string, to?: string): boolean 
   return false;
 }
 
+// apart: both are known and differ.
+function apart<T>(a: T | undefined, b: T | undefined): boolean {
+  return a !== undefined && b !== undefined && a !== b;
+}
+
 // claimEffect claims the card an effect brings or shows; false means
 // it clashes and is skipped.
 export function claimEffect(e: Effect): boolean {
   switch (e.kind) {
     case 'fly':
     case 'place':
-      return e.card === undefined || claim(e.card, 'arrive', e.kind, e.to[0]);
+      return e.card === undefined || claim(e.card, 'arrive', e.kind, { to: e.to[0] });
     case 'draw':
       // An own draw brings its card to the hand (20.7); another
       // player's card is never seen.
-      return !e.own || e.card === undefined || claim(e.card, 'arrive', 'loot-draw', e.to[0]);
+      return !e.own || e.card === undefined || claim(e.card, 'arrive', 'loot-draw', { to: e.to[0] });
     case 'reveal':
       return claim(e.card, 'show', 'reveal');
     case 'played':
-      return claim(e.card, 'show', 'played');
+      return claim(e.card, 'show', 'played', { object: e.object });
     default:
       return true;
   }

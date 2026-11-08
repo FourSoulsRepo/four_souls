@@ -148,7 +148,7 @@ describe('effectsFor', () => {
       { kind: 'loot_played', player: 0, object: 71, card: 'a_penny' },
     ];
     expect(effectsFor(events, ctx)).toEqual([
-      { kind: 'played', card: 'bomb', who: 'Bo', from: ['hand-1', 'player-1'], to: ['stack'] },
+      { kind: 'played', card: 'bomb', who: 'Bo', from: ['hand-1', 'player-1'], to: ['stack'], object: 70 },
     ]);
   });
 

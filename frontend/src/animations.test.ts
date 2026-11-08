@@ -63,6 +63,28 @@ describe('claims', () => {
     expect(clashes).toEqual([]);
   });
 
+  // Another player may play two copies of a loot card in two updates in
+  // a row: two objects, two cards, no clash (19.136). One object shown
+  // twice, or a show with no object, still clashes (19.4).
+  it('lets two copies of a played card show in two updates in a row', () => {
+    const played = (object?: number) => ({ kind: 'played' as const, card: 'two_cents', who: 'Bob', from: ['hand-1'], to: ['stack'], ...(object === undefined ? {} : { object }) });
+    expect(claimEffect(played(512))).toBe(true);
+    nextBeat();
+    expect(claimEffect(played(514))).toBe(true);
+    expect(clashes).toEqual([]);
+    nextBeat();
+    expect(claimEffect(played(514))).toBe(false);
+    nextBeat();
+    nextBeat();
+    expect(claimEffect(played(520))).toBe(true);
+    nextBeat();
+    expect(claimEffect(played())).toBe(false);
+    expect(clashes).toEqual([
+      { card: 'two_cents', job: 'show', first: 'played', second: 'played' },
+      { card: 'two_cents', job: 'show', first: 'played', second: 'played' },
+    ]);
+  });
+
   it('claims nothing for effects that bring no card', () => {
     expect(claimEffect({ kind: 'dice', value: 3, label: '', player: 0 })).toBe(true);
     expect(claimEffect({ kind: 'fly', from: ['deck-loot'], to: ['hand-1'], back: 'loot' })).toBe(true);
