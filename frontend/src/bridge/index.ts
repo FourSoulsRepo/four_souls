@@ -242,6 +242,12 @@ export interface Sounds {
   endTurnCue: string[];
   timerTick: string[];
   timerLast: string[];
+  choiceDeal: string[];
+  choicePick: string[];
+  cardGrab: string[];
+  aimCancel: string[];
+  playRefused: string[];
+  historyHover: string[];
 }
 
 // getSounds returns the sound URLs.

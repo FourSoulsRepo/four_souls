@@ -322,6 +322,12 @@ Clips (traced 2026-11-06 in Fanstone 37.0.254477):
 | `timer-tick` | `Countdown_Tick.wav` | `d4cbcbff6b2c84843839a2787776a2b8` | `TurnTimer.m_TickSound` | 20.15 |
 | `timer-last` | `Countdown_Tick_Final.wav` | `e99b87e5dc68bcc4dbe04e8e05190b6a` | `TurnTimer.m_FinalTickSound` | 20.15 |
 | `attack-hit-1` | `FX_Minion_AttackImpact.wav` | `784c4afefc057624fa90cab6478eed93` | `AttackSpellController.m_ImpactDefHandles`, power 0–5 | 20.3 |
+| `choice-deal` | `FX_GameStart09_CardsOntoTable.wav` | `d6db11e6fe15fb6448aa73618050217c` | ADR 027, 20.18 research | 20.18 |
+| `choice-pick` | `HeroDropItem1.wav` | `667e129aef9fb854cb4e74466fe7e942` | ADR 027, 20.18 research | 20.18 |
+| `card-grab` | `FX_MinionSummon01_DrawFromHand_01.wav` | `630f053471521454c96fe96837040c13` | ADR 027, 20.20 research | 20.20 |
+| `aim-cancel` | `cancel_attack.wav` | `066172a886131dc4b96649adffddf9cb` | ADR 027, 20.20 research | 20.20 |
+| `play-refused` | `UI_no_can_do.wav` | `9c034c03dde8fd8458679423cb554253` | ADR 027, 20.20 research | 20.20 |
+| `history-hover` | `history_event_mouseover.wav` | `5a250f9b221350647b46287650dd530c` | ADR 027, 20.21 research | 20.21 |
 
 Kept as it is: `loot-draw` (draw out).
 The reference's own: `draw_card_1..3.wav`.
@@ -354,6 +360,9 @@ Swapping it is the owner's call; not part of this step.
       2. List each difference with a recommendation.
    4. The owner picks what to build; then it is built here.
    5. A sound it needs comes as rule 8 says.
+   6. Owner picks (2026-11-08): every recommendation.
+      1. ADR 027 "Choosing cards" item 12, all 15.
+      2. Kept as they are: 5, 6, 14 (as recommended).
 3. Done when:
    1. ADR 027 has the findings and the differences.
    2. The owner's picks are built, with before and after screenshots.
@@ -409,6 +418,10 @@ Swapping it is the owner's call; not part of this step.
       4. List each difference with a recommendation.
    4. The owner picks what to build; then it is built here.
    5. A sound it needs comes as rule 8 says.
+   6. Owner picks (2026-11-08): every recommendation but 16.
+      1. ADR 027 "Playing from the hand" item 12.
+      2. 16, keyboard play: dropped; no key plays a card.
+      3. 12 holds the card till the answer, as the reference.
 3. Done when:
    1. ADR 027 has the findings and the differences.
    2. The owner's picks are built, with before and after screenshots.
@@ -436,6 +449,8 @@ Swapping it is the owner's call; not part of this step.
       2. List each difference with a recommendation.
    4. The owner picks what to build; then it is built here.
    5. A sound it needs comes as rule 8 says.
+   6. Owner picks (2026-11-08): every recommendation.
+      1. ADR 027 "History" item 11, all 18.
 3. Done when:
    1. ADR 027 has the findings and the differences.
    2. The owner's picks are built, with before and after screenshots.

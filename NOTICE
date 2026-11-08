@@ -82,6 +82,12 @@ reverse/sounds.sh of FourSoulsRepo/tools (20.17):
   end-turn-cue.mp3         VO_JobsDone (English)
   timer-tick.mp3           Countdown_Tick
   timer-last.mp3           Countdown_Tick_Final
+  choice-deal.mp3          FX_GameStart09_CardsOntoTable
+  choice-pick.mp3          HeroDropItem1
+  card-grab.mp3            FX_MinionSummon01_DrawFromHand_01
+  aim-cancel.mp3           cancel_attack
+  play-refused.mp3         UI_no_can_do
+  history-hover.mp3        history_event_mouseover
   Hearthstone is (c) Blizzard Entertainment, Inc. They belong to their
   owners, are not in this repository, and ship the same way as the card
   images. Converted to mono MP3.

@@ -338,6 +338,12 @@ export namespace main {
 	    endTurnCue: string[];
 	    timerTick: string[];
 	    timerLast: string[];
+	    choiceDeal: string[];
+	    choicePick: string[];
+	    cardGrab: string[];
+	    aimCancel: string[];
+	    playRefused: string[];
+	    historyHover: string[];
 	
 	    static createFrom(source: any = {}) {
 	        return new Sounds(source);
@@ -364,6 +370,12 @@ export namespace main {
 	        this.endTurnCue = source["endTurnCue"];
 	        this.timerTick = source["timerTick"];
 	        this.timerLast = source["timerLast"];
+	        this.choiceDeal = source["choiceDeal"];
+	        this.choicePick = source["choicePick"];
+	        this.cardGrab = source["cardGrab"];
+	        this.aimCancel = source["aimCancel"];
+	        this.playRefused = source["playRefused"];
+	        this.historyHover = source["historyHover"];
 	    }
 	}
 

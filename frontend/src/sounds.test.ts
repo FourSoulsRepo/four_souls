@@ -33,6 +33,12 @@ const none: Sounds = {
   endTurnCue: [],
   timerTick: [],
   timerLast: [],
+  choiceDeal: [],
+  choicePick: [],
+  cardGrab: [],
+  aimCancel: [],
+  playRefused: [],
+  historyHover: [],
 };
 
 const all: Sounds = {

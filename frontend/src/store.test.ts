@@ -104,6 +104,12 @@ describe('settings', () => {
       endTurnCue: [],
       timerTick: [],
       timerLast: [],
+      choiceDeal: [],
+      choicePick: [],
+      cardGrab: [],
+      aimCancel: [],
+      playRefused: [],
+      historyHover: [],
     });
     expect(useApp.getState().languages).not.toContain('xx');
     await useApp.getState().loadCards();

@@ -28,6 +28,12 @@ type Sounds struct {
 	EndTurnCue    []string `json:"endTurnCue"`    // nothing left to do this turn (20.10)
 	TimerTick     []string `json:"timerTick"`     // a response timer second (20.15)
 	TimerLast     []string `json:"timerLast"`     // the response timer's last second (20.15)
+	ChoiceDeal    []string `json:"choiceDeal"`    // a shown choice card arrives (20.18)
+	ChoicePick    []string `json:"choicePick"`    // a choice card is picked (20.18)
+	CardGrab      []string `json:"cardGrab"`      // a hand card is picked up (20.20)
+	AimCancel     []string `json:"aimCancel"`     // an aim is cancelled (20.20)
+	PlayRefused   []string `json:"playRefused"`   // a card cannot be played now (20.20)
+	HistoryHover  []string `json:"historyHover"`  // a history tile is hovered (20.21)
 }
 
 // soundFiles are the files of each sound, under the card images folder.
@@ -57,6 +63,12 @@ var soundFiles = Sounds{
 	EndTurnCue:    soundVariants("end-turn-cue", 1),
 	TimerTick:     soundVariants("timer-tick", 1),
 	TimerLast:     soundVariants("timer-last", 1),
+	ChoiceDeal:    soundVariants("choice-deal", 1),
+	ChoicePick:    soundVariants("choice-pick", 1),
+	CardGrab:      soundVariants("card-grab", 1),
+	AimCancel:     soundVariants("aim-cancel", 1),
+	PlayRefused:   soundVariants("play-refused", 1),
+	HistoryHover:  soundVariants("history-hover", 1),
 }
 
 // soundVariants names a sound's n files: <name>.mp3 alone, or
@@ -95,6 +107,12 @@ func (a *App) Sounds() Sounds {
 		EndTurnCue:    f(s.EndTurnCue),
 		TimerTick:     f(s.TimerTick),
 		TimerLast:     f(s.TimerLast),
+		ChoiceDeal:    f(s.ChoiceDeal),
+		ChoicePick:    f(s.ChoicePick),
+		CardGrab:      f(s.CardGrab),
+		AimCancel:     f(s.AimCancel),
+		PlayRefused:   f(s.PlayRefused),
+		HistoryHover:  f(s.HistoryHover),
 	}
 }
 
