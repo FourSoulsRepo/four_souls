@@ -4327,7 +4327,7 @@ Totals by system (135 items):
    1. [x] The strip shows only the newest tiles; the History panel keeps all.
    2. [x] Vitest: a long history gives a bounded strip.
    3. [x] UC-15 and wiki `Client.md` say so.
-   4. [ ] Rerun `make e2e-games`; compare early and late steps.
+   4. [x] Rerun `make e2e-games`; compare early and late steps.
 5. Fix (2026-11-08)
    1. `stripEntries` keeps the newest `stripTiles` (40) headlines.
    2. It reads the history from the end: no scan of the whole game.
@@ -4335,3 +4335,12 @@ Totals by system (135 items):
    4. Script time per step: 10–16 ms throughout, was 12 to 60.
    5. Step 2808: 118 ms a step, was 204 ms at step 2822.
    6. Not done: the History panel, when open, still draws every line.
+6. Rerun (2026-11-08), all three passed, no clash, no console problem
+   1. With the 19.97 and 19.109 bans.
+   2. 2 players: 29 turns, 274 s; 0.19 s a step early and late.
+   3. 3 players: 112 turns, 1331 s; 0.15 s a step early, 0.15–0.18 late.
+   4. 4 players: 129 turns, 1921 s, 12353 steps.
+   5. 4 players: 0.13 s a step for turns 0–10; 0.16 for turns 70–80.
+   6. Before the fix: 0.12 and 0.31.
+   7. Steps per turn stayed about 100 in both 4-player runs.
+   8. Log: `.cache/e2e-games-19.138.log` (not in git).
