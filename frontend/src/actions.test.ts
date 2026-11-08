@@ -11,6 +11,7 @@ import {
   PromptKind,
   Purpose,
   sameTarget,
+  shownByChoice,
 } from './actions';
 import type { Msg, Update } from './protocol';
 
@@ -403,3 +404,21 @@ describe('endTurnLook (20.10)', () => {
     expect(endTurnLook(turn([end, pass]), true, false)).toBe('turn');
   });
 });
+
+describe('shownByChoice', () => {
+  it('lists the card options and the subject of the own choose prompt (19.130)', () => {
+    const u = update(
+      {
+        waiting: { kind: PromptKind.choose, player: 0, purpose: Purpose.answer, options: [card('a_dime'), card('bomb'), m('ask.yes')] },
+        subject: { id: 9, card: 'a_penny', charged: false },
+      },
+      [],
+    );
+    expect([...shownByChoice(u, 0)].sort()).toEqual(['a_dime', 'a_penny', 'bomb']);
+    // Another player's prompt, or no prompt, showed this viewer nothing.
+    expect(shownByChoice(u, 1).size).toBe(0);
+    expect(shownByChoice(update({}, []), 0).size).toBe(0);
+    expect(shownByChoice(null, 0).size).toBe(0);
+  });
+});
+

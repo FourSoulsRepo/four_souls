@@ -1,7 +1,7 @@
 // The app's one store (ADR 008). Screens read it; only bridge results
 // and server messages write it.
 import { create } from 'zustand';
-import type { Choice } from './actions';
+import { shownByChoice, type Choice } from './actions';
 import {
   findGames,
   setFullscreen,
@@ -451,7 +451,7 @@ export const useApp = create<AppState>()((set, get) => {
       const moves = u.rollback_mode
         ? [...s.moves.filter((m) => !r || m.from < r.to), moveOf(u.events ?? [], entries, first, u.step, seatOf(s), names(u))]
         : [];
-      const looked = lookedAt(u.events ?? [], seatOf(s));
+      const looked = lookedAt(u.events ?? [], seatOf(s), shownByChoice(s.game, seatOf(s)));
       // A rollback jumps to the restored table: no animation, and what
       // the undone steps left on screen goes (item 8.5).
       const jump = u.rollback

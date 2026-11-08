@@ -703,11 +703,12 @@ export interface Looked {
 
 // lookedAt is the cards this viewer looks at in one update's events,
 // for the look dialog (V-07). A card looked at twice in one update
-// shows once (19.13).
-export function lookedAt(events: GameEvent[], you: number): Looked[] {
+// shows once (19.13). shown are the cards a choice showed just before:
+// they are not shown again (19.130); the history still tells the look.
+export function lookedAt(events: GameEvent[], you: number, shown: ReadonlySet<string> = new Set()): Looked[] {
   const seen = new Set<number>();
   return events.flatMap((e) => {
-    if (e.kind !== 'looked_at' || e.player !== you || !e.card) return [];
+    if (e.kind !== 'looked_at' || e.player !== you || !e.card || shown.has(e.card)) return [];
     const id = e.object ?? 0;
     if (seen.has(id)) return [];
     seen.add(id);

@@ -239,6 +239,17 @@ describe('lookedAt', () => {
     ]);
   });
 
+  it('leaves out the cards a choice showed just before (19.130)', () => {
+    const events = [
+      { kind: 'looked_at', player: 0, object: 7, card: 'a_dime', private: true },
+      { kind: 'looked_at', player: 0, object: 8, card: 'bomb', private: true },
+    ];
+    expect(lookedAt(events, 0, new Set(['a_dime', 'bomb']))).toEqual([]);
+    expect(lookedAt(events, 0, new Set(['bomb']))).toEqual([{ id: 7, card: 'a_dime' }]);
+    // The history still tells the look.
+    expect(entriesFor(events, 1, 0, n, 0)[0]).toMatchObject({ text: 'You look at A_DIME' });
+  });
+
   it('keeps whose hand a card is from; a deck card has no owner (19.71)', () => {
     const events = [
       { kind: 'looked_at', player: 0, object: 7, card: 'a_dime', private: true, by: 2 },

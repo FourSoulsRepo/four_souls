@@ -50,6 +50,11 @@
   * Others: "Ann puts the top loot card on the bottom".
   * Or: "Ann keeps the top loot card on top".
   * Others' line names the deck, never the card.
+* **2d. Pick one of the cards (19.130):** e.g. XVIII The Moon, IV The Emperor.
+  * The choice shows the deck's top cards; the player picks the one on top.
+  * No "You look at" dialog follows; the choice showed them.
+  * The history keeps "You look at <card>" for each.
+  * The same after a question about one card (2a).
 
 ## Postconditions
 

@@ -308,6 +308,18 @@ function turnWhy(blocked: Block[], names: MsgNames): NonNullable<TurnActions['wh
   return { ...(attack ? { attack } : {}), ...(buy ? { buy } : {}), ...(endTurn ? { endTurn } : {}) };
 }
 
+// shownByChoice is the cards the viewer's own choose prompt showed in
+// update u: its card options and the card it is about (19.130). A look
+// at them after the answer shows nothing new, so it opens no window.
+export function shownByChoice(u: Update | null | undefined, you: number): Set<string> {
+  if (u?.view.waiting.kind !== PromptKind.choose || u.view.waiting.player !== you) {
+    return new Set();
+  }
+  const cards = (u.view.waiting.options ?? []).map((m) => optionCard(m)).filter((c) => c !== undefined);
+  const subject = u.view.subject?.card;
+  return new Set(subject ? [...cards, subject] : cards);
+}
+
 // optionCard is the card an option is, if it is one ("ask.card").
 function optionCard(m?: Msg): string | undefined {
   const v = m?.key === 'ask.card' ? m.args?.card : undefined;

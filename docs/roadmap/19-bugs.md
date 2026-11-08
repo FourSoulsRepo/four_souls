@@ -37,7 +37,7 @@ This step never closes; new reports are appended.
 | B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90, 19.106 | 10 |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74, 19.111                      | 5     |
-| E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52, 19.54, 19.69 | 9  |
+| E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52, 19.54, 19.69, 19.130 | 10 |
 | F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88, 19.99, 19.102, 19.118, 19.119 | 11    |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
@@ -52,13 +52,13 @@ This step never closes; new reports are appended.
 | P  | A missing setting: no way to change it   | Client     | 19.93                                                  | 1     |
 | R  | Vitest setup: a test sees stale files    | Vitest     | 19.124                                                 | 1     |
 
-Totals by system (126 items):
+Totals by system (127 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
 | Engine    | A, B    | 28    |
 | Card data | C       | 2     |
-| Client    | D–G, O, P | 32  |
+| Client    | D–G, O, P | 33  |
 | Server    | H, N    | 2     |
 | e2e       | I, J    | 53    |
 | Release   | K       | 4     |
@@ -4067,3 +4067,29 @@ Totals by system (126 items):
 4. Result
    1. No code change; no Go test needed.
    2. The 19.126 test no longer depends on this: it plays A Penny!.
+
+### [x] 19.130 After The Moon's pick, a "You look at" window shows the same 5 cards again
+
+1. Goal: a choice that showed the cards is not followed by a look at them.
+2. Report (owner, 2026-11-08)
+   1. Found in 20.18's research; ADR 027 "Choosing cards" 11.15 and 12.11.
+   2. XVIII The Moon: the player picks the card to keep on top.
+   3. Then a "You look at" window shows all 5 cards once more.
+   4. The reference shows nothing after the pick.
+3. Cause
+   1. `OneOnTop` calls `LookAt` on the 5 cards after the answer.
+   2. Each `looked_at` event opens the look window (`lookedAt`, V-07).
+   3. The choice had shown those cards as its options already.
+   4. 19.16 dropped the look after the order prompt; this one stayed.
+4. Tasks:
+   1. [x] Skip the look window for cards the viewer's last choice showed.
+   2. [x] Keep the event and its history line.
+   3. [x] Vitest for the filter; e2e for The Moon's real flow.
+5. Fix (2026-11-08, in 20.18)
+   1. `shownByChoice`: the card options and subject of the own last prompt.
+   2. `lookedAt` leaves those cards out; the store passes the last update.
+   3. The engine is unchanged: `looked_at` stays a barrier and a history line.
+   4. Also covers 2a's question about one card (Cain's Eye): no repeat look.
+   5. UC-18 2d.
+   6. e2e `choice.spec.ts`: The Moon by a saved game; fails without the fix.
+
