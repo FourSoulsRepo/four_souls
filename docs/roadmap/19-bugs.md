@@ -37,7 +37,7 @@ This step never closes; new reports are appended.
 | B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90, 19.106 | 10 |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74, 19.111                      | 5     |
-| E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52, 19.54, 19.69, 19.130 | 10 |
+| E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52, 19.54, 19.69, 19.130, 19.134 | 11 |
 | F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88, 19.99, 19.102, 19.118, 19.119 | 11    |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
@@ -52,13 +52,13 @@ This step never closes; new reports are appended.
 | P  | A missing setting: no way to change it   | Client     | 19.93                                                  | 1     |
 | R  | Vitest setup: a test sees stale files    | Vitest     | 19.124                                                 | 1     |
 
-Totals by system (130 items):
+Totals by system (131 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
 | Engine    | A, B    | 28    |
 | Card data | C       | 2     |
-| Client    | D–G, O, P | 33  |
+| Client    | D–G, O, P | 34  |
 | Server    | H, N    | 2     |
 | e2e       | I, J    | 55    |
 | Release   | K       | 4     |
@@ -4160,3 +4160,26 @@ Totals by system (130 items):
 5. Fix (2026-11-08)
    1. The test looks for the curses it gave by their objects (9201–9211).
    2. An item named "Curse ..." in the items row no longer fails it.
+
+### [x] 19.134 Animation clash: a card drawn back from the discard it just flew to
+
+1. Goal: a card may fly to the loot discard and be drawn back in one update.
+2. Report (main session, 2026-11-08)
+   1. Seen in `make e2e-games` after 20.20: 4 players, seed 83175.
+   2. Cid's page: "animation clash: loot-draw arrives three_cents after fly".
+   3. Evidence: `.cache/e2e-evidence/games-20.20-clash/` (not in git).
+3. Cause
+   1. Cid's own draw took 3 Cents! back from the loot discard.
+   2. In the same update that card had flown to that discard.
+   3. Both claim "arrive" for the card: `fly`, then `loot-draw` (20.7).
+   4. Before 20.7 a looted card used `fly`, and one animation may bring a card again.
+   5. The two arrivals go to different places: discard, then hand.
+   6. So it is no clash; the claim rule ignores where a card arrives.
+4. Tasks:
+   1. [x] An arrival claim keeps its place; two clash only at the same place.
+   2. [x] Vitest: fly to the discard, then an own draw from it: no clash.
+5. Fix (2026-11-08)
+   1. `claim` takes the place an arrival goes to (`fly`, `place`, `loot-draw`).
+   2. Known, different places: no clash; same place or unknown: as before.
+   3. ADR 012 2.3 says "at one place"; 2.6 added. Animations.md `arrive` row.
+

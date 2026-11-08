@@ -54,6 +54,15 @@ describe('claims', () => {
     expect(clashes).toEqual([]);
   });
 
+  // A card may fly to the loot discard and be drawn back from it in one
+  // update: two arrivals at two places, no clash (19.134).
+  it('lets a card fly to the discard and be drawn back in one update', () => {
+    expect(claimEffect({ kind: 'fly', from: ['hand-1'], to: ['discard-loot'], card: 'three_cents', back: 'loot' })).toBe(true);
+    expect(claimEffect({ kind: 'draw', from: ['discard-loot'], to: ['hand-0', 'player-0'], card: 'three_cents', own: true, pace: 1 })).toBe(true);
+    expect(arrivedBy('three_cents')).toBe('loot-draw');
+    expect(clashes).toEqual([]);
+  });
+
   it('claims nothing for effects that bring no card', () => {
     expect(claimEffect({ kind: 'dice', value: 3, label: '', player: 0 })).toBe(true);
     expect(claimEffect({ kind: 'fly', from: ['deck-loot'], to: ['hand-1'], back: 'loot' })).toBe(true);

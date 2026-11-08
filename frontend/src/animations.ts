@@ -25,6 +25,8 @@ export interface Clash {
 interface Claim {
   by: string;
   beat: number;
+  // to: where an arrival brings the card, when known (19.134).
+  to?: string;
 }
 
 let beat = 0;
@@ -50,12 +52,17 @@ export function nextBeat(): void {
 // claim records that animation `by` does `job` to card. It returns false,
 // and records a clash, when another animation already did the same job
 // to it within reach. One animation may bring a card again: two copies
-// of a card, or a card looted and discarded in one update.
-export function claim(card: string, job: Job, by: string): boolean {
+// of a card, or a card looted and discarded in one update. Arrivals at
+// two known, different places are two jobs: a card flies to the loot
+// discard and is drawn back from it in one update (19.134).
+export function claim(card: string, job: Job, by: string, to?: string): boolean {
   const key = `${job}:${card}`;
   const old = claims.get(key);
-  claims.set(key, { by, beat });
+  claims.set(key, { by, beat, ...(to === undefined ? {} : { to }) });
   if (!old || beat - old.beat > reach(job) || (job === 'arrive' && old.by === by)) {
+    return true;
+  }
+  if (job === 'arrive' && to !== undefined && old.to !== undefined && to !== old.to) {
     return true;
   }
   const clash = { card, job, first: old.by, second: by };
@@ -70,11 +77,11 @@ export function claimEffect(e: Effect): boolean {
   switch (e.kind) {
     case 'fly':
     case 'place':
-      return e.card === undefined || claim(e.card, 'arrive', e.kind);
+      return e.card === undefined || claim(e.card, 'arrive', e.kind, e.to[0]);
     case 'draw':
       // An own draw brings its card to the hand (20.7); another
       // player's card is never seen.
-      return !e.own || e.card === undefined || claim(e.card, 'arrive', 'loot-draw');
+      return !e.own || e.card === undefined || claim(e.card, 'arrive', 'loot-draw', e.to[0]);
     case 'reveal':
       return claim(e.card, 'show', 'reveal');
     case 'played':
