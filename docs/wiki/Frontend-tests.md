@@ -82,6 +82,8 @@ Network play runs against the real Go server: `e2e/playwright.config.ts` starts 
 
 It is slow, so `make e2e` skips it. Run it with `make e2e-games` (Chromium only). Every 10 turns a test prints the turn, step, time and each player's souls; at the end, its seed, time, turns, steps and moves. `GAME_SEED=N` repeats the moves' choices; the server's deal stays random. The pages play at the "fast" animation speed: every effect still plays and is claimed, so the clash check holds, at half its time (19.137). `GAME_SPEED=normal` plays at the normal pace.
 
+The host bans the cards the load tool bans by default (`-ban` in `cmd/server_load`): Blue Baby, whose Forever Alone can repeat forever (19.97), and Smelter and Portable Slot Machine, which loop with other cards (19.109). A random player could repeat such a loop and the turn would never end. Keep the list in `games.spec.ts` the same as the load tool's, and drop a ban when its item is fixed.
+
 A failed game leaves what is needed to find the cause. Its match record (the deal and every move) is copied to `.cache/e2e-games/`, since the next run deletes the test servers' folders. Each page gets a screenshot and its store in the test's report; a page that stops answering gives the script stack it is stuck in, through a DevTools session opened with the page (19.12).
 
 The Vite server that Playwright starts watches no files (`FOUR_SOULS_E2E=1`, `frontend/vite.config.ts`). Otherwise a Wails build or an edit elsewhere would reload every test page in the middle of a game.

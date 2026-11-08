@@ -3166,6 +3166,7 @@ Totals by system (134 items):
 5. Done when:
    1. A game with Forever Alone out ends its turn.
    2. A test plays the activation loop and checks that End turn is offered.
+6. e2e-games bans it too: Blue Baby, in `games.spec.ts` (2026-11-08).
 
 ### [x] 19.98 The languages e2e test expects the first-roll prompt after Eden's choice
 
@@ -3490,6 +3491,7 @@ Totals by system (134 items):
    1. Find object 329 and why its prompt returns after a cancel.
    2. A cancel must not reopen the same prompt with no change.
    3. Test: the same choices in a rules test end the turn.
+5. e2e-games bans them too: Smelter, Portable Slot Machine, in `games.spec.ts` (2026-11-08).
 
 ### [ ] 19.110 Headless Horseman: prevent death lands it on 1 HP, so its heal ends at 3
 

@@ -25,6 +25,12 @@ const maxTurns = Number(process.env.GAME_TURNS ?? 300);
 // What it drops: motion at its normal pace, which the other specs check.
 // GAME_SPEED=normal plays at the normal pace.
 const speed = process.env.GAME_SPEED ?? 'fast';
+// bans: cards the host leaves out, as server_load's -ban default does
+// (cmd/server_load/main.go); keep the two lists the same. Each opens an
+// engine loop a random player can repeat forever, so its turn never ends:
+// Blue Baby starts with Forever Alone (19.97); Smelter and Portable Slot
+// Machine loop with other cards (19.109). Drop a ban when its item is fixed.
+const bans = ['blue_baby', 'smelter', 'portable_slot_machine'];
 // stallMs: no step for this long fails the game.
 const stallMs = 60_000;
 
@@ -454,6 +460,7 @@ test.describe('whole random games', () => {
       let opened = 0;
       const pages = await startGame(browser, names, {
         setup: everySet,
+        bans,
         open: (page) => {
           // A click that never lands fails fast: the next round looks
           // again, and the stall check sees a game that stops moving.
