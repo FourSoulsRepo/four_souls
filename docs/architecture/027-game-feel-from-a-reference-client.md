@@ -459,6 +459,36 @@ Each sub-step of step 20 takes the part it needs.
     18. Hover while aiming.
         1. Ours: allowed. Ref: off while the arrow is out.
         2. Recommend: keep ours; a look back can help the aim.
+12. Built in 20.21 (owner's picks: all; 1, 15–18 kept as ours).
+    1. Marks (11.2): `linkMarks` in the store, as entries come in.
+    2. A damage marks the play with its item's source, else its card.
+    3. Damages add up; a kill turns the mark into a skull.
+    4. A target the play did not name joins its list.
+    5. An attack's damage marks the attack roll at the same monster.
+    6. It looks back within the turn, 200 entries at most.
+    7. Size (11.3): rolls and damage half height, by the item's kind.
+    8. Frame (11.4): 2 px inside the tile, the owner's player color.
+    9. Owner: the item's controller, the buyer, the killer.
+    10. Full strip (11.5): the foot fades over 1.2 tile sides.
+    11. Only while more is below; a scroll to the end clears it.
+    12. New tile (11.6): 1 s, expo-out, from 1.3 tile widths left.
+    13. It is clipped at the strip's edge, so it comes out of the board's edge.
+    14. The list moves down as one element in the same time.
+    15. Speed scales it ("fast" 0.5 s); "off", reduced motion: at once.
+    16. Held (11.7): the tiles stay as the pointer found them.
+    17. A rollback still greys a held tile in place.
+    18. Hit area (11.8): the tile whose edge is nearest the pointer.
+    19. Sound (11.9): `historyHover` once per newly hovered tile.
+    20. Dim (11.11): the board to 30 % black, 0.5 s cubic in-out; out 0.1 s.
+    21. Kept: it did not flash sliding along the strip.
+    22. The dim follows the whole hit area, not a tile; gaps keep it.
+    23. Speed "off" and reduced motion: it shows and clears at once.
+    24. Separator (11.12): swords for an attack's roll, damage and kill.
+    25. Attack roll (11.13): the attacker's character, swords, the monster.
+    26. The monster carries the attack's damage and death too (11.2).
+    27. Targets (11.14): one row up to 4, then two rows.
+    28. Cards are hand size, shrunk past four a row.
+    29. Speed: each tile draws again only when its entry changes (19.138).
 
 ### Turn start
 

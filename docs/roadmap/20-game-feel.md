@@ -430,7 +430,7 @@ Swapping it is the owner's call; not part of this step.
    3. UC-13 matches the new flow.
    4. e2e: each kind of play, set up so it never depends on the deal.
 
-### [ ] 20.21 History strip, compared with the reference
+### [x] 20.21 History strip, compared with the reference
 
 1. Goal: the left history strip works like the reference's.
    1. Owner, 2026-11-08.
