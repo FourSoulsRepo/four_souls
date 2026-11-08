@@ -40,9 +40,11 @@ const claims = new Map<string, Claim>();
 export const clashes: Clash[] = [];
 
 // How many beats back a claim still clashes: a card shown large in the
-// update before is not shown again (19.4).
-function reach(job: Job): number {
-  return job === 'show' ? 1 : 0;
+// update before is not shown again (19.4). A choice's deal shows the
+// cards one player looks at, in a window, from the deck: a reveal of one
+// in a later update is a public event of its own (19.139).
+function reach(job: Job, by: string): number {
+  return job === 'show' && by !== 'choice-deal' ? 1 : 0;
 }
 
 // nextBeat starts the next update's animations.
@@ -67,7 +69,7 @@ export function claim(card: string, job: Job, by: string, where: Where = {}): bo
   const key = `${job}:${card}`;
   const old = claims.get(key);
   claims.set(key, { by, beat, ...where });
-  if (!old || beat - old.beat > reach(job) || (job === 'arrive' && old.by === by)) {
+  if (!old || beat - old.beat > reach(job, old.by) || (job === 'arrive' && old.by === by)) {
     return true;
   }
   if (job === 'arrive' && apart(where.to, old.to)) {

@@ -94,6 +94,26 @@ describe('claims', () => {
 
 // The inventory: every animation in the code carries an "anim: <id>"
 // tag, and docs/wiki/Animations.md has a row for each id (19.6).
+describe('a choice deal, then a reveal (19.139)', () => {
+  it('lets a card dealt in a look be revealed in the next update', () => {
+    resetClaims();
+    expect(claim('stoney', 'show', 'choice-deal')).toBe(true);
+    nextBeat();
+    expect(claim('stoney', 'show', 'reveal')).toBe(true);
+    expect(clashes).toEqual([]);
+  });
+
+  it('still finds a reveal in the same update, or a deal right after a reveal', () => {
+    resetClaims();
+    claim('stoney', 'show', 'choice-deal');
+    expect(claim('stoney', 'show', 'reveal')).toBe(false);
+    resetClaims();
+    claim('fly', 'show', 'reveal');
+    nextBeat();
+    expect(claim('fly', 'show', 'choice-deal')).toBe(false);
+  });
+});
+
 describe('animation inventory', () => {
   const sources = import.meta.glob<string>(['./**/*.{ts,tsx,css}', '!./**/*.test.ts'], {
     query: '?raw',

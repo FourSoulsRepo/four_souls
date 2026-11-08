@@ -81,6 +81,8 @@ Use option 1.
    5. A `show` clashes in the same or the next beat.
    6. Two places are two jobs: to the discard, then drawn back (19.134).
    7. Two known objects are two cards: two copies played in a row (19.136).
+   8. A choice's deal clashes in its own beat only (19.139).
+   9. A card looked at in a window may be revealed in the next update.
 3. A clash is logged, kept in `clashes`, and the second one skipped.
 4. Every animation site has an `anim: <id>` tag.
    1. `docs/wiki/Animations.md` has one row per id.
