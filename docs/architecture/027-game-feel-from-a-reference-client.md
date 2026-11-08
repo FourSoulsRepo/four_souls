@@ -533,6 +533,131 @@ Each sub-step of step 20 takes the part it needs.
    10. No server change: 5 s allowance and restarts stay.
    11. The Soft vote's timer keeps its full countdown.
 
+### Choosing cards
+
+1. Checked in 20.18 (`ChoiceCardMgr`, `Banner`, `InputManager`, `Card`).
+   1. Also its prefab data and three `SoundDef`s, via UnityPy.
+   2. A "general" choice: the server lists cards; the chooser picks.
+   3. The cards are real card objects, not copies in a dialog.
+2. Where they show.
+   1. One row, centred on a fixed spot above the board.
+   2. 1–3 cards: full size, gaps of about a quarter card.
+   3. 4: full size, gap a fifth; 5: 85 %, gap an eighth.
+   4. 6 and more: 70 %, gap a tenth; never a second row.
+   5. No dimmed backdrop; the board stays in view around them.
+3. How they come in, normally.
+   1. Each starts at its place, at size 0.
+   2. It grows to full in 0.2 s, expo-out (iTween's default).
+   3. All cards at once; no stagger, no sound.
+4. How they come in from a deck (a card tag: "show from deck").
+   1. Each starts on the deck, face down.
+   2. Path: deck → 3.6 units above it → its place, 1.5 s.
+   3. Its ease is sine-in-expo-out, so expo-out in effect (see Draw).
+   4. It turns face up over 1.5 s, after 0.094 s.
+   5. Cards leave 0.09 s apart; the first gap is 0.19 s.
+   6. Each plays `FX_GameStart09_CardsOntoTable` 0.04 s after it leaves.
+5. The banner.
+   1. "Choose One" by default; a card may give its own words.
+   2. It shows at once above the cards; it has floating motes.
+   3. Only one card's banner grows from 0, in 0.5 s.
+   4. A headline and an optional caption line.
+6. Hover and pick.
+   1. A pickable card glows; hover switches it to a brighter glow.
+   2. No hover growth in this code; the card is already big.
+   3. One pick: a click on the card sends it at once.
+   4. The pick plays `HeroDropItem1` (pitch 0.9–1.1).
+   5. Nothing else to press: no name buttons, no confirm.
+7. Several picks.
+   1. A click toggles a card; a chosen card gets an X mark.
+   2. A Confirm button sends; End Turn sends too.
+   3. Buttons click with `UI_MouseClick_01` (pitch 0.9–1.1).
+8. Hide and show.
+   1. A "Hide" button beside the cards.
+   2. Hide: cards shrink to 0 in 0.2 s; banner and Confirm go.
+   3. The button then reads "Show".
+   4. Show: cards grow back in 0.2 s, at their places, no deck flight.
+9. After the pick.
+   1. The unpicked cards vanish at once.
+   2. The picked card stays and then moves where the effect sends it.
+   3. A card tag may play a "selected" effect and an "unselected" one.
+   4. Dredge does: steam on the kept card, smoke on the rest.
+   5. Dredge is "look at the bottom 3, put one on top": our flow.
+10. Other players.
+    1. They see the chooser's cards too, at 1.5 / 2.85 = 53 % size.
+    2. At the chooser's side of the board; the server decides the faces.
+    3. A pick that comes before they show: they still show for 1 s.
+11. Ours, at 20.18.
+    1. `OneOnTop` (The Moon, IV The Emperor, IX The Hermit): a choose prompt.
+    2. Its options are the 5 cards; the rest go to the bottom, random.
+    3. Card options also: Eden's start, Friendly Sack, Red Key.
+    4. `PutBackInOrder`, `reorderADeck`, Sleight of Hand, Hagalaz.
+    5. Also Spelunker Hat: an order prompt (19.16).
+    6. Choose: `ChoiceDialog`; order: `OrderDialog` (UC-13, UC-18).
+    7. Both over a dark backdrop, 66 %, with a title line.
+    8. Choice cards: 110–180 px wide, 18 px gaps, wrap to rows.
+    9. Each card has its name as a red button under it.
+    10. Order: dashed places, 1 · top first; cards at table size, 80 px.
+    11. No entry motion, no sound, no exit motion.
+    12. "View board" hides at once; a bar at the bottom brings it back.
+    13. Hover opens the zoom, which covers the cards beside it.
+    14. Others see only "Waiting for Ann" and the question.
+    15. After The Moon's pick, a "You look at" dialog shows all 5 again.
+12. Differences and recommendations.
+    1. Entry from the deck.
+       1. Ours: all at once. Ref: each flies from the deck, turns face up.
+       2. Recommend for deck looks: fly from that deck, 0.09 s apart.
+       3. About 1 s each, expo-out; speed "off" shows them at once.
+    2. Entry otherwise.
+       1. Ours: at once. Ref: grow from 0 in 0.2 s, expo-out.
+       2. Recommend for other card choices: the same 0.2 s growth.
+    3. Deal sound.
+       1. Ours: none. Ref: one card-onto-table sound per card.
+       2. Recommend: `FX_GameStart09_CardsOntoTable` per card (rule 8).
+    4. Size and rows.
+       1. Ours: fixed size, wraps. Ref: one row; shrinks from 5 cards.
+       2. Recommend: one row up to 6; 85 % at 5, 70 % at 6.
+    5. Backdrop.
+       1. Ours: the board dims to 34 %. Ref: no dimming.
+       2. Recommend: keep ours; the dim says "nothing else takes clicks".
+    6. Title.
+       1. Ours: the question, at once. Ref: "Choose One", at once.
+       2. Recommend: keep ours; no change.
+    7. Name buttons.
+       1. Ours: a red name button under each card. Ref: the card only.
+       2. Recommend: drop the buttons for card options.
+       3. The card keeps its name as its label (keys, e2e, readers).
+    8. Hover.
+       1. Ours: the zoom covers the neighbours. Ref: a brighter glow only.
+       2. Recommend: a brighter glow and a small lift on hover.
+       3. The zoom only after the usual delay, or on right click.
+    9. Pick sound.
+       1. Ours: none. Ref: `HeroDropItem1`, pitch 0.9–1.1.
+       2. Recommend: that clip on a pick (rule 8); no random pitch.
+    10. After the pick.
+        1. Ours: the dialog closes at once. Ref: rest vanish; pick moves on.
+        2. Recommend for deck looks: the cards fly back to the deck.
+        3. The kept card to the top first; the rest slide under, 0.5 s.
+        4. For the order prompt: back in the set order, top last.
+    11. The look after The Moon.
+        1. Ours: a "You look at" dialog repeats the 5 cards. Ref: nothing.
+        2. Recommend: no look dialog after a choice that showed the cards.
+        3. As 19.16 did for the order prompt; the history line stays.
+    12. Hide and show.
+        1. Ours: hides at once. Ref: shrink and grow, 0.2 s each.
+        2. Recommend: the same 0.2 s shrink and growth; keep our bar.
+    13. Other players.
+        1. Ours: text only. Ref: the chooser's cards, small, at their side.
+        2. Recommend: small backs over the deck being looked at.
+        3. Faces stay hidden; they leave with the cards' flight back.
+    14. Several picks.
+        1. Ours: discard toggles a glow; the button counts.
+        2. Ref: an X mark per chosen card and a Confirm button.
+        3. Recommend: keep ours; it already says how many are left.
+    15. The order prompt.
+        1. The reference has none; Dredge picks one card only.
+        2. Recommend: keep our places; take only the motion above.
+        3. Cards at the choice size, not table size, if they fit one row.
+
 ## Consequences
 
 ### Positive
