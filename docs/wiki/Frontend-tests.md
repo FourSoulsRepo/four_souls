@@ -80,7 +80,7 @@ Network play runs against the real Go server: `e2e/playwright.config.ts` starts 
 * a page reloads, which drops its game;
 * one round of moves takes over 30 seconds.
 
-It is slow, so `make e2e` skips it. Run it with `make e2e-games` (Chromium only). Every 10 turns a test prints the turn, step, time and each player's souls; at the end, its seed, time, turns, steps and moves. `GAME_SEED=N` repeats the moves' choices; the server's deal stays random.
+It is slow, so `make e2e` skips it. Run it with `make e2e-games` (Chromium only). Every 10 turns a test prints the turn, step, time and each player's souls; at the end, its seed, time, turns, steps and moves. `GAME_SEED=N` repeats the moves' choices; the server's deal stays random. The pages play at the "fast" animation speed: every effect still plays and is claimed, so the clash check holds, at half its time (19.137). `GAME_SPEED=normal` plays at the normal pace.
 
 A failed game leaves what is needed to find the cause. Its match record (the deal and every move) is copied to `.cache/e2e-games/`, since the next run deletes the test servers' folders. Each page gets a screenshot and its store in the test's report; a page that stops answering gives the script stack it is stuck in, through a DevTools session opened with the page (19.12).
 

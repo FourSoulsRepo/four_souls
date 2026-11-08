@@ -149,7 +149,7 @@ export async function startGame(
 
 // setSpeed sets the page's animation speed for this session only, not
 // in its saved settings, and returns the speed before.
-async function setSpeed(page: Page, speed: string): Promise<string> {
+export async function setSpeed(page: Page, speed: string): Promise<string> {
   return page.evaluate((speed) => {
     interface S {
       settings: { animation: string };

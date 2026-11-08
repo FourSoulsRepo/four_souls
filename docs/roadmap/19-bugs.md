@@ -4264,7 +4264,7 @@ Totals by system (134 items):
    5. The newer big card still sends the older one away (20.9).
    6. ADR 012 2.7 added; Animations.md `show` row.
 
-### [ ] 19.137 e2e: whole random games hit the 1 h test timeout
+### [x] 19.137 e2e: whole random games hit the 1 h test timeout
 
 1. Goal: `make e2e-games` finishes a long 3 or 4 player game in time.
 2. Report (main session, 2026-11-08)
@@ -4283,5 +4283,20 @@ Totals by system (134 items):
    7. A step grows slower late in a game: more effects per step.
    8. The 1 h limit dates from the faster playback.
 4. Tasks:
-   1. [ ] Choose: a faster speed, or a longer timeout.
-   2. [ ] Rerun `make e2e-games`.
+   1. [x] Choose: a faster speed, or a longer timeout.
+   2. [x] Rerun `make e2e-games`.
+5. Fix (2026-11-08)
+   1. Chosen: every page plays at "fast"; the 1 h timeout stays.
+   2. "fast" plays every effect, half as long.
+   3. Claims and the clash check still run on each effect.
+   4. "off" would skip effects and claims: no clash check.
+   5. A longer timeout alone would make a long game take 2 h or more.
+   6. Dropped: motion at its normal pace; other specs check it.
+   7. `GAME_SPEED=normal` plays at the normal pace.
+   8. `setSpeed` (game.ts) sets it, as for the first roll (19.120).
+   9. Wiki `Frontend-tests.md` says so.
+6. Rerun (2026-11-08), all three passed, no clash, no console problem
+   1. 2 players: 18 turns, 205 s.
+   2. 3 players: 39 turns, 524 s.
+   3. 4 players: 82 turns, 1411 s; 0.19 s a step, was 0.32.
+   4. A 300-turn game would still pass 1 h; none came near that cap.

@@ -6,16 +6,25 @@
 // Slow, so opt-in: FULL_GAMES=1, or `make e2e-games`.
 // GAME_SEED repeats the moves' choices; the server's deal stays random.
 // GAME_TURNS caps a game (default 300 turns).
+// GAME_SPEED sets the pages' animation speed (default fast, 19.137).
 import { copyFileSync, mkdirSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import type { CDPSession, Locator, Page } from '@playwright/test';
 import { expect, test } from './fixtures';
-import { startGame } from './game';
+import { setSpeed, startGame } from './game';
 import { serverPort } from './server';
 import { enabled, endTurnButton, endTurnQuestion, passButton, playSpot, reachable, seen, tablePicks, throwButton, turnAction, type Seen } from './turn';
 import { tr, trRe } from './locale';
 
 const maxTurns = Number(process.env.GAME_TURNS ?? 300);
+// speed: every page plays at "fast" (19.137). A page acts only when its
+// playback is idle, so animation time adds to the game's time; at
+// "normal" step 20's longer motions took 3 and 4 player games past the
+// 1 h timeout. "fast" plays every effect, half as long: claims and the
+// clash check still run on each one. "off" would skip effects and claims.
+// What it drops: motion at its normal pace, which the other specs check.
+// GAME_SPEED=normal plays at the normal pace.
+const speed = process.env.GAME_SPEED ?? 'fast';
 // stallMs: no step for this long fails the game.
 const stallMs = 60_000;
 
@@ -453,7 +462,8 @@ test.describe('whole random games', () => {
           return attachDebugger(page);
         },
       });
-      console.log(`${String(players)} players, seed ${String(seed)}: started`);
+      await Promise.all(pages.map((page) => setSpeed(page, speed)));
+      console.log(`${String(players)} players, seed ${String(seed)}, speed ${speed}: started`);
       test.info().annotations.push({ type: 'seed', description: String(seed) });
       let passed = false;
       try {
