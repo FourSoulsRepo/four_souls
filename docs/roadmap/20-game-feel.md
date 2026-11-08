@@ -39,6 +39,7 @@ Rules for this step (owner, 2026-11-06):
     3. Game repo commits never include the submodule pointer.
     4. The owner merges, pushes and bumps the pointer by hand.
 12. Order: 20.18 runs before the step review, 20.16 (owner, 2026-11-08).
+13. Order: 20.19 runs before the step review too (owner, 2026-11-08).
 
 Owner notes (2026-11-06):
 
@@ -355,3 +356,30 @@ Swapping it is the owner's call; not part of this step.
    1. ADR 027 has the findings and the differences.
    2. The owner's picks are built, with before and after screenshots.
    3. e2e: the pick flow, set up so it never depends on the deal.
+
+### [ ] 20.19 Only the attacker flies
+
+1. Goal: the attacker flies into the target; the target stays and takes the hit.
+   1. Owner, 2026-11-08, from a recorded Hearthstone match.
+   2. There only the card that deals the damage moves.
+   3. Ours since 20.2: both cards meet half way.
+2. Findings so far (`AttackSpellController`, checked 2026-11-08):
+   1. Impact point: source + `m_ImpactStagingPoint` × (target − source).
+   2. `m_ImpactStagingPoint` is 1 by default: the target's own place.
+   3. The target "moves" to that point, so it stays where it is.
+   4. Only a proposed attack uses 0.5: half way, both move.
+   5. The attacker stops short by `m_SourceImpactOffset` (−0.25 by default).
+   6. ADR 027 "Attack" items 2.1, 2.2 and 7.1 read the half-way case as the normal one.
+3. Tasks:
+   1. Check both fields in the prefab data with UnityPy (rule 10).
+   2. Check how far the attacker overlaps the target at contact.
+   3. Strike: only the attacker's copy moves; the target card stays home.
+   4. Contact, burst, sound, shakes and the hit number stay at contact.
+   5. The target may still get the 20.3 shake; it is no flight.
+   6. A player panel as target: unchanged, the attacker goes to it.
+   7. Fix ADR 027 "Attack" in place; note what was checked.
+   8. Update the `lunge` row in `docs/wiki/Animations.md`.
+4. Done when:
+   1. e2e: the target card does not move during the strike.
+   2. e2e: the hit still lands at contact, after the strike starts.
+   3. Before and after screenshots of windup, contact and settle.
