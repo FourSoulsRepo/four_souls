@@ -41,7 +41,7 @@ This step never closes; new reports are appended.
 | F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88, 19.99, 19.102, 19.118, 19.119 | 11    |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
-| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122, 19.125, 19.126, 19.127, 19.120, 19.128 | 32 |
+| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122, 19.125, 19.126, 19.127, 19.120, 19.128, 19.132 | 33 |
 | J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107, 19.117, 19.121 | 21 |
 | Q  | Load tool: a lost connection ends a game | Go tools   | 19.108, 19.131                                         | 2     |
 | K  | Build and release files                  | Release    | 19.47, 19.59, 19.83, 19.91                             | 4     |
@@ -52,7 +52,7 @@ This step never closes; new reports are appended.
 | P  | A missing setting: no way to change it   | Client     | 19.93                                                  | 1     |
 | R  | Vitest setup: a test sees stale files    | Vitest     | 19.124                                                 | 1     |
 
-Totals by system (128 items):
+Totals by system (129 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
@@ -60,7 +60,7 @@ Totals by system (128 items):
 | Card data | C       | 2     |
 | Client    | D–G, O, P | 33  |
 | Server    | H, N    | 2     |
-| e2e       | I, J    | 53    |
+| e2e       | I, J    | 54    |
 | Release   | K       | 4     |
 | None      | L       | 2     |
 | Go tests  | M       | 1     |
@@ -4116,4 +4116,30 @@ Totals by system (128 items):
    2. `stopReason` names it: a cut, or the game's timeout; as `openTable` did.
    3. 0 of 30 runs fail, with the engine tests running beside it.
    4. No new test: the race needs a write at the moment of the stop.
+
+### [ ] 19.132 e2e: the strike test reads the target 1 px off home at contact, webkit
+
+1. Goal: the 20.19 strike test passes every run.
+2. Report (agent, 2026-11-08)
+   1. Seen in the 20.18 gate: `playback.spec.ts` "an attack strikes fast", webkit.
+   2. At contact the monster's box was 0.05 px right and 1.05 px down.
+   3. Not new: 2 of 10 runs fail at a1e0179, before 20.18's client change.
+   4. Evidence: `.cache/e2e-evidence/20.18-attack-strike/` (not in git).
+   5. Chromium too, by 2.9 px, after a first fix allowed only the push.
+3. Cause
+   1. The hit lands at contact; its `hit-shake` (20.3) pushes cards near it.
+   2. The target is near the hit too; a small hit pushes it 0.1 × 12 px.
+   3. 20.19 allows that: the target may shake; it does not fly.
+   4. A lethal hit also jitters the whole table, up to 6 px (`table-shake`).
+   5. The test read the box at contact; at times after the push starts.
+   6. The app was right.
+4. Fix (2026-11-08)
+   1. At contact the target stays within the push plus the table's jitter.
+   2. That is 7.2 px at most; a flight would move it far more.
+   3. Mid-strike it must still be exactly home: no shake yet.
+   4. Alone: 40 webkit and 10 chromium runs pass.
+5. Still open
+   1. With 5 workers, 3 of 30 webkit runs fail mid-strike, before any hit.
+   2. All four of the box's values differ there: a layout change, not a push.
+   3. Cause not found; left for a later look, with the owner.
 

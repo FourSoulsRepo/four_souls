@@ -411,7 +411,11 @@ test('an attack strikes fast, hits on contact and settles back (20.2, 20.19)', a
   await seek(vee, 'strike', 'finish');
   await expect(vee.getByTestId('burst')).toHaveText('−1');
   expect(await played(vee)).toEqual(['/cardimg/assets/sounds/attack-hit-1.mp3']);
-  expect(await box(vee, monster)).toEqual(home);
+  // The hit's shake (20.3) may push the target a little, and a lethal
+  // hit jitters the whole table; no more: it never flies (19.132).
+  const shaken = await box(vee, monster);
+  const push = (feel.hit.push[0] ?? 0) * feel.hit.reach + feel.table.reach + 0.01;
+  expect(Math.hypot(shaken.x - home.x, shaken.y - home.y)).toBeLessThanOrEqual(push);
   const hit = await box(vee, vee.getByTestId('lunge'));
   const overlaps = hit.x < home.x + home.width && home.x < hit.x + hit.width && hit.y < home.y + home.height && home.y < hit.y + hit.height;
   expect(overlaps).toBe(true);
