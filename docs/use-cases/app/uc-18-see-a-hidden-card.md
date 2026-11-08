@@ -35,6 +35,8 @@
   * A click on a placed card takes it back; later ones move up.
   * "Put back" is enabled once every card has a place.
   * Only the chooser sees the cards; others read "Ann is putting cards back".
+  * The cards come from the deck at a choice's size, if they fit one row (20.18).
+  * Others see small backs over that deck meanwhile (UC-13 5m).
   * No "You look at" dialog follows; the order dialog showed them.
 * **1a. Look at any time (19.30):** e.g. There's Options.
   * On the owner's turn the treasure deck's top card lies face up.

@@ -817,6 +817,32 @@ Each sub-step of step 20 takes the part it needs.
         1. The reference has none; Dredge picks one card only.
         2. Recommend: keep our places; take only the motion above.
         3. Cards at the choice size, not table size, if they fit one row.
+13. Built in 20.18 (owner's picks: all but 5, 6, 14).
+    1. Protocol: `waiting.look` names the deck and the count, for everyone.
+    2. It comes from `Question.Looks` (`OneOnTop`) or an order's cards.
+    3. Additive: protocol version stays; old saves just lack it.
+    4. Deal (12.1): 1 s, sine-in-expo-out, a lift of 80 px above the deck.
+    5. It turns face up over 0.9 s after 0.094 s.
+    6. Gaps: the second leaves 0.19 s after the first, then 0.09 s each.
+    7. `choiceDeal` 0.04 s after each card leaves (12.3).
+    8. Growth (12.2): 0.2 s, expo-out, all at once.
+    9. Row (12.4): 1–3 full, gap 1/4; 4 full, 1/5; 5 at 85 %, 1/8; 6 at 70 %, 1/10.
+    10. More than 6 wrap, at 70 %; the full size stays 110–180 px.
+    11. Buttons (12.7): the card is a button, named by the card.
+    12. Hover (12.8): an 8 px lift and a brighter glow, 0.15 s.
+    13. Zoom: the usual 0.4 s wait; a right click opens it at once.
+    14. Pick (12.9): `choicePick`, no random pitch.
+    15. Back (12.10): 0.5 s each, ease-in-out, turning face down.
+    16. The kept card first; the rest 0.15 s later, 0.06 s apart, under it.
+    17. An order: the bottom card first, the top card last.
+    18. Look window (12.11): bug 19.130; the history line stays.
+    19. Hide and show (12.12): 0.2 s shrink with a fade; 0.2 s growth back.
+    20. Others (12.13): one small back per card on the deck, fanned.
+    21. They rise in 0.5 s, expo-out, and sink back in 0.5 s.
+    22. Others hear no deal sound; the reference was not checked for it.
+    23. Order (12.15): choice size up to 6 cards, else table size.
+    24. Speed "off" and reduced motion: no deal, growth, flight or rise.
+    25. Discards grow in and take the row sizes too.
 
 ### Playing from the hand
 

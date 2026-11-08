@@ -1197,6 +1197,13 @@
     "text": "Face-down treasure card",
     "note": "Screen-reader name of a face-down treasure card."
   },
+  "deck.looking": {
+    "text": {
+      "one": "{player} looks at {n} card",
+      "other": "{player} looks at {n} cards"
+    },
+    "note": "Board: the small backs over a deck another player looks at (20.18). player: who looks; n: how many top cards."
+  },
   "deck.loot": {
     "text": {
       "one": "Loot deck: {n} card",

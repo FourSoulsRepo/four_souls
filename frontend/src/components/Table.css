@@ -1124,3 +1124,25 @@
 .player-allowance > span {
   white-space: nowrap;
 }
+
+/* The small backs over a deck another player looks at (20.18): fanned
+   on the pile, under its count; they never take the pointer. */
+.deck-look {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.deck-look-back {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 42px;
+  margin-left: -21px;
+  transform-origin: 50% 100%;
+}
+
+.deck-look-back .card {
+  width: 100%;
+  box-shadow: 0 2px 6px rgb(0 0 0 / 60%);
+}

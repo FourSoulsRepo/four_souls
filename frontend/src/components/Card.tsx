@@ -392,6 +392,22 @@ export function useZoom(cardRef: string | undefined, zoomable: boolean, rise = f
     onPointerCancel: cancelPress,
     onContextMenu: (e: MouseEvent<HTMLElement>) => {
       e.preventDefault(); // a long press must not open the menu
+      // A right click opens the mouse zoom at once, with no wait (20.18).
+      if (on && e.button === 2 && downRef.current === null) {
+        const el = e.currentTarget;
+        zoomedRef.current = true;
+        watch(el);
+        window.clearTimeout(waitRef.current);
+        setZoom({
+          ref: cardRef,
+          touch: false,
+          at: boxOf(el),
+          rise,
+          ...(why ? { why } : {}),
+          ...(stats.length > 0 ? { stats } : {}),
+          ...(counters.length > 0 ? { counters } : {}),
+        });
+      }
     },
   };
 }

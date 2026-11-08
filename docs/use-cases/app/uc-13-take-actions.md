@@ -101,10 +101,12 @@
 * **5f. Choice window (15.29):** a choice opens in the middle over the dimmed table.
   * Its options are big cards; nothing else takes clicks.
   * Discards and orders open the same way.
+  * The cards lie in one row up to six; smaller from five (20.18).
+  * A card option is the card itself: a click picks it; no name button.
 * **5g. View board (15.29):** the player presses "View board".
-  * The window hides; a small bar at the bottom names the choice.
+  * The cards shrink away in 0.2 s; a small bar at the bottom names the choice.
   * Options on the table glow and can be clicked there.
-  * "Back to the choice" opens the window again.
+  * "Back to the choice" opens the window again; the cards grow back in 0.2 s.
 * **2g. Why not (15.29):** a card or icon that can't be used says why (UC-22).
 * **7e. Plays left (V-46, 15.70):** End turn asks "End turn?" while it does not glow.
   * The question lists what is left: Attack, Buy, Play loot, Use abilities.
@@ -139,6 +141,20 @@
   * The own coins show "−N" beside the number: its price.
   * Red when the cents are short; the number dims meanwhile.
   * It goes when the pointer leaves the option.
+
+* **5k. Cards dealt from a deck (20.18):** e.g. XVIII The Moon, Sleight of Hand.
+  * Each card flies from that deck to its place and turns face up.
+  * About 1 s each, 0.09 s apart; a card sound as each leaves.
+  * Other card choices grow at their places in 0.2 s instead.
+  * Animation speed Off or reduced motion: the cards are there at once.
+* **5l. Hover and pick (20.18):** a hovered card lifts a little and glows brighter.
+  * Its zoom waits as usual; a right click opens it at once (UC-11 2d).
+  * A pick sounds; silent without the private sounds.
+  * Cards from a deck then fly back to it, the kept one first, on top.
+  * An order goes back bottom card first, top card last.
+* **5m. Others watch (20.18):** other players see small backs over that deck.
+  * One per card; they say "Ann looks at 5 cards"; never which.
+  * They sink back into the deck when the choice ends.
 
 ## Postconditions
 

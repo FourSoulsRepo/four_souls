@@ -1,10 +1,12 @@
+import { AnimatePresence, motion } from 'motion/react';
 import type { CSSProperties } from 'react';
 import type { Kind } from '../cards';
-import { feel } from '../feel';
+import { dealDelays } from '../choice';
+import { bezier, feel } from '../feel';
 import { t } from '../i18n';
 import { scaleFor } from '../playback';
-import type { CardView } from '../protocol';
-import { useApp } from '../store';
+import { Deck as DeckKind, type CardView } from '../protocol';
+import { seatOf, useApp } from '../store';
 import { Card, type CardSize } from './Card';
 import type { Handle } from './Interact';
 import { still } from './lunge';
@@ -67,8 +69,76 @@ export function Deck({
       ) : (
         <div className={`pile-empty size-${size}`} />
       )}
+      <LookBacks kind={kind} />
       <span className="pile-count">{count}</span>
     </div>
+  );
+}
+
+// lookDeck is the engine's deck (protocol Deck) of a pile kind, or -1.
+function lookDeck(kind: Kind): number {
+  switch (kind) {
+    case 'treasure':
+      return DeckKind.treasure;
+    case 'loot':
+      return DeckKind.loot;
+    case 'monster':
+      return DeckKind.monster;
+    default:
+      return -1;
+  }
+}
+
+// useOthersLook is how many top cards of this deck another player looks
+// at now, and who (20.18); 0 when nobody else does.
+function useOthersLook(kind: Kind): { n: number; who: number } {
+  const n = useApp((s) => {
+    const w = s.game?.view.waiting;
+    const look = w?.look;
+    return look && (look.deck ?? 0) === lookDeck(kind) && w.player !== seatOf(s) ? (look.count ?? 0) : 0;
+  });
+  const who = useApp((s) => s.game?.view.waiting.player ?? -1);
+  return { n, who };
+}
+
+// LookBacks are the small backs over a deck another player looks at
+// (20.18, ADR 027 "Choosing cards" 12.13): one per card, fanned on
+// the pile under its count, faces hidden. They rise out of the deck as
+// the look starts and sink back into it as it ends.
+function LookBacks({ kind }: { kind: Kind }) {
+  const { n, who } = useOthersLook(kind);
+  const name = useApp((s) => s.game?.seats?.find((x) => x.seat === who)?.name ?? '');
+  const calm = useApp((s) => scaleFor(s.settings.animation, 0, 0) === 0) || still();
+  const scale = useApp((s) => scaleFor(s.settings.animation, 0, 0));
+  const o = feel.choice;
+  const backs = Array.from({ length: n }, (_, i) => i);
+  return (
+    <AnimatePresence>
+      {n > 0 && (
+        // anim: choice-others
+        <motion.div key="look" className="deck-look" role="img" aria-label={t('deck.looking', { player: name, n })}>
+          {backs.map((i) => {
+            const spread = i - (n - 1) / 2;
+            const at = { x: spread * 9, y: -12 + Math.abs(spread) * 2, rotate: spread * 7, scale: 1 };
+            const home = { x: 0, y: 0, rotate: 0, scale: 0.6 };
+            const delay = (dealDelays(n).at(i) ?? 0) * scale;
+            return (
+              // anim: choice-others
+              <motion.div
+                key={i}
+                className="deck-look-back"
+                initial={calm ? false : home}
+                animate={at}
+                exit={calm ? { opacity: 0, transition: { duration: 0 } } : { ...home, transition: { duration: o.back * scale, ease: bezier(o.backCurve) } }}
+                transition={{ duration: o.others * scale, delay, ease: bezier(o.othersCurve) }}
+              >
+                <Card back={kind} size="small" />
+              </motion.div>
+            );
+          })}
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
 

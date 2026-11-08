@@ -1202,3 +1202,100 @@
   font-size: 13px;
   font-style: italic;
 }
+
+/* A choice's cards lie in one row (20.18, ADR 027 "Choosing cards"):
+   full size up to four, smaller from five; gaps in card widths
+   (choiceRow). More than six wrap. */
+.choice-row,
+.choice.order-big {
+  --choice-w: calc(clamp(110px, 13vw, 180px) * var(--choice-scale, 1));
+}
+
+.choice-row {
+  flex-wrap: nowrap;
+  gap: calc(var(--choice-w) * var(--choice-gap, 0.1));
+}
+
+.choice-row.wrap {
+  flex-wrap: wrap;
+}
+
+.choice-row .card.size-choice,
+.choice.order-big .card.size-choice {
+  width: var(--choice-w);
+}
+
+.choice.order-big .order-deck {
+  gap: calc(var(--choice-w) * var(--choice-gap, 0.1));
+}
+
+.choice.order-big .order-empty {
+  width: var(--choice-w);
+}
+
+/* While cards fly in from the deck, they may pass outside the window. */
+.choice.dealing {
+  overflow: visible;
+}
+
+/* A card option is the card itself (20.18): no button look. Hover
+   lifts it a little and brightens its glow. */
+.choice button.choice-card {
+  display: block;
+  padding: 0;
+  border: none;
+  background: none;
+  transition: translate 0.15s ease-out;
+}
+
+.choice button.choice-card:hover,
+.choice button.choice-card:focus-visible {
+  translate: 0 -8px;
+}
+
+.choice button.choice-card:focus-visible {
+  outline: none;
+}
+
+.choice-card:is(:hover, :focus-visible) .card.hl-pick {
+  box-shadow: 0 0 0 3px #b3e9ff, 0 0 26px 8px rgb(79 195 247 / 95%);
+}
+
+/* A dealt card turns face up on its way (20.18): its back lies
+   behind its face. */
+.deal-turn {
+  position: relative;
+  transform-style: preserve-3d;
+}
+
+.deal-face {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.deal-back {
+  position: absolute;
+  inset: 0;
+  transform: rotateY(180deg);
+}
+
+.deal-back .card {
+  width: 100%;
+}
+
+/* The cards flying back onto the deck after the pick (20.18). */
+.choice-back {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-deal);
+  pointer-events: none;
+}
+
+.choice-back-card {
+  position: absolute;
+  transform-origin: 50% 50%;
+}
+
+.choice-back-card .card {
+  width: 100%;
+}

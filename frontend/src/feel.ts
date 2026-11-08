@@ -350,6 +350,48 @@ export const feel = {
     show: 20,
     curve: curves.linear,
   },
+  // choice: picking among shown cards (20.18, ADR 027 "Choosing cards",
+  // choice.ts, ChoiceDialog.tsx). Cards a player looks at are dealt from
+  // their deck: each flies to its place over deal on a curve that rises
+  // toward lift px above the deck, and turns face up over turn after
+  // turnAt; the first leaves at once, the second first later, each next
+  // one gap later; each plays choice-deal sound seconds after it leaves.
+  // Other card choices grow at their places from 0 over grow. View board
+  // shrinks the cards to 0 and fades the window over hide; back, they
+  // grow again over grow. After the pick the cards fly back onto the
+  // deck over back, the kept one first, the rest backFirst after it and
+  // backGap apart; an order goes bottom card first, top card last. Other
+  // players see small backs over the deck while it is looked at; they
+  // rise out of it over others and sink back. sizes are the row's card
+  // size and gap (in card widths) up to upTo cards; more than row cards
+  // wrap (choiceRow).
+  choice: {
+    deal: 1,
+    lift: 80,
+    turnAt: 0.094,
+    turn: 0.9,
+    first: 0.19,
+    gap: 0.09,
+    sound: 0.04,
+    grow: 0.2,
+    hide: 0.2,
+    back: 0.5,
+    backFirst: 0.15,
+    backGap: 0.06,
+    others: 0.5,
+    row: 6,
+    sizes: [
+      { upTo: 3, scale: 1, gap: 0.25 },
+      { upTo: 4, scale: 1, gap: 0.2 },
+      { upTo: 5, scale: 0.85, gap: 0.125 },
+      { upTo: Infinity, scale: 0.7, gap: 0.1 },
+    ],
+    dealCurve: curves.sineInExpoOut,
+    turnCurve: curves.expoOut,
+    growCurve: curves.expoOut,
+    backCurve: curves.easeInOut,
+    othersCurve: curves.expoOut,
+  },
   // banner: the text in the middle (Effects.tsx). times are its
   // opacity keyframes: in, held, out. A long one (start of game) stays
   // twice as long, with fades as long.

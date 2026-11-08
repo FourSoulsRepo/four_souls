@@ -340,7 +340,7 @@ Swapping it is the owner's call; not part of this step.
 2. Its clip found by name among the audio bundles' `AudioClip`s.
 3. The Mid and Large GUIDs found the same way match the table.
 
-### [ ] 20.18 Choosing cards, compared with the reference
+### [x] 20.18 Choosing cards, compared with the reference
 
 1. Goal: picking among shown cards feels like the reference's choice.
    1. Owner, 2026-11-08: the reference's "choose one of 3".

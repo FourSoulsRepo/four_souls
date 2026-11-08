@@ -1,12 +1,155 @@
-import { useState, type ReactNode } from 'react';
+import { createContext, use, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode, type RefObject } from 'react';
 import { discardIntent, modeLines, orderIntent, outcomeLines, type Actions } from '../actions';
+import { claim } from '../animations';
+import type { Kind } from '../cards';
+import { choiceRow, dealDelays, dealPose } from '../choice';
+import { feel } from '../feel';
 import { lookGroups, type Looked } from '../history';
 import { t } from '../i18n';
 import type { CardView, ModeView } from '../protocol';
-import { useApp } from '../store';
+import { playSound } from '../sounds';
+import { useApp, viewScale } from '../store';
 import { Card } from './Card';
 import { CardDialog } from './CardDialog';
+import { deckBox, flyBack } from './ChoiceBack';
+import { still } from './lunge';
 import './Actions.css';
+
+// Entry is how a choice's cards come in (20.18, ADR 027 "Choosing
+// cards"): dealt from the deck they are looked at in, grown at their
+// places, or at once (speed "off", reduced motion).
+type Entry = 'deal' | 'grow' | 'none';
+
+interface Frame {
+  // deck is the deck the cards are looked at in, if it is on screen.
+  deck?: Kind | undefined;
+  // fly sends the cards back to the deck after the pick, in this order
+  // of their elements: the first flies first (20.18).
+  fly: (order: Element[]) => void;
+}
+
+const FrameContext = createContext<Frame>({ fly: () => undefined });
+
+// deckKinds are the engine's decks (protocol Deck) as the board's piles.
+const deckKinds: (Kind | undefined)[] = ['treasure', 'loot', 'monster', undefined];
+
+// useLook is the deck the viewer looks at in the prompt waiting now
+// (20.18): the server says which deck, and how many cards.
+function useLook(): Kind | undefined {
+  return useApp((s) => {
+    const look = s.game?.view.waiting.look;
+    return look ? deckKinds[look.deck ?? 0] : undefined;
+  });
+}
+
+// dealt keeps, per prompt step, the cards a deal claimed, so a second
+// mount of the same choice (React's StrictMode) does not claim again.
+const dealt = new Map<number, Set<string>>();
+
+// claimDeal claims each card a deal shows (ADR 012): it returns the
+// cards that may fly; a card another animation showed just now comes at
+// once instead.
+function claimDeal(step: number, cards: string[]): Set<string> {
+  let ok = dealt.get(step);
+  if (!ok) {
+    ok = new Set([...new Set(cards)].filter((c) => claim(c, 'show', 'choice-deal')));
+    dealt.clear();
+    dealt.set(step, ok);
+  }
+  return ok;
+}
+
+const ms = (s: number) => s * 1000;
+
+// sample is a motion as WAAPI keyframes, one per frame of 1/30 s.
+function sample<T>(time: number, at: (t: number) => T): T[] {
+  const n = Math.max(2, Math.ceil(time * 30));
+  return Array.from({ length: n + 1 }, (_, i) => at((time * i) / n));
+}
+
+// enter plays the cards' entry: each element marked data-deal, in
+// order. It returns a stop for the effect's cleanup.
+function enter(root: HTMLElement, entry: Entry, deck: Kind | undefined, scale: number, step: number, back: boolean): () => void {
+  const els = [...root.querySelectorAll<HTMLElement>('[data-deal]')];
+  const c = feel.choice;
+  const parts: (Animation | undefined)[] = [];
+  const timers: number[] = [];
+  const grow = (el: HTMLElement) =>
+    // anim: choice-grow
+    el.animate([{ transform: 'scale(0)' }, { transform: 'scale(1)' }], { duration: ms(c.grow * scale), easing: c.growCurve });
+  if (back) {
+    // anim: choice-grow
+    parts.push(root.closest('.choice-backdrop')?.animate([{ opacity: 0 }, { opacity: 1 }], { duration: ms(c.grow * scale), easing: c.growCurve }));
+  }
+  const box = entry === 'deal' && deck ? deckBox(deck) : null;
+  if (entry === 'grow' || (entry === 'deal' && !box)) {
+    parts.push(...els.map(grow));
+  } else if (entry === 'deal' && box) {
+    const may = claimDeal(
+      step,
+      els.map((el) => el.dataset.deal ?? ''),
+    );
+    const delays = dealDelays(els.length);
+    root.classList.add('dealing');
+    els.forEach((el, i) => {
+      if (!may.has(el.dataset.deal ?? '')) {
+        return;
+      }
+      const r = el.getBoundingClientRect();
+      const from = { x: box.left + box.width / 2 - (r.left + r.width / 2), y: box.top + box.height / 2 - (r.top + r.height / 2) };
+      const poses = sample(c.deal, (tt) => dealPose(tt, from, box.width / Math.max(r.width, 1)));
+      const timing = { duration: ms(c.deal * scale), delay: ms((delays.at(i) ?? 0) * scale), fill: 'backwards' } as const;
+      // anim: choice-deal
+      parts.push(el.animate(poses.map((p) => ({ transform: `translate(${String(p.x)}px, ${String(p.y)}px) scale(${String(p.scale)})` })), timing));
+      // anim: choice-deal
+      parts.push(el.querySelector('.deal-turn')?.animate(poses.map((p) => ({ transform: `rotateY(${String(p.turn)}deg)` })), timing));
+      timers.push(
+        window.setTimeout(() => {
+          playSound('choiceDeal');
+        }, ms(((delays.at(i) ?? 0) + c.sound) * scale)),
+      );
+    });
+    const last = (delays.at(-1) ?? 0) + c.deal;
+    timers.push(
+      window.setTimeout(() => {
+        root.classList.remove('dealing');
+      }, ms(last * scale)),
+    );
+  }
+  return () => {
+    root.classList.remove('dealing');
+    for (const id of timers) {
+      window.clearTimeout(id);
+    }
+    for (const p of parts) {
+      p?.cancel();
+    }
+  };
+}
+
+// DealCard is a card that may be dealt face down: its back lies behind
+// its face, and the deal turns it about its vertical axis (20.18).
+function DealCard({ kind, children }: { kind: Kind | undefined; children: ReactNode }) {
+  return (
+    <div className="deal-turn">
+      <div className="deal-face">{children}</div>
+      {kind && (
+        <div className="deal-face deal-back" aria-hidden="true">
+          <Card back={kind} size="choice" />
+        </div>
+      )}
+    </div>
+  );
+}
+
+// rowStyle sizes a row of n cards (20.18, choiceRow).
+function rowStyle(n: number): { className: string; style: CSSProperties } {
+  const r = choiceRow(n);
+  return {
+    className: `choice-row${r.wrap ? ' wrap' : ''}`,
+    style: { '--choice-scale': r.scale, '--choice-gap': r.gap } as CSSProperties,
+  };
+}
 
 // ChoiceDialog asks the player to pick one option. Card options show as
 // cards, Hearthstone-style (V-07); options on the table can be clicked
@@ -16,40 +159,38 @@ import './Actions.css';
 // An option with an outcome says what picking it gives (19.17); a
 // trigger option says its ability's words (19.19).
 //
-// A choice shows big cards over the dimmed board (15.29, H-11); "View
-// board" hides it to look at the table, where its targets still glow
-// and answer, and "Back to the choice" brings it back (F-20).
+// A choice shows big cards over the dimmed board (15.29, H-11). A card
+// option is the card itself: a click picks it; it has no name button
+// (20.18). Cards looked at in a deck are dealt from it and fly back to
+// it after the pick; other cards grow in. "View board" hides it to look
+// at the table, where its targets still glow and answer, and "Back to
+// the choice" brings it back (F-20).
 export function ChoiceDialog({ choice, subject }: { choice: NonNullable<Actions['choice']>; subject?: string | undefined }) {
   const act = useApp((s) => s.act);
   const cardName = (ref: string) => useApp.getState().cards.get(ref)?.name ?? ref;
+  const look = useLook();
+  const cards = choice.options.filter((o) => o.card).length;
+  const row = rowStyle(cards);
   return (
-    <ChoiceFrame label={choice.title}>
+    <ChoiceFrame label={choice.title} look={look} cards={cards > 0}>
       {subject && (
         <div className="choice-subject">
           <Card cardRef={subject} size="choice" />
         </div>
       )}
-      <div className="choice-options">
+      <div className={`choice-options ${row.className}`} style={row.style}>
         {choice.options.map((o) => (
           <div key={o.intent.choice ?? 0} className="choice-option">
-            {o.card && (
-              <Card
-                cardRef={o.card}
-                size="choice"
-                highlight="pick"
+            {o.card ? <OptionCard card={o.card} name={cardName(o.card)} deck={look} pick={() => { act(o.intent); }} /> : (
+              <button
+                type="button"
                 onClick={() => {
                   act(o.intent);
                 }}
-              />
+              >
+                {o.label}
+              </button>
             )}
-            <button
-              type="button"
-              onClick={() => {
-                act(o.intent);
-              }}
-            >
-              {o.card ? cardName(o.card) : o.label}
-            </button>
             {o.line && <p className="choice-line">{o.line}</p>}
             {o.outcome && (
               <ul className="choice-outcome" aria-label={t('choice.result')}>
@@ -65,38 +206,146 @@ export function ChoiceDialog({ choice, subject }: { choice: NonNullable<Actions[
   );
 }
 
+// OptionCard is a card option: the card is the button, named by the
+// card (keys, tests, screen readers). Hover lifts it and brightens its
+// glow; its zoom waits as usual, or a right click opens it (20.18). A
+// pick sounds; cards looked at in a deck then fly back to it, the
+// picked one first.
+function OptionCard({ card, name, deck, pick }: { card: string; name: string; deck: Kind | undefined; pick: () => void }) {
+  const frame = use(FrameContext);
+  return (
+    <button
+      type="button"
+      className="choice-card"
+      aria-label={name}
+      data-deal={card}
+      onClick={(e) => {
+        playSound('choicePick');
+        const kept = e.currentTarget;
+        const rest = [...(kept.closest('.choice-options')?.querySelectorAll('.choice-card') ?? [])].filter((el) => el !== kept);
+        frame.fly([kept, ...rest]);
+        pick();
+      }}
+    >
+      <DealCard kind={deck}>
+        <Card cardRef={card} size="choice" highlight="pick" />
+      </DealCard>
+    </button>
+  );
+}
+
 // ChoiceFrame is a choice over the dimmed board, or, while the player
 // views the board, a small bar to bring it back (15.29, F-20, H-11).
-// title is the heading when it says more than the label.
-function ChoiceFrame({ label, title, className = '', children }: { label: string; title?: ReactNode; className?: string; children: ReactNode }) {
+// title is the heading when it says more than the label. look is the
+// deck its cards are looked at in: they are dealt from it (20.18);
+// cards says it shows cards, which grow in otherwise. View board
+// shrinks the cards away; back, they grow in again, with no deal.
+function ChoiceFrame({
+  label,
+  title,
+  className = '',
+  style,
+  look,
+  cards = false,
+  children,
+}: {
+  label: string;
+  title?: ReactNode;
+  className?: string;
+  style?: CSSProperties | undefined;
+  look?: Kind | undefined;
+  cards?: boolean;
+  children: ReactNode;
+}) {
   const [board, setBoard] = useState(false);
+  const [shows, setShows] = useState(0);
+  const [hiding, setHiding] = useState(false);
+  // flown: the pick sent the cards back to the deck; the window waits
+  // hidden for the answer. A refusal (nothing sent any more) shows it.
+  const [flown, setFlown] = useState(false);
+  const waiting = useApp((s) => s.sent !== null);
+  const step = useApp((s) => s.game?.step ?? 0);
+  const [scale] = useState(() => (still() ? 0 : viewScale(useApp.getState())));
+  const ref = useRef<HTMLDivElement>(null);
+  const entry: Entry = scale === 0 || !cards ? 'none' : shows === 0 && look ? 'deal' : 'grow';
+  useEntry(ref, board || (flown && waiting), entry, look, scale, step, shows > 0);
+  const frame = useMemo<Frame>(() => ({
+    deck: look,
+    fly: (order) => {
+      if (scale === 0 || !look || !deckBox(look)) {
+        return;
+      }
+      flyBack(
+        order.map((el) => ({
+          card: el.getAttribute('data-deal') ?? el.getAttribute('data-card') ?? '',
+          box: (el.querySelector('.deal-face .card') ?? el.querySelector('.card') ?? el).getBoundingClientRect(),
+        })),
+        look,
+        scale,
+      );
+      setFlown(true);
+    },
+  }), [look, scale]);
   if (board) {
     return (
       <Peek
         title={title ?? label}
         back={() => {
           setBoard(false);
+          setShows(shows + 1);
         }}
       />
     );
   }
+  if (flown && waiting) {
+    return null;
+  }
+  const hide = () => {
+    const root = ref.current;
+    if (scale === 0 || !root || hiding) {
+      setBoard(true);
+      return;
+    }
+    setHiding(true);
+    const time = ms(feel.choice.hide * scale);
+    const easing = feel.choice.growCurve;
+    // anim: choice-hide
+    const shrink = [...root.querySelectorAll('.card')].map((el) => el.animate([{ transform: 'scale(1)' }, { transform: 'scale(0)' }], { duration: time, easing, fill: 'forwards' }));
+    // anim: choice-hide
+    const fade = root.closest('.choice-backdrop')?.animate([{ opacity: 1 }, { opacity: 0 }], { duration: time, easing, fill: 'forwards' });
+    void (fade ?? shrink.at(0))?.finished
+      .catch(() => undefined)
+      .then(() => {
+        setHiding(false);
+        setBoard(true);
+      });
+  };
   return (
-    <div className="choice-backdrop">
-      <div className={`choice${className ? ` ${className}` : ''}`} role="dialog" aria-label={label}>
-        <h2>{title ?? label}</h2>
-        {children}
-        <button
-          type="button"
-          className="choice-view"
-          onClick={() => {
-            setBoard(true);
-          }}
-        >
-          {t('choice.view_board')}
-        </button>
+    <FrameContext value={frame}>
+      <div className="choice-backdrop">
+        <div ref={ref} className={`choice${className ? ` ${className}` : ''}`} style={style} role="dialog" aria-label={label}>
+          <h2>{title ?? label}</h2>
+          {children}
+          <button type="button" className="choice-view" onClick={hide}>
+            {t('choice.view_board')}
+          </button>
+        </div>
       </div>
-    </div>
+    </FrameContext>
   );
+}
+
+// useEntry plays the cards' entry once each time the window shows.
+function useEntry(ref: RefObject<HTMLDivElement | null>, hidden: boolean, entry: Entry, deck: Kind | undefined, scale: number, step: number, back: boolean) {
+  useLayoutEffect(() => {
+    const root = ref.current;
+    if (hidden || !root || entry === 'none') {
+      return;
+    }
+    return enter(root, entry, deck, scale, step, back);
+    // The entry plays as the window shows; later renders keep it.
+    // eslint-disable-next-line react-hooks/exhaustive-deps, @eslint-react/exhaustive-deps
+  }, [hidden]);
 }
 
 // Peek is a hidden choice: its title and a button to bring it back.
@@ -205,27 +454,37 @@ export function LookDialog({ cards, you, name }: { cards: Looked[]; you: number;
 // OrderDialog puts the cards of an order prompt back on the deck (19.16).
 // A click puts a card in the next free place, top first; a click on a
 // placed card takes it back. Nothing is sent until every card has a
-// place, so the player sees the whole order before it counts.
+// place, so the player sees the whole order before it counts. The cards
+// are dealt from the deck, at a choice's size when they fit one row;
+// "Put back" sends them back onto it in their order, the top card last
+// (20.18).
 export function OrderDialog({ order, cards }: { order: NonNullable<Actions['order']>; cards: CardView[] }) {
   const act = useApp((s) => s.act);
+  const look = useLook();
   const [placed, setPlaced] = useState<number[]>([]);
   const left = cards.filter((c) => !placed.includes(c.id));
   // One place per card, numbered from the top.
   const places = cards.map((_, i) => ({ n: i + 1, card: cards.find((x) => x.id === placed.at(i)) }));
+  const row = rowStyle(cards.length);
+  const big = !choiceRow(cards.length).wrap;
+  const size = big ? 'choice' : 'table';
+  const name = (ref: string) => useApp.getState().cards.get(ref)?.name ?? ref;
   return (
-    <ChoiceFrame label={order.title} className="order">
+    <ChoiceFrame label={order.title} className={`order${big ? ' order-big' : ''}`} style={big ? row.style : undefined} look={look} cards>
       <p className="order-hint">{t('order.hint')}</p>
       <div className="order-deck">
         {places.map(({ n, card: c }) => (
           <div key={n} className="order-place" role="group" aria-label={t('order.place', { n })}>
             {c ? (
-              <Card
-                cardRef={c.card}
-                size="table"
-                onClick={() => {
-                  setPlaced(placed.filter((id) => id !== c.id));
-                }}
-              />
+              <div className="order-card" data-card={c.card}>
+                <Card
+                  cardRef={c.card}
+                  size={size}
+                  onClick={() => {
+                    setPlaced(placed.filter((id) => id !== c.id));
+                  }}
+                />
+              </div>
             ) : (
               <div className="order-empty" />
             )}
@@ -234,34 +493,57 @@ export function OrderDialog({ order, cards }: { order: NonNullable<Actions['orde
         ))}
       </div>
       {left.length > 0 && (
-        <div className="choice-options" role="group" aria-label={t('order.not_placed')}>
+        <div className={`choice-options${big ? ` ${row.className}` : ''}`} role="group" aria-label={t('order.not_placed')}>
           {left.map((c) => (
-            <Card
+            <button
               key={c.id}
-              cardRef={c.card}
-              size="table"
-              highlight="pick"
+              type="button"
+              className="choice-card"
+              aria-label={name(c.card)}
+              data-deal={c.card}
               onClick={() => {
+                playSound('choicePick');
                 setPlaced([...placed, c.id]);
               }}
-            />
+            >
+              <DealCard kind={look}>
+                <Card cardRef={c.card} size={size} highlight="pick" />
+              </DealCard>
+            </button>
           ))}
         </div>
       )}
-      <button
-        type="button"
+      <PutBack
         disabled={left.length > 0}
-        onClick={() => {
+        send={() => {
           act(orderIntent(order.intent, placed));
         }}
-      >
-        {t('order.put_back')}
-      </button>
+      />
     </ChoiceFrame>
   );
 }
 
-// DiscardDialog asks for exactly count cards from the hand.
+// PutBack sends an order; the placed cards fly back onto the deck, the
+// bottom one first and the top one last (20.18).
+function PutBack({ disabled, send }: { disabled: boolean; send: () => void }) {
+  const frame = use(FrameContext);
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={(e) => {
+        const root = e.currentTarget.closest('.choice');
+        frame.fly([...(root?.querySelectorAll('.order-card') ?? [])].reverse());
+        send();
+      }}
+    >
+      {t('order.put_back')}
+    </button>
+  );
+}
+
+// DiscardDialog asks for exactly count cards from the hand. Its cards
+// grow in, in one row up to six (20.18).
 export function DiscardDialog({
   discard,
   hand,
@@ -275,19 +557,21 @@ export function DiscardDialog({
   const toggle = (id: number) => {
     setChosen(chosen.includes(id) ? chosen.filter((x) => x !== id) : [...chosen, id]);
   };
+  const row = rowStyle(cards.length);
   return (
-    <ChoiceFrame label={t('discard.label')} title={t('discard.title', { n: discard.count })}>
-      <div className="choice-options">
+    <ChoiceFrame label={t('discard.label')} title={t('discard.title', { n: discard.count })} cards={cards.length > 0}>
+      <div className={`choice-options ${row.className}`} style={row.style}>
         {cards.map((c) => (
-          <Card
-            key={c.id}
-            cardRef={c.card}
-            size="choice"
-            highlight={chosen.includes(c.id) ? 'pick' : 'act'}
-            onClick={() => {
-              toggle(c.id);
-            }}
-          />
+          <div key={c.id} className="choice-grow" data-deal={c.card}>
+            <Card
+              cardRef={c.card}
+              size="choice"
+              highlight={chosen.includes(c.id) ? 'pick' : 'act'}
+              onClick={() => {
+                toggle(c.id);
+              }}
+            />
+          </div>
         ))}
       </div>
       <button

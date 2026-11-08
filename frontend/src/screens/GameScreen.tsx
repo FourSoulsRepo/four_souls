@@ -6,6 +6,7 @@ import { ActionMenu } from '../components/ActionMenu';
 import { t } from '../i18n';
 import { AimLayer } from '../components/Aim';
 import { Board } from '../components/Board';
+import { ChoiceBack } from '../components/ChoiceBack';
 import { ChoiceDialog, DiscardDialog, LookDialog, ModeDialog, OrderDialog } from '../components/ChoiceDialog';
 import { interact, noInteract } from '../components/Interact';
 import { PlayerArea } from '../components/PlayerArea';
@@ -263,6 +264,7 @@ function Table({ game, you }: { game: Update; you: number }) {
       )}
       {offered.discard && me && <DiscardDialog key={game.step} discard={offered.discard} hand={me.hand ?? []} />}
       {offered.order && <OrderDialog key={game.step} order={offered.order} cards={view.ordering ?? []} />}
+      <ChoiceBack />
       {looking.length > 0 && <LookDialog cards={looking} you={you} name={name} />}
       {voting && <RollbackVotePanel game={game} you={you} name={name} />}
       {connected && !view.over && <GameMenu host={you === 0} />}

@@ -427,6 +427,10 @@ export interface Prompt {
   options?: Msg[];
   purpose?: number;
   text?: Msg; // the question, or the roll a throw is for
+  // look is the deck whose top cards the prompt's player looks at, and
+  // how many (20.18); everyone gets it, only the chooser the cards.
+  // The treasure deck, 0, comes as no deck.
+  look?: { deck?: number; count?: number };
 }
 
 export interface GameView {

@@ -36,6 +36,7 @@ A choice shows its options over the dimmed board:
 | `menu` | A card's action menu and the ability dialog, with their backdrop. | The player opened it on purpose, over any prompt. | `components/Actions.css` |
 | `look` | The "you look at" window in the middle. | It may come with a choice; the cards to look at come first. | `components/Actions.css` |
 | `menu-button` | The Menu button. | Over the table and a choice's backdrop: the player can always leave or save (15.29). Under every other window. | `components/Overlays.css` |
+| `deal` | A choice's cards flying back onto their deck after the pick (20.18). | The window is gone by then; they cross the table and its cards to the deck. The Menu button and every window cover them. | `components/Actions.css` |
 | `choice` | Choice, discard, order and mode windows with their backdrop (the mode window since 15.58); the bar back to a hidden one (15.29). | A prompt the game waits on; it dims and covers the whole table, the hand and the action bar (H-11). "View board" hides it. | `components/Actions.css` |
 | `presence` | Another player's aiming arrow (15.36). | It points at the table and the hands; windows, the zoom, and the own arrow cover it, so a prompt stays readable. | `components/Table.css` |
 | `hand` | A hovered or aiming hand card. | It comes to the front of the fan, but never over a prompt's buttons. | `components/Table.css` |

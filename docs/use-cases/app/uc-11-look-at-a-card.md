@@ -51,6 +51,8 @@
   * The hand card keeps its place; its neighbours do not move.
 * **3h. Fan (20.5):** 1–3 hand cards lie straight.
   * From 4 cards they fan out: 40° plus 2° per card.
+* **2d. Right click (20.18):** the large copy opens at once, with no wait.
+  * Any card on the table or in a window, e.g. a choice's card.
 
 ## Postconditions
 
