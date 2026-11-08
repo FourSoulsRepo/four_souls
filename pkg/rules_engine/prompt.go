@@ -30,6 +30,18 @@ type Prompt struct {
 	Options []Msg         `json:"options,omitempty"`
 	Purpose ChoicePurpose `json:"purpose,omitempty"`
 	Text    Msg           `json:"text,omitzero"` // the question, if any
+	// Look, if set, is the deck whose top cards the prompt's player looks
+	// at while it waits, and how many (20.18). Everyone sees it; only
+	// the chooser sees the cards.
+	Look *DeckLook `json:"look,omitempty"`
+}
+
+// DeckLook is a look at a deck's top cards: which deck, and how many.
+// A saved game keeps it, so both fields may be left out (N-20); the
+// treasure deck, 0, is.
+type DeckLook struct {
+	Deck  DeckKind `json:"deck,omitempty"`
+	Count int      `json:"count,omitempty"`
 }
 
 // IntentKind is what a player wants to do.

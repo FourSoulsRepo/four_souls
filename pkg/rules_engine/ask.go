@@ -21,6 +21,11 @@ type Question struct {
 	// puts these cards in order, top first, in one answer. Its answer
 	// is 0; do reads the order from c.Order. No cards skips it (-1).
 	Order func(c *Ctx, answers []int) []ObjectID
+	// Looks, if set, are the deck cards the options are, one per option:
+	// a look at a deck's top cards, as The Moon's (20.18). Everyone then
+	// sees which deck is looked at and how many cards; an order
+	// question's cards count without it.
+	Looks func(c *Ctx, answers []int) []ObjectID
 }
 
 type askEffect struct {
@@ -146,6 +151,9 @@ func (g *Game) continueAsk(a *Asking) {
 		if q.Subject != nil {
 			ch.Subject = q.Subject(c, a.Answers)
 		}
+		if q.Looks != nil {
+			ch.Look = g.deckLook(q.Looks(c, a.Answers))
+		}
 		g.ask(ch, opts)
 		return
 	}
@@ -175,9 +183,24 @@ func (g *Game) askOrder(a *Asking, q Question, c *Ctx) bool {
 		who = q.Player(c, a.Answers)
 	}
 	text := q.msg(c, a.Answers)
-	g.Choice = &Choice{Purpose: ChooseOrder, Player: who, Rule: "R-ABIL-05", Ask: a, Question: text, Objects: cards}
-	g.Waiting = Prompt{Kind: PromptOrder, Player: who, Count: len(cards), Purpose: ChooseOrder, Text: text}
+	look := g.deckLook(cards)
+	g.Choice = &Choice{Purpose: ChooseOrder, Player: who, Rule: "R-ABIL-05", Ask: a, Question: text, Objects: cards, Look: look}
+	g.Waiting = Prompt{Kind: PromptOrder, Player: who, Count: len(cards), Purpose: ChooseOrder, Text: text, Look: look}
 	return true
+}
+
+// deckLook is the look at cards that all lie in one deck, or nil (20.18).
+func (g *Game) deckLook(ids []ObjectID) *DeckLook {
+	if len(ids) == 0 {
+		return nil
+	}
+	d := g.Object(ids[0]).Zone
+	for _, id := range ids {
+		if z := g.Object(id).Zone; z.Kind != ZoneDeck || z.Deck != d.Deck {
+			return nil
+		}
+	}
+	return &DeckLook{Deck: d.Deck, Count: len(ids)}
 }
 
 // answerOrder carries out the order the chooser sent, top first.

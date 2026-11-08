@@ -133,6 +133,7 @@ func OneOnTop(d engine.DeckKind) engine.Effect {
 		Options: func(c *engine.Ctx, _ []int) []engine.Msg {
 			return c.G.Labels(c.G.DeckTop(d, 5))
 		},
+		Looks: func(c *engine.Ctx, _ []int) []engine.ObjectID { return c.G.DeckTop(d, 5) },
 	})
 }
 

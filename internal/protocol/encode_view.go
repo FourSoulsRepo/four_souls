@@ -195,6 +195,9 @@ func appendPrompt(b []byte, p engine.Prompt) []byte {
 	if !p.Text.IsZero() {
 		b = appendMarshaled(b, `,"text":`, p.Text)
 	}
+	if p.Look != nil {
+		b = appendMarshaled(b, `,"look":`, p.Look)
+	}
 	return append(b, '}')
 }
 
