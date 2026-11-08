@@ -41,6 +41,7 @@ Rules for this step (owner, 2026-11-06):
 12. Order: 20.18 runs before the step review, 20.16 (owner, 2026-11-08).
 13. Order: 20.19 runs before the step review too (owner, 2026-11-08).
 14. Order: 20.20 runs before the step review too (owner, 2026-11-08).
+15. Order: 20.21 runs before the step review too (owner, 2026-11-08).
 
 Owner notes (2026-11-06):
 
@@ -413,3 +414,30 @@ Swapping it is the owner's call; not part of this step.
    2. The owner's picks are built, with before and after screenshots.
    3. UC-13 matches the new flow.
    4. e2e: each kind of play, set up so it never depends on the deal.
+
+### [ ] 20.21 History strip, compared with the reference
+
+1. Goal: the left history strip works like the reference's.
+   1. Owner, 2026-11-08.
+   2. Ours: icons along the board's left edge, newest on top (UC-15 8, 9).
+   3. Ours: hover shows the card large, the used ability and the owner.
+   4. ADR 027 "History" has only a short first look (items 1, 2).
+2. Tasks:
+   1. Read the reference's history strip (rule 10).
+      1. Which plays make a tile; how many tiles fit; what drops off.
+      2. A new tile: where it comes from, how the rest move, times, curves.
+      3. What a tile shows: art, frame, badges, damage or death marks.
+      4. Hover: the large card, its targets, their damage or death, sounds.
+      5. Hover delays, and what happens on click or touch.
+      6. Asset data (prefabs, `SoundDef`) via UnityPy, as in 20.17.
+   2. Write the findings into ADR 027 "History", appended items.
+   3. Compare with our strip and the full history panel.
+      1. Which entries get an icon; the turn line; the History button.
+      2. List each difference with a recommendation.
+   4. The owner picks what to build; then it is built here.
+   5. A sound it needs comes as rule 8 says.
+3. Done when:
+   1. ADR 027 has the findings and the differences.
+   2. The owner's picks are built, with before and after screenshots.
+   3. UC-15 matches the new strip.
+   4. e2e: the strip's new behaviour, set up so it never depends on the deal.
