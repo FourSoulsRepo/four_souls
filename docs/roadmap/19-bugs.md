@@ -51,14 +51,15 @@ This step never closes; new reports are appended.
 | O  | Reconnect: old connection state kept     | Client     | 19.78, 19.86                                           | 2     |
 | P  | A missing setting: no way to change it   | Client     | 19.93                                                  | 1     |
 | R  | Vitest setup: a test sees stale files    | Vitest     | 19.124                                                 | 1     |
+| S  | Sound: media players never released      | Client     | 19.135                                                 | 1     |
 
-Totals by system (131 items):
+Totals by system (132 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
 | Engine    | A, B    | 28    |
 | Card data | C       | 2     |
-| Client    | D–G, O, P | 34  |
+| Client    | D–G, O, P, S | 35 |
 | Server    | H, N    | 2     |
 | e2e       | I, J    | 55    |
 | Release   | K       | 4     |
@@ -4183,3 +4184,48 @@ Totals by system (131 items):
    2. Known, different places: no clash; same place or unknown: as before.
    3. ADR 012 2.3 says "at one place"; 2.6 added. Animations.md `arrive` row.
 
+### [x] 19.135 A long game goes silent: too many media players
+
+1. Goal: sounds play for any game length; no media player limit is hit.
+2. Report (main session, 2026-11-08)
+   1. Seen in `make e2e-games`, seed 83175, 3 players, chromium.
+   2. Cid's page logged 9 console errors.
+   3. "Blocked attempt to create a WebMediaPlayer ... too many".
+   4. Chromium caps live media players per page; WebView2 too.
+   5. Over the cap new sounds are blocked: the game goes silent.
+   6. Evidence: `.cache/e2e-evidence/games-83175-3p/` (not in git).
+   7. The game ran 100 turns and ended with a winner.
+   8. It was not stopped: `games.spec.ts` checks console errors at the end.
+   9. 300 turns is only the cap for a game with no winner.
+3. Cause
+   1. `playSound` makes a new `Audio` element for every play.
+   2. An ended element keeps its media player until it is garbage collected.
+   3. Collection is lazy; many sounds a second outrun it.
+   4. Since 15.50 (`8e0db6c`); more sounds since 20.17, ticks since 20.15.
+4. Tasks:
+   1. [x] Release an element when it ends or fails: no src, `load()`.
+   2. [x] Cap the live elements; over it, release the oldest.
+   3. [x] Vitest: 2000 plays keep the live elements bounded.
+   4. [x] e2e: many sounds in a page log no media player error.
+   5. [x] Rerun `GAME_SEED=83175 make e2e-games`.
+5. Fix (2026-11-08)
+   1. `release` pauses an element, drops its `src` and calls `load()`.
+   2. The browser then frees its media player at once.
+   3. It runs as a one-shot or key cue ends, fails or is blocked.
+   4. At most 16 play at once (`feel.mix.players`); a new one ends the oldest.
+   5. Kept HTML audio: no autoplay or first-play decode change.
+   6. Volume, the 80 ms limit and ducking stay as 20.14 built them.
+   7. Vitest: 2000 plays that never end keep 16; ended ones keep none.
+   8. e2e `sounds.spec.ts`: 1200 six-second plays, no media player error.
+   9. That test fails without the fix: chromium blocks past about 1000.
+   10. Docs: ADR 027 "Sounds" 10.14–10.17, Client.md, Animations.md.
+   11. `games.spec.ts` prints its problems on a timeout too.
+6. Rerun with seed 83175 (2026-11-08)
+   1. The server's deal is random: the games differ from the report's.
+   2. 2 players: passed, 29 turns.
+   3. 3 and 4 players: test timeout at 1 h, about 155 and 125 turns.
+   4. A timeout hid their console errors; hence 5.11.
+   5. 3 players again: 53 turns, a winner; no media player error.
+   6. It failed on another bug: "animation clash: played shows ... after played".
+   7. The 4-player run logged it too; not this item's cause.
+   8. Evidence: `.cache/e2e-evidence/games-83175-after/`, `games-83175-3p-rerun/`.

@@ -665,6 +665,10 @@ Each sub-step of step 20 takes the part it needs.
     11. Loops reach the master through a `rest` gain node, ducked alike.
     12. A cue counts as ended 5 s after its start at most.
     13. Sound, not motion: the speed setting does not change it.
+    14. A one-shot's element gives its media player back as it ends (19.135).
+    15. Browsers cap media players per page; a long game hit the cap.
+    16. At most 16 one-shots play at once (`feel.mix.players`).
+    17. A new one past that ends the oldest.
 11. Size 1 hit since the owner's review (2026-11-08).
     1. `attack-hit-1` is `FX_Minion_AttackImpact`, power 0–5.
     2. It replaces WoW's `unarmedparrymetala` (15.50).

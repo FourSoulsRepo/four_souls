@@ -330,7 +330,9 @@ export const feel = {
   // seconds after it starts at most, so a lost end never keeps the
   // rest quiet. The mixer moves its gain every tick seconds. These are
   // sound, not motion: the animation speed neither scales nor stops
-  // them.
+  // them. At most players files play at once (19.135): each holds a
+  // media player, which browsers cap per page; a new one past that
+  // ends the oldest.
   mix: {
     gap: 0.08,
     duck: 0.2,
@@ -338,6 +340,7 @@ export const feel = {
     duckOut: 0.7,
     cueMax: 5,
     tick: 0.02,
+    players: 16,
   },
   // timer: the response timer (20.15, ADR 027 principle 9, timer.ts,
   // ActionBar.tsx). It shows only in its last show seconds: the seconds

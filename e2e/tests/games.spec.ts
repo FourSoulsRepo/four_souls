@@ -470,6 +470,10 @@ test.describe('whole random games', () => {
         if (!passed) {
           const kept = keepRecord(names);
           console.log(`${String(players)} players, seed ${String(seed)}: failed; record ${kept}`);
+          // A test timeout skips the problems check; print them anyway (19.135).
+          for (const p of problems) {
+            console.log(`  ${p}`);
+          }
           test.info().annotations.push({ type: 'record', description: kept });
         }
       }

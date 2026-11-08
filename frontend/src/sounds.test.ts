@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Sounds } from './bridge';
-import { duckGain, loadSounds, loopBounds, mayStart, playLoop, playSound, setSoundVolume } from './sounds';
+import { duckGain, liveSounds, loadSounds, loopBounds, mayStart, playLoop, playSound, setSoundVolume } from './sounds';
 
 const hit = '/cardimg/assets/sounds/attack-hit-1.mp3';
 const cast = '/cardimg/assets/sounds/effect-cast.mp3';
@@ -54,11 +54,14 @@ const all: Sounds = {
   lootLand: lands,
 };
 
-// FakeAudio is a played file; onended ends it.
+// FakeAudio is a played file; onended ends it. holds is true while it
+// keeps its media player: from new until its file is dropped and it
+// loads nothing (19.135).
 interface FakeAudio {
   src: string;
   volume: number;
   onended: (() => void) | null;
+  holds: boolean;
 }
 
 // fakeAudio records each played URL; play fails with the given error.
@@ -70,12 +73,24 @@ function fakeAudio(fail?: DOMException, volumes: number[] = [], elements: FakeAu
     class {
       volume = 0.5;
       onended: (() => void) | null = null;
+      holds = true;
       constructor(public src: string) {}
       play(): Promise<void> {
         played.push(this.src);
         volumes.push(this.volume);
         elements.push(this);
         return fail ? Promise.reject(fail) : Promise.resolve();
+      }
+      pause(): void {
+        // nothing plays in a test
+      }
+      removeAttribute(name: string): void {
+        if (name === 'src') {
+          this.src = '';
+        }
+      }
+      load(): void {
+        this.holds = this.src !== '';
       }
     },
   );
@@ -185,6 +200,59 @@ describe('playSound', () => {
     playSound('attackHit');
     await Promise.resolve();
     expect(played).toEqual([hit]);
+  });
+});
+
+// Each played file holds a media player, which browsers cap per page
+// (19.135): a long game must never run out of them.
+describe('media players', () => {
+  const sounds = (Object.entries(all) as [keyof Sounds, string[]][]).filter(([, files]) => files.length > 0).map(([sound]) => sound);
+  const holding = (elements: FakeAudio[]) => elements.filter((e) => e.holds).length;
+
+  it('gives a player back as its file ends or fails', async () => {
+    loadSounds(all);
+    const elements: FakeAudio[] = [];
+    fakeAudio(undefined, [], elements);
+    const before = liveSounds();
+    playSound('attackHit');
+    playSound('diceRoll');
+    expect(liveSounds()).toBe(Math.min(before + 2, 16));
+    elements.at(0)?.onended?.();
+    expect(elements.at(0)?.holds).toBe(false);
+    expect(elements.at(1)?.holds).toBe(true);
+    fakeAudio(new DOMException('blocked', 'NotAllowedError'), [], elements);
+    clock += 100;
+    playSound('attackHit');
+    await Promise.resolve();
+    expect(elements.at(-1)?.holds).toBe(false);
+  });
+
+  it('keeps at most 16 over 2000 plays that never end', () => {
+    loadSounds(all);
+    const elements: FakeAudio[] = [];
+    fakeAudio(undefined, [], elements);
+    for (let i = 0; i < 2000; i++) {
+      playSound(sounds[i % sounds.length]);
+      clock += 10;
+    }
+    expect(elements).toHaveLength(2000);
+    expect(holding(elements)).toBe(16);
+    expect(liveSounds()).toBe(16);
+    // The newest play always plays; the oldest gave its player back.
+    expect(elements.at(-1)?.holds).toBe(true);
+    expect(elements.at(0)?.holds).toBe(false);
+  });
+
+  it('keeps none once each file ends before the next', () => {
+    loadSounds(all);
+    const elements: FakeAudio[] = [];
+    fakeAudio(undefined, [], elements);
+    for (let i = 0; i < 2000; i++) {
+      playSound(sounds[i % sounds.length]);
+      elements.at(-1)?.onended?.();
+      clock += 10;
+    }
+    expect(holding(elements)).toBe(0);
   });
 });
 

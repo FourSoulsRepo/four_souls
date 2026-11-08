@@ -19,6 +19,10 @@
 // One sound per moment (20.14): one sound never starts twice within
 // feel.mix.gap, and a key cue ducks every other sound while it plays.
 // Ducking is the mixer's gain on the rest, never a sound's own level.
+// A played file is an Audio element, and each holds a media player,
+// which browsers cap per page (19.135). An element gives its player
+// back as it ends or fails, and at most feel.mix.players play at once:
+// a new one past that ends the oldest.
 import type { Sounds } from './bridge';
 import { feel } from './feel';
 
@@ -134,25 +138,69 @@ export function playSound(sound: Sound): void {
     return;
   }
   started.set(sound, now);
-  const a = new Audio(files[Math.floor(Math.random() * files.length)]);
+  const url = files[Math.floor(Math.random() * files.length)] ?? '';
   if (keyCues.has(sound)) {
-    cue(a, now);
+    cue(url, now);
     return;
   }
+  const a = open(url, () => {
+    ducked.delete(a);
+  });
   a.volume = level * duckGain(now, cues);
   ducked.add(a);
-  const done = () => {
-    ducked.delete(a);
+  a.play().catch(() => {
+    release(a);
+  });
+}
+
+// live are the Audio elements that hold a media player now, oldest
+// first, each with what to do once it gives the player back (19.135).
+const live = new Map<HTMLAudioElement, () => void>();
+
+// open makes an Audio element for url, first ending the oldest while
+// feel.mix.players play. done runs once, as the element is released;
+// it is released as it ends or fails.
+function open(url: string, done: () => void): HTMLAudioElement {
+  for (const old of live.keys()) {
+    if (live.size < feel.mix.players) {
+      break;
+    }
+    release(old);
+  }
+  const a = new Audio(url);
+  live.set(a, done);
+  const end = () => {
+    release(a);
   };
-  a.onended = done;
-  a.onerror = done;
-  a.play().catch(done);
+  a.onended = end;
+  a.onerror = end;
+  return a;
+}
+
+// release stops an element and drops its file, so the browser frees
+// its media player now, not at some later garbage collection.
+function release(a: HTMLAudioElement): void {
+  const done = live.get(a);
+  if (!done) {
+    return;
+  }
+  live.delete(a);
+  a.onended = null;
+  a.onerror = null;
+  a.pause();
+  a.removeAttribute('src');
+  a.load();
+  done();
+}
+
+// liveSounds is how many Audio elements hold a media player now.
+export function liveSounds(): number {
+  return live.size;
 }
 
 // cue plays a key cue at full level and ducks the rest until it ends.
 // A cue that cannot play ducks nothing.
-function cue(a: HTMLAudioElement, now: number): void {
-  a.volume = level;
+function cue(url: string, now: number): void {
   const c: Cue = { start: now };
   cues.push(c);
   const end = () => {
@@ -160,14 +208,15 @@ function cue(a: HTMLAudioElement, now: number): void {
     c.end ??= Math.min(clock(), c.start + feel.mix.cueMax);
   };
   const longest = setTimeout(end, feel.mix.cueMax * 1000);
-  a.onended = end;
-  a.onerror = end;
+  const a = open(url, end);
+  a.volume = level;
   a.play().catch(() => {
     clearTimeout(longest);
     const i = cues.indexOf(c);
     if (i >= 0) {
       cues.splice(i, 1);
     }
+    release(a);
     mix();
   });
   ticker ??= setInterval(mix, feel.mix.tick * 1000);
