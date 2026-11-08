@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Sounds } from './bridge';
 import { duckGain, loadSounds, loopBounds, mayStart, playLoop, playSound, setSoundVolume } from './sounds';
 
-const hit = '/cardimg/assets/sounds/attack-hit.mp3';
+const hit = '/cardimg/assets/sounds/attack-hit-1.mp3';
 const cast = '/cardimg/assets/sounds/effect-cast.mp3';
 const impact = '/cardimg/assets/sounds/effect-impact.mp3';
 const dice = '/cardimg/assets/sounds/dice-roll.mp3';

@@ -5,16 +5,16 @@ import "strconv"
 // soundsDir holds every sound inside the card images folder.
 const soundsDir = "assets/sounds/"
 
-// The damage sounds (15.50), all from Hearthstone: an unarmed hit for
-// attacks, and the Fireball spell's cast and impact for damage from
-// effects. They belong to Blizzard, so they live only in the private
+// The damage sounds (15.50), all from Hearthstone: the Fireball
+// spell's cast and impact for damage from effects; an attack's hit
+// is the reference client's (20.3). They belong to Blizzard, so they live only in the private
 // images. So do the dice sound (15.69), the loot draw sound (18.7), the
 // player death sound (18.8), the treasure gain sound (18.9) and the soul
 // gain sound, for every soul (18.13, 18.14): their source is unknown.
 // The rest are Hearthstone's too, taken from the reference client of
 // step 20 (20.17); each later sub-step of step 20 plays its own.
 const (
-	attackHitSound    = soundsDir + "attack-hit.mp3"
+	attackHitSound    = soundsDir + "attack-hit-1.mp3"
 	effectCastSound   = soundsDir + "effect-cast.mp3"
 	effectImpactSound = soundsDir + "effect-impact.mp3"
 	diceRollSound     = soundsDir + "dice-roll.mp3"

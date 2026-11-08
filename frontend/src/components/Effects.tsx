@@ -317,7 +317,8 @@ function drawFrame(p: DrawPose, offset: number, opacity = 1): { move: Keyframe; 
 
 // drawKeys is a draw's keyframes over its time. Calm (reduced
 // motion): an own card shows at the show spot, face up, and fades.
-function drawKeys(own: boolean, path: DrawPath, calm: boolean): { move: Keyframe; turn: Keyframe }[] {
+// An open card (another player's, from the discard) stays face up.
+function drawKeys(own: boolean, path: DrawPath, calm: boolean, open: boolean): { move: Keyframe; turn: Keyframe }[] {
   if (calm) {
     const at = ownPose(feel.draw.show, path);
     return [0, 0.1, 0.85, 1].map((o, i) => drawFrame(at, o, i === 1 || i === 2 ? 1 : 0));
@@ -325,14 +326,17 @@ function drawKeys(own: boolean, path: DrawPath, calm: boolean): { move: Keyframe
   const time = drawTime(own);
   const pose = own ? ownPose : otherPose;
   const n = Math.ceil(time * drawFrames);
-  return Array.from({ length: n + 1 }, (_, i) => drawFrame(pose((time * i) / n, path), i / n));
+  return Array.from({ length: n + 1 }, (_, i) => {
+    const at = pose((time * i) / n, path);
+    return drawFrame(open ? { ...at, turn: 0 } : at, i / n);
+  });
 }
 
 // Draw plays a looted card (20.7, ADR 027 "Draw"). The viewer's own
 // card rises from the deck, turns face up on its way to the show spot,
 // holds there a moment, then goes into the hand: they see each card
 // before it joins the hand. Another player's flies deck to hand, back
-// only. Each draw is its own effect, so one card is in the air at a
+// only; one from the loot discard shows its face, as it is public. Each draw is its own effect, so one card is in the air at a
 // time. Sounds: loot-draw as an own card leaves, loot-land as it lands;
 // loot-draw-other for another player's. Reduced motion: an own card
 // shows at the show spot and fades; another player's only sounds.
@@ -371,7 +375,8 @@ function Draw({
       handScale: own ? handW / zoomW : deckScale,
     };
   });
-  const [keys] = useState(() => (path ? drawKeys(own, path, calm) : []));
+  const open = !own && card !== undefined;
+  const [keys] = useState(() => (path ? drawKeys(own, path, calm, open) : []));
   useSkip(!path, playing.done);
   const { done, scale } = playing;
   useEffect(() => {
@@ -414,7 +419,7 @@ function Draw({
       data-own={own}
     >
       <div ref={turnRef} className="effect-draw-turn" style={{ transform: String(start?.turn.transform ?? '') }}>
-        {own && (
+        {(own || open) && (
           <div className="effect-draw-face">
             <Card cardRef={card} back="loot" size="zoom" />
           </div>

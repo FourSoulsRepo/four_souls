@@ -359,7 +359,7 @@ w.go = {
         const one = (name: string): string[] => [`/cardimg/assets/sounds/${name}.mp3`];
         const three = (name: string): string[] => ['1', '2', '3'].map((i) => `/cardimg/assets/sounds/${name}-${i}.mp3`);
         return Promise.resolve({
-          attackHit: one('attack-hit'),
+          attackHit: one('attack-hit-1'),
           effectCast: one('effect-cast'),
           effectImpact: one('effect-impact'),
           diceRoll: one('dice-roll'),

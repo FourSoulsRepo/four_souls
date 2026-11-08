@@ -1,5 +1,5 @@
-// Damage sounds (15.50), all from Hearthstone. An attack lands with an
-// unarmed hit, card to card. Other damage is a fireball: its cast as the
+// Damage sounds (15.50), all from Hearthstone. An attack lands with a
+// hit, card to card, by size (20.3). Other damage is a fireball: its cast as the
 // shot leaves and its impact as it lands. A thrown die clatters on wood
 // as it lands (15.69), each die of several on its own (19.39). Each
 // looted card is dealt with a card sound (18.7). A player's death sounds

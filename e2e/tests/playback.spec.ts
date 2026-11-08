@@ -399,7 +399,7 @@ test('an attack strikes fast, hits on contact and settles back (20.2)', async ({
   // Contact: the strike's end lands the hit with its sound.
   await seek(vee, 'strike', 'finish');
   await expect(vee.getByTestId('burst')).toHaveText('−1');
-  expect(await played(vee)).toEqual(['/cardimg/assets/sounds/attack-hit.mp3']);
+  expect(await played(vee)).toEqual(['/cardimg/assets/sounds/attack-hit-1.mp3']);
   await seek(vee, 'settle', 0);
   await seek(vee, 'burst', burstPart(0.05));
   await shot(vee, 'attack-contact');
@@ -484,7 +484,7 @@ test('a bigger hit looks and sounds bigger (20.3)', async ({ browser }) => {
   // 1 damage: the small burst and sound; the near cards push a little.
   const small = await hitAndShoot(vee, 1, 'hit-size-1');
   expect(small.size).toBe('1');
-  expect(await played(vee)).toEqual(['/cardimg/assets/sounds/attack-hit.mp3']);
+  expect(await played(vee)).toEqual(['/cardimg/assets/sounds/attack-hit-1.mp3']);
   const near = await shakes(vee);
   expect(near.filter((id) => id === 'hit-shake').length).toBeGreaterThan(0);
   // The table shakes only when the hit kills.
@@ -1644,9 +1644,9 @@ function draws(page: Page): Promise<{ most: number; widths: number[]; own: strin
 
 // loot replays the view with cards looted by player, each also put in
 // the viewer's hand when they are the viewer's own (20.7).
-async function loot(page: Page, other: boolean, cards: string[]): Promise<void> {
+async function loot(page: Page, other: boolean, cards: string[], discard = false): Promise<void> {
   await page.evaluate(
-    ({ other, cards }) => {
+    ({ other, cards, discard }) => {
       interface Hand {
         id: number;
         card: string;
@@ -1672,11 +1672,15 @@ async function loot(page: Page, other: boolean, cards: string[]): Promise<void> 
         if (!other) {
           who.hand = [...(who.hand ?? []), { id, card, charged: true }];
         }
+        if (discard) {
+          // From the loot discard: public, every page gets the card.
+          return { kind: 'looted', player: who.id, object: id, card, text: 'from the discard' };
+        }
         return { kind: 'looted', player: who.id, object: id, ...(other ? {} : { card }), private: true };
       });
       s.receive({ type: 'update', data: { ...game, step: game.step + 1, events } });
     },
-    { other, cards },
+    { other, cards, discard },
   );
 }
 
@@ -1728,6 +1732,27 @@ test('another player\'s draw flies back up to their hand, with no show spot (20.
     expect(width).toBeLessThan(120);
   }
   expect((await played(ola)).map((p) => p.replace(/-\d\.mp3$/, '.mp3'))).toEqual(Array(2).fill('/cardimg/assets/sounds/loot-draw-other.mp3'));
+});
+
+test('another player\'s draw from the loot discard shows its face (20.16)', async ({ browser }) => {
+  const [ola] = await startGame(browser, ['Ola', 'Pim']);
+  if (!ola) {
+    throw new Error('no pages');
+  }
+  await trackDraws(ola);
+  await loot(ola, true, ['a_penny'], true);
+  const drawn = ola.getByTestId('drawn-card');
+  await expect(drawn).toBeAttached();
+  // The face is there and the card stays face up: no back shows.
+  await expect(drawn.locator('.effect-draw-face:not(.effect-draw-back)')).toHaveCount(1);
+  await ola.waitForTimeout(300);
+  await shot(ola, 'loot-draw-other-discard');
+  await expect(ola.locator('.effects')).toHaveCount(0, { timeout: 10_000 });
+  const d = await draws(ola);
+  expect(d.own).toEqual(['false']);
+  for (const width of d.widths) {
+    expect(width).toBeLessThan(120);
+  }
 });
 
 test('a player death makes its sound once, a monster death none (18.8)', async ({ browser }) => {

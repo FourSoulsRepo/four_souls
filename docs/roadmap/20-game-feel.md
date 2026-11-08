@@ -38,6 +38,7 @@ Rules for this step (owner, 2026-11-06):
     2. A normal commit: no amend, no push.
     3. Game repo commits never include the submodule pointer.
     4. The owner merges, pushes and bumps the pointer by hand.
+12. Order: 20.18 runs before the step review, 20.16 (owner, 2026-11-08).
 
 Owner notes (2026-11-06):
 
@@ -82,8 +83,8 @@ Owner notes (2026-11-06):
    3. Cards near the target shake away from it: 0.1, 0.5, 1.
    4. A player's death or a lethal hit: a short table shake.
    5. No shake when speed is "off" or reduced motion is on.
-   6. Sound by size: `attack-hit`, `attack-hit-2`, `attack-hit-3` (20.17).
-      1. Size 1 keeps today's `attack-hit` (15.50).
+   6. Sound by size: `attack-hit-1`, `attack-hit-2`, `attack-hit-3` (20.17).
+      1. Size 1 is the reference's too since the owner's review (20.16).
       2. No crowd cheer; the reference's is a tavern crowd.
 3. Done when:
    1. Vitest covers the size picker.
@@ -141,6 +142,7 @@ Owner notes (2026-11-06):
    3. Playable 0.3 s after it lands.
    4. Draws 4 and on: each 11 % faster, floor 0.556.
    5. Others' draws: back only, short, no show spot.
+      1. From the loot discard: face up, as it is public (owner, 20.16).
       1. One sound: `loot-draw-other` (20.17).
    6. Replace `fly` for own draws; claim as `arrive`.
 3. Done when:
@@ -316,7 +318,40 @@ Clips (traced 2026-11-06 in Fanstone 37.0.254477):
 | `end-turn-cue` | `VO_JobsDone.wav` (enUS) | `9cf1adfef5afae941bbf780a83efdf6d` | `EndTurnButton.PlayEndTurnSound` | 20.10 |
 | `timer-tick` | `Countdown_Tick.wav` | `d4cbcbff6b2c84843839a2787776a2b8` | `TurnTimer.m_TickSound` | 20.15 |
 | `timer-last` | `Countdown_Tick_Final.wav` | `e99b87e5dc68bcc4dbe04e8e05190b6a` | `TurnTimer.m_FinalTickSound` | 20.15 |
+| `attack-hit-1` | `FX_Minion_AttackImpact.wav` | `784c4afefc057624fa90cab6478eed93` | `AttackSpellController.m_ImpactDefHandles`, power 0–5 | 20.3 |
 
-Kept as they are: `attack-hit` (size 1) and `loot-draw` (draw out).
-The reference's own: `FX_Minion_AttackImpact.wav` and `draw_card_1..3.wav`.
-Swapping them is the owner's call; not part of this step.
+Kept as it is: `loot-draw` (draw out).
+The reference's own: `draw_card_1..3.wav`.
+Swapping it is the owner's call; not part of this step.
+
+`attack-hit-1` replaced `attack-hit` (owner, 2026-11-08).
+
+1. The old file, WoW's `unarmedparrymetala`, did not match in style.
+2. Its clip found by name among the audio bundles' `AudioClip`s.
+3. The Mid and Large GUIDs found the same way match the table.
+
+### [ ] 20.18 Choosing cards, compared with the reference
+
+1. Goal: picking among shown cards feels like the reference's choice.
+   1. Owner, 2026-11-08: the reference's "choose one of 3".
+   2. Ours: look at the top cards of a deck, put one on top, the rest on the bottom.
+   3. E.g. XVIII The Moon: top 5 loot, 1 on top, the rest on the bottom.
+   4. The same flow for monster cards, e.g. top 4 monsters.
+2. Tasks:
+   1. Read the reference's choice flow (rule 10).
+      1. Code: `ChoiceCardMgr.cs`, its banner, `CHOICE_TYPE`.
+      2. How the cards come in: from where, spacing, size, times, curves.
+      3. How one is picked: hover, click, confirm, sounds.
+      4. What happens to the rest: where they go, how they leave.
+      5. Hiding the choice to look at the table, and coming back.
+      6. Asset data (prefabs, `SoundDef`) via UnityPy, as in 20.17.
+   2. Write the findings into ADR 027, a new "Choosing cards" section.
+   3. Compare with our flow, every card that uses it.
+      1. Engine prompts and the client's pick view.
+      2. List each difference with a recommendation.
+   4. The owner picks what to build; then it is built here.
+   5. A sound it needs comes as rule 8 says.
+3. Done when:
+   1. ADR 027 has the findings and the differences.
+   2. The owner's picks are built, with before and after screenshots.
+   3. e2e: the pick flow, set up so it never depends on the deal.

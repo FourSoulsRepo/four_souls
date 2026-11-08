@@ -269,6 +269,7 @@
   * Another player's draw: its back flies to their hand, short, one sound.
   * Reduced motion: the card shows large in place and fades.
   * Animations off: no draw, like every effect.
+  * Another player's card from the loot discard flies face up: it is public.
 * **1ak. Turn start (20.8):** a new turn is one clear, ordered moment.
   * "Ann's turn" grows in, gives a small punch, and fades at 1.5 s.
   * As it shows, the player's used character and items light up again.

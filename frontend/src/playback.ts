@@ -21,7 +21,8 @@ export type Effect =
   | { kind: 'fly'; from: string[]; to: string[]; card?: string; back: Kind; middle?: boolean; leaves?: number; lifts?: number; sound?: Sound }
   | { kind: 'popup'; at: string[]; text: string; tone: 'good' | 'bad' }
   // draw: a looted card (20.7). own: the viewer's, shown at the show
-  // spot on its way to the hand; else back only, deck to hand. pace is
+  // spot on its way to the hand; else back only, deck to hand, but a
+  // card taken from the loot discard is public: face up. pace is
   // its time factor, by its place among the player's draws (drawPace).
   | { kind: 'draw'; from: string[]; to: string[]; card?: string; own: boolean; pace: number }
   // dice: thrown for a fresh roll or a reroll (15.62); a changed roll
@@ -231,15 +232,17 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
       case 'looted': {
         // Each looted card is drawn, from the deck or the discard, with
         // its sound (18.7, 20.7). The viewer sees their own card on its
-        // way; another player's shows its back only.
+        // way; another player's shows its back only, unless it comes
+        // from the discard, which everyone has seen (owner, 20.16).
         const n = draws.get(e.player) ?? 0;
         draws.set(e.player, n + 1);
         const own = ctx.you >= 0 && e.player === ctx.you;
+        const discard = e.text === 'from the discard';
         out.push({
           kind: 'draw',
-          from: [e.text === 'from the discard' ? 'discard-loot' : 'deck-loot'],
+          from: [discard ? 'discard-loot' : 'deck-loot'],
           to: handZones(e.player),
-          ...(own && e.card ? { card: e.card } : {}),
+          ...((own || discard) && e.card ? { card: e.card } : {}),
           own,
           pace: drawPace(n),
         });

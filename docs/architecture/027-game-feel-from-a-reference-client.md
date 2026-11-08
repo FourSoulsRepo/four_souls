@@ -154,6 +154,8 @@ Each sub-step of step 20 takes the part it needs.
    13. Reduced motion, another player's: only its sound.
    14. Speed "off": no draw, as every effect.
    15. `sineInExpoOut` stays expo-out; no sine-in phase is used.
+   16. From the loot discard another player's card shows its face (owner, 20.16).
+   17. That card is public; it flies face up, never turns.
 
 ### Drag
 
@@ -503,6 +505,9 @@ Each sub-step of step 20 takes the part it needs.
     11. Loops reach the master through a `rest` gain node, ducked alike.
     12. A cue counts as ended 5 s after its start at most.
     13. Sound, not motion: the speed setting does not change it.
+11. Size 1 hit since the owner's review (2026-11-08).
+    1. `attack-hit-1` is `FX_Minion_AttackImpact`, power 0–5.
+    2. It replaces WoW's `unarmedparrymetala` (15.50).
 
 ### Response timer
 

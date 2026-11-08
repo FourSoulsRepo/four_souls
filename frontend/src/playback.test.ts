@@ -56,7 +56,8 @@ describe('effectsFor', () => {
   // A card taken from the loot discard is drawn the same way (18.7).
   it('draws a card looted from the discard', () => {
     const e: GameEvent = { kind: 'looted', player: 1, object: 9, card: 'a_dime', text: 'from the discard' };
-    expect(effectsFor([e], ctx)).toEqual([{ kind: 'draw', from: ['discard-loot'], to: ['hand-1', 'player-1'], own: false, pace: 1 }]);
+    // It is public, so another player's shows its face (owner, 20.16).
+    expect(effectsFor([e], ctx)).toEqual([{ kind: 'draw', from: ['discard-loot'], to: ['hand-1', 'player-1'], card: 'a_dime', own: false, pace: 1 }]);
   });
 
   // Draws 4 and on of one player in one update go faster (20.7).
