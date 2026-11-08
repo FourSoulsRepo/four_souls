@@ -20,6 +20,7 @@
    2. A sword badge marks an attack; a bolt marks a played loot card.
    3. A line marks the first item of each turn.
    4. Hovering an icon shows the card large, the used ability, and the owner.
+   5. Only the newest 40 icons show; the History panel keeps every line (19.138).
 9. The strip runs along the board's left edge (15.22).
    1. Its History button opens the full history panel.
    2. The panel starts hidden, so the stack has the room.

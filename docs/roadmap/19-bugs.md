@@ -37,7 +37,7 @@ This step never closes; new reports are appended.
 | B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90, 19.106 | 10 |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74, 19.111                      | 5     |
-| E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52, 19.54, 19.69, 19.130, 19.134, 19.136 | 12 |
+| E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52, 19.54, 19.69, 19.130, 19.134, 19.136, 19.138 | 13 |
 | F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88, 19.99, 19.102, 19.118, 19.119 | 11    |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
@@ -53,13 +53,13 @@ This step never closes; new reports are appended.
 | R  | Vitest setup: a test sees stale files    | Vitest     | 19.124                                                 | 1     |
 | S  | Sound: media players never released      | Client     | 19.135                                                 | 1     |
 
-Totals by system (134 items):
+Totals by system (135 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
 | Engine    | A, B    | 28    |
 | Card data | C       | 2     |
-| Client    | D–G, O, P, S | 36 |
+| Client    | D–G, O, P, S | 37 |
 | Server    | H, N    | 2     |
 | e2e       | I, J    | 56    |
 | Release   | K       | 4     |
@@ -4302,3 +4302,36 @@ Totals by system (134 items):
    2. 3 players: 39 turns, 524 s.
    3. 4 players: 82 turns, 1411 s; 0.19 s a step, was 0.32.
    4. A 300-turn game would still pass 1 h; none came near that cap.
+
+### [ ] 19.138 A long game gets slower: the history strip draws every tile
+
+1. Goal: a step costs the same late in a game as early.
+2. Report (main session, 2026-11-08)
+   1. `make e2e-games` at "fast" (19.137), 4 players, seed 988032.
+   2. Turns 0–10: 96 s for 771 steps, 0.12 s a step.
+   3. Turns 70–80: 383 s for 1241 steps, 0.31 s a step.
+   4. Steps per turn grew less than the time per step.
+   5. Question: the app, or only the test's bot?
+3. Cause (probe of the same game, 2026-11-08)
+   1. Each page's own script time per step: 12 ms at step 260, 60 ms at 3800.
+   2. Page elements: 361 at the start, 4713 at step 3833; about 1.1 a step.
+   3. The history strip held 3245 of 3621 elements at step 2791: 391 tiles.
+   4. It draws every headline of the game; about 8 fit on screen.
+   5. Each update draws every tile again: a new `view` prop for each.
+   6. Every tile is a motion row: each render measures all of them.
+   7. CPU profile, step 2539–2791: JSX, React's render log, motion projection, `t()`.
+   8. The test's own work per step stayed flat: trial clicks 10–20 ms.
+   9. Its page reads slowed only because the pages were busy.
+   10. Evidence: `.cache/e2e-evidence/19.138/` (not in git).
+4. Tasks:
+   1. [x] The strip shows only the newest tiles; the History panel keeps all.
+   2. [x] Vitest: a long history gives a bounded strip.
+   3. [x] UC-15 and wiki `Client.md` say so.
+   4. [ ] Rerun `make e2e-games`; compare early and late steps.
+5. Fix (2026-11-08)
+   1. `stripEntries` keeps the newest `stripTiles` (40) headlines.
+   2. It reads the history from the end: no scan of the whole game.
+   3. The probe again, same seed: about 700 elements at every step.
+   4. Script time per step: 10–16 ms throughout, was 12 to 60.
+   5. Step 2808: 118 ms a step, was 204 ms at step 2822.
+   6. Not done: the History panel, when open, still draws every line.

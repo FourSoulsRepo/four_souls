@@ -12,6 +12,7 @@ import {
   rolledBack,
   stepName,
   stripEntries,
+  stripTiles,
   undoButton,
   voteEnded,
   type Entry,
@@ -567,6 +568,22 @@ describe('stripEntries', () => {
     // The new tile is on top; the old ones keep their keys below it.
     expect(after.slice(1)).toEqual(before);
     expect(after).toHaveLength(before.length + 1);
+  });
+
+  it('shows only the newest tiles of a long game (19.138)', () => {
+    // A 4-player game of 80 turns had about 900 headlines; each update
+    // drew every one again.
+    const long: Entry[] = Array.from({ length: 5000 }, (_, i) => ({ key: i + 1, turn: 1, icon: '+', text: String(i), headline: i % 2 === 0 }));
+    const tiles = stripEntries(long);
+    expect(tiles).toHaveLength(stripTiles);
+    // Newest on top, the same keys as the whole strip's.
+    expect(tiles.map((e) => e.key)).toEqual(
+      long
+        .filter((e) => e.headline)
+        .reverse()
+        .slice(0, stripTiles)
+        .map((e) => e.key),
+    );
   });
 });
 

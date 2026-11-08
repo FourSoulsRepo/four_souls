@@ -511,8 +511,20 @@ function dies(it: StackItem, e: GameEvent): boolean {
 // stripEntries are the history strip's tiles, newest on top (15.89):
 // the headlines. Each keeps its entry's key, so an older tile slides
 // down when a new one comes, instead of being drawn again (15.51).
+// Only the newest stripTiles show (19.138): every tile is drawn and
+// measured again on each update, so a long game's strip made each step
+// slower. About 8 fit on screen; the History panel keeps every line.
+export const stripTiles = 40;
+
 export function stripEntries(history: Entry[]): Entry[] {
-  return history.filter((e) => e.headline).reverse();
+  const out: Entry[] = [];
+  for (let i = history.length - 1; i >= 0 && out.length < stripTiles; i--) {
+    const e = history.at(i);
+    if (e?.headline) {
+      out.push(e);
+    }
+  }
+  return out;
 }
 
 // rolledBack is the history after a rollback (ADR 020, item 8): every

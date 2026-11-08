@@ -98,7 +98,7 @@ Measured on one Mac, Chromium. Some runs played three games at once, which makes
 | 3 | 10 | 643 s (10.7 min) | 122–1244 s | 46 |
 | 4 | 8 | 878 s (14.6 min) | 307–1547 s | 58 |
 
-So one round of `make e2e-games` (one game per player count, one after another) takes about 30 minutes, and longer when a 4-player game drags. Some games stay near a winner for dozens of turns: cards take souls away again. Steps also get slower as a game grows long (about 9 steps per second early in a 4-player game, under 5 after turn 80); nobody has looked at why yet.
+So one round of `make e2e-games` (one game per player count, one after another) takes about 30 minutes, and longer when a 4-player game drags. Some games stay near a winner for dozens of turns: cards take souls away again. Steps also got slower as a game grew long (about 9 steps per second early in a 4-player game, under 5 after turn 80). The cause was the app: the history strip drew every headline of the game on each update; it now holds the newest 40 (19.138).
 
 ### Open items
 
