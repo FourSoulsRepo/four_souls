@@ -114,6 +114,23 @@ describe('a choice deal, then a reveal (19.139)', () => {
   });
 });
 
+describe('a deal of another copy after a play (19.141)', () => {
+  it('tells two copies apart by their objects', () => {
+    resetClaims();
+    expect(claim('bomb', 'show', 'played', { object: 797 })).toBe(true);
+    nextBeat();
+    expect(claim('bomb', 'show', 'choice-deal', { object: 798 })).toBe(true);
+    expect(clashes).toEqual([]);
+  });
+
+  it('still finds the same copy shown twice', () => {
+    resetClaims();
+    claim('bomb', 'show', 'played', { object: 797 });
+    nextBeat();
+    expect(claim('bomb', 'show', 'choice-deal', { object: 797 })).toBe(false);
+  });
+});
+
 describe('animation inventory', () => {
   const sources = import.meta.glob<string>(['./**/*.{ts,tsx,css}', '!./**/*.test.ts'], {
     query: '?raw',

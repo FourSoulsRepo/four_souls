@@ -37,7 +37,7 @@ This step never closes; new reports are appended.
 | B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90, 19.106 | 10 |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74, 19.111                      | 5     |
-| E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52, 19.54, 19.69, 19.130, 19.134, 19.136, 19.138, 19.139 | 14 |
+| E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52, 19.54, 19.69, 19.130, 19.134, 19.136, 19.138, 19.139, 19.141 | 15 |
 | F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88, 19.99, 19.102, 19.118, 19.119 | 11    |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
@@ -53,13 +53,13 @@ This step never closes; new reports are appended.
 | R  | Vitest setup: a test sees stale files    | Vitest     | 19.124                                                 | 1     |
 | S  | Sound: media players never released      | Client     | 19.135                                                 | 1     |
 
-Totals by system (137 items):
+Totals by system (138 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
 | Engine    | A, B    | 28    |
 | Card data | C       | 2     |
-| Client    | D–G, O, P, S | 38 |
+| Client    | D–G, O, P, S | 39 |
 | Server    | H, N    | 2     |
 | e2e       | I, J    | 57    |
 | Release   | K       | 4     |
@@ -4389,3 +4389,27 @@ Totals by system (137 items):
    2. Not 20.21: the test runs on the lobby page; `sounds.ts` is unchanged.
    3. Guess: WebKit frees a media player late, so later runs stall.
    4. Left for a later look, with the owner.
+
+### [x] 19.141 Animation clash: a look deals another copy of a card just played
+
+1. Goal: a choice may deal a copy of a card another player just played.
+2. Report (20.21 subagent, 2026-11-09)
+   1. `make e2e-games` after 19.139, 3 players, seed 714953.
+   2. Bob's page: "animation clash: choice-deal shows bomb after played".
+   3. Evidence: `.cache/e2e-evidence/20.21-games-final/` (not in git).
+3. Cause (the record, steps 2962–2981)
+   1. Ann plays Bomb! (object 797): Bob's page shows it large, `played`.
+   2. Bob then orders the top 5 loot cards (step 2981), one is object 798.
+   3. Object 798 is another Bomb!: the deal claims `show` of `bomb`.
+   4. `played` carries its object since 19.136; a deal carries none.
+   5. So two copies look like one card to the claim.
+   6. The playback was right; the claim lacked the object.
+4. Tasks:
+   1. [x] A deal's cards carry their objects into the claim, when known.
+   2. [x] Vitest: a deal of another copy after `played`, no clash.
+   3. [x] ADR 012 and Animations.md.
+5. Fix (2026-11-09)
+   1. Each dealt card has `data-object`: the option's, an order's or a discard's card id.
+   2. `claimDeal` passes it to `claim`; known, different objects never clash.
+   3. A deal without an object: as before.
+   4. ADR 012 2.10 added; Animations.md `show` row.

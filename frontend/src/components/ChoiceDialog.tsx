@@ -48,11 +48,12 @@ const dealt = new Map<number, Set<string>>();
 
 // claimDeal claims each card a deal shows (ADR 012): it returns the
 // cards that may fly; a card another animation showed just now comes at
-// once instead.
-function claimDeal(step: number, cards: string[]): Set<string> {
+// once instead. A card's object, when known, tells copies apart (19.141).
+function claimDeal(step: number, cards: { card: string; object?: number | undefined }[]): Set<string> {
   let ok = dealt.get(step);
   if (!ok) {
-    ok = new Set([...new Set(cards)].filter((c) => claim(c, 'show', 'choice-deal')));
+    const seen = new Map(cards.map((c) => [c.card, c.object]));
+    ok = new Set([...seen].filter(([card, object]) => claim(card, 'show', 'choice-deal', { object })).map(([card]) => card));
     dealt.clear();
     dealt.set(step, ok);
   }
@@ -87,7 +88,7 @@ function enter(root: HTMLElement, entry: Entry, deck: Kind | undefined, scale: n
   } else if (entry === 'deal' && box) {
     const may = claimDeal(
       step,
-      els.map((el) => el.dataset.deal ?? ''),
+      els.map((el) => ({ card: el.dataset.deal ?? '', ...(el.dataset.object ? { object: Number(el.dataset.object) } : {}) })),
     );
     const delays = dealDelays(els.length);
     root.classList.add('dealing');
@@ -181,7 +182,7 @@ export function ChoiceDialog({ choice, subject }: { choice: NonNullable<Actions[
       <div className={`choice-options ${row.className}`} style={row.style}>
         {choice.options.map((o) => (
           <div key={o.intent.choice ?? 0} className="choice-option">
-            {o.card ? <OptionCard card={o.card} name={cardName(o.card)} deck={look} pick={() => { act(o.intent); }} /> : (
+            {o.card ? <OptionCard card={o.card} object={o.target?.object} name={cardName(o.card)} deck={look} pick={() => { act(o.intent); }} /> : (
               <button
                 type="button"
                 onClick={() => {
@@ -211,7 +212,7 @@ export function ChoiceDialog({ choice, subject }: { choice: NonNullable<Actions[
 // glow; its zoom waits as usual, or a right click opens it (20.18). A
 // pick sounds; cards looked at in a deck then fly back to it, the
 // picked one first.
-function OptionCard({ card, name, deck, pick }: { card: string; name: string; deck: Kind | undefined; pick: () => void }) {
+function OptionCard({ card, object, name, deck, pick }: { card: string; object?: number | undefined; name: string; deck: Kind | undefined; pick: () => void }) {
   const frame = use(FrameContext);
   return (
     <button
@@ -219,6 +220,7 @@ function OptionCard({ card, name, deck, pick }: { card: string; name: string; de
       className="choice-card"
       aria-label={name}
       data-deal={card}
+      data-object={object}
       onClick={(e) => {
         playSound('choicePick');
         const kept = e.currentTarget;
@@ -501,6 +503,7 @@ export function OrderDialog({ order, cards }: { order: NonNullable<Actions['orde
               className="choice-card"
               aria-label={name(c.card)}
               data-deal={c.card}
+              data-object={c.id}
               onClick={() => {
                 playSound('choicePick');
                 setPlaced([...placed, c.id]);
@@ -562,7 +565,7 @@ export function DiscardDialog({
     <ChoiceFrame label={t('discard.label')} title={t('discard.title', { n: discard.count })} cards={cards.length > 0}>
       <div className={`choice-options ${row.className}`} style={row.style}>
         {cards.map((c) => (
-          <div key={c.id} className="choice-grow" data-deal={c.card}>
+          <div key={c.id} className="choice-grow" data-deal={c.card} data-object={c.id}>
             <Card
               cardRef={c.card}
               size="choice"

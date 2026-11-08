@@ -18,7 +18,7 @@ Claims are counted in *beats*: a beat is one update, from the start of its effec
 | Job | Means | Clashes with |
 |-----|-------|--------------|
 | `arrive` | The card comes to its place on the table: a hand, a slot, a discard pile. | Another animation's `arrive` of that card at the same place in the same beat. The same animation may claim again (two copies of a card). Two places are two jobs: a card flown to the loot discard and drawn back from it in one update is no clash (19.134). |
-| `show` | The card shows large in the middle of the screen. | Any `show` of that card in the same or the previous beat (19.4). Two known, different objects are two cards: another player's two copies of a loot card played in two updates in a row are no clash (19.136). A choice's deal (`choice-deal`) clashes in its own beat only: a card looked at in the window may be revealed in the next update (19.139). |
+| `show` | The card shows large in the middle of the screen. | Any `show` of that card in the same or the previous beat (19.4). Two known, different objects are two cards: another player's two copies of a loot card played in two updates in a row are no clash (19.136). A choice's deal (`choice-deal`) clashes in its own beat only: a card looked at in the window may be revealed in the next update (19.139). A deal claims each card with its object, so it may deal another copy of a card just played (19.141). |
 
 ## Inventory
 

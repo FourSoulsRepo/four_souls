@@ -83,6 +83,7 @@ Use option 1.
    7. Two known objects are two cards: two copies played in a row (19.136).
    8. A choice's deal clashes in its own beat only (19.139).
    9. A card looked at in a window may be revealed in the next update.
+   10. A choice's deal claims each card with its object, when known (19.141).
 3. A clash is logged, kept in `clashes`, and the second one skipped.
 4. Every animation site has an `anim: <id>` tag.
    1. `docs/wiki/Animations.md` has one row per id.
