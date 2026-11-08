@@ -1256,6 +1256,181 @@ Each sub-step of step 20 takes the part it needs.
     3. Others' backs and the flight back to the deck: as they are.
     4. New for this screen: banner, Confirm, picked state, flight to items.
 
+### Target arrow
+
+1. Checked in 20.23 (`TargetReticleManager`, `TARGET_ARROW_TYPE`).
+   1. Also `TARGET_RETICLE_TYPE`, `TargetDamageIndicator`, `InputManager`.
+   2. Also `RemoteActionHandler`, `Card`, `CardTextBuilder`, `Entity`.
+   3. Prefab data via UnityPy: `Target_Arrow_Bullseye`, `Target_Arrow_Link`.
+   4. And `TargetDamageIndicator`, with their meshes and materials.
+   5. Units are the reference's world units; ours: 60 px each (see "Drag").
+2. Kinds.
+   1. Three: own ("friendly"), another player's ("enemy"), and static.
+   2. Static: a fixed arrow to a chosen target, one other game mode only.
+   3. All three look the same: one red arrow.
+   4. The kind changes behaviour, not color.
+   5. Some cards swap the head: a "?" for random targets, two special reticles.
+3. The look.
+   1. A head, a chain of links behind it, and a bullseye.
+   2. Links: long dashes, 0.56 wide, 0.99 long, one every 1.2 units.
+   3. Head: 1.01 wide, 0.73 long; its tip sits at the pointer.
+   4. Bullseye: a round target, 1.13 across, centred on the pointer.
+   5. Color is in the textures: red, bright red-orange top, dark red rims.
+   6. The materials stay white; no tint by kind or state.
+   7. Unlit; drawn on a layer over the cards.
+4. The curve.
+   1. A parabola from the source to the head, lifted 1.5 units at its middle.
+   2. The lift is the same for any length.
+   3. Each link turns along the curve's slope; so does the head.
+   4. Links: floor(length / 1.2) + 1, at most 15.
+   5. Under 1.2 units: no links; the head keeps a fixed tilt.
+   6. Past 15 links the part near the source stays empty.
+5. The march.
+   1. The links move toward the head at 0.5 units/s.
+   2. One link's place repeats every 2.4 s.
+   3. The link by the head fades out over its last 1.2 units.
+   4. Its opacity: (distance / 1.2)^6, so it goes late and fast.
+   5. The link at the tail fades in: (offset / 1.2)^2.
+6. Following the pointer.
+   1. Own arrow: the head is at the pointer each frame; no damping.
+   2. The head turns to face away from the source.
+   3. The system pointer hides while the own arrow shows.
+   4. Over an own hand card the arrow hides and the pointer shows.
+   5. Another player's arrow: see "Other players live" 7.11.
+7. Over a valid target.
+   1. The bullseye shows at once; off at once when the pointer leaves.
+   2. Valid targets carry a "valid target" highlight all the aim.
+   3. The hovered one turns to a stronger "valid target, mouse over" state.
+   4. Both looks are prefab data; not traced.
+   5. A big card never opens on hover while an own arrow shows.
+8. Over an invalid target.
+   1. Nothing changes: no bullseye, no other mark.
+   2. A click there: an error line and sounds ("Playing from the hand" 5.9).
+9. Appear and go.
+   1. Created: drawn at once at the pointer; no tween.
+   2. Ended: hidden at once; no tween.
+   3. Its prefabs hold an animation component with no clips.
+   4. No sound of its own: no audio in its prefabs or code.
+   5. Cancel: `CancelAttack`, as "Playing from the hand" 5.11.
+   6. Another player's arrow lingers 0.25 s ("Other players live" 6).
+10. What the head carries.
+    1. A short text: the card's own "target arrow text".
+    2. White letters on a yellow-orange burst; text box about 3 units wide.
+    3. Just above the head, 0.75 units toward the top.
+    4. Touch: shown by the source instead.
+    5. Empty text: no burst, no text.
+    6. A choose-one mode with no such text shows its card text.
+    7. Another player's arrow: never any text.
+    8. Attacks: none; only other modes' abilities and objects get one.
+11. Where it starts.
+    1. A spell: the player's hero ("Playing from the hand" 5.3).
+    2. A minion's own aim and an attack: that card on the board.
+    3. A hero power: its button.
+    4. Another player's: their held card, or their hero for a hidden one.
+12. Attack aims.
+    1. A click or drag on an attacker starts an arrow from it.
+    2. The attacker plays its own attack sounds; Four Souls has none.
+    3. Its attack spell starts with the aim ("Attack" 1, windup).
+    4. A cancel sends that spell to its cancel state.
+    5. Taunts on the other side show.
+    6. No text on the head.
+13. Another player's arrow (`RemoteActionHandler`).
+    1. Made only when they point at a card; not at empty board.
+    2. Its head goes to that card's middle, not to their pointer.
+    3. It starts at its source and glides out (0.1 per frame).
+    4. No bullseye, no text.
+    5. It ends 0.25 s after they stop.
+14. Sounds: no new clip.
+    1. The arrow plays none; cancel is `cancel_attack.wav` (20.20).
+15. Ours, at 20.23.
+    1. One `AimArrow` for the own aim and others' arrows (15.32).
+    2. Square blocks 28 × 26 px, one every 36 px; straight, no curve.
+    3. Head 48 long, 60 wide; tip at the pointer; red gradient, dark rim.
+    4. Blocks march 36 px per 0.5 s: 72 px/s, at the animation speed.
+    5. Tail block fades in, head block fades out, both linear.
+    6. The whole arrow at 85 % opacity, with a drop shadow.
+    7. Valid targets glow red (`hl-aim`) all the aim.
+    8. Over one, a ring with cross ticks: 68 px, in from 1.5× over 0.25 s.
+    9. Over an invalid one: nothing; a click gives the why note.
+    10. The system pointer stays; a hand pointer over cards.
+    11. The hover zoom opens after 0.4 s over any card, aim or not.
+    12. It covers the target and the head (shot 02 and 03).
+    13. The arrow shows only after the first pointer move; none on touch.
+    14. It ends at once; no sound but `aimCancel` on a cancel.
+    15. The head carries nothing; a banner says "Choose a target".
+    16. Starts at the card: lifted in the fan, or stopped at the board's edge.
+    17. Others: from their lifted hand back to the card or point.
+    18. Their head snaps to a card's middle, else to their pointer.
+    19. A new arrow starts at its first sample; no glide out.
+    20. Over any card their ring shows and the card gets a red frame.
+    21. Their arrow goes at once; 70 % opacity, under the windows.
+    22. Attacks: no arrow.
+    23. Attack, then priority passes, then a table pick: blue glow, dim.
+16. Differences and recommendations.
+    1. The curve.
+       1. Ours: straight. Ref: an arc, links and head along its slope.
+       2. Recommend: build a 2D arc bowing up the screen.
+       3. Peak at the middle; about 1.5 units (90 px), less on short arrows.
+       4. Blocks and head turn with the slope.
+    2. The links.
+       1. Ours: square blocks every 36 px. Ref: long dashes, a short gap.
+       2. Recommend: build dashes about 1.8 times longer than wide.
+       3. Keep our colors, rim and shadow.
+    3. The march.
+       1. Ours: 72 px/s, linear fades. Ref: 0.5 units/s (30 px/s).
+       2. Recommend: build the slower march and the ref's fade curves.
+       3. Head end ^6, tail ^2.
+    4. Zoom while aiming.
+       1. Ours: the zoom opens and hides the target. Ref: no big card.
+       2. Recommend: build; no hover zoom while the own arrow shows.
+       3. Owner: how to read a target then (see the open questions).
+    5. The pointer.
+       1. Ours: the system pointer over the head. Ref: hidden.
+       2. Recommend: build; no cursor while aiming with a mouse.
+    6. First frame.
+       1. Ours: no arrow until the pointer moves. Ref: at once.
+       2. Recommend: build; draw it from the click point.
+    7. Head text.
+       1. Ours: none; the banner names the card. Ref: a short line on a burst.
+       2. Recommend: later; it needs a short line per card.
+       3. Owner: or the damage only, e.g. "1", for damage cards.
+    8. The hovered valid target.
+       1. Ours: ring only. Ref: bullseye and a stronger highlight.
+       2. Recommend: build; the hovered target's red glow brightens.
+       3. The ring: keep ours; its 0.25 s grow is ours, by eye.
+    9. Invalid target.
+       1. Same in both: nothing on hover; a click explains.
+       2. Recommend: keep ours.
+    10. Others' arrow start.
+        1. Ours: at the first sample. Ref: glides out from its source.
+        2. Recommend: build; a new head starts at the source.
+    11. Others' arrow end.
+        1. Ours: at once. Ref: lingers 0.25 s ("Other players live" 6).
+        2. Recommend: build the linger.
+    12. Others' ring.
+        1. Ours: the ring over any card. Ref: no bullseye on theirs.
+        2. Recommend: build; drop the ring there, keep the red frame.
+        3. Our ring means "a valid target" only in the own aim.
+    13. Others pointing at nothing.
+        1. Ours: an arrow to their pointer. Ref: only at a card.
+        2. Recommend: keep ours; it shows the aim in the making.
+    14. Attack aims.
+        1. Ours: a table pick, no arrow. Ref: an arrow from the attacker.
+        2. Recommend: owner's pick; build or keep.
+        3. Build: the arrow from the own character during the attack pick.
+        4. Others see it as any aim; the blue pick glow stays.
+    15. Where it starts.
+        1. Ours: the card. Ref: the hero for a spell.
+        2. Recommend: keep ours ("Playing from the hand" 12.8).
+    16. Head over the own hand.
+        1. Ref: the arrow hides. Ours: no target is a hand card.
+        2. Recommend: keep ours.
+    17. Head variants and the static arrow.
+        1. Ref: "?" heads for random targets; a kept arrow in one mode.
+        2. Recommend: later.
+    18. Sounds.
+        1. Ref: none of the arrow's own. Recommend: keep; no new clip.
+
 ## Consequences
 
 ### Positive
