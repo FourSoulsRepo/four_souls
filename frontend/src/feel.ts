@@ -336,6 +336,17 @@ export const feel = {
     cueMax: 5,
     tick: 0.02,
   },
+  // timer: the response timer (20.15, ADR 027 principle 9, timer.ts,
+  // ActionBar.tsx). It shows only in its last show seconds: the seconds
+  // left, and a fuse along the prompt's foot that burns down with
+  // curve to empty at 0. Each second it loses then ticks for the player
+  // it waits for, and 0 ticks timer-last. It is a clock, not an effect:
+  // the animation speed neither scales nor stops it. Speed "off" and
+  // reduced motion: the fuse steps once a second instead of burning.
+  timer: {
+    show: 20,
+    curve: curves.linear,
+  },
   // banner: the text in the middle (Effects.tsx). times are its
   // opacity keyframes: in, held, out. A long one (start of game) stays
   // twice as long, with fades as long.

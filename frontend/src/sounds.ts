@@ -9,10 +9,11 @@
 // (18.14). The reference client's sounds of step 20 (20.17) are here too;
 // each later sub-step of step 20 plays its own: a bigger attack hit
 // sounds bigger since 20.3; a held card's two loops since 20.6; another
-// player's big played card since 20.9; End turn's cue since 20.10. A sound
-// may have several files: each play picks one at random, all alike, as
-// the reference does. The files live only in the private images; without them the
-// game is silent.
+// player's big played card since 20.9; End turn's cue since 20.10; the
+// response timer's ticks since 20.15. A sound may have several files:
+// each play picks one at random, all alike, as the reference does. The
+// files live only in the private images; without them the game is
+// silent.
 // Every file is levelled to one loudness (ADR 022), so every sound plays
 // at the same level. The player's volume (ST-09) scales them all alike.
 // One sound per moment (20.14): one sound never starts twice within

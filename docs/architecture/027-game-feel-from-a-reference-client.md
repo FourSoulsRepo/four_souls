@@ -504,6 +504,30 @@ Each sub-step of step 20 takes the part it needs.
     12. A cue counts as ended 5 s after its start at most.
     13. Sound, not motion: the speed setting does not change it.
 
+### Response timer
+
+1. Checked in 20.15 (`TurnTimer`).
+   1. The rope waits until 20 s are left (`m_RopeCapSeconds`).
+   2. Then it burns down, linear, to empty at 0.
+   3. The countdown text turns another color at the same time.
+   4. Ticks: when the whole seconds left (rounded up) go down.
+   5. The count starts at 20, so the first tick is at 19 s.
+   6. At 0 the final tick plays instead.
+   7. A jump of several seconds ticks once.
+   8. Ticks play only where a game mode turns them on.
+2. Built in 20.15.
+   1. `feel.timer`: shows in the last 20 s; the fuse burns linear.
+   2. The seconds after the prompt's title, and a fuse along its foot.
+   3. Ticks 19 … 1, then `timer-last` at 0 (`timer.ts`).
+   4. Ours: only the player it waits for hears the ticks.
+   5. Others see the fuse and the seconds, silent.
+   6. A wake-up at each new second, not a 250 ms poll.
+   7. On the own prompt the seconds turn dark red to read on gold.
+   8. A clock, not an effect: the speed setting does not scale it.
+   9. Speed "off" and reduced motion: the fuse steps once a second.
+   10. No server change: 5 s allowance and restarts stay.
+   11. The Soft vote's timer keeps its full countdown.
+
 ## Consequences
 
 ### Positive

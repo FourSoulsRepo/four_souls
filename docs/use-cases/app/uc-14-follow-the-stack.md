@@ -27,6 +27,7 @@
 * **3b. Response timer (N-07):** the host set one in the detailed setup.
   * The prompt banner counts down the seconds left.
   * When it runs out, the server answers for the player.
+  * The countdown shows only in its last 20 s (20.15).
 * **3c. Choices and discards:** the banner says "Waiting for Ann" and what for.
 * **2c. Whom it waits for (V-11):** the panel says "Waiting for Bo, Cy".
   * "Passed: Ann" lists who passed, auto-skipped players too.

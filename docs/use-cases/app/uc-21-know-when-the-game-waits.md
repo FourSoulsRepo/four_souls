@@ -36,6 +36,9 @@
   * The hint names the card and says Esc cancels.
   * Only the targets and the aiming card glow; the rest dims.
 * **3h. Response timer (N-07):** the banner counts down the seconds.
+  * It shows only in its last 20 s (20.15).
+  * A fuse along the banner's foot burns down with it.
+  * The waiting player hears a tick each second, another at 0.
 * **3i. Paused (N-08):** the banner says "Paused".
 * **3j. Game over:** no banner; the end window shows.
 * **2a. The board glows (15.95):** Ann's board, in the middle, glows green.

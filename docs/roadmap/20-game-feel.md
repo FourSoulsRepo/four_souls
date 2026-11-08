@@ -243,7 +243,7 @@ Owner notes (2026-11-06):
    1. Vitest: three deaths queue one sound.
    2. Vitest: duck curve values.
 
-### [ ] 20.15 Response timer only when it matters
+### [x] 20.15 Response timer only when it matters
 
 1. Goal: time pressure shows only near the end.
 2. Tasks:

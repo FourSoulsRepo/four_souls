@@ -527,6 +527,44 @@
   color: #ffd27a;
 }
 
+/* The response timer's last seconds (20.15): its own prompt's ink is
+   dark, so the gold seconds would not read on it. */
+.prompt-banner.mine .action-timer {
+  color: #a3260b;
+}
+
+/* The fuse along the prompt's foot burns down toward the seconds; times
+   in feel.timer, set inline (ActionBar.tsx). */
+.timer-fuse {
+  position: absolute;
+  right: 12px;
+  bottom: 2px;
+  left: 12px;
+  height: 3px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, #ff4a1c, #ffb347);
+  box-shadow: 0 0 4px rgb(255 120 40 / 80%);
+  transform-origin: right;
+  animation-name: timer-fuse;
+  animation-fill-mode: both;
+  pointer-events: none;
+}
+
+.timer-fuse.still {
+  animation: none;
+}
+
+/* anim: timer-fuse */
+@keyframes timer-fuse {
+  from {
+    transform: scaleX(1);
+  }
+
+  to {
+    transform: scaleX(0);
+  }
+}
+
 /* The stack panel sits in the board's info column (15.21, F-03): newest
    on top, an icon and one short line per item (S-01 – S-04). */
 .stack {
