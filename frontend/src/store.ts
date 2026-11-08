@@ -43,7 +43,7 @@ import { claimEffect, nextBeat } from './animations';
 import { lastRollAfter, type LastRoll } from './dice';
 import { bonusSlot, chargedIn, createPlayback, effectsFor, hpOf, playedEnds, scaleFor, shopSlot, slotZone, type Death, type Effect } from './playback';
 import { empty } from './presence';
-import { loadSounds, setSoundVolume } from './sounds';
+import { loadSounds, playSound, setSoundVolume } from './sounds';
 import { endsGame, lostDialogAfter, retryDelay } from './reconnect';
 import {
   httpBases,
@@ -147,6 +147,19 @@ export interface Big {
   scale: number;
 }
 
+// Dropped is an own hand card played and held where it was let go
+// (20.20): its object, its card, the step it was played at, and its box
+// on screen then.
+export interface Dropped {
+  id: number;
+  card: string;
+  step: number;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
 // Placed is a card a place effect left on its slot, at a screen point,
 // until the next view is shown (19.3).
 export interface Placed {
@@ -205,6 +218,11 @@ interface AppState extends Session {
   // (20.13).
   held: number | null;
   setHeld: (held: number | null) => void;
+  // dropped is the own hand card played and held where it was let go,
+  // until the server answers; once it leaves the hand it shrinks into
+  // its stack row from there (20.20).
+  dropped: Dropped | null;
+  setDropped: (dropped: Dropped | null) => void;
   // cost is the price of the purchase option the pointer is on; the own
   // cents counter previews it (20.11). A new view forgets it.
   cost: number | null;
@@ -455,7 +473,7 @@ export const useApp = create<AppState>()((set, get) => {
       // A rollback jumps to the restored table: no animation, and what
       // the undone steps left on screen goes (item 8.5).
       const jump = u.rollback
-        ? { lastRoll: null, looking: [], aiming: null, aimed: null, selected: null, sent: null, zoom: null, big: null }
+        ? { lastRoll: null, looking: [], aiming: null, aimed: null, selected: null, sent: null, zoom: null, big: null, dropped: null }
         : { lastRoll: lastRollAfter(s.lastRoll, u.events ?? []), ...(looked.length > 0 ? { looking: looked } : {}) };
       set({
         game: u,
@@ -817,6 +835,10 @@ export const useApp = create<AppState>()((set, get) => {
     setHeld: (held) => {
       set({ held });
     },
+    dropped: null,
+    setDropped: (dropped) => {
+      set({ dropped });
+    },
     cost: null,
     setCost: (cost) => {
       if (get().cost !== cost) {
@@ -825,6 +847,8 @@ export const useApp = create<AppState>()((set, get) => {
     },
     why: null,
     showWhy: (text, x, y) => {
+      // A refusal sounds as it shows (20.20, ADR 027 "Playing from the hand" 11).
+      playSound('playRefused');
       set((s) => ({ why: { text, x, y, n: (s.why?.n ?? 0) + 1 } }));
     },
     endWhy: () => {

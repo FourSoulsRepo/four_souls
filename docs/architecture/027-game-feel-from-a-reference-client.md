@@ -991,6 +991,40 @@ Each sub-step of step 20 takes the part it needs.
         1. Ours and ref: no key plays a hand card.
         2. Recommend: hand cards take focus; Enter lifts, Enter plays.
         3. Esc puts it back; a lower priority than the rest.
+13. Built in 20.20 (owner's picks: all but 16).
+    1. Click (12.1): a click picks a card up; it follows the pointer, button up.
+    2. The next click on the board plays it; anywhere else puts it back.
+    3. A click on a button on the board (End turn) puts it back too.
+    4. Right click and Esc put it back.
+    5. Menu (12.2): hand cards have none; table cards keep theirs.
+    6. Held size (12.3): 1.08× in 0.2 s, expo-out, on drag or click.
+    7. Over the board (12.4): the card's aura turns a brighter gold.
+    8. Back (12.5): 0.5 s, expo-out, from where it was, to its fan pose.
+    9. Grab (12.6): `cardGrab` on every pick-up, and on a click that aims.
+    10. Target drag (12.7): the card stops at its last place off the board.
+    11. The aim starts there; the arrow runs from the card (12.8 kept).
+    12. Back below the board: the aim ends silently; the drag goes on.
+    13. Released on a target it plays; elsewhere the aim and the card stay.
+    14. Kept (12.9, 12.11, 12.14): our source click, "why" note, mode dialog.
+    15. Cancel (12.10): `aimCancel` on Esc, right click or empty space.
+    16. Not on a new update's end of the aim, nor on the drag going back.
+    17. Refusal (12.11): `playRefused` with every "why" note.
+    18. Also when the server refuses a played card.
+    19. After the drop (12.12): the card waits where it was let go.
+    20. The answer is the next step; a refusal clears `sent` at the same step.
+    21. Left the hand: a copy shrinks into its stack row, 0.4 s, expo-out.
+    22. It ends as tall as the row; it fades over the last tenth of its eased way.
+    23. No row: its place on the table, else the loot discard.
+    24. Still in the hand (a mode asked): it goes home as in 8.
+    25. Aimed already (its target asked next): it waits on.
+    26. Hand gap (12.13): the rest slide in 0.5 s, expo-out, by left edge.
+    27. Only when a card left; a held or waiting card keeps its place.
+    28. Touch (12.15): a tap lifts the card as an aim does (40 px, 1.08×).
+    29. A tap on the board plays it; elsewhere puts it back; drag stays.
+    30. Speed "off" and reduced motion: no growth, flight, shrink or slide.
+    31. The wait at the drop point stays: it is no motion.
+    32. Times: `feel.play`; none is scaled by the animation speed.
+    33. Keys (12.16): dropped by the owner; no key picks up or plays a card.
 
 ## Consequences
 

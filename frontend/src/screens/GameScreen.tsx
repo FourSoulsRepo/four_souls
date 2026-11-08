@@ -3,6 +3,7 @@ import { actionsFor, aimedOption, IntentKind, Purpose, type Actions } from '../a
 import { onScreen, promptAim } from '../aim';
 import { ActionBar } from '../components/ActionBar';
 import { ActionMenu } from '../components/ActionMenu';
+import { DropLayer } from '../components/HandCard';
 import { t } from '../i18n';
 import { AimLayer } from '../components/Aim';
 import { Board } from '../components/Board';
@@ -250,6 +251,7 @@ function Table({ game, you }: { game: Update; you: number }) {
       />
       <ActionMenu actions={offered.cards} />
       {canAct && <AimLayer />}
+      <DropLayer you={you} />
       {me && !view.over && <PresenceSender active={started && view.turn.active === you} hand={hand} />}
       <PresenceLayer you={you} />
       <WhyNote />

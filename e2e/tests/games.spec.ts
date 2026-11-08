@@ -12,7 +12,7 @@ import type { CDPSession, Locator, Page } from '@playwright/test';
 import { expect, test } from './fixtures';
 import { startGame } from './game';
 import { serverPort } from './server';
-import { enabled, endTurnButton, endTurnQuestion, passButton, reachable, seen, tablePicks, throwButton, turnAction, type Seen } from './turn';
+import { enabled, endTurnButton, endTurnQuestion, passButton, playSpot, reachable, seen, tablePicks, throwButton, turnAction, type Seen } from './turn';
 import { tr, trRe } from './locale';
 
 const maxTurns = Number(process.env.GAME_TURNS ?? 300);
@@ -146,6 +146,16 @@ async function move(page: Page, s: Seen, rnd: Rnd): Promise<string | null> {
     }
     await done.click();
     return 'order';
+  }
+  // A hand card picked up by a click (20.20): mostly played on the
+  // board, sometimes put back.
+  if ((await page.locator('.hand-card.held').count()) > 0) {
+    if (rnd() < 0.8) {
+      await playSpot(page).click();
+    } else {
+      await page.keyboard.press('Escape');
+    }
+    return 'held';
   }
   const menu = page.getByRole('menu');
   if (await menu.isVisible()) {

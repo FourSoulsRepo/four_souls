@@ -5,6 +5,7 @@ import { t } from '../i18n';
 import { useKey } from '../keys';
 import { scaleFor } from '../playback';
 import type { Intent, OptionView } from '../protocol';
+import { playSound } from '../sounds';
 import { useApp, type Aiming } from '../store';
 
 // AimLayer is the player's aim (15.25): a click on a card that needs a
@@ -15,10 +16,21 @@ import { useApp, type Aiming } from '../store';
 // the shared WhyNote (15.29). While the mouse moves, an arrow
 // runs from the card to the pointer. A card already placed answers its
 // target prompt; cancelling it sends the prompt's cancel, and the card
-// goes back (15.34, T-13).
+// goes back (15.34, T-13). A hand card dragged onto the board aims too
+// (20.20): letting it go there decides by itself, so the click that
+// follows the release is no pick (swallowAimClick).
 export function AimLayer() {
   const aiming = useApp((s) => s.aiming);
   return aiming ? <Aim key={aiming.source} aiming={aiming} /> : null;
+}
+
+// swallow is set when a drag that aims ends: the click its release
+// makes is no click of the aim. A new press clears it.
+let swallow = false;
+
+// swallowAimClick drops the click that ends a drag which aims (20.20).
+export function swallowAimClick(): void {
+  swallow = true;
 }
 
 function Aim({ aiming }: { aiming: Aiming }) {
@@ -43,6 +55,10 @@ function Aim({ aiming }: { aiming: Aiming }) {
     const click = (e: MouseEvent) => {
       e.stopPropagation();
       e.preventDefault();
+      if (swallow) {
+        swallow = false;
+        return;
+      }
       const what = aimClick(zonesAt(e.clientX, e.clientY), aiming.source, aiming.targets);
       if (what.kind === 'pick') {
         pick(aiming, what.target);
@@ -57,21 +73,28 @@ function Aim({ aiming }: { aiming: Aiming }) {
         playAt(a.intent, target);
         return;
       }
+      // Sent first: the card that aimed sees its play sent as the aim
+      // ends, and waits for the answer (20.20).
       const answer = a.choice && aimedOption(a.choice, target);
-      setAiming(null);
       if (answer) {
         act(answer);
       }
+      setAiming(null);
     };
     const menu = (e: MouseEvent) => {
       e.preventDefault();
       cancel(aiming, act, setAiming);
     };
+    const press = () => {
+      swallow = false;
+    };
     window.addEventListener('pointermove', move);
+    window.addEventListener('pointerdown', press, true);
     window.addEventListener('click', click, true);
     window.addEventListener('contextmenu', menu, true);
     return () => {
       window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerdown', press, true);
       window.removeEventListener('click', click, true);
       window.removeEventListener('contextmenu', menu, true);
     };
@@ -79,8 +102,10 @@ function Aim({ aiming }: { aiming: Aiming }) {
   return line && <AimArrow {...line} />;
 }
 
-// cancel ends an aim; a placed card's prompt is cancelled with it.
+// cancel ends an aim; a placed card's prompt is cancelled with it. It
+// sounds (20.20, ADR 027 "Playing from the hand" 10).
 function cancel(aiming: Aiming, act: (i: Intent) => void, setAiming: (a: Aiming | null) => void) {
+  playSound('aimCancel');
   const c = aiming.choice && cancelOption(aiming.choice);
   setAiming(null);
   if (c) {

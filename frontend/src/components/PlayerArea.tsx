@@ -1,18 +1,14 @@
-import { motion, useMotionValue } from 'motion/react';
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
-import { arrivedBy } from '../animations';
-import { fanPose, feel, type FanPose } from '../feel';
+import { useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { fanPose } from '../feel';
 import { t } from '../i18n';
-import { scaleFor } from '../playback';
 import { Role, type CardView, type PlayerView } from '../protocol';
 import { useApp } from '../store';
 import type { LinePart } from '../stack';
 import { isCurse, isSoul, playerColor, soulCards, soulSlots, type Position } from '../table';
 import { Card, useZoom, type CardSize } from './Card';
 import { Count, useCount, useFlip } from './Count';
-import { holdCard, type Held } from './dragFeel';
+import { HandCard, useHandGap } from './HandCard';
 import type { Interact } from './Interact';
-import { still } from './lunge';
 import { HiddenHand, RevealedHand } from './Pile';
 import { Part } from './StackPanel';
 import './Table.css';
@@ -177,6 +173,8 @@ function OwnArea({ player, name, active, asked, winSouls, ui, tools }: Omit<Prop
   const hand = player.hand ?? [];
   const spent = useSpent();
   const { character } = player;
+  const handRef = useRef<HTMLDivElement>(null);
+  useHandGap(handRef, hand.map((c) => c.id).join(','));
   return (
     <section
       className={`player player-bottom own${active ? ' active' : ''}${player.dead ? ' dead' : ''}${pick.highlight ? ` hl-${pick.highlight}` : ''}`}
@@ -229,6 +227,7 @@ function OwnArea({ player, name, active, asked, winSouls, ui, tools }: Omit<Prop
           ))}
       </div>
       <div
+        ref={handRef}
         className="hand"
         role="group"
         aria-label={t('table.your_hand')}
@@ -367,136 +366,6 @@ function PlayCard({ card, owner, size, ui }: { card: CardView; owner: number; si
 function fan(n: number): CSSProperties {
   const overlap = n <= 3 ? 20 : Math.min(64, 20 + (n - 3) * 7);
   return { '--fan-overlap': `${String(overlap)}px` } as CSSProperties;
-}
-
-// onPlayArea: the point is over the board, where loot cards are played.
-function onPlayArea(x: number, y: number): boolean {
-  return document.elementsFromPoint(x, y).some((el) => el.closest('[data-drop="play"]') !== null);
-}
-
-// How far a pointer moves before a press becomes a drag, in pixels.
-const dragThreshold = 8;
-
-// HandCard is a card in the viewer's hand, turned and dropped by its
-// place in the fan (pose). A playable one can be dragged
-// onto the board to play it; clicking it opens its actions instead. The
-// drag is plain pointer events with pointer capture, so mouse and touch
-// share it and the release is never missed (ADR 008).
-// A card that needs a target is not dragged: a click starts aiming and
-// the card stays lifted in the fan meanwhile (15.25).
-// A dragged card tilts by its motion and two loops follow it (20.6,
-// holdCard); its inner box turns, so the drag's own move stays apart.
-function HandCard({ card, ui, pose }: { card: CardView; ui: Interact; pose: FanPose }) {
-  const act = useApp((s) => s.act);
-  const setZoom = useApp((s) => s.setZoom);
-  const setHeld = useApp((s) => s.setHeld);
-  const aiming = useApp((s) => s.aiming?.source === card.id);
-  const speed = useApp((s) => s.settings.animation);
-  const [offset, setOffset] = useState<{ x: number; y: number } | null>(null);
-  const startRef = useRef<{ x: number; y: number; pointer: number } | null>(null);
-  // draggedRef swallows the click that ends a drag.
-  const draggedRef = useRef(false);
-  // heldRef is the held card's tilt and loops while it is dragged.
-  const heldRef = useRef<Held | null>(null);
-  const pitch = useMotionValue(0);
-  const roll = useMotionValue(0);
-  // A card just drawn is playable only a moment after it lands (20.7).
-  const [landing, setLanding] = useState(() => arrivedBy(card.card) === 'loot-draw');
-  useEffect(() => {
-    if (!landing) {
-      return;
-    }
-    const id = window.setTimeout(() => {
-      setLanding(false);
-    }, feel.draw.ready * 1000);
-    return () => {
-      window.clearTimeout(id);
-    };
-  }, [landing]);
-  const action = landing ? undefined : ui.play(card.id);
-  const play = action && !action.targets?.length ? action.intent : undefined;
-  const handle = ui.object(card.id);
-  const usable = !landing && handle.highlight === 'act';
-  const reset = () => {
-    startRef.current = null;
-    if (heldRef.current) {
-      setHeld(null);
-    }
-    heldRef.current?.end();
-    heldRef.current = null;
-    setOffset(null);
-  };
-  // A card that leaves the hand mid-drag drops its loops; the others
-  // no longer see it held.
-  useEffect(
-    () => () => {
-      if (heldRef.current) {
-        setHeld(null);
-      }
-      heldRef.current?.end();
-    },
-    [setHeld],
-  );
-  return (
-    <div
-      className={`hand-card${play ? ' playable' : ''}${usable ? ' usable' : ''}${landing ? ' landing' : ''}${offset ? ' dragging' : ''}${aiming ? ' aiming' : ''}`}
-      style={
-        offset
-          ? {
-              transform: `translate(${String(offset.x)}px, ${String(offset.y)}px) scale(1.08)`,
-              perspective: `${String(feel.drag.perspective)}px`,
-            }
-          : ({ '--fan-angle': `${String(pose.angle)}deg`, '--fan-drop': `${String(pose.drop)}px` } as CSSProperties)
-      }
-      onPointerDown={(e) => {
-        if (play && e.button === 0) {
-          startRef.current = { x: e.clientX, y: e.clientY, pointer: e.pointerId };
-          draggedRef.current = false;
-        }
-      }}
-      onPointerMove={(e) => {
-        const start = startRef.current;
-        if (start?.pointer !== e.pointerId) {
-          return;
-        }
-        const x = e.clientX - start.x;
-        const y = e.clientY - start.y;
-        if (!offset) {
-          if (Math.hypot(x, y) < dragThreshold) {
-            return;
-          }
-          e.currentTarget.setPointerCapture(e.pointerId);
-          draggedRef.current = true;
-          setZoom(null);
-          setHeld(card.id);
-          heldRef.current = holdCard(e.clientX, e.clientY, scaleFor(speed, 0, 0) === 0 || still(), (p, r) => {
-            pitch.set(p);
-            roll.set(r);
-          });
-        }
-        heldRef.current?.move(e.clientX, e.clientY);
-        setOffset({ x, y });
-      }}
-      onPointerUp={(e) => {
-        if (offset && play && onPlayArea(e.clientX, e.clientY)) {
-          act(play);
-        }
-        reset();
-      }}
-      onPointerCancel={reset}
-      onClickCapture={(e) => {
-        if (draggedRef.current) {
-          draggedRef.current = false;
-          e.stopPropagation();
-        }
-      }}
-    >
-      {/* anim: drag-tilt */}
-      <motion.div className="drag-tilt" style={{ rotateX: pitch, rotateY: roll }}>
-        <Card cardRef={card.card} size="hand" objectId={card.id} rise {...handle} />
-      </motion.div>
-    </div>
-  );
 }
 
 // PlayerDot is the player's own color by their name; the stack names

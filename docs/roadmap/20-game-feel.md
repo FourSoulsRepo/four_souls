@@ -397,7 +397,7 @@ Swapping it is the owner's call; not part of this step.
    2. e2e: the hit still lands at contact, after the strike starts.
    3. Before and after screenshots of windup, contact and settle.
 
-### [ ] 20.20 Playing a card from the hand, compared with the reference
+### [x] 20.20 Playing a card from the hand, compared with the reference
 
 1. Goal: playing a hand card feels like the reference, without a menu.
    1. Owner, 2026-11-08: today a click opens a menu with a "Play" button.

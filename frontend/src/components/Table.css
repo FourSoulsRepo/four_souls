@@ -821,10 +821,59 @@
 }
 
 /* A card that aims stays in the fan, lifted, while its arrow points
-   (15.25). */
-.own .hand-card.aiming {
+   (15.25). A tapped card lifts the same way, and so does one played
+   from there while it waits for the server (20.20). */
+.own .hand-card.aiming,
+.own .hand-card.lifted {
   z-index: var(--z-hand);
   transform: translateY(-40px) scale(1.08);
+}
+
+/* Playing from the hand (20.20, HandCard.tsx). A card picked up by a
+   click follows the pointer, which clicks through it. One that aims
+   stops at the board's edge; a played one waits where it was let go,
+   out of the pointer's way. Going home it flies over its neighbours;
+   its tween is the only motion then. */
+.hand-card.held.dragging,
+.hand-card.waiting {
+  pointer-events: none;
+}
+
+.hand-card.stopped,
+.hand-card.waiting {
+  position: relative;
+  z-index: var(--z-drag);
+  transition: none;
+}
+
+.hand-card.returning {
+  position: relative;
+  z-index: var(--z-hand);
+  transition: none;
+}
+
+/* Over the board the held card's glow turns gold and brighter: it
+   plays there. No zone lights up (ADR 027 "Playing from the hand" 4). */
+.own .hand-card.usable.over > .drag-tilt::before {
+  box-shadow:
+    0 0 1px 1px rgb(255 245 200 / 90%),
+    0 0 6px 2px rgb(255 210 80 / 90%),
+    0 0 14px 4px rgb(245 175 40 / 60%);
+}
+
+.own .hand-card.usable.over > .drag-tilt::after {
+  box-shadow:
+    0 0 26px 8px rgb(250 195 50 / 50%),
+    0 0 52px 16px rgb(220 145 30 / 28%);
+}
+
+/* A played card shrinking into its stack row (DropLayer), drawn at
+   the hand card's size and scaled from its top left corner. */
+.hand-drop {
+  position: fixed;
+  z-index: var(--z-drag);
+  transform-origin: 0 0;
+  pointer-events: none;
 }
 
 /* The aiming arrow (15.32, Aim.tsx), after Hearthstone's: a chain of

@@ -375,19 +375,19 @@ export async function expectNextTurn(pages: Page[], press: Tap, after: number): 
   expect((await turnNumber(first)) > after || (await gameOver(first))).toBe(true);
 }
 
-// playLoot plays a hand card the way a player would: its menu's Play,
-// or, for a card that needs a target, the first glowing target (15.25):
-// any card, a character for its player (15.33), or a stack item.
-// A new state ends the card's selection, so its menu can close before
-// it is used: the card is pressed again until the menu or target shows
-// (19.100).
+// playLoot plays a hand card the way a player would (20.20): a click
+// picks it up (a tap lifts it), and a click on the board plays it; a
+// card that needs a target aims instead, and the first glowing target
+// is pressed (15.25): any card, a character for its player (15.33), or a
+// stack item. A new state can end an aim before it is used: the card is
+// pressed again until it is held or a target shows (19.100).
 export async function playLoot(page: Page, card: Locator, press: Tap): Promise<void> {
-  const menu = page.getByRole('menu');
+  const held = page.locator('.hand-card.held');
   const target = page.locator('.card.hl-aim, .stack-row.hl-aim').first();
   await expect
     .poll(
       async () => {
-        if ((await menu.isVisible()) || (await target.isVisible())) {
+        if ((await held.count()) > 0 || (await target.isVisible())) {
           return true;
         }
         await press(page, card);
@@ -396,7 +396,12 @@ export async function playLoot(page: Page, card: Locator, press: Tap): Promise<v
       { timeout: 10_000 },
     )
     .toBe(true);
-  await press(page, (await menu.isVisible()) ? menu.getByRole('menuitem', { name: tr('actions.play') }) : target);
+  await press(page, (await held.count()) > 0 ? playSpot(page) : target);
+}
+
+// playSpot is where a click plays a held hand card: the board (20.20).
+export function playSpot(page: Page): Locator {
+  return page.getByRole('region', { name: tr('board.label') });
 }
 
 // answerPlay answers what a played loot card asks before it goes on the

@@ -332,7 +332,8 @@ export function useZoom(cardRef: string | undefined, zoomable: boolean, rise = f
   };
   return {
     onPointerEnter: (e: PointerEvent<HTMLElement>) => {
-      if (on && e.pointerType === 'mouse') {
+      // A held hand card passes over cards without zooming them (20.20).
+      if (on && e.pointerType === 'mouse' && useApp.getState().held === null) {
         zoomedRef.current = true;
         const el = e.currentTarget;
         watch(el);

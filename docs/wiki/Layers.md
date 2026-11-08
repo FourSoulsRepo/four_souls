@@ -31,7 +31,7 @@ A choice shows its options over the dimmed board:
 | `zoom` | The large copy of a hovered or held card. | The player reads a card from any window: discard, choice, look, order, a dialog (19.26). A mouse zoom lets the pointer through. | `components/Card.css` |
 | `overlay` | Connection lost, paused, game over, the game menu, the End turn question (V-46), the reconnecting badge and server notices (N-20). | Modal: the table and its windows wait under it. | `components/Overlays.css` |
 | `vote` | The Soft rollback vote (ADR 020, 17.4); no backdrop, so the table and the history stay in view. | The game waits on it, over any prompt window or the throw; a dialog of the `overlay` row (game menu, connection lost) covers it. | `components/Overlays.css` |
-| `drag` | A hand card being dragged to play. | It follows the pointer over the table and its windows. | `components/Table.css` |
+| `drag` | A hand card being dragged to play, or picked up by a click (20.20); one stopped at the board's edge while it aims; a played one waiting where it was let go, and its shrink into the stack row. | It follows the pointer over the table and its windows; a played one stays in view until the server answers. | `components/Table.css` |
 | `throw` | The roll waiting for its throw, with its button. | The thrown die lands here; only the button catches clicks. | `components/Throw.css` |
 | `menu` | A card's action menu and the ability dialog, with their backdrop. | The player opened it on purpose, over any prompt. | `components/Actions.css` |
 | `look` | The "you look at" window in the middle. | It may come with a choice; the cards to look at come first. | `components/Actions.css` |
@@ -39,7 +39,7 @@ A choice shows its options over the dimmed board:
 | `deal` | A choice's cards flying back onto their deck after the pick (20.18). | The window is gone by then; they cross the table and its cards to the deck. The Menu button and every window cover them. | `components/Actions.css` |
 | `choice` | Choice, discard, order and mode windows with their backdrop (the mode window since 15.58); the bar back to a hidden one (15.29). | A prompt the game waits on; it dims and covers the whole table, the hand and the action bar (H-11). "View board" hides it. | `components/Actions.css` |
 | `presence` | Another player's aiming arrow (15.36). | It points at the table and the hands; windows, the zoom, and the own arrow cover it, so a prompt stays readable. | `components/Table.css` |
-| `hand` | A hovered or aiming hand card. | It comes to the front of the fan, but never over a prompt's buttons. | `components/Table.css` |
+| `hand` | A hovered, aiming or tapped hand card, and one flying home (20.20). | It comes to the front of the fan, but never over a prompt's buttons. | `components/Table.css` |
 | `action-bar` | The status, timer and skip buttons, bottom right. | Over the table, under every window. | `components/Actions.css` |
 | `sky` | The drifting night sky behind the menu screens (15.42). | Nothing: it is under everything, even the screen's own plain blocks. It is not drawn on the game table. | `components/Sky.css` |
 

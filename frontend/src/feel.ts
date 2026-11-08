@@ -392,6 +392,29 @@ export const feel = {
     backCurve: curves.easeInOut,
     othersCurve: curves.expoOut,
   },
+  // play: a card played from the own hand (20.20, ADR 027 "Playing from
+  // the hand", hold.ts, HandCard.tsx). A press that moves drag px picks
+  // the card up; so does a click (a tap on touch lifts it in the fan).
+  // Held, it grows to grow over growTime. Let go off the board, or put
+  // back, it goes home over back from where it was. Played, it stays
+  // where it was let go until the server answers, then shrinks into its
+  // stack row over into; it fades out from intoFade of the eased way on,
+  // when it is row-sized. The hand closes the gap a played
+  // card leaves over gap. These answer the pointer: the speed setting
+  // turns them off, but does not scale them.
+  play: {
+    drag: 8,
+    grow: 1.08,
+    growTime: 0.2,
+    growCurve: curves.expoOut,
+    back: 0.5,
+    backCurve: curves.expoOut,
+    into: 0.4,
+    intoFade: 0.9,
+    intoCurve: curves.expoOut,
+    gap: 0.5,
+    gapCurve: curves.expoOut,
+  },
   // banner: the text in the middle (Effects.tsx). times are its
   // opacity keyframes: in, held, out. A long one (start of game) stays
   // twice as long, with fades as long.
