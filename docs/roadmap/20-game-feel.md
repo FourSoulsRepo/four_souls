@@ -43,6 +43,7 @@ Rules for this step (owner, 2026-11-06):
 14. Order: 20.20 runs before the step review too (owner, 2026-11-08).
 15. Order: 20.21 runs before the step review too (owner, 2026-11-08).
 16. Order: 20.22 runs after 20.18 and before the step review (owner, 2026-11-08).
+17. Order: 20.23 runs after 20.20 and before the step review (owner, 2026-11-08).
 
 Owner notes (2026-11-06):
 
@@ -485,3 +486,30 @@ Swapping it is the owner's call; not part of this step.
    2. The owner's picks are built, with before and after screenshots.
    3. UC-26 matches the new screen.
    4. e2e: Eden's pick on the new screen, set up so it never depends on the deal.
+
+### [ ] 20.23 Target arrow, compared with the reference
+
+1. Goal: aiming at a target looks and feels like the reference's arrow.
+   1. Owner, 2026-11-08.
+   2. Ours: a chain of red blocks with a big head (UC-13 2e, 15.32).
+   3. Ours: a red ring on a valid target; a short note says what to pick.
+   4. Others see it live since 20.13; the head glides to each sample.
+2. Tasks:
+   1. Read the reference's arrow (rule 10).
+      1. Code: `TargetReticleManager.cs`, `TARGET_ARROW_TYPE.cs`.
+      2. Its look: the shaft, its segments, the head, colors by kind.
+      3. How it follows the pointer: curve, lift, speed, damping.
+      4. Over a valid target and over an invalid one: what changes.
+      5. How it appears and goes away: times, curves, sounds.
+      6. What the head carries: text, damage, an icon.
+      7. Asset data (prefabs, `SoundDef`) via UnityPy, as in 20.17.
+   2. Write the findings into ADR 027, a new "Target arrow" section.
+   3. Compare with ours: own aim, others' arrows, attack aims.
+      1. List each difference with a recommendation.
+   4. The owner picks what to build; then it is built here.
+   5. A sound it needs comes as rule 8 says.
+3. Done when:
+   1. ADR 027 has the findings and the differences.
+   2. The owner's picks are built, with before and after screenshots.
+   3. UC-13 2e matches the new arrow.
+   4. e2e: aiming with the new arrow, set up so it never depends on the deal.
