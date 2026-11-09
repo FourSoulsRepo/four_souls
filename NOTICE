@@ -88,6 +88,8 @@ reverse/sounds.sh of FourSoulsRepo/tools (20.17):
   aim-cancel.mp3           cancel_attack
   play-refused.mp3         UI_no_can_do
   history-hover.mp3        history_event_mouseover
+  choice-unpick.mp3        GM_ChatWarning
+  choice-confirm.mp3       BG_SelectHero
   Hearthstone is (c) Blizzard Entertainment, Inc. They belong to their
   owners, are not in this repository, and ship the same way as the card
   images. Converted to mono MP3.

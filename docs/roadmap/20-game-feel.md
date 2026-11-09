@@ -330,6 +330,8 @@ Clips (traced 2026-11-06 in Fanstone 37.0.254477):
 | `aim-cancel` | `cancel_attack.wav` | `066172a886131dc4b96649adffddf9cb` | ADR 027, 20.20 research | 20.20 |
 | `play-refused` | `UI_no_can_do.wav` | `9c034c03dde8fd8458679423cb554253` | ADR 027, 20.20 research | 20.20 |
 | `history-hover` | `history_event_mouseover.wav` | `5a250f9b221350647b46287650dd530c` | ADR 027, 20.21 research | 20.21 |
+| `choice-unpick` | `GM_ChatWarning.wav` | `2a6b3e2ef8f202b47bb1d4b9fc734d6b` | ADR 027 "Start of game" 14.3 | 20.22 |
+| `choice-confirm` | `BG_SelectHero.wav` | `fcecbadc52023e14ebf008249961886a` | ADR 027 "Start of game" 14.5 | 20.22 |
 
 Kept as it is: `loot-draw` (draw out).
 The reference's own: `draw_card_1..3.wav`.

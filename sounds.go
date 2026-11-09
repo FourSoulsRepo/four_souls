@@ -34,6 +34,8 @@ type Sounds struct {
 	AimCancel     []string `json:"aimCancel"`     // an aim is cancelled (20.20)
 	PlayRefused   []string `json:"playRefused"`   // a card cannot be played now (20.20)
 	HistoryHover  []string `json:"historyHover"`  // a history tile is hovered (20.21)
+	ChoiceUnpick  []string `json:"choiceUnpick"`  // a picked card is unpicked before Confirm (20.22)
+	ChoiceConfirm []string `json:"choiceConfirm"` // a start-of-game pick is confirmed (20.22)
 }
 
 // soundFiles are the files of each sound, under the card images folder.
@@ -69,6 +71,8 @@ var soundFiles = Sounds{
 	AimCancel:     soundVariants("aim-cancel", 1),
 	PlayRefused:   soundVariants("play-refused", 1),
 	HistoryHover:  soundVariants("history-hover", 1),
+	ChoiceUnpick:  soundVariants("choice-unpick", 1),
+	ChoiceConfirm: soundVariants("choice-confirm", 1),
 }
 
 // soundVariants names a sound's n files: <name>.mp3 alone, or
@@ -113,6 +117,8 @@ func (a *App) Sounds() Sounds {
 		AimCancel:     f(s.AimCancel),
 		PlayRefused:   f(s.PlayRefused),
 		HistoryHover:  f(s.HistoryHover),
+		ChoiceUnpick:  f(s.ChoiceUnpick),
+		ChoiceConfirm: f(s.ChoiceConfirm),
 	}
 }
 

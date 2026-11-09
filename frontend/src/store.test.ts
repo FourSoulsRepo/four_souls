@@ -110,6 +110,8 @@ describe('settings', () => {
       aimCancel: [],
       playRefused: [],
       historyHover: [],
+      choiceUnpick: [],
+      choiceConfirm: [],
     });
     expect(useApp.getState().languages).not.toContain('xx');
     await useApp.getState().loadCards();

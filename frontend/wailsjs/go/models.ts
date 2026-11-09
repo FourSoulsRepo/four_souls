@@ -344,6 +344,8 @@ export namespace main {
 	    aimCancel: string[];
 	    playRefused: string[];
 	    historyHover: string[];
+	    choiceUnpick: string[];
+	    choiceConfirm: string[];
 	
 	    static createFrom(source: any = {}) {
 	        return new Sounds(source);
@@ -376,6 +378,8 @@ export namespace main {
 	        this.aimCancel = source["aimCancel"];
 	        this.playRefused = source["playRefused"];
 	        this.historyHover = source["historyHover"];
+	        this.choiceUnpick = source["choiceUnpick"];
+	        this.choiceConfirm = source["choiceConfirm"];
 	    }
 	}
 

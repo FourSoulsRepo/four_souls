@@ -384,6 +384,8 @@ w.go = {
           aimCancel: one('aim-cancel'),
           playRefused: one('play-refused'),
           historyHover: one('history-hover'),
+          choiceUnpick: one('choice-unpick'),
+          choiceConfirm: one('choice-confirm'),
         });
       },
       // The mat images, at their real paths; the e2e tests serve them only

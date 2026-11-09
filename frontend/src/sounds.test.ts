@@ -39,6 +39,8 @@ const none: Sounds = {
   aimCancel: [],
   playRefused: [],
   historyHover: [],
+  choiceUnpick: [],
+  choiceConfirm: [],
 };
 
 const all: Sounds = {

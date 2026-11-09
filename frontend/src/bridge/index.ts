@@ -248,6 +248,8 @@ export interface Sounds {
   aimCancel: string[];
   playRefused: string[];
   historyHover: string[];
+  choiceUnpick: string[];
+  choiceConfirm: string[];
 }
 
 // getSounds returns the sound URLs.
