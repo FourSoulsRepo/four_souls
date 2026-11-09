@@ -497,6 +497,7 @@ export namespace settings {
 	    lan_address: string;
 	    language: string;
 	    volume: number;
+	    scale: number;
 	
 	    static createFrom(source: any = {}) {
 	        return new Settings(source);
@@ -516,6 +517,7 @@ export namespace settings {
 	        this.lan_address = source["lan_address"];
 	        this.language = source["language"];
 	        this.volume = source["volume"];
+	        this.scale = source["scale"];
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {

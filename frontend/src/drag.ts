@@ -4,6 +4,7 @@
 // functions, one frame at a time; dragFeel.ts runs them while a card is
 // dragged. Every number lives in feel.drag.
 import { feel } from './feel';
+import { px } from './uiScale';
 
 // Damped is a value that eases toward a target, and its speed.
 export interface Damped {
@@ -56,7 +57,8 @@ export const flat: Tilt = { pitch: rest, roll: rest };
 // per unit, up to the limits; the edge it moves toward leans away.
 // Then the tilt springs back toward flat over feel.drag.rest.
 export function tiltStep(t: Tilt, dx: number, dy: number, dt: number): Tilt {
-  const { gain, unit, pitch, roll, rest: back } = feel.drag;
+  const { gain, pitch, roll, rest: back } = feel.drag;
+  const unit = px(feel.drag.unit);
   const p = clamp(t.pitch.value - (dy / unit) * gain, pitch);
   const r = clamp(t.roll.value + (dx / unit) * gain, roll);
   return {
@@ -73,7 +75,8 @@ export function airStep(a: Damped, dist: number, dt: number): Damped {
   if (dt <= 0) {
     return a;
   }
-  const { unit, airScale, airBase, airEase, airRate } = feel.drag;
+  const { airScale, airBase, airEase, airRate } = feel.drag;
+  const unit = px(feel.drag.unit);
   const perFrame = (dist / unit) * (1 / 60 / dt);
   return smoothDamp(a, Math.log(perFrame * airScale + airBase), airEase, dt, airRate);
 }

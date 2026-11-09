@@ -2,6 +2,8 @@
 // (F-16, T-27), or, for a hand card, rising from it (H-13). Pure, so
 // tests can check it without a window.
 
+import { px } from './uiScale';
+
 // Box is a rectangle in window pixels.
 export interface Box {
   left: number;
@@ -23,7 +25,8 @@ export interface Place {
   tips: 'left' | 'right';
 }
 
-// Space kept between the zoom and the card, and to the window's edges.
+// Space kept between the zoom and the card, and to the window's edges,
+// in px at 100 % (ST-10).
 export const zoomGap = 12;
 export const zoomMargin = 8;
 
@@ -44,14 +47,16 @@ function clamp(v: number, lo: number, hi: number): number {
 export function placeZoom(anchor: Box, size: Size, view: Size, rise: boolean): Place {
   const middle = (anchor.left + anchor.right) / 2;
   const tips = middle < view.width / 2 ? 'right' : 'left';
-  const maxX = view.width - size.width - zoomMargin;
-  const maxY = view.height - size.height - zoomMargin;
+  const margin = px(zoomMargin);
+  const gap = px(zoomGap);
+  const maxX = view.width - size.width - margin;
+  const maxY = view.height - size.height - margin;
   if (rise) {
-    return { x: clamp(middle - size.width / 2, zoomMargin, maxX), y: clamp(maxY, zoomMargin, maxY), tips };
+    return { x: clamp(middle - size.width / 2, margin, maxX), y: clamp(maxY, margin, maxY), tips };
   }
-  const x = tips === 'right' ? anchor.right + zoomGap : anchor.left - zoomGap - size.width;
+  const x = tips === 'right' ? anchor.right + gap : anchor.left - gap - size.width;
   const y = (anchor.top + anchor.bottom) / 2 - size.height / 2;
-  return { x: clamp(x, zoomMargin, maxX), y: clamp(y, zoomMargin, maxY), tips };
+  return { x: clamp(x, margin, maxX), y: clamp(y, margin, maxY), tips };
 }
 
 // keyword is a footnote title without its dashes: "-Eternal-" → "Eternal".

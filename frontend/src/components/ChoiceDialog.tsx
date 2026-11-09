@@ -14,6 +14,7 @@ import { CardDialog } from './CardDialog';
 import { deckBox, flyBack, keepCard } from './ChoiceBack';
 import { still } from './lunge';
 import './Actions.css';
+import { rem } from '../uiScale';
 
 // Entry is how a choice's cards come in (20.18, ADR 027 "Choosing
 // cards"): dealt from the deck they are looked at in, grown at their
@@ -187,7 +188,7 @@ export function ChoiceDialog({ choice, subject }: { choice: NonNullable<Actions[
       label={choice.title}
       banner={banner}
       className={confirm ? 'start' : ''}
-      style={confirm ? ({ '--pick-lift': `${String(feel.start.lift)}px` } as CSSProperties) : undefined}
+      style={confirm ? ({ '--pick-lift': rem(feel.start.lift) } as CSSProperties) : undefined}
       look={look}
       cards={cards > 0}
     >

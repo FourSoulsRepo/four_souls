@@ -10,6 +10,7 @@
 import { elasticOut, feel, hitSize, type HitSize } from '../feel';
 import { playSound, type Sound } from '../sounds';
 import { shakeNear, shakeTable } from './shake';
+import { px } from '../uiScale';
 
 // How many points the burst's star has.
 const starPoints = 14;
@@ -138,7 +139,7 @@ export function burst(at: DOMRect, amount: number, scale: number, lethal = false
   b.dataset.size = String(size);
   b.style.scale = String(grows);
   b.style.left = `${String(x)}px`;
-  b.style.top = `${String(y + spot.spot * burstSide * grows * feel.burst.stack)}px`;
+  b.style.top = `${String(y + spot.spot * px(burstSide) * grows * feel.burst.stack)}px`;
   const n = document.createElement('span');
   n.textContent = `−${String(amount)}`;
   b.append(star(), n);

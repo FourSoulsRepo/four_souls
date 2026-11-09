@@ -11,6 +11,7 @@ import { bezier, feel } from './feel';
 import { t } from './i18n';
 import type { GameView, Prompt } from './protocol';
 import type { Sound } from './sounds';
+import { px } from './uiScale';
 
 export interface Row {
   // scale is the cards' size, as a part of a full choice card.
@@ -66,7 +67,7 @@ export function dealPose(t: number, from: Point, scale: number): DealPose {
   const c = feel.choice;
   const u = ease(c.dealCurve)(part(t, 0, c.deal));
   const v = 1 - u;
-  const lift = { x: from.x, y: from.y - c.lift };
+  const lift = { x: from.x, y: from.y - px(c.lift) };
   const turn = ease(c.turnCurve)(part(t, c.turnAt, c.turn));
   return {
     x: v * v * from.x + 2 * v * u * lift.x,

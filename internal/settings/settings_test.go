@@ -28,7 +28,7 @@ func TestSurvivesRestart(t *testing.T) {
 
 func TestDefaults(t *testing.T) {
 	dir := t.TempDir()
-	want := Settings{Recent: []RecentServer{}, Animation: "normal", Dice: "tear", Volume: MaxVolume}
+	want := Settings{Recent: []RecentServer{}, Animation: "normal", Dice: "tear", Volume: MaxVolume, Scale: DefaultScale}
 	if got := Load(filepath.Join(dir, "none.json")); !reflect.DeepEqual(got, want) {
 		t.Fatalf("missing file: %+v", got)
 	}
@@ -132,7 +132,7 @@ func TestAnimationSpeed(t *testing.T) {
 
 func TestWindowAndMat(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "settings.json")
-	want := Settings{Recent: []RecentServer{}, Animation: "normal", Fullscreen: true, Mat: "cathedral", Dice: "tear", Volume: MaxVolume}
+	want := Settings{Recent: []RecentServer{}, Animation: "normal", Fullscreen: true, Mat: "cathedral", Dice: "tear", Volume: MaxVolume, Scale: DefaultScale}
 	got, err := Save(path, Settings{Fullscreen: true, Mat: "cathedral", Volume: MaxVolume})
 	if err != nil || !reflect.DeepEqual(got, want) {
 		t.Fatalf("saved %+v, %v; want %+v", got, err, want)
@@ -155,7 +155,7 @@ func TestOldThemeIgnored(t *testing.T) {
 		t.Fatal(err)
 	}
 	got := Load(path)
-	want := Settings{Nickname: "Ann", Recent: []RecentServer{}, Animation: "normal", Mat: "cathedral", Dice: "tear", Volume: MaxVolume}
+	want := Settings{Nickname: "Ann", Recent: []RecentServer{}, Animation: "normal", Mat: "cathedral", Dice: "tear", Volume: MaxVolume, Scale: DefaultScale}
 	if !reflect.DeepEqual(got, want) {
 		t.Fatalf("loaded %+v, want %+v", got, want)
 	}
@@ -318,5 +318,31 @@ func TestBadLanguage(t *testing.T) {
 	}
 	if got := Load(path).Language; got != "" {
 		t.Fatalf("bad file language %q, want \"\"", got)
+	}
+}
+
+// TestScale: the interface scale is 75–200 %; 0 or a file without one
+// is 100 % (ST-10).
+func TestScale(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "settings.json")
+	got, err := Save(path, Settings{Scale: 150})
+	if err != nil || got.Scale != 150 {
+		t.Fatalf("Save scale 150: %v, %d", err, got.Scale)
+	}
+	if got, err := Save(path, Settings{}); err != nil || got.Scale != DefaultScale {
+		t.Fatalf("Save scale 0: %v, %d", err, got.Scale)
+	}
+	for _, bad := range []int{-5, MinScale - 1, MaxScale + 1} {
+		if _, err := Save(path, Settings{Scale: bad}); !errors.Is(err, ErrChoice) {
+			t.Fatalf("Save scale %d: %v, want ErrChoice", bad, err)
+		}
+	}
+	for _, file := range []string{`{"scale":250}`, `{}`} {
+		if err := os.WriteFile(path, []byte(file), 0o600); err != nil {
+			t.Fatal(err)
+		}
+		if got := Load(path).Scale; got != DefaultScale {
+			t.Fatalf("%s reads scale %d, want %d", file, got, DefaultScale)
+		}
 	}
 }

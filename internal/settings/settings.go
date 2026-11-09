@@ -51,6 +51,9 @@ type Settings struct {
 	// Volume is the sound volume in percent, 0–100 (ADR 022 levels the
 	// sounds; this is the player's own level). 0 is mute.
 	Volume int `json:"volume"`
+	// Scale is the interface scale in percent (ST-10): the root font
+	// size, so every rem in the frontend follows it. 0 is the default.
+	Scale int `json:"scale"`
 }
 
 // RecentServer is a server joined lately (N-18).
@@ -211,6 +214,13 @@ var ErrChoice = errors.New("unknown setting value")
 // MaxVolume is the loudest sound volume in percent.
 const MaxVolume = 100
 
+// The interface scale's bounds and default, in percent (ST-10).
+const (
+	MinScale     = 75
+	MaxScale     = 200
+	DefaultScale = 100
+)
+
 // ErrNickname means the nickname is empty after trimming, too long, or
 // has control characters.
 var ErrNickname = fmt.Errorf("nickname must be 1–%d characters", protocol.MaxName)
@@ -230,7 +240,7 @@ func (s *Settings) choices() []struct {
 // Recent is never nil, so the frontend always gets a list; an unknown
 // choice reads as its default.
 func Load(path string) Settings {
-	def := Settings{Recent: []RecentServer{}, Animation: Speeds[0], Dice: Dice[0], Volume: MaxVolume}
+	def := Settings{Recent: []RecentServer{}, Animation: Speeds[0], Dice: Dice[0], Volume: MaxVolume, Scale: DefaultScale}
 	data, err := os.ReadFile(path) //nolint:gosec // the app names the file
 	if err != nil {
 		return def
@@ -258,6 +268,9 @@ func Load(path string) Settings {
 	}
 	if s.Volume < 0 || s.Volume > MaxVolume {
 		s.Volume = MaxVolume
+	}
+	if s.Scale < MinScale || s.Scale > MaxScale {
+		s.Scale = DefaultScale
 	}
 	return s
 }
@@ -288,6 +301,12 @@ func Save(path string, s Settings) (Settings, error) {
 	}
 	if s.Volume < 0 || s.Volume > MaxVolume {
 		return Settings{}, fmt.Errorf("%w: volume %d", ErrChoice, s.Volume)
+	}
+	if s.Scale == 0 {
+		s.Scale = DefaultScale
+	}
+	if s.Scale < MinScale || s.Scale > MaxScale {
+		return Settings{}, fmt.Errorf("%w: scale %d", ErrChoice, s.Scale)
 	}
 	recent := []RecentServer{}
 	for _, r := range s.Recent {

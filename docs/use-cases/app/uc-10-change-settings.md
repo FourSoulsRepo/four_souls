@@ -50,6 +50,9 @@
 * **3i. Sound volume (ST-09):** a slider from 0% to 100%, 100% by default.
   * Saved with the other settings; every sound plays at that level at once.
   * 0% mutes every sound (UC-12).
+* **3j. Interface scale (ST-10):** a slider from 75% to 200%, 100% by default.
+  * Saved with the other settings; the whole window grows or shrinks at once.
+  * An older settings file reads as 100%.
 
 ## Postconditions
 

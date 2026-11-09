@@ -11,6 +11,7 @@ import { Card, type CardSize } from './Card';
 import type { Handle } from './Interact';
 import { still } from './lunge';
 import './Table.css';
+import { px, rem } from '../uiScale';
 
 // deckLabel names a deck and its count: "Loot deck: 3 cards".
 function deckLabel(kind: Kind, n: number): string {
@@ -119,7 +120,7 @@ function LookBacks({ kind }: { kind: Kind }) {
         <motion.div key="look" className="deck-look" role="img" aria-label={t('deck.looking', { player: name, n })}>
           {backs.map((i) => {
             const spread = i - (n - 1) / 2;
-            const at = { x: spread * 9, y: -12 + Math.abs(spread) * 2, rotate: spread * 7, scale: 1 };
+            const at = { x: px(spread * 9), y: px(-12 + Math.abs(spread) * 2), rotate: spread * 7, scale: 1 };
             const home = { x: 0, y: 0, rotate: 0, scale: 0.6 };
             const delay = (dealDelays(n).at(i) ?? 0) * scale;
             return (
@@ -161,10 +162,10 @@ const othersFeel = (() => {
   const o = feel.others;
   return {
     '--others-hover': `${String(o.hover)}s`,
-    '--others-hover-lift': `${String(o.hoverLift)}px`,
+    '--others-hover-lift': rem(o.hoverLift),
     '--others-hover-curve': o.hoverCurve,
     '--others-hold': `${String(o.hold)}s`,
-    '--others-hold-lift': `${String(o.holdLift)}px`,
+    '--others-hold-lift': rem(o.holdLift),
     '--others-hold-grow': String(o.holdGrow),
     '--others-hold-curve': o.holdCurve,
     '--others-sway': `${String(o.sway)}deg`,

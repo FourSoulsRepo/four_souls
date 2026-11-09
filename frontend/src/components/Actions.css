@@ -3,14 +3,14 @@
 
 .action-bar {
   position: fixed;
-  right: 16px;
-  bottom: 16px;
+  right: 1rem;
+  bottom: 1rem;
   z-index: var(--z-action-bar);
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 6px;
-  max-width: 320px;
+  gap: 0.375rem;
+  max-width: 20rem;
 }
 
 /* Prompt banner (15.28, V-20): what the game waits for. Waiting for
@@ -19,10 +19,10 @@
    breathing, so the player cannot miss it. */
 .prompt-banner {
   position: relative;
-  max-width: 320px;
-  padding: 6px 12px;
-  border: 2px solid rgb(255 255 255 / 12%);
-  border-radius: 8px;
+  max-width: 20rem;
+  padding: 0.375rem 0.75rem;
+  border: 0.125rem solid rgb(255 255 255 / 12%);
+  border-radius: 0.5rem;
   text-align: right;
   background: rgb(0 0 0 / 62%);
 }
@@ -32,28 +32,28 @@
 }
 
 .prompt-hint {
-  margin-top: 2px;
-  font-size: 13px;
+  margin-top: 0.125rem;
+  font-size: 0.8125rem;
   color: #d9d1c3;
 }
 
 .prompt-banner.mine {
   --ink: #1d120a;
-  padding: 8px 16px 7px;
-  border: 3px solid var(--ink);
-  border-radius: 14px 18px 16px 12px / 12px 16px 18px 14px;
+  padding: 0.5rem 1rem 0.4375rem;
+  border: 0.1875rem solid var(--ink);
+  border-radius: 0.875rem 1.125rem 1rem 0.75rem / 0.75rem 1rem 1.125rem 0.875rem;
   color: #2b1a0c;
   background:
     radial-gradient(ellipse at 30% 20%, rgb(255 255 255 / 45%), transparent 50%),
     linear-gradient(#ffe08a, #e9b23c);
   box-shadow:
-    0 3px 0 var(--ink),
-    0 6px 12px rgb(0 0 0 / 50%);
+    0 0.1875rem 0 var(--ink),
+    0 0.375rem 0.75rem rgb(0 0 0 / 50%);
 }
 
 .prompt-banner.mine .prompt-title {
   font-family: var(--font-game);
-  font-size: 22px;
+  font-size: 1.375rem;
   font-weight: 400;
   line-height: 1.1;
   letter-spacing: 0.02em;
@@ -75,10 +75,10 @@
 .prompt-banner.mine::before,
 .stack .stack-pass.answer::before {
   position: absolute;
-  inset: -3px;
+  inset: -0.1875rem;
   z-index: -1; /* layer: local */
   border-radius: inherit;
-  box-shadow: 0 0 16px 6px rgb(255 205 80 / 75%);
+  box-shadow: 0 0 1rem 0.375rem rgb(255 205 80 / 75%);
   content: "";
   animation: prompt-glow 1.2s ease-in-out infinite alternate;
   pointer-events: none;
@@ -106,16 +106,16 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
-  gap: 6px;
+  gap: 0.375rem;
 }
 
 .action-bar button,
 .action-menu button,
 .choice button,
 .player-pick {
-  padding: 8px 16px;
+  padding: 0.5rem 1rem;
   border: none;
-  border-radius: 6px;
+  border-radius: 0.375rem;
   font: inherit;
   color: var(--fg);
   background: var(--accent);
@@ -126,7 +126,7 @@
 .action-menu button,
 .choice button {
   font-family: var(--font-card);
-  font-size: 16px;
+  font-size: 1rem;
 }
 
 .action-bar button:disabled,
@@ -137,10 +137,10 @@
 
 .action-error {
   min-height: 1.2em;
-  font-size: 13px;
+  font-size: 0.8125rem;
   text-align: right;
   color: #ffb4ab;
-  text-shadow: 0 1px 3px #000;
+  text-shadow: 0 1px 0.1875rem #000;
 }
 
 .action-backdrop {
@@ -153,12 +153,12 @@
   position: absolute;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 6px;
-  border-radius: 8px;
-  translate: -50% calc(-100% - 8px);
+  gap: 0.25rem;
+  padding: 0.375rem;
+  border-radius: 0.5rem;
+  translate: -50% calc(-100% - 0.5rem);
   background: var(--panel);
-  box-shadow: 0 4px 16px rgb(0 0 0 / 50%);
+  box-shadow: 0 0.25rem 1rem rgb(0 0 0 / 50%);
 }
 
 .action-menu button:last-child {
@@ -176,37 +176,37 @@
 
 .ability-dialog {
   display: flex;
-  gap: 18px;
+  gap: 1.125rem;
   align-items: center;
-  max-width: min(92vw, 760px);
+  max-width: min(92vw, 47.5rem);
   max-height: 92vh;
-  padding: 16px 18px;
-  border-radius: 10px;
+  padding: 1rem 1.125rem;
+  border-radius: 0.625rem;
   box-sizing: border-box;
   background: rgb(20 28 40 / 94%);
-  box-shadow: 0 8px 32px rgb(0 0 0 / 60%);
+  box-shadow: 0 0.5rem 2rem rgb(0 0 0 / 60%);
 }
 
 .ability-dialog .card.size-zoom {
   flex: none;
-  width: min(280px, 40vw);
+  width: min(17.5rem, 40vw);
 }
 
 .ability-lines {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0.5rem;
   min-width: 0;
 }
 
 .ability-lines h2 {
-  margin: 0 0 4px;
+  margin: 0 0 0.25rem;
   font-family: var(--font-game);
-  font-size: 28px;
+  font-size: 1.75rem;
   font-weight: 400;
   letter-spacing: 0.03em;
   color: #f7de8f;
-  -webkit-text-stroke: 3px #1d120a;
+  -webkit-text-stroke: 0.1875rem #1d120a;
   paint-order: stroke fill;
   rotate: -1.5deg;
 }
@@ -218,19 +218,19 @@
   --ink: #1d120a;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 7px 14px 7px 8px;
-  border: 3px solid var(--ink);
-  border-radius: 14px 18px 16px 12px / 12px 16px 18px 14px;
+  gap: 0.625rem;
+  padding: 0.4375rem 0.875rem 0.4375rem 0.5rem;
+  border: 0.1875rem solid var(--ink);
+  border-radius: 0.875rem 1.125rem 1rem 0.75rem / 0.75rem 1rem 1.125rem 0.875rem;
   font-family: var(--font-card);
-  font-size: 17px;
+  font-size: 1.0625rem;
   line-height: 1.2;
   text-align: left;
   color: var(--ink);
   background:
     radial-gradient(ellipse at 20% 15%, rgb(255 255 255 / 45%), transparent 50%),
     linear-gradient(#f6ecd2, #e1cc9b);
-  box-shadow: 0 3px 0 var(--ink);
+  box-shadow: 0 0.1875rem 0 var(--ink);
   rotate: -0.6deg;
   cursor: pointer;
   transition:
@@ -249,14 +249,14 @@
 }
 
 .ability-line:enabled:hover {
-  translate: 0 -2px;
+  translate: 0 -0.125rem;
   box-shadow:
-    0 5px 0 var(--ink),
-    0 0 14px rgb(255 210 122 / 75%);
+    0 0.3125rem 0 var(--ink),
+    0 0 0.875rem rgb(255 210 122 / 75%);
 }
 
 .ability-line:enabled:active {
-  translate: 0 2px;
+  translate: 0 0.125rem;
   box-shadow: 0 1px 0 var(--ink);
 }
 
@@ -271,12 +271,12 @@
   display: grid;
   flex: none;
   place-items: center;
-  width: 30px;
-  height: 30px;
-  border: 2.5px solid var(--ink);
-  border-radius: 6px 8px 7px 5px;
+  width: 1.875rem;
+  height: 1.875rem;
+  border: 0.1562rem solid var(--ink);
+  border-radius: 0.375rem 0.5rem 0.4375rem 0.3125rem;
   font-family: var(--font-game);
-  font-size: 22px;
+  font-size: 1.375rem;
   line-height: 1;
   color: var(--ink);
   background: linear-gradient(#fbf4e2, #d9c290);
@@ -290,8 +290,8 @@
 }
 
 .ability-icon svg {
-  width: 22px;
-  height: 22px;
+  width: 1.375rem;
+  height: 1.375rem;
   fill: none;
   stroke: var(--ink);
   stroke-width: 2.8;
@@ -303,21 +303,21 @@
 .ability-buttons {
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
-  margin-top: 4px;
+  gap: 0.625rem;
+  margin-top: 0.25rem;
 }
 
 /* Cancel in the plain-paper look of Wait for my turn. */
 .ability-cancel,
 .ability-view {
-  padding: 6px 18px 4px;
-  border: 3px solid #1d120a;
-  border-radius: 20px 26px 22px 18px / 18px 22px 26px 20px;
+  padding: 0.375rem 1.125rem 0.25rem;
+  border: 0.1875rem solid #1d120a;
+  border-radius: 1.25rem 1.625rem 1.375rem 1.125rem / 1.125rem 1.375rem 1.625rem 1.25rem;
   font-family: var(--font-game);
-  font-size: 18px;
+  font-size: 1.125rem;
   color: #1d120a;
   background: linear-gradient(#e9e2d0, #bfb59c);
-  box-shadow: 0 3px 0 #1d120a;
+  box-shadow: 0 0.1875rem 0 #1d120a;
   rotate: 1deg;
   cursor: pointer;
 }
@@ -329,7 +329,7 @@
 .ability-cancel:hover,
 .ability-view:hover {
   translate: 0 -1px;
-  box-shadow: 0 4px 0 #1d120a;
+  box-shadow: 0 0.25rem 0 #1d120a;
 }
 
 /* A choice: big cards over the dimmed board, nothing else in view
@@ -348,10 +348,10 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
-  max-width: min(94vw, 1100px);
+  gap: 0.875rem;
+  max-width: min(94vw, 68.75rem);
   max-height: 94vh;
-  padding: 14px 18px;
+  padding: 0.875rem 1.125rem;
   box-sizing: border-box;
   overflow: auto;
 }
@@ -362,24 +362,24 @@
   top: 50%;
   left: 50%;
   z-index: var(--z-look);
-  max-width: min(90vw, 760px);
-  border-radius: 10px;
+  max-width: min(90vw, 47.5rem);
+  border-radius: 0.625rem;
   translate: -50% -50%;
   background: rgb(20 28 40 / 92%);
-  box-shadow: 0 8px 32px rgb(0 0 0 / 60%);
+  box-shadow: 0 0.5rem 2rem rgb(0 0 0 / 60%);
 }
 
 .choice h2 {
   margin: 0;
   font-family: var(--font-game);
-  font-size: 32px;
+  font-size: 2rem;
   font-weight: 400;
   letter-spacing: 0.03em;
-  text-shadow: 0 2px 8px rgb(0 0 0 / 80%);
+  text-shadow: 0 0.125rem 0.5rem rgb(0 0 0 / 80%);
 }
 
 .choice.look h2 {
-  font-size: 24px;
+  font-size: 1.5rem;
 }
 
 /* One row per looked-at hand, under its owner's name (19.71). */
@@ -387,13 +387,13 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 0.5rem;
 }
 
 .look-hand h3 {
   margin: 0;
   font-family: var(--font-game);
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: 400;
   letter-spacing: 0.03em;
   color: rgb(255 255 255 / 85%);
@@ -403,7 +403,7 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 18px;
+  gap: 1.125rem;
 }
 
 /* "View board" stands apart from the answers: plain, not red. */
@@ -422,27 +422,27 @@
    to bring it back, small, at the bottom edge (F-20). */
 .choice-peek {
   position: fixed;
-  bottom: 8px;
+  bottom: 0.5rem;
   left: 50%;
   z-index: var(--z-choice);
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 6px 8px 6px 16px;
-  border-radius: 10px;
+  gap: 0.75rem;
+  padding: 0.375rem 0.5rem 0.375rem 1rem;
+  border-radius: 0.625rem;
   translate: -50% 0;
   font-family: var(--font-game);
-  font-size: 20px;
+  font-size: 1.25rem;
   letter-spacing: 0.03em;
   background: rgb(20 28 40 / 92%);
-  box-shadow: 0 8px 32px rgb(0 0 0 / 60%);
+  box-shadow: 0 0.5rem 2rem rgb(0 0 0 / 60%);
 }
 
 .choice-peek button {
-  padding: 6px 14px;
-  border-radius: 6px;
+  padding: 0.375rem 0.875rem;
+  border-radius: 0.375rem;
   font-family: var(--font-card);
-  font-size: 16px;
+  font-size: 1rem;
   color: var(--fg);
   cursor: pointer;
 }
@@ -451,15 +451,15 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 0.375rem;
 }
 
 /* What an order of effects gives (19.17), under its card. */
 /* A trigger option's ability words (19.19). */
 .choice-line {
   margin: 0;
-  max-width: 180px;
-  font-size: 13px;
+  max-width: 11.25rem;
+  font-size: 0.8125rem;
   text-align: center;
 }
 
@@ -467,8 +467,8 @@
   margin: 0;
   padding: 0;
   list-style: none;
-  max-width: 180px;
-  font-size: 13px;
+  max-width: 11.25rem;
+  font-size: 0.8125rem;
   text-align: center;
 }
 
@@ -476,15 +476,15 @@
    the cards not placed yet below. */
 .order-hint {
   margin: 0;
-  font-size: 13px;
+  font-size: 0.8125rem;
   opacity: 0.8;
 }
 
 .order-deck {
   display: flex;
-  gap: 8px;
-  padding: 8px 10px;
-  border-radius: 8px;
+  gap: 0.5rem;
+  padding: 0.5rem 0.625rem;
+  border-radius: 0.5rem;
   background: rgb(0 0 0 / 30%);
 }
 
@@ -492,9 +492,9 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 0.25rem;
   font-family: var(--font-card);
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 
 .order-place:first-child span {
@@ -502,9 +502,9 @@
 }
 
 .order-empty {
-  width: 80px;
+  width: 5rem;
   aspect-ratio: 63 / 88;
-  border: 2px dashed rgb(255 255 255 / 30%);
+  border: 0.125rem dashed rgb(255 255 255 / 30%);
   border-radius: 5% / 3.6%;
   box-sizing: border-box;
 }
@@ -514,8 +514,8 @@
 }
 
 .player-pick {
-  padding: 2px 10px;
-  font-size: 12px;
+  padding: 0.125rem 0.625rem;
+  font-size: 0.75rem;
   background: #1f7fa8;
 }
 
@@ -537,13 +537,13 @@
    in feel.timer, set inline (ActionBar.tsx). */
 .timer-fuse {
   position: absolute;
-  right: 12px;
-  bottom: 2px;
-  left: 12px;
-  height: 3px;
-  border-radius: 2px;
+  right: 0.75rem;
+  bottom: 0.125rem;
+  left: 0.75rem;
+  height: 0.1875rem;
+  border-radius: 0.125rem;
   background: linear-gradient(90deg, #ff4a1c, #ffb347);
-  box-shadow: 0 0 4px rgb(255 120 40 / 80%);
+  box-shadow: 0 0 0.25rem rgb(255 120 40 / 80%);
   transform-origin: right;
   animation-name: timer-fuse;
   animation-fill-mode: both;
@@ -572,8 +572,8 @@
   flex: 0 1 auto;
   flex-direction: column;
   min-height: 0;
-  padding: 6px 10px 8px;
-  border-radius: 8px;
+  padding: 0.375rem 0.625rem 0.5rem;
+  border-radius: 0.5rem;
   box-sizing: border-box;
   background: rgb(10 16 24 / 85%);
 }
@@ -582,13 +582,13 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
-  margin-bottom: 4px;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
 }
 
 .stack h2 {
   margin: 0;
-  font-size: 14px;
+  font-size: 0.875rem;
   color: var(--muted);
 }
 
@@ -599,34 +599,34 @@
   display: grid;
   place-items: center;
   margin-right: auto;
-  border-radius: 6px;
+  border-radius: 0.375rem;
   outline: none;
 }
 
 .last-roll .die {
-  width: 22px;
-  height: 22px;
-  border-radius: 5px;
-  box-shadow: 0 1px 3px rgb(0 0 0 / 60%);
+  width: 1.375rem;
+  height: 1.375rem;
+  border-radius: 0.3125rem;
+  box-shadow: 0 1px 0.1875rem rgb(0 0 0 / 60%);
 }
 
 .last-roll .die-plain {
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 
 .last-roll:focus-visible {
-  box-shadow: 0 0 0 2px var(--muted);
+  box-shadow: 0 0 0 0.125rem var(--muted);
 }
 
 .last-roll-tip {
   position: absolute;
-  top: calc(100% + 6px);
+  top: calc(100% + 0.375rem);
   left: 0;
   z-index: 5; /* layer: local */
   display: none;
-  padding: 4px 10px;
-  border-radius: 8px;
-  font-size: 13px;
+  padding: 0.25rem 0.625rem;
+  border-radius: 0.5rem;
+  font-size: 0.8125rem;
   white-space: nowrap;
   background: rgb(0 0 0 / 85%);
 }
@@ -639,7 +639,7 @@
 .stack ol {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 0.125rem;
   min-height: 0;
   margin: 0;
   padding: 0;
@@ -650,10 +650,10 @@
 .stack-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 1px 4px;
-  border-radius: 6px;
-  font-size: 13px;
+  gap: 0.5rem;
+  padding: 1px 0.25rem;
+  border-radius: 0.375rem;
+  font-size: 0.8125rem;
   cursor: default;
 }
 
@@ -679,12 +679,12 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  min-height: 28px;
-  padding: 1px 8px;
+  min-height: 1.75rem;
+  padding: 1px 0.5rem;
   border: 1px dashed rgb(255 255 255 / 40%);
-  border-radius: 6px;
+  border-radius: 0.375rem;
   box-sizing: border-box;
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-style: italic;
 }
 
@@ -692,8 +692,8 @@
    ATK of a hit, on a line of its own under the declaration. */
 .stack-odds {
   flex-basis: 100%;
-  padding-bottom: 2px;
-  font-size: 12px;
+  padding-bottom: 0.125rem;
+  font-size: 0.75rem;
   font-style: normal;
   color: #ffe9b0;
 }
@@ -704,39 +704,39 @@
   display: grid;
   flex: none;
   place-items: center;
-  width: 28px;
-  height: 28px;
+  width: 1.75rem;
+  height: 1.75rem;
   overflow: hidden;
-  border-radius: 6px;
+  border-radius: 0.375rem;
 }
 
 /* The card is wider than the square: centered, its art in view. */
 .stack-icon .card {
   position: absolute;
-  top: -7px;
+  top: -0.4375rem;
   left: 50%;
   translate: -50% 0;
 }
 
 /* A roll shows the die in the player's dice look (V-19). */
 .stack-icon .die {
-  width: 24px;
-  height: 24px;
-  border-radius: 5px;
-  box-shadow: 0 1px 3px rgb(0 0 0 / 60%);
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 0.3125rem;
+  box-shadow: 0 1px 0.1875rem rgb(0 0 0 / 60%);
 }
 
 .stack-icon .die-plain {
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 
 .stack-die {
   display: grid;
   place-items: center;
-  width: 22px;
-  height: 22px;
-  border: 2px solid #1d120a;
-  border-radius: 6px;
+  width: 1.375rem;
+  height: 1.375rem;
+  border: 0.125rem solid #1d120a;
+  border-radius: 0.375rem;
   font-weight: 700;
   color: #1d120a;
   background: #f4efe4;
@@ -746,13 +746,13 @@
   position: relative;
   display: grid;
   place-items: center;
-  width: 26px;
-  height: 26px;
+  width: 1.625rem;
+  height: 1.625rem;
 }
 
 .stack-mark svg {
-  width: 26px;
-  height: 26px;
+  width: 1.625rem;
+  height: 1.625rem;
 }
 
 .stack-damage svg {
@@ -765,8 +765,8 @@
 
 .stack-mark b {
   position: absolute;
-  padding-top: 5px;
-  font-size: 12px;
+  padding-top: 0.3125rem;
+  font-size: 0.75rem;
   color: #fff;
 }
 
@@ -784,7 +784,7 @@
 
 .stack-nothing {
   margin: 0;
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-style: italic;
   color: var(--muted);
 }
@@ -792,14 +792,14 @@
 /* The first-player roll before turn 1 (15.43): one row per player of
    this round, their die once thrown. */
 .first-roll-title {
-  margin: 0 0 4px;
-  font-size: 12px;
+  margin: 0 0 0.25rem;
+  font-size: 0.75rem;
   color: var(--muted);
 }
 
 .first-roll ol {
   display: grid;
-  gap: 4px;
+  gap: 0.25rem;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -807,66 +807,66 @@
 
 .first-roll-row {
   display: flex;
-  gap: 8px;
+  gap: 0.5rem;
   align-items: center;
   justify-content: space-between;
-  min-height: 26px;
-  font-size: 14px;
+  min-height: 1.625rem;
+  font-size: 0.875rem;
 }
 
 .first-roll-row .die {
-  width: 24px;
-  height: 24px;
-  border-radius: 5px;
-  box-shadow: 0 1px 3px rgb(0 0 0 / 60%);
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 0.3125rem;
+  box-shadow: 0 1px 0.1875rem rgb(0 0 0 / 60%);
 }
 
 .first-roll-row .die-plain {
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 
 .first-roll-wait {
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-style: italic;
   color: var(--muted);
 }
 
 .stack-wait {
-  margin: 4px 0 0;
-  font-size: 12px;
+  margin: 0.25rem 0 0;
+  font-size: 0.75rem;
 }
 
 .stack-passed {
-  margin-top: 2px;
+  margin-top: 0.125rem;
   color: var(--muted);
 }
 
 .stack .stack-pass {
-  padding: 2px 14px 1px;
-  border-width: 2px;
-  font-size: 15px;
+  padding: 0.125rem 0.875rem 1px;
+  border-width: 0.125rem;
+  font-size: 0.9375rem;
 }
 
 /* Turn actions (15.19): round icons by own name, lit when usable,
    dim when not (F-11, F-12). */
 .turn-actions {
   display: flex;
-  gap: 8px;
-  margin: 2px 0;
+  gap: 0.5rem;
+  margin: 0.125rem 0;
 }
 
 .turn-action {
   --ink: #1d120a;
   display: grid;
   place-items: center;
-  width: 40px;
-  height: 40px;
+  width: 2.5rem;
+  height: 2.5rem;
   padding: 0;
-  border: 3px solid var(--ink);
+  border: 0.1875rem solid var(--ink);
   border-radius: 50%;
   color: rgb(255 255 255 / 40%);
   background: linear-gradient(#4a4740, #2c2a25);
-  box-shadow: 0 2px 0 var(--ink);
+  box-shadow: 0 0.125rem 0 var(--ink);
   cursor: not-allowed;
   transition:
     translate 80ms ease,
@@ -875,16 +875,16 @@
 }
 
 .turn-action svg {
-  width: 22px;
-  height: 22px;
+  width: 1.375rem;
+  height: 1.375rem;
   fill: currentColor;
 }
 
 /* The game's pixel sword (15.24): crisp pixels, a little shadow on the
    lit icon; dim, it fades like the drawn icons. */
 .turn-action-image {
-  width: 26px;
-  height: 26px;
+  width: 1.625rem;
+  height: 1.625rem;
   image-rendering: pixelated;
   opacity: 0.45;
   filter: grayscale(1) brightness(1.8);
@@ -908,23 +908,23 @@
 
 .turn-action-left {
   position: absolute;
-  top: -10px;
-  right: -9px;
+  top: -0.625rem;
+  right: -0.5625rem;
   z-index: 1; /* layer: local */
   display: grid;
   place-items: center;
-  width: 20px;
-  height: 20px;
-  padding: 2px 0 0;
-  border: 2px solid var(--ink);
-  border-radius: 10px;
+  width: 1.25rem;
+  height: 1.25rem;
+  padding: 0.125rem 0 0;
+  border: 0.125rem solid var(--ink);
+  border-radius: 0.625rem;
   box-sizing: border-box;
   font-family: var(--font-game);
-  font-size: 14px;
+  font-size: 0.875rem;
   line-height: 1;
   color: var(--ink);
   background: linear-gradient(#fbf4e2, #d9c290);
-  box-shadow: 0 2px 0 var(--ink);
+  box-shadow: 0 0.125rem 0 var(--ink);
   rotate: 6deg;
   pointer-events: none;
 }
@@ -932,12 +932,12 @@
 .turn-action-left.wide,
 .turn-action-left.long {
   width: auto;
-  padding: 2px 3px 0;
-  font-size: 12px;
+  padding: 0.125rem 0.1875rem 0;
+  font-size: 0.75rem;
 }
 
 .turn-action-left.long {
-  font-size: 10px;
+  font-size: 0.625rem;
 }
 
 .turn-action-left.none {
@@ -952,25 +952,25 @@
     radial-gradient(ellipse at 32% 25%, rgb(255 255 255 / 55%), transparent 50%),
     linear-gradient(#f7de8f, #e4a63a);
   box-shadow:
-    0 3px 0 var(--ink),
-    0 0 10px rgb(255 210 122 / 55%);
+    0 0.1875rem 0 var(--ink),
+    0 0 0.625rem rgb(255 210 122 / 55%);
   cursor: pointer;
 }
 
 .turn-action.lit:hover {
   translate: 0 -1px;
   box-shadow:
-    0 4px 0 var(--ink),
-    0 0 16px rgb(255 210 122 / 90%);
+    0 0.25rem 0 var(--ink),
+    0 0 1rem rgb(255 210 122 / 90%);
 }
 
 /* Pressed, or picking what the action is for (F-13, V-15). */
 .turn-action.lit:active,
 .turn-action.down {
-  translate: 0 3px;
+  translate: 0 0.1875rem;
   color: var(--ink);
   background: linear-gradient(#e9c56a, #c88f22);
-  box-shadow: inset 0 2px 5px rgb(0 0 0 / 45%);
+  box-shadow: inset 0 0.125rem 0.3125rem rgb(0 0 0 / 45%);
 }
 
 /* End turn (15.20): one big button at the board's right edge (H-04),
@@ -982,11 +982,11 @@
   --ink: #1d120a;
   width: 100%;
   min-height: calc(var(--u) * 0.82);
-  padding: 7px 6px 5px;
-  border: 3px solid var(--ink);
+  padding: 0.4375rem 0.375rem 0.3125rem;
+  border: 0.1875rem solid var(--ink);
   border-radius: 48% 52% 46% 54% / 58% 50% 52% 44%;
   font-family: var(--font-game);
-  font-size: clamp(14px, calc(var(--u) * 0.26), 24px);
+  font-size: clamp(0.875rem, calc(var(--u) * 0.26), 1.5rem);
   font-weight: 400;
   line-height: 1;
   letter-spacing: 0.03em;
@@ -995,8 +995,8 @@
     radial-gradient(ellipse at 30% 22%, rgb(255 255 255 / 25%), transparent 45%),
     linear-gradient(#a49d90, #6d665b);
   box-shadow:
-    0 2px 0 var(--ink),
-    0 5px 10px rgb(0 0 0 / 45%);
+    0 0.125rem 0 var(--ink),
+    0 0.3125rem 0.625rem rgb(0 0 0 / 45%);
   rotate: -2deg;
   cursor: not-allowed;
   transition:
@@ -1012,8 +1012,8 @@
     radial-gradient(circle at 80% 85%, rgb(120 60 0 / 25%), transparent 40%),
     linear-gradient(#f7de8f, #e4a63a);
   box-shadow:
-    0 4px 0 var(--ink),
-    0 8px 14px rgb(0 0 0 / 55%);
+    0 0.25rem 0 var(--ink),
+    0 0.5rem 0.875rem rgb(0 0 0 / 55%);
 }
 
 /* Own turn, but the engine does not allow ending it yet; a click on
@@ -1034,11 +1034,11 @@
 }
 
 .end-turn.own:enabled:not([aria-disabled='true']):hover {
-  translate: 0 -2px;
+  translate: 0 -0.125rem;
   box-shadow:
-    0 6px 0 var(--ink),
-    0 10px 16px rgb(0 0 0 / 55%),
-    0 0 14px rgb(255 210 122 / 70%);
+    0 0.375rem 0 var(--ink),
+    0 0.625rem 1rem rgb(0 0 0 / 55%),
+    0 0 0.875rem rgb(255 210 122 / 70%);
 }
 
 /* Nothing left (20.10, H-20): the button itself turns green. */
@@ -1064,7 +1064,7 @@
 
 .end-turn-slot.idle::before {
   position: absolute;
-  inset: -52px -46px;
+  inset: -3.25rem -2.875rem;
   border-radius: 50%;
   background: radial-gradient(
     closest-side,
@@ -1103,10 +1103,10 @@
 /* Pressed: the sticker sinks onto its shadow. */
 .end-turn.own:enabled:not([aria-disabled='true']):active,
 .end-turn.down {
-  translate: 0 3px;
+  translate: 0 0.1875rem;
   box-shadow:
     0 1px 0 var(--ink),
-    0 3px 6px rgb(0 0 0 / 50%);
+    0 0.1875rem 0.375rem rgb(0 0 0 / 50%);
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1123,11 +1123,11 @@
 .action-buttons button,
 .stack .stack-pass {
   --ink: #1d120a;
-  padding: 6px 18px 4px;
-  border: 3px solid var(--ink);
-  border-radius: 20px 26px 22px 18px / 18px 22px 26px 20px;
+  padding: 0.375rem 1.125rem 0.25rem;
+  border: 0.1875rem solid var(--ink);
+  border-radius: 1.25rem 1.625rem 1.375rem 1.125rem / 1.125rem 1.375rem 1.625rem 1.25rem;
   font-family: var(--font-game);
-  font-size: 18px;
+  font-size: 1.125rem;
   line-height: 1.1;
   letter-spacing: 0.03em;
   color: #fff1d6;
@@ -1136,8 +1136,8 @@
     radial-gradient(ellipse at 30% 22%, rgb(255 255 255 / 35%), transparent 45%),
     linear-gradient(#e0533f, #a3241a);
   box-shadow:
-    0 3px 0 var(--ink),
-    0 6px 10px rgb(0 0 0 / 50%);
+    0 0.1875rem 0 var(--ink),
+    0 0.375rem 0.625rem rgb(0 0 0 / 50%);
   rotate: 1.5deg;
   transition:
     translate 80ms ease,
@@ -1162,28 +1162,28 @@
 .stack .stack-pass:enabled:hover {
   translate: 0 -1px;
   box-shadow:
-    0 4px 0 var(--ink),
-    0 7px 12px rgb(0 0 0 / 55%);
+    0 0.25rem 0 var(--ink),
+    0 0.4375rem 0.75rem rgb(0 0 0 / 55%);
 }
 
 .action-buttons button:enabled:active,
 .stack .stack-pass:enabled:active {
-  translate: 0 3px;
+  translate: 0 0.1875rem;
   box-shadow:
     0 0 0 var(--ink),
-    0 2px 4px rgb(0 0 0 / 50%);
+    0 0.125rem 0.25rem rgb(0 0 0 / 50%);
 }
 
 /* Drag and aim (15.25): the dragged card's targets glow red, as in
    Hearthstone; a stack item it may aim at too. A player glows by the
    character card (15.33). */
 .stack-row.hl-aim {
-  box-shadow: inset 0 0 0 2px #ff4b3e;
+  box-shadow: inset 0 0 0 0.125rem #ff4b3e;
 }
 
 /* The row the own arrow is over glows brighter (20.23). */
 .stack-row.hl-aim[data-aim-over] {
-  box-shadow: inset 0 0 0 3px #ff8f7f, 0 0 12px 2px rgb(255 85 62 / 85%);
+  box-shadow: inset 0 0 0 0.1875rem #ff8f7f, 0 0 0.75rem 0.125rem rgb(255 85 62 / 85%);
 }
 
 /* Another player's loot card, large under the stack while it is there
@@ -1192,7 +1192,7 @@
   display: flex;
   flex: 1 1 0;
   align-items: flex-start;
-  gap: 8px;
+  gap: 0.5rem;
   min-height: 0;
   margin: 0;
 }
@@ -1204,7 +1204,7 @@
 }
 
 .played figcaption {
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-style: italic;
 }
 
@@ -1213,7 +1213,7 @@
    (choiceRow). More than six wrap. */
 .choice-row,
 .choice.order-big {
-  --choice-w: calc(clamp(110px, 13vw, 180px) * var(--choice-scale, 1));
+  --choice-w: calc(clamp(6.875rem, 13vw, 11.25rem) * var(--choice-scale, 1));
 }
 
 .choice-row {
@@ -1255,7 +1255,7 @@
 
 .choice button.choice-card:hover,
 .choice button.choice-card:focus-visible {
-  translate: 0 -8px;
+  translate: 0 -0.5rem;
 }
 
 .choice button.choice-card:focus-visible {
@@ -1263,7 +1263,7 @@
 }
 
 .choice-card:is(:hover, :focus-visible) .card.hl-pick {
-  box-shadow: 0 0 0 3px #b3e9ff, 0 0 26px 8px rgb(79 195 247 / 95%);
+  box-shadow: 0 0 0 0.1875rem #b3e9ff, 0 0 1.625rem 0.5rem rgb(79 195 247 / 95%);
 }
 
 /* A dealt card turns face up on its way (20.18): its back lies
@@ -1312,27 +1312,27 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 0.125rem;
   /* Room for a picked card's lift, so it never covers the caption. */
-  margin-bottom: var(--pick-lift, 14px);
+  margin-bottom: var(--pick-lift, 0.875rem);
 }
 
 .start-banner p {
   margin: 0;
-  font-size: 16px;
+  font-size: 1rem;
   color: rgb(255 255 255 / 85%);
-  text-shadow: 0 2px 6px rgb(0 0 0 / 80%);
+  text-shadow: 0 0.125rem 0.375rem rgb(0 0 0 / 80%);
 }
 
 .choice.start button.choice-card.picked {
-  translate: 0 calc(-1 * var(--pick-lift, 14px));
+  translate: 0 calc(-1 * var(--pick-lift, 0.875rem));
 }
 
 .choice-card.picked .card.hl-pick {
-  box-shadow: 0 0 0 3px #b3e9ff, 0 0 26px 8px rgb(79 195 247 / 95%);
+  box-shadow: 0 0 0 0.1875rem #b3e9ff, 0 0 1.625rem 0.5rem rgb(79 195 247 / 95%);
 }
 
 .choice button.choice-confirm {
-  min-width: 140px;
-  font-size: 18px;
+  min-width: 8.75rem;
+  font-size: 1.125rem;
 }

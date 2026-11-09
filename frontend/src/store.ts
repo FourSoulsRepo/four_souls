@@ -65,6 +65,7 @@ import {
 
 export type { Screen } from './lobby';
 import type { Block, CounterView, Explained } from './protocol';
+import { setUiScale } from './uiScale';
 
 // Zoom is the card shown large: on hover, or after a long press on touch
 // (B-06). side is where it shows, away from the pointer.
@@ -967,6 +968,7 @@ export const useApp = create<AppState>()((set, get) => {
       lan_address: '',
       language: '',
       volume: 100,
+      scale: 100,
     },
     hosting: null,
     lan: { searching: false, found: [], error: '' },
@@ -1056,6 +1058,7 @@ export const useApp = create<AppState>()((set, get) => {
         const s = await getSettings();
         setLanguage(s.language);
         setSoundVolume(s.volume);
+        setUiScale(s.scale);
         set({ settings: s, cards: cardsInLanguage(get().cards) });
       } catch {
         // Keep the defaults; Go already falls back to them.
@@ -1068,6 +1071,7 @@ export const useApp = create<AppState>()((set, get) => {
         // The language too: t() reads it when the screens draw again.
         setLanguage(saved.language);
         setSoundVolume(saved.volume);
+        setUiScale(saved.scale);
         set({ settings: saved, error: '', cards: cardsInLanguage(get().cards) });
         // Settings apply at once, without a restart.
         if (saved.fullscreen !== before.fullscreen) {

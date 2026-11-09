@@ -12,6 +12,7 @@ import type { Interact } from './Interact';
 import { HiddenHand, RevealedHand } from './Pile';
 import { Part } from './StackPanel';
 import './Table.css';
+import { rem } from '../uiScale';
 
 interface Props {
   player: PlayerView;
@@ -365,7 +366,7 @@ function PlayCard({ card, owner, size, ui }: { card: CardView; owner: number; si
 // own (fanPose, 20.5).
 function fan(n: number): CSSProperties {
   const overlap = n <= 3 ? 20 : Math.min(64, 20 + (n - 3) * 7);
-  return { '--fan-overlap': `${String(overlap)}px` } as CSSProperties;
+  return { '--fan-overlap': rem(overlap) } as CSSProperties;
 }
 
 // PlayerDot is the player's own color by their name; the stack names

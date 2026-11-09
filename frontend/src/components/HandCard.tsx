@@ -26,6 +26,7 @@ import { Card } from './Card';
 import { holdCard, type Held } from './dragFeel';
 import type { Interact } from './Interact';
 import { still } from './lunge';
+import { rem } from '../uiScale';
 
 // Mode is how a hand card is held: dragged with the button down;
 // following the pointer after a click; lifted in the fan after a tap;
@@ -361,9 +362,9 @@ export function HandCard({ card, ui, pose }: { card: CardView; ui: Interact; pos
         transform: 'none',
         translate: `${String(offset.x)}px ${String(offset.y)}px`,
         scale: String(feel.play.grow),
-        perspective: `${String(feel.drag.perspective)}px`,
+        perspective: rem(feel.drag.perspective),
       }
-    : ({ '--fan-angle': `${String(pose.angle)}deg`, '--fan-drop': `${String(pose.drop)}px` } as CSSProperties);
+    : ({ '--fan-angle': `${String(pose.angle)}deg`, '--fan-drop': rem(pose.drop) } as CSSProperties);
   return (
     <div
       ref={elRef}

@@ -1,10 +1,11 @@
 // Playing a card from the own hand (20.20, ADR 027 "Playing from the
 // hand"): the plain decisions, with no page. HandCard.tsx runs them.
 import { feel } from './feel';
+import { px } from './uiScale';
 
 // dragged: a press moved far enough to pick the card up.
 export function dragged(dx: number, dy: number): boolean {
-  return Math.hypot(dx, dy) >= feel.play.drag;
+  return Math.hypot(dx, dy) >= px(feel.play.drag);
 }
 
 // Release is what a click does to a card held by an earlier click or

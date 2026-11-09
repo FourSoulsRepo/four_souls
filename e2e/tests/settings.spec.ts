@@ -228,3 +228,25 @@ test('the language follows the OS until one is picked', async ({ browser }) => {
     await expect(page.getByRole('combobox', { name: tr('settings.language') })).toHaveValue(want ?? '');
   }
 });
+
+// Interface scale (ST-10, 18.18): the root font size, so every rem in
+// the window grows with it; it survives a restart.
+test('the interface scale applies at once and survives a restart', async ({ page }) => {
+  await page.goto('/?fake&nosplash');
+  await page.getByRole('button', { name: tr('menu.settings') }).click();
+  const save = page.getByRole('button', { name: tr('settings.save') });
+  const before = await save.boundingBox();
+  const scale = page.getByLabel(tr('settings.scale'));
+  await expect(scale).toHaveValue('100');
+  await scale.fill('150');
+  await save.click();
+  await expect(page.getByRole('status')).toHaveText(tr('settings.saved'));
+  await expect(page.locator('html')).toHaveCSS('font-size', '24px');
+  const after = await save.boundingBox();
+  expect(after?.height ?? 0).toBeGreaterThan((before?.height ?? 0) * 1.4);
+  await page.reload();
+  await expect(page.locator('html')).toHaveCSS('font-size', '24px');
+  await page.getByRole('button', { name: tr('menu.settings') }).click();
+  await expect(scale).toHaveValue('150');
+  await shot(page, 'settings-scale-150');
+});

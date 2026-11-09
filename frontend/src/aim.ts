@@ -4,6 +4,7 @@
 import { Purpose, type Choice } from './actions';
 import { feel } from './feel';
 import type { Intent, OptionView } from './protocol';
+import { px } from './uiScale';
 
 // zonesAt lists the zones under a point, topmost first: data-zone of
 // cards ("obj-N") and piles, data-stack of stack rows. A player is aimed
@@ -165,7 +166,8 @@ export interface Arc {
 // the line (|dx| / length × lean, at most 1). A line straight up or
 // down gets none, so the bow fades out there and never flips side.
 export function arcLift(from: Point, to: Point): number {
-  const { lift, liftShare, lean } = feel.aim;
+  const { liftShare, lean } = feel.aim;
+  const lift = px(feel.aim.lift);
   const dx = to.x - from.x;
   const length = Math.hypot(dx, to.y - from.y);
   if (length === 0) {
@@ -229,7 +231,8 @@ export function arc(from: Point, to: Point): Arc {
 // as (s / step)^tailFade, the one by the head fades out over its last
 // step as (left / step)^headFade; past the chain's end, none.
 export function dashOpacity(s: number, chain: number): number {
-  const { step, headFade, tailFade } = feel.aim;
+  const { headFade, tailFade } = feel.aim;
+  const step = px(feel.aim.step);
   const left = chain - s;
   if (s <= 0 || left <= 0) {
     return 0;
@@ -240,12 +243,12 @@ export function dashOpacity(s: number, chain: number): number {
 // chainOf is how long the dashed chain of an arc is: feel.aim.head
 // short of the pointer, under the head's back.
 export function chainOf(a: Arc): number {
-  return Math.max(0, a.length - feel.aim.head);
+  return Math.max(0, a.length - px(feel.aim.head));
 }
 
 // dashCount is how many dashes the chain holds: one per step begun.
 export function dashCount(chain: number): number {
-  return chain > 0 ? Math.ceil(chain / feel.aim.step) : 0;
+  return chain > 0 ? Math.ceil(chain / px(feel.aim.step)) : 0;
 }
 
 // DashFrame is a dash's pose at one point of its march, relative to the
@@ -260,7 +263,7 @@ export interface DashFrame {
 // march step: its middle (i + u) steps along the arc, turned with it,
 // relative to the source.
 export function dashPose(a: Arc, from: Point, i: number, u: number): DashFrame {
-  const s = (i + u) * feel.aim.step;
+  const s = (i + u) * px(feel.aim.step);
   const p = a.at(s);
   const r = (n: number) => String(Math.round(n * 100) / 100);
   return {

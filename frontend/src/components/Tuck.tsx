@@ -7,10 +7,12 @@ import { raised, tuckClip, tuckPose, tuckSide, tuckTime, type Spot } from '../tu
 import { Card } from './Card';
 import { deckBox } from './ChoiceBack';
 import { still } from './lunge';
+import { px } from '../uiScale';
 
-// The size of a table card, which the moving cards are drawn at.
-const cardW = 80;
-const cardH = 112;
+// The size of a table card, which the moving cards are drawn at, in
+// screen px (ST-10).
+const cardW = () => px(80);
+const cardH = () => px(112);
 // Most cards drawn; the tag counts them all.
 const most = 5;
 const ms = (s: number) => s * 1000;
@@ -33,7 +35,7 @@ function spotOf(el: HTMLElement): Spot {
 // frame is a pose as a keyframe of a card drawn at table size.
 function frame(t: number, from: Spot, pile: Spot, bottom: boolean, side: 1 | -1): Keyframe {
   const p = tuckPose(t, from, pile, bottom, side);
-  const at = `translate(${(p.x - cardW / 2).toFixed(1)}px, ${(p.y - cardH / 2).toFixed(1)}px) rotate(${p.rotate.toFixed(1)}deg) scale(${(p.w / cardW).toFixed(4)})`;
+  const at = `translate(${(p.x - cardW() / 2).toFixed(1)}px, ${(p.y - cardH() / 2).toFixed(1)}px) rotate(${p.rotate.toFixed(1)}deg) scale(${(p.w / cardW()).toFixed(4)})`;
   return { transform: at, clipPath: tuckClip(p.hide, side), opacity: p.opacity };
 }
 

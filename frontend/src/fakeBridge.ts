@@ -42,7 +42,8 @@ const settingsKey = 'fake-settings';
 function loadSettings(): unknown {
   // ?anim=off starts with animations off; ?mat=basement starts on that
   // mat; ?firstrun starts without a nickname, as on the first start;
-  // ?noendask ends the turn without asking (V-46).
+  // ?noendask ends the turn without asking (V-46); ?scale=150 starts at
+  // that interface scale (ST-10).
   const params = new URLSearchParams(window.location.search);
   const animation = params.get('anim') ?? 'normal';
   const mat = params.get('mat') ?? '';
@@ -61,6 +62,7 @@ function loadSettings(): unknown {
     // make screenshots LOCALE=qps starts every page in that language.
     language: import.meta.env.VITE_LOCALE ?? '',
     volume: 100,
+    scale: Number(params.get('scale') ?? 100),
   };
   return JSON.parse(localStorage.getItem(settingsKey) ?? JSON.stringify(fresh));
 }
@@ -89,6 +91,7 @@ interface FakeSettings {
   lan_address?: string;
   language?: string;
   volume?: number;
+  scale?: number;
 }
 
 function saveSettings(s: FakeSettings): Promise<unknown> {
@@ -102,7 +105,10 @@ function saveSettings(s: FakeSettings): Promise<unknown> {
   if (s.volume !== undefined && (!Number.isInteger(s.volume) || s.volume < 0 || s.volume > 100)) {
     return Promise.reject(new Error(`unknown setting value: ${String(s.volume)}`));
   }
-  const saved = { ...s, nickname, recent: s.recent.slice(0, 5), lan_address: (s.lan_address ?? '').trim() };
+  if (s.scale !== undefined && s.scale !== 0 && (!Number.isInteger(s.scale) || s.scale < 75 || s.scale > 200)) {
+    return Promise.reject(new Error(`unknown setting value: scale ${String(s.scale)}`));
+  }
+  const saved = { ...s, scale: s.scale === undefined || s.scale === 0 ? 100 : s.scale, nickname, recent: s.recent.slice(0, 5), lan_address: (s.lan_address ?? '').trim() };
   localStorage.setItem(settingsKey, JSON.stringify(saved));
   return Promise.resolve(saved);
 }

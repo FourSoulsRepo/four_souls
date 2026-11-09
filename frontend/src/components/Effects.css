@@ -46,25 +46,25 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 0.625rem;
 }
 
 /* The thrown die starts above the screen (15.62). Its cube turns in
    3D (15.69); its shadow stays on the table under it. */
 .effect-throw-spot {
   position: relative;
-  margin-bottom: 16px;
+  margin-bottom: 1rem;
 }
 
 /* Several dice land side by side (19.39). */
 .effect-throw-row {
   display: flex;
-  gap: 28px;
+  gap: 1.75rem;
 }
 
 .effect-thrown {
   opacity: 0;
-  perspective: 600px;
+  perspective: 37.5rem;
 }
 
 .effect-thrown-shadow {
@@ -79,16 +79,16 @@
 }
 
 .effect-label {
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 16px;
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.75rem;
+  font-size: 1rem;
   background: rgb(0 0 0 / 60%);
 }
 
 .effect-banner {
-  font-size: 40px;
+  font-size: 2.5rem;
   font-weight: 800;
-  text-shadow: 0 3px 12px rgb(0 0 0 / 70%);
+  text-shadow: 0 0.1875rem 0.75rem rgb(0 0 0 / 70%);
 }
 
 /* A new turn's banner (20.8): in the effect layer, in the middle of
@@ -110,9 +110,9 @@
 .effect-tuck-tag {
   position: absolute;
   translate: -50% -50%;
-  padding: 2px 10px;
-  border-radius: 10px;
-  font-size: 15px;
+  padding: 0.125rem 0.625rem;
+  border-radius: 0.625rem;
+  font-size: 0.9375rem;
   font-weight: 800;
   white-space: nowrap;
   color: #fff;
@@ -123,9 +123,9 @@
 .effect-popup {
   position: absolute;
   translate: -50% -50%;
-  padding: 4px 12px;
-  border-radius: 14px;
-  font-size: 22px;
+  padding: 0.25rem 0.75rem;
+  border-radius: 0.875rem;
+  font-size: 1.375rem;
   font-weight: 800;
   background: rgb(0 0 0 / 65%);
 }
@@ -156,13 +156,13 @@
 .effect-lunge {
   position: fixed;
   margin: 0;
-  box-shadow: 0 10px 24px rgb(0 0 0 / 60%);
+  box-shadow: 0 0.625rem 1.5rem rgb(0 0 0 / 60%);
 }
 
 .effect-burst {
   position: absolute;
-  width: 76px;
-  height: 76px;
+  width: 4.75rem;
+  height: 4.75rem;
   translate: -50% -50%;
   display: flex;
   align-items: center;
@@ -175,26 +175,26 @@
   fill: #ffd23f;
   stroke: #7a3d00;
   stroke-width: 3;
-  filter: drop-shadow(0 3px 6px rgb(0 0 0 / 60%));
+  filter: drop-shadow(0 0.1875rem 0.375rem rgb(0 0 0 / 60%));
 }
 
 /* A bigger hit glows (20.3): mid gold, large wide and hot. Its scale
    comes from feel.ts. */
 .effect-burst.size-2 svg {
-  filter: drop-shadow(0 3px 6px rgb(0 0 0 / 60%)) drop-shadow(0 0 10px rgb(255 200 60 / 85%));
+  filter: drop-shadow(0 0.1875rem 0.375rem rgb(0 0 0 / 60%)) drop-shadow(0 0 0.625rem rgb(255 200 60 / 85%));
 }
 
 .effect-burst.size-3 svg {
-  filter: drop-shadow(0 3px 6px rgb(0 0 0 / 60%)) drop-shadow(0 0 14px rgb(255 160 40 / 95%)) drop-shadow(0 0 30px rgb(255 90 30 / 80%));
+  filter: drop-shadow(0 0.1875rem 0.375rem rgb(0 0 0 / 60%)) drop-shadow(0 0 0.875rem rgb(255 160 40 / 95%)) drop-shadow(0 0 1.875rem rgb(255 90 30 / 80%));
 }
 
 .effect-burst span {
   position: relative;
   font-family: var(--font-game);
-  font-size: 30px;
+  font-size: 1.875rem;
   font-weight: 800;
   color: #fff;
-  -webkit-text-stroke: 2px #3a1400;
+  -webkit-text-stroke: 0.125rem #3a1400;
   paint-order: stroke fill;
 }
 
@@ -202,18 +202,18 @@
    glowing ball that flies from the damage's source to its target. */
 .effect-shot {
   position: absolute;
-  width: 26px;
-  height: 26px;
+  width: 1.625rem;
+  height: 1.625rem;
   translate: -50% -50%;
   border-radius: 50%;
   background: radial-gradient(circle, #fff 0 22%, #ffd23f 45%, #e8501a 75%, rgb(232 80 26 / 0%) 100%);
-  box-shadow: 0 0 14px 6px rgb(255 160 40 / 55%);
+  box-shadow: 0 0 0.875rem 0.375rem rgb(255 160 40 / 55%);
 }
 
 /* A roll change's shot (15.76): cool blue, apart from damage. */
 .effect-shot-roll {
   background: radial-gradient(circle, #fff 0 22%, #9fd8ff 45%, #3a7bd5 75%, rgb(58 123 213 / 0%) 100%);
-  box-shadow: 0 0 14px 6px rgb(110 180 255 / 55%);
+  box-shadow: 0 0 0.875rem 0.375rem rgb(110 180 255 / 55%);
 }
 
 /* A dying card's skull: bone white with an ink edge, over the card. */
@@ -232,5 +232,5 @@
   stroke: #1d120a;
   stroke-width: 1.1;
   stroke-linejoin: round;
-  filter: drop-shadow(0 4px 0 #1d120a) drop-shadow(0 6px 10px rgb(0 0 0 / 60%));
+  filter: drop-shadow(0 0.25rem 0 #1d120a) drop-shadow(0 0.375rem 0.625rem rgb(0 0 0 / 60%));
 }

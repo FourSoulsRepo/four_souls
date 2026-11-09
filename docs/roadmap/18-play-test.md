@@ -520,3 +520,30 @@ Ideas: B-04, B-05.
       3. Ping median 46 ms (81; 77); ping max 7.0 s (8.6 s; 10.4 s): still not explained.
       4. Handshake median 118 ms (313; 309); p95 1.22 s (1.37 s; 1.43 s).
       5. Stage 64: response median 14.6 ms; stage 128: 27.7 ms.
+
+### [x] 18.18 Interface scale
+
+1. Goal: the interface fills a big screen; the player sets its scale (ST-10).
+2. Tasks:
+   1. Sizes in the frontend CSS move from `px` to `rem`.
+      1. 16 px is 1 rem; the look at 100% stays the same.
+      2. Hairlines (1 px and less) stay in `px`.
+      3. The board's slot card cap (92 px) becomes a `rem` cap too.
+   2. Pixel constants in TS (`feel.ts` and others) follow the same scale.
+   3. Setting `scale`: percent, 75 to 200, step 5, default 100.
+      1. It sets the root font size; it applies at once, like the volume.
+      2. A missing or bad value reads as 100.
+   4. Docs: UC-10, `docs/wiki/Client.md`.
+   5. Gates: `make lint`, `make frontend e2e`, `go test ./internal/settings`.
+3. Done when:
+   1. At 100% the screenshots match the ones before the change.
+   2. At 150% and 200% the table, menus and dialogs grow and still fit.
+   3. **Owner** checks it on a big screen.
+4. Result (2026-11-09)
+   1. 1030 CSS sizes moved to `rem`; 66 hairlines stay `px`.
+   2. `uiScale.ts`: `setUiScale`, `px()` for math, `rem()` for CSS.
+   3. At 100% the static screens match the screenshots from before the change.
+   4. At 200% on 2560×1440 the table fills the window and fits.
+   5. The sky behind the menus keeps its size: a bigger tile would blur.
+   6. Gates: `make lint`, `make frontend`, `make e2e` (512 passed, 6 skipped).
+   7. `aim.spec.ts:406` failed in both screenshot runs, before and after; it passed in `make e2e`.

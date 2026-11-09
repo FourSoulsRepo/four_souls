@@ -62,6 +62,8 @@ export interface Settings {
   language: string;
   // volume is the sound volume in percent, 0 to 100 (ST-09); 0 is mute.
   volume: number;
+  // scale is the interface scale in percent, 75 to 200 (ST-10).
+  scale: number;
 }
 
 // RecentServer is a server joined lately; name is the one it gave in
@@ -94,6 +96,7 @@ function fromGo(s: {
   lan_address?: string;
   language?: string;
   volume?: number;
+  scale?: number;
 }): Settings {
   return {
     nickname: s.nickname,
@@ -108,6 +111,7 @@ function fromGo(s: {
     lan_address: s.lan_address ?? '',
     language: s.language ?? '',
     volume: s.volume ?? 100,
+    scale: s.scale ?? 100,
   };
 }
 

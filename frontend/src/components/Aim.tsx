@@ -24,6 +24,7 @@ import type { Intent, OptionView } from '../protocol';
 import { playSound } from '../sounds';
 import { useApp, type Aiming } from '../store';
 import { still } from './lunge';
+import { rem } from '../uiScale';
 
 // AimLayer is the player's aim (15.25): a click on a card that needs a
 // target starts it, the next click picks the target. A click on empty
@@ -279,8 +280,8 @@ export function AimArrow({ from, to, on, others }: Line & { others?: boolean }) 
   const { x, y, angle } = way.end;
   const cls = ['aim-arrow', on ? 'on' : '', moving ? '' : 'still', others ? 'others' : ''].filter(Boolean).join(' ');
   const look = {
-    '--aim-dash': `${String(feel.aim.dash)}px`,
-    '--aim-wide': `${String(feel.aim.wide)}px`,
+    '--aim-dash': rem(feel.aim.dash),
+    '--aim-wide': rem(feel.aim.wide),
     '--aim-ring': `${String(feel.aim.ring * scale)}s`,
   } as CSSProperties;
   return (

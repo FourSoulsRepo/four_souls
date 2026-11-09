@@ -4,6 +4,7 @@
 // own translate, apart from their transform (ADR 002). Animation speed
 // "off" (scale 0) and reduced motion shake nothing.
 import { feel, type HitSize } from '../feel';
+import { px } from '../uiScale';
 
 // calm is true when nothing may shake.
 function calm(scale: number): boolean {
@@ -22,7 +23,7 @@ export function shakeNear(at: DOMRect, size: HitSize, scale: number): void {
   const cx = at.left + at.width / 2;
   const cy = at.top + at.height / 2;
   const radius = near * Math.max(at.width, at.height);
-  const amp = (push[size - 1] ?? 0) * reach;
+  const amp = (push[size - 1] ?? 0) * px(reach);
   for (const el of document.querySelectorAll<HTMLElement>('.card[data-zone^="obj-"]')) {
     const r = el.getBoundingClientRect();
     const dx = r.left + r.width / 2 - cx;
@@ -61,7 +62,7 @@ export function shakeTable(scale: number): void {
     }
   }
   const { reach, time, steps } = feel.table;
-  const jolt = () => (Math.random() * 2 - 1) * reach;
+  const jolt = () => (Math.random() * 2 - 1) * px(reach);
   const frames: Keyframe[] = [{ translate: '0px 0px' }];
   for (let i = 1; i < steps; i++) {
     const k = 1 - i / steps;

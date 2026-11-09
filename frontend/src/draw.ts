@@ -6,6 +6,7 @@
 // a pose is sampled at a time, so one clock drives move, turn and size.
 import { cubicBezier } from 'motion/react';
 import { bezier, feel } from './feel';
+import { px } from './uiScale';
 
 export interface Point {
   x: number;
@@ -48,7 +49,7 @@ function mix(a: number, b: number, u: number): number {
 // arc is the point u of the way from a to b on a curve that first
 // rises toward a point lift px above a.
 function arc(a: Point, b: Point, u: number): Point {
-  const c = { x: a.x, y: a.y - feel.draw.lift };
+  const c = { x: a.x, y: a.y - px(feel.draw.lift) };
   const v = 1 - u;
   return { x: v * v * a.x + 2 * v * u * c.x + u * u * b.x, y: v * v * a.y + 2 * v * u * c.y + u * u * b.y };
 }

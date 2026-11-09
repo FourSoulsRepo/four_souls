@@ -3420,6 +3420,10 @@
     "text": "Saved.",
     "note": "Settings: status line after Save worked."
   },
+  "settings.scale": {
+    "text": "Interface scale",
+    "note": "Settings: label of the slider that makes the whole window bigger or smaller, from 75% to 200%; 100% is the default size."
+  },
   "settings.speed.fast": {
     "text": "Fast",
     "note": "Settings: animation speed choice."

@@ -94,16 +94,16 @@ button {
 .menu-buttons button,
 .overlay-buttons button,
 .game-menu-button {
-  padding: 7px 20px 5px;
-  border: 3px solid var(--ink);
-  border-radius: 14px 18px 16px 12px / 12px 16px 18px 14px;
+  padding: 0.4375rem 1.25rem 0.3125rem;
+  border: 0.1875rem solid var(--ink);
+  border-radius: 0.875rem 1.125rem 1rem 0.75rem / 0.75rem 1rem 1.125rem 0.875rem;
   font-family: var(--font-game);
-  font-size: 17px;
+  font-size: 1.0625rem;
   font-weight: 400;
   letter-spacing: 0.03em;
   color: var(--ink);
   background: var(--paper);
-  box-shadow: 0 3px 0 var(--ink);
+  box-shadow: 0 0.1875rem 0 var(--ink);
   rotate: -0.6deg;
   cursor: pointer;
   transition:
@@ -126,17 +126,17 @@ button {
 .menu-buttons button:enabled:hover,
 .overlay-buttons button:enabled:hover,
 .game-menu-button:hover {
-  translate: 0 -2px;
+  translate: 0 -0.125rem;
   box-shadow:
-    0 5px 0 var(--ink),
-    0 0 14px rgb(255 210 122 / 75%);
+    0 0.3125rem 0 var(--ink),
+    0 0 0.875rem rgb(255 210 122 / 75%);
 }
 
 .screen button:enabled:active,
 .menu-buttons button:enabled:active,
 .overlay-buttons button:enabled:active,
 .game-menu-button:active {
-  translate: 0 2px;
+  translate: 0 0.125rem;
   box-shadow: 0 1px 0 var(--ink);
 }
 
@@ -152,8 +152,8 @@ button {
 .menu-buttons button:focus-visible,
 .overlay-buttons button:focus-visible,
 .game-menu-button:focus-visible {
-  outline: 3px solid #f7de8f;
-  outline-offset: 2px;
+  outline: 0.1875rem solid #f7de8f;
+  outline-offset: 0.125rem;
 }
 
 /* A counter's number (Count.tsx, 20.11): each step flips it in about

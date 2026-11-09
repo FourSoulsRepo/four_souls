@@ -7,13 +7,14 @@ import { languageName } from '../locale';
 import { matChoices, matLook, matOf } from '../mats';
 import type { Speed } from '../playback';
 import { useApp } from '../store';
+import { maxScale, minScale } from '../uiScale';
 import './screens.css';
 
 function speedOf(v: string): Speed {
   return v === 'fast' || v === 'slow' || v === 'off' ? v : 'normal';
 }
 
-// SettingsScreen: ST-01, ST-03, ST-05, ST-06, ST-09, the dice look
+// SettingsScreen: ST-01, ST-03, ST-05, ST-06, ST-09, ST-10, the dice look
 // (V-19, 15.64), the question before ending the turn (V-46), and the
 // language (ADR 021). Saved settings apply at once; the dice look goes
 // out in the next hello.
@@ -125,6 +126,20 @@ export function SettingsScreen() {
             }}
           />
           <span>{form.volume}%</span>
+        </label>
+        <label className="field">
+          {t('settings.scale')}
+          <input
+            type="range"
+            min={minScale}
+            max={maxScale}
+            step={5}
+            value={form.scale}
+            onChange={(e) => {
+              change({ scale: Number(e.target.value) });
+            }}
+          />
+          <span>{form.scale}%</span>
         </label>
         {/* The looks sit on one line, above their previews (15.80). */}
         <div className="row">

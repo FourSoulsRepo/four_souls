@@ -832,6 +832,10 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
 8. ST-08. No Green felt mat (owner, 2026-10-20).
    1. It read as a poker table (H-05).
    2. A saved Green felt falls back to the default mat.
+9. ST-10. Interface scale (owner, 2026-11-09).
+   1. On big screens the cards and text are too small.
+   2. Frontend sizes in `rem`; a setting scales them.
+   3. Planned in 18.18.
 
 ## Audio (later)
 
