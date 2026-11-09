@@ -40,7 +40,7 @@ This step never closes; new reports are appended.
 | E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52, 19.54, 19.69, 19.130, 19.134, 19.136, 19.138, 19.139, 19.141 | 15 |
 | F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88, 19.99, 19.102, 19.118, 19.119 | 11    |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
-| H  | Lobby and rejoin                         | Server     | 19.32                                                  | 1     |
+| H  | Lobby and rejoin                         | Server     | 19.32, 19.148                                          | 2     |
 | I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122, 19.125, 19.126, 19.127, 19.120, 19.128, 19.132, 19.133, 19.137 | 35 |
 | J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107, 19.117, 19.121, 19.140 | 22 |
 | Q  | Load tool: a lost connection ends a game | Go tools   | 19.108, 19.131                                         | 2     |
@@ -54,15 +54,16 @@ This step never closes; new reports are appended.
 | S  | Sound: media players never released      | Client     | 19.135                                                 | 1     |
 | T  | Events and view: data sent too early     | Engine     | 19.142                                                 | 1     |
 | U  | Save and load: a running effect lost     | Engine     | 19.143                                                 | 1     |
+| V  | Flow: an extra step the player must take | Client     | 19.149                                                 | 1     |
 
-Totals by system (142 items):
+Totals by system (144 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
 | Engine    | A, B, T, U | 31 |
 | Card data | C       | 2     |
-| Client    | D–G, O, P, S | 40 |
-| Server    | H, N    | 2     |
+| Client    | D–G, O, P, S, V | 41 |
+| Server    | H, N    | 3     |
 | e2e       | I, J    | 57    |
 | Release   | K       | 4     |
 | None      | L       | 2     |
@@ -4608,3 +4609,40 @@ Totals by system (142 items):
    1. `make lint`, `make test` and `make frontend e2e` pass (exit 0).
 8. Owner notes (2026-11-09)
    1. Owner marks 19.147 solved.
+
+### [ ] 19.148 A game waiting for players on a server closes after about a minute
+
+1. Goal: a host's table waits on a server as long as the host does.
+2. Report (owner, 2026-11-09)
+   1. Host creates a game on a server and waits for players.
+   2. After about 1 minute the game closes by itself.
+3. Cause (the code)
+   1. The server's own empty-table limit is 30 min; not this.
+   2. In the lobby nothing goes over the socket: no pings, no messages.
+   3. A proxy drops an idle WebSocket (nginx: 60 s by default).
+   4. Off the game screen a closed socket goes back to Join; no retry.
+   5. The server frees the host's seat; an empty table is deleted.
+   6. In a game, presence and the retry hide the same drop.
+4. Tasks:
+   1. [ ] Server: a WebSocket ping every 30 s on every connection.
+   2. [ ] Go test: an idle connection gets pings.
+   3. [ ] Docs: ADR 017, wiki Server.
+
+### [ ] 19.149 LAN Join shows the host's game list instead of joining
+
+1. Goal: Join on the LAN screen sits the player at the host's game.
+2. Report (owner, 2026-11-09)
+   1. LAN Join opens the Games list with one game.
+   2. The player must press Join again.
+   3. A LAN host has only one game at a time.
+3. Cause (the code)
+   1. LAN rows call `joinServer`: it only connects.
+   2. The server then sends `games`; `GameList` shows it.
+   3. The LAN row already knows the game id from the probe.
+4. Tasks:
+   1. [ ] Client: LAN Join connects and sends `join` for that game.
+   2. [ ] A locked game: a password field in the LAN row.
+   3. [ ] A typed address: join its one open game.
+   4. [ ] A failed join: back to the LAN screen with the error.
+   5. [ ] Vitest and e2e tests.
+   6. [ ] Docs: use case, wiki.
