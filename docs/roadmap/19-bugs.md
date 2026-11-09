@@ -4610,7 +4610,7 @@ Totals by system (144 items):
 8. Owner notes (2026-11-09)
    1. Owner marks 19.147 solved.
 
-### [ ] 19.148 A game waiting for players on a server closes after about a minute
+### [x] 19.148 A game waiting for players on a server closes after about a minute
 
 1. Goal: a host's table waits on a server as long as the host does.
 2. Report (owner, 2026-11-09)
@@ -4640,6 +4640,8 @@ Totals by system (144 items):
 6. Result (2026-11-09)
    1. `make lint` and `make test` pass (exit 0).
    2. No frontend change; `make frontend e2e` not needed.
+7. Owner notes (2026-11-09)
+   1. Owner marks 19.148 solved.
 
 ### [ ] 19.149 LAN Join shows the host's game list instead of joining
 
