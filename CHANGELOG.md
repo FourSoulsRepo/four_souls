@@ -6,7 +6,26 @@ Rules engine versions are in each release's notes.
 
 ## Unreleased
 
+## 0.4.0 - 2026-11-09
+
 - Draft: in Detailed setup the host can offer each player 2 to 5 characters to pick from; one random character each stays the default. Each offer shows the character's starting item; Eden chooses hers when the game starts.
+- Start of game: a screen for start-of-game choices, such as Eden's item; several players choose at the same time, and the first-player roll waits until all are done.
+- Interface scale: a setting from 75 to 200 %; the whole window grows or shrinks with it.
+- Settings open from the game Menu too, without leaving the game.
+- The game feels livelier: fast strikes, hits that shake by their size, a damage number that stays, drag tilt, and new sounds, one per moment.
+- Others' plays are paced so you can follow them; their hands update live, and the table catches up by importance after a pause.
+- Choosing cards, playing a card from the hand, and the target arrow are reworked; only the attacker flies to its target.
+- The History strip slides new tiles in and holds them; it keeps the newest 40, so long games stay fast.
+- The response timer shows only when a response is possible; End turn shows its states.
+- A look at a deck shows on the board whether each card went to the top or the bottom.
+- Glitch's copy mark shows and zooms the card it copies.
+- Recharging or deactivating an item offers only the items the effect allows; Holy Mom's Eye no longer offers passive items.
+- Soul of Envy no longer goes on the stack again for the player who gains it.
+- Headless Horseman: its prevented death no longer heals it.
+- Online: a game waiting for players on a server no longer closes after about a minute.
+- LAN: Join takes you to the host's game instead of the game list.
+- Rules website: the rules and card checks run in the browser, at <https://foursoulsrepo.github.io/four_souls/>.
+- Rules engine 0.5.2: saved games of older versions can't be loaded.
 
 ## 0.3.3 - 2026-10-31
 
