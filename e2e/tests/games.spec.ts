@@ -190,6 +190,12 @@ async function move(page: Page, s: Seen, rnd: Rnd): Promise<string | null> {
     await (line ?? ability.locator('.ability-cancel')).click();
     return 'ability';
   }
+  // A start-of-game pick waits for Confirm (20.22).
+  const confirm = page.locator('.choice .choice-confirm');
+  if (await enabled(confirm)) {
+    await confirm.click();
+    return 'confirm';
+  }
   const choice = page.locator('.choice:not(.look)');
   if (await choice.isVisible()) {
     const picks = [

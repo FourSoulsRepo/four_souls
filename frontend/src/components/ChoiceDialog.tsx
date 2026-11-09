@@ -2,16 +2,16 @@ import { createContext, use, useLayoutEffect, useMemo, useRef, useState, type CS
 import { discardIntent, modeLines, orderIntent, outcomeLines, type Actions } from '../actions';
 import { claim } from '../animations';
 import type { Kind } from '../cards';
-import { choiceRow, dealDelays, dealPose } from '../choice';
+import { choiceRow, confirmFirst, dealDelays, dealPose, keptZone, pickToggle } from '../choice';
 import { feel } from '../feel';
 import { lookGroups, type Looked } from '../history';
 import { t } from '../i18n';
 import type { CardView, ModeView } from '../protocol';
 import { playSound } from '../sounds';
-import { useApp, viewScale } from '../store';
+import { seatOf, useApp, viewScale } from '../store';
 import { Card } from './Card';
 import { CardDialog } from './CardDialog';
-import { deckBox, flyBack } from './ChoiceBack';
+import { deckBox, flyBack, keepCard } from './ChoiceBack';
 import { still } from './lunge';
 import './Actions.css';
 
@@ -26,9 +26,12 @@ interface Frame {
   // fly sends the cards back to the deck after the pick, in this order
   // of their elements: the first flies first (20.18).
   fly: (order: Element[]) => void;
+  // keep holds the kept card at its place, for its flight to the
+  // player, and sends the rest back to the deck (20.22).
+  keep: (kept: Element, rest: Element[]) => void;
 }
 
-const FrameContext = createContext<Frame>({ fly: () => undefined });
+const FrameContext = createContext<Frame>({ fly: () => undefined, keep: () => undefined });
 
 // deckKinds are the engine's decks (protocol Deck) as the board's piles.
 const deckKinds: (Kind | undefined)[] = ['treasure', 'loot', 'monster', undefined];
@@ -166,14 +169,30 @@ function rowStyle(n: number): { className: string; style: CSSProperties } {
 // it after the pick; other cards grow in. "View board" hides it to look
 // at the table, where its targets still glow and answer, and "Back to
 // the choice" brings it back (F-20).
+//
+// A start-of-game choice (Eden's) is a screen of its own (20.22, ADR
+// 027 "Start of game"): a banner over the cards, a click picks a card
+// and Confirm sends it. The kept card then flies to the player.
 export function ChoiceDialog({ choice, subject }: { choice: NonNullable<Actions['choice']>; subject?: string | undefined }) {
   const act = useApp((s) => s.act);
   const cardName = (ref: string) => useApp.getState().cards.get(ref)?.name ?? ref;
   const look = useLook();
+  const confirm = confirmFirst(choice.purpose);
+  const [picked, setPicked] = useState<number | null>(null);
+  const character = useApp((s) => s.game?.view.players.find((p) => p.id === seatOf(s))?.character.card);
   const cards = choice.options.filter((o) => o.card).length;
   const row = rowStyle(cards);
+  const banner = confirm ? <StartBanner caption={t('start.caption', { card: character ? cardName(character) : '' })} /> : undefined;
+  const send = picked === null ? undefined : choice.options.find((o) => (o.intent.choice ?? 0) === picked)?.intent;
   return (
-    <ChoiceFrame label={choice.title} look={look} cards={cards > 0}>
+    <ChoiceFrame
+      label={choice.title}
+      banner={banner}
+      className={confirm ? 'start' : ''}
+      style={confirm ? ({ '--pick-lift': `${String(feel.start.lift)}px` } as CSSProperties) : undefined}
+      look={look}
+      cards={cards > 0}
+    >
       {subject && (
         <div className="choice-subject">
           <Card cardRef={subject} size="choice" />
@@ -182,7 +201,27 @@ export function ChoiceDialog({ choice, subject }: { choice: NonNullable<Actions[
       <div className={`choice-options ${row.className}`} style={row.style}>
         {choice.options.map((o) => (
           <div key={o.intent.choice ?? 0} className="choice-option">
-            {o.card ? <OptionCard card={o.card} object={o.target?.object} name={cardName(o.card)} deck={look} pick={() => { act(o.intent); }} /> : (
+            {o.card ? (
+              <OptionCard
+                card={o.card}
+                object={o.target?.object}
+                name={cardName(o.card)}
+                deck={look}
+                pick={() => {
+                  act(o.intent);
+                }}
+                {...(confirm
+                  ? {
+                      picked: picked === (o.intent.choice ?? 0),
+                      toggle: () => {
+                        const next = pickToggle(picked, o.intent.choice ?? 0);
+                        playSound(next.sound);
+                        setPicked(next.picked);
+                      },
+                    }
+                  : {})}
+              />
+            ) : (
               <button
                 type="button"
                 onClick={() => {
@@ -203,7 +242,68 @@ export function ChoiceDialog({ choice, subject }: { choice: NonNullable<Actions[
           </div>
         ))}
       </div>
+      {confirm && (
+        <Confirm
+          send={
+            send
+              ? () => {
+                  act(send);
+                }
+              : undefined
+          }
+        />
+      )}
     </ChoiceFrame>
+  );
+}
+
+// StartBanner is the start-of-game screen's banner: a headline and a
+// caption over the cards (20.22). It grows in as the screen opens.
+function StartBanner({ caption }: { caption: string }) {
+  const ref = useRef<HTMLElement>(null);
+  useLayoutEffect(() => {
+    const el = ref.current;
+    if (!el || still()) {
+      return;
+    }
+    const s = feel.start;
+    // anim: start-banner
+    const a = el.animate([{ transform: 'scale(0)' }, { transform: 'scale(1)' }], { duration: ms(s.banner * viewScale(useApp.getState())), easing: s.bannerCurve });
+    return () => {
+      a.cancel();
+    };
+  }, []);
+  return (
+    <header ref={ref} className="start-banner">
+      <h2>{t('start.title')}</h2>
+      <p>{caption}</p>
+    </header>
+  );
+}
+
+// Confirm sends a start-of-game pick (20.22); it waits disabled until a
+// card is picked. The picked card waits at its place for its flight to
+// the player; the rest fly back to the deck.
+function Confirm({ send }: { send: (() => void) | undefined }) {
+  const frame = use(FrameContext);
+  return (
+    <button
+      type="button"
+      className="choice-confirm"
+      disabled={!send}
+      onClick={(e) => {
+        const root = e.currentTarget.closest('.choice');
+        const kept = root?.querySelector('.choice-card.picked');
+        if (!send || !kept) {
+          return;
+        }
+        playSound('choiceConfirm');
+        frame.keep(kept, [...(root?.querySelectorAll('.choice-card') ?? [])].filter((el) => el !== kept));
+        send();
+      }}
+    >
+      {t('start.confirm')}
+    </button>
   );
 }
 
@@ -212,16 +312,40 @@ export function ChoiceDialog({ choice, subject }: { choice: NonNullable<Actions[
 // glow; its zoom waits as usual, or a right click opens it (20.18). A
 // pick sounds; cards looked at in a deck then fly back to it, the
 // picked one first.
-function OptionCard({ card, object, name, deck, pick }: { card: string; object?: number | undefined; name: string; deck: Kind | undefined; pick: () => void }) {
+//
+// With toggle, a click only picks or unpicks the card, and Confirm sends
+// it (20.22): picked lifts it and keeps its bright glow.
+function OptionCard({
+  card,
+  object,
+  name,
+  deck,
+  pick,
+  picked = false,
+  toggle,
+}: {
+  card: string;
+  object?: number | undefined;
+  name: string;
+  deck: Kind | undefined;
+  pick: () => void;
+  picked?: boolean;
+  toggle?: () => void;
+}) {
   const frame = use(FrameContext);
   return (
     <button
       type="button"
-      className="choice-card"
+      className={`choice-card${picked ? ' picked' : ''}`}
       aria-label={name}
+      aria-pressed={toggle ? picked : undefined}
       data-deal={card}
       data-object={object}
       onClick={(e) => {
+        if (toggle) {
+          toggle();
+          return;
+        }
         playSound('choicePick');
         const kept = e.currentTarget;
         const rest = [...(kept.closest('.choice-options')?.querySelectorAll('.choice-card') ?? [])].filter((el) => el !== kept);
@@ -245,6 +369,7 @@ function OptionCard({ card, object, name, deck, pick }: { card: string; object?:
 function ChoiceFrame({
   label,
   title,
+  banner,
   className = '',
   style,
   look,
@@ -253,6 +378,8 @@ function ChoiceFrame({
 }: {
   label: string;
   title?: ReactNode;
+  // banner replaces the heading: the start-of-game screen's (20.22).
+  banner?: ReactNode;
   className?: string;
   style?: CSSProperties | undefined;
   look?: Kind | undefined;
@@ -267,6 +394,7 @@ function ChoiceFrame({
   const [flown, setFlown] = useState(false);
   const waiting = useApp((s) => s.sent !== null);
   const step = useApp((s) => s.game?.step ?? 0);
+  const you = useApp(seatOf);
   const [scale] = useState(() => (still() ? 0 : viewScale(useApp.getState())));
   const ref = useRef<HTMLDivElement>(null);
   const entry: Entry = scale === 0 || !cards ? 'none' : shows === 0 && look ? 'deal' : 'grow';
@@ -287,7 +415,26 @@ function ChoiceFrame({
       );
       setFlown(true);
     },
-  }), [look, scale]);
+    keep: (kept, rest) => {
+      if (scale === 0) {
+        return;
+      }
+      const card = kept.getAttribute('data-deal') ?? '';
+      const box = (kept.querySelector('.deal-face .card') ?? kept.querySelector('.card') ?? kept).getBoundingClientRect();
+      keepCard({ card, box, zone: keptZone(you), step });
+      if (look && deckBox(look)) {
+        flyBack(
+          rest.map((el) => ({
+            card: el.getAttribute('data-deal') ?? '',
+            box: (el.querySelector('.deal-face .card') ?? el.querySelector('.card') ?? el).getBoundingClientRect(),
+          })),
+          look,
+          scale,
+        );
+      }
+      setFlown(true);
+    },
+  }), [look, scale, you, step]);
   if (board) {
     return (
       <Peek
@@ -326,7 +473,7 @@ function ChoiceFrame({
     <FrameContext value={frame}>
       <div className="choice-backdrop">
         <div ref={ref} className={`choice${className ? ` ${className}` : ''}`} style={style} role="dialog" aria-label={label}>
-          <h2>{title ?? label}</h2>
+          {banner ?? <h2>{title ?? label}</h2>}
           {children}
           <button type="button" className="choice-view" onClick={hide}>
             {t('choice.view_board')}

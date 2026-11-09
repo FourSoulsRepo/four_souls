@@ -18,6 +18,7 @@ import { HistoryStrip } from '../components/HistoryStrip';
 import { EndOverlay, LostOverlay, PauseOverlay, ReconnectBadge } from '../components/Overlays';
 import { RollbackVotePanel } from '../components/RollbackVote';
 import { PlayedCard, StackPanel } from '../components/StackPanel';
+import { StartWait } from '../components/StartWait';
 import { Throw } from '../components/Throw';
 import { WhyNote } from '../components/Why';
 import { EndTurn, TurnActions } from '../components/TurnActions';
@@ -243,6 +244,7 @@ function Table({ game, you }: { game: Update; you: number }) {
       {!view.over && !paused && (
         <Throw waiting={view.waiting} you={you} names={names} action={actions.throw} disabled={!canAct} />
       )}
+      {!paused && <StartWait view={view} you={you} name={name} />}
       <ActionBar
         banner={banner}
         paused={paused}
@@ -260,7 +262,9 @@ function Table({ game, you }: { game: Update; you: number }) {
         <ModeDialog key={game.step} choice={offered.choice} card={view.subject?.card} modes={view.modes} />
       ) : offered.choice && !aiming?.choice && !tablePick(offered.choice) && (
         <ChoiceDialog
-          key={game.step}
+          // A start-of-game choice stays as it is while another player's
+          // pick comes in: they choose at the same time (20.22).
+          key={offered.choice.purpose === Purpose.startingItem ? 'start' : game.step}
           choice={offered.choice}
           subject={offered.choice.purpose === Purpose.monsterSlot ? view.revealed?.card : view.subject?.card}
         />

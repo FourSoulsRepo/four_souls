@@ -397,6 +397,22 @@ export const feel = {
     backCurve: curves.easeInOut,
     othersCurve: curves.expoOut,
   },
+  // start: the start-of-game screen (20.22, ADR 027 "Start of game",
+  // ChoiceDialog.tsx). Its banner grows in over banner. A picked card
+  // lifts lift px and keeps its bright glow. After Confirm the picked
+  // card waits at its place, at most hold seconds, and flies to its
+  // player over keep; the rest fly back to the deck (choice.back).
+  // Others see "Bo is choosing" low on the board; it grows in over wait.
+  start: {
+    banner: 0.5,
+    lift: 14,
+    keep: 0.5,
+    hold: 4,
+    wait: 0.4,
+    bannerCurve: curves.expoOut,
+    keepCurve: curves.expoOut,
+    waitCurve: curves.expoOut,
+  },
   // play: a card played from the own hand (20.20, ADR 027 "Playing from
   // the hand", hold.ts, HandCard.tsx). A press that moves drag px picks
   // the card up; so does a click (a tap on touch lifts it in the fan).

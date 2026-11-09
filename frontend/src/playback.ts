@@ -2,6 +2,7 @@
 // first their events as short effects, then the update's view is shown.
 // Playback only changes what is drawn; the game state is the server's.
 import { kindOf, type CardInfo, type Kind } from './cards';
+import { keptZone } from './choice';
 import { firstPlayerText, tieText } from './dice';
 import { drawPace, feel } from './feel';
 import { say, t } from './i18n';
@@ -18,7 +19,8 @@ export type Effect =
   // the card leaves; it hides until the next view (19.41). lifts is the
   // table card it flies off; it hides until the next view (19.73).
   // sound plays as the card leaves (18.7).
-  | { kind: 'fly'; from: string[]; to: string[]; card?: string; back: Kind; middle?: boolean; leaves?: number; lifts?: number; sound?: Sound }
+  // start: a starting item, at the start-of-game screen's pace (20.22).
+  | { kind: 'fly'; from: string[]; to: string[]; card?: string; back: Kind; middle?: boolean; leaves?: number; lifts?: number; sound?: Sound; start?: boolean }
   | { kind: 'popup'; at: string[]; text: string; tone: 'good' | 'bad' }
   // draw: a looted card (20.7). own: the viewer's, shown at the show
   // spot on its way to the hand; else back only, deck to hand, but a
@@ -380,9 +382,15 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
         break;
       }
       case 'gained_treasure':
+        // A starting item flies to its player from the chooser's picked
+        // card, else from the treasure deck, silent (20.22).
+        if (e.text === 'starting item') {
+          out.push({ kind: 'fly', from: [keptZone(e.player), 'deck-treasure'], to: playerZones(e.player), card: e.card, back: 'treasure', start: true });
+          break;
+        }
         // A treasure drawn from its deck flies to the player with its
-        // sound, one per item; a starting or a stolen item does not (18.9).
-        if (e.text !== 'starting item' && e.text !== 'stolen') {
+        // sound, one per item; a stolen item does not (18.9).
+        if (e.text !== 'stolen') {
           out.push({ kind: 'fly', from: ['deck-treasure'], to: playerZones(e.player), card: e.card, back: 'treasure', sound: 'treasureGain' });
         }
         break;

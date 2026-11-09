@@ -118,3 +118,37 @@
     animation: none;
   }
 }
+
+/* Others' line while players make their start-of-game choices (20.22):
+   "Bo is choosing", low on the board, over the table; it catches no
+   clicks, so the table stays usable. */
+.start-wait-layer {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-throw);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 38vh;
+  pointer-events: none;
+}
+
+.start-wait {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 22px;
+  border: 2px solid rgb(255 210 122 / 70%);
+  border-radius: 14px;
+  background: rgb(20 28 40 / 88%);
+  box-shadow: 0 6px 24px rgb(0 0 0 / 60%);
+}
+
+.start-wait p {
+  margin: 0;
+  font-family: var(--font-game);
+  font-size: 24px;
+  letter-spacing: 0.03em;
+  text-shadow: 0 2px 6px rgb(0 0 0 / 80%);
+}

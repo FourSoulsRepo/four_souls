@@ -92,14 +92,22 @@ describe('effectsFor', () => {
     ]);
   });
 
-  // A trinket is loot, not treasure; a starting or stolen item moves no card from a deck (18.9).
-  it('keeps starting, stolen and trinket items silent', () => {
+  // A trinket is loot, not treasure; a stolen item moves no card from a deck (18.9).
+  it('keeps stolen and trinket items silent', () => {
     const events: GameEvent[] = [
-      { kind: 'gained_treasure', player: 0, object: 80, card: 'the_d6', text: 'starting item' },
       { kind: 'gained_treasure', player: 0, object: 81, prev: 30, card: 'the_d20', text: 'stolen' },
       { kind: 'gained_item', player: 0, object: 82, card: 'a_trinket' },
     ];
     expect(effectsFor(events, ctx)).toEqual([]);
+  });
+
+  // A starting item flies to its player, silent: from the chooser's
+  // kept card, else from the treasure deck (20.22).
+  it('flies a starting item from the kept card, silent', () => {
+    const e: GameEvent = { kind: 'gained_treasure', player: 1, object: 80, card: 'the_d6', text: 'starting item' };
+    expect(effectsFor([e], ctx)).toEqual([
+      { kind: 'fly', from: ['choice-kept-1', 'deck-treasure'], to: ['player-1'], card: 'the_d6', back: 'treasure', start: true },
+    ]);
   });
 
   it('flies a discarded card from where it was to its deck discard', () => {

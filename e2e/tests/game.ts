@@ -184,12 +184,16 @@ export async function throwFirstRoll(pages: Page[]): Promise<void> {
     }
     const roller = pages.find((_, j) => states[j]?.ready && states[j].turn < 1 && states[j].waiting === states[j].you);
     const button = roller ? throwButton(roller) : null;
-    // Eden's starting item comes before the roll (R-SETUP-09): pick the first.
+    // Eden's starting item comes before the roll (R-SETUP-09): pick the
+    // first, then Confirm (20.22).
     const eden = roller ? roller.locator('.choice:not(.look) .choice-option button').first() : null;
+    const confirm = roller ? roller.locator('.choice .choice-confirm') : null;
     if (roller && button && (await enabled(button))) {
       await button.click();
       // Off the cards, so no zoom covers the table.
       await roller.mouse.move(1, 1);
+    } else if (roller && confirm && (await enabled(confirm))) {
+      await confirm.click();
     } else if (roller && eden && (await enabled(eden))) {
       await eden.click();
     } else {

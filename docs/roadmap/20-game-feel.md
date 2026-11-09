@@ -461,7 +461,7 @@ Swapping it is the owner's call; not part of this step.
    3. UC-15 matches the new strip.
    4. e2e: the strip's new behaviour, set up so it never depends on the deal.
 
-### [ ] 20.22 A start-of-game screen, like the reference's starting hand
+### [x] 20.22 A start-of-game screen, like the reference's starting hand
 
 1. Goal: the game opens with a clear screen for choices made before turn 1.
    1. Owner, 2026-11-08: the reference shows "Starting hand" before the first turn.

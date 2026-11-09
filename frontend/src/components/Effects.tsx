@@ -49,11 +49,11 @@ function zoneCenter(zones: string[]): Point | null {
   return r && { x: r.left + r.width / 2, y: r.top + r.height / 2 };
 }
 
-// playedWidth is the width of the large played card when it is the
-// first of the zones on screen, else 0.
+// playedWidth is the width of the large played card, or of a choice's
+// kept card (20.22), when it is the first of the zones on screen, else 0.
 function playedWidth(zones: string[]): number {
   const z = zones.find((z) => document.querySelector(`[data-zone="${CSS.escape(z)}"]`));
-  return z?.startsWith('played-') ? (zoneRect([z])?.width ?? 0) : 0;
+  return z?.startsWith('played-') || z?.startsWith('choice-kept-') ? (zoneRect([z])?.width ?? 0) : 0;
 }
 
 // middle is the centre of the window, where large cards show.
@@ -118,6 +118,7 @@ function Effect({ playing }: { playing: Playing }) {
           playing={playing}
           stay={effect.kind === 'place'}
           sound={effect.kind === 'fly' ? effect.sound : undefined}
+          start={effect.kind === 'fly' && effect.start === true}
         />
       );
     case 'draw':
@@ -253,6 +254,7 @@ function Fly({
   playing,
   stay = false,
   sound,
+  start = false,
 }: {
   from: string[];
   to: string[];
@@ -263,6 +265,8 @@ function Fly({
   stay?: boolean;
   // sound plays once as the card leaves (18.7).
   sound?: Sound;
+  // start: a starting item, at the start-of-game screen's pace (20.22).
+  start?: boolean;
 }) {
   // Read the zones once, when the effect starts. A card leaving the
   // large played card starts at its size (15.74).
@@ -297,7 +301,7 @@ function Fly({
       className="effect-fly"
       initial={{ x: path.a.x - cardW / 2, y: path.a.y - cardH / 2, scale: path.grow || 0.9 }}
       animate={{ ...end, scale: 1 }}
-      transition={{ duration: feel.fly.time * playing.scale, ease: bezier(feel.fly.curve) }}
+      transition={{ duration: (start ? feel.start.keep : feel.fly.time) * playing.scale, ease: bezier(start ? feel.start.keepCurve : feel.fly.curve) }}
       onAnimationComplete={land}
     >
       <Card cardRef={card} back={back} size="table" />

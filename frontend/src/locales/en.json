@@ -3682,6 +3682,26 @@
     "text": "You",
     "note": "Stack panel: the viewer in the Waiting for and Passed lines."
   },
+  "start.caption": {
+    "text": "{card} keeps one",
+    "note": "Start-of-game screen: the line under the headline. {card} is the chooser's character, e.g. \"Eden keeps one\"."
+  },
+  "start.choosing": {
+    "text": "{player} is choosing",
+    "note": "Game table, low on the board, for everyone else while a player makes a start-of-game choice, e.g. \"Bo is choosing\". One line per chooser."
+  },
+  "start.confirm": {
+    "text": "Confirm",
+    "note": "Start-of-game screen: the button that sends the picked card; disabled until one is picked."
+  },
+  "start.title": {
+    "text": "Starting item",
+    "note": "Start-of-game screen (Eden): the banner headline above the cards she chooses her starting item from."
+  },
+  "start.waiting_label": {
+    "text": "Start of game",
+    "note": "Screen-reader name of the \"is choosing\" banner on the board."
+  },
   "stats.always_hits": {
     "text": "Always hits",
     "note": "Stack panel, an open attack's fight line: every die face hits."

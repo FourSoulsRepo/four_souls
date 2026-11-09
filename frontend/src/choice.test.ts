@@ -1,6 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { backDelays, choiceRow, dealDelays, dealPose } from './choice';
+import { PromptKind, Purpose } from './actions';
+import { backDelays, choiceRow, choosers, confirmFirst, dealDelays, dealPose, keptZone, pickToggle, startChoice, startWaits } from './choice';
 import { feel } from './feel';
+import { t } from './i18n';
+import type { GameView } from './protocol';
 
 describe('choiceRow', () => {
   it('keeps one row up to six, smaller from five on (20.18)', () => {
@@ -47,5 +50,38 @@ describe('dealPose', () => {
     expect(p.y).toBeCloseTo(0);
     expect(p.scale).toBeCloseTo(1);
     expect(p.turn).toBeCloseTo(0);
+  });
+});
+
+describe('start-of-game choices (20.22)', () => {
+  const start = { kind: PromptKind.choose, player: 0, purpose: Purpose.startingItem, players: [0, 2] };
+  const view = { waiting: start } as unknown as GameView;
+  const name = (p: number) => ['Ann', 'Bo', 'Cy'].at(p) ?? '?';
+
+  it('asks Confirm only for a start-of-game pick', () => {
+    expect(confirmFirst(Purpose.startingItem)).toBe(true);
+    expect(confirmFirst(Purpose.target)).toBe(false);
+    expect(startChoice(start)).toBe(true);
+    expect(startChoice({ ...start, kind: PromptKind.order })).toBe(false);
+  });
+
+  it('picks, switches and unpicks a card, each with its sound', () => {
+    expect(pickToggle(null, 1)).toEqual({ picked: 1, sound: 'choicePick' });
+    expect(pickToggle(1, 2)).toEqual({ picked: 2, sound: 'choicePick' });
+    expect(pickToggle(2, 2)).toEqual({ picked: null, sound: 'choiceUnpick' });
+  });
+
+  it('names every chooser for the others, none for a chooser', () => {
+    expect(choosers(start)).toEqual([0, 2]);
+    expect(choosers({ kind: PromptKind.choose, player: 1 })).toEqual([1]);
+    expect(startWaits(view, 1, name)).toEqual([t('start.choosing', { player: 'Ann' }), t('start.choosing', { player: 'Cy' })]);
+    expect(startWaits(view, -1, name)).toHaveLength(2);
+    expect(startWaits(view, 2, name)).toEqual([]);
+    expect(startWaits({ ...view, over: true }, 1, name)).toEqual([]);
+    expect(startWaits({ waiting: { kind: PromptKind.choose, player: 0, purpose: Purpose.target } } as unknown as GameView, 1, name)).toEqual([]);
+  });
+
+  it('keeps the picked card under its player zone', () => {
+    expect(keptZone(2)).toBe('choice-kept-2');
   });
 });

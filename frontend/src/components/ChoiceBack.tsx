@@ -1,8 +1,9 @@
-import { useLayoutEffect, useRef } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { create } from 'zustand';
 import type { Kind } from '../cards';
 import { backDelays } from '../choice';
 import { feel } from '../feel';
+import { useApp } from '../store';
 import { Card } from './Card';
 
 // A choice's cards fly back onto their deck after the pick (20.18, ADR
@@ -34,13 +35,79 @@ export function flyBack(cards: { card: string; box: DOMRect }[], deck: Kind, sca
   useFlight.setState({ flight: { key: next, deck, scale, cards } });
 }
 
-// ChoiceBack draws the cards flying back, while they fly.
+// Kept is a start-of-game pick after Confirm (20.22): the card waits
+// at its place in the window, under zone, until playback flies it to
+// its player from there. step is the update it was picked in.
+interface Kept {
+  key: number;
+  card: string;
+  box: DOMRect;
+  zone: string;
+  step: number;
+}
+
+const useKept = create<{ kept: Kept | null }>(() => ({ kept: null }));
+
+// keepCard holds a picked card at its place for its flight (20.22).
+export function keepCard(k: Omit<Kept, 'key'>): void {
+  next++;
+  useKept.setState({ kept: { ...k, key: next } });
+}
+
+// ChoiceBack draws the cards flying back, while they fly, and a kept
+// card while it waits for its flight.
 export function ChoiceBack() {
   const flight = useFlight((s) => s.flight);
-  if (!flight) {
-    return null;
+  const kept = useKept((s) => s.kept);
+  return (
+    <>
+      {flight && <Flying key={flight.key} flight={flight} />}
+      {kept && <Held key={kept.key} kept={kept} />}
+    </>
+  );
+}
+
+// Held is the kept card at its place. It hides once its flight starts
+// and goes when the flight ends, when the update is drawn with no
+// flight (speed "off"), or after feel.start.hold at most.
+function Held({ kept }: { kept: Kept }) {
+  const flying = useApp((s) => {
+    const e = s.playing?.effect;
+    return e?.kind === 'fly' && e.from[0] === kept.zone;
+  });
+  const drawn = useApp((s) => (s.game?.step ?? 0) > kept.step && s.playing === null);
+  // seen: its flight started; kept while the render follows it.
+  const [seen, setSeen] = useState(false);
+  if (flying && !seen) {
+    setSeen(true);
   }
-  return <Flying key={flight.key} flight={flight} />;
+  useEffect(() => {
+    const end = () => {
+      if (useKept.getState().kept?.key === kept.key) {
+        useKept.setState({ kept: null });
+      }
+    };
+    if ((seen && !flying) || drawn) {
+      end();
+      return;
+    }
+    const id = window.setTimeout(end, feel.start.hold * 1000);
+    return () => {
+      window.clearTimeout(id);
+    };
+  }, [seen, flying, drawn, kept.key]);
+  const { box } = kept;
+  return (
+    <div className="choice-back" data-testid="choice-kept">
+      <div
+        className="choice-back-card choice-kept"
+        data-zone={kept.zone}
+        style={{ left: box.left, top: box.top, width: box.width, height: box.height, visibility: flying || seen ? 'hidden' : undefined }}
+      >
+        <Card cardRef={kept.card} size="choice" highlight="pick" />
+      </div>
+    </div>
+  );
 }
 
 function Flying({ flight }: { flight: Flight }) {

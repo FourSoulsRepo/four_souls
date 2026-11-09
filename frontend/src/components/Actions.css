@@ -1299,3 +1299,35 @@
 .choice-back-card .card {
   width: 100%;
 }
+
+/* The start-of-game screen (20.22, ADR 027 "Start of game"): a banner
+   with a headline and a caption over the cards; a picked card lifts and
+   keeps its bright glow until Confirm. */
+.start-banner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  /* Room for a picked card's lift, so it never covers the caption. */
+  margin-bottom: var(--pick-lift, 14px);
+}
+
+.start-banner p {
+  margin: 0;
+  font-size: 16px;
+  color: rgb(255 255 255 / 85%);
+  text-shadow: 0 2px 6px rgb(0 0 0 / 80%);
+}
+
+.choice.start button.choice-card.picked {
+  translate: 0 calc(-1 * var(--pick-lift, 14px));
+}
+
+.choice-card.picked .card.hl-pick {
+  box-shadow: 0 0 0 3px #b3e9ff, 0 0 26px 8px rgb(79 195 247 / 95%);
+}
+
+.choice button.choice-confirm {
+  min-width: 140px;
+  font-size: 18px;
+}

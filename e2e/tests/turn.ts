@@ -130,6 +130,12 @@ async function answer(pages: Page[], press: Tap, steps: number[]): Promise<boole
       await press(page, mode.locator('.ability-line:enabled').first());
       return true;
     }
+    // A start-of-game pick waits for Confirm (20.22).
+    const confirm = page.locator('.choice .choice-confirm');
+    if (await enabled(confirm)) {
+      await press(page, confirm);
+      return true;
+    }
     const choice = page.locator('.choice:not(.look)');
     if (await choice.isVisible()) {
       // Prefer picking on the table, as a player would (7.7), where the

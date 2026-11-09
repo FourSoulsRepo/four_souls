@@ -6,7 +6,11 @@
 // are in seconds at normal speed (feel.choice); a pose is sampled at a
 // time, so one clock drives move, turn and size.
 import { cubicBezier } from 'motion/react';
+import { PromptKind, Purpose } from './actions';
 import { bezier, feel } from './feel';
+import { t } from './i18n';
+import type { GameView, Prompt } from './protocol';
+import type { Sound } from './sounds';
 
 export interface Row {
   // scale is the cards' size, as a part of a full choice card.
@@ -78,4 +82,57 @@ export function dealPose(t: number, from: Point, scale: number): DealPose {
 export function backDelays(n: number): number[] {
   const { backFirst, backGap } = feel.choice;
   return Array.from({ length: n }, (_, i) => (i === 0 ? 0 : backFirst + backGap * (i - 1)));
+}
+
+// Start-of-game choices (20.22, ADR 027 "Start of game"): the choice
+// opens as a screen of its own; a click picks a card and Confirm sends
+// it. Every player with such a choice makes it at the same time.
+
+// confirmFirst: a pick of this purpose waits for Confirm before it is
+// sent. A start-of-game pick lasts the whole game, so a misclick costs
+// much (16.3). The draft pick (14.11) can use it too.
+export function confirmFirst(purpose: number): boolean {
+  return purpose === Purpose.startingItem;
+}
+
+// Toggle is a click on a card before Confirm: the card picked now, if
+// any, and the sound the click plays.
+export interface Toggle {
+  picked: number | null;
+  sound: Sound;
+}
+
+// pickToggle is a click on option i while picked is picked: it picks
+// i, or unpicks it when it is the picked one (16.4).
+export function pickToggle(picked: number | null, i: number): Toggle {
+  return picked === i ? { picked: null, sound: 'choiceUnpick' } : { picked: i, sound: 'choicePick' };
+}
+
+// choosers are all who may answer the prompt now: its players on
+// start-of-game choices (20.22), else its player.
+export function choosers(w: Prompt): number[] {
+  return w.players && w.players.length > 0 ? w.players : [w.player];
+}
+
+// startChoice: the prompt is a start-of-game choice (Eden's).
+export function startChoice(w: Prompt): boolean {
+  return w.kind === PromptKind.choose && w.purpose === Purpose.startingItem;
+}
+
+// startWaits are the lines the others see while players make their
+// start-of-game choices, one per chooser: "Bo is choosing" (16.5). A
+// chooser sees their own screen instead; nothing for other prompts.
+export function startWaits(view: GameView, you: number, name: (p: number) => string): string[] {
+  const w = view.waiting;
+  if (view.over || !startChoice(w)) {
+    return [];
+  }
+  const who = choosers(w);
+  return who.includes(you) ? [] : who.map((p) => t('start.choosing', { player: name(p) }));
+}
+
+// keptZone is where a chooser's picked card waits for its flight to
+// them after Confirm (20.22): playback flies it from there.
+export function keptZone(player: number): string {
+  return `choice-kept-${String(player)}`;
 }

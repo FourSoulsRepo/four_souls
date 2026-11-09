@@ -32,7 +32,7 @@ A choice shows its options over the dimmed board:
 | `overlay` | Connection lost, paused, game over, the game menu, the End turn question (V-46), the reconnecting badge and server notices (N-20). | Modal: the table and its windows wait under it. | `components/Overlays.css` |
 | `vote` | The Soft rollback vote (ADR 020, 17.4); no backdrop, so the table and the history stay in view. | The game waits on it, over any prompt window or the throw; a dialog of the `overlay` row (game menu, connection lost) covers it. | `components/Overlays.css` |
 | `drag` | A hand card being dragged to play, or picked up by a click (20.20); one stopped at the board's edge while it aims; a played one waiting where it was let go, and its shrink into the stack row. | It follows the pointer over the table and its windows; a played one stays in view until the server answers. | `components/Table.css` |
-| `throw` | The roll waiting for its throw, with its button. | The thrown die lands here; only the button catches clicks. | `components/Throw.css` |
+| `throw` | The roll waiting for its throw, with its button; others' "Bo is choosing" during the start-of-game choices (20.22). | The thrown die lands here; only the button catches clicks. | `components/Throw.css` |
 | `menu` | A card's action menu and the ability dialog, with their backdrop. | The player opened it on purpose, over any prompt. | `components/Actions.css` |
 | `look` | The "you look at" window in the middle. | It may come with a choice; the cards to look at come first. | `components/Actions.css` |
 | `menu-button` | The Menu button. | Over the table and a choice's backdrop: the player can always leave or save (15.29). Under every other window. | `components/Overlays.css` |

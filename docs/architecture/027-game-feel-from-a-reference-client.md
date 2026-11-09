@@ -1270,6 +1270,29 @@ Each sub-step of step 20 takes the part it needs.
     12. Additive: `players` is new; the protocol version stays.
     13. Engine 0.5.2: older records cannot replay (`startVersion`).
     14. The draft (14.11) is a server step, not an engine prompt; not changed.
+20. Built in 20.22 (owner's picks: all of 16, with 16.12 changed by 19).
+    1. 16.1: a start-of-game mode of the 20.18 choice view (`confirmFirst`).
+    2. Banner: headline "Starting item", caption "Eden keeps one".
+    3. It grows from 0 in 0.5 s, expo-out, as the screen opens; it stays.
+    4. 16.2: the engine sends `waiting.look` (treasure, 3) for each Eden.
+    5. So the 20.18 deal, its sounds and the others' backs play as they are.
+    6. 16.3: a click picks a card; it lifts 14 px and keeps its bright glow.
+    7. A click on the picked card unpicks it; another card takes the pick.
+    8. Confirm under the cards, disabled until a card is picked.
+    9. 16.4: `choicePick` on a pick, `choiceUnpick` on an unpick.
+    10. `choiceConfirm` on Confirm; no random pitch, as 20.18.
+    11. 16.5: others see "Bo is choosing" low on the board, one line per chooser.
+    12. It grows from 0 in 0.4 s, expo-out; no window, no dim.
+    13. 16.6: bug 19.142, fixed; the badge reads "Before turn 1 · Start of game".
+    14. 16.7: the picked card waits at its place after Confirm.
+    15. The playback then flies it to its player: 0.5 s, expo-out, silent.
+    16. Others see it fly from the treasure deck; the rest fly back as 20.18.
+    17. A kept card waits 4 s at most, if no flight comes.
+    18. 16.12 changed: several Edens choose at the same time (item 19).
+    19. The window keeps its picks while another player's pick comes in.
+    20. Kept as they are: 16.8 to 16.11, 16.13, 16.14.
+    21. Speed "off" and reduced motion: no growth, deal or flight.
+    22. For the draft (14.11): `confirmFirst`, `pickToggle`, `Confirm`.
 
 ### Target arrow
 
