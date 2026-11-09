@@ -33,7 +33,7 @@ This step never closes; new reports are appended.
 
 | ID | Group                                    | System     | Items                                                  | Count |
 |----|------------------------------------------|------------|--------------------------------------------------------|-------|
-| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95, 19.97, 19.104, 19.105 | 18 |
+| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95, 19.97, 19.104, 19.105, 19.144 | 19 |
 | B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90, 19.106 | 10 |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74, 19.111                      | 5     |
@@ -55,11 +55,11 @@ This step never closes; new reports are appended.
 | T  | Events and view: data sent too early     | Engine     | 19.142                                                 | 1     |
 | U  | Save and load: a running effect lost     | Engine     | 19.143                                                 | 1     |
 
-Totals by system (140 items):
+Totals by system (141 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
-| Engine    | A, B, T, U | 30 |
+| Engine    | A, B, T, U | 31 |
 | Card data | C       | 2     |
 | Client    | D–G, O, P, S | 39 |
 | Server    | H, N    | 2     |
@@ -4467,3 +4467,27 @@ Totals by system (140 items):
    1. [ ] A key for a nested effect that survives a load.
    2. [ ] Go test: save and load inside Gimpy's discard question.
    3. [ ] The fuzz input as a corpus file once it passes.
+
+### [x] 19.144 Soul of Envy goes on the stack again for the player who gains it
+
+1. Goal: a gained bonus soul's own abilities stop (R-CARD-23).
+2. Report (owner, 2026-11-09)
+   1. Play test; record `2026-11-04-174011-g1_Hitokiri-Battosai_jеня_soul_of_envy_bug.fsrec`.
+   2. Soul of Envy's effect played twice.
+   3. The player who gained it reached the same 3 souls.
+3. Cause (the record and the code)
+   1. Step 991: seat 0 gains a 3rd soul; Soul of Envy triggers.
+   2. Step 994: seat 1 gains it as a new object, now 3 souls.
+   3. Step 996: that new object's ability triggers again.
+   4. Seat 0 is asked again; the answer only adds a counter.
+   5. `collectTriggers` checks a gained soul's own "gains this soul".
+   6. That check is for Mom's Heart; it ran for bonus souls too.
+   7. The first-time counter stays on the old object; the new one has none.
+4. Tasks:
+   1. [x] A gained bonus soul's abilities do not trigger.
+   2. [x] Go test: the player who gains Soul of Envy reaches 3 souls.
+5. Fix (2026-11-09)
+   1. `collectTriggers` skips a gained bonus soul's own check.
+   2. Mom's Heart and other monster souls still trigger on their gain.
+   3. Engine stays 0.5.2: not released yet (as 20.22).
+   4. Test: `TestSoulOfEnvyOnce`; it asked twice before the fix.
