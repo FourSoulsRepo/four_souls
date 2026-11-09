@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { checkSeat, getBacks, getCards, getDice, getFonts, getIcons, getMats, getSettings, getSounds, saveSettings, serverStatus } from './bridge';
 import { language, setCardLanguages, setLanguage } from './i18n';
-import { send } from './net';
+import { disconnect, send } from './net';
 import { noHostSetup } from './hostSetup';
 import type { Envelope, GameView, Update } from './protocol';
 import { messageOf, seatOf, useApp } from './store';
@@ -19,7 +19,7 @@ vi.mock('./bridge', () => ({
   saveSettings: vi.fn(),
   serverStatus: vi.fn(),
 }));
-vi.mock('./net', () => ({ drop: vi.fn(), send: vi.fn() }));
+vi.mock('./net', () => ({ disconnect: vi.fn(), drop: vi.fn(), send: vi.fn() }));
 
 const initial = useApp.getState();
 
@@ -201,6 +201,36 @@ describe('server notices (N-20)', () => {
     useApp.setState({ screen: 'game', sent: 7 });
     useApp.getState().receive({ type: 'welcome', data: { protocol: 5, app: '0.1.0', engine: '0.1.0', token: 't', seat: 0 } });
     expect(useApp.getState().sent).toBeNull();
+  });
+});
+
+describe('LAN Join (19.149)', () => {
+  const game = { id: 'g1', host: 'Ann', seats: 2, taken: 1, sets: ['b2'], started: false, locked: true };
+
+  it('sends the join with the row password when the games come, and stays on the LAN screen', () => {
+    useApp.setState({ screen: 'join', path: 'lan', connected: true, autoJoin: { game: 'g1', password: 'pw', sent: false } });
+    useApp.getState().receive({ type: 'games', data: { games: [game] } });
+    expect(send).toHaveBeenCalledWith('join', { game: 'g1', password: 'pw' });
+    expect(useApp.getState().autoJoin).toMatchObject({ sent: true });
+    useApp.getState().receive({ type: 'table', data: { game: 'g1', you: 1, seats: [], sets: ['b2'] } });
+    expect(useApp.getState()).toMatchObject({ screen: 'table', autoJoin: null });
+  });
+
+  it('a refused join leaves the server and keeps the error for the LAN screen', () => {
+    useApp.setState({ screen: 'join', path: 'lan', connected: true, autoJoin: { game: 'g1', password: 'no', sent: true } });
+    useApp.getState().receive({ type: 'error', data: { code: 'password_wrong', message: 'Wrong password.' } });
+    expect(disconnect).toHaveBeenCalled();
+    expect(useApp.getState()).toMatchObject({ screen: 'join', connected: false, autoJoin: null });
+    expect(useApp.getState().error).not.toBe('');
+  });
+
+  it('without a LAN Join the games only list, and an error keeps the connection', () => {
+    useApp.setState({ screen: 'join', connected: true });
+    useApp.getState().receive({ type: 'games', data: { games: [{ ...game, locked: false }] } });
+    useApp.getState().receive({ type: 'error', data: { code: 'full', message: 'Full.' } });
+    expect(send).not.toHaveBeenCalled();
+    expect(disconnect).not.toHaveBeenCalled();
+    expect(useApp.getState().connected).toBe(true);
   });
 });
 

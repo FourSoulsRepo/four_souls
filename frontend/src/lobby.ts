@@ -171,6 +171,11 @@ export interface LanRow {
   // rejoin: a started game this app held a seat in (15.97); joining
   // takes the seat back.
   rejoin: boolean;
+  // game is the probe's game id, which Join sits at (19.149); host
+  // names the row's password field; locked: joining needs it.
+  game: string;
+  host: string;
+  locked: boolean;
 }
 
 // lanRows lists the found games. A server that speaks another protocol
@@ -190,7 +195,65 @@ export function lanRows(found: LanServer[], protocol: number, rejoin: Rejoin): L
         text: `${g.locked ? '🔒 ' : ''}${t('lobby.game_row', { host: g.host, taken: g.taken, n: g.seats })}${state} · ${f.address}${version}`,
         joinable: same && (open || mine),
         rejoin: same && mine,
+        game: g.id,
+        host: g.host,
+        locked: g.locked,
       };
     }),
   );
+}
+
+// AutoJoin is a LAN Join on its way (19.149): the game to sit at once
+// the server lists its games. An empty game takes the host's one open
+// game (a typed address). sent: the join went out.
+export interface AutoJoin {
+  game: string;
+  password: string;
+  sent: boolean;
+}
+
+// oneOpenGame is the game a typed LAN address joins: the only game
+// there, waiting, with a free seat and no password; '' otherwise, and
+// the Games list shows (19.149).
+export function oneOpenGame(games: GameInfo[]): string {
+  if (games.length !== 1) {
+    return '';
+  }
+  const [g] = games;
+  return g.started || g.taken >= g.seats || g.locked ? '' : g.id;
+}
+
+// AutoStep is what one server message does to a LAN Join: the next
+// state, the join to send, or fail (disconnect, back to the LAN screen).
+export interface AutoStep {
+  next: AutoJoin | null;
+  join?: { game: string; password?: string };
+  fail: boolean;
+}
+
+// autoJoinStep moves a LAN Join on by one message. The join goes when
+// the games list comes: a rejoined seat gets no list, so no join. Any
+// error ends it as failed; a seat or a game ends it as done.
+export function autoJoinStep(a: AutoJoin, env: Envelope): AutoStep {
+  switch (env.type) {
+    case 'games': {
+      if (a.sent) {
+        return { next: a, fail: false };
+      }
+      const game = a.game || oneOpenGame((env.data as Games).games ?? []);
+      if (!game) {
+        return { next: null, fail: false };
+      }
+      return { next: { ...a, game, sent: true }, join: a.password ? { game, password: a.password } : { game }, fail: false };
+    }
+    case 'error':
+      return { next: null, fail: true };
+    case 'table':
+    case 'setup':
+    case 'update':
+    case 'saved':
+      return { next: null, fail: false };
+    default:
+      return { next: a, fail: false };
+  }
 }

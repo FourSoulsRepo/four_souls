@@ -132,9 +132,11 @@ test('a game found on the LAN is joined without typing (N-13)', async ({ browser
   await expect(host.getByRole('list', { name: tr('lobby.seats.seats') })).toContainText(`Lex ${tr('lobby.seats.you')}`);
   const id = await gameId(host);
 
-  // The fake LAN holds the test server; its real games list follows.
+  // The fake LAN finds the host's game on the test server, as the real
+  // probe does: by its id (19.149).
   const guest = await (await browser.newContext()).newPage();
   await realAssets(guest);
+  await setLan(guest, lanGame({ id, host: 'Lex', taken: 1, started: false }));
   await guest.goto(appURL());
   await openLan(guest);
   await guest.getByLabel(tr('lobby.nickname')).fill('Mio');
@@ -142,9 +144,88 @@ test('a game found on the LAN is joined without typing (N-13)', async ({ browser
   const found = lan.getByRole('listitem').filter({ hasText: address() });
   await expect(found).toContainText(trRe('lobby.game_row', { taken: 1, n: 2 }));
   await shot(guest, 'join-lan');
+  // Join sits the player at the host's game: no Games list (19.149).
   await found.getByRole('button', { name: tr('lobby.join') }).click();
-  await lobbyGame(guest, id).getByRole('button', { name: tr('lobby.join') }).click();
   await expect(guest.getByRole('list', { name: tr('lobby.seats.seats') })).toContainText(`Mio ${tr('lobby.seats.you')}`);
+  await expect(host.getByRole('list', { name: tr('lobby.seats.seats') })).toContainText('Mio');
+  expect(await gameId(guest)).toBe(id);
+});
+
+// onlyGames makes the server's games list on page show only the games
+// in ids: the test server is shared, so a typed address would see the
+// games of other tests too.
+async function onlyGames(page: Page, ids: string[]) {
+  await page.context().routeWebSocket(`ws://127.0.0.1:${String(serverPort())}/ws`, (ws) => {
+    const server = ws.connectToServer();
+    ws.onMessage((msg) => {
+      server.send(msg);
+    });
+    server.onMessage((msg) => {
+      const env = JSON.parse(String(msg)) as { type: string; data?: { games?: { id: string }[] | null } };
+      if (env.type === 'games' && env.data) {
+        env.data.games = (env.data.games ?? []).filter((g) => ids.includes(g.id));
+        ws.send(JSON.stringify(env));
+        return;
+      }
+      ws.send(msg);
+    });
+  });
+}
+
+// A locked row asks for the password in the row; a refused join goes
+// back to the LAN screen with the server's reason (19.149).
+test('a locked LAN game joins with the password from its row (19.149)', async ({ browser }) => {
+  const host = await (await browser.newContext()).newPage();
+  await host.goto(appURL());
+  await openHost(host);
+  await host.getByLabel(tr('lobby.nickname')).fill('Nox');
+  await host.getByLabel(tr('host.password')).fill('pw-123');
+  await host.getByRole('button', { name: tr('host.host'), exact: true }).click();
+  await expect(host.getByRole('list', { name: tr('lobby.seats.seats') })).toContainText(`Nox ${tr('lobby.seats.you')}`);
+  const id = await gameId(host);
+
+  const guest = await (await browser.newContext()).newPage();
+  await realAssets(guest);
+  await setLan(guest, [{ address: address(), app: 'demo', games: [{ id, host: 'Nox', seats: 2, taken: 1, locked: true, started: false }] }]);
+  await guest.goto(appURL());
+  await openLan(guest);
+  await guest.getByLabel(tr('lobby.nickname')).fill('Pip');
+  const row = guest.getByRole('region', { name: tr('lobby.lan.on_network') }).getByRole('listitem').filter({ hasText: address() });
+  const password = row.getByLabel(tr('lobby.games.password_label', { host: 'Nox' }));
+  const join = row.getByRole('button', { name: tr('lobby.join') });
+  const status = guest.getByRole('status');
+
+  await password.fill('guess');
+  await join.click();
+  await expect(status).toHaveText(tr('error.password_wrong'));
+  await expect(guest.getByRole('heading', { name: tr('menu.lan') })).toBeVisible();
+  await expect.poll(() => guest.evaluate(() => (window as unknown as { fourSouls: { store: { getState: () => { connected: boolean } } } }).fourSouls.store.getState().connected)).toBe(false);
+  await shot(guest, 'join-lan-password');
+
+  await password.fill('pw-123');
+  await join.click();
+  await expect(guest.getByRole('list', { name: tr('lobby.seats.seats') })).toContainText(`Pip ${tr('lobby.seats.you')}`);
+  expect(await gameId(guest)).toBe(id);
+});
+
+test("a typed LAN address joins the host's one open game (19.149)", async ({ browser }) => {
+  const host = await (await browser.newContext()).newPage();
+  await host.goto(appURL());
+  await openHost(host);
+  await host.getByLabel(tr('lobby.nickname')).fill('Oda');
+  await host.getByRole('button', { name: tr('host.host'), exact: true }).click();
+  await expect(host.getByRole('list', { name: tr('lobby.seats.seats') })).toContainText(`Oda ${tr('lobby.seats.you')}`);
+  const id = await gameId(host);
+
+  const guest = await (await browser.newContext()).newPage();
+  await onlyGames(guest, [id]);
+  await guest.goto(`${appURL()}&nolan`);
+  await openLan(guest);
+  await guest.getByLabel(tr('lobby.nickname')).fill('Uma');
+  await guest.getByLabel(tr('lobby.lan.address')).fill(address());
+  await guest.getByRole('button', { name: tr('lobby.connect') }).click();
+  await expect(guest.getByRole('list', { name: tr('lobby.seats.seats') })).toContainText(`Uma ${tr('lobby.seats.you')}`);
+  expect(await gameId(guest)).toBe(id);
 });
 
 test('with no game on the LAN, the address field is the way', async ({ page }) => {
@@ -221,6 +302,8 @@ test('a player whose app closed rejoins from the LAN list (15.97)', async ({ bro
 });
 
 test('the LAN screen keeps the typed address, not a Recent list (15.97)', async ({ page }) => {
+  // No game there: the Games list shows, not a seat (19.149).
+  await onlyGames(page, []);
   await page.goto(`${appURL()}&nolan`);
   await openLan(page);
   await page.getByLabel(tr('lobby.nickname')).fill('Tia');

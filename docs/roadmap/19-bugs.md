@@ -4655,12 +4655,12 @@ Totals by system (144 items):
    2. The server then sends `games`; `GameList` shows it.
    3. The LAN row already knows the game id from the probe.
 4. Tasks:
-   1. [ ] Client: LAN Join connects and sends `join` for that game.
-   2. [ ] A locked game: a password field in the LAN row.
-   3. [ ] A typed address: join its one open game.
-   4. [ ] A failed join: back to the LAN screen with the error.
-   5. [ ] Vitest and e2e tests.
-   6. [ ] Docs: use case, wiki.
+   1. [x] Client: LAN Join connects and sends `join` for that game.
+   2. [x] A locked game: a password field in the LAN row.
+   3. [x] A typed address: join its one open game.
+   4. [x] A failed join: back to the LAN screen with the error.
+   5. [x] Vitest and e2e tests.
+   6. [x] Docs: use case, wiki.
 5. Decisions (2026-11-09)
    1. A LAN row's Join sends `join` with the probe's game id after `hello`.
    2. A locked row shows a password field, as `GameList` does.
@@ -4671,3 +4671,25 @@ Totals by system (144 items):
    7. The host's own path (Host, saved games) does not change.
    8. Online (`path` not `lan`) does not change.
    9. Screenshots: LAN screen with a locked row, before and after.
+6. Fix (2026-11-09)
+   1. `LanRow` carries the probe's `game`, `host` and `locked`.
+   2. `joinServer` takes `join: { game, password }`; kept in `store.autoJoin`.
+   3. `autoJoinStep` (`lobby.ts`) sends `join` when `games` comes.
+   4. A rejoined seat gets no `games`: no `join`; Rejoin passes none.
+   5. A typed address passes game `''`: `oneOpenGame` picks it.
+   6. `oneOpenGame` also skips a locked game: no password to send (own call).
+   7. Any `error` before the seat: `disconnect`, LAN screen with the reason.
+   8. While `autoJoin` is set, `JoinScreen` keeps the LAN screen.
+   9. Back or Esc meanwhile leaves the server (`quit`).
+   10. A locked row: the `GameList` password field and its labels; no new text.
+   11. Host, saved games and Online never set `autoJoin`.
+   12. Vitest: `oneOpenGame`, `autoJoinStep`; store sends, fails, plain list.
+   13. e2e: LAN Join lands at the table; locked row, wrong then right password.
+   14. e2e: a typed address joins the one open game (`onlyGames` filter).
+   15. The typed-address test of 15.97 sees no games, so the list shows.
+   16. Docs: UC-17 steps 5–6, 3e, new 5a and 3i; wiki Client, First-start, Internal-builds.
+   17. Screenshots: `.cache/screenshots/19.149/before/` and `after/`.
+   18. A row with no game id (the fake LAN's default) joins as a typed address.
+   19. So the N-13 e2e test now gives the fake LAN the host's real id.
+7. Result (2026-11-09)
+   1. `make lint` and `make frontend e2e` pass (exit 0).

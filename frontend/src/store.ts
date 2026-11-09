@@ -37,7 +37,7 @@ import { cardLanguagesOf } from './locale';
 import { entriesFor, linkMarks, lookedAt, moveOf, restartCut, rolledBack, voteEnded, type Entry, type Looked, type Move, type Outcome } from './history';
 import type { LinePart } from './stack';
 import type { Box } from './zoom';
-import { emptyLobby, forgotten, leftTable, lost, onMessage, remember, renamed, type Screen, type ServerUp, type Session } from './lobby';
+import { autoJoinStep, emptyLobby, forgotten, leftTable, lost, onMessage, remember, renamed, type AutoJoin, type Screen, type ServerUp, type Session } from './lobby';
 import { connectFirst, disconnect, drop, send } from './net';
 import { claimEffect, nextBeat } from './animations';
 import { lastRollAfter, type LastRoll } from './dice';
@@ -323,8 +323,11 @@ interface AppState extends Session {
   saveNickname: (nickname: string) => Promise<boolean>;
   // joinServer connects to address and shows its game list. The
   // address goes to Recent unless recent is false (the LAN screen); a
-  // token takes that seat back (15.97).
-  joinServer: (address: string, opts?: { recent?: boolean; token?: string }) => Promise<void>;
+  // token takes that seat back (15.97). join sits at that game once
+  // the list comes; game '' takes the one open game (19.149).
+  joinServer: (address: string, opts?: { recent?: boolean; token?: string; join?: { game: string; password?: string } }) => Promise<void>;
+  // autoJoin is a LAN Join on its way; the LAN screen stays meanwhile.
+  autoJoin: AutoJoin | null;
   // forgetServer drops an address from the Recent list (N-18).
   forgetServer: (address: string) => Promise<void>;
   // recentStatus is the last check of each Recent server, by address
@@ -722,7 +725,7 @@ export const useApp = create<AppState>()((set, get) => {
           stopPlayback();
         }
         clearPresence();
-        set((s) => ({ ...lost(s), connected: false }));
+        set((s) => ({ ...lost(s), connected: false, autoJoin: null }));
         const s = get();
         if (s.screen === 'game' && !s.game?.view.over && s.lobby.welcome?.token) {
           retryLater();
@@ -773,6 +776,19 @@ export const useApp = create<AppState>()((set, get) => {
         stopPlayback();
       }
       set((s) => onMessage(s, env));
+      const auto = get().autoJoin;
+      if (auto) {
+        const step = autoJoinStep(auto, env);
+        set({ autoJoin: step.next });
+        if (step.join) {
+          send('join', step.join);
+        }
+        // A failed LAN Join leaves the server: the LAN screen shows why.
+        if (step.fail) {
+          disconnect();
+          set({ connected: false, lobby: emptyLobby, screen: 'join' });
+        }
+      }
       if (env.type === 'explained') {
         set({ explained: (env.data as Explained).blocked });
         explainedStep = serverStep;
@@ -1078,8 +1094,15 @@ export const useApp = create<AppState>()((set, get) => {
         set({ lan: { searching: false, found: [], error: messageOf(e) } });
       }
     },
+    autoJoin: null,
     joinServer: async (address, opts) => {
-      if ((await open(address, opts?.token)) && opts?.recent !== false) {
+      const join = opts?.join;
+      set({ autoJoin: join ? { game: join.game, password: join.password ?? '', sent: false } : null });
+      const ok = await open(address, opts?.token);
+      if (!ok) {
+        set({ autoJoin: null });
+      }
+      if (ok && opts?.recent !== false) {
         const s = get().settings;
         remembering = get().saveSettings({ ...s, recent: remember(s.recent, address) });
       }
@@ -1159,7 +1182,7 @@ export const useApp = create<AppState>()((set, get) => {
       disconnect();
       stopPlayback();
       const hosting = get().hosting;
-      set({ connected: false, hosting: null, lobby: emptyLobby, game: null, screen: to, error: '' });
+      set({ connected: false, hosting: null, lobby: emptyLobby, game: null, screen: to, error: '', autoJoin: null });
       if (hosting) {
         await stopHosting().catch(() => undefined);
       }
