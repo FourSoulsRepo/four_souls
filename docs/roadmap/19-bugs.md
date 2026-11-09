@@ -4661,3 +4661,13 @@ Totals by system (144 items):
    4. [ ] A failed join: back to the LAN screen with the error.
    5. [ ] Vitest and e2e tests.
    6. [ ] Docs: use case, wiki.
+5. Decisions (2026-11-09)
+   1. A LAN row's Join sends `join` with the probe's game id after `hello`.
+   2. A locked row shows a password field, as `GameList` does.
+   3. Rejoin keeps its token path; no `join` is sent.
+   4. A typed address: when `games` comes, join its one game if open.
+   5. Otherwise (none, several, started) the Games list shows, as now.
+   6. A failed auto-join: disconnect; the LAN screen shows the error.
+   7. The host's own path (Host, saved games) does not change.
+   8. Online (`path` not `lan`) does not change.
+   9. Screenshots: LAN screen with a locked row, before and after.
