@@ -33,7 +33,7 @@ This step never closes; new reports are appended.
 
 | ID | Group                                    | System     | Items                                                  | Count |
 |----|------------------------------------------|------------|--------------------------------------------------------|-------|
-| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95, 19.97, 19.104, 19.105, 19.144, 19.150 | 20 |
+| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95, 19.97, 19.104, 19.105, 19.144, 19.150, 19.151 | 21 |
 | B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90, 19.106 | 10 |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74, 19.111, 19.147              | 6     |
@@ -56,11 +56,11 @@ This step never closes; new reports are appended.
 | U  | Save and load: a running effect lost     | Engine     | 19.143                                                 | 1     |
 | V  | Flow: an extra step the player must take | Client     | 19.149                                                 | 1     |
 
-Totals by system (145 items):
+Totals by system (146 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
-| Engine    | A, B, T, U | 32 |
+| Engine    | A, B, T, U | 33 |
 | Card data | C       | 2     |
 | Client    | D–G, O, P, S, V | 41 |
 | Server    | H, N    | 3     |
@@ -4732,3 +4732,35 @@ Totals by system (145 items):
    1. `make lint test` passes (exit 0).
 7. Owner notes (2026-11-10)
    1. Owner marks 19.150 solved.
+
+### [ ] 19.151 Pride: the attack die is thrown before Pride's ability resolves
+
+1. Goal: "when an attack is declared on this" resolves before the first attack roll.
+2. Report (owner, 2026-11-10)
+   1. Play test; record `2026-11-09-192706-g2_Hitokiri-Battosai_jеня_charged_baby_bug.fsrec`.
+   2. Attack on Pride: the die was thrown before Pride's effect resolved.
+   3. The owner expects: Pride's effect first, then the roll.
+3. Cause (the record and the code)
+   1. Step 456: target Pride; the attack roll goes on the stack, Pride's trigger above it.
+   2. Step 457: the attacker throws the die (2).
+   3. Steps 459–462: Pride resolves; seat 1 discards 2 loot.
+   4. Step 464: the roll resolves.
+   5. `startAttack` emits `attack_target`, then pushes the first roll at once.
+   6. 19.105 only placed the trigger before the throw; 19.113 called this order right.
+4. Ruling basis
+   1. S-OFF: target triggers come with the declaration; then the attack starts.
+   2. S-RED: "when an attack is declared on this" enters the stack; then combat starts.
+   3. S-YUG (purchase): a trigger on the target passes priority; the purchase finishes after it.
+   4. No official ruling names the moment of the first roll: Community.
+5. Same trigger, all sets (one fix in `startAttack`)
+   1. b2: Pride.
+   2. r: Rag Mega, Gus, Sisters Vis, Dogma, The Harbingers (flipped side).
+   3. r: Angelic Intervention (deck attack), Battle Royale.
+   4. Not affected: Mom's Eye Shadow (a static); `attack_declared` cards (before the target).
+6. Tasks:
+   1. [ ] Engine: triggers of the target pick resolve before the first attack roll.
+   2. [ ] No such trigger: the roll comes at once, as now.
+   3. [ ] Go tests: Pride, Rag Mega, Angelic Intervention.
+   4. [ ] e2e: the 19.113 Pride test checks the new order.
+   5. [ ] e2e: Undo tests that expect the target pick ban the cards that ask.
+   6. [ ] Docs: rule R-ATK-25, Q-29, UC-13, wiki Frontend-tests.
