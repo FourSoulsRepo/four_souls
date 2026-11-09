@@ -57,6 +57,15 @@
   * No "You look at" dialog follows; the choice showed them.
   * The history keeps "You look at <card>" for each.
   * The same after a question about one card (2a).
+* **2e. The board shows top or bottom (19.147):** after 2a, 2c or 2d.
+  * Others see a small back over the deck while the player decides.
+  * A card kept on top drops onto its deck.
+  * A card put on the bottom slides out beside the deck, then under it.
+  * A tag on the deck says "Top", "Bottom" or "Bottom ×4".
+  * The chooser sees the card's face; others see its back.
+  * After The Moon's pick, the chooser's other cards slide under the deck.
+  * Also XII. The Hanged Man and Sack Head, one deck at a time.
+  * Also effects that reveal cards and put the rest on the bottom.
 
 ## Postconditions
 

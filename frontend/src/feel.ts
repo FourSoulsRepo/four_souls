@@ -429,6 +429,23 @@ export const feel = {
     backCurve: curves.easeInOut,
     othersCurve: curves.expoOut,
   },
+  // tuck: where a looked-at deck card went (19.147, ADR 027 "Choosing
+  // cards" 14). A card kept on top drops onto the pile over drop. A card
+  // put on the bottom slides out beside the pile over out, then back
+  // under it over under, hidden where the pile covers it. Cards leave
+  // gap apart. The tag on the pile fades in over fade, stays, and fades
+  // out over fade; the whole effect lasts tag seconds.
+  tuck: {
+    drop: 0.5,
+    out: 0.35,
+    under: 0.4,
+    gap: 0.09,
+    fade: 0.2,
+    tag: 1.5,
+    dropCurve: curves.expoOut,
+    outCurve: curves.expoOut,
+    underCurve: curves.easeInOut,
+  },
   // start: the start-of-game screen (20.22, ADR 027 "Start of game",
   // ChoiceDialog.tsx). Its banner grows in over banner. A picked card
   // lifts lift px and keeps its bright glow. After Confirm the picked

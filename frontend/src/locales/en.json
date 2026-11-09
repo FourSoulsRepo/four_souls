@@ -1301,6 +1301,18 @@
     "text": "+{n}¢ stolen",
     "note": "Effect: floating text by the thief's coins. n: cents stolen."
   },
+  "effect.tuck_bottom": {
+    "text": "Bottom",
+    "note": "Effect: short tag on a deck when a card a player looked at went to the bottom of that deck."
+  },
+  "effect.tuck_bottom_n": {
+    "text": "Bottom ×{n}",
+    "note": "Effect: short tag on a deck when cards a player looked at went to the bottom of that deck. n: how many, 2 or more."
+  },
+  "effect.tuck_top": {
+    "text": "Top",
+    "note": "Effect: short tag on a deck when a card a player looked at stayed on top of that deck."
+  },
   "effect.turn": {
     "text": "{player}'s turn",
     "note": "Effect: banner across the table when a turn starts. player: whose turn."

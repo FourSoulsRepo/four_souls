@@ -30,7 +30,7 @@ import {
   type Settings,
 } from './bridge';
 import { noHostSetup } from './hostSetup';
-import { inLanguage, type CardInfo, type Kind } from './cards';
+import { deckKinds, inLanguage, type CardInfo, type Kind } from './cards';
 import { loadFonts } from './fonts';
 import { language, languages, say, setCardLanguages, setLanguage, t } from './i18n';
 import { cardLanguagesOf } from './locale';
@@ -561,6 +561,10 @@ export const useApp = create<AppState>()((set, get) => {
         hpAfter: (e) => hpOf(u.view, e),
         charged: (p) => chargedIn(u.view, p),
         you: seatOf(get()),
+        looking: (deck) => {
+          const w = get().game?.view.waiting;
+          return w?.look !== undefined && deckKinds[w.look.deck ?? 0] === deck && w.player === seatOf(get());
+        },
       });
     },
     speed: () => get().settings.animation,

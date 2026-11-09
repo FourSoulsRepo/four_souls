@@ -26,6 +26,10 @@ type Question struct {
 	// sees which deck is looked at and how many cards; an order
 	// question's cards count without it.
 	Looks func(c *Ctx, answers []int) []ObjectID
+	// Peek: Subject is a deck's top card the chooser looks at, as
+	// Cain's Eye's (19.147). Everyone then sees the look at that deck,
+	// as with Looks; the options stay the question's own.
+	Peek bool
 }
 
 type askEffect struct {
@@ -153,6 +157,9 @@ func (g *Game) continueAsk(a *Asking) {
 		}
 		if q.Looks != nil {
 			ch.Look = g.deckLook(q.Looks(c, a.Answers))
+		}
+		if q.Peek && q.Subject != nil {
+			ch.Look = g.deckLook([]ObjectID{ch.Subject})
 		}
 		g.ask(ch, opts)
 		return

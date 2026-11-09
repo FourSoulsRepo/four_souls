@@ -20,12 +20,33 @@ const ctx = {
   hpAfter: (e: GameEvent): number | undefined => (e.object === 42 ? 0 : undefined),
   charged: (p: number) => (p === 1 ? [31, 32] : []),
   you: 0,
+  looking: (): boolean => false,
 };
 
 // monster knows every card as a monster (19.73).
 const monster = (ref: string): CardInfo => ({ ref, set: 'b2', type: 'Monster Card', name: ref, effects: [], footnotes: [], stats: [], rewards: [], image: '' });
 
 describe('effectsFor', () => {
+  it('drops a kept top card or tucks it under; only the chooser sees its face (19.147)', () => {
+    const own: GameEvent = { kind: 'top_choice', player: 0, object: 9, card: 'a_dime', private: true, text: 'loot deck bottom' };
+    const other: GameEvent = { kind: 'top_choice', player: 1, private: true, text: 'monster deck top' };
+    expect(effectsFor([own, other], ctx)).toEqual([
+      { kind: 'tuck', deck: 'loot', cards: [{ card: 'a_dime', bottom: true }], tag: 'Bottom' },
+      { kind: 'tuck', deck: 'monster', cards: [{ bottom: false }], tag: 'Top' },
+    ]);
+  });
+
+  it("tucks a look's rest under its deck; the chooser's window flew them, so only the tag (19.147)", () => {
+    const e: GameEvent = { kind: 'deck_bottom', player: -1, amount: 4, text: 'loot deck' };
+    const backs = Array.from({ length: 4 }, () => ({ bottom: true }));
+    expect(effectsFor([e], ctx)).toEqual([{ kind: 'tuck', deck: 'loot', cards: backs, tag: 'Bottom ×4' }]);
+    const chooser = { ...ctx, looking: (deck: string) => deck === 'loot' };
+    expect(effectsFor([e], chooser)).toEqual([{ kind: 'tuck', deck: 'loot', cards: [], tag: 'Bottom ×4' }]);
+    expect(effectsFor([{ ...e, amount: 1, text: 'treasure deck' }], chooser)).toEqual([{ kind: 'tuck', deck: 'treasure', cards: [{ bottom: true }], tag: 'Bottom' }]);
+    expect(weightOf({ kind: 'tuck', deck: 'loot', cards: [], tag: '' })).toBe('minor');
+    expect(weightOf({ kind: 'tuck', deck: 'loot', cards: backs, tag: '' })).toBe('normal');
+  });
+
   it('throws each first-player die, then names a tie or who goes first (15.43)', () => {
     const events: GameEvent[] = [
       { kind: 'dice_rolled', player: 1, amount: 2, text: 'first', label: { key: 'event.first_player_roll' } },

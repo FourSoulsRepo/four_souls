@@ -15,6 +15,7 @@ import './Effects.css';
 import { lunge, still } from './lunge';
 import { hits, skulls } from './marks';
 import { turnBanner } from './turn';
+import { Tuck } from './Tuck';
 
 // The size of a table card, for flying cards.
 const cardW = 80;
@@ -121,6 +122,8 @@ function Effect({ playing }: { playing: Playing }) {
           start={effect.kind === 'fly' && effect.start === true}
         />
       );
+    case 'tuck':
+      return <Tuck deck={effect.deck} cards={effect.cards} tag={effect.tag} playing={playing} />;
     case 'draw':
       return <Draw from={effect.from} to={effect.to} card={effect.card} own={effect.own} pace={effect.pace} playing={playing} />;
     case 'steal':

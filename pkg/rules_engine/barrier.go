@@ -69,6 +69,7 @@ var barrierKinds = map[EventKind]bool{
 	EvDamagePending:    false, // on the stack; not dealt yet
 	EvDeactivated:      false,
 	EvDeathPending:     false, // on the stack; not dead yet
+	EvDeckBottom:       false, // public, no card; its look is the barrier
 	EvDestroyed:        false,
 	EvDiscarded:        false,
 	EvEndOfTurn:        false, // end-of-turn triggers; the turn goes on

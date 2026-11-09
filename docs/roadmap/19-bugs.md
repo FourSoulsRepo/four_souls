@@ -36,7 +36,7 @@ This step never closes; new reports are appended.
 | A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95, 19.97, 19.104, 19.105, 19.144 | 19 |
 | B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90, 19.106 | 10 |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
-| D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74, 19.111                      | 5     |
+| D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74, 19.111, 19.147              | 6     |
 | E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52, 19.54, 19.69, 19.130, 19.134, 19.136, 19.138, 19.139, 19.141 | 15 |
 | F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88, 19.99, 19.102, 19.118, 19.119 | 11    |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
@@ -55,13 +55,13 @@ This step never closes; new reports are appended.
 | T  | Events and view: data sent too early     | Engine     | 19.142                                                 | 1     |
 | U  | Save and load: a running effect lost     | Engine     | 19.143                                                 | 1     |
 
-Totals by system (141 items):
+Totals by system (142 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
 | Engine    | A, B, T, U | 31 |
 | Card data | C       | 2     |
-| Client    | D–G, O, P, S | 39 |
+| Client    | D–G, O, P, S | 40 |
 | Server    | H, N    | 2     |
 | e2e       | I, J    | 57    |
 | Release   | K       | 4     |
@@ -4576,5 +4576,33 @@ Totals by system (141 items):
    5. So they emit no `top_choice`; even the log is silent.
    6. Look-5 cards (The Moon, The Emperor, The Hermit): others' backs sink into the deck.
    7. Nothing shows that 4 of them went to the bottom.
-4. Tasks:
-   1. [ ] Waits for the owner's pick of the visual and the scope.
+4. Ruling basis
+   1. At a real table the move is seen; the face is not (as 19.90).
+5. Tasks:
+   1. [x] Owner's picks: card motion and a tag; look-5 cards too.
+   2. [x] Engine: Sack Head and XII. The Hanged Man use `KeepOrBottom`.
+   3. [x] Engine: one-card looks show others the look (`Question.Peek`).
+   4. [x] Engine: `ToBottomRandom` emits a public `deck_bottom`.
+   5. [x] Client: the `tuck` effect; the chooser's rest slide under.
+   6. [x] Go, Vitest and e2e tests.
+   7. [x] Docs: ADR 027, ADR 020, UC-18, wiki.
+6. Fix (2026-11-09)
+   1. Every helper that moves a looked-at deck card to the bottom checked.
+   2. `KeepOrBottom`: Cain's Eye, Golden Horseshoe, Purple Heart (`LookMayBottom`).
+   3. `KeepOrBottom` now also: Sack Head, XII. The Hanged Man.
+   4. `ToBottomRandom`: The Moon, The Emperor, The Hermit, Eden's start.
+   5. Also Bobby Bomb, Mom's Bottle of Pills, Ouija Board, Black Candle.
+   6. Flush moves slot cards: each has its `moved_to_deck`; no `deck_bottom`.
+   7. `DeckToBottom` left only in fsp2 `revealTwoBosses`: a set-aside, not a choice.
+   8. Hanged Man's questions now show the card (`Subject`).
+   9. Event kind `deck_bottom`: public, no barrier (ADR 020 4.25).
+   10. Client: `tuck` effect (`Tuck.tsx`, `tuck.ts`); `flyBack` takes `under`.
+   11. Tag keys: `effect.tuck_top`, `effect.tuck_bottom`, `effect.tuck_bottom_n`.
+   12. Go: `TestSackHeadTellsEveryoneTheChoice`, `TestXIITheHangedManTellsEveryoneTheChoice`.
+   13. Go: `TestXVIIITheMoonTellsEveryoneTheBottom`; Cain's Eye and Flush extended.
+   14. Vitest: `tuck.test.ts`; `effectsFor` top_choice and deck_bottom.
+   15. e2e: two 19.147 tests in `choice.spec.ts`.
+   16. Engine stays 0.5.2: not released yet (as 19.144).
+   17. Screenshots: `.cache/screenshots/19.147/before/` and `after/`.
+7. Result (2026-11-09)
+   1. `make lint`, `make test` and `make frontend e2e` pass (exit 0).

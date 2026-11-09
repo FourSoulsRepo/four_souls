@@ -38,3 +38,25 @@ func TestXVIIITheMoonShowsTheLook(t *testing.T) {
 		t.Errorf("look %+v after the answer, want none", l)
 	}
 }
+
+// TestXVIIITheMoonTellsEveryoneTheBottom: the 4 cards not kept go to
+// the bottom as one public deck_bottom, with no card (19.147).
+func TestXVIIITheMoonTellsEveryoneTheBottom(t *testing.T) {
+	tb := lootTable(t, "xviii_the_moon")
+	ev := tb.Play(0, "xviii_the_moon", string(tb.G.Object(tb.G.DeckTop(engine.LootDeck, 1)[0]).Card))
+	var got []engine.Event
+	for _, e := range ev {
+		if e.Kind == engine.EvDeckBottom {
+			got = append(got, e)
+		}
+	}
+	if len(got) != 1 {
+		t.Fatalf("deck_bottom events %+v, want one", got)
+	}
+	if e := got[0]; e.Amount != 4 || e.Text != "loot deck" || e.Private || e.Card != "" || e.Player != engine.NoPlayer {
+		t.Errorf("event %+v", e)
+	}
+	if engine.Barrier(got[0]) {
+		t.Error("deck_bottom is a barrier")
+	}
+}

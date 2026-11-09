@@ -53,6 +53,10 @@ const (
 	// or put it on the bottom. Text is "<deck> deck top" or "<deck> deck
 	// bottom"; Private, so only Player sees Card (19.90).
 	EvTopChoice EventKind = "top_choice"
+	// EvDeckBottom: Amount cards that were in a deck went to its bottom
+	// (ToBottomRandom). Text is "<deck> deck"; public, no card, Player
+	// NoPlayer: the board shows them go under the deck (19.147).
+	EvDeckBottom EventKind = "deck_bottom"
 )
 
 // Event is one thing that happened, in order. Hidden cards (e.g. a looted

@@ -4,18 +4,22 @@ import type { Kind } from '../cards';
 import { backDelays } from '../choice';
 import { feel } from '../feel';
 import { useApp } from '../store';
+import { tuckClip, tuckPose, tuckSide, tuckTime } from '../tuck';
 import { Card } from './Card';
 
 // A choice's cards fly back onto their deck after the pick (20.18, ADR
 // 027 "Choosing cards" 12.10): copies of them leave the window's places
 // and land on the deck, turning face down. The first card of the list
-// flies first and lies on top of the rest.
+// flies first and lies on top of the rest. Cards that go to the bottom
+// fly beside the deck and slide under it instead (19.147).
 
 interface Flight {
   key: number;
   deck: Kind;
   scale: number;
   cards: { card: string; box: DOMRect }[];
+  // under: the cards from this place on go to the bottom.
+  under: number;
 }
 
 const useFlight = create<{ flight: Flight | null }>(() => ({ flight: null }));
@@ -29,10 +33,12 @@ export function deckBox(kind: Kind): DOMRect | null {
 }
 
 // flyBack sends cards back onto a deck: each card from its box on the
-// screen, in this order. scale is the animation speed's.
-export function flyBack(cards: { card: string; box: DOMRect }[], deck: Kind, scale: number): void {
+// screen, in this order. scale is the animation speed's. The cards from
+// place under on go under the deck: the rest of The Moon's look, all of
+// Eden's but the kept one (19.147).
+export function flyBack(cards: { card: string; box: DOMRect }[], deck: Kind, scale: number, under = cards.length): void {
   next++;
-  useFlight.setState({ flight: { key: next, deck, scale, cards } });
+  useFlight.setState({ flight: { key: next, deck, scale, cards, under } });
 }
 
 // Kept is a start-of-game pick after Confirm (20.22): the card waits
@@ -110,6 +116,22 @@ function Held({ kept }: { kept: Kept }) {
   );
 }
 
+// underFrames are a bottomed card's keyframes (19.147): from its box in
+// the window out beside the deck over choice.back, then under it.
+function underFrames(box: DOMRect, deck: DOMRect): Keyframe[] {
+  const from = { x: box.left + box.width / 2, y: box.top + box.height / 2, w: box.width, rotate: 0 };
+  const pile = { x: deck.left + deck.width / 2, y: deck.top + deck.height / 2, w: deck.width, rotate: 0 };
+  const side = tuckSide(pile, window.innerWidth);
+  const out = feel.choice.back;
+  const time = tuckTime(true, out);
+  const n = Math.max(2, Math.ceil(time * 60));
+  return Array.from({ length: n + 1 }, (_, j) => {
+    const p = tuckPose((time * j) / n, from, pile, true, side, out);
+    const move = `translate(${(p.x - from.x).toFixed(1)}px, ${(p.y - from.y).toFixed(1)}px) scale(${(p.w / Math.max(box.width, 1)).toFixed(4)})`;
+    return { transform: move, clipPath: tuckClip(p.hide, side), opacity: p.opacity };
+  });
+}
+
 function Flying({ flight }: { flight: Flight }) {
   const ref = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
@@ -135,9 +157,14 @@ function Flying({ flight }: { flight: Flight }) {
       const dy = deck.top + deck.height / 2 - (box.top + box.height / 2);
       const s = deck.width / Math.max(box.width, 1);
       const timing = { duration: c.back * flight.scale * 1000, delay: (delays.at(i) ?? 0) * flight.scale * 1000, easing: c.backCurve, fill: 'both' } as const;
+      const move =
+        i >= flight.under
+          ? // anim: tuck
+            el.animate(underFrames(box, deck), { ...timing, duration: tuckTime(true, c.back) * flight.scale * 1000, easing: 'linear' })
+          : // anim: choice-back
+            el.animate([{ transform: 'none' }, { transform: `translate(${String(dx)}px, ${String(dy)}px) scale(${String(s)})` }], timing);
       return [
-        // anim: choice-back
-        el.animate([{ transform: 'none' }, { transform: `translate(${String(dx)}px, ${String(dy)}px) scale(${String(s)})` }], timing),
+        move,
         // anim: choice-back
         el.querySelector('.deal-turn')?.animate([{ transform: 'rotateY(0deg)' }, { transform: 'rotateY(180deg)' }], timing),
       ];

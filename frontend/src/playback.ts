@@ -65,7 +65,12 @@ export type Effect =
   // update's first such effect (20.14).
   | { kind: 'deaths'; at: string[][]; player?: boolean; sound?: Sound }
   // sound: a sound with no flight, held for a beat (18.14).
-  | { kind: 'sound'; sound: Sound };
+  | { kind: 'sound'; sound: Sound }
+  // tuck: looked-at cards a choice left on a deck: each drops on top or
+  // slides under it, face up when the viewer saw it, and a tag on the
+  // deck says where (19.147). No cards: the chooser's window flew them
+  // already (ChoiceBack); only the tag shows.
+  | { kind: 'tuck'; deck: Kind; cards: { card?: string; bottom: boolean }[]; tag: string };
 
 export interface Hit {
   from: string[];
@@ -115,6 +120,9 @@ interface Context {
   charged: (player: number) => number[];
   // you is the viewer's seat; -1 for none.
   you: number;
+  // looking tells if the prompt shown now is the viewer's look at that
+  // deck, in a window that flies its cards back (19.147).
+  looking: (deck: Kind) => boolean;
 }
 
 function playerZones(p: number): string[] {
@@ -472,6 +480,22 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
       case 'first_roll_tied':
         out.push({ kind: 'banner', text: tieText(e, ctx.you, ctx.name), long: true });
         break;
+      case 'top_choice': {
+        // "loot deck top" or "loot deck bottom" (19.90).
+        const [deck = '', , where] = (e.text ?? '').split(' ');
+        const bottom = where === 'bottom';
+        const card = e.card ? { card: e.card } : {};
+        out.push({ kind: 'tuck', deck: deck as Kind, cards: [{ ...card, bottom }], tag: bottom ? t('effect.tuck_bottom') : t('effect.tuck_top') });
+        break;
+      }
+      case 'deck_bottom': {
+        // "loot deck": cards a look left go under it, faces hidden.
+        const deck = (e.text ?? '').split(' ')[0] as Kind;
+        const n = Math.max(1, amount);
+        const cards = ctx.looking(deck) ? [] : Array.from({ length: n }, () => ({ bottom: true }));
+        out.push({ kind: 'tuck', deck, cards, tag: n > 1 ? t('effect.tuck_bottom_n', { n }) : t('effect.tuck_bottom') });
+        break;
+      }
       case 'first_player':
         out.push({ kind: 'banner', text: firstPlayerText(e, ctx.you, ctx.name, (ref) => ctx.card(ref)?.name ?? ref), long: true });
         break;
@@ -610,6 +634,8 @@ export function weightOf(e: Effect): Weight {
     case 'popup':
     case 'steal':
       return 'minor';
+    case 'tuck':
+      return e.cards.length > 0 ? 'normal' : 'minor';
     default:
       return 'normal';
   }

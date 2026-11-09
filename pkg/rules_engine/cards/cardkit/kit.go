@@ -108,6 +108,7 @@ func LookMayBottom(d engine.DeckKind) engine.Effect {
 	}, engine.Question{
 		Text:    AskPutBottom,
 		Subject: func(c *engine.Ctx, _ []int) engine.ObjectID { return c.G.DeckTop(d, 1)[0] },
+		Peek:    true,
 		Options: func(c *engine.Ctx, _ []int) []engine.Msg {
 			top := c.G.DeckTop(d, 1)
 			if len(top) == 0 {

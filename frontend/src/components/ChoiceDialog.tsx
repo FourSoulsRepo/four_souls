@@ -1,7 +1,7 @@
 import { createContext, use, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode, type RefObject } from 'react';
 import { discardIntent, modeLines, orderIntent, outcomeLines, type Actions } from '../actions';
 import { claim } from '../animations';
-import type { Kind } from '../cards';
+import { deckKinds, type Kind } from '../cards';
 import { choiceRow, confirmFirst, dealDelays, dealPose, keptZone, pickToggle } from '../choice';
 import { feel } from '../feel';
 import { lookGroups, type Looked } from '../history';
@@ -24,17 +24,15 @@ interface Frame {
   // deck is the deck the cards are looked at in, if it is on screen.
   deck?: Kind | undefined;
   // fly sends the cards back to the deck after the pick, in this order
-  // of their elements: the first flies first (20.18).
-  fly: (order: Element[]) => void;
+  // of their elements: the first flies first (20.18). Those from place
+  // under on go under the deck (19.147).
+  fly: (order: Element[], under?: number) => void;
   // keep holds the kept card at its place, for its flight to the
   // player, and sends the rest back to the deck (20.22).
   keep: (kept: Element, rest: Element[]) => void;
 }
 
 const FrameContext = createContext<Frame>({ fly: () => undefined, keep: () => undefined });
-
-// deckKinds are the engine's decks (protocol Deck) as the board's piles.
-const deckKinds: (Kind | undefined)[] = ['treasure', 'loot', 'monster', undefined];
 
 // useLook is the deck the viewer looks at in the prompt waiting now
 // (20.18): the server says which deck, and how many cards.
@@ -349,7 +347,8 @@ function OptionCard({
         playSound('choicePick');
         const kept = e.currentTarget;
         const rest = [...(kept.closest('.choice-options')?.querySelectorAll('.choice-card') ?? [])].filter((el) => el !== kept);
-        frame.fly([kept, ...rest]);
+        // A look's pick stays on top; the rest go to the bottom (19.147).
+        frame.fly([kept, ...rest], 1);
         pick();
       }}
     >
@@ -401,7 +400,7 @@ function ChoiceFrame({
   useEntry(ref, board || (flown && waiting), entry, look, scale, step, shows > 0);
   const frame = useMemo<Frame>(() => ({
     deck: look,
-    fly: (order) => {
+    fly: (order, under) => {
       if (scale === 0 || !look || !deckBox(look)) {
         return;
       }
@@ -412,6 +411,7 @@ function ChoiceFrame({
         })),
         look,
         scale,
+        under,
       );
       setFlown(true);
     },
@@ -423,6 +423,7 @@ function ChoiceFrame({
       const box = (kept.querySelector('.deal-face .card') ?? kept.querySelector('.card') ?? kept).getBoundingClientRect();
       keepCard({ card, box, zone: keptZone(you), step });
       if (look && deckBox(look)) {
+        // The rest go to the bottom (19.147).
         flyBack(
           rest.map((el) => ({
             card: el.getAttribute('data-deal') ?? '',
@@ -430,6 +431,7 @@ function ChoiceFrame({
           })),
           look,
           scale,
+          0,
         );
       }
       setFlown(true);

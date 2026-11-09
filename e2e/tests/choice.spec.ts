@@ -4,7 +4,7 @@
 import type { Page } from '@playwright/test';
 import { expect, test } from './fixtures';
 import { startGame } from './game';
-import { cardName, tr } from './locale';
+import { cardName, tr, trRe } from './locale';
 import { saveAndContinue } from './saves';
 import { appURL } from './server';
 import { shot } from './shot';
@@ -367,3 +367,123 @@ for (const anim of ['on', 'off'] as const) {
     await expect(dialog.getByRole('button', { name: cardName('bomb') })).toBeVisible();
   });
 }
+
+// Tuck is one tuck effect a page showed (19.147): its deck, its tag,
+// where each card went, and the faces it showed.
+interface Tuck {
+  deck: string;
+  tag: string;
+  where: string[];
+  faces: string[];
+}
+
+// watchTucks keeps every tuck effect the page shows from now on, in
+// window.tucks; the effect lasts about 1.5 s.
+async function watchTucks(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const w = window as unknown as { tucks: Tuck[] };
+    w.tucks = [];
+    const seen = new WeakSet<Element>();
+    new MutationObserver(() => {
+      for (const el of document.querySelectorAll('.effect-tuck')) {
+        if (seen.has(el)) {
+          continue;
+        }
+        seen.add(el);
+        w.tucks.push({
+          deck: el.getAttribute('data-deck') ?? '',
+          tag: el.querySelector('.effect-tuck-tag')?.textContent ?? '',
+          where: [...el.querySelectorAll('[data-where]')].map((c) => c.getAttribute('data-where') ?? ''),
+          faces: [...el.querySelectorAll('[data-face]')].map((c) => c.getAttribute('data-face') ?? ''),
+        });
+      }
+    }).observe(document.body, { childList: true, subtree: true });
+  });
+}
+
+function tucks(page: Page): Promise<Tuck[]> {
+  return page.evaluate(() => (window as unknown as { tucks: Tuck[] }).tucks);
+}
+
+test('XII. The Hanged Man: others see each look; the board shows each card go on top or under (19.147)', async ({ browser }) => {
+  const who = names(['Gil', 'Hal']);
+  // Animations on: the tuck is the test.
+  const pages = await startGame(browser, who, { url: appURL() });
+  await activePage(pages, click);
+  await saveAndContinue(pages, who.join(', '), 'xii_the_hanged_man');
+  const active = await activePage(pages, click);
+  const other = pages.find((p) => p !== active);
+  if (!other) {
+    throw new Error('no other page');
+  }
+  await watchTucks(active);
+  await watchTucks(other);
+  const player = await nameOf(active);
+  const card = active.getByRole('group', { name: tr('table.your_hand') }).getByRole('button', { name: cardName('xii_the_hanged_man') });
+  await playLoot(active, card.first(), click);
+  await active.mouse.move(5, 5);
+  const dialog = active.getByRole('dialog', { name: tr('card.xii_the_hanged_man.put_this_card_on_the') });
+  await passUntil(pages, dialog);
+  // One question per deck: bottom, top, bottom. Others see one back
+  // over the deck each question is about.
+  const answers = [
+    { deck: 'treasure', bottom: true },
+    { deck: 'loot', bottom: false },
+    { deck: 'monster', bottom: true },
+  ];
+  for (const [i, a] of answers.entries()) {
+    const backs = other.locator(`[data-zone="deck-${a.deck}"]`).getByRole('img', { name: tr('deck.looking', { player, n: 1 }) });
+    await expect(backs.locator('.deck-look-back')).toHaveCount(1);
+    if (i === 0) {
+      await other.waitForTimeout(600);
+      await shot(other, '19.147-hanged-look-other');
+    }
+    await expect(dialog.locator('.choice-subject .card')).toBeVisible();
+    await dialog.getByRole('button', { name: trRe(a.bottom ? 'ask.put_on_bottom' : 'ask.keep_on_top') }).click();
+    await active.mouse.move(5, 5);
+    if (i < answers.length - 1) {
+      await expect(other.locator(`[data-zone="deck-${answers[i + 1]?.deck ?? ''}"] .deck-look-back`)).toHaveCount(1);
+    }
+  }
+  // Mid-way: the treasure card slides beside its deck on both pages.
+  await expect(other.locator('.effect-tuck[data-deck="treasure"] .effect-tuck-tag')).toBeVisible();
+  await other.waitForTimeout(300);
+  await shot(other, '19.147-hanged-bottom-other');
+  await active.waitForTimeout(50);
+  await shot(active, '19.147-hanged-bottom-own');
+  const want = answers.map((a) => ({ deck: a.deck, tag: tr(a.bottom ? 'effect.tuck_bottom' : 'effect.tuck_top'), where: [a.bottom ? 'bottom' : 'top'] }));
+  for (const page of [active, other]) {
+    await expect.poll(async () => (await tucks(page)).map(({ deck, tag, where }) => ({ deck, tag, where })), { timeout: 15_000 }).toEqual(want);
+  }
+  // Only the chooser saw the faces.
+  expect((await tucks(active)).every((t) => t.faces.length === 1)).toBe(true);
+  expect((await tucks(other)).every((t) => t.faces.length === 0)).toBe(true);
+  await expect(other.locator('.deck-look-back')).toHaveCount(0, { timeout: 5000 });
+});
+
+test("The Moon: others see the rest go under the deck; the chooser's flight tucks them (19.147)", async ({ browser }) => {
+  const who = names(['Ivo', 'Jem']);
+  const pages = await startGame(browser, who, { url: appURL() });
+  const { active, other } = await playMoon(pages, who, async (a, o) => {
+    await watchTucks(a);
+    await watchTucks(o);
+  });
+  const dialog = active.getByRole('dialog', { name: tr('ask.one_on_top') });
+  await expect(active.locator('.choice.dealing')).toHaveCount(0, { timeout: 5000 });
+  await expect(other.locator('[data-zone="deck-loot"] .deck-look-back')).toHaveCount(5);
+  await dialog.locator('.choice-option > button.choice-card').nth(2).click();
+  await active.mouse.move(5, 5);
+  // The chooser's 4 other cards fly beside the deck and under it.
+  await expect(active.getByTestId('choice-back')).toBeVisible();
+  await active.waitForTimeout(450);
+  await shot(active, '19.147-moon-own-under');
+  await expect(other.locator('.effect-tuck[data-deck="loot"] .effect-tuck-tag')).toBeVisible();
+  await other.waitForTimeout(450);
+  await shot(other, '19.147-moon-other-under');
+  const tag = tr('effect.tuck_bottom_n', { n: 4 });
+  await expect.poll(async () => (await tucks(other)).map(({ deck, tag, where }) => ({ deck, tag, where })), { timeout: 10_000 }).toEqual([{ deck: 'loot', tag, where: ['bottom', 'bottom', 'bottom', 'bottom'] }]);
+  // The chooser's window flew the cards already: the tag only.
+  await expect.poll(async () => (await tucks(active)).map(({ deck, tag, where }) => ({ deck, tag, where })), { timeout: 10_000 }).toEqual([{ deck: 'loot', tag, where: [] }]);
+  // The kept card's back sinks into the deck as before.
+  await expect(other.locator('.deck-look-back')).toHaveCount(0, { timeout: 5000 });
+});

@@ -33,14 +33,13 @@ var sackHead = engine.CardDef{
 					return
 				}
 				c.G.LookAt(c.Controller, top...)
-				if a[1] == 1 {
-					c.G.DeckToBottom(d, top[0])
-				}
+				c.G.KeepOrBottom(c.Controller, d, top[0], a[1] == 1)
 			}, engine.DeckQuestion(cardkit.AskLookTop), engine.Question{
 				Text: sackHeadPutItOn,
 				Subject: func(c *engine.Ctx, a []int) engine.ObjectID {
 					return c.G.DeckTop(c.Deck(a[0]), 1)[0]
 				},
+				Peek: true,
 				Options: func(c *engine.Ctx, a []int) []engine.Msg {
 					top := c.G.DeckTop(c.Deck(a[0]), 1)
 					if len(top) == 0 {

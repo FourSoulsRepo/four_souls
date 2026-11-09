@@ -877,6 +877,23 @@ Each sub-step of step 20 takes the part it needs.
     23. Order (12.15): choice size up to 6 cards, else table size.
     24. Speed "off" and reduced motion: no deal, growth, flight or rise.
     25. Discards grow in and take the row sizes too.
+14. Top or bottom (19.147, owner's picks: card motion and a tag, look-5 too).
+    1. Not in the reference; Dredge has no bottom.
+    2. Before: only the history told if a looked-at card went under.
+    3. Engine: `Question.Peek` shows others a one-card look (Cain's Eye).
+    4. Sack Head and XII. The Hanged Man now use `KeepOrBottom`: a `top_choice`.
+    5. `ToBottomRandom` emits one public `deck_bottom` for its deck cards.
+    6. Kept on top: the card drops onto the pile, 0.5 s, expo-out.
+    7. Bottom: it slides out beside the pile, 0.35 s, expo-out.
+    8. Then back under it, 0.4 s, ease-in-out; the pile hides it as it goes.
+    9. It slides toward the middle of the screen, so it stays on screen.
+    10. A tag on the pile, "Top" or "Bottom ×N", fades over 1.5 s.
+    11. Others' cards start at their backs over the deck (13.20).
+    12. The chooser's own start in a small fan above the pile, face up.
+    13. After The Moon's or Eden's pick the window sends the rest under.
+    14. The chooser then sees the tag only; the cards already moved.
+    15. At most 5 cards move; the tag counts them all.
+    16. Reduced motion: the tag only; speed "off": nothing.
 
 ### Playing from the hand
 
