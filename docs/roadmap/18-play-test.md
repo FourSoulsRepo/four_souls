@@ -573,4 +573,4 @@ Ideas: B-04, B-05.
    2. `GameMenu` has Settings; the form opens in the `overlay` layer.
    3. e2e: `the game menu changes the settings at the table` (`settings.spec.ts`).
    4. Gates: `make lint`, `make frontend`, `make e2e` (514 passed, 6 skipped).
-   5. Waits for the **owner**'s check.
+   5. **Owner** marks it solved (2026-11-09).
