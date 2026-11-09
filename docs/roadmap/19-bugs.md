@@ -4643,7 +4643,7 @@ Totals by system (144 items):
 7. Owner notes (2026-11-09)
    1. Owner marks 19.148 solved.
 
-### [ ] 19.149 LAN Join shows the host's game list instead of joining
+### [x] 19.149 LAN Join shows the host's game list instead of joining
 
 1. Goal: Join on the LAN screen sits the player at the host's game.
 2. Report (owner, 2026-11-09)
@@ -4693,3 +4693,5 @@ Totals by system (144 items):
    19. So the N-13 e2e test now gives the fake LAN the host's real id.
 7. Result (2026-11-09)
    1. `make lint` and `make frontend e2e` pass (exit 0).
+8. Owner notes (2026-11-09)
+   1. Owner marks 19.149 solved.
