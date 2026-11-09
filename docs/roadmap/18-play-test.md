@@ -547,3 +547,4 @@ Ideas: B-04, B-05.
    5. The sky behind the menus keeps its size: a bigger tile would blur.
    6. Gates: `make lint`, `make frontend`, `make e2e` (512 passed, 6 skipped).
    7. `aim.spec.ts:406` failed in both screenshot runs, before and after; it passed in `make e2e`.
+   8. **Owner** marks it solved (2026-11-09).
