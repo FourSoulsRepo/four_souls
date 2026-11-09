@@ -275,14 +275,27 @@ func DamageAPlayer(n int, others bool) engine.Effect {
 }
 
 // RechargeAnItem is "you may recharge an item", picked on resolution; the
-// last option declines.
+// last option declines. Only spent items with a ↷ ability are offered
+// (19.145).
 var RechargeAnItem = engine.Ask(func(c *engine.Ctx, a []int) {
-	if ids := AllItems(c.G); a[0] >= 0 && a[0] < len(ids) {
+	if ids := SpentActiveItems(c.G); a[0] >= 0 && a[0] < len(ids) {
 		c.G.Recharge(ids[a[0]])
 	}
 }, engine.Question{Text: AskRechargeItem, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
-	return append(c.G.Labels(AllItems(c.G)), engine.AskNone.Msg())
+	return append(c.G.Labels(SpentActiveItems(c.G)), engine.AskNone.Msg())
 }})
+
+// SpentActiveItems lists every uncharged item with a ↷ ability that
+// players control, in seat order: the items a recharge can change.
+func SpentActiveItems(g *engine.Game) []engine.ObjectID {
+	var out []engine.ObjectID
+	for _, id := range AllItems(g) {
+		if !g.Object(id).Charged && g.Def(id).Tap {
+			out = append(out, id)
+		}
+	}
+	return out
+}
 
 // AllItems lists every item players control, in seat order.
 func AllItems(g *engine.Game) []engine.ObjectID {

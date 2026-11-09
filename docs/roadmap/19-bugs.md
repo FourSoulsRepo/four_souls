@@ -4493,3 +4493,28 @@ Totals by system (141 items):
    4. Test: `TestSoulOfEnvyOnce`; it asked twice before the fix.
 6. Owner notes (2026-11-09)
    1. Owner marks 19.144 solved.
+
+### [ ] 19.145 Holy Mom's Eye offers passive items to recharge
+
+1. Goal: "you may recharge an item" offers only spent items with a ↷ ability.
+2. Report (owner, 2026-11-09)
+   1. Holy Mom's Eye asks to recharge passive items.
+   2. 19.95 fixed this for other recharge cards.
+3. Cause
+   1. 19.95 filtered only `TargetItem` cards (Lil Battery, Battery Bum, The Battery).
+   2. `cardkit.RechargeAnItem` asks on resolution from `AllItems`.
+   3. `AllItems` takes every item: passive, paid, and already charged.
+   4. Same helper: Charged Baby, The Habit, Charged Penny, AAA Battery, The Left Hand.
+4. Tasks:
+   1. [x] `RechargeAnItem` offers only spent items with a ↷ ability.
+   2. [x] Go test: Holy Mom's Eye offers no passive or charged item.
+   3. [x] Go test: one more card on the same helper.
+5. Fix (2026-11-09)
+   1. `cardkit.SpentActiveItems`: uncharged items with `CardDef.Tap`.
+   2. `RechargeAnItem` asks from it; all six cards get the fix.
+   3. Tests `TestHolyMomsEyeOffersOnlySpentActiveItems`, `TestChargedBabyOffersOnlySpentActiveItems`.
+   4. Both failed before the fix.
+   5. Engine stays 0.5.2: not released yet (as 19.144).
+   6. No screen change: no screenshots.
+6. Result (2026-11-09)
+   1. `make lint` and `make test` pass (exit 0).
