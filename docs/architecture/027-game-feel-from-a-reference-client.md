@@ -1,6 +1,6 @@
 # 27. Game feel: lessons from a reference client
 
-* **Status:** Proposed
+* **Status:** Accepted
 * **Date:** 2026-11-06
 * **Authors:** @HardDie
 

@@ -263,7 +263,7 @@ Owner notes (2026-11-06):
 3. Done when:
    1. e2e: no timer at 25 s left; shown at 15 s.
 
-### [ ] 20.16 Step review
+### [x] 20.16 Step review
 
 1. Goal: the owner plays and compares with the reference.
 2. Tasks:
@@ -272,6 +272,11 @@ Owner notes (2026-11-06):
    3. ADR 027 becomes Accepted for what was built.
 3. Done when:
    1. Owner approval.
+4. Owner notes (2026-11-09)
+   1. Step 20 marked solved by the owner.
+   2. No video; the owner judges the feel in play tests.
+   3. Tuned numbers are in each "Built in 20.N" item of ADR 027.
+   4. Open bugs 19.132, 19.140, 19.143 are fixed during play tests.
 
 ### [x] 20.17 Sounds from the reference client
 
