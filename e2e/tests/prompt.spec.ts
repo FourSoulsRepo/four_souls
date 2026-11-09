@@ -264,11 +264,9 @@ test('the board glows for the asked player; every seat marks them (15.95)', asyn
 // takes no screenshots, so the plain run's stay.
 async function attackActivity(browser: Browser, names: [string, string], item?: string) {
   const snap = item === undefined ? shot : () => Promise.resolve();
-  // Pride: its trigger goes above the attack roll, so the active
-  // player's line names Pride's ability, not the attack it checks. The
-  // item run sets its monsters up instead.
-  const bans = item === undefined ? ['pride'] : [];
-  const pages = await startGame(browser, names, { url: fast(), bans });
+  // Pride's trigger resolves before the attack roll (R-ATK-25, 19.151):
+  // it no longer hides the attack line, so no ban.
+  const pages = await startGame(browser, names, { url: fast() });
   await activePage(pages, click);
   if (item !== undefined) {
     // Every slot gets a plain monster with 4 HP: Bob's Brain's 1 damage

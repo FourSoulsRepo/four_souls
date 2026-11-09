@@ -4758,9 +4758,28 @@ Totals by system (146 items):
    3. r: Angelic Intervention (deck attack), Battle Royale.
    4. Not affected: Mom's Eye Shadow (a static); `attack_declared` cards (before the target).
 6. Tasks:
-   1. [ ] Engine: triggers of the target pick resolve before the first attack roll.
-   2. [ ] No such trigger: the roll comes at once, as now.
-   3. [ ] Go tests: Pride, Rag Mega, Angelic Intervention.
-   4. [ ] e2e: the 19.113 Pride test checks the new order.
-   5. [ ] e2e: Undo tests that expect the target pick ban the cards that ask.
-   6. [ ] Docs: rule R-ATK-25, Q-29, UC-13, wiki Frontend-tests.
+   1. [x] Engine: triggers of the target pick resolve before the first attack roll.
+   2. [x] No such trigger: the roll comes at once, as now.
+   3. [x] Go tests: Pride, Rag Mega, Angelic Intervention.
+   4. [x] e2e: the 19.113 Pride test checks the new order.
+   5. [x] e2e: Undo tests that expect the target pick ban the cards that ask.
+   6. [x] Docs: rule R-ATK-25, Q-29, UC-13, wiki Frontend-tests.
+7. Fix (2026-11-10)
+   1. `startAttack`: with triggers pending after `attack_target`, it opens a window.
+   2. They go on the stack and resolve; then `continueAttack` puts the first roll.
+   3. No trigger: the first roll comes at once, as before.
+   4. One place for every card in 5; no per-card change.
+   5. A cancel (Angelic Intervention) or a death now comes before any roll.
+   6. Helpers (Gus, Sisters Vis) join as before: they roll after the first roll.
+   7. Go: `TestPrideResolvesBeforeTheAttackRoll`, `TestAttackWithNoTargetTriggerRollsAtOnce` (b2).
+   8. Go: `TestRagMegaResolvesBeforeTheAttackRoll`, `TestDogmaResolvesBeforeTheAttackRoll` (r).
+   9. Go: `TestAngelicInterventionCancelsBeforeAnyRoll` (r).
+   10. The four order tests failed before the fix.
+   11. `enginetest`: `FirstAttackRoll`, `ResolvedAt`.
+   12. e2e: the 19.113 test now wants only the attack roll on the stack.
+   13. e2e: Godmode and Soft vote Undo tests ban Pride: its discard is the latest move.
+   14. e2e: `prompt.spec.ts` drops its Pride ban; its reason is gone.
+   15. Rule R-ATK-25; Q-29 (Community); UC-13 5n; wiki Frontend-tests.
+   16. Engine stays 0.5.3: not released yet (as 19.150).
+   17. No replay cutoff: only games with such an attack differ (as 19.150).
+   18. No screen change beyond the order: no screenshots.

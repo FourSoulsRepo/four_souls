@@ -214,9 +214,9 @@ export function tablePicks(page: Page): Locator {
 // throw is for the attack roll, the roll is on the stack not yet thrown,
 // the attack has its target, and the Throw button shows. Another roll
 // does not count: Bob's Brain rolls when the attack is declared, before
-// the target (19.85). The roll need not be on top: a die is thrown as
-// it goes on the stack (R-DICE-02), so a trigger of the target (Pride)
-// may already wait above it (19.113).
+// the target (19.85). A trigger of the target (Pride) resolves before
+// the first roll goes on the stack (R-ATK-25, 19.151); `settle` answers
+// its prompts on the way. The check does not need the roll on top.
 export async function attackRollWaits(page: Page): Promise<boolean> {
   const waits = await page.evaluate(() => {
     interface S {

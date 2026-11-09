@@ -354,6 +354,21 @@ On 2026-10-09 the owner parked every open decision for later.
 4. Status: **Owner** (2026-10-29): the owner has not decided. Test: `TestGoldOnBumFriendAndTechX`.
 5. Basis: **House**: no ruling found.
 
+### Q-29 The first attack roll and a target's trigger
+
+1. Question: is the first attack roll thrown before "when an attack is declared on this" resolves?
+   1. Cards: Pride, Rag Mega, Gus, Sisters Vis, Dogma, Angelic Intervention.
+2. Sources:
+   1. S-OFF: target triggers come with the declaration; the attack then starts.
+   2. S-OFF names no moment for the first roll.
+   3. S-RED: the trigger enters the stack; then combat starts.
+   4. S-YUG (a purchase): a trigger on the target passes priority; the purchase ends after it.
+3. Options:
+   1. (a) The trigger resolves first; then the first roll; the engine does this now.
+   2. (b) The die is thrown at once, under the trigger (before 19.151).
+4. Status: **Owner** (2026-11-10): (a). Tests: `TestPrideResolvesBeforeTheAttackRoll` and three in `cards/r`.
+5. Basis: **Community**: S-RED and an S-YUG purchase ruling; no official one.
+
 ## Old rulings re-checked (R-07)
 
 | # | Ruling (Ed's Notes, 2018–2019) | Check against current rules and V2 text | Status |
@@ -521,3 +536,4 @@ Every row of "Card rulings from Discord (S-DIS)" is Community too.
 | Q-26 | Godhead, I. The Magician, Libra, PHD, … | A roll set to its own value is not changed | House |
 | Q-27 | Golden Trinket, Bum-Bo! | Gained gain-¢ replacement | House (owner open) |
 | Q-28 | Golden Trinket, Bum Friend, Tech X | Two gained ↷ on one item in a turn | House (owner open) |
+| Q-29 | Pride, Rag Mega, Gus, Sisters Vis, Dogma, … | A target's trigger resolves before the first attack roll | Community |

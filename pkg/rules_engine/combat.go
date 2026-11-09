@@ -433,6 +433,12 @@ func (g *Game) startAttack(target ObjectID) {
 		g.Turn.MustAttack = 0 // the forced attack is made (Monster Manual, Krampus)
 	}
 	g.emit(Event{Kind: EvAttackTarget, Player: g.Turn.Active, Object: target, Card: g.Object(target).Card})
+	if len(g.PendingTriggers) > 0 {
+		// "When an attack is declared on this" (Pride) resolves first; the
+		// first roll comes when the stack is empty again (R-ATK-25, 19.151).
+		g.openWindow(g.Turn.Active)
+		return
+	}
 	g.attackRoll()
 }
 

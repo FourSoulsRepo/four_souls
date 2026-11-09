@@ -199,6 +199,11 @@
 * **2q. Speed Off or reduced motion (20.20):** no growth, flight, shrink or slide.
   * A played card still waits where it was let go for the answer.
 * **2r. No keys (20.20):** no key picks up or plays a hand card.
+* **5n. A monster that answers the attack (19.151):** e.g. Pride, Rag Mega.
+  * Its "when an attack is declared on this" goes on the stack first.
+  * Players answer it and may respond; it resolves.
+  * Only then the attack roll waits for the player's throw (R-ATK-25).
+  * Other monsters: the throw waits right after the pick.
 
 ## Postconditions
 

@@ -223,6 +223,28 @@ func Has(events []engine.Event, kind engine.EventKind, p engine.PlayerID) bool {
 	return false
 }
 
+// FirstAttackRoll is the index of the first attack roll put on the
+// stack in events, or -1 (19.151).
+func FirstAttackRoll(events []engine.Event) int {
+	for i, e := range events {
+		if e.Kind == engine.EvStackAdded && e.Label.Key.String() == "event.attack_roll" {
+			return i
+		}
+	}
+	return -1
+}
+
+// ResolvedAt is the index of the event where the stack item of card
+// resolved, or -1.
+func ResolvedAt(events []engine.Event, card engine.CardRef) int {
+	for i, e := range events {
+		if e.Kind == engine.EvStackResolved && e.Card == card {
+			return i
+		}
+	}
+	return -1
+}
+
 // Pass passes priority for p without settling, e.g. so the next player
 // may act on the active player's turn.
 func (tb *Table) Pass(p int) {
