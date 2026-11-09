@@ -729,9 +729,23 @@ func (e preventDeathEffect) apply(c *Ctx) {
 // ("another item").
 func NotThis(_ *Game, self ObjectID, c Chosen) bool { return c.Object != self }
 
-// ActiveItem is a target filter: an item with a ↷ ability. A passive or
-// paid item has none, so "recharge an item" skips it (19.95).
-func ActiveItem(g *Game, _ ObjectID, c Chosen) bool { return g.def(c.Object).Tap }
+// Rechargeable is the one rule for "recharge an item" pickers: a
+// deactivated item with a ↷ ability. A passive or paid item has nothing
+// to recharge (19.95, 19.146).
+func Rechargeable(g *Game, id ObjectID) bool {
+	o := g.Object(id)
+	return o.Role == RoleItem && !o.Charged && g.def(id).Tap
+}
+
+// Deactivatable is the one rule for "deactivate an item" pickers: a
+// charged item with a ↷ ability (Q-25, 19.146).
+func Deactivatable(g *Game, id ObjectID) bool {
+	o := g.Object(id)
+	return o.Role == RoleItem && o.Charged && g.def(id).Tap
+}
+
+// RechargeableItem is a target filter: a Rechargeable item.
+func RechargeableItem(g *Game, _ ObjectID, c Chosen) bool { return Rechargeable(g, c.Object) }
 
 // CapNextDamage reduces the next instance of damage the target takes
 // this turn to at most n: "is reduced to 1".

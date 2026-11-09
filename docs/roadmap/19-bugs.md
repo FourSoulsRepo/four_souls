@@ -4518,3 +4518,39 @@ Totals by system (141 items):
    6. No screen change: no screenshots.
 6. Result (2026-11-09)
    1. `make lint` and `make test` pass (exit 0).
+
+### [ ] 19.146 Recharge and deactivate pickers use different item rules
+
+1. Goal: one rule for every card that picks an item to recharge or deactivate.
+   1. Recharge offers only deactivated items with a ↷ ability.
+   2. Deactivate offers only charged items with a ↷ ability.
+2. Report (owner, 2026-11-09)
+   1. 19.145 fixed only `RechargeAnItem`; other cards kept their own rule.
+   2. The owner wants the agreed rule game-wide.
+3. Cause (every one-item picker, all sets)
+   1. Lil Battery, Battery Bum, The Battery: `ActiveItem`, ↷ only; charged items offered.
+   2. Charmed Dip (r), 9 Volt (g2), Car Battery (r): spent only; no ↷ check.
+   3. Hourglass (fsp2): own `chargedItems`, already right.
+   4. Each card set had its own copy of the rule.
+   5. "Recharge each item" effects ask nothing; out of scope.
+4. Tasks:
+   1. [x] Engine: `Rechargeable` and `Deactivatable`, the one rule.
+   2. [x] Engine: target filter `RechargeableItem` replaces `ActiveItem`.
+   3. [x] Every picker above uses them.
+   4. [x] Go tests: each picker leaves out passive and wrong-state items.
+5. Fix (2026-11-09)
+   1. `ability.go`: `Rechargeable`, `Deactivatable`, `RechargeableItem`.
+   2. `cardkit`: `RechargeableItems`, `DeactivatableItems` replace per-set copies.
+   3. Removed: r `deactivatedItems`, g2 `yourDeactivated`, fsp2 `chargedItems`.
+   4. Car Battery's own list uses `engine.Rechargeable`.
+   5. Lil Battery with no spent ↷ item has no target (R-ABIL-06).
+   6. Battery Bum then refuses too: no 4¢ spent on a charged item.
+   7. Tests (new): `TestLilBatteryNeedsASpentItem`, `TestCharmedDipOffersOnlyRechargeableItems`.
+   8. Tests (new): `Test9VoltOffersOnlyRechargeableItems`, `TestCarBatteryOffersOnlyRechargeableItems`.
+   9. Tests (extended): Lil Battery, Battery Bum, The Battery, Hourglass.
+   10. Each old rule, put back, fails at least one test.
+   11. `enginetest.UntilChoose`: shared by the new tests.
+   12. CLAUDE.md 5.24: fix game-wide, never one card.
+   13. Wiki: `Effect-blocks.md` names the new filter.
+   14. Engine stays 0.5.2: not released yet (as 19.144).
+   15. No screen change: no screenshots.

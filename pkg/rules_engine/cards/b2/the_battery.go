@@ -15,13 +15,14 @@ var theBattery = engine.CardDef{
 			Kind:    engine.Activated,
 			Text:    "↷: Recharge another item.",
 			Costs:   []engine.Cost{engine.Tap()},
-			Targets: []engine.TargetSpec{engine.ChooseWhere(engine.TargetItem, otherActiveItem)},
+			Targets: []engine.TargetSpec{engine.ChooseWhere(engine.TargetItem, otherRechargeableItem)},
 			Effects: []engine.Effect{engine.RechargeTarget(0)},
 		},
 	},
 }
 
-// otherActiveItem: "another item" with a ↷ ability (19.95).
-func otherActiveItem(g *engine.Game, self engine.ObjectID, c engine.Chosen) bool {
-	return engine.NotThis(g, self, c) && engine.ActiveItem(g, self, c)
+// otherRechargeableItem: "another item", deactivated, with a ↷ ability
+// (19.95, 19.146).
+func otherRechargeableItem(g *engine.Game, self engine.ObjectID, c engine.Chosen) bool {
+	return engine.NotThis(g, self, c) && engine.RechargeableItem(g, self, c)
 }

@@ -136,6 +136,14 @@
        1. Merge the step branch into `main` first, with `--no-ff`.
        2. Only then tag `vX.Y.Z` on `main` and push the tag.
        3. Never tag a step branch or any other branch.
+   24. Fix game-wide, never one card (owner, 2026-11-09).
+       1. A bug in one card: find every card with a similar effect.
+       2. Search all sets, not only the reported card's set.
+       3. Fix them all in the same change.
+       4. An agreed rule (e.g. recharge only spent ↷ items) applies to every card.
+       5. Put such a rule in one shared place in the engine.
+       6. Cards use it; no per-set copies of the rule.
+       7. The bug entry lists every card and helper checked.
 6. Licenses
    1. Code is MIT (`LICENSE`).
    2. `NOTICE` lists every third-party item and its license.

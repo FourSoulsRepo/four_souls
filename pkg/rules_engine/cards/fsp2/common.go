@@ -366,12 +366,12 @@ func rerollable(g *engine.Game, p engine.PlayerID) []engine.ObjectID {
 // deactivateAnItem: "you may deactivate an item". Only items with a ↷
 // ability are offered; a passive item has nothing to deactivate (Q-25).
 var deactivateAnItem = engine.Ask(func(c *engine.Ctx, a []int) {
-	if ids := chargedItems(c.G); a[0] >= 0 && a[0] < len(ids) {
+	if ids := cardkit.DeactivatableItems(c.G, engine.NoPlayer); a[0] >= 0 && a[0] < len(ids) {
 		c.G.Object(ids[a[0]]).Charged = false
 	}
 }, engine.Question{Text: askDeactivateWhichItem, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
 	var out []engine.Msg
-	for _, id := range chargedItems(c.G) {
+	for _, id := range cardkit.DeactivatableItems(c.G, engine.NoPlayer) {
 		out = append(out, engine.CardOption(c.G.Object(id).Card))
 	}
 	if len(out) == 0 {
@@ -379,16 +379,6 @@ var deactivateAnItem = engine.Ask(func(c *engine.Ctx, a []int) {
 	}
 	return append(out, engine.AskNone.Msg())
 }})
-
-func chargedItems(g *engine.Game) []engine.ObjectID {
-	var out []engine.ObjectID
-	for _, id := range itemsOf(g, engine.NoPlayer) {
-		if g.Object(id).Charged && g.Def(id).Tap {
-			out = append(out, id)
-		}
-	}
-	return out
-}
 
 // storeRoll keeps the roll's result for Telepathy for Dummies.
 func storeRoll() engine.RollTable {

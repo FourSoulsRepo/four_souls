@@ -1,6 +1,7 @@
 package b2
 
 import (
+	"errors"
 	"slices"
 	"testing"
 
@@ -21,7 +22,7 @@ func TestLilBattery(t *testing.T) {
 
 func TestLilBatteryOffersOnlyActiveItems(t *testing.T) {
 	tb := enginetest.NewSetup(t, engine.SituationSetup{Players: []engine.SituationPlayer{
-		{Character: "isaac", Items: items("the_d6", "breakfast", "battery_bum"), Hand: []engine.CardRef{"lil_battery"}},
+		{Character: "isaac", Items: items("the_d6", "jawbone", "breakfast", "battery_bum"), Deactivated: items("the_d6"), Hand: []engine.CardRef{"lil_battery"}},
 		seat("cain"),
 	}}, Set)
 	// Apply, not Play: Play would fail on the open target prompt.
@@ -30,11 +31,28 @@ func TestLilBatteryOffersOnlyActiveItems(t *testing.T) {
 	}
 	got := tb.Options()
 	if !slices.Contains(got, "the_d6") {
-		t.Errorf("options = %v: the active D6 is not offered", got)
+		t.Errorf("options = %v: the spent D6 is not offered", got)
+	}
+	if slices.Contains(got, "jawbone") {
+		t.Errorf("options = %v: the charged Jawbone is offered (19.146)", got)
 	}
 	for _, card := range []string{"breakfast", "battery_bum"} {
 		if slices.Contains(got, card) {
 			t.Errorf("options = %v: %s is offered, but it has no ↷ ability", got, card)
 		}
+	}
+}
+
+// With no spent active item there is nothing to recharge: Lil Battery
+// has no target (19.146).
+func TestLilBatteryNeedsASpentItem(t *testing.T) {
+	tb := enginetest.NewSetup(t, engine.SituationSetup{Players: []engine.SituationPlayer{
+		{Character: "isaac", Items: items("the_d6"), Hand: []engine.CardRef{"lil_battery"}},
+		seat("cain"),
+	}}, Set)
+	_, err := tb.G.Apply(engine.Intent{Player: 0, Kind: engine.IntentPlayLoot, Objects: []engine.ObjectID{tb.Find(0, "lil_battery")}})
+	var re *engine.RuleError
+	if !errors.As(err, &re) || re.Rule != "R-ABIL-06" {
+		t.Errorf("playing it with only a charged D6: %v, want R-ABIL-06", err)
 	}
 }

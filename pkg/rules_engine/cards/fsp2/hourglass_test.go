@@ -31,4 +31,7 @@ func TestHourglassSkipsPassiveItems(t *testing.T) {
 			t.Errorf("options = %v: passive %s is offered", got, card)
 		}
 	}
+	if slices.Contains(got, "mystery_sack") {
+		t.Errorf("options = %v: the spent sack is offered (19.146)", got)
+	}
 }

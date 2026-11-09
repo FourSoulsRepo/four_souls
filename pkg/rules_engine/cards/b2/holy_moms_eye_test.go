@@ -5,7 +5,6 @@ import (
 	"testing"
 
 	engine "github.com/FourSoulsRepo/rules_engine"
-	"github.com/FourSoulsRepo/rules_engine/enginetest"
 )
 
 func TestHolyMomsEye(t *testing.T) {
@@ -26,7 +25,7 @@ func TestHolyMomsEyeOffersOnlySpentActiveItems(t *testing.T) {
 	if _, err := tb.G.Apply(engine.Intent{Player: 0, Kind: engine.IntentActivate, Objects: []engine.ObjectID{tb.Find(0, "mystery_sack")}}); err != nil {
 		t.Fatal(err)
 	}
-	untilChoose(tb)
+	tb.UntilChoose()
 	want := []string{"mystery_sack", "jawbone", "ask.none"}
 	if got := tb.Options(); !slices.Equal(got, want) {
 		t.Errorf("options = %v, want %v", got, want)
@@ -41,26 +40,9 @@ func TestChargedBabyOffersOnlySpentActiveItems(t *testing.T) {
 	if _, err := tb.G.Apply(engine.Intent{Player: 0, Kind: engine.IntentActivate, Objects: []engine.ObjectID{tb.Find(0, "mystery_sack")}}); err != nil {
 		t.Fatal(err)
 	}
-	untilChoose(tb)
+	tb.UntilChoose()
 	want := []string{"mystery_sack", "ask.none"}
 	if got := tb.Options(); !slices.Equal(got, want) {
 		t.Errorf("options = %v, want %v", got, want)
 	}
-}
-
-// untilChoose throws and passes until a choose prompt opens.
-func untilChoose(tb *enginetest.Table) {
-	tb.T.Helper()
-	for range 100 {
-		tb.ThrowPending()
-		w := tb.G.Prompt()
-		if w.Kind == engine.PromptChoose {
-			return
-		}
-		if len(tb.G.Stack) == 0 {
-			tb.T.Fatalf("the stack emptied with no question, prompt %+v", w)
-		}
-		tb.Pass(int(w.Player))
-	}
-	tb.T.Fatal("untilChoose: no question opened")
 }

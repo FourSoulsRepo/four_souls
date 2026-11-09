@@ -182,6 +182,24 @@ func (tb *Table) option(_ engine.Prompt, label string) int {
 	return i
 }
 
+// UntilChoose throws and passes until a choose prompt opens; it fails
+// if the stack empties with no question.
+func (tb *Table) UntilChoose() {
+	tb.T.Helper()
+	for range 100 {
+		tb.ThrowPending()
+		w := tb.G.Prompt()
+		if w.Kind == engine.PromptChoose {
+			return
+		}
+		if len(tb.G.Stack) == 0 {
+			tb.T.Fatalf("the stack emptied with no question, prompt %+v", w)
+		}
+		tb.Pass(int(w.Player))
+	}
+	tb.T.Fatal("UntilChoose: no question opened")
+}
+
 // Options returns the labels of the open choose prompt.
 func (tb *Table) Options() []string {
 	return tb.G.PlainOptions()
