@@ -34,6 +34,15 @@
 * **6a. Someone plays Eden:** her choice comes before the roll, at setup.
   1. The roll waits until every start-of-game choice is made (R-SETUP-09).
   2. The panel shows the roll only after her choice.
+  3. Meanwhile the badge says "Before turn 1 · Start of game" (19.142).
+  4. With Cain at the table she still chooses first; then Cain starts.
+  5. Several Edens choose at the same time, each among their own cards (20.22).
+  6. The roll waits until the last of them has chosen.
+  7. Her choice is a screen of its own: "Starting item", "Eden keeps one".
+  8. Her three cards are dealt from the treasure deck.
+  9. A click picks a card; a second click unpicks it.
+  10. Confirm sends the pick; the card flies to her items.
+  11. The others see "Bo is choosing" low on the board.
 * **Reconnect during the roll:** the panel shows the dice of this round (UC-07).
 
 ## Postconditions

@@ -75,3 +75,36 @@ func TestPurchaseFailsWithoutMoney(t *testing.T) {
 		t.Error("after a failed purchase the action phase goes on")
 	}
 }
+
+// The purchase prompt sends each option's price, so the cents counter
+// can preview it (20.11): a shop item with its discounts, the deck top
+// at the base price.
+func TestPurchaseOptionsCarryTheirPrice(t *testing.T) {
+	g := newAbilityGame(t)
+	a := g.Turn.Active
+	giveItem(g, a, "sale")
+	declarePurchase(t, g)
+	opts := g.View(Viewer{Kind: ViewPlayer, Player: a}).Options
+	if len(opts) == 0 {
+		t.Fatal("no options")
+	}
+	for i, o := range opts {
+		want := 5
+		if o.Deck {
+			want = basePrice
+		}
+		if o.Price == nil || *o.Price != want {
+			t.Errorf("option %d (deck %v): price %v, want %d", i, o.Deck, o.Price, want)
+		}
+	}
+	if last := opts[len(opts)-1]; !last.Deck {
+		t.Error("the last option is the treasure deck")
+	}
+	g.Players[a].Cents = 5
+	if _, err := g.Apply(Intent{Player: a, Kind: IntentChoose, Choice: 0}); err != nil {
+		t.Fatal(err)
+	}
+	if g.Players[a].Cents != 0 {
+		t.Errorf("cents %d; the purchase paid the shown price", g.Players[a].Cents)
+	}
+}

@@ -228,3 +228,57 @@ test('the language follows the OS until one is picked', async ({ browser }) => {
     await expect(page.getByRole('combobox', { name: tr('settings.language') })).toHaveValue(want ?? '');
   }
 });
+
+// Interface scale (ST-10, 18.18): the root font size, so every rem in
+// the window grows with it; it survives a restart.
+test('the interface scale applies at once and survives a restart', async ({ page }) => {
+  await page.goto('/?fake&nosplash');
+  await page.getByRole('button', { name: tr('menu.settings') }).click();
+  const save = page.getByRole('button', { name: tr('settings.save') });
+  const before = await save.boundingBox();
+  const scale = page.getByLabel(tr('settings.scale'));
+  await expect(scale).toHaveValue('100');
+  await scale.fill('150');
+  await save.click();
+  await expect(page.getByRole('status')).toHaveText(tr('settings.saved'));
+  await expect(page.locator('html')).toHaveCSS('font-size', '24px');
+  const after = await save.boundingBox();
+  expect(after?.height ?? 0).toBeGreaterThan((before?.height ?? 0) * 1.4);
+  await page.reload();
+  await expect(page.locator('html')).toHaveCSS('font-size', '24px');
+  await page.getByRole('button', { name: tr('menu.settings') }).click();
+  await expect(scale).toHaveValue('150');
+  await shot(page, 'settings-scale-150');
+});
+
+// Settings in the game (ST-11, 18.19): the game menu opens the form over
+// the table; a saved mat and scale show at once, without leaving.
+test('the game menu changes the settings at the table', async ({ browser }) => {
+  const [ida] = await startGame(browser, ['Ida', 'Jon'], { url: `${appURL()}&mat=basement` });
+  if (!ida) {
+    throw new Error('no pages');
+  }
+  const table = ida.getByRole('main', { name: new RegExp(`^${trRe('game.turn').source}`) });
+  await expect(table).toHaveClass(/mat-basement/);
+  await ida.getByRole('button', { name: tr('game_menu.button') }).click();
+  await ida.getByRole('button', { name: tr('game_menu.settings') }).click();
+  const dialog = ida.getByRole('dialog', { name: tr('settings.title') });
+  await expect(dialog).toBeVisible();
+  // What the running game would not take is not offered here.
+  await expect(dialog.getByLabel(tr('settings.nickname'))).toHaveCount(0);
+  await expect(dialog.getByRole('combobox', { name: tr('settings.language') })).toHaveCount(0);
+  await expect(dialog.getByRole('combobox', { name: tr('settings.dice') })).toHaveCount(0);
+  await dialog.getByRole('combobox', { name: tr('settings.mat') }).selectOption('cathedral');
+  await dialog.getByLabel(tr('settings.scale')).fill('125');
+  await dialog.getByLabel(tr('settings.volume')).fill('40');
+  await shot(ida, 'game-settings');
+  await dialog.getByRole('button', { name: tr('settings.save') }).click();
+  await expect(dialog.getByRole('status')).toHaveText(tr('settings.saved'));
+  await expect(table).toHaveClass(/mat-cathedral/);
+  await expect(ida.locator('html')).toHaveCSS('font-size', '20px');
+  await dialog.getByRole('button', { name: tr('settings.back') }).click();
+  await expect(ida.getByRole('dialog', { name: tr('game_menu.label') })).toBeVisible();
+  await ida.getByRole('button', { name: tr('game_menu.cancel') }).click();
+  await expect(ida.getByRole('dialog')).toHaveCount(0);
+  await expect(table).toHaveClass(/mat-cathedral/);
+});

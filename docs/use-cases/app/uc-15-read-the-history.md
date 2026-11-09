@@ -20,6 +20,19 @@
    2. A sword badge marks an attack; a bolt marks a played loot card.
    3. A line marks the first item of each turn.
    4. Hovering an icon shows the card large, the used ability, and the owner.
+   5. Only the newest 40 icons show; the History panel keeps every line (19.138).
+   6. Rolls and damage are half height; the rest full (20.21).
+   7. A thin frame shows the owner's player color.
+   8. A new icon slides in from the left; the rest move down.
+   9. Nothing moves while the pointer is on the strip.
+   10. New icons come in when the pointer leaves.
+   11. The foot fades when more icons are below; the strip scrolls.
+   12. The strip is one hit area: the nearest icon shows.
+   13. Each newly hovered icon plays a soft sound; the board dims.
+   14. A play's card shows the damage and death its own items caused.
+   15. An attack's roll, damage and kill show swords, not an arrow.
+   16. An attack roll shows the attacker large, then the monster.
+   17. Targets stand in one row up to four, then two rows.
 9. The strip runs along the board's left edge (15.22).
    1. Its History button opens the full history panel.
    2. The panel starts hidden, so the stack has the room.

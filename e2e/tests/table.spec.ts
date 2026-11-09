@@ -2,7 +2,7 @@
 import type { Browser, Page } from '@playwright/test';
 import { expect, test } from './fixtures';
 import { expectFits, startGame, statMonsters } from './game';
-import { serverPort } from './server';
+import { appURL, serverPort } from './server';
 import { shot } from './shot';
 import { seen } from './turn';
 import { anyOf, cardName, tr, trRe, whole } from './locale';
@@ -818,8 +818,9 @@ test('curses sit at the far left of the player, apart from the items (15.55)', a
     const curses = area.locator('.curses');
     const cards = curses.locator('.card');
     await expect(cards).toHaveCount(position === 'bottom' ? 2 : 1);
-    // No curse in the items row.
-    await expect(area.locator('[role="group"][aria-label$="items"] .card[aria-label^="Curse"]')).toHaveCount(0);
+    // None of the given curses in the items row: by their objects, as
+    // an item may be named "Curse of the Tower" (19.133).
+    await expect(area.locator('[role="group"][aria-label$="items"] .card:is([data-zone^="obj-920"], [data-zone="obj-9211"])')).toHaveCount(0);
     // The curses stand left of the character, and of the soul crystals
     // too, at the far left of the area.
     const character = await area.locator('.player-cards:has(.souls)').boundingBox();
@@ -930,4 +931,28 @@ test("There's Options shows its owner the top treasure card (19.30)", async ({ b
   await shot(page, 'treasure-top');
   await expect(back).toHaveCount(0);
   await expect(deck.getByRole('img', { name })).toBeVisible();
+});
+
+// Interface scale (ST-10, 18.18): on a big window a bigger scale grows
+// the board's cards past their cap at 100 %, and the board still fits.
+test('a bigger interface scale grows the table on a big window', async ({ browser }) => {
+  const viewport = { width: 2560, height: 1440 };
+  const slotWidth = async (scale: number) => {
+    const pages = await startGame(browser, ['Ann', 'Bob'], { viewport, url: `${appURL()}&scale=${String(scale)}` });
+    const page = pages[0];
+    const board = await page.locator('.board').boundingBox();
+    expect(board).not.toBeNull();
+    expect((board?.x ?? -1) >= 0 && (board?.y ?? -1) >= 0).toBe(true);
+    expect((board?.x ?? 0) + (board?.width ?? 0)).toBeLessThanOrEqual(viewport.width);
+    expect((board?.y ?? 0) + (board?.height ?? 0)).toBeLessThanOrEqual(viewport.height);
+    await shot(page, `table-scale-${String(scale)}`);
+    const w = (board?.width ?? 0) / 12.75;
+    for (const p of pages) {
+      await p.context().close();
+    }
+    return w;
+  };
+  const normal = await slotWidth(100);
+  const big = await slotWidth(200);
+  expect(big).toBeGreaterThan(normal * 1.5);
 });

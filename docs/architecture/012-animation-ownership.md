@@ -76,9 +76,14 @@ Use option 1.
 2. Claims live in `frontend/src/animations.ts`.
    1. Jobs: `arrive` (to its place) and `show` (large).
    2. A beat is one update's effects plus its view.
-   3. Two `arrive`s of a card in one beat clash.
+   3. Two `arrive`s of a card at one place in one beat clash.
    4. The same animation may claim again: two copies of a card.
    5. A `show` clashes in the same or the next beat.
+   6. Two places are two jobs: to the discard, then drawn back (19.134).
+   7. Two known objects are two cards: two copies played in a row (19.136).
+   8. A choice's deal clashes in its own beat only (19.139).
+   9. A card looked at in a window may be revealed in the next update.
+   10. A choice's deal claims each card with its object, when known (19.141).
 3. A clash is logged, kept in `clashes`, and the second one skipped.
 4. Every animation site has an `anim: <id>` tag.
    1. `docs/wiki/Animations.md` has one row per id.

@@ -46,13 +46,7 @@ func (g *Game) askPurchase() {
 func (g *Game) purchase(item ObjectID, fromDeck bool) {
 	p := g.Turn.Active
 	g.Purchase = PurchaseState{}
-	price := basePrice
-	if !fromDeck {
-		price = max(price+g.bonus(StatShopPrice, p, item), 0) // e.g. Steamy Sale
-		if g.Turn.FreeShopItem && g.Turn.ShopBought == 0 {
-			price = 0 // Credit Card
-		}
-	}
+	price := g.priceOf(item, fromDeck)
 	if g.Players[p].Cents < price {
 		g.emit(Event{Kind: EvPurchaseFailed, Player: p, Amount: price})
 		return
@@ -73,6 +67,20 @@ func (g *Game) purchase(item ObjectID, fromDeck bool) {
 	g.emit(Event{Kind: EvPurchased, Player: p, Object: nid, Card: o.Card})
 	g.emit(Event{Kind: EvGainedItem, Player: p, Object: nid, Card: o.Card})
 	g.enqueue(Action{Kind: ActRefillSlots, Player: NoPlayer}) // R-SHOP-06
+}
+
+// priceOf is what the active player pays for a shop item, or for the
+// top of the treasure deck when fromDeck (R-SHOP-03). The purchase
+// prompt sends it with each option (20.11).
+func (g *Game) priceOf(item ObjectID, fromDeck bool) int {
+	if fromDeck {
+		return basePrice
+	}
+	price := max(basePrice+g.bonus(StatShopPrice, g.Turn.Active, item), 0) // e.g. Steamy Sale
+	if g.Turn.FreeShopItem && g.Turn.ShopBought == 0 {
+		price = 0 // Credit Card
+	}
+	return price
 }
 
 // purchasesLeft is how many purchases the active player may still declare.

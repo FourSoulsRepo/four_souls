@@ -2,9 +2,11 @@
 // first their events as short effects, then the update's view is shown.
 // Playback only changes what is drawn; the game state is the server's.
 import { kindOf, type CardInfo, type Kind } from './cards';
+import { keptZone } from './choice';
 import { firstPlayerText, tieText } from './dice';
+import { drawPace, feel } from './feel';
 import { say, t } from './i18n';
-import type { GameEvent, GameView, Update } from './protocol';
+import { Role, type GameEvent, type GameView, type Update } from './protocol';
 import type { Sound } from './sounds';
 
 export type Speed = 'normal' | 'fast' | 'slow' | 'off';
@@ -17,26 +19,40 @@ export type Effect =
   // the card leaves; it hides until the next view (19.41). lifts is the
   // table card it flies off; it hides until the next view (19.73).
   // sound plays as the card leaves (18.7).
-  | { kind: 'fly'; from: string[]; to: string[]; card?: string; back: Kind; middle?: boolean; leaves?: number; lifts?: number; sound?: Sound }
+  // start: a starting item, at the start-of-game screen's pace (20.22).
+  | { kind: 'fly'; from: string[]; to: string[]; card?: string; back: Kind; middle?: boolean; leaves?: number; lifts?: number; sound?: Sound; start?: boolean }
   | { kind: 'popup'; at: string[]; text: string; tone: 'good' | 'bad' }
+  // draw: a looted card (20.7). own: the viewer's, shown at the show
+  // spot on its way to the hand; else back only, deck to hand, but a
+  // card taken from the loot discard is public: face up. pace is
+  // its time factor, by its place among the player's draws (drawPace).
+  | { kind: 'draw'; from: string[]; to: string[]; card?: string; own: boolean; pace: number }
   // dice: thrown for a fresh roll or a reroll (15.62); a changed roll
   // spins in with its old value, a shot comes from the card that
   // changes it, and it turns to the new one (15.76). dice: every die of
   // a roll of several dice, thrown together (19.39).
   | { kind: 'dice'; value: number; label: string; player: number; thrown?: boolean; old?: number; source?: string[]; dice?: number[] }
   // banner: long stays twice as long, for the start of the game (15.43).
-  | { kind: 'banner'; text: string; long?: boolean }
+  // won: the game's end; it always plays (20.12).
+  | { kind: 'banner'; text: string; long?: boolean; won?: boolean }
+  // turn: a new turn's banner (20.8). own: the viewer's turn; it plays
+  // the turn-start sound. charges: the objects its recharge readies,
+  // lit as the banner shows, before the view is drawn.
+  | { kind: 'turn'; text: string; own: boolean; charges?: number[] }
   // reveal: the card grows out of its deck to the middle; it holds
   // there when the next effect moves it, else shrinks back (15.73).
   | { kind: 'reveal'; card: string; deck: string[]; hold?: boolean }
   // played: another player's loot card rises from their hand, shows
-  // large for a moment and goes on the stack (15.31, H-10, 15.74).
-  | { kind: 'played'; card: string; who: string; from: string[]; to: string[] }
+  // large and goes on the stack (15.31, H-10, 15.74). It outlives its
+  // effect: playback goes on 1 s after it shows (20.9, playedEnds).
+  // object: the played card's object, so two copies are two cards (19.136).
+  | { kind: 'played'; card: string; who: string; from: string[]; to: string[]; object?: number }
   // place: a card flies into a slot and stays there until the view is
   // shown, so later effects play over it (19.3).
   | { kind: 'place'; from: string[]; to: string[]; card: string; back: Kind; middle?: boolean }
   // lunge: the attacker's card hits the target and returns (15.3, V-12).
-  | { kind: 'lunge'; from: string[]; to: string[]; amount: number }
+  // lethal: the hit kills; the table shakes (20.3).
+  | { kind: 'lunge'; from: string[]; to: string[]; amount: number; lethal?: boolean }
   // hits: other damage flies from its source and bursts on every
   // damaged card at once (15.37, T-15, T-24).
   | { kind: 'hits'; hits: Hit[] }
@@ -44,15 +60,24 @@ export type Effect =
   // (15.75).
   | { kind: 'steal'; from: string[]; to: string[]; amount: number }
   // deaths: a big skull on each dying card before it leaves (T-26).
-  // sound plays with the skulls when a player died (18.8).
-  | { kind: 'deaths'; at: string[][]; sound?: Sound }
+  // player: a player died among them; the table shakes (20.3). sound
+  // plays with the skulls when a player died (18.8), only on the
+  // update's first such effect (20.14).
+  | { kind: 'deaths'; at: string[][]; player?: boolean; sound?: Sound }
   // sound: a sound with no flight, held for a beat (18.14).
-  | { kind: 'sound'; sound: Sound };
+  | { kind: 'sound'; sound: Sound }
+  // tuck: looked-at cards a choice left on a deck: each drops on top or
+  // slides under it, face up when the viewer saw it, and a tag on the
+  // deck says where (19.147). No cards: the chooser's window flew them
+  // already (ChoiceBack); only the tag shows.
+  | { kind: 'tuck'; deck: Kind; cards: { card?: string; bottom: boolean }[]; tag: string };
 
 export interface Hit {
   from: string[];
   to: string[];
   amount: number;
+  // lethal: the hit kills; the table shakes (20.3).
+  lethal?: boolean;
 }
 
 const noPlayer = -1;
@@ -88,8 +113,16 @@ interface Context {
   seen: (card: string) => boolean;
   // roll is the value of a roll on the stack shown now, if any (15.76).
   roll: (stack: number) => number | undefined;
+  // hpAfter is a damaged target's HP in this update's view, if shown (20.3).
+  hpAfter: (e: GameEvent) => number | undefined;
+  // charged is a player's character and items charged in this update's
+  // view (20.8).
+  charged: (player: number) => number[];
   // you is the viewer's seat; -1 for none.
   you: number;
+  // looking tells if the prompt shown now is the viewer's look at that
+  // deck, in a window that flies its cards back (19.147).
+  looking: (deck: Kind) => boolean;
 }
 
 function playerZones(p: number): string[] {
@@ -134,6 +167,39 @@ function damageFrom(e: GameEvent, ctx: Context): string[] {
   return out;
 }
 
+// kills tells if a damage event kills its target (20.3): the target
+// has no HP left in the update's view, or dies in the same update.
+function kills(e: GameEvent, events: GameEvent[], ctx: Context): boolean {
+  if (ctx.hpAfter(e) === 0) {
+    return true;
+  }
+  return events.some(
+    (d) =>
+      d.kind === 'died' &&
+      ((e.object !== undefined && d.prev === e.object) || (e.player >= 0 && !d.prev && d.player === e.player && (!e.object || e.object === ctx.character(e.player)))),
+  );
+}
+
+// hpOf is a damaged target's HP in a view: a player's, by the player or
+// their character, else a monster's on top of its slot (20.3).
+export function hpOf(view: GameView, e: GameEvent): number | undefined {
+  const p = view.players.find((x) => (e.object ? x.character.id === e.object : x.id === e.player));
+  if (p) {
+    return p.hp;
+  }
+  return (view.monsters ?? []).find((s) => e.object !== undefined && s.top?.id === e.object)?.top?.stats?.hp;
+}
+
+// chargedIn is a player's character and items charged in a view: what
+// their turn's recharge readies (20.8).
+export function chargedIn(view: GameView, player: number): number[] {
+  const p = view.players.find((x) => x.id === player);
+  if (!p) {
+    return [];
+  }
+  return [p.character, ...(p.in_play ?? [])].filter((c) => (c.role === Role.character || c.role === Role.item) && c.charged).map((c) => c.id);
+}
+
 // shopSlot is the shop slot whose top card is card, and its object.
 export function shopSlot(view: GameView, card: string): Death | undefined {
   const i = (view.shop ?? []).findIndex((s) => s.top?.card === card);
@@ -169,21 +235,30 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
   // rolls: values the update's own events gave rolls on the stack.
   const rolls = new Map<number, number>();
   const rollOf = (stack: number | undefined) => (stack ? (rolls.get(stack) ?? ctx.roll(stack)) : undefined);
+  // draws counts each player's looted cards so far, for their pace.
+  const draws = new Map<number, number>();
   for (const e of events) {
     const amount = e.amount ?? 0;
     switch (e.kind) {
-      case 'looted':
-        // Each looted card makes its sound, from the deck or the
-        // discard (18.7).
+      case 'looted': {
+        // Each looted card is drawn, from the deck or the discard, with
+        // its sound (18.7, 20.7). The viewer sees their own card on its
+        // way; another player's shows its back only, unless it comes
+        // from the discard, which everyone has seen (owner, 20.16).
+        const n = draws.get(e.player) ?? 0;
+        draws.set(e.player, n + 1);
+        const own = ctx.you >= 0 && e.player === ctx.you;
+        const discard = e.text === 'from the discard';
         out.push({
-          kind: 'fly',
-          from: [e.text === 'from the discard' ? 'discard-loot' : 'deck-loot'],
+          kind: 'draw',
+          from: [discard ? 'discard-loot' : 'deck-loot'],
           to: handZones(e.player),
-          card: e.card,
-          back: 'loot',
-          sound: 'lootDraw',
+          ...((own || discard) && e.card ? { card: e.card } : {}),
+          own,
+          pace: drawPace(n),
         });
         break;
+      }
       case 'discarded': {
         // A loot card leaves the stack from its large card under the
         // stack, else its stack row (15.74).
@@ -251,11 +326,13 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
       case 'damaged': {
         // Damage shows when it lands. Attack damage: its source lunges
         // at the target. Other damage flies from its source (damageFrom).
+        // A lethal hit shakes the table (20.3).
+        const lethal = kills(e, events, ctx) ? { lethal: true } : {};
         if (e.text === 'combat' && e.source) {
-          out.push({ kind: 'lunge', from: [`obj-${String(e.source)}`], to: hitZones(e, ctx), amount });
+          out.push({ kind: 'lunge', from: [`obj-${String(e.source)}`], to: hitZones(e, ctx), amount, ...lethal });
           break;
         }
-        const hit = { from: damageFrom(e, ctx), to: hitZones(e, ctx), amount };
+        const hit = { from: damageFrom(e, ctx), to: hitZones(e, ctx), amount, ...lethal };
         const last = out.at(-1);
         if (last?.kind === 'hits') {
           last.hits.push(hit);
@@ -282,6 +359,7 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
         // A player's died comes only once the death resolved, so nothing
         // can undo it; a monster's death is silent (18.8).
         if (e.player >= 0) {
+          last.player = true;
           last.sound = 'playerDied';
         }
         break;
@@ -312,9 +390,15 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
         break;
       }
       case 'gained_treasure':
+        // A starting item flies to its player from the chooser's picked
+        // card, else from the treasure deck, silent (20.22).
+        if (e.text === 'starting item') {
+          out.push({ kind: 'fly', from: [keptZone(e.player), 'deck-treasure'], to: playerZones(e.player), card: e.card, back: 'treasure', start: true });
+          break;
+        }
         // A treasure drawn from its deck flies to the player with its
-        // sound, one per item; a starting or a stolen item does not (18.9).
-        if (e.text !== 'starting item' && e.text !== 'stolen') {
+        // sound, one per item; a stolen item does not (18.9).
+        if (e.text !== 'stolen') {
           out.push({ kind: 'fly', from: ['deck-treasure'], to: playerZones(e.player), card: e.card, back: 'treasure', sound: 'treasureGain' });
         }
         break;
@@ -361,21 +445,57 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
         break;
       }
       case 'loot_played':
-        // The player's own play needs no reminder (15.31).
+        // The player's own play needs no reminder (15.31, 20.9). A
+        // viewer without a seat (you −1: a spectator, a replay) sees
+        // every play.
         if (e.card && e.player !== ctx.you) {
-          out.push({ kind: 'played', card: e.card, who: ctx.name(e.player), from: handZones(e.player), to: ['stack'] });
+          out.push({
+            kind: 'played',
+            card: e.card,
+            who: ctx.name(e.player),
+            from: handZones(e.player),
+            to: ['stack'],
+            ...(e.object === undefined ? {} : { object: e.object }),
+          });
         }
         break;
-      case 'turn_started':
-        out.push({ kind: 'banner', text: t('effect.turn', { player: ctx.name(e.player) }) });
+      case 'turn_started': {
+        // The turn's banner; its recharge readies the player's cards as
+        // it shows (20.8, ADR 027 "Turn start"). The draw and the rest
+        // follow in the events' order.
+        const recharges = events.some((r) => r.kind === 'recharged' && r.player === e.player && !r.object);
+        const charges = recharges ? ctx.charged(e.player) : [];
+        out.push({
+          kind: 'turn',
+          text: t('effect.turn', { player: ctx.name(e.player) }),
+          own: ctx.you >= 0 && e.player === ctx.you,
+          ...(charges.length > 0 ? { charges } : {}),
+        });
         break;
+      }
       case 'game_won':
-        out.push({ kind: 'banner', text: t('effect.wins', { player: ctx.name(e.player) }) });
+        out.push({ kind: 'banner', text: t('effect.wins', { player: ctx.name(e.player) }), won: true });
         break;
       // After the first-player dice: a tie, or who goes first (15.43).
       case 'first_roll_tied':
         out.push({ kind: 'banner', text: tieText(e, ctx.you, ctx.name), long: true });
         break;
+      case 'top_choice': {
+        // "loot deck top" or "loot deck bottom" (19.90).
+        const [deck = '', , where] = (e.text ?? '').split(' ');
+        const bottom = where === 'bottom';
+        const card = e.card ? { card: e.card } : {};
+        out.push({ kind: 'tuck', deck: deck as Kind, cards: [{ ...card, bottom }], tag: bottom ? t('effect.tuck_bottom') : t('effect.tuck_top') });
+        break;
+      }
+      case 'deck_bottom': {
+        // "loot deck": cards a look left go under it, faces hidden.
+        const deck = (e.text ?? '').split(' ')[0] as Kind;
+        const n = Math.max(1, amount);
+        const cards = ctx.looking(deck) ? [] : Array.from({ length: n }, () => ({ bottom: true }));
+        out.push({ kind: 'tuck', deck, cards, tag: n > 1 ? t('effect.tuck_bottom_n', { n }) : t('effect.tuck_bottom') });
+        break;
+      }
       case 'first_player':
         out.push({ kind: 'banner', text: firstPlayerText(e, ctx.you, ctx.name, (ref) => ctx.card(ref)?.name ?? ref), long: true });
         break;
@@ -383,7 +503,45 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
   }
   holdReveals(out);
   marksFirst(out);
+  oneDeathSound(out);
   return out;
+}
+
+// oneDeathSound keeps the death sound on the first deaths of an update
+// only (20.14, ADR 027 principle 8): players who die together make one
+// sound, even when other effects come between their skulls.
+function oneDeathSound(effects: Effect[]): void {
+  let heard = false;
+  for (const e of effects) {
+    if (e.kind !== 'deaths' || !e.sound) {
+      continue;
+    }
+    if (heard) {
+      delete e.sound;
+    }
+    heard = true;
+  }
+}
+
+// playedEnds tells if an effect sends the big played card of card away
+// at once (20.9): another big card, anything else in the middle of the
+// window, or a move of that card itself, as it leaves the stack.
+export function playedEnds(e: Effect, card: string): boolean {
+  switch (e.kind) {
+    case 'played':
+    case 'reveal':
+    case 'dice':
+    case 'banner':
+    case 'turn':
+      return true;
+    case 'draw':
+      return e.own;
+    case 'fly':
+    case 'place':
+      return e.card === card;
+    default:
+      return false;
+  }
 }
 
 // marksFirst lets a loot card that leaves the stack wait for the damage
@@ -436,16 +594,78 @@ function speedScale(speed: Speed): number {
 
 // scaleFor is how long effects take, as a factor of their normal time;
 // 0 skips them. A long queue or a big burst plays faster, so the table
-// catches up with the game.
+// catches up with the game (feel.catchUp). Which effects still play is
+// catchUp's call.
 export function scaleFor(speed: Speed, pending: number, effects: number): number {
   const base = speedScale(speed);
-  if (base === 0 || pending > 8) {
-    return 0;
-  }
-  if (pending > 2 || effects > 6) {
-    return base * 0.4;
+  const { shorten, burst, short } = feel.catchUp;
+  if (pending >= shorten || effects >= burst) {
+    return base * short;
   }
   return base;
+}
+
+// Weight is how much an effect matters to a lagging client (20.12,
+// ADR 027 principle 7): minor ones go first, key ones always play.
+export type Weight = 'minor' | 'normal' | 'key';
+
+const ranks: Record<Weight, number> = { minor: 0, normal: 1, key: 2 };
+
+// weightOf is an effect's own weight. Key: a player's death, a soul,
+// the game's end, the viewer's turn start. Minor: popups, a stolen
+// coin, another player's draw, a flight with no sound (to a discard).
+export function weightOf(e: Effect): Weight {
+  switch (e.kind) {
+    case 'deaths':
+      return e.player ? 'key' : 'normal';
+    case 'fly':
+      if (e.sound === 'soulGain') {
+        return 'key';
+      }
+      return e.sound || e.middle ? 'normal' : 'minor';
+    case 'sound':
+      return e.sound === 'soulGain' ? 'key' : 'minor';
+    case 'banner':
+      return e.won ? 'key' : 'normal';
+    case 'turn':
+      return e.own ? 'key' : 'normal';
+    case 'draw':
+      return e.own ? 'normal' : 'minor';
+    case 'popup':
+    case 'steal':
+      return 'minor';
+    case 'tuck':
+      return e.cards.length > 0 ? 'normal' : 'minor';
+    default:
+      return 'normal';
+  }
+}
+
+// Planned is an effect that plays, at its time factor.
+export interface Planned {
+  effect: Effect;
+  scale: number;
+}
+
+// catchUp is what plays of one update's effects, with pending updates
+// still waiting (20.12, feel.catchUp): a long queue drops minor effects
+// first, then shortens the rest, then keeps only key ones, short. Key
+// effects always play unless the speed is "off". A reveal that holds
+// its card for the move after it weighs as much as that move.
+export function catchUp(effects: Effect[], speed: Speed, pending: number): Planned[] {
+  const scale = scaleFor(speed, pending, effects.length);
+  if (scale === 0) {
+    return [];
+  }
+  const { dropMinor, dropNormal } = feel.catchUp;
+  const least = pending >= dropNormal ? ranks.key : pending >= dropMinor ? ranks.normal : ranks.minor;
+  return effects
+    .filter((e, i) => {
+      const next = effects.at(i + 1);
+      const held = e.kind === 'reveal' && e.hold && next ? ranks[weightOf(next)] : 0;
+      return Math.max(ranks[weightOf(e)], held) >= least;
+    })
+    .map((effect) => ({ effect, scale }));
 }
 
 interface Deps {
@@ -506,12 +726,8 @@ export function createPlayback(deps: Deps): Playback {
   }
 
   async function playEffects(u: Update): Promise<void> {
-    const effects = deps.effects(u);
-    const scale = scaleFor(deps.speed(), queue.length, effects.length);
-    if (scale > 0) {
-      for (const e of effects) {
-        await deps.run(e, scale);
-      }
+    for (const { effect, scale } of catchUp(deps.effects(u), deps.speed(), queue.length)) {
+      await deps.run(effect, scale);
     }
   }
 

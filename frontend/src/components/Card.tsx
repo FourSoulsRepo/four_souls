@@ -3,6 +3,7 @@ import { useEffect, useRef, useState, type CSSProperties, type MouseEvent, type 
 import { claimed } from '../animations';
 import { iconText, kindOf, textParts, unknownCard, type CardInfo, type Kind } from '../cards';
 import { diceImage } from '../dice';
+import { feel } from '../feel';
 import { t } from '../i18n';
 import { scaleFor } from '../playback';
 import { fighters } from '../prompt';
@@ -10,7 +11,9 @@ import { counterColor } from '../counters';
 import type { CounterView, MonsterStats, StatSource } from '../protocol';
 import { statLines, sumOf, tempSources, trend, type Name, type TempSource, type Trend } from '../stats';
 import { useApp, viewScale } from '../store';
-import { boxOf } from '../zoom';
+import { arrowShows } from '../aim';
+import { boxOf, restWatch, type RestWatch } from '../zoom';
+import { Count } from './Count';
 import { Die } from './Die';
 import './Card.css';
 
@@ -66,6 +69,9 @@ interface Props {
   // why says why the player can't use the card now: its zoom says it,
   // and so does a click on it (15.29, F-17, F-18).
   why?: string;
+  // cost is a purchase option's price: the own cents counter previews
+  // it while the pointer is on the card (20.11).
+  cost?: number;
   onClick?: () => void;
 }
 
@@ -89,6 +95,7 @@ export function Card({
   noZoom = false,
   rise = false,
   why,
+  cost,
   onClick,
 }: Props) {
   const scale = useApp(viewScale);
@@ -104,6 +111,7 @@ export function Card({
   // The zoom names the copied card first (19.111).
   const lines = copy ? [t('badge.copy', { card: name(copy) }), ...sums] : sums;
   const zoomHandlers = useZoom(cardRef, zoomable, rise, why, lines, counters.filter((c) => c.count > 0));
+  const preview = useCostPreview(cost);
   const cardElRef = useRef<HTMLDivElement>(null);
   // Leaving an icon for the card zooms the card again.
   const backToCard = (e: PointerEvent<HTMLElement>) => {
@@ -130,6 +138,7 @@ export function Card({
         role={onClick ? 'button' : 'img'}
         aria-label={faceDown(back)}
         onClick={onClick}
+        {...preview}
       >
         {backImage !== '' && backImage !== brokenImage ? (
           <img
@@ -170,6 +179,14 @@ export function Card({
       aria-label={card.name}
       onClick={click}
       {...zoomHandlers}
+      onPointerEnter={(e) => {
+        preview.onPointerEnter?.();
+        zoomHandlers.onPointerEnter(e);
+      }}
+      onPointerLeave={(e) => {
+        preview.onPointerLeave?.();
+        zoomHandlers.onPointerLeave(e);
+      }}
     >
       {image ? (
         <img
@@ -249,15 +266,33 @@ function useFlip(cardRef: string | undefined, objectId: number | undefined, scal
   return flip.half ? { face: cardRef, turn: 'in' } : { face: flip.from, turn: 'out' };
 }
 
+// warmUntil is when a table card's zoom stops showing at once after
+// the last one closed (feel.zoom.grace, 20.5), in ms since the page
+// loaded.
+let warmUntil = 0;
+
 // useZoom zooms a card from the element it is spread on: on mouse
 // hover, beside it or rising from it, or after a long touch (B-06). A
 // card and a soul crystal share it (V-43). Nothing zooms without a
-// card ref or when zoomable is false.
+// card ref or when zoomable is false. A hand card's (rise) zooms at
+// once; any other waits feel.zoom.delay and grows, unless a zoom shows
+// or just closed: then it shows at once (20.5, ADR 027 principle 2).
+// While the own arrow aims, no card zooms as the arrow passes: one
+// zooms once the arrow rests still on it for feel.zoom.rest, and the
+// arrow's next move closes it (20.23, ADR 027 "Target arrow").
 export function useZoom(cardRef: string | undefined, zoomable: boolean, rise = false, why?: string, stats: string[] = [], counters: CounterView[] = []) {
   const setZoom = useApp((s) => s.setZoom);
   const pressRef = useRef(0);
+  // waitRef is the pending timer of a table card's zoom.
+  const waitRef = useRef(0);
   const downRef = useRef<{ x: number; y: number } | null>(null);
+  // restRef waits for the arrow to rest on the card (20.23).
+  const restRef = useRef<RestWatch | null>(null);
   const on = zoomable && cardRef !== undefined;
+  const unrest = () => {
+    restRef.current?.stop();
+    restRef.current = null;
+  };
 
   // A card that leaves the screen while hovered gets no pointer-leave:
   // the card that started a mouse zoom ends it then.
@@ -273,6 +308,8 @@ export function useZoom(cardRef: string | undefined, zoomable: boolean, rise = f
   useEffect(
     () => () => {
       unwatch();
+      unrest();
+      window.clearTimeout(waitRef.current);
       const { zoom, setZoom: clear } = useApp.getState();
       if (zoomedRef.current && zoom && zoom.ref === cardRef && !zoom.touch) {
         clear(null);
@@ -287,6 +324,7 @@ export function useZoom(cardRef: string | undefined, zoomable: boolean, rise = f
         return;
       }
       unwatch();
+      window.clearTimeout(waitRef.current);
       zoomedRef.current = false;
       const { zoom, setZoom: clear } = useApp.getState();
       if (zoom && zoom.ref === cardRef && !zoom.touch) {
@@ -303,27 +341,59 @@ export function useZoom(cardRef: string | undefined, zoomable: boolean, rise = f
     window.clearTimeout(pressRef.current);
     downRef.current = null;
   };
+  const show = (el: HTMLElement, grow: boolean) => {
+    setZoom({
+      ref: cardRef ?? '',
+      touch: false,
+      at: boxOf(el),
+      rise,
+      ...(grow ? { grow } : {}),
+      ...(why ? { why } : {}),
+      ...(stats.length > 0 ? { stats } : {}),
+      ...(counters.length > 0 ? { counters } : {}),
+    });
+  };
+  // rest restarts the wait for the arrow to rest on the card.
+  const rest = (el: HTMLElement, x: number, y: number) => {
+    restRef.current ??= restWatch(feel.zoom.rest * 1000, () => {
+      show(el, true);
+    });
+    restRef.current.move(x, y);
+  };
   return {
     onPointerEnter: (e: PointerEvent<HTMLElement>) => {
-      if (on && e.pointerType === 'mouse') {
+      // A held hand card passes over cards without zooming them (20.20).
+      if (on && e.pointerType === 'mouse' && useApp.getState().held === null) {
         zoomedRef.current = true;
-        watch(e.currentTarget);
-        setZoom({
-          ref: cardRef,
-          touch: false,
-          at: boxOf(e.currentTarget),
-          rise,
-          ...(why ? { why } : {}),
-          ...(stats.length > 0 ? { stats } : {}),
-          ...(counters.length > 0 ? { counters } : {}),
-        });
+        const el = e.currentTarget;
+        watch(el);
+        window.clearTimeout(waitRef.current);
+        unrest();
+        if (arrowShows()) {
+          rest(el, e.clientX, e.clientY);
+          return;
+        }
+        const open = useApp.getState().zoom;
+        if (rise || (open && !open.touch) || performance.now() < warmUntil) {
+          show(el, false);
+          return;
+        }
+        waitRef.current = window.setTimeout(() => {
+          show(el, true);
+        }, feel.zoom.delay * 1000);
       }
     },
     onPointerLeave: (e: PointerEvent<HTMLElement>) => {
       cancelPress();
       if (on && e.pointerType === 'mouse') {
         unwatch();
+        unrest();
+        window.clearTimeout(waitRef.current);
         zoomedRef.current = false;
+        const open = useApp.getState().zoom;
+        if (open && !open.touch && !open.rise) {
+          warmUntil = performance.now() + feel.zoom.grace * 1000;
+        }
         setZoom(null);
       }
     },
@@ -337,6 +407,15 @@ export function useZoom(cardRef: string | undefined, zoomable: boolean, rise = f
       }
     },
     onPointerMove: (e: PointerEvent<HTMLElement>) => {
+      // While the arrow aims, each move starts the rest again (20.23).
+      if (on && e.pointerType === 'mouse' && useApp.getState().held === null) {
+        if (arrowShows()) {
+          window.clearTimeout(waitRef.current);
+          rest(e.currentTarget, e.clientX, e.clientY);
+        } else {
+          unrest();
+        }
+      }
       // A finger that moves is dragging, not pressing.
       const d = downRef.current;
       if (d && Math.hypot(e.clientX - d.x, e.clientY - d.y) > 8) {
@@ -347,6 +426,40 @@ export function useZoom(cardRef: string | undefined, zoomable: boolean, rise = f
     onPointerCancel: cancelPress,
     onContextMenu: (e: MouseEvent<HTMLElement>) => {
       e.preventDefault(); // a long press must not open the menu
+      // A right click opens the mouse zoom at once, with no wait (20.18).
+      if (on && e.button === 2 && downRef.current === null) {
+        const el = e.currentTarget;
+        zoomedRef.current = true;
+        watch(el);
+        window.clearTimeout(waitRef.current);
+        setZoom({
+          ref: cardRef,
+          touch: false,
+          at: boxOf(el),
+          rise,
+          ...(why ? { why } : {}),
+          ...(stats.length > 0 ? { stats } : {}),
+          ...(counters.length > 0 ? { counters } : {}),
+        });
+      }
+    },
+  };
+}
+
+// useCostPreview sets the store's cost while the pointer is on a card
+// with a price, for the own cents counter (20.11). No price, no
+// handlers.
+function useCostPreview(cost: number | undefined): { onPointerEnter?: () => void; onPointerLeave?: () => void } {
+  const setCost = useApp((s) => s.setCost);
+  if (cost === undefined) {
+    return {};
+  }
+  return {
+    onPointerEnter: () => {
+      setCost(cost);
+    },
+    onPointerLeave: () => {
+      setCost(null);
     },
   };
 }
@@ -495,7 +608,7 @@ function Badge({ kind, value, label, title, style, hurt = false, trend: dir }: B
         <path d={shapes.get(kind) ?? blob} />
         <path className="card-badge-shine" d="M30 26C36 18 46 16 52 18C44 22 38 28 34 36C31 34 29 30 30 26Z" />
       </svg>
-      <span className="card-badge-value">{value}</span>
+      {kind === 'hp' ? <Count value={value} className="card-badge-value" /> : <span className="card-badge-value">{value}</span>}
     </span>
   );
 }

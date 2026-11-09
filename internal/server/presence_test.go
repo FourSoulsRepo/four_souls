@@ -69,7 +69,7 @@ func TestPresenceReachesOthers(t *testing.T) {
 	players[1].say(protocol.TypePresence, protocol.Presence{Seat: 0, At: &protocol.Spot{Player: &target}, Point: &protocol.Point{X: 2, Y: 0.5}})
 	players[1].say(protocol.TypePresence, protocol.Presence{At: &protocol.Spot{Deck: &deck}})
 	for _, i := range []int{0, 2} {
-		got := players[i].presences(200 * time.Millisecond)
+		got := players[i].presences(600 * time.Millisecond)
 		if len(got) != 2 {
 			t.Fatalf("player %d got %d presences", i, len(got))
 		}
@@ -95,16 +95,29 @@ func TestPresenceHidesHandCards(t *testing.T) {
 		t.Fatal("no hand card")
 	}
 	id := hand[0].ID
-	players[0].say(protocol.TypePresence, protocol.Presence{From: &protocol.Spot{Object: id}})
-	players[0].say(protocol.TypePresence, protocol.Presence{From: &protocol.Spot{Hand: 1, Object: id}})
-	players[0].say(protocol.TypePresence, protocol.Presence{From: &protocol.Spot{Hand: 1}})
-	players[0].say(protocol.TypePresence, protocol.Presence{From: &protocol.Spot{Hand: 99}})
-	got := players[1].presences(200 * time.Millisecond)
-	if len(got) != 4 {
+	// Each one waits for the last to go: the server keeps only the
+	// newest of those that come within a gap (20.13).
+	sent := []protocol.Presence{
+		{From: &protocol.Spot{Object: id}},
+		{From: &protocol.Spot{Hand: 1, Object: id}},
+		{From: &protocol.Spot{Hand: 1}},
+		{From: &protocol.Spot{Hand: 99}},
+		{Held: &protocol.Spot{Object: id}},
+		{Held: &protocol.Spot{Hand: 1}},
+	}
+	var got []protocol.Presence
+	for _, p := range sent {
+		players[0].say(protocol.TypePresence, p)
+		got = append(got, players[1].presences(450*time.Millisecond)...)
+	}
+	if len(got) != len(sent) {
 		t.Fatalf("got %d presences", len(got))
 	}
-	for i, want := range []int{0, 0, 1, 0} {
+	for i, want := range []int{0, 0, 1, 0, 0, 1} {
 		from := got[i].From
+		if i >= 4 {
+			from = got[i].Held
+		}
 		switch {
 		case want == 0 && from != nil:
 			t.Errorf("presence %d kept %+v", i, *from)
@@ -119,15 +132,76 @@ func TestPresenceHidesHandCards(t *testing.T) {
 	}
 }
 
-// TestPresencePace: a player's flood is cut to MaxPresence a second.
-func TestPresencePace(t *testing.T) {
-	players, _ := playing(t, startHub(t), 2)
-	for range 100 {
-		players[0].say(protocol.TypePresence, protocol.Presence{Point: &protocol.Point{X: 0.5, Y: 0.5}})
+// timed is a presence and when it came.
+type timed struct {
+	p  protocol.Presence
+	at time.Time
+}
+
+// timedPresences collects the presence messages that come within d,
+// each with the time it came.
+func (p *player) timedPresences(d time.Duration) []timed {
+	p.t.Helper()
+	var out []timed
+	end := time.After(d)
+	for {
+		select {
+		case msg := <-p.conn.out:
+			e, err := protocol.Decode(msg)
+			if err != nil {
+				p.t.Fatal(err)
+			}
+			if e.Type != protocol.TypePresence {
+				continue
+			}
+			var pr protocol.Presence
+			if err := e.Unpack(&pr); err != nil {
+				p.t.Fatal(err)
+			}
+			out = append(out, timed{pr, time.Now()})
+		case <-end:
+			return out
+		}
 	}
-	got := players[1].presences(300 * time.Millisecond)
-	if len(got) < protocol.MaxPresence || len(got) > protocol.MaxPresence+10 {
-		t.Errorf("%d of 100 presences went through", len(got))
+}
+
+// TestPresenceSamples: a player's presence goes at most once per gap,
+// 0.35 s, or 0.25 s while aiming; the last one always arrives (20.13).
+func TestPresenceSamples(t *testing.T) {
+	players, ups := playing(t, startHub(t), 2)
+	character := ups[0].View.Players[0].Character.ID
+	for _, c := range []struct {
+		name string
+		from *protocol.Spot
+		gap  time.Duration
+	}{
+		{"pointer", nil, protocol.PresenceGap},
+		{"aim", &protocol.Spot{Object: character}, protocol.PresenceAimGap},
+	} {
+		// Let the last case's gap pass first.
+		time.Sleep(protocol.PresenceGap)
+		const n = 60
+		start := time.Now()
+		got := make(chan []timed)
+		go func() { got <- players[1].timedPresences(time.Second + 2*c.gap) }()
+		for i := range n {
+			players[0].say(protocol.TypePresence, protocol.Presence{From: c.from, Point: &protocol.Point{X: float64(i+1) / n, Y: 0.5}})
+			time.Sleep(time.Second / n)
+		}
+		seen := <-got
+		took := time.Since(start)
+		if most := int(took/c.gap) + 1; len(seen) < 2 || len(seen) > most {
+			t.Errorf("%s: %d of %d presences went in %v; want 2 to %d", c.name, len(seen), n, took, most)
+		}
+		for i := 1; i < len(seen); i++ {
+			// A little slack for the timer and the scheduler.
+			if d := seen[i].at.Sub(seen[i-1].at); d < c.gap-20*time.Millisecond {
+				t.Errorf("%s: presences %d and %d came %v apart; want %v", c.name, i-1, i, d, c.gap)
+			}
+		}
+		if last := seen[len(seen)-1].p; last.Point == nil || last.Point.X != 1 {
+			t.Errorf("%s: the last one that came is %+v, not the last sent", c.name, last)
+		}
 	}
 }
 

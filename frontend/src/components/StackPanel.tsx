@@ -174,7 +174,7 @@ function StackRow({ it, view, names }: { it: StackItem; view: GameView; names: N
   const hidden = left || (flown && !present);
   const show = (e: PointerEvent, touch: boolean) => {
     if (card) {
-      setZoom(itemZoom(it, card, view, names, e, touch));
+      setZoom(itemZoom(it, card, view, names, e.currentTarget, touch));
     }
   };
   return (
@@ -240,13 +240,13 @@ function DeclaredRow({ parts, odds }: { parts: LinePart[]; odds?: string | undef
 // itemZoom is the large card of a stack item: the used ability's words
 // and the owner in their color below it (S-06, S-07). An item without
 // words says what it did instead, naming its target (15.22). It opens
-// beside the row (15.27).
-export function itemZoom(it: StackItem, card: string, view: GameView, names: Names, e: PointerEvent, touch: boolean): Zoom {
+// beside the row or tile el (15.27).
+export function itemZoom(it: StackItem, card: string, view: GameView, names: Names, el: Element, touch: boolean): Zoom {
   const owner = it.controller >= 0 ? names.player(it.controller) : undefined;
   return {
     ref: card,
     touch,
-    at: boxOf(e.currentTarget),
+    at: boxOf(el),
     caption: {
       owner,
       color: playerColor(it.controller),

@@ -44,6 +44,11 @@ Use option 2.
 5. The record link follows the socket that opened.
    1. `https://` for `wss://`, `http://` for `ws://`.
 6. Code: `wsURLs` in `protocol.ts`, `connectFirst` in `net.ts`.
+7. The server pings every connection every 30 s (19.148).
+   1. A proxy drops an idle WebSocket; nginx after 60 s.
+   2. In the lobby nothing else crosses the socket.
+   3. Code: `pingEvery` in `internal/server/ws.go`.
+   4. No read deadline: a missing pong drops nobody.
 
 ## Consequences
 
@@ -52,6 +57,7 @@ Use option 2.
 1. A server behind Caddy is joined by its domain alone.
 2. Traffic to such a server is encrypted.
 3. Old addresses keep working as before.
+4. A table waiting in the lobby survives a proxy's idle timeout.
 
 ### Negative and risks
 

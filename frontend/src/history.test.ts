@@ -3,15 +3,21 @@ import kindList from '../../pkg/rules_engine/testdata/event_kinds.txt?raw';
 import { PromptKind } from './actions';
 import {
   entriesFor as entries,
+  heldTiles,
   historyKinds,
+  linkMarks,
   lookGroups,
   lookedAt,
   moveOf,
   moveText,
+  nearestTile,
+  outcomeGrid,
   restartCut,
   rolledBack,
   stepName,
   stripEntries,
+  stripTiles,
+  tileSize,
   undoButton,
   voteEnded,
   type Entry,
@@ -239,6 +245,17 @@ describe('lookedAt', () => {
     ]);
   });
 
+  it('leaves out the cards a choice showed just before (19.130)', () => {
+    const events = [
+      { kind: 'looked_at', player: 0, object: 7, card: 'a_dime', private: true },
+      { kind: 'looked_at', player: 0, object: 8, card: 'bomb', private: true },
+    ];
+    expect(lookedAt(events, 0, new Set(['a_dime', 'bomb']))).toEqual([]);
+    expect(lookedAt(events, 0, new Set(['bomb']))).toEqual([{ id: 7, card: 'a_dime' }]);
+    // The history still tells the look.
+    expect(entriesFor(events, 1, 0, n, 0)[0]).toMatchObject({ text: 'You look at A_DIME' });
+  });
+
   it('keeps whose hand a card is from; a deck card has no owner (19.71)', () => {
     const events = [
       { kind: 'looked_at', player: 0, object: 7, card: 'a_dime', private: true, by: 2 },
@@ -348,6 +365,7 @@ describe('historyKinds', () => {
         badge: 'kill',
         from: 'cain',
         outcome: [{ text: 'GAPER', card: 'gaper', mark: 'death' }],
+        owner: 1,
       },
     ]);
     // A player's death item ends only that player's death.
@@ -557,6 +575,22 @@ describe('stripEntries', () => {
     expect(after.slice(1)).toEqual(before);
     expect(after).toHaveLength(before.length + 1);
   });
+
+  it('shows only the newest tiles of a long game (19.138)', () => {
+    // A 4-player game of 80 turns had about 900 headlines; each update
+    // drew every one again.
+    const long: Entry[] = Array.from({ length: 5000 }, (_, i) => ({ key: i + 1, turn: 1, icon: '+', text: String(i), headline: i % 2 === 0 }));
+    const tiles = stripEntries(long);
+    expect(tiles).toHaveLength(stripTiles);
+    // Newest on top, the same keys as the whole strip's.
+    expect(tiles.map((e) => e.key)).toEqual(
+      long
+        .filter((e) => e.headline)
+        .reverse()
+        .slice(0, stripTiles)
+        .map((e) => e.key),
+    );
+  });
 });
 
 describe('rollback (ADR 020)', () => {
@@ -700,5 +734,123 @@ describe('the Undo button (17.7)', () => {
     expect(why({ ...soft, rollback_mode: 'god', rollback_from: 2, rollback_last: undefined })).toBe('Nothing to undo yet');
     // A greyed button names no step and says why in its tooltip.
     expect(undoButton({ ...soft, view: { over: true } }, 1, moves, n.player)).toEqual({ label: 'Ask to undo', ask: true, why: 'The game is over', title: 'The game is over' });
+  });
+});
+
+describe('history strip like the reference (20.21)', () => {
+  const none = { card: '', index: 0 };
+  const gaper = { player: -1, object: 9 };
+  const bomb: StackItem = { id: 3, kind: StackKind.loot, controller: 1, source: 40, card: 'bomb', target: gaper, ability: { card: 'bomb', index: 0 }, roll_for: none };
+  const hit: StackItem = { id: 5, kind: StackKind.damage, controller: 1, source: 40, amount: 1, target: gaper, ability: none, roll_for: none };
+  const death: StackItem = { id: 6, kind: StackKind.death, controller: -1, source: 0, target: gaper, ability: none, roll_for: none };
+  const roll: StackItem = { id: 7, kind: StackKind.roll, controller: 1, source: 0, roll: 5, attack: true, target: gaper, ability: none, roll_for: none };
+  const swing: StackItem = { id: 8, kind: StackKind.damage, controller: 1, source: 101, amount: 1, attack: true, target: gaper, ability: none, roll_for: none };
+  const resolved = (it: StackItem, card?: string): GameEvent => ({ kind: 'stack_resolved', player: it.controller, stack_id: it.id, item: it, ...(card ? { card } : {}) });
+  const killed: GameEvent[] = [resolved(death), { kind: 'died', player: -1, object: 50, card: 'gaper', prev: 9, by: 2 }];
+
+  // play adds each update's entries to the history as the store does.
+  const play = (updates: GameEvent[][]): Entry[] =>
+    updates.reduce<Entry[]>((h, events) => linkMarks(h, entriesFor(events, 1, 0, n, (h.at(-1)?.key ?? 0) + 1)), []);
+
+  it('makes rolls and damage half height, the rest full (11.3)', () => {
+    const [p] = entriesFor([resolved(bomb, 'bomb')], 1, 0, n, 0);
+    const [r] = entriesFor([resolved(roll)], 1, 0, n, 0);
+    const [d] = entriesFor([resolved(hit)], 1, 0, n, 0);
+    const kill = entriesFor(killed, 1, 0, n, 0).find((e) => e.badge === 'kill');
+    const [buy] = entriesFor([{ kind: 'purchased', player: 2, object: 12, card: 'spoon_bender' }], 1, 0, n, 0);
+    expect([p, r, d, kill, buy].map((e) => (e ? tileSize(e) : undefined))).toEqual(['full', 'half', 'half', 'full', 'full']);
+  });
+
+  it('names the owner of a play, a buy and a kill, for the frame (11.4)', () => {
+    const [p] = entriesFor([resolved(bomb, 'bomb')], 1, 0, n, 0);
+    const kill = entriesFor(killed, 1, 0, n, 0).find((e) => e.badge === 'kill');
+    const [buy] = entriesFor([{ kind: 'purchased', player: 2, object: 12, card: 'spoon_bender' }], 1, 0, n, 0);
+    expect([p.owner, kill?.owner, buy.owner]).toEqual([1, 1, 2]);
+  });
+
+  it("marks a play's target with the damage it dealt and the death it caused (11.2)", () => {
+    const h = play([[resolved(bomb, 'bomb')], [resolved(hit)], killed]);
+    const p = h.find((e) => e.card === 'bomb');
+    expect(p?.outcome).toEqual([{ text: 'GAPER', card: 'gaper', mark: 'death', amount: 1 }]);
+    // The damage knows its play; the old entry was copied, not changed.
+    expect(h.find((e) => e.item?.kind === StackKind.damage)?.play).toBe(p?.key);
+    const once = play([[resolved(bomb, 'bomb')]]);
+    expect(linkMarks(once, entriesFor([resolved(hit)], 1, 0, n, 2))[0]).not.toBe(once[0]);
+    expect(once[0]?.outcome).toEqual([{ text: 'GAPER', card: 'gaper' }]);
+  });
+
+  it('adds up two hits, and adds a card the play hit but did not target', () => {
+    const other: StackItem = { ...hit, id: 9, target: { player: 0, is_player: true } };
+    const h = play([[resolved(bomb, 'bomb')], [resolved(hit)], [resolved({ ...hit, id: 10, amount: 2 })], [resolved(other)]]);
+    expect(h.find((e) => e.card === 'bomb')?.outcome).toEqual([
+      { text: 'GAPER', card: 'gaper', mark: 'damage', amount: 3 },
+      { text: 'Ann', card: 'isaac', mark: 'damage', amount: 1 },
+    ]);
+  });
+
+  it('leaves a play alone when the damage came from elsewhere or another turn', () => {
+    const elsewhere = play([[resolved(bomb, 'bomb')], [resolved({ ...hit, source: 77 })]]);
+    expect(elsewhere.find((e) => e.card === 'bomb')?.outcome).toEqual([{ text: 'GAPER', card: 'gaper' }]);
+    const first = play([[resolved(bomb, 'bomb')]]);
+    const later = linkMarks(first, entries([resolved(hit)], 2, 0, n, 2, view));
+    expect(later.find((e) => e.card === 'bomb')?.outcome).toEqual([{ text: 'GAPER', card: 'gaper' }]);
+  });
+
+  it('shows an attack roll as the attacker, then the monster with its hit and death (11.12, 11.13)', () => {
+    const h = play([[resolved(roll)], [resolved(swing)], killed]);
+    const [r, d, k] = h.filter((e) => e.headline);
+    expect(r.from).toBe('cain');
+    expect(r.outcome).toEqual([{ text: 'GAPER', card: 'gaper', mark: 'death', amount: 1 }]);
+    // Swords for the roll, the damage and the kill.
+    expect([r.attack, d.attack, k.attack]).toEqual([true, true, true]);
+    // A kill by a play is no attack.
+    const byPlay = play([[resolved(bomb, 'bomb')], [resolved(hit)], killed]);
+    expect(byPlay.find((e) => e.badge === 'kill')?.attack).toBeUndefined();
+  });
+
+  it("marks only the roll that hit: a miss's damage to the attacker marks nothing", () => {
+    const back: StackItem = { ...swing, id: 11, source: 9, target: { player: 1, is_player: true } };
+    const h = play([[resolved({ ...roll, roll: 1 })], [resolved(back)]]);
+    expect(h.find((e) => e.item?.kind === StackKind.roll)?.outcome).toEqual([{ text: 'GAPER', card: 'gaper' }]);
+  });
+
+  it('holds the tiles still while hovered, and lets the new ones in after (11.7)', () => {
+    const tile = (key: number, undone = false): Entry => ({ key, turn: 1, icon: '+', text: String(key), headline: true, ...(undone ? { undone } : {}) });
+    const before = [tile(2), tile(1)];
+    expect(heldTiles(null, before)).toBe(before);
+    // Two new tiles came and tile 1 was rolled back while hovered.
+    const now = [tile(4), tile(3), tile(2), tile(1, true)];
+    const held = heldTiles(before, now);
+    expect(held.map((e) => e.key)).toEqual([2, 1]);
+    expect(held[1]?.undone).toBe(true);
+    // The pointer left: the new tiles come in on top.
+    expect(heldTiles(null, now).map((e) => e.key)).toEqual([4, 3, 2, 1]);
+  });
+
+  it('picks the tile nearest the pointer, gaps too (11.8)', () => {
+    const boxes = [
+      { top: 0, bottom: 30 },
+      { top: 33, bottom: 48 },
+      { top: 51, bottom: 81 },
+    ];
+    expect(nearestTile(boxes, 10)).toBe(0);
+    expect(nearestTile(boxes, 32)).toBe(1);
+    expect(nearestTile(boxes, 31)).toBe(0);
+    expect(nearestTile(boxes, 50)).toBe(2);
+    expect(nearestTile(boxes, 500)).toBe(2);
+    expect(nearestTile(boxes, -9)).toBe(0);
+    expect(nearestTile([], 5)).toBe(-1);
+  });
+
+  it('lays targets in one row up to four, then two rows, never above hand size (11.14)', () => {
+    expect([1, 2, 4, 5, 8, 9, 12].map(outcomeGrid)).toEqual([
+      { columns: 1, scale: 1 },
+      { columns: 2, scale: 1 },
+      { columns: 4, scale: 1 },
+      { columns: 3, scale: 1 },
+      { columns: 4, scale: 1 },
+      { columns: 5, scale: 0.8 },
+      { columns: 6, scale: 4 / 6 },
+    ]);
   });
 });

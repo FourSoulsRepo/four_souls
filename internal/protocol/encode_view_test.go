@@ -71,3 +71,21 @@ func BenchmarkMarshalPlayer(b *testing.B) {
 		}
 	}
 }
+
+// TestAppendPromptMatchesJSON: a prompt encodes to the bytes
+// encoding/json writes for it, with and without a deck look (20.18).
+func TestAppendPromptMatchesJSON(t *testing.T) {
+	for _, p := range []engine.Prompt{
+		{Kind: engine.PromptPriority, Player: 1},
+		{Kind: engine.PromptOrder, Player: 0, Count: 5, Purpose: engine.ChooseOrder, Look: &engine.DeckLook{Deck: engine.MonsterDeck, Count: 5}},
+		{Kind: engine.PromptChoose, Player: 2, Look: &engine.DeckLook{Deck: engine.TreasureDeck, Count: 1}},
+	} {
+		want, err := json.Marshal(p)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if got := appendPrompt(nil, p); string(got) != string(want) {
+			t.Errorf("prompt:\n got %s\nwant %s", got, want)
+		}
+	}
+}

@@ -201,6 +201,9 @@ type OptionView struct {
 	// Outcome is what the option leads to, when the engine can tell
 	// (replacement order, 19.17).
 	Outcome *OutcomeView `json:"outcome,omitempty"`
+	// Price is what buying the option costs, in a purchase prompt; the
+	// cents counter previews it while the option is hovered (20.11).
+	Price *int `json:"price,omitempty"`
 }
 
 // OutcomeView is what an order of replacements gives (19.17).
@@ -299,6 +302,14 @@ func (g *Game) ViewBase() ViewBase {
 // depend on the viewer.
 func (g *Game) ViewFor(b ViewBase, v Viewer) GameView {
 	out := b.view
+	// Of several start-of-game choices open at once, a player sees their
+	// own (20.22).
+	w, choice := g.Waiting, g.Choice
+	if i := g.startIndex(v.Player); v.Kind == ViewPlayer && i >= 0 {
+		c := g.StartChoices[i]
+		w, choice = g.startPrompt(i), &c
+		out.Waiting = w
+	}
 	out.Players = slices.Clone(b.view.Players)
 	for i, pl := range g.Players {
 		if v.sees(pl.ID) || g.bonus(StatRevealHand, pl.ID, 0) > 0 {
@@ -313,16 +324,16 @@ func (g *Game) ViewFor(b ViewBase, v Viewer) GameView {
 			}
 		}
 	}
-	if g.Waiting.Kind == PromptChoose && !v.sees(g.Waiting.Player) {
+	if w.Kind == PromptChoose && !v.sees(w.Player) {
 		// Options may name hidden cards (e.g. which loot card to discard).
 		out.Waiting.Options = nil
 	}
-	if g.Waiting.Kind == PromptChoose && v.sees(g.Waiting.Player) {
-		out.Options = g.optionViews()
+	if w.Kind == PromptChoose && v.sees(w.Player) {
+		out.Options = g.optionViewsOf(choice, len(w.Options))
 		out.Activating = g.activatingSource()
 		out.Modes = g.modeViews()
-		if g.Choice != nil && g.Choice.Subject != 0 {
-			cv := g.cardView(g.Choice.Subject)
+		if choice != nil && choice.Subject != 0 {
+			cv := g.cardView(choice.Subject)
 			out.Subject = &cv
 		}
 	}
@@ -393,11 +404,15 @@ func (g *Game) modeViews() []ModeView {
 
 // optionViews maps the open choice's options to what they point at.
 func (g *Game) optionViews() []OptionView {
-	c := g.Choice
+	return g.optionViewsOf(g.Choice, len(g.Waiting.Options))
+}
+
+// optionViewsOf maps the n options of choice c to what they point at.
+func (g *Game) optionViewsOf(c *Choice, n int) []OptionView {
 	if c == nil {
 		return nil
 	}
-	out := make([]OptionView, len(g.Waiting.Options))
+	out := make([]OptionView, n)
 	for i := range out {
 		out[i].Player = NoPlayer
 	}
@@ -414,10 +429,18 @@ func (g *Game) optionViews() []OptionView {
 				if p, ok := g.characterOf(id); ok && c.Purpose == ChooseAttackTarget {
 					o.Player, o.IsPlayer = p, true // attacking a player (R-ATK-20)
 				}
+				if c.Purpose == ChoosePurchase {
+					o.Price = new(g.priceOf(id, false))
+				}
 			})
 		}
 		if c.Deck {
-			set(len(c.Objects), func(o *OptionView) { o.Deck = true })
+			set(len(c.Objects), func(o *OptionView) {
+				o.Deck = true
+				if c.Purpose == ChoosePurchase {
+					o.Price = new(g.priceOf(0, true))
+				}
+			})
 		}
 	case ChooseTarget:
 		for i, t := range c.Targets {

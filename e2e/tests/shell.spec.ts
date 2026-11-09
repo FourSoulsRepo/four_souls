@@ -17,7 +17,9 @@ test('splash shows the fan-game notice, then the menu', async ({ page }) => {
 
 // The menu buttons stay put once they show: a title that changed size
 // after the menu showed moved them, and a quick click hit the wrong
-// button (19.49). Without the images the banner fails to load.
+// button (19.49). Without the images the banner fails to load; with
+// them it loads, and the game font changes the buttons' size (19.118).
+// A move counts only once the button shows.
 test('the menu buttons never move after they show (19.49)', async ({ page }) => {
   await page.addInitScript((settings) => {
     const w = window as unknown as { ys: number[] };
@@ -25,7 +27,7 @@ test('the menu buttons never move after they show (19.49)', async ({ page }) => 
     const t0 = performance.now();
     const frame = () => {
       const b = [...document.querySelectorAll('nav button')].find((x) => x.textContent === settings);
-      if (b) {
+      if (b?.checkVisibility({ visibilityProperty: true })) {
         const y = b.getBoundingClientRect().y;
         if (w.ys.at(-1) !== y) {
           w.ys.push(y);

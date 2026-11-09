@@ -44,6 +44,11 @@ func TestCainsEyeShowsTheTopCardToItsOwner(t *testing.T) {
 		if s := tb.G.View(v).Subject; s != nil {
 			t.Errorf("viewer %+v sees the hidden top card %+v", v, *s)
 		}
+		// Everyone sees the look at the loot deck's top card (19.147).
+		look := engine.DeckLook{Deck: engine.LootDeck, Count: 1}
+		if l := tb.G.View(v).Waiting.Look; l == nil || *l != look {
+			t.Errorf("viewer %+v: look %+v, want %+v", v, l, look)
+		}
 	}
 }
 

@@ -6,16 +6,31 @@
 // Slow, so opt-in: FULL_GAMES=1, or `make e2e-games`.
 // GAME_SEED repeats the moves' choices; the server's deal stays random.
 // GAME_TURNS caps a game (default 300 turns).
+// GAME_SPEED sets the pages' animation speed (default fast, 19.137).
 import { copyFileSync, mkdirSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import type { CDPSession, Locator, Page } from '@playwright/test';
 import { expect, test } from './fixtures';
-import { startGame } from './game';
+import { setSpeed, startGame } from './game';
 import { serverPort } from './server';
-import { enabled, endTurnButton, endTurnQuestion, passButton, reachable, seen, tablePicks, throwButton, turnAction, type Seen } from './turn';
+import { enabled, endTurnButton, endTurnQuestion, passButton, playSpot, reachable, seen, tablePicks, throwButton, turnAction, type Seen } from './turn';
 import { tr, trRe } from './locale';
 
 const maxTurns = Number(process.env.GAME_TURNS ?? 300);
+// speed: every page plays at "fast" (19.137). A page acts only when its
+// playback is idle, so animation time adds to the game's time; at
+// "normal" step 20's longer motions took 3 and 4 player games past the
+// 1 h timeout. "fast" plays every effect, half as long: claims and the
+// clash check still run on each one. "off" would skip effects and claims.
+// What it drops: motion at its normal pace, which the other specs check.
+// GAME_SPEED=normal plays at the normal pace.
+const speed = process.env.GAME_SPEED ?? 'fast';
+// bans: cards the host leaves out, as server_load's -ban default does
+// (cmd/server_load/main.go); keep the two lists the same. Each opens an
+// engine loop a random player can repeat forever, so its turn never ends:
+// Blue Baby starts with Forever Alone (19.97); Smelter and Portable Slot
+// Machine loop with other cards (19.109). Drop a ban when its item is fixed.
+const bans = ['blue_baby', 'smelter', 'portable_slot_machine'];
 // stallMs: no step for this long fails the game.
 const stallMs = 60_000;
 
@@ -147,6 +162,16 @@ async function move(page: Page, s: Seen, rnd: Rnd): Promise<string | null> {
     await done.click();
     return 'order';
   }
+  // A hand card picked up by a click (20.20): mostly played on the
+  // board, sometimes put back.
+  if ((await page.locator('.hand-card.held').count()) > 0) {
+    if (rnd() < 0.8) {
+      await playSpot(page).click();
+    } else {
+      await page.keyboard.press('Escape');
+    }
+    return 'held';
+  }
   const menu = page.getByRole('menu');
   if (await menu.isVisible()) {
     const item = one(rnd, await menu.getByRole('menuitem').filter({ hasNotText: 'Cancel' }).all());
@@ -164,6 +189,12 @@ async function move(page: Page, s: Seen, rnd: Rnd): Promise<string | null> {
     const line = one(rnd, await ability.locator('.ability-line:enabled').all());
     await (line ?? ability.locator('.ability-cancel')).click();
     return 'ability';
+  }
+  // A start-of-game pick waits for Confirm (20.22).
+  const confirm = page.locator('.choice .choice-confirm');
+  if (await enabled(confirm)) {
+    await confirm.click();
+    return 'confirm';
   }
   const choice = page.locator('.choice:not(.look)');
   if (await choice.isVisible()) {
@@ -435,6 +466,7 @@ test.describe('whole random games', () => {
       let opened = 0;
       const pages = await startGame(browser, names, {
         setup: everySet,
+        bans,
         open: (page) => {
           // A click that never lands fails fast: the next round looks
           // again, and the stall check sees a game that stops moving.
@@ -443,7 +475,8 @@ test.describe('whole random games', () => {
           return attachDebugger(page);
         },
       });
-      console.log(`${String(players)} players, seed ${String(seed)}: started`);
+      await Promise.all(pages.map((page) => setSpeed(page, speed)));
+      console.log(`${String(players)} players, seed ${String(seed)}, speed ${speed}: started`);
       test.info().annotations.push({ type: 'seed', description: String(seed) });
       let passed = false;
       try {
@@ -460,6 +493,10 @@ test.describe('whole random games', () => {
         if (!passed) {
           const kept = keepRecord(names);
           console.log(`${String(players)} players, seed ${String(seed)}: failed; record ${kept}`);
+          // A test timeout skips the problems check; print them anyway (19.135).
+          for (const p of problems) {
+            console.log(`  ${p}`);
+          }
           test.info().annotations.push({ type: 'record', description: kept });
         }
       }

@@ -128,7 +128,7 @@ test('a bomb aimed at a monster by two clicks damages it', async ({ browser }) =
   await active.mouse.move(to.x - 200, tip.y, { steps: 12 });
   await expect(arrow).toBeVisible();
   await expect(arrow).not.toHaveClass(/\bon\b/);
-  await expect(active.locator('.aim-block').first()).toBeAttached();
+  await expect(active.locator('.aim-dash').first()).toBeAttached();
   await shot(active, 'aim-off');
   await active.mouse.move(tip.x, tip.y, { steps: 12 });
   await expect(arrow).toHaveClass(/\bon\b/);
@@ -231,6 +231,69 @@ test('a loot card with no target dragged onto the board plays', async ({ browser
   // No arrow, no dialog: the card went straight to the stack.
   await expect(active.locator('.aim-arrow')).toHaveCount(0);
   await expect(active.getByRole('dialog')).toHaveCount(0);
+});
+
+// tiltOf is the held card's turn now, in degrees: its inner box's
+// rotateX (pitch) and rotateY (roll); 0 where it has none.
+async function tiltOf(page: Page): Promise<{ pitch: number; roll: number }> {
+  const style = await page.locator('.hand-card.dragging .drag-tilt').evaluate((el) => (el as HTMLElement).style.transform);
+  const deg = (axis: string) => Number(new RegExp(`rotate${axis}\\((-?[\\d.e-]+)deg\\)`).exec(style)?.[1] ?? 0);
+  return { pitch: deg('X'), roll: deg('Y') };
+}
+
+test('a dragged card tilts by its motion and lies flat when still (20.6)', async ({ browser }) => {
+  // Animations on: speed "off" keeps the card flat.
+  const pages = await startGame(browser, ['Til', 'Ura'], { url: appURL() });
+  await activePage(pages, click);
+  await saveAndContinue(pages, 'Til, Ura', 'a_penny');
+  const active = await activePage(pages, click);
+  // The loops' files do not load here: they stay silent, with no
+  // complaint from the audio context.
+  const audio: string[] = [];
+  active.on('console', (m) => {
+    if (/audio/i.test(m.text())) {
+      audio.push(m.text());
+    }
+  });
+  const penny = active.getByRole('group', { name: tr('table.your_hand') }).getByRole('button', { name: cardName('a_penny') }).first();
+  await expect(penny).toBeVisible();
+  const from = await penny.boundingBox();
+  if (!from) {
+    throw new Error('no box');
+  }
+  const x = from.x + 40;
+  const y = from.y + 40;
+  await active.mouse.move(x, y);
+  await active.mouse.down();
+  // Up and to the right, fast: the top edge and the right edge lean away.
+  await active.mouse.move(x + 10, y - 12, { steps: 2 });
+  await active.mouse.move(x + 160, y - 200, { steps: 6 });
+  await expect.poll(async () => (await tiltOf(active)).pitch).toBeGreaterThan(5);
+  const tilt = await tiltOf(active);
+  expect(tilt.roll).toBeGreaterThan(5);
+  expect(tilt.pitch).toBeLessThanOrEqual(40);
+  expect(tilt.roll).toBeLessThanOrEqual(45);
+  await shot(active, 'drag-tilt');
+  // Held still, it springs back to flat.
+  await expect.poll(async () => Math.abs((await tiltOf(active)).roll)).toBeLessThan(1);
+  // Dropped back on the hand, it is not played.
+  await active.mouse.move(x, y, { steps: 4 });
+  await active.mouse.up();
+  await expect(active.locator('.hand-card.dragging')).toHaveCount(0);
+  await expect(penny).toBeVisible();
+  // Reduced motion: no tilt at all.
+  await active.emulateMedia({ reducedMotion: 'reduce' });
+  await active.mouse.move(x, y);
+  await active.mouse.down();
+  await active.mouse.move(x + 10, y - 12, { steps: 2 });
+  await active.mouse.move(x + 160, y - 200, { steps: 6 });
+  await active.waitForTimeout(100);
+  expect(await tiltOf(active)).toEqual({ pitch: 0, roll: 0 });
+  // Dropped back on the hand: nothing is played.
+  await active.mouse.move(x, y, { steps: 4 });
+  await active.mouse.up();
+  await expect(active.locator('.hand-card.dragging')).toHaveCount(0);
+  expect(audio).toEqual([]);
 });
 
 test('a card placed first aims after its mode; a cancelled aim leaves it in hand', async ({ browser }) => {
@@ -379,7 +442,13 @@ test('the other player sees the arrow and the red mark', async ({ browser }) => 
   await expect(lifted).toHaveCount(1);
   await expect(await there(monster)).toHaveAttribute('data-presence', 'at');
   // The head ends on the marked monster, not on a card passed on the way.
-  const ringAt = async () => middle(other.locator('.aim-arrow.others .aim-ring > div'));
+  // Its tip is where the ring would be; others' arrows draw no ring (20.23).
+  await expect(other.locator('.aim-arrow.others .aim-ring > div')).toHaveCount(0);
+  const ringAt = () =>
+    other.evaluate(() => {
+      const r = document.querySelector('.aim-arrow.others .aim-ring')?.getBoundingClientRect();
+      return { x: r?.left ?? NaN, y: r?.top ?? NaN };
+    });
   const near = async (to: { x: number; y: number }) => {
     const r = await ringAt();
     return Math.hypot(r.x - to.x, r.y - to.y);
@@ -401,10 +470,13 @@ test('the other player sees the arrow and the red mark', async ({ browser }) => 
   await expect(arrow).toHaveCount(0);
   await expect(lifted).toHaveCount(0);
 
-  // On the own turn, a hovered card is marked for the other.
+  // On the own turn, a hovered card glows for the other, in the
+  // hovering player's color, not the red of an aim (20.13).
   const i = await middle(item);
   await active.mouse.move(i.x, i.y, { steps: 4 });
-  await expect(await there(item)).toHaveAttribute('data-presence', 'at');
+  await expect(await there(item)).toHaveAttribute('data-presence', 'hover');
+  const color = await (await there(item)).evaluate((el) => (el as HTMLElement).style.getPropertyValue('--presence-color'));
+  expect(color).toMatch(/^#[0-9a-f]{6}$/);
   await shot(other, 'presence-hover');
   await active.mouse.move(space.x, space.y, { steps: 4 });
   await expect(await there(item)).not.toHaveAttribute('data-presence');
@@ -419,4 +491,61 @@ test('the other player sees the arrow and the red mark', async ({ browser }) => 
   });
   expect(shown).toBe(0);
   await expect(active.locator('[data-presence]')).toHaveCount(0);
+});
+
+// Others' hands live (20.13, ADR 027 "Other players live"): the hand
+// card the active player hovers lifts a little on the other page, still
+// a back; a card they drag floats out of the hand and sways until it is
+// played or put back. Animations on, as players see it.
+test('the other player sees a hovered hand card lift and a dragged one float', async ({ browser }) => {
+  const pages = await startGame(browser, ['Lia', 'Max'], { url: appURL() });
+  await activePage(pages, click);
+  await saveAndContinue(pages, 'Lia, Max', 'a_penny');
+  const active = await activePage(pages, click);
+  const other = pages.find((p) => p !== active);
+  if (!other) {
+    throw new Error('no waiting player');
+  }
+  const penny = active.getByRole('group', { name: tr('table.your_hand') }).getByRole('button', { name: cardName('a_penny') }).first();
+  await expect(penny).toBeVisible();
+  const backs = other.locator('.hidden-back');
+  // A hovered or held back is still a back: no card object in it.
+  const hovered = other.locator('.hidden-back[data-presence~="hover"]');
+  const held = other.locator('.hidden-back[data-presence~="held"]');
+  // How far a back sits off its place in the fan, in px, either way.
+  const lift = (l: Locator) => l.evaluate((el) => Math.abs(Number.parseFloat(getComputedStyle(el).translate.split(' ')[1] ?? '0')));
+  await expect(backs.first()).toBeVisible();
+  await expect(other.locator('.hidden-back[data-presence]')).toHaveCount(0);
+
+  // Hovered: one back lifts a little toward the table; it stays a back.
+  const from = await penny.boundingBox();
+  if (!from) {
+    throw new Error('no box');
+  }
+  const x = from.x + 40;
+  const y = from.y + 40;
+  await active.mouse.move(x, y, { steps: 4 });
+  await expect(hovered).toHaveCount(1);
+  await expect.poll(() => lift(hovered)).toBe(14);
+  await expect(hovered.locator('[data-zone^="obj-"]')).toHaveCount(0);
+  await shot(other, 'presence-hand-hover');
+
+  // Dragged: the back floats further out, grows, and sways.
+  await active.mouse.down();
+  await active.mouse.move(x, y - 12, { steps: 2 });
+  await active.mouse.move(x + 40, y - 200, { steps: 6 });
+  await expect(held).toHaveCount(1);
+  await expect(hovered).toHaveCount(0);
+  await expect.poll(() => lift(held)).toBe(56);
+  expect(await held.evaluate((el) => getComputedStyle(el).animationName)).toBe('others-sway');
+  // It sways: its turn changes while the card is held.
+  const turn = () => held.evaluate((el) => getComputedStyle(el).rotate);
+  const first = await turn();
+  await expect.poll(turn, { timeout: 5000 }).not.toBe(first);
+  await shot(other, 'presence-held');
+
+  // Put back on the hand: it goes back into the fan.
+  await active.mouse.move(x, y, { steps: 4 });
+  await active.mouse.up();
+  await expect(held).toHaveCount(0);
 });

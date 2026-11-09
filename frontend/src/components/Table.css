@@ -10,9 +10,9 @@
     "left top right"
     "left board right"
     "left bottom right";
-  gap: 6px;
+  gap: 0.375rem;
   height: 100%;
-  padding: 6px;
+  padding: 0.375rem;
   box-sizing: border-box;
   overflow: hidden;
   /* The mat is a mat-* class. */
@@ -49,7 +49,7 @@
 }
 
 .board {
-  --u: min((100cqw - 4px) / 12.75, (100cqh - 4px) / 3.6, 92px);
+  --u: min((100cqw - 0.25rem) / 12.75, (100cqh - 0.25rem) / 3.6, 5.75rem);
   position: relative;
   display: grid;
   grid-template-columns:
@@ -60,17 +60,17 @@
     "strip info monsters souls decks end"
     "strip info shop souls decks end";
   gap: calc(var(--u) * 0.1) calc(var(--u) * 0.2);
-  /* Four slot cards and their gaps fit the slots column; 4px is the border. */
-  width: calc(var(--u) * 12.75 + 4px);
-  height: calc(var(--u) * 3.6 + 4px);
+  /* Four slot cards and their gaps fit the slots column; 0.25rem is the border. */
+  width: calc(var(--u) * 12.75 + 0.25rem);
+  height: calc(var(--u) * 3.6 + 0.25rem);
   padding: calc(var(--u) * 0.15);
-  border: 2px solid rgb(255 255 255 / 18%);
-  border-radius: 14px;
+  border: 0.125rem solid rgb(255 255 255 / 18%);
+  border-radius: 0.875rem;
   box-sizing: border-box;
   background: rgb(8 12 18 / 55%);
   box-shadow:
-    inset 0 0 24px rgb(0 0 0 / 60%),
-    0 4px 18px rgb(0 0 0 / 45%);
+    inset 0 0 1.5rem rgb(0 0 0 / 60%),
+    0 0.25rem 1.125rem rgb(0 0 0 / 45%);
 }
 
 /* The game waits for the viewer (15.95, V-52): the rim turns green
@@ -80,12 +80,12 @@
    it never covers a card; the inner tint sits under the cards. */
 .board::before {
   position: absolute;
-  inset: -2px;
+  inset: -0.125rem;
   border-radius: inherit;
   box-shadow:
     0 0 0 1px rgb(205 255 175 / 55%),
-    0 0 14px 3px rgb(95 235 65 / 55%),
-    0 0 36px 10px rgb(40 185 40 / 30%);
+    0 0 0.875rem 0.1875rem rgb(95 235 65 / 55%),
+    0 0 2.25rem 0.625rem rgb(40 185 40 / 30%);
   content: "";
   opacity: 0;
   pointer-events: none;
@@ -94,9 +94,9 @@
 .board.my-move {
   border-color: rgb(150 255 120 / 60%);
   box-shadow:
-    inset 0 0 24px rgb(0 0 0 / 60%),
-    inset 0 0 30px rgb(80 220 60 / 16%),
-    0 4px 18px rgb(0 0 0 / 45%);
+    inset 0 0 1.5rem rgb(0 0 0 / 60%),
+    inset 0 0 1.875rem rgb(80 220 60 / 16%),
+    0 0.25rem 1.125rem rgb(0 0 0 / 45%);
   transition:
     border-color 200ms ease-out 150ms,
     box-shadow 200ms ease-out 150ms;
@@ -139,7 +139,7 @@
 }
 
 .board .stack-icon .card.size-small {
-  width: 42px;
+  width: 2.625rem;
 }
 
 .board-strip {
@@ -152,7 +152,7 @@
   grid-area: info;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 0.375rem;
   min-height: 0;
 }
 
@@ -219,13 +219,13 @@
 
 .pile-count {
   position: absolute;
-  right: -6px;
-  bottom: -6px;
-  min-width: 22px;
-  padding: 1px 5px;
-  border-radius: 11px;
+  right: -0.375rem;
+  bottom: -0.375rem;
+  min-width: 1.375rem;
+  padding: 1px 0.3125rem;
+  border-radius: 0.6875rem;
   box-sizing: border-box;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 700;
   text-align: center;
   color: var(--fg);
@@ -237,29 +237,29 @@
   align-items: center;
   justify-content: center;
   aspect-ratio: 63 / 88;
-  border: 2px dashed rgb(255 255 255 / 25%);
+  border: 0.125rem dashed rgb(255 255 255 / 25%);
   border-radius: 5% / 3.6%;
   box-sizing: border-box;
-  font-size: 12px;
+  font-size: 0.75rem;
   color: rgb(255 255 255 / 45%);
 }
 
 .pile-empty.size-table {
-  width: 80px;
+  width: 5rem;
 }
 
 .pile-empty.size-small {
-  width: 60px;
+  width: 3.75rem;
 }
 
 .player {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 0.25rem;
   min-width: 0;
-  padding: 4px 8px 6px;
-  border: 2px solid transparent;
-  border-radius: 8px;
+  padding: 0.25rem 0.5rem 0.375rem;
+  border: 0.125rem solid transparent;
+  border-radius: 0.5rem;
 }
 
 .player.dead {
@@ -269,10 +269,10 @@
 .player-cards,
 .hand {
   display: flex;
-  gap: 6px;
+  gap: 0.375rem;
   min-width: 0;
   /* Room for the highlight glow, which overflow would clip. */
-  padding: 4px;
+  padding: 0.25rem;
   overflow-x: auto;
 }
 
@@ -283,11 +283,11 @@
   display: flex;
   flex-direction: column;
   gap: 1px;
-  text-shadow: 0 1px 3px rgb(0 0 0 / 80%);
+  text-shadow: 0 1px 0.1875rem rgb(0 0 0 / 80%);
 }
 
 .opp-name {
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 
 /* A player's own color (15.21), as the stack names them. */
@@ -312,7 +312,7 @@
   stroke-width: 1.7;
   stroke-linecap: round;
   vertical-align: -0.25em;
-  filter: drop-shadow(0 0 1px rgb(0 0 0 / 90%)) drop-shadow(0 1px 2px rgb(0 0 0 / 70%));
+  filter: drop-shadow(0 0 1px rgb(0 0 0 / 90%)) drop-shadow(0 1px 0.125rem rgb(0 0 0 / 70%));
 }
 
 .player-asked-sand {
@@ -328,33 +328,33 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 2px 10px;
+  gap: 0.125rem 0.625rem;
 }
 
 .opp-coins {
   display: flex;
   align-items: center;
-  gap: 4px;
-  font-size: 20px;
+  gap: 0.25rem;
+  font-size: 1.25rem;
   font-weight: 800;
   line-height: 1.1;
   color: #ffd27a;
 }
 
 .opp-coins .coin {
-  width: 18px;
-  height: 18px;
+  width: 1.125rem;
+  height: 1.125rem;
   border-width: 1px;
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 
 .opp-coins .coin-image {
-  width: 20px;
-  height: 20px;
+  width: 1.25rem;
+  height: 1.25rem;
 }
 
 .player-dead {
-  font-size: 12px;
+  font-size: 0.75rem;
   color: var(--muted);
 }
 
@@ -379,20 +379,20 @@
     "hand hand hand"
     "status character items";
   align-items: start;
-  column-gap: 14px;
+  column-gap: 0.875rem;
   row-gap: 0;
-  padding: 0 8px;
+  padding: 0 0.5rem;
 }
 
 .player-top .hidden-hand {
   grid-area: hand;
   justify-self: center;
   align-items: flex-end;
-  height: 34px;
+  height: 2.125rem;
 }
 
 .player-top .hidden-back {
-  transform: translateY(calc(var(--spread) * var(--spread) * -2px)) rotate(calc(var(--spread) * -5deg));
+  transform: translateY(calc(var(--spread) * var(--spread) * -0.125rem)) rotate(calc(var(--spread) * -5deg));
   transform-origin: 50% -80%;
 }
 
@@ -401,7 +401,7 @@
 }
 
 .player-top .hidden-back + .hidden-back {
-  margin-left: -42px;
+  margin-left: -2.625rem;
 }
 
 .player-top .opp-left {
@@ -409,14 +409,14 @@
   display: flex;
   justify-content: flex-end;
   align-items: flex-start;
-  gap: 14px;
+  gap: 0.875rem;
   min-width: 0;
 }
 
 .player-top .opp-status {
   flex: none;
   align-items: flex-end;
-  padding-top: 6px;
+  padding-top: 0.375rem;
   text-align: right;
 }
 
@@ -436,9 +436,9 @@
    width; with three players the free top lets it grow. */
 .player-left,
 .player-right {
-  width: 150px;
+  width: 9.375rem;
   box-sizing: border-box;
-  padding: 4px;
+  padding: 0.25rem;
 }
 
 /* The curses and the name are items of the column itself. */
@@ -456,18 +456,18 @@
 .player-left .hidden-hand,
 .player-right .hidden-hand {
   align-self: center;
-  margin: 4px 0 6px;
+  margin: 0.25rem 0 0.375rem;
 }
 
 .player-left .hidden-back,
 .player-right .hidden-back {
-  transform: translateY(calc(var(--spread) * var(--spread) * 1.5px)) rotate(calc(var(--spread) * 5deg));
+  transform: translateY(calc(var(--spread) * var(--spread) * 0.0938rem)) rotate(calc(var(--spread) * 5deg));
   transform-origin: 50% 160%;
 }
 
 .player-left .hidden-back + .hidden-back,
 .player-right .hidden-back + .hidden-back {
-  margin-left: -50px;
+  margin-left: -3.125rem;
 }
 
 .player-left .player-cards,
@@ -494,9 +494,9 @@
     "status character items"
     "hand hand hand";
   align-items: end;
-  column-gap: 14px;
+  column-gap: 0.875rem;
   row-gap: 0;
-  padding: 0 8px;
+  padding: 0 0.5rem;
 }
 
 /* Status text, then the turn actions in a column beside it (15.19).
@@ -506,7 +506,7 @@
   display: flex;
   justify-content: flex-end;
   align-items: flex-end;
-  gap: 12px;
+  gap: 0.75rem;
   min-width: 0;
 }
 
@@ -524,21 +524,21 @@
 
 .own-left .turn-actions {
   flex-direction: column;
-  padding-bottom: 6px;
+  padding-bottom: 0.375rem;
 }
 
 .own-status {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 2px;
-  padding-bottom: 4px;
+  gap: 0.125rem;
+  padding-bottom: 0.25rem;
   text-align: right;
-  text-shadow: 0 1px 3px rgb(0 0 0 / 80%);
+  text-shadow: 0 1px 0.1875rem rgb(0 0 0 / 80%);
 }
 
 .own-name {
-  font-size: 16px;
+  font-size: 1rem;
 }
 
 .player.active .own-name {
@@ -549,23 +549,39 @@
 .own-coins {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 30px;
+  gap: 0.375rem;
+  font-size: 1.875rem;
   font-weight: 800;
   line-height: 1.1;
   color: #ffd27a;
+}
+
+/* A buy's price previewed on the own coins while the pointer is on
+   it (20.11): the number dims and "−N" stands beside it; red when the
+   cents are short. */
+.own-coins.cost-preview .count {
+  opacity: 0.6;
+}
+
+.cents-cost {
+  font-size: 0.7em;
+  color: #ffb36b;
+}
+
+.own-coins.short .cents-cost {
+  color: #ff5a4f;
 }
 
 .coin {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 26px;
-  height: 26px;
-  border: 2px solid #8a6212;
+  width: 1.625rem;
+  height: 1.625rem;
+  border: 0.125rem solid #8a6212;
   border-radius: 50%;
   box-sizing: border-box;
-  font-size: 15px;
+  font-size: 0.9375rem;
   color: #6b4a0a;
   text-shadow: none;
   background: radial-gradient(circle at 35% 30%, #ffe9a3, #e0a82e);
@@ -573,8 +589,8 @@
 
 /* The game's own coin (15.38): the image is the whole coin. */
 .coin-image {
-  width: 30px;
-  height: 30px;
+  width: 1.875rem;
+  height: 1.875rem;
   border: none;
   background: none;
   filter: drop-shadow(0 1px 1px rgb(0 0 0 / 60%));
@@ -588,26 +604,26 @@
    like mana crystals in Hearthstone (V-30, V-31). The character cell
    pads its right side as wide, so the card stays centered. */
 .own {
-  --crystal: 16px;
+  --crystal: 1rem;
 }
 
 .opponent {
-  --crystal: 12px;
+  --crystal: 0.75rem;
 }
 
 .own-character,
 .opp-character {
   align-items: flex-end;
-  padding-right: calc(4px + var(--crystal) + 6px);
+  padding-right: calc(0.25rem + var(--crystal) + 0.375rem);
 }
 
 .souls {
   display: flex;
   flex: none;
   flex-direction: column-reverse;
-  gap: 3px;
-  padding-bottom: 6px;
-  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 80%));
+  gap: 0.1875rem;
+  padding-bottom: 0.375rem;
+  filter: drop-shadow(0 1px 0.125rem rgb(0 0 0 / 80%));
 }
 
 /* The rim, and the gem inset in it; both cut as a six-sided gem. */
@@ -630,12 +646,12 @@
 }
 
 .soul-slot::after {
-  inset: 2px;
+  inset: 0.125rem;
   background: rgb(8 14 28 / 80%);
 }
 
 .soul-slot.filled {
-  filter: drop-shadow(0 0 3px #6fd0ff);
+  filter: drop-shadow(0 0 0.1875rem #6fd0ff);
 }
 
 .soul-slot.filled::before {
@@ -660,7 +676,7 @@
 }
 
 .soul-slot.hl-act {
-  filter: drop-shadow(0 0 2px #f5c542) drop-shadow(0 0 5px #f5c542);
+  filter: drop-shadow(0 0 0.125rem #f5c542) drop-shadow(0 0 0.3125rem #f5c542);
 }
 
 .soul-slot.hl-act::before {
@@ -668,7 +684,7 @@
 }
 
 .soul-slot.hl-pick {
-  filter: drop-shadow(0 0 2px #fff) drop-shadow(0 0 5px #4fc3f7);
+  filter: drop-shadow(0 0 0.125rem #fff) drop-shadow(0 0 0.3125rem #4fc3f7);
 }
 
 .soul-slot.hl-pick::before {
@@ -676,11 +692,16 @@
 }
 
 .soul-slot.hl-aim {
-  filter: drop-shadow(0 0 2px #ff4b3e) drop-shadow(0 0 5px #ff4b3e);
+  filter: drop-shadow(0 0 0.125rem #ff4b3e) drop-shadow(0 0 0.3125rem #ff4b3e);
 }
 
 .soul-slot.hl-aim::before {
   background: #ff4b3e;
+}
+
+/* The crystal the own arrow is over glows brighter (20.23). */
+.soul-slot.hl-aim[data-aim-over] {
+  filter: drop-shadow(0 0 0.1875rem #ff8f7f) drop-shadow(0 0 0.5625rem #ff4b3e);
 }
 
 .own-items {
@@ -694,16 +715,17 @@
   justify-content: center;
   align-items: flex-start;
   gap: 0;
-  height: 104px;
-  padding: 12px 0 0;
+  height: 6.5rem;
+  padding: 0.75rem 0 0;
   overflow: visible;
 }
 
-/* The fan: each card turns by its place from the middle and drops a
-   little toward the ends. --spread is set per card, the rest on .hand. */
+/* The fan (20.5, ADR 027 "Hand"): from 4 cards each card turns about
+   its middle by its place and drops a little toward the ends; 1–3
+   lie straight. --fan-angle and --fan-drop are set per card
+   (fanPose), the overlap on .hand. */
 .own .hand-card {
-  transform: translateY(calc(var(--spread) * var(--spread) * var(--fan-drop))) rotate(calc(var(--spread) * var(--fan-step)));
-  transform-origin: 50% 160%;
+  transform: translateY(var(--fan-drop)) rotate(var(--fan-angle));
 }
 
 .own .hand-card + .hand-card {
@@ -722,7 +744,7 @@
    aura in layers, bright near the edge and fading out. The aura
    breathes slowly; only its opacity moves. */
 .own .hand .card.hl-act {
-  box-shadow: 0 2px 6px rgb(0 0 0 / 40%);
+  box-shadow: 0 0.125rem 0.375rem rgb(0 0 0 / 40%);
 }
 
 .own .hand .card.hl-act::after {
@@ -731,39 +753,41 @@
   border-radius: inherit;
   box-shadow:
     inset 0 0 0 1px rgb(236 255 222 / 55%),
-    inset 0 0 8px 1px rgb(150 255 110 / 30%);
+    inset 0 0 0.5rem 1px rgb(150 255 110 / 30%);
   content: "";
   pointer-events: none;
 }
 
-.own .hand-card.usable {
+/* The aura sits on the card's inner box (.drag-tilt), so it tilts with
+   a dragged card (20.6). */
+.own .hand-card.usable > .drag-tilt {
   position: relative;
   isolation: isolate;
 }
 
-.own .hand-card.usable::before,
-.own .hand-card.usable::after {
+.own .hand-card.usable > .drag-tilt::before,
+.own .hand-card.usable > .drag-tilt::after {
   position: absolute;
   inset: -1px;
   z-index: -1; /* layer: local */
-  border-radius: 6px;
+  border-radius: 0.375rem;
   content: "";
   pointer-events: none;
 }
 
 /* The steady part: a crisp light edge and a tight bright halo. */
-.own .hand-card.usable::before {
+.own .hand-card.usable > .drag-tilt::before {
   box-shadow:
     0 0 1px 1px rgb(220 255 190 / 75%),
-    0 0 5px 1px rgb(110 255 70 / 80%),
-    0 0 12px 3px rgb(60 210 45 / 50%);
+    0 0 0.3125rem 1px rgb(110 255 70 / 80%),
+    0 0 0.75rem 0.1875rem rgb(60 210 45 / 50%);
 }
 
 /* The breathing part: the wide, soft falloff. */
-.own .hand-card.usable::after {
+.own .hand-card.usable > .drag-tilt::after {
   box-shadow:
-    0 0 22px 6px rgb(50 200 45 / 40%),
-    0 0 44px 14px rgb(25 150 35 / 22%);
+    0 0 1.375rem 0.375rem rgb(50 200 45 / 40%),
+    0 0 2.75rem 0.875rem rgb(25 150 35 / 22%);
   animation: hand-glow 2.4s ease-in-out infinite alternate;
 }
 
@@ -789,6 +813,11 @@
   touch-action: none;
 }
 
+/* A card just drawn takes no pointer until it has landed (20.7). */
+.hand-card.landing {
+  pointer-events: none;
+}
+
 .hand-card.dragging {
   position: relative;
   z-index: var(--z-drag);
@@ -797,30 +826,79 @@
 }
 
 /* A card that aims stays in the fan, lifted, while its arrow points
-   (15.25). */
-.own .hand-card.aiming {
+   (15.25). A tapped card lifts the same way, and so does one played
+   from there while it waits for the server (20.20). */
+.own .hand-card.aiming,
+.own .hand-card.lifted {
   z-index: var(--z-hand);
-  transform: translateY(-40px) scale(1.08);
+  transform: translateY(-2.5rem) scale(1.08);
 }
 
-/* The aiming arrow (15.32, Aim.tsx), after Hearthstone's: a chain of
-   thick red blocks from the card, placed once with translate and
-   rotate, and a big head whose tip is at the pointer. The chain marches
-   toward the head; the first block fades in and the last fades out in
-   step, so the loop has no seam. On a valid target a ring with cross
-   ticks marks the tip. A little see-through, drawn over everything,
-   outlined so it reads on red art, and never hit by the pointer. Only
-   transform and opacity move; --march follows the animation speed. */
+/* Playing from the hand (20.20, HandCard.tsx). A card picked up by a
+   click follows the pointer, which clicks through it. One that aims
+   stops at the board's edge; a played one waits where it was let go,
+   out of the pointer's way. Going home it flies over its neighbours;
+   its tween is the only motion then. */
+.hand-card.held.dragging,
+.hand-card.waiting {
+  pointer-events: none;
+}
+
+.hand-card.stopped,
+.hand-card.waiting {
+  position: relative;
+  z-index: var(--z-drag);
+  transition: none;
+}
+
+.hand-card.returning {
+  position: relative;
+  z-index: var(--z-hand);
+  transition: none;
+}
+
+/* Over the board the held card's glow turns gold and brighter: it
+   plays there. No zone lights up (ADR 027 "Playing from the hand" 4). */
+.own .hand-card.usable.over > .drag-tilt::before {
+  box-shadow:
+    0 0 1px 1px rgb(255 245 200 / 90%),
+    0 0 0.375rem 0.125rem rgb(255 210 80 / 90%),
+    0 0 0.875rem 0.25rem rgb(245 175 40 / 60%);
+}
+
+.own .hand-card.usable.over > .drag-tilt::after {
+  box-shadow:
+    0 0 1.625rem 0.5rem rgb(250 195 50 / 50%),
+    0 0 3.25rem 1rem rgb(220 145 30 / 28%);
+}
+
+/* A played card shrinking into its stack row (DropLayer), drawn at
+   the hand card's size and scaled from its top left corner. */
+.hand-drop {
+  position: fixed;
+  z-index: var(--z-drag);
+  transform-origin: 0 0;
+  pointer-events: none;
+}
+
+/* The aiming arrow (15.32, 20.23, Aim.tsx), after the reference's
+   (ADR 027 "Target arrow"): long red dashes along a curve, each placed
+   and marched by Aim.tsx with transform and opacity only, and a big
+   head whose tip is at the pointer. On a valid target a ring with
+   cross ticks marks the tip. A little see-through, drawn over
+   everything, outlined so it reads on red art, and never hit by the
+   pointer. Sizes from feel.aim. */
 .aim-arrow {
   position: fixed;
   inset: 0;
   z-index: var(--z-aim);
   pointer-events: none;
   opacity: 0.85;
-  filter: drop-shadow(0 0 1px #000) drop-shadow(0 2px 3px rgb(0 0 0 / 70%));
+  filter: drop-shadow(0 0 1px #000) drop-shadow(0 0.125rem 0.1875rem rgb(0 0 0 / 70%));
 }
 
 .aim-chain,
+.aim-dash,
 .aim-head,
 .aim-ring {
   position: absolute;
@@ -828,57 +906,40 @@
   left: 0;
 }
 
-.aim-march {
-  animation: aim-march var(--march) linear infinite;
-}
-
-.aim-block {
-  position: absolute;
-  top: -13px;
-  left: 0;
-}
-
-.aim-block > div {
-  width: 28px;
-  height: 26px;
+.aim-dash > div {
+  width: var(--aim-dash);
+  height: var(--aim-wide);
+  margin: calc(var(--aim-wide) / -2) 0 0 calc(var(--aim-dash) / -2);
   box-sizing: border-box;
-  border: 2px solid #6e0d08;
-  border-radius: 3px;
+  border: 0.125rem solid #6e0d08;
+  border-radius: 0.3125rem;
   background: linear-gradient(to bottom, #ff7a63, #e53228 40%, #a8170f);
 }
 
-.aim-block > .first {
-  animation: aim-fade-in var(--march) linear infinite;
-}
-
-.aim-block > .last {
-  animation: aim-fade-out var(--march) linear infinite;
-}
-
 .aim-head {
-  width: 48px;
-  height: 60px;
-  margin-top: -30px;
-  margin-left: -48px;
+  width: 3rem;
+  height: 3.75rem;
+  margin-top: -1.875rem;
+  margin-left: -3rem;
   clip-path: polygon(0 0, 100% 50%, 0 100%, 24% 50%);
-  transform-origin: 48px 50%;
+  transform-origin: 3rem 50%;
   background: linear-gradient(to bottom, #ff7a63, #e53228 40%, #a8170f);
 }
 
 .aim-ring > div {
   position: absolute;
-  top: -34px;
-  left: -34px;
-  width: 68px;
-  height: 68px;
+  top: -2.125rem;
+  left: -2.125rem;
+  width: 4.25rem;
+  height: 4.25rem;
   box-sizing: border-box;
-  border: 6px solid #e53228;
+  border: 0.375rem solid #e53228;
   border-radius: 50%;
   opacity: 0;
   transform: scale(1.5);
   transition:
-    opacity calc(var(--march) / 2),
-    transform calc(var(--march) / 2);
+    opacity var(--aim-ring),
+    transform var(--aim-ring);
 }
 
 /* The cross ticks: two bars, see-through in the middle. */
@@ -888,14 +949,14 @@
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 88px;
-  height: 5px;
-  margin: -2.5px 0 0 -44px;
+  width: 5.5rem;
+  height: 0.3125rem;
+  margin: -0.1562rem 0 0 -2.75rem;
   background: linear-gradient(
     to right,
-    #e53228 0 18px,
-    transparent 18px calc(100% - 18px),
-    #e53228 calc(100% - 18px)
+    #e53228 0 1.125rem,
+    transparent 1.125rem calc(100% - 1.125rem),
+    #e53228 calc(100% - 1.125rem)
   );
 }
 
@@ -909,10 +970,17 @@
 }
 
 /* Another player's arrow (15.36, Presence.tsx): the same arrow, under
-   the windows and a little fainter than the own one. */
+   the windows and a little fainter than the own one; no ring (20.23). */
 .aim-arrow.others {
   z-index: var(--z-presence);
   opacity: 0.7;
+}
+
+/* While the own arrow aims with a mouse, its head is the pointer: the
+   system one hides everywhere (20.23, ADR 027 "Target arrow" 6.3). */
+html.aim-cursor,
+html.aim-cursor * {
+  cursor: none !important;
 }
 
 /* What another player's arrow or pointer is over (T-10, T-21): a red
@@ -921,54 +989,102 @@
 .hidden-back[data-presence~='at'] .card,
 .pile[data-presence~='at'] .card,
 .stack-row[data-presence~='at'] {
-  outline: 3px solid #ff4b3e;
-  outline-offset: 2px;
-  box-shadow: 0 0 16px 3px rgb(255 75 62 / 75%);
+  outline: 0.1875rem solid #ff4b3e;
+  outline-offset: 0.125rem;
+  box-shadow: 0 0 1rem 0.1875rem rgb(255 75 62 / 75%);
 }
 
 /* A hidden hand card another player aims with: its back lifts out of
    the fan, toward the board (T-09, T-22). */
 .hidden-back[data-presence~='from'] {
-  translate: 0 -28px;
+  translate: 0 -1.75rem;
   transition: transform 150ms ease-out, translate 150ms ease-out;
 }
 
 .player-top .hidden-back[data-presence~='from'] {
-  translate: 0 28px;
+  translate: 0 1.75rem;
+}
+
+/* What another player hovers on their turn (20.13, ADR 027 "Other
+   players live"): a glow in their color, set as --presence-color by
+   Presence.tsx. Red stays for what an arrow is over. */
+.card[data-presence~='hover'],
+.pile[data-presence~='hover'] .card,
+.stack-row[data-presence~='hover'] {
+  outline: 0.125rem solid var(--presence-color);
+  outline-offset: 0.125rem;
+  box-shadow: 0 0 0.875rem 0.25rem var(--presence-color);
+}
+
+/* A back another player hovers, drags or aims with comes over their
+   own character and items, which it would slide under. */
+.hidden-back[data-presence] {
+  z-index: 1; /* layer: local */
+}
+
+/* A hand card they hover lifts a little toward the table; its back
+   stays a back. Times from feel.others, set on .hidden-hand. */
+.hidden-back[data-presence~='hover'] {
+  translate: 0 calc(-1 * var(--others-hover-lift));
+  transition: transform 150ms ease-out, translate var(--others-hover) var(--others-hover-curve);
+}
+
+.player-top .hidden-back[data-presence~='hover'] {
+  translate: 0 var(--others-hover-lift);
+}
+
+/* A hand card they drag floats out of the hand and grows, then sways
+   slowly until it is played or put back. It sways about the fan's own
+   pivot, so it swings like a held card. */
+.hidden-back[data-presence~='held'] {
+  translate: 0 calc(-1 * var(--others-hold-lift));
+  scale: var(--others-hold-grow);
+  transition:
+    transform 150ms ease-out,
+    translate var(--others-hold) var(--others-hold-curve),
+    scale var(--others-hold) var(--others-hold-curve);
+  animation: others-sway var(--others-sway-period) var(--others-sway-curve) var(--others-hold) infinite;
+}
+
+.player-top .hidden-back[data-presence~='held'] {
+  translate: 0 var(--others-hold-lift);
+}
+
+/* anim: others-hold */
+@keyframes others-sway {
+  0%,
+  100% {
+    rotate: 0deg;
+  }
+
+  25% {
+    rotate: var(--others-sway);
+  }
+
+  75% {
+    rotate: calc(-1 * var(--others-sway));
+  }
+}
+
+.hidden-hand.still .hidden-back {
+  transition: none;
+  animation: none;
 }
 
 .aim-arrow.still *,
 .aim-arrow.still *::before,
 .aim-arrow.still *::after {
-  animation: none;
   transition: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .aim-arrow *,
-  .own .hand-card.usable::after {
+  .hidden-hand .hidden-back {
+    transition: none;
     animation: none;
   }
-}
 
-/* anim: aim-march */
-@keyframes aim-march {
-  to {
-    transform: translateX(36px);
-  }
-}
-
-/* anim: aim-fade-in */
-@keyframes aim-fade-in {
-  from {
-    opacity: 0;
-  }
-}
-
-/* anim: aim-fade-out */
-@keyframes aim-fade-out {
-  to {
-    opacity: 0;
+  .own .hand-card.usable > .drag-tilt::after {
+    animation: none;
   }
 }
 
@@ -985,20 +1101,20 @@
 
 .aim-why > div {
   position: absolute;
-  bottom: 14px;
+  bottom: 0.875rem;
   left: 0;
   width: max-content;
-  max-width: 260px;
-  padding: 6px 12px;
+  max-width: 16.25rem;
+  padding: 0.375rem 0.75rem;
   transform: translateX(-50%);
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 600;
   text-align: center;
   color: #fff;
   background: rgb(60 10 10 / 92%);
   border: 1px solid #e0473c;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgb(0 0 0 / 60%);
+  border-radius: 0.5rem;
+  box-shadow: 0 0.125rem 0.5rem rgb(0 0 0 / 60%);
   animation: aim-why 2.5s linear forwards;
 }
 
@@ -1015,17 +1131,39 @@
 
 /* What the active player does now (15.30): one line, stack colors. */
 .player-activity {
-  font-size: 12px;
+  font-size: 0.75rem;
   font-style: italic;
   color: #fff;
 }
 
 .player-allowance {
-  font-size: 12px;
+  font-size: 0.75rem;
   color: #ffd27a;
 }
 
 /* A narrow column wraps only between the parts. */
 .player-allowance > span {
   white-space: nowrap;
+}
+
+/* The small backs over a deck another player looks at (20.18): fanned
+   on the pile, under its count; they never take the pointer. */
+.deck-look {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.deck-look-back {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 2.625rem;
+  margin-left: -1.3125rem;
+  transform-origin: 50% 100%;
+}
+
+.deck-look-back .card {
+  width: 100%;
+  box-shadow: 0 0.125rem 0.375rem rgb(0 0 0 / 60%);
 }

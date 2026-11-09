@@ -1,9 +1,11 @@
 // Event playback and animations (7.6).
-import type { Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 import { expect, test } from './fixtures';
+import { feel } from '../../frontend/src/feel';
 import { startGame } from './game';
 import { shot } from './shot';
 import { tr } from './locale';
+import { activePage, click, endTurn, endTurnButton, seen, settle, tablePicks, turnAction } from './turn';
 
 // listenSounds records the file of every sound played from now on, in
 // window.played (15.50). Each sound still plays.
@@ -84,9 +86,9 @@ test('a fast burst of updates plays in order and ends on the last one', async ({
   await expect(kai.getByTestId('effect-dice')).toBeVisible();
   await kai.waitForTimeout(300); // let the dice settle for the picture
   await shot(kai, 'effect-dice');
-  // A fly plays between throws only briefly in a fast burst: look for it
-  // on every frame (15.62).
-  await kai.waitForFunction(() => document.querySelector('[data-testid="effect-fly"]') !== null);
+  // A draw plays between throws only briefly in a fast burst: look for
+  // it on every frame (15.62, 20.7).
+  await kai.waitForFunction(() => document.querySelector('[data-testid="effect-draw"]') !== null);
   // The burst plays for 13.6 s on a quiet machine: the last updates play
   // at full speed. 20 s left too little room on a busy one (19.51).
   await expect(kai.getByRole('main', { name: tr('game.turn', { n: 21 }) })).toBeVisible({ timeout: 40_000 });
@@ -232,15 +234,12 @@ test('a roll of several dice throws every die, each with its clatter (19.39)', a
   expect(await played(ola)).toHaveLength(4);
 });
 
-test('an attack lunges at the monster and drops its HP at the hit', async ({ browser }) => {
-  const [vee] = await startGame(browser, ['Vee', 'Wyn']);
-  if (!vee) {
-    throw new Error('no pages');
-  }
-  await listenSounds(vee);
-  // Replay the view with one hit of the own character on the first
-  // monster, whose HP is one lower after it.
-  const ids = await vee.evaluate(() => {
+// attack replays the view with one hit of the own character on the
+// first monster, whose HP is amount lower after it (at least 0), or
+// left when given. cents: the player then gains that many, in the same
+// update (20.4).
+async function attack(page: Page, amount = 1, left?: number, cents = 0): Promise<{ character: number; monster: number; hp: number }> {
+  return page.evaluate(([amount, left, cents]) => {
     interface Card {
       id: number;
       stats?: { hp: number };
@@ -262,46 +261,262 @@ test('an attack lunges at the monster and drops its HP at the hit', async ({ bro
       throw new Error('no game');
     }
     const hp = monster.stats.hp;
-    monster.stats.hp = hp - 1;
+    monster.stats.hp = left ?? Math.max(hp - amount, 0);
     s.receive({
       type: 'update',
       data: {
         ...game,
         step: game.step + 1,
-        events: [{ kind: 'damaged', player: -1, object: monster.id, amount: 1, source: character.id, text: 'combat' }],
+        events: [
+          { kind: 'damaged', player: -1, object: monster.id, amount, source: character.id, text: 'combat' },
+          ...(cents > 0 ? [{ kind: 'gained_cents', player: you, amount: cents }] : []),
+        ],
       },
     });
     return { character: character.id, monster: monster.id, hp };
+  }, [amount, left, cents] as const);
+}
+
+// listenShakes records the id of every shake started from now on, in
+// window.shakes (20.3). Call it once per page; forget empties the list.
+async function listenShakes(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const w = window as unknown as { shakes: string[] };
+    w.shakes = [];
+    const animate = Element.prototype.animate;
+    Element.prototype.animate = function (this: Element, ...args: Parameters<Element['animate']>) {
+      const a = animate.apply(this, args);
+      if (a.id.endsWith('shake')) {
+        w.shakes.push(a.id);
+      }
+      return a;
+    };
   });
-  const character = vee.locator(`[data-zone="obj-${String(ids.character)}"]`);
-  const monster = vee.locator(`[data-zone="obj-${String(ids.monster)}"]`);
-  // The card's copy flies; the card itself waits hidden at home.
-  await expect(vee.getByTestId('lunge')).toBeVisible();
-  await expect(character).toBeHidden();
-  if (process.env.SCREENSHOTS) {
-    // Hold the copy on its way into the monster for the picture.
-    const lunge = vee.getByTestId('lunge');
-    await lunge.evaluate((el) => {
-      for (const a of el.getAnimations()) {
+}
+
+function shakes(page: Page): Promise<string[]> {
+  return page.evaluate(() => (window as unknown as { shakes: string[] }).shakes);
+}
+
+// holdShakes pauses the cards' and the table's shakes at a part of
+// their time, for a screenshot.
+async function holdShakes(page: Page, part: number): Promise<void> {
+  await page.evaluate((part) => {
+    for (const a of document.getAnimations()) {
+      if (a.id.endsWith('shake')) {
         a.pause();
-        a.currentTime = 0.42 * Number(a.effect?.getTiming().duration ?? 0);
+        a.currentTime = part * Number(a.effect?.getTiming().duration ?? 0);
+      }
+    }
+  }, part);
+}
+
+// holdTrail pauses every animation of the effect layer as it starts,
+// so a test steps through them; releaseTrail plays them all again.
+async function holdTrail(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const seen = new WeakSet<Animation>();
+    const mo = new MutationObserver(() => {
+      for (const a of document.querySelector('.effects-trail')?.getAnimations({ subtree: true }) ?? []) {
+        if (!seen.has(a)) {
+          seen.add(a);
+          a.pause();
+        }
       }
     });
-    await shot(vee, 'attack-lunge');
-    await lunge.evaluate((el) => {
-      for (const a of el.getAnimations()) {
+    mo.observe(document.body, { childList: true, subtree: true });
+    (window as unknown as { releaseTrail: () => void }).releaseTrail = () => {
+      mo.disconnect();
+      for (const a of document.querySelector('.effects-trail')?.getAnimations({ subtree: true }) ?? []) {
         a.play();
       }
-    });
+    };
+  });
+}
+
+// seek sets the trail's animations with this id to a part of their
+// time; "finish" ends them.
+async function seek(page: Page, id: string, part: number | 'finish'): Promise<void> {
+  await page.evaluate(
+    ({ id, part }) => {
+      for (const a of document.querySelector('.effects-trail')?.getAnimations({ subtree: true }) ?? []) {
+        if (a.id !== id) {
+          continue;
+        }
+        if (part === 'finish') {
+          a.finish();
+        } else {
+          a.currentTime = part * Number(a.effect?.getTiming().duration ?? 0);
+        }
+      }
+    },
+    { id, part },
+  );
+}
+
+// burstPart is a time of the burst, in seconds, as a part of its own
+// (20.4): it grows, holds and fades in hold + fade.
+function burstPart(seconds: number): number {
+  return seconds / (feel.burst.hold + feel.burst.fade);
+}
+
+// moved is how far an element's animation has moved it from home.
+function moved(page: Page, testid: string): Promise<number> {
+  return page.getByTestId(testid).evaluate((el) => {
+    const m = new DOMMatrix(getComputedStyle(el).transform);
+    return Math.hypot(m.e, m.f);
+  });
+}
+
+// box is where an element is on screen.
+async function box(page: Page, el: Locator): Promise<{ x: number; y: number; width: number; height: number }> {
+  const b = await el.boundingBox();
+  if (!b) {
+    throw new Error('no box');
   }
+  return b;
+}
+
+test('an attack strikes fast, hits on contact and settles back (20.2, 20.19)', async ({ browser }) => {
+  const [vee] = await startGame(browser, ['Vee', 'Wyn']);
+  if (!vee) {
+    throw new Error('no pages');
+  }
+  await listenSounds(vee);
+  await holdTrail(vee);
+  const ids = await attack(vee);
+  const character = vee.locator(`[data-zone="obj-${String(ids.character)}"]`);
+  const monster = vee.locator(`[data-zone="obj-${String(ids.monster)}"]`);
+  // A copy of the attacker moves; the attacker waits hidden at home.
+  // The target stays, seen, in its place (20.19).
+  await expect(vee.getByTestId('lunge')).toBeVisible();
+  await expect(character).toBeHidden();
+  await expect(monster).toBeVisible();
+  const home = await box(vee, monster);
+  const { windup, strike } = feel.lunge;
+  const go = windup + strike;
+  // Windup: the attacker lifts; no hit yet.
+  await seek(vee, 'strike', windup / go);
+  expect(await moved(vee, 'lunge')).toBeGreaterThan(0);
+  await expect(vee.getByTestId('burst')).toHaveCount(0);
+  await shot(vee, 'attack-windup');
+  // Half way through the strike the attacker flies, the target does not
+  // move, and still no hit: it comes after the strike starts, not before.
+  await seek(vee, 'strike', (windup + strike / 2) / go);
+  expect(await box(vee, monster)).toEqual(home);
+  await expect(vee.getByTestId('burst')).toHaveCount(0);
+  expect(await played(vee)).toEqual([]);
+  // Contact: the strike's end lands the hit with its sound. The target
+  // is still home; the attacker overlaps it, short of its centre.
+  await seek(vee, 'strike', 'finish');
   await expect(vee.getByTestId('burst')).toHaveText('−1');
-  // The hit lands with the attack hit sound.
-  expect(await played(vee)).toEqual(['/cardimg/assets/sounds/attack-hit.mp3']);
-  await vee.waitForTimeout(200); // the burst pops
-  await shot(vee, 'attack-hit');
+  expect(await played(vee)).toEqual(['/cardimg/assets/sounds/attack-hit-1.mp3']);
+  // The hit's shake (20.3) may push the target a little, and a lethal
+  // hit jitters the whole table; no more: it never flies (19.132).
+  const shaken = await box(vee, monster);
+  const push = (feel.hit.push[0] ?? 0) * feel.hit.reach + feel.table.reach + 0.01;
+  expect(Math.hypot(shaken.x - home.x, shaken.y - home.y)).toBeLessThanOrEqual(push);
+  const hit = await box(vee, vee.getByTestId('lunge'));
+  const overlaps = hit.x < home.x + home.width && home.x < hit.x + hit.width && hit.y < home.y + home.height && home.y < hit.y + hit.height;
+  expect(overlaps).toBe(true);
+  const centre = (r: typeof home) => ({ x: r.x + r.width / 2, y: r.y + r.height / 2 });
+  expect(Math.hypot(centre(hit).x - centre(home).x, centre(hit).y - centre(home).y)).toBeGreaterThan(0.25 * Math.min(home.width, home.height));
+  await seek(vee, 'settle', 0);
+  await seek(vee, 'burst', burstPart(0.05));
+  await shot(vee, 'attack-contact');
+  // Settle: both ease back home, fast at first, as the burst grows past
+  // its full size (20.4).
+  const at = 0.15 * feel.burst.grow;
+  await seek(vee, 'settle', at / feel.lunge.settle);
+  await seek(vee, 'burst', burstPart(at));
+  await shot(vee, 'attack-settle');
+  await vee.evaluate(() => {
+    (window as unknown as { releaseTrail: () => void }).releaseTrail();
+  });
   await expect(monster.getByLabel(tr('badge.hp', { n: ids.hp - 1 }))).toBeVisible();
   await expect(vee.locator('.effects-trail > *')).toHaveCount(0);
   await expect(character).toBeVisible();
+  await expect(monster).toBeVisible();
+});
+
+test('with reduced motion an attack hits in place (20.2)', async ({ browser }) => {
+  const [vee] = await startGame(browser, ['Vee', 'Wyn']);
+  if (!vee) {
+    throw new Error('no pages');
+  }
+  await vee.emulateMedia({ reducedMotion: 'reduce' });
+  await listenSounds(vee);
+  await listenShakes(vee);
+  const ids = await attack(vee, 4);
+  await expect(vee.getByTestId('burst')).toHaveText('−4');
+  expect(await played(vee)).toEqual(['/cardimg/assets/sounds/attack-hit-3.mp3']);
+  // A large, lethal hit, but nothing shakes (20.3).
+  expect(await shakes(vee)).toEqual([]);
+  await expect(vee.getByTestId('lunge')).toHaveCount(0);
+  const monster = vee.locator(`[data-zone="obj-${String(ids.monster)}"]`);
+  await expect(monster.getByLabel(tr('badge.hp', { n: Math.max(ids.hp - 4, 0) }))).toBeVisible();
+});
+
+// forget empties the lists of played sounds and started shakes.
+async function forget(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const w = window as unknown as { played: string[]; shakes: string[] };
+    w.played = [];
+    w.shakes = [];
+  });
+}
+
+// hitAndShoot plays an attack of amount, holds the trail, and shoots
+// the contact with the shakes a fifth through, at their widest.
+async function hitAndShoot(page: Page, amount: number, name: string, left?: number): Promise<{ hp: number; size: string; width: number }> {
+  await forget(page);
+  await holdTrail(page);
+  const ids = await attack(page, amount, left);
+  await expect(page.getByTestId('lunge')).toBeVisible();
+  await seek(page, 'strike', 'finish');
+  await expect(page.getByTestId('burst')).toHaveText(`−${String(amount)}`);
+  await seek(page, 'settle', 0);
+  await seek(page, 'burst', burstPart(feel.burst.grow));
+  await holdShakes(page, 0.2);
+  await shot(page, name);
+  const burst = page.getByTestId('burst');
+  const size = (await burst.getAttribute('data-size')) ?? '';
+  const width = (await burst.boundingBox())?.width ?? 0;
+  await page.evaluate(() => {
+    (window as unknown as { releaseTrail: () => void }).releaseTrail();
+    for (const a of document.getAnimations()) {
+      if (a.id.endsWith('shake')) {
+        a.play();
+      }
+    }
+  });
+  await expect(page.locator('.effects-trail > *')).toHaveCount(0);
+  return { hp: ids.hp, size, width };
+}
+
+test('a bigger hit looks and sounds bigger (20.3)', async ({ browser }) => {
+  const [vee] = await startGame(browser, ['Vee', 'Wyn']);
+  if (!vee) {
+    throw new Error('no pages');
+  }
+  await listenSounds(vee);
+  await listenShakes(vee);
+  // 1 damage: the small burst and sound; the near cards push a little.
+  const small = await hitAndShoot(vee, 1, 'hit-size-1');
+  expect(small.size).toBe('1');
+  expect(await played(vee)).toEqual(['/cardimg/assets/sounds/attack-hit-1.mp3']);
+  const near = await shakes(vee);
+  expect(near.filter((id) => id === 'hit-shake').length).toBeGreaterThan(0);
+  // The table shakes only when the hit kills.
+  expect(near.includes('table-shake')).toBe(small.hp <= 1);
+  // 4 damage: the large burst and sound; this one kills.
+  const large = await hitAndShoot(vee, 4, 'hit-size-3', 0);
+  expect(large.size).toBe('3');
+  expect(large.width).toBeGreaterThan(small.width * 1.3);
+  expect(await played(vee)).toEqual(['/cardimg/assets/sounds/attack-hit-3.mp3']);
+  const big = await shakes(vee);
+  expect(big).toContain('hit-shake');
+  expect(big).toContain('table-shake');
 });
 
 // The view parts the replays below change.
@@ -388,6 +603,55 @@ test('damage from a card hits every target at once and reddens their HP', async 
   await expect(mo.locator(`[data-zone="obj-${String(ids.character)}"] .card-damage`)).toHaveCount(0);
   await expect(mo.locator('.effects-trail > *')).toHaveCount(0);
   await shot(mo, 'damage-red-hp');
+});
+
+test('the damage number stays while the next effect plays, and stacks on its card (20.4)', async ({ browser }) => {
+  const [vee] = await startGame(browser, ['Vee', 'Wyn']);
+  if (!vee) {
+    throw new Error('no pages');
+  }
+  await holdTrail(vee);
+  // An attack, then a gain of cents in the same update.
+  const ids = await attack(vee, 1, undefined, 3);
+  await expect(vee.getByTestId('lunge')).toBeVisible();
+  await seek(vee, 'strike', 'finish');
+  const number = vee.getByTestId('burst');
+  await expect(number).toHaveText('−1');
+  // The number is held where it starts, yet playback goes on: the next
+  // effect plays while it shows. It stays 3 s in all.
+  await expect(vee.getByTestId('effect-popup')).toBeVisible();
+  await expect(number).toHaveCount(1);
+  const { grow, hold, fade } = feel.burst;
+  expect(await number.evaluate((el) => el.getAnimations()[0]?.effect?.getTiming().duration)).toBe((hold + fade) * 1000);
+  await seek(vee, 'burst', burstPart(grow));
+  await shot(vee, 'damage-number-stays');
+  // Two more hits on the same card, while its first number shows: the
+  // numbers stack, none on another.
+  await expect(vee.locator('.effects')).toHaveCount(0);
+  await vee.evaluate((monster) => {
+    const store = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store;
+    const s = store.getState();
+    const game = structuredClone(s.game);
+    if (!game) {
+      throw new Error('no game');
+    }
+    const events = [1, 2].map(() => ({ kind: 'damaged', player: -1, object: monster, amount: 1 }));
+    s.receive({ type: 'update', data: { ...game, step: game.step + 1, events } });
+  }, ids.monster);
+  await expect(number).toHaveCount(3);
+  await seek(vee, 'burst', burstPart(grow));
+  const boxes = await number.evaluateAll((els) => els.map((el) => el.getBoundingClientRect().toJSON() as DOMRect));
+  for (const [i, a] of boxes.entries()) {
+    for (const b of boxes.slice(i + 1)) {
+      const apart = a.bottom <= b.top + 0.5 || b.bottom <= a.top + 0.5 || a.right <= b.left + 0.5 || b.right <= a.left + 0.5;
+      expect(apart).toBe(true);
+    }
+  }
+  await shot(vee, 'damage-number-stack');
+  await vee.evaluate(() => {
+    (window as unknown as { releaseTrail: () => void }).releaseTrail();
+  });
+  await expect(vee.locator('.effects-trail > *')).toHaveCount(0);
 });
 
 test('a dying monster gets a skull before it leaves', async ({ browser }) => {
@@ -993,10 +1257,11 @@ function tracked(page: Page): Promise<Record<string, { x: number; y: number; w: 
 
 // putLoot shows a loot card of the viewer's hand on the stack as
 // object 700, played by the viewer (mine) or the other player. With
-// played, the update says it was just played.
-async function putLoot(page: Page, mine: boolean, played: boolean): Promise<void> {
+// played, the update says it was just played. With cents, a second
+// update follows at once.
+async function putLoot(page: Page, mine: boolean, played: boolean, cents = false): Promise<void> {
   await page.evaluate(
-    ({ mine, played }) => {
+    ({ mine, played, cents }) => {
       const s = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store.getState();
       const game = structuredClone(s.game) as unknown as {
         step: number;
@@ -1013,8 +1278,12 @@ async function putLoot(page: Page, mine: boolean, played: boolean): Promise<void
       game.view.stack = [{ id: 50, kind: 0, controller, source: 700, card, target: { player: -1 }, ability: none, roll_for: none }];
       const events = played ? [{ kind: 'loot_played', player: controller, object: 700, card }] : [];
       s.receive({ type: 'update', data: { ...game, step: game.step + 1, events } });
+      // cents: the next update comes at once; the controller gains 1¢ (20.9).
+      if (cents) {
+        s.receive({ type: 'update', data: { ...game, step: game.step + 2, events: [{ kind: 'gained_cents', player: controller, amount: 1 }] } });
+      }
     },
-    { mine, played },
+    { mine, played, cents },
   );
 }
 
@@ -1037,6 +1306,8 @@ test("another player's loot card rises from their hand and shrinks into the stac
   await shot(ula, 'played-to-stack');
   await expect(ula.locator('[data-zone="played-700"]')).toBeVisible({ timeout: 5000 });
   await shot(ula, 'played-under-stack');
+  // It stays large a while after the view is drawn, then leaves (20.9).
+  await expect(ula.getByTestId('played-pop')).toHaveCount(0, { timeout: 8000 });
   const { pop } = await tracked(ula);
   const first = pop?.[0];
   const last = pop?.at(-1);
@@ -1050,6 +1321,52 @@ test("another player's loot card rises from their hand and shrinks into the stac
   expect(Math.abs(last.y - stack.y)).toBeLessThan(40);
   expect(last.w).toBeLessThan(140);
 });
+
+for (const mine of [false, true]) {
+  const whose = mine ? 'the viewer\'s own play shows no big card' : "another player's play shows big while the game goes on";
+  test(`${whose} (20.9)`, async ({ browser }) => {
+    const [cid] = await startGame(browser, ['Cid', 'Dot']);
+    if (!cid) {
+      throw new Error('no pages');
+    }
+    // Times, in ms of the page's clock, at which the big card and the
+    // next update's popup first show, and if the big card shows then.
+    await cid.evaluate(() => {
+      const w = window as unknown as { seen: { pop?: number; popup?: number; popWithPopup?: boolean } };
+      w.seen = {};
+      const look = () => {
+        const pop = document.querySelector('[data-testid="played-pop"]');
+        if (pop && w.seen.pop === undefined) {
+          w.seen.pop = performance.now();
+        }
+        if (document.querySelector('[data-testid="effect-popup"]') && w.seen.popup === undefined) {
+          w.seen.popup = performance.now();
+          w.seen.popWithPopup = pop !== null;
+        }
+      };
+      new MutationObserver(look).observe(document.body, { childList: true, subtree: true });
+    });
+    // The play, and at once the next update: its controller gains 1¢.
+    await putLoot(cid, mine, true, true);
+    await expect(cid.getByTestId('effect-popup')).toBeVisible({ timeout: 5000 });
+    if (!mine) {
+      await shot(cid, 'played-stays');
+    }
+    await expect(cid.locator('[data-zone="stack-src-700"]')).toBeVisible();
+    const seen = await cid.evaluate(() => (window as unknown as { seen: { pop?: number; popup?: number; popWithPopup?: boolean } }).seen);
+    if (mine) {
+      expect(seen.pop).toBeUndefined();
+      return;
+    }
+    // The popup waits about the big card's wait, and plays under it.
+    if (seen.pop === undefined || seen.popup === undefined) {
+      throw new Error('no big card or popup');
+    }
+    expect(seen.popup - seen.pop).toBeGreaterThan(feel.played.wait * 1000 - 100);
+    expect(seen.popWithPopup).toBe(true);
+    await expect(cid.getByTestId('played-pop')).toHaveCount(0, { timeout: 8000 });
+  });
+}
 
 for (const mine of [false, true]) {
   const from = mine ? 'its stack row' : 'the large card under the stack';
@@ -1295,10 +1612,167 @@ test('each looted card makes its sound, from the deck or the discard (18.7)', as
     ];
     s.receive({ type: 'update', data: { ...game, step: game.step + 1, events } });
   });
-  await expect(ola.getByTestId('effect-fly')).toBeAttached();
-  await expect(ola.locator('.effects')).toHaveCount(0);
-  // One deal per card, the one from the discard too.
-  expect(await played(ola)).toEqual(Array(3).fill('/cardimg/assets/sounds/loot-draw.mp3'));
+  await expect(ola.getByTestId('effect-draw')).toBeAttached();
+  await expect(ola.locator('.effects')).toHaveCount(0, { timeout: 10_000 });
+  // One deal per card, the one from the discard too; each lands with a
+  // sound of its own, one of three (20.7).
+  const deal = ['/cardimg/assets/sounds/loot-draw.mp3', '/cardimg/assets/sounds/loot-land.mp3'];
+  expect((await played(ola)).map((p) => p.replace(/-\d\.mp3$/, '.mp3'))).toEqual([...deal, ...deal, ...deal]);
+});
+
+// trackDraws records, every frame, how many drawn cards show at once,
+// each draw's largest width and whether it is the viewer's, and if a
+// hand card ever waited to land (20.7). It stops when read, or after 15 s.
+async function trackDraws(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const w = window as unknown as { draws: { most: number; widths: number[]; own: string[]; landing: boolean }; trackingDraws: boolean };
+    w.draws = { most: 0, widths: [], own: [], landing: false };
+    w.trackingDraws = true;
+    let last: Element | undefined;
+    const end = performance.now() + 15_000;
+    const frame = () => {
+      const all = document.querySelectorAll('[data-testid="drawn-card"]');
+      w.draws.most = Math.max(w.draws.most, all.length);
+      const el = all[0];
+      if (el && el !== last) {
+        w.draws.widths.push(0);
+        w.draws.own.push(el.getAttribute('data-own') ?? '');
+      }
+      last = el;
+      if (el) {
+        const i = w.draws.widths.length - 1;
+        w.draws.widths[i] = Math.max(w.draws.widths[i] ?? 0, el.getBoundingClientRect().width);
+      }
+      if (document.querySelector('.hand-card.landing')) {
+        w.draws.landing = true;
+      }
+      if (w.trackingDraws && performance.now() < end) {
+        requestAnimationFrame(frame);
+      }
+    };
+    requestAnimationFrame(frame);
+  });
+}
+
+function draws(page: Page): Promise<{ most: number; widths: number[]; own: string[]; landing: boolean }> {
+  return page.evaluate(() => {
+    const w = window as unknown as { draws: { most: number; widths: number[]; own: string[]; landing: boolean }; trackingDraws: boolean };
+    w.trackingDraws = false;
+    return w.draws;
+  });
+}
+
+// loot replays the view with cards looted by player, each also put in
+// the viewer's hand when they are the viewer's own (20.7).
+async function loot(page: Page, other: boolean, cards: string[], discard = false): Promise<void> {
+  await page.evaluate(
+    ({ other, cards, discard }) => {
+      interface Hand {
+        id: number;
+        card: string;
+        charged: boolean;
+      }
+      interface Store {
+        getState: () => {
+          game: { step: number; view: { players: { id: number; hand_size: number; hand?: Hand[] }[] } } | null;
+          lobby: { table: { you: number } | null };
+          receive: (env: unknown) => void;
+        };
+      }
+      const s = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store.getState();
+      const game = structuredClone(s.game);
+      const you = s.lobby.table?.you ?? 0;
+      const who = game?.view.players.find((p) => (other ? p.id !== you : p.id === you));
+      if (!game || !who) {
+        throw new Error('no game');
+      }
+      who.hand_size += cards.length;
+      const events = cards.map((card, i) => {
+        const id = 1001 + i;
+        if (!other) {
+          who.hand = [...(who.hand ?? []), { id, card, charged: true }];
+        }
+        if (discard) {
+          // From the loot discard: public, every page gets the card.
+          return { kind: 'looted', player: who.id, object: id, card, text: 'from the discard' };
+        }
+        return { kind: 'looted', player: who.id, object: id, ...(other ? {} : { card }), private: true };
+      });
+      s.receive({ type: 'update', data: { ...game, step: game.step + 1, events } });
+    },
+    { other, cards, discard },
+  );
+}
+
+test('an own 3-card draw shows each card at the show spot, one at a time (20.7)', async ({ browser }) => {
+  const [ola] = await startGame(browser, ['Ola', 'Pim']);
+  if (!ola) {
+    throw new Error('no pages');
+  }
+  await listenSounds(ola);
+  await trackDraws(ola);
+  await loot(ola, false, ['a_penny', 'a_dime', 'a_nickel']);
+  await expect(ola.getByTestId('drawn-card')).toBeAttached();
+  // Near the end of its first leg the card is face up at the show spot.
+  await ola.waitForTimeout(800);
+  await shot(ola, 'loot-draw-show');
+  await expect(ola.locator('.effects')).toHaveCount(0, { timeout: 10_000 });
+  await expect(ola.locator('.hand-card.landing')).toHaveCount(0);
+  await shot(ola, 'loot-draw-hand');
+  const d = await draws(ola);
+  // Three draws, each its own card in the air, each shown large.
+  expect(d.most).toBe(1);
+  expect(d.own).toEqual(['true', 'true', 'true']);
+  for (const width of d.widths) {
+    expect(width).toBeGreaterThan(150);
+  }
+  // Their hand cards waited a moment before they took the pointer.
+  expect(d.landing).toBe(true);
+  const deal = ['/cardimg/assets/sounds/loot-draw.mp3', '/cardimg/assets/sounds/loot-land.mp3'];
+  expect((await played(ola)).map((p) => p.replace(/-\d\.mp3$/, '.mp3'))).toEqual([...deal, ...deal, ...deal]);
+});
+
+test('another player\'s draw flies back up to their hand, with no show spot (20.7)', async ({ browser }) => {
+  const [ola] = await startGame(browser, ['Ola', 'Pim']);
+  if (!ola) {
+    throw new Error('no pages');
+  }
+  await listenSounds(ola);
+  await trackDraws(ola);
+  await loot(ola, true, ['', '']);
+  await expect(ola.getByTestId('drawn-card')).toBeAttached();
+  await ola.waitForTimeout(300);
+  await shot(ola, 'loot-draw-other');
+  await expect(ola.locator('.effects')).toHaveCount(0, { timeout: 10_000 });
+  const d = await draws(ola);
+  expect(d.most).toBe(1);
+  expect(d.own).toEqual(['false', 'false']);
+  // A table card's size all the way: never shown large.
+  for (const width of d.widths) {
+    expect(width).toBeLessThan(120);
+  }
+  expect((await played(ola)).map((p) => p.replace(/-\d\.mp3$/, '.mp3'))).toEqual(Array(2).fill('/cardimg/assets/sounds/loot-draw-other.mp3'));
+});
+
+test('another player\'s draw from the loot discard shows its face (20.16)', async ({ browser }) => {
+  const [ola] = await startGame(browser, ['Ola', 'Pim']);
+  if (!ola) {
+    throw new Error('no pages');
+  }
+  await trackDraws(ola);
+  await loot(ola, true, ['a_penny'], true);
+  const drawn = ola.getByTestId('drawn-card');
+  await expect(drawn).toBeAttached();
+  // The face is there and the card stays face up: no back shows.
+  await expect(drawn.locator('.effect-draw-face:not(.effect-draw-back)')).toHaveCount(1);
+  await ola.waitForTimeout(300);
+  await shot(ola, 'loot-draw-other-discard');
+  await expect(ola.locator('.effects')).toHaveCount(0, { timeout: 10_000 });
+  const d = await draws(ola);
+  expect(d.own).toEqual(['false']);
+  for (const width of d.widths) {
+    expect(width).toBeLessThan(120);
+  }
 });
 
 test('a player death makes its sound once, a monster death none (18.8)', async ({ browser }) => {
@@ -1307,6 +1781,7 @@ test('a player death makes its sound once, a monster death none (18.8)', async (
     throw new Error('no pages');
   }
   await listenSounds(ola);
+  await listenShakes(ola);
   // Replay the view with a monster's death and the player's death.
   await ola.evaluate(() => {
     interface Store {
@@ -1331,6 +1806,86 @@ test('a player death makes its sound once, a monster death none (18.8)', async (
   });
   await expect(ola.getByTestId('skull')).toHaveCount(2);
   await expect(ola.locator('.effects')).toHaveCount(0);
+  expect(await played(ola)).toEqual(['/cardimg/assets/sounds/player-died.mp3']);
+  // The player's death shakes the table, once (20.3).
+  expect(await shakes(ola)).toEqual(['table-shake']);
+});
+
+test('players who die in one update make one death sound (20.14)', async ({ browser }) => {
+  const [ola] = await startGame(browser, ['Ola', 'Pim']);
+  if (!ola) {
+    throw new Error('no pages');
+  }
+  await listenSounds(ola);
+  await listenShakes(ola);
+  // Replay the view with both players' deaths, a cents popup between
+  // them, so each has its own skull effect.
+  await ola.evaluate(() => {
+    const s = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store.getState();
+    const game = structuredClone(s.game);
+    if (!game) {
+      throw new Error('no game');
+    }
+    const events = [
+      { kind: 'died', player: 0 },
+      { kind: 'gained_cents', player: 0, amount: 1 },
+      { kind: 'died', player: 1 },
+    ];
+    s.receive({ type: 'update', data: { ...game, step: game.step + 1, events } });
+  });
+  await expect.poll(() => shakes(ola)).toEqual(['table-shake', 'table-shake']);
+  await expect(ola.getByTestId('skull').last()).toBeVisible();
+  await shot(ola, 'deaths-one-sound');
+  await expect(ola.locator('.effects')).toHaveCount(0);
+  // One sound for both; each skull still shakes the table.
+  expect(await played(ola)).toEqual(['/cardimg/assets/sounds/player-died.mp3']);
+  expect(await shakes(ola)).toEqual(['table-shake', 'table-shake']);
+});
+
+test('a lagging client skips small effects, never a player death (20.12)', async ({ browser }) => {
+  const [ola] = await startGame(browser, ['Ola', 'Pim']);
+  if (!ola) {
+    throw new Error('no pages');
+  }
+  await listenSounds(ola);
+  // A burst of 12 updates, as a client far behind gets them: the second
+  // brings cents and the viewer's death, with 10 more still waiting;
+  // each later one brings cents. Every effect played is recorded.
+  await ola.evaluate(() => {
+    interface Effects {
+      subscribe: (f: (s: { playing: { key: number; effect: { kind: string } } | null }) => void) => void;
+    }
+    const w = window as unknown as { fourSouls: { store: Store & Effects }; effects: string[] };
+    const store = w.fourSouls.store;
+    w.effects = [];
+    let last = 0;
+    store.subscribe((s) => {
+      if (s.playing && s.playing.key !== last) {
+        last = s.playing.key;
+        w.effects.push(s.playing.effect.kind);
+      }
+    });
+    const s = store.getState();
+    const game = structuredClone(s.game);
+    if (!game) {
+      throw new Error('no game');
+    }
+    const you = s.lobby.table?.you ?? 0;
+    const cents = { kind: 'gained_cents', player: you, amount: 1 };
+    for (let n = 1; n <= 12; n++) {
+      const events = n === 1 ? [] : n === 2 ? [cents, { kind: 'died', player: you }] : [cents];
+      s.receive({ type: 'update', data: { ...game, step: game.step + n, events } });
+    }
+  });
+  await expect(ola.getByTestId('skull')).toBeVisible();
+  await ola.waitForTimeout(150); // the skull pops
+  await shot(ola, 'catch-up-death');
+  await expect(ola.locator('.effects')).toHaveCount(0, { timeout: 10_000 });
+  // The death played first: the cents before it were dropped, and so
+  // were those of the updates after it while 3 or more still waited.
+  // The last three updates play their cents (feel.catchUp.dropMinor).
+  const effects = await ola.evaluate(() => (window as unknown as { effects: string[] }).effects);
+  expect(effects).toEqual(['deaths', 'popup', 'popup', 'popup']);
   expect(await played(ola)).toEqual(['/cardimg/assets/sounds/player-died.mp3']);
 });
 
@@ -1411,4 +1966,270 @@ test('each gained treasure flies in with its sound; a trinket and a starting ite
   await expect(ola.locator('.effects')).toHaveCount(0);
   // One sound per treasure: the shop buy and the deck's.
   expect(await played(ola)).toEqual(Array(2).fill('/cardimg/assets/sounds/treasure-gain.mp3'));
+});
+
+test('a turn starts with its banner; a pass during it is accepted (20.8)', async ({ browser }) => {
+  const pages = await startGame(browser, ['Ola', 'Pim']);
+  const active = await activePage(pages, click);
+  const next = pages.find((p) => p !== active);
+  if (!next) {
+    throw new Error('no pages');
+  }
+  await listenSounds(next);
+  await listenSounds(active);
+  const before = await seen(next);
+  await endTurn(active);
+  // The end of the turn waits for answers; then both see the banner.
+  const banner = next.getByTestId('turn-banner');
+  const other = active.getByTestId('turn-banner');
+  await settle(pages, click, async () => (await banner.count()) > 0 || (await other.count()) > 0);
+  await expect(banner).toBeAttached();
+  await expect(other).toBeAttached();
+  await next.waitForTimeout(100);
+  await shot(next, 'turn-banner-grow');
+  await next.waitForTimeout(500);
+  await shot(next, 'turn-banner-hold');
+  // The banner is visual only: a pass during it works as always. The
+  // click is made in the page, on the first frame Pass is live while
+  // the banner still shows. Pass is live there whatever the deal: the
+  // new active player's character was just recharged, and its tap needs
+  // no target, so the server never passes for them (TestTurnStartPriority,
+  // 19.125). A start-of-turn trigger (Eve's The Curse) waits on the stack
+  // under that priority; the pass is accepted the same.
+  const passed = await next.waitForFunction(
+    ({ stack, pass }) => {
+      interface S {
+        game: { step: number; view: { turn: { number: number; active: number } } } | null;
+        lobby: { table: { you: number } | null };
+      }
+      const b = document.querySelector('[data-testid="turn-banner"]');
+      const button = [...document.querySelectorAll(`aside[aria-label="${stack}"] button`)].find((x) => x.textContent === pass);
+      if (!b || !(button instanceof HTMLButtonElement) || button.disabled) {
+        return null;
+      }
+      const s = (window as unknown as { fourSouls: { store: { getState: () => S } } }).fourSouls.store.getState();
+      const at = { step: s.game?.step ?? -1, turn: s.game?.view.turn.number ?? 0, active: s.game?.view.turn.active ?? -1, you: s.lobby.table?.you ?? -2 };
+      button.click();
+      return at;
+    },
+    { stack: tr('stack.title'), pass: tr('stack.pass') },
+    { timeout: 5000 },
+  );
+  const at = await passed.jsonValue();
+  if (!at) {
+    throw new Error('no pass during the banner');
+  }
+  expect(at.turn).toBeGreaterThan(before.turn);
+  expect(at.active).toBe(at.you);
+  // The server took the pass: the game moved on, with no error.
+  await expect.poll(async () => (await seen(next)).step, { timeout: 5000 }).toBeGreaterThan(at.step);
+  await expect(next.locator('.action-error')).toHaveText('');
+  await shot(next, 'turn-banner-pass');
+  // Once the others pass too, the turn's loot draw follows.
+  await settle(pages, click, async () => (await next.getByTestId('effect-draw').count()) > 0);
+  await next.waitForTimeout(600);
+  await shot(next, 'turn-banner-draw');
+  await expect(banner).toHaveCount(0, { timeout: 5000 });
+  await shot(next, 'turn-banner-after');
+  // Only the new active player hears the turn start (20.17).
+  const turnStart = '/cardimg/assets/sounds/turn-start.mp3';
+  expect((await played(next)).filter((f) => f === turnStart)).toEqual([turnStart]);
+  expect((await played(active)).filter((f) => f === turnStart)).toEqual([]);
+});
+
+// cueTimes records when End turn's cue plays from now on, in ms of the
+// page's clock (20.10). Each sound still plays.
+async function cueTimes(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const w = window as unknown as { cues: number[] };
+    w.cues = [];
+    const play = HTMLMediaElement.prototype.play;
+    HTMLMediaElement.prototype.play = function (this: HTMLMediaElement) {
+      if (new URL(this.src).pathname.endsWith('/end-turn-cue.mp3')) {
+        w.cues.push(performance.now());
+      }
+      return play.call(this);
+    };
+  });
+}
+
+function cues(page: Page): Promise<number[]> {
+  return page.evaluate(() => (window as unknown as { cues: number[] }).cues);
+}
+
+// feedTurn plays the viewer's game again as the next update and says
+// when, in ms of the page's clock (20.10). done allows only passing and
+// ending the turn; else the turn's own intents, saved on the first
+// call, with an attack added, so a play is left whatever the deal.
+// later adds to the turn's number, as a later own turn.
+async function feedTurn(page: Page, done: boolean, later = 0): Promise<number> {
+  return page.evaluate(
+    ({ done, later }) => {
+      interface Intent {
+        player: number;
+        kind: number;
+      }
+      const w = window as unknown as {
+        fourSouls: { store: Store };
+        fed?: { allowed: Intent[]; turn: number };
+      };
+      const s = w.fourSouls.store.getState();
+      const game = structuredClone(s.game) as unknown as { step: number; allowed: Intent[]; view: { turn: { number: number } } } | null;
+      const you = s.lobby.table?.you ?? 0;
+      if (!game) {
+        throw new Error('no game');
+      }
+      w.fed ??= { allowed: game.allowed, turn: game.view.turn.number };
+      const own = w.fed.allowed.some((a) => a.kind === 5) ? w.fed.allowed : [...w.fed.allowed, { player: you, kind: 5 }];
+      const allowed = done ? w.fed.allowed.filter((a) => a.kind === 0 || a.kind === 1) : own;
+      const view = { ...game.view, turn: { ...game.view.turn, number: w.fed.turn + later } };
+      s.receive({ type: 'update', data: { ...game, step: game.step + 1, events: [], allowed, view } });
+      return performance.now();
+    },
+    { done, later },
+  );
+}
+
+test('End turn turns green once nothing is left, and cues once per turn (20.10)', async ({ browser }) => {
+  const pages = await startGame(browser, ['Ari', 'Bo']);
+  const active = await activePage(pages, click);
+  const button = endTurnButton(active);
+  await expect(button).toBeEnabled();
+  await cueTimes(active);
+  await active.mouse.move(600, 300);
+
+  // A play is left: yellow, no cue.
+  await feedTurn(active, false);
+  await expect(button).toHaveAttribute('data-look', 'turn');
+  await shot(active, 'end-turn-plays');
+  // Nothing left: green, and the cue about 1.5 s later.
+  const first = await feedTurn(active, true);
+  await expect(button).toHaveAttribute('data-look', 'done');
+  await expect(button).toHaveClass(/idle/);
+  await shot(active, 'end-turn-done');
+  await button.hover();
+  await active.waitForTimeout(feel.endTurn.hoverTime * 1000 + 100);
+  await shot(active, 'end-turn-done-hover');
+  await active.mouse.move(600, 300);
+  await expect.poll(() => cues(active), { timeout: 5000 }).toHaveLength(1);
+  const [cue = 0] = await cues(active);
+  expect(cue - first).toBeGreaterThan(feel.endTurn.cue * 1000 - 100);
+
+  // The same turn: a play comes and goes; no second cue.
+  await feedTurn(active, false);
+  await expect(button).toHaveAttribute('data-look', 'turn');
+  await feedTurn(active, true);
+  await expect(button).toHaveAttribute('data-look', 'done');
+  // A later own turn has its own cue. A second cue of the first turn
+  // would have come before it.
+  const next = await feedTurn(active, true, 1);
+  await expect.poll(() => cues(active), { timeout: 5000 }).toHaveLength(2);
+  const [, second = 0] = await cues(active);
+  expect(second - next).toBeGreaterThan(feel.endTurn.cue * 1000 - 100);
+});
+
+test('End turn skips its cue if a play became possible meanwhile (20.10)', async ({ browser }) => {
+  const pages = await startGame(browser, ['Cy', 'Di']);
+  const active = await activePage(pages, click);
+  await expect(endTurnButton(active)).toBeEnabled();
+  await cueTimes(active);
+  await feedTurn(active, true);
+  await expect(endTurnButton(active)).toHaveAttribute('data-look', 'done');
+  // A play comes back before the cue: that turn stays silent.
+  await feedTurn(active, false);
+  await expect(endTurnButton(active)).toHaveAttribute('data-look', 'turn');
+  // The next own turn cues; the skipped one would have come first.
+  const next = await feedTurn(active, true, 1);
+  await expect.poll(() => cues(active), { timeout: 5000 }).toHaveLength(1);
+  const [cue = 0] = await cues(active);
+  expect(cue - next).toBeGreaterThan(feel.endTurn.cue * 1000 - 100);
+});
+
+// feedCents plays the viewer's game again as the next update, with
+// their cents changed by n (20.11), and says what they were.
+async function feedCents(page: Page, n: number): Promise<number> {
+  return page.evaluate((n) => {
+    const w = window as unknown as { fourSouls: { store: Store } };
+    const s = w.fourSouls.store.getState();
+    const game = structuredClone(s.game) as unknown as { step: number; view: { players: { id: number; cents: number }[] } } | null;
+    const you = s.lobby.table?.you ?? 0;
+    const me = game?.view.players.find((p) => p.id === you);
+    if (!game || !me) {
+      throw new Error('no game');
+    }
+    const was = me.cents;
+    me.cents += n;
+    s.receive({ type: 'update', data: { ...game, step: game.step + 1, events: [] } });
+    return was;
+  }, n);
+}
+
+// countSteps records each number the own coin counter shows from now
+// on, with when, in window.counts (20.11); it stops the one before.
+async function countSteps(page: Page): Promise<void> {
+  await page.evaluate(() => {
+    const w = window as unknown as { counts: { n: number; at: number }[]; counter?: MutationObserver };
+    w.counts = [];
+    w.counter?.disconnect();
+    const el = document.querySelector('.own-coins .count');
+    if (!el) {
+      throw new Error('no coin counter');
+    }
+    w.counter = new MutationObserver(() => {
+      w.counts.push({ n: Number(el.getAttribute('data-count')), at: performance.now() });
+    });
+    w.counter.observe(el, { attributes: true, attributeFilter: ['data-count'] });
+  });
+}
+
+function counts(page: Page): Promise<{ n: number; at: number }[]> {
+  return page.evaluate(() => (window as unknown as { counts: { n: number; at: number }[] }).counts);
+}
+
+test('a +3¢ counts 1, 2, 3, a step at a time (20.11)', async ({ browser }) => {
+  const pages = await startGame(browser, ['Ari', 'Bo']);
+  const active = await activePage(pages, click);
+  await expect(endTurnButton(active)).toBeEnabled();
+  const coins = active.locator('.own-coins .count');
+  // Whatever the deal gave, the counter is done counting first.
+  const cents = await active.evaluate(() => {
+    const s = (window as unknown as { fourSouls: { store: Store } }).fourSouls.store.getState();
+    const game = s.game as unknown as { view: { players: { id: number; cents: number }[] } } | null;
+    return game?.view.players.find((p) => p.id === (s.lobby.table?.you ?? 0))?.cents ?? -1;
+  });
+  await expect(coins).toHaveAttribute('data-count', String(cents));
+  await countSteps(active);
+  const was = await feedCents(active, 3);
+  expect(was).toBe(cents);
+  await expect(coins).toHaveAttribute('data-count', String(cents + 3));
+  const steps = await counts(active);
+  expect(steps.map((s) => s.n)).toEqual([cents + 1, cents + 2, cents + 3]);
+  // 0.2 s apart, give or take a frame.
+  const [a, b, c] = steps.map((s) => s.at);
+  expect((b ?? 0) - (a ?? 0)).toBeGreaterThan(feel.count.step * 1000 - 50);
+  expect((c ?? 0) - (b ?? 0)).toBeGreaterThan(feel.count.step * 1000 - 50);
+  await shot(active, 'cents-counted');
+
+  // Down by 2: two steps, the other way.
+  await countSteps(active);
+  await feedCents(active, -2);
+  await expect(coins).toHaveAttribute('data-count', String(cents + 1));
+  expect((await counts(active)).map((s) => s.n)).toEqual([cents + 2, cents + 1]);
+});
+
+test('a buy previews its cost on the cents counter while hovered (20.11)', async ({ browser }) => {
+  const pages = await startGame(browser, ['Cy', 'Di']);
+  const active = await activePage(pages, click);
+  await expect(turnAction(active, 'Buy')).toBeEnabled();
+  await active.keyboard.press('b');
+  await settle(pages, click, async () => tablePicks(active).first().isVisible());
+  const coins = active.locator('.own-coins');
+  await expect(coins.locator('.cents-cost')).toHaveCount(0);
+  // The treasure deck's top costs the base price whatever the deal.
+  await active.locator('[data-zone="deck-treasure"] .card').hover();
+  await expect(coins.locator('.cents-cost')).toHaveText('−10');
+  await expect(coins.getByRole('status', { name: 'Costs 10 cents' })).toBeVisible();
+  await shot(active, 'cents-cost-preview');
+  await active.mouse.move(5, 5);
+  await expect(coins.locator('.cents-cost')).toHaveCount(0);
 });

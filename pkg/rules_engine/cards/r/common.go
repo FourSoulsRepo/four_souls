@@ -536,24 +536,14 @@ func afterRewardsAnotherPlayer(they string, effects ...engine.Effect) engine.Abi
 }
 
 // rechargeYourItem: the controller recharges a deactivated item they
-// control.
+// control; cardkit.RechargeableItems is the rule (19.146).
 var rechargeYourItem = engine.Ask(func(c *engine.Ctx, a []int) {
-	if ids := deactivatedItems(c.G, c.Controller); a[0] >= 0 && a[0] < len(ids) {
+	if ids := cardkit.RechargeableItems(c.G, c.Controller); a[0] >= 0 && a[0] < len(ids) {
 		c.G.Recharge(ids[a[0]])
 	}
 }, engine.Question{Text: cardkit.AskRechargeWhichItem, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
-	return labelsOf(c.G, deactivatedItems(c.G, c.Controller))
+	return labelsOf(c.G, cardkit.RechargeableItems(c.G, c.Controller))
 }})
-
-func deactivatedItems(g *engine.Game, p engine.PlayerID) []engine.ObjectID {
-	var out []engine.ObjectID
-	for _, id := range itemsOf(g, p) {
-		if !g.Object(id).Charged {
-			out = append(out, id)
-		}
-	}
-	return out
-}
 
 // centsEqualToRoll: the roller gains ¢ equal to the result.
 func centsEqualToRoll() engine.RollTable {

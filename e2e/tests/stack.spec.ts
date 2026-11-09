@@ -19,6 +19,7 @@ import {
   turnAction,
   turnNumber,
   untilAttackRoll,
+  untilStackWaits,
 } from './turn';
 import { anyOf as any, cardName, lineRe, tr, trRe, whole } from './locale';
 
@@ -101,26 +102,98 @@ test('a player may wait for their turn; the end of the turn before asks them (N-
   }
 });
 
-test('the response timer counts down for the waiting player', async ({ browser }) => {
+// feedDeadline plays the page's game again as the next update with the
+// response timer at left ms from now (20.15), and starts a new list of
+// the timer's sounds in window.ticks, in the same step, so no tick of
+// the timer before gets in. It returns the deadline.
+async function feedDeadline(page: Page, left: number): Promise<number> {
+  return page.evaluate((left) => {
+    const w = window as unknown as {
+      fourSouls: { store: { getState: () => { game: { step: number } | null; receive: (e: unknown) => void } } };
+      ticks?: string[];
+      tickHook?: boolean;
+    };
+    if (!w.tickHook) {
+      w.tickHook = true;
+      const play = HTMLMediaElement.prototype.play;
+      HTMLMediaElement.prototype.play = function (this: HTMLMediaElement) {
+        const file = new URL(this.src).pathname.split('/').pop() ?? '';
+        if (file.startsWith('timer-')) {
+          w.ticks?.push(file);
+        }
+        return play.call(this);
+      };
+    }
+    const s = w.fourSouls.store.getState();
+    const game = structuredClone(s.game);
+    if (!game) {
+      throw new Error('no game');
+    }
+    const deadline = Date.now() + left;
+    w.ticks = [];
+    s.receive({ type: 'update', data: { ...game, step: game.step + 1, events: [], deadline } });
+    return deadline;
+  }, left);
+}
+
+function ticks(page: Page): Promise<string[]> {
+  return page.evaluate(() => (window as unknown as { ticks: string[] }).ticks);
+}
+
+test('the response timer shows only in its last 20 s, and ticks for its player (20.15)', async ({ browser }) => {
   const pages = await startGame(browser, ['Uma', 'Vic'], {
-    url: fast(),
     setup: async (host) => {
       await host.getByLabel(tr('host.detailed')).check();
       await host.getByLabel(tr('host.timer')).selectOption('60');
     },
   });
   const active = await activePage(pages, click);
-  const timer = active.getByLabel(tr('actions.time_left'));
-  await expect(timer).toHaveText(new RegExp(`· ${trRe('actions.seconds').source}`));
-  const first = Number((await timer.textContent())?.match(/\d+/)?.[0]);
-  expect(first).toBeGreaterThan(0);
-  await expect.poll(async () => Number((await timer.textContent())?.match(/\d+/)?.[0])).toBeLessThan(first);
+  const other = pages.find((p) => p !== active);
+  if (!other) {
+    throw new Error('no other page');
+  }
+  const banner = (page: Page) => page.getByRole('region', { name: tr('banner.label') });
+  const timer = (page: Page) => page.getByLabel(tr('actions.time_left'));
+  const left = async (page: Page) => Number((await timer(page).textContent())?.match(/\d+/)?.[0]);
+  // The server's own timer has 65 s left: it does not show.
+  await expect(banner(active)).toHaveAttribute('data-deadline', /^[1-9]/);
+  await expect(timer(active)).toHaveCount(0);
+
+  for (const page of pages) {
+    const at25 = await feedDeadline(page, 25_000);
+    await expect(banner(page)).toHaveAttribute('data-deadline', String(at25));
+    await expect(timer(page)).toHaveCount(0);
+  }
+  await shot(active, 'timer-25');
+  for (const page of pages) {
+    const at15 = await feedDeadline(page, 15_000);
+    await expect(banner(page)).toHaveAttribute('data-deadline', String(at15));
+    await expect(timer(page)).toBeVisible();
+    expect(await left(page)).toBeGreaterThanOrEqual(13);
+    expect(await left(page)).toBeLessThanOrEqual(15);
+  }
+  await shot(active, 'timer-15');
+  await shot(other, 'timer-15-other');
+
+  // Its last seconds: a tick each second, a different one at 0, only
+  // for the player it waits for.
+  for (const page of pages) {
+    await feedDeadline(page, 2_500);
+  }
+  await expect.poll(() => ticks(active), { timeout: 5000 }).toEqual(['timer-tick.mp3', 'timer-tick.mp3', 'timer-last.mp3']);
+  expect(await left(active)).toBe(0);
+  expect(await ticks(other)).toEqual([]);
 });
 
 // waitLine is a stack panel line with "You" turned into the page's own
-// name, so every page's line can be compared.
+// name, so every page's line can be compared. A question's prompt line
+// has the same label but is not one of them: its asked player sees it
+// alone, the others after the player's name (19.126).
 async function waitLine(page: Page, me: string, label: string): Promise<string> {
-  const line = page.getByRole('complementary', { name: tr('stack.title') }).getByLabel(label === 'Passed' ? tr('stack.passed_label') : tr('stack.waiting_label'), { exact: true });
+  const line = page
+    .getByRole('complementary', { name: tr('stack.title') })
+    .getByLabel(label === 'Passed' ? tr('stack.passed_label') : tr('stack.waiting_label'), { exact: true })
+    .filter({ hasText: label === 'Passed' ? trRe('stack.passed') : trRe('stack.waiting') });
   if ((await line.count()) === 0) {
     return '';
   }
@@ -135,17 +208,24 @@ async function expectSameLines(pages: Page[], names: string[], want: string): Pr
   }
 }
 
+// A Penny! asks nothing, and the active player's character was charged
+// as the turn started (19.125): so the stack waits for a response,
+// whatever the deal. A dealt card could ask a question as it resolves
+// instead, and the test then compared a prompt line (19.126).
 test('every player sees whom the stack waits for (V-11)', async ({ browser }) => {
-  const names = ['Abe', 'Bea', 'Cal', 'Dot'];
+  // A repeat (--repeat-each) gets its own names: the saved games list
+  // keeps the earlier repeats' games.
+  const r = test.info().repeatEachIndex;
+  const names = ['Abe', 'Bea', 'Cal', 'Dot'].map((n) => (r > 0 ? `${n}${String(r)}` : n));
   const pages = await startGame(browser, names, { url: fast() });
+  await activePage(pages, click);
+  await saveAndContinue(pages, names.join(', '), 'a_penny');
   const active = await activePage(pages, click);
   const me = names[pages.indexOf(active)] ?? '';
-  const loot = active.locator('.hand .card.hl-act').first();
-  test.skip(!(await loot.isVisible()), 'no playable loot card in this deal');
-  await playLoot(active, loot, click);
+  await playLoot(active, active.getByRole('group', { name: tr('table.your_hand') }).getByRole('button', { name: cardName('a_penny') }).first(), click);
   const stack = active.getByRole('complementary', { name: tr('stack.title') });
-  await answerPlay(active, click);
-  await expect(stack).toContainText(any(trRe('stack.waiting'), /: /));
+  await expect(stack).toContainText(trRe('stack.loot', { card: cardName('a_penny') }));
+  await untilStackWaits(pages);
   const want = (await waitLine(active, me, 'Waiting for')) + (await waitLine(active, me, 'Passed'));
   expect(want).not.toBe('');
   await expectSameLines(pages, names, want);
@@ -153,7 +233,7 @@ test('every player sees whom the stack waits for (V-11)', async ({ browser }) =>
 
   // A pass moves the player to "Passed" on every table.
   const pass = passButton(active);
-  test.skip(!(await pass.isEnabled()), 'the loot card asked something first');
+  await expect(pass).toBeEnabled();
   await pass.click();
   // Unless everyone else was skipped and the item resolved.
   await expect

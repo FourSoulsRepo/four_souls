@@ -37,7 +37,7 @@ func rechargeUpTo(n int) engine.Effect {
 	items := func(c *engine.Ctx) []engine.ObjectID {
 		var out []engine.ObjectID
 		for _, id := range itemsOf(c.G, engine.NoPlayer) {
-			if id != c.Source && !c.G.Object(id).Charged {
+			if id != c.Source && engine.Rechargeable(c.G, id) {
 				out = append(out, id)
 			}
 		}

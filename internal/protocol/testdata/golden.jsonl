@@ -25,6 +25,7 @@
 {"type":"presence","data":{"seat":1,"from":{"object":314},"at":{"player":0}}}
 {"type":"presence","data":{"seat":1,"at":{"deck":2}}}
 {"type":"presence","data":{"seat":1,"at":{"stack_id":3}}}
+{"type":"presence","data":{"seat":1,"held":{"hand":4}}}
 {"type":"rollback","id":18,"data":{"step":7}}
 {"type":"rollback","id":19,"data":{"step":7,"ask":true}}
 {"type":"rollback_vote","id":20,"data":{"yes":true}}

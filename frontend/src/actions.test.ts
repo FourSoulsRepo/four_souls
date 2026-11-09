@@ -3,6 +3,7 @@ import {
   ActionKind,
   actionsFor,
   aimedOption,
+  endTurnLook,
   IntentKind,
   modeLines,
   orderIntent,
@@ -10,6 +11,7 @@ import {
   PromptKind,
   Purpose,
   sameTarget,
+  shownByChoice,
 } from './actions';
 import type { Msg, Update } from './protocol';
 
@@ -371,3 +373,52 @@ describe('modeLines', () => {
     expect(modeLines(choice, modes).cancel).toEqual(pick(1));
   });
 });
+
+describe('endTurnLook (20.10)', () => {
+  const turn = (allowed: Update['allowed']) => actionsFor(update({}, allowed), names).turn;
+  const end = { player: 0, kind: IntentKind.endTurn };
+  const pass = { player: 0, kind: IntentKind.pass };
+
+  it('is waiting on another player\'s turn, whatever is allowed', () => {
+    expect(endTurnLook(turn([end, pass]), false, true)).toBe('waiting');
+    expect(endTurnLook(turn([]), false, false)).toBe('waiting');
+  });
+
+  it('is turn on the own turn while plays are left', () => {
+    expect(endTurnLook(turn([end, pass, { player: 0, kind: IntentKind.attack }]), true, true)).toBe('turn');
+    expect(endTurnLook(turn([end, { player: 0, kind: IntentKind.playLoot, objects: [7] }]), true, true)).toBe('turn');
+    expect(endTurnLook(turn([end, { player: 0, kind: IntentKind.activate, objects: [3] }]), true, true)).toBe('turn');
+  });
+
+  it('is turn while ending is not allowed yet', () => {
+    expect(endTurnLook(turn([pass]), true, true)).toBe('turn');
+    expect(endTurnLook(turn([]), true, true)).toBe('turn');
+  });
+
+  it('is done once only passing and ending are left', () => {
+    expect(endTurnLook(turn([end, pass]), true, true)).toBe('done');
+    expect(endTurnLook(turn([end]), true, true)).toBe('done');
+  });
+
+  it('is turn, not done, while the viewer may not act', () => {
+    expect(endTurnLook(turn([end, pass]), true, false)).toBe('turn');
+  });
+});
+
+describe('shownByChoice', () => {
+  it('lists the card options and the subject of the own choose prompt (19.130)', () => {
+    const u = update(
+      {
+        waiting: { kind: PromptKind.choose, player: 0, purpose: Purpose.answer, options: [card('a_dime'), card('bomb'), m('ask.yes')] },
+        subject: { id: 9, card: 'a_penny', charged: false },
+      },
+      [],
+    );
+    expect([...shownByChoice(u, 0)].sort()).toEqual(['a_dime', 'a_penny', 'bomb']);
+    // Another player's prompt, or no prompt, showed this viewer nothing.
+    expect(shownByChoice(u, 1).size).toBe(0);
+    expect(shownByChoice(update({}, []), 0).size).toBe(0);
+    expect(shownByChoice(null, 0).size).toBe(0);
+  });
+});
+

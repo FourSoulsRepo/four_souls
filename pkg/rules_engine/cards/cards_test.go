@@ -115,7 +115,10 @@ func playSets(t *testing.T, s engine.Setup, choices []byte) {
 		if g.Over {
 			break
 		}
-		p := g.Prompt()
+		// Of several players who may answer at once (start-of-game
+		// choices, 20.22), the input picks who answers first.
+		who := g.Prompt().Who()
+		p := g.PromptFor(who[int(c)%len(who)])
 		allowed := g.Allowed(p.Player)
 		if len(allowed) == 0 {
 			t.Fatalf("step %d: nothing allowed, prompt %+v", i, p)

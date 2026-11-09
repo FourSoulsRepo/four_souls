@@ -33,5 +33,9 @@ export default defineConfig(({ mode }) => ({
   test: {
     // The animation inventory reads the CSS as text (animations.test.ts).
     css: true,
+    // Vitest 5 keeps transformed files on disk across runs. A file with
+    // import.meta.glob<T>( is cached too, so its file list goes stale:
+    // the inventory tests then miss a new file (19.124). It saves 0.2 s.
+    fsModuleCache: false,
   },
 }))

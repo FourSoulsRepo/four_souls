@@ -130,6 +130,12 @@ async function answer(pages: Page[], press: Tap, steps: number[]): Promise<boole
       await press(page, mode.locator('.ability-line:enabled').first());
       return true;
     }
+    // A start-of-game pick waits for Confirm (20.22).
+    const confirm = page.locator('.choice .choice-confirm');
+    if (await enabled(confirm)) {
+      await press(page, confirm);
+      return true;
+    }
     const choice = page.locator('.choice:not(.look)');
     if (await choice.isVisible()) {
       // Prefer picking on the table, as a player would (7.7), where the
@@ -205,20 +211,32 @@ export function tablePicks(page: Page): Locator {
 }
 
 // attackRollWaits: the page's player must throw their attack roll. The
-// roll on top of the stack is the attack's, the attack has its target,
-// and the Throw button shows. Another roll does not count: Bob's Brain
-// rolls when the attack is declared, before the target (19.85).
+// throw is for the attack roll, the roll is on the stack not yet thrown,
+// the attack has its target, and the Throw button shows. Another roll
+// does not count: Bob's Brain rolls when the attack is declared, before
+// the target (19.85). The roll need not be on top: a die is thrown as
+// it goes on the stack (R-DICE-02), so a trigger of the target (Pride)
+// may already wait above it (19.113).
 export async function attackRollWaits(page: Page): Promise<boolean> {
   const waits = await page.evaluate(() => {
     interface S {
-      game: { view: { waiting: { kind: number; player: number }; stack?: { kind: number; attack?: boolean }[]; attack?: { target?: number } } } | null;
+      game: {
+        view: { waiting: { kind: number; player: number; text?: { key?: string } }; stack?: { kind: number; attack?: boolean; roll?: number }[]; attack?: { target?: number } };
+      } | null;
       lobby: { table: { you: number } | null };
     }
     const s = (window as unknown as { fourSouls: { store: { getState: () => S } } }).fourSouls.store.getState();
     const view = s.game?.view;
-    const top = view?.stack?.at(-1);
     // 6 is PromptKind.throw (actions.ts); 3 is StackKind.roll (stack.ts).
-    return view !== undefined && view.waiting.kind === 6 && view.waiting.player === s.lobby.table?.you && top?.kind === 3 && top.attack === true && (view.attack?.target ?? 0) !== 0;
+    const roll = view?.stack?.some((it) => it.kind === 3 && it.attack === true && !it.roll) ?? false;
+    return (
+      view !== undefined &&
+      view.waiting.kind === 6 &&
+      view.waiting.player === s.lobby.table?.you &&
+      view.waiting.text?.key === 'event.attack_roll' &&
+      roll &&
+      (view.attack?.target ?? 0) !== 0
+    );
   });
   return waits && (await throwButton(page).count()) > 0;
 }
@@ -228,6 +246,30 @@ export async function attackRollWaits(page: Page): Promise<boolean> {
 // get answered: the target, and any card the attack sets off.
 export async function untilAttackRoll(pages: Page[], press: Tap, attacker: Page): Promise<void> {
   await settle(pages, press, () => attackRollWaits(attacker));
+}
+
+// stackWaits: the page shows the latest state, where the stack holds an
+// item and waits for a response to it (V-11). A resolving card's
+// question does not count: it shows as a prompt line instead (19.126).
+export async function stackWaits(page: Page): Promise<boolean> {
+  const ready = (await seen(page)).ready;
+  return (
+    ready &&
+    (await page.evaluate(() => {
+      interface S {
+        game: { view: { waiting: { kind: number }; stack?: unknown[] | null } } | null;
+      }
+      const view = (window as unknown as { fourSouls: { store: { getState: () => S } } }).fourSouls.store.getState().game?.view;
+      // 1 is PromptKind.priority (actions.ts).
+      return view?.waiting.kind === 1 && (view.stack?.length ?? 0) > 0;
+    }))
+  );
+}
+
+// untilStackWaits waits until every page shows the stack waiting for a
+// response (19.126).
+export async function untilStackWaits(pages: Page[]): Promise<void> {
+  await expect.poll(async () => (await Promise.all(pages.map(stackWaits))).every(Boolean)).toBe(true);
 }
 
 // markGame keeps the page's game state now, for untilResynced.
@@ -339,19 +381,19 @@ export async function expectNextTurn(pages: Page[], press: Tap, after: number): 
   expect((await turnNumber(first)) > after || (await gameOver(first))).toBe(true);
 }
 
-// playLoot plays a hand card the way a player would: its menu's Play,
-// or, for a card that needs a target, the first glowing target (15.25):
-// any card, a character for its player (15.33), or a stack item.
-// A new state ends the card's selection, so its menu can close before
-// it is used: the card is pressed again until the menu or target shows
-// (19.100).
+// playLoot plays a hand card the way a player would (20.20): a click
+// picks it up (a tap lifts it), and a click on the board plays it; a
+// card that needs a target aims instead, and the first glowing target
+// is pressed (15.25): any card, a character for its player (15.33), or a
+// stack item. A new state can end an aim before it is used: the card is
+// pressed again until it is held or a target shows (19.100).
 export async function playLoot(page: Page, card: Locator, press: Tap): Promise<void> {
-  const menu = page.getByRole('menu');
+  const held = page.locator('.hand-card.held');
   const target = page.locator('.card.hl-aim, .stack-row.hl-aim').first();
   await expect
     .poll(
       async () => {
-        if ((await menu.isVisible()) || (await target.isVisible())) {
+        if ((await held.count()) > 0 || (await target.isVisible())) {
           return true;
         }
         await press(page, card);
@@ -360,7 +402,12 @@ export async function playLoot(page: Page, card: Locator, press: Tap): Promise<v
       { timeout: 10_000 },
     )
     .toBe(true);
-  await press(page, (await menu.isVisible()) ? menu.getByRole('menuitem', { name: tr('actions.play') }) : target);
+  await press(page, (await held.count()) > 0 ? playSpot(page) : target);
+}
+
+// playSpot is where a click plays a held hand card: the board (20.20).
+export function playSpot(page: Page): Locator {
+  return page.getByRole('region', { name: tr('board.label') });
 }
 
 // answerPlay answers what a played loot card asks before it goes on the

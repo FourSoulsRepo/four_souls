@@ -2,20 +2,23 @@ import { useEffect, useRef } from 'react';
 import { stepName, undoButton, type Entry, type Undo } from '../history';
 import { t } from '../i18n';
 import type { GameView } from '../protocol';
-import type { Names } from '../stack';
+import { beforeStart, type Names } from '../stack';
 import { seatOf, useApp } from '../store';
 import { boxOf } from '../zoom';
 import './InfoPanels.css';
 
 // TurnBadge shows the turn number, whose turn it is and its step (V-05).
-// Before turn 1 it names the first-player roll (15.43).
+// Before turn 1 it names the first-player roll (15.43), or, before
+// that, the start of the game: the start-of-game choices (19.142).
 export function TurnBadge({ view, names }: { view: GameView; names: Names }) {
   const { turn } = view;
   return (
     <div className="turn-badge" role="status" aria-label={t('turn_badge.label')}>
       {view.first_roll
         ? t('turn_badge.first_roll')
-        : t('turn_badge.turn', { n: turn.number, player: names.player(turn.active), step: stepName(turn.step) })}
+        : beforeStart(view)
+          ? t('turn_badge.start')
+          : t('turn_badge.turn', { n: turn.number, player: names.player(turn.active), step: stepName(turn.step) })}
     </div>
   );
 }

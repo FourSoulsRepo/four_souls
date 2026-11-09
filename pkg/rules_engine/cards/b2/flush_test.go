@@ -11,7 +11,11 @@ func TestFlush(t *testing.T) {
 	tb := itemTable(t, items("flush"))
 	fly, _ := tb.G.Monsters[0].TopOf()
 	leech, _ := tb.G.Monsters[1].TopOf()
-	tb.Activate(0, "flush", 0, "Put each monster not being attacked on the bottom of the monster deck.")
+	ev := tb.Activate(0, "flush", 0, "Put each monster not being attacked on the bottom of the monster deck.")
+	// Slot cards have their own moved_to_deck; none was in the deck (19.147).
+	if slices.ContainsFunc(ev, func(e engine.Event) bool { return e.Kind == engine.EvDeckBottom }) {
+		t.Error("a deck_bottom for slot cards")
+	}
 	if tb.G.Object(fly).Zone.Kind == engine.ZoneInPlay || tb.G.Object(leech).Zone.Kind == engine.ZoneInPlay {
 		t.Error("a monster is still there")
 	}

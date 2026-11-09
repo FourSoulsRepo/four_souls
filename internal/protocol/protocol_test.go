@@ -59,6 +59,7 @@ func TestGolden(t *testing.T) {
 		{TypePresence, 0, Presence{Seat: 1, From: &Spot{Object: 314}, At: &Spot{Player: ptr(engine.PlayerID(0))}}},
 		{TypePresence, 0, Presence{Seat: 1, At: &Spot{Deck: ptr(engine.MonsterDeck)}}},
 		{TypePresence, 0, Presence{Seat: 1, At: &Spot{StackID: 3}}},
+		{TypePresence, 0, Presence{Seat: 1, Held: &Spot{Hand: 4}}},
 		{TypeRollback, 18, RollbackTo{Step: 7}},
 		{TypeRollback, 19, RollbackTo{Step: 7, Ask: true}},
 		{TypeRollbackVote, 20, RollbackVoteAnswer{Yes: true}},

@@ -20,7 +20,9 @@ if (import.meta.env.DEV && new URLSearchParams(window.location.search).has('fake
   const { useApp, dropConnection } = await import('./store');
   const { clashes } = await import('./animations');
   const { setLostDialogAfter } = await import('./reconnect');
-  (window as unknown as { fourSouls: unknown }).fourSouls = { store: useApp, drop: dropConnection, clashes, lostDialogAfter: setLostDialogAfter };
+  const { liveSounds, loadSounds, playSound } = await import('./sounds');
+  const sounds = { load: loadSounds, play: playSound, live: liveSounds };
+  (window as unknown as { fourSouls: unknown }).fourSouls = { store: useApp, drop: dropConnection, clashes, lostDialogAfter: setLostDialogAfter, sounds };
 }
 
 const container = document.getElementById('root');

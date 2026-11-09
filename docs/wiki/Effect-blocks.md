@@ -93,7 +93,7 @@ Targets are always asked, with a "cancel" option before anything is paid. A targ
 | `Choose(TargetYourItem)` | an item you control |
 | `Choose(TargetStackTrigger)` | a triggered ability on the stack (Dead Weight) |
 | `Choose(TargetItemOrSoul)` | an item or soul a player controls |
-| `ChooseWhere(kind, filter)` | e.g. the player with the most souls; `NotThis` is "another item"; `ActiveItem` is an item with a ↷ ability (Lil Battery) |
+| `ChooseWhere(kind, filter)` | e.g. the player with the most souls; `NotThis` is "another item"; `RechargeableItem` is a deactivated item with a ↷ ability (Lil Battery); pickers use `engine.Rechargeable` and `engine.Deactivatable`, the one rule for every card |
 
 Effects refer to targets by number: `DealDamage(1, 0)` hits the first target. `This` is the ability's own object (a monster shielding itself). `You` means the controller, for text without a target: `DealDamage(1, You)` is "Take 1 damage." A roll ability keeps its targets for the result: "Choose a player, then roll- deal damage equal to the result".
 
@@ -240,6 +240,7 @@ An object's `CopyOf` makes it act as another card: abilities, statics and stats 
 When several things happen "at once" and their order matters, the player picks it, one at a time; each question also offers to keep the rest in their order, the quick answer.
 
 * "Each monster takes damage": the active player picks which damage resolves first (R-MECH-29); monsters with death effects make this matter.
-* "Put the rest on the bottom": `ToBottomRandom` shuffles them; no player orders them (Q-22). The Emperor, The Hermit, The Moon, Flush, Black Candle, Eden's start.
+* "Put the rest on the bottom": `ToBottomRandom` shuffles them; no player orders them (Q-22). The Emperor, The Hermit, The Moon, Flush, Black Candle, Eden's start. It emits one public `deck_bottom` for the cards that were in the deck, so every board shows them go under it (19.147).
+* "Look at the top card; you may put it on the bottom": answer with `Game.KeepOrBottom`, never `DeckToBottom`, so everyone learns the choice (`top_choice`, 19.90). Give the question `Subject` (the top card) and `Peek: true`, so others see the look (19.147). `cardkit.LookMayBottom` does all of it.
 
 For a card: `OrderQuestions(text, rest, skip, max, who, items)` builds the questions and `Ordered(items, answers)` reads the order back.

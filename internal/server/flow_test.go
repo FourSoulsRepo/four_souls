@@ -281,3 +281,39 @@ func TestStartEventsNameCain(t *testing.T) {
 		t.Fatalf("start events %+v, want Cain's first_player and game_started", got)
 	}
 }
+
+// twoEdens is a new game where seats 0 and 2 play Eden: both choose
+// their starting items at the same time (20.22).
+func twoEdens(t *testing.T) *engine.Game {
+	t.Helper()
+	g, _, err := engine.NewGame(engine.Setup{Seed: 1, Players: 3, Sets: []engine.CardSet{b2.Set}, Characters: []engine.CardRef{"eden", "isaac", "eden"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if w := g.Prompt(); len(w.Players) != 2 {
+		t.Fatalf("prompt %+v, want both Edens choosing", w)
+	}
+	return g
+}
+
+// TestTimerAnswersEveryEden: the response timer picks for every Eden
+// still choosing, not only the first; then the roll starts (20.22).
+func TestTimerAnswersEveryEden(t *testing.T) {
+	g := twoEdens(t)
+	r := &Room{game: g, seats: []roomSeat{{client: &Client{}}, {client: &Client{}}, {client: &Client{}}}}
+	r.timeUp(r.timerGen)
+	if w := g.Prompt(); w.Kind != engine.PromptThrow || g.FirstRoll == nil || len(g.StartChoices) != 0 {
+		t.Fatalf("prompt %+v, open choices %d; want the first-player roll", w, len(g.StartChoices))
+	}
+}
+
+// TestKickedEdenPicks: a kicked Eden's choice is made at once; the
+// other Eden still chooses (N-08, 20.22).
+func TestKickedEdenPicks(t *testing.T) {
+	g := twoEdens(t)
+	r := &Room{game: g, seats: []roomSeat{{client: &Client{}}, {client: &Client{}}, {kicked: true}}}
+	r.after(nil, false)
+	if w := g.Prompt(); w.Kind != engine.PromptChoose || w.Player != 0 || len(w.Players) != 1 {
+		t.Fatalf("prompt %+v, want only seat 0 choosing", w)
+	}
+}

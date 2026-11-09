@@ -1,7 +1,10 @@
-// Aiming (15.25): what an aiming card points at. Pure, except
-// zonesAt and onScreen, which read the page.
+// Aiming (15.25): what an aiming card points at, and its arrow's way
+// (20.23). Pure, except zonesAt, onScreen, targetElement and the
+// pointer, which read the page.
 import { Purpose, type Choice } from './actions';
+import { feel } from './feel';
 import type { Intent, OptionView } from './protocol';
+import { px } from './uiScale';
 
 // zonesAt lists the zones under a point, topmost first: data-zone of
 // cards ("obj-N") and piles, data-stack of stack rows. A player is aimed
@@ -34,6 +37,11 @@ export function zonesAt(x: number, y: number): string[] {
 // a character card as an object wins over it as its player.
 export function targetAt(zones: string[], targets: OptionView[]): OptionView | undefined {
   for (const zone of zones) {
+    // The monster deck is an attack's target (20.23).
+    const deck = zone === 'deck-monster' && targets.find((o) => o.deck);
+    if (deck) {
+      return deck;
+    }
     const m = /^(obj|player|stack)-(\d+)$/.exec(zone);
     if (!m) {
       continue;
@@ -103,6 +111,9 @@ export function cancelOption(choice: Choice): Intent | undefined {
 
 // zoneOf is the page selector of a target, as zonesAt reads it.
 function zoneOf(t: OptionView): string {
+  if (t.deck) {
+    return '[data-zone="deck-monster"]';
+  }
   if (t.is_player) {
     return `[data-player="${String(t.player)}"]`;
   }
@@ -131,17 +142,183 @@ export interface Point {
   y: number;
 }
 
-// arrow is how an aiming arrow from a point to a point is drawn: its
-// length, and its angle in degrees from the x axis.
-export function arrow(from: Point, to: Point): { length: number; angle: number } {
-  const dx = to.x - from.x;
-  const dy = to.y - from.y;
-  return { length: Math.hypot(dx, dy), angle: (Math.atan2(dy, dx) * 180) / Math.PI };
+// Pose is a place on an aiming arrow: where, and which way it runs
+// there, in degrees from the x axis.
+export interface Pose {
+  x: number;
+  y: number;
+  angle: number;
 }
 
-// blocks is how many blocks of an aiming arrow's chain fit between its
-// source and its head: one every step pixels, the head's length short
-// of the pointer.
-export function blocks(length: number, step: number, head: number): number {
-  return Math.max(0, Math.floor((length - head) / step));
+// Arc is an aiming arrow's way (20.23, ADR 027 "Target arrow"): a
+// curve from its source to the pointer. length is the curve's length;
+// at(s) the pose s px along it, kept on the curve; end the pose at the
+// pointer, turned along the curve's last stretch.
+export interface Arc {
+  length: number;
+  at: (s: number) => Pose;
+  end: Pose;
+}
+
+// arcLift is how far the middle of an arrow from a point to a point
+// stands off the straight line, up the screen (feel.aim): lift, or
+// liftShare of a short line, times how much of the lift lies across
+// the line (|dx| / length × lean, at most 1). A line straight up or
+// down gets none, so the bow fades out there and never flips side.
+export function arcLift(from: Point, to: Point): number {
+  const { liftShare, lean } = feel.aim;
+  const lift = px(feel.aim.lift);
+  const dx = to.x - from.x;
+  const length = Math.hypot(dx, to.y - from.y);
+  if (length === 0) {
+    return 0;
+  }
+  return Math.min(lift, length * liftShare) * Math.min(1, (Math.abs(dx) / length) * lean);
+}
+
+// segments is how many straight pieces measure an arc.
+const segments = 32;
+
+// arc is the way of an aiming arrow: a quadratic curve whose middle
+// stands arcLift off the line, on its upper side.
+export function arc(from: Point, to: Point): Arc {
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+  const chord = Math.hypot(dx, dy);
+  const h = arcLift(from, to);
+  // The upper side's normal; (dy, −dx) points up for a line going right.
+  const side = dx < 0 ? -1 : 1;
+  const nx = chord > 0 ? (side * dy) / chord : 0;
+  const ny = chord > 0 ? (-side * dx) / chord : 0;
+  // A quadratic's middle is half way to its control point.
+  const c = { x: (from.x + to.x) / 2 + 2 * h * nx, y: (from.y + to.y) / 2 + 2 * h * ny };
+  const point = (t: number): Point => {
+    const u = 1 - t;
+    return { x: u * u * from.x + 2 * u * t * c.x + t * t * to.x, y: u * u * from.y + 2 * u * t * c.y + t * t * to.y };
+  };
+  const points = Array.from({ length: segments + 1 }, (_, i) => point(i / segments));
+  const lengths = [0];
+  points.forEach((b, i) => {
+    const a = points.at(i - 1);
+    if (i > 0 && a) {
+      lengths.push((lengths.at(-1) ?? 0) + Math.hypot(b.x - a.x, b.y - a.y));
+    }
+  });
+  const length = lengths.at(-1) ?? 0;
+  const degrees = (x: number, y: number) => (Math.atan2(y, x) * 180) / Math.PI;
+  const at = (s: number): Pose => {
+    const d = Math.min(Math.max(s, 0), length);
+    let i = 1;
+    while (i < segments && (lengths.at(i) ?? 0) < d) {
+      i++;
+    }
+    const a = points.at(i - 1) ?? from;
+    const b = points.at(i) ?? to;
+    const l0 = lengths.at(i - 1) ?? 0;
+    const piece = (lengths.at(i) ?? 0) - l0;
+    const k = piece > 0 ? (d - l0) / piece : 0;
+    return { x: a.x + (b.x - a.x) * k, y: a.y + (b.y - a.y) * k, angle: degrees(b.x - a.x, b.y - a.y) };
+  };
+  // The head turns along the curve's end: from the control point on.
+  const ex = to.x - c.x;
+  const ey = to.y - c.y;
+  const end = { x: to.x, y: to.y, angle: ex === 0 && ey === 0 ? degrees(dx, dy) : degrees(ex, ey) };
+  return { length, at, end };
+}
+
+// dashOpacity is how much a dash shows s px along the chain, which ends
+// chain px from the source, by the head (feel.aim): the tail's fades in
+// as (s / step)^tailFade, the one by the head fades out over its last
+// step as (left / step)^headFade; past the chain's end, none.
+export function dashOpacity(s: number, chain: number): number {
+  const { headFade, tailFade } = feel.aim;
+  const step = px(feel.aim.step);
+  const left = chain - s;
+  if (s <= 0 || left <= 0) {
+    return 0;
+  }
+  return Math.min(1, Math.pow(s / step, tailFade), Math.pow(left / step, headFade));
+}
+
+// chainOf is how long the dashed chain of an arc is: feel.aim.head
+// short of the pointer, under the head's back.
+export function chainOf(a: Arc): number {
+  return Math.max(0, a.length - px(feel.aim.head));
+}
+
+// dashCount is how many dashes the chain holds: one per step begun.
+export function dashCount(chain: number): number {
+  return chain > 0 ? Math.ceil(chain / px(feel.aim.step)) : 0;
+}
+
+// DashFrame is a dash's pose at one point of its march, relative to the
+// arrow's source.
+export interface DashFrame {
+  offset: number;
+  transform: string;
+  opacity: number;
+}
+
+// dashPose is dash i's pose part u (0 to 1) of the way through one
+// march step: its middle (i + u) steps along the arc, turned with it,
+// relative to the source.
+export function dashPose(a: Arc, from: Point, i: number, u: number): DashFrame {
+  const s = (i + u) * px(feel.aim.step);
+  const p = a.at(s);
+  const r = (n: number) => String(Math.round(n * 100) / 100);
+  return {
+    offset: u,
+    transform: `translate(${r(p.x - from.x)}px, ${r(p.y - from.y)}px) rotate(${r(p.angle)}deg)`,
+    opacity: Math.round(dashOpacity(s, chainOf(a)) * 1000) / 1000,
+  };
+}
+
+// dashFrames are dash i's keyframes through one march step: it moves
+// one step toward the head along the arc, sampled at feel.aim.stops
+// points, fading as dashOpacity says. Repeated, the chain marches with
+// no seam: each dash ends where the next one starts.
+export function dashFrames(a: Arc, from: Point, i: number): DashFrame[] {
+  const { stops } = feel.aim;
+  return Array.from({ length: stops + 1 }, (_, k) => dashPose(a, from, i, k / stops));
+}
+
+// marchTime is one march step's time in ms at an animation speed's
+// time scale: step px at march px a second.
+export function marchTime(scale: number): number {
+  return (feel.aim.step / feel.aim.march) * 1000 * scale;
+}
+
+// pointer is the last mouse place on the page, for an arrow drawn at
+// once when an aim starts (20.23); null before any mouse moved, or once
+// a touch or pen took over.
+let pointer: Point | null = null;
+
+if (typeof window !== 'undefined') {
+  const track = (e: PointerEvent) => {
+    pointer = e.pointerType === 'mouse' ? { x: e.clientX, y: e.clientY } : null;
+  };
+  window.addEventListener('pointermove', track, { capture: true, passive: true });
+  window.addEventListener('pointerdown', track, { capture: true, passive: true });
+}
+
+// lastPointer is the last mouse place, if a mouse leads.
+export function lastPointer(): Point | null {
+  return pointer;
+}
+
+// arrowShows is true while the own arrow is drawn (20.23): a card under
+// it zooms only once the arrow rests on it (useZoom).
+let shows = false;
+
+export function arrowShows(): boolean {
+  return shows;
+}
+
+export function setArrowShows(on: boolean): void {
+  shows = on;
+}
+
+// targetElement is a target's element on the page, if drawn.
+export function targetElement(t: OptionView): Element | null {
+  return document.querySelector(zoneOf(t));
 }

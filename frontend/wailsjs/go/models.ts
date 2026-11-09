@@ -319,14 +319,33 @@ export namespace main {
 	    }
 	}
 	export class Sounds {
-	    attackHit: string;
-	    effectCast: string;
-	    effectImpact: string;
-	    diceRoll: string;
-	    lootDraw: string;
-	    playerDied: string;
-	    treasureGain: string;
-	    soulGain: string;
+	    attackHit: string[];
+	    effectCast: string[];
+	    effectImpact: string[];
+	    diceRoll: string[];
+	    lootDraw: string[];
+	    playerDied: string[];
+	    treasureGain: string[];
+	    soulGain: string[];
+	    attackHit2: string[];
+	    attackHit3: string[];
+	    lootLand: string[];
+	    lootDrawOther: string[];
+	    dragBed: string[];
+	    dragAir: string[];
+	    turnStart: string[];
+	    cardPlayOther: string[];
+	    endTurnCue: string[];
+	    timerTick: string[];
+	    timerLast: string[];
+	    choiceDeal: string[];
+	    choicePick: string[];
+	    cardGrab: string[];
+	    aimCancel: string[];
+	    playRefused: string[];
+	    historyHover: string[];
+	    choiceUnpick: string[];
+	    choiceConfirm: string[];
 	
 	    static createFrom(source: any = {}) {
 	        return new Sounds(source);
@@ -342,6 +361,25 @@ export namespace main {
 	        this.playerDied = source["playerDied"];
 	        this.treasureGain = source["treasureGain"];
 	        this.soulGain = source["soulGain"];
+	        this.attackHit2 = source["attackHit2"];
+	        this.attackHit3 = source["attackHit3"];
+	        this.lootLand = source["lootLand"];
+	        this.lootDrawOther = source["lootDrawOther"];
+	        this.dragBed = source["dragBed"];
+	        this.dragAir = source["dragAir"];
+	        this.turnStart = source["turnStart"];
+	        this.cardPlayOther = source["cardPlayOther"];
+	        this.endTurnCue = source["endTurnCue"];
+	        this.timerTick = source["timerTick"];
+	        this.timerLast = source["timerLast"];
+	        this.choiceDeal = source["choiceDeal"];
+	        this.choicePick = source["choicePick"];
+	        this.cardGrab = source["cardGrab"];
+	        this.aimCancel = source["aimCancel"];
+	        this.playRefused = source["playRefused"];
+	        this.historyHover = source["historyHover"];
+	        this.choiceUnpick = source["choiceUnpick"];
+	        this.choiceConfirm = source["choiceConfirm"];
 	    }
 	}
 
@@ -393,6 +431,8 @@ export namespace settings {
 	    no_deck_ratios: boolean;
 	    random_seats: boolean;
 	    rollback: string;
+	    picking: string;
+	    draft_size: number;
 	
 	    static createFrom(source: any = {}) {
 	        return new HostSetup(source);
@@ -408,6 +448,8 @@ export namespace settings {
 	        this.no_deck_ratios = source["no_deck_ratios"];
 	        this.random_seats = source["random_seats"];
 	        this.rollback = source["rollback"];
+	        this.picking = source["picking"];
+	        this.draft_size = source["draft_size"];
 	    }
 	}
 	export class RecentServer {
@@ -455,6 +497,7 @@ export namespace settings {
 	    lan_address: string;
 	    language: string;
 	    volume: number;
+	    scale: number;
 	
 	    static createFrom(source: any = {}) {
 	        return new Settings(source);
@@ -474,6 +517,7 @@ export namespace settings {
 	        this.lan_address = source["lan_address"];
 	        this.language = source["language"];
 	        this.volume = source["volume"];
+	        this.scale = source["scale"];
 	    }
 	
 		convertValues(a: any, classs: any, asMap: boolean = false): any {

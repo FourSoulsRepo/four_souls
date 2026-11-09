@@ -22,7 +22,15 @@ export interface Clash {
   second: string;
 }
 
-interface Claim {
+// Where tells claims of one card apart, when known. to: where an
+// arrival brings the card (19.134). object: which copy of the card is
+// shown (19.136).
+export interface Where {
+  to?: string | undefined;
+  object?: number | undefined;
+}
+
+interface Claim extends Where {
   by: string;
   beat: number;
 }
@@ -32,9 +40,11 @@ const claims = new Map<string, Claim>();
 export const clashes: Clash[] = [];
 
 // How many beats back a claim still clashes: a card shown large in the
-// update before is not shown again (19.4).
-function reach(job: Job): number {
-  return job === 'show' ? 1 : 0;
+// update before is not shown again (19.4). A choice's deal shows the
+// cards one player looks at, in a window, from the deck: a reveal of one
+// in a later update is a public event of its own (19.139).
+function reach(job: Job, by: string): number {
+  return job === 'show' && by !== 'choice-deal' ? 1 : 0;
 }
 
 // nextBeat starts the next update's animations.
@@ -50,12 +60,22 @@ export function nextBeat(): void {
 // claim records that animation `by` does `job` to card. It returns false,
 // and records a clash, when another animation already did the same job
 // to it within reach. One animation may bring a card again: two copies
-// of a card, or a card looted and discarded in one update.
-export function claim(card: string, job: Job, by: string): boolean {
+// of a card, or a card looted and discarded in one update. Arrivals at
+// two known, different places are two jobs: a card flies to the loot
+// discard and is drawn back from it in one update (19.134). Two known,
+// different objects are two cards: two copies of a loot card played in
+// two updates in a row (19.136).
+export function claim(card: string, job: Job, by: string, where: Where = {}): boolean {
   const key = `${job}:${card}`;
   const old = claims.get(key);
-  claims.set(key, { by, beat });
-  if (!old || beat - old.beat > reach(job) || (job === 'arrive' && old.by === by)) {
+  claims.set(key, { by, beat, ...where });
+  if (!old || beat - old.beat > reach(job, old.by) || (job === 'arrive' && old.by === by)) {
+    return true;
+  }
+  if (job === 'arrive' && apart(where.to, old.to)) {
+    return true;
+  }
+  if (apart(where.object, old.object)) {
     return true;
   }
   const clash = { card, job, first: old.by, second: by };
@@ -64,17 +84,26 @@ export function claim(card: string, job: Job, by: string): boolean {
   return false;
 }
 
+// apart: both are known and differ.
+function apart<T>(a: T | undefined, b: T | undefined): boolean {
+  return a !== undefined && b !== undefined && a !== b;
+}
+
 // claimEffect claims the card an effect brings or shows; false means
 // it clashes and is skipped.
 export function claimEffect(e: Effect): boolean {
   switch (e.kind) {
     case 'fly':
     case 'place':
-      return e.card === undefined || claim(e.card, 'arrive', e.kind);
+      return e.card === undefined || claim(e.card, 'arrive', e.kind, { to: e.to[0] });
+    case 'draw':
+      // An own draw brings its card to the hand (20.7); another
+      // player's card is never seen.
+      return !e.own || e.card === undefined || claim(e.card, 'arrive', 'loot-draw', { to: e.to[0] });
     case 'reveal':
       return claim(e.card, 'show', 'reveal');
     case 'played':
-      return claim(e.card, 'show', 'played');
+      return claim(e.card, 'show', 'played', { object: e.object });
     default:
       return true;
   }
@@ -84,6 +113,12 @@ export function claimEffect(e: Effect): boolean {
 // the view's pop-in then stays still.
 export function claimed(card: string, job: Job): boolean {
   return claims.get(`${job}:${card}`)?.beat === beat;
+}
+
+// arrivedBy is the animation that brought the card in this beat, if any.
+export function arrivedBy(card: string): string | undefined {
+  const c = claims.get(`arrive:${card}`);
+  return c?.beat === beat ? c.by : undefined;
 }
 
 // resetClaims forgets every claim and clash, for tests.

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { checkSeat, getBacks, getCards, getDice, getFonts, getIcons, getMats, getSettings, getSounds, saveSettings, serverStatus } from './bridge';
 import { language, setCardLanguages, setLanguage } from './i18n';
-import { send } from './net';
+import { disconnect, send } from './net';
 import { noHostSetup } from './hostSetup';
 import type { Envelope, GameView, Update } from './protocol';
 import { messageOf, seatOf, useApp } from './store';
@@ -19,7 +19,7 @@ vi.mock('./bridge', () => ({
   saveSettings: vi.fn(),
   serverStatus: vi.fn(),
 }));
-vi.mock('./net', () => ({ drop: vi.fn(), send: vi.fn() }));
+vi.mock('./net', () => ({ disconnect: vi.fn(), drop: vi.fn(), send: vi.fn() }));
 
 const initial = useApp.getState();
 
@@ -42,7 +42,7 @@ describe('screens', () => {
 
 describe('settings', () => {
   it('loads what Go has', async () => {
-    vi.mocked(getSettings).mockResolvedValue({ nickname: 'Ann', recent: [], animation: 'normal', fullscreen: false, mat: 'basement', dice: 'tear', no_end_turn_ask: false, rejoin: { address: '', token: '', game: '', via: '' as const }, host: noHostSetup, lan_address: '', language: '', volume: 100 });
+    vi.mocked(getSettings).mockResolvedValue({ nickname: 'Ann', recent: [], animation: 'normal', fullscreen: false, mat: 'basement', dice: 'tear', no_end_turn_ask: false, rejoin: { address: '', token: '', game: '', via: '' as const }, host: noHostSetup, lan_address: '', language: '', volume: 100, scale: 100 });
     await useApp.getState().loadSettings();
     expect(useApp.getState().settings.nickname).toBe('Ann');
   });
@@ -54,8 +54,8 @@ describe('settings', () => {
   });
 
   it('keeps what Go stored, not what was typed', async () => {
-    vi.mocked(saveSettings).mockResolvedValue({ nickname: 'Ann', recent: [], animation: 'normal', fullscreen: false, mat: 'basement', dice: 'tear', no_end_turn_ask: false, rejoin: { address: '', token: '', game: '', via: '' as const }, host: noHostSetup, lan_address: '', language: '', volume: 100 });
-    expect(await useApp.getState().saveSettings({ nickname: '  Ann  ', recent: [], animation: 'normal', fullscreen: false, mat: 'basement', dice: 'tear', no_end_turn_ask: false, rejoin: { address: '', token: '', game: '', via: '' as const }, host: noHostSetup, lan_address: '', language: '', volume: 100 })).toBe(true);
+    vi.mocked(saveSettings).mockResolvedValue({ nickname: 'Ann', recent: [], animation: 'normal', fullscreen: false, mat: 'basement', dice: 'tear', no_end_turn_ask: false, rejoin: { address: '', token: '', game: '', via: '' as const }, host: noHostSetup, lan_address: '', language: '', volume: 100, scale: 100 });
+    expect(await useApp.getState().saveSettings({ nickname: '  Ann  ', recent: [], animation: 'normal', fullscreen: false, mat: 'basement', dice: 'tear', no_end_turn_ask: false, rejoin: { address: '', token: '', game: '', via: '' as const }, host: noHostSetup, lan_address: '', language: '', volume: 100, scale: 100 })).toBe(true);
     expect(useApp.getState().settings.nickname).toBe('Ann');
   });
 
@@ -64,7 +64,7 @@ describe('settings', () => {
     const isaac = { ref: 'isaac', set: 'b2', type: 'Character Card', name: 'Isaac', names: { en: 'Isaac', ru: 'Исаак' }, effects: [], footnotes: [], stats: [], rewards: [], image: images.en, images };
     useApp.setState({ cards: new Map([['isaac', isaac]]) });
     setCardLanguages(['en', 'ru']);
-    const ru = { nickname: 'Ann', recent: [], animation: 'normal' as const, fullscreen: false, mat: '', dice: 'tear', no_end_turn_ask: false, rejoin: { address: '', token: '', game: '', via: '' as const }, host: noHostSetup, lan_address: '', language: 'ru', volume: 100 };
+    const ru = { nickname: 'Ann', recent: [], animation: 'normal' as const, fullscreen: false, mat: '', dice: 'tear', no_end_turn_ask: false, rejoin: { address: '', token: '', game: '', via: '' as const }, host: noHostSetup, lan_address: '', language: 'ru', volume: 100, scale: 100 };
     vi.mocked(saveSettings).mockImplementation((s) => Promise.resolve(s));
     expect(await useApp.getState().saveSettings(ru)).toBe(true);
     expect(useApp.getState().cards.get('isaac')).toMatchObject({ name: 'Исаак', image: images.ru });
@@ -84,7 +84,35 @@ describe('settings', () => {
     vi.mocked(getBacks).mockResolvedValue([]);
     vi.mocked(getIcons).mockResolvedValue({ coin: '', sword: '', banner: '', sky: [] });
     vi.mocked(getFonts).mockResolvedValue({ title: '', body: '', cyrillic: '' });
-    vi.mocked(getSounds).mockResolvedValue({ attackHit: '', effectCast: '', effectImpact: '', diceRoll: '', lootDraw: '', playerDied: '', treasureGain: '', soulGain: '' });
+    vi.mocked(getSounds).mockResolvedValue({
+      attackHit: [],
+      effectCast: [],
+      effectImpact: [],
+      diceRoll: [],
+      lootDraw: [],
+      playerDied: [],
+      treasureGain: [],
+      soulGain: [],
+      attackHit2: [],
+      attackHit3: [],
+      lootLand: [],
+      lootDrawOther: [],
+      dragBed: [],
+      dragAir: [],
+      turnStart: [],
+      cardPlayOther: [],
+      endTurnCue: [],
+      timerTick: [],
+      timerLast: [],
+      choiceDeal: [],
+      choicePick: [],
+      cardGrab: [],
+      aimCancel: [],
+      playRefused: [],
+      historyHover: [],
+      choiceUnpick: [],
+      choiceConfirm: [],
+    });
     expect(useApp.getState().languages).not.toContain('xx');
     await useApp.getState().loadCards();
     expect(useApp.getState().languages).toContain('xx');
@@ -94,9 +122,9 @@ describe('settings', () => {
   });
 
   it('shows the Go error and keeps the old settings', async () => {
-    useApp.setState({ settings: { nickname: 'Ann', recent: [], animation: 'normal', fullscreen: false, mat: 'basement', dice: 'tear', no_end_turn_ask: false, rejoin: { address: '', token: '', game: '', via: '' as const }, host: noHostSetup, lan_address: '', language: '', volume: 100 } });
+    useApp.setState({ settings: { nickname: 'Ann', recent: [], animation: 'normal', fullscreen: false, mat: 'basement', dice: 'tear', no_end_turn_ask: false, rejoin: { address: '', token: '', game: '', via: '' as const }, host: noHostSetup, lan_address: '', language: '', volume: 100, scale: 100 } });
     vi.mocked(saveSettings).mockRejectedValue('nickname must be 1–20 characters');
-    expect(await useApp.getState().saveSettings({ nickname: ' ', recent: [], animation: 'normal', fullscreen: false, mat: 'basement', dice: 'tear', no_end_turn_ask: false, rejoin: { address: '', token: '', game: '', via: '' as const }, host: noHostSetup, lan_address: '', language: '', volume: 100 })).toBe(false);
+    expect(await useApp.getState().saveSettings({ nickname: ' ', recent: [], animation: 'normal', fullscreen: false, mat: 'basement', dice: 'tear', no_end_turn_ask: false, rejoin: { address: '', token: '', game: '', via: '' as const }, host: noHostSetup, lan_address: '', language: '', volume: 100, scale: 100 })).toBe(false);
     expect(useApp.getState()).toMatchObject({
       settings: { nickname: 'Ann' },
       error: 'nickname must be 1–20 characters',
@@ -123,7 +151,7 @@ describe('seatOf', () => {
 });
 
 describe('recent servers (N-18)', () => {
-  const settings = { nickname: 'Ann', recent: [{ address: 'a', name: '' }, { address: 'b', name: '' }], animation: 'normal' as const, fullscreen: false, mat: 'basement', dice: 'tear', no_end_turn_ask: false, rejoin: { address: '', token: '', game: '', via: '' as const }, host: noHostSetup, lan_address: '', language: '', volume: 100 };
+  const settings = { nickname: 'Ann', recent: [{ address: 'a', name: '' }, { address: 'b', name: '' }], animation: 'normal' as const, fullscreen: false, mat: 'basement', dice: 'tear', no_end_turn_ask: false, rejoin: { address: '', token: '', game: '', via: '' as const }, host: noHostSetup, lan_address: '', language: '', volume: 100, scale: 100 };
 
   beforeEach(() => {
     vi.mocked(saveSettings).mockImplementation((s) => Promise.resolve(s));
@@ -176,9 +204,39 @@ describe('server notices (N-20)', () => {
   });
 });
 
+describe('LAN Join (19.149)', () => {
+  const game = { id: 'g1', host: 'Ann', seats: 2, taken: 1, sets: ['b2'], started: false, locked: true };
+
+  it('sends the join with the row password when the games come, and stays on the LAN screen', () => {
+    useApp.setState({ screen: 'join', path: 'lan', connected: true, autoJoin: { game: 'g1', password: 'pw', sent: false } });
+    useApp.getState().receive({ type: 'games', data: { games: [game] } });
+    expect(send).toHaveBeenCalledWith('join', { game: 'g1', password: 'pw' });
+    expect(useApp.getState().autoJoin).toMatchObject({ sent: true });
+    useApp.getState().receive({ type: 'table', data: { game: 'g1', you: 1, seats: [], sets: ['b2'] } });
+    expect(useApp.getState()).toMatchObject({ screen: 'table', autoJoin: null });
+  });
+
+  it('a refused join leaves the server and keeps the error for the LAN screen', () => {
+    useApp.setState({ screen: 'join', path: 'lan', connected: true, autoJoin: { game: 'g1', password: 'no', sent: true } });
+    useApp.getState().receive({ type: 'error', data: { code: 'password_wrong', message: 'Wrong password.' } });
+    expect(disconnect).toHaveBeenCalled();
+    expect(useApp.getState()).toMatchObject({ screen: 'join', connected: false, autoJoin: null });
+    expect(useApp.getState().error).not.toBe('');
+  });
+
+  it('without a LAN Join the games only list, and an error keeps the connection', () => {
+    useApp.setState({ screen: 'join', connected: true });
+    useApp.getState().receive({ type: 'games', data: { games: [{ ...game, locked: false }] } });
+    useApp.getState().receive({ type: 'error', data: { code: 'full', message: 'Full.' } });
+    expect(send).not.toHaveBeenCalled();
+    expect(disconnect).not.toHaveBeenCalled();
+    expect(useApp.getState().connected).toBe(true);
+  });
+});
+
 describe('the saved seat (15.99)', () => {
   const rejoin = { address: '192.168.1.5', token: 't0k3n', game: 'g1', via: 'lan' as const };
-  const settings = { nickname: 'Ann', recent: [], animation: 'normal' as const, fullscreen: false, mat: '', dice: 'tear', no_end_turn_ask: false, rejoin, host: noHostSetup, lan_address: '', language: '', volume: 100 };
+  const settings = { nickname: 'Ann', recent: [], animation: 'normal' as const, fullscreen: false, mat: '', dice: 'tear', no_end_turn_ask: false, rejoin, host: noHostSetup, lan_address: '', language: '', volume: 100, scale: 100 };
   const none = { address: '', token: '', game: '', via: '' };
 
   beforeEach(() => {
@@ -220,7 +278,7 @@ describe('Recent servers (15.100)', () => {
     { address: 'games.example.com', name: 'Up' },
     { address: '192.168.1.9', name: '' },
   ];
-  const settings = { nickname: 'Ann', recent, animation: 'normal' as const, fullscreen: false, mat: '', dice: 'tear', no_end_turn_ask: false, rejoin: { address: '', token: '', game: '', via: '' as const }, host: noHostSetup, lan_address: '', language: '', volume: 100 };
+  const settings = { nickname: 'Ann', recent, animation: 'normal' as const, fullscreen: false, mat: '', dice: 'tear', no_end_turn_ask: false, rejoin: { address: '', token: '', game: '', via: '' as const }, host: noHostSetup, lan_address: '', language: '', volume: 100, scale: 100 };
 
   beforeEach(() => {
     useApp.setState({ settings });

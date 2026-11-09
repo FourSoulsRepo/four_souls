@@ -16,7 +16,9 @@ const lanEvery = 2000;
 export function JoinScreen() {
   const connected = useApp((s) => s.connected);
   const path = useApp((s) => s.path);
-  if (connected) {
+  // A LAN Join on its way keeps the LAN screen until the seat (19.149).
+  const joining = useApp((s) => s.autoJoin !== null);
+  if (connected && !joining) {
     return <GameList />;
   }
   return path === 'lan' ? <LanConnect /> : <OnlineConnect />;
@@ -24,8 +26,9 @@ export function JoinScreen() {
 
 // LanConnect: host a game in this app, or join one on this network
 // (15.97). The list fills by itself; a started game this app held a
-// seat in offers Rejoin. The address field keeps only the last address
-// typed, and nothing goes to Recent.
+// seat in offers Rejoin. Join sits at the row's game; a typed address
+// takes its one open game (19.149). The address field keeps only the
+// last address typed, and nothing goes to Recent.
 function LanConnect() {
   const settings = useApp((s) => s.settings);
   const error = useApp((s) => s.error);
@@ -33,18 +36,30 @@ function LanConnect() {
   const saveNickname = useApp((s) => s.saveNickname);
   const saveSettings = useApp((s) => s.saveSettings);
   const show = useApp((s) => s.show);
+  const quit = useApp((s) => s.quit);
+  const connected = useApp((s) => s.connected);
+  const joining = useApp((s) => s.autoJoin !== null);
   const [nickname, setNickname] = useState(settings.nickname);
   const [address, setAddress] = useState(settings.lan_address);
+  const [passwords, setPasswords] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
+  const wait = busy || joining;
   const lan = useApp((s) => s.lan);
   const rows = lanRows(lan.found, protocolVersion, settings.rejoin);
   useLanSearch();
-  useEscape(() => {
-    show('menu');
-  });
+  // Back during a Join on its way leaves that server too.
+  const back = () => {
+    if (connected) {
+      void quit('menu');
+    } else {
+      show('menu');
+    }
+  };
+  useEscape(back);
 
-  // go joins to; a typed address is kept, a rejoin sends the seat.
-  const go = (to: string, opts: { typed?: boolean; rejoin?: boolean }) => {
+  // go joins to; a typed address is kept, a rejoin sends the seat, and
+  // join names the game to sit at ('' for the one open game).
+  const go = (to: string, opts: { typed?: boolean; rejoin?: boolean; join?: { game: string; password?: string } }) => {
     setBusy(true);
     void (async () => {
       if (await saveNickname(nickname)) {
@@ -52,7 +67,7 @@ function LanConnect() {
         if (opts.typed && s.lan_address !== to.trim()) {
           await saveSettings({ ...s, lan_address: to });
         }
-        await joinServer(to, { recent: false, token: opts.rejoin ? s.rejoin.token : undefined });
+        await joinServer(to, { recent: false, token: opts.rejoin ? s.rejoin.token : undefined, join: opts.join });
       }
       setBusy(false);
     })();
@@ -88,12 +103,25 @@ function LanConnect() {
           {rows.map((r) => (
             <li key={r.key}>
               <span className="selectable">{r.text}</span>
+              {r.locked && r.joinable && !r.rejoin && (
+                <input
+                  type="password"
+                  className="game-password"
+                  aria-label={t('lobby.games.password_label', { host: r.host })}
+                  placeholder={t('lobby.games.password')}
+                  autoComplete="off"
+                  value={passwords[r.key] ?? ''}
+                  onChange={(e) => {
+                    setPasswords({ ...passwords, [r.key]: e.target.value });
+                  }}
+                />
+              )}
               <button
                 type="button"
                 className={r.rejoin ? 'primary' : undefined}
-                disabled={busy || !r.joinable}
+                disabled={wait || !r.joinable}
                 onClick={() => {
-                  go(r.address, { rejoin: r.rejoin });
+                  go(r.address, r.rejoin ? { rejoin: true } : { join: { game: r.game, password: passwords[r.key] } });
                 }}
               >
                 {r.rejoin ? t('lobby.rejoin') : t('lobby.join')}
@@ -105,7 +133,7 @@ function LanConnect() {
           className="row"
           onSubmit={(e) => {
             e.preventDefault();
-            go(address, { typed: true });
+            go(address, { typed: true, join: { game: '' } });
           }}
         >
           <label className="field grow">
@@ -118,7 +146,7 @@ function LanConnect() {
               }}
             />
           </label>
-          <button type="submit" disabled={busy}>
+          <button type="submit" disabled={wait}>
             {t('lobby.connect')}
           </button>
         </form>
@@ -126,12 +154,7 @@ function LanConnect() {
       <p className="status" role="status">
         {error}
       </p>
-      <button
-        type="button"
-        onClick={() => {
-          show('menu');
-        }}
-      >
+      <button type="button" onClick={back}>
         {t('lobby.back')}
       </button>
     </div>

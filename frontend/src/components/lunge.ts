@@ -1,16 +1,17 @@
-// The attack lunge (15.3, V-12, T-23). A copy of the attacker's card
-// jumps into the target and returns; a starburst "-N" pops on the hit
-// (H-14). The copy lives in a layer of its own, so it is never clipped
-// by the table and outlives the effect: playback goes on at the hit,
-// and the target's HP drops at once (C-03). Only transform and opacity
-// animate (ADR 002). The hit lands with an attack hit sound (15.50).
-import { playSound } from '../sounds';
+// The attack lunge (15.3, V-12, T-23; fast strike 20.2, ADR 027). A
+// copy of the attacker's card lifts, flies into the target and settles
+// back; the target stays home and takes the hit (20.19). A starburst
+// "-N" pops on the hit (H-14). The copy lives in a layer of its own, so
+// it is never clipped by the table and outlives the effect: playback
+// goes on at the hit (C-03). Only transform and opacity animate (ADR 002). The hit lands
+// with an attack hit sound (15.50). A bigger hit looks and sounds
+// bigger (20.3): its burst grows and glows, the cards near it shake,
+// and a lethal one shakes the table.
+import { elasticOut, feel, hitSize, type HitSize } from '../feel';
+import { playSound, type Sound } from '../sounds';
+import { shakeNear, shakeTable } from './shake';
+import { px } from '../uiScale';
 
-// The normal length of the lunge and of the starburst, in ms.
-const lungeMs = 700;
-const burstMs = 900;
-// The hit lands at this part of the lunge.
-const hitAt = 0.5;
 // How many points the burst's star has.
 const starPoints = 14;
 
@@ -60,15 +61,15 @@ function star(): SVGSVGElement {
 }
 
 // copy is a still copy of the card: no zones, names, or test ids, so
-// nothing finds it in place of the card.
-function copy(src: HTMLElement, r: DOMRect): HTMLElement {
+// nothing finds it in place of the card. testid names the copy.
+function copy(src: HTMLElement, r: DOMRect, testid: string): HTMLElement {
   const c = src.cloneNode(true) as HTMLElement;
   for (const el of [c, ...c.querySelectorAll<HTMLElement>('*')]) {
     el.removeAttribute('data-zone');
     el.removeAttribute('data-testid');
   }
   c.classList.add('effect-lunge');
-  c.dataset.testid = 'lunge';
+  c.dataset.testid = testid;
   Object.assign(c.style, {
     left: `${String(r.left)}px`,
     top: `${String(r.top)}px`,
@@ -80,76 +81,201 @@ function copy(src: HTMLElement, r: DOMRect): HTMLElement {
   return c;
 }
 
-// burst pops a starburst "−N" on a card (H-14, T-24).
-export function burst(at: DOMRect, amount: number, scale: number): void {
+// hitSounds are the attack hit sounds by hit size (20.3, 20.17).
+const hitSounds: Record<HitSize, Sound> = { 1: 'attackHit', 2: 'attackHit2', 3: 'attackHit3' };
+
+// hitSound is the sound of an attack that deals amount.
+export function hitSound(amount: number): Sound {
+  return hitSounds[hitSize(amount)];
+}
+
+// burstSide is the burst's side in px at size 1 (.effect-burst).
+const burstSide = 76;
+
+// stackSpot is a new burst's spot among the live ones on its card
+// (20.4): 0 in the middle, then −1 above, 1 below, −2, 2, … The first
+// free spot is taken, so a spot frees up when its burst is gone.
+export function stackSpot(taken: number[]): number {
+  for (let i = 0; ; i++) {
+    const spot = i % 2 === 1 ? -(i + 1) / 2 : i / 2;
+    if (!taken.includes(spot)) {
+      return spot;
+    }
+  }
+}
+
+// live are the bursts on screen: the centre of the card each sits on,
+// and its spot in that card's stack.
+const live = new Set<{ x: number; y: number; spot: number }>();
+
+// burstFrames are the burst's keyframes (ADR 027 "Damage and death"):
+// it grows from 0 with an elastic overshoot, holds, and fades. With
+// less motion it shows at full size at once and only fades.
+function burstFrames(calm: boolean): Keyframe[] {
+  const { grow, hold, fade } = feel.burst;
+  const total = hold + fade;
+  const frames: Keyframe[] = calm
+    ? [{ transform: 'scale(1)', opacity: 1, offset: 0 }]
+    : elasticOut.map((s) => ({ transform: `scale(${String(s.value)})`, opacity: 1, offset: (s.offset * grow) / total, easing: s.easing }));
+  frames.push({ transform: 'scale(1)', opacity: 1, offset: hold / total }, { transform: 'scale(1)', opacity: 0, offset: 1 });
+  return frames;
+}
+
+// burst pops a starburst "−N" on a card (H-14, T-24), sized by the
+// damage, and shakes the cards near it (20.3). A lethal hit shakes the
+// table too. It stays 3 s (20.4), but the caller goes on at once:
+// playback never waits for it. Bursts on one card stack, not overlap.
+export function burst(at: DOMRect, amount: number, scale: number, lethal = false): void {
+  const size = hitSize(amount);
+  const grows = feel.hit.burst[size - 1] ?? 1;
+  const x = at.left + at.width / 2;
+  const y = at.top + at.height / 2;
+  const taken = [...live].filter((l) => Math.abs(l.x - x) < at.width / 2 && Math.abs(l.y - y) < at.height / 2).map((l) => l.spot);
+  const spot = { x, y, spot: stackSpot(taken) };
+  live.add(spot);
   const b = document.createElement('div');
-  b.className = 'effect-burst';
+  b.className = `effect-burst size-${String(size)}`;
   b.dataset.testid = 'burst';
-  b.style.left = `${String(at.left + at.width / 2)}px`;
-  b.style.top = `${String(at.top + at.height / 2)}px`;
+  b.dataset.size = String(size);
+  b.style.scale = String(grows);
+  b.style.left = `${String(x)}px`;
+  b.style.top = `${String(y + spot.spot * px(burstSide) * grows * feel.burst.stack)}px`;
   const n = document.createElement('span');
   n.textContent = `−${String(amount)}`;
   b.append(star(), n);
   layer().append(b);
+  const { hold, fade } = feel.burst;
   // anim: burst
-  const a = b.animate(
-    [
-      { transform: 'scale(0.3)', opacity: 0 },
-      { transform: 'scale(1.15)', opacity: 1, offset: 0.2 },
-      { transform: 'scale(1)', opacity: 1, offset: 0.75 },
-      { transform: 'scale(1)', opacity: 0 },
-    ],
-    { duration: burstMs * scale },
-  );
-  a.onfinish = () => {
+  const a = b.animate(burstFrames(still()), { duration: (hold + fade) * 1000 * scale, id: 'burst' });
+  const end = () => {
+    live.delete(spot);
     b.remove();
   };
+  a.onfinish = end;
+  a.oncancel = end;
+  shakeNear(at, size, scale);
+  if (lethal) {
+    shakeTable(scale);
+  }
 }
 
-// lunge plays the attack and calls hit when it lands.
-export function lunge(from: string[], to: string[], amount: number, scale: number, hit: () => void): void {
+// held maps a card to the lunge whose copy of it still settles home,
+// and ends that lunge at once. A next lunge from or at the card (the
+// monster hits back) ends it first: one copy of a card at a time.
+const held = new Map<HTMLElement, () => void>();
+
+// still is true when the player asks for less motion: the hit lands
+// in place, with no strike.
+export function still(): boolean {
+  return typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+// stopShort is how far short of a card target's centre the attacker's
+// centre stops (20.19, ADR 027 "Attack"): feel.lunge.short of the
+// attacker's own length along the way, as the reference's. w and h are
+// the attacker's size; dx and dy the way from its centre to the
+// target's. Two cards of one size then overlap by a quarter.
+export function stopShort(w: number, h: number, dx: number, dy: number): number {
+  const len = Math.hypot(dx, dy);
+  if (len === 0) {
+    return 0;
+  }
+  const ux = Math.abs(dx) / len;
+  const uy = Math.abs(dy) / len;
+  const half = Math.min(ux > 0 ? w / 2 / ux : Infinity, uy > 0 ? h / 2 / uy : Infinity);
+  return 2 * half * feel.lunge.short;
+}
+
+// lunge plays the attack (ADR 027 "Attack") and calls hit on contact.
+// Windup: the attacker's copy lifts and grows. Strike: it flies into
+// the target, linear; the target stays home (20.19). Contact: the
+// sound, the burst and hit, from the strike's own end, not from a
+// timer. Settle: it eases back home. A target that is no card (a
+// player's panel): the attacker goes into it, short of its centre.
+// lethal: the hit kills.
+export function lunge(from: string[], to: string[], amount: number, scale: number, hit: () => void, lethal = false): void {
   const dst = find(to);
   if (!dst) {
     hit();
     return;
   }
-  const b = dst.getBoundingClientRect();
+  held.get(dst)?.();
   const src = find(from);
-  if (!src) {
-    playSound('attackHit');
-    burst(b, amount, scale);
+  if (src) {
+    held.get(src)?.();
+  }
+  const b = dst.getBoundingClientRect();
+  if (!src || src === dst || still()) {
+    playSound(hitSound(amount));
+    burst(b, amount, scale, lethal);
     hit();
     return;
   }
   const a = src.getBoundingClientRect();
-  // The card goes into the target, stopping short of its centre.
   const dx = b.left + b.width / 2 - (a.left + a.width / 2);
   const dy = b.top + b.height / 2 - (a.top + a.height / 2);
   const len = Math.hypot(dx, dy);
-  const k = len > 0 ? Math.max(0, len - Math.min(b.width, b.height) * 0.35) / len : 0;
-  const c = copy(src, a);
+  // Only the attacker moves (20.19). It stops short of a card target's
+  // centre, so the cards overlap at the hit, not cover each other; a
+  // player's panel it enters a little further.
+  const short = dst.classList.contains('card') ? stopShort(a.width, a.height, dx, dy) : Math.min(b.width, b.height) * 0.35;
+  const way = len > 0 ? Math.max(0, len - short) / len : 0;
+  const ax = dx * way;
+  const ay = dy * way;
+  const { windup, strike, settle, lift, pull, windupCurve, strikeCurve, settleCurve } = feel.lunge;
+  const ms = (s: number) => s * 1000 * scale;
+  const go = windup + strike;
+  const at = (x: number, y: number, k: number) => `translate(${String(x)}px, ${String(y)}px) scale(${String(k)})`;
+  const home = at(0, 0, 1);
+  const top = at(-dx * pull, -dy * pull, lift);
+  const ahit = at(ax, ay, (1 + lift) / 2);
+  const c = copy(src, a, 'lunge');
   layer().append(c);
   src.style.visibility = 'hidden';
-  const ms = lungeMs * scale;
   // anim: lunge
-  const anim = c.animate(
+  const swing = c.animate(
     [
-      { transform: 'translate(0, 0) scale(1)', easing: 'ease-out' },
-      { transform: `translate(${String(-dx * 0.08)}px, ${String(-dy * 0.08)}px) scale(1.1)`, offset: 0.3, easing: 'ease-in' },
-      { transform: `translate(${String(dx * k)}px, ${String(dy * k)}px) scale(1.05)`, offset: hitAt, easing: 'ease-in-out' },
-      { transform: 'translate(0, 0) scale(1)' },
+      { transform: home, easing: windupCurve },
+      { transform: top, offset: windup / go, easing: strikeCurve },
+      { transform: ahit },
     ],
-    { duration: ms },
+    { duration: ms(go), id: 'strike', fill: 'forwards' },
   );
+  let retreat: Animation | null = null;
+  let touched = false;
   const end = () => {
+    // Ended before the hit (never expected): the hit still lands, so
+    // playback never stalls.
+    if (!touched) {
+      touched = true;
+      hit();
+    }
+    for (const x of [swing, retreat]) {
+      if (x) {
+        x.onfinish = null;
+        x.oncancel = null;
+      }
+    }
     c.remove();
     src.style.visibility = '';
+    if (held.get(src) === end) {
+      held.delete(src);
+    }
   };
-  anim.onfinish = end;
-  anim.oncancel = end;
-  window.setTimeout(() => {
-    playSound('attackHit');
-    burst(b, amount, scale);
+  held.set(src, end);
+  const contact = () => {
+    if (touched) {
+      return;
+    }
+    touched = true;
+    playSound(hitSound(amount));
+    burst(b, amount, scale, lethal);
+    // anim: lunge
+    retreat = c.animate([{ transform: ahit }, { transform: home }], { duration: ms(settle), easing: settleCurve, id: 'settle' });
+    retreat.onfinish = end;
+    retreat.oncancel = end;
     hit();
-  }, ms * hitAt);
+  };
+  swing.onfinish = contact;
+  swing.oncancel = contact;
 }

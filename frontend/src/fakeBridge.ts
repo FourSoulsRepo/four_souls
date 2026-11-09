@@ -42,7 +42,8 @@ const settingsKey = 'fake-settings';
 function loadSettings(): unknown {
   // ?anim=off starts with animations off; ?mat=basement starts on that
   // mat; ?firstrun starts without a nickname, as on the first start;
-  // ?noendask ends the turn without asking (V-46).
+  // ?noendask ends the turn without asking (V-46); ?scale=150 starts at
+  // that interface scale (ST-10).
   const params = new URLSearchParams(window.location.search);
   const animation = params.get('anim') ?? 'normal';
   const mat = params.get('mat') ?? '';
@@ -56,11 +57,12 @@ function loadSettings(): unknown {
     dice: 'tear',
     no_end_turn_ask: params.has('noendask'),
     rejoin: { address: '', token: '', game: '', via: '' },
-    host: { seats: 0, sets: null, detailed: false, response_timer: 0, no_bonus_souls: false, no_deck_ratios: false, random_seats: false, rollback: '' },
+    host: { seats: 0, sets: null, detailed: false, response_timer: 0, no_bonus_souls: false, no_deck_ratios: false, random_seats: false, rollback: '', picking: '', draft_size: 0 },
     lan_address: '',
     // make screenshots LOCALE=qps starts every page in that language.
     language: import.meta.env.VITE_LOCALE ?? '',
     volume: 100,
+    scale: Number(params.get('scale') ?? 100),
   };
   return JSON.parse(localStorage.getItem(settingsKey) ?? JSON.stringify(fresh));
 }
@@ -89,6 +91,7 @@ interface FakeSettings {
   lan_address?: string;
   language?: string;
   volume?: number;
+  scale?: number;
 }
 
 function saveSettings(s: FakeSettings): Promise<unknown> {
@@ -102,7 +105,10 @@ function saveSettings(s: FakeSettings): Promise<unknown> {
   if (s.volume !== undefined && (!Number.isInteger(s.volume) || s.volume < 0 || s.volume > 100)) {
     return Promise.reject(new Error(`unknown setting value: ${String(s.volume)}`));
   }
-  const saved = { ...s, nickname, recent: s.recent.slice(0, 5), lan_address: (s.lan_address ?? '').trim() };
+  if (s.scale !== undefined && s.scale !== 0 && (!Number.isInteger(s.scale) || s.scale < 75 || s.scale > 200)) {
+    return Promise.reject(new Error(`unknown setting value: scale ${String(s.scale)}`));
+  }
+  const saved = { ...s, scale: s.scale === undefined || s.scale === 0 ? 100 : s.scale, nickname, recent: s.recent.slice(0, 5), lan_address: (s.lan_address ?? '').trim() };
   localStorage.setItem(settingsKey, JSON.stringify(saved));
   return Promise.resolve(saved);
 }
@@ -355,17 +361,39 @@ w.go = {
         }),
       // The sounds at their real paths; like the fonts, they load
       // only in screenshots, else they fail to load and stay silent.
-      Sounds: () =>
-        Promise.resolve({
-          attackHit: '/cardimg/assets/sounds/attack-hit.mp3',
-          effectCast: '/cardimg/assets/sounds/effect-cast.mp3',
-          effectImpact: '/cardimg/assets/sounds/effect-impact.mp3',
-          diceRoll: '/cardimg/assets/sounds/dice-roll.mp3',
-          lootDraw: '/cardimg/assets/sounds/loot-draw.mp3',
-          playerDied: '/cardimg/assets/sounds/player-died.mp3',
-          treasureGain: '/cardimg/assets/sounds/treasure-gain.mp3',
-          soulGain: '/cardimg/assets/sounds/soul-gain.mp3',
-        }),
+      Sounds: () => {
+        const one = (name: string): string[] => [`/cardimg/assets/sounds/${name}.mp3`];
+        const three = (name: string): string[] => ['1', '2', '3'].map((i) => `/cardimg/assets/sounds/${name}-${i}.mp3`);
+        return Promise.resolve({
+          attackHit: one('attack-hit-1'),
+          effectCast: one('effect-cast'),
+          effectImpact: one('effect-impact'),
+          diceRoll: one('dice-roll'),
+          lootDraw: one('loot-draw'),
+          playerDied: one('player-died'),
+          treasureGain: one('treasure-gain'),
+          soulGain: one('soul-gain'),
+          attackHit2: one('attack-hit-2'),
+          attackHit3: one('attack-hit-3'),
+          lootLand: three('loot-land'),
+          lootDrawOther: three('loot-draw-other'),
+          dragBed: one('drag-bed'),
+          dragAir: one('drag-air'),
+          turnStart: one('turn-start'),
+          cardPlayOther: three('card-play-other'),
+          endTurnCue: one('end-turn-cue'),
+          timerTick: one('timer-tick'),
+          timerLast: one('timer-last'),
+          choiceDeal: one('choice-deal'),
+          choicePick: one('choice-pick'),
+          cardGrab: one('card-grab'),
+          aimCancel: one('aim-cancel'),
+          playRefused: one('play-refused'),
+          historyHover: one('history-hover'),
+          choiceUnpick: one('choice-unpick'),
+          choiceConfirm: one('choice-confirm'),
+        });
+      },
       // The mat images, at their real paths; the e2e tests serve them only
       // for screenshots, else they fail to load as in a public clone.
       // ?nomats lists none, as Go does without the private images.

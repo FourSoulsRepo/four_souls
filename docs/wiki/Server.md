@@ -9,7 +9,7 @@ WebSocket (ws.go) ──Conn──▶ Client ──▶ Hub (lobby goroutine)
                                   └──▶ Room (one goroutine per game)
 ```
 
-* **Conn** is all a transport implements: `Send` and `Close`. The WebSocket adapter adds a send queue of 256 messages and a writer goroutine per client; the writer sends the queued messages in batches. A client that falls behind is disconnected and resyncs on reconnect; the log names the cause. Another transport (WebRTC, a relay) only adds a Conn.
+* **Conn** is all a transport implements: `Send` and `Close`. The WebSocket adapter adds a send queue of 256 messages and a writer goroutine per client; the writer sends the queued messages in batches. The writer also pings every connection every 30 s (`pingEvery`, 19.148): in the lobby nothing else crosses the socket, and a reverse proxy drops an idle WebSocket (nginx after 60 s, ADR 017). A missing pong drops nobody. A client that falls behind is disconnected and resyncs on reconnect; the log names the cause. Another transport (WebRTC, a relay) only adds a Conn.
 * **Hub** owns the lobby: hello, the game list, tables, ready checks, saved games. Only its goroutine touches that state; everything reaches it as a request on a channel.
 * **Room** owns one game: the ban and pick phase, then the engine game. Only its goroutine touches the engine.
 * **Client.Receive** sends a message to the hub until the client's game starts, then straight to its room.
@@ -26,7 +26,7 @@ Players see the lobby as the Games list. Each row is one table or game:
 
 1. Hello: protocol version, nickname, card sets, dice look; the server keeps or makes a token. The seat keeps the look (`CleanDice`: a bad ID is the default), even while its player is away, and every table and update lists it (V-19).
 2. Lobby: create (seats, sets, options) or join; ready. A full, ready table becomes a Room.
-3. Setup: host bans out; ban rounds in snake order with an optional timer; random or draft picks. Deck ratios are on unless the host turns them off; `checkOptions` turns them off when the sets are too small (GS-07). Random seats shuffle the seats once, when the game starts, with the game's seed (UC-37).
+3. Setup: host bans out; ban rounds in snake order with an optional timer; random or draft picks. A draft's `setup` message gives each player their offers and, in `items`, each offer's starting item by index; it is empty for a character that picks one at the start (Eden, R-SETUP-09). The client's pick screen is `PickScreen` (UC-39). Deck ratios are on unless the host turns them off; `checkOptions` turns them off when the sets are too small (GS-07). Random seats shuffle the seats once, when the game starts, with the game's seed (UC-37).
 4. Play starts with the first-player roll; the first update carries only `first_player` and `game_started` of the setup events, for Cain (`startEvents`, 15.43). Each intent is applied for the client's own seat; then `after` runs automatic passes, restarts the response timer, sends every client its update and records the steps.
 5. Disconnects pause the game; a vote can kick; a token brings a player back. A finished game never takes a token back: the hello goes to the lobby, so the player can start a new game (19.32).
 6. The host may save: the game stops and can be loaded again from the lobby.
@@ -47,9 +47,9 @@ The server answers for a player only in these cases, never choosing among real o
 
 ## Presence
 
-`presence.go` (15.35, N-15, ADR 016). A seated player sends `presence` while aiming or hovering: `from` (what aims), `at` (what the arrow or pointer is over), `point` (the pointer on the board frame, 0 to 1). The room fills in `seat` and sends it to every other client of the game, spectators too once step 9 seats them; the sender gets nothing back. Each one replaces the sender's last, so a lost or late one does no harm. When a player's connection drops, the others get an empty presence of that seat, so its arrow goes.
+`presence.go` (15.35, N-15, ADR 016). A seated player sends `presence` while aiming, hovering or dragging a card: `from` (what aims), `at` (what the arrow or pointer is over), `point` (the pointer on the board frame, 0 to 1), `held` (the card dragged to be played, 20.13). The room fills in `seat` and sends it to every other client of the game, spectators too once step 9 seats them; the sender gets nothing back. Each one replaces the sender's last, so a lost or late one does no harm. When a player's connection drops, the others get an empty presence of that seat, so its arrow goes.
 
-The engine never sees it and no record or save keeps it. It is never answered: a message that does not decode, comes before the game starts, or comes too fast is dropped. `pace` allows `protocol.MaxPresence` a second per seat, with a burst of as many.
+The engine never sees it and no record or save keeps it. It is never answered: a message that does not decode or comes before the game starts is dropped. Each seat's presence goes at most once per `protocol.PresenceGap` (0.35 s), or `PresenceAimGap` (0.25 s) when it has `from` (20.13, ADR 027 "Other players live"). One that comes sooner waits in the seat's `sampler` until the gap ends, and a newer one replaces it, so the last state always arrives (`TestPresenceSamples`).
 
 An operator may turn it off (`Config.Presence`, `-presence=false`): the room then drops every presence and relays none, and `welcome.presence` is unset so clients send none. It is on by default, and always for the app's own host.
 

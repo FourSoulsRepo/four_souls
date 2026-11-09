@@ -1197,6 +1197,13 @@
     "text": "Face-down treasure card",
     "note": "Screen-reader name of a face-down treasure card."
   },
+  "deck.looking": {
+    "text": {
+      "one": "{player} looks at {n} card",
+      "other": "{player} looks at {n} cards"
+    },
+    "note": "Board: the small backs over a deck another player looks at (20.18). player: who looks; n: how many top cards."
+  },
   "deck.loot": {
     "text": {
       "one": "Loot deck: {n} card",
@@ -1293,6 +1300,18 @@
   "effect.stolen": {
     "text": "+{n}¢ stolen",
     "note": "Effect: floating text by the thief's coins. n: cents stolen."
+  },
+  "effect.tuck_bottom": {
+    "text": "Bottom",
+    "note": "Effect: short tag on a deck when a card a player looked at went to the bottom of that deck."
+  },
+  "effect.tuck_bottom_n": {
+    "text": "Bottom ×{n}",
+    "note": "Effect: short tag on a deck when cards a player looked at went to the bottom of that deck. n: how many, 2 or more."
+  },
+  "effect.tuck_top": {
+    "text": "Top",
+    "note": "Effect: short tag on a deck when a card a player looked at stayed on top of that deck."
   },
   "effect.turn": {
     "text": "{player}'s turn",
@@ -1659,8 +1678,8 @@
     "note": "Game screen title before the table's first state arrives."
   },
   "game.setting_up_hint": {
-    "text": "Bans and picks get their own screen in step 7.14.",
-    "note": "Game screen, under 'Setting up the match…': a placeholder for a screen still to come."
+    "text": "The table appears when the match starts.",
+    "note": "Game screen, under 'Setting up the match…': shown until the table's first state arrives."
   },
   "game.turn": {
     "text": "Turn {n}",
@@ -1705,6 +1724,10 @@
   "game_menu.save_hint": {
     "text": "Saving stops the game for everyone; continue it later from Host a game.",
     "note": "Game menu dialog, for the host: line over the buttons."
+  },
+  "game_menu.settings": {
+    "text": "Settings",
+    "note": "Game menu dialog: opens the settings over the table."
   },
   "game_menu.title": {
     "text": "Menu",
@@ -2333,6 +2356,10 @@
     "text": "Detailed setup",
     "note": "Host screen: check box that shows the options below it."
   },
+  "host.draft_size": {
+    "text": "Characters offered",
+    "note": "Host screen, detailed setup: label of the select for how many characters each player picks from in a draft."
+  },
   "host.host": {
     "text": "Host",
     "note": "Host screen: button that starts hosting the game in this app."
@@ -2344,6 +2371,18 @@
   "host.password": {
     "text": "Password (optional)",
     "note": "Host screen: label of the game's password field."
+  },
+  "host.picking": {
+    "text": "Characters",
+    "note": "Host screen, detailed setup: label of the select for how characters are dealt."
+  },
+  "host.picking_draft": {
+    "text": "Draft",
+    "note": "Host screen, detailed setup, option of 'Characters': each player is offered several characters and picks one."
+  },
+  "host.picking_random": {
+    "text": "One random each",
+    "note": "Host screen, detailed setup, option of 'Characters': each player gets one random character (the default)."
   },
   "host.players": {
     "text": "Players",
@@ -2862,6 +2901,42 @@
     "text": "Wait",
     "note": "Pause dialog: button; vote to wait for the players who left."
   },
+  "pick.caption": {
+    "text": "Each character comes with its starting item.",
+    "note": "Draft pick screen, under the title, before the player has picked."
+  },
+  "pick.choosing": {
+    "text": "choosing",
+    "note": "Draft pick screen, list of players, lower case after 'Ann:': this player has not picked yet."
+  },
+  "pick.confirm": {
+    "text": "Confirm",
+    "note": "Draft pick screen: button that sends the picked character."
+  },
+  "pick.has_picked": {
+    "text": "picked",
+    "note": "Draft pick screen, list of players, lower case after 'Ann:': this player has picked a character (not which one)."
+  },
+  "pick.item": {
+    "text": "Starting item",
+    "note": "Draft pick screen, label over the small card under each offered character: the item that character starts with."
+  },
+  "pick.item_later": {
+    "text": "You choose a starting item when the game starts.",
+    "note": "Draft pick screen, under a character with no fixed starting item (Eden): the item is picked later, from the treasure deck."
+  },
+  "pick.players": {
+    "text": "Players",
+    "note": "Draft pick screen: screen-reader name of the list of players and whether each has picked."
+  },
+  "pick.title": {
+    "text": "Choose your character",
+    "note": "Draft pick screen title (GS-01): the player picks one of the characters offered to them."
+  },
+  "pick.waiting": {
+    "text": "Waiting for the other players to pick…",
+    "note": "Draft pick screen, under the title, after the player has picked."
+  },
   "prompt.copy_ability": {
     "text": "Copy which ↷ ability?",
     "note": "Question of a loot card that copies an item's ↷ (tap) ability."
@@ -3349,6 +3424,10 @@
     "text": "Saved.",
     "note": "Settings: status line after Save worked."
   },
+  "settings.scale": {
+    "text": "Interface scale",
+    "note": "Settings: label of the slider that makes the whole window bigger or smaller, from 75% to 200%; 100% is the default size."
+  },
   "settings.speed.fast": {
     "text": "Fast",
     "note": "Settings: animation speed choice."
@@ -3675,6 +3754,26 @@
     "text": "You",
     "note": "Stack panel: the viewer in the Waiting for and Passed lines."
   },
+  "start.caption": {
+    "text": "{card} keeps one",
+    "note": "Start-of-game screen: the line under the headline. {card} is the chooser's character, e.g. \"Eden keeps one\"."
+  },
+  "start.choosing": {
+    "text": "{player} is choosing",
+    "note": "Game table, low on the board, for everyone else while a player makes a start-of-game choice, e.g. \"Bo is choosing\". One line per chooser."
+  },
+  "start.confirm": {
+    "text": "Confirm",
+    "note": "Start-of-game screen: the button that sends the picked card; disabled until one is picked."
+  },
+  "start.title": {
+    "text": "Starting item",
+    "note": "Start-of-game screen (Eden): the banner headline above the cards she chooses her starting item from."
+  },
+  "start.waiting_label": {
+    "text": "Start of game",
+    "note": "Screen-reader name of the \"is choosing\" banner on the board."
+  },
   "stats.always_hits": {
     "text": "Always hits",
     "note": "Stack panel, an open attack's fight line: every die face hits."
@@ -3797,6 +3896,13 @@
       "other": "{n} cents"
     },
     "note": "Game table: screen-reader name of a player's coin count. n: their cents."
+  },
+  "table.cents_cost": {
+    "text": {
+      "one": "Costs {n} cent",
+      "other": "Costs {n} cents"
+    },
+    "note": "Game table: shown by your coins while the pointer is on something to buy; the coins show −n. n: its price in cents."
   },
   "table.choose": {
     "text": "Choose {player}",
@@ -3978,6 +4084,10 @@
   "turn_badge.label": {
     "text": "Turn",
     "note": "Game table: screen-reader name of the turn badge on the board."
+  },
+  "turn_badge.start": {
+    "text": "Before turn 1 · Start of game",
+    "note": "Game table: the turn badge while players make their start-of-game choices (e.g. Eden's starting item), before the first-player roll."
   },
   "turn_badge.step.action": {
     "text": "Action",

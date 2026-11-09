@@ -28,9 +28,9 @@ type roomSeat struct {
 	// waitSeq is the last stack ID when the wait began; a newer item
 	// that targets the player ends it (15.84).
 	waitSeq int
-	kicked  bool   // empty for good after a vote (N-08)
-	dice    string // the dice look (V-19); kept while the player is away
-	pace    pace   // presence messages (15.35)
+	kicked  bool    // empty for good after a vote (N-08)
+	dice    string  // the dice look (V-19); kept while the player is away
+	sample  sampler // presence messages (15.35, 20.13)
 }
 
 type request struct {
@@ -42,6 +42,8 @@ type request struct {
 	timeout int    // a ban turn's timer ran out (its turn number)
 	respond int    // the response timer ran out (its number)
 	voteUp  int    // a Soft vote's time ran out (its number)
+	// presence: a seat's waiting presence may go (seat + 1, 20.13).
+	presence int
 }
 
 // Room runs one game. Only its goroutine (Run) touches the game. It
@@ -226,6 +228,9 @@ func (r *Room) handle(req request) {
 		return
 	case req.voteUp > 0:
 		r.voteTimeUp(req.voteUp)
+		return
+	case req.presence > 0:
+		r.flushPresence(req.presence - 1)
 		return
 	}
 	env, err := protocol.Decode(req.msg)
@@ -418,6 +423,7 @@ func (r *Room) drop(c *Client) {
 	if c.seat >= 0 && r.seats[c.seat].client == c {
 		r.seats[c.seat].client = nil
 		r.seats[c.seat].wait = false
+		r.dropPresence(c.seat)
 		r.relayPresence(c, protocol.Presence{Seat: c.seat}) // its arrow goes
 		if r.rbVote != nil && r.paused() {
 			// The pause ends the vote; it may be asked again (ADR 020).

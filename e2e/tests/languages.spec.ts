@@ -115,10 +115,14 @@ async function untilRollBanner(pages: Page[], want: (page: Page, s: Seen) => str
     if (done) {
       return;
     }
-    // The page that rolls may sit on Eden's choice; pick its first option.
+    // The page that rolls may sit on Eden's choice; pick its first
+    // option, then Confirm (20.22).
     const j = seen.findIndex((s) => s.waiting.player === s.you && s.turn < 1);
     const eden = pages[j]?.locator('.choice:not(.look) .choice-option button').first();
-    if (eden && (await enabled(eden))) {
+    const confirm = pages[j]?.locator('.choice .choice-confirm');
+    if (confirm && (await enabled(confirm))) {
+      await confirm.click();
+    } else if (eden && (await enabled(eden))) {
       await eden.click();
     } else {
       await pages[0]?.waitForTimeout(100);

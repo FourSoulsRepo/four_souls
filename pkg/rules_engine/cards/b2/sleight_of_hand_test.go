@@ -39,6 +39,13 @@ func TestSleightOfHandAsksOneOrder(t *testing.T) {
 	if w.Kind != engine.PromptOrder || w.Count != 5 || w.Text.String() != "ask.put_back" {
 		t.Fatalf("prompt = %+v, want an order of 5", w)
 	}
+	// Everyone sees which deck is looked at, and how many (20.18).
+	look := engine.DeckLook{Deck: engine.MonsterDeck, Count: 5}
+	for _, v := range []engine.Viewer{{Kind: engine.ViewPlayer, Player: 0}, {Kind: engine.ViewPlayer, Player: 1}, {Kind: engine.ViewSpectator}} {
+		if l := tb.G.View(v).Waiting.Look; l == nil || *l != look {
+			t.Errorf("viewer %+v: look %+v, want %+v", v, l, look)
+		}
+	}
 	var shown []engine.ObjectID
 	for _, c := range tb.G.View(engine.Viewer{Kind: engine.ViewPlayer, Player: 0}).Ordering {
 		shown = append(shown, c.ID)
@@ -64,5 +71,8 @@ func TestSleightOfHandAsksOneOrder(t *testing.T) {
 	tb.Do(engine.Intent{Player: 0, Kind: engine.IntentOrder, Objects: want})
 	if got := tb.G.DeckTop(engine.MonsterDeck, 5); !slices.Equal(got, want) {
 		t.Errorf("top 5 = %v, want %v", got, want)
+	}
+	if l := tb.G.Prompt().Look; l != nil {
+		t.Errorf("look %+v after the order, want none", l)
 	}
 }

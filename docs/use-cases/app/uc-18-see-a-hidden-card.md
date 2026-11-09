@@ -35,6 +35,8 @@
   * A click on a placed card takes it back; later ones move up.
   * "Put back" is enabled once every card has a place.
   * Only the chooser sees the cards; others read "Ann is putting cards back".
+  * The cards come from the deck at a choice's size, if they fit one row (20.18).
+  * Others see small backs over that deck meanwhile (UC-13 5m).
   * No "You look at" dialog follows; the order dialog showed them.
 * **1a. Look at any time (19.30):** e.g. There's Options.
   * On the owner's turn the treasure deck's top card lies face up.
@@ -50,6 +52,20 @@
   * Others: "Ann puts the top loot card on the bottom".
   * Or: "Ann keeps the top loot card on top".
   * Others' line names the deck, never the card.
+* **2d. Pick one of the cards (19.130):** e.g. XVIII The Moon, IV The Emperor.
+  * The choice shows the deck's top cards; the player picks the one on top.
+  * No "You look at" dialog follows; the choice showed them.
+  * The history keeps "You look at <card>" for each.
+  * The same after a question about one card (2a).
+* **2e. The board shows top or bottom (19.147):** after 2a, 2c or 2d.
+  * Others see a small back over the deck while the player decides.
+  * A card kept on top drops onto its deck.
+  * A card put on the bottom slides out beside the deck, then under it.
+  * A tag on the deck says "Top", "Bottom" or "Bottom ×4".
+  * The chooser sees the card's face; others see its back.
+  * After The Moon's pick, the chooser's other cards slide under the deck.
+  * Also XII. The Hanged Man and Sack Head, one deck at a time.
+  * Also effects that reveal cards and put the rest on the bottom.
 
 ## Postconditions
 

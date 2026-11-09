@@ -4,8 +4,8 @@ name: Release
 # with card images and makes a draft GitHub release; the owner checks it
 # and publishes it by hand. Each platform also gets a "for-poor" archive:
 # the same game without card images, so cards show as text. The server
-# has its own archives, one per platform. A version tag also deploys the
-# rules website to GitHub Pages (job site).
+# has its own archives, one per platform. The rules website deploys on
+# every push to main instead (site.yml).
 on:
   push:
     tags: ["v*"]

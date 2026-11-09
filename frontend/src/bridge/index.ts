@@ -62,6 +62,8 @@ export interface Settings {
   language: string;
   // volume is the sound volume in percent, 0 to 100 (ST-09); 0 is mute.
   volume: number;
+  // scale is the interface scale in percent, 75 to 200 (ST-10).
+  scale: number;
 }
 
 // RecentServer is a server joined lately; name is the one it gave in
@@ -94,6 +96,7 @@ function fromGo(s: {
   lan_address?: string;
   language?: string;
   volume?: number;
+  scale?: number;
 }): Settings {
   return {
     nickname: s.nickname,
@@ -108,6 +111,7 @@ function fromGo(s: {
     lan_address: s.lan_address ?? '',
     language: s.language ?? '',
     volume: s.volume ?? 100,
+    scale: s.scale ?? 100,
   };
 }
 
@@ -216,19 +220,40 @@ export function getFonts(): Promise<Fonts> {
   return wailsFonts();
 }
 
-// Sounds are the damage sounds (15.50), the dice sound (15.69), the loot
-// draw sound (18.7), the player death sound (18.8), the treasure gain
-// sound (18.9) and the soul gain sound; each URL is '' without the
-// private images, and that sound stays silent.
+// Sounds are the sound URLs, a list per sound: the damage sounds (15.50),
+// the dice sound (15.69), the loot draw sound (18.7), the player death
+// sound (18.8), the treasure gain sound (18.9), the soul gain sound, and
+// the reference client's sounds of step 20 (20.17). A sound with several
+// files plays one at random. Each list is empty without the private
+// images, and that sound stays silent.
 export interface Sounds {
-  attackHit: string;
-  effectCast: string;
-  effectImpact: string;
-  diceRoll: string;
-  lootDraw: string;
-  playerDied: string;
-  treasureGain: string;
-  soulGain: string;
+  attackHit: string[];
+  effectCast: string[];
+  effectImpact: string[];
+  diceRoll: string[];
+  lootDraw: string[];
+  playerDied: string[];
+  treasureGain: string[];
+  soulGain: string[];
+  attackHit2: string[];
+  attackHit3: string[];
+  lootLand: string[];
+  lootDrawOther: string[];
+  dragBed: string[];
+  dragAir: string[];
+  turnStart: string[];
+  cardPlayOther: string[];
+  endTurnCue: string[];
+  timerTick: string[];
+  timerLast: string[];
+  choiceDeal: string[];
+  choicePick: string[];
+  cardGrab: string[];
+  aimCancel: string[];
+  playRefused: string[];
+  historyHover: string[];
+  choiceUnpick: string[];
+  choiceConfirm: string[];
 }
 
 // getSounds returns the sound URLs.

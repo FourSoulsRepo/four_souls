@@ -13,6 +13,7 @@ damage_pending
 damaged
 deactivated
 death_pending
+deck_bottom
 destroyed
 dice_rolled
 died

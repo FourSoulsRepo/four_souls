@@ -25,6 +25,8 @@
     1. Disabled by default; a short hint says what each mode allows.
     2. Soft: UC-31; Godmode: UC-30.
     3. The host screen remembers the last mode.
+15. Each draft offer comes with its starting item; the pick screen is UC-39.
+    1. Eden's is empty: she chooses one at the start (R-SETUP-09).
 
 ## Alternative scenarios and errors
 

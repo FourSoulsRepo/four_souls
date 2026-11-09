@@ -1,13 +1,14 @@
-import { useLayoutEffect, useRef, useState } from 'react';
+import { useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
 import { language, t } from '../i18n';
-import { useApp } from '../store';
+import { useApp, type Zoom } from '../store';
+import { feel } from '../feel';
 import { keyword, placeZoom, type Place } from '../zoom';
-import type { Outcome } from '../history';
+import { outcomeGrid, type Outcome } from '../history';
 import { translatorsOf } from '../cards';
 import { counterColor } from '../counters';
 import { Card, CardText } from './Card';
-import { starPolygon } from './lunge';
-import { skullPath } from './marks';
+import { starPolygon, still } from './lunge';
+import { skullPath, swordsPath } from './marks';
 import { Part } from './StackPanel';
 import './Card.css';
 
@@ -41,6 +42,29 @@ export function CardZoom() {
     const size = { width: el.offsetWidth, height: el.offsetHeight };
     setPlace(placeZoom(zoom.at, size, { width: window.innerWidth, height: window.innerHeight }, zoom.rise ?? false));
   }, [zoom]);
+  // A table card's zoom grows out of the card once it is placed (20.5).
+  const grownRef = useRef<Zoom | null>(null);
+  useLayoutEffect(() => {
+    const el = bodyRef.current;
+    if (!zoom?.grow || !place || !el || grownRef.current === zoom) {
+      return;
+    }
+    grownRef.current = zoom;
+    if (useApp.getState().settings.animation === 'off' || still()) {
+      return;
+    }
+    const { at } = zoom;
+    const from = Math.min(1, (at.right - at.left) / Math.max(el.offsetWidth, 1));
+    const origin = `${String((at.left + at.right) / 2 - place.x)}px ${String((at.top + at.bottom) / 2 - place.y)}px`;
+    // anim: zoom-grow
+    el.animate(
+      [
+        { transform: `translate(${String(place.x)}px, ${String(place.y)}px) scale(${String(from)})`, transformOrigin: origin },
+        { transform: `translate(${String(place.x)}px, ${String(place.y)}px) scale(1)`, transformOrigin: origin },
+      ],
+      { duration: feel.zoom.grow * 1000, easing: feel.zoom.growCurve },
+    );
+  }, [zoom, place]);
   if (!zoom) {
     return null;
   }
@@ -113,7 +137,7 @@ export function CardZoom() {
             <figcaption>{t('zoom.other_side')}</figcaption>
           </figure>
         )}
-        {zoom.outcome && zoom.outcome.length > 0 && <Outcomes list={zoom.outcome} />}
+        {zoom.outcome && zoom.outcome.length > 0 && <Outcomes list={zoom.outcome} swords={zoom.swords ?? false} />}
         {footnotes && footnotes.length > 0 && (
           <aside className="card-zoom-tips" role="note" aria-label={t('zoom.keywords')}>
             {footnotes.map((f) => (
@@ -129,16 +153,24 @@ export function CardZoom() {
   );
 }
 
-// Outcomes is what a play did (15.90, V-51): an arrow, then each card it
-// hit or gave, with a starburst and the damage, or a skull; cents are a
-// plain coin with the amount.
-function Outcomes({ list }: { list: Outcome[] }) {
+// Outcomes is what a play did (15.90, V-51): an arrow, or swords for an
+// attack's (20.21), then each card it hit or gave, with a starburst and
+// the damage, or a skull; cents are a plain coin with the amount. Cards
+// stand in one row up to four, then in two rows, smaller (outcomeGrid).
+function Outcomes({ list, swords }: { list: Outcome[]; swords: boolean }) {
+  const grid = outcomeGrid(list.length);
   return (
     <div className="card-zoom-outcome" role="list" aria-label={t('zoom.outcome')}>
-      <svg className="card-zoom-arrow" viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M3 10h12V5l7 7-7 7v-5H3Z" />
-      </svg>
-      <div className="card-zoom-results">
+      {swords ? (
+        <svg className="card-zoom-arrow card-zoom-swords" viewBox="0 0 24 24" aria-hidden="true" data-testid="zoom-swords">
+          <path d={swordsPath} />
+        </svg>
+      ) : (
+        <svg className="card-zoom-arrow" viewBox="0 0 24 24" aria-hidden="true" data-testid="zoom-arrow">
+          <path d="M3 10h12V5l7 7-7 7v-5H3Z" />
+        </svg>
+      )}
+      <div className="card-zoom-results" style={{ '--cols': grid.columns, '--k': grid.scale } as CSSProperties}>
         {list.map((o, i) => (
           // A popout's results never change order, so the index is a stable key.
           // eslint-disable-next-line @eslint-react/no-array-index-key

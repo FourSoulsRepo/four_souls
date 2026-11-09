@@ -108,6 +108,7 @@ func LookMayBottom(d engine.DeckKind) engine.Effect {
 	}, engine.Question{
 		Text:    AskPutBottom,
 		Subject: func(c *engine.Ctx, _ []int) engine.ObjectID { return c.G.DeckTop(d, 1)[0] },
+		Peek:    true,
 		Options: func(c *engine.Ctx, _ []int) []engine.Msg {
 			top := c.G.DeckTop(d, 1)
 			if len(top) == 0 {
@@ -133,6 +134,7 @@ func OneOnTop(d engine.DeckKind) engine.Effect {
 		Options: func(c *engine.Ctx, _ []int) []engine.Msg {
 			return c.G.Labels(c.G.DeckTop(d, 5))
 		},
+		Looks: func(c *engine.Ctx, _ []int) []engine.ObjectID { return c.G.DeckTop(d, 5) },
 	})
 }
 
@@ -274,14 +276,37 @@ func DamageAPlayer(n int, others bool) engine.Effect {
 }
 
 // RechargeAnItem is "you may recharge an item", picked on resolution; the
-// last option declines.
+// last option declines. Only engine.Rechargeable items are offered
+// (19.145).
 var RechargeAnItem = engine.Ask(func(c *engine.Ctx, a []int) {
-	if ids := AllItems(c.G); a[0] >= 0 && a[0] < len(ids) {
+	if ids := RechargeableItems(c.G, engine.NoPlayer); a[0] >= 0 && a[0] < len(ids) {
 		c.G.Recharge(ids[a[0]])
 	}
 }, engine.Question{Text: AskRechargeItem, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
-	return append(c.G.Labels(AllItems(c.G)), engine.AskNone.Msg())
+	return append(c.G.Labels(RechargeableItems(c.G, engine.NoPlayer)), engine.AskNone.Msg())
 }})
+
+// RechargeableItems lists the engine.Rechargeable items player p
+// controls, or every player's with NoPlayer, in seat order (19.146).
+func RechargeableItems(g *engine.Game, p engine.PlayerID) []engine.ObjectID {
+	return itemsWhere(g, p, engine.Rechargeable)
+}
+
+// DeactivatableItems lists the engine.Deactivatable items player p
+// controls, or every player's with NoPlayer, in seat order (19.146).
+func DeactivatableItems(g *engine.Game, p engine.PlayerID) []engine.ObjectID {
+	return itemsWhere(g, p, engine.Deactivatable)
+}
+
+func itemsWhere(g *engine.Game, p engine.PlayerID, ok func(*engine.Game, engine.ObjectID) bool) []engine.ObjectID {
+	var out []engine.ObjectID
+	for _, id := range AllItems(g) {
+		if ok(g, id) && (p == engine.NoPlayer || g.Object(id).Controller == p) {
+			out = append(out, id)
+		}
+	}
+	return out
+}
 
 // AllItems lists every item players control, in seat order.
 func AllItems(g *engine.Game) []engine.ObjectID {

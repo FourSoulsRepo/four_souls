@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { CardInfo } from './cards';
-import { createPlayback, effectsFor, scaleFor, shopSlot, slotZone, type Death, type Effect } from './playback';
+import { catchUp, chargedIn, createPlayback, effectsFor, hpOf, playedEnds, scaleFor, shopSlot, slotZone, weightOf, type Death, type Effect } from './playback';
 import type { GameEvent, GameView, Update } from './protocol';
 
 const ctx = {
@@ -17,13 +17,36 @@ const ctx = {
   diedAt: new Map<number, Death>(),
   seen: (card: string) => card === 'pin',
   roll: (stack: number) => (stack === 7 ? 2 : undefined),
+  hpAfter: (e: GameEvent): number | undefined => (e.object === 42 ? 0 : undefined),
+  charged: (p: number) => (p === 1 ? [31, 32] : []),
   you: 0,
+  looking: (): boolean => false,
 };
 
 // monster knows every card as a monster (19.73).
 const monster = (ref: string): CardInfo => ({ ref, set: 'b2', type: 'Monster Card', name: ref, effects: [], footnotes: [], stats: [], rewards: [], image: '' });
 
 describe('effectsFor', () => {
+  it('drops a kept top card or tucks it under; only the chooser sees its face (19.147)', () => {
+    const own: GameEvent = { kind: 'top_choice', player: 0, object: 9, card: 'a_dime', private: true, text: 'loot deck bottom' };
+    const other: GameEvent = { kind: 'top_choice', player: 1, private: true, text: 'monster deck top' };
+    expect(effectsFor([own, other], ctx)).toEqual([
+      { kind: 'tuck', deck: 'loot', cards: [{ card: 'a_dime', bottom: true }], tag: 'Bottom' },
+      { kind: 'tuck', deck: 'monster', cards: [{ bottom: false }], tag: 'Top' },
+    ]);
+  });
+
+  it("tucks a look's rest under its deck; the chooser's window flew them, so only the tag (19.147)", () => {
+    const e: GameEvent = { kind: 'deck_bottom', player: -1, amount: 4, text: 'loot deck' };
+    const backs = Array.from({ length: 4 }, () => ({ bottom: true }));
+    expect(effectsFor([e], ctx)).toEqual([{ kind: 'tuck', deck: 'loot', cards: backs, tag: 'Bottom ×4' }]);
+    const chooser = { ...ctx, looking: (deck: string) => deck === 'loot' };
+    expect(effectsFor([e], chooser)).toEqual([{ kind: 'tuck', deck: 'loot', cards: [], tag: 'Bottom ×4' }]);
+    expect(effectsFor([{ ...e, amount: 1, text: 'treasure deck' }], chooser)).toEqual([{ kind: 'tuck', deck: 'treasure', cards: [{ bottom: true }], tag: 'Bottom' }]);
+    expect(weightOf({ kind: 'tuck', deck: 'loot', cards: [], tag: '' })).toBe('minor');
+    expect(weightOf({ kind: 'tuck', deck: 'loot', cards: backs, tag: '' })).toBe('normal');
+  });
+
   it('throws each first-player die, then names a tie or who goes first (15.43)', () => {
     const events: GameEvent[] = [
       { kind: 'dice_rolled', player: 1, amount: 2, text: 'first', label: { key: 'event.first_player_roll' } },
@@ -39,21 +62,36 @@ describe('effectsFor', () => {
     ]);
   });
 
-  // Each card from the loot deck is dealt with its sound (18.7).
-  it('flies looted cards from the loot deck to the hand', () => {
-    const e: GameEvent = { kind: 'looted', player: 1, object: 9, card: 'a_dime', private: true };
-    expect(effectsFor([e, { ...e, object: 10, card: 'a_penny' }], ctx)).toEqual([
-      { kind: 'fly', from: ['deck-loot'], to: ['hand-1', 'player-1'], card: 'a_dime', back: 'loot', sound: 'lootDraw' },
-      { kind: 'fly', from: ['deck-loot'], to: ['hand-1', 'player-1'], card: 'a_penny', back: 'loot', sound: 'lootDraw' },
+  // Each card from the loot deck is drawn (18.7, 20.7): another
+  // player's back only, the viewer's own with its face.
+  it('draws looted cards from the loot deck to the hand', () => {
+    const e: GameEvent = { kind: 'looted', player: 1, object: 9, private: true };
+    expect(effectsFor([e, { ...e, object: 10 }], ctx)).toEqual([
+      { kind: 'draw', from: ['deck-loot'], to: ['hand-1', 'player-1'], own: false, pace: 1 },
+      { kind: 'draw', from: ['deck-loot'], to: ['hand-1', 'player-1'], own: false, pace: 1 },
     ]);
+    const mine: GameEvent = { kind: 'looted', player: 0, object: 9, card: 'a_dime', private: true };
+    expect(effectsFor([mine], ctx)).toEqual([{ kind: 'draw', from: ['deck-loot'], to: ['hand-0', 'player-0'], card: 'a_dime', own: true, pace: 1 }]);
   });
 
-  // A card taken from the loot discard makes the same sound (18.7).
-  it('flies a card looted from the discard with its sound', () => {
+  // A card taken from the loot discard is drawn the same way (18.7).
+  it('draws a card looted from the discard', () => {
     const e: GameEvent = { kind: 'looted', player: 1, object: 9, card: 'a_dime', text: 'from the discard' };
-    expect(effectsFor([e], ctx)).toEqual([
-      { kind: 'fly', from: ['discard-loot'], to: ['hand-1', 'player-1'], card: 'a_dime', back: 'loot', sound: 'lootDraw' },
-    ]);
+    // It is public, so another player's shows its face (owner, 20.16).
+    expect(effectsFor([e], ctx)).toEqual([{ kind: 'draw', from: ['discard-loot'], to: ['hand-1', 'player-1'], card: 'a_dime', own: false, pace: 1 }]);
+  });
+
+  // Draws 4 and on of one player in one update go faster (20.7).
+  it('speeds up each player\'s draws from the fourth on', () => {
+    const e = (player: number): GameEvent => ({ kind: 'looted', player, object: 9 });
+    const paces = effectsFor([e(0), e(0), e(1), e(0), e(0), e(1)], ctx).map((x) => (x.kind === 'draw' ? Number(x.pace.toFixed(3)) : 0));
+    expect(paces).toEqual([1, 1, 1, 1, 0.889, 1]);
+  });
+
+  // A spectator has no own draws (20.7).
+  it('shows every draw as another player\'s to a spectator', () => {
+    const e: GameEvent = { kind: 'looted', player: 0, object: 9 };
+    expect(effectsFor([e], { ...ctx, you: -1 })).toMatchObject([{ kind: 'draw', own: false }]);
   });
 
   // Each gained treasure flies from its deck with its sound (18.9).
@@ -75,14 +113,22 @@ describe('effectsFor', () => {
     ]);
   });
 
-  // A trinket is loot, not treasure; a starting or stolen item moves no card from a deck (18.9).
-  it('keeps starting, stolen and trinket items silent', () => {
+  // A trinket is loot, not treasure; a stolen item moves no card from a deck (18.9).
+  it('keeps stolen and trinket items silent', () => {
     const events: GameEvent[] = [
-      { kind: 'gained_treasure', player: 0, object: 80, card: 'the_d6', text: 'starting item' },
       { kind: 'gained_treasure', player: 0, object: 81, prev: 30, card: 'the_d20', text: 'stolen' },
       { kind: 'gained_item', player: 0, object: 82, card: 'a_trinket' },
     ];
     expect(effectsFor(events, ctx)).toEqual([]);
+  });
+
+  // A starting item flies to its player, silent: from the chooser's
+  // kept card, else from the treasure deck (20.22).
+  it('flies a starting item from the kept card, silent', () => {
+    const e: GameEvent = { kind: 'gained_treasure', player: 1, object: 80, card: 'the_d6', text: 'starting item' };
+    expect(effectsFor([e], ctx)).toEqual([
+      { kind: 'fly', from: ['choice-kept-1', 'deck-treasure'], to: ['player-1'], card: 'the_d6', back: 'treasure', start: true },
+    ]);
   });
 
   it('flies a discarded card from where it was to its deck discard', () => {
@@ -103,8 +149,26 @@ describe('effectsFor', () => {
     expect(effectsFor(events, ctx)).toEqual([
       { kind: 'dice', value: 5, label: 'attack roll', player: 0, thrown: true },
       { kind: 'popup', at: ['player-0'], text: '+3¢', tone: 'good' },
-      { kind: 'banner', text: "Bo's turn" },
+      { kind: 'turn', text: "Bo's turn", own: false },
     ]);
+  });
+
+  it("starts a turn with its banner; the recharge readies the player's cards as it shows (20.8)", () => {
+    const events: GameEvent[] = [
+      { kind: 'turn_ended', player: 0 },
+      { kind: 'turn_started', player: 1, amount: 2 },
+      { kind: 'recharged', player: 1 },
+      { kind: 'start_of_turn', player: 1 },
+      { kind: 'looted', player: 1, object: 80 },
+    ];
+    expect(effectsFor(events, ctx)).toEqual([
+      { kind: 'turn', text: "Bo's turn", own: false, charges: [31, 32] },
+      { kind: 'draw', from: ['deck-loot'], to: ['hand-1', 'player-1'], own: false, pace: 1 },
+    ]);
+    // The viewer's own turn: its banner plays the turn-start sound.
+    expect(effectsFor([{ kind: 'turn_started', player: 0, amount: 3 }], ctx)).toEqual([{ kind: 'turn', text: "Ann's turn", own: true }]);
+    // A spectator's banner is never their own.
+    expect(effectsFor([{ kind: 'turn_started', player: 0, amount: 3 }], { ...ctx, you: -1 })).toEqual([{ kind: 'turn', text: "Ann's turn", own: false }]);
   });
 
   it("shows another player's played loot card large, not the viewer's own (15.31)", () => {
@@ -113,8 +177,30 @@ describe('effectsFor', () => {
       { kind: 'loot_played', player: 0, object: 71, card: 'a_penny' },
     ];
     expect(effectsFor(events, ctx)).toEqual([
-      { kind: 'played', card: 'bomb', who: 'Bo', from: ['hand-1', 'player-1'], to: ['stack'] },
+      { kind: 'played', card: 'bomb', who: 'Bo', from: ['hand-1', 'player-1'], to: ['stack'], object: 70 },
     ]);
+  });
+
+  it('shows every play large to a viewer without a seat (20.9)', () => {
+    const events: GameEvent[] = [
+      { kind: 'loot_played', player: 1, object: 70, card: 'bomb' },
+      { kind: 'loot_played', player: 0, object: 71, card: 'a_penny' },
+    ];
+    expect(effectsFor(events, { ...ctx, you: -1 }).map((e) => e.kind === 'played' && e.card)).toEqual(['bomb', 'a_penny']);
+  });
+
+  it('sends the big played card away for the middle or its own move (20.9)', () => {
+    const fly: Effect = { kind: 'fly', from: ['stack'], to: ['discard-loot'], back: 'loot' };
+    expect(playedEnds({ kind: 'played', card: 'bomb', who: 'Bo', from: [], to: [] }, 'a_penny')).toBe(true);
+    expect(playedEnds({ kind: 'reveal', card: 'x', deck: [] }, 'bomb')).toBe(true);
+    expect(playedEnds({ kind: 'dice', value: 3, label: '', player: 0, thrown: true }, 'bomb')).toBe(true);
+    expect(playedEnds({ kind: 'turn', text: '', own: false }, 'bomb')).toBe(true);
+    expect(playedEnds({ kind: 'draw', from: [], to: [], own: true, pace: 1 }, 'bomb')).toBe(true);
+    expect(playedEnds({ kind: 'draw', from: [], to: [], own: false, pace: 1 }, 'bomb')).toBe(false);
+    expect(playedEnds({ ...fly, card: 'bomb' }, 'bomb')).toBe(true);
+    expect(playedEnds({ ...fly, card: 'a_penny' }, 'bomb')).toBe(false);
+    expect(playedEnds({ kind: 'popup', at: [], text: '+1¢', tone: 'good' }, 'bomb')).toBe(false);
+    expect(playedEnds({ kind: 'hits', hits: [] }, 'bomb')).toBe(false);
   });
 
   it('moves stolen cents from the victim to the thief (15.75)', () => {
@@ -206,7 +292,7 @@ describe('effectsFor', () => {
       { kind: 'died', player: -1, object: 90, prev: 40, card: 'fly' },
       { kind: 'died', player: 1, object: 31, card: 'cain' },
     ];
-    expect(effectsFor(events, ctx)).toEqual([{ kind: 'deaths', at: [['obj-40'], ['obj-31']], sound: 'playerDied' }]);
+    expect(effectsFor(events, ctx)).toEqual([{ kind: 'deaths', at: [['obj-40'], ['obj-31']], player: true, sound: 'playerDied' }]);
   });
 
   // A player's died comes only once nothing can undo it (18.8).
@@ -214,7 +300,26 @@ describe('effectsFor', () => {
     const monster: GameEvent = { kind: 'died', player: -1, object: 90, prev: 40, card: 'fly' };
     expect(effectsFor([monster], ctx)).toEqual([{ kind: 'deaths', at: [['obj-40']] }]);
     const player: GameEvent = { kind: 'died', player: 1, object: 31, card: 'cain' };
-    expect(effectsFor([player], ctx)).toMatchObject([{ kind: 'deaths', sound: 'playerDied' }]);
+    expect(effectsFor([player], ctx)).toMatchObject([{ kind: 'deaths', player: true, sound: 'playerDied' }]);
+  });
+
+  // One sound per moment (20.14): players who die in one update make one
+  // death sound, though other effects come between their skulls; each
+  // death still weighs as key and shakes the table.
+  it('queues one death sound for three deaths in an update', () => {
+    const events: GameEvent[] = [
+      { kind: 'died', player: 0 },
+      { kind: 'gained_cents', player: 0, amount: 1 },
+      { kind: 'died', player: 1 },
+      { kind: 'gained_cents', player: 1, amount: 1 },
+      { kind: 'died', player: 2 },
+    ];
+    const deaths = effectsFor(events, ctx).filter((e) => e.kind === 'deaths');
+    expect(deaths).toHaveLength(3);
+    expect(deaths.filter((e) => e.sound)).toEqual([expect.objectContaining({ sound: 'playerDied' })]);
+    expect(deaths.at(0)?.sound).toBe('playerDied');
+    expect(deaths.map((e) => e.player)).toEqual([true, true, true]);
+    expect(deaths.map(weightOf)).toEqual(['key', 'key', 'key']);
   });
 
   it('throws a fresh roll; a changed roll only spins in (15.62)', () => {
@@ -345,6 +450,41 @@ describe('effectsFor', () => {
   });
 });
 
+describe('lethal hits (20.3)', () => {
+  it('marks a hit that leaves no HP, or whose target dies in the update', () => {
+    const events: GameEvent[] = [
+      { kind: 'damaged', player: -1, object: 42, amount: 4, source: 30, text: 'combat' },
+      { kind: 'damaged', player: -1, object: 40, amount: 1, source: 30, text: 'combat' },
+      { kind: 'damaged', player: -1, object: 43, amount: 2, source: 7 },
+      { kind: 'damaged', player: 1, amount: 2, source: 7 },
+      { kind: 'died', player: -1, object: 99, prev: 43 },
+      { kind: 'died', player: 1 },
+    ];
+    expect(effectsFor(events, ctx).slice(0, 3)).toEqual([
+      { kind: 'lunge', from: ['obj-30'], to: ['obj-42'], amount: 4, lethal: true },
+      { kind: 'lunge', from: ['obj-30'], to: ['obj-40'], amount: 1 },
+      {
+        kind: 'hits',
+        hits: [
+          { from: ['obj-7', 'played-7', 'stack-src-7'], to: ['obj-43'], amount: 2, lethal: true },
+          { from: ['obj-7', 'played-7', 'stack-src-7'], to: ['obj-31', 'player-1'], amount: 2, lethal: true },
+        ],
+      },
+    ]);
+  });
+
+  it('reads the HP of a player, by id or character, and of a monster', () => {
+    const view = {
+      players: [{ id: 1, hp: 0, character: { id: 31 } }],
+      monsters: [{ top: { id: 40, stats: { hp: 2 } } }, {}],
+    } as unknown as GameView;
+    expect(hpOf(view, { kind: 'damaged', player: 1 })).toBe(0);
+    expect(hpOf(view, { kind: 'damaged', player: 1, object: 31 })).toBe(0);
+    expect(hpOf(view, { kind: 'damaged', player: -1, object: 40 })).toBe(2);
+    expect(hpOf(view, { kind: 'damaged', player: -1, object: 41 })).toBeUndefined();
+  });
+});
+
 describe('slotZone', () => {
   it('names the monster or shop slot a card is the top of', () => {
     const view = {
@@ -365,6 +505,28 @@ describe('shopSlot', () => {
   });
 });
 
+describe('chargedIn (20.8)', () => {
+  it("lists a player's charged character and items, not monsters or souls", () => {
+    const view = {
+      players: [
+        { id: 0, character: { id: 1, role: 1, charged: false }, in_play: [{ id: 2, role: 2, charged: true }] },
+        {
+          id: 1,
+          character: { id: 11, role: 1, charged: true },
+          in_play: [
+            { id: 12, role: 2, charged: true },
+            { id: 13, role: 2, charged: false },
+            { id: 14, role: 5, charged: true },
+          ],
+        },
+      ],
+    } as unknown as GameView;
+    expect(chargedIn(view, 1)).toEqual([11, 12]);
+    expect(chargedIn(view, 0)).toEqual([2]);
+    expect(chargedIn(view, 3)).toEqual([]);
+  });
+});
+
 describe('scaleFor', () => {
   it('follows the speed setting', () => {
     expect(scaleFor('normal', 0, 1)).toBe(1);
@@ -372,10 +534,82 @@ describe('scaleFor', () => {
     expect(scaleFor('off', 0, 1)).toBe(0);
   });
 
-  it('speeds up bursts and skips a long queue', () => {
-    expect(scaleFor('normal', 3, 1)).toBe(0.4);
+  it('shortens bursts and a long queue, never to nothing (20.12)', () => {
+    expect(scaleFor('normal', 4, 1)).toBe(1);
+    expect(scaleFor('normal', 5, 1)).toBe(0.4);
     expect(scaleFor('normal', 0, 7)).toBe(0.4);
-    expect(scaleFor('normal', 9, 1)).toBe(0);
+    expect(scaleFor('normal', 20, 1)).toBe(0.4);
+    expect(scaleFor('off', 20, 1)).toBe(0);
+  });
+});
+
+describe('catchUp (20.12)', () => {
+  const at = ['x'];
+  // One effect of each weight, and every key effect.
+  const minor: Effect[] = [
+    { kind: 'popup', at, text: '+1¢', tone: 'good' },
+    { kind: 'steal', from: at, to: at, amount: 1 },
+    { kind: 'draw', from: at, to: at, own: false, pace: 1 },
+    { kind: 'fly', from: at, to: at, back: 'loot' },
+  ];
+  const normal: Effect[] = [
+    { kind: 'lunge', from: at, to: at, amount: 1 },
+    { kind: 'deaths', at: [at] },
+    { kind: 'turn', text: 'Pim', own: false },
+    { kind: 'dice', value: 3, label: '', player: 0 },
+  ];
+  const key: Effect[] = [
+    { kind: 'deaths', at: [at], player: true, sound: 'playerDied' },
+    { kind: 'deaths', at: [at], player: true },
+    { kind: 'fly', from: at, to: at, back: 'monster', sound: 'soulGain' },
+    { kind: 'sound', sound: 'soulGain' },
+    { kind: 'banner', text: 'Ola wins', won: true },
+    { kind: 'turn', text: 'Ola', own: true },
+  ];
+  const kinds = (p: { effect: Effect }[]) => p.map((x) => x.effect);
+
+  it('weighs effects: key, normal, minor', () => {
+    expect(minor.map(weightOf)).toEqual(minor.map(() => 'minor'));
+    expect(normal.map(weightOf)).toEqual(normal.map(() => 'normal'));
+    expect(key.map(weightOf)).toEqual(key.map(() => 'key'));
+  });
+
+  it('plays everything while the queue is short', () => {
+    const all = [...minor, ...normal.slice(0, 2)];
+    expect(catchUp(all, 'normal', 2)).toEqual(all.map((effect) => ({ effect, scale: 1 })));
+  });
+
+  it('drops minor effects first, then shortens, then keeps only key ones', () => {
+    const popup: Effect = { kind: 'popup', at, text: '+1¢', tone: 'good' };
+    const lunge: Effect = { kind: 'lunge', from: at, to: at, amount: 1 };
+    const death: Effect = { kind: 'deaths', at: [at], player: true, sound: 'playerDied' };
+    const all = [popup, lunge, death];
+    expect(catchUp(all, 'normal', 3)).toEqual([
+      { effect: lunge, scale: 1 },
+      { effect: death, scale: 1 },
+    ]);
+    expect(catchUp(all, 'normal', 5)).toEqual([
+      { effect: lunge, scale: 0.4 },
+      { effect: death, scale: 0.4 },
+    ]);
+    expect(catchUp(all, 'normal', 9)).toEqual([{ effect: death, scale: 0.4 }]);
+  });
+
+  it('keeps every key effect with a queue of 20', () => {
+    const all = [...minor, ...key, ...normal, ...key];
+    const kept = catchUp(all, 'normal', 20);
+    expect(kinds(kept)).toEqual([...key, ...key]);
+    expect(kept.every((p) => p.scale === 0.4)).toBe(true);
+  });
+
+  it('plays nothing with speed "off"', () => {
+    expect(catchUp(key, 'off', 0)).toEqual([]);
+  });
+
+  it('keeps a reveal that holds its card for a key move', () => {
+    const reveal: Effect = { kind: 'reveal', card: 'c', deck: at, hold: true };
+    const fly: Effect = { kind: 'fly', from: at, to: at, card: 'c', back: 'monster', middle: true, sound: 'soulGain' };
+    expect(kinds(catchUp([reveal, fly], 'normal', 20))).toEqual([reveal, fly]);
   });
 });
 
@@ -457,6 +691,25 @@ describe('createPlayback', () => {
     // A long queue skips effects until it catches up.
     expect(played.length).toBeLessThan(29);
     expect(played.at(-1)).toEqual({ kind: 'dice', value: 30, label: '', player: 0, thrown: true });
+  });
+
+  it('plays every key effect of a queue of 20 updates (20.12)', async () => {
+    const { playback, shown, played } = setup();
+    playback.push({ ...update(0), events: [] });
+    for (let n = 1; n <= 20; n++) {
+      playback.push({
+        ...update(n),
+        events: [
+          { kind: 'gained_cents', player: 0, amount: 1 },
+          { kind: 'dice_rolled', player: 0, amount: n },
+          ...(n % 5 === 0 ? [{ kind: 'died' as const, player: 0 }] : []),
+        ],
+      });
+    }
+    await playback.idle();
+    expect(shown.length).toBe(21);
+    expect(played.filter((e) => e.kind === 'deaths')).toHaveLength(4);
+    expect(played.filter((e) => e.kind === 'popup').length).toBeLessThan(5);
   });
 
   it('clear drops what is still queued', async () => {

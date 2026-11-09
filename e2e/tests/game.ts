@@ -83,6 +83,9 @@ export async function startGame(
     // roll throws every first-player die (15.43), so the test starts in
     // turn 1; false leaves the roll to the test.
     roll = true,
+    // pick plays a draft's pick screen (14.11) once everyone is ready;
+    // the game starts when it returns.
+    pick = undefined as ((pages: Page[]) => Promise<void>) | undefined,
   } = {},
 ): Promise<Page[]> {
   const pages: Page[] = [];
@@ -131,13 +134,37 @@ export async function startGame(
   for (const page of pages) {
     await page.getByRole('button', { name: tr('lobby.seats.ready'), exact: true }).click();
   }
+  if (pick) {
+    await pick(pages);
+  }
   for (const page of pages) {
     await expect(page.getByRole('main', { name: new RegExp(`^${trRe('game.turn').source}`) })).toBeVisible();
   }
   if (roll) {
+    // The roll is setup here; first-roll.spec.ts checks how it plays,
+    // with roll: false. Animated, each throw waits for the dice before
+    // it, and a tie throws again: 6 s, 12 s after a tie, 17 to 25 s with
+    // ties under a full run, which used up a 30 s test (19.120). So it
+    // plays with animations off; each page's speed comes back after.
+    const speeds = await Promise.all(pages.map((page) => setSpeed(page, 'off')));
     await throwFirstRoll(pages);
+    await Promise.all(pages.map((page, i) => setSpeed(page, speeds[i] ?? 'normal')));
   }
   return pages;
+}
+
+// setSpeed sets the page's animation speed for this session only, not
+// in its saved settings, and returns the speed before.
+export async function setSpeed(page: Page, speed: string): Promise<string> {
+  return page.evaluate((speed) => {
+    interface S {
+      settings: { animation: string };
+    }
+    const store = (window as unknown as { fourSouls: { store: { getState: () => S; setState: (s: Partial<S>) => void } } }).fourSouls.store;
+    const { settings } = store.getState();
+    store.setState({ settings: { ...settings, animation: speed } });
+    return settings.animation;
+  }, speed);
 }
 
 // idle: the page plays no effect and shows the latest update.
@@ -163,12 +190,16 @@ export async function throwFirstRoll(pages: Page[]): Promise<void> {
     }
     const roller = pages.find((_, j) => states[j]?.ready && states[j].turn < 1 && states[j].waiting === states[j].you);
     const button = roller ? throwButton(roller) : null;
-    // Eden's starting item comes before the roll (R-SETUP-09): pick the first.
+    // Eden's starting item comes before the roll (R-SETUP-09): pick the
+    // first, then Confirm (20.22).
     const eden = roller ? roller.locator('.choice:not(.look) .choice-option button').first() : null;
+    const confirm = roller ? roller.locator('.choice .choice-confirm') : null;
     if (roller && button && (await enabled(button))) {
       await button.click();
       // Off the cards, so no zoom covers the table.
       await roller.mouse.move(1, 1);
+    } else if (roller && confirm && (await enabled(confirm))) {
+      await confirm.click();
     } else if (roller && eden && (await enabled(eden))) {
       await eden.click();
     } else {

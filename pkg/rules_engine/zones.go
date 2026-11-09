@@ -195,16 +195,22 @@ func (g *Game) KeepOrBottom(p PlayerID, d DeckKind, id ObjectID, bottom bool) {
 
 // ToBottomRandom puts cards on the bottom of a deck in random order; no
 // player orders them (Q-22). A card in a deck stays the same object; a
-// card in a slot leaves it.
+// card in a slot leaves it. The deck cards' move is one public
+// deck_bottom event (19.147); a slot card has its own moved_to_deck.
 func (g *Game) ToBottomRandom(d DeckKind, ids []ObjectID) {
 	ids = slices.Clone(ids)
 	g.RNG.Shuffle(len(ids), func(i, j int) { ids[i], ids[j] = ids[j], ids[i] })
+	n := 0
 	for _, id := range ids {
 		if g.Object(id).Zone.Kind == ZoneInPlay {
 			g.SlotToDeckBottom(id)
 		} else {
 			g.DeckToBottom(d, id)
+			n++
 		}
+	}
+	if n > 0 {
+		g.emit(Event{Kind: EvDeckBottom, Player: NoPlayer, Amount: n, Text: d.String() + " deck"})
 	}
 }
 

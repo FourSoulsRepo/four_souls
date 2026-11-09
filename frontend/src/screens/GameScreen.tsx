@@ -3,9 +3,11 @@ import { actionsFor, aimedOption, IntentKind, Purpose, type Actions } from '../a
 import { onScreen, promptAim } from '../aim';
 import { ActionBar } from '../components/ActionBar';
 import { ActionMenu } from '../components/ActionMenu';
+import { DropLayer } from '../components/HandCard';
 import { t } from '../i18n';
-import { AimLayer } from '../components/Aim';
+import { AimLayer, AttackAim } from '../components/Aim';
 import { Board } from '../components/Board';
+import { ChoiceBack } from '../components/ChoiceBack';
 import { ChoiceDialog, DiscardDialog, LookDialog, ModeDialog, OrderDialog } from '../components/ChoiceDialog';
 import { interact, noInteract } from '../components/Interact';
 import { PlayerArea } from '../components/PlayerArea';
@@ -16,14 +18,16 @@ import { HistoryStrip } from '../components/HistoryStrip';
 import { EndOverlay, LostOverlay, PauseOverlay, ReconnectBadge } from '../components/Overlays';
 import { RollbackVotePanel } from '../components/RollbackVote';
 import { PlayedCard, StackPanel } from '../components/StackPanel';
+import { StartWait } from '../components/StartWait';
 import { Throw } from '../components/Throw';
 import { WhyNote } from '../components/Why';
 import { EndTurn, TurnActions } from '../components/TurnActions';
 import { matLook } from '../mats';
 import type { Block, Update } from '../protocol';
 import { seatOf, useApp } from '../store';
+import { PickScreen } from './PickScreen';
 import { activity, askedSeat, myMove, picking, promptBanner, stackPrompt, tablePick } from '../prompt';
-import { seatNames, waitTurn, type Names } from '../stack';
+import { beforeStart, seatNames, waitTurn, type Names } from '../stack';
 import { seatPositions } from '../table';
 import '../components/Table.css';
 import './screens.css';
@@ -35,6 +39,10 @@ export function GameScreen() {
   const game = useApp((s) => s.game);
   const you = useApp(seatOf);
   const quit = useApp((s) => s.quit);
+  const setup = useApp((s) => s.lobby.setup);
+  if (!game && setup?.phase === 'pick') {
+    return <PickScreen setup={setup} />;
+  }
   if (!game) {
     return (
       <div className="screen">
@@ -141,6 +149,13 @@ function Table({ game, you }: { game: Update; you: number }) {
   }, [aimed, canAct, game.step, actions, act, takeAimed]);
   const offered = canAct ? actions : noActions;
   const me = view.players.at(you);
+  // An attack's pick on the table aims an arrow from the own character
+  // (20.23, ADR 027 "Target arrow" 16.14); the others see it as an aim.
+  const attackTargets = useMemo(
+    () => (offered.choice?.purpose === Purpose.attackTarget && tablePick(offered.choice) ? offered.choice.options.flatMap((o) => (o.target ? [o.target] : [])) : null),
+    [offered.choice],
+  );
+  const attacker = attackTargets && !aiming ? me?.character.id : undefined;
   // The hand's cards in order: a hand card is shared as its slot (A-16).
   const hand = useMemo(() => (me?.hand ?? []).map((c) => c.id), [me]);
   // The banner and the stack say what the game waits for (15.28). While
@@ -155,9 +170,10 @@ function Table({ game, you }: { game: Update; you: number }) {
   const asked = askedSeat(view);
   // What the active player does, on their seat for everyone else (15.30).
   const doing = activity(view, names);
-  // Before turn 1, while the first player is rolled for, nobody has a
-  // turn: no active seat, no turn buttons (15.43).
-  const started = !view.first_roll;
+  // Before turn 1, during the start-of-game choices and while the first
+  // player is rolled for, nobody has a turn: no active seat, no turn
+  // buttons (15.43, 19.142).
+  const started = !beforeStart(view);
   return (
     <main className={`game ${look.className}${dim ? ' picking' : ''}`} style={look.style} aria-label={t('game.turn', { n: view.turn.number })}>
       {seatPositions(view.players.length, you).map(({ position, player }) => {
@@ -208,13 +224,11 @@ function Table({ game, you }: { game: Update; you: number }) {
         end={
           me && !view.over && started ? (
             <EndTurn
-              intent={actions.turn.endTurn}
-              idle={actions.turn.idle ?? false}
-              left={actions.turn.left}
+              allowed={actions.turn}
               own={view.turn.active === you}
               disabled={!canAct}
               step={game.step}
-              why={actions.turn.why?.endTurn}
+              turn={view.turn.number}
             />
           ) : undefined
         }
@@ -242,6 +256,7 @@ function Table({ game, you }: { game: Update; you: number }) {
       {!view.over && !paused && (
         <Throw waiting={view.waiting} you={you} names={names} action={actions.throw} disabled={!canAct} />
       )}
+      {!paused && <StartWait view={view} you={you} name={name} />}
       <ActionBar
         banner={banner}
         paused={paused}
@@ -251,20 +266,25 @@ function Table({ game, you }: { game: Update; you: number }) {
       />
       <ActionMenu actions={offered.cards} />
       {canAct && <AimLayer />}
-      {me && !view.over && <PresenceSender active={started && view.turn.active === you} hand={hand} />}
+      {attackTargets && attacker !== undefined && <AttackAim source={attacker} targets={attackTargets} />}
+      <DropLayer you={you} />
+      {me && !view.over && <PresenceSender active={started && view.turn.active === you} hand={hand} attack={attacker} />}
       <PresenceLayer you={you} />
       <WhyNote />
       {offered.choice?.purpose === Purpose.mode && view.modes && !aiming?.choice ? (
         <ModeDialog key={game.step} choice={offered.choice} card={view.subject?.card} modes={view.modes} />
       ) : offered.choice && !aiming?.choice && !tablePick(offered.choice) && (
         <ChoiceDialog
-          key={game.step}
+          // A start-of-game choice stays as it is while another player's
+          // pick comes in: they choose at the same time (20.22).
+          key={offered.choice.purpose === Purpose.startingItem ? 'start' : game.step}
           choice={offered.choice}
           subject={offered.choice.purpose === Purpose.monsterSlot ? view.revealed?.card : view.subject?.card}
         />
       )}
       {offered.discard && me && <DiscardDialog key={game.step} discard={offered.discard} hand={me.hand ?? []} />}
       {offered.order && <OrderDialog key={game.step} order={offered.order} cards={view.ordering ?? []} />}
+      <ChoiceBack />
       {looking.length > 0 && <LookDialog cards={looking} you={you} name={name} />}
       {voting && <RollbackVotePanel game={game} you={you} name={name} />}
       {connected && !view.over && <GameMenu host={you === 0} />}

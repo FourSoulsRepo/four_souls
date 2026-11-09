@@ -51,6 +51,9 @@ type Settings struct {
 	// Volume is the sound volume in percent, 0–100 (ADR 022 levels the
 	// sounds; this is the player's own level). 0 is mute.
 	Volume int `json:"volume"`
+	// Scale is the interface scale in percent (ST-10): the root font
+	// size, so every rem in the frontend follows it. 0 is the default.
+	Scale int `json:"scale"`
 }
 
 // RecentServer is a server joined lately (N-18).
@@ -89,10 +92,22 @@ type HostSetup struct {
 	RandomSeats bool `json:"random_seats"`
 	// Rollback is the rollback mode (ADR 020); "": Disabled.
 	Rollback string `json:"rollback"`
+	// Picking is how characters are dealt (GS-01): "" is one random
+	// each, protocol.PickDraft a draft.
+	Picking string `json:"picking"`
+	// DraftSize is the characters a draft offers each player; 0: the
+	// default.
+	DraftSize int `json:"draft_size"`
 }
 
 // ResponseTimers are the host screen's response timer choices; 0 is off.
 var ResponseTimers = []int{0, 60, 90, 120, 180}
+
+// MinDraft and MaxDraft bound a draft's offers, as the server does.
+const (
+	MinDraft = 2
+	MaxDraft = 5
+)
 
 // maxHostSets caps the remembered card sets.
 const maxHostSets = 20
@@ -107,6 +122,12 @@ func (h HostSetup) clean() HostSetup {
 	}
 	if h.Rollback != protocol.RollbackSoft && h.Rollback != protocol.RollbackGod {
 		h.Rollback = ""
+	}
+	if h.Picking != protocol.PickDraft {
+		h.Picking = ""
+	}
+	if h.DraftSize < MinDraft || h.DraftSize > MaxDraft {
+		h.DraftSize = 0
 	}
 	if h.Sets != nil {
 		sets := []string{}
@@ -193,6 +214,13 @@ var ErrChoice = errors.New("unknown setting value")
 // MaxVolume is the loudest sound volume in percent.
 const MaxVolume = 100
 
+// The interface scale's bounds and default, in percent (ST-10).
+const (
+	MinScale     = 75
+	MaxScale     = 200
+	DefaultScale = 100
+)
+
 // ErrNickname means the nickname is empty after trimming, too long, or
 // has control characters.
 var ErrNickname = fmt.Errorf("nickname must be 1–%d characters", protocol.MaxName)
@@ -212,7 +240,7 @@ func (s *Settings) choices() []struct {
 // Recent is never nil, so the frontend always gets a list; an unknown
 // choice reads as its default.
 func Load(path string) Settings {
-	def := Settings{Recent: []RecentServer{}, Animation: Speeds[0], Dice: Dice[0], Volume: MaxVolume}
+	def := Settings{Recent: []RecentServer{}, Animation: Speeds[0], Dice: Dice[0], Volume: MaxVolume, Scale: DefaultScale}
 	data, err := os.ReadFile(path) //nolint:gosec // the app names the file
 	if err != nil {
 		return def
@@ -240,6 +268,9 @@ func Load(path string) Settings {
 	}
 	if s.Volume < 0 || s.Volume > MaxVolume {
 		s.Volume = MaxVolume
+	}
+	if s.Scale < MinScale || s.Scale > MaxScale {
+		s.Scale = DefaultScale
 	}
 	return s
 }
@@ -270,6 +301,12 @@ func Save(path string, s Settings) (Settings, error) {
 	}
 	if s.Volume < 0 || s.Volume > MaxVolume {
 		return Settings{}, fmt.Errorf("%w: volume %d", ErrChoice, s.Volume)
+	}
+	if s.Scale == 0 {
+		s.Scale = DefaultScale
+	}
+	if s.Scale < MinScale || s.Scale > MaxScale {
+		return Settings{}, fmt.Errorf("%w: scale %d", ErrChoice, s.Scale)
 	}
 	recent := []RecentServer{}
 	for _, r := range s.Recent {

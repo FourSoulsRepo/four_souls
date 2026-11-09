@@ -4,10 +4,11 @@
 // Both play in the lunge's layer and end the effect early, so the table
 // changes while the marks fade. Only transform and opacity animate
 // (ADR 002). A shot sounds as a fireball: cast, then impact (15.50). A
-// player's skull sounds as a death (18.8).
+// player's skull sounds as a death (18.8) and shakes the table (20.3).
 import type { Hit } from '../playback';
 import { playSound, type Sound } from '../sounds';
 import { burst, find, layer } from './lunge';
+import { shakeTable } from './shake';
 
 // The normal length of a shot and of a skull, in ms.
 const shotMs = 450;
@@ -18,6 +19,12 @@ const leaveAt = 0.6;
 // skullPath is the stack's skull icon (24 × 24); the big skull reuses it.
 export const skullPath =
   'M12 2.5a8 8 0 0 0-8 8c0 2.8 1.4 4.6 3 5.6V19a1.5 1.5 0 0 0 1.5 1.5h7A1.5 1.5 0 0 0 17 19v-2.9c1.6-1 3-2.8 3-5.6a8 8 0 0 0-8-8Zm-3.2 7.2a1.9 1.9 0 1 1 0 3.8 1.9 1.9 0 0 1 0-3.8Zm6.4 0a1.9 1.9 0 1 1 0 3.8 1.9 1.9 0 0 1 0-3.8ZM12 14l1.3 2.2h-2.6Z';
+
+// swordPath is a sword from top right to bottom left (24 × 24), the
+// history strip's attack badge; swordsPath crosses it with its mirror,
+// an attack's sign in a history popout (20.21).
+export const swordPath = 'M20.5 2.5 21 7l-9.6 9.6 1.4 1.4-1.4 1.4-2.1-2.1-3.2 3.2a1.5 1.5 0 0 1-2.1-2.1l3.2-3.2-2.1-2.1 1.4-1.4 1.4 1.4L17.5 3Z';
+export const swordsPath = `${swordPath}M3.5 2.5 3 7l9.6 9.6-1.4 1.4 1.4 1.4 2.1-2.1 3.2 3.2a1.5 1.5 0 0 0 2.1-2.1l-3.2-3.2 2.1-2.1-1.4-1.4-1.4 1.4L6.5 3Z`;
 
 const svgNS = 'http://www.w3.org/2000/svg';
 
@@ -34,7 +41,7 @@ function place(el: HTMLElement, x: number, y: number): void {
 // hits flies a shot from each source to its target, then bursts on
 // every target at once and calls done.
 export function hits(list: Hit[], scale: number, done: () => void): void {
-  const landed: { at: DOMRect; amount: number }[] = [];
+  const landed: { at: DOMRect; amount: number; lethal: boolean }[] = [];
   let flying = false;
   for (const h of list) {
     const dst = find(h.to);
@@ -42,7 +49,7 @@ export function hits(list: Hit[], scale: number, done: () => void): void {
       continue;
     }
     const at = dst.getBoundingClientRect();
-    landed.push({ at, amount: h.amount });
+    landed.push({ at, amount: h.amount, lethal: h.lethal ?? false });
     const src = find(h.from);
     if (!src) {
       continue;
@@ -80,7 +87,7 @@ export function hits(list: Hit[], scale: number, done: () => void): void {
       playSound('effectImpact');
     }
     for (const l of landed) {
-      burst(l.at, l.amount, scale);
+      burst(l.at, l.amount, scale, l.lethal);
     }
     done();
   };
@@ -102,7 +109,8 @@ function skull(): SVGSVGElement {
 
 // skulls pops a skull on each dying card, with sound if any (18.8);
 // done is called when the cards should leave, and the skulls fade after.
-export function skulls(at: string[][], scale: number, done: () => void, sound?: Sound): void {
+// A player's death shakes the table (20.3), with or without its sound.
+export function skulls(at: string[][], scale: number, done: () => void, sound?: Sound, player = false): void {
   let shown = false;
   for (const zones of at) {
     const el = find(zones);
@@ -135,8 +143,13 @@ export function skulls(at: string[][], scale: number, done: () => void, sound?: 
     anim.onfinish = end;
     anim.oncancel = end;
   }
+  // Only a player's death has a sound, the update's first one alone
+  // (20.14); each shakes the table (20.3).
   if (shown && sound) {
     playSound(sound);
+  }
+  if (shown && player) {
+    shakeTable(scale);
   }
   if (shown) {
     window.setTimeout(done, skullMs * scale * leaveAt);

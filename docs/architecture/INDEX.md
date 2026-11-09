@@ -28,4 +28,4 @@
 | [024](024-profiling-build-tag.md) | Profiling behind a build tag | Accepted |
 | [025](025-checksum-hash-chain.md) | Checksum: hash chain with anchors | Accepted |
 | [026](026-rules-website.md) | Rules website | Accepted |
-| [027](027-game-feel-from-a-reference-client.md) | Game feel: lessons from a reference client | Proposed |
+| [027](027-game-feel-from-a-reference-client.md) | Game feel: lessons from a reference client | Accepted |

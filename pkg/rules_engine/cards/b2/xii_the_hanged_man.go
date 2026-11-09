@@ -32,6 +32,11 @@ func hangedManQuestions() []engine.Question {
 	for k := range 4 { // at most 4 decks
 		qs = append(qs, engine.Question{
 			Text: xiiTheHangedManPutThisCard,
+			// Subject asks only when Options has some: the deck has a card.
+			Subject: func(c *engine.Ctx, _ []int) engine.ObjectID {
+				return c.G.DeckTop(c.G.DecksInPlay()[k], 1)[0]
+			},
+			Peek: true,
 			Options: func(c *engine.Ctx, _ []int) []engine.Msg {
 				decks := c.G.DecksInPlay()
 				if k >= len(decks) || len(c.G.Decks[decks[k]]) == 0 {
@@ -52,8 +57,6 @@ func hangedMan(c *engine.Ctx, a []int) {
 			continue
 		}
 		c.G.LookAt(c.Controller, top...)
-		if a[k] == 1 {
-			c.G.DeckToBottom(d, top[0])
-		}
+		c.G.KeepOrBottom(c.Controller, d, top[0], a[k] == 1)
 	}
 }

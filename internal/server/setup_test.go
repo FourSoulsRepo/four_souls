@@ -178,6 +178,7 @@ func TestDraft(t *testing.T) {
 			t.Fatalf("seat %d: phase %s offers %v", i, s.Phase, s.Offers)
 		}
 		offers[i] = s.Offers
+		checkItems(t, s)
 	}
 	for _, c := range offers[0] {
 		if slices.Contains(offers[1], c) {
@@ -194,6 +195,62 @@ func TestDraft(t *testing.T) {
 	if got[0] != offers[0][2] || got[1] != offers[1][1] {
 		t.Errorf("characters %v, want the picks %s and %s", got, offers[0][2], offers[1][1])
 	}
+}
+
+// checkItems: each draft offer comes with its starting item; Eden's is
+// chosen at the start, so it has none (14.11, R-SETUP-09).
+func checkItems(t *testing.T, s protocol.Setup) {
+	t.Helper()
+	if len(s.Items) != len(s.Offers) {
+		t.Fatalf("items %v for offers %v", s.Items, s.Offers)
+	}
+	want := startingItems(cards.Sets(), s.Offers)
+	for i, c := range s.Offers {
+		if s.Items[i] != want[i] {
+			t.Errorf("%s: item %q, want %q", c, s.Items[i], want[i])
+		}
+		if c == "eden" && s.Items[i] != "" {
+			t.Errorf("eden offered with %s", s.Items[i])
+		}
+	}
+}
+
+// Every character a draft can offer either has a starting item or picks
+// one at the start; the pick screen shows one or the other (14.11).
+func TestEveryCharacterHasAStartingItem(t *testing.T) {
+	sets := cards.Sets()
+	refs := characters(sets)
+	items := startingItems(sets, refs)
+	for i, c := range refs {
+		def := findDef(sets, c)
+		switch {
+		case items[i] == "" && def.StartingChoice == 0:
+			t.Errorf("%s has no starting item and no start choice", c)
+		case items[i] != "" && def.StartingChoice > 0:
+			t.Errorf("%s has a starting item and a start choice", c)
+		case items[i] != "" && findDef(sets, items[i]).Ref == "":
+			t.Errorf("%s: starting item %s is in no set", c, items[i])
+		}
+	}
+}
+
+// Eden shows no item in an offer.
+func TestStartingItemsEden(t *testing.T) {
+	got := startingItems(cards.Sets(), []engine.CardRef{"isaac", "eden", "cain"})
+	if got[0] != "the_d6" || got[1] != "" || got[2] != "sleight_of_hand" {
+		t.Errorf("starting items %v", got)
+	}
+}
+
+func findDef(sets []engine.CardSet, ref engine.CardRef) engine.CardDef {
+	for _, s := range sets {
+		for _, d := range s.Cards {
+			if d.Ref == ref {
+				return d
+			}
+		}
+	}
+	return engine.CardDef{}
 }
 
 func TestOptionChecks(t *testing.T) {

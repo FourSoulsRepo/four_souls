@@ -41,7 +41,7 @@ export interface Welcome {
 }
 
 // Presence is what a player points at now (15.35, ADR 016): the card
-// they aim from, and the spot the arrow or pointer is over. Each one
+// they aim from or hold, and the spot the arrow or pointer is over. Each one
 // replaces the sender's last; an empty one means nothing. The server
 // fills in seat.
 export interface Presence {
@@ -50,6 +50,8 @@ export interface Presence {
   at?: Spot;
   // point is the pointer on the board frame, 0 to 1, while over no spot.
   point?: { x: number; y: number };
+  // held is a card they drag to play it (20.13).
+  held?: Spot;
 }
 
 // Spot is one thing on the table; exactly one field is set. hand is
@@ -108,6 +110,29 @@ export interface Options {
   random_seats?: boolean; // seat the players in a random order at the start
   response_timer?: number; // seconds; 0: off, else at least 60
   rollback?: RollbackMode; // none: Disabled (ADR 020)
+}
+
+// Ban is one banned character; seat -1 is the host's list.
+export interface Ban {
+  seat: number;
+  card: string;
+}
+
+// Setup is the ban and pick phase before the game (GS-01 to GS-04).
+// Offers and their starting items go only to their own player.
+export interface Setup {
+  phase: 'ban' | 'pick';
+  round?: number;
+  turn: number; // the seat that bans now; -1 when everyone picks
+  pool: string[] | null;
+  banned: Ban[] | null;
+  offers?: string[];
+  // items are the offers' starting items, by index; '' for a character
+  // that picks one at the start (Eden, R-SETUP-09).
+  items?: string[];
+  picked?: boolean[]; // who has picked, per seat
+  deadline?: number; // Unix ms when the ban turn ends; 0: no timer
+  seats: Seat[];
 }
 
 // RollbackMode: soft, the others vote; god, anyone, at once.
@@ -425,6 +450,14 @@ export interface Prompt {
   options?: Msg[];
   purpose?: number;
   text?: Msg; // the question, or the roll a throw is for
+  // look is the deck whose top cards the prompt's player looks at, and
+  // how many (20.18); everyone gets it, only the chooser the cards.
+  // The treasure deck, 0, comes as no deck.
+  look?: { deck?: number; count?: number };
+  // players, on start-of-game choices, are all who may answer now, in
+  // seat order: they choose at the same time (20.22). Each sees their
+  // own choice as player; the rest see the first.
+  players?: number[];
 }
 
 export interface GameView {
@@ -515,6 +548,8 @@ export interface OptionView {
   // outcome is what the option leads to, when the engine can tell
   // (replacement order, 19.17).
   outcome?: OutcomeView;
+  // price is what buying the option costs, in a purchase prompt (20.11).
+  price?: number;
 }
 
 // OutcomeView is what an order of replacements gives (19.17): what then

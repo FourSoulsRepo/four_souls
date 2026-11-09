@@ -117,7 +117,7 @@ export interface Choice {
 
 // Purpose.purchase: a "deck" option means the treasure deck, otherwise
 // the monster deck.
-export const Purpose = { attackTarget: 1, monsterSlot: 2, penaltyItem: 3, penaltyLoot: 4, purchase: 5, target: 6, triggerOrder: 7, mode: 8, answer: 9 } as const;
+export const Purpose = { attackTarget: 1, monsterSlot: 2, penaltyItem: 3, penaltyLoot: 4, purchase: 5, target: 6, triggerOrder: 7, mode: 8, answer: 9, startingItem: 10 } as const;
 
 export interface Actions {
   // buttons are the actions that need no card: pass.
@@ -150,6 +150,22 @@ export interface TurnActions {
   // left names what the player may still do besides passing and ending
   // the turn, for the question before ending it (V-46).
   left?: string[];
+}
+
+// EndTurnLook is the End turn button's look (20.10, ADR 027): waiting
+// on another player's turn; turn on the viewer's own, while plays are
+// left or ending is not allowed yet; done once nothing is left but
+// passing and ending the turn.
+export type EndTurnLook = 'waiting' | 'turn' | 'done';
+
+// endTurnLook picks the look from the turn actions the update allows.
+// own: it is the viewer's turn; canAct: the viewer may act now (not
+// behind, nothing sent).
+export function endTurnLook(turn: TurnActions, own: boolean, canAct: boolean): EndTurnLook {
+  if (!own) {
+    return 'waiting';
+  }
+  return canAct && turn.endTurn !== undefined && turn.idle === true ? 'done' : 'turn';
 }
 
 // leftLabels name the plays End turn's question lists, in its order.
@@ -290,6 +306,18 @@ function turnWhy(blocked: Block[], names: MsgNames): NonNullable<TurnActions['wh
   const buy = reason(IntentKind.purchase);
   const endTurn = reason(IntentKind.endTurn);
   return { ...(attack ? { attack } : {}), ...(buy ? { buy } : {}), ...(endTurn ? { endTurn } : {}) };
+}
+
+// shownByChoice is the cards the viewer's own choose prompt showed in
+// update u: its card options and the card it is about (19.130). A look
+// at them after the answer shows nothing new, so it opens no window.
+export function shownByChoice(u: Update | null | undefined, you: number): Set<string> {
+  if (u?.view.waiting.kind !== PromptKind.choose || u.view.waiting.player !== you) {
+    return new Set();
+  }
+  const cards = (u.view.waiting.options ?? []).map((m) => optionCard(m)).filter((c) => c !== undefined);
+  const subject = u.view.subject?.card;
+  return new Set(subject ? [...cards, subject] : cards);
 }
 
 // optionCard is the card an option is, if it is one ("ask.card").

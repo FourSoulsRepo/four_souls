@@ -37,6 +37,15 @@ export interface Entry {
   rollback?: boolean;
   // restarted marks the row where a server restart cut the history.
   restarted?: boolean;
+  // owner is the seat whose play, buy or kill it is: the strip tile's
+  // frame takes that player's color (20.21).
+  owner?: number;
+  // attack marks an attack's roll, damage and kill: the popout shows
+  // swords between the card and its target (20.21).
+  attack?: boolean;
+  // play is the key of the play or attack roll whose item dealt this
+  // damage: a kill of its target marks that play too (20.21).
+  play?: number;
 }
 
 // Outcome is one result in the strip's popout (15.90): a card, with a
@@ -72,6 +81,7 @@ export const historyKinds: Record<string, string> = {
   damaged: 'The damage stack item resolves as a line.',
   deactivated: 'The causing card resolves as a line; the table shows the cards.',
   death_pending: 'A stack item; it resolves as a line.',
+  deck_bottom: 'The board shows the cards go under the deck; the look has its line.',
   destroyed: told,
   dice_rolled: told,
   died: told,
@@ -218,6 +228,8 @@ export function entriesFor(events: GameEvent[], turn: number, you: number, n: Na
           return `${card || t('history.roll')}${label}${shown ? ` ${t('history.rolled', { roll: shown })}` : ''}`;
         };
         const entry = add('✦', line(), e.card, e.item, true);
+        if (it && it.controller >= 0) entry.owner = it.controller;
+        if (it?.attack) entry.attack = true;
         roll = e.amount ? { entry, die: e.amount, line } : undefined;
         // The popout: a card's item points at its target; damage at the
         // card it hit, with the number (15.90).
@@ -231,6 +243,11 @@ export function entriesFor(events: GameEvent[], turn: number, you: number, n: Na
           const from = it.source_card ?? findCard(view, it.source) ?? character(it.controller);
           if (from) entry.from = from;
           entry.outcome = [{ ...aim, mark: 'damage', amount: it.amount ?? 0 }];
+        } else if (it?.kind === StackKind.roll && it.attack && aim) {
+          // An attack roll: the attacker large, then the monster (20.21).
+          const attacker = character(it.controller);
+          if (attacker) entry.from = attacker;
+          entry.outcome = [aim];
         }
         break;
       }
@@ -322,6 +339,7 @@ export function entriesFor(events: GameEvent[], turn: number, you: number, n: Na
               : t('history.buy.other', { player, card });
           const entry = add('¢', text, e.card, undefined, true);
           entry.badge = 'buy';
+          entry.owner = e.player;
           const buyer = character(e.player);
           if (buyer && e.card) {
             entry.from = buyer;
@@ -376,6 +394,11 @@ export function entriesFor(events: GameEvent[], turn: number, you: number, n: Na
           death = add('☠', text, e.card, undefined, true);
         }
         death.badge = 'kill';
+        if (by >= 0) {
+          death.owner = by;
+        } else {
+          delete death.owner;
+        }
         // The popout: the killer, then the dead card with its skull; the
         // rewards follow (15.90). Without a killer the dead card is large.
         const killerCard = by >= 0 ? character(by) : undefined;
@@ -511,8 +534,180 @@ function dies(it: StackItem, e: GameEvent): boolean {
 // stripEntries are the history strip's tiles, newest on top (15.89):
 // the headlines. Each keeps its entry's key, so an older tile slides
 // down when a new one comes, instead of being drawn again (15.51).
+// Only the newest stripTiles show (19.138): every tile is drawn and
+// measured again on each update, so a long game's strip made each step
+// slower. About 8 fit on screen; the History panel keeps every line.
+export const stripTiles = 40;
+
 export function stripEntries(history: Entry[]): Entry[] {
-  return history.filter((e) => e.headline).reverse();
+  const out: Entry[] = [];
+  for (let i = history.length - 1; i >= 0 && out.length < stripTiles; i--) {
+    const e = history.at(i);
+    if (e?.headline) {
+      out.push(e);
+    }
+  }
+  return out;
+}
+
+// TileSize is a strip tile's height (20.21, ADR 027 "History" 11.3):
+// rolls and damage are half height, so more fit; plays, kills and buys
+// are full and stand out.
+export type TileSize = 'full' | 'half';
+
+export function tileSize(e: Entry): TileSize {
+  const kind = e.badge ? undefined : e.item?.kind;
+  return kind === StackKind.roll || kind === StackKind.damage ? 'half' : 'full';
+}
+
+// heldTiles are the strip's tiles while the pointer is on it (20.21,
+// ADR 027 "History" 11.7): held are the tiles shown as it came, live
+// the strip now. Nothing moves and no tile comes: each held tile keeps
+// its place, as its entry is now (a rollback greys it). Without held,
+// the live strip shows, and the new tiles come in.
+export function heldTiles(held: readonly Entry[] | null, live: Entry[]): Entry[] {
+  if (!held) {
+    return live;
+  }
+  const now = new Map(live.map((e) => [e.key, e]));
+  return held.map((e) => now.get(e.key) ?? e);
+}
+
+// nearestTile is the tile the pointer at height y points at (20.21, ADR
+// 027 "History" 11.8): the strip is one hit area, so the gaps between
+// tiles never close the card; the nearest tile's edge wins. boxes are
+// the tiles' tops and bottoms, top first; -1 if there is none.
+export function nearestTile(boxes: readonly { top: number; bottom: number }[], y: number): number {
+  let best = -1;
+  let gap = Infinity;
+  boxes.forEach((b, i) => {
+    const d = y < b.top ? b.top - y : y > b.bottom ? y - b.bottom : 0;
+    if (d < gap) {
+      best = i;
+      gap = d;
+    }
+  });
+  return best;
+}
+
+// markScan is how far back, in entries, a damage looks for the play
+// that dealt it, and a kill for that damage: within the turn, and never
+// over the whole game (19.138).
+const markScan = 200;
+
+// playKinds are the stack items a damage can come from as a play's
+// own: a loot card, an ability, a trigger.
+const playKinds = new Set<number>([StackKind.loot, StackKind.ability, StackKind.trigger]);
+
+// dealtBy says whether play p dealt damage entry d: the same source,
+// or for a source the engine did not name, the same card. An attack's
+// damage comes from the attack roll at the same target.
+function dealtBy(p: Entry, d: StackItem, target: string): boolean {
+  const it = p.item;
+  if (!it || !p.headline || p.badge) {
+    return false;
+  }
+  if (d.attack) {
+    return it.kind === StackKind.roll && !!it.attack && p.outcome?.at(0)?.card === target;
+  }
+  if (!playKinds.has(it.kind)) {
+    return false;
+  }
+  return d.source !== 0 ? it.source === d.source : !!d.source_card && it.card === d.source_card;
+}
+
+// isAttackRoll tells an attack roll: an older one ends the search for
+// the roll an attack's damage came from.
+function isAttackRoll(e: Entry): boolean {
+  return e.item?.kind === StackKind.roll && !!e.item.attack;
+}
+
+// marked is play p with mark o on its target: a damage adds up, a death
+// takes the place of the damage. A target not shown yet joins a play's
+// list; an attack roll shows only its monster.
+function marked(p: Entry, o: Outcome): Entry {
+  const list = p.outcome ?? [];
+  const at = list.findIndex((x) => x.card === o.card && x.mark !== 'cents');
+  const old = at < 0 ? undefined : list.at(at);
+  if (!old) {
+    return isAttackRoll(p) ? p : { ...p, outcome: [...list, o] };
+  }
+  const mark: Outcome =
+    o.mark === 'damage' && old.mark === 'damage' ? { ...old, amount: (old.amount ?? 0) + (o.amount ?? 0) } : { ...old, mark: o.mark, ...(o.amount === undefined ? {} : { amount: o.amount }) };
+  return { ...p, outcome: list.map((x, i) => (i === at ? mark : x)) };
+}
+
+// linkMarks adds one update's entries to the history (20.21, ADR 027
+// "History" 11.2): a play's popout shows the marks its own items left.
+// A damage marks the play or attack roll that dealt it; a kill marks
+// the play whose damage it ended, as a death, and an attack's kill is
+// an attack too. Entries it marks are copied, never changed.
+export function linkMarks(history: Entry[], fresh: Entry[]): Entry[] {
+  const all = [...history, ...fresh];
+  // back finds the newest entry before i, in i's turn and markScan,
+  // that ok takes; 'stop' ends the search.
+  const back = (i: number, ok: (e: Entry) => boolean | 'stop'): number => {
+    const turn = all.at(i)?.turn;
+    const lo = Math.max(0, i - markScan);
+    let stopped = false;
+    const n = all.slice(lo, i).findLastIndex((e) => {
+      const r = stopped || e.turn !== turn ? 'stop' : ok(e);
+      stopped = r === 'stop';
+      return r === true;
+    });
+    return n < 0 ? -1 : lo + n;
+  };
+  const at = (i: number) => (i < 0 ? undefined : all.at(i));
+  const put = (i: number, e: Entry) => {
+    all.splice(i, 1, e);
+  };
+  for (let i = history.length; i < all.length; i++) {
+    const f = at(i);
+    const hit = f?.outcome?.at(0);
+    if (!f || !hit?.card) {
+      continue;
+    }
+    const target = hit.card;
+    const d = f.item;
+    if (d?.kind === StackKind.damage && !f.badge && hit.mark === 'damage') {
+      const j = back(i, (e) => (dealtBy(e, d, target) ? true : d.attack && isAttackRoll(e) ? 'stop' : false));
+      const p = at(j);
+      if (p) {
+        put(j, marked(p, { text: hit.text, card: target, mark: 'damage', amount: hit.amount ?? 0 }));
+        put(i, { ...f, play: p.key });
+      }
+    } else if (f.badge === 'kill' && hit.mark === 'death') {
+      const j = back(i, (e) => !e.badge && e.item?.kind === StackKind.damage && e.outcome?.at(0)?.card === target);
+      const dmg = at(j);
+      if (!dmg) {
+        continue;
+      }
+      if (dmg.attack) {
+        put(i, { ...f, attack: true });
+      }
+      const k = dmg.play === undefined ? -1 : back(j, (e) => e.key === dmg.play);
+      const p = at(k);
+      if (p) {
+        put(k, marked(p, { text: hit.text, card: target, mark: 'death' }));
+      }
+    }
+  }
+  return all;
+}
+
+// OutcomeGrid is how a popout lays out its targets (20.21, ADR 027
+// "History" 11.14): one row up to four, then two rows; scale shrinks
+// the cards from hand size when a row holds more than four.
+export interface OutcomeGrid {
+  columns: number;
+  scale: number;
+}
+
+export const outcomeRow = 4;
+
+export function outcomeGrid(n: number): OutcomeGrid {
+  const columns = n <= outcomeRow ? Math.max(1, n) : Math.ceil(n / 2);
+  return { columns, scale: Math.min(1, outcomeRow / columns) };
 }
 
 // rolledBack is the history after a rollback (ADR 020, item 8): every
@@ -703,11 +898,12 @@ export interface Looked {
 
 // lookedAt is the cards this viewer looks at in one update's events,
 // for the look dialog (V-07). A card looked at twice in one update
-// shows once (19.13).
-export function lookedAt(events: GameEvent[], you: number): Looked[] {
+// shows once (19.13). shown are the cards a choice showed just before:
+// they are not shown again (19.130); the history still tells the look.
+export function lookedAt(events: GameEvent[], you: number, shown: ReadonlySet<string> = new Set()): Looked[] {
   const seen = new Set<number>();
   return events.flatMap((e) => {
-    if (e.kind !== 'looked_at' || e.player !== you || !e.card) return [];
+    if (e.kind !== 'looked_at' || e.player !== you || !e.card || shown.has(e.card)) return [];
     const id = e.object ?? 0;
     if (seen.has(id)) return [];
     seen.add(id);

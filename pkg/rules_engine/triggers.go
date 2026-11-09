@@ -194,8 +194,10 @@ func (g *Game) collectTriggers(e Event) {
 	if e.Prev != 0 && g.Object(e.Prev).Zone.Kind != ZoneInPlay {
 		check(e.Prev)
 	}
-	if e.Kind == EvGainedSoul && e.Object != 0 {
-		check(e.Object) // "When a player gains this soul" (Mom's Heart)
+	if e.Kind == EvGainedSoul && e.Object != 0 && g.kindOf(e.Object) != BonusSoulCard {
+		// "When a player gains this soul" (Mom's Heart). A gained bonus
+		// soul's own abilities stop (R-CARD-23, 19.144).
+		check(e.Object)
 	}
 	if e.Kind == EvEnteredPlay && e.Object != 0 && slices.Contains(g.ShopItems(), e.Object) {
 		// A shop item's "enters play" abilities work in the shop

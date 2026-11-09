@@ -2,13 +2,17 @@
 // others, and what they point at shows here. Pure, except spotElement
 // and boardBox, which read the page.
 import type { Point } from './aim';
+import { feel } from './feel';
 import { Deck, type Presence, type Spot } from './protocol';
 
 // What a sender may share (owner, 2026-10-20): an aim always; a hover
-// only on the sender's own turn, so a waiting table stays quiet.
+// only on the sender's own turn, so a waiting table stays quiet. A
+// held card goes like an aim: it is a play in the making (20.13).
 export interface Pointing {
   // source is the card the player aims with, if aiming.
   source?: number;
+  // held is the hand card the player drags, if any (20.13).
+  held?: number;
   // active: it is the player's turn.
   active: boolean;
 }
@@ -52,8 +56,12 @@ export function spotAt(zones: string[], hand: number[]): Spot | undefined {
 
 // presenceFor is what the player shares now, from the zones under the
 // pointer and the pointer on the board frame. A pointer over no spot
-// counts only while aiming, for the arrow's head.
+// counts only while aiming, for the arrow's head. A dragged card is
+// shared alone: the others see it held, not what it passes over.
 export function presenceFor(p: Pointing, zones: string[], hand: number[], point: Point | undefined): Omit<Presence, 'seat'> {
+  if (p.held !== undefined) {
+    return { held: cardSpot(p.held, hand) };
+  }
   if (p.source === undefined && !p.active) {
     return {};
   }
@@ -70,13 +78,14 @@ export function presenceFor(p: Pointing, zones: string[], hand: number[], point:
 
 // empty: the presence points at nothing.
 export function empty(p: Omit<Presence, 'seat'>): boolean {
-  return !p.from && !p.at && !p.point;
+  return !p.from && !p.at && !p.point && !p.held;
 }
 
 // same: two presences point at the same spots. Points close together
 // count as the same, so a still pointer sends nothing new.
 export function same(a: Omit<Presence, 'seat'>, b: Omit<Presence, 'seat'>): boolean {
-  if (JSON.stringify(a.from) !== JSON.stringify(b.from) || JSON.stringify(a.at) !== JSON.stringify(b.at)) {
+  const spots = (p: Omit<Presence, 'seat'>) => JSON.stringify([p.from, p.at, p.held]);
+  if (spots(a) !== spots(b)) {
     return false;
   }
   if (!a.point || !b.point) {
@@ -94,6 +103,35 @@ export function onFrame(x: number, y: number, box: { left: number; top: number; 
 // fromFrame is a point on a box back on the screen.
 export function fromFrame(p: Point, box: { left: number; top: number; width: number; height: number }): Point {
   return { x: box.left + p.x * box.width, y: box.top + p.y * box.height };
+}
+
+// sendGap is the least time between two presence messages, in ms
+// (20.13, ADR 027 "Other players live"): shorter while aiming, so the
+// arrow follows closely. The server keeps the same gaps.
+export function sendGap(p: Omit<Presence, 'seat'>): number {
+  return (p.from ? feel.others.aimSample : feel.others.sample) * 1000;
+}
+
+// Mark is how another player's presence marks a spot on this screen:
+// at, the spot their arrow or aiming pointer is over (red); hover, the
+// spot they hover on their turn (a glow in their color; a hand slot
+// lifts); from, the hand slot they aim with; held, the hand slot of the
+// card they drag (20.13).
+export type Mark = 'at' | 'hover' | 'from' | 'held';
+
+// marksOf is how a presence marks its spots: [spot, mark] pairs.
+export function marksOf(p: Omit<Presence, 'seat'>): [Spot, Mark][] {
+  const out: [Spot, Mark][] = [];
+  if (p.held) {
+    out.push([p.held, 'held']);
+  }
+  if (p.from?.hand) {
+    out.push([p.from, 'from']);
+  }
+  if (p.at) {
+    out.push([p.at, p.from ? 'at' : 'hover']);
+  }
+  return out;
 }
 
 // backSlot is the back a hand slot shows on: a hidden hand fans only

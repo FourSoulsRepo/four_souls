@@ -26,6 +26,9 @@ export interface CardInfo {
 // colour and the card back.
 export type Kind = 'character' | 'treasure' | 'loot' | 'monster' | 'soul';
 
+// deckKinds are the engine's decks (protocol Deck) as the board's piles.
+export const deckKinds: (Kind | undefined)[] = ['treasure', 'loot', 'monster', undefined];
+
 export function kindOf(type: string): Kind {
   if (type === 'Character Card') {
     return 'character';

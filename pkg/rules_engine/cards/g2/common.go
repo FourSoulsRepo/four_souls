@@ -90,12 +90,12 @@ func combatDamageOnRollOf(n int) engine.Trigger {
 
 // rechargeYourItem: "you may recharge an item you control", one at a time.
 var rechargeYourItem = engine.Ask(func(c *engine.Ctx, a []int) {
-	if ids := yourDeactivated(c); a[0] >= 0 && a[0] < len(ids) {
+	if ids := cardkit.RechargeableItems(c.G, c.Controller); a[0] >= 0 && a[0] < len(ids) {
 		c.G.Recharge(ids[a[0]])
 	}
 }, engine.Question{Text: cardkit.AskRechargeWhichItem, Options: func(c *engine.Ctx, _ []int) []engine.Msg {
 	var out []engine.Msg
-	for _, id := range yourDeactivated(c) {
+	for _, id := range cardkit.RechargeableItems(c.G, c.Controller) {
 		out = append(out, engine.CardOption(c.G.Object(id).Card))
 	}
 	if len(out) == 0 {
@@ -103,16 +103,6 @@ var rechargeYourItem = engine.Ask(func(c *engine.Ctx, a []int) {
 	}
 	return append(out, engine.AskNone.Msg())
 }})
-
-func yourDeactivated(c *engine.Ctx) []engine.ObjectID {
-	var out []engine.ObjectID
-	for _, id := range c.G.Players[c.Controller].InPlay {
-		if o := c.G.Object(id); o.Role == engine.RoleItem && !o.Charged {
-			out = append(out, id)
-		}
-	}
-	return out
-}
 
 // freeSlots lists monster slots whose monster is not being attacked.
 func freeSlots(g *engine.Game) []int {

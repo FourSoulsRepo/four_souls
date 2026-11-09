@@ -7,26 +7,46 @@ import { languageName } from '../locale';
 import { matChoices, matLook, matOf } from '../mats';
 import type { Speed } from '../playback';
 import { useApp } from '../store';
+import { maxScale, minScale } from '../uiScale';
 import './screens.css';
 
 function speedOf(v: string): Speed {
   return v === 'fast' || v === 'slow' || v === 'off' ? v : 'normal';
 }
 
-// SettingsScreen: ST-01, ST-03, ST-05, ST-06, ST-09, the dice look
+// SettingsScreen: ST-01, ST-03, ST-05, ST-06, ST-09, ST-10, the dice look
 // (V-19, 15.64), the question before ending the turn (V-46), and the
 // language (ADR 021). Saved settings apply at once; the dice look goes
 // out in the next hello.
 export function SettingsScreen() {
+  const show = useApp((s) => s.show);
+  return (
+    <div className="screen">
+      <h1>{t('settings.title')}</h1>
+      <SettingsForm
+        inGame={false}
+        onBack={() => {
+          show('menu');
+        }}
+      />
+    </div>
+  );
+}
+
+// SettingsForm is the settings form of the main screen and of the game
+// menu (ST-11, 18.19). In a game it leaves out what the running game
+// would not take: the nickname and dice go out in the hello, and the
+// language stays with the main screen.
+export function SettingsForm({ inGame, onBack }: { inGame: boolean; onBack: () => void }) {
   const settings = useApp((s) => s.settings);
   const error = useApp((s) => s.error);
   const save = useApp((s) => s.saveSettings);
-  const show = useApp((s) => s.show);
   const mats = useApp((s) => s.mats);
   // Card languages join the list when the cards load (16.10).
   const languages = useApp((s) => s.languages);
   const dice = useApp((s) => s.dice);
   const diceGroups = diceChoices(dice);
+  const showDice = !inGame && diceGroups.length > 0;
   const [form, setForm] = useState<Settings>(settings);
   const [saved, setSaved] = useState(false);
   const preview = matLook(form.mat, mats);
@@ -37,8 +57,7 @@ export function SettingsScreen() {
   };
 
   return (
-    <div className="screen">
-      <h1>{t('settings.title')}</h1>
+    <>
       <form
         className="panel"
         onSubmit={(e) => {
@@ -51,15 +70,17 @@ export function SettingsScreen() {
           });
         }}
       >
-        <label className="field">
-          {t('settings.nickname')}
-          <input
-            value={form.nickname}
-            onChange={(e) => {
-              change({ nickname: e.target.value });
-            }}
-          />
-        </label>
+        {!inGame && (
+          <label className="field">
+            {t('settings.nickname')}
+            <input
+              value={form.nickname}
+              onChange={(e) => {
+                change({ nickname: e.target.value });
+              }}
+            />
+          </label>
+        )}
         <label className="check">
           <input
             type="checkbox"
@@ -82,21 +103,23 @@ export function SettingsScreen() {
         </label>
         {/* Each language in its own name; the list is not translated. */}
         <div className="row">
-          <label className="field">
-            {t('settings.language')}
-            <select
-              value={shownLanguage(form.language)}
-              onChange={(e) => {
-                change({ language: e.target.value });
-              }}
-            >
-              {languages.map((l) => (
-                <option key={l} value={l} lang={l}>
-                  {languageName(l)}
-                </option>
-              ))}
-            </select>
-          </label>
+          {!inGame && (
+            <label className="field">
+              {t('settings.language')}
+              <select
+                value={shownLanguage(form.language)}
+                onChange={(e) => {
+                  change({ language: e.target.value });
+                }}
+              >
+                {languages.map((l) => (
+                  <option key={l} value={l} lang={l}>
+                    {languageName(l)}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
           <label className="field">
             {t('settings.animations')}
             <select
@@ -126,6 +149,20 @@ export function SettingsScreen() {
           />
           <span>{form.volume}%</span>
         </label>
+        <label className="field">
+          {t('settings.scale')}
+          <input
+            type="range"
+            min={minScale}
+            max={maxScale}
+            step={5}
+            value={form.scale}
+            onChange={(e) => {
+              change({ scale: Number(e.target.value) });
+            }}
+          />
+          <span>{form.scale}%</span>
+        </label>
         {/* The looks sit on one line, above their previews (15.80). */}
         <div className="row">
           <label className="field">
@@ -143,7 +180,7 @@ export function SettingsScreen() {
               ))}
             </select>
           </label>
-          {diceGroups.length > 0 && (
+          {showDice && (
             <label className="field">
               {t('settings.dice')}
               <select
@@ -166,7 +203,7 @@ export function SettingsScreen() {
           )}
         </div>
         <div className={`mat-preview ${preview.className}`} style={preview.style} aria-label={t('settings.mat_preview')} />
-        {diceGroups.length > 0 && (
+        {showDice && (
           <div className="dice-preview" role="group" aria-label={t('settings.dice_preview')}>
             {[1, 2, 3, 4, 5, 6].map((v) => (
               <Die key={v} value={v} image={diceImage} />
@@ -180,15 +217,10 @@ export function SettingsScreen() {
       <p className="status" role="status">
         {error || (saved ? t('settings.saved') : '')}
       </p>
-      <button
-        type="button"
-        onClick={() => {
-          show('menu');
-        }}
-      >
+      <button type="button" onClick={onBack}>
         {t('settings.back')}
       </button>
-    </div>
+    </>
   );
 }
 

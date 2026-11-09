@@ -4,6 +4,13 @@ import { say, t } from './i18n';
 import type { GameView, Seat, StackItem } from './protocol';
 import { oddsLine, rollChanges, type Name } from './stats';
 
+// beforeStart: turn 1 has not started. The start-of-game choices come
+// first (Eden), then the first-player roll (15.43, 19.142); nobody has
+// a turn yet.
+export function beforeStart(view: GameView): boolean {
+  return view.first_roll !== undefined || view.turn.number < 1;
+}
+
 // Stack item kinds, in Go's order (pkg/rules_engine/stack.go).
 export const StackKind = {
   loot: 0,
@@ -183,7 +190,7 @@ export function attackTarget(view: GameView, target: number, n: Names): LinePart
 // A declared end of turn too, also one a card declared, until the end
 // phase starts (19.74, R-TURN-08, R-TURN-10); a death end is none.
 export function declaration(view: GameView, n: Names): LinePart[] | null {
-  if (view.over || view.first_roll) {
+  if (view.over || beforeStart(view)) {
     return null;
   }
   const { active } = view.turn;

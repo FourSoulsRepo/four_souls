@@ -92,7 +92,7 @@ func (g *Game) blockedWhere(p PlayerID, keep func(ObjectID) bool, turns bool) []
 
 // waitSay is why p can't act now although the rules would let them.
 func (g *Game) waitSay(p PlayerID) Msg {
-	if g.Waiting.Player == p && g.Waiting.Kind != PromptPriority {
+	if w := g.PromptFor(p); w.Player == p && w.Kind != PromptPriority {
 		return refuseAnswerPrompt.Msg()
 	}
 	return refuseWaitPriority.Msg()

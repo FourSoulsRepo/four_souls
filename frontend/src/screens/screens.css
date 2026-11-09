@@ -5,9 +5,9 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 16px;
+  gap: 1rem;
   height: 100%;
-  padding: 24px;
+  padding: 1.5rem;
   box-sizing: border-box;
 }
 
@@ -26,28 +26,28 @@
   --muted: #c9bfa6;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  width: min(480px, 100%);
+  gap: 0.75rem;
+  width: min(30rem, 100%);
   min-height: 0;
   overflow-y: auto;
   box-sizing: border-box;
-  padding: 18px 22px;
-  border: 3px solid var(--ink);
-  border-radius: 12px 16px 14px 10px / 10px 14px 16px 12px;
+  padding: 1.125rem 1.375rem;
+  border: 0.1875rem solid var(--ink);
+  border-radius: 0.75rem 1rem 0.875rem 0.625rem / 0.625rem 0.875rem 1rem 0.75rem;
   color: var(--fg);
   background:
     radial-gradient(ellipse at 50% 0%, rgb(247 222 143 / 8%), transparent 60%),
     rgb(20 28 40 / 96%);
   box-shadow:
     inset 0 0 0 1px rgb(247 222 143 / 18%),
-    0 4px 0 var(--ink),
-    0 10px 28px rgb(0 0 0 / 45%);
+    0 0.25rem 0 var(--ink),
+    0 0.625rem 1.75rem rgb(0 0 0 / 45%);
 }
 
 .row {
   display: flex;
   align-items: end;
-  gap: 12px;
+  gap: 0.75rem;
   flex-wrap: wrap;
 }
 
@@ -55,7 +55,7 @@
 .field {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 0.375rem;
   font-family: var(--font-game);
   letter-spacing: 0.03em;
   color: #f7de8f;
@@ -64,7 +64,7 @@
 .check {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 0.625rem;
   font-family: var(--font-game);
   letter-spacing: 0.03em;
   color: var(--fg);
@@ -75,7 +75,7 @@
 .sets {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px 16px;
+  gap: 0.5rem 1rem;
   margin: 0;
   padding: 0;
   border: 0;
@@ -83,7 +83,7 @@
 
 .sets legend {
   width: 100%;
-  margin-bottom: 6px;
+  margin-bottom: 0.375rem;
   padding: 0;
   font-family: var(--font-game);
   letter-spacing: 0.03em;
@@ -94,31 +94,31 @@
    types stays in the plain UI font, so it reads exactly. */
 .screen input:not([type="checkbox"]),
 .screen select {
-  padding: 7px 10px;
-  border: 2.5px solid var(--ink);
-  border-radius: 8px 10px 9px 7px;
+  padding: 0.4375rem 0.625rem;
+  border: 0.1562rem solid var(--ink);
+  border-radius: 0.5rem 0.625rem 0.5625rem 0.4375rem;
   font: inherit;
   font-family: var(--font-ui);
   letter-spacing: normal;
   color: var(--ink);
   background: linear-gradient(#fbf4e2, #eadcb6);
-  box-shadow: inset 0 2px 0 rgb(29 18 10 / 15%);
+  box-shadow: inset 0 0.125rem 0 rgb(29 18 10 / 15%);
 }
 
 /* The select's arrow is drawn in ink. */
 .screen select {
   appearance: none;
-  padding-right: 30px;
+  padding-right: 1.875rem;
   background:
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%231d120a' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
-      right 10px center / 12px 8px no-repeat,
+      right 0.625rem center / 0.75rem 0.5rem no-repeat,
     linear-gradient(#fbf4e2, #eadcb6);
   cursor: pointer;
 }
 
 .screen input:focus-visible,
 .screen select:focus-visible {
-  outline: 3px solid #f7de8f;
+  outline: 0.1875rem solid #f7de8f;
   outline-offset: 1px;
 }
 
@@ -127,11 +127,11 @@
   display: grid;
   flex: none;
   place-items: center;
-  width: 20px;
-  height: 20px;
+  width: 1.25rem;
+  height: 1.25rem;
   margin: 0;
-  border: 2.5px solid var(--ink);
-  border-radius: 4px 6px 5px 3px;
+  border: 0.1562rem solid var(--ink);
+  border-radius: 0.25rem 0.375rem 0.3125rem 0.1875rem;
   appearance: none;
   background: linear-gradient(#fbf4e2, #e1cc9b);
   rotate: -3deg;
@@ -139,11 +139,11 @@
 }
 
 .screen input[type="checkbox"]::after {
-  width: 5px;
-  height: 10px;
-  margin-top: -3px;
+  width: 0.3125rem;
+  height: 0.625rem;
+  margin-top: -0.1875rem;
   border: solid var(--ink);
-  border-width: 0 3px 3px 0;
+  border-width: 0 0.1875rem 0.1875rem 0;
   rotate: 45deg;
   content: "";
   visibility: hidden;
@@ -159,8 +159,8 @@
 }
 
 .screen input[type="checkbox"]:focus-visible {
-  outline: 3px solid #f7de8f;
-  outline-offset: 2px;
+  outline: 0.1875rem solid #f7de8f;
+  outline-offset: 0.125rem;
 }
 
 .status {
@@ -180,7 +180,7 @@
 .list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 0.5rem;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -190,7 +190,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 0.75rem;
 }
 
 .muted {
@@ -199,28 +199,28 @@
 
 /* A short note under a field, e.g. what a rollback mode allows. */
 .hint {
-  margin: -6px 0 0;
-  font-size: 13px;
+  margin: -0.375rem 0 0;
+  font-size: 0.8125rem;
 }
 
 .mat-preview {
-  height: 48px;
-  border: 2.5px solid var(--ink);
-  border-radius: 8px;
+  height: 3rem;
+  border: 0.1562rem solid var(--ink);
+  border-radius: 0.5rem;
 }
 
 /* Every face of the picked dice look (15.64). */
 .dice-preview {
   display: flex;
-  gap: 10px;
+  gap: 0.625rem;
 }
 
 .dice-preview .die {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  font-size: 22px;
-  box-shadow: 0 2px 8px rgb(0 0 0 / 45%);
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.5rem;
+  font-size: 1.375rem;
+  box-shadow: 0 0.125rem 0.5rem rgb(0 0 0 / 45%);
 }
 
 /* LAN games on the join screen (N-13). */
@@ -239,12 +239,12 @@
 .recent li {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 0.25rem;
 }
 
 .screen .recent button.forget {
-  padding: 2px 9px 0;
-  font-size: 15px;
+  padding: 0.125rem 0.5625rem 0;
+  font-size: 0.9375rem;
   line-height: 1.2;
 }
 
@@ -252,16 +252,16 @@
 .server-up {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  font-size: 13px;
+  gap: 0.3125rem;
+  font-size: 0.8125rem;
   color: var(--muted);
   white-space: nowrap;
 }
 
 .server-up::before {
   content: '';
-  width: 8px;
-  height: 8px;
+  width: 0.5rem;
+  height: 0.5rem;
   border-radius: 50%;
   background: currentColor;
   opacity: 0.5;
@@ -279,9 +279,9 @@
 
 /* The server's name under the Games heading (N-18). */
 .server-name {
-  margin: -8px 0 0;
+  margin: -0.5rem 0 0;
   font-family: var(--font-game);
-  font-size: 20px;
+  font-size: 1.25rem;
   color: #f7de8f;
 }
 
@@ -289,11 +289,81 @@
    keeps its width; the row text wraps instead (19.88). */
 .screen input.game-password {
   flex: none;
-  width: 140px;
+  width: 8.75rem;
 }
 
 /* The card gallery is a test screen bigger than the window. */
 .gallery {
   justify-content: flex-start;
   overflow-y: auto;
+}
+
+/* The draft pick (14.11): the offers in a row, each with its starting
+   item under it; a picked card lifts and keeps its bright glow until
+   Confirm, as the start-of-game screen's (20.22). */
+.pick-offers {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 1.5rem;
+  max-width: 100%;
+}
+
+.pick-offer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.screen button.pick-card {
+  display: block;
+  padding: 0;
+  border: none;
+  background: none;
+  transition: translate 0.15s ease-out;
+}
+
+.screen button.pick-card:hover,
+.screen button.pick-card:focus-visible,
+.screen button.pick-card.picked {
+  translate: 0 -0.625rem;
+}
+
+.screen button.pick-card:focus-visible {
+  outline: none;
+}
+
+.pick-card:is(:hover, :focus-visible) .card.hl-pick,
+.pick-card.picked .card.hl-pick {
+  box-shadow: 0 0 0 0.1875rem #b3e9ff, 0 0 1.625rem 0.5rem rgb(79 195 247 / 95%);
+}
+
+.pick-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  width: clamp(6.875rem, 13vw, 11.25rem);
+  min-height: 9.375rem;
+  text-align: center;
+  font-size: 0.875rem;
+}
+
+.pick-item-later {
+  margin-top: 1.5rem;
+}
+
+.pick-seats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.25rem 1.125rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pick-seats li.picked {
+  color: #b3e9ff;
 }

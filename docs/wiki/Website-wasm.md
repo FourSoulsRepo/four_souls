@@ -46,7 +46,7 @@ A refusal in `check` carries `rule`, the English `reason` for developers, and `s
 
 1. The page needs `DecompressionStream`; without it, it says to update the browser.
 2. It adds Go's `wasm_exec.js` as a script, then fetches `site.wasm.gz`.
-3. A progress bar counts the bytes against `Content-Length`.
+3. A progress bar counts the bytes against `Content-Length`. It sits under the check view: above it, its end moved the examples under the pointer, and a click missed (19.119).
 4. The page unpacks the stream with `DecompressionStream("gzip")` only when its first bytes are gzip's (`1f 8b`). Some hosts send `.gz` files with `Content-Encoding: gzip` (Vite's dev server and `vite preview` do), and then the browser has unpacked it already; the progress bar then has no total.
 5. `WebAssembly.instantiateStreaming` compiles it as it arrives; `go.run` sets `globalThis.fourSouls`.
 6. The page reads `version()`, `cards()` and `notice()` once. A failure shows its reason; the rules page works without the engine.
@@ -125,4 +125,6 @@ Whether GitHub Pages compresses `.wasm` or sends `.gz` with `Content-Encoding` i
 curl -sI -H 'Accept-Encoding: gzip, br' https://foursoulsrepo.github.io/four_souls/site.wasm.gz
 ```
 
-`Content-Type: application/gzip` with no `Content-Encoding` is the expected case: the page unpacks it and the progress bar has a total. `Content-Encoding: gzip` also works, without a total. Write what it answers here.
+`Content-Type: application/gzip` with no `Content-Encoding` is the expected case: the page unpacks it and the progress bar has a total. `Content-Encoding: gzip` also works, without a total.
+
+Checked 2026-11-06: Pages answers `Content-Type: application/gzip`, `Content-Length: 2166822`, no `Content-Encoding`. So the page unpacks it, and a visitor downloads about 2.2 MB. Pages does gzip the text files itself (`wasm_exec.js`, the assets).

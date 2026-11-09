@@ -1,14 +1,18 @@
 import { useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { fanPose } from '../feel';
 import { t } from '../i18n';
 import { Role, type CardView, type PlayerView } from '../protocol';
 import { useApp } from '../store';
 import type { LinePart } from '../stack';
 import { isCurse, isSoul, playerColor, soulCards, soulSlots, type Position } from '../table';
 import { Card, useZoom, type CardSize } from './Card';
+import { Count, useCount, useFlip } from './Count';
+import { HandCard, useHandGap } from './HandCard';
 import type { Interact } from './Interact';
 import { HiddenHand, RevealedHand } from './Pile';
 import { Part } from './StackPanel';
 import './Table.css';
+import { rem } from '../uiScale';
 
 interface Props {
   player: PlayerView;
@@ -27,9 +31,12 @@ interface Props {
   doing?: LinePart[] | null;
 }
 
-// spent: a character or item that is used up until it recharges.
-function spent(c: CardView): boolean {
-  return (c.role === Role.character || c.role === Role.item) && !c.charged;
+// useSpent tells if a character or item is used up until it recharges.
+// A card the turn's recharge readies lights up as the turn's banner
+// shows, before the view is drawn (20.8).
+function useSpent(): (c: CardView) => boolean {
+  const charged = useApp((s) => s.charged);
+  return (c) => (c.role === Role.character || c.role === Role.item) && !c.charged && !charged.includes(c.id);
 }
 
 // PlayerArea is one player's place at the table: name and counters,
@@ -47,6 +54,7 @@ export function PlayerArea({ you, position, tools, ...rest }: Props) {
 function OpponentArea({ player, name, position, active, asked, winSouls, ui, doing }: Omit<Props, 'you' | 'tools'>) {
   const size: CardSize = position === 'left' || position === 'right' ? 'small' : 'table';
   const pick = ui.player(player.id);
+  const spent = useSpent();
   const { character } = player;
   return (
     <section
@@ -70,7 +78,7 @@ function OpponentArea({ player, name, position, active, asked, winSouls, ui, doi
           <span className="opp-line">
             <span className="opp-coins" title={t('table.coins')} aria-label={t('table.cents', { n: player.cents })}>
               <Coin />
-              {player.cents}
+              <Count value={player.cents} />
             </span>
             {player.dead && <span className="player-dead">{t('table.dead')}</span>}
           </span>
@@ -135,6 +143,26 @@ export function Coin() {
   );
 }
 
+// OwnCents is the viewer's big coin counter. It counts each change
+// one cent at a time (20.11). While the pointer is on something to buy,
+// it previews the price: "−N" beside the number, red when the cents
+// are short.
+function OwnCents({ cents }: { cents: number }) {
+  const cost = useApp((s) => s.cost);
+  const preview = cost === null ? '' : cost > cents ? ' cost-preview short' : ' cost-preview';
+  return (
+    <span className={`own-coins${preview}`} title={t('table.coins')} aria-label={t('table.cents', { n: cents })}>
+      <Coin />
+      <Count value={cents} />
+      {cost !== null && (
+        <span className="cents-cost" role="status" aria-label={t('table.cents_cost', { n: cost })}>
+          −{cost}
+        </span>
+      )}
+    </span>
+  );
+}
+
 // OwnArea is the viewer's place at the bottom edge (15.17): name, big
 // coins and the turn actions at the left, any curses at the far left
 // (15.55), the souls and the character centered with its live health
@@ -144,7 +172,10 @@ function OwnArea({ player, name, active, asked, winSouls, ui, tools }: Omit<Prop
   const label = t('table.own_name', { player: name });
   const pick = ui.player(player.id);
   const hand = player.hand ?? [];
+  const spent = useSpent();
   const { character } = player;
+  const handRef = useRef<HTMLDivElement>(null);
+  useHandGap(handRef, hand.map((c) => c.id).join(','));
   return (
     <section
       className={`player player-bottom own${active ? ' active' : ''}${player.dead ? ' dead' : ''}${pick.highlight ? ` hl-${pick.highlight}` : ''}`}
@@ -159,10 +190,7 @@ function OwnArea({ player, name, active, asked, winSouls, ui, tools }: Omit<Prop
             {label}
             {asked && <Hourglass player={player.id} />}
           </b>
-          <span className="own-coins" title={t('table.coins')} aria-label={t('table.cents', { n: player.cents })}>
-            <Coin />
-            {player.cents}
-          </span>
+          <OwnCents cents={player.cents} />
           {player.dead && <span className="player-dead">{t('table.dead')}</span>}
           {active && (
             <span className="player-allowance" aria-label={t('table.loot_left_label')}>
@@ -200,6 +228,7 @@ function OwnArea({ player, name, active, asked, winSouls, ui, tools }: Omit<Prop
           ))}
       </div>
       <div
+        ref={handRef}
         className="hand"
         role="group"
         aria-label={t('table.your_hand')}
@@ -207,7 +236,7 @@ function OwnArea({ player, name, active, asked, winSouls, ui, tools }: Omit<Prop
         style={fan(hand.length)}
       >
         {hand.map((c, i) => (
-          <HandCard key={c.id} card={c} ui={ui} spread={i - (hand.length - 1) / 2} />
+          <HandCard key={c.id} card={c} ui={ui} pose={fanPose(i, hand.length)} />
         ))}
       </div>
     </section>
@@ -220,12 +249,14 @@ function OwnArea({ player, name, active, asked, winSouls, ui, tools }: Omit<Prop
 // card, which is not on the table (V-43).
 function Souls({ player, winSouls, ui }: { player: PlayerView; winSouls: number; ui: Interact }) {
   const cards = soulCards(player);
-  const slots = soulSlots(Math.max(player.souls, cards.length), winSouls);
+  // The crystals fill and empty one at a time (20.11).
+  const souls = useCount(Math.max(player.souls, cards.length));
+  const slots = soulSlots(souls, winSouls);
   const label = t('table.souls', { souls: player.souls, n: slots.length });
   return (
     <div className="souls" role="group" aria-label={label} title={label}>
       {slots.map((filled, i) => {
-        const card = cards.at(i);
+        const card = filled ? cards.at(i) : undefined;
         return (
           // A slot is only its place in the row, so the index is its key.
           // eslint-disable-next-line @eslint-react/no-array-index-key
@@ -245,8 +276,11 @@ function SoulCrystal({ filled, card, own, ui }: { filled: boolean; card?: CardVi
   const pick = soul ? ui.object(soul.id) : {};
   const zoom = useZoom(card?.card, card !== undefined);
   const name = useApp((s) => (card ? (s.cards.get(card.card)?.name ?? card.card) : ''));
+  const ref = useRef<HTMLSpanElement>(null);
+  useFlip(ref, filled ? 1 : 0);
   return (
     <span
+      ref={ref}
       className={`soul-slot${filled ? ' filled' : ''}${pick.highlight ? ` hl-${pick.highlight}` : ''}`}
       data-zone={soul ? `obj-${String(soul.id)}` : undefined}
       role={pick.onClick ? 'button' : card ? 'img' : undefined}
@@ -309,6 +343,7 @@ function statsOf(player: PlayerView) {
 // PlayCard is a character or item in play; owner's dice look draws the
 // numbers it keeps (15.67).
 function PlayCard({ card, owner, size, ui }: { card: CardView; owner: number; size: CardSize; ui: Interact }) {
+  const spent = useSpent();
   return (
     <Card
       cardRef={card.card}
@@ -326,102 +361,12 @@ function PlayCard({ card, owner, size, ui }: { card: CardView; owner: number; si
   );
 }
 
-// fan spreads a hand of n cards: a smaller angle and more overlap the
-// more cards there are, so a big hand still fits (H-03). The ends drop
-// at most fanDrop pixels, so their tops stay in reach (19.15).
+// fan spaces a hand of n cards: more overlap the more cards there are,
+// so a big hand still fits (H-03). Each card's turn and drop is its
+// own (fanPose, 20.5).
 function fan(n: number): CSSProperties {
-  const step = Math.min(7, 40 / Math.max(n, 1));
   const overlap = n <= 3 ? 20 : Math.min(64, 20 + (n - 3) * 7);
-  const half = Math.max((n - 1) / 2, 1);
-  const drop = Math.min(4, fanDrop / (half * half));
-  return {
-    '--fan-step': `${String(step)}deg`,
-    '--fan-overlap': `${String(overlap)}px`,
-    '--fan-drop': `${String(drop)}px`,
-  } as CSSProperties;
-}
-
-// fanDrop is how far the end cards of a big hand drop, in pixels.
-const fanDrop = 24;
-
-// onPlayArea: the point is over the board, where loot cards are played.
-function onPlayArea(x: number, y: number): boolean {
-  return document.elementsFromPoint(x, y).some((el) => el.closest('[data-drop="play"]') !== null);
-}
-
-// How far a pointer moves before a press becomes a drag, in pixels.
-const dragThreshold = 8;
-
-// HandCard is a card in the viewer's hand, spread from the hand's middle
-// by its place in the fan. A playable one can be dragged
-// onto the board to play it; clicking it opens its actions instead. The
-// drag is plain pointer events with pointer capture, so mouse and touch
-// share it and the release is never missed (ADR 008).
-// A card that needs a target is not dragged: a click starts aiming and
-// the card stays lifted in the fan meanwhile (15.25).
-function HandCard({ card, ui, spread }: { card: CardView; ui: Interact; spread: number }) {
-  const act = useApp((s) => s.act);
-  const setZoom = useApp((s) => s.setZoom);
-  const aiming = useApp((s) => s.aiming?.source === card.id);
-  const [offset, setOffset] = useState<{ x: number; y: number } | null>(null);
-  const startRef = useRef<{ x: number; y: number; pointer: number } | null>(null);
-  // draggedRef swallows the click that ends a drag.
-  const draggedRef = useRef(false);
-  const action = ui.play(card.id);
-  const play = action && !action.targets?.length ? action.intent : undefined;
-  const handle = ui.object(card.id);
-  const reset = () => {
-    startRef.current = null;
-    setOffset(null);
-  };
-  return (
-    <div
-      className={`hand-card${play ? ' playable' : ''}${handle.highlight === 'act' ? ' usable' : ''}${offset ? ' dragging' : ''}${aiming ? ' aiming' : ''}`}
-      style={
-        offset
-          ? { transform: `translate(${String(offset.x)}px, ${String(offset.y)}px) scale(1.08)` }
-          : ({ '--spread': String(spread) } as CSSProperties)
-      }
-      onPointerDown={(e) => {
-        if (play && e.button === 0) {
-          startRef.current = { x: e.clientX, y: e.clientY, pointer: e.pointerId };
-          draggedRef.current = false;
-        }
-      }}
-      onPointerMove={(e) => {
-        const start = startRef.current;
-        if (start?.pointer !== e.pointerId) {
-          return;
-        }
-        const x = e.clientX - start.x;
-        const y = e.clientY - start.y;
-        if (!offset) {
-          if (Math.hypot(x, y) < dragThreshold) {
-            return;
-          }
-          e.currentTarget.setPointerCapture(e.pointerId);
-          draggedRef.current = true;
-          setZoom(null);
-        }
-        setOffset({ x, y });
-      }}
-      onPointerUp={(e) => {
-        if (offset && play && onPlayArea(e.clientX, e.clientY)) {
-          act(play);
-        }
-        reset();
-      }}
-      onPointerCancel={reset}
-      onClickCapture={(e) => {
-        if (draggedRef.current) {
-          draggedRef.current = false;
-          e.stopPropagation();
-        }
-      }}
-    >
-      <Card cardRef={card.card} size="hand" objectId={card.id} rise {...handle} />
-    </div>
-  );
+  return { '--fan-overlap': rem(overlap) } as CSSProperties;
 }
 
 // PlayerDot is the player's own color by their name; the stack names

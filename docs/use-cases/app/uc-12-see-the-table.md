@@ -46,7 +46,7 @@
 * **3a. Empty deck or discard:** a dashed outline keeps its place.
 * **3b. Covered slot:** a "+N" badge shows the cards under the top one.
 * **3c. More than four slots:** the slots share the row; the board stays the same.
-* **1a. Bans or a draft first:** "Setting up the match…" until 7.14.
+* **1a. Bans or a draft first:** a draft shows its pick screen (UC-39); bans show "Setting up the match…".
 * **1b. Events play first (V-08):** each update's events play one at a time.
   * Looted and discarded cards fly between deck, hand and discard.
   * Dice rolls show the result; cents, healing and damage pop up.
@@ -80,9 +80,12 @@
 * **1h. Attack hit (15.3):** the attacker's card lunges into the target.
   * It winds up, hits, and goes back to its place.
   * A yellow starburst "−N" pops on the card that was hit.
-  * The target's health drops at the hit, while the card goes back.
+  * The target's new health shows on the hit.
   * A monster's hit on a player lunges the monster at the character.
   * Damage shows no popup when it goes on the stack.
+  * Only the attacker moves; a target card stays in place (20.19).
+  * The hit, its sound and burst land at that contact.
+  * Reduced motion: no strike; the burst pops on the target.
 * **1i. Other damage (15.37):** a glowing shot flies from its source.
   * The source: its card on the table, else its stack row.
   * Every damaged card bursts "−N" at once.
@@ -249,6 +252,38 @@
   * Both players see it.
   * Hover or long press on the mark zooms the copied card (19.111).
   * The item's own zoom reads "Copy of The D6" first.
+* **1ai. Damage number that stays (20.4):** the "−N" stays while the game goes on.
+  * It grows from nothing with a bounce, in 1 s.
+  * It fades from 2 s on; 3 s on screen in all.
+  * The next effect starts at once; it never waits for the number.
+  * More hits on one card stack: middle, above, below.
+  * Reduced motion: no bounce; it shows at full size and fades.
+  * Animations off: no number, like every effect.
+* **1aj. Loot draw with a look (20.7):** the drawer sees each new loot card.
+  * It rises from the loot deck and turns face up on its way.
+  * It shows large a moment, a little above the middle.
+  * Then it goes into the hand: 1.5 s in all.
+  * A deal sound as it leaves, a second one as it lands.
+  * Its hand card takes clicks 0.3 s after it lands.
+  * Several cards: one at a time; from the fourth on, each is faster.
+  * Another player's draw: its back flies to their hand, short, one sound.
+  * Reduced motion: the card shows large in place and fades.
+  * Animations off: no draw, like every effect.
+  * Another player's card from the loot discard flies face up: it is public.
+* **1ak. Turn start (20.8):** a new turn is one clear, ordered moment.
+  * "Ann's turn" grows in, gives a small punch, and fades at 1.5 s.
+  * As it shows, the player's used character and items light up again.
+  * After 1 s the turn's loot draw and the rest go on under it.
+  * Own turn only: the "your turn" alert sound.
+  * Visual only: buttons stay live; a Pass during it works.
+  * Reduced motion: it only fades in and out.
+  * Animations off: no banner, like every effect.
+* **1al. Counters that count (20.11):** cents, souls and health change a step at a time.
+  * A +3¢ shows 1, 2, 3 more, 0.2 s apart.
+  * More than 5 steps go faster; the count takes at most 1 s.
+  * Each step flips the number in; a soul crystal flips as it fills.
+  * Reduced motion: it still counts, with no flip.
+  * Animations off: the number jumps.
 
 ## Postconditions
 

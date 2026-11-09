@@ -56,6 +56,36 @@ test('a check link shows the refusal; its rule link opens the rule', async ({ pa
   await shot(page, 'site-rules');
 });
 
+// The examples stay put while the engine loads: the loading line above
+// them went away when it was ready, and a click on an example then
+// missed it (19.119). The engine is held back so it surely loads late.
+test('the examples never move when the engine is ready (19.119)', async ({ page }) => {
+  await page.route('**/site.wasm.gz', async (route) => {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await route.continue();
+  });
+  await page.addInitScript(() => {
+    const w = window as unknown as { ys: number[] };
+    w.ys = [];
+    const frame = () => {
+      const b = document.querySelector('.examples button');
+      if (b) {
+        const y = b.getBoundingClientRect().y;
+        if (w.ys.at(-1) !== y) {
+          w.ys.push(y);
+        }
+      }
+      requestAnimationFrame(frame);
+    };
+    requestAnimationFrame(frame);
+  });
+  await page.goto(`${site}#/en/check`);
+  await expect(page.locator('.loading')).toBeVisible();
+  await expect(page.locator('.version')).toBeVisible({ timeout: 30_000 });
+  await page.evaluate(() => new Promise((resolve) => requestAnimationFrame(resolve)));
+  expect(await page.evaluate(() => (window as unknown as { ys: number[] }).ys)).toHaveLength(1);
+});
+
 test('a copied link opens the same situation, on a phone too', async ({ browser }) => {
   const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const page = await context.newPage();

@@ -40,3 +40,4 @@
 | UC-36 | See a card flip | `rules_engine`, `cards.go`, `frontend` | Implemented | [app/uc-36-see-a-card-flip.md](app/uc-36-see-a-card-flip.md) |
 | UC-37 | Seat the players in a random order | `internal/server`, `frontend` | Implemented | [server/uc-37-random-seats.md](server/uc-37-random-seats.md) |
 | UC-38 | Check a situation on the website | `frontend/src/site`, `cmd/website` | Implemented | [website/uc-38-check-a-situation-on-the-website.md](website/uc-38-check-a-situation-on-the-website.md) |
+| UC-39 | Pick a character in a draft | `frontend`, `internal/server` | Implemented | [app/uc-39-pick-a-character-in-a-draft.md](app/uc-39-pick-a-character-in-a-draft.md) |

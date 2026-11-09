@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { canCreate, emptyLobby, lanRows, leftTable, forgotten, lost, onMessage, optionsText, remember, renamed, serverLabel, upText, type Session } from './lobby';
+import { autoJoinStep, canCreate, emptyLobby, lanRows, oneOpenGame, leftTable, forgotten, lost, onMessage, optionsText, remember, renamed, serverLabel, upText, type Session } from './lobby';
 import type { Table } from './protocol';
 
 const start: Session = { screen: 'join', lobby: emptyLobby, game: null, error: '' };
@@ -67,6 +67,16 @@ describe('leaving', () => {
       'This app is older than the server.',
     );
     expect(lost({ ...start, screen: 'table' }).screen).toBe('join');
+  });
+
+  it('keeps the draft offers until the game starts (14.11)', () => {
+    const setup = { phase: 'pick' as const, turn: -1, pool: [], banned: [], offers: ['isaac', 'eden'], items: ['the_d6', ''], picked: [false, false], seats: [] };
+    const atTable = onMessage(start, { type: 'table', data: table });
+    const picking = onMessage(atTable, { type: 'setup', data: setup });
+    expect(picking).toMatchObject({ screen: 'game', lobby: { table, setup } });
+    const playing = onMessage(picking, { type: 'update', data: {} });
+    expect(playing.lobby.setup).toBeNull();
+    expect(leftTable(picking).lobby.setup).toBeNull();
   });
 
   it('lost keeps a running game, to reconnect to', () => {
@@ -150,13 +160,25 @@ describe('lanRows', () => {
       none,
     );
     expect(rows).toEqual([
-      { key: '192.168.1.5:4774#0', address: '192.168.1.5:4774', text: "🔒 Ann's game · 1/3 players · 192.168.1.5:4774", joinable: true, rejoin: false },
+      {
+        key: '192.168.1.5:4774#0',
+        address: '192.168.1.5:4774',
+        text: "🔒 Ann's game · 1/3 players · 192.168.1.5:4774",
+        joinable: true,
+        rejoin: false,
+        game: '',
+        host: 'Ann',
+        locked: true,
+      },
       {
         key: '192.168.1.9:4774#0',
         address: '192.168.1.9:4774',
         text: "Bo's game · 1/2 players · 192.168.1.9:4774 · needs app 2.0.0",
         joinable: false,
         rejoin: false,
+        game: '',
+        host: 'Bo',
+        locked: false,
       },
     ]);
   });
@@ -198,5 +220,42 @@ describe('canCreate', () => {
 
   it('hides it from the host, who uses the host screen', () => {
     expect(canCreate({ ...emptyLobby, welcome: { ...welcome, create: true } }, true)).toBe(false);
+  });
+});
+
+describe('LAN Join (19.149)', () => {
+  const g = { id: 'g1', host: 'Ann', seats: 2, taken: 1, sets: ['b2'], started: false };
+  const games = (list: unknown[]) => ({ type: 'games', data: { games: list } });
+
+  it('a typed address takes only one waiting, open, unlocked game', () => {
+    expect(oneOpenGame([g])).toBe('g1');
+    expect(oneOpenGame([])).toBe('');
+    expect(oneOpenGame([g, { ...g, id: 'g2' }])).toBe('');
+    expect(oneOpenGame([{ ...g, started: true }])).toBe('');
+    expect(oneOpenGame([{ ...g, taken: 2 }])).toBe('');
+    expect(oneOpenGame([{ ...g, locked: true }])).toBe('');
+  });
+
+  it("a row's Join sends its game and password once the games come", () => {
+    const a = { game: 'g7', password: 'pw', sent: false };
+    const step = autoJoinStep(a, games([g]));
+    expect(step).toEqual({ next: { ...a, sent: true }, join: { game: 'g7', password: 'pw' }, fail: false });
+    // A later list changes nothing: the join went out.
+    expect(autoJoinStep({ ...a, sent: true }, games([]))).toEqual({ next: { ...a, sent: true }, fail: false });
+  });
+
+  it("a typed address joins its one open game; otherwise the Games list shows", () => {
+    const typed = { game: '', password: '', sent: false };
+    expect(autoJoinStep(typed, games([g]))).toEqual({ next: { game: 'g1', password: '', sent: true }, join: { game: 'g1' }, fail: false });
+    expect(autoJoinStep(typed, games([g, { ...g, id: 'g2' }]))).toEqual({ next: null, fail: false });
+    expect(autoJoinStep(typed, { type: 'games', data: { games: null } })).toEqual({ next: null, fail: false });
+  });
+
+  it('an error fails it; a seat or a game ends it; the welcome waits', () => {
+    const a = { game: 'g1', password: '', sent: true };
+    expect(autoJoinStep(a, { type: 'error', data: { code: 'full', message: 'Full' } })).toEqual({ next: null, fail: true });
+    expect(autoJoinStep(a, { type: 'table', data: table })).toEqual({ next: null, fail: false });
+    expect(autoJoinStep(a, { type: 'update', data: {} })).toEqual({ next: null, fail: false });
+    expect(autoJoinStep(a, { type: 'welcome', data: {} })).toEqual({ next: a, fail: false });
   });
 });

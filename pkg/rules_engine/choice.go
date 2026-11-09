@@ -58,6 +58,8 @@ type Choice struct {
 	// Subject is the card the question is about; only the chooser sees
 	// it (19.11).
 	Subject ObjectID `json:"subject,omitempty"`
+	// Look is the deck look the question shows, for everyone (20.18).
+	Look *DeckLook `json:"look,omitempty"`
 	// Owner is whose death penalty a penalty choice is for; To, if not
 	// NoPlayer, gains the discarded loot card instead (Shadow).
 	Owner PlayerID `json:"owner"`
@@ -67,7 +69,7 @@ type Choice struct {
 // ask opens a choose prompt.
 func (g *Game) ask(c Choice, labels []Msg) {
 	g.Choice = &c
-	g.Waiting = Prompt{Kind: PromptChoose, Player: c.Player, Options: labels, Purpose: c.Purpose, Text: c.Question}
+	g.Waiting = Prompt{Kind: PromptChoose, Player: c.Player, Options: labels, Purpose: c.Purpose, Text: c.Question, Look: c.Look}
 }
 
 // answer carries out the chosen option of the open choice.

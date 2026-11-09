@@ -51,6 +51,20 @@ func characters(sets []engine.CardSet) []engine.CardRef {
 	return out
 }
 
+// startingItems are the characters' starting items, by index; "" for a
+// character that picks one at the start (Eden, R-SETUP-09).
+func startingItems(sets []engine.CardSet, chars []engine.CardRef) []engine.CardRef {
+	out := make([]engine.CardRef, len(chars))
+	for _, s := range sets {
+		for _, d := range s.Cards {
+			if i := slices.Index(chars, d.Ref); i >= 0 {
+				out[i] = d.StartingItem
+			}
+		}
+	}
+	return out
+}
+
 // checkOptions fills in defaults and checks the detailed setup against
 // the card sets and the number of players.
 func checkOptions(o *protocol.Options, sets []engine.CardSet, players int) error {
@@ -299,6 +313,7 @@ func (r *Room) sendSetup(c *Client) {
 		}
 		if c.seat >= 0 {
 			msg.Offers = m.offers[c.seat] // only your own offers
+			msg.Items = startingItems(r.setup.Sets, msg.Offers)
 		}
 	}
 	c.send(protocol.TypeSetup, 0, msg)

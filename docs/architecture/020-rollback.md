@@ -87,6 +87,7 @@ Use options 1, 4, 8, 10 and 12.
    22. So a private `moved_to_deck` is no barrier: a hand card goes on the loot deck.
    23. Every other private event but 24 draws a deck card or shows a hand card.
    24. A private `top_choice` is no barrier: its `looked_at` already is (19.90).
+   25. A public `deck_bottom` is no barrier: no card shows; its look already is (19.147).
 5. Soft vote
    1. Only the other players can roll back; never the target's author.
    2. The author may ask; the ask opens a vote.

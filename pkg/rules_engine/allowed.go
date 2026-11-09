@@ -8,7 +8,8 @@ package rulesengine
 // prompt it returns one intent with the cards in their order now; send
 // them in the order wanted.
 func (g *Game) Allowed(p PlayerID) []Intent {
-	if g.Over || g.Waiting.Player != p {
+	w := g.PromptFor(p)
+	if g.Over || w.Player != p {
 		return nil
 	}
 	var out []Intent
@@ -17,7 +18,7 @@ func (g *Game) Allowed(p PlayerID) []Intent {
 			out = append(out, in)
 		}
 	}
-	switch g.Waiting.Kind {
+	switch w.Kind {
 	case PromptPriority:
 		try(Intent{Player: p, Kind: IntentPass})
 		try(Intent{Player: p, Kind: IntentEndTurn})
@@ -32,7 +33,7 @@ func (g *Game) Allowed(p PlayerID) []Intent {
 			}
 		}
 	case PromptChoose:
-		for i := range g.Waiting.Options {
+		for i := range w.Options {
 			try(Intent{Player: p, Kind: IntentChoose, Choice: i})
 		}
 	case PromptDiscard:

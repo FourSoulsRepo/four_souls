@@ -594,17 +594,22 @@ test('a strip tile shows what the play did: target, damage, kill and rewards (15
   await expect(results.nth(0).locator('.result-burst')).toHaveText('−1');
   await shot(active, 'history-popout-damage');
 
-  // The play: Bomb! large with its ability, an arrow to its target.
+  // The play: Bomb! large with its ability, an arrow to its target; the
+  // target shows the death its damage caused (20.21).
   await play.hover();
   await expect(zoom.locator('.card-zoom-ability')).toBeVisible();
+  await expect(zoom.getByTestId('zoom-arrow')).toBeVisible();
   await expect(results).toHaveCount(1);
   await expect(results.nth(0).locator('.card')).toBeAttached();
+  await expect(results.nth(0)).toHaveAttribute('aria-label', whole(trRe('zoom.result_death')));
+  await expect(results.nth(0).locator('.result-skull')).toBeAttached();
   await shot(active, 'history-popout-play');
 });
 
 // A strip tile zooms its own card even when the tile under the pointer
 // lost its image meanwhile: the image failed and was redrawn, and no
-// out event came for it (19.99).
+// out event came for it (19.99). Since 20.21 the strip is one hit area
+// and picks the tile by the pointer's place, not by such events.
 test('a strip tile zooms its own card when the one before it is redrawn (19.99)', async ({ browser }) => {
   const pages = await startGame(browser, ['Ray', 'Sue'], { url: fast() });
   const active = await activePage(pages, click);
@@ -615,15 +620,11 @@ test('a strip tile zooms its own card when the one before it is redrawn (19.99)'
   const zoom = active.getByTestId('card-zoom');
   await kill.hover();
   await expect(zoom.locator('.card-zoom-line')).toHaveText(whole(trRe('history.kill.you')));
-  // The kill's card is redrawn under the pointer: no out event comes for
-  // it, and the pointer's next over names that card as where it came from.
-  const from = await kill.locator('.card').elementHandle();
-  if (!from) {
-    throw new Error('no card in the kill tile');
-  }
-  await damage.evaluate((el, prev) => {
-    el.dispatchEvent(new PointerEvent('pointerover', { bubbles: true, composed: true, pointerType: 'mouse', relatedTarget: prev }));
-  }, from);
+  // The kill's card is redrawn under the pointer: no out event comes for it.
+  await kill.locator('.card').evaluate((el) => {
+    el.replaceWith(el.cloneNode(true));
+  });
+  await damage.hover();
   await expect(zoom.locator('.card.size-zoom')).toHaveAttribute('aria-label', new RegExp(`^${lineRe(cardName('bomb')).source}`));
 });
 
@@ -661,7 +662,9 @@ test('everyone sees if a looked-at top card stays or goes to the bottom (19.90)'
   }
   const history = (p: typeof lea) => p.getByRole('complementary', { name: tr('history.title'), exact: true });
   await expect(history(lea)).toContainText(tr('history.top_bottom.you', { card: cardName('a_dime') }));
-  await expect(history(mo)).toContainText(tr('history.top_bottom.loot', { player: names[0] ?? '' }));
-  await expect(history(mo)).not.toContainText(cardName('a_dime'));
+  const row = history(mo).getByRole('listitem').filter({ hasText: tr('history.top_bottom.loot', { player: names[0] ?? '' }) });
+  await expect(row).toHaveCount(1);
+  // Only this row: the deal may give Mo the same card as their own loot (19.123).
+  await expect(row).not.toContainText(cardName('a_dime'));
   await shot(mo, 'history-top-choice');
 });

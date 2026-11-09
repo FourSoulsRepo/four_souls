@@ -1,7 +1,7 @@
 // The app's one store (ADR 008). Screens read it; only bridge results
 // and server messages write it.
 import { create } from 'zustand';
-import type { Choice } from './actions';
+import { shownByChoice, type Choice } from './actions';
 import {
   findGames,
   setFullscreen,
@@ -30,19 +30,20 @@ import {
   type Settings,
 } from './bridge';
 import { noHostSetup } from './hostSetup';
-import { inLanguage, type CardInfo, type Kind } from './cards';
+import { deckKinds, inLanguage, type CardInfo, type Kind } from './cards';
 import { loadFonts } from './fonts';
 import { language, languages, say, setCardLanguages, setLanguage, t } from './i18n';
 import { cardLanguagesOf } from './locale';
-import { entriesFor, lookedAt, moveOf, restartCut, rolledBack, voteEnded, type Entry, type Looked, type Move, type Outcome } from './history';
+import { entriesFor, linkMarks, lookedAt, moveOf, restartCut, rolledBack, voteEnded, type Entry, type Looked, type Move, type Outcome } from './history';
 import type { LinePart } from './stack';
 import type { Box } from './zoom';
-import { emptyLobby, forgotten, leftTable, lost, onMessage, remember, renamed, type Screen, type ServerUp, type Session } from './lobby';
+import { autoJoinStep, emptyLobby, forgotten, leftTable, lost, onMessage, remember, renamed, type AutoJoin, type Screen, type ServerUp, type Session } from './lobby';
 import { connectFirst, disconnect, drop, send } from './net';
 import { claimEffect, nextBeat } from './animations';
 import { lastRollAfter, type LastRoll } from './dice';
-import { bonusSlot, createPlayback, effectsFor, scaleFor, shopSlot, slotZone, type Death, type Effect } from './playback';
-import { loadSounds, setSoundVolume } from './sounds';
+import { bonusSlot, chargedIn, createPlayback, effectsFor, hpOf, playedEnds, scaleFor, shopSlot, slotZone, type Death, type Effect } from './playback';
+import { empty } from './presence';
+import { loadSounds, playSound, setSoundVolume } from './sounds';
 import { endsGame, lostDialogAfter, retryDelay } from './reconnect';
 import {
   httpBases,
@@ -64,6 +65,7 @@ import {
 
 export type { Screen } from './lobby';
 import type { Block, CounterView, Explained } from './protocol';
+import { setUiScale } from './uiScale';
 
 // Zoom is the card shown large: on hover, or after a long press on touch
 // (B-06). side is where it shows, away from the pointer.
@@ -74,6 +76,8 @@ export interface Zoom {
   at: Box;
   // rise: a hand card's zoom rises from it instead (H-13).
   rise?: boolean;
+  // grow: it grows out of the card, after a table card's wait (20.5).
+  grow?: boolean;
   // why says why the player can't use the card now (15.29, F-17).
   why?: string;
   // caption goes below the card: who owns it, and the used ability's
@@ -81,6 +85,9 @@ export interface Zoom {
   caption?: ZoomCaption;
   // outcome: what a history headline did, beside the card (15.90).
   outcome?: Outcome[];
+  // swords: the outcome is an attack's, so swords stand before it, not
+  // an arrow (20.21).
+  swords?: boolean;
   // stats: why the card's stats are not its print, or what an effect of
   // this turn does, below the card (15.92, V-41).
   stats?: string[];
@@ -133,6 +140,30 @@ export interface Playing {
   done: () => void;
 }
 
+// Big is another player's card shown large (20.9): a played effect's
+// card, kept after its effect ends, until it leaves or is sent away.
+export interface Big {
+  key: number;
+  card: string;
+  who: string;
+  from: string[];
+  to: string[];
+  scale: number;
+}
+
+// Dropped is an own hand card played and held where it was let go
+// (20.20): its object, its card, the step it was played at, and its box
+// on screen then.
+export interface Dropped {
+  id: number;
+  card: string;
+  step: number;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
 // Placed is a card a place effect left on its slot, at a screen point,
 // until the next view is shown (19.3).
 export interface Placed {
@@ -146,12 +177,17 @@ interface AppState extends Session {
   // playing is the event effect on screen, if any.
   playing: Playing | null;
   placed: Placed[];
+  // big is another player's card shown large, if any (20.9).
+  big: Big | null;
   // left is the sources of stack items whose card flew away; they hide
   // until the next view is shown (19.41).
   left: number[];
   // lifted is the table cards a dead card's flight took off their slot;
   // they hide until the next view is shown (19.73).
   lifted: number[];
+  // charged is the cards a turn's recharge readied while its banner
+  // shows; they show charged until the next view is shown (20.8).
+  charged: number[];
   // history is the match so far, as this viewer saw it (7.9).
   history: Entry[];
   // moves name what each update did, for the Undo button (17.7); a
@@ -182,6 +218,19 @@ interface AppState extends Session {
   // aiming is the card the player aims with; its targets glow (15.25).
   aiming: Aiming | null;
   setAiming: (aiming: Aiming | null) => void;
+  // held is the hand card the player drags now; the others see it held
+  // (20.13).
+  held: number | null;
+  setHeld: (held: number | null) => void;
+  // dropped is the own hand card played and held where it was let go,
+  // until the server answers; once it leaves the hand it shrinks into
+  // its stack row from there (20.20).
+  dropped: Dropped | null;
+  setDropped: (dropped: Dropped | null) => void;
+  // cost is the price of the purchase option the pointer is on; the own
+  // cents counter previews it (20.11). A new view forgets it.
+  cost: number | null;
+  setCost: (cost: number | null) => void;
   // why is the reason shown by the last refused click, if any.
   why: Why | null;
   showWhy: (text: string, x: number, y: number) => void;
@@ -275,8 +324,11 @@ interface AppState extends Session {
   saveNickname: (nickname: string) => Promise<boolean>;
   // joinServer connects to address and shows its game list. The
   // address goes to Recent unless recent is false (the LAN screen); a
-  // token takes that seat back (15.97).
-  joinServer: (address: string, opts?: { recent?: boolean; token?: string }) => Promise<void>;
+  // token takes that seat back (15.97). join sits at that game once
+  // the list comes; game '' takes the one open game (19.149).
+  joinServer: (address: string, opts?: { recent?: boolean; token?: string; join?: { game: string; password?: string } }) => Promise<void>;
+  // autoJoin is a LAN Join on its way; the LAN screen stays meanwhile.
+  autoJoin: AutoJoin | null;
   // forgetServer drops an address from the Recent list (N-18).
   forgetServer: (address: string) => Promise<void>;
   // recentStatus is the last check of each Recent server, by address
@@ -305,6 +357,8 @@ interface AppState extends Session {
   joinGame: (game: string, password?: string) => void;
   loadSave: (save: string) => void;
   setReady: (ready: boolean) => void;
+  // pick picks one of the player's draft offers (GS-01, 14.11).
+  pick: (card: string) => void;
   leaveTable: () => Promise<void>;
   // quit closes the connection, stops hosting, and goes to the menu,
   // or to another screen: the join screen, one level up from its games.
@@ -424,20 +478,22 @@ export const useApp = create<AppState>()((set, get) => {
       const moves = u.rollback_mode
         ? [...s.moves.filter((m) => !r || m.from < r.to), moveOf(u.events ?? [], entries, first, u.step, seatOf(s), names(u))]
         : [];
-      const looked = lookedAt(u.events ?? [], seatOf(s));
+      const looked = lookedAt(u.events ?? [], seatOf(s), shownByChoice(s.game, seatOf(s)));
       // A rollback jumps to the restored table: no animation, and what
       // the undone steps left on screen goes (item 8.5).
       const jump = u.rollback
-        ? { lastRoll: null, looking: [], aiming: null, aimed: null, selected: null, sent: null, zoom: null }
+        ? { lastRoll: null, looking: [], aiming: null, aimed: null, selected: null, sent: null, zoom: null, big: null, dropped: null }
         : { lastRoll: lastRollAfter(s.lastRoll, u.events ?? []), ...(looked.length > 0 ? { looking: looked } : {}) };
       set({
         game: u,
         placed: [],
         left: [],
         lifted: [],
+        charged: [],
+        cost: null,
         behind: playback.pending() > 0,
         jumped: u.rollback !== undefined,
-        history: [...history, ...entries.map((e) => ({ ...e, step: first }))],
+        history: linkMarks(history, entries.map((e) => ({ ...e, step: first }))),
         moves,
         ...jump,
       });
@@ -453,6 +509,16 @@ export const useApp = create<AppState>()((set, get) => {
         const lifts = effect.kind === 'fly' ? effect.lifts : undefined;
         if (lifts !== undefined) {
           set((s) => ({ lifted: [...s.lifted, lifts] }));
+        }
+        // A turn's recharge readies its cards as the banner shows (20.8).
+        const charges = effect.kind === 'turn' ? effect.charges : undefined;
+        if (charges) {
+          set((s) => ({ charged: [...s.charged, ...charges] }));
+        }
+        // A big played card goes when the middle is needed (20.9).
+        const big = get().big;
+        if (big && playedEnds(effect, big.card)) {
+          set({ big: null });
         }
         // A clashing effect is logged and skipped (19.6).
         if (!claimEffect(effect)) {
@@ -498,7 +564,13 @@ export const useApp = create<AppState>()((set, get) => {
         diedAt,
         seen: (ref) => (get().game?.events ?? []).some((e) => e.kind === 'card_revealed' && e.card === ref),
         roll: (stack) => get().game?.view.stack?.find((it) => it.id === stack)?.roll,
+        hpAfter: (e) => hpOf(u.view, e),
+        charged: (p) => chargedIn(u.view, p),
         you: seatOf(get()),
+        looking: (deck) => {
+          const w = get().game?.view.waiting;
+          return w?.look !== undefined && deckKinds[w.look.deck ?? 0] === deck && w.player === seatOf(get());
+        },
       });
     },
     speed: () => get().settings.animation,
@@ -578,7 +650,7 @@ export const useApp = create<AppState>()((set, get) => {
     get().playing?.done();
     clearPresence();
     diedAt.clear();
-    set({ history: [], moves: [], lastRoll: null, looking: [], placed: [], left: [], lifted: [] });
+    set({ history: [], moves: [], lastRoll: null, looking: [], placed: [], big: null, left: [], lifted: [], charged: [], cost: null });
   };
 
   // open connects to address and says hello; the server answers with
@@ -654,7 +726,7 @@ export const useApp = create<AppState>()((set, get) => {
           stopPlayback();
         }
         clearPresence();
-        set((s) => ({ ...lost(s), connected: false }));
+        set((s) => ({ ...lost(s), connected: false, autoJoin: null }));
         const s = get();
         if (s.screen === 'game' && !s.game?.view.over && s.lobby.welcome?.token) {
           retryLater();
@@ -682,8 +754,10 @@ export const useApp = create<AppState>()((set, get) => {
   return {
     playing: null,
     placed: [],
+    big: null,
     left: [],
     lifted: [],
+    charged: [],
     history: [],
     moves: [],
     lastRoll: null,
@@ -703,6 +777,19 @@ export const useApp = create<AppState>()((set, get) => {
         stopPlayback();
       }
       set((s) => onMessage(s, env));
+      const auto = get().autoJoin;
+      if (auto) {
+        const step = autoJoinStep(auto, env);
+        set({ autoJoin: step.next });
+        if (step.join) {
+          send('join', step.join);
+        }
+        // A failed LAN Join leaves the server: the LAN screen shows why.
+        if (step.fail) {
+          disconnect();
+          set({ connected: false, lobby: emptyLobby, screen: 'join' });
+        }
+      }
       if (env.type === 'explained') {
         set({ explained: (env.data as Explained).blocked });
         explainedStep = serverStep;
@@ -743,12 +830,12 @@ export const useApp = create<AppState>()((set, get) => {
           forgetSeat();
           endRetry();
           stopPlayback();
-          set((s) => ({ screen: 'join', lobby: { ...s.lobby, table: null }, game: null }));
+          set((s) => ({ screen: 'join', lobby: { ...s.lobby, table: null, setup: null }, game: null }));
         }
       }
       if (env.type === 'presence') {
         const p = env.data as Presence;
-        if (!p.from && !p.at && !p.point) {
+        if (empty(p)) {
           forget(p.seat);
           return;
         }
@@ -770,8 +857,24 @@ export const useApp = create<AppState>()((set, get) => {
     setAiming: (aiming) => {
       set({ aiming, selected: null });
     },
+    held: null,
+    setHeld: (held) => {
+      set({ held });
+    },
+    dropped: null,
+    setDropped: (dropped) => {
+      set({ dropped });
+    },
+    cost: null,
+    setCost: (cost) => {
+      if (get().cost !== cost) {
+        set({ cost });
+      }
+    },
     why: null,
     showWhy: (text, x, y) => {
+      // A refusal sounds as it shows (20.20, ADR 027 "Playing from the hand" 11).
+      playSound('playRefused');
       set((s) => ({ why: { text, x, y, n: (s.why?.n ?? 0) + 1 } }));
     },
     endWhy: () => {
@@ -865,6 +968,7 @@ export const useApp = create<AppState>()((set, get) => {
       lan_address: '',
       language: '',
       volume: 100,
+      scale: 100,
     },
     hosting: null,
     lan: { searching: false, found: [], error: '' },
@@ -954,6 +1058,7 @@ export const useApp = create<AppState>()((set, get) => {
         const s = await getSettings();
         setLanguage(s.language);
         setSoundVolume(s.volume);
+        setUiScale(s.scale);
         set({ settings: s, cards: cardsInLanguage(get().cards) });
       } catch {
         // Keep the defaults; Go already falls back to them.
@@ -966,6 +1071,7 @@ export const useApp = create<AppState>()((set, get) => {
         // The language too: t() reads it when the screens draw again.
         setLanguage(saved.language);
         setSoundVolume(saved.volume);
+        setUiScale(saved.scale);
         set({ settings: saved, error: '', cards: cardsInLanguage(get().cards) });
         // Settings apply at once, without a restart.
         if (saved.fullscreen !== before.fullscreen) {
@@ -992,8 +1098,15 @@ export const useApp = create<AppState>()((set, get) => {
         set({ lan: { searching: false, found: [], error: messageOf(e) } });
       }
     },
+    autoJoin: null,
     joinServer: async (address, opts) => {
-      if ((await open(address, opts?.token)) && opts?.recent !== false) {
+      const join = opts?.join;
+      set({ autoJoin: join ? { game: join.game, password: join.password ?? '', sent: false } : null });
+      const ok = await open(address, opts?.token);
+      if (!ok) {
+        set({ autoJoin: null });
+      }
+      if (ok && opts?.recent !== false) {
         const s = get().settings;
         remembering = get().saveSettings({ ...s, recent: remember(s.recent, address) });
       }
@@ -1052,6 +1165,9 @@ export const useApp = create<AppState>()((set, get) => {
     setReady: (ready) => {
       send('ready', { ready });
     },
+    pick: (card) => {
+      send('pick', { card });
+    },
     leaveTable: async () => {
       if (get().hosting) {
         await get().quit();
@@ -1070,7 +1186,7 @@ export const useApp = create<AppState>()((set, get) => {
       disconnect();
       stopPlayback();
       const hosting = get().hosting;
-      set({ connected: false, hosting: null, lobby: emptyLobby, game: null, screen: to, error: '' });
+      set({ connected: false, hosting: null, lobby: emptyLobby, game: null, screen: to, error: '', autoJoin: null });
       if (hosting) {
         await stopHosting().catch(() => undefined);
       }

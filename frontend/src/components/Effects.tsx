@@ -1,25 +1,31 @@
 import { motion } from 'motion/react';
 import { useEffect, useRef, useState } from 'react';
 import { diceDelays, diceImage } from '../dice';
+import { drawTime, otherPose, ownPose, type DrawPath, type DrawPose } from '../draw';
+import { bezier, feel } from '../feel';
 import { t } from '../i18n';
+import type { Effect } from '../playback';
 import { playSound, type Sound } from '../sounds';
-import { useApp, type Playing } from '../store';
+import { useApp, type Big, type Playing } from '../store';
 import { Card } from './Card';
 import { Die, DieCube } from './Die';
 import { playerColor } from '../table';
 import { Coin } from './PlayerArea';
 import './Effects.css';
-import { lunge } from './lunge';
+import { lunge, still } from './lunge';
 import { hits, skulls } from './marks';
+import { turnBanner } from './turn';
+import { Tuck } from './Tuck';
+import { px, rem } from '../uiScale';
 
-// The size of a table card, for flying cards.
-const cardW = 80;
-const cardH = 112;
+// The size of a table card, for flying cards, in screen px (ST-10).
+const cardW = () => px(80);
+const cardH = () => px(112);
 // The width of a large card (size-zoom); its height follows.
-const zoomW = 320;
-const zoomH = (zoomW * cardH) / cardW;
+const zoomW = () => px(320);
+const zoomH = () => (zoomW() * 112) / 80;
 // The width of a hand card (size-hand).
-const handW = 100;
+const handW = () => px(100);
 
 interface Point {
   x: number;
@@ -45,11 +51,11 @@ function zoneCenter(zones: string[]): Point | null {
   return r && { x: r.left + r.width / 2, y: r.top + r.height / 2 };
 }
 
-// playedWidth is the width of the large played card when it is the
-// first of the zones on screen, else 0.
+// playedWidth is the width of the large played card, or of a choice's
+// kept card (20.22), when it is the first of the zones on screen, else 0.
 function playedWidth(zones: string[]): number {
   const z = zones.find((z) => document.querySelector(`[data-zone="${CSS.escape(z)}"]`));
-  return z?.startsWith('played-') ? (zoneRect([z])?.width ?? 0) : 0;
+  return z?.startsWith('played-') || z?.startsWith('choice-kept-') ? (zoneRect([z])?.width ?? 0) : 0;
 }
 
 // middle is the centre of the window, where large cards show.
@@ -63,6 +69,7 @@ function middle(): Point {
 export function Effects() {
   const playing = useApp((s) => s.playing);
   const placed = useApp((s) => s.placed);
+  const big = useApp((s) => s.big);
   return (
     <>
       {placed.length > 0 && (
@@ -77,6 +84,11 @@ export function Effects() {
               <Card cardRef={p.card} size="table" />
             </div>
           ))}
+        </div>
+      )}
+      {big && (
+        <div className="effects">
+          <BigPlayed key={big.key} big={big} />
         </div>
       )}
       {playing && (
@@ -108,8 +120,13 @@ function Effect({ playing }: { playing: Playing }) {
           playing={playing}
           stay={effect.kind === 'place'}
           sound={effect.kind === 'fly' ? effect.sound : undefined}
+          start={effect.kind === 'fly' && effect.start === true}
         />
       );
+    case 'tuck':
+      return <Tuck deck={effect.deck} cards={effect.cards} tag={effect.tag} playing={playing} />;
+    case 'draw':
+      return <Draw from={effect.from} to={effect.to} card={effect.card} own={effect.own} pace={effect.pace} playing={playing} />;
     case 'steal':
       return <Steal from={effect.from} to={effect.to} amount={effect.amount} playing={playing} />;
     case 'popup':
@@ -136,22 +153,43 @@ function Effect({ playing }: { playing: Playing }) {
           className="effect-center effect-banner"
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: [0, 1, 1, 0], scale: [0.9, 1, 1, 1] }}
-          transition={{ duration: duration(effect.long ? 2.2 : 1.1), times: effect.long ? [0, 0.1, 0.9, 1] : [0, 0.2, 0.8, 1] }}
+          transition={{
+            duration: duration(effect.long ? feel.banner.long : feel.banner.time),
+            times: [...(effect.long ? feel.banner.longTimes : feel.banner.times)],
+          }}
           onAnimationComplete={done}
         >
           {effect.text}
         </motion.div>
       );
+    case 'turn':
+      return (
+        <Layered
+          playing={playing}
+          start={(done) => {
+            turnBanner(effect.text, effect.own, scale, done);
+          }}
+        />
+      );
     case 'reveal':
       return <Reveal card={effect.card} deck={effect.deck} hold={effect.hold ?? false} playing={playing} />;
     case 'played':
-      return <Played card={effect.card} who={effect.who} from={effect.from} to={effect.to} playing={playing} />;
+      // Playback goes on feel.played.wait after it shows; it stays (20.9).
+      return (
+        <Layered
+          playing={playing}
+          start={(done) => {
+            showPlayed(effect, playing.key, scale);
+            window.setTimeout(done, feel.played.wait * 1000 * scale);
+          }}
+        />
+      );
     case 'lunge':
       return (
         <Layered
           playing={playing}
           start={(done) => {
-            lunge(effect.from, effect.to, effect.amount, scale, done);
+            lunge(effect.from, effect.to, effect.amount, scale, done, effect.lethal);
           }}
         />
       );
@@ -169,7 +207,7 @@ function Effect({ playing }: { playing: Playing }) {
         <Layered
           playing={playing}
           start={(done) => {
-            skulls(effect.at, scale, done, effect.sound);
+            skulls(effect.at, scale, done, effect.sound, effect.player);
           }}
         />
       );
@@ -220,6 +258,7 @@ function Fly({
   playing,
   stay = false,
   sound,
+  start = false,
 }: {
   from: string[];
   to: string[];
@@ -230,10 +269,12 @@ function Fly({
   stay?: boolean;
   // sound plays once as the card leaves (18.7).
   sound?: Sound;
+  // start: a starting item, at the start-of-game screen's pace (20.22).
+  start?: boolean;
 }) {
   // Read the zones once, when the effect starts. A card leaving the
   // large played card starts at its size (15.74).
-  const [path] = useState(() => ({ a: zoneCenter(from), b: zoneCenter(to), grow: playedWidth(from) / cardW }));
+  const [path] = useState(() => ({ a: zoneCenter(from), b: zoneCenter(to), grow: playedWidth(from) / cardW() }));
   useSkip(!path.a || !path.b, playing.done);
   const flies = Boolean(path.a && path.b);
   // A timer, so StrictMode's second mount does not play it twice.
@@ -251,7 +292,7 @@ function Fly({
   if (!path.a || !path.b) {
     return null;
   }
-  const end = { x: path.b.x - cardW / 2, y: path.b.y - cardH / 2 };
+  const end = { x: path.b.x - cardW() / 2, y: path.b.y - cardH() / 2 };
   const land = () => {
     if (stay && card) {
       useApp.setState((s) => ({ placed: [...s.placed, { key: playing.key, card, ...end }] }));
@@ -262,13 +303,140 @@ function Fly({
     // anim: fly
     <motion.div
       className="effect-fly"
-      initial={{ x: path.a.x - cardW / 2, y: path.a.y - cardH / 2, scale: path.grow || 0.9 }}
+      initial={{ x: path.a.x - cardW() / 2, y: path.a.y - cardH() / 2, scale: path.grow || 0.9 }}
       animate={{ ...end, scale: 1 }}
-      transition={{ duration: 0.45 * playing.scale, ease: 'easeInOut' }}
+      transition={{ duration: (start ? feel.start.keep : feel.fly.time) * playing.scale, ease: bezier(start ? feel.start.keepCurve : feel.fly.curve) }}
       onAnimationComplete={land}
     >
       <Card cardRef={card} back={back} size="table" />
     </motion.div>
+  );
+}
+
+// How many poses a drawn card's keyframes take per second.
+const drawFrames = 60;
+
+// drawFrame is a pose as the drawn card's keyframes: the outer box
+// moves and scales a large card; the inner one turns it.
+function drawFrame(p: DrawPose, offset: number, opacity = 1): { move: Keyframe; turn: Keyframe } {
+  const at = `translate(${(p.x - zoomW() / 2).toFixed(1)}px, ${(p.y - zoomH() / 2).toFixed(1)}px) scale(${p.scale.toFixed(4)})`;
+  return { move: { offset, opacity, transform: at }, turn: { offset, transform: `perspective(${rem(1000)}) rotateY(${p.turn.toFixed(1)}deg)` } };
+}
+
+// drawKeys is a draw's keyframes over its time. Calm (reduced
+// motion): an own card shows at the show spot, face up, and fades.
+// An open card (another player's, from the discard) stays face up.
+function drawKeys(own: boolean, path: DrawPath, calm: boolean, open: boolean): { move: Keyframe; turn: Keyframe }[] {
+  if (calm) {
+    const at = ownPose(feel.draw.show, path);
+    return [0, 0.1, 0.85, 1].map((o, i) => drawFrame(at, o, i === 1 || i === 2 ? 1 : 0));
+  }
+  const time = drawTime(own);
+  const pose = own ? ownPose : otherPose;
+  const n = Math.ceil(time * drawFrames);
+  return Array.from({ length: n + 1 }, (_, i) => {
+    const at = pose((time * i) / n, path);
+    return drawFrame(open ? { ...at, turn: 0 } : at, i / n);
+  });
+}
+
+// Draw plays a looted card (20.7, ADR 027 "Draw"). The viewer's own
+// card rises from the deck, turns face up on its way to the show spot,
+// holds there a moment, then goes into the hand: they see each card
+// before it joins the hand. Another player's flies deck to hand, back
+// only; one from the loot discard shows its face, as it is public. Each draw is its own effect, so one card is in the air at a
+// time. Sounds: loot-draw as an own card leaves, loot-land as it lands;
+// loot-draw-other for another player's. Reduced motion: an own card
+// shows at the show spot and fades; another player's only sounds.
+function Draw({
+  from,
+  to,
+  card,
+  own,
+  pace,
+  playing,
+}: {
+  from: string[];
+  to: string[];
+  card: string | undefined;
+  own: boolean;
+  pace: number;
+  playing: Playing;
+}) {
+  const moveRef = useRef<HTMLDivElement>(null);
+  const turnRef = useRef<HTMLDivElement>(null);
+  const [calm] = useState(still);
+  const [path] = useState((): DrawPath | null => {
+    const deck = zoneRect(from);
+    const hand = zoneCenter(to);
+    if (!deck || !hand) {
+      return null;
+    }
+    const d = feel.draw;
+    const deckScale = deck.width / zoomW();
+    return {
+      deck: { x: deck.left + deck.width / 2, y: deck.top + deck.height / 2 },
+      deckScale,
+      ...(own ? { show: { x: window.innerWidth * d.spotX, y: window.innerHeight * d.spotY } } : {}),
+      showScale: px(d.spot) / zoomW(),
+      hand,
+      handScale: own ? handW() / zoomW() : deckScale,
+    };
+  });
+  const open = !own && card !== undefined;
+  const [keys] = useState(() => (path ? drawKeys(own, path, calm, open) : []));
+  useSkip(!path, playing.done);
+  const { done, scale } = playing;
+  useEffect(() => {
+    if (!path) {
+      return;
+    }
+    const ms = drawTime(own) * pace * scale * 1000;
+    // A timer, so StrictMode's second mount does not sound twice.
+    const out = window.setTimeout(() => {
+      playSound(own ? 'lootDraw' : 'lootDrawOther');
+    }, 0);
+    const land = window.setTimeout(() => {
+      if (own) {
+        playSound('lootLand');
+      }
+      done();
+    }, ms);
+    const timing = { duration: ms, fill: 'forwards' } as const;
+    // anim: loot-draw
+    const parts = [moveRef.current?.animate(keys.map((k) => k.move), timing), turnRef.current?.animate(keys.map((k) => k.turn), timing)];
+    return () => {
+      window.clearTimeout(out);
+      window.clearTimeout(land);
+      for (const p of parts) {
+        p?.cancel();
+      }
+    };
+  }, [path, keys, own, pace, scale, done]);
+  // A calm draw of another player's card only sounds.
+  if (!path || (calm && !own)) {
+    return null;
+  }
+  const start = keys.at(0);
+  return (
+    <div
+      ref={moveRef}
+      className="effect-draw"
+      style={{ transform: String(start?.move.transform ?? ''), opacity: Number(start?.move.opacity ?? 1) }}
+      data-testid="drawn-card"
+      data-own={own}
+    >
+      <div ref={turnRef} className="effect-draw-turn" style={{ transform: String(start?.turn.transform ?? '') }}>
+        {(own || open) && (
+          <div className="effect-draw-face">
+            <Card cardRef={card} back="loot" size="zoom" />
+          </div>
+        )}
+        <div className="effect-draw-face effect-draw-back">
+          <Card back="loot" size="zoom" />
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -279,7 +447,7 @@ function Reveal({ card, deck, hold, playing }: { card: string; deck: string[]; h
   const [from] = useState(() => {
     const r = zoneRect(deck);
     const m = middle();
-    return r && { x: r.left + r.width / 2 - m.x, y: r.top + r.height / 2 - m.y, scale: Math.min(1, r.width / zoomW) };
+    return r && { x: r.left + r.width / 2 - m.x, y: r.top + r.height / 2 - m.y, scale: Math.min(1, r.width / zoomW()) };
   });
   // Without the deck on screen, the card fades in and out in the middle.
   const off = from ?? { x: 0, y: 0, scale: 0.8 };
@@ -312,39 +480,65 @@ function cardOffset(zones: string[], width: (r: DOMRect) => number): { x: number
     return null;
   }
   const m = middle();
-  return { x: r.left + r.width / 2 - m.x, y: r.top + r.height / 2 - m.y, scale: Math.min(1, width(r) / zoomW) };
+  return { x: r.left + r.width / 2 - m.x, y: r.top + r.height / 2 - m.y, scale: Math.min(1, width(r) / zoomW()) };
 }
 
-// Played shows another player's loot card (15.31, 15.74): it rises from
-// their hand to the middle, stays a moment with "Ann plays", then
-// shrinks into the stack panel, to the size of a hand card.
-function Played({ card, who, from, to, playing }: { card: string; who: string; from: string[]; to: string[]; playing: Playing }) {
-  const [path] = useState(() => ({
-    a: cardOffset(from, () => cardW),
-    b: cardOffset(to, () => handW),
-  }));
-  const a = path.a ?? { x: 0, y: 0, scale: 0.6 };
-  const b = path.b ?? { x: 0, y: 0, scale: 0.5 };
+// showPlayed shows another player's card large (20.9): it plays
+// card-play-other as it shows, and stays after its effect ends.
+function showPlayed(effect: Extract<Effect, { kind: 'played' }>, key: number, scale: number): void {
+  useApp.setState({ big: { key, card: effect.card, who: effect.who, from: effect.from, to: effect.to, scale } });
+  playSound('cardPlayOther');
+}
+
+// BigPlayed is another player's loot card shown large (15.31, 15.74,
+// 20.9, ADR 027 "Others' plays"): it rises from their hand to the
+// middle with "Ann plays", stays while the game goes on, then shrinks
+// into the stack panel, to the size of a hand card. With less motion it
+// only fades in and out in the middle.
+function BigPlayed({ big }: { big: Big }) {
+  const { key, card, who, from, to, scale } = big;
+  const { rise, stay, leave, riseCurve, leaveCurve } = feel.played;
+  const [calm] = useState(still);
+  const [a] = useState(() => (calm ? null : cardOffset(from, cardW)));
+  // b is where it leaves to, found as it leaves: the stack panel is
+  // drawn by then. undefined while it stays; null fades it in place.
+  const [b, setB] = useState<{ x: number; y: number; scale: number } | null | undefined>(undefined);
+  useEffect(() => {
+    const t = window.setTimeout(() => {
+      setB(calm ? null : cardOffset(to, handW));
+    }, stay * 1000 * scale);
+    return () => {
+      window.clearTimeout(t);
+    };
+  }, [calm, to, stay, scale]);
+  const gone = () => {
+    if (b !== undefined) {
+      useApp.setState((s) => (s.big?.key === key ? { big: null } : {}));
+    }
+  };
+  const start = a ?? { x: 0, y: 0, scale: calm ? 1 : 0.6 };
+  const end = b ?? { x: 0, y: 0, scale: 1 };
+  const leaving = b !== undefined;
   return (
     // anim: played
     <motion.div
       className="effect-center"
-      initial={{ x: a.x, y: a.y, scale: a.scale, opacity: 0 }}
-      animate={{
-        x: [a.x, 0, 0, b.x],
-        y: [a.y, 0, 0, b.y],
-        scale: [a.scale, 1, 1, b.scale],
-        opacity: [0, 1, 1, path.b ? 1 : 0],
-      }}
-      transition={{ duration: 1.5 * playing.scale, times: [0, 0.25, 0.75, 1], ease: 'easeInOut' }}
-      onAnimationComplete={playing.done}
+      initial={{ x: start.x, y: start.y, scale: start.scale, opacity: 0 }}
+      animate={leaving ? { x: end.x, y: end.y, scale: end.scale, opacity: b ? 1 : 0 } : { x: 0, y: 0, scale: 1, opacity: 1 }}
+      transition={
+        leaving
+          ? { duration: leave * scale, ease: bezier(leaveCurve) }
+          : { duration: rise * scale, ease: bezier(riseCurve), opacity: { duration: (calm ? leave : rise / 4) * scale } }
+      }
+      onAnimationComplete={gone}
       data-testid="played-pop"
     >
       {/* anim: played */}
       <motion.div
         className="effect-label"
-        animate={{ opacity: [1, 1, 0] }}
-        transition={{ duration: 1.5 * playing.scale, times: [0, 0.75, 0.85] }}
+        initial={{ opacity: 1 }}
+        animate={{ opacity: leaving ? 0 : 1 }}
+        transition={{ duration: (leave / 2) * scale }}
       >
         {t('effect.plays', { player: who })}
       </motion.div>
@@ -364,7 +558,7 @@ function FlyFromMiddle({ to, card, playing, stay }: { to: string[]; card: string
   const b = path.b;
   const land = () => {
     if (stay) {
-      useApp.setState((s) => ({ placed: [...s.placed, { key: playing.key, card, x: b.x - cardW / 2, y: b.y - cardH / 2 }] }));
+      useApp.setState((s) => ({ placed: [...s.placed, { key: playing.key, card, x: b.x - cardW() / 2, y: b.y - cardH() / 2 }] }));
     }
     playing.done();
   };
@@ -372,9 +566,9 @@ function FlyFromMiddle({ to, card, playing, stay }: { to: string[]; card: string
     // anim: fly
     <motion.div
       className="effect-fly"
-      initial={{ x: path.a.x - zoomW / 2, y: path.a.y - zoomH / 2, scale: 1 }}
-      animate={{ x: b.x - zoomW / 2, y: b.y - zoomH / 2, scale: cardW / zoomW }}
-      transition={{ duration: 0.55 * playing.scale, ease: 'easeInOut' }}
+      initial={{ x: path.a.x - zoomW() / 2, y: path.a.y - zoomH() / 2, scale: 1 }}
+      animate={{ x: b.x - zoomW() / 2, y: b.y - zoomH() / 2, scale: cardW() / zoomW() }}
+      transition={{ duration: feel.fly.fromMiddle * playing.scale, ease: bezier(feel.fly.curve) }}
       onAnimationComplete={land}
     >
       <Card cardRef={card} size="zoom" />
@@ -567,9 +761,9 @@ const fall: Keyframe[] = [
   { offset: 0, transform: 'translateY(-60vh)', opacity: 0, easing: 'ease-in' },
   { offset: 0.05, opacity: 1, easing: 'ease-in' },
   { offset: landings[0], transform: 'translateY(0)', easing: 'ease-out' },
-  { offset: 0.39, transform: 'translateY(-70px)', easing: 'ease-in' },
+  { offset: 0.39, transform: `translateY(${rem(-70)})`, easing: 'ease-in' },
   { offset: landings[1], transform: 'translateY(0)', easing: 'ease-out' },
-  { offset: 0.56, transform: 'translateY(-16px)', easing: 'ease-in' },
+  { offset: 0.56, transform: `translateY(${rem(-16)})`, easing: 'ease-in' },
   { offset: 0.62, transform: 'translateY(0)' },
   { offset: 0.88, transform: 'translateY(0)', opacity: 1 },
   { offset: 1, transform: 'translateY(0)', opacity: 0 },

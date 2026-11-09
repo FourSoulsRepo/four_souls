@@ -272,6 +272,10 @@ type Game struct {
 
 	// Choice is the open question of a choose prompt.
 	Choice *Choice `json:"choice,omitempty"`
+	// StartChoices are the open start-of-game choices, one per player
+	// still choosing, in seat order (R-SETUP-09, 20.22). They are open at
+	// the same time; Choice and Waiting show one of them.
+	StartChoices []Choice `json:"start_choices,omitempty"`
 	// Throw is the roll waiting for its die to be thrown (PromptThrow).
 	Throw *Throw `json:"throw,omitempty"`
 	// FirstRoll is the first-player roll before turn 1 (15.43).

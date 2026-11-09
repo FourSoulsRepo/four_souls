@@ -264,10 +264,17 @@ test('the board glows for the asked player; every seat marks them (15.95)', asyn
 // takes no screenshots, so the plain run's stay.
 async function attackActivity(browser: Browser, names: [string, string], item?: string) {
   const snap = item === undefined ? shot : () => Promise.resolve();
-  const pages = await startGame(browser, names, { url: fast() });
+  // Pride: its trigger goes above the attack roll, so the active
+  // player's line names Pride's ability, not the attack it checks. The
+  // item run sets its monsters up instead.
+  const bans = item === undefined ? ['pride'] : [];
+  const pages = await startGame(browser, names, { url: fast(), bans });
   await activePage(pages, click);
   if (item !== undefined) {
-    await saveAndContinue(pages, names.join(', '), 'bomb', item);
+    // Every slot gets a plain monster with 4 HP: Bob's Brain's 1 damage
+    // kills none, and none has a trigger of its own that can end the
+    // attack or the turn first (19.116, 19.127).
+    await saveAndContinue(pages, names.join(', '), 'bomb', item, false, {}, undefined, ['fatty', 'pale_fatty', 'conjoined_fatty', 'monstro']);
   }
   const active = await activePage(pages, click);
   const other = pages.find((p) => p !== active);
@@ -298,7 +305,11 @@ test('the others see what the active player does (15.30)', async ({ browser }) =
 });
 
 test('the attack line waits for a roll the attack triggers: Bob\'s Brain (19.85)', async ({ browser }) => {
-  await attackActivity(browser, ['Vik', 'Wyn'], 'bobs_brain');
+  // A repeat (--repeat-each) gets its own names: the saved games list
+  // keeps the earlier repeats' games.
+  const r = test.info().repeatEachIndex;
+  const n = r > 0 ? String(r) : '';
+  await attackActivity(browser, [`Vik${n}`, `Wyn${n}`], 'bobs_brain');
 });
 
 test('a word answer is a plain button, not a card (19.42)', async ({ browser }) => {

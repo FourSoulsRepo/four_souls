@@ -12,6 +12,7 @@
 2. The page loads the rules engine.
    1. It shows a progress bar while `site.wasm.gz` downloads.
    2. It unpacks and starts it in the browser; no server answers.
+   3. The bar is under the examples; nothing above it moves when it goes (19.119).
 3. The page unpacks the link into the situation payload.
    1. The payload shows in the text box.
 4. The engine checks the situation.

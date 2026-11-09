@@ -13,7 +13,7 @@
    2. The stack panel: Pass.
    3. Icons by own name: Buy and Attack; lit when usable, dim when not.
    4. A big End turn button at the board's right edge.
-2. The player drags a loot card onto the board to play it.
+2. The player plays a loot card on the board: a drag, or a click, then a click there.
 3. Others may respond; the player passes or acts again.
 4. The player presses Attack.
 5. The monsters that can be attacked glow blue; the player clicks one.
@@ -22,8 +22,9 @@
 
 ## Alternative scenarios and errors
 
-* **2a. Click or tap:** a card opens its action menu: Play, Use, Cancel.
-* **2b. Abilities:** a character or item with abilities shows "Use" or "Use ability N".
+* **2a. Click or tap:** a table card opens its action menu: Use, Cancel.
+  * A hand card has no menu; a click picks it up (2j).
+* **2b. Abilities:** a character or item in play shows "Use" or "Use ability N".
 * **5a. A choice dialog:** every other choice shows as a dialog (5i).
   * Card options show as cards (V-07); text options as buttons.
   * A question shows its text as the title.
@@ -50,8 +51,8 @@
   * With a mouse, a red arrow points from the card to the pointer.
   * The second click, on a target, plays the card at it; no dialog asks.
   * A click on empty space, a right click, or Esc cancels; nothing is sent.
-  * Such a card opens no menu and is not dragged.
-  * The arrow is a chain of red blocks with a big head (15.32).
+  * Such a card opens no menu; it may be dragged too (2n).
+  * The arrow is a chain of red dashes with a big head (15.32, 20.23).
   * Over a valid target a red ring marks the head.
   * A click on the aiming card again does nothing (15.33).
   * A click on a card, pile, or stack item that is no target keeps aiming.
@@ -60,6 +61,18 @@
   * A player is aimed at by the character card, as a monster is.
   * The character glows red; the player's area stays plain.
   * A card that may target itself, as The D20, picks itself on that click.
+  * The arrow bows up the screen; its dashes march toward the head (20.23).
+  * An arrow straight up or down stays straight.
+  * It shows at once where the mouse is; no move is needed.
+  * The system pointer hides while it shows; the head is the pointer.
+  * The valid target under the head glows brighter.
+  * No card zooms while the arrow moves over it.
+  * Resting still on a card for 0.8 s zooms it, beside the card.
+  * Any move closes that zoom.
+  * Another player's arrow glides out from its source, with no ring.
+  * It stays 0.25 s after they stop aiming.
+  * Animation speed Off or reduced motion: no march, no glide.
+  * Touch: no arrow, as before.
 * **2f. Place, then aim (15.34):** a card with no target is dragged onto the board; no arrow.
   * A card that asks its mode first is dragged too; the mode dialog asks.
   * Then the target is aimed from the card, as in 2e; no dialog asks.
@@ -101,10 +114,12 @@
 * **5f. Choice window (15.29):** a choice opens in the middle over the dimmed table.
   * Its options are big cards; nothing else takes clicks.
   * Discards and orders open the same way.
+  * The cards lie in one row up to six; smaller from five (20.18).
+  * A card option is the card itself: a click picks it; no name button.
 * **5g. View board (15.29):** the player presses "View board".
-  * The window hides; a small bar at the bottom names the choice.
+  * The cards shrink away in 0.2 s; a small bar at the bottom names the choice.
   * Options on the table glow and can be clicked there.
-  * "Back to the choice" opens the window again.
+  * "Back to the choice" opens the window again; the cards grow back in 0.2 s.
 * **2g. Why not (15.29):** a card or icon that can't be used says why (UC-22).
 * **7e. Plays left (V-46, 15.70):** End turn asks "End turn?" while it does not glow.
   * The question lists what is left: Attack, Buy, Play loot, Use abilities.
@@ -123,8 +138,67 @@
   * The options glow on the table; the rest dims.
   * A deck option: the monster deck or the treasure deck glows.
   * A deck attack's drawn card stays face up on the monster deck.
-  * One click picks; no arrow, no cancel.
+  * One click picks; no cancel.
   * An option not on the table, e.g. an empty slot, keeps the dialog.
+  * What to attack: an arrow runs from the own character (20.23).
+  * It looks and acts as in 2e; the options keep their blue glow.
+  * The other players see it, as any aim.
+* **2i. Drag tilt (20.6):** a dragged card tilts by its motion, as if held.
+  * The edge it moves toward leans away; faster moves lean more.
+  * Held still, it lies flat again in about 0.2 s.
+  * Animation speed Off or reduced motion: it stays flat.
+  * A soft loop plays while it is held; a whoosh grows with its speed.
+  * Both fade out on the drop; silent without the private sounds.
+* **7f. Nothing left, said aloud (20.10):** End turn turns green and glows stronger.
+  * 1.5 s later a voice says "Job's done!", once per turn.
+  * No voice if a play became possible meanwhile.
+  * Silent without the private sounds.
+* **5j. Price on the coins (20.11):** while choosing what to buy, hover an option.
+  * The own coins show "−N" beside the number: its price.
+  * Red when the cents are short; the number dims meanwhile.
+  * It goes when the pointer leaves the option.
+
+* **5k. Cards dealt from a deck (20.18):** e.g. XVIII The Moon, Sleight of Hand.
+  * Each card flies from that deck to its place and turns face up.
+  * About 1 s each, 0.09 s apart; a card sound as each leaves.
+  * Other card choices grow at their places in 0.2 s instead.
+  * Animation speed Off or reduced motion: the cards are there at once.
+* **5l. Hover and pick (20.18):** a hovered card lifts a little and glows brighter.
+  * Its zoom waits as usual; a right click opens it at once (UC-11 2d).
+  * A pick sounds; silent without the private sounds.
+  * Cards from a deck then fly back to it, the kept one first, on top.
+  * An order goes back bottom card first, top card last.
+* **5m. Others watch (20.18):** other players see small backs over that deck.
+  * One per card; they say "Ann looks at 5 cards"; never which.
+  * They sink back into the deck when the choice ends.
+
+* **2j. Pick up (20.20):** a click on a playable hand card picks it up.
+  * It follows the pointer, button up; it grows a little; a grab sounds.
+  * A drag past 8 px picks it up too.
+  * A held card passes over other cards without zooming them.
+* **2k. Over the board (20.20):** the held card's glow turns gold.
+  * It turns green again off the board; no zone lights up.
+  * A release or a click on the board plays it.
+  * A click on a button there, e.g. End turn, puts it back.
+* **2l. Put back (20.20):** a release or click off the board, a right click, or Esc.
+  * The card flies home into the fan in 0.5 s; nothing is sent.
+* **2m. Played (20.20):** the card stays where it was let go until the server answers.
+  * Then it shrinks into its stack row in 0.4 s; the hand closes the gap.
+  * Refused: it flies home; the reason shows (2c) and a refusal sounds.
+  * A card that asks its mode goes home while the dialog asks (2h).
+* **2n. Aim by drag (20.20):** a card that needs a target may be dragged.
+  * On the board's edge it stops; the arrow runs from it (2e).
+  * Back below the board, the arrow goes and the drag goes on.
+  * Let go on a target, it plays there; elsewhere the aim stays.
+  * A click on such a card still aims from the fan, as in 2e.
+* **2o. Touch (20.20):** a tap lifts a playable hand card in the fan.
+  * A tap on the board plays it; a tap anywhere else puts it back.
+  * A drag still plays it; a long press zooms it.
+* **2p. Sounds (20.20):** a cancelled aim sounds; so does every why note (2g).
+  * Silent without the private sounds.
+* **2q. Speed Off or reduced motion (20.20):** no growth, flight, shrink or slide.
+  * A played card still waits where it was let go for the answer.
+* **2r. No keys (20.20):** no key picks up or plays a hand card.
 
 ## Postconditions
 

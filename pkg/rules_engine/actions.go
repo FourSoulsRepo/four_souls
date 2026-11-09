@@ -33,6 +33,7 @@ const (
 	ActPushLingering                        // put lingering ability From of Object on the stack; EventPlayer Player, EventAmount Amount
 	ActThrow                                // Player throws the die of the roll Amount (15.59)
 	ActPassCurse                            // Player gives the curse Object to another player of their choice
+	ActChooseFirstPlayer                    // after the start-of-game choices: Cain, or the first-player roll (19.142)
 )
 
 // Action is a pending change. It sits in the queue, may be rewritten by
@@ -311,6 +312,8 @@ func (g *Game) perform(a Action) {
 		g.emit(Event{Kind: EvStole, Player: a.Player, Amount: n, Text: strconv.Itoa(int(a.From))})
 	case ActChooseStartingItem:
 		g.askStartingItem(a.Player, a.Amount)
+	case ActChooseFirstPlayer:
+		g.chooseFirstPlayer()
 	case ActGiveCurse:
 		g.askCurseTarget(a.Object)
 	case ActPlayLootFree:
