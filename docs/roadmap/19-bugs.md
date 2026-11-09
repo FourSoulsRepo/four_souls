@@ -4560,3 +4560,21 @@ Totals by system (141 items):
    1. `make lint` and `make test` pass (exit 0).
 7. Owner notes (2026-11-09)
    1. Owner marks 19.146 solved.
+
+### [ ] 19.147 The board never shows if a looked-at card went to the top or the bottom
+
+1. Goal: everyone sees on the board where a looked-at top card went.
+2. Report (owner, 2026-11-09)
+   1. Cain's Eye and similar effects.
+   2. Nothing on the board shows top or bottom.
+   3. Only the text log tells what happened.
+3. Cause (the code)
+   1. `KeepOrBottom` emits `top_choice` (19.90); the client draws only a history line.
+   2. `LookMayBottom` asks with `Subject`, no `Looks`: others see no look either.
+   3. Same helper: Cain's Eye, Golden Horseshoe, Purple Heart.
+   4. Sack Head and XII. The Hanged Man call `DeckToBottom` directly.
+   5. So they emit no `top_choice`; even the log is silent.
+   6. Look-5 cards (The Moon, The Emperor, The Hermit): others' backs sink into the deck.
+   7. Nothing shows that 4 of them went to the bottom.
+4. Tasks:
+   1. [ ] Waits for the owner's pick of the visual and the scope.
