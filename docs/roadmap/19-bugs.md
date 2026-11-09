@@ -4491,3 +4491,5 @@ Totals by system (141 items):
    2. Mom's Heart and other monster souls still trigger on their gain.
    3. Engine stays 0.5.2: not released yet (as 20.22).
    4. Test: `TestSoulOfEnvyOnce`; it asked twice before the fix.
+6. Owner notes (2026-11-09)
+   1. Owner marks 19.144 solved.
