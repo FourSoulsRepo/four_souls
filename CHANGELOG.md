@@ -6,6 +6,9 @@ Rules engine versions are in each release's notes.
 
 ## Unreleased
 
+- Golden Trinket and Glitch with a copied ↷ ability count as ↷ items: Charged Baby and other recharge cards can recharge them, and death or Curse of Impulse deactivates them.
+- Rules engine 0.5.3.
+
 ## 0.4.0 - 2026-11-09
 
 - Draft: in Detailed setup the host can offer each player 2 to 5 characters to pick from; one random character each stays the default. Each offer shows the character's starting item; Eden chooses hers when the game starts.

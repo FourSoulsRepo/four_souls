@@ -2,7 +2,7 @@ package rulesengine
 
 // Version is the rules engine version.
 // Bump it with every change to rules behavior; see docs/roadmap/08-first-release.md.
-const Version = "0.5.2"
+const Version = "0.5.3"
 
 // StateMeaning numbers what the saved state's fields mean (N-20). Raise
 // it when a field keeps its JSON name and type but means something new:

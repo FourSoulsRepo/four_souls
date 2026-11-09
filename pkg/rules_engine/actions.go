@@ -298,7 +298,7 @@ func (g *Game) perform(a Action) {
 		pl := g.Players[a.Player]
 		g.Object(pl.Character).Charged = false
 		for _, id := range pl.InPlay {
-			if g.Object(id).Role == RoleItem && g.def(id).Tap {
+			if g.Object(id).Role == RoleItem && g.HasTap(id) {
 				g.Object(id).Charged = false
 			}
 		}

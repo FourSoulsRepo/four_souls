@@ -18,7 +18,7 @@ var curseOfImpulse = engine.CardDef{
 		Effects: []engine.Effect{engine.EffectFunc(func(c *engine.Ctx) {
 			c.G.Object(c.G.Players[c.Controller].Character).Charged = false
 			for _, id := range itemsOf(c.G, c.Controller) {
-				if c.G.Def(id).Tap { // passive items stay charged (Q-25)
+				if c.G.HasTap(id) { // passive items stay charged (Q-25)
 					c.G.Object(id).Charged = false
 				}
 			}

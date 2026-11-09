@@ -734,14 +734,25 @@ func NotThis(_ *Game, self ObjectID, c Chosen) bool { return c.Object != self }
 // to recharge (19.95, 19.146).
 func Rechargeable(g *Game, id ObjectID) bool {
 	o := g.Object(id)
-	return o.Role == RoleItem && !o.Charged && g.def(id).Tap
+	return o.Role == RoleItem && !o.Charged && g.HasTap(id)
 }
 
 // Deactivatable is the one rule for "deactivate an item" pickers: a
 // charged item with a ↷ ability (Q-25, 19.146).
 func Deactivatable(g *Game, id ObjectID) bool {
 	o := g.Object(id)
-	return o.Role == RoleItem && o.Charged && g.def(id).Tap
+	return o.Role == RoleItem && o.Charged && g.HasTap(id)
+}
+
+// HasTap is the one rule for "has a ↷ ability": its own card or any
+// card whose abilities it has (Golden Trinket, Glitch; 19.150).
+func (g *Game) HasTap(id ObjectID) bool {
+	for _, face := range g.facesOf(id) {
+		if d, ok := g.cards.find(face); ok && d.Tap {
+			return true
+		}
+	}
+	return false
 }
 
 // RechargeableItem is a target filter: a Rechargeable item.

@@ -33,7 +33,7 @@ This step never closes; new reports are appended.
 
 | ID | Group                                    | System     | Items                                                  | Count |
 |----|------------------------------------------|------------|--------------------------------------------------------|-------|
-| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95, 19.97, 19.104, 19.105, 19.144 | 19 |
+| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95, 19.97, 19.104, 19.105, 19.144, 19.150 | 20 |
 | B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90, 19.106 | 10 |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74, 19.111, 19.147              | 6     |
@@ -56,11 +56,11 @@ This step never closes; new reports are appended.
 | U  | Save and load: a running effect lost     | Engine     | 19.143                                                 | 1     |
 | V  | Flow: an extra step the player must take | Client     | 19.149                                                 | 1     |
 
-Totals by system (144 items):
+Totals by system (145 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
-| Engine    | A, B, T, U | 31 |
+| Engine    | A, B, T, U | 32 |
 | Card data | C       | 2     |
 | Client    | D–G, O, P, S, V | 41 |
 | Server    | H, N    | 3     |
@@ -4711,6 +4711,22 @@ Totals by system (144 items):
    5. Same check: death penalty deactivate (`ActDeactivateTaps`).
    6. Same check: Curse of Impulse.
 4. Tasks:
-   1. [ ] Engine: one `HasTap` rule over every face of an object.
-   2. [ ] `Rechargeable`, `Deactivatable`, death penalty, Curse of Impulse use it.
-   3. [ ] Go tests: Charged Baby with Golden Trinket; Glitch; death penalty.
+   1. [x] Engine: one `HasTap` rule over every face of an object.
+   2. [x] `Rechargeable`, `Deactivatable`, death penalty, Curse of Impulse use it.
+   3. [x] Go tests: Charged Baby with Golden Trinket; Glitch; death penalty.
+5. Fix (2026-11-10)
+   1. `Game.HasTap`: any face (`facesOf`) with `CardDef.Tap`.
+   2. Faces: own card, Glitch's gained card, Golden Trinket's gold items.
+   3. Placebo has its own `Tap`; it needs no change.
+   4. Every `CardDef.Tap` read now goes through `HasTap`.
+   5. So all `RechargeableItem` pickers get the fix (19.146 list).
+   6. Tests in `cards/r/gained_tap_test.go`, four new.
+   7. Charged Baby, Glitch, death penalty, Curse of Impulse.
+   8. Each fails on its own check with the old rule put back.
+   9. Wiki: `Effect-blocks.md` names `HasTap`.
+   10. No screen change: no screenshots.
+   11. Engine 0.5.3: 0.5.2 shipped in app 0.4.0 with the old rule.
+   12. No replay cutoff: only games with a copied ↷ recharged or deactivated differ.
+   13. CHANGELOG: Unreleased.
+6. Result (2026-11-10)
+   1. `make lint test` passes (exit 0).
