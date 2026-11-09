@@ -481,6 +481,11 @@ Swapping it is the owner's call; not part of this step.
    4. The owner picks what to build; then it is built here.
    5. Reuse the 20.18 choice view where it fits.
    6. A sound it needs comes as rule 8 says.
+   7. Owner picks (2026-11-09): every recommendation of "Start of game" 16.
+      1. Banner words as proposed: a title, and "Bo is choosing" for others.
+      2. Confirm is for Eden now and for the draft (14.11) later.
+      3. 12 changed: several Edens choose at the same time.
+      4. 6 is bug 19.142; it is fixed here.
 3. Done when:
    1. ADR 027 has the findings and the differences.
    2. The owner's picks are built, with before and after screenshots.
@@ -508,6 +513,12 @@ Swapping it is the owner's call; not part of this step.
       1. List each difference with a recommendation.
    4. The owner picks what to build; then it is built here.
    5. A sound it needs comes as rule 8 says.
+   6. Owner picks (2026-11-09): every recommendation of "Target arrow" 16.
+      1. Plus 14: attack aims get the arrow, from the attacker.
+      2. 4 changed: the zoom shows when the arrow rests still on a target.
+      3. The rest time is tuned by eye; any move closes the zoom.
+      4. 7 (head text) stays later, as recommended.
+      5. The arc: about 90 px at the middle, tuned by eye.
 3. Done when:
    1. ADR 027 has the findings and the differences.
    2. The owner's picks are built, with before and after screenshots.
