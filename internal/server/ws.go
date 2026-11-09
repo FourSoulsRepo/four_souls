@@ -24,6 +24,11 @@ const writeWait = 10 * time.Second
 // most. Each message is still its own frame; the writes are fewer (18.17).
 const batchBytes = 64 << 10
 
+// pingEvery is how often the server pings each connection, so a reverse
+// proxy never sees an idle socket and drops it (19.148, ADR 017). Nginx
+// drops one after 60 s by default. A var so tests can shorten it.
+var pingEvery = 30 * time.Second
+
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  4096,
 	WriteBufferSize: 4096,
@@ -54,10 +59,13 @@ type wsConn struct {
 	close chan struct{}
 	local bool // the peer is on this computer
 	wmu   sync.Mutex
+	// pingEvery is read once per connection, so a test may change the
+	// package var between connections.
+	pingEvery time.Duration
 }
 
 func serveWS(h *Hub, ws *websocket.Conn) {
-	c := &wsConn{ws: ws, conn: ws.UnderlyingConn(), out: make(chan []byte, sendQueue), close: make(chan struct{}), local: loopback(ws.RemoteAddr())}
+	c := &wsConn{ws: ws, conn: ws.UnderlyingConn(), out: make(chan []byte, sendQueue), close: make(chan struct{}), local: loopback(ws.RemoteAddr()), pingEvery: pingEvery}
 	ws.SetPingHandler(c.pong)
 	go c.write()
 	client := h.Connect(c)
@@ -119,14 +127,34 @@ func (c *wsConn) pong(data string) error {
 	return c.ws.WriteControl(websocket.PongMessage, []byte(data), time.Now().Add(writeWait))
 }
 
+// ping sends a ping control frame under the writer's lock.
+func (c *wsConn) ping() error {
+	c.wmu.Lock()
+	defer c.wmu.Unlock()
+	return c.ws.WriteControl(websocket.PingMessage, nil, time.Now().Add(writeWait))
+}
+
 // write sends the queued messages. It takes every message already queued,
-// up to batchBytes, and sends them in one write.
+// up to batchBytes, and sends them in one write. It also pings the client
+// every pingEvery, so an idle connection keeps traffic (19.148).
 func (c *wsConn) write() {
 	var batch []byte
+	ping := time.NewTicker(c.pingEvery)
+	defer ping.Stop()
 	for {
 		select {
 		case <-c.close:
 			return
+		case <-ping.C:
+			if err := c.ping(); err != nil {
+				select {
+				case <-c.close: // closed meanwhile; nothing to report
+				default:
+					log.Printf("server: ping to a client failed: %v", err)
+					c.Close()
+				}
+				return
+			}
 		case msg := <-c.out:
 			batch = appendFrame(batch[:0], msg)
 			batch = c.takeQueued(batch)

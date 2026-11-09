@@ -4624,9 +4624,22 @@ Totals by system (144 items):
    5. The server frees the host's seat; an empty table is deleted.
    6. In a game, presence and the retry hide the same drop.
 4. Tasks:
-   1. [ ] Server: a WebSocket ping every 30 s on every connection.
-   2. [ ] Go test: an idle connection gets pings.
-   3. [ ] Docs: ADR 017, wiki Server.
+   1. [x] Server: a WebSocket ping every 30 s on every connection.
+   2. [x] Go test: an idle connection gets pings.
+   3. [x] Docs: ADR 017, wiki Server.
+5. Fix (2026-11-09)
+   1. `ws.go`: the writer goroutine pings every `pingEvery` (30 s).
+   2. The ping takes the write lock `wmu`, as pongs and batches do.
+   3. Write deadline `writeWait`; the ticker stops when the connection closes.
+   4. A failed ping closes the connection, as a failed write does.
+   5. No read deadline: a client that never answers is not dropped.
+   6. `pingEvery` is a package var, read once per connection; tests shorten it.
+   7. Browsers and gorilla clients answer pings on their own.
+   8. Go: `TestIdleConnectionGetsPings` in `ws_frame_test.go`.
+   9. Docs: ADR 017 Decision 7 and Positive 4; wiki Server (Conn).
+6. Result (2026-11-09)
+   1. `make lint` and `make test` pass (exit 0).
+   2. No frontend change; `make frontend e2e` not needed.
 
 ### [ ] 19.149 LAN Join shows the host's game list instead of joining
 
