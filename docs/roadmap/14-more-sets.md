@@ -292,7 +292,7 @@ Alt art (CD-11) comes after all sets.
    1. Owner marks 14.10 solved.
    2. Rule: a test bans only the cards it needs, each with a reason.
 
-### [ ] 14.11 Draft pick screen
+### [x] 14.11 Draft pick screen
 
 1. Goal: normal games can use draft picking (GS-01).
 2. Tasks:
@@ -328,6 +328,8 @@ Alt art (CD-11) comes after all sets.
    6. `PickScreen`: click to pick, Confirm to send, who has picked.
    7. Tests: `TestDraft`, `TestStartingItemsEden`, `e2e/tests/draft.spec.ts`.
    8. UC-39 added; UC-05 and UC-12 updated.
+5. Owner notes (2026-11-09)
+   1. Owner marks 14.11 solved.
 
 ### [ ] 14.12 Ban list in the host screen
 
