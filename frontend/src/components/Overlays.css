@@ -44,6 +44,13 @@
   margin: 0;
 }
 
+/* The settings form in the game menu (18.19): the menu screens' look,
+   sized to the form instead of the window. */
+.screen.game-settings {
+  height: auto;
+  max-height: 100%;
+}
+
 .overlay-buttons {
   display: flex;
   /* Too many for one row: the rest go to the next, not squeezed (19.84). */

@@ -53,6 +53,11 @@
 * **3j. Interface scale (ST-10):** a slider from 75% to 200%, 100% by default.
   * Saved with the other settings; the whole window grows or shrinks at once.
   * An older settings file reads as 100%.
+* **1b. In a game (ST-11, 18.19):** **Menu**, then **Settings**, opens the form over the table.
+  * Fields: fullscreen, End turn question, animations, volume, scale, game mat.
+  * No nickname, language or dice there; the main screen keeps them.
+  * **Save** applies them at once; the table shows the new mat and scale.
+  * **Back** returns to the game menu; the game goes on under it.
 
 ## Postconditions
 

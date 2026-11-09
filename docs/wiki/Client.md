@@ -210,6 +210,8 @@ The app has one theme, dark (15.80, ST-07). The colors are the `:root` tokens in
 
 Every size in the frontend CSS is in `rem` (18.18, ST-10): 16 px at 100 % is 1 rem, so the root font size scales the whole window. Hairlines of 1 px and less stay in `px`. The setting `scale` (75–200 %, default 100) sets it: `setUiScale` in `uiScale.ts` puts the percent on `<html>`'s `font-size`, on load and on save. Old settings files without it read as 100 %. The board's slot card is capped at `5.75rem` (92 px at 100 %), so on a big screen the scale is what lets it grow. Pixel numbers in code are px at 100 %: `feel.ts`, the card sizes in `Effects.tsx` and `Tuck.tsx`, the zoom's gap. Code that mixes one with a measured box turns it into screen px with `px()`; code that writes CSS uses `rem()`, which the browser scales. Viewport units (`vw`, `vh`) and container units do not follow the scale.
 
+The game menu has Settings too (18.19, ST-11). `GameMenu` swaps its buttons for `SettingsForm`, the same form the Settings screen draws, inside a `.screen.game-settings` box in the `overlay` layer. With `inGame` it leaves out the nickname and the dice, which go out in hello so the running game would keep the old ones, and the language, which stays on the main screen. Save stores and applies them at once, as on the main screen: the mat, scale, volume, animations, fullscreen and the End turn question. Back returns to the game menu.
+
 ## Languages
 
 The Settings screen holds the language choice:

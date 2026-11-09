@@ -548,3 +548,29 @@ Ideas: B-04, B-05.
    6. Gates: `make lint`, `make frontend`, `make e2e` (512 passed, 6 skipped).
    7. `aim.spec.ts:406` failed in both screenshot runs, before and after; it passed in `make e2e`.
    8. **Owner** marks it solved (2026-11-09).
+
+### [x] 18.19 Settings in the game
+
+1. Goal: the player changes settings without leaving the table (ST-11).
+2. Tasks:
+   1. The game menu gets a **Settings** button.
+   2. It opens the settings form over the table, in the menu's window.
+   3. The fields: volume, interface scale, game mat, animations.
+      1. Also fullscreen and the question before ending the turn.
+   4. Left out: nickname, dice, language.
+      1. Nickname and dice go out in the hello; the running game keeps them.
+      2. Language stays on the main screen, with the cards' languages.
+   5. One form for both places: the main Settings screen reuses it.
+   6. **Save** applies at once, as on the main screen; **Back** returns to the menu.
+   7. Docs: UC-10, `docs/wiki/Client.md`, `docs/wiki/Layers.md` if it changes.
+   8. Gates: `make lint`, `make frontend e2e`.
+3. Done when:
+   1. A mat, volume or scale saved in the game shows on the table at once.
+   2. An e2e test covers it.
+   3. **Owner** checks it.
+4. Result (2026-11-09)
+   1. `SettingsForm` in `SettingsScreen.tsx`: one form; `inGame` hides nickname, language, dice.
+   2. `GameMenu` has Settings; the form opens in the `overlay` layer.
+   3. e2e: `the game menu changes the settings at the table` (`settings.spec.ts`).
+   4. Gates: `make lint`, `make frontend`, `make e2e` (514 passed, 6 skipped).
+   5. Waits for the **owner**'s check.

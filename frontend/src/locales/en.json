@@ -1725,6 +1725,10 @@
     "text": "Saving stops the game for everyone; continue it later from Host a game.",
     "note": "Game menu dialog, for the host: line over the buttons."
   },
+  "game_menu.settings": {
+    "text": "Settings",
+    "note": "Game menu dialog: opens the settings over the table."
+  },
   "game_menu.title": {
     "text": "Menu",
     "note": "Game menu dialog: title."

@@ -836,6 +836,10 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    1. On big screens the cards and text are too small.
    2. Frontend sizes in `rem`; a setting scales them.
    3. Planned in 18.18.
+10. ST-11. Settings in the game (owner, 2026-11-09).
+   1. The game menu opens the settings without leaving the table.
+   2. Only the settings that apply at once in a game.
+   3. Planned in 18.19.
 
 ## Audio (later)
 

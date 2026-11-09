@@ -1,17 +1,19 @@
 import { useState } from 'react';
 import { t } from '../i18n';
+import { SettingsForm } from '../screens/SettingsScreen';
 import { useApp } from '../store';
 import './Overlays.css';
 
 // GameMenu is the in-game menu: the host may save the game to continue
 // later (N-11), or end it for everyone after a confirm step (19.84);
-// anyone may leave.
+// anyone may leave or change the settings (ST-11, 18.19).
 export function GameMenu({ host }: { host: boolean }) {
   const saveGame = useApp((s) => s.saveGame);
   const endGame = useApp((s) => s.endGame);
   const quit = useApp((s) => s.quit);
   const [open, setOpen] = useState(false);
   const [ending, setEnding] = useState(false);
+  const [settings, setSettings] = useState(false);
   if (!open) {
     return (
       <button
@@ -23,6 +25,21 @@ export function GameMenu({ host }: { host: boolean }) {
       >
         {t('game_menu.button')}
       </button>
+    );
+  }
+  if (settings) {
+    return (
+      <div className="overlay" role="dialog" aria-label={t('settings.title')}>
+        <div className="screen game-settings">
+          <h2>{t('settings.title')}</h2>
+          <SettingsForm
+            inGame
+            onBack={() => {
+              setSettings(false);
+            }}
+          />
+        </div>
+      </div>
     );
   }
   if (ending) {
@@ -84,6 +101,14 @@ export function GameMenu({ host }: { host: boolean }) {
               {t('game_menu.end')}
             </button>
           )}
+          <button
+            type="button"
+            onClick={() => {
+              setSettings(true);
+            }}
+          >
+            {t('game_menu.settings')}
+          </button>
           <button
             type="button"
             onClick={() => {
