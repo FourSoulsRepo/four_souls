@@ -126,13 +126,21 @@ func NewGame(s Setup) (*Game, []Event, error) {
 		g.loot(PlayerID(p), startingLoot)
 		g.Players[p].Cents = startingCents
 	}
+	choices := false
 	for p := range g.Players {
 		// Start-of-game abilities resolve at once, without priority (R-SETUP-09).
 		if n := g.def(g.Players[p].Character).StartingChoice; n > 0 {
 			g.enqueue(Action{Kind: ActChooseStartingItem, Player: PlayerID(p), Amount: n})
+			choices = true
 		}
 	}
-	g.chooseFirstPlayer()
+	if choices {
+		// Who goes first is known only after the start-of-game choices:
+		// the roll's view comes after them too (19.142).
+		g.enqueue(Action{Kind: ActChooseFirstPlayer, Player: NoPlayer})
+	} else {
+		g.chooseFirstPlayer()
+	}
 	g.run()
 	return g, g.takeEvents(), nil
 }

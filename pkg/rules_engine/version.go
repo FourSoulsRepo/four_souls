@@ -2,7 +2,7 @@ package rulesengine
 
 // Version is the rules engine version.
 // Bump it with every change to rules behavior; see docs/roadmap/08-first-release.md.
-const Version = "0.5.1"
+const Version = "0.5.2"
 
 // StateMeaning numbers what the saved state's fields mean (N-20). Raise
 // it when a field keeps its JSON name and type but means something new:
@@ -37,3 +37,9 @@ const orderVersion = "0.4.2"
 // heal: Headless Horseman's death prevention leaves it at 0 HP (19.110).
 // Older records' checksums differ: they cannot replay.
 const horsemanVersion = "0.5.1"
+
+// startVersion is the first engine version where the first-player roll
+// starts only after the start-of-game choices (19.142), and several
+// such choices are open at once (20.22). Older records' checksums
+// differ: they cannot replay.
+const startVersion = "0.5.2"

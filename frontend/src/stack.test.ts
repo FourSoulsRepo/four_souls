@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { PromptKind } from './actions';
 import type { GameView, StackItem } from './protocol';
 import {
+  beforeStart,
   declaration,
   findCard,
   playedCard,
@@ -236,6 +237,16 @@ describe('declaration', () => {
     expect(declaration(view, names)).toBeNull();
     expect(declaration({ ...view, buying: true, over: true }, names)).toBeNull();
     expect(declaration({ ...view, attack: {}, first_roll: { round: 1, players: [0, 1] } }, names)).toBeNull();
+    expect(declaration({ ...view, attack: {}, turn: { ...view.turn, number: 0 } }, names)).toBeNull();
+  });
+});
+
+describe('beforeStart', () => {
+  it('holds during the start-of-game choices and the roll, not after (19.142)', () => {
+    const choosing = { ...view, turn: { ...view.turn, number: 0 } };
+    expect(beforeStart(choosing)).toBe(true);
+    expect(beforeStart({ ...choosing, first_roll: { round: 1, players: [0, 1] } })).toBe(true);
+    expect(beforeStart(view)).toBe(false);
   });
 });
 

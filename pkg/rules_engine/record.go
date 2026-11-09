@@ -101,6 +101,9 @@ func CanReplay(v string) error {
 	if older(v, horsemanVersion) {
 		return fmt.Errorf("replay: the record was made by rules engine %s; engines from %s on do not heal when death is prevented, so its checksums differ and it cannot replay", v, horsemanVersion)
 	}
+	if older(v, startVersion) {
+		return fmt.Errorf("replay: the record was made by rules engine %s; engines from %s on start the first-player roll after the start-of-game choices, so its checksums differ and it cannot replay", v, startVersion)
+	}
 	return nil
 }
 

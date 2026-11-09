@@ -25,7 +25,7 @@ import { matLook } from '../mats';
 import type { Block, Update } from '../protocol';
 import { seatOf, useApp } from '../store';
 import { activity, askedSeat, myMove, picking, promptBanner, stackPrompt, tablePick } from '../prompt';
-import { seatNames, waitTurn, type Names } from '../stack';
+import { beforeStart, seatNames, waitTurn, type Names } from '../stack';
 import { seatPositions } from '../table';
 import '../components/Table.css';
 import './screens.css';
@@ -157,9 +157,10 @@ function Table({ game, you }: { game: Update; you: number }) {
   const asked = askedSeat(view);
   // What the active player does, on their seat for everyone else (15.30).
   const doing = activity(view, names);
-  // Before turn 1, while the first player is rolled for, nobody has a
-  // turn: no active seat, no turn buttons (15.43).
-  const started = !view.first_roll;
+  // Before turn 1, during the start-of-game choices and while the first
+  // player is rolled for, nobody has a turn: no active seat, no turn
+  // buttons (15.43, 19.142).
+  const started = !beforeStart(view);
   return (
     <main className={`game ${look.className}${dim ? ' picking' : ''}`} style={look.style} aria-label={t('game.turn', { n: view.turn.number })}>
       {seatPositions(view.players.length, you).map(({ position, player }) => {

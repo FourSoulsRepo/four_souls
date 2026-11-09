@@ -3,7 +3,7 @@
 import { choiceTitle, PromptKind, Purpose, type Actions } from './actions';
 import { say, t } from './i18n';
 import type { GameView } from './protocol';
-import { attackTarget, findCard, partsOf, StackKind, stackLine, type LinePart, type Names } from './stack';
+import { attackTarget, beforeStart, findCard, partsOf, StackKind, stackLine, type LinePart, type Names } from './stack';
 import type { Aiming } from './store';
 
 // BannerKind is the prompt a banner is about. "aim" is the player's own
@@ -159,8 +159,9 @@ export function stackPrompt(b: Banner | null, n: Names): string | undefined {
 // them. Only public state, so spectators get the same words. Nothing
 // while the game waits for others with none of these going on.
 export function activity(view: GameView, n: Names): LinePart[] | null {
-  // Before turn 1 nobody is active: the first-player roll (15.43).
-  if (view.over || view.first_roll) {
+  // Before turn 1 nobody is active: the start-of-game choices and the
+  // first-player roll (15.43, 19.142).
+  if (view.over || beforeStart(view)) {
     return null;
   }
   const { active } = view.turn;

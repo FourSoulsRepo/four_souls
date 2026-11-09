@@ -34,6 +34,8 @@
 * **6a. Someone plays Eden:** her choice comes before the roll, at setup.
   1. The roll waits until every start-of-game choice is made (R-SETUP-09).
   2. The panel shows the roll only after her choice.
+  3. Meanwhile the badge says "Before turn 1 · Start of game" (19.142).
+  4. With Cain at the table she still chooses first; then Cain starts.
 * **Reconnect during the roll:** the panel shows the dice of this round (UC-07).
 
 ## Postconditions

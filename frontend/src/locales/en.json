@@ -3993,6 +3993,10 @@
     "text": "Turn",
     "note": "Game table: screen-reader name of the turn badge on the board."
   },
+  "turn_badge.start": {
+    "text": "Before turn 1 · Start of game",
+    "note": "Game table: the turn badge while players make their start-of-game choices (e.g. Eden's starting item), before the first-player roll."
+  },
   "turn_badge.step.action": {
     "text": "Action",
     "note": "Turn badge: the action step, where the player plays."

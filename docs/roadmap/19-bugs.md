@@ -4429,4 +4429,16 @@ Totals by system (139 items):
    4. The panel draws it; the first unrolled seat reads "throwing…".
    5. The throw prompt itself waits; only the view is early.
 4. Tasks:
-   1. [ ] Fix waits for the owner's 20.22 picks (ADR 027 "Start of game" 16.6).
+   1. [x] Fix waits for the owner's 20.22 picks (ADR 027 "Start of game" 16.6).
+   2. [x] The roll starts after the start-of-game choices.
+   3. [x] Before turn 1 the client keys on the turn number, not the roll.
+   4. [x] Go and Vitest tests; UC-26 6a.
+5. Fix (2026-11-09)
+   1. `NewGame` queues `ActChooseFirstPlayer` after the start-of-game choices.
+   2. So `FirstRoll` is set, and sent, only when they are made.
+   3. Cain's start waits for them too (R-SETUP-09).
+   4. A game without such choices starts as before.
+   5. Engine 0.5.2; `startVersion`: older records cannot replay.
+   6. Client: `beforeStart` in `stack.ts`: turn 0 or a roll.
+   7. The badge reads "Before turn 1 · Start of game" during the choices.
+   8. Tests: `TestEden`, `TestEdenBeforeCain`; Vitest `beforeStart`.
