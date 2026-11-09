@@ -303,9 +303,22 @@ Alt art (CD-11) comes after all sets.
    5. Others see who has picked, not what.
    6. Without card images, the offers show as text cards.
    7. No bans here; ban rounds stay with the tournament tools.
+   8. **Owner:** random (one character each) stays the default (2026-11-09).
+   9. Draft size: the host sets it in detailed setup.
+       1. Range 2–5, default 3, as the server allows (6.6).
+   10. Each offer shows the character and its starting item.
+       1. The server sends the item with each offer.
+       2. It comes from the engine's card definition (`StartingItem`).
+       3. Without card images, the item shows as a text card too.
+   11. A character without a fixed starting item shows none (Eden).
+       1. Its offer says the item is chosen after the pick.
+       2. The player picks it at game start, as today (R-SETUP-09).
+       3. Check every set for such characters, reprints included.
 3. Done when:
    1. e2e test: host a draft game, each player picks, the game starts.
    2. UC-05 updated; use case for the pick screen.
+   3. e2e test: each offer shows its starting item; Eden shows none.
+   4. Server test: offers carry the starting items.
 
 ### [ ] 14.12 Ban list in the host screen
 

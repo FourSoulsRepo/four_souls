@@ -915,6 +915,9 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    3. Ban phase: players ban characters, then get random ones.
    4. Ban rounds: each player bans one character per round.
    5. Host sets the number of ban rounds.
+   6. Draft offers show each character's starting item (owner, 2026-11-09).
+   7. Eden shows none; its item is chosen after the pick.
+   8. Random stays the default; the host sets the draft size.
 2. GS-02. Host can ban characters for the whole game.
    1. Banned characters are never dealt.
    2. Players see the list of banned characters.
