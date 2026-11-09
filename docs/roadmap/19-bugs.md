@@ -4494,7 +4494,7 @@ Totals by system (141 items):
 6. Owner notes (2026-11-09)
    1. Owner marks 19.144 solved.
 
-### [ ] 19.145 Holy Mom's Eye offers passive items to recharge
+### [x] 19.145 Holy Mom's Eye offers passive items to recharge
 
 1. Goal: "you may recharge an item" offers only spent items with a ↷ ability.
 2. Report (owner, 2026-11-09)
@@ -4518,8 +4518,10 @@ Totals by system (141 items):
    6. No screen change: no screenshots.
 6. Result (2026-11-09)
    1. `make lint` and `make test` pass (exit 0).
+7. Owner notes (2026-11-09)
+   1. Owner marks 19.145 solved.
 
-### [ ] 19.146 Recharge and deactivate pickers use different item rules
+### [x] 19.146 Recharge and deactivate pickers use different item rules
 
 1. Goal: one rule for every card that picks an item to recharge or deactivate.
    1. Recharge offers only deactivated items with a ↷ ability.
@@ -4554,3 +4556,7 @@ Totals by system (141 items):
    13. Wiki: `Effect-blocks.md` names the new filter.
    14. Engine stays 0.5.2: not released yet (as 19.144).
    15. No screen change: no screenshots.
+6. Result (2026-11-09)
+   1. `make lint` and `make test` pass (exit 0).
+7. Owner notes (2026-11-09)
+   1. Owner marks 19.146 solved.
