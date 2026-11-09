@@ -4695,3 +4695,22 @@ Totals by system (144 items):
    1. `make lint` and `make frontend e2e` pass (exit 0).
 8. Owner notes (2026-11-09)
    1. Owner marks 19.149 solved.
+
+### [ ] 19.150 Charged Baby can't recharge a spent Golden Trinket
+
+1. Goal: an item with a gained ↷ ability counts as a ↷ item.
+2. Report (owner, 2026-11-09)
+   1. Play test; record `2026-11-09-192706-g2_Hitokiri-Battosai_jеня_charged_baby_bug.fsrec`.
+   2. Golden Trinket copied Host Hat (gold counter) and used its ↷.
+   3. A roll of 2: Charged Baby offered no item to recharge.
+3. Cause
+   1. Record steps 452–470: Host Hat gets gold; the trinket's ↷ spent.
+   2. Step 470: Charged Baby's question has no item.
+   3. `Rechargeable` and `Deactivatable` (19.146) read `CardDef.Tap` of the card only.
+   4. Golden Trinket and Glitch gain ↷ through `facesOf`; it misses them.
+   5. Same check: death penalty deactivate (`ActDeactivateTaps`).
+   6. Same check: Curse of Impulse.
+4. Tasks:
+   1. [ ] Engine: one `HasTap` rule over every face of an object.
+   2. [ ] `Rechargeable`, `Deactivatable`, death penalty, Curse of Impulse use it.
+   3. [ ] Go tests: Charged Baby with Golden Trinket; Glitch; death penalty.
