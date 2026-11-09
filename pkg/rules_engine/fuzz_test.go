@@ -43,7 +43,11 @@ func playFuzz(t *testing.T, seed uint64, players uint8, choices []byte, focus []
 		if g.Over {
 			break
 		}
-		p := g.Prompt()
+		// Of several players who may answer at once (start-of-game
+		// choices, 20.22), the input picks who answers first.
+		w := g.Prompt()
+		who := w.Who()
+		p := g.PromptFor(who[int(c)%len(who)])
 		allowed := g.Allowed(p.Player)
 		if len(allowed) == 0 {
 			t.Fatalf("step %d: nothing allowed for the waiting player, prompt %+v", i, p)

@@ -56,8 +56,10 @@ func (r *Room) autoIntent() (engine.Intent, bool) {
 		return engine.Intent{}, false
 	}
 	w := g.Prompt()
-	if w.Player >= 0 && int(w.Player) < len(r.seats) && r.seats[w.Player].kicked {
-		return r.forcedIntent() // a kicked seat stays empty (N-08)
+	for _, p := range w.Who() {
+		if p >= 0 && int(p) < len(r.seats) && r.seats[p].kicked {
+			return r.forcedIntent(p) // a kicked seat stays empty (N-08)
+		}
 	}
 	if w.Kind != engine.PromptPriority {
 		return engine.Intent{}, false
@@ -154,20 +156,26 @@ func (r *Room) restartTimer() {
 
 // timeUp answers for a player whose response timer ran out (N-07): pass
 // or end the turn; a discard takes the first cards; a choice takes the
-// first option.
+// first option. Start-of-game choices open at once share the timer:
+// each player still choosing gets the answer (20.22).
 func (r *Room) timeUp(gen int) {
 	if gen != r.timerGen || r.game == nil || r.game.Over || r.paused() || r.rbVote != nil {
 		return
 	}
-	in, ok := r.forcedIntent()
-	if !ok {
-		return
+	for _, p := range r.game.Prompt().Who() {
+		if r.game.Over || !slices.Contains(r.game.Prompt().Who(), p) {
+			continue
+		}
+		in, ok := r.forcedIntent(p)
+		if !ok {
+			continue
+		}
+		events, err := r.apply(in)
+		if err != nil {
+			continue
+		}
+		r.after(events, true)
 	}
-	events, err := r.apply(in)
-	if err != nil {
-		return
-	}
-	r.after(events, true)
 }
 
 // paused: a running game waits for a seated player who left (N-08).
@@ -240,13 +248,13 @@ func (r *Room) vote(c *Client, env protocol.Envelope) {
 	r.after(nil, false)
 }
 
-// forcedIntent is the minimal answer for the waiting player, when the
+// forcedIntent is the minimal answer for waiting player p, when the
 // player is out of time or kicked: pass or end the turn; a discard
 // takes the first cards; a choice takes the first option; an order
 // keeps the cards as they are; a throw throws (15.59).
-func (r *Room) forcedIntent() (engine.Intent, bool) {
-	w := r.game.Prompt()
-	allowed := r.game.Allowed(w.Player)
+func (r *Room) forcedIntent(p engine.PlayerID) (engine.Intent, bool) {
+	w := r.game.PromptFor(p)
+	allowed := r.game.Allowed(p)
 	if len(allowed) == 0 {
 		return engine.Intent{}, false
 	}

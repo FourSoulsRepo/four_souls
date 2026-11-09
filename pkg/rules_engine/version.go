@@ -40,6 +40,6 @@ const horsemanVersion = "0.5.1"
 
 // startVersion is the first engine version where the first-player roll
 // starts only after the start-of-game choices (19.142), and several
-// such choices are open at once (20.22). Older records' checksums
+// such choices are open at the same time (20.22). Older records' checksums
 // differ: they cannot replay.
 const startVersion = "0.5.2"

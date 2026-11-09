@@ -53,12 +53,13 @@ This step never closes; new reports are appended.
 | R  | Vitest setup: a test sees stale files    | Vitest     | 19.124                                                 | 1     |
 | S  | Sound: media players never released      | Client     | 19.135                                                 | 1     |
 | T  | Events and view: data sent too early     | Engine     | 19.142                                                 | 1     |
+| U  | Save and load: a running effect lost     | Engine     | 19.143                                                 | 1     |
 
-Totals by system (139 items):
+Totals by system (140 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
-| Engine    | A, B, T | 29    |
+| Engine    | A, B, T, U | 30 |
 | Card data | C       | 2     |
 | Client    | D–G, O, P, S | 39 |
 | Server    | H, N    | 2     |
@@ -4442,3 +4443,24 @@ Totals by system (139 items):
    6. Client: `beforeStart` in `stack.ts`: turn 0 or a roll.
    7. The badge reads "Before turn 1 · Start of game" during the choices.
    8. Tests: `TestEden`, `TestEdenBeforeCain`; Vitest `beforeStart`.
+
+### [ ] 19.143 Fuzz: a nested question asks again after a load
+
+1. Goal: a game loaded during a nested question goes on as before the save.
+2. Report (20.22 subagent, 2026-11-09)
+   1. `go test -fuzz=FuzzSets -fuzztime=90s ./cards/` in `pkg/rules_engine`.
+   2. "redo from step 70: step 0: replay: state differs from the record".
+   3. Fails the same on `bfc74cd`, before any 20.22 change.
+   4. Evidence: `.cache/fuzz-evidence/19.143/` (not in git).
+   5. Input: `55bb281b0c9ed398`; states after step 71, played and loaded.
+3. Cause (the states; not fixed yet)
+   1. Gimpy's answer "Loot 1, then discard" runs a nested question.
+   2. The game is saved while that nested question waits.
+   3. `Asking.Key` finds a nested effect only while the game runs.
+   4. After a load `Effect` is the fallback: the top-level effect.
+   5. So the same answer asks Gimpy's first question again.
+   6. Undo (ADR 020) and a server restart load such a state too.
+4. Tasks:
+   1. [ ] A key for a nested effect that survives a load.
+   2. [ ] Go test: save and load inside Gimpy's discard question.
+   3. [ ] The fuzz input as a corpus file once it passes.

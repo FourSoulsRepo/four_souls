@@ -431,6 +431,10 @@ export interface Prompt {
   // how many (20.18); everyone gets it, only the chooser the cards.
   // The treasure deck, 0, comes as no deck.
   look?: { deck?: number; count?: number };
+  // players, on start-of-game choices, are all who may answer now, in
+  // seat order: they choose at the same time (20.22). Each sees their
+  // own choice as player; the rest see the first.
+  players?: number[];
 }
 
 export interface GameView {

@@ -1255,6 +1255,21 @@ Each sub-step of step 20 takes the part it needs.
     2. Its deal needs only `waiting.look` from the server.
     3. Others' backs and the flight back to the deck: as they are.
     4. New for this screen: banner, Confirm, picked state, flight to items.
+19. Several start-of-game choices at once (owner, 2026-11-09; changes 16.12).
+    1. Every player with one chooses at the same time, as the reference.
+    2. The engine keeps one prompt; it names all who may answer now.
+    3. `Game.StartChoices`: one open choice per such player, seat order.
+    4. Each gets the next cards from the treasure deck's top: no card twice.
+    5. `Waiting` shows the first; `Waiting.Players` lists all choosers.
+    6. `PromptFor(p)`: p's own choice; `Allowed`, `check` and the view use it.
+    7. So each chooser sees `waiting.player` as themselves; others see the first.
+    8. An answer closes that player's choice; the rest stay open.
+    9. The first-player roll starts after the last (19.142).
+    10. The record keeps the answers in their order: replays stay the same.
+    11. Timer and kicked seats: the server answers for each chooser.
+    12. Additive: `players` is new; the protocol version stays.
+    13. Engine 0.5.2: older records cannot replay (`startVersion`).
+    14. The draft (14.11) is a server step, not an engine prompt; not changed.
 
 ### Target arrow
 

@@ -126,18 +126,20 @@ func NewGame(s Setup) (*Game, []Event, error) {
 		g.loot(PlayerID(p), startingLoot)
 		g.Players[p].Cents = startingCents
 	}
-	choices := false
+	var who []PlayerID
+	var counts []int
 	for p := range g.Players {
-		// Start-of-game abilities resolve at once, without priority (R-SETUP-09).
+		// Start-of-game abilities resolve at once, without priority
+		// (R-SETUP-09); every such player chooses at the same time (20.22).
 		if n := g.def(g.Players[p].Character).StartingChoice; n > 0 {
-			g.enqueue(Action{Kind: ActChooseStartingItem, Player: PlayerID(p), Amount: n})
-			choices = true
+			who, counts = append(who, PlayerID(p)), append(counts, n)
 		}
 	}
-	if choices {
+	if len(who) > 0 {
 		// Who goes first is known only after the start-of-game choices:
 		// the roll's view comes after them too (19.142).
 		g.enqueue(Action{Kind: ActChooseFirstPlayer, Player: NoPlayer})
+		g.openStartChoices(who, counts)
 	} else {
 		g.chooseFirstPlayer()
 	}
@@ -286,7 +288,9 @@ func (g *Game) chooseFirstPlayer() {
 }
 
 // askStartingItem shows p the top n treasure cards to pick a starting
-// item from (Eden).
+// item from (Eden). Only a game saved before 20.22 still asks this way,
+// one player after another; new games open every such choice at once
+// (openStartChoices).
 func (g *Game) askStartingItem(p PlayerID, n int) {
 	deck := g.Decks[TreasureDeck]
 	n = min(n, len(deck))
@@ -321,6 +325,66 @@ func (g *Game) chooseStartingItem(c Choice, i int) {
 	o.Role, o.Charged, o.Eternal, o.StartingItem = RoleItem, true, true, true
 	g.Players[c.Player].InPlay = append(g.Players[c.Player].InPlay, nid)
 	g.emit(Event{Kind: EvGainedTreasure, Player: c.Player, Object: nid, Card: o.Card, Text: "starting item"})
+	if k := g.startIndex(c.Player); k >= 0 {
+		g.StartChoices = slices.Delete(g.StartChoices, k, k+1)
+		if len(g.StartChoices) == 0 {
+			g.StartChoices = nil
+		}
+		g.focusStart(NoPlayer) // the others still choose
+	}
+}
+
+// openStartChoices opens a start-of-game choice for each player of who,
+// all at the same time (20.22): the next counts[i] cards from the top
+// of the treasure deck, in seat order, so no two players see one card.
+// Each is a look at the treasure deck, for everyone (20.18).
+func (g *Game) openStartChoices(who []PlayerID, counts []int) {
+	deck := g.Decks[TreasureDeck]
+	next := len(deck) - 1 // the topmost card not given yet
+	for i, p := range who {
+		n := min(counts[i], next+1)
+		if n == 0 {
+			continue
+		}
+		top := make([]ObjectID, 0, n)
+		for j := next; j > next-n; j-- {
+			top = append(top, deck[j])
+		}
+		next -= n
+		g.StartChoices = append(g.StartChoices, Choice{
+			Purpose: ChooseStartingItem, Player: p, Rule: "R-SETUP-09", Objects: top,
+			Look: &DeckLook{Deck: TreasureDeck, Count: n},
+		})
+	}
+	g.focusStart(NoPlayer)
+}
+
+// startIndex is the index of p's open start-of-game choice, or -1.
+func (g *Game) startIndex(p PlayerID) int {
+	return slices.IndexFunc(g.StartChoices, func(c Choice) bool { return c.Player == p })
+}
+
+// startPrompt is the prompt of open start-of-game choice i; Players
+// names everyone who still chooses.
+func (g *Game) startPrompt(i int) Prompt {
+	c := g.StartChoices[i]
+	who := make([]PlayerID, len(g.StartChoices))
+	for j, o := range g.StartChoices {
+		who[j] = o.Player
+	}
+	return Prompt{Kind: PromptChoose, Player: c.Player, Options: g.Labels(c.Objects), Purpose: c.Purpose, Text: c.Question, Look: c.Look, Players: who}
+}
+
+// focusStart makes p's open start-of-game choice the one Choice and
+// Waiting show, or the first one when p has none. With none open it
+// does nothing.
+func (g *Game) focusStart(p PlayerID) {
+	if len(g.StartChoices) == 0 {
+		return
+	}
+	i := max(g.startIndex(p), 0)
+	c := g.StartChoices[i]
+	g.Choice, g.Waiting = &c, g.startPrompt(i)
 }
 
 // FirstRoll is the first-player roll in progress (R-SETUP-11, GS-06,

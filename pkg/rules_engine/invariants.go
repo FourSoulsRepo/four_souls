@@ -94,6 +94,9 @@ func (g *Game) CheckInvariants() error {
 	if !g.Over && g.Waiting.Kind == PromptNone {
 		return fmt.Errorf("the game waits for nothing")
 	}
+	if len(g.StartChoices) > 0 && (g.Waiting.Kind != PromptChoose || g.Waiting.Purpose != ChooseStartingItem || g.startIndex(g.Waiting.Player) < 0) {
+		return fmt.Errorf("start-of-game choices open, but the game waits on %+v", g.Waiting)
+	}
 	return g.checkKeys()
 }
 

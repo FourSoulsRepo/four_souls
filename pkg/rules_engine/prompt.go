@@ -34,6 +34,19 @@ type Prompt struct {
 	// at while it waits, and how many (20.18). Everyone sees it; only
 	// the chooser sees the cards.
 	Look *DeckLook `json:"look,omitempty"`
+	// Players, on start-of-game choices, are all who may answer now, in
+	// seat order: their choices are open at the same time (20.22). Each
+	// of them sees their own choice as Player; the rest see the first.
+	Players []PlayerID `json:"players,omitempty"`
+}
+
+// Who lists every player who may answer the prompt now: Players, or
+// else Player alone.
+func (w Prompt) Who() []PlayerID {
+	if len(w.Players) > 0 {
+		return w.Players
+	}
+	return []PlayerID{w.Player}
 }
 
 // DeckLook is a look at a deck's top cards: which deck, and how many.
@@ -102,6 +115,15 @@ func deny(rule string, say Msg, format string, args ...any) error {
 // Prompt returns what the engine waits for.
 func (g *Game) Prompt() Prompt { return g.Waiting }
 
+// PromptFor returns the prompt p answers now: p's own start-of-game
+// choice while several are open (20.22), else Prompt.
+func (g *Game) PromptFor(p PlayerID) Prompt {
+	if i := g.startIndex(p); i >= 0 {
+		return g.startPrompt(i)
+	}
+	return g.Waiting
+}
+
 // Apply checks an intent and, if allowed, runs the game until it needs
 // input again. It returns what happened, in order. On error the state is
 // unchanged.
@@ -123,7 +145,7 @@ func (g *Game) Apply(in Intent) ([]Event, error) {
 }
 
 func (g *Game) check(in Intent) error {
-	w := g.Waiting
+	w := g.PromptFor(in.Player)
 	if g.Over {
 		return refuse("R-WIN-03", "the game is over")
 	}
@@ -290,6 +312,9 @@ func (g *Game) apply(in Intent) {
 			Ability: g.AbilitiesOf(in.Objects[0])[in.Choice],
 		})
 	case IntentChoose:
+		if g.startIndex(in.Player) >= 0 {
+			g.focusStart(in.Player) // one of several open at once (20.22)
+		}
 		g.answer(in.Choice)
 	case IntentOrder:
 		g.answerOrder(in.Objects)

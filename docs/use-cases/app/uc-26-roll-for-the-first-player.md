@@ -36,6 +36,8 @@
   2. The panel shows the roll only after her choice.
   3. Meanwhile the badge says "Before turn 1 · Start of game" (19.142).
   4. With Cain at the table she still chooses first; then Cain starts.
+  5. Several Edens choose at the same time, each among their own cards (20.22).
+  6. The roll waits until the last of them has chosen.
 * **Reconnect during the roll:** the panel shows the dice of this round (UC-07).
 
 ## Postconditions
