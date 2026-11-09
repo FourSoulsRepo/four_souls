@@ -1181,6 +1181,11 @@
   box-shadow: inset 0 0 0 2px #ff4b3e;
 }
 
+/* The row the own arrow is over glows brighter (20.23). */
+.stack-row.hl-aim[data-aim-over] {
+  box-shadow: inset 0 0 0 3px #ff8f7f, 0 0 12px 2px rgb(255 85 62 / 85%);
+}
+
 /* Another player's loot card, large under the stack while it is there
    (15.31, H-10). It takes the height left in the info column. */
 .played {

@@ -58,3 +58,38 @@ export function placeZoom(anchor: Box, size: Size, view: Size, rise: boolean): P
 export function keyword(title: string): string {
   return title.replace(/^-+|-+$/g, '').trim();
 }
+
+// RestWatch opens a card's zoom while the own arrow aims (20.23, ADR 027
+// "Target arrow"): only once the pointer rests still on the card for a
+// while. move tells it where the pointer is; a place that differs from
+// the last restarts the wait. stop ends the watch.
+export interface RestWatch {
+  move: (x: number, y: number) => void;
+  stop: () => void;
+}
+
+// restWatch calls open once the pointer stays at one place for wait ms
+// after its last move. Each move starts the wait again; a move to the
+// same place, as a browser may send, does not.
+export function restWatch(wait: number, open: () => void): RestWatch {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  let at: { x: number; y: number } | null = null;
+  return {
+    move: (x, y) => {
+      if (at?.x === x && at.y === y) {
+        return;
+      }
+      at = { x, y };
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        timer = undefined;
+        open();
+      }, wait);
+    },
+    stop: () => {
+      clearTimeout(timer);
+      timer = undefined;
+      at = null;
+    },
+  };
+}

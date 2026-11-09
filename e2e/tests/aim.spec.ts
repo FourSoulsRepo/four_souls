@@ -128,7 +128,7 @@ test('a bomb aimed at a monster by two clicks damages it', async ({ browser }) =
   await active.mouse.move(to.x - 200, tip.y, { steps: 12 });
   await expect(arrow).toBeVisible();
   await expect(arrow).not.toHaveClass(/\bon\b/);
-  await expect(active.locator('.aim-block').first()).toBeAttached();
+  await expect(active.locator('.aim-dash').first()).toBeAttached();
   await shot(active, 'aim-off');
   await active.mouse.move(tip.x, tip.y, { steps: 12 });
   await expect(arrow).toHaveClass(/\bon\b/);
@@ -442,7 +442,13 @@ test('the other player sees the arrow and the red mark', async ({ browser }) => 
   await expect(lifted).toHaveCount(1);
   await expect(await there(monster)).toHaveAttribute('data-presence', 'at');
   // The head ends on the marked monster, not on a card passed on the way.
-  const ringAt = async () => middle(other.locator('.aim-arrow.others .aim-ring > div'));
+  // Its tip is where the ring would be; others' arrows draw no ring (20.23).
+  await expect(other.locator('.aim-arrow.others .aim-ring > div')).toHaveCount(0);
+  const ringAt = () =>
+    other.evaluate(() => {
+      const r = document.querySelector('.aim-arrow.others .aim-ring')?.getBoundingClientRect();
+      return { x: r?.left ?? NaN, y: r?.top ?? NaN };
+    });
   const near = async (to: { x: number; y: number }) => {
     const r = await ringAt();
     return Math.hypot(r.x - to.x, r.y - to.y);

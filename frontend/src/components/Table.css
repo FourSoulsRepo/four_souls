@@ -699,6 +699,11 @@
   background: #ff4b3e;
 }
 
+/* The crystal the own arrow is over glows brighter (20.23). */
+.soul-slot.hl-aim[data-aim-over] {
+  filter: drop-shadow(0 0 3px #ff8f7f) drop-shadow(0 0 9px #ff4b3e);
+}
+
 .own-items {
   grid-area: items;
 }
@@ -876,14 +881,13 @@
   pointer-events: none;
 }
 
-/* The aiming arrow (15.32, Aim.tsx), after Hearthstone's: a chain of
-   thick red blocks from the card, placed once with translate and
-   rotate, and a big head whose tip is at the pointer. The chain marches
-   toward the head; the first block fades in and the last fades out in
-   step, so the loop has no seam. On a valid target a ring with cross
-   ticks marks the tip. A little see-through, drawn over everything,
-   outlined so it reads on red art, and never hit by the pointer. Only
-   transform and opacity move; --march follows the animation speed. */
+/* The aiming arrow (15.32, 20.23, Aim.tsx), after the reference's
+   (ADR 027 "Target arrow"): long red dashes along a curve, each placed
+   and marched by Aim.tsx with transform and opacity only, and a big
+   head whose tip is at the pointer. On a valid target a ring with
+   cross ticks marks the tip. A little see-through, drawn over
+   everything, outlined so it reads on red art, and never hit by the
+   pointer. Sizes from feel.aim. */
 .aim-arrow {
   position: fixed;
   inset: 0;
@@ -894,6 +898,7 @@
 }
 
 .aim-chain,
+.aim-dash,
 .aim-head,
 .aim-ring {
   position: absolute;
@@ -901,31 +906,14 @@
   left: 0;
 }
 
-.aim-march {
-  animation: aim-march var(--march) linear infinite;
-}
-
-.aim-block {
-  position: absolute;
-  top: -13px;
-  left: 0;
-}
-
-.aim-block > div {
-  width: 28px;
-  height: 26px;
+.aim-dash > div {
+  width: var(--aim-dash);
+  height: var(--aim-wide);
+  margin: calc(var(--aim-wide) / -2) 0 0 calc(var(--aim-dash) / -2);
   box-sizing: border-box;
   border: 2px solid #6e0d08;
-  border-radius: 3px;
+  border-radius: 5px;
   background: linear-gradient(to bottom, #ff7a63, #e53228 40%, #a8170f);
-}
-
-.aim-block > .first {
-  animation: aim-fade-in var(--march) linear infinite;
-}
-
-.aim-block > .last {
-  animation: aim-fade-out var(--march) linear infinite;
 }
 
 .aim-head {
@@ -950,8 +938,8 @@
   opacity: 0;
   transform: scale(1.5);
   transition:
-    opacity calc(var(--march) / 2),
-    transform calc(var(--march) / 2);
+    opacity var(--aim-ring),
+    transform var(--aim-ring);
 }
 
 /* The cross ticks: two bars, see-through in the middle. */
@@ -982,10 +970,17 @@
 }
 
 /* Another player's arrow (15.36, Presence.tsx): the same arrow, under
-   the windows and a little fainter than the own one. */
+   the windows and a little fainter than the own one; no ring (20.23). */
 .aim-arrow.others {
   z-index: var(--z-presence);
   opacity: 0.7;
+}
+
+/* While the own arrow aims with a mouse, its head is the pointer: the
+   system one hides everywhere (20.23, ADR 027 "Target arrow" 6.3). */
+html.aim-cursor,
+html.aim-cursor * {
+  cursor: none !important;
 }
 
 /* What another player's arrow or pointer is over (T-10, T-21): a red
@@ -1079,7 +1074,6 @@
 .aim-arrow.still *,
 .aim-arrow.still *::before,
 .aim-arrow.still *::after {
-  animation: none;
   transition: none;
 }
 
@@ -1089,30 +1083,8 @@
     animation: none;
   }
 
-  .aim-arrow *,
   .own .hand-card.usable > .drag-tilt::after {
     animation: none;
-  }
-}
-
-/* anim: aim-march */
-@keyframes aim-march {
-  to {
-    transform: translateX(36px);
-  }
-}
-
-/* anim: aim-fade-in */
-@keyframes aim-fade-in {
-  from {
-    opacity: 0;
-  }
-}
-
-/* anim: aim-fade-out */
-@keyframes aim-fade-out {
-  to {
-    opacity: 0;
   }
 }
 

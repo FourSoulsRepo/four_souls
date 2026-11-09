@@ -25,7 +25,7 @@ A choice shows its options over the dimmed board:
 | ID | What | Above everything below because | Code |
 |----|------|--------------------------------|------|
 | `aim-why` | The note why a click did nothing: an aim at no target, or a card or turn icon not usable now (15.29). | It answers the pointer, right under it; it covers its own arrow. | `components/Table.css` |
-| `aim` | The aiming arrow. | It is the pointer while aiming; the target under it may be any window's card. | `components/Table.css` |
+| `aim` | The aiming arrow, also an attack's pick (20.23). | It is the pointer while aiming (the system pointer hides); the target under it may be any window's card. Over the zoom a rest opens, so its head stays in view. | `components/Table.css` |
 | `trail` | The attack lunge (the attacker's copy) and its starburst. | It plays over the effects of the same hit. | `components/Effects.css` |
 | `effects` | Event effects: flying cards, reveal, dice, banner, popups. | A game event must be seen, even over a zoom or an overlay. It never catches the pointer. | `components/Effects.css` |
 | `zoom` | The large copy of a hovered or held card. | The player reads a card from any window: discard, choice, look, order, a dialog (19.26). A mouse zoom lets the pointer through. | `components/Card.css` |

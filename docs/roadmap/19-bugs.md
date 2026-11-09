@@ -4147,6 +4147,9 @@ Totals by system (140 items):
    1. With 5 workers, 3 of 30 webkit runs fail mid-strike, before any hit.
    2. All four of the box's values differ there: a layout change, not a push.
    3. Cause not found; left for a later look, with the owner.
+   4. Seen again in the 20.23 gate, chromium, 5 workers, mid-strike.
+   5. Off by under 0.003 px on all four values; the rerun passed.
+   6. Evidence: `.cache/e2e-evidence/20.23-gate1/` (not in git).
 
 
 ### [x] 19.133 e2e: the curses test takes Curse of the Tower for a curse

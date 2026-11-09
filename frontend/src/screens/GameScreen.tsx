@@ -5,7 +5,7 @@ import { ActionBar } from '../components/ActionBar';
 import { ActionMenu } from '../components/ActionMenu';
 import { DropLayer } from '../components/HandCard';
 import { t } from '../i18n';
-import { AimLayer } from '../components/Aim';
+import { AimLayer, AttackAim } from '../components/Aim';
 import { Board } from '../components/Board';
 import { ChoiceBack } from '../components/ChoiceBack';
 import { ChoiceDialog, DiscardDialog, LookDialog, ModeDialog, OrderDialog } from '../components/ChoiceDialog';
@@ -144,6 +144,13 @@ function Table({ game, you }: { game: Update; you: number }) {
   }, [aimed, canAct, game.step, actions, act, takeAimed]);
   const offered = canAct ? actions : noActions;
   const me = view.players.at(you);
+  // An attack's pick on the table aims an arrow from the own character
+  // (20.23, ADR 027 "Target arrow" 16.14); the others see it as an aim.
+  const attackTargets = useMemo(
+    () => (offered.choice?.purpose === Purpose.attackTarget && tablePick(offered.choice) ? offered.choice.options.flatMap((o) => (o.target ? [o.target] : [])) : null),
+    [offered.choice],
+  );
+  const attacker = attackTargets && !aiming ? me?.character.id : undefined;
   // The hand's cards in order: a hand card is shared as its slot (A-16).
   const hand = useMemo(() => (me?.hand ?? []).map((c) => c.id), [me]);
   // The banner and the stack say what the game waits for (15.28). While
@@ -254,8 +261,9 @@ function Table({ game, you }: { game: Update; you: number }) {
       />
       <ActionMenu actions={offered.cards} />
       {canAct && <AimLayer />}
+      {attackTargets && attacker !== undefined && <AttackAim source={attacker} targets={attackTargets} />}
       <DropLayer you={you} />
-      {me && !view.over && <PresenceSender active={started && view.turn.active === you} hand={hand} />}
+      {me && !view.over && <PresenceSender active={started && view.turn.active === you} hand={hand} attack={attacker} />}
       <PresenceLayer you={you} />
       <WhyNote />
       {offered.choice?.purpose === Purpose.mode && view.modes && !aiming?.choice ? (

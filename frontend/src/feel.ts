@@ -164,11 +164,43 @@ export const feel = {
   // delay, then grows over grow from the card's size. While one shows,
   // or within grace after one closed, the next shows at once: the
   // pointer moves from card to card and the zoom stays open.
+  // While the own arrow aims (20.23), no card zooms on hover: one zooms
+  // once the arrow rests still on it for rest, and any move closes it.
   zoom: {
     delay: 0.4,
     grow: 0.15,
     growCurve: curves.expoOut,
     grace: 0.3,
+    rest: 0.8,
+  },
+  // aim: the aiming arrow (20.23, ADR 027 "Target arrow", aim.ts,
+  // Aim.tsx). It bows up the screen: its middle stands lift px off the
+  // straight line, or liftShare of the line's length on a short one.
+  // Only the lift across the line bends it, at full from a line lean of
+  // the way off upright (|dx| / length × lean ≥ 1) and less below, so a
+  // line straight up stays straight and the bow never flips. Dashes
+  // dash px long and wide px across, one every step px, march toward
+  // the head at march px a second (the animation speed scales it);
+  // stops keyframes sample one dash's way. The dash by the head fades
+  // out over its last step as (left / step)^headFade, the tail's fades
+  // in as (way / step)^tailFade. The chain ends head px short of the
+  // tip, under the head's back, so the last dashes fade into it. The
+  // ring on a hovered target grows in over ring. Another player's arrow
+  // stays linger seconds after they stop aiming.
+  aim: {
+    lift: 90,
+    liftShare: 0.25,
+    lean: 3,
+    dash: 40,
+    wide: 22,
+    step: 48,
+    march: 30,
+    stops: 8,
+    headFade: 6,
+    tailFade: 2,
+    head: 24,
+    ring: 0.25,
+    linger: 0.25,
   },
   // drag: a held hand card (20.6, ADR 027 "Drag", drag.ts). Each move
   // tilts it gain degrees per unit moved, up to pitch and roll; unit is

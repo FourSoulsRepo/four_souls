@@ -52,7 +52,7 @@
   * The second click, on a target, plays the card at it; no dialog asks.
   * A click on empty space, a right click, or Esc cancels; nothing is sent.
   * Such a card opens no menu; it may be dragged too (2n).
-  * The arrow is a chain of red blocks with a big head (15.32).
+  * The arrow is a chain of red dashes with a big head (15.32, 20.23).
   * Over a valid target a red ring marks the head.
   * A click on the aiming card again does nothing (15.33).
   * A click on a card, pile, or stack item that is no target keeps aiming.
@@ -61,6 +61,18 @@
   * A player is aimed at by the character card, as a monster is.
   * The character glows red; the player's area stays plain.
   * A card that may target itself, as The D20, picks itself on that click.
+  * The arrow bows up the screen; its dashes march toward the head (20.23).
+  * An arrow straight up or down stays straight.
+  * It shows at once where the mouse is; no move is needed.
+  * The system pointer hides while it shows; the head is the pointer.
+  * The valid target under the head glows brighter.
+  * No card zooms while the arrow moves over it.
+  * Resting still on a card for 0.8 s zooms it, beside the card.
+  * Any move closes that zoom.
+  * Another player's arrow glides out from its source, with no ring.
+  * It stays 0.25 s after they stop aiming.
+  * Animation speed Off or reduced motion: no march, no glide.
+  * Touch: no arrow, as before.
 * **2f. Place, then aim (15.34):** a card with no target is dragged onto the board; no arrow.
   * A card that asks its mode first is dragged too; the mode dialog asks.
   * Then the target is aimed from the card, as in 2e; no dialog asks.
@@ -126,8 +138,11 @@
   * The options glow on the table; the rest dims.
   * A deck option: the monster deck or the treasure deck glows.
   * A deck attack's drawn card stays face up on the monster deck.
-  * One click picks; no arrow, no cancel.
+  * One click picks; no cancel.
   * An option not on the table, e.g. an empty slot, keeps the dialog.
+  * What to attack: an arrow runs from the own character (20.23).
+  * It looks and acts as in 2e; the options keep their blue glow.
+  * The other players see it, as any aim.
 * **2i. Drag tilt (20.6):** a dragged card tilts by its motion, as if held.
   * The edge it moves toward leans away; faster moves lean more.
   * Held still, it lies flat again in about 0.2 s.

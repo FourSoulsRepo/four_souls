@@ -514,6 +514,18 @@
   box-shadow: 0 0 0 3px #ff4b3e, 0 0 16px 3px rgb(255 75 62 / 75%);
 }
 
+/* The target the own arrow is over glows brighter (20.23, ADR 027
+   "Target arrow" 7.3); an attack's target keeps its blue, brighter. */
+.card.hl-aim[data-aim-over],
+[data-aim-over] .card.hl-aim {
+  box-shadow: 0 0 0 4px #ff8f7f, 0 0 26px 8px rgb(255 85 62 / 95%);
+}
+
+.card.hl-pick[data-aim-over],
+[data-aim-over] .card.hl-pick {
+  box-shadow: 0 0 0 4px #b3ecff, 0 0 26px 8px rgb(79 195 247 / 95%);
+}
+
 /* A card in a fight (15.31, F-19): a red frame outside the card, so
    it shows with any glow. */
 .card.fight {

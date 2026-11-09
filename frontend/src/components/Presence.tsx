@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { zonesAt, type Point } from '../aim';
-import { followStep } from '../feel';
+import { feel, followStep } from '../feel';
 import { playerColor } from '../table';
 import { scaleFor } from '../playback';
 import { boardBox, empty, fromFrame, marksOf, onFrame, presenceFor, same, sendGap, spotElement, type Pointing } from '../presence';
@@ -16,9 +16,10 @@ import { still } from './lunge';
 // change, at most every sendGap (0.35 s, 0.25 s while aiming; ADR 027
 // "Other players live"), and renews a still presence so the others
 // keep it.
-export function PresenceSender({ active, hand }: { active: boolean; hand: number[] }) {
+// An attack's pick aims from the attacker too (attack, 20.23).
+export function PresenceSender({ active, hand, attack }: { active: boolean; hand: number[]; attack?: number }) {
   const sendPresence = useApp((s) => s.sendPresence);
-  const source = useApp((s) => s.aiming?.source);
+  const source = useApp((s) => s.aiming?.source) ?? attack;
   const held = useApp((s) => s.held ?? undefined);
   const pointingRef = useRef<Pointing & { hand: number[] }>({ active, hand });
   const pointerRef = useRef<Point | null>(null);
@@ -109,16 +110,36 @@ function near(a: Point, b: Point): boolean {
 // red (T-10, T-21). Since 20.13 (ADR 027 "Other players live"): a card
 // they hover glows in their color, and a hand slot lifts; a card they
 // drag floats out of their hand and sways; their arrow's head follows
-// each new sample smoothly (followStep), never jumping. Marks are
+// each new sample smoothly (followStep), never jumping. Since 20.23
+// (ADR 027 "Target arrow"): a new arrow's head glides out from its
+// source, and an arrow stays feel.aim.linger after they stop. Marks are
 // data-presence attributes on the table's own elements, with the
 // player's color as --presence-color; a spot that is gone shows
 // nothing. Speed "off" and reduced motion: the head jumps, nothing
-// floats or sways.
+// floats or sways; a new arrow is drawn whole at once.
 export function PresenceLayer({ you }: { you: number }) {
   const presence = useApp((s) => s.presence);
   const game = useApp((s) => s.game);
   const calm = useApp((s) => scaleFor(s.settings.animation, 0, 0) === 0) || still();
   const [arrows, setArrows] = useState<OtherArrow[]>([]);
+  // gone are arrows that stopped, kept until a while after (feel.aim.linger).
+  const [gone, setGone] = useState<(OtherArrow & { until: number })[]>([]);
+  useEffect(() => {
+    if (gone.length === 0) {
+      return undefined;
+    }
+    const first = Math.min(...gone.map((a) => a.until));
+    const timer = window.setTimeout(
+      () => {
+        const now = performance.now();
+        setGone((g) => g.filter((a) => a.until > now));
+      },
+      Math.max(0, first - performance.now()),
+    );
+    return () => {
+      window.clearTimeout(timer);
+    };
+  }, [gone]);
   // markedRef holds the elements marked now; the next pass clears them.
   const markedRef = useRef<Element[]>([]);
   // targetsRef are the arrows as the last samples place them; shownRef
@@ -137,7 +158,8 @@ export function PresenceLayer({ you }: { you: number }) {
     const shown = new Map<number, Point>();
     let moving = false;
     const out = targetsRef.current.map((a) => {
-      const was = shownRef.current.get(a.seat);
+      // A new arrow glides out from its source.
+      const was = shownRef.current.get(a.seat) ?? (k < 1 ? a.from : undefined);
       let to = a.to;
       if (was && k < 1) {
         to = { x: was.x + (a.to.x - was.x) * k, y: was.y + (a.to.y - was.y) * k };
@@ -197,6 +219,15 @@ export function PresenceLayer({ you }: { you: number }) {
         }
       }
       markedRef.current = [...marks.keys()];
+      // An arrow that stopped stays a while where it was drawn; one
+      // that comes back takes its place.
+      const seats = new Set(out.map((a) => a.seat));
+      const until = performance.now() + feel.aim.linger * 1000;
+      const stopped = targetsRef.current.filter((a) => !seats.has(a.seat)).map((a) => ({ ...a, to: shownRef.current.get(a.seat) ?? a.to, until }));
+      setGone((g) => {
+        const kept = g.filter((a) => !seats.has(a.seat) && !stopped.some((s) => s.seat === a.seat));
+        return kept.length === g.length && stopped.length === 0 ? g : [...kept, ...stopped];
+      });
       targetsRef.current = out;
       cancelAnimationFrame(frameRef.current);
       let last = performance.now();
@@ -207,7 +238,7 @@ export function PresenceLayer({ you }: { you: number }) {
           frameRef.current = requestAnimationFrame(tick);
         }
       };
-      // A new arrow starts where its sample puts it; a known one moves.
+      // A known arrow moves on from where it is; a new one from its source.
       if (followRef.current(0)) {
         frameRef.current = requestAnimationFrame(tick);
       }
@@ -222,7 +253,10 @@ export function PresenceLayer({ you }: { you: number }) {
     },
     [],
   );
-  return arrows.map((a) => <AimArrow key={a.seat} from={a.from} to={a.to} on={a.on} others />);
+  return [
+    ...arrows.map((a) => <AimArrow key={a.seat} from={a.from} to={a.to} on={a.on} others />),
+    ...gone.map((a) => <AimArrow key={`gone-${String(a.seat)}`} from={a.from} to={a.to} on={a.on} others />),
+  ];
 }
 
 function unmark(els: Element[]) {

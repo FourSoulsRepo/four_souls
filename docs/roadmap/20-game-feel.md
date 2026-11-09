@@ -494,7 +494,7 @@ Swapping it is the owner's call; not part of this step.
    3. UC-26 matches the new screen.
    4. e2e: Eden's pick on the new screen, set up so it never depends on the deal.
 
-### [ ] 20.23 Target arrow, compared with the reference
+### [x] 20.23 Target arrow, compared with the reference
 
 1. Goal: aiming at a target looks and feels like the reference's arrow.
    1. Owner, 2026-11-08.

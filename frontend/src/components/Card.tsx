@@ -11,7 +11,8 @@ import { counterColor } from '../counters';
 import type { CounterView, MonsterStats, StatSource } from '../protocol';
 import { statLines, sumOf, tempSources, trend, type Name, type TempSource, type Trend } from '../stats';
 import { useApp, viewScale } from '../store';
-import { boxOf } from '../zoom';
+import { arrowShows } from '../aim';
+import { boxOf, restWatch, type RestWatch } from '../zoom';
 import { Count } from './Count';
 import { Die } from './Die';
 import './Card.css';
@@ -276,13 +277,22 @@ let warmUntil = 0;
 // card ref or when zoomable is false. A hand card's (rise) zooms at
 // once; any other waits feel.zoom.delay and grows, unless a zoom shows
 // or just closed: then it shows at once (20.5, ADR 027 principle 2).
+// While the own arrow aims, no card zooms as the arrow passes: one
+// zooms once the arrow rests still on it for feel.zoom.rest, and the
+// arrow's next move closes it (20.23, ADR 027 "Target arrow").
 export function useZoom(cardRef: string | undefined, zoomable: boolean, rise = false, why?: string, stats: string[] = [], counters: CounterView[] = []) {
   const setZoom = useApp((s) => s.setZoom);
   const pressRef = useRef(0);
   // waitRef is the pending timer of a table card's zoom.
   const waitRef = useRef(0);
   const downRef = useRef<{ x: number; y: number } | null>(null);
+  // restRef waits for the arrow to rest on the card (20.23).
+  const restRef = useRef<RestWatch | null>(null);
   const on = zoomable && cardRef !== undefined;
+  const unrest = () => {
+    restRef.current?.stop();
+    restRef.current = null;
+  };
 
   // A card that leaves the screen while hovered gets no pointer-leave:
   // the card that started a mouse zoom ends it then.
@@ -298,6 +308,7 @@ export function useZoom(cardRef: string | undefined, zoomable: boolean, rise = f
   useEffect(
     () => () => {
       unwatch();
+      unrest();
       window.clearTimeout(waitRef.current);
       const { zoom, setZoom: clear } = useApp.getState();
       if (zoomedRef.current && zoom && zoom.ref === cardRef && !zoom.touch) {
@@ -330,6 +341,25 @@ export function useZoom(cardRef: string | undefined, zoomable: boolean, rise = f
     window.clearTimeout(pressRef.current);
     downRef.current = null;
   };
+  const show = (el: HTMLElement, grow: boolean) => {
+    setZoom({
+      ref: cardRef ?? '',
+      touch: false,
+      at: boxOf(el),
+      rise,
+      ...(grow ? { grow } : {}),
+      ...(why ? { why } : {}),
+      ...(stats.length > 0 ? { stats } : {}),
+      ...(counters.length > 0 ? { counters } : {}),
+    });
+  };
+  // rest restarts the wait for the arrow to rest on the card.
+  const rest = (el: HTMLElement, x: number, y: number) => {
+    restRef.current ??= restWatch(feel.zoom.rest * 1000, () => {
+      show(el, true);
+    });
+    restRef.current.move(x, y);
+  };
   return {
     onPointerEnter: (e: PointerEvent<HTMLElement>) => {
       // A held hand card passes over cards without zooming them (20.20).
@@ -338,25 +368,18 @@ export function useZoom(cardRef: string | undefined, zoomable: boolean, rise = f
         const el = e.currentTarget;
         watch(el);
         window.clearTimeout(waitRef.current);
-        const show = (grow: boolean) => {
-          setZoom({
-            ref: cardRef,
-            touch: false,
-            at: boxOf(el),
-            rise,
-            ...(grow ? { grow } : {}),
-            ...(why ? { why } : {}),
-            ...(stats.length > 0 ? { stats } : {}),
-            ...(counters.length > 0 ? { counters } : {}),
-          });
-        };
+        unrest();
+        if (arrowShows()) {
+          rest(el, e.clientX, e.clientY);
+          return;
+        }
         const open = useApp.getState().zoom;
         if (rise || (open && !open.touch) || performance.now() < warmUntil) {
-          show(false);
+          show(el, false);
           return;
         }
         waitRef.current = window.setTimeout(() => {
-          show(true);
+          show(el, true);
         }, feel.zoom.delay * 1000);
       }
     },
@@ -364,6 +387,7 @@ export function useZoom(cardRef: string | undefined, zoomable: boolean, rise = f
       cancelPress();
       if (on && e.pointerType === 'mouse') {
         unwatch();
+        unrest();
         window.clearTimeout(waitRef.current);
         zoomedRef.current = false;
         const open = useApp.getState().zoom;
@@ -383,6 +407,15 @@ export function useZoom(cardRef: string | undefined, zoomable: boolean, rise = f
       }
     },
     onPointerMove: (e: PointerEvent<HTMLElement>) => {
+      // While the arrow aims, each move starts the rest again (20.23).
+      if (on && e.pointerType === 'mouse' && useApp.getState().held === null) {
+        if (arrowShows()) {
+          window.clearTimeout(waitRef.current);
+          rest(e.currentTarget, e.clientX, e.clientY);
+        } else {
+          unrest();
+        }
+      }
       // A finger that moves is dragging, not pressing.
       const d = downRef.current;
       if (d && Math.hypot(e.clientX - d.x, e.clientY - d.y) > 8) {

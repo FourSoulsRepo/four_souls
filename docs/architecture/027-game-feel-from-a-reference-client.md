@@ -1468,6 +1468,45 @@ Each sub-step of step 20 takes the part it needs.
         2. Recommend: later.
     18. Sounds.
         1. Ref: none of the arrow's own. Recommend: keep; no new clip.
+17. Built in 20.23 (owner picks, 2026-11-09).
+    1. Every "build" of 16; 4 changed, 14 built; 7 stays later.
+    2. Times and sizes in `feel.aim`; `feel.zoom.rest` for the zoom.
+    3. Arc: a quadratic curve, bowing up the screen (`arc` in `aim.ts`).
+    4. Its middle: 90 px off the line, or a quarter of a short line.
+    5. Only the lift across the line bends it: full from 20° off upright.
+    6. Below that it fades to none; an upright arrow stays straight.
+    7. So the bow never flips side as the pointer crosses upright.
+    8. As the reference's lift, seen from its camera.
+    9. Dashes: 40 long, 22 across, one every 48 px; by eye.
+    10. Our colors, rim and shadow stay; dashes and head turn with the curve.
+    11. March: 30 px/s, the reference's 0.5 units/s; speed scales it.
+    12. Fades: the head end (left / step)^6, the tail (way / step)^2.
+    13. Each dash is one WAAPI loop over one step; all start at one time.
+    14. The chain ends 24 px short of the tip, under the head's back.
+    15. By eye: at the head's full length a gap showed before the head.
+    16. Own arrow: drawn at once from the last mouse place; no move needed.
+    17. It follows its card each frame, e.g. while the card lifts.
+    18. The system pointer hides while it shows (`html.aim-cursor`).
+    19. The hovered valid target gets `data-aim-over`: a brighter glow.
+    20. The ring stays on the own aim; its 0.25 s grow is `feel.aim.ring`.
+    21. Zoom (4, owner's change): none while the arrow moves.
+    22. A card zooms once the arrow rests still on it for 0.8 s.
+    23. 0.8 s: twice the 0.4 s table hover; by eye.
+    24. Any card, target or not: a rest means "let me read this".
+    25. Any pointer move closes the zoom; the next rest opens it again.
+    26. It opens beside the card; the arrow's layer is above the zoom.
+    27. So the head on the target stays in view.
+    28. Others: a new head glides out from its source (`followStep`).
+    29. A stopped arrow stays 0.25 s where it was drawn.
+    30. No ring on others' arrows; the red frame stays.
+    31. Attack (14, owner): the pick of what to attack draws the arrow.
+    32. From the own character to the pointer; the blue glow stays.
+    33. The hovered option's blue glow brightens; the ring shows.
+    34. The click still answers the pick, as in 18.11.
+    35. The monster deck counts as the deck option's target.
+    36. Others see it as any aim: `presence.from` is the character.
+    37. Speed "off" and reduced motion: no march, no glide; it still shows.
+    38. No new sound.
 
 ## Consequences
 
