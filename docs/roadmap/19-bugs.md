@@ -4561,7 +4561,7 @@ Totals by system (142 items):
 7. Owner notes (2026-11-09)
    1. Owner marks 19.146 solved.
 
-### [ ] 19.147 The board never shows if a looked-at card went to the top or the bottom
+### [x] 19.147 The board never shows if a looked-at card went to the top or the bottom
 
 1. Goal: everyone sees on the board where a looked-at top card went.
 2. Report (owner, 2026-11-09)
@@ -4606,3 +4606,5 @@ Totals by system (142 items):
    17. Screenshots: `.cache/screenshots/19.147/before/` and `after/`.
 7. Result (2026-11-09)
    1. `make lint`, `make test` and `make frontend e2e` pass (exit 0).
+8. Owner notes (2026-11-09)
+   1. Owner marks 19.147 solved.
