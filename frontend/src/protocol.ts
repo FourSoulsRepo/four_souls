@@ -112,6 +112,29 @@ export interface Options {
   rollback?: RollbackMode; // none: Disabled (ADR 020)
 }
 
+// Ban is one banned character; seat -1 is the host's list.
+export interface Ban {
+  seat: number;
+  card: string;
+}
+
+// Setup is the ban and pick phase before the game (GS-01 to GS-04).
+// Offers and their starting items go only to their own player.
+export interface Setup {
+  phase: 'ban' | 'pick';
+  round?: number;
+  turn: number; // the seat that bans now; -1 when everyone picks
+  pool: string[] | null;
+  banned: Ban[] | null;
+  offers?: string[];
+  // items are the offers' starting items, by index; '' for a character
+  // that picks one at the start (Eden, R-SETUP-09).
+  items?: string[];
+  picked?: boolean[]; // who has picked, per seat
+  deadline?: number; // Unix ms when the ban turn ends; 0: no timer
+  seats: Seat[];
+}
+
 // RollbackMode: soft, the others vote; god, anyone, at once.
 export type RollbackMode = 'soft' | 'god';
 

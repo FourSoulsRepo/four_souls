@@ -46,7 +46,7 @@
 * **3a. Empty deck or discard:** a dashed outline keeps its place.
 * **3b. Covered slot:** a "+N" badge shows the cards under the top one.
 * **3c. More than four slots:** the slots share the row; the board stays the same.
-* **1a. Bans or a draft first:** "Setting up the match…" until 7.14.
+* **1a. Bans or a draft first:** a draft shows its pick screen (UC-39); bans show "Setting up the match…".
 * **1b. Events play first (V-08):** each update's events play one at a time.
   * Looted and discarded cards fly between deck, hand and discard.
   * Dice rolls show the result; cents, healing and damage pop up.

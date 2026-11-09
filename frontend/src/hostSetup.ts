@@ -13,6 +13,11 @@ export interface HostSetup {
   random_seats: boolean;
   // rollback is the rollback mode (ADR 020); '': Disabled.
   rollback: string;
+  // picking is how characters are dealt (GS-01): '' one random each,
+  // 'draft' a draft.
+  picking: string;
+  // draft_size is the characters a draft offers; 0: the default.
+  draft_size: number;
 }
 
 // noHostSetup is the setup before the first host.
@@ -25,4 +30,6 @@ export const noHostSetup: HostSetup = {
   no_deck_ratios: false,
   random_seats: false,
   rollback: '',
+  picking: '',
+  draft_size: 0,
 };

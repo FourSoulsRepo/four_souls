@@ -1678,8 +1678,8 @@
     "note": "Game screen title before the table's first state arrives."
   },
   "game.setting_up_hint": {
-    "text": "Bans and picks get their own screen in step 7.14.",
-    "note": "Game screen, under 'Setting up the match…': a placeholder for a screen still to come."
+    "text": "The table appears when the match starts.",
+    "note": "Game screen, under 'Setting up the match…': shown until the table's first state arrives."
   },
   "game.turn": {
     "text": "Turn {n}",
@@ -2352,6 +2352,10 @@
     "text": "Detailed setup",
     "note": "Host screen: check box that shows the options below it."
   },
+  "host.draft_size": {
+    "text": "Characters offered",
+    "note": "Host screen, detailed setup: label of the select for how many characters each player picks from in a draft."
+  },
   "host.host": {
     "text": "Host",
     "note": "Host screen: button that starts hosting the game in this app."
@@ -2363,6 +2367,18 @@
   "host.password": {
     "text": "Password (optional)",
     "note": "Host screen: label of the game's password field."
+  },
+  "host.picking": {
+    "text": "Characters",
+    "note": "Host screen, detailed setup: label of the select for how characters are dealt."
+  },
+  "host.picking_draft": {
+    "text": "Draft",
+    "note": "Host screen, detailed setup, option of 'Characters': each player is offered several characters and picks one."
+  },
+  "host.picking_random": {
+    "text": "One random each",
+    "note": "Host screen, detailed setup, option of 'Characters': each player gets one random character (the default)."
   },
   "host.players": {
     "text": "Players",
@@ -2880,6 +2896,42 @@
   "pause.wait": {
     "text": "Wait",
     "note": "Pause dialog: button; vote to wait for the players who left."
+  },
+  "pick.caption": {
+    "text": "Each character comes with its starting item.",
+    "note": "Draft pick screen, under the title, before the player has picked."
+  },
+  "pick.choosing": {
+    "text": "choosing",
+    "note": "Draft pick screen, list of players, lower case after 'Ann:': this player has not picked yet."
+  },
+  "pick.confirm": {
+    "text": "Confirm",
+    "note": "Draft pick screen: button that sends the picked character."
+  },
+  "pick.has_picked": {
+    "text": "picked",
+    "note": "Draft pick screen, list of players, lower case after 'Ann:': this player has picked a character (not which one)."
+  },
+  "pick.item": {
+    "text": "Starting item",
+    "note": "Draft pick screen, label over the small card under each offered character: the item that character starts with."
+  },
+  "pick.item_later": {
+    "text": "You choose a starting item when the game starts.",
+    "note": "Draft pick screen, under a character with no fixed starting item (Eden): the item is picked later, from the treasure deck."
+  },
+  "pick.players": {
+    "text": "Players",
+    "note": "Draft pick screen: screen-reader name of the list of players and whether each has picked."
+  },
+  "pick.title": {
+    "text": "Choose your character",
+    "note": "Draft pick screen title (GS-01): the player picks one of the characters offered to them."
+  },
+  "pick.waiting": {
+    "text": "Waiting for the other players to pick…",
+    "note": "Draft pick screen, under the title, after the player has picked."
   },
   "prompt.copy_ability": {
     "text": "Copy which ↷ ability?",

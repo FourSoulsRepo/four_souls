@@ -319,6 +319,15 @@ Alt art (CD-11) comes after all sets.
    2. UC-05 updated; use case for the pick screen.
    3. e2e test: each offer shows its starting item; Eden shows none.
    4. Server test: offers carry the starting items.
+4. Result (owner's jump ahead, 2026-11-09):
+   1. Protocol: `setup.items`, the offers' starting items, by index.
+   2. Eden is the only character with a start choice, in every set.
+   3. `TestEveryCharacterHasAStartingItem` fails on a new one.
+   4. Detailed setup: "Characters" (random or draft), "Characters offered".
+   5. The host screen remembers both (`HostSetup.picking`, `draft_size`).
+   6. `PickScreen`: click to pick, Confirm to send, who has picked.
+   7. Tests: `TestDraft`, `TestStartingItemsEden`, `e2e/tests/draft.spec.ts`.
+   8. UC-39 added; UC-05 and UC-12 updated.
 
 ### [ ] 14.12 Ban list in the host screen
 

@@ -431,6 +431,8 @@ export namespace settings {
 	    no_deck_ratios: boolean;
 	    random_seats: boolean;
 	    rollback: string;
+	    picking: string;
+	    draft_size: number;
 	
 	    static createFrom(source: any = {}) {
 	        return new HostSetup(source);
@@ -446,6 +448,8 @@ export namespace settings {
 	        this.no_deck_ratios = source["no_deck_ratios"];
 	        this.random_seats = source["random_seats"];
 	        this.rollback = source["rollback"];
+	        this.picking = source["picking"];
+	        this.draft_size = source["draft_size"];
 	    }
 	}
 	export class RecentServer {

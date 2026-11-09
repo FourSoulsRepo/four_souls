@@ -89,10 +89,22 @@ type HostSetup struct {
 	RandomSeats bool `json:"random_seats"`
 	// Rollback is the rollback mode (ADR 020); "": Disabled.
 	Rollback string `json:"rollback"`
+	// Picking is how characters are dealt (GS-01): "" is one random
+	// each, protocol.PickDraft a draft.
+	Picking string `json:"picking"`
+	// DraftSize is the characters a draft offers each player; 0: the
+	// default.
+	DraftSize int `json:"draft_size"`
 }
 
 // ResponseTimers are the host screen's response timer choices; 0 is off.
 var ResponseTimers = []int{0, 60, 90, 120, 180}
+
+// MinDraft and MaxDraft bound a draft's offers, as the server does.
+const (
+	MinDraft = 2
+	MaxDraft = 5
+)
 
 // maxHostSets caps the remembered card sets.
 const maxHostSets = 20
@@ -107,6 +119,12 @@ func (h HostSetup) clean() HostSetup {
 	}
 	if h.Rollback != protocol.RollbackSoft && h.Rollback != protocol.RollbackGod {
 		h.Rollback = ""
+	}
+	if h.Picking != protocol.PickDraft {
+		h.Picking = ""
+	}
+	if h.DraftSize < MinDraft || h.DraftSize > MaxDraft {
+		h.DraftSize = 0
 	}
 	if h.Sets != nil {
 		sets := []string{}

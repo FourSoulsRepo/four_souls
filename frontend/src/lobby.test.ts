@@ -69,6 +69,16 @@ describe('leaving', () => {
     expect(lost({ ...start, screen: 'table' }).screen).toBe('join');
   });
 
+  it('keeps the draft offers until the game starts (14.11)', () => {
+    const setup = { phase: 'pick' as const, turn: -1, pool: [], banned: [], offers: ['isaac', 'eden'], items: ['the_d6', ''], picked: [false, false], seats: [] };
+    const atTable = onMessage(start, { type: 'table', data: table });
+    const picking = onMessage(atTable, { type: 'setup', data: setup });
+    expect(picking).toMatchObject({ screen: 'game', lobby: { table, setup } });
+    const playing = onMessage(picking, { type: 'update', data: {} });
+    expect(playing.lobby.setup).toBeNull();
+    expect(leftTable(picking).lobby.setup).toBeNull();
+  });
+
   it('lost keeps a running game, to reconnect to', () => {
     const playing = onMessage(start, { type: 'table', data: table });
     const s = lost({ ...playing, screen: 'game' });

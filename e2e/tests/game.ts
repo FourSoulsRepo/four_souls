@@ -83,6 +83,9 @@ export async function startGame(
     // roll throws every first-player die (15.43), so the test starts in
     // turn 1; false leaves the roll to the test.
     roll = true,
+    // pick plays a draft's pick screen (14.11) once everyone is ready;
+    // the game starts when it returns.
+    pick = undefined as ((pages: Page[]) => Promise<void>) | undefined,
   } = {},
 ): Promise<Page[]> {
   const pages: Page[] = [];
@@ -130,6 +133,9 @@ export async function startGame(
   }
   for (const page of pages) {
     await page.getByRole('button', { name: tr('lobby.seats.ready'), exact: true }).click();
+  }
+  if (pick) {
+    await pick(pages);
   }
   for (const page of pages) {
     await expect(page.getByRole('main', { name: new RegExp(`^${trRe('game.turn').source}`) })).toBeVisible();

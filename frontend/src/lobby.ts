@@ -1,6 +1,6 @@
 // The lobby state and how server messages change it. Pure, so it is
 // tested without a socket.
-import type { Envelope, GameInfo, Games, Options, ProtocolError, RollbackMode, Saved, SaveInfo, Table, Update, Welcome } from './protocol';
+import type { Envelope, GameInfo, Games, Options, ProtocolError, RollbackMode, Saved, SaveInfo, Setup, Table, Update, Welcome } from './protocol';
 import { errorText } from './protocol';
 import type { LanServer, RecentServer, Rejoin } from './bridge';
 import { t } from './i18n';
@@ -16,9 +16,11 @@ export interface Lobby {
   table: Table | null;
   // saved is the ID the host saved the game under; '' if none.
   saved: string;
+  // setup is the ban and pick phase before the game; null outside it.
+  setup: Setup | null;
 }
 
-export const emptyLobby: Lobby = { welcome: null, games: [], saves: [], table: null, saved: '' };
+export const emptyLobby: Lobby = { welcome: null, games: [], saves: [], table: null, saved: '', setup: null };
 
 // Session is the part of the store that server messages change.
 export interface Session {
@@ -42,12 +44,14 @@ export function onMessage(s: Session, env: Envelope): Session {
       return { ...s, lobby: { ...l, games: g.games ?? [], saves: g.saves ?? [] } };
     }
     case 'table':
-      return { screen: 'table', lobby: { ...l, table: env.data as Table, saved: '' }, game: null, error: '' };
+      return { screen: 'table', lobby: { ...l, table: env.data as Table, saved: '', setup: null }, game: null, error: '' };
     case 'setup':
-      return s.screen === 'game' ? s : { ...s, screen: 'game', error: '' };
-    case 'update':
+      return { ...s, screen: 'game', lobby: { ...l, setup: env.data as Setup }, error: s.screen === 'game' ? s.error : '' };
+    case 'update': {
       // The update itself goes to playback, which shows it in turn.
-      return s.screen === 'game' ? s : { ...s, screen: 'game', error: '' };
+      const next = l.setup ? { ...s, lobby: { ...l, setup: null } } : s;
+      return s.screen === 'game' ? next : { ...next, screen: 'game', error: '' };
+    }
     case 'saved':
       return { ...s, screen: 'join', lobby: { ...l, table: null, saved: (env.data as Saved).save }, game: null };
     case 'error':
@@ -60,7 +64,7 @@ export function onMessage(s: Session, env: Envelope): Session {
 // leftTable is the session after the player leaves the table: back to
 // the server's game list.
 export function leftTable(s: Session): Session {
-  return { screen: 'join', lobby: { ...s.lobby, table: null }, game: null, error: '' };
+  return { screen: 'join', lobby: { ...s.lobby, table: null, setup: null }, game: null, error: '' };
 }
 
 // lost is the session after the connection dropped. A server error sent

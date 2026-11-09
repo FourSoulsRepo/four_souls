@@ -6,6 +6,8 @@ Rules engine versions are in each release's notes.
 
 ## Unreleased
 
+- Draft: in Detailed setup the host can offer each player 2 to 5 characters to pick from; one random character each stays the default. Each offer shows the character's starting item; Eden chooses hers when the game starts.
+
 ## 0.3.3 - 2026-10-31
 
 - Dedicated server: one CPU serves more games at once, each step costs less work.

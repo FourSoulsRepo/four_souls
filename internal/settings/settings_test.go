@@ -218,17 +218,17 @@ func TestHostSetupRemembered(t *testing.T) {
 		t.Errorf("default host setup = %+v, want unset", got)
 	}
 	in := Load(path)
-	in.Host = HostSetup{Seats: 3, Sets: []string{"b2", "g2", "g2", "Bad Code"}, Detailed: true, ResponseTimer: 90, NoBonusSouls: true, NoDeckRatios: true, RandomSeats: true, Rollback: protocol.RollbackSoft}
+	in.Host = HostSetup{Seats: 3, Sets: []string{"b2", "g2", "g2", "Bad Code"}, Detailed: true, ResponseTimer: 90, NoBonusSouls: true, NoDeckRatios: true, RandomSeats: true, Rollback: protocol.RollbackSoft, Picking: protocol.PickDraft, DraftSize: 4}
 	if _, err := Save(path, in); err != nil {
 		t.Fatal(err)
 	}
 	got := Load(path).Host
-	want := HostSetup{Seats: 3, Sets: []string{"b2", "g2"}, Detailed: true, ResponseTimer: 90, NoBonusSouls: true, NoDeckRatios: true, RandomSeats: true, Rollback: protocol.RollbackSoft}
+	want := HostSetup{Seats: 3, Sets: []string{"b2", "g2"}, Detailed: true, ResponseTimer: 90, NoBonusSouls: true, NoDeckRatios: true, RandomSeats: true, Rollback: protocol.RollbackSoft, Picking: protocol.PickDraft, DraftSize: 4}
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("host setup = %+v, want %+v", got, want)
 	}
-	in.Host = HostSetup{Seats: 9, ResponseTimer: 7, Rollback: "chaos"}
-	if out, err := Save(path, in); err != nil || out.Host.Seats != 0 || out.Host.ResponseTimer != 0 || out.Host.Rollback != "" {
+	in.Host = HostSetup{Seats: 9, ResponseTimer: 7, Rollback: "chaos", Picking: "ban", DraftSize: 9}
+	if out, err := Save(path, in); err != nil || out.Host.Seats != 0 || out.Host.ResponseTimer != 0 || out.Host.Rollback != "" || out.Host.Picking != "" || out.Host.DraftSize != 0 {
 		t.Errorf("bad values: %+v, %v; want them dropped", out.Host, err)
 	}
 }

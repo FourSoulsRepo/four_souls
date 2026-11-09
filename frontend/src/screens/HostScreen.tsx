@@ -36,6 +36,9 @@ export function HostScreen() {
   const [detailed, setDetailed] = useState(last.detailed);
   const [options, setOptions] = useState<Options>({
     ...simple,
+    // Random stays the default; a draft is remembered (GS-01, 14.11).
+    picking: last.picking === 'draft' ? 'draft' : 'random',
+    draft_size: last.draft_size || 3,
     response_timer: last.response_timer,
     no_bonus_souls: last.no_bonus_souls,
     no_deck_ratios: last.no_deck_ratios,
@@ -105,6 +108,8 @@ export function HostScreen() {
                   no_deck_ratios: options.no_deck_ratios ?? false,
                   random_seats: options.random_seats ?? false,
                   rollback: options.rollback ?? '',
+                  picking: options.picking === 'draft' ? 'draft' : '',
+                  draft_size: options.draft_size ?? 3,
                 },
               });
               const game = { seats, sets: chosen, options: detailed ? options : undefined, password: password || undefined };
@@ -183,9 +188,40 @@ export function HostScreen() {
         </label>
         {detailed && (
           <>
-            {/* Draft and bans need the ban and pick screen, which comes with
-                the tournament tools (roadmap, Future); until then a game
-                with them could not start. */}
+            {/* One random character each by default; a draft offers each
+                player 2–5 and they pick one (GS-01, 14.11). Bans need
+                the ban screen, which comes with the tournament tools. */}
+            <div className="row">
+              <label className="field">
+                {t('host.picking')}
+                <select
+                  value={options.picking}
+                  onChange={(e) => {
+                    option({ picking: e.target.value === 'draft' ? 'draft' : 'random' });
+                  }}
+                >
+                  <option value="random">{t('host.picking_random')}</option>
+                  <option value="draft">{t('host.picking_draft')}</option>
+                </select>
+              </label>
+              {options.picking === 'draft' && (
+                <label className="field">
+                  {t('host.draft_size')}
+                  <select
+                    value={options.draft_size}
+                    onChange={(e) => {
+                      option({ draft_size: Number(e.target.value) });
+                    }}
+                  >
+                    {[2, 3, 4, 5].map((n) => (
+                      <option key={n} value={n}>
+                        {n}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
+            </div>
             <div className="row">
               <label className="field">
                 {t('host.timer')}

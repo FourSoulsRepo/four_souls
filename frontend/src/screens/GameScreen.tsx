@@ -25,6 +25,7 @@ import { EndTurn, TurnActions } from '../components/TurnActions';
 import { matLook } from '../mats';
 import type { Block, Update } from '../protocol';
 import { seatOf, useApp } from '../store';
+import { PickScreen } from './PickScreen';
 import { activity, askedSeat, myMove, picking, promptBanner, stackPrompt, tablePick } from '../prompt';
 import { beforeStart, seatNames, waitTurn, type Names } from '../stack';
 import { seatPositions } from '../table';
@@ -38,6 +39,10 @@ export function GameScreen() {
   const game = useApp((s) => s.game);
   const you = useApp(seatOf);
   const quit = useApp((s) => s.quit);
+  const setup = useApp((s) => s.lobby.setup);
+  if (!game && setup?.phase === 'pick') {
+    return <PickScreen setup={setup} />;
+  }
   if (!game) {
     return (
       <div className="screen">

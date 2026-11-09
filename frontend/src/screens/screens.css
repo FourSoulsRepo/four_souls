@@ -297,3 +297,73 @@
   justify-content: flex-start;
   overflow-y: auto;
 }
+
+/* The draft pick (14.11): the offers in a row, each with its starting
+   item under it; a picked card lifts and keeps its bright glow until
+   Confirm, as the start-of-game screen's (20.22). */
+.pick-offers {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 24px;
+  max-width: 100%;
+}
+
+.pick-offer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+.screen button.pick-card {
+  display: block;
+  padding: 0;
+  border: none;
+  background: none;
+  transition: translate 0.15s ease-out;
+}
+
+.screen button.pick-card:hover,
+.screen button.pick-card:focus-visible,
+.screen button.pick-card.picked {
+  translate: 0 -10px;
+}
+
+.screen button.pick-card:focus-visible {
+  outline: none;
+}
+
+.pick-card:is(:hover, :focus-visible) .card.hl-pick,
+.pick-card.picked .card.hl-pick {
+  box-shadow: 0 0 0 3px #b3e9ff, 0 0 26px 8px rgb(79 195 247 / 95%);
+}
+
+.pick-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  width: clamp(110px, 13vw, 180px);
+  min-height: 150px;
+  text-align: center;
+  font-size: 14px;
+}
+
+.pick-item-later {
+  margin-top: 24px;
+}
+
+.pick-seats {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 4px 18px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.pick-seats li.picked {
+  color: #b3e9ff;
+}

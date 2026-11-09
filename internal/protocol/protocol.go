@@ -487,6 +487,7 @@ type Setup struct {
 	Pool     []engine.CardRef `json:"pool"`               // characters still in the game
 	Banned   []Ban            `json:"banned"`             // in order
 	Offers   []engine.CardRef `json:"offers,omitempty"`   // your draft choices
+	Items    []engine.CardRef `json:"items,omitempty"`    // the offers' starting items; "": Eden's choice (R-SETUP-09)
 	Picked   []bool           `json:"picked,omitempty"`   // who has picked, per seat
 	Deadline int64            `json:"deadline,omitempty"` // Unix ms when the ban turn ends; 0: no timer
 	Seats    []Seat           `json:"seats"`

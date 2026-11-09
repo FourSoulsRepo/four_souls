@@ -353,6 +353,8 @@ interface AppState extends Session {
   joinGame: (game: string, password?: string) => void;
   loadSave: (save: string) => void;
   setReady: (ready: boolean) => void;
+  // pick picks one of the player's draft offers (GS-01, 14.11).
+  pick: (card: string) => void;
   leaveTable: () => Promise<void>;
   // quit closes the connection, stops hosting, and goes to the menu,
   // or to another screen: the join screen, one level up from its games.
@@ -811,7 +813,7 @@ export const useApp = create<AppState>()((set, get) => {
           forgetSeat();
           endRetry();
           stopPlayback();
-          set((s) => ({ screen: 'join', lobby: { ...s.lobby, table: null }, game: null }));
+          set((s) => ({ screen: 'join', lobby: { ...s.lobby, table: null, setup: null }, game: null }));
         }
       }
       if (env.type === 'presence') {
@@ -1135,6 +1137,9 @@ export const useApp = create<AppState>()((set, get) => {
     },
     setReady: (ready) => {
       send('ready', { ready });
+    },
+    pick: (card) => {
+      send('pick', { card });
     },
     leaveTable: async () => {
       if (get().hosting) {
