@@ -4696,7 +4696,7 @@ Totals by system (145 items):
 8. Owner notes (2026-11-09)
    1. Owner marks 19.149 solved.
 
-### [ ] 19.150 Charged Baby can't recharge a spent Golden Trinket
+### [x] 19.150 Charged Baby can't recharge a spent Golden Trinket
 
 1. Goal: an item with a gained ↷ ability counts as a ↷ item.
 2. Report (owner, 2026-11-09)
@@ -4730,3 +4730,5 @@ Totals by system (145 items):
    13. CHANGELOG: Unreleased.
 6. Result (2026-11-10)
    1. `make lint test` passes (exit 0).
+7. Owner notes (2026-11-10)
+   1. Owner marks 19.150 solved.
