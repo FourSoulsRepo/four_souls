@@ -451,7 +451,7 @@ Alt art (CD-11) comes after all sets.
    1. Owner amended and pushed the images (`4ad7123`).
    2. Owner marks 14.16 solved.
 
-### [ ] 14.17 Challenge rules research
+### [x] 14.17 Challenge rules research
 
 1. Goal: our rules text for co-op challenges and Krampus (GS-11).
 2. Owner decisions (2026-11-10):
@@ -504,6 +504,18 @@ Alt art (CD-11) comes after all sets.
 6. Done when:
    1. Rules test passes: every new ID unique and well formed.
    2. The rules website shows the new file, if it lists every topic file.
+7. Result (2026-11-10):
+   1. New `pkg/rules_engine/docs/rules/challenges.md`.
+   2. Rules R-COOP-01–12, R-CHAL-01–15, R-KRAMPUS-01–16.
+   3. Topics added to the rules README; the website lists the file last.
+   4. Open cases Q-30 to Q-42 in `open-questions.md`; Q-04 notes Q-35.
+   5. House answers Q-31–Q-33, Q-39–Q-42 are in "Rulings to revisit".
+   6. Final boss leaves when "killed" (S-OFF over the PDF): Q-37.
+   7. Room rule after the room step: Q-38.
+   8. Only Normal has the forced minion attack; checked on the boss cards.
+   9. `sources.md`: new source S-MAE, the cached Maestro Media PDFs.
+   10. Community: Yuggy on events in minion slots, timer, regular boss cards.
+   11. Nothing on Krampus in S-RED, S-X or S-DIS.
 
 ### [ ] 14.18 ADR: challenges
 

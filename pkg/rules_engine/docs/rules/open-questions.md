@@ -47,6 +47,7 @@ On 2026-10-09 the owner parked every open decision for later.
 2. Sources: S-OFF says "during their turn"; S-RU says on any death.
 3. Proposal: follow S-OFF (trust order).
 4. Status: **Parked** (co-op is future, GS-11).
+5. Challenges never tick on a death; see Q-35 (2026-11-10).
 
 ### Q-05 Bartering in a digital game
 
@@ -369,6 +370,190 @@ On 2026-10-09 the owner parked every open decision for later.
 4. Status: **Owner** (2026-11-10): (a). Tests: `TestPrideResolvesBeforeTheAttackRoll` and three in `cards/r`.
 5. Basis: **Community**: S-RED and an S-YUG purchase ruling; no official one.
 
+### Q-30 "Souls controlled by all players" in a challenge
+
+1. Question: does Krampus count soul cards, or soul value?
+   1. Rules: R-KRAMPUS-10, R-KRAMPUS-11.
+2. Sources:
+   1. S-MAE: "the number of souls controlled by all players".
+   2. R-CARD-21 (S-OFF): abilities that count souls count total soul value.
+   3. No challenge ruling found: S-YUG, S-RED, S-X, S-DIS (2026-11-10).
+3. Proposal: the sum of both players' total soul value.
+   1. Character soul values count too (R-CARD-35).
+   2. Checked whenever a soul total changes, like the win check (R-WIN-02).
+4. Status: **Owner** (2026-11-10): keep the proposal for now; the engine may use it.
+5. Basis: **Official**: R-CARD-21 applies to every count of souls.
+
+### Q-31 Normal Krampus: the forced attack on a random minion
+
+1. Question: "players must attack a random minion once each turn if able".
+   1. Who picks the minion, and when?
+   2. Rule: R-KRAMPUS-13 (Normal only; the Hard and Ultra Hard cards lack it).
+2. Sources:
+   1. S-MAE: Normal boss card and rules page.
+   2. R-ATK-22: "must attack this once each turn if able".
+   3. No ruling found: S-YUG, S-RED, S-X, S-DIS (2026-11-10).
+3. Proposal:
+   1. The duty is met once an attack this turn went to a minion.
+   2. While unmet, a minion is in play and an attack is possible, the turn can't end.
+   3. While unmet, the next attack declared goes to a minion; the player picks no target.
+   4. The game picks the minion at random, among minions that can be attacked.
+   5. The pick happens when the target would be chosen (R-ATK-02), after the declaration's priority.
+   6. A deck attack is not allowed while the duty is unmet.
+   7. Minions that come later in the turn bring the duty if an attack is still possible.
+   8. With another forced attack (Krampus, Blind Rage): the attacker picks which first (R-ATK-03).
+4. Status: **Owner** (2026-11-10): keep the proposal for now; the engine may use it.
+5. Basis: **House**: no ruling found.
+
+### Q-32 "All I Want for Christmas" with a mixed reward
+
+1. Question: a monster gives ¢ and loot; what can be forgone?
+   1. Rule: R-KRAMPUS-07.
+2. Sources:
+   1. S-MAE: forgo "the reward or soul"; counters "equal to the amount of that resource foregone".
+   2. No ruling found: S-YUG, S-RED, S-X, S-DIS (2026-11-10).
+3. Proposal:
+   1. Each part of the reward is offered on its own: ¢, loot, treasure.
+   2. A part is forgone whole: N¢ gives N counters to the ¢ present.
+   3. A rolled reward is offered after the roll, with its result.
+   4. Parts of other kinds can't be forgone; they are gained as usual.
+   5. The soul is a separate choice: forgo it for its soul value in counters.
+   6. A forgone soul card goes to discard.
+   7. The player who would gain it chooses, when the reward or soul would be gained.
+   8. Only monster rewards and souls; other ¢, loot or treasure gains can't be forgone.
+4. Status: **Owner** (2026-11-10): keep the proposal for now; the engine may use it.
+5. Basis: **House**: no ruling found.
+
+### Q-33 A forgone reward for a destroyed present
+
+1. Question: may a player forgo a reward of a kind whose present is gone?
+   1. Rule: R-KRAMPUS-07.
+2. Sources: S-MAE says nothing; no ruling found (2026-11-10).
+3. Proposal: no; the choice is not offered for that kind, and the reward is gained.
+   1. The same after Happy Holidays!: no presents, no choice.
+4. Status: **Owner** (2026-11-10): keep the proposal for now; the engine may use it.
+5. Basis: **House**: no ruling found.
+
+### Q-34 A round with an extra or a skipped turn
+
+1. Question: when does the challenge timer tick if a turn is added or skipped?
+   1. Rules: R-COOP-08, R-CHAL-13.
+2. Sources:
+   1. S-OFF Round: the game's round runs from the starting player's turn to their next one.
+   2. S-OFF: extra and skipped turns do not move a round's start or end (R-TURN-16).
+   3. S-YUG (Reddit jjkz9be): the timer ticks after both characters have had a turn.
+3. Proposal:
+   1. The timer ticks once at the end of the last turn before the starting player's next regular turn.
+   2. Extra turns taken in between come first; they add no tick.
+   3. A skipped turn counts as taken.
+   4. A tick to 0 loses at once, before the next turn starts.
+4. Status: **Owner** (2026-11-10): keep the proposal for now; the engine may use it.
+5. Basis: **Official**: S-OFF's round rules.
+
+### Q-35 The challenge timer and deaths
+
+1. Question: does Q-04 (timer on a death) matter in a challenge?
+2. Sources:
+   1. S-OFF and S-MAE Challenge Rules: the timer does not tick on a death.
+   2. S-YUG (Reddit jjkz9be): only at the end of the round, unless the challenge says so.
+3. Proposal: no tick on any death (R-CHAL-13); Q-04 stays parked for plain co-op.
+4. Status: **Resolved** (2026-11-10): the sources agree.
+5. Basis: **Official**: S-OFF, S-MAE and Yuggy.
+
+### Q-36 The regular Krampus in the monster deck
+
+1. Question: does Krampus (Four Souls+) stay in the monster deck in this challenge?
+   1. S-MAE lets the regular card stand in for the boss, which takes it out.
+2. Sources:
+   1. S-YUG (Reddit jt1j1gn, jt1ifgy): no strict rule.
+   2. A stand-in is removed; with printed boss cards the normal one stays.
+3. Proposal: it stays; the game has the real Pilfering Krampus card.
+   1. Its "must attack this" can meet Normal's forced attack: the attacker picks (Q-31).
+4. Status: **Owner** (2026-11-10): keep the proposal for now; the engine may use it.
+5. Basis: **Official**: Yuggy, said of every challenge.
+
+### Q-37 A final boss leaves when "defeated in an attack" or "killed"
+
+1. Question: may a final boss leave its slot after a death outside an attack?
+   1. Rule: R-CHAL-04.
+2. Sources:
+   1. S-MAE Challenge Rules: only if "defeated in an attack".
+   2. S-OFF Four Souls Challenges: only if "killed".
+   3. No ruling found: S-YUG, S-RED, S-X, S-DIS (2026-11-10).
+3. Proposal: "killed", as S-OFF (first in the trust order; kept up to date online).
+   1. Non-combat damage can kill it, within boss armor (R-CHAL-05).
+   2. Krampus' goal is that it dies; R-KRAMPUS-11 still guards it.
+   3. Effects that move, cover or reroll it do nothing.
+4. Status: **Owner** (2026-11-10): keep the proposal for now; the engine may use it.
+5. Basis: **Official**: S-OFF over S-MAE.
+
+### Q-38 The co-op room rule: after step 3 or step 4
+
+1. Question: at which end-phase step does an unchanged room go to discard?
+   1. Rule: R-COOP-11.
+2. Sources:
+   1. S-MAE Solitaire and Co-op Rules: "after step 4".
+   2. S-OFF: "after step 3".
+   3. Both name the step in brackets: the room step (S-OFF step 3; R-TURN-12).
+3. Proposal: right after the room step (R-TURN-12, R-TURN-17), before the turn passes (R-TURN-13).
+4. Status: **Resolved** (2026-11-10): both texts point to the room step.
+5. Basis: **Official**: S-OFF; S-MAE's number does not match its own bracket.
+
+### Q-39 The co-op room rule: "a whole round"
+
+1. Question: when has a room "not changed for a whole round"?
+   1. Rule: R-COOP-11.
+2. Sources: S-OFF and S-MAE give no count; no ruling found (2026-11-10).
+3. Proposal:
+   1. Checked at every end phase, for each room slot.
+   2. The room goes if its top card was already there when the active player's previous turn started.
+   3. The active player's round, as R-TURN-15; extra turns do not count (R-TURN-16).
+   4. On the first round nothing goes: no player had a previous turn.
+4. Status: **Owner** (2026-11-10): keep the proposal for now; the engine may use it.
+5. Basis: **House**: no ruling found.
+
+### Q-40 What a present is
+
+1. Question: can cards see presents, and how do they flip?
+   1. Rules: R-KRAMPUS-06, R-KRAMPUS-10.
+2. Sources:
+   1. S-MAE: presents lie "to one side of the play area", face down.
+   2. S-MAE FAQ: after Happy Holidays! they are items, out of Krampus' reach.
+   3. No ruling found on other cards and presents (2026-11-10).
+3. Proposal:
+   1. Presents are not in play: no ability can choose them or change their counters.
+   2. Only R-KRAMPUS-07, R-KRAMPUS-08 and R-KRAMPUS-12 touch their counters.
+   3. Their faces stay hidden from both players until the flip.
+   4. The flip goes in order: ¢, loot, treasure, soul present.
+   5. For each, the active player picks a player; that player gains it as an item, charged.
+   6. Its counters go away; it enters play like any gained item.
+4. Status: **Owner** (2026-11-10): keep the proposal for now; the engine may use it.
+5. Basis: **House**: no ruling found.
+
+### Q-41 Hard and Ultra Hard: when minions are counted for extra rolls
+
+1. Question: "rolls again for every 2 minions" (Hard), "for each minion" (Ultra Hard).
+   1. Are minions counted once, or after each roll?
+   2. Rule: R-KRAMPUS-12.
+2. Sources: S-MAE only; no ruling found (2026-11-10).
+3. Proposal:
+   1. Counted once, when the ability resolves, before the first roll.
+   2. Hard: 1 + floor(minions / 2) rolls; Ultra Hard: 1 + minions.
+   3. The rolls come one at a time; each resolves fully first.
+   4. Minions brought by these rolls add none this turn.
+   5. Each roll is a non-attack roll of the active player; dice effects may change it.
+4. Status: **Owner** (2026-11-10): keep the proposal for now; the engine may use it.
+5. Basis: **House**: no ruling found.
+
+### Q-42 Open hands in co-op
+
+1. Question: do co-op partners see each other's hands?
+   1. Rule: R-COOP-07.
+2. Sources: S-OFF and S-MAE: hands stay apart, but may be played face up.
+3. Proposal: yes; each player sees the partner's hand. Spectators follow their usual view.
+4. Status: **Owner** (2026-11-10): keep the proposal for now; the engine may use it.
+5. Basis: **House**: the rules allow it; the choice is ours.
+
 ## Old rulings re-checked (R-07)
 
 | # | Ruling (Ed's Notes, 2018–2019) | Check against current rules and V2 text | Status |
@@ -537,3 +722,10 @@ Every row of "Card rulings from Discord (S-DIS)" is Community too.
 | Q-27 | Golden Trinket, Bum-Bo! | Gained gain-¢ replacement | House (owner open) |
 | Q-28 | Golden Trinket, Bum Friend, Tech X | Two gained ↷ on one item in a turn | House (owner open) |
 | Q-29 | Pride, Rag Mega, Gus, Sisters Vis, Dogma, … | A target's trigger resolves before the first attack roll | Community |
+| Q-31 | Pilfering Krampus (Normal) | Random minion picked by the game; the turn can't end before | House |
+| Q-32 | Pilfering Krampus | Each reward part forgone whole; soul for its value | House |
+| Q-33 | Pilfering Krampus | No forgo for a destroyed present | House |
+| Q-39 | Rooms in co-op | Unchanged since the active player's previous turn | House |
+| Q-40 | Pilfering Krampus | Presents not in play; flip ¢, loot, treasure, soul | House |
+| Q-41 | Pilfering Krampus (Hard, Ultra Hard) | Minions counted once, before the first roll | House |
+| Q-42 | Co-op | Partners see each other's hands | House |

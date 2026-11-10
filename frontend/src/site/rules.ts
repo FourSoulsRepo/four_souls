@@ -10,7 +10,7 @@ const files = import.meta.glob<string>(
 );
 
 // order is README.md's topic order; a new file goes last until added.
-const order = ['setup', 'cards', 'zones', 'abilities', 'mechanics', 'turn', 'stack', 'attack', 'shop', 'death', 'win'];
+const order = ['setup', 'cards', 'zones', 'abilities', 'mechanics', 'turn', 'stack', 'attack', 'shop', 'death', 'win', 'challenges'];
 
 export interface Topic {
   // file is the file's name without .md: "cards".
