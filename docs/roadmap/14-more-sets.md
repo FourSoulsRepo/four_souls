@@ -3,7 +3,7 @@
 Goal: official sets beyond the Base Game.
 Order: Gold Box, Four Souls+, Requiem, Warp Zone, promos.
 
-Ideas: CD-02, GS-07, GS-08, CD-11, A-16, CD-12, V-32, GS-12, GS-13, GS-01.
+Ideas: CD-02, GS-07, GS-08, CD-11, A-16, CD-12, V-32, GS-12, GS-13, GS-01, GS-11.
 
 ---
 
@@ -450,3 +450,214 @@ Alt art (CD-11) comes after all sets.
 5. Owner notes (2026-11-10)
    1. Owner amended and pushed the images (`4ad7123`).
    2. Owner marks 14.16 solved.
+
+### [ ] 14.17 Challenge rules research
+
+1. Goal: our rules text for co-op challenges and Krampus (GS-11).
+2. Owner decisions (2026-11-10):
+   1. A "Challenge" game mode beside the regular game.
+   2. First challenge: How the Krampus Stole Christmas.
+   3. Difficulties now: Normal, Hard, Ultra Hard.
+   4. Co-op only: exactly 2 people, one character each.
+   5. Solo (one person, two characters): later, 14.27.
+   6. Competitive variant: later, 14.28.
+   7. No 3–4 player challenges; official rules use 2 characters.
+3. Sources (copyrighted; only in the tools repo `.cache/research/maestro/`):
+   1. `solo-coop-and-challenge-rules.pdf` and `.txt`: Maestro Media.
+   2. `how-the-krampus-stole-christmas.pdf` and `.txt`: Maestro Media.
+   3. `pilfering-krampus-cards.png`: the 4 boss cards (page 4 of the PDF).
+   4. Rulebook sections: `.cache/research/official/extended-rulebook.md`.
+   5. "Solitaire/Co-op Mode" and "Four Souls Challenges" (lines 1010–1105).
+   6. Fan copy: foursoulsspoiler.net/challenges (a transcription; low trust).
+   7. Links: maestromedia.com/collections/boi-challenges.
+4. Facts found (2026-11-10):
+   1. Pilfering Krampus: HP 5 Normal, 6 Hard, 6 Ultra Hard; 4+; ATK 2.
+   2. Reward +1 treasure; soul value 1, every difficulty.
+   3. The competitive boss: HP 5; its own text.
+   4. Presents at start (¢, loot, treasure, soul): 8/2/3/3, 12/4/3/3, 16/4/3/3.
+   5. Order of the rows: Normal, Hard, Ultra Hard.
+   6. "What's in the Box?": 3 minions on Normal, 4 on Hard and Ultra Hard.
+   7. "Happy Holidays!": at 5, 6 or 7 souls by difficulty.
+   8. The PDF: a final boss leaves its slot only if "defeated in an attack".
+   9. The rulebook says "killed"; the research picks one and says why.
+   10. The PDF room rule says "after step 4"; the rulebook says "step 3".
+   11. foursouls.com lists the challenge cards as origin `challenge` (83 cards).
+   12. Krampus: `challenge-pilfering_krampus-{norm,hard,ultra,comp}`.
+   13. Its rule cards: `challenge-how_the_krampus_stole_christmas-{norm,hard,ultra,comp}`.
+5. Tasks:
+   1. New rules file `challenges.md`; topics COOP, CHAL, KRAMPUS.
+   2. COOP: co-op setup and play; no solitaire rules yet.
+   3. CHAL: final boss slot, boss armor, minion slots, timer, beating a challenge.
+   4. KRAMPUS: goal, setup, presents, three global modifiers, per difficulty.
+   5. Search S-YUG, S-RED, S-DIS for Krampus challenge rulings.
+   6. Open cases go to `open-questions.md` with a proposal each.
+   7. Known cases to write down:
+      1. "Souls controlled by all players": soul value, or soul cards?
+      2. Normal's forced attack: who picks the random minion, and when?
+      3. "All I Want for Christmas" with a mixed reward (¢ and loot).
+      4. A forgone reward for a destroyed present.
+      5. "Round": when does it end with an extra or a skipped turn?
+      6. Q-04 (timer on death) does not apply: challenges never tick on death.
+      7. Does the regular Krampus (`fsp2`) stay in the monster deck?
+      8. The PDF lets it stand in for the boss, which takes it out.
+   8. Mark each basis Official, Community or House (rulings-basis rule).
+6. Done when:
+   1. Rules test passes: every new ID unique and well formed.
+   2. The rules website shows the new file, if it lists every topic file.
+
+### [ ] 14.18 ADR: challenges
+
+1. Goal: one decision record for the challenge mode (ADR 028).
+2. Written in the main conversation (CLAUDE.md 5.21.2).
+3. Tasks:
+   1. Engine: a challenge is a setup option, with its ID and difficulty.
+   2. Engine: challenge code lives apart from card sets.
+   3. Final boss slots and minion slots as new slot rows.
+   4. Presents: where they live, how counters and the flip work.
+   5. Timer: game state, shown to every player.
+   6. Co-op end: both players win, or both lose; game over says why.
+   7. Card data: `challenge` card_db set, never offered as a playable set.
+   8. Protocol, record header (ADR 007), saves and restart carry the mode.
+   9. Client: where the boss, minions, presents and timer go.
+   10. Without card images: text cards, like every other card.
+4. Done when:
+   1. ADR 028 accepted by the owner; INDEX row added.
+
+### [ ] 14.19 Challenge card data
+
+1. Goal: the Krampus challenge's 8 cards in `card_db`, with images.
+2. Tasks:
+   1. Tools: `cards -origin challenge`; card data from foursouls.com.
+   2. Tools: `build` and `images` for the `challenge` set.
+   3. Only the cards that a supported challenge uses go into the game data.
+   4. Now: the 4 Pilfering Krampus and the 4 Krampus rule cards.
+   5. Kinds for the boss and the rule cards (ADR 028).
+   6. Check every stat against the PDF (14.17, item 4).
+   7. Images into the private image repo; the owner pushes them.
+   8. The game builds and runs without them (text cards).
+3. Done when:
+   1. `card_db` validates the set; `cardgen -report` lists it.
+   2. The host screen does not offer `challenge` as a card set.
+
+### [ ] 14.20 Engine: co-op challenge core
+
+1. Goal: a 2-player co-op game against the game itself.
+2. Tasks:
+   1. `Setup` takes a challenge and a difficulty (ADR 028).
+   2. A challenge needs exactly 2 players.
+   3. No bonus souls; 3+ player cards are out (R-CARD-32).
+   4. Timer: starts at 8; ticks down at the end of each round.
+   5. The timer reaches 0: both players lose.
+   6. The challenge's goal met: both players win.
+   7. Soul target and "that player wins" effects do not end the game.
+   8. With rooms: a room unchanged for a whole round goes to discard.
+   9. View: timer, challenge, difficulty; win or loss reason.
+   10. Events and history messages for the timer, win and loss.
+3. Done when:
+   1. Engine tests for each rule ID of COOP and CHAL timer.
+   2. A test challenge with a trivial goal plays to a win and to a loss.
+
+### [ ] 14.21 Engine: final boss and minion slots
+
+1. Goal: the challenge slot rows work with every card.
+2. Tasks:
+   1. Final boss slot: attackable; can't be covered or leave unless killed.
+   2. Boss armor: killed outright or over 3 non-combat damage: takes 3.
+   3. Minion slots: a new slot per minion; never refilled.
+   4. An event put in a minion slot resolves, then goes to discard.
+   5. Cards that target, move or cover monsters respect both rows.
+   6. Search every set for such cards; one shared rule (CLAUDE.md 5.24).
+   7. Attack targets and odds include both rows.
+3. Done when:
+   1. Engine tests for each CHAL slot rule.
+   2. Fuzz runs with a challenge setup stay green.
+
+### [ ] 14.22 Engine: How the Krampus Stole Christmas
+
+1. Goal: the Krampus challenge plays by its rules, all 3 difficulties.
+2. Tasks:
+   1. Setup: Pilfering Krampus of the difficulty in a final boss slot.
+   2. Setup: 4 face-down treasure cards as presents, with counters.
+   3. Start of each turn: the active player rolls; counters come off.
+   4. Hard and Ultra Hard: extra rolls per minions in play.
+   5. "What's in the Box?": a present at 0 is destroyed; minions come.
+   6. "Happy Holidays!": presents flip into items; the active player gives them.
+   7. "All I Want for Christmas": forgo a reward or a soul for counters.
+   8. Krampus can't be attacked or take damage below the soul count or with a minion.
+   9. Normal: attack a random minion once each turn if able.
+   10. No rewards or souls from minions.
+   11. Goal: Krampus dies; lost: all 4 presents destroyed, or the timer.
+   12. Fuzz and sims run Krampus games at every difficulty.
+3. Done when:
+   1. Engine tests for each KRAMPUS rule and each open case's answer.
+   2. Seeded whole games end in a win and in a loss.
+
+### [ ] 14.23 Server: challenge games
+
+1. Goal: the server hosts a challenge for 2 players.
+2. Tasks:
+   1. Protocol option: challenge ID and difficulty (ADR 028).
+   2. A challenge table has exactly 2 seats; the server checks it.
+   3. Bonus souls are off in a challenge, whatever the option says.
+   4. Records, saves and the seamless restart keep the mode.
+   5. The game list shows the challenge and its difficulty.
+   6. A list of challenges the server knows, for the host screen.
+3. Done when:
+   1. Server tests: create, start, save, load and restart a Krampus game.
+   2. UC-03 and UC-05 updated, or a new use case.
+
+### [ ] 14.24 Client: game mode in the host screen
+
+1. Goal: the host picks "Regular game" or "Challenge".
+2. Tasks:
+   1. A "Game mode" select: Regular game (default), Challenge.
+   2. Challenge: a select of challenges beside it; now only Krampus.
+   3. Challenge: a difficulty select: Normal, Hard, Ultra Hard.
+   4. Challenge: seats fixed at 2; bonus souls hidden.
+   5. The host screen remembers the last mode, challenge and difficulty.
+   6. English and Russian texts.
+   7. Other detailed options stay: sets, picking, rooms, timer, rollback, bans.
+3. Done when:
+   1. e2e test: host a Krampus challenge; the game list shows it.
+   2. Use case for hosting a challenge.
+
+### [ ] 14.25 Client: the challenge table
+
+1. Goal: both players see and play the challenge.
+2. Tasks:
+   1. Final boss slot beside the monster slots; aiming works on it.
+   2. Minion slots appear and vanish with their minions.
+   3. Presents: face-down cards with their counters; flipped ones are items.
+   4. Timer: a d8 that counts down, with a tooltip.
+   5. The challenge's rule card for the chosen difficulty, zoomable.
+   6. "All I Want for Christmas" choice in a dialog.
+   7. Game over: "Challenge won" or "Challenge lost", with the reason.
+   8. History lines for presents, minions, the timer.
+   9. Animations and window layers follow ADR 012 and ADR 015.
+   10. Without card images: text cards for the boss and the presents.
+3. Done when:
+   1. e2e tests: presents lose counters; minions come; Krampus is attacked.
+   2. Screenshots for review; use case for playing a challenge.
+
+### [ ] 14.26 Challenge play-check and docs
+
+1. Goal: whole Krampus games run in the app; docs match.
+2. Tasks:
+   1. `make e2e-games` also plays Krampus at each difficulty.
+   2. Wiki: a players' page for challenges; Home and sidebar.
+   3. README: one line about the challenge mode.
+   4. `docs/ideas.md` GS-11: what is done, what is left.
+3. Done when:
+   1. `make e2e-games` passes with the Krampus games.
+
+### [ ] 14.27 Solo challenges
+
+1. Goal: one person plays both characters (solitaire).
+2. Not now (owner, 2026-11-10): co-op comes first.
+3. Open: one app holds both seats; the table follows the waiting seat.
+
+### [ ] 14.28 Krampus: competitive variant
+
+1. Goal: 2–4 players race to kill Pilfering Krampus.
+2. Not now (owner, 2026-11-10).
+3. Rules: personal present slots; the competitive boss card; first kill wins.

@@ -961,6 +961,9 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    2. Official challenges, each against a boss (Rag Man, Mom, Greed, ...).
    3. Difficulty: Normal, Hard, Ultra Hard.
    4. Not part of the first main goal.
+   5. Owner, 2026-11-10: a "Challenge" game mode, planned in 14.17 – 14.28.
+   6. First: How the Krampus Stole Christmas, co-op, 2 players.
+   7. Solo and the competitive variant come later.
 12. GS-12. Optional house rule: no damage loops at 0 HP.
    1. Official rules: damage at 0 HP still fires "when you take damage" (R-MECH-51).
    2. Example: Forever Alone with Gurdy Jr. loops while the death waits.
