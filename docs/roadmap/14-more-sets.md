@@ -437,3 +437,6 @@ Alt art (CD-11) comes after all sets.
    6. Every portrait image came out byte-identical.
    7. gosec flagged two temp-file writes after the change (G703); marked, with the reason.
    8. The images wait in the private repo for the owner's amend and push.
+5. Owner notes (2026-11-10)
+   1. Owner amended and pushed the images (`4ad7123`).
+   2. Owner marks 14.16 solved.
