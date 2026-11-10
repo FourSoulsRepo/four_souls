@@ -107,6 +107,9 @@ export interface Options {
   host_bans?: string[];
   no_bonus_souls?: boolean;
   no_deck_ratios?: boolean;
+  // room_deck plays with the room deck (R-SETUP-16, 14.13); the server
+  // turns it off when the sets have no rooms.
+  room_deck?: boolean;
   random_seats?: boolean; // seat the players in a random order at the start
   response_timer?: number; // seconds; 0: off, else at least 60
   rollback?: RollbackMode; // none: Disabled (ADR 020)
@@ -464,6 +467,8 @@ export interface GameView {
   players: PlayerView[];
   shop: SlotView[] | null;
   monsters: SlotView[] | null;
+  // rooms are the room slots; none without the room deck (14.13).
+  rooms?: SlotView[];
   deck_sizes: number[];
   // discards: the top card of each discard pile; discard_sizes: the sizes.
   discards: (CardView | null)[];

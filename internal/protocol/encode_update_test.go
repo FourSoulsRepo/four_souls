@@ -24,6 +24,7 @@ func fullUpdate() Update {
 			Players:    []engine.PlayerView{{ID: 1, Dead: true, Hand: []engine.CardView{top}}},
 			Shop:       []engine.SlotView{{Top: &top}, {}},
 			Monsters:   nil,
+			Rooms:      []engine.SlotView{{Top: &top, Covered: []engine.CardView{top}}},
 			BonusSouls: []engine.CardView{top},
 			DeckSizes:  [4]int{1, 2, 3, 4}, DiscardSizes: [4]int{0, 1, 0, 2},
 			Discards:   [4]*engine.CardView{&top, nil, nil, &top},

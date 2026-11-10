@@ -92,6 +92,34 @@
   --frame: #5a7fa8;
 }
 
+.kind-room {
+  --face: #e2e6d6;
+  --frame: #5f7448;
+}
+
+/* A room is printed landscape (14.13): as tall as a card of its size is
+   wide. Its drawn face keeps the portrait card's text size. */
+.card.kind-room {
+  aspect-ratio: 88 / 63;
+  border-radius: 3.6% / 5%;
+}
+
+.card.kind-room.size-table {
+  width: calc(5rem * 88 / 63);
+}
+
+.card.kind-room.size-small {
+  width: calc(3.75rem * 88 / 63);
+}
+
+.card.kind-room.size-zoom {
+  width: calc(20rem * 88 / 63);
+}
+
+.card.kind-room.size-choice {
+  width: calc(clamp(6.875rem, 13vw, 11.25rem) * 88 / 63);
+}
+
 .card-blank {
   display: flex;
   flex-direction: column;
@@ -173,6 +201,42 @@
   text-transform: capitalize;
   color: var(--face);
   background: #2a2a2a;
+}
+
+/* A room's drawn face: the sizes above times 63 / 88, so its text is
+   as large as on a portrait card of the same height (14.13). */
+.kind-room .card-blank {
+  gap: 2.1cqi;
+  padding: 5cqi;
+  border-width: 2.1cqi;
+  border-radius: 3.6cqi;
+}
+
+.kind-room .card-name {
+  font-size: 7.9cqi;
+}
+
+.kind-room .card-type,
+.kind-room .card-rewards {
+  font-size: 5cqi;
+}
+
+.kind-room .card-text {
+  font-size: 3.7cqi;
+}
+
+.kind-room .card-text p {
+  margin-bottom: 1.4cqi;
+}
+
+.kind-room .card-stats {
+  font-size: 6.4cqi;
+}
+
+.kind-room .card-back-face {
+  border-width: 2.1cqi;
+  border-radius: 3.6cqi;
+  font-size: 8.6cqi;
 }
 
 .card-zoom {

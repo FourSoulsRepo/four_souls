@@ -213,12 +213,13 @@ export function bonusSlot(view: GameView, card: string): Death | undefined {
   return b ? { zone: `obj-${String(b.id)}`, object: b.id } : undefined;
 }
 
-// slotZone is the zone of the monster or shop slot whose top card is
+// slotZone is the zone of the monster, shop or room slot whose top card is
 // object, as the board names it.
 export function slotZone(view: GameView, object: number): string | undefined {
   for (const [name, slots] of [
     ['monster', view.monsters],
     ['shop', view.shop],
+    ['room', view.rooms],
   ] as const) {
     const i = (slots ?? []).findIndex((s) => s.top?.id === object);
     if (i >= 0) {

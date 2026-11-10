@@ -674,6 +674,8 @@ function backWord(kind: Kind): string {
       return t('deck.back.monster');
     case 'soul':
       return t('deck.back.soul');
+    case 'room':
+      return t('deck.back.room');
     default:
       return t('deck.back.loot');
   }
@@ -690,6 +692,8 @@ function faceDown(kind: Kind): string {
       return t('deck.face_down.monster');
     case 'soul':
       return t('deck.face_down.soul');
+    case 'room':
+      return t('deck.face_down.room');
     default:
       return t('deck.face_down.loot');
   }

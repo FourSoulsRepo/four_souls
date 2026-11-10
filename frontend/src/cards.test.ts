@@ -17,6 +17,7 @@ describe('kindOf', () => {
       'Pill/Rune Card': 'loot',
       '1 Cent Card': 'loot',
       'Lost Soul Card': 'loot',
+      'Room Card': 'room',
     };
     for (const [type, kind] of Object.entries(cases)) {
       expect(kindOf(type), type).toBe(kind);

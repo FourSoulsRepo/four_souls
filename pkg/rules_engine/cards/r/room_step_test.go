@@ -62,6 +62,11 @@ func TestRoomsOption(t *testing.T) {
 		if !on && len(g.Decks[engine.RoomDeck]) > 0 {
 			t.Error("without the option, rooms stay out of the game (R-SETUP-16)")
 		}
+		// Every viewer sees the room slot (14.13).
+		v := g.View(engine.Viewer{Kind: engine.ViewSpectator})
+		if got := len(v.Rooms) == 1 && v.Rooms[0].Top != nil; got != on {
+			t.Errorf("rooms %v: the view shows a room = %v", on, got)
+		}
 	}
 }
 

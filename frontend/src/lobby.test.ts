@@ -143,6 +143,8 @@ describe('optionsText', () => {
     // The rollback mode (ADR 020).
     expect(optionsText({ no_deck_ratios: true, rollback: 'god' })).toBe('Random characters · Godmode rollback');
     expect(optionsText({ no_deck_ratios: true, random_seats: true })).toBe('Random characters · random seats');
+    // The room deck (14.13).
+    expect(optionsText({ no_deck_ratios: true, room_deck: true })).toBe('Random characters · room deck');
   });
 });
 

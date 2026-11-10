@@ -24,10 +24,11 @@ export interface CardInfo {
 
 // Kind is the deck family a card belongs to; it sets the blank card's
 // colour and the card back.
-export type Kind = 'character' | 'treasure' | 'loot' | 'monster' | 'soul';
+// A room is printed landscape (14.13).
+export type Kind = 'character' | 'treasure' | 'loot' | 'monster' | 'soul' | 'room';
 
 // deckKinds are the engine's decks (protocol Deck) as the board's piles.
-export const deckKinds: (Kind | undefined)[] = ['treasure', 'loot', 'monster', undefined];
+export const deckKinds: (Kind | undefined)[] = ['treasure', 'loot', 'monster', 'room'];
 
 export function kindOf(type: string): Kind {
   if (type === 'Character Card') {
@@ -35,6 +36,9 @@ export function kindOf(type: string): Kind {
   }
   if (type === 'Bonus Soul Card') {
     return 'soul';
+  }
+  if (type === 'Room Card') {
+    return 'room';
   }
   if (type.includes('Treasure')) {
     return 'treasure';

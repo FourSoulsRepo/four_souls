@@ -41,3 +41,4 @@
 | UC-37 | Seat the players in a random order | `internal/server`, `frontend` | Implemented | [server/uc-37-random-seats.md](server/uc-37-random-seats.md) |
 | UC-38 | Check a situation on the website | `frontend/src/site`, `cmd/website` | Implemented | [website/uc-38-check-a-situation-on-the-website.md](website/uc-38-check-a-situation-on-the-website.md) |
 | UC-39 | Pick a character in a draft | `frontend`, `internal/server` | Implemented | [app/uc-39-pick-a-character-in-a-draft.md](app/uc-39-pick-a-character-in-a-draft.md) |
+| UC-40 | Rooms on the table | `frontend`, `internal/server`, `rules_engine` | Implemented | [app/uc-40-rooms-on-the-table.md](app/uc-40-rooms-on-the-table.md) |

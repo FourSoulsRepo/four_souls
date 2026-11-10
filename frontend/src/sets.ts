@@ -6,6 +6,9 @@ import { t } from './i18n';
 // baseGame is in every game; expansions need it (CD-02).
 export const baseGame = 'b2';
 
+// requiem is the set with the room deck (R-SETUP-16, 14.13).
+export const requiem = 'r';
+
 // names are the sets' names in the chosen language.
 const names = new Map([
   ['b2', () => t('set.base_game')],

@@ -54,6 +54,7 @@ Use options 1 and 5.
    13. It takes a step number; the next step goes on after it.
    14. The header keeps the rollback mode (`rollback`).
    15. Events hold messages, a key and values, never words (ADR 021).
+   16. The setup also says `room_deck` when the game played with rooms (R-SETUP-16).
 3. Writing
    1. Lines are flushed once a second, and at every stop (18.17).
       1. A crash leaves a readable record without `end`, up to a second short.

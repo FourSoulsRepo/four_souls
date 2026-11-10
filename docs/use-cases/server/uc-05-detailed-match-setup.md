@@ -27,6 +27,7 @@
     3. The host screen remembers the last mode.
 15. Each draft offer comes with its starting item; the pick screen is UC-39.
     1. Eden's is empty: she chooses one at the start (R-SETUP-09).
+16. Room deck: off by default; the box shows only with Requiem (UC-40).
 
 ## Alternative scenarios and errors
 
@@ -37,6 +38,7 @@
 * **5b. A ban of a card not in the pool:** refused with `bad_card`.
 * **5c. The ban timer runs out:** that player makes no ban this round.
 * **8a. A pick that is not one of the offers:** refused with `bad_card`.
+* **16a. The room deck without rooms in the sets:** the server turns it off.
 
 ## Postconditions
 

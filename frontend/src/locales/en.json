@@ -629,6 +629,10 @@
     "text": "Monsters",
     "note": "Board: screen-reader name of the monster slots."
   },
+  "board.rooms": {
+    "text": "Rooms",
+    "note": "Board: screen-reader name of the room cards and the room deck."
+  },
   "board.shop": {
     "text": "Shop",
     "note": "Board: screen-reader name of the shop slots."
@@ -1165,6 +1169,10 @@
     "text": "monster",
     "note": "A monster card's back drawn without the card images: the deck's name on it."
   },
+  "deck.back.room": {
+    "text": "room",
+    "note": "A room card's back drawn without the card images: the deck's name on it."
+  },
   "deck.back.soul": {
     "text": "soul",
     "note": "A bonus soul card's back drawn without the card images: the deck's name on it."
@@ -1188,6 +1196,10 @@
   "deck.face_down.monster": {
     "text": "Face-down monster card",
     "note": "Screen-reader name of a face-down monster card."
+  },
+  "deck.face_down.room": {
+    "text": "Face-down room card",
+    "note": "Screen-reader name of a face-down room card."
   },
   "deck.face_down.soul": {
     "text": "Face-down soul card",
@@ -1231,6 +1243,20 @@
       "other": "Monster discard: {n} cards"
     },
     "note": "Board: tooltip of the monster discard pile. n: cards in it."
+  },
+  "deck.room": {
+    "text": {
+      "one": "Room deck: {n} card",
+      "other": "Room deck: {n} cards"
+    },
+    "note": "Board: tooltip of the room deck. n: cards in it."
+  },
+  "deck.room_discard": {
+    "text": {
+      "one": "Room discard: {n} card",
+      "other": "Room discard: {n} cards"
+    },
+    "note": "Board: tooltip of the room discard pile. n: cards in it."
   },
   "deck.treasure": {
     "text": {
@@ -2420,6 +2446,10 @@
     "text": "Soft",
     "note": "Host screen: rollback mode choice; the others vote on each undo."
   },
+  "host.room_deck": {
+    "text": "Room deck",
+    "note": "Host screen: check box, shown only with Requiem; the game plays with the room deck and one room on the table."
+  },
   "host.seconds": {
     "text": "{n} s",
     "note": "Host screen: a Response timer choice. n: seconds."
@@ -2600,6 +2630,10 @@
   "lobby.options.rollback_soft": {
     "text": "Soft rollback",
     "note": "Game list and table screen: the game's rollback mode; the others vote on each undo."
+  },
+  "lobby.options.room_deck": {
+    "text": "room deck",
+    "note": "Table screen, setup summary, lower case after a dot: the game plays with the room deck."
   },
   "lobby.options.timer": {
     "text": "{n} s to respond",

@@ -183,6 +183,46 @@
   width: 100%;
 }
 
+/* A game with the room deck (14.13): a rooms column after the slots,
+   as wide as a landscape slot card; the board grows by it, so the other
+   cards keep their size against each other. */
+.board.has-rooms {
+  --u: min((100cqw - 0.25rem) / 14.35, (100cqh - 0.25rem) / 3.6, 5.75rem);
+  grid-template-columns:
+    calc(var(--u) * 0.45) calc(var(--u) * 2.9) minmax(0, 1fr) calc(var(--u) * 1.4)
+    calc(var(--u) * 0.75) calc(var(--u) * 1.58) calc(var(--u) * 1.3);
+  grid-template-areas:
+    "strip info monsters rooms souls decks end"
+    "strip info shop rooms souls decks end";
+  width: calc(var(--u) * 14.35 + 0.25rem);
+}
+
+/* The room on top, then the room deck and its discard; rooms are
+   printed landscape, so each is as tall as a portrait card is wide. */
+.board-rooms {
+  grid-area: rooms;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--u) * 0.08);
+}
+
+.board-rooms .card.size-table,
+.board-rooms .pile-empty.size-table {
+  width: calc(var(--u) * 88 / 63);
+}
+
+.board-rooms .card.size-small,
+.board-rooms .pile-empty.size-small {
+  width: calc(var(--u) * 0.75 * 88 / 63);
+}
+
+.board-rooms .pile-empty {
+  aspect-ratio: 88 / 63;
+  border-radius: 3.6% / 5%;
+}
+
 .bonus-souls {
   grid-area: souls;
   display: flex;

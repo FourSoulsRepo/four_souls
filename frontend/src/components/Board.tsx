@@ -13,7 +13,9 @@ import './Table.css';
 // column (children: turn, stack, history), monster and shop slots, bonus souls, and the decks with
 // their discards at the right edge (H-16), then the End turn button
 // (end, H-04). An empty zone keeps its place, so the board never
-// changes size (V-23).
+// changes size (V-23). A game with the room deck has one more column,
+// after the slots: its rooms, landscape, over the room deck and its
+// discard (14.13); a game without one never shows it.
 // The board is also where loot cards are dropped to play them (7.7).
 // glow: the game waits for the viewer, so the board glows (15.95).
 export function Board({
@@ -31,9 +33,10 @@ export function Board({
   end?: ReactNode;
   children?: ReactNode;
 }) {
+  const rooms = view.rooms ?? [];
   return (
     <div className="board-cell">
-      <section className={`board${glow ? ' my-move' : ''}`} aria-label={t('board.label')} data-drop="play">
+      <section className={`board${rooms.length > 0 ? ' has-rooms' : ''}${glow ? ' my-move' : ''}`} aria-label={t('board.label')} data-drop="play">
         <div className="board-strip">{strip}</div>
         <div className="board-info">{children}</div>
         <div className="board-slots board-monsters" role="group" aria-label={t('board.monsters')}>
@@ -46,6 +49,15 @@ export function Board({
             <Slot key={slotKey(slot, i)} slot={slot} zone={`shop-slot-${String(i)}`} ui={ui} />
           ))}
         </div>
+        {rooms.length > 0 && (
+          <div className="board-rooms" role="group" aria-label={t('board.rooms')}>
+            {rooms.map((slot, i) => (
+              <Slot key={slotKey(slot, i)} slot={slot} zone={`room-slot-${String(i)}`} ui={ui} />
+            ))}
+            <Deck kind="room" count={view.deck_sizes[DeckKind.room] ?? 0} size="small" handle={ui.deck('room')} />
+            <Discard kind="room" top={view.discards[DeckKind.room] ?? null} count={view.discard_sizes[DeckKind.room] ?? 0} size="small" />
+          </div>
+        )}
         <div className="bonus-souls" role="group" aria-label={t('board.bonus_souls')}>
           {view.bonus_souls?.map((c) => (
             <Card key={c.id} cardRef={c.card} size="small" counters={c.counters} objectId={c.id} />
@@ -122,8 +134,9 @@ function slotKey(slot: SlotView, i: number): string {
   return slot.top ? `card-${String(slot.top.id)}` : `empty-${String(i)}`;
 }
 
-// Slot is one shop or monster slot: its top card and how many it covers.
-// zone names the slot for effects that place a card on it (19.3).
+// Slot is one shop, monster or room slot: its top card and how many it
+// covers. zone names the slot for effects that place a card on it
+// (19.3).
 function Slot({ slot, zone, ui }: { slot: SlotView; zone: string; ui: Interact }) {
   const covered = slot.covered?.length ?? 0;
   // A dead card flew off its slot: the slot shows empty until the next

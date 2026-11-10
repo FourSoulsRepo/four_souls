@@ -495,7 +495,7 @@ func (h *Hub) start(t *table) {
 	if t.opts.RandomSeats {
 		shuffleSeats(seats, gameSeed)
 	}
-	setup := engine.Setup{Seed: gameSeed, Players: len(t.seats), Sets: setsOf(t.sets), BonusSouls: !t.opts.NoBonusSouls, Banned: t.opts.HostBans, DeckRatios: !t.opts.NoDeckRatios}
+	setup := engine.Setup{Seed: gameSeed, Players: len(t.seats), Sets: setsOf(t.sets), BonusSouls: !t.opts.NoBonusSouls, Banned: t.opts.HostBans, DeckRatios: !t.opts.NoDeckRatios, Rooms: t.opts.RoomDeck}
 	room, err := NewRoom(setup, t.opts, seats)
 	if err != nil {
 		for _, s := range t.seats {

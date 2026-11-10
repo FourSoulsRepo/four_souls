@@ -429,6 +429,7 @@ export namespace settings {
 	    response_timer: number;
 	    no_bonus_souls: boolean;
 	    no_deck_ratios: boolean;
+	    room_deck: boolean;
 	    random_seats: boolean;
 	    rollback: string;
 	    picking: string;
@@ -446,6 +447,7 @@ export namespace settings {
 	        this.response_timer = source["response_timer"];
 	        this.no_bonus_souls = source["no_bonus_souls"];
 	        this.no_deck_ratios = source["no_deck_ratios"];
+	        this.room_deck = source["room_deck"];
 	        this.random_seats = source["random_seats"];
 	        this.rollback = source["rollback"];
 	        this.picking = source["picking"];

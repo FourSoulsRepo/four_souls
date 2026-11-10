@@ -449,6 +449,9 @@ type Options struct {
 	// (R-SETUP-17, GS-07). The server sets it when the chosen sets have
 	// too few cards for the ratios.
 	NoDeckRatios bool `json:"no_deck_ratios,omitempty"`
+	// RoomDeck plays with the room deck (R-SETUP-16, 14.13); off by
+	// default. The server turns it off when the sets have no rooms.
+	RoomDeck bool `json:"room_deck,omitempty"`
 	// RandomSeats seats the players in a random order when the game
 	// starts; false: in the order they joined.
 	RandomSeats bool `json:"random_seats,omitempty"`

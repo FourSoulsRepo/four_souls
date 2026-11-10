@@ -29,7 +29,6 @@ const GAINED_END_OF_TURN = 1;
 // item, is a card whose abilities the item has till end of turn (Glitch,
 // 19.106). monster, if given, becomes the top card of the first monster
 // slot (19.113); a list gives each slot its card, in slot order (19.127).
-// The test server keeps saves under .cache/e2e.
 export function giveCard(
   game: string,
   card: string,
@@ -39,18 +38,42 @@ export function giveCard(
   gained?: string,
   monster?: string | string[],
 ) {
-  const file = join(import.meta.dirname, '..', '..', '.cache', 'e2e', String(serverPort()), 'saves', `${game}.fssave`);
-  const save = JSON.parse(readFileSync(file, 'utf8')) as {
+  editSave(game, (save) => {
+    giveIn(save as unknown as GiveSave, card, item, nextRoll, sets, gained, monster);
+  });
+}
+
+// GiveSave is the part of a save giveCard changes.
+interface GiveSave {
+  sets: string[];
+  state: {
     sets: string[];
-    state: {
-      sets: string[];
-      turn: { active: number };
-      players: { hand: number[]; in_play: number[] }[];
-      objects: { card: string; gained?: string; gained_till?: number }[];
-      monsters: { cards: number[] }[];
-      boosts?: { stat: number; player: number; amount: number; source?: number }[];
-    };
+    turn: { active: number };
+    players: { hand: number[]; in_play: number[] }[];
+    objects: { card: string; gained?: string; gained_till?: number }[];
+    monsters: { cards: number[] }[];
+    boosts?: { stat: number; player: number; amount: number; source?: number }[];
   };
+}
+
+// editSave reads a saved game, lets edit change it, and writes it back.
+// The test server keeps saves under .cache/e2e.
+export function editSave(game: string, edit: (save: Record<string, unknown>) => void) {
+  const file = join(import.meta.dirname, '..', '..', '.cache', 'e2e', String(serverPort()), 'saves', `${game}.fssave`);
+  const save = JSON.parse(readFileSync(file, 'utf8')) as Record<string, unknown>;
+  edit(save);
+  writeFileSync(file, JSON.stringify(save));
+}
+
+function giveIn(
+  save: GiveSave,
+  card: string,
+  item: string | undefined,
+  nextRoll: boolean,
+  sets: Record<string, string>,
+  gained: string | undefined,
+  monster: string | string[] | undefined,
+) {
   const { state } = save;
   const player = state.players[state.turn.active];
   const id = player?.hand[0];
@@ -91,7 +114,6 @@ export function giveCard(
     save.sets.push(code);
     state.sets.push(name);
   }
-  writeFileSync(file, JSON.stringify(save));
 }
 
 // saveAndContinue: the host saves, the active player gets the card (and
@@ -107,6 +129,14 @@ export async function saveAndContinue(
   gained?: string,
   monster?: string | string[],
 ) {
+  await saveEditContinue(pages, names, (game) => {
+    giveCard(game, card, item, nextRoll, sets, gained, monster);
+  });
+}
+
+// saveEditContinue: the host saves, edit changes the save of that game
+// on disk, then everyone comes back to it (14.13).
+export async function saveEditContinue(pages: Page[], names: string, edit: (game: string) => void) {
   const [host, ...guests] = pages;
   if (!host) {
     throw new Error('no pages');
@@ -117,7 +147,7 @@ export async function saveAndContinue(
   for (const page of pages) {
     await expect(page.getByText(tr('lobby.games.saved'))).toBeVisible();
   }
-  giveCard(game, card, item, nextRoll, sets, gained, monster);
+  edit(game);
   // Back from the Games list is the LAN screen, with its Host button.
   await host.getByRole('button', { name: tr('lobby.back') }).click();
   await host.getByRole('button', { name: tr('host.title_host') }).click();

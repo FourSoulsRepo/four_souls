@@ -111,8 +111,14 @@ func checkOptions(o *protocol.Options, sets []engine.CardSet, players int) error
 	}
 	// Any card of the sets may be banned (GS-13); a trial deal shows the
 	// decks still fill the slots.
-	if _, _, err := engine.NewGame(engine.Setup{Players: players, Sets: sets, Banned: o.HostBans, DeckRatios: !o.NoDeckRatios}); err != nil {
+	g, _, err := engine.NewGame(engine.Setup{Players: players, Sets: sets, Banned: o.HostBans, DeckRatios: !o.NoDeckRatios, Rooms: o.RoomDeck})
+	if err != nil {
 		return err
+	}
+	// The room deck needs room cards: without Requiem, or with every
+	// room banned, the game has no room slot and the option is off.
+	if len(g.Rooms) == 0 {
+		o.RoomDeck = false
 	}
 	return nil
 }

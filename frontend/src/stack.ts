@@ -60,7 +60,7 @@ export function seatNames(seats: readonly Seat[] | null | undefined, card: (ref:
 export function findCard(view: GameView, id: number): string | undefined {
   const all = [
     ...view.players.flatMap((p) => [p.character, ...(p.in_play ?? []), ...(p.hand ?? [])]),
-    ...[...(view.monsters ?? []), ...(view.shop ?? [])].flatMap((s) => [...(s.covered ?? []), ...(s.top ? [s.top] : [])]),
+    ...[...(view.monsters ?? []), ...(view.shop ?? []), ...(view.rooms ?? [])].flatMap((s) => [...(s.covered ?? []), ...(s.top ? [s.top] : [])]),
     ...view.discards.flatMap((d) => d ?? []),
     ...(view.bonus_souls ?? []),
   ];

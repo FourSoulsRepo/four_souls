@@ -3,7 +3,7 @@ import { deckRatiosBlocked, getCardSets } from '../bridge';
 import { t } from '../i18n';
 import { useEscape } from '../keys';
 import type { Options, RollbackMode } from '../protocol';
-import { baseGame, setName, sortSets } from '../sets';
+import { baseGame, requiem, setName, sortSets } from '../sets';
 import { deckRatiosText, useApp } from '../store';
 import './screens.css';
 
@@ -42,6 +42,7 @@ export function HostScreen() {
     response_timer: last.response_timer,
     no_bonus_souls: last.no_bonus_souls,
     no_deck_ratios: last.no_deck_ratios,
+    room_deck: last.room_deck,
     random_seats: last.random_seats,
     rollback: last.rollback === 'soft' || last.rollback === 'god' ? last.rollback : undefined,
   });
@@ -80,6 +81,9 @@ export function HostScreen() {
     };
   }, [chosen, seats]);
 
+  // Only Requiem has rooms: the room deck shows with it (14.13).
+  const rooms = chosen.includes(requiem);
+
   const option = (o: Options) => {
     setOptions({ ...options, ...o });
   };
@@ -106,13 +110,16 @@ export function HostScreen() {
                   response_timer: options.response_timer ?? 0,
                   no_bonus_souls: options.no_bonus_souls ?? false,
                   no_deck_ratios: options.no_deck_ratios ?? false,
+                  room_deck: options.room_deck ?? false,
                   random_seats: options.random_seats ?? false,
                   rollback: options.rollback ?? '',
                   picking: options.picking === 'draft' ? 'draft' : '',
                   draft_size: options.draft_size ?? 3,
                 },
               });
-              const game = { seats, sets: chosen, options: detailed ? options : undefined, password: password || undefined };
+              // The room deck goes only with Requiem (R-SETUP-16).
+              const sent = { ...options, room_deck: rooms && !!options.room_deck };
+              const game = { seats, sets: chosen, options: detailed ? sent : undefined, password: password || undefined };
               if (remote) {
                 createGame(game);
               } else {
@@ -273,6 +280,19 @@ export function HostScreen() {
               />
               {t('host.deck_ratios')}
             </label>
+            {/* Off by default; only with Requiem (R-SETUP-16, 14.13). */}
+            {rooms && (
+              <label className="check">
+                <input
+                  type="checkbox"
+                  checked={!!options.room_deck}
+                  onChange={(e) => {
+                    option({ room_deck: e.target.checked });
+                  }}
+                />
+                {t('host.room_deck')}
+              </label>
+            )}
             {/* Disabled by default (ADR 020, item 1.2). */}
             <div className="row">
               <label className="field">

@@ -172,6 +172,7 @@ Ideas: CD-02, GS-07, GS-08, CD-11, A-16, CD-12, V-32, GS-12, GS-13, GS-01.
    12. A-16 holds: the client still gets whole sets, never the dealt decks.
    13. FuzzSets and the simulations turn the ratios on in some games.
    14. Use case UC-20; tests `TestDeckRatios`, `TestDeckRatiosOption`, e2e.
+   15. Rooms done in 14.13 (2026-11-10); Bonus Souls was already in.
 
 ### [ ] 14.5 Copy art on the table
 
@@ -346,7 +347,7 @@ Alt art (CD-11) comes after all sets.
    2. e2e test: the table shows the ban list to every player.
    3. Use case for the option.
 
-### [ ] 14.13 Rooms on the table
+### [x] 14.13 Rooms on the table
 
 1. Goal: the room deck plays in the app (Requiem).
 2. Tasks:
@@ -359,6 +360,17 @@ Alt art (CD-11) comes after all sets.
 3. Done when:
    1. e2e test: host with rooms, use a room, change it in the end phase.
    2. Use case for rooms; UC-05 updated.
+4. Result (owner's jump ahead, 2026-11-10):
+   1. Protocol option `room_deck`; the server turns it off without rooms.
+   2. Record header `room_deck`; ADR 007 updated.
+   3. View: `rooms`, the room slots; presence covers them.
+   4. Host screen: "Room deck" in detailed setup, only with Requiem.
+   5. Board: a rooms column after the slots; room, room deck, discard.
+   6. Client kind `room`: landscape in every size, text cards too.
+   7. Room use and the room step need no new client code.
+   8. No room back image yet: a face-down room is the plain back.
+   9. Tests: `TestRoomDeckOption`, `TestRoomsOption`, `e2e/tests/rooms.spec.ts`.
+   10. UC-40 added; UC-05 and the Client wiki updated.
 
 ### [ ] 14.14 Attack a player or an item
 

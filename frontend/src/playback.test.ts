@@ -486,13 +486,15 @@ describe('lethal hits (20.3)', () => {
 });
 
 describe('slotZone', () => {
-  it('names the monster or shop slot a card is the top of', () => {
+  it('names the monster, shop or room slot a card is the top of', () => {
     const view = {
       monsters: [{ top: { id: 7 } }, { top: { id: 8 } }],
       shop: [{}, { top: { id: 9 } }],
+      rooms: [{ top: { id: 11 } }],
     } as unknown as GameView;
     expect(slotZone(view, 8)).toBe('monster-slot-1');
     expect(slotZone(view, 9)).toBe('shop-slot-1');
+    expect(slotZone(view, 11)).toBe('room-slot-0');
     expect(slotZone(view, 10)).toBeUndefined();
   });
 });

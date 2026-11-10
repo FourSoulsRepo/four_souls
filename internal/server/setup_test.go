@@ -336,6 +336,71 @@ func TestDeckRatiosOption(t *testing.T) {
 	}
 }
 
+// R-SETUP-16, 14.13: the room deck is off by default and needs room
+// cards; a game with it shows its room slot, and the record says so.
+func TestRoomDeckOption(t *testing.T) {
+	dir := t.TempDir()
+	h := NewHub()
+	h.records = dir
+	ctx, cancel := context.WithCancel(context.Background())
+	stopped := make(chan struct{})
+	go func() { h.Run(ctx); close(stopped) }()
+	all := []string{"b2", "g2", "fsp2", "r"}
+	hello := func(name string) *player {
+		p := &player{t: t, conn: newMemConn()}
+		p.c = h.Connect(p.conn)
+		p.say(protocol.TypeHello, protocol.Hello{Protocol: protocol.Version, Name: name, Role: protocol.RolePlayer, Sets: all})
+		p.next(protocol.TypeWelcome, nil)
+		return p
+	}
+	for name, c := range map[string]struct {
+		sets []string
+		opts *protocol.Options
+		on   bool
+	}{
+		"off by default": {sets: all},
+		"turned on":      {sets: all, opts: &protocol.Options{RoomDeck: true}, on: true},
+		"no Requiem":     {sets: []string{"b2", "g2"}, opts: &protocol.Options{RoomDeck: true}},
+	} {
+		p := hello("Ann")
+		p.say(protocol.TypeCreate, protocol.Create{Seats: 2, Sets: c.sets, Options: c.opts})
+		var tb protocol.Table
+		p.next(protocol.TypeTable, &tb)
+		if tb.Options == nil || tb.Options.RoomDeck != c.on {
+			t.Errorf("%s: options %+v, want room_deck %v", name, tb.Options, c.on)
+		}
+	}
+
+	host := hello("Bo")
+	host.say(protocol.TypeCreate, protocol.Create{Seats: 2, Sets: all, Options: &protocol.Options{RoomDeck: true}})
+	var tb protocol.Table
+	host.next(protocol.TypeTable, &tb)
+	guest := hello("Cy")
+	guest.say(protocol.TypeJoin, protocol.Join{Game: tb.Game})
+	guest.next(protocol.TypeTable, nil)
+	for _, p := range []*player{host, guest} {
+		p.say(protocol.TypeReady, protocol.Ready{Ready: true})
+	}
+	var u protocol.Update
+	guest.next(protocol.TypeUpdate, &u)
+	if len(u.View.Rooms) != 1 || u.View.Rooms[0].Top == nil {
+		t.Errorf("the view's rooms %+v, want one room", u.View.Rooms)
+	}
+	cancel()
+	<-stopped
+	files, err := filepath.Glob(filepath.Join(dir, "*"+record.Ext))
+	if err != nil || len(files) != 1 {
+		t.Fatalf("records %v, %v", files, err)
+	}
+	rec, err := record.ReadFile(files[0])
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !rec.Header.Setup.RoomDeck {
+		t.Error("the record header lacks room_deck")
+	}
+}
+
 // ADR 023: a back face is never dealt, so the pool holds only fronts.
 func TestBackFacesAreNotDealt(t *testing.T) {
 	pool := characters(cards.Sets())

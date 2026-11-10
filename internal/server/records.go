@@ -60,7 +60,7 @@ func (r *Room) openRecord(s engine.Setup) {
 	now := time.Now()
 	h := record.Header{
 		App: v.App, Engine: v.Engine, Protocol: protocol.Version, Game: r.recInfo.game, Server: r.recInfo.server, Started: now.UTC(),
-		Setup: record.Setup{Seed: s.Seed, Players: s.Players, Sets: r.recInfo.sets, BonusSouls: s.BonusSouls, Characters: chars, Banned: banned, DeckRatios: s.DeckRatios},
+		Setup: record.Setup{Seed: s.Seed, Players: s.Players, Sets: r.recInfo.sets, BonusSouls: s.BonusSouls, Characters: chars, Banned: banned, DeckRatios: s.DeckRatios, RoomDeck: s.Rooms},
 		Seats: seats, Cards: r.recInfo.cards, Rollback: r.opts.Rollback,
 	}
 	w, err := record.Create(r.path, h)

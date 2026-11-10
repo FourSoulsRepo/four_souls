@@ -55,6 +55,7 @@ type Setup struct {
 	Characters []string `json:"characters,omitempty"`
 	Banned     []string `json:"banned,omitempty"`      // left out of the game (GS-13)
 	DeckRatios bool     `json:"deck_ratios,omitempty"` // decks built from the deck ratios (GS-07)
+	RoomDeck   bool     `json:"room_deck,omitempty"`   // played with the room deck (R-SETUP-16)
 }
 
 // Seat is one player of the match.

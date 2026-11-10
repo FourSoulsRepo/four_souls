@@ -216,7 +216,7 @@ func (h *Hub) restoreRoom(f *restartFile) {
 	}
 	setup := engine.Setup{
 		Seed: f.Seed, Players: len(seats), Sets: setsOf(f.Sets), BonusSouls: !f.Options.NoBonusSouls,
-		Banned: f.Options.HostBans, DeckRatios: !f.Options.NoDeckRatios,
+		Banned: f.Options.HostBans, DeckRatios: !f.Options.NoDeckRatios, Rooms: f.Options.RoomDeck,
 	}
 	room, err := NewRoom(setup, f.Options, seats)
 	if err != nil {

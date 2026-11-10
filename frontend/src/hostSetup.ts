@@ -9,6 +9,8 @@ export interface HostSetup {
   response_timer: number;
   no_bonus_souls: boolean;
   no_deck_ratios: boolean;
+  // room_deck plays with the room deck (R-SETUP-16); off by default.
+  room_deck: boolean;
   // random_seats seats the players in a random order at the start.
   random_seats: boolean;
   // rollback is the rollback mode (ADR 020); '': Disabled.
@@ -28,6 +30,7 @@ export const noHostSetup: HostSetup = {
   response_timer: 0,
   no_bonus_souls: false,
   no_deck_ratios: false,
+  room_deck: false,
   random_seats: false,
   rollback: '',
   picking: '',

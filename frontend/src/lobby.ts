@@ -149,6 +149,9 @@ export function optionsText(o: Options | undefined): string {
   if (o && !o.no_deck_ratios) {
     parts.push(t('lobby.options.deck_ratios'));
   }
+  if (o?.room_deck) {
+    parts.push(t('lobby.options.room_deck'));
+  }
   if (o?.rollback) {
     parts.push(rollbackText(o.rollback));
   }

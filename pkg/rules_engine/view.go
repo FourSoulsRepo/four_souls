@@ -119,6 +119,8 @@ type GameView struct {
 	Shop      []SlotView     `json:"shop"`
 	Monsters  []SlotView     `json:"monsters"`
 	DeckSizes [deckCount]int `json:"deck_sizes"`
+	// Rooms are the room slots; empty without the room deck (R-SETUP-16).
+	Rooms []SlotView `json:"rooms,omitempty"`
 	// Discards are the top card of each discard pile, nil when it is
 	// empty; DiscardSizes are the piles' sizes. The rest of a pile is
 	// not sent: no view shows it.
@@ -270,6 +272,9 @@ func (g *Game) ViewBase() ViewBase {
 	}
 	out.Shop = g.slotViews(g.Shop)
 	out.Monsters = g.slotViews(g.Monsters)
+	if len(g.Rooms) > 0 {
+		out.Rooms = g.slotViews(g.Rooms)
+	}
 	for d := range deckCount {
 		out.DeckSizes[d] = len(g.Decks[d])
 		out.DiscardSizes[d] = len(g.Discards[d])
