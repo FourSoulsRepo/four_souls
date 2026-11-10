@@ -2,6 +2,7 @@
 // first their events as short effects, then the update's view is shown.
 // Playback only changes what is drawn; the game state is the server's.
 import { kindOf, type CardInfo, type Kind } from './cards';
+import { monsterRows } from './challenge';
 import { keptZone } from './choice';
 import { firstPlayerText, tieText } from './dice';
 import { drawPace, feel } from './feel';
@@ -187,7 +188,7 @@ export function hpOf(view: GameView, e: GameEvent): number | undefined {
   if (p) {
     return p.hp;
   }
-  return (view.monsters ?? []).find((s) => e.object !== undefined && s.top?.id === e.object)?.top?.stats?.hp;
+  return monsterRows(view).find((s) => e.object !== undefined && s.top?.id === e.object)?.top?.stats?.hp;
 }
 
 // chargedIn is a player's character and items charged in a view: what
@@ -213,13 +214,15 @@ export function bonusSlot(view: GameView, card: string): Death | undefined {
   return b ? { zone: `obj-${String(b.id)}`, object: b.id } : undefined;
 }
 
-// slotZone is the zone of the monster, shop or room slot whose top card is
-// object, as the board names it.
+// slotZone is the zone of the monster, shop, room, final boss or minion
+// slot whose top card is object, as the board names it.
 export function slotZone(view: GameView, object: number): string | undefined {
   for (const [name, slots] of [
     ['monster', view.monsters],
     ['shop', view.shop],
     ['room', view.rooms],
+    ['boss', view.bosses],
+    ['minion', view.minions],
   ] as const) {
     const i = (slots ?? []).findIndex((s) => s.top?.id === object);
     if (i >= 0) {
@@ -439,12 +442,37 @@ export function effectsFor(events: GameEvent[], ctx: Context): Effect[] {
         }
         // A card put into a slot, e.g. a deck attack's monster, is there
         // before the attack roll that follows it.
+        // A challenge's new minion slot is not drawn yet: the minion
+        // row's place takes it (14.25).
         const slot = e.object ? ctx.slot(e.object) : undefined;
         if (slot) {
-          out.push({ kind: 'place', from: [`deck-${kind}`], to: [slot], card: e.card, back: kind });
+          out.push({ kind: 'place', from: [`deck-${kind}`], to: slot.startsWith('minion-') ? [slot, 'minions'] : [slot], card: e.card, back: kind });
         }
         break;
       }
+      // A present's counters change on its card (R-KRAMPUS-05).
+      case 'present_counters':
+        out.push({
+          kind: 'popup',
+          at: [`present-${e.text ?? ''}`],
+          text: amount < 0 ? t('effect.counters_lost', { n: -amount }) : t('effect.counters_gained', { n: amount }),
+          tone: amount < 0 ? 'bad' : 'good',
+        });
+        break;
+      // A destroyed present goes to the treasure discard face up
+      // (R-KRAMPUS-08); a given one to its player (R-KRAMPUS-10).
+      case 'present_destroyed':
+        out.push({ kind: 'fly', from: [`present-${e.text ?? ''}`], to: ['discard-treasure'], ...(e.card ? { card: e.card } : {}), back: 'treasure' });
+        break;
+      case 'present_given':
+        out.push({ kind: 'fly', from: [`present-${e.text ?? ''}`], to: playerZones(e.player), ...(e.card ? { card: e.card } : {}), back: 'treasure', sound: 'treasureGain' });
+        break;
+      case 'challenge_won':
+        out.push({ kind: 'banner', text: t('effect.challenge_won'), won: true });
+        break;
+      case 'challenge_lost':
+        out.push({ kind: 'banner', text: t('effect.challenge_lost'), won: true });
+        break;
       case 'loot_played':
         // The player's own play needs no reminder (15.31, 20.9). A
         // viewer without a seat (you −1: a spectator, a replay) sees

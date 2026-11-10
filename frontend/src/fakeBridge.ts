@@ -4,6 +4,7 @@
 
 import b2 from '../../pkg/card_db/data/b2.json?raw';
 import requiem from '../../pkg/card_db/data/r.json?raw';
+import challenge from '../../pkg/card_db/data/challenge.json?raw';
 import { protocolVersion } from './protocol';
 
 interface Part {
@@ -227,6 +228,9 @@ const b2Data = JSON.parse(b2) as DataSet;
 // Requiem has the two-sided cards (14.15); its cards are only dealt
 // with ?requiem.
 const requiemData = JSON.parse(requiem) as DataSet;
+// The challenge cards (ADR 028): a challenge's boss and rule cards, as
+// Go's App.Cards lists them; never a playable set (14.25).
+const challengeData = JSON.parse(challenge) as DataSet;
 
 // translated gives a card's names in every language and its translators,
 // as Go's App.Cards does (16.5); the cards above take them from b2 too.
@@ -237,7 +241,7 @@ function translated(ref: string, name: string): { names: Record<string, string>;
 }
 
 function realCards(): unknown[] {
-  return [b2Data, requiemData].flatMap((data) =>
+  return [b2Data, requiemData, challengeData].flatMap((data) =>
     data.cards
       .filter((c) => !c.reprint && !cards.some((s) => s.ref === c.id))
       .flatMap((c) => {

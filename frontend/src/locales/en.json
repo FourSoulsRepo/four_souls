@@ -625,9 +625,17 @@
     "text": "Bonus souls",
     "note": "Board: screen-reader name of the bonus soul cards."
   },
+  "board.final_boss": {
+    "text": "Final boss",
+    "note": "Board: screen-reader name of a challenge's final boss slot, left of the monster slots (ADR 028)."
+  },
   "board.label": {
     "text": "Board",
     "note": "Game table: screen-reader name of the board in the middle."
+  },
+  "board.minions": {
+    "text": "Minions",
+    "note": "Board: screen-reader name of a challenge's minion slots, the row under the monster slots (ADR 028)."
   },
   "board.monsters": {
     "text": "Monsters",
@@ -1117,6 +1125,60 @@
     "text": "How the Krampus Stole Christmas",
     "note": "Name of the official co-op challenge (Maestro Media), in the game list, the table screen and the host screen."
   },
+  "challenge.panel": {
+    "text": "Challenge",
+    "note": "Board: screen-reader name of the challenge panel by the decks: the rule card, the timer and the presents (ADR 028)."
+  },
+  "challenge.present.cents": {
+    "text": "¢",
+    "note": "Board: caption under the Krampus challenge's ¢ present (R-KRAMPUS-05). Keep it short: a small card's width."
+  },
+  "challenge.present.loot": {
+    "text": "Loot",
+    "note": "Board: caption under the Krampus challenge's loot present. Keep it short: a small card's width."
+  },
+  "challenge.present.soul": {
+    "text": "Soul",
+    "note": "Board: caption under the Krampus challenge's soul present. Keep it short: a small card's width."
+  },
+  "challenge.present.treasure": {
+    "text": "Treasure",
+    "note": "Board: caption under the Krampus challenge's treasure present. Keep it short: a small card's width."
+  },
+  "challenge.present_destroyed": {
+    "text": "{present} present: destroyed",
+    "note": "Board: name and tooltip of a present that lost its last counter and went to the treasure discard. present: its kind, e.g. ¢ or Loot."
+  },
+  "challenge.present_down": {
+    "text": {
+      "one": "{present} present: face down, {n} counter",
+      "other": "{present} present: face down, {n} counters"
+    },
+    "note": "Board: name and tooltip of a face-down present. present: its kind, e.g. ¢ or Loot; n: its counters."
+  },
+  "challenge.present_given": {
+    "text": "{present} present: {player} has it as an item",
+    "note": "Board: name and tooltip of a present a player gained (Happy Holidays!). present: its kind, e.g. ¢ or Loot; player: who has it."
+  },
+  "challenge.present_up": {
+    "text": "{present} present: face up, for a player to gain",
+    "note": "Board: name of a present Happy Holidays! turned face up that nobody has gained yet. present: its kind, e.g. ¢ or Loot."
+  },
+  "challenge.presents": {
+    "text": "Presents",
+    "note": "Board: screen-reader name of the Krampus challenge's 4 presents in the challenge panel."
+  },
+  "challenge.timer": {
+    "text": {
+      "one": "{n} round left",
+      "other": "{n} rounds left"
+    },
+    "note": "Board: tooltip and name of the challenge timer, a d8 by the decks. n: rounds before the players lose."
+  },
+  "challenge.timer_label": {
+    "text": "Rounds left",
+    "note": "Board: short caption under the challenge timer's die."
+  },
   "choice.back": {
     "text": "Back to the choice",
     "note": "The bar of a hidden choice: button that shows the choice again."
@@ -1366,6 +1428,22 @@
       "other": "Discard {n} loot cards"
     },
     "note": "Discard dialog title, and the prompt banner while a player discards. n: cards to discard."
+  },
+  "effect.challenge_lost": {
+    "text": "Challenge lost",
+    "note": "Effect: banner across the table when the players lose the co-op challenge."
+  },
+  "effect.challenge_won": {
+    "text": "Challenge won!",
+    "note": "Effect: banner across the table when the players beat the co-op challenge."
+  },
+  "effect.counters_gained": {
+    "text": "+{n}",
+    "note": "Effect: rises from a challenge present that got counters (All I Want for Christmas). n: the counters put on."
+  },
+  "effect.counters_lost": {
+    "text": "−{n}",
+    "note": "Effect: rises from a challenge present that lost counters (Pilfering Krampus's roll). n: the counters taken."
   },
   "effect.healed": {
     "text": "+{n} HP",
@@ -3054,6 +3132,14 @@
   "order.top": {
     "text": "1 · top",
     "note": "Order dialog: under the first place, the deck's top."
+  },
+  "over.challenge_lost": {
+    "text": "Challenge lost",
+    "note": "Game over dialog title: both players lost the co-op challenge. The reason shows under it."
+  },
+  "over.challenge_won": {
+    "text": "Challenge won!",
+    "note": "Game over dialog title: both players beat the co-op challenge."
   },
   "over.hint": {
     "text": "Keep the match record to watch it again later.",

@@ -49,6 +49,16 @@ export function kindOf(type: string): Kind {
   return 'loot';
 }
 
+// landscapeTypes are the card types printed landscape: rooms (14.13)
+// and a challenge's boss and rule cards (14.25, ADR 028).
+const landscapeTypes = ['Room Card', 'Challenge Boss Card', 'Challenge Card'];
+
+// landscape: the card of this type is printed landscape; it is drawn
+// so in every size, text cards too.
+export function landscape(type: string): boolean {
+  return landscapeTypes.includes(type);
+}
+
 // TextPart is plain text or an icon written as {Icon Name} in card text.
 export type TextPart = { text: string } | { icon: string };
 

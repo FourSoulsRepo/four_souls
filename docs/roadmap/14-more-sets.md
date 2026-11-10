@@ -774,7 +774,7 @@ Alt art (CD-11) comes after all sets.
    14. `startGame` hooks `listed` and `seated` check a guest before Join and Ready.
    15. New UC-41; UC-03 and UC-05 point to it; wiki Client.
 
-### [ ] 14.25 Client: the challenge table
+### [x] 14.25 Client: the challenge table
 
 1. Goal: both players see and play the challenge.
 2. Tasks:
@@ -791,6 +791,30 @@ Alt art (CD-11) comes after all sets.
 3. Done when:
    1. e2e tests: presents lose counters; minions come; Krampus is attacked.
    2. Screenshots for review; use case for playing a challenge.
+4. Result (2026-11-11):
+   1. Board `.has-challenge`: three rows and a challenge column, one shape.
+   2. Final boss group left of the monster slots; landscape, aimable.
+   3. Minion row under the monsters; small cards; empty, it shows nothing.
+   4. Challenge panel in the bonus souls' column: rule card, timer, presents.
+   5. Timer: an SVG d8 with the rounds left; "Rounds left"; tooltip.
+   6. Presents: treasure back, counter badge, kind under it.
+   7. A destroyed present's place shows ✗; a given one's ✓.
+   8. `landscape(type)` in `cards.ts`: rooms, boss and rule cards, text too.
+   9. New `challenge.ts`: `monsterRows`, `presents`, `timerText`, `challengeEnd`.
+   10. `findCard`, `hpOf`, `slotZone` know bosses and minions.
+   11. Game over: "Challenge won!" or "Challenge lost" with the reason.
+   12. Effects reuse ADR 012 animations; no new one, no new layer:
+       1. A new minion: `card_revealed` places it; the row takes it first.
+       2. `present_counters`: a popup; `present_destroyed`, `present_given`: a fly.
+       3. `challenge_won`, `challenge_lost`: the end banner.
+   13. Choices needed nothing new: forgo and gifts use the choice dialog.
+   14. `ask.attack_random` shows only beside another owed attack.
+       1. With none, the engine attacks a random minion at once.
+   15. History lines already named their cards; checked.
+   16. Fake bridge and e2e `cardName` know the challenge cards.
+   17. Tests: Vitest `challenge.test.ts`, `playback.test.ts`, `cards.test.ts`.
+   18. e2e `challenge-table.spec.ts`: 4 tests, saved games for exact states.
+   19. UC-42; ADR 028 items 11.7–11.11; wiki Client and Animations.
 
 ### [ ] 14.26 Challenge play-check and docs
 

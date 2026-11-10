@@ -97,26 +97,27 @@
   --frame: #5f7448;
 }
 
-/* A room is printed landscape (14.13): as tall as a card of its size is
+/* A room is printed landscape (14.13), and so are a challenge's boss
+   and rule cards (14.25, .landscape): as tall as a card of its size is
    wide. Its drawn face keeps the portrait card's text size. */
-.card.kind-room {
+.card:is(.kind-room, .landscape) {
   aspect-ratio: 88 / 63;
   border-radius: 3.6% / 5%;
 }
 
-.card.kind-room.size-table {
+.card:is(.kind-room, .landscape).size-table {
   width: calc(5rem * 88 / 63);
 }
 
-.card.kind-room.size-small {
+.card:is(.kind-room, .landscape).size-small {
   width: calc(3.75rem * 88 / 63);
 }
 
-.card.kind-room.size-zoom {
+.card:is(.kind-room, .landscape).size-zoom {
   width: calc(20rem * 88 / 63);
 }
 
-.card.kind-room.size-choice {
+.card:is(.kind-room, .landscape).size-choice {
   width: calc(clamp(6.875rem, 13vw, 11.25rem) * 88 / 63);
 }
 
@@ -203,37 +204,37 @@
   background: #2a2a2a;
 }
 
-/* A room's drawn face: the sizes above times 63 / 88, so its text is
-   as large as on a portrait card of the same height (14.13). */
-.kind-room .card-blank {
+/* A landscape card's drawn face: the sizes above times 63 / 88, so its
+   text is as large as on a portrait card of the same height (14.13). */
+:is(.kind-room, .landscape) .card-blank {
   gap: 2.1cqi;
   padding: 5cqi;
   border-width: 2.1cqi;
   border-radius: 3.6cqi;
 }
 
-.kind-room .card-name {
+:is(.kind-room, .landscape) .card-name {
   font-size: 7.9cqi;
 }
 
-.kind-room .card-type,
-.kind-room .card-rewards {
+:is(.kind-room, .landscape) .card-type,
+:is(.kind-room, .landscape) .card-rewards {
   font-size: 5cqi;
 }
 
-.kind-room .card-text {
+:is(.kind-room, .landscape) .card-text {
   font-size: 3.7cqi;
 }
 
-.kind-room .card-text p {
+:is(.kind-room, .landscape) .card-text p {
   margin-bottom: 1.4cqi;
 }
 
-.kind-room .card-stats {
+:is(.kind-room, .landscape) .card-stats {
   font-size: 6.4cqi;
 }
 
-.kind-room .card-back-face {
+:is(.kind-room, .landscape) .card-back-face {
   border-width: 2.1cqi;
   border-radius: 3.6cqi;
   font-size: 8.6cqi;
@@ -600,11 +601,11 @@
 /* While the player picks a target (15.28, V-20), the cards that answer
    glow and the rest of the table dims. A player picked as a whole
    keeps their cards lit; dialogs and the stack are not dimmed. */
-.game.picking :is(.board-slots, .board-decks, .bonus-souls, .player:not(.hl-pick)) .card:not(.hl-act, .hl-pick, .hl-aim) {
+.game.picking :is(.board-slots, .board-decks, .bonus-souls, .board-challenge, .player:not(.hl-pick)) .card:not(.hl-act, .hl-pick, .hl-aim) {
   filter: brightness(0.45) saturate(0.6);
 }
 
-.game :is(.board-slots, .board-decks, .bonus-souls, .player) .card {
+.game :is(.board-slots, .board-decks, .bonus-souls, .board-challenge, .player) .card {
   transition: filter 150ms ease;
 }
 
@@ -718,6 +719,17 @@
 
 .card-dc .card-badge-value {
   -webkit-text-stroke: 0;
+}
+
+/* A landscape card's badges keep a portrait card's size: 63 / 88 of
+   the widths above (14.25). */
+.card.landscape .card-badge {
+  width: 24.3cqi;
+}
+
+.card.landscape .card-badge-value {
+  font-size: 15.75cqi;
+  -webkit-text-stroke: 1.7cqi var(--ink);
 }
 
 /* Counters (C-01): a blob on the card's art, clear of the stats. Each

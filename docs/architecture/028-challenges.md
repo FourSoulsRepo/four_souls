@@ -159,6 +159,11 @@ Use options 1, 4 and 5.
    4. Presents, timer and rule card in a challenge panel by the decks.
    5. A face-down present shows the treasure back; plain without images.
    6. Game over: "Challenge won" or "Challenge lost" with the reason.
+   7. The hidden minion row keeps its place: the board keeps one shape (V-23).
+   8. The challenge panel takes the bonus souls' column; a challenge has none.
+   9. Boss and rule cards are landscape, by card type (`landscape` in `cards.ts`).
+   10. A destroyed present's place shows ✗; a given one's ✓ (14.25).
+   11. The timer is a d8 with "Rounds left"; its tooltip says how many.
 12. Solo, later (14.27)
    1. Nothing here may assume one seat per app forever.
    2. The engine already treats each character as a player.

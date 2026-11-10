@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { abilityLine, iconText, inLanguage, kindOf, textParts, translatorsOf, unknownCard } from './cards';
+import { abilityLine, iconText, inLanguage, kindOf, landscape, textParts, translatorsOf, unknownCard } from './cards';
 
 describe('kindOf', () => {
   it('sorts every Base Game type into its deck family', () => {
@@ -22,6 +22,17 @@ describe('kindOf', () => {
     for (const [type, kind] of Object.entries(cases)) {
       expect(kindOf(type), type).toBe(kind);
     }
+  });
+});
+
+describe('landscape', () => {
+  it('draws rooms and challenge cards landscape (14.13, 14.25)', () => {
+    expect(['Room Card', 'Challenge Boss Card', 'Challenge Card'].every(landscape)).toBe(true);
+    expect(['Basic Monster Card', 'Epic Boss Card', 'Character Card', 'Trinket Card', ''].some(landscape)).toBe(false);
+  });
+
+  it('keeps a challenge boss a monster', () => {
+    expect(kindOf('Challenge Boss Card')).toBe('monster');
   });
 });
 

@@ -43,3 +43,4 @@
 | UC-39 | Pick a character in a draft | `frontend`, `internal/server` | Implemented | [app/uc-39-pick-a-character-in-a-draft.md](app/uc-39-pick-a-character-in-a-draft.md) |
 | UC-40 | Rooms on the table | `frontend`, `internal/server`, `rules_engine` | Implemented | [app/uc-40-rooms-on-the-table.md](app/uc-40-rooms-on-the-table.md) |
 | UC-41 | Host a challenge | `frontend`, `internal/settings`, `internal/server` | Implemented | [server/uc-41-host-a-challenge.md](server/uc-41-host-a-challenge.md) |
+| UC-42 | Play a challenge | `frontend`, `rules_engine` | Implemented | [app/uc-42-play-a-challenge.md](app/uc-42-play-a-challenge.md) |

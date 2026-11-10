@@ -211,6 +211,7 @@ function Table({ game, you }: { game: Update; you: number }) {
         view={view}
         ui={ui}
         glow={glow}
+        name={name}
         strip={
           <HistoryStrip
             view={view}
