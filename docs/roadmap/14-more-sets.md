@@ -517,7 +517,7 @@ Alt art (CD-11) comes after all sets.
    10. Community: Yuggy on events in minion slots, timer, regular boss cards.
    11. Nothing on Krampus in S-RED, S-X or S-DIS.
 
-### [ ] 14.18 ADR: challenges
+### [x] 14.18 ADR: challenges
 
 1. Goal: one decision record for the challenge mode (ADR 028).
 2. Written in the main conversation (CLAUDE.md 5.21.2).
@@ -534,6 +534,12 @@ Alt art (CD-11) comes after all sets.
    10. Without card images: text cards, like every other card.
 4. Done when:
    1. ADR 028 accepted by the owner; INDEX row added.
+5. Result (2026-11-10):
+   1. ADR 028 written in the main conversation; INDEX row added.
+   2. Accepted on the owner's go-ahead to implement 14.17 – 14.26.
+   3. The owner reviews it with the step; changes go back into it.
+   4. A challenge is a card set plus a `ChallengeDef`.
+   5. Own slot rows: `Bosses`, `Minions`; presents outside the game.
 
 ### [ ] 14.19 Challenge card data
 
