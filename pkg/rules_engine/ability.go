@@ -392,9 +392,9 @@ func BecomeSoul() Effect { return becomeSoulEffect{} }
 
 func (becomeSoulEffect) apply(c *Ctx) {
 	o := c.G.Object(c.Source)
-	if o.Zone.Kind == ZoneInPlay && o.Role == RoleEvent && o.Zone.Slot == MonsterSlot {
-		// An event in a monster slot: "This becomes a soul. Gain it."
-		// (Holy Chest); its slot is refilled.
+	if o.Zone.Kind == ZoneInPlay && o.Role == RoleEvent && eventSlot(o.Zone) {
+		// An event in a monster or minion slot: "This becomes a soul. Gain
+		// it." (Holy Chest); its slot is refilled or removed.
 		g := c.G
 		if !g.CanGainSouls(c.Controller) {
 			return // it goes to discard like any event
@@ -512,11 +512,7 @@ func (e killEffect) apply(c *Ctx) {
 		c.G.KillPlayer(t.Player, c.Controller)
 		return
 	}
-	if c.G.Eternal(t.Object) {
-		return // R-DEATH-03
-	}
-	c.G.Object(t.Object).Damage = c.G.def(t.Object).HP + c.G.bonus(StatMonsterHP, NoPlayer, t.Object)
-	c.G.push(StackItem{Kind: StackDeath, Controller: NoPlayer, Label: eventDeath.Msg(), Target: Target{Object: t.Object}})
+	c.G.killObject(t.Object, c.Controller, c.Source) // eternal: R-DEATH-03; boss armor: R-CHAL-05
 }
 
 // You is the target index that means the ability's controller, for text
@@ -637,15 +633,7 @@ func (e eachPlayerEffect) apply(c *Ctx) {
 // play. The active player picks the order they resolve in, or keeps slot
 // order (R-MECH-29): with death triggers, order matters.
 func EachMonsterTakesDamage(n int) Effect {
-	monsters := func(c *Ctx, _ []int) []ObjectID {
-		var out []ObjectID
-		for _, s := range c.G.Monsters {
-			if top, ok := s.TopOf(); ok && c.G.Object(top).Role == RoleMonster {
-				out = append(out, top)
-			}
-		}
-		return out
-	}
+	monsters := func(c *Ctx, _ []int) []ObjectID { return c.G.MonstersInPlay() }
 	active := func(c *Ctx) PlayerID { return c.G.Turn.Active }
 	return Ask(func(c *Ctx, a []int) {
 		order := Ordered(monsters(c, nil), a)

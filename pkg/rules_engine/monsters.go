@@ -21,12 +21,13 @@ func (g *Game) enterMonsterSlot(id ObjectID) {
 }
 
 // finishEvent puts an event whose abilities are done into discard; its
-// slot is refilled (R-CARD-15, R-SHOP-06). An event its own ability
+// slot is refilled, or removed if it is a minion slot (R-CARD-15,
+// R-SHOP-06, R-CHAL-12). An event its own ability
 // covered (Boss Rush! puts a boss in its slot) leaves from under that
 // card, which stays (19.61).
 func (g *Game) finishEvent(id ObjectID) {
 	o := g.Object(id)
-	if o.Zone.Slot != MonsterSlot || g.kindOf(id) != EventCard || g.def(id).Curse {
+	if !eventSlot(o.Zone) || g.kindOf(id) != EventCard || g.def(id).Curse {
 		return
 	}
 	switch o.Zone.Kind {
@@ -154,6 +155,9 @@ func (g *Game) AddDeckAttack() {
 // deck, below the top n cards (0: on top).
 func (g *Game) PutIntoDeck(d DeckKind, id ObjectID, n int) {
 	if g.Object(id).Zone.Kind == ZoneInPlay {
+		if g.Held(id) {
+			return // a final boss or minion stays (R-CHAL-04, R-CHAL-10)
+		}
 		g.removeFromSlot(id) // a monster or shop card in its slot
 	}
 	nid := g.move(id, DeckZone(d), NoPlayer)

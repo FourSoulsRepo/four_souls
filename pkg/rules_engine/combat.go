@@ -342,9 +342,9 @@ func (g *Game) askAttackTarget() {
 // players an effect lets them attack (R-ATK-20).
 func (g *Game) attackTargets() []ObjectID {
 	var out []ObjectID
-	for _, s := range g.Monsters {
-		if top, ok := s.TopOf(); ok && g.Object(top).Role == RoleMonster && !g.def(top).Unattackable {
-			out = append(out, top)
+	for _, id := range g.MonstersInPlay() { // final bosses and minions too (R-CHAL-03, R-CHAL-07)
+		if !g.def(id).Unattackable {
+			out = append(out, id)
 		}
 	}
 	for _, pl := range g.Players {
@@ -631,7 +631,7 @@ func (g *Game) resolveDamage(it StackItem) {
 	if o.Zone.Kind != ZoneInPlay || g.HP(id) == 0 {
 		return
 	}
-	n := min(it.Amount, g.HP(id))
+	n := min(g.armored(id, it.Amount, it.Attack), g.HP(id)) // R-CHAL-05
 	o.Damage += n
 	o.HitsThisTurn++
 	if g.HP(id) == 0 {
@@ -708,7 +708,7 @@ func (g *Game) monsterDeath(id ObjectID) {
 		g.endAttack()
 	}
 	text := g.deathText(id)
-	inSlot := o.Zone.Slot == MonsterSlot || o.Zone.Slot == RoomSlot
+	inSlot := o.Zone.Slot == MonsterSlot || o.Zone.Slot == RoomSlot || o.Zone.Slot == FinalBossSlot || o.Zone.Slot == MinionSlot
 	var z Zone
 	if inSlot && o.Controller == NoPlayer {
 		z = g.takeFromSlot(id)
@@ -875,17 +875,25 @@ func (g *Game) removeFromSlot(id ObjectID) {
 }
 
 // takeFromSlot takes an object off the top of its slot and returns the
-// slot's zone; the card below stays covered until uncover.
+// slot's zone; the card below stays covered until uncover. A minion
+// slot left empty is removed (R-CHAL-11); a final boss slot stays.
 func (g *Game) takeFromSlot(id ObjectID) Zone {
 	z := g.Object(id).Zone
 	slot := g.slotAt(z)
 	slot.Cards = remove(slot.Cards, id)
+	if z.Slot == MinionSlot && len(slot.Cards) == 0 {
+		g.dropMinionSlot(z.Index)
+	}
 	return z
 }
 
 // uncover puts the covered card on top of the slot at z into play; its
-// card_revealed names the covered object as Prev (19.72).
+// card_revealed names the covered object as Prev (19.72). Final boss
+// and minion slots cover nothing (R-CHAL-04, R-CHAL-11).
 func (g *Game) uncover(z Zone) {
+	if z.Slot == FinalBossSlot || z.Slot == MinionSlot {
+		return
+	}
 	slot := g.slotAt(z)
 	if below, ok := slot.TopOf(); ok && g.Object(below).Zone.Kind == ZoneCovered {
 		slot.Cards = slot.Cards[:len(slot.Cards)-1]
@@ -899,6 +907,10 @@ func (g *Game) slotAt(z Zone) *Slot {
 		return &g.Shop[z.Index]
 	case MonsterSlot:
 		return &g.Monsters[z.Index]
+	case FinalBossSlot:
+		return &g.Bosses[z.Index]
+	case MinionSlot:
+		return &g.Minions[z.Index]
 	default:
 		return &g.Rooms[z.Index]
 	}
@@ -1015,9 +1027,9 @@ func (g *Game) redirector() (PlayerID, bool) {
 // (S-YUG).
 func (g *Game) askRedirect(q PlayerID, declared ObjectID) {
 	options := []ObjectID{declared}
-	for _, s := range g.Monsters {
-		if top, ok := s.TopOf(); ok && top != declared && g.Object(top).Role == RoleMonster && !g.def(top).Unattackable {
-			options = append(options, top)
+	for _, id := range g.MonstersInPlay() {
+		if id != declared && !g.def(id).Unattackable {
+			options = append(options, id)
 		}
 	}
 	g.ask(Choice{Purpose: ChooseRedirect, Player: q, Rule: "R-ATK-03", Objects: options, Question: promptRedirect.Msg()}, g.Labels(options))

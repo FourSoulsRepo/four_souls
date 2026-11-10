@@ -110,6 +110,11 @@ Use options 1, 4 and 5.
    6. A minion slot is removed when its card leaves (R-CHAL-11).
    7. Later minions' `Zone.Index` shifts down with it.
    8. Boss armor is one rule in the damage and kill code (R-CHAL-05).
+   9. Helpers `MonstersInPlay()`, `MonsterRows()`: monsters, bosses, minions.
+   10. `Held(id)`: a final boss or minion; discard and deck moves skip it.
+   11. Engine calls: `PutInFinalBossSlot(card)`, `PutInMinionSlot(id)`, `MinionFromDeck()`.
+   12. A dead final boss leaves its slot empty; nothing refills it.
+   13. Situations take `bosses` and `minions` rows too.
 8. Co-op turn and end
    1. Timer ticks at the end of each round (R-COOP-08, Q-34).
    2. Timer at 0: `LoseChallenge` (R-COOP-09).

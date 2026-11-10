@@ -77,6 +77,14 @@ func appendView(b []byte, v engine.GameView) []byte {
 		b = append(b, `,"rooms":`...)
 		b = appendSlots(b, v.Rooms)
 	}
+	if len(v.Bosses) > 0 {
+		b = append(b, `,"bosses":`...)
+		b = appendSlots(b, v.Bosses)
+	}
+	if len(v.Minions) > 0 {
+		b = append(b, `,"minions":`...)
+		b = appendSlots(b, v.Minions)
+	}
 	b = append(b, `,"discards":`...)
 	b = appendCardPtrs(b, v.Discards[:])
 	b = append(b, `,"discard_sizes":`...)

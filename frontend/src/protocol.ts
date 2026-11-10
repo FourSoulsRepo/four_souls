@@ -469,6 +469,10 @@ export interface GameView {
   monsters: SlotView[] | null;
   // rooms are the room slots; none without the room deck (14.13).
   rooms?: SlotView[];
+  // bosses and minions are a challenge's final boss and minion slots;
+  // none in a regular game (ADR 028, 14.21).
+  bosses?: SlotView[];
+  minions?: SlotView[];
   deck_sizes: number[];
   // discards: the top card of each discard pile; discard_sizes: the sizes.
   discards: (CardView | null)[];

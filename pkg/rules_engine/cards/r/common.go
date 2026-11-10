@@ -179,7 +179,7 @@ func cardsInPlay(g *engine.Game) []engine.ObjectID {
 		}
 	}
 	out = append(out, g.ShopItems()...)
-	for _, rows := range [][]engine.Slot{g.Monsters, g.Rooms} {
+	for _, rows := range append(g.MonsterRows(), g.Rooms) {
 		for _, s := range rows {
 			if top, ok := s.TopOf(); ok {
 				out = append(out, top)

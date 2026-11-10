@@ -616,7 +616,7 @@ Alt art (CD-11) comes after all sets.
    18. `testdata/regular_save.json`: a save from before 14.20 still resumes.
    19. ADR 028 got small drift items: Decision 3.6–3.8, 5.9–5.11.
 
-### [ ] 14.21 Engine: final boss and minion slots
+### [x] 14.21 Engine: final boss and minion slots
 
 1. Goal: the challenge slot rows work with every card.
 2. Tasks:
@@ -630,6 +630,42 @@ Alt art (CD-11) comes after all sets.
 3. Done when:
    1. Engine tests for each CHAL slot rule.
    2. Fuzz runs with a challenge setup stay green.
+4. Result (2026-11-10):
+   1. `boss_slots.go`: `FinalBossSlot`, `MinionSlot`; `Game.Bosses`, `Game.Minions`.
+   2. Both rows `omitempty`; `TestRegularSaveUnchanged` stays green.
+   3. Helpers: `MonstersInPlay()`, `MonsterRows()`; `IsFinalBoss`, `IsMinion`, `Held`.
+   4. Engine calls: `PutInFinalBossSlot(card)`, `PutInMinionSlot(id)`, `MinionFromDeck()`.
+   5. `Held`: `DiscardMonster`, `PutIntoDeck`, `SlotToDeckBottom` do nothing to it.
+   6. Boss armor: one `killObject` for `Kill` and `KillObject`; `armored` in `resolveDamage`.
+   7. Before, `Kill` and `KillObject` were two kill paths; now one.
+   8. A minion slot goes when its card leaves (`takeFromSlot`); later indices shift.
+   9. Invariants: every slot card's zone names its row and slot number.
+   10. Events in a minion slot: `finishEvent`, `afterEventAbility`, `BecomeSoul`.
+   11. A minion dies as a normal monster; Krampus's rule is 14.22's.
+   12. View: `GameView.Bosses`, `Minions`; protocol encoder and `protocol.ts`.
+   13. Situations take `bosses` and `minions` rows (wiki Situation-payload).
+   14. Audit, engine, through the helper:
+       1. `inPlay`, `attackTargets`, `askRedirect`, `TargetMonster` choices.
+       2. `EachMonsterTakesDamage`, `monsterDeath`, `slotAt`, situation stack.
+   15. Audit, engine, monster slots only:
+       1. `fillSlots`, `refillSlots`, deck attack placement, `PlaceFromOutside`.
+       2. `CoverMonsterSlot`, `PlaceFromDeck`, `PlaceFromDiscard`, `FromUnder`.
+       3. `PutUnder`, Indomitable, `ExpandMonsters`, situation `monsters`.
+   16. Audit, cards: 75 files in b2, g2, fsp2, r, cardkit, enginetest.
+       1. Most go through `cardkit.MonstersInPlay`, now the engine helper.
+       2. Changed: cardkit `MonstersInPlay`, Ehwaz, Magic Marker, r `cardsInPlay`.
+       3. Moves that `Held` stops: Ehwaz, Spider Mod, Void, I Am Error, Dogma.
+       4. Also: Emergency Contact, Flush, the room discard effects.
+       5. Kills that become 3 damage: Chaos Card, XIII Death, Tech X, The Bible.
+       6. Also: Pandora's Box, Euthanasia, Soulbond, Plan C, Mother's Shadow.
+       7. Slots only: The D10, Key, Red Key, Peep, Rainmaker, Dad's Note.
+       8. Also: Friendly Ball, Ouija, g2 and fsp2 `freeSlots`, expand cards.
+       9. Ace of Diamonds counts monster slots only (R-CHAL-02, R-CHAL-07).
+       10. Rag Man, Delirium, `backOnTop` move a dead card: unchanged.
+   17. Open: a max HP drop (R-MECH-21) can still bring a boss to 0 HP.
+   18. Tests: `cards/challenge_slots_test.go`, R-CHAL-02 – R-CHAL-12.
+   19. Fuzz: `FuzzChallengeSets`, `make fuzz-challenge`; 3 minutes green.
+   20. ADR 028 got small drift items: Decision 7.9–7.13.
 
 ### [ ] 14.22 Engine: How the Krampus Stole Christmas
 

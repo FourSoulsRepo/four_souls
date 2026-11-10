@@ -14,9 +14,9 @@ var ehwaz = engine.CardDef{
 			Kind: engine.LootAbility,
 			Text: "Put each monster not being attacked into discard and replace each with the top card of the monster deck.",
 			Effects: []engine.Effect{engine.EffectFunc(func(c *engine.Ctx) {
-				for _, s := range c.G.Monsters {
-					if top, ok := s.TopOf(); ok && c.G.Object(top).Role == engine.RoleMonster && top != c.G.Attack.Target {
-						c.G.DiscardMonster(top)
+				for _, id := range c.G.MonstersInPlay() { // a final boss or minion stays (R-CHAL-04)
+					if id != c.G.Attack.Target {
+						c.G.DiscardMonster(id)
 					}
 				}
 				c.G.RefillSlots()

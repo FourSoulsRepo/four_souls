@@ -64,7 +64,7 @@ func markable(c *engine.Ctx) []engine.ObjectID {
 		all = append(all, pl.Character)
 		all = append(all, pl.InPlay...)
 	}
-	for _, rows := range [][]engine.Slot{c.G.Monsters, c.G.Rooms} {
+	for _, rows := range append(c.G.MonsterRows(), c.G.Rooms) {
 		for _, s := range rows {
 			if top, ok := s.TopOf(); ok {
 				all = append(all, top)

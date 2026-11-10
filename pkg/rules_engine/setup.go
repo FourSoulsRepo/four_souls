@@ -223,12 +223,13 @@ func (g *Game) putInSlotFrom(id ObjectID, kind SlotKind, i int, prev ObjectID) O
 	case ShopSlot:
 		o.Role = RoleItem
 		g.Shop[i].Cards = append(g.Shop[i].Cards, nid)
-	case MonsterSlot:
+	case MonsterSlot, FinalBossSlot, MinionSlot:
 		o.Role = RoleMonster
 		if g.kindOf(nid) == EventCard {
 			o.Role = RoleEvent
 		}
-		g.Monsters[i].Cards = append(g.Monsters[i].Cards, nid)
+		s := g.slotAt(Zone{Slot: kind, Index: i})
+		s.Cards = append(s.Cards, nid)
 	case RoomSlot:
 		o.Role = RoleRoom
 		if g.Turn.Step >= StepEndTriggers {

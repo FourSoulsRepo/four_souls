@@ -33,7 +33,7 @@ LOCALE ?=
 AREA ?=
 
 .DEFAULT_GOAL := help
-.PHONY: help doctor update-deps test vet build wasm site lint i18n frontend e2e e2e-games screenshots internal server-archives fuzz fuzz-engine fuzz-focused fuzz-sets fuzz-new sims
+.PHONY: help doctor update-deps test vet build wasm site lint i18n frontend e2e e2e-games screenshots internal server-archives fuzz fuzz-engine fuzz-focused fuzz-sets fuzz-new fuzz-challenge sims
 
 help: ## Show this help
 	@echo "Usage: make <target> [VAR=value]"
@@ -146,7 +146,7 @@ server-archives: ## Build the release server archives into .cache/server
 	@release/server.sh "$(VERSION)" .cache/server
 
 # Go fuzzes one target at a time, so fuzz runs them one after another.
-fuzz: fuzz-engine fuzz-sets ## Run fuzz-engine, then fuzz-sets (FUZZTIME each)
+fuzz: fuzz-engine fuzz-sets fuzz-challenge ## Run fuzz-engine, fuzz-sets, then fuzz-challenge (FUZZTIME each)
 
 fuzz-engine: ## Fuzz the engine with its test cards (FuzzAllCards)
 	@cd pkg/rules_engine && go test -run '^$$' -fuzz=FuzzAllCards -fuzztime=$(FUZZTIME) -fuzzminimizetime=$(MINIMIZE) .
@@ -159,6 +159,9 @@ fuzz-sets: ## Fuzz with every real card set (FuzzSets)
 
 fuzz-new: ## Fuzz with only the SETS card sets, rooms mostly on (FuzzFocusedSets)
 	@cd pkg/rules_engine && FOUR_SOULS_SETS=$(SETS) go test -run '^$$' -fuzz=FuzzFocusedSets -fuzztime=$(FUZZTIME) -fuzzminimizetime=$(MINIMIZE) ./cards/
+
+fuzz-challenge: ## Fuzz a test challenge with a final boss and minions (FuzzChallengeSets)
+	@cd pkg/rules_engine && go test -run '^$$' -fuzz=FuzzChallengeSets -fuzztime=$(FUZZTIME) -fuzzminimizetime=$(MINIMIZE) ./cards/
 
 sims: ## Play SIMS whole random games with the real sets
 	@cd pkg/rules_engine && FOUR_SOULS_SIMS=$(SIMS) go test -count=1 -timeout 60m -run '^TestSimulations$$' -v ./cards/

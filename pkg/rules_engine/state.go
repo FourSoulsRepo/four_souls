@@ -55,6 +55,10 @@ const (
 	ShopSlot SlotKind = iota
 	MonsterSlot
 	RoomSlot
+	// FinalBossSlot and MinionSlot are a challenge's own rows (ADR 028,
+	// Decision 7; R-CHAL-02, R-CHAL-07).
+	FinalBossSlot
+	MinionSlot
 )
 
 // Zone tells exactly where an object is.
@@ -253,6 +257,10 @@ type Game struct {
 	Shop     []Slot `json:"shop"`
 	Monsters []Slot `json:"monsters"`
 	Rooms    []Slot `json:"rooms,omitempty"`
+	// Bosses are the final boss slots and Minions the minion slots of a
+	// challenge (ADR 028, Decision 7); empty in a regular game.
+	Bosses  []Slot `json:"bosses,omitempty"`
+	Minions []Slot `json:"minions,omitempty"`
 
 	Outside []ObjectID `json:"outside"`
 	// BonusSouls are the active bonus souls, outside the game (R-SETUP-06).
@@ -390,8 +398,9 @@ func (g *Game) Checksum() (uint64, error) {
 
 // inPlay lists the objects in play whose abilities work, in a fixed
 // order: each player's character and play area in seat order, then the
-// top of every monster and room slot, then a challenge's rule card (ADR
-// 028). Souls are left out: a soul only counts for its value (R-CARD-18).
+// top of every monster and room slot, then of the final boss and minion
+// slots, then a challenge's rule card (ADR 028). Souls are left out: a
+// soul only counts for its value (R-CARD-18).
 func (g *Game) inPlay() []ObjectID {
 	var out []ObjectID
 	for _, pl := range g.Players {
@@ -403,7 +412,7 @@ func (g *Game) inPlay() []ObjectID {
 		}
 	}
 	// Shop items' abilities do not work in the shop (R-CARD-05).
-	for _, rows := range [][]Slot{g.Monsters, g.Rooms} {
+	for _, rows := range [][]Slot{g.Monsters, g.Rooms, g.Bosses, g.Minions} {
 		for _, s := range rows {
 			if top, ok := s.TopOf(); ok && g.Object(top).Zone.Kind == ZoneInPlay {
 				out = append(out, top)

@@ -121,6 +121,10 @@ type GameView struct {
 	DeckSizes [deckCount]int `json:"deck_sizes"`
 	// Rooms are the room slots; empty without the room deck (R-SETUP-16).
 	Rooms []SlotView `json:"rooms,omitempty"`
+	// Bosses are a challenge's final boss slots and Minions its minion
+	// slots (ADR 028, Decision 9.3); empty in a regular game.
+	Bosses  []SlotView `json:"bosses,omitempty"`
+	Minions []SlotView `json:"minions,omitempty"`
 	// Discards are the top card of each discard pile, nil when it is
 	// empty; DiscardSizes are the piles' sizes. The rest of a pile is
 	// not sent: no view shows it.
@@ -296,6 +300,12 @@ func (g *Game) ViewBase() ViewBase {
 	out.Monsters = g.slotViews(g.Monsters)
 	if len(g.Rooms) > 0 {
 		out.Rooms = g.slotViews(g.Rooms)
+	}
+	if len(g.Bosses) > 0 {
+		out.Bosses = g.slotViews(g.Bosses)
+	}
+	if len(g.Minions) > 0 {
+		out.Minions = g.slotViews(g.Minions)
 	}
 	for d := range deckCount {
 		out.DeckSizes[d] = len(g.Decks[d])

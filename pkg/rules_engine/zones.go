@@ -286,8 +286,11 @@ func (g *Game) ShopItems() []ObjectID {
 }
 
 // DiscardMonster puts a monster in a slot into the monster discard; the
-// slot is refilled later (RefillSlots).
+// slot is refilled later (RefillSlots). A final boss or minion stays.
 func (g *Game) DiscardMonster(id ObjectID) {
+	if g.Held(id) {
+		return // R-CHAL-04, R-CHAL-10
+	}
 	g.removeFromSlot(id)
 	nid := g.discard(id, MonsterDeck)
 	g.emit(Event{Kind: EvDiscarded, Player: NoPlayer, Object: nid, Card: g.Object(nid).Card, Prev: id})
@@ -378,10 +381,11 @@ func (g *Game) DiscardShopItem(id ObjectID) {
 }
 
 // SlotToDeckBottom puts the top card of a shop or monster slot on the
-// bottom of its deck; the slot is refilled later (RefillSlots).
+// bottom of its deck; the slot is refilled later (RefillSlots). A final
+// boss or minion stays.
 func (g *Game) SlotToDeckBottom(id ObjectID) {
 	d, ok := g.kindOf(id).Deck()
-	if !ok {
+	if !ok || g.Held(id) { // R-CHAL-04, R-CHAL-10
 		return
 	}
 	g.removeFromSlot(id)
@@ -442,8 +446,16 @@ func (g *Game) PutOnDeck(d DeckKind, cards ...CardRef) {
 
 // KillObject kills a monster or other object with HP: HP to 0, its
 // death on the stack (R-MECH-23).
-func (g *Game) KillObject(id ObjectID) {
+func (g *Game) KillObject(id ObjectID) { g.killObject(id, NoPlayer, 0) }
+
+// killObject is KillObject by an ability of controller from source. A
+// final boss takes 3 damage instead (boss armor, R-CHAL-05).
+func (g *Game) killObject(id ObjectID, controller PlayerID, source ObjectID) {
 	if g.Object(id).Zone.Kind != ZoneInPlay || g.Eternal(id) {
+		return
+	}
+	if g.IsFinalBoss(id) {
+		g.push(StackItem{Kind: StackDamage, Controller: controller, Source: source, Amount: bossArmor, Label: eventDamage.Msg(), Target: Target{Object: id}})
 		return
 	}
 	g.Object(id).Damage = g.def(id).HP + g.bonus(StatMonsterHP, NoPlayer, id)

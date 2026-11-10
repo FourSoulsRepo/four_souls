@@ -85,6 +85,18 @@ A co-op challenge (ADR 028; rules in `docs/rules/challenges.md`) is a regular ga
 * Rooms: after the room step, a room whose top object is older than the active player's previous turn goes to discard (R-COOP-11, Q-39). Object IDs only grow, so `TurnFrom` and `RoundFrom` keep the first object ID of each player's last two turns.
 * View: `GameView.Challenge` (ID, difficulty, timer, rule card, presents, lost and reason) for everyone; each player also sees the partner's hand (R-COOP-07, Q-42). Hand events stay private as in any game.
 
+### Final boss and minion slots
+
+A challenge has two more slot rows beside the monster slots (`boss_slots.go`, R-CHAL-02 to R-CHAL-12): `Game.Bosses` (`FinalBossSlot`) and `Game.Minions` (`MinionSlot`). Both are `omitempty`, so a regular game saves as before; the view has `GameView.Bosses` and `GameView.Minions`.
+
+* "Monsters in play" is `g.MonstersInPlay()`: the tops of the monster, final boss and minion slots, in that order (`MonsterRows()`). Attack targets, Mom's Eye Shadow, `TargetMonster` choices, "each monster" and every card's `monstersInPlay` (cardkit) use it.
+* "Monster slot" effects stay on `g.Monsters`: covering, refilling, expanding, putting a card into a monster slot, deck attacks, Indomitable, Ace of Diamonds' count. So a final boss is never covered, and neither row is refilled.
+* `Held(id)` is a final boss or minion: it can't leave unless it is killed (R-CHAL-04, R-CHAL-10, Q-37). `DiscardMonster`, `PutIntoDeck`, `SlotToDeckBottom` (and so `ToBottomRandom`) do nothing to it; `PutUnder` takes monster slots only.
+* Boss armor (R-CHAL-05) is one rule in two places: `killObject` (both `Kill` and `KillObject`) gives a final boss 3 damage instead; `resolveDamage` caps one non-combat instance at 3 (`armored`). Combat damage is never capped.
+* A dead final boss leaves its slot empty. A minion slot is removed when its card leaves (`takeFromSlot`); later minions' `Zone.Index` shift down (`dropMinionSlot`). `CheckInvariants` checks that every slot card's zone names its row and slot.
+* `PutInFinalBossSlot(card)` is for a challenge's setup. `PutInMinionSlot(id)` (a monster deck card) and `MinionFromDeck()` give the card a new minion slot; an event there resolves, goes to discard, and its slot goes (R-CHAL-12).
+* A minion dies like any monster; challenge-specific rewards are the challenge's job (R-KRAMPUS-14).
+
 ## The run loop must always settle
 
 `run()` keeps doing automatic work (queued actions, triggers, step changes) until the game waits on a prompt. Any path that leaves no prompt and changes nothing spins forever. Rules for new code:
