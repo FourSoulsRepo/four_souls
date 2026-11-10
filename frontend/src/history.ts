@@ -4,7 +4,7 @@
 import { firstPlayerText, tieText } from './dice';
 import { say, t } from './i18n';
 import type { GameEvent, GameView, Rollback, RollbackEnd, RollbackStep, StackItem, Update } from './protocol';
-import { findCard, StackKind, stackLine, type Names } from './stack';
+import { attackedPlayer, findCard, StackKind, stackLine, type Names } from './stack';
 import { rollChanges } from './stats';
 
 export interface Entry {
@@ -186,6 +186,9 @@ export function entriesFor(events: GameEvent[], turn: number, you: number, n: Na
   const targetOf = (it: StackItem): Outcome | undefined => {
     const ref = it.target.is_player ? character(it.target.player) : (it.target_card ?? findCard(view, it.target.object ?? 0));
     if (it.target.is_player) return { text: n.player(it.target.player), ...(ref ? { card: ref } : {}) };
+    // An attack on a player aims at their character (R-ATK-20, 14.14).
+    const victim = attackedPlayer(it, view);
+    if (victim !== undefined) return { text: n.player(victim), ...(ref ? { card: ref } : {}) };
     return ref ? { text: n.card(ref), card: ref } : undefined;
   };
   // A bought item also comes as a gain; the buy line names it alone.

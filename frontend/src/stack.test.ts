@@ -99,6 +99,16 @@ describe('stackLine', () => {
     expect(stackLine(back, view, names)).toBe('Attack: GAPER deals 1 damage to Ann');
   });
 
+  it('names an attacked player, not their character (14.14, R-ATK-20)', () => {
+    // Cain (object 2) stands for Bo; the roll names Bo.
+    const roll = item({ kind: StackKind.roll, roll: 5, attack: true, target: { player: -1, object: 2 } });
+    expect(stackLine(roll, view, names)).toBe('Attack: Ann rolls 5 against Bo');
+    expect(stackParts(roll, view, names)).toContainEqual({ text: 'Bo', role: 'target', player: 1 });
+    // A card's item at a character is no attack: it names the card.
+    const aim = item({ kind: StackKind.damage, amount: 1, target: { player: -1, object: 2 } });
+    expect(stackLine(aim, view, names)).toBe('Ann deals 1 damage to CAIN');
+  });
+
   it('names the card when a player takes damage (15.47)', () => {
     // Boom Fly: each player controls the damage they take; the fly is gone.
     const fly = item({ kind: StackKind.damage, amount: 1, controller: 1, source: 307, source_card: 'boom_fly', target: { player: 1, is_player: true } });

@@ -204,6 +204,18 @@
   * Players answer it and may respond; it resolves.
   * Only then the attack roll waits for the player's throw (R-ATK-25).
   * Other monsters: the throw waits right after the pick.
+* **5o. Attack a player (14.14):** e.g. while The Siren is out (R-ATK-20).
+  * The other players' characters glow beside the monsters.
+  * The arrow aims at them from the own character, as at a monster.
+  * The stack names the player, not the character card.
+  * The odds use the evasion the card sets: The Siren's 4+.
+* **5p. Attack an item or a room (14.14):** e.g. Punching Bag, Gus (R-MECH-04).
+  * It glows where it lies: an item in its owner's area, a room in the room column.
+  * Its own stats count; the attack goes on as against a monster.
+* **5q. Helpers' rolls (14.14):** e.g. Sibling Rivalry, Gus (R-ATK-21).
+  * After the active player's roll, each helper throws in turn.
+  * The helper gets the Throw button; others read "<name> is throwing".
+  * The stack line names the helper: "Attack: Fay rolls against Fatty".
 
 ## Postconditions
 

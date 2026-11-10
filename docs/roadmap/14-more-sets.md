@@ -378,7 +378,7 @@ Alt art (CD-11) comes after all sets.
        4. Images: `assets/backs/room.webp`, landscape like the rooms (818×600 since 14.16).
        5. App: `backKinds` has `room`; without the images it stays plain.
 
-### [ ] 14.14 Attack a player or an item
+### [x] 14.14 Attack a player or an item
 
 1. Goal: Requiem's new attack targets work in the app.
 2. Tasks:
@@ -390,6 +390,16 @@ Alt art (CD-11) comes after all sets.
    1. e2e test: The Siren lets the active player attack a player.
    2. e2e test: Punching Bag can be attacked.
    3. UC-13 updated.
+4. Result (owner's jump ahead, 2026-11-10):
+   1. Engine, server and view were done before: targets, odds, helper rolls.
+   2. The client's pick, glow and arrow already took players and items.
+   3. One bug: an attack roll on a player named the character card.
+   4. "Ada rolls against Judas"; now "Ada rolls against Bo".
+   5. `attackedPlayer` in `stack.ts`; the stack and the history use it.
+   6. Helpers' rolls already named the helper: Throw, banner, stack line.
+   7. The odds row stays the active player's during a helper's roll.
+   8. Tests: `stack.test.ts`, `e2e/tests/attack-targets.spec.ts` (Siren, Punching Bag, Sibling Rivalry).
+   9. UC-13: 5o, 5p, 5q; Client wiki: `attackedPlayer`.
 
 ### [x] 14.15 Two-sided cards
 

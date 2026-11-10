@@ -8,6 +8,7 @@ Rules engine versions are in each release's notes.
 
 - Golden Trinket and Glitch with a copied ↷ ability count as ↷ items: Charged Baby and other recharge cards can recharge them, and death or Curse of Impulse deactivates them.
 - An attack on Pride, Rag Mega, Dogma and other "when an attack is declared on this" monsters: their ability resolves before the attack die is thrown.
+- An attack on a player (The Siren): the attack roll names the player, not their character card.
 - Rules engine 0.5.3.
 
 ## 0.4.0 - 2026-11-09

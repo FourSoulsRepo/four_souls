@@ -97,9 +97,12 @@ export function stackParts(it: StackItem, view: GameView, n: Names, rolled?: str
   const who: LinePart = { text: n.player(it.controller), role: 'player', player: it.controller };
   const card: LinePart = { text: it.card ? n.card(it.card) : '', role: 'card' };
   const targetCard = it.target_card ?? findCard(view, it.target.object ?? 0);
+  const victim = attackedPlayer(it, view);
   const target: LinePart = it.target.is_player
     ? { text: n.player(it.target.player), role: 'target', player: it.target.player }
-    : { text: targetCard ? n.card(targetCard) : t('stack.a_card'), role: 'target' };
+    : victim !== undefined
+      ? { text: n.player(victim), role: 'target', player: victim }
+      : { text: targetCard ? n.card(targetCard) : t('stack.a_card'), role: 'target' };
   // An attack's items say so first: "Attack: Ann rolls 4 against Gaper".
   const attack = (line: LinePart[]) => (it.attack ? partsOf(t('stack.attack'), { line }) : line);
   // dealer is who deals damage: the player, or the monster that hits back.
@@ -170,6 +173,15 @@ function rollParts(it: StackItem, n: Names, roll: string, who: LinePart, target:
 // sourceName names a stat source's card for rollChanges and oddsLine.
 function sourceName(n: Names): Name {
   return (ref) => (ref ? n.card(ref) : t('stats.hidden_card'));
+}
+
+// attackedPlayer is the player an attack's item aims at: its target is
+// their character, which stands for them (R-ATK-20, 14.14).
+export function attackedPlayer(it: StackItem, view: GameView): number | undefined {
+  if (!it.attack || it.target.is_player) {
+    return undefined;
+  }
+  return view.players.find((p) => p.character.id === it.target.object)?.id;
 }
 
 // attackTarget names what an attack aims at: an attacked player by name,
