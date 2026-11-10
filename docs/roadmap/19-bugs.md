@@ -41,7 +41,7 @@ This step never closes; new reports are appended.
 | F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88, 19.99, 19.102, 19.118, 19.119 | 11    |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32, 19.148                                          | 2     |
-| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122, 19.125, 19.126, 19.127, 19.120, 19.128, 19.132, 19.133, 19.137 | 35 |
+| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122, 19.125, 19.126, 19.127, 19.120, 19.128, 19.132, 19.133, 19.137, 19.152 | 36 |
 | J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107, 19.117, 19.121, 19.140 | 22 |
 | Q  | Load tool: a lost connection ends a game | Go tools   | 19.108, 19.131                                         | 2     |
 | K  | Build and release files                  | Release    | 19.47, 19.59, 19.83, 19.91                             | 4     |
@@ -56,7 +56,7 @@ This step never closes; new reports are appended.
 | U  | Save and load: a running effect lost     | Engine     | 19.143                                                 | 1     |
 | V  | Flow: an extra step the player must take | Client     | 19.149                                                 | 1     |
 
-Totals by system (146 items):
+Totals by system (147 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
@@ -64,7 +64,7 @@ Totals by system (146 items):
 | Card data | C       | 2     |
 | Client    | D–G, O, P, S, V | 41 |
 | Server    | H, N    | 3     |
-| e2e       | I, J    | 57    |
+| e2e       | I, J    | 58    |
 | Release   | K       | 4     |
 | None      | L       | 2     |
 | Go tests  | M       | 1     |
@@ -4784,7 +4784,7 @@ Totals by system (146 items):
    17. No replay cutoff: only games with such an attack differ (as 19.150).
    18. No screen change beyond the order: no screenshots.
 
-### [ ] 19.152 e2e: Requiem attack and room tests stall on webkit
+### [x] 19.152 e2e: Requiem attack and room tests stall on webkit
 
 1. Goal: `attack-targets.spec.ts` and `rooms.spec.ts` pass in full webkit runs.
 2. Report (main agent, 2026-11-10)
@@ -4800,6 +4800,43 @@ Totals by system (146 items):
    10. 14.20's full run (before 14.21) passed; unknown if by luck.
    11. Evidence: `.cache/e2e-evidence/19.152-run1` – `run3` (not in git).
 3. Tasks:
-   1. Find the cause from the evidence; compare with the commit before 14.21.
-   2. Fix the app, the engine or the test; no ban without a reason (CLAUDE.md 5.16).
-   3. Check: both specs, webkit, 5 workers, 10 repeats, all pass.
+   1. [x] Find the cause from the evidence; compare with the commit before 14.21.
+   2. [x] Fix the app, the engine or the test; no ban without a reason (CLAUDE.md 5.16).
+   3. [x] Check: both specs, webkit, 5 workers, 10 repeats, all pass.
+4. Cause (page snapshots, records, a settle log in run 4)
+   1. Three causes, all in the tests; the app and engine were right.
+   2. Helper test: its wait after Sibling Rivalry held too early.
+   3. It asked: stack empty, the game waits for the active player.
+   4. That is also true before the play lands.
+   5. Run 4's log: that settle ended at once, with no move.
+   6. Then the Attack click came while Sibling Rivalry went on the stack.
+   7. Attack stayed disabled; the click waited until the test timeout.
+   8. Snapshots of runs 1, 3, 4: Sibling Rivalry on the stack, Attack disabled.
+   9. Punching Bag (runs 1, 4): Cursed Mom's Hand was in a monster slot.
+   10. Its curse: the active player rolls a 6, the turn ends at once.
+   11. Di rolled 6 on the bag; the hit never landed; turn 2 began.
+   12. The test waited for damage that could not come.
+   13. The Siren and helper tests have the same risk: a 6 ends the attack.
+   14. Rooms (run 2): the first room was Blood Lust (record g149).
+   15. It forces two attacks a turn; End turn stays off until then.
+   16. `activePage` played fights for five turns; settle ran out.
+   17. Blind Rage forces a deck attack the same way.
+   18. Run 4 also: `--repeat-each` runs repeats of one test at once.
+   19. Their saves had the same names; Continue found two games.
+   20. 14.21 was not involved: no cause touches its code.
+   21. Cursed Mom's Hand, the rooms and the wait predate it.
+   22. So no worktree of `1a67512` was needed.
+5. Fix (2026-11-10)
+   1. Helper test: the wait wants Sibling Rivalry spent and resolved.
+   2. Also the action step (priority, empty stack) and a ready page.
+   3. `attack-targets.spec.ts` bans Cursed Mom's Hand, with the reason.
+   4. `rooms.spec.ts` bans Blood Lust and Blind Rage, with the reason.
+   5. `repeatNames` (`game.ts`): names get the repeat index after the first.
+   6. Both specs use it; a repeat finds its own save.
+   7. Wiki Frontend-tests: `repeatNames`.
+   8. No app or engine change; no screen change, no screenshots.
+   9. Evidence: `.cache/e2e-evidence/19.152-run1` – `run4` (not in git).
+6. Checks (2026-11-10)
+   1. Before: both specs, webkit, 5 workers, 10 repeats: 12 of 40 failed (run 4).
+   2. After: the same run, 40 of 40 passed.
+   3. `make lint test frontend e2e` pass (exit 0); e2e 522 passed, 6 skipped.

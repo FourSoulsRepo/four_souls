@@ -3,7 +3,7 @@
 // it, and puts it into discard in the end phase for the next room.
 import type { Page } from '@playwright/test';
 import { expect, test } from './fixtures';
-import { startGame } from './game';
+import { repeatNames, startGame } from './game';
 import { cardName, tr, trRe } from './locale';
 import { editSave, saveEditContinue } from './saves';
 import { appURL } from './server';
@@ -70,11 +70,15 @@ function rooms(page: Page) {
 }
 
 test('a room on the table: use it, change it in the end phase (14.13)', async ({ browser }) => {
-  const names = ['Ivo', 'Jun'];
+  const names = repeatNames(['Ivo', 'Jun']);
   // The pages offer Requiem (?requiem), ticked with the other sets; its
   // room deck is a detailed setup option, off by default.
   const pages = await startGame(browser, names, {
     url: `${appURL()}&requiem`,
+    // Bans: Blood Lust and Blind Rage as the first room force attacks
+    // before a turn may end. activePage then plays fights for turns,
+    // and the swapped room keeps the forced attack (19.152).
+    bans: ['blood_lust_r', 'blind_rage'],
     setup: async (host) => {
       await host.getByLabel(tr('host.detailed')).check();
       const box = host.getByLabel(tr('host.room_deck'));

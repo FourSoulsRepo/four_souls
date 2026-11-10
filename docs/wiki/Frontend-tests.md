@@ -46,7 +46,7 @@ URL flags, dev server only:
 
 Every new screen gets a Playwright test. Find elements the way a player does: by role and visible text (`getByRole('button', { name: 'Save' })`), not by CSS classes.
 
-`e2e/tests/game.ts` has `startGame(browser, names)`: a real game with one page per player, and `expectFits(page)`, which fails when the table scrolls or leaves the window. Tests share one server and its game list, so guests join the host's game by its id (`lobbyGame`, 19.31); player names may repeat.
+`e2e/tests/game.ts` has `startGame(browser, names)`: a real game with one page per player, and `expectFits(page)`, which fails when the table scrolls or leaves the window. Tests share one server and its game list, so guests join the host's game by its id (`lobbyGame`, 19.31); player names may repeat. A test that saves and continues a game finds its save by the players' names, so it names them with `repeatNames(names)`: from the second `--repeat-each` repeat on, each name gets the repeat's number, and repeats running at once never see each other's saves (19.152).
 
 Specs import `test` and `expect` from `e2e/tests/fixtures.ts`, not from `@playwright/test`. Its automatic fixture fails a test when any app page logged an animation clash (ADR 012, [Animations](Animations)); `fixtures.spec.ts` fails a spec that imports `test` from elsewhere. Types like `Page` still come from `@playwright/test`.
 

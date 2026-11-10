@@ -4,27 +4,33 @@
 // sets the cards, so nothing depends on the deal.
 import type { Page } from '@playwright/test';
 import { expect, test } from './fixtures';
-import { startGame } from './game';
+import { repeatNames, startGame } from './game';
 import { cardName, tr } from './locale';
 import { editSave, saveAndContinue, saveEditContinue } from './saves';
 import { appURL } from './server';
 import { shot } from './shot';
-import { activePage, click, settle, tablePicks, throwButton, turnAction, untilAttackRoll } from './turn';
+import { activePage, click, seen, settle, tablePicks, throwButton, turnAction, untilAttackRoll } from './turn';
+
+// PRIORITY is PromptKind.priority (actions.ts).
+const PRIORITY = 1;
 
 test.setTimeout(150_000);
 
 // The pages offer Requiem (?requiem), so they can continue a game with
 // it; the deal stays the Base Game's, unticked as in two-sided.spec.ts.
+// Ban: Cursed Mom's Hand in a slot ends the turn when the active player
+// rolls a 6, before the hit lands or the helper rolls (19.152).
 const opts = () => ({
   url: `${appURL()}&anim=off&requiem`,
   setup: (host: Page) => host.getByRole('group', { name: tr('host.sets') }).getByLabel(tr('set.requiem')).uncheck(),
+  bans: ['cursed_moms_hand'],
 });
 
 interface Seat {
   id: number;
   hp: number;
   character: { id: number; card: string };
-  in_play: { id: number; card: string; damage?: number }[] | null;
+  in_play: { id: number; card: string; charged?: boolean; damage?: number }[] | null;
 }
 
 interface View {
@@ -74,7 +80,7 @@ function stack(page: Page) {
 }
 
 test('The Siren lets the active player attack a player (14.14, R-ATK-20)', async ({ browser }) => {
-  const names = ['Ada', 'Bo'];
+  const names = repeatNames(['Ada', 'Bo']);
   const pages = await startGame(browser, names, opts());
   await activePage(pages, click);
   // The Siren in the first slot; Requiem joins the game for her.
@@ -125,7 +131,7 @@ test('The Siren lets the active player attack a player (14.14, R-ATK-20)', async
 });
 
 test('Punching Bag can be attacked (14.14, R-MECH-04)', async ({ browser }) => {
-  const names = ['Cy', 'Di'];
+  const names = repeatNames(['Cy', 'Di']);
   const pages = await startGame(browser, names, opts());
   const first = await activePage(pages, click);
   const seat = pages.indexOf(first);
@@ -185,7 +191,7 @@ test('Punching Bag can be attacked (14.14, R-MECH-04)', async ({ browser }) => {
 });
 
 test("a helper's extra attack roll shows whose roll it is (14.14, R-ATK-21)", async ({ browser }) => {
-  const names = ['Ed', 'Fay'];
+  const names = repeatNames(['Ed', 'Fay']);
   const pages = await startGame(browser, names, opts());
   await activePage(pages, click);
   // Sibling Rivalry in play; a plain monster in the first slot.
@@ -200,9 +206,14 @@ test("a helper's extra attack roll shows whose roll it is (14.14, R-ATK-21)", as
   await click(active, rivalry);
   await expect(active.locator(`[data-zone="obj-${String(them.character.id)}"]`).first()).toHaveClass(/hl-aim/);
   await click(active, active.locator(`[data-zone="obj-${String(them.character.id)}"]`).first());
+  // Wait for the exact state (18.10): the item spent, its ability
+  // resolved, the turn back in its action step. Before the play lands,
+  // the stack is empty too; the Attack click then waited for good
+  // (19.152).
   await settle(pages, click, async () => {
     const { view: v } = await view(active);
-    return (v.stack?.length ?? 0) === 0 && v.waiting.player === me.id;
+    const spent = v.players.find((p) => p.id === me.id)?.in_play?.some((c) => c.card === 'sibling_rivalry' && c.charged === false) ?? false;
+    return spent && (v.stack?.length ?? 0) === 0 && v.waiting.kind === PRIORITY && v.waiting.player === me.id && (await seen(active)).ready;
   });
 
   await turnAction(active, 'Attack').click();
