@@ -62,7 +62,14 @@ var kinds = map[string]string{
 
 	"Bonus Soul Card": "BonusSoulCard",
 	"Room Card":       "RoomCard",
+
+	// A challenge's cards (ADR 028): the boss is never in a deck.
+	"Challenge Boss Card": "MonsterCard",
+	"Challenge Card":      "ChallengeCard",
 }
+
+// outsideTypes are printed types whose cards start outside the game.
+var outsideTypes = map[string]bool{"Challenge Boss Card": true}
 
 // groups maps printed card types to deck ratio groups (R-SETUP-17).
 var groups = map[string]string{
@@ -243,7 +250,7 @@ func cardStub(pkg string, c carddb.Card, startingItem bool) (stub, error) {
 	if c.ThreePlus {
 		fields = append(fields, "ThreePlus: true")
 	}
-	if startingItem {
+	if startingItem || outsideTypes[c.Type] {
 		fields = append(fields, "Outside: true")
 	}
 	if kind == "CharacterCard" || strings.Contains(strings.Join(en.Effects, "\n"), "{Tap Effect}") {

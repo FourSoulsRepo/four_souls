@@ -208,6 +208,10 @@ func TestLobbyRefusals(t *testing.T) {
 	if code := ann.failure(); code != protocol.ErrBadSetup {
 		t.Errorf("unknown set: %s", code)
 	}
+	ann.say(protocol.TypeCreate, protocol.Create{Seats: 2, Sets: []string{"challenge"}})
+	if code := ann.failure(); code != protocol.ErrBadSetup {
+		t.Errorf("the challenge set is no playable set (ADR 028): %s", code)
+	}
 	ann.say(protocol.TypeCreate, protocol.Create{Seats: 2})
 	var tb protocol.Table
 	ann.next(protocol.TypeTable, &tb)

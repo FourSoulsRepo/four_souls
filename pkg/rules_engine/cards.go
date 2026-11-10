@@ -14,6 +14,9 @@ const (
 	EventCard   // monster-deck card without stats (R-CARD-09)
 	BonusSoulCard
 	RoomCard
+	// ChallengeCard is a challenge's rule card: no deck, never dealt
+	// (ADR 028).
+	ChallengeCard
 )
 
 // Deck returns the deck a card kind belongs to; ok is false for kinds
@@ -28,7 +31,7 @@ func (k CardKind) Deck() (DeckKind, bool) {
 		return MonsterDeck, true
 	case RoomCard:
 		return RoomDeck, true
-	case CharacterCard, BonusSoulCard:
+	case CharacterCard, BonusSoulCard, ChallengeCard:
 		return 0, false
 	default:
 		return 0, false

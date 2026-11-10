@@ -541,7 +541,7 @@ Alt art (CD-11) comes after all sets.
    4. A challenge is a card set plus a `ChallengeDef`.
    5. Own slot rows: `Bosses`, `Minions`; presents outside the game.
 
-### [ ] 14.19 Challenge card data
+### [x] 14.19 Challenge card data
 
 1. Goal: the Krampus challenge's 8 cards in `card_db`, with images.
 2. Tasks:
@@ -556,6 +556,27 @@ Alt art (CD-11) comes after all sets.
 3. Done when:
    1. `card_db` validates the set; `cardgen -report` lists it.
    2. The host screen does not offer `challenge` as a card set.
+4. Result (2026-11-10):
+   1. Scraped `cards -origin challenge`: 86 cards; Chrome passed on its own.
+   2. New `data/challenge.json`: 8 cards, one copy each; set order 5.
+   3. Bosses: `pilfering_krampus_{norm,hard,ultra,comp}`, `Challenge Boss Card`.
+   4. Rule cards: `how_the_krampus_stole_christmas_{norm,hard,ultra,comp}`, `Challenge Card`.
+   5. IDs: the slugs with `-` as `_`; ADR 028 Decision 1 lists them.
+   6. `comp` (14.28) is in: same cards, cheap data, never dealt.
+   7. The site prints no type; the tools name them by stats.
+   8. Tools: `gameCards` keeps only these 8; no TTS or copies step.
+   9. Stats match R-KRAMPUS-03: HP 5/6/6 (comp 5), 4+, ATK 2, +1 treasure, soul 1.
+   10. Overrides from the printed cards (`overrides/challenge.json`):
+       1. Normal: "minon" twice on the site; printed "minion".
+       2. Hard: "5: remove" in lower case.
+       3. Comp: roll 5 is the treasure present; the last line was missing.
+   11. Engine: new kind `ChallengeCard`, no deck.
+   12. cardgen: a `Challenge Boss Card` is a `MonsterCard` with `Outside`.
+   13. Stubs in `cards/challenge/`; not in `cards.Sets()`; abilities in 14.22.
+   14. Tests: never dealt, Krampus stats, no `challenge` in `CardSets` or create.
+   15. Images: 8 landscape WebP files, 839×600, in `images/en/challenge/`.
+   16. They wait in the private repo for the owner's amend and push.
+   17. The client draws only rooms landscape; challenge cards need it (14.25).
 
 ### [ ] 14.20 Engine: co-op challenge core
 

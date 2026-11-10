@@ -64,6 +64,33 @@ func TestGenerateBaseGame(t *testing.T) {
 	}
 }
 
+// TestGenerateChallenge: the boss is a monster outside the game, the rule
+// card a ChallengeCard (ADR 028).
+func TestGenerateChallenge(t *testing.T) {
+	db, err := carddb.Load(os.DirFS("../../pkg/card_db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	files, err := generate(db, "challenge")
+	if err != nil {
+		t.Fatal(err)
+	}
+	src := map[string]string{}
+	for _, f := range files {
+		src[f.file] = string(f.src)
+	}
+	boss := src["pilfering_krampus_norm.go"]
+	for _, want := range []string{"Kind:    engine.MonsterCard", "Outside: true", "HP:      5", "Soul:    1"} {
+		if !strings.Contains(boss, want) {
+			t.Errorf("boss lacks %q:\n%s", want, boss)
+		}
+	}
+	rule := src["how_the_krampus_stole_christmas_norm.go"]
+	if !strings.Contains(rule, "Kind:   engine.ChallengeCard") || strings.Contains(rule, "Outside") {
+		t.Errorf("rule card:\n%s", rule)
+	}
+}
+
 func TestWriteKeepsFinishedCards(t *testing.T) {
 	dir := t.TempDir()
 	finished := filepath.Join(dir, "done.go")

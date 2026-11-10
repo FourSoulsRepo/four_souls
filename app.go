@@ -71,7 +71,8 @@ func (a *App) SaveSettings(s settings.Settings) (settings.Settings, error) {
 }
 
 // CardSets returns the codes of the card sets this app has; the client
-// sends them when it connects (CD-03).
+// sends them when it connects (CD-03). The challenge set is not among
+// them: it is never a playable set (ADR 028).
 func (a *App) CardSets() []string {
 	var codes []string
 	for _, s := range cards.Sets() {

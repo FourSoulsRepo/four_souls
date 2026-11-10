@@ -52,11 +52,19 @@ Use options 1, 4 and 5.
 
 1. Card data
    1. card_db set `challenge`; only cards of supported challenges.
-   2. Krampus: `pilfering_krampus_{normal,hard,ultra}` and its rule cards.
-   3. Exact IDs: the site's slugs, as ADR 004 says; 14.19 fixes them.
+   2. Krampus: `pilfering_krampus_{norm,hard,ultra,comp}`.
+   3. Its rule cards: `how_the_krampus_stole_christmas_{norm,hard,ultra,comp}`.
    4. The set is never offered as a playable set.
    5. The app's set list, the host screen and `checkOptions` skip it.
    6. Images: private repo, folder `challenge/`; without them, text cards.
+   7. IDs: the site's slugs, a hyphen as `_` (ADR 004); fixed in 14.19.
+   8. `comp` is the competitive variant (14.28): data only for now.
+   9. The site prints no type; the tools name them.
+      1. `Challenge Boss Card`: the boss, a card with stats.
+      2. `Challenge Card`: a rule card.
+   10. Tools: `gameCards` lists the cards the game takes; one copy each.
+   11. Set order 5, released 2022-12 (ADR 010).
+   12. Images are landscape, 839×600.
 2. Engine kinds
    1. A boss is a `MonsterCard` with `Outside`: never in a deck.
    2. A rule card is a new kind `ChallengeCard`: no deck, never dealt.

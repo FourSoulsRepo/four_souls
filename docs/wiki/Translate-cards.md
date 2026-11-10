@@ -14,6 +14,7 @@ Every card set is one JSON file in `pkg/card_db/data/`:
 | `g2.json` | Gold Box V2 |
 | `fsp2.json` | Four Souls+ V2 |
 | `r.json` | Requiem |
+| `challenge.json` | Challenges: the boss and rule cards of the supported challenges |
 
 Each card has a `text` object with one entry per language, by the same two-letter code as the interface file (`de`, `ru`). English (`en`) is always there; Russian has names for every card. The format is ADR 004 (`docs/architecture/004-card-data-format.md`).
 

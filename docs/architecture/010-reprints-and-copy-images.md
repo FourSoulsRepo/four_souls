@@ -50,6 +50,7 @@ Use options 1 and 4; images become a list.
    5. Base Game comes before Gold Box, its add-on.
    6. The loader reads sets in this order.
    7. `r` 4 (2022-10): Requiem, shipped to backers in fall 2022.
+   8. `challenge` 5 (2022-12): Challenges, Krampus first (ADR 028).
 2. Images
    1. `images` replaces `image`.
    2. One path: every copy shows it.

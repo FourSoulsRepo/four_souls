@@ -1,0 +1,49 @@
+{
+  "pilfering_krampus_norm": {
+    "text": {
+      "en": {
+        "name": "Pilfering Krampus",
+        "effects": [
+          "While the number of souls controlled by all players is less than 5 or there is a minion in play, this can't be attacked or take damage.",
+          "As each turn starts, the active player rolls-\n1-2: Remove 4 counters from the ¢ present.\n3-4: Remove 1 counter from the loot present.\n5: Remove 1 counter from the treasure present.\n6: Remove 1 counter from the soul present.",
+          "While there is a minion in play, players must attack a random minion once each turn if able.",
+          "Players gain no rewards or souls when a minion dies."
+        ],
+        "notes": [
+          "\"Lay not up for yourselves treasures upon the earth, where moth and rust doth corrupt, and where thieves break through and steal\"\nMatthew 6:19"
+        ]
+      }
+    }
+  },
+  "pilfering_krampus_hard": {
+    "text": {
+      "en": {
+        "name": "Pilfering Krampus",
+        "effects": [
+          "While the number of souls controlled by all players is less than 6 or there is a minion in play, this can't be attacked or take damage.",
+          "As each turn starts, the active player rolls, then rolls again for every 2 minions in play-\n1-2: Remove 5 counters from the ¢ present.\n3-4: Remove 2 counters from the loot present.\n5: Remove 1 counter from the treasure present.\n6: Remove 1 counter from the soul present.",
+          "Players gain no rewards or souls when a minion dies."
+        ],
+        "notes": [
+          "\"Lay not up for yourselves treasures upon the earth, where moth and rust doth corrupt, and where thieves break through and steal\"\nMatthew 6:19"
+        ]
+      }
+    }
+  },
+  "pilfering_krampus_comp": {
+    "text": {
+      "en": {
+        "name": "Pilfering Krampus",
+        "effects": [
+          "While the number of souls controlled by the active player is less than 3 or there is a minion in a present slot they control, this can't be attacked or take damage.",
+          "As each turn starts, the active player rolls-\n1-2: Remove 3 counters from their ¢ present.\n3-4: Remove 1 counter from their loot present.\n5: Remove 1 counter from their treasure present.\n6: Remove 1 counter from their soul present.",
+          "While there is a minion in a present slot controlled by the active player, the active player must attack a random minion once each turn if able.",
+          "Players gain no rewards or souls when a minion dies."
+        ],
+        "notes": [
+          "\"Lay not up for yourselves treasures upon the earth, where moth and rust doth corrupt, and where thieves break through and steal\"\nMatthew 6:19"
+        ]
+      }
+    }
+  }
+}

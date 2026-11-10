@@ -17,6 +17,8 @@ Sets are built oldest first (Base Game, Gold Box, Four Souls+, …), because `bu
 In the official TTS table, Gold Box is the bag named "Kickstarter" (`scraper tts -origin g2 -bag Kickstarter`).
 Requiem is the bag "Requiem" (`scraper tts -origin r -bag Requiem`). A two-sided card is named "Front/Back" on the site and only by its front in TTS (`The Enigma`); the tools match both. `build` splits it into the card and its `back` (ADR 023): the name at the `/`, a "Back name: " effect prefix, and "a/b" stats; the rest stays on the front, and an override's `back` key corrects it (Anima Sola, The Enigma, The Harbingers). `images` writes the back image, the card page's "Alternate Card Back", to `<set>/<back id>.webp`. When the site lists one card twice (Requiem's `r-eden` and `r-eden_2`), the build makes one card with both images.
 
+Challenges (ADR 028) are the site's origin `challenge`: `scraper cards -origin challenge`, then `build` and `images`, with no `tts` or `copies` step. The tools' `gameCards` list keeps only the cards of the challenges the game supports (now the 8 Krampus cards), one copy each; the rest of the site's 83 challenge cards stay out. The site prints no type for them: a card with stats becomes a `Challenge Boss Card` (an engine monster with `Outside`, never dealt), the others a `Challenge Card` (the engine's `ChallengeCard`). A hyphen in a slug becomes `_` in the ID (`pilfering_krampus_norm`). Challenge images are landscape (839×600). The `challenge` set is in `card_db` but never in `cards.Sets()`, so the host screen never offers it.
+
 After regenerating data, validate it here:
 
 ```sh
