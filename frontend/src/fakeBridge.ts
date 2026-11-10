@@ -340,7 +340,7 @@ w.go = {
       // them only for screenshots, else they fail to load: plain backs.
       Backs: () =>
         Promise.resolve(
-          ['loot', 'treasure', 'monster'].map((kind) => ({ kind, image: `/cardimg/assets/backs/${kind}.webp` })),
+          ['loot', 'treasure', 'monster', 'room'].map((kind) => ({ kind, image: `/cardimg/assets/backs/${kind}.webp` })),
         ),
       // The coin and sword icons, the banner and the sky at their real
       // paths; like the backs, they load only in screenshots, else the

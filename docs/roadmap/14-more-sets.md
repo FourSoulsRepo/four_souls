@@ -368,9 +368,15 @@ Alt art (CD-11) comes after all sets.
    5. Board: a rooms column after the slots; room, room deck, discard.
    6. Client kind `room`: landscape in every size, text cards too.
    7. Room use and the room step need no new client code.
-   8. No room back image yet: a face-down room is the plain back.
+   8. No room back image at first: a face-down room was the plain back.
    9. Tests: `TestRoomDeckOption`, `TestRoomsOption`, `e2e/tests/rooms.spec.ts`.
    10. UC-40 added; UC-05 and the Client wiki updated.
+   11. Owner: the room deck showed no back image (2026-11-10).
+       1. The tools fetched only loot, treasure and monster backs.
+       2. The app served only those three kinds (`backKinds`).
+       3. Tools: `backs` also fetches `RoomCardBack.png` (landscape).
+       4. Images: `assets/backs/room.webp`, 600×440 like the rooms.
+       5. App: `backKinds` has `room`; without the images it stays plain.
 
 ### [ ] 14.14 Attack a player or an item
 
