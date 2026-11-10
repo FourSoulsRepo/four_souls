@@ -421,6 +421,7 @@ On 2026-10-09 the owner parked every open decision for later.
    6. A forgone soul card goes to discard.
    7. The player who would gain it chooses, when the reward or soul would be gained.
    8. Only monster rewards and souls; other ¢, loot or treasure gains can't be forgone.
+   9. Engine (14.22): a soul is a dead card's soul; an item or event that becomes a soul is not offered.
 4. Status: **Owner** (2026-11-10): keep the proposal for now; the engine may use it.
 5. Basis: **House**: no ruling found.
 

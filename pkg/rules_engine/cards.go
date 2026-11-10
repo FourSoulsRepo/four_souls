@@ -94,6 +94,22 @@ type CardDef struct {
 	CopiesTapOnPlay bool
 	// Unattackable: "This can't be attacked."
 	Unattackable bool
+	// Guarded: while it returns true, this can't be attacked and can't
+	// take damage ("While … this can't be attacked or take damage":
+	// Pilfering Krampus, R-KRAMPUS-11). Damage to it is prevented.
+	Guarded func(g *Game, self ObjectID) bool
+	// MustAttackRandom: while this is in play, the active player must
+	// attack one of the objects it lists, picked at random, once each
+	// turn if able ("players must attack a random minion once each turn
+	// if able": Pilfering Krampus Normal, R-KRAMPUS-13, Q-31). The
+	// engine drops what can't be attacked.
+	MustAttackRandom func(g *Game, self ObjectID) []ObjectID
+	// NoSpoils: while this is in play, a monster dying gives no rewards
+	// and no soul when it returns true for it; a soul card goes to
+	// discard ("Players gain no rewards or souls when a minion dies":
+	// Pilfering Krampus, R-KRAMPUS-14). It is asked as the monster dies,
+	// still in its slot.
+	NoSpoils func(g *Game, self, dying ObjectID) bool
 	// GainsAbilities lists cards whose abilities this object has too:
 	// "This has the abilities of other items with gold counters on them"
 	// (Golden Trinket).

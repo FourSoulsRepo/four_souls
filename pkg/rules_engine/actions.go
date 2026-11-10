@@ -49,6 +49,9 @@ type Action struct {
 	Reroll bool `json:"reroll,omitempty"`
 	// Penalty marks the death penalty's loss of ¢ (Soulbond).
 	Penalty bool `json:"penalty,omitempty"`
+	// Reward marks a dead monster's reward: ¢, loot or treasure gained
+	// in the rewards step, rolled ones too (R-DEATH-06, R-KRAMPUS-07).
+	Reward bool `json:"reward,omitempty"`
 	// Purchase marks treasure gained by buying the top of the deck; the
 	// first card gained is the purchase (Damocles still adds one).
 	Purchase bool `json:"purchase,omitempty"`
@@ -66,10 +69,15 @@ type ReplacementRef struct {
 // Replacement is a replacement effect created by a card (R-ABIL-29 to
 // R-ABIL-31). When says whether it applies to an action; Do returns what
 // happens instead: nothing (prevent), the same action changed, or others.
+//
+// May, if set, makes it optional ("you may instead …"): the affected
+// player is asked the question it returns, yes or no, before it
+// applies. A no counts as applied, so it is not asked again.
 type Replacement struct {
 	Text string
 	When func(g *Game, self ObjectID, a Action) bool
 	Do   func(g *Game, self ObjectID, a Action) []Action
+	May  func(g *Game, self ObjectID, a Action) Msg
 }
 
 // Events about actions.
@@ -148,7 +156,7 @@ func (g *Game) processQueue() {
 			Previews: previews, Question: replacementQuestion(a),
 		}, opts)
 	case len(refs) == 1:
-		g.applyReplacement(refs[0])
+		g.takeReplacement(refs[0])
 	default:
 		g.Queue = g.Queue[1:]
 		g.perform(a)
@@ -205,6 +213,28 @@ func replacementQuestion(a Action) Msg {
 		return promptReplacementCents.Msg(N("n", a.Amount))
 	}
 	return promptReplacement.Msg()
+}
+
+// takeReplacement applies a replacement, or asks first whether to,
+// when it is optional (Replacement.May).
+func (g *Game) takeReplacement(ref ReplacementRef) {
+	r := g.replacement(ref)
+	if r.May == nil {
+		g.applyReplacement(ref)
+		return
+	}
+	a := g.Queue[0]
+	g.ask(Choice{
+		Purpose: ChooseMayReplace, Player: g.affected(a), Rule: "R-ABIL-29", Replacements: []ReplacementRef{ref},
+		Objects: []ObjectID{ref.Object}, Question: r.May(g, ref.Object, a),
+	}, Options(AskYes, AskNo))
+}
+
+// declineReplacement: the affected player said no to an optional
+// replacement; it counts as applied to the queued action (R-ABIL-32).
+func (g *Game) declineReplacement(ref ReplacementRef) {
+	a := &g.Queue[0]
+	a.Applied = append(a.Applied, ref)
 }
 
 // applyReplacement rewrites the first queued action with one replacement.

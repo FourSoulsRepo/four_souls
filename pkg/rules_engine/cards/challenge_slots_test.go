@@ -60,7 +60,8 @@ func slotsSetup(seed uint64, rooms bool) engine.Setup {
 }
 
 // FuzzChallengeSets is FuzzSets in a challenge with a final boss and
-// minions (14.21):
+// minions (14.21). Flags 1 to 3 (bits 0 and 1) play Krampus at Normal,
+// Hard or Ultra Hard (14.22); 0 the test challenge. Bit 2 adds rooms.
 //
 //	go test -run '^$' -fuzz=FuzzChallengeSets -fuzztime=5m ./cards/
 func FuzzChallengeSets(f *testing.F) {
@@ -68,8 +69,18 @@ func FuzzChallengeSets(f *testing.F) {
 	f.Add(uint64(5), uint8(4), bytes.Repeat([]byte{1, 0, 3, 2}, 100))
 	f.Add(uint64(9), uint8(0), bytes.Repeat([]byte{0}, 300))
 	f.Add(uint64(3), uint8(4), bytes.Repeat([]byte{2, 1}, 300))
+	f.Add(uint64(2), uint8(1), bytes.Repeat([]byte{1, 0, 3, 2}, 300))
+	f.Add(uint64(4), uint8(6), bytes.Repeat([]byte{2, 1}, 400))
+	f.Add(uint64(7), uint8(3), bytes.Repeat([]byte{0, 3, 1}, 400))
 	f.Fuzz(func(t *testing.T, seed uint64, flags uint8, choices []byte) {
-		playSets(t, slotsSetup(seed, flags&4 != 0), choices)
+		rooms := flags&4 != 0
+		if level := flags & 3; level > 0 {
+			s := krampusSetup(seed, krampusLevels[level-1])
+			s.Rooms = rooms
+			playSets(t, s, choices)
+			return
+		}
+		playSets(t, slotsSetup(seed, rooms), choices)
 	})
 }
 

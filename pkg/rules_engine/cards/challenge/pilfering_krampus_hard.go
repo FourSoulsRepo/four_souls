@@ -11,19 +11,23 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 //	5: Remove 1 counter from the treasure present.
 //	6: Remove 1 counter from the soul present.
 //	Players gain no rewards or souls when a minion dies.
-//
-// TODO(card): implement the text above, then delete this line.
-// Until then `go run ./cmd/cardgen` rewrites this file from card_db.
-// A question or option it asks is a key, engine.NewKey("card.pilfering_krampus_hard.<name>"),
-// with its words and a note in frontend/src/locales/en.json (ADR 021).
 var pilferingKrampusHard = engine.CardDef{
-	Ref:     "pilfering_krampus_hard",
-	Kind:    engine.MonsterCard,
-	Copies:  1,
-	HP:      6,
-	DC:      4,
-	ATK:     2,
-	Soul:    1,
-	Rewards: []engine.Reward{{Kind: engine.RewardTreasure, Amount: 1}},
-	Outside: true,
+	Ref:      "pilfering_krampus_hard",
+	Kind:     engine.MonsterCard,
+	Copies:   1,
+	HP:       6,
+	DC:       4,
+	ATK:      2,
+	Soul:     1,
+	Rewards:  []engine.Reward{{Kind: engine.RewardTreasure, Amount: 1}},
+	Outside:  true,
+	Guarded:  guardedBelow(6),
+	NoSpoils: minionSpoils,
+	Abilities: []engine.Ability{
+		presentRoll("As each turn starts, the active player rolls, then rolls again for every 2 minions in play- 1-2: Remove 5 counters from the ¢ present. 3-4: Remove 2 counters from the loot present. 5: Remove 1 counter from the treasure present. 6: Remove 1 counter from the soul present.", func(m int) int { return m / 2 }, engine.RollTable{}.
+			Results(1, 2, takeCounters(engine.PresentCents, 5)).
+			Results(3, 4, takeCounters(engine.PresentLoot, 2)).
+			Results(5, 5, takeCounters(engine.PresentTreasure, 1)).
+			Results(6, 6, takeCounters(engine.PresentSoul, 1))),
+	},
 }

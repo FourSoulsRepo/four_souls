@@ -69,6 +69,12 @@ func (g *Game) CheckInvariants() error {
 		if c.Timer < 0 || (c.Timer == 0 && !g.Over) {
 			return fmt.Errorf("challenge timer %d, game over %v", c.Timer, g.Over)
 		}
+		for _, p := range c.Presents {
+			// A face-down present lies outside the game (R-KRAMPUS-06).
+			if k := g.Objects[p.Object].Zone.Kind; !p.Destroyed && !p.Flipped && k != ZoneOutside {
+				return fmt.Errorf("the %s present (%s) is in zone %d", p.Kind, g.Objects[p.Object].Card, k)
+			}
+		}
 	}
 	for _, it := range g.Stack {
 		if it.Kind == StackLoot {

@@ -322,14 +322,32 @@ func (g *Game) declareAttack(p PlayerID) {
 }
 
 // askAttackTarget offers the monsters in play and the monster deck.
+// While a random attack is owed (MustAttackRandom, Q-31), the attack
+// goes to one of its monsters at random; with another forced attack the
+// attacker picks which comes first, the random one as the last option.
 func (g *Game) askAttackTarget() {
+	random := g.randomAttackTargets()
 	if g.Turn.MustAttackDeck > 0 {
 		g.Turn.MustAttackDeck--
-		g.ask(Choice{Purpose: ChooseAttackTarget, Player: g.Turn.Active, Rule: "R-ATK-02", Deck: true}, []Msg{DeckOption(MonsterDeck)})
+		c := Choice{Purpose: ChooseAttackTarget, Player: g.Turn.Active, Rule: "R-ATK-02", Deck: true}
+		labels := []Msg{DeckOption(MonsterDeck)}
+		if len(random) > 0 {
+			c.Random, labels = true, append(labels, askAttackRandom.Msg())
+		}
+		g.ask(c, labels)
 		return
 	}
-	if m := g.Turn.MustAttack; m != 0 && g.Object(m).Zone.Kind == ZoneInPlay {
-		g.ask(Choice{Purpose: ChooseAttackTarget, Player: g.Turn.Active, Rule: "R-ATK-02", Objects: []ObjectID{m}}, g.targetLabels([]ObjectID{m}))
+	if m := g.Turn.MustAttack; m != 0 && g.Object(m).Zone.Kind == ZoneInPlay && g.CanBeAttacked(m) {
+		c := Choice{Purpose: ChooseAttackTarget, Player: g.Turn.Active, Rule: "R-ATK-02", Objects: []ObjectID{m}}
+		labels := g.targetLabels([]ObjectID{m})
+		if len(random) > 0 && !contains(random, m) {
+			c.Random, labels = true, append(labels, askAttackRandom.Msg())
+		}
+		g.ask(c, labels)
+		return
+	}
+	if len(random) > 0 {
+		g.attackRandom(random) // no deck attack while it is owed (Q-31)
 		return
 	}
 	targets := g.attackTargets()
@@ -343,7 +361,7 @@ func (g *Game) askAttackTarget() {
 func (g *Game) attackTargets() []ObjectID {
 	var out []ObjectID
 	for _, id := range g.MonstersInPlay() { // final bosses and minions too (R-CHAL-03, R-CHAL-07)
-		if !g.def(id).Unattackable {
+		if g.CanBeAttacked(id) {
 			out = append(out, id)
 		}
 	}
@@ -431,6 +449,9 @@ func (g *Game) startAttack(target ObjectID) {
 	g.Turn.NextHelpers, g.Turn.NextShare = nil, nil
 	if g.Turn.MustAttack == target {
 		g.Turn.MustAttack = 0 // the forced attack is made (Monster Manual, Krampus)
+	}
+	if contains(g.randomAttackTargets(), target) {
+		g.Turn.RandomAttackMade = true // Q-31: an attack went to one of them
 	}
 	g.emit(Event{Kind: EvAttackTarget, Player: g.Turn.Active, Object: target, Card: g.Object(target).Card})
 	if len(g.PendingTriggers) > 0 {
@@ -631,6 +652,11 @@ func (g *Game) resolveDamage(it StackItem) {
 	if o.Zone.Kind != ZoneInPlay || g.HP(id) == 0 {
 		return
 	}
+	if g.guarded(id) {
+		// "This can't take damage" (R-KRAMPUS-11).
+		g.emit(Event{Kind: EvPrevented, Player: NoPlayer, Object: id, Amount: it.Amount, Source: id})
+		return
+	}
 	n := min(g.armored(id, it.Amount, it.Attack), g.HP(id)) // R-CHAL-05
 	o.Damage += n
 	o.HitsThisTurn++
@@ -708,6 +734,7 @@ func (g *Game) monsterDeath(id ObjectID) {
 		g.endAttack()
 	}
 	text := g.deathText(id)
+	noSpoils := g.noSpoils(id)
 	inSlot := o.Zone.Slot == MonsterSlot || o.Zone.Slot == RoomSlot || o.Zone.Slot == FinalBossSlot || o.Zone.Slot == MinionSlot
 	var z Zone
 	if inSlot && o.Controller == NoPlayer {
@@ -719,7 +746,7 @@ func (g *Game) monsterDeath(id ObjectID) {
 	}
 	holding := g.move(id, Zone{Kind: ZoneOutside}, NoPlayer) // R-DEATH-04
 	h := g.Object(holding)
-	h.KilledBy, h.ShareRewards = killedBy, share
+	h.KilledBy, h.ShareRewards, h.NoSpoils = killedBy, share, noSpoils
 	before := len(g.PendingTriggers)
 	kind := EvDied
 	if text != "" {
@@ -754,6 +781,10 @@ const (
 // rewardsStep gives the active player the rewards (R-DEATH-06); then
 // "after rewards" triggers trigger (R-DEATH-07).
 func (g *Game) rewardsStep(holding ObjectID) {
+	if g.Object(holding).NoSpoils {
+		g.soulStep(holding) // no rewards (R-KRAMPUS-14)
+		return
+	}
 	active := g.receiver(holding)
 	times := 1
 	if g.Object(holding).DoubleRewards || g.bonus(StatDoubleRewards, NoPlayer, 0) > 0 {
@@ -773,13 +804,13 @@ func (g *Game) rewardsStep(holding ObjectID) {
 			g.push(StackItem{Kind: StackRoll, Controller: active, Source: holding, Label: eventRewardRoll.Msg(), Reward: int(r.Kind) + 1, Amount: times})
 			continue
 		}
-		g.enqueue(Action{Kind: r.action(), Player: active, Amount: r.Amount * times})
+		g.enqueue(Action{Kind: r.action(), Player: active, Amount: r.Amount * times, Reward: true})
 	}
 	for _, p := range g.Object(holding).ShareRewards {
 		// Sibling Rivalry: the helper gains the rewards too.
 		for _, r := range g.def(holding).Rewards {
 			if !r.Roll {
-				g.enqueue(Action{Kind: r.action(), Player: p, Amount: r.Amount * times})
+				g.enqueue(Action{Kind: r.action(), Player: p, Amount: r.Amount * times, Reward: true})
 			}
 		}
 	}
@@ -815,7 +846,7 @@ func (g *Game) receiver(holding ObjectID) PlayerID {
 // (R-DEATH-08, R-DEATH-09).
 func (g *Game) soulStep(holding ObjectID) {
 	if g.Object(holding).Zone.Kind == ZoneOutside {
-		if g.def(holding).Soul > 0 {
+		if g.def(holding).Soul > 0 && !g.Object(holding).NoSpoils {
 			g.enqueue(Action{Kind: ActBecomeSoul, Player: g.receiver(holding), Object: holding})
 		} else {
 			g.enqueue(Action{Kind: ActDiscardObject, Player: NoPlayer, Object: holding})
@@ -1028,7 +1059,7 @@ func (g *Game) redirector() (PlayerID, bool) {
 func (g *Game) askRedirect(q PlayerID, declared ObjectID) {
 	options := []ObjectID{declared}
 	for _, id := range g.MonstersInPlay() {
-		if id != declared && !g.def(id).Unattackable {
+		if id != declared && g.CanBeAttacked(id) {
 			options = append(options, id)
 		}
 	}

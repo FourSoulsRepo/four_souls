@@ -530,11 +530,18 @@ export interface ChallengeView {
   reason?: Msg;
 }
 
-// PresentView is a face-down present: its kind ("cents", "loot",
-// "treasure", "soul") and counters, never its card (ADR 028).
+// PresentView is a present: its kind ("cents", "loot", "treasure",
+// "soul") and, face down, its counters, never its card (ADR 028).
+// destroyed: it went to the treasure discard; flipped: Happy Holidays!
+// turned it face up (R-KRAMPUS-10). card shows once it is face up;
+// player is who gained it as an item, or -1.
 export interface PresentView {
   kind: string;
   counters: number;
+  destroyed?: boolean;
+  flipped?: boolean;
+  card?: string;
+  player: number;
 }
 
 // FirstRoll is the first-player roll in progress: the lowest goes

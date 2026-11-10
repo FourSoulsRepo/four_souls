@@ -160,8 +160,8 @@ fuzz-sets: ## Fuzz with every real card set (FuzzSets)
 fuzz-new: ## Fuzz with only the SETS card sets, rooms mostly on (FuzzFocusedSets)
 	@cd pkg/rules_engine && FOUR_SOULS_SETS=$(SETS) go test -run '^$$' -fuzz=FuzzFocusedSets -fuzztime=$(FUZZTIME) -fuzzminimizetime=$(MINIMIZE) ./cards/
 
-fuzz-challenge: ## Fuzz a test challenge with a final boss and minions (FuzzChallengeSets)
+fuzz-challenge: ## Fuzz a test challenge with a final boss and minions, and Krampus (FuzzChallengeSets)
 	@cd pkg/rules_engine && go test -run '^$$' -fuzz=FuzzChallengeSets -fuzztime=$(FUZZTIME) -fuzzminimizetime=$(MINIMIZE) ./cards/
 
-sims: ## Play SIMS whole random games with the real sets
+sims: ## Play SIMS whole random games with the real sets, then Krampus games
 	@cd pkg/rules_engine && FOUR_SOULS_SIMS=$(SIMS) go test -count=1 -timeout 60m -run '^TestSimulations$$' -v ./cards/

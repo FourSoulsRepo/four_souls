@@ -95,10 +95,182 @@ type ChallengeState struct {
 }
 
 // Present is a present of a challenge: its kind and the face-down
-// treasure card, with its counters (R-KRAMPUS-05, 14.22).
+// treasure card outside the game, with its counters (R-KRAMPUS-05).
+// Destroyed: it went to the treasure discard (R-KRAMPUS-08); Object is
+// then the discarded card. Flipped: it is face up, without counters
+// (R-KRAMPUS-10); once a player gains it, Object is that item.
 type Present struct {
-	Kind   string   `json:"kind,omitempty"`
-	Object ObjectID `json:"object,omitempty"`
+	Kind      string   `json:"kind,omitempty"`
+	Object    ObjectID `json:"object,omitempty"`
+	Destroyed bool     `json:"destroyed,omitempty"`
+	Flipped   bool     `json:"flipped,omitempty"`
+}
+
+// Presents and their counters (ADR 028, Decision 5; R-KRAMPUS-05 to
+// R-KRAMPUS-10). Presents are not in play: no card ability sees them;
+// only these calls, made by a challenge's own cards, touch them (Q-40).
+
+// AddPresent puts the top treasure card outside the game, face down, as
+// the present of kind with n counters (R-KRAMPUS-05). It reports false
+// if the treasure deck and its discard are empty.
+func (g *Game) AddPresent(kind string, n int) bool {
+	c := g.Challenge
+	if c == nil {
+		return false
+	}
+	id, ok := g.drawTop(TreasureDeck)
+	if !ok {
+		return false
+	}
+	nid := g.move(id, Zone{Kind: ZoneOutside}, NoPlayer)
+	g.Object(nid).addCounters("", n)
+	c.Presents = append(c.Presents, Present{Kind: kind, Object: nid})
+	return true
+}
+
+// present returns the present of kind, or nil.
+func (g *Game) present(kind string) *Present {
+	if g.Challenge == nil {
+		return nil
+	}
+	for i := range g.Challenge.Presents {
+		if p := &g.Challenge.Presents[i]; p.Kind == kind {
+			return p
+		}
+	}
+	return nil
+}
+
+// PresentLive reports whether the present of kind is still there, face
+// down: neither destroyed nor flipped (Q-33).
+func (g *Game) PresentLive(kind string) bool {
+	p := g.present(kind)
+	return p != nil && !p.Destroyed && !p.Flipped
+}
+
+// PresentOf returns the kind of the present whose card is id, or "".
+func (g *Game) PresentOf(id ObjectID) string {
+	if g.Challenge == nil {
+		return ""
+	}
+	for _, p := range g.Challenge.Presents {
+		if p.Object == id {
+			return p.Kind
+		}
+	}
+	return ""
+}
+
+// PresentCounters returns the counters on the live present of kind; 0
+// if it is gone.
+func (g *Game) PresentCounters(kind string) int {
+	if !g.PresentLive(kind) {
+		return 0
+	}
+	return g.Object(g.present(kind).Object).CountersOf("")
+}
+
+// AddPresentCounters puts n counters on the live present of kind, or
+// removes -n; never below 0, and nothing on a present that is gone
+// (R-KRAMPUS-09). It returns the change made; a change emits
+// present_counters, by p (NoPlayer: the game).
+func (g *Game) AddPresentCounters(kind string, n int, p PlayerID) int {
+	if !g.PresentLive(kind) || n == 0 {
+		return 0
+	}
+	id := g.present(kind).Object
+	o := g.Object(id)
+	before := o.CountersOf("")
+	o.addCounters("", n)
+	d := o.CountersOf("") - before
+	if d != 0 {
+		g.emit(Event{Kind: EvPresentCounters, Player: p, Object: id, Amount: d, Text: kind})
+	}
+	return d
+}
+
+// DestroyPresent puts the live present of kind into the treasure
+// discard, face up (R-KRAMPUS-08). It reports whether it did, and
+// whether every present is now destroyed (R-KRAMPUS-09).
+func (g *Game) DestroyPresent(kind string) (done, all bool) {
+	if !g.PresentLive(kind) {
+		return false, false
+	}
+	pr := g.present(kind)
+	old := pr.Object
+	pr.Object, pr.Destroyed = g.discard(old, TreasureDeck), true
+	g.emit(Event{Kind: EvPresentDestroyed, Player: NoPlayer, Object: pr.Object, Card: g.Object(pr.Object).Card, Prev: old, Text: kind})
+	for _, p := range g.Challenge.Presents {
+		if !p.Destroyed {
+			return true, false
+		}
+	}
+	return true, true
+}
+
+// FlipPresents turns every live present face up, without counters
+// (R-KRAMPUS-10, Q-40); it marks Holidays, once a game. It reports
+// false if it happened already.
+func (g *Game) FlipPresents() bool {
+	c := g.Challenge
+	if c == nil || c.Holidays {
+		return false
+	}
+	c.Holidays = true
+	n := 0
+	for i := range c.Presents {
+		if p := &c.Presents[i]; !p.Destroyed && !p.Flipped {
+			p.Flipped = true
+			g.Object(p.Object).Counters = nil
+			n++
+		}
+	}
+	g.emit(Event{Kind: EvPresentsFlipped, Player: NoPlayer, Amount: n})
+	return true
+}
+
+// PresentToGive returns the card of the flipped present of kind that
+// nobody has gained yet, or 0.
+func (g *Game) PresentToGive(kind string) ObjectID {
+	p := g.present(kind)
+	if p == nil || !p.Flipped || g.Object(p.Object).Zone.Kind != ZoneOutside {
+		return 0
+	}
+	return p.Object
+}
+
+// GivePresent makes player to gain the flipped present of kind as an
+// item, charged, like any gained item (R-KRAMPUS-10, Q-40).
+func (g *Game) GivePresent(kind string, to PlayerID) {
+	id := g.PresentToGive(kind)
+	if id == 0 {
+		return
+	}
+	nid := g.move(id, Zone{Kind: ZoneInPlay}, to)
+	g.enterAsItem(to, nid)
+	g.present(kind).Object = nid
+	card := g.Object(nid).Card
+	g.emit(Event{Kind: EvPresentGiven, Player: to, Object: nid, Card: card, Prev: id, Text: kind})
+	g.emit(Event{Kind: EvGainedItem, Player: to, Object: nid, Card: card})
+	g.emit(Event{Kind: EvEnteredPlay, Player: to, Object: nid, Card: card})
+}
+
+// Forgo records that p forgoes a monster's reward or a soul for n
+// counters on the present of kind (R-KRAMPUS-07): the counters go on,
+// and forgone tells the table.
+func (g *Game) Forgo(kind string, n int, p PlayerID) {
+	g.emit(Event{Kind: EvForgone, Player: p, Amount: n, Text: kind})
+	g.AddPresentCounters(kind, n, p)
+}
+
+// SoulsInPlay is the players' total soul value together, character
+// soul values too (R-CARD-21, R-CARD-35, Q-30).
+func (g *Game) SoulsInPlay() int {
+	n := 0
+	for _, pl := range g.Players {
+		n += g.SoulValue(pl.ID)
+	}
+	return n
 }
 
 // checkChallenge checks the setup of a challenge (R-COOP-01, R-COOP-02,
@@ -143,6 +315,25 @@ func (g *Game) startChallenge(c *ChallengeDef, difficulty string) error {
 			return fmt.Errorf("setup: challenge %s: %w", c.ID, err)
 		}
 	}
+	return nil
+}
+
+// StartChallenge makes a table built by BuildTable a challenge at the
+// difficulty, for situations and tests: the timer, the rule card, and
+// the challenge's own setup. Rounds count from the active player.
+func (g *Game) StartChallenge(c *ChallengeDef, difficulty string) error {
+	if len(g.Players) != challengePlayers || g.Challenge != nil {
+		return fmt.Errorf("setup: challenge %s needs a 2-player table that is no challenge yet", c.ID)
+	}
+	if _, ok := c.Level(difficulty); !ok {
+		return fmt.Errorf("setup: challenge %s has no difficulty %q", c.ID, difficulty)
+	}
+	if err := g.startChallenge(c, difficulty); err != nil {
+		return err
+	}
+	g.Challenge.Starter = g.Turn.Active
+	g.turnTaken(g.Turn.Active)
+	g.events = nil
 	return nil
 }
 

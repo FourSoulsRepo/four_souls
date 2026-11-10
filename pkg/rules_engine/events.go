@@ -64,6 +64,25 @@ const (
 	// reason as Label (R-COOP-10, ADR 028).
 	EvChallengeWon  EventKind = "challenge_won"
 	EvChallengeLost EventKind = "challenge_lost"
+	// EvPresentCounters: the present of kind Text got Amount counters,
+	// negative if removed; Player is who forwent, or NoPlayer
+	// (R-KRAMPUS-07, R-KRAMPUS-12).
+	EvPresentCounters EventKind = "present_counters"
+	// EvPresentDestroyed: the present of kind Text went to the treasure
+	// discard as Card (R-KRAMPUS-08).
+	EvPresentDestroyed EventKind = "present_destroyed"
+	// EvPresentsFlipped: Amount presents flipped face up (Happy
+	// Holidays!, R-KRAMPUS-10).
+	EvPresentsFlipped EventKind = "presents_flipped"
+	// EvPresentGiven: Player gained the present of kind Text, Card, as
+	// an item (R-KRAMPUS-10).
+	EvPresentGiven EventKind = "present_given"
+	// EvForgone: Player forwent a reward or a soul for Amount counters on
+	// the present of kind Text (R-KRAMPUS-07).
+	EvForgone EventKind = "forgone"
+	// EvMinionArrived: Card came from the monster deck into a new minion
+	// slot (R-CHAL-09).
+	EvMinionArrived EventKind = "minion_arrived"
 )
 
 // Event is one thing that happened, in order. Hidden cards (e.g. a looted

@@ -96,6 +96,26 @@ A challenge has two more slot rows beside the monster slots (`boss_slots.go`, R-
 * A dead final boss leaves its slot empty. A minion slot is removed when its card leaves (`takeFromSlot`); later minions' `Zone.Index` shift down (`dropMinionSlot`). `CheckInvariants` checks that every slot card's zone names its row and slot.
 * `PutInFinalBossSlot(card)` is for a challenge's setup. `PutInMinionSlot(id)` (a monster deck card) and `MinionFromDeck()` give the card a new minion slot; an event there resolves, goes to discard, and its slot goes (R-CHAL-12).
 * A minion dies like any monster; challenge-specific rewards are the challenge's job (R-KRAMPUS-14).
+* `PutInMinionSlot` and `MinionFromDeck` emit `minion_arrived` (after the slot's `card_revealed`).
+
+### How the Krampus Stole Christmas
+
+The first challenge (14.22; rules R-KRAMPUS-01 to 15, open cases Q-30 to Q-41) lives in `cards/challenge`: `krampus.go` holds `Krampus` (the `ChallengeDef`), its setup and the shared parts; each card file builds its card from them. Nothing in the engine names Krampus: the cards use generic `CardDef` hooks and the presents API (ADR 028, Decision 6.4).
+
+* Setup (`krampusSetup`): `PutInFinalBossSlot` with the difficulty's Pilfering Krampus, then `AddPresent` four times: the top treasure card goes outside the game, face down, with its counters (8/2/3/3, 12/4/3/3, 16/4/3/3).
+* Presents (`challenge.go`): `ChallengeState.Presents` keeps kind, card, `Destroyed` and `Flipped`. Only the challenge's cards call `AddPresentCounters` (never below 0, nothing on a gone present; emits `present_counters`), `DestroyPresent` (to the treasure discard; `present_destroyed`; reports whether all 4 are gone), `FlipPresents` (once: `Holidays`, counters off, `presents_flipped`), `GivePresent` (a charged item, like any gained item; `present_given`) and `Forgo` (`forgone`, then the counters). `SoulsInPlay` is both players' soul value, characters too (Q-30).
+* The boss cards print the boss rules, so they hold them:
+  * `Guarded` (new hook): while it returns true the monster can't be attacked and takes no damage. `CanBeAttacked` checks it with `Unattackable` for attack targets, Mom's Eye Shadow's redirect and Monster Manual's forced attack; `resolveDamage` prevents the damage (`prevented`). Boss armor turns an outright kill into 3 damage first, so a guarded boss takes none (R-KRAMPUS-11).
+  * The start-of-turn roll is a triggered ability with `RollTimes`: 1 roll, plus `minions / 2` on Hard or `minions` on Ultra Hard, counted once as it resolves (R-KRAMPUS-12, Q-41). Each roll resolves with its table result before the next.
+  * `MustAttackRandom` (new hook, Normal only): while it lists attackable monsters and the duty is unmet (`Turn.RandomAttackMade`), the active player who can attack can't end the turn, and a declared attack goes to one of them picked at random (`random_pick`), with no deck option. With another forced attack (Monster Manual, the regular Krampus, Blind Rage's deck attack) the target choice offers it plus `ask.attack_random` (`Choice.Random`); a deck attack picked away stays owed (R-KRAMPUS-13, Q-31).
+  * `NoSpoils` (new hook): asked as a monster dies, still in its slot; the dead card is marked `NoSpoils`, gets no rewards step and goes to discard instead of becoming a soul (R-KRAMPUS-14).
+* The rule card holds the global modifiers and the goal; its triggered abilities are the active player's (`abilityController`):
+  * All I Want for Christmas is an optional replacement: `Replacement.May` (new) asks the affected player yes or no (`ChooseMayReplace`) before it applies; a no counts as applied. It replaces a monster's reward part (`Action.Reward`, set by the rewards step and by roll rewards after the roll) or a dead card's soul (`ActBecomeSoul`; the card then goes to discard), only while that kind's present is face down (R-KRAMPUS-07, Q-32, Q-33). Other gains, and an item or event that becomes a soul, are not offered. With other replacements (Lucky Toe) the player orders them as usual, and the forgo is asked when its turn comes.
+  * What's in the Box? triggers on `present_counters` that leave a present at 0; as it resolves, a present still at 0 is destroyed, then 3 or 4 `MinionFromDeck`; the fourth destroyed present calls `LoseChallenge` with `event.challenge_lost.presents` instead (R-KRAMPUS-08, R-KRAMPUS-09).
+  * Happy Holidays! triggers on `gained_soul` while `SoulsInPlay` reaches 5, 6 or 7 and it has not happened; it flips the presents first, then asks the active player who gains each, ¢, loot, treasure, soul; a gone present is skipped (R-KRAMPUS-10, Q-40).
+  * The goal: when the difficulty's Pilfering Krampus dies, `WinChallenge` (R-KRAMPUS-01).
+* View: `ChallengeView.Presents` shows kind and counters face down; `destroyed`, `flipped`, the card once face up, and the player who gained it.
+* Tests: `cards/challenge/*_test.go`, one file per card plus `krampus_test.go` (setup, whole seeded games won and lost, replay and load). `FuzzChallengeSets` flags 1 to 3 and `TestSimulations` play Krampus too (wiki [Fuzzing](Fuzzing)).
 
 ## The run loop must always settle
 

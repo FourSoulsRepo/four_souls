@@ -99,6 +99,7 @@ func (g *Game) MinionFromDeck() ObjectID {
 func (g *Game) toMinionSlot(id ObjectID) ObjectID {
 	g.Minions = append(g.Minions, Slot{})
 	nid := g.putInSlot(id, MinionSlot, len(g.Minions)-1)
+	g.emit(Event{Kind: EvMinionArrived, Player: NoPlayer, Object: nid, Card: g.Object(nid).Card})
 	g.enterMonsterSlot(nid)
 	return nid
 }

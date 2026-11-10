@@ -44,7 +44,12 @@ func fullUpdate() Update {
 			FirstRoll:  &engine.FirstRoll{Round: 1, Players: []engine.PlayerID{0, 1}, Rolls: []int{3}},
 			Challenge: &engine.ChallengeView{
 				ID: "krampus", Difficulty: "hard", Timer: 5, Card: top,
-				Presents: []engine.PresentView{{Kind: "cents", Counters: 12}}, Lost: true, Reason: engine.ReasonTimer.Msg(),
+				Presents: []engine.PresentView{
+					{Kind: "cents", Counters: 12, Player: engine.NoPlayer},
+					{Kind: "loot", Destroyed: true, Card: "the_d6", Player: engine.NoPlayer},
+					{Kind: "soul", Flipped: true, Card: "the_d20", Player: 1},
+				},
+				Lost: true, Reason: engine.ReasonTimer.Msg(),
 			},
 		},
 		Allowed:      []engine.Intent{{Player: 1, Kind: engine.IntentPass}, {Player: 0, Kind: engine.IntentActivate, Objects: []engine.ObjectID{8, 9}, Choice: 2}},

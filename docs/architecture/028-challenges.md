@@ -95,12 +95,20 @@ Use options 1, 4 and 5.
    9. `Starter`: rounds count from the starting player (Q-34).
    10. `TurnFrom`, `RoundFrom`: first object ID of each player's last two turns (Q-39).
    11. `RoomTurn`: the turn whose room rule has run (R-COOP-11).
+   12. `Present.Destroyed`, `Present.Flipped`: where a present went (14.22).
+   13. Presents API: `AddPresent`, `AddPresentCounters`, `DestroyPresent`.
+   14. Also `FlipPresents`, `GivePresent`, `Forgo`, `SoulsInPlay`.
 6. Abilities
    1. `inPlay` adds the rule card after the room slots.
    2. Boss rules are the boss card's abilities (R-KRAMPUS-11 – 14).
    3. Global modifiers are the rule card's abilities (R-KRAMPUS-07, 08, 10).
    4. New hooks go on `CardDef`, like `InsteadOfDestroy`; no hooks by challenge ID.
    5. Engine calls: `WinChallenge()`, `LoseChallenge(reason)`.
+   6. Hooks from 14.22: `Guarded`, `MustAttackRandom`, `NoSpoils`.
+   7. Also `Replacement.May`: an optional replacement, asked yes or no.
+   8. R-KRAMPUS-14 is the boss card's: the boss card prints it.
+   9. The goal (R-KRAMPUS-01) is a rule card ability.
+   10. A rule card's triggered abilities are the active player's.
 7. Slot rows
    1. New `SlotKind`s: `FinalBossSlot`, `MinionSlot`.
    2. `Game.Bosses` and `Game.Minions`, each `[]Slot`.
@@ -127,6 +135,7 @@ Use options 1, 4 and 5.
    2. A face-down present shows its kind and counters, never its card.
    3. `GameView.Bosses` and `GameView.Minions`: `[]SlotView`.
    4. In a challenge, each player sees the partner's hand (R-COOP-07).
+   5. A present also shows destroyed, flipped, its face-up card, its gainer.
 10. Protocol, server, records
    1. `Options.Challenge` (ID) and `Options.Difficulty`.
    2. A challenge table has exactly 2 seats; the server checks it.

@@ -29,6 +29,7 @@ first_player
 first_roll_tied
 fizzled
 flipped
+forgone
 gained_cents
 gained_item
 gained_soul
@@ -43,12 +44,17 @@ loot_done
 loot_played
 looted
 lost_cents
+minion_arrived
 moved_to_deck
 object_died
 paid
 passed_priority
 penalty_paid
 phase
+present_counters
+present_destroyed
+present_given
+presents_flipped
 prevented
 purchase_declared
 purchase_failed

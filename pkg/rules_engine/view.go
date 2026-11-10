@@ -189,10 +189,16 @@ type ChallengeView struct {
 }
 
 // PresentView is a present: a face-down one shows its kind and
-// counters, never its card (ADR 028, Decision 9).
+// counters, never its card (ADR 028, Decision 9). Destroyed went to the
+// treasure discard; Flipped is face up (R-KRAMPUS-10). Card shows once
+// it is face up either way; Player is who gained it, or NoPlayer.
 type PresentView struct {
-	Kind     string `json:"kind"`
-	Counters int    `json:"counters"`
+	Kind      string   `json:"kind"`
+	Counters  int      `json:"counters"`
+	Destroyed bool     `json:"destroyed,omitempty"`
+	Flipped   bool     `json:"flipped,omitempty"`
+	Card      CardRef  `json:"card,omitempty"`
+	Player    PlayerID `json:"player"`
 }
 
 // AttackView is an attack in progress: its target once chosen, and
@@ -334,7 +340,17 @@ func (g *Game) ViewBase() ViewBase {
 	if c := g.Challenge; c != nil {
 		cv := &ChallengeView{ID: c.ID, Difficulty: c.Difficulty, Timer: c.Timer, Card: g.cardView(c.Card), Lost: c.Lost, Reason: c.Reason}
 		for _, pr := range c.Presents {
-			cv.Presents = append(cv.Presents, PresentView{Kind: pr.Kind, Counters: g.Object(pr.Object).CountersOf("")})
+			pv := PresentView{Kind: pr.Kind, Destroyed: pr.Destroyed, Flipped: pr.Flipped, Player: NoPlayer}
+			o := g.Object(pr.Object)
+			if pr.Destroyed || pr.Flipped {
+				pv.Card = o.Card // face up (R-KRAMPUS-08, R-KRAMPUS-10)
+			} else {
+				pv.Counters = o.CountersOf("")
+			}
+			if pr.Flipped && o.Zone.Kind == ZoneInPlay {
+				pv.Player = o.Controller
+			}
+			cv.Presents = append(cv.Presents, pv)
 		}
 		out.Challenge = cv
 	}
@@ -509,7 +525,7 @@ func (g *Game) optionViewsOf(c *Choice, n int) []OptionView {
 		for i, r := range c.Replacements {
 			set(i, func(o *OptionView) { o.Object, o.Outcome = r.Object, g.outcomeView(c, i) })
 		}
-	case ChooseTriggerOrder, ChooseMode, ChooseAnswer, ChooseCopyAbility, ChooseDie, ChooseOrder:
+	case ChooseTriggerOrder, ChooseMode, ChooseAnswer, ChooseCopyAbility, ChooseDie, ChooseOrder, ChooseMayReplace:
 		// Text options.
 	}
 	return out

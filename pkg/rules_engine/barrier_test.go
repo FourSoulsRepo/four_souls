@@ -22,7 +22,7 @@ func TestBarrierKinds(t *testing.T) {
 	want := []string{
 		"attack_roll_repeated", "card_revealed", "challenge_lost", "challenge_won", "character_dealt", "damaged", "dice_rolled", "died",
 		"first_player", "first_roll_tied", "gained_treasure", "game_started", "game_won", "looked_at",
-		"object_died", "random_pick", "roll_changed", "roll_repeated", "roll_resolved", "roll_would_resolve",
+		"object_died", "present_destroyed", "presents_flipped", "random_pick", "roll_changed", "roll_repeated", "roll_resolved", "roll_would_resolve",
 		"turn_ended", "turn_ended_early", "turn_skipped",
 	}
 	var got []string

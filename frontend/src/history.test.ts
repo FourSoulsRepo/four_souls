@@ -290,7 +290,10 @@ describe('historyKinds', () => {
   const kinds = kindList.split('\n').filter(Boolean);
   // sample: an event of a told kind that gives a line; others need only
   // their kind and a player.
-  const sample = new Map<string, Partial<GameEvent>>([['dice_rolled', { text: 'first', label: { key: 'event.first_player_roll' }, amount: 3 }]]);
+  const sample = new Map<string, Partial<GameEvent>>([
+    ['dice_rolled', { text: 'first', label: { key: 'event.first_player_roll' }, amount: 3 }],
+    ['present_counters', { player: -1, text: 'cents', amount: -4 }],
+  ]);
 
   it('tells or skips every engine event kind, with a reason (15.88)', () => {
     expect(Object.keys(historyKinds).sort()).toEqual(kinds);
@@ -308,6 +311,32 @@ describe('historyKinds', () => {
         expect(lines, kind).toEqual([]);
       }
     }
+  });
+
+  it('tells the Krampus presents, minions and forgone rewards (14.22)', () => {
+    const lines = entriesFor(
+      [
+        { kind: 'present_counters', player: -1, text: 'loot', amount: -2 },
+        { kind: 'present_destroyed', player: -1, text: 'loot', card: 'the_d6' },
+        { kind: 'minion_arrived', player: -1, card: 'gaper' },
+        { kind: 'forgone', player: 1, text: 'cents', amount: 3 },
+        { kind: 'present_counters', player: 1, text: 'cents', amount: 3 },
+        { kind: 'presents_flipped', player: -1, amount: 3 },
+        { kind: 'present_given', player: 0, text: 'soul', card: 'the_d20' },
+      ],
+      1,
+      0,
+      n,
+      0,
+    );
+    expect(lines.map((e) => e.text)).toEqual([
+      'The loot present loses 2 counters',
+      'The loot present is destroyed: it was THE_D6',
+      'GAPER comes as a minion',
+      'Bo forgoes it: 3 counters on the ¢ present',
+      'Happy Holidays! The presents open',
+      'You gain the soul present: THE_D20',
+    ]);
   });
 
   it('names who attacks, buys and kills, as headlines', () => {

@@ -26,6 +26,7 @@ const (
 	ChooseOrder                             // the order of cards put back on a deck (PromptOrder, 19.16)
 	ChoosePassCurse                         // who gets a curse passed on (Curse of the Soulless)
 	ChooseRoom                              // a room to put into discard, or keep (R-TURN-12)
+	ChooseMayReplace                        // yes or no: an optional replacement (Replacement.May)
 )
 
 // Choice is an open question to one player. Options are listed in the
@@ -40,6 +41,9 @@ type Choice struct {
 	Previews []ReplacementPreview `json:"previews,omitempty"`
 	// Deck adds the monster deck as the last option (attack targets).
 	Deck bool `json:"deck,omitempty"`
+	// Random adds, after the deck, the owed random attack (Q-31): the
+	// game then picks its target at random (MustAttackRandom).
+	Random bool `json:"random,omitempty"`
 	// Slots are monster slot indexes (where a revealed card goes).
 	Slots []int `json:"slots,omitempty"`
 	// Targets are the target options of ChooseTarget; one more option
@@ -78,17 +82,26 @@ func (g *Game) answer(i int) {
 	g.Choice, g.Waiting = nil, Prompt{}
 	switch c.Purpose {
 	case ChooseReplacement:
-		g.applyReplacement(c.Replacements[i])
+		g.takeReplacement(c.Replacements[i])
+	case ChooseMayReplace:
+		if i == 0 {
+			g.applyReplacement(c.Replacements[0])
+		} else {
+			g.declineReplacement(c.Replacements[0])
+		}
 	case ChooseAttackTarget:
+		if c.Random && i == len(c.Objects)+btoi(c.Deck) {
+			if c.Deck {
+				g.Turn.MustAttackDeck++ // the deck attack is still owed
+			}
+			g.attackRandom(g.randomAttackTargets())
+			return
+		}
 		if c.Deck && i == len(c.Objects) {
 			g.attackDeck()
 			return
 		}
-		if q, ok := g.redirector(); ok && g.Object(c.Objects[i]).Role == RoleMonster {
-			g.askRedirect(q, c.Objects[i])
-			return
-		}
-		g.startAttack(c.Objects[i])
+		g.attackChosen(c.Objects[i])
 	case ChooseMonsterSlot:
 		g.placeRevealed(c.Slots[i])
 	case ChoosePenaltyItem:

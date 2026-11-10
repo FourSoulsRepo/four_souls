@@ -39,6 +39,9 @@ type Turn struct {
 	// MustAttackDeck of them on the monster deck.
 	MustAttacks    int `json:"must_attacks,omitempty"`
 	MustAttackDeck int `json:"must_attack_deck,omitempty"`
+	// RandomAttackMade: an attack this turn went to one of the monsters
+	// a MustAttackRandom card lists; the duty is met (Q-31).
+	RandomAttackMade bool `json:"random_attack_made,omitempty"`
 	// DeckAttacks are extra attacks only on the monster deck.
 	DeckAttacks int `json:"deck_attacks,omitempty"`
 	// ShopBought counts shop items purchased this turn; FreeShopItem makes

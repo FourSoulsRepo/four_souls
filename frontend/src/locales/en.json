@@ -95,6 +95,10 @@
     "text": "{card}: {text}",
     "note": "An option that is an ability. card: its card; text: its words from the card (not translated yet)."
   },
+  "ask.attack_random": {
+    "text": "a random minion",
+    "note": "Attack target option: the attack you owe goes to a minion the game picks at random (Pilfering Krampus, Normal). Shown beside another attack you must make."
+  },
   "ask.cancel": {
     "text": "cancel",
     "note": "Option that cancels playing or using a card before anything is paid."
@@ -804,6 +808,50 @@
   "card.holy_greedling.gain_3": {
     "text": "Gain 3¢?",
     "note": "Card question while Holy Greedling resolves."
+  },
+  "card.how_the_krampus_stole_christmas.forgo_cents": {
+    "text": {
+      "one": "Forgo {n}¢ and put {n} counter on the ¢ present instead?",
+      "other": "Forgo {n}¢ and put {n} counters on the ¢ present instead?"
+    },
+    "note": "Question of How the Krampus Stole Christmas (All I Want for Christmas): a monster's ¢ reward could be forgone. n: the ¢. Options: yes, no."
+  },
+  "card.how_the_krampus_stole_christmas.forgo_loot": {
+    "text": {
+      "one": "Forgo looting {n} and put {n} counter on the loot present instead?",
+      "other": "Forgo looting {n} and put {n} counters on the loot present instead?"
+    },
+    "note": "Question of How the Krampus Stole Christmas (All I Want for Christmas): a monster's loot reward could be forgone. n: the loot cards. Options: yes, no."
+  },
+  "card.how_the_krampus_stole_christmas.forgo_soul": {
+    "text": {
+      "one": "Forgo the soul {card} and put {n} counter on the soul present instead?",
+      "other": "Forgo the soul {card} and put {n} counters on the soul present instead?"
+    },
+    "note": "Question of How the Krampus Stole Christmas (All I Want for Christmas): a soul could be forgone; the card then goes to discard. card: the soul; n: its soul value. Options: yes, no."
+  },
+  "card.how_the_krampus_stole_christmas.forgo_treasure": {
+    "text": {
+      "one": "Forgo gaining {n} treasure and put {n} counter on the treasure present instead?",
+      "other": "Forgo gaining {n} treasures and put {n} counters on the treasure present instead?"
+    },
+    "note": "Question of How the Krampus Stole Christmas (All I Want for Christmas): a monster's treasure reward could be forgone. n: the treasures. Options: yes, no."
+  },
+  "card.how_the_krampus_stole_christmas.gift_cents": {
+    "text": "Happy Holidays! Who gains the ¢ present?",
+    "note": "Question of How the Krampus Stole Christmas (Happy Holidays!): the active player picks who gains the flipped ¢ present as an item. Options: players."
+  },
+  "card.how_the_krampus_stole_christmas.gift_loot": {
+    "text": "Happy Holidays! Who gains the loot present?",
+    "note": "Question of How the Krampus Stole Christmas (Happy Holidays!): the active player picks who gains the flipped loot present as an item. Options: players."
+  },
+  "card.how_the_krampus_stole_christmas.gift_soul": {
+    "text": "Happy Holidays! Who gains the soul present?",
+    "note": "Question of How the Krampus Stole Christmas (Happy Holidays!): the active player picks who gains the flipped soul present as an item. Options: players."
+  },
+  "card.how_the_krampus_stole_christmas.gift_treasure": {
+    "text": "Happy Holidays! Who gains the treasure present?",
+    "note": "Question of How the Krampus Stole Christmas (Happy Holidays!): the active player picks who gains the flipped treasure present as an item. Options: players."
   },
   "card.i_am_error_r.put_which_monster_into_discard": {
     "text": "Put which monster into discard?",
@@ -1599,6 +1647,10 @@
     "text": "attack roll",
     "note": "What a stack item is: on the stack, in the history and on the throw banner."
   },
+  "event.challenge_lost.presents": {
+    "text": "All 4 presents were destroyed",
+    "note": "Why the Krampus challenge was lost. Shown after \"Challenge lost:\" in the history and on the game-over screen."
+  },
   "event.challenge_lost.timer": {
     "text": "The timer ran out",
     "note": "Why a co-op challenge was lost: its timer reached 0. Shown after \"Challenge lost:\" in the history and on the game-over screen."
@@ -1999,6 +2051,20 @@
     "text": "{card} turns face up",
     "note": "History: a two-sided card turned to its other side. card: the side now up, or 'A card'."
   },
+  "history.forgone.other": {
+    "text": {
+      "one": "{player} forgoes it: {n} counter on the {present}",
+      "other": "{player} forgoes it: {n} counters on the {present}"
+    },
+    "note": "History: a player forwent a monster's reward or a soul for counters on a present (All I Want for Christmas). present: e.g. \"¢ present\"."
+  },
+  "history.forgone.you": {
+    "text": {
+      "one": "You forgo it: {n} counter on the {present}",
+      "other": "You forgo it: {n} counters on the {present}"
+    },
+    "note": "History: the viewer forwent a monster's reward or a soul for counters on a present (All I Want for Christmas). present: e.g. \"¢ present\"."
+  },
   "history.gain.other": {
     "text": "{player} gains {card}",
     "note": "History: an item or treasure came to a player."
@@ -2095,6 +2161,10 @@
     "text": "You lose {n}¢",
     "note": "History: the viewer lost cents. n: the cents."
   },
+  "history.minion_arrived": {
+    "text": "{card} comes as a minion",
+    "note": "History: a card of the monster deck went into a new minion slot (What's in the Box?)."
+  },
   "history.mode_god": {
     "text": "Godmode",
     "note": "History panel, by the title: the game's rollback mode."
@@ -2142,6 +2212,45 @@
   "history.penalty.you": {
     "text": "You pay the death penalty",
     "note": "History: the viewer paid the death penalty."
+  },
+  "history.present.cents": {
+    "text": "¢ present",
+    "note": "History: the Krampus challenge's ¢ present, inside other lines."
+  },
+  "history.present.loot": {
+    "text": "loot present",
+    "note": "History: the Krampus challenge's loot present, inside other lines."
+  },
+  "history.present.soul": {
+    "text": "soul present",
+    "note": "History: the Krampus challenge's soul present, inside other lines."
+  },
+  "history.present.treasure": {
+    "text": "treasure present",
+    "note": "History: the Krampus challenge's treasure present, inside other lines."
+  },
+  "history.present_counters": {
+    "text": {
+      "one": "The {present} loses {n} counter",
+      "other": "The {present} loses {n} counters"
+    },
+    "note": "History: Pilfering Krampus's roll took counters off a present. present: e.g. \"¢ present\"; n: the counters."
+  },
+  "history.present_destroyed": {
+    "text": "The {present} is destroyed: it was {card}",
+    "note": "History: a present reached 0 counters and went to the treasure discard (What's in the Box?). present: e.g. \"¢ present\"; card: the treasure it was."
+  },
+  "history.present_given.other": {
+    "text": "{player} gains the {present}: {card}",
+    "note": "History: a player gained a flipped present as an item. present: e.g. \"¢ present\"; card: the item."
+  },
+  "history.present_given.you": {
+    "text": "You gain the {present}: {card}",
+    "note": "History: the viewer gained a flipped present as an item. present: e.g. \"¢ present\"; card: the item."
+  },
+  "history.presents_flipped": {
+    "text": "Happy Holidays! The presents open",
+    "note": "History: the players hold enough souls; every present left flips face up and becomes an item."
   },
   "history.prevented": {
     "text": "Damage is prevented",

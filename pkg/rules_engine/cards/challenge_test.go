@@ -101,11 +101,17 @@ func TestChallenges(t *testing.T) {
 	}
 }
 
-// Krampus can't start until its own setup is written (roadmap 14.22).
-func TestKrampusNotYetPlayable(t *testing.T) {
-	c, _ := FindChallenge("krampus")
-	s := engine.Setup{Players: 2, Sets: append(Sets(), challenge.Set), Challenge: c, Difficulty: engine.DifficultyNormal}
-	if _, _, err := engine.NewGame(s); err == nil {
-		t.Fatal("a Krampus game started without its setup")
+// R-KRAMPUS-04, R-KRAMPUS-05: a Krampus game starts at every
+// difficulty, with its boss in a final boss slot and the 4 presents.
+func TestKrampusPlayable(t *testing.T) {
+	for _, d := range krampusLevels {
+		g, _, err := engine.NewGame(krampusSetup(1, d))
+		if err != nil {
+			t.Fatalf("%s: %v", d, err)
+		}
+		if len(g.Bosses) != 1 || len(g.Challenge.Presents) != 4 {
+			t.Errorf("%s: %d bosses, %d presents", d, len(g.Bosses), len(g.Challenge.Presents))
+		}
+		checkInvariants(t, g)
 	}
 }

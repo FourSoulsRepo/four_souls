@@ -138,6 +138,9 @@ type Object struct {
 	DoubleRewards bool `json:"double_rewards,omitempty"`
 	// ShareRewards also gain a dead card's rewards (Sibling Rivalry).
 	ShareRewards []PlayerID `json:"share_rewards,omitempty"`
+	// NoSpoils: this dead card gives no rewards and no soul
+	// (CardDef.NoSpoils, R-KRAMPUS-14).
+	NoSpoils bool `json:"no_spoils,omitempty"`
 	// HitsThisTurn counts the times it took damage this turn.
 	HitsThisTurn int `json:"hits_this_turn,omitempty"`
 }

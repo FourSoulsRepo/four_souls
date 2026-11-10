@@ -94,6 +94,7 @@ export const historyKinds: Record<string, string> = {
   expanded: told,
   extra_turn: told,
   first_player: told,
+  forgone: told,
   first_roll_tied: told,
   fizzled: told,
   flipped: told,
@@ -111,12 +112,17 @@ export const historyKinds: Record<string, string> = {
   loot_played: 'The loot card resolves as a line, or is cancelled.',
   looted: told,
   lost_cents: told,
+  minion_arrived: told,
   moved_to_deck: 'Cards put back into a deck are mostly hidden.',
   object_died: told,
   paid: 'The buy or the ability names what was paid for.',
   passed_priority: 'Passing is no play.',
   penalty_paid: told,
   phase: 'The turn badge shows the step.',
+  present_counters: told,
+  present_destroyed: told,
+  present_given: told,
+  presents_flipped: told,
   prevented: told,
   purchase_declared: told,
   purchase_failed: told,
@@ -140,6 +146,20 @@ export const historyKinds: Record<string, string> = {
   turn_skipped: told,
   turn_started: told,
 };
+
+// presentName names a Krampus present by its kind (R-KRAMPUS-05).
+function presentName(kind: string | undefined): string {
+  switch (kind) {
+    case 'loot':
+      return t('history.present.loot');
+    case 'treasure':
+      return t('history.present.treasure');
+    case 'soul':
+      return t('history.present.soul');
+    default:
+      return t('history.present.cents');
+  }
+}
 
 // topChoiceText is another player's top_choice line: it names the deck
 // and where its top card went, never the card (19.90).
@@ -329,6 +349,39 @@ export function entriesFor(events: GameEvent[], turn: number, you: number, n: Na
         break;
       case 'challenge_lost':
         add('✗', t('history.challenge_lost', { reason: say(e.label, n) }));
+        break;
+      // How the Krampus Stole Christmas (R-KRAMPUS, 14.22). Counters a
+      // forgo adds have the forgone line.
+      case 'present_counters':
+        if ((e.amount ?? 0) < 0) {
+          add('🎁', t('history.present_counters', { present: presentName(e.text), n: -(e.amount ?? 0) }));
+        }
+        break;
+      case 'present_destroyed':
+        add('🎁', t('history.present_destroyed', { present: presentName(e.text), card }), e.card);
+        break;
+      case 'presents_flipped':
+        add('🎁', t('history.presents_flipped'));
+        break;
+      case 'present_given':
+        add(
+          '🎁',
+          mine(e.player)
+            ? t('history.present_given.you', { present: presentName(e.text), card })
+            : t('history.present_given.other', { player, present: presentName(e.text), card }),
+          e.card,
+        );
+        break;
+      case 'forgone':
+        add(
+          '🎁',
+          mine(e.player)
+            ? t('history.forgone.you', { present: presentName(e.text), n: e.amount ?? 0 })
+            : t('history.forgone.other', { player, present: presentName(e.text), n: e.amount ?? 0 }),
+        );
+        break;
+      case 'minion_arrived':
+        add('☠', t('history.minion_arrived', { card }), e.card);
         break;
       case 'attack_declared':
         add('⚔', mine(e.player) ? t('history.attack_declared.you') : t('history.attack_declared.other', { player }));
@@ -769,6 +822,8 @@ function barrierWords(kind: string): string | undefined {
     case 'gained_treasure':
       return t('history.barrier.drawn');
     case 'card_revealed':
+    case 'present_destroyed':
+    case 'presents_flipped':
       return t('history.barrier.revealed');
     case 'looked_at':
       return t('history.barrier.seen');

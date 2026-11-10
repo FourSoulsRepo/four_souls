@@ -667,7 +667,7 @@ Alt art (CD-11) comes after all sets.
    19. Fuzz: `FuzzChallengeSets`, `make fuzz-challenge`; 3 minutes green.
    20. ADR 028 got small drift items: Decision 7.9–7.13.
 
-### [ ] 14.22 Engine: How the Krampus Stole Christmas
+### [x] 14.22 Engine: How the Krampus Stole Christmas
 
 1. Goal: the Krampus challenge plays by its rules, all 3 difficulties.
 2. Tasks:
@@ -686,6 +686,32 @@ Alt art (CD-11) comes after all sets.
 3. Done when:
    1. Engine tests for each KRAMPUS rule and each open case's answer.
    2. Seeded whole games end in a win and in a loss.
+4. Result (2026-11-10):
+   1. `cards/challenge/krampus.go`: setup, shared parts; the card files build on it.
+   2. Setup: the boss via `PutInFinalBossSlot`; 4 presents via `AddPresent`.
+   3. Presents API in `challenge.go`; `Present.Destroyed`, `Present.Flipped`.
+   4. New `CardDef` hooks: `Guarded`, `MustAttackRandom`, `NoSpoils`.
+   5. New `Replacement.May`: optional, asked yes or no (`ChooseMayReplace`).
+   6. `Action.Reward` marks a monster's reward parts, rolled ones too.
+   7. Boss card: protection, start-of-turn roll, Normal's forced attack.
+   8. R-KRAMPUS-14 is the boss card's too: the boss card prints it.
+   9. Rule card: All I Want for Christmas, What's in the Box?, Happy Holidays!, the goal.
+   10. Rule card abilities are the active player's (`abilityController`).
+   11. Loss reason `event.challenge_lost.presents`.
+   12. Events: `present_counters`, `present_destroyed`, `presents_flipped`.
+   13. Also `present_given`, `forgone`, `minion_arrived`; history lines for each.
+   14. `present_destroyed`, `presents_flipped` are Soft barriers: a card shows.
+   15. View: presents show destroyed, flipped, face-up card, gainer.
+   16. Decisions left open by the docs:
+       1. Happy Holidays! triggers on a gained soul; it uses the stack.
+       2. It flips first; then the active player picks, seeing the cards.
+       3. What's in the Box? destroys at resolution, if still at 0.
+       4. A forgone soul is a dead card's soul (Q-32, item 3.9).
+       5. A deck attack picked away for the random one stays owed (Q-31).
+   17. Tests: `cards/challenge/*_test.go`, one file per card, plus `krampus_test.go`.
+   18. Whole games: seeds won at Normal and Hard; random ones lost.
+   19. Fuzz: `FuzzChallengeSets` flags 1–3 play Krampus; `TestSimulations` too.
+   20. ADR 028 got small drift items: Decision 5.12–5.14, 6.6–6.10, 9.5.
 
 ### [ ] 14.23 Server: challenge games
 
