@@ -74,6 +74,9 @@ export const historyKinds: Record<string, string> = {
   boosted: 'The boosting card resolves as a line; the card shows its stats.',
   cancelled: told,
   card_revealed: 'The table shows it; an attack on it names it.',
+  challenge_lost: told,
+  challenge_timer: told,
+  challenge_won: told,
   character_dealt: 'Setup: the pick screen shows the characters.',
   counters: 'The card shows its counters (15.23).',
   cursed: told,
@@ -316,6 +319,16 @@ export function entriesFor(events: GameEvent[], turn: number, you: number, n: Na
         break;
       case 'game_won':
         add('♛', mine(e.player) ? t('history.won.you') : t('history.won.other', { player }));
+        break;
+      // A co-op challenge (ADR 028): the timer at a round's end, and its end.
+      case 'challenge_timer':
+        add('⌛', t('history.challenge_timer', { n: e.amount ?? 0 }));
+        break;
+      case 'challenge_won':
+        add('♛', t('history.challenge_won'));
+        break;
+      case 'challenge_lost':
+        add('✗', t('history.challenge_lost', { reason: say(e.label, n) }));
         break;
       case 'attack_declared':
         add('⚔', mine(e.player) ? t('history.attack_declared.you') : t('history.attack_declared.other', { player }));

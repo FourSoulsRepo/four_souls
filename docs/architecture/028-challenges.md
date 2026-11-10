@@ -74,6 +74,9 @@ Use options 1, 4 and 5.
    3. Krampus's setup: the boss into a final boss slot, the 4 presents.
    4. Definitions live in `cards/challenge`, beside the sets.
    5. `cards.Challenges()` and `cards.FindChallenge(id)` list them.
+   6. `ChallengeDef.Set` is the code of its card set.
+   7. `ChallengeDef.Levels`: difficulty, boss and rule card each.
+   8. Krampus's ID is `krampus`.
 4. Engine setup
    1. `Setup.Challenge *ChallengeDef` and `Setup.Difficulty string`.
    2. Difficulties: `normal`, `hard`, `ultra`.
@@ -89,6 +92,9 @@ Use options 1, 4 and 5.
    6. `Holidays`: Happy Holidays! has happened (R-KRAMPUS-10).
    7. `Lost` and `Reason`: why the game ended, as a message key.
    8. New fields are `omitempty`; regular saves stay byte-identical (ADR 019).
+   9. `Starter`: rounds count from the starting player (Q-34).
+   10. `TurnFrom`, `RoundFrom`: first object ID of each player's last two turns (Q-39).
+   11. `RoomTurn`: the turn whose room rule has run (R-COOP-11).
 6. Abilities
    1. `inPlay` adds the rule card after the room slots.
    2. Boss rules are the boss card's abilities (R-KRAMPUS-11 – 14).

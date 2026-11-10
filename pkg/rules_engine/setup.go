@@ -26,6 +26,11 @@ type Setup struct {
 	// DeckRatios builds the treasure, loot and monster decks from the
 	// official count per group, 100 cards each (R-SETUP-17, GS-07).
 	DeckRatios bool
+	// Challenge, when set, makes the game a co-op challenge at
+	// Difficulty (ADR 028): 2 players, no bonus souls, and the
+	// challenge's card set among Sets.
+	Challenge  *ChallengeDef
+	Difficulty string
 }
 
 // Defaults of the official rules.
@@ -41,6 +46,11 @@ const (
 func NewGame(s Setup) (*Game, []Event, error) {
 	if s.Players < 2 || s.Players > 4 {
 		return nil, nil, fmt.Errorf("setup: %d players; the game is for 2 to 4 (GS-09)", s.Players)
+	}
+	if s.Challenge != nil {
+		if err := checkChallenge(s); err != nil {
+			return nil, nil, err
+		}
 	}
 	idx, err := newCardIndex(s.Sets...)
 	if err != nil {
@@ -126,6 +136,11 @@ func NewGame(s Setup) (*Game, []Event, error) {
 		g.loot(PlayerID(p), startingLoot)
 		g.Players[p].Cents = startingCents
 	}
+	if s.Challenge != nil {
+		if err := g.startChallenge(s.Challenge, s.Difficulty); err != nil {
+			return nil, nil, err
+		}
+	}
 	var who []PlayerID
 	var counts []int
 	for p := range g.Players {
@@ -150,6 +165,10 @@ func NewGame(s Setup) (*Game, []Event, error) {
 // startGame starts turn 1 with the first player p.
 func (g *Game) startGame(p PlayerID) {
 	g.Turn = Turn{Active: p, Number: 1, Step: StepRecharge}
+	if g.Challenge != nil {
+		g.Challenge.Starter = p // rounds count from here (R-COOP-08)
+		g.turnTaken(p)
+	}
 	g.emit(Event{Kind: EvGameStarted, Player: p})
 }
 

@@ -315,6 +315,9 @@ type Game struct {
 	WinSouls int        `json:"win_souls"` // default 4 (R-WIN-01)
 	Over     bool       `json:"over,omitempty"`
 	Winners  []PlayerID `json:"winners,omitempty"`
+	// Challenge is the co-op challenge being played; nil in a regular
+	// game (ADR 028).
+	Challenge *ChallengeState `json:"challenge,omitempty"`
 
 	// Sets lists the card sets in play; definitions are looked up by name
 	// when a saved game is loaded.
@@ -387,8 +390,8 @@ func (g *Game) Checksum() (uint64, error) {
 
 // inPlay lists the objects in play whose abilities work, in a fixed
 // order: each player's character and play area in seat order, then the
-// top of every monster and room slot. Souls are left out: a soul only
-// counts for its value (R-CARD-18).
+// top of every monster and room slot, then a challenge's rule card (ADR
+// 028). Souls are left out: a soul only counts for its value (R-CARD-18).
 func (g *Game) inPlay() []ObjectID {
 	var out []ObjectID
 	for _, pl := range g.Players {
@@ -406,6 +409,9 @@ func (g *Game) inPlay() []ObjectID {
 				out = append(out, top)
 			}
 		}
+	}
+	if g.Challenge != nil {
+		out = append(out, g.Challenge.Card)
 	}
 	return out
 }

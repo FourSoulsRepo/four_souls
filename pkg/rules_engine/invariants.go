@@ -72,6 +72,14 @@ func (g *Game) CheckInvariants() error {
 	if err := mark(g.BonusSouls, ZoneOutside, "bonus souls"); err != nil {
 		return err
 	}
+	if c := g.Challenge; c != nil {
+		if err := mark([]ObjectID{c.Card}, ZoneOutside, "challenge card"); err != nil {
+			return err
+		}
+		if c.Timer < 0 || (c.Timer == 0 && !g.Over) {
+			return fmt.Errorf("challenge timer %d, game over %v", c.Timer, g.Over)
+		}
+	}
 	for _, it := range g.Stack {
 		if it.Kind == StackLoot {
 			if err := mark([]ObjectID{it.Source}, ZoneStack, "stack"); err != nil {
@@ -106,6 +114,9 @@ func (g *Game) checkKeys() error {
 	msgs := append([]Msg{g.Waiting.Text}, g.Waiting.Options...)
 	for _, it := range g.Stack {
 		msgs = append(msgs, it.Label)
+	}
+	if g.Challenge != nil {
+		msgs = append(msgs, g.Challenge.Reason)
 	}
 	for _, m := range msgs {
 		if !m.IsZero() && !Declared(m.Key) {

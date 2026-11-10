@@ -167,6 +167,28 @@ type GameView struct {
 	// FirstRoll is the first-player roll before turn 1: who still rolls
 	// and this round's dice so far. It is public (GS-06, 15.43).
 	FirstRoll *FirstRoll `json:"first_roll,omitempty"`
+	// Challenge is the co-op challenge being played; nil in a regular
+	// game. It is public (ADR 028, Decision 9).
+	Challenge *ChallengeView `json:"challenge,omitempty"`
+}
+
+// ChallengeView is what every viewer sees of a challenge: its ID and
+// difficulty, the timer, the rule card, the presents, and how it ended.
+type ChallengeView struct {
+	ID         string        `json:"id"`
+	Difficulty string        `json:"difficulty"`
+	Timer      int           `json:"timer"`
+	Card       CardView      `json:"card"`
+	Presents   []PresentView `json:"presents,omitempty"`
+	Lost       bool          `json:"lost,omitempty"`
+	Reason     Msg           `json:"reason,omitzero"`
+}
+
+// PresentView is a present: a face-down one shows its kind and
+// counters, never its card (ADR 028, Decision 9).
+type PresentView struct {
+	Kind     string `json:"kind"`
+	Counters int    `json:"counters"`
 }
 
 // AttackView is an attack in progress: its target once chosen, and
@@ -299,6 +321,13 @@ func (g *Game) ViewBase() ViewBase {
 	if fr := g.FirstRoll; fr != nil {
 		out.FirstRoll = &FirstRoll{Round: fr.Round, Players: slices.Clone(fr.Players), Rolls: slices.Clone(fr.Rolls)}
 	}
+	if c := g.Challenge; c != nil {
+		cv := &ChallengeView{ID: c.ID, Difficulty: c.Difficulty, Timer: c.Timer, Card: g.cardView(c.Card), Lost: c.Lost, Reason: c.Reason}
+		for _, pr := range c.Presents {
+			cv.Presents = append(cv.Presents, PresentView{Kind: pr.Kind, Counters: g.Object(pr.Object).CountersOf("")})
+		}
+		out.Challenge = cv
+	}
 	return ViewBase{view: out}
 }
 
@@ -317,7 +346,8 @@ func (g *Game) ViewFor(b ViewBase, v Viewer) GameView {
 	}
 	out.Players = slices.Clone(b.view.Players)
 	for i, pl := range g.Players {
-		if v.sees(pl.ID) || g.bonus(StatRevealHand, pl.ID, 0) > 0 {
+		// Co-op partners see each other's hands (R-COOP-07, Q-42).
+		if v.sees(pl.ID) || g.bonus(StatRevealHand, pl.ID, 0) > 0 || (g.Challenge != nil && v.Kind == ViewPlayer) {
 			for _, id := range pl.Hand {
 				out.Players[i].Hand = append(out.Players[i].Hand, g.cardView(id))
 			}

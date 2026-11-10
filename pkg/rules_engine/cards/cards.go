@@ -7,6 +7,7 @@ package cards
 import (
 	engine "github.com/FourSoulsRepo/rules_engine"
 	"github.com/FourSoulsRepo/rules_engine/cards/b2"
+	"github.com/FourSoulsRepo/rules_engine/cards/challenge"
 	"github.com/FourSoulsRepo/rules_engine/cards/fsp2"
 	"github.com/FourSoulsRepo/rules_engine/cards/g2"
 	"github.com/FourSoulsRepo/rules_engine/cards/r"
@@ -25,4 +26,21 @@ func Find(code string) (engine.CardSet, bool) {
 		}
 	}
 	return engine.CardSet{}, false
+}
+
+// Challenges returns every known challenge, in a fixed order (ADR 028).
+// Each one's cards are in the set its Set names, which Find does not
+// list: the caller adds it to the game's sets.
+func Challenges() []*engine.ChallengeDef {
+	return []*engine.ChallengeDef{&challenge.Krampus}
+}
+
+// FindChallenge returns the challenge with the given ID, e.g. "krampus".
+func FindChallenge(id string) (*engine.ChallengeDef, bool) {
+	for _, c := range Challenges() {
+		if c.ID == id {
+			return c, true
+		}
+	}
+	return nil, false
 }

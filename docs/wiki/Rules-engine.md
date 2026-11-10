@@ -74,6 +74,17 @@ The generator lives in the app module because the engine never imports `card_db`
 
 A test fails when the committed report is out of date, so run the command after finishing a card.
 
+## Challenges
+
+A co-op challenge (ADR 028; rules in `docs/rules/challenges.md`) is a regular game with `Setup.Challenge` (an `*engine.ChallengeDef`) and `Setup.Difficulty` (`normal`, `hard`, `ultra`). `cards.Challenges()` lists the known ones and `cards.FindChallenge(id)` finds one; each lives in `cards/challenge` beside its cards. The challenge's card set is no playable set (`cards.Sets()` leaves it out), so the caller adds it to `Setup.Sets`. `NewGame` refuses a challenge without exactly 2 players (R-COOP-01), with bonus souls (R-COOP-02), without its set, or with a difficulty it lacks.
+
+`ChallengeDef` holds the ID, the set's code, and per difficulty (`Levels`) the final boss and the rule card. After the regular setup, `NewGame` makes `Game.Challenge` (`challenge.go`): the timer at 8, the rule card as an object outside the game, then the def's own `Setup(g, difficulty)`. `inPlay` lists the rule card last, so its abilities work like any card's. Every `ChallengeState` field is `omitempty`, so a regular game saves exactly as before (`testdata/regular_save.json`, ADR 019).
+
+* Timer: `startNextTurn` ticks it (`challenge_timer`, the rounds left) before the starting player's next regular turn, skipped or not; an extra turn adds no tick (R-COOP-08, Q-34). At 0 the game is lost at once.
+* End: `WinChallenge()` (`challenge_won`, both players in `Winners`) or `LoseChallenge(reason)` (`challenge_lost`, the reason as its label and in `Challenge.Reason`, no winners). `checkWin` and `WinGame` do nothing in a challenge (R-CHAL-14).
+* Rooms: after the room step, a room whose top object is older than the active player's previous turn goes to discard (R-COOP-11, Q-39). Object IDs only grow, so `TurnFrom` and `RoundFrom` keep the first object ID of each player's last two turns.
+* View: `GameView.Challenge` (ID, difficulty, timer, rule card, presents, lost and reason) for everyone; each player also sees the partner's hand (R-COOP-07, Q-42). Hand events stay private as in any game.
+
 ## The run loop must always settle
 
 `run()` keeps doing automatic work (queued actions, triggers, step changes) until the game waits on a prompt. Any path that leaves no prompt and changes nothing spins forever. Rules for new code:

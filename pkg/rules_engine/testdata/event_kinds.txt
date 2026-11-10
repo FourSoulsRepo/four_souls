@@ -6,6 +6,9 @@ attack_target
 boosted
 cancelled
 card_revealed
+challenge_lost
+challenge_timer
+challenge_won
 character_dealt
 counters
 cursed

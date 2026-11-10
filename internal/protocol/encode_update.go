@@ -135,6 +135,9 @@ func appendView(b []byte, v engine.GameView) []byte {
 	if v.FirstRoll != nil {
 		b = appendMarshaled(b, `,"first_roll":`, v.FirstRoll)
 	}
+	if v.Challenge != nil {
+		b = appendMarshaled(b, `,"challenge":`, v.Challenge)
+	}
 	return append(b, '}')
 }
 

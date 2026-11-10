@@ -248,6 +248,7 @@
   "error.sit_first",
   "error.started",
   "event.attack_roll",
+  "event.challenge_lost.timer",
   "event.combat_damage",
   "event.copy_of",
   "event.damage",

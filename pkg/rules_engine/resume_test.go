@@ -138,3 +138,19 @@ func TestStateFieldsOmitEmpty(t *testing.T) {
 		}
 	}
 }
+
+// TestRegularSaveUnchanged: a regular game saved before challenges came
+// (14.20) resumes to the same bytes; a regular game has no challenge
+// key (ADR 019; ADR 028, Decision 5.8).
+func TestRegularSaveUnchanged(t *testing.T) {
+	data, err := os.ReadFile(filepath.Join("testdata", "regular_save.json"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := Resume(data, StateMeaning, testSet, abilitySet); err != nil {
+		t.Fatal(err)
+	}
+	if bytes.Contains(savedGame(t), []byte(`"challenge"`)) {
+		t.Error("a regular game saves a challenge key")
+	}
+}

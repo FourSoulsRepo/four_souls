@@ -54,8 +54,10 @@ var barrierKinds = map[EventKind]bool{
 	EvTurnEndedEarly: true,
 	EvTurnSkipped:    true,
 	// The game (item 4.6).
-	EvGameStarted: true,
-	EvGameWon:     true,
+	EvGameStarted:   true,
+	EvGameWon:       true,
+	EvChallengeWon:  true,
+	EvChallengeLost: true,
 
 	// Not barriers: what is seen anyway, and steps on the way.
 	EvActivated:        false,
@@ -64,6 +66,7 @@ var barrierKinds = map[EventKind]bool{
 	EvAttackTarget:     false,
 	EvBoosted:          false,
 	EvCancelled:        false,
+	EvChallengeTimer:   false, // at the end of a round; turn_ended is the barrier
 	EvCounters:         false,
 	EvCursed:           false,
 	EvDamagePending:    false, // on the stack; not dealt yet

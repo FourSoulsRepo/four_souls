@@ -1599,6 +1599,10 @@
     "text": "attack roll",
     "note": "What a stack item is: on the stack, in the history and on the throw banner."
   },
+  "event.challenge_lost.timer": {
+    "text": "The timer ran out",
+    "note": "Why a co-op challenge was lost: its timer reached 0. Shown after \"Challenge lost:\" in the history and on the game-over screen."
+  },
   "event.combat_damage": {
     "text": "combat damage",
     "note": "What a stack item is: on the stack, in the history and on the throw banner."
@@ -1870,6 +1874,21 @@
   "history.cents.you": {
     "text": "You gain {n}¢",
     "note": "History: the viewer gained cents. n: the cents."
+  },
+  "history.challenge_lost": {
+    "text": "Challenge lost: {reason}",
+    "note": "History: both players lost the co-op challenge. reason: why, e.g. \"The timer ran out\"."
+  },
+  "history.challenge_timer": {
+    "text": {
+      "one": "The round ends: {n} round left",
+      "other": "The round ends: {n} rounds left"
+    },
+    "note": "History: the co-op challenge timer ticked down at the end of a round. n: rounds left."
+  },
+  "history.challenge_won": {
+    "text": "Challenge won",
+    "note": "History: both players won the co-op challenge."
   },
   "history.choice.other": {
     "text": "{player}'s choice",

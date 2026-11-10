@@ -578,7 +578,7 @@ Alt art (CD-11) comes after all sets.
    16. They wait in the private repo for the owner's amend and push.
    17. The client draws only rooms landscape; challenge cards need it (14.25).
 
-### [ ] 14.20 Engine: co-op challenge core
+### [x] 14.20 Engine: co-op challenge core
 
 1. Goal: a 2-player co-op game against the game itself.
 2. Tasks:
@@ -595,6 +595,26 @@ Alt art (CD-11) comes after all sets.
 3. Done when:
    1. Engine tests for each rule ID of COOP and CHAL timer.
    2. A test challenge with a trivial goal plays to a win and to a loss.
+4. Result (2026-11-10):
+   1. `challenge.go`: `ChallengeDef`, `ChallengeLevel`, `ChallengeState`, `Present`.
+   2. `Setup.Challenge`, `Setup.Difficulty`; `Game.Challenge`, nil in a regular game.
+   3. Setup errors on 3+ players, bonus souls, a missing set, an unknown difficulty.
+   4. Bonus souls are an error, not forced off; the server turns them off (14.23).
+   5. The rule card is an object outside the game; `inPlay` lists it last.
+   6. Timer: ticks before the starter's next regular turn (Q-34); 0 loses at once.
+   7. `WinChallenge()`, `LoseChallenge(reason)`; reason `event.challenge_lost.timer`.
+   8. Events `challenge_timer`, `challenge_won`, `challenge_lost`; history lines.
+   9. `checkWin` and `WinGame` do nothing in a challenge (R-CHAL-14).
+   10. Room rule by object IDs: `TurnFrom`, `RoundFrom` per player (Q-39).
+   11. An extra turn checks rooms against the player's previous regular turn.
+   12. View: `GameView.Challenge`; players see the partner's hand.
+   13. Hand events stay private; only the view shows the partner's hand.
+   14. `cards.Challenges()`, `cards.FindChallenge`; Krampus is listed as `krampus`.
+   15. Krampus's own setup returns an error until 14.22; its data is tested.
+   16. No Russian line: the repo has no `ru.json` yet; English only.
+   17. Tests: `challenge_test.go` with a test challenge; win, timer loss, rooms.
+   18. `testdata/regular_save.json`: a save from before 14.20 still resumes.
+   19. ADR 028 got small drift items: Decision 3.6–3.8, 5.9–5.11.
 
 ### [ ] 14.21 Engine: final boss and minion slots
 

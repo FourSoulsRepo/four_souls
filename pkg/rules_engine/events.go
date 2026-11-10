@@ -57,6 +57,13 @@ const (
 	// (ToBottomRandom). Text is "<deck> deck"; public, no card, Player
 	// NoPlayer: the board shows them go under the deck (19.147).
 	EvDeckBottom EventKind = "deck_bottom"
+	// EvChallengeTimer: the challenge timer ticked down to Amount
+	// (R-COOP-08).
+	EvChallengeTimer EventKind = "challenge_timer"
+	// EvChallengeWon and EvChallengeLost end a challenge; a loss has its
+	// reason as Label (R-COOP-10, ADR 028).
+	EvChallengeWon  EventKind = "challenge_won"
+	EvChallengeLost EventKind = "challenge_lost"
 )
 
 // Event is one thing that happened, in order. Hidden cards (e.g. a looted

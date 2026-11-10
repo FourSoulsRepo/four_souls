@@ -64,3 +64,48 @@ func TestKrampusCards(t *testing.T) {
 		t.Errorf("%d challenge cards, want 8", len(defs))
 	}
 }
+
+// ADR 028, Decision 3: the challenge list; each level names a boss and
+// a rule card of the challenge's own set.
+func TestChallenges(t *testing.T) {
+	c, ok := FindChallenge("krampus")
+	if !ok || c != Challenges()[0] {
+		t.Fatal("no krampus challenge")
+	}
+	if _, ok := FindChallenge("nope"); ok {
+		t.Error("found an unknown challenge")
+	}
+	sets := map[string]engine.CardSet{challenge.Set.Code: challenge.Set}
+	for _, c := range Challenges() {
+		set, ok := sets[c.Set]
+		if !ok || c.ID == "" || len(c.Levels) == 0 || c.Setup == nil {
+			t.Errorf("%s: set %q, %d levels", c.ID, c.Set, len(c.Levels))
+		}
+		kinds := map[engine.CardRef]engine.CardKind{}
+		for _, d := range set.Cards {
+			kinds[d.Ref] = d.Kind
+		}
+		var diffs []string
+		for _, l := range c.Levels {
+			diffs = append(diffs, l.Difficulty)
+			if k, ok := kinds[l.Boss]; !ok || k != engine.MonsterCard {
+				t.Errorf("%s %s: boss %q", c.ID, l.Difficulty, l.Boss)
+			}
+			if k, ok := kinds[l.Card]; !ok || k != engine.ChallengeCard {
+				t.Errorf("%s %s: rule card %q", c.ID, l.Difficulty, l.Card)
+			}
+		}
+		if c.ID == "krampus" && !slices.Equal(diffs, []string{engine.DifficultyNormal, engine.DifficultyHard, engine.DifficultyUltra}) {
+			t.Errorf("krampus difficulties %v (R-KRAMPUS-02)", diffs)
+		}
+	}
+}
+
+// Krampus can't start until its own setup is written (roadmap 14.22).
+func TestKrampusNotYetPlayable(t *testing.T) {
+	c, _ := FindChallenge("krampus")
+	s := engine.Setup{Players: 2, Sets: append(Sets(), challenge.Set), Challenge: c, Difficulty: engine.DifficultyNormal}
+	if _, _, err := engine.NewGame(s); err == nil {
+		t.Fatal("a Krampus game started without its setup")
+	}
+}

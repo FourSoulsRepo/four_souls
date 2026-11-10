@@ -508,6 +508,29 @@ export interface GameView {
   // first_roll is the first-player roll before turn 1: who still rolls,
   // in seat order, and this round's dice so far (GS-06, 15.43).
   first_roll?: FirstRoll;
+  // challenge is the co-op challenge being played; none in a regular
+  // game (ADR 028, 14.20).
+  challenge?: ChallengeView;
+}
+
+// ChallengeView is a co-op challenge: its ID and difficulty ("normal",
+// "hard", "ultra"), the rounds left, the rule card, the presents, and
+// how it ended: lost, with the reason (ADR 028).
+export interface ChallengeView {
+  id: string;
+  difficulty: string;
+  timer: number;
+  card: CardView;
+  presents?: PresentView[];
+  lost?: boolean;
+  reason?: Msg;
+}
+
+// PresentView is a face-down present: its kind ("cents", "loot",
+// "treasure", "soul") and counters, never its card (ADR 028).
+export interface PresentView {
+  kind: string;
+  counters: number;
 }
 
 // FirstRoll is the first-player roll in progress: the lowest goes

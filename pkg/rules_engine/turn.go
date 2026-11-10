@@ -219,6 +219,10 @@ func (g *Game) advanceFrom(s Step) {
 	case StepHandSize:
 		g.goTo(StepRoom)
 	case StepRoom:
+		if g.coopRooms() {
+			g.Turn.RoomReplaced = true // the new room's window follows its refill
+			return
+		}
 		if g.Turn.RoomReplaced {
 			g.Turn.RoomReplaced = false
 			g.openWindow(g.Turn.Active) // the new room's "enters play" (R-TURN-18)
@@ -267,9 +271,15 @@ func (g *Game) enterStep() {
 
 func (g *Game) startNextTurn() {
 	next := g.next(g.Turn.Active)
+	regular := !g.ExtraTurn
 	if g.ExtraTurn {
 		next, g.ExtraTurn = g.Turn.Active, false
 		g.emit(Event{Kind: EvExtraTurn, Player: next})
+	}
+	// In a challenge the timer ticks before the starting player's next
+	// regular turn, skipped or not; an extra turn adds no tick (Q-34).
+	if regular && g.roundEndsBefore(next) && g.tickTimer() {
+		return
 	}
 	for range g.Players {
 		if g.Players[next].SkipTurns == 0 {
@@ -277,7 +287,16 @@ func (g *Game) startNextTurn() {
 		}
 		g.Players[next].SkipTurns--
 		g.emit(Event{Kind: EvTurnSkipped, Player: next})
-		next = g.next(next)
+		if regular {
+			g.turnTaken(next) // a skipped turn counts as taken (R-TURN-16)
+		}
+		next, regular = g.next(next), true
+		if g.roundEndsBefore(next) && g.tickTimer() {
+			return
+		}
+	}
+	if regular {
+		g.turnTaken(next)
 	}
 	g.Turn = Turn{Active: next, Number: g.Turn.Number + 1, Step: StepRecharge}
 	g.emit(Event{Kind: EvTurnStarted, Player: g.Turn.Active, Amount: g.Turn.Number})
@@ -432,7 +451,11 @@ func (g *Game) characterSouls(id ObjectID) int {
 
 // checkWin ends the game when players reach the soul target (R-WIN-01 to
 // R-WIN-03). It runs between resolutions, without the stack (R-WIN-02).
+// In a challenge only its goal wins (R-CHAL-14).
 func (g *Game) checkWin() bool {
+	if g.Challenge != nil {
+		return false
+	}
 	var winners []PlayerID
 	for _, pl := range g.Players {
 		if g.SoulValue(pl.ID) >= g.WinSouls {
@@ -479,9 +502,9 @@ func (g *Game) maxHand(p PlayerID) int {
 }
 
 // WinGame ends the game with p as the winner: "That player wins." (Mom's
-// Heart).
+// Heart). In a challenge it does nothing (R-CHAL-14).
 func (g *Game) WinGame(p PlayerID) {
-	if g.Over {
+	if g.Over || g.Challenge != nil {
 		return
 	}
 	g.Over, g.Winners = true, []PlayerID{p}
