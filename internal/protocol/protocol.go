@@ -346,6 +346,9 @@ type GameInfo struct {
 	Locked  bool     `json:"locked,omitempty"` // joining needs the password (N-14)
 	// Rollback is the game's rollback mode (ADR 020, item 1.4).
 	Rollback string `json:"rollback,omitempty"`
+	// Challenge and Difficulty name a challenge game (ADR 028).
+	Challenge  string `json:"challenge,omitempty"`
+	Difficulty string `json:"difficulty,omitempty"`
 }
 
 // SeatInfo answers GET /seat?token=… (15.99): whether the token still
@@ -461,6 +464,13 @@ type Options struct {
 	// Rollback is the rollback mode (ADR 020): "" is Disabled, else
 	// RollbackSoft or RollbackGod.
 	Rollback string `json:"rollback,omitempty"`
+	// Challenge is the ID of the co-op challenge, e.g. "krampus"; ""
+	// is a regular game (ADR 028). A challenge has exactly 2 seats and
+	// no bonus souls; the server adds its card set.
+	Challenge string `json:"challenge,omitempty"`
+	// Difficulty is the challenge's difficulty: "normal", "hard" or
+	// "ultra" (engine.DifficultyNormal …).
+	Difficulty string `json:"difficulty,omitempty"`
 }
 
 // Rollback modes (ADR 020, item 1).

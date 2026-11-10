@@ -56,6 +56,10 @@ type Setup struct {
 	Banned     []string `json:"banned,omitempty"`      // left out of the game (GS-13)
 	DeckRatios bool     `json:"deck_ratios,omitempty"` // decks built from the deck ratios (GS-07)
 	RoomDeck   bool     `json:"room_deck,omitempty"`   // played with the room deck (R-SETUP-16)
+	// Challenge is the co-op challenge's ID, e.g. "krampus"; its card
+	// set is not among Sets: the challenge brings it (ADR 028).
+	Challenge  string `json:"challenge,omitempty"`
+	Difficulty string `json:"difficulty,omitempty"` // the challenge's: normal, hard, ultra
 }
 
 // Seat is one player of the match.
@@ -97,7 +101,7 @@ type Rollback struct {
 type End struct {
 	Kind     string    `json:"kind"` // "end"
 	Ended    time.Time `json:"ended"`
-	Finished bool      `json:"finished"` // false: stopped before a winner (RP-08)
+	Finished bool      `json:"finished"` // false: stopped before the end (RP-08); a lost challenge has no winners
 	Winners  []int     `json:"winners,omitempty"`
 }
 

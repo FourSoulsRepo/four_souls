@@ -60,7 +60,7 @@ func (r *Room) openRecord(s engine.Setup) {
 	now := time.Now()
 	h := record.Header{
 		App: v.App, Engine: v.Engine, Protocol: protocol.Version, Game: r.recInfo.game, Server: r.recInfo.server, Started: now.UTC(),
-		Setup: record.Setup{Seed: s.Seed, Players: s.Players, Sets: r.recInfo.sets, BonusSouls: s.BonusSouls, Characters: chars, Banned: banned, DeckRatios: s.DeckRatios, RoomDeck: s.Rooms},
+		Setup: record.Setup{Seed: s.Seed, Players: s.Players, Sets: r.recInfo.sets, BonusSouls: s.BonusSouls, Characters: chars, Banned: banned, DeckRatios: s.DeckRatios, RoomDeck: s.Rooms, Challenge: r.opts.Challenge, Difficulty: r.opts.Difficulty},
 		Seats: seats, Cards: r.recInfo.cards, Rollback: r.opts.Rollback,
 	}
 	w, err := record.Create(r.path, h)
@@ -71,8 +71,9 @@ func (r *Room) openRecord(s engine.Setup) {
 	r.rec = w
 }
 
-// closeRecord ends the record: finished when the game has a winner,
-// unfinished when the server stops first (RP-08).
+// closeRecord ends the record: finished when the game is over, with its
+// winners; a lost challenge has none (ADR 028). Unfinished when the
+// server stops first (RP-08).
 func (r *Room) closeRecord(finished bool) {
 	if r.rec == nil {
 		return

@@ -1,6 +1,6 @@
 // The lobby state and how server messages change it. Pure, so it is
 // tested without a socket.
-import type { Envelope, GameInfo, Games, Options, ProtocolError, RollbackMode, Saved, SaveInfo, Setup, Table, Update, Welcome } from './protocol';
+import type { Difficulty, Envelope, GameInfo, Games, Options, ProtocolError, RollbackMode, Saved, SaveInfo, Setup, Table, Update, Welcome } from './protocol';
 import { errorText } from './protocol';
 import type { LanServer, RecentServer, Rejoin } from './bridge';
 import { t } from './i18n';
@@ -133,13 +133,17 @@ export function upText(up: ServerUp | undefined): string {
 // optionsText sums up the match setup for the table.
 export function optionsText(o: Options | undefined): string {
   const parts = [o?.picking === 'draft' ? t('lobby.options.draft', { n: o.draft_size ?? 3 }) : t('lobby.options.random')];
+  if (o?.challenge) {
+    parts.unshift(challengeText(o.challenge, o.difficulty));
+  }
   if (o?.ban_rounds) {
     parts.push(t('lobby.options.ban_rounds', { n: o.ban_rounds }));
   }
   if (o?.response_timer) {
     parts.push(t('lobby.options.timer', { n: o.response_timer }));
   }
-  if (o?.no_bonus_souls) {
+  // A challenge always plays without them (ADR 028); its name says so.
+  if (o?.no_bonus_souls && !o.challenge) {
     parts.push(t('lobby.options.no_bonus_souls'));
   }
   if (o?.random_seats) {
@@ -156,6 +160,32 @@ export function optionsText(o: Options | undefined): string {
     parts.push(rollbackText(o.rollback));
   }
   return parts.join(' · ');
+}
+
+// challengeName names a challenge; an unknown one shows its ID.
+export function challengeName(id: string): string {
+  return id === 'krampus' ? t('challenge.name.krampus') : id;
+}
+
+// difficultyName names a challenge's difficulty; an unknown one (a newer
+// server's) shows its ID.
+export function difficultyName(d: string | undefined): string {
+  switch (d) {
+    case 'normal':
+      return t('challenge.difficulty.normal');
+    case 'hard':
+      return t('challenge.difficulty.hard');
+    case 'ultra':
+      return t('challenge.difficulty.ultra');
+    default:
+      return d ?? '';
+  }
+}
+
+// challengeText names a challenge game and its difficulty, for the game
+// list and the table (ADR 028).
+export function challengeText(id: string, d: Difficulty | undefined): string {
+  return t('lobby.options.challenge', { challenge: challengeName(id), difficulty: difficultyName(d) });
 }
 
 // rollbackText names a rollback mode for the game list and the table

@@ -44,3 +44,14 @@ func FindChallenge(id string) (*engine.ChallengeDef, bool) {
 	}
 	return nil, false
 }
+
+// ChallengeSet returns the card set that holds a challenge's cards
+// (ChallengeDef.Set). Find leaves it out: it is never a playable set.
+func ChallengeSet(c *engine.ChallengeDef) (engine.CardSet, bool) {
+	for _, s := range []engine.CardSet{challenge.Set} {
+		if s.Code == c.Set {
+			return s, true
+		}
+	}
+	return engine.CardSet{}, false
+}

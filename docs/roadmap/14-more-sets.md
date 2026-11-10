@@ -713,7 +713,7 @@ Alt art (CD-11) comes after all sets.
    19. Fuzz: `FuzzChallengeSets` flags 1–3 play Krampus; `TestSimulations` too.
    20. ADR 028 got small drift items: Decision 5.12–5.14, 6.6–6.10, 9.5.
 
-### [ ] 14.23 Server: challenge games
+### [x] 14.23 Server: challenge games
 
 1. Goal: the server hosts a challenge for 2 players.
 2. Tasks:
@@ -726,6 +726,22 @@ Alt art (CD-11) comes after all sets.
 3. Done when:
    1. Server tests: create, start, save, load and restart a Krampus game.
    2. UC-03 and UC-05 updated, or a new use case.
+4. Result (2026-11-10):
+   1. Protocol: `Options.challenge`, `Options.difficulty`; `GameInfo` has both.
+   2. All `omitempty`; protocol version unchanged; golden lines appended.
+   3. `checkChallenge`: unknown challenge, bad difficulty, seats other than 2.
+   4. Message keys `error.no_challenge`, `error.no_difficulty`, `error.challenge_seats`.
+   5. Bonus souls forced off; a host ban of a challenge card is refused.
+   6. The table's set list stays the playable sets; `challenge` is never shown.
+   7. `gameSets` adds the challenge set last; `engineSetup` builds every setup.
+   8. Used by start, restart, the option checks; saves and rollback follow.
+   9. `cards.ChallengeSet(def)`: the set of a challenge.
+   10. Record header: `challenge`, `difficulty` (ADR 007, items 2.17–2.19, 5.7).
+   11. A lost challenge: record `end` finished, no winners; the room is over.
+   12. Challenge list: bridge `App.Challenges()`, like `CardSets` (ADR 028, 10.7).
+   13. Lobby: `challengeText` in the game list and the table summary; English.
+   14. Tests: `internal/server/challenge_test.go`; record and app tests.
+   15. Test helper `replaySetup` rebuilds a setup from a record header.
 
 ### [ ] 14.24 Client: game mode in the host screen
 

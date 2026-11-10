@@ -32,3 +32,5 @@
 {"type":"rollback_cancel","id":21,"data":{}}
 {"type":"end","id":22,"data":{}}
 {"type":"notice","data":{"kind":"game_ended","game":"g1"}}
+{"type":"create","id":23,"data":{"seats":2,"sets":["b2"],"options":{"challenge":"krampus","difficulty":"hard"}}}
+{"type":"games","data":{"games":[{"id":"g2","host":"Ann","seats":2,"taken":1,"sets":["b2"],"started":false,"challenge":"krampus","difficulty":"hard"}]}}

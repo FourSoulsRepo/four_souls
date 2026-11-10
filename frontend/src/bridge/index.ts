@@ -4,10 +4,12 @@
 import { noHostSetup, type HostSetup } from '../hostSetup';
 import type { CardInfo, Kind } from '../cards';
 import type { Speed } from '../playback';
+import type { Difficulty } from '../protocol';
 import {
   Backs as wailsBacks,
   Cards as wailsCards,
   CardSets as wailsCardSets,
+  Challenges as wailsChallenges,
   CheckSeat as wailsCheckSeat,
   DeckRatios as wailsDeckRatios,
   Dice as wailsDice,
@@ -152,6 +154,19 @@ export async function saveSettings(s: Settings): Promise<Settings> {
 // getCardSets lists the card set codes this app has (CD-03).
 export function getCardSets(): Promise<string[]> {
   return wailsCardSets();
+}
+
+// ChallengeInfo is a challenge the app knows: its ID and difficulties,
+// easiest first (ADR 028, Decision 10.7).
+export interface ChallengeInfo {
+  id: string;
+  difficulties: Difficulty[];
+}
+
+// getChallenges lists the challenges this app knows, for the host screen.
+export async function getChallenges(): Promise<ChallengeInfo[]> {
+  const list = await wailsChallenges();
+  return list.map((c) => ({ id: c.id, difficulties: c.difficulties as Difficulty[] }));
 }
 
 // deckRatiosBlocked says why a game with these sets and players can't

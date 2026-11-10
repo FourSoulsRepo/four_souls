@@ -83,6 +83,9 @@ export interface GameInfo {
   locked?: boolean;
   // rollback is the game's rollback mode (ADR 020).
   rollback?: RollbackMode;
+  // challenge and difficulty name a challenge game (ADR 028).
+  challenge?: string;
+  difficulty?: Difficulty;
 }
 
 export interface SaveInfo {
@@ -113,7 +116,14 @@ export interface Options {
   random_seats?: boolean; // seat the players in a random order at the start
   response_timer?: number; // seconds; 0: off, else at least 60
   rollback?: RollbackMode; // none: Disabled (ADR 020)
+  // challenge is a co-op challenge's ID, e.g. 'krampus'; none: a
+  // regular game (ADR 028). It needs 2 seats; bonus souls are off.
+  challenge?: string;
+  difficulty?: Difficulty;
 }
+
+// Difficulty is a challenge's difficulty (ADR 028, Decision 4.2).
+export type Difficulty = 'normal' | 'hard' | 'ultra';
 
 // Ban is one banned character; seat -1 is the host's list.
 export interface Ban {

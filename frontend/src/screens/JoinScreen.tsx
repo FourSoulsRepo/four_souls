@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { t } from '../i18n';
 import { useEscape } from '../keys';
-import { canCreate, lanRows, rollbackText, serverLabel, upText } from '../lobby';
+import { canCreate, challengeText, lanRows, rollbackText, serverLabel, upText } from '../lobby';
 import { protocolVersion } from '../protocol';
 import { setList } from '../sets';
 import { useApp } from '../store';
@@ -334,6 +334,7 @@ function GameList() {
                 {g.locked && <span aria-label={t('lobby.games.locked')}>🔒 </span>}
                 {t('lobby.game_row', { host: g.host, taken: g.taken, n: g.seats })}
                 {g.started ? ` · ${t('lobby.games.playing')}` : ''}
+                {g.challenge && <span className="muted"> · {challengeText(g.challenge, g.difficulty)}</span>}
                 {g.sets && g.sets.length > 0 && <span className="muted"> · {setList(g.sets)}</span>}
                 {g.rollback && <span className="muted"> · {rollbackText(g.rollback)}</span>}
               </span>

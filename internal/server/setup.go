@@ -8,6 +8,7 @@ import (
 
 	"github.com/FourSoulsRepo/four_souls/internal/protocol"
 	engine "github.com/FourSoulsRepo/rules_engine"
+	"github.com/FourSoulsRepo/rules_engine/cards"
 )
 
 // Limits of the detailed setup.
@@ -65,9 +66,65 @@ func startingItems(sets []engine.CardSet, chars []engine.CardRef) []engine.CardR
 	return out
 }
 
+// checkChallenge checks the challenge of the options (ADR 028, Decision
+// 10): a known one, one of its difficulties, exactly 2 seats. A
+// challenge plays without bonus souls, whatever the option said. It
+// returns the message a refusal shows; zero when the options pass.
+func checkChallenge(o *protocol.Options, seats int) engine.Msg {
+	if o.Challenge == "" {
+		if o.Difficulty != "" {
+			return errNoDifficulty.Msg(engine.Str("difficulty", o.Difficulty))
+		}
+		return engine.Msg{}
+	}
+	c, ok := cards.FindChallenge(o.Challenge)
+	if !ok {
+		return errNoChallenge.Msg(engine.Str("challenge", o.Challenge))
+	}
+	if _, ok := c.Level(o.Difficulty); !ok {
+		return errNoDifficulty.Msg(engine.Str("difficulty", o.Difficulty))
+	}
+	if seats != challengeSeats {
+		return errChallengeSeats.Msg(engine.N("n", challengeSeats))
+	}
+	o.NoBonusSouls = true // R-COOP-02
+	return engine.Msg{}
+}
+
+// challengeSeats is the seats of a co-op challenge (R-COOP-01).
+const challengeSeats = 2
+
+// gameSets are the engine's card sets of a game: the table's sets, then
+// the challenge's own set, which no table lists (ADR 028, Decision 1.4).
+// Saves, restart files and records keep only the table's codes; the
+// challenge in the options brings its set back.
+func gameSets(codes []string, o protocol.Options) []engine.CardSet {
+	out := setsOf(codes)
+	if c, ok := cards.FindChallenge(o.Challenge); ok {
+		if set, ok := cards.ChallengeSet(c); ok {
+			out = append(out, set)
+		}
+	}
+	return out
+}
+
+// engineSetup is the engine setup of a game with these options; every
+// place that starts or rebuilds a game uses it (hub, restart, checks).
+func engineSetup(seed uint64, players int, codes []string, o protocol.Options) engine.Setup {
+	s := engine.Setup{
+		Seed: seed, Players: players, Sets: gameSets(codes, o), BonusSouls: !o.NoBonusSouls,
+		Banned: o.HostBans, DeckRatios: !o.NoDeckRatios, Rooms: o.RoomDeck,
+	}
+	if c, ok := cards.FindChallenge(o.Challenge); ok {
+		s.Challenge, s.Difficulty, s.BonusSouls = c, o.Difficulty, false
+	}
+	return s
+}
+
 // checkOptions fills in defaults and checks the detailed setup against
-// the card sets and the number of players.
-func checkOptions(o *protocol.Options, sets []engine.CardSet, players int) error {
+// the card sets and the number of players. The challenge must have
+// passed checkChallenge.
+func checkOptions(o *protocol.Options, codes []string, players int) error {
 	if o.Picking == "" {
 		o.Picking = protocol.PickRandom
 	}
@@ -89,6 +146,16 @@ func checkOptions(o *protocol.Options, sets []engine.CardSet, players int) error
 	case o.Rollback != "" && o.Rollback != protocol.RollbackSoft && o.Rollback != protocol.RollbackGod:
 		return fmt.Errorf("rollback is off, %q or %q (ADR 020)", protocol.RollbackSoft, protocol.RollbackGod)
 	}
+	sets := setsOf(codes)
+	if c, ok := cards.FindChallenge(o.Challenge); ok {
+		// A challenge's own cards are its setup, not the decks' (ADR 028).
+		set, _ := cards.ChallengeSet(c)
+		for _, b := range o.HostBans {
+			if slices.ContainsFunc(set.Cards, func(d engine.CardDef) bool { return d.Ref == b }) {
+				return fmt.Errorf("%s belongs to the challenge; it can't be banned", b)
+			}
+		}
+	}
 	all := characters(sets)
 	left := len(all) - o.BanRounds*players
 	for _, b := range o.HostBans {
@@ -106,12 +173,13 @@ func checkOptions(o *protocol.Options, sets []engine.CardSet, players int) error
 	// Deck ratios are on unless the host turns them off or the sets
 	// have too few cards for them (GS-07).
 	if !o.NoDeckRatios {
-		short, err := engine.RatioShortfall(engine.Setup{Players: players, Sets: sets, Banned: o.HostBans})
+		s := engineSetup(0, players, codes, *o)
+		short, err := engine.RatioShortfall(engine.Setup{Players: players, Sets: s.Sets, Banned: o.HostBans})
 		o.NoDeckRatios = err != nil || len(short) > 0
 	}
 	// Any card of the sets may be banned (GS-13); a trial deal shows the
-	// decks still fill the slots.
-	g, _, err := engine.NewGame(engine.Setup{Players: players, Sets: sets, Banned: o.HostBans, DeckRatios: !o.NoDeckRatios, Rooms: o.RoomDeck})
+	// decks still fill the slots, and a challenge sets itself up.
+	g, _, err := engine.NewGame(engineSetup(0, players, codes, *o))
 	if err != nil {
 		return err
 	}

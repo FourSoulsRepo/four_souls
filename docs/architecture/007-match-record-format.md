@@ -55,6 +55,9 @@ Use options 1 and 5.
    14. The header keeps the rollback mode (`rollback`).
    15. Events hold messages, a key and values, never words (ADR 021).
    16. The setup also says `room_deck` when the game played with rooms (R-SETUP-16).
+   17. The setup says `challenge` and `difficulty` in a challenge (ADR 028).
+   18. Its card set is not among `sets`; the challenge brings it.
+   19. A lost challenge ends finished with no `winners`.
 3. Writing
    1. Lines are flushed once a second, and at every stop (18.17).
       1. A crash leaves a readable record without `end`, up to a second short.
@@ -72,6 +75,7 @@ Use options 1 and 5.
    4. A record with rollbacks replays its live steps (`Record.Live`).
    5. Undone steps stay in the file; replay leaves them out.
    6. Records of engines before 0.4.0 cannot replay: messages changed the state (16.4).
+   7. A challenge record: the challenge's own set goes after the header's sets.
 
 ## Consequences
 

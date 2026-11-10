@@ -81,6 +81,28 @@ func (a *App) CardSets() []string {
 	return codes
 }
 
+// ChallengeInfo is a challenge the host screen offers (ADR 028,
+// Decision 10.7): its ID and difficulties, easiest first. The client
+// names them; a server that lacks one refuses it at create.
+type ChallengeInfo struct {
+	ID           string   `json:"id"`
+	Difficulties []string `json:"difficulties"`
+}
+
+// Challenges lists the challenges this app knows, like CardSets lists
+// its sets.
+func (a *App) Challenges() []ChallengeInfo {
+	var out []ChallengeInfo
+	for _, c := range cards.Challenges() {
+		info := ChallengeInfo{ID: c.ID}
+		for _, l := range c.Levels {
+			info.Difficulties = append(info.Difficulties, l.Difficulty)
+		}
+		out = append(out, info)
+	}
+	return out
+}
+
 // DeckRatios says why a game with these sets and players can't use the
 // deck ratios, or "" when it can (GS-07). The host screen shows it as
 // the reason the box is off. The reason is a JSON list of messages

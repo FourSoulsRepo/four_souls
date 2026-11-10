@@ -304,6 +304,7 @@ w.go = {
       // ?requiem adds Requiem, the only set the deck ratios need; other
       // tests keep the older sets.
       CardSets: () => Promise.resolve(['b2', 'g2', 'fsp2', ...(params.has('requiem') ? ['r'] : [])]),
+      Challenges: () => Promise.resolve([{ id: 'krampus', difficulties: ['normal', 'hard', 'ultra'] }]),
       // Go's answer for today's card data (App.DeckRatios): the ratios
       // need Requiem, and Four Souls+ too in a 2-player game.
       DeckRatios: (sets: string[], players: number) =>

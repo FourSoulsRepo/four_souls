@@ -286,3 +286,40 @@ func TestRollbackLines(t *testing.T) {
 		t.Errorf("after a last rollback: %+v", got)
 	}
 }
+
+// TestChallengeSetup: a challenge record keeps its challenge and
+// difficulty, and a lost one ends finished with no winners; a regular
+// record leaves both fields out (ADR 028, Decision 10.5).
+func TestChallengeSetup(t *testing.T) {
+	for _, c := range []struct{ challenge, difficulty string }{{"krampus", "hard"}, {"", ""}} {
+		path := filepath.Join(t.TempDir(), "g1"+Ext)
+		h := header()
+		h.Setup.Challenge, h.Setup.Difficulty, h.Setup.BonusSouls = c.challenge, c.difficulty, false
+		w, err := Create(path, h)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if cerr := w.Close(End{Finished: true}); cerr != nil {
+			t.Fatal(cerr)
+		}
+		rec, err := ReadFile(path)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if s := rec.Header.Setup; s.Challenge != c.challenge || s.Difficulty != c.difficulty {
+			t.Errorf("setup %+v, want %+v", s, c)
+		}
+		if rec.End == nil || !rec.End.Finished || len(rec.End.Winners) != 0 {
+			t.Errorf("end %+v", rec.End)
+		}
+		line, err := json.Marshal(rec.Header.Setup)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for _, field := range []string{`"challenge"`, `"difficulty"`} {
+			if has := bytes.Contains(line, []byte(field)); has != (c.challenge != "") {
+				t.Errorf("setup %s: %s field %v", line, field, has)
+			}
+		}
+	}
+}

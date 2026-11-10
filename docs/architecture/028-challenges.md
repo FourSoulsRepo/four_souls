@@ -143,7 +143,15 @@ Use options 1, 4 and 5.
    4. It turns bonus souls off in a challenge.
    5. Record setup: `challenge` and `difficulty` (ADR 007).
    6. Saves and the seamless restart keep them (ADR 019).
-   7. A server message lists the challenges it knows, for the host screen.
+   7. The host screen lists the challenges from the app (`App.Challenges`), like card sets.
+   8. Each: ID and difficulties; the client names them (`challenge.name.<id>`).
+   9. A server that lacks one refuses it at create: `error.no_challenge` (14.23).
+   10. Other refusals: `error.no_difficulty`, `error.challenge_seats`; code `bad_setup`.
+   11. Table, game list, saves and records keep only the playable set codes.
+   12. The challenge in the options brings its set back (`gameSets`, last).
+   13. `GameInfo` carries `challenge` and `difficulty`.
+   14. A host ban of a challenge card is refused.
+   15. A lost challenge is a finished game: record `end` finished, no winners.
 11. Client
    1. Host screen: "Game mode" select; then challenge and difficulty selects.
    2. Table: the final boss left of the monster slots.

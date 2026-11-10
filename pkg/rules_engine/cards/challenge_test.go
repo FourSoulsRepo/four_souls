@@ -66,7 +66,7 @@ func TestKrampusCards(t *testing.T) {
 }
 
 // ADR 028, Decision 3: the challenge list; each level names a boss and
-// a rule card of the challenge's own set.
+// a rule card of the challenge's own set, which ChallengeSet finds.
 func TestChallenges(t *testing.T) {
 	c, ok := FindChallenge("krampus")
 	if !ok || c != Challenges()[0] {
@@ -75,10 +75,9 @@ func TestChallenges(t *testing.T) {
 	if _, ok := FindChallenge("nope"); ok {
 		t.Error("found an unknown challenge")
 	}
-	sets := map[string]engine.CardSet{challenge.Set.Code: challenge.Set}
 	for _, c := range Challenges() {
-		set, ok := sets[c.Set]
-		if !ok || c.ID == "" || len(c.Levels) == 0 || c.Setup == nil {
+		set, ok := ChallengeSet(c)
+		if !ok || set.Code != c.Set || c.ID == "" || len(c.Levels) == 0 || c.Setup == nil {
 			t.Errorf("%s: set %q, %d levels", c.ID, c.Set, len(c.Levels))
 		}
 		kinds := map[engine.CardRef]engine.CardKind{}

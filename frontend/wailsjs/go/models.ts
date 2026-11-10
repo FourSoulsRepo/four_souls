@@ -234,6 +234,20 @@ export namespace main {
 	        this.image = source["image"];
 	    }
 	}
+	export class ChallengeInfo {
+	    id: string;
+	    difficulties: string[];
+	
+	    static createFrom(source: any = {}) {
+	        return new ChallengeInfo(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.difficulties = source["difficulties"];
+	    }
+	}
 	export class DiceSkin {
 	    id: string;
 	    name: string;

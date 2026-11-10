@@ -1101,6 +1101,22 @@
     "text": "Put this card on the bottom of its deck?",
     "note": "Card question while XII. The Hanged Man resolves."
   },
+  "challenge.difficulty.hard": {
+    "text": "Hard",
+    "note": "A challenge's difficulty, in the game list, the table screen and the host screen (ADR 028)."
+  },
+  "challenge.difficulty.normal": {
+    "text": "Normal",
+    "note": "A challenge's easiest difficulty, in the game list, the table screen and the host screen (ADR 028)."
+  },
+  "challenge.difficulty.ultra": {
+    "text": "Ultra Hard",
+    "note": "A challenge's hardest difficulty, in the game list, the table screen and the host screen (ADR 028)."
+  },
+  "challenge.name.krampus": {
+    "text": "How the Krampus Stole Christmas",
+    "note": "Name of the official co-op challenge (Maestro Media), in the game list, the table screen and the host screen."
+  },
   "choice.back": {
     "text": "Back to the choice",
     "note": "The bar of a hidden choice: button that shows the choice again."
@@ -1415,6 +1431,10 @@
     "text": "Card data: {error}",
     "note": "Status line when the app could not load its card data. error: the message from the app, in English."
   },
+  "error.challenge_seats": {
+    "text": "A challenge has exactly {n} seats.",
+    "note": "Error from the server, shown in the lobby. A new challenge game asked for another number of seats. n: the seats, 2."
+  },
   "error.client_outdated": {
     "text": "This app is older than the server. Update the app to play here.",
     "note": "Status line when the server speaks a newer protocol."
@@ -1455,9 +1475,17 @@
     "text": "No ban phase now.",
     "note": "Error from the server, shown in the lobby or on the table. A ban outside the ban phase."
   },
+  "error.no_challenge": {
+    "text": "This server has no challenge {challenge}.",
+    "note": "Error from the server, shown in the lobby. A new game asked for a challenge the server does not know, e.g. an older server. challenge: its ID, e.g. krampus."
+  },
   "error.no_connection": {
     "text": "Could not connect to the server.",
     "note": "Status line when no server answered at the typed address."
+  },
+  "error.no_difficulty": {
+    "text": "The challenge has no difficulty {difficulty}.",
+    "note": "Error from the server, shown in the lobby. A new game asked for a difficulty the challenge lacks, or a difficulty without a challenge. difficulty: its ID, e.g. hard."
   },
   "error.no_game": {
     "text": "No game {game}.",
@@ -2730,6 +2758,10 @@
       "other": "{n} ban rounds"
     },
     "note": "Table screen, setup summary. n: rounds of character bans."
+  },
+  "lobby.options.challenge": {
+    "text": "Challenge: {challenge}, {difficulty}",
+    "note": "Game list and table screen: the game is a co-op challenge. challenge: its name; difficulty: Normal, Hard or Ultra Hard."
   },
   "lobby.options.deck_ratios": {
     "text": "deck ratios",

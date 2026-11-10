@@ -143,6 +143,7 @@ Use options 1, 3, 5 and 10.
    35. `update` → `rollback_cut`: the step where a server restart cut the history.
    36. The host sends `end`: the game stops unfinished (19.84).
    37. All get `notice` `game_ended`; an away player when they return.
+   38. `create` options and `games` carry `challenge` and `difficulty` (ADR 028).
 9. Playing over the internet, until a relay exists
    1. A virtual LAN (Tailscale, ZeroTier, Hamachi, Radmin VPN), or port forwarding.
    2. Or a dedicated server on a rented VPS.

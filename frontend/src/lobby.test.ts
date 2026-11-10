@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { autoJoinStep, canCreate, emptyLobby, lanRows, oneOpenGame, leftTable, forgotten, lost, onMessage, optionsText, remember, renamed, serverLabel, upText, type Session } from './lobby';
+import { autoJoinStep, canCreate, challengeText, emptyLobby, lanRows, oneOpenGame, leftTable, forgotten, lost, onMessage, optionsText, remember, renamed, serverLabel, upText, type Session } from './lobby';
 import type { Table } from './protocol';
 
 const start: Session = { screen: 'join', lobby: emptyLobby, game: null, error: '' };
@@ -145,6 +145,18 @@ describe('optionsText', () => {
     expect(optionsText({ no_deck_ratios: true, random_seats: true })).toBe('Random characters · random seats');
     // The room deck (14.13).
     expect(optionsText({ no_deck_ratios: true, room_deck: true })).toBe('Random characters · room deck');
+    // A challenge comes first; its bonus souls are always off (ADR 028).
+    expect(optionsText({ no_deck_ratios: true, no_bonus_souls: true, challenge: 'krampus', difficulty: 'ultra' })).toBe(
+      'Challenge: How the Krampus Stole Christmas, Ultra Hard · Random characters',
+    );
+  });
+});
+
+describe('challengeText', () => {
+  it('names the challenge and its difficulty; an unknown one by its ID', () => {
+    expect(challengeText('krampus', 'normal')).toBe('Challenge: How the Krampus Stole Christmas, Normal');
+    expect(challengeText('krampus', 'hard')).toBe('Challenge: How the Krampus Stole Christmas, Hard');
+    expect(challengeText('newer', 'hard')).toBe('Challenge: newer, Hard');
   });
 });
 

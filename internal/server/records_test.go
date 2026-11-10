@@ -73,21 +73,7 @@ func TestRecordReplays(t *testing.T) {
 	if rec.Header.Server != "Basement" {
 		t.Errorf("record server %q", rec.Header.Server)
 	}
-	s := rec.Header.Setup
-	setup := engine.Setup{Seed: s.Seed, Players: s.Players, BonusSouls: s.BonusSouls}
-	for _, code := range s.Sets {
-		set, ok := cards.Find(code)
-		if !ok {
-			t.Fatalf("unknown set %s", code)
-		}
-		setup.Sets = append(setup.Sets, set)
-	}
-	for _, c := range s.Characters {
-		setup.Characters = append(setup.Characters, engine.CardRef(c))
-	}
-	for _, c := range s.Banned {
-		setup.Banned = append(setup.Banned, engine.CardRef(c))
-	}
+	setup := replaySetup(t, rec.Header.Setup)
 	var steps []engine.StepRecord
 	throws := 0
 	for _, st := range rec.Steps {
@@ -106,6 +92,39 @@ func TestRecordReplays(t *testing.T) {
 	if _, err := engine.Replay(setup, steps); err != nil {
 		t.Fatalf("the record does not replay: %v", err)
 	}
+}
+
+// replaySetup rebuilds a game's engine setup from its record header, as
+// a replayer does (ADR 007, item 5.1): the sets, then the challenge's
+// own set, which the header's sets leave out (ADR 028).
+func replaySetup(t *testing.T, s record.Setup) engine.Setup {
+	t.Helper()
+	setup := engine.Setup{
+		Seed: s.Seed, Players: s.Players, BonusSouls: s.BonusSouls,
+		DeckRatios: s.DeckRatios, Rooms: s.RoomDeck, Difficulty: s.Difficulty,
+	}
+	for _, code := range s.Sets {
+		set, ok := cards.Find(code)
+		if !ok {
+			t.Fatalf("unknown set %s", code)
+		}
+		setup.Sets = append(setup.Sets, set)
+	}
+	if s.Challenge != "" {
+		c, ok := cards.FindChallenge(s.Challenge)
+		if !ok {
+			t.Fatalf("unknown challenge %s", s.Challenge)
+		}
+		set, _ := cards.ChallengeSet(c)
+		setup.Challenge, setup.Sets = c, append(setup.Sets, set)
+	}
+	for _, c := range s.Characters {
+		setup.Characters = append(setup.Characters, engine.CardRef(c))
+	}
+	for _, c := range s.Banned {
+		setup.Banned = append(setup.Banned, engine.CardRef(c))
+	}
+	return setup
 }
 
 // TestDownloadRecord: only the game's players, only after it is over

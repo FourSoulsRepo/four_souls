@@ -15,7 +15,6 @@ import (
 	"github.com/FourSoulsRepo/four_souls/internal/protocol"
 	"github.com/FourSoulsRepo/record"
 	engine "github.com/FourSoulsRepo/rules_engine"
-	"github.com/FourSoulsRepo/rules_engine/cards"
 )
 
 // bot is a headless test client over a real WebSocket (6.10).
@@ -238,18 +237,7 @@ func checkRecord(t *testing.T, path string) {
 	if rec.End == nil || !rec.End.Finished || len(rec.End.Winners) == 0 {
 		t.Fatalf("record end %+v", rec.End)
 	}
-	s := rec.Header.Setup
-	setup := engine.Setup{Seed: s.Seed, Players: s.Players, BonusSouls: s.BonusSouls}
-	for _, code := range s.Sets {
-		set, _ := cards.Find(code)
-		setup.Sets = append(setup.Sets, set)
-	}
-	for _, c := range s.Characters {
-		setup.Characters = append(setup.Characters, engine.CardRef(c))
-	}
-	for _, c := range s.Banned {
-		setup.Banned = append(setup.Banned, engine.CardRef(c))
-	}
+	setup := replaySetup(t, rec.Header.Setup)
 	steps := make([]engine.StepRecord, len(rec.Steps))
 	for i, st := range rec.Steps {
 		if jerr := json.Unmarshal(st.Intent, &steps[i].Intent); jerr != nil {

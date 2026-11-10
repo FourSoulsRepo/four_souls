@@ -96,3 +96,12 @@ func TestCardSetsSkipChallenges(t *testing.T) {
 		t.Errorf("the challenge set is offered: %v", sets)
 	}
 }
+
+// TestChallenges: the host screen learns the challenges from the app,
+// like the card sets (ADR 028, Decision 10.7).
+func TestChallenges(t *testing.T) {
+	got := (&App{}).Challenges()
+	if len(got) != 1 || got[0].ID != "krampus" || !slices.Equal(got[0].Difficulties, []string{"normal", "hard", "ultra"}) {
+		t.Errorf("challenges %+v", got)
+	}
+}

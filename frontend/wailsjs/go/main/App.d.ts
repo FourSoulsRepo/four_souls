@@ -14,6 +14,8 @@ export function CardSets():Promise<Array<string>>;
 
 export function Cards():Promise<Array<cardinfo.CardInfo>>;
 
+export function Challenges():Promise<Array<main.ChallengeInfo>>;
+
 export function CheckSeat(arg1:Array<string>,arg2:string):Promise<protocol.SeatInfo>;
 
 export function DeckRatios(arg1:Array<string>,arg2:number):Promise<string>;
