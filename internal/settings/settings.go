@@ -99,7 +99,18 @@ type HostSetup struct {
 	// DraftSize is the characters a draft offers each player; 0: the
 	// default.
 	DraftSize int `json:"draft_size"`
+	// Mode is the game mode (ADR 028): "" a regular game, ModeChallenge
+	// a co-op challenge. An older file without it loads a regular game.
+	Mode string `json:"mode"`
+	// Challenge and Difficulty are the last challenge and its difficulty,
+	// e.g. "krampus" and "hard"; "": not set yet. The host screen checks
+	// them against the challenges the app knows.
+	Challenge  string `json:"challenge"`
+	Difficulty string `json:"difficulty"`
 }
+
+// ModeChallenge is the host screen's challenge mode (ADR 028).
+const ModeChallenge = "challenge"
 
 // ResponseTimers are the host screen's response timer choices; 0 is off.
 var ResponseTimers = []int{0, 60, 90, 120, 180}
@@ -129,6 +140,15 @@ func (h HostSetup) clean() HostSetup {
 	}
 	if h.DraftSize < MinDraft || h.DraftSize > MaxDraft {
 		h.DraftSize = 0
+	}
+	if h.Mode != ModeChallenge {
+		h.Mode = ""
+	}
+	if !setCode.MatchString(h.Challenge) {
+		h.Challenge = ""
+	}
+	if !setCode.MatchString(h.Difficulty) {
+		h.Difficulty = ""
 	}
 	if h.Sets != nil {
 		sets := []string{}

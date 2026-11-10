@@ -448,6 +448,9 @@ export namespace settings {
 	    rollback: string;
 	    picking: string;
 	    draft_size: number;
+	    mode: string;
+	    challenge: string;
+	    difficulty: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new HostSetup(source);
@@ -466,6 +469,9 @@ export namespace settings {
 	        this.rollback = source["rollback"];
 	        this.picking = source["picking"];
 	        this.draft_size = source["draft_size"];
+	        this.mode = source["mode"];
+	        this.challenge = source["challenge"];
+	        this.difficulty = source["difficulty"];
 	    }
 	}
 	export class RecentServer {

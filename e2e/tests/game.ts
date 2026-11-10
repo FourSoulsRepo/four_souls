@@ -94,6 +94,11 @@ export async function startGame(
     // pick plays a draft's pick screen (14.11) once everyone is ready;
     // the game starts when it returns.
     pick = undefined as ((pages: Page[]) => Promise<void>) | undefined,
+    // listed runs on each guest page once the game's row is in its list,
+    // before Join: a test checks what the list shows.
+    listed = (_: Locator) => Promise.resolve(),
+    // seated runs on each guest page at the table, before Ready.
+    seated = (_: Page) => Promise.resolve(),
   } = {},
 ): Promise<Page[]> {
   const pages: Page[] = [];
@@ -136,8 +141,10 @@ export async function startGame(
     // a started game's disabled Join (19.14).
     const join = lobbyGame(page, id).getByRole('button', { name: tr('lobby.join') });
     await expect(join).toBeEnabled();
+    await listed(lobbyGame(page, id));
     await join.dispatchEvent('click');
     await expect(page.getByRole('list', { name: tr('lobby.seats.seats') })).toBeVisible();
+    await seated(page);
   }
   for (const page of pages) {
     await page.getByRole('button', { name: tr('lobby.seats.ready'), exact: true }).click();

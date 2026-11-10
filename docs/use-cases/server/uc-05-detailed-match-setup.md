@@ -33,6 +33,7 @@
     2. Picking, bans, rooms, deck ratios, timer, rollback and random seats still work.
     3. Saves, the seamless restart and the record keep the challenge.
     4. A lost challenge ends the game; the record has no winners.
+    5. The host screen picks it in "Game mode" (UC-41); bonus souls hidden.
 
 ## Alternative scenarios and errors
 

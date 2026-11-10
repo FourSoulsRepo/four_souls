@@ -233,6 +233,31 @@ func TestHostSetupRemembered(t *testing.T) {
 	}
 }
 
+// The host screen remembers the game mode, challenge and difficulty
+// (ADR 028, 14.24); a file from before them loads a regular game.
+func TestHostGameModeRemembered(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "settings.json")
+	old := `{"nickname":"Ann","host":{"seats":3,"sets":["b2"],"detailed":true}}`
+	if err := os.WriteFile(path, []byte(old), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if got := Load(path).Host; got.Mode != "" || got.Challenge != "" || got.Difficulty != "" || got.Seats != 3 {
+		t.Errorf("old host setup = %+v, want a regular game", got)
+	}
+	in := Load(path)
+	in.Host.Mode, in.Host.Challenge, in.Host.Difficulty = ModeChallenge, "krampus", "hard"
+	if _, err := Save(path, in); err != nil {
+		t.Fatal(err)
+	}
+	if got := Load(path).Host; got.Mode != ModeChallenge || got.Challenge != "krampus" || got.Difficulty != "hard" {
+		t.Errorf("host setup = %+v, want the Krampus challenge at Hard", got)
+	}
+	in.Host.Mode, in.Host.Challenge, in.Host.Difficulty = "chaos", "Bad ID", "very hard"
+	if out, err := Save(path, in); err != nil || out.Host.Mode != "" || out.Host.Challenge != "" || out.Host.Difficulty != "" {
+		t.Errorf("bad values: %+v, %v; want them dropped", out.Host, err)
+	}
+}
+
 // End turn asks by default (V-46); the switch to stop it is kept.
 func TestNoEndTurnAsk(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "settings.json")

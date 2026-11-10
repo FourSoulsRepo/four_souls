@@ -2522,6 +2522,14 @@
     "text": "Bonus souls",
     "note": "Host screen: check box; the game uses bonus soul cards."
   },
+  "host.challenge": {
+    "text": "Challenge",
+    "note": "Host screen: label of the list of co-op challenges, e.g. How the Krampus Stole Christmas (ADR 028). Shows when the game mode is Challenge."
+  },
+  "host.challenge_seats": {
+    "text": "A challenge is played by exactly {n} players, together.",
+    "note": "Host screen: line under the locked player count when the game mode is Challenge. n: the players, 2."
+  },
   "host.continue_saved": {
     "text": "Continue a saved game",
     "note": "Host screen: button that hosts a game saved before."
@@ -2538,6 +2546,10 @@
     "text": "Detailed setup",
     "note": "Host screen: check box that shows the options below it."
   },
+  "host.difficulty": {
+    "text": "Difficulty",
+    "note": "Host screen: label of the challenge's difficulty list: Normal, Hard or Ultra Hard (ADR 028)."
+  },
   "host.draft_size": {
     "text": "Characters offered",
     "note": "Host screen, detailed setup: label of the select for how many characters each player picks from in a draft."
@@ -2545,6 +2557,18 @@
   "host.host": {
     "text": "Host",
     "note": "Host screen: button that starts hosting the game in this app."
+  },
+  "host.mode": {
+    "text": "Game mode",
+    "note": "Host screen: label of the list of game modes: a regular game or a co-op challenge (ADR 028)."
+  },
+  "host.mode_challenge": {
+    "text": "Challenge",
+    "note": "Host screen, option of 'Game mode': 2 players play together against the game, e.g. How the Krampus Stole Christmas."
+  },
+  "host.mode_regular": {
+    "text": "Regular game",
+    "note": "Host screen, option of 'Game mode': the usual game, the first to the soul goal wins (the default)."
   },
   "host.on_server": {
     "text": "On the server {address}",

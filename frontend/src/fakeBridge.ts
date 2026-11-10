@@ -57,7 +57,7 @@ function loadSettings(): unknown {
     dice: 'tear',
     no_end_turn_ask: params.has('noendask'),
     rejoin: { address: '', token: '', game: '', via: '' },
-    host: { seats: 0, sets: null, detailed: false, response_timer: 0, no_bonus_souls: false, no_deck_ratios: false, room_deck: false, random_seats: false, rollback: '', picking: '', draft_size: 0 },
+    host: { seats: 0, sets: null, detailed: false, response_timer: 0, no_bonus_souls: false, no_deck_ratios: false, room_deck: false, random_seats: false, rollback: '', picking: '', draft_size: 0, mode: '', challenge: '', difficulty: '' },
     lan_address: '',
     // make screenshots LOCALE=qps starts every page in that language.
     language: import.meta.env.VITE_LOCALE ?? '',
@@ -88,6 +88,11 @@ interface FakeSettings {
     room_deck?: boolean;
     random_seats?: boolean;
     rollback?: string;
+    picking?: string;
+    draft_size?: number;
+    mode?: string;
+    challenge?: string;
+    difficulty?: string;
   };
   lan_address?: string;
   language?: string;

@@ -743,7 +743,7 @@ Alt art (CD-11) comes after all sets.
    14. Tests: `internal/server/challenge_test.go`; record and app tests.
    15. Test helper `replaySetup` rebuilds a setup from a record header.
 
-### [ ] 14.24 Client: game mode in the host screen
+### [x] 14.24 Client: game mode in the host screen
 
 1. Goal: the host picks "Regular game" or "Challenge".
 2. Tasks:
@@ -757,6 +757,22 @@ Alt art (CD-11) comes after all sets.
 3. Done when:
    1. e2e test: host a Krampus challenge; the game list shows it.
    2. Use case for hosting a challenge.
+4. Result (2026-11-10):
+   1. "Game mode" in the simple setup, above Players: Regular game, Challenge.
+   2. Challenge: challenge and difficulty selects beside it, from `getChallenges()`.
+   3. Players show 2, locked, with a line under it; Bonus souls hidden.
+   4. Every other detailed option stays; the host screen has no ban list yet.
+   5. `hostSetup.ts`: `pickChallenge`, `createOptions`; Vitest tests.
+   6. A challenge sends `challenge` and `difficulty` without Detailed too.
+   7. It sends no `no_bonus_souls`; the server plays without them.
+   8. Host settings: `mode`, `challenge`, `difficulty`; Go, TS mirror, fake bridge.
+   9. An old settings file loads Regular game; Go test.
+   10. Item 6: English only; the interface is English only (16.6).
+   11. Selects have `aria-label`s: "Challenge" is also a mode option.
+   12. The joiner's game list and table line name the challenge (14.23).
+   13. e2e `challenge-host.spec.ts`: Krampus at Hard; a regular game unchanged.
+   14. `startGame` hooks `listed` and `seated` check a guest before Join and Ready.
+   15. New UC-41; UC-03 and UC-05 point to it; wiki Client.
 
 ### [ ] 14.25 Client: the challenge table
 
