@@ -375,7 +375,7 @@ Alt art (CD-11) comes after all sets.
        1. The tools fetched only loot, treasure and monster backs.
        2. The app served only those three kinds (`backKinds`).
        3. Tools: `backs` also fetches `RoomCardBack.png` (landscape).
-       4. Images: `assets/backs/room.webp`, 600×440 like the rooms.
+       4. Images: `assets/backs/room.webp`, landscape like the rooms (818×600 since 14.16).
        5. App: `backKinds` has `room`; without the images it stays plain.
 
 ### [ ] 14.14 Attack a player or an item
@@ -410,3 +410,30 @@ Alt art (CD-11) comes after all sets.
    2. **Owner:** the tools fetch the back images now (2026-10-27).
 5. Owner notes (2026-10-27)
    1. Owner marks 14.15 solved.
+
+### [x] 14.16 Landscape cards at full quality
+
+1. Goal: a landscape card is as sharp as a portrait one (owner, 2026-11-10).
+2. Tasks:
+   1. Tools: `resize` limits the width to 600 px, whatever the shape.
+   2. A portrait card is 600×818; a room is only 600×440.
+   3. The board and zoom draw a room 88/63 wider than a portrait card.
+   4. So a room has fewer pixels per screen pixel; its zoom is blurry.
+   5. Card images and backs: limit the short side to 600 px instead.
+   6. Portrait cards stay 600×818; landscape ones become 818×600.
+   7. `assets` (mats, dice) keeps its width limit.
+   8. Regenerate every landscape image: the rooms and the room back.
+   9. Translated room images too, if any.
+3. Done when:
+   1. Tools test: a landscape card resizes to 818×600.
+   2. Every room image and the room back are 818×600.
+   3. No portrait image changes.
+4. Result (owner's jump ahead, 2026-11-10):
+   1. Tools: `resizeCard` limits the short side; `images` and `backs` use it.
+   2. `assets` keeps `resize`, the width limit, for mats and dice.
+   3. Test `TestResizeCard`: 962×1312 to 600×818, 1312×962 to 818×600.
+   4. Only Requiem has landscape cards: 61 rooms; no translated images.
+   5. Reran `images -origin r` and `backs`: 62 files changed, all landscape.
+   6. Every portrait image came out byte-identical.
+   7. gosec flagged two temp-file writes after the change (G703); marked, with the reason.
+   8. The images wait in the private repo for the owner's amend and push.

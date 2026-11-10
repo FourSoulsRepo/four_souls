@@ -212,6 +212,7 @@ Step 20 done (owner, 2026-11-09); its open bugs go to play tests.
 14. Requiem: rooms on the table (14.13).
 15. Requiem: attack a player or an attackable item in the app (14.14).
 16. Requiem: two-sided cards (14.15).
+17. Landscape cards as sharp as portrait ones (14.16).
 
 ## 15. Visual refresh
 

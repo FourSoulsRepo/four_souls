@@ -8,7 +8,7 @@ What the tools do, in short:
 2. Read copies per card from the official Tabletop Simulator table.
 3. `scraper copies` finds the numbered page of every copy on foursouls.com, so each copy gets its own image.
 4. `scraper build -game <this repo>` merges all of it with `pkg/card_db/overrides/<set>.json` and writes `pkg/card_db/data/<set>.json` (format: ADR 004 and ADR 010).
-5. `scraper images -game <this repo>` writes 600 px WebP images to `pkg/card_db/images/en/<set>/`, one per copy when copies differ.
+5. `scraper images -game <this repo>` writes WebP images to `pkg/card_db/images/en/<set>/`, one per copy when copies differ: 600 px on the short side, so a portrait card is 600×818 and a room 818×600 (14.16).
 6. `scraper fonts -game <this repo>` writes the game's fonts to `pkg/card_db/images/assets/fonts/`.
 7. `scraper ru-names -migrations <dir> -game <this repo>` writes Russian card names and their translators (16.5); see below.
 
