@@ -4783,3 +4783,23 @@ Totals by system (146 items):
    16. Engine stays 0.5.3: not released yet (as 19.150).
    17. No replay cutoff: only games with such an attack differ (as 19.150).
    18. No screen change beyond the order: no screenshots.
+
+### [ ] 19.152 e2e: Requiem attack and room tests stall on webkit
+
+1. Goal: `attack-targets.spec.ts` and `rooms.spec.ts` pass in full webkit runs.
+2. Report (main agent, 2026-11-10)
+   1. Found by the 14.21 agent's `make e2e` gates; webkit only.
+   2. Run 1: "Punching Bag can be attacked", "a helper's extra attack roll".
+   3. Run 2: "a room on the table".
+   4. Error: "the game never settled", or the test timeout.
+   5. Each failed test passed when run alone.
+   6. Repeat: both specs, webkit, 5 workers, 5 repeats: 1 of 20 failed.
+   7. That one: the helper's roll test; turn 1, Attack disabled.
+   8. The page waited for Ed after Sibling Rivalry resolved.
+   9. The tests are from 14.13 and 14.14, before the challenge work.
+   10. 14.20's full run (before 14.21) passed; unknown if by luck.
+   11. Evidence: `.cache/e2e-evidence/19.152-run1` – `run3` (not in git).
+3. Tasks:
+   1. Find the cause from the evidence; compare with the commit before 14.21.
+   2. Fix the app, the engine or the test; no ban without a reason (CLAUDE.md 5.16).
+   3. Check: both specs, webkit, 5 workers, 10 repeats, all pass.
