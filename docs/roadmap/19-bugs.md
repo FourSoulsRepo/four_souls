@@ -4840,3 +4840,16 @@ Totals by system (147 items):
    1. Before: both specs, webkit, 5 workers, 10 repeats: 12 of 40 failed (run 4).
    2. After: the same run, 40 of 40 passed.
    3. `make lint test frontend e2e` pass (exit 0); e2e 522 passed, 6 skipped.
+
+### [ ] 19.153 e2e: a card zoom shows while the aiming pointer moves
+
+1. Goal: `arrow.spec.ts:62` passes in full runs.
+2. Report (14.24 agent, 2026-11-11)
+   1. `make e2e` run 1 of 14.24, chromium; 525 passed, this one failed.
+   2. Line 123: a card zoom showed while the pointer was moving.
+   3. The spec passed 3 times in a row alone; run 2 passed in full.
+   4. Unrelated to the host screen change.
+   5. Evidence: `.cache/e2e-evidence/14.24-run1` (not in git).
+3. Tasks:
+   1. Find the cause from the evidence; fix the app or the test.
+   2. Check: the spec, both browsers, 5 workers, 10 repeats, all pass.
