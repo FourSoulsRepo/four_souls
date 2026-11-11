@@ -1140,3 +1140,29 @@ Alt art (CD-11) comes after all sets.
       3. Cause: `giveIn` in `saves.ts` sets a slot's card without checking the others.
       4. Evidence: `.cache/e2e-evidence/14.34-run1/`; reported to the owner.
    9. `make e2e` run 2: 542 passed, 18 skipped, both browsers.
+
+### [x] 14.35 Halloween game mat
+
+1. Goal: a Halloween mat, to play Trick or Treat in the mood.
+2. Tasks:
+   1. Owner's request, 2026-11-11.
+   2. A Halloween look of the Basement mat: image in the private images.
+   3. `assets/mats/halloween.webp`; the mat menu lists it from the file (V-24).
+   4. A Halloween color mat, so a build without images shows its colors.
+   5. Its name in `en.json`; UC-10 and the wiki Client page name it.
+3. Done when:
+   1. The mat menu offers it, with and without the images.
+   2. Vitest and e2e cover the choice; screenshots for review.
+4. Result (2026-11-11):
+   1. `halloween.webp`: Basement recolored to a purple night, 3840×1920, 201 KB.
+      1. Drawn on it: jack-o'-lanterns with a glow, bats, cobwebs, candy corn.
+      2. The trapdoor and the heart marks stay clear.
+      3. Made by a one-off Pillow script; not kept in this repo.
+   2. Color mat `halloween`: Go `ColorMats`, `colorMats` in `mats.ts`.
+      1. `.mat-halloween`: a pumpkin glow in a purple night.
+      2. The image takes its place in the menu, as for Basement.
+   3. `mat.halloween` in `en.json`; the fake bridge lists the image.
+   4. Tests: Vitest `mats`; e2e table with the mat, menu, colors without images.
+   5. Screenshot: `.cache/screenshots/screen-table-mat-halloween.png`.
+   6. UC-10 3e and wiki Client name it.
+   7. `make e2e`: 544 passed, 18 skipped, both browsers.

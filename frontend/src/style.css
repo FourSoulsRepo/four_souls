@@ -66,6 +66,13 @@ button {
   background: var(--mat-colors);
 }
 
+/* Halloween (14.35): a pumpkin glow in the middle of a purple night. */
+.mat-halloween {
+  --mat-colors: radial-gradient(ellipse at center, #8a4a2a 0%, #4a2a40 55%, #1e1028 100%);
+
+  background: var(--mat-colors);
+}
+
 /* A mat image (V-24) over its colors, which show if it fails to load.
    The shade keeps cards and text readable on a busy picture. */
 .mat-image {

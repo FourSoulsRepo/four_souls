@@ -93,12 +93,27 @@ test('a mat image lies under the table', async ({ browser }) => {
   await shot(mat, 'table-mat');
 });
 
+// The Halloween mat (14.35): its image, or its own colors without it.
+test('the Halloween mat lies under the table', async ({ browser }) => {
+  const [mat] = await startGame(browser, ['Mat', 'Ned'], { url: `${appURL()}&mat=halloween` });
+  if (!mat) {
+    throw new Error('no pages');
+  }
+  const table = mat.getByRole('main', { name: new RegExp(`^${trRe('game.turn').source}`) });
+  await expect(table).toHaveClass(/mat-halloween mat-image/);
+  const background = await table.evaluate((el) => getComputedStyle(el).backgroundImage);
+  expect(background).toContain('/cardimg/assets/mats/halloween.webp');
+  // The colors under the image: the pumpkin glow in the middle.
+  expect(background).toContain('rgb(138, 74, 42)');
+  await shot(mat, 'table-mat-halloween');
+});
+
 test('the mat menu lists the mat images', async ({ page }) => {
   await realAssets(page);
   await page.goto('/?fake&nosplash');
   await page.getByRole('button', { name: tr('menu.settings') }).click();
   const mats = page.getByRole('combobox', { name: tr('settings.mat') });
-  await expect(mats.getByRole('option')).toHaveText([tr('mat.basement'), tr('mat.cathedral')]);
+  await expect(mats.getByRole('option')).toHaveText([tr('mat.basement'), tr('mat.cathedral'), tr('mat.halloween')]);
   await mats.selectOption('basement');
   await expect(page.getByLabel(tr('settings.mat_preview'))).toHaveClass(/mat-image/);
   await shot(page, 'settings-mat');
@@ -117,6 +132,7 @@ test('without mat images the table shows colors', async ({ browser }) => {
   for (const [query, colors] of [
     ['&nomats', 'mat-basement'],
     ['&nomats&mat=cathedral', 'mat-cathedral'],
+    ['&nomats&mat=halloween', 'mat-halloween'],
     // Green felt is gone (ST-08): a saved one is the default.
     ['&nomats&mat=felt', 'mat-basement'],
     ['&mat=dark_room', 'mat-basement'],

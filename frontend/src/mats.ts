@@ -11,10 +11,18 @@ import { t } from './i18n';
 export const colorMats: readonly MatInfo[] = [
   { id: 'basement', name: '', image: '' },
   { id: 'cathedral', name: '', image: '' },
+  { id: 'halloween', name: '', image: '' },
 ];
 
 function colorName(id: string): string {
-  return id === 'cathedral' ? t('mat.cathedral') : t('mat.basement');
+  switch (id) {
+    case 'cathedral':
+      return t('mat.cathedral');
+    case 'halloween':
+      return t('mat.halloween');
+    default:
+      return t('mat.basement');
+  }
 }
 
 // matChoices lists the color mats, then the image mats; an image mat

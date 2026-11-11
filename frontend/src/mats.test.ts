@@ -6,12 +6,12 @@ const room = { id: 'dark_room', name: 'Dark room', image: '/cardimg/assets/mats/
 
 describe('matChoices', () => {
   it('lists the color mats without images', () => {
-    expect(matChoices([]).map((m) => m.id)).toEqual(['basement', 'cathedral']);
+    expect(matChoices([]).map((m) => m.id)).toEqual(['basement', 'cathedral', 'halloween']);
   });
 
   it('puts an image in place of its color mat and adds new ones', () => {
     const got = matChoices([room, basement]);
-    expect(got.map((m) => m.id)).toEqual(['basement', 'cathedral', 'dark_room']);
+    expect(got.map((m) => m.id)).toEqual(['basement', 'cathedral', 'halloween', 'dark_room']);
     expect(got[0]).toEqual(basement);
   });
 });
@@ -39,5 +39,10 @@ describe('matLook', () => {
   it('falls back to colors when the image is missing', () => {
     expect(matLook('basement', [])).toEqual({ className: 'mat-basement', style: {} });
     expect(matLook('dark_room', [])).toEqual({ className: 'mat-basement', style: {} });
+  });
+
+  it('draws the Halloween mat in its own colors without its image (14.35)', () => {
+    expect(matLook('halloween', [])).toEqual({ className: 'mat-halloween', style: {} });
+    expect(matChoices([]).find((m) => m.id === 'halloween')?.name).toBe('Halloween');
   });
 });
