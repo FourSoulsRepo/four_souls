@@ -53,6 +53,8 @@
     1. The active player throws it, then the attack roll.
     2. Changed rewards show on the monster as a ribbon and under its zoom.
     3. Gained abilities show as the copy mark on the monster.
+    4. Hard rolls 2x, Ultra Hard 3x: one mark per gained monster (19.157).
+    5. Hover on a mark zooms the gained monster; the monster's zoom names them all.
 15. Trick side: a monster dies; the Haunt loses a trick counter (R-TRICK-12).
     1. The Haunt's roll and the trick counter come at once.
     2. The active player orders them in the trigger order dialog.

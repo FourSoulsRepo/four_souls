@@ -36,13 +36,13 @@ This step never closes; new reports are appended.
 | A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95, 19.97, 19.104, 19.105, 19.144, 19.150, 19.151 | 21 |
 | B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90, 19.106 | 10 |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
-| D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74, 19.111, 19.147              | 6     |
+| D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74, 19.111, 19.147, 19.157      | 7     |
 | E  | Playback, animations, history            | Client     | 19.1, 19.3, 19.4, 19.6, 19.13, 19.41, 19.52, 19.54, 19.69, 19.130, 19.134, 19.136, 19.138, 19.139, 19.141 | 15 |
 | F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88, 19.99, 19.102, 19.118, 19.119 | 11    |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32, 19.148                                          | 2     |
 | I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122, 19.125, 19.126, 19.127, 19.120, 19.128, 19.132, 19.133, 19.137, 19.152, 19.154 | 37 |
-| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107, 19.117, 19.121, 19.140 | 22 |
+| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107, 19.117, 19.121, 19.140, 19.158 | 23 |
 | Q  | Load tool: a lost connection ends a game | Go tools   | 19.108, 19.131                                         | 2     |
 | K  | Build and release files                  | Release    | 19.47, 19.59, 19.83, 19.91                             | 4     |
 | L  | Not a bug: the app follows a ruling      | None       | 19.63, 19.129                                          | 2     |
@@ -56,15 +56,15 @@ This step never closes; new reports are appended.
 | U  | Save and load: a running effect lost     | Engine     | 19.143                                                 | 1     |
 | V  | Flow: an extra step the player must take | Client     | 19.149                                                 | 1     |
 
-Totals by system (148 items):
+Totals by system (150 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
 | Engine    | A, B, T, U | 33 |
 | Card data | C       | 2     |
-| Client    | D–G, O, P, S, V | 41 |
+| Client    | D–G, O, P, S, V | 42 |
 | Server    | H, N    | 3     |
-| e2e       | I, J    | 59    |
+| e2e       | I, J    | 60    |
 | Release   | K       | 4     |
 | None      | L       | 2     |
 | Go tests  | M       | 1     |
@@ -4909,6 +4909,7 @@ Totals by system (148 items):
    4. "Ivo dies" waited on the stack; the test never got its 3¢.
    5. Rerun, webkit, 3 repeats: 3 of 3 passed; so the deal matters.
    6. Evidence: `.cache/e2e-evidence/14.36-run1/` (not in git).
+   7. Again in the 19.157 full run, both browsers; evidence `.cache/e2e-evidence/19.157-full1/`.
 3. Cause: not found yet.
    1. `giveRoom` swaps the character, not the eternal or other cards.
    2. Something dealt took Isaac below 2 HP before the room.
@@ -4917,3 +4918,66 @@ Totals by system (148 items):
    1. Read the saved match record for the deal.
    2. Check other specs that use Blood Donation the same way.
    3. Check: the spec, both browsers, 5 workers, 10 repeats.
+
+### [ ] 19.157 Trick: a monster that gains a revealed monster's abilities shows no copy mark
+
+1. Goal: a monster that gained abilities shows a copy mark for every gained card.
+2. Report (owner, 2026-11-11)
+   1. Play test, challenge Trick or Treat.
+   2. Trick's roll of 3–4: the attacked monster gains a revealed monster's abilities.
+   3. The table never showed which monster's abilities it gained.
+   4. Owner asks for a mark as on Modeling Clay and other copying items.
+3. Cause (2026-11-11)
+   1. `CardView.copy` is sent for monsters too (19.106).
+   2. `Slot` in `Board.tsx` never passes it to `Card`; 19.106 drew the mark on players' cards only.
+   3. Hard and Ultra Hard can gain 2 or 3 cards in one attack (Q-46).
+   4. `CardView` carries the first gain only; the rest stay in `Object.MoreGained`.
+   5. `docs/wiki/Client.md` says monsters show the mark; it was never true.
+4. Tasks:
+   1. Engine: `CardView.more_copies` lists the gains after the first.
+   2. Test: a view of a monster with two gains names both; fails before the fix.
+   3. Client: `Slot` passes the copies; `Card` draws one mark per copied card.
+   4. The card's zoom names every copied card.
+   5. e2e: a monster with gained abilities shows its marks.
+   6. Search: every other place that draws a card in play without its copy.
+5. Done when:
+   1. The tests pass; `make lint` and `make test` pass.
+   2. `make frontend e2e` passes.
+   3. Before and after screenshots in `.cache/screenshots/19.157/`.
+6. Result (2026-11-11)
+   1. Engine: `CardView.MoreCopies` (`more_copies`) lists `MoreGained` after `Copy`.
+   2. Server: the hand-written card encoder (`internal/protocol/encode_card.go`) sends it.
+   3. A first e2e run showed one mark: the encoder dropped the new field.
+   4. New test `TestSampleCardsSetEveryField`: the encoder's samples set every `CardView` field.
+   5. Client: `copiesOf` in `table.ts`; `Card` takes `copies`, one `CopyBadge` each.
+   6. The marks stack down the left edge (`--copy-place`, 30cqi apart).
+   7. `Slot` in `Board.tsx` passes the copies: monster, boss, minion, shop and room slots.
+   8. Players' cards pass every copy too (`PlayerArea.tsx`).
+   9. Choice dialogs and pickers draw cards by ref only; no copy there, as before.
+   10. New tests: `TestViewShowsEveryGainOfAMonster` (engine view); e2e in `copy.spec.ts`.
+   11. The e2e failed before the fix: 0 marks.
+   12. No rule change, so no engine version bump.
+   13. Docs: UC-12 1ah, UC-42 step 14, `docs/wiki/Client.md`.
+   14. Gates: `make lint`, `make test`, `make frontend` exit 0.
+   15. `make e2e` exit 2: 545 passed, 3 failed, none in `copy.spec.ts`.
+   16. `rooms.spec.ts:72`, both browsers: 19.156, still open.
+   17. `rollback.spec.ts:211`, chromium: logged as 19.158.
+   18. Both reran 3 times per browser: 12 of 12 passed.
+   19. Evidence: `.cache/e2e-evidence/19.157-full1/` (not in git).
+   20. Screenshots: `.cache/screenshots/19.157/before/` and `after/`.
+
+### [ ] 19.158 e2e: Soft rollback test sees Undo instead of Ask to undo
+
+1. Goal: `rollback.spec.ts:211` passes whatever the deal.
+2. Report (19.157 `make e2e`, 2026-11-11)
+   1. Chromium; the webkit run of the same test passed.
+   2. Expected the button "Ask to undo"; it said "↶ Undo".
+   3. Its title: "Undo: Pia discards 3 Cents!".
+   4. Rerun, both browsers, 3 repeats: 6 of 6 passed; so the deal matters.
+   5. Evidence: `.cache/e2e-evidence/19.157-full1/` (not in git).
+3. Cause: not found yet.
+   1. The last move was a discard, perhaps the author's own.
+   2. Find which dealt card makes the move one that needs no vote.
+4. Tasks:
+   1. Read the saved match record for the deal.
+   2. Check: the spec, both browsers, 5 workers, 10 repeats.

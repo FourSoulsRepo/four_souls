@@ -6,6 +6,8 @@ Rules engine versions are in each release's notes.
 
 ## Unreleased
 
+- Trick or Treat: a monster that gains another monster's abilities shows a copy mark for each one; hover it to see that monster.
+
 ## 0.4.1 - 2026-11-11
 
 - Challenges: a co-op game mode for 2 players, picked in the host screen, with Normal, Hard and Ultra Hard.

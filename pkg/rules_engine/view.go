@@ -51,6 +51,9 @@ type CardView struct {
 	// Copy is the card whose abilities this card uses by copying them:
 	// see copyOf. Empty when it uses its own (19.106).
 	Copy CardRef `json:"copy,omitempty"`
+	// MoreCopies are the cards it gained abilities from after Copy, in
+	// the order gained: Trick on Hard rolls twice (Q-46, 19.157).
+	MoreCopies []CardRef `json:"more_copies,omitempty"`
 }
 
 // MonsterStats are a monster's stats now and as printed, so a client can
@@ -590,6 +593,11 @@ func (g *Game) cardView(id ObjectID) CardView {
 	}
 	cv.Flipped = cv.Card != o.Card
 	cv.Copy = g.copyOf(id)
+	if cv.Copy != "" && cv.Copy == o.Gained {
+		for _, gn := range o.MoreGained {
+			cv.MoreCopies = append(cv.MoreCopies, gn.Card)
+		}
+	}
 	if d := g.def(id); d.Dice != nil {
 		cv.Dice = d.Dice(g, id)
 	}

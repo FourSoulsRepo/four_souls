@@ -47,6 +47,12 @@ export function soulSlots(souls: number, winSouls = 0): boolean[] {
 
 // isSoul: a card in play that is one of its owner's souls; it shows
 // as crystals, not in the items row (V-43).
+// copiesOf lists the cards whose abilities c uses by copying them, in
+// the order gained; each gets a copy mark (19.106, 19.157).
+export function copiesOf(c: CardView): string[] {
+  return c.copy ? [c.copy, ...(c.more_copies ?? [])] : [];
+}
+
 export function isSoul(c: CardView): boolean {
   return c.role === Role.soul;
 }

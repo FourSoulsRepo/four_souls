@@ -5,7 +5,7 @@ import { counterColor, playerCounters } from '../counters';
 import { Role, type CardView, type PlayerView } from '../protocol';
 import { useApp } from '../store';
 import type { LinePart } from '../stack';
-import { isCurse, isSoul, playerColor, soulCards, soulSlots, type Position } from '../table';
+import { copiesOf, isCurse, isSoul, playerColor, soulCards, soulSlots, type Position } from '../table';
 import { Card, useZoom, type CardSize } from './Card';
 import { Count, useCount, useFlip } from './Count';
 import { HandCard, useHandGap } from './HandCard';
@@ -101,7 +101,7 @@ function OpponentArea({ player, name, position, active, asked, winSouls, ui, doi
           damage={character.damage}
           spent={spent(character)}
           counters={character.counters}
-          copy={character.copy}
+          copies={copiesOf(character)}
           stats={statsOf(player)}
           objectId={character.id}
           player={player.id}
@@ -216,7 +216,7 @@ function OwnArea({ player, name, active, asked, winSouls, ui, tools }: Omit<Prop
           damage={character.damage}
           spent={spent(character)}
           counters={character.counters}
-          copy={character.copy}
+          copies={copiesOf(character)}
           stats={statsOf(player)}
           objectId={character.id}
           player={player.id}
@@ -378,7 +378,7 @@ function PlayCard({ card, owner, size, ui }: { card: CardView; owner: number; si
       damage={card.damage}
       spent={spent(card)}
       counters={card.counters}
-      copy={card.copy}
+      copies={copiesOf(card)}
       dice={card.dice}
       owner={owner}
       monster={card.stats}
