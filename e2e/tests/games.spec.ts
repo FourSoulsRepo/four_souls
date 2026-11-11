@@ -1,6 +1,7 @@
 // Whole games with every card set, played by random moves through the
 // UI, for 2, 3 and 4 players (owner request, 2026-10-15), and the
-// Krampus challenge for 2 at each difficulty (14.26). A game must end
+// Krampus (14.26) and Trick or Treat (14.34) challenges for 2 at each
+// difficulty. A game must end
 // with a winner, or a challenge won or lost, with no server error, no page error and no console
 // error or warning on any page. Each test logs how long its game took.
 //
@@ -452,13 +453,13 @@ function keepRecord(names: string[]): string {
   return to;
 }
 
-// krampus hosts the Krampus challenge (14.26, UC-41) at the difficulty,
-// over every card set: the host form keeps the sets in a challenge.
-function krampus(difficulty: string): (host: Page) => Promise<void> {
+// challenge hosts a challenge (UC-41) at the difficulty, over every
+// card set: the host form keeps the sets in a challenge.
+function challenge(id: string, difficulty: string): (host: Page) => Promise<void> {
   return async (host) => {
     await everySet(host);
     await host.getByLabel(tr('host.mode')).selectOption('challenge');
-    await host.getByLabel(tr('host.challenge'), { exact: true }).selectOption('krampus');
+    await host.getByLabel(tr('host.challenge'), { exact: true }).selectOption(id);
     await host.getByLabel(tr('host.difficulty')).selectOption(difficulty);
   };
 }
@@ -525,7 +526,16 @@ const games: Game[] = [
     title: `2 players finish the Krampus challenge at ${difficulty}`,
     run: `k${difficulty.slice(0, 1)}`,
     players: 2,
-    setup: krampus(difficulty),
+    setup: challenge('krampus', difficulty),
+    over: challengeOver,
+  })),
+  // Trick or Treat (14.34): the same; the random moves answer its flip
+  // question, fear pick, attack-start throws and trigger order.
+  ...['normal', 'hard', 'ultra'].map((difficulty) => ({
+    title: `2 players finish the Trick or Treat challenge at ${difficulty}`,
+    run: `t${difficulty.slice(0, 1)}`,
+    players: 2,
+    setup: challenge('trick_or_treat', difficulty),
     over: challengeOver,
   })),
 ];

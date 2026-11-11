@@ -1105,7 +1105,7 @@ Alt art (CD-11) comes after all sets.
    13. UC-41 item 2; UC-42 items 11–17; ADR 028 11.12–11.15; wiki Client, Animations.
    14. `make e2e` run 1: 542 passed, 12 skipped, both browsers.
 
-### [ ] 14.34 Trick or Treat: play-check and docs
+### [x] 14.34 Trick or Treat: play-check and docs
 
 1. Goal: whole games in the app; docs match.
 2. Tasks:
@@ -1114,3 +1114,29 @@ Alt art (CD-11) comes after all sets.
    3. `docs/ideas.md` GS-11: appended progress.
 3. Done when:
    1. `make e2e-games` passes with the new games.
+4. Result (2026-11-11):
+   1. `games.spec.ts`: Trick or Treat at Normal, Hard, Ultra Hard; 2 players, every set.
+      1. `krampus()` became `challenge(id, difficulty)`; both challenges use it.
+      2. The random moves needed nothing new.
+      3. The records show flips, fear, attack-start rolls, gains and trick counters off.
+   2. Random play lost every Trick or Treat game by the timer; a valid end.
+      1. Normal seed 938499, 17 turns; Hard seed 147578, 16 turns.
+      2. Ultra Hard seed 343122, 16 turns.
+   3. Same run: Krampus Normal 515285 timer 17 turns; Hard 691975 presents 10.
+      1. Krampus Ultra Hard 821541, presents, 7 turns.
+      2. Regular 2, 3, 4 players passed; 9 passed in 1.6 h.
+   4. Wiki Challenges: a Trick or Treat section and "On the table".
+      1. Text only; the owner may add screenshots later.
+      2. Intro, host step and "Not yet" name both challenges.
+   5. `docs/ideas.md` GS-11 items 10 and 11.
+   6. Docs check: `challenges.md` TRICK, Q-43 – Q-54, UC-41, UC-42, ADR 028.
+      1. They match the code; no rule or decision drift.
+      2. Fixed: Makefile help of `fuzz-challenge` and `sims` named only Krampus.
+      3. Fixed: README, wiki Home, Frontend-tests and CLAUDE.md 4.18 named only Krampus.
+   7. No bug in Trick or Treat; no 19.N item.
+   8. `make e2e` run 1: `attack-targets.spec.ts:193` failed on chromium.
+      1. The deal had Fatty in slot 2; the save made slot 1 Fatty too.
+      2. Two "Fatty" cards: the label locator matched both.
+      3. Cause: `giveIn` in `saves.ts` sets a slot's card without checking the others.
+      4. Evidence: `.cache/e2e-evidence/14.34-run1/`; reported to the owner.
+   9. `make e2e` run 2: 542 passed, 18 skipped, both browsers.

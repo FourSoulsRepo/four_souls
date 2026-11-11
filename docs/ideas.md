@@ -971,6 +971,11 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
       1. Solo: one person, two characters (14.27).
       2. Competitive Krampus, 2–4 players (14.28).
       3. The other official challenges, each with its cards.
+   10. Done (14.29 – 14.34): co-op Trick or Treat.
+      1. Normal, Hard and Ultra Hard; 2 players.
+      2. Rules, card data, engine blocks, engine, table, whole-game tests.
+      3. Wiki Challenges has its section; screenshots may come later.
+   11. Left for Trick or Treat: its competitive variant (R-TRICK-17).
 12. GS-12. Optional house rule: no damage loops at 0 HP.
    1. Official rules: damage at 0 HP still fires "when you take damage" (R-MECH-51).
    2. Example: Forever Alone with Gurdy Jr. loops while the death waits.
