@@ -64,6 +64,18 @@ type MonsterStats struct {
 	PrintedATK int `json:"printed_atk"`
 	// Sources are what changes the monster's HP, DC and ATK now (V-41).
 	Sources []StatSourceView `json:"sources,omitempty"`
+	// Rewards are the rewards the monster gives now, only while this
+	// turn changed them (Rewards, R-TRICK-13, R-TRICK-15); the card
+	// shows the printed ones.
+	Rewards []RewardView `json:"rewards,omitempty"`
+}
+
+// RewardView is one reward line: Kind is "cents", "loot" or
+// "treasure"; Roll gives as many as a roll's result (R-CARD-31).
+type RewardView struct {
+	Kind   string `json:"kind"`
+	Amount int    `json:"amount,omitempty"`
+	Roll   bool   `json:"roll,omitempty"`
 }
 
 // StatSourceView is one source of a stat change, so a client can show
@@ -589,6 +601,9 @@ func (g *Game) cardView(id ObjectID) CardView {
 			// marks it as changed.
 			PrintedHP: d.HP, PrintedDC: min(max(d.DC, 1), 6), PrintedATK: d.ATK,
 			Sources: g.monsterSources(id),
+		}
+		if g.RewardsChanged(id) {
+			cv.Stats.Rewards = g.rewardViews(id)
 		}
 	}
 	return cv

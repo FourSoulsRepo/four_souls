@@ -108,11 +108,14 @@ export function Board({
           <div className="board-challenge" role="group" aria-label={t('challenge.panel')}>
             <Card cardRef={challenge.card.card} size="small" objectId={challenge.card.id} counters={challenge.card.counters} />
             <Timer rounds={challenge.timer} />
-            <div className="board-presents" role="group" aria-label={t('challenge.presents')}>
-              {presents(view, name).map((p) => (
-                <PresentCard key={p.kind} present={p} />
-              ))}
-            </div>
+            {/* Trick or Treat has no presents: no group (14.33). */}
+            {(challenge.presents ?? []).length > 0 && (
+              <div className="board-presents" role="group" aria-label={t('challenge.presents')}>
+                {presents(view, name).map((p) => (
+                  <PresentCard key={p.kind} present={p} />
+                ))}
+              </div>
+            )}
           </div>
         ) : (
           <div className="bonus-souls" role="group" aria-label={t('board.bonus_souls')}>

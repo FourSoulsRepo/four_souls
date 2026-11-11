@@ -9,7 +9,7 @@ import { scaleFor } from '../playback';
 import { fighters } from '../prompt';
 import { counterColor } from '../counters';
 import type { CounterView, MonsterStats, StatSource } from '../protocol';
-import { statLines, sumOf, tempSources, trend, type Name, type TempSource, type Trend } from '../stats';
+import { rewardsLine, rewardsText, statLines, sumOf, tempSources, trend, type Name, type TempSource, type Trend } from '../stats';
 import { useApp, viewScale } from '../store';
 import { arrowShows } from '../aim';
 import { boxOf, restWatch, type RestWatch } from '../zoom';
@@ -112,8 +112,11 @@ export function Card({
   const name: Name = (ref) => (ref ? (cards.get(ref)?.name ?? ref) : t('stats.hidden_card'));
   const sources = stats?.sources ?? monster?.sources;
   const sums = sources ? statLines(sources, printedOf(stats, monster), liveOf(stats, monster), name) : [];
+  // A monster's rewards changed this turn (14.33): a mark on the card,
+  // and a line under its zoom.
+  const rewards = rewardsLine(monster?.rewards);
   // The zoom names the copied card first (19.111).
-  const lines = copy ? [t('badge.copy', { card: name(copy) }), ...sums] : sums;
+  const lines = [...(copy ? [t('badge.copy', { card: name(copy) })] : []), ...sums, ...(rewards ? [rewards] : [])];
   const zoomHandlers = useZoom(cardRef, zoomable, rise, why, lines, counters.filter((c) => c.count > 0));
   const preview = useCostPreview(cost);
   const cardElRef = useRef<HTMLDivElement>(null);
@@ -230,6 +233,11 @@ export function Card({
         </>
       )}
       {badges && monster && <MonsterBadges stats={monster} hurt={damage > 0} />}
+      {badges && rewards && (
+        <span className="card-rewards-now" role="img" aria-label={rewards} title={rewards}>
+          {rewardsText(monster?.rewards)}
+        </span>
+      )}
       {badges && <SourceIcons list={tempSources(sources)} name={name} onLeave={backToCard} />}
     </motion.div>
   );

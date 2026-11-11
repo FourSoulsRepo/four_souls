@@ -158,6 +158,10 @@ describe('challengeText', () => {
     expect(challengeText('krampus', 'hard')).toBe('Challenge: How the Krampus Stole Christmas, Hard');
     expect(challengeText('newer', 'hard')).toBe('Challenge: newer, Hard');
   });
+
+  it('names Trick or Treat (14.33)', () => {
+    expect(challengeText('trick_or_treat', 'ultra')).toBe('Challenge: Trick or Treat, Ultra Hard');
+  });
 });
 
 describe('lanRows', () => {

@@ -13,8 +13,9 @@
    2. It is in the simple setup, above the players.
 2. Two selects show beside it: the challenge and its difficulty.
    1. The challenges come from the app (`getChallenges`).
-   2. Now only "How the Krampus Stole Christmas".
+   2. "How the Krampus Stole Christmas" and "Trick or Treat".
    3. Difficulties: Normal, Hard, Ultra Hard; Normal first.
+   4. An unknown challenge ID shows as it is (14.33).
 3. The players are fixed at 2; the select is locked.
    1. A line under it says a challenge is for exactly 2 players.
 4. The host presses Host (or Create on a server).

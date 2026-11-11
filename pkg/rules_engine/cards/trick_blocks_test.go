@@ -356,3 +356,38 @@ func countKind(events []engine.Event, kind engine.EventKind) int {
 	}
 	return n
 }
+
+// 14.33: the view shows a monster's changed rewards while they last,
+// and its fear evasion with the boss as the source (V-41).
+func TestTrickBlocksInView(t *testing.T) {
+	tb := blocksTable(t, []engine.CardRef{"blocks_mob"}, []engine.CardRef{"blocks_boss"})
+	g := tb.G
+	mob, boss := slotTop(tb, 0), g.Bosses[0].Cards[0]
+	stats := func() *engine.MonsterStats {
+		t.Helper()
+		v := g.View(engine.Viewer{Kind: engine.ViewPlayer, Player: 0})
+		top := v.Monsters[0].Top
+		if top == nil || top.ID != mob || top.Stats == nil {
+			t.Fatalf("no monster view for %d: %+v", mob, top)
+		}
+		return top.Stats
+	}
+	if s := stats(); s.Rewards != nil || s.DC != 3 {
+		t.Fatalf("fresh: rewards %+v, DC %d; want none and 3", s.Rewards, s.DC)
+	}
+	g.AddPlayerCounters(0, "fear", 2)
+	g.SetRewardsToCents(mob, 1, boss)
+	g.AddReward(mob, engine.RewardLoot, 1, boss)
+	s := stats()
+	want := []engine.RewardView{{Kind: "cents", Amount: 1}, {Kind: "loot", Amount: 1}}
+	if !slices.Equal(s.Rewards, want) {
+		t.Errorf("rewards %+v, want %+v", s.Rewards, want)
+	}
+	if s.DC != 4 || len(s.Sources) != 1 || s.Sources[0].Source != boss || s.Sources[0].Stat != "dc" || s.Sources[0].Amount != 1 {
+		t.Errorf("DC %d, sources %+v; want 4, +1 from the boss", s.DC, s.Sources)
+	}
+	tb.EndTurn()
+	if s := stats(); s.Rewards != nil {
+		t.Errorf("rewards outlive the turn: %+v", s.Rewards)
+	}
+}

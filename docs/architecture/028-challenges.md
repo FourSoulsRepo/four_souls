@@ -188,6 +188,12 @@ Use options 1, 4 and 5.
    9. Boss and rule cards are landscape, by card type (`landscape` in `cards.ts`).
    10. A destroyed present's place shows ✗; a given one's ✓ (14.25).
    11. The timer is a d8 with "Rounds left"; its tooltip says how many.
+   12. Trick or Treat (14.33): no presents, so the panel shows none.
+   13. Counters on a player show by the name: dot, number, word.
+       1. Fear's tooltip says what it does.
+   14. Changed rewards: `MonsterStats.rewards`, only while changed.
+       1. A ribbon on the monster; a line under its zoom.
+   15. The rule card flips in the panel with the `card-flip` animation.
 12. Solo, later (14.27)
    1. Nothing here may assume one seat per app forever.
    2. The engine already treats each character as a player.

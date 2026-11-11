@@ -732,6 +732,34 @@
   -webkit-text-stroke: 1.7cqi var(--ink);
 }
 
+/* Changed rewards (14.33): a dark ribbon across the card above the
+   stats, in the gold of the reward box; the zoom says it in words. */
+.card-rewards-now {
+  position: absolute;
+  bottom: 40cqi;
+  left: 50%;
+  max-width: 92cqi;
+  padding: 1.5cqi 4cqi;
+  overflow: hidden;
+  border: 1.2cqi solid #f0b83a;
+  border-radius: 4cqi;
+  background: rgb(29 18 10 / 88%);
+  color: #f0b83a;
+  font-size: 10cqi;
+  font-weight: 700;
+  line-height: 1.15;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  translate: -50% 0;
+  rotate: -2deg;
+  pointer-events: none;
+}
+
+.card.landscape .card-rewards-now {
+  bottom: 27cqi;
+  font-size: 7cqi;
+}
+
 /* Counters (C-01): a blob on the card's art, clear of the stats. Each
    kind is one blob in its colour (18.15), stacked down by --i. */
 .card-counters {

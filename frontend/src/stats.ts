@@ -2,7 +2,7 @@
 // what it prints, and which effects of this turn change it. Built from
 // the view's sources (15.54).
 import { say, t } from './i18n';
-import type { OddsView, StatSource } from './protocol';
+import type { OddsView, RewardView, StatSource } from './protocol';
 
 export type Trend = 'up' | 'down' | undefined;
 
@@ -158,4 +158,39 @@ export function rollChanges(sources: StatSource[] | undefined, name: Name): stri
 
 function signed(n: number): string {
   return `${n < 0 ? '−' : '+'}${String(Math.abs(n))}`;
+}
+
+// rewardsLine is a monster's changed rewards (14.33, R-TRICK-13,
+// R-TRICK-15): "Rewards this turn: 1¢ · 1 loot"; '' when none changed.
+export function rewardsLine(rewards: RewardView[] | undefined): string {
+  const text = rewardsText(rewards);
+  return text === '' ? '' : t('stats.rewards_now', { rewards: text });
+}
+
+// rewardsText is the rewards alone, "1¢ · 1 loot", for the mark on
+// the card; '' when none changed. Fixed amounts of one kind add up:
+// 2 loot and loot 1 added are "3 loot".
+export function rewardsText(rewards: RewardView[] | undefined): string {
+  const sums: RewardView[] = [];
+  for (const r of rewards ?? []) {
+    const same = r.roll ? undefined : sums.find((s) => s.kind === r.kind && !s.roll);
+    if (same) {
+      same.amount = (same.amount ?? 0) + (r.amount ?? 0);
+    } else {
+      sums.push({ ...r });
+    }
+  }
+  return sums.map(rewardText).join(' · ');
+}
+
+function rewardText(r: RewardView): string {
+  const n = r.amount ?? 0;
+  switch (r.kind) {
+    case 'loot':
+      return r.roll ? t('stats.reward.roll_loot') : t('stats.reward.loot', { n });
+    case 'treasure':
+      return r.roll ? t('stats.reward.roll_treasure') : t('stats.reward.treasure', { n });
+    default:
+      return r.roll ? t('stats.reward.roll_cents') : t('stats.reward.cents', { n });
+  }
 }

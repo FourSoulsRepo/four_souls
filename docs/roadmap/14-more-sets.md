@@ -1052,7 +1052,7 @@ Alt art (CD-11) comes after all sets.
    18. The host screen lists the ID; its English name comes in 14.33.
    19. e2e: run 1 hit the known aim flake (19.107, item 2.6); run 2 passed.
 
-### [ ] 14.33 Client: Trick or Treat
+### [x] 14.33 Client: Trick or Treat
 
 1. Goal: both players see and play the challenge.
 2. Tasks:
@@ -1065,6 +1065,45 @@ Alt art (CD-11) comes after all sets.
 3. Done when:
    1. e2e tests: a flip; fear raises evasion; a kill removes a trick counter.
    2. Screenshots for review; UC-41 and UC-42 updated.
+4. Result (2026-11-11):
+   1. `challengeName`: "Trick or Treat"; host screen, game list, table line.
+      1. English only (`en.json`); the fake bridge lists it too.
+   2. Trick counters: the usual counter badge, kind `trick`, grey.
+      1. Grey as every kind without a colour; the owner may pick one (18.15).
+   3. Fear: `PlayerCounters` by each name, own and opponent's.
+      1. A dot, the number (`Count`), the word "Fear".
+      2. Tooltip: "Fear: N — monsters +1 evasion per 2 on the active player".
+      3. `playerCounters` in `counters.ts`; any other kind shows its name.
+   4. The panel shows the face up; a flip plays `card-flip` (ADR 023).
+      1. It worked as it was: the rule card keeps its object.
+      2. No presents: the panel shows no presents group.
+   5. Changed rewards: engine `MonsterStats.Rewards`, only while changed.
+      1. `RewardView`: kind, amount, roll; from `Rewards(id)`.
+      2. MonsterStats goes through `encoding/json`: the encoder needed nothing.
+      3. A ribbon on the card, "1¢ · 1 loot"; "Rewards this turn" in the zoom.
+      4. `rewardsLine`, `rewardsText` in `stats.ts`; one kind's amounts add up.
+   6. Fear evasion: the view's V-41 sources already name the Haunt.
+      1. Green DC badge; zoom "DC 5 = 4 printed + 1 Mischievous The Haunt".
+      2. A lasting source has no icon (owner, 2026-10-22).
+   7. Gained abilities: the copy mark, as Glitch's (`copy`, 19.106).
+      1. Only the first gain of a turn has the mark (`copyOf` reads `Gained`).
+   8. Dialogs checked by screenshot; none changed:
+      1. The flip question names the side; the fear pick is the choice dialog.
+      2. The attack-start roll is a Throw before the attack roll.
+      3. Every kill asks the order of the Haunt's roll and Nobody's Fool.
+      4. No setting orders triggers by itself; engine rules unchanged.
+   9. Without images: the Haunt, Trick and Treat are landscape text cards.
+   10. Tests: Vitest `counters`, `stats`, `lobby`; Go `TestTrickBlocksInView`.
+   11. e2e `challenge-trick.spec.ts`: 4 tests, saved games for exact states.
+       1. Host at Normal; the flip at turn start; the timer loss.
+       2. Fear raises the shown evasion; a miss gives fear; the reward ribbon.
+       3. The guarded boss; the trigger order; a kill takes a trick counter.
+       4. Souls reach the counters: the boss is a target; the win.
+       5. Bans only in the fear test: Delirium, Stoney; they change evasion.
+   12. Screenshots in `.cache/screenshots/14.33/`, `images/` and `no-images/`.
+       1. No images: `realAssets` skipped by a local edit, not committed.
+   13. UC-41 item 2; UC-42 items 11–17; ADR 028 11.12–11.15; wiki Client, Animations.
+   14. `make e2e` run 1: 542 passed, 12 skipped, both browsers.
 
 ### [ ] 14.34 Trick or Treat: play-check and docs
 

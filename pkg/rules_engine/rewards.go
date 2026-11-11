@@ -87,3 +87,13 @@ func (g *Game) moveRewardChanges(from, to ObjectID) {
 		}
 	}
 }
+
+// rewardViews are the rewards id gives now, for the view (14.33).
+func (g *Game) rewardViews(id ObjectID) []RewardView {
+	rs := g.Rewards(id)
+	out := make([]RewardView, 0, len(rs))
+	for _, r := range rs {
+		out = append(out, RewardView{Kind: rewardCodes[r.Kind], Amount: r.Amount, Roll: r.Roll})
+	}
+	return out
+}

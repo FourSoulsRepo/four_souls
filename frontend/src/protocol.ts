@@ -342,6 +342,16 @@ export interface MonsterStats {
   printed_dc: number;
   printed_atk: number;
   sources?: StatSource[]; // what changes HP, DC and ATK now (V-41)
+  // rewards: what the monster gives now, only while this turn changed
+  // them (Trick or Treat, 14.33); older servers send none.
+  rewards?: RewardView[];
+}
+
+// RewardView is one reward line; roll gives as many as a roll shows.
+export interface RewardView {
+  kind: "cents" | "loot" | "treasure";
+  amount?: number;
+  roll?: boolean;
 }
 
 // StatSource is one source of a stat change (V-41). card is "" or absent

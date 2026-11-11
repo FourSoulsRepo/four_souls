@@ -1137,6 +1137,10 @@
     "text": "How the Krampus Stole Christmas",
     "note": "Name of the official co-op challenge (Maestro Media), in the game list, the table screen and the host screen."
   },
+  "challenge.name.trick_or_treat": {
+    "text": "Trick or Treat",
+    "note": "Name of the Trick or Treat challenge (ADR 028): host screen, game list and table line."
+  },
   "challenge.panel": {
     "text": "Challenge",
     "note": "Board: screen-reader name of the challenge panel by the decks: the rule card, the timer and the presents (ADR 028)."
@@ -4229,6 +4233,40 @@
     "text": "{hits} (DC {dc}{terms})",
     "note": "Stack panel, an open attack's fight line. hits: 'Hits on 4+'; dc: the monster's dice; terms: ' − 1 Meat!'."
   },
+  "stats.reward.cents": {
+    "text": "{n}¢",
+    "note": "One part of a monster's changed rewards. n: cents."
+  },
+  "stats.reward.loot": {
+    "text": {
+      "one": "{n} loot",
+      "other": "{n} loot"
+    },
+    "note": "One part of a monster's changed rewards. n: loot cards."
+  },
+  "stats.reward.roll_cents": {
+    "text": "¢ by a roll",
+    "note": "One part of a monster's changed rewards: as many cents as a roll shows."
+  },
+  "stats.reward.roll_loot": {
+    "text": "loot by a roll",
+    "note": "One part of a monster's changed rewards: as many loot cards as a roll shows."
+  },
+  "stats.reward.roll_treasure": {
+    "text": "treasure by a roll",
+    "note": "One part of a monster's changed rewards: as many treasures as a roll shows."
+  },
+  "stats.reward.treasure": {
+    "text": {
+      "one": "{n} treasure",
+      "other": "{n} treasures"
+    },
+    "note": "One part of a monster's changed rewards. n: treasures."
+  },
+  "stats.rewards_now": {
+    "text": "Rewards this turn: {rewards}",
+    "note": "A monster whose rewards changed till end of turn (Trick or Treat): the line under its zoom, and the name of the mark on its card. rewards: the reward parts joined, e.g. \"1¢ · 1 loot\"."
+  },
   "stats.rolls": {
     "text": "Rolls: {list}",
     "note": "Zoomed card, under it: changes to all its player's rolls. list: '+1 Meat!, −2 Round Worm (next roll)'."
@@ -4299,6 +4337,14 @@
     "text": "dead",
     "note": "Game table: tag by a dead player's name, lower case."
   },
+  "table.fear": {
+    "text": "Fear",
+    "note": "Game table, by a player's name: the word beside their fear counters (Trick or Treat)."
+  },
+  "table.fear_title": {
+    "text": "Fear: {n} — monsters +1 evasion per 2 on the active player",
+    "note": "Tooltip and screen-reader name of a player's fear counters (Trick or Treat, Mischievous The Haunt). n: their fear counters."
+  },
   "table.hand": {
     "text": {
       "one": "Hand: {n} card",
@@ -4321,6 +4367,10 @@
   "table.own_name": {
     "text": "{player} (you)",
     "note": "Game table: the viewer's own name over their area. player: the name."
+  },
+  "table.player_counters_title": {
+    "text": "{name}: {n}",
+    "note": "Tooltip and screen-reader name of counters of another kind on a player. name: the kind as the card names it (not translated yet); n: the counters."
   },
   "table.player_n": {
     "text": "Player {n}",

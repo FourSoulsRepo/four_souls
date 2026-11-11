@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { StatSource } from './protocol';
-import { hitsText, oddsLine, rollChanges, statLines, sumOf, tempSources, trend } from './stats';
+import { hitsText, oddsLine, rewardsLine, rollChanges, statLines, sumOf, tempSources, trend } from './stats';
 
 const names = new Map([
   ['polyphemus', 'Polyphemus'],
@@ -115,5 +115,32 @@ describe('rollChanges', () => {
   it('lists roll changes only', () => {
     expect(rollChanges([meat, worm, poly], name)).toBe('+1 Meat!, +1 Round Worm (next roll)');
     expect(rollChanges(undefined, name)).toBe('');
+  });
+});
+
+describe('rewardsLine (14.33)', () => {
+  it('says the rewards a monster gives this turn; none changed, no line', () => {
+    expect(rewardsLine(undefined)).toBe('');
+    expect(rewardsLine([])).toBe('');
+    expect(rewardsLine([{ kind: 'cents', amount: 1 }])).toBe('Rewards this turn: 1¢');
+    expect(
+      rewardsLine([
+        { kind: 'cents', amount: 3 },
+        { kind: 'loot', amount: 1 },
+        { kind: 'treasure', amount: 2 },
+        { kind: 'cents', roll: true },
+      ]),
+    ).toBe('Rewards this turn: 3¢ · 1 loot · 2 treasures · ¢ by a roll');
+  });
+
+  it('adds up fixed amounts of one kind; a roll stays apart', () => {
+    const rewards = [
+      { kind: 'loot', amount: 2 },
+      { kind: 'cents', roll: true },
+      { kind: 'loot', amount: 1 },
+      { kind: 'cents', amount: 3 },
+    ] as const;
+    expect(rewardsLine(rewards.map((r) => ({ ...r })))).toBe('Rewards this turn: 3 loot · ¢ by a roll · 3¢');
+    expect(rewards[0].amount).toBe(2);
   });
 });

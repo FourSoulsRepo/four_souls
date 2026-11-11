@@ -1,6 +1,7 @@
 import { useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { fanPose } from '../feel';
 import { t } from '../i18n';
+import { counterColor, playerCounters } from '../counters';
 import { Role, type CardView, type PlayerView } from '../protocol';
 import { useApp } from '../store';
 import type { LinePart } from '../stack';
@@ -80,6 +81,7 @@ function OpponentArea({ player, name, position, active, asked, winSouls, ui, doi
               <Coin />
               <Count value={player.cents} />
             </span>
+            <PlayerCounters player={player} />
             {player.dead && <span className="player-dead">{t('table.dead')}</span>}
           </span>
           {active && doing && <Activity parts={doing} />}
@@ -191,6 +193,7 @@ function OwnArea({ player, name, active, asked, winSouls, ui, tools }: Omit<Prop
             {asked && <Hourglass player={player.id} />}
           </b>
           <OwnCents cents={player.cents} />
+          <PlayerCounters player={player} />
           {player.dead && <span className="player-dead">{t('table.dead')}</span>}
           {active && (
             <span className="player-allowance" aria-label={t('table.loot_left_label')}>
@@ -240,6 +243,30 @@ function OwnArea({ player, name, active, asked, winSouls, ui, tools }: Omit<Prop
         ))}
       </div>
     </section>
+  );
+}
+
+// PlayerCounters are the counters on a player, not on a card (14.31,
+// 14.33): fear in Trick or Treat. Each kind is a dot in its colour, the
+// number and the kind's word; the tooltip says what it does. None, no
+// element.
+function PlayerCounters({ player }: { player: PlayerView }) {
+  const list = playerCounters(player.counters);
+  if (list.length === 0) {
+    return null;
+  }
+  return (
+    <span className="player-counters">
+      {list.map((c) => (
+        <span key={c.name} className="player-counter" role="img" aria-label={c.title} title={c.title} style={{ '--fill': counterColor(c.name) } as CSSProperties}>
+          <span className="player-counter-dot" aria-hidden="true" />
+          <Count value={c.count} />
+          <span className="player-counter-word" aria-hidden="true">
+            {c.word}
+          </span>
+        </span>
+      ))}
+    </span>
   );
 }
 

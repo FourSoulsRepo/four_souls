@@ -164,7 +164,14 @@ export function optionsText(o: Options | undefined): string {
 
 // challengeName names a challenge; an unknown one shows its ID.
 export function challengeName(id: string): string {
-  return id === 'krampus' ? t('challenge.name.krampus') : id;
+  switch (id) {
+    case 'krampus':
+      return t('challenge.name.krampus');
+    case 'trick_or_treat':
+      return t('challenge.name.trick_or_treat');
+    default:
+      return id;
+  }
 }
 
 // difficultyName names a challenge's difficulty; an unknown one (a newer
