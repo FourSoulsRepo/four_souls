@@ -27,6 +27,7 @@ A situation is a small JSON document: a table position, one action, and optional
 * `setup.players[]` — `character`, `items`, `hand`, `cents`, `souls`, `damage`, `dead`, and `deactivated` (cards, or `"character"`, that start deactivated).
 * `setup.active` — the active player; the turn is in the open action phase with one loot play, attack and purchase left (`loot_plays` overrides the loot plays).
 * `setup.monsters`, `setup.shop` — the top card of each slot.
+* `setup.bosses`, `setup.minions` — a challenge's final boss and minion slots, one card each (R-CHAL-02, R-CHAL-07).
 * `setup.stack` — items already on the stack, bottom first: dice rolls, loot cards, abilities, triggers and attack rolls; see [Stacked items](#stacked-items).
 * `action.kind` — `play`, `activate`, `attack`, `purchase`, `end_turn` or `pass`; `card` and `ability` pick the card.
 * `action.choices` — answers to the prompts that follow, by option label: an option's plain form, with no language (`Game.Plain`, 16.4). A card is its ref (`"bomb"`), a player `"player 2 (hero_b)"`, a number its digits, a card's own words (a "choose one-" option) the words; any other option is its key, then its values (`"ask.deck.monster"`, `"ask.cancel"`, `"ask.yes"`, `"ask.slot_card 1 fly"`).
@@ -42,7 +43,7 @@ A situation is a small JSON document: a table position, one action, and optional
 | `play` | a loot card | `card` (a loot card), `choices` |
 | `activate` | an activated ability | `card` (in play, the owner's), `ability` (as in `action`), `choices` |
 | `trigger` | a triggered ability | `card` (the owner's, or a monster or room in a slot when the owner is the active player), `ability` |
-| `attack_roll` | an attack roll | `dice_roll` (1–6), `card` (a monster in a monster slot); the owner is the active player |
+| `attack_roll` | an attack roll | `dice_roll` (1–6), `card` (a monster in play: a monster, final boss or minion slot); the owner is the active player |
 
 `choices` are the mode and targets chosen when the item went on the stack, in the order the prompts ask them, by the same labels as `action.choices`: `"player 2 (maggy)"`, `"bomb"`, a dice roll below it `"ask.roll_of 2"`, a mode its words. A target can be an item lower on the stack. Answers the item asks for while it resolves (an amount, a yes) go in `action.choices`.
 

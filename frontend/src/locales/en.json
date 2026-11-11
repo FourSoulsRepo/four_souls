@@ -95,6 +95,10 @@
     "text": "{card}: {text}",
     "note": "An option that is an ability. card: its card; text: its words from the card (not translated yet)."
   },
+  "ask.attack_random": {
+    "text": "a random minion",
+    "note": "Attack target option: the attack you owe goes to a minion the game picks at random (Pilfering Krampus, Normal). Shown beside another attack you must make."
+  },
   "ask.cancel": {
     "text": "cancel",
     "note": "Option that cancels playing or using a card before anything is paid."
@@ -621,13 +625,25 @@
     "text": "Bonus souls",
     "note": "Board: screen-reader name of the bonus soul cards."
   },
+  "board.final_boss": {
+    "text": "Final boss",
+    "note": "Board: screen-reader name of a challenge's final boss slot, left of the monster slots (ADR 028)."
+  },
   "board.label": {
     "text": "Board",
     "note": "Game table: screen-reader name of the board in the middle."
   },
+  "board.minions": {
+    "text": "Minions",
+    "note": "Board: screen-reader name of a challenge's minion slots, the row under the monster slots (ADR 028)."
+  },
   "board.monsters": {
     "text": "Monsters",
     "note": "Board: screen-reader name of the monster slots."
+  },
+  "board.rooms": {
+    "text": "Rooms",
+    "note": "Board: screen-reader name of the room cards and the room deck."
   },
   "board.shop": {
     "text": "Shop",
@@ -800,6 +816,50 @@
   "card.holy_greedling.gain_3": {
     "text": "Gain 3¢?",
     "note": "Card question while Holy Greedling resolves."
+  },
+  "card.how_the_krampus_stole_christmas.forgo_cents": {
+    "text": {
+      "one": "Forgo {n}¢ and put {n} counter on the ¢ present instead?",
+      "other": "Forgo {n}¢ and put {n} counters on the ¢ present instead?"
+    },
+    "note": "Question of How the Krampus Stole Christmas (All I Want for Christmas): a monster's ¢ reward could be forgone. n: the ¢. Options: yes, no."
+  },
+  "card.how_the_krampus_stole_christmas.forgo_loot": {
+    "text": {
+      "one": "Forgo looting {n} and put {n} counter on the loot present instead?",
+      "other": "Forgo looting {n} and put {n} counters on the loot present instead?"
+    },
+    "note": "Question of How the Krampus Stole Christmas (All I Want for Christmas): a monster's loot reward could be forgone. n: the loot cards. Options: yes, no."
+  },
+  "card.how_the_krampus_stole_christmas.forgo_soul": {
+    "text": {
+      "one": "Forgo the soul {card} and put {n} counter on the soul present instead?",
+      "other": "Forgo the soul {card} and put {n} counters on the soul present instead?"
+    },
+    "note": "Question of How the Krampus Stole Christmas (All I Want for Christmas): a soul could be forgone; the card then goes to discard. card: the soul; n: its soul value. Options: yes, no."
+  },
+  "card.how_the_krampus_stole_christmas.forgo_treasure": {
+    "text": {
+      "one": "Forgo gaining {n} treasure and put {n} counter on the treasure present instead?",
+      "other": "Forgo gaining {n} treasures and put {n} counters on the treasure present instead?"
+    },
+    "note": "Question of How the Krampus Stole Christmas (All I Want for Christmas): a monster's treasure reward could be forgone. n: the treasures. Options: yes, no."
+  },
+  "card.how_the_krampus_stole_christmas.gift_cents": {
+    "text": "Happy Holidays! Who gains the ¢ present?",
+    "note": "Question of How the Krampus Stole Christmas (Happy Holidays!): the active player picks who gains the flipped ¢ present as an item. Options: players."
+  },
+  "card.how_the_krampus_stole_christmas.gift_loot": {
+    "text": "Happy Holidays! Who gains the loot present?",
+    "note": "Question of How the Krampus Stole Christmas (Happy Holidays!): the active player picks who gains the flipped loot present as an item. Options: players."
+  },
+  "card.how_the_krampus_stole_christmas.gift_soul": {
+    "text": "Happy Holidays! Who gains the soul present?",
+    "note": "Question of How the Krampus Stole Christmas (Happy Holidays!): the active player picks who gains the flipped soul present as an item. Options: players."
+  },
+  "card.how_the_krampus_stole_christmas.gift_treasure": {
+    "text": "Happy Holidays! Who gains the treasure present?",
+    "note": "Question of How the Krampus Stole Christmas (Happy Holidays!): the active player picks who gains the flipped treasure present as an item. Options: players."
   },
   "card.i_am_error_r.put_which_monster_into_discard": {
     "text": "Put which monster into discard?",
@@ -1037,6 +1097,18 @@
     "text": "Choose a player or monster.",
     "note": "Card question while Tnt Barrel resolves."
   },
+  "card.trick_treat.flip_to_treat": {
+    "text": "Flip the challenge card to Treat?",
+    "note": "Trick or Treat: as each turn starts, the active player may flip the Trick/Treat card; it now shows Trick."
+  },
+  "card.trick_treat.flip_to_trick": {
+    "text": "Flip the challenge card to Trick?",
+    "note": "Trick or Treat: as each turn starts, the active player may flip the Trick/Treat card; it now shows Treat."
+  },
+  "card.trick_treat.remove_fear": {
+    "text": "Remove a fear counter from which player?",
+    "note": "Trick or Treat: the active player picks a player with a fear counter to lose one (Mischievous The Haunt's roll of 4-6, or the Treat side's You Don't Scare Me)."
+  },
   "card.we_need_to_go_deeper.put_another_monster_card_on": {
     "text": "Put another monster card on top of the deck?",
     "note": "Card question while We Need To Go Deeper! resolves."
@@ -1048,6 +1120,80 @@
   "card.xii_the_hanged_man.put_this_card_on_the": {
     "text": "Put this card on the bottom of its deck?",
     "note": "Card question while XII. The Hanged Man resolves."
+  },
+  "challenge.difficulty.hard": {
+    "text": "Hard",
+    "note": "A challenge's difficulty, in the game list, the table screen and the host screen (ADR 028)."
+  },
+  "challenge.difficulty.normal": {
+    "text": "Normal",
+    "note": "A challenge's easiest difficulty, in the game list, the table screen and the host screen (ADR 028)."
+  },
+  "challenge.difficulty.ultra": {
+    "text": "Ultra Hard",
+    "note": "A challenge's hardest difficulty, in the game list, the table screen and the host screen (ADR 028)."
+  },
+  "challenge.name.krampus": {
+    "text": "How the Krampus Stole Christmas",
+    "note": "Name of the official co-op challenge (Maestro Media), in the game list, the table screen and the host screen."
+  },
+  "challenge.name.trick_or_treat": {
+    "text": "Trick or Treat",
+    "note": "Name of the Trick or Treat challenge (ADR 028): host screen, game list and table line."
+  },
+  "challenge.panel": {
+    "text": "Challenge",
+    "note": "Board: screen-reader name of the challenge panel by the decks: the rule card, the timer and the presents (ADR 028)."
+  },
+  "challenge.present.cents": {
+    "text": "¢",
+    "note": "Board: caption under the Krampus challenge's ¢ present (R-KRAMPUS-05). Keep it short: a small card's width."
+  },
+  "challenge.present.loot": {
+    "text": "Loot",
+    "note": "Board: caption under the Krampus challenge's loot present. Keep it short: a small card's width."
+  },
+  "challenge.present.soul": {
+    "text": "Soul",
+    "note": "Board: caption under the Krampus challenge's soul present. Keep it short: a small card's width."
+  },
+  "challenge.present.treasure": {
+    "text": "Treasure",
+    "note": "Board: caption under the Krampus challenge's treasure present. Keep it short: a small card's width."
+  },
+  "challenge.present_destroyed": {
+    "text": "{present} present: destroyed",
+    "note": "Board: name and tooltip of a present that lost its last counter and went to the treasure discard. present: its kind, e.g. ¢ or Loot."
+  },
+  "challenge.present_down": {
+    "text": {
+      "one": "{present} present: face down, {n} counter",
+      "other": "{present} present: face down, {n} counters"
+    },
+    "note": "Board: name and tooltip of a face-down present. present: its kind, e.g. ¢ or Loot; n: its counters."
+  },
+  "challenge.present_given": {
+    "text": "{present} present: {player} has it as an item",
+    "note": "Board: name and tooltip of a present a player gained (Happy Holidays!). present: its kind, e.g. ¢ or Loot; player: who has it."
+  },
+  "challenge.present_up": {
+    "text": "{present} present: face up, for a player to gain",
+    "note": "Board: name of a present Happy Holidays! turned face up that nobody has gained yet. present: its kind, e.g. ¢ or Loot."
+  },
+  "challenge.presents": {
+    "text": "Presents",
+    "note": "Board: screen-reader name of the Krampus challenge's 4 presents in the challenge panel."
+  },
+  "challenge.timer": {
+    "text": {
+      "one": "{n} round left",
+      "other": "{n} rounds left"
+    },
+    "note": "Board: tooltip and name of the challenge timer, a d8 by the decks. n: rounds before the players lose."
+  },
+  "challenge.timer_label": {
+    "text": "Rounds left",
+    "note": "Board: short caption under the challenge timer's die."
   },
   "choice.back": {
     "text": "Back to the choice",
@@ -1165,6 +1311,10 @@
     "text": "monster",
     "note": "A monster card's back drawn without the card images: the deck's name on it."
   },
+  "deck.back.room": {
+    "text": "room",
+    "note": "A room card's back drawn without the card images: the deck's name on it."
+  },
   "deck.back.soul": {
     "text": "soul",
     "note": "A bonus soul card's back drawn without the card images: the deck's name on it."
@@ -1188,6 +1338,10 @@
   "deck.face_down.monster": {
     "text": "Face-down monster card",
     "note": "Screen-reader name of a face-down monster card."
+  },
+  "deck.face_down.room": {
+    "text": "Face-down room card",
+    "note": "Screen-reader name of a face-down room card."
   },
   "deck.face_down.soul": {
     "text": "Face-down soul card",
@@ -1231,6 +1385,20 @@
       "other": "Monster discard: {n} cards"
     },
     "note": "Board: tooltip of the monster discard pile. n: cards in it."
+  },
+  "deck.room": {
+    "text": {
+      "one": "Room deck: {n} card",
+      "other": "Room deck: {n} cards"
+    },
+    "note": "Board: tooltip of the room deck. n: cards in it."
+  },
+  "deck.room_discard": {
+    "text": {
+      "one": "Room discard: {n} card",
+      "other": "Room discard: {n} cards"
+    },
+    "note": "Board: tooltip of the room discard pile. n: cards in it."
   },
   "deck.treasure": {
     "text": {
@@ -1276,6 +1444,22 @@
       "other": "Discard {n} loot cards"
     },
     "note": "Discard dialog title, and the prompt banner while a player discards. n: cards to discard."
+  },
+  "effect.challenge_lost": {
+    "text": "Challenge lost",
+    "note": "Effect: banner across the table when the players lose the co-op challenge."
+  },
+  "effect.challenge_won": {
+    "text": "Challenge won!",
+    "note": "Effect: banner across the table when the players beat the co-op challenge."
+  },
+  "effect.counters_gained": {
+    "text": "+{n}",
+    "note": "Effect: rises from a challenge present that got counters (All I Want for Christmas). n: the counters put on."
+  },
+  "effect.counters_lost": {
+    "text": "−{n}",
+    "note": "Effect: rises from a challenge present that lost counters (Pilfering Krampus's roll). n: the counters taken."
   },
   "effect.healed": {
     "text": "+{n} HP",
@@ -1341,6 +1525,10 @@
     "text": "Card data: {error}",
     "note": "Status line when the app could not load its card data. error: the message from the app, in English."
   },
+  "error.challenge_seats": {
+    "text": "A challenge has exactly {n} seats.",
+    "note": "Error from the server, shown in the lobby. A new challenge game asked for another number of seats. n: the seats, 2."
+  },
   "error.client_outdated": {
     "text": "This app is older than the server. Update the app to play here.",
     "note": "Status line when the server speaks a newer protocol."
@@ -1381,9 +1569,17 @@
     "text": "No ban phase now.",
     "note": "Error from the server, shown in the lobby or on the table. A ban outside the ban phase."
   },
+  "error.no_challenge": {
+    "text": "This server has no challenge {challenge}.",
+    "note": "Error from the server, shown in the lobby. A new game asked for a challenge the server does not know, e.g. an older server. challenge: its ID, e.g. krampus."
+  },
   "error.no_connection": {
     "text": "Could not connect to the server.",
     "note": "Status line when no server answered at the typed address."
+  },
+  "error.no_difficulty": {
+    "text": "The challenge has no difficulty {difficulty}.",
+    "note": "Error from the server, shown in the lobby. A new game asked for a difficulty the challenge lacks, or a difficulty without a challenge. difficulty: its ID, e.g. hard."
   },
   "error.no_game": {
     "text": "No game {game}.",
@@ -1573,6 +1769,14 @@
     "text": "attack roll",
     "note": "What a stack item is: on the stack, in the history and on the throw banner."
   },
+  "event.challenge_lost.presents": {
+    "text": "All 4 presents were destroyed",
+    "note": "Why the Krampus challenge was lost. Shown after \"Challenge lost:\" in the history and on the game-over screen."
+  },
+  "event.challenge_lost.timer": {
+    "text": "The timer ran out",
+    "note": "Why a co-op challenge was lost: its timer reached 0. Shown after \"Challenge lost:\" in the history and on the game-over screen."
+  },
   "event.combat_damage": {
     "text": "combat damage",
     "note": "What a stack item is: on the stack, in the history and on the throw banner."
@@ -1741,6 +1945,10 @@
     "text": "a loot card",
     "note": "Zoomed history card: a looted card the viewer can't see."
   },
+  "history.abilities_gained": {
+    "text": "{card} gains the abilities of {gained} this turn",
+    "note": "History: Trick or Treat; Ghostly Trickery rolled 3-4: the attacked monster gains a revealed monster's abilities till end of turn. card: the attacked monster; gained: the revealed monster."
+  },
   "history.an_ability": {
     "text": "An ability",
     "note": "History, at the start of a line: an ability with no card to name."
@@ -1845,6 +2053,21 @@
     "text": "You gain {n}¢",
     "note": "History: the viewer gained cents. n: the cents."
   },
+  "history.challenge_lost": {
+    "text": "Challenge lost: {reason}",
+    "note": "History: both players lost the co-op challenge. reason: why, e.g. \"The timer ran out\"."
+  },
+  "history.challenge_timer": {
+    "text": {
+      "one": "The round ends: {n} round left",
+      "other": "The round ends: {n} rounds left"
+    },
+    "note": "History: the co-op challenge timer ticked down at the end of a round. n: rounds left."
+  },
+  "history.challenge_won": {
+    "text": "Challenge won",
+    "note": "History: both players won the co-op challenge."
+  },
   "history.choice.other": {
     "text": "{player}'s choice",
     "note": "Undo button's tooltip and rollback vote: the move to undo is a player's answer to a question."
@@ -1860,6 +2083,14 @@
   "history.cursed.you": {
     "text": "You gain the curse {card}",
     "note": "History: a curse came to the viewer."
+  },
+  "history.damage_taken.other": {
+    "text": "Damage {player} takes is up by {n} this turn",
+    "note": "History: Trick or Treat; Ghostly Trickery rolled 1-2: each damage the player takes this turn is n more."
+  },
+  "history.damage_taken.you": {
+    "text": "Damage you take is up by {n} this turn",
+    "note": "History: Trick or Treat; Ghostly Trickery rolled 1-2: each damage the viewer takes this turn is n more."
   },
   "history.death_prevented.other": {
     "text": "{player}'s death is prevented",
@@ -1938,6 +2169,34 @@
     "text": "You take an extra turn",
     "note": "History: the viewer gets another turn."
   },
+  "history.fear_gained.other": {
+    "text": {
+      "one": "{player} gets {n} fear counter",
+      "other": "{player} gets {n} fear counters"
+    },
+    "note": "History: Trick or Treat; a player got fear counters (Mischievous The Haunt: a player took damage). n: the counters."
+  },
+  "history.fear_gained.you": {
+    "text": {
+      "one": "You get {n} fear counter",
+      "other": "You get {n} fear counters"
+    },
+    "note": "History: Trick or Treat; the viewer got fear counters (Mischievous The Haunt: a player took damage). n: the counters."
+  },
+  "history.fear_lost.other": {
+    "text": {
+      "one": "{player} loses {n} fear counter",
+      "other": "{player} loses {n} fear counters"
+    },
+    "note": "History: Trick or Treat; a fear counter came off a player (Mischievous The Haunt's roll, or You Don't Scare Me). n: the counters."
+  },
+  "history.fear_lost.you": {
+    "text": {
+      "one": "You lose {n} fear counter",
+      "other": "You lose {n} fear counters"
+    },
+    "note": "History: Trick or Treat; a fear counter came off the viewer (Mischievous The Haunt's roll, or You Don't Scare Me). n: the counters."
+  },
   "history.first_roll.other": {
     "text": "{player} rolls {n} for the first player",
     "note": "History, before turn 1: a player's first-player die. n: the die."
@@ -1953,6 +2212,20 @@
   "history.flipped": {
     "text": "{card} turns face up",
     "note": "History: a two-sided card turned to its other side. card: the side now up, or 'A card'."
+  },
+  "history.forgone.other": {
+    "text": {
+      "one": "{player} forgoes it: {n} counter on the {present}",
+      "other": "{player} forgoes it: {n} counters on the {present}"
+    },
+    "note": "History: a player forwent a monster's reward or a soul for counters on a present (All I Want for Christmas). present: e.g. \"¢ present\"."
+  },
+  "history.forgone.you": {
+    "text": {
+      "one": "You forgo it: {n} counter on the {present}",
+      "other": "You forgo it: {n} counters on the {present}"
+    },
+    "note": "History: the viewer forwent a monster's reward or a soul for counters on a present (All I Want for Christmas). present: e.g. \"¢ present\"."
   },
   "history.gain.other": {
     "text": "{player} gains {card}",
@@ -2050,6 +2323,10 @@
     "text": "You lose {n}¢",
     "note": "History: the viewer lost cents. n: the cents."
   },
+  "history.minion_arrived": {
+    "text": "{card} comes as a minion",
+    "note": "History: a card of the monster deck went into a new minion slot (What's in the Box?)."
+  },
   "history.mode_god": {
     "text": "Godmode",
     "note": "History panel, by the title: the game's rollback mode."
@@ -2098,6 +2375,45 @@
     "text": "You pay the death penalty",
     "note": "History: the viewer paid the death penalty."
   },
+  "history.present.cents": {
+    "text": "¢ present",
+    "note": "History: the Krampus challenge's ¢ present, inside other lines."
+  },
+  "history.present.loot": {
+    "text": "loot present",
+    "note": "History: the Krampus challenge's loot present, inside other lines."
+  },
+  "history.present.soul": {
+    "text": "soul present",
+    "note": "History: the Krampus challenge's soul present, inside other lines."
+  },
+  "history.present.treasure": {
+    "text": "treasure present",
+    "note": "History: the Krampus challenge's treasure present, inside other lines."
+  },
+  "history.present_counters": {
+    "text": {
+      "one": "The {present} loses {n} counter",
+      "other": "The {present} loses {n} counters"
+    },
+    "note": "History: Pilfering Krampus's roll took counters off a present. present: e.g. \"¢ present\"; n: the counters."
+  },
+  "history.present_destroyed": {
+    "text": "The {present} is destroyed: it was {card}",
+    "note": "History: a present reached 0 counters and went to the treasure discard (What's in the Box?). present: e.g. \"¢ present\"; card: the treasure it was."
+  },
+  "history.present_given.other": {
+    "text": "{player} gains the {present}: {card}",
+    "note": "History: a player gained a flipped present as an item. present: e.g. \"¢ present\"; card: the item."
+  },
+  "history.present_given.you": {
+    "text": "You gain the {present}: {card}",
+    "note": "History: the viewer gained a flipped present as an item. present: e.g. \"¢ present\"; card: the item."
+  },
+  "history.presents_flipped": {
+    "text": "Happy Holidays! The presents open",
+    "note": "History: the players hold enough souls; every present left flips face up and becomes an item."
+  },
   "history.prevented": {
     "text": "Damage is prevented",
     "note": "History: damage was prevented."
@@ -2129,6 +2445,22 @@
   "history.rewards.you": {
     "text": "You gain the rewards of {card}",
     "note": "History: the viewer killed a monster and gains its rewards."
+  },
+  "history.rewards_changed.cents": {
+    "text": "{card}'s rewards get {n}¢ more this turn",
+    "note": "History: Trick or Treat; Hallows' Eve Bounty added n¢ to the attacked monster's rewards till end of turn. card: the monster."
+  },
+  "history.rewards_changed.loot": {
+    "text": "{card}'s rewards get loot {n} more this turn",
+    "note": "History: Trick or Treat; Hallows' Eve Bounty added loot n to the attacked monster's rewards till end of turn. card: the monster."
+  },
+  "history.rewards_changed.set": {
+    "text": "{card}'s rewards become {n}¢ this turn",
+    "note": "History: Trick or Treat; Ghostly Trickery rolled 5-6: the attacked monster's rewards are only n¢ till end of turn. card: the monster."
+  },
+  "history.rewards_changed.treasure": {
+    "text": "{card}'s rewards get {n} treasure more this turn",
+    "note": "History: Trick or Treat; Hallows' Eve Bounty added n treasure to the attacked monster's rewards till end of turn. card: the monster."
   },
   "history.roll": {
     "text": "Roll",
@@ -2244,6 +2576,13 @@
     "text": "You keep {card} on top",
     "note": "History: the viewer looked at a deck's top card and left it there."
   },
+  "history.trick_counters": {
+    "text": {
+      "one": "{card} loses {n} trick counter",
+      "other": "{card} loses {n} trick counters"
+    },
+    "note": "History: Trick or Treat; a monster died, so a trick counter came off the final boss (Nobody's Fool). card: the boss; n: the counters."
+  },
   "history.turn": {
     "text": "Turn {n}: {player}",
     "note": "History: the line a turn starts with. n: the turn; player: whose turn, or You."
@@ -2340,6 +2679,14 @@
     "text": "Bonus souls",
     "note": "Host screen: check box; the game uses bonus soul cards."
   },
+  "host.challenge": {
+    "text": "Challenge",
+    "note": "Host screen: label of the list of co-op challenges, e.g. How the Krampus Stole Christmas (ADR 028). Shows when the game mode is Challenge."
+  },
+  "host.challenge_seats": {
+    "text": "A challenge is played by exactly {n} players, together.",
+    "note": "Host screen: line under the locked player count when the game mode is Challenge. n: the players, 2."
+  },
   "host.continue_saved": {
     "text": "Continue a saved game",
     "note": "Host screen: button that hosts a game saved before."
@@ -2356,6 +2703,10 @@
     "text": "Detailed setup",
     "note": "Host screen: check box that shows the options below it."
   },
+  "host.difficulty": {
+    "text": "Difficulty",
+    "note": "Host screen: label of the challenge's difficulty list: Normal, Hard or Ultra Hard (ADR 028)."
+  },
   "host.draft_size": {
     "text": "Characters offered",
     "note": "Host screen, detailed setup: label of the select for how many characters each player picks from in a draft."
@@ -2363,6 +2714,18 @@
   "host.host": {
     "text": "Host",
     "note": "Host screen: button that starts hosting the game in this app."
+  },
+  "host.mode": {
+    "text": "Game mode",
+    "note": "Host screen: label of the list of game modes: a regular game or a co-op challenge (ADR 028)."
+  },
+  "host.mode_challenge": {
+    "text": "Challenge",
+    "note": "Host screen, option of 'Game mode': 2 players play together against the game, e.g. How the Krampus Stole Christmas."
+  },
+  "host.mode_regular": {
+    "text": "Regular game",
+    "note": "Host screen, option of 'Game mode': the usual game, the first to the soul goal wins (the default)."
   },
   "host.on_server": {
     "text": "On the server {address}",
@@ -2419,6 +2782,10 @@
   "host.rollback_soft": {
     "text": "Soft",
     "note": "Host screen: rollback mode choice; the others vote on each undo."
+  },
+  "host.room_deck": {
+    "text": "Room deck",
+    "note": "Host screen: check box, shown only with Requiem; the game plays with the room deck and one room on the table."
   },
   "host.seconds": {
     "text": "{n} s",
@@ -2573,6 +2940,10 @@
     },
     "note": "Table screen, setup summary. n: rounds of character bans."
   },
+  "lobby.options.challenge": {
+    "text": "Challenge: {challenge}, {difficulty}",
+    "note": "Game list and table screen: the game is a co-op challenge. challenge: its name; difficulty: Normal, Hard or Ultra Hard."
+  },
   "lobby.options.deck_ratios": {
     "text": "deck ratios",
     "note": "Table screen, setup summary, lower case after a dot: decks are built by the official card ratios."
@@ -2600,6 +2971,10 @@
   "lobby.options.rollback_soft": {
     "text": "Soft rollback",
     "note": "Game list and table screen: the game's rollback mode; the others vote on each undo."
+  },
+  "lobby.options.room_deck": {
+    "text": "room deck",
+    "note": "Table screen, setup summary, lower case after a dot: the game plays with the room deck."
   },
   "lobby.options.timer": {
     "text": "{n} s to respond",
@@ -2725,6 +3100,14 @@
     "text": "Cathedral",
     "note": "Settings: the Cathedral game mat in the Game mat list (an image, or pale blue colors without it). Named after the Isaac floor."
   },
+  "mat.christmas": {
+    "text": "Christmas",
+    "note": "Settings: the Christmas game mat in the Game mat list: the Basement with trees, lights, presents and snow (an image, or warm and snowy blue colors without it). The holiday's usual name."
+  },
+  "mat.halloween": {
+    "text": "Halloween",
+    "note": "Settings: the Halloween game mat in the Game mat list: the Basement with pumpkins, bats and cobwebs (an image, or orange and purple colors without it). The holiday's usual name."
+  },
   "menu.exit": {
     "text": "Exit",
     "note": "Main menu: button that closes the app."
@@ -2836,6 +3219,14 @@
   "order.top": {
     "text": "1 · top",
     "note": "Order dialog: under the first place, the deck's top."
+  },
+  "over.challenge_lost": {
+    "text": "Challenge lost",
+    "note": "Game over dialog title: both players lost the co-op challenge. The reason shows under it."
+  },
+  "over.challenge_won": {
+    "text": "Challenge won!",
+    "note": "Game over dialog title: both players beat the co-op challenge."
   },
   "over.hint": {
     "text": "Keep the match record to watch it again later.",
@@ -3850,6 +4241,40 @@
     "text": "{hits} (DC {dc}{terms})",
     "note": "Stack panel, an open attack's fight line. hits: 'Hits on 4+'; dc: the monster's dice; terms: ' − 1 Meat!'."
   },
+  "stats.reward.cents": {
+    "text": "{n}¢",
+    "note": "One part of a monster's changed rewards. n: cents."
+  },
+  "stats.reward.loot": {
+    "text": {
+      "one": "{n} loot",
+      "other": "{n} loot"
+    },
+    "note": "One part of a monster's changed rewards. n: loot cards."
+  },
+  "stats.reward.roll_cents": {
+    "text": "¢ by a roll",
+    "note": "One part of a monster's changed rewards: as many cents as a roll shows."
+  },
+  "stats.reward.roll_loot": {
+    "text": "loot by a roll",
+    "note": "One part of a monster's changed rewards: as many loot cards as a roll shows."
+  },
+  "stats.reward.roll_treasure": {
+    "text": "treasure by a roll",
+    "note": "One part of a monster's changed rewards: as many treasures as a roll shows."
+  },
+  "stats.reward.treasure": {
+    "text": {
+      "one": "{n} treasure",
+      "other": "{n} treasures"
+    },
+    "note": "One part of a monster's changed rewards. n: treasures."
+  },
+  "stats.rewards_now": {
+    "text": "Rewards this turn: {rewards}",
+    "note": "A monster whose rewards changed till end of turn (Trick or Treat): the line under its zoom, and the name of the mark on its card. rewards: the reward parts joined, e.g. \"1¢ · 1 loot\"."
+  },
   "stats.rolls": {
     "text": "Rolls: {list}",
     "note": "Zoomed card, under it: changes to all its player's rolls. list: '+1 Meat!, −2 Round Worm (next roll)'."
@@ -3920,6 +4345,14 @@
     "text": "dead",
     "note": "Game table: tag by a dead player's name, lower case."
   },
+  "table.fear": {
+    "text": "Fear",
+    "note": "Game table, by a player's name: the word beside their fear counters (Trick or Treat)."
+  },
+  "table.fear_title": {
+    "text": "Fear: {n} — monsters +1 evasion per 2 on the active player",
+    "note": "Tooltip and screen-reader name of a player's fear counters (Trick or Treat, Mischievous The Haunt). n: their fear counters."
+  },
   "table.hand": {
     "text": {
       "one": "Hand: {n} card",
@@ -3942,6 +4375,10 @@
   "table.own_name": {
     "text": "{player} (you)",
     "note": "Game table: the viewer's own name over their area. player: the name."
+  },
+  "table.player_counters_title": {
+    "text": "{name}: {n}",
+    "note": "Tooltip and screen-reader name of counters of another kind on a player. name: the kind as the card names it (not translated yet); n: the counters."
   },
   "table.player_n": {
     "text": "Player {n}",

@@ -225,11 +225,9 @@ func (g *Game) targetOptions(t TargetSpec, p PlayerID, src ObjectID) ([]Chosen, 
 		}
 	}
 	addMonsters := func() {
-		for _, s := range g.Monsters {
-			if top, ok := s.TopOf(); ok && g.Object(top).Role == RoleMonster {
-				opts = append(opts, Chosen{Kind: TargetMonster, Player: NoPlayer, Object: top})
-				labels = append(labels, CardOption(g.Object(top).Card))
-			}
+		for _, id := range g.MonstersInPlay() {
+			opts = append(opts, Chosen{Kind: TargetMonster, Player: NoPlayer, Object: id})
+			labels = append(labels, CardOption(g.Object(id).Card))
 		}
 	}
 	switch t.Kind {
@@ -469,7 +467,7 @@ func hasTap(a Ability) bool {
 // after what the ability queued (R-CARD-15).
 func (g *Game) afterEventAbility(src ObjectID) {
 	if o := g.Object(src); o.Role == RoleEvent && o.Zone.Kind == ZoneInPlay {
-		if g.Object(src).Zone.Slot == MonsterSlot && !g.def(src).Curse && !g.waitingRoll(src) {
+		if eventSlot(g.Object(src).Zone) && !g.def(src).Curse && !g.waitingRoll(src) {
 			g.enqueue(Action{Kind: ActFinishEvent, Player: NoPlayer, Object: src})
 		}
 	}

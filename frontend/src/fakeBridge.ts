@@ -4,6 +4,7 @@
 
 import b2 from '../../pkg/card_db/data/b2.json?raw';
 import requiem from '../../pkg/card_db/data/r.json?raw';
+import challenge from '../../pkg/card_db/data/challenge.json?raw';
 import { protocolVersion } from './protocol';
 
 interface Part {
@@ -57,7 +58,7 @@ function loadSettings(): unknown {
     dice: 'tear',
     no_end_turn_ask: params.has('noendask'),
     rejoin: { address: '', token: '', game: '', via: '' },
-    host: { seats: 0, sets: null, detailed: false, response_timer: 0, no_bonus_souls: false, no_deck_ratios: false, random_seats: false, rollback: '', picking: '', draft_size: 0 },
+    host: { seats: 0, sets: null, detailed: false, response_timer: 0, no_bonus_souls: false, no_deck_ratios: false, room_deck: false, random_seats: false, rollback: '', picking: '', draft_size: 0, mode: '', challenge: '', difficulty: '' },
     lan_address: '',
     // make screenshots LOCALE=qps starts every page in that language.
     language: import.meta.env.VITE_LOCALE ?? '',
@@ -85,8 +86,14 @@ interface FakeSettings {
     response_timer: number;
     no_bonus_souls: boolean;
     no_deck_ratios: boolean;
+    room_deck?: boolean;
     random_seats?: boolean;
     rollback?: string;
+    picking?: string;
+    draft_size?: number;
+    mode?: string;
+    challenge?: string;
+    difficulty?: string;
   };
   lan_address?: string;
   language?: string;
@@ -221,6 +228,9 @@ const b2Data = JSON.parse(b2) as DataSet;
 // Requiem has the two-sided cards (14.15); its cards are only dealt
 // with ?requiem.
 const requiemData = JSON.parse(requiem) as DataSet;
+// The challenge cards (ADR 028): a challenge's boss and rule cards, as
+// Go's App.Cards lists them; never a playable set (14.25).
+const challengeData = JSON.parse(challenge) as DataSet;
 
 // translated gives a card's names in every language and its translators,
 // as Go's App.Cards does (16.5); the cards above take them from b2 too.
@@ -231,7 +241,7 @@ function translated(ref: string, name: string): { names: Record<string, string>;
 }
 
 function realCards(): unknown[] {
-  return [b2Data, requiemData].flatMap((data) =>
+  return [b2Data, requiemData, challengeData].flatMap((data) =>
     data.cards
       .filter((c) => !c.reprint && !cards.some((s) => s.ref === c.id))
       .flatMap((c) => {
@@ -303,6 +313,11 @@ w.go = {
       // ?requiem adds Requiem, the only set the deck ratios need; other
       // tests keep the older sets.
       CardSets: () => Promise.resolve(['b2', 'g2', 'fsp2', ...(params.has('requiem') ? ['r'] : [])]),
+      Challenges: () =>
+        Promise.resolve([
+          { id: 'krampus', difficulties: ['normal', 'hard', 'ultra'] },
+          { id: 'trick_or_treat', difficulties: ['normal', 'hard', 'ultra'] },
+        ]),
       // Go's answer for today's card data (App.DeckRatios): the ratios
       // need Requiem, and Four Souls+ too in a 2-player game.
       DeckRatios: (sets: string[], players: number) =>
@@ -339,7 +354,7 @@ w.go = {
       // them only for screenshots, else they fail to load: plain backs.
       Backs: () =>
         Promise.resolve(
-          ['loot', 'treasure', 'monster'].map((kind) => ({ kind, image: `/cardimg/assets/backs/${kind}.webp` })),
+          ['loot', 'treasure', 'monster', 'room'].map((kind) => ({ kind, image: `/cardimg/assets/backs/${kind}.webp` })),
         ),
       // The coin and sword icons, the banner and the sky at their real
       // paths; like the backs, they load only in screenshots, else the
@@ -404,6 +419,8 @@ w.go = {
             : [
                 { id: 'basement', name: 'Basement', image: '/cardimg/assets/mats/basement.webp' },
                 { id: 'cathedral', name: 'Cathedral', image: '/cardimg/assets/mats/cathedral.webp' },
+                { id: 'halloween', name: 'Halloween', image: '/cardimg/assets/mats/halloween.webp' },
+                { id: 'christmas', name: 'Christmas', image: '/cardimg/assets/mats/christmas.webp' },
               ],
         ),
       // The real server's answer, like Go's App.CheckSeat: the first

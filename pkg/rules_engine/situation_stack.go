@@ -145,7 +145,7 @@ func (g *Game) stackedAbility(p PlayerID, st SituationStack) (StackItem, error) 
 // event's player is the owner.
 func (g *Game) stackedTrigger(p PlayerID, st SituationStack) (StackItem, error) {
 	cards := g.controlled(p)
-	for _, rows := range [][]Slot{g.Monsters, g.Rooms} {
+	for _, rows := range append(g.MonsterRows(), g.Rooms) {
 		for _, s := range rows {
 			if top, ok := s.TopOf(); ok {
 				cards = append(cards, top)
@@ -171,14 +171,14 @@ func (g *Game) stackedAttackRoll(p PlayerID, st SituationStack) (StackItem, erro
 		return StackItem{}, fmt.Errorf("owner %d is not the active player; only they attack here", st.Owner)
 	}
 	target, found := ObjectID(0), false
-	for _, s := range g.Monsters {
-		if top, ok := s.TopOf(); ok && !found && g.Object(top).Card == st.Card && g.Object(top).Role == RoleMonster {
-			target, found = top, true
+	for _, id := range g.MonstersInPlay() {
+		if !found && g.Object(id).Card == st.Card {
+			target, found = id, true
 		}
 	}
 	switch {
 	case !found:
-		return StackItem{}, fmt.Errorf("%q is not a monster in a monster slot", st.Card)
+		return StackItem{}, fmt.Errorf("%q is not a monster in play", st.Card)
 	case g.Attack.Started && g.Attack.Target != target:
 		return StackItem{}, errors.New("every attack roll must attack the same monster")
 	case !g.Attack.Started:

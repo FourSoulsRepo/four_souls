@@ -483,17 +483,72 @@ describe('lethal hits (20.3)', () => {
     expect(hpOf(view, { kind: 'damaged', player: -1, object: 40 })).toBe(2);
     expect(hpOf(view, { kind: 'damaged', player: -1, object: 41 })).toBeUndefined();
   });
+
+  it("reads a final boss's and a minion's HP too (14.25)", () => {
+    const view = {
+      players: [],
+      monsters: [{}],
+      bosses: [{ top: { id: 50, stats: { hp: 5 } } }],
+      minions: [{ top: { id: 60, stats: { hp: 1 } } }],
+    } as unknown as GameView;
+    expect(hpOf(view, { kind: 'damaged', player: -1, object: 50 })).toBe(5);
+    expect(hpOf(view, { kind: 'damaged', player: -1, object: 60 })).toBe(1);
+  });
+});
+
+describe('challenge effects (14.25)', () => {
+  it('brings a minion from the monster deck to its slot, else to the row', () => {
+    const minion = { ...ctx, card: monster, slot: (id: number) => (id === 70 ? 'minion-slot-2' : undefined) };
+    // The slot's card_revealed brings it; minion_arrived is history only.
+    const events: GameEvent[] = [
+      { kind: 'card_revealed', player: -1, object: 70, card: 'gaper' },
+      { kind: 'minion_arrived', player: -1, object: 70, card: 'gaper' },
+    ];
+    expect(effectsFor(events, minion)).toEqual([
+      // The reveal holds it in the middle; it flies on from there (15.73).
+      { kind: 'reveal', card: 'gaper', deck: ['deck-monster'], hold: true },
+      { kind: 'place', from: ['deck-monster'], to: ['minion-slot-2', 'minions'], card: 'gaper', back: 'monster', middle: true },
+    ]);
+  });
+
+  it("shows a present's counters going and coming, and where it went", () => {
+    expect(effectsFor([{ kind: 'present_counters', player: -1, object: 80, amount: -4, text: 'cents' }], ctx)).toEqual([
+      { kind: 'popup', at: ['present-cents'], text: '−4', tone: 'bad' },
+    ]);
+    expect(effectsFor([{ kind: 'present_counters', player: 0, object: 80, amount: 2, text: 'loot' }], ctx)).toEqual([
+      { kind: 'popup', at: ['present-loot'], text: '+2', tone: 'good' },
+    ]);
+    expect(effectsFor([{ kind: 'present_destroyed', player: -1, object: 81, card: 'the_d6', text: 'soul' }], ctx)).toEqual([
+      { kind: 'fly', from: ['present-soul'], to: ['discard-treasure'], card: 'the_d6', back: 'treasure' },
+    ]);
+    expect(effectsFor([{ kind: 'present_given', player: 1, object: 82, card: 'the_d6', text: 'treasure' }], ctx)).toEqual([
+      { kind: 'fly', from: ['present-treasure'], to: ['player-1'], card: 'the_d6', back: 'treasure', sound: 'treasureGain' },
+    ]);
+  });
+
+  it('ends a challenge with a banner, won or lost', () => {
+    expect(effectsFor([{ kind: 'challenge_won', player: -1 }], ctx)).toEqual([{ kind: 'banner', text: 'Challenge won!', won: true }]);
+    expect(effectsFor([{ kind: 'challenge_lost', player: -1 }], ctx)).toEqual([{ kind: 'banner', text: 'Challenge lost', won: true }]);
+  });
 });
 
 describe('slotZone', () => {
-  it('names the monster or shop slot a card is the top of', () => {
+  it('names the monster, shop or room slot a card is the top of', () => {
     const view = {
       monsters: [{ top: { id: 7 } }, { top: { id: 8 } }],
       shop: [{}, { top: { id: 9 } }],
+      rooms: [{ top: { id: 11 } }],
     } as unknown as GameView;
     expect(slotZone(view, 8)).toBe('monster-slot-1');
     expect(slotZone(view, 9)).toBe('shop-slot-1');
+    expect(slotZone(view, 11)).toBe('room-slot-0');
     expect(slotZone(view, 10)).toBeUndefined();
+  });
+
+  it("names a challenge's final boss and minion slots (14.25)", () => {
+    const view = { monsters: [], shop: [], bosses: [{ top: { id: 20 } }], minions: [{ top: { id: 21 } }, { top: { id: 22 } }] } as unknown as GameView;
+    expect(slotZone(view, 20)).toBe('boss-slot-0');
+    expect(slotZone(view, 22)).toBe('minion-slot-1');
   });
 });
 

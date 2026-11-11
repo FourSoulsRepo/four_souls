@@ -62,7 +62,14 @@ var kinds = map[string]string{
 
 	"Bonus Soul Card": "BonusSoulCard",
 	"Room Card":       "RoomCard",
+
+	// A challenge's cards (ADR 028): the boss is never in a deck.
+	"Challenge Boss Card": "MonsterCard",
+	"Challenge Card":      "ChallengeCard",
 }
+
+// outsideTypes are printed types whose cards start outside the game.
+var outsideTypes = map[string]bool{"Challenge Boss Card": true}
 
 // groups maps printed card types to deck ratio groups (R-SETUP-17).
 var groups = map[string]string{
@@ -105,6 +112,7 @@ var rewardKinds = map[string]string{
 type stub struct {
 	file string // file name inside the set folder
 	name string // Go variable name
+	back string // the back face's variable name, if two-sided (ADR 023)
 	src  []byte
 }
 
@@ -174,7 +182,6 @@ func cardStub(pkg string, c carddb.Card, startingItem bool) (stub, error) {
 	}
 	en := c.Text[carddb.English]
 	var b bytes.Buffer
-	var todo []string
 
 	fmt.Fprintf(&b, "package %s\n\nimport engine \"github.com/FourSoulsRepo/rules_engine\"\n\n", pkg)
 	fmt.Fprintf(&b, "// %s (%s)\n", en.Name, c.Type)
@@ -190,44 +197,8 @@ func cardStub(pkg string, c carddb.Card, startingItem bool) (stub, error) {
 		"Kind: engine." + kind,
 		"Copies: " + strconv.Itoa(c.Copies),
 	}
-	for _, st := range c.Stats {
-		n, err := strconv.Atoi(st.Value)
-		if err != nil {
-			todo = append(todo, fmt.Sprintf("%s is %q", st.Name, st.Value))
-			continue
-		}
-		switch st.Name {
-		case "HP", "ATK", "DC":
-			fields = append(fields, st.Name+": "+strconv.Itoa(n))
-		default:
-			todo = append(todo, "stat "+st.Name)
-		}
-	}
-	var rewards []string
-	soul := 0
-	for _, r := range c.Rewards {
-		n, okN := rewardCount(r.Count)
-		rolled := strings.HasPrefix(strings.ReplaceAll(r.Count, " ", ""), "Roll-")
-		switch {
-		case rolled && kind == "MonsterCard" && rewardKinds[r.Kind] != "":
-			rewards = append(rewards, fmt.Sprintf("{Kind: %s, Roll: true}", rewardKinds[r.Kind]))
-		case r.Kind == "Soul" && okN:
-			soul += n // some cards print several soul icons
-		case kind != "MonsterCard":
-			// Icons on items and loot show what the card gives; the
-			// effect blocks do that, not a reward box.
-		case !okN || rewardKinds[r.Kind] == "":
-			todo = append(todo, fmt.Sprintf("reward %q %s", r.Count, r.Kind))
-		default:
-			rewards = append(rewards, fmt.Sprintf("{Kind: %s, Amount: %d}", rewardKinds[r.Kind], n))
-		}
-	}
-	if soul > 0 {
-		fields = append(fields, "Soul: "+strconv.Itoa(soul))
-	}
-	if len(rewards) > 0 {
-		fields = append(fields, "Rewards: []engine.Reward{"+strings.Join(rewards, ", ")+"}")
-	}
+	stats, todo := statFields(c, kind)
+	fields = append(fields, stats...)
 	if kind == "CharacterCard" && len(c.Related) > 0 {
 		fields = append(fields, fmt.Sprintf("StartingItem: %q", c.Related[0]))
 	}
@@ -243,11 +214,15 @@ func cardStub(pkg string, c carddb.Card, startingItem bool) (stub, error) {
 	if c.ThreePlus {
 		fields = append(fields, "ThreePlus: true")
 	}
-	if startingItem {
+	if startingItem || outsideTypes[c.Type] {
 		fields = append(fields, "Outside: true")
 	}
 	if kind == "CharacterCard" || strings.Contains(strings.Join(en.Effects, "\n"), "{Tap Effect}") {
 		fields = append(fields, "Tap: true")
+	}
+	back, hasBack := c.BackCard()
+	if hasBack {
+		fields = append(fields, fmt.Sprintf("Back: %q", back.Ref().String()))
 	}
 
 	b.WriteString("//\n")
@@ -261,12 +236,38 @@ func cardStub(pkg string, c carddb.Card, startingItem bool) (stub, error) {
 	}
 	name := varName(ref)
 	fmt.Fprintf(&b, "var %s = engine.CardDef{\n%s,\n}\n", name, strings.Join(fields, ",\n"))
+	backName := ""
+	if hasBack {
+		backName = varName(back.Ref())
+		backDef(&b, back, kind, backName)
+	}
 
 	src, err := format.Source(b.Bytes())
 	if err != nil {
 		return stub{}, fmt.Errorf("cardgen: %s: format: %w", ref, err)
 	}
-	return stub{file: fileName(ref), name: name, src: src}, nil
+	return stub{file: fileName(ref), name: name, back: backName, src: src}, nil
+}
+
+// backDef writes the back face of a two-sided card (ADR 023): a card of
+// its own, outside the game, never dealt (R-MECH-33).
+func backDef(b *bytes.Buffer, back carddb.Card, kind, name string) {
+	en := back.Text[carddb.English]
+	fmt.Fprintf(b, "\n// %s is the back of %s: %s.\n", name, back.Front, en.Name)
+	if text := printedText(en); len(text) > 0 {
+		b.WriteString("//\n")
+		for _, line := range text {
+			fmt.Fprintf(b, "//\t%s\n", line)
+		}
+	}
+	fields := []string{fmt.Sprintf("Ref: %q", back.Ref().String()), "Kind: engine." + kind}
+	stats, todo := statFields(back, kind)
+	fields = append(fields, stats...)
+	fields = append(fields, "Outside: true")
+	for _, t := range todo {
+		fmt.Fprintf(b, "// Not generated: %s.\n", t)
+	}
+	fmt.Fprintf(b, "var %s = engine.CardDef{\n%s,\n}\n", name, strings.Join(fields, ",\n"))
 }
 
 // reprint is a card of an older set that this set adds copies of (ADR 010).
@@ -307,6 +308,11 @@ func setList(set carddb.Set, cards []stub, reprints []reprint, grouped []group) 
 	fmt.Fprintf(&b, "var Set = engine.CardSet{\nCode: %q,\nName: %q,\nCards: []engine.CardDef{\n", set.Code, set.Name)
 	for _, c := range cards {
 		b.WriteString(c.name + ",\n")
+	}
+	for _, c := range cards {
+		if c.back != "" {
+			b.WriteString(c.back + ",\n") // back faces last, never dealt (ADR 023)
+		}
 	}
 	b.WriteString("},\n")
 	if len(reprints) > 0 {
@@ -427,4 +433,48 @@ func write(dir string, files []stub) (written, kept int, err error) {
 		}
 	}
 	return written, kept, nil
+}
+
+// statFields are a face's stats, soul and rewards; todo lists what it
+// can't read.
+func statFields(c carddb.Card, kind string) (fields, todo []string) {
+	for _, st := range c.Stats {
+		n, err := strconv.Atoi(st.Value)
+		if err != nil {
+			todo = append(todo, fmt.Sprintf("%s is %q", st.Name, st.Value))
+			continue
+		}
+		switch st.Name {
+		case "HP", "ATK", "DC":
+			fields = append(fields, st.Name+": "+strconv.Itoa(n))
+		default:
+			todo = append(todo, "stat "+st.Name)
+		}
+	}
+	var rewards []string
+	soul := 0
+	for _, r := range c.Rewards {
+		n, okN := rewardCount(r.Count)
+		rolled := strings.HasPrefix(strings.ReplaceAll(r.Count, " ", ""), "Roll-")
+		switch {
+		case rolled && kind == "MonsterCard" && rewardKinds[r.Kind] != "":
+			rewards = append(rewards, fmt.Sprintf("{Kind: %s, Roll: true}", rewardKinds[r.Kind]))
+		case r.Kind == "Soul" && okN:
+			soul += n // some cards print several soul icons
+		case kind != "MonsterCard":
+			// Icons on items and loot show what the card gives; the
+			// effect blocks do that, not a reward box.
+		case !okN || rewardKinds[r.Kind] == "":
+			todo = append(todo, fmt.Sprintf("reward %q %s", r.Count, r.Kind))
+		default:
+			rewards = append(rewards, fmt.Sprintf("{Kind: %s, Amount: %d}", rewardKinds[r.Kind], n))
+		}
+	}
+	if soul > 0 {
+		fields = append(fields, "Soul: "+strconv.Itoa(soul))
+	}
+	if len(rewards) > 0 {
+		fields = append(fields, "Rewards: []engine.Reward{"+strings.Join(rewards, ", ")+"}")
+	}
+	return fields, todo
 }

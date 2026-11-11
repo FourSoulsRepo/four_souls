@@ -4,7 +4,7 @@
 import { firstPlayerText, tieText } from './dice';
 import { say, t } from './i18n';
 import type { GameEvent, GameView, Rollback, RollbackEnd, RollbackStep, StackItem, Update } from './protocol';
-import { findCard, StackKind, stackLine, type Names } from './stack';
+import { attackedPlayer, findCard, StackKind, stackLine, type Names } from './stack';
 import { rollChanges } from './stats';
 
 export interface Entry {
@@ -67,15 +67,20 @@ const told = 'line';
 // missing here fails history.test.ts, so no play goes untold.
 export const historyKinds: Record<string, string> = {
   activated: 'Its stack item resolves as a line, or is cancelled.',
+  abilities_gained: told,
   attack_declared: told,
   attack_ended: 'The rolls, the damage and the kill tell how it ended.',
   attack_roll_repeated: 'A trigger cause; the trigger resolves as a line.',
+  attack_start: 'A trigger moment; attack_target has the line, its triggers resolve as lines.',
   attack_target: told,
-  boosted: 'The boosting card resolves as a line; the card shows its stats.',
+  boosted: told,
   cancelled: told,
   card_revealed: 'The table shows it; an attack on it names it.',
+  challenge_lost: told,
+  challenge_timer: told,
+  challenge_won: told,
   character_dealt: 'Setup: the pick screen shows the characters.',
-  counters: 'The card shows its counters (15.23).',
+  counters: told,
   cursed: told,
   damage_pending: 'A stack item; it resolves as a line.',
   damaged: 'The damage stack item resolves as a line.',
@@ -91,6 +96,7 @@ export const historyKinds: Record<string, string> = {
   expanded: told,
   extra_turn: told,
   first_player: told,
+  forgone: told,
   first_roll_tied: told,
   fizzled: told,
   flipped: told,
@@ -108,12 +114,18 @@ export const historyKinds: Record<string, string> = {
   loot_played: 'The loot card resolves as a line, or is cancelled.',
   looted: told,
   lost_cents: told,
+  minion_arrived: told,
   moved_to_deck: 'Cards put back into a deck are mostly hidden.',
   object_died: told,
   paid: 'The buy or the ability names what was paid for.',
   passed_priority: 'Passing is no play.',
   penalty_paid: told,
   phase: 'The turn badge shows the step.',
+  player_counters: told,
+  present_counters: told,
+  present_destroyed: told,
+  present_given: told,
+  presents_flipped: told,
   prevented: told,
   purchase_declared: told,
   purchase_failed: told,
@@ -121,6 +133,7 @@ export const historyKinds: Record<string, string> = {
   random_pick: 'Its card resolves as a line, with the results after it.',
   recharged: 'The table shows charged cards.',
   replaced: 'The results that replace the event have their lines.',
+  rewards_changed: told,
   rewards_gained: told,
   roll_changed: "The roll's line shows the change.",
   roll_repeated: 'A trigger cause; the trigger resolves as a line.',
@@ -137,6 +150,20 @@ export const historyKinds: Record<string, string> = {
   turn_skipped: told,
   turn_started: told,
 };
+
+// presentName names a Krampus present by its kind (R-KRAMPUS-05).
+function presentName(kind: string | undefined): string {
+  switch (kind) {
+    case 'loot':
+      return t('history.present.loot');
+    case 'treasure':
+      return t('history.present.treasure');
+    case 'soul':
+      return t('history.present.soul');
+    default:
+      return t('history.present.cents');
+  }
+}
 
 // topChoiceText is another player's top_choice line: it names the deck
 // and where its top card went, never the card (19.90).
@@ -186,6 +213,9 @@ export function entriesFor(events: GameEvent[], turn: number, you: number, n: Na
   const targetOf = (it: StackItem): Outcome | undefined => {
     const ref = it.target.is_player ? character(it.target.player) : (it.target_card ?? findCard(view, it.target.object ?? 0));
     if (it.target.is_player) return { text: n.player(it.target.player), ...(ref ? { card: ref } : {}) };
+    // An attack on a player aims at their character (R-ATK-20, 14.14).
+    const victim = attackedPlayer(it, view);
+    if (victim !== undefined) return { text: n.player(victim), ...(ref ? { card: ref } : {}) };
     return ref ? { text: n.card(ref), card: ref } : undefined;
   };
   // A bought item also comes as a gain; the buy line names it alone.
@@ -313,6 +343,93 @@ export function entriesFor(events: GameEvent[], turn: number, you: number, n: Na
         break;
       case 'game_won':
         add('♛', mine(e.player) ? t('history.won.you') : t('history.won.other', { player }));
+        break;
+      // A co-op challenge (ADR 028): the timer at a round's end, and its end.
+      case 'challenge_timer':
+        add('⌛', t('history.challenge_timer', { n: e.amount ?? 0 }));
+        break;
+      case 'challenge_won':
+        add('♛', t('history.challenge_won'));
+        break;
+      case 'challenge_lost':
+        add('✗', t('history.challenge_lost', { reason: say(e.label, n) }));
+        break;
+      // How the Krampus Stole Christmas (R-KRAMPUS, 14.22). Counters a
+      // forgo adds have the forgone line.
+      case 'present_counters':
+        if ((e.amount ?? 0) < 0) {
+          add('🎁', t('history.present_counters', { present: presentName(e.text), n: -(e.amount ?? 0) }));
+        }
+        break;
+      // Trick or Treat (R-TRICK, 14.32): fear on players, trick counters
+      // off the boss, and what the attack-start rolls did. Other counters
+      // and boosts show on their cards only (15.23).
+      case 'player_counters': {
+        const k = Math.abs(e.amount ?? 0);
+        if (e.text === 'fear' && (e.amount ?? 0) > 0) {
+          add('👻', mine(e.player) ? t('history.fear_gained.you', { n: k }) : t('history.fear_gained.other', { player, n: k }));
+        } else if (e.text === 'fear') {
+          add('👻', mine(e.player) ? t('history.fear_lost.you', { n: k }) : t('history.fear_lost.other', { player, n: k }));
+        }
+        break;
+      }
+      case 'counters':
+        if (e.text === 'trick' && (e.amount ?? 0) < 0) {
+          add('🎃', t('history.trick_counters', { card, n: -(e.amount ?? 0) }), e.card);
+        }
+        break;
+      case 'boosted':
+        if (e.text === 'damage taken') {
+          const k = e.amount ?? 0;
+          add('🎃', mine(e.player) ? t('history.damage_taken.you', { n: k }) : t('history.damage_taken.other', { player, n: k }));
+        }
+        break;
+      case 'rewards_changed': {
+        const k = e.amount ?? 0;
+        switch (e.text) {
+          case 'set cents':
+            add('🎃', t('history.rewards_changed.set', { card, n: k }), e.card);
+            break;
+          case 'add loot':
+            add('🎃', t('history.rewards_changed.loot', { card, n: k }), e.card);
+            break;
+          case 'add treasure':
+            add('🎃', t('history.rewards_changed.treasure', { card, n: k }), e.card);
+            break;
+          default:
+            add('🎃', t('history.rewards_changed.cents', { card, n: k }), e.card);
+        }
+        break;
+      }
+      case 'abilities_gained':
+        // text is the card whose abilities the monster gained.
+        add('🎃', t('history.abilities_gained', { card, gained: n.card(e.text ?? '') }), e.card);
+        break;
+      case 'present_destroyed':
+        add('🎁', t('history.present_destroyed', { present: presentName(e.text), card }), e.card);
+        break;
+      case 'presents_flipped':
+        add('🎁', t('history.presents_flipped'));
+        break;
+      case 'present_given':
+        add(
+          '🎁',
+          mine(e.player)
+            ? t('history.present_given.you', { present: presentName(e.text), card })
+            : t('history.present_given.other', { player, present: presentName(e.text), card }),
+          e.card,
+        );
+        break;
+      case 'forgone':
+        add(
+          '🎁',
+          mine(e.player)
+            ? t('history.forgone.you', { present: presentName(e.text), n: e.amount ?? 0 })
+            : t('history.forgone.other', { player, present: presentName(e.text), n: e.amount ?? 0 }),
+        );
+        break;
+      case 'minion_arrived':
+        add('☠', t('history.minion_arrived', { card }), e.card);
         break;
       case 'attack_declared':
         add('⚔', mine(e.player) ? t('history.attack_declared.you') : t('history.attack_declared.other', { player }));
@@ -753,6 +870,8 @@ function barrierWords(kind: string): string | undefined {
     case 'gained_treasure':
       return t('history.barrier.drawn');
     case 'card_revealed':
+    case 'present_destroyed':
+    case 'presents_flipped':
       return t('history.barrier.revealed');
     case 'looked_at':
       return t('history.barrier.seen');

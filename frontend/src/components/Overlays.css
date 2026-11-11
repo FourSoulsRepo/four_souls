@@ -44,6 +44,11 @@
   margin: 0;
 }
 
+/* Why a challenge was lost, under the title (14.25). */
+.over-reason {
+  font-size: 1.125rem;
+}
+
 /* The settings form in the game menu (18.19): the menu screens' look,
    sized to the form instead of the window. */
 .screen.game-settings {

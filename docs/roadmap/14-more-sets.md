@@ -3,7 +3,7 @@
 Goal: official sets beyond the Base Game.
 Order: Gold Box, Four Souls+, Requiem, Warp Zone, promos.
 
-Ideas: CD-02, GS-07, GS-08, CD-11, A-16, CD-12, V-32, GS-12, GS-13, GS-01.
+Ideas: CD-02, GS-07, GS-08, CD-11, A-16, CD-12, V-32, GS-12, GS-13, GS-01, GS-11.
 
 ---
 
@@ -172,6 +172,7 @@ Ideas: CD-02, GS-07, GS-08, CD-11, A-16, CD-12, V-32, GS-12, GS-13, GS-01.
    12. A-16 holds: the client still gets whole sets, never the dealt decks.
    13. FuzzSets and the simulations turn the ratios on in some games.
    14. Use case UC-20; tests `TestDeckRatios`, `TestDeckRatiosOption`, e2e.
+   15. Rooms done in 14.13 (2026-11-10); Bonus Souls was already in.
 
 ### [ ] 14.5 Copy art on the table
 
@@ -346,7 +347,7 @@ Alt art (CD-11) comes after all sets.
    2. e2e test: the table shows the ban list to every player.
    3. Use case for the option.
 
-### [ ] 14.13 Rooms on the table
+### [x] 14.13 Rooms on the table
 
 1. Goal: the room deck plays in the app (Requiem).
 2. Tasks:
@@ -359,8 +360,25 @@ Alt art (CD-11) comes after all sets.
 3. Done when:
    1. e2e test: host with rooms, use a room, change it in the end phase.
    2. Use case for rooms; UC-05 updated.
+4. Result (owner's jump ahead, 2026-11-10):
+   1. Protocol option `room_deck`; the server turns it off without rooms.
+   2. Record header `room_deck`; ADR 007 updated.
+   3. View: `rooms`, the room slots; presence covers them.
+   4. Host screen: "Room deck" in detailed setup, only with Requiem.
+   5. Board: a rooms column after the slots; room, room deck, discard.
+   6. Client kind `room`: landscape in every size, text cards too.
+   7. Room use and the room step need no new client code.
+   8. No room back image at first: a face-down room was the plain back.
+   9. Tests: `TestRoomDeckOption`, `TestRoomsOption`, `e2e/tests/rooms.spec.ts`.
+   10. UC-40 added; UC-05 and the Client wiki updated.
+   11. Owner: the room deck showed no back image (2026-11-10).
+       1. The tools fetched only loot, treasure and monster backs.
+       2. The app served only those three kinds (`backKinds`).
+       3. Tools: `backs` also fetches `RoomCardBack.png` (landscape).
+       4. Images: `assets/backs/room.webp`, landscape like the rooms (818×600 since 14.16).
+       5. App: `backKinds` has `room`; without the images it stays plain.
 
-### [ ] 14.14 Attack a player or an item
+### [x] 14.14 Attack a player or an item
 
 1. Goal: Requiem's new attack targets work in the app.
 2. Tasks:
@@ -372,6 +390,16 @@ Alt art (CD-11) comes after all sets.
    1. e2e test: The Siren lets the active player attack a player.
    2. e2e test: Punching Bag can be attacked.
    3. UC-13 updated.
+4. Result (owner's jump ahead, 2026-11-10):
+   1. Engine, server and view were done before: targets, odds, helper rolls.
+   2. The client's pick, glow and arrow already took players and items.
+   3. One bug: an attack roll on a player named the character card.
+   4. "Ada rolls against Judas"; now "Ada rolls against Bo".
+   5. `attackedPlayer` in `stack.ts`; the stack and the history use it.
+   6. Helpers' rolls already named the helper: Throw, banner, stack line.
+   7. The odds row stays the active player's during a helper's roll.
+   8. Tests: `stack.test.ts`, `e2e/tests/attack-targets.spec.ts` (Siren, Punching Bag, Sibling Rivalry).
+   9. UC-13: 5o, 5p, 5q; Client wiki: `attackedPlayer`.
 
 ### [x] 14.15 Two-sided cards
 
@@ -392,3 +420,780 @@ Alt art (CD-11) comes after all sets.
    2. **Owner:** the tools fetch the back images now (2026-10-27).
 5. Owner notes (2026-10-27)
    1. Owner marks 14.15 solved.
+
+### [x] 14.16 Landscape cards at full quality
+
+1. Goal: a landscape card is as sharp as a portrait one (owner, 2026-11-10).
+2. Tasks:
+   1. Tools: `resize` limits the width to 600 px, whatever the shape.
+   2. A portrait card is 600×818; a room is only 600×440.
+   3. The board and zoom draw a room 88/63 wider than a portrait card.
+   4. So a room has fewer pixels per screen pixel; its zoom is blurry.
+   5. Card images and backs: limit the short side to 600 px instead.
+   6. Portrait cards stay 600×818; landscape ones become 818×600.
+   7. `assets` (mats, dice) keeps its width limit.
+   8. Regenerate every landscape image: the rooms and the room back.
+   9. Translated room images too, if any.
+3. Done when:
+   1. Tools test: a landscape card resizes to 818×600.
+   2. Every room image and the room back are 818×600.
+   3. No portrait image changes.
+4. Result (owner's jump ahead, 2026-11-10):
+   1. Tools: `resizeCard` limits the short side; `images` and `backs` use it.
+   2. `assets` keeps `resize`, the width limit, for mats and dice.
+   3. Test `TestResizeCard`: 962×1312 to 600×818, 1312×962 to 818×600.
+   4. Only Requiem has landscape cards: 61 rooms; no translated images.
+   5. Reran `images -origin r` and `backs`: 62 files changed, all landscape.
+   6. Every portrait image came out byte-identical.
+   7. gosec flagged two temp-file writes after the change (G703); marked, with the reason.
+   8. The images wait in the private repo for the owner's amend and push.
+5. Owner notes (2026-11-10)
+   1. Owner amended and pushed the images (`4ad7123`).
+   2. Owner marks 14.16 solved.
+
+### [x] 14.17 Challenge rules research
+
+1. Goal: our rules text for co-op challenges and Krampus (GS-11).
+2. Owner decisions (2026-11-10):
+   1. A "Challenge" game mode beside the regular game.
+   2. First challenge: How the Krampus Stole Christmas.
+   3. Difficulties now: Normal, Hard, Ultra Hard.
+   4. Co-op only: exactly 2 people, one character each.
+   5. Solo (one person, two characters): later, 14.27.
+   6. Competitive variant: later, 14.28.
+   7. No 3–4 player challenges; official rules use 2 characters.
+3. Sources (copyrighted; only in the tools repo `.cache/research/maestro/`):
+   1. `solo-coop-and-challenge-rules.pdf` and `.txt`: Maestro Media.
+   2. `how-the-krampus-stole-christmas.pdf` and `.txt`: Maestro Media.
+   3. `pilfering-krampus-cards.png`: the 4 boss cards (page 4 of the PDF).
+   4. Rulebook sections: `.cache/research/official/extended-rulebook.md`.
+   5. "Solitaire/Co-op Mode" and "Four Souls Challenges" (lines 1010–1105).
+   6. Fan copy: foursoulsspoiler.net/challenges (a transcription; low trust).
+   7. Links: maestromedia.com/collections/boi-challenges.
+4. Facts found (2026-11-10):
+   1. Pilfering Krampus: HP 5 Normal, 6 Hard, 6 Ultra Hard; 4+; ATK 2.
+   2. Reward +1 treasure; soul value 1, every difficulty.
+   3. The competitive boss: HP 5; its own text.
+   4. Presents at start (¢, loot, treasure, soul): 8/2/3/3, 12/4/3/3, 16/4/3/3.
+   5. Order of the rows: Normal, Hard, Ultra Hard.
+   6. "What's in the Box?": 3 minions on Normal, 4 on Hard and Ultra Hard.
+   7. "Happy Holidays!": at 5, 6 or 7 souls by difficulty.
+   8. The PDF: a final boss leaves its slot only if "defeated in an attack".
+   9. The rulebook says "killed"; the research picks one and says why.
+   10. The PDF room rule says "after step 4"; the rulebook says "step 3".
+   11. foursouls.com lists the challenge cards as origin `challenge` (83 cards).
+   12. Krampus: `challenge-pilfering_krampus-{norm,hard,ultra,comp}`.
+   13. Its rule cards: `challenge-how_the_krampus_stole_christmas-{norm,hard,ultra,comp}`.
+5. Tasks:
+   1. New rules file `challenges.md`; topics COOP, CHAL, KRAMPUS.
+   2. COOP: co-op setup and play; no solitaire rules yet.
+   3. CHAL: final boss slot, boss armor, minion slots, timer, beating a challenge.
+   4. KRAMPUS: goal, setup, presents, three global modifiers, per difficulty.
+   5. Search S-YUG, S-RED, S-DIS for Krampus challenge rulings.
+   6. Open cases go to `open-questions.md` with a proposal each.
+   7. Known cases to write down:
+      1. "Souls controlled by all players": soul value, or soul cards?
+      2. Normal's forced attack: who picks the random minion, and when?
+      3. "All I Want for Christmas" with a mixed reward (¢ and loot).
+      4. A forgone reward for a destroyed present.
+      5. "Round": when does it end with an extra or a skipped turn?
+      6. Q-04 (timer on death) does not apply: challenges never tick on death.
+      7. Does the regular Krampus (`fsp2`) stay in the monster deck?
+      8. The PDF lets it stand in for the boss, which takes it out.
+   8. Mark each basis Official, Community or House (rulings-basis rule).
+6. Done when:
+   1. Rules test passes: every new ID unique and well formed.
+   2. The rules website shows the new file, if it lists every topic file.
+7. Result (2026-11-10):
+   1. New `pkg/rules_engine/docs/rules/challenges.md`.
+   2. Rules R-COOP-01–12, R-CHAL-01–15, R-KRAMPUS-01–16.
+   3. Topics added to the rules README; the website lists the file last.
+   4. Open cases Q-30 to Q-42 in `open-questions.md`; Q-04 notes Q-35.
+   5. House answers Q-31–Q-33, Q-39–Q-42 are in "Rulings to revisit".
+   6. Final boss leaves when "killed" (S-OFF over the PDF): Q-37.
+   7. Room rule after the room step: Q-38.
+   8. Only Normal has the forced minion attack; checked on the boss cards.
+   9. `sources.md`: new source S-MAE, the cached Maestro Media PDFs.
+   10. Community: Yuggy on events in minion slots, timer, regular boss cards.
+   11. Nothing on Krampus in S-RED, S-X or S-DIS.
+
+### [x] 14.18 ADR: challenges
+
+1. Goal: one decision record for the challenge mode (ADR 028).
+2. Written in the main conversation (CLAUDE.md 5.21.2).
+3. Tasks:
+   1. Engine: a challenge is a setup option, with its ID and difficulty.
+   2. Engine: challenge code lives apart from card sets.
+   3. Final boss slots and minion slots as new slot rows.
+   4. Presents: where they live, how counters and the flip work.
+   5. Timer: game state, shown to every player.
+   6. Co-op end: both players win, or both lose; game over says why.
+   7. Card data: `challenge` card_db set, never offered as a playable set.
+   8. Protocol, record header (ADR 007), saves and restart carry the mode.
+   9. Client: where the boss, minions, presents and timer go.
+   10. Without card images: text cards, like every other card.
+4. Done when:
+   1. ADR 028 accepted by the owner; INDEX row added.
+5. Result (2026-11-10):
+   1. ADR 028 written in the main conversation; INDEX row added.
+   2. Accepted on the owner's go-ahead to implement 14.17 – 14.26.
+   3. The owner reviews it with the step; changes go back into it.
+   4. A challenge is a card set plus a `ChallengeDef`.
+   5. Own slot rows: `Bosses`, `Minions`; presents outside the game.
+
+### [x] 14.19 Challenge card data
+
+1. Goal: the Krampus challenge's 8 cards in `card_db`, with images.
+2. Tasks:
+   1. Tools: `cards -origin challenge`; card data from foursouls.com.
+   2. Tools: `build` and `images` for the `challenge` set.
+   3. Only the cards that a supported challenge uses go into the game data.
+   4. Now: the 4 Pilfering Krampus and the 4 Krampus rule cards.
+   5. Kinds for the boss and the rule cards (ADR 028).
+   6. Check every stat against the PDF (14.17, item 4).
+   7. Images into the private image repo; the owner pushes them.
+   8. The game builds and runs without them (text cards).
+3. Done when:
+   1. `card_db` validates the set; `cardgen -report` lists it.
+   2. The host screen does not offer `challenge` as a card set.
+4. Result (2026-11-10):
+   1. Scraped `cards -origin challenge`: 86 cards; Chrome passed on its own.
+   2. New `data/challenge.json`: 8 cards, one copy each; set order 5.
+   3. Bosses: `pilfering_krampus_{norm,hard,ultra,comp}`, `Challenge Boss Card`.
+   4. Rule cards: `how_the_krampus_stole_christmas_{norm,hard,ultra,comp}`, `Challenge Card`.
+   5. IDs: the slugs with `-` as `_`; ADR 028 Decision 1 lists them.
+   6. `comp` (14.28) is in: same cards, cheap data, never dealt.
+   7. The site prints no type; the tools name them by stats.
+   8. Tools: `gameCards` keeps only these 8; no TTS or copies step.
+   9. Stats match R-KRAMPUS-03: HP 5/6/6 (comp 5), 4+, ATK 2, +1 treasure, soul 1.
+   10. Overrides from the printed cards (`overrides/challenge.json`):
+       1. Normal: "minon" twice on the site; printed "minion".
+       2. Hard: "5: remove" in lower case.
+       3. Comp: roll 5 is the treasure present; the last line was missing.
+   11. Engine: new kind `ChallengeCard`, no deck.
+   12. cardgen: a `Challenge Boss Card` is a `MonsterCard` with `Outside`.
+   13. Stubs in `cards/challenge/`; not in `cards.Sets()`; abilities in 14.22.
+   14. Tests: never dealt, Krampus stats, no `challenge` in `CardSets` or create.
+   15. Images: 8 landscape WebP files, 839×600, in `images/en/challenge/`.
+   16. They wait in the private repo for the owner's amend and push.
+   17. The client draws only rooms landscape; challenge cards need it (14.25).
+
+### [x] 14.20 Engine: co-op challenge core
+
+1. Goal: a 2-player co-op game against the game itself.
+2. Tasks:
+   1. `Setup` takes a challenge and a difficulty (ADR 028).
+   2. A challenge needs exactly 2 players.
+   3. No bonus souls; 3+ player cards are out (R-CARD-32).
+   4. Timer: starts at 8; ticks down at the end of each round.
+   5. The timer reaches 0: both players lose.
+   6. The challenge's goal met: both players win.
+   7. Soul target and "that player wins" effects do not end the game.
+   8. With rooms: a room unchanged for a whole round goes to discard.
+   9. View: timer, challenge, difficulty; win or loss reason.
+   10. Events and history messages for the timer, win and loss.
+3. Done when:
+   1. Engine tests for each rule ID of COOP and CHAL timer.
+   2. A test challenge with a trivial goal plays to a win and to a loss.
+4. Result (2026-11-10):
+   1. `challenge.go`: `ChallengeDef`, `ChallengeLevel`, `ChallengeState`, `Present`.
+   2. `Setup.Challenge`, `Setup.Difficulty`; `Game.Challenge`, nil in a regular game.
+   3. Setup errors on 3+ players, bonus souls, a missing set, an unknown difficulty.
+   4. Bonus souls are an error, not forced off; the server turns them off (14.23).
+   5. The rule card is an object outside the game; `inPlay` lists it last.
+   6. Timer: ticks before the starter's next regular turn (Q-34); 0 loses at once.
+   7. `WinChallenge()`, `LoseChallenge(reason)`; reason `event.challenge_lost.timer`.
+   8. Events `challenge_timer`, `challenge_won`, `challenge_lost`; history lines.
+   9. `checkWin` and `WinGame` do nothing in a challenge (R-CHAL-14).
+   10. Room rule by object IDs: `TurnFrom`, `RoundFrom` per player (Q-39).
+   11. An extra turn checks rooms against the player's previous regular turn.
+   12. View: `GameView.Challenge`; players see the partner's hand.
+   13. Hand events stay private; only the view shows the partner's hand.
+   14. `cards.Challenges()`, `cards.FindChallenge`; Krampus is listed as `krampus`.
+   15. Krampus's own setup returns an error until 14.22; its data is tested.
+   16. No Russian line: the repo has no `ru.json` yet; English only.
+   17. Tests: `challenge_test.go` with a test challenge; win, timer loss, rooms.
+   18. `testdata/regular_save.json`: a save from before 14.20 still resumes.
+   19. ADR 028 got small drift items: Decision 3.6–3.8, 5.9–5.11.
+
+### [x] 14.21 Engine: final boss and minion slots
+
+1. Goal: the challenge slot rows work with every card.
+2. Tasks:
+   1. Final boss slot: attackable; can't be covered or leave unless killed.
+   2. Boss armor: killed outright or over 3 non-combat damage: takes 3.
+   3. Minion slots: a new slot per minion; never refilled.
+   4. An event put in a minion slot resolves, then goes to discard.
+   5. Cards that target, move or cover monsters respect both rows.
+   6. Search every set for such cards; one shared rule (CLAUDE.md 5.24).
+   7. Attack targets and odds include both rows.
+3. Done when:
+   1. Engine tests for each CHAL slot rule.
+   2. Fuzz runs with a challenge setup stay green.
+4. Result (2026-11-10):
+   1. `boss_slots.go`: `FinalBossSlot`, `MinionSlot`; `Game.Bosses`, `Game.Minions`.
+   2. Both rows `omitempty`; `TestRegularSaveUnchanged` stays green.
+   3. Helpers: `MonstersInPlay()`, `MonsterRows()`; `IsFinalBoss`, `IsMinion`, `Held`.
+   4. Engine calls: `PutInFinalBossSlot(card)`, `PutInMinionSlot(id)`, `MinionFromDeck()`.
+   5. `Held`: `DiscardMonster`, `PutIntoDeck`, `SlotToDeckBottom` do nothing to it.
+   6. Boss armor: one `killObject` for `Kill` and `KillObject`; `armored` in `resolveDamage`.
+   7. Before, `Kill` and `KillObject` were two kill paths; now one.
+   8. A minion slot goes when its card leaves (`takeFromSlot`); later indices shift.
+   9. Invariants: every slot card's zone names its row and slot number.
+   10. Events in a minion slot: `finishEvent`, `afterEventAbility`, `BecomeSoul`.
+   11. A minion dies as a normal monster; Krampus's rule is 14.22's.
+   12. View: `GameView.Bosses`, `Minions`; protocol encoder and `protocol.ts`.
+   13. Situations take `bosses` and `minions` rows (wiki Situation-payload).
+   14. Audit, engine, through the helper:
+       1. `inPlay`, `attackTargets`, `askRedirect`, `TargetMonster` choices.
+       2. `EachMonsterTakesDamage`, `monsterDeath`, `slotAt`, situation stack.
+   15. Audit, engine, monster slots only:
+       1. `fillSlots`, `refillSlots`, deck attack placement, `PlaceFromOutside`.
+       2. `CoverMonsterSlot`, `PlaceFromDeck`, `PlaceFromDiscard`, `FromUnder`.
+       3. `PutUnder`, Indomitable, `ExpandMonsters`, situation `monsters`.
+   16. Audit, cards: 75 files in b2, g2, fsp2, r, cardkit, enginetest.
+       1. Most go through `cardkit.MonstersInPlay`, now the engine helper.
+       2. Changed: cardkit `MonstersInPlay`, Ehwaz, Magic Marker, r `cardsInPlay`.
+       3. Moves that `Held` stops: Ehwaz, Spider Mod, Void, I Am Error, Dogma.
+       4. Also: Emergency Contact, Flush, the room discard effects.
+       5. Kills that become 3 damage: Chaos Card, XIII Death, Tech X, The Bible.
+       6. Also: Pandora's Box, Euthanasia, Soulbond, Plan C, Mother's Shadow.
+       7. Slots only: The D10, Key, Red Key, Peep, Rainmaker, Dad's Note.
+       8. Also: Friendly Ball, Ouija, g2 and fsp2 `freeSlots`, expand cards.
+       9. Ace of Diamonds counts monster slots only (R-CHAL-02, R-CHAL-07).
+       10. Rag Man, Delirium, `backOnTop` move a dead card: unchanged.
+   17. Open: a max HP drop (R-MECH-21) can still bring a boss to 0 HP.
+   18. Tests: `cards/challenge_slots_test.go`, R-CHAL-02 – R-CHAL-12.
+   19. Fuzz: `FuzzChallengeSets`, `make fuzz-challenge`; 3 minutes green.
+   20. ADR 028 got small drift items: Decision 7.9–7.13.
+
+### [x] 14.22 Engine: How the Krampus Stole Christmas
+
+1. Goal: the Krampus challenge plays by its rules, all 3 difficulties.
+2. Tasks:
+   1. Setup: Pilfering Krampus of the difficulty in a final boss slot.
+   2. Setup: 4 face-down treasure cards as presents, with counters.
+   3. Start of each turn: the active player rolls; counters come off.
+   4. Hard and Ultra Hard: extra rolls per minions in play.
+   5. "What's in the Box?": a present at 0 is destroyed; minions come.
+   6. "Happy Holidays!": presents flip into items; the active player gives them.
+   7. "All I Want for Christmas": forgo a reward or a soul for counters.
+   8. Krampus can't be attacked or take damage below the soul count or with a minion.
+   9. Normal: attack a random minion once each turn if able.
+   10. No rewards or souls from minions.
+   11. Goal: Krampus dies; lost: all 4 presents destroyed, or the timer.
+   12. Fuzz and sims run Krampus games at every difficulty.
+3. Done when:
+   1. Engine tests for each KRAMPUS rule and each open case's answer.
+   2. Seeded whole games end in a win and in a loss.
+4. Result (2026-11-10):
+   1. `cards/challenge/krampus.go`: setup, shared parts; the card files build on it.
+   2. Setup: the boss via `PutInFinalBossSlot`; 4 presents via `AddPresent`.
+   3. Presents API in `challenge.go`; `Present.Destroyed`, `Present.Flipped`.
+   4. New `CardDef` hooks: `Guarded`, `MustAttackRandom`, `NoSpoils`.
+   5. New `Replacement.May`: optional, asked yes or no (`ChooseMayReplace`).
+   6. `Action.Reward` marks a monster's reward parts, rolled ones too.
+   7. Boss card: protection, start-of-turn roll, Normal's forced attack.
+   8. R-KRAMPUS-14 is the boss card's too: the boss card prints it.
+   9. Rule card: All I Want for Christmas, What's in the Box?, Happy Holidays!, the goal.
+   10. Rule card abilities are the active player's (`abilityController`).
+   11. Loss reason `event.challenge_lost.presents`.
+   12. Events: `present_counters`, `present_destroyed`, `presents_flipped`.
+   13. Also `present_given`, `forgone`, `minion_arrived`; history lines for each.
+   14. `present_destroyed`, `presents_flipped` are Soft barriers: a card shows.
+   15. View: presents show destroyed, flipped, face-up card, gainer.
+   16. Decisions left open by the docs:
+       1. Happy Holidays! triggers on a gained soul; it uses the stack.
+       2. It flips first; then the active player picks, seeing the cards.
+       3. What's in the Box? destroys at resolution, if still at 0.
+       4. A forgone soul is a dead card's soul (Q-32, item 3.9).
+       5. A deck attack picked away for the random one stays owed (Q-31).
+   17. Tests: `cards/challenge/*_test.go`, one file per card, plus `krampus_test.go`.
+   18. Whole games: seeds won at Normal and Hard; random ones lost.
+   19. Fuzz: `FuzzChallengeSets` flags 1–3 play Krampus; `TestSimulations` too.
+   20. ADR 028 got small drift items: Decision 5.12–5.14, 6.6–6.10, 9.5.
+
+### [x] 14.23 Server: challenge games
+
+1. Goal: the server hosts a challenge for 2 players.
+2. Tasks:
+   1. Protocol option: challenge ID and difficulty (ADR 028).
+   2. A challenge table has exactly 2 seats; the server checks it.
+   3. Bonus souls are off in a challenge, whatever the option says.
+   4. Records, saves and the seamless restart keep the mode.
+   5. The game list shows the challenge and its difficulty.
+   6. A list of challenges the server knows, for the host screen.
+3. Done when:
+   1. Server tests: create, start, save, load and restart a Krampus game.
+   2. UC-03 and UC-05 updated, or a new use case.
+4. Result (2026-11-10):
+   1. Protocol: `Options.challenge`, `Options.difficulty`; `GameInfo` has both.
+   2. All `omitempty`; protocol version unchanged; golden lines appended.
+   3. `checkChallenge`: unknown challenge, bad difficulty, seats other than 2.
+   4. Message keys `error.no_challenge`, `error.no_difficulty`, `error.challenge_seats`.
+   5. Bonus souls forced off; a host ban of a challenge card is refused.
+   6. The table's set list stays the playable sets; `challenge` is never shown.
+   7. `gameSets` adds the challenge set last; `engineSetup` builds every setup.
+   8. Used by start, restart, the option checks; saves and rollback follow.
+   9. `cards.ChallengeSet(def)`: the set of a challenge.
+   10. Record header: `challenge`, `difficulty` (ADR 007, items 2.17–2.19, 5.7).
+   11. A lost challenge: record `end` finished, no winners; the room is over.
+   12. Challenge list: bridge `App.Challenges()`, like `CardSets` (ADR 028, 10.7).
+   13. Lobby: `challengeText` in the game list and the table summary; English.
+   14. Tests: `internal/server/challenge_test.go`; record and app tests.
+   15. Test helper `replaySetup` rebuilds a setup from a record header.
+
+### [x] 14.24 Client: game mode in the host screen
+
+1. Goal: the host picks "Regular game" or "Challenge".
+2. Tasks:
+   1. A "Game mode" select: Regular game (default), Challenge.
+   2. Challenge: a select of challenges beside it; now only Krampus.
+   3. Challenge: a difficulty select: Normal, Hard, Ultra Hard.
+   4. Challenge: seats fixed at 2; bonus souls hidden.
+   5. The host screen remembers the last mode, challenge and difficulty.
+   6. English and Russian texts.
+   7. Other detailed options stay: sets, picking, rooms, timer, rollback, bans.
+3. Done when:
+   1. e2e test: host a Krampus challenge; the game list shows it.
+   2. Use case for hosting a challenge.
+4. Result (2026-11-10):
+   1. "Game mode" in the simple setup, above Players: Regular game, Challenge.
+   2. Challenge: challenge and difficulty selects beside it, from `getChallenges()`.
+   3. Players show 2, locked, with a line under it; Bonus souls hidden.
+   4. Every other detailed option stays; the host screen has no ban list yet.
+   5. `hostSetup.ts`: `pickChallenge`, `createOptions`; Vitest tests.
+   6. A challenge sends `challenge` and `difficulty` without Detailed too.
+   7. It sends no `no_bonus_souls`; the server plays without them.
+   8. Host settings: `mode`, `challenge`, `difficulty`; Go, TS mirror, fake bridge.
+   9. An old settings file loads Regular game; Go test.
+   10. Item 6: English only; the interface is English only (16.6).
+   11. Selects have `aria-label`s: "Challenge" is also a mode option.
+   12. The joiner's game list and table line name the challenge (14.23).
+   13. e2e `challenge-host.spec.ts`: Krampus at Hard; a regular game unchanged.
+   14. `startGame` hooks `listed` and `seated` check a guest before Join and Ready.
+   15. New UC-41; UC-03 and UC-05 point to it; wiki Client.
+
+### [x] 14.25 Client: the challenge table
+
+1. Goal: both players see and play the challenge.
+2. Tasks:
+   1. Final boss slot beside the monster slots; aiming works on it.
+   2. Minion slots appear and vanish with their minions.
+   3. Presents: face-down cards with their counters; flipped ones are items.
+   4. Timer: a d8 that counts down, with a tooltip.
+   5. The challenge's rule card for the chosen difficulty, zoomable.
+   6. "All I Want for Christmas" choice in a dialog.
+   7. Game over: "Challenge won" or "Challenge lost", with the reason.
+   8. History lines for presents, minions, the timer.
+   9. Animations and window layers follow ADR 012 and ADR 015.
+   10. Without card images: text cards for the boss and the presents.
+3. Done when:
+   1. e2e tests: presents lose counters; minions come; Krampus is attacked.
+   2. Screenshots for review; use case for playing a challenge.
+4. Result (2026-11-11):
+   1. Board `.has-challenge`: three rows and a challenge column, one shape.
+   2. Final boss group left of the monster slots; landscape, aimable.
+   3. Minion row under the monsters; small cards; empty, it shows nothing.
+   4. Challenge panel in the bonus souls' column: rule card, timer, presents.
+   5. Timer: an SVG d8 with the rounds left; "Rounds left"; tooltip.
+   6. Presents: treasure back, counter badge, kind under it.
+   7. A destroyed present's place shows ✗; a given one's ✓.
+   8. `landscape(type)` in `cards.ts`: rooms, boss and rule cards, text too.
+   9. New `challenge.ts`: `monsterRows`, `presents`, `timerText`, `challengeEnd`.
+   10. `findCard`, `hpOf`, `slotZone` know bosses and minions.
+   11. Game over: "Challenge won!" or "Challenge lost" with the reason.
+   12. Effects reuse ADR 012 animations; no new one, no new layer:
+       1. A new minion: `card_revealed` places it; the row takes it first.
+       2. `present_counters`: a popup; `present_destroyed`, `present_given`: a fly.
+       3. `challenge_won`, `challenge_lost`: the end banner.
+   13. Choices needed nothing new: forgo and gifts use the choice dialog.
+   14. `ask.attack_random` shows only beside another owed attack.
+       1. With none, the engine attacks a random minion at once.
+   15. History lines already named their cards; checked.
+   16. Fake bridge and e2e `cardName` know the challenge cards.
+   17. Tests: Vitest `challenge.test.ts`, `playback.test.ts`, `cards.test.ts`.
+   18. e2e `challenge-table.spec.ts`: 4 tests, saved games for exact states.
+   19. UC-42; ADR 028 items 11.7–11.11; wiki Client and Animations.
+
+### [x] 14.26 Challenge play-check and docs
+
+1. Goal: whole Krampus games run in the app; docs match.
+2. Tasks:
+   1. `make e2e-games` also plays Krampus at each difficulty.
+   2. Wiki: a players' page for challenges; Home and sidebar.
+   3. README: one line about the challenge mode.
+   4. `docs/ideas.md` GS-11: what is done, what is left.
+3. Done when:
+   1. `make e2e-games` passes with the Krampus games.
+4. Result (2026-11-11):
+   1. `games.spec.ts`: Krampus at Normal, Hard, Ultra Hard; 2 players, every set.
+   2. A game ends at game over: "Challenge won!" or "Challenge lost" and the reason.
+   3. Each test logs its seed at start; failed records go to `.cache/e2e-games/`.
+   4. Random play lost every time, by the timer or the presents; a valid end.
+   5. Final run: Normal seed 972853, timer, 15 turns.
+   6. Hard seed 175475, presents, 10 turns; Ultra Hard seed 284574, presents, 6 turns.
+   7. The regular 2, 3 and 4 player games passed in the same run (54 min).
+   8. Wiki: new players' page Challenges, in Home and the sidebar.
+   9. Three screenshots with card images; rows in wiki Screenshots.
+   10. Wiki Frontend-tests and CLAUDE.md 4.18 name the Krampus games.
+   11. README: one line; `docs/ideas.md` GS-11 items 8 and 9.
+   12. Docs check: ADR 028, UC-41, UC-42 and `challenges.md` against the code.
+       1. ADR 028 Decision 6.1: the rule card comes after every slot row.
+       2. UC-42 item 4: Attack goes to a random minion at once.
+       3. The dialog with "a random minion" shows only beside another owed attack.
+   13. `make e2e` run 1: the Krampus win test failed on webkit; 19.154, fixed.
+
+### [ ] 14.27 Solo challenges
+
+1. Goal: one person plays both characters (solitaire).
+2. Not now (owner, 2026-11-10): co-op comes first.
+3. Open: one app holds both seats; the table follows the waiting seat.
+
+### [ ] 14.28 Krampus: competitive variant
+
+1. Goal: 2–4 players race to kill Pilfering Krampus.
+2. Not now (owner, 2026-11-10).
+3. Rules: personal present slots; the competitive boss card; first kill wins.
+
+### [x] 14.29 Trick or Treat: rules research
+
+1. Goal: our rules text for the Trick or Treat challenge (GS-11).
+2. Owner (2026-11-11): the second challenge; same scope as Krampus.
+   1. Co-op only, exactly 2 players; Normal, Hard, Ultra Hard.
+   2. The competitive variant waits, like 14.28.
+3. Sources (tools repo `.cache/research/maestro/`, copyrighted):
+   1. `trick-or-treat.pdf` and `.txt`: Maestro Media.
+   2. The general rules: `solo-coop-and-challenge-rules.*` (14.17).
+   3. Site data: `.cache/cards/raw-challenge.json` (14.19).
+   4. Community: `.cache/research/{reddit,x,discord}`.
+4. Facts found (2026-11-11):
+   1. Boss: Mischievous The Haunt; HP 4, evasion 5+, ATK 1; +1 treasure; soul 1.
+   2. Trick counters at start: 12 Normal, 14 Hard, 14 Ultra Hard.
+   3. Guarded while trick counters > souls of all players.
+   4. Fear: a player who takes damage gets a fear counter.
+   5. Ultra Hard: each player gets one instead.
+   6. Monsters: +1 evasion per 2 fear counters on the active player.
+   7. A monster dies: the active player rolls; 4–6: a fear counter off a player.
+   8. Challenge card: one two-sided card, Trick / Treat, all 3 difficulties.
+   9. It starts Trick side up; as each turn starts, it may flip.
+   10. Trick: each kill removes a trick counter from the final boss.
+   11. Trick: attack-start roll; Hard 2 rolls, Ultra Hard 3 rolls.
+   12. Trick rolls: 1–2 damage you take +1; 3–4 gain a revealed monster's abilities.
+   13. Trick rolls: 5–6 the monster's rewards become 1¢; all till end of turn.
+   14. Treat: each gain of rewards removes a fear counter from a player.
+   15. Treat: attack-start roll; 1–2 +3¢, 3–4 +1 loot, 5–6 +1 treasure rewards.
+   16. Goal: the boss dies; loss: only the timer (R-CHAL-15).
+   17. Site cards: `challenge-mischievous_the_haunt-{norm,hard,ultra,comp}`.
+   18. Site cards: `challenge-trick_treat-normhardultra` and `-comp` ("Trick/Treat").
+   19. PDF FAQ: "a player" includes yourself.
+   20. PDF FAQ: an evasion change after the roll resolves does not change hit or miss.
+5. Tasks:
+   1. Topic TRICK in `challenges.md`: R-TRICK-NN, appended after KRAMPUS.
+   2. Search the community sources for Trick or Treat rulings.
+   3. Open cases with proposals (rulings-basis rule), at least:
+      1. Who decides the flip, and is it before or after start-of-turn triggers?
+      2. Who is "you" on the challenge card: the active player, or any player?
+      3. Fear counters: on the player or their character; do they leave on death?
+      4. Several Trick rolls with the same result: do they stack?
+      5. 3–4: abilities gained mid-attack; "when this dies" ones included?
+      6. 1¢ rewards and Treat's added rewards in the same turn: the order.
+      7. Does the regular The Haunt stay in the monster deck (as Q-36)?
+6. Done when:
+   1. Rules test passes; the rules website lists the topic.
+7. Result (2026-11-11):
+   1. Topic TRICK in `challenges.md`: R-TRICK-01–17.
+   2. Rules README: TRICK row; the website lists `challenges.md` already.
+   3. Open cases Q-43 to Q-54; Q-30 notes R-TRICK-06.
+   4. House answers Q-43, Q-44, Q-46–Q-48, Q-50, Q-51, Q-53, Q-54 are in "Rulings to revisit".
+   5. Official: Q-45 (S-OFF counters), Q-49 (Yuggy), Q-52 (S-MAE FAQ).
+   6. Checked on the printed cards: Ultra Hard puts fear on each player.
+   7. Treat rolls once at every difficulty; only Trick has Hard and Ultra Hard rolls.
+   8. `sources.md`: the Trick or Treat files under S-MAE.
+   9. The card pages are cached as PNGs next to the PDF.
+   10. Community: only Yuggy's launch post (2022-11-01), no rulings.
+   11. Nothing on Trick or Treat in S-RED digest, S-X or S-DIS.
+
+### [x] 14.30 Trick or Treat: card data
+
+1. Goal: the challenge's cards in `card_db`, with images.
+2. Tasks:
+   1. Tools: allow `mischievous_the_haunt_*` and `trick_treat_*` (14.19 list).
+   2. Trick/Treat is two-sided: Trick front, Treat back (ADR 023).
+   3. Check every stat and text against the PDF; overrides for typos.
+   4. cardgen stubs in `cards/challenge/`; set not dealt.
+   5. Images into the private repo; the owner pushes them.
+3. Done when:
+   1. `card_db` validates; `cardgen -report` lists the cards.
+4. Result (2026-11-11):
+   1. Site data from 14.19's `raw-challenge.json`; no new scrape.
+   2. `data/challenge.json`: 14 cards; 6 new.
+   3. Bosses: `mischievous_the_haunt_{norm,hard,ultra,comp}`, `Challenge Boss Card`.
+   4. Rule cards: `trick_treat_{normhardultra,comp}`, `Challenge Card`.
+   5. Trick is the front; backs `treat_normhardultra`, `treat_comp` (ADR 023).
+   6. Tools: a back's id keeps the slug's variant; else both were `treat`.
+   7. Stats match R-TRICK-03: HP 4, 5+, ATK 1, +1 treasure, soul 1.
+   8. Trick counters 12 / 14 / 14; Ultra Hard fear on each player.
+   9. Overrides from the printed cards (`overrides/challenge.json`):
+      1. Ultra, comp: "Mischievous the Haunt"; printed as the others, "The".
+      2. Trick/Treat: the site packs a side in one effect; split per printed ability.
+      3. Comp Treat: "squal" is "equal".
+      4. Comp Treat: "5-6" on its own line, as printed.
+   10. cardgen: a two-sided card's stub defines its back too (ADR 023).
+       1. The set list ends with the backs.
+       2. Requiem's `r/backs.go` is gone; its set list has them now.
+   11. Stubs in `cards/challenge/`; abilities in 14.32.
+   12. Tests: Haunt stats, Trick/Treat backs, never dealt, backs match card_db.
+   13. Images: 8 landscape WebP files, 839×600, in `images/en/challenge/`.
+   14. They wait in the private repo for the owner's amend and push.
+
+### [x] 14.31 Engine: Trick or Treat blocks
+
+1. Goal: the generic blocks the challenge needs, tested with other cards.
+2. Tasks:
+   1. Counters on players (fear) shown in the view; check existing player counters first.
+   2. Evasion from counters on the active player, for every monster row.
+   3. Attack-start trigger: "at the start of each attack against a monster".
+   4. Till end of turn: added rewards; rewards replaced by 1¢.
+   5. Till end of turn: "damage you would take is increased by 1".
+   6. A monster gains a revealed monster's abilities till end of turn (as Glitch).
+   7. An optional flip of the rule card at turn start (two-sided, ADR 023).
+   8. One shared place each; search all sets for similar effects (CLAUDE.md 5.24).
+3. Done when:
+   1. Engine tests per block; fuzz stays green.
+4. Result (2026-11-11):
+   1. Counters on players: `player_counters.go`.
+      1. `Player.Counters`, `omitempty`; none existed before.
+      2. `AddPlayerCounters`, `PlayerCounters`, `PlayersWithCounters`.
+      3. Event `player_counters`; `PlayerView.Counters`; encoder; `protocol.ts`.
+      4. Objects and players share the counter list code.
+   2. Fear evasion: static `MonstersHavePerCounters(stat, name, per)`.
+      1. Every monster in all three rows; active player's counters only.
+      2. Read by `Evasion` as each roll resolves; capped at 6; V-41 parts.
+   3. Attack start: event `attack_start`, trigger `AtStartOfAttackOnMonster`.
+      1. Emitted after `attack_target` when the target is a monster.
+      2. `nextTriggerGroup` places these first: they resolve after the target's.
+   4. Rewards: `rewards.go`, `Game.RewardChanges` till end of turn.
+      1. `AddReward`, `SetRewardsToCents`; event `rewards_changed`.
+      2. `Rewards(id)` applies them in the order made (Q-48).
+      3. A dying monster's changes move to its dead card; the rewards step reads them.
+      4. Krampus forgo and doubling keep working; the soul is no reward.
+   5. More damage: stat `StatDamageTaken`; `IncreaseDamageTaken(p, n, source)`.
+      1. Applied after shields, before the cards that lower damage.
+   6. Gained monster abilities: `RevealUntilMonster`, `GainRevealedMonster`.
+      1. Revealed cards go to the bottom in random order (Q-22).
+      2. `GainAbilities` adds gains up: `Gained` first, then `MoreGained`.
+      3. Monsters' gains end in the cleanup too (`endGains`).
+      4. Gained faces bring `CombatMod` and `Unattackable` too.
+      5. Other `CardDef` hooks are not gained; no monster needs one now.
+   7. Rule card flip: `Flip` also turns the challenge's rule card.
+      1. `FlipThis()` effect; `AtStartOfEachTurn()` trigger.
+      2. "You may" is `cardkit.May`; the view shows the face up already.
+   8. Triggers checked: `damaged` per instance, `died`, `rewards_gained`.
+      1. New: `WhenAPlayerTakesDamage()`; the rest existed.
+      2. `rewards_gained` comes for a monster without rewards too.
+      3. 14.32 checks `len(Rewards(e.Object))` for Q-54.5.
+   9. Cross-set search (b2, g2, fsp2, r, challenge):
+      1. "Damage you would take" +1: Daddy Haunt; now `StatDamageTaken`.
+      2. "Flip this": Anima Sola's own effect; now `FlipThis()`.
+      3. Start of every turn: Krampus (fsp2, challenge), The Harbingers, r rooms.
+      4. Those four now use `AtStartOfEachTurn()`.
+      5. Gained abilities: Glitch only; it keeps working with gains added up.
+      6. Rewards added or set to ¢: no card; Dinga doubles (unchanged).
+      7. Counters on players, DC per counters on a player: no card.
+   10. Decisions left open by the docs:
+       1. Increase before reductions: Daddy Haunt + Dry Baby takes 1.
+       2. During Glitch's end phase both gains work; the cleanup ends one.
+       3. 14.33 adds the changed rewards to the view; the engine has `Rewards`.
+   11. Tests: `cards/trick_blocks_test.go`, one test or two per block.
+   12. ADR 028 got small drift items: Decision 5.15–5.16, 6.11, 9.6–9.7.
+
+### [x] 14.32 Engine: Trick or Treat
+
+1. Goal: the challenge plays by its rules, all 3 difficulties.
+2. Tasks:
+   1. `ChallengeDef` `trick_or_treat`: the boss with its trick counters; Trick side up.
+   2. Boss abilities per difficulty; Trick and Treat abilities on the rule card.
+   3. Goal: the boss dies, `WinChallenge`.
+   4. History lines and view for counters, flips and rolls.
+   5. Fuzz and sims play it at every difficulty.
+3. Done when:
+   1. Engine tests per R-TRICK rule and each open case's answer.
+   2. Seeded whole games end in a win and in a loss.
+4. Result (2026-11-11):
+   1. `cards/challenge/trick_or_treat.go`: `TrickOrTreat`, setup, shared abilities.
+   2. ID `trick_or_treat`; `cards.Challenges()` lists it after Krampus.
+   3. Setup: the boss via `PutInFinalBossSlot`, then 12/14/14 `trick` counters.
+   4. One rule card for all levels; Trick side up.
+   5. Boss cards (`haunt`):
+      1. `Guarded` while trick counters > `SoulsInPlay` (Q-30).
+      2. Fear per damage instance; Ultra Hard on each player (Q-50).
+      3. `MonstersHavePerCounters` fear evasion (Q-52).
+      4. Death roll: 4–6 asks the active player who loses a fear counter (Q-51).
+   6. Rule card, both faces: the optional flip and the goal.
+   7. Trick: Nobody's Fool; Ghostly Trickery 1/2/3 rolls by `Challenge.Difficulty`.
+   8. Treat: You Don't Scare Me; Hallows' Eve Bounty, one roll.
+   9. New event `abilities_gained` from `GainRevealedMonster`.
+   10. History lines: fear gained and lost, trick counters off.
+   11. Also: damage taken up, rewards changed, abilities gained.
+   12. Keys: `card.trick_treat.{flip_to_treat,flip_to_trick,remove_fear}`.
+   13. Decisions left open by the docs:
+       1. The flip question names the side it would show.
+       2. The fear question opens only for players with fear; none, none.
+       3. Nobody's Fool takes a counter off each final boss in play.
+       4. The goal matches any of the three boss cards.
+   14. Tests: one file per card, plus `trick_or_treat_test.go`.
+       1. One test per R-TRICK rule and open case; real-card mixes.
+       2. Boom Fly gained, Dinga, Blessing of the Sack, Daddy Haunt.
+       3. Chaos Card and Bomb! against the guard and the armor.
+   15. Whole games: greedy seeds with 3 souls and 4 tricks won; random ones lost.
+   16. Fuzz: `FuzzChallengeSets` flag bit 3; `TestSimulations` plays it too.
+   17. ADR 028 got small drift items: Decision 3.9, 6.12.
+   18. The host screen lists the ID; its English name comes in 14.33.
+   19. e2e: run 1 hit the known aim flake (19.107, item 2.6); run 2 passed.
+
+### [x] 14.33 Client: Trick or Treat
+
+1. Goal: both players see and play the challenge.
+2. Tasks:
+   1. The host screen lists it (from the registry); English name.
+   2. Trick counters on the boss; fear counters by each player.
+   3. The challenge card shows its side up; a flip animation (ADR 012).
+   4. The flip question and the attack-start rolls are answerable and shown.
+   5. Changed rewards and evasion show on the monsters (V-41 breakdown).
+   6. Without card images: text cards.
+3. Done when:
+   1. e2e tests: a flip; fear raises evasion; a kill removes a trick counter.
+   2. Screenshots for review; UC-41 and UC-42 updated.
+4. Result (2026-11-11):
+   1. `challengeName`: "Trick or Treat"; host screen, game list, table line.
+      1. English only (`en.json`); the fake bridge lists it too.
+   2. Trick counters: the usual counter badge, kind `trick`, grey.
+      1. Grey as every kind without a colour; the owner may pick one (18.15).
+   3. Fear: `PlayerCounters` by each name, own and opponent's.
+      1. A dot, the number (`Count`), the word "Fear".
+      2. Tooltip: "Fear: N — monsters +1 evasion per 2 on the active player".
+      3. `playerCounters` in `counters.ts`; any other kind shows its name.
+   4. The panel shows the face up; a flip plays `card-flip` (ADR 023).
+      1. It worked as it was: the rule card keeps its object.
+      2. No presents: the panel shows no presents group.
+   5. Changed rewards: engine `MonsterStats.Rewards`, only while changed.
+      1. `RewardView`: kind, amount, roll; from `Rewards(id)`.
+      2. MonsterStats goes through `encoding/json`: the encoder needed nothing.
+      3. A ribbon on the card, "1¢ · 1 loot"; "Rewards this turn" in the zoom.
+      4. `rewardsLine`, `rewardsText` in `stats.ts`; one kind's amounts add up.
+   6. Fear evasion: the view's V-41 sources already name the Haunt.
+      1. Green DC badge; zoom "DC 5 = 4 printed + 1 Mischievous The Haunt".
+      2. A lasting source has no icon (owner, 2026-10-22).
+   7. Gained abilities: the copy mark, as Glitch's (`copy`, 19.106).
+      1. Only the first gain of a turn has the mark (`copyOf` reads `Gained`).
+   8. Dialogs checked by screenshot; none changed:
+      1. The flip question names the side; the fear pick is the choice dialog.
+      2. The attack-start roll is a Throw before the attack roll.
+      3. Every kill asks the order of the Haunt's roll and Nobody's Fool.
+      4. No setting orders triggers by itself; engine rules unchanged.
+   9. Without images: the Haunt, Trick and Treat are landscape text cards.
+   10. Tests: Vitest `counters`, `stats`, `lobby`; Go `TestTrickBlocksInView`.
+   11. e2e `challenge-trick.spec.ts`: 4 tests, saved games for exact states.
+       1. Host at Normal; the flip at turn start; the timer loss.
+       2. Fear raises the shown evasion; a miss gives fear; the reward ribbon.
+       3. The guarded boss; the trigger order; a kill takes a trick counter.
+       4. Souls reach the counters: the boss is a target; the win.
+       5. Bans only in the fear test: Delirium, Stoney; they change evasion.
+   12. Screenshots in `.cache/screenshots/14.33/`, `images/` and `no-images/`.
+       1. No images: `realAssets` skipped by a local edit, not committed.
+   13. UC-41 item 2; UC-42 items 11–17; ADR 028 11.12–11.15; wiki Client, Animations.
+   14. `make e2e` run 1: 542 passed, 12 skipped, both browsers.
+
+### [x] 14.34 Trick or Treat: play-check and docs
+
+1. Goal: whole games in the app; docs match.
+2. Tasks:
+   1. `make e2e-games` plays Trick or Treat at each difficulty.
+   2. Wiki Challenges page: a Trick or Treat section.
+   3. `docs/ideas.md` GS-11: appended progress.
+3. Done when:
+   1. `make e2e-games` passes with the new games.
+4. Result (2026-11-11):
+   1. `games.spec.ts`: Trick or Treat at Normal, Hard, Ultra Hard; 2 players, every set.
+      1. `krampus()` became `challenge(id, difficulty)`; both challenges use it.
+      2. The random moves needed nothing new.
+      3. The records show flips, fear, attack-start rolls, gains and trick counters off.
+   2. Random play lost every Trick or Treat game by the timer; a valid end.
+      1. Normal seed 938499, 17 turns; Hard seed 147578, 16 turns.
+      2. Ultra Hard seed 343122, 16 turns.
+   3. Same run: Krampus Normal 515285 timer 17 turns; Hard 691975 presents 10.
+      1. Krampus Ultra Hard 821541, presents, 7 turns.
+      2. Regular 2, 3, 4 players passed; 9 passed in 1.6 h.
+   4. Wiki Challenges: a Trick or Treat section and "On the table".
+      1. Text only; the owner may add screenshots later.
+      2. Intro, host step and "Not yet" name both challenges.
+   5. `docs/ideas.md` GS-11 items 10 and 11.
+   6. Docs check: `challenges.md` TRICK, Q-43 – Q-54, UC-41, UC-42, ADR 028.
+      1. They match the code; no rule or decision drift.
+      2. Fixed: Makefile help of `fuzz-challenge` and `sims` named only Krampus.
+      3. Fixed: README, wiki Home, Frontend-tests and CLAUDE.md 4.18 named only Krampus.
+   7. No bug in Trick or Treat; no 19.N item.
+   8. `make e2e` run 1: `attack-targets.spec.ts:193` failed on chromium.
+      1. The deal had Fatty in slot 2; the save made slot 1 Fatty too.
+      2. Two "Fatty" cards: the label locator matched both.
+      3. Cause: `giveIn` in `saves.ts` sets a slot's card without checking the others.
+      4. Evidence: `.cache/e2e-evidence/14.34-run1/`; reported to the owner.
+   9. `make e2e` run 2: 542 passed, 18 skipped, both browsers.
+
+### [x] 14.35 Halloween game mat
+
+1. Goal: a Halloween mat, to play Trick or Treat in the mood.
+2. Tasks:
+   1. Owner's request, 2026-11-11.
+   2. A Halloween look of the Basement mat: image in the private images.
+   3. `assets/mats/halloween.webp`; the mat menu lists it from the file (V-24).
+   4. A Halloween color mat, so a build without images shows its colors.
+   5. Its name in `en.json`; UC-10 and the wiki Client page name it.
+3. Done when:
+   1. The mat menu offers it, with and without the images.
+   2. Vitest and e2e cover the choice; screenshots for review.
+4. Result (2026-11-11):
+   1. `halloween.webp`: Basement recolored to a purple night, 3840×1920, 201 KB.
+      1. Drawn on it: jack-o'-lanterns with a glow, bats, cobwebs, candy corn.
+      2. The trapdoor and the heart marks stay clear.
+      3. Made by a one-off Pillow script; not kept in this repo.
+   2. Color mat `halloween`: Go `ColorMats`, `colorMats` in `mats.ts`.
+      1. `.mat-halloween`: a pumpkin glow in a purple night.
+      2. The image takes its place in the menu, as for Basement.
+   3. `mat.halloween` in `en.json`; the fake bridge lists the image.
+   4. Tests: Vitest `mats`; e2e table with the mat, menu, colors without images.
+   5. Screenshot: `.cache/screenshots/screen-table-mat-halloween.png`.
+   6. UC-10 3e and wiki Client name it.
+   7. `make e2e`: 544 passed, 18 skipped, both browsers.
+
+### [x] 14.36 Christmas game mat
+
+1. Goal: a Christmas mat, to play the Krampus challenge in the mood.
+2. Tasks:
+   1. Owner's request, 2026-11-11.
+   2. A Christmas look of the Basement mat: image in the private images.
+   3. `assets/mats/christmas.webp`; the mat menu lists it from the file (V-24).
+   4. A Christmas color mat, so a build without images shows its colors.
+   5. Its name in `en.json`; UC-10 and the wiki Client page name it.
+3. Done when:
+   1. The mat menu offers it, with and without the images.
+   2. Vitest and e2e cover the choice; screenshots for review.
+4. Result (2026-11-11):
+   1. `christmas.webp`: Basement in a snowy blue night, 3840×1920, 206 KB.
+      1. A warm middle; frost on the edges.
+      2. Drawn on it: strings of lights, trees, presents, candy canes, holly.
+      3. Snowflakes and light falling snow over the wood.
+      4. The trapdoor and the heart marks stay clear.
+      5. Made by a one-off Pillow script, like 14.35; not kept in this repo.
+   2. Color mat `christmas`: Go `ColorMats`, `colorMats` in `mats.ts`.
+      1. `.mat-christmas`: a fireside glow in a snowy blue night.
+      2. The image takes its place in the menu, as for Basement.
+   3. `mat.christmas` in `en.json`; the fake bridge lists the image.
+   4. Tests: Vitest `mats`; e2e table with the mat, menu, colors without images.
+   5. Screenshot: `.cache/screenshots/screen-table-mat-christmas.png`.
+   6. UC-10 3e and wiki Client name it.
+   7. `make e2e` run 1: 545 passed, 1 failed, 18 skipped.
+      1. `rooms.spec.ts`, webkit: Blood Donation killed Isaac; deal-dependent.
+      2. Logged as 19.156; evidence in `.cache/e2e-evidence/14.36-run1/`.
+   8. `make e2e` run 2: 546 passed, 18 skipped, both browsers.

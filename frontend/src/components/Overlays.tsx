@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { challengeEnd } from '../challenge';
 import { t } from '../i18n';
 import type { Update } from '../protocol';
 import { noticeText } from '../reconnect';
@@ -149,24 +150,31 @@ export function PauseOverlay({ game, you, name }: { game: Update; you: number; n
   );
 }
 
-// EndOverlay: the winner, and the match record to keep (RP-05).
+// EndOverlay: the winner, and the match record to keep (RP-05). A
+// challenge says won or lost, and why it was lost (ADR 028, 11.6).
 export function EndOverlay({ game, you, name }: { game: Update; you: number; name: (p: number) => string }) {
   const saveRecord = useApp((s) => s.saveRecord);
   const quit = useApp((s) => s.quit);
   const error = useApp((s) => s.error);
+  const cards = useApp((s) => s.cards);
+  const cardName = (ref: string) => cards.get(ref)?.name ?? ref;
   const [saved, setSaved] = useState('');
   const winners = game.view.winners ?? [];
-  const title = winners.includes(you)
-    ? t('over.you_win')
-    : winners.length === 1
-      ? t('over.wins', { player: name(winners[0] ?? 0) })
-      : winners.length > 1
-        ? t('over.win', { players: winners.slice(0, -1).map(name).join(', '), last: name(winners.at(-1) ?? 0) })
-        : t('over.title');
+  const challenge = challengeEnd(game.view, { player: name, card: cardName });
+  const title = challenge
+    ? challenge.title
+    : winners.includes(you)
+      ? t('over.you_win')
+      : winners.length === 1
+        ? t('over.wins', { player: name(winners[0] ?? 0) })
+        : winners.length > 1
+          ? t('over.win', { players: winners.slice(0, -1).map(name).join(', '), last: name(winners.at(-1) ?? 0) })
+          : t('over.title');
   return (
     <div className="overlay" role="dialog" aria-label={t('over.title')}>
       <div className="overlay-box">
         <h2>{title}</h2>
+        {challenge?.reason && <p className="over-reason">{challenge.reason}</p>}
         <p className="muted">{t('over.hint')}</p>
         <div className="overlay-buttons">
           <button

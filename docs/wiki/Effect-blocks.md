@@ -93,7 +93,7 @@ Targets are always asked, with a "cancel" option before anything is paid. A targ
 | `Choose(TargetYourItem)` | an item you control |
 | `Choose(TargetStackTrigger)` | a triggered ability on the stack (Dead Weight) |
 | `Choose(TargetItemOrSoul)` | an item or soul a player controls |
-| `ChooseWhere(kind, filter)` | e.g. the player with the most souls; `NotThis` is "another item"; `RechargeableItem` is a deactivated item with a ↷ ability (Lil Battery); pickers use `engine.Rechargeable` and `engine.Deactivatable`, the one rule for every card |
+| `ChooseWhere(kind, filter)` | e.g. the player with the most souls; `NotThis` is "another item"; `RechargeableItem` is a deactivated item with a ↷ ability (Lil Battery); pickers use `engine.Rechargeable` and `engine.Deactivatable`, the one rule for every card; "has a ↷" is `g.HasTap(id)`, which counts gained abilities (Golden Trinket, Glitch) |
 
 Effects refer to targets by number: `DealDamage(1, 0)` hits the first target. `This` is the ability's own object (a monster shielding itself). `You` means the controller, for text without a target: `DealDamage(1, You)` is "Take 1 damage." A roll ability keeps its targets for the result: "Choose a player, then roll- deal damage equal to the result".
 
@@ -194,6 +194,9 @@ Roll(RollTable{}.Results(1, 2, Loot(1)).Results(3, 4, GainCents(3)).Results(5, 6
 | `WhenThisDies()` | when this monster dies, before its rewards (R-DEATH-05); `c.EventObject` is the dead card |
 | `AfterThisRewards()` | after this dead monster's rewards (R-DEATH-07) |
 | `WhenARollWouldBe(n)` | each time a player would roll n (R-DICE-05); `c.EventStack` is the roll |
+| `AtStartOfEachTurn()` | as every turn starts, whoever's it is (R-TURN-03) |
+| `WhenAPlayerTakesDamage()` | each time any player takes damage, once per instance (Q-50); `c.EventPlayer` is the player |
+| `AtStartOfAttackOnMonster()` | at the start of each attack against a monster, before its first roll; below the target's own triggers (Q-53); `c.EventObject` is the monster |
 
 ## Static abilities
 
@@ -202,6 +205,8 @@ Roll(RollTable{}.Results(1, 2, Loot(1)).Results(3, 4, GainCents(3)).Results(5, 6
 | `YouHave(StatPlayerATK, 1)` | You have +1 ATK. |
 | `YouHave(StatShopPrice, -5)` | Shop items you purchase cost 5¢ less. |
 | `MonstersHave(StatMonsterDC, 1)` | Monsters have +1 DC. |
+| `MonstersHavePerCounters(StatMonsterDC, "fear", 2)` | For every 2 fear counters on the active player, monsters have +1 DC. |
+| `YouHave(StatDamageTaken, 1)` | If you would take any amount of damage, take that much damage +1 instead. (Daddy Haunt) |
 
 Stats: `StatPlayerATK`, `StatPlayerHP`, `StatMonsterDC`, `StatMonsterATK`, `StatMonsterHP`, `StatShopPrice`, `StatRoll`, `StatAttackRoll`, `StatLootPlays`, `StatAttacks`, `StatPurchases`, `StatLootStep`.
 

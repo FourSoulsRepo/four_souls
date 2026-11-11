@@ -14,6 +14,10 @@ export function Cards() {
   return window['go']['main']['App']['Cards']();
 }
 
+export function Challenges() {
+  return window['go']['main']['App']['Challenges']();
+}
+
 export function CheckSeat(arg1, arg2) {
   return window['go']['main']['App']['CheckSeat'](arg1, arg2);
 }

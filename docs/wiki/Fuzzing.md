@@ -1,6 +1,6 @@
 # Fuzzing
 
-The rules engine has two Go fuzz targets in `pkg/rules_engine/fuzz_test.go`. They play random games and check after every step that the state is still valid. They catch bugs nobody wrote a test for.
+The rules engine has two Go fuzz targets in `pkg/rules_engine/fuzz_test.go`, and three more with the real card sets in `pkg/rules_engine/cards`. They play random games and check after every step that the state is still valid. They catch bugs nobody wrote a test for.
 
 ## What one fuzz input does
 
@@ -23,10 +23,11 @@ A game is capped at `maxFuzzSteps` (2000) steps. Every step hashes the whole sta
 * `FuzzFocused` — the given cards are put into every player's play area at the start, so their abilities come up often. Use it for a new card. The focused game is not replayed, because a replay starts without those items.
 * `FuzzSets` (in `pkg/rules_engine/cards`) — the same checks with the real card sets, all of them together. The room deck and the deck ratios are on in some games.
 * `FuzzFocusedSets` (same package) — `FuzzSets` with only the sets named in `FOUR_SOULS_SETS`, the room deck on in most games. Use it for a new set: `SETS=b2,r` puts the Base Game with Requiem, so the new cards come up often. It keeps its own corpus, so a run fuzzes new inputs at once instead of replaying the big `FuzzSets` corpus first.
+* `FuzzChallengeSets` (same package) — `FuzzSets` as a 2-player challenge (14.21): a test challenge puts a final boss into its slot and two monsters into minion slots, and the top monster card into a new minion slot at the end of each turn, so events in minion slots and removed slots come up often. The invariants also check that every slot card's zone names its row and slot number. The room deck is on in some games. Flags 1 to 3 play How the Krampus Stole Christmas instead, at Normal, Hard or Ultra Hard (14.22): presents, the start-of-turn rolls, minions, the forced attack and the forgo questions. Flag bit 3 (8 to 11) plays Trick or Treat instead (14.32), the difficulty from bits 0 and 1 as for Krampus, 0 as Normal: fear, trick counters, the flip and the attack-start rolls.
 
 ## Simulations
 
-`TestSimulations` (in `pkg/rules_engine/cards`) plays whole games with random legal moves for 2, 3 and 4 players and checks the invariants after every step. It prefers acting over passing, so most games end with a winner. CI plays 100 games; locally:
+`TestSimulations` (in `pkg/rules_engine/cards`) plays whole games with random legal moves for 2, 3 and 4 players and checks the invariants after every step. It prefers acting over passing, so most games end with a winner. A quarter as many Krampus challenge games follow, the difficulties in turn (14.22), then as many Trick or Treat games (14.32); random players mostly lose them. CI plays 100 games; locally:
 
 ```sh
 cd pkg/rules_engine
@@ -40,8 +41,9 @@ FOUR_SOULS_SIMS=3000 go test -count=1 -timeout 30m -run TestSimulations ./cards/
 CI runs only the seed corpus, as normal tests (`go test ./...`). Real fuzzing runs on your machine. From the repo root:
 
 ```sh
-make fuzz                          # fuzz-engine, then fuzz-sets, 10 minutes each
+make fuzz                          # fuzz-engine, fuzz-sets, then fuzz-challenge, 10 minutes each
 make fuzz-sets FUZZTIME=2m
+make fuzz-challenge FUZZTIME=2m    # a final boss and minions; Krampus; Trick or Treat
 make fuzz-focused FOCUS=razor,d6   # cards of the engine's test sets
 make fuzz-new SETS=b2,r            # a new set with the Base Game
 make sims SIMS=3000

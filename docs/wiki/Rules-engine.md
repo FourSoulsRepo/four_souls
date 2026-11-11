@@ -74,6 +74,79 @@ The generator lives in the app module because the engine never imports `card_db`
 
 A test fails when the committed report is out of date, so run the command after finishing a card.
 
+## Challenges
+
+A co-op challenge (ADR 028; rules in `docs/rules/challenges.md`) is a regular game with `Setup.Challenge` (an `*engine.ChallengeDef`) and `Setup.Difficulty` (`normal`, `hard`, `ultra`). `cards.Challenges()` lists the known ones and `cards.FindChallenge(id)` finds one; each lives in `cards/challenge` beside its cards. The challenge's card set is no playable set (`cards.Sets()` leaves it out), so the caller adds it to `Setup.Sets`. `NewGame` refuses a challenge without exactly 2 players (R-COOP-01), with bonus souls (R-COOP-02), without its set, or with a difficulty it lacks.
+
+`ChallengeDef` holds the ID, the set's code, and per difficulty (`Levels`) the final boss and the rule card. After the regular setup, `NewGame` makes `Game.Challenge` (`challenge.go`): the timer at 8, the rule card as an object outside the game, then the def's own `Setup(g, difficulty)`. `inPlay` lists the rule card last, so its abilities work like any card's. Every `ChallengeState` field is `omitempty`, so a regular game saves exactly as before (`testdata/regular_save.json`, ADR 019).
+
+* Timer: `startNextTurn` ticks it (`challenge_timer`, the rounds left) before the starting player's next regular turn, skipped or not; an extra turn adds no tick (R-COOP-08, Q-34). At 0 the game is lost at once.
+* End: `WinChallenge()` (`challenge_won`, both players in `Winners`) or `LoseChallenge(reason)` (`challenge_lost`, the reason as its label and in `Challenge.Reason`, no winners). `checkWin` and `WinGame` do nothing in a challenge (R-CHAL-14).
+* Rooms: after the room step, a room whose top object is older than the active player's previous turn goes to discard (R-COOP-11, Q-39). Object IDs only grow, so `TurnFrom` and `RoundFrom` keep the first object ID of each player's last two turns.
+* View: `GameView.Challenge` (ID, difficulty, timer, rule card, presents, lost and reason) for everyone; each player also sees the partner's hand (R-COOP-07, Q-42). Hand events stay private as in any game.
+
+### Final boss and minion slots
+
+A challenge has two more slot rows beside the monster slots (`boss_slots.go`, R-CHAL-02 to R-CHAL-12): `Game.Bosses` (`FinalBossSlot`) and `Game.Minions` (`MinionSlot`). Both are `omitempty`, so a regular game saves as before; the view has `GameView.Bosses` and `GameView.Minions`.
+
+* "Monsters in play" is `g.MonstersInPlay()`: the tops of the monster, final boss and minion slots, in that order (`MonsterRows()`). Attack targets, Mom's Eye Shadow, `TargetMonster` choices, "each monster" and every card's `monstersInPlay` (cardkit) use it.
+* "Monster slot" effects stay on `g.Monsters`: covering, refilling, expanding, putting a card into a monster slot, deck attacks, Indomitable, Ace of Diamonds' count. So a final boss is never covered, and neither row is refilled.
+* `Held(id)` is a final boss or minion: it can't leave unless it is killed (R-CHAL-04, R-CHAL-10, Q-37). `DiscardMonster`, `PutIntoDeck`, `SlotToDeckBottom` (and so `ToBottomRandom`) do nothing to it; `PutUnder` takes monster slots only.
+* Boss armor (R-CHAL-05) is one rule in two places: `killObject` (both `Kill` and `KillObject`) gives a final boss 3 damage instead; `resolveDamage` caps one non-combat instance at 3 (`armored`). Combat damage is never capped.
+* A dead final boss leaves its slot empty. A minion slot is removed when its card leaves (`takeFromSlot`); later minions' `Zone.Index` shift down (`dropMinionSlot`). `CheckInvariants` checks that every slot card's zone names its row and slot.
+* `PutInFinalBossSlot(card)` is for a challenge's setup. `PutInMinionSlot(id)` (a monster deck card) and `MinionFromDeck()` give the card a new minion slot; an event there resolves, goes to discard, and its slot goes (R-CHAL-12).
+* A minion dies like any monster; challenge-specific rewards are the challenge's job (R-KRAMPUS-14).
+* `PutInMinionSlot` and `MinionFromDeck` emit `minion_arrived` (after the slot's `card_revealed`).
+
+### How the Krampus Stole Christmas
+
+The first challenge (14.22; rules R-KRAMPUS-01 to 15, open cases Q-30 to Q-41) lives in `cards/challenge`: `krampus.go` holds `Krampus` (the `ChallengeDef`), its setup and the shared parts; each card file builds its card from them. Nothing in the engine names Krampus: the cards use generic `CardDef` hooks and the presents API (ADR 028, Decision 6.4).
+
+* Setup (`krampusSetup`): `PutInFinalBossSlot` with the difficulty's Pilfering Krampus, then `AddPresent` four times: the top treasure card goes outside the game, face down, with its counters (8/2/3/3, 12/4/3/3, 16/4/3/3).
+* Presents (`challenge.go`): `ChallengeState.Presents` keeps kind, card, `Destroyed` and `Flipped`. Only the challenge's cards call `AddPresentCounters` (never below 0, nothing on a gone present; emits `present_counters`), `DestroyPresent` (to the treasure discard; `present_destroyed`; reports whether all 4 are gone), `FlipPresents` (once: `Holidays`, counters off, `presents_flipped`), `GivePresent` (a charged item, like any gained item; `present_given`) and `Forgo` (`forgone`, then the counters). `SoulsInPlay` is both players' soul value, characters too (Q-30).
+* The boss cards print the boss rules, so they hold them:
+  * `Guarded` (new hook): while it returns true the monster can't be attacked and takes no damage. `CanBeAttacked` checks it with `Unattackable` for attack targets, Mom's Eye Shadow's redirect and Monster Manual's forced attack; `resolveDamage` prevents the damage (`prevented`). Boss armor turns an outright kill into 3 damage first, so a guarded boss takes none (R-KRAMPUS-11).
+  * The start-of-turn roll is a triggered ability with `RollTimes`: 1 roll, plus `minions / 2` on Hard or `minions` on Ultra Hard, counted once as it resolves (R-KRAMPUS-12, Q-41). Each roll resolves with its table result before the next.
+  * `MustAttackRandom` (new hook, Normal only): while it lists attackable monsters and the duty is unmet (`Turn.RandomAttackMade`), the active player who can attack can't end the turn, and a declared attack goes to one of them picked at random (`random_pick`), with no deck option. With another forced attack (Monster Manual, the regular Krampus, Blind Rage's deck attack) the target choice offers it plus `ask.attack_random` (`Choice.Random`); a deck attack picked away stays owed (R-KRAMPUS-13, Q-31).
+  * `NoSpoils` (new hook): asked as a monster dies, still in its slot; the dead card is marked `NoSpoils`, gets no rewards step and goes to discard instead of becoming a soul (R-KRAMPUS-14).
+* The rule card holds the global modifiers and the goal; its triggered abilities are the active player's (`abilityController`):
+  * All I Want for Christmas is an optional replacement: `Replacement.May` (new) asks the affected player yes or no (`ChooseMayReplace`) before it applies; a no counts as applied. It replaces a monster's reward part (`Action.Reward`, set by the rewards step and by roll rewards after the roll) or a dead card's soul (`ActBecomeSoul`; the card then goes to discard), only while that kind's present is face down (R-KRAMPUS-07, Q-32, Q-33). Other gains, and an item or event that becomes a soul, are not offered. With other replacements (Lucky Toe) the player orders them as usual, and the forgo is asked when its turn comes.
+  * What's in the Box? triggers on `present_counters` that leave a present at 0; as it resolves, a present still at 0 is destroyed, then 3 or 4 `MinionFromDeck`; the fourth destroyed present calls `LoseChallenge` with `event.challenge_lost.presents` instead (R-KRAMPUS-08, R-KRAMPUS-09).
+  * Happy Holidays! triggers on `gained_soul` while `SoulsInPlay` reaches 5, 6 or 7 and it has not happened; it flips the presents first, then asks the active player who gains each, ¢, loot, treasure, soul; a gone present is skipped (R-KRAMPUS-10, Q-40).
+  * The goal: when the difficulty's Pilfering Krampus dies, `WinChallenge` (R-KRAMPUS-01).
+* View: `ChallengeView.Presents` shows kind and counters face down; `destroyed`, `flipped`, the card once face up, and the player who gained it.
+* Tests: `cards/challenge/*_test.go`, one file per card plus `krampus_test.go` (setup, whole seeded games won and lost, replay and load). `FuzzChallengeSets` flags 1 to 3 and `TestSimulations` play Krampus too (wiki [Fuzzing](Fuzzing)).
+
+### Trick or Treat blocks
+
+The generic pieces Trick or Treat needs (14.31; rules R-TRICK-01 to 17, open cases Q-43 to Q-54). Each is one shared rule in the engine; the challenge's cards (14.32) only use them, and any other card may too. Tests with test cards: `cards/trick_blocks_test.go`.
+
+* Counters on players (`player_counters.go`): `Player.Counters`, on the player, not the character, so they stay on a death and a character change (R-MECH-13, Q-45). `AddPlayerCounters(p, name, n)` (never below 0; returns the change; emits `player_counters`), `PlayerCounters(p, name)`, `PlayersWithCounters(name)` (the choices of "remove a fear counter from a player", Q-51). The view has `PlayerView.Counters`. Objects and players share the counter list code (`countOf`, `addCount`).
+* Evasion from counters: the static `MonstersHavePerCounters(StatMonsterDC, "fear", 2)` gives every monster in play (all three rows) +1 per 2 counters on the active player. It is a normal static, so `Evasion` reads it when each attack roll resolves, clamps it at 6, and the V-41 parts name its card (Q-52).
+* Attack start: `startAttack` emits `attack_start` after `attack_target` when the target is a monster, so for a deck attack only once the revealed monster is in its slot; an event, a player or an item gets none. `AtStartOfAttackOnMonster()` triggers on it. `nextTriggerGroup` places attack-start triggers first, so they lie below the target's own triggers and resolve after them; the first roll waits for the empty stack (R-ATK-25, Q-53).
+* Reward changes (`rewards.go`): `AddReward(id, kind, n, source)` and `SetRewardsToCents(id, n, source)` go into `Game.RewardChanges` (till end of turn; `rewards_changed`). `Rewards(id)` applies them in the order made: "become ¢" replaces everything before it, later additions add (Q-48). A dying monster's changes move to its dead card, and the rewards step reads `Rewards`, so doubling (Dinga) and the Krampus forgo (`Action.Reward`) work on the changed rewards. The soul is no reward.
+* More damage taken: `StatDamageTaken`. `IncreaseDamageTaken(p, n, source)` is a boost till end of turn; Daddy Haunt is `YouHave(StatDamageTaken, 1)`. `resolveDamage` adds it to each instance a player takes after shields, before the `DamageMod` cards that lower damage (Dry Baby, The Dead Cat). Several add up (Q-46).
+* Gained monster abilities: `RevealUntilMonster(p)` reveals monster deck cards (`card_revealed`) until a non-event monster, refilling from the discard if needed, then puts every revealed card on the bottom in random order (Q-22, `deck_bottom`); "" if none. `GainRevealedMonster(id, p)` gains that card's abilities till end of turn (Q-47). `GainAbilities` now adds gains up: the first stays in `Object.Gained`, later ones in `MoreGained`, each with its own end. Gained faces also bring `CombatMod` and `Unattackable`; other `CardDef` hooks stay the card's own. A gained "when this dies" triggers, since the death looks at the old object.
+* Flip of the rule card: `Flip` also turns the challenge's rule card, which is outside the game; then only its face up has abilities (`CardOf`, ADR 023). `FlipThis()` is the shared "flip this" effect (Anima Sola uses it); "you may" wraps it in `cardkit.May`. `AtStartOfEachTurn()` is the trigger. The view's `ChallengeView.Card` shows the face up with `flipped` (ADR 023, option 5).
+* Triggers 14.32 needs: `WhenAPlayerTakesDamage()` (new; one `damaged` per instance, none when prevented, Q-50), `WhenAMonsterDies()` (`died`, Q-54), and `rewards_gained` once per dead card whose rewards the receiver gains; `len(Rewards(e.Object))` tells whether there were any (Q-54.5).
+
+### Trick or Treat
+
+The second challenge (14.32; rules R-TRICK-01 to 17, open cases Q-43 to Q-54) lives in `cards/challenge`: `trick_or_treat.go` holds `TrickOrTreat` (the `ChallengeDef`, ID `trick_or_treat`), its setup and the shared abilities; the card files build on them. It uses the blocks above and nothing else new but one event.
+
+* Setup (`trickSetup`): `PutInFinalBossSlot` with the difficulty's Mischievous The Haunt, then 12, 14 or 14 `trick` counters on it (`AddNamedCounters`). All three levels share the rule card `trick_treat_normhardultra`, Trick side up. The regular The Haunt stays in the monster deck (Q-49).
+* The boss cards (`haunt`) hold:
+  * `Guarded` while its trick counters exceed `SoulsInPlay` (R-TRICK-06, Q-30); equal is no guard. Boss armor turns an outright kill into 3 damage first, so a guarded boss takes none.
+  * Fear: `WhenAPlayerTakesDamage` puts a `fear` counter on the damaged player, on each player at Ultra Hard; one per instance (R-TRICK-07, Q-50).
+  * `MonstersHavePerCounters(StatMonsterDC, "fear", 2)` (R-TRICK-09, Q-52).
+  * The death roll: on each monster death the active player rolls; 4–6 asks them which player with a fear counter loses one (`card.trick_treat.remove_fear`; no fear anywhere, no question; R-TRICK-10, Q-51).
+* The rule card: both faces hold the optional flip (`AtStartOfEachTurn`, `cardkit.May`, `FlipThis`; the question names the side it would show) and the goal (any Mischievous The Haunt dies: `WinChallenge`), so a flip never drops them. Its triggers are the active player's (Q-44).
+  * Trick: Nobody's Fool (`WhenAMonsterDies`: a trick counter off each final boss; Q-54) and Ghostly Trickery (`AtStartOfAttackOnMonster`, `RollTimes` 1, 2 or 3 by `Challenge.Difficulty`): 1–2 `IncreaseDamageTaken` on the active player, 3–4 `GainRevealedMonster` on the attacked monster, 5–6 `SetRewardsToCents(1)` (Q-46 to Q-48, Q-53).
+  * Treat: You Don't Scare Me (`rewards_gained` of the active player whose dead card has `Rewards`; the same fear question; Q-54) and Hallows' Eve Bounty (one roll at every difficulty: `AddReward` 3¢, loot 1 or 1 treasure).
+* Events: `GainRevealedMonster` now emits `abilities_gained` (Text: the gained card). History lines: fear gained and lost, trick counters off, damage taken up, rewards changed, abilities gained; a flip has its line already.
+* There is no loss of its own: only the timer (R-TRICK-01).
+* Tests: `cards/challenge/*_test.go`, one file per card plus `trick_or_treat_test.go` (setup, whole games), one test per rule and open case, with real cards (Boom Fly gained, Dinga and Blessing of the Sack on 1¢, Daddy Haunt, Chaos Card and Bomb! on the guarded boss), and seeded whole games won and lost. `FuzzChallengeSets` flag bit 3 and `TestSimulations` play it at every difficulty.
+
 ## The run loop must always settle
 
 `run()` keeps doing automatic work (queued actions, triggers, step changes) until the game waits on a prompt. Any path that leaves no prompt and changes nothing spins forever. Rules for new code:

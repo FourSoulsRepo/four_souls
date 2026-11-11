@@ -20,6 +20,7 @@ Raw copies are copyrighted; they stay in the tools repo cache.
 | S-X | Tweets by Edmund McMillen, Yuggy, Kizzycocoa | Rulings | High for Ed and Yuggy |
 | S-YUG | Yuggy's Reddit comments and tweets | Rulings with context | High |
 | S-DIS | Discord "Турнирный сервер" | 100k messages of the rules channel | Medium |
+| S-MAE | maestromedia.com challenge PDFs | Solo/co-op and challenge rules; How the Krampus Stole Christmas | Official; below S-OFF |
 
 Order of trust when sources disagree:
 
@@ -110,3 +111,19 @@ Order of trust when sources disagree:
       3. English: only a death "during their turn"; Russian: any death.
       4. Listed as an open case (3.8).
    4. Errata: identical (left in English).
+
+## Maestro Media challenges (S-MAE)
+
+1. Cached 2026-11-10 in the tools repo, `.cache/research/maestro/`.
+2. Files:
+   1. `solo-coop-and-challenge-rules.pdf` and `.txt`: co-op and general challenge rules.
+   2. `how-the-krampus-stole-christmas.pdf` and `.txt`: the Krampus challenge.
+   3. `pilfering-krampus-cards.png`: the 4 boss cards, printed upside down.
+3. The `.txt` files come from PDF extraction; some lines appear twice.
+4. Trust: official (the publisher); S-OFF wins where they differ (Q-37, Q-38).
+5. Used by rules/challenges.md (topics COOP, CHAL, KRAMPUS).
+6. Trick or Treat, cached 2026-11-11 (14.29):
+   1. `trick-or-treat.pdf` and `.txt`: the challenge, its competitive variant and FAQ.
+   2. `trick-or-treat-cards-boss.png`: the 4 Mischievous The Haunt cards (PDF page 4), upside down.
+   3. `trick-or-treat-cards-challenge.png`: the Trick/Treat cards (PDF page 5), upside down.
+   4. Used by rules/challenges.md, topic TRICK.

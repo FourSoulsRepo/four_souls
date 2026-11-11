@@ -32,6 +32,10 @@ type SituationSetup struct {
 	BonusSouls []CardRef `json:"bonus_souls,omitempty"`
 	// Rooms fill the room slots, one each (R-SETUP-12).
 	Rooms []CardRef `json:"rooms,omitempty"`
+	// Bosses and Minions fill final boss and minion slots, one each, as
+	// in a challenge (R-CHAL-02, R-CHAL-07).
+	Bosses  []CardRef `json:"bosses,omitempty"`
+	Minions []CardRef `json:"minions,omitempty"`
 }
 
 // SituationPlayer is one seat.
@@ -220,6 +224,18 @@ func (s Situation) build(sets []CardSet) (*Game, error) {
 		}
 		g.Rooms = append(g.Rooms, Slot{})
 		g.putInSlot(g.newObject(ref, Zone{Kind: ZoneOutside}, NoPlayer), RoomSlot, i)
+	}
+	for _, ref := range s.Setup.Bosses {
+		if g.PutInFinalBossSlot(ref) == 0 {
+			return nil, fmt.Errorf("situation: %q is no monster for a final boss slot", ref)
+		}
+	}
+	for i, ref := range s.Setup.Minions {
+		if err := need(ref); err != nil {
+			return nil, err
+		}
+		g.Minions = append(g.Minions, Slot{})
+		g.putInSlot(g.newObject(ref, Zone{Kind: ZoneOutside}, NoPlayer), MinionSlot, i)
 	}
 	for _, ref := range s.Setup.BonusSouls {
 		if err := need(ref); err != nil {

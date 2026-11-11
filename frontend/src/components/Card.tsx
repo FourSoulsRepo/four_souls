@@ -1,7 +1,7 @@
 import { AnimatePresence, motion, useIsPresent } from 'motion/react';
 import { useEffect, useRef, useState, type CSSProperties, type MouseEvent, type PointerEvent } from 'react';
 import { claimed } from '../animations';
-import { iconText, kindOf, textParts, unknownCard, type CardInfo, type Kind } from '../cards';
+import { iconText, kindOf, landscape, textParts, unknownCard, type CardInfo, type Kind } from '../cards';
 import { diceImage } from '../dice';
 import { feel } from '../feel';
 import { t } from '../i18n';
@@ -9,7 +9,7 @@ import { scaleFor } from '../playback';
 import { fighters } from '../prompt';
 import { counterColor } from '../counters';
 import type { CounterView, MonsterStats, StatSource } from '../protocol';
-import { statLines, sumOf, tempSources, trend, type Name, type TempSource, type Trend } from '../stats';
+import { rewardsLine, rewardsText, statLines, sumOf, tempSources, trend, type Name, type TempSource, type Trend } from '../stats';
 import { useApp, viewScale } from '../store';
 import { arrowShows } from '../aim';
 import { boxOf, restWatch, type RestWatch } from '../zoom';
@@ -72,6 +72,9 @@ interface Props {
   // cost is a purchase option's price: the own cents counter previews
   // it while the pointer is on the card (20.11).
   cost?: number;
+  // label names a face-down card instead of its deck, e.g. a challenge
+  // present by its kind (14.25).
+  label?: string;
   onClick?: () => void;
 }
 
@@ -96,6 +99,7 @@ export function Card({
   rise = false,
   why,
   cost,
+  label,
   onClick,
 }: Props) {
   const scale = useApp(viewScale);
@@ -108,8 +112,11 @@ export function Card({
   const name: Name = (ref) => (ref ? (cards.get(ref)?.name ?? ref) : t('stats.hidden_card'));
   const sources = stats?.sources ?? monster?.sources;
   const sums = sources ? statLines(sources, printedOf(stats, monster), liveOf(stats, monster), name) : [];
+  // A monster's rewards changed this turn (14.33): a mark on the card,
+  // and a line under its zoom.
+  const rewards = rewardsLine(monster?.rewards);
   // The zoom names the copied card first (19.111).
-  const lines = copy ? [t('badge.copy', { card: name(copy) }), ...sums] : sums;
+  const lines = [...(copy ? [t('badge.copy', { card: name(copy) })] : []), ...sums, ...(rewards ? [rewards] : [])];
   const zoomHandlers = useZoom(cardRef, zoomable, rise, why, lines, counters.filter((c) => c.count > 0));
   const preview = useCostPreview(cost);
   const cardElRef = useRef<HTMLDivElement>(null);
@@ -131,12 +138,26 @@ export function Card({
         }
       : undefined);
 
+  // A face-down card shows its counters too, e.g. a present's (14.25).
+  const shown = counters.filter((c) => c.count > 0);
+  const counterBadges =
+    size !== 'zoom' &&
+    shown.map((c, i) => (
+      <Badge
+        key={c.name ?? ''}
+        kind="counters"
+        value={c.count}
+        label={c.name ? t('badge.counters_named', { n: c.count, name: c.name }) : t('badge.counters', { n: c.count })}
+        style={{ '--fill': counterColor(c.name), '--i': i } as CSSProperties}
+      />
+    ));
+
   if (cardRef === undefined) {
     return (
       <div
-        className={`card size-${size} kind-${back}${highlight ? ` hl-${highlight}` : ''}`}
+        className={`card size-${size} kind-${back}${shown.length > 0 ? ' has-counters' : ''}${highlight ? ` hl-${highlight}` : ''}`}
         role={onClick ? 'button' : 'img'}
-        aria-label={faceDown(back)}
+        aria-label={label ?? faceDown(back)}
         onClick={onClick}
         {...preview}
       >
@@ -152,6 +173,7 @@ export function Card({
         ) : (
           <div className="card-back-face">{backWord(back)}</div>
         )}
+        {counterBadges}
       </div>
     );
   }
@@ -161,7 +183,6 @@ export function Card({
   // The zoomed card shows no badges: its words stay readable.
   const badges = size !== 'zoom';
 
-  const shown = counters.filter((c) => c.count > 0);
   const counted = shown.reduce((n, c) => n + c.count, 0);
   const pop = objectId !== undefined && scale > 0 && !claimed(card.ref, 'arrive');
   return (
@@ -173,7 +194,7 @@ export function Card({
       transition={{ duration: 0.25 * scale }}
       data-zone={objectId === undefined ? undefined : `obj-${String(objectId)}`}
       data-player={player}
-      className={`card size-${size} kind-${kindOf(card.type)}${image ? '' : ' blank'}${counted > 0 ? ' has-counters' : ''}${badges && copy ? ' has-copy' : ''}${spent ? ' spent' : ''}${fight ? ' fight' : ''}${highlight ? ` hl-${highlight}` : ''}${flip.turn ? ` flip-${flip.turn}` : ''}`}
+      className={`card size-${size} kind-${kindOf(card.type)}${landscape(card.type) ? ' landscape' : ''}${image ? '' : ' blank'}${counted > 0 ? ' has-counters' : ''}${badges && copy ? ' has-copy' : ''}${spent ? ' spent' : ''}${fight ? ' fight' : ''}${highlight ? ` hl-${highlight}` : ''}${flip.turn ? ` flip-${flip.turn}` : ''}`}
       style={flip.turn ? { animationDuration: `${String((FLIP_MS * scale) / 2)}ms` } : undefined}
       role={onClick ? 'button' : 'img'}
       aria-label={card.name}
@@ -200,16 +221,7 @@ export function Card({
       ) : (
         <BlankFace card={card} full={size === 'zoom'} />
       )}
-      {badges &&
-        shown.map((c, i) => (
-          <Badge
-            key={c.name ?? ''}
-            kind="counters"
-            value={c.count}
-            label={c.name ? t('badge.counters_named', { n: c.count, name: c.name }) : t('badge.counters', { n: c.count })}
-            style={{ '--fill': counterColor(c.name), '--i': i } as CSSProperties}
-          />
-        ))}
+      {badges && counterBadges}
       {badges && copy && <CopyBadge cardRef={copy} name={name(copy)} onLeave={backToCard} />}
       {badges && dice && dice.length > 0 && <DieBadges values={dice} owner={owner} />}
       {/* Damage shows as the lower, red health; the mark is for the rest. */}
@@ -221,6 +233,11 @@ export function Card({
         </>
       )}
       {badges && monster && <MonsterBadges stats={monster} hurt={damage > 0} />}
+      {badges && rewards && (
+        <span className="card-rewards-now" role="img" aria-label={rewards} title={rewards}>
+          {rewardsText(monster?.rewards)}
+        </span>
+      )}
       {badges && <SourceIcons list={tempSources(sources)} name={name} onLeave={backToCard} />}
     </motion.div>
   );
@@ -674,6 +691,8 @@ function backWord(kind: Kind): string {
       return t('deck.back.monster');
     case 'soul':
       return t('deck.back.soul');
+    case 'room':
+      return t('deck.back.room');
     default:
       return t('deck.back.loot');
   }
@@ -690,6 +709,8 @@ function faceDown(kind: Kind): string {
       return t('deck.face_down.monster');
     case 'soul':
       return t('deck.face_down.soul');
+    case 'room':
+      return t('deck.face_down.room');
     default:
       return t('deck.face_down.loot');
   }

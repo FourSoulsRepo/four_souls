@@ -198,7 +198,7 @@ func (g *Game) resolveTop() {
 		}
 		if it.Reward > 0 {
 			r := Reward{Kind: RewardKind(it.Reward - 1)}
-			g.enqueue(Action{Kind: r.action(), Player: it.Controller, Amount: it.Roll * max(it.Amount, 1)})
+			g.enqueue(Action{Kind: r.action(), Player: it.Controller, Amount: it.Roll * max(it.Amount, 1), Reward: true})
 		}
 		if it.RollFor.Card != "" {
 			// The roll ability's result trigger goes on the stack (R-ABIL-24).

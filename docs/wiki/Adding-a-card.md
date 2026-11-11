@@ -6,7 +6,7 @@ Cards are Go values. Each card is one short file built from the blocks listed on
 
 ## 1. Find or make the stub
 
-Base Game cards live in `pkg/rules_engine/cards/b2/`, one file per card, named after the card ID: `the_d6.go`, `a_nickel.go`. Gold Box is `cards/g2/`, Four Souls+ is `cards/fsp2/`. Pieces many cards share (a character's extra loot play, "recharge an item", "deal 1 damage to a monster or player", …) live in `cards/cardkit/`; each set's `common.go` gives them short local names.
+Base Game cards live in `pkg/rules_engine/cards/b2/`, one file per card, named after the card ID: `the_d6.go`, `a_nickel.go`. Gold Box is `cards/g2/`, Four Souls+ is `cards/fsp2/`. Challenge cards are `cards/challenge/` (ADR 028): the boss is a `MonsterCard` with `Outside`, a rule card a `ChallengeCard`; that set is not in `cards.Sets()`. A two-sided card (ADR 023) gets its back face in the same file: the front's `Back` names it, and the set list ends with the backs (Requiem's The Revenant, Trick or Treat's `treat_normhardultra`). Pieces many cards share (a character's extra loot play, "recharge an item", "deal 1 damage to a monster or player", …) live in `cards/cardkit/`; each set's `common.go` gives them short local names.
 
 A card that an older set already has (a reprint, ADR 010) is not written again: the generator lists it under the set's `Reprints`, which only adds that set's copies to the decks.
 

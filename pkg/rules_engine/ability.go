@@ -392,9 +392,9 @@ func BecomeSoul() Effect { return becomeSoulEffect{} }
 
 func (becomeSoulEffect) apply(c *Ctx) {
 	o := c.G.Object(c.Source)
-	if o.Zone.Kind == ZoneInPlay && o.Role == RoleEvent && o.Zone.Slot == MonsterSlot {
-		// An event in a monster slot: "This becomes a soul. Gain it."
-		// (Holy Chest); its slot is refilled.
+	if o.Zone.Kind == ZoneInPlay && o.Role == RoleEvent && eventSlot(o.Zone) {
+		// An event in a monster or minion slot: "This becomes a soul. Gain
+		// it." (Holy Chest); its slot is refilled or removed.
 		g := c.G
 		if !g.CanGainSouls(c.Controller) {
 			return // it goes to discard like any event
@@ -448,6 +448,15 @@ func (e boostEffect) apply(c *Ctx) {
 	}
 	c.G.Boosts = append(c.G.Boosts, b)
 	c.G.emit(Event{Kind: EvBoosted, Player: b.Player, Object: b.Object, Amount: e.n, Text: b.Stat.String()})
+}
+
+// IncreaseDamageTaken makes each instance of damage player p would take
+// this turn n more: "Damage you would take is increased by 1 till end
+// of turn" (Ghostly Trickery, R-TRICK-13). Several add up (Q-46).
+// source is the object whose ability did it (V-41).
+func (g *Game) IncreaseDamageTaken(p PlayerID, n int, source ObjectID) {
+	g.Boosts = append(g.Boosts, Boost{Stat: StatDamageTaken, Player: p, Amount: n, Source: source})
+	g.emit(Event{Kind: EvBoosted, Player: p, Amount: n, Text: StatDamageTaken.String(), Source: source})
 }
 
 type shieldEffect struct{ n, target int }
@@ -512,11 +521,7 @@ func (e killEffect) apply(c *Ctx) {
 		c.G.KillPlayer(t.Player, c.Controller)
 		return
 	}
-	if c.G.Eternal(t.Object) {
-		return // R-DEATH-03
-	}
-	c.G.Object(t.Object).Damage = c.G.def(t.Object).HP + c.G.bonus(StatMonsterHP, NoPlayer, t.Object)
-	c.G.push(StackItem{Kind: StackDeath, Controller: NoPlayer, Label: eventDeath.Msg(), Target: Target{Object: t.Object}})
+	c.G.killObject(t.Object, c.Controller, c.Source) // eternal: R-DEATH-03; boss armor: R-CHAL-05
 }
 
 // You is the target index that means the ability's controller, for text
@@ -637,15 +642,7 @@ func (e eachPlayerEffect) apply(c *Ctx) {
 // play. The active player picks the order they resolve in, or keeps slot
 // order (R-MECH-29): with death triggers, order matters.
 func EachMonsterTakesDamage(n int) Effect {
-	monsters := func(c *Ctx, _ []int) []ObjectID {
-		var out []ObjectID
-		for _, s := range c.G.Monsters {
-			if top, ok := s.TopOf(); ok && c.G.Object(top).Role == RoleMonster {
-				out = append(out, top)
-			}
-		}
-		return out
-	}
+	monsters := func(c *Ctx, _ []int) []ObjectID { return c.G.MonstersInPlay() }
 	active := func(c *Ctx) PlayerID { return c.G.Turn.Active }
 	return Ask(func(c *Ctx, a []int) {
 		order := Ordered(monsters(c, nil), a)
@@ -734,14 +731,25 @@ func NotThis(_ *Game, self ObjectID, c Chosen) bool { return c.Object != self }
 // to recharge (19.95, 19.146).
 func Rechargeable(g *Game, id ObjectID) bool {
 	o := g.Object(id)
-	return o.Role == RoleItem && !o.Charged && g.def(id).Tap
+	return o.Role == RoleItem && !o.Charged && g.HasTap(id)
 }
 
 // Deactivatable is the one rule for "deactivate an item" pickers: a
 // charged item with a ↷ ability (Q-25, 19.146).
 func Deactivatable(g *Game, id ObjectID) bool {
 	o := g.Object(id)
-	return o.Role == RoleItem && o.Charged && g.def(id).Tap
+	return o.Role == RoleItem && o.Charged && g.HasTap(id)
+}
+
+// HasTap is the one rule for "has a ↷ ability": its own card or any
+// card whose abilities it has (Golden Trinket, Glitch; 19.150).
+func (g *Game) HasTap(id ObjectID) bool {
+	for _, face := range g.facesOf(id) {
+		if d, ok := g.cards.find(face); ok && d.Tap {
+			return true
+		}
+	}
+	return false
 }
 
 // RechargeableItem is a target filter: a Rechargeable item.

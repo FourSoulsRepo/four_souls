@@ -10,6 +10,7 @@ Pick your group: players, people who run a game server, translators, or develope
 
 * [First start](First-start) — getting past the macOS and Windows warnings; Linux packages.
 * [Playing over the internet](Playing-over-the-internet) — virtual LAN (Tailscale, ZeroTier, Radmin VPN, Hamachi) or port forwarding.
+* [Challenges](Challenges) — two players together against Pilfering Krampus or Mischievous The Haunt: hosting, rules, the table.
 
 ## Server admins
 

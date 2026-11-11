@@ -234,6 +234,20 @@ export namespace main {
 	        this.image = source["image"];
 	    }
 	}
+	export class ChallengeInfo {
+	    id: string;
+	    difficulties: string[];
+	
+	    static createFrom(source: any = {}) {
+	        return new ChallengeInfo(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.difficulties = source["difficulties"];
+	    }
+	}
 	export class DiceSkin {
 	    id: string;
 	    name: string;
@@ -429,10 +443,14 @@ export namespace settings {
 	    response_timer: number;
 	    no_bonus_souls: boolean;
 	    no_deck_ratios: boolean;
+	    room_deck: boolean;
 	    random_seats: boolean;
 	    rollback: string;
 	    picking: string;
 	    draft_size: number;
+	    mode: string;
+	    challenge: string;
+	    difficulty: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new HostSetup(source);
@@ -446,10 +464,14 @@ export namespace settings {
 	        this.response_timer = source["response_timer"];
 	        this.no_bonus_souls = source["no_bonus_souls"];
 	        this.no_deck_ratios = source["no_deck_ratios"];
+	        this.room_deck = source["room_deck"];
 	        this.random_seats = source["random_seats"];
 	        this.rollback = source["rollback"];
 	        this.picking = source["picking"];
 	        this.draft_size = source["draft_size"];
+	        this.mode = source["mode"];
+	        this.challenge = source["challenge"];
+	        this.difficulty = source["difficulty"];
 	    }
 	}
 	export class RecentServer {

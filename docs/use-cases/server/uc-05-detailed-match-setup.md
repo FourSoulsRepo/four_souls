@@ -27,6 +27,13 @@
     3. The host screen remembers the last mode.
 15. Each draft offer comes with its starting item; the pick screen is UC-39.
     1. Eden's is empty: she chooses one at the start (R-SETUP-09).
+16. Room deck: off by default; the box shows only with Requiem (UC-40).
+17. Challenge (ADR 028): the server adds the challenge's card set.
+    1. Bonus souls are off, whatever the option says.
+    2. Picking, bans, rooms, deck ratios, timer, rollback and random seats still work.
+    3. Saves, the seamless restart and the record keep the challenge.
+    4. A lost challenge ends the game; the record has no winners.
+    5. The host screen picks it in "Game mode" (UC-41); bonus souls hidden.
 
 ## Alternative scenarios and errors
 
@@ -37,6 +44,8 @@
 * **5b. A ban of a card not in the pool:** refused with `bad_card`.
 * **5c. The ban timer runs out:** that player makes no ban this round.
 * **8a. A pick that is not one of the offers:** refused with `bad_card`.
+* **16a. The room deck without rooms in the sets:** the server turns it off.
+* **17a. A host ban of a challenge card:** refused with `bad_setup`.
 
 ## Postconditions
 

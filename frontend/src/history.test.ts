@@ -290,7 +290,15 @@ describe('historyKinds', () => {
   const kinds = kindList.split('\n').filter(Boolean);
   // sample: an event of a told kind that gives a line; others need only
   // their kind and a player.
-  const sample = new Map<string, Partial<GameEvent>>([['dice_rolled', { text: 'first', label: { key: 'event.first_player_roll' }, amount: 3 }]]);
+  const sample = new Map<string, Partial<GameEvent>>([
+    ['dice_rolled', { text: 'first', label: { key: 'event.first_player_roll' }, amount: 3 }],
+    ['present_counters', { player: -1, text: 'cents', amount: -4 }],
+    ['player_counters', { text: 'fear', amount: 1 }],
+    ['counters', { player: -1, text: 'trick', amount: -1 }],
+    ['boosted', { text: 'damage taken', amount: 1 }],
+    ['rewards_changed', { player: -1, text: 'set cents', amount: 1 }],
+    ['abilities_gained', { text: 'leech' }],
+  ]);
 
   it('tells or skips every engine event kind, with a reason (15.88)', () => {
     expect(Object.keys(historyKinds).sort()).toEqual(kinds);
@@ -308,6 +316,66 @@ describe('historyKinds', () => {
         expect(lines, kind).toEqual([]);
       }
     }
+  });
+
+  it('tells the Krampus presents, minions and forgone rewards (14.22)', () => {
+    const lines = entriesFor(
+      [
+        { kind: 'present_counters', player: -1, text: 'loot', amount: -2 },
+        { kind: 'present_destroyed', player: -1, text: 'loot', card: 'the_d6' },
+        { kind: 'minion_arrived', player: -1, card: 'gaper' },
+        { kind: 'forgone', player: 1, text: 'cents', amount: 3 },
+        { kind: 'present_counters', player: 1, text: 'cents', amount: 3 },
+        { kind: 'presents_flipped', player: -1, amount: 3 },
+        { kind: 'present_given', player: 0, text: 'soul', card: 'the_d20' },
+      ],
+      1,
+      0,
+      n,
+      0,
+    );
+    expect(lines.map((e) => e.text)).toEqual([
+      'The loot present loses 2 counters',
+      'The loot present is destroyed: it was THE_D6',
+      'GAPER comes as a minion',
+      'Bo forgoes it: 3 counters on the ¢ present',
+      'Happy Holidays! The presents open',
+      'You gain the soul present: THE_D20',
+    ]);
+  });
+
+  it('tells Trick or Treat fear, trick counters and attack-start rolls (14.32)', () => {
+    const lines = entriesFor(
+      [
+        { kind: 'player_counters', player: 1, text: 'fear', amount: 1 },
+        { kind: 'player_counters', player: 0, text: 'fear', amount: -1 },
+        { kind: 'player_counters', player: 1, text: 'gold', amount: 2 },
+        { kind: 'counters', player: -1, card: 'mischievous_the_haunt_norm', text: 'trick', amount: -1 },
+        { kind: 'counters', player: 1, card: 'gaper', text: '', amount: 2 },
+        { kind: 'boosted', player: 0, text: 'damage taken', amount: 1 },
+        { kind: 'boosted', player: 0, text: 'ATK', amount: 1 },
+        { kind: 'rewards_changed', player: -1, card: 'gaper', text: 'set cents', amount: 1 },
+        { kind: 'rewards_changed', player: -1, card: 'gaper', text: 'add cents', amount: 3 },
+        { kind: 'rewards_changed', player: -1, card: 'gaper', text: 'add loot', amount: 1 },
+        { kind: 'rewards_changed', player: -1, card: 'gaper', text: 'add treasure', amount: 1 },
+        { kind: 'abilities_gained', player: 0, card: 'gaper', text: 'leech' },
+      ],
+      1,
+      0,
+      n,
+      0,
+    );
+    expect(lines.map((e) => e.text)).toEqual([
+      'Bo gets 1 fear counter',
+      'You lose 1 fear counter',
+      'MISCHIEVOUS_THE_HAUNT_NORM loses 1 trick counter',
+      'Damage you take is up by 1 this turn',
+      "GAPER's rewards become 1¢ this turn",
+      "GAPER's rewards get 3¢ more this turn",
+      "GAPER's rewards get loot 1 more this turn",
+      "GAPER's rewards get 1 treasure more this turn",
+      'GAPER gains the abilities of LEECH this turn',
+    ]);
   });
 
   it('names who attacks, buys and kills, as headlines', () => {

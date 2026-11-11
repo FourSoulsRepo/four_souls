@@ -378,7 +378,11 @@ func (h *Hub) create(c *Client, env protocol.Envelope) {
 	if m.Options != nil {
 		opts = *m.Options
 	}
-	if err := checkOptions(&opts, setsOf(m.Sets), m.Seats); err != nil {
+	if msg := checkChallenge(&opts, m.Seats); !msg.IsZero() {
+		c.fail(env.ID, protocol.ErrBadSetup, msg)
+		return
+	}
+	if err := checkOptions(&opts, m.Sets, m.Seats); err != nil {
 		c.fail(env.ID, protocol.ErrBadSetup, errBadMessage.Msg(engine.Str("error", err.Error())))
 		return
 	}
@@ -495,7 +499,7 @@ func (h *Hub) start(t *table) {
 	if t.opts.RandomSeats {
 		shuffleSeats(seats, gameSeed)
 	}
-	setup := engine.Setup{Seed: gameSeed, Players: len(t.seats), Sets: setsOf(t.sets), BonusSouls: !t.opts.NoBonusSouls, Banned: t.opts.HostBans, DeckRatios: !t.opts.NoDeckRatios}
+	setup := engineSetup(gameSeed, len(t.seats), t.sets, t.opts)
 	room, err := NewRoom(setup, t.opts, seats)
 	if err != nil {
 		for _, s := range t.seats {
@@ -511,7 +515,7 @@ func (h *Hub) start(t *table) {
 		s.client.table = nil
 		s.client.room.Store(room)
 	}
-	h.run(room, protocol.GameInfo{ID: t.id, Host: t.host, Seats: len(t.seats), Taken: len(t.seats), Sets: t.sets, Started: true, Rollback: t.opts.Rollback})
+	h.run(room, gameInfo(t.id, t.host, len(t.seats), len(t.seats), t.sets, t.opts))
 }
 
 // setUpRoom gives a new room the server's settings.
@@ -606,15 +610,24 @@ func (h *Hub) list() protocol.Games {
 				taken++
 			}
 		}
-		out.Games = append(out.Games, protocol.GameInfo{
-			ID: t.id, Host: t.host, Seats: len(t.seats), Taken: taken, Sets: t.sets, Locked: t.password != "", Rollback: t.opts.Rollback,
-		})
+		info := gameInfo(t.id, t.host, len(t.seats), taken, t.sets, t.opts)
+		info.Started, info.Locked = false, t.password != ""
+		out.Games = append(out.Games, info)
 	}
 	for _, g := range h.games {
 		out.Games = append(out.Games, g.info)
 	}
 	out.Saves = listSaves(h.saves)
 	return out
+}
+
+// gameInfo is a started game's row in the game list; it names its
+// rollback mode and its challenge (ADR 020, ADR 028).
+func gameInfo(id, host string, seats, taken int, sets []string, o protocol.Options) protocol.GameInfo {
+	return protocol.GameInfo{
+		ID: id, Host: host, Seats: seats, Taken: taken, Sets: sets, Started: true,
+		Rollback: o.Rollback, Challenge: o.Challenge, Difficulty: o.Difficulty,
+	}
 }
 
 // lacks returns a set of need that have does not list, or "".

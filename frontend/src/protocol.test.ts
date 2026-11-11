@@ -166,13 +166,22 @@ const modeled: Record<string, Envelope | Envelope[]> = {
     } satisfies Update,
   },
   list: { type: 'list', id: 4, data: {} },
-  games: {
-    type: 'games',
-    id: 4,
-    data: {
-      games: [{ id: 'g1', host: 'Ann', seats: 4, taken: 2, sets: ['b2'], started: false, rollback: 'god' }],
-    } satisfies Games,
-  },
+  games: [
+    {
+      type: 'games',
+      id: 4,
+      data: {
+        games: [{ id: 'g1', host: 'Ann', seats: 4, taken: 2, sets: ['b2'], started: false, rollback: 'god' }],
+      } satisfies Games,
+    },
+    // A challenge game (ADR 028).
+    {
+      type: 'games',
+      data: {
+        games: [{ id: 'g2', host: 'Ann', seats: 2, taken: 1, sets: ['b2'], started: false, challenge: 'krampus', difficulty: 'hard' }],
+      } satisfies Games,
+    },
+  ],
   create: {
     type: 'create',
     id: 5,
@@ -189,6 +198,11 @@ const modeled: Record<string, Envelope | Envelope[]> = {
         rollback: 'god',
       },
     } satisfies Create,
+  },
+  'create#23': {
+    type: 'create',
+    id: 23,
+    data: { seats: 2, sets: ['b2'], options: { challenge: 'krampus', difficulty: 'hard' } } satisfies Create,
   },
   join: { type: 'join', id: 6, data: { game: 'g1' } satisfies Join },
   ready: { type: 'ready', id: 7, data: { ready: true } satisfies Ready },

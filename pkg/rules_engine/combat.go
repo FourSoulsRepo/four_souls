@@ -83,17 +83,27 @@ func (g *Game) CardOf(id ObjectID) CardRef {
 // EvFlipped means Object turned to its other face; Card is the face now up.
 const EvFlipped EventKind = "flipped"
 
-// Flip turns an object in play to its other face, if its card has one
-// (R-MECH-33). It reports whether it flipped.
+// Flip turns an object to its other face, if its card has one
+// (R-MECH-33): an object in play, or a challenge's rule card outside
+// the game, whose face up then has the abilities (R-TRICK-11, Q-43).
+// It reports whether it flipped.
 func (g *Game) Flip(id ObjectID) bool {
 	o := g.Object(id)
 	d, ok := g.cards.find(o.Card)
-	if !ok || d.Back == "" || o.Zone.Kind != ZoneInPlay {
+	ruleCard := g.Challenge != nil && g.Challenge.Card == id
+	if !ok || d.Back == "" || (o.Zone.Kind != ZoneInPlay && !ruleCard) {
 		return false
 	}
 	o.Flipped = !o.Flipped
 	g.emit(Event{Kind: EvFlipped, Player: o.Controller, Object: id, Card: g.CardOf(id)})
 	return true
+}
+
+// FlipThis flips the ability's own object: "flip this" (Anima Sola; the
+// Trick/Treat card, R-TRICK-11). A "you may" flip wraps it in a yes/no
+// ask (cardkit.May).
+func FlipThis() Effect {
+	return EffectFunc(func(c *Ctx) { c.G.Flip(c.Source) })
 }
 
 // WhenFlippedToThisSide triggers when this object is flipped to the face
@@ -322,14 +332,32 @@ func (g *Game) declareAttack(p PlayerID) {
 }
 
 // askAttackTarget offers the monsters in play and the monster deck.
+// While a random attack is owed (MustAttackRandom, Q-31), the attack
+// goes to one of its monsters at random; with another forced attack the
+// attacker picks which comes first, the random one as the last option.
 func (g *Game) askAttackTarget() {
+	random := g.randomAttackTargets()
 	if g.Turn.MustAttackDeck > 0 {
 		g.Turn.MustAttackDeck--
-		g.ask(Choice{Purpose: ChooseAttackTarget, Player: g.Turn.Active, Rule: "R-ATK-02", Deck: true}, []Msg{DeckOption(MonsterDeck)})
+		c := Choice{Purpose: ChooseAttackTarget, Player: g.Turn.Active, Rule: "R-ATK-02", Deck: true}
+		labels := []Msg{DeckOption(MonsterDeck)}
+		if len(random) > 0 {
+			c.Random, labels = true, append(labels, askAttackRandom.Msg())
+		}
+		g.ask(c, labels)
 		return
 	}
-	if m := g.Turn.MustAttack; m != 0 && g.Object(m).Zone.Kind == ZoneInPlay {
-		g.ask(Choice{Purpose: ChooseAttackTarget, Player: g.Turn.Active, Rule: "R-ATK-02", Objects: []ObjectID{m}}, g.targetLabels([]ObjectID{m}))
+	if m := g.Turn.MustAttack; m != 0 && g.Object(m).Zone.Kind == ZoneInPlay && g.CanBeAttacked(m) {
+		c := Choice{Purpose: ChooseAttackTarget, Player: g.Turn.Active, Rule: "R-ATK-02", Objects: []ObjectID{m}}
+		labels := g.targetLabels([]ObjectID{m})
+		if len(random) > 0 && !contains(random, m) {
+			c.Random, labels = true, append(labels, askAttackRandom.Msg())
+		}
+		g.ask(c, labels)
+		return
+	}
+	if len(random) > 0 {
+		g.attackRandom(random) // no deck attack while it is owed (Q-31)
 		return
 	}
 	targets := g.attackTargets()
@@ -342,9 +370,9 @@ func (g *Game) askAttackTarget() {
 // players an effect lets them attack (R-ATK-20).
 func (g *Game) attackTargets() []ObjectID {
 	var out []ObjectID
-	for _, s := range g.Monsters {
-		if top, ok := s.TopOf(); ok && g.Object(top).Role == RoleMonster && !g.def(top).Unattackable {
-			out = append(out, top)
+	for _, id := range g.MonstersInPlay() { // final bosses and minions too (R-CHAL-03, R-CHAL-07)
+		if g.CanBeAttacked(id) {
+			out = append(out, id)
 		}
 	}
 	for _, pl := range g.Players {
@@ -432,7 +460,22 @@ func (g *Game) startAttack(target ObjectID) {
 	if g.Turn.MustAttack == target {
 		g.Turn.MustAttack = 0 // the forced attack is made (Monster Manual, Krampus)
 	}
+	if contains(g.randomAttackTargets(), target) {
+		g.Turn.RandomAttackMade = true // Q-31: an attack went to one of them
+	}
 	g.emit(Event{Kind: EvAttackTarget, Player: g.Turn.Active, Object: target, Card: g.Object(target).Card})
+	if g.Object(target).Role == RoleMonster {
+		// "At the start of each attack against a monster": a deck attack's
+		// monster is in its slot by now; an event or an attack on a player
+		// or item has none (Q-53). Its triggers go below the target's own.
+		g.emit(Event{Kind: EvAttackStart, Player: g.Turn.Active, Object: target, Card: g.Object(target).Card})
+	}
+	if len(g.PendingTriggers) > 0 {
+		// "When an attack is declared on this" (Pride) resolves first; the
+		// first roll comes when the stack is empty again (R-ATK-25, 19.151).
+		g.openWindow(g.Turn.Active)
+		return
+	}
 	g.attackRoll()
 }
 
@@ -467,14 +510,12 @@ func (g *Game) resolveAttackRoll(it StackItem) {
 	g.Attack.Rolls++
 	target := it.Target.Object
 	tp, onPlayer := g.characterOf(target)
-	mod := g.def(target).CombatMod
-	if onPlayer {
-		mod = nil // the attacked player's own cards change it below (R-ATK-24)
-	}
+	// The attacked player's own cards change it below (R-ATK-24).
+	mod := !onPlayer
 	if it.Roll >= g.Evasion(target) {
 		atk := g.PlayerATK(p)
-		if mod != nil {
-			atk = mod(g, target, it.Roll, true, atk)
+		if mod {
+			atk = g.combatMod(target, it.Roll, true, atk)
 		}
 		atk = g.attackerCombatMod(p, it.Roll, true, atk)
 		dt := Target{Object: target}
@@ -492,8 +533,8 @@ func (g *Game) resolveAttackRoll(it StackItem) {
 	}
 	// Nobody deals 0 damage (R-MECH-20).
 	atk := g.MonsterATK(target)
-	if mod != nil {
-		atk = mod(g, target, it.Roll, false, atk)
+	if mod {
+		atk = g.combatMod(target, it.Roll, false, atk)
 	}
 	ctrl := NoPlayer
 	if onPlayer {
@@ -588,6 +629,12 @@ func (g *Game) resolveDamage(it StackItem) {
 	if it.Amount = g.shield(it.Target, it.Amount); it.Amount <= 0 {
 		return
 	}
+	if it.Target.IsPlayer {
+		// "Damage you would take is increased by 1": statics and this
+		// turn's boosts, before the cards that lower it (Daddy Haunt,
+		// Ghostly Trickery; Q-46: they add up).
+		it.Amount += max(g.bonus(StatDamageTaken, it.Target.Player, 0), 0)
+	}
 	for _, id := range g.inPlay() { // e.g. Dry Baby, The Dead Cat
 		if mod := g.def(id).DamageMod; mod != nil {
 			if it.Amount = mod(g, id, it.Target, it.Amount, it.Attack); it.Amount <= 0 {
@@ -625,7 +672,12 @@ func (g *Game) resolveDamage(it StackItem) {
 	if o.Zone.Kind != ZoneInPlay || g.HP(id) == 0 {
 		return
 	}
-	n := min(it.Amount, g.HP(id))
+	if g.guarded(id) {
+		// "This can't take damage" (R-KRAMPUS-11).
+		g.emit(Event{Kind: EvPrevented, Player: NoPlayer, Object: id, Amount: it.Amount, Source: id})
+		return
+	}
+	n := min(g.armored(id, it.Amount, it.Attack), g.HP(id)) // R-CHAL-05
 	o.Damage += n
 	o.HitsThisTurn++
 	if g.HP(id) == 0 {
@@ -702,7 +754,8 @@ func (g *Game) monsterDeath(id ObjectID) {
 		g.endAttack()
 	}
 	text := g.deathText(id)
-	inSlot := o.Zone.Slot == MonsterSlot || o.Zone.Slot == RoomSlot
+	noSpoils := g.noSpoils(id)
+	inSlot := o.Zone.Slot == MonsterSlot || o.Zone.Slot == RoomSlot || o.Zone.Slot == FinalBossSlot || o.Zone.Slot == MinionSlot
 	var z Zone
 	if inSlot && o.Controller == NoPlayer {
 		z = g.takeFromSlot(id)
@@ -712,8 +765,9 @@ func (g *Game) monsterDeath(id ObjectID) {
 		inSlot = false
 	}
 	holding := g.move(id, Zone{Kind: ZoneOutside}, NoPlayer) // R-DEATH-04
+	g.moveRewardChanges(id, holding)
 	h := g.Object(holding)
-	h.KilledBy, h.ShareRewards = killedBy, share
+	h.KilledBy, h.ShareRewards, h.NoSpoils = killedBy, share, noSpoils
 	before := len(g.PendingTriggers)
 	kind := EvDied
 	if text != "" {
@@ -748,6 +802,10 @@ const (
 // rewardsStep gives the active player the rewards (R-DEATH-06); then
 // "after rewards" triggers trigger (R-DEATH-07).
 func (g *Game) rewardsStep(holding ObjectID) {
+	if g.Object(holding).NoSpoils {
+		g.soulStep(holding) // no rewards (R-KRAMPUS-14)
+		return
+	}
 	active := g.receiver(holding)
 	times := 1
 	if g.Object(holding).DoubleRewards || g.bonus(StatDoubleRewards, NoPlayer, 0) > 0 {
@@ -756,24 +814,25 @@ func (g *Game) rewardsStep(holding ObjectID) {
 	// A roll reward waits for its throw on the stack. The steps after the
 	// rewards wait under it, so no refill runs before the roll (19.104).
 	rolls := false
-	for _, r := range g.def(holding).Rewards {
+	rewards := g.Rewards(holding) // this turn's changes too (Q-48)
+	for _, r := range rewards {
 		rolls = rolls || r.Roll
 	}
 	if rolls {
 		g.push(StackItem{Kind: StackDeathStep, Controller: NoPlayer, Label: eventRewards.Msg(), Target: Target{Object: holding}, Amount: stepRewardsGiven})
 	}
-	for _, r := range g.def(holding).Rewards {
+	for _, r := range rewards {
 		if r.Roll {
 			g.push(StackItem{Kind: StackRoll, Controller: active, Source: holding, Label: eventRewardRoll.Msg(), Reward: int(r.Kind) + 1, Amount: times})
 			continue
 		}
-		g.enqueue(Action{Kind: r.action(), Player: active, Amount: r.Amount * times})
+		g.enqueue(Action{Kind: r.action(), Player: active, Amount: r.Amount * times, Reward: true})
 	}
 	for _, p := range g.Object(holding).ShareRewards {
 		// Sibling Rivalry: the helper gains the rewards too.
-		for _, r := range g.def(holding).Rewards {
+		for _, r := range rewards {
 			if !r.Roll {
-				g.enqueue(Action{Kind: r.action(), Player: p, Amount: r.Amount * times})
+				g.enqueue(Action{Kind: r.action(), Player: p, Amount: r.Amount * times, Reward: true})
 			}
 		}
 	}
@@ -809,7 +868,7 @@ func (g *Game) receiver(holding ObjectID) PlayerID {
 // (R-DEATH-08, R-DEATH-09).
 func (g *Game) soulStep(holding ObjectID) {
 	if g.Object(holding).Zone.Kind == ZoneOutside {
-		if g.def(holding).Soul > 0 {
+		if g.def(holding).Soul > 0 && !g.Object(holding).NoSpoils {
 			g.enqueue(Action{Kind: ActBecomeSoul, Player: g.receiver(holding), Object: holding})
 		} else {
 			g.enqueue(Action{Kind: ActDiscardObject, Player: NoPlayer, Object: holding})
@@ -869,17 +928,25 @@ func (g *Game) removeFromSlot(id ObjectID) {
 }
 
 // takeFromSlot takes an object off the top of its slot and returns the
-// slot's zone; the card below stays covered until uncover.
+// slot's zone; the card below stays covered until uncover. A minion
+// slot left empty is removed (R-CHAL-11); a final boss slot stays.
 func (g *Game) takeFromSlot(id ObjectID) Zone {
 	z := g.Object(id).Zone
 	slot := g.slotAt(z)
 	slot.Cards = remove(slot.Cards, id)
+	if z.Slot == MinionSlot && len(slot.Cards) == 0 {
+		g.dropMinionSlot(z.Index)
+	}
 	return z
 }
 
 // uncover puts the covered card on top of the slot at z into play; its
-// card_revealed names the covered object as Prev (19.72).
+// card_revealed names the covered object as Prev (19.72). Final boss
+// and minion slots cover nothing (R-CHAL-04, R-CHAL-11).
 func (g *Game) uncover(z Zone) {
+	if z.Slot == FinalBossSlot || z.Slot == MinionSlot {
+		return
+	}
 	slot := g.slotAt(z)
 	if below, ok := slot.TopOf(); ok && g.Object(below).Zone.Kind == ZoneCovered {
 		slot.Cards = slot.Cards[:len(slot.Cards)-1]
@@ -893,6 +960,10 @@ func (g *Game) slotAt(z Zone) *Slot {
 		return &g.Shop[z.Index]
 	case MonsterSlot:
 		return &g.Monsters[z.Index]
+	case FinalBossSlot:
+		return &g.Bosses[z.Index]
+	case MinionSlot:
+		return &g.Minions[z.Index]
 	default:
 		return &g.Rooms[z.Index]
 	}
@@ -986,8 +1057,17 @@ func (g *Game) attackerCombatMod(p PlayerID, roll int, hit bool, n int) int {
 		if o := g.Object(id); o.Role == RoleSoul {
 			continue
 		}
-		if mod := g.def(id).CombatMod; mod != nil {
-			n = mod(g, id, roll, hit, n)
+		n = g.combatMod(id, roll, hit, n)
+	}
+	return n
+}
+
+// combatMod applies the CombatMod of every face of id: its card's, then
+// those of cards whose abilities it gained (R-ABIL-38, Q-47).
+func (g *Game) combatMod(id ObjectID, roll int, hit bool, n int) int {
+	for _, face := range g.facesOf(id) {
+		if d, ok := g.cards.find(face); ok && d.CombatMod != nil {
+			n = d.CombatMod(g, id, roll, hit, n)
 		}
 	}
 	return n
@@ -1009,9 +1089,9 @@ func (g *Game) redirector() (PlayerID, bool) {
 // (S-YUG).
 func (g *Game) askRedirect(q PlayerID, declared ObjectID) {
 	options := []ObjectID{declared}
-	for _, s := range g.Monsters {
-		if top, ok := s.TopOf(); ok && top != declared && g.Object(top).Role == RoleMonster && !g.def(top).Unattackable {
-			options = append(options, top)
+	for _, id := range g.MonstersInPlay() {
+		if id != declared && g.CanBeAttacked(id) {
+			options = append(options, id)
 		}
 	}
 	g.ask(Choice{Purpose: ChooseRedirect, Player: q, Rule: "R-ATK-03", Objects: options, Question: promptRedirect.Msg()}, g.Labels(options))

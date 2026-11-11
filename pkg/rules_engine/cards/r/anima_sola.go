@@ -22,7 +22,7 @@ var animaSola = engine.CardDef{
 			Kind:    engine.Activated,
 			Text:    "↷: Flip this item.",
 			Costs:   []engine.Cost{engine.Tap()},
-			Effects: []engine.Effect{flipThis},
+			Effects: []engine.Effect{engine.FlipThis()},
 		},
 		{
 			Kind:    engine.Triggered,
@@ -61,6 +61,3 @@ var theRevenant = engine.CardDef{
 		})},
 	}},
 }
-
-// flipThis flips the ability's own object.
-var flipThis = engine.EffectFunc(func(c *engine.Ctx) { c.G.Flip(c.Source) })

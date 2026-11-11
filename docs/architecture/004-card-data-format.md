@@ -106,3 +106,4 @@ Use options 1 and 4; stats and rewards stay strings (option 5 lost).
    3. It mirrors these types in `scraper/carddata`; keep both in sync.
    4. Its `scraper ru-names` writes Russian names (16.5).
    5. `scraper build` keeps other languages' text and translators.
+   6. A hyphen in a site slug becomes `_` in the ID (ADR 028).

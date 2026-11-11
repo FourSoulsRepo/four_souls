@@ -34,6 +34,7 @@ Players see the lobby as the Games list. Each row is one table or game:
 8. A dedicated server that stops keeps every table and game in `<saves>/restart/`; the next start brings them back (`restart.go`, ADR 019). A game from another engine must load and save back to the same bytes (`engine.Resume`); else it ends and its players hear why when they return.
 9. Idle limits end a game nobody is connected to, or one past its longest time (`limits.go`, 8.25). Each room checks once a minute on the hub's clock; tests pass a fake one.
 10. The host may end the game at any moment before it is over (`end`, 19.84). `Room.end` refuses any other seat with `not_host`, then stops the room like an idle limit (`endWith`): connected players get the `game_ended` notice, the others when they come back, and the record ends unfinished. On a dedicated server this is the only way to stop a game at once; leaving only pauses it.
+11. A challenge game (ADR 028, 14.23) sets `Options.challenge` (e.g. `krampus`) and `Options.difficulty` (`normal`, `hard`, `ultra`). `checkChallenge` refuses an unknown challenge (`error.no_challenge`), a difficulty it lacks or one without a challenge (`error.no_difficulty`), and any seat count but 2 (`error.challenge_seats`), all as `bad_setup`; it turns bonus souls off. The table, the game list (`GameInfo.challenge`, `difficulty`), saves and restart files keep only the playable set codes; `gameSets` adds the challenge's own set (`cards.ChallengeSet`) last, and `engineSetup` builds every engine setup from the options (start, restart, the option checks). A host ban of a challenge card is refused. A lost challenge is over with no winners: the record ends finished, with no `winners`. The host screen learns the challenges from the app (`App.Challenges`), as it learns the card sets.
 
 ## Automatic answers
 
@@ -114,7 +115,7 @@ A server restart (17.5, ADR 020, item 10) keeps the history when it can. `keepHi
 
 ## Tests
 
-* `hub_test.go`, `setup_test.go`, `flow_test.go`, `pause_test.go`, `records_test.go`, `saves_test.go`, `presence_test.go`, `rollback_test.go`, `soft_test.go`, `restart_rollback_test.go`: in-memory connections.
+* `hub_test.go`, `setup_test.go`, `challenge_test.go`, `flow_test.go`, `pause_test.go`, `records_test.go`, `saves_test.go`, `presence_test.go`, `rollback_test.go`, `soft_test.go`, `restart_rollback_test.go`: in-memory connections.
 * `integration_test.go`: whole games of bots over real WebSockets, a drop and a reconnect, a save and a load; every record must replay in the engine. Under `-race` only the 2-player game runs.
 * `internal/protocol/testdata/golden.jsonl` pins the JSON of every message: rename or remove a field, bump `protocol.Version`; then `go test ./internal/protocol -update`.
 * Timers count `Hub.second`, so tests make a second one millisecond.

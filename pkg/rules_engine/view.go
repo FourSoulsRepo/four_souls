@@ -64,6 +64,18 @@ type MonsterStats struct {
 	PrintedATK int `json:"printed_atk"`
 	// Sources are what changes the monster's HP, DC and ATK now (V-41).
 	Sources []StatSourceView `json:"sources,omitempty"`
+	// Rewards are the rewards the monster gives now, only while this
+	// turn changed them (Rewards, R-TRICK-13, R-TRICK-15); the card
+	// shows the printed ones.
+	Rewards []RewardView `json:"rewards,omitempty"`
+}
+
+// RewardView is one reward line: Kind is "cents", "loot" or
+// "treasure"; Roll gives as many as a roll's result (R-CARD-31).
+type RewardView struct {
+	Kind   string `json:"kind"`
+	Amount int    `json:"amount,omitempty"`
+	Roll   bool   `json:"roll,omitempty"`
 }
 
 // StatSourceView is one source of a stat change, so a client can show
@@ -105,6 +117,9 @@ type PlayerView struct {
 	PrintedHP  int              `json:"printed_hp"`
 	PrintedATK int              `json:"printed_atk"`
 	Sources    []StatSourceView `json:"sources,omitempty"`
+	// Counters are on the player, not the character, e.g. fear counters
+	// (R-MECH-13, Q-45).
+	Counters []Counter `json:"counters,omitempty"`
 }
 
 // SlotView is a table slot: the top card and the covered ones below.
@@ -119,6 +134,12 @@ type GameView struct {
 	Shop      []SlotView     `json:"shop"`
 	Monsters  []SlotView     `json:"monsters"`
 	DeckSizes [deckCount]int `json:"deck_sizes"`
+	// Rooms are the room slots; empty without the room deck (R-SETUP-16).
+	Rooms []SlotView `json:"rooms,omitempty"`
+	// Bosses are a challenge's final boss slots and Minions its minion
+	// slots (ADR 028, Decision 9.3); empty in a regular game.
+	Bosses  []SlotView `json:"bosses,omitempty"`
+	Minions []SlotView `json:"minions,omitempty"`
 	// Discards are the top card of each discard pile, nil when it is
 	// empty; DiscardSizes are the piles' sizes. The rest of a pile is
 	// not sent: no view shows it.
@@ -165,6 +186,34 @@ type GameView struct {
 	// FirstRoll is the first-player roll before turn 1: who still rolls
 	// and this round's dice so far. It is public (GS-06, 15.43).
 	FirstRoll *FirstRoll `json:"first_roll,omitempty"`
+	// Challenge is the co-op challenge being played; nil in a regular
+	// game. It is public (ADR 028, Decision 9).
+	Challenge *ChallengeView `json:"challenge,omitempty"`
+}
+
+// ChallengeView is what every viewer sees of a challenge: its ID and
+// difficulty, the timer, the rule card, the presents, and how it ended.
+type ChallengeView struct {
+	ID         string        `json:"id"`
+	Difficulty string        `json:"difficulty"`
+	Timer      int           `json:"timer"`
+	Card       CardView      `json:"card"`
+	Presents   []PresentView `json:"presents,omitempty"`
+	Lost       bool          `json:"lost,omitempty"`
+	Reason     Msg           `json:"reason,omitzero"`
+}
+
+// PresentView is a present: a face-down one shows its kind and
+// counters, never its card (ADR 028, Decision 9). Destroyed went to the
+// treasure discard; Flipped is face up (R-KRAMPUS-10). Card shows once
+// it is face up either way; Player is who gained it, or NoPlayer.
+type PresentView struct {
+	Kind      string   `json:"kind"`
+	Counters  int      `json:"counters"`
+	Destroyed bool     `json:"destroyed,omitempty"`
+	Flipped   bool     `json:"flipped,omitempty"`
+	Card      CardRef  `json:"card,omitempty"`
+	Player    PlayerID `json:"player"`
 }
 
 // AttackView is an attack in progress: its target once chosen, and
@@ -261,6 +310,7 @@ func (g *Game) ViewBase() ViewBase {
 		d := g.def(pl.Character)
 		pv.PrintedHP, pv.PrintedATK, pv.Sources = d.HP, d.ATK, g.playerSources(pl.ID)
 		pv.Character.Souls = g.characterSouls(pl.Character)
+		pv.Counters = slices.Clone(pl.Counters)
 		for _, id := range pl.InPlay {
 			cv := g.playedView(id)
 			cv.Souls = g.soulsOf(id)
@@ -270,6 +320,15 @@ func (g *Game) ViewBase() ViewBase {
 	}
 	out.Shop = g.slotViews(g.Shop)
 	out.Monsters = g.slotViews(g.Monsters)
+	if len(g.Rooms) > 0 {
+		out.Rooms = g.slotViews(g.Rooms)
+	}
+	if len(g.Bosses) > 0 {
+		out.Bosses = g.slotViews(g.Bosses)
+	}
+	if len(g.Minions) > 0 {
+		out.Minions = g.slotViews(g.Minions)
+	}
 	for d := range deckCount {
 		out.DeckSizes[d] = len(g.Decks[d])
 		out.DiscardSizes[d] = len(g.Discards[d])
@@ -294,6 +353,23 @@ func (g *Game) ViewBase() ViewBase {
 	if fr := g.FirstRoll; fr != nil {
 		out.FirstRoll = &FirstRoll{Round: fr.Round, Players: slices.Clone(fr.Players), Rolls: slices.Clone(fr.Rolls)}
 	}
+	if c := g.Challenge; c != nil {
+		cv := &ChallengeView{ID: c.ID, Difficulty: c.Difficulty, Timer: c.Timer, Card: g.cardView(c.Card), Lost: c.Lost, Reason: c.Reason}
+		for _, pr := range c.Presents {
+			pv := PresentView{Kind: pr.Kind, Destroyed: pr.Destroyed, Flipped: pr.Flipped, Player: NoPlayer}
+			o := g.Object(pr.Object)
+			if pr.Destroyed || pr.Flipped {
+				pv.Card = o.Card // face up (R-KRAMPUS-08, R-KRAMPUS-10)
+			} else {
+				pv.Counters = o.CountersOf("")
+			}
+			if pr.Flipped && o.Zone.Kind == ZoneInPlay {
+				pv.Player = o.Controller
+			}
+			cv.Presents = append(cv.Presents, pv)
+		}
+		out.Challenge = cv
+	}
 	return ViewBase{view: out}
 }
 
@@ -312,7 +388,8 @@ func (g *Game) ViewFor(b ViewBase, v Viewer) GameView {
 	}
 	out.Players = slices.Clone(b.view.Players)
 	for i, pl := range g.Players {
-		if v.sees(pl.ID) || g.bonus(StatRevealHand, pl.ID, 0) > 0 {
+		// Co-op partners see each other's hands (R-COOP-07, Q-42).
+		if v.sees(pl.ID) || g.bonus(StatRevealHand, pl.ID, 0) > 0 || (g.Challenge != nil && v.Kind == ViewPlayer) {
 			for _, id := range pl.Hand {
 				out.Players[i].Hand = append(out.Players[i].Hand, g.cardView(id))
 			}
@@ -464,7 +541,7 @@ func (g *Game) optionViewsOf(c *Choice, n int) []OptionView {
 		for i, r := range c.Replacements {
 			set(i, func(o *OptionView) { o.Object, o.Outcome = r.Object, g.outcomeView(c, i) })
 		}
-	case ChooseTriggerOrder, ChooseMode, ChooseAnswer, ChooseCopyAbility, ChooseDie, ChooseOrder:
+	case ChooseTriggerOrder, ChooseMode, ChooseAnswer, ChooseCopyAbility, ChooseDie, ChooseOrder, ChooseMayReplace:
 		// Text options.
 	}
 	return out
@@ -524,6 +601,9 @@ func (g *Game) cardView(id ObjectID) CardView {
 			// marks it as changed.
 			PrintedHP: d.HP, PrintedDC: min(max(d.DC, 1), 6), PrintedATK: d.ATK,
 			Sources: g.monsterSources(id),
+		}
+		if g.RewardsChanged(id) {
+			cv.Stats.Rewards = g.rewardViews(id)
 		}
 	}
 	return cv

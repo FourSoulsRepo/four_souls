@@ -205,7 +205,7 @@ func (h *Hub) restoreRoom(f *restartFile) {
 	var g *engine.Game
 	if f.Kind == keptGame {
 		var err error
-		if g, err = engine.Resume(f.State, f.Meaning, setsOf(f.Sets)...); err != nil {
+		if g, err = engine.Resume(f.State, f.Meaning, gameSets(f.Sets, f.Options)...); err != nil {
 			h.lose(f, err)
 			return
 		}
@@ -214,10 +214,7 @@ func (h *Hub) restoreRoom(f *restartFile) {
 	for i, s := range f.Seats {
 		seats[i] = roomSeat{name: s.Name, token: s.Token, kicked: s.Kicked, dice: s.Dice}
 	}
-	setup := engine.Setup{
-		Seed: f.Seed, Players: len(seats), Sets: setsOf(f.Sets), BonusSouls: !f.Options.NoBonusSouls,
-		Banned: f.Options.HostBans, DeckRatios: !f.Options.NoDeckRatios,
-	}
+	setup := engineSetup(f.Seed, len(seats), f.Sets, f.Options)
 	room, err := NewRoom(setup, f.Options, seats)
 	if err != nil {
 		log.Printf("server: restart file %s: %v", f.Game, err)
@@ -229,7 +226,7 @@ func (h *Hub) restoreRoom(f *restartFile) {
 	if g != nil && f.Engine != engine.Version {
 		room.notice = protocol.NoticeEngine // the rules may have changed
 	}
-	h.run(room, protocol.GameInfo{ID: f.Game, Host: f.Host, Seats: len(seats), Taken: len(seats), Sets: f.Sets, Started: true, Rollback: f.Options.Rollback})
+	h.run(room, gameInfo(f.Game, f.Host, len(seats), len(seats), f.Sets, f.Options))
 }
 
 // keep writes the room to a restart file instead of ending its record;

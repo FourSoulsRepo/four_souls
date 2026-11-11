@@ -71,13 +71,36 @@ func (a *App) SaveSettings(s settings.Settings) (settings.Settings, error) {
 }
 
 // CardSets returns the codes of the card sets this app has; the client
-// sends them when it connects (CD-03).
+// sends them when it connects (CD-03). The challenge set is not among
+// them: it is never a playable set (ADR 028).
 func (a *App) CardSets() []string {
 	var codes []string
 	for _, s := range cards.Sets() {
 		codes = append(codes, s.Code)
 	}
 	return codes
+}
+
+// ChallengeInfo is a challenge the host screen offers (ADR 028,
+// Decision 10.7): its ID and difficulties, easiest first. The client
+// names them; a server that lacks one refuses it at create.
+type ChallengeInfo struct {
+	ID           string   `json:"id"`
+	Difficulties []string `json:"difficulties"`
+}
+
+// Challenges lists the challenges this app knows, like CardSets lists
+// its sets.
+func (a *App) Challenges() []ChallengeInfo {
+	var out []ChallengeInfo
+	for _, c := range cards.Challenges() {
+		info := ChallengeInfo{ID: c.ID}
+		for _, l := range c.Levels {
+			info.Difficulties = append(info.Difficulties, l.Difficulty)
+		}
+		out = append(out, info)
+	}
+	return out
 }
 
 // DeckRatios says why a game with these sets and players can't use the

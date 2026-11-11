@@ -49,13 +49,18 @@ var barrierKinds = map[EventKind]bool{
 	EvLookedAt:       true,
 	EvGainedTreasure: true, // the treasure deck's top, or a searched deck
 	EvCharacterDealt: true,
+	// A present's face shows (R-KRAMPUS-08, R-KRAMPUS-10).
+	EvPresentDestroyed: true,
+	EvPresentsFlipped:  true,
 	// The turn ends (item 4.5).
 	EvTurnEnded:      true,
 	EvTurnEndedEarly: true,
 	EvTurnSkipped:    true,
 	// The game (item 4.6).
-	EvGameStarted: true,
-	EvGameWon:     true,
+	EvGameStarted:   true,
+	EvGameWon:       true,
+	EvChallengeWon:  true,
+	EvChallengeLost: true,
 
 	// Not barriers: what is seen anyway, and steps on the way.
 	EvActivated:        false,
@@ -64,6 +69,7 @@ var barrierKinds = map[EventKind]bool{
 	EvAttackTarget:     false,
 	EvBoosted:          false,
 	EvCancelled:        false,
+	EvChallengeTimer:   false, // at the end of a round; turn_ended is the barrier
 	EvCounters:         false,
 	EvCursed:           false,
 	EvDamagePending:    false, // on the stack; not dealt yet
@@ -107,4 +113,12 @@ var barrierKinds = map[EventKind]bool{
 	EvStole:            false,
 	EvTopChoice:        false,
 	EvTurnStarted:      false,
+	EvPresentCounters:  false,
+	EvPresentGiven:     false, // its face showed when it flipped
+	EvForgone:          false,
+	EvMinionArrived:    false, // its card_revealed is the barrier
+	EvPlayerCounters:   false,
+	EvAttackStart:      false, // a trigger moment; its rolls are barriers
+	EvRewardsChanged:   false,
+	EvAbilitiesGained:  false, // its card_revealed events are the barriers
 }

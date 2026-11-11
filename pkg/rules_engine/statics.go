@@ -41,9 +41,10 @@ const (
 	StatOneAbility                     // the player can't activate more than one ability each turn (Shadow of Famine)
 	StatOneLoot                        // the player can't play more than one loot card each turn (Shadow of Famine)
 	StatAttackTax                      // to attack, the player pays this much ¢ to each other player (Tax for the Mighty)
+	StatDamageTaken                    // each instance of damage the player would take is increased by this much (Daddy Haunt, Ghostly Trickery)
 )
 
-var statNames = []string{"ATK", "HP", "DC", "ATK", "HP", "price", "roll", "attack roll", "loot plays", "attacks", "purchases", "loot step", "lock", "double loot", "death ward", "DC of attacked monsters", "recharge limit", "max hand size", "next attack roll", "lock this turn", "no character recharge", "revealed hand", "choose attacks", "used", "double rewards", "eternal", "no forced loss", "2 or 3 becomes 1", "cheaper $ abilities", "no souls", "two dice, left chooses", "penalty item given", "DC when attacked"}
+var statNames = []string{"ATK", "HP", "DC", "ATK", "HP", "price", "roll", "attack roll", "loot plays", "attacks", "purchases", "loot step", "lock", "double loot", "death ward", "DC of attacked monsters", "recharge limit", "max hand size", "next attack roll", "lock this turn", "no character recharge", "revealed hand", "choose attacks", "used", "double rewards", "eternal", "no forced loss", "2 or 3 becomes 1", "cheaper $ abilities", "no souls", "two dice, left chooses", "penalty item given", "DC when attacked", "one ability", "one loot", "attack tax", "damage taken"}
 
 func (s Stat) String() string { return statNames[s] }
 
@@ -109,6 +110,25 @@ func YouHave(s Stat, n int) Static {
 // MonstersHave changes a stat of every monster: MonstersHave(StatMonsterDC, 1).
 func MonstersHave(s Stat, n int) Static {
 	return Static{Stat: s, Amount: n, Applies: func(*Game, ObjectID, PlayerID, ObjectID) bool { return true }}
+}
+
+// MonstersHavePerCounters changes a stat of every monster by 1 for every
+// per counters named name on the active player, rounded down: "For
+// every 2 fear counters on the active player, monsters have +1 DC"
+// (Mischievous The Haunt, R-TRICK-09, Q-52). It is read whenever the
+// stat is, so an attack roll uses the count as it resolves; Evasion
+// keeps the result between 1 and 6 (R-ATK-18).
+func MonstersHavePerCounters(s Stat, name string, per int) Static {
+	return Static{
+		Stat:    s,
+		Applies: func(*Game, ObjectID, PlayerID, ObjectID) bool { return true },
+		Value: func(g *Game, _ ObjectID) int {
+			if g.Turn.Active < 0 || int(g.Turn.Active) >= len(g.Players) {
+				return 0
+			}
+			return g.PlayerCounters(g.Turn.Active, name) / per
+		},
+	}
 }
 
 // bonus sums the statics in play that change stat for the subject.

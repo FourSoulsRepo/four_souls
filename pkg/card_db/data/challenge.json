@@ -1,0 +1,721 @@
+{
+  "set": {
+    "code": "challenge",
+    "name": "Challenges",
+    "order": 5,
+    "released": "2022-12"
+  },
+  "cards": [
+    {
+      "id": "how_the_krampus_stole_christmas_comp",
+      "type": "Challenge Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "How the Krampus Stole Christmas",
+          "effects": [
+            "If you would gain rewards from a monster or gain a soul, you may instead forego the reward or soul and put counters on the present of the respective type (¢, loot, treasure, or soul) equal to the amount of that resource foregone.",
+            "If a present is reduced to 0 counters, destroy it. Put the top 3 cards of the monster deck in the present slots controlled by the active player.",
+            "When a player reaches 3 or more souls, each present they control is flipped, becomes an item, and is gained by them."
+          ]
+        }
+      },
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "OrisGhost"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "challenge/how_the_krampus_stole_christmas_comp.webp"
+      ]
+    },
+    {
+      "id": "how_the_krampus_stole_christmas_hard",
+      "type": "Challenge Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "How the Krampus Stole Christmas",
+          "effects": [
+            "If you would gain rewards from a monster or gain a soul, you may instead forego the reward or soul and put counters on the present of the respective type (¢, loot, treasure, or soul) equal to the amount of that resource foregone.",
+            "If a present is reduced to 0 counters, destroy it. Put the top 4 cards of the monster deck in minion slots.",
+            "The first time there are 6 or more souls controlled by all players, each present is flipped, becomes an item, and is gained by a player of the active player's choice."
+          ]
+        }
+      },
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "OrisGhost"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "challenge/how_the_krampus_stole_christmas_hard.webp"
+      ]
+    },
+    {
+      "id": "how_the_krampus_stole_christmas_norm",
+      "type": "Challenge Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "How the Krampus Stole Christmas",
+          "effects": [
+            "If you would gain rewards from a monster or gain a soul, you may instead forego the reward or soul and put counters on the present of the respective type (¢, loot, treasure, or soul) equal to the amount of that resource foregone.",
+            "If a present is reduced to 0 counters, destroy it. Put the top 3 cards of the monster deck in minion slots.",
+            "The first time there are 5 or more souls controlled by all players, each present is flipped, becomes an item, and is gained by a player of the active player's choice."
+          ]
+        }
+      },
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "OrisGhost"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "challenge/how_the_krampus_stole_christmas_norm.webp"
+      ]
+    },
+    {
+      "id": "how_the_krampus_stole_christmas_ultra",
+      "type": "Challenge Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "How the Krampus Stole Christmas",
+          "effects": [
+            "If you would gain rewards from a monster or gain a soul, you may instead forego the reward or soul and put counters on the present of the respective type (¢, loot, treasure, or soul) equal to the amount of that resource foregone.",
+            "If a present is reduced to 0 counters, destroy it. Put the top 4 cards of the monster deck in minion slots.",
+            "The first time there are 7 or more souls controlled by all players, each present is flipped, becomes an item, and is gained by a player of the active player's choice."
+          ]
+        }
+      },
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "OrisGhost"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "challenge/how_the_krampus_stole_christmas_ultra.webp"
+      ]
+    },
+    {
+      "id": "mischievous_the_haunt_comp",
+      "type": "Challenge Boss Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Mischievous The Haunt",
+          "effects": [
+            "While the active player controls less than 3 souls, attacks can't be declared on this and it can't take damage.",
+            "Each time a player dies, put a fear counter on them.",
+            "For every 2 fear counters on the active player, monsters have +1{DC}.",
+            "Each time a monster dies, the active player chooses a player. Remove a fear counter from them."
+          ],
+          "notes": [
+            "\"They were terrified and affrighted, and supposed that they had seen a spirit.\"\nLuke 24:37"
+          ]
+        }
+      },
+      "stats": [
+        {
+          "name": "HP",
+          "value": "4"
+        },
+        {
+          "name": "DC",
+          "value": "5"
+        },
+        {
+          "name": "ATK",
+          "value": "1"
+        }
+      ],
+      "rewards": [
+        {
+          "count": "1x",
+          "kind": "Soul"
+        },
+        {
+          "count": "1x",
+          "kind": "Treasure"
+        }
+      ],
+      "artists": [
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "challenge/mischievous_the_haunt_comp.webp"
+      ]
+    },
+    {
+      "id": "mischievous_the_haunt_hard",
+      "type": "Challenge Boss Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Mischievous The Haunt",
+          "effects": [
+            "This starts with 14 trick counters.",
+            "While there are more trick counters on this than the number of souls controlled by all players, attacks can't be declared on this and it can't take damage.",
+            "Each time a player takes damage, put a fear counter on them.",
+            "For every 2 fear counters on the active player, monsters have +1{DC}.",
+            "Each time a monster dies, the active player rolls-\n4-6: Remove a fear counter from a player."
+          ],
+          "notes": [
+            "\"They were terrified and affrighted, and supposed that they had seen a spirit.\"\nLuke 24:37"
+          ]
+        }
+      },
+      "stats": [
+        {
+          "name": "HP",
+          "value": "4"
+        },
+        {
+          "name": "DC",
+          "value": "5"
+        },
+        {
+          "name": "ATK",
+          "value": "1"
+        }
+      ],
+      "rewards": [
+        {
+          "count": "1x",
+          "kind": "Soul"
+        },
+        {
+          "count": "1x",
+          "kind": "Treasure"
+        }
+      ],
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "OrisGhost"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "challenge/mischievous_the_haunt_hard.webp"
+      ]
+    },
+    {
+      "id": "mischievous_the_haunt_norm",
+      "type": "Challenge Boss Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Mischievous The Haunt",
+          "effects": [
+            "This starts with 12 trick counters.",
+            "While there are more trick counters on this than the number of souls controlled by all players, attacks can't be declared on this and it can't take damage.",
+            "Each time a player takes damage, put a fear counter on them.",
+            "For every 2 fear counters on the active player, monsters have +1{DC}.",
+            "Each time a monster dies, the active player rolls-\n4-6: Remove a fear counter from a player."
+          ],
+          "notes": [
+            "\"They were terrified and affrighted, and supposed that they had seen a spirit.\"\nLuke 24:37"
+          ]
+        }
+      },
+      "stats": [
+        {
+          "name": "HP",
+          "value": "4"
+        },
+        {
+          "name": "DC",
+          "value": "5"
+        },
+        {
+          "name": "ATK",
+          "value": "1"
+        }
+      ],
+      "rewards": [
+        {
+          "count": "1x",
+          "kind": "Soul"
+        },
+        {
+          "count": "1x",
+          "kind": "Treasure"
+        }
+      ],
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "OrisGhost"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "challenge/mischievous_the_haunt_norm.webp"
+      ]
+    },
+    {
+      "id": "mischievous_the_haunt_ultra",
+      "type": "Challenge Boss Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Mischievous The Haunt",
+          "effects": [
+            "This starts with 14 trick counters.",
+            "While there are more trick counters on this than the number of souls controlled by all players, attacks can't be declared on this and it can't take damage.",
+            "Each time a player takes damage, put a fear counter on each player.",
+            "For every 2 fear counters on the active player, monsters have +1{DC}.",
+            "Each time a monster dies, the active player rolls-\n4-6: Remove a fear counter from a player."
+          ],
+          "notes": [
+            "\"They were terrified and affrighted, and supposed that they had seen a spirit.\"\nLuke 24:37"
+          ]
+        }
+      },
+      "stats": [
+        {
+          "name": "HP",
+          "value": "4"
+        },
+        {
+          "name": "DC",
+          "value": "5"
+        },
+        {
+          "name": "ATK",
+          "value": "1"
+        }
+      ],
+      "rewards": [
+        {
+          "count": "1x",
+          "kind": "Soul"
+        },
+        {
+          "count": "1x",
+          "kind": "Treasure"
+        }
+      ],
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "OrisGhost"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "challenge/mischievous_the_haunt_ultra.webp"
+      ]
+    },
+    {
+      "id": "pilfering_krampus_comp",
+      "type": "Challenge Boss Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Pilfering Krampus",
+          "effects": [
+            "While the number of souls controlled by the active player is less than 3 or there is a minion in a present slot they control, this can't be attacked or take damage.",
+            "As each turn starts, the active player rolls-\n1-2: Remove 3 counters from their ¢ present.\n3-4: Remove 1 counter from their loot present.\n5: Remove 1 counter from their treasure present.\n6: Remove 1 counter from their soul present.",
+            "While there is a minion in a present slot controlled by the active player, the active player must attack a random minion once each turn if able.",
+            "Players gain no rewards or souls when a minion dies."
+          ],
+          "notes": [
+            "\"Lay not up for yourselves treasures upon the earth, where moth and rust doth corrupt, and where thieves break through and steal\"\nMatthew 6:19"
+          ]
+        }
+      },
+      "stats": [
+        {
+          "name": "HP",
+          "value": "5"
+        },
+        {
+          "name": "DC",
+          "value": "4"
+        },
+        {
+          "name": "ATK",
+          "value": "2"
+        }
+      ],
+      "rewards": [
+        {
+          "count": "1x",
+          "kind": "Soul"
+        },
+        {
+          "count": "1x",
+          "kind": "Treasure"
+        }
+      ],
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "OrisGhost"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "challenge/pilfering_krampus_comp.webp"
+      ]
+    },
+    {
+      "id": "pilfering_krampus_hard",
+      "type": "Challenge Boss Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Pilfering Krampus",
+          "effects": [
+            "While the number of souls controlled by all players is less than 6 or there is a minion in play, this can't be attacked or take damage.",
+            "As each turn starts, the active player rolls, then rolls again for every 2 minions in play-\n1-2: Remove 5 counters from the ¢ present.\n3-4: Remove 2 counters from the loot present.\n5: Remove 1 counter from the treasure present.\n6: Remove 1 counter from the soul present.",
+            "Players gain no rewards or souls when a minion dies."
+          ],
+          "notes": [
+            "\"Lay not up for yourselves treasures upon the earth, where moth and rust doth corrupt, and where thieves break through and steal\"\nMatthew 6:19"
+          ]
+        }
+      },
+      "stats": [
+        {
+          "name": "HP",
+          "value": "6"
+        },
+        {
+          "name": "DC",
+          "value": "4"
+        },
+        {
+          "name": "ATK",
+          "value": "2"
+        }
+      ],
+      "rewards": [
+        {
+          "count": "1x",
+          "kind": "Soul"
+        },
+        {
+          "count": "1x",
+          "kind": "Treasure"
+        }
+      ],
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "OrisGhost"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "challenge/pilfering_krampus_hard.webp"
+      ]
+    },
+    {
+      "id": "pilfering_krampus_norm",
+      "type": "Challenge Boss Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Pilfering Krampus",
+          "effects": [
+            "While the number of souls controlled by all players is less than 5 or there is a minion in play, this can't be attacked or take damage.",
+            "As each turn starts, the active player rolls-\n1-2: Remove 4 counters from the ¢ present.\n3-4: Remove 1 counter from the loot present.\n5: Remove 1 counter from the treasure present.\n6: Remove 1 counter from the soul present.",
+            "While there is a minion in play, players must attack a random minion once each turn if able.",
+            "Players gain no rewards or souls when a minion dies."
+          ],
+          "notes": [
+            "\"Lay not up for yourselves treasures upon the earth, where moth and rust doth corrupt, and where thieves break through and steal\"\nMatthew 6:19"
+          ]
+        }
+      },
+      "stats": [
+        {
+          "name": "HP",
+          "value": "5"
+        },
+        {
+          "name": "DC",
+          "value": "4"
+        },
+        {
+          "name": "ATK",
+          "value": "2"
+        }
+      ],
+      "rewards": [
+        {
+          "count": "1x",
+          "kind": "Soul"
+        },
+        {
+          "count": "1x",
+          "kind": "Treasure"
+        }
+      ],
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "OrisGhost"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "challenge/pilfering_krampus_norm.webp"
+      ]
+    },
+    {
+      "id": "pilfering_krampus_ultra",
+      "type": "Challenge Boss Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Pilfering Krampus",
+          "effects": [
+            "While the number of souls controlled by all players is less than 7 or there is a minion in play, this can't be attacked or take damage.",
+            "As each turn starts, the active player rolls, then rolls again for each minion in play-\n1: Remove 8 counters from the ¢ present.\n2-3: Remove 2 counters from the loot present.\n4-5: Remove 1 counter from the treasure present.\n6: Remove 1 counter from the soul present.",
+            "Players gain no rewards or souls when a minion dies."
+          ],
+          "notes": [
+            "\"Lay not up for yourselves treasures upon the earth, where moth and rust doth corrupt, and where thieves break through and steal\"\nMatthew 6:19"
+          ]
+        }
+      },
+      "stats": [
+        {
+          "name": "HP",
+          "value": "6"
+        },
+        {
+          "name": "DC",
+          "value": "4"
+        },
+        {
+          "name": "ATK",
+          "value": "2"
+        }
+      ],
+      "rewards": [
+        {
+          "count": "1x",
+          "kind": "Soul"
+        },
+        {
+          "count": "1x",
+          "kind": "Treasure"
+        }
+      ],
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "OrisGhost"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        }
+      ],
+      "images": [
+        "challenge/pilfering_krampus_ultra.webp"
+      ]
+    },
+    {
+      "id": "trick_treat_comp",
+      "type": "Challenge Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Trick",
+          "effects": [
+            "At the start of each turn, each player votes trick or treat. If treat wins, flip this. Each non-active player that votes treat loots x, where x is equal to the number of souls the active player controls.",
+            "At the start of each attack against a monster, the active player rolls-\n1-2: Damage you would take is increased by 1 till end of turn.\n3-4: Reveal cards from the top of the monster deck until you reveal a non-event monster card. The monster being attacked gains its abilities till end of turn. Put any revealed cards on the bottom of the deck.\n5-6: The rewards of that monster become 1¢ till end of turn."
+          ]
+        }
+      },
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "OrisGhost"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        },
+        {
+          "role": "Back character artist",
+          "name": "OrisGhost"
+        },
+        {
+          "role": "Back background artist",
+          "name": "Private"
+        }
+      ],
+      "images": [
+        "challenge/trick_treat_comp.webp"
+      ],
+      "back": {
+        "id": "treat_comp",
+        "text": {
+          "en": {
+            "name": "Treat",
+            "effects": [
+              "At the start of each turn, each player votes trick or treat. If trick wins, flip this. Each non-active player that votes treat loots x, where x is equal to the number of souls the active player controls.",
+              "At the start of each attack against a monster, the active player rolls-\n1-2: Add 3¢ to the rewards of that monster till end of turn.\n3-4: Add loot 1 to the rewards of that monster till end of turn.\n5-6: Add +1 treasure to the rewards of that monster till end of turn."
+            ]
+          }
+        },
+        "images": [
+          "challenge/treat_comp.webp"
+        ]
+      }
+    },
+    {
+      "id": "trick_treat_normhardultra",
+      "type": "Challenge Card",
+      "copies": 1,
+      "text": {
+        "en": {
+          "name": "Trick",
+          "effects": [
+            "As each turn starts, you may flip this.",
+            "Each time you kill a monster, remove a trick counter from the final boss.",
+            "At the start of each attack against a monster, the active player rolls. If you are playing on hard, roll 2x instead. If you are playing on ultra hard, roll 3x instead-\n1-2: Damage you would take is increased by 1 till end of turn.\n3-4: Reveal cards from the top of the monster deck until you reveal a non-event monster card. The monster being attacked gains its abilities till end of turn. Put any revealed cards on the bottom of the deck.\n5-6: The rewards of that monster become 1¢ till end of turn."
+          ]
+        }
+      },
+      "artists": [
+        {
+          "role": "Front character artist",
+          "name": "OrisGhost"
+        },
+        {
+          "role": "Front background artist",
+          "name": "Private"
+        },
+        {
+          "role": "Card back artist",
+          "name": "KrystalFlamingo"
+        },
+        {
+          "role": "Back character artist",
+          "name": "OrisGhost"
+        },
+        {
+          "role": "Back background artist",
+          "name": "Private"
+        }
+      ],
+      "images": [
+        "challenge/trick_treat_normhardultra.webp"
+      ],
+      "back": {
+        "id": "treat_normhardultra",
+        "text": {
+          "en": {
+            "name": "Treat",
+            "effects": [
+              "As each turn starts, you may flip this.",
+              "Each time you gain rewards, remove a fear counter from a player.",
+              "At the start of each attack against a monster, the active player rolls-\n1-2: Add 3¢ to the rewards of that monster till end of turn.\n3-4: Add loot 1 to the rewards of that monster till end of turn.\n5-6: Add +1 treasure to the rewards of that monster till end of turn."
+            ]
+          }
+        },
+        "images": [
+          "challenge/treat_normhardultra.webp"
+        ]
+      }
+    }
+  ]
+}

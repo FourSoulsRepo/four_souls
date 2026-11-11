@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	engine "github.com/FourSoulsRepo/rules_engine"
+	"github.com/FourSoulsRepo/rules_engine/cards/challenge"
 )
 
 // maxSimSteps caps one simulated game.
@@ -25,19 +26,66 @@ func TestSimulations(t *testing.T) {
 	finished, steps := 0, 0
 	for i := range games {
 		seed := uint64(i + 1)
-		over, n := simulate(t, seed, 2+i%3)
+		players := 2 + i%3
+		s := engine.Setup{Seed: seed, Players: players, Sets: Sets(), BonusSouls: true, Rooms: seed%2 == 1, DeckRatios: seed%3 == 0}
+		g, n := simulate(t, s)
 		steps += n
-		if over {
+		if g.Over {
 			finished++
 		}
 	}
 	t.Logf("%d games, %d finished with a winner, %d steps", games, finished, steps)
+	// Krampus at every difficulty (14.22): a quarter as many games.
+	won, lost := 0, 0
+	for i := range max(games/4, 3) {
+		g, n := simulate(t, krampusSetup(uint64(i+1), krampusLevels[i%3]))
+		steps += n
+		switch {
+		case g.Over && g.Challenge.Lost:
+			lost++
+		case g.Over:
+			won++
+		}
+	}
+	t.Logf("Krampus: %d won, %d lost", won, lost)
+	// Trick or Treat at every difficulty (14.32): as many as Krampus.
+	won, lost = 0, 0
+	for i := range max(games/4, 3) {
+		g, n := simulate(t, trickSetup(uint64(i+1), krampusLevels[i%3]))
+		steps += n
+		switch {
+		case g.Over && g.Challenge.Lost:
+			lost++
+		case g.Over:
+			won++
+		}
+	}
+	t.Logf("Trick or Treat: %d won, %d lost", won, lost)
 }
 
-// simulate plays one game; it reports whether it ended and its length.
-func simulate(t *testing.T, seed uint64, players int) (bool, int) {
+// krampusLevels are the Krampus difficulties (R-KRAMPUS-02).
+var krampusLevels = []string{engine.DifficultyNormal, engine.DifficultyHard, engine.DifficultyUltra}
+
+// krampusSetup is a Krampus challenge game (ADR 028, 14.22).
+func krampusSetup(seed uint64, difficulty string) engine.Setup {
+	return engine.Setup{
+		Seed: seed, Players: 2, Sets: append(Sets(), challenge.Set), Rooms: seed%2 == 1,
+		Challenge: &challenge.Krampus, Difficulty: difficulty,
+	}
+}
+
+// trickSetup is a Trick or Treat challenge game (14.32); its
+// difficulties are Krampus's (R-TRICK-02).
+func trickSetup(seed uint64, difficulty string) engine.Setup {
+	s := krampusSetup(seed, difficulty)
+	s.Challenge = &challenge.TrickOrTreat
+	return s
+}
+
+// simulate plays one game; it returns the game and its length.
+func simulate(t *testing.T, s engine.Setup) (*engine.Game, int) {
 	t.Helper()
-	s := engine.Setup{Seed: seed, Players: players, Sets: Sets(), BonusSouls: true, Rooms: seed%2 == 1, DeckRatios: seed%3 == 0}
+	seed := s.Seed
 	g, _, err := engine.NewGame(s)
 	if err != nil {
 		t.Fatal(err)
@@ -64,7 +112,7 @@ func simulate(t *testing.T, seed uint64, players int) (bool, int) {
 			t.Fatalf("seed %d step %d after %+v: %v", seed, step, in, err)
 		}
 	}
-	return g.Over, step
+	return g, step
 }
 
 // pick prefers doing something over passing, so games move on.

@@ -71,7 +71,10 @@ async function expectUndone(pages: Page[], active: Page, who: RegExp[]) {
 test('in Godmode each Undo undoes one move, by the author or another player (17.3, 17.7)', async ({ browser }) => {
   // Animations on: the restored table must jump, with no clash.
   const names = ['Gia', 'Hal'];
-  const pages = await startGame(browser, names, { options: god });
+  // Pride: its trigger's discard resolves before the first throw
+  // (R-ATK-25), so the latest move is the discard, not the target pick
+  // this test undoes.
+  const pages = await startGame(browser, names, { options: god, bans: ['pride'] });
   const active = await activePage(pages, click);
   const other = pages.find((p) => p !== active);
   if (!other) {
@@ -108,7 +111,7 @@ test('in Godmode each Undo undoes one move, by the author or another player (17.
   await attackToThrow(pages, active);
 });
 
-test("an attack on Pride waits for its throw under Pride's trigger; Undo names the target pick (19.113)", async ({ browser }) => {
+test("an attack on Pride throws only after Pride's trigger resolves (19.113, 19.151)", async ({ browser }) => {
   const names = ['Ivy', 'Jon'];
   const pages = await startGame(browser, names, { url: `${appURL()}&anim=off`, options: god });
   await activePage(pages, click);
@@ -116,16 +119,16 @@ test("an attack on Pride waits for its throw under Pride's trigger; Undo names t
   await saveAndContinue(pages, names.join(', '), 'bomb', undefined, false, {}, undefined, 'pride');
   const active = await activePage(pages, click);
   await attackToThrow(pages, active);
-  // The die waits under Pride's trigger (R-DICE-02): nothing resolved yet.
-  const top = await active.evaluate(() => {
+  // Pride's trigger resolved first (R-ATK-25): the stack holds only the
+  // attack roll, not thrown yet.
+  const stack = await active.evaluate(() => {
     interface S {
-      game: { view: { stack?: { card?: string }[] } } | null;
+      game: { view: { stack?: { kind: number; attack?: boolean; card?: string }[] } } | null;
     }
-    return (window as unknown as { fourSouls: { store: { getState: () => S } } }).fourSouls.store.getState().game?.view.stack?.at(-1)?.card;
+    return (window as unknown as { fourSouls: { store: { getState: () => S } } }).fourSouls.store.getState().game?.view.stack ?? [];
   });
-  expect(top).toBe('pride');
-  await openHistory(active);
-  await expect(undo(active)).toHaveAttribute('title', new RegExp(`^${lineRe(tr('history.undo.title', { move: tr('history.attack.you') })).source}$`));
+  // 3 is StackKind.roll (stack.ts).
+  expect(stack.map((it) => [it.kind, it.attack ?? false, it.card ?? ''])).toEqual([[3, true, '']]);
 });
 
 test('a game without a rollback mode has no Undo button (ADR 020)', async ({ browser }) => {
@@ -158,7 +161,10 @@ function votePanel(page: Page) {
 
 test('in Soft the author asks; another player opens a vote that passes (17.4, 17.7)', async ({ browser }) => {
   const names = ['Mia', 'Ned', 'Oda'];
-  const pages = await startGame(browser, names, { url: `${appURL()}&anim=off`, setup: pickSoft });
+  // Pride: its trigger's discard resolves before the first throw
+  // (R-ATK-25), so the latest move is the discard, not the target pick
+  // this vote undoes.
+  const pages = await startGame(browser, names, { url: `${appURL()}&anim=off`, setup: pickSoft, bans: ['pride'] });
   const active = await activePage(pages, click);
   const name = names[pages.indexOf(active)] ?? '';
   const [opener, voter] = pages.filter((p) => p !== active);

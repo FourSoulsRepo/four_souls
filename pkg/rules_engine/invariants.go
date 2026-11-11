@@ -56,21 +56,25 @@ func (g *Game) CheckInvariants() error {
 			}
 		}
 	}
-	for _, rows := range [][]Slot{g.Shop, g.Monsters, g.Rooms} {
-		for _, s := range rows {
-			for i, id := range s.Cards {
-				want := ZoneCovered
-				if i == len(s.Cards)-1 {
-					want = ZoneInPlay
-				}
-				if err := mark([]ObjectID{id}, want, "slot"); err != nil {
-					return err
-				}
-			}
-		}
+	if err := g.checkSlots(mark); err != nil {
+		return err
 	}
 	if err := mark(g.BonusSouls, ZoneOutside, "bonus souls"); err != nil {
 		return err
+	}
+	if c := g.Challenge; c != nil {
+		if err := mark([]ObjectID{c.Card}, ZoneOutside, "challenge card"); err != nil {
+			return err
+		}
+		if c.Timer < 0 || (c.Timer == 0 && !g.Over) {
+			return fmt.Errorf("challenge timer %d, game over %v", c.Timer, g.Over)
+		}
+		for _, p := range c.Presents {
+			// A face-down present lies outside the game (R-KRAMPUS-06).
+			if k := g.Objects[p.Object].Zone.Kind; !p.Destroyed && !p.Flipped && k != ZoneOutside {
+				return fmt.Errorf("the %s present (%s) is in zone %d", p.Kind, g.Objects[p.Object].Card, k)
+			}
+		}
 	}
 	for _, it := range g.Stack {
 		if it.Kind == StackLoot {
@@ -107,9 +111,46 @@ func (g *Game) checkKeys() error {
 	for _, it := range g.Stack {
 		msgs = append(msgs, it.Label)
 	}
+	if g.Challenge != nil {
+		msgs = append(msgs, g.Challenge.Reason)
+	}
 	for _, m := range msgs {
 		if !m.IsZero() && !Declared(m.Key) {
 			return fmt.Errorf("message key %q is not declared with NewKey", m.Key)
+		}
+	}
+	return nil
+}
+
+// checkSlots marks every slot card: covered, the top one in play. Each
+// card's zone names its own row and slot number; a final boss or
+// minion slot holds one card at most, and a minion slot is never empty
+// (R-ZONE-10, R-CHAL-04, R-CHAL-11).
+func (g *Game) checkSlots(mark func([]ObjectID, ZoneKind, string) error) error {
+	rows := []struct {
+		kind  SlotKind
+		slots []Slot
+	}{{ShopSlot, g.Shop}, {MonsterSlot, g.Monsters}, {RoomSlot, g.Rooms}, {FinalBossSlot, g.Bosses}, {MinionSlot, g.Minions}}
+	for _, r := range rows {
+		for n, s := range r.slots {
+			if (r.kind == FinalBossSlot || r.kind == MinionSlot) && len(s.Cards) > 1 {
+				return fmt.Errorf("slot row %d, slot %d holds %d cards", r.kind, n, len(s.Cards))
+			}
+			if r.kind == MinionSlot && len(s.Cards) == 0 {
+				return fmt.Errorf("minion slot %d is empty", n)
+			}
+			for i, id := range s.Cards {
+				want := ZoneCovered
+				if i == len(s.Cards)-1 {
+					want = ZoneInPlay
+				}
+				if err := mark([]ObjectID{id}, want, "slot"); err != nil {
+					return err
+				}
+				if z := g.Objects[id].Zone; z.Slot != r.kind || z.Index != n {
+					return fmt.Errorf("object %d in slot row %d, slot %d has zone %+v", id, r.kind, n, z)
+				}
+			}
 		}
 	}
 	return nil

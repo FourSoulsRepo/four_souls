@@ -135,6 +135,7 @@ func (r *Room) public() *publicTable {
 	}
 	slots(v.Shop)
 	slots(v.Monsters)
+	slots(v.Rooms)
 	for _, d := range v.Discards {
 		if d != nil {
 			add(*d) // only the top card of a pile is in the view

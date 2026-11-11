@@ -24,7 +24,7 @@ var theHarbingers = engine.CardDef{
 		{
 			Kind:    engine.Triggered,
 			Text:    "The active player must attack this once each turn if able.",
-			Trigger: engine.Trigger{On: engine.EvStartOfTurn, Match: func(*engine.Game, engine.ObjectID, engine.Event) bool { return true }},
+			Trigger: engine.AtStartOfEachTurn(),
 			Effects: []engine.Effect{mustAttackThis},
 		},
 		{

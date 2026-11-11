@@ -83,6 +83,9 @@ export interface GameInfo {
   locked?: boolean;
   // rollback is the game's rollback mode (ADR 020).
   rollback?: RollbackMode;
+  // challenge and difficulty name a challenge game (ADR 028).
+  challenge?: string;
+  difficulty?: Difficulty;
 }
 
 export interface SaveInfo {
@@ -107,10 +110,20 @@ export interface Options {
   host_bans?: string[];
   no_bonus_souls?: boolean;
   no_deck_ratios?: boolean;
+  // room_deck plays with the room deck (R-SETUP-16, 14.13); the server
+  // turns it off when the sets have no rooms.
+  room_deck?: boolean;
   random_seats?: boolean; // seat the players in a random order at the start
   response_timer?: number; // seconds; 0: off, else at least 60
   rollback?: RollbackMode; // none: Disabled (ADR 020)
+  // challenge is a co-op challenge's ID, e.g. 'krampus'; none: a
+  // regular game (ADR 028). It needs 2 seats; bonus souls are off.
+  challenge?: string;
+  difficulty?: Difficulty;
 }
+
+// Difficulty is a challenge's difficulty (ADR 028, Decision 4.2).
+export type Difficulty = 'normal' | 'hard' | 'ultra';
 
 // Ban is one banned character; seat -1 is the host's list.
 export interface Ban {
@@ -329,6 +342,16 @@ export interface MonsterStats {
   printed_dc: number;
   printed_atk: number;
   sources?: StatSource[]; // what changes HP, DC and ATK now (V-41)
+  // rewards: what the monster gives now, only while this turn changed
+  // them (Trick or Treat, 14.33); older servers send none.
+  rewards?: RewardView[];
+}
+
+// RewardView is one reward line; roll gives as many as a roll shows.
+export interface RewardView {
+  kind: "cents" | "loot" | "treasure";
+  amount?: number;
+  roll?: boolean;
 }
 
 // StatSource is one source of a stat change (V-41). card is "" or absent
@@ -368,6 +391,9 @@ export interface PlayerView {
   printed_hp?: number;
   printed_atk?: number;
   sources?: StatSource[];
+  // counters: on the player, not the character, e.g. fear counters
+  // (R-MECH-13); older servers send none.
+  counters?: CounterView[];
 }
 
 export interface Turn {
@@ -464,6 +490,12 @@ export interface GameView {
   players: PlayerView[];
   shop: SlotView[] | null;
   monsters: SlotView[] | null;
+  // rooms are the room slots; none without the room deck (14.13).
+  rooms?: SlotView[];
+  // bosses and minions are a challenge's final boss and minion slots;
+  // none in a regular game (ADR 028, 14.21).
+  bosses?: SlotView[];
+  minions?: SlotView[];
   deck_sizes: number[];
   // discards: the top card of each discard pile; discard_sizes: the sizes.
   discards: (CardView | null)[];
@@ -503,6 +535,36 @@ export interface GameView {
   // first_roll is the first-player roll before turn 1: who still rolls,
   // in seat order, and this round's dice so far (GS-06, 15.43).
   first_roll?: FirstRoll;
+  // challenge is the co-op challenge being played; none in a regular
+  // game (ADR 028, 14.20).
+  challenge?: ChallengeView;
+}
+
+// ChallengeView is a co-op challenge: its ID and difficulty ("normal",
+// "hard", "ultra"), the rounds left, the rule card, the presents, and
+// how it ended: lost, with the reason (ADR 028).
+export interface ChallengeView {
+  id: string;
+  difficulty: string;
+  timer: number;
+  card: CardView;
+  presents?: PresentView[];
+  lost?: boolean;
+  reason?: Msg;
+}
+
+// PresentView is a present: its kind ("cents", "loot", "treasure",
+// "soul") and, face down, its counters, never its card (ADR 028).
+// destroyed: it went to the treasure discard; flipped: Happy Holidays!
+// turned it face up (R-KRAMPUS-10). card shows once it is face up;
+// player is who gained it as an item, or -1.
+export interface PresentView {
+  kind: string;
+  counters: number;
+  destroyed?: boolean;
+  flipped?: boolean;
+  card?: string;
+  player: number;
 }
 
 // FirstRoll is the first-player roll in progress: the lowest goes

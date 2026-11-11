@@ -33,7 +33,7 @@ This step never closes; new reports are appended.
 
 | ID | Group                                    | System     | Items                                                  | Count |
 |----|------------------------------------------|------------|--------------------------------------------------------|-------|
-| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95, 19.97, 19.104, 19.105, 19.144 | 19 |
+| A  | Rules: a card or rule coded wrong        | Engine     | 19.22, 19.23, 19.25, 19.27, 19.36, 19.46, 19.60, 19.61, 19.62, 19.64, 19.65, 19.66, 19.92, 19.94, 19.95, 19.97, 19.104, 19.105, 19.144, 19.150, 19.151 | 21 |
 | B  | Events and view: data never sent         | Engine     | 19.2, 19.9, 19.11, 19.39, 19.67, 19.71, 19.72, 19.73, 19.90, 19.106 | 10 |
 | C  | Card data: wrong values in `card_db`     | Card data  | 19.24, 19.45                                           | 2     |
 | D  | View data sent, never drawn              | Client     | 19.5, 19.29, 19.30, 19.74, 19.111, 19.147              | 6     |
@@ -41,7 +41,7 @@ This step never closes; new reports are appended.
 | F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88, 19.99, 19.102, 19.118, 19.119 | 11    |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32, 19.148                                          | 2     |
-| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122, 19.125, 19.126, 19.127, 19.120, 19.128, 19.132, 19.133, 19.137 | 35 |
+| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122, 19.125, 19.126, 19.127, 19.120, 19.128, 19.132, 19.133, 19.137, 19.152, 19.154 | 37 |
 | J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107, 19.117, 19.121, 19.140 | 22 |
 | Q  | Load tool: a lost connection ends a game | Go tools   | 19.108, 19.131                                         | 2     |
 | K  | Build and release files                  | Release    | 19.47, 19.59, 19.83, 19.91                             | 4     |
@@ -56,15 +56,15 @@ This step never closes; new reports are appended.
 | U  | Save and load: a running effect lost     | Engine     | 19.143                                                 | 1     |
 | V  | Flow: an extra step the player must take | Client     | 19.149                                                 | 1     |
 
-Totals by system (144 items):
+Totals by system (148 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
-| Engine    | A, B, T, U | 31 |
+| Engine    | A, B, T, U | 33 |
 | Card data | C       | 2     |
 | Client    | D–G, O, P, S, V | 41 |
 | Server    | H, N    | 3     |
-| e2e       | I, J    | 57    |
+| e2e       | I, J    | 59    |
 | Release   | K       | 4     |
 | None      | L       | 2     |
 | Go tests  | M       | 1     |
@@ -3440,6 +3440,9 @@ Totals by system (144 items):
    3. The second full run of the same tree passed (388 of 388).
    4. Passes alone: 1 of 1 rerun, webkit.
    5. Evidence: `.cache/e2e-evidence/19.107-aim-webkit/` (not in git).
+   6. Again (agent, 2026-11-11, 14.32), chromium, full run: 533 passed, this one failed.
+   7. `expect(arrow).toHaveCount(0)` at `aim.spec.ts:470`: the arrow stayed after the cancel.
+   8. Evidence: `.cache/e2e-evidence/14.32-run1/` (not in git).
 3. Cause
    1. Not found yet.
 4. Tasks:
@@ -4695,3 +4698,222 @@ Totals by system (144 items):
    1. `make lint` and `make frontend e2e` pass (exit 0).
 8. Owner notes (2026-11-09)
    1. Owner marks 19.149 solved.
+
+### [x] 19.150 Charged Baby can't recharge a spent Golden Trinket
+
+1. Goal: an item with a gained ↷ ability counts as a ↷ item.
+2. Report (owner, 2026-11-09)
+   1. Play test; record `2026-11-09-192706-g2_Hitokiri-Battosai_jеня_charged_baby_bug.fsrec`.
+   2. Golden Trinket copied Host Hat (gold counter) and used its ↷.
+   3. A roll of 2: Charged Baby offered no item to recharge.
+3. Cause
+   1. Record steps 452–470: Host Hat gets gold; the trinket's ↷ spent.
+   2. Step 470: Charged Baby's question has no item.
+   3. `Rechargeable` and `Deactivatable` (19.146) read `CardDef.Tap` of the card only.
+   4. Golden Trinket and Glitch gain ↷ through `facesOf`; it misses them.
+   5. Same check: death penalty deactivate (`ActDeactivateTaps`).
+   6. Same check: Curse of Impulse.
+4. Tasks:
+   1. [x] Engine: one `HasTap` rule over every face of an object.
+   2. [x] `Rechargeable`, `Deactivatable`, death penalty, Curse of Impulse use it.
+   3. [x] Go tests: Charged Baby with Golden Trinket; Glitch; death penalty.
+5. Fix (2026-11-10)
+   1. `Game.HasTap`: any face (`facesOf`) with `CardDef.Tap`.
+   2. Faces: own card, Glitch's gained card, Golden Trinket's gold items.
+   3. Placebo has its own `Tap`; it needs no change.
+   4. Every `CardDef.Tap` read now goes through `HasTap`.
+   5. So all `RechargeableItem` pickers get the fix (19.146 list).
+   6. Tests in `cards/r/gained_tap_test.go`, four new.
+   7. Charged Baby, Glitch, death penalty, Curse of Impulse.
+   8. Each fails on its own check with the old rule put back.
+   9. Wiki: `Effect-blocks.md` names `HasTap`.
+   10. No screen change: no screenshots.
+   11. Engine 0.5.3: 0.5.2 shipped in app 0.4.0 with the old rule.
+   12. No replay cutoff: only games with a copied ↷ recharged or deactivated differ.
+   13. CHANGELOG: Unreleased.
+6. Result (2026-11-10)
+   1. `make lint test` passes (exit 0).
+7. Owner notes (2026-11-10)
+   1. Owner marks 19.150 solved.
+
+### [ ] 19.151 Pride: the attack die is thrown before Pride's ability resolves
+
+1. Goal: "when an attack is declared on this" resolves before the first attack roll.
+2. Report (owner, 2026-11-10)
+   1. Play test; record `2026-11-09-192706-g2_Hitokiri-Battosai_jеня_charged_baby_bug.fsrec`.
+   2. Attack on Pride: the die was thrown before Pride's effect resolved.
+   3. The owner expects: Pride's effect first, then the roll.
+3. Cause (the record and the code)
+   1. Step 456: target Pride; the attack roll goes on the stack, Pride's trigger above it.
+   2. Step 457: the attacker throws the die (2).
+   3. Steps 459–462: Pride resolves; seat 1 discards 2 loot.
+   4. Step 464: the roll resolves.
+   5. `startAttack` emits `attack_target`, then pushes the first roll at once.
+   6. 19.105 only placed the trigger before the throw; 19.113 called this order right.
+4. Ruling basis
+   1. S-OFF: target triggers come with the declaration; then the attack starts.
+   2. S-RED: "when an attack is declared on this" enters the stack; then combat starts.
+   3. S-YUG (purchase): a trigger on the target passes priority; the purchase finishes after it.
+   4. No official ruling names the moment of the first roll: Community.
+5. Same trigger, all sets (one fix in `startAttack`)
+   1. b2: Pride.
+   2. r: Rag Mega, Gus, Sisters Vis, Dogma, The Harbingers (flipped side).
+   3. r: Angelic Intervention (deck attack), Battle Royale.
+   4. Not affected: Mom's Eye Shadow (a static); `attack_declared` cards (before the target).
+6. Tasks:
+   1. [x] Engine: triggers of the target pick resolve before the first attack roll.
+   2. [x] No such trigger: the roll comes at once, as now.
+   3. [x] Go tests: Pride, Rag Mega, Angelic Intervention.
+   4. [x] e2e: the 19.113 Pride test checks the new order.
+   5. [x] e2e: Undo tests that expect the target pick ban the cards that ask.
+   6. [x] Docs: rule R-ATK-25, Q-29, UC-13, wiki Frontend-tests.
+7. Fix (2026-11-10)
+   1. `startAttack`: with triggers pending after `attack_target`, it opens a window.
+   2. They go on the stack and resolve; then `continueAttack` puts the first roll.
+   3. No trigger: the first roll comes at once, as before.
+   4. One place for every card in 5; no per-card change.
+   5. A cancel (Angelic Intervention) or a death now comes before any roll.
+   6. Helpers (Gus, Sisters Vis) join as before: they roll after the first roll.
+   7. Go: `TestPrideResolvesBeforeTheAttackRoll`, `TestAttackWithNoTargetTriggerRollsAtOnce` (b2).
+   8. Go: `TestRagMegaResolvesBeforeTheAttackRoll`, `TestDogmaResolvesBeforeTheAttackRoll` (r).
+   9. Go: `TestAngelicInterventionCancelsBeforeAnyRoll` (r).
+   10. The four order tests failed before the fix.
+   11. `enginetest`: `FirstAttackRoll`, `ResolvedAt`.
+   12. e2e: the 19.113 test now wants only the attack roll on the stack.
+   13. e2e: Godmode and Soft vote Undo tests ban Pride: its discard is the latest move.
+   14. e2e: `prompt.spec.ts` drops its Pride ban; its reason is gone.
+   15. Rule R-ATK-25; Q-29 (Community); UC-13 5n; wiki Frontend-tests.
+   16. Engine stays 0.5.3: not released yet (as 19.150).
+   17. No replay cutoff: only games with such an attack differ (as 19.150).
+   18. No screen change beyond the order: no screenshots.
+
+### [x] 19.152 e2e: Requiem attack and room tests stall on webkit
+
+1. Goal: `attack-targets.spec.ts` and `rooms.spec.ts` pass in full webkit runs.
+2. Report (main agent, 2026-11-10)
+   1. Found by the 14.21 agent's `make e2e` gates; webkit only.
+   2. Run 1: "Punching Bag can be attacked", "a helper's extra attack roll".
+   3. Run 2: "a room on the table".
+   4. Error: "the game never settled", or the test timeout.
+   5. Each failed test passed when run alone.
+   6. Repeat: both specs, webkit, 5 workers, 5 repeats: 1 of 20 failed.
+   7. That one: the helper's roll test; turn 1, Attack disabled.
+   8. The page waited for Ed after Sibling Rivalry resolved.
+   9. The tests are from 14.13 and 14.14, before the challenge work.
+   10. 14.20's full run (before 14.21) passed; unknown if by luck.
+   11. Evidence: `.cache/e2e-evidence/19.152-run1` – `run3` (not in git).
+3. Tasks:
+   1. [x] Find the cause from the evidence; compare with the commit before 14.21.
+   2. [x] Fix the app, the engine or the test; no ban without a reason (CLAUDE.md 5.16).
+   3. [x] Check: both specs, webkit, 5 workers, 10 repeats, all pass.
+4. Cause (page snapshots, records, a settle log in run 4)
+   1. Three causes, all in the tests; the app and engine were right.
+   2. Helper test: its wait after Sibling Rivalry held too early.
+   3. It asked: stack empty, the game waits for the active player.
+   4. That is also true before the play lands.
+   5. Run 4's log: that settle ended at once, with no move.
+   6. Then the Attack click came while Sibling Rivalry went on the stack.
+   7. Attack stayed disabled; the click waited until the test timeout.
+   8. Snapshots of runs 1, 3, 4: Sibling Rivalry on the stack, Attack disabled.
+   9. Punching Bag (runs 1, 4): Cursed Mom's Hand was in a monster slot.
+   10. Its curse: the active player rolls a 6, the turn ends at once.
+   11. Di rolled 6 on the bag; the hit never landed; turn 2 began.
+   12. The test waited for damage that could not come.
+   13. The Siren and helper tests have the same risk: a 6 ends the attack.
+   14. Rooms (run 2): the first room was Blood Lust (record g149).
+   15. It forces two attacks a turn; End turn stays off until then.
+   16. `activePage` played fights for five turns; settle ran out.
+   17. Blind Rage forces a deck attack the same way.
+   18. Run 4 also: `--repeat-each` runs repeats of one test at once.
+   19. Their saves had the same names; Continue found two games.
+   20. 14.21 was not involved: no cause touches its code.
+   21. Cursed Mom's Hand, the rooms and the wait predate it.
+   22. So no worktree of `1a67512` was needed.
+5. Fix (2026-11-10)
+   1. Helper test: the wait wants Sibling Rivalry spent and resolved.
+   2. Also the action step (priority, empty stack) and a ready page.
+   3. `attack-targets.spec.ts` bans Cursed Mom's Hand, with the reason.
+   4. `rooms.spec.ts` bans Blood Lust and Blind Rage, with the reason.
+   5. `repeatNames` (`game.ts`): names get the repeat index after the first.
+   6. Both specs use it; a repeat finds its own save.
+   7. Wiki Frontend-tests: `repeatNames`.
+   8. No app or engine change; no screen change, no screenshots.
+   9. Evidence: `.cache/e2e-evidence/19.152-run1` – `run4` (not in git).
+6. Checks (2026-11-10)
+   1. Before: both specs, webkit, 5 workers, 10 repeats: 12 of 40 failed (run 4).
+   2. After: the same run, 40 of 40 passed.
+   3. `make lint test frontend e2e` pass (exit 0); e2e 522 passed, 6 skipped.
+
+### [ ] 19.153 e2e: a card zoom shows while the aiming pointer moves
+
+1. Goal: `arrow.spec.ts:62` passes in full runs.
+2. Report (14.24 agent, 2026-11-11)
+   1. `make e2e` run 1 of 14.24, chromium; 525 passed, this one failed.
+   2. Line 123: a card zoom showed while the pointer was moving.
+   3. The spec passed 3 times in a row alone; run 2 passed in full.
+   4. Unrelated to the host screen change.
+   5. Evidence: `.cache/e2e-evidence/14.24-run1` (not in git).
+3. Tasks:
+   1. Find the cause from the evidence; fix the app or the test.
+   2. Check: the spec, both browsers, 5 workers, 10 repeats, all pass.
+
+### [x] 19.154 e2e: Krampus win test misses when Delirium is dealt
+
+1. Goal: `challenge-table.spec.ts:301` passes on every deal.
+2. Report (14.26 agent, 2026-11-11)
+   1. `make e2e` run 1 of 14.26, webkit; 533 passed, this one failed.
+   2. "Challenge won!" never showed after 6 turns of attacks.
+   3. Chromium passed the same test in the same run.
+   4. Evidence: `.cache/e2e-evidence/14.26-run1` (not in git).
+3. Cause (found in the evidence and a repro)
+   1. The failed table had Delirium in a monster slot.
+   2. Delirium: other monsters +1 evasion; Stoney: monsters +1 evasion.
+   3. Krampus is a monster (R-CHAL-03), so its 4+ became 5+.
+   4. The test gives +3 to the next attack roll: a 1 makes 4, a miss.
+   5. Damage heals at the end of the turn; 1 damage a hit can't win in 6 turns.
+   6. Repro: Eve and Blue Baby, 4 runs; one deal had Delirium (Krampus DC 5).
+   7. The engine is right; the test assumed a plain evasion.
+4. Tasks:
+   1. The test bans `statMonsters` (14.10), with the reason.
+   2. Check: the spec, both browsers, 5 workers, 10 repeats, all pass.
+5. Fix (2026-11-11)
+   1. The win test bans `statMonsters` (Delirium, Stoney), with the reason.
+   2. Only these two change a monster's stats when dealt (14.10).
+   3. No app or engine change; no screen change, no screenshots.
+6. Checks (2026-11-11)
+   1. The test, webkit and chromium, 5 workers, 10 repeats: 20 of 20 passed.
+
+### [ ] 19.155 e2e: a save edit puts a second copy of a monster on the table
+
+1. Goal: `attack-targets.spec.ts:193` passes whatever the deal.
+2. Report (14.34 agent, 2026-11-11)
+   1. First `make e2e` run of 14.34, chromium.
+   2. The deal had Fatty in monster slot 2; the save edit made slot 1 Fatty too.
+   3. The locator for "Fatty" then matched two cards.
+   4. Evidence: `.cache/e2e-evidence/14.34-run1/` (not in git).
+3. Cause (from the agent's reading)
+   1. `giveIn` in `e2e/tests/saves.ts` sets a slot's card.
+   2. It never checks the other slots for the same card.
+4. Tasks:
+   1. Make the edit leave no second copy, or the test pick its slot by place.
+   2. Search other specs that name a monster set by a save edit.
+   3. Check: the spec, both browsers, 5 workers, 10 repeats.
+
+### [ ] 19.156 e2e: Blood Donation kills the active player in `rooms.spec.ts`
+
+1. Goal: `rooms.spec.ts:72` passes whatever the deal.
+2. Report (14.36 `make e2e`, 2026-11-11)
+   1. Webkit; timed out after 120 s.
+   2. The save edit made Ivo Isaac; Ivo kept the dealt eternal Sumptorium.
+   3. After Blood Donation's 1 HP, Isaac showed 0 health.
+   4. "Ivo dies" waited on the stack; the test never got its 3¢.
+   5. Rerun, webkit, 3 repeats: 3 of 3 passed; so the deal matters.
+   6. Evidence: `.cache/e2e-evidence/14.36-run1/` (not in git).
+3. Cause: not found yet.
+   1. `giveRoom` swaps the character, not the eternal or other cards.
+   2. Something dealt took Isaac below 2 HP before the room.
+   3. Find that card; ban it with a reason, or fix it if it is a bug.
+4. Tasks:
+   1. Read the saved match record for the deal.
+   2. Check other specs that use Blood Donation the same way.
+   3. Check: the spec, both browsers, 5 workers, 10 repeats.

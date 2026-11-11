@@ -209,16 +209,9 @@ var FirstAttackRollATK = engine.Static{
 	},
 }
 
-// MonstersInPlay lists the monsters on top of the monster slots.
-func MonstersInPlay(g *engine.Game) []engine.ObjectID {
-	var out []engine.ObjectID
-	for _, s := range g.Monsters {
-		if top, ok := s.TopOf(); ok && g.Object(top).Role == engine.RoleMonster {
-			out = append(out, top)
-		}
-	}
-	return out
-}
+// MonstersInPlay lists the monsters in play: on top of the monster,
+// final boss and minion slots (ADR 028, R-CHAL-03, R-CHAL-07).
+func MonstersInPlay(g *engine.Game) []engine.ObjectID { return g.MonstersInPlay() }
 
 // LivingPlayers lists living players, other than skip if skip >= 0.
 func LivingPlayers(g *engine.Game, skip engine.PlayerID) []engine.PlayerID {

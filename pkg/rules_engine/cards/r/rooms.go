@@ -55,7 +55,7 @@ func fewestOf(count func(*engine.Game, engine.PlayerID) int) func(*engine.Game, 
 
 // atStartOfTheTurn and atEndOfTheTurn trigger on every turn.
 func atStartOfTheTurn() engine.Trigger {
-	return engine.Trigger{On: engine.EvStartOfTurn, Match: anyPlayer}
+	return engine.AtStartOfEachTurn()
 }
 
 func atEndOfTheTurn() engine.Trigger {

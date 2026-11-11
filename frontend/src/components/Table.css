@@ -183,6 +183,233 @@
   width: 100%;
 }
 
+/* A game with the room deck (14.13): a rooms column after the slots,
+   as wide as a landscape slot card; the board grows by it, so the other
+   cards keep their size against each other. */
+.board.has-rooms {
+  --u: min((100cqw - 0.25rem) / 14.35, (100cqh - 0.25rem) / 3.6, 5.75rem);
+  grid-template-columns:
+    calc(var(--u) * 0.45) calc(var(--u) * 2.9) minmax(0, 1fr) calc(var(--u) * 1.4)
+    calc(var(--u) * 0.75) calc(var(--u) * 1.58) calc(var(--u) * 1.3);
+  grid-template-areas:
+    "strip info monsters rooms souls decks end"
+    "strip info shop rooms souls decks end";
+  width: calc(var(--u) * 14.35 + 0.25rem);
+}
+
+/* The room on top, then the room deck and its discard; rooms are
+   printed landscape, so each is as tall as a portrait card is wide. */
+.board-rooms {
+  grid-area: rooms;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--u) * 0.08);
+}
+
+.board-rooms .card.size-table,
+.board-rooms .pile-empty.size-table {
+  width: calc(var(--u) * 88 / 63);
+}
+
+.board-rooms .card.size-small,
+.board-rooms .pile-empty.size-small {
+  width: calc(var(--u) * 0.75 * 88 / 63);
+}
+
+.board-rooms .pile-empty {
+  aspect-ratio: 88 / 63;
+  border-radius: 3.6% / 5%;
+}
+
+/* A challenge (14.25, ADR 028 Decision 11): the final boss left of the
+   monster slots, a minion row under them, and the challenge panel in
+   place of the bonus souls, which a challenge plays without. The board
+   keeps one shape: the minion row keeps its place while empty. */
+.board.has-challenge {
+  --u: min((100cqw - 0.25rem) / 15.15, (100cqh - 0.25rem) / 4.8, 5.75rem);
+  grid-template-columns:
+    calc(var(--u) * 0.45) calc(var(--u) * 2.9) minmax(0, 1fr) calc(var(--u) * 1.7)
+    calc(var(--u) * 1.58) calc(var(--u) * 1.3);
+  grid-template-rows: minmax(0, 1fr) calc(var(--u) * 1.1) minmax(0, 1fr);
+  grid-template-areas:
+    "strip info monsters challenge decks end"
+    "strip info minions challenge decks end"
+    "strip info shop challenge decks end";
+  width: calc(var(--u) * 15.15 + 0.25rem);
+  height: calc(var(--u) * 4.8 + 0.25rem);
+}
+
+.board.has-challenge.has-rooms {
+  --u: min((100cqw - 0.25rem) / 16.75, (100cqh - 0.25rem) / 4.8, 5.75rem);
+  grid-template-columns:
+    calc(var(--u) * 0.45) calc(var(--u) * 2.9) minmax(0, 1fr) calc(var(--u) * 1.4)
+    calc(var(--u) * 1.7) calc(var(--u) * 1.58) calc(var(--u) * 1.3);
+  grid-template-areas:
+    "strip info monsters rooms challenge decks end"
+    "strip info minions rooms challenge decks end"
+    "strip info shop rooms challenge decks end";
+  width: calc(var(--u) * 16.75 + 0.25rem);
+}
+
+.board-top {
+  grid-area: monsters;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--u) * 0.2);
+  min-width: 0;
+}
+
+/* The monster slots take the rest of the row, next to the boss. */
+.board-top .board-monsters {
+  flex: 1 1 0;
+  justify-content: flex-start;
+}
+
+/* The final boss is printed landscape: as tall as a slot card is wide. */
+.board-bosses {
+  flex: none;
+}
+
+.board-bosses > .pile,
+.board-bosses > .pile-empty {
+  flex: none;
+  width: calc(var(--u) * 88 / 63);
+}
+
+.board-bosses .pile-empty {
+  aspect-ratio: 88 / 63;
+  border-radius: 3.6% / 5%;
+}
+
+/* Minions are small cards; more of them share the row. */
+.board-minions {
+  grid-area: minions;
+}
+
+.board-minion-row {
+  flex: 1 1 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--u) * 0.08);
+  min-width: 0;
+  height: 100%;
+}
+
+.board-minion-row > .pile,
+.board-minion-row > .pile-empty {
+  flex: 0 1 calc(var(--u) * 0.75);
+  min-width: 0;
+}
+
+.board-minion-row .card.size-small {
+  width: 100%;
+}
+
+/* The challenge panel: the rule card, the timer, then the presents two
+   by two. */
+.board-challenge {
+  grid-area: challenge;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  gap: calc(var(--u) * 0.06);
+  min-height: 0;
+}
+
+.board-challenge > .card.size-small {
+  width: calc(var(--u) * 1.6);
+}
+
+.challenge-timer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: calc(var(--u) * 0.08);
+  cursor: help;
+}
+
+.challenge-d8 {
+  width: calc(var(--u) * 0.55);
+  aspect-ratio: 1;
+  overflow: visible;
+  filter: drop-shadow(0 0.0625rem 0 #1d120a);
+}
+
+.challenge-d8-face {
+  fill: #f3ead2;
+  stroke: #1d120a;
+  stroke-width: 6;
+  stroke-linejoin: round;
+}
+
+.challenge-d8-edge {
+  fill: none;
+  stroke: rgb(29 18 10 / 35%);
+  stroke-width: 3;
+}
+
+/* The number sits on the die's middle. */
+.challenge-d8-value {
+  position: absolute;
+  left: calc(var(--u) * 0.275);
+  top: 50%;
+  translate: -50% -50%;
+  font-family: var(--font-game);
+  font-size: calc(var(--u) * 0.3);
+  line-height: 1;
+  color: #1d120a;
+}
+
+.challenge-timer-label {
+  max-width: calc(var(--u) * 1);
+  font-size: calc(var(--u) * 0.16);
+  line-height: 1.1;
+  color: rgb(255 255 255 / 75%);
+}
+
+.board-presents {
+  display: grid;
+  grid-template-columns: repeat(2, calc(var(--u) * 0.7));
+  gap: calc(var(--u) * 0.06) calc(var(--u) * 0.1);
+}
+
+.present {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0;
+}
+
+.board .present .card.size-small,
+.board .present .pile-empty.size-small {
+  width: calc(var(--u) * 0.7);
+}
+
+.present figcaption {
+  font-size: calc(var(--u) * 0.16);
+  line-height: 1.3;
+  color: rgb(255 255 255 / 80%);
+}
+
+/* A present that left: given to a player, or destroyed. */
+.present-gone {
+  font-size: calc(var(--u) * 0.4);
+}
+
+.present-destroyed .present-gone {
+  color: rgb(255 110 95 / 70%);
+}
+
+.present-destroyed figcaption {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
 .bonus-souls {
   grid-area: souls;
   display: flex;
@@ -355,6 +582,42 @@
 
 .player-dead {
   font-size: 0.75rem;
+  color: var(--muted);
+}
+
+/* Counters on a player (14.33): fear in Trick or Treat. A dot in the
+   kind's colour, the number, the kind's word; the tooltip says more. */
+.player-counters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.375rem;
+}
+
+.player-counter {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0 0.375rem 0 0.25rem;
+  border-radius: 0.625rem;
+  background: rgb(0 0 0 / 45%);
+  font-size: 0.875rem;
+  font-weight: 800;
+  line-height: 1.4;
+  color: #f3ead2;
+  cursor: help;
+}
+
+.player-counter-dot {
+  width: 0.75rem;
+  height: 0.75rem;
+  border: 2px solid #1d120a;
+  border-radius: 50%;
+  background: var(--fill);
+}
+
+.player-counter-word {
+  font-size: 0.75rem;
+  font-weight: 600;
   color: var(--muted);
 }
 

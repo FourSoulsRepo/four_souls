@@ -24,10 +24,11 @@ export interface CardInfo {
 
 // Kind is the deck family a card belongs to; it sets the blank card's
 // colour and the card back.
-export type Kind = 'character' | 'treasure' | 'loot' | 'monster' | 'soul';
+// A room is printed landscape (14.13).
+export type Kind = 'character' | 'treasure' | 'loot' | 'monster' | 'soul' | 'room';
 
 // deckKinds are the engine's decks (protocol Deck) as the board's piles.
-export const deckKinds: (Kind | undefined)[] = ['treasure', 'loot', 'monster', undefined];
+export const deckKinds: (Kind | undefined)[] = ['treasure', 'loot', 'monster', 'room'];
 
 export function kindOf(type: string): Kind {
   if (type === 'Character Card') {
@@ -36,6 +37,9 @@ export function kindOf(type: string): Kind {
   if (type === 'Bonus Soul Card') {
     return 'soul';
   }
+  if (type === 'Room Card') {
+    return 'room';
+  }
   if (type.includes('Treasure')) {
     return 'treasure';
   }
@@ -43,6 +47,16 @@ export function kindOf(type: string): Kind {
     return 'monster';
   }
   return 'loot';
+}
+
+// landscapeTypes are the card types printed landscape: rooms (14.13)
+// and a challenge's boss and rule cards (14.25, ADR 028).
+const landscapeTypes = ['Room Card', 'Challenge Boss Card', 'Challenge Card'];
+
+// landscape: the card of this type is printed landscape; it is drawn
+// so in every size, text cards too.
+export function landscape(type: string): boolean {
+  return landscapeTypes.includes(type);
 }
 
 // TextPart is plain text or an icon written as {Icon Name} in card text.

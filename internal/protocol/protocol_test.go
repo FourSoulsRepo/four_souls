@@ -66,6 +66,9 @@ func TestGolden(t *testing.T) {
 		{TypeRollbackCancel, 21, struct{}{}},
 		{TypeEnd, 22, struct{}{}},
 		{TypeNotice, 0, Notice{Kind: NoticeEnded, Game: "g1"}},
+		// A challenge game (ADR 028, Decision 10).
+		{TypeCreate, 23, Create{Seats: 2, Sets: []string{"b2"}, Options: &Options{Challenge: "krampus", Difficulty: engine.DifficultyHard}}},
+		{TypeGames, 0, Games{Games: []GameInfo{{ID: "g2", Host: "Ann", Seats: 2, Taken: 1, Sets: []string{"b2"}, Challenge: "krampus", Difficulty: engine.DifficultyHard}}}},
 	}
 	var got bytes.Buffer
 	for _, m := range messages {

@@ -20,6 +20,8 @@ function deckLabel(kind: Kind, n: number): string {
       return t('deck.monster', { n });
     case 'treasure':
       return t('deck.treasure', { n });
+    case 'room':
+      return t('deck.room', { n });
     default:
       return t('deck.loot', { n });
   }
@@ -32,6 +34,8 @@ function discardLabel(kind: Kind, n: number): string {
       return t('deck.monster_discard', { n });
     case 'treasure':
       return t('deck.treasure_discard', { n });
+    case 'room':
+      return t('deck.room_discard', { n });
     default:
       return t('deck.loot_discard', { n });
   }
@@ -85,6 +89,8 @@ function lookDeck(kind: Kind): number {
       return DeckKind.loot;
     case 'monster':
       return DeckKind.monster;
+    case 'room':
+      return DeckKind.room;
     default:
       return -1;
   }

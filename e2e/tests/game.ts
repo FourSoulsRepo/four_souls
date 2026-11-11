@@ -1,10 +1,18 @@
 // Starts a real game on the test server with one page per player.
-import { expect, type Browser, type Locator, type Page } from '@playwright/test';
+import { expect, test, type Browser, type Locator, type Page } from '@playwright/test';
 import { appURL, serverPort } from './server';
 import { realAssets } from './shot';
 import { enabled, seen, throwButton } from './turn';
 import { openHost, openOnline } from './menu';
 import { tr, trRe } from './locale';
+
+// repeatNames makes the names unique to a --repeat-each run of the
+// test. A saved game is found by its players' names, and repeats of one
+// test run at the same time (19.152).
+export function repeatNames(names: string[]): string[] {
+  const r = test.info().repeatEachIndex;
+  return r === 0 ? names : names.map((n) => `${n}${String(r)}`);
+}
 
 // statMonsters change other monsters' stats (14.10). A test that checks
 // a fresh monster bans them, or a lucky deal puts a badge on it.
@@ -86,6 +94,11 @@ export async function startGame(
     // pick plays a draft's pick screen (14.11) once everyone is ready;
     // the game starts when it returns.
     pick = undefined as ((pages: Page[]) => Promise<void>) | undefined,
+    // listed runs on each guest page once the game's row is in its list,
+    // before Join: a test checks what the list shows.
+    listed = (_: Locator) => Promise.resolve(),
+    // seated runs on each guest page at the table, before Ready.
+    seated = (_: Page) => Promise.resolve(),
   } = {},
 ): Promise<Page[]> {
   const pages: Page[] = [];
@@ -128,8 +141,10 @@ export async function startGame(
     // a started game's disabled Join (19.14).
     const join = lobbyGame(page, id).getByRole('button', { name: tr('lobby.join') });
     await expect(join).toBeEnabled();
+    await listed(lobbyGame(page, id));
     await join.dispatchEvent('click');
     await expect(page.getByRole('list', { name: tr('lobby.seats.seats') })).toBeVisible();
+    await seated(page);
   }
   for (const page of pages) {
     await page.getByRole('button', { name: tr('lobby.seats.ready'), exact: true }).click();

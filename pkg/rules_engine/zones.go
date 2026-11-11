@@ -193,6 +193,54 @@ func (g *Game) KeepOrBottom(p PlayerID, d DeckKind, id ObjectID, bottom bool) {
 	g.emit(Event{Kind: EvTopChoice, Player: p, Object: id, Card: g.Object(id).Card, Text: d.String() + where, Private: true})
 }
 
+// RevealUntilMonster reveals cards from the top of the monster deck,
+// for p, until a non-event monster card; then every revealed card goes
+// to the bottom in random order (Q-22). An empty deck refills from its
+// discard as usual (R-ZONE-05). It returns the monster's card, or ""
+// when deck and discard hold none (Q-47.7, Q-47.8). Events met on the
+// way only show.
+func (g *Game) RevealUntilMonster(p PlayerID) CardRef {
+	var shown []ObjectID
+	var found CardRef
+	for found == "" {
+		if len(g.Decks[MonsterDeck]) == 0 {
+			if len(g.Discards[MonsterDeck]) == 0 {
+				break
+			}
+			g.refillDeck(MonsterDeck)
+		}
+		deck := g.Decks[MonsterDeck]
+		id := deck[len(deck)-1]
+		g.Decks[MonsterDeck] = deck[:len(deck)-1] // off the deck while shown
+		shown = append(shown, id)
+		g.emit(Event{Kind: EvCardRevealed, Player: p, Object: id, Card: g.Object(id).Card})
+		if g.kindOf(id) == MonsterCard {
+			found = g.Object(id).Card
+		}
+	}
+	g.ToBottomRandom(MonsterDeck, shown)
+	return found
+}
+
+// EvAbilitiesGained means monster Object gained the abilities of the
+// card named by Text (a card ref) till end of turn, for Player
+// (GainRevealedMonster).
+const EvAbilitiesGained EventKind = "abilities_gained"
+
+// GainRevealedMonster makes monster id gain the abilities of the monster
+// card RevealUntilMonster finds, till end of turn (Ghostly Trickery,
+// R-TRICK-13, Q-47). Abilities only: stats, rewards and soul stay its
+// own. Several gains add up (Q-46). It returns the gained card, or "".
+// A gain emits abilities_gained.
+func (g *Game) GainRevealedMonster(id ObjectID, p PlayerID) CardRef {
+	card := g.RevealUntilMonster(p)
+	if card != "" && g.Object(id).Zone.Kind == ZoneInPlay {
+		g.GainAbilities(id, card, GainEndOfTurn)
+		g.emit(Event{Kind: EvAbilitiesGained, Player: p, Object: id, Card: g.Object(id).Card, Text: string(card)})
+	}
+	return card
+}
+
 // ToBottomRandom puts cards on the bottom of a deck in random order; no
 // player orders them (Q-22). A card in a deck stays the same object; a
 // card in a slot leaves it. The deck cards' move is one public
@@ -286,8 +334,11 @@ func (g *Game) ShopItems() []ObjectID {
 }
 
 // DiscardMonster puts a monster in a slot into the monster discard; the
-// slot is refilled later (RefillSlots).
+// slot is refilled later (RefillSlots). A final boss or minion stays.
 func (g *Game) DiscardMonster(id ObjectID) {
+	if g.Held(id) {
+		return // R-CHAL-04, R-CHAL-10
+	}
 	g.removeFromSlot(id)
 	nid := g.discard(id, MonsterDeck)
 	g.emit(Event{Kind: EvDiscarded, Player: NoPlayer, Object: nid, Card: g.Object(nid).Card, Prev: id})
@@ -378,10 +429,11 @@ func (g *Game) DiscardShopItem(id ObjectID) {
 }
 
 // SlotToDeckBottom puts the top card of a shop or monster slot on the
-// bottom of its deck; the slot is refilled later (RefillSlots).
+// bottom of its deck; the slot is refilled later (RefillSlots). A final
+// boss or minion stays.
 func (g *Game) SlotToDeckBottom(id ObjectID) {
 	d, ok := g.kindOf(id).Deck()
-	if !ok {
+	if !ok || g.Held(id) { // R-CHAL-04, R-CHAL-10
 		return
 	}
 	g.removeFromSlot(id)
@@ -442,8 +494,16 @@ func (g *Game) PutOnDeck(d DeckKind, cards ...CardRef) {
 
 // KillObject kills a monster or other object with HP: HP to 0, its
 // death on the stack (R-MECH-23).
-func (g *Game) KillObject(id ObjectID) {
+func (g *Game) KillObject(id ObjectID) { g.killObject(id, NoPlayer, 0) }
+
+// killObject is KillObject by an ability of controller from source. A
+// final boss takes 3 damage instead (boss armor, R-CHAL-05).
+func (g *Game) killObject(id ObjectID, controller PlayerID, source ObjectID) {
 	if g.Object(id).Zone.Kind != ZoneInPlay || g.Eternal(id) {
+		return
+	}
+	if g.IsFinalBoss(id) {
+		g.push(StackItem{Kind: StackDamage, Controller: controller, Source: source, Amount: bossArmor, Label: eventDamage.Msg(), Target: Target{Object: id}})
 		return
 	}
 	g.Object(id).Damage = g.def(id).HP + g.bonus(StatMonsterHP, NoPlayer, id)

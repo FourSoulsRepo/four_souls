@@ -32,14 +32,14 @@ interface DataCard {
   back?: DataCard; // a two-sided card's other face (ADR 023)
 }
 
-// The fake bridge's cards are the Base Game's and Requiem's
-// (fakeBridge.ts); a later version's ref is id@N, as Go's, and a back
-// face is a card of its own.
+// The fake bridge's cards are the Base Game's, Requiem's and the
+// challenge cards (fakeBridge.ts); a later version's ref is id@N, as
+// Go's, and a back face is a card of its own.
 function dataCards(set: string): DataCard[] {
   return (JSON.parse(readFileSync(join(root, 'pkg', 'card_db', 'data', `${set}.json`), 'utf8')) as { cards: DataCard[] }).cards;
 }
 const b2 = { cards: dataCards('b2') };
-const all = [...b2.cards, ...dataCards('r')].filter((c) => !c.reprint).flatMap((c) => (c.back ? [c, c.back] : [c]));
+const all = [...b2.cards, ...dataCards('r'), ...dataCards('challenge')].filter((c) => !c.reprint).flatMap((c) => (c.back ? [c, c.back] : [c]));
 const cards = new Map(all.map((c) => [c.version && c.version > 1 ? `${c.id}@${String(c.version)}` : c.id, c]));
 
 // languageNames are the Settings choices of a development build, as
@@ -59,7 +59,7 @@ export function cardName(ref: string): string {
   const card = cards.get(ref);
   const name = card?.text[locale]?.name ?? card?.text.en?.name;
   if (name === undefined) {
-    throw new Error(`no card ${ref} in b2.json or r.json`);
+    throw new Error(`no card ${ref} in b2.json, r.json or challenge.json`);
   }
   return name;
 }

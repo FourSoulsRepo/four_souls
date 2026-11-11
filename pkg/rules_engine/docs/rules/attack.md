@@ -26,3 +26,4 @@ Sources: S-OFF Attacking; S-RU Атака.
 22. **R-ATK-22** *(Requiem)* "Must attack this once each turn if able" (The Harbingers, Blind Rage): one attack of the turn must go there while any attack is possible; other attacks may go anywhere. If two such effects clash, the attacker picks (S-YUG, R-ATK-03).
 23. **R-ATK-23** *(Requiem)* Monster slots have no maximum (S-YUG).
 24. **R-ATK-24** *(Requiem)* "You take no combat damage on attack rolls of N" also covers attack rolls made against you by an attacking player (S-YUG: Halo of Flies).
+25. **R-ATK-25** **Target triggers before the first roll**: abilities that trigger on the target pick ("When an attack is declared on this": Pride, Rag Mega) go on the stack and resolve first; the first attack roll comes when the stack is empty again. With no such trigger the first roll comes at once (S-RED, S-YUG; Q-29, 19.151).

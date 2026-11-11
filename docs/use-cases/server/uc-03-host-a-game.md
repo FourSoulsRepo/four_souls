@@ -47,10 +47,17 @@
   * Players, card sets, detailed setup, response timer, bonus souls.
   * Kept in the app settings; the password is never kept (N-14).
   * The deck ratios box too (UC-20).
+  * The game mode, challenge and difficulty too (UC-41).
 * **1e. On a dedicated server:** the player creates the game there (UC-19).
 * **4d. A friend creates on the host's app:** refused with `not_host` (N-17).
   * The friend's app offers no "Create a game" there.
 * **1f. Back or Esc on the host screen:** the LAN screen (15.97).
+* **4e. A challenge (ADR 028):** the options name it and its difficulty.
+  * Exactly 2 seats; else refused with `bad_setup` (`error.challenge_seats`).
+  * Unknown challenge: `bad_setup` (`error.no_challenge`).
+  * A difficulty it lacks: `bad_setup` (`error.no_difficulty`).
+  * The game list shows the challenge and its difficulty.
+  * The host screen picks it: "Game mode", challenge, difficulty (UC-41).
 
 ## Postconditions
 

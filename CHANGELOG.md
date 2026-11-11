@@ -6,6 +6,20 @@ Rules engine versions are in each release's notes.
 
 ## Unreleased
 
+## 0.4.1 - 2026-11-11
+
+- Challenges: a co-op game mode for 2 players, picked in the host screen, with Normal, Hard and Ultra Hard.
+- How the Krampus Stole Christmas: beat Pilfering Krampus and his minions before all four presents are destroyed or the timer runs out.
+- Trick or Treat: beat Mischievous The Haunt before the timer runs out, while its tricks and your fear make it harder.
+- Halloween and Christmas game mats, to play the challenges in the mood.
+- Requiem rooms: the host can turn on the room deck in Detailed setup; the active player uses the room, and the end phase may change it.
+- Attack a player or an item: The Siren, Punching Bag and other Requiem cards offer them as attack targets; extra attack rolls name whose roll it is.
+- Rooms and other landscape cards are as sharp as portrait cards.
+- Golden Trinket and Glitch with a copied ↷ ability count as ↷ items: Charged Baby and other recharge cards can recharge them, and death or Curse of Impulse deactivates them.
+- An attack on Pride, Rag Mega, Dogma and other "when an attack is declared on this" monsters: their ability resolves before the attack die is thrown.
+- An attack on a player (The Siren): the attack roll names the player, not their character card.
+- Rules engine 0.5.3.
+
 ## 0.4.0 - 2026-11-09
 
 - Draft: in Detailed setup the host can offer each player 2 to 5 characters to pick from; one random character each stays the default. Each offer shows the character's starting item; Eden chooses hers when the game starts.
