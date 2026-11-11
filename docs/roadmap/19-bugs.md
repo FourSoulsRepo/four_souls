@@ -4898,3 +4898,22 @@ Totals by system (148 items):
    1. Make the edit leave no second copy, or the test pick its slot by place.
    2. Search other specs that name a monster set by a save edit.
    3. Check: the spec, both browsers, 5 workers, 10 repeats.
+
+### [ ] 19.156 e2e: Blood Donation kills the active player in `rooms.spec.ts`
+
+1. Goal: `rooms.spec.ts:72` passes whatever the deal.
+2. Report (14.36 `make e2e`, 2026-11-11)
+   1. Webkit; timed out after 120 s.
+   2. The save edit made Ivo Isaac; Ivo kept the dealt eternal Sumptorium.
+   3. After Blood Donation's 1 HP, Isaac showed 0 health.
+   4. "Ivo dies" waited on the stack; the test never got its 3¢.
+   5. Rerun, webkit, 3 repeats: 3 of 3 passed; so the deal matters.
+   6. Evidence: `.cache/e2e-evidence/14.36-run1/` (not in git).
+3. Cause: not found yet.
+   1. `giveRoom` swaps the character, not the eternal or other cards.
+   2. Something dealt took Isaac below 2 HP before the room.
+   3. Find that card; ban it with a reason, or fix it if it is a bug.
+4. Tasks:
+   1. Read the saved match record for the deal.
+   2. Check other specs that use Blood Donation the same way.
+   3. Check: the spec, both browsers, 5 workers, 10 repeats.
