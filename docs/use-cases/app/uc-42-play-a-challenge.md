@@ -24,8 +24,8 @@
    2. Minions come from the monster deck, one by one.
    3. They lie in a row under the monster slots.
 4. On Normal, the turn can't end before a random minion attack.
-   1. The attack offers "a random minion" in a dialog.
-   2. The game picks the minion.
+   1. Attack goes to a random minion; the game picks it.
+   2. Beside another owed attack, a dialog offers "a random minion".
 5. While souls are too few or a minion is left, Krampus is guarded.
    1. Attacking, it is no target: it dims while the targets glow.
 6. A monster's reward or a soul could be forgone (All I Want for Christmas).

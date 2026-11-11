@@ -41,7 +41,7 @@ This step never closes; new reports are appended.
 | F  | Layout and visuals                       | Client     | 19.15, 19.26, 19.40, 19.49, 19.50, 19.76, 19.88, 19.99, 19.102, 19.118, 19.119 | 11    |
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32, 19.148                                          | 2     |
-| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122, 19.125, 19.126, 19.127, 19.120, 19.128, 19.132, 19.133, 19.137, 19.152 | 36 |
+| I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122, 19.125, 19.126, 19.127, 19.120, 19.128, 19.132, 19.133, 19.137, 19.152, 19.154 | 37 |
 | J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107, 19.117, 19.121, 19.140 | 22 |
 | Q  | Load tool: a lost connection ends a game | Go tools   | 19.108, 19.131                                         | 2     |
 | K  | Build and release files                  | Release    | 19.47, 19.59, 19.83, 19.91                             | 4     |
@@ -56,7 +56,7 @@ This step never closes; new reports are appended.
 | U  | Save and load: a running effect lost     | Engine     | 19.143                                                 | 1     |
 | V  | Flow: an extra step the player must take | Client     | 19.149                                                 | 1     |
 
-Totals by system (147 items):
+Totals by system (148 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
@@ -64,7 +64,7 @@ Totals by system (147 items):
 | Card data | C       | 2     |
 | Client    | D–G, O, P, S, V | 41 |
 | Server    | H, N    | 3     |
-| e2e       | I, J    | 58    |
+| e2e       | I, J    | 59    |
 | Release   | K       | 4     |
 | None      | L       | 2     |
 | Go tests  | M       | 1     |
@@ -4853,3 +4853,29 @@ Totals by system (147 items):
 3. Tasks:
    1. Find the cause from the evidence; fix the app or the test.
    2. Check: the spec, both browsers, 5 workers, 10 repeats, all pass.
+
+### [x] 19.154 e2e: Krampus win test misses when Delirium is dealt
+
+1. Goal: `challenge-table.spec.ts:301` passes on every deal.
+2. Report (14.26 agent, 2026-11-11)
+   1. `make e2e` run 1 of 14.26, webkit; 533 passed, this one failed.
+   2. "Challenge won!" never showed after 6 turns of attacks.
+   3. Chromium passed the same test in the same run.
+   4. Evidence: `.cache/e2e-evidence/14.26-run1` (not in git).
+3. Cause (found in the evidence and a repro)
+   1. The failed table had Delirium in a monster slot.
+   2. Delirium: other monsters +1 evasion; Stoney: monsters +1 evasion.
+   3. Krampus is a monster (R-CHAL-03), so its 4+ became 5+.
+   4. The test gives +3 to the next attack roll: a 1 makes 4, a miss.
+   5. Damage heals at the end of the turn; 1 damage a hit can't win in 6 turns.
+   6. Repro: Eve and Blue Baby, 4 runs; one deal had Delirium (Krampus DC 5).
+   7. The engine is right; the test assumed a plain evasion.
+4. Tasks:
+   1. The test bans `statMonsters` (14.10), with the reason.
+   2. Check: the spec, both browsers, 5 workers, 10 repeats, all pass.
+5. Fix (2026-11-11)
+   1. The win test bans `statMonsters` (Delirium, Stoney), with the reason.
+   2. Only these two change a monster's stats when dealt (14.10).
+   3. No app or engine change; no screen change, no screenshots.
+6. Checks (2026-11-11)
+   1. The test, webkit and chromium, 5 workers, 10 repeats: 20 of 20 passed.

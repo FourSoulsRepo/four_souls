@@ -4,6 +4,7 @@
 
 * [First start](First-start)
 * [Playing over the internet](Playing-over-the-internet)
+* [Challenges](Challenges)
 
 **Server admins**
 

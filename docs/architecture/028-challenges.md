@@ -99,7 +99,7 @@ Use options 1, 4 and 5.
    13. Presents API: `AddPresent`, `AddPresentCounters`, `DestroyPresent`.
    14. Also `FlipPresents`, `GivePresent`, `Forgo`, `SoulsInPlay`.
 6. Abilities
-   1. `inPlay` adds the rule card after the room slots.
+   1. `inPlay` adds the rule card after every slot row.
    2. Boss rules are the boss card's abilities (R-KRAMPUS-11 – 14).
    3. Global modifiers are the rule card's abilities (R-KRAMPUS-07, 08, 10).
    4. New hooks go on `CardDef`, like `InsteadOfDestroy`; no hooks by challenge ID.

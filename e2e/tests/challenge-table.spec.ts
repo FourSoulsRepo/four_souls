@@ -5,7 +5,7 @@
 // 0, enough souls, a known monster, the last round.
 import type { Page } from '@playwright/test';
 import { expect, test } from './fixtures';
-import { repeatNames, startGame } from './game';
+import { repeatNames, startGame, statMonsters } from './game';
 import { cardName, tr } from './locale';
 import { editSave, saveEditContinue } from './saves';
 import { shot } from './shot';
@@ -300,7 +300,10 @@ test('a present at 0 brings minions; the guarded boss is no target (14.25)', asy
 
 test('the boss can be attacked once souls are enough; the challenge is won (14.25)', async ({ browser }) => {
   const names = repeatNames(['Bea', 'Bob']);
-  const pages = await startGame(browser, names, { setup: hostKrampus });
+  // Delirium or Stoney in a slot gives Krampus +1 evasion (14.10,
+  // R-CHAL-03): the boosted roll of 1 then misses, and 1 damage a hit
+  // can't kill a healed Krampus in 6 turns (19.154).
+  const pages = await startGame(browser, names, { setup: hostKrampus, bans: statMonsters });
   await activePage(pages, click);
   // 5 souls and no minion: Krampus may be attacked (R-KRAMPUS-11). It
   // has 1 HP left, and the attacker's next roll gets +3, so the first

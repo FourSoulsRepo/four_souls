@@ -80,6 +80,8 @@ Network play runs against the real Go server: `e2e/playwright.config.ts` starts 
 * a page reloads, which drops its game;
 * one round of moves takes over 30 seconds.
 
+It also plays the Krampus challenge ([Challenges](Challenges)) once at each difficulty, Normal, Hard and Ultra Hard, for 2 players with every card set (14.26). Random play rarely wins it: the timer runs out or the presents are destroyed in a few minutes. That is a valid end. The game must reach game over with "Challenge won!" or "Challenge lost" and its reason on both pages; the test logs the result and the timer left. Each test logs its seed when it starts, so a game that never ends still names it.
+
 It is slow, so `make e2e` skips it. Run it with `make e2e-games` (Chromium only). Every 10 turns a test prints the turn, step, time and each player's souls; at the end, its seed, time, turns, steps and moves. `GAME_SEED=N` repeats the moves' choices; the server's deal stays random. The pages play at the "fast" animation speed: every effect still plays and is claimed, so the clash check holds, at half its time (19.137). `GAME_SPEED=normal` plays at the normal pace.
 
 The host bans the cards the load tool bans by default (`-ban` in `cmd/server_load`): Blue Baby, whose Forever Alone can repeat forever (19.97), and Smelter and Portable Slot Machine, which loop with other cards (19.109). A random player could repeat such a loop and the turn would never end. Keep the list in `games.spec.ts` the same as the load tool's, and drop a ban when its item is fixed.

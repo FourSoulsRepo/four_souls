@@ -46,7 +46,7 @@
    15. `make e2e`: Playwright UI tests in `e2e/`.
    16. Frontend testing rules: `docs/wiki/Frontend-tests.md`.
    17. `make internal`: play-test build with card images; see `docs/wiki/Internal-builds.md`.
-   18. `make e2e-games`: whole random games, every set, 2–4 players (slow).
+   18. `make e2e-games`: whole random games, every set, 2–4 players, Krampus (slow).
    19. Before a `cardimages` build or test: `go generate ./pkg/card_db/images`.
    20. `wails build` and `wails dev` always take `-m` (19.59).
        1. It skips `go mod tidy`.

@@ -816,7 +816,7 @@ Alt art (CD-11) comes after all sets.
    18. e2e `challenge-table.spec.ts`: 4 tests, saved games for exact states.
    19. UC-42; ADR 028 items 11.7–11.11; wiki Client and Animations.
 
-### [ ] 14.26 Challenge play-check and docs
+### [x] 14.26 Challenge play-check and docs
 
 1. Goal: whole Krampus games run in the app; docs match.
 2. Tasks:
@@ -826,6 +826,23 @@ Alt art (CD-11) comes after all sets.
    4. `docs/ideas.md` GS-11: what is done, what is left.
 3. Done when:
    1. `make e2e-games` passes with the Krampus games.
+4. Result (2026-11-11):
+   1. `games.spec.ts`: Krampus at Normal, Hard, Ultra Hard; 2 players, every set.
+   2. A game ends at game over: "Challenge won!" or "Challenge lost" and the reason.
+   3. Each test logs its seed at start; failed records go to `.cache/e2e-games/`.
+   4. Random play lost every time, by the timer or the presents; a valid end.
+   5. Final run: Normal seed 972853, timer, 15 turns.
+   6. Hard seed 175475, presents, 10 turns; Ultra Hard seed 284574, presents, 6 turns.
+   7. The regular 2, 3 and 4 player games passed in the same run (54 min).
+   8. Wiki: new players' page Challenges, in Home and the sidebar.
+   9. Three screenshots with card images; rows in wiki Screenshots.
+   10. Wiki Frontend-tests and CLAUDE.md 4.18 name the Krampus games.
+   11. README: one line; `docs/ideas.md` GS-11 items 8 and 9.
+   12. Docs check: ADR 028, UC-41, UC-42 and `challenges.md` against the code.
+       1. ADR 028 Decision 6.1: the rule card comes after every slot row.
+       2. UC-42 item 4: Attack goes to a random minion at once.
+       3. The dialog with "a random minion" shows only beside another owed attack.
+   13. `make e2e` run 1: the Krampus win test failed on webkit; 19.154, fixed.
 
 ### [ ] 14.27 Solo challenges
 

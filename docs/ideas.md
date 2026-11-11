@@ -964,6 +964,13 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    5. Owner, 2026-11-10: a "Challenge" game mode, planned in 14.17 – 14.28.
    6. First: How the Krampus Stole Christmas, co-op, 2 players.
    7. Solo and the competitive variant come later.
+   8. Done (14.17 – 14.26): co-op How the Krampus Stole Christmas.
+      1. Normal, Hard and Ultra Hard; 2 players.
+      2. Rules, engine, server, host screen, table, whole-game tests.
+   9. Left:
+      1. Solo: one person, two characters (14.27).
+      2. Competitive Krampus, 2–4 players (14.28).
+      3. The other official challenges, each with its cards.
 12. GS-12. Optional house rule: no damage loops at 0 HP.
    1. Official rules: damage at 0 HP still fires "when you take damage" (R-MECH-51).
    2. Example: Forever Alone with Gurdy Jr. loops while the death waits.

@@ -1,6 +1,7 @@
 // Whole games with every card set, played by random moves through the
-// UI, for 2, 3 and 4 players (owner request, 2026-10-15). A game must
-// end with a winner, with no server error, no page error and no console
+// UI, for 2, 3 and 4 players (owner request, 2026-10-15), and the
+// Krampus challenge for 2 at each difficulty (14.26). A game must end
+// with a winner, or a challenge won or lost, with no server error, no page error and no console
 // error or warning on any page. Each test logs how long its game took.
 //
 // Slow, so opt-in: FULL_GAMES=1, or `make e2e-games`.
@@ -451,21 +452,105 @@ function keepRecord(names: string[]): string {
   return to;
 }
 
+// krampus hosts the Krampus challenge (14.26, UC-41) at the difficulty,
+// over every card set: the host form keeps the sets in a challenge.
+function krampus(difficulty: string): (host: Page) => Promise<void> {
+  return async (host) => {
+    await everySet(host);
+    await host.getByLabel(tr('host.mode')).selectOption('challenge');
+    await host.getByLabel(tr('host.challenge'), { exact: true }).selectOption('krampus');
+    await host.getByLabel(tr('host.difficulty')).selectOption(difficulty);
+  };
+}
+
+// Ending is how a challenge ended: won or lost, why, and the timer.
+interface Ending {
+  lost: boolean;
+  reason: string;
+  timer: number;
+}
+
+async function ending(page: Page): Promise<Ending> {
+  return page.evaluate(() => {
+    interface S {
+      game: { view: { challenge?: { lost?: boolean; reason?: { key?: string }; timer: number } } } | null;
+    }
+    const c = (window as unknown as { fourSouls: { store: { getState: () => S } } }).fourSouls.store.getState().game?.view.challenge;
+    return { lost: c?.lost ?? false, reason: c?.reason?.key ?? '', timer: c?.timer ?? -1 };
+  });
+}
+
+// Game is one whole game: who plays, how the host sets it up, and what
+// its game-over dialog must say.
+interface Game {
+  title: string;
+  run: string;
+  players: number;
+  setup: (host: Page) => Promise<void>;
+  over: (page: Page) => Promise<string>;
+}
+
+// regularOver: a regular game ends with a winner.
+async function regularOver(page: Page): Promise<string> {
+  await expect(page.getByRole('dialog', { name: tr('over.title') })).toBeVisible();
+  return 'over';
+}
+
+// challengeOver: a challenge ends won or lost, and a loss says why
+// (ADR 028 Decision 11.6, UC-42). Random play mostly loses.
+async function challengeOver(page: Page): Promise<string> {
+  const over = page.getByRole('dialog', { name: tr('over.title') });
+  await expect(over).toBeVisible();
+  const e = await ending(page);
+  if (!e.lost) {
+    await expect(over.getByRole('heading', { name: tr('over.challenge_won') })).toBeVisible();
+    return `won, timer ${String(e.timer)}`;
+  }
+  await expect(over.getByRole('heading', { name: tr('over.challenge_lost') })).toBeVisible();
+  expect(e.reason).not.toBe('');
+  await expect(over.getByText(tr(e.reason))).toBeVisible();
+  return `lost (${e.reason}), timer ${String(e.timer)}`;
+}
+
+const games: Game[] = [
+  ...[2, 3, 4].map((players) => ({
+    title: `${String(players)} players finish a game with every card set`,
+    run: `${String(players)}r`,
+    players,
+    setup: everySet,
+    over: regularOver,
+  })),
+  // Krampus (14.26): 2 players, each difficulty, played to its end.
+  ...['normal', 'hard', 'ultra'].map((difficulty) => ({
+    title: `2 players finish the Krampus challenge at ${difficulty}`,
+    run: `k${difficulty.slice(0, 1)}`,
+    players: 2,
+    setup: krampus(difficulty),
+    over: challengeOver,
+  })),
+];
+
 test.describe('whole random games', () => {
   test.skip(process.env.FULL_GAMES !== '1', 'slow; run with FULL_GAMES=1 (make e2e-games)');
   test.describe.configure({ timeout: 60 * 60_000 });
 
-  for (const players of [2, 3, 4]) {
-    test(`${String(players)} players finish a game with every card set`, async ({ browser }) => {
+  for (const game of games) {
+    const { players } = game;
+    test(game.title, async ({ browser }) => {
       const seed = Number(process.env.GAME_SEED ?? Date.now() % 1_000_000);
+      const label = `${game.title}, seed ${String(seed)}`;
+      // The seed shows before the game, so a run that never ends still
+      // names it (CLAUDE.md 5.19.3).
+      console.log(`${label}: starting`);
       // A finished game stays in the lobby list, so each repeat
       // (--repeat-each) hosts under its own name.
-      const run = `${String(players)}r${String(test.info().repeatEachIndex)}`;
+      const run = `${game.run}${String(test.info().repeatEachIndex)}`;
       const names = ['Ann', 'Bob', 'Cid', 'Dee'].slice(0, players).map((n) => `Rnd${run}${n}`);
       const problems: string[] = [];
       let opened = 0;
+      test.info().annotations.push({ type: 'seed', description: String(seed) });
       const pages = await startGame(browser, names, {
-        setup: everySet,
+        setup: game.setup,
         bans,
         open: (page) => {
           // A click that never lands fails fast: the next round looks
@@ -476,15 +561,15 @@ test.describe('whole random games', () => {
         },
       });
       await Promise.all(pages.map((page) => setSpeed(page, speed)));
-      console.log(`${String(players)} players, seed ${String(seed)}, speed ${speed}: started`);
-      test.info().annotations.push({ type: 'seed', description: String(seed) });
+      console.log(`${label}, speed ${speed}: started`);
       let passed = false;
       try {
         const r = await play(pages, names, problems, mulberry32(seed));
+        const ends: string[] = [];
         for (const page of pages) {
-          await expect(page.getByRole('dialog', { name: tr('over.title') })).toBeVisible();
+          ends.push(await game.over(page));
         }
-        const line = `${String(players)} players, seed ${String(seed)}: ${r.seconds.toFixed(0)} s, ${String(r.turns)} turns, ${String(r.steps)} steps, ${String(r.moves)} moves`;
+        const line = `${label}: ${ends[0] ?? ''}; ${r.seconds.toFixed(0)} s, ${String(r.turns)} turns, ${String(r.steps)} steps, ${String(r.moves)} moves`;
         console.log(line);
         test.info().annotations.push({ type: 'game', description: line });
         expect(problems).toEqual([]);
@@ -492,7 +577,7 @@ test.describe('whole random games', () => {
       } finally {
         if (!passed) {
           const kept = keepRecord(names);
-          console.log(`${String(players)} players, seed ${String(seed)}: failed; record ${kept}`);
+          console.log(`${label}: failed; record ${kept}`);
           // A test timeout skips the problems check; print them anyway (19.135).
           for (const p of problems) {
             console.log(`  ${p}`);
