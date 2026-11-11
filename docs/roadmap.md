@@ -215,6 +215,7 @@ Step 20 done (owner, 2026-11-09); its open bugs go to play tests.
 17. Landscape cards as sharp as portrait ones (14.16).
 18. Challenges: a game mode; co-op How the Krampus Stole Christmas (GS-11, 14.17 – 14.26).
 19. Later: solo challenges (14.27), Krampus competitive variant (14.28).
+20. Challenge: Trick or Treat, co-op (14.29 – 14.34).
 
 ## 15. Visual refresh
 

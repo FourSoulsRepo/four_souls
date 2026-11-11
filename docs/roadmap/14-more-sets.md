@@ -855,3 +855,113 @@ Alt art (CD-11) comes after all sets.
 1. Goal: 2–4 players race to kill Pilfering Krampus.
 2. Not now (owner, 2026-11-10).
 3. Rules: personal present slots; the competitive boss card; first kill wins.
+
+### [ ] 14.29 Trick or Treat: rules research
+
+1. Goal: our rules text for the Trick or Treat challenge (GS-11).
+2. Owner (2026-11-11): the second challenge; same scope as Krampus.
+   1. Co-op only, exactly 2 players; Normal, Hard, Ultra Hard.
+   2. The competitive variant waits, like 14.28.
+3. Sources (tools repo `.cache/research/maestro/`, copyrighted):
+   1. `trick-or-treat.pdf` and `.txt`: Maestro Media.
+   2. The general rules: `solo-coop-and-challenge-rules.*` (14.17).
+   3. Site data: `.cache/cards/raw-challenge.json` (14.19).
+   4. Community: `.cache/research/{reddit,x,discord}`.
+4. Facts found (2026-11-11):
+   1. Boss: Mischievous The Haunt; HP 4, evasion 5+, ATK 1; +1 treasure; soul 1.
+   2. Trick counters at start: 12 Normal, 14 Hard, 14 Ultra Hard.
+   3. Guarded while trick counters > souls of all players.
+   4. Fear: a player who takes damage gets a fear counter.
+   5. Ultra Hard: each player gets one instead.
+   6. Monsters: +1 evasion per 2 fear counters on the active player.
+   7. A monster dies: the active player rolls; 4–6: a fear counter off a player.
+   8. Challenge card: one two-sided card, Trick / Treat, all 3 difficulties.
+   9. It starts Trick side up; as each turn starts, it may flip.
+   10. Trick: each kill removes a trick counter from the final boss.
+   11. Trick: attack-start roll; Hard 2 rolls, Ultra Hard 3 rolls.
+   12. Trick rolls: 1–2 damage you take +1; 3–4 gain a revealed monster's abilities.
+   13. Trick rolls: 5–6 the monster's rewards become 1¢; all till end of turn.
+   14. Treat: each gain of rewards removes a fear counter from a player.
+   15. Treat: attack-start roll; 1–2 +3¢, 3–4 +1 loot, 5–6 +1 treasure rewards.
+   16. Goal: the boss dies; loss: only the timer (R-CHAL-15).
+   17. Site cards: `challenge-mischievous_the_haunt-{norm,hard,ultra,comp}`.
+   18. Site cards: `challenge-trick_treat-normhardultra` and `-comp` ("Trick/Treat").
+   19. PDF FAQ: "a player" includes yourself.
+   20. PDF FAQ: an evasion change after the roll resolves does not change hit or miss.
+5. Tasks:
+   1. Topic TRICK in `challenges.md`: R-TRICK-NN, appended after KRAMPUS.
+   2. Search the community sources for Trick or Treat rulings.
+   3. Open cases with proposals (rulings-basis rule), at least:
+      1. Who decides the flip, and is it before or after start-of-turn triggers?
+      2. Who is "you" on the challenge card: the active player, or any player?
+      3. Fear counters: on the player or their character; do they leave on death?
+      4. Several Trick rolls with the same result: do they stack?
+      5. 3–4: abilities gained mid-attack; "when this dies" ones included?
+      6. 1¢ rewards and Treat's added rewards in the same turn: the order.
+      7. Does the regular The Haunt stay in the monster deck (as Q-36)?
+6. Done when:
+   1. Rules test passes; the rules website lists the topic.
+
+### [ ] 14.30 Trick or Treat: card data
+
+1. Goal: the challenge's cards in `card_db`, with images.
+2. Tasks:
+   1. Tools: allow `mischievous_the_haunt_*` and `trick_treat_*` (14.19 list).
+   2. Trick/Treat is two-sided: Trick front, Treat back (ADR 023).
+   3. Check every stat and text against the PDF; overrides for typos.
+   4. cardgen stubs in `cards/challenge/`; set not dealt.
+   5. Images into the private repo; the owner pushes them.
+3. Done when:
+   1. `card_db` validates; `cardgen -report` lists the cards.
+
+### [ ] 14.31 Engine: Trick or Treat blocks
+
+1. Goal: the generic blocks the challenge needs, tested with other cards.
+2. Tasks:
+   1. Counters on players (fear) shown in the view; check existing player counters first.
+   2. Evasion from counters on the active player, for every monster row.
+   3. Attack-start trigger: "at the start of each attack against a monster".
+   4. Till end of turn: added rewards; rewards replaced by 1¢.
+   5. Till end of turn: "damage you would take is increased by 1".
+   6. A monster gains a revealed monster's abilities till end of turn (as Glitch).
+   7. An optional flip of the rule card at turn start (two-sided, ADR 023).
+   8. One shared place each; search all sets for similar effects (CLAUDE.md 5.24).
+3. Done when:
+   1. Engine tests per block; fuzz stays green.
+
+### [ ] 14.32 Engine: Trick or Treat
+
+1. Goal: the challenge plays by its rules, all 3 difficulties.
+2. Tasks:
+   1. `ChallengeDef` `trick_or_treat`: the boss with its trick counters; Trick side up.
+   2. Boss abilities per difficulty; Trick and Treat abilities on the rule card.
+   3. Goal: the boss dies, `WinChallenge`.
+   4. History lines and view for counters, flips and rolls.
+   5. Fuzz and sims play it at every difficulty.
+3. Done when:
+   1. Engine tests per R-TRICK rule and each open case's answer.
+   2. Seeded whole games end in a win and in a loss.
+
+### [ ] 14.33 Client: Trick or Treat
+
+1. Goal: both players see and play the challenge.
+2. Tasks:
+   1. The host screen lists it (from the registry); English name.
+   2. Trick counters on the boss; fear counters by each player.
+   3. The challenge card shows its side up; a flip animation (ADR 012).
+   4. The flip question and the attack-start rolls are answerable and shown.
+   5. Changed rewards and evasion show on the monsters (V-41 breakdown).
+   6. Without card images: text cards.
+3. Done when:
+   1. e2e tests: a flip; fear raises evasion; a kill removes a trick counter.
+   2. Screenshots for review; UC-41 and UC-42 updated.
+
+### [ ] 14.34 Trick or Treat: play-check and docs
+
+1. Goal: whole games in the app; docs match.
+2. Tasks:
+   1. `make e2e-games` plays Trick or Treat at each difficulty.
+   2. Wiki Challenges page: a Trick or Treat section.
+   3. `docs/ideas.md` GS-11: appended progress.
+3. Done when:
+   1. `make e2e-games` passes with the new games.
