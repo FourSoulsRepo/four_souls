@@ -101,7 +101,12 @@ func TestCardSetsSkipChallenges(t *testing.T) {
 // like the card sets (ADR 028, Decision 10.7).
 func TestChallenges(t *testing.T) {
 	got := (&App{}).Challenges()
-	if len(got) != 1 || got[0].ID != "krampus" || !slices.Equal(got[0].Difficulties, []string{"normal", "hard", "ultra"}) {
-		t.Errorf("challenges %+v", got)
+	if len(got) != 2 || got[0].ID != "krampus" || got[1].ID != "trick_or_treat" {
+		t.Fatalf("challenges %+v", got)
+	}
+	for _, c := range got {
+		if !slices.Equal(c.Difficulties, []string{"normal", "hard", "ultra"}) {
+			t.Errorf("%s: difficulties %v", c.ID, c.Difficulties)
+		}
 	}
 }

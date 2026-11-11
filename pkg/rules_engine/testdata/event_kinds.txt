@@ -1,3 +1,4 @@
+abilities_gained
 activated
 attack_declared
 attack_ended

@@ -130,6 +130,23 @@ The generic pieces Trick or Treat needs (14.31; rules R-TRICK-01 to 17, open cas
 * Flip of the rule card: `Flip` also turns the challenge's rule card, which is outside the game; then only its face up has abilities (`CardOf`, ADR 023). `FlipThis()` is the shared "flip this" effect (Anima Sola uses it); "you may" wraps it in `cardkit.May`. `AtStartOfEachTurn()` is the trigger. The view's `ChallengeView.Card` shows the face up with `flipped` (ADR 023, option 5).
 * Triggers 14.32 needs: `WhenAPlayerTakesDamage()` (new; one `damaged` per instance, none when prevented, Q-50), `WhenAMonsterDies()` (`died`, Q-54), and `rewards_gained` once per dead card whose rewards the receiver gains; `len(Rewards(e.Object))` tells whether there were any (Q-54.5).
 
+### Trick or Treat
+
+The second challenge (14.32; rules R-TRICK-01 to 17, open cases Q-43 to Q-54) lives in `cards/challenge`: `trick_or_treat.go` holds `TrickOrTreat` (the `ChallengeDef`, ID `trick_or_treat`), its setup and the shared abilities; the card files build on them. It uses the blocks above and nothing else new but one event.
+
+* Setup (`trickSetup`): `PutInFinalBossSlot` with the difficulty's Mischievous The Haunt, then 12, 14 or 14 `trick` counters on it (`AddNamedCounters`). All three levels share the rule card `trick_treat_normhardultra`, Trick side up. The regular The Haunt stays in the monster deck (Q-49).
+* The boss cards (`haunt`) hold:
+  * `Guarded` while its trick counters exceed `SoulsInPlay` (R-TRICK-06, Q-30); equal is no guard. Boss armor turns an outright kill into 3 damage first, so a guarded boss takes none.
+  * Fear: `WhenAPlayerTakesDamage` puts a `fear` counter on the damaged player, on each player at Ultra Hard; one per instance (R-TRICK-07, Q-50).
+  * `MonstersHavePerCounters(StatMonsterDC, "fear", 2)` (R-TRICK-09, Q-52).
+  * The death roll: on each monster death the active player rolls; 4–6 asks them which player with a fear counter loses one (`card.trick_treat.remove_fear`; no fear anywhere, no question; R-TRICK-10, Q-51).
+* The rule card: both faces hold the optional flip (`AtStartOfEachTurn`, `cardkit.May`, `FlipThis`; the question names the side it would show) and the goal (any Mischievous The Haunt dies: `WinChallenge`), so a flip never drops them. Its triggers are the active player's (Q-44).
+  * Trick: Nobody's Fool (`WhenAMonsterDies`: a trick counter off each final boss; Q-54) and Ghostly Trickery (`AtStartOfAttackOnMonster`, `RollTimes` 1, 2 or 3 by `Challenge.Difficulty`): 1–2 `IncreaseDamageTaken` on the active player, 3–4 `GainRevealedMonster` on the attacked monster, 5–6 `SetRewardsToCents(1)` (Q-46 to Q-48, Q-53).
+  * Treat: You Don't Scare Me (`rewards_gained` of the active player whose dead card has `Rewards`; the same fear question; Q-54) and Hallows' Eve Bounty (one roll at every difficulty: `AddReward` 3¢, loot 1 or 1 treasure).
+* Events: `GainRevealedMonster` now emits `abilities_gained` (Text: the gained card). History lines: fear gained and lost, trick counters off, damage taken up, rewards changed, abilities gained; a flip has its line already.
+* There is no loss of its own: only the timer (R-TRICK-01).
+* Tests: `cards/challenge/*_test.go`, one file per card plus `trick_or_treat_test.go` (setup, whole games), one test per rule and open case, with real cards (Boom Fly gained, Dinga and Blessing of the Sack on 1¢, Daddy Haunt, Chaos Card and Bomb! on the guarded boss), and seeded whole games won and lost. `FuzzChallengeSets` flag bit 3 and `TestSimulations` play it at every difficulty.
+
 ## The run loop must always settle
 
 `run()` keeps doing automatic work (queued actions, triggers, step changes) until the game waits on a prompt. Any path that leaves no prompt and changes nothing spins forever. Rules for new code:

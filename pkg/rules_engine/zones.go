@@ -222,14 +222,21 @@ func (g *Game) RevealUntilMonster(p PlayerID) CardRef {
 	return found
 }
 
+// EvAbilitiesGained means monster Object gained the abilities of the
+// card named by Text (a card ref) till end of turn, for Player
+// (GainRevealedMonster).
+const EvAbilitiesGained EventKind = "abilities_gained"
+
 // GainRevealedMonster makes monster id gain the abilities of the monster
 // card RevealUntilMonster finds, till end of turn (Ghostly Trickery,
 // R-TRICK-13, Q-47). Abilities only: stats, rewards and soul stay its
 // own. Several gains add up (Q-46). It returns the gained card, or "".
+// A gain emits abilities_gained.
 func (g *Game) GainRevealedMonster(id ObjectID, p PlayerID) CardRef {
 	card := g.RevealUntilMonster(p)
 	if card != "" && g.Object(id).Zone.Kind == ZoneInPlay {
 		g.GainAbilities(id, card, GainEndOfTurn)
+		g.emit(Event{Kind: EvAbilitiesGained, Player: p, Object: id, Card: g.Object(id).Card, Text: string(card)})
 	}
 	return card
 }

@@ -1097,6 +1097,18 @@
     "text": "Choose a player or monster.",
     "note": "Card question while Tnt Barrel resolves."
   },
+  "card.trick_treat.flip_to_treat": {
+    "text": "Flip the challenge card to Treat?",
+    "note": "Trick or Treat: as each turn starts, the active player may flip the Trick/Treat card; it now shows Trick."
+  },
+  "card.trick_treat.flip_to_trick": {
+    "text": "Flip the challenge card to Trick?",
+    "note": "Trick or Treat: as each turn starts, the active player may flip the Trick/Treat card; it now shows Treat."
+  },
+  "card.trick_treat.remove_fear": {
+    "text": "Remove a fear counter from which player?",
+    "note": "Trick or Treat: the active player picks a player with a fear counter to lose one (Mischievous The Haunt's roll of 4-6, or the Treat side's You Don't Scare Me)."
+  },
   "card.we_need_to_go_deeper.put_another_monster_card_on": {
     "text": "Put another monster card on top of the deck?",
     "note": "Card question while We Need To Go Deeper! resolves."
@@ -1929,6 +1941,10 @@
     "text": "a loot card",
     "note": "Zoomed history card: a looted card the viewer can't see."
   },
+  "history.abilities_gained": {
+    "text": "{card} gains the abilities of {gained} this turn",
+    "note": "History: Trick or Treat; Ghostly Trickery rolled 3-4: the attacked monster gains a revealed monster's abilities till end of turn. card: the attacked monster; gained: the revealed monster."
+  },
   "history.an_ability": {
     "text": "An ability",
     "note": "History, at the start of a line: an ability with no card to name."
@@ -2064,6 +2080,14 @@
     "text": "You gain the curse {card}",
     "note": "History: a curse came to the viewer."
   },
+  "history.damage_taken.other": {
+    "text": "Damage {player} takes is up by {n} this turn",
+    "note": "History: Trick or Treat; Ghostly Trickery rolled 1-2: each damage the player takes this turn is n more."
+  },
+  "history.damage_taken.you": {
+    "text": "Damage you take is up by {n} this turn",
+    "note": "History: Trick or Treat; Ghostly Trickery rolled 1-2: each damage the viewer takes this turn is n more."
+  },
   "history.death_prevented.other": {
     "text": "{player}'s death is prevented",
     "note": "History: a player's death was prevented."
@@ -2140,6 +2164,34 @@
   "history.extra_turn.you": {
     "text": "You take an extra turn",
     "note": "History: the viewer gets another turn."
+  },
+  "history.fear_gained.other": {
+    "text": {
+      "one": "{player} gets {n} fear counter",
+      "other": "{player} gets {n} fear counters"
+    },
+    "note": "History: Trick or Treat; a player got fear counters (Mischievous The Haunt: a player took damage). n: the counters."
+  },
+  "history.fear_gained.you": {
+    "text": {
+      "one": "You get {n} fear counter",
+      "other": "You get {n} fear counters"
+    },
+    "note": "History: Trick or Treat; the viewer got fear counters (Mischievous The Haunt: a player took damage). n: the counters."
+  },
+  "history.fear_lost.other": {
+    "text": {
+      "one": "{player} loses {n} fear counter",
+      "other": "{player} loses {n} fear counters"
+    },
+    "note": "History: Trick or Treat; a fear counter came off a player (Mischievous The Haunt's roll, or You Don't Scare Me). n: the counters."
+  },
+  "history.fear_lost.you": {
+    "text": {
+      "one": "You lose {n} fear counter",
+      "other": "You lose {n} fear counters"
+    },
+    "note": "History: Trick or Treat; a fear counter came off the viewer (Mischievous The Haunt's roll, or You Don't Scare Me). n: the counters."
   },
   "history.first_roll.other": {
     "text": "{player} rolls {n} for the first player",
@@ -2390,6 +2442,22 @@
     "text": "You gain the rewards of {card}",
     "note": "History: the viewer killed a monster and gains its rewards."
   },
+  "history.rewards_changed.cents": {
+    "text": "{card}'s rewards get {n}¢ more this turn",
+    "note": "History: Trick or Treat; Hallows' Eve Bounty added n¢ to the attacked monster's rewards till end of turn. card: the monster."
+  },
+  "history.rewards_changed.loot": {
+    "text": "{card}'s rewards get loot {n} more this turn",
+    "note": "History: Trick or Treat; Hallows' Eve Bounty added loot n to the attacked monster's rewards till end of turn. card: the monster."
+  },
+  "history.rewards_changed.set": {
+    "text": "{card}'s rewards become {n}¢ this turn",
+    "note": "History: Trick or Treat; Ghostly Trickery rolled 5-6: the attacked monster's rewards are only n¢ till end of turn. card: the monster."
+  },
+  "history.rewards_changed.treasure": {
+    "text": "{card}'s rewards get {n} treasure more this turn",
+    "note": "History: Trick or Treat; Hallows' Eve Bounty added n treasure to the attacked monster's rewards till end of turn. card: the monster."
+  },
   "history.roll": {
     "text": "Roll",
     "note": "History: a resolved roll with no card to name."
@@ -2503,6 +2571,13 @@
   "history.top_kept.you": {
     "text": "You keep {card} on top",
     "note": "History: the viewer looked at a deck's top card and left it there."
+  },
+  "history.trick_counters": {
+    "text": {
+      "one": "{card} loses {n} trick counter",
+      "other": "{card} loses {n} trick counters"
+    },
+    "note": "History: Trick or Treat; a monster died, so a trick counter came off the final boss (Nobody's Fool). card: the boss; n: the counters."
   },
   "history.turn": {
     "text": "Turn {n}: {player}",

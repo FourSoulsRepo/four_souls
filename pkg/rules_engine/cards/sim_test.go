@@ -48,6 +48,19 @@ func TestSimulations(t *testing.T) {
 		}
 	}
 	t.Logf("Krampus: %d won, %d lost", won, lost)
+	// Trick or Treat at every difficulty (14.32): as many as Krampus.
+	won, lost = 0, 0
+	for i := range max(games/4, 3) {
+		g, n := simulate(t, trickSetup(uint64(i+1), krampusLevels[i%3]))
+		steps += n
+		switch {
+		case g.Over && g.Challenge.Lost:
+			lost++
+		case g.Over:
+			won++
+		}
+	}
+	t.Logf("Trick or Treat: %d won, %d lost", won, lost)
 }
 
 // krampusLevels are the Krampus difficulties (R-KRAMPUS-02).
@@ -59,6 +72,14 @@ func krampusSetup(seed uint64, difficulty string) engine.Setup {
 		Seed: seed, Players: 2, Sets: append(Sets(), challenge.Set), Rooms: seed%2 == 1,
 		Challenge: &challenge.Krampus, Difficulty: difficulty,
 	}
+}
+
+// trickSetup is a Trick or Treat challenge game (14.32); its
+// difficulties are Krampus's (R-TRICK-02).
+func trickSetup(seed uint64, difficulty string) engine.Setup {
+	s := krampusSetup(seed, difficulty)
+	s.Challenge = &challenge.TrickOrTreat
+	return s
 }
 
 // simulate plays one game; it returns the game and its length.

@@ -1008,7 +1008,7 @@ Alt art (CD-11) comes after all sets.
    11. Tests: `cards/trick_blocks_test.go`, one test or two per block.
    12. ADR 028 got small drift items: Decision 5.15–5.16, 6.11, 9.6–9.7.
 
-### [ ] 14.32 Engine: Trick or Treat
+### [x] 14.32 Engine: Trick or Treat
 
 1. Goal: the challenge plays by its rules, all 3 difficulties.
 2. Tasks:
@@ -1020,6 +1020,37 @@ Alt art (CD-11) comes after all sets.
 3. Done when:
    1. Engine tests per R-TRICK rule and each open case's answer.
    2. Seeded whole games end in a win and in a loss.
+4. Result (2026-11-11):
+   1. `cards/challenge/trick_or_treat.go`: `TrickOrTreat`, setup, shared abilities.
+   2. ID `trick_or_treat`; `cards.Challenges()` lists it after Krampus.
+   3. Setup: the boss via `PutInFinalBossSlot`, then 12/14/14 `trick` counters.
+   4. One rule card for all levels; Trick side up.
+   5. Boss cards (`haunt`):
+      1. `Guarded` while trick counters > `SoulsInPlay` (Q-30).
+      2. Fear per damage instance; Ultra Hard on each player (Q-50).
+      3. `MonstersHavePerCounters` fear evasion (Q-52).
+      4. Death roll: 4–6 asks the active player who loses a fear counter (Q-51).
+   6. Rule card, both faces: the optional flip and the goal.
+   7. Trick: Nobody's Fool; Ghostly Trickery 1/2/3 rolls by `Challenge.Difficulty`.
+   8. Treat: You Don't Scare Me; Hallows' Eve Bounty, one roll.
+   9. New event `abilities_gained` from `GainRevealedMonster`.
+   10. History lines: fear gained and lost, trick counters off.
+   11. Also: damage taken up, rewards changed, abilities gained.
+   12. Keys: `card.trick_treat.{flip_to_treat,flip_to_trick,remove_fear}`.
+   13. Decisions left open by the docs:
+       1. The flip question names the side it would show.
+       2. The fear question opens only for players with fear; none, none.
+       3. Nobody's Fool takes a counter off each final boss in play.
+       4. The goal matches any of the three boss cards.
+   14. Tests: one file per card, plus `trick_or_treat_test.go`.
+       1. One test per R-TRICK rule and open case; real-card mixes.
+       2. Boom Fly gained, Dinga, Blessing of the Sack, Daddy Haunt.
+       3. Chaos Card and Bomb! against the guard and the armor.
+   15. Whole games: greedy seeds with 3 souls and 4 tricks won; random ones lost.
+   16. Fuzz: `FuzzChallengeSets` flag bit 3; `TestSimulations` plays it too.
+   17. ADR 028 got small drift items: Decision 3.9, 6.12.
+   18. The host screen lists the ID; its English name comes in 14.33.
+   19. e2e: run 1 hit the known aim flake (19.107, item 2.6); run 2 passed.
 
 ### [ ] 14.33 Client: Trick or Treat
 

@@ -32,7 +32,7 @@ func Find(code string) (engine.CardSet, bool) {
 // Each one's cards are in the set its Set names, which Find does not
 // list: the caller adds it to the game's sets.
 func Challenges() []*engine.ChallengeDef {
-	return []*engine.ChallengeDef{&challenge.Krampus}
+	return []*engine.ChallengeDef{&challenge.Krampus, &challenge.TrickOrTreat}
 }
 
 // FindChallenge returns the challenge with the given ID, e.g. "krampus".

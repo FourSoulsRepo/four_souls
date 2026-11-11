@@ -120,4 +120,5 @@ var barrierKinds = map[EventKind]bool{
 	EvPlayerCounters:   false,
 	EvAttackStart:      false, // a trigger moment; its rolls are barriers
 	EvRewardsChanged:   false,
+	EvAbilitiesGained:  false, // its card_revealed events are the barriers
 }

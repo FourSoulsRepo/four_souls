@@ -67,19 +67,20 @@ const told = 'line';
 // missing here fails history.test.ts, so no play goes untold.
 export const historyKinds: Record<string, string> = {
   activated: 'Its stack item resolves as a line, or is cancelled.',
+  abilities_gained: told,
   attack_declared: told,
   attack_ended: 'The rolls, the damage and the kill tell how it ended.',
   attack_roll_repeated: 'A trigger cause; the trigger resolves as a line.',
   attack_start: 'A trigger moment; attack_target has the line, its triggers resolve as lines.',
   attack_target: told,
-  boosted: 'The boosting card resolves as a line; the card shows its stats.',
+  boosted: told,
   cancelled: told,
   card_revealed: 'The table shows it; an attack on it names it.',
   challenge_lost: told,
   challenge_timer: told,
   challenge_won: told,
   character_dealt: 'Setup: the pick screen shows the characters.',
-  counters: 'The card shows its counters (15.23).',
+  counters: told,
   cursed: told,
   damage_pending: 'A stack item; it resolves as a line.',
   damaged: 'The damage stack item resolves as a line.',
@@ -120,7 +121,7 @@ export const historyKinds: Record<string, string> = {
   passed_priority: 'Passing is no play.',
   penalty_paid: told,
   phase: 'The turn badge shows the step.',
-  player_counters: 'The causing card resolves as a line; the player shows the counters.',
+  player_counters: told,
   present_counters: told,
   present_destroyed: told,
   present_given: told,
@@ -132,7 +133,7 @@ export const historyKinds: Record<string, string> = {
   random_pick: 'Its card resolves as a line, with the results after it.',
   recharged: 'The table shows charged cards.',
   replaced: 'The results that replace the event have their lines.',
-  rewards_changed: 'The causing card resolves as a line; the monster shows its rewards.',
+  rewards_changed: told,
   rewards_gained: told,
   roll_changed: "The roll's line shows the change.",
   roll_repeated: 'A trigger cause; the trigger resolves as a line.',
@@ -359,6 +360,50 @@ export function entriesFor(events: GameEvent[], turn: number, you: number, n: Na
         if ((e.amount ?? 0) < 0) {
           add('🎁', t('history.present_counters', { present: presentName(e.text), n: -(e.amount ?? 0) }));
         }
+        break;
+      // Trick or Treat (R-TRICK, 14.32): fear on players, trick counters
+      // off the boss, and what the attack-start rolls did. Other counters
+      // and boosts show on their cards only (15.23).
+      case 'player_counters': {
+        const k = Math.abs(e.amount ?? 0);
+        if (e.text === 'fear' && (e.amount ?? 0) > 0) {
+          add('👻', mine(e.player) ? t('history.fear_gained.you', { n: k }) : t('history.fear_gained.other', { player, n: k }));
+        } else if (e.text === 'fear') {
+          add('👻', mine(e.player) ? t('history.fear_lost.you', { n: k }) : t('history.fear_lost.other', { player, n: k }));
+        }
+        break;
+      }
+      case 'counters':
+        if (e.text === 'trick' && (e.amount ?? 0) < 0) {
+          add('🎃', t('history.trick_counters', { card, n: -(e.amount ?? 0) }), e.card);
+        }
+        break;
+      case 'boosted':
+        if (e.text === 'damage taken') {
+          const k = e.amount ?? 0;
+          add('🎃', mine(e.player) ? t('history.damage_taken.you', { n: k }) : t('history.damage_taken.other', { player, n: k }));
+        }
+        break;
+      case 'rewards_changed': {
+        const k = e.amount ?? 0;
+        switch (e.text) {
+          case 'set cents':
+            add('🎃', t('history.rewards_changed.set', { card, n: k }), e.card);
+            break;
+          case 'add loot':
+            add('🎃', t('history.rewards_changed.loot', { card, n: k }), e.card);
+            break;
+          case 'add treasure':
+            add('🎃', t('history.rewards_changed.treasure', { card, n: k }), e.card);
+            break;
+          default:
+            add('🎃', t('history.rewards_changed.cents', { card, n: k }), e.card);
+        }
+        break;
+      }
+      case 'abilities_gained':
+        // text is the card whose abilities the monster gained.
+        add('🎃', t('history.abilities_gained', { card, gained: n.card(e.text ?? '') }), e.card);
         break;
       case 'present_destroyed':
         add('🎁', t('history.present_destroyed', { present: presentName(e.text), card }), e.card);

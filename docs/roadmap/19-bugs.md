@@ -3440,6 +3440,9 @@ Totals by system (148 items):
    3. The second full run of the same tree passed (388 of 388).
    4. Passes alone: 1 of 1 rerun, webkit.
    5. Evidence: `.cache/e2e-evidence/19.107-aim-webkit/` (not in git).
+   6. Again (agent, 2026-11-11, 14.32), chromium, full run: 533 passed, this one failed.
+   7. `expect(arrow).toHaveCount(0)` at `aim.spec.ts:470`: the arrow stayed after the cancel.
+   8. Evidence: `.cache/e2e-evidence/14.32-run1/` (not in git).
 3. Cause
    1. Not found yet.
 4. Tasks:

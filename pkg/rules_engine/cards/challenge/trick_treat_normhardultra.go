@@ -10,16 +10,17 @@ import engine "github.com/FourSoulsRepo/rules_engine"
 //	1-2: Damage you would take is increased by 1 till end of turn.
 //	3-4: Reveal cards from the top of the monster deck until you reveal a non-event monster card. The monster being attacked gains its abilities till end of turn. Put any revealed cards on the bottom of the deck.
 //	5-6: The rewards of that monster become 1¢ till end of turn.
-//
-// TODO(card): implement the text above, then delete this line.
-// Until then `go run ./cmd/cardgen` rewrites this file from card_db.
-// A question or option it asks is a key, engine.NewKey("card.trick_treat_normhardultra.<name>"),
-// with its words and a note in frontend/src/locales/en.json (ADR 021).
 var trickTreatNormhardultra = engine.CardDef{
 	Ref:    "trick_treat_normhardultra",
 	Kind:   engine.ChallengeCard,
 	Copies: 1,
 	Back:   "treat_normhardultra",
+	Abilities: []engine.Ability{
+		trickOrTreating(flipToTreatAsk),
+		nobodysFool,
+		ghostlyTrickery,
+		trickGoal,
+	},
 }
 
 // treatNormhardultra is the back of trick_treat_normhardultra: Treat.
@@ -34,4 +35,10 @@ var treatNormhardultra = engine.CardDef{
 	Ref:     "treat_normhardultra",
 	Kind:    engine.ChallengeCard,
 	Outside: true,
+	Abilities: []engine.Ability{
+		trickOrTreating(flipToTrickAsk),
+		youDontScareMe,
+		hallowsEveBounty,
+		trickGoal,
+	},
 }

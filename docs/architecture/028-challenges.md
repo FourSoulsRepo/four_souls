@@ -81,6 +81,9 @@ Use options 1, 4 and 5.
    6. `ChallengeDef.Set` is the code of its card set.
    7. `ChallengeDef.Levels`: difficulty, boss and rule card each.
    8. Krampus's ID is `krampus`.
+   9. Trick or Treat's ID is `trick_or_treat` (14.32).
+      1. All three levels name the one rule card `trick_treat_normhardultra`.
+      2. Its setup: the boss with its `trick` counters (12, 14, 14).
 4. Engine setup
    1. `Setup.Challenge *ChallengeDef` and `Setup.Difficulty string`.
    2. Difficulties: `normal`, `hard`, `ultra`.
@@ -123,6 +126,11 @@ Use options 1, 4 and 5.
        5. `GainRevealedMonster`; `GainAbilities` adds gains up (Q-46, Q-47).
        6. `Flip` also turns the rule card; `FlipThis`, `AtStartOfEachTurn`.
        7. `WhenAPlayerTakesDamage`: one trigger per instance (Q-50).
+   12. Trick or Treat (14.32):
+       1. Boss cards: `Guarded` by trick counters, fear, fear evasion, the death roll.
+       2. Both rule card faces hold the flip and the goal.
+       3. Ghostly Trickery reads `Challenge.Difficulty` for its roll count.
+       4. `GainRevealedMonster` emits `abilities_gained` for the history.
 7. Slot rows
    1. New `SlotKind`s: `FinalBossSlot`, `MinionSlot`.
    2. `Game.Bosses` and `Game.Minions`, each `[]Slot`.
