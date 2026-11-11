@@ -89,6 +89,17 @@ func TestGenerateChallenge(t *testing.T) {
 	if !strings.Contains(rule, "Kind:   engine.ChallengeCard") || strings.Contains(rule, "Outside") {
 		t.Errorf("rule card:\n%s", rule)
 	}
+	// A two-sided card links its back and defines it in the same file;
+	// the set list ends with the backs (ADR 023).
+	trick := src["trick_treat_normhardultra.go"]
+	for _, want := range []string{`Back:   "treat_normhardultra"`, "var treatNormhardultra = engine.CardDef{", "Add 3¢ to the rewards"} {
+		if !strings.Contains(trick, want) {
+			t.Errorf("Trick/Treat lacks %q:\n%s", want, trick)
+		}
+	}
+	if list := src[setFile]; !strings.HasSuffix(strings.TrimSpace(list), "treatComp,\n\t\ttreatNormhardultra,\n\t},\n}") {
+		t.Errorf("set list:\n%s", list)
+	}
 }
 
 func TestWriteKeepsFinishedCards(t *testing.T) {

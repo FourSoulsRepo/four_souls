@@ -247,6 +247,9 @@ var Set = engine.CardSet{
 		whiteChampions,
 		wishbone,
 		xRayVision,
+		theRevenant,
+		amgineEht,
+		theBeast,
 	},
 	Reprints: []engine.Reprint{
 		{Ref: "a_nickel", Copies: 1},

@@ -19,6 +19,7 @@ import (
 	"github.com/FourSoulsRepo/record"
 	engine "github.com/FourSoulsRepo/rules_engine"
 	"github.com/FourSoulsRepo/rules_engine/cards"
+	"github.com/FourSoulsRepo/rules_engine/cards/challenge"
 )
 
 // TestRecordReplays: a game's record replays in the engine with every
@@ -183,7 +184,7 @@ func TestBackFacesMatchCardData(t *testing.T) {
 		t.Fatal(err)
 	}
 	engineBacks := map[string]string{}
-	for _, set := range cards.Sets() {
+	for _, set := range append(cards.Sets(), challenge.Set) {
 		for _, d := range set.Cards {
 			if d.Back != "" {
 				engineBacks[string(d.Ref)] = string(d.Back)

@@ -914,7 +914,7 @@ Alt art (CD-11) comes after all sets.
    10. Community: only Yuggy's launch post (2022-11-01), no rulings.
    11. Nothing on Trick or Treat in S-RED digest, S-X or S-DIS.
 
-### [ ] 14.30 Trick or Treat: card data
+### [x] 14.30 Trick or Treat: card data
 
 1. Goal: the challenge's cards in `card_db`, with images.
 2. Tasks:
@@ -925,6 +925,27 @@ Alt art (CD-11) comes after all sets.
    5. Images into the private repo; the owner pushes them.
 3. Done when:
    1. `card_db` validates; `cardgen -report` lists the cards.
+4. Result (2026-11-11):
+   1. Site data from 14.19's `raw-challenge.json`; no new scrape.
+   2. `data/challenge.json`: 14 cards; 6 new.
+   3. Bosses: `mischievous_the_haunt_{norm,hard,ultra,comp}`, `Challenge Boss Card`.
+   4. Rule cards: `trick_treat_{normhardultra,comp}`, `Challenge Card`.
+   5. Trick is the front; backs `treat_normhardultra`, `treat_comp` (ADR 023).
+   6. Tools: a back's id keeps the slug's variant; else both were `treat`.
+   7. Stats match R-TRICK-03: HP 4, 5+, ATK 1, +1 treasure, soul 1.
+   8. Trick counters 12 / 14 / 14; Ultra Hard fear on each player.
+   9. Overrides from the printed cards (`overrides/challenge.json`):
+      1. Ultra, comp: "Mischievous the Haunt"; printed as the others, "The".
+      2. Trick/Treat: the site packs a side in one effect; split per printed ability.
+      3. Comp Treat: "squal" is "equal".
+      4. Comp Treat: "5-6" on its own line, as printed.
+   10. cardgen: a two-sided card's stub defines its back too (ADR 023).
+       1. The set list ends with the backs.
+       2. Requiem's `r/backs.go` is gone; its set list has them now.
+   11. Stubs in `cards/challenge/`; abilities in 14.32.
+   12. Tests: Haunt stats, Trick/Treat backs, never dealt, backs match card_db.
+   13. Images: 8 landscape WebP files, 839×600, in `images/en/challenge/`.
+   14. They wait in the private repo for the owner's amend and push.
 
 ### [ ] 14.31 Engine: Trick or Treat blocks
 

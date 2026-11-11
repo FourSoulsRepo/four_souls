@@ -60,8 +60,33 @@ func TestKrampusCards(t *testing.T) {
 	if _, deck := engine.ChallengeCard.Deck(); deck {
 		t.Error("a rule card has a deck")
 	}
-	if len(defs) != 8 {
-		t.Errorf("%d challenge cards, want 8", len(defs))
+	if len(defs) != 16 {
+		t.Errorf("%d challenge cards, want 16: Krampus 8, Trick or Treat 6 and 2 backs", len(defs))
+	}
+}
+
+// R-TRICK-03: Mischievous The Haunt by difficulty; Trick/Treat is one
+// two-sided rule card, Treat its back (R-TRICK-02, ADR 023).
+func TestTrickOrTreatCards(t *testing.T) {
+	defs := map[engine.CardRef]engine.CardDef{}
+	for _, d := range challenge.Set.Cards {
+		defs[d.Ref] = d
+	}
+	want := []engine.Reward{{Kind: engine.RewardTreasure, Amount: 1}}
+	for _, diff := range []string{"norm", "hard", "ultra", "comp"} {
+		ref := engine.CardRef("mischievous_the_haunt_" + diff)
+		d, ok := defs[ref]
+		if !ok || d.Kind != engine.MonsterCard || !d.Outside || d.HP != 4 || d.DC != 5 || d.ATK != 1 ||
+			d.Soul != 1 || !slices.Equal(d.Rewards, want) {
+			t.Errorf("%s = %+v", ref, d)
+		}
+	}
+	for _, v := range []string{"normhardultra", "comp"} {
+		front, back := defs[engine.CardRef("trick_treat_"+v)], defs[engine.CardRef("treat_"+v)]
+		if front.Kind != engine.ChallengeCard || front.Back != back.Ref || back.Ref == "" ||
+			back.Kind != engine.ChallengeCard || !back.Outside {
+			t.Errorf("%s: front %+v, back %+v", v, front, back)
+		}
 	}
 }
 

@@ -62,6 +62,8 @@ Use options 1 and 5.
    7. An override's `back` key replaces the whole back.
    8. `images` writes the back to `<set>/<back id>.webp`.
    9. `ru-names` splits the Russian name the same way.
+   10. A challenge slug's variant goes on the back's id.
+       1. `challenge-trick_treat-comp`: back `treat_comp` (14.30).
 3. Engine view
    1. `card` is the face up: the back's ref when flipped.
    2. `flipped: true` marks the back up.
@@ -71,6 +73,9 @@ Use options 1 and 5.
    3. The zoom shows both faces.
    4. A card whose `card` turns to its other face plays a flip.
    5. The flip is `anim: card-flip` (ADR 012).
+5. cardgen
+   1. A front's stub sets `Back` and defines the back in the same file.
+   2. The set list ends with the backs, in the fronts' order.
 
 ## Consequences
 

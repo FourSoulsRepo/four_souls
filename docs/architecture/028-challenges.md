@@ -65,6 +65,10 @@ Use options 1, 4 and 5.
    10. Tools: `gameCards` lists the cards the game takes; one copy each.
    11. Set order 5, released 2022-12 (ADR 010).
    12. Images are landscape, 839×600.
+   13. Trick or Treat: `mischievous_the_haunt_{norm,hard,ultra,comp}`.
+   14. Its rule card: `trick_treat_{normhardultra,comp}`, two-sided (ADR 023).
+       1. Trick is the front; the backs are `treat_normhardultra`, `treat_comp`.
+       2. `normhardultra` serves all three co-op difficulties.
 2. Engine kinds
    1. A boss is a `MonsterCard` with `Outside`: never in a deck.
    2. A rule card is a new kind `ChallengeCard`: no deck, never dealt.
@@ -185,5 +189,5 @@ Use options 1, 4 and 5.
 
 ### Neutral
 
-1. The 75 other challenge cards stay out of card_db until their challenge.
+1. The 69 other challenge cards stay out of card_db until their challenge.
 2. Plain co-op without a challenge is not offered (R-COOP-12).
