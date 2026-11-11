@@ -383,6 +383,7 @@ On 2026-10-09 the owner parked every open decision for later.
    2. Checked whenever a soul total changes, like the win check (R-WIN-02).
 4. Status: **Owner** (2026-11-10): keep the proposal for now; the engine may use it.
 5. Basis: **Official**: R-CARD-21 applies to every count of souls.
+6. Trick or Treat counts souls the same way: R-TRICK-06 (2026-11-11).
 
 ### Q-31 Normal Krampus: the forced attack on a random minion
 
@@ -554,6 +555,211 @@ On 2026-10-09 the owner parked every open decision for later.
 3. Proposal: yes; each player sees the partner's hand. Spectators follow their usual view.
 4. Status: **Owner** (2026-11-10): keep the proposal for now; the engine may use it.
 5. Basis: **House**: the rules allow it; the choice is ours.
+
+### Q-43 Trick or Treating: who flips, and when
+
+1. Question: "As each turn starts, you may flip this."
+   1. Who decides the flip?
+   2. Before or after other start-of-turn triggers?
+   3. Rule: R-TRICK-11.
+2. Sources:
+   1. S-MAE: the rules page and both sides of the co-op card.
+   2. The competitive card has a vote instead; co-op has none.
+   3. No ruling found: S-YUG, S-RED, S-X, S-DIS (2026-11-11).
+3. Proposal:
+   1. A start-of-turn trigger of the card (R-TURN-03), every turn, the first one too.
+   2. It goes on the stack with the other start-of-turn triggers.
+   3. The active player orders it among their own triggers, as usual.
+   4. The active player decides when it resolves: flip, or keep the side.
+   5. Before the loot step (R-TURN-04); the side then holds all turn.
+   6. "Till end of turn" results of the old side end with the turn as usual.
+4. Status: **Owner** (2026-11-11): keep the proposal for now; the engine may use it.
+5. Basis: **House**: no ruling found.
+
+### Q-44 "You" on the Trick/Treat card
+
+1. Question: who is "you" in "you may flip", "you kill", "you gain rewards", "damage you would take"?
+   1. Rules: R-TRICK-05, R-TRICK-11 to R-TRICK-14.
+2. Sources:
+   1. S-MAE: the card names no player; the rules say "you" to the players.
+   2. R-CARD-10: "you" on a monster card is the active player.
+   3. R-CARD-36: a room naming no player means the active player.
+   4. The Ghostly Trickery roll is made by "the active player".
+   5. No ruling found: S-YUG, S-RED, S-X, S-DIS (2026-11-11).
+3. Proposal:
+   1. "You" is the active player, as on monsters and rooms.
+   2. The card is not in play and nobody controls it.
+   3. No other ability can choose it, flip it or copy it.
+4. Status: **Owner** (2026-11-11): keep the proposal for now; the engine may use it.
+5. Basis: **House**: follows R-CARD-10 and R-CARD-36; no ruling for challenge cards.
+
+### Q-45 Fear counters: player or character; after a death
+
+1. Question: are fear counters on the player or their character?
+   1. Do they stay when the player dies?
+   2. Rules: R-TRICK-07, R-TRICK-08.
+2. Sources:
+   1. S-MAE: "put a fear counter on them" (a player).
+   2. S-OFF Counters: counters on a player stay when the character changes (R-MECH-13).
+   3. S-OFF: counters go when an object leaves play; a player never does.
+   4. The competitive boss puts a counter on a player who dies; it must stay.
+3. Proposal:
+   1. On the player; they stay on a death and on a character change.
+   2. Only R-TRICK-10 and R-TRICK-14 remove them; never below 0.
+   3. The view shows each player's fear counters.
+4. Status: **Owner** (2026-11-11): keep the proposal for now; the engine may use it.
+5. Basis: **Official**: S-OFF counter rules.
+
+### Q-46 Several Ghostly Trickery rolls
+
+1. Question: Hard rolls 2 times, Ultra Hard 3 times; do equal results stack?
+   1. Rule: R-TRICK-13.
+2. Sources: S-MAE only; no ruling found (2026-11-11).
+3. Proposal:
+   1. The rolls come one at a time; each resolves fully first (as Q-41).
+   2. Each roll is a non-attack roll of the active player; dice effects may change it.
+   3. 1–2 twice: +2 damage on each instance the active player takes.
+   4. 3–4 twice: two reveals; the monster gains both monsters' abilities.
+   5. 5–6 twice: the rewards are still 1¢.
+   6. Each attack against a monster rolls anew, extra attacks too.
+   7. Hallows' Eve Bounty (Treat) rolls once on every difficulty: its text has no extra rolls.
+4. Status: **Owner** (2026-11-11): keep the proposal for now; the engine may use it.
+5. Basis: **House**: no ruling found.
+
+### Q-47 Ghostly Trickery 3–4: gaining a revealed monster's abilities
+
+1. Question: which abilities does the attacked monster gain, mid-attack?
+   1. "When this dies" ones too?
+   2. Rule: R-TRICK-13.
+2. Sources:
+   1. S-MAE: "gains its abilities till end of turn".
+   2. R-ABIL-38 and Yuggy on Glitch: gaining keeps the object's own abilities.
+   3. Yuggy on Keeper's Sack: gaining abilities is not gaining the card.
+   4. No ruling found on this card: S-YUG, S-RED, S-X, S-DIS (2026-11-11).
+3. Proposal:
+   1. It gains every ability in the revealed card's text box, triggered ones included.
+   2. Stats, reward box and soul icon are not abilities; they stay.
+   3. Gained "when this dies" abilities trigger if it dies this turn.
+   4. Triggers whose moment has passed ("when an attack is declared on this") do not fire for this attack.
+   5. A gained "can't be attacked" does not stop the attack already going on.
+   6. Events revealed on the way do nothing; they are only revealed.
+   7. An empty deck refills as usual (R-ZONE-05).
+   8. With no non-event monster left in deck and discard, nothing is gained.
+   9. Every revealed card goes to the bottom in random order (Q-22).
+   10. The gain ends at the end of the turn, or when the monster leaves play.
+4. Status: **Owner** (2026-11-11): keep the proposal for now; the engine may use it.
+5. Basis: **House**: built on the Glitch rulings (R-ABIL-38).
+
+### Q-48 Rewards set to 1¢ and rewards added in one turn
+
+1. Question: in what order do "become 1¢" and "add to the rewards" apply?
+   1. Rules: R-TRICK-13, R-TRICK-15.
+2. Sources:
+   1. S-MAE: both last till end of turn.
+   2. The card flips only as a turn starts, so both sides never act in one turn.
+   3. Other cards may still add rewards in a Trick turn.
+   4. No ruling found: S-YUG, S-RED, S-X, S-DIS (2026-11-11).
+3. Proposal:
+   1. Changes apply in the order they were made.
+   2. "Become 1¢" replaces the whole reward, with every earlier addition.
+   3. Additions made after it add to the 1¢.
+   4. The soul icon is not a reward; a boss still gives its soul.
+   5. A monster without rewards gets the added reward as its only one.
+   6. Several Hallows' Eve Bounty results on one monster all add up.
+4. Status: **Owner** (2026-11-11): keep the proposal for now; the engine may use it.
+5. Basis: **House**: no ruling found.
+
+### Q-49 The regular The Haunt in the monster deck
+
+1. Question: does The Haunt (Base Game V2) stay in the monster deck?
+   1. S-MAE lets the regular card stand in for the boss, which takes it out.
+2. Sources:
+   1. S-YUG (Reddit jt1j1gn, jt1ifgy): no strict rule, said of every challenge.
+   2. A stand-in is removed; with printed boss cards the normal one stays.
+3. Proposal: it stays; the game has the real Mischievous The Haunt card (as Q-36).
+4. Status: **Owner** (2026-11-11): keep the proposal for now; the engine may use it.
+5. Basis: **Official**: Yuggy, said of every challenge.
+
+### Q-50 Fear counters per instance of damage
+
+1. Question: "each time a player takes damage": one counter, or one per point?
+   1. Rule: R-TRICK-07.
+2. Sources: S-MAE only; no ruling found (2026-11-11).
+3. Proposal:
+   1. One fear counter per instance of damage, whatever its amount.
+   2. Prevented damage (0 taken) adds none.
+   3. Combat and non-combat damage both count.
+   4. Ultra Hard: each instance puts one counter on each player.
+   5. A trigger of the boss; it uses the stack like other damage triggers.
+4. Status: **Owner** (2026-11-11): keep the proposal for now; the engine may use it.
+5. Basis: **House**: "each time" read as per instance; no ruling found.
+
+### Q-51 Who picks "a player" to lose a fear counter
+
+1. Question: R-TRICK-10 and R-TRICK-14 remove "a fear counter from a player"; who picks?
+2. Sources:
+   1. S-MAE FAQ: "a player" includes you.
+   2. The competitive boss: "the active player chooses a player".
+   3. No co-op ruling found: S-YUG, S-RED, S-X, S-DIS (2026-11-11).
+3. Proposal:
+   1. The active player picks, when the ability resolves.
+   2. Only a player with a fear counter can be picked.
+   3. With no fear counters anywhere, nothing happens.
+4. Status: **Owner** (2026-11-11): keep the proposal for now; the engine may use it.
+5. Basis: **House**: after the competitive card's wording.
+
+### Q-52 Fear evasion: which monsters, the cap, the moment
+
+1. Question: which monsters get +1 evasion, and when is it read?
+   1. Rule: R-TRICK-09.
+2. Sources:
+   1. S-MAE FAQ: a change after the attack roll resolves does not change hit or miss.
+   2. R-CHAL-03: a final boss is a monster.
+   3. R-ATK-18: evasion is between 1 and 6.
+3. Proposal:
+   1. Every monster in play: monster slots, the final boss, a revealed monster.
+   2. +1 for every 2 fear counters on the active player (rounded down).
+   3. Only the active player's counters count.
+   4. Capped at 6.
+   5. Read when each attack roll resolves.
+4. Status: **Owner** (2026-11-11): keep the proposal for now; the engine may use it.
+5. Basis: **Official**: S-MAE FAQ and the general rules.
+
+### Q-53 "At the start of each attack against a monster"
+
+1. Question: when do the Trick and Treat rolls happen, and for which attacks?
+   1. Rules: R-TRICK-13, R-TRICK-15.
+2. Sources:
+   1. S-MAE only; no ruling found (2026-11-11).
+   2. R-ATK-05: "an attack on a monster" applies once a deck attack reveals one.
+   3. R-ATK-25: target triggers resolve before the first attack roll.
+3. Proposal:
+   1. It triggers once the attack has a monster target, before the first attack roll.
+   2. A deck attack: once the revealed non-event monster is in its slot.
+   3. A deck attack that reveals an event: no roll.
+   4. The final boss counts; attacks on players or non-monster objects do not.
+   5. It goes on the stack below the target's own triggers; those resolve first.
+   6. The first attack roll waits until the stack is empty (R-ATK-25).
+4. Status: **Owner** (2026-11-11): keep the proposal for now; the engine may use it.
+5. Basis: **House**: no ruling found.
+
+### Q-54 "Each time you kill a monster" and "each time you gain rewards"
+
+1. Question: what counts for Nobody's Fool (Trick) and You Don't Scare Me (Treat)?
+   1. Rules: R-TRICK-12, R-TRICK-14.
+2. Sources:
+   1. S-OFF: the active player gains the rewards whoever killed the monster.
+   2. "You" is the active player (Q-44).
+   3. No ruling found: S-YUG, S-RED, S-X, S-DIS (2026-11-11).
+3. Proposal:
+   1. Nobody's Fool: every monster death counts, in an attack or not, whoever dealt the damage.
+   2. A death that is prevented or cancelled does not count.
+   3. You Don't Scare Me: once per death whose rewards the active player gains.
+   4. A reward with several parts (¢ and loot) still counts once.
+   5. A monster with no rewards gives no removal.
+   6. Rewards of other objects with a reward box count too (R-CARD-31).
+4. Status: **Owner** (2026-11-11): keep the proposal for now; the engine may use it.
+5. Basis: **House**: no ruling found.
 
 ## Old rulings re-checked (R-07)
 
@@ -730,3 +936,12 @@ Every row of "Card rulings from Discord (S-DIS)" is Community too.
 | Q-40 | Pilfering Krampus | Presents not in play; flip ¢, loot, treasure, soul | House |
 | Q-41 | Pilfering Krampus (Hard, Ultra Hard) | Minions counted once, before the first roll | House |
 | Q-42 | Co-op | Partners see each other's hands | House |
+| Q-43 | Trick/Treat | The active player may flip it as a start-of-turn trigger | House |
+| Q-44 | Trick/Treat | "You" is the active player; the card is not in play | House |
+| Q-46 | Trick/Treat (Hard, Ultra Hard) | Rolls one at a time; equal results stack, 1¢ does not | House |
+| Q-47 | Trick/Treat | Gains every text ability; passed triggers do not fire | House |
+| Q-48 | Trick/Treat | Reward changes apply in the order made | House |
+| Q-50 | Mischievous The Haunt | One fear counter per instance of damage | House |
+| Q-51 | Mischievous The Haunt, Trick/Treat | The active player picks who loses a fear counter | House |
+| Q-53 | Trick/Treat | Attack-start rolls after the target's triggers | House |
+| Q-54 | Trick/Treat | Every monster death counts; one removal per rewards gained | House |

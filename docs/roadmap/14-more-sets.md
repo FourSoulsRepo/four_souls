@@ -856,7 +856,7 @@ Alt art (CD-11) comes after all sets.
 2. Not now (owner, 2026-11-10).
 3. Rules: personal present slots; the competitive boss card; first kill wins.
 
-### [ ] 14.29 Trick or Treat: rules research
+### [x] 14.29 Trick or Treat: rules research
 
 1. Goal: our rules text for the Trick or Treat challenge (GS-11).
 2. Owner (2026-11-11): the second challenge; same scope as Krampus.
@@ -901,6 +901,18 @@ Alt art (CD-11) comes after all sets.
       7. Does the regular The Haunt stay in the monster deck (as Q-36)?
 6. Done when:
    1. Rules test passes; the rules website lists the topic.
+7. Result (2026-11-11):
+   1. Topic TRICK in `challenges.md`: R-TRICK-01–17.
+   2. Rules README: TRICK row; the website lists `challenges.md` already.
+   3. Open cases Q-43 to Q-54; Q-30 notes R-TRICK-06.
+   4. House answers Q-43, Q-44, Q-46–Q-48, Q-50, Q-51, Q-53, Q-54 are in "Rulings to revisit".
+   5. Official: Q-45 (S-OFF counters), Q-49 (Yuggy), Q-52 (S-MAE FAQ).
+   6. Checked on the printed cards: Ultra Hard puts fear on each player.
+   7. Treat rolls once at every difficulty; only Trick has Hard and Ultra Hard rolls.
+   8. `sources.md`: the Trick or Treat files under S-MAE.
+   9. The card pages are cached as PNGs next to the PDF.
+   10. Community: only Yuggy's launch post (2022-11-01), no rulings.
+   11. Nothing on Trick or Treat in S-RED digest, S-X or S-DIS.
 
 ### [ ] 14.30 Trick or Treat: card data
 

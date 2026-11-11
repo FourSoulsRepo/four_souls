@@ -80,3 +80,47 @@ Solo play (one person, two characters) comes later (roadmap 14.27); so does the 
 41. **R-KRAMPUS-14** Every difficulty: players gain no rewards and no souls when a minion dies; a minion with a soul icon goes to discard.
 42. **R-KRAMPUS-15** The regular Krampus (Four Souls+) stays in the monster deck (Q-36).
 43. **R-KRAMPUS-16** The competitive variant (2–4 players, personal present slots, its own boss card) is not supported yet (roadmap 14.28).
+
+## Trick or Treat
+
+Sources: S-MAE (Trick or Treat, its boss and challenge cards); S-YUG.
+Owner (2026-11-11): the second challenge; co-op only, like Krampus.
+
+44. **R-TRICK-01** **Goal**: the challenge is won when Mischievous The Haunt dies. It has no loss condition of its own; it is lost when the timer reaches 0 (R-CHAL-15).
+45. **R-TRICK-02** Difficulties: Normal, Hard and Ultra Hard. Each has its own Mischievous The Haunt card; one two-sided challenge card, **Trick/Treat**, serves all three.
+46. **R-TRICK-03** Mischievous The Haunt by difficulty (the boss cards):
+
+| Difficulty | HP | Evasion | ATK | Reward | Soul | Trick counters |
+|---|---|---|---|---|---|---|
+| Normal | 4 | 5+ | 1 | +1 treasure | 1 | 12 |
+| Hard | 4 | 5+ | 1 | +1 treasure | 1 | 14 |
+| Ultra Hard | 4 | 5+ | 1 | +1 treasure | 1 | 14 |
+
+47. **R-TRICK-04** **Setup**: the co-op setup (R-COOP-02), then Mischievous The Haunt of the chosen difficulty goes face up into a final boss slot with its trick counters. The Trick/Treat card goes beside the play area, Trick side up.
+48. **R-TRICK-05** The Trick/Treat card is not in play and nobody controls it; only R-TRICK-11 flips it. "You" on it means the active player (Q-44).
+49. **R-TRICK-06** **Guard**: while the boss has more trick counters than the souls the players hold between them, attacks can't be declared on it and it can't take damage. Souls count as in Q-30. Trick counters never go below 0.
+50. **R-TRICK-07** **Fear**: each time a player takes damage, a fear counter goes on that player (Normal, Hard), or one on each player (Ultra Hard). One per instance of damage (Q-50).
+51. **R-TRICK-08** Fear counters are on the player, not the character; they stay when the player dies or the character changes (R-MECH-13, Q-45).
+52. **R-TRICK-09** For every 2 fear counters on the active player, every monster has +1 evasion, up to 6 (R-ATK-18). A change after an attack roll resolves does not turn its hit or miss (S-MAE FAQ, Q-52).
+53. **R-TRICK-10** Each time a monster dies, the active player rolls a D6 (a triggered ability of the boss). 4–6: the active player removes a fear counter from a player of their choice, themselves included (S-MAE FAQ, Q-51).
+54. **R-TRICK-11** **Trick or Treating** (both sides): as each turn starts, the active player may flip the Trick/Treat card. Only the side up has abilities (Q-43).
+55. **R-TRICK-12** **Nobody's Fool** (Trick): each time a monster is killed, a trick counter is removed from the final boss (Q-54).
+56. **R-TRICK-13** **Ghostly Trickery** (Trick): at the start of each attack against a monster, the active player rolls a D6; on Hard 2 rolls, on Ultra Hard 3 (Q-46, Q-53). Each result lasts till end of turn:
+
+| Roll | Result |
+|---|---|
+| 1–2 | Damage the active player would take is increased by 1. |
+| 3–4 | Reveal from the top of the monster deck until a non-event monster card. The attacked monster gains its abilities. The revealed cards go to the bottom (Q-47). |
+| 5–6 | The rewards of the attacked monster become 1¢ (Q-48). |
+
+57. **R-TRICK-14** **You Don't Scare Me** (Treat): each time the active player gains rewards, they remove a fear counter from a player of their choice (Q-51, Q-54).
+58. **R-TRICK-15** **Hallows' Eve Bounty** (Treat): at the start of each attack against a monster, the active player rolls a D6 once, at every difficulty (Q-53). The result is added to the attacked monster's rewards till end of turn (Q-48):
+
+| Roll | Added reward |
+|---|---|
+| 1–2 | 3¢ |
+| 3–4 | loot 1 |
+| 5–6 | +1 treasure |
+
+59. **R-TRICK-16** The regular The Haunt (Base Game V2) stays in the monster deck (Q-49).
+60. **R-TRICK-17** The competitive variant (2–4 players vote trick or treat each turn; its own boss card) is not supported yet; it comes later, like the competitive Krampus (roadmap 14.28).

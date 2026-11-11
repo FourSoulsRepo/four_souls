@@ -32,6 +32,7 @@ The engine implements these rules; tests and sandbox answers cite their IDs.
 | COOP | [challenges.md](challenges.md) | Co-op play for 2 players |
 | CHAL | [challenges.md](challenges.md) | Final boss and minion slots, timer, beating a challenge |
 | KRAMPUS | [challenges.md](challenges.md) | How the Krampus Stole Christmas |
+| TRICK | [challenges.md](challenges.md) | Trick or Treat |
 
 ## Scope and sources
 
@@ -43,3 +44,4 @@ The engine implements these rules; tests and sandbox answers cite their IDs.
 6. Step 14 adds Gold Box V2 and Four Souls+ V2; their new rules say so.
 7. Requiem (`r`) rules say so too; rooms, flip and attacking players are now in use.
 8. Co-op challenges (step 14, 14.17): S-MAE, in challenges.md.
+9. Trick or Treat (14.29): S-MAE, in challenges.md, topic TRICK.

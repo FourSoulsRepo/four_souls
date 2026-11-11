@@ -122,3 +122,8 @@ Order of trust when sources disagree:
 3. The `.txt` files come from PDF extraction; some lines appear twice.
 4. Trust: official (the publisher); S-OFF wins where they differ (Q-37, Q-38).
 5. Used by rules/challenges.md (topics COOP, CHAL, KRAMPUS).
+6. Trick or Treat, cached 2026-11-11 (14.29):
+   1. `trick-or-treat.pdf` and `.txt`: the challenge, its competitive variant and FAQ.
+   2. `trick-or-treat-cards-boss.png`: the 4 Mischievous The Haunt cards (PDF page 4), upside down.
+   3. `trick-or-treat-cards-challenge.png`: the Trick/Treat cards (PDF page 5), upside down.
+   4. Used by rules/challenges.md, topic TRICK.
