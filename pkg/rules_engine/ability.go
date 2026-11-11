@@ -450,6 +450,15 @@ func (e boostEffect) apply(c *Ctx) {
 	c.G.emit(Event{Kind: EvBoosted, Player: b.Player, Object: b.Object, Amount: e.n, Text: b.Stat.String()})
 }
 
+// IncreaseDamageTaken makes each instance of damage player p would take
+// this turn n more: "Damage you would take is increased by 1 till end
+// of turn" (Ghostly Trickery, R-TRICK-13). Several add up (Q-46).
+// source is the object whose ability did it (V-41).
+func (g *Game) IncreaseDamageTaken(p PlayerID, n int, source ObjectID) {
+	g.Boosts = append(g.Boosts, Boost{Stat: StatDamageTaken, Player: p, Amount: n, Source: source})
+	g.emit(Event{Kind: EvBoosted, Player: p, Amount: n, Text: StatDamageTaken.String(), Source: source})
+}
+
 type shieldEffect struct{ n, target int }
 
 // PreventNextDamage prevents the next instance of damage the target

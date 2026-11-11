@@ -193,6 +193,47 @@ func (g *Game) KeepOrBottom(p PlayerID, d DeckKind, id ObjectID, bottom bool) {
 	g.emit(Event{Kind: EvTopChoice, Player: p, Object: id, Card: g.Object(id).Card, Text: d.String() + where, Private: true})
 }
 
+// RevealUntilMonster reveals cards from the top of the monster deck,
+// for p, until a non-event monster card; then every revealed card goes
+// to the bottom in random order (Q-22). An empty deck refills from its
+// discard as usual (R-ZONE-05). It returns the monster's card, or ""
+// when deck and discard hold none (Q-47.7, Q-47.8). Events met on the
+// way only show.
+func (g *Game) RevealUntilMonster(p PlayerID) CardRef {
+	var shown []ObjectID
+	var found CardRef
+	for found == "" {
+		if len(g.Decks[MonsterDeck]) == 0 {
+			if len(g.Discards[MonsterDeck]) == 0 {
+				break
+			}
+			g.refillDeck(MonsterDeck)
+		}
+		deck := g.Decks[MonsterDeck]
+		id := deck[len(deck)-1]
+		g.Decks[MonsterDeck] = deck[:len(deck)-1] // off the deck while shown
+		shown = append(shown, id)
+		g.emit(Event{Kind: EvCardRevealed, Player: p, Object: id, Card: g.Object(id).Card})
+		if g.kindOf(id) == MonsterCard {
+			found = g.Object(id).Card
+		}
+	}
+	g.ToBottomRandom(MonsterDeck, shown)
+	return found
+}
+
+// GainRevealedMonster makes monster id gain the abilities of the monster
+// card RevealUntilMonster finds, till end of turn (Ghostly Trickery,
+// R-TRICK-13, Q-47). Abilities only: stats, rewards and soul stay its
+// own. Several gains add up (Q-46). It returns the gained card, or "".
+func (g *Game) GainRevealedMonster(id ObjectID, p PlayerID) CardRef {
+	card := g.RevealUntilMonster(p)
+	if card != "" && g.Object(id).Zone.Kind == ZoneInPlay {
+		g.GainAbilities(id, card, GainEndOfTurn)
+	}
+	return card
+}
+
 // ToBottomRandom puts cards on the bottom of a deck in random order; no
 // player orders them (Q-22). A card in a deck stays the same object; a
 // card in a slot leaves it. The deck cards' move is one public

@@ -105,6 +105,9 @@ type PlayerView struct {
 	PrintedHP  int              `json:"printed_hp"`
 	PrintedATK int              `json:"printed_atk"`
 	Sources    []StatSourceView `json:"sources,omitempty"`
+	// Counters are on the player, not the character, e.g. fear counters
+	// (R-MECH-13, Q-45).
+	Counters []Counter `json:"counters,omitempty"`
 }
 
 // SlotView is a table slot: the top card and the covered ones below.
@@ -295,6 +298,7 @@ func (g *Game) ViewBase() ViewBase {
 		d := g.def(pl.Character)
 		pv.PrintedHP, pv.PrintedATK, pv.Sources = d.HP, d.ATK, g.playerSources(pl.ID)
 		pv.Character.Souls = g.characterSouls(pl.Character)
+		pv.Counters = slices.Clone(pl.Counters)
 		for _, id := range pl.InPlay {
 			cv := g.playedView(id)
 			cv.Souls = g.soulsOf(id)

@@ -134,6 +134,38 @@ func WhenARollWouldBe(n int) Trigger {
 	}}
 }
 
+// EvAttackStart means the attack on the monster Object starts, before
+// its first roll (AtStartOfAttackOnMonster, Q-53).
+const EvAttackStart EventKind = "attack_start"
+
+// AtStartOfAttackOnMonster triggers at the start of each attack against
+// a monster, once it has its target and before the first attack roll;
+// for a deck attack once the revealed monster is in its slot. An event
+// revealed, or an attack on a player or an item, starts none (Q-53).
+// c.EventObject is the monster. These triggers go on the stack before
+// the others of that moment, so the target's own ("when an attack is
+// declared on this") resolve first; the first roll waits for all
+// (R-ATK-25).
+func AtStartOfAttackOnMonster() Trigger {
+	return Trigger{On: EvAttackStart, Match: func(*Game, ObjectID, Event) bool { return true }}
+}
+
+// WhenAPlayerTakesDamage triggers each time any player takes damage,
+// once per instance, whatever its amount; prevented damage is none
+// (R-MECH-51, Q-50). c.EventPlayer is the player, c.EventAmount the
+// damage.
+func WhenAPlayerTakesDamage() Trigger {
+	return Trigger{On: EvDamaged, Match: func(_ *Game, _ ObjectID, e Event) bool {
+		return e.Player != NoPlayer && e.Object == 0
+	}}
+}
+
+// AtStartOfEachTurn triggers as every turn starts, whoever's it is
+// (R-TURN-03).
+func AtStartOfEachTurn() Trigger {
+	return Trigger{On: EvStartOfTurn, Match: func(*Game, ObjectID, Event) bool { return true }}
+}
+
 // WhenThisEntersPlay triggers when this object enters play.
 func WhenThisEntersPlay() Trigger {
 	return Trigger{On: EvEnteredPlay, Match: func(_ *Game, self ObjectID, e Event) bool { return e.Object == self }}
@@ -237,6 +269,8 @@ func (g *Game) placeNextTrigger() {
 }
 
 // nextTriggerGroup returns the indexes of the triggers that go next.
+// Attack-start triggers go first, so they resolve after the target's
+// own triggers of the same moment (Q-53).
 func (g *Game) nextTriggerGroup() []int {
 	order := []PlayerID{NoPlayer}
 	p := g.Turn.Active
@@ -244,15 +278,17 @@ func (g *Game) nextTriggerGroup() []int {
 		order = append(order, p)
 		p = g.next(p)
 	}
-	for _, c := range order {
-		var group []int
-		for i, t := range g.PendingTriggers {
-			if t.Controller == c {
-				group = append(group, i)
+	for _, first := range []bool{true, false} {
+		for _, c := range order {
+			var group []int
+			for i, t := range g.PendingTriggers {
+				if t.Controller == c && (!first || t.On == EvAttackStart) {
+					group = append(group, i)
+				}
 			}
-		}
-		if len(group) > 0 {
-			return group
+			if len(group) > 0 {
+				return group
+			}
 		}
 	}
 	return nil

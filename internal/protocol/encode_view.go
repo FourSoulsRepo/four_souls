@@ -64,6 +64,9 @@ func appendPlayer(b []byte, p engine.PlayerView) []byte {
 	if len(p.Sources) > 0 {
 		b = appendMarshaled(b, `,"sources":`, p.Sources)
 	}
+	if len(p.Counters) > 0 {
+		b = appendMarshaled(b, `,"counters":`, p.Counters)
+	}
 	return append(b, '}')
 }
 

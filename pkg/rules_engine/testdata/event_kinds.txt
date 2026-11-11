@@ -2,6 +2,7 @@ activated
 attack_declared
 attack_ended
 attack_roll_repeated
+attack_start
 attack_target
 boosted
 cancelled
@@ -51,6 +52,7 @@ paid
 passed_priority
 penalty_paid
 phase
+player_counters
 present_counters
 present_destroyed
 present_given
@@ -62,6 +64,7 @@ purchased
 random_pick
 recharged
 replaced
+rewards_changed
 rewards_gained
 roll_changed
 roll_repeated

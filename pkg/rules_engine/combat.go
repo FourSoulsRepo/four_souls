@@ -83,17 +83,27 @@ func (g *Game) CardOf(id ObjectID) CardRef {
 // EvFlipped means Object turned to its other face; Card is the face now up.
 const EvFlipped EventKind = "flipped"
 
-// Flip turns an object in play to its other face, if its card has one
-// (R-MECH-33). It reports whether it flipped.
+// Flip turns an object to its other face, if its card has one
+// (R-MECH-33): an object in play, or a challenge's rule card outside
+// the game, whose face up then has the abilities (R-TRICK-11, Q-43).
+// It reports whether it flipped.
 func (g *Game) Flip(id ObjectID) bool {
 	o := g.Object(id)
 	d, ok := g.cards.find(o.Card)
-	if !ok || d.Back == "" || o.Zone.Kind != ZoneInPlay {
+	ruleCard := g.Challenge != nil && g.Challenge.Card == id
+	if !ok || d.Back == "" || (o.Zone.Kind != ZoneInPlay && !ruleCard) {
 		return false
 	}
 	o.Flipped = !o.Flipped
 	g.emit(Event{Kind: EvFlipped, Player: o.Controller, Object: id, Card: g.CardOf(id)})
 	return true
+}
+
+// FlipThis flips the ability's own object: "flip this" (Anima Sola; the
+// Trick/Treat card, R-TRICK-11). A "you may" flip wraps it in a yes/no
+// ask (cardkit.May).
+func FlipThis() Effect {
+	return EffectFunc(func(c *Ctx) { c.G.Flip(c.Source) })
 }
 
 // WhenFlippedToThisSide triggers when this object is flipped to the face
@@ -454,6 +464,12 @@ func (g *Game) startAttack(target ObjectID) {
 		g.Turn.RandomAttackMade = true // Q-31: an attack went to one of them
 	}
 	g.emit(Event{Kind: EvAttackTarget, Player: g.Turn.Active, Object: target, Card: g.Object(target).Card})
+	if g.Object(target).Role == RoleMonster {
+		// "At the start of each attack against a monster": a deck attack's
+		// monster is in its slot by now; an event or an attack on a player
+		// or item has none (Q-53). Its triggers go below the target's own.
+		g.emit(Event{Kind: EvAttackStart, Player: g.Turn.Active, Object: target, Card: g.Object(target).Card})
+	}
 	if len(g.PendingTriggers) > 0 {
 		// "When an attack is declared on this" (Pride) resolves first; the
 		// first roll comes when the stack is empty again (R-ATK-25, 19.151).
@@ -494,14 +510,12 @@ func (g *Game) resolveAttackRoll(it StackItem) {
 	g.Attack.Rolls++
 	target := it.Target.Object
 	tp, onPlayer := g.characterOf(target)
-	mod := g.def(target).CombatMod
-	if onPlayer {
-		mod = nil // the attacked player's own cards change it below (R-ATK-24)
-	}
+	// The attacked player's own cards change it below (R-ATK-24).
+	mod := !onPlayer
 	if it.Roll >= g.Evasion(target) {
 		atk := g.PlayerATK(p)
-		if mod != nil {
-			atk = mod(g, target, it.Roll, true, atk)
+		if mod {
+			atk = g.combatMod(target, it.Roll, true, atk)
 		}
 		atk = g.attackerCombatMod(p, it.Roll, true, atk)
 		dt := Target{Object: target}
@@ -519,8 +533,8 @@ func (g *Game) resolveAttackRoll(it StackItem) {
 	}
 	// Nobody deals 0 damage (R-MECH-20).
 	atk := g.MonsterATK(target)
-	if mod != nil {
-		atk = mod(g, target, it.Roll, false, atk)
+	if mod {
+		atk = g.combatMod(target, it.Roll, false, atk)
 	}
 	ctrl := NoPlayer
 	if onPlayer {
@@ -614,6 +628,12 @@ func (g *Game) endAttack() {
 func (g *Game) resolveDamage(it StackItem) {
 	if it.Amount = g.shield(it.Target, it.Amount); it.Amount <= 0 {
 		return
+	}
+	if it.Target.IsPlayer {
+		// "Damage you would take is increased by 1": statics and this
+		// turn's boosts, before the cards that lower it (Daddy Haunt,
+		// Ghostly Trickery; Q-46: they add up).
+		it.Amount += max(g.bonus(StatDamageTaken, it.Target.Player, 0), 0)
 	}
 	for _, id := range g.inPlay() { // e.g. Dry Baby, The Dead Cat
 		if mod := g.def(id).DamageMod; mod != nil {
@@ -745,6 +765,7 @@ func (g *Game) monsterDeath(id ObjectID) {
 		inSlot = false
 	}
 	holding := g.move(id, Zone{Kind: ZoneOutside}, NoPlayer) // R-DEATH-04
+	g.moveRewardChanges(id, holding)
 	h := g.Object(holding)
 	h.KilledBy, h.ShareRewards, h.NoSpoils = killedBy, share, noSpoils
 	before := len(g.PendingTriggers)
@@ -793,13 +814,14 @@ func (g *Game) rewardsStep(holding ObjectID) {
 	// A roll reward waits for its throw on the stack. The steps after the
 	// rewards wait under it, so no refill runs before the roll (19.104).
 	rolls := false
-	for _, r := range g.def(holding).Rewards {
+	rewards := g.Rewards(holding) // this turn's changes too (Q-48)
+	for _, r := range rewards {
 		rolls = rolls || r.Roll
 	}
 	if rolls {
 		g.push(StackItem{Kind: StackDeathStep, Controller: NoPlayer, Label: eventRewards.Msg(), Target: Target{Object: holding}, Amount: stepRewardsGiven})
 	}
-	for _, r := range g.def(holding).Rewards {
+	for _, r := range rewards {
 		if r.Roll {
 			g.push(StackItem{Kind: StackRoll, Controller: active, Source: holding, Label: eventRewardRoll.Msg(), Reward: int(r.Kind) + 1, Amount: times})
 			continue
@@ -808,7 +830,7 @@ func (g *Game) rewardsStep(holding ObjectID) {
 	}
 	for _, p := range g.Object(holding).ShareRewards {
 		// Sibling Rivalry: the helper gains the rewards too.
-		for _, r := range g.def(holding).Rewards {
+		for _, r := range rewards {
 			if !r.Roll {
 				g.enqueue(Action{Kind: r.action(), Player: p, Amount: r.Amount * times, Reward: true})
 			}
@@ -1035,8 +1057,17 @@ func (g *Game) attackerCombatMod(p PlayerID, roll int, hit bool, n int) int {
 		if o := g.Object(id); o.Role == RoleSoul {
 			continue
 		}
-		if mod := g.def(id).CombatMod; mod != nil {
-			n = mod(g, id, roll, hit, n)
+		n = g.combatMod(id, roll, hit, n)
+	}
+	return n
+}
+
+// combatMod applies the CombatMod of every face of id: its card's, then
+// those of cards whose abilities it gained (R-ABIL-38, Q-47).
+func (g *Game) combatMod(id ObjectID, roll int, hit bool, n int) int {
+	for _, face := range g.facesOf(id) {
+		if d, ok := g.cards.find(face); ok && d.CombatMod != nil {
+			n = d.CombatMod(g, id, roll, hit, n)
 		}
 	}
 	return n

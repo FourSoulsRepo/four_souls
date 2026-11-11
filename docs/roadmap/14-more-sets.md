@@ -947,7 +947,7 @@ Alt art (CD-11) comes after all sets.
    13. Images: 8 landscape WebP files, 839×600, in `images/en/challenge/`.
    14. They wait in the private repo for the owner's amend and push.
 
-### [ ] 14.31 Engine: Trick or Treat blocks
+### [x] 14.31 Engine: Trick or Treat blocks
 
 1. Goal: the generic blocks the challenge needs, tested with other cards.
 2. Tasks:
@@ -961,6 +961,52 @@ Alt art (CD-11) comes after all sets.
    8. One shared place each; search all sets for similar effects (CLAUDE.md 5.24).
 3. Done when:
    1. Engine tests per block; fuzz stays green.
+4. Result (2026-11-11):
+   1. Counters on players: `player_counters.go`.
+      1. `Player.Counters`, `omitempty`; none existed before.
+      2. `AddPlayerCounters`, `PlayerCounters`, `PlayersWithCounters`.
+      3. Event `player_counters`; `PlayerView.Counters`; encoder; `protocol.ts`.
+      4. Objects and players share the counter list code.
+   2. Fear evasion: static `MonstersHavePerCounters(stat, name, per)`.
+      1. Every monster in all three rows; active player's counters only.
+      2. Read by `Evasion` as each roll resolves; capped at 6; V-41 parts.
+   3. Attack start: event `attack_start`, trigger `AtStartOfAttackOnMonster`.
+      1. Emitted after `attack_target` when the target is a monster.
+      2. `nextTriggerGroup` places these first: they resolve after the target's.
+   4. Rewards: `rewards.go`, `Game.RewardChanges` till end of turn.
+      1. `AddReward`, `SetRewardsToCents`; event `rewards_changed`.
+      2. `Rewards(id)` applies them in the order made (Q-48).
+      3. A dying monster's changes move to its dead card; the rewards step reads them.
+      4. Krampus forgo and doubling keep working; the soul is no reward.
+   5. More damage: stat `StatDamageTaken`; `IncreaseDamageTaken(p, n, source)`.
+      1. Applied after shields, before the cards that lower damage.
+   6. Gained monster abilities: `RevealUntilMonster`, `GainRevealedMonster`.
+      1. Revealed cards go to the bottom in random order (Q-22).
+      2. `GainAbilities` adds gains up: `Gained` first, then `MoreGained`.
+      3. Monsters' gains end in the cleanup too (`endGains`).
+      4. Gained faces bring `CombatMod` and `Unattackable` too.
+      5. Other `CardDef` hooks are not gained; no monster needs one now.
+   7. Rule card flip: `Flip` also turns the challenge's rule card.
+      1. `FlipThis()` effect; `AtStartOfEachTurn()` trigger.
+      2. "You may" is `cardkit.May`; the view shows the face up already.
+   8. Triggers checked: `damaged` per instance, `died`, `rewards_gained`.
+      1. New: `WhenAPlayerTakesDamage()`; the rest existed.
+      2. `rewards_gained` comes for a monster without rewards too.
+      3. 14.32 checks `len(Rewards(e.Object))` for Q-54.5.
+   9. Cross-set search (b2, g2, fsp2, r, challenge):
+      1. "Damage you would take" +1: Daddy Haunt; now `StatDamageTaken`.
+      2. "Flip this": Anima Sola's own effect; now `FlipThis()`.
+      3. Start of every turn: Krampus (fsp2, challenge), The Harbingers, r rooms.
+      4. Those four now use `AtStartOfEachTurn()`.
+      5. Gained abilities: Glitch only; it keeps working with gains added up.
+      6. Rewards added or set to ¢: no card; Dinga doubles (unchanged).
+      7. Counters on players, DC per counters on a player: no card.
+   10. Decisions left open by the docs:
+       1. Increase before reductions: Daddy Haunt + Dry Baby takes 1.
+       2. During Glitch's end phase both gains work; the cleanup ends one.
+       3. 14.33 adds the changed rewards to the view; the engine has `Rewards`.
+   11. Tests: `cards/trick_blocks_test.go`, one test or two per block.
+   12. ADR 028 got small drift items: Decision 5.15–5.16, 6.11, 9.6–9.7.
 
 ### [ ] 14.32 Engine: Trick or Treat
 

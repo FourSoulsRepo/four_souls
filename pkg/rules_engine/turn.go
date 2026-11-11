@@ -345,9 +345,7 @@ func (g *Game) endCopiesTillYourTurn(p PlayerID) {
 		if o.CopyTillYourTurn {
 			o.CopyOf, o.CopyTillYourTurn = "", false
 		}
-		if o.GainedTill == GainTillYourTurn {
-			o.Gained, o.GainedTill = "", 0
-		}
+		o.endGains(GainTillYourTurn)
 	}
 }
 
@@ -406,17 +404,19 @@ func (g *Game) healAll() {
 		g.Object(id).Damage, g.Object(id).HitsThisTurn = 0, 0
 	}
 	g.Boosts, g.Shields, g.Lingering, g.Markers = nil, nil, nil, nil // till end of turn effects end
+	g.RewardChanges = nil
 	for _, pl := range g.Players {
 		for _, id := range append([]ObjectID{pl.Character}, pl.InPlay...) {
 			o := g.Object(id)
 			if o.CopyThisTurn {
 				o.CopyOf, o.CopyThisTurn = "", false
 			}
-			if o.GainedTill == GainEndOfTurn {
-				o.Gained, o.GainedTill = "", 0
-			}
+			o.endGains(GainEndOfTurn)
 		}
 		g.Players[pl.ID].CopyNextLoot = false
+	}
+	for _, id := range g.MonstersInPlay() {
+		g.Object(id).endGains(GainEndOfTurn) // a monster's gained abilities (Q-47)
 	}
 	g.emit(Event{Kind: EvHealed, Player: NoPlayer})
 }

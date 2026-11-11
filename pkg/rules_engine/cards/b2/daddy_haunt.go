@@ -10,12 +10,9 @@ var daddyHaunt = engine.CardDef{
 	Ref:    "daddy_haunt",
 	Kind:   engine.TreasureCard,
 	Copies: 1,
-	DamageMod: func(g *engine.Game, self engine.ObjectID, t engine.Target, n int, _ bool) int {
-		if t.IsPlayer && t.Player == g.Object(self).Controller {
-			return n + 1
-		}
-		return n
-	},
+	// The engine's one rule for "damage you would take is increased"
+	// (StatDamageTaken): it applies before cards that lower damage.
+	Statics: []engine.Static{engine.YouHave(engine.StatDamageTaken, 1)},
 	Abilities: []engine.Ability{
 		{
 			Kind:    engine.Triggered,

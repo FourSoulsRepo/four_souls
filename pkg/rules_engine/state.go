@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"hash/fnv"
 	"maps"
+	"slices"
 )
 
 // PlayerID is a seat; seats are in turn order (R-TURN-01).
@@ -107,8 +108,11 @@ type Object struct {
 	CopyTillYourTurn bool `json:"copy_till_your_turn,omitempty"`
 	// Gained is a card whose abilities this object has too (R-ABIL-38:
 	// Glitch); GainedTill ends it: GainEndOfTurn or GainTillYourTurn.
+	// MoreGained are the gains after the first, in the order made
+	// (Ghostly Trickery twice, Q-46); see gains.
 	Gained     CardRef `json:"gained,omitempty"`
 	GainedTill int     `json:"gained_till,omitempty"`
+	MoreGained []Gain  `json:"more_gained,omitempty"`
 	// ATKSet, if not 0, is the object's ATK plus 1 ("Its ATK becomes 1":
 	// Hemoptysis).
 	ATKSet int `json:"atk_set,omitempty"`
@@ -149,8 +153,15 @@ type Object struct {
 func (o *Object) Killer() PlayerID { return PlayerID(o.KilledBy - 1) }
 
 // CountersOf returns how many counters named name the object has.
-func (o *Object) CountersOf(name string) int {
-	for _, c := range o.Counters {
+func (o *Object) CountersOf(name string) int { return countOf(o.Counters, name) }
+
+// addCounters adds n counters (or removes, if negative), never below 0.
+func (o *Object) addCounters(name string, n int) { o.Counters = addCount(o.Counters, name, n) }
+
+// countOf is how many counters named name a list holds; objects and
+// players keep their counters alike (R-MECH-12, R-MECH-13).
+func countOf(cs []Counter, name string) int {
+	for _, c := range cs {
 		if c.Name == name {
 			return c.Count
 		}
@@ -158,20 +169,22 @@ func (o *Object) CountersOf(name string) int {
 	return 0
 }
 
-// addCounters adds n counters (or removes, if negative), never below 0.
-func (o *Object) addCounters(name string, n int) {
-	for i, c := range o.Counters {
+// addCount adds n counters named name to a list (or removes, if
+// negative), never below 0; a name at 0 leaves the list.
+func addCount(cs []Counter, name string, n int) []Counter {
+	for i, c := range cs {
 		if c.Name == name {
-			o.Counters[i].Count = max(c.Count+n, 0)
-			if o.Counters[i].Count == 0 {
-				o.Counters = append(o.Counters[:i], o.Counters[i+1:]...)
+			cs[i].Count = max(c.Count+n, 0)
+			if cs[i].Count == 0 {
+				cs = append(cs[:i], cs[i+1:]...)
 			}
-			return
+			return cs
 		}
 	}
 	if n > 0 {
-		o.Counters = append(o.Counters, Counter{Name: name, Count: n})
+		cs = append(cs, Counter{Name: name, Count: n})
 	}
+	return cs
 }
 
 // Shield prevents damage to Target: the whole next instance, or up to
@@ -238,6 +251,9 @@ type Player struct {
 	// KilledBy is who dealt the damage or effect that killed the player
 	// this turn, plus 1 (0: nobody).
 	KilledBy int `json:"killed_by,omitempty"`
+	// Counters are on the player, not the character: they stay when the
+	// player dies or the character changes (R-MECH-13, Q-45: fear).
+	Counters []Counter `json:"counters,omitempty"`
 }
 
 // Slot is one table slot; the last card is on top and in play, the rest
@@ -311,6 +327,9 @@ type Game struct {
 	Lingering []Lingering `json:"lingering,omitempty"`
 	// Markers change numbers in effect text till end of turn (Magic Marker).
 	Markers []Marker `json:"markers,omitempty"`
+	// RewardChanges change monsters' rewards till end of turn, in the
+	// order made (rewards.go, Q-48).
+	RewardChanges []RewardChange `json:"reward_changes,omitempty"`
 	// ManyDice: the next roll is made with Dice dice and Chooser picks the
 	// result (Mutant Spider, R-DICE-11).
 	ManyDice []ManyDice `json:"many_dice,omitempty"`
@@ -450,13 +469,19 @@ const (
 	GainTillYourTurn = 2
 )
 
+// Gain is a card whose abilities an object gained, and how long it
+// keeps them: GainEndOfTurn or GainTillYourTurn.
+type Gain struct {
+	Card CardRef `json:"card,omitempty"`
+	Till int     `json:"till,omitempty"`
+}
+
 // facesOf lists the cards whose abilities an object has: the card it
 // acts as, then any it gained (R-ABIL-38: Glitch, Golden Trinket).
 func (g *Game) facesOf(id ObjectID) []CardRef {
 	out := []CardRef{g.CardOf(id)}
-	o := g.Object(id)
-	if o.Gained != "" {
-		out = append(out, o.Gained)
+	for _, gn := range g.Object(id).gains() {
+		out = append(out, gn.Card)
 	}
 	if d, ok := g.cards.find(out[0]); ok && d.GainsAbilities != nil {
 		out = append(out, d.GainsAbilities(g, id)...)
@@ -465,8 +490,41 @@ func (g *Game) facesOf(id ObjectID) []CardRef {
 }
 
 // GainAbilities gives an object the abilities of card till the end of
-// this turn, or till the start of its controller's next turn.
+// this turn, or till the start of its controller's next turn. Gains
+// add up: each keeps its own end (R-ABIL-38, Q-46, Q-47). Stats,
+// rewards and soul are no abilities; they stay the object's own. A
+// gain ends when the object leaves play: the new object has none.
 func (g *Game) GainAbilities(id ObjectID, card CardRef, till int) {
 	o := g.Object(id)
-	o.Gained, o.GainedTill = card, till
+	o.setGains(append(o.gains(), Gain{Card: card, Till: till}))
+}
+
+// gains lists the object's gained cards, oldest first.
+func (o *Object) gains() []Gain {
+	if o.Gained == "" {
+		return nil
+	}
+	return append([]Gain{{Card: o.Gained, Till: o.GainedTill}}, o.MoreGained...)
+}
+
+// setGains stores gains: the first in Gained, so a save with one gain
+// looks as before; the rest in MoreGained.
+func (o *Object) setGains(gs []Gain) {
+	o.Gained, o.GainedTill, o.MoreGained = "", 0, nil
+	if len(gs) > 0 {
+		o.Gained, o.GainedTill = gs[0].Card, gs[0].Till
+		o.MoreGained = slices.Clone(gs[1:])
+	}
+	if len(o.MoreGained) == 0 {
+		o.MoreGained = nil
+	}
+}
+
+// endGains ends the object's gains that last till: GainEndOfTurn at
+// the cleanup, GainTillYourTurn as its controller's turn starts.
+func (o *Object) endGains(till int) {
+	if o.Gained == "" {
+		return
+	}
+	o.setGains(slices.DeleteFunc(o.gains(), func(gn Gain) bool { return gn.Till == till }))
 }

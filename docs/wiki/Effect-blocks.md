@@ -194,6 +194,9 @@ Roll(RollTable{}.Results(1, 2, Loot(1)).Results(3, 4, GainCents(3)).Results(5, 6
 | `WhenThisDies()` | when this monster dies, before its rewards (R-DEATH-05); `c.EventObject` is the dead card |
 | `AfterThisRewards()` | after this dead monster's rewards (R-DEATH-07) |
 | `WhenARollWouldBe(n)` | each time a player would roll n (R-DICE-05); `c.EventStack` is the roll |
+| `AtStartOfEachTurn()` | as every turn starts, whoever's it is (R-TURN-03) |
+| `WhenAPlayerTakesDamage()` | each time any player takes damage, once per instance (Q-50); `c.EventPlayer` is the player |
+| `AtStartOfAttackOnMonster()` | at the start of each attack against a monster, before its first roll; below the target's own triggers (Q-53); `c.EventObject` is the monster |
 
 ## Static abilities
 
@@ -202,6 +205,8 @@ Roll(RollTable{}.Results(1, 2, Loot(1)).Results(3, 4, GainCents(3)).Results(5, 6
 | `YouHave(StatPlayerATK, 1)` | You have +1 ATK. |
 | `YouHave(StatShopPrice, -5)` | Shop items you purchase cost 5¢ less. |
 | `MonstersHave(StatMonsterDC, 1)` | Monsters have +1 DC. |
+| `MonstersHavePerCounters(StatMonsterDC, "fear", 2)` | For every 2 fear counters on the active player, monsters have +1 DC. |
+| `YouHave(StatDamageTaken, 1)` | If you would take any amount of damage, take that much damage +1 instead. (Daddy Haunt) |
 
 Stats: `StatPlayerATK`, `StatPlayerHP`, `StatMonsterDC`, `StatMonsterATK`, `StatMonsterHP`, `StatShopPrice`, `StatRoll`, `StatAttackRoll`, `StatLootPlays`, `StatAttacks`, `StatPurchases`, `StatLootStep`.
 

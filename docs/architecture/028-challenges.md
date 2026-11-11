@@ -102,6 +102,8 @@ Use options 1, 4 and 5.
    12. `Present.Destroyed`, `Present.Flipped`: where a present went (14.22).
    13. Presents API: `AddPresent`, `AddPresentCounters`, `DestroyPresent`.
    14. Also `FlipPresents`, `GivePresent`, `Forgo`, `SoulsInPlay`.
+   15. Counters on players: `Player.Counters`, `omitempty` (14.31, Q-45).
+   16. Reward changes till end of turn: `Game.RewardChanges` (14.31).
 6. Abilities
    1. `inPlay` adds the rule card after every slot row.
    2. Boss rules are the boss card's abilities (R-KRAMPUS-11 – 14).
@@ -113,6 +115,14 @@ Use options 1, 4 and 5.
    8. R-KRAMPUS-14 is the boss card's: the boss card prints it.
    9. The goal (R-KRAMPUS-01) is a rule card ability.
    10. A rule card's triggered abilities are the active player's.
+   11. Generic blocks from 14.31, for Trick or Treat:
+       1. `AddPlayerCounters`; `MonstersHavePerCounters` for fear evasion.
+       2. `AtStartOfAttackOnMonster`: below the target's own triggers (Q-53).
+       3. `AddReward`, `SetRewardsToCents`; `Rewards(id)` in the order made (Q-48).
+       4. `IncreaseDamageTaken`: stat `StatDamageTaken`.
+       5. `GainRevealedMonster`; `GainAbilities` adds gains up (Q-46, Q-47).
+       6. `Flip` also turns the rule card; `FlipThis`, `AtStartOfEachTurn`.
+       7. `WhenAPlayerTakesDamage`: one trigger per instance (Q-50).
 7. Slot rows
    1. New `SlotKind`s: `FinalBossSlot`, `MinionSlot`.
    2. `Game.Bosses` and `Game.Minions`, each `[]Slot`.
@@ -140,6 +150,8 @@ Use options 1, 4 and 5.
    3. `GameView.Bosses` and `GameView.Minions`: `[]SlotView`.
    4. In a challenge, each player sees the partner's hand (R-COOP-07).
    5. A present also shows destroyed, flipped, its face-up card, its gainer.
+   6. The rule card shows its face up, with `flipped` (ADR 023, 14.31).
+   7. `PlayerView.Counters`: each player's counters, e.g. fear (14.31).
 10. Protocol, server, records
    1. `Options.Challenge` (ID) and `Options.Difficulty`.
    2. A challenge table has exactly 2 seats; the server checks it.

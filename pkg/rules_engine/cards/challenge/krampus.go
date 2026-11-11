@@ -126,7 +126,7 @@ func presentRoll(text string, extra func(minions int) int, table engine.RollTabl
 	return engine.Ability{
 		Kind:    engine.Triggered,
 		Text:    text,
-		Trigger: engine.Trigger{On: engine.EvStartOfTurn, Match: func(*engine.Game, engine.ObjectID, engine.Event) bool { return true }},
+		Trigger: engine.AtStartOfEachTurn(),
 		Effects: []engine.Effect{engine.RollTimes(func(c *engine.Ctx) int { return 1 + extra(len(minions(c.G))) }, table)},
 	}
 }

@@ -381,6 +381,9 @@ export interface PlayerView {
   printed_hp?: number;
   printed_atk?: number;
   sources?: StatSource[];
+  // counters: on the player, not the character, e.g. fear counters
+  // (R-MECH-13); older servers send none.
+  counters?: CounterView[];
 }
 
 export interface Turn {

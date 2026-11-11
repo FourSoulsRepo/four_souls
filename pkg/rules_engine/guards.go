@@ -9,9 +9,15 @@ package rulesengine
 var askAttackRandom = NewKey("ask.attack_random")
 
 // CanBeAttacked reports whether id may be an attack's target: it is
-// neither "can't be attacked" (Unattackable) nor guarded now (Guarded).
+// neither "can't be attacked" (Unattackable, gained too: Q-47) nor
+// guarded now (Guarded).
 func (g *Game) CanBeAttacked(id ObjectID) bool {
-	return !g.def(id).Unattackable && !g.guarded(id)
+	for _, face := range g.facesOf(id) {
+		if d, ok := g.cards.find(face); ok && d.Unattackable {
+			return false
+		}
+	}
+	return !g.guarded(id)
 }
 
 // guarded: id is in play and its Guarded hook holds; it can't be
