@@ -1166,3 +1166,34 @@ Alt art (CD-11) comes after all sets.
    5. Screenshot: `.cache/screenshots/screen-table-mat-halloween.png`.
    6. UC-10 3e and wiki Client name it.
    7. `make e2e`: 544 passed, 18 skipped, both browsers.
+
+### [x] 14.36 Christmas game mat
+
+1. Goal: a Christmas mat, to play the Krampus challenge in the mood.
+2. Tasks:
+   1. Owner's request, 2026-11-11.
+   2. A Christmas look of the Basement mat: image in the private images.
+   3. `assets/mats/christmas.webp`; the mat menu lists it from the file (V-24).
+   4. A Christmas color mat, so a build without images shows its colors.
+   5. Its name in `en.json`; UC-10 and the wiki Client page name it.
+3. Done when:
+   1. The mat menu offers it, with and without the images.
+   2. Vitest and e2e cover the choice; screenshots for review.
+4. Result (2026-11-11):
+   1. `christmas.webp`: Basement in a snowy blue night, 3840×1920, 206 KB.
+      1. A warm middle; frost on the edges.
+      2. Drawn on it: strings of lights, trees, presents, candy canes, holly.
+      3. Snowflakes and light falling snow over the wood.
+      4. The trapdoor and the heart marks stay clear.
+      5. Made by a one-off Pillow script, like 14.35; not kept in this repo.
+   2. Color mat `christmas`: Go `ColorMats`, `colorMats` in `mats.ts`.
+      1. `.mat-christmas`: a fireside glow in a snowy blue night.
+      2. The image takes its place in the menu, as for Basement.
+   3. `mat.christmas` in `en.json`; the fake bridge lists the image.
+   4. Tests: Vitest `mats`; e2e table with the mat, menu, colors without images.
+   5. Screenshot: `.cache/screenshots/screen-table-mat-christmas.png`.
+   6. UC-10 3e and wiki Client name it.
+   7. `make e2e` run 1: 545 passed, 1 failed, 18 skipped.
+      1. `rooms.spec.ts`, webkit: Blood Donation killed Isaac; deal-dependent.
+      2. Logged as 19.156; evidence in `.cache/e2e-evidence/14.36-run1/`.
+   8. `make e2e` run 2: 546 passed, 18 skipped, both browsers.

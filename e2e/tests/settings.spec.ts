@@ -108,12 +108,32 @@ test('the Halloween mat lies under the table', async ({ browser }) => {
   await shot(mat, 'table-mat-halloween');
 });
 
+// The Christmas mat (14.36), for the Krampus challenge: as Halloween.
+test('the Christmas mat lies under the table', async ({ browser }) => {
+  const [mat] = await startGame(browser, ['Mat', 'Ned'], { url: `${appURL()}&mat=christmas` });
+  if (!mat) {
+    throw new Error('no pages');
+  }
+  const table = mat.getByRole('main', { name: new RegExp(`^${trRe('game.turn').source}`) });
+  await expect(table).toHaveClass(/mat-christmas mat-image/);
+  const background = await table.evaluate((el) => getComputedStyle(el).backgroundImage);
+  expect(background).toContain('/cardimg/assets/mats/christmas.webp');
+  // The colors under the image: the fireside glow in the middle.
+  expect(background).toContain('rgb(122, 74, 50)');
+  await shot(mat, 'table-mat-christmas');
+});
+
 test('the mat menu lists the mat images', async ({ page }) => {
   await realAssets(page);
   await page.goto('/?fake&nosplash');
   await page.getByRole('button', { name: tr('menu.settings') }).click();
   const mats = page.getByRole('combobox', { name: tr('settings.mat') });
-  await expect(mats.getByRole('option')).toHaveText([tr('mat.basement'), tr('mat.cathedral'), tr('mat.halloween')]);
+  await expect(mats.getByRole('option')).toHaveText([
+    tr('mat.basement'),
+    tr('mat.cathedral'),
+    tr('mat.halloween'),
+    tr('mat.christmas'),
+  ]);
   await mats.selectOption('basement');
   await expect(page.getByLabel(tr('settings.mat_preview'))).toHaveClass(/mat-image/);
   await shot(page, 'settings-mat');
@@ -133,6 +153,7 @@ test('without mat images the table shows colors', async ({ browser }) => {
     ['&nomats', 'mat-basement'],
     ['&nomats&mat=cathedral', 'mat-cathedral'],
     ['&nomats&mat=halloween', 'mat-halloween'],
+    ['&nomats&mat=christmas', 'mat-christmas'],
     // Green felt is gone (ST-08): a saved one is the default.
     ['&nomats&mat=felt', 'mat-basement'],
     ['&mat=dark_room', 'mat-basement'],

@@ -30,7 +30,7 @@
   * The next start opens in the saved mode.
 * **3d. Theme (ST-07):** no choice; the app has one dark theme (15.80).
   * An older settings file's theme is ignored.
-* **3e. Game mat (ST-03):** Basement, Cathedral or Halloween.
+* **3e. Game mat (ST-03):** Basement, Cathedral, Halloween or Christmas.
   * A preview shows the mat; the table uses it at once.
   * With the private images, every mat image is a choice (V-24).
   * An image takes the place of the color mat with its name.
@@ -39,6 +39,8 @@
   * A saved Green felt, a mat before 15.81, gets the default (ST-08).
   * Halloween (14.35): the Basement with pumpkins, bats and cobwebs.
     * Without images: orange and purple colors.
+  * Christmas (14.36): the Basement with trees, lights, presents and snow.
+    * Without images: a warm middle in snowy blue colors.
 * **1a. First start (ST-06):** after the splash, a Welcome screen asks for the nickname.
   * Continue saves it and opens the main menu; it is asked only once.
 * **3f. Dice (V-19, 15.64):** the look of the player's dice.

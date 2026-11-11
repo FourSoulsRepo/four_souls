@@ -73,6 +73,13 @@ button {
   background: var(--mat-colors);
 }
 
+/* Christmas (14.36): a fireside glow in the middle of a snowy blue night. */
+.mat-christmas {
+  --mat-colors: radial-gradient(ellipse at center, #7a4a32 0%, #2e3a52 55%, #c8d6e8 100%);
+
+  background: var(--mat-colors);
+}
+
 /* A mat image (V-24) over its colors, which show if it fails to load.
    The shade keeps cards and text readable on a busy picture. */
 .mat-image {

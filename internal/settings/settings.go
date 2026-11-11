@@ -200,7 +200,7 @@ var (
 // when there are no mat images.
 // Image mats come from the files, so any ValidMat name is kept: a mat
 // whose image is missing shows as colors.
-var ColorMats = []string{"basement", "cathedral", "halloween"}
+var ColorMats = []string{"basement", "cathedral", "halloween", "christmas"}
 
 // droppedMat was a color mat (Green felt) until ST-08; a file that still
 // names it gets the default mat.

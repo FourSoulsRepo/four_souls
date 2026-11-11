@@ -3100,6 +3100,10 @@
     "text": "Cathedral",
     "note": "Settings: the Cathedral game mat in the Game mat list (an image, or pale blue colors without it). Named after the Isaac floor."
   },
+  "mat.christmas": {
+    "text": "Christmas",
+    "note": "Settings: the Christmas game mat in the Game mat list: the Basement with trees, lights, presents and snow (an image, or warm and snowy blue colors without it). The holiday's usual name."
+  },
   "mat.halloween": {
     "text": "Halloween",
     "note": "Settings: the Halloween game mat in the Game mat list: the Basement with pumpkins, bats and cobwebs (an image, or orange and purple colors without it). The holiday's usual name."

@@ -420,6 +420,7 @@ w.go = {
                 { id: 'basement', name: 'Basement', image: '/cardimg/assets/mats/basement.webp' },
                 { id: 'cathedral', name: 'Cathedral', image: '/cardimg/assets/mats/cathedral.webp' },
                 { id: 'halloween', name: 'Halloween', image: '/cardimg/assets/mats/halloween.webp' },
+                { id: 'christmas', name: 'Christmas', image: '/cardimg/assets/mats/christmas.webp' },
               ],
         ),
       // The real server's answer, like Go's App.CheckSeat: the first

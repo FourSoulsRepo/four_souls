@@ -12,6 +12,7 @@ export const colorMats: readonly MatInfo[] = [
   { id: 'basement', name: '', image: '' },
   { id: 'cathedral', name: '', image: '' },
   { id: 'halloween', name: '', image: '' },
+  { id: 'christmas', name: '', image: '' },
 ];
 
 function colorName(id: string): string {
@@ -20,6 +21,8 @@ function colorName(id: string): string {
       return t('mat.cathedral');
     case 'halloween':
       return t('mat.halloween');
+    case 'christmas':
+      return t('mat.christmas');
     default:
       return t('mat.basement');
   }
