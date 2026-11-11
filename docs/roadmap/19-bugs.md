@@ -4882,3 +4882,19 @@ Totals by system (148 items):
    3. No app or engine change; no screen change, no screenshots.
 6. Checks (2026-11-11)
    1. The test, webkit and chromium, 5 workers, 10 repeats: 20 of 20 passed.
+
+### [ ] 19.155 e2e: a save edit puts a second copy of a monster on the table
+
+1. Goal: `attack-targets.spec.ts:193` passes whatever the deal.
+2. Report (14.34 agent, 2026-11-11)
+   1. First `make e2e` run of 14.34, chromium.
+   2. The deal had Fatty in monster slot 2; the save edit made slot 1 Fatty too.
+   3. The locator for "Fatty" then matched two cards.
+   4. Evidence: `.cache/e2e-evidence/14.34-run1/` (not in git).
+3. Cause (from the agent's reading)
+   1. `giveIn` in `e2e/tests/saves.ts` sets a slot's card.
+   2. It never checks the other slots for the same card.
+4. Tasks:
+   1. Make the edit leave no second copy, or the test pick its slot by place.
+   2. Search other specs that name a monster set by a save edit.
+   3. Check: the spec, both browsers, 5 workers, 10 repeats.
