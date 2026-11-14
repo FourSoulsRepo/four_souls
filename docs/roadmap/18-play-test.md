@@ -601,7 +601,7 @@ Ideas: B-04, B-05, B-08.
    6. Gates: images repo tests in both modes, `make test`.
    7. **Owner** marks it solved (2026-11-14).
 
-### [ ] 18.21 Update ADR
+### [x] 18.21 Update ADR
 
 1. Goal: one ADR for the in-app update (B-08).
 2. Written in the main conversation, not by a subagent.
@@ -643,6 +643,10 @@ Ideas: B-04, B-05, B-08.
    5. Answer: the ported code is MIT in this repo (owner, 2026-11-14).
    6. Answer: check only on button press (owner, 2026-11-14).
    7. Answer: show download progress (owner, 2026-11-14).
+11. Result (2026-11-14)
+   1. ADR 029 `In-app update`, Accepted.
+   2. Size limit 500 MB: full builds are near 120 MB.
+   3. Old `README.txt`, `LICENSE`, `NOTICE` stay; noted as a risk.
 10. Done when:
    1. ADR 029 is Accepted, with a row in `docs/architecture/INDEX.md`.
    2. The owner answered the questions.

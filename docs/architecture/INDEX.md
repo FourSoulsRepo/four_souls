@@ -30,3 +30,4 @@
 | [026](026-rules-website.md) | Rules website | Accepted |
 | [027](027-game-feel-from-a-reference-client.md) | Game feel: lessons from a reference client | Accepted |
 | [028](028-challenges.md) | Challenges: card set, slot rows, co-op end | Accepted |
+| [029](029-in-app-update.md) | In-app update | Accepted |
