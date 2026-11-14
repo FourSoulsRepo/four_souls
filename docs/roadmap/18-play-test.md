@@ -574,3 +574,29 @@ Ideas: B-04, B-05.
    3. e2e: `the game menu changes the settings at the table` (`settings.spec.ts`).
    4. Gates: `make lint`, `make frontend`, `make e2e` (514 passed, 6 skipped).
    5. **Owner** marks it solved (2026-11-09).
+
+### [x] 18.20 Russian card images: Base Game V2
+
+1. Goal: Russian players see the Base Game V2 cards in Russian (LO-07).
+2. Tasks:
+   1. Source: the owner's Russian TTS images, 340 JPG files.
+   2. Only set `b2`; other sets stay English.
+   3. Same format as English: short side 600 px, WebP quality 85.
+   4. Same file names as `en/b2/`; the loader finds them (16.6).
+   5. Copies with own art match the English copy by its art.
+   6. Images go to `ru/b2/` in the private images repo.
+   7. The raw embed lists the new `ru` folder.
+   8. Nothing else changes: no code, no new tool.
+   9. Gates: images repo tests in both embed modes; `make test`.
+3. Done when:
+   1. Every `en/b2/` file has a `ru/b2/` twin.
+   2. With Russian selected, a Base Game card shows its Russian image.
+   3. **Owner** checks it.
+4. Result (2026-11-14)
+   1. 340 images in `ru/b2/`, 23 MB; each the size of its `en/b2/` twin.
+   2. Four TTS names differ: `a_penny_N`, `bum-bo`, `chest-2` kinds, `xl_fLoor`.
+   3. Gold Chest copies were swapped in the TTS names; matched by card text.
+   4. Chest, Dark Chest and Pills copies checked by card text too.
+   5. All 287 `b2` cards find a `ru/` image; other sets fall back to English.
+   6. Gates: images repo tests in both modes, `make test`.
+   7. **Owner** marks it solved (2026-11-14).
