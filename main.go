@@ -46,6 +46,7 @@ func main() {
 	}
 	app := NewApp(settingsFile)
 	host := &Host{}
+	updater := NewUpdater()
 
 	err = wails.Run(&options.App{
 		Title:  title,
@@ -58,9 +59,15 @@ func main() {
 		BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 1},
 		// The saved window mode applies from the first frame (ST-01).
 		Fullscreen: settings.Load(app.settings).Fullscreen,
-		Bind:       []any{app, host},
-		OnStartup:  app.startup,
-		OnShutdown: func(ctx context.Context) { _ = host.stop(ctx) }, //nolint:errcheck // the app is closing
+		Bind:       []any{app, host, updater},
+		OnStartup: func(ctx context.Context) {
+			app.startup(ctx)
+			updater.startup(ctx)
+		},
+		OnShutdown: func(ctx context.Context) {
+			updater.shutdown()
+			_ = host.stop(ctx) //nolint:errcheck // the app is closing
+		},
 	})
 	if err != nil {
 		log.Fatal(err)

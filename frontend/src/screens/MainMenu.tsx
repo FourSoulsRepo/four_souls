@@ -103,6 +103,14 @@ export function MainMenu() {
         >
           {t('menu.settings')}
         </button>
+        <button
+          type="button"
+          onClick={() => {
+            show('update');
+          }}
+        >
+          {t('menu.update')}
+        </button>
         <button type="button" onClick={quitApp}>
           {t('menu.exit')}
         </button>

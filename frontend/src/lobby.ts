@@ -6,7 +6,7 @@ import type { LanServer, RecentServer, Rejoin } from './bridge';
 import { t } from './i18n';
 
 // 'cards' is a dev-only card gallery for tests (?screen=cards).
-export type Screen = 'splash' | 'welcome' | 'menu' | 'settings' | 'host' | 'join' | 'table' | 'game' | 'cards';
+export type Screen = 'splash' | 'welcome' | 'menu' | 'settings' | 'host' | 'join' | 'table' | 'game' | 'cards' | 'update';
 
 export interface Lobby {
   welcome: Welcome | null;

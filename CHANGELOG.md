@@ -6,6 +6,10 @@ Rules engine versions are in each release's notes.
 
 ## Unreleased
 
+## 0.4.3 - 2026-11-15
+
+- An Update button in the main menu: it checks for a new version, downloads it with a progress bar, and installs it on restart. You keep your system and edition (with card images or for-poor). This is the last version you download by hand.
+
 ## 0.4.2 - 2026-11-14
 
 - Russian card images for the Base Game: with Russian chosen, its cards show in Russian; other sets stay in English.

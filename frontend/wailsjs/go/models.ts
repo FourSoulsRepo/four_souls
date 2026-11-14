@@ -563,6 +563,39 @@ export namespace settings {
 
 }
 
+export namespace update {
+	
+	export class Status {
+	    current: string;
+	    latest: string;
+	    notes: string;
+	    url: string;
+	    releases: string;
+	    asset: string;
+	    newer: boolean;
+	    canInstall: boolean;
+	    reason: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new Status(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.current = source["current"];
+	        this.latest = source["latest"];
+	        this.notes = source["notes"];
+	        this.url = source["url"];
+	        this.releases = source["releases"];
+	        this.asset = source["asset"];
+	        this.newer = source["newer"];
+	        this.canInstall = source["canInstall"];
+	        this.reason = source["reason"];
+	    }
+	}
+
+}
+
 export namespace version {
 	
 	export class Info {
