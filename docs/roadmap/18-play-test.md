@@ -671,7 +671,7 @@ Ideas: B-04, B-05, B-08.
    6. A changed file fails the check.
    7. The trial tag check is left to the **Owner**.
 
-### [ ] 18.23 Update package
+### [x] 18.23 Update package
 
 1. Goal: `internal/update` finds, checks and installs this build's archive (B-08).
 2. Tasks:
@@ -693,6 +693,21 @@ Ideas: B-04, B-05, B-08.
       3. A test checks it reaches the full size.
 3. Done when:
    1. The tests pass on all three OS in CI.
+4. Result (2026-11-14)
+   1. `internal/update`: `Check`, `Download`, `Apply`; no Wails import.
+   2. Archive by exact name: `AssetName` from version, edition, target.
+   3. `version.Edition`: `full` or `for-poor`, from two tagged files.
+   4. `Status.Reason`: `not_version`, `not_newer`, `no_archive`, `not_writable`.
+   5. `Status.Releases`: the releases page for a manual update.
+   6. Missing sums: `ErrNoSums`; missing or wrong hash: `ErrChecksum`.
+   7. Progress: start, at most every 200 ms, and once at the end.
+   8. Unpack refuses paths and links that leave the folder.
+   9. Helpers wait for the app's PID; paths single-quoted.
+   10. A test runs the sh helper on a path with spaces and quotes.
+   11. `NOTICE`: no row; the owner allows the code under MIT.
+   12. Wiki: `Update` in `Client.md`.
+   13. Checked: `make lint test`; `go vet` for windows and linux/arm64.
+   14. CI on all three OS: left to the next push.
 
 ### [ ] 18.24 Update screen
 
