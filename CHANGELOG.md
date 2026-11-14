@@ -6,6 +6,9 @@ Rules engine versions are in each release's notes.
 
 ## Unreleased
 
+## 0.4.2 - 2026-11-14
+
+- Russian card images for the Base Game: with Russian chosen, its cards show in Russian; other sets stay in English.
 - Trick or Treat: a monster that gains another monster's abilities shows a copy mark for each one; hover it to see that monster.
 
 ## 0.4.1 - 2026-11-11
