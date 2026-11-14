@@ -300,6 +300,7 @@ Step 20 done (owner, 2026-11-09); its open bugs go to play tests.
 7. Every sound at one loudness (AU-04, ADR 022).
 8. Player death sound (AU-06).
 9. Treasure gain sound (AU-07).
+10. Russian card images for the Base Game V2 (LO-07, 18.20).
 
 ## 19. Bugs
 

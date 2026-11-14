@@ -25,6 +25,8 @@ const FLIP_MS = 500;
 
 // NO_COUNTERS is a card with none; a shared value, so it is not new each render.
 const NO_COUNTERS: CounterView[] = [];
+// NO_COPIES is a card that copies nothing; shared for the same reason.
+const NO_COPIES: string[] = [];
 
 export type CardSize = 'hand' | 'table' | 'small' | 'zoom' | 'choice';
 
@@ -47,10 +49,10 @@ interface Props {
   // counters are the card's counters by kind; each kind is one badge
   // in its colour (7.9, 18.15).
   counters?: CounterView[];
-  // copy is the card whose abilities this card uses by copying them: the
-  // copy mark shows its art and zooms it; the card's zoom names it
-  // (19.106, 19.111).
-  copy?: string;
+  // copies are the cards whose abilities this card uses by copying them,
+  // in the order gained: one copy mark each shows its art and zooms it;
+  // the card's zoom names them (19.106, 19.111, 19.157).
+  copies?: string[];
   // dice are the die numbers the card keeps, drawn in owner's dice look
   // (15.67).
   dice?: number[];
@@ -87,7 +89,7 @@ export function Card({
   damage = 0,
   spent = false,
   counters = NO_COUNTERS,
-  copy,
+  copies = NO_COPIES,
   dice,
   owner = -1,
   objectId,
@@ -116,7 +118,7 @@ export function Card({
   // and a line under its zoom.
   const rewards = rewardsLine(monster?.rewards);
   // The zoom names the copied card first (19.111).
-  const lines = [...(copy ? [t('badge.copy', { card: name(copy) })] : []), ...sums, ...(rewards ? [rewards] : [])];
+  const lines = [...copies.map((c) => t('badge.copy', { card: name(c) })), ...sums, ...(rewards ? [rewards] : [])];
   const zoomHandlers = useZoom(cardRef, zoomable, rise, why, lines, counters.filter((c) => c.count > 0));
   const preview = useCostPreview(cost);
   const cardElRef = useRef<HTMLDivElement>(null);
@@ -194,7 +196,7 @@ export function Card({
       transition={{ duration: 0.25 * scale }}
       data-zone={objectId === undefined ? undefined : `obj-${String(objectId)}`}
       data-player={player}
-      className={`card size-${size} kind-${kindOf(card.type)}${landscape(card.type) ? ' landscape' : ''}${image ? '' : ' blank'}${counted > 0 ? ' has-counters' : ''}${badges && copy ? ' has-copy' : ''}${spent ? ' spent' : ''}${fight ? ' fight' : ''}${highlight ? ` hl-${highlight}` : ''}${flip.turn ? ` flip-${flip.turn}` : ''}`}
+      className={`card size-${size} kind-${kindOf(card.type)}${landscape(card.type) ? ' landscape' : ''}${image ? '' : ' blank'}${counted > 0 ? ' has-counters' : ''}${badges && copies.length > 0 ? ' has-copy' : ''}${spent ? ' spent' : ''}${fight ? ' fight' : ''}${highlight ? ` hl-${highlight}` : ''}${flip.turn ? ` flip-${flip.turn}` : ''}`}
       style={flip.turn ? { animationDuration: `${String((FLIP_MS * scale) / 2)}ms` } : undefined}
       role={onClick ? 'button' : 'img'}
       aria-label={card.name}
@@ -222,7 +224,7 @@ export function Card({
         <BlankFace card={card} full={size === 'zoom'} />
       )}
       {badges && counterBadges}
-      {badges && copy && <CopyBadge cardRef={copy} name={name(copy)} onLeave={backToCard} />}
+      {badges && copies.map((c, i) => <CopyBadge key={`${String(i)}-${c}`} cardRef={c} name={name(c)} place={i} onLeave={backToCard} />)}
       {badges && dice && dice.length > 0 && <DieBadges values={dice} owner={owner} />}
       {/* Damage shows as the lower, red health; the mark is for the rest. */}
       {badges && damage > 0 && !monster && !stats && <Badge kind="damage" value={damage} label={t('badge.damage', { n: damage })} />}
@@ -634,8 +636,9 @@ function Badge({ kind, value, label, title, style, hurt = false, trend: dir }: B
 // an icon cut from the copied card's art, as a turn effect's (15.92),
 // with a blue two-sheet mark in its corner. A text card shows the
 // copied card's initial. Hover or a long press zooms the copied card,
-// so the player sees which card it is (19.111).
-function CopyBadge({ cardRef, name, onLeave }: { cardRef: string; name: string; onLeave: (e: PointerEvent<HTMLElement>) => void }) {
+// so the player sees which card it is (19.111). place stacks the marks
+// of several copied cards down the card's left edge (19.157).
+function CopyBadge({ cardRef, name, place, onLeave }: { cardRef: string; name: string; place: number; onLeave: (e: PointerEvent<HTMLElement>) => void }) {
   const image = useApp((s) => s.cards.get(cardRef)?.image ?? '');
   const [broken, setBroken] = useState('');
   const zoom = useZoom(cardRef, true);
@@ -643,6 +646,7 @@ function CopyBadge({ cardRef, name, onLeave }: { cardRef: string; name: string; 
   return (
     <span
       className="card-copy"
+      style={{ '--copy-place': place } as CSSProperties}
       role="img"
       aria-label={label}
       {...zoom}

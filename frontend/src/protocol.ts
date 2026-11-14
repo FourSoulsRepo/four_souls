@@ -330,6 +330,9 @@ export interface CardView {
   // copy: the card whose abilities this card uses by copying them, e.g.
   // Placebo's or Glitch's; older servers send none (19.106).
   copy?: string;
+  // more_copies: the cards it gained abilities from after copy, in the
+  // order gained (Trick on Hard, 19.157).
+  more_copies?: string[];
 }
 
 

@@ -456,3 +456,20 @@ func TestViewShowsWhatACopyUses(t *testing.T) {
 		t.Fatalf("the view shows %d of the %d items", seen, len(want))
 	}
 }
+
+// TestViewShowsEveryGainOfAMonster: a monster that gained two cards'
+// abilities (Trick on Hard, Q-46) names both, in the order gained
+// (19.157).
+func TestViewShowsEveryGainOfAMonster(t *testing.T) {
+	g := newAbilityGame(t)
+	id := g.Monsters[0].Cards[len(g.Monsters[0].Cards)-1]
+	g.GainAbilities(id, "dagaz_like", GainEndOfTurn)
+	g.GainAbilities(id, "coin_bag", GainEndOfTurn)
+	top := g.View(Viewer{Kind: ViewSpectator}).Monsters[0].Top
+	if top == nil {
+		t.Fatal("the first monster slot shows no card")
+	}
+	if top.Copy != "dagaz_like" || !slices.Equal(top.MoreCopies, []CardRef{"coin_bag"}) {
+		t.Errorf("copy %q, more %v; want dagaz_like, [coin_bag]", top.Copy, top.MoreCopies)
+	}
+}

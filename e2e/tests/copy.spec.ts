@@ -3,7 +3,7 @@
 // the mark zooms the copied card; the item's zoom names it (19.111).
 import { expect, test } from './fixtures';
 import { startGame } from './game';
-import { saveAndContinue } from './saves';
+import { editSave, saveAndContinue, saveEditContinue } from './saves';
 import { appURL } from './server';
 import { shot } from './shot';
 import { activePage, click } from './turn';
@@ -41,4 +41,54 @@ test('an item that gains another item\'s abilities shows the copy mark (19.106)'
   await shot(active, 'copy-card-zoom');
   // The other player sees the same mark.
   await expect.soft(other.locator('.card-copy')).toHaveCount(1);
+});
+
+// GAINED_END_OF_TURN is the engine's GainEndOfTurn (state.go).
+const GAINED_END_OF_TURN = 1;
+
+interface GainSave {
+  state: {
+    objects: { card: string; gained?: string; gained_till?: number; more_gained?: { card: string; till: number }[] }[];
+    monsters: { cards: number[] }[];
+  };
+}
+
+test('a monster that gains other monsters\' abilities shows a mark for each (19.157)', async ({ browser }) => {
+  const pages = await startGame(browser, ['Vex', 'Kai'], { url: fast() });
+  await activePage(pages, click);
+  // Trick's 3–4 on Hard, twice: the first monster gains Pooter's and
+  // Leaper's abilities till end of turn (R-TRICK-13, Q-46).
+  await saveEditContinue(pages, 'Vex, Kai', (game) => {
+    editSave(game, (raw) => {
+      const { state } = raw as unknown as GainSave;
+      const top = state.monsters[0]?.cards.at(-1);
+      const monster = top === undefined ? undefined : state.objects[top];
+      if (!monster) {
+        throw new Error('monster slot 1 is empty');
+      }
+      monster.gained = 'pooter';
+      monster.gained_till = GAINED_END_OF_TURN;
+      monster.more_gained = [{ card: 'leaper', till: GAINED_END_OF_TURN }];
+    });
+  });
+  const active = await activePage(pages, click);
+  const slot = active.locator('[data-zone="monster-slot-0"]');
+  // Two marks on the monster, in the order gained.
+  const marks = slot.locator('.card-copy');
+  await expect.soft(marks).toHaveCount(2);
+  await expect.soft(marks.nth(0)).toHaveAttribute('aria-label', tr('badge.copy', { card: cardName('pooter') }));
+  await expect.soft(marks.nth(1)).toHaveAttribute('aria-label', tr('badge.copy', { card: cardName('leaper') }));
+  await shot(active, 'monster-copy-badges');
+  // The monster's zoom names both copied cards first.
+  const zoom = active.getByTestId('card-zoom');
+  const card = slot.locator('.card').first();
+  const box = await card.boundingBox();
+  await card.hover({ position: { x: (box?.width ?? 60) / 2, y: (box?.height ?? 80) * 0.8 } });
+  const lines = zoom.locator('.card-zoom-stats li');
+  await expect.soft(lines.nth(0)).toHaveText(tr('badge.copy', { card: cardName('pooter') }));
+  await expect.soft(lines.nth(1)).toHaveText(tr('badge.copy', { card: cardName('leaper') }));
+  await shot(active, 'monster-copy-zoom');
+  // The other player sees the same marks.
+  const other = pages.find((p) => p !== active);
+  await expect.soft(other?.locator('[data-zone="monster-slot-0"] .card-copy') ?? marks).toHaveCount(2);
 });

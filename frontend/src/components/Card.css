@@ -840,7 +840,8 @@
    pointer: hover zooms the copied card. */
 .card-copy {
   position: absolute;
-  top: 4cqi;
+  /* Several marks stack down the left edge (19.157). */
+  top: calc(4cqi + var(--copy-place, 0) * 30cqi);
   left: 4cqi;
   width: 28cqi;
   aspect-ratio: 1;

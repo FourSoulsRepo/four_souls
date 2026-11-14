@@ -249,6 +249,8 @@
   * A text card shows the copied card's initial.
   * Glitch's gained item, a copy (Diplopia), and Placebo's ability on the stack show it.
   * Placebo's mark shows only while its copied ability is on the stack.
+  * A monster in a slot shows it too: Trick's gained monster (19.157).
+  * Several gained cards: one mark each, down the left edge, in the order gained.
   * Both players see it.
   * Hover or long press on the mark zooms the copied card (19.111).
   * The item's own zoom reads "Copy of The D6" first.

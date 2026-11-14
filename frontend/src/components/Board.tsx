@@ -5,6 +5,7 @@ import { t } from '../i18n';
 import { Deck as DeckKind, type CardView, type GameView, type SlotView } from '../protocol';
 import { useApp } from '../store';
 import { Card } from './Card';
+import { copiesOf } from '../table';
 import { Count } from './Count';
 import type { Interact } from './Interact';
 import { Deck, Discard } from './Pile';
@@ -213,6 +214,7 @@ function Slot({ slot, zone, ui, size = 'table' }: { slot: SlotView; zone: string
         size={size}
         damage={slot.top.damage}
         counters={slot.top.counters}
+        copies={copiesOf(slot.top)}
         monster={slot.top.stats}
         objectId={slot.top.id}
         {...ui.object(slot.top.id)}
