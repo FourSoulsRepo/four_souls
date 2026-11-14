@@ -44,3 +44,4 @@
 | UC-40 | Rooms on the table | `frontend`, `internal/server`, `rules_engine` | Implemented | [app/uc-40-rooms-on-the-table.md](app/uc-40-rooms-on-the-table.md) |
 | UC-41 | Host a challenge | `frontend`, `internal/settings`, `internal/server` | Implemented | [server/uc-41-host-a-challenge.md](server/uc-41-host-a-challenge.md) |
 | UC-42 | Play a challenge | `frontend`, `rules_engine` | Implemented | [app/uc-42-play-a-challenge.md](app/uc-42-play-a-challenge.md) |
+| UC-43 | Update the app | `internal/update`, `updater.go`, `frontend` | Implemented | [app/uc-43-update-the-app.md](app/uc-43-update-the-app.md) |

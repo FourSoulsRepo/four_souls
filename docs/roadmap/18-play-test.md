@@ -709,7 +709,7 @@ Ideas: B-04, B-05, B-08.
    13. Checked: `make lint test`; `go vet` for windows and linux/arm64.
    14. CI on all three OS: left to the next push.
 
-### [ ] 18.24 Update screen
+### [x] 18.24 Update screen
 
 1. Goal: an Update button in the main menu installs the new version (B-08).
 2. Tasks:
@@ -733,3 +733,24 @@ Ideas: B-04, B-05, B-08.
    1. The owner updates a real older release to a newer one.
    2. On macOS, Windows and Linux; full and for-poor each stay the same edition.
    3. **Owner** checks it.
+4. Result (2026-11-14)
+   1. Binding `Updater` (`updater.go`): `Check`, `Download`, `ApplyAndQuit`, `OpenReleases`.
+   2. Its context ends at app shutdown; a download stops then.
+   3. Progress: Wails event `update:progress` with `done` and `total`.
+   4. Errors: `error.update_*` messages; the raw error goes to the log.
+   5. Bridge: `checkUpdate`, `downloadUpdate`, `installUpdate`, `openReleases`, `onUpdateProgress`.
+   6. Main menu: **Update** between Settings and Exit.
+   7. Screen: version, Check, latest and notes, Download, Install and restart.
+   8. Bar with percent and MB; unknown total: MB only.
+   9. Notes scroll in their own box; the page does not scroll.
+   10. Reason in words; releases button with it and after errors.
+   11. Strings in `en.json`; `make i18n` passes.
+   12. Use case: UC-43; wiki: `Client.md` (Update).
+   13. e2e: `update.spec.ts` with a fake status and fake progress events.
+   14. `shell.spec.ts`: the menu-move test watches 2 s from when the menu shows.
+   15. The real-release check on three OS is left to the **Owner**.
+   16. Main menu: the banner shrinks in a short window, so five buttons fit.
+   17. Without it, opening Play moved the title by 20 px (19.49 rule).
+   18. Gates: `make lint`, `make test`, `make frontend` exit 0.
+   19. `make e2e`: 563 passed, 1 failed: `aim.spec.ts:406`, webkit.
+   20. Alone it passed 3 of 3; logged as 19.159.

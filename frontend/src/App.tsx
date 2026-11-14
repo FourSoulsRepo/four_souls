@@ -11,6 +11,7 @@ import { MainMenu } from './screens/MainMenu';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { Splash } from './screens/Splash';
 import { TableScreen } from './screens/TableScreen';
+import { UpdateScreen } from './screens/UpdateScreen';
 import { WelcomeScreen } from './screens/WelcomeScreen';
 import { onSky } from './sky';
 import { useApp, type Screen as ScreenName } from './store';
@@ -65,5 +66,7 @@ function Screen({ screen, onSplashDone }: { screen: ScreenName; onSplashDone: ()
       return <GameScreen />;
     case 'cards':
       return <CardGallery />;
+    case 'update':
+      return <UpdateScreen />;
   }
 }

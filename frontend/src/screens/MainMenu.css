@@ -19,21 +19,27 @@
   font-synthesis: none;
 }
 
-/* The banner keeps the logo's aspect; short windows shrink it. */
+/* The banner keeps the logo's aspect; short windows shrink it. It
+   gives way to the buttons: a menu taller than the window moved the
+   title when Play opened (18.24). */
 .menu-banner {
+  display: flex;
+  min-height: 0;
+  max-height: 40vh;
   margin: 0 0 1.5rem;
   line-height: 0;
 }
 
 .menu-banner img {
   width: min(32.875rem, 80vw);
-  max-height: 40vh;
+  max-height: 100%;
   object-fit: contain;
 }
 
 .menu-buttons {
   display: flex;
   flex-direction: column;
+  flex-shrink: 0;
   gap: 0.75rem;
   min-width: 18.75rem;
 }

@@ -301,7 +301,35 @@ const w = window as unknown as {
   fakeQuit: boolean;
   // fakeLan is what the LAN search finds, when a test sets it.
   fakeLan?: unknown[];
+  // fakeUpdate is what the update check gives (18.24): a status as Go's
+  // update.Status, or { error } with Go's message text. Unset: an update.
+  fakeUpdate?: object;
+  // fakeDownload ends the running fake download: with no error it
+  // succeeds, else it fails with that text.
+  fakeDownload?: { finish: (error?: string) => void };
+  // fakeOpened is the page OpenReleases opened.
+  fakeOpened?: string;
+  // fakeEmit sends a Wails event to the page, e.g. update:progress.
+  fakeEmit: (name: string, ...data: unknown[]) => void;
 };
+
+// The update the fake check finds unless a test sets fakeUpdate.
+const fakeReleases = 'https://github.com/FourSoulsRepo/four_souls/releases';
+const newerRelease = {
+  current: 'demo',
+  latest: 'v9.9.9',
+  notes: '## What is new\n\n- A new card set.\n- Faster games.',
+  url: `${fakeReleases}/tag/v9.9.9`,
+  releases: fakeReleases,
+  asset: 'four-souls-9.9.9-macos-universal.zip',
+  newer: true,
+  canInstall: true,
+  reason: '',
+};
+let checkedUrl = '';
+
+// Wails events: what the page listens to, by name.
+const listeners = new Map<string, Set<(...data: unknown[]) => void>>();
 
 w.go = {
   main: {
@@ -469,12 +497,59 @@ w.go = {
       Info: () => Promise.resolve(hostInfo),
       Stop: () => Promise.resolve(),
     },
+    // No network: a test sets the check's answer and sends the download's
+    // progress events itself (fakeEmit), then ends it (fakeDownload).
+    Updater: {
+      Check: () => {
+        const got = (w.fakeUpdate ?? newerRelease) as { error?: string; url?: string };
+        if (got.error !== undefined) {
+          return Promise.reject(new Error(got.error));
+        }
+        checkedUrl = got.url ?? '';
+        return Promise.resolve(got);
+      },
+      Download: () =>
+        new Promise<void>((resolve, reject) => {
+          w.fakeDownload = {
+            finish: (error?: string) => {
+              if (error === undefined) {
+                resolve();
+              } else {
+                reject(new Error(error));
+              }
+            },
+          };
+          w.fakeEmit('update:progress', { done: 0, total: 0 });
+        }),
+      ApplyAndQuit: () => {
+        w.fakeQuit = true;
+        return Promise.resolve();
+      },
+      OpenReleases: () => {
+        w.fakeOpened = checkedUrl || fakeReleases;
+        return Promise.resolve();
+      },
+    },
   },
 };
 w.fakeFullscreen = false;
 w.fakeQuit = false;
+w.fakeEmit = (name, ...data) => {
+  for (const callback of listeners.get(name) ?? []) {
+    callback(...data);
+  }
+};
 w.runtime = {
   BrowserOpenURL: () => undefined,
+  // Wails' EventsOn: it returns the call that stops listening.
+  EventsOnMultiple: (name: string, callback: (...data: unknown[]) => void) => {
+    const set = listeners.get(name) ?? new Set();
+    set.add(callback);
+    listeners.set(name, set);
+    return () => {
+      set.delete(callback);
+    };
+  },
   Quit: () => {
     w.fakeQuit = true;
   },

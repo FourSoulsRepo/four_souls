@@ -1765,6 +1765,46 @@
     "text": "something went wrong",
     "note": "Status line for a failure that came with no message."
   },
+  "error.update_bad_archive": {
+    "text": "The downloaded archive is broken or holds no app.",
+    "note": "Error shown on the Update screen. The downloaded archive could not be unpacked, or the app is missing in it."
+  },
+  "error.update_check": {
+    "text": "Could not reach GitHub to check for updates. Check your internet connection and try again.",
+    "note": "Error shown on the Update screen. Pressing Check for updates failed: no network, or GitHub did not answer."
+  },
+  "error.update_checksum": {
+    "text": "The download is damaged: its checksum does not match. Try again.",
+    "note": "Error shown on the Update screen. The downloaded file differs from the one the release lists; it was deleted."
+  },
+  "error.update_download": {
+    "text": "The download failed. Check your internet connection and try again.",
+    "note": "Error shown on the Update screen. The new version's download broke off: no network, or the disk is full."
+  },
+  "error.update_install": {
+    "text": "The update could not be installed. Update by hand from the releases page.",
+    "note": "Error shown on the Update screen. Starting the installer failed, e.g. the app's folder can't be written."
+  },
+  "error.update_no_archive": {
+    "text": "The latest release has no download for this system.",
+    "note": "Error shown on the Update screen. The release lacks the archive for this computer's system and edition."
+  },
+  "error.update_no_download": {
+    "text": "Download the update first.",
+    "note": "Error shown on the Update screen. Install was pressed before a finished download."
+  },
+  "error.update_no_sums": {
+    "text": "The release has no checksum list, so the download can't be checked. Update by hand from the releases page.",
+    "note": "Error shown on the Update screen. Checksum list: the SHA256SUMS.txt file of the release that proves the download is intact."
+  },
+  "error.update_not_ready": {
+    "text": "Check for updates first.",
+    "note": "Error shown on the Update screen. Download was pressed before a check found an update."
+  },
+  "error.update_too_large": {
+    "text": "The download is too large.",
+    "note": "Error shown on the Update screen. The release's archive is over the app's size limit."
+  },
   "event.attack_roll": {
     "text": "attack roll",
     "note": "What a stack item is: on the stack, in the history and on the throw banner."
@@ -3155,6 +3195,10 @@
   "menu.soon_label": {
     "text": "{name} (soon)",
     "note": "Main menu: screen-reader name of a greyed button. name: the button's text, e.g. Records."
+  },
+  "menu.update": {
+    "text": "Update",
+    "note": "Main menu: button that opens the Update screen, to install a newer version of the app."
   },
   "menu.versions": {
     "text": "app {app} · rules engine {engine}",
@@ -4557,6 +4601,94 @@
   "turn_badge.turn": {
     "text": "Turn {n} · {player} · {step}",
     "note": "Game table: the turn badge on the board. n: the turn number; player: whose turn; step: the step, e.g. Action."
+  },
+  "update.back": {
+    "text": "Back",
+    "note": "Update screen: button back to the main menu."
+  },
+  "update.check": {
+    "text": "Check for updates",
+    "note": "Update screen: button that asks GitHub for the latest version."
+  },
+  "update.checking": {
+    "text": "Checking for updates…",
+    "note": "Update screen, status line while the check runs."
+  },
+  "update.current": {
+    "text": "This version: {version}",
+    "note": "Update screen: the running app's version. version: e.g. 0.5.0, or demo."
+  },
+  "update.download": {
+    "text": "Download",
+    "note": "Update screen: button that downloads the new version."
+  },
+  "update.downloaded": {
+    "text": "The new version is downloaded and checked. Install it to restart the app.",
+    "note": "Update screen, status line after the download."
+  },
+  "update.downloading": {
+    "text": "Downloading…",
+    "note": "Update screen, status line while the download runs."
+  },
+  "update.install": {
+    "text": "Install and restart",
+    "note": "Update screen: button that installs the downloaded version, closes the app and starts the new one."
+  },
+  "update.installing": {
+    "text": "Installing…",
+    "note": "Update screen, status line while the installer starts; the app closes next."
+  },
+  "update.latest": {
+    "text": "Latest version: {version}",
+    "note": "Update screen, after a check: the newest release. version: e.g. v0.6.0."
+  },
+  "update.notes": {
+    "text": "What's new",
+    "note": "Update screen: title over the release notes of the latest version."
+  },
+  "update.progress": {
+    "text": "{percent}% · {done} of {total} MB",
+    "note": "Update screen, under the download bar. percent: 0 to 100; done and total: megabytes, e.g. 12.5."
+  },
+  "update.progress_label": {
+    "text": "Download",
+    "note": "Update screen: screen-reader name of the download bar."
+  },
+  "update.progress_mb": {
+    "text": "{done} MB",
+    "note": "Update screen, under the download bar when the size is unknown. done: megabytes so far, e.g. 12.5."
+  },
+  "update.ready": {
+    "text": "A new version is ready to download.",
+    "note": "Update screen, status line after a check that found a newer version."
+  },
+  "update.reason.no_archive": {
+    "text": "The latest release has no download for this system. You can update by hand from the releases page.",
+    "note": "Update screen, after a check: why the app can't update itself."
+  },
+  "update.reason.not_newer": {
+    "text": "You have the latest version.",
+    "note": "Update screen, after a check: nothing newer is out."
+  },
+  "update.reason.not_version": {
+    "text": "This build has no release version, so it can't update itself. You can update by hand from the releases page.",
+    "note": "Update screen, after a check: a test or developer build, not a release."
+  },
+  "update.reason.not_writable": {
+    "text": "The app can't write to its own folder, so it can't update itself. Move it to a folder you own, or update by hand from the releases page.",
+    "note": "Update screen, after a check: no rights to replace the app's files."
+  },
+  "update.reason.unknown": {
+    "text": "This version can't update itself. You can update by hand from the releases page.",
+    "note": "Update screen, after a check: the app can't update itself for another reason."
+  },
+  "update.releases": {
+    "text": "Open the releases page",
+    "note": "Update screen: button that opens the download page of all versions in the browser."
+  },
+  "update.title": {
+    "text": "Update",
+    "note": "Update screen: title."
   },
   "welcome.continue": {
     "text": "Continue",

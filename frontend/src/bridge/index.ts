@@ -27,7 +27,13 @@ import {
 } from '../../wailsjs/go/main/App';
 import { settings } from '../../wailsjs/go/models';
 import { Info as hostInfo, Start as hostStart, Stop as hostStop } from '../../wailsjs/go/main/Host';
-import { BrowserOpenURL, Quit, WindowFullscreen, WindowUnfullscreen } from '../../wailsjs/runtime/runtime';
+import {
+  ApplyAndQuit as wailsApplyAndQuit,
+  Check as wailsCheckUpdate,
+  Download as wailsDownloadUpdate,
+  OpenReleases as wailsOpenReleases,
+} from '../../wailsjs/go/main/Updater';
+import { BrowserOpenURL, EventsOn, Quit, WindowFullscreen, WindowUnfullscreen } from '../../wailsjs/runtime/runtime';
 
 export interface Versions {
   app: string;
@@ -391,4 +397,61 @@ export function openExternal(url: string): void {
   if (url.startsWith('https://')) {
     BrowserOpenURL(url);
   }
+}
+
+// UpdateReason says why the app can't update itself (ADR 029); '' when
+// it can. 'other' stands for a reason a newer Go names.
+export type UpdateReason = '' | 'not_version' | 'not_newer' | 'no_archive' | 'not_writable' | 'other';
+
+// UpdateStatus is the result of one update check (18.24).
+export interface UpdateStatus {
+  current: string;
+  latest: string; // the release tag, e.g. v0.6.0
+  notes: string; // the release text
+  canInstall: boolean;
+  reason: UpdateReason;
+}
+
+// UpdateProgress is how far a download is, in bytes; total is 0 when
+// the server did not say.
+export interface UpdateProgress {
+  done: number;
+  total: number;
+}
+
+function updateReason(r: string): UpdateReason {
+  return r === '' || r === 'not_version' || r === 'not_newer' || r === 'no_archive' || r === 'not_writable' ? r : 'other';
+}
+
+// checkUpdate asks GitHub for the latest release; it rejects with Go's
+// message for the player when GitHub can't be asked.
+export async function checkUpdate(): Promise<UpdateStatus> {
+  const s = await wailsCheckUpdate();
+  const reason = updateReason(s.reason);
+  return { current: s.current, latest: s.latest, notes: s.notes, canInstall: s.canInstall && reason === '', reason };
+}
+
+// downloadUpdate fetches and checks the release a check found;
+// onUpdateProgress hears how far it is.
+export function downloadUpdate(): Promise<void> {
+  return wailsDownloadUpdate();
+}
+
+// installUpdate starts the installer and closes the app; the new
+// version starts by itself.
+export function installUpdate(): Promise<void> {
+  return wailsApplyAndQuit();
+}
+
+// openReleases opens the release page in the browser, to update by hand.
+export function openReleases(): void {
+  void wailsOpenReleases();
+}
+
+// onUpdateProgress calls back on each progress event of a download;
+// it returns the call that stops listening.
+export function onUpdateProgress(callback: (p: UpdateProgress) => void): () => void {
+  return EventsOn('update:progress', (p: UpdateProgress) => {
+    callback({ done: p.done, total: p.total });
+  });
 }

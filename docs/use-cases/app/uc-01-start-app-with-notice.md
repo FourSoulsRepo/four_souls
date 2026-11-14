@@ -17,7 +17,7 @@
 7. The main menu shows the foursouls.ru banner at the top (15.41).
 8. The main menu and the game setup screens drift on a starry sky (15.42).
 9. The player clicks Exit, the last menu button; the app closes (15.79).
-10. The main menu lists Play, Records, Settings and Exit (15.96).
+10. The main menu lists Play, Records, Settings, Update and Exit (15.96, 18.24).
 11. The player clicks Play; LAN, Online and Learn to play open under it.
 12. The buttons above Play stay put; the ones below slide down.
 

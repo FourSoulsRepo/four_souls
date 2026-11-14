@@ -42,7 +42,7 @@ This step never closes; new reports are appended.
 | G  | Prompts: the choice is unclear           | Client     | 19.16, 19.17, 19.19, 19.42                             | 4     |
 | H  | Lobby and rejoin                         | Server     | 19.32, 19.148                                          | 2     |
 | I  | e2e test logic: the app was right        | e2e        | 19.7, 19.8, 19.10, 19.18, 19.21, 19.28, 19.31, 19.34, 19.37, 19.48, 19.58, 19.70, 19.79, 19.80, 19.81, 19.82, 19.85, 19.87, 19.98, 19.100, 19.112, 19.113, 19.114, 19.115, 19.116, 19.123, 19.122, 19.125, 19.126, 19.127, 19.120, 19.128, 19.132, 19.133, 19.137, 19.152, 19.154 | 37 |
-| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107, 19.117, 19.121, 19.140, 19.158 | 23 |
+| J  | e2e under load, or cause not found       | e2e        | 19.12, 19.14, 19.20, 19.33, 19.35, 19.38, 19.43, 19.44, 19.51, 19.53, 19.55, 19.56, 19.57, 19.75, 19.77, 19.89, 19.101, 19.103, 19.107, 19.117, 19.121, 19.140, 19.158, 19.159 | 24 |
 | Q  | Load tool: a lost connection ends a game | Go tools   | 19.108, 19.131                                         | 2     |
 | K  | Build and release files                  | Release    | 19.47, 19.59, 19.83, 19.91                             | 4     |
 | L  | Not a bug: the app follows a ruling      | None       | 19.63, 19.129                                          | 2     |
@@ -56,7 +56,7 @@ This step never closes; new reports are appended.
 | U  | Save and load: a running effect lost     | Engine     | 19.143                                                 | 1     |
 | V  | Flow: an extra step the player must take | Client     | 19.149                                                 | 1     |
 
-Totals by system (150 items):
+Totals by system (151 items):
 
 | System    | Groups  | Count |
 |-----------|---------|-------|
@@ -64,7 +64,7 @@ Totals by system (150 items):
 | Card data | C       | 2     |
 | Client    | D–G, O, P, S, V | 42 |
 | Server    | H, N    | 3     |
-| e2e       | I, J    | 60    |
+| e2e       | I, J    | 61    |
 | Release   | K       | 4     |
 | None      | L       | 2     |
 | Go tests  | M       | 1     |
@@ -4981,3 +4981,20 @@ Totals by system (150 items):
 4. Tasks:
    1. Read the saved match record for the deal.
    2. Check: the spec, both browsers, 5 workers, 10 repeats.
+
+### [ ] 19.159 e2e: hover mark stays after the mouse leaves, webkit
+
+1. Goal: `aim.spec.ts:406` passes in the full run.
+2. Report (18.24 `make e2e`, 2026-11-15)
+   1. WebKit only; Chromium passed in the same run.
+   2. Line 482: `data-presence="hover"` stays on The Dead Cat.
+   3. The active player's mouse had moved to empty space.
+   4. Alone, WebKit, 1 worker: 3 of 3 passed.
+   5. Evidence: `.cache/e2e-evidence/18.24-full1/` (not in git).
+3. Cause: not found yet.
+   1. Perhaps the hover-off presence message is lost or late under load.
+   2. `--repeat-each` reruns fail sooner: saved games "Hal, Ivy" pile up.
+   3. That second failure is test setup: `.cache/e2e-evidence/18.24-aim-rerun/`.
+4. Tasks:
+   1. Find whether hover-off is sent, and when, under load.
+   2. Check: the spec, webkit, 5 workers, 10 repeats.
