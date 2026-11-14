@@ -3,7 +3,7 @@
 Goal: real players play real games on every set done so far.
 Moved from step 8 (8.4–8.6): the Base Game alone is too few cards.
 
-Ideas: B-04, B-05.
+Ideas: B-04, B-05, B-08.
 
 ---
 
@@ -600,3 +600,109 @@ Ideas: B-04, B-05.
    5. All 287 `b2` cards find a `ru/` image; other sets fall back to English.
    6. Gates: images repo tests in both modes, `make test`.
    7. **Owner** marks it solved (2026-11-14).
+
+### [ ] 18.21 Update ADR
+
+1. Goal: one ADR for the in-app update (B-08).
+2. Written in the main conversation, not by a subagent.
+3. Decisions to record:
+   1. Source: GitHub API `releases/latest` of `FourSoulsRepo/four_souls`.
+   2. It skips drafts and prereleases (`v0.1.0-test`).
+   3. Port the flow of `ytmemchat_wails/pkg/update`: check, download, apply.
+   4. Apply: a helper script swaps the install after the app quits, then starts it.
+   5. Package: `internal/update`; no Wails import.
+4. Same build only: the archive name must match exactly.
+   1. Name: `four-souls-<latest>-<edition><target>.<ext>`.
+   2. `<latest>`: the tag without `v`.
+   3. `<edition>`: empty for full, `for-poor-` for text cards.
+   4. Never a substring match.
+   5. `windows-amd64.zip` also matches `for-poor-windows-amd64.zip`.
+5. Target from `runtime.GOOS` and `runtime.GOARCH`:
+   1. darwin, any arch: `macos-universal.zip`.
+   2. windows amd64, arm64: `windows-<arch>.zip`.
+   3. linux amd64, arm64: `linux-<arch>.tar.gz`.
+   4. Anything else: no update; the screen links the releases page.
+6. Edition from build tags, not from a guess at runtime:
+   1. `embed && cardimages`: full.
+   2. Any other build: for-poor.
+   3. One constant in `internal/version`, set by two tagged files.
+7. Safety:
+   1. Release adds `SHA256SUMS.txt`; a download with a wrong hash is dropped.
+   2. Size limit on the download, as in the reference.
+   3. Archive paths that leave the folder are refused.
+8. No update in these cases; the screen says why:
+   1. A `dev` build or a version that is not `X.Y.Z`.
+   2. The latest is not newer.
+   3. The install folder is not writable.
+   4. In each case a button opens the releases page.
+9. **Owner** questions:
+   1. The reference repo is GPL-3; this repo is MIT.
+   2. The owner wrote both: may the code be reused under MIT?
+   3. Check on button press only, as in the reference?
+   4. Or also once at start, with a mark on the button?
+   5. Answer: the ported code is MIT in this repo (owner, 2026-11-14).
+   6. Answer: check only on button press (owner, 2026-11-14).
+   7. Answer: show download progress (owner, 2026-11-14).
+10. Done when:
+   1. ADR 029 is Accepted, with a row in `docs/architecture/INDEX.md`.
+   2. The owner answered the questions.
+
+### [ ] 18.22 Release checksums
+
+1. Goal: every release lists the SHA-256 of each archive (B-08).
+2. Tasks:
+   1. `release.yml`, job `release`: write `SHA256SUMS.txt` over `dist/*`.
+   2. It covers app and server archives.
+   3. It is uploaded with the other files.
+   4. Wiki: release page notes the new file.
+3. Done when:
+   1. A trial tag (`v0.0.0-test`) makes a draft with `SHA256SUMS.txt`.
+   2. `sha256sum -c` passes on the downloaded archives.
+
+### [ ] 18.23 Update package
+
+1. Goal: `internal/update` finds, checks and installs this build's archive (B-08).
+2. Tasks:
+   1. Port from the reference, per ADR 029.
+   2. Asset name built exactly, from version, edition, target.
+   3. `internal/version`: `Edition` constant from build tags.
+   4. Tests with a fake GitHub server (`httptest`):
+      1. Each OS and arch picks its own archive.
+      2. Full never picks `for-poor-`; for-poor never picks full.
+      3. Missing archive, missing sums, wrong hash: clear errors.
+      4. `dev` and older or equal versions: no update.
+      5. Zip and tar.gz with a path that leaves the folder: refused.
+   5. `NOTICE`: per the owner's answer in 18.21.
+   6. Wiki: a short `Update` section in `docs/wiki/Client.md`.
+   7. Gates: `make lint test`.
+   8. Download progress: a callback with bytes done and total.
+      1. Total from `Content-Length`; unknown when missing.
+      2. Calls at most a few times a second.
+      3. A test checks it reaches the full size.
+3. Done when:
+   1. The tests pass on all three OS in CI.
+
+### [ ] 18.24 Update screen
+
+1. Goal: an Update button in the main menu installs the new version (B-08).
+2. Tasks:
+   1. Binding: `Check`, `Download`, `ApplyAndQuit`, `OpenReleases`.
+   2. Only `frontend/src/bridge/` calls them.
+   3. Main menu: an **Update** button.
+   4. Screen: current and latest version, release notes.
+   5. Buttons: Check, Download, Install and restart.
+   6. A busy state while it works; errors in plain words.
+   7. When no update is possible: the reason and the releases link.
+   8. Strings in every locale; `make i18n` passes.
+   9. Use case: next free UC in `docs/use-cases/app/`.
+   10. e2e: the screen with a fake status; no real network.
+   11. Gates: `make lint`, `make frontend e2e`.
+   12. Download shows progress (owner, 2026-11-14).
+       1. The binding sends a Wails event with bytes done and total.
+       2. The screen shows a bar, percent and MB.
+       3. Unknown total: MB only, no percent.
+       4. e2e: a fake event moves the bar.
+3. Done when:
+   1. The owner updates a real older release to a newer one.
+   2. On macOS, Windows and Linux; full and for-poor each stay the same edition.
+   3. **Owner** checks it.

@@ -1108,6 +1108,13 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    1. One script per OS installs every tool `make` needs.
    2. The wiki says what each `make` target needs, per OS.
    3. Only macOS and Linux for now; Windows later (owner, 2026-10-27).
+8. B-08. Update button in the main menu (owner, 2026-11-14).
+   1. Users no longer download each new version by hand.
+   2. Reference: the owner's `ytmemchat_wails`, package `pkg/update`.
+   3. The update keeps the same OS, architecture and edition.
+   4. Edition: full (card images) or for-poor (text cards).
+   5. Checks only when the button is pressed.
+   6. Shows progress while it downloads.
 
 ## Legal
 
