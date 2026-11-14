@@ -38,6 +38,8 @@ Each platform also gets a `for-poor` archive, e.g. `four-souls-<version>-for-poo
 
 Every archive also has `README.txt` (from `release/README.txt`, or `release/SERVER.txt` for the server), `LICENSE` and `NOTICE`.
 
+The release also has `SHA256SUMS.txt`: the SHA-256 of every app and server archive, one `<hash>  <name>` line each. The in-app update drops a download whose hash does not match (ADR 029). Check downloaded archives by hand with `sha256sum -c --ignore-missing SHA256SUMS.txt` in their folder.
+
 Server archives carry no version in their names (8.17), so `https://github.com/FourSoulsRepo/four_souls/releases/latest/download/four-souls-server-linux-amd64.tar.gz` always gets the newest server; the Dockerfile relies on it. "Latest" skips drafts and pre-releases. App archives keep their versions.
 
 The app is built with `-tags "embed cardimages"` after `go generate ./pkg/card_db/images` (`for-poor`: `embed` only); the server only with `embed` (it needs card text, not images) and `CGO_ENABLED=0`, so its Linux binaries run on any distribution, Alpine included. Linux builds use WebKitGTK 4.1 (`webkit2_41`), so players need `libwebkit2gtk-4.1` (Ubuntu 22.04 and later).

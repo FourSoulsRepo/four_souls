@@ -651,7 +651,7 @@ Ideas: B-04, B-05, B-08.
    1. ADR 029 is Accepted, with a row in `docs/architecture/INDEX.md`.
    2. The owner answered the questions.
 
-### [ ] 18.22 Release checksums
+### [x] 18.22 Release checksums
 
 1. Goal: every release lists the SHA-256 of each archive (B-08).
 2. Tasks:
@@ -662,6 +662,14 @@ Ideas: B-04, B-05, B-08.
 3. Done when:
    1. A trial tag (`v0.0.0-test`) makes a draft with `SHA256SUMS.txt`.
    2. `sha256sum -c` passes on the downloaded archives.
+4. Result (2026-11-14)
+   1. Job `release` hashes `dist/*` after `notes.md` moves out.
+   2. Lines are `<hash>  <name>`, names without `dist/`.
+   3. `SHA256SUMS.txt` goes up with the archives.
+   4. Wiki: `Releases.md` notes the file and how to check it.
+   5. Checked locally: the step on fake files, then `sha256sum -c`.
+   6. A changed file fails the check.
+   7. The trial tag check is left to the **Owner**.
 
 ### [ ] 18.23 Update package
 

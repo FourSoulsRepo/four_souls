@@ -170,6 +170,11 @@ jobs:
         run: |
           ls -la dist
           mv dist/notes.md notes.md
+          # Hashes of every app and server archive, for the in-app update
+          # (ADR 029); `sha256sum -c SHA256SUMS.txt` checks them.
+          (cd dist && sha256sum -- * > ../SHA256SUMS.txt)
+          mv SHA256SUMS.txt dist/
+          cat dist/SHA256SUMS.txt
           flags=(--draft --title "Four Souls ${TAG#v}" --notes-file notes.md)
           # A tag with a suffix (v0.1.0-test) is a trial, never the latest release.
           [[ "$TAG" == *-* ]] && flags+=(--prerelease)
