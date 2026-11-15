@@ -956,6 +956,7 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    2. Goal: do not scare new players.
    3. Detailed setup: every extra option.
    4. Examples: Bonus Souls, Rooms, deck ratios, ban modes.
+   5. Owner, 2026-11-15: a line above Detailed; its options in titled groups (18.25).
 11. GS-11. Co-op and solitaire modes (future).
    1. Players together against the game, or one player alone.
    2. Official challenges, each against a boss (Rag Man, Mom, Greed, ...).

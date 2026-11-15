@@ -34,6 +34,11 @@
     3. Saves, the seamless restart and the record keep the challenge.
     4. A lost challenge ends the game; the record has no winners.
     5. The host screen picks it in "Game mode" (UC-41); bonus souls hidden.
+18. Host screen layout (18.25).
+    1. A line separates the simple setup from "Detailed setup".
+    2. Characters and seats: picking, characters offered, random seats.
+    3. Cards: bonus souls, deck ratios, room deck.
+    4. Turns and undo: response timer, rollback.
 
 ## Alternative scenarios and errors
 

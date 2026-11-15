@@ -2751,6 +2751,18 @@
     "text": "Characters offered",
     "note": "Host screen, detailed setup: label of the select for how many characters each player picks from in a draft."
   },
+  "host.group_cards": {
+    "text": "Cards",
+    "note": "Host screen, detailed setup: title over bonus souls, deck ratios and room deck."
+  },
+  "host.group_characters": {
+    "text": "Characters and seats",
+    "note": "Host screen, detailed setup: title over how characters are dealt and random seats."
+  },
+  "host.group_turns": {
+    "text": "Turns and undo",
+    "note": "Host screen, detailed setup: title over the response timer and the rollback mode."
+  },
   "host.host": {
     "text": "Host",
     "note": "Host screen: button that starts hosting the game in this app."

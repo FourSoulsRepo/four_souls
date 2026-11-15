@@ -90,6 +90,33 @@
   color: #f7de8f;
 }
 
+/* The host's detailed setup: a line under the simple part, then
+   options in titled groups (18.25). */
+.divider {
+  width: 100%;
+  margin: 0.25rem 0;
+  border: 0;
+  border-top: 1px solid var(--muted);
+  opacity: 0.6;
+}
+
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0.5rem 0.75rem 0.75rem;
+  border: 1px solid rgb(201 191 166 / 35%);
+  border-radius: 0.5rem;
+}
+
+.group legend {
+  padding: 0 0.375rem;
+  font-family: var(--font-game);
+  letter-spacing: 0.03em;
+  color: #f7de8f;
+}
+
 /* Inputs are parchment slips with an ink outline; what the player
    types stays in the plain UI font, so it reads exactly. */
 .screen input:not([type="checkbox"]),

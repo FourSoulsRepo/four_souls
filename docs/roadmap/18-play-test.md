@@ -754,3 +754,28 @@ Ideas: B-04, B-05, B-08.
    18. Gates: `make lint`, `make test`, `make frontend` exit 0.
    19. `make e2e`: 563 passed, 1 failed: `aim.spec.ts:406`, webkit.
    20. Alone it passed 3 of 3; logged as 19.159.
+
+### [ ] 18.25 Host screen groups
+
+1. Goal: the host screen reads in parts, not one long list (GS-10, owner 2026-11-15).
+2. Tasks:
+   1. A line, like `---` in Markdown, above "Detailed setup".
+   2. Detailed options in titled groups:
+      1. Characters and seats: picking, characters offered, random seats.
+      2. Cards: bonus souls, deck ratios, room deck.
+      3. Turns and undo: response timer, rollback and its hint.
+   3. Each group: a `fieldset` with a `legend`, styled like "Card sets".
+   4. No option changes: same values, defaults, labels and order inside a group.
+   5. Strings for the group titles in `en.json`; `make i18n` passes.
+   6. Docs: UC-05, UC-03 if wording changes, `docs/wiki/Client.md`.
+   7. Gates: `make lint`, `make frontend e2e`.
+3. Done when:
+   1. Screenshots show the line and the three groups.
+   2. Existing host e2e tests pass unchanged.
+   3. **Owner** checks it.
+4. Result (2026-11-15)
+   1. `hr.divider` above "Detailed setup"; three `fieldset.group` boxes.
+   2. Titles: `host.group_characters`, `host.group_cards`, `host.group_turns`.
+   3. Random seats moved into the first group; nothing else moved between groups.
+   4. Docs: UC-05 item 18, `docs/wiki/Client.md`.
+   5. Gates: `make lint`, `make frontend`, `make e2e` (564 passed, 18 skipped).

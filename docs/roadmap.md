@@ -302,6 +302,7 @@ Step 20 done (owner, 2026-11-09); its open bugs go to play tests.
 9. Treasure gain sound (AU-07).
 10. Russian card images for the Base Game V2 (LO-07, 18.20).
 11. Update button in the main menu (B-08, 18.21–18.24).
+12. Host screen: a line before Detailed, options in groups (GS-10, 18.25).
 
 ## 19. Bugs
 
