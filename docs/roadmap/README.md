@@ -66,3 +66,4 @@ Each sub-step is sized for one agent session.
 | 18 | [18-play-test.md](18-play-test.md) |
 | 19 | [19-bugs.md](19-bugs.md) |
 | 20 | [20-game-feel.md](20-game-feel.md) |
+| 21 | [21-bindings.md](21-bindings.md) |

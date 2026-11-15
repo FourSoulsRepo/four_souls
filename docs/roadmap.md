@@ -25,6 +25,7 @@ Each step ends in something that runs and is tested.
 | 12 | Rules website | Engine in WebAssembly on GitHub Pages, in English and Russian | 8, 16 |
 | 20 | Game feel | Hearthstone-like timing, impacts and pacing (ADR 027) | 8 |
 | 18 | Play-test | New-user check, play-test, docs check | 14 |
+| 21 | Bindings by domain | Wails bindings split into packages under `bindings/` | 8 |
 | 9 | Spectators | Viewers watch live | 8 |
 | 10 | Replays | Records screen and replay player | 8 |
 | 11 | Learning | Rules viewer, sandbox, tutorial, bot | 8, 12 |
@@ -42,6 +43,7 @@ Step 15 is paused (owner, 2026-10-26); work goes on with 17, then 16.
 Step numbers stay as IDs; the table lists steps in work order.
 Step 20 added (owner, 2026-11-06); it starts now, on the step 12 branch.
 Step 20 done (owner, 2026-11-09); its open bugs go to play tests.
+Step 21 added (owner, 2026-11-15); it waits for the owner to start it.
 
 ---
 
@@ -319,6 +321,13 @@ Step 20 done (owner, 2026-11-09); its open bugs go to play tests.
 5. Counting counters, catch-up by importance, others' hands live.
 6. One sound per moment; response timer only near its end.
 7. Ideas: V-54, V-13, V-22.
+
+## 21. Bindings by domain
+
+1. One package per domain under `bindings/`, as in ytmemchat_wails.
+2. `App` keeps lifecycle and shared state only.
+3. No change the player sees; the bridge API stays.
+4. Ideas: A-17.
 
 ## Future
 

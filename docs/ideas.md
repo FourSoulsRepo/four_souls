@@ -469,6 +469,11 @@ Each idea has a stable ID; new ideas are appended to the end of their group.
    5. With deck ratios (GS-07) the decks are a random subset.
    6. Sending that subset would tell players what is in the decks.
    7. Exception: cards the host banned are public and may be left out.
+17. A-17. Bindings grouped by domain (owner, 2026-11-15).
+   1. Today `App` binds most methods from `package main`.
+   2. One package per domain under `bindings/`, one struct each.
+   3. Model: `HardDie/ytmemchat_wails`, folder `bindings/`.
+   4. Planned in step 21.
 
 ## Network
 
