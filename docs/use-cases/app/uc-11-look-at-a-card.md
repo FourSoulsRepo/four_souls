@@ -1,6 +1,6 @@
 # UC-11: Look at a card
 
-**Module:** `frontend/src/components`, `cards.go`
+**Module:** `frontend/src/components`, `bindings/assets`
 **Status:** Implemented
 **Actors:** Player
 **Goal:** The player reads any card on screen, with or without card images

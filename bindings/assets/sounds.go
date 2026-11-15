@@ -1,4 +1,4 @@
-package main
+package assets
 
 import "strconv"
 
@@ -89,7 +89,7 @@ func soundVariants(name string, n int) []string {
 }
 
 // Sounds returns the sound URLs.
-func (a *App) Sounds() Sounds {
+func (a *Assets) Sounds() Sounds {
 	f, s := a.soundURLs, soundFiles
 	return Sounds{
 		AttackHit:     f(s.AttackHit),
@@ -124,7 +124,7 @@ func (a *App) Sounds() Sounds {
 
 // soundURLs gives the URL of each file that exists; never nil, so the
 // frontend gets an empty list, not null.
-func (a *App) soundURLs(files []string) []string {
+func (a *Assets) soundURLs(files []string) []string {
 	urls := make([]string, 0, len(files))
 	for _, file := range files {
 		if u := a.imageURL(file); u != "" {

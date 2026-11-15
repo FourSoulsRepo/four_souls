@@ -363,6 +363,50 @@ w.go = {
             ? ''
             : JSON.stringify([{ key: 'refuse.deck_ratios', args: { n: players } }, { key: 'refuse.ratio.butter_beans', args: { have: 3, need: 5 } }]),
         ),
+      // The real server's answer, like Go's App.CheckSeat: the first
+      // base that answers.
+      CheckSeat: async (bases: string[], token: string) => {
+        for (const b of bases) {
+          try {
+            const r = await fetch(`${b}/seat?token=${encodeURIComponent(token)}`);
+            if (r.ok) {
+              return (await r.json()) as unknown;
+            }
+          } catch {
+            // the next base
+          }
+        }
+        throw new Error('server: no answer');
+      },
+      // Like Go's App.ServerStatus: the first base that answers.
+      ServerStatus: async (bases: string[]) => {
+        for (const b of bases) {
+          try {
+            const r = await fetch(`${b}/status`);
+            if (r.ok) {
+              return (await r.json()) as unknown;
+            }
+          } catch {
+            // the next base
+          }
+        }
+        throw new Error('server: no answer');
+      },
+      SaveRecord: (link: string) => Promise.resolve(`/fake/${new URL(link).searchParams.get('game') ?? ''}.fsrec`),
+      // The LAN holds one hosting app: the test server (?server=PORT).
+      // ?nolan finds nothing; a test sets window.fakeLan to list others,
+      // in this app's protocol unless it names one.
+      FindGames: () =>
+        Promise.resolve(
+          w.fakeLan?.map((f) => ({ protocol: protocolVersion, ...(f as object) })) ??
+            (params.has('nolan')
+              ? []
+              : [{ address: `127.0.0.1:${String(hostPort)}`, protocol: protocolVersion, app: 'demo', games: [{ id: '', host: 'Lan', seats: 2, taken: 1 }] }]),
+        ),
+    },
+  },
+  assets: {
+    Assets: {
       Cards: () => Promise.resolve(withTestLanguage([...cards.map((c) => ({ ...c, ...translated(c.ref, c.name) })), ...realCards()])),
       // The dice textures at their real paths; like the mat, the e2e
       // tests serve them only for screenshots, else they fail: plain dice.
@@ -459,46 +503,6 @@ w.go = {
                 { id: 'halloween', name: 'Halloween', image: '/cardimg/assets/mats/halloween.webp' },
                 { id: 'christmas', name: 'Christmas', image: '/cardimg/assets/mats/christmas.webp' },
               ],
-        ),
-      // The real server's answer, like Go's App.CheckSeat: the first
-      // base that answers.
-      CheckSeat: async (bases: string[], token: string) => {
-        for (const b of bases) {
-          try {
-            const r = await fetch(`${b}/seat?token=${encodeURIComponent(token)}`);
-            if (r.ok) {
-              return (await r.json()) as unknown;
-            }
-          } catch {
-            // the next base
-          }
-        }
-        throw new Error('server: no answer');
-      },
-      // Like Go's App.ServerStatus: the first base that answers.
-      ServerStatus: async (bases: string[]) => {
-        for (const b of bases) {
-          try {
-            const r = await fetch(`${b}/status`);
-            if (r.ok) {
-              return (await r.json()) as unknown;
-            }
-          } catch {
-            // the next base
-          }
-        }
-        throw new Error('server: no answer');
-      },
-      SaveRecord: (link: string) => Promise.resolve(`/fake/${new URL(link).searchParams.get('game') ?? ''}.fsrec`),
-      // The LAN holds one hosting app: the test server (?server=PORT).
-      // ?nolan finds nothing; a test sets window.fakeLan to list others,
-      // in this app's protocol unless it names one.
-      FindGames: () =>
-        Promise.resolve(
-          w.fakeLan?.map((f) => ({ protocol: protocolVersion, ...(f as object) })) ??
-            (params.has('nolan')
-              ? []
-              : [{ address: `127.0.0.1:${String(hostPort)}`, protocol: protocolVersion, app: 'demo', games: [{ id: '', host: 'Lan', seats: 2, taken: 1 }] }]),
         ),
     },
   },

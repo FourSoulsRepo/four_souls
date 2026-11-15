@@ -1,4 +1,4 @@
-package main
+package assets
 
 import (
 	"bytes"
@@ -14,7 +14,7 @@ import (
 )
 
 func TestMatsFromFiles(t *testing.T) {
-	a := &App{cardFiles: fstest.MapFS{
+	a := &Assets{cardFiles: fstest.MapFS{
 		"images/assets/mats/basement.webp":  {Data: []byte("RIFF")},
 		"images/assets/mats/dark_room.webp": {Data: []byte("RIFF")},
 		"images/assets/mats/old.png":        {Data: []byte("PNG")},
@@ -29,7 +29,7 @@ func TestMatsFromFiles(t *testing.T) {
 		t.Fatalf("mats %+v, want %+v", got, want)
 	}
 	// Without the private images the list is empty, never nil.
-	a = &App{cardFiles: os.DirFS(t.TempDir())}
+	a = &Assets{cardFiles: os.DirFS(t.TempDir())}
 	if got := a.Mats(); got == nil || len(got) != 0 {
 		t.Fatalf("mats %#v without images", got)
 	}
@@ -39,7 +39,7 @@ func TestMatsFromFiles(t *testing.T) {
 // each mat is served. Without the submodule both are empty.
 func TestMatsMatchFolder(t *testing.T) {
 	var want []string
-	entries, err := os.ReadDir("pkg/card_db/images/assets/mats")
+	entries, err := os.ReadDir("../../pkg/card_db/images/assets/mats")
 	if err != nil && !errors.Is(err, fs.ErrNotExist) {
 		t.Fatal(err)
 	}
@@ -48,9 +48,9 @@ func TestMatsMatchFolder(t *testing.T) {
 			want = append(want, id)
 		}
 	}
-	files := os.DirFS("pkg/card_db")
-	a := &App{cardFiles: files}
-	h := cardImages(files)(http.NotFoundHandler())
+	files := os.DirFS("../../pkg/card_db")
+	a := &Assets{cardFiles: files}
+	h := Middleware(files)(http.NotFoundHandler())
 	var got []string
 	for _, m := range a.Mats() {
 		got = append(got, m.ID)

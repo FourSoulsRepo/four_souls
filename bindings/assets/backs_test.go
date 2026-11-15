@@ -1,4 +1,4 @@
-package main
+package assets
 
 import (
 	"bytes"
@@ -10,7 +10,7 @@ import (
 )
 
 func TestBacksFromFiles(t *testing.T) {
-	a := &App{cardFiles: fstest.MapFS{"images/assets/backs/loot.webp": {Data: []byte("RIFF")}}}
+	a := &Assets{cardFiles: fstest.MapFS{"images/assets/backs/loot.webp": {Data: []byte("RIFF")}}}
 	got := a.Backs()
 	if len(got) != len(backKinds) {
 		t.Fatalf("backs %+v", got)
@@ -25,7 +25,7 @@ func TestBacksFromFiles(t *testing.T) {
 		}
 	}
 	// Without the private images every back is drawn plain.
-	a = &App{cardFiles: os.DirFS(t.TempDir())}
+	a = &Assets{cardFiles: os.DirFS(t.TempDir())}
 	for _, b := range a.Backs() {
 		if b.Image != "" {
 			t.Fatalf("%+v without images", b)
@@ -36,11 +36,11 @@ func TestBacksFromFiles(t *testing.T) {
 // The real backs are WebP in the private images submodule. With the
 // submodule, each one is found and served; without it, backs are plain.
 func TestBacksServed(t *testing.T) {
-	files := os.DirFS("pkg/card_db")
-	a := &App{cardFiles: files}
-	h := cardImages(files)(http.NotFoundHandler())
+	files := os.DirFS("../../pkg/card_db")
+	a := &Assets{cardFiles: files}
+	h := Middleware(files)(http.NotFoundHandler())
 	for _, b := range a.Backs() {
-		_, err := os.Stat("pkg/card_db/images/" + backsDir + "/" + b.Kind + ".webp")
+		_, err := os.Stat("../../pkg/card_db/images/" + backsDir + "/" + b.Kind + ".webp")
 		if (err == nil) != (b.Image != "") {
 			t.Fatalf("%s: image %q does not match the file (%v)", b.Kind, b.Image, err)
 		}

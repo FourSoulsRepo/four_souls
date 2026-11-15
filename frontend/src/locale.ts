@@ -111,7 +111,7 @@ export function pseudoLocale(en: Locale): Locale {
 }
 
 // cardLanguagesOf lists the languages the cards have names in, from the
-// names Go sends (App.Cards, 16.10): a language with no interface file
+// names Go sends (Assets.Cards, 16.10): a language with no interface file
 // is still a choice, with English screens and its card names.
 export function cardLanguagesOf(cards: readonly { names?: Record<string, string> }[]): string[] {
   return [...new Set(cards.flatMap((c) => Object.keys(c.names ?? {})))].sort();

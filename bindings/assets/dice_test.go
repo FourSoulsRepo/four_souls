@@ -1,4 +1,4 @@
-package main
+package assets
 
 import (
 	"bytes"
@@ -23,12 +23,12 @@ func TestDiceMatchSettings(t *testing.T) {
 }
 
 func TestDiceImage(t *testing.T) {
-	a := &App{cardFiles: fstest.MapFS{"images/" + diceSkins[0].file: {Data: []byte("RIFF")}}}
+	a := &Assets{cardFiles: fstest.MapFS{"images/" + diceSkins[0].file: {Data: []byte("RIFF")}}}
 	if got := a.Dice()[0].Image; got != "/cardimg/"+diceSkins[0].file {
 		t.Fatalf("image %q", got)
 	}
 	// Without the private images every die is drawn plain.
-	a = &App{cardFiles: os.DirFS(t.TempDir())}
+	a = &Assets{cardFiles: os.DirFS(t.TempDir())}
 	for _, d := range a.Dice() {
 		if d.Image != "" || d.Name == "" {
 			t.Fatalf("%+v without images", d)
@@ -39,11 +39,11 @@ func TestDiceImage(t *testing.T) {
 // The real dice textures are WebP in the private images submodule. With
 // the submodule, each one is found and served; without it, dice are plain.
 func TestDiceTexturesServed(t *testing.T) {
-	files := os.DirFS("pkg/card_db")
-	a := &App{cardFiles: files}
-	h := cardImages(files)(http.NotFoundHandler())
+	files := os.DirFS("../../pkg/card_db")
+	a := &Assets{cardFiles: files}
+	h := Middleware(files)(http.NotFoundHandler())
 	for i, d := range a.Dice() {
-		_, err := os.Stat("pkg/card_db/images/" + diceSkins[i].file)
+		_, err := os.Stat("../../pkg/card_db/images/" + diceSkins[i].file)
 		if (err == nil) != (d.Image != "") {
 			t.Fatalf("%s: image %q does not match the file (%v)", d.ID, d.Image, err)
 		}

@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"sync"
 
-	"github.com/FourSoulsRepo/four_souls/internal/assets"
 	"github.com/FourSoulsRepo/four_souls/internal/instance"
 	"github.com/FourSoulsRepo/four_souls/internal/msgerr"
 	"github.com/FourSoulsRepo/four_souls/internal/settings"
@@ -18,14 +17,12 @@ import (
 
 // App holds the methods the frontend calls through Wails bindings.
 type App struct {
-	wails     wailsContext // the app's lifetime; unbound (ADR 030, item 4)
-	cardFiles fs.FS        // card data and images
-	cardList  cardList
+	wails wailsContext // the app's lifetime; unbound (ADR 030, item 4)
 }
 
 // NewApp creates the bindings object.
 func NewApp() *App {
-	return &App{cardFiles: assets.CardsFS()}
+	return &App{}
 }
 
 // slotSettings is the settings file of this copy of the app. A new

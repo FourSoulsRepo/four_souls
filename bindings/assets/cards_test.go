@@ -1,4 +1,4 @@
-package main
+package assets
 
 import (
 	"maps"
@@ -9,11 +9,11 @@ import (
 	"testing"
 	"testing/fstest"
 
-	"github.com/FourSoulsRepo/four_souls/internal/assets"
+	appfiles "github.com/FourSoulsRepo/four_souls/internal/assets"
 )
 
 func TestCards(t *testing.T) {
-	a := &App{cardFiles: os.DirFS("pkg/card_db")}
+	a := &Assets{cardFiles: os.DirFS("../../pkg/card_db")}
 	cards, err := a.Cards()
 	if err != nil {
 		t.Fatal(err)
@@ -32,7 +32,7 @@ func TestCards(t *testing.T) {
 	}
 	// The private images submodule may be missing; then no card has an
 	// image URL and every card shows as a blank card.
-	if _, err := os.Stat("pkg/card_db/images/en/b2/isaac.webp"); (err == nil) != (isaac.Image == "/cardimg/en/b2/isaac.webp") {
+	if _, err := os.Stat("../../pkg/card_db/images/en/b2/isaac.webp"); (err == nil) != (isaac.Image == "/cardimg/en/b2/isaac.webp") {
 		t.Fatalf("isaac image %q does not match the file (%v)", isaac.Image, err)
 	}
 }
@@ -40,7 +40,7 @@ func TestCards(t *testing.T) {
 // A two-sided card's faces are two cards, each with its own name, linked
 // both ways (ADR 023).
 func TestCardsTwoSided(t *testing.T) {
-	a := &App{cardFiles: os.DirFS("pkg/card_db")}
+	a := &Assets{cardFiles: os.DirFS("../../pkg/card_db")}
 	cards, err := a.Cards()
 	if err != nil {
 		t.Fatal(err)
@@ -56,7 +56,7 @@ func TestCardsTwoSided(t *testing.T) {
 	if back.Name != "The Revenant" || back.Front != "anima_sola" || back.Names["ru"] != "Мститель" || len(back.Stats) != 3 {
 		t.Errorf("back: %+v", back)
 	}
-	if _, err := os.Stat("pkg/card_db/images/en/r/the_revenant.webp"); (err == nil) != (back.Image == "/cardimg/en/r/the_revenant.webp") {
+	if _, err := os.Stat("../../pkg/card_db/images/en/r/the_revenant.webp"); (err == nil) != (back.Image == "/cardimg/en/r/the_revenant.webp") {
 		t.Errorf("back image %q does not match the file (%v)", back.Image, err)
 	}
 }
@@ -73,7 +73,7 @@ func TestCardImages(t *testing.T) {
 	frontend := http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusTeapot)
 	})
-	h := cardImages(files)(frontend)
+	h := Middleware(files)(frontend)
 	for path, want := range map[string]int{
 		"/cardimg/en/b2/isaac.webp":         http.StatusOK,
 		"/cardimg/b2/isaac.webp":            http.StatusNotFound,
@@ -104,7 +104,7 @@ func TestCardsImagesPerLanguage(t *testing.T) {
 		{"id":"isaac","type":"Character Card","copies":1,"text":{"en":{"name":"Isaac"}},"images":["b2/isaac.webp"]},
 		{"id":"cain","type":"Character Card","copies":1,"text":{"en":{"name":"Cain"}},"images":["b2/cain.webp"]},
 		{"id":"maggy","type":"Character Card","copies":1,"text":{"en":{"name":"Maggy"}},"images":["b2/maggy.webp"]}]}`
-	a := &App{cardFiles: fstest.MapFS{
+	a := &Assets{cardFiles: fstest.MapFS{
 		"data/b2.json":            {Data: []byte(set)},
 		"images/en/b2/isaac.webp": {Data: []byte("RIFF")},
 		"images/en/b2/cain.webp":  {Data: []byte("RIFF")},
@@ -133,7 +133,7 @@ func TestCardsNamesCardOnlyLanguage(t *testing.T) {
 	set := `{"set":{"code":"b2","name":"B","order":1},"cards":[
 		{"id":"isaac","type":"Character Card","copies":1,"text":{"en":{"name":"Isaac"},"xx":{"name":"Xisaac"}}},
 		{"id":"cain","type":"Character Card","copies":1,"text":{"en":{"name":"Cain"}}}]}`
-	a := &App{cardFiles: fstest.MapFS{"data/b2.json": {Data: []byte(set)}}}
+	a := &Assets{cardFiles: fstest.MapFS{"data/b2.json": {Data: []byte(set)}}}
 	cards, err := a.Cards()
 	if err != nil {
 		t.Fatal(err)
@@ -150,7 +150,7 @@ func TestCardsNamesCardOnlyLanguage(t *testing.T) {
 }
 
 // A translator's own image folder (16.12) reaches the client through the
-// real card files: App.Cards names it and /cardimg/ serves it, with or
+// real card files: Assets.Cards names it and /cardimg/ serves it, with or
 // without the private images.
 func TestCardsOwnImages(t *testing.T) {
 	own := t.TempDir()
@@ -160,9 +160,9 @@ func TestCardsOwnImages(t *testing.T) {
 	if err := os.WriteFile(filepath.Join(own, "de", "b2", "isaac.webp"), []byte("RIFF own"), 0o600); err != nil {
 		t.Fatal(err)
 	}
-	t.Setenv(assets.EnvCardsDir, "pkg/card_db")
-	t.Setenv(assets.EnvImagesDir, own)
-	a := &App{cardFiles: assets.CardsFS()}
+	t.Setenv(appfiles.EnvCardsDir, "../../pkg/card_db")
+	t.Setenv(appfiles.EnvImagesDir, own)
+	a := &Assets{cardFiles: appfiles.CardsFS()}
 	cards, err := a.Cards()
 	if err != nil {
 		t.Fatal(err)
@@ -179,7 +179,7 @@ func TestCardsOwnImages(t *testing.T) {
 		t.Errorf("cain in de: %q, want the English %q", got, en)
 	}
 	rec := httptest.NewRecorder()
-	cardImages(a.cardFiles)(http.NotFoundHandler()).ServeHTTP(rec,
+	Middleware(a.cardFiles)(http.NotFoundHandler()).ServeHTTP(rec,
 		httptest.NewRequestWithContext(t.Context(), http.MethodGet, "http://wails.localhost/cardimg/de/b2/isaac.webp", nil))
 	if rec.Code != http.StatusOK || rec.Body.String() != "RIFF own" || rec.Header().Get("Content-Type") != "image/webp" {
 		t.Errorf("GET own image: %d %q %q", rec.Code, rec.Body.String(), rec.Header().Get("Content-Type"))

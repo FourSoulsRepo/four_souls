@@ -1,4 +1,4 @@
-package main
+package assets
 
 // The game's fonts inside the card images folder, downloaded by the tools
 // repo (15.20): font-souls for Latin text, its Body face for card text
@@ -18,6 +18,6 @@ type Fonts struct {
 }
 
 // Fonts returns the font URLs.
-func (a *App) Fonts() Fonts {
+func (a *Assets) Fonts() Fonts {
 	return Fonts{Title: a.imageURL(titleFont), Body: a.imageURL(bodyFont), Cyrillic: a.imageURL(cyrillicFont)}
 }

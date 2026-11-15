@@ -1,4 +1,4 @@
-package main
+package assets
 
 import (
 	"net/http"
@@ -48,7 +48,7 @@ func TestSoundsFromFiles(t *testing.T) {
 			files["images/"+f] = &fstest.MapFile{Data: []byte("ID3")}
 		}
 	}
-	got := soundLists(t, (&App{cardFiles: files}).Sounds())
+	got := soundLists(t, (&Assets{cardFiles: files}).Sounds())
 	for name, list := range soundLists(t, soundFiles) {
 		want := make([]string, len(list))
 		for i, f := range list {
@@ -59,14 +59,14 @@ func TestSoundsFromFiles(t *testing.T) {
 		}
 	}
 	// Without the private images the game is silent: every list is empty.
-	for name, list := range soundLists(t, (&App{cardFiles: os.DirFS(t.TempDir())}).Sounds()) {
+	for name, list := range soundLists(t, (&Assets{cardFiles: os.DirFS(t.TempDir())}).Sounds()) {
 		if list == nil || len(list) != 0 {
 			t.Fatalf("%s: %#v without images", name, list)
 		}
 	}
 	// A missing variant is left out; the rest still play.
 	delete(files, "images/assets/sounds/loot-land-2.mp3")
-	if got := (&App{cardFiles: files}).Sounds().LootLand; !slices.Equal(got, []string{"/cardimg/assets/sounds/loot-land-1.mp3", "/cardimg/assets/sounds/loot-land-3.mp3"}) {
+	if got := (&Assets{cardFiles: files}).Sounds().LootLand; !slices.Equal(got, []string{"/cardimg/assets/sounds/loot-land-1.mp3", "/cardimg/assets/sounds/loot-land-3.mp3"}) {
 		t.Fatalf("loot-land without its second file: %v", got)
 	}
 }
@@ -75,14 +75,14 @@ func TestSoundsFromFiles(t *testing.T) {
 // every file of every sound is there, found and served as audio; without
 // it, nothing is.
 func TestSoundsServed(t *testing.T) {
-	files := os.DirFS("pkg/card_db")
-	_, err := os.Stat("pkg/card_db/images/" + soundFiles.AttackHit[0])
+	files := os.DirFS("../../pkg/card_db")
+	_, err := os.Stat("../../pkg/card_db/images/" + soundFiles.AttackHit[0])
 	withImages := err == nil
-	got := soundLists(t, (&App{cardFiles: files}).Sounds())
+	got := soundLists(t, (&Assets{cardFiles: files}).Sounds())
 	for name, list := range soundLists(t, soundFiles) {
 		var want []string
 		for _, f := range list {
-			if _, err := os.Stat("pkg/card_db/images/" + f); err == nil {
+			if _, err := os.Stat("../../pkg/card_db/images/" + f); err == nil {
 				want = append(want, "/cardimg/"+f)
 			} else if withImages {
 				t.Fatalf("%s: %s is missing from the images", name, f)
@@ -93,7 +93,7 @@ func TestSoundsServed(t *testing.T) {
 		}
 		for _, url := range got[name] {
 			rec := httptest.NewRecorder()
-			h := cardImages(files)(http.NotFoundHandler())
+			h := Middleware(files)(http.NotFoundHandler())
 			h.ServeHTTP(rec, httptest.NewRequestWithContext(t.Context(), http.MethodGet, "http://wails.localhost"+url, nil))
 			if rec.Code != http.StatusOK || rec.Header().Get("Content-Type") != "audio/mpeg" || rec.Body.Len() == 0 {
 				t.Fatalf("%s: %d %q, not an MP3", url, rec.Code, rec.Header().Get("Content-Type"))

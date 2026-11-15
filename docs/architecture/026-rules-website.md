@@ -22,7 +22,7 @@
    3. A refusal carries `Say`: a message key with values (ADR 021).
    4. Rules text: 12 Markdown files in `pkg/rules_engine/docs/rules/`.
    5. `frontend/` has `t()`, the locale loader and the card component.
-   6. `cards.go` builds `CardInfo` from card_db for the app.
+   6. `bindings/assets/cards.go` builds `CardInfo` from card_db for the app.
 4. Size, measured 2026-11-06, every set, `-ldflags "-s -w"`:
    1. 7.9 MB raw.
    2. 2.0 MB gzip.

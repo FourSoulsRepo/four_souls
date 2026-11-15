@@ -1,4 +1,4 @@
-package main
+package assets
 
 // backsDir holds the card back images inside the card images folder.
 const backsDir = "assets/backs"
@@ -16,7 +16,7 @@ type CardBack struct {
 }
 
 // Backs returns the back of every deck, for face-down cards.
-func (a *App) Backs() []CardBack {
+func (a *Assets) Backs() []CardBack {
 	out := make([]CardBack, 0, len(backKinds))
 	for _, kind := range backKinds {
 		out = append(out, CardBack{Kind: kind, Image: a.imageURL(backsDir + "/" + kind + ".webp")})

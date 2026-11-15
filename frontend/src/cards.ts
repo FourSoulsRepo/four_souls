@@ -1,5 +1,5 @@
 // Card display data and the pure helpers the Card component uses.
-// The data comes from Go (App.Cards), from card_db.
+// The data comes from Go (Assets.Cards), from card_db.
 
 export interface CardInfo {
   ref: string;

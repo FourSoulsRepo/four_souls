@@ -1,4 +1,4 @@
-package main
+package assets
 
 import (
 	"io/fs"
@@ -23,7 +23,7 @@ type MatInfo struct {
 // Mats lists every mat image, so a new mat needs only a new file.
 // Without the private images the list is empty and the table shows
 // the color mats.
-func (a *App) Mats() []MatInfo {
+func (a *Assets) Mats() []MatInfo {
 	out := []MatInfo{}
 	entries, err := fs.ReadDir(a.cardFiles, path.Join(carddb.ImagesDir, matsDir))
 	if err != nil {

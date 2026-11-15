@@ -1,4 +1,4 @@
-package main
+package assets
 
 import (
 	"io/fs"
@@ -34,7 +34,7 @@ var diceSkins = []struct{ id, name, set, file string }{
 }
 
 // Dice returns every dice look, for the dice component and settings.
-func (a *App) Dice() []DiceSkin {
+func (a *Assets) Dice() []DiceSkin {
 	out := make([]DiceSkin, 0, len(diceSkins))
 	for _, d := range diceSkins {
 		skin := DiceSkin{ID: d.id, Name: d.name, Set: d.set}

@@ -6,21 +6,23 @@ import type { CardInfo, Kind } from '../cards';
 import type { Speed } from '../playback';
 import type { Difficulty } from '../protocol';
 import {
-  Backs as wailsBacks,
-  Cards as wailsCards,
   CardSets as wailsCardSets,
   Challenges as wailsChallenges,
   CheckSeat as wailsCheckSeat,
   DeckRatios as wailsDeckRatios,
-  Dice as wailsDice,
   FindGames as wailsFindGames,
+  SaveRecord as wailsSaveRecord,
+  ServerStatus as wailsServerStatus,
+} from '../../wailsjs/go/main/App';
+import {
+  Backs as wailsBacks,
+  Cards as wailsCards,
+  Dice as wailsDice,
   Fonts as wailsFonts,
   Icons as wailsIcons,
   Mats as wailsMats,
-  SaveRecord as wailsSaveRecord,
-  ServerStatus as wailsServerStatus,
   Sounds as wailsSounds,
-} from '../../wailsjs/go/main/App';
+} from '../../wailsjs/go/assets/Assets';
 import { Notice as wailsNotice, Versions as wailsVersions } from '../../wailsjs/go/about/About';
 import { SaveSettings as wailsSaveSettings, Settings as wailsSettings } from '../../wailsjs/go/prefs/Prefs';
 import { settings } from '../../wailsjs/go/models';

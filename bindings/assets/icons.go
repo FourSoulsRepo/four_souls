@@ -1,11 +1,4 @@
-package main
-
-import (
-	"io/fs"
-	"path"
-
-	carddb "github.com/FourSoulsRepo/card_db"
-)
+package assets
 
 // coinIcon is the coin image inside the card images folder: the ¢ face of
 // the game's coin, cut out by the tools repo (15.38).
@@ -40,13 +33,13 @@ type Icons struct {
 }
 
 // Icons returns the icon URLs.
-func (a *App) Icons() Icons {
+func (a *Assets) Icons() Icons {
 	return Icons{Coin: a.imageURL(coinIcon), Sword: a.imageURL(swordIcon), Banner: a.imageURL(bannerImage), Sky: a.sky()}
 }
 
 // sky returns the URLs of every sky layer, or an empty list when one is
 // missing: a sky without some of its stars would not match the site.
-func (a *App) sky() []string {
+func (a *Assets) sky() []string {
 	urls := make([]string, 0, len(skyLayers))
 	for _, file := range skyLayers {
 		u := a.imageURL(file)
@@ -56,14 +49,4 @@ func (a *App) sky() []string {
 		urls = append(urls, u)
 	}
 	return urls
-}
-
-// imageURL is the URL of file inside the card images folder, or "" when
-// the file is missing.
-func (a *App) imageURL(file string) string {
-	info, err := fs.Stat(a.cardFiles, path.Join(carddb.ImagesDir, file))
-	if err != nil || info.IsDir() {
-		return ""
-	}
-	return cardImagePrefix + file
 }

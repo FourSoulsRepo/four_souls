@@ -156,7 +156,7 @@ Shared helpers: `msgError` (`messages.go`), `imageURL`, `soundURLs`, `appContext
        4. Failures, chromium: `rollback.spec.ts:248`, `restart.spec.ts:228`; logged as 19.163, 19.164.
        5. Rerun of run 2's failures: 2 of 2 passed.
 
-### [ ] 21.4 Assets
+### [x] 21.4 Assets
 
 1. Goal: card and media bindings leave `App`.
 2. Tasks:
@@ -167,6 +167,27 @@ Shared helpers: `msgError` (`messages.go`), `imageURL`, `soundURLs`, `appContext
    1. `cards.go`, `backs.go`, `dice.go`, `mats.go`, `fonts.go`, `icons.go`, `sounds.go` are gone from the root.
    2. Cards still show as text without the private images.
    3. Gates pass.
+4. Result (2026-11-16)
+   1. `bindings/assets`: `assets.New(cardFiles)`; seven methods, their tests along.
+      1. `assets.go`: `Assets`, `New`, `imageURL`, the URL prefix.
+      2. The card list cache stays in `cards.go`.
+   2. `cardImages` is now `assets.Middleware(cardFiles)`, a package func.
+      1. Not a method: a bound struct's exported methods reach the frontend.
+   3. `main` reads `CardsFS()` once; `New` and `Middleware` share it.
+      1. `internal/assets` is imported as `appfiles` there and in `cards_test.go`.
+   4. `App` lost `cardFiles` and `cardList`.
+   5. Generated: `wailsjs/go/assets/Assets`.
+      1. `models.ts`: the six types moved from `main` to the new `assets`.
+      2. No merge: `internal/assets` gives no model types.
+      3. File modes as in HEAD (644; `models.ts` 755).
+   6. Bridge: one more import path; exports unchanged.
+   7. `fakeBridge.ts`: the seven fakes moved to `go.assets.Assets`.
+   8. Docs: `Client.md`, `Build-modes.md`, ADR 026, UC-11, use-case index.
+   9. Gates: `make lint`, `make test`, `make frontend`, `wails build -m -tags embed`.
+      1. With the images: `go build -tags "embed cardimages" .`.
+      2. `make e2e`: 562 passed, 2 failed, 18 skipped.
+      3. Failures, webkit: `lobby.spec.ts:13` (19.162), `challenge-trick.spec.ts:333` (19.165).
+      4. Rerun, webkit, 5 workers, 3 repeats: 6 of 6 passed.
 
 ### [ ] 21.5 Setup, join, records
 
