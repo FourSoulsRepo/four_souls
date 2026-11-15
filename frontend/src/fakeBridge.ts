@@ -229,11 +229,11 @@ const b2Data = JSON.parse(b2) as DataSet;
 // with ?requiem.
 const requiemData = JSON.parse(requiem) as DataSet;
 // The challenge cards (ADR 028): a challenge's boss and rule cards, as
-// Go's App.Cards lists them; never a playable set (14.25).
+// Go's Assets.Cards lists them; never a playable set (14.25).
 const challengeData = JSON.parse(challenge) as DataSet;
 
 // translated gives a card's names in every language and its translators,
-// as Go's App.Cards does (16.5); the cards above take them from b2 too.
+// as Go's Assets.Cards does (16.5); the cards above take them from b2 too.
 function translated(ref: string, name: string): { names: Record<string, string>; translators: Record<string, string[]> } {
   const c = b2Data.cards.find((d) => d.id === ref && !d.version);
   const names = Object.fromEntries(Object.entries(c?.text ?? {}).flatMap(([lang, text]) => (text?.name ? [[lang, text.name]] : [])));
@@ -246,13 +246,13 @@ function realCards(): unknown[] {
       .filter((c) => !c.reprint && !cards.some((s) => s.ref === c.id))
       .flatMap((c) => {
         const front = { ...realCard(data.set.code, c), ...(c.back ? { back: c.back.id } : {}) };
-        // A back face is a card of its own, as in Go's App.Cards.
+        // A back face is a card of its own, as in Go's Assets.Cards.
         return c.back ? [front, { ...realCard(data.set.code, { ...c, ...c.back, version: 0 }), front: c.id }] : [front];
       }),
   );
 }
 
-// realCard is one card of the card data as Go's App.Cards gives it.
+// realCard is one card of the card data as Go's Assets.Cards gives it.
 function realCard(set: string, c: DataCard): Record<string, unknown> {
   const names = Object.fromEntries(Object.entries(c.text).flatMap(([lang, text]) => (text?.name ? [[lang, text.name]] : [])));
   return {

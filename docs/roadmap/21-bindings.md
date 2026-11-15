@@ -226,7 +226,7 @@ Shared helpers: `msgError` (`messages.go`), `imageURL`, `soundURLs`, `appContext
        1. `make frontend`: Vitest 675 passed, 1 skipped.
        2. `make e2e`: 564 passed, 0 failed, 18 skipped.
 
-### [ ] 21.6 Docs
+### [x] 21.6 Docs
 
 1. Goal: docs match the new layout.
 2. Tasks:
@@ -236,3 +236,21 @@ Shared helpers: `msgError` (`messages.go`), `imageURL`, `soundURLs`, `appContext
    4. ADRs that name a moved file or struct: edit in place.
 3. Done when:
    1. `grep` finds no stale `App.<Method>` binding names in `docs/`.
+4. Result (2026-11-16)
+   1. `Repo-layout.md`: one line per `bindings/` package; `main.go`, `app.go` line.
+   2. `Client.md`: new section Bindings.
+      1. Package table; `wailsjs/go/<package>/<Struct>`; `models.ts` namespaces.
+      2. `fakeBridge.ts` fakes `window.go.<package>.<Struct>`.
+   3. `Frontend-tests.md`: the fake's `window.go` paths; `window.go.host.Host`.
+   4. `CLAUDE.md` 3.1 edited in place; 3.19 `bindings/` appended.
+   5. ADR 030, small drift in place.
+      1. 3.3, 3.4: which `New` takes nothing, which an `api`.
+      2. 7.1, 7.3: `assets.Middleware` is a package func.
+   6. Use cases: UC-36 `cards.go` became `bindings/assets`.
+      1. UC-09: `bindings/host` (saves folder), not `bindings/records`.
+      2. Both files and their index rows.
+   7. `fakeBridge.ts`: four comments `App.Cards` became `Assets.Cards`.
+   8. Grep for stale `App.<Method>` names: hits only in `docs/roadmap/` (history).
+      1. Old root file names: only engine files (`pkg/rules_engine`).
+      2. ADR 026 item 91: past tense, history.
+   9. Gates: `make lint`, `make frontend` (Vitest 675 passed, 1 skipped).

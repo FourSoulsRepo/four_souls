@@ -10,7 +10,7 @@
 | UC-06 | Respond without stalls | `internal/server` | In progress | [server/uc-06-respond-without-stalls.md](server/uc-06-respond-without-stalls.md) |
 | UC-07 | Reconnect after a lost connection | `internal/server` | In progress | [server/uc-07-reconnect.md](server/uc-07-reconnect.md) |
 | UC-08 | Get a match record | `internal/server`, `pkg/record`, `bindings/records` | In progress | [server/uc-08-get-a-match-record.md](server/uc-08-get-a-match-record.md) |
-| UC-09 | Save and continue a game | `internal/server`, `pkg/record`, `bindings/records` | In progress | [server/uc-09-save-and-continue.md](server/uc-09-save-and-continue.md) |
+| UC-09 | Save and continue a game | `internal/server`, `pkg/record`, `bindings/host` | In progress | [server/uc-09-save-and-continue.md](server/uc-09-save-and-continue.md) |
 | UC-10 | Change settings | `internal/settings`, `bindings/prefs`, `frontend` | In progress | [app/uc-10-change-settings.md](app/uc-10-change-settings.md) |
 | UC-11 | Look at a card | `frontend`, `bindings/assets` | Implemented | [app/uc-11-look-at-a-card.md](app/uc-11-look-at-a-card.md) |
 | UC-12 | See the table | `frontend` | In progress | [app/uc-12-see-the-table.md](app/uc-12-see-the-table.md) |
@@ -37,7 +37,7 @@
 | UC-33 | Check a translation | `frontend`, `Makefile` | Implemented | [translate/uc-33-check-a-translation.md](translate/uc-33-check-a-translation.md) |
 | UC-34 | Show own card images | `internal/assets`, `pkg/card_db` | Implemented | [translate/uc-34-show-own-card-images.md](translate/uc-34-show-own-card-images.md) |
 | UC-35 | The host ends the game | `internal/server`, `frontend` | Implemented | [server/uc-35-host-ends-the-game.md](server/uc-35-host-ends-the-game.md) |
-| UC-36 | See a card flip | `rules_engine`, `cards.go`, `frontend` | Implemented | [app/uc-36-see-a-card-flip.md](app/uc-36-see-a-card-flip.md) |
+| UC-36 | See a card flip | `rules_engine`, `bindings/assets`, `frontend` | Implemented | [app/uc-36-see-a-card-flip.md](app/uc-36-see-a-card-flip.md) |
 | UC-37 | Seat the players in a random order | `internal/server`, `frontend` | Implemented | [server/uc-37-random-seats.md](server/uc-37-random-seats.md) |
 | UC-38 | Check a situation on the website | `frontend/src/site`, `cmd/website` | Implemented | [website/uc-38-check-a-situation-on-the-website.md](website/uc-38-check-a-situation-on-the-website.md) |
 | UC-39 | Pick a character in a draft | `frontend`, `internal/server` | Implemented | [app/uc-39-pick-a-character-in-a-draft.md](app/uc-39-pick-a-character-in-a-draft.md) |

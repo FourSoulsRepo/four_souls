@@ -6,7 +6,7 @@ The desktop client is React + TypeScript in `frontend/` (ADR 002), with three li
 
 | File | What it does |
 |---|---|
-| `src/bridge/` | The only code that calls Wails: settings, versions, card data, hosting. |
+| `src/bridge/` | The only code that calls Wails: settings, versions, card data, hosting ([Bindings](#bindings)). |
 | `src/net.ts` | The one WebSocket to the game server; `connectFirst` tries `wss://` then `ws://` (ADR 017). |
 | `src/protocol.ts` | Message and engine view types, mirroring `internal/protocol` and the engine; `wsURLs` (what a typed address tries, ADR 017), `recordURL`, `errorText`. |
 | `src/lobby.ts` | Pure: how server messages change the session (screen, lobby, error). |
@@ -18,7 +18,7 @@ The desktop client is React + TypeScript in `frontend/` (ADR 002), with three li
 | `src/store.ts` | The Zustand store; wires the pure parts to the bridge, the socket and playback. |
 | `src/screens/` | One component per screen; `App.tsx` picks by `store.screen`. |
 | `src/components/` | `Card`, `CardZoom`, `Board`, `PlayerArea`, `Pile`, `Effects`. |
-| `src/fakeBridge.ts` | Dev only: fake Wails bindings for tests (`?fake`). |
+| `src/fakeBridge.ts` | Dev only: fake Wails bindings for tests (`?fake`), at `window.go.<package>.<Struct>`. |
 | `src/i18n.ts` | `t()`, the language files and the chosen language ([Languages](#languages)). |
 | `src/locale.ts` | Pure: lookup, plural forms, the test language, the language list, the translation checks. |
 | `src/locales/` | One JSON file per language; `en.json` is the source; `glossary/` holds the game terms. |
@@ -31,6 +31,23 @@ The desktop client is React + TypeScript in `frontend/` (ADR 002), with three li
 3. An `update` also goes to playback, which queues it.
 4. Playback plays the update's events as effects, one at a time (`store.playing`, drawn by `Effects`), then sets `store.game`. The first update has no table yet: it is drawn first, then its effects play on it; only a game start brings events then (Cain's banner, 15.43).
 5. The table (`GameScreen`) draws `store.game`; it never changes game state itself.
+
+## Bindings
+
+Go bindings are one package per domain under `bindings/` (ADR 030); `main.go` builds each with `New` and lists them in `Bind`. `App` in `app.go` is not bound: it only keeps the Wails context (`Context()`) for the bindings that need it.
+
+| Package | Struct | Methods |
+|---|---|---|
+| `about` | `About` | `Versions`, `Notice` |
+| `prefs` | `Prefs` | `Settings`, `SaveSettings` |
+| `assets` | `Assets` | `Cards`, `Backs`, `Dice`, `Mats`, `Fonts`, `Icons`, `Sounds` |
+| `setup` | `Setup` | `CardSets`, `Challenges`, `DeckRatios` |
+| `join` | `Join` | `FindGames`, `CheckSeat`, `ServerStatus` |
+| `host` | `Host` | `Start`, `Stop`, `Info` |
+| `records` | `Records` | `SaveRecord` |
+| `updater` | `Updater` | `Check`, `Download`, `ApplyAndQuit`, `OpenReleases` |
+
+Wails generates each struct's calls into `frontend/wailsjs/go/<package>/<Struct>.js` (e.g. `wailsjs/go/assets/Assets`) and its types into `export namespace <package>` in `models.ts`. Only `src/bridge/index.ts` imports them; its exports keep their own names, so screens never see the Go packages. At run time the calls go through `window.go.<package>.<Struct>.<Method>`, and `src/fakeBridge.ts` fakes exactly those paths (`?fake`), e.g. `window.go.join.Join.FindGames`. A new binding package checks `models.ts` first: a name already used there (`settings`, `update`, …) would merge two namespaces.
 
 ## Effects
 

@@ -10,7 +10,7 @@
    3. Roadmap: `docs/roadmap.md`; detailed steps in `docs/roadmap/`.
    4. Decisions: `docs/architecture/` (see `INDEX.md`).
 3. Layout
-   1. `main.go`, `app.go`: Wails entry point and bindings.
+   1. `main.go`, `app.go`: Wails entry point and app context.
    2. `frontend/`: React + TS (Vite).
    3. `docs/architecture/`: ADRs.
    4. `docs/use-cases/`: user-visible scenarios.
@@ -28,6 +28,7 @@
    16. `deploy/`: server setups: systemd, Docker, compose with Caddy (ADR 018).
    17. `scripts/`: `setup.sh` installs the tools; `versions.env` holds their versions.
    18. `cmd/server_load`: load test against a running server (wiki Load-test).
+   19. `bindings/`: Wails bindings, one package per domain (ADR 030).
 4. Commands
    1. `wails dev -m`: run with hot reload.
    2. `wails build -m`: release binary to `build/bin/`.

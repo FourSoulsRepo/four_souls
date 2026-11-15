@@ -32,7 +32,7 @@ The inventory tests (`animations.test.ts`, `layers.test.ts`, `i18n.test.ts`) lis
 
 ## UI tests
 
-Vite serves the frontend with fake Wails bindings (`?fake`, `frontend/src/fakeBridge.ts`). The fake keeps settings in `localStorage`, so a page reload acts like an app restart.
+Vite serves the frontend with fake Wails bindings (`?fake`, `frontend/src/fakeBridge.ts`). It fakes each bound struct where Wails puts it, `window.go.<package>.<Struct>`, e.g. `window.go.assets.Assets` (ADR 030). The fake keeps settings in `localStorage`, so a page reload acts like an app restart.
 
 URL flags, dev server only:
 
@@ -68,7 +68,7 @@ The rules website has its own spec, `site.spec.ts`: it opens the page `make site
 
 Match dialogs and buttons by exact name where a question could contain the same word (`{ name: 'Discard', exact: true }`).
 
-Network play runs against the real Go server: `e2e/playwright.config.ts` starts `cmd/server` next to Vite, one per browser project (Chromium on port 4799, WebKit on 4797; `e2e/tests/ports.ts`), so the two runs never see each other's games. Tests reach theirs with `serverPort()` and `appURL()` (`e2e/tests/server.ts`). The fake `Host` binding points at it (`?server=PORT`), so one page "hosts" and others join it by address. Use separate browser contexts for separate players: each has its own `localStorage`, like a separate app.
+Network play runs against the real Go server: `e2e/playwright.config.ts` starts `cmd/server` next to Vite, one per browser project (Chromium on port 4799, WebKit on 4797; `e2e/tests/ports.ts`), so the two runs never see each other's games. Tests reach theirs with `serverPort()` and `appURL()` (`e2e/tests/server.ts`). The fake `Host` binding (`window.go.host.Host`) points at it (`?server=PORT`), so one page "hosts" and others join it by address. Use separate browser contexts for separate players: each has its own `localStorage`, like a separate app.
 
 ## Whole random games
 

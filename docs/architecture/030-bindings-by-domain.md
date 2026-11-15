@@ -59,6 +59,8 @@ Use option 1.
 3. Each package has `New(…)`; it takes what it needs.
    1. Fixed values as arguments: settings file, card files, folders.
    2. The Wails context through an `api` interface: `Context() context.Context`.
+   3. `about` and `setup` need neither: `New()` takes nothing.
+   4. Only `join`, `records`, `updater` take an `api`; `main` passes `App`.
 4. `App` stays in `package main`, not bound.
    1. It keeps the Wails context from `OnStartup`.
    2. Its `Context()` ends at shutdown; background before startup.
@@ -69,8 +71,10 @@ Use option 1.
    1. It holds the message error type and the JSON list helper.
    2. Each binding package keeps its own keys and its error mapping.
 7. `assets` keeps the card files and the URL prefix.
-   1. It also serves the files: `cardImages` becomes its middleware.
+   1. It also serves the files: `cardImages` becomes `assets.Middleware`.
    2. `internal/assets` keeps the embedded or on-disk file system.
+   3. `Middleware` is a package func, not a method.
+      1. A method on bound `Assets` would reach the frontend (Context 5).
 8. `appPath`, `slotSettings` and the instance slot stay in `main`.
 9. Each package has its tests; `wails.json` and key tests stay in `main`.
 10. Only the bridge and the fake bridge change in the frontend.
