@@ -189,7 +189,7 @@ Shared helpers: `msgError` (`messages.go`), `imageURL`, `soundURLs`, `appContext
       3. Failures, webkit: `lobby.spec.ts:13` (19.162), `challenge-trick.spec.ts:333` (19.165).
       4. Rerun, webkit, 5 workers, 3 repeats: 6 of 6 passed.
 
-### [ ] 21.5 Setup, join, records
+### [x] 21.5 Setup, join, records
 
 1. Goal: the last `App` bindings move out.
 2. Tasks:
@@ -199,6 +199,32 @@ Shared helpers: `msgError` (`messages.go`), `imageURL`, `soundURLs`, `appContext
    1. `App` is not bound; it keeps only the Wails context.
    2. `main.go` binds only `bindings/*` structs.
    3. Gates pass.
+4. Result (2026-11-16)
+   1. `bindings/setup`: `setup.New()`; `CardSets`, `Challenges`, `DeckRatios`.
+      1. `ChallengeInfo` moved along; its key `error.deck_ratios` too.
+   2. `bindings/join`: `join.New(api)`; `FindGames`, `CheckSeat`, `ServerStatus`.
+      1. Files: `join.go` (was `messages.go`), `lan.go`, `servers.go`.
+      2. Its key `error.lan_no_network`; `lanError` maps it through `msgerr`.
+      3. New test: `TestLanError`.
+   3. `bindings/records`: `records.New(api)`; `SaveRecord`, its tests along.
+      1. File: `records.go` (was `record.go`).
+   4. `App` is not bound; `wailsContext` folded into it.
+      1. `startup`, `shutdown` unexported; `Context()` as in 21.2.
+      2. `TestWailsContext` now tests `App`.
+      3. `messages.go` and `playerError` are gone.
+   5. `main.go`: `Bind` lists eight `bindings/*` structs.
+      1. `join`, `records`, `updater` take `app` as their `api`.
+   6. Generated: `wailsjs/go/setup`, `join`, `records`; `wailsjs/go/main/` gone.
+      1. `models.ts`: `ChallengeInfo` moved from `main` to `setup`; no merge.
+      2. File modes as in HEAD (644; `models.ts` 755).
+   7. Bridge: three import paths; exports unchanged.
+   8. `fakeBridge.ts`: fakes moved to `go.setup.Setup`, `go.join.Join`, `go.records.Records`.
+      1. Three comments name the Go method: `App.` became `Setup.` or `Join.`.
+   9. Docs: `Client.md`, `Server.md`, `Repo-layout.md` line 4, ADR 028.
+      1. UC-08, UC-17 and their index rows.
+   10. Gates: `make lint`, `make test`, `make frontend`, `wails build -m -tags embed`.
+       1. `make frontend`: Vitest 675 passed, 1 skipped.
+       2. `make e2e`: 564 passed, 0 failed, 18 skipped.
 
 ### [ ] 21.6 Docs
 

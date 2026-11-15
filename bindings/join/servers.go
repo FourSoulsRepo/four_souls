@@ -1,4 +1,4 @@
-package main
+package join
 
 import (
 	"context"
@@ -26,18 +26,18 @@ const maxAnswer = 4 << 10
 // (15.99), so the menu offers Rejoin. bases are the server's http(s)
 // addresses to try in order, as the frontend builds them from the
 // address it joined (wss first, then ws, ADR 017).
-func (a *App) CheckSeat(bases []string, token string) (protocol.SeatInfo, error) {
+func (j *Join) CheckSeat(bases []string, token string) (protocol.SeatInfo, error) {
 	var info protocol.SeatInfo
-	err := askServer(a.wails.Context(), bases, "/seat", url.Values{"token": {token}}, &info)
+	err := askServer(j.api.Context(), bases, "/seat", url.Values{"token": {token}}, &info)
 	return info, err
 }
 
 // ServerStatus asks a game server how many games wait for players
 // (15.100), for the Online screen's Recent list. bases are as for
 // CheckSeat; an error means no base answered: the server is down.
-func (a *App) ServerStatus(bases []string) (protocol.ServerStatus, error) {
+func (j *Join) ServerStatus(bases []string) (protocol.ServerStatus, error) {
 	var st protocol.ServerStatus
-	err := askServer(a.wails.Context(), bases, "/status", nil, &st)
+	err := askServer(j.api.Context(), bases, "/status", nil, &st)
 	return st, err
 }
 

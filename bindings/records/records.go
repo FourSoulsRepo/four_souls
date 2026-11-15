@@ -1,4 +1,6 @@
-package main
+// Package records is the binding that saves a finished game's record
+// from the game server (RP-05, ADR 030).
+package records
 
 import (
 	"context"
@@ -26,23 +28,40 @@ var ErrRecordSize = errors.New("record: the file is too large")
 // hundred KB.
 const maxRecord = 64 << 20
 
+// api is what the binding needs from the app (ADR 030, item 3).
+type api interface {
+	// Context is the Wails context for the save dialog; it ends when
+	// the app shuts down, which stops a running download.
+	Context() context.Context
+}
+
+// Records saves match records.
+type Records struct {
+	api api
+}
+
+// New makes the binding.
+func New(a api) *Records {
+	return &Records{api: a}
+}
+
 // SaveRecord downloads a finished game's record from the game server
 // and asks where to save it (RP-05). link is http://host:port/record?…,
 // or https://… for a server behind an HTTPS proxy (8.18); the dialog suggests the server's file name, cleaned again. The result
 // is the saved file, or "" when the player cancelled.
-func (a *App) SaveRecord(link string) (string, error) {
+func (r *Records) SaveRecord(link string) (string, error) {
 	u, err := url.Parse(link)
 	if err != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Path != "/record" || u.Host == "" {
 		return "", ErrRecordURL
 	}
-	data, name, err := fetchRecord(a.wails.Context(), u.String())
+	data, name, err := fetchRecord(r.api.Context(), u.String())
 	if err != nil {
 		return "", err
 	}
 	if name == "" {
 		name = "four-souls-" + record.SafeName(u.Query().Get("game")) + record.Ext
 	}
-	path, err := runtime.SaveFileDialog(a.wails.Context(), runtime.SaveDialogOptions{
+	path, err := runtime.SaveFileDialog(r.api.Context(), runtime.SaveDialogOptions{
 		Title:           "Save the match record",
 		DefaultFilename: name,
 		Filters:         []runtime.FileFilter{{DisplayName: "Four Souls records", Pattern: "*" + record.Ext}},

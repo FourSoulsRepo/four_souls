@@ -5,15 +5,9 @@ import { noHostSetup, type HostSetup } from '../hostSetup';
 import type { CardInfo, Kind } from '../cards';
 import type { Speed } from '../playback';
 import type { Difficulty } from '../protocol';
-import {
-  CardSets as wailsCardSets,
-  Challenges as wailsChallenges,
-  CheckSeat as wailsCheckSeat,
-  DeckRatios as wailsDeckRatios,
-  FindGames as wailsFindGames,
-  SaveRecord as wailsSaveRecord,
-  ServerStatus as wailsServerStatus,
-} from '../../wailsjs/go/main/App';
+import { CardSets as wailsCardSets, Challenges as wailsChallenges, DeckRatios as wailsDeckRatios } from '../../wailsjs/go/setup/Setup';
+import { CheckSeat as wailsCheckSeat, FindGames as wailsFindGames, ServerStatus as wailsServerStatus } from '../../wailsjs/go/join/Join';
+import { SaveRecord as wailsSaveRecord } from '../../wailsjs/go/records/Records';
 import {
   Backs as wailsBacks,
   Cards as wailsCards,

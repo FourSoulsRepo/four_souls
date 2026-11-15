@@ -15,7 +15,10 @@ import (
 	"github.com/FourSoulsRepo/four_souls/bindings/about"
 	"github.com/FourSoulsRepo/four_souls/bindings/assets"
 	"github.com/FourSoulsRepo/four_souls/bindings/host"
+	"github.com/FourSoulsRepo/four_souls/bindings/join"
 	"github.com/FourSoulsRepo/four_souls/bindings/prefs"
+	"github.com/FourSoulsRepo/four_souls/bindings/records"
+	"github.com/FourSoulsRepo/four_souls/bindings/setup"
 	"github.com/FourSoulsRepo/four_souls/bindings/updater"
 	appfiles "github.com/FourSoulsRepo/four_souls/internal/assets"
 	"github.com/FourSoulsRepo/four_souls/internal/instance"
@@ -65,14 +68,15 @@ func main() {
 		BackgroundColour: &options.RGBA{R: 27, G: 38, B: 54, A: 1},
 		// The saved window mode applies from the first frame (ST-01).
 		Fullscreen: settings.Load(settingsFile).Fullscreen,
+		// Only the bindings/* structs; App is not bound (ADR 030, item 4).
 		Bind: []any{
-			app, about.New(), prefs.New(settingsFile), assets.New(cardFiles), hosting,
-			updater.New(&app.wails),
+			about.New(), prefs.New(settingsFile), assets.New(cardFiles), setup.New(),
+			join.New(app), hosting, records.New(app), updater.New(app),
 		},
-		OnStartup: app.wails.startup,
+		OnStartup: app.startup,
 		// Ending the context stops a running update (ADR 030, item 5).
 		OnShutdown: func(context.Context) {
-			app.wails.shutdown()
+			app.shutdown()
 			_ = hosting.Stop() //nolint:errcheck,contextcheck // closing; Stop has its own limit
 		},
 	})

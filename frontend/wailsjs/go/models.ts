@@ -390,25 +390,6 @@ export namespace legal {
 
 }
 
-export namespace main {
-	
-	export class ChallengeInfo {
-	    id: string;
-	    difficulties: string[];
-	
-	    static createFrom(source: any = {}) {
-	        return new ChallengeInfo(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.id = source["id"];
-	        this.difficulties = source["difficulties"];
-	    }
-	}
-
-}
-
 export namespace protocol {
 	
 	export class SeatInfo {
@@ -569,6 +550,25 @@ export namespace settings {
 		    }
 		    return a;
 		}
+	}
+
+}
+
+export namespace setup {
+	
+	export class ChallengeInfo {
+	    id: string;
+	    difficulties: string[];
+	
+	    static createFrom(source: any = {}) {
+	        return new ChallengeInfo(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.difficulties = source["difficulties"];
+	    }
 	}
 
 }

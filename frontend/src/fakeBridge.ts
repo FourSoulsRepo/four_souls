@@ -345,8 +345,8 @@ w.go = {
       SaveSettings: saveSettings,
     },
   },
-  main: {
-    App: {
+  setup: {
+    Setup: {
       // ?requiem adds Requiem, the only set the deck ratios need; other
       // tests keep the older sets.
       CardSets: () => Promise.resolve(['b2', 'g2', 'fsp2', ...(params.has('requiem') ? ['r'] : [])]),
@@ -355,7 +355,7 @@ w.go = {
           { id: 'krampus', difficulties: ['normal', 'hard', 'ultra'] },
           { id: 'trick_or_treat', difficulties: ['normal', 'hard', 'ultra'] },
         ]),
-      // Go's answer for today's card data (App.DeckRatios): the ratios
+      // Go's answer for today's card data (Setup.DeckRatios): the ratios
       // need Requiem, and Four Souls+ too in a 2-player game.
       DeckRatios: (sets: string[], players: number) =>
         Promise.resolve(
@@ -363,7 +363,11 @@ w.go = {
             ? ''
             : JSON.stringify([{ key: 'refuse.deck_ratios', args: { n: players } }, { key: 'refuse.ratio.butter_beans', args: { have: 3, need: 5 } }]),
         ),
-      // The real server's answer, like Go's App.CheckSeat: the first
+    },
+  },
+  join: {
+    Join: {
+      // The real server's answer, like Go's Join.CheckSeat: the first
       // base that answers.
       CheckSeat: async (bases: string[], token: string) => {
         for (const b of bases) {
@@ -378,7 +382,7 @@ w.go = {
         }
         throw new Error('server: no answer');
       },
-      // Like Go's App.ServerStatus: the first base that answers.
+      // Like Go's Join.ServerStatus: the first base that answers.
       ServerStatus: async (bases: string[]) => {
         for (const b of bases) {
           try {
@@ -392,7 +396,6 @@ w.go = {
         }
         throw new Error('server: no answer');
       },
-      SaveRecord: (link: string) => Promise.resolve(`/fake/${new URL(link).searchParams.get('game') ?? ''}.fsrec`),
       // The LAN holds one hosting app: the test server (?server=PORT).
       // ?nolan finds nothing; a test sets window.fakeLan to list others,
       // in this app's protocol unless it names one.
@@ -403,6 +406,11 @@ w.go = {
               ? []
               : [{ address: `127.0.0.1:${String(hostPort)}`, protocol: protocolVersion, app: 'demo', games: [{ id: '', host: 'Lan', seats: 2, taken: 1 }] }]),
         ),
+    },
+  },
+  records: {
+    Records: {
+      SaveRecord: (link: string) => Promise.resolve(`/fake/${new URL(link).searchParams.get('game') ?? ''}.fsrec`),
     },
   },
   assets: {

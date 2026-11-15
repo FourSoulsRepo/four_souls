@@ -1,7 +1,7 @@
 # Repo layout
 
 ```
-main.go, app.go        Wails desktop app and its bindings
+main.go, app.go        Wails desktop app: entry point, lifetime, binding list
 bindings/              Wails bindings, one package per domain (ADR 030)
 cmd/server/            dedicated server (no UI)
 cmd/server_load/       load test: plays whole games against a running server

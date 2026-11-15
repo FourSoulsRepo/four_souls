@@ -1,6 +1,7 @@
-package main
+package records
 
 import (
+	"context"
 	"errors"
 	"mime"
 	"net/http"
@@ -40,10 +41,15 @@ func TestFetchRecord(t *testing.T) {
 }
 
 func TestSaveRecordChecksTheLink(t *testing.T) {
-	a := &App{}
+	r := New(background{})
 	for _, bad := range []string{"ftp://x/record", "https://x/save", "http://x/save", "file:///etc/passwd", "http:///record", "::"} {
-		if _, err := a.SaveRecord(bad); !errors.Is(err, ErrRecordURL) {
+		if _, err := r.SaveRecord(bad); !errors.Is(err, ErrRecordURL) {
 			t.Errorf("%q: err %v, want ErrRecordURL", bad, err)
 		}
 	}
 }
+
+// background is the app before startup: its context never ends.
+type background struct{}
+
+func (background) Context() context.Context { return context.Background() }

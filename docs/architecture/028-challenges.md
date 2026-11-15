@@ -167,7 +167,7 @@ Use options 1, 4 and 5.
    4. It turns bonus souls off in a challenge.
    5. Record setup: `challenge` and `difficulty` (ADR 007).
    6. Saves and the seamless restart keep them (ADR 019).
-   7. The host screen lists the challenges from the app (`App.Challenges`), like card sets.
+   7. The host screen lists the challenges from the app (`Setup.Challenges`), like card sets.
    8. Each: ID and difficulties; the client names them (`challenge.name.<id>`).
    9. A server that lacks one refuses it at create: `error.no_challenge` (14.23).
    10. Other refusals: `error.no_difficulty`, `error.challenge_seats`; code `bad_setup`.

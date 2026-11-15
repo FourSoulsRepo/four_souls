@@ -1,4 +1,4 @@
-package main
+package join
 
 import (
 	"time"
@@ -12,10 +12,10 @@ const findWait = time.Second
 
 // FindGames lists the games hosted on the local network that wait for
 // players (N-13, ADR 009).
-func (a *App) FindGames() ([]lan.Found, error) {
-	found, err := lan.Find(a.wails.Context(), protocol.DefaultPort, findWait)
+func (j *Join) FindGames() ([]lan.Found, error) {
+	found, err := lan.Find(j.api.Context(), protocol.DefaultPort, findWait)
 	if found == nil {
 		found = []lan.Found{} // an empty list, not null, for the frontend
 	}
-	return found, playerError(err)
+	return found, lanError(err)
 }
