@@ -293,7 +293,8 @@ const hostPort = Number(params.get('server') ?? '4774');
 const hostInfo = { running: true, port: hostPort, addresses: ['127.0.0.1'] };
 
 const w = window as unknown as {
-  go: { main: Record<string, Record<string, (...args: never[]) => Promise<unknown>>> };
+  // Wails puts each bound struct under its Go package: go.<package>.<Struct> (ADR 030).
+  go: Record<string, Record<string, Record<string, (...args: never[]) => Promise<unknown>>>>;
   runtime: Record<string, (...args: never[]) => void>;
   // fakeFullscreen lets tests see the window mode.
   fakeFullscreen: boolean;
@@ -492,11 +493,15 @@ w.go = {
               : [{ address: `127.0.0.1:${String(hostPort)}`, protocol: protocolVersion, app: 'demo', games: [{ id: '', host: 'Lan', seats: 2, taken: 1 }] }]),
         ),
     },
+  },
+  host: {
     Host: {
       Start: () => Promise.resolve(hostInfo),
       Info: () => Promise.resolve(hostInfo),
       Stop: () => Promise.resolve(),
     },
+  },
+  updater: {
     // No network: a test sets the check's answer and sends the download's
     // progress events itself (fakeEmit), then ends it (fakeDownload).
     Updater: {

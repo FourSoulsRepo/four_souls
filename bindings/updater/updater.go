@@ -1,4 +1,6 @@
-package main
+// Package updater is the binding of the Update screen (18.24, ADR 029,
+// ADR 030).
+package updater
 
 import (
 	"context"
@@ -8,6 +10,7 @@ import (
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 
+	"github.com/FourSoulsRepo/four_souls/internal/msgerr"
 	"github.com/FourSoulsRepo/four_souls/internal/update"
 	"github.com/FourSoulsRepo/four_souls/internal/version"
 	engine "github.com/FourSoulsRepo/rules_engine"
@@ -39,25 +42,31 @@ type UpdateProgress struct {
 	Total int64 `json:"total"`
 }
 
-// Updater holds the update bindings of the Update screen (18.24, ADR 029).
-type Updater struct {
-	client *update.Client
-
-	// The Wails calls; tests replace them.
-	emit func(name string, data any)
-	quit func()
-	open func(url string)
-
-	mu     sync.Mutex
-	ctx    context.Context //nolint:containedctx // ends when the app shuts down
-	cancel context.CancelFunc
-	url    string // the release page of the last Check
+// api is what the binding needs from the app (ADR 030, item 3).
+type api interface {
+	// Context is the Wails context; it ends when the app shuts down,
+	// which stops a running check or download.
+	Context() context.Context
 }
 
-// NewUpdater makes the bindings for this build's releases.
-func NewUpdater() *Updater {
-	ctx, cancel := context.WithCancel(context.Background())
+// Updater holds the update bindings of the Update screen (18.24, ADR 029).
+type Updater struct {
+	api    api
+	client *update.Client
+
+	// The Wails runtime calls; tests replace them.
+	emit func(ctx context.Context, name string, data any)
+	quit func(ctx context.Context)
+	open func(ctx context.Context, url string)
+
+	mu  sync.Mutex
+	url string // the release page of the last Check
+}
+
+// New makes the bindings for this build's releases.
+func New(a api) *Updater {
 	return &Updater{
+		api: a,
 		client: update.New(update.Config{
 			Owner:   "FourSoulsRepo",
 			Repo:    "four_souls",
@@ -65,44 +74,16 @@ func NewUpdater() *Updater {
 			Current: version.App,
 			Edition: version.Edition,
 		}),
-		ctx:    ctx,
-		cancel: cancel,
-		emit:   func(string, any) {},
-		quit:   func() {},
-		open:   func(string) {},
+		emit: func(ctx context.Context, name string, data any) { runtime.EventsEmit(ctx, name, data) },
+		quit: runtime.Quit,
+		open: runtime.BrowserOpenURL,
 	}
-}
-
-// startup wires the Wails runtime; downloads end when the app shuts down.
-func (u *Updater) startup(ctx context.Context) {
-	u.mu.Lock()
-	defer u.mu.Unlock()
-	u.cancel()
-	u.ctx, u.cancel = context.WithCancel(ctx)
-	u.emit = func(name string, data any) { runtime.EventsEmit(ctx, name, data) }
-	u.quit = func() { runtime.Quit(ctx) }
-	u.open = func(url string) { runtime.BrowserOpenURL(ctx, url) }
-}
-
-// shutdown stops a running check or download.
-func (u *Updater) shutdown() {
-	u.mu.Lock()
-	defer u.mu.Unlock()
-	u.cancel()
-}
-
-// wails is the context and the runtime calls, read under the lock.
-func (u *Updater) wails() (ctx context.Context, emit func(string, any), quit func(), open func(string)) {
-	u.mu.Lock()
-	defer u.mu.Unlock()
-	return u.ctx, u.emit, u.quit, u.open
 }
 
 // Check asks GitHub for the latest release. "No update" is in the
 // status, with its reason; an error means GitHub could not be asked.
 func (u *Updater) Check() (update.Status, error) {
-	ctx, _, _, _ := u.wails()
-	st, err := u.client.Check(ctx)
+	st, err := u.client.Check(u.api.Context())
 	if err != nil {
 		return st, updateError(err, errUpdateCheck)
 	}
@@ -115,9 +96,9 @@ func (u *Updater) Check() (update.Status, error) {
 // Download fetches and checks the archive of the last Check, sending
 // progressEvent as it goes.
 func (u *Updater) Download() error {
-	ctx, emit, _, _ := u.wails()
+	ctx := u.api.Context()
 	err := u.client.Download(ctx, func(done, total int64) {
-		emit(progressEvent, UpdateProgress{Done: done, Total: total})
+		u.emit(ctx, progressEvent, UpdateProgress{Done: done, Total: total})
 	})
 	return updateError(err, errUpdateDownload)
 }
@@ -128,22 +109,20 @@ func (u *Updater) ApplyAndQuit() error {
 	if err := u.client.Apply(); err != nil {
 		return updateError(err, errUpdateInstall)
 	}
-	_, _, quit, _ := u.wails()
-	quit()
+	u.quit(u.api.Context())
 	return nil
 }
 
 // OpenReleases opens the release page in the browser: the last
 // checked release, else the page of all releases.
 func (u *Updater) OpenReleases() {
-	_, _, _, open := u.wails()
 	u.mu.Lock()
 	url := u.url
 	u.mu.Unlock()
 	if url == "" {
 		url = u.client.ReleasesURL()
 	}
-	open(url)
+	u.open(u.api.Context(), url)
 }
 
 // updateError gives an update error the player's words; other is the
@@ -171,5 +150,5 @@ func updateError(err error, other engine.Key) error {
 			break
 		}
 	}
-	return msgError{msg: key.Msg(), cause: err}
+	return msgerr.New(key.Msg(), err)
 }

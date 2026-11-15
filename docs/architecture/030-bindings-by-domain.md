@@ -73,8 +73,9 @@ Use option 1.
    2. `internal/assets` keeps the embedded or on-disk file system.
 8. `appPath`, `slotSettings` and the instance slot stay in `main`.
 9. Each package has its tests; `wails.json` and key tests stay in `main`.
-10. The bridge is the only frontend code that changes.
+10. Only the bridge and the fake bridge change in the frontend.
     1. Its exports and types stay the same for screens.
+    2. `fakeBridge.ts` fakes `window.go.<package>.<Struct>` to match.
 
 ## Consequences
 

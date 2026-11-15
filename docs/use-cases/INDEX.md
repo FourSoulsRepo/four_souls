@@ -4,7 +4,7 @@
 |----|------|--------|--------|------|
 | UC-01 | Start the app with the fan-game notice | `internal/legal`, `frontend` | Implemented | [app/uc-01-start-app-with-notice.md](app/uc-01-start-app-with-notice.md) |
 | UC-02 | Start the dedicated server | `cmd/server` | In progress | [server/uc-02-start-dedicated-server.md](server/uc-02-start-dedicated-server.md) |
-| UC-03 | Host a game | `internal/server`, `host.go` | In progress | [server/uc-03-host-a-game.md](server/uc-03-host-a-game.md) |
+| UC-03 | Host a game | `internal/server`, `bindings/host` | In progress | [server/uc-03-host-a-game.md](server/uc-03-host-a-game.md) |
 | UC-04 | Join a game | `internal/server` | In progress | [server/uc-04-join-a-game.md](server/uc-04-join-a-game.md) |
 | UC-05 | Detailed match setup | `internal/server` | In progress | [server/uc-05-detailed-match-setup.md](server/uc-05-detailed-match-setup.md) |
 | UC-06 | Respond without stalls | `internal/server` | In progress | [server/uc-06-respond-without-stalls.md](server/uc-06-respond-without-stalls.md) |
@@ -44,4 +44,4 @@
 | UC-40 | Rooms on the table | `frontend`, `internal/server`, `rules_engine` | Implemented | [app/uc-40-rooms-on-the-table.md](app/uc-40-rooms-on-the-table.md) |
 | UC-41 | Host a challenge | `frontend`, `internal/settings`, `internal/server` | Implemented | [server/uc-41-host-a-challenge.md](server/uc-41-host-a-challenge.md) |
 | UC-42 | Play a challenge | `frontend`, `rules_engine` | Implemented | [app/uc-42-play-a-challenge.md](app/uc-42-play-a-challenge.md) |
-| UC-43 | Update the app | `internal/update`, `updater.go`, `frontend` | Implemented | [app/uc-43-update-the-app.md](app/uc-43-update-the-app.md) |
+| UC-43 | Update the app | `internal/update`, `bindings/updater`, `frontend` | Implemented | [app/uc-43-update-the-app.md](app/uc-43-update-the-app.md) |

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"slices"
@@ -108,5 +109,28 @@ func TestChallenges(t *testing.T) {
 		if !slices.Equal(c.Difficulties, []string{"normal", "hard", "ultra"}) {
 			t.Errorf("%s: difficulties %v", c.ID, c.Difficulties)
 		}
+	}
+}
+
+// The Wails context is a background one before startup; it ends at
+// shutdown, with or without a startup (ADR 030, item 4).
+func TestWailsContext(t *testing.T) {
+	var w wailsContext
+	if w.Context().Done() != nil {
+		t.Error("ends before startup")
+	}
+	type key struct{}
+	w.startup(context.WithValue(context.Background(), key{}, "wails"))
+	if w.Context().Value(key{}) != "wails" {
+		t.Error("lost the startup context")
+	}
+	w.shutdown()
+	if w.Context().Err() == nil {
+		t.Error("alive after shutdown")
+	}
+	var unstarted wailsContext
+	unstarted.shutdown()
+	if unstarted.Context().Err() == nil {
+		t.Error("alive after shutdown without startup")
 	}
 }

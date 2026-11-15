@@ -1,6 +1,7 @@
-package main
+package host
 
 import (
+	"encoding/json"
 	"errors"
 	"net"
 	"strconv"
@@ -17,7 +18,7 @@ import (
 // as the app does, and a friend over the LAN address; both play (6.4).
 // Only the host may open the game (N-17).
 func TestHostAndRemoteClient(t *testing.T) {
-	h := &Host{}
+	h := New(t.TempDir(), t.TempDir())
 	info, err := h.Start()
 	if err != nil {
 		t.Skipf("cannot host here: %v", err)
@@ -27,8 +28,15 @@ func TestHostAndRemoteClient(t *testing.T) {
 			t.Error(err)
 		}
 	}()
-	if _, again := h.Start(); !errors.Is(again, ErrHosting) {
+	_, again := h.Start()
+	if !errors.Is(again, ErrHosting) {
 		t.Error("hosted twice")
+	}
+	var m struct {
+		Key string `json:"key"`
+	}
+	if err := json.Unmarshal([]byte(again.Error()), &m); err != nil || m.Key != "error.hosting" {
+		t.Errorf("hosted twice: %q is not error.hosting", again.Error())
 	}
 	addrs := [2]string{"127.0.0.1", "127.0.0.1"}
 	if len(info.Addresses) > 0 {

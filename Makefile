@@ -136,7 +136,7 @@ internal: ## Build the app for play tests, card images included
 	@go generate ./pkg/card_db/images
 	@wails build -m $(if $(PLATFORM),-platform $(PLATFORM)) -tags "$(TAGS) embed cardimages" -ldflags "-X github.com/FourSoulsRepo/four_souls/internal/version.App=$(INTERNAL_VERSION)"
 	@# wails build regenerates the bindings as executable files; keep them 644.
-	@chmod 644 frontend/wailsjs/go/main/* frontend/wailsjs/go/models.ts frontend/wailsjs/runtime/*
+	@chmod 644 frontend/wailsjs/go/*/* frontend/wailsjs/go/models.ts frontend/wailsjs/runtime/*
 
 # The release server archives (8.17) into .cache/server; needs macOS
 # for the universal macOS binary. VERSION is stamped into the server.

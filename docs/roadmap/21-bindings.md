@@ -9,8 +9,9 @@ Ideas: A-17.
 
 1. A refactor: nothing the player sees changes.
    1. The bridge API (`frontend/src/bridge/index.ts` exports) stays the same.
-   2. Screens and `fakeBridge.ts` need no change.
+   2. Screens need no change.
    3. Every e2e test passes unchanged.
+   4. `fakeBridge.ts` changes only its `window.go` paths (owner, 2026-11-15).
 2. One domain move per sub-step; the app builds and runs after each.
 3. A move takes its tests along (`*_test.go` next to the code).
 4. Gates: `make lint`, `make frontend e2e`.
@@ -81,7 +82,7 @@ Shared helpers: `msgError` (`messages.go`), `imageURL`, `soundURLs`, `appContext
    5. Player messages: `internal/msgerr`; keys stay in each package.
    6. ADR 003 item 4.4: the `bindings/` folder.
 
-### [ ] 21.2 Host and updater
+### [x] 21.2 Host and updater
 
 1. Goal: the two structs that already stand alone move first.
 2. Tasks:
@@ -92,6 +93,34 @@ Shared helpers: `msgError` (`messages.go`), `imageURL`, `soundURLs`, `appContext
 3. Done when:
    1. `host.go`, `updater.go` are gone from the repo root.
    2. Gates pass.
+4. Result (2026-11-16)
+   1. `bindings/host`: `host.New(records, saves)`; `main` passes the `appPath` folders.
+      1. Its own key `error.hosting`; `OnShutdown` calls `Stop`.
+   2. `bindings/updater`: `updater.New(api)`; `api` gives `Context()`.
+      1. No lifecycle methods; runtime calls take that context.
+      2. Tests replace `emit`, `quit`, `open`.
+   3. `internal/msgerr`: `Error`, `New`, `JSON`, with tests.
+      1. `main` keeps `playerError` for settings and LAN.
+   4. Departure: `Context()` is on `App.wails`, an unbound `wailsContext` field.
+      1. Not `App.Context()`: `App` is bound until 21.5.
+      2. Background before startup; ends at shutdown.
+      3. `FindGames`, `SaveRecord`, `CheckSeat`, `ServerStatus` use it.
+      4. In 21.5 it can fold into `App` (ADR 030 item 4).
+   5. Departure: `HostInfo` is now `host.Info` (revive: no stutter).
+      1. The bridge keeps its own `HostInfo`; its exports are unchanged.
+   6. Generated: `wailsjs/go/host/Host`, `wailsjs/go/updater/Updater`.
+      1. `models.ts`: new namespace `host`; no merge.
+   7. Rule change (owner, 2026-11-15): `fakeBridge.ts` fakes `window.go.<package>.<Struct>`.
+      1. Step rule 1.4 and ADR 030 item 10.2.
+      2. Only the paths and the `go` type changed there.
+   8. Bridge: two import paths; exports unchanged.
+   9. `Makefile` `internal`: chmod covers `wailsjs/go/*/*`.
+   10. Docs: `Client.md`, `Repo-layout.md`, UC-03, UC-43, use-case index.
+   11. Gates: `make lint`, `make test`, `make frontend`, `wails build -m -tags embed`.
+       1. `make e2e`: 562 passed, 2 failed, 18 skipped.
+       2. Failures, chromium only: `aim.spec.ts:33`, `lobby.spec.ts:13`; logged as 19.161, 19.162.
+       3. Rerun of both: 2 of 2 passed.
+       4. A run before the fake bridge change: 446 failed (`window.go.main.Host` gone).
 
 ### [ ] 21.3 About and prefs
 

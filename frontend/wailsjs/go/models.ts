@@ -106,6 +106,27 @@ export namespace cardinfo {
 
 }
 
+export namespace host {
+	
+	export class Info {
+	    running: boolean;
+	    port: number;
+	    addresses: string[];
+	
+	    static createFrom(source: any = {}) {
+	        return new Info(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.running = source["running"];
+	        this.port = source["port"];
+	        this.addresses = source["addresses"];
+	    }
+	}
+
+}
+
 export namespace lan {
 	
 	export class Game {
@@ -280,22 +301,6 @@ export namespace main {
 	        this.title = source["title"];
 	        this.body = source["body"];
 	        this.cyrillic = source["cyrillic"];
-	    }
-	}
-	export class HostInfo {
-	    running: boolean;
-	    port: number;
-	    addresses: string[];
-	
-	    static createFrom(source: any = {}) {
-	        return new HostInfo(source);
-	    }
-	
-	    constructor(source: any = {}) {
-	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.running = source["running"];
-	        this.port = source["port"];
-	        this.addresses = source["addresses"];
 	    }
 	}
 	export class Icons {

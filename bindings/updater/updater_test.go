@@ -1,6 +1,7 @@
-package main
+package updater
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -54,6 +55,11 @@ func TestUpdateErrorKeys(t *testing.T) {
 	}
 }
 
+// background is the app before startup: its context never ends.
+type background struct{}
+
+func (background) Context() context.Context { return context.Background() }
+
 // fakeUpdater points the bindings at a fake GitHub that answers with
 // status code; it records what the runtime was asked.
 func fakeUpdater(t *testing.T, code int) (u *Updater, opened *[]string, quits *int) {
@@ -66,12 +72,12 @@ func fakeUpdater(t *testing.T, code int) (u *Updater, opened *[]string, quits *i
 		_, _ = w.Write([]byte(`{"tag_name":"v9.0.0","html_url":"https://example.test/v9","body":"new"}`)) //nolint:errcheck // test server
 	}))
 	t.Cleanup(ts.Close)
-	u = NewUpdater()
+	u = New(background{})
 	u.client.API = ts.URL
 	opened, quits = new([]string), new(int)
-	u.open = func(url string) { *opened = append(*opened, url) }
-	u.quit = func() { *quits++ }
-	u.emit = func(name string, data any) { t.Errorf("event %s %v", name, data) }
+	u.open = func(_ context.Context, url string) { *opened = append(*opened, url) }
+	u.quit = func(context.Context) { *quits++ }
+	u.emit = func(_ context.Context, name string, data any) { t.Errorf("event %s %v", name, data) }
 	return u, opened, quits
 }
 

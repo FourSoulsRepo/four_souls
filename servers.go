@@ -28,7 +28,7 @@ const maxAnswer = 4 << 10
 // address it joined (wss first, then ws, ADR 017).
 func (a *App) CheckSeat(bases []string, token string) (protocol.SeatInfo, error) {
 	var info protocol.SeatInfo
-	err := askServer(a.appContext(), bases, "/seat", url.Values{"token": {token}}, &info)
+	err := askServer(a.wails.Context(), bases, "/seat", url.Values{"token": {token}}, &info)
 	return info, err
 }
 
@@ -37,16 +37,8 @@ func (a *App) CheckSeat(bases []string, token string) (protocol.SeatInfo, error)
 // CheckSeat; an error means no base answered: the server is down.
 func (a *App) ServerStatus(bases []string) (protocol.ServerStatus, error) {
 	var st protocol.ServerStatus
-	err := askServer(a.appContext(), bases, "/status", nil, &st)
+	err := askServer(a.wails.Context(), bases, "/status", nil, &st)
 	return st, err
-}
-
-// appContext is the app's context, or a background one before startup.
-func (a *App) appContext() context.Context {
-	if a.ctx == nil {
-		return context.Background()
-	}
-	return a.ctx
 }
 
 // askServer gets path from the first of bases that answers, as JSON

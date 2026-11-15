@@ -26,13 +26,13 @@ import {
   Versions as wailsVersions,
 } from '../../wailsjs/go/main/App';
 import { settings } from '../../wailsjs/go/models';
-import { Info as hostInfo, Start as hostStart, Stop as hostStop } from '../../wailsjs/go/main/Host';
+import { Info as hostInfo, Start as hostStart, Stop as hostStop } from '../../wailsjs/go/host/Host';
 import {
   ApplyAndQuit as wailsApplyAndQuit,
   Check as wailsCheckUpdate,
   Download as wailsDownloadUpdate,
   OpenReleases as wailsOpenReleases,
-} from '../../wailsjs/go/main/Updater';
+} from '../../wailsjs/go/updater/Updater';
 import { BrowserOpenURL, EventsOn, Quit, WindowFullscreen, WindowUnfullscreen } from '../../wailsjs/runtime/runtime';
 
 export interface Versions {

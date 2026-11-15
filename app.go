@@ -6,10 +6,12 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"sync"
 
 	"github.com/FourSoulsRepo/four_souls/internal/assets"
 	"github.com/FourSoulsRepo/four_souls/internal/instance"
 	"github.com/FourSoulsRepo/four_souls/internal/legal"
+	"github.com/FourSoulsRepo/four_souls/internal/msgerr"
 	"github.com/FourSoulsRepo/four_souls/internal/settings"
 	"github.com/FourSoulsRepo/four_souls/internal/version"
 	engine "github.com/FourSoulsRepo/rules_engine"
@@ -18,9 +20,9 @@ import (
 
 // App holds the methods the frontend calls through Wails bindings.
 type App struct {
-	ctx       context.Context //nolint:containedctx // Wails hands the app context over at startup
-	settings  string          // the settings file
-	cardFiles fs.FS           // card data and images
+	wails     wailsContext // the app's lifetime; unbound (ADR 030, item 4)
+	settings  string       // the settings file
+	cardFiles fs.FS        // card data and images
 	cardList  cardList
 }
 
@@ -46,8 +48,56 @@ func slotSettings(slot *instance.Slot, first string) string {
 	return path
 }
 
-// startup keeps the app context for runtime calls such as dialogs.
-func (a *App) startup(ctx context.Context) { a.ctx = ctx }
+// appPath is where the app keeps a file or folder: the user's config
+// folder, or next to the app if there is none.
+func appPath(name string) string {
+	dir, err := os.UserConfigDir()
+	if err != nil {
+		return name
+	}
+	return filepath.Join(dir, "FourSouls", name)
+}
+
+// wailsContext is the Wails context for runtime calls such as dialogs
+// (ADR 030, items 4 and 5). It is a background context before startup
+// and ends at shutdown, which stops the work bindings run in it. The
+// zero value is ready. It stays apart from App while App is bound, so
+// Context does not reach the frontend.
+type wailsContext struct {
+	mu     sync.Mutex
+	ctx    context.Context //nolint:containedctx // Wails hands it over at startup
+	cancel context.CancelFunc
+}
+
+// startup keeps ctx, the context Wails gives OnStartup.
+func (w *wailsContext) startup(ctx context.Context) {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	if w.cancel != nil {
+		w.cancel()
+	}
+	w.ctx, w.cancel = context.WithCancel(ctx)
+}
+
+// shutdown ends the context.
+func (w *wailsContext) shutdown() {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	if w.cancel == nil {
+		w.ctx, w.cancel = context.WithCancel(context.Background())
+	}
+	w.cancel()
+}
+
+// Context is the Wails context; a background one before startup.
+func (w *wailsContext) Context() context.Context {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+	if w.ctx == nil {
+		return context.Background()
+	}
+	return w.ctx
+}
 
 // Versions returns the app and rules engine versions for the main menu.
 func (a *App) Versions() version.Info {
@@ -116,7 +166,7 @@ func (a *App) DeckRatios(sets []string, players int) string {
 	}
 	short, err := engine.RatioShortfall(s)
 	if err != nil {
-		return msgJSON([]engine.Msg{errDeckRatios.Msg(engine.Str("error", err.Error()))})
+		return msgerr.JSON([]engine.Msg{errDeckRatios.Msg(engine.Str("error", err.Error()))})
 	}
 	if len(short) == 0 {
 		return ""
@@ -125,5 +175,5 @@ func (a *App) DeckRatios(sets []string, players int) string {
 	for _, sh := range short {
 		out = append(out, sh.Msg())
 	}
-	return msgJSON(out)
+	return msgerr.JSON(out)
 }

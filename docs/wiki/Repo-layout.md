@@ -2,6 +2,7 @@
 
 ```
 main.go, app.go        Wails desktop app and its bindings
+bindings/              Wails bindings, one package per domain (ADR 030)
 cmd/server/            dedicated server (no UI)
 cmd/server_load/       load test: plays whole games against a running server
 cmd/website/           rules website, js/wasm only
@@ -11,6 +12,7 @@ internal/cardinfo/     card display info from card_db, for app and website
 internal/instance/     one slot per running app copy
 internal/lan/          finds hosted games on the LAN (ADR 009)
 internal/legal/        fan-game notice used by app and server
+internal/msgerr/       player messages out of the bindings (ADR 021)
 internal/protocol/     network messages (never split out)
 internal/server/       game rooms and the WebSocket transport (ADR 006)
 internal/settings/     the player's app settings file

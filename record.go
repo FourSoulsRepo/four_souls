@@ -35,14 +35,14 @@ func (a *App) SaveRecord(link string) (string, error) {
 	if err != nil || (u.Scheme != "http" && u.Scheme != "https") || u.Path != "/record" || u.Host == "" {
 		return "", ErrRecordURL
 	}
-	data, name, err := fetchRecord(a.ctx, u.String())
+	data, name, err := fetchRecord(a.wails.Context(), u.String())
 	if err != nil {
 		return "", err
 	}
 	if name == "" {
 		name = "four-souls-" + record.SafeName(u.Query().Get("game")) + record.Ext
 	}
-	path, err := runtime.SaveFileDialog(a.ctx, runtime.SaveDialogOptions{
+	path, err := runtime.SaveFileDialog(a.wails.Context(), runtime.SaveDialogOptions{
 		Title:           "Save the match record",
 		DefaultFilename: name,
 		Filters:         []runtime.FileFilter{{DisplayName: "Four Souls records", Pattern: "*" + record.Ext}},
