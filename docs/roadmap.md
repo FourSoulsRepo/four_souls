@@ -325,7 +325,7 @@ Step 21 added (owner, 2026-11-15); it runs on the step 18 branch.
 ## 21. Bindings by domain
 
 1. One package per domain under `bindings/`, as in ytmemchat_wails.
-2. `App` keeps lifecycle and shared state only.
+2. `App` is not bound; it keeps only the Wails context.
 3. No change the player sees; the bridge API stays.
 4. Ideas: A-17.
 
