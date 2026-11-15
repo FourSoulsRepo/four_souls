@@ -52,6 +52,7 @@ Use options 2, 5 and 7.
    1. `main.go`: the Wails app.
    2. `cmd/server`: the dedicated server.
    3. `cmd/website`: `js/wasm` only.
+   4. `bindings/`: Wails bindings, one package per domain (ADR 030).
 5. Versions
    1. App: `-X github.com/FourSoulsRepo/four_souls/internal/version.App=…`.
    2. Engine: constant `rulesengine.Version`.

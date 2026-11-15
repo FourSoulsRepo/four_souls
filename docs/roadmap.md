@@ -43,7 +43,7 @@ Step 15 is paused (owner, 2026-10-26); work goes on with 17, then 16.
 Step numbers stay as IDs; the table lists steps in work order.
 Step 20 added (owner, 2026-11-06); it starts now, on the step 12 branch.
 Step 20 done (owner, 2026-11-09); its open bugs go to play tests.
-Step 21 added (owner, 2026-11-15); it waits for the owner to start it.
+Step 21 added (owner, 2026-11-15); it runs on the step 18 branch.
 
 ---
 

@@ -15,6 +15,8 @@ Ideas: A-17.
 3. A move takes its tests along (`*_test.go` next to the code).
 4. Gates: `make lint`, `make frontend e2e`.
 5. Check without images too: `wails build -m -tags embed`.
+6. Branch: the step 18 branch, not its own (owner, 2026-11-15).
+7. Design: ADR 030; each sub-step follows it.
 
 ## Today (2026-11-15)
 
@@ -37,7 +39,7 @@ Shared helpers: `msgError` (`messages.go`), `imageURL`, `soundURLs`, `appContext
 
 ---
 
-### [ ] 21.1 ADR: bindings by domain
+### [x] 21.1 ADR: bindings by domain
 
 1. Goal: one ADR fixes the packages, names and wiring.
 2. Tasks:
@@ -71,6 +73,13 @@ Shared helpers: `msgError` (`messages.go`), `imageURL`, `soundURLs`, `appContext
    2. `assets`: one package, or `cards` apart from the media skins?
 6. Done when:
    1. The ADR is Accepted and its row is in `INDEX.md`.
+7. Result (2026-11-15)
+   1. ADR 030, Accepted; the draft packages as they stand.
+   2. Owner answers: the draft names; one `assets` package.
+   3. `App` stays in `main`, not bound; it gives `Context()` only.
+   4. Fixed values go to each `New`; no shared `api` beyond the context.
+   5. Player messages: `internal/msgerr`; keys stay in each package.
+   6. ADR 003 item 4.4: the `bindings/` folder.
 
 ### [ ] 21.2 Host and updater
 
@@ -114,7 +123,7 @@ Shared helpers: `msgError` (`messages.go`), `imageURL`, `soundURLs`, `appContext
    1. `bindings/setup`, `bindings/join`, `bindings/records` with their tests.
    2. Bridge imports the new paths.
 3. Done when:
-   1. `App` binds no methods for the frontend; only lifecycle is left.
+   1. `App` is not bound; it keeps only the Wails context.
    2. `main.go` binds only `bindings/*` structs.
    3. Gates pass.
 
