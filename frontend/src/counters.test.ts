@@ -26,13 +26,10 @@ describe('fearOf (18.26)', () => {
   });
 });
 
-describe('playerCounters (14.33)', () => {
-  it('lists the kinds a player has; fear says what it does', () => {
+describe('playerCounters (14.31)', () => {
+  it('lists the kinds a player has; fear shows on the character card instead (18.26)', () => {
     expect(playerCounters(undefined)).toEqual([]);
-    expect(playerCounters([{ name: 'fear', count: 0 }])).toEqual([]);
-    expect(playerCounters([{ name: 'fear', count: 3 }, { name: 'luck', count: 1 }])).toEqual([
-      { name: 'fear', count: 3, word: 'Fear', title: 'Fear: 3 — monsters +1 evasion per 2 on the active player' },
-      { name: 'luck', count: 1, word: 'luck', title: 'luck: 1' },
-    ]);
+    expect(playerCounters([{ name: 'luck', count: 0 }])).toEqual([]);
+    expect(playerCounters([{ name: 'fear', count: 3 }, { name: 'luck', count: 1 }])).toEqual([{ name: 'luck', count: 1, word: 'luck', title: 'luck: 1' }]);
   });
 });

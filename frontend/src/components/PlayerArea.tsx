@@ -8,7 +8,6 @@ import type { LinePart } from '../stack';
 import { copiesOf, isCurse, isSoul, playerColor, soulCards, soulSlots, type Position } from '../table';
 import { Card, useZoom, type CardSize } from './Card';
 import { Count, useCount, useFlip } from './Count';
-import { Ghost } from './Ghost';
 import { HandCard, useHandGap } from './HandCard';
 import type { Interact } from './Interact';
 import { HiddenHand, RevealedHand } from './Pile';
@@ -249,11 +248,10 @@ function OwnArea({ player, name, active, asked, winSouls, ui, tools }: Omit<Prop
   );
 }
 
-// PlayerCounters are the counters on a player, not on a card (14.31,
-// 14.33): fear in Trick or Treat. Each kind is a dot in its colour (fear
-// a ghost, 18.26), the number and the kind's word; the tooltip says what
-// it does. Fear also shows on the player's character card. None, no
-// element.
+// PlayerCounters are the counters on a player, not on a card (14.31).
+// Each kind is a dot in its colour, the number and the kind's word; the
+// tooltip says what it does. Fear shows on the player's character card
+// instead (18.26). None, no element.
 function PlayerCounters({ player }: { player: PlayerView }) {
   const list = playerCounters(player.counters);
   if (list.length === 0) {
@@ -263,7 +261,7 @@ function PlayerCounters({ player }: { player: PlayerView }) {
     <span className="player-counters">
       {list.map((c) => (
         <span key={c.name} className="player-counter" role="img" aria-label={c.title} title={c.title} style={{ '--fill': counterColor(c.name) } as CSSProperties}>
-          {c.name === 'fear' ? <Ghost className="player-counter-dot ghost" /> : <span className="player-counter-dot" aria-hidden="true" />}
+          <span className="player-counter-dot" aria-hidden="true" />
           <Count value={c.count} />
           <span className="player-counter-word" aria-hidden="true">
             {c.word}

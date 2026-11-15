@@ -1,7 +1,7 @@
 // Trick or Treat on the table (14.33, ADR 028 Decision 11, UC-42):
 // Mischievous The Haunt with its trick counters left of the monster
-// slots, the Trick/Treat card in the challenge panel, fear counters by
-// each player's name and on their character (18.26), and the monsters' evasion and rewards as the
+// slots, the Trick/Treat card in the challenge panel, fear counters on
+// each player's character card (18.26), and the monsters' evasion and rewards as the
 // challenge changes them. Saved games reach the exact states: fear on
 // a player, a changed reward, a sure hit or miss, enough souls, the
 // last round.
@@ -199,7 +199,7 @@ function objectCard(page: Page, id: number) {
 
 // fearBadge is the ghost on a character card: its player's fear (18.26).
 function fearBadge(page: Page, character: number, n: number) {
-  return page.locator(`[data-zone="obj-${String(character)}"]`).getByLabel(tr('badge.fear', { n }), { exact: true });
+  return page.locator(`[data-zone="obj-${String(character)}"]`).getByLabel(tr('table.fear_title', { n }), { exact: true });
 }
 
 // trickNormal is the game list's and the table's line for the game.
@@ -330,7 +330,7 @@ test('Trick or Treat at Normal: the table, a flip at turn start, the timer runs 
   await shot(first(pages), 'trick-lost');
 });
 
-test('fear by the names raises the shown evasion; damage gives fear; changed rewards show (14.33)', async ({ browser }) => {
+test('fear on the character cards raises the shown evasion; damage gives fear; changed rewards show (14.33)', async ({ browser }) => {
   const names = repeatNames(['Fen', 'Fiz']);
   // Delirium and Stoney change other monsters' evasion (14.10): the
   // test checks the +1 from fear alone.
@@ -357,9 +357,9 @@ test('fear by the names raises the shown evasion; damage gives fear; changed rew
   const activeSeat = now.fear.indexOf(2);
   expect(activeSeat).toBeGreaterThanOrEqual(0);
   for (const page of pages) {
-    // Both screens show the fear by the active player's name, and on
-    // their character card (18.26); the other player's card has none.
-    await expect(page.getByRole('img', { name: tr('table.fear_title', { n: 2 }), exact: true })).toBeVisible();
+    // Both screens show the fear on the active player's character card,
+    // not by the name (18.26); the other player's card has none.
+    await expect(page.locator('.player-counter')).toHaveCount(0);
     await expect(fearBadge(page, now.characters[activeSeat] ?? -1, 2)).toBeVisible();
     for (const [seat, character] of now.characters.entries()) {
       if (seat !== activeSeat) {
@@ -407,7 +407,6 @@ test('fear by the names raises the shown evasion; damage gives fear; changed rew
   await settle(pages, click, async () => ((await seenOf(first(pages))).fear[activeSeat] ?? 0) > 2);
   const fear = (await seenOf(first(pages))).fear[activeSeat] ?? 0;
   for (const page of pages) {
-    await expect(page.getByRole('img', { name: tr('table.fear_title', { n: fear }), exact: true })).toBeVisible();
     await expect(fearBadge(page, now.characters[activeSeat] ?? -1, fear)).toBeVisible();
   }
   await shot(active, 'trick-fear-gained');

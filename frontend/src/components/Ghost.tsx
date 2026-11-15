@@ -1,9 +1,8 @@
 import { counterColor, ghostPath } from '../counters';
 
 // Ghost is fear's small icon (18.26): a ghost-white ghost with an ink
-// edge and two eyes, by a player's name and in a card's zoom. Its shape
-// tells fear apart without its colour. Decorative: the text beside it
-// names the fear.
+// edge and two eyes, in a character's zoom. Its shape tells fear apart
+// without its colour. Decorative: the text beside it names the fear.
 export function Ghost({ className }: { className: string }) {
   return (
     <svg className={className} viewBox="0 0 100 100" aria-hidden="true">

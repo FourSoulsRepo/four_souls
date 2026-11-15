@@ -24,9 +24,9 @@ export function fearOf(list: { name?: string; count: number }[] | undefined): nu
   return list?.find((c) => c.name === 'fear')?.count ?? 0;
 }
 
-// PlayerCounter is one kind of counter on a player (14.31, 14.33):
-// fear in Trick or Treat. word names the kind beside the number; title
-// says what the counters do, as tooltip and screen-reader name.
+// PlayerCounter is one kind of counter on a player (14.31): word names
+// the kind beside the number; title is its tooltip and screen-reader
+// name.
 export interface PlayerCounter {
   name: string;
   count: number;
@@ -35,13 +35,10 @@ export interface PlayerCounter {
 }
 
 // playerCounters lists a player's counters to show by their name: each
-// kind with any, in the view's order. Fear says what it does (R-TRICK-09).
+// kind with any, in the view's order. Fear is not among them: it shows
+// on the player's character card only (owner, 18.26).
 export function playerCounters(list: { name?: string; count: number }[] | undefined): PlayerCounter[] {
   return (list ?? [])
-    .filter((c) => c.count > 0)
-    .map(({ name = '', count }) =>
-      name === 'fear'
-        ? { name, count, word: t('table.fear'), title: t('table.fear_title', { n: count }) }
-        : { name, count, word: name, title: t('table.player_counters_title', { name, n: count }) },
-    );
+    .filter((c) => c.count > 0 && c.name !== 'fear')
+    .map(({ name = '', count }) => ({ name, count, word: name, title: t('table.player_counters_title', { name, n: count }) }));
 }

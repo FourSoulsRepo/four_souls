@@ -781,7 +781,7 @@ Ideas: B-04, B-05, B-08.
    5. Gates: `make lint`, `make frontend`, `make e2e` (564 passed, 18 skipped).
    6. **Owner** marks it solved (2026-11-15).
 
-### [ ] 18.26 Fear on the character card
+### [x] 18.26 Fear on the character card
 
 1. Goal: a player sees fear at a glance, as on a real table (owner 2026-11-15).
 2. Why now:
@@ -815,7 +815,7 @@ Ideas: B-04, B-05, B-08.
    3. **Owner** checks it.
 6. Result (2026-11-15)
    1. Fear is `#e6ecf5` in `counters.ts`; `ghostPath`, `fearOf` there too.
-   2. By the name: `Ghost.tsx`, a ghost with eyes, in place of the dot.
+   2. `Ghost.tsx`: a small ghost with eyes, in the zoom's fear line.
    3. On the card: `Card`'s `fear` prop, a ghost badge with eyes and the number.
       1. Bottom middle, its head above health and attack.
       2. Card counters stay on the left of the art, apart from it.
@@ -829,3 +829,12 @@ Ideas: B-04, B-05, B-08.
       1. The failure: `challenge-table.spec.ts:253`, a deal; logged as 19.160.
       2. Rerun of both challenge specs: 8 of 8 passed.
    10. Not covered by a screenshot: card counters and fear on one character.
+7. Owner change (2026-11-15): fear only on the character card.
+   1. Replaces task 4.4: the name line no longer shows fear.
+   2. `playerCounters` leaves fear out; other kinds still show by the name.
+   3. The badge's screen-reader name says what fear does (`table.fear_title`).
+   4. Removed: `table.fear`, `badge.fear`, the ghost dot by the name.
+   5. e2e: no `.player-counter` while fear is on; the badge as before.
+   6. Docs: UC-42 13.1–13.2, `Client.md`, `Challenges.md`, `Animations.md`.
+   7. Gates: `make lint`, `make frontend`; `challenge-trick.spec.ts` 4 of 4 passed.
+   8. **Owner** marks it solved (2026-11-15).

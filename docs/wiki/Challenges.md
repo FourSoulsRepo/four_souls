@@ -126,7 +126,7 @@ The regular The Haunt from the Base Game can still turn up in the monster deck; 
 
 * **Mischievous The Haunt** lies in the final boss place with its trick counters as a counter badge. While it is guarded, it stays dim when you pick an attack target.
 * The **challenge panel** shows the Trick/Treat card with its side up, and the timer. There are no presents. A flip turns the card over in the panel.
-* **Fear** shows by each player's name: a little white ghost, the number and the word "Fear". Hover it to read what it does. The same ghost, with the number, sits on the player's character card between health and attack; the character's zoom says "Fear: N" and what it does. Fear belongs to the player, so a new character shows the same fear.
+* **Fear** shows on each player's character card: a white ghost with the number, between health and attack. Hover the card: its zoom says "Fear: N" and what it does. Fear belongs to the player, so a new character shows the same fear.
 * Monsters show their raised evasion; the zoom names the Haunt as the source.
 * An attack on a monster starts with a **Throw** for the side's roll, before the attack roll.
 * Changed rewards show as a ribbon on the monster (for example "1¢ · 1 loot") and under its zoom as "Rewards this turn". A monster that gained another's abilities has the copy mark.

@@ -230,7 +230,7 @@ export function Card({
         <BlankFace card={card} full={size === 'zoom'} />
       )}
       {badges && counterBadges}
-      {badges && fear > 0 && <Badge kind="fear" value={fear} label={t('badge.fear', { n: fear })} />}
+      {badges && fear > 0 && <Badge kind="fear" value={fear} label={t('table.fear_title', { n: fear })} />}
       {badges && copies.map((c, i) => <CopyBadge key={`${String(i)}-${c}`} cardRef={c} name={name(c)} place={i} onLeave={backToCard} />)}
       {badges && dice && dice.length > 0 && <DieBadges values={dice} owner={owner} />}
       {/* Damage shows as the lower, red health; the mark is for the rest. */}

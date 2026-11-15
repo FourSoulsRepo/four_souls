@@ -498,13 +498,6 @@
     "text": "Dice to hit (printed {n})",
     "note": "Tooltip of a monster's changed dice badge. n: the number printed on the card."
   },
-  "badge.fear": {
-    "text": {
-      "one": "{n} fear counter on this player",
-      "other": "{n} fear counters on this player"
-    },
-    "note": "Screen-reader name of the ghost badge on a character card (Trick or Treat): fear counters are on the player, shown on their character. n: their fear counters."
-  },
   "badge.hp": {
     "text": {
       "one": "{n} health",
@@ -4408,13 +4401,9 @@
     "text": "dead",
     "note": "Game table: tag by a dead player's name, lower case."
   },
-  "table.fear": {
-    "text": "Fear",
-    "note": "Game table, by a player's name: the word beside their fear counters (Trick or Treat)."
-  },
   "table.fear_title": {
     "text": "Fear: {n} — monsters +1 evasion per 2 on the active player",
-    "note": "Tooltip and screen-reader name of a player's fear counters (Trick or Treat, Mischievous The Haunt). n: their fear counters."
+    "note": "Screen-reader name of the ghost badge on a player's character card, and its line in the card's zoom: their fear counters (Trick or Treat, Mischievous The Haunt). n: their fear counters."
   },
   "table.hand": {
     "text": {
